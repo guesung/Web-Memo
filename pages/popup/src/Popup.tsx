@@ -1,12 +1,13 @@
 import '@src/Popup.css';
 import { useStorageSuspense, withErrorBoundary, withSuspense } from '@extension/shared';
 import { exampleThemeStorage } from '@extension/storage';
-import { ComponentPropsWithoutRef } from 'react';
+import { ComponentPropsWithoutRef, useEffect, useState } from 'react';
 
 const Popup = () => {
   const theme = useStorageSuspense(exampleThemeStorage);
   const isLight = theme === 'light';
   const logo = isLight ? 'popup/logo_vertical.svg' : 'popup/logo_vertical_dark.svg';
+  const [pageText, setPageText] = useState('');
 
   const injectContentScript = async () => {
     const [tab] = await chrome.tabs.query({ currentWindow: true, active: true });
@@ -21,18 +22,31 @@ const Popup = () => {
       files: ['content-runtime/index.iife.js'],
     });
   };
+
+  useEffect(() => {
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+      const activeTab = tabs[0];
+      if (activeTab.id) {
+        chrome.tabs.sendMessage(activeTab.id, { type: 'get-page-content' }, response => {
+          if (chrome.runtime.lastError) {
+            console.error(chrome.runtime.lastError);
+            return;
+          }
+          if (response && response.content) {
+            setPageText(response.content);
+          }
+        });
+      }
+    });
+  }, []);
+
   const handlePopup = () => {
-    chrome.runtime.sendMessage(
-      {
-        type: 'summarize',
-        payload: {
-          pageText: 'Hello My name is Guesung',
-        },
+    chrome.runtime.sendMessage({
+      type: 'summarize',
+      payload: {
+        pageText,
       },
-      response => {
-        console.log(response);
-      },
-    );
+    });
   };
 
   return (

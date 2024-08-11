@@ -1,13 +1,19 @@
 import { useEffect } from 'react';
 
 export default function App() {
+  const getPageContent = () => {
+    const fullText = document.body.innerText;
+    return fullText.substring(0, 10000);
+  };
+
   useEffect(() => {
-    console.log('content ui loaded');
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.type === 'get-page-content') {
+        const pageText = getPageContent();
+        sendResponse({ content: pageText });
+      }
+    });
   }, []);
 
-  return (
-    <div className="flex gap-1 text-blue-500">
-      Edit <strong>pages/content-ui/src/app.tsx</strong> and save to reload.
-    </div>
-  );
+  return <div></div>;
 }

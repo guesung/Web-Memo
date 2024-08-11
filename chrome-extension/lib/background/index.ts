@@ -7,9 +7,6 @@ exampleThemeStorage.get().then(theme => {
   console.log('theme', theme);
 });
 
-console.log('background loaded');
-console.log("Edit 'chrome-extension/lib/background/index.ts' and save to reload.");
-
 const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
 });
@@ -21,18 +18,20 @@ export type RequestType = {
   };
 };
 
-chrome.runtime.onMessage.addListener(async ({ type, payload: { pageText } }: RequestType, sender, sendResponse) => {
-  console.log('message received');
+chrome.runtime.onMessage.addListener(async ({ type, payload }: RequestType, sender, sendResponse) => {
+  console.log(1);
   if (type === 'summarize') {
-    const chatCompletion = await openai.chat.completions.create({
-      messages: [{ role: 'user', content: 'Summarize This.' + pageText }],
-      model: 'gpt-4o-mini',
-    });
-    const message = chatCompletion.choices[0].message.content;
-    console.log(message);
-    sendResponse({
-      message,
-    });
+    const { pageText } = payload;
+    console.log(pageText);
+    // const chatCompletion = await openai.chat.completions.create({
+    //   messages: [{ role: 'user', content: 'Summarize This.'  }],
+    //   model: 'gpt-4o-mini',
+    // });
+    // const message = chatCompletion.choices[0].message.content;
+    // console.log(message);
+    // sendResponse({
+    //   message,
+    // });
   }
 
   return true; // 비동기로 작업 시 필요

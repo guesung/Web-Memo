@@ -21,6 +21,19 @@ const Popup = () => {
       files: ['content-runtime/index.iife.js'],
     });
   };
+  const handlePopup = () => {
+    chrome.runtime.sendMessage(
+      {
+        type: 'summarize',
+        payload: {
+          pageText: 'Hello My name is Guesung',
+        },
+      },
+      response => {
+        console.log(response);
+      },
+    );
+  };
 
   return (
     <div className={`App ${isLight ? 'bg-slate-50' : 'bg-gray-800'}`}>
@@ -38,6 +51,7 @@ const Popup = () => {
           Click to inject Content Script
         </button>
         <ToggleButton>Toggle theme</ToggleButton>
+        <button onClick={handlePopup}>번역</button>
       </header>
     </div>
   );

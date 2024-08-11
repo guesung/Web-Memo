@@ -1,7 +1,7 @@
 import 'webextension-polyfill';
 import { exampleThemeStorage } from '@extension/storage';
 import OpenAI from 'openai';
-import { OPENAI_API_KEY } from '../../constants/env';
+import { OPENAI_API_KEY, MOCK_OPEN_AI_API_RESPONSE } from '../../constants';
 
 exampleThemeStorage.get().then(theme => {
   console.log('theme', theme);
@@ -19,19 +19,18 @@ export type RequestType = {
 };
 
 chrome.runtime.onMessage.addListener(async ({ type, payload }: RequestType, sender, sendResponse) => {
-  console.log(1);
   if (type === 'summarize') {
-    const { pageText } = payload;
-    console.log(pageText);
+    // const { pageText } = payload;
+    // console.log(pageText);
     // const chatCompletion = await openai.chat.completions.create({
-    //   messages: [{ role: 'user', content: 'Summarize This.'  }],
+    //   messages: [{ role: 'user', content: '아래 내용을 요약해줘.' + pageText }],
     //   model: 'gpt-4o-mini',
     // });
     // const message = chatCompletion.choices[0].message.content;
-    // console.log(message);
     // sendResponse({
     //   message,
     // });
+    return MOCK_OPEN_AI_API_RESPONSE;
   }
 
   return true; // 비동기로 작업 시 필요

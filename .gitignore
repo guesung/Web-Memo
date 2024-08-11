@@ -21,3 +21,6 @@
 # compiled
 chrome-extension/public/manifest.json
 **/tailwind-output.css
+
+# env
+env.ts

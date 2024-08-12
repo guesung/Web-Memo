@@ -30,7 +30,9 @@ chrome.runtime.onMessage.addListener(async ({ type, payload }: RequestType, send
     // sendResponse({
     //   message,
     // });
-    return MOCK_OPEN_AI_API_RESPONSE;
+    sendResponse({
+      message: MOCK_OPEN_AI_API_RESPONSE,
+    });
   }
 
   return true; // 비동기로 작업 시 필요

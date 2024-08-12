@@ -1,10 +1,7 @@
-import { useStorageSuspense, withErrorBoundary, withSuspense } from '@extension/shared';
-import { exampleThemeStorage } from '@extension/storage';
+import { withErrorBoundary, withSuspense } from '@extension/shared';
 import { useEffect, useState } from 'react';
 
 const Popup = () => {
-  const theme = useStorageSuspense(exampleThemeStorage);
-  const isLight = theme === 'light';
   const [pageText, setPageText] = useState('');
   const [summary, setSummary] = useState('');
 
@@ -40,12 +37,17 @@ const Popup = () => {
   };
 
   return (
-    <div className={`App ${isLight ? 'bg-slate-50' : 'bg-gray-800'}`}>
-      <header className={`App-header ${isLight ? 'text-gray-900' : 'text-gray-100'}`}>
-        <button onClick={handlePopup}>Summarize this page !</button>
-        {summary && <p>{summary}</p>}
-      </header>
-    </div>
+    <header className={`bg-base-300 ${summary && 'mockup-window'} block`}>
+      {summary ? (
+        <p className="px-8 py-4 bg-base-200 max-w-[400] break-words">
+          summarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummarysummary
+        </p>
+      ) : (
+        <button onClick={handlePopup} className="btn btn-primary">
+          Summarize this page !
+        </button>
+      )}
+    </header>
   );
 };
 

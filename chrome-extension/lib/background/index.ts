@@ -1,7 +1,8 @@
 import 'webextension-polyfill';
 import { exampleThemeStorage } from '@extension/storage';
 import OpenAI from 'openai';
-import { OPENAI_API_KEY, MOCK_OPEN_AI_API_RESPONSE } from '../../constants';
+import { OPENAI_API_KEY } from '../../constants';
+import { BRIDGE_TYPE_SUMMARY } from '@extension/shared';
 
 exampleThemeStorage.get().then(theme => {
   console.log('theme', theme);
@@ -19,7 +20,8 @@ export type RequestType = {
 };
 
 chrome.runtime.onMessage.addListener(({ type, payload }, sender, sendResponse) => {
-  if (type === 'summarize') {
+  console.log(payload);
+  if (type === BRIDGE_TYPE_SUMMARY) {
     const { content } = payload;
     openai.chat.completions
       .create({
@@ -27,6 +29,7 @@ chrome.runtime.onMessage.addListener(({ type, payload }, sender, sendResponse) =
         model: 'gpt-4o-mini',
       })
       .then(chatCompletion => {
+        console.log(chatCompletion);
         const message = chatCompletion.choices[0].message.content;
         sendResponse({
           message,

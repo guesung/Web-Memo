@@ -18,22 +18,21 @@ export type RequestType = {
   };
 };
 
-chrome.runtime.onMessage.addListener(async ({ type, payload }: RequestType, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(({ type, payload }, sender, sendResponse) => {
   if (type === 'summarize') {
-    // const { pageText } = payload;
-    // console.log(pageText);
-    // const chatCompletion = await openai.chat.completions.create({
-    //   messages: [{ role: 'user', content: '아래 내용을 요약해줘.' + pageText }],
-    //   model: 'gpt-4o-mini',
-    // });
-    // const message = chatCompletion.choices[0].message.content;
-    // sendResponse({
-    //   message,
-    // });
-    sendResponse({
-      message: MOCK_OPEN_AI_API_RESPONSE,
-    });
+    const { content } = payload;
+    openai.chat.completions
+      .create({
+        messages: [{ role: 'user', content: '아래 내용을 요약해줘.' + content }],
+        model: 'gpt-4o-mini',
+      })
+      .then(chatCompletion => {
+        const message = chatCompletion.choices[0].message.content;
+        console.log(message);
+        sendResponse({
+          message,
+        });
+      });
   }
-
-  return true; // 비동기로 작업 시 필요
+  return true;
 });

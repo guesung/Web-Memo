@@ -1,19 +1,16 @@
-import { useEffect } from 'react';
+const getPageContent = () => {
+  const fullText = document.body.innerText;
+  return fullText.substring(0, 10000);
+};
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (!message) return;
+  if (message.type === 'get-page-content') {
+    const content = getPageContent();
+    sendResponse({ content });
+  }
+});
 
 export default function App() {
-  const getPageContent = () => {
-    const fullText = document.body.innerText;
-    return fullText.substring(0, 10000);
-  };
-
-  useEffect(() => {
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === 'get-page-content') {
-        const pageText = getPageContent();
-        sendResponse({ content: pageText });
-      }
-    });
-  }, []);
-
   return <div></div>;
 }

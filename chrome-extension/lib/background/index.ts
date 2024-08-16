@@ -28,7 +28,6 @@ chrome.runtime.onMessage.addListener(({ type, payload }, sender, sendResponse) =
       })
       .then(chatCompletion => {
         const message = chatCompletion.choices[0].message.content;
-        console.log(message);
         sendResponse({
           message,
         });

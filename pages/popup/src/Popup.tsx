@@ -4,21 +4,22 @@ import { queryPageSummaryFromBackground, queryPageTextFromTab } from './query';
 
 const Popup = () => {
   const [summary, setSummary] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       const pageText = await queryPageTextFromTab();
-      console.log(pageText);
       if (!pageText) return;
       const pageSummary = await queryPageSummaryFromBackground(pageText);
       console.log(pageSummary);
       setSummary(pageSummary);
     })();
+    setLoading(false);
   }, []);
 
-  if (!summary) return <div>Loading ...</div>;
+  if (!summary) return <span className="loading loading-ring loading-md" />;
   return (
-    <header className={`bg-base-300 ${summary && 'mockup-window'} block`}>
+    <header className={`bg-base-300 block ${summary && 'mockup-window'}`}>
       <p className="px-8 py-4 bg-base-200 min-w-[800px] break-words">{summary}</p>
     </header>
   );

@@ -2,7 +2,7 @@ import 'webextension-polyfill';
 import { exampleThemeStorage } from '@extension/storage';
 import OpenAI from 'openai';
 import { OPENAI_API_KEY } from '../../constants';
-import { BRIDGE_TYPE_SUMMARY, BridgeRequest } from '@extension/shared';
+import { BRIDGE_TYPE_SUMMARY, BridgeRequest, BridgeResponse } from '@extension/shared';
 
 exampleThemeStorage.get().then(theme => {
   console.log('theme', theme);
@@ -49,7 +49,7 @@ chrome.runtime.onMessage.addListener((bridgeResponse: BridgeRequest, sender, sen
         const message = chatCompletion.choices[0].message.content;
         sendResponse({
           message,
-        });
+        } as BridgeResponse);
       });
   }
   return true;

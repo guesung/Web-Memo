@@ -7,4 +7,6 @@ export interface BridgeRequest {
   };
 }
 
-export interface QueryPageTextFromTabResponse {}
+export interface BridgeResponse {
+  message: string;
+}

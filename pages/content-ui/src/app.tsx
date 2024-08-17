@@ -1,4 +1,4 @@
-import { BRIDGE_TYPE_PAGE_CONTENT, BridgeRequest } from '@extension/shared';
+import { BRIDGE_TYPE_PAGE_CONTENT, BridgeRequest, BridgeResponse } from '@extension/shared';
 
 const getPageContent = () => {
   const fullText = document.body.innerText;
@@ -8,8 +8,8 @@ const getPageContent = () => {
 chrome.runtime.onMessage.addListener((bridgeResponse: BridgeRequest, sender, sendResponse) => {
   if (!bridgeResponse) return;
   if (bridgeResponse.type === BRIDGE_TYPE_PAGE_CONTENT) {
-    const content = getPageContent();
-    sendResponse({ content });
+    const pageContent = getPageContent();
+    sendResponse({ message: pageContent } as BridgeResponse);
   }
 });
 

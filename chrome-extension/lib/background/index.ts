@@ -2,7 +2,7 @@ import 'webextension-polyfill';
 import { exampleThemeStorage } from '@extension/storage';
 import OpenAI from 'openai';
 import { OPENAI_API_KEY } from '../../constants';
-import { BRIDGE_TYPE_SUMMARY } from '@extension/shared';
+import { BRIDGE_TYPE_SUMMARY, BridgeRequest } from '@extension/shared';
 
 exampleThemeStorage.get().then(theme => {
   console.log('theme', theme);
@@ -35,9 +35,9 @@ export type RequestType = {
   };
 };
 
-chrome.runtime.onMessage.addListener(({ type, payload }, sender, sendResponse) => {
-  console.log(payload);
-  if (type === BRIDGE_TYPE_SUMMARY) {
+chrome.runtime.onMessage.addListener((bridgeResponse: BridgeRequest, sender, sendResponse) => {
+  const { type, payload } = bridgeResponse;
+  if (type === BRIDGE_TYPE_SUMMARY && payload && payload.content) {
     const { content } = payload;
     openai.chat.completions
       .create({

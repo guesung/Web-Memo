@@ -1,11 +1,11 @@
-import { BRIDGE_TYPE_PAGE_CONTENT, BRIDGE_TYPE_SUMMARY } from '@extension/shared';
+import { BRIDGE_TYPE_PAGE_CONTENT, BRIDGE_TYPE_SUMMARY, BridgeRequest } from '@extension/shared';
 
 export const queryPageTextFromTab = () =>
   new Promise(resolve => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
       const [activeTab] = tabs;
       if (activeTab.id) {
-        chrome.tabs.sendMessage(activeTab.id, { type: BRIDGE_TYPE_PAGE_CONTENT }, response => {
+        chrome.tabs.sendMessage(activeTab.id, { type: BRIDGE_TYPE_PAGE_CONTENT } as BridgeRequest, response => {
           if (chrome.runtime.lastError) {
             console.error(chrome.runtime.lastError);
             return;
@@ -27,7 +27,7 @@ export const queryPageSummaryFromBackground = (pageText: string) =>
         payload: {
           content: pageText,
         },
-      },
+      } as BridgeRequest,
       response => {
         if (chrome.runtime.lastError) {
           console.error(chrome.runtime.lastError);

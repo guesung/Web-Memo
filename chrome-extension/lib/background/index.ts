@@ -13,19 +13,24 @@ const openai = new OpenAI({
 });
 
 const prompt = `
-I will provide you with all the content currently on this page. Please summarize the entire page for me.
+You are a professional summarizer. Please read the page content I provide and summarize it concisely according to the following format:
+\`\`\`
+### Key Themes of This Text
+1. [First main theme]
+2. [Second main theme]
+3. [Third main theme]
 
-Create a summary that captures the essential information in a clean, organized Markdown format. Focus on the key points and main ideas, presenting them in a concise yet comprehensive manner. Use appropriate Markdown elements such as headers, bullet points, or numbered lists to structure the summary logically.
+### Action Items
+1. [First action item]
+2. [Second action item]
 
-Ensure that your summary:
-1. Covers all major topics or sections from the original content
-2. Highlights the most important information
-3. Is easy to read and understand
-4. Uses clear and concise language
-5. Maintains the original meaning and intent of the content
-6. Tell me in Korean.
-
-Please begin your summary once I've shared the page content with you.
+Guidelines:
+1. For Key Themes, list the 3 most important points of the text.
+2. For Action Items, write 2 main action steps or next steps suggested in the text.
+3. Write all content in Korean.
+4. Use concise and clear sentences.
+\`\`\`
+Please follow the provided format exactly.
 `;
 
 export type RequestType = {

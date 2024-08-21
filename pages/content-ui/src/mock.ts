@@ -52,4 +52,14 @@ def compliance_manager_recruitment():
 --- 
 
 위 내용은 토스증권의 컴플라이언스 매니저 채용 공고의 주요 사항을 요약한 것입니다.
+
+* Lists
+* [ ] todo
+* [x] done
+
+A table:
+
+| a | b |
+| - | - |
+
 `;

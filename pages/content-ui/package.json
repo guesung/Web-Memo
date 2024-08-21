@@ -21,12 +21,16 @@
     "postinstall": "pnpm run build:tailwindcss"
   },
   "dependencies": {
-    "@extension/shared": "workspace:*"
+    "@extension/shared": "workspace:*",
+    "@tailwindcss/typography": "^0.5.14",
+    "daisyui": "^4.12.10",
+    "react-markdown": "^9.0.1",
+    "remark-gfm": "^4.0.0"
   },
   "devDependencies": {
+    "@extension/hmr": "workspace:*",
     "@extension/tailwindcss-config": "workspace:*",
     "@extension/tsconfig": "workspace:*",
-    "@extension/hmr": "workspace:*",
     "@extension/vite-config": "workspace:*"
   }
 }

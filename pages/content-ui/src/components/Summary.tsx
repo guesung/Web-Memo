@@ -30,6 +30,11 @@ export default function Summary() {
     setIsSummaryVisible(false);
   };
 
+  useEffect(() => {
+    setSummary('');
+    setIsSummaryVisible(false);
+  }, [window.location.href]);
+
   if (isLoading) return <span className="loading loading-spinner loading-lg" />;
   else if (!isSummaryVisible)
     return (

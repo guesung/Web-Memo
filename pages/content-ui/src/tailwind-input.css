@@ -5,15 +5,15 @@
 @layer base {
   .markdown {
     h1 {
-      @apply text-[1.5rem] font-bold mb-4 text-gray-900;
+      @apply text-[24px] font-bold mb-4 text-gray-900;
     }
 
     h2 {
-      @apply text-[1.2rem] font-semibold mb-3 text-gray-800;
+      @apply text-[19.2px] font-semibold mb-3 text-gray-800;
     }
 
     h3 {
-      @apply text-[1rem] font-medium mb-2 text-gray-700;
+      @apply text-[16px] font-medium mb-2 text-gray-700;
     }
 
     p {
@@ -28,8 +28,13 @@
     ol {
       @apply mb-4 pl-5;
     }
+
     ul {
       list-style: disc outside none;
+    }
+
+    ol {
+      list-style: demical outside none;
     }
 
     li {

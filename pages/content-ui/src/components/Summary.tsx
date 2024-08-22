@@ -2,6 +2,7 @@ import { queryPageSummaryFromBackground } from '@src/query';
 import { useEffect, useState } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import ReactComponent from '../../public/logo.svg';
 
 const getPageContent = () => {
   const fullText = document.body.innerText;
@@ -38,13 +39,16 @@ export default function Summary() {
   if (isLoading) return <span className="loading loading-spinner loading-lg" />;
   else if (!isSummaryVisible)
     return (
-      <button className="text-xs rounded-full btn btn-circle tooltip" data-tip="Summary" onClick={handleSummaryOpen}>
-        S
+      <button
+        className="flex items-center justify-center text-xs bg-transparent rounded-full btn btn-circle tooltip"
+        data-tip="Summary"
+        onClick={handleSummaryOpen}>
+        <ReactComponent width={28} height={28} />
       </button>
     );
   else
     return (
-      <div onClick={handleSummaryClose}>
+      <div onClick={handleSummaryClose} onKeyUp={handleSummaryClose} role="button" tabIndex={0}>
         <Markdown
           remarkPlugins={[remarkGfm]}
           className="markdown shadow-xl prose-sm max-w-[600px] prose max-h-[400px] px-2 py-1 overflow-y-scroll cursor-pointer text-base-content rounded-xl bg-base-100">

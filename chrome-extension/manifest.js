@@ -19,14 +19,14 @@ const sidePanelConfig = {
 const manifest = deepmerge(
   {
     manifest_version: 3,
-    default_locale: 'en',
     /**
      * if you want to support multiple languages, you can use the following reference
      * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Internationalization
      */
-    name: '__MSG_extensionName__',
+    name: 'PagePal',
+    default_locale: 'en',
     version: packageJson.version,
-    description: '__MSG_extensionDescription__',
+    description: 'PagePal은 웹 페이지의 내용을 미리 요약해주어, 글을 읽기 더 쉽게 만들어주는 프로그램입니다.',
     host_permissions: ['<all_urls>'],
     permissions: ['storage', 'scripting'],
     options_page: 'options/index.html',

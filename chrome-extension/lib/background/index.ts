@@ -1,12 +1,7 @@
 import 'webextension-polyfill';
-import { exampleThemeStorage } from '@extension/storage';
 import OpenAI from 'openai';
 import { OPENAI_API_KEY } from '../../constants';
 import { BRIDGE_TYPE_SUMMARY, BridgeRequest, BridgeResponse } from '@extension/shared';
-
-exampleThemeStorage.get().then(theme => {
-  console.log('theme', theme);
-});
 
 const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,

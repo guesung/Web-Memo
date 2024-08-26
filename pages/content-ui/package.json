@@ -1,6 +1,6 @@
 {
   "name": "@extension/content-ui",
-  "version": "0.2.2",
+  "version": "0.0.1",
   "description": "chrome extension content ui",
   "type": "module",
   "private": true,
@@ -23,6 +23,7 @@
   "dependencies": {
     "@extension/shared": "workspace:*",
     "@tailwindcss/typography": "^0.5.14",
+    "@vitejs/plugin-react": "^4.3.1",
     "daisyui": "^4.12.10",
     "react-markdown": "^9.0.1",
     "remark-gfm": "^4.0.0"
@@ -31,6 +32,7 @@
     "@extension/hmr": "workspace:*",
     "@extension/tailwindcss-config": "workspace:*",
     "@extension/tsconfig": "workspace:*",
-    "@extension/vite-config": "workspace:*"
+    "@extension/vite-config": "workspace:*",
+    "vite-plugin-svgr": "^4.2.0"
   }
 }

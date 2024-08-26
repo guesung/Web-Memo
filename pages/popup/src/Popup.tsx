@@ -1,7 +1,17 @@
 import { withErrorBoundary, withSuspense } from '@extension/shared';
 
 const Popup = () => {
-  return <header></header>;
+  return (
+    <header className="px-4 py-2 text-center">
+      <p className="text-nowrap text-lg">Page Summary</p>
+      <div className="h-4" />
+      <p className="text-nowrap">
+        <span>v0.0.2</span>
+        <span> | </span>
+        <span>last update : 24.08.26</span>
+      </p>
+    </header>
+  );
 };
 
 export default withErrorBoundary(withSuspense(Popup, <div> Loading ... </div>), <div> Error Occur </div>);

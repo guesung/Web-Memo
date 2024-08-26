@@ -25,7 +25,6 @@ const manifest = deepmerge(
     name: 'Page Summary',
     default_locale: 'en',
     version: packageJson.version,
-    description: 'Page Summary는 웹 페이지의 내용을 미리 요약해주어, 글을 읽기 더 쉽게 만들어주는 프로그램입니다.',
     host_permissions: ['<all_urls>'],
     options_page: 'options/index.html',
     background: {

@@ -1,10 +1,10 @@
 {
   "extensionDescription": {
-    "description": "PagePal is a program that summarizes the content of a web page in advance to make it easier to read.",
-    "message": "PagePal is a program that summarizes the content of a web page in advance to make it easier to read."
+    "description": "Page Summary is a program that summarizes the content of a web page in advance to make it easier to read.",
+    "message": "Page Summary is a program that summarizes the content of a web page in advance to make it easier to read."
   },
   "extensionName": {
-    "description": "PagePal",
-    "message": "PagePal"
+    "description": "Page Summary",
+    "message": "Page Summary"
   }
 }

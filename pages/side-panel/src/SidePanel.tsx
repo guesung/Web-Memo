@@ -12,21 +12,16 @@ import remarkGfm from 'remark-gfm';
 
 const SidePanel = () => {
   const [summary, setSummary] = useState('');
-  const [isSummaryVisible, setIsSummaryVisible] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const startSummary = async () => {
     if (!summary) {
-      setIsLoading(true);
       const pageContent = await queryPageTextFromTab();
       const port = chrome.runtime.connect({ name: BRIDGE_TYPE_SUMMARY });
       port.postMessage({ pageContent });
       port.onMessage.addListener(message => {
         setSummary(prev => prev + message);
       });
-      setIsLoading(false);
     }
-    setIsSummaryVisible(true);
   };
 
   useEffect(() => {

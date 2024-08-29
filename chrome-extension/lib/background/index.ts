@@ -1,7 +1,7 @@
 import 'webextension-polyfill';
 import OpenAI from 'openai';
 import { OPENAI_API_KEY } from '../../constants';
-import { BRIDGE_TYPE_SUMMARY, BridgeRequest, BridgeResponse } from '@extension/shared';
+import { BRIDGE_TYPE_OPEN_SIDE_PANEL, BRIDGE_TYPE_SUMMARY, BridgeRequest, BridgeResponse } from '@extension/shared';
 
 const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
@@ -27,6 +27,7 @@ export type RequestType = {
 
 // chatGPT 응답을 받아서 다시 content script로 전달
 chrome.runtime.onMessage.addListener((bridgeResponse: BridgeRequest, sender, sendResponse) => {
+  console.log(1);
   const { type, payload } = bridgeResponse;
   if (type === BRIDGE_TYPE_SUMMARY && payload && payload.content) {
     const { content } = payload;
@@ -44,4 +45,17 @@ chrome.runtime.onMessage.addListener((bridgeResponse: BridgeRequest, sender, sen
       });
   }
   return true;
+});
+
+chrome.runtime.onMessage.addListener((bridgeResponse: BridgeRequest, sender, sendResponse) => {
+  (async () => {
+    if (bridgeResponse.type === BRIDGE_TYPE_OPEN_SIDE_PANEL) {
+      await chrome.sidePanel.open({ tabId: sender.tab.id });
+      await chrome.sidePanel.setOptions({
+        tabId: sender.tab.id,
+        path: 'side-panel/index.html',
+        enabled: true,
+      });
+    }
+  })();
 });

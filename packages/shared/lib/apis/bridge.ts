@@ -1,4 +1,4 @@
-import { BRIDGE_TYPE_PAGE_CONTENT, BRIDGE_TYPE_SUMMARY } from '../constants';
+import { BRIDGE_TYPE_PAGE_CONTENT } from '../constants';
 import { BridgeRequest, BridgeResponse } from '../types';
 
 // Tab으로부터 페이지 텍스트를 가져온다.

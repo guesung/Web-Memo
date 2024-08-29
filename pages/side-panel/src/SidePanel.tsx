@@ -1,10 +1,4 @@
-import {
-  BRIDGE_TYPE_SUMMARY,
-  getCurrentTab,
-  queryPageTextFromTab,
-  withErrorBoundary,
-  withSuspense,
-} from '@extension/shared';
+import { BRIDGE_TYPE_SUMMARY, queryPageTextFromTab, withErrorBoundary, withSuspense } from '@extension/shared';
 import '@src/SidePanel.css';
 import { useEffect, useState } from 'react';
 import Markdown from 'react-markdown';

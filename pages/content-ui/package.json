@@ -23,9 +23,7 @@
   "dependencies": {
     "@extension/shared": "workspace:*",
     "@tailwindcss/typography": "^0.5.14",
-    "@vitejs/plugin-react": "^4.3.1",
-    "react-markdown": "^9.0.1",
-    "remark-gfm": "^4.0.0"
+    "@vitejs/plugin-react": "^4.3.1"
   },
   "devDependencies": {
     "@extension/hmr": "workspace:*",

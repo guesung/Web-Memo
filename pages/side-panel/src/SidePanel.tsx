@@ -1,39 +1,42 @@
+import {
+  queryPageSummaryFromBackground,
+  queryPageTextFromTab,
+  withErrorBoundary,
+  withSuspense,
+} from '@extension/shared';
 import '@src/SidePanel.css';
-import { useStorageSuspense, withErrorBoundary, withSuspense } from '@extension/shared';
-import { exampleThemeStorage } from '@extension/storage';
-import { ComponentPropsWithoutRef } from 'react';
+import { useEffect, useState } from 'react';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const SidePanel = () => {
-  const theme = useStorageSuspense(exampleThemeStorage);
-  const isLight = theme === 'light';
-  const logo = isLight ? 'side-panel/logo_vertical.svg' : 'side-panel/logo_vertical_dark.svg';
+  const [summary, setSummary] = useState('');
+  const [isSummaryVisible, setIsSummaryVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const startSummary = async () => {
+    if (!summary) {
+      setIsLoading(true);
+      const pageContent = await queryPageTextFromTab();
+      const pageSummary = await queryPageSummaryFromBackground(pageContent);
+      setSummary(pageSummary);
+      setIsLoading(false);
+    }
+    setIsSummaryVisible(true);
+  };
+
+  useEffect(() => {
+    (async () => {
+      await startSummary();
+    })();
+  }, []);
 
   return (
-    <div className={`App ${isLight ? 'bg-slate-50' : 'bg-gray-800'}`}>
-      <header className={`App-header ${isLight ? 'text-gray-900' : 'text-gray-100'}`}>
-        <img src={chrome.runtime.getURL(logo)} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>pages/side-panel/src/SidePanel.tsx</code>
-        </p>
-        <ToggleButton>Toggle theme</ToggleButton>
-      </header>
-    </div>
-  );
-};
-
-const ToggleButton = (props: ComponentPropsWithoutRef<'button'>) => {
-  const theme = useStorageSuspense(exampleThemeStorage);
-  return (
-    <button
-      className={
-        props.className +
-        ' ' +
-        'font-bold mt-4 py-1 px-4 rounded shadow hover:scale-105 ' +
-        (theme === 'light' ? 'bg-white text-black' : 'bg-black text-white')
-      }
-      onClick={exampleThemeStorage.toggle}>
-      {props.children}
-    </button>
+    <Markdown
+      remarkPlugins={[remarkGfm]}
+      className="markdown shadow-xl prose-sm max-w-[600px] prose max-h-[400px] px-2 py-1 overflow-y-scroll cursor-pointer text-base-content rounded-xl bg-base-100">
+      {summary}
+    </Markdown>
   );
 };
 

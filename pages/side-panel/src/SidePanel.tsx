@@ -14,21 +14,18 @@ const SidePanel = () => {
   const [summary, setSummary] = useState('');
 
   const startSummary = async () => {
-    if (!summary) {
-      const pageContent = await queryPageTextFromTab();
-      const port = chrome.runtime.connect({ name: BRIDGE_TYPE_SUMMARY });
-      port.postMessage({ pageContent });
-      port.onMessage.addListener(message => {
-        setSummary(prev => prev + message);
-      });
-    }
+    if (summary) return;
+    const pageContent = await queryPageTextFromTab();
+    const port = chrome.runtime.connect({ name: BRIDGE_TYPE_SUMMARY });
+    port.postMessage({ pageContent });
+    port.onMessage.addListener(message => {
+      setSummary(prev => prev + message);
+    });
   };
 
   useEffect(() => {
     (async () => {
       await startSummary();
-      const tab = await getCurrentTab();
-      console.log(tab);
     })();
   }, []);
 

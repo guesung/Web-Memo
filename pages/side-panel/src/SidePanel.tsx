@@ -1,5 +1,6 @@
 import {
-  queryPageSummaryFromBackground,
+  BRIDGE_TYPE_SUMMARY,
+  getCurrentTab,
   queryPageTextFromTab,
   withErrorBoundary,
   withSuspense,
@@ -18,8 +19,11 @@ const SidePanel = () => {
     if (!summary) {
       setIsLoading(true);
       const pageContent = await queryPageTextFromTab();
-      const pageSummary = await queryPageSummaryFromBackground(pageContent);
-      setSummary(pageSummary);
+      const port = chrome.runtime.connect({ name: BRIDGE_TYPE_SUMMARY });
+      port.postMessage({ pageContent });
+      port.onMessage.addListener(message => {
+        setSummary(prev => prev + message);
+      });
       setIsLoading(false);
     }
     setIsSummaryVisible(true);
@@ -28,6 +32,8 @@ const SidePanel = () => {
   useEffect(() => {
     (async () => {
       await startSummary();
+      const tab = await getCurrentTab();
+      console.log(tab);
     })();
   }, []);
 

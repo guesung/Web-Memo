@@ -31,27 +31,3 @@ export const responsePageTextFromTab = () => {
     }
   });
 };
-
-// Background로부터 페이지 요약을 가져온다.
-export const queryPageSummaryFromBackground = (pageText: string): Promise<string> =>
-  new Promise(resolve => {
-    let pageSummary = '';
-    chrome.runtime.sendMessage<BridgeRequest, BridgeResponse>(
-      {
-        type: BRIDGE_TYPE_SUMMARY,
-        payload: {
-          content: pageText,
-        },
-      },
-      response => {
-        if (chrome.runtime.lastError) {
-          console.error(chrome.runtime.lastError);
-          return;
-        }
-        if (response && response.message) {
-          pageSummary = response.message;
-        }
-        resolve(pageSummary);
-      },
-    );
-  });

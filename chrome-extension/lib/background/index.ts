@@ -18,16 +18,8 @@ Instructions:Please answer within 200-800 characters. Your task is to summarize 
 
 `;
 
-export type RequestType = {
-  type: 'summarize';
-  payload: {
-    pageText: string;
-  };
-};
-
 // chatGPT 응답을 받아서 다시 content script로 전달
 chrome.runtime.onMessage.addListener((bridgeResponse: BridgeRequest, sender, sendResponse) => {
-  console.log(1);
   const { type, payload } = bridgeResponse;
   if (type === BRIDGE_TYPE_SUMMARY && payload && payload.content) {
     const { content } = payload;
@@ -37,7 +29,6 @@ chrome.runtime.onMessage.addListener((bridgeResponse: BridgeRequest, sender, sen
         model: 'gpt-4o-mini',
       })
       .then(chatCompletion => {
-        console.log(chatCompletion);
         const message = chatCompletion.choices[0].message.content;
         sendResponse({
           message,

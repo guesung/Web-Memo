@@ -25,7 +25,10 @@ chrome.runtime.onConnect.addListener(async port => {
       stream: true,
     });
     for await (const chunk of stream) {
-      port.postMessage(chunk.choices[0]?.delta?.content);
+      const message = chunk.choices[0]?.delta?.content;
+      if (message === undefined) port.disconnect();
+
+      port.postMessage(message);
     }
   });
 });

@@ -25,6 +25,7 @@ const manifest = deepmerge(
     name: 'Page Summary',
     default_locale: 'en',
     version: packageJson.version,
+    permissions: ['sidePanel'],
     host_permissions: ['<all_urls>'],
     description: 'Page Summary is a browser extension that helps you summarize web pages.',
     options_page: 'options/index.html',

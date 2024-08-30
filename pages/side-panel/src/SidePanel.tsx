@@ -25,7 +25,7 @@ const SidePanel = () => {
 
   return (
     <main className="prose prose-sm">
-      <header className="navbar">
+      <header className="navbar flex justify-center">
         {isSummaryLoading ? (
           <span className="loading loading-bars loading-sm" />
         ) : (

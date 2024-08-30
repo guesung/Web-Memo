@@ -8,7 +8,7 @@ export default function App() {
   };
 
   return (
-    <div data-theme="light">
+    <div>
       <FloatingButton onClick={handleSidePanelOpen} />
     </div>
   );

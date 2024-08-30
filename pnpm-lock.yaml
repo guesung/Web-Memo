@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      daisyui:
-        specifier: ^4.12.10
-        version: 4.12.10(postcss@8.4.41)
       openai:
         specifier: ^4.55.4
         version: 4.55.4
@@ -195,7 +192,11 @@ importers:
         specifier: workspace:*
         version: link:../tsconfig
 
-  packages/tailwind-config: {}
+  packages/tailwind-config:
+    devDependencies:
+      daisyui:
+        specifier: ^4.12.10
+        version: 4.12.10(postcss@8.4.41)
 
   packages/tsconfig: {}
 
@@ -2495,7 +2496,7 @@ packages:
     dependencies:
       cssesc: 3.0.0
       fastparse: 1.1.2
-    dev: false
+    dev: true
 
   /cssesc@3.0.0:
     resolution: {integrity: sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==}
@@ -2508,7 +2509,7 @@ packages:
   /culori@3.3.0:
     resolution: {integrity: sha512-pHJg+jbuFsCjz9iclQBqyL3B2HLCBF71BwVNujUYEvCeQMvV97R59MNK3R2+jgJ3a1fcZgI9B3vYgz8lzr/BFQ==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-    dev: false
+    dev: true
 
   /daisyui@4.12.10(postcss@8.4.41):
     resolution: {integrity: sha512-jp1RAuzbHhGdXmn957Z2XsTZStXGHzFfF0FgIOZj3Wv9sH7OZgLfXTRZNfKVYxltGUOBsG1kbWAdF5SrqjebvA==}
@@ -2520,7 +2521,7 @@ packages:
       postcss-js: 4.0.1(postcss@8.4.41)
     transitivePeerDependencies:
       - postcss
-    dev: false
+    dev: true
 
   /damerau-levenshtein@1.0.8:
     resolution: {integrity: sha512-sdQSFB7+llfUcQHUQO3+B8ERRj0Oa4w9POWMI/puGtuf7gFywGmkaLCElnudfTiKZV+NvHqL0ifzdrI8Ro7ESA==}
@@ -3315,7 +3316,7 @@ packages:
 
   /fastparse@1.1.2:
     resolution: {integrity: sha512-483XLLxTVIwWK3QTrMGRqUfUpoOs/0hbQrl2oz4J0pAcm3A3bu84wxTFqGqkJzewCLdME38xJLJAxBABfQT8sQ==}
-    dev: false
+    dev: true
 
   /fastq@1.17.1:
     resolution: {integrity: sha512-sRVD3lWVIXWg6By68ZN7vho9a1pQcN/WBFaAAsDDFzlJjvoGx0P8z7V1t72grFJfJhu3YPZBuu25f7Kaw2jN1w==}

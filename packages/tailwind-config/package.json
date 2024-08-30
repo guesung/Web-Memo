@@ -3,5 +3,8 @@
   "version": "0.0.1",
   "description": "Tailwind CSS configuration for boilerplate",
   "main": "./tailwind.config.js",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "daisyui": "^4.12.10"
+  }
 }

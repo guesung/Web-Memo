@@ -1,16 +1,10 @@
-import {
-  BRIDGE_TYPE_SUMMARY,
-  MOCK_SUMMARY,
-  queryPageTextFromTab,
-  withErrorBoundary,
-  withSuspense,
-} from '@extension/shared';
+import { BRIDGE_TYPE_SUMMARY, queryPageTextFromTab, withErrorBoundary, withSuspense } from '@extension/shared';
 import { useEffect, useState } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 const SidePanel = () => {
-  const [summary, setSummary] = useState(MOCK_SUMMARY);
+  const [summary, setSummary] = useState('');
 
   const startSummary = async () => {
     const pageContent = await queryPageTextFromTab();
@@ -23,7 +17,7 @@ const SidePanel = () => {
 
   useEffect(() => {
     (async () => {
-      // await startSummary();
+      await startSummary();
     })();
   }, []);
 

@@ -4,4 +4,5 @@ const baseConfig = require('@extension/tailwindcss-config');
 module.exports = {
   ...baseConfig,
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  plugins: [require('@tailwindcss/typography'), ...baseConfig.plugins],
 };

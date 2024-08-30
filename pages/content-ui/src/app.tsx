@@ -7,9 +7,5 @@ export default function App() {
     await chrome.runtime.sendMessage<BridgeRequest, BridgeResponse>({ type: BRIDGE_TYPE_OPEN_SIDE_PANEL });
   };
 
-  return (
-    <div>
-      <FloatingButton onClick={handleSidePanelOpen} />
-    </div>
-  );
+  return <FloatingButton onClick={handleSidePanelOpen} />;
 }

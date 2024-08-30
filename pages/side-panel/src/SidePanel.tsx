@@ -1,14 +1,18 @@
-import { BRIDGE_TYPE_SUMMARY, queryPageTextFromTab, withErrorBoundary, withSuspense } from '@extension/shared';
-import '@src/SidePanel.css';
+import {
+  BRIDGE_TYPE_SUMMARY,
+  MOCK_SUMMARY,
+  queryPageTextFromTab,
+  withErrorBoundary,
+  withSuspense,
+} from '@extension/shared';
 import { useEffect, useState } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 const SidePanel = () => {
-  const [summary, setSummary] = useState('');
+  const [summary, setSummary] = useState(MOCK_SUMMARY);
 
   const startSummary = async () => {
-    if (summary) return;
     const pageContent = await queryPageTextFromTab();
     const port = chrome.runtime.connect({ name: BRIDGE_TYPE_SUMMARY });
     port.postMessage({ pageContent });
@@ -19,14 +23,12 @@ const SidePanel = () => {
 
   useEffect(() => {
     (async () => {
-      await startSummary();
+      // await startSummary();
     })();
   }, []);
 
   return (
-    <Markdown
-      remarkPlugins={[remarkGfm]}
-      className="markdown shadow-xl prose-sm max-w-[600px] prose max-h-[400px] px-2 py-1 overflow-y-scroll cursor-pointer text-base-content rounded-xl bg-base-100">
+    <Markdown remarkPlugins={[remarkGfm]} className="markdown px-4 py-2 prose prose-sm">
       {summary}
     </Markdown>
   );

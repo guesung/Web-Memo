@@ -61,6 +61,11 @@ const manifest = deepmerge(
         matches: ['*://*/*'],
       },
     ],
+    commands: {
+      _execute_action: {
+        suggested_key: 'Alt+S',
+      },
+    },
   },
   !isFirefox && sidePanelConfig,
 );

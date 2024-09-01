@@ -21,9 +21,11 @@ const SidePanel = () => {
 
     const port = chrome.runtime.connect({ name: BRIDGE_TYPE_SUMMARY });
     port.postMessage({ pageContent });
-    port.onMessage.addListener(message => {
+    port.onMessage.addListener(async message => {
       setSummary(prev => prev + message);
-      if (message === null) setIsSummaryLoading(false);
+      if (message === null) {
+        setIsSummaryLoading(false);
+      }
     });
   };
 

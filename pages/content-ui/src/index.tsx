@@ -3,9 +3,10 @@ import App from '@src/app';
 // eslint-disable-next-line
 // @ts-ignore
 import tailwindcssOutput from '@src/tailwind-output.css?inline';
+import { responsePageTextFromTab } from '@extension/shared';
 
 const root = document.createElement('div');
-root.id = 'chrome-extension-boilerplate-react-vite-content-view-root';
+root.id = 'page-summary';
 
 document.body.append(root);
 
@@ -32,6 +33,8 @@ shadowRoot.adoptedStyleSheets = [globalStyleSheet];
  * shadowRoot.appendChild(styleElement);
  * ```
  */
+
+responsePageTextFromTab();
 
 shadowRoot.appendChild(rootIntoShadow);
 createRoot(rootIntoShadow).render(<App />);

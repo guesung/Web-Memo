@@ -10,11 +10,21 @@ const SidePanel = () => {
   const startSummary = async () => {
     setIsSummaryLoading(true);
     setSummary('');
-    const pageContent = await queryPageTextFromTab();
+    let pageContent = '';
+    try {
+      pageContent = await queryPageTextFromTab();
+    } catch (e) {
+      setIsSummaryLoading(false);
+      setSummary('Failed to get page content');
+      return;
+    }
+
     const port = chrome.runtime.connect({ name: BRIDGE_TYPE_SUMMARY });
     port.postMessage({ pageContent });
-    port.onMessage.addListener(message => setSummary(prev => prev + message));
-    port.onDisconnect.addListener(() => setIsSummaryLoading(false));
+    port.onMessage.addListener(message => {
+      setSummary(prev => prev + message);
+      if (message === null) setIsSummaryLoading(false);
+    });
   };
 
   useEffect(() => {

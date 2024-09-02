@@ -3,42 +3,21 @@
   "ui": "tui",
   "tasks": {
     "ready": {
-      "outputs": [
-        "dist/**",
-        "build/**"
-      ]
+      "outputs": ["dist/**", "build/**"]
     },
     "dev": {
-      "dependsOn": [
-        "ready"
-      ],
-      "outputs": [
-        "dist/**",
-        "build/**"
-      ],
-      "env": [
-        "__FIREFOX__"
-      ],
+      "dependsOn": ["ready"],
+      "outputs": ["dist/**", "build/**"],
+      "env": ["__FIREFOX__"],
       "persistent": true
     },
     "build": {
-      "dependsOn": [
-        "^build",
-        "ready"
-      ],
-      "env": [
-        "__FIREFOX__"
-      ],
-      "outputs": [
-        "../../dist/**",
-        "dist/**",
-        "build/**"
-      ]
+      "dependsOn": ["^build", "ready"],
+      "env": ["__FIREFOX__"],
+      "outputs": ["../../dist/**", "dist/**", "build/**"]
     },
     "zip": {
-      "dependsOn": [
-        "^build"
-      ],
+      "dependsOn": ["^build"],
       "cache": false
     },
     "type-check": {
@@ -54,10 +33,7 @@
       "cache": false
     },
     "test": {
-      "dependsOn": [
-        "^test",
-        "^build"
-      ],
+      "dependsOn": ["^test", "^build"],
       "cache": false
     },
     "clean": {

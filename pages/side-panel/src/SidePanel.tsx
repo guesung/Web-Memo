@@ -1,6 +1,15 @@
-import { OverlayProvider, overlay } from 'overlay-kit';
+import { overlay, OverlayProvider } from 'overlay-kit';
 
-import { BRIDGE_TYPE_SUMMARY, queryPageTextFromTab, Summary, withErrorBoundary, withSuspense } from '@extension/shared';
+import {
+  BRIDGE_TYPE_SUMMARY,
+  queryPageTextFromTab,
+  SummaryStorage,
+  SummaryType,
+  SyncStorage,
+  urlToKey,
+  withErrorBoundary,
+  withSuspense,
+} from '@extension/shared';
 import { useEffect, useState } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -32,20 +41,25 @@ const SidePanel = () => {
   };
 
   const startSave = async () => {
-    const prevSummaryList = ((await chrome.storage.sync.get('summaryList')).summaryList || []) as Summary[];
+    const prevSummaryList = await SyncStorage.get<SummaryStorage>();
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const newSummary = {
+    console.log(prevSummaryList);
+
+    if (!tab.url || !tab.title) throw new Error('Save Failed: Invalid URL');
+
+    const urlKey = urlToKey(tab.url);
+
+    await SyncStorage.set<SummaryType>(urlKey, {
       title: tab.title,
       summary: summary,
-      url: tab.url,
       date: new Date().toISOString(),
-    };
-    // await chrome.storage.sync.set({ summaryList: [...prevSummaryList, newSummary] });
+    });
+
     overlay.open(({ open, close }) => {
       return (
         <div className="toast toast-end">
           <div className="alert alert-success">
-            <span>Message sent successfully.</span>
+            <span>Storage save successfully.</span>
           </div>
         </div>
       );

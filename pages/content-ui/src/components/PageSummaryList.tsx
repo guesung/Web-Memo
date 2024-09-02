@@ -1,21 +1,33 @@
-import { Summary } from '@extension/shared';
+import { keyToUrl, SummaryStorage, SummaryType, SyncStorage } from '@extension/shared';
 import { useEffect, useState } from 'react';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function PageSummaryList() {
-  const [summaryList, setSummaryList] = useState<Summary[]>([]);
+  const [summaryList, setSummaryList] = useState<SummaryType[]>([]);
   useEffect(() => {
     (async () => {
-      const { summaryList } = await chrome.storage.sync.get('summaryList');
-      setSummaryList(summaryList);
+      const storage = await SyncStorage.get<SummaryStorage>();
+      for (const url in storage) {
+        setSummaryList((prev: SummaryType[]) => [
+          ...prev,
+          {
+            ...storage[url],
+            url: keyToUrl(url),
+          },
+        ]);
+      }
     })();
   }, []);
 
   return (
-    <div>
+    <div className="prose prose-sm shadow-xl">
       {summaryList.map(it => (
-        <div key={it.date}>
-          <h2>{it.title}</h2>
-          <p>{it.summary}</p>
+        <div key={it.date} className="card card-body">
+          <h2 className="card-title">{it.title}</h2>
+          <Markdown remarkPlugins={[remarkGfm]} className="markdown px-4">
+            {it.summary}
+          </Markdown>
         </div>
       ))}
     </div>

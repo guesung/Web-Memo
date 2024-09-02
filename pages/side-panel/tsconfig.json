@@ -8,5 +8,5 @@
     "jsx": "react-jsx",
     "types": ["chrome"]
   },
-  "include": ["src"]
+  "include": ["src", "../../packages/shared/lib/utils/utils"]
 }

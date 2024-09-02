@@ -1,26 +1,33 @@
-import '@src/NewTab.css';
-import '@src/NewTab.scss';
-import { useStorageSuspense, withErrorBoundary, withSuspense } from '@extension/shared';
-import { exampleThemeStorage } from '@extension/storage';
-import { Button } from '@extension/ui';
+import { withErrorBoundary, withSuspense, keyToUrl, SummaryStorage, SummaryType, SyncStorage } from '@extension/shared';
+import { useEffect, useState } from 'react';
 
 const NewTab = () => {
-  const theme = useStorageSuspense(exampleThemeStorage);
-  const isLight = theme === 'light';
-  const logo = isLight ? 'new-tab/logo_horizontal.svg' : 'new-tab/logo_horizontal_dark.svg';
+  const [summaryList, setSummaryList] = useState<SummaryType[]>([]);
+  useEffect(() => {
+    (async () => {
+      const storage = await SyncStorage.get<SummaryStorage>();
+      for (const url in storage) {
+        setSummaryList((prev: SummaryType[]) => [
+          ...prev,
+          {
+            ...storage[url],
+            url: keyToUrl(url),
+          },
+        ]);
+      }
+    })();
+  }, []);
 
   return (
-    <div className={`App ${isLight ? 'bg-slate-50' : 'bg-gray-800'}`}>
-      <header className={`App-header ${isLight ? 'text-gray-900' : 'text-gray-100'}`}>
-        <img src={chrome.runtime.getURL(logo)} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>pages/new-tab/src/NewTab.tsx</code>
-        </p>
-        <h6>The color of this paragraph is defined using SASS.</h6>
-        <Button onClick={exampleThemeStorage.toggle} theme={theme}>
-          Toggle theme
-        </Button>
-      </header>
+    <div className="shadow-xl">
+      {summaryList.map(it => (
+        <div key={it.date} className="card card-body">
+          <h2 className="card-title">{it.title}</h2>
+          <p className="text-start">{it.url}</p>
+          <p className="text-start">{it.date}</p>
+          <p>{it.summary}</p>
+        </div>
+      ))}
     </div>
   );
 };

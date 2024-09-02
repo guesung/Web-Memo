@@ -2,7 +2,7 @@ import { overlay, OverlayProvider } from 'overlay-kit';
 
 import {
   BRIDGE_TYPE_SUMMARY,
-  queryPageTextFromTab,
+  getPageContent,
   SummaryStorage,
   SummaryType,
   SyncStorage,
@@ -23,7 +23,7 @@ const SidePanel = () => {
     setSummary('');
     let pageContent = '';
     try {
-      pageContent = await queryPageTextFromTab();
+      pageContent = await getPageContent();
     } catch (e) {
       setIsSummaryLoading(false);
       setSummary('Failed to get page content');

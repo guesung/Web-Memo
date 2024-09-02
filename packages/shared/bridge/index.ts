@@ -1,3 +1,3 @@
 export * from './pageContent';
-export * from './type';
 export * from './openSidePanel';
+export * from './type';

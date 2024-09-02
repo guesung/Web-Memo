@@ -36,7 +36,5 @@ shadowRoot.adoptedStyleSheets = [globalStyleSheet];
 
 responsePageContent();
 
-if (location.href === 'http://localhost:3000/') {
-  shadowRoot.appendChild(rootIntoShadow);
-  createRoot(rootIntoShadow).render(<App />);
-}
+shadowRoot.appendChild(rootIntoShadow);
+createRoot(rootIntoShadow).render(<App />);

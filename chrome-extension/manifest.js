@@ -27,7 +27,6 @@ const manifest = deepmerge(
     version: packageJson.version,
     permissions: ['sidePanel', 'storage', 'tabs', 'contextMenus'],
     host_permissions: ['<all_urls>'],
-    description: 'Page Summary is a browser extension that helps you summarize web pages.',
     options_page: 'options/index.html',
     background: {
       service_worker: 'background.iife.js',
@@ -36,6 +35,9 @@ const manifest = deepmerge(
     action: {
       default_popup: 'popup/index.html',
       default_icon: 'icon-34.png',
+    },
+    chrome_url_overrides: {
+      newtab: 'new-tab/index.html',
     },
     icons: {
       128: 'icon-128.png',

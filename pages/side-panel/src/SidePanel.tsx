@@ -3,10 +3,10 @@ import { OverlayProvider } from 'overlay-kit';
 import { SummaryType, SyncStorage, Tab, urlToKey, withErrorBoundary, withSuspense } from '@extension/shared';
 import { useEffect } from 'react';
 import { Header, Summary } from './components';
-import { useSummary } from './hooks';
+import { useGetSummary } from './hooks';
 
 const SidePanel = () => {
-  const { isSummaryLoading, startSummary, summary } = useSummary();
+  const { isSummaryLoading, startSummary, summary } = useGetSummary();
 
   const startSave = async () => {
     const tab = await Tab.get();

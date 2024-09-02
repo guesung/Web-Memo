@@ -6,6 +6,7 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Loading } from './components';
 import { useGetSummary } from './hooks';
+import { Save, Start } from './icons';
 
 const SidePanel = () => {
   const { isSummaryLoading, startSummary, summary } = useGetSummary();
@@ -49,38 +50,10 @@ const SidePanel = () => {
           ) : (
             <div className="flex gap-4">
               <button onClick={startSummary}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width={24}>
-                  <circle cx="50" cy="50" r="45" fill="currentColor" />
-                  <polygon points="40,30 70,50 40,70" fill="white" />
-                </svg>
+                <Start />
               </button>
               <button onClick={startSave}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width={24}>
-                  <path
-                    d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                  />
-                  <polyline
-                    points="17 21 17 13 7 13 7 21"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                  />
-                  <polyline
-                    points="7 3 7 8 15 8"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                  />
-                </svg>
+                <Save />
               </button>
             </div>
           )}

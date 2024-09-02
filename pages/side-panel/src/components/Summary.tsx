@@ -7,7 +7,7 @@ interface SummaryProps {
 
 export default function Summary({ summary }: SummaryProps) {
   return (
-    <Markdown remarkPlugins={[remarkGfm]} className="markdown px-4">
+    <Markdown remarkPlugins={[remarkGfm]} className="markdown flex-1 overflow-scroll">
       {summary}
     </Markdown>
   );

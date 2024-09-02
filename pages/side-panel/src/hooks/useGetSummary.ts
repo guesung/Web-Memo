@@ -1,4 +1,4 @@
-import { BRIDGE_TYPE_SUMMARY, getPageContent } from '@extension/shared';
+import { BRIDGE_TYPE_SUMMARY, requestPageContent } from '@extension/shared';
 import { useState } from 'react';
 
 export default function useGetSummary() {
@@ -10,7 +10,7 @@ export default function useGetSummary() {
     setSummary('');
     let pageContent = '';
     try {
-      pageContent = await getPageContent();
+      pageContent = await requestPageContent();
     } catch (e) {
       setIsSummaryLoading(false);
       setSummary('Failed to get page content');

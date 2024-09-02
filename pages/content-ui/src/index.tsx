@@ -3,7 +3,7 @@ import App from '@src/app';
 // eslint-disable-next-line
 // @ts-ignore
 import tailwindcssOutput from '@src/tailwind-output.css?inline';
-import { sendPageContent } from '@extension/shared';
+import { responsePageContent, Tab } from '@extension/shared';
 
 const root = document.createElement('div');
 root.id = 'page-summary';
@@ -34,7 +34,9 @@ shadowRoot.adoptedStyleSheets = [globalStyleSheet];
  * ```
  */
 
-sendPageContent();
+responsePageContent();
 
-shadowRoot.appendChild(rootIntoShadow);
-createRoot(rootIntoShadow).render(<App />);
+if (location.href === 'http://localhost:3000/') {
+  shadowRoot.appendChild(rootIntoShadow);
+  createRoot(rootIntoShadow).render(<App />);
+}

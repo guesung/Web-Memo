@@ -1,7 +1,6 @@
-import { BRIDGE_TYPE_PAGE_CONTENT } from '../constants';
-import { BridgeRequest, BridgeResponse } from '../types';
+import { BridgeRequest, BridgeResponse } from './type';
 
-// Tab으로부터 페이지 텍스트를 가져온다.
+export const BRIDGE_TYPE_PAGE_CONTENT = 'page-content';
 export const queryPageTextFromTab = async () => {
   try {
     const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });

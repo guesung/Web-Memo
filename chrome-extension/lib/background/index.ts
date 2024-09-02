@@ -1,17 +1,6 @@
-import { BRIDGE_TYPE_OPEN_SIDE_PANEL, BridgeRequest } from '@extension/shared';
 import { PROMPT } from '@root/constants';
 import { openai } from '@root/utils/openai';
 import 'webextension-polyfill';
-
-chrome.runtime.onMessage.addListener((bridgeResponse: BridgeRequest, sender) => {
-  (async () => {
-    if (!sender.tab) return;
-    if (bridgeResponse.type === BRIDGE_TYPE_OPEN_SIDE_PANEL) {
-      await chrome.sidePanel.open({ tabId: sender.tab.id, windowId: sender.tab.windowId });
-      console.log(sender.tab.id);
-    }
-  })();
-});
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });

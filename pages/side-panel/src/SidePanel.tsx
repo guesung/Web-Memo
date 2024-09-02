@@ -1,44 +1,14 @@
-import { overlay, OverlayProvider } from 'overlay-kit';
+import { OverlayProvider } from 'overlay-kit';
 
-import {
-  BRIDGE_TYPE_SUMMARY,
-  getPageContent,
-  SummaryType,
-  SyncStorage,
-  Tab,
-  urlToKey,
-  withErrorBoundary,
-  withSuspense,
-} from '@extension/shared';
-import { useEffect, useState } from 'react';
+import { SummaryType, SyncStorage, Tab, urlToKey, withErrorBoundary, withSuspense } from '@extension/shared';
+import { useEffect } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Loading } from './components';
+import { useGetSummary } from './hooks';
 
 const SidePanel = () => {
-  const [summary, setSummary] = useState('');
-  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
-
-  const startSummary = async () => {
-    setIsSummaryLoading(true);
-    setSummary('');
-    let pageContent = '';
-    try {
-      pageContent = await getPageContent();
-    } catch (e) {
-      setIsSummaryLoading(false);
-      setSummary('Failed to get page content');
-      return;
-    }
-
-    const port = chrome.runtime.connect({ name: BRIDGE_TYPE_SUMMARY });
-    port.postMessage({ pageContent });
-    port.onMessage.addListener(async message => {
-      setSummary(prev => prev + message);
-      if (message === null) {
-        setIsSummaryLoading(false);
-      }
-    });
-  };
+  const { isSummaryLoading, startSummary, summary } = useGetSummary();
 
   const startSave = async () => {
     const tab = await Tab.get();
@@ -49,19 +19,19 @@ const SidePanel = () => {
 
     await SyncStorage.set<SummaryType>(urlKey, {
       title: tab.title,
-      summary: summary,
+      summary,
       date: new Date().toISOString(),
     });
 
-    overlay.open(({ open, close }) => {
-      return (
-        <div className="toast toast-end">
-          <div className="alert alert-success">
-            <span>Storage save successfully.</span>
-          </div>
-        </div>
-      );
-    });
+    // overlay.open(({ open, close }) => {
+    //   return (
+    //     <div className="toast toast-end">
+    //       <div className="alert alert-success">
+    //         <span>Storage save successfully.</span>
+    //       </div>
+    //     </div>
+    //   );
+    // });
   };
 
   useEffect(() => {
@@ -75,7 +45,7 @@ const SidePanel = () => {
       <main className="prose prose-sm">
         <header className="navbar flex justify-center">
           {isSummaryLoading ? (
-            <span className="loading loading-bars loading-sm" />
+            <Loading />
           ) : (
             <div className="flex gap-4">
               <button onClick={startSummary}>

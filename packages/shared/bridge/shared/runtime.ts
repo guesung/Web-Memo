@@ -1,4 +1,4 @@
-import { BridgeType } from 'bridge/type';
+import { BridgeRequest, BridgeResponse, BridgeType } from 'bridge/type';
 
 // ref : https://developer.chrome.com/docs/extensions/reference/api/runtime
 export class Runtime {
@@ -9,5 +9,12 @@ export class Runtime {
         callbackFn?.();
       }
     });
+  }
+  static async sendMessage<TPayload>(type: BridgeType, payload?: TPayload): Promise<BridgeResponse> {
+    const response = await chrome.runtime.sendMessage<BridgeRequest<TPayload>, BridgeResponse>({
+      type,
+      payload,
+    });
+    return response;
   }
 }

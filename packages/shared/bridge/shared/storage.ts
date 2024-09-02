@@ -1,3 +1,4 @@
+// ref : https://developer.chrome.com/docs/extensions/reference/api/storage
 export class SyncStorage {
   static async get<T>(key?: string): Promise<T> {
     if (key) return (await chrome.storage.sync.get(key)) as T;

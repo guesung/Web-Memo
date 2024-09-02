@@ -3,9 +3,9 @@ import { overlay, OverlayProvider } from 'overlay-kit';
 import {
   BRIDGE_TYPE_SUMMARY,
   getPageContent,
-  SummaryStorage,
   SummaryType,
   SyncStorage,
+  Tab,
   urlToKey,
   withErrorBoundary,
   withSuspense,
@@ -41,9 +41,7 @@ const SidePanel = () => {
   };
 
   const startSave = async () => {
-    const prevSummaryList = await SyncStorage.get<SummaryStorage>();
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    console.log(prevSummaryList);
+    const tab = await Tab.get();
 
     if (!tab.url || !tab.title) throw new Error('Save Failed: Invalid URL');
 

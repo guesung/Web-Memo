@@ -2,11 +2,8 @@ import { OverlayProvider } from 'overlay-kit';
 
 import { SummaryType, SyncStorage, Tab, urlToKey, withErrorBoundary, withSuspense } from '@extension/shared';
 import { useEffect } from 'react';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { Loading } from './components';
+import { Header, Summary } from './components';
 import { useSummary } from './hooks';
-import { Save, Start } from './icons';
 
 const SidePanel = () => {
   const { isSummaryLoading, startSummary, summary } = useSummary();
@@ -44,24 +41,8 @@ const SidePanel = () => {
   return (
     <OverlayProvider>
       <main className="prose prose-sm">
-        <header className="navbar flex justify-center">
-          {isSummaryLoading ? (
-            <Loading />
-          ) : (
-            <div className="flex gap-4">
-              <button onClick={startSummary}>
-                <Start />
-              </button>
-              <button onClick={startSave}>
-                <Save />
-              </button>
-            </div>
-          )}
-        </header>
-
-        <Markdown remarkPlugins={[remarkGfm]} className="markdown px-4">
-          {summary}
-        </Markdown>
+        <Header isSummaryLoading={isSummaryLoading} startSave={startSave} startSummary={startSummary} />
+        <Summary summary={summary} />
       </main>
     </OverlayProvider>
   );

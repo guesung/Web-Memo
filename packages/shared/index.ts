@@ -4,4 +4,4 @@ export * from './lib/types';
 export * from './lib/apis';
 export * from './lib/mock';
 export * from './lib/utils';
-export * from './lib/bridge';
+export * from './bridge';

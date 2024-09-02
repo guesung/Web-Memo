@@ -6,5 +6,5 @@
     "baseUrl": ".",
     "types": ["chrome"]
   },
-  "include": ["index.ts", "lib"]
+  "include": ["index.ts", "lib", "bridge"]
 }

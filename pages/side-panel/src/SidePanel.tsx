@@ -5,11 +5,11 @@ import { useEffect } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Loading } from './components';
-import { useGetSummary } from './hooks';
+import { useSummary } from './hooks';
 import { Save, Start } from './icons';
 
 const SidePanel = () => {
-  const { isSummaryLoading, startSummary, summary } = useGetSummary();
+  const { isSummaryLoading, startSummary, summary } = useSummary();
 
   const startSave = async () => {
     const tab = await Tab.get();

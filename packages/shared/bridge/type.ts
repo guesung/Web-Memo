@@ -11,6 +11,4 @@ export interface BridgeRequest<T> {
   payload?: T;
 }
 
-export interface BridgeResponse {
-  message: string;
-}
+export type BridgeResponse = string;

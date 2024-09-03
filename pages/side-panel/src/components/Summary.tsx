@@ -4,7 +4,7 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 export default function Summary() {
-  const { isSummaryLoading, startSummary, summary } = useGetSummary();
+  const { startSummary, summary } = useGetSummary();
 
   useDidMount(startSummary);
 
@@ -13,4 +13,5 @@ export default function Summary() {
       {summary}
     </Markdown>
   );
+  z;
 }

@@ -1,10 +1,10 @@
 {
-  "extensionDescription": {
-    "description": "Page Summary is a program that summarizes the content of a web page in advance to make it easier to read.",
-    "message": "Page Summary is a program that summarizes the content of a web page in advance to make it easier to read."
-  },
   "extensionName": {
-    "description": "Page Summary",
-    "message": "Page Summary"
+    "description": "Page Memos",
+    "message": "Page Memos"
+  },
+  "extensionDescription": {
+    "description": "Create and manage notes directly on web pages. With PageNotes, you can instantly jot down ideas, important information, and personal thoughts while browsing. Use the summarization feature when needed for quick overviews. Transform your web surfing into a more productive and organized experience with your own digital notebook",
+    "message": "Create and manage notes directly on web pages. With PageNotes, you can instantly jot down ideas, important information, and personal thoughts while browsing. Use the summarization feature when needed for quick overviews. Transform your web surfing into a more productive and organized experience with your own digital notebook"
   }
 }

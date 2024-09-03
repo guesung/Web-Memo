@@ -1,8 +1,16 @@
-import { formatDate } from '@extension/shared';
-import { useGetMemo } from '@src/hooks';
+import { formatDate, MemoStorage, SyncStorage, urlToKey, useFetch } from '@extension/shared';
 
 export default function MemoTable() {
-  const { memoList } = useGetMemo();
+  const { data: memoStorage } = useFetch({
+    fetchFn: SyncStorage.get<MemoStorage>,
+  });
+
+  const handleDelete = async (url: string) => {
+    const answer = confirm('삭제하시겠습니까?');
+    if (!answer) return;
+
+    await chrome.storage.sync.remove(urlToKey(url));
+  };
 
   return (
     <table className="table">
@@ -12,10 +20,11 @@ export default function MemoTable() {
           <th className="w-1/3 text-center">제목</th>
           <th className="text-center">날짜</th>
           <th className="w-full text-center">메모</th>
+          <th className="w-full text-center">삭제</th>
         </tr>
       </thead>
       <tbody>
-        {memoList.map((memo, index) => (
+        {Object.values(memoStorage).map((memo, index) => (
           <tr key={memo.url}>
             <th className="text-center">{index + 1}</th>
             <td>
@@ -25,6 +34,9 @@ export default function MemoTable() {
             </td>
             <td className="whitespace-nowrap">{formatDate(new Date(memo.date))}</td>
             <td className="whitespace-break-spaces">{memo.memo}</td>
+            <td className="text-center" onClick={() => handleDelete(memo.url)}>
+              x
+            </td>
           </tr>
         ))}
       </tbody>

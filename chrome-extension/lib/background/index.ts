@@ -4,15 +4,6 @@ import 'webextension-polyfill';
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
-  // chrome.contextMenus.create({
-  //   id: 'openSidePanel',
-  //   title: '사이드 패널 열기',
-  //   contexts: ['all'],
-  // });
-  // chrome.tabs.create({ url: 'page.html' });
-});
-
-chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: 'openSidePanel',
     title: 'Open side panel',

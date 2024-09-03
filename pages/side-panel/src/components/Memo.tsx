@@ -1,13 +1,14 @@
 import { useUrl } from '@extension/shared';
 import useGetMemo from '@src/hooks/useGetMemo';
 import { saveMemo } from '@src/utils';
+import { Toast } from '@src/components';
+import { overlay } from 'overlay-kit';
 import { useState } from 'react';
 
 export default function Memo() {
   const { url } = useUrl();
   const { memo: initialMemo } = useGetMemo({ url });
-  const [memo, setMemo] = useState(initialMemo?.memo);
-
+  const [memo, setMemo] = useState(initialMemo?.memo ?? '');
 
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMemo(e.target.value);
@@ -16,6 +17,7 @@ export default function Memo() {
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     saveMemo(memo);
+    overlay.open(({ open, unmount }) => <Toast message="Saved" onClose={unmount} />);
   };
 
   return (
@@ -31,7 +33,7 @@ export default function Memo() {
           onChange={handleTextAreaChange}
         />
         <div className="label">
-          <span className="label-text-alt">{memo?.length}/1,000</span>
+          <span className="label-text-alt">{memo.length}/1,000</span>
           <button className="label-text-alt" type="submit">
             Save
           </button>

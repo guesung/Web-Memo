@@ -1,8 +1,7 @@
 import { MemoType, SyncStorage, Tab, urlToKey } from '@extension/shared';
 import { overlay } from 'overlay-kit';
-import React from 'react';
 
-export const startSave = async (memo: string) => {
+export const saveMemo = async (memo: string) => {
   const tab = await Tab.get();
 
   if (!tab.url || !tab.title) throw new Error('Save Failed: Invalid URL');

@@ -25,8 +25,8 @@ export default function PageSummaryList() {
       {summaryList.map(it => (
         <div key={it.date} className="card card-body">
           <h2 className="card-title">{it.title}</h2>
-          <caption className="text-start">{it.url}</caption>
-          <caption className="text-start">{it.date}</caption>
+          <p className="text-start">{it.url}</p>
+          <p className="text-start">{it.date}</p>
           <Markdown remarkPlugins={[remarkGfm]} className="markdown px-4">
             {it.summary}
           </Markdown>

@@ -1,11 +1,12 @@
 import { withErrorBoundary, withSuspense } from '@extension/shared';
 import { MemoTable } from './components';
+import { OverlayProvider } from 'overlay-kit';
 
 const NewTab = () => {
   return (
-    <div className="shadow-xl">
+    <OverlayProvider>
       <MemoTable />
-    </div>
+    </OverlayProvider>
   );
 };
 

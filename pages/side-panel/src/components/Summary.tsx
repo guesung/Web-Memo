@@ -13,5 +13,4 @@ export default function Summary() {
       {summary}
     </Markdown>
   );
-  z;
 }

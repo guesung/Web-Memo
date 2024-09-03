@@ -465,9 +465,6 @@ importers:
       '@extension/storage':
         specifier: workspace:*
         version: link:../../packages/storage
-      overlay-kit:
-        specifier: ^1.4.1
-        version: 1.4.1(react-dom@18.3.1)(react@18.3.1)
       react-markdown:
         specifier: ^9.0.1
         version: 9.0.1(@types/react@18.3.5)(react@18.3.1)
@@ -5439,6 +5436,7 @@ packages:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       use-sync-external-store: 1.2.2(react@18.3.1)
+    dev: true
 
   /p-limit@3.1.0:
     resolution: {integrity: sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ==}
@@ -6688,6 +6686,7 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
     dependencies:
       react: 18.3.1
+    dev: true
 
   /util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}

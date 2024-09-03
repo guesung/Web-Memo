@@ -3,7 +3,7 @@ export type MemoStorage = {
 };
 
 export type MemoType = {
-  url?: string;
+  url: string;
   date: string;
   title: string;
   memo: string;

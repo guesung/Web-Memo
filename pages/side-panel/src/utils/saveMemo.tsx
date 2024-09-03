@@ -11,5 +11,6 @@ export const saveMemo = async (memo: string) => {
     title: tab.title,
     memo,
     date: new Date().toISOString(),
+    url: tab.url,
   });
 };

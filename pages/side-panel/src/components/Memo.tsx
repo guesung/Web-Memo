@@ -23,7 +23,7 @@ export default function Memo() {
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     saveMemo(memo);
-    overlay.open(({ open, unmount }) => <Toast message="Saved" onClose={unmount} />);
+    overlay.open(({ unmount }) => <Toast message="Saved" onClose={unmount} />);
   };
 
   return (

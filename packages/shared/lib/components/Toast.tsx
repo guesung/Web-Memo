@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 
 interface ToastProps {
   message: string;
   onClose?: () => void;
 }
+
 export default function Toast({ message, onClose }: ToastProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -15,10 +16,10 @@ export default function Toast({ message, onClose }: ToastProps) {
   }, []);
 
   return (
-    <div className="toast toast-end" onClick={onClose}>
+    <button className="toast toast-end" onClick={onClose}>
       <div className="alert alert-success">
         <span>{message}</span>
       </div>
-    </div>
+    </button>
   );
 }

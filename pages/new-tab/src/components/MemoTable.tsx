@@ -1,10 +1,10 @@
-import { formatDate, MemoStorage, Storage, urlToKey, useFetch } from '@extension/shared';
+import { formatDate, MemoStorage, MemoType, urlToKey, useFetch } from '@extension/shared';
 import { Toast } from '@extension/ui';
 import { overlay } from 'overlay-kit';
 
 export default function MemoTable() {
   const { data: memoStorage } = useFetch({
-    fetchFn: Storage.get<MemoStorage>,
+    fetchFn: MemoStorage.get,
   });
 
   const handleDeleteClick = async (url: string) => {
@@ -31,7 +31,7 @@ export default function MemoTable() {
         </tr>
       </thead>
       <tbody>
-        {Object.values(memoStorage).map((memo, index) => (
+        {Object.values(memoStorage as MemoType[]).map((memo, index) => (
           <tr key={memo.url} className="hover">
             <th className="text-center">{index + 1}</th>
             <td>

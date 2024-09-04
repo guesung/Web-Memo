@@ -19,7 +19,7 @@ export class MemoStorage {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { option_language, ...memoStorage } = storage;
 
-    return memoStorage as MemoStorageType;
+    return memoStorage;
   }
   static async set(key: keyof MemoStorageType, value: MemoStorageType): Promise<void> {
     await Storage.set(key, value as StorageType);

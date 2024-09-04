@@ -1,4 +1,4 @@
-import { Tab, useFetch } from '@extension/shared';
+import { I18n, Tab, useFetch } from '@extension/shared';
 import { Toast } from '@extension/ui';
 import useGetMemo from '@src/hooks/useGetMemo';
 import { saveMemo } from '@src/utils';
@@ -30,7 +30,7 @@ export default function Memo() {
     <div className="flex-1">
       <form className="form-control h-full" onSubmit={handleFormSubmit}>
         <div className="label">
-          <span className="label-text whitespace-nowrap font-bold">Memo</span>
+          <span className="label-text whitespace-nowrap font-bold">{I18n.get('memo')}</span>
           <span className="mx-1">|</span>
           <span className="label-text truncate w-full text-right text-neutral-content">{tab?.title}</span>
         </div>
@@ -43,7 +43,7 @@ export default function Memo() {
         <div className="label">
           <span className="label-text-alt">{memo?.length ?? 0}/1,000</span>
           <button className="label-text-alt" type="submit">
-            Save
+            {I18n.get('save')}
           </button>
         </div>
       </form>

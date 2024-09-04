@@ -2,7 +2,7 @@ import { useState } from 'react';
 import useDidMount from './useDidMount';
 
 interface UseFetchProps<TData> {
-  fetchFn: () => Promise<TData>;
+  fetchFn: () => Promise<TData> | TData;
   defaultValue?: TData;
 }
 

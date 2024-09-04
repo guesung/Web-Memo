@@ -1,10 +1,11 @@
-import { Storage } from '@extension/shared';
+import { I18n, languageObject, Storage } from '@extension/shared';
 import { getPrompt } from '@root/utils';
 import { openai } from '@root/utils/openai';
 import 'webextension-polyfill';
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+  Storage.set('option_language', languageObject[I18n.getUiLanguage()]);
 });
 
 chrome.runtime.onConnect.addListener(async port => {

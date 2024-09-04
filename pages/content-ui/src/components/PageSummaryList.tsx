@@ -1,4 +1,4 @@
-import { keyToUrl, SummaryStorage, SummaryType, SyncStorage } from '@extension/shared';
+import { keyToUrl, SummaryStorage, SummaryType, Storage } from '@extension/shared';
 import { useEffect, useState } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -7,7 +7,7 @@ export default function PageSummaryList() {
   const [summaryList, setSummaryList] = useState<SummaryType[]>([]);
   useEffect(() => {
     (async () => {
-      const storage = await SyncStorage.get<SummaryStorage>();
+      const storage = await Storage.get<SummaryStorage>();
       for (const url in storage) {
         setSummaryList((prev: SummaryType[]) => [
           ...prev,

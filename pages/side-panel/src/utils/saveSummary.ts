@@ -1,4 +1,4 @@
-import { SummaryType, SyncStorage, Tab, urlToKey } from '@extension/shared';
+import { SummaryType, Storage, Tab, urlToKey } from '@extension/shared';
 
 export const startSave = async (summary: string) => {
   const tab = await Tab.get();
@@ -7,7 +7,7 @@ export const startSave = async (summary: string) => {
 
   const urlKey = urlToKey(tab.url);
 
-  await SyncStorage.set<SummaryType>(urlKey, {
+  await Storage.set<SummaryType>(urlKey, {
     title: tab.title,
     summary,
     date: new Date().toISOString(),

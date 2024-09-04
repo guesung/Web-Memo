@@ -1,10 +1,10 @@
-import { formatDate, MemoStorage, SyncStorage, urlToKey, useFetch } from '@extension/shared';
+import { formatDate, MemoStorage, Storage, urlToKey, useFetch } from '@extension/shared';
 import { Toast } from '@extension/ui';
 import { overlay } from 'overlay-kit';
 
 export default function MemoTable() {
   const { data: memoStorage } = useFetch({
-    fetchFn: SyncStorage.get<MemoStorage>,
+    fetchFn: Storage.get<MemoStorage>,
   });
 
   const handleDeleteClick = async (url: string) => {

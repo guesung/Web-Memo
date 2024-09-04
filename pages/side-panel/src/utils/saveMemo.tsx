@@ -1,4 +1,4 @@
-import { MemoType, SyncStorage, Tab, urlToKey } from '@extension/shared';
+import { MemoType, Storage, Tab, urlToKey } from '@extension/shared';
 
 export const saveMemo = async (memo: string) => {
   const tab = await Tab.get();
@@ -7,7 +7,7 @@ export const saveMemo = async (memo: string) => {
 
   const urlKey = urlToKey(tab.url);
 
-  await SyncStorage.set<MemoType>(urlKey, {
+  await Storage.set<MemoType>(urlKey, {
     title: tab.title,
     memo,
     date: new Date().toISOString(),

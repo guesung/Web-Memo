@@ -1,4 +1,4 @@
-import { LANGUAGE_LIST, SyncStorage, useFetch, withErrorBoundary, withSuspense } from '@extension/shared';
+import { LANGUAGE_LIST, Storage, useFetch, withErrorBoundary, withSuspense } from '@extension/shared';
 import '@src/Options.css';
 import { FormEvent } from 'react';
 
@@ -10,7 +10,7 @@ const Options = () => {
     await chrome.storage.sync.clear();
   };
 
-  const { data } = useFetch({ fetchFn: SyncStorage.get });
+  const { data } = useFetch({ fetchFn: Storage.get });
 
   const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -1,4 +1,4 @@
-import { formatDate, MemoStorage, MemoType, urlToKey, useFetch } from '@extension/shared';
+import { formatDate, I18n, MemoStorage, MemoType, urlToKey, useFetch } from '@extension/shared';
 import { Toast } from '@extension/ui';
 import { overlay } from 'overlay-kit';
 
@@ -23,11 +23,11 @@ export default function MemoTable() {
     <table className="table max-w-[1000px] shadow-xl mx-auto">
       <thead>
         <tr>
-          <th className="text-center">번호</th>
-          <th className="w-1/3 text-center">제목</th>
-          <th className="text-center">날짜</th>
-          <th className="w-full text-center">메모</th>
-          <th className="w-full text-center">삭제</th>
+          <th className="text-center">{I18n.get('number')}</th>
+          <th className="w-1/3 text-center">{I18n.get('title')}</th>
+          <th className="text-center">{I18n.get('date')}</th>
+          <th className="w-full text-center">{I18n.get('memo')}</th>
+          <th className="w-full text-center">{I18n.get('delete')}</th>
         </tr>
       </thead>
       <tbody>

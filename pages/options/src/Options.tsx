@@ -1,11 +1,11 @@
-import { LANGUAGE_LIST, Storage, useFetch, withErrorBoundary, withSuspense } from '@extension/shared';
+import { I18n, LANGUAGE_LIST, Storage, useFetch, withErrorBoundary, withSuspense } from '@extension/shared';
 import '@src/Options.css';
 import { FormEvent, useEffect, useRef } from 'react';
 
 const Options = () => {
   const languageRef = useRef<HTMLSelectElement>(null);
   const handleResetClick = async () => {
-    const response = confirm('데이터를 정말로 초기화 하시겠습니까?');
+    const response = confirm(I18n.get('question_delete'));
     if (!response) return;
 
     await chrome.storage.sync.clear();
@@ -34,7 +34,7 @@ const Options = () => {
           <tbody>
             <tr>
               <th>
-                <button className="button">언어 선택</button>
+                <button className="button">{I18n.get('select_language')}</button>
               </th>
               <th>
                 <select className="select select-bordered w-full max-w-xs" ref={languageRef}>
@@ -48,7 +48,7 @@ const Options = () => {
             </tr>
             <tr>
               <th>
-                <button className="button ">데이터 초기화</button>
+                <button className="button ">{I18n.get('reset_option')}</button>
               </th>
               <th>
                 <button className="btn btn-outline btn-warning" onClick={handleResetClick} type="button">

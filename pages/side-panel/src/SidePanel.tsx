@@ -19,11 +19,11 @@ const SidePanel = () => {
             <Loading />
           ) : (
             <button onClick={startSummary}>
-              <Refresh />
+              <Refresh width="20px" height="20px" />
             </button>
           )}
           <button onClick={handleOptionClick}>
-            <Option />
+            <Option width="24px" height="24px" />
           </button>
         </div>
         <Summary summary={summary} />

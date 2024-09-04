@@ -1,8 +1,14 @@
 import React from 'react';
 interface OptionProps extends React.SVGProps<SVGSVGElement> {}
-export default function Option({ ...props }: OptionProps) {
+export default function Option(props: OptionProps) {
   return (
-    <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <svg
+      width="current"
+      height="current"
+      viewBox="0 0 24 24"
+      fill="current"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}>
       <path
         fillRule="evenodd"
         clipRule="evenodd"

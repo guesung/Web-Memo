@@ -1,4 +1,4 @@
-import { SyncStorage, useFetch, withErrorBoundary, withSuspense } from '@extension/shared';
+import { LANGUAGE_LIST, SyncStorage, useFetch, withErrorBoundary, withSuspense } from '@extension/shared';
 import '@src/Options.css';
 import { FormEvent } from 'react';
 
@@ -30,8 +30,11 @@ const Options = () => {
               </th>
               <th>
                 <select className="select select-bordered w-full max-w-xs">
-                  <option>한국어</option>
-                  <option>English</option>
+                  {LANGUAGE_LIST.map(({ inEnglish, inNative }) => (
+                    <option value={inEnglish} key={inEnglish}>
+                      {inNative}
+                    </option>
+                  ))}
                 </select>
               </th>
             </tr>

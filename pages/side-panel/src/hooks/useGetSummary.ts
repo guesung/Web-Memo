@@ -14,8 +14,10 @@ export default function useGetSummary() {
       return;
     }
 
-    await Runtime.connect(BRIDGE_TYPE_SUMMARY, { pageContent }, (message: string) =>
-      setSummary(prev => prev + message),
+    await Runtime.connect(
+      BRIDGE_TYPE_SUMMARY,
+      { pageContent },
+      (message: string) => message && setSummary(prev => prev + message),
     );
   };
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import useDidMount from './useDidMount';
 
 interface UseFetchProps<TData> {
@@ -11,7 +11,8 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
-  useDidMount(async () => {
+  const fetch = useCallback(async () => {
+    setIsLoading(true);
     try {
       const data = await fetchFn();
       setData(data);
@@ -19,8 +20,10 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
       setIsError(true);
     }
     setIsLoading(false);
-  });
+  }, [fetchFn]);
+
+  useDidMount(fetch);
 
   if (isError) throw new Error('Error in useFetch');
-  return { data, isLoading, isError };
+  return { data, isLoading, isError, refretch: fetch };
 }

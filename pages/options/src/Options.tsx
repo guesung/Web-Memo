@@ -1,8 +1,9 @@
 import { LANGUAGE_LIST, Storage, useFetch, withErrorBoundary, withSuspense } from '@extension/shared';
 import '@src/Options.css';
-import { FormEvent } from 'react';
+import { FormEvent, useEffect, useRef } from 'react';
 
 const Options = () => {
+  const languageRef = useRef<HTMLSelectElement>(null);
   const handleResetClick = async () => {
     const response = confirm('데이터를 정말로 초기화 하시겠습니까?');
     if (!response) return;
@@ -12,8 +13,15 @@ const Options = () => {
 
   const { data } = useFetch({ fetchFn: Storage.get });
 
+  useEffect(() => {
+    if (data) {
+      languageRef.current!.value = data.option_language;
+    }
+  }, [data]);
+
   const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    Storage.set('option_language', languageRef.current?.value);
   };
 
   return (
@@ -29,7 +37,7 @@ const Options = () => {
                 <button className="button">언어 선택</button>
               </th>
               <th>
-                <select className="select select-bordered w-full max-w-xs">
+                <select className="select select-bordered w-full max-w-xs" ref={languageRef}>
                   {LANGUAGE_LIST.map(({ inEnglish, inNative }) => (
                     <option value={inEnglish} key={inEnglish}>
                       {inNative}

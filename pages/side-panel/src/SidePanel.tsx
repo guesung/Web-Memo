@@ -26,7 +26,7 @@ const SidePanel = () => {
             <Option />
           </button>
         </div>
-        <Summary startSummary={startSummary} summary={summary} />
+        <Summary summary={summary} />
         <Memo />
       </main>
     </OverlayProvider>

@@ -17,4 +17,16 @@ export class Runtime {
     });
     return response;
   }
+
+  static async connect(type: BridgeType, payload: any, callbackFn: any): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const port = chrome.runtime.connect({ name: type });
+      console.log(port);
+      port.postMessage(payload);
+      port.onMessage.addListener(async message => {
+        if (message === null) resolve();
+        callbackFn(message);
+      });
+    });
+  }
 }

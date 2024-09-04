@@ -8,11 +8,13 @@ interface UseFetchProps<TData> {
 
 export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps<TData>) {
   const [data, setData] = useState<TData>(defaultValue ?? ({} as TData));
+  const [isLoading, setIsLoading] = useState(true);
 
   useDidMount(async () => {
     const data = await fetchFn();
     setData(data);
+    setIsLoading(false);
   });
 
-  return { data };
+  return { data, isLoading };
 }

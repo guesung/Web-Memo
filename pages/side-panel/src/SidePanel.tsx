@@ -16,9 +16,7 @@ const SidePanel = () => {
       <main className="prose prose-sm flex flex-col h-lvh px-4 relative">
         <div className="absolute right-4 top-4 flex gap-1 items-center">
           <Refresh width="20px" height="20px" isLoading={isSummaryLoading} onRefresh={startSummary} />
-          <button onClick={handleOptionClick}>
-            <Option width="24px" height="24px" />
-          </button>
+          <Option width="24px" height="24px" onOption={handleOptionClick} />
         </div>
         <Summary summary={summary} />
         <Memo />

@@ -1,4 +1,5 @@
-import { Tab, Toast, useFetch } from '@extension/shared';
+import { Tab, useFetch } from '@extension/shared';
+import { Toast } from '@extension/ui';
 import useGetMemo from '@src/hooks/useGetMemo';
 import { saveMemo } from '@src/utils';
 import { overlay } from 'overlay-kit';

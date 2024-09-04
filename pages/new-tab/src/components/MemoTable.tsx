@@ -1,4 +1,5 @@
-import { formatDate, MemoStorage, SyncStorage, Toast, urlToKey, useFetch } from '@extension/shared';
+import { formatDate, MemoStorage, SyncStorage, urlToKey, useFetch } from '@extension/shared';
+import { Toast } from '@extension/ui';
 import { overlay } from 'overlay-kit';
 
 export default function MemoTable() {

@@ -3,9 +3,10 @@ import { getPrompt } from '@root/utils';
 import { openai } from '@root/utils/openai';
 import 'webextension-polyfill';
 
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener(async () => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
-  Storage.set('option_language', languageObject[I18n.getUiLanguage()]);
+  const language = await Storage.get('option_langauge');
+  if (!language) Storage.set('option_language', languageObject[I18n.getUiLanguage()]);
 });
 
 chrome.runtime.onConnect.addListener(async port => {

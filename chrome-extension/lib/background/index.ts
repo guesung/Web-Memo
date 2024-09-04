@@ -1,4 +1,5 @@
-import { PROMPT } from '@root/constants';
+import { Storage } from '@extension/shared';
+import { getPrompt } from '@root/utils';
 import { openai } from '@root/utils/openai';
 import 'webextension-polyfill';
 
@@ -8,10 +9,16 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.runtime.onConnect.addListener(async port => {
   port.onMessage.addListener(async message => {
+    const language = (await Storage.get('option_language')) ?? 'English';
+
+    const prompt = getPrompt({ language });
     const pageContent = message.pageContent;
     const stream = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: PROMPT + pageContent }],
+      messages: [
+        { role: 'system', content: prompt },
+        { role: 'user', content: pageContent },
+      ],
       stream: true,
     });
 

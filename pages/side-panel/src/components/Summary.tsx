@@ -1,11 +1,13 @@
 import { useDidMount } from '@extension/shared';
-import { useGetSummary } from '@src/hooks';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-export default function Summary() {
-  const { startSummary, summary } = useGetSummary();
+interface SummaryProps {
+  summary: string;
+  startSummary: () => void;
+}
 
+export default function Summary({ summary, startSummary }: SummaryProps) {
   useDidMount(startSummary);
 
   return (

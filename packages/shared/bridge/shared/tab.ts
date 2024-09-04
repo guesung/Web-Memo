@@ -6,13 +6,14 @@ export class Tab {
     const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
     return tab;
   }
-  static async sendMessage<TPayload>(type: BridgeType, payload?: TPayload): Promise<BridgeResponse> {
+  static async sendMessage<TPayload>(type: BridgeType, payload?: TPayload) {
     const tab = await this.get();
     if (!tab.id) throw new Error('Tab not found');
-    const response = await chrome.tabs.sendMessage<BridgeRequest<TPayload>, BridgeResponse>(tab.id, {
+    const message = await chrome.tabs.sendMessage<BridgeRequest<TPayload>, BridgeResponse>(tab.id, {
       type,
       payload,
     });
-    return response;
+    if (!message) throw new Error('Message not found');
+    return message;
   }
 }

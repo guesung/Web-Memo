@@ -2,8 +2,8 @@ import { OverlayProvider } from 'overlay-kit';
 
 import { withErrorBoundary, withSuspense } from '@extension/shared';
 import { Loading, Memo, Summary } from './components';
-import { Option, Refresh } from './icons';
 import { useGetSummary } from './hooks';
+import { Option, Refresh } from './icons';
 
 const SidePanel = () => {
   const { startSummary, summary, isSummaryLoading } = useGetSummary();

@@ -10,7 +10,7 @@ export default function useGetSummary() {
     try {
       pageContent = await requestPageContent();
     } catch (e) {
-      setSummary('Failed to get page content');
+      setSummary('Error Occur');
       return;
     }
 

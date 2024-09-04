@@ -25,5 +25,8 @@
   },
   "reset_option": {
     "message": "설정 및 데이터 초기화"
+  },
+  "save_option": {
+    "message": "설정을 저장하였습니다."
   }
 }

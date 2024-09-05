@@ -31,32 +31,34 @@ export default function MemoTable() {
         </tr>
       </thead>
       <tbody>
-        {Object.values(memoStorage as MemoType[]).map((memo, index) => (
-          <tr key={memo.url} className="hover">
-            <th className="text-center">{index + 1}</th>
-            <td>
-              <a href={memo.url} target="_blank" rel="noreferrer" className="tooltip text-start" data-tip={memo.url}>
-                {memo.title}
-              </a>
-            </td>
-            <td className="whitespace-nowrap">{formatDate(new Date(memo.date))}</td>
-            <td>
-              <div className="tooltip" data-tip="메모 복사">
-                <button
-                  type="button"
-                  onClick={() => handleMemoClick(memo.memo)}
-                  className="cursor-pointer text-start whitespace-break-spaces">
-                  {memo.memo}
+        {Object.values(memoStorage as MemoType[])
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          .map((memo, index) => (
+            <tr key={memo.url} className="hover">
+              <th className="text-center">{index + 1}</th>
+              <td>
+                <a href={memo.url} target="_blank" rel="noreferrer" className="tooltip text-start" data-tip={memo.url}>
+                  {memo.title}
+                </a>
+              </td>
+              <td className="whitespace-nowrap">{formatDate(new Date(memo.date))}</td>
+              <td>
+                <div className="tooltip" data-tip="메모 복사">
+                  <button
+                    type="button"
+                    onClick={() => handleMemoClick(memo.memo)}
+                    className="cursor-pointer text-start whitespace-break-spaces">
+                    {memo.memo}
+                  </button>
+                </div>
+              </td>
+              <td className="tooltip" data-tip="메모 제거">
+                <button type="button" onClick={() => handleDeleteClick(memo.url)} className="text-center w-full">
+                  x
                 </button>
-              </div>
-            </td>
-            <td className="tooltip" data-tip="메모 제거">
-              <button type="button" onClick={() => handleDeleteClick(memo.url)} className="text-center w-full">
-                x
-              </button>
-            </td>
-          </tr>
-        ))}
+              </td>
+            </tr>
+          ))}
       </tbody>
     </table>
   );

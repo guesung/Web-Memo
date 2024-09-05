@@ -1,6 +1,6 @@
-import { withErrorBoundary, withSuspense } from '@extension/shared';
-import { MemoTable } from './components';
+import { withSuspense } from '@extension/shared';
 import { OverlayProvider } from 'overlay-kit';
+import { MemoTable } from './components';
 
 const NewTab = () => {
   return (
@@ -10,4 +10,4 @@ const NewTab = () => {
   );
 };
 
-export default withErrorBoundary(withSuspense(NewTab, <div> Loading ... </div>), <div> Error Occur </div>);
+export default withSuspense(NewTab, <div> Loading ... </div>);

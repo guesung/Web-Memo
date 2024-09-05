@@ -1,6 +1,6 @@
-import '@src/Panel.css';
-import { useStorageSuspense, withErrorBoundary, withSuspense } from '@extension/shared';
+import { useStorageSuspense, withSuspense } from '@extension/shared';
 import { exampleThemeStorage } from '@extension/storage';
+import '@src/Panel.css';
 import { ComponentPropsWithoutRef } from 'react';
 
 const Panel = () => {
@@ -37,4 +37,4 @@ const ToggleButton = (props: ComponentPropsWithoutRef<'button'>) => {
   );
 };
 
-export default withErrorBoundary(withSuspense(Panel, <div> Loading ... </div>), <div> Error Occur </div>);
+export default withSuspense(Panel, <div> Loading ... </div>);

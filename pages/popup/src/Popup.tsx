@@ -1,4 +1,4 @@
-import { withErrorBoundary, withSuspense } from '@extension/shared';
+import { withSuspense } from '@extension/shared';
 
 const Popup = () => {
   return (
@@ -14,4 +14,4 @@ const Popup = () => {
   );
 };
 
-export default withErrorBoundary(withSuspense(Popup, <div> Loading ... </div>), <div> Error Occur </div>);
+export default withSuspense(Popup, <div> Loading ... </div>);

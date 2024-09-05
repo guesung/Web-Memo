@@ -1,4 +1,4 @@
-import { withErrorBoundary, withSuspense } from '@extension/shared';
+import { withSuspense } from '@extension/shared';
 import '@src/Options.css';
 import { OverlayProvider } from 'overlay-kit';
 import { Header, OptionForm } from './components';
@@ -14,4 +14,4 @@ const Options = () => {
   );
 };
 
-export default withErrorBoundary(withSuspense(Options, <div> Loading ... </div>), <div> Error Occur </div>);
+export default withSuspense(Options, <div> Loading ... </div>);

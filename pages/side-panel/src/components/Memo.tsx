@@ -25,12 +25,11 @@ export default function Memo() {
   const [memo, setMemo] = useState('');
 
   useEffect(() => {
-    setMemo(memoList?.[urlToKey(tab.url)]?.memo);
+    setMemo(memoList?.[urlToKey(tab.url)]?.memo ?? '');
   }, [memoList, tab.url]);
 
   useDidMount(() =>
     responseUpdateSidePanel(() => {
-      refetchMemo();
       refetchtab();
     }),
   );

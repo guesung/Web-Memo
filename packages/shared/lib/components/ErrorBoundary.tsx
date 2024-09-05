@@ -1,8 +1,13 @@
-import type { ErrorInfo, PropsWithChildren, ReactElement } from 'react';
-import { Component } from 'react';
+import type { ComponentType, ErrorInfo, PropsWithChildren } from 'react';
+import { Component, createElement } from 'react';
+import ErrorFallback from './ErrorFallback';
 
+export interface FallbackComponentProps {
+  error: Error;
+  resetErrorBoundary: () => void;
+}
 interface ErrorBoundaryProps extends PropsWithChildren {
-  fallback: ReactElement;
+  FallbackComponent?: ComponentType<FallbackComponentProps>;
   onReset?: () => void;
 }
 interface ErrorBoundaryState {
@@ -13,11 +18,9 @@ const initialState: ErrorBoundaryState = {
 };
 
 export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  // state = { error: null };
   constructor(props: ErrorBoundaryProps) {
     super(props);
-
-    this.setState(initialState);
+    this.state = initialState;
   }
 
   static getDerivedStateFromError(error: Error) {
@@ -39,11 +42,13 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
 
   render() {
     const { error } = this.state;
-
+    const { children, FallbackComponent } = this.props;
+    console.log('ErrorBoundary render', error);
+    let childToRender = children;
     if (error) {
-      return <div>{error.message}</div>;
+      const props: FallbackComponentProps = { error, resetErrorBoundary: this.resetErrorBoundary };
+      childToRender = createElement(FallbackComponent ?? ErrorFallback, props);
     }
-
-    return this.props.children;
+    return childToRender;
   }
 }

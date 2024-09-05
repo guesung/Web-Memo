@@ -1,4 +1,4 @@
-import { Loading } from '@src/components';
+import { Loading } from '@extension/ui';
 import React from 'react';
 
 interface RefreshProps extends React.SVGProps<SVGSVGElement> {

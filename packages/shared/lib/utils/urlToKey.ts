@@ -1,4 +1,4 @@
-export const urlToKey = (url: string) => {
+export const urlToKey = (url?: string) => {
   if (!url) return '';
 
   const urlWithoutFragment = url.split('#').at(0);

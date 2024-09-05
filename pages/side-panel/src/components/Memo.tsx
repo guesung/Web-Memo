@@ -1,20 +1,39 @@
-import { I18n, Tab, useFetch } from '@extension/shared';
+import {
+  I18n,
+  MemoStorageType,
+  responseUpdateSidePanel,
+  Storage,
+  Tab,
+  urlToKey,
+  useDidMount,
+  useFetch,
+} from '@extension/shared';
 import { Toast } from '@extension/ui';
-import useGetMemo from '@src/hooks/useGetMemo';
 import { saveMemo } from '@src/utils';
 import { overlay } from 'overlay-kit';
 import { useEffect, useState } from 'react';
 
 export default function Memo() {
-  const { data: tab } = useFetch<chrome.tabs.Tab>({
+  const { data: tab, refretch: refetchtab } = useFetch<chrome.tabs.Tab>({
     fetchFn: Tab.get,
   });
-  const { memo: initialMemo } = useGetMemo({ url: tab.url ?? '' });
-  const [memo, setMemo] = useState(() => initialMemo?.memo);
+  const { data: memoList, refretch: refetchMemo } = useFetch<MemoStorageType>({
+    fetchFn: Storage.get,
+    defaultValue: {},
+  });
+
+  const [memo, setMemo] = useState('');
 
   useEffect(() => {
-    setMemo(initialMemo?.memo);
-  }, [initialMemo]);
+    setMemo(memoList?.[urlToKey(tab.url)]?.memo);
+  }, [memoList, tab.url]);
+
+  useDidMount(() =>
+    responseUpdateSidePanel(() => {
+      refetchMemo();
+      refetchtab();
+    }),
+  );
 
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMemo(e.target.value);
@@ -22,6 +41,7 @@ export default function Memo() {
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     saveMemo(memo);
     overlay.open(({ unmount }) => <Toast message="Saved" onClose={unmount} />);
   };

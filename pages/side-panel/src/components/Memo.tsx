@@ -17,26 +17,18 @@ export default function Memo() {
   const { data: tab, refretch: refetchtab } = useFetch<chrome.tabs.Tab>({
     fetchFn: Tab.get,
   });
-  const { data: memoList, refretch: refetchMemo } = useFetch<MemoStorageType>({
+  const { data: memoList } = useFetch<MemoStorageType>({
     fetchFn: Storage.get,
     defaultValue: {},
   });
 
   const [memo, setMemo] = useState('');
 
-  useEffect(() => {
-    setMemo(memoList?.[urlToKey(tab.url)]?.memo ?? '');
-  }, [memoList, tab.url]);
+  useDidMount(() => responseUpdateSidePanel(refetchtab));
 
-  useDidMount(() =>
-    responseUpdateSidePanel(() => {
-      refetchtab();
-    }),
-  );
+  useEffect(() => setMemo(memoList?.[urlToKey(tab.url)]?.memo ?? ''), [memoList, tab.url]);
 
-  const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMemo(e.target.value);
-  };
+  const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => setMemo(e.target.value);
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

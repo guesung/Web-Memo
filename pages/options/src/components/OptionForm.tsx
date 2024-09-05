@@ -1,4 +1,4 @@
-import { I18n, LANGUAGE_LIST, Storage, useFetch } from '@extension/shared';
+import { I18n, LANGUAGE_LIST, Storage, STORAGE_TYPE_OPTION_LANGUAGE, useFetch } from '@extension/shared';
 import { Toast } from '@extension/ui';
 import '@src/Options.css';
 import { overlay } from 'overlay-kit';
@@ -17,7 +17,7 @@ export default function OptionForm() {
 
   const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    Storage.set('option_language', languageRef.current?.value);
+    Storage.set(STORAGE_TYPE_OPTION_LANGUAGE, languageRef.current?.value);
     overlay.open(({ unmount }) => <Toast message={I18n.get('save_option')} onClose={unmount} />);
   };
 

@@ -1,6 +1,7 @@
 import { MemoStorageType, StorageType } from 'lib/types';
 
 // ref : https://developer.chrome.com/docs/extensions/reference/api/storage
+export const STORAGE_TYPE_OPTION_LANGUAGE = 'option_language';
 export class Storage {
   static async get(key?: string) {
     const storage = await chrome.storage.sync.get(key);

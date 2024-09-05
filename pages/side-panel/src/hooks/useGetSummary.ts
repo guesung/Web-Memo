@@ -23,11 +23,11 @@ export default function useGetSummary() {
     }
   };
 
-  const { isLoading, refretch: refretchSummary } = useFetch({ fetchFn: startSummary });
+  const { isLoading, refretch: refetchSummary } = useFetch({ fetchFn: startSummary });
 
   return {
     isSummaryLoading: isLoading,
     summary,
-    refretchSummary,
+    refetchSummary,
   };
 }

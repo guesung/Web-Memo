@@ -43,16 +43,14 @@ export default function MemoTable() {
               </td>
               <td className="whitespace-nowrap">{formatDate(new Date(memo.date))}</td>
               <td>
-                <div className="tooltip" data-tip="메모 복사">
-                  <button
-                    type="button"
-                    onClick={() => handleMemoClick(memo.memo)}
-                    className="cursor-pointer text-start whitespace-break-spaces">
-                    {memo.memo}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => handleMemoClick(memo.memo)}
+                  className="cursor-copy text-start whitespace-break-spaces">
+                  {memo.memo}
+                </button>
               </td>
-              <td className="tooltip" data-tip="메모 제거">
+              <td>
                 <button type="button" onClick={() => handleDeleteClick(memo.url)} className="text-center w-full">
                   x
                 </button>

@@ -14,7 +14,7 @@ import { overlay } from 'overlay-kit';
 import { useEffect, useState } from 'react';
 
 export default function Memo() {
-  const { data: tab, refetch: refetchtab } = useFetch<chrome.tabs.Tab>({
+  const { data: tab, refetch: refetchtab } = useFetch({
     fetchFn: Tab.get,
     defaultValue: {} as chrome.tabs.Tab,
   });
@@ -27,7 +27,7 @@ export default function Memo() {
 
   useDidMount(() => responseUpdateSidePanel(refetchtab));
 
-  useEffect(() => setMemo(memoList?.[urlToKey(tab.url)]?.memo ?? ''), [memoList, tab.url]);
+  useEffect(() => setMemo(memoList?.[urlToKey(tab?.url)]?.memo ?? ''), [memoList, tab?.url]);
 
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => setMemo(e.target.value);
 

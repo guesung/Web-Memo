@@ -16,4 +16,4 @@ export type LanguageOptionType = {
   [STORAGE_TYPE_OPTION_LANGUAGE]: (typeof LANGUAGE_LIST)[number]['inEnglish'];
 };
 
-export type StorageType = MemoStorageType & LanguageOptionType;
+export type StorageType = MemoStorageType | LanguageOptionType;

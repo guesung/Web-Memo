@@ -3,7 +3,7 @@ import { MemoStorageType, StorageType } from 'lib/types';
 // ref : https://developer.chrome.com/docs/extensions/reference/api/storage
 export const STORAGE_TYPE_OPTION_LANGUAGE = 'option_language';
 export class Storage {
-  static async get(key?: string) {
+  static async get(key?: string): Promise<StorageType> {
     const storage = await chrome.storage.sync.get(key);
     if (key) return storage[key];
     return storage as StorageType;
@@ -23,6 +23,6 @@ export class MemoStorage {
     return memoStorage;
   }
   static async set(key: keyof MemoStorageType, value: MemoStorageType): Promise<void> {
-    await Storage.set(key, value as StorageType);
+    await Storage.set(key as keyof StorageType, value as StorageType);
   }
 }

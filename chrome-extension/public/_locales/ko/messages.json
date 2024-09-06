@@ -28,5 +28,8 @@
   },
   "save_option": {
     "message": "설정을 저장하였습니다."
+  },
+  "error_common": {
+    "message": "에러가 발생하였습니다."
   }
 }

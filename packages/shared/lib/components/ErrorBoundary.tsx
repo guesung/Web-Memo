@@ -1,6 +1,6 @@
 import type { ComponentType, ErrorInfo, PropsWithChildren } from 'react';
 import { Component, createElement } from 'react';
-import ErrorFallback from './ErrorFallback';
+import { ErrorFallback } from '@extension/ui';
 
 export interface FallbackComponentProps {
   error: Error;

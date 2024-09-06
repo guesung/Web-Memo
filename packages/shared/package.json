@@ -17,7 +17,9 @@
     "prettier": "prettier . --write --ignore-path ../../.prettierignore",
     "type-check": "tsc --noEmit"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@extension/ui": "workspace:*"
+  },
   "devDependencies": {
     "@extension/storage": "workspace:*",
     "@extension/tsconfig": "workspace:*"

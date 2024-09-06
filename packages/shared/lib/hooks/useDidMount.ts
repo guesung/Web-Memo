@@ -7,7 +7,7 @@ export default function useDidMount(callbackFn: () => void) {
     if (mountRef.current) return;
     callbackFn();
     mountRef.current = true;
-  }, []);
+  }, [callbackFn]);
 
   return null;
 }

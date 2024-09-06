@@ -3,7 +3,7 @@ import App from '@src/app';
 // eslint-disable-next-line
 // @ts-ignore
 import tailwindcssOutput from '@src/tailwind-output.css?inline';
-import { responsePageContent, Tab } from '@extension/shared';
+import { responsePageContent } from '@extension/shared';
 
 const root = document.createElement('div');
 root.id = 'page-summary';

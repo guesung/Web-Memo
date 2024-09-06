@@ -1,6 +1,7 @@
 import { OverlayProvider } from 'overlay-kit';
 
-import { ErrorBoundary, withSuspense } from '@extension/shared';
+import { withSuspense } from '@extension/shared';
+import { ErrorBoundary } from '@extension/ui';
 import { Header, Memo, Summary, SummaryProvider } from './components';
 
 const SidePanel = () => {

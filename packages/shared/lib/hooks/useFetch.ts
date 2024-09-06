@@ -15,7 +15,6 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
     setIsLoading(true);
     try {
       const data = await fetchFn();
-      console.log(data);
       setData(data);
     } catch (e) {
       setError(e as Error);

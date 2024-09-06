@@ -14,7 +14,7 @@ import { overlay } from 'overlay-kit';
 import { useEffect, useState } from 'react';
 
 export default function Memo() {
-  const { data: tab, refretch: refetchtab } = useFetch<chrome.tabs.Tab>({
+  const { data: tab, refetch: refetchtab } = useFetch<chrome.tabs.Tab>({
     fetchFn: Tab.get,
     defaultValue: {} as chrome.tabs.Tab,
   });

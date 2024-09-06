@@ -23,7 +23,7 @@ export default function useSummary() {
     }
   };
 
-  const { isLoading, refretch: refetchSummary } = useFetch({
+  const { isLoading, refetch: refetchSummary } = useFetch({
     fetchFn: startSummary,
     defaultValue: {},
     initialFetch: false,

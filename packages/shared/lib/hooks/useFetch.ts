@@ -17,7 +17,7 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
       const data = await fetchFn();
       setData(data);
     } catch (e) {
-      setError(e as Error);
+      setError(e);
     }
     setIsLoading(false);
   }, [fetchFn]);
@@ -25,5 +25,5 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
   useDidMount(fetch);
 
   if (error) throw error;
-  return { data, isLoading, error, refretch: fetch };
+  return { data, isLoading, error, refetch: fetch };
 }

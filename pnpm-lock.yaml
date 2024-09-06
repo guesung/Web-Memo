@@ -181,6 +181,10 @@ importers:
         version: 10.9.2(@types/node@20.14.15)(typescript@5.5.4)
 
   packages/shared:
+    dependencies:
+      '@extension/ui':
+        specifier: workspace:*
+        version: link:../ui
     devDependencies:
       '@extension/storage':
         specifier: workspace:*

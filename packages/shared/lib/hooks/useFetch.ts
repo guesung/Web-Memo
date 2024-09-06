@@ -9,7 +9,7 @@ interface UseFetchProps<TData> {
 
 export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps<TData>) {
   const [data, setData] = useState<TData | undefined>(defaultValue);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const fetch = useCallback(async () => {
@@ -19,8 +19,9 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
       setData(data);
     } catch (e) {
       setError(e instanceof Error ? e : new Error(I18n.get('error_common')));
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, [fetchFn]);
 
   useDidMount(fetch);

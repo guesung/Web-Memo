@@ -7,14 +7,14 @@ const SidePanel = () => {
   return (
     <OverlayProvider>
       <main className="prose prose-sm flex flex-col h-lvh px-4 relative">
-        <SummaryProvider>
-          <Header />
-          <section className="flex-1 overflow-scroll">
-            <ErrorBoundary>
+        <section className="flex-1 overflow-scroll">
+          <ErrorBoundary>
+            <SummaryProvider>
+              <Header />
               <Summary />
-            </ErrorBoundary>
-          </section>
-        </SummaryProvider>
+            </SummaryProvider>
+          </ErrorBoundary>
+        </section>
         <section className="flex-1">
           <ErrorBoundary>
             <Memo />

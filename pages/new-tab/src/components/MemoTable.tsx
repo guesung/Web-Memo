@@ -5,6 +5,7 @@ import { overlay } from 'overlay-kit';
 export default function MemoTable() {
   const { data: memoStorage } = useFetch({
     fetchFn: MemoStorage.get,
+    defaultValue: {},
   });
 
   const handleDeleteClick = async (url: string) => {

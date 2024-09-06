@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 export default function Memo() {
   const { data: tab, refretch: refetchtab } = useFetch<chrome.tabs.Tab>({
     fetchFn: Tab.get,
+    defaultValue: {} as chrome.tabs.Tab,
   });
   const { data: memoList } = useFetch<MemoStorageType>({
     fetchFn: Storage.get,

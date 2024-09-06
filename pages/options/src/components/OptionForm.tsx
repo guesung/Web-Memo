@@ -6,7 +6,7 @@ import { FormEvent, useEffect, useRef } from 'react';
 
 export default function OptionForm() {
   const languageRef = useRef<HTMLSelectElement>(null);
-  const { data } = useFetch({ fetchFn: Storage.get });
+  const { data } = useFetch({ fetchFn: Storage.get, defaultValue: {} });
 
   const handleResetClick = async () => {
     const response = confirm(I18n.get('question_delete'));

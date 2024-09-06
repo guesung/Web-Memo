@@ -1,7 +1,7 @@
-import { useGetSummary } from '@src/hooks';
+import { useSummary } from '@src/hooks';
 import { createContext, PropsWithChildren, useContext } from 'react';
 
-interface SummaryContext extends ReturnType<typeof useGetSummary> {}
+interface SummaryContext extends ReturnType<typeof useSummary> {}
 
 const SummaryContext = createContext<SummaryContext>({
   refetchSummary: async () => {},
@@ -12,12 +12,12 @@ const SummaryContext = createContext<SummaryContext>({
 export const useSummaryContext = () => {
   const context = useContext<SummaryContext>(SummaryContext);
 
-  if (!context) throw new Error('Provider가 없습니다.');
+  if (!context) throw new Error('SummaryProvider가 없습니다.');
   return context;
 };
 
 export default function SummaryProvider({ children }: PropsWithChildren) {
-  const useGetSummaryProps = useGetSummary();
+  const useSummaryProps = useSummary();
 
-  return <SummaryContext.Provider value={useGetSummaryProps}>{children}</SummaryContext.Provider>;
+  return <SummaryContext.Provider value={useSummaryProps}>{children}</SummaryContext.Provider>;
 }

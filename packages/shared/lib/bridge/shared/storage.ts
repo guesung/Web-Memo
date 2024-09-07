@@ -4,10 +4,6 @@ import { MemoStorageType, MemoType, StorageType } from '../../types';
 export const STORAGE_TYPE_OPTION_LANGUAGE = 'option_language';
 const optionList = [STORAGE_TYPE_OPTION_LANGUAGE];
 
-export const isUrlString = (key: string): key is string => {
-  return !optionList.includes(key) && key.startsWith('http');
-};
-
 export class Storage {
   static async get(key?: string): Promise<StorageType> {
     const storage = await chrome.storage.sync.get(key);

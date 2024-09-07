@@ -14,6 +14,9 @@ export class Storage {
   static async set(key: keyof StorageType, value: StorageType[keyof StorageType]): Promise<void> {
     await chrome.storage.sync.set({ [key]: value });
   }
+  static async remove(key: keyof StorageType): Promise<void> {
+    await chrome.storage.sync.remove(key);
+  }
 }
 
 export class MemoStorage {
@@ -27,6 +30,9 @@ export class MemoStorage {
   }
   static async set(key: keyof MemoStorageType, value: MemoType): Promise<void> {
     await Storage.set(key as keyof StorageType, value);
+  }
+  static async remove(key: keyof MemoStorageType): Promise<void> {
+    await Storage.remove(key as keyof StorageType);
   }
 }
 

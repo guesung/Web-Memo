@@ -3,7 +3,7 @@ import { Toast } from '@extension/ui';
 import { overlay } from 'overlay-kit';
 
 export default function MemoTable() {
-  const { data: memoStorage } = useFetch({
+  const { data: memoStorage, refetch: refetchMemo } = useFetch({
     fetchFn: MemoStorage.get,
     defaultValue: {},
   });
@@ -12,7 +12,8 @@ export default function MemoTable() {
     const answer = confirm('삭제하시겠습니까?');
     if (!answer) return;
 
-    await chrome.storage.sync.remove(urlToKey(url));
+    await MemoStorage.remove(urlToKey(url));
+    await refetchMemo();
   };
 
   const handleMemoClick = async (memo: string) => {

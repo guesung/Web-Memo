@@ -25,8 +25,6 @@ export default function useSummary() {
 
   const { isLoading, refetch: refetchSummary } = useFetch({
     fetchFn: startSummary,
-    defaultValue: {},
-    initialFetch: false,
   });
 
   return {

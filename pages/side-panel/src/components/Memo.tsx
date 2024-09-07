@@ -1,8 +1,8 @@
 import {
   I18n,
+  MemoStorage,
   MemoStorageType,
   responseUpdateSidePanel,
-  Storage,
   Tab,
   urlToKey,
   useDidMount,
@@ -19,7 +19,7 @@ export default function Memo() {
     defaultValue: {} as chrome.tabs.Tab,
   });
   const { data: memoList } = useFetch<MemoStorageType>({
-    fetchFn: Storage.get,
+    fetchFn: MemoStorage.get,
     defaultValue: {},
   });
 

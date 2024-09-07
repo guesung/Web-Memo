@@ -1,6 +1,7 @@
 {
   "extends": "@extension/tsconfig/base",
   "compilerOptions": {
+    "module": "ES2020",
     "baseUrl": ".",
     "paths": {
       "@src/*": ["src/*"],
@@ -9,5 +10,5 @@
     "jsx": "react-jsx",
     "types": ["chrome"]
   },
-  "include": ["src", "../../packages/shared/lib/utils/utils"]
+  "include": ["src", "vite-env.d.ts"]
 }

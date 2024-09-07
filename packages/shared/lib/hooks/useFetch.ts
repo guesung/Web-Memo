@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import useDidMount from './useDidMount';
-import { I18n } from 'bridge';
+import { I18n } from '../bridge/shared';
 
 interface UseFetchProps<TData> {
   fetchFn: () => Promise<TData> | TData;

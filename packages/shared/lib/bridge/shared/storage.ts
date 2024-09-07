@@ -1,4 +1,4 @@
-import { MemoStorageType, StorageType } from 'lib/types';
+import { MemoStorageType, StorageType } from '../../types';
 
 // ref : https://developer.chrome.com/docs/extensions/reference/api/storage
 export const STORAGE_TYPE_OPTION_LANGUAGE = 'option_language';

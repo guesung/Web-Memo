@@ -1,10 +1,16 @@
-import { MemoStorageType, StorageType } from '../../types';
+import { MemoStorageType, MemoType, StorageType } from '../../types';
 
 // ref : https://developer.chrome.com/docs/extensions/reference/api/storage
 export const STORAGE_TYPE_OPTION_LANGUAGE = 'option_language';
+const optionList = [STORAGE_TYPE_OPTION_LANGUAGE];
+export const isUrlString = (key: string): key is string => {
+  return !optionList.includes(key) && key.startsWith('http');
+};
+
 export class Storage {
   static async get(key?: string): Promise<StorageType> {
     const storage = await chrome.storage.sync.get(key);
+
     if (key) return storage[key];
     return storage as StorageType;
   }
@@ -22,7 +28,7 @@ export class MemoStorage {
 
     return memoStorage;
   }
-  static async set(key: keyof MemoStorageType, value: MemoStorageType): Promise<void> {
-    await Storage.set(key as keyof StorageType, value as StorageType);
+  static async set(key: keyof MemoStorageType, value: MemoType): Promise<void> {
+    await Storage.set(key as keyof StorageType, value);
   }
 }

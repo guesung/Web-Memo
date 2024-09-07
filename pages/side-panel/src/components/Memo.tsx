@@ -9,7 +9,7 @@ import {
   useFetch,
 } from '@extension/shared';
 import { Toast } from '@extension/ui';
-import { saveMemo } from '@src/utils';
+import { saveMemoStorage } from '@src/utils';
 import { overlay } from 'overlay-kit';
 import { useEffect, useState } from 'react';
 
@@ -33,8 +33,7 @@ export default function Memo() {
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    saveMemo(memo);
+    saveMemoStorage(memo);
     overlay.open(({ unmount }) => <Toast message="Saved" onClose={unmount} />);
   };
 

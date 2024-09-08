@@ -7,11 +7,14 @@ import {
   urlToKey,
   useDidMount,
   useFetch,
+  useThrottle,
 } from '@extension/shared';
 import { Toast } from '@extension/ui';
 import { saveMemoStorage } from '@src/utils';
 import { overlay } from 'overlay-kit';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
+const OPTION_AUTO_SAVE = true;
 
 export default function Memo() {
   const { data: tab, refetch: refetchtab } = useFetch({
@@ -22,22 +25,32 @@ export default function Memo() {
     fetchFn: MemoStorage.get,
     defaultValue: {},
   });
-
+  const { throttle } = useThrottle();
   const [memo, setMemo] = useState('');
 
   useDidMount(() => responseUpdateSidePanel(refetchtab));
-
   useEffect(() => setMemo(memoList?.[urlToKey(tab?.url)]?.memo ?? ''), [memoList, tab?.url]);
+
+  const saveMemoAndRefetchStorage = useCallback(
+    async (memo: string) => {
+      await saveMemoStorage(memo);
+      overlay.open(({ unmount }) => <Toast message="Saved" onClose={unmount} />);
+      await refetchMemo();
+    },
+    [refetchMemo],
+  );
 
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMemo(e.target.value);
+    if (!OPTION_AUTO_SAVE) return;
+    throttle(async () => {
+      await saveMemoAndRefetchStorage(e.target.value);
+    });
   };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await saveMemoStorage(memo);
-    overlay.open(({ unmount }) => <Toast message="Saved" onClose={unmount} />);
-    await refetchMemo();
+    saveMemoAndRefetchStorage(memo);
   };
 
   return (

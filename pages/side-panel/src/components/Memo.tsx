@@ -18,7 +18,7 @@ export default function Memo() {
     fetchFn: Tab.get,
     defaultValue: {} as chrome.tabs.Tab,
   });
-  const { data: memoList } = useFetch<MemoStorageType>({
+  const { data: memoList, refetch: refetchMemo } = useFetch<MemoStorageType>({
     fetchFn: MemoStorage.get,
     defaultValue: {},
   });
@@ -29,12 +29,15 @@ export default function Memo() {
 
   useEffect(() => setMemo(memoList?.[urlToKey(tab?.url)]?.memo ?? ''), [memoList, tab?.url]);
 
-  const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => setMemo(e.target.value);
+  const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMemo(e.target.value);
+  };
 
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    saveMemoStorage(memo);
+    await saveMemoStorage(memo);
     overlay.open(({ unmount }) => <Toast message="Saved" onClose={unmount} />);
+    await refetchMemo();
   };
 
   return (

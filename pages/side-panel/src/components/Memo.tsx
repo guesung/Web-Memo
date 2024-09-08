@@ -23,7 +23,7 @@ export default function Memo() {
   });
   const { data: memoList, refetch: refetchMemo } = useFetch<MemoStorageType>({
     fetchFn: MemoStorage.get,
-    defaultValue: {},
+    defaultValue: {} as MemoStorageType,
   });
   const { throttle } = useThrottle();
   const [memo, setMemo] = useState('');
@@ -34,7 +34,7 @@ export default function Memo() {
   const saveMemoAndRefetchStorage = useCallback(
     async (memo: string) => {
       await saveMemoStorage(memo);
-      overlay.open(({ unmount }) => <Toast message="Saved" onClose={unmount} />);
+      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
       await refetchMemo();
     },
     [refetchMemo],

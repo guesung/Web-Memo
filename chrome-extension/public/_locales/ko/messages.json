@@ -17,7 +17,7 @@
   "delete": {
     "message": "삭제"
   },
-  "question_delete": {
+  "modal_modal_question_delete": {
     "message": "데이터를 정말로 초기화 하시겠습니까?"
   },
   "select_language": {
@@ -26,10 +26,13 @@
   "reset_option": {
     "message": "설정 및 데이터 초기화"
   },
-  "save_option": {
+  "toast_save_option": {
     "message": "설정을 저장하였습니다."
   },
-  "error_common": {
+  "toast_error_common": {
     "message": "에러가 발생하였습니다."
+  },
+  "toast_saved": {
+    "message": "저장되었습니다."
   }
 }

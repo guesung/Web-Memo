@@ -57,6 +57,7 @@ export default function Memo() {
     <form className="form-control h-full" onSubmit={handleFormSubmit}>
       <div className="label">
         <span className="label-text whitespace-nowrap font-bold">{I18n.get('memo')}</span>
+        <span className="w-4" />
         <span className="label-text truncate w-full text-right text-neutral-content">{tab?.title}</span>
       </div>
       <textarea

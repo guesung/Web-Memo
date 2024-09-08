@@ -1,0 +1,16 @@
+import { useRef } from 'react';
+
+export default function useThrottle() {
+  const timerRef = useRef<number | null>(null);
+
+  const throttle = (callbackFn: () => void, delay = 1000) => {
+    if (timerRef.current) return;
+
+    timerRef.current = setTimeout(() => {
+      callbackFn();
+      timerRef.current = null;
+    }, delay);
+  };
+
+  return { throttle };
+}

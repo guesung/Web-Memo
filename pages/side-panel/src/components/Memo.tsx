@@ -9,9 +9,7 @@ import {
   useFetch,
   useThrottle,
 } from '@extension/shared';
-import { Toast } from '@extension/ui';
 import { saveMemoStorage } from '@src/utils';
-import { overlay } from 'overlay-kit';
 import { useCallback, useEffect, useState } from 'react';
 
 const OPTION_AUTO_SAVE = true;
@@ -27,6 +25,7 @@ export default function Memo() {
   });
   const { throttle } = useThrottle();
   const [memo, setMemo] = useState('');
+  const [isSaved, setIsSaved] = useState(true);
 
   useDidMount(() => responseUpdateSidePanel(refetchtab));
   useEffect(() => setMemo(memoList?.[urlToKey(tab?.url)]?.memo ?? ''), [memoList, tab?.url]);
@@ -34,7 +33,7 @@ export default function Memo() {
   const saveMemoAndRefetchStorage = useCallback(
     async (memo: string) => {
       await saveMemoStorage(memo);
-      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
+      setIsSaved(true);
       await refetchMemo();
     },
     [refetchMemo],
@@ -43,6 +42,7 @@ export default function Memo() {
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMemo(e.target.value);
     if (!OPTION_AUTO_SAVE) return;
+    setIsSaved(false);
     throttle(async () => {
       await saveMemoAndRefetchStorage(e.target.value);
     });
@@ -67,7 +67,7 @@ export default function Memo() {
         onChange={handleTextAreaChange}
       />
       <div className="label">
-        <span />
+        {isSaved ? <span /> : <span className="loading loading-ring loading-xs" />}
         <button className="label-text-alt" type="submit">
           {I18n.get('save')}
         </button>

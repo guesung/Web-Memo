@@ -22,7 +22,7 @@ const manifest = deepmerge(
      * if you want to support multiple languages, you can use the following reference
      * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Internationalization
      */
-    name: 'Page Memos',
+    name: 'Page Memo',
     default_locale: 'ko',
     version: packageJson.version,
     permissions: ['sidePanel', 'storage', 'tabs', 'identity'],

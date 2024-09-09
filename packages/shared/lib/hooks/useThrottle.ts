@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 
 export default function useThrottle() {
-  const timerRef = useRef<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const throttle = (callbackFn: () => void, delay = 3000) => {
     if (timerRef.current) return;

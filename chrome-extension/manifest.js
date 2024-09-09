@@ -25,7 +25,7 @@ const manifest = deepmerge(
     name: 'Page Memo',
     default_locale: 'ko',
     version: packageJson.version,
-    permissions: ['sidePanel', 'storage', 'tabs', 'identity'],
+    permissions: ['sidePanel', 'storage', 'tabs'],
     host_permissions: ['<all_urls>'],
     options_page: 'options/index.html',
     background: {

@@ -9,7 +9,9 @@ import {
   useFetch,
   useThrottle,
 } from '@extension/shared';
+import { Toast } from '@extension/ui';
 import { saveMemoStorage } from '@src/utils';
+import { overlay } from 'overlay-kit';
 import { useCallback, useEffect, useState } from 'react';
 
 const OPTION_AUTO_SAVE = true;
@@ -51,6 +53,7 @@ export default function Memo() {
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     saveMemoAndRefetchStorage(memo);
+    overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
   };
 
   return (

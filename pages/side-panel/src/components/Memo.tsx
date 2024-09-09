@@ -67,7 +67,7 @@ export default function Memo() {
         onChange={handleTextAreaChange}
       />
       <div className="label">
-        <span className="label-text-alt">{memo?.length ?? 0}/1,000</span>
+        <span />
         <button className="label-text-alt" type="submit">
           {I18n.get('save')}
         </button>

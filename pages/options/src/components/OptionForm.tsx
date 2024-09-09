@@ -9,7 +9,7 @@ export default function OptionForm() {
   const { data } = useFetch({ fetchFn: OptionStorage.get, defaultValue: '' });
 
   const handleResetClick = async () => {
-    const response = confirm(I18n.get('modal_question_delete'));
+    const response = confirm(I18n.get('modal_modal_question_delete'));
     if (!response) return;
 
     await chrome.storage.sync.clear();

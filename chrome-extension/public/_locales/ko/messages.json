@@ -34,5 +34,11 @@
   },
   "toast_saved": {
     "message": "저장되었습니다."
+  },
+  "error_get_page_content": {
+    "message": "페이지 컨텐츠를 가져오는데 실패했습니다."
+  },
+  "error_get_summary": {
+    "message": "요약을 가져오는데 실패했습니다."
   }
 }

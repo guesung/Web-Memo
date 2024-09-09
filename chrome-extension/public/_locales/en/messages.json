@@ -1,10 +1,44 @@
 {
-  "extensionName": {
-    "description": "Page Memos",
-    "message": "Page Memos"
+  "memo": {
+    "message": "Memo"
   },
-  "extensionDescription": {
-    "description": "Create and manage notes directly on web pages. With PageNotes, you can instantly jot down ideas, important information, and personal thoughts while browsing. Use the summarization feature when needed for quick overviews. Transform your web surfing into a more productive and organized experience with your own digital notebook",
-    "message": "Create and manage notes directly on web pages. With PageNotes, you can instantly jot down ideas, important information, and personal thoughts while browsing. Use the summarization feature when needed for quick overviews. Transform your web surfing into a more productive and organized experience with your own digital notebook"
+  "save": {
+    "message": "Save"
+  },
+  "number": {
+    "message": "Number"
+  },
+  "title": {
+    "message": "Title"
+  },
+  "date": {
+    "message": "Date"
+  },
+  "delete": {
+    "message": "Delete"
+  },
+  "modal_modal_question_delete": {
+    "message": "Are you sure you want to reset the data?"
+  },
+  "select_language": {
+    "message": "Select prompt response language"
+  },
+  "reset_option": {
+    "message": "Reset settings and data"
+  },
+  "toast_save_option": {
+    "message": "Settings have been saved."
+  },
+  "toast_error_common": {
+    "message": "An error has occurred."
+  },
+  "toast_saved": {
+    "message": "Saved successfully."
+  },
+  "error_get_page_content": {
+    "message": "Failed to retrieve page content."
+  },
+  "error_get_summary": {
+    "message": "Failed to retrieve summary."
   }
 }

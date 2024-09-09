@@ -8,6 +8,9 @@
   "number": {
     "message": "Number"
   },
+  "reset": {
+    "message": "Reset"
+  },
   "title": {
     "message": "Title"
   },

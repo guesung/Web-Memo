@@ -8,6 +8,9 @@
   "number": {
     "message": "번호"
   },
+  "reset": {
+    "message": "초기화"
+  },
   "title": {
     "message": "제목"
   },

@@ -52,7 +52,7 @@ export default function OptionForm() {
             </th>
             <th>
               <button className="btn btn-outline btn-warning" onClick={handleResetClick} type="button">
-                초기화
+                {I18n.get('reset')}
               </button>
             </th>
           </tr>
@@ -60,7 +60,7 @@ export default function OptionForm() {
       </table>
       <div className="my-12 flex justify-end">
         <button className="btn btn-outline btn-accent" type="submit">
-          저장
+          {I18n.get('save')}
         </button>
       </div>
     </form>

@@ -1,7 +1,7 @@
 {
   "name": "chrome-extension-boilerplate-react-vite",
-  "version": "0.2.0",
-  "description": "Page Memos - Chrome Extension",
+  "version": "0.3.0",
+  "description": "Page Memo - Chrome Extension",
   "license": "MIT",
   "repository": {
     "type": "git",

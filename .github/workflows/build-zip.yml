@@ -3,6 +3,7 @@ name: Build And Upload Extension Zip
 on:
   push:
   pull_request:
+    branches: [ main ]
 
 jobs:
   build:

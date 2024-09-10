@@ -20,7 +20,6 @@ export default function useSummary() {
         (message: string) => message && setSummary(prev => prev + message),
       );
     } catch (e) {
-      ``;
       setSummary(I18n.get('error_get_summary'));
     }
   };

@@ -1,15 +1,19 @@
 import { MemoStorageType, MemoType, StorageType } from '../../types';
+import { I18n } from './i18n';
 
 // ref : https://developer.chrome.com/docs/extensions/reference/api/storage
 export const STORAGE_TYPE_OPTION_LANGUAGE = 'option_language';
 const optionList = [STORAGE_TYPE_OPTION_LANGUAGE];
 
 export class Storage {
-  static async get(key?: string): Promise<StorageType> {
-    const storage = await chrome.storage.sync.get(key);
-
-    if (key) return storage[key];
-    return storage as StorageType;
+  static async get(key?: string): Promise<StorageType | undefined> {
+    try {
+      const storage = await chrome.storage.sync.get(key);
+      if (key) return storage[key];
+      return storage;
+    } catch (error) {
+      throw new Error(I18n.get('error_get_storage'));
+    }
   }
   static async set(key: keyof StorageType, value: StorageType[keyof StorageType]): Promise<void> {
     await chrome.storage.sync.set({ [key]: value });

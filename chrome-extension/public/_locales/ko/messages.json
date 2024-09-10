@@ -43,5 +43,8 @@
   },
   "error_get_summary": {
     "message": "요약을 가져오는데 실패했습니다."
+  },
+  "error_get_storage": {
+    "message": "스토리지 데이터를 가져오는데 실패했습니다."
   }
 }

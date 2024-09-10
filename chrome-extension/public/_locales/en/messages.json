@@ -43,5 +43,8 @@
   },
   "error_get_summary": {
     "message": "Failed to retrieve summary."
+  },
+  "error_get_storage": {
+    "message": "Failed to retrieve storage data."
   }
 }

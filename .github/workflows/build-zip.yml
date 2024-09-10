@@ -1,9 +1,8 @@
 name: Build And Upload Extension Zip
 
 on:
-  push:
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build:
@@ -22,8 +21,8 @@ jobs:
           echo VITE_OPENAI_API_KEY=${{ secrets.VITE_OPENAI_API_KEY }} >> chrome-extension/.env
           echo VITE_MAKE_WEBHOOK_NOTION_API=${{ secrets.VITE_MAKE_WEBHOOK_NOTION_API }} >> pages/side-panel/.env
           pnpm build
-
       - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         with:
           name: page-memo-zip
           path: dist/*

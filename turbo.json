@@ -15,7 +15,7 @@
     "build": {
       "dependsOn": ["^build", "ready"],
       "env": ["__FIREFOX__", "VITE_MAKE_WEBHOOK_NOTION_API", "VITE_OPENAI_API_KEY"],
-      "outputs": ["../../dist/**", "dist/**", "build/**"],
+      "outputs": ["dist/**", "build/**"],
       "inputs": [".env"]
     },
     "zip": {

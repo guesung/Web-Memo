@@ -1,4 +1,10 @@
 {
+  "extensionDescription": {
+    "message": "A browser extension that allows you to record important information while web surfing."
+  },
+  "extensionName": {
+    "message": "Web Memo"
+  },
   "memo": {
     "message": "Memo"
   },

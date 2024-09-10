@@ -24,4 +24,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
+          name: zip-artifact
           path: dist/*
+          if-no-files-found: error

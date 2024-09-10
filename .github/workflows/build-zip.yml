@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Create .env
+        run: |
+          echo VITE_OPENAI_API_KEY=${{ secrets.VITE_OPENAI_API_KEY }} >> .env
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4

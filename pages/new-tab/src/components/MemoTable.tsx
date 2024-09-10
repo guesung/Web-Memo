@@ -3,15 +3,17 @@ import { Toast } from '@extension/ui';
 import { overlay } from 'overlay-kit';
 
 export default function MemoTable() {
-  const { data: memoStorage } = useFetch({
+  const { data: memoStorage, refetch: refetchMemo } = useFetch({
     fetchFn: MemoStorage.get,
+    defaultValue: {},
   });
 
   const handleDeleteClick = async (url: string) => {
     const answer = confirm('삭제하시겠습니까?');
     if (!answer) return;
 
-    await chrome.storage.sync.remove(urlToKey(url));
+    await MemoStorage.remove(urlToKey(url));
+    await refetchMemo();
   };
 
   const handleMemoClick = async (memo: string) => {
@@ -43,16 +45,14 @@ export default function MemoTable() {
               </td>
               <td className="whitespace-nowrap">{formatDate(new Date(memo.date))}</td>
               <td>
-                <div className="tooltip" data-tip="메모 복사">
-                  <button
-                    type="button"
-                    onClick={() => handleMemoClick(memo.memo)}
-                    className="cursor-pointer text-start whitespace-break-spaces">
-                    {memo.memo}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => handleMemoClick(memo.memo)}
+                  className="cursor-copy text-start whitespace-break-spaces">
+                  {memo.memo}
+                </button>
               </td>
-              <td className="tooltip" data-tip="메모 제거">
+              <td>
                 <button type="button" onClick={() => handleDeleteClick(memo.url)} className="text-center w-full">
                   x
                 </button>

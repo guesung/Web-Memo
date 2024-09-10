@@ -4,5 +4,5 @@ export * from './lib/types';
 export * from './lib/mock';
 export * from './lib/utils';
 export * from './lib/constants';
-export * from './lib/components';
-export * from './bridge';
+export * from './lib/bridge';
+export * from './lib/bridge/shared';

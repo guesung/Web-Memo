@@ -1,4 +1,4 @@
-export const languageObject = {
+export const languageObject: Record<string, string> = {
   ar: 'Arabic',
   am: 'Amharic',
   bg: 'Bulgarian',

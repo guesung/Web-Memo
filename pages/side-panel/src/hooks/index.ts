@@ -1,1 +1,1 @@
-export { default as useGetSummary } from './useGetSummary';
+export { default as useSummary } from './useSummary';

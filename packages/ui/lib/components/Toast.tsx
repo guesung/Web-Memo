@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 interface ToastProps {
   message: string;
@@ -13,7 +13,7 @@ export default function Toast({ message, onClose }: ToastProps) {
     return () => {
       clearTimeout(timer);
     };
-  }, []);
+  }, [onClose]);
 
   return (
     <button className="toast toast-end" onClick={onClose}>

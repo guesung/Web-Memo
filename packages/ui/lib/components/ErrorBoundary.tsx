@@ -43,7 +43,6 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
   render() {
     const { error } = this.state;
     const { children, FallbackComponent } = this.props;
-    console.log('ErrorBoundary render', error);
     let childToRender = children;
     if (error) {
       const props: FallbackComponentProps = { error, resetErrorBoundary: this.resetErrorBoundary };

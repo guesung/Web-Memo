@@ -1,5 +1,5 @@
-import { STORAGE_TYPE_OPTION_LANGUAGE } from 'bridge';
-import { LANGUAGE_LIST } from 'lib/constants';
+import { STORAGE_TYPE_OPTION_LANGUAGE } from '../bridge/shared';
+import { LANGUAGE_LIST } from '../constants';
 
 export type MemoType = {
   url: string;
@@ -16,4 +16,4 @@ export type LanguageOptionType = {
   [STORAGE_TYPE_OPTION_LANGUAGE]: (typeof LANGUAGE_LIST)[number]['inEnglish'];
 };
 
-export type StorageType = MemoStorageType & LanguageOptionType;
+export type StorageType = MemoStorageType | LanguageOptionType;

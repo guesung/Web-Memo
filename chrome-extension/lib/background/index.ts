@@ -1,4 +1,11 @@
-import { I18n, languageObject, requestUpdateSidePanel, Storage, STORAGE_TYPE_OPTION_LANGUAGE } from '@extension/shared';
+import {
+  I18n,
+  languageObject,
+  OptionStorage,
+  requestUpdateSidePanel,
+  Storage,
+  STORAGE_TYPE_OPTION_LANGUAGE,
+} from '@extension/shared';
 import { getPrompt } from '@root/utils';
 import { openai } from '@root/utils/openai';
 import 'webextension-polyfill';
@@ -13,7 +20,7 @@ chrome.runtime.onInstalled.addListener(async () => {
 // chatGPT에게서 메시지를 받아서 다시 전달한다.
 chrome.runtime.onConnect.addListener(async port => {
   port.onMessage.addListener(async message => {
-    const language = (await Storage.get(STORAGE_TYPE_OPTION_LANGUAGE)) ?? 'English';
+    const language = (await OptionStorage.get(STORAGE_TYPE_OPTION_LANGUAGE)) ?? 'English';
 
     const prompt = getPrompt({ language });
     const pageContent = message.pageContent;

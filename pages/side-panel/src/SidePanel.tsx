@@ -1,7 +1,8 @@
 import { OverlayProvider } from 'overlay-kit';
 
-import { ErrorBoundary, withSuspense } from '@extension/shared';
-import { Memo, Summary } from './components';
+import { withSuspense } from '@extension/shared';
+import { ErrorBoundary } from '@extension/ui';
+import { Header, Memo, Summary, SummaryProvider } from './components';
 
 const SidePanel = () => {
   return (
@@ -9,7 +10,10 @@ const SidePanel = () => {
       <main className="prose prose-sm flex flex-col h-lvh px-4 relative">
         <section className="flex-1 overflow-scroll">
           <ErrorBoundary>
-            <Summary />
+            <SummaryProvider>
+              <Header />
+              <Summary />
+            </SummaryProvider>
           </ErrorBoundary>
         </section>
         <section className="flex-1">

@@ -4,14 +4,14 @@ import react from '@vitejs/plugin-react-swc';
 import deepmerge from 'deepmerge';
 import { isDev, isProduction } from './env.mjs';
 
-export const watchOption = isDev ? {
-  buildDelay: 50,
-  chokidar: {
-    ignored:[
-      /\/packages\/.*\.(ts|tsx|map)$/,
-    ]
-  }
-}: undefined;
+export const watchOption = isDev
+  ? {
+      buildDelay: 50,
+      chokidar: {
+        ignored: [/\/packages\/.*\.(ts|tsx|map)$/],
+      },
+    }
+  : undefined;
 
 /**
  * @typedef {import('vite').UserConfig} UserConfig

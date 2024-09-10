@@ -1,7 +1,7 @@
 import { BRIDGE_TYPE_SUMMARY, requestPageContent, Runtime, useFetch } from '@extension/shared';
 import { useState } from 'react';
 
-export default function useGetSummary() {
+export default function useSummary() {
   const [summary, setSummary] = useState('');
 
   const startSummary = async () => {
@@ -23,11 +23,13 @@ export default function useGetSummary() {
     }
   };
 
-  const { isLoading, refretch: refretchSummary } = useFetch({ fetchFn: startSummary });
+  const { isLoading, refetch: refetchSummary } = useFetch({
+    fetchFn: startSummary,
+  });
 
   return {
     isSummaryLoading: isLoading,
     summary,
-    refretchSummary,
+    refetchSummary,
   };
 }

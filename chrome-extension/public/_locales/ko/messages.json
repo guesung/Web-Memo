@@ -1,4 +1,10 @@
 {
+  "extensionDescription": {
+    "message": "웹 서핑 중 중요한 정보를 기록할 수 있는 확장 프로그램입니다."
+  },
+  "extensionName": {
+    "message": "웹 메모"
+  },
   "memo": {
     "message": "메모"
   },
@@ -28,5 +34,8 @@
   },
   "save_option": {
     "message": "설정을 저장하였습니다."
+  },
+  "error_common": {
+    "message": "에러가 발생하였습니다."
   }
 }

@@ -20,7 +20,7 @@ export const saveMemoNotion = async (memo: string) => {
 
   if (!tab.url || !tab.title) throw new Error('Save Failed: Invalid URL');
 
-  const response = await fetch(import.meta.env.VITE_MAKE_WEBHOOK_NOTION_API, {
+  await fetch(import.meta.env.VITE_MAKE_WEBHOOK_NOTION_API, {
     method: 'POST',
     body: JSON.stringify({
       title: tab.title,
@@ -29,5 +29,4 @@ export const saveMemoNotion = async (memo: string) => {
       url: tab.url,
     }),
   });
-  console.log(response);
 };

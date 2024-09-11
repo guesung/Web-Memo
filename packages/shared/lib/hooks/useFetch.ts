@@ -18,7 +18,7 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
       const data = await fetchFn();
       setData(data);
     } catch (e) {
-      setError(e instanceof Error ? e : new Error(I18n.get('error_common')));
+      setError(e instanceof Error ? e : new Error(I18n.get('toast_error_common')));
     } finally {
       setIsLoading(false);
     }

@@ -14,6 +14,9 @@
   "number": {
     "message": "번호"
   },
+  "reset": {
+    "message": "초기화"
+  },
   "title": {
     "message": "제목"
   },
@@ -23,7 +26,7 @@
   "delete": {
     "message": "삭제"
   },
-  "question_delete": {
+  "modal_modal_question_delete": {
     "message": "데이터를 정말로 초기화 하시겠습니까?"
   },
   "select_language": {
@@ -32,10 +35,22 @@
   "reset_option": {
     "message": "설정 및 데이터 초기화"
   },
-  "save_option": {
+  "toast_save_option": {
     "message": "설정을 저장하였습니다."
   },
-  "error_common": {
+  "toast_error_common": {
     "message": "에러가 발생하였습니다."
+  },
+  "toast_saved": {
+    "message": "저장되었습니다."
+  },
+  "error_get_page_content": {
+    "message": "페이지 컨텐츠를 가져오는데 실패했습니다."
+  },
+  "error_get_summary": {
+    "message": "요약을 가져오는데 실패했습니다."
+  },
+  "error_get_storage": {
+    "message": "스토리지 데이터를 가져오는데 실패했습니다."
   }
 }

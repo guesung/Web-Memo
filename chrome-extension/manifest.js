@@ -22,7 +22,7 @@ const manifest = deepmerge(
      * if you want to support multiple languages, you can use the following reference
      * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Internationalization
      */
-    name: 'Page Memos',
+    name: 'Web Memo',
     default_locale: 'ko',
     version: packageJson.version,
     permissions: ['sidePanel', 'storage', 'tabs'],
@@ -67,6 +67,11 @@ const manifest = deepmerge(
       _execute_action: {
         suggested_key: 'Alt+S',
       },
+    },
+    key: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAob5nrfpKAihURRka74OiALrnMN9aHytr7Ik7vGzbtoVrc6xecQYj+fw1qHfax0gwQi4bql0/Ah3Zb2u7zPmPPvoPStgittQUgg5IVxJIij1cIbRgY+MvQh3z3YU27lA4zANOauhb7Q8Z9ocDr9OoZqX0rBMk9zXSk/UlgDZhRkMuyG8R1DSVUe0qFSIwKFQFMDWp1VmgMR8p9htrhGoOE8kIPxUxKHiVOHw2Dd+u5jASk462HcS7OptLpfAIZsgk/enj0LumPzjANu062ZUBbTUHUzWUL9540UTI6slfuvcjwRKLAtOpg8FN3yaNvCZKOO5Ot9Qy23zZ4LoItHt+TwIDAQAB',
+    oauth2: {
+      client_id: '541718063018-a1lnta8dlg6ovqse6kgii4kblvbqd4lo.apps.googleusercontent.com',
+      scopes: ['https://www.googleapis.com/auth/contacts.readonly'],
     },
   },
   !isFirefox && sidePanelConfig,

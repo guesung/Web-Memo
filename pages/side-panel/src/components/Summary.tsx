@@ -6,10 +6,8 @@ export default function Summary() {
   const { summary } = useSummaryContext();
 
   return (
-    <>
-      <Markdown remarkPlugins={[remarkGfm]} className="markdown">
-        {summary}
-      </Markdown>
-    </>
+    <Markdown remarkPlugins={[remarkGfm]} className="markdown">
+      {summary}
+    </Markdown>
   );
 }

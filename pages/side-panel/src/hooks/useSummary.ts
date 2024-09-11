@@ -1,4 +1,4 @@
-import { BRIDGE_TYPE_SUMMARY, requestPageContent, Runtime, useFetch } from '@extension/shared';
+import { BRIDGE_TYPE_SUMMARY, I18n, requestPageContent, Runtime, useFetch } from '@extension/shared';
 import { useState } from 'react';
 
 export default function useSummary() {
@@ -10,7 +10,8 @@ export default function useSummary() {
     try {
       pageContent = await requestPageContent();
     } catch (e) {
-      throw new Error('페이지 컨텐츠를 가져오는데 실패했습니다.');
+      setSummary(I18n.get('error_get_page_content'));
+      return;
     }
     try {
       await Runtime.connect(
@@ -19,7 +20,7 @@ export default function useSummary() {
         (message: string) => message && setSummary(prev => prev + message),
       );
     } catch (e) {
-      throw new Error('요약을 가져오는데 실패했습니다.');
+      setSummary(I18n.get('error_get_summary'));
     }
   };
 

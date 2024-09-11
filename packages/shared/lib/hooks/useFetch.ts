@@ -6,11 +6,11 @@ interface UseFetchProps<TData> {
   defaultValue?: TData;
 }
 
-type StatusType = 'pending' | 'success' | 'rejected';
+type StatusType = 'loading' | 'success' | 'rejected';
 
 export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps<TData>) {
   const [data, setData] = useState<TData | undefined>(defaultValue);
-  const [status, setStatus] = useState<StatusType>('pending');
+  const [status, setStatus] = useState<StatusType>('loading');
   const [error, setError] = useState<Error | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -49,5 +49,5 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
   }, [fetch]);
 
   if (status === 'rejected' && error) throw error;
-  return { data, error, refetch: fetch, status, isLoading: status === 'pending' };
+  return { data, error, refetch: fetch, status, isLoading: status === 'loading' };
 }

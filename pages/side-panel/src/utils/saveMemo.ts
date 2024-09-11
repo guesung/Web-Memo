@@ -27,4 +27,5 @@ export const saveMemoNotion = async (memo: string) => {
     method: 'POST',
     body: JSON.stringify(memoData),
   });
+  return response;
 };

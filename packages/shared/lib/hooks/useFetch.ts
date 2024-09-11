@@ -1,10 +1,10 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import useDidMount from './useDidMount';
 import { I18n } from '../bridge/shared';
 
 interface UseFetchProps<TData> {
   fetchFn: () => Promise<TData> | TData;
-  defaultValue?: TData | undefined;
+  defaultValue?: TData;
 }
 
 type StatusType = 'pending' | 'success' | 'rejected';
@@ -14,18 +14,39 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
   const [status, setStatus] = useState<StatusType>('pending');
   const [error, setError] = useState<Error | null>(null);
 
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const fetch = useCallback(async () => {
+    if (abortControllerRef.current) {
+      // 이미 동일한 요청이 있다면 취소한다
+      abortControllerRef.current.abort();
+    }
+
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
     try {
       const data = await fetchFn();
-      setData(data);
-      setStatus('success');
+      if (!abortController.signal.aborted) {
+        setData(data);
+        setStatus('success');
+      }
     } catch (e) {
-      setStatus('rejected');
-      setError(e instanceof Error ? e : new Error(I18n.get('toast_error_common')));
+      if (!abortController.signal.aborted) {
+        setStatus('rejected');
+        setError(e instanceof Error ? e : new Error(I18n.get('toast_error_common')));
+      }
+    } finally {
+      abortControllerRef.current = null;
     }
   }, [fetchFn]);
 
-  useDidMount(fetch);
+  useEffect(() => {
+    fetch();
+
+    return () => {
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+    };
+  }, [fetch]);
 
   if (status === 'rejected' && error) throw error;
   return { data, error, refetch: fetch, status, isLoading: status === 'pending' };

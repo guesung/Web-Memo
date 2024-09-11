@@ -8,14 +8,14 @@
     "dev": {
       "dependsOn": ["ready"],
       "outputs": ["dist/**", "build/**"],
-      "env": ["__FIREFOX__", "VITE_MAKE_WEBHOOK_NOTION_API"],
+      "env": ["__FIREFOX__", "VITE_MAKE_WEBHOOK_NOTION_API", "VITE_OPENAI_API_KEY"],
       "persistent": true,
       "inputs": [".env"]
     },
     "build": {
       "dependsOn": ["^build", "ready"],
-      "env": ["__FIREFOX__", "VITE_MAKE_WEBHOOK_NOTION_API"],
-      "outputs": ["../../dist/**", "dist/**", "build/**"],
+      "env": ["__FIREFOX__", "VITE_MAKE_WEBHOOK_NOTION_API", "VITE_OPENAI_API_KEY"],
+      "outputs": ["dist/**", "build/**"],
       "inputs": [".env"]
     },
     "zip": {

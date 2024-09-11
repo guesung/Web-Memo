@@ -23,7 +23,7 @@ const manifest = deepmerge(
      * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Internationalization
      */
     name: 'Web Memo',
-    default_locale: 'ko',
+    default_locale: 'en',
     version: packageJson.version,
     permissions: ['sidePanel', 'storage', 'tabs'],
     host_permissions: ['<all_urls>'],

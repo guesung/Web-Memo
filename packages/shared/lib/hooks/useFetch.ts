@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import useDidMount from './useDidMount';
 import { I18n } from '../bridge/shared';
 
 interface UseFetchProps<TData> {
@@ -38,7 +37,8 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
     } finally {
       abortControllerRef.current = null;
     }
-  }, [fetchFn]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     fetch();

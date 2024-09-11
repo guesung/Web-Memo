@@ -24,12 +24,12 @@ export default function useSummary() {
     }
   };
 
-  const { status, refetch: refetchSummary } = useFetch({
+  const { isLoading, refetch: refetchSummary } = useFetch({
     fetchFn: startSummary,
   });
 
   return {
-    isSummaryLoading: status,
+    isSummaryLoading: isLoading,
     summary,
     refetchSummary,
   };

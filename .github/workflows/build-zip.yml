@@ -1,13 +1,11 @@
-name: Build And Upload Extension Zip Via Artifact
+name: Build And Upload Extension Zip
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
+    branches: [ master ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -18,10 +16,14 @@ jobs:
           node-version-file: '.nvmrc'
           cache: pnpm
 
-      - run: pnpm install --frozen-lockfile --prefer-offline
-
-      - run: pnpm build
-
+      - run: |
+          pnpm install --frozen-lockfile --prefer-offline
+          echo VITE_OPENAI_API_KEY=${{ secrets.VITE_OPENAI_API_KEY }} >> chrome-extension/.env
+          echo VITE_MAKE_WEBHOOK_NOTION_API=${{ secrets.VITE_MAKE_WEBHOOK_NOTION_API }} >> pages/side-panel/.env
+          pnpm build
       - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         with:
+          name: page-memo-zip
           path: dist/*
+          if-no-files-found: error

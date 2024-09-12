@@ -17,7 +17,7 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
 
   const fetch = useCallback(async () => {
     if (abortControllerRef.current) {
-      // 이미 동일한 요청이 있다면 취소한다
+      // NOTE: 이미 동일한 요청이 있다면 취소한다
       abortControllerRef.current.abort();
     }
 

@@ -34,10 +34,6 @@
     "prettier": {
       "cache": false
     },
-    "test": {
-      "dependsOn": ["^test", "^build"],
-      "cache": false
-    },
     "clean": {
       "cache": false
     }

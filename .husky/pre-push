@@ -5,7 +5,7 @@ FORBIDDEN_REF="refs/heads/master"
 
 if read local_ref local_sha remote_ref remote_sha
 then
-  if [ "$remote_ref" == "$FORBIDDEN_REF" ]
+  if [ "$remote_ref" = "$FORBIDDEN_REF" ]
   then
       echo "master브랜치로 직접 push하면 안됩니다."
       exit 1

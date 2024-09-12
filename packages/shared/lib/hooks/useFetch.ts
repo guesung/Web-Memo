@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { I18n } from '../bridge/shared';
 
 interface UseFetchProps<TData> {
-  fetchFn: () => Promise<TData> | TData;
+  fetchFn: () => Promise<TData>;
   defaultValue?: TData;
 }
 
@@ -37,7 +37,6 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
     } finally {
       abortControllerRef.current = null;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

@@ -1,7 +1,4 @@
 import * as Sentry from '@sentry/react';
-import fs from 'node:fs';
-
-const packageJson = JSON.parse(fs.readFileSync('../../../../package.json', 'utf8'));
 
 export const initSentry = () => {
   Sentry.init({
@@ -15,6 +12,6 @@ export const initSentry = () => {
     tracesSampleRate: 1.0,
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
-    release: packageJson.version,
+    release: 0.3.1,
   });
 };

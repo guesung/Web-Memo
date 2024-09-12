@@ -6,7 +6,7 @@ interface UseFetchProps<TData> {
   defaultValue?: TData;
 }
 
-type StatusType = 'loading' | 'success' | 'rejected';
+type StatusType = 'loading' | 'success' | 'rejected' | 'aborted';
 
 export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps<TData>) {
   const [data, setData] = useState<TData | undefined>(defaultValue);
@@ -25,15 +25,20 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
     abortControllerRef.current = abortController;
     try {
       const data = await fetchFn();
-      if (!abortController.signal.aborted) {
-        setData(data);
-        setStatus('success');
+      if (abortController.signal.aborted) {
+        setStatus('aborted');
+        return;
       }
+
+      setData(data);
+      setStatus('success');
     } catch (e) {
-      if (!abortController.signal.aborted) {
-        setStatus('rejected');
-        setError(e instanceof Error ? e : new Error(I18n.get('toast_error_common')));
+      if (abortController.signal.aborted) {
+        setStatus('aborted');
+        return;
       }
+      setStatus('rejected');
+      setError(e instanceof Error ? e : new Error(I18n.get('toast_error_common')));
     } finally {
       abortControllerRef.current = null;
     }

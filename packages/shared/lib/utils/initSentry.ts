@@ -12,6 +12,6 @@ export const initSentry = () => {
     tracesSampleRate: 1.0,
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
-    release: 0.3.1,
+    release: '0.3.1',
   });
 };

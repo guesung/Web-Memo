@@ -37,7 +37,7 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
     } finally {
       abortControllerRef.current = null;
     }
-  }, []);
+  }, [fetchFn]);
 
   useEffect(() => {
     fetch();

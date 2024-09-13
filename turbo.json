@@ -8,13 +8,25 @@
     "dev": {
       "dependsOn": ["ready"],
       "outputs": ["dist/**", "build/**"],
-      "env": ["__FIREFOX__", "VITE_MAKE_WEBHOOK_NOTION_API", "VITE_OPENAI_API_KEY"],
+      "env": [
+        "__FIREFOX__",
+        "VITE_MAKE_WEBHOOK_NOTION_API",
+        "VITE_OPENAI_API_KEY",
+        "VITE_SENTRY_AUTH_TOKEN",
+        "VITE_SENTRY_DSN"
+      ],
       "persistent": true,
       "inputs": [".env"]
     },
     "build": {
       "dependsOn": ["^build", "ready"],
-      "env": ["__FIREFOX__", "VITE_MAKE_WEBHOOK_NOTION_API", "VITE_OPENAI_API_KEY"],
+      "env": [
+        "__FIREFOX__",
+        "VITE_MAKE_WEBHOOK_NOTION_API",
+        "VITE_OPENAI_API_KEY",
+        "VITE_SENTRY_AUTH_TOKEN",
+        "VITE_SENTRY_DSN"
+      ],
       "outputs": ["dist/**", "build/**"],
       "inputs": [".env"]
     },

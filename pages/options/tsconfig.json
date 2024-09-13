@@ -6,8 +6,7 @@
       "@src/*": ["src/*"]
     },
     "jsx": "react-jsx",
-    "types": ["chrome"],
-    "module": "ES2022"
+    "types": ["chrome"]
   },
   "include": ["src", "./vite-env.d.ts"]
 }

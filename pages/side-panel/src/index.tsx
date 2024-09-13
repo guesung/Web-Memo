@@ -1,11 +1,11 @@
-/* eslint-disable import/namespace */
 import { initSentry } from '@extension/shared';
 import '@extension/ui/dist/global.css';
 
 import '@src/index.css';
 import SidePanel from '@src/SidePanel';
 import { createRoot } from 'react-dom/client';
-initSentry();
+
+initSentry(import.meta.env.VITE_SENTRY_DSN);
 
 function init() {
   const appContainer = document.querySelector('#app-container');

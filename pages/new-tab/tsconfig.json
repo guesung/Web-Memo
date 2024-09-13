@@ -6,7 +6,8 @@
       "@src/*": ["src/*"]
     },
     "jsx": "react-jsx",
-    "types": ["chrome"]
+    "types": ["chrome"],
+    "module": "ES2020"
   },
-  "include": ["src", "../../packages/shared/lib/utils/backupMemo.ts", "../../packages/shared/lib/utils/loadMemo.ts"]
+  "include": ["src", "./vite-env.d.ts"]
 }

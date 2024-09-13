@@ -1,9 +1,9 @@
 /* eslint-disable import/namespace */
 import * as Sentry from '@sentry/react';
 
-export const initSentry = () => {
+export const initSentry = (sentryDsn: string) => {
   Sentry.init({
-    dsn: 'https://5cfab1c4baa24c2f83d8a875d7ea36c9@o4505677778976768.ingest.us.sentry.io/4507931952807936',
+    dsn: sentryDsn,
     integrations: [
       Sentry.browserTracingIntegration(),
       Sentry.replayIntegration(),

@@ -20,6 +20,11 @@ jobs:
           pnpm install --frozen-lockfile --prefer-offline
           echo VITE_OPENAI_API_KEY=${{ secrets.VITE_OPENAI_API_KEY }} >> chrome-extension/.env
           echo VITE_MAKE_WEBHOOK_NOTION_API=${{ secrets.VITE_MAKE_WEBHOOK_NOTION_API }} >> pages/side-panel/.env
+          
+          echo VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }} VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }} >> pages/side-panel/.env
+          echo VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }} VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }} >> pages/new-tab/.env
+          echo VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }} VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }} >> pages/options/.env
+          
           pnpm build
       - uses: actions/upload-artifact@v4
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'

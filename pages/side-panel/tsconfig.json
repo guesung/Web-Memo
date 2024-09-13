@@ -1,7 +1,6 @@
 {
   "extends": "@extension/tsconfig/base",
   "compilerOptions": {
-    "module": "ES2020",
     "baseUrl": ".",
     "paths": {
       "@src/*": ["src/*"],

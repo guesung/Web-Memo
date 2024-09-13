@@ -28,12 +28,14 @@
   },
   "type": "module",
   "dependencies": {
+    "@sentry/react": "^8.30.0",
     "openai": "^4.57.0",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.268",
+    "@sentry/vite-plugin": "^2.22.4",
     "@types/node": "^20.14.10",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
@@ -52,6 +54,7 @@
     "eslint-plugin-react-hooks": "4.6.2",
     "husky": "^9.1.5",
     "lint-staged": "^15.2.7",
+    "overlay-kit": "^1.4.1",
     "postcss": "^8.4.38",
     "prettier": "^3.3.3",
     "rimraf": "^6.0.1",
@@ -60,8 +63,7 @@
     "tslib": "^2.6.3",
     "turbo": "^2.1.1",
     "typescript": "5.5.3",
-    "vite": "5.3.3",
-    "overlay-kit": "^1.4.1"
+    "vite": "5.3.3"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

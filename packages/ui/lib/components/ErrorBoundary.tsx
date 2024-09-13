@@ -1,6 +1,7 @@
 import type { ComponentType, ErrorInfo, PropsWithChildren } from 'react';
 import { Component, createElement } from 'react';
 import ErrorFallback from './ErrorFallback';
+import * as Sentry from '@sentry/react';
 
 export interface FallbackComponentProps {
   error: Error;
@@ -28,7 +29,8 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // TODO : log error
+    // eslint-disable-next-line import/namespace
+    Sentry.captureException(error);
     console.error(error, errorInfo);
   }
 

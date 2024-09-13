@@ -5,4 +5,4 @@ export * from './backupMemo';
 export * from './loadMemo';
 export * from './initSentry';
 export * from './testSentry';
-export * from './isProduction';
+export * from './getIsProduction';

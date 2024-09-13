@@ -1,7 +1,9 @@
 /* eslint-disable import/namespace */
 import * as Sentry from '@sentry/react';
+import { getIsProduction } from './getIsProduction';
 
-export const initSentry = (sentryDsn: string) => {
+export const initSentry = async (sentryDsn: string) => {
+  const isProduction = await getIsProduction();
   Sentry.init({
     dsn: sentryDsn,
     integrations: [
@@ -10,7 +12,7 @@ export const initSentry = (sentryDsn: string) => {
       Sentry.browserProfilingIntegration(),
     ],
 
-    tracesSampleRate: 1.0,
+    tracesSampleRate: isProduction ? 1.0 : 0,
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
     release: '0.3.1',

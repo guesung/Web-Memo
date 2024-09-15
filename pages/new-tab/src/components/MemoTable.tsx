@@ -39,7 +39,12 @@ export default function MemoTable() {
             <tr key={memo.url} className="hover">
               <th className="text-center">{index + 1}</th>
               <td>
-                <a href={memo.url} target="_blank" rel="noreferrer" className="tooltip text-start" data-tip={memo.url}>
+                <a
+                  href={memo.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="tooltip line-clamp-2 text-start max-w-[18rem]"
+                  data-tip={memo.url}>
                   {memo.title}
                 </a>
               </td>

@@ -50,7 +50,8 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
     return () => {
       if (abortControllerRef.current) abortControllerRef.current.abort();
     };
-  }, [fetch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (status === 'rejected' && error) throw error;
   return { data, error, refetch: fetch, status, isLoading: status === 'loading' };

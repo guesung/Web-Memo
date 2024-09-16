@@ -254,9 +254,6 @@ importers:
       '@extension/ui':
         specifier: workspace:*
         version: link:../ui
-      '@supabase/ssr':
-        specifier: ^0.5.1
-        version: 0.5.1(@supabase/supabase-js@2.45.4)
       '@types/node':
         specifier: 22.5.2
         version: 22.5.2
@@ -1796,15 +1793,6 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@supabase/ssr@0.5.1(@supabase/supabase-js@2.45.4):
-    resolution: {integrity: sha512-+G94H/GZG0nErZ3FQV9yJmsC5Rj7dmcfCAwOt37hxeR1La+QTl8cE9whzYwPUrTJjMLGNXoO+1BMvVxwBAbz4g==}
-    peerDependencies:
-      '@supabase/supabase-js': ^2.43.4
-    dependencies:
-      '@supabase/supabase-js': 2.45.4
-      cookie: 0.6.0
-    dev: false
-
   /@supabase/storage-js@2.7.0:
     resolution: {integrity: sha512-iZenEdO6Mx9iTR6T7wC7sk6KKsoDPLq8rdu5VRy7+JiT1i8fnqfcOr6mfF2Eaqky9VQzhP8zZKQYjzozB65Rig==}
     dependencies:
@@ -3084,11 +3072,6 @@ packages:
 
   /convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
-
-  /cookie@0.6.0:
-    resolution: {integrity: sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==}
-    engines: {node: '>= 0.6'}
-    dev: false
 
   /cosmiconfig@8.3.6(typescript@5.5.3):
     resolution: {integrity: sha512-kcZ6+W5QzcJ3P1Mt+83OUv/oHFqZHIx8DuxG6eZ5RGMERoLqp4BuGjhHLYGK+Kf5XVkQvqBSmAy/nGWN3qDgEA==}

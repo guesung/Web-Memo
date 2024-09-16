@@ -242,6 +242,15 @@ importers:
 
   packages/web:
     dependencies:
+      '@extension/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@extension/storage':
+        specifier: workspace:*
+        version: link:../storage
+      '@extension/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@types/node':
         specifier: 22.5.2
         version: 22.5.2
@@ -278,6 +287,16 @@ importers:
       typescript:
         specifier: 5.5.4
         version: 5.5.4
+    devDependencies:
+      '@extension/tailwindcss-config':
+        specifier: workspace:*
+        version: link:../tailwind-config
+      '@extension/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@tailwindcss/typography':
+        specifier: ^0.5.14
+        version: 0.5.14(tailwindcss@3.4.10)
 
   packages/zipper:
     devDependencies:

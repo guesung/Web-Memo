@@ -1,10 +1,10 @@
 import type { UserResponse } from '@supabase/supabase-js';
-import { authToken } from 'lib/constants';
+import { authToken } from '../../lib/constants';
 
 export const getUser = async () => {
   const cookie = await chrome.cookies.get({
     name: authToken,
-    url: 'http://localhost:3000',
+    url: process.env.WEB_URL!,
   });
   if (!cookie) return;
 

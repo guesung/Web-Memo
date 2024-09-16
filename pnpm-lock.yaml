@@ -197,6 +197,9 @@ importers:
       '@extension/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
 
   packages/storage:
     devDependencies:

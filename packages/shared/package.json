@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@extension/storage": "workspace:*",
-    "@extension/tsconfig": "workspace:*"
+    "@extension/tsconfig": "workspace:*",
+    "dotenv": "^16.4.5"
   }
 }

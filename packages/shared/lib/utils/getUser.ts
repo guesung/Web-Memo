@@ -1,5 +1,5 @@
-import { UserResponse } from '@supabase/supabase-js';
-import { authToken } from '../constants/supabase';
+import type { UserResponse } from '@supabase/supabase-js';
+import { authToken } from 'lib/constants';
 
 export const getUser = async () => {
   const cookie = await chrome.cookies.get({

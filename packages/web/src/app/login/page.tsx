@@ -1,15 +1,12 @@
 'use client';
 
-import { signInOAuth } from '@src/utils';
+import LoginSection from './LoginSection';
 
 export default function page() {
-  const handleLogin = async () => {
-    signInOAuth('google');
-  };
-
   return (
-    <button className="btn" onClick={handleLogin}>
-      구글 로그인
-    </button>
+    <main className="bg-base-100 flex flex-col items-center">
+      <div>소셜 로그인</div>
+      <LoginSection />
+    </main>
   );
 }

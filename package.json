@@ -37,7 +37,7 @@
     "@types/chrome": "^0.0.268",
     "@sentry/vite-plugin": "^2.22.4",
     "@types/node": "^20.14.10",
-    "@types/react": "^18.3.5",
+    "@types/react": "^18.3.6",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",

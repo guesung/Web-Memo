@@ -1,4 +1,4 @@
-import { Runtime, Tab } from './shared';
+import { Runtime, SidePanel, Tab } from './shared';
 
 export const BRIDGE_TYPE_OPEN_SIDE_PANEL = 'open-side-panel';
 
@@ -13,6 +13,6 @@ export const requestOpenSidePanel = () => Runtime.sendMessage(BRIDGE_TYPE_OPEN_S
 export const responseOpenSidePanel = async () => {
   await Runtime.onMessage(BRIDGE_TYPE_OPEN_SIDE_PANEL, async () => {
     const tab = await Tab.get();
-    await chrome.sidePanel.open({ tabId: tab.id, windowId: tab.windowId });
+    SidePanel.open(tab.id, tab.windowId);
   });
 };

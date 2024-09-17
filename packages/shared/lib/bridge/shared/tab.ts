@@ -6,6 +6,7 @@ export class Tab {
     const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
     return tab;
   }
+
   static async sendMessage<TPayload>(type: BridgeType, payload?: TPayload) {
     const tab = await this.get();
     if (!tab.id) throw new Error('Tab not found');
@@ -13,7 +14,7 @@ export class Tab {
       type,
       payload,
     });
-    if (!message) throw new Error('Message not found');
+    if (!message) throw new Error('Messㄴage not found');
     return message;
   }
 }

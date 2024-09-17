@@ -1,3 +1,4 @@
+export const keyToUrl = (key: string) => decodeURIComponent(key);
 export const urlToKey = (url?: string) => {
   if (!url) return '';
 

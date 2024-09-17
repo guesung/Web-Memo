@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
-import { getUserFromCookie } from './getUserFromCookie';
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../../lib/constants';
+import { getUserFromCookie } from './getSession';
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../../constants';
 
 export const getSupabaseClient = async () => {
   const user = await getUserFromCookie();

@@ -25,7 +25,7 @@ const manifest = deepmerge(
     name: 'Web Memo',
     default_locale: 'en',
     version: packageJson.version,
-    permissions: ['sidePanel', 'storage', 'tabs'],
+    permissions: ['sidePanel', 'storage', 'tabs', 'cookies'],
     host_permissions: ['<all_urls>'],
     options_page: 'options/index.html',
     background: {
@@ -70,8 +70,8 @@ const manifest = deepmerge(
     },
     key: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAob5nrfpKAihURRka74OiALrnMN9aHytr7Ik7vGzbtoVrc6xecQYj+fw1qHfax0gwQi4bql0/Ah3Zb2u7zPmPPvoPStgittQUgg5IVxJIij1cIbRgY+MvQh3z3YU27lA4zANOauhb7Q8Z9ocDr9OoZqX0rBMk9zXSk/UlgDZhRkMuyG8R1DSVUe0qFSIwKFQFMDWp1VmgMR8p9htrhGoOE8kIPxUxKHiVOHw2Dd+u5jASk462HcS7OptLpfAIZsgk/enj0LumPzjANu062ZUBbTUHUzWUL9540UTI6slfuvcjwRKLAtOpg8FN3yaNvCZKOO5Ot9Qy23zZ4LoItHt+TwIDAQAB',
     oauth2: {
-      client_id: '541718063018-a1lnta8dlg6ovqse6kgii4kblvbqd4lo.apps.googleusercontent.com',
-      scopes: ['https://www.googleapis.com/auth/contacts.readonly'],
+      client_id: '541718063018-1or10fljnf26bg8jgd028t509k22ejfi.apps.googleusercontent.com',
+      scopes: ['openid', 'email', 'profile'],
     },
   },
   !isFirefox && sidePanelConfig,

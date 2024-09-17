@@ -1,4 +1,4 @@
-export * from './formatDate';
+export * from './date';
 export * from './extension/initSentry';
 export * from './testSentry';
 export * from './extension/getIsProduction';

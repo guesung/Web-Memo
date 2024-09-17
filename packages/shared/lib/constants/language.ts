@@ -1,4 +1,4 @@
-export const languageObject: Record<string, string> = {
+export const LANGUAGE_MAP: Record<string, string> = {
   ar: 'Arabic',
   am: 'Amharic',
   bg: 'Bulgarian',
@@ -57,7 +57,7 @@ export const languageObject: Record<string, string> = {
 };
 
 interface Language {
-  inEnglish: (typeof languageObject)[keyof typeof languageObject];
+  inEnglish: (typeof LANGUAGE_MAP)[keyof typeof LANGUAGE_MAP];
   inNative: string;
 }
 

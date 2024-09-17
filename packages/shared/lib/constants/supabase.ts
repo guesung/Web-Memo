@@ -1,1 +1,1 @@
-export const authToken = 'sb-czwtqukymcqoberdoltq-auth-token';
+export const SUPABASE_AUTH_TOKEN = 'sb-czwtqukymcqoberdoltq-auth-token';

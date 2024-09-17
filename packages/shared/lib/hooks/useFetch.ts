@@ -1,4 +1,4 @@
-import { I18n } from '../utils';
+import { I18n } from '../utils/extension/module';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface UseFetchProps<TData> {

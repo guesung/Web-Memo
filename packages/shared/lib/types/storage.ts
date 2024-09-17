@@ -1,4 +1,4 @@
-import { STORAGE_TYPE_OPTION_LANGUAGE } from '../utils';
+import { STORAGE_TYPE_OPTION_LANGUAGE } from '../utils/extension/module';
 import { LANGUAGE_LIST } from '../constants';
 
 export type MemoType = {

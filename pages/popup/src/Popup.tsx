@@ -1,6 +1,4 @@
-import { withSuspense } from '@extension/shared';
-
-const Popup = () => {
+export default function Popup() {
   return (
     <header className="px-4 py-2 text-center">
       <p className="text-nowrap text-lg">Web Memo</p>
@@ -12,6 +10,4 @@ const Popup = () => {
       </p>
     </header>
   );
-};
-
-export default withSuspense(Popup, <div> Loading ... </div>);
+}

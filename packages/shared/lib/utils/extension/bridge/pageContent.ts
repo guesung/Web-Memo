@@ -1,4 +1,4 @@
-import { Runtime, Tab } from './shared';
+import { Runtime, Tab } from '../module';
 
 export const BRIDGE_TYPE_PAGE_CONTENT = 'get-page-content';
 

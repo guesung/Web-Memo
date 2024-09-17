@@ -1,4 +1,4 @@
-import { Runtime } from './shared';
+import { Runtime } from '../module';
 
 export const BRIDGE_TYPE_UPDATE_SIDE_PANEL = 'update-side-panel';
 export const requestUpdateSidePanel = () => Runtime.sendMessage(BRIDGE_TYPE_UPDATE_SIDE_PANEL);

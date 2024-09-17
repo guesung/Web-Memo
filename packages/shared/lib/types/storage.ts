@@ -1,4 +1,4 @@
-import { STORAGE_TYPE_OPTION_LANGUAGE } from '../bridge/shared';
+import { STORAGE_TYPE_OPTION_LANGUAGE } from '../utils';
 import { LANGUAGE_LIST } from '../constants';
 
 export type MemoType = {

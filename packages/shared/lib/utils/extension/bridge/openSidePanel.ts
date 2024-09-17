@@ -1,4 +1,4 @@
-import { Runtime, SidePanel, Tab } from './shared';
+import { Runtime, SidePanel, Tab } from '../module';
 
 export const BRIDGE_TYPE_OPEN_SIDE_PANEL = 'open-side-panel';
 

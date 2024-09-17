@@ -1,5 +1,5 @@
+import { I18n } from '../utils';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { I18n } from '../bridge/shared';
 
 interface UseFetchProps<TData> {
   fetchFn: () => Promise<TData>;

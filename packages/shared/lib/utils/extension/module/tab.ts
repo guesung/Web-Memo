@@ -1,4 +1,4 @@
-import { BridgeRequest, BridgeResponse, BridgeType } from '../type';
+import { BridgeRequest, BridgeResponse, BridgeType } from '../bridge/type';
 
 // ref : https://developer.chrome.com/docs/extensions/reference/api/tabs
 export class Tab {

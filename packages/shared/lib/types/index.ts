@@ -1,1 +1,1 @@
-export * from './chromeStorage';
+export * from './storage';

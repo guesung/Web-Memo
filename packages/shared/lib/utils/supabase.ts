@@ -4,6 +4,8 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../../lib/constants';
 
 export const getSupabaseClient = async () => {
   const user = await getUserFromCookie();
+  if (!user) throw new Error('없는 사용자입니다.');
+
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     db: { schema: 'memo' },
     global: {
@@ -12,7 +14,6 @@ export const getSupabaseClient = async () => {
       },
     },
   });
-  await supabase.auth.setSession({ accessToken: user.access_token, refresh_token: user.refresh_token });
   return supabase;
 };
 

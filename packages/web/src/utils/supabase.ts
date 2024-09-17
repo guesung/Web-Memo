@@ -9,7 +9,7 @@ const getSupabaseClient = () => {
         getItem: key => {
           if (isServer) return '';
           return document.cookie.match(new RegExp(`(^| )${key}=([^;]+)`))?.[2] as any;
-          // TODO: any
+          // TODO: any를 구체적인 타입으로 작성한다.
         },
         setItem: (key, value) => {
           document.cookie = `${key}=${value}; path=/; max-age=31536000; SameSite=Strict; Secure`;

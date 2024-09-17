@@ -4,8 +4,9 @@ import '@extension/ui/dist/global.css';
 import '@src/index.css';
 import SidePanel from '@src/SidePanel';
 import { createRoot } from 'react-dom/client';
+import { SENTRY_DSN } from './constants';
 
-initSentry(import.meta.env.VITE_SENTRY_DSN);
+initSentry(SENTRY_DSN);
 
 function init() {
   const appContainer = document.querySelector('#app-container');

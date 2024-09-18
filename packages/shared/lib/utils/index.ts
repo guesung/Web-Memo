@@ -9,3 +9,4 @@ export * from './getIsProduction';
 export * from './isServer';
 export * from './getUserFromCookie';
 export * from './supabase';
+export * from './config';

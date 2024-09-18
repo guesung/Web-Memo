@@ -8,3 +8,4 @@ export * from './testSentry';
 export * from './getIsProduction';
 export * from './isServer';
 export * from './getUserFromCookie';
+export * from './config';

@@ -24,6 +24,7 @@ jobs:
           echo VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }} VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }} >> pages/side-panel/.env
           echo VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }} VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }} >> pages/new-tab/.env
           echo VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }} VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }} >> pages/options/.env
+          echo WEB_URL=${{ secrets.WEB_URL }} >> packages/shared/.env
           
           pnpm build
       - uses: actions/upload-artifact@v4

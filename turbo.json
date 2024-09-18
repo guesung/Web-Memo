@@ -13,7 +13,8 @@
         "VITE_MAKE_WEBHOOK_NOTION_API",
         "VITE_OPENAI_API_KEY",
         "VITE_SENTRY_AUTH_TOKEN",
-        "VITE_SENTRY_DSN"
+        "VITE_SENTRY_DSN",
+        "WEB_URL"
       ],
       "persistent": true,
       "inputs": [".env"]
@@ -25,7 +26,8 @@
         "VITE_MAKE_WEBHOOK_NOTION_API",
         "VITE_OPENAI_API_KEY",
         "VITE_SENTRY_AUTH_TOKEN",
-        "VITE_SENTRY_DSN"
+        "VITE_SENTRY_DSN",
+        "WEB_URL"
       ],
       "outputs": ["dist/**", "build/**"],
       "inputs": [".env"]

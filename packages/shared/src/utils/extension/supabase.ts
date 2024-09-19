@@ -1,12 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
-import { getSession } from './getSession';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../../constants';
+import { getSession } from './getSession';
+import { MemoType } from 'src/types';
 
 export const getSupabaseClient = async () => {
   const user = await getSession();
   if (!user) throw new Error('없는 사용자입니다.');
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     db: { schema: 'memo' },
     global: {
       headers: {
@@ -14,16 +15,22 @@ export const getSupabaseClient = async () => {
       },
     },
   });
-  return supabase;
+  return supabaseClient;
 };
 
 export const getMemo = async () => {
   const supabaseClient = await getSupabaseClient();
-  const response = await supabaseClient.from('memo').select('*');
-  return response;
+  return await supabaseClient.from('memo').select('*');
 };
 
-export const insertMemo = async (memo: string) => {
+interface MemoSupabaseRequest extends Omit<MemoType, 'date'> {}
+
+export const insertMemo = async (memoRequest: MemoSupabaseRequest) => {
   const supabaseClient = await getSupabaseClient();
-  await supabaseClient.from('memo').insert({ memo });
+  return await supabaseClient.from('memo').insert(memoRequest).select();
+};
+
+export const updateMemo = async (memoRequest: MemoSupabaseRequest) => {
+  const supabaseClient = await getSupabaseClient();
+  return await supabaseClient.from('memo').update(memoRequest).eq('url', memoRequest).select();
 };

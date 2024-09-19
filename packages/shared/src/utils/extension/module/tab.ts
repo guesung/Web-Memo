@@ -14,7 +14,7 @@ export class Tab {
       type,
       payload,
     });
-    if (!message) throw new Error('Messㄴage not found');
+    if (!message) throw new Error('Message not found');
     return message;
   }
 }

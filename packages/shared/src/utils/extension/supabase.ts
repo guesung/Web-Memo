@@ -25,7 +25,7 @@ export const getMemo = async () => {
 
 interface MemoSupabaseRequest extends Omit<MemoType, 'date'> {}
 
-export const insertMemo = async (memoRequest: MemoSupabaseRequest) => {
+export const insertMemo = async (memoRequest: MemoSupabaseRequest | MemoSupabaseRequest[]) => {
   const supabaseClient = await getSupabaseClient();
   return await supabaseClient.from('memo').insert(memoRequest).select();
 };
@@ -33,4 +33,9 @@ export const insertMemo = async (memoRequest: MemoSupabaseRequest) => {
 export const updateMemo = async (memoRequest: MemoSupabaseRequest) => {
   const supabaseClient = await getSupabaseClient();
   return await supabaseClient.from('memo').update(memoRequest).eq('url', memoRequest).select();
+};
+
+export const upsertMemo = async (memoRequest: MemoSupabaseRequest | MemoSupabaseRequest[]) => {
+  const supabaseClient = await getSupabaseClient();
+  return await supabaseClient.from('memo').upsert(memoRequest).select();
 };

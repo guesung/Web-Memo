@@ -7,8 +7,8 @@ import {
   formatUrl,
   useDidMount,
   useFetch,
-  useSession,
   useThrottle,
+  getSession,
 } from '@extension/shared';
 import { Toast } from '@extension/ui';
 import { saveMemoStorage, saveMemoSupabase } from '@src/utils';
@@ -26,23 +26,25 @@ export default function Memo() {
     fetchFn: MemoStorage.get,
     defaultValue: {} as MemoStorageType,
   });
+  const { data: sessionData } = useFetch({
+    fetchFn: getSession,
+  });
   const { throttle } = useThrottle();
   const [memo, setMemo] = useState('');
   const [isSaved, setIsSaved] = useState(true);
-  const session = useSession();
 
   useDidMount(() => responseUpdateSidePanel(refetchtab));
   useEffect(() => setMemo(memoList?.[formatUrl(tab?.url)]?.memo ?? ''), [memoList, tab?.url]);
 
   const saveMemoAndRefetchStorage = useCallback(
     async (memo: string) => {
-      if (session) await saveMemoSupabase(memo);
+      if (sessionData) await saveMemoSupabase(memo);
       await saveMemoStorage(memo);
 
       setIsSaved(true);
       await refetchMemo();
     },
-    [refetchMemo, session],
+    [refetchMemo, sessionData],
   );
 
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

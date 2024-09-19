@@ -15,16 +15,14 @@ const sidePanelConfig = {
  * After changing, please reload the extension at `chrome://extensions`
  * @type {chrome.runtime.ManifestV3}
  */
+
 const manifest = deepmerge(
   {
     manifest_version: 3,
-    /**
-     * if you want to support multiple languages, you can use the following reference
-     * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Internationalization
-     */
-    name: 'Web Memo',
-    default_locale: 'en',
+    name: '__MSG_extensionName__',
     version: packageJson.version,
+    description: '__MSG_extensionDescription__',
+    default_locale: 'en',
     permissions: ['sidePanel', 'storage', 'tabs', 'cookies'],
     host_permissions: ['<all_urls>'],
     options_page: 'options/index.html',

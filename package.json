@@ -10,6 +10,7 @@
   "scripts": {
     "clean": "rimraf dist && rimraf .turbo && turbo clean",
     "build": "turbo build",
+    "build:web": "turbo build --filter web",
     "build:firefox": "cross-env __FIREFOX__=true turbo build",
     "zip": "turbo zip",
     "dev-servmer": "pnpm -F hmr ready && pnpm -F hmr dev",
@@ -31,6 +32,7 @@
   "dependencies": {
     "@sentry/react": "^8.30.0",
     "@supabase/supabase-js": "^2.45.4",
+    "next": "14.2.7",
     "openai": "^4.57.0",
     "react": "18.3.1",
     "react-dom": "18.3.1"

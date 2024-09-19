@@ -1,7 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import { SUPABASE_AUTH_TOKEN, WEB_URL } from '../../constants';
 
-export const getUserFromCookie = async () => {
+export const getSession = async () => {
   const cookie = await chrome.cookies.get({
     name: SUPABASE_AUTH_TOKEN,
     url: WEB_URL,

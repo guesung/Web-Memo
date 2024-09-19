@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
-import { getUserFromCookie } from './getSession';
+import { getSession } from './getSession';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../../constants';
 
 export const getSupabaseClient = async () => {
-  const user = await getUserFromCookie();
+  const user = await getSession();
   if (!user) throw new Error('없는 사용자입니다.');
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {

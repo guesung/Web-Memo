@@ -1,4 +1,4 @@
 export const getIsProduction = async () => {
   const self = await chrome.management.getSelf();
-  return self.installType !== 'developement';
+  return self.installType !== 'development';
 };

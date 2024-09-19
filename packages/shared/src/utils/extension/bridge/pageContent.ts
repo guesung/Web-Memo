@@ -1,6 +1,6 @@
 import { Runtime, Tab } from '../module';
 
-export const BRIDGE_TYPE_PAGE_CONTENT = 'get-page-content';
+export const BRIDGE_TYPE_PAGE_CONTENT = 'PAGE_CONTENT';
 
 /**
  * Tab에게 페이지 컨텐츠를 요청한다.

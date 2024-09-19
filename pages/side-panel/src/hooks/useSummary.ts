@@ -1,4 +1,4 @@
-import { BRIDGE_TYPE_SUMMARY, I18n, requestPageContent, Runtime, useFetch } from '@extension/shared';
+import { BRIDGE_TYPE_GET_SUMMARY, I18n, requestPageContent, Runtime, useFetch } from '@extension/shared';
 import { useState } from 'react';
 
 export default function useSummary() {
@@ -15,7 +15,7 @@ export default function useSummary() {
     }
     try {
       await Runtime.connect(
-        BRIDGE_TYPE_SUMMARY,
+        BRIDGE_TYPE_GET_SUMMARY,
         { pageContent },
         (message: string) => message && setSummary(prev => prev + message),
       );

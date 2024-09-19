@@ -1,1 +1,1 @@
-export const BRIDGE_TYPE_SUMMARY = 'get-summary';
+export const BRIDGE_TYPE_GET_SUMMARY = 'BRIDGE_TYPE_GET_SUMMARY';

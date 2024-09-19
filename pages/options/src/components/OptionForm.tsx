@@ -1,4 +1,16 @@
-import { I18n, LANGUAGE_LIST, OptionStorage, Storage, STORAGE_TYPE_OPTION_LANGUAGE, useFetch } from '@extension/shared';
+import {
+  getSession,
+  I18n,
+  insertMemo,
+  LANGUAGE_LIST,
+  MemoStorage,
+  OptionStorage,
+  removeSession,
+  Storage,
+  STORAGE_TYPE_OPTION_LANGUAGE,
+  useFetch,
+  WEB_URL,
+} from '@extension/shared';
 import { Toast } from '@extension/ui';
 import '@src/Options.css';
 import { overlay } from 'overlay-kit';
@@ -7,12 +19,29 @@ import { FormEvent, useEffect, useRef } from 'react';
 export default function OptionForm() {
   const languageRef = useRef<HTMLSelectElement>(null);
   const { data } = useFetch({ fetchFn: OptionStorage.get, defaultValue: '' });
+  const { data: sessionData, refetch: refetchSessionData } = useFetch({
+    fetchFn: getSession,
+  });
 
   const handleResetClick = async () => {
     const response = confirm(I18n.get('modal_modal_question_delete'));
     if (!response) return;
 
     await chrome.storage.sync.clear();
+  };
+
+  const handleLogoutClick = async () => {
+    await removeSession();
+    await refetchSessionData();
+  };
+
+  const handleMigrateClick = async () => {
+    const memoList = await MemoStorage.get();
+    const newMemoList = Object.values(memoList).map(memo => {
+      const { date, ...props } = memo;
+      return props;
+    });
+    await insertMemo(newMemoList);
   };
 
   const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -33,9 +62,7 @@ export default function OptionForm() {
       <table className="table">
         <tbody>
           <tr>
-            <th>
-              <button className="button">{I18n.get('select_language')}</button>
-            </th>
+            <th>{I18n.get('select_language')}</th>
             <th>
               <select className="select select-bordered w-full max-w-xs" ref={languageRef}>
                 {LANGUAGE_LIST.map(({ inEnglish, inNative }) => (
@@ -47,13 +74,37 @@ export default function OptionForm() {
             </th>
           </tr>
           <tr>
-            <th>
-              <button className="button ">{I18n.get('reset_option')}</button>
-            </th>
+            <th>{I18n.get('reset_option')}</th>
             <th>
               <button className="btn btn-outline btn-warning" onClick={handleResetClick} type="button">
                 {I18n.get('reset')}
               </button>
+            </th>
+          </tr>
+          <tr>
+            <th>데이터 보존</th>
+            <th>
+              {sessionData ? (
+                <button className="btn" onClick={handleLogoutClick}>
+                  로그아웃
+                </button>
+              ) : (
+                <a className="btn btn-outline" type="button" href={`${WEB_URL}/login`} target="_blank" rel="noreferrer">
+                  로그인
+                </a>
+              )}
+            </th>
+          </tr>
+          <tr>
+            <th>브라우저 저장소에서 전역 저장소로 마이그레이션</th>
+            <th>
+              {sessionData ? (
+                <button className="btn" onClick={handleMigrateClick} type="button">
+                  마이그레이션
+                </button>
+              ) : (
+                <span>로그인을 먼저 해주세요.</span>
+              )}
             </th>
           </tr>
         </tbody>

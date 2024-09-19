@@ -1,4 +1,4 @@
-import { formatDate, I18n, MemoStorage, MemoType, urlToKey, useFetch } from '@extension/shared';
+import { formatDate, I18n, MemoStorage, MemoType, formatUrl, useFetch } from '@extension/shared';
 import { Toast } from '@extension/ui';
 import { overlay } from 'overlay-kit';
 
@@ -12,7 +12,7 @@ export default function MemoTable() {
     const answer = confirm('삭제하시겠습니까?');
     if (!answer) return;
 
-    await MemoStorage.remove(urlToKey(url));
+    await MemoStorage.remove(formatUrl(url));
     await refetchMemo();
   };
 

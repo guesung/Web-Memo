@@ -4,7 +4,7 @@ import {
   MemoStorageType,
   responseUpdateSidePanel,
   Tab,
-  urlToKey,
+  formatUrl,
   useDidMount,
   useFetch,
   useSession,
@@ -32,7 +32,7 @@ export default function Memo() {
   const session = useSession();
 
   useDidMount(() => responseUpdateSidePanel(refetchtab));
-  useEffect(() => setMemo(memoList?.[urlToKey(tab?.url)]?.memo ?? ''), [memoList, tab?.url]);
+  useEffect(() => setMemo(memoList?.[formatUrl(tab?.url)]?.memo ?? ''), [memoList, tab?.url]);
 
   const saveMemoAndRefetchStorage = useCallback(
     async (memo: string) => {

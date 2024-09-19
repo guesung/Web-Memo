@@ -1,4 +1,4 @@
-import { updateMemo, MemoStorage, Tab, urlToKey, getMemo, MemoType, insertMemo } from '@extension/shared';
+import { updateMemo, MemoStorage, Tab, formatUrl, getMemo, MemoType, insertMemo } from '@extension/shared';
 import { WEBHOOK_NOTION_API } from '@src/constants';
 
 const getMemoMetaData = async (memo: string): Promise<MemoType> => {
@@ -16,7 +16,7 @@ const getMemoMetaData = async (memo: string): Promise<MemoType> => {
 
 export const saveMemoStorage = async (memo: string) => {
   const memoData = await getMemoMetaData(memo);
-  const urlKey = urlToKey(memoData.url);
+  const urlKey = formatUrl(memoData.url);
 
   await MemoStorage.set(urlKey, memoData);
 };

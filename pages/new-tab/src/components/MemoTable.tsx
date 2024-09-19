@@ -1,4 +1,4 @@
-import { formatDate, I18n, MemoStorage, MemoType, formatUrl, useFetch } from '@extension/shared';
+import { formatDate, formatUrl, getMemo, I18n, MemoStorage, useFetch } from '@extension/shared';
 import { Toast } from '@extension/ui';
 import { overlay } from 'overlay-kit';
 
@@ -6,6 +6,9 @@ export default function MemoTable() {
   const { data: memoStorage, refetch: refetchMemo } = useFetch({
     fetchFn: MemoStorage.get,
     defaultValue: {},
+  });
+  const { data: memoData } = useFetch({
+    fetchFn: getMemo,
   });
 
   const handleDeleteClick = async (url: string) => {
@@ -21,6 +24,7 @@ export default function MemoTable() {
     overlay.open(({ unmount }) => <Toast message="메모를 복사하였습니다." onClose={unmount} />);
   };
 
+  if (!memoData?.data) return;
   return (
     <table className="table max-w-[1000px] shadow-xl mx-auto">
       <thead>
@@ -33,7 +37,7 @@ export default function MemoTable() {
         </tr>
       </thead>
       <tbody>
-        {Object.values(memoStorage as MemoType[])
+        {memoData?.data
           .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
           .map((memo, index) => (
             <tr key={memo.url} className="hover">
@@ -48,7 +52,7 @@ export default function MemoTable() {
                   {memo.title}
                 </a>
               </td>
-              <td className="whitespace-nowrap">{formatDate(new Date(memo.date))}</td>
+              <td className="whitespace-nowrap">{formatDate(new Date(memo.created_at))}</td>
               <td>
                 <button
                   type="button"

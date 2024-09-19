@@ -1,5 +1,4 @@
 export * from './src/hooks';
-export * from './src/hooks/extension';
 export * from './src/types';
 export * from './src/utils';
 export * from './src/utils/extension';

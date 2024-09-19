@@ -1,9 +1,9 @@
-import { isServer } from '@extension/shared';
+import { Database, isServer } from '@extension/shared';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
 import { createClient } from '@supabase/supabase-js';
 
 const getSupabaseClient = () => {
-  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  return createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
       storage: {
         getItem: key => {

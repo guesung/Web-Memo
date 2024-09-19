@@ -1,6 +1,6 @@
 import {
   I18n,
-  languageObject,
+  LANGUAGE_MAP,
   OptionStorage,
   requestUpdateSidePanel,
   Storage,
@@ -14,7 +14,7 @@ import 'webextension-polyfill';
 chrome.runtime.onInstalled.addListener(async () => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
   const language = await Storage.get(STORAGE_TYPE_OPTION_LANGUAGE);
-  if (!language) Storage.set(STORAGE_TYPE_OPTION_LANGUAGE, languageObject[I18n.getUiLanguage()]);
+  if (!language) Storage.set(STORAGE_TYPE_OPTION_LANGUAGE, LANGUAGE_MAP[I18n.getUiLanguage()]);
 });
 
 // chatGPT에게서 메시지를 받아서 다시 전달한다.

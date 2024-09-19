@@ -1,4 +1,4 @@
-import { isServer } from '@extension/shared/lib/utils';
+import { isServer } from '@extension/shared';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
 import { createClient } from '@supabase/supabase-js';
 

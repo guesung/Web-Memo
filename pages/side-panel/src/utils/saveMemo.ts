@@ -1,4 +1,5 @@
 import { MemoStorage, Tab, urlToKey } from '@extension/shared';
+import { WEBHOOK_NOTION_API } from '@src/constants';
 
 const getMemoData = async (memo: string) => {
   const tab = await Tab.get();
@@ -23,7 +24,7 @@ export const saveMemoStorage = async (memo: string) => {
 export const saveMemoNotion = async (memo: string) => {
   const memoData = await getMemoData(memo);
 
-  const response = await fetch(import.meta.env.VITE_MAKE_WEBHOOK_NOTION_API, {
+  const response = await fetch(WEBHOOK_NOTION_API, {
     method: 'POST',
     body: JSON.stringify(memoData),
   });

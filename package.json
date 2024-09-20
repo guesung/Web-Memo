@@ -2,10 +2,12 @@
   "name": "chrome-extension-boilerplate-react-vite",
   "version": "1.0.0",
   "description": "Web Memo - Chrome Extension",
+  "bugs": "https://github.com/guesung/Web-Memo/issues",
+  "homepage": "https://web-memos.vercel.app",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite.git"
+    "url": "https://github.com/guesung/Web-Memo.git"
   },
   "scripts": {
     "clean": "rimraf dist && rimraf .turbo && turbo clean",
@@ -28,6 +30,9 @@
     "update-version:default": "./update_version.sh",
     "package": "pnpm i && pnpm clean && pnpm build && pnpm zip"
   },
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "dependencies": {
     "@sentry/react": "^8.30.0",
@@ -77,5 +82,6 @@
   "packageManager": "pnpm@9.5.0",
   "engines": {
     "node": ">=18.12.0"
-  }
+  },
+  "sideEffects": false
 }

@@ -24,6 +24,7 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
     try {
+      setStatus('loading');
       const data = await fetchFn();
       if (abortController.signal.aborted) {
         setStatus('aborted');

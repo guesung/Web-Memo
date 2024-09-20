@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  # pull_request:
+  #   branches: [ develop, master ]
+  push
+
+jobs:
+  lint:
+    name: check the lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      - run: pnpm lint
+
+  build:
+    name: check the build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      - run: |
+          echo VITE_OPENAI_API_KEY=${{ secrets.VITE_OPENAI_API_KEY }} >> chrome-extension/.env
+          echo VITE_MAKE_WEBHOOK_NOTION_API=${{ secrets.VITE_MAKE_WEBHOOK_NOTION_API }} >> pages/side-panel/.env
+          
+          echo VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }} VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }} >> pages/side-panel/.env
+          echo VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }} VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }} >> pages/new-tab/.env
+          echo VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }} VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }} >> pages/options/.env
+          
+          echo WEB_URL=${{ secrets.WEB_URL }} >> packages/shared/.env
+          
+          echo NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }} >> packages/web/.env
+          echo NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }} >> packages/web/.env
+
+          pnpm build
+    

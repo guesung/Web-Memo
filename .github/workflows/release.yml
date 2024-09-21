@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   release:
-    name: Release pushed tag
+    name: Setting the project
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -38,17 +38,17 @@ jobs:
 
           pnpm build
 
-      - name: zip
+      - name: Zip the build files
         run: pnpm zip
 
-      - name: upload zipped build files
+      - name: Upload zipped file on artifact
         uses: actions/upload-artifact@v4
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         with:
           path: dist-zip/extension.zip
           if-no-files-found: error
 
-      - name: upload zipped build files
+      - name: Upload zipped file on chrome store
         uses: mnao305/chrome-extension-upload@v5.0.0
         with:
           file-path: dist-zip/extension.zip
@@ -57,7 +57,7 @@ jobs:
           client-secret: ${{ secrets.CLIENT_SECRET }}
           refresh-token: ${{ secrets.REFRESH_TOKEN }}
 
-      - name: Create release
+      - name: Update gitHub releases
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}

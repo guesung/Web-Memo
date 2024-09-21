@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   release:
-    name: Setting the project
+    name: Release New Version
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4

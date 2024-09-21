@@ -358,6 +358,9 @@ importers:
       '@extension/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@extension/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@tailwindcss/typography':
         specifier: ^0.5.14
         version: 0.5.14(tailwindcss@3.4.10)

@@ -1,11 +1,12 @@
 /* eslint-disable import/namespace */
 import * as Sentry from '@sentry/react';
 import { getIsProduction } from './getIsProduction';
+import { SENTRY_DSN } from '../../constants';
 
-export const initSentry = async (sentryDsn: string) => {
+export const initSentry = async () => {
   const isProduction = await getIsProduction();
   Sentry.init({
-    dsn: sentryDsn,
+    dsn: SENTRY_DSN,
     integrations: [
       Sentry.browserTracingIntegration(),
       Sentry.replayIntegration(),

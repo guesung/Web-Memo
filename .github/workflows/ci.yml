@@ -28,14 +28,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-      - run: pnpm install --frozen-lockfile --prefer-offline
       - run: |
+          pnpm install --frozen-lockfile --prefer-offline
           echo VITE_OPENAI_API_KEY=${{ secrets.VITE_OPENAI_API_KEY }} >> chrome-extension/.env
           echo VITE_MAKE_WEBHOOK_NOTION_API=${{ secrets.VITE_MAKE_WEBHOOK_NOTION_API }} >> pages/side-panel/.env
           
-          echo VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }} VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }} >> pages/side-panel/.env
-          echo VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }} VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }} >> pages/new-tab/.env
-          echo VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }} VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }} >> pages/options/.env
+          echo SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }} SENTRY_DSN=${{ secrets.SENTRY_DSN }} >> packages/shared/.env
           
           echo WEB_URL=${{ secrets.WEB_URL }} >> packages/shared/.env
           

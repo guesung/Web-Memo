@@ -1,4 +1,4 @@
-name: Create release
+name: Release New Version
 
 on:
   push:
@@ -10,10 +10,53 @@ permissions:
 
 jobs:
   release:
-    name: Release pushed tag
+    name: Release New Version
     runs-on: ubuntu-22.04
     steps:
-      - name: Create release
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: pnpm
+      - name: build
+        run: |
+          pnpm install --frozen-lockfile --prefer-offline
+          echo VITE_OPENAI_API_KEY=${{ secrets.VITE_OPENAI_API_KEY }} >> chrome-extension/.env
+          echo VITE_MAKE_WEBHOOK_NOTION_API=${{ secrets.VITE_MAKE_WEBHOOK_NOTION_API }} >> pages/side-panel/.env
+          
+          echo SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }} >> packages/shared/.env
+          echo SENTRY_DSN=${{ secrets.SENTRY_DSN }} >> packages/shared/.env
+          echo SUPABASE_URL=${{ secrets.SUPABASE_URL }} >> packages/shared/.env
+          echo SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}  >> packages/shared/.env
+          
+          echo WEB_URL=${{ secrets.WEB_URL }} >> packages/shared/.env
+          
+          echo NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }} >> packages/web/.env
+          echo NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }} >> packages/web/.env
+
+          pnpm build
+    
+      - name: Zip the build files
+        run: pnpm zip
+
+      - name: Upload zipped file on artifact
+        uses: actions/upload-artifact@v4
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        with:
+          path: dist-zip/extension.zip
+          if-no-files-found: error
+
+      - name: Upload zipped file on chrome store
+        uses: mnao305/chrome-extension-upload@v5.0.0
+        with:
+          file-path: dist-zip/extension.zip
+          extension-id: eaiojpmgklfngpjddhoalgcpkepgkclh
+          client-id: ${{ secrets.CLIENT_ID }}
+          client-secret: ${{ secrets.CLIENT_SECRET }}
+          refresh-token: ${{ secrets.REFRESH_TOKEN }}
+
+      - name: Update gitHub releases
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}

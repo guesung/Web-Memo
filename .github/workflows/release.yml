@@ -1,4 +1,4 @@
-name: Create release
+name: Release New Version
 
 on:
   push:
@@ -30,6 +30,8 @@ jobs:
           echo VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }} VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }} >> pages/options/.env
           
           echo WEB_URL=${{ secrets.WEB_URL }} >> packages/shared/.env
+          echo WEB_URL=${{ secrets.SUPABASE_URL }} >> packages/shared/.env
+          echo WEB_URL=${{ secrets.SUPABASE_ANON_KEY }} >> packages/shared/.env
           
           echo NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }} >> packages/web/.env
           echo NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }} >> packages/web/.env

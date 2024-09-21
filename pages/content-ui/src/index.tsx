@@ -2,7 +2,7 @@ import { createRoot } from 'react-dom/client';
 // eslint-disable-next-line
 // @ts-ignore
 import tailwindcssOutput from '@src/tailwind-output.css?inline';
-import { responsePageContent } from '@extension/shared';
+import { responseObserverMemoPage, responsePageContent } from '@extension/shared';
 import { MemoTable } from './components';
 
 const initMemoList = () => {
@@ -20,11 +20,10 @@ const initMemoList = () => {
   globalStyleSheet.replaceSync(tailwindcssOutput);
   shadowRoot.adoptedStyleSheets = [globalStyleSheet];
 
-  responsePageContent();
-
   shadowRoot.appendChild(rootIntoShadow);
 
   createRoot(rootIntoShadow).render(<MemoTable />);
 };
 
-initMemoList();
+responsePageContent();
+responseObserverMemoPage(initMemoList);

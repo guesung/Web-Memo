@@ -3,7 +3,8 @@ import { createRoot } from 'react-dom/client';
 // @ts-ignore
 import tailwindcssOutput from '@src/tailwind-output.css?inline';
 import { responsePageContent } from '@extension/shared';
-import { MemoTable } from '@extension/ui/lib/components';
+// TODO : 경로 수정
+import { MemoTable } from '../../../pages/new-tab/src/components';
 
 const memoRoot = document.getElementById('memo');
 

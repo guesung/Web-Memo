@@ -1,5 +1,5 @@
+import { MemoTable } from '@extension/ui';
 import { OverlayProvider } from 'overlay-kit';
-import { MemoTable } from './components';
 
 export default function NewTab() {
   return (

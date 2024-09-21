@@ -1,6 +1,6 @@
 import { formatDate, I18n, MemoStorage, MemoType, urlToKey, useFetch } from '@extension/shared';
-import { Toast } from '@extension/ui';
 import { overlay } from 'overlay-kit';
+import Toast from './Toast';
 
 export default function MemoTable() {
   const { data: memoStorage, refetch: refetchMemo } = useFetch({
@@ -22,7 +22,7 @@ export default function MemoTable() {
   };
 
   return (
-    <table className="table max-w-[1000px] shadow-xl mx-auto">
+    <table className="table max-w-[1000px] shadow-xl mx-auto bg-base-100">
       <thead>
         <tr>
           <th className="text-center">{I18n.get('number')}</th>

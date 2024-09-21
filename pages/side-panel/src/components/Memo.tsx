@@ -1,5 +1,6 @@
 import {
   I18n,
+  isUserPreferDarkMode,
   MemoStorage,
   MemoStorageType,
   responseUpdateSidePanel,
@@ -8,7 +9,9 @@ import {
   useDidMount,
   useFetch,
   useThrottle,
+  WEB_URL,
 } from '@extension/shared';
+import { TopRightArrow } from '../icons';
 import { Toast } from '@extension/ui';
 import { saveMemoStorage } from '@src/utils';
 import { overlay } from 'overlay-kit';
@@ -41,6 +44,10 @@ export default function Memo() {
     [refetchMemo],
   );
 
+  const handleMemoClick = () => {
+    chrome.tabs.create({ url: `${WEB_URL}/memo` });
+  };
+
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMemo(e.target.value);
     if (!OPTION_AUTO_SAVE) return;
@@ -60,6 +67,14 @@ export default function Memo() {
     <form className="form-control h-full" onSubmit={handleFormSubmit}>
       <div className="label">
         <span className="label-text whitespace-nowrap font-bold">{I18n.get('memo')}</span>
+        <span className="w-1" />
+        <TopRightArrow
+          width={20}
+          height={20}
+          fill={isUserPreferDarkMode ? 'black' : 'white'}
+          onClick={handleMemoClick}
+          className="cursor-pointer"
+        />
         <span className="w-4" />
         <span className="label-text truncate w-full text-right">{tab?.title}</span>
       </div>

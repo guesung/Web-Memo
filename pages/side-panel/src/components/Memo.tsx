@@ -61,7 +61,7 @@ export default function Memo() {
       <div className="label">
         <span className="label-text whitespace-nowrap font-bold">{I18n.get('memo')}</span>
         <span className="w-4" />
-        <span className="label-text truncate w-full text-right text-neutral-content">{tab?.title}</span>
+        <span className="label-text truncate w-full text-right">{tab?.title}</span>
       </div>
       <textarea
         className="textarea textarea-bordered h-full resize-none"

@@ -38,7 +38,7 @@
     "@sentry/react": "^8.30.0",
     "@supabase/supabase-js": "^2.45.4",
     "dotenv": "^16.4.5",
-    "next": "14.2.7",
+    "next": "14.2.10",
     "openai": "^4.57.0",
     "react": "18.3.1",
     "react-dom": "18.3.1"
@@ -73,7 +73,7 @@
     "tslib": "^2.6.3",
     "turbo": "^2.1.1",
     "typescript": "5.5.3",
-    "vite": "5.3.3"
+    "vite": "5.3.6"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

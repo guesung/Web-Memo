@@ -3,8 +3,7 @@ import { createRoot } from 'react-dom/client';
 // @ts-ignore
 import tailwindcssOutput from '@src/tailwind-output.css?inline';
 import { responsePageContent } from '@extension/shared';
-// TODO : 경로 수정
-import { MemoTable } from '../../../pages/new-tab/src/components';
+import { MemoTable } from './components';
 
 const memoRoot = document.getElementById('memo');
 
@@ -23,6 +22,5 @@ if (memoRoot) {
 
   shadowRoot.appendChild(rootIntoShadow);
 
-  console.log(1);
   createRoot(rootIntoShadow).render(<MemoTable />);
 }

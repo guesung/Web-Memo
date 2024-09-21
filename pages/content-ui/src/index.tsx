@@ -5,9 +5,11 @@ import tailwindcssOutput from '@src/tailwind-output.css?inline';
 import { responsePageContent } from '@extension/shared';
 import { MemoTable } from './components';
 
-const memoRoot = document.getElementById('memo');
+const initMemoList = () => {
+  const memoRoot = document.getElementById('memo');
 
-if (memoRoot) {
+  if (!memoRoot) return;
+
   document.body.append(memoRoot);
   const rootIntoShadow = document.createElement('div');
   rootIntoShadow.id = 'shadow-memo-root';
@@ -23,4 +25,6 @@ if (memoRoot) {
   shadowRoot.appendChild(rootIntoShadow);
 
   createRoot(rootIntoShadow).render(<MemoTable />);
-}
+};
+
+initMemoList();

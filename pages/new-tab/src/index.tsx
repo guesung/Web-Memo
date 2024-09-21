@@ -4,7 +4,7 @@ import '@extension/ui/lib/global.css';
 import NewTab from '@src/NewTab';
 import { initSentry } from '@extension/shared';
 
-initSentry(import.meta.env.VITE_SENTRY_DSN);
+initSentry();
 
 function init() {
   const appContainer = document.querySelector('#app-container');

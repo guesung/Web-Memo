@@ -31,7 +31,7 @@ export default function Memo() {
   const { throttle } = useThrottle();
   const [isSaved, setIsSaved] = useState(true);
   const memoRef = useRef<HTMLTextAreaElement>(null);
-  const memo = memoRef?.current?.value ?? '';
+  const getMemoValue = useCallback(() => memoRef?.current?.value ?? '', [memoRef]);
 
   useDidMount(() => responseUpdateSidePanel(refetchtab));
   useEffect(() => {
@@ -57,20 +57,20 @@ export default function Memo() {
     if (!OPTION_AUTO_SAVE) return;
     setIsSaved(false);
     throttle(async () => {
-      await saveMemoAndRefetchStorage(memo);
+      await saveMemoAndRefetchStorage(getMemoValue());
     });
   };
 
   const handleTextAreaKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.metaKey && e.key === 's') {
       e.preventDefault();
-      await saveMemoAndRefetchStorage(memo, true);
+      await saveMemoAndRefetchStorage(getMemoValue(), true);
     }
   };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    saveMemoAndRefetchStorage(memo, true);
+    saveMemoAndRefetchStorage(getMemoValue(), true);
   };
 
   return (

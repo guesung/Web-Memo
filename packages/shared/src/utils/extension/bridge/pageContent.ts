@@ -11,7 +11,6 @@ export const requestPageContent = () => Tab.sendMessage(BRIDGE_TYPE_PAGE_CONTENT
  * Tab이 페이지 컨텐츠를 전달한다.
  */
 export const responsePageContent = () => {
-  console.log(1);
   Runtime.onMessage(BRIDGE_TYPE_PAGE_CONTENT, (_, __, sendResponse) => {
     sendResponse(document.body.innerText);
   });

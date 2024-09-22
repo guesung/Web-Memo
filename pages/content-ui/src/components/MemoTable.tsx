@@ -20,7 +20,7 @@ export default function MemoTable() {
   // };
 
   return (
-    <table className="table max-w-[1000px] shadow-xl mx-auto">
+    <table id="memo-table" className="table max-w-[1000px] shadow-xl mx-auto">
       <thead>
         <tr>
           <th className="text-center">{I18n.get('number')}</th>

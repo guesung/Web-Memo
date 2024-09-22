@@ -27,5 +27,6 @@ const initMemoList = () => {
   createRoot(rootIntoShadow).render(<MemoTable />);
 };
 
+initMemoList();
 responsePageContent();
 responseObserverMemoPage(initMemoList);

@@ -41,7 +41,7 @@ export default function MemoTable() {
                   href={memo.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="tooltip line-clamp-2 text-start max-w-[18rem]"
+                  className="line-clamp-2 text-start max-w-[18rem] link-hover"
                   data-tip={memo.url}>
                   {memo.title}
                 </a>

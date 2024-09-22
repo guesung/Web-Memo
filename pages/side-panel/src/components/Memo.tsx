@@ -11,11 +11,11 @@ import {
   useThrottle,
   WEB_URL,
 } from '@extension/shared';
-import { TopRightArrow } from '../icons';
 import { Toast } from '@extension/ui';
 import { saveMemoStorage } from '@src/utils';
 import { overlay } from 'overlay-kit';
 import { useCallback, useEffect, useState } from 'react';
+import { TopRightArrow } from '../icons';
 
 const OPTION_AUTO_SAVE = true;
 
@@ -36,10 +36,11 @@ export default function Memo() {
   useEffect(() => setMemo(memoList?.[urlToKey(tab?.url)]?.memo ?? ''), [memoList, tab?.url]);
 
   const saveMemoAndRefetchStorage = useCallback(
-    async (memo: string) => {
+    async (memo: string, showOverlay = false) => {
       await saveMemoStorage(memo);
       setIsSaved(true);
       await refetchMemo();
+      if (showOverlay) overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
     },
     [refetchMemo],
   );
@@ -57,10 +58,16 @@ export default function Memo() {
     });
   };
 
+  const handleTextAreaKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.metaKey && e.key === 's') {
+      e.preventDefault();
+      await saveMemoAndRefetchStorage(memo, true);
+    }
+  };
+
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    saveMemoAndRefetchStorage(memo);
-    overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
+    saveMemoAndRefetchStorage(memo, true);
   };
 
   return (
@@ -83,6 +90,7 @@ export default function Memo() {
         placeholder="memo"
         value={memo}
         onChange={handleTextAreaChange}
+        onKeyDown={handleTextAreaKeyDown}
       />
       <div className="label">
         {isSaved ? <span /> : <span className="loading loading-ring loading-xs" />}

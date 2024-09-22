@@ -10,7 +10,7 @@ export default function Header() {
   };
 
   return (
-    <div className="absolute right-4 top-4 flex gap-1 items-center">
+    <div className="flex gap-1 items-center float-right mt-4">
       <Refresh
         width="20px"
         height="20px"

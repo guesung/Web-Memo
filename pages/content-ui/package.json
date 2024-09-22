@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@extension/shared": "workspace:*",
+    "@extension/ui": "workspace:*",
     "@tailwindcss/typography": "^0.5.14",
     "@vitejs/plugin-react": "^4.3.1",
     "react-markdown": "^9.0.1",

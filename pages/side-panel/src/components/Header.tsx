@@ -5,7 +5,7 @@ import { useSummaryContext } from './SummaryProvider';
 export default function Header() {
   const { isSummaryLoading, refetchSummary } = useSummaryContext();
 
-  const handleOption = () => {
+  const handleOptionClick = () => {
     chrome.runtime.openOptionsPage();
   };
 
@@ -18,7 +18,7 @@ export default function Header() {
         onRefresh={refetchSummary}
         fill={isUserPreferDarkMode ? 'black' : 'white'}
       />
-      <Option width="24px" height="24px" onOption={handleOption} fill={isUserPreferDarkMode ? 'black' : 'white'} />
+      <Option width="24px" height="24px" onOption={handleOptionClick} fill={isUserPreferDarkMode ? 'black' : 'white'} />
     </div>
   );
 }

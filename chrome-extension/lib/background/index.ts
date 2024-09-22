@@ -2,6 +2,7 @@ import {
   I18n,
   LANGUAGE_MAP,
   OptionStorage,
+  requestObserverMemoPage,
   requestUpdateSidePanel,
   Storage,
   STORAGE_TYPE_OPTION_LANGUAGE,
@@ -40,11 +41,13 @@ chrome.runtime.onConnect.addListener(async port => {
   });
 });
 
-// 활성화된 탭이 변경되었을 때 사이드 패널을 업데이트한다.
 chrome.tabs.onActivated.addListener(async () => {
+  // 활성화된 탭이 변경되었을 때 사이드 패널을 업데이트한다.
   requestUpdateSidePanel();
 });
-// 페이지를 이동했을 때 사이드 패널을 업데이트한다.
 chrome.tabs.onUpdated.addListener(async () => {
+  // 페이지를 이동했을 때 사이드 패널을 업데이트한다.
   requestUpdateSidePanel();
+  // 페이지를 이동했을 때 메모를 보여주는 페이지인지 체크한다.
+  requestObserverMemoPage();
 });

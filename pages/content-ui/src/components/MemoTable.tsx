@@ -1,6 +1,4 @@
 import { formatDate, I18n, MemoStorage, MemoType, urlToKey, useFetch } from '@extension/shared';
-import { Toast } from '@extension/ui';
-import { overlay } from 'overlay-kit';
 
 export default function MemoTable() {
   const { data: memoStorage, refetch: refetchMemo } = useFetch({
@@ -16,13 +14,13 @@ export default function MemoTable() {
     await refetchMemo();
   };
 
-  const handleMemoClick = async (memo: string) => {
-    await navigator.clipboard.writeText(memo);
-    overlay.open(({ unmount }) => <Toast message="메모를 복사하였습니다." onClose={unmount} />);
-  };
+  // const handleMemoClick = async (memo: string) => {
+  //   await navigator.clipboard.writeText(memo);
+  //   overlay.open(({ unmount }) => <Toast message="메모를 복사하였습니다." onClose={unmount} />);
+  // };
 
   return (
-    <table className="table max-w-[1000px] shadow-xl mx-auto">
+    <table id="memo-table" className="table max-w-[1000px] shadow-xl mx-auto">
       <thead>
         <tr>
           <th className="text-center">{I18n.get('number')}</th>
@@ -50,12 +48,7 @@ export default function MemoTable() {
               </td>
               <td className="whitespace-nowrap">{formatDate(new Date(memo.date))}</td>
               <td>
-                <button
-                  type="button"
-                  onClick={() => handleMemoClick(memo.memo)}
-                  className="cursor-copy text-start whitespace-break-spaces">
-                  {memo.memo}
-                </button>
+                <p className="text-start whitespace-break-spaces">{memo.memo}</p>
               </td>
               <td>
                 <button type="button" onClick={() => handleDeleteClick(memo.url)} className="text-center w-full">

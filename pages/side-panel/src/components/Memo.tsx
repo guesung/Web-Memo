@@ -14,7 +14,7 @@ import {
 import { Toast } from '@extension/ui';
 import { saveMemoStorage } from '@src/utils';
 import { overlay } from 'overlay-kit';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { TopRightArrow } from '../icons';
 
 const OPTION_AUTO_SAVE = true;
@@ -29,11 +29,15 @@ export default function Memo() {
     defaultValue: {} as MemoStorageType,
   });
   const { throttle } = useThrottle();
-  const [memo, setMemo] = useState('');
   const [isSaved, setIsSaved] = useState(true);
+  const memoRef = useRef<HTMLTextAreaElement>(null);
+  const memo = memoRef?.current?.value ?? '';
 
   useDidMount(() => responseUpdateSidePanel(refetchtab));
-  useEffect(() => setMemo(memoList?.[urlToKey(tab?.url)]?.memo ?? ''), [memoList, tab?.url]);
+  useEffect(() => {
+    if (!memoRef.current) return;
+    memoRef.current.value = memoList?.[urlToKey(tab?.url)]?.memo ?? '';
+  }, [memoList, tab?.url]);
 
   const saveMemoAndRefetchStorage = useCallback(
     async (memo: string, showOverlay = false) => {
@@ -49,12 +53,11 @@ export default function Memo() {
     chrome.tabs.create({ url: `${WEB_URL}/memo` });
   };
 
-  const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMemo(e.target.value);
+  const handleTextAreaChange = () => {
     if (!OPTION_AUTO_SAVE) return;
     setIsSaved(false);
     throttle(async () => {
-      await saveMemoAndRefetchStorage(e.target.value);
+      await saveMemoAndRefetchStorage(memo);
     });
   };
 
@@ -88,9 +91,9 @@ export default function Memo() {
       <textarea
         className="textarea textarea-bordered h-full resize-none"
         placeholder="memo"
-        value={memo}
         onChange={handleTextAreaChange}
         onKeyDown={handleTextAreaKeyDown}
+        ref={memoRef}
       />
       <div className="label">
         {isSaved ? <span /> : <span className="loading loading-ring loading-xs" />}

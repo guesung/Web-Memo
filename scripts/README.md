@@ -6,7 +6,7 @@
 ### 2. Sonarqube scanner 실행을 위한 전역 변수 설정
 1. `$ vi /etc/profile`
 2. `export SONAR_TOKEN=SONAR_TOKEN` 입력. 
-    - 토큰값은 SonarQube 실행 시, localhost:9000에서 얻을 수 있습ㄴ디ㅏ.
+    - 토큰값은 SonarQube 실행 시, localhost:9000에서 얻을 수 있습니다.
 3. `$ source /etc/profile`
 
 

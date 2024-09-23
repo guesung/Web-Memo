@@ -5,26 +5,33 @@ import tailwindcssOutput from '@src/tailwind-output.css?inline';
 import { responseObserverMemoPage, responsePageContent, WEB_URL } from '@extension/shared';
 import { MemoTable } from './components';
 
-const initMemoList = () => {
-  if (location.href !== `${WEB_URL}/memo`) return;
+interface AttachShadowTree {
+  shadowHost: HTMLElement;
+  shadowTree: JSX.Element;
+}
 
-  const memoRoot = document.getElementById('memo');
-  const memoTable = document.getElementById('memo-table');
-  if (!memoRoot || memoTable) return;
-
-  document.body.append(memoRoot);
-  const rootIntoShadow = document.createElement('div');
-  rootIntoShadow.id = 'shadow-root';
-
-  const shadowRoot = memoRoot.attachShadow({ mode: 'open' });
+const attachShadowTree = ({ shadowHost, shadowTree }: AttachShadowTree) => {
+  const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
 
   const globalStyleSheet = new CSSStyleSheet();
   globalStyleSheet.replaceSync(tailwindcssOutput);
   shadowRoot.adoptedStyleSheets = [globalStyleSheet];
 
-  shadowRoot.appendChild(rootIntoShadow);
+  createRoot(shadowRoot).render(shadowTree);
+};
 
-  createRoot(rootIntoShadow).render(<MemoTable />);
+const initMemoList = () => {
+  if (location.href !== `${WEB_URL}/memo`) return;
+
+  const memoRoot = document.getElementById('memo');
+  const memoTable = document.getElementById('memo-table');
+
+  if (!memoRoot || memoTable) return;
+
+  attachShadowTree({
+    shadowHost: memoRoot,
+    shadowTree: <MemoTable />,
+  });
 };
 
 initMemoList();

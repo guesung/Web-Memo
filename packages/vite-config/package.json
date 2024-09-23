@@ -1,6 +1,6 @@
 {
   "name": "@extension/vite-config",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Vite base configuration",
   "main": "index.mjs",
   "type": "module",

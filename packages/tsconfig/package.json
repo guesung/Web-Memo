@@ -1,6 +1,6 @@
 {
   "name": "@extension/tsconfig",
-  "version": "0.0.1",
+  "version": "1.2.1",
   "description": "tsconfig for chrome extension",
   "private": true
 }

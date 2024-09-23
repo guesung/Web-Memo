@@ -1,4 +1,4 @@
-import Memo from './components/Memo';
+import { Memo } from './components';
 
 export default function Page() {
   return <Memo />;

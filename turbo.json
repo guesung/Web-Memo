@@ -14,7 +14,8 @@
         "VITE_OPENAI_API_KEY",
         "SENTRY_AUTH_TOKEN",
         "SENTRY_DSN",
-        "WEB_URL"
+        "WEB_URL",
+        "NODE_ENV"
       ],
       "persistent": true,
       "inputs": [".env"]
@@ -27,7 +28,8 @@
         "VITE_OPENAI_API_KEY",
         "SENTRY_AUTH_TOKEN",
         "SENTRY_DSN",
-        "WEB_URL"
+        "WEB_URL",
+        "NODE_ENV"
       ],
       "outputs": ["dist/**", "build/**"],
       "inputs": [".env"]

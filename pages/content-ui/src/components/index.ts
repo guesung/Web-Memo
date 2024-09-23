@@ -1,1 +1,1 @@
-export { default as FloatingButton } from './FloatingButton';
+export { default as MemoTable } from './MemoTable';

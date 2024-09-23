@@ -1,8 +1,9 @@
 import {
   BRIDGE_TYPE_OPEN_SIDE_PANEL,
   I18n,
-  languageObject,
+  LANGUAGE_MAP,
   OptionStorage,
+  requestObserverMemoPage,
   requestUpdateSidePanel,
   Storage,
   STORAGE_TYPE_OPTION_LANGUAGE,
@@ -15,7 +16,7 @@ import 'webextension-polyfill';
 chrome.runtime.onInstalled.addListener(async () => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
   const language = await Storage.get(STORAGE_TYPE_OPTION_LANGUAGE);
-  if (!language) Storage.set(STORAGE_TYPE_OPTION_LANGUAGE, languageObject[I18n.getUiLanguage()]);
+  if (!language) Storage.set(STORAGE_TYPE_OPTION_LANGUAGE, LANGUAGE_MAP[I18n.getUiLanguage()]);
 });
 
 // content-ui에서 메시지를 전달받아 사이드 패널을 연다.
@@ -52,11 +53,13 @@ chrome.runtime.onConnect.addListener(async port => {
   });
 });
 
-// 활성화된 탭이 변경되었을 때 사이드 패널을 업데이트한다.
 chrome.tabs.onActivated.addListener(async () => {
+  // 활성화된 탭이 변경되었을 때 사이드 패널을 업데이트한다.
   requestUpdateSidePanel();
 });
-// 페이지를 이동했을 때 사이드 패널을 업데이트한다.
 chrome.tabs.onUpdated.addListener(async () => {
+  // 페이지를 이동했을 때 사이드 패널을 업데이트한다.
   requestUpdateSidePanel();
+  // 페이지를 이동했을 때 메모를 보여주는 페이지인지 체크한다.
+  requestObserverMemoPage();
 });

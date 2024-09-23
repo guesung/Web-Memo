@@ -1,9 +1,8 @@
-import { withSuspense } from '@extension/shared';
 import '@src/Options.css';
 import { OverlayProvider } from 'overlay-kit';
 import { Header, OptionForm } from './components';
 
-const Options = () => {
+export default function Options() {
   return (
     <main className="max-w-[1000px] mx-auto text-start text-base px-8">
       <OverlayProvider>
@@ -12,6 +11,4 @@ const Options = () => {
       </OverlayProvider>
     </main>
   );
-};
-
-export default withSuspense(Options, <div> Loading ... </div>);
+}

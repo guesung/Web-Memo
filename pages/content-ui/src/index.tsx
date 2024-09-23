@@ -3,13 +3,15 @@ import { createRoot } from 'react-dom/client';
 // @ts-ignore
 import tailwindcssOutput from '@src/tailwind-output.css?inline';
 import {
+  isProduction,
   MEMO_TABLE_ID,
   MEMO_TABLE_WRAPPER_ID,
+  OPEN_SIDE_PANEL_ID,
   responseObserverMemoPage,
   responsePageContent,
   WEB_URL,
 } from '@extension/shared';
-import { MemoTable } from './components';
+import { MemoTable, OpenSidePanelButton } from './components';
 
 interface AttachShadowTree {
   shadowTreeWrapper?: HTMLElement;
@@ -34,7 +36,7 @@ const attachShadowTree = ({ shadowTreeWrapper, shadowTree, shadowHostId }: Attac
   return shadowRoot;
 };
 
-const initMemoList = () => {
+const renderMemoList = () => {
   const memoTableWrapper = document.getElementById(MEMO_TABLE_WRAPPER_ID);
   const memoTable = document.getElementById(MEMO_TABLE_ID);
   const isMemoPage = location.href === `${WEB_URL}/memo`;
@@ -48,7 +50,17 @@ const initMemoList = () => {
   }
 };
 
-responseObserverMemoPage(initMemoList);
-initMemoList();
+const renderOpenSidePanelButton = async () => {
+  if (isProduction) return;
+
+  attachShadowTree({
+    shadowHostId: OPEN_SIDE_PANEL_ID,
+    shadowTree: <OpenSidePanelButton />,
+  });
+};
+
+responseObserverMemoPage(renderMemoList);
+renderMemoList();
+renderOpenSidePanelButton();
 
 responsePageContent();

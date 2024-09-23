@@ -1,6 +1,7 @@
 import { Runtime, SidePanel, Tab } from '../module';
 
 export const BRIDGE_TYPE_OPEN_SIDE_PANEL = 'OPEN_SIDE_PANEL';
+export const OPEN_SIDE_PANEL_ID = 'OPEN_SIDE_PANEL';
 
 /**
  * servicer worker에게 SidePanel을 열도록 요청한다.

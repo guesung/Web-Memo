@@ -12,16 +12,19 @@ import {
 import { MemoTable } from './components';
 
 interface AttachShadowTree {
+  shadowTreeWrapper?: HTMLElement;
   shadowTree: JSX.Element;
   shadowHostId: string;
 }
 
-const attachShadowTree = ({ shadowTree, shadowHostId }: AttachShadowTree) => {
-  const shadowHostParent = document.createElement('div');
-  shadowHostParent.id = shadowHostId;
-  document.body.appendChild(shadowHostParent);
+const attachShadowTree = ({ shadowTreeWrapper, shadowTree, shadowHostId }: AttachShadowTree) => {
+  if (!shadowTreeWrapper) {
+    shadowTreeWrapper = document.createElement('div');
+    shadowTreeWrapper.id = shadowHostId;
+    document.body.appendChild(shadowTreeWrapper);
+  }
 
-  const shadowRoot = shadowHostParent.attachShadow({ mode: 'open' });
+  const shadowRoot = shadowTreeWrapper.attachShadow({ mode: 'open' });
 
   const globalStyleSheet = new CSSStyleSheet();
   globalStyleSheet.replaceSync(tailwindcssOutput);
@@ -32,17 +35,17 @@ const attachShadowTree = ({ shadowTree, shadowHostId }: AttachShadowTree) => {
 };
 
 const initMemoList = () => {
-  if (location.href !== `${WEB_URL}/memo`) return;
-
-  const memoRoot = document.getElementById(MEMO_TABLE_WRAPPER_ID);
+  const memoTableWrapper = document.getElementById(MEMO_TABLE_WRAPPER_ID);
   const memoTable = document.getElementById(MEMO_TABLE_ID);
+  const isMemoPage = location.href === `${WEB_URL}/memo`;
 
-  if (!memoRoot || memoTable) return;
-
-  attachShadowTree({
-    shadowHostId: MEMO_TABLE_ID,
-    shadowTree: <MemoTable />,
-  });
+  if (isMemoPage && memoTableWrapper && !memoTable) {
+    attachShadowTree({
+      shadowTreeWrapper: memoTableWrapper,
+      shadowHostId: MEMO_TABLE_ID,
+      shadowTree: <MemoTable />,
+    });
+  }
 };
 
 responseObserverMemoPage(initMemoList);

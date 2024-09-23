@@ -1,9 +1,9 @@
-import { useStorageSuspense, withSuspense } from '@extension/shared';
+import { useStorageSuspense } from '@extension/shared';
 import { exampleThemeStorage } from '@extension/storage';
 import '@src/Panel.css';
 import { ComponentPropsWithoutRef } from 'react';
 
-const Panel = () => {
+export default function Panel() {
   const theme = useStorageSuspense(exampleThemeStorage);
   const isLight = theme === 'light';
   const logo = isLight ? 'devtools-panel/logo_horizontal.svg' : 'devtools-panel/logo_horizontal_dark.svg';
@@ -19,7 +19,7 @@ const Panel = () => {
       </header>
     </div>
   );
-};
+}
 
 const ToggleButton = (props: ComponentPropsWithoutRef<'button'>) => {
   const theme = useStorageSuspense(exampleThemeStorage);
@@ -36,5 +36,3 @@ const ToggleButton = (props: ComponentPropsWithoutRef<'button'>) => {
     </button>
   );
 };
-
-export default withSuspense(Panel, <div> Loading ... </div>);

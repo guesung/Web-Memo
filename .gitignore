@@ -24,3 +24,6 @@ chrome-extension/public/manifest.json
 
 
 vite.config.**
+
+# next
+.next

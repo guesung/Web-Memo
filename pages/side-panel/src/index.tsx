@@ -5,7 +5,7 @@ import '@src/index.css';
 import SidePanel from '@src/SidePanel';
 import { createRoot } from 'react-dom/client';
 
-initSentry(import.meta.env.VITE_SENTRY_DSN);
+initSentry();
 
 function init() {
   const appContainer = document.querySelector('#app-container');

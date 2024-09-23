@@ -12,8 +12,9 @@
         "__FIREFOX__",
         "VITE_MAKE_WEBHOOK_NOTION_API",
         "VITE_OPENAI_API_KEY",
-        "VITE_SENTRY_AUTH_TOKEN",
-        "VITE_SENTRY_DSN"
+        "SENTRY_AUTH_TOKEN",
+        "SENTRY_DSN",
+        "WEB_URL"
       ],
       "persistent": true,
       "inputs": [".env"]
@@ -24,11 +25,17 @@
         "__FIREFOX__",
         "VITE_MAKE_WEBHOOK_NOTION_API",
         "VITE_OPENAI_API_KEY",
-        "VITE_SENTRY_AUTH_TOKEN",
-        "VITE_SENTRY_DSN"
+        "SENTRY_AUTH_TOKEN",
+        "SENTRY_DSN",
+        "WEB_URL"
       ],
       "outputs": ["dist/**", "build/**"],
       "inputs": [".env"]
+    },
+    "web:build": {
+      "dependsOn": ["^build"],
+      "env": ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"],
+      "outputs": [".next/**", "!.next/cache/**"]
     },
     "zip": {
       "dependsOn": ["^build"],

@@ -5,8 +5,7 @@
   "private": true,
   "sideEffects": false,
   "files": [
-    "dist/*",
-    "dist/**/*"
+    "dist"
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -49,7 +48,7 @@
   },
   "scripts": {
     "clean": "rimraf ./dist",
-    "ready": "rm -rf dist && node build.mjs && tsc --emitDeclarationOnly --outDir dist",
+    "ready": "rm -rf dist && node build.mjs",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "pnpm lint --fix",
     "prettier": "prettier . --write --ignore-path ../../.prettierignore",

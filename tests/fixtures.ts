@@ -20,7 +20,10 @@ export const test = base.extend<{
   },
   extensionId: async ({ context }, use) => {
     let [background] = context.serviceWorkers();
-    if (!background) background = await context.waitForEvent('serviceworker');
+    if (!background)
+      background = await context.waitForEvent('serviceworker', {
+        timeout: 5000,
+      });
 
     const extensionId = background.url().split('/')[2];
     await use(extensionId);

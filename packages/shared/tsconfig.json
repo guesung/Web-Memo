@@ -3,8 +3,17 @@
   "compilerOptions": {
     "outDir": "dist",
     "jsx": "react-jsx",
+    "types": ["chrome"],
+    "emitDeclarationOnly": false,
     "baseUrl": ".",
-    "types": ["chrome"]
+    "strictPropertyInitialization": false,
+    "declaration": true,
+    "target": "esnext",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   },
-  "include": ["src/**/*", "index.ts"]
+  "include": ["./src/**/*", "**/*.d.ts"],
+  "exclude": ["dist", "node_modules"]
 }

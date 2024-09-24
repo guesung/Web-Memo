@@ -22,8 +22,15 @@ const libBuildOptions = {
   define,
 };
 
-await esbuild.build({ ...libBuildOptions, format: 'cjs', outExtension: { '.js': '.cjs' } });
-await esbuild.build({ ...libBuildOptions, format: 'esm', outExtension: { '.js': '.js' }, sourcemap: true });
+const build = async () => {
+  await esbuild.build({ ...libBuildOptions, format: 'cjs', outExtension: { '.js': '.cjs' } });
+  await esbuild.build({ ...libBuildOptions, format: 'esm', outExtension: { '.js': '.js' }, sourcemap: true });
 
-const execAsync = promisify(exec);
-await execAsync('tsc --emitDeclarationOnly --outDir dist');
+  const execAsync = promisify(exec);
+  await execAsync('tsc --emitDeclarationOnly --outDir dist');
+};
+
+build().catch(error => {
+  console.log(error);
+  process.exit(1);
+});

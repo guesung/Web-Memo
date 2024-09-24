@@ -11,38 +11,31 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js",
+      "default": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
     "./utils": {
-      "require": "./dist/utils/index.cjs",
-      "import": "./dist/utils/index.js",
+      "default": "./dist/utils/index.js",
       "types": "./dist/utils/index.d.ts"
     },
     "./utils/extension": {
-      "require": "./dist/utils/extension/index.cjs",
-      "import": "./dist/utils/index.js",
+      "default": "./dist/utils/index.js",
       "types": "./dist/utils/index.d.ts"
     },
     "./utils/web": {
-      "require": "./dist/utils/index.cjs",
-      "import": "./dist/utils/index.js",
+      "default": "./dist/utils/index.js",
       "types": "./dist/utils/index.d.ts"
     },
     "./hooks": {
-      "require": "./dist/hooks/index.cjs",
-      "import": "./dist/hooks/index.js",
+      "default": "./dist/hooks/index.js",
       "types": "./dist/hooks/index.d.ts"
     },
     "./constants": {
-      "require": "./dist/constants/index.cjs",
-      "import": "./dist/constants/index.js",
+      "default": "./dist/constants/index.js",
       "types": "./dist/constants/index.d.ts"
     },
     "./types": {
-      "require": "./dist/types/index.cjs",
-      "import": "./dist/types/index.js",
+      "default": "./dist/types/index.js",
       "types": "./dist/types/index.d.ts"
     }
   },

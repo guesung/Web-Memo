@@ -14,7 +14,7 @@ for (const k in process.env) {
  * @type { import("esbuild").BuildOptions }
  */
 const libBuildOptions = {
-  entryPoints: ['./src/**/index.ts'],
+  entryPoints: ['./src/**/*'],
   outdir: 'dist',
   tsconfig: './tsconfig.json',
   target: 'es6',
@@ -23,7 +23,6 @@ const libBuildOptions = {
 };
 
 const build = async () => {
-  await esbuild.build({ ...libBuildOptions, format: 'cjs', outExtension: { '.js': '.cjs' } });
   await esbuild.build({ ...libBuildOptions, format: 'esm', outExtension: { '.js': '.js' }, sourcemap: true });
 
   const execAsync = promisify(exec);

@@ -12,6 +12,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
+    "moduleResolution": "node",
     "resolveJsonModule": true
   },
   "include": ["./src/**/*", "**/*.d.ts"],

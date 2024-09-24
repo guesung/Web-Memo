@@ -1,14 +1,11 @@
 import dotenv from 'dotenv';
 import * as esbuild from 'esbuild';
 import { nodeExternalsPlugin } from 'esbuild-node-externals';
-dotenv.config();
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
-const execAsync = promisify(exec);
-
+dotenv.config();
 const define = {};
-
 for (const k in process.env) {
   define[`process.env.${k}`] = JSON.stringify(process.env[k]);
 }
@@ -16,7 +13,7 @@ for (const k in process.env) {
 /**
  * @type { import("esbuild").BuildOptions }
  */
-const buildOptions = {
+const libBuildOptions = {
   entryPoints: ['./src/**/index.ts'],
   outdir: 'dist',
   tsconfig: './tsconfig.json',
@@ -25,8 +22,8 @@ const buildOptions = {
   define,
 };
 
-await esbuild.build({ ...buildOptions, format: 'cjs', outExtension: { '.js': '.cjs' } });
+await esbuild.build({ ...libBuildOptions, format: 'cjs', outExtension: { '.js': '.cjs' } });
+await esbuild.build({ ...libBuildOptions, format: 'esm', outExtension: { '.js': '.js' }, sourcemap: true });
 
-await esbuild.build({ ...buildOptions, format: 'esm', outExtension: { '.js': '.js' }, sourcemap: true });
-
+const execAsync = promisify(exec);
 await execAsync('tsc --emitDeclarationOnly --outDir dist');

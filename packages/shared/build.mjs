@@ -17,16 +17,11 @@ const buildOptions = {
   outdir: 'dist',
   tsconfig: './tsconfig.json',
   bundle: true,
-  sourcemap: true,
-  format: 'esm',
   target: 'es6',
   plugins: [nodeExternalsPlugin()],
   define,
 };
 
-await esbuild
-  .build(buildOptions)
-  .then(async () => {
-    console.log('Build complete');
-  })
-  .catch(() => process.exit(1));
+await esbuild.build({ ...buildOptions, format: 'cjs', outExtension: { '.js': '.cjs' } });
+
+await esbuild.build({ ...buildOptions, format: 'esm', outExtension: { '.js': '.js' }, sourcemap: true });

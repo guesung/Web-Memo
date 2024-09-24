@@ -9,10 +9,11 @@
     "strictPropertyInitialization": false,
     "declaration": true,
     "target": "esnext",
+    "module": "NodeNext",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "resolveJsonModule": true,
     "rootDir": "src"
   },

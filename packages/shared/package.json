@@ -5,13 +5,51 @@
   "private": true,
   "sideEffects": false,
   "files": [
-    "dist/**"
+    "dist/*",
+    "dist/**/*"
   ],
-  "types": "index.ts",
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./utils": {
+      "require": "./dist/utils/index.js",
+      "import": "./dist/utils/index.js",
+      "types": "./dist/utils/index.d.ts"
+    },
+    "./utils/extension": {
+      "require": "./dist/utils/extension/index.js",
+      "import": "./dist/utils/index.js",
+      "types": "./dist/utils/index.d.ts"
+    },
+    "./utils/web": {
+      "require": "./dist/utils/index.js",
+      "import": "./dist/utils/index.js",
+      "types": "./dist/utils/index.d.ts"
+    },
+    "./hooks": {
+      "require": "./dist/hooks/index.js",
+      "import": "./dist/hooks/index.js",
+      "types": "./dist/hooks/index.d.ts"
+    },
+    "./constants": {
+      "require": "./dist/constants/index.js",
+      "import": "./dist/constants/index.js",
+      "types": "./dist/constants/index.d.ts"
+    },
+    "./types": {
+      "require": "./dist/types/index.js",
+      "import": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
   "scripts": {
     "clean": "rimraf ./dist",
-    "ready": "node build.mjs",
+    "ready": "rm -rf dist && node build.mjs && tsc",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "pnpm lint --fix",
     "prettier": "prettier . --write --ignore-path ../../.prettierignore",
@@ -20,5 +58,8 @@
   "devDependencies": {
     "@extension/storage": "workspace:*",
     "@extension/tsconfig": "workspace:*"
+  },
+  "dependencies": {
+    "esbuild-node-externals": "^1.14.0"
   }
 }

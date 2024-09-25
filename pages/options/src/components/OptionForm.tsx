@@ -1,4 +1,15 @@
-import { I18n, LANGUAGE_LIST, OptionStorage, Storage, STORAGE_TYPE_OPTION_LANGUAGE, useFetch } from '@extension/shared';
+import {
+  convertToCSVBlob,
+  convertToJSONBlob,
+  downloadBlob,
+  getMemoList,
+  I18n,
+  LANGUAGE_LIST,
+  OptionStorage,
+  Storage,
+  STORAGE_TYPE_OPTION_LANGUAGE,
+  useFetch,
+} from '@extension/shared';
 import { Toast } from '@extension/ui';
 import '@src/Options.css';
 import { overlay } from 'overlay-kit';
@@ -7,6 +18,19 @@ import { FormEvent, useEffect, useRef } from 'react';
 export default function OptionForm() {
   const languageRef = useRef<HTMLSelectElement>(null);
   const { data: optionData } = useFetch({ fetchFn: OptionStorage.get, defaultValue: '' });
+  const { data: memoList } = useFetch({ fetchFn: getMemoList, defaultValue: [] });
+
+  const handleCSVDownloadClick = () => {
+    if (!memoList) return;
+    const csvBlob = convertToCSVBlob(memoList);
+    downloadBlob(csvBlob, { fileExtension: 'csv' });
+  };
+
+  const handleJSONDownloadClick = () => {
+    if (!memoList) return;
+    const jsonBlob = convertToJSONBlob(memoList);
+    downloadBlob(jsonBlob, { fileExtension: 'json' });
+  };
 
   const handleResetClick = async () => {
     const response = confirm(I18n.get('modal_modal_question_delete'));
@@ -44,6 +68,26 @@ export default function OptionForm() {
                   </option>
                 ))}
               </select>
+            </th>
+          </tr>
+          <tr>
+            <th>
+              <button className="button ">{I18n.get('메모를 CSV형태로 저장')}</button>
+            </th>
+            <th>
+              <button className="btn btn-outline btn-warning" onClick={handleCSVDownloadClick} type="button">
+                CSV로 다운로드
+              </button>
+            </th>
+          </tr>
+          <tr>
+            <th>
+              <button className="button ">{I18n.get('메모를 CSV형태로 저장')}</button>
+            </th>
+            <th>
+              <button className="btn btn-outline btn-warning" onClick={handleJSONDownloadClick} type="button">
+                JSON으로 다운로드
+              </button>
             </th>
           </tr>
           <tr>

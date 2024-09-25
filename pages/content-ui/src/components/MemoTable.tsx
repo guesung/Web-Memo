@@ -1,9 +1,9 @@
-import { formatDate, I18n, MemoStorage, MemoType, urlToKey, useFetch } from '@extension/shared';
+import { formatDate, getMemoList, I18n, MemoStorage, urlToKey, useFetch } from '@extension/shared';
 
 export default function MemoTable() {
-  const { data: memoStorage, refetch: refetchMemo } = useFetch({
-    fetchFn: MemoStorage.get,
-    defaultValue: {},
+  const { data: memoList, refetch: refetchMemo } = useFetch({
+    fetchFn: getMemoList,
+    defaultValue: [],
   });
 
   const handleDeleteClick = async (url: string) => {
@@ -31,32 +31,30 @@ export default function MemoTable() {
         </tr>
       </thead>
       <tbody>
-        {Object.values(memoStorage as MemoType[])
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-          .map((memo, index) => (
-            <tr key={memo.url} className="hover">
-              <th className="text-center">{index + 1}</th>
-              <td>
-                <a
-                  href={memo.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="line-clamp-2 text-start max-w-[18rem] link-hover"
-                  data-tip={memo.url}>
-                  {memo.title}
-                </a>
-              </td>
-              <td className="whitespace-nowrap">{formatDate(new Date(memo.date))}</td>
-              <td>
-                <p className="text-start whitespace-break-spaces">{memo.memo}</p>
-              </td>
-              <td>
-                <button type="button" onClick={() => handleDeleteClick(memo.url)} className="text-center w-full">
-                  x
-                </button>
-              </td>
-            </tr>
-          ))}
+        {memoList.map((memo, index) => (
+          <tr key={memo.url} className="hover">
+            <th className="text-center">{index + 1}</th>
+            <td>
+              <a
+                href={memo.url}
+                target="_blank"
+                rel="noreferrer"
+                className="line-clamp-2 text-start max-w-[18rem] link-hover"
+                data-tip={memo.url}>
+                {memo.title}
+              </a>
+            </td>
+            <td className="whitespace-nowrap">{formatDate(new Date(memo.date))}</td>
+            <td>
+              <p className="text-start whitespace-break-spaces">{memo.memo}</p>
+            </td>
+            <td>
+              <button type="button" onClick={() => handleDeleteClick(memo.url)} className="text-center w-full">
+                x
+              </button>
+            </td>
+          </tr>
+        ))}
       </tbody>
     </table>
   );

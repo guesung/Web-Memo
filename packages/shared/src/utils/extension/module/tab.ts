@@ -17,4 +17,8 @@ export class Tab {
     if (!message) throw new Error('Message not found');
     return message;
   }
+
+  static async create(props: chrome.tabs.CreateProperties) {
+    await chrome.tabs.create(props);
+  }
 }

@@ -52,5 +52,8 @@
   },
   "error_get_storage": {
     "message": "Failed to retrieve storage data."
+  },
+  "context_menus_check_memo": {
+    "message": "Check memo"
   }
 }

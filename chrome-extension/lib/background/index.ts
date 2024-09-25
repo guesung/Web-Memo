@@ -27,17 +27,17 @@ chrome.runtime.onInstalled.addListener(async () => {
 });
 
 // 확장 프로그램이 설치되었을 때 contextMenus를 설정한다.
-const CONTEXT_MENU_ID_MEMO_LIST = 'CONTEXT_MENU_ID_MEMO_LIST';
+const CONTEXT_MENU_ID_CHECK_MEMO = 'CONTEXT_MENU_ID_CHECK_MEMO';
 chrome.runtime.onInstalled.addListener(async () => {
   chrome.contextMenus.create({
-    title: 'Memo List로 이동',
-    id: CONTEXT_MENU_ID_MEMO_LIST,
+    title: I18n.get('context_menus_check_memo'),
+    id: CONTEXT_MENU_ID_CHECK_MEMO,
     contexts: ['action'],
   });
 });
 chrome.contextMenus.onClicked.addListener(async item => {
   switch (item.menuItemId) {
-    case CONTEXT_MENU_ID_MEMO_LIST:
+    case CONTEXT_MENU_ID_CHECK_MEMO:
       await Tab.create({ url: `${WEB_URL}/memo` });
   }
 });

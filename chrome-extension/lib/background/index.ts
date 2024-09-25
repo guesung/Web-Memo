@@ -6,6 +6,7 @@ import {
   requestUpdateSidePanel,
   Storage,
   STORAGE_TYPE_OPTION_LANGUAGE,
+  Tab,
   URL_GUIDE,
   WEB_URL,
 } from '@extension/shared';
@@ -20,22 +21,24 @@ chrome.runtime.onInstalled.addListener(async () => {
   if (!language) Storage.set(STORAGE_TYPE_OPTION_LANGUAGE, LANGUAGE_MAP[I18n.getUiLanguage()]);
 });
 
+// 확장 프로그램이 설치되었을 때 가이드 페이지로 이동한다.
+chrome.runtime.onInstalled.addListener(async () => {
+  Tab.create({ url: URL_GUIDE });
+});
+
+// 확장 프로그램이 설치되었을 때 contextMenus를 설정한다.
+const CONTEXT_MENU_ID_MEMO_LIST = 'CONTEXT_MENU_ID_MEMO_LIST';
 chrome.runtime.onInstalled.addListener(async () => {
   chrome.contextMenus.create({
-    title: 'Web Memo로 이동',
-    id: 'memo-list',
+    title: 'Memo List로 이동',
+    id: CONTEXT_MENU_ID_MEMO_LIST,
     contexts: ['action'],
   });
 });
-
-chrome.runtime.onInstalled.addListener(async () => {
-  chrome.tabs.create({ url: URL_GUIDE });
-});
-
 chrome.contextMenus.onClicked.addListener(async item => {
   switch (item.menuItemId) {
-    case 'memo-list':
-      await chrome.tabs.create({ url: `${WEB_URL}/memo` });
+    case CONTEXT_MENU_ID_MEMO_LIST:
+      await Tab.create({ url: `${WEB_URL}/memo` });
   }
 });
 

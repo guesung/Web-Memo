@@ -9,18 +9,21 @@ export const escapeCSV = (field: string) => {
   return field;
 };
 
-export const convertToCSV = <T extends object, K extends keyof T>(data: T[]) => {
+export const convertToCSVBlob = <T extends object, K extends keyof T>(objList: T[]) => {
   // 헤더를 생성한다.
-  const headers = Object.keys(data[0]);
+  const headers = Object.keys(objList[0]);
   const headerRow = headers.map(escapeCSV).join(',');
 
   // 데이터 행을 생성한다.
-  const rows = data.map(obj => headers.map(header => escapeCSV(String(obj[header as K]))).join(','));
+  const rows = objList.map(obj => headers.map(header => escapeCSV(String(obj[header as K]))).join(','));
 
   // 헤더와 데이터 행을 결합한다.
-  return [headerRow, ...rows].join('\n');
+  const csvData = [headerRow, ...rows].join('\n');
+
+  return new Blob([csvData]);
 };
 
-export const convertToJSON = <T extends object>(data: T[]) => {
-  return JSON.stringify(data, null, 2);
+export const convertToJSONBlob = <T extends object>(objList: T[]) => {
+  const jsonData = JSON.stringify(objList, null, 2);
+  return new Blob([jsonData]);
 };

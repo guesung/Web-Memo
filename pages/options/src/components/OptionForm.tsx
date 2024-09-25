@@ -6,7 +6,7 @@ import { FormEvent, useEffect, useRef } from 'react';
 
 export default function OptionForm() {
   const languageRef = useRef<HTMLSelectElement>(null);
-  const { data } = useFetch({ fetchFn: OptionStorage.get, defaultValue: '' });
+  const { data: optionData } = useFetch({ fetchFn: OptionStorage.get, defaultValue: '' });
 
   const handleResetClick = async () => {
     const response = confirm(I18n.get('modal_modal_question_delete'));
@@ -25,8 +25,8 @@ export default function OptionForm() {
   };
 
   useEffect(() => {
-    if (data) languageRef.current!.value = data;
-  }, [data]);
+    if (optionData) languageRef.current!.value = optionData;
+  }, [optionData]);
 
   return (
     <form onSubmit={handleFormSubmit}>

@@ -34,12 +34,12 @@ chrome.runtime.onInstalled.addListener(async () => {
     id: CONTEXT_MENU_ID_CHECK_MEMO,
     contexts: ['action'],
   });
-});
-chrome.contextMenus.onClicked.addListener(async item => {
-  switch (item.menuItemId) {
-    case CONTEXT_MENU_ID_CHECK_MEMO:
-      await Tab.create({ url: `${WEB_URL}/memo` });
-  }
+  chrome.contextMenus.onClicked.addListener(async item => {
+    switch (item.menuItemId) {
+      case CONTEXT_MENU_ID_CHECK_MEMO:
+        await Tab.create({ url: `${WEB_URL}/memo` });
+    }
+  });
 });
 
 // chatGPT에게서 메시지를 받아서 다시 전달한다.

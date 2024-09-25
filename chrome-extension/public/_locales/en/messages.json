@@ -33,7 +33,13 @@
     "message": "Select prompt response language"
   },
   "reset_option": {
-    "message": "Reset settings and data"
+    "message": "Reset datas"
+  },
+  "download_csv_option": {
+    "message": "Download as CSV file"
+  },
+  "download_json_option": {
+    "message": "Download as JSON file"
   },
   "toast_save_option": {
     "message": "Settings have been saved."

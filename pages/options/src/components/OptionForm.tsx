@@ -57,9 +57,7 @@ export default function OptionForm() {
       <table className="table">
         <tbody>
           <tr>
-            <th>
-              <button className="button">{I18n.get('select_language')}</button>
-            </th>
+            <th>{I18n.get('select_language')}</th>
             <th>
               <select className="select select-bordered w-full max-w-xs" ref={languageRef}>
                 {LANGUAGE_LIST.map(({ inEnglish, inNative }) => (
@@ -71,32 +69,26 @@ export default function OptionForm() {
             </th>
           </tr>
           <tr>
+            <th></th>
             <th>
-              <button className="button ">{I18n.get('메모를 CSV형태로 저장')}</button>
-            </th>
-            <th>
-              <button className="btn btn-outline btn-warning" onClick={handleCSVDownloadClick} type="button">
-                CSV로 다운로드
+              <button className="btn btn-outline" onClick={handleCSVDownloadClick} type="button">
+                {I18n.get('download_csv_option')}
               </button>
             </th>
           </tr>
           <tr>
+            <th></th>
             <th>
-              <button className="button ">{I18n.get('메모를 CSV형태로 저장')}</button>
-            </th>
-            <th>
-              <button className="btn btn-outline btn-warning" onClick={handleJSONDownloadClick} type="button">
-                JSON으로 다운로드
+              <button className="btn btn-outline" onClick={handleJSONDownloadClick} type="button">
+                {I18n.get('download_json_option')}
               </button>
             </th>
           </tr>
           <tr>
+            <th></th>
             <th>
-              <button className="button ">{I18n.get('reset_option')}</button>
-            </th>
-            <th>
-              <button className="btn btn-outline btn-warning" onClick={handleResetClick} type="button">
-                {I18n.get('reset')}
+              <button className="btn btn-outline" onClick={handleResetClick} type="button">
+                {I18n.get('reset_option')}
               </button>
             </th>
           </tr>

@@ -1,4 +1,4 @@
-import { formatDate, getMemoList, I18n, MemoStorage, urlToKey, useFetch } from '@extension/shared';
+import { getMemoList, I18n, MemoStorage, urlToKey, useFetch } from '@extension/shared';
 
 export default function MemoTable() {
   const { data: memoList, refetch: refetchMemo } = useFetch({
@@ -45,7 +45,7 @@ export default function MemoTable() {
                 {memo.title}
               </a>
             </td>
-            <td className="whitespace-nowrap">{formatDate(new Date(memo.date))}</td>
+            <td className="whitespace-nowrap">{memo.date}</td>
             <td>
               <p className="text-start whitespace-break-spaces">{memo.memo}</p>
             </td>

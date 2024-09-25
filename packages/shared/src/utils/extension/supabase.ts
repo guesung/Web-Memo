@@ -22,13 +22,13 @@ export const getSupabaseClient = async () => {
   return supabaseClientInstance;
 };
 
-export const getMemo = async () => {
+export const getMemoSupabase = async () => {
   const supabaseClient = await getSupabaseClient();
   const response = await supabaseClient.from('memo').select('*');
   return response;
 };
 
-export const insertMemo = async (memo: string) => {
+export const insertMemoSupabase = async (memo: string) => {
   const supabaseClient = await getSupabaseClient();
   await supabaseClient.from('memo').insert({ memo });
 };

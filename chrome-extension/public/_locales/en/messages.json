@@ -1,6 +1,6 @@
 {
   "extensionDescription": {
-    "message": "A browser extension that allows you to record important information while web surfing."
+    "message": "It's a browser extension that helps you easily take notes while web surfing."
   },
   "extensionName": {
     "message": "Web Memo"
@@ -52,5 +52,8 @@
   },
   "error_get_storage": {
     "message": "Failed to retrieve storage data."
+  },
+  "context_menus_check_memo": {
+    "message": "Check memo"
   }
 }

@@ -43,10 +43,8 @@ jobs:
 
       - name: Upload zipped file on artifact
         uses: actions/upload-artifact@v4
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         with:
           path: dist-zip/extension.zip
-          if-no-files-found: error
 
       - name: Upload zipped file on chrome store
         uses: mnao305/chrome-extension-upload@v5.0.0

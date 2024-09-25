@@ -4,6 +4,7 @@ import {
   OptionStorage,
   requestObserverMemoPage,
   requestUpdateSidePanel,
+  responseOpenSidePanel,
   Storage,
   STORAGE_TYPE_OPTION_LANGUAGE,
   Tab,
@@ -75,3 +76,6 @@ chrome.tabs.onUpdated.addListener(async () => {
   // 페이지를 이동했을 때 메모를 보여주는 페이지인지 체크한다.
   requestObserverMemoPage();
 });
+
+// content-ui에서 메시지를 전달받아 사이드 패널을 연다.
+responseOpenSidePanel();

@@ -50,7 +50,7 @@ export default function Memo() {
   );
 
   const handleMemoClick = () => {
-    chrome.tabs.create({ url: `${WEB_URL}/memo` });
+    Tab.create({ url: `${WEB_URL}/memo` });
   };
 
   const handleTextAreaChange = () => {

@@ -19,6 +19,7 @@ export default function MemoTable() {
   //   overlay.open(({ unmount }) => <Toast message="메모를 복사하였습니다." onClose={unmount} />);
   // };
 
+  if (!memoList || memoList.length === 0) return <p className="text-center">No Memo</p>;
   return (
     <table id="memo-table" className="table max-w-[1000px] shadow-xl mx-auto">
       <thead>

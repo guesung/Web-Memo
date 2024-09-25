@@ -6,6 +6,8 @@ import {
   requestUpdateSidePanel,
   Storage,
   STORAGE_TYPE_OPTION_LANGUAGE,
+  URL_GUIDE,
+  WEB_URL,
 } from '@extension/shared';
 import { getPrompt } from '@root/utils';
 import { openai } from '@root/utils/openai';
@@ -16,6 +18,25 @@ chrome.runtime.onInstalled.addListener(async () => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
   const language = await Storage.get(STORAGE_TYPE_OPTION_LANGUAGE);
   if (!language) Storage.set(STORAGE_TYPE_OPTION_LANGUAGE, LANGUAGE_MAP[I18n.getUiLanguage()]);
+});
+
+chrome.runtime.onInstalled.addListener(async () => {
+  chrome.contextMenus.create({
+    title: 'Web Memo로 이동',
+    id: 'memo-list',
+    contexts: ['action'],
+  });
+});
+
+chrome.runtime.onInstalled.addListener(async () => {
+  chrome.tabs.create({ url: URL_GUIDE });
+});
+
+chrome.contextMenus.onClicked.addListener(async item => {
+  switch (item.menuItemId) {
+    case 'memo-list':
+      await chrome.tabs.create({ url: `${WEB_URL}/memo` });
+  }
 });
 
 // chatGPT에게서 메시지를 받아서 다시 전달한다.

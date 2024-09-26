@@ -1,5 +1,6 @@
 import {
   I18n,
+  isProduction,
   LANGUAGE_MAP,
   OptionStorage,
   requestObserverMemoPage,
@@ -8,7 +9,8 @@ import {
   Storage,
   STORAGE_TYPE_OPTION_LANGUAGE,
   Tab,
-  URL_GUIDE,
+  URL_GUIDE_EN,
+  URL_GUIDE_KO,
   WEB_URL,
 } from '@extension/shared';
 import { getPrompt } from '@root/utils';
@@ -19,12 +21,15 @@ import 'webextension-polyfill';
 chrome.runtime.onInstalled.addListener(async () => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
   const language = await Storage.get(STORAGE_TYPE_OPTION_LANGUAGE);
-  if (!language) Storage.set(STORAGE_TYPE_OPTION_LANGUAGE, LANGUAGE_MAP[I18n.getUiLanguage()]);
+  if (!language) Storage.set(STORAGE_TYPE_OPTION_LANGUAGE, LANGUAGE_MAP[I18n.getUILanguage()]);
 });
 
 // 확장 프로그램이 설치되었을 때 가이드 페이지로 이동한다.
 chrome.runtime.onInstalled.addListener(async () => {
-  Tab.create({ url: URL_GUIDE });
+  if (!isProduction) return;
+  const lang = I18n.getUILanguage();
+  if (lang === 'ko') Tab.create({ url: URL_GUIDE_KO });
+  else Tab.create({ url: URL_GUIDE_EN });
 });
 
 // 확장 프로그램이 설치되었을 때 contextMenus를 설정한다.

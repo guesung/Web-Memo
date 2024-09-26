@@ -4,8 +4,6 @@ token=$SONAR_TOKEN
 url="http://localhost:9000"
 project="web-memo"
 
-
-
 docker run \
     --rm \
     --net host \

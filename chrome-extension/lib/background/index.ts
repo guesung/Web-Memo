@@ -1,5 +1,6 @@
 import {
   I18n,
+  isProduction,
   LANGUAGE_MAP,
   OptionStorage,
   requestObserverMemoPage,
@@ -24,6 +25,7 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 // 확장 프로그램이 설치되었을 때 가이드 페이지로 이동한다.
 chrome.runtime.onInstalled.addListener(async () => {
+  if (!isProduction) return;
   Tab.create({ url: URL_GUIDE });
 });
 

@@ -33,10 +33,16 @@
     "message": "프롬프트 답변 언어 선택"
   },
   "reset_option": {
-    "message": "설정 및 데이터 초기화"
+    "message": "데이터 초기화"
   },
   "toast_save_option": {
     "message": "설정을 저장하였습니다."
+  },
+  "download_csv_option": {
+    "message": "csv확장자로 다운로드"
+  },
+  "download_json_option": {
+    "message": "json확장자로 다운로드"
   },
   "toast_error_common": {
     "message": "에러가 발생하였습니다."

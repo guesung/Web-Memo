@@ -34,6 +34,14 @@ jobs:
           ./setting-env.sh
           pnpm build
 
+      - name: Zip the build files
+        run: pnpm zip
+
+      - name: Upload zipped file on artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: dist-zip/extension.zip
+
   # e2e-test:
   #   runs-on: ubuntu-latest
   #   steps:

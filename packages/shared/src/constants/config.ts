@@ -6,3 +6,6 @@ export const SUPABASE_ANON_KEY = getSafeConfig('SUPABASE_ANON_KEY', process.env.
 export const SENTRY_DSN = getSafeConfig('SENTRY_DSN', process.env.SENTRY_DSN);
 export const SENTRY_AUTH_TOKEN = getSafeConfig('SENTRY_DSN', process.env.SENTRY_AUTH_TOKEN);
 export const NODE_ENV = getSafeConfig('SENTRY_DSN', process.env.NODE_ENV) as 'development' | 'production';
+export const MAKE_WEBHOOK_NOTION_API = getSafeConfig('SENTRY_DSN', process.env.MAKE_WEBHOOK_NOTION_API) as
+  | 'development'
+  | 'production';

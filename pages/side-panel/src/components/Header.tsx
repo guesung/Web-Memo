@@ -10,7 +10,7 @@ export default function Header() {
   };
 
   return (
-    <div className="flex gap-1 items-center float-right mt-4">
+    <header className="flex gap-1 items-center float-right mt-4">
       <Refresh
         width="20px"
         height="20px"
@@ -19,6 +19,6 @@ export default function Header() {
         fill={isUserPreferDarkMode ? 'black' : 'white'}
       />
       <Option width="24px" height="24px" onOption={handleOptionClick} fill={isUserPreferDarkMode ? 'black' : 'white'} />
-    </div>
+    </header>
   );
 }

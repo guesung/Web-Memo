@@ -28,7 +28,9 @@
     "update-version": "run-script-os",
     "update-version:win32": "bash update_version.sh",
     "update-version:default": "./update_version.sh",
-    "package": "pnpm i && pnpm clean && pnpm build && pnpm zip"
+    "package": "pnpm i && pnpm clean && pnpm build && pnpm zip",
+    "sonarqube": "./scripts/run-sonarqube.sh",
+    "sonarqube-scan": "./scripts/run-sonarscanner.sh"
   },
   "files": [
     "dist"

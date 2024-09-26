@@ -23,7 +23,7 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline
       - name: build
         run: |
-          ./setting-env.sh
+          ./scripts/setting-env.sh
           pnpm build
     
       - name: Zip the build files

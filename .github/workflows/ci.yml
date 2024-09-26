@@ -29,10 +29,11 @@ jobs:
           node-version-file: '.nvmrc'
       - name: pnpm install
         run: pnpm install --frozen-lockfile --prefer-offline
+      - name: setting environment variables
+        run: ./scripts/setting-env.sh
+        shell: bash
       - name: build
-        run: |
-          ./scripts/setting-env.sh
-          pnpm build
+        run: pnpm build
 
       - name: Zip the build files
         run: pnpm zip

@@ -1,5 +1,7 @@
 'use client';
 
+import { MEMO_TABLE_WRAPPER_ID } from '@extension/shared';
+
 export default function Memo() {
-  return <main id="memo" />;
+  return <main id={MEMO_TABLE_WRAPPER_ID} />;
 }

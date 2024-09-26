@@ -19,12 +19,13 @@
     "dev": "turbo ready && turbo watch dev --concurrency 20",
     "dev:firefox": "turbo ready && cross-env __FIREFOX__=true turbo watch dev --concurrency 20",
     "dev:web": "turbo run --filter web",
-    "test": "turbo test",
     "type-check": "turbo type-check",
     "lint": "turbo lint --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
     "lint:fix": "turbo lint:fix --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
     "prettier": "turbo prettier --continue -- --cache --cache-location node_modules/.cache/.prettiercache",
     "prepare": "husky",
+    "test": "exec playwright test",
+    "test-report": "exec playwright show-report",
     "update-version": "run-script-os",
     "update-version:win32": "bash update_version.sh",
     "update-version:default": "./update_version.sh",
@@ -44,6 +45,7 @@
     "react-dom": "18.3.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.47.0",
     "@sentry/vite-plugin": "^2.22.4",
     "@types/chrome": "^0.0.268",
     "@types/node": "^20.14.10",

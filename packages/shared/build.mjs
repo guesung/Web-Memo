@@ -12,7 +12,7 @@ for (const k in process.env) {
  * @type { import("esbuild").BuildOptions }
  */
 const buildOptions = {
-  entryPoints: ['./index.ts', './src/**/*.ts', './src/**/*.tsx'],
+  entryPoints: ['./index.ts', './src/**/*.ts'],
   tsconfig: './tsconfig.json',
   bundle: false,
   target: 'es6',

@@ -11,7 +11,7 @@
       "env": [
         "__FIREFOX__",
         "MAKE_WEBHOOK_NOTION_API",
-        "VITE_OPENAI_API_KEY",
+        "OPENAI_API_KEY",
         "SENTRY_AUTH_TOKEN",
         "SENTRY_DSN",
         "WEB_URL",
@@ -25,7 +25,7 @@
       "env": [
         "__FIREFOX__",
         "MAKE_WEBHOOK_NOTION_API",
-        "VITE_OPENAI_API_KEY",
+        "OPENAI_API_KEY",
         "SENTRY_AUTH_TOKEN",
         "SENTRY_DSN",
         "WEB_URL",

@@ -9,3 +9,4 @@ export const NODE_ENV = getSafeConfig('SENTRY_DSN', process.env.NODE_ENV) as 'de
 export const MAKE_WEBHOOK_NOTION_API = getSafeConfig('SENTRY_DSN', process.env.MAKE_WEBHOOK_NOTION_API) as
   | 'development'
   | 'production';
+export const OPENAI_API_KEY = getSafeConfig('SENTRY_DSN', process.env.OPENAI_API_KEY);

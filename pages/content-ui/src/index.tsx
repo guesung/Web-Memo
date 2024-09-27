@@ -11,7 +11,7 @@ import { MemoTable, OpenSidePanelButton } from './components';
 import { attachShadowTree } from './utils';
 
 const renderMemoList = () => {
-  const memoTableWrapper = document.getElementById(MEMO_TABLE_WRAPPER_ID);
+  const memoTableWrapper = document.getElementById(MEMO_TABLE_WRAPPER_ID) ?? document.getElementById('memo');
   const memoTable = document.getElementById(MEMO_TABLE_ID);
   const isMemoPage = location.href === `${WEB_URL}/memo`;
 

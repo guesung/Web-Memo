@@ -9,6 +9,7 @@ import {
   Storage,
   STORAGE_TYPE_OPTION_LANGUAGE,
   Tab,
+  URL_FORM,
   URL_GUIDE_EN,
   URL_GUIDE_KO,
   WEB_URL,
@@ -58,6 +59,8 @@ chrome.runtime.onInstalled.addListener(async () => {
     }
   });
 });
+
+chrome.runtime.setUninstallURL(URL_FORM);
 
 // chatGPT에게서 메시지를 받아서 다시 전달한다.
 chrome.runtime.onConnect.addListener(async port => {

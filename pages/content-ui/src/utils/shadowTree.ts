@@ -4,19 +4,19 @@ import { createRoot } from 'react-dom/client';
 import tailwindcssOutput from '@src/tailwind-output.css?inline';
 
 interface AttachShadowTree {
-  shadowTreeWrapper?: HTMLElement;
+  shadowHostElement?: HTMLElement;
   shadowTree: JSX.Element;
   shadowHostId: string;
 }
 
-export const attachShadowTree = ({ shadowTreeWrapper, shadowTree, shadowHostId }: AttachShadowTree) => {
-  if (!shadowTreeWrapper) {
-    shadowTreeWrapper = document.createElement('div');
-    shadowTreeWrapper.id = shadowHostId;
-    document.body.appendChild(shadowTreeWrapper);
+export const attachShadowTree = ({ shadowHostElement, shadowTree, shadowHostId }: AttachShadowTree) => {
+  const shadowHost = shadowHostElement ?? document.createElement('div');
+  if (!shadowHostElement) {
+    shadowHost.id = shadowHostId;
+    document.body.appendChild(shadowHost);
   }
 
-  const shadowRoot = shadowTreeWrapper.attachShadow({ mode: 'open' });
+  const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
 
   const globalStyleSheet = new CSSStyleSheet();
   globalStyleSheet.replaceSync(tailwindcssOutput);

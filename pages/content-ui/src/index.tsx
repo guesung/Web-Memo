@@ -17,7 +17,7 @@ const renderMemoList = () => {
 
   if (isMemoPage && memoTableWrapper && !memoTable) {
     attachShadowTree({
-      shadowTreeWrapper: memoTableWrapper,
+      shadowHostElement: memoTableWrapper,
       shadowHostId: MEMO_TABLE_ID,
       shadowTree: <MemoTable />,
     });

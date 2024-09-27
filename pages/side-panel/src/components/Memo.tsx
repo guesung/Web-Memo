@@ -24,7 +24,7 @@ export default function Memo() {
     fetchFn: Tab.get,
     defaultValue: {} as chrome.tabs.Tab,
   });
-  const { data: memoList, refetch: refetchMemo } = useFetch<MemoStorageType>({
+  const { data: memoList } = useFetch<MemoStorageType>({
     fetchFn: MemoStorage.get,
     defaultValue: {} as MemoStorageType,
   });
@@ -39,15 +39,11 @@ export default function Memo() {
     memoRef.current.value = memoList?.[urlToKey(tab?.url)]?.memo ?? '';
   }, [memoList, tab?.url]);
 
-  const saveMemoAndRefetchStorage = useCallback(
-    async (memo: string, showOverlay = false) => {
-      await saveMemoStorage(memo);
-      setIsSaved(true);
-      await refetchMemo();
-      if (showOverlay) overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
-    },
-    [refetchMemo],
-  );
+  const saveMemoAndRefetchStorage = useCallback(async (memo: string, showOverlay = false) => {
+    await saveMemoStorage(memo);
+    setIsSaved(true);
+    if (showOverlay) overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
+  }, []);
 
   const handleMemoClick = () => {
     Tab.create({ url: `${WEB_URL}/memo` });

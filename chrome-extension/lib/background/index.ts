@@ -34,16 +34,27 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 // 확장 프로그램이 설치되었을 때 contextMenus를 설정한다.
 const CONTEXT_MENU_ID_CHECK_MEMO = 'CONTEXT_MENU_ID_CHECK_MEMO';
+const CONTEXT_MENU_ID_SHOW_GUIDE = 'CONTEXT_MENU_ID_SHOW_GUIDE';
 chrome.runtime.onInstalled.addListener(async () => {
   chrome.contextMenus.create({
     title: I18n.get('context_menus_check_memo'),
     id: CONTEXT_MENU_ID_CHECK_MEMO,
     contexts: ['action'],
   });
+  chrome.contextMenus.create({
+    title: I18n.get('context_menus_show_guide'),
+    id: CONTEXT_MENU_ID_SHOW_GUIDE,
+    contexts: ['action'],
+  });
   chrome.contextMenus.onClicked.addListener(async item => {
     switch (item.menuItemId) {
       case CONTEXT_MENU_ID_CHECK_MEMO:
         await Tab.create({ url: `${WEB_URL}/memo` });
+        break;
+      case CONTEXT_MENU_ID_SHOW_GUIDE:
+        if (I18n.getUILanguage() === 'ko') Tab.create({ url: URL_GUIDE_KO });
+        else Tab.create({ url: URL_GUIDE_EN });
+        break;
     }
   });
 });

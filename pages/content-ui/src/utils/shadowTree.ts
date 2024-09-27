@@ -16,6 +16,8 @@ export const attachShadowTree = ({ shadowHostElement, shadowTree, shadowHostId }
     document.body.appendChild(shadowHost);
   }
 
+  shadowHost.setAttribute('aria-hidden', 'false');
+
   const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
 
   const globalStyleSheet = new CSSStyleSheet();

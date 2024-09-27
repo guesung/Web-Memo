@@ -328,37 +328,6 @@ importers:
         specifier: ^4.16.2
         version: 4.17.0
 
-  pages/content:
-    dependencies:
-      '@extension/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      '@extension/storage':
-        specifier: workspace:*
-        version: link:../../packages/storage
-    devDependencies:
-      '@extension/hmr':
-        specifier: workspace:*
-        version: link:../../packages/hmr
-      '@extension/tsconfig':
-        specifier: workspace:*
-        version: link:../../packages/tsconfig
-      '@extension/vite-config':
-        specifier: workspace:*
-        version: link:../../packages/vite-config
-
-  pages/content-runtime:
-    devDependencies:
-      '@extension/hmr':
-        specifier: workspace:*
-        version: link:../../packages/hmr
-      '@extension/tsconfig':
-        specifier: workspace:*
-        version: link:../../packages/tsconfig
-      '@extension/vite-config':
-        specifier: workspace:*
-        version: link:../../packages/vite-config
-
   pages/content-ui:
     dependencies:
       '@extension/shared':
@@ -396,38 +365,6 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0(typescript@5.5.3)(vite@5.3.6)
 
-  pages/devtools:
-    dependencies:
-      '@extension/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-    devDependencies:
-      '@extension/tsconfig':
-        specifier: workspace:*
-        version: link:../../packages/tsconfig
-      '@extension/vite-config':
-        specifier: workspace:*
-        version: link:../../packages/vite-config
-
-  pages/devtools-panel:
-    dependencies:
-      '@extension/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      '@extension/storage':
-        specifier: workspace:*
-        version: link:../../packages/storage
-    devDependencies:
-      '@extension/tailwindcss-config':
-        specifier: workspace:*
-        version: link:../../packages/tailwind-config
-      '@extension/tsconfig':
-        specifier: workspace:*
-        version: link:../../packages/tsconfig
-      '@extension/vite-config':
-        specifier: workspace:*
-        version: link:../../packages/vite-config
-
   pages/options:
     dependencies:
       '@extension/shared':
@@ -452,9 +389,6 @@ importers:
 
   pages/popup:
     dependencies:
-      '@extension/content-runtime-script':
-        specifier: workspace:*
-        version: link:../content-runtime
       '@extension/shared':
         specifier: workspace:*
         version: link:../../packages/shared

@@ -1,6 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { getSession } from './getSession';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../../constants';
+import { getSession } from './storage';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let supabaseClientInstance: SupabaseClient<any, 'memo', any> | null = null;

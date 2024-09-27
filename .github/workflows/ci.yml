@@ -20,7 +20,7 @@ jobs:
       - run: pnpm lint
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -29,24 +29,32 @@ jobs:
           node-version-file: '.nvmrc'
       - name: pnpm install
         run: pnpm install --frozen-lockfile --prefer-offline
-      - name: build
+      - name: setting environment variables
         run: |
-          echo VITE_OPENAI_API_KEY=${{ secrets.VITE_OPENAI_API_KEY }} >> chrome-extension/.env
-          echo VITE_MAKE_WEBHOOK_NOTION_API=${{ secrets.VITE_MAKE_WEBHOOK_NOTION_API }} >> pages/side-panel/.env
-          
+          echo OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} >> packages/shared/.env
           echo SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }} >> packages/shared/.env
           echo SENTRY_DSN=${{ secrets.SENTRY_DSN }} >> packages/shared/.env
           echo SUPABASE_URL=${{ secrets.SUPABASE_URL }} >> packages/shared/.env
-          echo SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}  >> packages/shared/.env
-          echo NODE_ENV=${{ secrets.NODE_ENV }}  >> packages/shared/.env
-          
+          echo SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} >> packages/shared/.env
+          echo NODE_ENV=${{ secrets.NODE_ENV }} >> packages/shared/.env
+          echo MAKE_WEBHOOK_NOTION_API=${{ secrets.MAKE_WEBHOOK_NOTION_API }} >> packages/shared/.env
           echo WEB_URL=${{ secrets.WEB_URL }} >> packages/shared/.env
-          
+
           echo NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }} >> packages/web/.env
           echo NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }} >> packages/web/.env
+        
+      - name: build
+        run: pnpm run build
 
-          pnpm build
+      - name: Zip the build files
+        run: pnpm zip
 
+      - name: Upload zipped file on artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: dist-zip/extension.zip
+
+          
   # e2e-test:
   #   runs-on: ubuntu-latest
   #   steps:

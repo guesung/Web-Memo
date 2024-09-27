@@ -13,10 +13,7 @@ export const requestOpenSidePanel = () => Runtime.sendMessage(BRIDGE_TYPE_OPEN_S
  */
 export const responseOpenSidePanel = async () => {
   chrome.runtime.onMessage.addListener((request, sender) => {
-    console.log(1);
-    console.log(request.type);
     if (request.type === BRIDGE_TYPE_OPEN_SIDE_PANEL) {
-      console.log(sender.tab?.windowId);
       if (!sender.tab?.windowId) return;
       chrome.sidePanel.open({ windowId: sender.tab.windowId });
     }

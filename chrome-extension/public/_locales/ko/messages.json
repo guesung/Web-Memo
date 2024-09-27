@@ -5,6 +5,9 @@
   "extensionName": {
     "message": "웹 메모"
   },
+  "no_memo": {
+    "message": "메모가 없습니다."
+  },
   "memo": {
     "message": "메모"
   },

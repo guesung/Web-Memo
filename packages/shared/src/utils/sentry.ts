@@ -1,7 +1,13 @@
 /* eslint-disable import/namespace */
 import * as Sentry from '@sentry/react';
-import { SENTRY_DSN } from '../../constants';
-import { isProduction } from '../isProduction';
+import { isProduction } from './environment';
+import { SENTRY_DSN } from '../constants';
+
+export const testSentry = () => {
+  Sentry.captureException(new Error(`captureException Error 테스트`));
+  Sentry.captureException(`captureException String 테스트1`);
+  Sentry.captureMessage(`captureMessage 테스트2`);
+};
 
 export const initSentry = async () => {
   Sentry.init({

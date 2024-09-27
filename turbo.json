@@ -10,8 +10,8 @@
       "outputs": ["dist/**", "build/**"],
       "env": [
         "__FIREFOX__",
-        "VITE_MAKE_WEBHOOK_NOTION_API",
-        "VITE_OPENAI_API_KEY",
+        "MAKE_WEBHOOK_NOTION_API",
+        "OPENAI_API_KEY",
         "SENTRY_AUTH_TOKEN",
         "SENTRY_DSN",
         "WEB_URL",
@@ -24,8 +24,8 @@
       "dependsOn": ["^build", "ready"],
       "env": [
         "__FIREFOX__",
-        "VITE_MAKE_WEBHOOK_NOTION_API",
-        "VITE_OPENAI_API_KEY",
+        "MAKE_WEBHOOK_NOTION_API",
+        "OPENAI_API_KEY",
         "SENTRY_AUTH_TOKEN",
         "SENTRY_DSN",
         "WEB_URL",

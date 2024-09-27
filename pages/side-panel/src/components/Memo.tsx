@@ -90,6 +90,7 @@ export default function Memo() {
       </div>
       <textarea
         className="textarea textarea-bordered h-full resize-none"
+        id="memo-textarea"
         placeholder="memo"
         onChange={handleTextAreaChange}
         onKeyDown={handleTextAreaKeyDown}

@@ -20,10 +20,10 @@ test.describe('사이드 패널을 테스트한다', () => {
     expect(sidePanelPage).toBeDefined();
   });
 
-  test('메모에 입력이 잘 된다', async ({ page }) => {
+  test('사이드 패널의 메모에 입력이 잘 된다', async ({ page }) => {
     const sidePanelPage = getSidePanelPage(page)!;
 
-    const $testArea = sidePanelPage.locator('#memos');
+    const $testArea = sidePanelPage.locator('#memo-textarea');
 
     await expect($testArea).toBeVisible();
 

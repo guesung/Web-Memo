@@ -54,7 +54,7 @@
     "message": "저장되었습니다."
   },
   "error_get_page_content": {
-    "message": "페이지 컨텐츠를 가져오는데 실패했습니다."
+    "message": "페이지 컨텐츠를 불러올 수 없는 사이트입니다. 다른 사이트에서 다시 시도해주세요. "
   },
   "error_get_summary": {
     "message": "요약을 가져오는데 실패했습니다."
@@ -64,5 +64,8 @@
   },
   "context_menus_check_memo": {
     "message": "메모 확인하기"
+  },
+  "context_menus_show_guide": {
+    "message": "가이드 확인하기"
   }
 }

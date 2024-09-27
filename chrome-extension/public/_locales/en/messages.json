@@ -64,5 +64,8 @@
   },
   "context_menus_check_memo": {
     "message": "Check memo"
+  },
+  "context_menus_show_guide": {
+    "message": "Check Guide"
   }
 }

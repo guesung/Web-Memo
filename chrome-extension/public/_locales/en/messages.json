@@ -5,6 +5,9 @@
   "extensionName": {
     "message": "Web Memo"
   },
+  "no_memo": {
+    "message": "There is no memo"
+  },
   "memo": {
     "message": "Memo"
   },
@@ -33,7 +36,13 @@
     "message": "Select prompt response language"
   },
   "reset_option": {
-    "message": "Reset settings and data"
+    "message": "Reset datas"
+  },
+  "download_csv_option": {
+    "message": "Download as CSV file"
+  },
+  "download_json_option": {
+    "message": "Download as JSON file"
   },
   "toast_save_option": {
     "message": "Settings have been saved."
@@ -48,9 +57,15 @@
     "message": "Failed to retrieve page content."
   },
   "error_get_summary": {
-    "message": "Failed to retrieve summary."
+    "message": "Summarization is not possible on the following sites: New Tab, Chrome Web Store, Chrome Settings page. Please move to another page and press the retry button on the right"
   },
   "error_get_storage": {
     "message": "Failed to retrieve storage data."
+  },
+  "context_menus_check_memo": {
+    "message": "Check memo"
+  },
+  "context_menus_show_guide": {
+    "message": "Check Guide"
   }
 }

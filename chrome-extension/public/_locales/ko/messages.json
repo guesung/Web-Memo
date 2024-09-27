@@ -5,6 +5,9 @@
   "extensionName": {
     "message": "웹 메모"
   },
+  "no_memo": {
+    "message": "메모가 없습니다."
+  },
   "memo": {
     "message": "메모"
   },
@@ -33,10 +36,16 @@
     "message": "프롬프트 답변 언어 선택"
   },
   "reset_option": {
-    "message": "설정 및 데이터 초기화"
+    "message": "데이터 초기화"
   },
   "toast_save_option": {
     "message": "설정을 저장하였습니다."
+  },
+  "download_csv_option": {
+    "message": "csv확장자로 다운로드"
+  },
+  "download_json_option": {
+    "message": "json확장자로 다운로드"
   },
   "toast_error_common": {
     "message": "에러가 발생하였습니다."
@@ -45,12 +54,18 @@
     "message": "저장되었습니다."
   },
   "error_get_page_content": {
-    "message": "페이지 컨텐츠를 가져오는데 실패했습니다."
+    "message": "다음과 같은 사이트에서는 요약을 할 수 없습니다. New Tab, 크롬 웹스토어, 크롬 설정 페이지. 다른 페이지로 이동해 우측의 다시 시도 버튼을 눌러주세요."
   },
   "error_get_summary": {
     "message": "요약을 가져오는데 실패했습니다."
   },
   "error_get_storage": {
     "message": "스토리지 데이터를 가져오는데 실패했습니다."
+  },
+  "context_menus_check_memo": {
+    "message": "메모 확인하기"
+  },
+  "context_menus_show_guide": {
+    "message": "가이드 확인하기"
   }
 }

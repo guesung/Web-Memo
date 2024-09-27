@@ -1,6 +1,6 @@
 {
   "name": "chrome-extension",
-  "version": "1.2.1",
+  "version": "1.3.3",
   "description": "chrome extension",
   "scripts": {
     "clean": "rimraf ../../dist",
@@ -10,7 +10,6 @@
     "build:firefox:watch": "cross-env __DEV__=true __FIREFOX__=true vite build --mode development",
     "dev": "pnpm build:watch",
     "dev:firefox": "pnpm build:firefox:watch",
-    "test": "vitest run",
     "lint": "eslint ./ --ext .ts,.js,.tsx,.jsx",
     "lint:fix": "pnpm lint --fix",
     "prettier": "prettier . --write --ignore-path ../.prettierignore",

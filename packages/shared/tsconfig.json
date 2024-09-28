@@ -13,10 +13,9 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
-    "moduleResolution": "NodeNext",
-    "resolveJsonModule": true,
-    "rootDir": "src"
+    "moduleResolution": "Node16",
+    "resolveJsonModule": true
   },
-  "include": ["./src/**/*", "**/*.d.ts"],
+  "include": ["./src/**/*", "**/*.d.ts", "index.ts"],
   "exclude": ["dist", "node_modules"]
 }

@@ -1,15 +1,13 @@
+import { LANGUAGE_LIST } from '@extension/shared/constants';
+import { useFetch } from '@extension/shared/hooks';
+import { convertToCSVBlob, convertToJSONBlob, downloadBlob } from '@extension/shared/utils';
 import {
-  convertToCSVBlob,
-  convertToJSONBlob,
-  downloadBlob,
   getMemoList,
   I18n,
-  LANGUAGE_LIST,
   OptionStorage,
   Storage,
   STORAGE_TYPE_OPTION_LANGUAGE,
-  useFetch,
-} from '@extension/shared';
+} from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 import '@src/Options.css';
 import { overlay } from 'overlay-kit';

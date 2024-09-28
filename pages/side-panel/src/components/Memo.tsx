@@ -1,21 +1,13 @@
-import {
-  I18n,
-  isUserPreferDarkMode,
-  MemoStorage,
-  MemoStorageType,
-  responseUpdateSidePanel,
-  Tab,
-  urlToKey,
-  useDidMount,
-  useFetch,
-  useThrottle,
-  WEB_URL,
-} from '@extension/shared';
-import { Toast } from '@extension/ui';
 import { saveMemoStorage } from '@src/utils';
 import { overlay } from 'overlay-kit';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TopRightArrow } from '../icons';
+import { isUserPreferDarkMode, urlToKey } from '@extension/shared/utils';
+import { I18n, MemoStorage, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
+import { useDidMount, useFetch, useThrottle } from '@extension/shared/hooks';
+import { MemoStorageType } from '@extension/shared/types';
+import { WEB_URL } from '@extension/shared/constants';
+import { Toast } from '@extension/ui';
 
 const OPTION_AUTO_SAVE = true;
 

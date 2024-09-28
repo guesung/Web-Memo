@@ -1,4 +1,6 @@
-import { getMemoList, I18n, MemoStorage, urlToKey, useFetch } from '@extension/shared';
+import { getMemoList, I18n, MemoStorage } from '@extension/shared/utils/extension';
+import { useFetch } from '@extension/shared/hooks';
+import { urlToKey } from '@extension/shared/utils';
 
 export default function MemoTable() {
   const { data: memoList, refetch: refetchMemo } = useFetch({

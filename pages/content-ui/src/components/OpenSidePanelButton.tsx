@@ -1,4 +1,4 @@
-import { requestOpenSidePanel } from '@extension/shared';
+import { requestOpenSidePanel } from '@extension/shared/utils/extension';
 
 export default function OpenSidePanelButton() {
   return (

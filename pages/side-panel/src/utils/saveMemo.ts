@@ -1,4 +1,6 @@
-import { MAKE_WEBHOOK_NOTION_API, MemoStorage, Tab, urlToKey } from '@extension/shared';
+import { MAKE_WEBHOOK_NOTION_API } from '@extension/shared/constants';
+import { urlToKey } from '@extension/shared/utils';
+import { MemoStorage, Tab } from '@extension/shared/utils/extension';
 
 const getMemoData = async (memo: string) => {
   const tab = await Tab.get();

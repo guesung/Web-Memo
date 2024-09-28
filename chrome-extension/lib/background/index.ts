@@ -1,7 +1,7 @@
+import { LANGUAGE_MAP, URL_FORM, URL_GUIDE_EN, URL_GUIDE_KO, WEB_URL } from '@extension/shared/constants';
+import { isProduction } from '@extension/shared/utils';
 import {
   I18n,
-  isProduction,
-  LANGUAGE_MAP,
   OptionStorage,
   requestObserverMemoPage,
   requestUpdateSidePanel,
@@ -9,11 +9,7 @@ import {
   Storage,
   STORAGE_TYPE_OPTION_LANGUAGE,
   Tab,
-  URL_FORM,
-  URL_GUIDE_EN,
-  URL_GUIDE_KO,
-  WEB_URL,
-} from '@extension/shared';
+} from '@extension/shared/utils/extension';
 import { getPrompt } from '@root/utils';
 import { openai } from '@root/utils/openai';
 import 'webextension-polyfill';

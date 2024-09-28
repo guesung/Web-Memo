@@ -10,7 +10,7 @@
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

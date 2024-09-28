@@ -2,7 +2,7 @@ import { createRoot } from 'react-dom/client';
 import '@src/index.css';
 import '@extension/ui/dist/global.css';
 import Options from '@src/Options';
-import { initSentry } from '@extension/shared';
+import { initSentry } from '@extension/shared/utils';
 
 initSentry();
 

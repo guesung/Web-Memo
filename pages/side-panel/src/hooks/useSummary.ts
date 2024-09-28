@@ -1,4 +1,5 @@
-import { BRIDGE_TYPE_GET_SUMMARY, I18n, requestPageContent, Runtime, useFetch } from '@extension/shared';
+import { useFetch } from '@extension/shared/hooks';
+import { BRIDGE_TYPE_GET_SUMMARY, I18n, requestPageContent, Runtime } from '@extension/shared/utils/extension';
 import { useState } from 'react';
 
 export default function useSummary() {

@@ -46,17 +46,17 @@ chrome.runtime.onInstalled.addListener(async () => {
 });
 
 // contextMenus 각 항목을 누를 때 해당하는 페이지로 이동한다.
-chrome.contextMenus.onClicked.addListener(async item => {
-  switch (item.menuItemId) {
-    case CONTEXT_MENU_ID_CHECK_MEMO:
-      await Tab.create({ url: `${WEB_URL}/memo` });
-      break;
-    case CONTEXT_MENU_ID_SHOW_GUIDE:
-      if (I18n.getUILanguage() === 'ko') Tab.create({ url: URL_GUIDE_KO });
-      else Tab.create({ url: URL_GUIDE_EN });
-      break;
-  }
-});
+// chrome.contextMenus.onClicked.addListener(async item => {
+//   switch (item.menuItemId) {
+//     case CONTEXT_MENU_ID_CHECK_MEMO:
+//       await Tab.create({ url: `${WEB_URL}/memo` });
+//       break;
+//     case CONTEXT_MENU_ID_SHOW_GUIDE:
+//       if (I18n.getUILanguage() === 'ko') Tab.create({ url: URL_GUIDE_KO });
+//       else Tab.create({ url: URL_GUIDE_EN });
+//       break;
+//   }
+// });
 
 chrome.runtime.setUninstallURL(URL_FORM);
 

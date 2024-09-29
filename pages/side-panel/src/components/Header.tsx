@@ -1,9 +1,10 @@
-import { isUserPreferDarkMode } from '@extension/shared/utils';
+import { useUserPreferDarkMode } from '@extension/shared/hooks';
 import { Option, Refresh } from '../icons';
 import { useSummaryContext } from './SummaryProvider';
 
 export default function Header() {
   const { isSummaryLoading, refetchSummary } = useSummaryContext();
+  const { isUserPreferDarkMode } = useUserPreferDarkMode();
 
   const handleOptionClick = () => {
     chrome.runtime.openOptionsPage();

@@ -54,10 +54,10 @@
     "message": "Saved successfully."
   },
   "error_get_page_content": {
-    "message": "Failed to retrieve page content."
+    "message": "Summarization is not possible on the following sites: New Tab, Chrome Web Store, Chrome Settings page. Please move to another page and press the retry button on the right. If you have newly installed the app, please refresh the page once"
   },
   "error_get_summary": {
-    "message": "Summarization is not possible on the following sites: New Tab, Chrome Web Store, Chrome Settings page. Please move to another page and press the retry button on the right"
+    "message": "Summarization failed. Please try again. If the same error occurs, please contact us using the contact information in the 'Guide' for prompt assistance."
   },
   "error_get_storage": {
     "message": "Failed to retrieve storage data."

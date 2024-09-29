@@ -89,8 +89,8 @@ jobs:
     #     run: pnpm run build
       # - name: run the web
       #   run: pnpm run start:web
-      - name: Install Playwright Browsers
-        run: pnpm exec playwright install --with-deps
+      # - name: Install Playwright Browsers
+      #   run: pnpm exec playwright install --with-deps
       - name: test
         run: pnpm exec playwright test
       - uses: actions/upload-artifact@v4

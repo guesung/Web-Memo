@@ -3,7 +3,8 @@
   "ui": "tui",
   "tasks": {
     "ready": {
-      "outputs": ["dist/**", "build/**"]
+      "outputs": ["dist/**", "build/**"],
+      "cache": false
     },
     "dev": {
       "dependsOn": ["ready"],
@@ -34,8 +35,7 @@
       "outputs": ["dist/**", "build/**"],
       "inputs": [".env"]
     },
-    "web:build": {
-      "dependsOn": ["^build"],
+    "start": {
       "env": ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"],
       "outputs": [".next/**", "!.next/cache/**"]
     },

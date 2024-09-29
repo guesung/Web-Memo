@@ -2,10 +2,10 @@ import { saveMemoStorage } from '@src/utils';
 import { overlay } from 'overlay-kit';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TopRightArrow } from '../icons';
-import { isUserPreferDarkMode } from '@extension/shared/utils/web';
+
 import { urlToKey } from '@extension/shared/utils';
 import { I18n, MemoStorage, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
-import { useDidMount, useFetch, useThrottle } from '@extension/shared/hooks';
+import { useDidMount, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
 import { MemoStorageType } from '@extension/shared/types';
 import { WEB_URL } from '@extension/shared/constants';
 import { Toast } from '@extension/ui';
@@ -25,6 +25,7 @@ export default function Memo() {
   const [isSaved, setIsSaved] = useState(true);
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const getMemoValue = useCallback(() => memoRef?.current?.value ?? '', [memoRef]);
+  const { isUserPreferDarkMode } = useUserPreferDarkMode();
 
   useDidMount(() => responseUpdateSidePanel(refetchtab));
   useEffect(() => {

@@ -1,6 +1,6 @@
 {
   "name": "chrome-extension",
-  "version": "1.3.5",
+  "version": "1.3.6",
   "description": "chrome extension",
   "scripts": {
     "clean": "rimraf ../../dist",

@@ -6,6 +6,9 @@
     "types": ["chrome"],
     "emitDeclarationOnly": false,
     "baseUrl": ".",
+    "paths": {
+      "@src/*": ["./src/*"]
+    },
     "strictPropertyInitialization": false,
     "declaration": true,
     "target": "esnext",

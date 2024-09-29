@@ -1,8 +1,8 @@
-import { MemoType } from '../../types';
-import { formatDate } from '../date';
+import { MemoType } from '@src/types';
 import { MemoStorage } from './module';
 import type { Session } from '@supabase/supabase-js';
-import { SUPABASE_AUTH_TOKEN, WEB_URL } from '../../constants';
+import { formatDate } from '@src/utils/date';
+import { SUPABASE_AUTH_TOKEN, WEB_URL } from '@src/constants';
 
 export const getMemoList = async (): Promise<MemoType[]> => {
   const memoStorage = await MemoStorage.get();

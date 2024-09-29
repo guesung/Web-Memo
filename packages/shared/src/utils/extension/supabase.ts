@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../../constants';
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
 import { getSession } from './storage';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

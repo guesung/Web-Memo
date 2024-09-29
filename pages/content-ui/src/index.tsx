@@ -19,12 +19,14 @@ const renderMemoList = () => {
 };
 
 const renderOpenSidePanelButton = async () => {
-  if (isProduction) return;
-
-  attachShadowTree({
-    shadowHostId: OPEN_SIDE_PANEL_ID,
-    shadowTree: <OpenSidePanelButton />,
-  });
+  const isCIEnvironment = process.env.CI;
+  // CI 환경이거나, 개발 환경에서만 보여준다.
+  if (isCIEnvironment || !isProduction) {
+    attachShadowTree({
+      shadowHostId: OPEN_SIDE_PANEL_ID,
+      shadowTree: <OpenSidePanelButton />,
+    });
+  }
 };
 
 responseObserverMemoPage(renderMemoList);

@@ -1,4 +1,4 @@
-import { isUserPreferDarkMode } from '@extension/shared/utils';
+import { isUserPreferDarkMode } from '@extension/shared/utils/web';
 import { Option, Refresh } from '../icons';
 import { useSummaryContext } from './SummaryProvider';
 

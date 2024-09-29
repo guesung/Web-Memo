@@ -61,7 +61,6 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: artifact
           github-token: ${{ secrets.GH_PAT }} # token with actions:read permissions on target repo
           repository: guesung/Web-Memo
           run-id: 11090262963

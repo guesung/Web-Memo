@@ -5,6 +5,9 @@ on:
     branches: 
       - 'develop'
       - 'master'
+  push:
+    branches:
+      - 'master'
 
 jobs:
   lint:

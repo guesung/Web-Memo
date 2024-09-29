@@ -2,7 +2,7 @@ import { expect, test } from './fixtures';
 
 test.describe('메모 테이블을 테스트한다', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3000/memo', { timeout: 3000 });
+    await page.goto('https://web-memos.vercel.app/memo', { timeout: 3000 });
   });
   test('메모 테이블의 title을 체크한다', async ({ page }) => {
     await expect(page).toHaveTitle('Web Memo');

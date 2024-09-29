@@ -82,8 +82,8 @@ jobs:
 
       - name: build
         run: pnpm run build
-      - name: run the web
-        run: pnpm run start:web
+      # - name: run the web
+      #   run: pnpm run start:web
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: test

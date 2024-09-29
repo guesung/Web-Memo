@@ -3,6 +3,9 @@ import * as esbuild from 'esbuild';
 import { nodeExternalsPlugin } from 'esbuild-node-externals';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 dotenv.config();
 const define = {};
@@ -20,6 +23,10 @@ const libBuildOptions = {
   target: 'es6',
   plugins: [nodeExternalsPlugin()],
   define,
+  bundle: true,
+  alias: {
+    '@src': resolve(__dirname, './src'),
+  },
 };
 
 const build = async () => {

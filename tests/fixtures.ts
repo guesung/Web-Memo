@@ -14,6 +14,7 @@ export const test = base.extend<{
     const context = await chromium.launchPersistentContext('', {
       headless: false,
       args: [`--headless=new`, `--disable-extensions-except=${pathToExtension}`, `--load-extension=${pathToExtension}`],
+      timeout: 10 * 1000,
     });
     await use(context);
     await context.close();

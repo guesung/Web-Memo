@@ -69,8 +69,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-      # - name: pnpm install
-      #   run: pnpm install --frozen-lockfile --prefer-offline
+      - name: pnpm install
+        run: pnpm install --frozen-lockfile --prefer-offline
     #   - name: setting environment variables
     #     run: |
     #       echo OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} >> packages/shared/.env
@@ -89,8 +89,8 @@ jobs:
     #     run: pnpm run build
       # - name: run the web
       #   run: pnpm run start:web
-      # - name: Install Playwright Browsers
-      #   run: pnpm exec playwright install --with-deps
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps
       - name: test
         run: pnpm exec playwright test
       - uses: actions/upload-artifact@v4

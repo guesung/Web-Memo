@@ -18,15 +18,8 @@ export const test = base.extend<{
     await use(context);
     await context.close();
   },
-  extensionId: async ({ context }, use) => {
-    let [background] = context.serviceWorkers();
-    if (!background)
-      background = await context.waitForEvent('serviceworker', {
-        timeout: 5000,
-      });
-
-    const extensionId = background.url().split('/')[2];
-    await use(extensionId);
+  extensionId: async ({}, use) => {
+    await use('eaiojpmgklfngpjddhoalgcpkepgkclh');
   },
 });
 export const expect = test.expect;

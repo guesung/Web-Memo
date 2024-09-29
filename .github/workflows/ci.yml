@@ -64,13 +64,13 @@ jobs:
           github-token: ${{ secrets.GH_PAT }} # token with actions:read permissions on target repo
           repository: guesung/Web-Memo
           run-id: 11090262963
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-      - name: pnpm install
-        run: pnpm install --frozen-lockfile --prefer-offline
+      # - uses: actions/checkout@v4
+      # - uses: pnpm/action-setup@v4
+      # - uses: actions/setup-node@v4
+      #   with:
+      #     node-version-file: '.nvmrc'
+      # - name: pnpm install
+      #   run: pnpm install --frozen-lockfile --prefer-offline
     #   - name: setting environment variables
     #     run: |
     #       echo OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} >> packages/shared/.env
@@ -92,7 +92,7 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: test
-        run: pnpm run test
+        run: npx exec playwright test
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:

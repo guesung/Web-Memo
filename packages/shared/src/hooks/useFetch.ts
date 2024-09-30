@@ -17,6 +17,9 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
   const fetch = useCallback(async () => {
     try {
       setStatus('loading');
+      setTimeout(() => {
+        if (status === 'loading') throw new Error(I18n.get('toast_error_common'));
+      }, 3000);
       const data = await fetchFn();
 
       setData(data);

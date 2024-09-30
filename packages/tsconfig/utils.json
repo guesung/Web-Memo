@@ -5,9 +5,9 @@
   "compilerOptions": {
     "noEmit": false,
     "declaration": true,
+    "target": "ES6",
+    "types": ["node"],
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "target": "ES6",
-    "types": ["node"]
   }
 }

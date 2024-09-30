@@ -62,6 +62,9 @@
   "error_get_storage": {
     "message": "Failed to retrieve storage data."
   },
+  "toast_error_storage_exceeded": {
+    "message": "Storage space is full."
+  },
   "context_menus_check_memo": {
     "message": "Check memo"
   },

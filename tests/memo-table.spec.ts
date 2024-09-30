@@ -8,7 +8,7 @@ test.describe('메모 테이블을 테스트한다', () => {
     await expect(page).toHaveTitle('Web Memo');
   });
   test('메모 테이블이 비었을 때를 체크한다.', async ({ page }) => {
-    const emptyElem = page.getByText('No memo');
+    const emptyElem = page.getByText('There is no memo');
     expect(emptyElem).toBeVisible();
   });
 });

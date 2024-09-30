@@ -5,7 +5,7 @@ import { TopRightArrow } from '../icons';
 import { WEB_URL } from '@extension/shared/constants';
 import { useDidMount, useError, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
 import { MemoStorageType } from '@extension/shared/types';
-import { toErrorWithMessage, urlToKey } from '@extension/shared/utils';
+import { formatUrl, toErrorWithMessage } from '@extension/shared/utils';
 import { I18n, MemoStorage, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 
@@ -30,7 +30,7 @@ export default function Memo() {
   useDidMount(() => responseUpdateSidePanel(refetchtab));
   useEffect(() => {
     if (!memoRef.current) return;
-    memoRef.current.value = memoList?.[urlToKey(tab?.url)]?.memo ?? '';
+    memoRef.current.value = memoList?.[formatUrl(tab?.url)]?.memo ?? '';
   }, [memoList, tab?.url]);
 
   const saveMemoStorage = useCallback(

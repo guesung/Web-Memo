@@ -1,16 +1,3 @@
-import {
-  getSession,
-  I18n,
-  insertMemo,
-  LANGUAGE_LIST,
-  MemoStorage,
-  OptionStorage,
-  removeSession,
-  Storage,
-  STORAGE_TYPE_OPTION_LANGUAGE,
-  useFetch,
-  WEB_URL,
-} from '@extension/shared';
 import { LANGUAGE_LIST } from '@extension/shared/constants';
 import { useFetch } from '@extension/shared/hooks';
 import { convertToCSVBlob, convertToJSONBlob, downloadBlob } from '@extension/shared/utils';
@@ -50,19 +37,18 @@ export default function OptionForm() {
     await chrome.storage.sync.clear();
   };
 
-  const handleLogoutClick = async () => {
-    await removeSession();
-    await refetchSessionData();
-  };
+  // const handleLogoutClick = async () => {
+  //   await removeSession();
+  // };
 
-  const handleMigrateClick = async () => {
-    const memoList = await MemoStorage.get();
-    const newMemoList = Object.values(memoList).map(memo => {
-      const { date, ...props } = memo;
-      return props;
-    });
-    await insertMemo(newMemoList);
-  };
+  // const handleMigrateClick = async () => {
+  //   const memoList = await MemoStorage.get();
+  //   const newMemoList = Object.values(memoList).map(memo => {
+  //     const { date, ...props } = memo;
+  //     return props;
+  //   });
+  //   await insertMemo(newMemoList);
+  // };
 
   const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -117,7 +103,7 @@ export default function OptionForm() {
               </button>
             </th>
           </tr>
-          <tr>
+          {/* <tr>
             <th>데이터 보존</th>
             <th>
               {sessionData ? (
@@ -130,8 +116,8 @@ export default function OptionForm() {
                 </a>
               )}
             </th>
-          </tr>
-          <tr>
+          </tr> */}
+          {/* <tr>
             <th>브라우저 저장소에서 전역 저장소로 마이그레이션</th>
             <th>
               {sessionData ? (
@@ -142,7 +128,7 @@ export default function OptionForm() {
                 <span>로그인을 먼저 해주세요.</span>
               )}
             </th>
-          </tr>
+          </tr> */}
         </tbody>
       </table>
       <div className="my-12 flex justify-end">

@@ -1,6 +1,6 @@
-import { Database, isServer } from '@extension/shared';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
 import { createClient } from '@supabase/supabase-js';
+import { Database } from '@extension/shared/types';
 import { isServer } from '@extension/shared/utils/web';
 
 const getSupabaseClient = () => {

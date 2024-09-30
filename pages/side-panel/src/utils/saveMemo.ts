@@ -1,8 +1,7 @@
-import { updateMemo, MemoStorage, Tab, formatUrl, getMemo, MemoType, insertMemo } from '@extension/shared';
-import { WEBHOOK_NOTION_API } from '@src/constants';
 import { MAKE_WEBHOOK_NOTION_API } from '@extension/shared/constants';
-import { urlToKey } from '@extension/shared/utils';
-import { MemoStorage, Tab } from '@extension/shared/utils/extension';
+import { MemoType } from '@extension/shared/types';
+import { formatUrl } from '@extension/shared/utils';
+import { getMemoSupabase, insertMemo, MemoStorage, Tab, updateMemo } from '@extension/shared/utils/extension';
 
 const getMemoMetaData = async (memo: string): Promise<MemoType> => {
   const tab = await Tab.get();
@@ -37,7 +36,7 @@ export const saveMemoNotion = async (memo: string) => {
 export const saveMemoSupabase = async (memo: string) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { date, ...memoData } = await getMemoMetaData(memo);
-  const { data: memoList } = await getMemo();
+  const { data: memoList } = await getMemoSupabase();
 
   const urlMatchMemo = memoList?.find(memo => memo.url === memoData.url);
 

@@ -62,6 +62,9 @@
   "error_get_storage": {
     "message": "스토리지 데이터를 가져오는데 실패했습니다."
   },
+  "toast_error_storage_exceeded": {
+    "message": "저장 공간이 가득 찼습니다."
+  },
   "context_menus_check_memo": {
     "message": "메모 확인하기"
   },

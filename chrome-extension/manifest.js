@@ -35,6 +35,8 @@ const manifest = deepmerge(
       default_icon: 'icon-34.png',
     },
     icons: {
+      16: 'icon-16.png',
+      48: 'icon-48.png',
       128: 'icon-128.png',
     },
     content_scripts: [
@@ -49,7 +51,7 @@ const manifest = deepmerge(
     ],
     web_accessible_resources: [
       {
-        resources: ['*.js', '*.css', '*.svg', 'icon-128.png', 'icon-34.png'],
+        resources: ['*.js', '*.css', '*.svg', 'icon-128.png', 'icon-34.png', 'icon-16.png', 'icon-48.png'],
         matches: ['*://*/*'],
       },
     ],

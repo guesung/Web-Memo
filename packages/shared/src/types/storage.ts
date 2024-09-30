@@ -1,4 +1,4 @@
-import { STORAGE_TYPE_OPTION_LANGUAGE } from '@src/utils/extension/module';
+import { STORAGE_TYPE_OPTION_LANGUAGE, STORAGE_TYPE_OPTION_LIST } from '@src/utils/extension/module';
 import { LANGUAGE_LIST } from '@src/constants';
 
 export type MemoType = {
@@ -8,12 +8,13 @@ export type MemoType = {
   memo: string;
 };
 
-export type MemoStorageType = {
+export type StorageMemoType = {
   [key: string]: MemoType;
 };
 
-export type LanguageOptionStorageType = {
+export type StorageOptionType = {
   [STORAGE_TYPE_OPTION_LANGUAGE]: (typeof LANGUAGE_LIST)[number]['inEnglish'];
 };
+export type StorageOptionKeyType = (typeof STORAGE_TYPE_OPTION_LIST)[number];
 
-export type StorageType = MemoStorageType | LanguageOptionStorageType;
+export type StorageType = StorageMemoType | StorageOptionType;

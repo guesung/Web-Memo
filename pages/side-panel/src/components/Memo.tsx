@@ -4,8 +4,15 @@ import { TopRightArrow } from '../icons';
 
 import { WEB_URL } from '@extension/shared/constants';
 import { useDidMount, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
-import { StorageMemoType } from '@extension/shared/types';
-import { getFormattedMemo, I18n, MemoStorage, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
+import { MemoType } from '@extension/shared/types';
+import {
+  getFormattedMemo,
+  getMemoList,
+  I18n,
+  MemoStorage,
+  responseUpdateSidePanel,
+  Tab,
+} from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 
 const OPTION_AUTO_SAVE = true;
@@ -15,9 +22,9 @@ export default function Memo() {
     fetchFn: Tab.get,
     defaultValue: {} as chrome.tabs.Tab,
   });
-  const { data: memoList, refetch: refetchMemoList } = useFetch<StorageMemoType>({
-    fetchFn: MemoStorage.get,
-    defaultValue: {} as StorageMemoType,
+  const { data: memoList, refetch: refetchMemoList } = useFetch<MemoType[]>({
+    fetchFn: getMemoList,
+    defaultValue: [] as MemoType[],
   });
   const [isSaved, setIsSaved] = useState(true);
 
@@ -36,7 +43,7 @@ export default function Memo() {
 
   useEffect(() => {
     if (!memoRef.current || !tab?.url) return;
-    memoRef.current.value = memoList?.[tab?.url]?.memo ?? '';
+    memoRef.current.value = memoList?.find(memo => memo.url === tab.url)?.memo ?? '';
   }, [memoList, tab?.url]);
 
   const saveMemoStorage = useCallback(async (memo: string) => {

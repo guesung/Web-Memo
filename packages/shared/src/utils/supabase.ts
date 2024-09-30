@@ -1,5 +1,6 @@
 import { MemoSupabaseClient, MemoTable } from '@src/types';
 import { type Provider } from '@supabase/supabase-js';
+import { getMemoMetaData } from './extension';
 
 export const getMemoSupabase = async (supabaseClient: MemoSupabaseClient) => supabaseClient.from('memo').select('*');
 
@@ -16,3 +17,14 @@ export const signInOAuth = async (supabaseClient: MemoSupabaseClient, provider: 
   supabaseClient.auth.signInWithOAuth({
     provider,
   });
+
+export const saveMemoSupabase = async (supabaseClient: MemoSupabaseClient, memo: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { date, ...memoData } = await getMemoMetaData(memo);
+  const { data: memoList } = await getMemoSupabase(supabaseClient);
+
+  const urlMatchMemo = memoList?.find(memo => memo.url === memoData.url);
+
+  if (urlMatchMemo === undefined) await insertMemo(supabaseClient, memoData);
+  else await updateMemo(supabaseClient, memoData);
+};

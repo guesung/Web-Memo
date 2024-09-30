@@ -39,7 +39,7 @@ export default function Memo() {
         await saveMemoStorage(memo);
         setIsSaved(true);
       } catch (error) {
-        setError(toErrorWithMessage(I18n.get('error_storage_exceeded')));
+        setError(toErrorWithMessage(I18n.get('toast_error_storage_exceeded')));
       }
     },
     [setError],
@@ -59,14 +59,14 @@ export default function Memo() {
     if (e.metaKey && e.key === 's') {
       e.preventDefault();
       await saveMemoStorage(getMemoValue());
-      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
+      if (isSaved) overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
     }
   };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     saveMemoStorage(getMemoValue());
-    overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
+    if (isSaved) overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
   };
 
   return (

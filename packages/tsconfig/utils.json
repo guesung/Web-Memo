@@ -6,6 +6,8 @@
     "noEmit": false,
     "declaration": true,
     "target": "ES6",
-    "types": ["node"]
+    "types": ["node"],
+    "module": "CommonJS",
+    "moduleResolution": "Node",
   }
 }

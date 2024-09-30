@@ -1,5 +1,6 @@
 import { MemoType } from '@src/types';
 import { Tab } from '.';
+import { formatUrl } from '../url';
 
 export const getFormattedMemo = async (memo: string): Promise<MemoType> => {
   const tab = await Tab.get();
@@ -10,6 +11,6 @@ export const getFormattedMemo = async (memo: string): Promise<MemoType> => {
     title: tab.title,
     memo,
     date: new Date().toISOString(),
-    url: tab.url,
+    url: formatUrl(tab.url),
   };
 };

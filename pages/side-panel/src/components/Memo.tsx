@@ -5,7 +5,6 @@ import { TopRightArrow } from '../icons';
 import { WEB_URL } from '@extension/shared/constants';
 import { useDidMount, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
 import { StorageMemoType } from '@extension/shared/types';
-import { formatUrl } from '@extension/shared/utils';
 import { getFormattedMemo, I18n, MemoStorage, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 
@@ -20,10 +19,12 @@ export default function Memo() {
     fetchFn: MemoStorage.get,
     defaultValue: {} as StorageMemoType,
   });
-  const { throttle } = useThrottle();
   const [isSaved, setIsSaved] = useState(true);
+
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const getMemoValue = useCallback(() => memoRef?.current?.value ?? '', [memoRef]);
+
+  const { throttle } = useThrottle();
   const { isUserPreferDarkMode } = useUserPreferDarkMode();
 
   useDidMount(() =>
@@ -34,15 +35,14 @@ export default function Memo() {
   );
 
   useEffect(() => {
-    if (!memoRef.current) return;
-    console.log(memoList?.[formatUrl(tab?.url)]?.memo);
-    memoRef.current.value = memoList?.[formatUrl(tab?.url)]?.memo ?? '';
+    if (!memoRef.current || !tab?.url) return;
+    memoRef.current.value = memoList?.[tab?.url]?.memo ?? '';
   }, [memoList, tab?.url]);
 
   const saveMemoStorage = useCallback(async (memo: string) => {
     try {
       const memoData = await getFormattedMemo(memo);
-      const urlKey = formatUrl(memoData.url);
+      const urlKey = memoData.url;
 
       await MemoStorage.set(urlKey, memoData);
       setIsSaved(true);

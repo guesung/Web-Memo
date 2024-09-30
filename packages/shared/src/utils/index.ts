@@ -5,3 +5,4 @@ export * from './blob';
 export * from './environment';
 export * from './url';
 export * from './error';
+export * from './supabase';

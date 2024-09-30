@@ -3,8 +3,7 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
 import { getSession } from './storage';
 import { Database } from '@src/types';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const supabaseClientInstance: SupabaseClient<any, 'memo', any> | null = null;
+const supabaseClientInstance: SupabaseClient<Database, 'memo', Database['memo']> | null = null;
 
 export const getSupabaseClient = async () => {
   if (supabaseClientInstance) return supabaseClientInstance;
@@ -21,24 +20,4 @@ export const getSupabaseClient = async () => {
     },
   });
   return supabaseClient;
-};
-
-export const getMemoSupabase = async () => {
-  const supabaseClient = await getSupabaseClient();
-  return await supabaseClient.from('memo').select('*');
-};
-
-export const insertMemo = async (memoRequest: Database['memo']['Tables']['memo']['Insert']) => {
-  const supabaseClient = await getSupabaseClient();
-  return await supabaseClient.from('memo').insert(memoRequest).select();
-};
-
-export const updateMemo = async (memoRequest: Database['memo']['Tables']['memo']['Update']) => {
-  const supabaseClient = await getSupabaseClient();
-  return await supabaseClient.from('memo').update(memoRequest).eq('url', memoRequest).select();
-};
-
-export const upsertMemo = async (memoRequest: Database['memo']['Tables']['memo']['Insert']) => {
-  const supabaseClient = await getSupabaseClient();
-  return await supabaseClient.from('memo').upsert(memoRequest).select();
 };

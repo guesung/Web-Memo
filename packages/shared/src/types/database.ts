@@ -54,6 +54,8 @@ export type Database = {
   };
 };
 
+export type MemoTable = Database['memo']['Tables']['memo'];
+
 type PublicSchema = Database[Extract<keyof Database, 'public'>];
 
 export type Tables<

@@ -3,10 +3,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { TopRightArrow } from '../icons';
 
 import { WEB_URL } from '@extension/shared/constants';
-import { useDidMount, useError, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
-import { MemoStorageType } from '@extension/shared/types';
-import { formatUrl, toErrorWithMessage } from '@extension/shared/utils';
-import { I18n, MemoStorage, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
+import { useDidMount, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
+import { StorageMemoType } from '@extension/shared/types';
+import { formatUrl } from '@extension/shared/utils';
+import { getMemoMetaData, I18n, MemoStorage, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 
 const OPTION_AUTO_SAVE = true;
@@ -16,34 +16,39 @@ export default function Memo() {
     fetchFn: Tab.get,
     defaultValue: {} as chrome.tabs.Tab,
   });
-  const { data: memoList } = useFetch<MemoStorageType>({
+  const { data: memoList, refetch: refetchMemoList } = useFetch<StorageMemoType>({
     fetchFn: MemoStorage.get,
-    defaultValue: {} as MemoStorageType,
+    defaultValue: {} as StorageMemoType,
   });
   const { throttle } = useThrottle();
   const [isSaved, setIsSaved] = useState(true);
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const getMemoValue = useCallback(() => memoRef?.current?.value ?? '', [memoRef]);
   const { isUserPreferDarkMode } = useUserPreferDarkMode();
-  const { setError } = useError();
 
-  useDidMount(() => responseUpdateSidePanel(refetchtab));
+  useDidMount(() =>
+    responseUpdateSidePanel(() => {
+      refetchtab();
+      refetchMemoList();
+    }),
+  );
   useEffect(() => {
     if (!memoRef.current) return;
+    console.log(memoList?.[formatUrl(tab?.url)]?.memo);
     memoRef.current.value = memoList?.[formatUrl(tab?.url)]?.memo ?? '';
   }, [memoList, tab?.url]);
 
-  const saveMemoStorage = useCallback(
-    async (memo: string) => {
-      try {
-        await saveMemoStorage(memo);
-        setIsSaved(true);
-      } catch (error) {
-        setError(toErrorWithMessage(I18n.get('toast_error_storage_exceeded')));
-      }
-    },
-    [setError],
-  );
+  const saveMemoStorage = useCallback(async (memo: string) => {
+    try {
+      const memoData = await getMemoMetaData(memo);
+      const urlKey = formatUrl(memoData.url);
+
+      await MemoStorage.set(urlKey, memoData);
+      setIsSaved(true);
+    } catch (error) {
+      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_error_storage_exceeded')} onClose={unmount} />);
+    }
+  }, []);
 
   const handleMemoClick = () => {
     Tab.create({ url: `${WEB_URL}/memo` });
@@ -59,14 +64,14 @@ export default function Memo() {
     if (e.metaKey && e.key === 's') {
       e.preventDefault();
       await saveMemoStorage(getMemoValue());
-      if (isSaved) overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
+      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
     }
   };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     saveMemoStorage(getMemoValue());
-    if (isSaved) overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
+    overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
   };
 
   return (

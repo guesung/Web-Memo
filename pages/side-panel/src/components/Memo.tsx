@@ -6,7 +6,7 @@ import { WEB_URL } from '@extension/shared/constants';
 import { useDidMount, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
 import { StorageMemoType } from '@extension/shared/types';
 import { formatUrl } from '@extension/shared/utils';
-import { getMemoMetaData, I18n, MemoStorage, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
+import { getFormattedMemo, I18n, MemoStorage, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 
 const OPTION_AUTO_SAVE = true;
@@ -32,6 +32,7 @@ export default function Memo() {
       refetchMemoList();
     }),
   );
+
   useEffect(() => {
     if (!memoRef.current) return;
     console.log(memoList?.[formatUrl(tab?.url)]?.memo);
@@ -40,7 +41,7 @@ export default function Memo() {
 
   const saveMemoStorage = useCallback(async (memo: string) => {
     try {
-      const memoData = await getMemoMetaData(memo);
+      const memoData = await getFormattedMemo(memo);
       const urlKey = formatUrl(memoData.url);
 
       await MemoStorage.set(urlKey, memoData);

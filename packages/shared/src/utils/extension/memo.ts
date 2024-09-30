@@ -1,7 +1,7 @@
 import { MemoType } from '@src/types';
 import { Tab } from '.';
 
-export const getMemoMetaData = async (memo: string): Promise<MemoType> => {
+export const getFormattedMemo = async (memo: string): Promise<MemoType> => {
   const tab = await Tab.get();
 
   if (!tab.url || !tab.title) throw new Error('Save Failed: Invalid URL');

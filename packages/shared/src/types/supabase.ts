@@ -1,3 +1,5 @@
+import { SupabaseClient } from '@supabase/supabase-js';
+
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
@@ -55,6 +57,7 @@ export type Database = {
 };
 
 export type MemoTable = Database['memo']['Tables']['memo'];
+export type MemoSupabaseClient = SupabaseClient<Database, 'memo', Database['memo']>;
 
 type PublicSchema = Database[Extract<keyof Database, 'public'>];
 

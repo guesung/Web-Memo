@@ -1,9 +1,9 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
+import { Database, MemoSupabaseClient } from '@src/types';
+import { createClient } from '@supabase/supabase-js';
 import { getSession } from './storage';
-import { Database } from '@src/types';
 
-const supabaseClientInstance: SupabaseClient<Database, 'memo', Database['memo']> | null = null;
+const supabaseClientInstance: MemoSupabaseClient | null = null;
 
 export const getSupabaseClient = async () => {
   if (supabaseClientInstance) return supabaseClientInstance;

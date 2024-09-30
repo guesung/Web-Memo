@@ -1,13 +1,12 @@
-import { saveMemoStorage } from '@src/utils';
 import { overlay } from 'overlay-kit';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TopRightArrow } from '../icons';
 
-import { urlToKey } from '@extension/shared/utils';
-import { I18n, MemoStorage, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
-import { useDidMount, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
-import { MemoStorageType } from '@extension/shared/types';
 import { WEB_URL } from '@extension/shared/constants';
+import { useDidMount, useError, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
+import { MemoStorageType } from '@extension/shared/types';
+import { toErrorWithMessage, urlToKey } from '@extension/shared/utils';
+import { I18n, MemoStorage, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 
 const OPTION_AUTO_SAVE = true;
@@ -26,6 +25,7 @@ export default function Memo() {
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const getMemoValue = useCallback(() => memoRef?.current?.value ?? '', [memoRef]);
   const { isUserPreferDarkMode } = useUserPreferDarkMode();
+  const { setError } = useError();
 
   useDidMount(() => responseUpdateSidePanel(refetchtab));
   useEffect(() => {
@@ -33,11 +33,17 @@ export default function Memo() {
     memoRef.current.value = memoList?.[urlToKey(tab?.url)]?.memo ?? '';
   }, [memoList, tab?.url]);
 
-  const saveMemoAndRefetchStorage = useCallback(async (memo: string, showOverlay = false) => {
-    await saveMemoStorage(memo);
-    setIsSaved(true);
-    if (showOverlay) overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
-  }, []);
+  const saveMemoStorage = useCallback(
+    async (memo: string) => {
+      try {
+        await saveMemoStorage(memo);
+        setIsSaved(true);
+      } catch (error) {
+        setError(toErrorWithMessage(I18n.get('error_storage_exceeded')));
+      }
+    },
+    [setError],
+  );
 
   const handleMemoClick = () => {
     Tab.create({ url: `${WEB_URL}/memo` });
@@ -46,21 +52,21 @@ export default function Memo() {
   const handleTextAreaChange = () => {
     if (!OPTION_AUTO_SAVE) return;
     setIsSaved(false);
-    throttle(async () => {
-      await saveMemoAndRefetchStorage(getMemoValue());
-    });
+    throttle(() => saveMemoStorage(getMemoValue()));
   };
 
   const handleTextAreaKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.metaKey && e.key === 's') {
       e.preventDefault();
-      await saveMemoAndRefetchStorage(getMemoValue(), true);
+      await saveMemoStorage(getMemoValue());
+      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
     }
   };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    saveMemoAndRefetchStorage(getMemoValue(), true);
+    saveMemoStorage(getMemoValue());
+    overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
   };
 
   return (

@@ -1,6 +1,5 @@
 import { getMemoList, I18n, MemoStorage } from '@extension/shared/utils/extension';
 import { useFetch } from '@extension/shared/hooks';
-import { formatUrl } from '@extension/shared/utils';
 
 export default function MemoTable() {
   const { data: memoList, refetch: refetchMemo } = useFetch({
@@ -12,7 +11,7 @@ export default function MemoTable() {
     const answer = confirm('삭제하시겠습니까?');
     if (!answer) return;
 
-    await MemoStorage.remove(formatUrl(url));
+    await MemoStorage.remove(url);
     await refetchMemo();
   };
 

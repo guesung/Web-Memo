@@ -48,10 +48,10 @@ export class MemoStorage {
 }
 
 export class OptionStorage {
-  static async get(key: string): Promise<string | null> {
+  static async get(key?: string): Promise<string | null> {
     const storage = await Storage.get(key);
 
-    if (!isKeyStorageOption(key)) return null;
+    if (key && !isKeyStorageOption(key)) return null;
 
     if (!storage) throw new Error(I18n.get('error_get_storage'));
     const { option_language } = storage;

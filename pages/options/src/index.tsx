@@ -2,9 +2,9 @@ import { createRoot } from 'react-dom/client';
 import '@src/index.css';
 import '@extension/ui/dist/global.css';
 import Options from '@src/Options';
-import { initSentry } from '@extension/shared';
+import { initSentry } from '@extension/shared/utils';
 
-initSentry(import.meta.env.VITE_SENTRY_DSN);
+initSentry();
 
 function init() {
   const appContainer = document.querySelector('#app-container');

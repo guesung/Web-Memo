@@ -1,40 +1,34 @@
-import { createRoot } from 'react-dom/client';
-import App from '@src/app';
-// eslint-disable-next-line
-// @ts-ignore
-import tailwindcssOutput from '@src/tailwind-output.css?inline';
-import { responsePageContent } from '@extension/shared';
+import { MemoTable, OpenSidePanelButton } from './components';
+import { attachShadowTree } from './utils';
+import { MEMO_TABLE_ID, MEMO_TABLE_WRAPPER_ID, WEB_URL } from '@extension/shared/constants';
+import { OPEN_SIDE_PANEL_ID, responseObserverMemoPage, responsePageContent } from '@extension/shared/utils/extension';
+import { isProduction } from '@extension/shared/utils';
 
-const root = document.createElement('div');
-root.id = 'page-summary';
+const renderMemoList = () => {
+  const memoTableWrapper = document.getElementById(MEMO_TABLE_WRAPPER_ID) ?? document.getElementById('memo');
+  const memoTable = document.getElementById(MEMO_TABLE_ID);
+  const isMemoPage = location.href === `${WEB_URL}/memo`;
 
-document.body.append(root);
+  if (isMemoPage && memoTableWrapper && !memoTable) {
+    attachShadowTree({
+      shadowHostElement: memoTableWrapper,
+      shadowHostId: MEMO_TABLE_ID,
+      shadowTree: <MemoTable />,
+    });
+  }
+};
 
-const rootIntoShadow = document.createElement('div');
-rootIntoShadow.id = 'shadow-root';
+const renderOpenSidePanelButton = async () => {
+  if (isProduction) return;
 
-const shadowRoot = root.attachShadow({ mode: 'open' });
+  attachShadowTree({
+    shadowHostId: OPEN_SIDE_PANEL_ID,
+    shadowTree: <OpenSidePanelButton />,
+  });
+};
 
-/** Inject styles into shadow dom */
-const globalStyleSheet = new CSSStyleSheet();
-globalStyleSheet.replaceSync(tailwindcssOutput);
-shadowRoot.adoptedStyleSheets = [globalStyleSheet];
-/**
- * In the firefox environment, the adoptedStyleSheets bug may prevent style from being applied properly.
- *
- * @url https://bugzilla.mozilla.org/show_bug.cgi?id=1770592
- * @url https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite/pull/174
- *
- * Please refer to the links above and try the following code if you encounter the issue.
- *
-
- * const styleElement = document.createElement('style');
- * styleElement.innerHTML = tailwindcssOutput;
- * shadowRoot.appendChild(styleElement);
- * ```
- */
+responseObserverMemoPage(renderMemoList);
+renderMemoList();
+renderOpenSidePanelButton();
 
 responsePageContent();
-
-shadowRoot.appendChild(rootIntoShadow);
-createRoot(rootIntoShadow).render(<App />);

@@ -1,5 +1,8 @@
 import { updateMemo, MemoStorage, Tab, formatUrl, getMemo, MemoType, insertMemo } from '@extension/shared';
 import { WEBHOOK_NOTION_API } from '@src/constants';
+import { MAKE_WEBHOOK_NOTION_API } from '@extension/shared/constants';
+import { urlToKey } from '@extension/shared/utils';
+import { MemoStorage, Tab } from '@extension/shared/utils/extension';
 
 const getMemoMetaData = async (memo: string): Promise<MemoType> => {
   const tab = await Tab.get();
@@ -24,7 +27,7 @@ export const saveMemoStorage = async (memo: string) => {
 export const saveMemoNotion = async (memo: string) => {
   const memoData = await getMemoMetaData(memo);
 
-  const response = await fetch(WEBHOOK_NOTION_API, {
+  const response = await fetch(MAKE_WEBHOOK_NOTION_API, {
     method: 'POST',
     body: JSON.stringify(memoData),
   });

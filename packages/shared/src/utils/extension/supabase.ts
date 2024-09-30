@@ -1,9 +1,13 @@
-import { createClient } from '@supabase/supabase-js';
-import { Database } from 'src/types';
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../../constants';
-import { getSession } from './getSession';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
+import { getSession } from './storage';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const supabaseClientInstance: SupabaseClient<any, 'memo', any> | null = null;
 
 export const getSupabaseClient = async () => {
+  if (supabaseClientInstance) return supabaseClientInstance;
+
   const user = await getSession();
   if (!user) throw new Error('없는 사용자입니다.');
 
@@ -18,7 +22,7 @@ export const getSupabaseClient = async () => {
   return supabaseClient;
 };
 
-export const getMemo = async () => {
+export const getMemoSupabase = async () => {
   const supabaseClient = await getSupabaseClient();
   return await supabaseClient.from('memo').select('*');
 };

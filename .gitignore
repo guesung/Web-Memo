@@ -25,5 +25,11 @@ chrome-extension/public/manifest.json
 
 vite.config.**
 
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
 # next
 .next

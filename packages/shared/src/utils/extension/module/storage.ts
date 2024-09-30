@@ -1,4 +1,4 @@
-import { MemoStorageType, MemoType, StorageType } from '../../../types';
+import { MemoStorageType, MemoType, StorageType } from '@src/types';
 import { I18n } from './i18n';
 
 // ref : https://developer.chrome.com/docs/extensions/reference/api/storage

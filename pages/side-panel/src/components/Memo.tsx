@@ -1,19 +1,13 @@
-import {
-  I18n,
-  MemoStorage,
-  MemoStorageType,
-  responseUpdateSidePanel,
-  Tab,
-  formatUrl,
-  useDidMount,
-  useFetch,
-  useThrottle,
-  getSession,
-} from '@extension/shared';
-import { Toast } from '@extension/ui';
-import { saveMemoStorage, saveMemoSupabase } from '@src/utils';
 import { overlay } from 'overlay-kit';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { TopRightArrow } from '../icons';
+
+import { WEB_URL } from '@extension/shared/constants';
+import { useDidMount, useError, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
+import { MemoStorageType } from '@extension/shared/types';
+import { toErrorWithMessage, urlToKey } from '@extension/shared/utils';
+import { I18n, MemoStorage, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
+import { Toast } from '@extension/ui';
 
 const OPTION_AUTO_SAVE = true;
 
@@ -22,43 +16,56 @@ export default function Memo() {
     fetchFn: Tab.get,
     defaultValue: {} as chrome.tabs.Tab,
   });
-  const { data: memoList, refetch: refetchMemo } = useFetch<MemoStorageType>({
+  const { data: memoList } = useFetch<MemoStorageType>({
     fetchFn: MemoStorage.get,
     defaultValue: {} as MemoStorageType,
   });
-  const { data: sessionData } = useFetch({
-    fetchFn: getSession,
-  });
   const { throttle } = useThrottle();
-  const [memo, setMemo] = useState('');
   const [isSaved, setIsSaved] = useState(true);
+  const memoRef = useRef<HTMLTextAreaElement>(null);
+  const getMemoValue = useCallback(() => memoRef?.current?.value ?? '', [memoRef]);
+  const { isUserPreferDarkMode } = useUserPreferDarkMode();
+  const { setError } = useError();
 
   useDidMount(() => responseUpdateSidePanel(refetchtab));
-  useEffect(() => setMemo(memoList?.[formatUrl(tab?.url)]?.memo ?? ''), [memoList, tab?.url]);
+  useEffect(() => {
+    if (!memoRef.current) return;
+    memoRef.current.value = memoList?.[urlToKey(tab?.url)]?.memo ?? '';
+  }, [memoList, tab?.url]);
 
-  const saveMemoAndRefetchStorage = useCallback(
+  const saveMemoStorage = useCallback(
     async (memo: string) => {
-      if (sessionData) await saveMemoSupabase(memo);
-      await saveMemoStorage(memo);
-
-      setIsSaved(true);
-      await refetchMemo();
+      try {
+        await saveMemoStorage(memo);
+        setIsSaved(true);
+      } catch (error) {
+        setError(toErrorWithMessage(I18n.get('error_storage_exceeded')));
+      }
     },
-    [refetchMemo, sessionData],
+    [setError],
   );
 
-  const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMemo(e.target.value);
+  const handleMemoClick = () => {
+    Tab.create({ url: `${WEB_URL}/memo` });
+  };
+
+  const handleTextAreaChange = () => {
     if (!OPTION_AUTO_SAVE) return;
     setIsSaved(false);
-    throttle(async () => {
-      await saveMemoAndRefetchStorage(e.target.value);
-    });
+    throttle(() => saveMemoStorage(getMemoValue()));
+  };
+
+  const handleTextAreaKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.metaKey && e.key === 's') {
+      e.preventDefault();
+      await saveMemoStorage(getMemoValue());
+      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
+    }
   };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    saveMemoAndRefetchStorage(memo);
+    saveMemoStorage(getMemoValue());
     overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
   };
 
@@ -66,14 +73,24 @@ export default function Memo() {
     <form className="form-control h-full" onSubmit={handleFormSubmit}>
       <div className="label">
         <span className="label-text whitespace-nowrap font-bold">{I18n.get('memo')}</span>
+        <span className="w-1" />
+        <TopRightArrow
+          width={20}
+          height={20}
+          fill={isUserPreferDarkMode ? 'black' : 'white'}
+          onClick={handleMemoClick}
+          className="cursor-pointer"
+        />
         <span className="w-4" />
-        <span className="label-text truncate w-full text-right text-neutral-content">{tab?.title}</span>
+        <span className="label-text truncate w-full text-right">{tab?.title}</span>
       </div>
       <textarea
         className="textarea textarea-bordered h-full resize-none"
+        id="memo-textarea"
         placeholder="memo"
-        value={memo}
         onChange={handleTextAreaChange}
+        onKeyDown={handleTextAreaKeyDown}
+        ref={memoRef}
       />
       <div className="label">
         {isSaved ? <span /> : <span className="loading loading-ring loading-xs" />}

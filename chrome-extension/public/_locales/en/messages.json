@@ -1,9 +1,12 @@
 {
   "extensionDescription": {
-    "message": "A browser extension that allows you to record important information while web surfing."
+    "message": "It's a browser extension that helps you easily take notes while web surfing."
   },
   "extensionName": {
     "message": "Web Memo"
+  },
+  "no_memo": {
+    "message": "There is no memo"
   },
   "memo": {
     "message": "Memo"
@@ -33,7 +36,13 @@
     "message": "Select prompt response language"
   },
   "reset_option": {
-    "message": "Reset settings and data"
+    "message": "Reset datas"
+  },
+  "download_csv_option": {
+    "message": "Download as CSV file"
+  },
+  "download_json_option": {
+    "message": "Download as JSON file"
   },
   "toast_save_option": {
     "message": "Settings have been saved."
@@ -45,12 +54,21 @@
     "message": "Saved successfully."
   },
   "error_get_page_content": {
-    "message": "Failed to retrieve page content."
+    "message": "Summarization is not possible on the following sites: New Tab, Chrome Web Store, Chrome Settings page. Please move to another page and press the retry button on the right. If you have newly installed the app, please refresh the page once"
   },
   "error_get_summary": {
-    "message": "Failed to retrieve summary."
+    "message": "Summarization failed. Please try again. If the same error occurs, please contact us using the contact information in the 'Guide' for prompt assistance."
   },
   "error_get_storage": {
     "message": "Failed to retrieve storage data."
+  },
+  "toast_error_storage_exceeded": {
+    "message": "Storage space is full."
+  },
+  "context_menus_check_memo": {
+    "message": "Check memo"
+  },
+  "context_menus_show_guide": {
+    "message": "Check Guide"
   }
 }

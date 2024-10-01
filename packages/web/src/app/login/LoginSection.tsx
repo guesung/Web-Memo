@@ -1,8 +1,10 @@
-import { signInOAuth } from '@src/utils';
 import Image from 'next/image';
+import { signInOAuth } from '@extension/shared/utils';
+import { getSupabaseClient } from '@extension/shared/utils/web';
 
 export default function LoginSection() {
-  const handleGoogleLogin = () => signInOAuth('google');
+  const supabaseClient = getSupabaseClient();
+  const handleGoogleLogin = () => signInOAuth(supabaseClient, 'google');
 
   return (
     <section className="flex justify-center flex-col gap-8">

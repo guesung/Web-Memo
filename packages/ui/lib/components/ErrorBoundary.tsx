@@ -1,8 +1,7 @@
 import * as Sentry from '@sentry/react';
-import { overlay } from 'overlay-kit';
 import type { ComponentType, ErrorInfo, PropsWithChildren } from 'react';
-import { Component } from 'react';
-import Toast from './Toast';
+import { Component, createElement } from 'react';
+import ErrorFallback from './ErrorFallback';
 
 export interface FallbackComponentProps {
   error: Error;
@@ -35,11 +34,22 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
     console.error(error, errorInfo);
   }
 
-  render() {
+  resetErrorBoundary() {
     const { error } = this.state;
     if (error) {
-      overlay.open(({ unmount }) => <Toast message={error.message} onClose={unmount} />);
+      this.props.onReset?.();
+      this.setState({ error: null });
     }
-    return this.props.children;
+  }
+
+  render() {
+    const { error } = this.state;
+    const { children, FallbackComponent } = this.props;
+    let childToRender = children;
+    if (error) {
+      const props: FallbackComponentProps = { error, resetErrorBoundary: this.resetErrorBoundary };
+      childToRender = createElement(FallbackComponent ?? ErrorFallback, props);
+    }
+    return childToRender;
   }
 }

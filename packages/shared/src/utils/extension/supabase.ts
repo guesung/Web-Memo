@@ -1,9 +1,9 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
+import { Database, MemoSupabaseClient } from '@src/types';
+import { createClient } from '@supabase/supabase-js';
 import { getSession } from './storage';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let supabaseClientInstance: SupabaseClient<any, 'memo', any> | null = null;
+const supabaseClientInstance: MemoSupabaseClient | null = null;
 
 export const getSupabaseClient = async () => {
   if (supabaseClientInstance) return supabaseClientInstance;
@@ -11,7 +11,7 @@ export const getSupabaseClient = async () => {
   const user = await getSession();
   if (!user) throw new Error('없는 사용자입니다.');
 
-  supabaseClientInstance = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  const supabaseClient = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     db: { schema: 'memo' },
     global: {
       headers: {
@@ -19,16 +19,5 @@ export const getSupabaseClient = async () => {
       },
     },
   });
-  return supabaseClientInstance;
-};
-
-export const getMemoSupabase = async () => {
-  const supabaseClient = await getSupabaseClient();
-  const response = await supabaseClient.from('memo').select('*');
-  return response;
-};
-
-export const insertMemoSupabase = async (memo: string) => {
-  const supabaseClient = await getSupabaseClient();
-  await supabaseClient.from('memo').insert({ memo });
+  return supabaseClient;
 };

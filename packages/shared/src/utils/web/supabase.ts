@@ -1,9 +1,10 @@
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
+import { Database } from '@src/types';
 import { createClient } from '@supabase/supabase-js';
-import { isServer } from '@extension/shared/utils/web';
+import { isServer } from './environment';
 
-const getSupabaseClient = () => {
-  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+export const getSupabaseClient = () =>
+  createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
       storage: {
         getItem: key => {
@@ -19,19 +20,3 @@ const getSupabaseClient = () => {
       },
     },
   });
-};
-
-export const supabaseClient = getSupabaseClient();
-
-export const getUser = async () => {
-  const user = await supabaseClient.auth.getUser();
-  return user;
-};
-
-type ProviderType = 'google' | 'kakao';
-
-export const signInOAuth = async (provider: ProviderType) => {
-  await supabaseClient.auth.signInWithOAuth({
-    provider,
-  });
-};

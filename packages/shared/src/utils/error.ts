@@ -10,11 +10,8 @@ function isErrorWithMessage(error: unknown): error is Error {
 export function toErrorWithMessage(maybeError: unknown): Error {
   if (isErrorWithMessage(maybeError)) return maybeError;
 
-  try {
-    return new Error(JSON.stringify(maybeError));
-  } catch {
-    return new Error(String(maybeError));
-  }
+  if (typeof maybeError === 'string') return new Error(maybeError);
+  else return new Error(JSON.stringify(maybeError));
 }
 export function getErrorMeesage(error: unknown) {
   return toErrorWithMessage(error).message;

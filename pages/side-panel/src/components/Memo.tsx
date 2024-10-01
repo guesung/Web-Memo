@@ -3,10 +3,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { TopRightArrow } from '../icons';
 
 import { WEB_URL } from '@extension/shared/constants';
-import { useDidMount, useError, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
-import { MemoStorageType } from '@extension/shared/types';
-import { toErrorWithMessage, urlToKey } from '@extension/shared/utils';
-import { I18n, MemoStorage, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
+import { useDidMount, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
+import { MemoType } from '@extension/shared/types';
+import {
+  getFormattedMemo,
+  getMemoList,
+  I18n,
+  MemoStorage,
+  responseUpdateSidePanel,
+  Tab,
+} from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 
 const OPTION_AUTO_SAVE = true;
@@ -16,34 +22,41 @@ export default function Memo() {
     fetchFn: Tab.get,
     defaultValue: {} as chrome.tabs.Tab,
   });
-  const { data: memoList } = useFetch<MemoStorageType>({
-    fetchFn: MemoStorage.get,
-    defaultValue: {} as MemoStorageType,
+  const { data: memoList, refetch: refetchMemoList } = useFetch<MemoType[]>({
+    fetchFn: getMemoList,
+    defaultValue: [] as MemoType[],
   });
-  const { throttle } = useThrottle();
   const [isSaved, setIsSaved] = useState(true);
+
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const getMemoValue = useCallback(() => memoRef?.current?.value ?? '', [memoRef]);
-  const { isUserPreferDarkMode } = useUserPreferDarkMode();
-  const { setError } = useError();
 
-  useDidMount(() => responseUpdateSidePanel(refetchtab));
+  const { throttle } = useThrottle();
+  const { isUserPreferDarkMode } = useUserPreferDarkMode();
+
+  useDidMount(() =>
+    responseUpdateSidePanel(() => {
+      refetchtab();
+      refetchMemoList();
+    }),
+  );
+
   useEffect(() => {
-    if (!memoRef.current) return;
-    memoRef.current.value = memoList?.[urlToKey(tab?.url)]?.memo ?? '';
+    if (!memoRef.current || !tab?.url) return;
+    memoRef.current.value = memoList?.find(memo => memo.url === tab.url)?.memo ?? '';
   }, [memoList, tab?.url]);
 
-  const saveMemoStorage = useCallback(
-    async (memo: string) => {
-      try {
-        await saveMemoStorage(memo);
-        setIsSaved(true);
-      } catch (error) {
-        setError(toErrorWithMessage(I18n.get('error_storage_exceeded')));
-      }
-    },
-    [setError],
-  );
+  const saveMemoStorage = useCallback(async (memo: string) => {
+    try {
+      const memoData = await getFormattedMemo(memo);
+      const urlKey = memoData.url;
+
+      await MemoStorage.set(urlKey, memoData);
+      setIsSaved(true);
+    } catch (error) {
+      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_error_storage_exceeded')} onClose={unmount} />);
+    }
+  }, []);
 
   const handleMemoClick = () => {
     Tab.create({ url: `${WEB_URL}/memo` });

@@ -8,7 +8,7 @@ interface UseFetchProps<TData> {
   defaultValue?: TData;
 }
 
-type StatusType = 'loading' | 'success' | 'rejected' | 'aborted';
+type StatusType = 'loading' | 'success' | 'rejected';
 
 export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps<TData>) {
   const [data, setData] = useState<TData | undefined>(defaultValue);

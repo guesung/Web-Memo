@@ -1,10 +1,16 @@
-import { MemoStorageType, MemoType, StorageType } from '@src/types';
+import { StorageMemoType, MemoType, StorageType, StorageOptionKeyType } from '@src/types';
 import { I18n } from './i18n';
 
-// ref : https://developer.chrome.com/docs/extensions/reference/api/storage
 export const STORAGE_TYPE_OPTION_LANGUAGE = 'option_language';
-const optionList = [STORAGE_TYPE_OPTION_LANGUAGE];
+export const STORAGE_TYPE_OPTION_STORAGE = 'storage';
+export const STORAGE_TYPE_OPTION_LIST = [STORAGE_TYPE_OPTION_LANGUAGE, STORAGE_TYPE_OPTION_STORAGE];
 
+function isKeyStorageOption(key: StorageOptionKeyType): key is StorageOptionKeyType {
+  if (STORAGE_TYPE_OPTION_LIST.includes(key)) return true;
+  return false;
+}
+
+// ref : https://developer.chrome.com/docs/extensions/reference/api/storage
 export class Storage {
   static async get(key?: string): Promise<StorageType | undefined> {
     try {
@@ -33,17 +39,19 @@ export class MemoStorage {
 
     return memoStorage;
   }
-  static async set(key: keyof MemoStorageType, value: MemoType): Promise<void> {
+  static async set(key: keyof StorageMemoType, value: MemoType): Promise<void> {
     await Storage.set(key as keyof StorageType, value);
   }
-  static async remove(key: keyof MemoStorageType): Promise<void> {
+  static async remove(key: keyof StorageMemoType): Promise<void> {
     await Storage.remove(key as keyof StorageType);
   }
 }
 
 export class OptionStorage {
-  static async get(key?: (typeof optionList)[number]): Promise<string> {
+  static async get(key?: string): Promise<string | null> {
     const storage = await Storage.get(key);
+
+    if (key && !isKeyStorageOption(key)) return null;
 
     if (!storage) throw new Error(I18n.get('error_get_storage'));
     const { option_language } = storage;

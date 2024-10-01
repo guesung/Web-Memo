@@ -15,7 +15,10 @@ import { FormEvent, useEffect, useRef } from 'react';
 
 export default function OptionForm() {
   const languageRef = useRef<HTMLSelectElement>(null);
-  const { data: optionData } = useFetch({ fetchFn: OptionStorage.get, defaultValue: '' });
+  const { data: optionData } = useFetch({
+    fetchFn: () => OptionStorage.get(STORAGE_TYPE_OPTION_LANGUAGE),
+    defaultValue: '',
+  });
   const { data: memoList } = useFetch({ fetchFn: getMemoList, defaultValue: [] });
 
   const handleCSVDownloadClick = () => {

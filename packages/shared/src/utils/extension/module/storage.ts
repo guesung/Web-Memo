@@ -48,7 +48,7 @@ export class MemoStorage {
 }
 
 export class OptionStorage {
-  static async get(key?: string): Promise<StorageType | null> {
+  static async get(key: string): Promise<StorageType | null> {
     const storageValue = await Storage.get(key);
 
     if (key && !isKeyStorageOption(key)) return null;

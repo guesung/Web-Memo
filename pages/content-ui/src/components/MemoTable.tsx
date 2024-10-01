@@ -11,7 +11,13 @@ export default function MemoTable() {
     const answer = confirm('삭제하시겠습니까?');
     if (!answer) return;
 
-    await MemoStorage.remove(url);
+    const memoStorge = await MemoStorage.get();
+    // TODO: url 포맷 마이그레이션을 위한 임시 코드
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    if (memoStorge[url]) await MemoStorage.remove(url);
+    else await MemoStorage.remove(encodeURIComponent(url));
+
     await refetchMemo();
   };
 

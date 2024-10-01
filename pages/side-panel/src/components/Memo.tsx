@@ -7,14 +7,18 @@ import { useDidMount, useFetch, useThrottle, useUserPreferDarkMode } from '@exte
 import { MemoType } from '@extension/shared/types';
 import {
   getMemoList,
+  getSupabaseClient,
   I18n,
   responseUpdateSidePanel,
   setMemo as setMemoStorage,
+  Storage,
   Tab,
 } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
+import { saveMemoSupabase } from '@extension/shared/utils';
 
 const OPTION_AUTO_SAVE = true;
+const OPTION_SAVE_STORAGE = 'supabase';
 
 export default function Memo() {
   const { data: tab, refetch: refetchtab } = useFetch({
@@ -46,11 +50,21 @@ export default function Memo() {
   }, [memoList, tab?.url]);
 
   const saveMemo = useCallback(async (memo: string) => {
-    try {
-      await setMemoStorage(memo);
-      setIsSaved(true);
-    } catch (error) {
-      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_error_storage_exceeded')} onClose={unmount} />);
+    Storage.get('');
+    if (OPTION_SAVE_STORAGE === 'supabase') {
+      const supabaseClient = await getSupabaseClient();
+      const a = await saveMemoSupabase(supabaseClient, memo);
+      console.log(a);
+      return;
+    }
+    if (OPTION_SAVE_STORAGE === 'chrome-storage') {
+      try {
+        await setMemoStorage(memo);
+        setIsSaved(true);
+      } catch (error) {
+        overlay.open(({ unmount }) => <Toast message={I18n.get('toast_error_storage_exceeded')} onClose={unmount} />);
+      }
+      return;
     }
   }, []);
 

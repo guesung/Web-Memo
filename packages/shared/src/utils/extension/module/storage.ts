@@ -1,9 +1,6 @@
 import { StorageMemoType, MemoType, StorageType, StorageOptionKeyType } from '@src/types';
 import { I18n } from './i18n';
-
-export const STORAGE_TYPE_OPTION_LANGUAGE = 'option_language';
-export const STORAGE_TYPE_OPTION_STORAGE = 'storage';
-export const STORAGE_TYPE_OPTION_LIST = [STORAGE_TYPE_OPTION_LANGUAGE, STORAGE_TYPE_OPTION_STORAGE];
+import { STORAGE_TYPE_OPTION_LIST } from '@src/constants';
 
 function isKeyStorageOption(key: StorageOptionKeyType): key is StorageOptionKeyType {
   if (STORAGE_TYPE_OPTION_LIST.includes(key)) return true;
@@ -12,11 +9,14 @@ function isKeyStorageOption(key: StorageOptionKeyType): key is StorageOptionKeyT
 
 // ref : https://developer.chrome.com/docs/extensions/reference/api/storage
 export class Storage {
-  static async get(key?: string): Promise<StorageType | undefined> {
+  static async get<T extends StorageType>(key?: string): Promise<T> {
     try {
       const storage = await chrome.storage.sync.get(key);
-      if (key) return storage[key];
-      return storage;
+      if (key) {
+        if (storage[key]) return storage[key];
+        else throw new Error(I18n.get('error_get_storage'));
+      }
+      return storage as T;
     } catch (error) {
       throw new Error(I18n.get('error_get_storage'));
     }
@@ -35,7 +35,7 @@ export class MemoStorage {
 
     if (!storage) throw new Error(I18n.get('error_get_storage'));
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { option_language, ...memoStorage } = storage;
+    const { LANGUAGE, ...memoStorage } = storage;
 
     return memoStorage;
   }

@@ -3,8 +3,7 @@ import { signInOAuth } from '@extension/shared/utils';
 import { getSupabaseClient } from '@extension/shared/utils/web';
 
 export default function LoginSection() {
-  const supabaseClient = getSupabaseClient();
-  const handleGoogleLogin = () => signInOAuth(supabaseClient, 'google');
+  const handleGoogleLogin = () => signInOAuth(getSupabaseClient(), 'google');
 
   return (
     <section className="flex justify-center flex-col gap-8">

@@ -1,4 +1,11 @@
-import { LANGUAGE_MAP, URL_FORM, URL_GUIDE_EN, URL_GUIDE_KO, WEB_URL } from '@extension/shared/constants';
+import {
+  LANGUAGE_MAP,
+  STORAGE_TYPE_OPTION_LANGUAGE,
+  URL_FORM,
+  URL_GUIDE_EN,
+  URL_GUIDE_KO,
+  WEB_URL,
+} from '@extension/shared/constants';
 import { isProduction } from '@extension/shared/utils';
 import {
   I18n,
@@ -7,7 +14,6 @@ import {
   requestUpdateSidePanel,
   responseOpenSidePanel,
   Storage,
-  STORAGE_TYPE_OPTION_LANGUAGE,
   Tab,
 } from '@extension/shared/utils/extension';
 import { getPrompt } from '@root/utils';

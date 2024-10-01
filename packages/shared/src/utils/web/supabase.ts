@@ -19,4 +19,5 @@ export const getSupabaseClient = () =>
         },
       },
     },
+    db: { schema: 'memo' },
   });

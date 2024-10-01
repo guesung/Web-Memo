@@ -6,11 +6,10 @@ import { WEB_URL } from '@extension/shared/constants';
 import { useDidMount, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
 import { MemoType } from '@extension/shared/types';
 import {
-  getFormattedMemo,
   getMemoList,
   I18n,
-  MemoStorage,
   responseUpdateSidePanel,
+  setMemo as setMemoStorage,
   Tab,
 } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
@@ -46,12 +45,9 @@ export default function Memo() {
     memoRef.current.value = memoList?.find(memo => memo.url === tab.url)?.memo ?? '';
   }, [memoList, tab?.url]);
 
-  const saveMemoStorage = useCallback(async (memo: string) => {
+  const saveMemo = useCallback(async (memo: string) => {
     try {
-      const memoData = await getFormattedMemo(memo);
-      const urlKey = memoData.url;
-
-      await MemoStorage.set(urlKey, memoData);
+      await setMemoStorage(memo);
       setIsSaved(true);
     } catch (error) {
       overlay.open(({ unmount }) => <Toast message={I18n.get('toast_error_storage_exceeded')} onClose={unmount} />);
@@ -65,20 +61,20 @@ export default function Memo() {
   const handleTextAreaChange = () => {
     if (!OPTION_AUTO_SAVE) return;
     setIsSaved(false);
-    throttle(() => saveMemoStorage(getMemoValue()));
+    throttle(() => saveMemo(getMemoValue()));
   };
 
   const handleTextAreaKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.metaKey && e.key === 's') {
       e.preventDefault();
-      await saveMemoStorage(getMemoValue());
+      await saveMemo(getMemoValue());
       overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
     }
   };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    saveMemoStorage(getMemoValue());
+    saveMemo(getMemoValue());
     overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
   };
 

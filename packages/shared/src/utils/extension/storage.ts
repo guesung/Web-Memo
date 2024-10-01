@@ -3,6 +3,7 @@ import { MemoStorage } from './module';
 import type { Session } from '@supabase/supabase-js';
 import { formatDate } from '@src/utils/date';
 import { SUPABASE_AUTH_TOKEN, WEB_URL } from '@src/constants';
+import { getFormattedMemo } from './memo';
 
 export const getMemoList = async (): Promise<MemoType[]> => {
   const memoStorage = await MemoStorage.get();
@@ -13,6 +14,13 @@ export const getMemoList = async (): Promise<MemoType[]> => {
       ...memo,
     }));
   return memoList;
+};
+
+export const setMemo = async (memo: string) => {
+  const memoData = await getFormattedMemo(memo);
+  const urlKey = memoData.url;
+
+  await MemoStorage.set(urlKey, memoData);
 };
 
 export const getSession = async () => {

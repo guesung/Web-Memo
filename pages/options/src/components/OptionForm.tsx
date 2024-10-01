@@ -37,19 +37,6 @@ export default function OptionForm() {
     await chrome.storage.sync.clear();
   };
 
-  // const handleLogoutClick = async () => {
-  //   await removeSession();
-  // };
-
-  // const handleMigrateClick = async () => {
-  //   const memoList = await MemoStorage.get();
-  //   const newMemoList = Object.values(memoList).map(memo => {
-  //     const { date, ...props } = memo;
-  //     return props;
-  //   });
-  //   await insertMemo(newMemoList);
-  // };
-
   const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -103,32 +90,6 @@ export default function OptionForm() {
               </button>
             </th>
           </tr>
-          {/* <tr>
-            <th>데이터 보존</th>
-            <th>
-              {sessionData ? (
-                <button className="btn" onClick={handleLogoutClick}>
-                  로그아웃
-                </button>
-              ) : (
-                <a className="btn btn-outline" type="button" href={`${WEB_URL}/login`} target="_blank" rel="noreferrer">
-                  로그인
-                </a>
-              )}
-            </th>
-          </tr> */}
-          {/* <tr>
-            <th>브라우저 저장소에서 전역 저장소로 마이그레이션</th>
-            <th>
-              {sessionData ? (
-                <button className="btn" onClick={handleMigrateClick} type="button">
-                  마이그레이션
-                </button>
-              ) : (
-                <span>로그인을 먼저 해주세요.</span>
-              )}
-            </th>
-          </tr> */}
         </tbody>
       </table>
       <div className="my-12 flex justify-end">

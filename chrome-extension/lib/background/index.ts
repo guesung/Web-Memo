@@ -1,6 +1,6 @@
 import {
   LANGUAGE_MAP,
-  STORAGE_TYPE_OPTION_LANGUAGE,
+  STORAGE_OPTION_LANGUAGE,
   URL_FORM,
   URL_GUIDE_EN,
   URL_GUIDE_KO,
@@ -23,8 +23,8 @@ import 'webextension-polyfill';
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
 chrome.runtime.onInstalled.addListener(async () => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
-  const language = await Storage.get(STORAGE_TYPE_OPTION_LANGUAGE);
-  if (!language) Storage.set(STORAGE_TYPE_OPTION_LANGUAGE, LANGUAGE_MAP[I18n.getUILanguage()]);
+  const language = await Storage.get(STORAGE_OPTION_LANGUAGE);
+  if (!language) Storage.set(STORAGE_OPTION_LANGUAGE, LANGUAGE_MAP[I18n.getUILanguage()]);
 });
 
 // 확장 프로그램이 설치되었을 때 가이드 페이지로 이동한다.
@@ -70,7 +70,7 @@ chrome.runtime.setUninstallURL(URL_FORM);
 // chatGPT에게서 메시지를 받아서 다시 전달한다.
 chrome.runtime.onConnect.addListener(async port => {
   port.onMessage.addListener(async message => {
-    const language = (await OptionStorage.get(STORAGE_TYPE_OPTION_LANGUAGE)) ?? 'English';
+    const language = (await OptionStorage.get(STORAGE_OPTION_LANGUAGE)) ?? 'English';
 
     const prompt = getPrompt({ language });
     const pageContent = message.pageContent;

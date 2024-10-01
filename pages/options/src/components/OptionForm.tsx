@@ -1,4 +1,4 @@
-import { LANGUAGE_LIST, STORAGE_TYPE_OPTION_LANGUAGE } from '@extension/shared/constants';
+import { LANGUAGE_LIST, STORAGE_OPTION_LANGUAGE } from '@extension/shared/constants';
 import { useFetch } from '@extension/shared/hooks';
 import { convertToCSVBlob, convertToJSONBlob, downloadBlob } from '@extension/shared/utils';
 import { getMemoList, I18n, OptionStorage, Storage } from '@extension/shared/utils/extension';
@@ -10,7 +10,7 @@ import { FormEvent, useEffect, useRef } from 'react';
 export default function OptionForm() {
   const languageRef = useRef<HTMLSelectElement>(null);
   const { data: optionData } = useFetch({
-    fetchFn: () => OptionStorage.get(STORAGE_TYPE_OPTION_LANGUAGE),
+    fetchFn: () => OptionStorage.get(STORAGE_OPTION_LANGUAGE),
     defaultValue: '',
   });
   const { data: memoList } = useFetch({ fetchFn: getMemoList, defaultValue: [] });
@@ -39,7 +39,7 @@ export default function OptionForm() {
 
     if (!languageRef.current) return;
 
-    Storage.set(STORAGE_TYPE_OPTION_LANGUAGE, languageRef.current?.value);
+    Storage.set(STORAGE_OPTION_LANGUAGE, languageRef.current?.value);
     overlay.open(({ unmount }) => <Toast message={I18n.get('toast_save_option')} onClose={unmount} />);
   };
 

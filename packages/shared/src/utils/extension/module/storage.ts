@@ -1,9 +1,9 @@
 import { StorageMemoType, MemoType, StorageType, StorageOptionKeyType } from '@src/types';
 import { I18n } from './i18n';
-import { STORAGE_TYPE_OPTION_LIST } from '@src/constants';
+import { STORAGE_OPTION_LIST } from '@src/constants';
 
 function isKeyStorageOption(key: StorageOptionKeyType): key is StorageOptionKeyType {
-  if (STORAGE_TYPE_OPTION_LIST.includes(key)) return true;
+  if (STORAGE_OPTION_LIST.includes(key)) return true;
   return false;
 }
 

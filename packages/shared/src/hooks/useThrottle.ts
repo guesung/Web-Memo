@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
 
 export default function useThrottle() {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -12,5 +12,9 @@ export default function useThrottle() {
     }, delay);
   };
 
-  return { throttle };
+  const abortThrottle = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, []);
+
+  return { throttle, abortThrottle };
 }

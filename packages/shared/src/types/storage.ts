@@ -1,23 +1,8 @@
-import { LANGUAGE_LIST, STORAGE_OPTION_LANGUAGE, STORAGE_OPTION_LIST } from '@src/constants';
+import { LANGUAGE_LIST, STORAGE_OPTION_LANGUAGE } from '@src/constants';
 
-export type MemoType = {
-  url: string;
-  date: string;
-  title: string;
-  memo: string;
-};
-
-export type StorageMemoType = {
-  [key: string]: MemoType;
-};
-
-export type StorageMemoTypeType = 'chrome-storage' | 'supabase';
-
-export type StorageOptionType = {
+export type StorageOptionObjectType = {
   [STORAGE_OPTION_LANGUAGE]: (typeof LANGUAGE_LIST)[number]['inEnglish'];
 };
-export type StorageOptionKeyType = (typeof STORAGE_OPTION_LIST)[number];
 
-export type StorageType = StorageMemoType | StorageOptionType;
-
-export type 
+export type StorageType = StorageOptionObjectType;
+export type StorageKeyType = keyof StorageOptionObjectType;

@@ -1,72 +1,68 @@
 import { overlay } from 'overlay-kit';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TopRightArrow } from '../icons';
 
 import { WEB_URL } from '@extension/shared/constants';
 import { useDidMount, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
-import { MemoType } from '@extension/shared/types';
+import type { MemoSupabaseResponse } from '@extension/shared/types';
+import { getMemoSupabase, insertMemo, updateMemo } from '@extension/shared/utils';
 import {
-  getMemoList,
+  getFormattedMemo,
   getSupabaseClient,
   I18n,
   responseUpdateSidePanel,
-  setMemo as setMemoStorage,
-  Storage,
   Tab,
 } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
-import { saveMemoSupabase } from '@extension/shared/utils';
 
 const OPTION_AUTO_SAVE = true;
-const OPTION_SAVE_STORAGE = 'supabase';
 
 export default function Memo() {
   const { data: tab, refetch: refetchtab } = useFetch({
     fetchFn: Tab.get,
     defaultValue: {} as chrome.tabs.Tab,
   });
-  const { data: memoList, refetch: refetchMemoList } = useFetch<MemoType[]>({
+  const getMemoList = async () => {
+    const supabaseClient = await getSupabaseClient();
+    return await getMemoSupabase(supabaseClient);
+  };
+  const { data: memoList, refetch: refetchMemoList } = useFetch<MemoSupabaseResponse>({
     fetchFn: getMemoList,
-    defaultValue: [] as MemoType[],
+    defaultValue: {} as MemoSupabaseResponse,
   });
+  const currentMemo = useMemo(() => memoList?.data?.find(memo => memo.url === tab?.url), [memoList?.data, tab?.url]);
+
   const [isSaved, setIsSaved] = useState(true);
 
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const getMemoValue = useCallback(() => memoRef?.current?.value ?? '', [memoRef]);
 
-  const { throttle } = useThrottle();
+  const { throttle, abortThrottle } = useThrottle();
   const { isUserPreferDarkMode } = useUserPreferDarkMode();
 
   useDidMount(() =>
     responseUpdateSidePanel(() => {
       refetchtab();
       refetchMemoList();
+      abortThrottle();
     }),
   );
 
   useEffect(() => {
     if (!memoRef.current || !tab?.url) return;
-    memoRef.current.value = memoList?.find(memo => memo.url === tab.url)?.memo ?? '';
+    memoRef.current.value = memoList?.data?.find(memo => memo.url === tab.url)?.memo ?? '';
   }, [memoList, tab?.url]);
 
-  const saveMemo = useCallback(async (memo: string) => {
-    Storage.get('');
-    if (OPTION_SAVE_STORAGE === 'supabase') {
+  const saveMemo = useCallback(
+    async (memo: string) => {
       const supabaseClient = await getSupabaseClient();
-      const a = await saveMemoSupabase(supabaseClient, memo);
-      console.log(a);
-      return;
-    }
-    if (OPTION_SAVE_STORAGE === 'chrome-storage') {
-      try {
-        await setMemoStorage(memo);
-        setIsSaved(true);
-      } catch (error) {
-        overlay.open(({ unmount }) => <Toast message={I18n.get('toast_error_storage_exceeded')} onClose={unmount} />);
-      }
-      return;
-    }
-  }, []);
+
+      if (currentMemo) await updateMemo(supabaseClient, { ...currentMemo, memo });
+      else insertMemo(supabaseClient, await getFormattedMemo(memo));
+      setIsSaved(true);
+    },
+    [currentMemo],
+  );
 
   const handleMemoClick = () => {
     Tab.create({ url: `${WEB_URL}/memo` });

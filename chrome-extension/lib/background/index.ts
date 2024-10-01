@@ -9,7 +9,6 @@ import {
 import { isProduction } from '@extension/shared/utils';
 import {
   I18n,
-  OptionStorage,
   requestObserverMemoPage,
   requestUpdateSidePanel,
   responseOpenSidePanel,
@@ -70,7 +69,7 @@ chrome.runtime.setUninstallURL(URL_FORM);
 // chatGPT에게서 메시지를 받아서 다시 전달한다.
 chrome.runtime.onConnect.addListener(async port => {
   port.onMessage.addListener(async message => {
-    const language = (await OptionStorage.get(STORAGE_OPTION_LANGUAGE)) ?? 'English';
+    const language = (await Storage.get(STORAGE_OPTION_LANGUAGE)) ?? 'English';
 
     const prompt = getPrompt({ language });
     const pageContent = message.pageContent;

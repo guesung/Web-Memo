@@ -1,7 +1,8 @@
 import { LANGUAGE_LIST, STORAGE_OPTION_LANGUAGE } from '@extension/shared/constants';
 import { useFetch } from '@extension/shared/hooks';
-import { convertToCSVBlob, convertToJSONBlob, downloadBlob } from '@extension/shared/utils';
-import { getMemoList, I18n, OptionStorage, Storage } from '@extension/shared/utils/extension';
+import { MemoSupabaseResponse } from '@extension/shared/types';
+import { convertToCSVBlob, convertToJSONBlob, downloadBlob, getMemoSupabase } from '@extension/shared/utils';
+import { getSupabaseClient, I18n, Storage } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 import '@src/Options.css';
 import { overlay } from 'overlay-kit';
@@ -10,20 +11,27 @@ import { FormEvent, useEffect, useRef } from 'react';
 export default function OptionForm() {
   const languageRef = useRef<HTMLSelectElement>(null);
   const { data: optionData } = useFetch({
-    fetchFn: () => OptionStorage.get(STORAGE_OPTION_LANGUAGE),
+    fetchFn: () => Storage.get(STORAGE_OPTION_LANGUAGE),
     defaultValue: '',
   });
-  const { data: memoList } = useFetch({ fetchFn: getMemoList, defaultValue: [] });
+  const getMemoList = async () => {
+    const supabaseClient = await getSupabaseClient();
+    return await getMemoSupabase(supabaseClient);
+  };
+  const { data: memoList } = useFetch<MemoSupabaseResponse>({
+    fetchFn: getMemoList,
+    defaultValue: {} as MemoSupabaseResponse,
+  });
 
   const handleCSVDownloadClick = () => {
-    if (!memoList) return;
-    const csvBlob = convertToCSVBlob(memoList);
+    if (!memoList?.data) return;
+    const csvBlob = convertToCSVBlob(memoList.data);
     downloadBlob(csvBlob, { fileExtension: 'csv' });
   };
 
   const handleJSONDownloadClick = () => {
-    if (!memoList) return;
-    const jsonBlob = convertToJSONBlob(memoList);
+    if (!memoList?.data) return;
+    const jsonBlob = convertToJSONBlob(memoList?.data);
     downloadBlob(jsonBlob, { fileExtension: 'json' });
   };
 

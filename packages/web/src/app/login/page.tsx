@@ -1,5 +1,3 @@
-'use client';
-
 import LoginSection from './LoginSection';
 
 export default function page() {

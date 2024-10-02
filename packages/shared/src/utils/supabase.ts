@@ -21,4 +21,10 @@ export const upsertMemo = async (supabaseClient: MemoSupabaseClient, memoRequest
 export const signInOAuth = async (supabaseClient: MemoSupabaseClient, provider: Provider) =>
   supabaseClient.auth.signInWithOAuth({
     provider,
+    options: {
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      },
+    },
   });

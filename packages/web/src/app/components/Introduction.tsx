@@ -1,4 +1,5 @@
 import { YoutubeEmbed } from '@src/components';
+import Link from 'next/link';
 
 export default function Introduction() {
   return (
@@ -14,7 +15,9 @@ export default function Introduction() {
           <li>메모 확인: 저장한 메모를 자사 사이트에서 한눈에 확인할 수 있습니다.</li>
         </ul>
         <div className="h-20" />
+        {/* <Link href={}> */}
         <button className="btn btn-primary">chrome에 추가</button>
+        {/* </Link> */}
       </section>
       <section className="flex-[45]">
         <div className="h-20" />

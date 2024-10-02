@@ -5,7 +5,7 @@ import { TopRightArrow } from '../icons';
 import { WEB_URL } from '@extension/shared/constants';
 import { useDidMount, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
 import type { MemoSupabaseResponse } from '@extension/shared/types';
-import { getMemoSupabase, insertMemo, updateMemo } from '@extension/shared/utils';
+import { formatUrl, getMemoSupabase, insertMemo, updateMemo } from '@extension/shared/utils';
 import {
   getFormattedMemo,
   getSupabaseClient,
@@ -30,7 +30,11 @@ export default function Memo() {
     fetchFn: getMemoList,
     defaultValue: {} as MemoSupabaseResponse,
   });
-  const currentMemo = useMemo(() => memoList?.data?.find(memo => memo.url === tab?.url), [memoList?.data, tab?.url]);
+  const currentMemo = useMemo(
+    () => memoList?.data?.find(memo => memo.url === formatUrl(tab?.url)),
+    [memoList?.data, tab?.url],
+  );
+
 
   const [isSaved, setIsSaved] = useState(true);
 

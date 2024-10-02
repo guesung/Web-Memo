@@ -35,7 +35,6 @@ export default function Memo() {
     [memoList?.data, tab?.url],
   );
 
-
   const [isSaved, setIsSaved] = useState(true);
 
   const memoRef = useRef<HTMLTextAreaElement>(null);

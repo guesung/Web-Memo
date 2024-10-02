@@ -1,11 +1,9 @@
 'use client';
 
-import { formatDate, getMemoSupabase } from '@extension/shared/utils';
-import { getSupabaseClient } from '@extension/shared/utils/web';
 import { useFetch } from '@extension/shared/hooks';
 import type { MemoSupabaseResponse } from '@extension/shared/types';
-
-import { useEffect } from 'react';
+import { deleteMemo, formatDate, getMemoSupabase } from '@extension/shared/utils';
+import { getSupabaseClient } from '@extension/shared/utils/web';
 
 export default function MemoList() {
   const getMemoList = async () => {
@@ -15,12 +13,15 @@ export default function MemoList() {
 
   const { data: memoResponse, refetch: refetchMemo } = useFetch<MemoSupabaseResponse>({ fetchFn: getMemoList });
 
-  // const handleDeleteClick = async () => {
-  //   const answer = confirm('삭제하시겠습니까?');
-  //   if (!answer) return;
-  //   await deleteMemo
-  //   await refetchMemo();
-  // };
+  const handleDeleteClick = async (id: number) => {
+    const supabaseClient = getSupabaseClient();
+    const answer = confirm('삭제하시겠습니까?');
+
+    if (!answer) return;
+
+    await deleteMemo(supabaseClient, id);
+    await refetchMemo();
+  };
 
   const memoList = memoResponse?.data;
   if (!memoList || memoList.length === 0) return <p className="text-center">메모</p>;
@@ -37,7 +38,7 @@ export default function MemoList() {
       </thead>
       <tbody>
         {memoList.map((memo, index) => (
-          <tr key={memo.url} className="hover">
+          <tr key={memo.id} className="hover">
             <th className="text-center">{index + 1}</th>
             <td>
               <a
@@ -53,11 +54,11 @@ export default function MemoList() {
             <td>
               <p className="text-start whitespace-break-spaces">{memo.memo}</p>
             </td>
-            {/* <td>
-              <button type="button" onClick={() => handleDeleteClick()} className="text-center w-full">
+            <td>
+              <button type="button" onClick={() => handleDeleteClick(memo.id)} className="text-center w-full">
                 x
               </button>
-            </td> */}
+            </td>
           </tr>
         ))}
       </tbody>

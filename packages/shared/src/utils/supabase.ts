@@ -12,6 +12,9 @@ interface UpdateMemo extends Omit<MemoTable['Update'], 'id'> {
 export const updateMemo = async (supabaseClient: MemoSupabaseClient, memoRequest: UpdateMemo) =>
   supabaseClient.from('memo').update(memoRequest).eq('id', memoRequest.id).select();
 
+export const deleteMemo = async (supabaseClient: MemoSupabaseClient, id: number) =>
+  supabaseClient.from('memo').delete().eq('id', id).select();
+
 export const upsertMemo = async (supabaseClient: MemoSupabaseClient, memoRequest: MemoTable['Insert']) =>
   supabaseClient.from('memo').upsert(memoRequest).select();
 

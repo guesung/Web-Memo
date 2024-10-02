@@ -5,5 +5,5 @@ export const formatUrl = (url?: string) => {
 
   if (!urlWithoutFragment) throw new Error('Invalid URL');
 
-  return urlWithoutFragment.slice(0, 255);
+  return urlWithoutFragment;
 };

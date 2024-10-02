@@ -1,13 +1,21 @@
 'use client';
-
-import Image from 'next/image';
-import { signInOAuth } from '@extension/shared/utils';
 import { getSupabaseClient } from '@extension/shared/utils/web';
-import { SUPABASE_URL, WEB_URL } from '@src/constants';
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
+import Image from 'next/image';
 
-export default function LoginSection() {
-  const handleGoogleLogin = () => signInOAuth(getSupabaseClient(), 'google');
+export default async function LoginSection() {
+  const handleGoogleLogin = () => {
+    const supabaseClient = getSupabaseClient();
+    supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+    });
+  };
+  const handleKakaoLogin = () => {
+    const supabaseClient = getSupabaseClient();
+    supabaseClient.auth.signInWithOAuth({
+      provider: 'kakao',
+    });
+  };
 
   return (
     <section className="flex justify-center flex-col gap-8 items-center">
@@ -19,6 +27,14 @@ export default function LoginSection() {
         height={200}
         alt="google로그인"
         onClick={handleGoogleLogin}
+        className="cursor-pointer"
+      />
+      <Image
+        src="/images/svgs/google-login.svg"
+        width={200}
+        height={200}
+        alt="google로그인"
+        onClick={handleKakaoLogin}
         className="cursor-pointer"
       />
     </section>

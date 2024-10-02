@@ -3,7 +3,7 @@ import { Database, MemoSupabaseClient } from '@src/types';
 import { createClient } from '@supabase/supabase-js';
 import { getSession } from './storage';
 
-const supabaseClientInstance: MemoSupabaseClient | null = null;
+let supabaseClientInstance: MemoSupabaseClient | null = null;
 
 export const getSupabaseClient = async () => {
   if (supabaseClientInstance) return supabaseClientInstance;
@@ -11,7 +11,7 @@ export const getSupabaseClient = async () => {
   const user = await getSession();
   if (!user) throw new Error('없는 사용자입니다.');
 
-  const supabaseClient = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  supabaseClientInstance = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     db: { schema: 'memo' },
     global: {
       headers: {
@@ -19,5 +19,5 @@ export const getSupabaseClient = async () => {
       },
     },
   });
-  return supabaseClient;
+  return supabaseClientInstance;
 };

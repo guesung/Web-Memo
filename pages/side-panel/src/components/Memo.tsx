@@ -14,10 +14,11 @@ import {
   Tab,
 } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
+import withAuthentication from '@src/hoc/withAuthentication';
 
 const OPTION_AUTO_SAVE = true;
 
-export default function Memo() {
+function Memo() {
   const { data: tab, refetch: refetchtab } = useFetch({
     fetchFn: Tab.get,
     defaultValue: {} as chrome.tabs.Tab,
@@ -123,3 +124,5 @@ export default function Memo() {
     </form>
   );
 }
+
+export default withAuthentication(Memo);

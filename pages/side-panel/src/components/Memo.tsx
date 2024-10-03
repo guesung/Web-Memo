@@ -59,6 +59,7 @@ function Memo() {
 
   const saveMemo = useCallback(
     async (memo: string) => {
+      if (memo.length === 0) return;
       const supabaseClient = await getSupabaseClient();
 
       if (currentMemo) await updateMemo(supabaseClient, { ...currentMemo, memo });

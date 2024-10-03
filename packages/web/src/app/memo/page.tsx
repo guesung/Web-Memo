@@ -1,12 +1,15 @@
-import { getSupabaseClient } from '@src/utils/supabase.server';
-import { Memo, MemoList } from './components';
 import { getMemoSupabase } from '@extension/shared/utils';
+import { getSupabaseClient } from '@src/utils/supabase.server';
+import { MemoList } from './components';
 
 export default async function Page() {
   const supabaseClient = await getSupabaseClient();
   const memoList = await getMemoSupabase(supabaseClient);
 
-  console.log(memoList);
-
-  return <MemoList initialMemoList={memoList} />;
+  return (
+    <main>
+      <div className="h-16" />
+      <MemoList initialMemoList={memoList} />
+    </main>
+  );
 }

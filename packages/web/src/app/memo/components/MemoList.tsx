@@ -3,15 +3,19 @@
 import { useFetch } from '@extension/shared/hooks';
 import type { MemoSupabaseResponse } from '@extension/shared/types';
 import { deleteMemo, formatDate, getMemoSupabase } from '@extension/shared/utils';
-import { getSupabaseClient } from '@extension/shared/utils/web';
+import { getSupabaseClient } from '@src/utils/supabase.server';
 
-export default function MemoList() {
-  const getMemoList = async () => {
-    const supabaseClient = getSupabaseClient();
-    return await getMemoSupabase(supabaseClient);
-  };
+interface MemoListProps {
+  initialMemoList: MemoSupabaseResponse;
+}
 
-  const { data: memoResponse, refetch: refetchMemo } = useFetch<MemoSupabaseResponse>({ fetchFn: getMemoList });
+export default function MemoList({ initialMemoList }: MemoListProps) {
+  // const getMemoList = async () => {
+  //   const supabaseClient = await getSupabaseClient();
+  //   return await getMemoSupabase(supabaseClient);
+  // };
+
+  // const { data: memoResponse, refetch: refetchMemo } = useFetch<MemoSupabaseResponse>({ fetchFn: getMemoList });
 
   const handleDeleteClick = async (id: number) => {
     const supabaseClient = getSupabaseClient();
@@ -20,10 +24,10 @@ export default function MemoList() {
     if (!answer) return;
 
     await deleteMemo(supabaseClient, id);
-    await refetchMemo();
+    // await refetchMemo();
   };
 
-  const memoList = memoResponse?.data;
+  const memoList = initialMemoList?.data;
   if (!memoList || memoList.length === 0) return <p className="text-center">메모</p>;
   return (
     <table id="memo-table" className="table max-w-[1000px] shadow-xl mx-auto">

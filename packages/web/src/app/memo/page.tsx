@@ -1,11 +1,12 @@
-import { getSupabaseClient } from '@extension/shared/utils/web';
+import { getSupabaseClient } from '@src/utils/supabase.server';
 import { Memo, MemoList } from './components';
 import { getMemoSupabase } from '@extension/shared/utils';
 
 export default async function Page() {
-  const supabaseClient = getSupabaseClient();
+  const supabaseClient = await getSupabaseClient();
   const memoList = await getMemoSupabase(supabaseClient);
 
-  return <MemoList />;
-  return <Memo />;
+  console.log(memoList);
+
+  return <MemoList initialMemoList={memoList} />;
 }

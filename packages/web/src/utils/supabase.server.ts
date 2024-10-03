@@ -20,6 +20,7 @@ export const getSupabaseClient = async () => {
         cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
       },
     },
+    db: { schema: 'memo' },
   });
   return supabaseClient;
 };

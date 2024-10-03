@@ -1,52 +1,31 @@
 import { overlay } from 'overlay-kit';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { TopRightArrow } from '../icons';
 
 import { WEB_URL } from '@extension/shared/constants';
-import { useDidMount, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
-import type { MemoSupabaseResponse } from '@extension/shared/types';
-import { formatUrl, getMemoSupabase, insertMemo, updateMemo } from '@extension/shared/utils';
-import {
-  getFormattedMemo,
-  getSupabaseClient,
-  I18n,
-  responseUpdateSidePanel,
-  Tab,
-} from '@extension/shared/utils/extension';
+import { useDidMount, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
+import { I18n, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
+import { useMemoListQuery, useMemoMutation, useTabQuery } from '@src/hooks';
 
 const OPTION_AUTO_SAVE = true;
 
 function Memo() {
-  const { data: tab, refetch: refetchtab } = useFetch({
-    fetchFn: Tab.get,
-    defaultValue: {} as chrome.tabs.Tab,
-  });
-  const getMemoList = async () => {
-    const supabaseClient = await getSupabaseClient();
-    return await getMemoSupabase(supabaseClient);
-  };
-  const { data: memoList, refetch: refetchMemoList } = useFetch<MemoSupabaseResponse>({
-    fetchFn: getMemoList,
-    defaultValue: {} as MemoSupabaseResponse,
-  });
-  const currentMemo = useMemo(
-    () => memoList?.data?.find(memo => memo.url === formatUrl(tab?.url)),
-    [memoList?.data, tab?.url],
-  );
-
   const [isSaved, setIsSaved] = useState(true);
-
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const getMemoValue = useCallback(() => memoRef?.current?.value ?? '', [memoRef]);
-
   const { throttle, abortThrottle } = useThrottle();
+
+  const { data: tab, refetch: refetchTab } = useTabQuery();
+  const { data: memoList, refetch: refetchMemoList } = useMemoListQuery();
+  const { mutate: mutateMemo } = useMemoMutation();
+
   const { isUserPreferDarkMode } = useUserPreferDarkMode();
 
   useDidMount(() =>
     responseUpdateSidePanel(() => {
-      refetchtab();
+      refetchTab();
       refetchMemoList();
       abortThrottle();
     }),
@@ -57,21 +36,6 @@ function Memo() {
     memoRef.current.value = memoList?.data?.find(memo => memo.url === tab.url)?.memo ?? '';
   }, [memoList, tab?.url]);
 
-  const saveMemo = useCallback(
-    async (memo: string) => {
-      const supabaseClient = await getSupabaseClient();
-
-      if (currentMemo) await updateMemo(supabaseClient, { ...currentMemo, memo });
-      else {
-        const formattedMemo = await getFormattedMemo(memo);
-        await insertMemo(supabaseClient, formattedMemo);
-        await refetchMemoList();
-      }
-      setIsSaved(true);
-    },
-    [currentMemo, refetchMemoList],
-  );
-
   const handleMemoClick = () => {
     Tab.create({ url: `${WEB_URL}/memo` });
   };
@@ -79,20 +43,20 @@ function Memo() {
   const handleTextAreaChange = () => {
     if (!OPTION_AUTO_SAVE) return;
     setIsSaved(false);
-    throttle(() => saveMemo(getMemoValue()));
+    throttle(() => mutateMemo(getMemoValue()));
   };
 
   const handleTextAreaKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.metaKey && e.key === 's') {
       e.preventDefault();
-      await saveMemo(getMemoValue());
+      mutateMemo(getMemoValue());
       overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
     }
   };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    saveMemo(getMemoValue());
+    mutateMemo(getMemoValue());
     overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
   };
 

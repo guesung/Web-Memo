@@ -40,7 +40,8 @@ export const signInWithOAuth = async (provider: Provider) => {
   redirect(data.url);
 };
 
-// export const signout = async () => {
-//   const supabaseClient = await getSupabaseClient();
-//   await supabaseClient.auth.signOut();
-// };
+export const signout = async () => {
+  'use server';
+  const supabaseClient = await getSupabaseClient();
+  await supabaseClient.auth.signOut();
+};

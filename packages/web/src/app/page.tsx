@@ -1,10 +1,9 @@
-'use client';
-import { Introduce } from '@src/components';
+import { Introduction } from './components';
 
-export default function Page() {
+export default async function Page() {
   return (
     <main>
-      <Introduce />
+      <Introduction />
     </main>
   );
 }

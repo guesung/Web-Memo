@@ -1,20 +1,16 @@
-import type { Metadata } from 'next';
+// FIXME: supabase버그로 인해 'use client'를 추가한다
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Header } from '@src/components';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
-  title: 'Web Memo',
-  description: 'Web Memo',
-};
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko" className="bg-base-100 h-full">
+    <html lang="ko" className="bg-base-100 h-screen">
       <body className={`${inter.className} h-full`}>
         <Header />
+        <div className="h-[64px]" />
         {children}
       </body>
     </html>

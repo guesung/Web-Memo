@@ -1,4 +1,3 @@
-import { I18n } from '@src/utils/extension';
 import { useCallback, useState } from 'react';
 import useDidMount from './useDidMount';
 import useError from './useError';
@@ -18,9 +17,9 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
   const fetch = useCallback(async () => {
     try {
       setStatus('loading');
-      setTimeout(() => {
-        if (status === 'loading') throw new Error(I18n.get('toast_error_common'));
-      }, 3000);
+      // setTimeout(() => {
+      //   if (status === 'loading') throw new Error(I18n.get('toast_error_common'));
+      // }, 3000);
       const data = await fetchFn();
 
       setData(data);
@@ -29,7 +28,7 @@ export default function useFetch<TData>({ fetchFn, defaultValue }: UseFetchProps
       setStatus('rejected');
       setError(error as Error);
     }
-  }, [fetchFn, setError, status]);
+  }, [fetchFn, setError]);
 
   useDidMount(fetch);
 

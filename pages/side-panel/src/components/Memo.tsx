@@ -1,62 +1,76 @@
 import { overlay } from 'overlay-kit';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TopRightArrow } from '../icons';
 
 import { WEB_URL } from '@extension/shared/constants';
 import { useDidMount, useFetch, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
-import { MemoType } from '@extension/shared/types';
+import type { MemoSupabaseResponse } from '@extension/shared/types';
+import { formatUrl, getMemoSupabase, insertMemo, updateMemo } from '@extension/shared/utils';
 import {
   getFormattedMemo,
-  getMemoList,
+  getSupabaseClient,
   I18n,
-  MemoStorage,
   responseUpdateSidePanel,
   Tab,
 } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
+import withAuthentication from '@src/hoc/withAuthentication';
 
 const OPTION_AUTO_SAVE = true;
 
-export default function Memo() {
+function Memo() {
   const { data: tab, refetch: refetchtab } = useFetch({
     fetchFn: Tab.get,
     defaultValue: {} as chrome.tabs.Tab,
   });
-  const { data: memoList, refetch: refetchMemoList } = useFetch<MemoType[]>({
+  const getMemoList = async () => {
+    const supabaseClient = await getSupabaseClient();
+    return await getMemoSupabase(supabaseClient);
+  };
+  const { data: memoList, refetch: refetchMemoList } = useFetch<MemoSupabaseResponse>({
     fetchFn: getMemoList,
-    defaultValue: [] as MemoType[],
+    defaultValue: {} as MemoSupabaseResponse,
   });
+  const currentMemo = useMemo(
+    () => memoList?.data?.find(memo => memo.url === formatUrl(tab?.url)),
+    [memoList?.data, tab?.url],
+  );
+
   const [isSaved, setIsSaved] = useState(true);
 
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const getMemoValue = useCallback(() => memoRef?.current?.value ?? '', [memoRef]);
 
-  const { throttle } = useThrottle();
+  const { throttle, abortThrottle } = useThrottle();
   const { isUserPreferDarkMode } = useUserPreferDarkMode();
 
   useDidMount(() =>
     responseUpdateSidePanel(() => {
       refetchtab();
       refetchMemoList();
+      abortThrottle();
     }),
   );
 
   useEffect(() => {
     if (!memoRef.current || !tab?.url) return;
-    memoRef.current.value = memoList?.find(memo => memo.url === tab.url)?.memo ?? '';
+    memoRef.current.value = memoList?.data?.find(memo => memo.url === tab.url)?.memo ?? '';
   }, [memoList, tab?.url]);
 
-  const saveMemoStorage = useCallback(async (memo: string) => {
-    try {
-      const memoData = await getFormattedMemo(memo);
-      const urlKey = memoData.url;
+  const saveMemo = useCallback(
+    async (memo: string) => {
+      const supabaseClient = await getSupabaseClient();
 
-      await MemoStorage.set(urlKey, memoData);
+      if (currentMemo) await updateMemo(supabaseClient, { ...currentMemo, memo });
+      else {
+        const formattedMemo = await getFormattedMemo(memo);
+        await insertMemo(supabaseClient, formattedMemo);
+        await refetchMemoList();
+      }
       setIsSaved(true);
-    } catch (error) {
-      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_error_storage_exceeded')} onClose={unmount} />);
-    }
-  }, []);
+    },
+    [currentMemo, refetchMemoList],
+  );
 
   const handleMemoClick = () => {
     Tab.create({ url: `${WEB_URL}/memo` });
@@ -65,20 +79,20 @@ export default function Memo() {
   const handleTextAreaChange = () => {
     if (!OPTION_AUTO_SAVE) return;
     setIsSaved(false);
-    throttle(() => saveMemoStorage(getMemoValue()));
+    throttle(() => saveMemo(getMemoValue()));
   };
 
   const handleTextAreaKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.metaKey && e.key === 's') {
       e.preventDefault();
-      await saveMemoStorage(getMemoValue());
+      await saveMemo(getMemoValue());
       overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
     }
   };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    saveMemoStorage(getMemoValue());
+    saveMemo(getMemoValue());
     overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
   };
 
@@ -114,3 +128,5 @@ export default function Memo() {
     </form>
   );
 }
+
+export default withAuthentication(Memo);

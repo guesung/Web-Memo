@@ -10,6 +10,8 @@ export const testSentry = () => {
 };
 
 export const initSentry = async () => {
+  if (!isProduction) return;
+
   Sentry.init({
     dsn: SENTRY_DSN,
     integrations: [

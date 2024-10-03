@@ -24,7 +24,7 @@ export const getSupabaseClient = async () => {
   return supabaseClient;
 };
 
-const signInWithOAuth = async (provider: Provider) => {
+export const signInWithOAuth = async (provider: Provider) => {
   const supabaseClient = await getSupabaseClient();
 
   const { error, data } = await supabaseClient.auth.signInWithOAuth({
@@ -39,11 +39,7 @@ const signInWithOAuth = async (provider: Provider) => {
   redirect(data.url);
 };
 
-export const signInWithOAuthKakao = () => signInWithOAuth('kakao');
-
-export const signInWithOAuthGoogle = async () => signInWithOAuth('google');
-
 // export const signout = async () => {
-//   const supabaseClient = getSupabaseClient();
-//   supabaseClient.auth.signOut();
+//   const supabaseClient = await getSupabaseClient();
+//   await supabaseClient.auth.signOut();
 // };

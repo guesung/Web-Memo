@@ -1,4 +1,4 @@
-import { signInWithOAuthGoogle, signInWithOAuthKakao } from '@src/utils/supabase.server';
+import { signInWithOAuth } from '@src/utils/supabase.server';
 import Image from 'next/image';
 
 export default async function LoginSection() {
@@ -8,20 +8,12 @@ export default async function LoginSection() {
       <p>가입하여 chatGPT 이용 및 메모하기</p>
       <form className="flex flex-col gap-4">
         <button
-          formAction={async () => {
-            'use server';
-            await signInWithOAuthKakao();
-          }}
+          formAction={signInWithOAuth.bind(null, 'kakao')}
           className="btn bg-[rgb(247,228,76)] text-black hover:bg-[rgb(247,228,76)]">
           <Image src="/images/svgs/kakao.svg" width={16} height={16} alt="google" />
           카카오 로그인
         </button>
-        <button
-          formAction={async () => {
-            'use server';
-            await signInWithOAuthGoogle();
-          }}
-          className="btn bg-white hover:bg-white text-black">
+        <button formAction={signInWithOAuth.bind(null, 'google')} className="btn bg-white hover:bg-white text-black">
           <Image src="/images/svgs/google.svg" width={16} height={16} alt="google" />
           구글 로그인
         </button>

@@ -1,9 +1,10 @@
-import { createClient } from '@src/utils/supabase.server';
+'use server';
+import { getSupabaseClient } from '@src/utils/supabase.server';
 import { getUser } from '@extension/shared/utils';
 import LoginSection from './LoginSection';
 
 export default async function page() {
-  const supabaseClient = createClient();
+  const supabaseClient = getSupabaseClient();
   const a = await getUser(supabaseClient);
 
   // if (user) redirect('/');

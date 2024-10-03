@@ -1,11 +1,17 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import { SUPABASE_ANON_KEY, SUPABASE_URL, WEB_URL } from '@src/constants';
+'use server';
 
-export function createClient() {
+import { Database } from '@extension/shared/types';
+import { SUPABASE_ANON_KEY, SUPABASE_URL, WEB_URL } from '@src/constants';
+import { createServerClient } from '@supabase/ssr';
+import { Provider } from '@supabase/supabase-js';
+import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+
+export const getSupabaseClient = async () => {
   const cookieStore = cookies();
 
-  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  const supabaseClient = createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -15,16 +21,11 @@ export function createClient() {
       },
     },
   });
-  return supabase;
-}
-
-import { Provider } from '@supabase/supabase-js';
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
+  return supabaseClient;
+};
 
 const signInWithOAuth = async (provider: Provider) => {
-  'use server';
-  const supabaseClient = createClient();
+  const supabaseClient = await getSupabaseClient();
 
   const { error, data } = await supabaseClient.auth.signInWithOAuth({
     provider,
@@ -38,11 +39,11 @@ const signInWithOAuth = async (provider: Provider) => {
   redirect(data.url);
 };
 
-export const signInWithOAuthKakao = async () => {
-  'use server';
-  await signInWithOAuth('kakao');
-};
-export const signInWithOAuthGoogle = async () => {
-  'use server';
-  await signInWithOAuth('google');
-};
+export const signInWithOAuthKakao = () => signInWithOAuth('kakao');
+
+export const signInWithOAuthGoogle = async () => signInWithOAuth('google');
+
+// export const signout = async () => {
+//   const supabaseClient = getSupabaseClient();
+//   supabaseClient.auth.signOut();
+// };

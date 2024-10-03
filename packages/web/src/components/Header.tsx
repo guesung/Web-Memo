@@ -1,12 +1,13 @@
+import { useDidMount } from '@extension/shared/hooks';
 import { getSupabaseClient } from '@extension/shared/utils/web';
+import { createClient } from '@src/utils/supabase-server';
 import Image from 'next/image';
 import Link from 'next/link';
 
-interface HeaderProps {}
 export default async function Header() {
-  const supabaseClient = getSupabaseClient();
-  const session = await supabaseClient.auth.getSession();
-  console.log(session);
+  const supabaseClient = createClient();
+  const userIdentities = await supabaseClient.auth.getUserIdentities();
+  console.log(userIdentities?.data?.identities[0]?.identity_data?.avatar_url);
 
   return (
     <header className="navbar bg-base-100 flex-1 w-full fixed inset-x-0 shadow-sm">

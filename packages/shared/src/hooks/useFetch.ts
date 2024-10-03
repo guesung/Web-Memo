@@ -1,4 +1,3 @@
-import { I18n } from '@src/utils/extension';
 import { useCallback, useState } from 'react';
 import useDidMount from './useDidMount';
 import useError from './useError';

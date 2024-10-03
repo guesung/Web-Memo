@@ -49,6 +49,7 @@
   "devDependencies": {
     "@playwright/test": "^1.47.0",
     "@sentry/vite-plugin": "^2.22.4",
+    "@tanstack/eslint-plugin-query": "^5.58.1",
     "@types/chrome": "^0.0.268",
     "@types/node": "^20.14.10",
     "@types/react": "^18.3.5",

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 export default async function Header() {
-  const supabaseClient = getSupabaseClient();
+  const supabaseClient = await getSupabaseClient();
   const user = await getUser(supabaseClient);
 
   return (
@@ -17,7 +17,7 @@ export default async function Header() {
         </Link>
       </div>
       <div className="flex navbar-end">
-        {user ? (
+        {user?.data?.user ? (
           <>
             <Link className="btn btn-ghost text-md" href="memo">
               나의 메모

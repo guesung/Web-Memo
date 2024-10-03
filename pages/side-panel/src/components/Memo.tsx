@@ -62,10 +62,14 @@ function Memo() {
       const supabaseClient = await getSupabaseClient();
 
       if (currentMemo) await updateMemo(supabaseClient, { ...currentMemo, memo });
-      else insertMemo(supabaseClient, await getFormattedMemo(memo));
+      else {
+        const formattedMemo = await getFormattedMemo(memo);
+        await insertMemo(supabaseClient, formattedMemo);
+        await refetchMemoList();
+      }
       setIsSaved(true);
     },
-    [currentMemo],
+    [currentMemo, refetchMemoList],
   );
 
   const handleMemoClick = () => {

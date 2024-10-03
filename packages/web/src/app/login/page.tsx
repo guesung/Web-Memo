@@ -1,13 +1,10 @@
-import { createClient } from '@src/utils/supabase-server';
+import { createClient } from '@src/utils/supabase.server';
+import { getUser } from '@extension/shared/utils';
 import LoginSection from './LoginSection';
 
 export default async function page() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  console.log(user);
+  const supabaseClient = createClient();
+  const a = await getUser(supabaseClient);
 
   // if (user) redirect('/');
   return (

@@ -1,3 +1,4 @@
+'use server';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';

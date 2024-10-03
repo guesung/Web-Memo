@@ -28,3 +28,5 @@ export const signInOAuth = async (supabaseClient: MemoSupabaseClient, provider: 
       },
     },
   });
+
+export const getUser = async (supabaseClient: MemoSupabaseClient) => await supabaseClient?.auth?.getUser();

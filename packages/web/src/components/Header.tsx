@@ -1,13 +1,14 @@
 import { useDidMount } from '@extension/shared/hooks';
+import { getUser } from '@extension/shared/utils';
 import { getSupabaseClient } from '@extension/shared/utils/web';
-import { createClient } from '@src/utils/supabase-server';
+import { createClient } from '@src/utils/supabase.server';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export default async function Header() {
   const supabaseClient = createClient();
-  const userIdentities = await supabaseClient.auth.getUserIdentities();
-  console.log(userIdentities?.data?.identities[0]?.identity_data?.avatar_url);
+  const user = await getUser(supabaseClient);
+  console.log(user?.data?.user?.identities?.[0]?.identity_data?.avatar_url);
 
   return (
     <header className="navbar bg-base-100 flex-1 w-full fixed inset-x-0 shadow-sm">
@@ -21,9 +22,22 @@ export default async function Header() {
         <Link className="btn btn-ghost text-md" href="memo">
           나의 메모
         </Link>
-        <Link className="btn btn-ghost text-md" href="login">
-          로그인
-        </Link>
+        {user ? (
+          <div className="avatar dropdown dropdown-bottom dropdown-end">
+            <div className="w-8 rounded-full" tabIndex={0} role="button">
+              <img src={user?.data?.user?.identities?.[0]?.identity_data?.avatar_url} />
+            </div>
+            <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-40 p-2 shadow">
+              <li>
+                <a>로그아웃</a>
+              </li>
+            </ul>
+          </div>
+        ) : (
+          <Link className="btn btn-ghost text-md" href="login">
+            로그인
+          </Link>
+        )}
       </div>
     </header>
   );

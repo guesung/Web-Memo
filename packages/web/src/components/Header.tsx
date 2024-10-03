@@ -1,6 +1,6 @@
 'use server';
 import { getUser } from '@extension/shared/utils';
-import { getSupabaseClient } from '@src/utils/supabase.server';
+import { getSupabaseClient, signout } from '@src/utils/supabase.server';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -29,7 +29,7 @@ export default async function Header() {
               <form>
                 <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-40 p-2 shadow">
                   <li>
-                    <button>로그아웃</button>
+                    <button formAction={signout}>로그아웃</button>
                   </li>
                 </ul>
               </form>

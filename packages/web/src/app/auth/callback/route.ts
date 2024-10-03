@@ -5,10 +5,12 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/';
+  try {
+    const code = searchParams.get('code');
+    const next = searchParams.get('next') ?? '/';
 
-  if (code) {
+    if (!code) throw new Error('no code');
+
     const cookieStore = cookies();
     const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       cookies: {
@@ -23,15 +25,16 @@ export async function GET(request: Request) {
         },
       },
     });
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) return;
+
+    const { data: sessionData } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (!sessionData.session) throw new Error('no session');
 
     cookieStore.set('access_token', sessionData.session.access_token);
     cookieStore.set('refresh_token', sessionData.session.refresh_token);
 
     return NextResponse.redirect(`${origin}${next}`);
+  } catch (e) {
+    return NextResponse.redirect(`${origin}/login?message=Could not login with provider`);
   }
-
-  // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/login?message=Could not login with provider`);
 }

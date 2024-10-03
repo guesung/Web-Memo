@@ -9,17 +9,16 @@ import { Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
 import { useMemoListQuery, useMemoMutation, useTabQuery } from '@src/hooks';
 
-const OPTION_AUTO_SAVE = true;
-
 function Memo() {
   const [isSaved, setIsSaved] = useState(true);
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const getMemoValue = useCallback(() => memoRef?.current?.value ?? '', [memoRef]);
   const { throttle, abortThrottle } = useThrottle();
-
   const { data: tab, refetch: refetchTab } = useTabQuery();
   const { data: memoList, refetch: refetchMemoList } = useMemoListQuery();
-  const { mutate: mutateMemo } = useMemoMutation();
+  const { mutate: mutateMemo } = useMemoMutation({
+    onSuccess: () => overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />),
+  });
 
   const { isUserPreferDarkMode } = useUserPreferDarkMode();
 
@@ -41,7 +40,6 @@ function Memo() {
   };
 
   const handleTextAreaChange = () => {
-    if (!OPTION_AUTO_SAVE) return;
     setIsSaved(false);
     throttle(() => mutateMemo(getMemoValue()));
   };
@@ -50,14 +48,12 @@ function Memo() {
     if (e.metaKey && e.key === 's') {
       e.preventDefault();
       mutateMemo(getMemoValue());
-      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
     }
   };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     mutateMemo(getMemoValue());
-    overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
   };
 
   return (

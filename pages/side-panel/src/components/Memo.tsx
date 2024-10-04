@@ -14,6 +14,8 @@ import {
 import { getFormattedMemo, I18n, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
+import { UseQueryResult } from '@tanstack/react-query';
+import { MemoSupabaseResponse } from '@extension/shared/types';
 
 function Memo() {
   const [isSaved, setIsSaved] = useState(true);
@@ -21,7 +23,8 @@ function Memo() {
   const getMemoValue = useCallback(() => memoRef?.current?.value ?? '', [memoRef]);
   const { throttle } = useThrottle();
   const { data: tab, refetch: refetchTab } = useTabQuery();
-  const { data: memoList } = useMemoListQuery();
+  // TODO :타입 에러로 인해 타입 단언으로 일단 해결
+  const { data: memoList }: UseQueryResult<MemoSupabaseResponse, Error> = useMemoListQuery();
   const { mutate: mutateMemo } = useMemoPostMutation();
 
   const { isUserPreferDarkMode } = useUserPreferDarkMode();

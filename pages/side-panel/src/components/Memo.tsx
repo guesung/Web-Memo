@@ -3,11 +3,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { TopRightArrow } from '../icons';
 
 import { WEB_URL } from '@extension/shared/constants';
-import { useDidMount, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
-import { I18n, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
+import {
+  useDidMount,
+  useMemoListQuery,
+  useMemoPostMutation,
+  useTabQuery,
+  useThrottle,
+  useUserPreferDarkMode,
+} from '@extension/shared/hooks';
+import { getFormattedMemo, I18n, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
-import { useMemoListQuery, useMemoPostMutation, useTabQuery } from '@src/hooks';
 
 function Memo() {
   const [isSaved, setIsSaved] = useState(true);
@@ -41,21 +47,24 @@ function Memo() {
     Tab.create({ url: `${WEB_URL}/memo` });
   };
 
-  const handleTextAreaChange = () => {
+  const handleTextAreaChange = async () => {
     setIsSaved(false);
-    throttle(() => mutateMemo(getMemoValue()));
+    const formattedMemo = await getFormattedMemo(getMemoValue());
+    throttle(() => mutateMemo(formattedMemo));
   };
 
   const handleTextAreaKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.metaKey && e.key === 's') {
       e.preventDefault();
-      mutateMemo(getMemoValue());
+      const formattedMemo = await getFormattedMemo(getMemoValue());
+      mutateMemo(formattedMemo);
     }
   };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    mutateMemo(getMemoValue());
+    const formattedMemo = await getFormattedMemo(getMemoValue());
+    mutateMemo(formattedMemo);
   };
 
   return (

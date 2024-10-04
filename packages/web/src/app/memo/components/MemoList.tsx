@@ -1,10 +1,8 @@
 'use client';
 
-import { useFetch } from '@extension/shared/hooks';
 import type { MemoSupabaseResponse } from '@extension/shared/types';
-import { deleteMemo, formatDate, getMemoSupabase } from '@extension/shared/utils';
+import { formatDate } from '@extension/shared/utils';
 import { useMemoDeleteMutation } from '@src/hooks';
-import { getSupabaseClient } from '@src/utils/supabase.client';
 
 interface MemoListProps {
   initialMemoList: MemoSupabaseResponse;

@@ -1,4 +1,6 @@
 import { Inter } from 'next/font/google';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
 import './globals.css';
 import { Header, QueryProvider } from '@src/components';
 
@@ -11,6 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <QueryProvider>
           <Header />
           {children}
+          <ReactQueryDevtools initialIsOpen={false} />
         </QueryProvider>
       </body>
     </html>

@@ -5,7 +5,7 @@ import useTabQuery from './useTabQuery';
 import useMemoListQuery from './useMemoListQuery';
 import { MemoSupabaseResponse } from '@extension/shared/types';
 
-export default function useMemoMutation(useMutationProps: UseMutationOptions<MemoSupabaseResponse, Error, string>) {
+export default function useMemoPostMutation(useMutationProps: UseMutationOptions<MemoSupabaseResponse, Error, string>) {
   const queryClient = useQueryClient();
   const { data: memoList } = useMemoListQuery();
   const { data: tab } = useTabQuery();

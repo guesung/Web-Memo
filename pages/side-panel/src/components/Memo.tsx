@@ -7,7 +7,7 @@ import { useDidMount, useThrottle, useUserPreferDarkMode } from '@extension/shar
 import { I18n, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
-import { useMemoListQuery, useMemoMutation, useTabQuery } from '@src/hooks';
+import { useMemoListQuery, useMemoPostMutation, useTabQuery } from '@src/hooks';
 
 function Memo() {
   const [isSaved, setIsSaved] = useState(true);
@@ -16,7 +16,7 @@ function Memo() {
   const { throttle, abortThrottle } = useThrottle();
   const { data: tab, refetch: refetchTab } = useTabQuery();
   const { data: memoList } = useMemoListQuery();
-  const { mutate: mutateMemo } = useMemoMutation({
+  const { mutate: mutateMemo } = useMemoPostMutation({
     onSuccess: () => {
       setIsSaved(true);
       overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);

@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function Introduction() {
   return (
-    <section className="px-12 pt-40 flex from-cyan-500 to-blue-500 gap-4">
+    <section className="px-12 pt-40 flex-col lg:flex-row flex from-cyan-500 to-blue-500 gap-4">
       <article className="flex-[55] flex flex-col items-center">
         <p className="text-3xl">Web Memo: 이제 chatGPT의 요약과 함께</p>
         <p className="text-3xl">웹페이지를 읽을면서 편하게 메모하세요!</p>
@@ -21,7 +21,7 @@ export default function Introduction() {
           <button className="btn btn-primary text-xl">chrome에 추가하기</button>
         </Link>
       </article>
-      <article className="flex-[45] hidden lg:block">
+      <article className="flex-[45]">
         <div className="h-20" />
         <YoutubeEmbed embedId="3s6ZNMnmL_4" className="rounded-2xl" isAutoPlay />
       </article>

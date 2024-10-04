@@ -29,9 +29,7 @@ chrome.runtime.onInstalled.addListener(async () => {
 // 확장 프로그램이 설치되었을 때 가이드 페이지로 이동한다.
 chrome.runtime.onInstalled.addListener(async () => {
   if (!isProduction) return;
-  const lang = I18n.getUILanguage();
-  if (lang === 'ko') Tab.create({ url: URL_GUIDE_KO });
-  else Tab.create({ url: URL_GUIDE_EN });
+  await Tab.create({ url: `${WEB_URL}/login` });
 });
 
 // 확장 프로그램이 설치되었을 때 contextMenus를 설정한다.

@@ -19,8 +19,8 @@ export default async function Header() {
       <div className="flex navbar-end">
         {user?.data?.user ? (
           <>
-            <Link className="btn btn-ghost text-md" href="memo">
-              나의 메모
+            <Link className="btn btn-ghost text-md" href="memos">
+              메모
             </Link>
             <div className="avatar dropdown dropdown-bottom dropdown-end">
               <div className="w-8 rounded-full" tabIndex={0} role="button">

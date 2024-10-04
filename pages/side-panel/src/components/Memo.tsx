@@ -15,9 +15,12 @@ function Memo() {
   const getMemoValue = useCallback(() => memoRef?.current?.value ?? '', [memoRef]);
   const { throttle, abortThrottle } = useThrottle();
   const { data: tab, refetch: refetchTab } = useTabQuery();
-  const { data: memoList, refetch: refetchMemoList } = useMemoListQuery();
+  const { data: memoList } = useMemoListQuery();
   const { mutate: mutateMemo } = useMemoMutation({
-    onSuccess: () => overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />),
+    onSuccess: () => {
+      setIsSaved(true);
+      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
+    },
   });
 
   const { isUserPreferDarkMode } = useUserPreferDarkMode();
@@ -25,7 +28,6 @@ function Memo() {
   useDidMount(() =>
     responseUpdateSidePanel(() => {
       refetchTab();
-      refetchMemoList();
       abortThrottle();
     }),
   );

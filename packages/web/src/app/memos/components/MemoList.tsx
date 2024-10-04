@@ -19,11 +19,12 @@ export default function MemoList() {
     deleteMemoMutate(id);
   };
 
-  console.log(memoListData);
+
   const memoList = memoListData?.data;
-  if (!memoList || memoList.length === 0) return <p className="text-center">메모</p>;
+  if (!memoList || memoList.length === 0)
+    return <p className="text-center mt-8">아직 저장된 메모가 없어요. 사이드 패널을 열어 메모를 저장해보세요 !</p>;
   return (
-    <table id="memo-table" className="table max-w-[1000px] shadow-xl mx-auto">
+    <table id="memo-table" className="table max-w-[1200px] mx-auto">
       <thead>
         <tr>
           <th className="text-center">번호</th>

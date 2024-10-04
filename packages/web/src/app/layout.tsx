@@ -3,8 +3,14 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 import './globals.css';
 import { Header, QueryProvider } from '@src/components';
+import type { Metadata } from 'next';
 
 const inter = Inter({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: '웹 메모',
+  description: '웹 메모',
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -3,28 +3,19 @@
 import { useFetch } from '@extension/shared/hooks';
 import type { MemoSupabaseResponse } from '@extension/shared/types';
 import { deleteMemo, formatDate, getMemoSupabase } from '@extension/shared/utils';
-import { getSupabaseClient } from '@src/utils/supabase.server';
+import { useMemoDeleteMutation } from '@src/hooks';
+import { getSupabaseClient } from '@src/utils/supabase.client';
 
 interface MemoListProps {
   initialMemoList: MemoSupabaseResponse;
 }
 
 export default function MemoList({ initialMemoList }: MemoListProps) {
-  // const getMemoList = async () => {
-  //   const supabaseClient = await getSupabaseClient();
-  //   return await getMemoSupabase(supabaseClient);
-  // };
-
-  // const { data: memoResponse, refetch: refetchMemo } = useFetch<MemoSupabaseResponse>({ fetchFn: getMemoList });
-
+  const { mutate: deleteMemoMutate } = useMemoDeleteMutation();
   const handleDeleteClick = async (id: number) => {
-    const supabaseClient = getSupabaseClient();
     const answer = confirm('삭제하시겠습니까?');
-
     if (!answer) return;
-
-    await deleteMemo(supabaseClient, id);
-    // await refetchMemo();
+    deleteMemoMutate(id);
   };
 
   const memoList = initialMemoList?.data;

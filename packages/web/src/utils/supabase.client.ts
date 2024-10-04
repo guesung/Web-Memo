@@ -1,14 +1,12 @@
+import { Database } from '@extension/shared/types';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
-import { Database } from '@src/types';
-import { createClient } from '@supabase/supabase-js';
-import { isServer } from './environment';
+import { createBrowserClient } from '@supabase/ssr';
 
 export const getSupabaseClient = () =>
-  createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  createBrowserClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
       storage: {
         getItem: key => {
-          if (isServer) return '';
           return document.cookie.match(new RegExp(`(^| )${key}=([^;]+)`))?.[2] ?? '';
         },
         setItem: (key, value) => {

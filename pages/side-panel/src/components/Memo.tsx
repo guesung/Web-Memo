@@ -3,32 +3,36 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { TopRightArrow } from '../icons';
 
 import { WEB_URL } from '@extension/shared/constants';
-import { useDidMount, useThrottle, useUserPreferDarkMode } from '@extension/shared/hooks';
-import { I18n, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
+import {
+  useDidMount,
+  useMemoListQuery,
+  useMemoPostMutation,
+  useTabQuery,
+  useThrottle,
+  useUserPreferDarkMode,
+} from '@extension/shared/hooks';
+import { getFormattedMemo, I18n, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
-import { useMemoListQuery, useMemoMutation, useTabQuery } from '@src/hooks';
+import { UseQueryResult } from '@tanstack/react-query';
+import { MemoSupabaseResponse } from '@extension/shared/types';
 
 function Memo() {
   const [isSaved, setIsSaved] = useState(true);
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const getMemoValue = useCallback(() => memoRef?.current?.value ?? '', [memoRef]);
-  const { throttle, abortThrottle } = useThrottle();
+  const { throttle } = useThrottle();
   const { data: tab, refetch: refetchTab } = useTabQuery();
-  const { data: memoList } = useMemoListQuery();
-  const { mutate: mutateMemo } = useMemoMutation({
-    onSuccess: () => {
-      setIsSaved(true);
-      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
-    },
-  });
+  // TODO :타입 에러로 인해 타입 단언으로 일단 해결
+  const { data: memoList }: UseQueryResult<MemoSupabaseResponse, Error> = useMemoListQuery();
+  const { mutate: mutateMemo } = useMemoPostMutation();
 
   const { isUserPreferDarkMode } = useUserPreferDarkMode();
 
   useDidMount(() =>
     responseUpdateSidePanel(() => {
+      setIsSaved(true);
       refetchTab();
-      abortThrottle();
     }),
   );
 
@@ -41,21 +45,35 @@ function Memo() {
     Tab.create({ url: `${WEB_URL}/memo` });
   };
 
-  const handleTextAreaChange = () => {
+  const handleTextAreaChange = async () => {
+    if (isSaved) return;
     setIsSaved(false);
-    throttle(() => mutateMemo(getMemoValue()));
+    const formattedMemo = await getFormattedMemo(getMemoValue());
+    throttle(() => mutateMemo(formattedMemo));
   };
 
   const handleTextAreaKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.metaKey && e.key === 's') {
       e.preventDefault();
-      mutateMemo(getMemoValue());
+      const formattedMemo = await getFormattedMemo(getMemoValue());
+      mutateMemo(formattedMemo, {
+        onSuccess: () => {
+          overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
+          setIsSaved(true);
+        },
+      });
     }
   };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    mutateMemo(getMemoValue());
+    const formattedMemo = await getFormattedMemo(getMemoValue());
+    mutateMemo(formattedMemo, {
+      onSuccess: () => {
+        overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
+        setIsSaved(true);
+      },
+    });
   };
 
   return (

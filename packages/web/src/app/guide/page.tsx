@@ -1,3 +1,9 @@
+import { GuideSection } from './components';
+
 export default function Page() {
-  return <div>Guide</div>;
+  return (
+    <main className="h-full">
+      <GuideSection />
+    </main>
+  );
 }

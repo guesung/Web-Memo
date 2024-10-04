@@ -17,5 +17,5 @@ export async function GET(request: Request) {
     cookieStore.set('refresh_token', sessionData.session.refresh_token);
   }
 
-  return NextResponse.redirect(requestUrl.origin);
+  return NextResponse.redirect(requestUrl.origin + '/guide');
 }

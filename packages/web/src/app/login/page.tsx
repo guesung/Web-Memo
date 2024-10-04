@@ -1,10 +1,11 @@
 'use server';
-import LoginSection from './LoginSection';
+import { LoginSection, PersonalInformationInfo } from './components';
 
 export default async function page() {
   return (
-    <main className="flex items-center justify-center h-full">
+    <main className="flex items-center justify-center h-full relative">
       <LoginSection />
+      <PersonalInformationInfo />
     </main>
   );
 }

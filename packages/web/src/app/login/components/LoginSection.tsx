@@ -3,10 +3,11 @@ import Image from 'next/image';
 
 export default async function LoginSection() {
   return (
-    <section className="flex justify-center flex-col gap-8 items-center">
+    <section className="flex justify-center flex-col items-center card w-96 shadow-xl base-300 py-12">
       <p className="text-2xl text-center">환영합니다</p>
-      <p>가입하여 chatGPT 이용 및 메모하기</p>
-      <form className="flex flex-col gap-4">
+      <p className="text-md text-center">편리하게 메모를 작성할 수 있는 웹 메모입니다.</p>
+      <div className="h-8" />
+      <form className="flex flex-col gap-4 w-full px-4">
         <button
           formAction={signInWithOAuth.bind(null, 'kakao')}
           className="btn bg-[rgb(247,228,76)] text-black hover:bg-[rgb(247,228,76)]">

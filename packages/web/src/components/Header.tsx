@@ -9,7 +9,7 @@ export default async function Header() {
   const user = await getUser(supabaseClient);
 
   return (
-    <header className="navbar bg-base-100 flex-1 w-full fixed inset-x-0 shadow-sm">
+    <header className="navbar bg-base-100 flex-1 w-full fixed inset-x-0 shadow-sm z-50">
       <div className="navbar-start">
         <Link href="/" className="btn btn-ghost text-md">
           <Image src="/images/pngs/icon.png" width={24} height={24} alt="icon" />

@@ -44,4 +44,7 @@ export const signout = async () => {
   'use server';
   const supabaseClient = await getSupabaseClient();
   await supabaseClient.auth.signOut();
+  const cookieStore = cookies();
+  cookieStore.delete('access_token');
+  cookieStore.delete('refresh_token');
 };

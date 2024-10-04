@@ -19,22 +19,17 @@ function Memo() {
   const [isSaved, setIsSaved] = useState(true);
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const getMemoValue = useCallback(() => memoRef?.current?.value ?? '', [memoRef]);
-  const { throttle, abortThrottle } = useThrottle();
+  const { throttle } = useThrottle();
   const { data: tab, refetch: refetchTab } = useTabQuery();
   const { data: memoList } = useMemoListQuery();
-  const { mutate: mutateMemo } = useMemoPostMutation({
-    onSuccess: () => {
-      setIsSaved(true);
-      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
-    },
-  });
+  const { mutate: mutateMemo } = useMemoPostMutation();
 
   const { isUserPreferDarkMode } = useUserPreferDarkMode();
 
   useDidMount(() =>
     responseUpdateSidePanel(() => {
+      setIsSaved(true);
       refetchTab();
-      abortThrottle();
     }),
   );
 
@@ -48,6 +43,7 @@ function Memo() {
   };
 
   const handleTextAreaChange = async () => {
+    if (isSaved) return;
     setIsSaved(false);
     const formattedMemo = await getFormattedMemo(getMemoValue());
     throttle(() => mutateMemo(formattedMemo));
@@ -57,14 +53,24 @@ function Memo() {
     if (e.metaKey && e.key === 's') {
       e.preventDefault();
       const formattedMemo = await getFormattedMemo(getMemoValue());
-      mutateMemo(formattedMemo);
+      mutateMemo(formattedMemo, {
+        onSuccess: () => {
+          overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
+          setIsSaved(true);
+        },
+      });
     }
   };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formattedMemo = await getFormattedMemo(getMemoValue());
-    mutateMemo(formattedMemo);
+    mutateMemo(formattedMemo, {
+      onSuccess: () => {
+        overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
+        setIsSaved(true);
+      },
+    });
   };
 
   return (

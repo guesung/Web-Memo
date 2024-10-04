@@ -12,7 +12,7 @@ interface SaveMemoProps {
 }
 
 export default function useMemoPostMutation(
-  useMutationProps: UseMutationOptions<MemoSupabaseResponse, Error, SaveMemoProps>,
+  useMutationProps?: UseMutationOptions<MemoSupabaseResponse, Error, SaveMemoProps>,
 ) {
   const queryClient = useQueryClient();
   const { data: memoList } = useMemoListQuery();

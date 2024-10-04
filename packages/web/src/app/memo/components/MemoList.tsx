@@ -1,22 +1,26 @@
 'use client';
 
-import type { MemoSupabaseResponse } from '@extension/shared/types';
-import { formatDate } from '@extension/shared/utils';
+import { queryKeys } from '@extension/shared/constants';
+import { formatDate, getMemoSupabase } from '@extension/shared/utils';
 import { useMemoDeleteMutation } from '@src/hooks';
+import { getSupabaseClient } from '@src/utils/supabase.client';
+import { useQuery } from '@tanstack/react-query';
 
-interface MemoListProps {
-  initialMemoList: MemoSupabaseResponse;
-}
-
-export default function MemoList({ initialMemoList }: MemoListProps) {
+export default function MemoList() {
   const { mutate: deleteMemoMutate } = useMemoDeleteMutation();
+  const supabaseClient = getSupabaseClient();
+  const { data: memoListData } = useQuery({
+    queryKey: queryKeys.memoList(),
+    queryFn: () => getMemoSupabase(supabaseClient),
+  });
   const handleDeleteClick = async (id: number) => {
     const answer = confirm('삭제하시겠습니까?');
     if (!answer) return;
     deleteMemoMutate(id);
   };
 
-  const memoList = initialMemoList?.data;
+  console.log(memoListData);
+  const memoList = memoListData?.data;
   if (!memoList || memoList.length === 0) return <p className="text-center">메모</p>;
   return (
     <table id="memo-table" className="table max-w-[1000px] shadow-xl mx-auto">

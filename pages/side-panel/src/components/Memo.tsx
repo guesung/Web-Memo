@@ -42,7 +42,7 @@ function Memo() {
   }, [memoList, tab?.url]);
 
   const handleMemoClick = () => {
-    Tab.create({ url: `${WEB_URL}/memo` });
+    Tab.create({ url: `${WEB_URL}/memos` });
   };
 
   const handleTextAreaChange = async () => {

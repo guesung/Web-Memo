@@ -31,6 +31,10 @@
       "types": "./dist/hooks/index.d.ts",
       "default": "./dist/hooks/index.js"
     },
+    "./hooks/extension": {
+      "types": "./dist/hooks/extension/index.d.ts",
+      "default": "./dist/hooks/extension/index.js"
+    },
     "./constants": {
       "types": "./dist/constants/index.d.ts",
       "default": "./dist/constants/index.js"

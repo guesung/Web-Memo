@@ -11,8 +11,9 @@
   },
   "scripts": {
     "clean": "rimraf dist && rimraf .turbo && turbo clean",
-    "build": "turbo build --filter=!web",
-    "build:web": "turbo build --filter web",
+    "build:extension": "turbo build --filter=!web",
+    "build:web": "turbo build --filter=web",
+    "start:web": "turbo start --filter=web",
     "build:firefox": "cross-env __FIREFOX__=true turbo build",
     "zip": "turbo zip",
     "dev-servmer": "pnpm -F hmr ready && pnpm -F hmr dev",

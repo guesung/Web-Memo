@@ -8,7 +8,6 @@ import {
   useMemoListQuery,
   useMemoPostMutation,
   useTabQuery,
-  useThrottle,
   useUserPreferDarkMode,
 } from '@extension/shared/hooks';
 import { MemoSupabaseResponse } from '@extension/shared/types';
@@ -20,11 +19,14 @@ import { UseQueryResult } from '@tanstack/react-query';
 function Memo() {
   const [isSaved, setIsSaved] = useState(true);
   const [memo, setMemo] = useState('');
-  const { throttle, abortThrottle } = useThrottle();
   const { data: tab, refetch: refetchTab } = useTabQuery();
   // TODO :타입 에러로 인해 타입 단언으로 일단 해결
   const { data: memoList }: UseQueryResult<MemoSupabaseResponse, Error> = useMemoListQuery();
-  const { mutate: mutateMemo } = useMemoPostMutation();
+  const { mutate: mutateMemo } = useMemoPostMutation({
+    handleSettled: () => {
+      setIsSaved(true);
+    },
+  });
 
   const { isUserPreferDarkMode } = useUserPreferDarkMode();
 
@@ -32,7 +34,6 @@ function Memo() {
     responseUpdateSidePanel(() => {
       setIsSaved(true);
       refetchTab();
-      abortThrottle();
     }),
   );
 
@@ -50,11 +51,6 @@ function Memo() {
   const handleTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setIsSaved(false);
     setMemo(event.target.value);
-    const formattedMemo = await getFormattedMemo(memo);
-    throttle(() => {
-      if (isSaved) return;
-      mutateMemo(formattedMemo);
-    });
   };
 
   const handleTextAreaKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -62,10 +58,7 @@ function Memo() {
       e.preventDefault();
       const formattedMemo = await getFormattedMemo(memo);
       mutateMemo(formattedMemo, {
-        onSuccess: () => {
-          overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
-          setIsSaved(true);
-        },
+        onSuccess: () => overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />),
       });
     }
   };
@@ -74,10 +67,7 @@ function Memo() {
     e.preventDefault();
     const formattedMemo = await getFormattedMemo(memo);
     mutateMemo(formattedMemo, {
-      onSuccess: () => {
-        overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
-        setIsSaved(true);
-      },
+      onSuccess: () => overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />),
     });
   };
 

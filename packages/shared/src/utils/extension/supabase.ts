@@ -28,6 +28,5 @@ export const getSupabaseClient = async () => {
       },
     },
   });
-  console.log(supabaseClientInstance);
   return supabaseClientInstance;
 };

@@ -1,5 +1,5 @@
 import { queryKeys } from '@src/constants';
-import { MemoSupabaseResponse } from '@src/types';
+import { MemoSupabaseClient, MemoSupabaseResponse } from '@src/types';
 import { formatUrl, insertMemo, updateMemo } from '@src/utils';
 import { getSupabaseClient } from '@src/utils/extension';
 import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query';
@@ -12,12 +12,17 @@ interface SaveMemoProps {
 }
 
 interface UseMemoPostMutationProps extends UseMutationOptions<MemoSupabaseResponse, Error, SaveMemoProps> {
+  supabaseClient: MemoSupabaseClient;
   handleSettled: () => void;
 }
 
-export default function useMemoPostMutation({ handleSettled, ...useMutationProps }: UseMemoPostMutationProps) {
+export default function useMemoPostMutation({
+  supabaseClient,
+  handleSettled,
+  ...useMutationProps
+}: UseMemoPostMutationProps) {
   const queryClient = useQueryClient();
-  const { data: memoList } = useMemoListQuery();
+  const { data: memoList } = useMemoListQuery({ supabaseClient });
 
   const saveMemo = async ({ memo, title, url }: SaveMemoProps) => {
     const currentMemo = memoList?.data?.find(memo => memo.url === formatUrl(url));

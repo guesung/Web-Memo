@@ -1,17 +1,16 @@
 import { queryKeys } from '@src/constants';
-import { MemoSupabaseResponse } from '@src/types';
+import { MemoSupabaseClient, MemoSupabaseResponse } from '@src/types';
 import { getMemoSupabase } from '@src/utils';
-import { getSupabaseClient } from '@src/utils/extension';
 import { useQuery } from '@tanstack/react-query';
 
-export default function useMemoListQuery() {
-  const getMemoList = async () => {
-    const supabaseClient = await getSupabaseClient();
-    return await getMemoSupabase(supabaseClient);
-  };
+interface UseMemoListQueryProps {
+  supabaseClient: MemoSupabaseClient;
+}
 
+export default function useMemoListQuery({ supabaseClient }: UseMemoListQueryProps) {
   return useQuery<MemoSupabaseResponse, Error>({
-    queryFn: getMemoList,
+    queryFn: getMemoSupabase.bind(null, supabaseClient),
     queryKey: queryKeys.memoList(),
+    enabled: !!supabaseClient,
   });
 }

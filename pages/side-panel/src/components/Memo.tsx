@@ -7,11 +7,19 @@ import {
   useDidMount,
   useMemoListQuery,
   useMemoPostMutation,
+  useSupabaseClient,
   useTabQuery,
+  useThrottle,
   useUserPreferDarkMode,
 } from '@extension/shared/hooks';
 import { MemoSupabaseResponse } from '@extension/shared/types';
-import { getFormattedMemo, I18n, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
+import {
+  getFormattedMemo,
+  getSupabaseClient,
+  I18n,
+  responseUpdateSidePanel,
+  Tab,
+} from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
 import { UseQueryResult } from '@tanstack/react-query';
@@ -19,11 +27,17 @@ import { UseQueryResult } from '@tanstack/react-query';
 function Memo() {
   const [isSaved, setIsSaved] = useState(true);
   const [memo, setMemo] = useState('');
+  const { throttle, abortThrottle } = useThrottle();
   const { data: tab, refetch: refetchTab } = useTabQuery();
+  const { data: supabaseClient } = useSupabaseClient({
+    getSupabaseClient,
+  });
   // TODO :타입 에러로 인해 타입 단언으로 일단 해결
-  const { data: memoList }: UseQueryResult<MemoSupabaseResponse, Error> = useMemoListQuery();
+  const { data: memoList }: UseQueryResult<MemoSupabaseResponse, Error> = useMemoListQuery({ supabaseClient });
   const { mutate: mutateMemo } = useMemoPostMutation({
+    supabaseClient,
     handleSettled: () => {
+      abortThrottle();
       setIsSaved(true);
     },
   });
@@ -34,6 +48,7 @@ function Memo() {
     responseUpdateSidePanel(() => {
       setIsSaved(true);
       refetchTab();
+      abortThrottle();
     }),
   );
 
@@ -49,8 +64,14 @@ function Memo() {
   };
 
   const handleTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setIsSaved(false);
     setMemo(event.target.value);
+    setIsSaved(false);
+
+    throttle(async () => {
+      // FIXME: isSaved
+      const formattedMemo = await getFormattedMemo(event.target.value);
+      mutateMemo(formattedMemo);
+    });
   };
 
   const handleTextAreaKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

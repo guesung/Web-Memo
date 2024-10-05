@@ -11,9 +11,11 @@ interface SaveMemoProps {
   title: string;
 }
 
-export default function useMemoPostMutation(
-  useMutationProps?: UseMutationOptions<MemoSupabaseResponse, Error, SaveMemoProps>,
-) {
+interface UseMemoPostMutationProps extends UseMutationOptions<MemoSupabaseResponse, Error, SaveMemoProps> {
+  handleSettled: () => void;
+}
+
+export default function useMemoPostMutation({ handleSettled, ...useMutationProps }: UseMemoPostMutationProps) {
   const queryClient = useQueryClient();
   const { data: memoList } = useMemoListQuery();
 
@@ -22,16 +24,15 @@ export default function useMemoPostMutation(
     const supabaseClient = await getSupabaseClient();
 
     if (currentMemo) return await updateMemo(supabaseClient, { ...currentMemo, memo });
-    else {
-      return await insertMemo(supabaseClient, { memo, title, url });
-    }
+    else return await insertMemo(supabaseClient, { memo, title, url });
   };
 
   return useMutation<MemoSupabaseResponse, Error, SaveMemoProps>({
+    ...useMutationProps,
     mutationFn: saveMemo,
     onSettled: async () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.memoList() });
+      handleSettled();
     },
-    ...useMutationProps,
   });
 }

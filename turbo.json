@@ -35,10 +35,10 @@
       "outputs": ["dist/**", "build/**"],
       "inputs": [".env"]
     },
-    "web:build": {
-      "dependsOn": ["^build"],
-      "env": ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"],
-      "outputs": [".next/**", "!.next/cache/**"]
+    "start": {
+      "dependsOn": ["^build", "ready"],
+      "outputs": ["dist/**", "build/**", ".next"],
+      "inputs": [".env"]
     },
     "zip": {
       "dependsOn": ["^build"],

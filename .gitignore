@@ -10,8 +10,7 @@
 **/dist-zip
 
 # env
-**/.env.local
-**/.env
+.env*
 
 # etc
 .DS_Store
@@ -33,3 +32,4 @@ vite.config.**
 
 # next
 .next
+.vercel

@@ -68,7 +68,7 @@ function Memo() {
     setIsSaved(false);
 
     throttle(async () => {
-      // FIXME: isSaved
+      setIsSaved(true);
       const formattedMemo = await getFormattedMemo(event.target.value);
       mutateMemo(formattedMemo);
     });

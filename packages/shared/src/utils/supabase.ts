@@ -1,7 +1,8 @@
 import { MemoSupabaseClient, MemoTable } from '@src/types';
 import { type Provider } from '@supabase/supabase-js';
 
-export const getMemoSupabase = async (supabaseClient: MemoSupabaseClient) => supabaseClient.from('memo').select('*');
+export const getMemoSupabase = async (supabaseClient: MemoSupabaseClient) =>
+  supabaseClient.from('memo').select('*').order('created_at', { ascending: false });
 
 export const insertMemo = async (supabaseClient: MemoSupabaseClient, memoRequest: MemoTable['Insert']) =>
   supabaseClient.from('memo').insert(memoRequest).select();

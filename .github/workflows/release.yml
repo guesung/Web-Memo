@@ -22,7 +22,9 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: setting environment variables
-        run: echo "${{ secrets.ENV_FILE }}" > packages/shared/.env
+        run: |
+          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/shared/.env
+          echo WEB_URL=${{ secrets.PROD_WEB_URL }} >> packages/shared/.env
 
       - name: build
         run: pnpm run build:extension
@@ -62,7 +64,7 @@ jobs:
               --repo="$GITHUB_REPOSITORY" \
               --title="${GITHUB_REPOSITORY#*/} ${tag#v}" \
               --generate-notes
-              
+
   build-web:
     runs-on: ubuntu-22.04
     steps:
@@ -73,8 +75,11 @@ jobs:
         run: npm install --global vercel@latest
       - name: setting environment variables
         run: |
-          echo "${{ secrets.ENV_FILE }}" > packages/shared/.env
+          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/shared/.env
+          echo WEB_URL=${{ secrets.PROD_WEB_URL }} >> packages/shared/.env
+
           echo "${{ secrets.WEB_ENV_FILE }}" > packages/web/.env
+          echo NEXT_PUBLIC_WEB_URL=${{ secrets.PROD_WEB_URL }} >> packages/web/.env
 
       - name : Vercel Pull
         run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
@@ -86,4 +91,4 @@ jobs:
         run: |
           VERCEL_DEPOLYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
-          vercel alias set "$VERCEL_DEPOLYED_URL" ${{secrets.WEB_URL}} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects
+          vercel alias set "$VERCEL_DEPOLYED_URL" ${{secrets.PROD_WEB_URL}} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects

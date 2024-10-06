@@ -26,7 +26,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko" className="bg-base-100 h-screen" data-theme="cupcake">
       <body className={`${pretendard.variable} font-pretendard h-full`}>
         <QueryProvider>
-          <Header />
           {children}
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryProvider>

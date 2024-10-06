@@ -31,4 +31,4 @@ jobs:
         run: |
           VERCEL_DEPOLYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
-          vercel alias set "$VERCEL_DEPOLYED_URL" ${{secrets.STAGING_WEB_URL}} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects
+          vercel alias set "$VERCEL_DEPOLYED_URL" ${{secrets.STAGING_WEB_URL_WITHOUT_PROTOCOL}} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects

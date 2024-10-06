@@ -1,6 +1,6 @@
 {
   "name": "@extension/content-ui",
-  "version": "1.3.12",
+  "version": "1.4.0",
   "description": "chrome extension content ui",
   "type": "module",
   "private": true,

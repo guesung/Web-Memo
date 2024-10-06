@@ -19,7 +19,6 @@ export default function MemoList() {
     deleteMemoMutate(id);
   };
 
-
   const memoList = memoListData?.data;
   if (!memoList || memoList.length === 0)
     return <p className="text-center mt-8">아직 저장된 메모가 없어요. 사이드 패널을 열어 메모를 저장해보세요 !</p>;

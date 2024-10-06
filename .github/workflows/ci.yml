@@ -23,7 +23,9 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: setting environment variables
-        run: echo "${{ secrets.ENV_FILE }}" > packages/shared/.env
+        run: |
+          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/shared/.env
+          echo WEB_URL=${{ secrets.LOCAL_WEB_URL }} >> packages/shared/.env
 
       - name: build
         run: pnpm run build:extension
@@ -47,15 +49,18 @@ jobs:
         run: npm install --global vercel@latest
       - name: setting environment variables
         run: |
-          echo "${{ secrets.ENV_FILE }}" > packages/shared/.env
+          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/shared/.env
+          echo WEB_URL=${{ secrets.LOCAL_WEB_URL }} >> packages/shared/.env
+
           echo "${{ secrets.WEB_ENV_FILE }}" > packages/web/.env
+          echo NEXT_PUBLIC_WEB_URL=${{ secrets.LOCAL_WEB_URL }} >> packages/web/.env
 
       - name : Vercel Pull
         run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Project Artifacts
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
-          
+
   # e2e-test:
   #   runs-on: ubuntu-latest
   #   steps:

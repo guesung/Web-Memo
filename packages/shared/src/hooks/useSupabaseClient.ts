@@ -1,13 +1,13 @@
 import { queryKeys } from '@src/constants';
 import { MemoSupabaseResponse } from '@src/types';
-import { QueryFunction, QueryKey, useQuery } from '@tanstack/react-query';
+import { QueryFunction, QueryKey, useSuspenseQuery } from '@tanstack/react-query';
 
 interface UseSupabaseClientProps {
   getSupabaseClient: QueryFunction<MemoSupabaseResponse, QueryKey>;
 }
 
 export default function useSupabaseClient({ getSupabaseClient }: UseSupabaseClientProps) {
-  return useQuery({
+  return useSuspenseQuery({
     queryFn: getSupabaseClient,
     queryKey: queryKeys.supabaseClient(),
   });

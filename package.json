@@ -1,44 +1,57 @@
 {
   "name": "chrome-extension-boilerplate-react-vite",
-  "version": "0.3.3",
+  "version": "1.4.2",
   "description": "Web Memo - Chrome Extension",
+  "bugs": "https://github.com/guesung/Web-Memo/issues",
+  "homepage": "https://web-memos.vercel.app",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite.git"
+    "url": "https://github.com/guesung/Web-Memo.git"
   },
   "scripts": {
     "clean": "rimraf dist && rimraf .turbo && turbo clean",
-    "build": "turbo build",
-    "build:web": "turbo build --filter web",
+    "build:extension": "turbo build --filter=!web",
+    "build:web": "turbo build --filter=web",
+    "start:web": "turbo start --filter=web",
     "build:firefox": "cross-env __FIREFOX__=true turbo build",
     "zip": "turbo zip",
     "dev-servmer": "pnpm -F hmr ready && pnpm -F hmr dev",
     "dev": "turbo ready && turbo watch dev --concurrency 20",
     "dev:firefox": "turbo ready && cross-env __FIREFOX__=true turbo watch dev --concurrency 20",
     "dev:web": "turbo run --filter web",
-    "test": "turbo test",
     "type-check": "turbo type-check",
     "lint": "turbo lint --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
     "lint:fix": "turbo lint:fix --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
     "prettier": "turbo prettier --continue -- --cache --cache-location node_modules/.cache/.prettiercache",
     "prepare": "husky",
+    "test": "exec playwright test",
+    "test-report": "exec playwright show-report",
     "update-version": "run-script-os",
     "update-version:win32": "bash update_version.sh",
     "update-version:default": "./update_version.sh",
-    "package": "pnpm i && pnpm clean && pnpm build && pnpm zip"
+    "package": "pnpm i && pnpm clean && pnpm build && pnpm zip",
+    "generate-supabase-type": "supabase gen types --lang=typescript --project-id czwtqukymcqoberdoltq --schema memo > packages/shared/src/types/database.ts"
   },
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "dependencies": {
     "@sentry/react": "^8.30.0",
     "@supabase/supabase-js": "^2.45.4",
-    "next": "14.2.7",
+    "@tanstack/react-query": "^5.59.0",
+    "@tanstack/react-query-devtools": "^5.59.0",
+    "dotenv": "^16.4.5",
+    "next": "14.2.10",
     "openai": "^4.57.0",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.47.0",
     "@sentry/vite-plugin": "^2.22.4",
+    "@tanstack/eslint-plugin-query": "^5.58.1",
     "@types/chrome": "^0.0.268",
     "@types/node": "^20.14.10",
     "@types/react": "^18.3.5",
@@ -58,11 +71,12 @@
     "eslint-plugin-react-hooks": "4.6.2",
     "husky": "^9.1.5",
     "lint-staged": "^15.2.7",
-    "overlay-kit": "^1.4.1",
+    "overlay-kit": "^1.4.2",
     "postcss": "^8.4.38",
     "prettier": "^3.3.3",
     "rimraf": "^6.0.1",
     "run-script-os": "^1.1.6",
+    "supabase": "^1.192.5",
     "tailwindcss": "^3.4.10",
     "tslib": "^2.6.3",
     "turbo": "^2.1.1",
@@ -77,5 +91,6 @@
   "packageManager": "pnpm@9.5.0",
   "engines": {
     "node": ">=18.12.0"
-  }
+  },
+  "sideEffects": false
 }

@@ -1,7 +1,7 @@
+import * as Sentry from '@sentry/react';
 import type { ComponentType, ErrorInfo, PropsWithChildren } from 'react';
 import { Component, createElement } from 'react';
 import ErrorFallback from './ErrorFallback';
-import * as Sentry from '@sentry/react';
 
 export interface FallbackComponentProps {
   error: Error;

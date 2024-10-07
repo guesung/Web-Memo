@@ -3,18 +3,20 @@
   "ui": "tui",
   "tasks": {
     "ready": {
-      "outputs": ["dist/**", "build/**"]
+      "outputs": ["dist/**", "build/**"],
+      "cache": false
     },
     "dev": {
       "dependsOn": ["ready"],
       "outputs": ["dist/**", "build/**"],
       "env": [
         "__FIREFOX__",
-        "VITE_MAKE_WEBHOOK_NOTION_API",
-        "VITE_OPENAI_API_KEY",
-        "VITE_SENTRY_AUTH_TOKEN",
-        "VITE_SENTRY_DSN",
-        "WEB_URL"
+        "MAKE_WEBHOOK_NOTION_API",
+        "OPENAI_API_KEY",
+        "SENTRY_AUTH_TOKEN",
+        "SENTRY_DSN",
+        "WEB_URL",
+        "NODE_ENV"
       ],
       "persistent": true,
       "inputs": [".env"]
@@ -23,19 +25,20 @@
       "dependsOn": ["^build", "ready"],
       "env": [
         "__FIREFOX__",
-        "VITE_MAKE_WEBHOOK_NOTION_API",
-        "VITE_OPENAI_API_KEY",
-        "VITE_SENTRY_AUTH_TOKEN",
-        "VITE_SENTRY_DSN",
-        "WEB_URL"
+        "MAKE_WEBHOOK_NOTION_API",
+        "OPENAI_API_KEY",
+        "SENTRY_AUTH_TOKEN",
+        "SENTRY_DSN",
+        "WEB_URL",
+        "NODE_ENV"
       ],
       "outputs": ["dist/**", "build/**"],
       "inputs": [".env"]
     },
-    "web:build": {
-      "dependsOn": ["^build"],
-      "env": ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"],
-      "outputs": [".next/**", "!.next/cache/**"]
+    "start": {
+      "dependsOn": ["^build", "ready"],
+      "outputs": ["dist/**", "build/**", ".next"],
+      "inputs": [".env"]
     },
     "zip": {
       "dependsOn": ["^build"],
@@ -51,10 +54,6 @@
       "cache": false
     },
     "prettier": {
-      "cache": false
-    },
-    "test": {
-      "dependsOn": ["^test", "^build"],
       "cache": false
     },
     "clean": {

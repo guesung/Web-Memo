@@ -1,29 +1,32 @@
+import { SUPABASE_ANON_KEY, SUPABASE_URL, WEB_URL } from '@src/constants';
+import { Database } from '@src/types';
 import { createClient } from '@supabase/supabase-js';
-import { getSession } from './getSession';
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../../constants';
+
+export const getToken = async () => {
+  const accessTokenCookie = await chrome.cookies.get({
+    name: 'access_token',
+    url: WEB_URL,
+  });
+  const refreshTokenCookie = await chrome.cookies.get({
+    name: 'refresh_token',
+    url: WEB_URL,
+  });
+
+  if (!accessTokenCookie || !refreshTokenCookie) return;
+  return { accessToken: accessTokenCookie.value, refreshToken: refreshTokenCookie.value };
+};
 
 export const getSupabaseClient = async () => {
-  const user = await getSession();
-  if (!user) throw new Error('없는 사용자입니다.');
+  const token = await getToken();
+  if (!token) throw new Error('없는 사용자입니다.');
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  const supabaseClientInstance = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     db: { schema: 'memo' },
     global: {
       headers: {
-        authorization: `Bearer ${user.access_token}`,
+        authorization: `Bearer ${token.accessToken}`,
       },
     },
   });
-  return supabase;
-};
-
-export const getMemo = async () => {
-  const supabaseClient = await getSupabaseClient();
-  const response = await supabaseClient.from('memo').select('*');
-  return response;
-};
-
-export const insertMemo = async (memo: string) => {
-  const supabaseClient = await getSupabaseClient();
-  await supabaseClient.from('memo').insert({ memo });
+  return supabaseClientInstance;
 };

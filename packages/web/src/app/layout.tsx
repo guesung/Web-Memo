@@ -1,22 +1,34 @@
-import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+import localFont from 'next/font/local';
+
 import './globals.css';
-import { Footer, Header } from '@src/components';
+import { Header, QueryProvider } from '@src/components';
+import type { Metadata } from 'next';
 
 const inter = Inter({ subsets: ['latin'] });
 
+const pretendard = localFont({
+  src: '../fonts/PretendardVariable.woff2',
+  display: 'swap',
+  weight: '45 920',
+  variable: '--font-pretendard',
+});
+
 export const metadata: Metadata = {
-  title: 'Web Memo',
-  description: 'Web Memo',
+  title: '웹 메모',
+  description: '웹 메모',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko" className="bg-base-100 h-full">
-      <body className={`${inter.className} h-full`}>
-        <Header />
-        {children}
-        <Footer />
+    <html lang="ko" className="bg-base-100 h-screen" data-theme="cupcake">
+      <body className={`${pretendard.variable} font-pretendard h-full`}>
+        <QueryProvider>
+          {children}
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryProvider>
       </body>
     </html>
   );

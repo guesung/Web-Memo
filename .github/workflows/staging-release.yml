@@ -1,0 +1,34 @@
+name: Staging Release
+on:
+  push:
+    branches:
+      - 'staging'
+    
+jobs:
+  build-web:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      - name: setting environment variables
+        run: |
+          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/shared/.env
+          echo WEB_URL=${{ secrets.STAGING_WEB_URL }} >> packages/shared/.env
+
+          echo "${{ secrets.WEB_ENV_FILE }}" > packages/web/.env
+          echo NEXT_PUBLIC_WEB_URL=${{ secrets.STAGING_WEB_URL }} >> packages/web/.env
+
+      - name : Vercel Pull
+        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        run: |
+          VERCEL_DEPOLYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
+          vercel alias set "$VERCEL_DEPOLYED_URL" ${{secrets.STAGING_WEB_URL_WITHOUT_PROTOCOL}} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects

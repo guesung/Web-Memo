@@ -1,6 +1,6 @@
 {
   "name": "@extension/popup",
-  "version": "0.0.1",
+  "version": "1.4.2",
   "description": "chrome extension popup",
   "private": true,
   "sideEffects": true,
@@ -18,7 +18,6 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@extension/content-runtime-script": "workspace:*",
     "@extension/shared": "workspace:*",
     "@extension/storage": "workspace:*",
     "@types/node": "^20.14.10"

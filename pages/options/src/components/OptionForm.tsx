@@ -1,4 +1,7 @@
-import { I18n, LANGUAGE_LIST, OptionStorage, Storage, STORAGE_TYPE_OPTION_LANGUAGE, useFetch } from '@extension/shared';
+import { LANGUAGE_LIST, STORAGE_OPTION_LANGUAGE } from '@extension/shared/constants';
+import { useOptionQuery } from '@extension/shared/hooks/extension';
+import { convertToCSVBlob, convertToJSONBlob, downloadBlob, getMemoSupabase } from '@extension/shared/utils';
+import { getSupabaseClient, I18n, Storage } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 import '@src/Options.css';
 import { overlay } from 'overlay-kit';
@@ -6,7 +9,25 @@ import { FormEvent, useEffect, useRef } from 'react';
 
 export default function OptionForm() {
   const languageRef = useRef<HTMLSelectElement>(null);
-  const { data } = useFetch({ fetchFn: OptionStorage.get, defaultValue: '' });
+  const { data: option } = useOptionQuery();
+  const getMemoList = async () => {
+    const supabaseClient = await getSupabaseClient();
+    return await getMemoSupabase(supabaseClient);
+  };
+
+  const handleCSVDownloadClick = async () => {
+    const memoList = await getMemoList();
+    if (!memoList?.data) return;
+    const csvBlob = convertToCSVBlob(memoList.data);
+    downloadBlob(csvBlob, { fileExtension: 'csv' });
+  };
+
+  const handleJSONDownloadClick = async () => {
+    const memoList = await getMemoList();
+    if (!memoList?.data) return;
+    const jsonBlob = convertToJSONBlob(memoList?.data);
+    downloadBlob(jsonBlob, { fileExtension: 'json' });
+  };
 
   const handleResetClick = async () => {
     const response = confirm(I18n.get('modal_modal_question_delete'));
@@ -20,22 +41,20 @@ export default function OptionForm() {
 
     if (!languageRef.current) return;
 
-    Storage.set(STORAGE_TYPE_OPTION_LANGUAGE, languageRef.current?.value);
+    Storage.set(STORAGE_OPTION_LANGUAGE, languageRef.current?.value);
     overlay.open(({ unmount }) => <Toast message={I18n.get('toast_save_option')} onClose={unmount} />);
   };
 
   useEffect(() => {
-    if (data) languageRef.current!.value = data;
-  }, [data]);
+    if (option) languageRef.current!.value = option;
+  }, [option]);
 
   return (
     <form onSubmit={handleFormSubmit}>
       <table className="table">
         <tbody>
           <tr>
-            <th>
-              <button className="button">{I18n.get('select_language')}</button>
-            </th>
+            <th>{I18n.get('select_language')}</th>
             <th>
               <select className="select select-bordered w-full max-w-xs" ref={languageRef}>
                 {LANGUAGE_LIST.map(({ inEnglish, inNative }) => (
@@ -47,12 +66,26 @@ export default function OptionForm() {
             </th>
           </tr>
           <tr>
+            <th></th>
             <th>
-              <button className="button ">{I18n.get('reset_option')}</button>
+              <button className="btn btn-outline" onClick={handleCSVDownloadClick} type="button">
+                {I18n.get('download_csv_option')}
+              </button>
             </th>
+          </tr>
+          <tr>
+            <th></th>
             <th>
-              <button className="btn btn-outline btn-warning" onClick={handleResetClick} type="button">
-                {I18n.get('reset')}
+              <button className="btn btn-outline" onClick={handleJSONDownloadClick} type="button">
+                {I18n.get('download_json_option')}
+              </button>
+            </th>
+          </tr>
+          <tr>
+            <th></th>
+            <th>
+              <button className="btn btn-outline" onClick={handleResetClick} type="button">
+                {I18n.get('reset_option')}
               </button>
             </th>
           </tr>

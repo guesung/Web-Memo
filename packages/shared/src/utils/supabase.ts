@@ -1,34 +1,33 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { getSession } from './extension';
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../constants';
+import { MemoSupabaseClient, MemoTable } from '@src/types';
+import { type Provider } from '@supabase/supabase-js';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let supabaseClientInstance: SupabaseClient<any, 'memo', any> | null = null;
+export const getMemoSupabase = async (supabaseClient: MemoSupabaseClient) =>
+  supabaseClient.from('memo').select('*').order('created_at', { ascending: false });
 
-export const getSupabaseClient = async () => {
-  if (supabaseClientInstance) return supabaseClientInstance;
+export const insertMemo = async (supabaseClient: MemoSupabaseClient, memoRequest: MemoTable['Insert']) =>
+  supabaseClient.from('memo').insert(memoRequest).select();
 
-  const user = await getSession();
-  if (!user) throw new Error('없는 사용자입니다.');
+interface UpdateMemo extends Omit<MemoTable['Update'], 'id'> {
+  id: number;
+}
+export const updateMemo = async (supabaseClient: MemoSupabaseClient, memoRequest: UpdateMemo) =>
+  supabaseClient.from('memo').update(memoRequest).eq('id', memoRequest.id).select();
 
-  supabaseClientInstance = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    db: { schema: 'memo' },
-    global: {
-      headers: {
-        authorization: `Bearer ${user.access_token}`,
+export const deleteMemo = async (supabaseClient: MemoSupabaseClient, id: number) =>
+  supabaseClient.from('memo').delete().eq('id', id).select();
+
+export const upsertMemo = async (supabaseClient: MemoSupabaseClient, memoRequest: MemoTable['Insert']) =>
+  supabaseClient.from('memo').upsert(memoRequest).select();
+
+export const signInOAuth = async (supabaseClient: MemoSupabaseClient, provider: Provider) =>
+  supabaseClient.auth.signInWithOAuth({
+    provider,
+    options: {
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
       },
     },
   });
-  return supabaseClientInstance;
-};
 
-export const getMemo = async () => {
-  const supabaseClient = await getSupabaseClient();
-  const response = await supabaseClient.from('memo').select('*');
-  return response;
-};
-
-export const insertMemo = async (memo: string) => {
-  const supabaseClient = await getSupabaseClient();
-  await supabaseClient.from('memo').insert({ memo });
-};
+export const getUser = async (supabaseClient: MemoSupabaseClient) => await supabaseClient?.auth?.getUser();

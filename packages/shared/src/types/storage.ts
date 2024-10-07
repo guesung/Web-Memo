@@ -1,19 +1,8 @@
-import { STORAGE_TYPE_OPTION_LANGUAGE } from '../utils/extension/module';
-import { LANGUAGE_LIST } from '../constants';
+import { LANGUAGE_LIST, STORAGE_OPTION_LANGUAGE } from '@src/constants';
 
-export type MemoType = {
-  url: string;
-  date: string;
-  title: string;
-  memo: string;
+export type StorageOptionObjectType = {
+  [STORAGE_OPTION_LANGUAGE]: (typeof LANGUAGE_LIST)[number]['inEnglish'];
 };
 
-export type MemoStorageType = {
-  [key: string]: MemoType;
-};
-
-export type LanguageOptionStorageType = {
-  [STORAGE_TYPE_OPTION_LANGUAGE]: (typeof LANGUAGE_LIST)[number]['inEnglish'];
-};
-
-export type StorageType = MemoStorageType | LanguageOptionStorageType;
+export type StorageType = StorageOptionObjectType;
+export type StorageKeyType = keyof StorageOptionObjectType;

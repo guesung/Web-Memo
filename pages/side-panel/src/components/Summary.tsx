@@ -1,6 +1,6 @@
-import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useSummaryContext } from './SummaryProvider';
+import Markdown from 'react-markdown';
 
 export default function Summary() {
   const { summary } = useSummaryContext();

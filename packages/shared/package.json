@@ -1,17 +1,52 @@
 {
   "name": "@extension/shared",
-  "version": "0.0.1",
+  "version": "1.4.2",
   "description": "chrome extension shared code",
   "private": true,
   "sideEffects": false,
   "files": [
-    "dist/**"
+    "dist"
   ],
-  "types": "index.ts",
   "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./utils/date.js": {
+      "types": "./dist/utils/date.d.ts",
+      "default": "./dist/utils/date.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "default": "./dist/utils/index.js"
+    },
+    "./utils/extension": {
+      "types": "./dist/utils/extension/index.d.ts",
+      "default": "./dist/utils/extension/index.js"
+    },
+    "./utils/web": {
+      "types": "./dist/utils/web/index.d.ts",
+      "default": "./dist/utils/web/index.js"
+    },
+    "./hooks": {
+      "types": "./dist/hooks/index.d.ts",
+      "default": "./dist/hooks/index.js"
+    },
+    "./hooks/extension": {
+      "types": "./dist/hooks/extension/index.d.ts",
+      "default": "./dist/hooks/extension/index.js"
+    },
+    "./constants": {
+      "types": "./dist/constants/index.d.ts",
+      "default": "./dist/constants/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/types/index.js"
+    }
+  },
   "scripts": {
     "clean": "rimraf ./dist",
-    "ready": "node build.mjs",
+    "ready": "rm -rf dist && node build.mjs",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "pnpm lint --fix",
     "prettier": "prettier . --write --ignore-path ../../.prettierignore",
@@ -20,6 +55,6 @@
   "devDependencies": {
     "@extension/storage": "workspace:*",
     "@extension/tsconfig": "workspace:*",
-    "dotenv": "^16.4.5"
+    "esbuild-node-externals": "^1.14.0"
   }
 }

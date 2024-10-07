@@ -1,32 +1,55 @@
-import { SUPABASE_ANON_KEY, SUPABASE_URL, WEB_URL } from '@src/constants';
-import { Database } from '@src/types';
+import {
+  COOKIE_KEY_ACCESS_TOKEN,
+  COOKIE_KEY_REFRESH_TOKEN,
+  SUPABASE_ANON_KEY,
+  SUPABASE_URL,
+  WEB_URL,
+} from '@src/constants';
+import { Database, StorageKeyType } from '@src/types';
 import { createClient } from '@supabase/supabase-js';
-
-export const getToken = async () => {
-  const accessTokenCookie = await chrome.cookies.get({
-    name: 'access_token',
-    url: WEB_URL,
-  });
-  const refreshTokenCookie = await chrome.cookies.get({
-    name: 'refresh_token',
-    url: WEB_URL,
-  });
-
-  if (!accessTokenCookie || !refreshTokenCookie) return;
-  return { accessToken: accessTokenCookie.value, refreshToken: refreshTokenCookie.value };
-};
+import { Storage } from './module';
 
 export const getSupabaseClient = async () => {
-  const token = await getToken();
-  if (!token) throw new Error('없는 사용자입니다.');
-
-  const supabaseClientInstance = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    db: { schema: 'memo' },
-    global: {
-      headers: {
-        authorization: `Bearer ${token.accessToken}`,
+  try {
+    const supabaseClientInstance = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      db: { schema: 'memo' },
+      auth: {
+        storage: {
+          getItem: async key => {
+            return (await Storage.get(key as StorageKeyType)) ?? null;
+          },
+          setItem: async (key, value) => {
+            return await Storage.set(key as StorageKeyType, value);
+          },
+          removeItem: async key => {
+            return await Storage.remove(key as StorageKeyType);
+          },
+        },
       },
-    },
-  });
-  return supabaseClientInstance;
+    });
+
+    const user = await supabaseClientInstance.auth.getUser();
+
+    if (user?.data?.user) return supabaseClientInstance;
+
+    const accessTokenFromWeb = await chrome.cookies.get({
+      name: COOKIE_KEY_ACCESS_TOKEN,
+      url: WEB_URL,
+    });
+    const refreshTokenCookieFromWeb = await chrome.cookies.get({
+      name: COOKIE_KEY_REFRESH_TOKEN,
+      url: WEB_URL,
+    });
+
+    if (!accessTokenFromWeb || !refreshTokenCookieFromWeb) throw new Error('로그인을 먼저 해주세요.');
+
+    await supabaseClientInstance.auth.setSession({
+      access_token: accessTokenFromWeb.value,
+      refresh_token: refreshTokenCookieFromWeb.value,
+    });
+
+    return supabaseClientInstance;
+  } catch (e) {
+    throw new Error('로그인을 먼저 해주세요');
+  }
 };

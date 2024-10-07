@@ -43,8 +43,11 @@ export const signInWithOAuth = async (provider: Provider) => {
 export const signout = async () => {
   'use server';
   const supabaseClient = getSupabaseClient();
+
   await supabaseClient.auth.signOut();
+
   const cookieStore = cookies();
   cookieStore.delete('access_token');
   cookieStore.delete('refresh_token');
+  redirect('/');
 };

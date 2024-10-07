@@ -15,7 +15,7 @@ const pretendard = localFont({
   variable: '--font-pretendard',
 });
 
-const HIDE_HEADER_PATH_LIST = ['/guide', '/memo'];
+const HIDE_HEADER_PATH_LIST = ['/memo'];
 
 export const metadata: Metadata = {
   title: '웹 메모',

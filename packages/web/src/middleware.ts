@@ -3,10 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  const headers = setHeader(request);
-
-  await updateSession(request);
-  return NextResponse.next({ headers });
+  return await updateSession(request);
 }
 
 export const config = {
@@ -22,17 +19,12 @@ export const config = {
   ],
 };
 
-function setHeader(request: NextRequest) {
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('pathname', request.nextUrl.pathname);
-  return requestHeaders;
-}
-
 const HAVE_TO_AUTH_PATH_LIST = ['/memos', 'guide'];
 
 async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
+    headers: setHeader(request),
   });
 
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -63,4 +55,10 @@ async function updateSession(request: NextRequest) {
   }
 
   return supabaseResponse;
+}
+
+function setHeader(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('pathname', request.nextUrl.pathname);
+  return requestHeaders;
 }

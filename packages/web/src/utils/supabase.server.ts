@@ -15,6 +15,7 @@ export const getSupabaseClient = () => {
         return cookieStore.getAll();
       },
       setAll(cookiesToSet) {
+        // 로그인 시 토큰 쿠키 설정
         cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
       },
     },

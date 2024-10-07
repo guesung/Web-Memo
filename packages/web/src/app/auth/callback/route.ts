@@ -13,8 +13,12 @@ export async function GET(request: Request) {
     if (!sessionData.session) throw new Error('no session');
 
     const cookieStore = cookies();
-    cookieStore.set('access_token', sessionData.session.access_token);
-    cookieStore.set('refresh_token', sessionData.session.refresh_token);
+    cookieStore.set('access_token', sessionData.session.access_token, {
+      maxAge: sessionData.session.expires_in,
+    });
+    cookieStore.set('refresh_token', sessionData.session.refresh_token, {
+      maxAge: 3600 * 24 * 365, // 1년
+    });
   }
 
   return NextResponse.redirect(requestUrl.origin + '/guide');

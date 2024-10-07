@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get('code');
 
   if (code) {
-    const supabase = await getSupabaseClient();
+    const supabase = getSupabaseClient();
     const { data: sessionData } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!sessionData.session) throw new Error('no session');

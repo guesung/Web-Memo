@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 import { MemoList } from './components';
 
 export default async function Page() {
-  const supabaseClient = await getSupabaseClient();
+  const supabaseClient = getSupabaseClient();
   const user = await supabaseClient.auth.getUser();
 
   if (!user?.data?.user) redirect('/login');

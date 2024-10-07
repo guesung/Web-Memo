@@ -1,5 +1,3 @@
-'use server';
-
 import { Database } from '@extension/shared/types';
 import { SUPABASE_ANON_KEY, SUPABASE_URL, WEB_URL } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
@@ -8,7 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-export const getSupabaseClient = async () => {
+export const getSupabaseClient = () => {
   const cookieStore = cookies();
 
   const supabaseClient = createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -26,7 +24,8 @@ export const getSupabaseClient = async () => {
 };
 
 export const signInWithOAuth = async (provider: Provider) => {
-  const supabaseClient = await getSupabaseClient();
+  'use server';
+  const supabaseClient = getSupabaseClient();
 
   const { error, data } = await supabaseClient.auth.signInWithOAuth({
     provider,
@@ -42,7 +41,7 @@ export const signInWithOAuth = async (provider: Provider) => {
 
 export const signout = async () => {
   'use server';
-  const supabaseClient = await getSupabaseClient();
+  const supabaseClient = getSupabaseClient();
   await supabaseClient.auth.signOut();
   const cookieStore = cookies();
   cookieStore.delete('access_token');

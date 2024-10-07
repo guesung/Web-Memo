@@ -1,13 +1,12 @@
-import { Inter } from 'next/font/google';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 import localFont from 'next/font/local';
 
-import './globals.css';
 import { Header, QueryProvider } from '@src/components';
 import type { Metadata } from 'next';
-
-const inter = Inter({ subsets: ['latin'] });
+import './globals.css';
+import { PropsWithChildren } from 'react';
+import { headers } from 'next/headers';
 
 const pretendard = localFont({
   src: '../fonts/PretendardVariable.woff2',
@@ -16,17 +15,24 @@ const pretendard = localFont({
   variable: '--font-pretendard',
 });
 
+const HIDE_HEADER_PATH_LIST = ['/guide', '/memo'];
+
 export const metadata: Metadata = {
   title: '웹 메모',
   description: '웹 메모',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+interface RootLayoutProps extends PropsWithChildren {}
+
+export default function RootLayout({ children }: RootLayoutProps) {
+  const headersList = headers();
+  const pathname = headersList.get('pathname') ?? '/';
+
   return (
     <html lang="ko" className="bg-base-100 h-screen" data-theme="cupcake">
       <body className={`${pretendard.variable} font-pretendard h-full`}>
         <QueryProvider>
-          <Header />
+          {!HIDE_HEADER_PATH_LIST.includes(pathname) ? <Header /> : null}
           <Header.Margin />
           {children}
           <ReactQueryDevtools initialIsOpen={false} />

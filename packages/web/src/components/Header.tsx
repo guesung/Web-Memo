@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 export default async function Header() {
-  const supabaseClient = await getSupabaseClient();
+  const supabaseClient = getSupabaseClient();
   const user = await getUser(supabaseClient);
 
   return (
@@ -27,7 +27,7 @@ export default async function Header() {
                 <img src={user?.data?.user?.identities?.[0]?.identity_data?.avatar_url} />
               </div>
               <form>
-                <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-40 p-2 shadow">
+                <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-40 p-2 shadow">
                   <li>
                     <button formAction={signout}>로그아웃</button>
                   </li>
@@ -44,3 +44,9 @@ export default async function Header() {
     </header>
   );
 }
+
+function Margin() {
+  return <div className="h-16" />;
+}
+
+Header.Margin = Margin;

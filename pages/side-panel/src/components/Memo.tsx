@@ -32,7 +32,7 @@ function Memo() {
   const { data: supabaseClient } = useSupabaseClient({
     getSupabaseClient,
   });
-  // TODO :타입 에러로 인해 타입 단언으로 일단 해결
+  // TODO :타입 에러로 인해 타입 단언으로 임시 해결
   const { data: memoList }: UseQueryResult<MemoSupabaseResponse, Error> = useMemoListQuery({ supabaseClient });
   const { mutate: mutateMemo } = useMemoPostMutation({
     supabaseClient,

@@ -44,3 +44,9 @@ export default async function Header() {
     </header>
   );
 }
+
+function Margin() {
+  return <div className="h-16" />;
+}
+
+Header.Margin = Margin;

@@ -12,7 +12,6 @@ export default async function Page() {
   if (!user?.data?.user) redirect('/login');
   return (
     <main>
-      <div className="h-16" />
       <HydrationBoundaryWrapper queryKey={queryKeys.memoList()} queryFn={() => getMemoSupabase(supabaseClient)}>
         <MemoList />
       </HydrationBoundaryWrapper>

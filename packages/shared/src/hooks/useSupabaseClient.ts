@@ -10,5 +10,6 @@ export default function useSupabaseClient({ getSupabaseClient }: UseSupabaseClie
   return useSuspenseQuery({
     queryFn: getSupabaseClient,
     queryKey: queryKeys.supabaseClient(),
+    retry: 1,
   });
 }

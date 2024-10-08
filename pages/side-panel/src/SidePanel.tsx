@@ -1,7 +1,7 @@
 import { OverlayProvider } from 'overlay-kit';
 
 import { ErrorBoundary, Loading } from '@extension/ui';
-import { SummaryHeader, MemoForm, MemoHeader, Summary, SummaryProvider } from './components';
+import { SummaryHeader, MemoForm, MemoHeader, Summary, SummaryProvider, LoginSection } from './components';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Suspense } from 'react';
@@ -26,6 +26,8 @@ export default function SidePanel() {
               <Suspense fallback={<Loading />}>
                 <MemoHeader />
               </Suspense>
+            </ErrorBoundary>
+            <ErrorBoundary FallbackComponent={LoginSection}>
               <Suspense fallback={<Loading />}>
                 <MemoForm />
               </Suspense>

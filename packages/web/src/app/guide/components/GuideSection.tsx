@@ -17,7 +17,7 @@ export default function GuideSection() {
         <p>메모를 보러 가시겠습니까?</p>
         <div className="h-4" />
         <button className="btn">
-          <Link href="/memo">메모 보러가기</Link>
+          <Link href="/memos">메모 보러가기</Link>
         </button>
       </article>
       <div className="divider divider-horizontal">.</div>

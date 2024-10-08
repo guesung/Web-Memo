@@ -15,6 +15,7 @@ export const getSupabaseClient = () => {
         return cookieStore.getAll();
       },
       setAll(cookiesToSet) {
+        // 로그인 시 토큰 쿠키 설정
         cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
       },
     },
@@ -42,8 +43,11 @@ export const signInWithOAuth = async (provider: Provider) => {
 export const signout = async () => {
   'use server';
   const supabaseClient = getSupabaseClient();
+
   await supabaseClient.auth.signOut();
+
   const cookieStore = cookies();
   cookieStore.delete('access_token');
   cookieStore.delete('refresh_token');
+  redirect('/');
 };

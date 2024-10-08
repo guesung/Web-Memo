@@ -12,6 +12,4 @@ const renderOpenSidePanelButton = async () => {
   });
 };
 
-renderOpenSidePanelButton();
-
 responsePageContent();

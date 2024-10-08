@@ -1,3 +1,4 @@
+import { COOKIE_KEY_ACCESS_TOKEN, COOKIE_KEY_REFRESH_TOKEN } from '@extension/shared/constants';
 import { Database } from '@extension/shared/types';
 import { SUPABASE_ANON_KEY, SUPABASE_URL, WEB_URL } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
@@ -43,11 +44,10 @@ export const signInWithOAuth = async (provider: Provider) => {
 export const signout = async () => {
   'use server';
   const supabaseClient = getSupabaseClient();
-
   await supabaseClient.auth.signOut();
 
   const cookieStore = cookies();
-  cookieStore.delete('access_token');
-  cookieStore.delete('refresh_token');
+  cookieStore.delete(COOKIE_KEY_ACCESS_TOKEN);
+  cookieStore.delete(COOKIE_KEY_REFRESH_TOKEN);
   redirect('/');
 };

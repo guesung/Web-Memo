@@ -10,6 +10,7 @@ jobs:
       - run: |
           echo ${{ github.ref }}
           echo ${{ github.ref_name }}
+          echo ${{ startsWith(github.ref_name, 'refs/tags/v')}}
           
 
   test-if:

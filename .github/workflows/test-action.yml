@@ -7,7 +7,11 @@ jobs:
   test-tag:
     runs-on: ubuntu-22.04
     steps:
-      - run: echo ${{ github.ref }}
+      - run: |
+          echo ${{ github.ref }}
+          echo ${{ github.ref_name }}
+          
+
   test-if:
     runs-on: ubuntu-22.04
     if: github.ref == 'refs/heads/feature/optimize-the-github-actions' && ${{ startsWith(github.ref_name, 'refs/tags/v')}}

@@ -6,3 +6,4 @@ export * from './url';
 export * from './storage';
 export * from './queryKey';
 export * from './cookie';
+export * from './extension';

@@ -100,7 +100,7 @@ jobs:
           path: .vercel
 
       - name: Vercel Deploy on Staging
-        if:  github.ref == 'refs/tags/prod'
+        if:  github.ref == 'refs/tags/staging'
         run: |
           VERCEL_DEPOLYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
           vercel alias set "$VERCEL_DEPOLYED_URL" ${{secrets.STAGING_WEB_URL_WITHOUT_PROTOCOL}} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects

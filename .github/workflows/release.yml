@@ -2,9 +2,9 @@ name: Release New Version
 
 on:
   push:
-    branches:
-      - master
-      - develop
+    # branches:
+    #   - master
+    #   - develop
   # pull_request:
   #   branches:
   #     - master

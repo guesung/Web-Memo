@@ -1,7 +1,7 @@
 import { OverlayProvider } from 'overlay-kit';
 
 import { ErrorBoundary, Loading } from '@extension/ui';
-import { Header, Memo, Summary, SummaryProvider } from './components';
+import { SummaryHeader, MemoForm, MemoHeader, Summary, SummaryProvider } from './components';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Suspense } from 'react';
@@ -16,7 +16,7 @@ export default function SidePanel() {
           <section className="flex-1 overflow-scroll">
             <ErrorBoundary>
               <SummaryProvider>
-                <Header />
+                <SummaryHeader />
                 <Summary />
               </SummaryProvider>
             </ErrorBoundary>
@@ -24,7 +24,10 @@ export default function SidePanel() {
           <section className="flex-1">
             <ErrorBoundary>
               <Suspense fallback={<Loading />}>
-                <Memo />
+                <MemoHeader />
+              </Suspense>
+              <Suspense fallback={<Loading />}>
+                <MemoForm />
               </Suspense>
             </ErrorBoundary>
           </section>

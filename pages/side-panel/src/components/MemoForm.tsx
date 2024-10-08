@@ -1,8 +1,6 @@
 import { overlay } from 'overlay-kit';
 import { useEffect, useState } from 'react';
-import { TopRightArrow } from '../icons';
 
-import { WEB_URL } from '@extension/shared/constants';
 import {
   useDidMount,
   useMemoListQuery,
@@ -10,25 +8,18 @@ import {
   useSupabaseClient,
   useTabQuery,
   useThrottle,
-  useUserPreferDarkMode,
 } from '@extension/shared/hooks';
 import { MemoSupabaseResponse } from '@extension/shared/types';
-import {
-  getFormattedMemo,
-  getSupabaseClient,
-  I18n,
-  responseUpdateSidePanel,
-  Tab,
-} from '@extension/shared/utils/extension';
+import { getFormattedMemo, getSupabaseClient, I18n, responseUpdateSidePanel } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
 import { UseQueryResult } from '@tanstack/react-query';
 
-function Memo() {
+function MemoForm() {
   const [isSaved, setIsSaved] = useState(true);
   const [memo, setMemo] = useState('');
   const { throttle, abortThrottle } = useThrottle();
-  const { data: tab, refetch: refetchTab } = useTabQuery();
+  const { data: tab } = useTabQuery();
   const { data: supabaseClient } = useSupabaseClient({
     getSupabaseClient,
   });
@@ -42,12 +33,9 @@ function Memo() {
     },
   });
 
-  const { isUserPreferDarkMode } = useUserPreferDarkMode();
-
   useDidMount(() =>
     responseUpdateSidePanel(() => {
       setIsSaved(true);
-      refetchTab();
       abortThrottle();
     }),
   );
@@ -58,10 +46,6 @@ function Memo() {
 
     setMemo(currentMemo);
   }, [memoList, tab?.url]);
-
-  const handleMemoClick = () => {
-    Tab.create({ url: `${WEB_URL}/memos` });
-  };
 
   const handleTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMemo(event.target.value);
@@ -87,6 +71,7 @@ function Memo() {
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formattedMemo = await getFormattedMemo(memo);
+
     mutateMemo(formattedMemo, {
       onSuccess: () => overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />),
     });
@@ -94,19 +79,6 @@ function Memo() {
 
   return (
     <form className="form-control h-full" onSubmit={handleFormSubmit}>
-      <div className="label">
-        <span className="label-text whitespace-nowrap font-bold">{I18n.get('memo')}</span>
-        <span className="w-1" />
-        <TopRightArrow
-          width={20}
-          height={20}
-          fill={isUserPreferDarkMode ? 'black' : 'white'}
-          onClick={handleMemoClick}
-          className="cursor-pointer"
-        />
-        <span className="w-4" />
-        <span className="label-text truncate w-full text-right">{tab?.title}</span>
-      </div>
       <textarea
         className="textarea textarea-bordered h-full resize-none"
         id="memo-textarea"
@@ -125,4 +97,4 @@ function Memo() {
   );
 }
 
-export default withAuthentication(Memo);
+export default withAuthentication(MemoForm);

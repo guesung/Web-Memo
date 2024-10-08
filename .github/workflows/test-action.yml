@@ -13,9 +13,15 @@ jobs:
           echo ${{ startsWith(github.ref_name, 'refs/tags/v')}}
           
 
-  test-if:
+  test-if1:
     runs-on: ubuntu-22.04
-    if: github.ref == 'refs/heads/feature/optimize-the-github-actions' && ${{ startsWith(github.ref_name, 'refs/tags/v')}}
+    if:  ${{ github.ref == 'refs/heads/feature/optimize-the-github-actions' && startsWith(github.ref_name, '1')}}
+    steps:
+      - run: echo hello
+
+  test-if2:
+    runs-on: ubuntu-22.04
+    if:  ${{ github.ref == 'refs/heads/feature/optimize-the-github-actions' && startsWith(github.ref_name, '2')}}
     steps:
       - run: echo hello
 

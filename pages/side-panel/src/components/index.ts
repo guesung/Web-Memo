@@ -1,5 +1,5 @@
 export { default as Summary } from './Summary';
-export { default as Memo } from './Memo';
+export { default as MemoForm } from './MemoForm';
 export { default as Header } from './Header';
 export { default as SummaryProvider } from './SummaryProvider';
 export { default as LoginSection } from './LoginSection';

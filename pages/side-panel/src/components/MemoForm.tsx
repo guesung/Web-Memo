@@ -15,7 +15,7 @@ import { Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
 import { UseQueryResult } from '@tanstack/react-query';
 
-function Memo() {
+function MemoForm() {
   const [isSaved, setIsSaved] = useState(true);
   const [memo, setMemo] = useState('');
   const { throttle, abortThrottle } = useThrottle();
@@ -71,6 +71,7 @@ function Memo() {
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formattedMemo = await getFormattedMemo(memo);
+
     mutateMemo(formattedMemo, {
       onSuccess: () => overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />),
     });
@@ -96,4 +97,4 @@ function Memo() {
   );
 }
 
-export default withAuthentication(Memo);
+export default withAuthentication(MemoForm);

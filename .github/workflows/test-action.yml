@@ -1,0 +1,16 @@
+name: test-action
+
+on:
+  push
+
+jobs:
+  test-tag:
+    runs-on: ubuntu-22.04
+    steps:
+      - run: echo ${{ github.ref }}
+  test-if:
+    runs-on: ubuntu-22.04
+    if: github.ref == 'refs/heads/feature/optimize-the-github-actions' && ${{ startsWith(github.ref_name, 'refs/tags/v')}}
+    steps:
+      - run: echo hello
+

@@ -1,0 +1,45 @@
+name: CICD Extension
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - master
+      - develop
+
+jobs:
+  build-web:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+      - name: Web Build
+        run: npm install --global vercel@latest
+      - name: setting environment variables
+        run: |
+          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/shared/.env
+          echo WEB_URL=${{ secrets.PROD_WEB_URL }} >> packages/shared/.env
+
+          echo "${{ secrets.WEB_ENV_FILE }}" > packages/web/.env
+          echo NEXT_PUBLIC_WEB_URL=${{ secrets.PROD_WEB_URL }} >> packages/web/.env
+
+      - name : Vercel Pull
+        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Vercel Build
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Vercel Deploy on Staging
+        run: |
+          VERCEL_DEPOLYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
+          vercel alias set "$VERCEL_DEPOLYED_URL" ${{secrets.STAGING_WEB_URL_WITHOUT_PROTOCOL}} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects
+
+      - name: Vercel Deploy on Production
+        if:  github.ref == 'refs/tags/prod'
+        run: |
+          VERCEL_DEPOLYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }}

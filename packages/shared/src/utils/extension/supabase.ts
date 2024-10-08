@@ -5,13 +5,17 @@ import {
   SUPABASE_URL,
   WEB_URL,
 } from '@src/constants';
-import { Database, StorageKeyType } from '@src/types';
+import { Database, MemoSupabaseClient, StorageKeyType } from '@src/types';
 import { createClient } from '@supabase/supabase-js';
 import { Storage } from './module';
 
+let supabaseClientInstance: MemoSupabaseClient | null = null;
+
 export const getSupabaseClient = async () => {
   try {
-    const supabaseClientInstance = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    if (supabaseClientInstance) return supabaseClientInstance;
+
+    supabaseClientInstance = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
       db: { schema: 'memo' },
       auth: {
         storage: {

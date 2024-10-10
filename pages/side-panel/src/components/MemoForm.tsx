@@ -18,6 +18,7 @@ import { UseQueryResult } from '@tanstack/react-query';
 function MemoForm() {
   const [isSaved, setIsSaved] = useState(true);
   const [memo, setMemo] = useState('');
+  const [category, setCategory] = useState('');
   const { throttle, abortThrottle } = useThrottle();
   const { data: tab } = useTabQuery();
   const { data: supabaseClient } = useSupabaseClient({
@@ -28,8 +29,8 @@ function MemoForm() {
   const { mutate: mutateMemo } = useMemoPostMutation({
     supabaseClient,
     handleSettled: () => {
-      abortThrottle();
       setIsSaved(true);
+      abortThrottle();
     },
   });
 
@@ -42,9 +43,10 @@ function MemoForm() {
 
   useEffect(() => {
     if (!tab?.url) return;
-    const currentMemo = memoList?.data?.find(memo => memo.url === tab.url)?.memo ?? '';
-
-    setMemo(currentMemo);
+    const currentMemo = memoList?.data?.find(memo => memo.url === tab.url);
+    if (!currentMemo) return;
+    setMemo(currentMemo?.memo ?? '');
+    setCategory(currentMemo?.category ?? '');
   }, [memoList, tab?.url]);
 
   const handleTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -58,9 +60,13 @@ function MemoForm() {
     });
   };
 
-  const handleTextAreaKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.metaKey && e.key === 's') {
-      e.preventDefault();
+  const handleCategoryInputChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCategory(event.target.value);
+  };
+
+  const handleTextAreaKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.metaKey && event.key === 's') {
+      event.preventDefault();
       const formattedMemo = await getFormattedMemo(memo);
       mutateMemo(formattedMemo, {
         onSuccess: () => overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />),
@@ -68,8 +74,8 @@ function MemoForm() {
     }
   };
 
-  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     const formattedMemo = await getFormattedMemo(memo);
 
     mutateMemo(formattedMemo, {
@@ -78,7 +84,7 @@ function MemoForm() {
   };
 
   return (
-    <form className="form-control h-full " onSubmit={handleFormSubmit}>
+    <form className="form-control h-full" onSubmit={handleFormSubmit}>
       <textarea
         className={`textarea textarea-bordered h-full border-2 resize-none ${isSaved ? '' : 'border-cyan-900 focus:border-cyan-900 '}`}
         id="memo-textarea"
@@ -88,6 +94,10 @@ function MemoForm() {
         value={memo}
       />
       <div className="label">
+        <label className="input input-bordered flex items-center gap-2 h-full input-xs">
+          <span>#</span>
+          <input type="text" onChange={handleCategoryInputChange} value={category} />
+        </label>
         <button className="label-text-alt" type="submit">
           {I18n.get('save')}
         </button>

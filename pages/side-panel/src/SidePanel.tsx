@@ -36,7 +36,7 @@ export default function SidePanel() {
           </section>
         </main>
       </OverlayProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
   );
 }

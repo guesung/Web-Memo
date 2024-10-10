@@ -11,7 +11,7 @@ import {
 } from '@extension/shared/hooks';
 import { MemoSupabaseResponse } from '@extension/shared/types';
 import { getFormattedMemo, getSupabaseClient, I18n, responseUpdateSidePanel } from '@extension/shared/utils/extension';
-import { Toast } from '@extension/ui';
+import { cn, Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
 import { UseQueryResult } from '@tanstack/react-query';
 
@@ -90,7 +90,9 @@ function MemoForm() {
   return (
     <form className="form-control h-full" onSubmit={handleFormSubmit}>
       <textarea
-        className={`textarea textarea-bordered h-full border-2 resize-none ${isSaved ? '' : 'border-cyan-900 focus:border-cyan-900 '}`}
+        className={cn('textarea textarea-bordered h-full border-2 resize-none', {
+          'border-cyan-900 focus:border-cyan-900': isSaved,
+        })}
         id="memo-textarea"
         placeholder="memo"
         onChange={handleMemoTextAreaChange}

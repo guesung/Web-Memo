@@ -1,5 +1,5 @@
 import type { PostgrestSingleResponse, SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from './database';
+import { Database } from './supabase';
 
 export type MemoTable = Database['memo']['Tables']['memo'];
 export type MemoSupabaseClient = SupabaseClient<Database, 'memo', Database['memo']>;

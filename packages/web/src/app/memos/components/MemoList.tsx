@@ -29,15 +29,16 @@ export default function MemoList() {
         <tr>
           <th className="text-center">번호</th>
           <th className="w-1/3 text-center">제목</th>
-          <th className="text-center">날짜</th>
           <th className="w-full text-center">메모</th>
-          <th className="w-full text-center">삭제</th>
+          <th className="text-center">카테고리</th>
+          <th className="text-center">날짜</th>
+          <th className="w-full text-center hidden lg:block">삭제</th>
         </tr>
       </thead>
       <tbody>
         {memoList.map((memo, index) => (
           <tr key={memo.id} className="hover">
-            <th className="text-center">{index + 1}</th>
+            <td className="text-center">{index + 1}</td>
             <td>
               <a
                 href={memo.url}
@@ -48,11 +49,14 @@ export default function MemoList() {
                 {memo.title}
               </a>
             </td>
-            <td className="whitespace-nowrap">{formatDate(memo.created_at)}</td>
             <td>
               <p className="text-start whitespace-break-spaces">{memo.memo}</p>
             </td>
-            <td>
+            <td className="">
+              {memo.category ? <p className="badge badge-neutral h-full">{memo.category}</p> : <></>}
+            </td>
+            <td className="whitespace-nowrap">{formatDate(memo.created_at)}</td>
+            <td className="hidden lg:block">
               <button type="button" onClick={() => handleDeleteClick(memo.id)} className="text-center w-full">
                 x
               </button>

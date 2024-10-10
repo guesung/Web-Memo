@@ -43,19 +43,20 @@ function MemoForm() {
 
   useEffect(() => {
     if (!tab?.url) return;
+
     const currentMemo = memoList?.data?.find(memo => memo.url === tab.url);
-    if (!currentMemo) return;
+
     setMemo(currentMemo?.memo ?? '');
     setCategory(currentMemo?.category ?? '');
   }, [memoList, tab?.url]);
 
-  const handleTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMemo(event.target.value);
     setIsSaved(false);
 
     throttle(async () => {
       setIsSaved(true);
-      const formattedMemo = await getFormattedMemo(event.target.value);
+      const formattedMemo = await getFormattedMemo({ memo: event.target.value, category });
       mutateMemo(formattedMemo);
     });
   };
@@ -64,10 +65,15 @@ function MemoForm() {
     setCategory(event.target.value);
   };
 
-  const handleTextAreaKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = async (
+    event: React.KeyboardEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLInputElement>,
+  ) => {
     if (event.metaKey && event.key === 's') {
       event.preventDefault();
-      const formattedMemo = await getFormattedMemo(memo);
+
+      console.log(memo, category);
+      const formattedMemo = await getFormattedMemo({ memo, category });
+      console.log(formattedMemo);
       mutateMemo(formattedMemo, {
         onSuccess: () => overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />),
       });
@@ -76,7 +82,7 @@ function MemoForm() {
 
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formattedMemo = await getFormattedMemo(memo);
+    const formattedMemo = await getFormattedMemo({ memo, category });
 
     mutateMemo(formattedMemo, {
       onSuccess: () => overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />),
@@ -89,14 +95,14 @@ function MemoForm() {
         className={`textarea textarea-bordered h-full border-2 resize-none ${isSaved ? '' : 'border-cyan-900 focus:border-cyan-900 '}`}
         id="memo-textarea"
         placeholder="memo"
-        onChange={handleTextAreaChange}
-        onKeyDown={handleTextAreaKeyDown}
+        onChange={handleMemoTextAreaChange}
+        onKeyDown={handleKeyDown}
         value={memo}
       />
       <div className="label">
         <label className="input input-bordered flex items-center gap-2 h-full input-xs">
           <span>#</span>
-          <input type="text" onChange={handleCategoryInputChange} value={category} />
+          <input type="text" onChange={handleCategoryInputChange} onKeyDown={handleKeyDown} value={category} />
         </label>
         <button className="label-text-alt" type="submit">
           {I18n.get('save')}

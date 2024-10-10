@@ -9,6 +9,7 @@ interface SaveMemoProps {
   memo: string;
   url: string;
   title: string;
+  category: string;
 }
 
 interface UseMemoPostMutationProps extends UseMutationOptions<MemoSupabaseResponse, Error, SaveMemoProps> {
@@ -24,12 +25,14 @@ export default function useMemoPostMutation({
   const queryClient = useQueryClient();
   const { data: memoList } = useMemoListQuery({ supabaseClient });
 
-  const saveMemo = async ({ memo, title, url }: SaveMemoProps) => {
+  const saveMemo = async ({ memo, title, url, category }: SaveMemoProps) => {
     const currentMemo = memoList?.data?.find(memo => memo.url === formatUrl(url));
     const supabaseClient = await getSupabaseClient();
 
-    if (currentMemo) return await updateMemo(supabaseClient, { ...currentMemo, memo });
-    else return await insertMemo(supabaseClient, { memo, title, url });
+    console.log(memo, title, url, category);
+
+    if (currentMemo) return await updateMemo(supabaseClient, { ...currentMemo, memo, category });
+    else return await insertMemo(supabaseClient, { memo, title, url, category });
   };
 
   return useMutation<MemoSupabaseResponse, Error, SaveMemoProps>({

@@ -31,7 +31,7 @@
     "update-version:win32": "bash update_version.sh",
     "update-version:default": "./update_version.sh",
     "package": "pnpm i && pnpm clean && pnpm build && pnpm zip",
-    "generate-supabase-type": "supabase gen types --lang=typescript --project-id czwtqukymcqoberdoltq --schema memo > packages/shared/src/types/database.ts"
+    "generate-supabase-type": "supabase gen types --lang=typescript --project-id czwtqukymcqoberdoltq --schema memo > packages/shared/src/types/supabase.ts"
   },
   "files": [
     "dist"

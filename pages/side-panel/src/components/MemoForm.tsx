@@ -71,9 +71,7 @@ function MemoForm() {
     if (event.metaKey && event.key === 's') {
       event.preventDefault();
 
-      console.log(memo, category);
       const formattedMemo = await getFormattedMemo({ memo, category });
-      console.log(formattedMemo);
       mutateMemo(formattedMemo, {
         onSuccess: () => overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />),
       });

@@ -78,9 +78,9 @@ function MemoForm() {
   };
 
   return (
-    <form className="form-control h-full" onSubmit={handleFormSubmit}>
+    <form className="form-control h-full " onSubmit={handleFormSubmit}>
       <textarea
-        className="textarea textarea-bordered h-full resize-none"
+        className={`textarea textarea-bordered h-full border-2 resize-none ${isSaved ? '' : 'border-cyan-900 focus:border-cyan-900 '}`}
         id="memo-textarea"
         placeholder="memo"
         onChange={handleTextAreaChange}
@@ -88,7 +88,6 @@ function MemoForm() {
         value={memo}
       />
       <div className="label">
-        {isSaved ? <span /> : <span className="loading loading-ring loading-xs" />}
         <button className="label-text-alt" type="submit">
           {I18n.get('save')}
         </button>

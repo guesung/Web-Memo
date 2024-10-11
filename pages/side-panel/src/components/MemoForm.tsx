@@ -91,10 +91,10 @@ function MemoForm() {
     <form className="form-control h-full" onSubmit={handleFormSubmit}>
       <textarea
         className={cn('textarea textarea-bordered h-full border-2 resize-none', {
-          'border-cyan-900 focus:border-cyan-900': isSaved,
+          'border-cyan-900 focus:border-cyan-900': !isSaved,
         })}
         id="memo-textarea"
-        placeholder="memo"
+        placeholder="메모"
         onChange={handleMemoTextAreaChange}
         onKeyDown={handleKeyDown}
         value={memo}
@@ -102,7 +102,13 @@ function MemoForm() {
       <div className="label">
         <label className="input input-bordered flex items-center gap-2 h-full input-xs">
           <span>#</span>
-          <input type="text" onChange={handleCategoryInputChange} onKeyDown={handleKeyDown} value={category} />
+          <input
+            type="text"
+            onChange={handleCategoryInputChange}
+            onKeyDown={handleKeyDown}
+            value={category}
+            placeholder="카테고리"
+          />
         </label>
         <button className="label-text-alt" type="submit">
           {I18n.get('save')}

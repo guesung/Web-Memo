@@ -1,6 +1,6 @@
 {
   "name": "chrome-extension-boilerplate-react-vite",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "description": "Web Memo - Chrome Extension",
   "bugs": "https://github.com/guesung/Web-Memo/issues",
   "homepage": "https://web-memos.vercel.app",

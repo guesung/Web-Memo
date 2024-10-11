@@ -61,10 +61,6 @@ function MemoForm() {
     });
   };
 
-  const handleCategoryInputChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    setCategory(event.target.value);
-  };
-
   const handleKeyDown = async (
     event: React.KeyboardEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLInputElement>,
   ) => {
@@ -100,16 +96,7 @@ function MemoForm() {
         value={memo}
       />
       <div className="label">
-        <label className="input input-bordered flex items-center gap-2 h-full input-xs">
-          <span>#</span>
-          <input
-            type="text"
-            onChange={handleCategoryInputChange}
-            onKeyDown={handleKeyDown}
-            value={category}
-            placeholder="카테고리"
-          />
-        </label>
+        <span />
         <button className="label-text-alt" type="submit">
           {I18n.get('save')}
         </button>

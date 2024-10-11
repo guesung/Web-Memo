@@ -30,7 +30,6 @@ export default function MemoList() {
           <th className="text-center">번호</th>
           <th className="w-1/3 text-center">제목</th>
           <th className="w-full text-center">메모</th>
-          <th className="text-center">카테고리</th>
           <th className="text-center">날짜</th>
           <th className="w-full text-center hidden lg:block">삭제</th>
         </tr>
@@ -51,9 +50,6 @@ export default function MemoList() {
             </td>
             <td>
               <p className="text-start whitespace-break-spaces">{memo.memo}</p>
-            </td>
-            <td className="">
-              {memo.category ? <p className="badge badge-neutral h-full">{memo.category}</p> : <></>}
             </td>
             <td className="whitespace-nowrap">{formatDate(memo.created_at)}</td>
             <td className="hidden lg:block">

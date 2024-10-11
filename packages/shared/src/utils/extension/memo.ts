@@ -1,7 +1,12 @@
 import { Tab } from '.';
 import { formatUrl } from '../url';
 
-export const getFormattedMemo = async (memo: string) => {
+interface GetFormattedMemoProps {
+  memo: string;
+  category: string;
+}
+
+export const getFormattedMemo = async ({ memo, category }: GetFormattedMemoProps) => {
   const tab = await Tab.get();
 
   if (!tab.url || !tab.title) throw new Error('Save Failed: Invalid URL');
@@ -9,6 +14,7 @@ export const getFormattedMemo = async (memo: string) => {
   return {
     title: tab.title,
     memo,
+    category,
     url: formatUrl(tab.url),
   };
 };

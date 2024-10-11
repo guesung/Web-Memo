@@ -1,4 +1,5 @@
 import { WEB_URL } from '@extension/shared/constants';
+import { Tab } from '@extension/shared/utils/extension';
 import { TopRightArrow } from '@src/icons';
 
 export default function LoginSection() {
@@ -10,9 +11,9 @@ export default function LoginSection() {
         type="button"
         className="cursor-pointer flex items-center gap-2"
         onClick={() => {
-          window.open(`${WEB_URL}/login`, '_blank', 'location=yes,height=570,width=520,scrollbars=yes,status=yes');
+          Tab.create({ url: `${WEB_URL}/login` });
         }}>
-        <span>로그인하러가기</span>
+        로그인하러가기
         <TopRightArrow height={16} width={16} />
       </button>
     </div>

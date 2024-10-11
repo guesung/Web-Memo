@@ -1,10 +1,11 @@
 import { OverlayProvider } from 'overlay-kit';
 
-import { ErrorBoundary, Loading } from '@extension/ui';
-import { Header, Memo, Summary, SummaryProvider } from './components';
+import { ErrorBoundary } from '@extension/ui';
+import { SummaryHeader, MemoForm, MemoHeader, Summary, SummaryProvider, LoginSection } from './components';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Suspense } from 'react';
+import { LoadingFallback } from '@extension/ui/lib/components';
 
 const queryClient = new QueryClient();
 
@@ -16,21 +17,26 @@ export default function SidePanel() {
           <section className="flex-1 overflow-scroll">
             <ErrorBoundary>
               <SummaryProvider>
-                <Header />
+                <SummaryHeader />
                 <Summary />
               </SummaryProvider>
             </ErrorBoundary>
           </section>
-          <section className="flex-1">
+          <section className="h-1/2 flex flex-col">
             <ErrorBoundary>
-              <Suspense fallback={<Loading />}>
-                <Memo />
+              <Suspense fallback={<LoadingFallback />}>
+                <MemoHeader />
+              </Suspense>
+            </ErrorBoundary>
+            <ErrorBoundary FallbackComponent={LoginSection}>
+              <Suspense fallback={<LoadingFallback />}>
+                <MemoForm />
               </Suspense>
             </ErrorBoundary>
           </section>
         </main>
       </OverlayProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
   );
 }

@@ -7,3 +7,4 @@ export * from './url';
 export * from './error';
 export * from './supabase';
 export * from './notion';
+export * from './tailwind';

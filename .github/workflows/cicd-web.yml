@@ -35,16 +35,14 @@ jobs:
       - name: Vercel Build
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Vercel Deploy on Staging
-        # 자동 배포를 위해 develop 브랜치에 푸시하면 staging 배포를 진행한다
-        if:  ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop'}}
+      - name: Deploy staging when push on develop branch
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop'}}
         run: |
           VERCEL_DEPOLYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
           vercel alias set "$VERCEL_DEPOLYED_URL" ${{secrets.STAGING_WEB_URL_WITHOUT_PROTOCOL}} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects
 
-      - name: Vercel Deploy on Production
-        # 수동 배포를 위해 `prod` 태그로 프로덕션 배포를 진행한다.
-        if:  github.ref == 'refs/tags/prod'
+      - name: Deploy production when push on master branch
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master'}}
         run: |
           VERCEL_DEPOLYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }}

@@ -10,9 +10,6 @@ on:
       - master
       - develop
 
-permissions:
-  contents: write
-
 jobs:
   build-extension:
     runs-on: ubuntu-22.04
@@ -48,8 +45,8 @@ jobs:
   upload-extension:
     needs: build-extension
     runs-on: ubuntu-22.04
-    # 수동 배포를 위해 `v.xx` 태그로 익스텐션 배포를 진행한다.
-    if:  ${{ startsWith(github.ref, 'refs/tags/v')}}
+    name: Upload chrome store when push on master branch
+    if:  ${{ github.event_name == 'push' && github.ref == 'refs/heads/master'}}
     steps:
       - name: Download Artifacts
         uses: actions/download-artifact@v4
@@ -63,13 +60,3 @@ jobs:
           client-secret: ${{ secrets.CLIENT_SECRET }}
           refresh-token: ${{ secrets.REFRESH_TOKEN }}
           publish: false
-
-      - name: Update gitHub releases
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.ref_name }}
-        run: |
-          gh release create "$tag" \
-              --repo="$GITHUB_REPOSITORY" \
-              --title="${GITHUB_REPOSITORY#*/} ${tag#v}" \
-              --generate-notes

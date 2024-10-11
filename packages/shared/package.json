@@ -56,5 +56,9 @@
     "@extension/storage": "workspace:*",
     "@extension/tsconfig": "workspace:*",
     "esbuild-node-externals": "^1.14.0"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.4.0"
   }
 }

@@ -1,3 +1,4 @@
+import { cn } from '@extension/shared/utils';
 import { IframeHTMLAttributes } from 'react';
 
 interface YoutubeEmbedProps extends IframeHTMLAttributes<HTMLIFrameElement> {
@@ -10,7 +11,7 @@ export default function YoutubeEmbed({ embedId, className, isAutoPlay = false, .
       <iframe
         width="853"
         height="480"
-        src={`https://www.youtube.com/embed/${embedId}${isAutoPlay ? '?autoplay=1' : ''}`}
+        src={cn(`https://www.youtube.com/embed/${embedId}`, { '?autoplay=1': isAutoPlay })}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
         title="Embedded youtube"

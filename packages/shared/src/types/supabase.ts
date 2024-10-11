@@ -1,5 +1,3 @@
-import { type PostgrestSingleResponse, SupabaseClient } from '@supabase/supabase-js';
-
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
@@ -7,6 +5,7 @@ export type Database = {
     Tables: {
       memo: {
         Row: {
+          category: string | null;
           created_at: string;
           id: number;
           memo: string;
@@ -15,6 +14,7 @@ export type Database = {
           user_id: string | null;
         };
         Insert: {
+          category?: string | null;
           created_at?: string;
           id?: number;
           memo: string;
@@ -23,6 +23,7 @@ export type Database = {
           user_id?: string | null;
         };
         Update: {
+          category?: string | null;
           created_at?: string;
           id?: number;
           memo?: string;
@@ -55,10 +56,6 @@ export type Database = {
     };
   };
 };
-
-export type MemoTable = Database['memo']['Tables']['memo'];
-export type MemoSupabaseClient = SupabaseClient<Database, 'memo', Database['memo']>;
-export type MemoSupabaseResponse = PostgrestSingleResponse<Array<MemoTable['Row']>>;
 
 type PublicSchema = Database[Extract<keyof Database, 'public'>];
 

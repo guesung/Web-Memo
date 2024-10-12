@@ -53,7 +53,7 @@ if (chrome.contextMenus)
   chrome.contextMenus.onClicked.addListener(async item => {
     switch (item.menuItemId) {
       case CONTEXT_MENU_ID_CHECK_MEMO:
-        await Tab.create({ url: `${WEB_URL}/memo` });
+        await Tab.create({ url: `${WEB_URL}/memos` });
         break;
       case CONTEXT_MENU_ID_SHOW_GUIDE:
         if (I18n.getUILanguage() === 'ko') Tab.create({ url: URL_GUIDE_KO });

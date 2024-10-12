@@ -26,12 +26,14 @@ export default function useMemoPatchMutation({
 
         const { data: previousMemoListData } = previousMemoList;
 
-        const currentMemoIndex = previousMemoListData?.findIndex(memo => memo.id === currentMemo.id);
-        const currentMemoBase = previousMemoListData?.find(memo => memo.id === currentMemo.id);
+        if (!previousMemoListData) throw new NoMemoListError();
 
-        if (!currentMemoIndex || !currentMemoBase) throw new NoMemoError();
+        const currentMemoIndex = previousMemoListData.findIndex(memo => memo.id === currentMemo.id);
+        const currentMemoBase = previousMemoListData.find(memo => memo.id === currentMemo.id);
 
-        previousMemoListData?.splice(currentMemoIndex, 1, { ...currentMemoBase, ...currentMemo });
+        if (currentMemoIndex === -1 || !currentMemoBase) throw new NoMemoError();
+
+        previousMemoListData.splice(currentMemoIndex, 1, { ...currentMemoBase, ...currentMemo });
 
         await queryClient.setQueryData(queryKeys.memoList(), { ...previousMemoList, data: previousMemoListData });
 

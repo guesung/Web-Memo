@@ -52,7 +52,7 @@ export default function MemoList() {
               <p className="text-start whitespace-break-spaces">{memo.memo}</p>
             </td>
             <td className="whitespace-nowrap">{formatDate(memo.created_at)}</td>
-            <td className="hidden lg:block">
+            <td>
               <button type="button" onClick={() => handleDeleteClick(memo.id)} className="text-center w-full">
                 x
               </button>

@@ -7,10 +7,10 @@ export const getMemoSupabase = async (supabaseClient: MemoSupabaseClient) =>
 export const insertMemo = async (supabaseClient: MemoSupabaseClient, memoRequest: MemoTable['Insert']) =>
   supabaseClient.from('memo').insert(memoRequest).select();
 
-interface UpdateMemo extends Omit<MemoTable['Update'], 'id'> {
+export interface UpdateMemoProps extends Omit<MemoTable['Update'], 'id'> {
   id: number;
 }
-export const updateMemo = async (supabaseClient: MemoSupabaseClient, memoRequest: UpdateMemo) =>
+export const updateMemo = async (supabaseClient: MemoSupabaseClient, memoRequest: UpdateMemoProps) =>
   supabaseClient.from('memo').update(memoRequest).eq('id', memoRequest.id).select();
 
 export const deleteMemo = async (supabaseClient: MemoSupabaseClient, id: number) =>

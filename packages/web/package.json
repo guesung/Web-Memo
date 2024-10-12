@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@egjs/react-infinitegrid": "^4.12.0",
     "@extension/shared": "workspace:*",
     "@extension/storage": "workspace:*",
     "@extension/ui": "workspace:*",

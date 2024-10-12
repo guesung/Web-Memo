@@ -23,7 +23,7 @@ const Item = ({ num }: any) => (
 
 function getItems(nextGroupKey: number, count: number) {
   const nextItems = [];
-  const nextKey = nextGroupKey * count;
+  const nextKey = nextGroupKey * 10;
 
   for (let i = 0; i < count; ++i) {
     nextItems.push({ groupKey: nextGroupKey, key: nextKey + i });
@@ -48,7 +48,11 @@ export default function MemoGrid() {
       gap={5}
       onRequestAppend={e => {
         const nextGroupKey = (+e.groupKey! || 0) + 1;
-        setItems([...items, ...getItems(nextGroupKey, 10)]);
+        const maxAddItem = items.length + 10 > memoList.length ? memoList.length - items.length : 10;
+
+        if (maxAddItem === 0) return;
+
+        setItems([...items, ...getItems(nextGroupKey, maxAddItem)]);
       }}>
       {items.map(item => (
         <MemoItem data-grid-groupkey={item.groupKey} key={item.key} memo={memoList.at(item.key)} />

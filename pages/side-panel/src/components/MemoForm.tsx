@@ -35,9 +35,13 @@ function MemoForm() {
   const { data: memoList }: UseQueryResult<MemoSupabaseResponse, Error> = useMemoListQuery({ supabaseClient });
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
-    handleMutate: () => {
+    handleSuccess: () => {
       setIsSaved(true);
       abortThrottle();
+      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
+    },
+    onError: () => {
+      overlay.open(({ unmount }) => <Toast message="메모 저장에 실패했습니다." onClose={unmount} />);
     },
   });
   const { mutate: mutateMemoPost } = useMemoPostMutation({
@@ -45,6 +49,10 @@ function MemoForm() {
     handleSuccess: () => {
       setIsSaved(true);
       abortThrottle();
+      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
+    },
+    onError: () => {
+      overlay.open(({ unmount }) => <Toast message="메모 저장에 실패했습니다." onClose={unmount} />);
     },
   });
 
@@ -91,14 +99,12 @@ function MemoForm() {
       event.preventDefault();
 
       await saveMemo({ memo, category });
-      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
     }
   };
 
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     await saveMemo({ memo, category });
-    overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
   };
 
   return (

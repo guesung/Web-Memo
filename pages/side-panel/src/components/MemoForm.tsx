@@ -4,13 +4,20 @@ import { useEffect, useState } from 'react';
 import {
   useDidMount,
   useMemoListQuery,
+  useMemoPatchMutation,
   useMemoPostMutation,
   useSupabaseClient,
   useTabQuery,
   useThrottle,
 } from '@extension/shared/hooks';
 import { MemoSupabaseResponse } from '@extension/shared/types';
-import { getFormattedMemo, getSupabaseClient, I18n, responseUpdateSidePanel } from '@extension/shared/utils/extension';
+import {
+  getFormattedMemo,
+  GetFormattedMemoProps,
+  getSupabaseClient,
+  I18n,
+  responseUpdateSidePanel,
+} from '@extension/shared/utils/extension';
 import { cn, Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
 import { UseQueryResult } from '@tanstack/react-query';
@@ -26,13 +33,30 @@ function MemoForm() {
   });
   // TODO :타입 에러로 인해 타입 단언으로 임시 해결
   const { data: memoList }: UseQueryResult<MemoSupabaseResponse, Error> = useMemoListQuery({ supabaseClient });
-  const { mutate: mutateMemo } = useMemoPostMutation({
+  const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
-    handleSettled: () => {
+    handleMutate: () => {
       setIsSaved(true);
       abortThrottle();
     },
   });
+  const { mutate: mutateMemoPost } = useMemoPostMutation({
+    supabaseClient,
+    handleSuccess: () => {
+      setIsSaved(true);
+      abortThrottle();
+    },
+  });
+
+  const saveMemo = async ({ memo, category }: GetFormattedMemoProps) => {
+    const currentMemo = memoList?.data?.find(memo => memo.url === tab.url);
+
+    if (currentMemo) mutateMemoPatch({ memo, category, id: currentMemo.id });
+    else {
+      const formattedMemo = await getFormattedMemo({ category, memo });
+      mutateMemoPost(formattedMemo);
+    }
+  };
 
   useDidMount(() =>
     responseUpdateSidePanel(() => {
@@ -56,8 +80,7 @@ function MemoForm() {
 
     throttle(async () => {
       setIsSaved(true);
-      const formattedMemo = await getFormattedMemo({ memo: event.target.value, category });
-      mutateMemo(formattedMemo);
+      await saveMemo({ memo: event.target.value, category });
     });
   };
 
@@ -67,20 +90,15 @@ function MemoForm() {
     if (event.metaKey && event.key === 's') {
       event.preventDefault();
 
-      const formattedMemo = await getFormattedMemo({ memo, category });
-      mutateMemo(formattedMemo, {
-        onSuccess: () => overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />),
-      });
+      await saveMemo({ memo, category });
+      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
     }
   };
 
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formattedMemo = await getFormattedMemo({ memo, category });
-
-    mutateMemo(formattedMemo, {
-      onSuccess: () => overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />),
-    });
+    await saveMemo({ memo, category });
+    overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
   };
 
   return (

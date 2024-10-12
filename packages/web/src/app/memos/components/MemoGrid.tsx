@@ -63,10 +63,11 @@ export default function MemoGrid() {
 }
 
 interface MemoItemProps {
-  memo: MemoRow;
+  memo?: MemoRow;
 }
 
 function MemoItem({ memo }: MemoItemProps) {
+  if (!memo) return null;
   return (
     <div className="bg-base-100 shadow-xl card box-border w-[300px]">
       <div className="card-body">

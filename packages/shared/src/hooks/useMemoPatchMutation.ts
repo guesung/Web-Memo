@@ -5,12 +5,12 @@ import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react
 
 interface UseMemoPostMutationProps extends UseMutationOptions<MemoSupabaseResponse, Error, UpdateMemoProps> {
   supabaseClient: MemoSupabaseClient;
-  handleMutate: () => void;
+  handleSuccess: () => void;
 }
 
 export default function useMemoPatchMutation({
   supabaseClient,
-  handleMutate,
+  handleSuccess,
   ...useMutationProps
 }: UseMemoPostMutationProps) {
   const queryClient = useQueryClient();
@@ -18,35 +18,28 @@ export default function useMemoPatchMutation({
     ...useMutationProps,
     mutationFn: async (updateMemoProps: UpdateMemoProps) => await updateMemo(supabaseClient, updateMemoProps),
     onMutate: async currentMemo => {
-      try {
-        await queryClient.cancelQueries({ queryKey: queryKeys.memoList() });
-        const previousMemoList = queryClient.getQueryData<MemoSupabaseResponse>(queryKeys.memoList());
+      await queryClient.cancelQueries({ queryKey: queryKeys.memoList() });
+      const previousMemoList = queryClient.getQueryData<MemoSupabaseResponse>(queryKeys.memoList());
 
-        if (!previousMemoList) throw new NoMemoListError();
+      if (!previousMemoList) throw new NoMemoListError();
 
-        const { data: previousMemoListData } = previousMemoList;
+      const { data: previousMemoListData } = previousMemoList;
 
-        if (!previousMemoListData) throw new NoMemoListError();
+      if (!previousMemoListData) throw new NoMemoListError();
 
-        const currentMemoIndex = previousMemoListData.findIndex(memo => memo.id === currentMemo.id);
-        const currentMemoBase = previousMemoListData.find(memo => memo.id === currentMemo.id);
+      const currentMemoIndex = previousMemoListData.findIndex(memo => memo.id === currentMemo.id);
+      const currentMemoBase = previousMemoListData.find(memo => memo.id === currentMemo.id);
 
-        if (currentMemoIndex === -1 || !currentMemoBase) throw new NoMemoError();
+      if (currentMemoIndex === -1 || !currentMemoBase) throw new NoMemoError();
 
-        previousMemoListData.splice(currentMemoIndex, 1, { ...currentMemoBase, ...currentMemo });
+      previousMemoListData.splice(currentMemoIndex, 1, { ...currentMemoBase, ...currentMemo });
 
-        await queryClient.setQueryData(queryKeys.memoList(), { ...previousMemoList, data: previousMemoListData });
+      await queryClient.setQueryData(queryKeys.memoList(), { ...previousMemoList, data: previousMemoListData });
 
-        handleMutate();
-
-        return { previousMemoList };
-      } catch (e) {
-        if (e instanceof NoMemoListError) {
-          queryClient.invalidateQueries({ queryKey: queryKeys.memoList() });
-          return;
-        }
-        return;
-      }
+      return { previousMemoList };
+    },
+    onSuccess: async () => {
+      handleSuccess();
     },
   });
 }

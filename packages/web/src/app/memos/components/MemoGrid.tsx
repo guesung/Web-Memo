@@ -10,18 +10,6 @@ import { useEffect, useState } from 'react';
 import { MemoRow, MemoSupabaseResponse } from '@extension/shared/types';
 import Link from 'next/link';
 
-const Item = ({ num }: any) => (
-  <div
-    style={{
-      width: '250px',
-    }}>
-    <div className="thumbnail">
-      <img src={`https://naver.github.io/egjs-infinitegrid/assets/image/${(num % 33) + 1}.jpg`} alt="egjs" />
-    </div>
-    <div className="info">{`egjs ${num}`}</div>
-  </div>
-);
-
 function getItems(nextGroupKey: number, count: number) {
   const nextItems = [];
   const nextKey = nextGroupKey * 10;

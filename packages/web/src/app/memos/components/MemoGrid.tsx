@@ -46,7 +46,8 @@ export default function MemoGrid() {
   return (
     <MasonryInfiniteGrid
       className="container"
-      gap={10}
+      gap={16}
+      align="center"
       onRequestAppend={e => {
         const nextGroupKey = (+e.groupKey! || 0) + 1;
         const maxAddItem = items.length + 10 > memoList.length ? memoList.length - items.length : 10;

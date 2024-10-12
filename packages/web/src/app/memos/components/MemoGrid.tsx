@@ -62,7 +62,7 @@ function MemoItem({ memo }: MemoItemProps) {
   return (
     <div className="bg-base-100 shadow-xl card box-border w-[300px]">
       <div className="card-body relative">
-        <div className="flex gap-2">
+        <Link className="flex gap-2 link-hover" href={memo.url} target="_blank">
           {memo?.favIconUrl ? (
             <Image
               src={memo.favIconUrl}
@@ -75,10 +75,8 @@ function MemoItem({ memo }: MemoItemProps) {
           ) : (
             <></>
           )}
-          <Link className="font-bold line-clamp-1 link-hover" href={memo.url} target="_blank">
-            {memo.title}
-          </Link>
-        </div>
+          <span className="font-bold line-clamp-1 ">{memo.title}</span>
+        </Link>
         <div className="break-all whitespace-break-spaces">{memo.memo}</div>
         <span className="text-xs absolute right-2 bottom-2 text-stone-500">
           {(new Date(memo.created_at).getMonth() + 1) % 12}/{new Date(memo.created_at).getDate()}

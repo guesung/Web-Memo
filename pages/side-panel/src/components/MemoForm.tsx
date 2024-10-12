@@ -38,7 +38,6 @@ function MemoForm() {
     handleSuccess: () => {
       setIsSaved(true);
       abortThrottle();
-      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
     },
     onError: () => {
       overlay.open(({ unmount }) => <Toast message="메모 저장에 실패했습니다." onClose={unmount} />);
@@ -48,8 +47,6 @@ function MemoForm() {
     supabaseClient,
     handleSuccess: () => {
       setIsSaved(true);
-      abortThrottle();
-      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
     },
     onError: () => {
       overlay.open(({ unmount }) => <Toast message="메모 저장에 실패했습니다." onClose={unmount} />);
@@ -86,10 +83,7 @@ function MemoForm() {
     setMemo(event.target.value);
     setIsSaved(false);
 
-    throttle(async () => {
-      setIsSaved(true);
-      await saveMemo({ memo: event.target.value, category });
-    });
+    throttle(async () => await saveMemo({ memo: event.target.value, category }));
   };
 
   const handleKeyDown = async (
@@ -99,12 +93,14 @@ function MemoForm() {
       event.preventDefault();
 
       await saveMemo({ memo, category });
+      abortThrottle();
     }
   };
 
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     await saveMemo({ memo, category });
+    abortThrottle();
   };
 
   return (

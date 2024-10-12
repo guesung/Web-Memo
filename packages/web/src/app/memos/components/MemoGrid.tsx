@@ -8,6 +8,7 @@ import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
 import { useEffect, useState } from 'react';
 
 import { MemoRow, MemoSupabaseResponse } from '@extension/shared/types';
+import Link from 'next/link';
 
 const Item = ({ num }: any) => (
   <div
@@ -45,7 +46,7 @@ export default function MemoGrid() {
   return (
     <MasonryInfiniteGrid
       className="container"
-      gap={5}
+      gap={10}
       onRequestAppend={e => {
         const nextGroupKey = (+e.groupKey! || 0) + 1;
         const maxAddItem = items.length + 10 > memoList.length ? memoList.length - items.length : 10;
@@ -67,10 +68,12 @@ interface MemoItemProps {
 
 function MemoItem({ memo }: MemoItemProps) {
   return (
-    <div className="bg-base-100 shadow-xl mb-4 card box-border w-[250px]">
+    <div className="bg-base-100 shadow-xl card box-border w-[300px]">
       <div className="card-body">
-        <p className="font-bold">{memo?.title}</p>
-        <p className="whitespace-break-spaces">{memo?.memo}</p>
+        <Link className="font-bold line-clamp-2 link-hover" href={memo.url} target="_blank">
+          {memo.title}
+        </Link>
+        <p className="whitespace-break-spaces">{memo.memo}</p>
       </div>
     </div>
   );

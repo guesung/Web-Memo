@@ -1,1 +1,1 @@
-export { default as MemoList } from './MemoList';
+export { default as MemoTable } from './MemoTable';

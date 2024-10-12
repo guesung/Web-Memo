@@ -2,13 +2,14 @@
 
 import { useMemoListQuery } from '@extension/shared/hooks';
 
+import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import { UseQueryResult } from '@tanstack/react-query';
-import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { MemoRow, MemoSupabaseResponse } from '@extension/shared/types';
 import Link from 'next/link';
+import { formatDate } from '@extension/shared/utils';
 
 function getItems(nextGroupKey: number, count: number) {
   const nextItems = [];
@@ -59,11 +60,14 @@ function MemoItem({ memo }: MemoItemProps) {
   if (!memo) return null;
   return (
     <div className="bg-base-100 shadow-xl card box-border w-[300px]">
-      <div className="card-body">
+      <div className="card-body relative">
         <Link className="font-bold line-clamp-2 link-hover" href={memo.url} target="_blank">
           {memo.title}
         </Link>
         <p className="whitespace-break-spaces">{memo.memo}</p>
+        <span className="text-xs absolute right-2 bottom-2 text-stone-500">
+          {(new Date(memo.created_at).getMonth() + 1) % 12}/{new Date(memo.created_at).getDate()}
+        </span>
       </div>
     </div>
   );

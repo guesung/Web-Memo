@@ -7,7 +7,7 @@ import { useMemoDeleteMutation } from '@src/hooks';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import { UseQueryResult } from '@tanstack/react-query';
 
-export default function MemoList() {
+export default function MemoTable() {
   const { mutate: deleteMemoMutate } = useMemoDeleteMutation();
   const supabaseClient = getSupabaseClient();
   // TODO :타입 에러로 인해 타입 단언으로 임시 해결

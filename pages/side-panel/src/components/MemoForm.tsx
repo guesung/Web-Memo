@@ -83,7 +83,9 @@ function MemoForm() {
     setMemo(event.target.value);
     setIsSaved(false);
 
-    throttle(async () => await saveMemo({ memo: event.target.value, category }));
+    throttle(async () => {
+      await saveMemo({ memo: event.target.value, category });
+    });
   };
 
   const handleKeyDown = async (

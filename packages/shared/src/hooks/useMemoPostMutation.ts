@@ -1,14 +1,9 @@
 import { queryKeys } from '@src/constants';
-import { MemoSupabaseClient, MemoSupabaseResponse } from '@src/types';
+import { MemoSupabaseClient, MemoSupabaseResponse, MemoTableInsert } from '@src/types';
 import { insertMemo } from '@src/utils';
 import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query';
 
-interface PostMemoProps {
-  memo: string;
-  url: string;
-  title: string;
-  category: string;
-}
+interface PostMemoProps extends MemoTableInsert {}
 
 interface UseMemoPostMutationProps extends UseMutationOptions<MemoSupabaseResponse, Error, PostMemoProps> {
   supabaseClient: MemoSupabaseClient;

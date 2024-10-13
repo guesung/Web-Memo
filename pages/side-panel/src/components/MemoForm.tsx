@@ -15,7 +15,6 @@ import {
   getFormattedMemo,
   GetFormattedMemoProps,
   getSupabaseClient,
-  I18n,
   responseUpdateSidePanel,
 } from '@extension/shared/utils/extension';
 import { cn, Toast } from '@extension/ui';

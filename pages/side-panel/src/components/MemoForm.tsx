@@ -99,14 +99,8 @@ function MemoForm() {
     }
   };
 
-  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    await saveMemo({ memo, category });
-    abortThrottle();
-  };
-
   return (
-    <form className="form-control h-full" onSubmit={handleFormSubmit}>
+    <form className="form-control h-full">
       <textarea
         className={cn('textarea textarea-bordered h-full border-2 resize-none', {
           'border-cyan-900 focus:border-cyan-900': !isSaved,
@@ -117,12 +111,7 @@ function MemoForm() {
         onKeyDown={handleKeyDown}
         value={memo}
       />
-      <div className="label">
-        <span />
-        <button className="label-text-alt" type="submit">
-          {I18n.get('save')}
-        </button>
-      </div>
+      <div className="label" />
     </form>
   );
 }

@@ -107,7 +107,7 @@ function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
         </Link>
         <div className="break-all whitespace-break-spaces">{memo.memo}</div>
         <span className="text-xs absolute right-2 bottom-2 text-stone-500">
-          {(new Date(memo.created_at).getMonth() + 1) % 12}/{new Date(memo.created_at).getDate()}
+          {(new Date(memo.updated_at).getMonth() + 1) % 12}/{new Date(memo.updated_at).getDate()}
         </span>
         {isHovered ? (
           <span className="absolute right-4 top-6 cursor-pointer" onClick={handleDeleteClick}>

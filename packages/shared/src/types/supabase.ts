@@ -17,6 +17,7 @@ export type Database = {
           id: number
           memo: string
           title: string
+          updated_at: string | null
           url: string
           user_id: string | null
         }
@@ -27,6 +28,7 @@ export type Database = {
           id?: number
           memo: string
           title: string
+          updated_at?: string | null
           url: string
           user_id?: string | null
         }
@@ -37,6 +39,7 @@ export type Database = {
           id?: number
           memo?: string
           title?: string
+          updated_at?: string | null
           url?: string
           user_id?: string | null
         }

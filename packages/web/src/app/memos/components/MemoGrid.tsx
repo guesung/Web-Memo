@@ -5,7 +5,7 @@ import { useMemoListQuery } from '@extension/shared/hooks';
 import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import { UseQueryResult } from '@tanstack/react-query';
-import 'driver.js/dist/driver.css';
+
 import { HTMLAttributes, MouseEventHandler, useRef, useState } from 'react';
 
 import { MemoRow, MemoSupabaseResponse } from '@extension/shared/types';

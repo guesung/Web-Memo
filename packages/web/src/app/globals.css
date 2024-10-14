@@ -1,3 +1,4 @@
+@import './memos/css/guide.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

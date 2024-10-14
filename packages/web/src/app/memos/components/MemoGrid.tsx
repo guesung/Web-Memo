@@ -5,12 +5,14 @@ import { useMemoListQuery } from '@extension/shared/hooks';
 import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import { UseQueryResult } from '@tanstack/react-query';
+
 import { HTMLAttributes, MouseEventHandler, useRef, useState } from 'react';
 
 import { MemoRow, MemoSupabaseResponse } from '@extension/shared/types';
-import Link from 'next/link';
-import Image from 'next/image';
 import { useMemoDeleteMutation } from '@src/hooks';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useGuide } from '../hooks';
 
 function getItems(nextGroupKey: number, count: number) {
   const nextItems = [];
@@ -40,6 +42,7 @@ export default function MemoGrid() {
   const handleMouseLeave: MouseEventHandler<HTMLDivElement> = () => {
     setHoverdMemoId(null);
   };
+  useGuide();
 
   const handleUpdateItems = () => {
     if (!gridRef.current) return;

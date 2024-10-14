@@ -1,0 +1,5 @@
+@layer base {
+  .driver-popover.driverjs-theme {
+    @apply whitespace-pre-wrap;
+  }
+}

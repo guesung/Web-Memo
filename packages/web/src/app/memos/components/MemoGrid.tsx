@@ -73,7 +73,7 @@ export default function MemoGrid() {
       }}>
       {items.map((item, index) => (
         <motion.div
-        key={item.key}
+          key={item.key}
           initial={{ opacity: 0, y: 20, scale: 0.8 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.3, delay: index < 5 ? 0 : Math.min(index * 0.05, 0.5) }}>
@@ -99,15 +99,10 @@ function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
   if (!memo) return null;
   const { mutate: mutateMemoDelete } = useMemoDeleteMutation();
 
-  const handleDeleteConfirmClick = async () => {
-    mutateMemoDelete(memo.id);
-    toast.success('삭제가 완료되었습니다.');
-  };
-
   const handleDeleteClick = () => {
-    const modalEl = document.getElementById(MEMO_DELETE_MODAL_ID) as HTMLDialogElement;
-    if (!modalEl) return;
-    modalEl.showModal();
+    const answer = window.confirm('정말로 메모를 삭제하시겠습니까? 복구는 불가능합니다.');
+    if (!answer) return;
+    mutateMemoDelete(memo.id);
   };
 
   return (
@@ -140,7 +135,6 @@ function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
           ''
         )}
       </div>
-      <MemoDeleteModal onMemoDeleteConfirmClick={handleDeleteConfirmClick} />
     </div>
   );
 }

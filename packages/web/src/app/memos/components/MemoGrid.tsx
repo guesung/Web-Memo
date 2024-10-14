@@ -75,7 +75,7 @@ export default function MemoGrid() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: index < 5 ? 0 : index * 0.05 }}>
+          transition={{ duration: 0.3, delay: index < 5 ? 0 : Math.min(index * 0.05, 0.5) }}>
           <MemoItem
             data-grid-groupkey={item.groupKey}
             key={item.key}

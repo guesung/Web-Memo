@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { useGuide } from '../hooks';
 import { toast } from 'react-toastify';
 import MemoDeleteModal, { MEMO_DELETE_MODAL_ID } from './MemoDeleteModal';
+import { motion } from 'framer-motion';
 
 function getItems(nextGroupKey: number, count: number) {
   const nextItems = [];
@@ -70,15 +71,20 @@ export default function MemoGrid() {
 
         setItems([...items, ...getItems(nextGroupKey, maxAddItem)]);
       }}>
-      {items.map(item => (
-        <MemoItem
-          data-grid-groupkey={item.groupKey}
-          key={item.key}
-          memo={memoList.at(item.key)}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          isHovered={hoveredMemoId === String(memoList.at(item.key)?.id)}
-        />
+      {items.map((item, index) => (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: index < 5 ? 0 : index * 0.05 }}>
+          <MemoItem
+            data-grid-groupkey={item.groupKey}
+            key={item.key}
+            memo={memoList.at(item.key)}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            isHovered={hoveredMemoId === String(memoList.at(item.key)?.id)}
+          />
+        </motion.div>
       ))}
     </MasonryInfiniteGrid>
   );

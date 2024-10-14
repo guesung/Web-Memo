@@ -1,7 +1,7 @@
 import { Tab } from '.';
 import { formatUrl } from '../url';
 
-interface GetFormattedMemoProps {
+export interface GetFormattedMemoProps {
   memo: string;
   category: string;
 }
@@ -9,12 +9,13 @@ interface GetFormattedMemoProps {
 export const getFormattedMemo = async ({ memo, category }: GetFormattedMemoProps) => {
   const tab = await Tab.get();
 
-  if (!tab.url || !tab.title) throw new Error('Save Failed: Invalid URL');
+  if (!tab.url) throw new Error('Save Failed: Invalid URL');
 
   return {
     title: tab.title,
+    favIconUrl: tab?.favIconUrl,
+    url: formatUrl(tab.url),
     memo,
     category,
-    url: formatUrl(tab.url),
   };
 };

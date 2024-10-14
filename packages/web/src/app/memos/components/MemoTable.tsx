@@ -7,7 +7,7 @@ import { useMemoDeleteMutation } from '@src/hooks';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import { UseQueryResult } from '@tanstack/react-query';
 
-export default function MemoList() {
+export default function MemoTable() {
   const { mutate: deleteMemoMutate } = useMemoDeleteMutation();
   const supabaseClient = getSupabaseClient();
   // TODO :타입 에러로 인해 타입 단언으로 임시 해결
@@ -52,7 +52,7 @@ export default function MemoList() {
               <p className="text-start whitespace-break-spaces">{memo.memo}</p>
             </td>
             <td className="whitespace-nowrap">{formatDate(memo.created_at)}</td>
-            <td className="hidden lg:block">
+            <td>
               <button type="button" onClick={() => handleDeleteClick(memo.id)} className="text-center w-full">
                 x
               </button>

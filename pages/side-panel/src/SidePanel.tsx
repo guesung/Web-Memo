@@ -1,17 +1,21 @@
 import { OverlayProvider } from 'overlay-kit';
 
 import { ErrorBoundary } from '@extension/ui';
-import { SummaryHeader, MemoForm, MemoHeader, Summary, SummaryProvider, LoginSection } from './components';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { Suspense } from 'react';
 import { LoadingFallback } from '@extension/ui/lib/components';
-
-const queryClient = new QueryClient();
+import { Suspense } from 'react';
+import {
+  LoginSection,
+  MemoForm,
+  MemoHeader,
+  QueryProvider,
+  Summary,
+  SummaryHeader,
+  SummaryProvider,
+} from './components';
 
 export default function SidePanel() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryProvider>
       <OverlayProvider>
         <main className="prose prose-sm flex flex-col h-lvh px-4 relative">
           <section className="flex-1 overflow-scroll">
@@ -37,6 +41,6 @@ export default function SidePanel() {
         </main>
       </OverlayProvider>
       {/* <ReactQueryDevtools initialIsOpen={false} /> */}
-    </QueryClientProvider>
+    </QueryProvider>
   );
 }

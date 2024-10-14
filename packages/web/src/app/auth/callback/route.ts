@@ -22,5 +22,5 @@ export async function GET(request: Request) {
     });
   }
 
-  return NextResponse.redirect(requestUrl.origin + '/guide');
+  return NextResponse.redirect(requestUrl.origin + '/memos');
 }

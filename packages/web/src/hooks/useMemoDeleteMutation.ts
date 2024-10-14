@@ -13,8 +13,8 @@ export default function useMemoDeleteMutation() {
 
   return useMutation({
     mutationFn: deleteMemoFn,
-    onSettled: async () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.memoList() });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.memoList() });
     },
   });
 }

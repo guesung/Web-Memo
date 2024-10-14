@@ -5,6 +5,8 @@ import type { Metadata } from 'next';
 import { PropsWithChildren } from 'react';
 import './globals.css';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Bounce, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const pretendard = localFont({
   src: '../fonts/PretendardVariable.woff2',
@@ -28,6 +30,15 @@ export default function RootLayout({ children }: RootLayoutProps) {
           {children}
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryProvider>
+        <ToastContainer
+          position="bottom-right"
+          autoClose={2000}
+          closeOnClick
+          draggable
+          pauseOnHover
+          theme="light"
+          transition={Bounce}
+        />
       </body>
     </html>
   );

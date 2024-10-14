@@ -13,6 +13,9 @@ import { useMemoDeleteMutation } from '@src/hooks';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useGuide } from '../hooks';
+import { toast } from 'react-toastify';
+import MemoDeleteModal, { MEMO_DELETE_MODAL_ID } from './MemoDeleteModal';
+import { motion } from 'framer-motion';
 
 function getItems(nextGroupKey: number, count: number) {
   const nextItems = [];
@@ -68,15 +71,20 @@ export default function MemoGrid() {
 
         setItems([...items, ...getItems(nextGroupKey, maxAddItem)]);
       }}>
-      {items.map(item => (
-        <MemoItem
-          data-grid-groupkey={item.groupKey}
-          key={item.key}
-          memo={memoList.at(item.key)}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          isHovered={hoveredMemoId === String(memoList.at(item.key)?.id)}
-        />
+      {items.map((item, index) => (
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.8 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.3, delay: index < 5 ? 0 : Math.min(index * 0.05, 0.5) }}>
+          <MemoItem
+            data-grid-groupkey={item.groupKey}
+            key={item.key}
+            memo={memoList.at(item.key)}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            isHovered={hoveredMemoId === String(memoList.at(item.key)?.id)}
+          />
+        </motion.div>
       ))}
     </MasonryInfiniteGrid>
   );
@@ -91,10 +99,15 @@ function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
   if (!memo) return null;
   const { mutate: mutateMemoDelete } = useMemoDeleteMutation();
 
-  const handleDeleteClick = async () => {
-    const answer = confirm('정말로 삭제하시겠습니까?');
-    if (!answer) return;
+  const handleDeleteConfirmClick = async () => {
     mutateMemoDelete(memo.id);
+    toast.success('삭제가 완료되었습니다.');
+  };
+
+  const handleDeleteClick = () => {
+    const modalEl = document.getElementById(MEMO_DELETE_MODAL_ID) as HTMLDialogElement;
+    if (!modalEl) return;
+    modalEl.showModal();
   };
 
   return (
@@ -127,6 +140,7 @@ function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
           ''
         )}
       </div>
+      <MemoDeleteModal onMemoDeleteConfirmClick={handleDeleteConfirmClick} />
     </div>
   );
 }

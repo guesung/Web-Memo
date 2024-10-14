@@ -3,10 +3,19 @@ import { queryKeys } from '@extension/shared/constants';
 import { useQueryClient } from '@tanstack/react-query';
 import React from 'react';
 
+import { toast } from 'react-toastify';
+
 interface MemoRefreshProps extends React.SVGProps<SVGSVGElement> {}
 export default function MemoRefresh({ ...props }: MemoRefreshProps) {
   const queryClient = useQueryClient();
-  const handleClick = () => queryClient.invalidateQueries({ queryKey: queryKeys.memoList() });
+  const handleClick = async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.memoList() });
+    toast.success('새로고침이 완료되었습니다.', {
+      position: 'bottom-right',
+      closeOnClick: true,
+      autoClose: 2000,
+    });
+  };
 
   return (
     <svg

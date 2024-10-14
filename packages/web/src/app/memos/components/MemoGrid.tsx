@@ -13,6 +13,7 @@ import { useMemoDeleteMutation } from '@src/hooks';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useGuide } from '../hooks';
+import { toast } from 'react-toastify';
 
 function getItems(nextGroupKey: number, count: number) {
   const nextItems = [];
@@ -95,6 +96,11 @@ function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
     const answer = confirm('정말로 삭제하시겠습니까?');
     if (!answer) return;
     mutateMemoDelete(memo.id);
+    toast.success('삭제가 완료되었습니다.', {
+      position: 'bottom-right',
+      closeOnClick: true,
+      autoClose: 2000,
+    });
   };
 
   return (

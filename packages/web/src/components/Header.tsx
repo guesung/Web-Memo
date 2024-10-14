@@ -20,15 +20,9 @@ export default async function Header() {
       <div className="flex navbar-end">
         {user?.data?.user ? (
           <div className="flex gap-2">
-            <MemoRefresh
-              width={32}
-              hanging={32}
-              fill="white"
-              id="refresh"
-              cursor="pointer"
-              color="gray"
-              className="btn btn-circle btn-sm"
-            />
+            <button className="btn btn-circle btn-sm">
+              <MemoRefresh width={32} hanging={32} fill="white" id="refresh" cursor="pointer" color="gray" />
+            </button>
             <div className="btn btn-circle btn-sm">
               <div className="avatar dropdown dropdown-bottom dropdown-end">
                 <div className="w-8 rounded-full" tabIndex={0} role="button">

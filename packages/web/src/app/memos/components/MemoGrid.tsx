@@ -14,6 +14,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useGuide } from '../hooks';
 import { toast } from 'react-toastify';
+import MemoDeleteModal, { MEMO_DELETE_MODAL_ID } from './MemoDeleteModal';
 
 function getItems(nextGroupKey: number, count: number) {
   const nextItems = [];
@@ -92,11 +93,15 @@ function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
   if (!memo) return null;
   const { mutate: mutateMemoDelete } = useMemoDeleteMutation();
 
-  const handleDeleteClick = async () => {
-    const answer = confirm('정말로 삭제하시겠습니까?');
-    if (!answer) return;
+  const handleDeleteConfirmClick = async () => {
     mutateMemoDelete(memo.id);
     toast.success('삭제가 완료되었습니다.');
+  };
+
+  const handleDeleteClick = () => {
+    const modalEl = document.getElementById(MEMO_DELETE_MODAL_ID) as HTMLDialogElement;
+    if (!modalEl) return;
+    modalEl.showModal();
   };
 
   return (
@@ -129,6 +134,7 @@ function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
           ''
         )}
       </div>
+      <MemoDeleteModal onMemoDeleteConfirmClick={handleDeleteConfirmClick} />
     </div>
   );
 }

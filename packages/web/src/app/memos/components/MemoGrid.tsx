@@ -5,11 +5,10 @@ import { useMemoListQuery } from '@extension/shared/hooks';
 import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import { UseQueryResult } from '@tanstack/react-query';
-import { HTMLAttributes, MouseEventHandler, useState } from 'react';
+import { HTMLAttributes, MouseEventHandler, useRef, useState } from 'react';
 
 import { MemoRow, MemoSupabaseResponse } from '@extension/shared/types';
 import Link from 'next/link';
-import { formatDate } from '@extension/shared/utils';
 import Image from 'next/image';
 import { useMemoDeleteMutation } from '@src/hooks';
 
@@ -32,6 +31,7 @@ export default function MemoGrid() {
   const memoList = memoListData?.data;
   const [items, setItems] = useState(() => getItems(0, 10));
   const [hoveredMemoId, setHoverdMemoId] = useState<null | string>(null);
+  const gridRef = useRef<MasonryInfiniteGrid>(null);
 
   const handleMouseEnter: MouseEventHandler<HTMLDivElement> = event => {
     const id = event.currentTarget.id;
@@ -41,6 +41,11 @@ export default function MemoGrid() {
     setHoverdMemoId(null);
   };
 
+  const handleUpdateItems = () => {
+    if (!gridRef.current) return;
+    gridRef.current.updateItems();
+  };
+
   if (!memoList || memoList.length === 0)
     return <p className="text-center mt-8">아직 저장된 메모가 없어요. 사이드 패널을 열어 메모를 저장해보세요 !</p>;
   return (
@@ -48,6 +53,8 @@ export default function MemoGrid() {
       className="container"
       gap={16}
       align="center"
+      ref={gridRef}
+      onRequestPrepend={handleUpdateItems}
       onRequestAppend={e => {
         if (items.length >= memoList.length) return;
 

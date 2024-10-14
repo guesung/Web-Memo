@@ -22,7 +22,7 @@ const manifest = deepmerge(
     name: '__MSG_extensionName__',
     version: packageJson.version,
     description: '__MSG_extensionDescription__',
-    default_locale: 'en',
+    default_locale: 'ko',
     permissions: ['sidePanel', 'storage', 'tabs', 'contextMenus', 'cookies'],
     host_permissions: ['<all_urls>'],
     options_page: 'options/index.html',

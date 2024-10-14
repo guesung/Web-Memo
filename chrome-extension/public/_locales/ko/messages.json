@@ -1,9 +1,9 @@
 {
   "extensionDescription": {
-    "message": "웹 서핑 중 편하게 기록할 수 있도록 돕는 확장 프로그램입니다."
+    "message": "웹 어시스턴트 & 웹 페이지 요약를 위해 ChatGPT 사용"
   },
   "extensionName": {
-    "message": "웹 메모"
+    "message": "웹 메모: 웹 어시스턴트 & 웹 페이지 요약"
   },
   "no_memo": {
     "message": "메모가 없습니다."

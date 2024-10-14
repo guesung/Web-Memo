@@ -15,7 +15,6 @@ import {
   getFormattedMemo,
   GetFormattedMemoProps,
   getSupabaseClient,
-  I18n,
   responseUpdateSidePanel,
 } from '@extension/shared/utils/extension';
 import { cn, Toast } from '@extension/ui';
@@ -38,7 +37,6 @@ function MemoForm() {
     handleSuccess: () => {
       setIsSaved(true);
       abortThrottle();
-      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
     },
     onError: () => {
       overlay.open(({ unmount }) => <Toast message="메모 저장에 실패했습니다." onClose={unmount} />);
@@ -48,8 +46,6 @@ function MemoForm() {
     supabaseClient,
     handleSuccess: () => {
       setIsSaved(true);
-      abortThrottle();
-      overlay.open(({ unmount }) => <Toast message={I18n.get('toast_saved')} onClose={unmount} />);
     },
     onError: () => {
       overlay.open(({ unmount }) => <Toast message="메모 저장에 실패했습니다." onClose={unmount} />);
@@ -58,12 +54,10 @@ function MemoForm() {
 
   const saveMemo = async ({ memo, category }: GetFormattedMemoProps) => {
     const currentMemo = memoList?.data?.find(memo => memo.url === tab.url);
+    const formattedMemo = await getFormattedMemo({ category, memo });
 
-    if (currentMemo) mutateMemoPatch({ memo, category, id: currentMemo.id });
-    else {
-      const formattedMemo = await getFormattedMemo({ category, memo });
-      mutateMemoPost(formattedMemo);
-    }
+    if (currentMemo) mutateMemoPatch({ ...formattedMemo, id: currentMemo.id });
+    else mutateMemoPost(formattedMemo);
   };
 
   useDidMount(() =>
@@ -87,7 +81,6 @@ function MemoForm() {
     setIsSaved(false);
 
     throttle(async () => {
-      setIsSaved(true);
       await saveMemo({ memo: event.target.value, category });
     });
   };
@@ -99,16 +92,12 @@ function MemoForm() {
       event.preventDefault();
 
       await saveMemo({ memo, category });
+      abortThrottle();
     }
   };
 
-  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    await saveMemo({ memo, category });
-  };
-
   return (
-    <form className="form-control h-full" onSubmit={handleFormSubmit}>
+    <form className="form-control h-full">
       <textarea
         className={cn('textarea textarea-bordered h-full border-2 resize-none', {
           'border-cyan-900 focus:border-cyan-900': !isSaved,
@@ -119,12 +108,7 @@ function MemoForm() {
         onKeyDown={handleKeyDown}
         value={memo}
       />
-      <div className="label">
-        <span />
-        <button className="label-text-alt" type="submit">
-          {I18n.get('save')}
-        </button>
-      </div>
+      <div className="label" />
     </form>
   );
 }

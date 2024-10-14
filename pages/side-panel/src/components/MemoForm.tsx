@@ -54,12 +54,10 @@ function MemoForm() {
 
   const saveMemo = async ({ memo, category }: GetFormattedMemoProps) => {
     const currentMemo = memoList?.data?.find(memo => memo.url === tab.url);
+    const formattedMemo = await getFormattedMemo({ category, memo });
 
-    if (currentMemo) mutateMemoPatch({ memo, category, id: currentMemo.id });
-    else {
-      const formattedMemo = await getFormattedMemo({ category, memo });
-      mutateMemoPost(formattedMemo);
-    }
+    if (currentMemo) mutateMemoPatch({ ...formattedMemo, id: currentMemo.id });
+    else mutateMemoPost(formattedMemo);
   };
 
   useDidMount(() =>

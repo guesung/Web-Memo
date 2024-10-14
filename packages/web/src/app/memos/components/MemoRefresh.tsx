@@ -10,11 +10,7 @@ export default function MemoRefresh({ ...props }: MemoRefreshProps) {
   const queryClient = useQueryClient();
   const handleClick = async () => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.memoList() });
-    toast.success('새로고침이 완료되었습니다.', {
-      position: 'bottom-right',
-      closeOnClick: true,
-      autoClose: 2000,
-    });
+    toast.success('새로고침이 완료되었습니다.');
   };
 
   return (

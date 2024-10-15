@@ -12,7 +12,6 @@ export default function ExtensionVersion() {
     try {
       requestGetExtensionManifest(manifest => {
         setVersion(manifest.version);
-        console.log(manifest.version);
       });
     } catch (e) {
       const answer = window.confirm(

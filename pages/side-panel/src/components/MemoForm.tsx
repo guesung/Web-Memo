@@ -15,6 +15,7 @@ import {
   getFormattedMemo,
   GetFormattedMemoProps,
   getSupabaseClient,
+  responseRefetchTheMemoList,
   responseUpdateSidePanel,
 } from '@extension/shared/utils/extension';
 import { cn, Toast } from '@extension/ui';
@@ -32,7 +33,9 @@ function MemoForm() {
     getSupabaseClient,
   });
   // TODO :타입 에러로 인해 타입 단언으로 임시 해결
-  const { data: memoList }: UseQueryResult<MemoSupabaseResponse, Error> = useMemoListQuery({ supabaseClient });
+  const { data: memoList, refetch: refetchMemoList }: UseQueryResult<MemoSupabaseResponse, Error> = useMemoListQuery({
+    supabaseClient,
+  });
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
     handleSuccess: () => {
@@ -67,6 +70,9 @@ function MemoForm() {
       abortThrottle();
     }),
   );
+  useDidMount(() => {
+    responseRefetchTheMemoList(refetchMemoList);
+  });
 
   useEffect(() => {
     if (!tab?.url) return;

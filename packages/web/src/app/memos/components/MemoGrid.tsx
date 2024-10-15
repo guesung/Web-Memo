@@ -1,21 +1,20 @@
 'use client';
 
 import { useMemoListQuery } from '@extension/shared/hooks';
+import { requestRefetchTheMemoList } from '@extension/shared/utils/extension';
 
 import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import { UseQueryResult } from '@tanstack/react-query';
 
-import { HTMLAttributes, MouseEventHandler, useRef, useState } from 'react';
+import { HTMLAttributes, MouseEventHandler, useState } from 'react';
 
 import { MemoRow, MemoSupabaseResponse } from '@extension/shared/types';
 import { useMemoDeleteMutation } from '@src/hooks';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useGuide } from '../hooks';
-import { toast } from 'react-toastify';
-import MemoDeleteModal, { MEMO_DELETE_MODAL_ID } from './MemoDeleteModal';
-import { motion } from 'framer-motion';
 
 function getItems(nextGroupKey: number, count: number) {
   const nextItems = [];
@@ -92,7 +91,9 @@ interface MemoItemProps extends HTMLAttributes<HTMLDivElement> {
 
 function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
   if (!memo) return null;
-  const { mutate: mutateMemoDelete } = useMemoDeleteMutation();
+  const { mutate: mutateMemoDelete } = useMemoDeleteMutation({
+    handleSuccess: requestRefetchTheMemoList,
+  });
 
   const handleDeleteClick = () => {
     const answer = window.confirm('정말로 메모를 삭제하시겠습니까? 복구는 불가능합니다.');

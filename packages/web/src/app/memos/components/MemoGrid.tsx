@@ -36,7 +36,6 @@ export default function MemoGrid() {
   const memoList = memoListData?.data;
   const [items, setItems] = useState(() => getItems(0, 10));
   const [hoveredMemoId, setHoverdMemoId] = useState<null | string>(null);
-  const gridRef = useRef<MasonryInfiniteGrid>(null);
 
   const handleMouseEnter: MouseEventHandler<HTMLDivElement> = event => {
     const id = event.currentTarget.id;
@@ -47,11 +46,6 @@ export default function MemoGrid() {
   };
   useGuide();
 
-  const handleUpdateItems = () => {
-    if (!gridRef.current) return;
-    gridRef.current.updateItems();
-  };
-
   if (!memoList || memoList.length === 0)
     return <p className="text-center mt-8">아직 저장된 메모가 없어요. 사이드 패널을 열어 메모를 저장해보세요 !</p>;
   return (
@@ -59,8 +53,9 @@ export default function MemoGrid() {
       className="container"
       gap={16}
       align="center"
-      ref={gridRef}
-      onRequestPrepend={handleUpdateItems}
+      useResizeObserver
+      observeChildren
+      autoResize
       onRequestAppend={e => {
         if (items.length >= memoList.length) return;
 

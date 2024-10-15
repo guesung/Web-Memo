@@ -6,3 +6,4 @@ export * from './updateSidePanel';
 export * from './observeMemoPage';
 export * from './refetchTheMemoList';
 export * from './getExtensionManifest';
+export * from './getSidePanelOpen';

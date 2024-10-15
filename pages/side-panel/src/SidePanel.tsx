@@ -12,8 +12,12 @@ import {
   SummaryHeader,
   SummaryProvider,
 } from './components';
+import { useDidMount } from '@extension/shared/hooks';
+import { responseGetSidePanelOpen } from '@extension/shared/utils/extension';
 
 export default function SidePanel() {
+  useDidMount(responseGetSidePanelOpen);
+
   return (
     <QueryProvider>
       <OverlayProvider>

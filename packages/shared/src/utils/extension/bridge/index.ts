@@ -5,3 +5,4 @@ export * from './getSummary';
 export * from './updateSidePanel';
 export * from './observeMemoPage';
 export * from './refetchTheMemoList';
+export * from './getExtensionManifest';

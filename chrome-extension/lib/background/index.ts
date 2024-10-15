@@ -11,6 +11,7 @@ import {
   I18n,
   requestObserverMemoPage,
   requestUpdateSidePanel,
+  responseGetExtensionManifest,
   responseOpenSidePanel,
   Storage,
   Tab,
@@ -100,3 +101,5 @@ chrome.tabs.onUpdated.addListener(async () => {
 
 // content-ui에서 메시지를 전달받아 사이드 패널을 연다.
 responseOpenSidePanel();
+
+responseGetExtensionManifest();

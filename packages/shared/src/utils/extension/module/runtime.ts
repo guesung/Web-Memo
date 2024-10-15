@@ -43,15 +43,15 @@ export class Runtime {
    */
   static async onMessageExternal<TPayload>(
     type: BridgeType,
-    callbackFn: (
+    callbackFn?: (
       request: BridgeRequest<TPayload>,
       sender: chrome.runtime.MessageSender,
-      sendResponse: (response?: string) => void,
+      sendResponse: (response?: unknown) => void,
     ) => void,
   ): Promise<void> {
     return chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
       if (!request?.type || request.type !== type) return;
-      callbackFn(request, sender, sendResponse);
+      callbackFn?.(request, sender, sendResponse);
     });
   }
 

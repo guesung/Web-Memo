@@ -5,11 +5,13 @@ import React from 'react';
 
 import { toast } from 'react-toastify';
 import { motion, SVGMotionProps } from 'framer-motion';
+import { driverObj } from '../utils';
 
 interface MemoRefreshProps extends SVGMotionProps<SVGSVGElement> {}
 export default function MemoRefresh({ ...props }: MemoRefreshProps) {
   const queryClient = useQueryClient();
   const handleClick = async () => {
+    driverObj.moveNext();
     await queryClient.invalidateQueries({ queryKey: queryKeys.memoList() });
     toast.success('새로고침이 완료되었습니다.');
   };

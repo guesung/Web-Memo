@@ -1,5 +1,6 @@
 import { signInWithOAuth } from '@src/utils/supabase.server';
 import Image from 'next/image';
+import ExtensionVersion from './ExtensionVersion';
 
 export default async function LoginSection() {
   return (
@@ -19,6 +20,7 @@ export default async function LoginSection() {
           구글 로그인
         </button>
       </form>
+      <ExtensionVersion />
     </section>
   );
 }

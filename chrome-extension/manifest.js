@@ -30,6 +30,9 @@ const manifest = deepmerge(
       service_worker: 'background.iife.js',
       type: 'module',
     },
+    externally_connectable: {
+      matches: ['http://localhost:3000/*', 'https://*.web-memo.site/*'],
+    },
     action: {
       default_popup: 'popup/index.html',
       default_icon: 'icon-34.png',

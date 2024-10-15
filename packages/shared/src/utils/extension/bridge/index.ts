@@ -4,3 +4,4 @@ export * from './type';
 export * from './getSummary';
 export * from './updateSidePanel';
 export * from './observeMemoPage';
+export * from './refetchTheMemoList';

@@ -3,7 +3,11 @@ import { deleteMemo } from '@extension/shared/utils';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-export default function useMemoDeleteMutation() {
+interface UseMemoDeleteMutationProps {
+  handleSuccess?: () => void;
+}
+
+export default function useMemoDeleteMutation({ handleSuccess }: UseMemoDeleteMutationProps) {
   const queryClient = useQueryClient();
 
   const deleteMemoFn = async (id: number) => {
@@ -15,6 +19,7 @@ export default function useMemoDeleteMutation() {
     mutationFn: deleteMemoFn,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.memoList() });
+      handleSuccess?.();
     },
   });
 }

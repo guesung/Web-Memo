@@ -20,6 +20,7 @@ import {
 import { cn, Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
 import { UseQueryResult } from '@tanstack/react-query';
+import { formatUrl } from '@extension/shared/utils';
 
 function MemoForm() {
   const [isSaved, setIsSaved] = useState(true);
@@ -53,7 +54,7 @@ function MemoForm() {
   });
 
   const saveMemo = async ({ memo, category }: GetFormattedMemoProps) => {
-    const currentMemo = memoList?.data?.find(memo => memo.url === tab.url);
+    const currentMemo = memoList?.data?.find(memo => memo.url === formatUrl(tab.url));
     const formattedMemo = await getFormattedMemo({ category, memo });
 
     if (currentMemo) mutateMemoPatch({ ...formattedMemo, id: currentMemo.id });

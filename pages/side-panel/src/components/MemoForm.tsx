@@ -15,11 +15,13 @@ import {
   getFormattedMemo,
   GetFormattedMemoProps,
   getSupabaseClient,
+  responseRefetchTheMemoList,
   responseUpdateSidePanel,
 } from '@extension/shared/utils/extension';
 import { cn, Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
 import { UseQueryResult } from '@tanstack/react-query';
+import { formatUrl } from '@extension/shared/utils';
 
 function MemoForm() {
   const [isSaved, setIsSaved] = useState(true);
@@ -31,7 +33,9 @@ function MemoForm() {
     getSupabaseClient,
   });
   // TODO :타입 에러로 인해 타입 단언으로 임시 해결
-  const { data: memoList }: UseQueryResult<MemoSupabaseResponse, Error> = useMemoListQuery({ supabaseClient });
+  const { data: memoList, refetch: refetchMemoList }: UseQueryResult<MemoSupabaseResponse, Error> = useMemoListQuery({
+    supabaseClient,
+  });
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
     handleSuccess: () => {
@@ -53,7 +57,7 @@ function MemoForm() {
   });
 
   const saveMemo = async ({ memo, category }: GetFormattedMemoProps) => {
-    const currentMemo = memoList?.data?.find(memo => memo.url === tab.url);
+    const currentMemo = memoList?.data?.find(memo => memo.url === formatUrl(tab.url));
     const formattedMemo = await getFormattedMemo({ category, memo });
 
     if (currentMemo) mutateMemoPatch({ ...formattedMemo, id: currentMemo.id });
@@ -66,6 +70,9 @@ function MemoForm() {
       abortThrottle();
     }),
   );
+  useDidMount(() => {
+    responseRefetchTheMemoList(refetchMemoList);
+  });
 
   useEffect(() => {
     if (!tab?.url) return;

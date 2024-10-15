@@ -49,5 +49,5 @@ export const signout = async () => {
   const cookieStore = cookies();
   cookieStore.delete(COOKIE_KEY_ACCESS_TOKEN);
   cookieStore.delete(COOKIE_KEY_REFRESH_TOKEN);
-  redirect('/');
+  redirect('/login');
 };

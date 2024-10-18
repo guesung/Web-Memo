@@ -10,7 +10,7 @@ import {
   useTabQuery,
   useThrottle,
 } from '@extension/shared/hooks';
-import { MemoSupabaseResponse } from '@extension/shared/types';
+import { formatUrl } from '@extension/shared/utils';
 import {
   getFormattedMemo,
   GetFormattedMemoProps,
@@ -20,8 +20,6 @@ import {
 } from '@extension/shared/utils/extension';
 import { cn, Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
-import { UseQueryResult } from '@tanstack/react-query';
-import { formatUrl } from '@extension/shared/utils';
 
 function MemoForm() {
   const [isSaved, setIsSaved] = useState(true);
@@ -32,8 +30,7 @@ function MemoForm() {
   const { data: supabaseClient } = useSupabaseClient({
     getSupabaseClient,
   });
-  // TODO :타입 에러로 인해 타입 단언으로 임시 해결
-  const { data: memoList, refetch: refetchMemoList }: UseQueryResult<MemoSupabaseResponse, Error> = useMemoListQuery({
+  const { data: memoList, refetch: refetchMemoList } = useMemoListQuery({
     supabaseClient,
   });
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({

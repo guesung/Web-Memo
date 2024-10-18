@@ -5,11 +5,10 @@ import { requestRefetchTheMemoList } from '@extension/shared/utils/extension';
 
 import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
 import { getSupabaseClient } from '@src/utils/supabase.client';
-import { UseQueryResult } from '@tanstack/react-query';
 
 import { HTMLAttributes, MouseEventHandler, useState } from 'react';
 
-import { MemoRow, MemoSupabaseResponse } from '@extension/shared/types';
+import { MemoRow } from '@extension/shared/types';
 import { useMemoDeleteMutation } from '@src/hooks';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -28,8 +27,7 @@ function getItems(nextGroupKey: number, count: number) {
 
 export default function MemoGrid() {
   const supabaseClient = getSupabaseClient();
-  // TODO :타입 에러로 인해 타입 단언으로 임시 해결
-  const { data: memoListData }: UseQueryResult<MemoSupabaseResponse, Error> = useMemoListQuery({
+  const { data: memoListData } = useMemoListQuery({
     supabaseClient,
   });
   const memoList = memoListData?.data;

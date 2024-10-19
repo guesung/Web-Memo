@@ -1,5 +1,5 @@
 import { StorageKeyType, StorageType } from '@src/types';
-import { I18n } from './i18n';
+import { I18n } from './I18n';
 import { ValueOf } from 'next/dist/shared/lib/constants';
 
 // ref : https://developer.chrome.com/docs/extensions/reference/api/storage

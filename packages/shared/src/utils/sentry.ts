@@ -1,6 +1,6 @@
 /* eslint-disable import/namespace */
 import * as Sentry from '@sentry/react';
-import { isProduction } from './environment';
+import { isProduction } from './Environment';
 import { SENTRY_DSN } from '@src/constants';
 
 export const testSentry = () => {

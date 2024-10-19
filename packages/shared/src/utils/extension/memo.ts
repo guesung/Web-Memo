@@ -1,5 +1,5 @@
 import { Tab } from '.';
-import { formatUrl } from '../url';
+import { formatUrl } from '../Url';
 
 export interface GetFormattedMemoProps {
   memo: string;

@@ -45,7 +45,7 @@ export default function MemoGrid() {
   useGuide();
 
   if (!memoList || memoList.length === 0)
-    return <p className="text-center mt-8">아직 저장된 메모가 없어요. 사이드 패널을 열어 메모를 저장해보세요 !</p>;
+    return <p className="mt-8 text-center">아직 저장된 메모가 없어요. 사이드 패널을 열어 메모를 저장해보세요 !</p>;
   return (
     <MasonryInfiniteGrid
       className="container"
@@ -101,9 +101,9 @@ function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
   };
 
   return (
-    <div className="bg-base-100 shadow-xl card box-border w-[300px]" id={String(memo.id)} {...props}>
+    <div className="bg-base-100 card box-border w-[300px] shadow-xl" id={String(memo.id)} {...props}>
       <div className="card-body relative p-6">
-        <Link className="flex gap-2 link-hover" href={memo.url} target="_blank">
+        <Link className="link-hover flex gap-2" href={memo.url} target="_blank">
           {memo?.favIconUrl ? (
             <Image
               src={memo.favIconUrl}
@@ -116,10 +116,10 @@ function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
           ) : (
             <></>
           )}
-          <span className="font-bold line-clamp-1">{memo.title}</span>
+          <span className="line-clamp-1 font-bold">{memo.title}</span>
         </Link>
-        <div className="break-all whitespace-break-spaces">{memo.memo}</div>
-        <span className="text-xs absolute right-2 bottom-2 text-stone-500">{formatDate(memo.updated_at, 'mm/dd')}</span>
+        <div className="whitespace-break-spaces break-all">{memo.memo}</div>
+        <span className="absolute bottom-2 right-2 text-xs text-stone-500">{formatDate(memo.updated_at, 'mm/dd')}</span>
         {isHovered ? (
           <span className="absolute right-4 top-6 cursor-pointer" onClick={handleDeleteClick}>
             X

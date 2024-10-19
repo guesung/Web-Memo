@@ -103,7 +103,7 @@ function MemoForm() {
   return (
     <form className="form-control h-full">
       <textarea
-        className={cn('textarea textarea-bordered h-full border-2 resize-none', {
+        className={cn('textarea textarea-bordered h-full resize-none border-2', {
           'border-cyan-900 focus:border-cyan-900': !isSaved,
         })}
         id="memo-textarea"

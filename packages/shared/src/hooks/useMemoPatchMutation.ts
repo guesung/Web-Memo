@@ -1,6 +1,6 @@
-import { queryKeys } from '@src/constants';
+import { queryKeys, NoMemoError, NoMemoListError } from '@src/constants';
 import { MemoSupabaseClient, MemoSupabaseResponse } from '@src/types';
-import { NoMemoError, NoMemoListError, updateMemo, UpdateMemoProps } from '@src/utils';
+import { updateMemo, UpdateMemoProps } from '@src/utils';
 import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query';
 
 interface UseMemoPostMutationProps extends UseMutationOptions<MemoSupabaseResponse, Error, UpdateMemoProps> {

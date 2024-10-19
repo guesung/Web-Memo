@@ -8,7 +8,7 @@ export default function Options() {
   return (
     <QueryClientProvider client={queryClient}>
       <OverlayProvider>
-        <main className="max-w-[1000px] mx-auto text-start text-base px-8">
+        <main className="mx-auto max-w-[1000px] px-8 text-start text-base">
           <Header />
           <OptionForm />
         </main>

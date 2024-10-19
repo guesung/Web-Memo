@@ -28,7 +28,7 @@ export default function MemoHeader() {
         className="cursor-pointer"
       />
       <span className="w-4" />
-      <span className="label-text truncate w-full text-right">{tab?.title}</span>
+      <span className="label-text w-full truncate text-right">{tab?.title}</span>
     </div>
   );
 }

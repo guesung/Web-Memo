@@ -14,6 +14,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useGuide } from '../hooks';
+import { formatDate } from '@extension/shared/utils';
 
 function getItems(nextGroupKey: number, count: number) {
   const nextItems = [];
@@ -118,9 +119,7 @@ function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
           <span className="font-bold line-clamp-1">{memo.title}</span>
         </Link>
         <div className="break-all whitespace-break-spaces">{memo.memo}</div>
-        <span className="text-xs absolute right-2 bottom-2 text-stone-500">
-          {(new Date(memo.updated_at).getMonth() + 1) % 12}/{new Date(memo.updated_at).getDate()}
-        </span>
+        <span className="text-xs absolute right-2 bottom-2 text-stone-500">{formatDate(memo.updated_at, 'mm/dd')}</span>
         {isHovered ? (
           <span className="absolute right-4 top-6 cursor-pointer" onClick={handleDeleteClick}>
             X

@@ -48,7 +48,7 @@ export default function MemoTable() {
             <td>
               <p className="text-start whitespace-break-spaces">{memo.memo}</p>
             </td>
-            <td className="whitespace-nowrap">{formatDate(memo.created_at)}</td>
+            <td className="whitespace-nowrap">{formatDate(memo.created_at, 'yyyy.mm.dd')}</td>
             <td>
               <button type="button" onClick={() => handleDeleteClick(memo.id)} className="text-center w-full">
                 x

@@ -21,7 +21,7 @@ export default function SidePanel() {
   return (
     <QueryProvider>
       <OverlayProvider>
-        <main className="prose prose-sm flex flex-col h-lvh px-4 relative">
+        <main className="prose prose-sm relative flex h-lvh flex-col px-4">
           <section className="flex-1 overflow-scroll">
             <ErrorBoundary>
               <SummaryProvider>
@@ -30,7 +30,7 @@ export default function SidePanel() {
               </SummaryProvider>
             </ErrorBoundary>
           </section>
-          <section className="h-1/2 flex flex-col">
+          <section className="flex h-1/2 flex-col">
             <ErrorBoundary>
               <Suspense fallback={<LoadingFallback />}>
                 <MemoHeader />

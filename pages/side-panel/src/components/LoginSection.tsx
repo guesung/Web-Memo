@@ -4,12 +4,12 @@ import { TopRightArrow } from '@src/icons';
 
 export default function LoginSection() {
   return (
-    <div className="h-full justify-center items-center flex flex-col">
+    <div className="flex h-full flex-col items-center justify-center">
       <p>메모 기능을 이용하려면 로그인이 필요합니다.</p>
 
       <button
         type="button"
-        className="cursor-pointer flex items-center gap-2"
+        className="flex cursor-pointer items-center gap-2"
         onClick={() => {
           Tab.create({ url: `${WEB_URL}/login` });
         }}>

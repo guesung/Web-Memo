@@ -7,3 +7,4 @@ export * from './Storage';
 export * from './QueryKey';
 export * from './Cookie';
 export * from './Extension';
+export * from './Error';

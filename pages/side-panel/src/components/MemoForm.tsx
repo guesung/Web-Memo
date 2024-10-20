@@ -74,7 +74,7 @@ function MemoForm() {
   useEffect(() => {
     if (!tab?.url) return;
 
-    const currentMemo = memoList?.data?.find(memo => memo.url === tab.url);
+    const currentMemo = memoList?.data?.find(memo => memo.url === formatUrl(tab.url));
 
     setMemo(currentMemo?.memo ?? '');
     setCategory(currentMemo?.category ?? '');

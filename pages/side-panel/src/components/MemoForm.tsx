@@ -47,6 +47,7 @@ function MemoForm() {
     supabaseClient,
     handleSuccess: () => {
       setIsSaved(true);
+      abortThrottle();
     },
     onError: () => {
       overlay.open(({ unmount }) => <Toast message="메모 저장에 실패했습니다." onClose={unmount} />);
@@ -74,7 +75,7 @@ function MemoForm() {
   useEffect(() => {
     if (!tab?.url) return;
 
-    const currentMemo = memoList?.data?.find(memo => memo.url === tab.url);
+    const currentMemo = memoList?.data?.find(memo => memo.url === formatUrl(tab.url));
 
     setMemo(currentMemo?.memo ?? '');
     setCategory(currentMemo?.category ?? '');

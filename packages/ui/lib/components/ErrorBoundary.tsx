@@ -1,3 +1,4 @@
+'use client';
 import * as Sentry from '@sentry/react';
 import type { ComponentType, ErrorInfo, PropsWithChildren } from 'react';
 import { Component, createElement } from 'react';

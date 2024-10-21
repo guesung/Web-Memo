@@ -16,7 +16,6 @@ import {
   GetFormattedMemoProps,
   getSupabaseClient,
   responseRefetchTheMemoList,
-  responseUpdateSidePanel,
 } from '@extension/shared/utils/extension';
 import { cn, Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
@@ -55,6 +54,8 @@ function MemoForm() {
   });
 
   const saveMemo = async ({ memo, category }: GetFormattedMemoProps) => {
+    if (memo === '') return;
+
     const currentMemo = memoList?.data?.find(memo => memo.url === formatUrl(tab.url));
     const formattedMemo = await getFormattedMemo({ category, memo });
 
@@ -62,12 +63,6 @@ function MemoForm() {
     else mutateMemoPost(formattedMemo);
   };
 
-  useDidMount(() =>
-    responseUpdateSidePanel(() => {
-      setIsSaved(true);
-      abortThrottle();
-    }),
-  );
   useDidMount(() => {
     responseRefetchTheMemoList(refetchMemoList);
   });

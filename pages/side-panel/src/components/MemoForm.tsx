@@ -54,6 +54,8 @@ function MemoForm() {
   });
 
   const saveMemo = async ({ memo, category }: GetFormattedMemoProps) => {
+    if (memo === '') return;
+
     const currentMemo = memoList?.data?.find(memo => memo.url === formatUrl(tab.url));
     const formattedMemo = await getFormattedMemo({ category, memo });
 

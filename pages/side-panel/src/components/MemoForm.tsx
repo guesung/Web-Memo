@@ -3,14 +3,13 @@ import { useEffect, useState } from 'react';
 
 import {
   useDidMount,
-  useMemoListQuery,
   useMemoPatchMutation,
   useMemoPostMutation,
+  useMemoQuery,
   useSupabaseClient,
   useTabQuery,
   useThrottle,
 } from '@extension/shared/hooks';
-import { formatUrl } from '@extension/shared/utils';
 import {
   getFormattedMemo,
   GetFormattedMemoProps,
@@ -29,9 +28,12 @@ function MemoForm() {
   const { data: supabaseClient } = useSupabaseClient({
     getSupabaseClient,
   });
-  const { data: memoList, refetch: refetchMemoList } = useMemoListQuery({
+
+  const { data: currentMemo, refetch: refetchMemo } = useMemoQuery({
     supabaseClient,
+    url: tab.url,
   });
+
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
     handleSuccess: () => {
@@ -56,7 +58,6 @@ function MemoForm() {
   const saveMemo = async ({ memo, category }: GetFormattedMemoProps) => {
     if (memo === '') return;
 
-    const currentMemo = memoList?.data?.find(memo => memo.url === formatUrl(tab.url));
     const formattedMemo = await getFormattedMemo({ category, memo });
 
     if (currentMemo) mutateMemoPatch({ ...formattedMemo, id: currentMemo.id });
@@ -64,17 +65,15 @@ function MemoForm() {
   };
 
   useDidMount(() => {
-    responseRefetchTheMemoList(refetchMemoList);
+    responseRefetchTheMemoList(refetchMemo);
   });
 
   useEffect(() => {
     if (!tab?.url) return;
 
-    const currentMemo = memoList?.data?.find(memo => memo.url === formatUrl(tab.url));
-
     setMemo(currentMemo?.memo ?? '');
     setCategory(currentMemo?.category ?? '');
-  }, [memoList, tab?.url]);
+  }, [currentMemo?.category, currentMemo?.memo, tab?.url]);
 
   const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMemo(event.target.value);

@@ -16,7 +16,6 @@ import {
   GetFormattedMemoProps,
   getSupabaseClient,
   responseRefetchTheMemoList,
-  responseUpdateSidePanel,
 } from '@extension/shared/utils/extension';
 import { cn, Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
@@ -62,12 +61,6 @@ function MemoForm() {
     else mutateMemoPost(formattedMemo);
   };
 
-  useDidMount(() =>
-    responseUpdateSidePanel(() => {
-      setIsSaved(true);
-      abortThrottle();
-    }),
-  );
   useDidMount(() => {
     responseRefetchTheMemoList(refetchMemoList);
   });

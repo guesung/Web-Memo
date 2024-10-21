@@ -47,6 +47,7 @@ function MemoForm() {
     supabaseClient,
     handleSuccess: () => {
       setIsSaved(true);
+      abortThrottle();
     },
     onError: () => {
       overlay.open(({ unmount }) => <Toast message="메모 저장에 실패했습니다." onClose={unmount} />);

@@ -13,7 +13,10 @@ export default function useThrottle() {
   };
 
   const abortThrottle = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
   }, []);
 
   return { throttle, abortThrottle };

@@ -1,14 +1,8 @@
 name: CICD Extension
 
 on:
-  push:
-    branches:
-      - master
-      - develop
-  pull_request:
-    branches:
-      - master
-      - develop
+  - push
+  - pull_request
 
 jobs:
   build-extension:

@@ -50,7 +50,7 @@ export const signInWithEmail = async (email: string, password: string) => {
 
   if (error) redirect('/error');
   revalidatePath('/', 'layout');
-  redirect('/memos');
+  redirect(`${WEB_URL}/auth/callback-email`);
 };
 
 export const signout = async () => {

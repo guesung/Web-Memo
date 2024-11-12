@@ -16,7 +16,6 @@ export const getSupabaseClient = () => {
         return cookieStore.getAll();
       },
       setAll(cookiesToSet) {
-        // 로그인 시 토큰 쿠키 설정
         cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
       },
     },
@@ -39,6 +38,19 @@ export const signInWithOAuth = async (provider: Provider) => {
   if (error) redirect('/error');
   revalidatePath('/', 'layout');
   redirect(data.url);
+};
+
+export const signInWithEmail = async (email: string, password: string) => {
+  'use server';
+  const supabaseClient = getSupabaseClient();
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) redirect('/error');
+  revalidatePath('/', 'layout');
+  redirect('/memos');
 };
 
 export const signout = async () => {

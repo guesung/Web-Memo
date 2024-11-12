@@ -53,7 +53,6 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@extension/storage": "workspace:*",
     "@extension/tsconfig": "workspace:*",
     "esbuild-node-externals": "^1.14.0"
   },

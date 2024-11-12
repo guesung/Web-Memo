@@ -10,7 +10,6 @@
   "dependencies": {
     "@egjs/react-infinitegrid": "^4.12.0",
     "@extension/shared": "workspace:*",
-    "@extension/storage": "workspace:*",
     "@extension/ui": "workspace:*",
     "@supabase/ssr": "^0.5.1",
     "@types/node": "22.5.2",

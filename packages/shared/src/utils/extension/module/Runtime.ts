@@ -1,13 +1,6 @@
 import { BridgeRequest, BridgeResponse, BridgeType } from '../bridge';
 
-// ref : https://developer.chrome.com/docs/extensions/reference/api/runtime
 export class Runtime {
-  /**
-   *
-   * @param type bridge type
-   * @param payload bridge request
-   * @returns Nothing
-   */
   static sendMessage<TPayload>(type: BridgeType, payload?: TPayload): Promise<BridgeResponse> {
     return chrome.runtime.sendMessage<BridgeRequest<TPayload>, BridgeResponse>({
       type,
@@ -15,18 +8,12 @@ export class Runtime {
     });
   }
 
-  /**
-   *
-   * @param type : bridge type
-   * @param callbackFn : bridge response
-   * @returns Nothing
-   */
   static async onMessage<TPayload>(
     type: BridgeType,
     callbackFn: (
       request: BridgeRequest<TPayload>,
       sender: chrome.runtime.MessageSender,
-      sendResponse: (response?: string) => void,
+      sendResponse: (response?: unknown) => void,
     ) => void,
   ): Promise<void> {
     return chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -35,12 +22,6 @@ export class Runtime {
     });
   }
 
-  /**
-   *
-   * @param type : bridge type
-   * @param callbackFn : bridge response
-   * @returns Nothing
-   */
   static async onMessageExternal<TPayload>(
     type: BridgeType,
     callbackFn?: (

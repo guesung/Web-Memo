@@ -1,14 +1,16 @@
-import { test as base, chromium, type BrowserContext } from '@playwright/test';
+import { test as base, chromium, Page, type BrowserContext } from '@playwright/test';
 import path from 'path';
 
 process.env.PW_CHROMIUM_ATTACH_TO_OTHER = '1';
 
 const pathToExtension = path.join(path.resolve(), 'dist');
 
-export const test = base.extend<{
+type ExtensionFixture = {
   context: BrowserContext;
-  extensionId: string;
-}>({
+  sidePanelPage: Page;
+};
+
+export const test = base.extend<ExtensionFixture>({
   // eslint-disable-next-line no-empty-pattern
   context: async ({}, use) => {
     const context = await chromium.launchPersistentContext('', {
@@ -18,15 +20,14 @@ export const test = base.extend<{
     await use(context);
     await context.close();
   },
-  extensionId: async ({ context }, use) => {
-    let [background] = context.serviceWorkers();
-    if (!background)
-      background = await context.waitForEvent('serviceworker', {
-        timeout: 5000,
-      });
+  sidePanelPage: async ({ page }, use) => {
+    const sidePanelPage = page
+      .context()
+      .pages()
+      .find(page => page.url() === 'chrome-extension://eaiojpmgklfngpjddhoalgcpkepgkclh/side-panel/index.html')!;
 
-    const extensionId = background.url().split('/')[2];
-    await use(extensionId);
+    use(sidePanelPage);
   },
+  baseURL: 'http://localhost:3000',
 });
 export const expect = test.expect;

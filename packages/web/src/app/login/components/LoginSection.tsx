@@ -1,6 +1,7 @@
-import { signInWithOAuth } from '@src/utils/supabase.server';
+import { signInWithEmail, signInWithOAuth } from '@src/utils/supabase.server';
 import Image from 'next/image';
 import ExtensionVersion from './ExtensionVersion';
+import { SUPABASE_TEST_EMAIL, SUPABASE_TEST_PASSWORD } from '@extension/shared/constants';
 
 export default async function LoginSection() {
   return (
@@ -12,12 +13,15 @@ export default async function LoginSection() {
         <button
           formAction={signInWithOAuth.bind(null, 'kakao')}
           className="btn bg-[rgb(247,228,76)] text-black hover:bg-[rgb(247,228,76)]">
-          <Image src="/images/svgs/kakao.svg" width={16} height={16} alt="google" />
+          <Image src="/images/svgs/kakao.svg" width={16} height={16} alt="kakao" />
           카카오 로그인
         </button>
         <button formAction={signInWithOAuth.bind(null, 'google')} className="btn bg-white text-black hover:bg-white">
           <Image src="/images/svgs/google.svg" width={16} height={16} alt="google" />
           구글 로그인
+        </button>
+        <button formAction={signInWithEmail.bind(null, SUPABASE_TEST_EMAIL, SUPABASE_TEST_PASSWORD)} className="btn">
+          테스트 계정으로 로그인
         </button>
       </form>
       <ExtensionVersion />

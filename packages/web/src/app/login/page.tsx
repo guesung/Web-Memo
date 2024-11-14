@@ -6,8 +6,9 @@ import { redirect } from 'next/navigation';
 export default async function page() {
   const supabaseClient = getSupabaseClient();
   const user = await supabaseClient.auth.getUser();
+  const isUserLogin = !!user?.data?.user;
 
-  if (user?.data?.user) redirect('/memos');
+  if (isUserLogin) redirect('/memos');
   return (
     <main className="relative flex h-full items-center justify-center">
       <LoginSection />

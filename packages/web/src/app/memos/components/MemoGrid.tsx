@@ -64,7 +64,7 @@ export default function MemoGrid() {
 
         setItems([...items, ...getItems(nextGroupKey, maxAddItem)]);
       }}>
-      {items.map((item, index) => (
+      {items.map(item => (
         <motion.div
           key={item.key}
           initial={{ opacity: 0, y: 20, scale: 0.8 }}

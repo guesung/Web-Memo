@@ -12,6 +12,7 @@ import {
   requestObserverMemoPage,
   requestUpdateSidePanel,
   responseGetExtensionManifest,
+  responseGetTabs,
   responseOpenSidePanel,
   Storage,
   Tab,
@@ -103,3 +104,5 @@ chrome.tabs.onUpdated.addListener(async () => {
 responseOpenSidePanel();
 
 responseGetExtensionManifest();
+
+responseGetTabs();

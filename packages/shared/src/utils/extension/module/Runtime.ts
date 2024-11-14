@@ -1,8 +1,8 @@
-import { BridgeRequest, BridgeResponse, BridgeType } from '../bridge';
+import { BridgeRequest, BridgeType } from '../bridge';
 
 export class Runtime {
-  static sendMessage<TPayload>(type: BridgeType, payload?: TPayload): Promise<BridgeResponse> {
-    return chrome.runtime.sendMessage<BridgeRequest<TPayload>, BridgeResponse>({
+  static sendMessage<TPayload, TResponse>(type: BridgeType, payload?: TPayload): Promise<TResponse> {
+    return chrome.runtime.sendMessage<BridgeRequest<TPayload>, TResponse>({
       type,
       payload,
     });

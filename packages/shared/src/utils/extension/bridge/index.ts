@@ -7,3 +7,4 @@ export * from './observeMemoPage';
 export * from './refetchTheMemoList';
 export * from './getExtensionManifest';
 export * from './getSidePanelOpen';
+export * from './getTabs';

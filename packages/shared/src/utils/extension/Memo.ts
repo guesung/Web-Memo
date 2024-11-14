@@ -6,7 +6,7 @@ export interface GetFormattedMemoProps {
   category: string;
 }
 
-export const getFormattedMemo = async ({ memo, category }: GetFormattedMemoProps) => {
+export const getFormattedMemo = async ({ memo = '', category = '' }: GetFormattedMemoProps) => {
   const tab = await Tab.get();
 
   if (!tab.url) throw new Error('Save Failed: Invalid URL');

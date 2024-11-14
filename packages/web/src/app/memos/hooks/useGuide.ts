@@ -8,6 +8,5 @@ export default function useGuide() {
     const isUserSeenGuide = window.localStorage.getItem(IS_USER_SEEN_GUIDE);
     if (isUserSeenGuide === 'true') return;
     driverObj.drive();
-    window.localStorage.setItem(IS_USER_SEEN_GUIDE, 'true');
   });
 }

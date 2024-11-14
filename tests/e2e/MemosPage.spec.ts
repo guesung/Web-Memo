@@ -13,10 +13,10 @@ test.describe('Login Page', () => {
         '메모를 한 번 해볼까요?\nOption + S를 눌러 사이드 패널을 열어보세요 !',
       );
     });
-    test('사이드 패널을 열 시, 다음 가이드 페이지로 이동한다.', async ({ page }) => {
+    test('사이드 패널을 열 시, 다음 가이드 페이지로 이동한다.', async ({ page, baseURL }) => {
       await page.goto('https://blog.toss.im/article/toss-team-culture');
       await page.locator('#open-side-panel').click();
-      await page.goto('http://localhost:3000');
+      await page.goto(baseURL!);
 
       await page.waitForTimeout(1000);
 
@@ -29,8 +29,24 @@ test.describe('Login Page', () => {
       await page.locator('.driver-popover-next-btn').click();
       await page.locator('#refresh').click();
 
-      console.log(page.locator('#driver-popover'));
       expect(page.locator('#driver-popover')).toBeHidden();
+    });
+  });
+
+  test.describe('메모 확인 기능', () => {
+    test.beforeEach(async ({ page, baseURL }) => {
+      await page.goto('https://blog.toss.im/article/toss-team-culture');
+      await page.locator('#open-side-panel').click();
+
+      await page.goto(baseURL!);
+    });
+    test('사이드 패널에서 메모를 저장하면 메모를 확인할 수 있다.', async ({ page, sidePanelPage }) => {
+      const text = String(new Date());
+      await sidePanelPage.locator('#memo-textarea').fill(text);
+      await sidePanelPage.locator('#memo-textarea').press('ControlOrMeta+s');
+
+      await page.reload();
+      expect(page.getByText(text)).toBeVisible();
     });
   });
 });

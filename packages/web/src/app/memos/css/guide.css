@@ -1,5 +1,5 @@
 @layer base {
   .driver-popover.driverjs-theme {
-    @apply whitespace-pre-wrap;
+    @apply min-w-[330px] whitespace-pre-wrap;
   }
 }

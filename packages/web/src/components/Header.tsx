@@ -1,6 +1,6 @@
 'use server';
 import { getUser } from '@extension/shared/utils';
-import { MemoRefresh } from '@src/app/memos/components';
+import { MemoRefresh, RefreshButton } from '@src/app/memos/components';
 import { getSupabaseClient, signout } from '@src/utils/supabase.server';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -10,19 +10,17 @@ export default async function Header() {
   const user = await getUser(supabaseClient);
 
   return (
-    <header className="navbar bg-base-100 flex-1 w-full fixed inset-x-0 shadow-sm z-50">
+    <header className="navbar bg-base-100 fixed inset-x-0 z-50 w-full flex-1 shadow-sm">
       <div className="navbar-start">
         <Link href="/memos" className="btn btn-ghost">
           <Image src="/images/pngs/icon.png" width={28} height={28} alt="icon" />
           <span className="text-xl">웹 메모</span>
         </Link>
       </div>
-      <div className="flex navbar-end">
+      <div className="navbar-end flex">
         {user?.data?.user ? (
           <div className="flex gap-2">
-            <button className="btn btn-circle btn-sm">
-              <MemoRefresh width={32} hanging={32} fill="white" id="refresh" cursor="pointer" color="gray" />
-            </button>
+            <RefreshButton />
             <div className="btn btn-circle btn-sm">
               <div className="avatar dropdown dropdown-bottom dropdown-end">
                 <div className="w-8 rounded-full" tabIndex={0} role="button">

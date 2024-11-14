@@ -1,6 +1,7 @@
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import { requestGetSidePanelOpen } from '@extension/shared/utils/extension';
+import { IS_USER_SEEN_GUIDE } from '../constants';
 
 export const driverObj = driver({
   showProgress: true,
@@ -35,6 +36,10 @@ export const driverObj = driver({
       popover: {
         title: '메모 확인',
         description: '이제, 새로 고침을 눌러 저장된 메모를 확인해볼까요?',
+        onNextClick: () => {
+          window.localStorage.setItem(IS_USER_SEEN_GUIDE, 'true');
+          driverObj.destroy();
+        },
       },
     },
   ],

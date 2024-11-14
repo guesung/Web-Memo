@@ -11,8 +11,9 @@ test.describe('SidePanel', () => {
   });
 
   test('메모가 입력된다.', async ({ sidePanelPage }) => {
-    const text = String(new Date());
+    sidePanelPage.waitForTimeout(1000);
 
+    const text = String(new Date());
     sidePanelPage.locator('#memo-textarea').fill(text);
 
     await expect(sidePanelPage.locator('#memo-textarea')).toHaveText(text);

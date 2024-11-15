@@ -15,7 +15,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useGuide } from '../hooks';
 import { formatDate } from '@extension/shared/utils';
-import { CategoryType } from '../page';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import MemoModal from './MemoModal';
 
 function getItems(nextGroupKey: number, count: number) {
   const nextItems = [];
@@ -27,11 +28,12 @@ function getItems(nextGroupKey: number, count: number) {
   return nextItems;
 }
 
-interface MemoGridProps {
-  category: CategoryType;
-}
-
-export default function MemoGrid({ category }: MemoGridProps) {
+export default function MemoGrid() {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+  const category = searchParams.get('category') ?? '';
+  const id = searchParams.get('id') ?? '';
   const supabaseClient = getSupabaseClient();
   const { data: memoListData } = useMemoListQuery({
     supabaseClient,
@@ -43,50 +45,59 @@ export default function MemoGrid({ category }: MemoGridProps) {
   const [items, setItems] = useState(() => getItems(0, 10));
   const [hoveredMemoId, setHoverdMemoId] = useState<null | string>(null);
 
-  const handleMouseEnter: MouseEventHandler<HTMLDivElement> = event => {
+  const handleMemoMouseEnter: MouseEventHandler<HTMLDivElement> = event => {
     const id = event.currentTarget.id;
     setHoverdMemoId(id);
   };
-  const handleMouseLeave: MouseEventHandler<HTMLDivElement> = () => {
+  const handleMemoMouseLeave: MouseEventHandler<HTMLDivElement> = () => {
     setHoverdMemoId(null);
+  };
+  const handleMemoClick: MouseEventHandler<HTMLDivElement> = event => {
+    document.getElementById('my_modal_2').showModal();
+    const id = event.currentTarget.id;
+    router.replace(`${pathname}?id=${id}`, { scroll: false });
   };
   useGuide();
 
   if (!memoList || memoList.length === 0)
     return <p className="mt-8 text-center">아직 저장된 메모가 없어요. 사이드 패널을 열어 메모를 저장해보세요 !</p>;
   return (
-    <MasonryInfiniteGrid
-      className="container"
-      gap={16}
-      align="center"
-      useResizeObserver
-      observeChildren
-      autoResize
-      onRequestAppend={e => {
-        if (items.length >= memoList.length) return;
+    <>
+      <MemoModal />
+      <MasonryInfiniteGrid
+        className="container"
+        gap={16}
+        align="center"
+        useResizeObserver
+        observeChildren
+        autoResize
+        onRequestAppend={e => {
+          if (items.length >= memoList.length) return;
 
-        const nextGroupKey = (+e.groupKey! || 0) + 1;
-        const maxAddItem = items.length + 10 > memoList.length ? memoList.length - items.length : 10;
+          const nextGroupKey = (+e.groupKey! || 0) + 1;
+          const maxAddItem = items.length + 10 > memoList.length ? memoList.length - items.length : 10;
 
-        if (maxAddItem === 0) return;
+          if (maxAddItem === 0) return;
 
-        setItems([...items, ...getItems(nextGroupKey, maxAddItem)]);
-      }}>
-      {items.map(item => (
-        <motion.div
-          key={item.key}
-          initial={{ opacity: 0, y: 20, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          data-grid-groupkey={item.groupKey}>
-          <MemoItem
-            memo={memoList.at(item.key)}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            isHovered={hoveredMemoId === String(memoList.at(item.key)?.id)}
-          />
-        </motion.div>
-      ))}
-    </MasonryInfiniteGrid>
+          setItems([...items, ...getItems(nextGroupKey, maxAddItem)]);
+        }}>
+        {items.map(item => (
+          <motion.div
+            key={item.key}
+            initial={{ opacity: 0, y: 20, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            data-grid-groupkey={item.groupKey}>
+            <MemoItem
+              memo={memoList.at(item.key)}
+              onMouseEnter={handleMemoMouseEnter}
+              onMouseLeave={handleMemoMouseLeave}
+              onClick={handleMemoClick}
+              isHovered={hoveredMemoId === String(memoList.at(item.key)?.id)}
+            />
+          </motion.div>
+        ))}
+      </MasonryInfiniteGrid>
+    </>
   );
 }
 

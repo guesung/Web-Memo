@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { driverObj } from '../utils';
 import Image from 'next/image';
 import { IS_USER_SEEN_GUIDE } from '../constants';
+import { Button } from '@src/components/ui/button';
 
 interface RefreshButtonProps extends HTMLMotionProps<'button'> {}
 
@@ -22,14 +23,8 @@ export default function RefreshButton({ ...props }: RefreshButtonProps) {
   };
 
   return (
-    <motion.button
-      onClick={handleRefreshClick}
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.9 }}
-      id="refresh"
-      className="btn btn-circle btn-sm"
-      {...props}>
-      <Image src="/images/svgs/refresh.svg" color="gray" alt="refresh" width={16} height={16} />
-    </motion.button>
+    <Button variant="outline" size="icon" id="refresh" onClick={handleRefreshClick}>
+      <Image src="/images/svgs/refresh.svg" alt="refresh" width={16} height={16} />
+    </Button>
   );
 }

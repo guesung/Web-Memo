@@ -4,10 +4,11 @@ import { RefreshButton } from '@src/app/memos/components';
 import { getSupabaseClient, signout } from '@src/utils/supabase.server';
 import Image from 'next/image';
 import Link from 'next/link';
+import ToggleTheme from './ToggleTheme';
 
 export default async function Header() {
   return (
-    <header className="navbar bg-base-100 fixed inset-x-0 z-50 w-full flex-1 shadow-sm">
+    <header className="navbar bg-background fixed inset-x-0 z-50 w-full flex-1 shadow-sm">
       <div className="navbar-start">
         <HeaderLeft />
       </div>
@@ -38,6 +39,7 @@ async function HeaderRight() {
   if (isUserLogin)
     return (
       <div className="flex gap-2">
+        <ToggleTheme />
         <RefreshButton />
         <div className="btn btn-circle btn-sm">
           <div className="avatar dropdown dropdown-bottom dropdown-end">

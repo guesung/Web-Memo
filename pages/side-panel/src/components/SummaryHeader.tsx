@@ -1,7 +1,7 @@
 import { useUserPreferDarkMode } from '@extension/shared/hooks';
-import Option from '../../public/svgs/option.svg';
-import { useSummaryContext } from './SummaryProvider';
+import OptionIcon from '../../public/svgs/option.svg';
 import RefreshIcon from '../../public/svgs/refresh.svg';
+import { useSummaryContext } from './SummaryProvider';
 import { Loading } from '@extension/ui';
 
 export default function Header() {
@@ -26,7 +26,12 @@ export default function Header() {
         />
       )}
 
-      <Option width="24px" height="24px" onClick={handleOptionClick} fill={isUserPreferDarkMode ? 'black' : 'white'} />
+      <OptionIcon
+        width="24px"
+        height="24px"
+        onClick={handleOptionClick}
+        fill={isUserPreferDarkMode ? 'black' : 'white'}
+      />
     </header>
   );
 }

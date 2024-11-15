@@ -1,6 +1,6 @@
 import { WEB_URL } from '@extension/shared/constants';
 import { Tab } from '@extension/shared/utils/extension';
-import TopRightArrow from '../../public/svgs/top_right_arrow.svg';
+import TopRightArrowIcon from '../../public/svgs/top_right_arrow.svg';
 
 export default function LoginSection() {
   return (
@@ -13,7 +13,7 @@ export default function LoginSection() {
           Tab.create({ url: `${WEB_URL}/login` });
         }}>
         로그인하러가기
-        <TopRightArrow height={16} width={16} />
+        <TopRightArrowIcon height={16} width={16} />
       </button>
     </div>
   );

@@ -1,7 +1,7 @@
-import { useDidMount, useTabQuery, useUserPreferDarkMode } from '@extension/shared/hooks';
-import { TopRightArrow } from '../icons';
 import { WEB_URL } from '@extension/shared/constants';
+import { useDidMount, useTabQuery, useUserPreferDarkMode } from '@extension/shared/hooks';
 import { I18n, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
+import TopRightArrowIcon from '../../public/svgs/top_right_arrow.svg';
 
 export default function MemoHeader() {
   const { data: tab, refetch: refetchTab } = useTabQuery();
@@ -20,7 +20,7 @@ export default function MemoHeader() {
     <div className="label">
       <span className="label-text whitespace-nowrap font-bold">{I18n.get('memo')}</span>
       <span className="w-1" />
-      <TopRightArrow
+      <TopRightArrowIcon
         width={20}
         height={20}
         fill={isUserPreferDarkMode ? 'black' : 'white'}

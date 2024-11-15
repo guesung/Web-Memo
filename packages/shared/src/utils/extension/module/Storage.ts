@@ -2,7 +2,6 @@ import { StorageKeyType, StorageType } from '@src/types';
 import { I18n } from './I18n';
 import { ValueOf } from 'next/dist/shared/lib/constants';
 
-// ref : https://developer.chrome.com/docs/extensions/reference/api/storage
 export class Storage {
   static async get<K extends StorageKeyType>(key: K): Promise<ValueOf<StorageType> | undefined> {
     try {

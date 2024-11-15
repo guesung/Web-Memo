@@ -1,5 +1,6 @@
 import { overlay } from 'overlay-kit';
 import { useEffect, useState } from 'react';
+import HeartIcon from '../../public/svgs/heart.svg';
 
 import {
   useDidMount,
@@ -22,17 +23,18 @@ import withAuthentication from '@src/hoc/withAuthentication';
 function MemoForm() {
   const [isSaved, setIsSaved] = useState(true);
   const [memo, setMemo] = useState('');
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState(['']);
   const { throttle, abortThrottle } = useThrottle();
   const { data: tab } = useTabQuery();
   const { data: supabaseClient } = useSupabaseClient({
     getSupabaseClient,
   });
-
   const { data: currentMemo, refetch: refetchMemo } = useMemoQuery({
     supabaseClient,
     url: tab.url,
   });
+
+  const isWish = currentMemo?.category?.includes('wish');
 
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
@@ -56,8 +58,6 @@ function MemoForm() {
   });
 
   const saveMemo = async ({ memo, category }: GetFormattedMemoProps) => {
-    if (memo === '') return;
-
     const formattedMemo = await getFormattedMemo({ category, memo });
 
     if (currentMemo) mutateMemoPatch({ ...formattedMemo, id: currentMemo.id });
@@ -72,7 +72,7 @@ function MemoForm() {
     if (!tab?.url) return;
 
     setMemo(currentMemo?.memo ?? '');
-    setCategory(currentMemo?.category ?? '');
+    setCategory(currentMemo?.category ?? ['']);
   }, [currentMemo?.category, currentMemo?.memo, tab?.url]);
 
   const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -95,6 +95,20 @@ function MemoForm() {
     }
   };
 
+  const handleWishClick = async () => {
+    const category = getCategoryWithWish();
+    setCategory(category);
+    const formattedMemo = await getFormattedMemo({ category, memo });
+
+    if (currentMemo) mutateMemoPatch({ ...formattedMemo, id: currentMemo.id });
+    else mutateMemoPost(formattedMemo);
+  };
+
+  const getCategoryWithWish = () => {
+    if (isWish) return [''];
+    return ['wish'];
+  };
+
   return (
     <form className="form-control h-full">
       <textarea
@@ -107,7 +121,15 @@ function MemoForm() {
         onKeyDown={handleKeyDown}
         value={memo}
       />
-      <div className="label" />
+      <div className="label">
+        <HeartIcon
+          width="16px"
+          height="16px"
+          fill={isWish ? 'white' : 'black'}
+          onClick={handleWishClick}
+          className="cursor-pointer"
+        />
+      </div>
     </form>
   );
 }

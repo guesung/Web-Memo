@@ -3,7 +3,7 @@ import { getFormattedMemo } from './extension';
 
 interface SaveMemoNotionProps {
   memo: string;
-  category: string;
+  category: string[];
 }
 
 export const saveMemoNotion = async ({ memo, category }: SaveMemoNotionProps) => {

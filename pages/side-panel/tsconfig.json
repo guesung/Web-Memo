@@ -7,7 +7,7 @@
       "@public/*": ["public/*"]
     },
     "jsx": "react-jsx",
-    "types": ["chrome"]
+    "types": ["chrome", "vite-plugin-svgr/client"]
   },
-  "include": ["src"]
+  "include": ["src", "svg.d.ts"]
 }

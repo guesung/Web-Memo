@@ -1,6 +1,6 @@
 import { queryKeys } from '@src/constants';
 import { MemoSupabaseClient } from '@src/types';
-import { getMemoSupabase } from '@src/utils';
+import { getMemo } from '@src/utils';
 import { useQuery } from '@tanstack/react-query';
 
 interface UseMemoListQueryProps {
@@ -9,7 +9,7 @@ interface UseMemoListQueryProps {
 
 export default function useMemoListQuery({ supabaseClient }: UseMemoListQueryProps) {
   return useQuery({
-    queryFn: getMemoSupabase.bind(null, supabaseClient),
+    queryFn: getMemo.bind(null, supabaseClient),
     queryKey: queryKeys.memoList(),
     enabled: !!supabaseClient,
   });

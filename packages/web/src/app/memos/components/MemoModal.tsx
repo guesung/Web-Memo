@@ -1,34 +1,48 @@
 'use client';
-import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@src/components/ui/dialog';
-import { useMemoQuery, useSupabaseClient } from '@extension/shared/hooks';
-import { getSupabaseClient } from '@src/utils/supabase.client';
+import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
 import { Textarea } from '@src/components/ui/textarea';
-import { useEffect, useState } from 'react';
+import { getSupabaseClient } from '@src/utils/supabase.client';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function MemoModal() {
   const searchParams = useSearchParams();
   const id = searchParams.get('id') ?? '';
   const router = useRouter();
   const [row, setRow] = useState(4);
+  const [memo, setMemo] = useState('');
 
   const supabaseClient = getSupabaseClient();
   const { data: memoData } = useMemoQuery({ supabaseClient, id });
+  const { mutate: mutateMemoPatch } = useMemoPatchMutation({
+    supabaseClient,
+  });
+
+  useEffect(() => {
+    setMemo(memoData?.memo ?? '');
+  }, [memoData]);
+
+  const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMemo(event.target.value);
+  };
+
+  const handleKeyDown = async (
+    event: React.KeyboardEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (event.metaKey && event.key === 's') {
+      event.preventDefault();
+
+      mutateMemoPatch({ ...memoData, memo });
+    }
+  };
 
   useEffect(() => {
     if (!memoData?.memo) return;
 
     const rowCount = memoData?.memo.split(/\r\n|\r|\n/).length;
-
     setRow(rowCount + 2);
   }, [memoData]);
 
@@ -59,9 +73,12 @@ export default function MemoModal() {
             </Link>
           </DialogTitle>
           <div className="h-2" />
-          <Textarea defaultValue={memoData?.memo} rows={row} />
+          <Textarea rows={row} onKeyDown={handleKeyDown} value={memo} onChange={handleMemoTextAreaChange} />
         </DialogHeader>
       </DialogContent>
     </Dialog>
   );
+}
+function abortThrottle() {
+  throw new Error('Function not implemented.');
 }

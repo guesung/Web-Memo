@@ -5,7 +5,7 @@ import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react
 
 interface UseMemoPostMutationProps extends UseMutationOptions<MemoSupabaseResponse, Error, UpdateMemoProps> {
   supabaseClient: MemoSupabaseClient;
-  handleSuccess: () => void;
+  handleSuccess?: () => void;
 }
 
 export default function useMemoPatchMutation({
@@ -39,7 +39,7 @@ export default function useMemoPatchMutation({
       return { previousMemoList };
     },
     onSuccess: async () => {
-      handleSuccess();
+      handleSuccess?.();
     },
   });
 }

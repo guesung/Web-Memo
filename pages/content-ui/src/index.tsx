@@ -1,4 +1,4 @@
-import { formatUrl, getMemoSupabase, insertMemo, isProduction } from '@extension/shared/utils';
+import { formatUrl, getMemo, insertMemo, isProduction } from '@extension/shared/utils';
 import {
   getSupabaseClient,
   OPEN_SIDE_PANEL_ID,
@@ -29,7 +29,7 @@ window.addEventListener('keydown', async event => {
   const supabaseClient = await getSupabaseClient();
   const tab = await requestGetTabs();
 
-  const { data: memosData } = await getMemoSupabase(supabaseClient);
+  const { data: memosData } = await getMemo(supabaseClient);
 
   toast.success('새로고침이 완료되었습니다.');
 

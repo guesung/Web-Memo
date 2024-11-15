@@ -7,27 +7,31 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+
+type InputType = {
+  memo: string;
+};
 
 export default function MemoModal() {
   const searchParams = useSearchParams();
   const id = searchParams.get('id') ?? '';
   const router = useRouter();
   const [row, setRow] = useState(4);
-  const [memo, setMemo] = useState('');
+
+  const { register, handleSubmit, watch, setValue } = useForm<InputType>({
+    defaultValues: {
+      memo: '',
+    },
+  });
+  const onSubmit: SubmitHandler<InputType> = data => console.log(data);
+  const memo = watch('memo');
 
   const supabaseClient = getSupabaseClient();
   const { data: memoData } = useMemoQuery({ supabaseClient, id });
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
   });
-
-  useEffect(() => {
-    setMemo(memoData?.memo ?? '');
-  }, [memoData]);
-
-  const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMemo(event.target.value);
-  };
 
   const handleKeyDown = async (
     event: React.KeyboardEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLInputElement>,
@@ -39,43 +43,47 @@ export default function MemoModal() {
     }
   };
 
-  useEffect(() => {
-    if (!memoData?.memo) return;
-
-    const rowCount = memoData?.memo.split(/\r\n|\r|\n/).length;
-    setRow(rowCount + 2);
-  }, [memoData]);
-
   const handleClose = () => {
     router.replace('/memos', { scroll: false });
   };
 
+  useEffect(() => {
+    const rowCount = memo.split(/\r\n|\r|\n/).length;
+    setRow(rowCount + 2);
+  }, [memo]);
+
+  useEffect(() => {
+    setValue('memo', memoData?.memo ?? '');
+  }, [memoData]);
+
   if (!id || !memoData) return;
   return (
     <Dialog open={!!id}>
-      <DialogContent onClose={handleClose}>
-        <DialogHeader>
-          <DialogTitle>
-            <Link className="link-hover flex gap-2" href={memoData.url} target="_blank">
-              {memoData.favIconUrl ? (
-                <Image
-                  src={memoData.favIconUrl}
-                  width={16}
-                  height={16}
-                  alt="favicon"
-                  className="float-left"
-                  style={{ objectFit: 'contain' }}
-                />
-              ) : (
-                <></>
-              )}
-              {memoData?.title}
-            </Link>
-          </DialogTitle>
-          <div className="h-2" />
-          <Textarea rows={row} onKeyDown={handleKeyDown} value={memo} onChange={handleMemoTextAreaChange} />
-        </DialogHeader>
-      </DialogContent>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <DialogContent onClose={handleClose}>
+          <DialogHeader>
+            <DialogTitle>
+              <Link className="link-hover flex gap-2" href={memoData.url} target="_blank">
+                {memoData.favIconUrl ? (
+                  <Image
+                    src={memoData.favIconUrl}
+                    width={16}
+                    height={16}
+                    alt="favicon"
+                    className="float-left"
+                    style={{ objectFit: 'contain' }}
+                  />
+                ) : (
+                  <></>
+                )}
+                {memoData?.title}
+              </Link>
+            </DialogTitle>
+            <div className="h-2" />
+            <Textarea rows={row} onKeyDown={handleKeyDown} {...register('memo')} />
+          </DialogHeader>
+        </DialogContent>
+      </form>
     </Dialog>
   );
 }

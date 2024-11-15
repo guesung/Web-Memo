@@ -14,9 +14,17 @@ export async function GET(request: Request) {
   const cookieStore = cookies();
   cookieStore.set(COOKIE_KEY_ACCESS_TOKEN, sessionData.session.access_token, {
     maxAge: 3600 * 24 * 365, // 1년
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
   });
   cookieStore.set(COOKIE_KEY_REFRESH_TOKEN, sessionData.session.refresh_token, {
     maxAge: 3600 * 24 * 365, // 1년
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
   });
 
   return NextResponse.redirect(requestUrl.origin + '/memos');

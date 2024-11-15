@@ -12,7 +12,7 @@ export default async function Page() {
     <>
       <Header />
       <Header.Margin />
-      <main className="flex w-full p-4">
+      <main className="bg-background flex w-full p-4">
         <MemoMenu />
         <MemoMenu.Margin />
         <HydrationBoundaryWrapper queryKey={queryKeys.memoList()} queryFn={() => getMemo(supabaseClient)}>

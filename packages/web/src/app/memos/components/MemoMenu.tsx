@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function MemoMenu() {
   return (
-    <ul className="menu bg-base-200 rounded-box fixed lg:min-w-max">
+    <ul className="menu rounded-box fixed lg:min-w-max">
       <li>
         <Link href="/memos">메모</Link>
       </li>

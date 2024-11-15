@@ -4,10 +4,10 @@ import { Header, HydrationBoundaryWrapper } from '@src/components';
 import { getSupabaseClient } from '@src/utils/supabase.server';
 import { MemoGrid, MemoTable, MemoMenu, MemoWish } from './components';
 
-type SearchParamsType = { view: ViewType; show: ShowType };
+export type CategoryType = 'wish';
 
-export type ViewType = 'grid' | 'table';
-export type ShowType = 'all' | 'wish';
+type SearchParamsType = { category: CategoryType };
+
 interface MemoViewProps {
   searchParams: SearchParamsType;
 }
@@ -15,17 +15,16 @@ interface MemoViewProps {
 export default async function Page({ searchParams }: MemoViewProps) {
   const supabaseClient = getSupabaseClient();
 
-  const view: ViewType = searchParams?.view ?? 'grid';
-  const show: ShowType = searchParams?.show ?? 'all';
+  const category: CategoryType = searchParams?.category ?? '';
   return (
     <>
       <Header />
       <Header.Margin />
       <main className="flex w-full p-4">
         <MemoMenu />
+        <MemoMenu.Margin />
         <HydrationBoundaryWrapper queryKey={queryKeys.memoList()} queryFn={() => getMemo(supabaseClient)}>
-          {view === 'grid' && <MemoGrid show={show} />}
-          {view === 'table' && <MemoTable />}
+          <MemoGrid category={category} />
         </HydrationBoundaryWrapper>
       </main>
     </>

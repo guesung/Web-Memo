@@ -15,7 +15,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useGuide } from '../hooks';
 import { formatDate } from '@extension/shared/utils';
-import { ShowType } from '../page';
+import { CategoryType } from '../page';
 
 function getItems(nextGroupKey: number, count: number) {
   const nextItems = [];
@@ -28,19 +28,17 @@ function getItems(nextGroupKey: number, count: number) {
 }
 
 interface MemoGridProps {
-  show: ShowType;
+  category: CategoryType;
 }
 
-export default function MemoGrid({ show }: MemoGridProps) {
+export default function MemoGrid({ category }: MemoGridProps) {
   const supabaseClient = getSupabaseClient();
   const { data: memoListData } = useMemoListQuery({
     supabaseClient,
   });
-  console.log(show);
-  const memoList = memoListData?.data?.filter(({ memo }) => {
-    if (show === 'all' && memo.length > 0) return true;
-    if (show === 'wish' && memo.length === 0) return true;
-    return false;
+  const memoList = memoListData?.data?.filter(memo => {
+    if (!category && !memo?.category?.includes('wish')) return true;
+    return memo?.category?.includes(category);
   });
   const [items, setItems] = useState(() => getItems(0, 10));
   const [hoveredMemoId, setHoverdMemoId] = useState<null | string>(null);

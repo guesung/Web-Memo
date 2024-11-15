@@ -1,6 +1,8 @@
 import { useUserPreferDarkMode } from '@extension/shared/hooks';
-import { Option, Refresh } from '../icons';
+import Option from '../../public/svgs/option.svg';
 import { useSummaryContext } from './SummaryProvider';
+import RefreshIcon from '../../public/svgs/refresh.svg';
+import { Loading } from '@extension/ui';
 
 export default function Header() {
   const { isSummaryLoading, refetchSummary } = useSummaryContext();
@@ -12,14 +14,19 @@ export default function Header() {
 
   return (
     <header className="float-right mt-4 flex items-center gap-1">
-      <Refresh
-        width="20px"
-        height="20px"
-        isLoading={isSummaryLoading}
-        onRefresh={refetchSummary}
-        fill={isUserPreferDarkMode ? 'black' : 'white'}
-      />
-      <Option width="24px" height="24px" onOption={handleOptionClick} fill={isUserPreferDarkMode ? 'black' : 'white'} />
+      {isSummaryLoading ? (
+        <Loading />
+      ) : (
+        <RefreshIcon
+          width="20px"
+          height="20px"
+          onClick={refetchSummary}
+          cursor="pointer"
+          fill={isUserPreferDarkMode ? 'black' : 'white'}
+        />
+      )}
+
+      <Option width="24px" height="24px" onClick={handleOptionClick} fill={isUserPreferDarkMode ? 'black' : 'white'} />
     </header>
   );
 }

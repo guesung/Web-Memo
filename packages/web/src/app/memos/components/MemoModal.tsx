@@ -12,6 +12,8 @@ import { useMemoQuery, useSupabaseClient } from '@extension/shared/hooks';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import { Textarea } from '@src/components/ui/textarea';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export default function MemoModal() {
   const searchParams = useSearchParams();
@@ -34,12 +36,29 @@ export default function MemoModal() {
     router.replace('/memos', { scroll: false });
   };
 
-  if (!id) return;
+  if (!id || !memoData) return;
   return (
     <Dialog open={!!id}>
       <DialogContent onClose={handleClose}>
         <DialogHeader>
-          <DialogTitle>{memoData?.title}</DialogTitle>
+          <DialogTitle>
+            <Link className="link-hover flex gap-2" href={memoData.url} target="_blank">
+              {memoData.favIconUrl ? (
+                <Image
+                  src={memoData.favIconUrl}
+                  width={16}
+                  height={16}
+                  alt="favicon"
+                  className="float-left"
+                  style={{ objectFit: 'contain' }}
+                />
+              ) : (
+                <></>
+              )}
+              {memoData?.title}
+            </Link>
+          </DialogTitle>
+          <div className="h-2" />
           <Textarea defaultValue={memoData?.memo} rows={row} />
         </DialogHeader>
       </DialogContent>

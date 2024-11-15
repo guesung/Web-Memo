@@ -53,7 +53,6 @@ export default function MemoGrid() {
     setHoverdMemoId(null);
   };
   const handleMemoClick: MouseEventHandler<HTMLDivElement> = event => {
-    document.getElementById('my_modal_2').showModal();
     const id = event.currentTarget.id;
     router.replace(`${pathname}?id=${id}`, { scroll: false });
   };

@@ -1,7 +1,6 @@
 import { WEB_URL } from '@extension/shared/constants';
 import { useDidMount, useTabQuery, useUserPreferDarkMode } from '@extension/shared/hooks';
 import { I18n, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
-import PlusIcon from '../../public/svgs/plus.svg';
 import TopRightArrowIcon from '../../public/svgs/top_right_arrow.svg';
 
 export default function MemoHeader() {
@@ -28,7 +27,6 @@ export default function MemoHeader() {
         onClick={handleMemoClick}
         className="cursor-pointer"
       />
-      <PlusIcon width={20} height={20} className="cursor-pointer" fill={isUserPreferDarkMode ? 'black' : 'white'} />
       <span className="w-4" />
       <span className="label-text w-full truncate text-right">{tab?.title}</span>
     </div>

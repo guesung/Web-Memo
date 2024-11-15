@@ -1,4 +1,4 @@
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
+import { NEED_AUTH_PAGES, SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -18,8 +18,6 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
-
-const HAVE_TO_AUTH_PATH_LIST = ['/memos', 'guide'];
 
 async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -44,11 +42,11 @@ async function updateSession(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await supabase.auth.getUser();
+  const isUserLogin = !!user?.data?.user;
+  const isNeedAuthPage = NEED_AUTH_PAGES.includes(request.nextUrl.pathname);
 
-  if (!user && HAVE_TO_AUTH_PATH_LIST.includes(request.nextUrl.pathname)) {
+  if (!isUserLogin && isNeedAuthPage) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);

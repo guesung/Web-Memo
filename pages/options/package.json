@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@extension/shared": "workspace:*",
-    "@extension/storage": "workspace:*",
     "@extension/ui": "workspace:*"
   },
   "devDependencies": {

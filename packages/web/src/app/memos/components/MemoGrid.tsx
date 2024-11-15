@@ -18,9 +18,11 @@ import { formatDate } from '@extension/shared/utils';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import MemoModal from './MemoModal';
 
+const MEMO_UNIT = 20;
+
 function getItems(nextGroupKey: number, count: number) {
   const nextItems = [];
-  const nextKey = nextGroupKey * 10;
+  const nextKey = nextGroupKey * MEMO_UNIT;
 
   for (let i = 0; i < count; ++i) {
     nextItems.push({ groupKey: nextGroupKey, key: nextKey + i });
@@ -42,7 +44,7 @@ export default function MemoGrid() {
     if (!category && !memo?.category?.includes('wish')) return true;
     return memo?.category?.includes(category);
   });
-  const [items, setItems] = useState(() => getItems(0, 10));
+  const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
   const [hoveredMemoId, setHoverdMemoId] = useState<null | string>(null);
 
   const handleMemoMouseEnter: MouseEventHandler<HTMLDivElement> = event => {
@@ -74,7 +76,7 @@ export default function MemoGrid() {
           if (items.length >= memoList.length) return;
 
           const nextGroupKey = (+e.groupKey! || 0) + 1;
-          const maxAddItem = items.length + 10 > memoList.length ? memoList.length - items.length : 10;
+          const maxAddItem = items.length + MEMO_UNIT > memoList.length ? memoList.length - items.length : MEMO_UNIT;
 
           if (maxAddItem === 0) return;
 

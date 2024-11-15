@@ -9,7 +9,6 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       WEB_URL: "${{ github.ref == 'refs/heads/develop' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}"
-      NODE_ENV: "${{ github.ref == 'refs/heads/develop' && 'staging' || 'production' }}"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -24,7 +23,6 @@ jobs:
         run: |
           echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/shared/.env
           echo WEB_URL=${{ env.WEB_URL }} >> packages/shared/.env
-          echo NODE_ENV=${{ env.NODE_ENV }} >> packages/shared/.env
 
       - name: build
         run: pnpm run build:extension

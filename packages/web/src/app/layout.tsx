@@ -1,13 +1,12 @@
 import localFont from 'next/font/local';
 
 import { QueryProvider, ThemeProvider } from '@src/components';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import type { Metadata } from 'next';
 import { PropsWithChildren } from 'react';
-import './globals.css';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Bounce, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import './globals.css';
 
 const pretendard = localFont({
   src: '../fonts/PretendardVariable.woff2',

@@ -3,11 +3,11 @@ import { requestRefetchTheMemoList } from '@extension/shared/utils/extension';
 import { HTMLAttributes } from 'react';
 
 import { MemoRow } from '@extension/shared/types';
-import { formatDate } from '@extension/shared/utils';
-import { Card, CardContent, CardHeader } from '@src/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '@src/components/ui/card';
 import { useMemoDeleteMutation } from '@src/hooks';
+import { cn } from '@src/utils';
 import Image from 'next/image';
-import Link from 'next/link';
+import MemoOption from './MemoOption';
 
 interface MemoItemProps extends HTMLAttributes<HTMLDivElement> {
   isHovered: boolean;
@@ -20,21 +20,19 @@ export default function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
     handleSuccess: requestRefetchTheMemoList,
   });
 
-  const handleDeleteClick = () => {
-    const answer = window.confirm('정말로 메모를 삭제하시겠습니까? 복구는 불가능합니다.');
-    if (!answer) return;
+  const handleMemoDeleteMemo = () => {
     mutateMemoDelete(memo.id);
   };
 
   return (
     <Card className="relative box-border w-[300px]" id={String(memo.id)} {...props}>
       <CardHeader>
-        <Link className="flex gap-2" href={memo.url} target="_blank">
+        <p className="flex gap-2">
           {memo?.favIconUrl ? (
             <Image
               src={memo.favIconUrl}
-              width={16}
-              height={16}
+              width={12}
+              height={12}
               alt="favicon"
               className="float-left"
               style={{ objectFit: 'contain' }}
@@ -42,23 +40,17 @@ export default function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
           ) : (
             <></>
           )}
-          <span className="line-clamp-1 font-bold">{memo.title}</span>
-        </Link>
+          <span className="line-clamp-1">{memo.title}</span>
+        </p>
       </CardHeader>
-      {memo.memo && (
-        <CardContent className="whitespace-break-spaces break-all">
-          {memo.memo}
-          <div className="text-right text-xs text-stone-500">{formatDate(memo.updated_at, 'mm/dd')}</div>
-        </CardContent>
-      )}
-
-      {isHovered ? (
-        <span className="absolute right-4 top-6 cursor-pointer" onClick={handleDeleteClick}>
-          X
-        </span>
-      ) : (
-        ''
-      )}
+      {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
+      <CardFooter
+        className={cn('flex justify-end p-0 pb-2', {
+          'invisible opacity-0': !isHovered,
+          'visible opacity-100': isHovered,
+        })}>
+        <MemoOption onDeleteMemo={handleMemoDeleteMemo} />
+      </CardFooter>
     </Card>
   );
 }

@@ -20,9 +20,9 @@ export default async function LoginSection() {
           <Image src="/images/svgs/google.svg" width={16} height={16} alt="google" />
           구글 로그인
         </button>
-        {/* <button formAction={signInWithEmail.bind(null, SUPABASE_TEST_EMAIL, SUPABASE_TEST_PASSWORD)} className="btn">
+        <button formAction={signInWithEmail.bind(null, SUPABASE_TEST_EMAIL, SUPABASE_TEST_PASSWORD)} className="btn">
           테스트 계정으로 로그인
-        </button> */}
+        </button>
       </form>
       <ExtensionVersion />
     </section>

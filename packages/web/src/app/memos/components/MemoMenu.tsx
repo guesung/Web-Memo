@@ -1,3 +1,4 @@
+import { useSearchParamsRouter } from '@extension/shared/hooks';
 import Link from 'next/link';
 
 export default function MemoMenu() {
@@ -7,7 +8,7 @@ export default function MemoMenu() {
         <Link href="/memos">메모</Link>
       </li>
       <li>
-        <Link href="/memos?category=wish">위시리스트</Link>
+        <Link href="/memos?wish=true">위시리스트</Link>
       </li>
     </ul>
   );

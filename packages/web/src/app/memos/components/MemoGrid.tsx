@@ -26,17 +26,15 @@ function getItems(nextGroupKey: number, count: number) {
 }
 
 export default function MemoGrid() {
-  const categorySearchParamsRouter = useSearchParamsRouter({ targetSearchParams: 'category' });
+  const isWishSearchParamsRouter = useSearchParamsRouter({ targetSearchParams: 'wish' });
   const idSearchParamsRouter = useSearchParamsRouter({ targetSearchParams: 'id' });
-  const category = categorySearchParamsRouter.get();
+  const isWish = isWishSearchParamsRouter.get() === 'true';
   const supabaseClient = getSupabaseClient();
   const { data: memoListData } = useMemoListQuery({
     supabaseClient,
   });
-  const memoList = memoListData?.data?.filter(memo => {
-    if (!category && !memo?.category?.includes('wish')) return true;
-    return memo?.category?.includes(category);
-  });
+
+  const memoList = memoListData?.data?.filter(memo => isWish === !!memo.isWish);
   const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
   const [hoveredMemoId, setHoverdMemoId] = useState<null | string>(null);
 

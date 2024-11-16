@@ -6,8 +6,8 @@ interface SaveMemoNotionProps {
   category: string;
 }
 
-export const saveMemoNotion = async ({ memo, category }: SaveMemoNotionProps) => {
-  const memoData = await getFormattedMemo({ memo, category });
+export const saveMemoNotion = async ({ memo }: SaveMemoNotionProps) => {
+  const memoData = await getFormattedMemo({ memo });
 
   const response = await fetch(MAKE_WEBHOOK_NOTION_API, {
     method: 'POST',

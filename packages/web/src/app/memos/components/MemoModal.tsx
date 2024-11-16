@@ -16,7 +16,7 @@ type InputType = {
 };
 
 export default function MemoModal() {
-  const idSearchParamsRouter = useSearchParamsRouter({ targetSearchParams: 'id' });
+  const idSearchParamsRouter = useSearchParamsRouter('id');
   const id = idSearchParamsRouter.get();
   const [row, setRow] = useState(4);
   const [isSaved, setIsSaved] = useState(true);
@@ -47,7 +47,7 @@ export default function MemoModal() {
   };
 
   const handleClose = () => {
-    idSearchParamsRouter.reset();
+    idSearchParamsRouter.remove();
   };
 
   useEffect(() => {

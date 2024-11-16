@@ -26,8 +26,8 @@ function getItems(nextGroupKey: number, count: number) {
 }
 
 export default function MemoGrid() {
-  const isWishSearchParamsRouter = useSearchParamsRouter({ targetSearchParams: 'wish' });
-  const idSearchParamsRouter = useSearchParamsRouter({ targetSearchParams: 'id' });
+  const isWishSearchParamsRouter = useSearchParamsRouter('wish');
+  const idSearchParamsRouter = useSearchParamsRouter('id');
   const isWish = isWishSearchParamsRouter.get() === 'true';
   const supabaseClient = getSupabaseClient();
   const { data: memoListData } = useMemoListQuery({
@@ -47,7 +47,7 @@ export default function MemoGrid() {
   };
   const handleMemoClick: MouseEventHandler<HTMLDivElement> = event => {
     const id = event.currentTarget.id;
-    idSearchParamsRouter.set(id);
+    idSearchParamsRouter.add(id);
   };
   useGuide();
 

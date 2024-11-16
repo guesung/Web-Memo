@@ -5,33 +5,39 @@ export type Database = {
     Tables: {
       memo: {
         Row: {
-          category: string[] | null;
+          category: string | null;
           created_at: string;
           favIconUrl: string | null;
           id: number;
+          isWish: boolean | null;
           memo: string;
+          tags: string[] | null;
           title: string;
           updated_at: string;
           url: string;
           user_id: string;
         };
         Insert: {
-          category?: string[] | null;
+          category?: string | null;
           created_at?: string;
           favIconUrl?: string | null;
           id?: number;
+          isWish?: boolean | null;
           memo: string;
+          tags?: string[] | null;
           title: string;
           updated_at?: string;
           url: string;
           user_id?: string;
         };
         Update: {
-          category?: string[] | null;
+          category?: string | null;
           created_at?: string;
           favIconUrl?: string | null;
           id?: number;
+          isWish?: boolean | null;
           memo?: string;
+          tags?: string[] | null;
           title?: string;
           updated_at?: string;
           url?: string;

@@ -45,9 +45,9 @@ export default function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
       </CardHeader>
       {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
       <CardFooter
-        className={cn('flex justify-end p-0 pb-2', {
-          'invisible opacity-0': !isHovered,
-          'visible opacity-100': isHovered,
+        className={cn('flex justify-end p-0 pb-2 transition', {
+          'opacity-0': !isHovered,
+          'opacity-100': isHovered,
         })}>
         <MemoOption onDeleteMemo={handleMemoDeleteMemo} />
       </CardFooter>

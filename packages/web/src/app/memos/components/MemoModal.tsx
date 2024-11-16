@@ -1,6 +1,7 @@
 'use client';
 import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
+import { Button } from '@src/components/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
 import { Textarea } from '@src/components/ui/textarea';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import Image from 'next/image';
@@ -62,7 +63,7 @@ export default function MemoModal() {
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogContent onClose={handleClose}>
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="font-normal">
               <Link className="link-hover flex gap-2" href={memoData.url} target="_blank">
                 {memoData.favIconUrl ? (
                   <Image
@@ -80,13 +81,15 @@ export default function MemoModal() {
               </Link>
             </DialogTitle>
             <div className="h-2" />
-            <Textarea rows={row} onKeyDown={handleKeyDown} {...register('memo')} />
+            <Textarea rows={row} onKeyDown={handleKeyDown} {...register('memo')} className="relative" />
           </DialogHeader>
+          <DialogFooter>
+            <Button onClick={handleClose} variant="outline" type="button">
+              닫기
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </form>
     </Dialog>
   );
-}
-function abortThrottle() {
-  throw new Error('Function not implemented.');
 }

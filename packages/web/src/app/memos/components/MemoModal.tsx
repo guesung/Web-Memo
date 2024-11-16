@@ -7,9 +7,8 @@ import { cn } from '@src/utils';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 type InputType = {
   memo: string;
@@ -48,7 +47,12 @@ export default function MemoModal() {
     }
   };
 
-  const handleClose = () => {
+  const handleCloseClick = () => {
+    idSearchParamsRouter.remove();
+  };
+
+  const handleSaveClick = () => {
+    saveMemo();
     idSearchParamsRouter.remove();
   };
 
@@ -64,7 +68,7 @@ export default function MemoModal() {
   if (!id || !memoData) return;
   return (
     <Dialog open={!!id}>
-      <DialogContent onClose={handleClose}>
+      <DialogContent onClose={handleCloseClick}>
         <DialogHeader>
           <DialogTitle className="font-normal">
             <Link className="link-hover flex gap-2" href={memoData.url} target="_blank">
@@ -96,10 +100,10 @@ export default function MemoModal() {
           />
         </DialogHeader>
         <DialogFooter>
-          <Button onClick={handleClose} variant="outline" type="button">
+          <Button onClick={handleCloseClick} variant="outline" type="button">
             닫기
           </Button>
-          <Button variant="outline" onClick={saveMemo}>
+          <Button variant="outline" onClick={handleSaveClick}>
             저장
           </Button>
         </DialogFooter>

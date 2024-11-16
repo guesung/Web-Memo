@@ -21,13 +21,16 @@ export default function MemoModal() {
   const [row, setRow] = useState(4);
   const [isSaved, setIsSaved] = useState(true);
 
-  const { register, handleSubmit, watch, setValue } = useForm<InputType>({
+  const { register, watch, setValue } = useForm<InputType>({
     defaultValues: {
       memo: '',
     },
   });
-  const onSubmit: SubmitHandler<InputType> = data => console.log(data);
-  const memo = watch('memo');
+
+  const saveMemo = () => {
+    setIsSaved(true);
+    mutateMemoPatch({ ...memoData, memo: watch('memo') });
+  };
 
   const supabaseClient = getSupabaseClient();
   const { data: memoData } = useMemoQuery({ supabaseClient, id });
@@ -41,8 +44,7 @@ export default function MemoModal() {
     if (event.metaKey && event.key === 's') {
       event.preventDefault();
 
-      setIsSaved(true);
-      mutateMemoPatch({ ...memoData, memo });
+      saveMemo();
     }
   };
 
@@ -51,9 +53,9 @@ export default function MemoModal() {
   };
 
   useEffect(() => {
-    const rowCount = memo.split(/\r\n|\r|\n/).length;
+    const rowCount = watch('memo').split(/\r\n|\r|\n/).length;
     setRow(rowCount + 2);
-  }, [memo]);
+  }, [watch('memo')]);
 
   useEffect(() => {
     setValue('memo', memoData?.memo ?? '');
@@ -62,45 +64,46 @@ export default function MemoModal() {
   if (!id || !memoData) return;
   return (
     <Dialog open={!!id}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <DialogContent onClose={handleClose}>
-          <DialogHeader>
-            <DialogTitle className="font-normal">
-              <Link className="link-hover flex gap-2" href={memoData.url} target="_blank">
-                {memoData.favIconUrl ? (
-                  <Image
-                    src={memoData.favIconUrl}
-                    width={16}
-                    height={16}
-                    alt="favicon"
-                    className="float-left"
-                    style={{ objectFit: 'contain' }}
-                  />
-                ) : (
-                  <></>
-                )}
-                {memoData?.title}
-              </Link>
-            </DialogTitle>
-            <div className="h-2" />
-            <Textarea
-              rows={row}
-              onKeyDown={handleKeyDown}
-              {...register('memo', {
-                onChange: () => setIsSaved(false),
-              })}
-              className={cn({
-                'border-cyan-900 focus:border-cyan-900': !isSaved,
-              })}
-            />
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={handleClose} variant="outline" type="button">
-              닫기
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </form>
+      <DialogContent onClose={handleClose}>
+        <DialogHeader>
+          <DialogTitle className="font-normal">
+            <Link className="link-hover flex gap-2" href={memoData.url} target="_blank">
+              {memoData.favIconUrl ? (
+                <Image
+                  src={memoData.favIconUrl}
+                  width={16}
+                  height={16}
+                  alt="favicon"
+                  className="float-left"
+                  style={{ objectFit: 'contain' }}
+                />
+              ) : (
+                <></>
+              )}
+              {memoData?.title}
+            </Link>
+          </DialogTitle>
+          <div className="h-2" />
+          <Textarea
+            rows={row}
+            onKeyDown={handleKeyDown}
+            {...register('memo', {
+              onChange: () => setIsSaved(false),
+            })}
+            className={cn({
+              'border-cyan-900 focus:border-cyan-900': !isSaved,
+            })}
+          />
+        </DialogHeader>
+        <DialogFooter>
+          <Button onClick={handleClose} variant="outline" type="button">
+            닫기
+          </Button>
+          <Button variant="outline" onClick={saveMemo}>
+            저장
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 }

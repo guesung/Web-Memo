@@ -3,6 +3,7 @@ import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { Button } from '@src/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
 import { Textarea } from '@src/components/ui/textarea';
+import { cn } from '@src/utils';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -19,6 +20,7 @@ export default function MemoModal() {
   const id = searchParams.get('id') ?? '';
   const router = useRouter();
   const [row, setRow] = useState(4);
+  const [isSaved, setIsSaved] = useState(true);
 
   const { register, handleSubmit, watch, setValue } = useForm<InputType>({
     defaultValues: {
@@ -40,6 +42,7 @@ export default function MemoModal() {
     if (event.metaKey && event.key === 's') {
       event.preventDefault();
 
+      setIsSaved(true);
       mutateMemoPatch({ ...memoData, memo });
     }
   };
@@ -81,7 +84,16 @@ export default function MemoModal() {
               </Link>
             </DialogTitle>
             <div className="h-2" />
-            <Textarea rows={row} onKeyDown={handleKeyDown} {...register('memo')} className="relative" />
+            <Textarea
+              rows={row}
+              onKeyDown={handleKeyDown}
+              {...register('memo', {
+                onChange: () => setIsSaved(false),
+              })}
+              className={cn({
+                'border-cyan-900 focus:border-cyan-900': !isSaved,
+              })}
+            />
           </DialogHeader>
           <DialogFooter>
             <Button onClick={handleClose} variant="outline" type="button">

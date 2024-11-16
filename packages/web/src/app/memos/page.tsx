@@ -2,8 +2,7 @@ import { queryKeys } from '@extension/shared/constants';
 import { getMemo } from '@extension/shared/utils';
 import { Header, HydrationBoundaryWrapper } from '@src/components';
 import { getSupabaseClient } from '@src/utils/supabase.server';
-import { MemoGrid, MemoTable, MemoMenu, MemoWish } from './components';
-import MemoModal from './components/MemoModal';
+import { MemoGrid, MemoMenu } from './components';
 
 export default async function Page() {
   const supabaseClient = getSupabaseClient();

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemoListQuery } from '@extension/shared/hooks';
+import { useMemoListQuery, useSearchParamsRouter } from '@extension/shared/hooks';
 
 import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
 import { getSupabaseClient } from '@src/utils/supabase.client';
@@ -8,7 +8,7 @@ import { getSupabaseClient } from '@src/utils/supabase.client';
 import { MouseEventHandler, useState } from 'react';
 
 import { motion } from 'framer-motion';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
 import { useGuide } from '../hooks';
 import MemoItem from './MemoItem';
 import MemoModal from './MemoModal';
@@ -26,11 +26,9 @@ function getItems(nextGroupKey: number, count: number) {
 }
 
 export default function MemoGrid() {
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
-  const category = searchParams.get('category') ?? '';
-  const id = searchParams.get('id') ?? '';
+  const categorySearchParamsRouter = useSearchParamsRouter({ targetSearchParams: 'category' });
+  const idSearchParamsRouter = useSearchParamsRouter({ targetSearchParams: 'id' });
+  const category = categorySearchParamsRouter.get();
   const supabaseClient = getSupabaseClient();
   const { data: memoListData } = useMemoListQuery({
     supabaseClient,
@@ -51,7 +49,7 @@ export default function MemoGrid() {
   };
   const handleMemoClick: MouseEventHandler<HTMLDivElement> = event => {
     const id = event.currentTarget.id;
-    router.replace(`${pathname}?id=${id}`, { scroll: false });
+    idSearchParamsRouter.set(id);
   };
   useGuide();
 

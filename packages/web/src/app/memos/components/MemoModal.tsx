@@ -1,5 +1,5 @@
 'use client';
-import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
+import { useMemoPatchMutation, useMemoQuery, useSearchParamsRouter } from '@extension/shared/hooks';
 import { Button } from '@src/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
 import { Textarea } from '@src/components/ui/textarea';
@@ -16,9 +16,8 @@ type InputType = {
 };
 
 export default function MemoModal() {
-  const searchParams = useSearchParams();
-  const id = searchParams.get('id') ?? '';
-  const router = useRouter();
+  const idSearchParamsRouter = useSearchParamsRouter({ targetSearchParams: 'id' });
+  const id = idSearchParamsRouter.get();
   const [row, setRow] = useState(4);
   const [isSaved, setIsSaved] = useState(true);
 
@@ -48,7 +47,7 @@ export default function MemoModal() {
   };
 
   const handleClose = () => {
-    router.replace('/memos', { scroll: false });
+    idSearchParamsRouter.reset();
   };
 
   useEffect(() => {

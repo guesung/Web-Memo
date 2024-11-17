@@ -7,6 +7,7 @@ import { PropsWithChildren } from 'react';
 import { Bounce, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './globals.css';
+import { Toaster } from '@src/components/ui/toaster';
 
 const pretendard = localFont({
   src: '../fonts/PretendardVariable.woff2',
@@ -33,15 +34,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           </QueryProvider>
         </ThemeProvider>
 
-        <ToastContainer
-          position="bottom-right"
-          autoClose={2000}
-          closeOnClick
-          draggable
-          pauseOnHover
-          theme="light"
-          transition={Bounce}
-        />
+        <Toaster />
       </body>
     </html>
   );

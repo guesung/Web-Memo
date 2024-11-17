@@ -1,4 +1,4 @@
-export { default as Header } from './Header';
+export { default as Header } from '../app/memos/components/Header';
 export { default as Footer } from './Footer';
 export { default as YoutubeEmbed } from './YoutubeEmbed';
 export { default as QueryProvider } from './QueryProvider';

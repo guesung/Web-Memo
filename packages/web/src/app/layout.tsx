@@ -1,11 +1,10 @@
 import localFont from 'next/font/local';
 
 import { QueryProvider, ThemeProvider } from '@src/components';
+import { Toaster } from '@src/components/ui/toaster';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import type { Metadata } from 'next';
 import { PropsWithChildren } from 'react';
-import { Bounce, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import './globals.css';
 
 const pretendard = localFont({
@@ -24,23 +23,16 @@ interface RootLayoutProps extends PropsWithChildren {}
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="ko" className="h-screen">
+    <html lang="ko" className="bg-background h-screen">
       <body className={`${pretendard.variable} font-pretendard h-full`}>
-        <ThemeProvider attribute="class" defaultTheme="light">
+        <ThemeProvider attribute="class" defaultTheme="system">
           <QueryProvider>
             {children}
             <ReactQueryDevtools initialIsOpen={false} />
           </QueryProvider>
         </ThemeProvider>
-        <ToastContainer
-          position="bottom-right"
-          autoClose={2000}
-          closeOnClick
-          draggable
-          pauseOnHover
-          theme="light"
-          transition={Bounce}
-        />
+
+        <Toaster />
       </body>
     </html>
   );

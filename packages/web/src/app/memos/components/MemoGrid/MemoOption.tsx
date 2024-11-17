@@ -33,7 +33,7 @@ export default function MemoOption({ id }: MemoOptionProps) {
   const { toast } = useToast();
   const { data: categoryData } = useCategoryQuery({ supabaseClient });
   const categories = categoryData?.data;
-  const { data: memoData } = useMemoQuery({ supabaseClient, id });
+  const { data: memoData, refetch: refetchMemo } = useMemoQuery({ supabaseClient, id });
   const { mutate: mutatePatchMemo } = useMemoPatchMutation({
     supabaseClient,
   });
@@ -48,8 +48,19 @@ export default function MemoOption({ id }: MemoOptionProps) {
   };
 
   const handleCategoryChange = (categoryId: string) => {
-    mutatePatchMemo({ id, category_id: categoryId });
-    toast({ title: '메모가 수정되었습니다.' });
+    mutatePatchMemo(
+      { id, category_id: Number(categoryId) },
+      {
+        onSuccess: () => {
+          toast({ title: '메모가 수정되었습니다.' });
+          refetchMemo();
+        },
+      },
+    );
+  };
+
+  const onCategoryAdd = () => {
+    toast({ title: '카테고리 추가 기능은 준비 중입니다.' });
   };
 
   return (
@@ -79,6 +90,7 @@ export default function MemoOption({ id }: MemoOptionProps) {
                         {category.name}
                       </SelectItem>
                     ))}
+                  <SelectLabel onClick={onCategoryAdd}>카테고리 추가</SelectLabel>
                 </SelectGroup>
               </SelectContent>
             </Select>

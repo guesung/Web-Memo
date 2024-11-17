@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 
 import { useGuide } from '../../hooks';
 import MemoItem from './MemoItem';
-import MemoModal from './MemoModal';
+import MemoModal from '../MemoDialog';
 
 const MEMO_UNIT = 20;
 
@@ -26,9 +26,8 @@ function getItems(nextGroupKey: number, count: number) {
 }
 
 export default function MemoGrid() {
-  const isWishSearchParamsRouter = useSearchParamsRouter('wish');
-  const idSearchParamsRouter = useSearchParamsRouter('id');
-  const isWish = isWishSearchParamsRouter.get() === 'true';
+  const isWish = useSearchParamsRouter('wish').get() === 'true';
+  const { set: setIdSearchParamsRouter } = useSearchParamsRouter('id');
   const supabaseClient = getSupabaseClient();
   const { data: memoListData } = useMemoListQuery({
     supabaseClient,
@@ -47,7 +46,7 @@ export default function MemoGrid() {
   };
   const handleMemoClick: MouseEventHandler<HTMLDivElement> = event => {
     const id = event.currentTarget.id;
-    idSearchParamsRouter.set(id);
+    setIdSearchParamsRouter(id);
   };
   useGuide();
 
@@ -57,7 +56,6 @@ export default function MemoGrid() {
     );
   return (
     <>
-      <MemoModal />
       <MasonryInfiniteGrid
         className="container"
         gap={16}

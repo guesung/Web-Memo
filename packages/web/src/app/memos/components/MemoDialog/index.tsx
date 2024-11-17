@@ -16,7 +16,7 @@ type InputType = {
   memo: string;
 };
 
-export default function MemoModal() {
+export default function MemoDialog() {
   const idSearchParamsRouter = useSearchParamsRouter('id');
   const id = idSearchParamsRouter.get();
   const [row, setRow] = useState(MIN_ROW);
@@ -34,7 +34,7 @@ export default function MemoModal() {
   };
 
   const supabaseClient = getSupabaseClient();
-  const { data: memoData } = useMemoQuery({ supabaseClient, id });
+  const { data: memoData } = useMemoQuery({ supabaseClient, id: Number(id) });
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
   });

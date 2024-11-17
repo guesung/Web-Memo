@@ -22,6 +22,7 @@ import { getSupabaseClient } from '@src/utils/supabase.client';
 import { useCategoryQuery, useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { useMemoDeleteMutation } from '@src/hooks';
 import { requestRefetchTheMemoList } from '@extension/shared/utils/extension';
+import { useToast } from '@src/hooks/use-toast';
 
 interface MemoOptionProps {
   id: number;
@@ -29,6 +30,7 @@ interface MemoOptionProps {
 
 export default function MemoOption({ id }: MemoOptionProps) {
   const supabaseClient = getSupabaseClient();
+  const { toast } = useToast();
   const { data: categoryData } = useCategoryQuery({ supabaseClient });
   const categories = categoryData?.data;
   const { data: memoData } = useMemoQuery({ supabaseClient, id });
@@ -42,10 +44,12 @@ export default function MemoOption({ id }: MemoOptionProps) {
 
   const onDeleteMemo = () => {
     mutateDeleteMemo(id);
+    toast({ title: '메모가 삭제되었습니다.' });
   };
 
   const handleCategoryChange = (categoryId: string) => {
     mutatePatchMemo({ id, category_id: categoryId });
+    toast({ title: '메모가 수정되었습니다.' });
   };
 
   return (
@@ -58,7 +62,7 @@ export default function MemoOption({ id }: MemoOptionProps) {
       <DropdownMenuContent>
         <DropdownMenuGroup>
           <DropdownMenuItem className="cursor-pointer" onClick={onDeleteMemo}>
-            삭제
+            메모 삭제
           </DropdownMenuItem>
           <DropdownMenuItem className="cursor-pointer">
             <Select

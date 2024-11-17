@@ -1,20 +1,15 @@
 import { Heart, Home } from 'lucide-react';
 
-import Header from '../Header';
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-} from './sidebar';
-import { RefreshButton } from '@src/app/memos/components';
+} from '@src/components/ui/sidebar';
+import Header from '../Header';
 
 const items = [
   {
@@ -29,7 +24,7 @@ const items = [
   },
 ];
 
-export function AppSidebar() {
+export default function MemoSidebar() {
   return (
     <Sidebar>
       <Header.Margin />

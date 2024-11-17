@@ -1,6 +1,6 @@
 'use server';
 import { getUser } from '@extension/shared/utils';
-import { RefreshButton } from '@src/app/memos/components';
+import { ToggleTheme } from '@src/components';
 import { Avatar, AvatarFallback, AvatarImage } from '@src/components/ui/avatar';
 import {
   DropdownMenu,
@@ -11,8 +11,7 @@ import {
 import { getSupabaseClient, signout } from '@src/utils/supabase.server';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Button } from './ui/button';
-import ToggleTheme from './ToggleTheme';
+import RefreshButton from './RefreshButton';
 
 export default async function Header() {
   return (

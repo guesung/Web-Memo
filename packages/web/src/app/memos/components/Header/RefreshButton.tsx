@@ -6,12 +6,10 @@ import { Button } from '@src/components/ui/button';
 import { useToast } from '@src/hooks/use-toast';
 import { HTMLMotionProps } from 'framer-motion';
 import { RefreshCwIcon } from 'lucide-react';
-import { IS_USER_SEEN_GUIDE } from '../constants';
-import { driverObj } from '../utils';
+import { IS_USER_SEEN_GUIDE } from '../../constants';
+import { driverObj } from '../../utils';
 
-interface RefreshButtonProps extends HTMLMotionProps<'button'> {}
-
-export default function RefreshButton({ ...props }: RefreshButtonProps) {
+export default function RefreshButton() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 

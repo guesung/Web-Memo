@@ -9,7 +9,7 @@ import { MouseEventHandler, useState } from 'react';
 
 import { motion } from 'framer-motion';
 
-import { useGuide } from '../hooks';
+import { useGuide } from '../../hooks';
 import MemoItem from './MemoItem';
 import MemoModal from './MemoModal';
 

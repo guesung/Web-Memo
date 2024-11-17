@@ -1,8 +1,7 @@
-import { signInWithEmail, signInWithOAuth } from '@src/utils/supabase.server';
+import { Button } from '@src/components/ui/button';
+import { signInWithOAuth } from '@src/utils/supabase.server';
 import Image from 'next/image';
 import ExtensionVersion from './ExtensionVersion';
-import { SUPABASE_TEST_EMAIL, SUPABASE_TEST_PASSWORD } from '@extension/shared/constants';
-import { Button } from '@src/components/ui/button';
 
 export default async function LoginSection() {
   return (

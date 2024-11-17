@@ -10,7 +10,19 @@ export default function useSearchParamsRouter(targetKey: string) {
   };
 
   const set = (value: string) => {
-    router.replace(`${pathname}?${targetKey}=${value}`, { scroll: false });
+    const currentSearchParams = [...searchParams.entries()]
+      .filter(([key]) => targetKey !== key)
+      .concat([[targetKey, value]])
+      .reduce((prev, [key, value], index) => {
+        if (index === 0) prev += '?';
+        else prev += '&';
+
+        return (prev += `${key}=${value}`);
+      }, '');
+
+    console.log([...searchParams.entries()].filter(([key]) => targetKey !== key).concat([targetKey, value]));
+
+    router.replace(`${pathname}${currentSearchParams}`, { scroll: false });
   };
 
   const add = (value: string) => {

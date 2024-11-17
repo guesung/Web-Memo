@@ -47,7 +47,7 @@ export default function MemoGrid() {
   };
   const handleMemoClick: MouseEventHandler<HTMLDivElement> = event => {
     const id = event.currentTarget.id;
-    idSearchParamsRouter.add(id);
+    idSearchParamsRouter.set(id);
   };
   useGuide();
 

@@ -1,5 +1,6 @@
-import { Calendar, Home, Inbox, Search, Settings } from 'lucide-react';
+import { Heart, Home } from 'lucide-react';
 
+import Header from '../Header';
 import {
   Sidebar,
   SidebarContent,
@@ -9,8 +10,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from './sidebar';
-import Header from '../Header';
+import { RefreshButton } from '@src/app/memos/components';
 
 const items = [
   {
@@ -21,7 +25,7 @@ const items = [
   {
     title: '위시리스트',
     url: '?wish=true',
-    icon: Inbox,
+    icon: Heart,
   },
 ];
 
@@ -31,7 +35,6 @@ export function AppSidebar() {
       <Header.Margin />
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>메모</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map(item => (

@@ -1,15 +1,12 @@
 import localFont from 'next/font/local';
 
-import { QueryProvider, ThemeProvider } from '@src/components';
+import { Header, QueryProvider, ThemeProvider } from '@src/components';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import type { Metadata } from 'next';
 import { PropsWithChildren } from 'react';
 import { Bounce, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './globals.css';
-import { SidebarProvider, SidebarTrigger } from '@src/components/ui/sidebar';
-import { AppSidebar } from '@src/components/ui/app-sidebar';
-import { cookies } from 'next/headers';
 
 const pretendard = localFont({
   src: '../fonts/PretendardVariable.woff2',
@@ -26,9 +23,6 @@ export const metadata: Metadata = {
 interface RootLayoutProps extends PropsWithChildren {}
 
 export default function RootLayout({ children }: RootLayoutProps) {
-  const cookieStore = cookies();
-  const defaultOpen = cookieStore.get('sidebar:state')?.value === 'true';
-
   return (
     <html lang="ko" className="h-screen">
       <body className={`${pretendard.variable} font-pretendard h-full`}>

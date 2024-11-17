@@ -2,11 +2,11 @@ import { MemoTableInsert } from '@src/types';
 import { Tab } from '.';
 import { formatUrl } from '../Url';
 
-export interface GetFormattedMemoProps extends Pick<MemoTableInsert, 'memo'>, Pick<MemoTableInsert, 'category'> {}
+export interface GetFormattedMemoProps extends Pick<MemoTableInsert, 'memo'>, Pick<MemoTableInsert, 'isWish'> {}
 
 export const getFormattedMemo = async ({
   memo = '',
-  category = [''],
+  isWish = false,
 }: GetFormattedMemoProps): Promise<MemoTableInsert> => {
   const tab = await Tab.get();
 
@@ -17,6 +17,6 @@ export const getFormattedMemo = async ({
     favIconUrl: tab?.favIconUrl,
     url: formatUrl(tab.url),
     memo,
-    category,
+    isWish,
   };
 };

@@ -1,13 +1,21 @@
 'use server';
 import { getUser } from '@extension/shared/utils';
 import { RefreshButton } from '@src/app/memos/components';
+import { Avatar, AvatarFallback, AvatarImage } from '@src/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@src/components/ui/dropdown-menu';
 import { getSupabaseClient, signout } from '@src/utils/supabase.server';
 import Image from 'next/image';
 import Link from 'next/link';
+import ToggleTheme from './ToggleTheme';
 
 export default async function Header() {
   return (
-    <header className="navbar bg-base-100 fixed inset-x-0 z-50 w-full flex-1 shadow-sm">
+    <header className="navbar bg-background fixed inset-x-0 z-50 w-full flex-1 shadow-sm">
       <div className="navbar-start">
         <HeaderLeft />
       </div>
@@ -21,7 +29,7 @@ export default async function Header() {
 function HeaderLeft() {
   return (
     <Link href="/memos" className="btn btn-ghost">
-      <Image src="/images/pngs/icon.png" width={28} height={28} alt="icon" />
+      <Image src="/images/pngs/icon.png" width={24} height={24} alt="logo" />
       <span className="text-xl">웹 메모</span>
     </Link>
   );
@@ -34,25 +42,28 @@ async function HeaderRight() {
   const isUserLogin = !!user?.data?.user;
   const userAvatarUrl =
     user?.data?.user?.identities?.[0]?.identity_data?.avatar_url ?? '/images/pngs/default_image_user.png';
+  const userName = user?.data?.user?.identities?.[0]?.identity_data?.name;
 
   if (isUserLogin)
     return (
       <div className="flex gap-2">
+        {/* <ToggleTheme /> */}
         <RefreshButton />
-        <div className="btn btn-circle btn-sm">
-          <div className="avatar dropdown dropdown-bottom dropdown-end">
-            <div className="avatar w-8 rounded-full" tabIndex={0} role="button">
-              <Image src={userAvatarUrl} alt="avatar" width={16} height={16} />
-            </div>
-            <form>
-              <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-40 p-2 shadow">
-                <li>
-                  <button formAction={signout}>로그아웃</button>
-                </li>
-              </ul>
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <Avatar>
+              <AvatarImage src={userAvatarUrl} alt="@shadcn" />
+              <AvatarFallback>{userName}</AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <form action={signout}>
+              <DropdownMenuLabel>
+                <button>로그아웃</button>
+              </DropdownMenuLabel>
             </form>
-          </div>
-        </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     );
   return (

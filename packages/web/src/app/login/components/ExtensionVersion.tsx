@@ -22,7 +22,6 @@ export default function ExtensionVersion() {
     }
   });
 
-  if (version)
-    return <p className="w-full text-sm absolute right-2 bottom-2 text-gray-600 text-end">설치된 버전 : {version}</p>;
+  if (version) return <p className="absolute bottom-2 right-2 w-full text-end text-sm">설치된 버전 : {version}</p>;
   return;
 }

@@ -40,7 +40,7 @@
     --sidebar-background: 0 0% 98%;
   }
   .dark {
-    --background: 240 10% 3.9%;
+    --background: 225, 16%, 4.5%;
     --foreground: 0 0% 98%;
     --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
@@ -79,7 +79,7 @@
   * {
     @apply border-border;
   }
-  body {
+  html {
     @apply bg-background text-foreground;
   }
 }

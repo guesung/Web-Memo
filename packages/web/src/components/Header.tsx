@@ -11,7 +11,6 @@ import {
 import { getSupabaseClient, signout } from '@src/utils/supabase.server';
 import Image from 'next/image';
 import Link from 'next/link';
-import ToggleTheme from './ToggleTheme';
 
 export default async function Header() {
   return (
@@ -29,8 +28,8 @@ export default async function Header() {
 function HeaderLeft() {
   return (
     <Link href="/memos" className="btn btn-ghost">
-      <Image src="/images/pngs/icon.png" width={24} height={24} alt="logo" />
-      <span className="text-xl">웹 메모</span>
+      <Image src="/images/pngs/icon.png" width={16} height={16} alt="logo" />
+      <span className="text-md">웹 메모</span>
     </Link>
   );
 }

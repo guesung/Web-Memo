@@ -4,3 +4,4 @@ export { default as RefreshButton } from './RefreshButton';
 export { default as MemoDeleteModal } from './MemoDeleteModal';
 export { default as MemoMenu } from './MemoMenu';
 export { default as MemoWish } from './MemoWish';
+export { default as MemoWrapper } from './MemoWrapper';

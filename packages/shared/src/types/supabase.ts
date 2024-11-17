@@ -3,10 +3,30 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   memo: {
     Tables: {
+      category: {
+        Row: {
+          created_at: string;
+          id: number;
+          name: string | null;
+          user_id: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: number;
+          name?: string | null;
+          user_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: number;
+          name?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       memo: {
         Row: {
-          category: string | null;
-          created_at: string;
+          category_id: number | null;
           favIconUrl: string | null;
           id: number;
           isWish: boolean | null;
@@ -18,8 +38,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
-          category?: string | null;
-          created_at?: string;
+          category_id?: number | null;
           favIconUrl?: string | null;
           id?: number;
           isWish?: boolean | null;
@@ -31,8 +50,7 @@ export type Database = {
           user_id?: string;
         };
         Update: {
-          category?: string | null;
-          created_at?: string;
+          category_id?: number | null;
           favIconUrl?: string | null;
           id?: number;
           isWish?: boolean | null;
@@ -43,7 +61,15 @@ export type Database = {
           url?: string;
           user_id?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'memo_category_id_fkey';
+            columns: ['category_id'];
+            isOneToOne: false;
+            referencedRelation: 'category';
+            referencedColumns: ['id'];
+          },
+        ];
       };
     };
     Views: {

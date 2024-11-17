@@ -10,6 +10,8 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+const MIN_ROW = 4;
+
 type InputType = {
   memo: string;
 };
@@ -17,7 +19,7 @@ type InputType = {
 export default function MemoModal() {
   const idSearchParamsRouter = useSearchParamsRouter('id');
   const id = idSearchParamsRouter.get();
-  const [row, setRow] = useState(4);
+  const [row, setRow] = useState(MIN_ROW);
   const [isSaved, setIsSaved] = useState(true);
 
   const { register, watch, setValue } = useForm<InputType>({

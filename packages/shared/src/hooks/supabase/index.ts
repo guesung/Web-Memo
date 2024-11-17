@@ -4,3 +4,4 @@ export { default as useMemoListQuery } from './useMemoListQuery';
 export { default as useSupabaseClient } from './useSupabaseClient';
 export { default as useSupabaseUser } from './useSupabaseUser';
 export { default as useMemoQuery } from './useMemoQuery';
+export { default as useCategoryQuery } from './useCategoryQuery';

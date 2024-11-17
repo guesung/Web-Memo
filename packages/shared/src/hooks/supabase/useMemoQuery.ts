@@ -6,18 +6,18 @@ import { useQuery } from '@tanstack/react-query';
 interface UseMemoQueryProps {
   supabaseClient: MemoSupabaseClient;
   url?: string;
-  id?: string;
+  id?: number;
 }
 
 interface FindMemoProps {
   memoList: MemoSupabaseResponse['data'];
   url?: string;
-  id?: string;
+  id?: number;
 }
 
 const findMemo = ({ memoList, url, id }: FindMemoProps) => {
   if (url) return memoList?.find(memo => memo.url === formatUrl(url));
-  if (id) return memoList?.find(memo => String(memo.id) === id);
+  if (id) return memoList?.find(memo => memo.id === id);
   return null;
 };
 

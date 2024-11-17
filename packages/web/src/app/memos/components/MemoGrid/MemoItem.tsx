@@ -8,6 +8,8 @@ import { useMemoDeleteMutation } from '@src/hooks';
 import { cn } from '@src/utils';
 import Image from 'next/image';
 import MemoOption from './MemoOption';
+import { getSupabaseClient } from '@src/utils/supabase.client';
+import { useCategoryQuery } from '@extension/shared/hooks';
 
 interface MemoItemProps extends HTMLAttributes<HTMLDivElement> {
   isHovered: boolean;
@@ -16,13 +18,6 @@ interface MemoItemProps extends HTMLAttributes<HTMLDivElement> {
 
 export default function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
   if (!memo) return null;
-  const { mutate: mutateMemoDelete } = useMemoDeleteMutation({
-    handleSuccess: requestRefetchTheMemoList,
-  });
-
-  const handleMemoDeleteMemo = () => {
-    mutateMemoDelete(memo.id);
-  };
 
   return (
     <Card className="relative box-border w-[300px]" id={String(memo.id)} {...props}>
@@ -49,7 +44,7 @@ export default function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
           'opacity-0': !isHovered,
           'opacity-100': isHovered,
         })}>
-        <MemoOption onDeleteMemo={handleMemoDeleteMemo} />
+        <MemoOption id={memo.id} />
       </CardFooter>
     </Card>
   );

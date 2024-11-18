@@ -1,4 +1,4 @@
-import { queryKeys, NoMemoError, NoMemoListError } from '@src/constants';
+import { queryKeys, NoMemoError, NoMemosError } from '@src/constants';
 import { MemoSupabaseClient, MemoSupabaseResponse } from '@src/types';
 import { updateMemo, UpdateMemoProps } from '@src/utils';
 import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query';
@@ -18,25 +18,25 @@ export default function useMemoPatchMutation({
     ...useMutationProps,
     mutationFn: async (updateMemoProps: UpdateMemoProps) => await updateMemo(supabaseClient, updateMemoProps),
     onMutate: async currentMemo => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.memoList() });
-      const previousMemoList = queryClient.getQueryData<MemoSupabaseResponse>(queryKeys.memoList());
+      await queryClient.cancelQueries({ queryKey: queryKeys.memos() });
+      const previousMemos = queryClient.getQueryData<MemoSupabaseResponse>(queryKeys.memos());
 
-      if (!previousMemoList) throw new NoMemoListError();
+      if (!previousMemos) throw new NoMemosError();
 
-      const { data: previousMemoListData } = previousMemoList;
+      const { data: previousMemosData } = previousMemos;
 
-      if (!previousMemoListData) throw new NoMemoListError();
+      if (!previousMemosData) throw new NoMemosError();
 
-      const currentMemoIndex = previousMemoListData.findIndex(memo => memo.id === currentMemo.id);
-      const currentMemoBase = previousMemoListData.find(memo => memo.id === currentMemo.id);
+      const currentMemoIndex = previousMemosData.findIndex(memo => memo.id === currentMemo.id);
+      const currentMemoBase = previousMemosData.find(memo => memo.id === currentMemo.id);
 
       if (currentMemoIndex === -1 || !currentMemoBase) throw new NoMemoError();
 
-      previousMemoListData.splice(currentMemoIndex, 1, { ...currentMemoBase, ...currentMemo });
+      previousMemosData.splice(currentMemoIndex, 1, { ...currentMemoBase, ...currentMemo });
 
-      await queryClient.setQueryData(queryKeys.memoList(), { ...previousMemoList, data: previousMemoListData });
+      await queryClient.setQueryData(queryKeys.memos(), { ...previousMemos, data: previousMemosData });
 
-      return { previousMemoList };
+      return { previousMemos };
     },
     onSuccess: async () => {
       handleSuccess?.();

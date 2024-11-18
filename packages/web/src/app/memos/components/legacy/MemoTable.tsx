@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemoListQuery } from '@extension/shared/hooks';
+import { useMemosQuery } from '@extension/shared/hooks';
 import { formatDate } from '@extension/shared/utils';
 import { useMemoDeleteMutation } from '@src/hooks';
 import { getSupabaseClient } from '@src/utils/supabase.client';
@@ -8,7 +8,7 @@ import { getSupabaseClient } from '@src/utils/supabase.client';
 export default function MemoTable() {
   const { mutate: deleteMemoMutate } = useMemoDeleteMutation({});
   const supabaseClient = getSupabaseClient();
-  const { memos } = useMemoListQuery({
+  const { memos } = useMemosQuery({
     supabaseClient,
   });
   const handleDeleteClick = async (id: number) => {

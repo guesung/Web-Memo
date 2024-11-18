@@ -21,7 +21,7 @@ import { CategoryRow } from '@extension/shared/types';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import { useCategoryQuery, useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { useMemoDeleteMutation } from '@src/hooks';
-import { requestRefetchTheMemoList } from '@extension/shared/utils/extension';
+import { requestRefetchTheMemos } from '@extension/shared/utils/extension';
 import { useToast } from '@src/hooks/use-toast';
 import { MouseEventHandler } from 'react';
 import { EllipsisVerticalIcon } from 'lucide-react';
@@ -40,7 +40,7 @@ export default function MemoOption({ id }: MemoOptionProps) {
   });
 
   const { mutate: mutateDeleteMemo } = useMemoDeleteMutation({
-    handleSuccess: requestRefetchTheMemoList,
+    handleSuccess: requestRefetchTheMemos,
   });
 
   const handleDeleteMemo: MouseEventHandler<HTMLDivElement> = event => {

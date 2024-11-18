@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemoListQuery, useSearchParamsRouter } from '@extension/shared/hooks';
+import { useMemosQuery, useSearchParamsRouter } from '@extension/shared/hooks';
 
 import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
 import { getSupabaseClient } from '@src/utils/supabase.client';
@@ -26,7 +26,7 @@ export default function MemoGrid() {
   const category = useSearchParamsRouter('category').get();
   const { set: setIdSearchParamsRouter } = useSearchParamsRouter('id');
   const supabaseClient = getSupabaseClient();
-  const { memos } = useMemoListQuery({
+  const { memos } = useMemosQuery({
     supabaseClient,
   });
 

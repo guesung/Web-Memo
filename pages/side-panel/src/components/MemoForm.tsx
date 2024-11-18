@@ -15,7 +15,7 @@ import {
   getFormattedMemo,
   GetFormattedMemoProps,
   getSupabaseClient,
-  responseRefetchTheMemoList,
+  responseRefetchTheMemos,
 } from '@extension/shared/utils/extension';
 import { cn, Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
@@ -73,7 +73,7 @@ function MemoForm() {
   };
 
   useDidMount(() => {
-    responseRefetchTheMemoList(refetchMemo);
+    responseRefetchTheMemos(refetchMemo);
   });
 
   useEffect(() => {

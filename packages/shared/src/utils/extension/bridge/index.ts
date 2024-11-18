@@ -4,7 +4,7 @@ export * from './type';
 export * from './getSummary';
 export * from './updateSidePanel';
 export * from './observeMemoPage';
-export * from './refetchTheMemoList';
+export * from './refetchTheMemos';
 export * from './getExtensionManifest';
 export * from './getSidePanelOpen';
 export * from './getTabs';

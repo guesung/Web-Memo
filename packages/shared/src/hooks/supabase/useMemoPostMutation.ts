@@ -1,4 +1,4 @@
-import { NoMemoListError, queryKeys } from '@src/constants';
+import { NoMemosError, queryKeys } from '@src/constants';
 import type { MemoSupabaseClient, MemoSupabaseResponse, MemoTableInsert } from '@src/types';
 import { insertMemo } from '@src/utils';
 import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query';
@@ -20,23 +20,23 @@ export default function useMemoPostMutation({
     ...useMutationProps,
     mutationFn: async (postMemoProps: PostMemoProps) => await insertMemo(supabaseClient, postMemoProps),
     onSuccess: async ({ data: newData }) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.memoList() });
+      await queryClient.cancelQueries({ queryKey: queryKeys.memos() });
 
-      const previousMemoList = queryClient.getQueryData<MemoSupabaseResponse>(queryKeys.memoList());
+      const previousMemos = queryClient.getQueryData<MemoSupabaseResponse>(queryKeys.memos());
 
-      if (!previousMemoList || !newData) throw new NoMemoListError();
+      if (!previousMemos || !newData) throw new NoMemosError();
 
-      const { data: previousMemoListData } = previousMemoList;
+      const { data: previousMemosData } = previousMemos;
 
-      if (!previousMemoListData) throw new NoMemoListError();
+      if (!previousMemosData) throw new NoMemosError();
 
-      const newMemoListData = previousMemoListData.concat(newData);
+      const newMemosData = previousMemosData.concat(newData);
 
-      await queryClient.setQueryData(queryKeys.memoList(), { ...previousMemoList, data: newMemoListData });
+      await queryClient.setQueryData(queryKeys.memos(), { ...previousMemos, data: newMemosData });
 
       handleSuccess();
 
-      return { previousMemoList };
+      return { previousMemos };
     },
   });
 }

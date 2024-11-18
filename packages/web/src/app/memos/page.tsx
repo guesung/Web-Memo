@@ -18,7 +18,7 @@ export default async function Page() {
           <HydrationBoundaryWrapper queryKey={queryKeys.category()} queryFn={() => getCategory(supabaseClient)}>
             <MemoSidebar />
           </HydrationBoundaryWrapper>
-          <HydrationBoundaryWrapper queryKey={queryKeys.memoList()} queryFn={() => getMemo(supabaseClient)}>
+          <HydrationBoundaryWrapper queryKey={queryKeys.memos()} queryFn={() => getMemo(supabaseClient)}>
             <MemoSidebarTrigger />
 
             <MemoGrid />

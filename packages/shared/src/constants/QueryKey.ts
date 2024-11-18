@@ -1,6 +1,6 @@
 export const queryKeys = {
   tab: () => ['tab'],
-  memoList: () => ['memoList'],
+  memos: () => ['memos'],
   option: () => ['option'],
   supabaseClient: () => ['supabaseClient'],
   user: () => ['user'],

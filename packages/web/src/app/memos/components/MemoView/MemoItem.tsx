@@ -30,7 +30,9 @@ export default function MemoItem({ memo, ...props }: MemoItemProps) {
     mutateMemoPatch(
       {
         id: memo.id,
-        isWish: !memo.isWish,
+        memoRequest: {
+          isWish: !memo.isWish,
+        },
       },
       {
         onSuccess: () => {

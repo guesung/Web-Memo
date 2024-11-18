@@ -1,9 +1,14 @@
-import { queryKeys, NoMemoError, NoMemosError } from '@src/constants';
-import { MemoSupabaseClient, MemoSupabaseResponse } from '@src/types';
-import { updateMemo, UpdateMemoProps } from '@src/utils';
+import { NoMemoError, NoMemosError, queryKeys } from '@src/constants';
+import { MemoRow, MemoSupabaseClient, MemoSupabaseResponse, MemoTable } from '@src/types';
+import { updateMemo } from '@src/utils';
 import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query';
 
-interface UseMemoPostMutationProps extends UseMutationOptions<MemoSupabaseResponse, Error, UpdateMemoProps> {
+interface Variables {
+  id: MemoRow['id'];
+  memoRequest: MemoTable['Update'];
+}
+
+interface UseMemoPostMutationProps extends UseMutationOptions<MemoSupabaseResponse, Error, Variables> {
   supabaseClient: MemoSupabaseClient;
   handleSuccess?: () => void;
 }
@@ -14,10 +19,10 @@ export default function useMemoPatchMutation({
   ...useMutationProps
 }: UseMemoPostMutationProps) {
   const queryClient = useQueryClient();
-  return useMutation<MemoSupabaseResponse, Error, UpdateMemoProps>({
+  return useMutation<MemoSupabaseResponse, Error, Variables>({
     ...useMutationProps,
-    mutationFn: async (updateMemoProps: UpdateMemoProps) => await updateMemo(supabaseClient, updateMemoProps),
-    onMutate: async currentMemo => {
+    mutationFn: async ({ id, memoRequest }) => await updateMemo(supabaseClient, id, memoRequest),
+    onMutate: async ({ id, memoRequest }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.memos() });
       const previousMemos = queryClient.getQueryData<MemoSupabaseResponse>(queryKeys.memos());
 
@@ -27,12 +32,12 @@ export default function useMemoPatchMutation({
 
       if (!previousMemosData) throw new NoMemosError();
 
-      const currentMemoIndex = previousMemosData.findIndex(memo => memo.id === currentMemo.id);
-      const currentMemoBase = previousMemosData.find(memo => memo.id === currentMemo.id);
+      const currentMemoIndex = previousMemosData.findIndex(memo => memo.id === id);
+      const currentMemoBase = previousMemosData.find(memo => memo.id === id);
 
       if (currentMemoIndex === -1 || !currentMemoBase) throw new NoMemoError();
 
-      previousMemosData.splice(currentMemoIndex, 1, { ...currentMemoBase, ...currentMemo });
+      previousMemosData.splice(currentMemoIndex, 1, { ...currentMemoBase, ...memoRequest });
 
       await queryClient.setQueryData(queryKeys.memos(), { ...previousMemos, data: previousMemosData });
 

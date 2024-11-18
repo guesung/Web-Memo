@@ -1,6 +1,6 @@
 'use client';
 
-import { useCategoryQuery, useSearchParamsRouter, useCategoryPostMutation } from '@extension/shared/hooks';
+import { useCategoryQuery, useSearchParamsRouter } from '@extension/shared/hooks';
 import {
   SidebarGroup,
   SidebarGroupContent,

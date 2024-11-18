@@ -21,7 +21,6 @@ export default function MemoDialog() {
   const idSearchParamsRouter = useSearchParamsRouter('id');
   const id = idSearchParamsRouter.get();
   const [row, setRow] = useState(MIN_ROW);
-  const [isSaved, setIsSaved] = useState(true);
 
   const { register, watch, setValue } = useForm<InputType>({
     defaultValues: {
@@ -37,9 +36,8 @@ export default function MemoDialog() {
   });
 
   const saveMemo = () => {
-    setIsSaved(true);
     mutateMemoPatch(
-      { ...memoData, memo: watch('memo') },
+      { id: Number(id), memoRequest: { memo: watch('memo') } },
       {
         onSuccess: () => toast({ title: '메모가 수정되었습니다.' }),
       },
@@ -106,16 +104,7 @@ export default function MemoDialog() {
             </Link>
           </DialogTitle>
           <div className="h-2" />
-          <Textarea
-            rows={row}
-            onKeyDown={handleKeyDown}
-            {...register('memo', {
-              onChange: () => setIsSaved(false),
-            })}
-            className={cn({
-              'border-cyan-900 focus:border-cyan-900': !isSaved,
-            })}
-          />
+          <Textarea rows={row} onKeyDown={handleKeyDown} {...register('memo')} />
         </DialogHeader>
         <DialogFooter>
           <Button onClick={closeDialog} variant="outline" type="button">

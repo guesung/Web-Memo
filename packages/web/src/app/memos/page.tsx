@@ -12,20 +12,17 @@ export default async function Page() {
   const defaultOpen = cookieStore.get('sidebar:state')?.value === 'true';
 
   return (
-    <>
-      <main className="bg-background flex w-full p-4 text-sm">
-        <SidebarProvider defaultOpen={defaultOpen}>
-          <HydrationBoundaryWrapper queryKey={queryKeys.category()} queryFn={() => getCategory(supabaseClient)}>
-            <MemoSidebar />
-          </HydrationBoundaryWrapper>
-          <HydrationBoundaryWrapper queryKey={queryKeys.memos()} queryFn={() => getMemo(supabaseClient)}>
-            <MemoSidebarTrigger />
-
-            <MemoView />
-            <MemoDialog />
-          </HydrationBoundaryWrapper>
-        </SidebarProvider>
-      </main>
-    </>
+    <main className="bg-background flex w-full p-4 text-sm">
+      <SidebarProvider defaultOpen={defaultOpen}>
+        <HydrationBoundaryWrapper queryKey={queryKeys.category()} queryFn={() => getCategory(supabaseClient)}>
+          <MemoSidebar />
+          <MemoSidebarTrigger />
+        </HydrationBoundaryWrapper>
+        <HydrationBoundaryWrapper queryKey={queryKeys.memos()} queryFn={() => getMemo(supabaseClient)}>
+          <MemoView />
+          <MemoDialog />
+        </HydrationBoundaryWrapper>
+      </SidebarProvider>
+    </main>
   );
 }

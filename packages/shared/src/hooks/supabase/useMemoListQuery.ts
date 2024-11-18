@@ -8,9 +8,14 @@ interface UseMemoListQueryProps {
 }
 
 export default function useMemoListQuery({ supabaseClient }: UseMemoListQueryProps) {
-  return useQuery({
+  const query = useQuery({
     queryFn: getMemo.bind(null, supabaseClient),
     queryKey: queryKeys.memoList(),
     enabled: !!supabaseClient,
   });
+
+  return {
+    ...query,
+    memos: query.data?.data,
+  };
 }

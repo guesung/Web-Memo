@@ -33,8 +33,7 @@ interface MemoOptionProps {
 export default function MemoOption({ id }: MemoOptionProps) {
   const supabaseClient = getSupabaseClient();
   const { toast } = useToast();
-  const { data: categoryData } = useCategoryQuery({ supabaseClient });
-  const categories = categoryData?.data;
+  const { categories } = useCategoryQuery({ supabaseClient });
   const { data: memoData, refetch: refetchMemo } = useMemoQuery({ supabaseClient, id });
   const { mutate: mutatePatchMemo } = useMemoPatchMutation({
     supabaseClient,
@@ -44,7 +43,7 @@ export default function MemoOption({ id }: MemoOptionProps) {
     handleSuccess: requestRefetchTheMemoList,
   });
 
-  const onDeleteMemo: MouseEventHandler<HTMLDivElement> = event => {
+  const handleDeleteMemo: MouseEventHandler<HTMLDivElement> = event => {
     event.stopPropagation();
     mutateDeleteMemo(id);
     toast({ title: '메모가 삭제되었습니다.' });
@@ -76,13 +75,11 @@ export default function MemoOption({ id }: MemoOptionProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuGroup>
-          <DropdownMenuItem className="cursor-pointer" onClick={onDeleteMemo}>
+          <DropdownMenuItem className="cursor-pointer" onClick={handleDeleteMemo}>
             메모 삭제
           </DropdownMenuItem>
           <DropdownMenuItem className="cursor-pointer">
-            <Select
-              onValueChange={handleCategoryChange}
-              defaultValue={String(memoData?.category_id) ?? categories?.[0]}>
+            <Select onValueChange={handleCategoryChange} defaultValue={String(memoData?.category_id)}>
               <SelectTrigger>
                 <SelectValue placeholder="카테고리 변경" />
               </SelectTrigger>

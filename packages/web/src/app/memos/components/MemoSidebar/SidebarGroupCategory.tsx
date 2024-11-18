@@ -10,9 +10,10 @@ import {
   SidebarMenuItem,
 } from '@src/components/ui/sidebar';
 import { getSupabaseClient } from '@src/utils/supabase.client';
+import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
 
 export default function SidebarGroupCategory() {
-  const { data: categoryData } = useCategoryQuery({
+  const { categories } = useCategoryQuery({
     supabaseClient: getSupabaseClient(),
   });
   const categorySearchParamsRouter = useSearchParamsRouter('category');
@@ -26,7 +27,7 @@ export default function SidebarGroupCategory() {
       <SidebarGroupLabel>카테고리 모아보기</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {categoryData?.data?.map(category => (
+          {categories?.map(category => (
             <SidebarMenuItem key={category.name}>
               <SidebarMenuButton asChild>
                 <button onClick={handleCategoryClick.bind(null, category.name)}>
@@ -35,6 +36,7 @@ export default function SidebarGroupCategory() {
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
+          <SidebarMenuItemAddCategory />
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

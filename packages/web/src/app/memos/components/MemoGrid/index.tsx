@@ -11,7 +11,7 @@ import MemoItem from './MemoItem';
 
 const MEMO_UNIT = 20;
 
-function getItems(nextGroupKey: number, count: number) {
+function getMemoItems(nextGroupKey: number, count: number) {
   const nextItems = [];
   const nextKey = nextGroupKey * MEMO_UNIT;
 
@@ -26,30 +26,31 @@ export default function MemoGrid() {
   const category = useSearchParamsRouter('category').get();
   const { set: setIdSearchParamsRouter } = useSearchParamsRouter('id');
   const supabaseClient = getSupabaseClient();
-  const { data: memoListData } = useMemoListQuery({
+  const { memos } = useMemoListQuery({
     supabaseClient,
   });
 
-  const memoList = memoListData?.data
+  const filteredMemos = memos
     ?.filter(memo => isWish === !!memo.isWish)
     .filter(memo => (category ? memo.category?.name === category : true));
-  const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
+  const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT));
   const [hoveredMemoId, setHoverdMemoId] = useState<null | string>(null);
 
-  const handleMemoMouseEnter: MouseEventHandler<HTMLDivElement> = event => {
+  const handleMemoItemMouseEnter: MouseEventHandler<HTMLDivElement> = event => {
     const id = event.currentTarget.id;
     setHoverdMemoId(id);
   };
-  const handleMemoMouseLeave: MouseEventHandler<HTMLDivElement> = () => {
+  const handleMemoItemMouseLeave: MouseEventHandler<HTMLDivElement> = () => {
     setHoverdMemoId(null);
   };
-  const handleMemoClick: MouseEventHandler<HTMLDivElement> = event => {
+  const handleMemoItemClick: MouseEventHandler<HTMLDivElement> = event => {
     const id = event.currentTarget.id;
     setIdSearchParamsRouter(id);
   };
+
   useGuide();
 
-  if (!memoList || memoList.length === 0)
+  if (!filteredMemos || filteredMemos.length === 0)
     return (
       <p className="mt-8 w-full text-center">아직 저장된 메모가 없어요. 사이드 패널을 열어 메모를 저장해보세요 !</p>
     );
@@ -63,14 +64,15 @@ export default function MemoGrid() {
         observeChildren
         autoResize
         onRequestAppend={e => {
-          if (items.length >= memoList.length) return;
+          if (items.length >= filteredMemos.length) return;
 
           const nextGroupKey = (+e.groupKey! || 0) + 1;
-          const maxAddItem = items.length + MEMO_UNIT > memoList.length ? memoList.length - items.length : MEMO_UNIT;
+          const maxAddItem =
+            items.length + MEMO_UNIT > filteredMemos.length ? filteredMemos.length - items.length : MEMO_UNIT;
 
           if (maxAddItem === 0) return;
 
-          setItems([...items, ...getItems(nextGroupKey, maxAddItem)]);
+          setItems([...items, ...getMemoItems(nextGroupKey, maxAddItem)]);
         }}>
         {items.map(item => (
           <motion.div
@@ -79,11 +81,11 @@ export default function MemoGrid() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             data-grid-groupkey={item.groupKey}>
             <MemoItem
-              memo={memoList.at(item.key)}
-              onMouseEnter={handleMemoMouseEnter}
-              onMouseLeave={handleMemoMouseLeave}
-              onClick={handleMemoClick}
-              isHovered={hoveredMemoId === String(memoList.at(item.key)?.id)}
+              memo={filteredMemos.at(item.key)}
+              onMouseEnter={handleMemoItemMouseEnter}
+              onMouseLeave={handleMemoItemMouseLeave}
+              onClick={handleMemoItemClick}
+              isHovered={hoveredMemoId === String(filteredMemos.at(item.key)?.id)}
             />
           </motion.div>
         ))}

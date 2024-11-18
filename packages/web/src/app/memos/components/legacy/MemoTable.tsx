@@ -8,7 +8,7 @@ import { getSupabaseClient } from '@src/utils/supabase.client';
 export default function MemoTable() {
   const { mutate: deleteMemoMutate } = useMemoDeleteMutation({});
   const supabaseClient = getSupabaseClient();
-  const { data: memoListData } = useMemoListQuery({
+  const { memos } = useMemoListQuery({
     supabaseClient,
   });
   const handleDeleteClick = async (id: number) => {
@@ -17,8 +17,7 @@ export default function MemoTable() {
     deleteMemoMutate(id);
   };
 
-  const memoList = memoListData?.data;
-  if (!memoList || memoList.length === 0)
+  if (!memos || memos.length === 0)
     return <p className="mt-8 text-center">아직 저장된 메모가 없어요. 사이드 패널을 열어 메모를 저장해보세요 !</p>;
   return (
     <table id="memo-table" className="mx-auto table max-w-[1200px]">
@@ -32,7 +31,7 @@ export default function MemoTable() {
         </tr>
       </thead>
       <tbody>
-        {memoList.map((memo, index) => (
+        {memos.map((memo, index) => (
           <tr key={memo.id} className="hover">
             <td className="text-center">{index + 1}</td>
             <td>

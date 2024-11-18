@@ -6,18 +6,14 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
 } from '@src/components/ui/sidebar';
-import Header from '../Header';
-import { useCategoryQuery } from '@extension/shared/hooks';
-import { getSupabaseClient } from '@src/utils/supabase.client';
-import SidebarGroupCategory from './SidebarGroupCategory';
 import Link from 'next/link';
-import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
+import Header from '../Header';
+import SidebarGroupCategory from './SidebarGroupCategory';
 
 const items = [
   {
@@ -36,6 +32,7 @@ export default function MemoSidebar() {
   return (
     <Sidebar>
       <Header.Margin />
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
@@ -57,8 +54,6 @@ export default function MemoSidebar() {
         <SidebarSeparator />
 
         <SidebarGroupCategory />
-
-        <SidebarMenuItemAddCategory />
       </SidebarContent>
       <SidebarFooter>
         <Link href="/setting" className="mb-2 ml-2 cursor-pointer">

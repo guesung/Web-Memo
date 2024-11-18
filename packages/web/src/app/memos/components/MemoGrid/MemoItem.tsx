@@ -1,28 +1,28 @@
-import { HTMLAttributes, MouseEventHandler } from 'react';
+import { HTMLAttributes, MouseEventHandler, useState } from 'react';
 
+import { useMemoPatchMutation, useSearchParamsRouter } from '@extension/shared/hooks';
+import { GetMemoType } from '@extension/shared/utils';
 import { Badge } from '@src/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader } from '@src/components/ui/card';
+import { useToast } from '@src/hooks/use-toast';
 import { cn } from '@src/utils';
+import { getSupabaseClient } from '@src/utils/supabase.client';
+import { HeartIcon } from 'lucide-react';
 import Image from 'next/image';
 import MemoOption from './MemoOption';
-import { HeartIcon } from 'lucide-react';
-import { useMemoPatchMutation } from '@extension/shared/hooks';
-import { getSupabaseClient } from '@src/utils/supabase.client';
-import { useToast } from '@src/hooks/use-toast';
-import { QueryData } from '@supabase/supabase-js';
-import { GetMemoType } from '@extension/shared/utils';
 
 interface MemoItemProps extends HTMLAttributes<HTMLDivElement> {
-  isHovered: boolean;
   memo?: GetMemoType;
 }
 
-export default function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
+export default function MemoItem({ memo, ...props }: MemoItemProps) {
   if (!memo) return null;
 
+  const [isHovered, setIsHovered] = useState(false);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient: getSupabaseClient(),
   });
+  const { set: setIdSearchParamsRouter } = useSearchParamsRouter('id');
   const { toast } = useToast();
 
   const handleMemoIsWishClick: MouseEventHandler<SVGSVGElement> = event => {
@@ -41,8 +41,27 @@ export default function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
     );
   };
 
+  const handleClick: MouseEventHandler<HTMLDivElement> = event => {
+    const id = event.currentTarget.id;
+    setIdSearchParamsRouter(id);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
   return (
-    <Card className="relative box-border w-[300px]" id={String(memo.id)} {...props}>
+    <Card
+      className="relative box-border w-[300px]"
+      id={String(memo.id)}
+      {...props}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onClick={handleClick}>
       <CardHeader className="py-4">
         <p className="flex gap-2">
           {memo?.favIconUrl && (

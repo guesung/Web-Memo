@@ -24,7 +24,7 @@ function getMemoItems(nextGroupKey: number, count: number) {
 export default function MemoGrid() {
   const isWish = useSearchParamsRouter('wish').get() === 'true';
   const category = useSearchParamsRouter('category').get();
-  const { set: setIdSearchParamsRouter } = useSearchParamsRouter('id');
+
   const supabaseClient = getSupabaseClient();
   const { memos } = useMemosQuery({
     supabaseClient,
@@ -34,19 +34,6 @@ export default function MemoGrid() {
     ?.filter(memo => isWish === !!memo.isWish)
     .filter(memo => (category ? memo.category?.name === category : true));
   const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT));
-  const [hoveredMemoId, setHoverdMemoId] = useState<null | string>(null);
-
-  const handleMemoItemMouseEnter: MouseEventHandler<HTMLDivElement> = event => {
-    const id = event.currentTarget.id;
-    setHoverdMemoId(id);
-  };
-  const handleMemoItemMouseLeave: MouseEventHandler<HTMLDivElement> = () => {
-    setHoverdMemoId(null);
-  };
-  const handleMemoItemClick: MouseEventHandler<HTMLDivElement> = event => {
-    const id = event.currentTarget.id;
-    setIdSearchParamsRouter(id);
-  };
 
   useGuide();
 
@@ -80,13 +67,7 @@ export default function MemoGrid() {
             initial={{ opacity: 0, y: 20, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             data-grid-groupkey={item.groupKey}>
-            <MemoItem
-              memo={filteredMemos.at(item.key)}
-              onMouseEnter={handleMemoItemMouseEnter}
-              onMouseLeave={handleMemoItemMouseLeave}
-              onClick={handleMemoItemClick}
-              isHovered={hoveredMemoId === String(filteredMemos.at(item.key)?.id)}
-            />
+            <MemoItem memo={filteredMemos.at(item.key)} />
           </motion.div>
         ))}
       </MasonryInfiniteGrid>

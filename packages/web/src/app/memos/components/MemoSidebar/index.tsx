@@ -1,10 +1,12 @@
-import { Heart, Home } from 'lucide-react';
+import { Heart, Home, SettingsIcon } from 'lucide-react';
 
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -15,6 +17,7 @@ import { useCategoryQuery } from '@extension/shared/hooks';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import SidebarGroupCategory from './SidebarGroupCategory';
 import Link from 'next/link';
+import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
 
 const items = [
   {
@@ -54,7 +57,14 @@ export default function MemoSidebar() {
         <SidebarSeparator />
 
         <SidebarGroupCategory />
+
+        <SidebarMenuItemAddCategory />
       </SidebarContent>
+      <SidebarFooter>
+        <Link href="/setting" className="mb-2 ml-2 cursor-pointer">
+          <SettingsIcon size={16} />
+        </Link>
+      </SidebarFooter>
     </Sidebar>
   );
 }

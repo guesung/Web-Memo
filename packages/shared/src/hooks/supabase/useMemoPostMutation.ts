@@ -1,5 +1,5 @@
 import { NoMemoListError, queryKeys } from '@src/constants';
-import { MemoSupabaseClient, MemoSupabaseResponse, MemoTableInsert } from '@src/types';
+import type { MemoSupabaseClient, MemoSupabaseResponse, MemoTableInsert } from '@src/types';
 import { insertMemo } from '@src/utils';
 import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query';
 

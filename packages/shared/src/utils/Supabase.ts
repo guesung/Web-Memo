@@ -1,4 +1,4 @@
-import { MemoSupabaseClient, MemoTable } from '@src/types';
+import { CategoryTable, MemoSupabaseClient, MemoTable } from '@src/types';
 import { type Provider } from '@supabase/supabase-js';
 
 export const getMemo = async (supabaseClient: MemoSupabaseClient) =>
@@ -34,3 +34,6 @@ export const getUser = async (supabaseClient: MemoSupabaseClient) => await supab
 
 export const getCategory = async (supabaseClient: MemoSupabaseClient) =>
   supabaseClient.from('category').select('*').order('created_at', { ascending: false });
+
+export const insertCategory = async (supabaseClient: MemoSupabaseClient, categoryRequest: CategoryTable['Insert']) =>
+  supabaseClient.from('category').insert(categoryRequest).select();

@@ -1,6 +1,6 @@
 import localFont from 'next/font/local';
 
-import { QueryProvider, ThemeProvider } from '@src/components';
+import { Header, QueryProvider, ThemeProvider } from '@src/components';
 import { Toaster } from '@src/components/ui/toaster';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import type { Metadata } from 'next';
@@ -27,6 +27,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body className={`${pretendard.variable} font-pretendard h-full`}>
         <ThemeProvider attribute="class" defaultTheme="system">
           <QueryProvider>
+            <Header />
+            <Header.Margin />
             {children}
             <ReactQueryDevtools initialIsOpen={false} />
           </QueryProvider>

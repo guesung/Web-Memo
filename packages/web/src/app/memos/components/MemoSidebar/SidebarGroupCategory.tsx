@@ -1,11 +1,10 @@
 'use client';
 
-import { Heart, Home } from 'lucide-react';
-
-import { useCategoryQuery, useSearchParamsRouter } from '@extension/shared/hooks';
+import { useCategoryQuery, useSearchParamsRouter, useCategoryPostMutation } from '@extension/shared/hooks';
 import {
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -19,17 +18,18 @@ export default function SidebarGroupCategory() {
   const categorySearchParamsRouter = useSearchParamsRouter('category');
 
   const handleCategoryClick = (category: string) => {
-    categorySearchParamsRouter.set(category);
+    categorySearchParamsRouter.set(category, { removeOthers: true });
   };
 
   return (
     <SidebarGroup>
+      <SidebarGroupLabel>카테고리 모아보기</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
           {categoryData?.data?.map(category => (
             <SidebarMenuItem key={category.name}>
               <SidebarMenuButton asChild>
-                <button onClick={handleCategoryClick.bind(null, category?.name)}>
+                <button onClick={handleCategoryClick.bind(null, category.name)}>
                   <span>{category.name}</span>
                 </button>
               </SidebarMenuButton>

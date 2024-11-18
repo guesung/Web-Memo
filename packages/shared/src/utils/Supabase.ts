@@ -1,8 +1,10 @@
 import { CategoryTable, MemoSupabaseClient, MemoTable } from '@src/types';
-import { type Provider } from '@supabase/supabase-js';
+import type { QueryData, Provider } from '@supabase/supabase-js';
 
 export const getMemo = async (supabaseClient: MemoSupabaseClient) =>
   supabaseClient.from('memo').select('*,category(name)').order('created_at', { ascending: false });
+
+export type GetMemoType = QueryData<ReturnType<typeof getMemo>>[number];
 
 export const insertMemo = async (supabaseClient: MemoSupabaseClient, memoRequest: MemoTable['Insert']) =>
   supabaseClient.from('memo').insert(memoRequest).select();

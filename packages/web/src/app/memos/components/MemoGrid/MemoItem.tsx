@@ -1,6 +1,5 @@
 import { HTMLAttributes, MouseEventHandler } from 'react';
 
-import { MemoRow } from '@extension/shared/types';
 import { Badge } from '@src/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader } from '@src/components/ui/card';
 import { cn } from '@src/utils';
@@ -10,10 +9,12 @@ import { HeartIcon } from 'lucide-react';
 import { useMemoPatchMutation } from '@extension/shared/hooks';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import { useToast } from '@src/hooks/use-toast';
+import { QueryData } from '@supabase/supabase-js';
+import { GetMemoType } from '@extension/shared/utils';
 
 interface MemoItemProps extends HTMLAttributes<HTMLDivElement> {
   isHovered: boolean;
-  memo?: MemoRow & { category: { name: string } };
+  memo?: GetMemoType;
 }
 
 export default function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {

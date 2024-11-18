@@ -42,7 +42,7 @@ export default function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
 
   return (
     <Card className="relative box-border w-[300px]" id={String(memo.id)} {...props}>
-      <CardHeader>
+      <CardHeader className="py-4">
         <p className="flex gap-2">
           {memo?.favIconUrl && (
             <Image
@@ -58,7 +58,7 @@ export default function MemoItem({ isHovered, memo, ...props }: MemoItemProps) {
         </p>
       </CardHeader>
       {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
-      <CardFooter className={cn('flex justify-between p-0 px-4 pb-2')}>
+      <CardFooter className={cn('flex justify-between p-0 px-4 pb-2 pt-0')}>
         <div>{memo?.category?.name ? <Badge variant="outline">{memo?.category?.name}</Badge> : <span />}</div>
         <div
           className={cn('flex items-center gap-2 transition', {

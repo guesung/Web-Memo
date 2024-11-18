@@ -20,8 +20,6 @@ export default function useSearchParamsRouter(targetKey: string) {
         return (prev += `${key}=${value}`);
       }, '');
 
-    console.log([...searchParams.entries()].filter(([key]) => targetKey !== key).concat([targetKey, value]));
-
     router.replace(`${pathname}${currentSearchParams}`, { scroll: false });
   };
 

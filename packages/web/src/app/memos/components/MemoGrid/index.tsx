@@ -11,7 +11,6 @@ import { motion } from 'framer-motion';
 
 import { useGuide } from '../../hooks';
 import MemoItem from './MemoItem';
-import MemoModal from '../MemoDialog';
 
 const MEMO_UNIT = 20;
 
@@ -27,13 +26,16 @@ function getItems(nextGroupKey: number, count: number) {
 
 export default function MemoGrid() {
   const isWish = useSearchParamsRouter('wish').get() === 'true';
+  const category = useSearchParamsRouter('category').get();
   const { set: setIdSearchParamsRouter } = useSearchParamsRouter('id');
   const supabaseClient = getSupabaseClient();
   const { data: memoListData } = useMemoListQuery({
     supabaseClient,
   });
 
-  const memoList = memoListData?.data?.filter(memo => isWish === !!memo.isWish);
+  const memoList = memoListData?.data
+    ?.filter(memo => isWish === !!memo.isWish)
+    .filter(memo => (category ? memo.category?.name === category : true));
   const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
   const [hoveredMemoId, setHoverdMemoId] = useState<null | string>(null);
 

@@ -51,7 +51,7 @@ export default function MemoOption({ id }: MemoOptionProps) {
 
   const handleCategoryChange = (categoryId: string) => {
     mutatePatchMemo(
-      { id, category_id: Number(categoryId) },
+      { id, memoRequest: { category_id: Number(categoryId) } },
       {
         onSuccess: () => {
           toast({ title: '카테고리가 수정되었습니다.' });

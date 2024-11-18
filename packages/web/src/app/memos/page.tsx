@@ -4,7 +4,7 @@ import { HydrationBoundaryWrapper } from '@src/components';
 import { SidebarProvider } from '@src/components/ui/sidebar';
 import { getSupabaseClient } from '@src/utils/supabase.server';
 import { cookies } from 'next/headers';
-import { MemoDialog, MemoGrid, MemoSidebar, MemoSidebarTrigger } from './components';
+import { MemoDialog, MemoGrid, MemoSidebar, MemoSidebarTrigger, MemoView } from './components';
 
 export default async function Page() {
   const supabaseClient = getSupabaseClient();
@@ -21,7 +21,7 @@ export default async function Page() {
           <HydrationBoundaryWrapper queryKey={queryKeys.memos()} queryFn={() => getMemo(supabaseClient)}>
             <MemoSidebarTrigger />
 
-            <MemoGrid />
+            <MemoView />
             <MemoDialog />
           </HydrationBoundaryWrapper>
         </SidebarProvider>

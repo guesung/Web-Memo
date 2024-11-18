@@ -1,4 +1,4 @@
-import { HTMLAttributes, MouseEventHandler, useState } from 'react';
+import { HTMLAttributes, memo, MouseEventHandler, useState } from 'react';
 
 import { useMemoPatchMutation, useSearchParamsRouter } from '@extension/shared/hooks';
 import { GetMemoType } from '@extension/shared/utils';
@@ -15,7 +15,7 @@ interface MemoItemProps extends HTMLAttributes<HTMLDivElement> {
   memo?: GetMemoType;
 }
 
-export default function MemoItem({ memo, ...props }: MemoItemProps) {
+export default memo(function MemoItem({ memo, ...props }: MemoItemProps) {
   if (!memo) return null;
 
   const [isHovered, setIsHovered] = useState(false);
@@ -60,10 +60,10 @@ export default function MemoItem({ memo, ...props }: MemoItemProps) {
     <Card
       className="relative box-border w-[300px]"
       id={String(memo.id)}
-      {...props}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={handleClick}>
+      onClick={handleClick}
+      {...props}>
       <CardHeader className="py-4">
         <p className="flex gap-2">
           {memo?.favIconUrl && (
@@ -99,4 +99,4 @@ export default function MemoItem({ memo, ...props }: MemoItemProps) {
       </CardFooter>
     </Card>
   );
-}
+});

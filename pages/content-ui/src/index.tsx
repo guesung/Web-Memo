@@ -5,7 +5,6 @@ import {
   requestGetTabs,
   responsePageContent,
 } from '@extension/shared/utils/extension';
-import { toast } from 'react-toastify';
 import { OpenSidePanelButton } from './components';
 import { attachShadowTree } from './utils';
 
@@ -31,7 +30,7 @@ window.addEventListener('keydown', async event => {
 
   const { data: memosData } = await getMemo(supabaseClient);
 
-  toast.success('새로고침이 완료되었습니다.');
+  // toast.success('새로고침이 완료되었습니다.');
 
   if (memosData?.some(memo => memo.url === formatUrl(tab.url))) return;
 

@@ -5,7 +5,7 @@ import { BRIDGE_TYPE_GET_TABS } from './getTabs';
 import { BRIDGE_TYPE_OBSERVER_MEMO_PAGE } from './observeMemoPage';
 import { BRIDGE_TYPE_OPEN_SIDE_PANEL } from './openSidePanel';
 import { BRIDGE_TYPE_PAGE_CONTENT } from './pageContent';
-import { BRIDGE_TYPE_REFETCH_THE_MEMO_LIST } from './refetchTheMemoList';
+import { BRIDGE_TYPE_REFETCH_THE_MEMO_LIST } from './refetchTheMemos';
 import { BRIDGE_TYPE_UPDATE_SIDE_PANEL } from './updateSidePanel';
 
 export type BridgeType =

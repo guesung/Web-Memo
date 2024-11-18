@@ -18,7 +18,7 @@ export default function useMemoDeleteMutation({ handleSuccess }: UseMemoDeleteMu
   return useMutation({
     mutationFn: deleteMemoFn,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.memoList() });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.memos() });
       handleSuccess?.();
     },
   });

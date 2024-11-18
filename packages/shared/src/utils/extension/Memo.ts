@@ -1,13 +1,13 @@
-import { MemoTableInsert } from '@src/types';
+import { MemoTable } from '@src/types';
 import { Tab } from '.';
 import { formatUrl } from '../Url';
 
-export interface GetFormattedMemoProps extends Pick<MemoTableInsert, 'memo'>, Pick<MemoTableInsert, 'category'> {}
+export interface GetFormattedMemoProps extends Pick<MemoTable['Insert'], 'memo'>, Pick<MemoTable['Insert'], 'isWish'> {}
 
 export const getFormattedMemo = async ({
   memo = '',
-  category = [''],
-}: GetFormattedMemoProps): Promise<MemoTableInsert> => {
+  isWish = false,
+}: GetFormattedMemoProps): Promise<MemoTable['Insert']> => {
   const tab = await Tab.get();
 
   if (!tab.url || !tab.title) throw new Error('Save Failed: Invalid URL');
@@ -17,6 +17,6 @@ export const getFormattedMemo = async ({
     favIconUrl: tab?.favIconUrl,
     url: formatUrl(tab.url),
     memo,
-    category,
+    isWish,
   };
 };

@@ -15,15 +15,16 @@ import {
   getFormattedMemo,
   GetFormattedMemoProps,
   getSupabaseClient,
-  responseRefetchTheMemoList,
+  responseRefetchTheMemos,
 } from '@extension/shared/utils/extension';
 import { cn, Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
+import { useForm } from 'react-hook-form';
+
+type InputType = GetFormattedMemoProps;
 
 function MemoForm() {
   const [isSaved, setIsSaved] = useState(true);
-  const [memo, setMemo] = useState('');
-  const [category, setCategory] = useState(['']);
   const { throttle, abortThrottle } = useThrottle();
   const { data: tab } = useTabQuery();
   const { data: supabaseClient } = useSupabaseClient({
@@ -33,8 +34,12 @@ function MemoForm() {
     supabaseClient,
     url: tab.url,
   });
-
-  const isWish = currentMemo?.category?.includes('wish');
+  const { register, setValue, watch } = useForm<InputType>({
+    defaultValues: {
+      memo: '',
+      isWish: false,
+    },
+  });
 
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
@@ -57,31 +62,32 @@ function MemoForm() {
     },
   });
 
-  const saveMemo = async ({ memo, category }: GetFormattedMemoProps) => {
-    const formattedMemo = await getFormattedMemo({ category, memo });
+  const saveMemo = async (data?: InputType) => {
+    const memo = data?.memo ?? watch('memo');
+    const isWish = data?.isWish ?? watch('isWish');
+
+    const formattedMemo = await getFormattedMemo({ memo, isWish });
 
     if (currentMemo) mutateMemoPatch({ ...formattedMemo, id: currentMemo.id });
     else mutateMemoPost(formattedMemo);
   };
 
   useDidMount(() => {
-    responseRefetchTheMemoList(refetchMemo);
+    responseRefetchTheMemos(refetchMemo);
   });
 
   useEffect(() => {
     if (!tab?.url) return;
 
-    setMemo(currentMemo?.memo ?? '');
-    setCategory(currentMemo?.category ?? ['']);
-  }, [currentMemo?.category, currentMemo?.memo, tab?.url]);
+    setValue('memo', currentMemo?.memo ?? '');
+    setValue('isWish', currentMemo?.isWish ?? false);
+  }, [currentMemo?.isWish, currentMemo?.memo, setValue, tab?.url]);
 
   const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMemo(event.target.value);
+    setValue('memo', event.target.value);
     setIsSaved(false);
 
-    throttle(async () => {
-      await saveMemo({ memo: event.target.value, category });
-    });
+    throttle(saveMemo);
   };
 
   const handleKeyDown = async (
@@ -90,23 +96,15 @@ function MemoForm() {
     if (event.metaKey && event.key === 's') {
       event.preventDefault();
 
-      await saveMemo({ memo, category });
+      await saveMemo();
       abortThrottle();
     }
   };
 
   const handleWishClick = async () => {
-    const category = getCategoryWithWish();
-    setCategory(category);
-    const formattedMemo = await getFormattedMemo({ category, memo });
+    setValue('isWish', !watch('isWish'));
 
-    if (currentMemo) mutateMemoPatch({ ...formattedMemo, id: currentMemo.id });
-    else mutateMemoPost(formattedMemo);
-  };
-
-  const getCategoryWithWish = () => {
-    if (isWish) return [''];
-    return ['wish'];
+    await saveMemo();
   };
 
   return (
@@ -117,15 +115,16 @@ function MemoForm() {
         })}
         id="memo-textarea"
         placeholder="메모"
-        onChange={handleMemoTextAreaChange}
         onKeyDown={handleKeyDown}
-        value={memo}
+        {...register('memo', {
+          onChange: handleMemoTextAreaChange,
+        })}
       />
       <div className="label">
         <HeartIcon
           width="16px"
           height="16px"
-          fill={isWish ? 'white' : 'black'}
+          fill={watch('isWish') ? 'white' : 'black'}
           onClick={handleWishClick}
           className="cursor-pointer"
         />

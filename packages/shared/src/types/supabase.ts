@@ -3,41 +3,79 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   memo: {
     Tables: {
+      category: {
+        Row: {
+          created_at: string;
+          id: number;
+          name: string;
+          user_id: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: number;
+          name: string;
+          user_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: number;
+          name?: string;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       memo: {
         Row: {
-          category: string[] | null;
-          created_at: string;
+          category: string | null;
+          category_id: number | null;
+          created_at: string | null;
           favIconUrl: string | null;
           id: number;
+          isWish: boolean | null;
           memo: string;
+          tags: string[] | null;
           title: string;
           updated_at: string;
           url: string;
           user_id: string;
         };
         Insert: {
-          category?: string[] | null;
-          created_at?: string;
+          category?: string | null;
+          category_id?: number | null;
+          created_at?: string | null;
           favIconUrl?: string | null;
           id?: number;
+          isWish?: boolean | null;
           memo: string;
+          tags?: string[] | null;
           title: string;
           updated_at?: string;
           url: string;
           user_id?: string;
         };
         Update: {
-          category?: string[] | null;
-          created_at?: string;
+          category?: string | null;
+          category_id?: number | null;
+          created_at?: string | null;
           favIconUrl?: string | null;
           id?: number;
+          isWish?: boolean | null;
           memo?: string;
+          tags?: string[] | null;
           title?: string;
           updated_at?: string;
           url?: string;
           user_id?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'memo_category_id_fkey';
+            columns: ['category_id'];
+            isOneToOne: false;
+            referencedRelation: 'category';
+            referencedColumns: ['id'];
+          },
+        ];
       };
     };
     Views: {

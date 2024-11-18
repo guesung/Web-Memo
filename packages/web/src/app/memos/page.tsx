@@ -1,32 +1,28 @@
 import { queryKeys } from '@extension/shared/constants';
-import { getMemo } from '@extension/shared/utils';
-import { Header, HydrationBoundaryWrapper } from '@src/components';
+import { getCategory, getMemo } from '@extension/shared/utils';
+import { HydrationBoundaryWrapper } from '@src/components';
+import { SidebarProvider } from '@src/components/ui/sidebar';
 import { getSupabaseClient } from '@src/utils/supabase.server';
-import { MemoGrid, MemoTable, MemoMenu, MemoWish } from './components';
+import { cookies } from 'next/headers';
+import { MemoDialog, MemoSidebar, MemoSidebarTrigger, MemoView } from './components';
 
-export type CategoryType = 'wish';
-
-type SearchParamsType = { category: CategoryType };
-
-interface MemoViewProps {
-  searchParams: SearchParamsType;
-}
-
-export default async function Page({ searchParams }: MemoViewProps) {
+export default async function Page() {
   const supabaseClient = getSupabaseClient();
+  const cookieStore = cookies();
+  const defaultOpen = cookieStore.get('sidebar:state')?.value === 'true';
 
-  const category: CategoryType = searchParams?.category ?? '';
   return (
-    <>
-      <Header />
-      <Header.Margin />
-      <main className="flex w-full p-4">
-        <MemoMenu />
-        <MemoMenu.Margin />
-        <HydrationBoundaryWrapper queryKey={queryKeys.memoList()} queryFn={() => getMemo(supabaseClient)}>
-          <MemoGrid category={category} />
+    <main className="bg-background flex w-full p-4 text-sm">
+      <SidebarProvider defaultOpen={defaultOpen}>
+        <HydrationBoundaryWrapper queryKey={queryKeys.category()} queryFn={() => getCategory(supabaseClient)}>
+          <MemoSidebar />
+          <MemoSidebarTrigger />
         </HydrationBoundaryWrapper>
-      </main>
-    </>
+        <HydrationBoundaryWrapper queryKey={queryKeys.memos()} queryFn={() => getMemo(supabaseClient)}>
+          <MemoView />
+          <MemoDialog />
+        </HydrationBoundaryWrapper>
+      </SidebarProvider>
+    </main>
   );
 }

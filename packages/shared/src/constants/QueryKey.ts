@@ -1,11 +1,8 @@
-import { QueryKey } from '@tanstack/react-query';
-
-type KeyType = 'tab' | 'memoList' | 'option' | 'supabaseClient' | 'user';
-
-export const queryKeys: Record<KeyType, () => QueryKey> = {
+export const queryKeys = {
   tab: () => ['tab'],
-  memoList: () => ['memoList'],
+  memos: () => ['memos'],
   option: () => ['option'],
   supabaseClient: () => ['supabaseClient'],
   user: () => ['user'],
+  category: () => ['cateogory'],
 };

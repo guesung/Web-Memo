@@ -3,6 +3,7 @@ import { useMemoPatchMutation, useMemoQuery, useSearchParamsRouter } from '@exte
 import { Button } from '@src/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
 import { Textarea } from '@src/components/ui/textarea';
+import { useToast } from '@src/hooks/use-toast';
 import { cn } from '@src/utils';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import Image from 'next/image';
@@ -10,14 +11,16 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+const MIN_ROW = 4;
+
 type InputType = {
   memo: string;
 };
 
-export default function MemoModal() {
+export default function MemoDialog() {
   const idSearchParamsRouter = useSearchParamsRouter('id');
   const id = idSearchParamsRouter.get();
-  const [row, setRow] = useState(4);
+  const [row, setRow] = useState(MIN_ROW);
   const [isSaved, setIsSaved] = useState(true);
 
   const { register, watch, setValue } = useForm<InputType>({
@@ -26,16 +29,22 @@ export default function MemoModal() {
     },
   });
 
-  const saveMemo = () => {
-    setIsSaved(true);
-    mutateMemoPatch({ ...memoData, memo: watch('memo') });
-  };
-
   const supabaseClient = getSupabaseClient();
-  const { data: memoData } = useMemoQuery({ supabaseClient, id });
+  const { data: memoData } = useMemoQuery({ supabaseClient, id: Number(id) });
+  const { toast } = useToast();
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
   });
+
+  const saveMemo = () => {
+    setIsSaved(true);
+    mutateMemoPatch(
+      { ...memoData, memo: watch('memo') },
+      {
+        onSuccess: () => toast({ title: '메모가 수정되었습니다.' }),
+      },
+    );
+  };
 
   const handleKeyDown = async (
     event: React.KeyboardEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLInputElement>,
@@ -47,14 +56,23 @@ export default function MemoModal() {
     }
   };
 
-  const handleCloseClick = () => {
+  const closeDialog = () => {
     idSearchParamsRouter.remove();
   };
 
   const handleSaveClick = () => {
     saveMemo();
-    idSearchParamsRouter.remove();
+    closeDialog();
   };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeDialog();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     const rowCount = watch('memo').split(/\r\n|\r|\n/).length;
@@ -68,7 +86,7 @@ export default function MemoModal() {
   if (!id || !memoData) return;
   return (
     <Dialog open={!!id}>
-      <DialogContent onClose={handleCloseClick}>
+      <DialogContent onClose={closeDialog}>
         <DialogHeader>
           <DialogTitle className="font-normal">
             <Link className="link-hover flex gap-2" href={memoData.url} target="_blank">
@@ -100,7 +118,7 @@ export default function MemoModal() {
           />
         </DialogHeader>
         <DialogFooter>
-          <Button onClick={handleCloseClick} variant="outline" type="button">
+          <Button onClick={closeDialog} variant="outline" type="button">
             닫기
           </Button>
           <Button variant="outline" onClick={handleSaveClick}>

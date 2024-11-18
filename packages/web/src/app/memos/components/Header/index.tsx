@@ -64,11 +64,7 @@ async function HeaderRight() {
         </DropdownMenu>
       </div>
     );
-  return (
-    <Link className="btn btn-ghost text-md" href="login">
-      로그인
-    </Link>
-  );
+  return;
 }
 
 function Margin() {

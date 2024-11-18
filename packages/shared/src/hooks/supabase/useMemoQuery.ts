@@ -6,28 +6,28 @@ import { useQuery } from '@tanstack/react-query';
 interface UseMemoQueryProps {
   supabaseClient: MemoSupabaseClient;
   url?: string;
-  id?: string;
+  id?: number;
 }
 
 interface FindMemoProps {
-  memoList: MemoSupabaseResponse['data'];
+  memos: MemoSupabaseResponse['data'];
   url?: string;
-  id?: string;
+  id?: number;
 }
 
-const findMemo = ({ memoList, url, id }: FindMemoProps) => {
-  if (url) return memoList?.find(memo => memo.url === formatUrl(url));
-  if (id) return memoList?.find(memo => String(memo.id) === id);
+const findMemo = ({ memos, url, id }: FindMemoProps) => {
+  if (url) return memos?.find(memo => memo.url === formatUrl(url));
+  if (id) return memos?.find(memo => memo.id === id);
   return null;
 };
 
 export default function useMemoQuery({ supabaseClient, url, id }: UseMemoQueryProps) {
   return useQuery({
     queryFn: getMemo.bind(null, supabaseClient),
-    queryKey: queryKeys.memoList(),
+    queryKey: queryKeys.memos(),
     enabled: !!supabaseClient,
-    select: ({ data: memoList }: MemoSupabaseResponse) => {
-      return findMemo({ memoList, url, id });
+    select: ({ data: memos }: MemoSupabaseResponse) => {
+      return findMemo({ memos, url, id });
     },
   });
 }

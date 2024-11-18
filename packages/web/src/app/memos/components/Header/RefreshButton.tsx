@@ -17,7 +17,7 @@ export default function RefreshButton() {
     driverObj.moveNext();
     window.localStorage.setItem(IS_USER_SEEN_GUIDE, 'true');
 
-    await queryClient.invalidateQueries({ queryKey: queryKeys.memoList() });
+    await queryClient.invalidateQueries({ queryKey: queryKeys.memos() });
     toast({ title: '새로고침이 완료되었습니다.' });
   };
 

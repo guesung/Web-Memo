@@ -1,10 +1,10 @@
 import { queryKeys } from '@extension/shared/constants';
-import { getMemo } from '@extension/shared/utils';
+import { getCategory, getMemo } from '@extension/shared/utils';
 import { HydrationBoundaryWrapper } from '@src/components';
-import { SidebarProvider, SidebarTrigger } from '@src/components/ui/sidebar';
+import { SidebarProvider } from '@src/components/ui/sidebar';
 import { getSupabaseClient } from '@src/utils/supabase.server';
 import { cookies } from 'next/headers';
-import { Header, MemoGrid, MemoSidebar } from './components';
+import { MemoDialog, MemoSidebar, MemoSidebarTrigger, MemoView } from './components';
 
 export default async function Page() {
   const supabaseClient = getSupabaseClient();
@@ -13,16 +13,18 @@ export default async function Page() {
 
   return (
     <>
-      <Header />
-      <Header.Margin />
-      <main className="bg-background flex w-full p-4">
-        <HydrationBoundaryWrapper queryKey={queryKeys.memoList()} queryFn={() => getMemo(supabaseClient)}>
-          <SidebarProvider defaultOpen={defaultOpen}>
+      <main className="bg-background flex w-full p-4 text-sm">
+        <SidebarProvider defaultOpen={defaultOpen}>
+          <HydrationBoundaryWrapper queryKey={queryKeys.category()} queryFn={() => getCategory(supabaseClient)}>
             <MemoSidebar />
-            <SidebarTrigger />
-            <MemoGrid />
-          </SidebarProvider>
-        </HydrationBoundaryWrapper>
+          </HydrationBoundaryWrapper>
+          <HydrationBoundaryWrapper queryKey={queryKeys.memos()} queryFn={() => getMemo(supabaseClient)}>
+            <MemoSidebarTrigger />
+
+            <MemoView />
+            <MemoDialog />
+          </HydrationBoundaryWrapper>
+        </SidebarProvider>
       </main>
     </>
   );

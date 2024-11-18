@@ -10,22 +10,22 @@ import { FormEvent, useEffect, useRef } from 'react';
 export default function OptionForm() {
   const languageRef = useRef<HTMLSelectElement>(null);
   const { data: option } = useOptionQuery();
-  const getMemoList = async () => {
+  const getMemos = async () => {
     const supabaseClient = await getSupabaseClient();
     return await getMemo(supabaseClient);
   };
 
   const handleCSVDownloadClick = async () => {
-    const memoList = await getMemoList();
-    if (!memoList?.data) return;
-    const csvBlob = convertToCSVBlob(memoList.data);
+    const memos = await getMemos();
+    if (!memos?.data) return;
+    const csvBlob = convertToCSVBlob(memos.data);
     downloadBlob(csvBlob, { fileExtension: 'csv' });
   };
 
   const handleJSONDownloadClick = async () => {
-    const memoList = await getMemoList();
-    if (!memoList?.data) return;
-    const jsonBlob = convertToJSONBlob(memoList?.data);
+    const memos = await getMemos();
+    if (!memos?.data) return;
+    const jsonBlob = convertToJSONBlob(memos?.data);
     downloadBlob(jsonBlob, { fileExtension: 'json' });
   };
 

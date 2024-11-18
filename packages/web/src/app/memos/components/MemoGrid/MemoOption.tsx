@@ -23,6 +23,8 @@ import { useCategoryQuery, useMemoPatchMutation, useMemoQuery } from '@extension
 import { useMemoDeleteMutation } from '@src/hooks';
 import { requestRefetchTheMemoList } from '@extension/shared/utils/extension';
 import { useToast } from '@src/hooks/use-toast';
+import { MouseEventHandler } from 'react';
+import { EllipsisVerticalIcon } from 'lucide-react';
 
 interface MemoOptionProps {
   id: number;
@@ -42,7 +44,8 @@ export default function MemoOption({ id }: MemoOptionProps) {
     handleSuccess: requestRefetchTheMemoList,
   });
 
-  const onDeleteMemo = () => {
+  const onDeleteMemo: MouseEventHandler<HTMLDivElement> = event => {
+    event.stopPropagation();
     mutateDeleteMemo(id);
     toast({ title: '메모가 삭제되었습니다.' });
   };
@@ -52,14 +55,15 @@ export default function MemoOption({ id }: MemoOptionProps) {
       { id, category_id: Number(categoryId) },
       {
         onSuccess: () => {
-          toast({ title: '메모가 수정되었습니다.' });
+          toast({ title: '카테고리가 수정되었습니다.' });
           refetchMemo();
         },
       },
     );
   };
 
-  const onCategoryAdd = () => {
+  const onCategoryAdd: MouseEventHandler<HTMLDivElement> = event => {
+    event.stopPropagation();
     toast({ title: '카테고리 추가 기능은 준비 중입니다.' });
   };
 
@@ -67,7 +71,7 @@ export default function MemoOption({ id }: MemoOptionProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="link" size="sm">
-          <Image src="/images/svgs/option_vertical.svg" width={16} height={16} alt="option" className="rounded-full" />
+          <EllipsisVerticalIcon size={16} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

@@ -26,7 +26,9 @@ export type Database = {
       };
       memo: {
         Row: {
+          category: string | null;
           category_id: number | null;
+          created_at: string | null;
           favIconUrl: string | null;
           id: number;
           isWish: boolean | null;
@@ -38,7 +40,9 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          category?: string | null;
           category_id?: number | null;
+          created_at?: string | null;
           favIconUrl?: string | null;
           id?: number;
           isWish?: boolean | null;
@@ -50,7 +54,9 @@ export type Database = {
           user_id?: string;
         };
         Update: {
+          category?: string | null;
           category_id?: number | null;
+          created_at?: string | null;
           favIconUrl?: string | null;
           id?: number;
           isWish?: boolean | null;

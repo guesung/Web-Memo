@@ -1,5 +1,9 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
+interface Option {
+  removeOthers?: boolean;
+}
+
 export default function useSearchParamsRouter(targetKey: string) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -9,9 +13,9 @@ export default function useSearchParamsRouter(targetKey: string) {
     return searchParams.get(targetKey) ?? '';
   };
 
-  const set = (value: string) => {
+  const set = (value: string, options?: Option) => {
     const currentSearchParams = [...searchParams.entries()]
-      .filter(([key]) => targetKey !== key)
+      .filter(([key]) => (options?.removeOthers ? false : targetKey !== key))
       .concat([[targetKey, value]])
       .reduce((prev, [key, value], index) => {
         if (index === 0) prev += '?';

@@ -1,4 +1,4 @@
-import { queryKeys } from '@extension/shared/constants';
+import { COOKIE_KEY_SIDE_BAR_STATE, queryKeys } from '@extension/shared/constants';
 import { getCategory, getMemo } from '@extension/shared/utils';
 import { Header, HydrationBoundaryWrapper } from '@src/components';
 import { SidebarProvider } from '@src/components/ui/sidebar';
@@ -9,7 +9,7 @@ import { MemoDialog, MemoSidebar, MemoSidebarTrigger, MemoView } from './compone
 export default async function Page() {
   const supabaseClient = getSupabaseClient();
   const cookieStore = cookies();
-  const defaultOpen = cookieStore.get('sidebar:state')?.value === 'true';
+  const defaultOpen = cookieStore.get(COOKIE_KEY_SIDE_BAR_STATE)?.value === 'true';
 
   return (
     <>

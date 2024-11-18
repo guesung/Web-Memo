@@ -53,7 +53,7 @@ function MemoForm() {
   });
   const { mutate: mutateMemoPost } = useMemoPostMutation({
     supabaseClient,
-    handleSuccess: () => {
+    onSuccess: () => {
       setIsSaved(true);
       abortThrottle();
     },

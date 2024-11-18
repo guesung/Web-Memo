@@ -1,6 +1,7 @@
+import { NavigateOptions } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-interface Option {
+interface Option extends NavigateOptions {
   removeOthers?: boolean;
 }
 
@@ -24,10 +25,10 @@ export default function useSearchParamsRouter(targetKey: string) {
         return (prev += `${key}=${value}`);
       }, '');
 
-    router.replace(`${pathname}${currentSearchParams}`, { scroll: false });
+    router.replace(`${pathname}${currentSearchParams}`, { scroll: options?.scroll ?? false });
   };
 
-  const add = (value: string) => {
+  const add = (value: string, options?: Option) => {
     const currentSearchParams = [...searchParams.entries(), [targetKey, value]].reduce((prev, [key, value], index) => {
       if (index === 0) prev += '?';
       else prev += '&';
@@ -35,10 +36,10 @@ export default function useSearchParamsRouter(targetKey: string) {
       return (prev += `${key}=${value}`);
     }, '');
 
-    router.replace(`${pathname}${currentSearchParams}`, { scroll: false });
+    router.replace(`${pathname}${currentSearchParams}`, { scroll: options?.scroll ?? false });
   };
 
-  const remove = () => {
+  const remove = (options?: Option) => {
     const currentSearchParams = [...searchParams.entries()]
       .filter(([key]) => targetKey !== key)
       .reduce((prev, [key, value], index) => {
@@ -48,7 +49,7 @@ export default function useSearchParamsRouter(targetKey: string) {
         return (prev += `${key}=${value}`);
       }, '');
 
-    router.replace(`${pathname}${currentSearchParams}`, { scroll: false });
+    router.replace(`${pathname}${currentSearchParams}`, { scroll: options?.scroll ?? false });
   };
 
   return {

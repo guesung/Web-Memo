@@ -20,9 +20,10 @@ const getMemoItems = (nextGroupKey: number, count: number) => {
 
 interface MemoGridProps {
   memos: GetMemoType[];
+  gridKey: string;
 }
 
-export default function MemoGrid({ memos }: MemoGridProps) {
+export default function MemoGrid({ memos, gridKey }: MemoGridProps) {
   const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT));
 
   return (
@@ -45,7 +46,7 @@ export default function MemoGrid({ memos }: MemoGridProps) {
       }}>
       {items.map(item => (
         <motion.div
-          key={item.key}
+          key={item.key + gridKey}
           initial={{ opacity: 0, y: 20, scale: 0.8 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           data-grid-groupkey={item.groupKey}>

@@ -19,7 +19,7 @@ export default function SidebarGroupCategory() {
   const categorySearchParamsRouter = useSearchParamsRouter('category');
 
   const handleCategoryClick = (category: string) => {
-    categorySearchParamsRouter.set(category, { removeOthers: true });
+    categorySearchParamsRouter.set(category, { removeOthers: true, scroll: true });
   };
 
   return (

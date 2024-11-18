@@ -25,5 +25,5 @@ export default function MemoView() {
     return (
       <p className="mt-8 w-full text-center">아직 저장된 메모가 없어요. 사이드 패널을 열어 메모를 저장해보세요 !</p>
     );
-  return <MemoGrid memos={filteredMemos} />;
+  return <MemoGrid memos={filteredMemos} gridKey={category + isWish} />;
 }

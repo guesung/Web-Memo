@@ -1,10 +1,9 @@
 'use client';
-import { useMemoPatchMutation, useMemoQuery, useSearchParamsRouter } from '@extension/shared/hooks';
+import { useCloseOnEscape, useMemoPatchMutation, useMemoQuery, useSearchParamsRouter } from '@extension/shared/hooks';
 import { Button } from '@src/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
 import { Textarea } from '@src/components/ui/textarea';
 import { useToast } from '@src/hooks/use-toast';
-import { cn } from '@src/utils';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -21,18 +20,16 @@ export default function MemoDialog() {
   const idSearchParamsRouter = useSearchParamsRouter('id');
   const id = idSearchParamsRouter.get();
   const [row, setRow] = useState(MIN_ROW);
+  const { data: memoData } = useMemoQuery({ supabaseClient: getSupabaseClient(), id: Number(id) });
+  const { toast } = useToast();
+  const { mutate: mutateMemoPatch } = useMemoPatchMutation({
+    supabaseClient: getSupabaseClient(),
+  });
 
   const { register, watch, setValue } = useForm<InputType>({
     defaultValues: {
       memo: '',
     },
-  });
-
-  const supabaseClient = getSupabaseClient();
-  const { data: memoData } = useMemoQuery({ supabaseClient, id: Number(id) });
-  const { toast } = useToast();
-  const { mutate: mutateMemoPatch } = useMemoPatchMutation({
-    supabaseClient,
   });
 
   const saveMemo = () => {
@@ -54,23 +51,9 @@ export default function MemoDialog() {
     }
   };
 
-  const closeDialog = () => {
-    idSearchParamsRouter.remove();
-  };
+  const closeDialog = () => idSearchParamsRouter.remove();
 
-  const handleSaveClick = () => {
-    saveMemo();
-    closeDialog();
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeDialog();
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  useCloseOnEscape(closeDialog);
 
   useEffect(() => {
     const rowCount = watch('memo').split(/\r\n|\r|\n/).length;
@@ -110,7 +93,7 @@ export default function MemoDialog() {
           <Button onClick={closeDialog} variant="outline" type="button">
             닫기
           </Button>
-          <Button variant="outline" onClick={handleSaveClick}>
+          <Button variant="outline" onClick={saveMemo}>
             저장
           </Button>
         </DialogFooter>

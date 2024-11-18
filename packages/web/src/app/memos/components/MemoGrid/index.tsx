@@ -4,11 +4,8 @@ import { useMemoListQuery, useSearchParamsRouter } from '@extension/shared/hooks
 
 import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
 import { getSupabaseClient } from '@src/utils/supabase.client';
-
 import { MouseEventHandler, useState } from 'react';
-
 import { motion } from 'framer-motion';
-
 import { useGuide } from '../../hooks';
 import MemoItem from './MemoItem';
 

@@ -68,7 +68,7 @@ function MemoForm() {
 
     const formattedMemo = await getFormattedMemo({ memo, isWish });
 
-    if (currentMemo) mutateMemoPatch({ ...formattedMemo, id: currentMemo.id });
+    if (currentMemo) mutateMemoPatch({ id: currentMemo.id, memoRequest: formattedMemo });
     else mutateMemoPost(formattedMemo);
   };
 

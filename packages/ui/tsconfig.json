@@ -4,7 +4,10 @@
     "outDir": "dist",
     "jsx": "react-jsx",
     "baseUrl": ".",
-    "types": ["chrome"]
+    "types": ["chrome", "node"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["index.ts", "lib"]
 }

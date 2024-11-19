@@ -1,4 +1,4 @@
-import { queryKeys } from '@extension/shared/constants';
+import { QUERY_KEY } from '@extension/shared/constants';
 import { deleteMemo } from '@extension/shared/utils';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,7 +18,7 @@ export default function useMemoDeleteMutation({ handleSuccess }: UseMemoDeleteMu
   return useMutation({
     mutationFn: deleteMemoFn,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.memos() });
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
       handleSuccess?.();
     },
   });

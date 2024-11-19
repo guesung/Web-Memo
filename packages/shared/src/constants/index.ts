@@ -1,7 +1,6 @@
 export * from './Language';
 export * from './Supabase';
 export * from './Config';
-export * from './Memo';
 export * from './Url';
 export * from './Storage';
 export * from './QueryKey';

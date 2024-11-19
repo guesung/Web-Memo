@@ -1,4 +1,4 @@
-import { queryKeys } from '@src/constants';
+import { QUERY_KEY } from '@src/constants';
 import { MemoSupabaseClient } from '@src/types';
 import { getCategory } from '@src/utils';
 import { useQuery } from '@tanstack/react-query';
@@ -10,7 +10,7 @@ interface UseCategoryQueryProps {
 export default function useCategoryQuery({ supabaseClient }: UseCategoryQueryProps) {
   const query = useQuery({
     queryFn: getCategory.bind(null, supabaseClient),
-    queryKey: queryKeys.category(),
+    queryKey: QUERY_KEY.category(),
     enabled: !!supabaseClient,
   });
 

@@ -28,7 +28,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <ThemeProvider attribute="class" defaultTheme="system">
           <QueryProvider>
             <Header />
-            <Header.Margin />
+
             {children}
             <ReactQueryDevtools initialIsOpen={false} />
           </QueryProvider>

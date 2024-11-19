@@ -1,4 +1,4 @@
-import { COOKIE_KEY_SIDE_BAR_STATE, queryKeys } from '@extension/shared/constants';
+import { COOKIE_KEY_SIDE_BAR_STATE, QUERY_KEY } from '@extension/shared/constants';
 import { getCategory, getMemo } from '@extension/shared/utils';
 import { Header, HydrationBoundaryWrapper } from '@src/components';
 import { SidebarProvider } from '@src/components/ui/sidebar';
@@ -16,11 +16,11 @@ export default async function Page() {
       <Header.Margin />
       <main className="bg-background flex w-full p-4 text-sm">
         <SidebarProvider defaultOpen={defaultOpen}>
-          <HydrationBoundaryWrapper queryKey={queryKeys.category()} queryFn={() => getCategory(supabaseClient)}>
+          <HydrationBoundaryWrapper queryKey={QUERY_KEY.category()} queryFn={() => getCategory(supabaseClient)}>
             <MemoSidebar />
             <MemoSidebarTrigger />
           </HydrationBoundaryWrapper>
-          <HydrationBoundaryWrapper queryKey={queryKeys.memos()} queryFn={() => getMemo(supabaseClient)}>
+          <HydrationBoundaryWrapper queryKey={QUERY_KEY.memos()} queryFn={() => getMemo(supabaseClient)}>
             <MemoView />
             <MemoDialog />
           </HydrationBoundaryWrapper>

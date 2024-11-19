@@ -88,7 +88,13 @@ export default memo(function MemoItem({ memo, ...props }: MemoItemProps) {
         </Link>
       </CardHeader>
       {memo.memo && (
-        <CardContent className="whitespace-break-spaces break-all" onClick={handleContentClick} id={String(memo.id)}>
+        <CardContent
+          className="whitespace-break-spaces break-all"
+          onClick={handleContentClick}
+          id={String(memo.id)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={e => e.key === 'Enter' && handleContentClick(e as any)}>
           {memo.memo}
         </CardContent>
       )}

@@ -7,13 +7,13 @@ import { PlusIcon } from 'lucide-react';
 import { memo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-interface Input {
+interface CategoryFormInput {
   category: string;
 }
 
 export default memo(function SidebarMenuItemAddCategory() {
   const [isEditMode, setIsEditMode] = useState(false);
-  const { register, handleSubmit } = useForm<Input>({
+  const { register, handleSubmit } = useForm<CategoryFormInput>({
     defaultValues: {
       category: '',
     },

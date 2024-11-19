@@ -1,4 +1,4 @@
-import { queryKeys } from '@src/constants';
+import { QUERY_KEY } from '@src/constants';
 import { MemoSupabaseClient } from '@src/types';
 import { type UserResponse } from '@supabase/supabase-js';
 import { useSuspenseQuery } from '@tanstack/react-query';
@@ -14,6 +14,6 @@ export default function useSupabaseUser({ supabaseClient }: UseSupabaseUserProps
 
   return useSuspenseQuery<UserResponse, Error>({
     queryFn: getUser,
-    queryKey: queryKeys.user(),
+    queryKey: QUERY_KEY.user(),
   });
 }

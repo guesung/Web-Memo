@@ -7,7 +7,8 @@
     "types": ["chrome", "node"],
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "declaration": true
   },
-  "include": ["src"]
+  "include": ["src", "index.ts"]
 }

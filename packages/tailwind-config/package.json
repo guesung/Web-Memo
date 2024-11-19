@@ -5,6 +5,7 @@
   "main": "./tailwind.config.js",
   "private": true,
   "devDependencies": {
-    "daisyui": "^4.12.10"
+    "daisyui": "^4.12.10",
+    "tailwindcss-animate": "^1.0.7"
   }
 }

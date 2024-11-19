@@ -25,7 +25,7 @@ const buildOptions = {
 
 const build = async () => {
   await esbuild.build(buildOptions);
-  fs.copyFileSync(resolve('lib', 'global.css'), resolve('dist', 'global.css'));
+  fs.copyFileSync(resolve('global.css'), resolve('dist', 'global.css'));
 
   const execAsync = promisify(exec);
   await execAsync('tsc --emitDeclarationOnly --outDir dist');

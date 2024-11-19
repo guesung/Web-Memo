@@ -1,6 +1,6 @@
 'use client';
 import { useCloseOnEscape, useMemoPatchMutation, useMemoQuery, useSearchParamsRouter } from '@extension/shared/hooks';
-import { Button } from '@src/components/ui/button';
+import { Button } from '@extension/ui';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
 import { Textarea } from '@src/components/ui/textarea';
 import { useToast } from '@src/hooks/use-toast';

@@ -1,5 +1,5 @@
 import localFont from 'next/font/local';
-
+import '@extension/ui/dist/global.css';
 import { Header, QueryProvider, ThemeProvider } from '@src/components';
 import { Toaster } from '@src/components/ui/toaster';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';

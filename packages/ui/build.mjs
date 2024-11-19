@@ -11,11 +11,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  * @type { import("esbuild").BuildOptions }
  */
 const buildOptions = {
-  entryPoints: ['./index.ts', './tailwind.config.ts', './lib/**/*', './src/**/*'],
+  entryPoints: ['./index.ts', './tailwind.config.ts'],
   tsconfig: './tsconfig.json',
   bundle: true,
   target: 'es6',
   outdir: './dist',
+  format: 'esm',
   sourcemap: true,
   alias: {
     '@': resolve(__dirname, './src'),

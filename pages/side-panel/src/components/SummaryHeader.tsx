@@ -1,5 +1,5 @@
-import { Button } from '@extension/ui';
-import { LoaderCircle, RefreshCwIcon } from 'lucide-react';
+import { Button, Loading } from '@extension/ui';
+import { RefreshCwIcon } from 'lucide-react';
 import { useSummaryContext } from './SummaryProvider';
 import ToggleTheme from './ToggleTheme';
 
@@ -11,7 +11,7 @@ export default function Header() {
       <ToggleTheme />
       {isSummaryLoading ? (
         <Button variant="outline" size="icon">
-          <LoaderCircle className="animate-spin" size={16} />
+          <Loading />
         </Button>
       ) : (
         <Button variant="outline" size="icon" onClick={refetchSummary}>

@@ -1,3 +1,6 @@
-export const Loading = () => {
-  return <div className="h-4 w-4 animate-spin rounded-full border-8 border-gray-300 border-t-blue-600" />;
-};
+import { LoaderCircle } from 'lucide-react';
+
+interface LoadingProps extends React.ComponentProps<'svg'> {}
+export function Loading(props: LoadingProps) {
+  return <LoaderCircle className="animate-spin" size={16} {...props} />;
+}

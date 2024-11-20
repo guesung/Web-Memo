@@ -1,6 +1,5 @@
 export { default as ErrorFallback } from './ErrorFallback';
 export { default as ErrorBoundary } from './ErrorBoundary';
-export { default as LoadingFallback } from './LoadingFallback';
 export { default as ToggleTheme } from './ToggleTheme';
 
 export * from './accordion';
@@ -30,7 +29,6 @@ export * from './input-otp';
 export * from './input';
 export * from './label';
 export * from './loading';
-export * from './LoadingFallback';
 export * from './menubar';
 export * from './navigation-menu';
 export * from './pagination';

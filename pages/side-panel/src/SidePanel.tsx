@@ -1,6 +1,6 @@
 import { useDidMount } from '@extension/shared/hooks';
 import { responseGetSidePanelOpen } from '@extension/shared/utils/extension';
-import { ErrorBoundary, LoadingFallback, Toaster } from '@extension/ui';
+import { ErrorBoundary, Loading, Toaster } from '@extension/ui';
 import { Suspense } from 'react';
 import {
   LoginSection,
@@ -28,12 +28,12 @@ export default function SidePanel() {
         </section>
         <section className="flex h-1/2 flex-col">
           <ErrorBoundary>
-            <Suspense fallback={<LoadingFallback />}>
+            <Suspense fallback={<Loading />}>
               <MemoHeader />
             </Suspense>
           </ErrorBoundary>
           <ErrorBoundary FallbackComponent={LoginSection}>
-            <Suspense fallback={<LoadingFallback />}>
+            <Suspense fallback={<Loading />}>
               <MemoForm />
             </Suspense>
           </ErrorBoundary>

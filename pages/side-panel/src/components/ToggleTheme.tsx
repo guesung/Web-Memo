@@ -5,43 +5,34 @@ import { useEffect, useState } from 'react';
 
 type Theme = 'dark' | 'light';
 
-const makeDarkTheme = () => {
-  document.documentElement.classList.add('dark');
-  Storage.set('theme', 'dark');
-};
-const makeLightTheme = () => {
-  document.documentElement.classList.remove('dark');
-  Storage.set('theme', 'light');
-};
-
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>('light');
+
+  const setThemeMode = (theme: Theme) => {
+    if (theme === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+    Storage.set('theme', theme);
+    setTheme(theme);
+  };
 
   useEffect(() => {
     (async () => {
       const storageTheme = await Storage.get('theme');
 
-      if ((!storageTheme && window.matchMedia('(prefers-color-scheme: dark)').matches) || storageTheme === 'dark') {
-        makeDarkTheme();
-        setTheme('dark');
-      }
+      if ((!storageTheme && window.matchMedia('(prefers-color-scheme: dark)').matches) || storageTheme === 'dark')
+        setThemeMode('dark');
     })();
   }, []);
 
-  return { setTheme, theme };
+  return { setTheme: setThemeMode, theme };
 }
 
 export default function ToggleTheme() {
   const { theme, setTheme } = useTheme();
 
   const handleClick = () => {
-    if (theme === 'dark') {
-      makeLightTheme();
-      setTheme('light');
-    } else {
-      makeDarkTheme();
-      setTheme('dark');
-    }
+    if (theme === 'dark') setTheme('light');
+    else setTheme('dark');
   };
 
   return (

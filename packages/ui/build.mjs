@@ -11,7 +11,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  * @type { import("esbuild").BuildOptions }
  */
 const buildOptions = {
-  entryPoints: ['./index.ts', './tailwind.config.ts'],
+  entryPoints: ['./index.ts', './tailwind.config.js'],
   tsconfig: './tsconfig.json',
   bundle: true,
   target: 'es6',

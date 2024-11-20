@@ -1,4 +1,3 @@
-export { default as Loading } from './Loading';
 export { default as ErrorFallback } from './ErrorFallback';
 export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as LoadingFallback } from './LoadingFallback';
@@ -29,7 +28,7 @@ export * from './hover-card';
 export * from './input-otp';
 export * from './input';
 export * from './label';
-export * from './Loading';
+export * from './loading';
 export * from './LoadingFallback';
 export * from './menubar';
 export * from './navigation-menu';

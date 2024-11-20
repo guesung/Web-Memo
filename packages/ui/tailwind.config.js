@@ -1,5 +1,4 @@
 const baseConfig = require('@extension/tailwindcss-config');
-// import baseConfig from '@extension/tailwindcss-config';
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {

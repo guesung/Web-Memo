@@ -23,7 +23,7 @@ interface RootLayoutProps extends PropsWithChildren {}
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="ko" className="bg-background h-screen">
+    <html lang="ko" className="h-screen">
       <body className={`${pretendard.variable} font-pretendard h-full`}>
         <ThemeProvider attribute="class" defaultTheme="system">
           <QueryProvider>

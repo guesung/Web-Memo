@@ -38,7 +38,11 @@ export default function ToggleTheme() {
   };
 
   return (
-    <Button onClick={handleClick} variant="outline" size="icon">
+    <Button
+      onClick={handleClick}
+      variant="outline"
+      size="icon"
+      aria-label={`${theme === 'dark' ? '라이트' : '다크'} 모드로 전환`}>
       {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} color="black" />}
     </Button>
   );

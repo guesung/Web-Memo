@@ -19,8 +19,10 @@ export function useTheme() {
     (async () => {
       const storageTheme = await Storage.get('theme');
 
-      if ((!storageTheme && window.matchMedia('(prefers-color-scheme: dark)').matches) || storageTheme === 'dark')
-        setThemeMode('dark');
+      const isInitialThemeDark = !storageTheme && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isStorageThemeDark = storageTheme === 'dark';
+
+      if (isInitialThemeDark || isStorageThemeDark) setThemeMode('dark');
     })();
   }, []);
 

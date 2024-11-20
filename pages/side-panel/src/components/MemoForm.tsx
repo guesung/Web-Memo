@@ -18,9 +18,9 @@ import {
 } from '@extension/shared/utils/extension';
 import { cn, Textarea, ToastAction, useToast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
+import { getWishListUrl } from '@src/utils';
 import { HeartIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { WEB_URL } from '@extension/shared/constants';
 
 type InputType = GetFormattedMemoProps;
 
@@ -102,20 +102,21 @@ function MemoForm() {
     }
   };
 
+  const getTitle = (isWish: boolean) => {
+    if (isWish) return '위시 리스트에서 제거되었습니다.';
+    return '위시 리스트에 추가되었습니다.';
+  };
+
   const handleWishListClick = () => {
-    if (currentMemo?.id) Tab.create({ url: `${WEB_URL}/memos?wish=true&id=${currentMemo?.id}` });
-    else Tab.create({ url: `${WEB_URL}/memos?wish=true` });
+    const wishListUrl = getWishListUrl(currentMemo?.id);
+
+    Tab.create({ url: wishListUrl });
   };
 
   const handleWishClick = async () => {
     const currentIsWish = watch('isWish');
 
     setValue('isWish', !currentIsWish);
-
-    const getTitle = (isWish: boolean) => {
-      if (isWish) return '위시 리스트에서 제거되었습니다.';
-      return '위시 리스트에 추가되었습니다.';
-    };
 
     toast({
       title: getTitle(currentIsWish),

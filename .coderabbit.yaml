@@ -16,7 +16,15 @@ reviews:
   changed_files_summary: true
   labeling_instructions: []
   path_filters: []
-  path_instructions: []
+  path_instructions:
+    - path: '**/*.ts|js|tsx|jsx'
+      instructions: |
+        Review the JavaScript code or TypeScript code against the Airbnb JavaScript style guide and point out any mismatches
+    - path: 'tests/**.*'
+      instructions: |
+        Review the following unit test code written using the Mocha test library. Ensure that:
+        - The code adheres to best practices associated with Mocha.
+        - Descriptive test names are used to clearly convey the intent of each test.
   abort_on_close: true
   auto_review:
     enabled: true

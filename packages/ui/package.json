@@ -11,7 +11,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "clean": "rimraf ./dist && rimraf .turbo",
-    "ready": "rm -rf dist && node build.mjs",
+    "ready": "rimraf dist && node build.mjs",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "pnpm lint --fix",
     "prettier": "prettier . --write",

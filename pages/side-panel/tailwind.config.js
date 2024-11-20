@@ -5,5 +5,4 @@ const { withUI } = require('@extension/ui');
 module.exports = withUI({
   ...baseConfig,
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
-  plugins: [require('@tailwindcss/typography'), ...baseConfig.plugins],
 });

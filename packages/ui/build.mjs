@@ -15,11 +15,22 @@ const buildOptions = {
   tsconfig: './tsconfig.json',
   bundle: true,
   target: 'es6',
-  outdir: './dist',
+  outdir: 'dist',
   format: 'esm',
   sourcemap: true,
   alias: {
     '@': resolve(__dirname, './src'),
+  },
+  jsx: 'automatic',
+  external: ['react', 'react-dom'],
+  loader: {
+    '.tsx': 'tsx',
+    '.ts': 'ts',
+    '.jsx': 'jsx',
+    '.js': 'jsx',
+  },
+  define: {
+    'process.env.NODE_ENV': '"production"',
   },
 };
 

@@ -8,7 +8,10 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "declaration": true
+    "declaration": true,
+    "target": "esnext",
+    "esModuleInterop": true,
+    "moduleResolution": "node"
   },
   "include": ["src", "index.ts"]
 }

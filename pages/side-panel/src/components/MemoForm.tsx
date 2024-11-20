@@ -1,4 +1,3 @@
-import { overlay } from 'overlay-kit';
 import { useEffect, useState } from 'react';
 
 import {
@@ -16,15 +15,15 @@ import {
   getSupabaseClient,
   responseRefetchTheMemos,
 } from '@extension/shared/utils/extension';
-import { cn, Textarea, Toast } from '@extension/ui';
+import { cn, Textarea, useToast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
-import { useForm } from 'react-hook-form';
 import { HeartIcon } from 'lucide-react';
+import { useForm } from 'react-hook-form';
 
 type InputType = GetFormattedMemoProps;
 
 function MemoForm() {
-  // const { toast } = useToast();
+  const { toast } = useToast();
   const [isSaved, setIsSaved] = useState(true);
   const { throttle, abortThrottle } = useThrottle();
   const { data: tab } = useTabQuery();
@@ -48,8 +47,8 @@ function MemoForm() {
       setIsSaved(true);
       abortThrottle();
     },
-    onSuccess: () => {
-      // toast({ title: '저장 성공' });
+    onError: () => {
+      toast({ title: '저장에 실패했습니다.' });
     },
   });
   const { mutate: mutateMemoPost } = useMemoPostMutation({
@@ -59,7 +58,7 @@ function MemoForm() {
       abortThrottle();
     },
     onError: () => {
-      overlay.open(({ unmount }) => <Toast message="메모 저장에 실패했습니다." onClose={unmount} />);
+      toast({ title: '저장에 실패했습니다.' });
     },
   });
 
@@ -114,7 +113,7 @@ function MemoForm() {
         {...register('memo', {
           onChange: handleMemoTextAreaChange,
         })}
-        className={cn('h-full resize-none border-2 text-sm', {
+        className={cn('h-full resize-none text-sm', {
           'border-cyan-900 focus:border-cyan-900': !isSaved,
         })}
         id="memo-textarea"

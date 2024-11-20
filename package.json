@@ -53,7 +53,8 @@
     "react-dom": "18.3.1",
     "react-hook-form": "^7.53.2",
     "uvcanvas": "^0.2.2",
-    "vite-plugin-svgr": "^4.3.0"
+    "vite-plugin-svgr": "^4.3.0",
+    "lucide-react": "^0.456.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0",

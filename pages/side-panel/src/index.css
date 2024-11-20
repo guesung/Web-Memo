@@ -20,5 +20,5 @@
 }
 
 .prose {
-  --tw-prose-headings: @apply text-foreground;
+  --tw-prose-headings: var(--foreground);
 }

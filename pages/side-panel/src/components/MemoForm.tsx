@@ -14,11 +14,13 @@ import {
   GetFormattedMemoProps,
   getSupabaseClient,
   responseRefetchTheMemos,
+  Tab,
 } from '@extension/shared/utils/extension';
-import { cn, Textarea, useToast } from '@extension/ui';
+import { cn, Textarea, ToastAction, useToast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
 import { HeartIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { WEB_URL } from '@extension/shared/constants';
 
 type InputType = GetFormattedMemoProps;
 
@@ -100,8 +102,25 @@ function MemoForm() {
     }
   };
 
+  const handleWishListClick = () => {
+    if (currentMemo?.id) Tab.create({ url: `${WEB_URL}/memos?wish=true&id=${currentMemo?.id}` });
+    else Tab.create({ url: `${WEB_URL}/memos?wish=true` });
+  };
+
   const handleWishClick = async () => {
-    setValue('isWish', !watch('isWish'));
+    const currentIsWish = watch('isWish');
+    setValue('isWish', !currentIsWish);
+
+    if (currentIsWish) toast({ title: '위시 리스트에서 제거되었습니다.' });
+    else
+      toast({
+        title: '위시 리스트에 추가되었습니다.',
+        action: (
+          <ToastAction altText="바로가기" onClick={handleWishListClick}>
+            바로가기
+          </ToastAction>
+        ),
+      });
 
     await saveMemo();
   };

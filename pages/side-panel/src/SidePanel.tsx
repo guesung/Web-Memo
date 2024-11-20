@@ -17,7 +17,7 @@ export default function SidePanel() {
 
   return (
     <QueryProvider>
-      <main className="prose prose-sm relative flex h-lvh flex-col px-4">
+      <main className="prose prose-sm bg-background text-foreground relative flex h-lvh flex-col px-4">
         <section className="flex-1 overflow-scroll">
           <ErrorBoundary>
             <SummaryProvider>

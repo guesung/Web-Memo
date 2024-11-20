@@ -109,18 +109,22 @@ function MemoForm() {
 
   const handleWishClick = async () => {
     const currentIsWish = watch('isWish');
+
     setValue('isWish', !currentIsWish);
 
-    if (currentIsWish) toast({ title: '위시 리스트에서 제거되었습니다.' });
-    else
-      toast({
-        title: '위시 리스트에 추가되었습니다.',
-        action: (
-          <ToastAction altText="바로가기" onClick={handleWishListClick}>
-            바로가기
-          </ToastAction>
-        ),
-      });
+    const getTitle = (isWish: boolean) => {
+      if (isWish) return '위시 리스트에서 제거되었습니다.';
+      return '위시 리스트에 추가되었습니다.';
+    };
+
+    toast({
+      title: getTitle(currentIsWish),
+      action: (
+        <ToastAction altText="바로가기" onClick={handleWishListClick}>
+          바로가기
+        </ToastAction>
+      ),
+    });
 
     await saveMemo();
   };

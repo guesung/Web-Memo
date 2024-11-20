@@ -41,22 +41,21 @@ function MemoForm() {
     },
   });
 
+  const handleSaveMemoSuccess = () => {
+    setIsSaved(true);
+    abortThrottle();
+  };
+
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
-    handleSuccess: () => {
-      setIsSaved(true);
-      abortThrottle();
-    },
+    onSuccess: handleSaveMemoSuccess,
     onError: () => {
       toast({ title: '저장에 실패했습니다.' });
     },
   });
   const { mutate: mutateMemoPost } = useMemoPostMutation({
     supabaseClient,
-    onSuccess: () => {
-      setIsSaved(true);
-      abortThrottle();
-    },
+    onSuccess: handleSaveMemoSuccess,
     onError: () => {
       toast({ title: '저장에 실패했습니다.' });
     },

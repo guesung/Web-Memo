@@ -1,6 +1,5 @@
 import { overlay } from 'overlay-kit';
 import { useEffect, useState } from 'react';
-import HeartIcon from '../../public/svgs/heart.svg';
 
 import {
   useDidMount,
@@ -17,13 +16,15 @@ import {
   getSupabaseClient,
   responseRefetchTheMemos,
 } from '@extension/shared/utils/extension';
-import { cn, Toast } from '@extension/ui';
+import { cn, Textarea, Toast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
 import { useForm } from 'react-hook-form';
+import { HeartIcon } from 'lucide-react';
 
 type InputType = GetFormattedMemoProps;
 
 function MemoForm() {
+  // const { toast } = useToast();
   const [isSaved, setIsSaved] = useState(true);
   const { throttle, abortThrottle } = useThrottle();
   const { data: tab } = useTabQuery();
@@ -47,8 +48,8 @@ function MemoForm() {
       setIsSaved(true);
       abortThrottle();
     },
-    onError: () => {
-      overlay.open(({ unmount }) => <Toast message="메모 저장에 실패했습니다." onClose={unmount} />);
+    onSuccess: () => {
+      // toast({ title: '저장 성공' });
     },
   });
   const { mutate: mutateMemoPost } = useMemoPostMutation({
@@ -108,25 +109,25 @@ function MemoForm() {
   };
 
   return (
-    <form className="form-control h-full">
-      <textarea
-        className={cn('textarea textarea-bordered h-full resize-none border-2', {
+    <form className="relative h-full py-1">
+      <Textarea
+        {...register('memo', {
+          onChange: handleMemoTextAreaChange,
+        })}
+        className={cn('h-full resize-none border-2 text-sm', {
           'border-cyan-900 focus:border-cyan-900': !isSaved,
         })}
         id="memo-textarea"
         placeholder="메모"
         onKeyDown={handleKeyDown}
-        {...register('memo', {
-          onChange: handleMemoTextAreaChange,
-        })}
       />
-      <div className="label">
+      <div className="absolute bottom-2 left-2">
         <HeartIcon
-          width="16px"
-          height="16px"
-          fill={watch('isWish') ? 'white' : 'black'}
+          size={16}
+          fill={watch('isWish') ? 'pink' : ''}
+          fillOpacity={watch('isWish') ? 100 : 0}
           onClick={handleWishClick}
-          className="cursor-pointer"
+          role="button"
         />
       </div>
     </form>

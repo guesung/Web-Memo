@@ -1,11 +1,10 @@
 import { WEB_URL } from '@extension/shared/constants';
-import { useDidMount, useTabQuery, useUserPreferDarkMode } from '@extension/shared/hooks';
+import { useDidMount, useTabQuery } from '@extension/shared/hooks';
 import { I18n, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
-import TopRightArrowIcon from '../../public/svgs/top_right_arrow.svg';
+import { ExternalLinkIcon } from 'lucide-react';
 
 export default function MemoHeader() {
   const { data: tab, refetch: refetchTab } = useTabQuery();
-  const { isUserPreferDarkMode } = useUserPreferDarkMode();
   const handleMemoClick = () => {
     Tab.create({ url: `${WEB_URL}/memos` });
   };
@@ -17,18 +16,13 @@ export default function MemoHeader() {
   );
 
   return (
-    <div className="label">
-      <span className="label-text whitespace-nowrap font-bold">{I18n.get('memo')}</span>
-      <span className="w-1" />
-      <TopRightArrowIcon
-        width={20}
-        height={20}
-        fill={isUserPreferDarkMode ? 'black' : 'white'}
-        onClick={handleMemoClick}
-        className="cursor-pointer"
-      />
+    <div className="flex items-center">
+      <div className="flex items-center gap-1">
+        <span className="whitespace-nowrap font-bold">{I18n.get('memo')}</span>
+        <ExternalLinkIcon size={16} onClick={handleMemoClick} role="button" />
+      </div>
       <span className="w-4" />
-      <span className="label-text w-full truncate text-right">{tab?.title}</span>
+      <span className="w-full truncate text-right">{tab?.title}</span>
     </div>
   );
 }

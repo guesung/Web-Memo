@@ -1,6 +1,7 @@
 export { default as ErrorFallback } from './ErrorFallback';
 export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as LoadingFallback } from './LoadingFallback';
+export { default as ToggleTheme } from './ToggleTheme';
 
 export * from './accordion';
 export * from './alert-dialog';

@@ -20,10 +20,11 @@ export default function MemoDialog() {
   const idSearchParamsRouter = useSearchParamsRouter('id');
   const id = idSearchParamsRouter.get();
   const [row, setRow] = useState(MIN_ROW);
-  const { data: memoData } = useMemoQuery({ supabaseClient: getSupabaseClient(), id: Number(id) });
+  const supabaseClient = getSupabaseClient();
+  const { data: memoData } = useMemoQuery({ supabaseClient, id: Number(id) });
   const { toast } = useToast();
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
-    supabaseClient: getSupabaseClient(),
+    supabaseClient,
   });
 
   const { register, watch, setValue } = useForm<InputType>({

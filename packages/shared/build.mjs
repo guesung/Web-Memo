@@ -30,13 +30,19 @@ const libBuildOptions = {
 };
 
 const build = async () => {
-  await esbuild.build({ ...libBuildOptions, format: 'esm', outExtension: { '.js': '.js' }, sourcemap: true });
+  console.log('🚀 빌드 프로세스 시작...');
 
-  const execAsync = promisify(exec);
-  await execAsync('tsc --emitDeclarationOnly --outDir dist');
+  try {
+    await esbuild.build({ ...libBuildOptions, format: 'esm', outExtension: { '.js': '.js' }, sourcemap: true });
+    console.log('✅ esbuild 빌드 완료');
+
+    const execAsync = promisify(exec);
+    await execAsync('tsc --emitDeclarationOnly --outDir dist');
+    console.log('✅ TypeScript 선언 파일 생성 완료');
+  } catch (error) {
+    console.error('❌ 빌드 중 오류 발생:', error);
+    throw error;
+  }
 };
 
-build().catch(error => {
-  console.log(error);
-  process.exit(1);
-});
+build();

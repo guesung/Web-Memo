@@ -55,11 +55,11 @@ export default function MemoSidebar() {
 
         <SidebarGroupCategory />
       </SidebarContent>
-      <SidebarFooter>
+      {/* <SidebarFooter>
         <Link href="/setting" className="mb-2 ml-2 cursor-pointer">
           <SettingsIcon size={16} />
         </Link>
-      </SidebarFooter>
+      </SidebarFooter> */}
     </Sidebar>
   );
 }

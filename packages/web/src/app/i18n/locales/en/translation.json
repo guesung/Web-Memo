@@ -19,7 +19,7 @@
   },
   "option": {
     "deleteMemo": "Delete Memo",
-    "changeCategory": "Change Category"
+    "changeCategory": "Select a Category"
   },
   "login": {
     "welcomeTitle": "Welcome.",

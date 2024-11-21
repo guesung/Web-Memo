@@ -16,7 +16,7 @@ export const updateMemo = async (
 ) => supabaseClient.from('memo').update(memoRequest).eq('id', id).select();
 
 export const deleteMemo = async (supabaseClient: MemoSupabaseClient, id: number) =>
-  supabaseClient.from('memo').delete().eq('id', id);
+  supabaseClient.from('memo').delete().eq('id', id).select();
 
 export const upsertMemo = async (supabaseClient: MemoSupabaseClient, memoRequest: MemoTable['Insert']) =>
   supabaseClient.from('memo').upsert(memoRequest).select();

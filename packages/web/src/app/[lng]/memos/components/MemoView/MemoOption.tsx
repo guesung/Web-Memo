@@ -19,7 +19,13 @@ import {
 } from '@src/components/ui/select';
 import { CategoryRow } from '@extension/shared/types';
 import { getSupabaseClient } from '@src/utils/supabase.client';
-import { useCategoryQuery, useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
+import {
+  useCategoryQuery,
+  useMemoPatchMutation,
+  useMemoPostMutation,
+  useMemoQuery,
+  useSearchParamsRouter,
+} from '@extension/shared/hooks';
 import { useMemoDeleteMutation } from '@src/hooks';
 import { requestRefetchTheMemos } from '@extension/shared/utils/extension';
 import { useToast } from '@src/hooks/use-toast';
@@ -27,6 +33,9 @@ import { MouseEventHandler } from 'react';
 import { EllipsisVerticalIcon } from 'lucide-react';
 import { LanguageType } from '@src/app/i18n/type';
 import useTranslation from '@src/app/i18n/client';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { PATHS } from '@src/constants';
+import { ToastAction } from '@src/components/ui/toast';
 
 interface MemoOptionProps extends LanguageType {
   id: number;
@@ -43,14 +52,36 @@ export default function MemoOption({ lng, id }: MemoOptionProps) {
     supabaseClient,
   });
 
+  const router = useRouter();
+
   const { mutate: mutateDeleteMemo } = useMemoDeleteMutation({
     handleSuccess: requestRefetchTheMemos,
+  });
+  const { mutate: mutatePostMemo } = useMemoPostMutation({
+    supabaseClient,
   });
 
   const handleDeleteMemo: MouseEventHandler<HTMLDivElement> = event => {
     event.stopPropagation();
-    mutateDeleteMemo(id);
-    toast({ title: t('toastMessage.memoDeleted') });
+    mutateDeleteMemo(id, {
+      onSuccess: ({ data }) => {
+        if (!data) return;
+
+        const saveMemo = () =>
+          mutatePostMemo(data[0], {
+            onSuccess: refetchMemo,
+          });
+
+        toast({
+          title: t('toastMessage.memoDeleted'),
+          action: (
+            <ToastAction altText="제거 취소" onClick={saveMemo}>
+              제거 취소
+            </ToastAction>
+          ),
+        });
+      },
+    });
   };
 
   const handleCategoryChange = (categoryId: string) => {
@@ -58,7 +89,21 @@ export default function MemoOption({ lng, id }: MemoOptionProps) {
       { id, memoRequest: { category_id: Number(categoryId) } },
       {
         onSuccess: () => {
-          toast({ title: t('toastMessage.memoEdited') });
+          const category = categories?.find(category => category.id === Number(categoryId));
+          if (!category) return;
+
+          toast({
+            title: t('toastMessage.memoEdited'),
+            action: (
+              <ToastAction
+                altText="바로가기"
+                onClick={() => {
+                  router.push(`${PATHS.memos}?category=${category.name}&id=${id}`);
+                }}>
+                바로가기
+              </ToastAction>
+            ),
+          });
           refetchMemo();
         },
       },
@@ -78,7 +123,7 @@ export default function MemoOption({ lng, id }: MemoOptionProps) {
             {t('option.deleteMemo')}
           </DropdownMenuItem>
           <DropdownMenuItem className="cursor-pointer">
-            <Select onValueChange={handleCategoryChange} defaultValue={String(memoData?.category_id)}>
+            <Select onValueChange={handleCategoryChange}>
               <SelectTrigger>
                 <SelectValue placeholder={t('option.changeCategory')} />
               </SelectTrigger>

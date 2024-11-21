@@ -70,5 +70,17 @@
   },
   "context_menus_show_guide": {
     "message": "Check Guide"
+  },
+  "wish_list_deleted": {
+    "message": "Removed from wish list."
+  },
+  "wish_list_added": {
+    "message": "Added to wish list."
+  },
+  "go_to": {
+    "message": "Go to"
+  },
+  "toast_error_save": {
+    "message": "Failed to save memo"
   }
 }

@@ -5,6 +5,7 @@ import { GetMemoType } from '@extension/shared/utils';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import MemoItem from './MemoItem';
+import { LanguageType } from '@src/app/i18n/type';
 
 const MEMO_UNIT = 20;
 
@@ -18,12 +19,12 @@ const getMemoItems = (nextGroupKey: number, count: number) => {
   return nextItems;
 };
 
-interface MemoGridProps {
+interface MemoGridProps extends LanguageType {
   memos: GetMemoType[];
   gridKey: string;
 }
 
-export default function MemoGrid({ memos, gridKey }: MemoGridProps) {
+export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT));
 
   return (
@@ -50,7 +51,7 @@ export default function MemoGrid({ memos, gridKey }: MemoGridProps) {
           initial={{ opacity: 0, y: 20, scale: 0.8 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           data-grid-groupkey={item.groupKey}>
-          <MemoItem memo={memos.at(item.key)} />
+          <MemoItem memo={memos.at(item.key)} lng={lng} />
         </motion.div>
       ))}
     </MasonryInfiniteGrid>

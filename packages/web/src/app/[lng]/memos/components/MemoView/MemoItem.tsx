@@ -12,13 +12,17 @@ import Image from 'next/image';
 import MemoOption from './MemoOption';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
 import Link from 'next/link';
+import { LanguageType } from '@src/app/i18n/type';
+import useTranslation from '@src/app/i18n/client';
 
-interface MemoItemProps extends HTMLAttributes<HTMLDivElement> {
+interface MemoItemProps extends HTMLAttributes<HTMLDivElement>, LanguageType {
   memo?: GetMemoType;
 }
 
-export default memo(function MemoItem({ memo, ...props }: MemoItemProps) {
+export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
   if (!memo) return null;
+
+  const { t } = useTranslation(lng);
 
   const [isHovered, setIsHovered] = useState(false);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
@@ -37,8 +41,8 @@ export default memo(function MemoItem({ memo, ...props }: MemoItemProps) {
       },
       {
         onSuccess: () => {
-          if (memo.isWish) toast({ title: '메모가 위시리스트에서 제거되었습니다.' });
-          else toast({ title: '메모가 위시리스트에 추가되었습니다.' });
+          if (memo.isWish) toast({ title: t('toastMessage.memoWishListDeleted') });
+          else toast({ title: t('toastMessage.memoWishListAdded') });
         },
       },
     );
@@ -114,7 +118,7 @@ export default memo(function MemoItem({ memo, ...props }: MemoItemProps) {
             onClick={handleIsWishClick}
             className="cursor-pointer"
           />
-          <MemoOption id={memo.id} />
+          <MemoOption id={memo.id} lng={lng} />
         </div>
       </CardFooter>
     </Card>

@@ -62,7 +62,7 @@ async function HeaderRight({ lng }: LanguageType) {
           <DropdownMenuContent>
             <form action={signout}>
               <DropdownMenuLabel>
-                <button>{t('auth.logout')}</button>
+                <button>{t('header.logout')}</button>
               </DropdownMenuLabel>
             </form>
           </DropdownMenuContent>

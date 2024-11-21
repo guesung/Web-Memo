@@ -7,7 +7,7 @@
     "wishList": "Wish List",
     "allCategory": "View All Categories"
   },
-  "auth": {
+  "header": {
     "logout": "Logout"
   },
   "toastMessage": {
@@ -20,5 +20,14 @@
   "option": {
     "deleteMemo": "Delete Memo",
     "changeCategory": "Change Category"
+  },
+  "login": {
+    "welcomeTitle": "Welcome.",
+    "welcomeDescrption": "Web Memo where you can write memos conveniently.",
+    "kakaoLogin": "Kakao Login",
+    "googleLogin": "Google Login",
+    "installedVersion": "Installed Version",
+    "askGoInstallExtension": "You haven't installed the extension. You need to install it to use the memo feature. Would you like to go install it?",
+    "personalInformationInfo": "Your data will never be shared. No spam messages."
   }
 }

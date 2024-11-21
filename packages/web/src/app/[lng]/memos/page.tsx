@@ -6,12 +6,16 @@ import { getSupabaseClient } from '@src/utils/supabase.server';
 import { cookies } from 'next/headers';
 import { MemoDialog, MemoSidebar, MemoSidebarTrigger, MemoView } from './components';
 import { LangageParams } from '@src/app/i18n/type';
+import { redirect } from 'next/navigation';
 
-export default function Page({ params: { lng } }: LangageParams) {
+export default async function Page({ params: { lng } }: LangageParams) {
   const supabaseClient = getSupabaseClient();
   const cookieStore = cookies();
   const defaultOpen = cookieStore.get(COOKIE_KEY_SIDE_BAR_STATE)?.value === 'true';
+  const user = await supabaseClient.auth.getUser();
+  const isUserLogin = !!user?.data?.user;
 
+  if (!isUserLogin) redirect('/login');
   return (
     <>
       <Header.Margin />

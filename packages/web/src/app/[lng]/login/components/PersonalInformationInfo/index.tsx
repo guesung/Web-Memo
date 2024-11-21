@@ -1,7 +1,13 @@
-export default function PersonalInformationInfo() {
+import useTranslation from '@src/app/i18n/server';
+import { LanguageType } from '@src/app/i18n/type';
+
+interface PersonalInformationInfoProps extends LanguageType {}
+
+export default async function PersonalInformationInfo({ lng }: PersonalInformationInfoProps) {
+  const { t } = await useTranslation(lng);
   return (
     <footer className="absolute inset-x-0 bottom-4 text-center text-sm">
-      <p>귀하의 데이터는 절대 공유되지 않습니다. 스팸 메시지가 없습니다.</p>
+      <p>{t('login.personalInformationInfo')}</p>
     </footer>
   );
 }

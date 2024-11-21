@@ -37,9 +37,8 @@ export default function useTranslation(lng, ns, options) {
   }
 
   useEffect(() => {
-    if (activeLng === i18n.resolvedLanguage) return;
     setActiveLng(i18n.resolvedLanguage);
-  }, [activeLng, i18n.resolvedLanguage]);
+  }, [activeLng]);
 
   useEffect(() => {
     if (!lng || i18n.resolvedLanguage === lng) return;
@@ -48,7 +47,12 @@ export default function useTranslation(lng, ns, options) {
 
   useEffect(() => {
     if (cookies.i18next === lng) return;
-    setCookie(cookieName, lng, { path: '/' });
+    setCookie(cookieName, lng, {
+      path: '/',
+      maxAge: 365 * 24 * 60 * 60,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
   }, [lng, cookies.i18next]);
 
   return ret;

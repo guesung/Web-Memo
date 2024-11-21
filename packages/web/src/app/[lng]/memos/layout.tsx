@@ -28,7 +28,7 @@ export default async function Layout({ children, params: { lng } }: LayoutProps)
         <SidebarProvider defaultOpen={defaultOpen}>
           <HydrationBoundaryWrapper queryKey={QUERY_KEY.category()} queryFn={() => getCategory(supabaseClient)}>
             <MemoSidebar lng={lng} />
-            <MemoSidebarTrigger />
+            <MemoSidebarTrigger lng={lng} />
           </HydrationBoundaryWrapper>
           {children}
         </SidebarProvider>

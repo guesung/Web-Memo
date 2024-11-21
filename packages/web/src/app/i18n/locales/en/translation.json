@@ -29,5 +29,8 @@
     "installedVersion": "Installed Version",
     "askGoInstallExtension": "You haven't installed the extension. You need to install it to use the memo feature. Would you like to go install it?",
     "personalInformationInfo": "We value your privacy. Your personal data is securely stored and will never be shared with third parties. We do not send marketing or spam messages."
+  },
+  "tooltip": {
+    "sideBar": "toggle the sidebar"
   }
 }

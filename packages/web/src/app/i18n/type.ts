@@ -4,6 +4,6 @@ export type LanguageType = {
   lng: (typeof languages)[number];
 };
 
-export interface LangageParams {
+export interface LanguageParams {
   params: LanguageType;
 }

@@ -2,9 +2,9 @@
 import { getSupabaseClient } from '@src/utils/supabase.server';
 import { LoginSection, PersonalInformationInfo } from './components';
 import { redirect } from 'next/navigation';
-import { LangageParams } from '@src/app/i18n/type';
+import { LanguageParams } from '@src/app/i18n/type';
 
-export default async function page({ params: { lng } }: LangageParams) {
+export default async function page({ params: { lng } }: LanguageParams) {
   const supabaseClient = getSupabaseClient();
   const user = await supabaseClient.auth.getUser();
   const isUserLogin = !!user?.data?.user;

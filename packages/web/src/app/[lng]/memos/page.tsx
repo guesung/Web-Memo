@@ -5,10 +5,10 @@ import { SidebarProvider } from '@src/components/ui/sidebar';
 import { getSupabaseClient } from '@src/utils/supabase.server';
 import { cookies } from 'next/headers';
 import { MemoDialog, MemoSidebar, MemoSidebarTrigger, MemoView } from './components';
-import { LangageParams } from '@src/app/i18n/type';
+import { LanguageParams } from '@src/app/i18n/type';
 import { redirect } from 'next/navigation';
 
-export default async function Page({ params: { lng } }: LangageParams) {
+export default async function Page({ params: { lng } }: LanguageParams) {
   const supabaseClient = getSupabaseClient();
   const cookieStore = cookies();
   const defaultOpen = cookieStore.get(COOKIE_KEY_SIDE_BAR_STATE)?.value === 'true';

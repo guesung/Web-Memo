@@ -31,7 +31,7 @@ export const signInWithOAuth = async (provider: Provider) => {
   const { error, data } = await supabaseClient.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${WEB_URL}/${PATHS.allbackoAuth}`,
+      redirectTo: `${WEB_URL}${PATHS.allbackoAuth}`,
     },
   });
 
@@ -50,7 +50,7 @@ export const signInWithEmail = async (email: string, password: string) => {
 
   if (error) redirect(PATHS.error);
   revalidatePath(PATHS.root, 'layout');
-  redirect(`${WEB_URL}/${PATHS.callbackEmail}`);
+  redirect(`${WEB_URL}${PATHS.callbackEmail}`);
 };
 
 export const signout = async () => {

@@ -13,8 +13,9 @@ import { Sheet, SheetContent } from '@src/components/ui/sheet';
 import { Skeleton } from '@src/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
 import { cn } from '@src/utils';
+import { COOKIE_KEY_SIDE_BAR_STATE } from '@extension/shared/constants';
 
-const SIDEBAR_COOKIE_NAME = 'sidebar:state';
+const SIDEBAR_COOKIE_NAME = COOKIE_KEY_SIDE_BAR_STATE;
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_WIDTH = '10rem';
 const SIDEBAR_WIDTH_MOBILE = '18rem';
@@ -428,45 +429,52 @@ const sidebarMenuButtonVariants = cva(
   },
 );
 
-const SidebarMenuButton = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<'button'> & {
-    asChild?: boolean;
-    isActive?: boolean;
-    tooltip?: string | React.ComponentProps<typeof TooltipContent>;
-  } & VariantProps<typeof sidebarMenuButtonVariants>
->(({ asChild = false, isActive = false, variant = 'default', size = 'default', tooltip, className, ...props }, ref) => {
-  const Comp = asChild ? Slot : 'button';
-  const { isMobile, state } = useSidebar();
+const SidebarMenuButton = React.memo(
+  React.forwardRef<
+    HTMLButtonElement,
+    React.ComponentProps<'button'> & {
+      asChild?: boolean;
+      isActive?: boolean;
+      tooltip?: string | React.ComponentProps<typeof TooltipContent>;
+    } & VariantProps<typeof sidebarMenuButtonVariants>
+  >(
+    (
+      { asChild = false, isActive = false, variant = 'default', size = 'default', tooltip, className, ...props },
+      ref,
+    ) => {
+      const Comp = asChild ? Slot : 'button';
+      const { isMobile, state } = useSidebar();
 
-  const button = (
-    <Comp
-      ref={ref}
-      data-sidebar="menu-button"
-      data-size={size}
-      data-active={isActive}
-      className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
-      {...props}
-    />
-  );
+      const button = (
+        <Comp
+          ref={ref}
+          data-sidebar="menu-button"
+          data-size={size}
+          data-active={isActive}
+          className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+          {...props}
+        />
+      );
 
-  if (!tooltip) {
-    return button;
-  }
+      if (!tooltip) {
+        return button;
+      }
 
-  if (typeof tooltip === 'string') {
-    tooltip = {
-      children: tooltip,
-    };
-  }
+      if (typeof tooltip === 'string') {
+        tooltip = {
+          children: tooltip,
+        };
+      }
 
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>{button}</TooltipTrigger>
-      <TooltipContent side="right" align="center" hidden={state !== 'collapsed' || isMobile} {...tooltip} />
-    </Tooltip>
-  );
-});
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>{button}</TooltipTrigger>
+          <TooltipContent side="right" align="center" hidden={state !== 'collapsed' || isMobile} {...tooltip} />
+        </Tooltip>
+      );
+    },
+  ),
+);
 SidebarMenuButton.displayName = 'SidebarMenuButton';
 
 const SidebarMenuAction = React.forwardRef<

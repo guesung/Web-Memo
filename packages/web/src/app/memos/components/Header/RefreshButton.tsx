@@ -1,5 +1,5 @@
 'use client';
-import { queryKeys } from '@extension/shared/constants';
+import { QUERY_KEY } from '@extension/shared/constants';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@src/components/ui/button';
@@ -17,7 +17,7 @@ export default function RefreshButton() {
     driverObj.moveNext();
     window.localStorage.setItem(IS_USER_SEEN_GUIDE, 'true');
 
-    await queryClient.invalidateQueries({ queryKey: queryKeys.memos() });
+    await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
     toast({ title: '새로고침이 완료되었습니다.' });
   };
 

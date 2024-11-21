@@ -1,5 +1,5 @@
 import localFont from 'next/font/local';
-
+import '@extension/ui/dist/global.css';
 import { Header, QueryProvider, ThemeProvider } from '@src/components';
 import { Toaster } from '@src/components/ui/toaster';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -23,12 +23,12 @@ interface RootLayoutProps extends PropsWithChildren {}
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="ko" className="bg-background h-screen">
+    <html lang="ko" className="h-screen">
       <body className={`${pretendard.variable} font-pretendard h-full`}>
         <ThemeProvider attribute="class" defaultTheme="system">
           <QueryProvider>
             <Header />
-            <Header.Margin />
+
             {children}
             <ReactQueryDevtools initialIsOpen={false} />
           </QueryProvider>

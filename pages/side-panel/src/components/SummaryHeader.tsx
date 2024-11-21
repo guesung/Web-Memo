@@ -1,37 +1,25 @@
-import { useUserPreferDarkMode } from '@extension/shared/hooks';
-import OptionIcon from '../../public/svgs/option.svg';
-import RefreshIcon from '../../public/svgs/refresh.svg';
+import { Button, ErrorBoundary, Loading } from '@extension/ui';
+import { RefreshCwIcon } from 'lucide-react';
 import { useSummaryContext } from './SummaryProvider';
-import { Loading } from '@extension/ui';
+import ToggleTheme from './ToggleTheme';
 
 export default function Header() {
   const { isSummaryLoading, refetchSummary } = useSummaryContext();
-  const { isUserPreferDarkMode } = useUserPreferDarkMode();
-
-  const handleOptionClick = () => {
-    chrome.runtime.openOptionsPage();
-  };
 
   return (
     <header className="float-right mt-4 flex items-center gap-1">
+      <ErrorBoundary>
+        <ToggleTheme />
+      </ErrorBoundary>
       {isSummaryLoading ? (
-        <Loading />
+        <Button variant="outline" size="icon">
+          <Loading />
+        </Button>
       ) : (
-        <RefreshIcon
-          width="20px"
-          height="20px"
-          onClick={refetchSummary}
-          cursor="pointer"
-          fill={isUserPreferDarkMode ? 'black' : 'white'}
-        />
+        <Button variant="outline" size="icon" onClick={refetchSummary}>
+          <RefreshCwIcon size={16} />
+        </Button>
       )}
-
-      <OptionIcon
-        width="24px"
-        height="24px"
-        onClick={handleOptionClick}
-        fill={isUserPreferDarkMode ? 'black' : 'white'}
-      />
     </header>
   );
 }

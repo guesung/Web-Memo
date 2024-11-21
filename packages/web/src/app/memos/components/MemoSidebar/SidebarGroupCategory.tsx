@@ -11,14 +11,17 @@ import {
 } from '@src/components/ui/sidebar';
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
+import { memo, MouseEventHandler, useCallback } from 'react';
 
-export default function SidebarGroupCategory() {
+export default memo(function SidebarGroupCategory() {
   const { categories } = useCategoryQuery({
     supabaseClient: getSupabaseClient(),
   });
   const categorySearchParamsRouter = useSearchParamsRouter('category');
 
-  const handleCategoryClick = (category: string) => {
+  const handleCategoryClick: MouseEventHandler<HTMLButtonElement> = event => {
+    const category = event.currentTarget.id;
+
     categorySearchParamsRouter.set(category, { removeOthers: true, scroll: true });
   };
 
@@ -30,7 +33,7 @@ export default function SidebarGroupCategory() {
           {categories?.map(category => (
             <SidebarMenuItem key={category.name}>
               <SidebarMenuButton asChild>
-                <button onClick={handleCategoryClick.bind(null, category.name)}>
+                <button id={category.name} onClick={handleCategoryClick}>
                   <span>{category.name}</span>
                 </button>
               </SidebarMenuButton>
@@ -41,4 +44,4 @@ export default function SidebarGroupCategory() {
       </SidebarGroupContent>
     </SidebarGroup>
   );
-}
+});

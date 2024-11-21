@@ -1,4 +1,4 @@
-export const queryKeys = {
+export const QUERY_KEY = {
   tab: () => ['tab'],
   memos: () => ['memos'],
   option: () => ['option'],

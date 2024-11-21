@@ -1,4 +1,4 @@
-import { queryKeys } from '@src/constants';
+import { QUERY_KEY } from '@src/constants';
 import type { CategorySupabaseResponse, CategoryTable, MemoSupabaseClient } from '@src/types';
 import { insertCategory } from '@src/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -13,7 +13,7 @@ export default function useCategoryPostMutation({ supabaseClient }: UseCategoryP
   return useMutation<CategorySupabaseResponse, Error, CategoryTable['Insert']>({
     mutationFn: async postCategoryProps => await insertCategory(supabaseClient, postCategoryProps),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.category() });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
     },
   });
 }

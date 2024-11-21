@@ -4,7 +4,14 @@
     "outDir": "dist",
     "jsx": "react-jsx",
     "baseUrl": ".",
-    "types": ["chrome"]
+    "types": ["chrome", "node"],
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "declaration": true,
+    "target": "esnext",
+    "esModuleInterop": true,
+    "moduleResolution": "node"
   },
-  "include": ["index.ts", "lib"]
+  "include": ["src", "index.ts"]
 }

@@ -1,4 +1,4 @@
-import { HTMLAttributes, memo, MouseEventHandler, useState } from 'react';
+import { HTMLAttributes, KeyboardEvent, memo, MouseEvent, MouseEventHandler, useState } from 'react';
 
 import { useMemoPatchMutation, useSearchParamsRouter } from '@extension/shared/hooks';
 import { GetMemoType } from '@extension/shared/utils';
@@ -44,8 +44,10 @@ export default memo(function MemoItem({ memo, ...props }: MemoItemProps) {
     );
   };
 
-  const handleContentClick: MouseEventHandler<HTMLDivElement> = event => {
+  const handleContentClick = (event: MouseEvent<HTMLDivElement> | KeyboardEvent<HTMLDivElement>) => {
     const id = event.currentTarget.id;
+    if (!id) return;
+
     setIdSearchParamsRouter(id);
   };
 

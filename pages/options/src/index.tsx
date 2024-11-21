@@ -1,8 +1,6 @@
-import { createRoot } from 'react-dom/client';
-import '@src/index.css';
-import '@extension/ui/dist/global.css';
-import Options from '@src/Options';
 import { initSentry } from '@extension/shared/utils';
+import '@extension/ui/dist/global.css';
+import '@src/index.css';
 
 initSentry();
 
@@ -11,8 +9,6 @@ function init() {
   if (!appContainer) {
     throw new Error('Can not find #app-container');
   }
-  const root = createRoot(appContainer);
-  root.render(<Options />);
 }
 
 init();

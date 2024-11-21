@@ -2,7 +2,6 @@ import { resolve } from 'path';
 import { makeEntryPointPlugin } from '@extension/hmr';
 import { withPageConfig, isDev } from '@extension/vite-config';
 import svgr from 'vite-plugin-svgr';
-import react from '@vitejs/plugin-react';
 
 const rootDir = resolve(__dirname);
 const srcDir = resolve(rootDir, 'src');
@@ -15,7 +14,6 @@ export default withPageConfig({
   },
   plugins: [
     isDev && makeEntryPointPlugin(),
-    react(),
     svgr({
       // svgr options: https://react-svgr.com/docs/options/
       svgrOptions: { exportType: 'default', ref: true, svgo: false, titleProp: true },

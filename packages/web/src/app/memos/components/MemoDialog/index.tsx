@@ -1,6 +1,6 @@
 'use client';
 import { useCloseOnEscape, useMemoPatchMutation, useMemoQuery, useSearchParamsRouter } from '@extension/shared/hooks';
-import { Button } from '@src/components/ui/button';
+import { Button } from '@extension/ui';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
 import { Textarea } from '@src/components/ui/textarea';
 import { useToast } from '@src/hooks/use-toast';
@@ -20,10 +20,11 @@ export default function MemoDialog() {
   const idSearchParamsRouter = useSearchParamsRouter('id');
   const id = idSearchParamsRouter.get();
   const [row, setRow] = useState(MIN_ROW);
-  const { data: memoData } = useMemoQuery({ supabaseClient: getSupabaseClient(), id: Number(id) });
+  const supabaseClient = getSupabaseClient();
+  const { data: memoData } = useMemoQuery({ supabaseClient, id: Number(id) });
   const { toast } = useToast();
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
-    supabaseClient: getSupabaseClient(),
+    supabaseClient,
   });
 
   const { register, watch, setValue } = useForm<InputType>({

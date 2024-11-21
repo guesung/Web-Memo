@@ -1,6 +1,4 @@
-import { overlay } from 'overlay-kit';
 import { useEffect, useState } from 'react';
-import HeartIcon from '../../public/svgs/heart.svg';
 
 import {
   useDidMount,
@@ -16,14 +14,18 @@ import {
   GetFormattedMemoProps,
   getSupabaseClient,
   responseRefetchTheMemos,
+  Tab,
 } from '@extension/shared/utils/extension';
-import { cn, Toast } from '@extension/ui';
+import { cn, Textarea, ToastAction, useToast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
+import { getMemoWishListUrl } from '@src/utils';
+import { HeartIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 type InputType = GetFormattedMemoProps;
 
 function MemoForm() {
+  const { toast } = useToast();
   const [isSaved, setIsSaved] = useState(true);
   const { throttle, abortThrottle } = useThrottle();
   const { data: tab } = useTabQuery();
@@ -41,24 +43,23 @@ function MemoForm() {
     },
   });
 
+  const handleSaveMemoSuccess = () => {
+    setIsSaved(true);
+    abortThrottle();
+  };
+
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
-    handleSuccess: () => {
-      setIsSaved(true);
-      abortThrottle();
-    },
+    onSuccess: handleSaveMemoSuccess,
     onError: () => {
-      overlay.open(({ unmount }) => <Toast message="메모 저장에 실패했습니다." onClose={unmount} />);
+      toast({ title: '저장에 실패했습니다.' });
     },
   });
   const { mutate: mutateMemoPost } = useMemoPostMutation({
     supabaseClient,
-    onSuccess: () => {
-      setIsSaved(true);
-      abortThrottle();
-    },
+    onSuccess: handleSaveMemoSuccess,
     onError: () => {
-      overlay.open(({ unmount }) => <Toast message="메모 저장에 실패했습니다." onClose={unmount} />);
+      toast({ title: '저장에 실패했습니다.' });
     },
   });
 
@@ -101,32 +102,54 @@ function MemoForm() {
     }
   };
 
+  const getTitle = (isWish: boolean) => {
+    if (isWish) return '위시 리스트에서 제거되었습니다.';
+    return '위시 리스트에 추가되었습니다.';
+  };
+
+  const handleWishListClick = () => {
+    const memoWishListUrl = getMemoWishListUrl(currentMemo?.id);
+
+    Tab.create({ url: memoWishListUrl });
+  };
+
   const handleWishClick = async () => {
-    setValue('isWish', !watch('isWish'));
+    const currentIsWish = watch('isWish');
+
+    setValue('isWish', !currentIsWish);
+
+    toast({
+      title: getTitle(currentIsWish),
+      action: (
+        <ToastAction altText="바로가기" onClick={handleWishListClick}>
+          바로가기
+        </ToastAction>
+      ),
+    });
 
     await saveMemo();
   };
 
   return (
-    <form className="form-control h-full">
-      <textarea
-        className={cn('textarea textarea-bordered h-full resize-none border-2', {
+    <form className="relative h-full py-1">
+      <Textarea
+        {...register('memo', {
+          onChange: handleMemoTextAreaChange,
+        })}
+        className={cn('h-full resize-none text-sm', {
           'border-cyan-900 focus:border-cyan-900': !isSaved,
         })}
         id="memo-textarea"
         placeholder="메모"
         onKeyDown={handleKeyDown}
-        {...register('memo', {
-          onChange: handleMemoTextAreaChange,
-        })}
       />
-      <div className="label">
+      <div className="absolute bottom-2 left-2">
         <HeartIcon
-          width="16px"
-          height="16px"
-          fill={watch('isWish') ? 'white' : 'black'}
+          size={16}
+          fill={watch('isWish') ? 'pink' : ''}
+          fillOpacity={watch('isWish') ? 100 : 0}
           onClick={handleWishClick}
-          className="cursor-pointer"
+          role="button"
         />
       </div>
     </form>

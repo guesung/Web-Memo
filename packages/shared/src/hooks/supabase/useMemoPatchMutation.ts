@@ -10,14 +10,9 @@ interface Variables {
 
 interface UseMemoPostMutationProps extends UseMutationOptions<MemoSupabaseResponse, Error, Variables> {
   supabaseClient: MemoSupabaseClient;
-  handleSuccess?: () => void;
 }
 
-export default function useMemoPatchMutation({
-  supabaseClient,
-  handleSuccess,
-  ...useMutationProps
-}: UseMemoPostMutationProps) {
+export default function useMemoPatchMutation({ supabaseClient, ...useMutationProps }: UseMemoPostMutationProps) {
   const queryClient = useQueryClient();
   return useMutation<MemoSupabaseResponse, Error, Variables>({
     ...useMutationProps,
@@ -42,9 +37,6 @@ export default function useMemoPatchMutation({
       await queryClient.setQueryData(QUERY_KEY.memos(), { ...previousMemos, data: previousMemosData });
 
       return { previousMemos };
-    },
-    onSuccess: async () => {
-      handleSuccess?.();
     },
   });
 }

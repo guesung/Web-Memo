@@ -70,5 +70,14 @@
   },
   "context_menus_show_guide": {
     "message": "가이드 확인하기"
+  },
+  "wish_list_deleted": {
+    "message": "위시 리스트에서 제거되었습니다."
+  },
+  "wish_list_added": {
+    "message": "위시 리스트에 추가되었습니다."
+  },
+  "go_to": {
+    "message": "바로가기"
   }
 }

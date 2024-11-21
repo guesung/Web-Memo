@@ -13,6 +13,7 @@ import {
   getFormattedMemo,
   GetFormattedMemoProps,
   getSupabaseClient,
+  I18n,
   responseRefetchTheMemos,
   Tab,
 } from '@extension/shared/utils/extension';
@@ -103,8 +104,8 @@ function MemoForm() {
   };
 
   const getTitle = (isWish: boolean) => {
-    if (isWish) return '위시 리스트에서 제거되었습니다.';
-    return '위시 리스트에 추가되었습니다.';
+    if (isWish) return I18n.get('wish_list_deleted');
+    return I18n.get('wish_list_added');
   };
 
   const handleWishListClick = () => {
@@ -122,7 +123,7 @@ function MemoForm() {
       title: getTitle(currentIsWish),
       action: (
         <ToastAction altText="바로가기" onClick={handleWishListClick}>
-          바로가기
+          {I18n.get('go_to')}
         </ToastAction>
       ),
     });
@@ -140,7 +141,7 @@ function MemoForm() {
           'border-cyan-900 focus:border-cyan-900': !isSaved,
         })}
         id="memo-textarea"
-        placeholder="메모"
+        placeholder={I18n.get('memo')}
         onKeyDown={handleKeyDown}
       />
       <div className="absolute bottom-2 left-2">

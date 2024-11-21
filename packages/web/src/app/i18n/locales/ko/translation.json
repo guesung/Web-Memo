@@ -23,7 +23,7 @@
   },
   "login": {
     "welcomeTitle": "환영합니다.",
-    "welcomeDescrption": "편리하게 메모를 작성할 수 있는 웹 메모입니다.",
+    "welcomeDescription": "편리하게 메모를 작성할 수 있는 웹 메모입니다.",
     "kakaoLogin": "카카오 로그인",
     "googleLogin": "구글 로그인",
     "installedVersion": "설치된 버전",

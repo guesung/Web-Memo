@@ -13,7 +13,7 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
   return (
     <section className="relative flex w-96 flex-col items-center justify-center rounded-md bg-zinc-100 py-12 opacity-80 shadow-xl dark:bg-zinc-900">
       <p className="text-center text-2xl">{t('login.welcomeTitle')}</p>
-      <p className="text-md text-center">{t('login.welcomeDescrption')}</p>
+      <p className="text-md text-center">{t('login.welcomeDescription')}</p>
       <div className="h-8" />
       <form className="flex w-full flex-col gap-4 px-4">
         <Button

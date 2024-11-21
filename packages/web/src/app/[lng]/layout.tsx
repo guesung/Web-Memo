@@ -9,7 +9,7 @@ import './globals.css';
 import { dir } from 'i18next';
 
 import { appWithTranslation } from 'next-i18next';
-import { languages } from '@src/constants';
+import { languages } from '../i18n/settings';
 
 const pretendard = localFont({
   src: '../../fonts/PretendardVariable.woff2',
@@ -39,7 +39,7 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
       <body className={`${pretendard.variable} font-pretendard h-full`}>
         <ThemeProvider attribute="class" defaultTheme="system">
           <QueryProvider>
-            <Header />
+            <Header lng={lng} />
 
             {children}
             {/* <ReactQueryDevtools initialIsOpen={false} /> */}

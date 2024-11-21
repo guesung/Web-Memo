@@ -498,6 +498,12 @@ importers:
       i18next:
         specifier: ^23.16.8
         version: 23.16.8
+      i18next-browser-languagedetector:
+        specifier: ^8.0.0
+        version: 8.0.0
+      i18next-resources-to-backend:
+        specifier: ^1.2.1
+        version: 1.2.1
       next:
         specifier: 14.2.10
         version: 14.2.10(@babel/core@7.25.2)(@playwright/test@1.47.0)(react-dom@18.3.1)(react@18.3.1)
@@ -510,9 +516,15 @@ importers:
       react:
         specifier: 18.3.1
         version: 18.3.1
+      react-cookie:
+        specifier: ^7.2.2
+        version: 7.2.2(react@18.3.1)
       react-dom:
         specifier: 18.3.1
         version: 18.3.1(react@18.3.1)
+      react-i18next:
+        specifier: ^15.1.1
+        version: 15.1.1(i18next@23.16.8)(react-dom@18.3.1)(react@18.3.1)
       tailwind-merge:
         specifier: ^2.4.0
         version: 2.4.0
@@ -4168,6 +4180,10 @@ packages:
       '@types/har-format': 1.2.15
     dev: true
 
+  /@types/cookie@0.6.0:
+    resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
+    dev: false
+
   /@types/d3-array@3.2.1:
     resolution: {integrity: sha512-Y2Jn2idRrLzUfAKV2LyRImR+y4oa2AntrgID95SHJxuMUrkNXmanDSed71sRNZysveJVt1hLLemQZIady0FpEg==}
     dev: false
@@ -5317,6 +5333,11 @@ packages:
 
   /cookie@0.6.0:
     resolution: {integrity: sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==}
+    engines: {node: '>= 0.6'}
+    dev: false
+
+  /cookie@0.7.2:
+    resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
     dev: false
 
@@ -7111,8 +7132,20 @@ packages:
     hasBin: true
     dev: true
 
+  /i18next-browser-languagedetector@8.0.0:
+    resolution: {integrity: sha512-zhXdJXTTCoG39QsrOCiOabnWj2jecouOqbchu3EfhtSHxIB5Uugnm9JaizenOy39h7ne3+fLikIjeW88+rgszw==}
+    dependencies:
+      '@babel/runtime': 7.26.0
+    dev: false
+
   /i18next-fs-backend@2.4.0:
     resolution: {integrity: sha512-NLSktIBdoPUC/sKBNw5JtOQEHA6EgwDDOHospvoikAiQg9NDQlQw8UZRXgif/zJRLRV6zxWbT2uN58LXr4hU+A==}
+    dev: false
+
+  /i18next-resources-to-backend@1.2.1:
+    resolution: {integrity: sha512-okHbVA+HZ7n1/76MsfhPqDou0fptl2dAlhRDu2ideXloRRduzHsqDOznJBef+R3DFZnbvWoBW+KxJ7fnFjd6Yw==}
+    dependencies:
+      '@babel/runtime': 7.26.0
     dev: false
 
   /i18next@23.16.8:
@@ -9070,6 +9103,17 @@ packages:
       safe-buffer: 5.2.1
     dev: true
 
+  /react-cookie@7.2.2(react@18.3.1):
+    resolution: {integrity: sha512-e+hi6axHcw9VODoeVu8WyMWyoosa1pzpyjfvrLdF7CexfU+WSGZdDuRfHa4RJgTpfv3ZjdIpHE14HpYBieHFhg==}
+    peerDependencies:
+      react: '>= 16.3.0'
+    dependencies:
+      '@types/hoist-non-react-statics': 3.3.5
+      hoist-non-react-statics: 3.3.2
+      react: 18.3.1
+      universal-cookie: 7.2.2
+    dev: false
+
   /react-day-picker@8.10.1(date-fns@4.1.0)(react@18.3.1):
     resolution: {integrity: sha512-TMx7fNbhLk15eqcMt+7Z7S2KF7mfTId/XJDjKE8f+IUcFn0l08/kI4FiYTL/0yuOLmEcbR4Fwe3GJf/NiiMnPA==}
     peerDependencies:
@@ -10390,6 +10434,13 @@ packages:
       '@types/unist': 3.0.3
       unist-util-is: 6.0.0
       unist-util-visit-parents: 6.0.1
+    dev: false
+
+  /universal-cookie@7.2.2:
+    resolution: {integrity: sha512-fMiOcS3TmzP2x5QV26pIH3mvhexLIT0HmPa3V7Q7knRfT9HG6kTwq02HZGLPw0sAOXrAmotElGRvTLCMbJsvxQ==}
+    dependencies:
+      '@types/cookie': 0.6.0
+      cookie: 0.7.2
     dev: false
 
   /unplugin@1.0.1:

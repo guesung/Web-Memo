@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateSession } from './utils';
 import acceptLanguage from 'accept-language';
-import { fallbackLng, languages, cookieName } from './constants';
+import { fallbackLng, languages, cookieName } from './app/i18n/settings.js';
 
 acceptLanguage.languages(languages);
-
-let locales = ['en', 'ko'];
-
-const getLocale = (request: NextRequest) => 'ko';
 
 export async function middleware(request: NextRequest) {
   let lng;

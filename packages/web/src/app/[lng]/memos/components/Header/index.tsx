@@ -12,30 +12,35 @@ import { getSupabaseClient, signout } from '@src/utils/supabase.server';
 import Image from 'next/image';
 import Link from 'next/link';
 import RefreshButton from './RefreshButton';
+import { LanguageType } from '@src/app/i18n/type';
+import useTranslation from '@src/app/i18n/server';
 
-export default async function Header() {
+export default async function Header({ lng }: LanguageType) {
   return (
     <header className="bg-background fixed inset-x-0 z-50 flex flex-1 justify-between p-2 shadow-sm">
-      <HeaderLeft />
-      <HeaderRight />
+      <HeaderLeft lng={lng} />
+      <HeaderRight lng={lng} />
     </header>
   );
 }
 
-function HeaderLeft() {
+async function HeaderLeft({ lng }: LanguageType) {
+  const { t } = await useTranslation(lng);
+
   return (
     <Link href="/memos">
       <div className="flex h-full items-center gap-2 px-4">
         <Image src="/images/pngs/icon.png" width={16} height={16} alt="logo" className="flex-1" />
-        <span className="text-md font-semibold">웹 메모</span>
+        <span className="text-md font-semibold">{t('common.webMemo')}</span>
       </div>
     </Link>
   );
 }
 
-async function HeaderRight() {
+async function HeaderRight({ lng }: LanguageType) {
   const supabaseClient = getSupabaseClient();
   const user = await getUser(supabaseClient);
+  const { t } = await useTranslation(lng);
 
   const isUserLogin = !!user?.data?.user;
   const userAvatarUrl =
@@ -57,7 +62,7 @@ async function HeaderRight() {
           <DropdownMenuContent>
             <form action={signout}>
               <DropdownMenuLabel>
-                <button>로그아웃</button>
+                <button>{t('common.logOut')}</button>
               </DropdownMenuLabel>
             </form>
           </DropdownMenuContent>

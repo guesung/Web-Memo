@@ -6,7 +6,7 @@ import { getSupabaseClient } from '@src/utils/supabase.server';
 import { cookies } from 'next/headers';
 import { MemoDialog, MemoSidebar, MemoSidebarTrigger, MemoView } from './components';
 
-export default async function Page() {
+export default function Page() {
   const supabaseClient = getSupabaseClient();
   const cookieStore = cookies();
   const defaultOpen = cookieStore.get(COOKIE_KEY_SIDE_BAR_STATE)?.value === 'true';

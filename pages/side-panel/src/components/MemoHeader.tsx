@@ -1,6 +1,6 @@
-import { WEB_URL } from '@extension/shared/constants';
 import { useDidMount, useMemoQuery, useSupabaseClient, useTabQuery } from '@extension/shared/hooks';
 import { getSupabaseClient, I18n, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
+import { getMemoUrl } from '@src/utils';
 import { ExternalLinkIcon } from 'lucide-react';
 
 export default function MemoHeader() {
@@ -14,8 +14,9 @@ export default function MemoHeader() {
   });
 
   const handleMemoClick = () => {
-    if (currentMemo?.id) Tab.create({ url: `${WEB_URL}/memos?id=${currentMemo.id}` });
-    else Tab.create({ url: `${WEB_URL}/memos` });
+    const memoUrl = getMemoUrl(currentMemo?.id);
+
+    Tab.create({ url: memoUrl });
   };
 
   useDidMount(() =>

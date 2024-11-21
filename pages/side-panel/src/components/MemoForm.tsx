@@ -18,7 +18,7 @@ import {
 } from '@extension/shared/utils/extension';
 import { cn, Textarea, ToastAction, useToast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
-import { getWishListUrl } from '@src/utils';
+import { getMemoWishListUrl } from '@src/utils';
 import { HeartIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
@@ -108,9 +108,9 @@ function MemoForm() {
   };
 
   const handleWishListClick = () => {
-    const wishListUrl = getWishListUrl(currentMemo?.id);
+    const memoWishListUrl = getMemoWishListUrl(currentMemo?.id);
 
-    Tab.create({ url: wishListUrl });
+    Tab.create({ url: memoWishListUrl });
   };
 
   const handleWishClick = async () => {

@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/_next') &&
     !request.nextUrl.pathname.includes('/auth')
   ) {
-    return NextResponse.redirect(new URL(`/${lng}${request.nextUrl.pathname}`, request.url));
+    return NextResponse.redirect(new URL(`/${lng}${request.nextUrl.pathname}${request.nextUrl.search}`, request.url));
   }
 
   if (request.headers.has('referer')) {

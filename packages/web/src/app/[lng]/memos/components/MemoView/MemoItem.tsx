@@ -42,7 +42,7 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
       {
         onSuccess: () => {
           if (memo.isWish) toast({ title: t('toastMessage.memoWishListDeleted') });
-          else toast({ title: t('toastMessage.memoWishListDeleted') });
+          else toast({ title: t('toastMessage.memoWishListAdded') });
         },
       },
     );

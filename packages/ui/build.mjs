@@ -53,4 +53,6 @@ const build = async () => {
   }
 };
 
-build();
+build().catch(() => {
+  process.exit(1);
+});

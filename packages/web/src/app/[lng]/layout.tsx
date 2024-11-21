@@ -6,31 +6,43 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import type { Metadata } from 'next';
 import { PropsWithChildren } from 'react';
 import './globals.css';
+import { dir } from 'i18next';
+
+import { appWithTranslation } from 'next-i18next';
+import { languages } from '../i18n/settings';
 
 const pretendard = localFont({
-  src: '../fonts/PretendardVariable.woff2',
+  src: '../../fonts/PretendardVariable.woff2',
   display: 'swap',
   weight: '45 920',
   variable: '--font-pretendard',
 });
+
+export async function generateStaticParams() {
+  return languages.map(lng => ({ lng }));
+}
 
 export const metadata: Metadata = {
   title: '웹 메모',
   description: '웹 메모',
 };
 
-interface RootLayoutProps extends PropsWithChildren {}
+interface RootLayoutProps extends PropsWithChildren {
+  params: {
+    lng: string;
+  };
+}
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default function RootLayout({ children, params: { lng } }: RootLayoutProps) {
   return (
-    <html lang="ko" className="h-screen">
+    <html lang={lng} className="h-screen" dir={dir(lng)}>
       <body className={`${pretendard.variable} font-pretendard h-full`}>
         <ThemeProvider attribute="class" defaultTheme="system">
           <QueryProvider>
-            <Header />
+            <Header lng={lng} />
 
             {children}
-            <ReactQueryDevtools initialIsOpen={false} />
+            {/* <ReactQueryDevtools initialIsOpen={false} /> */}
           </QueryProvider>
         </ThemeProvider>
 

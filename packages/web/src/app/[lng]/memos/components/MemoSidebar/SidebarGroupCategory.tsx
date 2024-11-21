@@ -12,8 +12,11 @@ import {
 import { getSupabaseClient } from '@src/utils/supabase.client';
 import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
 import { memo, MouseEventHandler, useCallback } from 'react';
+import useTranslation from '@src/app/i18n/client';
+import { LanguageType } from '@src/app/i18n/type';
 
-export default memo(function SidebarGroupCategory() {
+export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
+  const { t } = useTranslation(lng);
   const { categories } = useCategoryQuery({
     supabaseClient: getSupabaseClient(),
   });
@@ -27,7 +30,7 @@ export default memo(function SidebarGroupCategory() {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>카테고리 모아보기</SidebarGroupLabel>
+      <SidebarGroupLabel>{t('sideBar.allCategory')}</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
           {categories?.map(category => (

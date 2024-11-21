@@ -8,8 +8,13 @@ import { HTMLMotionProps } from 'framer-motion';
 import { RefreshCwIcon } from 'lucide-react';
 import { IS_USER_SEEN_GUIDE } from '../../constants';
 import { driverObj } from '../../utils';
+import { LanguageType } from '@src/app/i18n/type';
+import useTranslation from '@src/app/i18n/client';
 
-export default function RefreshButton() {
+interface RefreshButtonProps extends LanguageType {}
+
+export default function RefreshButton({ lng }: RefreshButtonProps) {
+  const { t } = useTranslation(lng);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -18,7 +23,7 @@ export default function RefreshButton() {
     window.localStorage.setItem(IS_USER_SEEN_GUIDE, 'true');
 
     await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
-    toast({ title: '새로고침이 완료되었습니다.' });
+    toast({ title: t('toastMessage.refresh') });
   };
 
   return (

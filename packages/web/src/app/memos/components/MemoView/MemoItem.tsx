@@ -49,7 +49,7 @@ export default memo(function MemoItem({ memo, ...props }: MemoItemProps) {
     if (!id) return;
 
     setIdSearchParamsRouter(id);
-  };
+  };
 
   const handleMouseEnter = () => {
     setIsHovered(true);

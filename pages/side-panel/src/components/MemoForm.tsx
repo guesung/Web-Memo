@@ -53,14 +53,14 @@ function MemoForm() {
     supabaseClient,
     onSuccess: handleSaveMemoSuccess,
     onError: () => {
-      toast({ title: '저장에 실패했습니다.' });
+      toast({ title: I18n.get('toast_error_save') });
     },
   });
   const { mutate: mutateMemoPost } = useMemoPostMutation({
     supabaseClient,
     onSuccess: handleSaveMemoSuccess,
     onError: () => {
-      toast({ title: '저장에 실패했습니다.' });
+      toast({ title: I18n.get('toast_error_save') });
     },
   });
 
@@ -122,7 +122,7 @@ function MemoForm() {
     toast({
       title: getTitle(currentIsWish),
       action: (
-        <ToastAction altText="바로가기" onClick={handleWishListClick}>
+        <ToastAction altText={I18n.get('go_to')} onClick={handleWishListClick}>
           {I18n.get('go_to')}
         </ToastAction>
       ),

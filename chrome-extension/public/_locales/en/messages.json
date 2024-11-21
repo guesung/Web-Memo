@@ -79,5 +79,8 @@
   },
   "go_to": {
     "message": "Go to"
+  },
+  "toast_error_save": {
+    "message": "Failed to save memo"
   }
 }

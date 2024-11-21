@@ -79,5 +79,8 @@
   },
   "go_to": {
     "message": "바로가기"
+  },
+  "toast_error_save": {
+    "message": "저장에 실패했습니다."
   }
 }

@@ -51,7 +51,7 @@ async function HeaderRight({ lng }: LanguageType) {
     return (
       <div className="flex gap-2">
         <ToggleTheme />
-        <RefreshButton />
+        <RefreshButton lng={lng} />
         <DropdownMenu>
           <DropdownMenuTrigger>
             <Avatar>
@@ -62,7 +62,7 @@ async function HeaderRight({ lng }: LanguageType) {
           <DropdownMenuContent>
             <form action={signout}>
               <DropdownMenuLabel>
-                <button>{t('common.logOut')}</button>
+                <button>{t('auth.logout')}</button>
               </DropdownMenuLabel>
             </form>
           </DropdownMenuContent>

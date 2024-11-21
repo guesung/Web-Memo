@@ -25,12 +25,16 @@ import { requestRefetchTheMemos } from '@extension/shared/utils/extension';
 import { useToast } from '@src/hooks/use-toast';
 import { MouseEventHandler } from 'react';
 import { EllipsisVerticalIcon } from 'lucide-react';
+import { LanguageType } from '@src/app/i18n/type';
+import useTranslation from '@src/app/i18n/client';
 
-interface MemoOptionProps {
+interface MemoOptionProps extends LanguageType {
   id: number;
 }
 
-export default function MemoOption({ id }: MemoOptionProps) {
+export default function MemoOption({ lng, id }: MemoOptionProps) {
+  const { t } = useTranslation(lng);
+
   const supabaseClient = getSupabaseClient();
   const { toast } = useToast();
   const { categories } = useCategoryQuery({ supabaseClient });
@@ -46,7 +50,7 @@ export default function MemoOption({ id }: MemoOptionProps) {
   const handleDeleteMemo: MouseEventHandler<HTMLDivElement> = event => {
     event.stopPropagation();
     mutateDeleteMemo(id);
-    toast({ title: '메모가 삭제되었습니다.' });
+    toast({ title: t('toastMessage.memoDeleted') });
   };
 
   const handleCategoryChange = (categoryId: string) => {
@@ -54,16 +58,11 @@ export default function MemoOption({ id }: MemoOptionProps) {
       { id, memoRequest: { category_id: Number(categoryId) } },
       {
         onSuccess: () => {
-          toast({ title: '카테고리가 수정되었습니다.' });
+          toast({ title: t('toastMessage.memoEdited') });
           refetchMemo();
         },
       },
     );
-  };
-
-  const onCategoryAdd: MouseEventHandler<HTMLDivElement> = event => {
-    event.stopPropagation();
-    toast({ title: '카테고리 추가 기능은 준비 중입니다.' });
   };
 
   return (
@@ -76,12 +75,12 @@ export default function MemoOption({ id }: MemoOptionProps) {
       <DropdownMenuContent>
         <DropdownMenuGroup>
           <DropdownMenuItem className="cursor-pointer" onClick={handleDeleteMemo}>
-            메모 삭제
+            {t('option.deleteMemo')}
           </DropdownMenuItem>
           <DropdownMenuItem className="cursor-pointer">
             <Select onValueChange={handleCategoryChange} defaultValue={String(memoData?.category_id)}>
               <SelectTrigger>
-                <SelectValue placeholder="카테고리 변경" />
+                <SelectValue placeholder={t('option.changeCategory')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
@@ -91,7 +90,6 @@ export default function MemoOption({ id }: MemoOptionProps) {
                         {category.name}
                       </SelectItem>
                     ))}
-                  <SelectLabel onClick={onCategoryAdd}>카테고리 추가</SelectLabel>
                 </SelectGroup>
               </SelectContent>
             </Select>

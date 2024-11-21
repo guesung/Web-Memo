@@ -5,8 +5,9 @@ import { SidebarProvider } from '@src/components/ui/sidebar';
 import { getSupabaseClient } from '@src/utils/supabase.server';
 import { cookies } from 'next/headers';
 import { MemoDialog, MemoSidebar, MemoSidebarTrigger, MemoView } from './components';
+import { LangageParams } from '@src/app/i18n/type';
 
-export default function Page() {
+export default function Page({ params: { lng } }: LangageParams) {
   const supabaseClient = getSupabaseClient();
   const cookieStore = cookies();
   const defaultOpen = cookieStore.get(COOKIE_KEY_SIDE_BAR_STATE)?.value === 'true';
@@ -17,12 +18,12 @@ export default function Page() {
       <main className="bg-background flex w-full p-4 text-sm">
         <SidebarProvider defaultOpen={defaultOpen}>
           <HydrationBoundaryWrapper queryKey={QUERY_KEY.category()} queryFn={() => getCategory(supabaseClient)}>
-            <MemoSidebar />
+            <MemoSidebar lng={lng} />
             <MemoSidebarTrigger />
           </HydrationBoundaryWrapper>
           <HydrationBoundaryWrapper queryKey={QUERY_KEY.memos()} queryFn={() => getMemo(supabaseClient)}>
-            <MemoView />
-            <MemoDialog />
+            <MemoView lng={lng} />
+            <MemoDialog lng={lng} />
           </HydrationBoundaryWrapper>
         </SidebarProvider>
       </main>

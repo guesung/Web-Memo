@@ -1,6 +1,24 @@
 {
   "common": {
-    "webMemo": "Web Memo",
-    "logOut": "logOut"
+    "webMemo": "Web Memo"
+  },
+  "sideBar": {
+    "memo": "Memo",
+    "wishList": "Wish List",
+    "allCategory": "View All Categories"
+  },
+  "auth": {
+    "logout": "Logout"
+  },
+  "toastMessage": {
+    "refresh": "Refresh completed.",
+    "memoEdited": "Memo has been edited.",
+    "memoDeleted": "Memo has been deleted.",
+    "memoWishListDeleted": "Memo has been removed from wish list.",
+    "memoWishListAdded": "Memo has been added to wish list."
+  },
+  "option": {
+    "deleteMemo": "Delete Memo",
+    "changeCategory": "Change Category"
   }
 }

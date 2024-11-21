@@ -1,6 +1,24 @@
 {
   "common": {
-    "webMemo": "웹 메모",
-    "logOut": "로그아웃"
+    "webMemo": "웹 메모"
+  },
+  "sideBar": {
+    "memo": "메모",
+    "wishList": "위시 리스트",
+    "allCategory": "카테고리 모아보기"
+  },
+  "auth": {
+    "logout": "로그아웃"
+  },
+  "toastMessage": {
+    "refresh": "새로고침이 완료되었습니다.",
+    "memoEdited": "메모가 수정되었습니다.",
+    "memoDeleted": "메모가 삭제되었습니다.",
+    "memoWishListDeleted": "메모가 위시리스트에서 제거되었습니다.",
+    "memoWishListAdded": "메모가 위시리스트에 추가되었습니다."
+  },
+  "option": {
+    "deleteMemo": "메모 삭제",
+    "changeCategory": "카테고리 변경"
   }
 }

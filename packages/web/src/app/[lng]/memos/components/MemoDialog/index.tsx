@@ -1,6 +1,8 @@
 'use client';
 import { useCloseOnEscape, useMemoPatchMutation, useMemoQuery, useSearchParamsRouter } from '@extension/shared/hooks';
 import { Button } from '@extension/ui';
+import useTranslation from '@src/app/i18n/client';
+import { LanguageType } from '@src/app/i18n/type';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
 import { Textarea } from '@src/components/ui/textarea';
 import { useToast } from '@src/hooks/use-toast';
@@ -16,7 +18,10 @@ type InputType = {
   memo: string;
 };
 
-export default function MemoDialog() {
+interface MemoDialog extends LanguageType {}
+
+export default function MemoDialog({ lng }: MemoDialog) {
+  const { t } = useTranslation(lng);
   const idSearchParamsRouter = useSearchParamsRouter('id');
   const id = idSearchParamsRouter.get();
   const [row, setRow] = useState(MIN_ROW);
@@ -37,7 +42,7 @@ export default function MemoDialog() {
     mutateMemoPatch(
       { id: Number(id), memoRequest: { memo: watch('memo') } },
       {
-        onSuccess: () => toast({ title: '메모가 수정되었습니다.' }),
+        onSuccess: () => toast({ title: t('toastMessage.memoEdited') }),
       },
     );
   };

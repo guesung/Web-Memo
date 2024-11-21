@@ -18,16 +18,17 @@ import Header from '../Header';
 import SidebarGroupCategory from './SidebarGroupCategory';
 import { LanguageType } from '@src/app/i18n/type';
 import useTranslation from '@src/app/i18n/server';
+import { PATHS } from '@src/constants';
 
 const items = [
   {
     i18n: 'sideBar.memo',
-    url: '/memos',
+    url: PATHS.memos,
     icon: Home,
   },
   {
     i18n: 'sideBar.wishList',
-    url: '/memos?wish=true',
+    url: PATHS.memosWish,
     icon: Heart,
   },
 ];
@@ -61,11 +62,11 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 
         <SidebarGroupCategory lng={lng} />
       </SidebarContent>
-      {/* <SidebarFooter>
-        <Link href="/setting" className="mb-2 ml-2 cursor-pointer">
+      <SidebarFooter>
+        <Link href={PATHS.memosSetting} className="mb-2 ml-2 cursor-pointer">
           <SettingsIcon size={16} />
         </Link>
-      </SidebarFooter> */}
+      </SidebarFooter>
     </Sidebar>
   );
 }

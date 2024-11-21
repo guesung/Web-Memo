@@ -14,6 +14,7 @@ import Link from 'next/link';
 import RefreshButton from './RefreshButton';
 import { LanguageType } from '@src/app/i18n/type';
 import useTranslation from '@src/app/i18n/server';
+import { PATHS } from '@src/constants';
 
 export default async function Header({ lng }: LanguageType) {
   return (
@@ -28,7 +29,7 @@ async function HeaderLeft({ lng }: LanguageType) {
   const { t } = await useTranslation(lng);
 
   return (
-    <Link href="/memos">
+    <Link href={PATHS.memos}>
       <div className="flex h-full items-center gap-2 px-4">
         <Image src="/images/pngs/icon.png" width={16} height={16} alt="logo" className="flex-1" />
         <span className="text-md font-semibold">{t('common.webMemo')}</span>

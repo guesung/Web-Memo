@@ -7,6 +7,7 @@ import { cookies } from 'next/headers';
 import { MemoDialog, MemoSidebar, MemoSidebarTrigger, MemoView } from './components';
 import { LanguageParams } from '@src/app/i18n/type';
 import { redirect } from 'next/navigation';
+import { PATHS } from '@src/constants';
 
 export default async function Page({ params: { lng } }: LanguageParams) {
   const supabaseClient = getSupabaseClient();
@@ -15,7 +16,7 @@ export default async function Page({ params: { lng } }: LanguageParams) {
   const user = await supabaseClient.auth.getUser();
   const isUserLogin = !!user?.data?.user;
 
-  if (!isUserLogin) redirect('/login');
+  if (!isUserLogin) redirect(PATHS.login);
   return (
     <>
       <Header.Margin />

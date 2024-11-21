@@ -1,6 +1,6 @@
 import { COOKIE_KEY_ACCESS_TOKEN, COOKIE_KEY_REFRESH_TOKEN } from '@extension/shared/constants';
 import { Database } from '@extension/shared/types';
-import { SUPABASE_ANON_KEY, SUPABASE_URL, WEB_URL } from '@src/constants';
+import { PATHS, SUPABASE_ANON_KEY, SUPABASE_URL, WEB_URL } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
 import { Provider } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
@@ -31,12 +31,12 @@ export const signInWithOAuth = async (provider: Provider) => {
   const { error, data } = await supabaseClient.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${WEB_URL}/auth/callback`,
+      redirectTo: `${WEB_URL}${PATHS.allbackoAuth}`,
     },
   });
 
   if (error) redirect('/error');
-  revalidatePath('/', 'layout');
+  revalidatePath(PATHS.root, 'layout');
   redirect(data.url);
 };
 
@@ -48,9 +48,9 @@ export const signInWithEmail = async (email: string, password: string) => {
     password,
   });
 
-  if (error) redirect('/error');
-  revalidatePath('/', 'layout');
-  redirect(`${WEB_URL}/auth/callback-email`);
+  if (error) redirect(PATHS.error);
+  revalidatePath(PATHS.root, 'layout');
+  redirect(`${WEB_URL}${PATHS.callbackEmail}`);
 };
 
 export const signout = async () => {
@@ -61,5 +61,5 @@ export const signout = async () => {
   const cookieStore = cookies();
   cookieStore.delete(COOKIE_KEY_ACCESS_TOKEN);
   cookieStore.delete(COOKIE_KEY_REFRESH_TOKEN);
-  redirect('/login');
+  redirect(PATHS.login);
 };

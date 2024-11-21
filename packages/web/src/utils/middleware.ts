@@ -1,4 +1,4 @@
-import { NEED_AUTH_PAGES, SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
+import { NEED_AUTH_PAGES, PATHS, SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -31,7 +31,7 @@ export async function updateSession(request: NextRequest) {
 
   if (!isUserLogin && isNeedAuthPage) {
     const url = request.nextUrl.clone();
-    url.pathname = '/login';
+    url.pathname = PATHS.login;
     return NextResponse.redirect(url);
   }
 

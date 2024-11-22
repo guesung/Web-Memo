@@ -9,6 +9,7 @@ import { PropsWithChildren } from 'react';
 import './globals.css';
 
 import { languages } from '../i18n/settings';
+import { LanguageParams } from '../i18n/type';
 
 const pretendard = localFont({
   src: '../../fonts/PretendardVariable.woff2',
@@ -26,11 +27,7 @@ export const metadata: Metadata = {
   description: '웹 메모',
 };
 
-interface RootLayoutProps extends PropsWithChildren {
-  params: {
-    lng: string;
-  };
-}
+interface RootLayoutProps extends PropsWithChildren, LanguageParams {}
 
 export default function RootLayout({ children, params: { lng } }: RootLayoutProps) {
   return (

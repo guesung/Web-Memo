@@ -5,25 +5,14 @@ import { useDidMount } from '@extension/shared/hooks';
 import { requestGetExtensionManifest } from '@extension/shared/utils/extension';
 import useTranslation from '@src/app/i18n/client';
 import { LanguageType } from '@src/app/i18n/type';
+import { useGetExtensionVersion } from '@src/hooks';
 import { useState } from 'react';
 
 interface ExtensionVersionProps extends LanguageType {}
 
 export default function ExtensionVersion({ lng }: ExtensionVersionProps) {
-  const [version, setVersion] = useState<null | string>(null);
   const { t } = useTranslation(lng);
-
-  useDidMount(() => {
-    try {
-      requestGetExtensionManifest(manifest => {
-        setVersion(manifest.version);
-      });
-    } catch (e) {
-      const answer = window.confirm(t('login.askGoInstallExtension'));
-      if (!answer) return;
-      location.href = URL_CHROME_STORE;
-    }
-  });
+  const { version } = useGetExtensionVersion({ lng });
 
   if (version)
     return (

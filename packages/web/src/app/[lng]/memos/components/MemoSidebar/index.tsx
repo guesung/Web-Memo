@@ -13,6 +13,8 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from '@src/components/ui/sidebar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
+
 import Link from 'next/link';
 import Header from '../Header';
 import SidebarGroupCategory from './SidebarGroupCategory';
@@ -62,10 +64,19 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 
         <SidebarGroupCategory lng={lng} />
       </SidebarContent>
-      <SidebarFooter>
-        <Link href={PATHS.memosSetting} className="mb-2 ml-2 cursor-pointer">
-          <SettingsIcon size={16} />
-        </Link>
+      <SidebarFooter className="p-4">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Link href={PATHS.memosSetting} className="mb-2 ml-2 cursor-pointer">
+                <SettingsIcon size={16} />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('tooltip.goSetting')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </SidebarFooter>
     </Sidebar>
   );

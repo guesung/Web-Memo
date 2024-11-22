@@ -31,7 +31,8 @@
     "personalInformationInfo": "고객님의 개인정보는 철저히 보호되며, 마케팅 목적으로 활용되지 않습니다."
   },
   "tooltip": {
-    "sideBar": "사이드바 토글"
+    "sideBar": "사이드바 토글",
+    "goSetting": "설정 페이지로 이동"
   },
   "setting": {
     "header": "설정",

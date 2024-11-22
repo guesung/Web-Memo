@@ -32,5 +32,9 @@
   },
   "tooltip": {
     "sideBar": "사이드바 토글"
+  },
+  "setting": {
+    "header": "설정",
+    "language": "언어"
   }
 }

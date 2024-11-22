@@ -72,15 +72,15 @@ export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
 
   const currentExtensionDialog = EXTENSION_DIALOG[dialogType];
 
-  const handleUpdateClick = () => {
-    window.open(currentExtensionDialog.link, '_blank');
-  };
-
-  const handleCloseClick = () => {
+  const setLocalStroageTrueAndCloseDialog = () => {
     setOpen(false);
-
     if (checkUpdateVersion(currentExtensionDialog.localStorageKey))
       LocalStorage.setTrue(currentExtensionDialog.localStorageKey);
+  };
+
+  const handleUpdateClick = () => {
+    window.open(currentExtensionDialog.link, '_blank');
+    setLocalStroageTrueAndCloseDialog();
   };
 
   return (
@@ -92,7 +92,7 @@ export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
         </DialogHeader>
         <DialogFooter>
           {currentExtensionDialog.message.cancel && (
-            <Button onClick={handleCloseClick} variant="secondary">
+            <Button onClick={setLocalStroageTrueAndCloseDialog} variant="secondary">
               {currentExtensionDialog.message?.cancel}
             </Button>
           )}

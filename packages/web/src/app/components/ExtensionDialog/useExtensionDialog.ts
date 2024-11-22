@@ -1,6 +1,6 @@
 import { EXTENSION } from '@extension/shared/constants';
 import { useGetExtensionManifest } from '@src/hooks';
-import { checkUpdateVersion, LOCAL_STORAGE_KEY_MAP, LocalStorage } from '@src/utils';
+import { checkLocalStorageKey, LOCAL_STORAGE_KEY_MAP, LocalStorage } from '@src/utils';
 import { useEffect, useState } from 'react';
 
 export type DialogType = 'install' | 'update';
@@ -30,7 +30,7 @@ export default function useExtensionDialog() {
 
   const handleClose = (localStorageKey: string) => {
     setOpen(false);
-    if (checkUpdateVersion(localStorageKey)) LocalStorage.setTrue(localStorageKey);
+    if (checkLocalStorageKey(localStorageKey)) LocalStorage.setTrue(localStorageKey);
   };
 
   return {

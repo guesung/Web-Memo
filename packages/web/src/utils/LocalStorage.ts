@@ -1,8 +1,10 @@
 type UpdateVersionType = `updateVersion${number}.${number}.${number}`;
 
 const REGEXR_UPDATE_VERSION_VERSION = /^updateVersion\d+\.\d+\.\d+$/;
-export const checkUpdateVersion = (value: string): value is UpdateVersionType =>
+export const checkUpdateVersionKey = (value: string): value is UpdateVersionType =>
   REGEXR_UPDATE_VERSION_VERSION.test(value);
+export const checkLocalStorageKey = (value: string): value is LocalStorageType =>
+  checkUpdateVersionKey(value) || Object.keys(LOCAL_STORAGE_KEY_MAP).includes(value);
 
 export const LOCAL_STORAGE_KEY_MAP = {
   guide: 'guide',

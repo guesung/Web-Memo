@@ -10,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@src/components/ui/dialog';
-import { checkUpdateVersion, LocalStorage } from '@src/utils';
 import { getExtensionDialogInfo } from './getExtensionDialogInfo';
 import useExtensionDialog from './useExtensionDialog';
 

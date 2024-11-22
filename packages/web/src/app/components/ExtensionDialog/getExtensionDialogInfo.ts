@@ -17,7 +17,7 @@ export const getExtensionDialogInfo = (
     install: {
       message: {
         title: t('dialogInstall.title'),
-        description: t('dialogInstall.title'),
+        description: t('dialogInstall.description'),
         ok: t('dialogInstall.ok'),
         cancel: t('dialogInstall.cancel'),
       },
@@ -31,8 +31,8 @@ export const getExtensionDialogInfo = (
           currentVersion: manifest?.version,
           lastVersion: EXTENSION.lastVersion,
         }),
-        cancel: t('dialogVersion.cancel'),
         ok: t('dialogVersion.ok'),
+        cancel: t('dialogVersion.cancel'),
       },
       link: URL_GUIDE_KO,
       localStorageKey: LOCAL_STORAGE_KEY_MAP.updateVersion + 'a',

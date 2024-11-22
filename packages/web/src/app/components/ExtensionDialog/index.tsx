@@ -17,21 +17,19 @@ import useExtensionDialog from './useExtensionDialog';
 interface ExtensionDialogProps extends LanguageType {}
 
 export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
-  const { open, setOpen, dialogType, manifest } = useExtensionDialog();
+  const { open, setOpen, dialogType, manifest, handleClose } = useExtensionDialog();
 
   if (!dialogType) return;
 
   const extensionDialogInfo = getExtensionDialogInfo(lng, manifest, dialogType);
 
-  const setLocalStroageTrueAndCloseDialog = () => {
-    setOpen(false);
-    if (checkUpdateVersion(extensionDialogInfo.localStorageKey))
-      LocalStorage.setTrue(extensionDialogInfo.localStorageKey);
-  };
-
   const handleUpdateClick = () => {
     window.open(extensionDialogInfo.link, '_blank');
-    setLocalStroageTrueAndCloseDialog();
+    handleClose(extensionDialogInfo.localStorageKey);
+  };
+
+  const handleCloseClick = () => {
+    handleClose(extensionDialogInfo.localStorageKey);
   };
 
   return (
@@ -43,7 +41,7 @@ export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
         </DialogHeader>
         <DialogFooter>
           {extensionDialogInfo.message.cancel && (
-            <Button onClick={setLocalStroageTrueAndCloseDialog} variant="secondary">
+            <Button onClick={handleCloseClick} variant="secondary">
               {extensionDialogInfo.message?.cancel}
             </Button>
           )}

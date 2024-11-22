@@ -118,7 +118,7 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
             onClick={handleIsWishClick}
             className="cursor-pointer"
           />
-          <MemoOption id={memo.id} lng={lng} />
+          <MemoOption memoId={memo.id} lng={lng} />
         </div>
       </CardFooter>
     </Card>

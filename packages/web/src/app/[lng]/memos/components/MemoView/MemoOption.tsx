@@ -6,44 +6,28 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@src/components/ui/dropdown-menu';
-import Image from 'next/image';
 
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '@src/components/ui/select';
-import { CategoryRow } from '@extension/shared/types';
-import { getSupabaseClient } from '@src/utils/supabase.client';
-import {
-  useCategoryQuery,
-  useMemoPatchMutation,
-  useMemoPostMutation,
-  useMemoQuery,
-  useSearchParamsRouter,
-} from '@extension/shared/hooks';
-import { useMemoDeleteMutation } from '@src/hooks';
-import { requestRefetchTheMemos } from '@extension/shared/utils/extension';
-import { useToast } from '@src/hooks/use-toast';
-import { MouseEventHandler } from 'react';
-import { EllipsisVerticalIcon } from 'lucide-react';
-import { LanguageType } from '@src/app/i18n/type';
-import useTranslation from '@src/app/i18n/client';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { PATHS } from '@src/constants';
-import { ToastAction } from '@src/components/ui/toast';
-import { useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEY } from '@extension/shared/constants';
+import { useCategoryQuery, useMemoPatchMutation, useMemoPostMutation } from '@extension/shared/hooks';
+import { requestRefetchTheMemos } from '@extension/shared/utils/extension';
+import useTranslation from '@src/app/i18n/client';
+import { LanguageType } from '@src/app/i18n/type';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@src/components/ui/select';
+import { ToastAction } from '@src/components/ui/toast';
+import { PATHS } from '@src/constants';
+import { useMemoDeleteMutation } from '@src/hooks';
+import { useToast } from '@src/hooks/use-toast';
+import { getSupabaseClient } from '@src/utils/supabase.client';
+import { useQueryClient } from '@tanstack/react-query';
+import { EllipsisVerticalIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { MouseEventHandler } from 'react';
 
 interface MemoOptionProps extends LanguageType {
-  id: number;
+  memoId: number;
 }
 
-export default function MemoOption({ lng, id }: MemoOptionProps) {
+export default function MemoOption({ lng, memoId }: MemoOptionProps) {
   const { t } = useTranslation(lng);
 
   const supabaseClient = getSupabaseClient();
@@ -65,7 +49,7 @@ export default function MemoOption({ lng, id }: MemoOptionProps) {
 
   const handleDeleteMemo: MouseEventHandler<HTMLDivElement> = event => {
     event.stopPropagation();
-    mutateDeleteMemo(id, {
+    mutateDeleteMemo(memoId, {
       onSuccess: ({ data }) => {
         if (!data) return;
 
@@ -85,7 +69,7 @@ export default function MemoOption({ lng, id }: MemoOptionProps) {
 
   const handleCategoryChange = (categoryId: string) => {
     mutatePatchMemo(
-      { id, memoRequest: { category_id: Number(categoryId) } },
+      { id: memoId, memoRequest: { category_id: Number(categoryId) } },
       {
         onSuccess: () => {
           const category = categories?.find(category => category.id === Number(categoryId));
@@ -97,7 +81,7 @@ export default function MemoOption({ lng, id }: MemoOptionProps) {
               <ToastAction
                 altText={t('toastActionMessage.goTo')}
                 onClick={() => {
-                  router.push(`${PATHS.memos}?category=${category.name}&id=${id}`);
+                  router.push(`${PATHS.memos}?category=${category.name}&memoId=${memoId}`);
                 }}>
                 {t('toastActionMessage.goTo')}
               </ToastAction>

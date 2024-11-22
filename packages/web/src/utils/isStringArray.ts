@@ -1,0 +1,4 @@
+export const isStringArray = (value: unknown): value is string[] => {
+  if (Array.isArray(value) && value.every(item => typeof item === 'string')) return true;
+  return false;
+};

@@ -1,5 +1,8 @@
 'use client';
 
+import { EXTENSION, URL_CHROME_STORE, URL_GUIDE_KO } from '@extension/shared/constants';
+import useTranslation from '@src/app/i18n/client';
+import { LanguageType } from '@src/app/i18n/type';
 import {
   Dialog,
   DialogContent,
@@ -8,13 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@src/components/ui/dialog';
+import { useGetExtensionManifest } from '@src/hooks';
+import { LOCAL_STORAGE_KEY_MAP, LocalStorage } from '@src/utils';
 import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
-import { useGetExtensionManifest } from '@src/hooks';
-import { EXTENSION, URL_CHROME_STORE, URL_GUIDE_KO } from '@extension/shared/constants';
-import { LanguageType } from '@src/app/i18n/type';
-import useTranslation from '@src/app/i18n/client';
-import { LOCAL_STORAGE_KEY_MAP, LocalStorage } from '@src/utils';
 
 type DialogType = 'install' | 'update';
 
@@ -28,16 +28,15 @@ export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
   const [dialogType, setDialogType] = useState<DialogType | null>(null);
 
   useEffect(() => {
-    const extensionNotLoaded = manifest === null;
-    if (extensionNotLoaded) return;
+    if (manifest === null) return;
 
-    const extensionNotInstalled = manifest === undefined;
-    const extensionNotLastVersion = manifest.version !== '1.6.5';
+    const isExtensionInstalled = manifest !== undefined;
+    const isExtensionNotLastVersion = isExtensionInstalled && manifest.version !== EXTENSION.lastVersion;
 
-    if (extensionNotInstalled && !LocalStorage.check(LOCAL_STORAGE_KEY_MAP.install)) {
+    if (!isExtensionInstalled && !LocalStorage.check(LOCAL_STORAGE_KEY_MAP.install)) {
       setDialogType('install');
       setOpen(true);
-    } else if (extensionNotLastVersion && !LocalStorage.check(LOCAL_STORAGE_KEY_MAP.updateVersion)) {
+    } else if (isExtensionNotLastVersion && !LocalStorage.check(LOCAL_STORAGE_KEY_MAP.updateVersion)) {
       setDialogType('update');
       setOpen(true);
     }
@@ -50,8 +49,8 @@ export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
       message: {
         title: t('dialogInstall.title'),
         description: t('dialogInstall.title'),
-        cancel: t('dialogInstall.cancel'),
         ok: t('dialogInstall.ok'),
+        cancel: t('dialogInstall.cancel'),
       },
       link: URL_CHROME_STORE,
       localStorage: LOCAL_STORAGE_KEY_MAP.install,
@@ -88,9 +87,11 @@ export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
           <DialogDescription>{EXTENSION_DIALOG[dialogType].message.description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button onClick={handleCloseClick} variant="secondary">
-            {EXTENSION_DIALOG[dialogType].message.cancel}
-          </Button>
+          {EXTENSION_DIALOG[dialogType].message.cancel && (
+            <Button onClick={handleCloseClick} variant="secondary">
+              {EXTENSION_DIALOG[dialogType].message?.cancel}
+            </Button>
+          )}
           <Button onClick={handleUpdateClick}>{EXTENSION_DIALOG[dialogType].message.ok}</Button>
         </DialogFooter>
       </DialogContent>

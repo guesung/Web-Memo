@@ -16,7 +16,7 @@ export default function Setting({ lng }: SettingProps) {
     <section className="grid gap-6">
       <div className="grid grid-cols-12">
         <Label className="col-span-4 grid place-items-center">{t('setting.language')}</Label>
-        <Select onValueChange={setLanguageRouter} value={language}>
+        <Select onValueChange={setLanguageRouter} value={language} aria-label={t('setting.selectLanguage')}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Theme" />
           </SelectTrigger>

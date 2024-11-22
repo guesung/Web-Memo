@@ -29,6 +29,11 @@ export const signInOAuth = async (supabaseClient: MemoSupabaseClient, provider: 
 
 export const getUser = async (supabaseClient: MemoSupabaseClient) => await supabaseClient.auth.getUser();
 
+export const checkUserLogin = async (supabaseClient: MemoSupabaseClient) => {
+  const user = await supabaseClient.auth.getUser();
+  return !!user?.data?.user;
+};
+
 export const getCategory = async (supabaseClient: MemoSupabaseClient) =>
   supabaseClient.from('category').select('*').order('created_at', { ascending: false });
 

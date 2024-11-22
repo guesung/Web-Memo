@@ -4,11 +4,11 @@ import { LoginSection, PersonalInformationInfo } from './components';
 import { redirect } from 'next/navigation';
 import { LanguageParams } from '@src/app/i18n/type';
 import { PATHS } from '@src/constants';
+import { checkUserLogin } from '@extension/shared/utils';
 
 export default async function page({ params: { lng } }: LanguageParams) {
   const supabaseClient = getSupabaseClient();
-  const user = await supabaseClient.auth.getUser();
-  const isUserLogin = !!user?.data?.user;
+  const isUserLogin = await checkUserLogin(supabaseClient);
 
   if (isUserLogin) redirect(PATHS.memos);
   return (

@@ -8,6 +8,7 @@ import {
 import { Database, MemoSupabaseClient, StorageKeyType } from '@src/types';
 import { createClient } from '@supabase/supabase-js';
 import { Storage } from './module';
+import { checkUserLogin } from '../Supabase';
 
 let supabaseClientInstance: MemoSupabaseClient | null = null;
 
@@ -32,9 +33,8 @@ export const getSupabaseClient = async () => {
       },
     });
 
-    const user = await supabaseClientInstance.auth.getUser();
-
-    if (user?.data?.user) return supabaseClientInstance;
+    const isUserLogin = await checkUserLogin(supabaseClientInstance);
+    if (isUserLogin) return supabaseClientInstance;
 
     const accessTokenFromWeb = await chrome.cookies.get({
       name: COOKIE_KEY_ACCESS_TOKEN,

@@ -12,35 +12,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@src/components/ui/dialog';
-import { useGetExtensionManifest } from '@src/hooks';
 import { checkUpdateVersion, LOCAL_STORAGE_KEY_MAP, LocalStorage } from '@src/utils';
-import { useEffect, useState } from 'react';
-
-type DialogType = 'install' | 'update';
+import useExtensionDialog from './useExtensionDialog';
 
 interface ExtensionDialogProps extends LanguageType {}
 
 export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
   const { t } = useTranslation(lng);
-  const [open, setOpen] = useState(false);
-  const manifest = useGetExtensionManifest();
 
-  const [dialogType, setDialogType] = useState<DialogType | null>(null);
-
-  useEffect(() => {
-    if (manifest === null) return;
-
-    const isExtensionInstalled = manifest !== undefined;
-    const isExtensionNotLastVersion = isExtensionInstalled && manifest.version !== EXTENSION.lastVersion;
-
-    if (!isExtensionInstalled && !LocalStorage.check(LOCAL_STORAGE_KEY_MAP.install)) {
-      setDialogType('install');
-      setOpen(true);
-    } else if (isExtensionNotLastVersion && !LocalStorage.check(LOCAL_STORAGE_KEY_MAP.updateVersion)) {
-      setDialogType('update');
-      setOpen(true);
-    }
-  }, [manifest]);
+  const { open, setOpen, dialogType, manifest } = useExtensionDialog();
 
   if (!dialogType) return;
 

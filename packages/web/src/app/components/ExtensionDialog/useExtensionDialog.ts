@@ -1,5 +1,3 @@
-'use client';
-
 import { EXTENSION } from '@extension/shared/constants';
 import { useGetExtensionManifest } from '@src/hooks';
 import { checkUpdateVersion, LOCAL_STORAGE_KEY_MAP, LocalStorage } from '@src/utils';
@@ -10,7 +8,7 @@ export type DialogType = 'install' | 'update';
 export default function useExtensionDialog() {
   const manifest = useGetExtensionManifest();
   const [open, setOpen] = useState(false);
-  const [dialogType, setDialogType] = useState<DialogType | null>(null);
+  const [dialogType, setDialogType] = useState<DialogType | undefined>(undefined);
 
   useEffect(() => {
     if (manifest === null) return;

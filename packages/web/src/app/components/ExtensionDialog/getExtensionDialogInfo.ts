@@ -1,5 +1,3 @@
-'use client';
-
 import { EXTENSION, URL_CHROME_STORE, URL_GUIDE_KO } from '@extension/shared/constants';
 import useTranslation from '@src/app/i18n/client';
 import { Language } from '@src/app/i18n/type';
@@ -9,9 +7,11 @@ import useExtensionDialog, { DialogType } from './useExtensionDialog';
 export const getExtensionDialogInfo = (
   lng: Language,
   manifest: ReturnType<typeof useExtensionDialog>['manifest'],
-  dialogType: DialogType,
+  dialogType?: DialogType,
 ) => {
   const { t } = useTranslation(lng);
+
+  if (!dialogType) return;
 
   const EXTENSION_DIALOG_INFO_ALL = {
     install: {

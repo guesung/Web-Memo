@@ -19,9 +19,9 @@ interface ExtensionDialogProps extends LanguageType {}
 export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
   const { open, setOpen, dialogType, manifest, handleClose } = useExtensionDialog();
 
-  if (!dialogType) return;
-
   const extensionDialogInfo = getExtensionDialogInfo(lng, manifest, dialogType);
+
+  if (!dialogType || !extensionDialogInfo) return <div></div>;
 
   const handleUpdateClick = () => {
     window.open(extensionDialogInfo.link, '_blank');

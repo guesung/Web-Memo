@@ -1,3 +1,9 @@
+type UpdateVersionType = `updateVersion${number}.${number}.${number}`;
+
+const REGEXR_UPDATE_VERSION_VERSION = /^updateVersion\d+\.\d+\.\d+$/;
+export const checkUpdateVersion = (value: string): value is UpdateVersionType =>
+  REGEXR_UPDATE_VERSION_VERSION.test(value);
+
 export const LOCAL_STORAGE_KEY_MAP = {
   guide: 'guide',
   updateVersion: 'updateVersion',
@@ -8,7 +14,7 @@ export const LOCAL_STORAGE_VALUE_MAP = {
   true: 'true',
 } as const;
 
-export type LocalStorageType = (typeof LOCAL_STORAGE_KEY_MAP)[keyof typeof LOCAL_STORAGE_KEY_MAP];
+export type LocalStorageType = (typeof LOCAL_STORAGE_KEY_MAP)[keyof typeof LOCAL_STORAGE_KEY_MAP] | UpdateVersionType;
 
 export class LocalStorage {
   static get(key: LocalStorageType) {

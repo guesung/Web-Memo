@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from '@src/components/ui/dialog';
 import { useGetExtensionManifest } from '@src/hooks';
-import { LOCAL_STORAGE_KEY_MAP, LocalStorage } from '@src/utils';
+import { checkUpdateVersion, LOCAL_STORAGE_KEY_MAP, LocalStorage } from '@src/utils';
 import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 
@@ -53,7 +53,7 @@ export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
         cancel: t('dialogInstall.cancel'),
       },
       link: URL_CHROME_STORE,
-      localStorage: LOCAL_STORAGE_KEY_MAP.install,
+      localStorageKey: LOCAL_STORAGE_KEY_MAP.install,
     },
     update: {
       message: {
@@ -66,33 +66,37 @@ export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
         ok: t('dialogVersion.ok'),
       },
       link: URL_GUIDE_KO,
-      localStorage: LOCAL_STORAGE_KEY_MAP.updateVersion,
+      localStorageKey: LOCAL_STORAGE_KEY_MAP.updateVersion + 'a',
     },
   };
 
+  const currentExtensionDialog = EXTENSION_DIALOG[dialogType];
+
   const handleUpdateClick = () => {
-    window.open(EXTENSION_DIALOG[dialogType].link, '_blank');
+    window.open(currentExtensionDialog.link, '_blank');
   };
 
   const handleCloseClick = () => {
     setOpen(false);
-    LocalStorage.setTrue(EXTENSION_DIALOG[dialogType].localStorage);
+
+    if (checkUpdateVersion(currentExtensionDialog.localStorageKey))
+      LocalStorage.setTrue(currentExtensionDialog.localStorageKey);
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{EXTENSION_DIALOG[dialogType].message.title}</DialogTitle>
-          <DialogDescription>{EXTENSION_DIALOG[dialogType].message.description}</DialogDescription>
+          <DialogTitle>{currentExtensionDialog.message.title}</DialogTitle>
+          <DialogDescription>{currentExtensionDialog.message.description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          {EXTENSION_DIALOG[dialogType].message.cancel && (
+          {currentExtensionDialog.message.cancel && (
             <Button onClick={handleCloseClick} variant="secondary">
-              {EXTENSION_DIALOG[dialogType].message?.cancel}
+              {currentExtensionDialog.message?.cancel}
             </Button>
           )}
-          <Button onClick={handleUpdateClick}>{EXTENSION_DIALOG[dialogType].message.ok}</Button>
+          <Button onClick={handleUpdateClick}>{currentExtensionDialog.message.ok}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

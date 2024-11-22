@@ -8,11 +8,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@src/components/ui/dialog';
-import { LOCAL_STORAGE } from '@src/constants';
+
 import { useEffect, useState } from 'react';
 import { useGetExtensionManifest } from '@src/hooks';
 import { URL_CHROME_STORE } from '@extension/shared/constants';
 import { Button } from '@src/components/ui/button';
+import { LocalStorage, LOCAL_STORAGE_KEY_MAP } from '@src/utils';
 
 const EXTENSION_DIALOG = {
   install: {
@@ -23,7 +24,7 @@ const EXTENSION_DIALOG = {
       ok: '설치하러 가기',
     },
     link: URL_CHROME_STORE,
-    localStorage: LOCAL_STORAGE.install,
+    localStorage: LOCAL_STORAGE_KEY_MAP.install,
   },
   update: {
     message: {
@@ -33,7 +34,7 @@ const EXTENSION_DIALOG = {
       ok: '업데이트 하러가기',
     },
     link: '',
-    localStorage: LOCAL_STORAGE.updateVersion,
+    localStorage: LOCAL_STORAGE_KEY_MAP.updateVersion,
   },
 };
 
@@ -61,7 +62,7 @@ export default function ExtensionDialog() {
 
   const handleCloseClick = () => {
     setOpen(false);
-    localStorage.setItem(EXTENSION_DIALOG[dialogType].localStorage, 'true');
+    LocalStorage.setTrue(EXTENSION_DIALOG[dialogType].localStorage);
   };
 
   return (

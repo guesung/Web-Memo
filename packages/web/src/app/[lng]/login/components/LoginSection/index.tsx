@@ -30,7 +30,6 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
           테스트 계정으로 로그인
         </button> */}
       </form>
-      <ExtensionVersion lng={lng} />
     </section>
   );
 }

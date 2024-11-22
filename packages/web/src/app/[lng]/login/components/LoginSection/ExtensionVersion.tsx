@@ -1,6 +1,6 @@
 'use client';
 
-import { URL_CHROME_STORE } from '@extension/shared/constants';
+import { EXTENSION, URL_CHROME_STORE } from '@extension/shared/constants';
 import useTranslation from '@src/app/i18n/client';
 import { LanguageType } from '@src/app/i18n/type';
 import { useGetExtensionManifest } from '@src/hooks';
@@ -15,7 +15,9 @@ export default function ExtensionVersion({ lng }: ExtensionVersionProps) {
   if (!manifest) return;
   return (
     <p className="absolute bottom-2 right-2 w-full text-end text-sm">
-      {t('login.installedVersion')} : {manifest.version}
+      {manifest.version === EXTENSION.lastVersion
+        ? t('version.itIsLastVersion')
+        : `${t('version.installedVersion')} : ${manifest.version} | ${t('version.lastVersion')} : ${EXTENSION.lastVersion}`}
     </p>
   );
 }

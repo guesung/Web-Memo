@@ -8,17 +8,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@src/components/ui/dialog';
-import { LOCAL_STORAGE } from '@src/constants';
 import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { useGetExtensionManifest } from '@src/hooks';
-import { URL_CHROME_STORE, URL_GUIDE_KO } from '@extension/shared/constants';
+import { EXTENSION, URL_CHROME_STORE, URL_GUIDE_KO } from '@extension/shared/constants';
+import { LanguageType } from '@src/app/i18n/type';
+import useTranslation from '@src/app/i18n/client';
+import { LOCAL_STORAGE_KEY_MAP, LocalStorage } from '@src/utils';
 
 type DialogType = 'install' | 'update';
 
-const LAST_VERSION = '1.6.5';
+interface ExtensionDialogProps extends LanguageType {}
 
-export default function ExtensionDialog() {
+export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
+  const { t } = useTranslation(lng);
   const [open, setOpen] = useState(false);
   const manifest = useGetExtensionManifest();
 
@@ -29,7 +32,7 @@ export default function ExtensionDialog() {
     if (extensionNotLoaded) return;
 
     const extensionNotInstalled = manifest === undefined;
-    const extensionNotLastVersion = manifest.version !== LAST_VERSION;
+    const extensionNotLastVersion = manifest.version !== '1.6.5';
 
     if (extensionNotInstalled || extensionNotLastVersion) setOpen(true);
     if (extensionNotInstalled) setDialogType('install');
@@ -41,23 +44,26 @@ export default function ExtensionDialog() {
   const EXTENSION_DIALOG = {
     install: {
       message: {
-        title: '확장 프로그램 미설치',
-        description: '설치해야 메모 기능을 이용하실 수 있습니다. 설치하러 가시겠습니까?',
-        cancel: '설치하지 않고 이용하기',
-        ok: '설치하러 가기',
+        title: t('dialogInstall.title'),
+        description: t('dialogInstall.title'),
+        cancel: t('dialogInstall.cancel'),
+        ok: t('dialogInstall.ok'),
       },
       link: URL_CHROME_STORE,
-      localStorage: LOCAL_STORAGE.install,
+      localStorage: LOCAL_STORAGE_KEY_MAP.install,
     },
     update: {
       message: {
-        title: '새로운 버전 출시!',
-        description: `현재 설치된 버전 : ${manifest?.version}, 최신 버전 : ${LAST_VERSION}`,
-        cancel: '업데이트 하지 않고 이용하기',
-        ok: '업데이트 하러가기',
+        title: t('dialogVersion.title'),
+        description: t('dialogVersion.description', {
+          currentVersion: manifest?.version,
+          lastVersion: EXTENSION.lastVersion,
+        }),
+        cancel: t('dialogVersion.cancel'),
+        ok: t('dialogVersion.ok'),
       },
       link: URL_GUIDE_KO,
-      localStorage: LOCAL_STORAGE.updateVersion,
+      localStorage: LOCAL_STORAGE_KEY_MAP.updateVersion,
     },
   };
 
@@ -67,11 +73,11 @@ export default function ExtensionDialog() {
 
   const handleCloseClick = () => {
     setOpen(false);
-    localStorage.setItem(EXTENSION_DIALOG[dialogType].localStorage, 'true');
+    LocalStorage.setTrue(EXTENSION_DIALOG[dialogType].localStorage);
   };
 
   return (
-    <Dialog open={!!dialogType} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{EXTENSION_DIALOG[dialogType].message.title}</DialogTitle>

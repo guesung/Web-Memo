@@ -13,21 +13,24 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from '@src/components/ui/sidebar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
+
 import Link from 'next/link';
 import Header from '../Header';
 import SidebarGroupCategory from './SidebarGroupCategory';
 import { LanguageType } from '@src/app/i18n/type';
 import useTranslation from '@src/app/i18n/server';
+import { PATHS } from '@src/constants';
 
 const items = [
   {
     i18n: 'sideBar.memo',
-    url: '/memos',
+    url: PATHS.memos,
     icon: Home,
   },
   {
     i18n: 'sideBar.wishList',
-    url: '/memos?wish=true',
+    url: PATHS.memosWish,
     icon: Heart,
   },
 ];
@@ -61,11 +64,20 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 
         <SidebarGroupCategory lng={lng} />
       </SidebarContent>
-      {/* <SidebarFooter>
-        <Link href="/setting" className="mb-2 ml-2 cursor-pointer">
-          <SettingsIcon size={16} />
-        </Link>
-      </SidebarFooter> */}
+      <SidebarFooter className="p-4">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Link href={PATHS.memosSetting} className="mb-2 ml-2 cursor-pointer">
+                <SettingsIcon size={16} />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('tooltip.goSetting')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </SidebarFooter>
     </Sidebar>
   );
 }

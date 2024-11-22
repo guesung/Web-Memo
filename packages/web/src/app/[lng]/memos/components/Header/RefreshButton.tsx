@@ -2,14 +2,13 @@
 import { QUERY_KEY } from '@extension/shared/constants';
 import { useQueryClient } from '@tanstack/react-query';
 
+import useTranslation from '@src/app/i18n/client';
+import { LanguageType } from '@src/app/i18n/type';
 import { Button } from '@src/components/ui/button';
 import { useToast } from '@src/hooks/use-toast';
-import { HTMLMotionProps } from 'framer-motion';
 import { RefreshCwIcon } from 'lucide-react';
 import { IS_USER_SEEN_GUIDE } from '../../constants';
 import { driverObj } from '../../utils';
-import { LanguageType } from '@src/app/i18n/type';
-import useTranslation from '@src/app/i18n/client';
 
 interface RefreshButtonProps extends LanguageType {}
 

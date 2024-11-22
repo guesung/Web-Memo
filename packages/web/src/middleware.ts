@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateSession } from './utils';
+import { isStringArray, updateSession } from './utils';
 import acceptLanguage from 'accept-language';
-import { fallbackLng, languages, cookieName } from './app/i18n/settings.js';
+import { fallbackLng, languages, cookieName } from './app/i18n/settings';
 
-acceptLanguage.languages(languages);
+if (isStringArray(languages)) acceptLanguage.languages(languages);
 
 export async function middleware(request: NextRequest) {
   let lng;
@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/_next') &&
     !request.nextUrl.pathname.includes('/auth')
   ) {
-    return NextResponse.redirect(new URL(`/${lng}${request.nextUrl.pathname}`, request.url));
+    return NextResponse.redirect(new URL(`/${lng}${request.nextUrl.pathname}${request.nextUrl.search}`, request.url));
   }
 
   if (request.headers.has('referer')) {
@@ -27,9 +27,7 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  await updateSession(request);
-
-  return NextResponse.next();
+  return await updateSession(request);
 }
 
 export const config = {

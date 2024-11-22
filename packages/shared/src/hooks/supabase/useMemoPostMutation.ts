@@ -25,7 +25,7 @@ export default function useMemoPostMutation({ supabaseClient, ...useMutationProp
 
       if (!previousMemosData) throw new NoMemosError();
 
-      const newMemosData = previousMemosData.concat(newData);
+      const newMemosData = newData.concat(previousMemosData);
 
       await queryClient.setQueryData(QUERY_KEY.memos(), { ...previousMemos, data: newMemosData });
 

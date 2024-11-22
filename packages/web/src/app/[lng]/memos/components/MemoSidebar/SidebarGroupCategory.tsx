@@ -14,18 +14,20 @@ import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
 import { memo, MouseEventHandler, useCallback } from 'react';
 import useTranslation from '@src/app/i18n/client';
 import { LanguageType } from '@src/app/i18n/type';
+import { useRouter } from 'next/navigation';
+import { PATHS } from '@src/constants';
 
 export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
   const { t } = useTranslation(lng);
   const { categories } = useCategoryQuery({
     supabaseClient: getSupabaseClient(),
   });
-  const categorySearchParamsRouter = useSearchParamsRouter('category');
+  const router = useRouter();
 
   const handleCategoryClick: MouseEventHandler<HTMLButtonElement> = event => {
     const category = event.currentTarget.id;
 
-    categorySearchParamsRouter.set(category, { removeOthers: true, scroll: true });
+    router.push(`${PATHS.memos}?category=${category}`, { scroll: true });
   };
 
   return (

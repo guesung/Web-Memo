@@ -9,7 +9,7 @@ export default function Setting() {
   const { language, setLanauageRouter } = useLanguage();
 
   return (
-    <div className="grid gap-6">
+    <section className="grid gap-6">
       <div className="grid grid-cols-12">
         <Label className="col-span-4 grid place-items-center">언어</Label>
         <Select onValueChange={setLanauageRouter} value={language}>
@@ -22,6 +22,6 @@ export default function Setting() {
           </SelectContent>
         </Select>
       </div>
-    </div>
+    </section>
   );
 }

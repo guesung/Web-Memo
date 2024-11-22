@@ -24,7 +24,7 @@ export default async function Layout({ children, params: { lng } }: LayoutProps)
   return (
     <div>
       <Header.Margin />
-      <main className="bg-background flex w-full p-4 text-sm">
+      <div className="bg-background flex w-full p-4 text-sm">
         <SidebarProvider defaultOpen={defaultOpen}>
           <HydrationBoundaryWrapper queryKey={QUERY_KEY.category()} queryFn={() => getCategory(supabaseClient)}>
             <MemoSidebar lng={lng} />
@@ -32,7 +32,7 @@ export default async function Layout({ children, params: { lng } }: LayoutProps)
           </HydrationBoundaryWrapper>
           {children}
         </SidebarProvider>
-      </main>
+      </div>
     </div>
   );
 }

@@ -1,10 +1,10 @@
 import { Setting, SettingHeader } from './component';
 
-export default function page() {
+export default function Page() {
   return (
-    <div>
+    <main>
       <SettingHeader />
       <Setting />
-    </div>
+    </main>
   );
 }

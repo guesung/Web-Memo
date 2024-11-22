@@ -5,7 +5,7 @@ import { useGetExtensionManifest } from '@src/hooks';
 import { LOCAL_STORAGE_KEY_MAP, LocalStorage } from '@src/utils';
 import { useEffect, useState } from 'react';
 
-type DialogType = 'install' | 'update';
+export type DialogType = 'install' | 'update';
 
 export default function useExtensionDialog() {
   const manifest = useGetExtensionManifest();

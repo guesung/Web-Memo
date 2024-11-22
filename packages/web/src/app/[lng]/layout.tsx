@@ -1,5 +1,5 @@
 import '@extension/ui/dist/global.css';
-import { ExtensionDialog, Header, QueryProvider, ThemeProvider } from '@src/components';
+import { Header, QueryProvider, ThemeProvider } from '@src/components';
 import { Toaster } from '@src/components/ui/toaster';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { dir } from 'i18next';
@@ -10,6 +10,7 @@ import './globals.css';
 
 import { languages } from '../i18n/settings';
 import { LanguageParams } from '../i18n/type';
+import { ExtensionDialog } from '../components';
 
 const pretendard = localFont({
   src: '../../fonts/PretendardVariable.woff2',

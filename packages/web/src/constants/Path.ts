@@ -5,7 +5,7 @@ export const PATHS = {
   memos: '/memos',
   memosWish: '/memos?wish=true',
   memosSetting: '/memos/setting',
-  allbackoAuth: '/auth/callback',
+  callbackOAuth: '/auth/callback',
   callbackEmail: '/auth/callback-email',
 };
 

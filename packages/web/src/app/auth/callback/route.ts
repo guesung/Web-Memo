@@ -2,6 +2,7 @@ import { getSupabaseClient } from '@src/utils/supabase.server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { COOKIE_KEY_ACCESS_TOKEN, COOKIE_KEY_REFRESH_TOKEN } from '@extension/shared/constants';
+import { PATHS } from '@src/constants';
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -22,5 +23,5 @@ export async function GET(request: Request) {
     });
   }
 
-  return NextResponse.redirect(requestUrl.origin + '/memos');
+  return NextResponse.redirect(requestUrl.origin + PATHS.memos);
 }

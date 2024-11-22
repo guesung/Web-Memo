@@ -29,5 +29,13 @@
     "installedVersion": "설치된 버전",
     "askGoInstallExtension": "익스텐션을 설치하지 않으셨군요. 설치해야 메모 기능을 이용하실 수 있습니다. 설치하러 가시겠습니까?",
     "personalInformationInfo": "고객님의 개인정보는 철저히 보호되며, 마케팅 목적으로 활용되지 않습니다."
+  },
+  "tooltip": {
+    "sideBar": "사이드바 토글",
+    "goSetting": "설정 페이지로 이동"
+  },
+  "setting": {
+    "header": "설정",
+    "language": "언어"
   }
 }

@@ -1,8 +1,16 @@
+'use server';
+
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
 
 import { SidebarTrigger } from '@src/components/ui/sidebar';
+import { LanguageType } from '@src/app/i18n/type';
+import useTranslation from '@src/app/i18n/server';
 
-export default function MemoSidebarTrigger() {
+interface MemoSidebarTriggerProps extends LanguageType {}
+
+export default async function MemoSidebarTrigger({ lng }: MemoSidebarTriggerProps) {
+  const { t } = await useTranslation(lng);
+
   return (
     <div>
       <TooltipProvider>
@@ -11,8 +19,8 @@ export default function MemoSidebarTrigger() {
             <SidebarTrigger />
           </TooltipTrigger>
           <TooltipContent>
-            <p>사이드바 토글</p>
-            <p>Command + B</p>
+            <p>{t('tooltip.sideBar')}</p>
+            <p>Control/Command + B</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

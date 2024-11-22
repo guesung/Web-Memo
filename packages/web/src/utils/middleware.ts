@@ -1,4 +1,5 @@
-import { NEED_AUTH_PAGES, SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
+import { checkUserLogin } from '@extension/shared/utils';
+import { NEED_AUTH_PAGES, PATHS, SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -8,7 +9,7 @@ export async function updateSession(request: NextRequest) {
     headers: setHeader(request),
   });
 
-  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  const supabaseClient = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
         return request.cookies.getAll();
@@ -25,13 +26,12 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const user = await supabase.auth.getUser();
-  const isUserLogin = !!user?.data?.user;
+  const isUserLogin = await checkUserLogin(supabaseClient);
   const isNeedAuthPage = NEED_AUTH_PAGES.includes(request.nextUrl.pathname);
 
   if (!isUserLogin && isNeedAuthPage) {
     const url = request.nextUrl.clone();
-    url.pathname = '/login';
+    url.pathname = PATHS.login;
     return NextResponse.redirect(url);
   }
 

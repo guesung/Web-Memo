@@ -10,13 +10,13 @@ interface SettingProps extends LanguageType {}
 
 export default function Setting({ lng }: SettingProps) {
   const { t } = useTranslation(lng);
-  const { language, setLanauageRouter } = useLanguage();
+  const { language, setLanguageRouter } = useLanguage();
 
   return (
     <section className="grid gap-6">
       <div className="grid grid-cols-12">
         <Label className="col-span-4 grid place-items-center">{t('setting.language')}</Label>
-        <Select onValueChange={setLanauageRouter} value={language}>
+        <Select onValueChange={setLanguageRouter} value={language}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Theme" />
           </SelectTrigger>

@@ -20,7 +20,7 @@ export default function useLanguage() {
     setLanguage(pathnameLanguage as Language);
   }, []);
 
-  const setLanauageRouter = (value: Language) => {
+  const setLanguageRouter = (value: Language) => {
     const pathnameWithoutLanguage = pathname.match(REGEXR_PATHNAME_WITHOUT_LANGUAGE)?.[1];
 
     if (!pathnameWithoutLanguage) return;
@@ -30,6 +30,6 @@ export default function useLanguage() {
 
   return {
     language,
-    setLanauageRouter,
+    setLanguageRouter,
   };
 }

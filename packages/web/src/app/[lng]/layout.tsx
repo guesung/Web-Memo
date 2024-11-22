@@ -1,5 +1,5 @@
 import '@extension/ui/dist/global.css';
-import { Header, QueryProvider, ThemeProvider } from '@src/components';
+import { ExtensionDialog, Header, QueryProvider, ThemeProvider } from '@src/components';
 import { Toaster } from '@src/components/ui/toaster';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { dir } from 'i18next';
@@ -43,6 +43,7 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
         </ThemeProvider>
 
         <Toaster />
+        <ExtensionDialog />
       </body>
     </html>
   );

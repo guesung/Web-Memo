@@ -1,3 +1,3 @@
 export { default as useMemoDeleteMutation } from './useMemoDeleteMutation';
 export { default as useLanguage } from './useLanguage';
-export { default as useGetExtensionVersion } from './useGetExtensionVersion';
+export { default as useGetExtensionManifest } from './useGetExtensionManifest';

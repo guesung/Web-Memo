@@ -7,8 +7,8 @@ import { LanguageType } from '@src/app/i18n/type';
 import { Button } from '@src/components/ui/button';
 import { useToast } from '@src/hooks/use-toast';
 import { RefreshCwIcon } from 'lucide-react';
-import { IS_USER_SEEN_GUIDE } from '../../constants';
 import { driverObj } from '../../utils';
+import { LOCAL_STORAGE } from '@src/constants';
 
 interface RefreshButtonProps extends LanguageType {}
 
@@ -19,7 +19,7 @@ export default function RefreshButton({ lng }: RefreshButtonProps) {
 
   const handleRefreshClick = async () => {
     driverObj.moveNext();
-    window.localStorage.setItem(IS_USER_SEEN_GUIDE, 'true');
+    window.localStorage.setItem(LOCAL_STORAGE.guide, 'true');
 
     await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
     toast({ title: t('toastMessage.refresh') });

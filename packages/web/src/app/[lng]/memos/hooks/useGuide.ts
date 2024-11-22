@@ -1,11 +1,11 @@
 import { useDidMount } from '@extension/shared/hooks';
 import { driverObj } from '../utils';
-import { IS_USER_SEEN_GUIDE } from '../constants';
+import { LOCAL_STORAGE } from '@src/constants';
 
 export default function useGuide() {
   useDidMount(() => {
-    const isUserSeenGuide = window.localStorage.getItem(IS_USER_SEEN_GUIDE);
-    if (isUserSeenGuide === 'true') return;
+    const isUserSeenGuide = window.localStorage.getItem(LOCAL_STORAGE.guide) === 'true';
+    if (isUserSeenGuide) return;
 
     driverObj.drive();
   });

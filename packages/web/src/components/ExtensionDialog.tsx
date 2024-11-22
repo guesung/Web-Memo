@@ -34,9 +34,13 @@ export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
     const extensionNotInstalled = manifest === undefined;
     const extensionNotLastVersion = manifest.version !== '1.6.5';
 
-    if (extensionNotInstalled || extensionNotLastVersion) setOpen(true);
-    if (extensionNotInstalled) setDialogType('install');
-    else if (extensionNotLastVersion) setDialogType('update');
+    if (extensionNotInstalled && !LocalStorage.check(LOCAL_STORAGE_KEY_MAP.install)) {
+      setDialogType('install');
+      setOpen(true);
+    } else if (extensionNotLastVersion && !LocalStorage.check(LOCAL_STORAGE_KEY_MAP.updateVersion)) {
+      setDialogType('update');
+      setOpen(true);
+    }
   }, [manifest]);
 
   if (!dialogType) return;

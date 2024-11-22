@@ -31,6 +31,11 @@
     "personalInformationInfo": "We value your privacy. Your personal data is securely stored and will never be shared with third parties. We do not send marketing or spam messages."
   },
   "tooltip": {
-    "sideBar": "toggle the sidebar"
+    "sideBar": "toggle the sidebar",
+    "goSetting": "Go to Settings"
+  },
+  "setting": {
+    "header": "Settings",
+    "language": "Language"
   }
 }

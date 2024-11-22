@@ -1,4 +1,4 @@
-import { COOKIE_KEY_ACCESS_TOKEN, COOKIE_KEY_REFRESH_TOKEN } from '@extension/shared/constants';
+import { COOKIE_KEY_ACCESS_TOKEN, COOKIE_KEY_REFRESH_TOKEN, SUPABASE_SCHEMA_MEMO } from '@extension/shared/constants';
 import { Database } from '@extension/shared/types';
 import { PATHS, SUPABASE_ANON_KEY, SUPABASE_URL, WEB_URL } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
@@ -19,7 +19,7 @@ export const getSupabaseClient = () => {
         cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
       },
     },
-    db: { schema: 'memo' },
+    db: { schema: SUPABASE_SCHEMA_MEMO },
   });
   return supabaseClient;
 };

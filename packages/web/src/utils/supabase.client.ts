@@ -1,3 +1,4 @@
+import { SUPABASE_SCHEMA_MEMO } from '@extension/shared/constants';
 import { Database } from '@extension/shared/types';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
 import { createBrowserClient } from '@supabase/ssr';
@@ -17,5 +18,5 @@ export const getSupabaseClient = () =>
         },
       },
     },
-    db: { schema: 'memo' },
+    db: { schema: SUPABASE_SCHEMA_MEMO },
   });

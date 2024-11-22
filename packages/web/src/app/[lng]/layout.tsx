@@ -1,14 +1,13 @@
-import localFont from 'next/font/local';
 import '@extension/ui/dist/global.css';
 import { Header, QueryProvider, ThemeProvider } from '@src/components';
 import { Toaster } from '@src/components/ui/toaster';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { dir } from 'i18next';
 import type { Metadata } from 'next';
+import localFont from 'next/font/local';
 import { PropsWithChildren } from 'react';
 import './globals.css';
-import { dir } from 'i18next';
 
-import { appWithTranslation } from 'next-i18next';
 import { languages } from '../i18n/settings';
 
 const pretendard = localFont({
@@ -42,7 +41,7 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
             <Header lng={lng} />
 
             {children}
-            {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+            <ReactQueryDevtools initialIsOpen={false} />
           </QueryProvider>
         </ThemeProvider>
 

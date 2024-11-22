@@ -36,6 +36,8 @@ import useTranslation from '@src/app/i18n/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PATHS } from '@src/constants';
 import { ToastAction } from '@src/components/ui/toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { QUERY_KEY } from '@extension/shared/constants';
 
 interface MemoOptionProps extends LanguageType {
   id: number;
@@ -47,7 +49,7 @@ export default function MemoOption({ lng, id }: MemoOptionProps) {
   const supabaseClient = getSupabaseClient();
   const { toast } = useToast();
   const { categories } = useCategoryQuery({ supabaseClient });
-  const { data: memoData, refetch: refetchMemo } = useMemoQuery({ supabaseClient, id });
+  const queryClient = useQueryClient();
   const { mutate: mutatePatchMemo } = useMemoPatchMutation({
     supabaseClient,
   });
@@ -67,10 +69,7 @@ export default function MemoOption({ lng, id }: MemoOptionProps) {
       onSuccess: ({ data }) => {
         if (!data) return;
 
-        const saveMemo = () =>
-          mutatePostMemo(data[0], {
-            onSuccess: refetchMemo,
-          });
+        const saveMemo = () => mutatePostMemo(data[0]);
 
         toast({
           title: t('toastMessage.memoDeleted'),
@@ -104,7 +103,7 @@ export default function MemoOption({ lng, id }: MemoOptionProps) {
               </ToastAction>
             ),
           });
-          refetchMemo();
+          queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
         },
       },
     );
@@ -123,7 +122,7 @@ export default function MemoOption({ lng, id }: MemoOptionProps) {
             {t('option.deleteMemo')}
           </DropdownMenuItem>
           <DropdownMenuItem className="cursor-pointer">
-            <Select onValueChange={handleCategoryChange}>
+            <Select onValueChange={handleCategoryChange} defaultValue="">
               <SelectTrigger>
                 <SelectValue placeholder={t('option.changeCategory')} />
               </SelectTrigger>

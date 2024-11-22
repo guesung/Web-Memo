@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateSession } from './utils';
 import acceptLanguage from 'accept-language';
-import { fallbackLng, languages, cookieName } from './app/i18n/settings.js';
+import { fallbackLng, languages, cookieName } from './app/i18n/settings';
 
-acceptLanguage.languages(languages);
+acceptLanguage.languages(languages as unknown as string[]);
 
 export async function middleware(request: NextRequest) {
   let lng;

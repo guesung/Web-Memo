@@ -1,7 +1,9 @@
 import { languages } from './settings';
 
+export type Language = (typeof languages)[number];
+
 export type LanguageType = {
-  lng: (typeof languages)[number];
+  lng: Language;
 };
 
 export interface LanguageParams {

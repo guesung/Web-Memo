@@ -13,9 +13,14 @@
   "toastMessage": {
     "refresh": "새로고침이 완료되었습니다.",
     "memoEdited": "메모가 수정되었습니다.",
+    "categoryEdited": "카테고리가 변경되었습니다.",
     "memoDeleted": "메모가 삭제되었습니다.",
     "memoWishListDeleted": "메모가 위시리스트에서 제거되었습니다.",
     "memoWishListAdded": "메모가 위시리스트에 추가되었습니다."
+  },
+  "toastActionMessage": {
+    "goTo": "바로가기",
+    "memoDeleteCancle": "제거 취소"
   },
   "option": {
     "deleteMemo": "메모 삭제",

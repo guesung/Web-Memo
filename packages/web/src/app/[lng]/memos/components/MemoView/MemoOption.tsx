@@ -74,8 +74,8 @@ export default function MemoOption({ lng, id }: MemoOptionProps) {
         toast({
           title: t('toastMessage.memoDeleted'),
           action: (
-            <ToastAction altText="제거 취소" onClick={saveMemo}>
-              제거 취소
+            <ToastAction altText={t('toastActionMessage.memoDeleteCancle')} onClick={saveMemo}>
+              {t('toastActionMessage.memoDeleteCancle')}
             </ToastAction>
           ),
         });
@@ -92,14 +92,14 @@ export default function MemoOption({ lng, id }: MemoOptionProps) {
           if (!category) return;
 
           toast({
-            title: t('toastMessage.memoEdited'),
+            title: t('toastMessage.categoryEdited'),
             action: (
               <ToastAction
-                altText="바로가기"
+                altText={t('toastActionMessage.goTo')}
                 onClick={() => {
                   router.push(`${PATHS.memos}?category=${category.name}&id=${id}`);
                 }}>
-                바로가기
+                {t('toastActionMessage.goTo')}
               </ToastAction>
             ),
           });

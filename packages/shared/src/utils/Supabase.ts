@@ -29,7 +29,7 @@ export const checkUserLogin = async (supabaseClient: MemoSupabaseClient) => {
   return !!user?.data?.user;
 };
 
-export const getCategory = async (supabaseClient: MemoSupabaseClient) =>
+export const getCategories = async (supabaseClient: MemoSupabaseClient) =>
   supabaseClient.from('category').select('*').order('created_at', { ascending: false });
 
 export const insertCategory = async (supabaseClient: MemoSupabaseClient, categoryRequest: CategoryTable['Insert']) =>

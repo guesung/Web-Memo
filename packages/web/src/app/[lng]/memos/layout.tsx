@@ -1,7 +1,7 @@
 'use server';
 
 import { COOKIE_KEY, QUERY_KEY } from '@extension/shared/constants';
-import { checkUserLogin, getCategory } from '@extension/shared/utils';
+import { checkUserLogin, getCategories } from '@extension/shared/utils';
 import { LanguageParams } from '@src/app/i18n/type';
 import { Header, HydrationBoundaryWrapper } from '@src/components';
 import { SidebarProvider } from '@src/components/ui/sidebar';
@@ -28,7 +28,7 @@ export default async function Layout({ children, params: { lng } }: LayoutProps)
       <Header.Margin />
       <div className="bg-background flex w-full p-4 text-sm">
         <SidebarProvider defaultOpen={defaultOpen}>
-          <HydrationBoundaryWrapper queryKey={QUERY_KEY.category()} queryFn={() => getCategory(supabaseClient)}>
+          <HydrationBoundaryWrapper queryKey={QUERY_KEY.category()} queryFn={() => getCategories(supabaseClient)}>
             <MemoSidebar lng={lng} />
             <MemoSidebarTrigger lng={lng} />
           </HydrationBoundaryWrapper>

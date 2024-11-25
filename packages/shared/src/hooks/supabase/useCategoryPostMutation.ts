@@ -7,6 +7,7 @@ interface UseCategoryPostMutationProps {
   supabaseClient: MemoSupabaseClient;
 }
 
+// TODO : 낙관적 업데이트
 export default function useCategoryPostMutation({ supabaseClient }: UseCategoryPostMutationProps) {
   const queryClient = useQueryClient();
 

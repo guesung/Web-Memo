@@ -8,13 +8,13 @@ export default function MemoHeader() {
   const { data: tab, refetch: refetchTab } = useTabQuery();
   const { data: supabaseClient } = useSupabaseClientQuery();
 
-  const { data: currentMemo } = useMemoQuery({
+  const { memo: memoData } = useMemoQuery({
     supabaseClient,
     url: tab.url,
   });
 
   const handleMemoClick = () => {
-    const memoUrl = getMemoUrl(currentMemo?.id);
+    const memoUrl = getMemoUrl(memoData?.id);
 
     Tab.create({ url: memoUrl });
   };

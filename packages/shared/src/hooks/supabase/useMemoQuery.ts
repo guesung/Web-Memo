@@ -9,25 +9,22 @@ interface UseMemoQueryProps {
   id?: number;
 }
 
-interface FindMemoProps {
-  memos: MemoSupabaseResponse['data'];
-  url?: string;
-  id?: number;
-}
-
-const findMemo = ({ memos, url, id }: FindMemoProps) => {
-  if (url) return memos?.find(memo => memo.url === formatUrl(url));
-  if (id) return memos?.find(memo => memo.id === id);
-  return null;
-};
-
 export default function useMemoQuery({ supabaseClient, url, id }: UseMemoQueryProps) {
-  return useQuery({
+  const query = useQuery({
     queryFn: () => getMemos(supabaseClient),
     queryKey: QUERY_KEY.memos(),
     enabled: !!supabaseClient,
     select: ({ data: memos }: MemoSupabaseResponse) => {
-      return findMemo({ memos, url, id });
+      if (!memos) return;
+
+      if (id) return memos?.find(memo => memo.id === id);
+      if (url) return memos?.find(memo => memo.url === formatUrl(url));
+      return;
     },
   });
+
+  return {
+    ...query,
+    memo: query.data,
+  };
 }

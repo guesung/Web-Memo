@@ -10,10 +10,10 @@ import MemoGrid from './MemoGrid';
 interface MemoViewProps extends LanguageType {}
 
 export default function MemoView({ lng }: MemoViewProps) {
+  const supabaseClient = useSupabaseClient();
   const isWish = useSearchParamsRouter('wish').get() === 'true';
   const category = useSearchParamsRouter('category').get();
 
-  const supabaseClient = useSupabaseClient();
   const { memos } = useMemosQuery({
     supabaseClient,
   });

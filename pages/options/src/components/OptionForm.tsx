@@ -1,6 +1,6 @@
 import { LANGUAGE_LIST, STORAGE_OPTION_LANGUAGE } from '@extension/shared/constants';
 import { useOptionQuery } from '@extension/shared/hooks/extension';
-import { convertToCSVBlob, convertToJSONBlob, downloadBlob, getMemo } from '@extension/shared/utils';
+import { convertToCSVBlob, convertToJSONBlob, downloadBlob, getMemos } from '@extension/shared/utils';
 import { getSupabaseClient, I18n, Storage } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
 import '@src/Options.css';
@@ -12,7 +12,7 @@ export default function OptionForm() {
   const { data: option } = useOptionQuery();
   const getMemos = async () => {
     const supabaseClient = await getSupabaseClient();
-    return await getMemo(supabaseClient);
+    return await getMemos(supabaseClient);
   };
 
   const handleCSVDownloadClick = async () => {

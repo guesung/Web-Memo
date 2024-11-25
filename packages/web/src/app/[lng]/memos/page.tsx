@@ -1,3 +1,5 @@
+'use server';
+
 import { QUERY_KEY } from '@extension/shared/constants';
 import { getMemo } from '@extension/shared/utils';
 import { LanguageParams } from '@src/app/i18n/type';

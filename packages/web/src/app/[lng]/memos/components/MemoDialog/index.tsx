@@ -5,8 +5,8 @@ import useTranslation from '@src/app/i18n/client';
 import { LanguageType } from '@src/app/i18n/type';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
 import { Textarea } from '@src/components/ui/textarea';
+import { useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
-import { getSupabaseClient } from '@src/utils/supabase.client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -22,7 +22,7 @@ export default function MemoDialog({ lng }: MemoDialog) {
   const idSearchParamsRouter = useSearchParamsRouter('id');
   const id = idSearchParamsRouter.get();
   const [row, setRow] = useState(MIN_ROW);
-  const supabaseClient = getSupabaseClient();
+  const supabaseClient = useSupabaseClient();
   const { data: memoData } = useMemoQuery({ supabaseClient, id: Number(id) });
   const { toast } = useToast();
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({

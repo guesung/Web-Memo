@@ -15,9 +15,8 @@ import { LanguageType } from '@src/app/i18n/type';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@src/components/ui/select';
 import { ToastAction } from '@src/components/ui/toast';
 import { PATHS } from '@src/constants';
-import { useMemoDeleteMutation } from '@src/hooks';
+import { useMemoDeleteMutation, useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
-import { getSupabaseClient } from '@src/utils/supabase.client';
 import { useQueryClient } from '@tanstack/react-query';
 import { EllipsisVerticalIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -30,7 +29,7 @@ interface MemoOptionProps extends LanguageType {
 export default function MemoOption({ lng, memoId }: MemoOptionProps) {
   const { t } = useTranslation(lng);
 
-  const supabaseClient = getSupabaseClient();
+  const supabaseClient = useSupabaseClient();
   const { toast } = useToast();
   const { categories } = useCategoryQuery({ supabaseClient });
   const queryClient = useQueryClient();

@@ -11,7 +11,7 @@ export default function useCategoryPostMutation({ supabaseClient }: UseCategoryP
   const queryClient = useQueryClient();
 
   return useMutation<CategorySupabaseResponse, Error, CategoryTable['Insert']>({
-    mutationFn: async postCategoryProps => await insertCategory(supabaseClient, postCategoryProps),
+    mutationFn: postCategoryProps => insertCategory(supabaseClient, postCategoryProps),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
     },

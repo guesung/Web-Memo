@@ -23,7 +23,7 @@ const findMemo = ({ memos, url, id }: FindMemoProps) => {
 
 export default function useMemoQuery({ supabaseClient, url, id }: UseMemoQueryProps) {
   return useQuery({
-    queryFn: getMemo.bind(null, supabaseClient),
+    queryFn: () => getMemo(supabaseClient),
     queryKey: QUERY_KEY.memos(),
     enabled: !!supabaseClient,
     select: ({ data: memos }: MemoSupabaseResponse) => {

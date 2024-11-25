@@ -9,7 +9,7 @@ interface UseCategoryQueryProps {
 
 export default function useCategoryQuery({ supabaseClient }: UseCategoryQueryProps) {
   const query = useQuery({
-    queryFn: getCategory.bind(null, supabaseClient),
+    queryFn: () => getCategory(supabaseClient),
     queryKey: QUERY_KEY.category(),
     enabled: !!supabaseClient,
   });

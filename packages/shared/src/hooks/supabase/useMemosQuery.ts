@@ -9,7 +9,7 @@ interface UseMemosQueryProps {
 
 export default function useMemosQuery({ supabaseClient }: UseMemosQueryProps) {
   const query = useQuery({
-    queryFn: getMemo.bind(null, supabaseClient),
+    queryFn: () => getMemo(supabaseClient),
     queryKey: QUERY_KEY.memos(),
     enabled: !!supabaseClient,
   });

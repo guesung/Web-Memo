@@ -2,6 +2,7 @@ import {
   COOKIE_KEY_ACCESS_TOKEN,
   COOKIE_KEY_REFRESH_TOKEN,
   SUPABASE_ANON_KEY,
+  SUPABASE_SCHEMA_MEMO,
   SUPABASE_URL,
   WEB_URL,
 } from '@src/constants';
@@ -13,7 +14,7 @@ import { Storage } from './module';
 export const getSupabaseClient = async () => {
   try {
     const supabaseClientInstance = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      db: { schema: 'memo' },
+      db: { schema: SUPABASE_SCHEMA_MEMO },
       auth: {
         storage: {
           getItem: async key => {

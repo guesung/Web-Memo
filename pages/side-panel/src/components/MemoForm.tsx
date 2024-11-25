@@ -11,7 +11,6 @@ import {
 } from '@extension/shared/hooks';
 import {
   getFormattedMemo,
-  GetFormattedMemoProps,
   getSupabaseClient,
   I18n,
   responseRefetchTheMemos,
@@ -19,11 +18,10 @@ import {
 } from '@extension/shared/utils/extension';
 import { cn, Textarea, ToastAction, useToast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
+import { MemoInput } from '@src/types/Input';
 import { getMemoWishListUrl } from '@src/utils';
 import { HeartIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-
-type InputType = GetFormattedMemoProps;
 
 function MemoForm() {
   const { toast } = useToast();
@@ -37,7 +35,7 @@ function MemoForm() {
     supabaseClient,
     url: tab.url,
   });
-  const { register, setValue, watch } = useForm<InputType>({
+  const { register, setValue, watch } = useForm<MemoInput>({
     defaultValues: {
       memo: '',
       isWish: false,
@@ -64,7 +62,7 @@ function MemoForm() {
     },
   });
 
-  const saveMemo = async (data?: InputType) => {
+  const saveMemo = async (data?: MemoInput) => {
     const memo = data?.memo ?? watch('memo');
     const isWish = data?.isWish ?? watch('isWish');
 

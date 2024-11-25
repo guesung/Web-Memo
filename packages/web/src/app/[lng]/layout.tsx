@@ -10,6 +10,7 @@ import './globals.css';
 
 import { languages } from '../i18n/settings';
 import { LanguageParams } from '../i18n/type';
+import { ExtensionDialog } from '../components';
 
 const pretendard = localFont({
   src: '../../fonts/PretendardVariable.woff2',
@@ -43,6 +44,7 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
         </ThemeProvider>
 
         <Toaster />
+        <ExtensionDialog lng={lng} />
       </body>
     </html>
   );

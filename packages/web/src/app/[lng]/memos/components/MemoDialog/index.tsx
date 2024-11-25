@@ -11,12 +11,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { MemoInput } from '../../types';
 
 const MIN_ROW = 4;
-
-type InputType = {
-  memo: string;
-};
 
 interface MemoDialog extends LanguageType {}
 
@@ -32,7 +29,7 @@ export default function MemoDialog({ lng }: MemoDialog) {
     supabaseClient,
   });
 
-  const { register, watch, setValue } = useForm<InputType>({
+  const { register, watch, setValue } = useForm<MemoInput>({
     defaultValues: {
       memo: '',
     },

@@ -6,14 +6,11 @@ import { getSupabaseClient } from '@src/utils/supabase.client';
 import { PlusIcon } from 'lucide-react';
 import { memo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-
-interface CategoryFormInput {
-  category: string;
-}
+import { CategoryInput } from '../../types';
 
 export default memo(function SidebarMenuItemAddCategory() {
   const [isEditMode, setIsEditMode] = useState(false);
-  const { register, handleSubmit } = useForm<CategoryFormInput>({
+  const { register, handleSubmit } = useForm<CategoryInput>({
     defaultValues: {
       category: '',
     },

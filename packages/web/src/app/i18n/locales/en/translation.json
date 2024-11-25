@@ -13,26 +13,44 @@
   "toastMessage": {
     "refresh": "Refresh completed.",
     "memoEdited": "Memo has been edited.",
+    "categoryEdited": "Category has been changed.",
     "memoDeleted": "Memo has been deleted.",
-    "memoWishListDeleted": "Memo has been removed from wish list.",
-    "memoWishListAdded": "Memo has been added to wish list."
+    "memoWishListDeleted": "Memo has been removed from the wish list.",
+    "memoWishListAdded": "Memo has been added to the wish list."
+  },
+  "toastActionMessage": {
+    "goTo": "Go to",
+    "memoDeleteCancel": "Cancel deletion"
   },
   "option": {
-    "deleteMemo": "Delete Memo",
-    "changeCategory": "Change a Category"
+    "deleteMemo": "Delete memo",
+    "changeCategory": "Change category"
   },
   "login": {
     "welcomeTitle": "Welcome.",
-    "welcomeDescription": "Web Memo where you can write memos conveniently.",
+    "welcomeDescription": "Web Memo is a convenient tool for writing memos.",
     "kakaoLogin": "Kakao Login",
     "googleLogin": "Google Login",
-    "installedVersion": "Installed Version",
-    "askGoInstallExtension": "You haven't installed the extension. You need to install it to use the memo feature. Would you like to go install it?",
-    "personalInformationInfo": "We value your privacy. Your personal data is securely stored and will never be shared with third parties. We do not send marketing or spam messages."
+    "askGoInstallExtension": "You need to install the extension to use the memo feature. Would you like to install it?",
+    "personalInformationInfo": "Your personal information is strictly protected and will not be used for marketing purposes."
+  },
+  "dialogInstall": {
+    "title": "Extension Not Installed",
+    "description": "You need to install the extension to use the memo feature. Would you like to install it?",
+    "cancel": "Use without installing",
+    "ok": "Go to install"
+  },
+  "dialogVersion": {
+    "title": "New Version Released!",
+    "description": "Current Version: {{currentVersion}} | Latest Version: {{lastVersion}}",
+    "itIsLastVersion": "This is the latest version.",
+    "cancel": "Continue without updating",
+    "ok": "Go to update",
+    "lastVersion": "Latest version"
   },
   "tooltip": {
-    "sideBar": "toggle the sidebar",
-    "goSetting": "Go to Settings"
+    "sideBar": "Toggle sidebar",
+    "goSetting": "Go to settings page"
   },
   "setting": {
     "header": "Settings",

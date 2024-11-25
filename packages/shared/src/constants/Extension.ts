@@ -1,1 +1,4 @@
-export const EXTENSION_ID = 'eaiojpmgklfngpjddhoalgcpkepgkclh';
+export const EXTENSION = {
+  id: 'eaiojpmgklfngpjddhoalgcpkepgkclh',
+  lastVersion: '1.6.4',
+};

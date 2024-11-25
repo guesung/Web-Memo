@@ -58,8 +58,8 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
         toast({
           title: t('toastMessage.memoDeleted'),
           action: (
-            <ToastAction altText={t('toastActionMessage.memoDeleteCancle')} onClick={saveMemo}>
-              {t('toastActionMessage.memoDeleteCancle')}
+            <ToastAction altText={t('toastActionMessage.memoDeleteCancel')} onClick={saveMemo}>
+              {t('toastActionMessage.memoDeleteCancel')}
             </ToastAction>
           ),
         });

@@ -20,7 +20,7 @@
   },
   "toastActionMessage": {
     "goTo": "바로가기",
-    "memoDeleteCancle": "제거 취소"
+    "memoDeleteCancel": "제거 취소"
   },
   "option": {
     "deleteMemo": "메모 삭제",
@@ -42,10 +42,10 @@
   },
   "dialogVersion": {
     "title": "새로운 버전 출시!",
-    "description": "현재 설치된 버전 : {{currentVersion}} | 최신 버전 : {{lastVersion}}",
+    "description": "현재 버전 {{currentVersion}}에서 새로운 버전 {{lastVersion}}으로 업데이트할 수 있습니다.",
     "itIsLastVersion": "최신 버전입니다.",
-    "cancel": "업데이트 하지 않고 이용하기",
-    "ok": "업데이트 하러가기",
+    "cancel": "나중에 업데이트하기",
+    "ok": "지금 업데이트하기",
     "lastVersion": "최신 버전"
   },
   "tooltip": {

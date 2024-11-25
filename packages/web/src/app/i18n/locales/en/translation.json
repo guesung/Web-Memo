@@ -20,7 +20,7 @@
   },
   "toastActionMessage": {
     "goTo": "Go to",
-    "memoDeleteCancle": "Cancel deletion"
+    "memoDeleteCancel": "Cancel deletion"
   },
   "option": {
     "deleteMemo": "Delete memo",
@@ -31,7 +31,7 @@
     "welcomeDescription": "Web Memo is a convenient tool for writing memos.",
     "kakaoLogin": "Kakao Login",
     "googleLogin": "Google Login",
-    "askGoInstallExtension": "You haven't installed the extension. You need to install it to use the memo feature. Would you like to install it?",
+    "askGoInstallExtension": "You need to install the extension to use the memo feature. Would you like to install it?",
     "personalInformationInfo": "Your personal information is strictly protected and will not be used for marketing purposes."
   },
   "dialogInstall": {

@@ -35,7 +35,7 @@ export const getExtensionDialogInfo = (
         cancel: t('dialogVersion.cancel'),
       },
       link: URL_GUIDE_KO,
-      localStorageKey: LOCAL_STORAGE_KEY_MAP.updateVersion + 'a',
+      localStorageKey: LOCAL_STORAGE_KEY_MAP.updateVersion,
     },
   };
   return EXTENSION_DIALOG_INFO_ALL[dialogType];

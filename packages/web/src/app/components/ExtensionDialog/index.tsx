@@ -20,10 +20,10 @@ export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
 
   const extensionDialogInfo = getExtensionDialogInfo(lng, manifest, dialogType);
 
-  if (!dialogType || !extensionDialogInfo) return <div></div>;
+  if (!dialogType || !extensionDialogInfo) return;
 
   const handleUpdateClick = () => {
-    window.open(extensionDialogInfo.link, '_blank');
+    window.open(extensionDialogInfo.link, '_blank', 'noopener,noreferrer');
     handleClose(extensionDialogInfo.localStorageKey);
   };
 
@@ -41,7 +41,7 @@ export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
         <DialogFooter>
           {extensionDialogInfo.message.cancel && (
             <Button onClick={handleCloseClick} variant="secondary">
-              {extensionDialogInfo.message?.cancel}
+              {extensionDialogInfo.message.cancel}
             </Button>
           )}
           <Button onClick={handleUpdateClick}>{extensionDialogInfo.message.ok}</Button>

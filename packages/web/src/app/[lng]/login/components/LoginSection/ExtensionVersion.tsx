@@ -4,7 +4,6 @@ import { EXTENSION, URL_CHROME_STORE } from '@extension/shared/constants';
 import useTranslation from '@src/app/i18n/client';
 import { LanguageType } from '@src/app/i18n/type';
 import { useGetExtensionManifest } from '@src/hooks';
-import { useEffect } from 'react';
 
 interface ExtensionVersionProps extends LanguageType {}
 

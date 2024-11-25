@@ -5,17 +5,10 @@ import {
   useMemoPatchMutation,
   useMemoPostMutation,
   useMemoQuery,
-  useSupabaseClient,
-  useTabQuery,
   useThrottle,
 } from '@extension/shared/hooks';
-import {
-  getFormattedMemo,
-  getSupabaseClient,
-  I18n,
-  responseRefetchTheMemos,
-  Tab,
-} from '@extension/shared/utils/extension';
+import { useSupabaseClientQuery, useTabQuery } from '@extension/shared/hooks/extension';
+import { getFormattedMemo, I18n, responseRefetchTheMemos, Tab } from '@extension/shared/utils/extension';
 import { cn, Textarea, ToastAction, useToast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
 import { MemoInput } from '@src/types/Input';
@@ -28,9 +21,7 @@ function MemoForm() {
   const [isSaved, setIsSaved] = useState(true);
   const { throttle, abortThrottle } = useThrottle();
   const { data: tab } = useTabQuery();
-  const { data: supabaseClient } = useSupabaseClient({
-    getSupabaseClient,
-  });
+  const { data: supabaseClient } = useSupabaseClientQuery();
   const { data: currentMemo, refetch: refetchMemo } = useMemoQuery({
     supabaseClient,
     url: tab.url,

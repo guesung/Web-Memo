@@ -16,7 +16,6 @@ interface LayoutProps extends LanguageParams, PropsWithChildren {}
 
 export default async function Layout({ children, params: { lng } }: LayoutProps) {
   const supabaseClient = await getSupabaseClient();
-  console.log(supabaseClient);
   const isUserLogin = await checkUserLogin(supabaseClient);
   if (!isUserLogin) redirect(PATHS.login);
 

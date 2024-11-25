@@ -35,6 +35,10 @@
       "types": "./dist/hooks/extension/index.d.ts",
       "default": "./dist/hooks/extension/index.js"
     },
+    "./hooks/web": {
+      "types": "./dist/hooks/web/index.d.ts",
+      "default": "./dist/hooks/web/index.js"
+    },
     "./constants": {
       "types": "./dist/constants/index.d.ts",
       "default": "./dist/constants/index.js"

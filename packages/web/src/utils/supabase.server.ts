@@ -1,6 +1,6 @@
 import { COOKIE_KEY, SUPABASE } from '@extension/shared/constants';
 import { Database, MemoSupabaseClient } from '@extension/shared/types';
-import { CONFIG, PATHS, SUPABASE_ANON_KEY } from '@src/constants';
+import { CONFIG, PATHS } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
 import { Provider } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
@@ -14,7 +14,7 @@ export const getSupabaseClient = () => {
 
   const cookieStore = cookies();
 
-  return createServerClient<Database>(CONFIG.supabaseUrl, SUPABASE_ANON_KEY, {
+  return createServerClient<Database>(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();

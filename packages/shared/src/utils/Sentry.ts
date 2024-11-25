@@ -1,7 +1,7 @@
 /* eslint-disable import/namespace */
 import * as Sentry from '@sentry/react';
 import { isProduction } from './Environment';
-import { SENTRY_DSN } from '@src/constants';
+import { CONFIG } from '@src/constants';
 
 export const testSentry = () => {
   Sentry.captureException(new Error(`captureException Error 테스트`));
@@ -13,7 +13,7 @@ export const initSentry = async () => {
   if (!isProduction) return;
 
   Sentry.init({
-    dsn: SENTRY_DSN,
+    dsn: CONFIG.sentryDsn,
     integrations: [
       Sentry.browserTracingIntegration(),
       Sentry.replayIntegration(),

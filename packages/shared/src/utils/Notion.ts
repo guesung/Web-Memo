@@ -1,4 +1,4 @@
-import { MAKE_WEBHOOK_NOTION_API } from '@src/constants';
+import { CONFIG } from '@src/constants';
 import { getFormattedMemo } from './extension';
 
 interface SaveMemoNotionProps {
@@ -9,7 +9,7 @@ interface SaveMemoNotionProps {
 export const saveMemoNotion = async ({ memo }: SaveMemoNotionProps) => {
   const memoData = await getFormattedMemo({ memo });
 
-  const response = await fetch(MAKE_WEBHOOK_NOTION_API, {
+  const response = await fetch(CONFIG.makeWebhookNotionApi, {
     method: 'POST',
     body: JSON.stringify(memoData),
   });

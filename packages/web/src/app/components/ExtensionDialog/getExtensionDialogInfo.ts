@@ -1,4 +1,4 @@
-import { EXTENSION, URL_CHROME_STORE, URL_GUIDE_KO } from '@extension/shared/constants';
+import { EXTENSION, URL } from '@extension/shared/constants';
 import useTranslation from '@src/app/i18n/client';
 import { Language } from '@src/app/i18n/type';
 import { LOCAL_STORAGE_KEY_MAP } from '@src/utils';
@@ -21,7 +21,7 @@ export const getExtensionDialogInfo = (
         ok: t('dialogInstall.ok'),
         cancel: t('dialogInstall.cancel'),
       },
-      link: URL_CHROME_STORE,
+      link: URL.chromeStore,
       localStorageKey: LOCAL_STORAGE_KEY_MAP.install,
     },
     update: {
@@ -34,7 +34,7 @@ export const getExtensionDialogInfo = (
         ok: t('dialogVersion.ok'),
         cancel: t('dialogVersion.cancel'),
       },
-      link: URL_GUIDE_KO,
+      link: URL.guideKo,
       localStorageKey: LOCAL_STORAGE_KEY_MAP.updateVersion,
     },
   };

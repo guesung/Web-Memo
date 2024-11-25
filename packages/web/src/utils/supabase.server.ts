@@ -1,6 +1,6 @@
-import { COOKIE_KEY_ACCESS_TOKEN, COOKIE_KEY_REFRESH_TOKEN, SUPABASE_SCHEMA_MEMO } from '@extension/shared/constants';
+import { COOKIE_KEY, SUPABASE } from '@extension/shared/constants';
 import { Database, MemoSupabaseClient } from '@extension/shared/types';
-import { PATHS, SUPABASE_ANON_KEY, SUPABASE_URL, WEB_URL } from '@src/constants';
+import { CONFIG, PATHS, SUPABASE_ANON_KEY } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
 import { Provider } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
@@ -14,7 +14,7 @@ export const getSupabaseClient = () => {
 
   const cookieStore = cookies();
 
-  return createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  return createServerClient<Database>(CONFIG.supabaseUrl, SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -23,7 +23,7 @@ export const getSupabaseClient = () => {
         cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
       },
     },
-    db: { schema: SUPABASE_SCHEMA_MEMO },
+    db: { schema: SUPABASE.schemaMemo },
   });
 };
 
@@ -34,7 +34,7 @@ export const signInWithOAuth = async (provider: Provider) => {
   const { error, data } = await supabaseClient.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${WEB_URL}${PATHS.callbackOAuth}`,
+      redirectTo: `${CONFIG.webUrl}${PATHS.callbackOAuth}`,
     },
   });
 
@@ -53,7 +53,7 @@ export const signInWithEmail = async (email: string, password: string) => {
 
   if (error) redirect(PATHS.error);
   revalidatePath(PATHS.root, 'layout');
-  redirect(`${WEB_URL}${PATHS.callbackEmail}`);
+  redirect(`${CONFIG.webUrl}${PATHS.callbackEmail}`);
 };
 
 export const signout = async () => {
@@ -62,7 +62,7 @@ export const signout = async () => {
   await supabaseClient.auth.signOut();
 
   const cookieStore = cookies();
-  cookieStore.delete(COOKIE_KEY_ACCESS_TOKEN);
-  cookieStore.delete(COOKIE_KEY_REFRESH_TOKEN);
+  cookieStore.delete(COOKIE_KEY.accessToken);
+  cookieStore.delete(COOKIE_KEY.refreshToken);
   redirect(PATHS.login);
 };

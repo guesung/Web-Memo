@@ -26,7 +26,7 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
           <Image src="/images/svgs/google.svg" width={16} height={16} alt="google" />
           {t('login.googleLogin')}
         </Button>
-        {/* <button formAction={() => signInWithEmail(SUPABASE_TEST_EMAIL, SUPABASE_TEST_PASSWORD)} className="btn">
+        {/* <button formAction={() => signInWithEmail(SUPABASE.testEmail, SUPABASE.testPassword)} className="btn">
           테스트 계정으로 로그인
         </button> */}
       </form>

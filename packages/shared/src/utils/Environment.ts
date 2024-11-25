@@ -1,3 +1,3 @@
-import { NODE_ENV } from '@src/constants';
+import { CONFIG } from '@src/constants';
 
-export const isProduction = NODE_ENV === 'production';
+export const isProduction = CONFIG.nodeEnv === 'production';

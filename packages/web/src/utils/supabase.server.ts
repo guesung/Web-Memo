@@ -1,5 +1,5 @@
 import { COOKIE_KEY_ACCESS_TOKEN, COOKIE_KEY_REFRESH_TOKEN, SUPABASE_SCHEMA_MEMO } from '@extension/shared/constants';
-import { Database } from '@extension/shared/types';
+import { Database, MemoSupabaseClient } from '@extension/shared/types';
 import { PATHS, SUPABASE_ANON_KEY, SUPABASE_URL, WEB_URL } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
 import { Provider } from '@supabase/supabase-js';
@@ -7,10 +7,14 @@ import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+let supabaseClient: MemoSupabaseClient;
+
 export const getSupabaseClient = () => {
+  if (supabaseClient) return supabaseClient;
+
   const cookieStore = cookies();
 
-  const supabaseClient = createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  return createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -21,7 +25,6 @@ export const getSupabaseClient = () => {
     },
     db: { schema: SUPABASE_SCHEMA_MEMO },
   });
-  return supabaseClient;
 };
 
 export const signInWithOAuth = async (provider: Provider) => {

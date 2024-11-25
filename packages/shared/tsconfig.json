@@ -12,6 +12,8 @@
     "strictPropertyInitialization": false,
     "declaration": true,
     "target": "esnext",
+    "declarationMap": true,
+    "stripInternal": true,
     "module": "NodeNext",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

@@ -3,7 +3,7 @@
 import { Button } from '@src/components/ui/button';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/server';
-import { signInWithOAuth } from '@src/utils/supabase.server';
+import { signInWithOAuth } from '@src/modules/supabase/util.server';
 import Image from 'next/image';
 
 interface LoginSectionProps extends LanguageType {}

@@ -1,8 +1,8 @@
-import { getSupabaseClient } from '@src/utils/supabase.server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { COOKIE_KEY } from '@extension/shared/constants';
 import { PATHS } from '@src/constants';
+import { getSupabaseClient } from '@src/modules/supabase/util.server';
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);

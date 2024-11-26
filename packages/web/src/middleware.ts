@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateSession } from './utils';
 import acceptLanguage from 'accept-language';
 import { fallbackLng, languages, cookieName, Language, getLanguage } from './modules/i18n';
 import { PATHS } from './constants';
+import { updateSession } from './modules/supabase';
 
 export async function middleware(request: NextRequest) {
   const language = getLanguage(request);

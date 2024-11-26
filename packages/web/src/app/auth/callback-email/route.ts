@@ -1,4 +1,4 @@
-import { getSupabaseClient } from '@src/utils/supabase.server';
+import { getSupabaseClient } from '@src/modules/supabase/util.server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { COOKIE_KEY } from '@extension/shared/constants';

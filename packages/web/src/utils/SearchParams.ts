@@ -23,18 +23,18 @@ export class SearchParams {
     return Array.from(this.#searchParamsMap.get(key) || []);
   };
 
-  add = ([key, value]: SearchParamType) => {
+  add = (key: SearchParamKeyType, value: SearchParamValueType) => {
     if (!this.#searchParamsMap.has(key)) {
       this.#searchParamsMap.set(key, new Set());
     }
     this.#searchParamsMap.get(key)?.add(value);
   };
 
-  set = ([key, value]: SearchParamType) => {
+  set = (key: SearchParamKeyType, value: SearchParamValueType) => {
     this.#searchParamsMap.set(key, new Set([value]));
   };
 
-  remove = ([key, value]: SearchParamType) => {
+  remove = (key: SearchParamKeyType, value: SearchParamValueType) => {
     this.#searchParamsMap.get(key)?.delete(value);
     if (this.#searchParamsMap.get(key)?.size === 0) {
       this.#searchParamsMap.delete(key);

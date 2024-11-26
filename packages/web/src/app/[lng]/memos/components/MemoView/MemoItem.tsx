@@ -55,8 +55,7 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
     const id = event.currentTarget.id;
     if (!id) return;
 
-    searchParams.set(['id', id]);
-    console.log(searchParams);
+    searchParams.set('id', id);
     router.replace(searchParams.getUrl(), { scroll: false });
   };
 

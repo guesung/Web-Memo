@@ -1,12 +1,10 @@
 import { defaultNS, fallbackLng, languages } from '.';
 
-export function getOptions(lng = fallbackLng, ns = defaultNS) {
-  return {
-    supportedLngs: languages,
-    fallbackLng,
-    lng,
-    fallbackNS: defaultNS,
-    defaultNS,
-    ns,
-  };
-}
+export const getOptions = (lng = fallbackLng, ns = defaultNS) => ({
+  supportedLngs: languages,
+  fallbackLng,
+  lng,
+  fallbackNS: defaultNS,
+  defaultNS,
+  ns,
+});

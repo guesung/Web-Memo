@@ -1,32 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateSession } from './utils';
 import acceptLanguage from 'accept-language';
-import { fallbackLng, languages, cookieName } from './modules/i18n';
-import { checkStringArray } from '@extension/shared/utils';
+import { fallbackLng, languages, cookieName, Language } from './modules/i18n';
 
-if (checkStringArray(languages)) acceptLanguage.languages(languages);
+const getLanguage = (request: NextRequest) => {
+  acceptLanguage.languages([...languages]);
+  if (request.cookies.has(cookieName)) return acceptLanguage.get(request.cookies.get(cookieName)?.value);
+  if (request.headers.get('Accept-Language')) return acceptLanguage.get(request.headers.get('Accept-Language'));
+  if (request.headers.get('referer'))
+    return languages.find(language => request.headers.get('referer')?.startsWith(`/${language}`));
+  return fallbackLng;
+};
 
 export async function middleware(request: NextRequest) {
-  let lng;
-  if (request.cookies.has(cookieName)) lng = acceptLanguage.get(request.cookies.get(cookieName)?.value);
-  if (!lng) lng = acceptLanguage.get(request.headers.get('Accept-Language'));
-  if (!lng) lng = fallbackLng;
+  const language = getLanguage(request);
 
-  if (
-    !languages.some(language => request.nextUrl.pathname.startsWith(`/${language}`)) &&
-    !request.nextUrl.pathname.startsWith('/_next') &&
-    !request.nextUrl.pathname.includes('/auth')
-  ) {
-    return NextResponse.redirect(new URL(`/${lng}${request.nextUrl.pathname}${request.nextUrl.search}`, request.url));
-  }
-
-  if (request.headers.has('referer')) {
-    const refererUrl = new URL(request.headers.get('referer') ?? '');
-    const lngInReferer = languages.find(l => refererUrl.pathname.startsWith(`/${l}`));
-    const response = NextResponse.next();
-    if (lngInReferer) response.cookies.set(cookieName, lngInReferer);
-    return response;
-  }
+  const isLanguagePath = languages.some(lng => request.nextUrl.pathname.startsWith(`/${lng}`));
+  if (!isLanguagePath)
+    return NextResponse.redirect(
+      new URL(`/${language}${request.nextUrl.pathname}${request.nextUrl.search}${request.nextUrl.hash}`, request.url),
+    );
 
   return await updateSession(request);
 }

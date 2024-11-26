@@ -1,8 +1,8 @@
 'use client';
 
 import { useCategoryQuery } from '@extension/shared/hooks';
-import useTranslation from '@src/app/i18n/client';
-import { LanguageType } from '@src/app/i18n/type';
+import useTranslation from '@src/modules/i18n/client';
+import { LanguageType } from '@src/modules/i18n';
 import {
   SidebarGroup,
   SidebarGroupContent,

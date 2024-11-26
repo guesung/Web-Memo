@@ -12,8 +12,8 @@ import { getSupabaseClient, signout } from '@src/utils/supabase.server';
 import Image from 'next/image';
 import Link from 'next/link';
 import RefreshButton from './RefreshButton';
-import { LanguageType } from '@src/app/i18n/type';
-import useTranslation from '@src/app/i18n/server';
+import { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/server';
 import { PATHS } from '@src/constants';
 
 export default async function Header({ lng }: LanguageType) {

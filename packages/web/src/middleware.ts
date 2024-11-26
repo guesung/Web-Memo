@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateSession } from './utils';
 import acceptLanguage from 'accept-language';
-import { fallbackLng, languages, cookieName } from './app/i18n/settings';
+import { fallbackLng, languages, cookieName } from './modules/i18n';
 import { checkStringArray } from '@extension/shared/utils';
 
 if (checkStringArray(languages)) acceptLanguage.languages(languages);

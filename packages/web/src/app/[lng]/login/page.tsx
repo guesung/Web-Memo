@@ -2,7 +2,7 @@
 import { getSupabaseClient } from '@src/utils/supabase.server';
 import { LoginSection, PersonalInformationInfo } from './components';
 import { redirect } from 'next/navigation';
-import { LanguageParams } from '@src/app/i18n/type';
+import { LanguageParams } from '@src/modules/i18n';
 import { PATHS } from '@src/constants';
 import { checkUserLogin } from '@extension/shared/utils';
 

@@ -1,9 +1,8 @@
 import { Button } from '@src/components/ui/button';
+import { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/server';
 import { signInWithOAuth } from '@src/utils/supabase.server';
 import Image from 'next/image';
-import ExtensionVersion from './ExtensionVersion';
-import { LanguageType } from '@src/app/i18n/type';
-import useTranslation from '@src/app/i18n/server';
 
 interface LoginSectionProps extends LanguageType {}
 

@@ -1,4 +1,4 @@
-import { languages } from './settings';
+import { languages } from '.';
 
 export type Language = (typeof languages)[number];
 

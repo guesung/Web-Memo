@@ -32,7 +32,7 @@ reviews:
     ignore_title_keywords: []
     labels: []
     drafts: false
-    base_branches: []
+    base_branches: ['master', 'develop']
   tools:
     shellcheck:
       enabled: true

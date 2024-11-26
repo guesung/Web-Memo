@@ -1,7 +1,8 @@
-import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
+
 import { requestGetSidePanelOpen } from '@extension/shared/utils/extension';
-import { LocalStorage, LOCAL_STORAGE_KEY_MAP } from '@src/utils';
+import { setLocalStorageTrue } from '@extension/shared/modules/local-storage';
+import { driver } from 'driver.js';
 
 export const driverObj = driver({
   showProgress: true,
@@ -37,7 +38,7 @@ export const driverObj = driver({
         title: '메모 확인',
         description: '이제, 새로 고침을 눌러 저장된 메모를 확인해볼까요?',
         onNextClick: () => {
-          LocalStorage.setTrue(LOCAL_STORAGE_KEY_MAP.guide);
+          setLocalStorageTrue('guide');
           driverObj.destroy();
         },
       },

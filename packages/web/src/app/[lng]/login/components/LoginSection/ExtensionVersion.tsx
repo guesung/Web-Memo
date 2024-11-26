@@ -1,8 +1,8 @@
 'use client';
 
 import { EXTENSION } from '@extension/shared/constants';
-import useTranslation from '@src/app/i18n/client';
-import { LanguageType } from '@src/app/i18n/type';
+import useTranslation from '@src/modules/i18n/client';
+import { LanguageType } from '@src/modules/i18n';
 import { useGetExtensionManifest } from '@src/hooks';
 
 interface ExtensionVersionProps extends LanguageType {}

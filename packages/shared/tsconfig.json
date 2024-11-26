@@ -2,7 +2,7 @@
   "extends": "@extension/tsconfig/utils",
   "compilerOptions": {
     "jsx": "react-jsx",
-    "types": ["chrome"],
+    "types": ["chrome", "jest"],
     "emitDeclarationOnly": false,
     "baseUrl": ".",
     "paths": {

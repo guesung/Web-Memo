@@ -1,8 +1,19 @@
 import { EXTENSION, URL } from '@extension/shared/constants';
-import useTranslation from '@src/app/i18n/client';
-import { Language } from '@src/app/i18n/type';
-import { LOCAL_STORAGE_KEY_MAP } from '@src/utils';
+import useTranslation from '@src/modules/i18n/client';
+import { Language } from '@src/modules/i18n';
 import useExtensionDialog, { DialogType } from './useExtensionDialog';
+import { LocalStorageKeyType } from '@extension/shared/modules/local-storage';
+
+interface ExtensionDialogInfo {
+  message: {
+    title: string;
+    description: string;
+    ok: string;
+    cancel?: string;
+  };
+  link: string;
+  localStorageKey: LocalStorageKeyType;
+}
 
 export const getExtensionDialogInfo = (
   lng: Language,
@@ -13,7 +24,7 @@ export const getExtensionDialogInfo = (
 
   if (!dialogType) return;
 
-  const EXTENSION_DIALOG_INFO_ALL = {
+  const EXTENSION_DIALOG_INFO_ALL: Record<DialogType, ExtensionDialogInfo> = {
     install: {
       message: {
         title: t('dialogInstall.title'),
@@ -22,7 +33,7 @@ export const getExtensionDialogInfo = (
         cancel: t('dialogInstall.cancel'),
       },
       link: URL.chromeStore,
-      localStorageKey: LOCAL_STORAGE_KEY_MAP.install,
+      localStorageKey: 'install',
     },
     update: {
       message: {
@@ -35,7 +46,7 @@ export const getExtensionDialogInfo = (
         cancel: t('dialogVersion.cancel'),
       },
       link: URL.guideKo,
-      localStorageKey: LOCAL_STORAGE_KEY_MAP.updateVersion,
+      localStorageKey: 'updateVersion',
     },
   };
   return EXTENSION_DIALOG_INFO_ALL[dialogType];

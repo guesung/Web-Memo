@@ -1,6 +1,6 @@
 'use client';
 
-import { LanguageType } from '@src/app/i18n/type';
+import { LanguageType } from '@src/modules/i18n';
 import { Button } from '@src/components/ui/button';
 import {
   Dialog,
@@ -12,6 +12,7 @@ import {
 } from '@src/components/ui/dialog';
 import { getExtensionDialogInfo } from './getExtensionDialogInfo';
 import useExtensionDialog from './useExtensionDialog';
+import { checkLocalStorageKey } from '@extension/shared/modules/local-storage';
 
 interface ExtensionDialogProps extends LanguageType {}
 
@@ -20,7 +21,7 @@ export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
 
   const extensionDialogInfo = getExtensionDialogInfo(lng, manifest, dialogType);
 
-  if (!dialogType || !extensionDialogInfo) return;
+  if (!dialogType || !extensionDialogInfo) return null;
 
   const handleUpdateClick = () => {
     window.open(extensionDialogInfo.link, '_blank', 'noopener,noreferrer');

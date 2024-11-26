@@ -8,8 +8,7 @@ import localFont from 'next/font/local';
 import { PropsWithChildren } from 'react';
 import './globals.css';
 
-import { languages } from '../i18n/settings';
-import { LanguageParams } from '../i18n/type';
+import { LanguageParams, languages } from '@src/modules/i18n';
 import { ExtensionDialog } from '../components';
 
 const pretendard = localFont({
@@ -32,7 +31,7 @@ interface RootLayoutProps extends PropsWithChildren, LanguageParams {}
 
 export default function RootLayout({ children, params: { lng } }: RootLayoutProps) {
   return (
-    <html lang={lng} className="h-screen" dir={dir(lng)}>
+    <html lang={lng} className="h-screen" dir={dir(lng)} suppressHydrationWarning>
       <body className={`${pretendard.variable} font-pretendard h-full`}>
         <ThemeProvider attribute="class" defaultTheme="system">
           <QueryProvider>

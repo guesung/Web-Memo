@@ -10,8 +10,8 @@ import {
 import { QUERY_KEY } from '@extension/shared/constants';
 import { useCategoryQuery, useMemoPatchMutation, useMemoPostMutation } from '@extension/shared/hooks';
 import { requestRefetchTheMemos } from '@extension/shared/utils/extension';
-import useTranslation from '@src/app/i18n/client';
-import { LanguageType } from '@src/app/i18n/type';
+import useTranslation from '@src/modules/i18n/client';
+import { LanguageType } from '@src/modules/i18n';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@src/components/ui/select';
 import { ToastAction } from '@src/components/ui/toast';
 import { PATHS } from '@src/constants';

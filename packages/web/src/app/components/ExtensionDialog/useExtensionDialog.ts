@@ -1,6 +1,11 @@
 import { EXTENSION } from '@extension/shared/constants';
 import { useGetExtensionManifest } from '@src/hooks';
-import { checkLocalStorageKey, LOCAL_STORAGE_KEY_MAP, LocalStorage } from '@src/utils';
+import {
+  checkLocalStorageKey,
+  checkLocalStorageTrue,
+  LocalStorageKeyType,
+  setLocalStorageTrue,
+} from '@extension/shared/modules/local-storage';
 import { useEffect, useState } from 'react';
 
 export type DialogType = 'install' | 'update';
@@ -16,21 +21,21 @@ export default function useExtensionDialog() {
     const isExtensionInstalled = manifest !== undefined;
     const isExtensionNotLastVersion = isExtensionInstalled && manifest.version !== EXTENSION.lastVersion;
 
-    if (!isExtensionInstalled && !LocalStorage.check(LOCAL_STORAGE_KEY_MAP.install)) {
+    if (!isExtensionInstalled && !checkLocalStorageTrue('install')) {
       setDialogType('install');
       setOpen(true);
       return;
     }
-    if (isExtensionNotLastVersion && !LocalStorage.check(LOCAL_STORAGE_KEY_MAP.updateVersion)) {
+    if (isExtensionNotLastVersion && !checkLocalStorageTrue('updateVersion')) {
       setDialogType('update');
       setOpen(true);
       return;
     }
   }, [manifest]);
 
-  const handleClose = (localStorageKey: string) => {
+  const handleClose = (localStorageKey: LocalStorageKeyType) => {
     setOpen(false);
-    if (checkLocalStorageKey(localStorageKey)) LocalStorage.setTrue(localStorageKey);
+    if (checkLocalStorageKey(localStorageKey)) setLocalStorageTrue(localStorageKey);
   };
 
   return {

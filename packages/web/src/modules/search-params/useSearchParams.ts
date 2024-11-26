@@ -1,3 +1,5 @@
+'use client';
+
 import { usePathname, useSearchParams as useSearchParamsNext } from 'next/navigation';
 import { SearchParams, SearchParamType } from '.';
 

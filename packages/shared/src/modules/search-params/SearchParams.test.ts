@@ -18,7 +18,7 @@ describe('SearchParams', () => {
     });
 
     test('key값에 해당하는 값이 없다면 빈 문자열을 반환한다.', () => {
-      // @ts-ignore
+      // @ts-expect-error: 테스트 코드를 위해 타입을 무시한다.
       expect(searchParams.get('ids')).toBe('');
     });
   });
@@ -71,5 +71,12 @@ describe('SearchParams', () => {
     test('SearchParams의 전체 문자열을 얻는다.', () => {
       expect(searchParams.getSearchParams()).toBe('?id=5&id=10&category=book');
     });
+
+    test('파라미터가 없는 경우 빈 문자열을 반환한다.', () => {
+      searchParams.removeAll('id');
+      searchParams.removeAll('category');
+      expect(searchParams.getSearchParams()).toBe('');
+    });
+
   });
 });

@@ -25,6 +25,7 @@
     "lint:fix": "turbo lint:fix --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
     "prettier": "turbo prettier --continue -- --cache --cache-location node_modules/.cache/.prettiercache",
     "prepare": "husky",
+    "test:jest": "vitest",
     "test": "exec playwright test",
     "test-report": "exec playwright show-report",
     "update-version": "run-script-os",
@@ -62,11 +63,13 @@
     "@sentry/vite-plugin": "^2.22.4",
     "@tanstack/eslint-plugin-query": "^5.58.1",
     "@types/chrome": "^0.0.268",
+    "@types/jest": "^29.5.14",
     "@types/node": "^20.14.10",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
+    "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.19",
     "cross-env": "^7.0.3",
     "esbuild": "^0.23.0",
@@ -90,7 +93,8 @@
     "tslib": "^2.6.3",
     "turbo": "^2.1.1",
     "typescript": "5.5.3",
-    "vite": "5.3.3"
+    "vite": "5.3.3",
+    "vitest": "^2.1.5"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

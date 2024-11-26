@@ -4,6 +4,7 @@ import {
   checkLocalStorageKey,
   checkLocalStorageTrue,
   LocalStorage,
+  LocalStorageKeyType,
   setLocalStorageTrue,
 } from '@extension/shared/modules/local-storage';
 import { useEffect, useState } from 'react';
@@ -33,7 +34,7 @@ export default function useExtensionDialog() {
     }
   }, [manifest]);
 
-  const handleClose = (localStorageKey: string) => {
+  const handleClose = (localStorageKey: LocalStorageKeyType) => {
     setOpen(false);
     if (checkLocalStorageKey(localStorageKey)) setLocalStorageTrue(localStorageKey);
   };

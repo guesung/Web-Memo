@@ -1,18 +1,19 @@
 import { HTMLAttributes, KeyboardEvent, memo, MouseEvent, MouseEventHandler, useState } from 'react';
 
-import { useMemoPatchMutation, useSearchParamsRouter } from '@extension/shared/hooks';
+import { useMemoPatchMutation } from '@extension/shared/hooks';
 import { GetMemoResponse } from '@extension/shared/utils';
 import useTranslation from '@src/app/i18n/client';
 import { LanguageType } from '@src/app/i18n/type';
 import { Badge } from '@src/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader } from '@src/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
-import { useSupabaseClient } from '@src/hooks';
+import { useSearchParamsSafe, useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
 import { cn } from '@src/utils';
 import { HeartIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import MemoOption from './MemoOption';
 
 interface MemoItemProps extends HTMLAttributes<HTMLDivElement>, LanguageType {
@@ -29,7 +30,8 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
   });
-  const { set: setIdSearchParamsRouter } = useSearchParamsRouter('id');
+  const searchParams = useSearchParamsSafe();
+  const router = useRouter();
   const { toast } = useToast();
 
   const handleIsWishClick: MouseEventHandler<SVGSVGElement> = event => {
@@ -53,7 +55,9 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
     const id = event.currentTarget.id;
     if (!id) return;
 
-    setIdSearchParamsRouter(id);
+    searchParams.set(['id', id]);
+    console.log(searchParams);
+    router.replace(searchParams.getUrl(), { scroll: false });
   };
 
   const handleMouseEnter = () => {

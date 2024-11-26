@@ -17,15 +17,9 @@ export async function GET(request: Request) {
     const cookieStore = cookies();
     cookieStore.set(COOKIE_KEY.accessToken, sessionData.session.access_token, {
       maxAge: 3600 * 24 * 365, // 1년
-      secure: true,
-      httpOnly: true,
-      sameSite: 'strict',
     });
     cookieStore.set(COOKIE_KEY.refreshToken, sessionData.session.refresh_token, {
       maxAge: 3600 * 24 * 365, // 1년
-      secure: true,
-      httpOnly: true,
-      sameSite: 'strict',
     });
   }
 

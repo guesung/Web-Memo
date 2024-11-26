@@ -3,6 +3,7 @@ export const PATHS = {
   error: '/error',
   login: '/login',
   memos: '/memos',
+  auth: '/auth',
   memosWish: '/memos?wish=true',
   memosSetting: '/memos/setting',
   callbackOAuth: '/auth/callback',

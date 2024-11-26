@@ -1,22 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateSession } from './utils';
 import acceptLanguage from 'accept-language';
-import { fallbackLng, languages, cookieName, Language } from './modules/i18n';
-
-const getLanguage = (request: NextRequest) => {
-  acceptLanguage.languages([...languages]);
-  if (request.cookies.has(cookieName)) return acceptLanguage.get(request.cookies.get(cookieName)?.value);
-  if (request.headers.get('Accept-Language')) return acceptLanguage.get(request.headers.get('Accept-Language'));
-  if (request.headers.get('referer'))
-    return languages.find(language => request.headers.get('referer')?.startsWith(`/${language}`));
-  return fallbackLng;
-};
+import { fallbackLng, languages, cookieName, Language, getLanguage } from './modules/i18n';
+import { PATHS } from './constants';
 
 export async function middleware(request: NextRequest) {
   const language = getLanguage(request);
 
   const isLanguagePath = languages.some(lng => request.nextUrl.pathname.startsWith(`/${lng}`));
-  if (!isLanguagePath)
+  const isAuthPath = request.nextUrl.pathname.startsWith(PATHS.auth);
+  if (!isLanguagePath && !isAuthPath)
     return NextResponse.redirect(
       new URL(`/${language}${request.nextUrl.pathname}${request.nextUrl.search}${request.nextUrl.hash}`, request.url),
     );

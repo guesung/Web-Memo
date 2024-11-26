@@ -1,4 +1,5 @@
 'use server';
+
 import { checkUserLogin, getUser } from '@extension/shared/utils';
 import { ToggleTheme } from '@src/components';
 import { Avatar, AvatarFallback, AvatarImage } from '@src/components/ui/avatar';

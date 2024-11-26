@@ -1,6 +1,8 @@
 'use client';
 
-import { useCategoryQuery, useSearchParamsRouter } from '@extension/shared/hooks';
+import { useCategoryQuery } from '@extension/shared/hooks';
+import useTranslation from '@src/app/i18n/client';
+import { LanguageType } from '@src/app/i18n/type';
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -9,18 +11,17 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@src/components/ui/sidebar';
-import { getSupabaseClient } from '@src/utils/supabase.client';
-import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
-import { memo, MouseEventHandler, useCallback } from 'react';
-import useTranslation from '@src/app/i18n/client';
-import { LanguageType } from '@src/app/i18n/type';
-import { useRouter } from 'next/navigation';
 import { PATHS } from '@src/constants';
+import { useSupabaseClient } from '@src/hooks';
+import { useRouter } from 'next/navigation';
+import { memo, MouseEventHandler } from 'react';
+import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
 
 export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
   const { t } = useTranslation(lng);
+  const supabaseClient = useSupabaseClient();
   const { categories } = useCategoryQuery({
-    supabaseClient: getSupabaseClient(),
+    supabaseClient,
   });
   const router = useRouter();
 

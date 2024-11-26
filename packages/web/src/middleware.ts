@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isStringArray, updateSession } from './utils';
+import { updateSession } from './utils';
 import acceptLanguage from 'accept-language';
 import { fallbackLng, languages, cookieName } from './app/i18n/settings';
+import { checkStringArray } from '@extension/shared/utils';
 
-if (isStringArray(languages)) acceptLanguage.languages(languages);
+if (checkStringArray(languages)) acceptLanguage.languages(languages);
 
 export async function middleware(request: NextRequest) {
   let lng;

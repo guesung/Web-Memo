@@ -17,16 +17,16 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
       <div className="h-8" />
       <form className="flex w-full flex-col gap-4 px-4">
         <Button
-          formAction={signInWithOAuth.bind(null, 'kakao')}
+          formAction={() => signInWithOAuth('kakao')}
           className="h-12 bg-[rgb(247,228,76)] text-black hover:bg-[rgb(247,228,76)]">
           <Image src="/images/svgs/kakao.svg" width={16} height={16} alt="kakao" />
           {t('login.kakaoLogin')}
         </Button>
-        <Button formAction={signInWithOAuth.bind(null, 'google')} className="h-12 bg-white text-black hover:bg-white">
+        <Button formAction={() => signInWithOAuth('google')} className="h-12 bg-white text-black hover:bg-white">
           <Image src="/images/svgs/google.svg" width={16} height={16} alt="google" />
           {t('login.googleLogin')}
         </Button>
-        {/* <button formAction={signInWithEmail.bind(null, SUPABASE_TEST_EMAIL, SUPABASE_TEST_PASSWORD)} className="btn">
+        {/* <button formAction={() => signInWithEmail(SUPABASE.testEmail, SUPABASE.testPassword)} className="btn">
           테스트 계정으로 로그인
         </button> */}
       </form>

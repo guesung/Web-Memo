@@ -1,23 +1,13 @@
-import {
-  COOKIE_KEY_ACCESS_TOKEN,
-  COOKIE_KEY_REFRESH_TOKEN,
-  SUPABASE_ANON_KEY,
-  SUPABASE_URL,
-  WEB_URL,
-} from '@src/constants';
-import { Database, MemoSupabaseClient, StorageKeyType } from '@src/types';
+import { COOKIE_KEY, SUPABASE, CONFIG } from '@src/constants';
+import { Database, StorageKeyType } from '@src/types';
 import { createClient } from '@supabase/supabase-js';
-import { Storage } from './module';
 import { checkUserLogin } from '../Supabase';
-
-let supabaseClientInstance: MemoSupabaseClient | null = null;
+import { Storage } from './module';
 
 export const getSupabaseClient = async () => {
   try {
-    if (supabaseClientInstance) return supabaseClientInstance;
-
-    supabaseClientInstance = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      db: { schema: 'memo' },
+    const supabaseClientInstance = createClient<Database>(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey, {
+      db: { schema: SUPABASE.schemaMemo },
       auth: {
         storage: {
           getItem: async key => {
@@ -37,12 +27,12 @@ export const getSupabaseClient = async () => {
     if (isUserLogin) return supabaseClientInstance;
 
     const accessTokenFromWeb = await chrome.cookies.get({
-      name: COOKIE_KEY_ACCESS_TOKEN,
-      url: WEB_URL,
+      name: COOKIE_KEY.accessToken,
+      url: CONFIG.webUrl,
     });
     const refreshTokenCookieFromWeb = await chrome.cookies.get({
-      name: COOKIE_KEY_REFRESH_TOKEN,
-      url: WEB_URL,
+      name: COOKIE_KEY.refreshToken,
+      url: CONFIG.webUrl,
     });
 
     if (!accessTokenFromWeb || !refreshTokenCookieFromWeb) throw new Error('로그인을 먼저 해주세요.');

@@ -5,17 +5,10 @@ import {
   useMemoPatchMutation,
   useMemoPostMutation,
   useMemoQuery,
-  useSupabaseClient,
-  useTabQuery,
   useThrottle,
 } from '@extension/shared/hooks';
-import {
-  getFormattedMemo,
-  getSupabaseClient,
-  I18n,
-  responseRefetchTheMemos,
-  Tab,
-} from '@extension/shared/utils/extension';
+import { useSupabaseClientQuery, useTabQuery } from '@extension/shared/hooks/extension';
+import { getFormattedMemo, I18n, responseRefetchTheMemos, Tab } from '@extension/shared/utils/extension';
 import { cn, Textarea, ToastAction, useToast } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
 import { MemoInput } from '@src/types/Input';
@@ -28,10 +21,8 @@ function MemoForm() {
   const [isSaved, setIsSaved] = useState(true);
   const { throttle, abortThrottle } = useThrottle();
   const { data: tab } = useTabQuery();
-  const { data: supabaseClient } = useSupabaseClient({
-    getSupabaseClient,
-  });
-  const { data: currentMemo, refetch: refetchMemo } = useMemoQuery({
+  const { data: supabaseClient } = useSupabaseClientQuery();
+  const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
     supabaseClient,
     url: tab.url,
   });
@@ -68,7 +59,7 @@ function MemoForm() {
 
     const formattedMemo = await getFormattedMemo({ memo, isWish });
 
-    if (currentMemo) mutateMemoPatch({ id: currentMemo.id, memoRequest: formattedMemo });
+    if (memoData) mutateMemoPatch({ id: memoData.id, memoRequest: formattedMemo });
     else mutateMemoPost(formattedMemo);
   };
 
@@ -79,9 +70,9 @@ function MemoForm() {
   useEffect(() => {
     if (!tab?.url) return;
 
-    setValue('memo', currentMemo?.memo ?? '');
-    setValue('isWish', currentMemo?.isWish ?? false);
-  }, [currentMemo?.isWish, currentMemo?.memo, setValue, tab?.url]);
+    setValue('memo', memoData?.memo ?? '');
+    setValue('isWish', memoData?.isWish ?? false);
+  }, [memoData?.isWish, memoData?.memo, setValue, tab?.url]);
 
   const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setValue('memo', event.target.value);
@@ -107,7 +98,7 @@ function MemoForm() {
   };
 
   const handleWishListClick = () => {
-    const memoWishListUrl = getMemoWishListUrl(currentMemo?.id);
+    const memoWishListUrl = getMemoWishListUrl(memoData?.id);
 
     Tab.create({ url: memoWishListUrl });
   };

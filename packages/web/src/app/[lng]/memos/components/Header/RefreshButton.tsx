@@ -14,8 +14,8 @@ interface RefreshButtonProps extends LanguageType {}
 
 export default function RefreshButton({ lng }: RefreshButtonProps) {
   const { t } = useTranslation(lng);
-  const queryClient = useQueryClient();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleRefreshClick = async () => {
     driverObj.moveNext();

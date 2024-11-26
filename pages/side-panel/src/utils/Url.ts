@@ -1,11 +1,11 @@
-import { WEB_URL } from '@extension/shared/constants';
+import { CONFIG } from '@extension/shared/constants';
 
 export const getMemoUrl = (id?: number) => {
-  if (id) return `${WEB_URL}/memos?id=${id}`;
-  return `${WEB_URL}/memos`;
+  if (id) return `${CONFIG.webUrl}/memos?id=${id}`;
+  return `${CONFIG.webUrl}/memos`;
 };
 
 export const getMemoWishListUrl = (id?: number) => {
-  if (id) return `${WEB_URL}/memos?wish=true&id=${id}`;
-  return `${WEB_URL}/memos?wish=true`;
+  if (id) return `${CONFIG.webUrl}/memos?wish=true&id=${id}`;
+  return `${CONFIG.webUrl}/memos?wish=true`;
 };

@@ -1,5 +1,5 @@
 import { checkUserLogin } from '@extension/shared/utils';
-import { NEED_AUTH_PAGES, PATHS, SUPABASE_ANON_KEY, SUPABASE_URL } from '@src/constants';
+import { PATHS, CONFIG, NEED_AUTH_PAGES } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -9,7 +9,7 @@ export async function updateSession(request: NextRequest) {
     headers: setHeader(request),
   });
 
-  const supabaseClient = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  const supabaseClient = createServerClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();

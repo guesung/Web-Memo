@@ -1,32 +1,33 @@
 import { HTMLAttributes, KeyboardEvent, memo, MouseEvent, MouseEventHandler, useState } from 'react';
 
 import { useMemoPatchMutation, useSearchParamsRouter } from '@extension/shared/hooks';
-import { GetMemoType } from '@extension/shared/utils';
+import { GetMemoResponse } from '@extension/shared/utils';
+import useTranslation from '@src/app/i18n/client';
+import { LanguageType } from '@src/app/i18n/type';
 import { Badge } from '@src/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader } from '@src/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
+import { useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
 import { cn } from '@src/utils';
-import { getSupabaseClient } from '@src/utils/supabase.client';
 import { HeartIcon } from 'lucide-react';
 import Image from 'next/image';
-import MemoOption from './MemoOption';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
 import Link from 'next/link';
-import { LanguageType } from '@src/app/i18n/type';
-import useTranslation from '@src/app/i18n/client';
+import MemoOption from './MemoOption';
 
 interface MemoItemProps extends HTMLAttributes<HTMLDivElement>, LanguageType {
-  memo?: GetMemoType;
+  memo?: GetMemoResponse;
 }
 
 export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
   if (!memo) return null;
 
   const { t } = useTranslation(lng);
+  const supabaseClient = useSupabaseClient();
 
   const [isHovered, setIsHovered] = useState(false);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
-    supabaseClient: getSupabaseClient(),
+    supabaseClient,
   });
   const { set: setIdSearchParamsRouter } = useSearchParamsRouter('id');
   const { toast } = useToast();

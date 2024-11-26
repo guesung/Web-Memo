@@ -8,3 +8,4 @@ export * from './Error';
 export * from './Supabase';
 export * from './Notion';
 export * from './Tailwind';
+export * from './String';

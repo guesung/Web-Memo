@@ -7,4 +7,3 @@ export { default as useSearchParamsRouter } from './useSearchParamsRouter';
 export { default as useCloseOnEscape } from './useCloseOnEscape';
 
 export * from './supabase';
-export * from './extension';

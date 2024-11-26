@@ -1,24 +1,28 @@
 {
   "extends": "@extension/tsconfig/utils",
   "compilerOptions": {
-    "outDir": "dist",
     "jsx": "react-jsx",
     "types": ["chrome"],
     "emitDeclarationOnly": false,
     "baseUrl": ".",
     "paths": {
-      "@src/*": ["./src/*"]
+      "@*": ["./*"]
     },
     "strictPropertyInitialization": false,
     "declaration": true,
     "target": "esnext",
-    "module": "NodeNext",
+    "declarationMap": true,
+    "stripInternal": true,
+    "module": "es2015",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
-    "moduleResolution": "NodeNext",
-    "resolveJsonModule": true
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "declarationDir": "dist",
+    "outDir": "dist",
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["./src/**/*"],
+  "include": ["src"],
   "exclude": ["dist", "node_modules"]
 }

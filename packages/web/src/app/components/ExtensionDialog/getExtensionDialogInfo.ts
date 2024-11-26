@@ -1,7 +1,6 @@
 import { EXTENSION, URL } from '@extension/shared/constants';
 import useTranslation from '@src/modules/i18n/client';
 import { Language } from '@src/modules/i18n';
-import { LOCAL_STORAGE_KEY_MAP } from '@src/utils';
 import useExtensionDialog, { DialogType } from './useExtensionDialog';
 
 export const getExtensionDialogInfo = (
@@ -22,7 +21,7 @@ export const getExtensionDialogInfo = (
         cancel: t('dialogInstall.cancel'),
       },
       link: URL.chromeStore,
-      localStorageKey: LOCAL_STORAGE_KEY_MAP.install,
+      localStorageKey: 'install',
     },
     update: {
       message: {
@@ -35,7 +34,7 @@ export const getExtensionDialogInfo = (
         cancel: t('dialogVersion.cancel'),
       },
       link: URL.guideKo,
-      localStorageKey: LOCAL_STORAGE_KEY_MAP.updateVersion,
+      localStorageKey: 'updateVersion',
     },
   };
   return EXTENSION_DIALOG_INFO_ALL[dialogType];

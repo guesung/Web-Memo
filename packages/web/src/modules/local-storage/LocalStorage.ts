@@ -1,4 +1,4 @@
-import { LOCAL_STORAGE_VALUE_MAP, LocalStorageKeyType, UpdateVersionType } from '.';
+import { LocalStorageKeyType } from '.';
 
 export default class LocalStorage {
   static get(key: LocalStorageKeyType) {

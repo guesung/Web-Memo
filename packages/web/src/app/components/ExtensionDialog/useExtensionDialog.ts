@@ -3,7 +3,6 @@ import { useGetExtensionManifest } from '@src/hooks';
 import {
   checkLocalStorageKey,
   checkLocalStorageTrue,
-  LocalStorage,
   LocalStorageKeyType,
   setLocalStorageTrue,
 } from '@extension/shared/modules/local-storage';

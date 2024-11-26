@@ -4,13 +4,13 @@ export default class SearchParams {
   #searchParamsMap: Map<SearchParamKeyType, Set<SearchParamValueType>>;
 
   constructor(searchParams: SearchParamType[]) {
-    this.#searchParamsMap = new Map();
-    searchParams.forEach(([key, value]) => {
-      if (!this.#searchParamsMap.has(key)) {
-        this.#searchParamsMap.set(key, new Set());
+    this.#searchParamsMap = searchParams.reduce((acc, [key, value]) => {
+      if (!acc.has(key)) {
+        acc.set(key, new Set());
       }
-      this.#searchParamsMap.get(key)?.add(value);
-    });
+      acc.get(key)?.add(value);
+      return acc;
+    }, new Map());
   }
 
   get = (key: SearchParamKeyType) => {
@@ -23,10 +23,9 @@ export default class SearchParams {
   };
 
   add = (key: SearchParamKeyType, value: SearchParamValueType) => {
-    if (!this.#searchParamsMap.has(key)) {
-      this.#searchParamsMap.set(key, new Set());
-    }
-    this.#searchParamsMap.get(key)?.add(value);
+    const values = this.#searchParamsMap.get(key) ?? new Set();
+    values.add(value);
+    this.#searchParamsMap.set(key, values);
   };
 
   set = (key: SearchParamKeyType, value: SearchParamValueType) => {

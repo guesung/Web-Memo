@@ -2,6 +2,18 @@ import { EXTENSION, URL } from '@extension/shared/constants';
 import useTranslation from '@src/modules/i18n/client';
 import { Language } from '@src/modules/i18n';
 import useExtensionDialog, { DialogType } from './useExtensionDialog';
+import { LocalStorageKeyType } from '@extension/shared/modules/local-storage';
+
+interface ExtensionDialogInfo {
+  message: {
+    title: string;
+    description: string;
+    ok: string;
+    cancel?: string;
+  };
+  link: string;
+  localStorageKey: LocalStorageKeyType;
+}
 
 export const getExtensionDialogInfo = (
   lng: Language,
@@ -12,7 +24,7 @@ export const getExtensionDialogInfo = (
 
   if (!dialogType) return;
 
-  const EXTENSION_DIALOG_INFO_ALL = {
+  const EXTENSION_DIALOG_INFO_ALL: Record<DialogType, ExtensionDialogInfo> = {
     install: {
       message: {
         title: t('dialogInstall.title'),

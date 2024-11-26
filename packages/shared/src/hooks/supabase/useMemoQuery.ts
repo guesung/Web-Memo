@@ -15,11 +15,11 @@ export default function useMemoQuery({ supabaseClient, url, id }: UseMemoQueryPr
     queryKey: QUERY_KEY.memos(),
     enabled: !!supabaseClient,
     select: ({ data: memos }: MemoSupabaseResponse) => {
-      if (!memos) return;
+      if (memos?.length === 0) return null;
 
-      if (id) return memos?.find(memo => memo.id === id);
-      if (url) return memos?.find(memo => memo.url === formatUrl(url));
-      return;
+      if (id) return memos?.find(memo => memo.id === id) ?? null;
+      if (url) return memos?.find(memo => memo.url === formatUrl(url)) ?? null;
+      return null;
     },
   });
 

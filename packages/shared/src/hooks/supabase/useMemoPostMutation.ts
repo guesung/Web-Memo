@@ -12,7 +12,7 @@ interface UseMemoPostMutationProps extends UseMutationOptions<MutationData, Muta
 
 export default function useMemoPostMutation({ supabaseClient, ...useMutationProps }: UseMemoPostMutationProps) {
   const queryClient = useQueryClient();
-  return useMutation<MemoSupabaseResponse, Error, MemoTable['Insert']>({
+  return useMutation<MemoSupabaseResponse, MutationError, MemoTable['Insert']>({
     ...useMutationProps,
     mutationFn: async postMemoProps => await insertMemo(supabaseClient, postMemoProps),
     onSuccess: async (result, variables, context) => {

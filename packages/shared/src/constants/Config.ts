@@ -8,10 +8,10 @@ export const CONFIG = {
   supabaseUrl: getSafeConfig('SUPABASE_URL', process.env.SUPABASE_URL),
   supabaseAnonKey: getSafeConfig('SUPABASE_ANON_KEY', process.env.SUPABASE_ANON_KEY),
   sentryDsn: getSafeConfig('SENTRY_DSN', process.env.SENTRY_DSN),
-  sentryAuthToken: getSafeConfig('SENTRY_DSN', process.env.SENTRY_AUTH_TOKEN),
-  nodeEnv: getSafeConfig('SENTRY_DSN', process.env.NODE_ENV) as 'development' | 'production',
-  makeWebhookNotionApi: getSafeConfig('SENTRY_DSN', process.env.MAKE_WEBHOOK_NOTION_API) as
+  sentryAuthToken: getSafeConfig('SENTRY_AUTH_TOKEN', process.env.SENTRY_AUTH_TOKEN),
+  nodeEnv: getSafeConfig('NODE_ENV', process.env.NODE_ENV) as 'development' | 'production',
+  makeWebhookNotionApi: getSafeConfig('MAKE_WEBHOOK_NOTION_API', process.env.MAKE_WEBHOOK_NOTION_API) as
     | 'development'
     | 'production',
-  openApiKey: getSafeConfig('SENTRY_DSN', process.env.OPENAI_API_KEY),
+  openApiKey: getSafeConfig('OPENAI_API_KEY', process.env.OPENAI_API_KEY),
 };

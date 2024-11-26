@@ -10,8 +10,7 @@ interface UseMemoDeleteMutationProps {
 
 export default function useMemoDeleteMutation({ handleSuccess }: UseMemoDeleteMutationProps) {
   const queryClient = useQueryClient();
-  const supabaseClient = useSupabaseClient;
-  useSupabaseClient();
+  const supabaseClient = useSupabaseClient();
 
   const deleteMemoFn = async (id: number) => {
     return await deleteMemo(supabaseClient, id);

@@ -1,7 +1,7 @@
 import { HTMLAttributes, KeyboardEvent, memo, MouseEvent, MouseEventHandler, useState } from 'react';
 
 import { useMemoPatchMutation, useSearchParamsRouter } from '@extension/shared/hooks';
-import { GetMemoType } from '@extension/shared/utils';
+import { GetMemoResponse } from '@extension/shared/utils';
 import useTranslation from '@src/app/i18n/client';
 import { LanguageType } from '@src/app/i18n/type';
 import { Badge } from '@src/components/ui/badge';
@@ -16,7 +16,7 @@ import Link from 'next/link';
 import MemoOption from './MemoOption';
 
 interface MemoItemProps extends HTMLAttributes<HTMLDivElement>, LanguageType {
-  memo?: GetMemoType;
+  memo?: GetMemoResponse;
 }
 
 export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {

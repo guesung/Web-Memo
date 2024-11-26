@@ -3,18 +3,20 @@ import { MemoRow, MemoSupabaseClient, MemoSupabaseResponse, MemoTable } from '@s
 import { updateMemo } from '@src/utils';
 import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query';
 
-interface Variables {
+type MutationVariables = {
   id: MemoRow['id'];
   memoRequest: MemoTable['Update'];
-}
+};
+type MutationData = Awaited<ReturnType<typeof updateMemo>>;
+type MutationError = Error;
 
-interface UseMemoPostMutationProps extends UseMutationOptions<MemoSupabaseResponse, Error, Variables> {
+interface UseMemoPatchMutationProps extends UseMutationOptions<MutationData, MutationError, MutationVariables> {
   supabaseClient: MemoSupabaseClient;
 }
 
-export default function useMemoPatchMutation({ supabaseClient, ...useMutationProps }: UseMemoPostMutationProps) {
+export default function useMemoPatchMutation({ supabaseClient, ...useMutationProps }: UseMemoPatchMutationProps) {
   const queryClient = useQueryClient();
-  return useMutation<MemoSupabaseResponse, Error, Variables>({
+  return useMutation<MutationData, MutationError, MutationVariables>({
     ...useMutationProps,
     mutationFn: async ({ id, memoRequest }) => await updateMemo(supabaseClient, id, memoRequest),
     onMutate: async ({ id, memoRequest }) => {

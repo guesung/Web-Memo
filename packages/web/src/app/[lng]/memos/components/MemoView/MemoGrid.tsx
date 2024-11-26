@@ -1,7 +1,7 @@
 'use client';
 
 import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
-import { GetMemoType } from '@extension/shared/utils';
+import { GetMemoResponse } from '@extension/shared/utils';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import MemoItem from './MemoItem';
@@ -20,7 +20,7 @@ const getMemoItems = (nextGroupKey: number, count: number) => {
 };
 
 interface MemoGridProps extends LanguageType {
-  memos: GetMemoType[];
+  memos: GetMemoResponse[];
   gridKey: string;
 }
 

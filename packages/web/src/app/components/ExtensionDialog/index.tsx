@@ -1,6 +1,6 @@
 'use client';
 
-import { LanguageType } from '@src/app/i18n/type';
+import { LanguageType } from '@src/modules/i18n';
 import { Button } from '@src/components/ui/button';
 import {
   Dialog,

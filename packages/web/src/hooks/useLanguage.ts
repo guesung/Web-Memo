@@ -1,5 +1,5 @@
-import { fallbackLng } from '@src/app/i18n/settings';
-import { Language } from '@src/app/i18n/type';
+import { fallbackLng } from '@src/modules/i18n';
+import { Language } from '@src/modules/i18n';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 

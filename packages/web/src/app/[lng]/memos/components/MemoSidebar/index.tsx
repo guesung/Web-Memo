@@ -18,8 +18,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/c
 import Link from 'next/link';
 import Header from '../Header';
 import SidebarGroupCategory from './SidebarGroupCategory';
-import { LanguageType } from '@src/app/i18n/type';
-import useTranslation from '@src/app/i18n/server';
+import { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/server';
 import { PATHS } from '@src/constants';
 
 const items = [

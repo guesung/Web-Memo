@@ -3,8 +3,8 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
 
 import { SidebarTrigger } from '@src/components/ui/sidebar';
-import { LanguageType } from '@src/app/i18n/type';
-import useTranslation from '@src/app/i18n/server';
+import { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/server';
 
 interface MemoSidebarTriggerProps extends LanguageType {}
 

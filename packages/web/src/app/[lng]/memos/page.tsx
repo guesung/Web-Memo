@@ -2,7 +2,7 @@
 
 import { QUERY_KEY } from '@extension/shared/constants';
 import { getMemos } from '@extension/shared/utils';
-import { LanguageParams } from '@src/app/i18n/type';
+import { LanguageParams } from '@src/modules/i18n';
 import { HydrationBoundaryWrapper } from '@src/components';
 import { getSupabaseClient } from '@src/utils/supabase.server';
 import { MemoDialog, MemoView } from './components';

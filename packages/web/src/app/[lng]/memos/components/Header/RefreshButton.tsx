@@ -2,8 +2,8 @@
 import { QUERY_KEY } from '@extension/shared/constants';
 import { useQueryClient } from '@tanstack/react-query';
 
-import useTranslation from '@src/app/i18n/client';
-import { LanguageType } from '@src/app/i18n/type';
+import useTranslation from '@src/modules/i18n/client';
+import { LanguageType } from '@src/modules/i18n';
 import { Button } from '@src/components/ui/button';
 import { useToast } from '@src/hooks/use-toast';
 import { RefreshCwIcon } from 'lucide-react';

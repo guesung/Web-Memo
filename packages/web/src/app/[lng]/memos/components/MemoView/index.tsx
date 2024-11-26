@@ -2,7 +2,7 @@
 
 import { useMemosQuery } from '@extension/shared/hooks';
 
-import { LanguageType } from '@src/app/i18n/type';
+import { LanguageType } from '@src/modules/i18n';
 import { useSupabaseClient } from '@src/hooks';
 import { useGuide } from '../../hooks';
 import MemoGrid from './MemoGrid';

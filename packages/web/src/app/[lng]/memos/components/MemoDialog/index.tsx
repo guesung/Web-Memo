@@ -1,8 +1,8 @@
 'use client';
 import { useCloseOnEscape, useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { Button } from '@extension/ui';
-import useTranslation from '@src/app/i18n/client';
-import { LanguageType } from '@src/app/i18n/type';
+import useTranslation from '@src/modules/i18n/client';
+import { LanguageType } from '@src/modules/i18n';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
 import { Textarea } from '@src/components/ui/textarea';
 import { useSupabaseClient } from '@src/hooks';

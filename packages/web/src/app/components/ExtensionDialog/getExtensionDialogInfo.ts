@@ -1,6 +1,6 @@
 import { EXTENSION, URL } from '@extension/shared/constants';
-import useTranslation from '@src/app/i18n/client';
-import { Language } from '@src/app/i18n/type';
+import useTranslation from '@src/modules/i18n/client';
+import { Language } from '@src/modules/i18n';
 import { LOCAL_STORAGE_KEY_MAP } from '@src/utils';
 import useExtensionDialog, { DialogType } from './useExtensionDialog';
 

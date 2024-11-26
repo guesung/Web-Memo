@@ -2,7 +2,7 @@
 
 import { COOKIE_KEY, QUERY_KEY } from '@extension/shared/constants';
 import { checkUserLogin, getCategories } from '@extension/shared/utils';
-import { LanguageParams } from '@src/app/i18n/type';
+import { LanguageParams } from '@src/modules/i18n';
 import { Header, HydrationBoundaryWrapper } from '@src/components';
 import { SidebarProvider } from '@src/components/ui/sidebar';
 import { PATHS } from '@src/constants';

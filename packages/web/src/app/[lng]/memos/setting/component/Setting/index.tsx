@@ -1,7 +1,7 @@
 'use client';
 
-import useTranslation from '@src/app/i18n/client';
-import { Language, LanguageType } from '@src/app/i18n/type';
+import useTranslation from '@src/modules/i18n/client';
+import { Language, LanguageType } from '@src/modules/i18n';
 import { Label } from '@src/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@src/components/ui/select';
 import { useLanguage } from '@src/hooks';

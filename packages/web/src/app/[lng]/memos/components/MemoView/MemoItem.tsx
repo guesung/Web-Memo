@@ -2,8 +2,8 @@ import { HTMLAttributes, KeyboardEvent, memo, MouseEvent, MouseEventHandler, use
 
 import { useMemoPatchMutation } from '@extension/shared/hooks';
 import { GetMemoResponse } from '@extension/shared/utils';
-import useTranslation from '@src/app/i18n/client';
-import { LanguageType } from '@src/app/i18n/type';
+import useTranslation from '@src/modules/i18n/client';
+import { LanguageType } from '@src/modules/i18n';
 import { Badge } from '@src/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader } from '@src/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';

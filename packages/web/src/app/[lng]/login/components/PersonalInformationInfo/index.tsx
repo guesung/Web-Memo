@@ -1,5 +1,5 @@
-import useTranslation from '@src/app/i18n/server';
-import { LanguageType } from '@src/app/i18n/type';
+import useTranslation from '@src/modules/i18n/server';
+import { LanguageType } from '@src/modules/i18n';
 
 interface PersonalInformationInfoProps extends LanguageType {}
 

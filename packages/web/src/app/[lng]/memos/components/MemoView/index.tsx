@@ -3,14 +3,15 @@
 import { useMemosQuery } from '@extension/shared/hooks';
 
 import { LanguageType } from '@src/app/i18n/type';
-import { useSearchParamsSafe, useSupabaseClient } from '@src/hooks';
+import { useSupabaseClient } from '@src/hooks';
 import { useGuide } from '../../hooks';
 import MemoGrid from './MemoGrid';
+import { useSearchParams } from '@src/modules/search-params';
 
 interface MemoViewProps extends LanguageType {}
 
 export default function MemoView({ lng }: MemoViewProps) {
-  const searchParams = useSearchParamsSafe();
+  const searchParams = useSearchParams();
   const supabaseClient = useSupabaseClient();
   const isWish = searchParams.get('isWish') === 'true';
   const category = searchParams.get('category');

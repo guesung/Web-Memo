@@ -1,4 +1,4 @@
-import { SearchParams } from './SearchParams';
+import { SearchParams } from '.';
 
 describe('SearchParams', () => {
   let searchParams: SearchParams;

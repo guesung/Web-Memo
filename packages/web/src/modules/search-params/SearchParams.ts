@@ -1,7 +1,6 @@
-import { SearchParamKeyType, SearchParamType, SearchParamValueType } from '@src/hooks/useSearchParamsSafe';
-import { ReadonlyURLSearchParams } from 'next/navigation';
+import { SearchParamKeyType, SearchParamType, SearchParamValueType } from '.';
 
-export class SearchParams {
+export default class SearchParams {
   #searchParamsMap: Map<SearchParamKeyType, Set<SearchParamValueType>>;
 
   constructor(searchParams: SearchParamType[]) {

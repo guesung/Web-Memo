@@ -5,7 +5,7 @@ import useTranslation from '@src/app/i18n/client';
 import { LanguageType } from '@src/app/i18n/type';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
 import { Textarea } from '@src/components/ui/textarea';
-import { useSearchParamsSafe, useSupabaseClient } from '@src/hooks';
+import { useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { MemoInput } from '../../types';
 import { useRouter } from 'next/navigation';
+import { useSearchParams } from '@src/modules/search-params';
 
 const MIN_ROW = 4;
 
@@ -20,7 +21,7 @@ interface MemoDialog extends LanguageType {}
 
 export default function MemoDialog({ lng }: MemoDialog) {
   const { t } = useTranslation(lng);
-  const searchParams = useSearchParamsSafe();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const id = searchParams.get('id');
   const [row, setRow] = useState(MIN_ROW);

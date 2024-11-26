@@ -7,7 +7,7 @@ import { LanguageType } from '@src/app/i18n/type';
 import { Badge } from '@src/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader } from '@src/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
-import { useSearchParamsSafe, useSupabaseClient } from '@src/hooks';
+import { useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
 import { cn } from '@src/utils';
 import { HeartIcon } from 'lucide-react';
@@ -15,6 +15,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import MemoOption from './MemoOption';
+import { useSearchParams } from '@src/modules/search-params';
 
 interface MemoItemProps extends HTMLAttributes<HTMLDivElement>, LanguageType {
   memo?: GetMemoResponse;
@@ -30,7 +31,7 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
   });
-  const searchParams = useSearchParamsSafe();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { toast } = useToast();
 

@@ -15,7 +15,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import MemoOption from './MemoOption';
-import { useSearchParams } from '@src/modules/search-params';
+import { useSearchParams } from '@extension/shared/modules/search-params';
 
 interface MemoItemProps extends HTMLAttributes<HTMLDivElement>, LanguageType {
   memo?: GetMemoResponse;
@@ -83,7 +83,7 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
               height={12}
               alt="favicon"
               className="float-left"
-              style={{ objectFit: 'contain' }}
+              style={{ objectFit: 'contain', height: 'auto' }}
             />
           )}
           <TooltipProvider delayDuration={200}>

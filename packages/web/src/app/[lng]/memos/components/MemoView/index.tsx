@@ -6,7 +6,7 @@ import { LanguageType } from '@src/modules/i18n';
 import { useSupabaseClient } from '@src/hooks';
 import { useGuide } from '../../hooks';
 import MemoGrid from './MemoGrid';
-import { useSearchParams } from '@src/modules/search-params';
+import { useSearchParams } from '@extension/shared/modules/search-params';
 
 interface MemoViewProps extends LanguageType {}
 

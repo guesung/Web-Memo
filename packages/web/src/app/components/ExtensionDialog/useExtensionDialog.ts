@@ -5,7 +5,7 @@ import {
   checkLocalStorageTrue,
   LocalStorage,
   setLocalStorageTrue,
-} from '@src/modules/local-storage';
+} from '@extension/shared/modules/local-storage';
 import { useEffect, useState } from 'react';
 
 export type DialogType = 'install' | 'update';

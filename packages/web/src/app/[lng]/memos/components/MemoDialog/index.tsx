@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { MemoInput } from '../../types';
 import { useRouter } from 'next/navigation';
-import { useSearchParams } from '@src/modules/search-params';
+import { useSearchParams } from '@extension/shared/modules/search-params';
 
 const MIN_ROW = 4;
 

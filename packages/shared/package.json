@@ -38,6 +38,14 @@
     "./types": {
       "types": "./dist/types/index.d.ts",
       "default": "./dist/types/index.js"
+    },
+    "./modules/local-storage": {
+      "types": "./dist/modules/local-storage/index.d.ts",
+      "default": "./dist/modules/local-storage/index.js"
+    },
+    "./modules/search-params": {
+      "types": "./dist/modules/search-params/index.d.ts",
+      "default": "./dist/modules/search-params/index.js"
     }
   },
   "scripts": {

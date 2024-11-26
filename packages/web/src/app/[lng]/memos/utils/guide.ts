@@ -1,7 +1,7 @@
 import 'driver.js/dist/driver.css';
 
 import { requestGetSidePanelOpen } from '@extension/shared/utils/extension';
-import { setLocalStorageTrue } from '@src/modules/local-storage';
+import { setLocalStorageTrue } from '@extension/shared/modules/local-storage';
 import { driver } from 'driver.js';
 
 export const driverObj = driver({

@@ -8,7 +8,7 @@ import { Button } from '@src/components/ui/button';
 import { useToast } from '@src/hooks/use-toast';
 import { RefreshCwIcon } from 'lucide-react';
 import { driverObj } from '../../utils';
-import { setLocalStorageTrue } from '@src/modules/local-storage';
+import { setLocalStorageTrue } from '@extension/shared/modules/local-storage';
 
 interface RefreshButtonProps extends LanguageType {}
 

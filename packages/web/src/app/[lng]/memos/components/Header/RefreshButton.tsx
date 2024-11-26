@@ -8,7 +8,7 @@ import { Button } from '@src/components/ui/button';
 import { useToast } from '@src/hooks/use-toast';
 import { RefreshCwIcon } from 'lucide-react';
 import { driverObj } from '../../utils';
-import { LOCAL_STORAGE_KEY_MAP, LocalStorage } from '@src/utils';
+import { setLocalStorageTrue } from '@src/modules/local-storage';
 
 interface RefreshButtonProps extends LanguageType {}
 
@@ -19,7 +19,7 @@ export default function RefreshButton({ lng }: RefreshButtonProps) {
 
   const handleRefreshClick = async () => {
     driverObj.moveNext();
-    LocalStorage.setTrue(LOCAL_STORAGE_KEY_MAP.guide);
+    setLocalStorageTrue('guide');
 
     await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
     toast({ title: t('toastMessage.refresh') });

@@ -1,4 +1,5 @@
 import { CONFIG } from '@src/constants';
+
 import { getFormattedMemo } from './extension';
 
 interface SaveMemoNotionProps {

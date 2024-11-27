@@ -1,9 +1,9 @@
-import { getSupabaseClient } from '@src/modules/supabase/util.server';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
 import { COOKIE_KEY } from '@extension/shared/constants';
 import { PATHS } from '@src/constants';
+import { getSupabaseClient } from '@src/modules/supabase/util.server';
 import { isProduction } from '@src/utils';
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);

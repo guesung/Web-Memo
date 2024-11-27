@@ -1,13 +1,13 @@
 'use client';
 
 import { useMemosQuery } from '@extension/shared/hooks';
-
-import { LanguageType } from '@src/modules/i18n';
-import { useSupabaseClient } from '@src/hooks';
-import MemoGrid from './MemoGrid';
 import { useSearchParams } from '@extension/shared/modules/search-params';
+import { useSupabaseClient } from '@src/hooks';
 import { useGuide } from '@src/modules/guide';
+import { LanguageType } from '@src/modules/i18n';
 import { useTranslation } from 'react-i18next';
+
+import MemoGrid from './MemoGrid';
 
 interface MemoViewProps extends LanguageType {}
 

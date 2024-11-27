@@ -1,7 +1,6 @@
 import { URL } from '@extension/shared/constants';
 import Link from 'next/link';
 
-interface FooterProps {}
 export default function Footer() {
   return (
     <footer className="footer bg-neutral text-neutral-content p-10">

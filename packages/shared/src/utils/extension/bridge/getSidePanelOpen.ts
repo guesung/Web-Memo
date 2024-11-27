@@ -1,4 +1,5 @@
 import { EXTENSION } from '@src/constants';
+
 import { Runtime } from '../module';
 
 export const BRIDGE_TYPE_GET_SIDE_PANEL_OPEN = 'BRIDGE_TYPE_GET_SIDE_PANEL_OPEN';

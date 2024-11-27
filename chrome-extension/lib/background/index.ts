@@ -1,4 +1,6 @@
-import { LANGUAGE_MAP, STORAGE_OPTION_LANGUAGE, URL, CONFIG } from '@extension/shared/constants';
+import 'webextension-polyfill';
+
+import { CONFIG, LANGUAGE_MAP, STORAGE_OPTION_LANGUAGE, URL } from '@extension/shared/constants';
 import { isProduction } from '@extension/shared/utils';
 import {
   I18n,
@@ -12,13 +14,12 @@ import {
 } from '@extension/shared/utils/extension';
 import { getPrompt } from '@root/utils';
 import { openai } from '@root/utils/openai';
-import 'webextension-polyfill';
 
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
 chrome.runtime.onInstalled.addListener(async () => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
   const language = await Storage.get(STORAGE_OPTION_LANGUAGE);
-  if (!language) Storage.set(STORAGE_OPTION_LANGUAGE, LANGUAGE_MAP[I18n.getUILanguage()]);
+  if (!language) Storage.set(STORAGE_OPTION_LANGUAGE, LANGUAGE_MAP[I18n.getUILanguage() as keyof typeof LANGUAGE_MAP]);
 });
 
 // 확장 프로그램이 설치되었을 때 가이드 페이지로 이동한다.

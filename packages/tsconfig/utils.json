@@ -8,6 +8,6 @@
     "target": "ES6",
     "types": ["node"],
     "module": "CommonJS",
-    "moduleResolution": "Node",
+    "moduleResolution": "Node"
   }
 }

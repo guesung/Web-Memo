@@ -2,10 +2,11 @@
 
 import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
 import { GetMemoResponse } from '@extension/shared/utils';
+import { LanguageType } from '@src/modules/i18n';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+
 import MemoItem from './MemoItem';
-import { LanguageType } from '@src/modules/i18n';
 
 const MEMO_UNIT = 20;
 

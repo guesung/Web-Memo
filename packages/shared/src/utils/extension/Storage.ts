@@ -1,4 +1,4 @@
-import { SUPABASE, CONFIG } from '@src/constants';
+import { CONFIG, SUPABASE } from '@src/constants';
 import type { Session } from '@supabase/supabase-js';
 
 export const getSession = async () => {

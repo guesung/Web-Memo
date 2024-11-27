@@ -1,5 +1,6 @@
 import { Button, ErrorBoundary, Loading } from '@extension/ui';
 import { RefreshCwIcon } from 'lucide-react';
+
 import { useSummaryContext } from './SummaryProvider';
 import ToggleTheme from './ToggleTheme';
 

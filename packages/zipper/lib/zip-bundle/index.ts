@@ -1,7 +1,7 @@
-import { createReadStream, createWriteStream, existsSync, mkdirSync } from 'fs';
-import { resolve, relative } from 'path';
 import glob from 'fast-glob';
 import { AsyncZipDeflate, Zip } from 'fflate';
+import { createReadStream, createWriteStream, existsSync, mkdirSync } from 'fs';
+import { relative, resolve } from 'path';
 
 // Converts bytes to megabytes
 function toMB(bytes: number): number {

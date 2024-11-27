@@ -1,29 +1,27 @@
-import { HTMLAttributes, KeyboardEvent, memo, MouseEvent, MouseEventHandler, useState } from 'react';
-
 import { useMemoPatchMutation } from '@extension/shared/hooks';
+import { useSearchParams } from '@extension/shared/modules/search-params';
 import { GetMemoResponse } from '@extension/shared/utils';
-import useTranslation from '@src/modules/i18n/client';
-import { LanguageType } from '@src/modules/i18n';
 import { Badge } from '@src/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader } from '@src/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
 import { useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
+import { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/client';
 import { cn } from '@src/utils';
 import { HeartIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { HTMLAttributes, KeyboardEvent, memo, MouseEvent, MouseEventHandler, useState } from 'react';
+
 import MemoOption from './MemoOption';
-import { useSearchParams } from '@extension/shared/modules/search-params';
 
 interface MemoItemProps extends HTMLAttributes<HTMLDivElement>, LanguageType {
   memo?: GetMemoResponse;
 }
 
 export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
-  if (!memo) return null;
-
   const { t } = useTranslation(lng);
   const supabaseClient = useSupabaseClient();
 
@@ -35,7 +33,9 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleIsWishClick: MouseEventHandler<SVGSVGElement> = event => {
+  if (!memo) return null;
+
+  const handleIsWishClick: MouseEventHandler<SVGSVGElement> = () => {
     mutateMemoPatch(
       {
         id: memo.id,
@@ -105,7 +105,7 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
           id={String(memo.id)}
           role="button"
           tabIndex={0}
-          onKeyDown={e => e.key === 'Enter' && handleContentClick(e as any)}>
+          onKeyDown={e => e.key === 'Enter' && handleContentClick(e)}>
           {memo.memo}
         </CardContent>
       )}

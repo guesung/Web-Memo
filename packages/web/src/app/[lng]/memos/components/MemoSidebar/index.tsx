@@ -1,7 +1,5 @@
 'use server';
 
-import { Heart, Home, SettingsIcon } from 'lucide-react';
-
 import {
   Sidebar,
   SidebarContent,
@@ -14,13 +12,14 @@ import {
   SidebarSeparator,
 } from '@src/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
-
-import Link from 'next/link';
-import Header from '../Header';
-import SidebarGroupCategory from './SidebarGroupCategory';
+import { PATHS } from '@src/constants';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/server';
-import { PATHS } from '@src/constants';
+import { Heart, Home, SettingsIcon } from 'lucide-react';
+import Link from 'next/link';
+
+import Header from '../Header';
+import SidebarGroupCategory from './SidebarGroupCategory';
 
 const items = [
   {

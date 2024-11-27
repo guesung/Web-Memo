@@ -1,19 +1,20 @@
 'use client';
 import { useCloseOnEscape, useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
+import { useSearchParams } from '@extension/shared/modules/search-params';
 import { Button } from '@extension/ui';
-import useTranslation from '@src/modules/i18n/client';
-import { LanguageType } from '@src/modules/i18n';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
 import { Textarea } from '@src/components/ui/textarea';
 import { useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
+import { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/client';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+
 import { MemoInput } from '../../types';
-import { useRouter } from 'next/navigation';
-import { useSearchParams } from '@extension/shared/modules/search-params';
 
 const MIN_ROW = 4;
 
@@ -22,8 +23,8 @@ interface MemoDialog extends LanguageType {}
 export default function MemoDialog({ lng }: MemoDialog) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
-  const router = useRouter();
   const id = searchParams.get('id');
+  const router = useRouter();
   const [row, setRow] = useState(MIN_ROW);
   const supabaseClient = useSupabaseClient();
   const { memo: memoData } = useMemoQuery({ supabaseClient, id: Number(id) });
@@ -68,11 +69,11 @@ export default function MemoDialog({ lng }: MemoDialog) {
   useEffect(() => {
     const rowCount = watch('memo').split(/\r\n|\r|\n/).length;
     setRow(rowCount + 2);
-  }, [watch('memo')]);
+  }, [watch]);
 
   useEffect(() => {
     setValue('memo', memoData?.memo ?? '');
-  }, [memoData]);
+  }, [memoData, setValue]);
 
   if (!id || !memoData) return;
   return (

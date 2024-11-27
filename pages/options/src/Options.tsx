@@ -1,7 +1,9 @@
 import '@src/Options.css';
-import { OverlayProvider } from 'overlay-kit';
-import { Header, OptionForm } from './components';
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { OverlayProvider } from 'overlay-kit';
+
+import { Header, OptionForm } from './components';
 
 const queryClient = new QueryClient();
 export default function Options() {

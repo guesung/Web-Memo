@@ -1,14 +1,13 @@
 'use client';
 import { QUERY_KEY } from '@extension/shared/constants';
-import { useQueryClient } from '@tanstack/react-query';
-
-import useTranslation from '@src/modules/i18n/client';
-import { LanguageType } from '@src/modules/i18n';
+import { setLocalStorageTrue } from '@extension/shared/modules/local-storage';
 import { Button } from '@src/components/ui/button';
 import { useToast } from '@src/hooks/use-toast';
-import { RefreshCwIcon } from 'lucide-react';
-import { setLocalStorageTrue } from '@extension/shared/modules/local-storage';
 import { useGuide } from '@src/modules/guide';
+import { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { RefreshCwIcon } from 'lucide-react';
 
 interface RefreshButtonProps extends LanguageType {}
 

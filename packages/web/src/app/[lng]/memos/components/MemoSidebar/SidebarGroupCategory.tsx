@@ -1,8 +1,6 @@
 'use client';
 
 import { useCategoryQuery } from '@extension/shared/hooks';
-import useTranslation from '@src/modules/i18n/client';
-import { LanguageType } from '@src/modules/i18n';
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -13,8 +11,11 @@ import {
 } from '@src/components/ui/sidebar';
 import { PATHS } from '@src/constants';
 import { useSupabaseClient } from '@src/hooks';
+import { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/client';
 import { useRouter } from 'next/navigation';
 import { memo, MouseEventHandler } from 'react';
+
 import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
 
 export default memo(function SidebarGroupCategory({ lng }: LanguageType) {

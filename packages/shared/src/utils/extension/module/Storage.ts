@@ -1,6 +1,7 @@
 import { StorageKeyType, StorageType } from '@src/types';
-import { I18n } from './I18n';
 import { ValueOf } from 'next/dist/shared/lib/constants';
+
+import { I18n } from './I18n';
 
 export class Storage {
   static async get<K extends StorageKeyType>(key: K): Promise<ValueOf<StorageType> | undefined> {

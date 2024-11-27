@@ -1,7 +1,8 @@
 /* eslint-disable import/namespace */
 import * as Sentry from '@sentry/react';
-import { isProduction } from './Environment';
 import { CONFIG } from '@src/constants';
+
+import { isProduction } from './Environment';
 
 export const testSentry = () => {
   Sentry.captureException(new Error(`captureException Error 테스트`));

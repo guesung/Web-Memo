@@ -3,12 +3,12 @@
   "ui": "tui",
   "tasks": {
     "ready": {
-      "outputs": ["dist/**", "build/**"],
+      "outputs": ["dist", "build"],
       "cache": false
     },
     "dev": {
       "dependsOn": ["ready"],
-      "outputs": ["dist/**", "build/**"],
+      "outputs": ["dist", "build"],
       "env": [
         "__FIREFOX__",
         "MAKE_WEBHOOK_NOTION_API",
@@ -32,12 +32,12 @@
         "WEB_URL",
         "NODE_ENV"
       ],
-      "outputs": ["dist/**", "build/**"],
+      "outputs": ["dist", "build"],
       "inputs": [".env"]
     },
     "start": {
       "dependsOn": ["^build", "ready"],
-      "outputs": ["dist/**", "build/**", ".next"],
+      "outputs": ["dist", "build", ".next"],
       "inputs": [".env"]
     },
     "zip": {

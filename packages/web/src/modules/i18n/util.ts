@@ -1,7 +1,8 @@
-import type { NextRequest } from 'next/server';
-import { cookieName, defaultNS, fallbackLng, languages } from './constant';
 import acceptLanguage from 'accept-language';
-import { Namespace } from 'i18next';
+import type { Namespace } from 'i18next';
+import type { NextRequest } from 'next/server';
+
+import { cookieName, defaultNS, fallbackLng, languages } from './constant';
 
 export const getOptions = (lng = fallbackLng, ns: Namespace = defaultNS) => ({
   supportedLngs: languages,

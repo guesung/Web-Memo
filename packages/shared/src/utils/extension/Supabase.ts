@@ -1,6 +1,7 @@
-import { COOKIE_KEY, SUPABASE, CONFIG } from '@src/constants';
+import { CONFIG, COOKIE_KEY, SUPABASE } from '@src/constants';
 import { Database, StorageKeyType } from '@src/types';
 import { createClient } from '@supabase/supabase-js';
+
 import { checkUserLogin } from '../Supabase';
 import { Storage } from './module';
 

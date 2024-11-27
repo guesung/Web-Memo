@@ -6,6 +6,7 @@ import { useSupabaseClient } from '@src/hooks';
 import { PlusIcon } from 'lucide-react';
 import { memo, useState } from 'react';
 import { useForm } from 'react-hook-form';
+
 import { CategoryInput } from '../../types';
 
 export default memo(function SidebarMenuItemAddCategory() {

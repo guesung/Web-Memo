@@ -1,11 +1,11 @@
 import { EXTENSION } from '@extension/shared/constants';
-import { useGetExtensionManifest } from '@src/hooks';
 import {
   checkLocalStorageKey,
   checkLocalStorageTrue,
   LocalStorageKeyType,
   setLocalStorageTrue,
 } from '@extension/shared/modules/local-storage';
+import { useGetExtensionManifest } from '@src/hooks';
 import { useEffect, useState } from 'react';
 
 export type DialogType = 'install' | 'update';

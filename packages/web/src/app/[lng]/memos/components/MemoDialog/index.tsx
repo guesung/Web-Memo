@@ -1,19 +1,20 @@
 'use client';
 import { useCloseOnEscape, useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
+import { useSearchParams } from '@extension/shared/modules/search-params';
 import { Button } from '@extension/ui';
-import useTranslation from '@src/modules/i18n/client';
-import { LanguageType } from '@src/modules/i18n';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
 import { Textarea } from '@src/components/ui/textarea';
 import { useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
+import { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/client';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+
 import { MemoInput } from '../../types';
-import { useRouter } from 'next/navigation';
-import { useSearchParams } from '@extension/shared/modules/search-params';
 
 const MIN_ROW = 4;
 
@@ -43,12 +44,12 @@ export default function MemoDialog({ lng }: MemoDialog) {
       { id: Number(id), memoRequest: { memo: watch('memo') } },
       {
         onSuccess: () => toast({ title: t('toastMessage.memoEdited') }),
-      }
+      },
     );
   };
 
   const handleKeyDown = async (
-    event: React.KeyboardEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLInputElement>
+    event: React.KeyboardEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLInputElement>,
   ) => {
     if (event.metaKey && event.key === 's') {
       event.preventDefault();
@@ -68,11 +69,11 @@ export default function MemoDialog({ lng }: MemoDialog) {
   useEffect(() => {
     const rowCount = watch('memo').split(/\r\n|\r|\n/).length;
     setRow(rowCount + 2);
-  }, [watch('memo')]);
+  }, [watch]);
 
   useEffect(() => {
     setValue('memo', memoData?.memo ?? '');
-  }, [memoData]);
+  }, [memoData, setValue]);
 
   if (!id || !memoData) return;
   return (

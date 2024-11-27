@@ -1,11 +1,13 @@
 import 'driver.js/dist/driver.css';
-import { driver } from 'driver.js';
-import { requestGetSidePanelOpen } from '@extension/shared/utils/extension';
-import { checkLocalStorageTrue, setLocalStorageTrue } from '@extension/shared/modules/local-storage';
-import useTranslation from '../i18n/client';
-import { LanguageType } from '../i18n';
+
 import { useDidMount } from '@extension/shared/hooks';
+import { checkLocalStorageTrue, setLocalStorageTrue } from '@extension/shared/modules/local-storage';
+import { requestGetSidePanelOpen } from '@extension/shared/utils/extension';
 import { isMac } from '@src/utils';
+import { driver } from 'driver.js';
+
+import { LanguageType } from '../i18n';
+import useTranslation from '../i18n/client';
 
 interface UseGuideProps extends LanguageType {}
 

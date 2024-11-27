@@ -1,3 +1,7 @@
+import { QUERY_KEY } from '@extension/shared/constants';
+import { useCategoryQuery, useMemoPatchMutation, useMemoPostMutation, useMemoQuery } from '@extension/shared/hooks';
+import { useSearchParams } from '@extension/shared/modules/search-params';
+import { requestRefetchTheMemos } from '@extension/shared/utils/extension';
 import { Button } from '@src/components/ui/button';
 import {
   DropdownMenu,
@@ -6,22 +10,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@src/components/ui/dropdown-menu';
-
-import { QUERY_KEY } from '@extension/shared/constants';
-import { useCategoryQuery, useMemoPatchMutation, useMemoPostMutation, useMemoQuery } from '@extension/shared/hooks';
-import { requestRefetchTheMemos } from '@extension/shared/utils/extension';
-import useTranslation from '@src/modules/i18n/client';
-import { LanguageType } from '@src/modules/i18n';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@src/components/ui/select';
 import { ToastAction } from '@src/components/ui/toast';
-import { PATHS } from '@src/constants';
 import { useMemoDeleteMutation, useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
+import { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { EllipsisVerticalIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { MouseEventHandler } from 'react';
-import { useSearchParams } from '@extension/shared/modules/search-params';
 
 interface MemoOptionProps extends LanguageType {
   memoId: number;
@@ -92,7 +90,7 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
           });
           queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
         },
-      }
+      },
     );
   };
 

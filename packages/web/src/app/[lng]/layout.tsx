@@ -1,14 +1,15 @@
 import '@extension/ui/dist/global.css';
+import './globals.css';
+
 import { Header, QueryProvider, ThemeProvider } from '@src/components';
 import { Toaster } from '@src/components/ui/toaster';
+import { LanguageParams, languages } from '@src/modules/i18n';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { dir } from 'i18next';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { PropsWithChildren } from 'react';
-import './globals.css';
 
-import { LanguageParams, languages } from '@src/modules/i18n';
 import { ExtensionDialog } from '../components';
 
 const pretendard = localFont({

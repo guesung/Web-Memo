@@ -9,13 +9,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@src/components/ui/dropdown-menu';
-import Image from 'next/image';
-import Link from 'next/link';
-import RefreshButton from './RefreshButton';
+import { PATHS } from '@src/constants';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/server';
-import { PATHS } from '@src/constants';
 import { getSupabaseClient, signout } from '@src/modules/supabase/util.server';
+import Image from 'next/image';
+import Link from 'next/link';
+
+import RefreshButton from './RefreshButton';
 
 export default async function Header({ lng }: LanguageType) {
   return (

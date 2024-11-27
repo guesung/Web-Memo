@@ -2,7 +2,7 @@ import { COOKIE_KEY, SUPABASE } from '@extension/shared/constants';
 import { Database, MemoSupabaseClient } from '@extension/shared/types';
 import { CONFIG, PATHS } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
-import { Provider } from '@supabase/supabase-js';
+import type { Provider } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';

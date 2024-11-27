@@ -1,9 +1,9 @@
+import { colorLog, ManifestParser } from '@extension/dev-utils';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ManifestParser, colorLog } from '@extension/dev-utils';
-import type { PluginOption } from 'vite';
-import { pathToFileURL } from 'url';
 import * as process from 'process';
+import { pathToFileURL } from 'url';
+import type { PluginOption } from 'vite';
 
 const { resolve } = path;
 

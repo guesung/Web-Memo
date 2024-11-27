@@ -3,7 +3,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@src/*": ["./src/*"]
+      "@src/*": [
+        "./src/*"
+      ]
     },
     "jsx": "preserve",
     "incremental": true,
@@ -14,6 +16,12 @@
     ],
     "target": "ES2015"
   },
-  "include": ["src"],
-  "exclude": ["node_modules", ".next"]
+  "include": [
+    "src",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next"
+  ]
 }

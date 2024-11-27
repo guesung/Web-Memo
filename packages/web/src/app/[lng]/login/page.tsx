@@ -1,10 +1,11 @@
 'use server';
-import { getSupabaseClient } from '@src/modules/supabase/util.server';
-import { LoginSection, PersonalInformationInfo } from './components';
-import { redirect } from 'next/navigation';
-import { LanguageParams } from '@src/modules/i18n';
-import { PATHS } from '@src/constants';
 import { checkUserLogin } from '@extension/shared/utils';
+import { PATHS } from '@src/constants';
+import { LanguageParams } from '@src/modules/i18n';
+import { getSupabaseClient } from '@src/modules/supabase/util.server';
+import { redirect } from 'next/navigation';
+
+import { LoginSection, PersonalInformationInfo } from './components';
 
 export default async function page({ params: { lng } }: LanguageParams) {
   const supabaseClient = getSupabaseClient();

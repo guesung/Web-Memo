@@ -1,5 +1,5 @@
 import { checkUserLogin } from '@extension/shared/utils';
-import { PATHS, CONFIG, NEED_AUTH_PAGES } from '@src/constants';
+import { CONFIG, NEED_AUTH_PAGES, PATHS } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
 

@@ -1,5 +1,5 @@
-import type { PluginOption } from 'vite';
 import fg from 'fast-glob';
+import type { PluginOption } from 'vite';
 
 export function watchPublicPlugin(): PluginOption {
   return {

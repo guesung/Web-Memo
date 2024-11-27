@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+
 import useDidMount from './useDidMount';
 
 export default function useUserPreferDarkMode() {

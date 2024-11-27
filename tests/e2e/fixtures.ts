@@ -1,4 +1,4 @@
-import { test as base, chromium, Page, type BrowserContext } from '@playwright/test';
+import { type BrowserContext, chromium, Page, test as base } from '@playwright/test';
 import path from 'path';
 
 process.env.PW_CHROMIUM_ATTACH_TO_OTHER = '1';

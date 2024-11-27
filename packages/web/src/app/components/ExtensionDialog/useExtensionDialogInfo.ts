@@ -1,8 +1,9 @@
 import { EXTENSION, URL } from '@extension/shared/constants';
-import useTranslation from '@src/modules/i18n/client';
-import { Language } from '@src/modules/i18n';
-import useExtensionDialog, { DialogType } from './useExtensionDialog';
 import { LocalStorageKeyType } from '@extension/shared/modules/local-storage';
+import { Language } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/client';
+
+import useExtensionDialog, { DialogType } from './useExtensionDialog';
 
 interface ExtensionDialogInfo {
   message: {
@@ -15,10 +16,10 @@ interface ExtensionDialogInfo {
   localStorageKey: LocalStorageKeyType;
 }
 
-export const getExtensionDialogInfo = (
+export const useExtensionDialogInfo = (
   lng: Language,
   manifest: ReturnType<typeof useExtensionDialog>['manifest'],
-  dialogType?: DialogType
+  dialogType?: DialogType,
 ) => {
   const { t } = useTranslation(lng);
 

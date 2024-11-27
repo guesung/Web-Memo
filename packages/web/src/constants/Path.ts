@@ -4,7 +4,7 @@ export const PATHS = {
   login: '/login',
   memos: '/memos',
   auth: '/auth',
-  memosWish: '/memos?wish=true',
+  memosWish: '/memos?isWish=true',
   memosSetting: '/memos/setting',
   callbackOAuth: '/auth/callback',
   callbackEmail: '/auth/callback-email',

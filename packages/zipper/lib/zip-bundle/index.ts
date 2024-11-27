@@ -1,7 +1,7 @@
-import { createReadStream, createWriteStream, existsSync, mkdirSync } from 'fs';
-import { resolve, relative } from 'path';
 import glob from 'fast-glob';
 import { AsyncZipDeflate, Zip } from 'fflate';
+import { createReadStream, createWriteStream, existsSync, mkdirSync } from 'fs';
+import { relative, resolve } from 'path';
 
 // Converts bytes to megabytes
 function toMB(bytes: number): number {
@@ -26,7 +26,7 @@ function streamFileToZip(
   relPath: string,
   zip: Zip,
   onAbort: () => void,
-  onError: (error: Error) => void
+  onError: (error: Error) => void,
 ): void {
   const data = new AsyncZipDeflate(relPath, { level: 9 });
   zip.add(data);
@@ -51,7 +51,7 @@ export const zipBundle = async (
     buildDirectory: string;
     distDirectoryName: string;
   },
-  withMaps = false
+  withMaps = false,
 ): Promise<void> => {
   ensureBuildDirectoryExists(buildDirectory);
 
@@ -66,7 +66,7 @@ export const zipBundle = async (
     {
       cwd: distDirectory,
       onlyFiles: true,
-    }
+    },
   );
 
   return new Promise<void>((pResolve, pReject) => {
@@ -103,7 +103,7 @@ export const zipBundle = async (
           aborted = true;
           zip.terminate();
         },
-        error => pReject(`Error reading file ${absPath}: ${error.message}`)
+        error => pReject(`Error reading file ${absPath}: ${error.message}`),
       );
     }
 

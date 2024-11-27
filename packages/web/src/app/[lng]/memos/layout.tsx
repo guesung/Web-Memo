@@ -2,16 +2,16 @@
 
 import { COOKIE_KEY, QUERY_KEY } from '@extension/shared/constants';
 import { checkUserLogin, getCategories } from '@extension/shared/utils';
-import { LanguageParams } from '@src/modules/i18n';
 import { Header, HydrationBoundaryWrapper } from '@src/components';
 import { SidebarProvider } from '@src/components/ui/sidebar';
 import { PATHS } from '@src/constants';
-
+import { LanguageParams } from '@src/modules/i18n';
+import { getSupabaseClient } from '@src/modules/supabase/util.server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { PropsWithChildren } from 'react';
+
 import { MemoSidebar, MemoSidebarTrigger } from './components';
-import { getSupabaseClient } from '@src/modules/supabase/util.server';
 
 interface LayoutProps extends LanguageParams, PropsWithChildren {}
 

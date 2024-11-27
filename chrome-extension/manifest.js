@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+
 import deepmerge from 'deepmerge';
 
 const packageJson = JSON.parse(fs.readFileSync('../package.json', 'utf8'));
@@ -69,7 +70,7 @@ const manifest = deepmerge(
       scopes: ['openid', 'email', 'profile'],
     },
   },
-  !isFirefox && sidePanelConfig
+  !isFirefox && sidePanelConfig,
 );
 
 export default manifest;

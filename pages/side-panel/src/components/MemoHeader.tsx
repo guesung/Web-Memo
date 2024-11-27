@@ -22,7 +22,7 @@ export default function MemoHeader() {
   useDidMount(() =>
     responseUpdateSidePanel(() => {
       refetchTab();
-    })
+    }),
   );
 
   return (

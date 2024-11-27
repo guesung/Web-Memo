@@ -1,3 +1,5 @@
+import '@src/Options.css';
+
 import { LANGUAGE_LIST, STORAGE_OPTION_LANGUAGE } from '@extension/shared/constants';
 import { useOptionQuery } from '@extension/shared/hooks/extension';
 import {
@@ -8,7 +10,6 @@ import {
 } from '@extension/shared/utils';
 import { getSupabaseClient, I18n, Storage } from '@extension/shared/utils/extension';
 import { Toast } from '@extension/ui';
-import '@src/Options.css';
 import { overlay } from 'overlay-kit';
 import { FormEvent, useEffect, useRef } from 'react';
 

@@ -34,7 +34,7 @@ const DrawerContent = React.forwardRef<
       ref={ref}
       className={cn(
         'bg-background fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border',
-        className
+        className,
       )}
       {...props}>
       <div className="bg-muted mx-auto mt-4 h-2 w-[100px] rounded-full" />
@@ -76,13 +76,13 @@ DrawerDescription.displayName = DrawerPrimitive.Description.displayName;
 
 export {
   Drawer,
-  DrawerPortal,
-  DrawerOverlay,
-  DrawerTrigger,
   DrawerClose,
   DrawerContent,
-  DrawerHeader,
-  DrawerFooter,
-  DrawerTitle,
   DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerPortal,
+  DrawerTitle,
+  DrawerTrigger,
 };

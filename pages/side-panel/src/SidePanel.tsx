@@ -2,6 +2,7 @@ import { useDidMount } from '@extension/shared/hooks';
 import { responseGetSidePanelOpen } from '@extension/shared/utils/extension';
 import { ErrorBoundary, Loading, Toaster } from '@extension/ui';
 import { Suspense } from 'react';
+
 import {
   LoginSection,
   MemoForm,

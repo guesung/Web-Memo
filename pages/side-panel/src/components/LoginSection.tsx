@@ -1,5 +1,6 @@
 import { CONFIG } from '@extension/shared/constants';
 import { Tab } from '@extension/shared/utils/extension';
+
 import TopRightArrowIcon from '../../public/svgs/top_right_arrow.svg';
 
 export default function LoginSection() {

@@ -1,12 +1,12 @@
 'use client';
 
-import * as React from 'react';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { Slot } from '@radix-ui/react-slot';
+import * as React from 'react';
 import { Controller, ControllerProps, FieldPath, FieldValues, FormProvider, useFormContext } from 'react-hook-form';
 
-import { cn } from '@/utils';
 import { Label } from '@/components/label';
+import { cn } from '@/utils';
 
 const Form = FormProvider;
 
@@ -70,7 +70,7 @@ const FormItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
         <div ref={ref} className={cn('space-y-2', className)} {...props} />
       </FormItemContext.Provider>
     );
-  }
+  },
 );
 FormItem.displayName = 'FormItem';
 
@@ -97,7 +97,7 @@ const FormControl = React.forwardRef<React.ElementRef<typeof Slot>, React.Compon
         {...props}
       />
     );
-  }
+  },
 );
 FormControl.displayName = 'FormControl';
 
@@ -108,7 +108,7 @@ const FormDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttribu
     return (
       <p ref={ref} id={formDescriptionId} className={cn('text-muted-foreground text-[0.8rem]', className)} {...props} />
     );
-  }
+  },
 );
 FormDescription.displayName = 'FormDescription';
 
@@ -130,8 +130,8 @@ const FormMessage = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<
         {body}
       </p>
     );
-  }
+  },
 );
 FormMessage.displayName = 'FormMessage';
 
-export { useFormField, Form, FormItem, FormLabel, FormControl, FormDescription, FormMessage, FormField };
+export { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, useFormField };

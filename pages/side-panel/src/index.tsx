@@ -1,7 +1,7 @@
-import { initSentry } from '@extension/shared/utils';
 import '@extension/ui/dist/global.css';
-
 import '@src/index.css';
+
+import { initSentry } from '@extension/shared/utils';
 import SidePanel from '@src/SidePanel';
 import { createRoot } from 'react-dom/client';
 

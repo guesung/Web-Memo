@@ -46,6 +46,10 @@
     "./modules/search-params": {
       "types": "./dist/modules/search-params/index.d.ts",
       "default": "./dist/modules/search-params/index.js"
+    },
+    "./modules/bridge": {
+      "types": "./dist/modules/bridge/index.d.ts",
+      "default": "./dist/modules/bridge/index.js"
     }
   },
   "scripts": {
@@ -54,12 +58,12 @@
     "prettier": "prettier . --write --ignore-path ../../.prettierignore",
     "type-check": "tsc --noEmit"
   },
-  "devDependencies": {
-    "@extension/tsconfig": "workspace:*",
-    "esbuild-node-externals": "^1.14.0"
-  },
   "dependencies": {
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.4.0"
+  },
+  "devDependencies": {
+    "@extension/tsconfig": "workspace:*",
+    "esbuild-node-externals": "^1.14.0"
   }
 }

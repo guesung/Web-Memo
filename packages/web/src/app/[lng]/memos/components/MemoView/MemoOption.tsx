@@ -21,6 +21,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { EllipsisVerticalIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { MouseEventHandler } from 'react';
+import { useSearchParams } from '@extension/shared/modules/search-params';
 
 interface MemoOptionProps extends LanguageType {
   memoId: number;
@@ -28,23 +29,20 @@ interface MemoOptionProps extends LanguageType {
 
 export default function MemoOption({ lng, memoId }: MemoOptionProps) {
   const { t } = useTranslation(lng);
-
   const supabaseClient = useSupabaseClient();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const { toast } = useToast();
   const { categories } = useCategoryQuery({ supabaseClient });
   const queryClient = useQueryClient();
+
   const { mutate: mutatePatchMemo } = useMemoPatchMutation({
     supabaseClient,
-  });
-
-  const router = useRouter();
-
-  const { mutate: mutateDeleteMemo } = useMemoDeleteMutation({
-    handleSuccess: requestRefetchTheMemos,
   });
   const { mutate: mutatePostMemo } = useMemoPostMutation({
     supabaseClient,
   });
+  const { mutate: mutateDeleteMemo } = useMemoDeleteMutation();
 
   const handleDeleteMemo: MouseEventHandler<HTMLDivElement> = event => {
     event.stopPropagation();
@@ -62,6 +60,7 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
             </ToastAction>
           ),
         });
+        requestRefetchTheMemos();
       },
     });
   };
@@ -80,7 +79,10 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
               <ToastAction
                 altText={t('toastActionMessage.goTo')}
                 onClick={() => {
-                  router.push(`${PATHS.memos}?category=${category.name}&memoId=${memoId}`);
+                  searchParams.set('category', category.name);
+                  searchParams.set('id', memoId.toString());
+
+                  router.push(searchParams.getUrl());
                 }}>
                 {t('toastActionMessage.goTo')}
               </ToastAction>

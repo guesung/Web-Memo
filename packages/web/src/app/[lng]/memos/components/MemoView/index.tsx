@@ -20,11 +20,11 @@ export default function MemoView({ lng }: MemoViewProps) {
     supabaseClient,
   });
 
+  useGuide({ lng });
+
   const filteredMemos = memos
     ?.filter(memo => isWish === !!memo.isWish)
     .filter(memo => (category ? memo.category?.name === category : true));
-
-  useGuide({ lng });
 
   if (!filteredMemos || filteredMemos.length === 0)
     return (

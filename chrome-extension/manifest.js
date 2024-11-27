@@ -69,7 +69,7 @@ const manifest = deepmerge(
       scopes: ['openid', 'email', 'profile'],
     },
   },
-  !isFirefox && sidePanelConfig,
+  !isFirefox && sidePanelConfig
 );
 
 export default manifest;

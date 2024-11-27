@@ -10,5 +10,5 @@ export const withUI = (tailwindConfig: Config) =>
         './node_modules/@extension/ui/lib/**/*.{tsx,ts,js,jsx}',
         './node_modules/@extension/ui/src/**/*.{tsx,ts,js,jsx}',
       ],
-    }),
+    })
   );

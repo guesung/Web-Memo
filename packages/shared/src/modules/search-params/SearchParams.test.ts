@@ -77,6 +77,5 @@ describe('SearchParams', () => {
       searchParams.removeAll('category');
       expect(searchParams.getSearchParams()).toBe('');
     });
-
   });
 });

@@ -48,7 +48,7 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
           if (memo.isWish) toast({ title: t('toastMessage.memoWishListDeleted') });
           else toast({ title: t('toastMessage.memoWishListAdded') });
         },
-      },
+      }
     );
   };
 

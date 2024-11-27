@@ -26,7 +26,7 @@ function initReloadServer() {
         }
         if (message.type === 'build_complete') {
           clientsThatNeedToUpdate.forEach((ws: WebSocket) =>
-            ws.send(MessageInterpreter.send({ type: 'do_update', id: message.id })),
+            ws.send(MessageInterpreter.send({ type: 'do_update', id: message.id }))
           );
         }
       });

@@ -82,7 +82,7 @@ function MemoForm() {
   };
 
   const handleKeyDown = async (
-    event: React.KeyboardEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLInputElement>,
+    event: React.KeyboardEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLInputElement>
   ) => {
     if (event.metaKey && event.key === 's') {
       event.preventDefault();

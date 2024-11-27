@@ -11,7 +11,7 @@ export async function middleware(request: NextRequest) {
   const isAuthPath = request.nextUrl.pathname.startsWith(PATHS.auth);
   if (!isLanguagePath && !isAuthPath)
     return NextResponse.redirect(
-      new URL(`/${language}${request.nextUrl.pathname}${request.nextUrl.search}${request.nextUrl.hash}`, request.url),
+      new URL(`/${language}${request.nextUrl.pathname}${request.nextUrl.search}${request.nextUrl.hash}`, request.url)
     );
 
   return await updateSession(request);

@@ -13,7 +13,7 @@ export const insertMemo = async (supabaseClient: MemoSupabaseClient, memoRequest
 export const updateMemo = async (
   supabaseClient: MemoSupabaseClient,
   id: MemoRow['id'],
-  memoRequest: MemoTable['Update'],
+  memoRequest: MemoTable['Update']
 ) => supabaseClient.from(SUPABASE.schemaMemo).update(memoRequest).eq('id', id).select();
 
 export const deleteMemo = async (supabaseClient: MemoSupabaseClient, id: number) =>

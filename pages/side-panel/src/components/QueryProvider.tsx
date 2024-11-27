@@ -7,7 +7,7 @@ export default function QueryProvider({ children }: PropsWithChildren) {
     () =>
       new QueryClient({
         defaultOptions: { queries: { refetchOnWindowFocus: true } },
-      }),
+      })
   );
 
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;

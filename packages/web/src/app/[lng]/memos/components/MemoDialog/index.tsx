@@ -43,12 +43,12 @@ export default function MemoDialog({ lng }: MemoDialog) {
       { id: Number(id), memoRequest: { memo: watch('memo') } },
       {
         onSuccess: () => toast({ title: t('toastMessage.memoEdited') }),
-      },
+      }
     );
   };
 
   const handleKeyDown = async (
-    event: React.KeyboardEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLInputElement>,
+    event: React.KeyboardEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLInputElement>
   ) => {
     if (event.metaKey && event.key === 's') {
       event.preventDefault();

@@ -13,8 +13,8 @@ export class Runtime {
     callbackFn: (
       request: BridgeRequest<TPayload>,
       sender: chrome.runtime.MessageSender,
-      sendResponse: (response?: unknown) => void,
-    ) => void,
+      sendResponse: (response?: unknown) => void
+    ) => void
   ): Promise<void> {
     return chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (!request?.type || request.type !== type) return;
@@ -27,8 +27,8 @@ export class Runtime {
     callbackFn?: (
       request: BridgeRequest<TPayload>,
       sender: chrome.runtime.MessageSender,
-      sendResponse: (response?: unknown) => void,
-    ) => void,
+      sendResponse: (response?: unknown) => void
+    ) => void
   ): Promise<void> {
     return chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
       if (!request?.type || request.type !== type) return;
@@ -39,7 +39,7 @@ export class Runtime {
   static async connect<TPayload>(
     type: BridgeType,
     payload: TPayload,
-    callbackFn: (message: string) => void,
+    callbackFn: (message: string) => void
   ): Promise<void> {
     return new Promise(resolve => {
       const port = chrome.runtime.connect({ name: type });

@@ -18,7 +18,7 @@ interface ExtensionDialogInfo {
 export const getExtensionDialogInfo = (
   lng: Language,
   manifest: ReturnType<typeof useExtensionDialog>['manifest'],
-  dialogType?: DialogType,
+  dialogType?: DialogType
 ) => {
   const { t } = useTranslation(lng);
 

@@ -92,7 +92,7 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
           });
           queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
         },
-      },
+      }
     );
   };
 

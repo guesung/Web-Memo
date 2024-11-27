@@ -7,7 +7,7 @@ interface YoutubeEmbedProps extends IframeHTMLAttributes<HTMLIFrameElement> {
 }
 export default function YoutubeEmbed({ embedId, className, isAutoPlay = false, ...props }: YoutubeEmbedProps) {
   return (
-    <div className="overflow-hidden relative h-0 pb-[56.25%]">
+    <div className="relative h-0 overflow-hidden pb-[56.25%]">
       <iframe
         width="853"
         height="480"

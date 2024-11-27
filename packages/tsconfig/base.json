@@ -19,6 +19,8 @@
     "noImplicitReturns": true,
     "jsx": "react-jsx",
     "lib": ["DOM", "ESNext"],
-    "module": "ESNext"
+    "module": "ESNext",
+    "target": "ES2021",
+    "incremental": true
   }
 }

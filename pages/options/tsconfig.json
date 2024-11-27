@@ -5,7 +5,6 @@
     "paths": {
       "@src/*": ["src/*"]
     },
-    "jsx": "react-jsx",
     "types": ["chrome"]
   },
   "include": ["src", "./vite-env.d.ts"]

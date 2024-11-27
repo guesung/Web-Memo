@@ -1,5 +1,5 @@
 'use server';
-import { getSupabaseClient } from '@src/utils/supabase.server';
+import { getSupabaseClient } from '@src/modules/supabase/util.server';
 import { LoginSection, PersonalInformationInfo } from './components';
 import { redirect } from 'next/navigation';
 import { LanguageParams } from '@src/modules/i18n';

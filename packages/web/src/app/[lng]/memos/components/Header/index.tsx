@@ -1,4 +1,5 @@
 'use server';
+
 import { checkUserLogin, getUser } from '@extension/shared/utils';
 import { ToggleTheme } from '@src/components';
 import { Avatar, AvatarFallback, AvatarImage } from '@src/components/ui/avatar';
@@ -8,13 +9,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@src/components/ui/dropdown-menu';
-import { getSupabaseClient, signout } from '@src/utils/supabase.server';
 import Image from 'next/image';
 import Link from 'next/link';
 import RefreshButton from './RefreshButton';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/server';
 import { PATHS } from '@src/constants';
+import { getSupabaseClient, signout } from '@src/modules/supabase/util.server';
 
 export default async function Header({ lng }: LanguageType) {
   return (

@@ -1,59 +1,84 @@
 {
   "common": {
-    "webMemo": "웹 메모"
+    "webMemo": "웹 메모",
+    "next": "다음",
+    "prev": "이전",
+    "done": "완료"
   },
   "sideBar": {
-    "memo": "메모",
-    "wishList": "위시 리스트",
-    "allCategory": "카테고리 모아보기"
+    "memo": "나의 메모",
+    "wishList": "나의 위시 리스트",
+    "allCategory": "모든 카테고리 보기"
   },
   "header": {
-    "logout": "로그아웃"
+    "logout": "로그아웃하기"
   },
   "toastMessage": {
-    "refresh": "새로고침이 완료되었습니다.",
-    "memoEdited": "메모가 수정되었습니다.",
-    "categoryEdited": "카테고리가 변경되었습니다.",
-    "memoDeleted": "메모가 삭제되었습니다.",
-    "memoWishListDeleted": "메모가 위시리스트에서 제거되었습니다.",
-    "memoWishListAdded": "메모가 위시리스트에 추가되었습니다."
+    "refresh": "새로고침이 완료되었어요!",
+    "memoEdited": "메모가 성공적으로 수정되었어요!",
+    "categoryEdited": "카테고리가 성공적으로 변경되었어요!",
+    "memoDeleted": "메모가 삭제되었어요.",
+    "memoWishListDeleted": "위시리스트에서 메모를 제거했어요.",
+    "memoWishListAdded": "위시리스트에 메모를 추가했어요!"
   },
   "toastActionMessage": {
-    "goTo": "바로가기",
-    "memoDeleteCancel": "제거 취소"
+    "goTo": "바로 이동하기",
+    "memoDeleteCancel": "삭제 취소하기"
   },
   "option": {
-    "deleteMemo": "메모 삭제",
-    "changeCategory": "카테고리 변경"
+    "deleteMemo": "이 메모 삭제하기",
+    "changeCategory": "카테고리 변경하기"
   },
   "login": {
-    "welcomeTitle": "환영합니다.",
-    "welcomeDescription": "편리하게 메모를 작성할 수 있는 웹메모입니다.",
-    "kakaoLogin": "카카오 로그인",
-    "googleLogin": "구글 로그인",
-    "askGoInstallExtension": "익스텐션을 설치하지 않으셨군요. 설치해야 메모 기능을 이용하실 수 있습니다. 설치하러 가시겠습니까?",
-    "personalInformationInfo": "고객님의 개인정보는 철저히 보호되며, 마케팅 목적으로 활용되지 않습니다."
+    "welcomeTitle": "웹 메모에 오신 것을 환영합니다!",
+    "welcomeDescription": "웹 메모와 함께 더 쉽고 편리하게 메모를 관리해보세요.",
+    "kakaoLogin": "카카오 계정으로 시작하기",
+    "googleLogin": "구글 계정으로 시작하기",
+    "askGoInstallExtension": "메모 기능을 사용하시려면 확장 프로그램이 필요해요. 지금 설치하러 가시겠어요?",
+    "personalInformationInfo": "고객님의 소중한 개인정보는 안전하게 보호되며, 마케팅 목적으로는 절대 사용되지 않아요."
   },
   "dialogInstall": {
-    "title": "확장 프로그램 미설치",
-    "description": "설치해야 메모 기능을 이용하실 수 있습니다. 설치하러 가시겠습니까?",
-    "cancel": "설치하지 않고 이용하기",
-    "ok": "설치하러 가기"
+    "title": "확장 프로그램 설치가 필요해요",
+    "description": "메모 기능을 사용하시려면 확장 프로그램이 필요합니다. 지금 설치하러 가볼까요?",
+    "cancel": "다음에 설치할게요",
+    "ok": "네, 설치하러 갈게요"
   },
   "dialogVersion": {
-    "title": "새로운 버전 출시!",
-    "description": "현재 버전 {{currentVersion}}에서 새로운 버전 {{lastVersion}}으로 업데이트할 수 있습니다.",
-    "itIsLastVersion": "최신 버전입니다.",
-    "cancel": "나중에 업데이트하기",
-    "ok": "지금 업데이트하기",
+    "title": "새로운 버전이 나왔어요!",
+    "description": "현재 버전({{currentVersion}})에서 새로운 버전({{lastVersion}})으로 업데이트하실 수 있어요.",
+    "itIsLastVersion": "이미 최신 버전을 사용하고 계세요!",
+    "cancel": "다음에 업데이트할게요",
+    "ok": "지금 바로 업데이트하기",
     "lastVersion": "최신 버전"
   },
   "tooltip": {
-    "sideBar": "사이드바 토글",
-    "goSetting": "설정 페이지로 이동"
+    "sideBar": "사이드바 열기/닫기",
+    "goSetting": "설정 페이지로 이동하기"
   },
   "setting": {
-    "header": "설정",
-    "language": "언어"
+    "header": "환경설정",
+    "language": "언어 설정"
+  },
+  "guide": {
+    "next": "다음",
+    "prev": "이전",
+    "done": "완료",
+    "welcome": {
+      "title": "웹 메모에 오신 것을 환영합니다 🎉",
+      "description": "메모를 한 번 해볼까요? '{{key}} + S'를 눌러 사이드 패널을 열어보세요 !"
+    },
+    "save": {
+      "title": "메모 저장하기",
+      "description": "잘하셨어요 !\n이제 이 사이드 패널에서 메모를 기록하실 수 있답니다.\n메모를 입력하고, '{{key}} + S'를 눌러 저장해보세요.\n메모 테두리가 파랑색 테두리에서 기본 테두리로 돌아왔다면 저장에 성공한 거에요!\n또한, 3초마다 자동으로 저장되니 안심하세요 ☺️"
+    },
+    "check": {
+      "title": "메모 확인하기",
+      "description": "마지막으로, 새로고침 버튼을 클릭하여 최신 메모를 확인하세요!"
+    }
+  },
+  "memos": {
+    "emptyState": {
+      "message": "아직 저장된 메모가 없어요. 사이드 패널을 열어 메모를 저장해보세요!"
+    }
   }
 }

@@ -1,8 +1,8 @@
-import { getSupabaseClient } from '@src/utils/supabase.server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { COOKIE_KEY } from '@extension/shared/constants';
 import { PATHS } from '@src/constants';
+import { getSupabaseClient } from '@src/modules/supabase/util.server';
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -17,15 +17,9 @@ export async function GET(request: Request) {
     const cookieStore = cookies();
     cookieStore.set(COOKIE_KEY.accessToken, sessionData.session.access_token, {
       maxAge: 3600 * 24 * 365, // 1년
-      secure: true,
-      httpOnly: true,
-      sameSite: 'strict',
     });
     cookieStore.set(COOKIE_KEY.refreshToken, sessionData.session.refresh_token, {
       maxAge: 3600 * 24 * 365, // 1년
-      secure: true,
-      httpOnly: true,
-      sameSite: 'strict',
     });
   }
 

@@ -1,24 +1,24 @@
 {
   "extensionDescription": {
-    "message": "It's a browser extension that helps you easily take notes while web surfing."
+    "message": "Meet your perfect web surfing companion! Our extension helps you take notes effortlessly while browsing."
   },
   "extensionName": {
-    "message": "Web Memo"
+    "message": "Web Memo - Your Smart Note-Taking Assistant"
   },
   "no_memo": {
-    "message": "There is no memo"
+    "message": "You don't have any memos yet. Ready to create your first one?"
   },
   "memo": {
-    "message": "Memo"
+    "message": "My Memo"
   },
   "save": {
-    "message": "Save"
+    "message": "Save Changes"
   },
   "number": {
     "message": "Number"
   },
   "reset": {
-    "message": "Reset"
+    "message": "Start Fresh"
   },
   "title": {
     "message": "Title"
@@ -27,60 +27,60 @@
     "message": "Date"
   },
   "delete": {
-    "message": "Delete"
+    "message": "Remove"
   },
   "modal_modal_question_delete": {
-    "message": "Are you sure you want to reset the data?"
+    "message": "Would you like to reset all your data? This action cannot be undone."
   },
   "select_language": {
-    "message": "Select prompt response language"
+    "message": "Choose your preferred language for prompt responses"
   },
   "reset_option": {
-    "message": "Reset datas"
+    "message": "Clear All Data"
   },
   "download_csv_option": {
-    "message": "Download as CSV file"
+    "message": "Save as CSV file"
   },
   "download_json_option": {
-    "message": "Download as JSON file"
+    "message": "Save as JSON file"
   },
   "toast_save_option": {
-    "message": "Settings have been saved."
+    "message": "Great! Your settings have been saved successfully."
   },
   "toast_error_common": {
-    "message": "An error has occurred."
+    "message": "Oops! Something went wrong. Please try again."
   },
   "toast_saved": {
-    "message": "Saved successfully."
+    "message": "Perfect! Your changes have been saved successfully."
   },
   "error_get_page_content": {
-    "message": "Summarization is not possible on the following sites: New Tab, Chrome Web Store, Chrome Settings page. Please move to another page and press the retry button on the right. If you have newly installed the app, please refresh the page once"
+    "message": "Sorry, but we can't summarize content from New Tab, Chrome Web Store, or Chrome Settings pages. Please visit a different webpage and click the retry button on the right. If you've just installed the app, try refreshing the page once."
   },
   "error_get_summary": {
-    "message": "Summarization failed. Please try again. If the same error occurs, please contact us using the contact information in the 'Guide' for prompt assistance."
+    "message": "We couldn't create your summary this time. Please try again! If you keep seeing this error, we're here to help - just reach out to us through the contact information in the 'Guide'."
   },
   "error_get_storage": {
-    "message": "Failed to retrieve storage data."
+    "message": "We couldn't access your stored data. Please try again."
   },
   "toast_error_storage_exceeded": {
-    "message": "Storage space is full."
+    "message": "Looks like your storage is full! Try removing some old items to make space."
   },
   "context_menus_check_memo": {
-    "message": "Check memo"
+    "message": "View Your Memos"
   },
   "context_menus_show_guide": {
-    "message": "Check Guide"
+    "message": "Open User Guide"
   },
   "wish_list_deleted": {
-    "message": "Removed from wish list."
+    "message": "We've removed this item from your wish list!"
   },
   "wish_list_added": {
-    "message": "Added to wish list."
+    "message": "Great choice! Added to your wish list successfully!"
   },
   "go_to": {
-    "message": "Go to"
+    "message": "Take Me There"
   },
   "toast_error_save": {
-    "message": "Failed to save memo"
+    "message": "Sorry, we couldn't save your memo. Please try again."
   }
 }

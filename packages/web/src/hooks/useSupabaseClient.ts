@@ -1,5 +1,5 @@
 import { MemoSupabaseClient } from '@extension/shared/types';
-import { getSupabaseClient } from '@src/utils/supabase.client';
+import { getSupabaseClient } from '@src/modules/supabase/util.client';
 import { useMemo } from 'react';
 
 let client: MemoSupabaseClient | undefined;

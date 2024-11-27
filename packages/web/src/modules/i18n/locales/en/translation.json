@@ -1,59 +1,84 @@
 {
   "common": {
-    "webMemo": "Web Memo"
+    "webMemo": "Web Memo",
+    "next": "Next",
+    "prev": "Previous",
+    "done": "Done"
   },
   "sideBar": {
-    "memo": "Memo",
-    "wishList": "Wish List",
+    "memo": "My Memos",
+    "wishList": "My Wish List",
     "allCategory": "View All Categories"
   },
   "header": {
-    "logout": "Logout"
+    "logout": "Sign Out"
   },
   "toastMessage": {
-    "refresh": "Refresh completed.",
-    "memoEdited": "Memo has been edited.",
-    "categoryEdited": "Category has been changed.",
-    "memoDeleted": "Memo has been deleted.",
-    "memoWishListDeleted": "Memo has been removed from the wish list.",
-    "memoWishListAdded": "Memo has been added to the wish list."
+    "refresh": "Great! The page has been refreshed successfully!",
+    "memoEdited": "Your memo has been updated successfully!",
+    "categoryEdited": "The category has been changed successfully!",
+    "memoDeleted": "Your memo has been deleted.",
+    "memoWishListDeleted": "The memo has been removed from your wish list.",
+    "memoWishListAdded": "The memo has been added to your wish list!"
   },
   "toastActionMessage": {
-    "goTo": "Go to",
-    "memoDeleteCancel": "Cancel deletion"
+    "goTo": "Take me there",
+    "memoDeleteCancel": "Undo deletion"
   },
   "option": {
-    "deleteMemo": "Delete memo",
+    "deleteMemo": "Delete this memo",
     "changeCategory": "Change category"
   },
   "login": {
-    "welcomeTitle": "Welcome.",
-    "welcomeDescription": "Web Memo is a convenient tool for writing memos.",
-    "kakaoLogin": "Kakao Login",
-    "googleLogin": "Google Login",
-    "askGoInstallExtension": "You need to install the extension to use the memo feature. Would you like to install it?",
-    "personalInformationInfo": "Your personal information is strictly protected and will not be used for marketing purposes."
+    "welcomeTitle": "Welcome to Web Memo!",
+    "welcomeDescription": "Let's make memo-taking easier and more convenient together!",
+    "kakaoLogin": "Continue with Kakao",
+    "googleLogin": "Continue with Google",
+    "askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
+    "personalInformationInfo": "Don't worry! Your personal information is strictly protected and will never be used for marketing purposes."
   },
   "dialogInstall": {
     "title": "Extension Not Installed",
-    "description": "You need to install the extension to use the memo feature. Would you like to install it?",
-    "cancel": "Use without installing",
-    "ok": "Go to install"
+    "description": "To use all the wonderful memo features, you'll need to install our extension. Would you like to install it now?",
+    "cancel": "Maybe later",
+    "ok": "Yes, install now"
   },
   "dialogVersion": {
-    "title": "New Version Released!",
-    "description": "Current Version: {{currentVersion}} | Latest Version: {{lastVersion}}",
-    "itIsLastVersion": "This is the latest version.",
-    "cancel": "Continue without updating",
-    "ok": "Go to update",
+    "title": "Exciting News! New Version Available!",
+    "description": "We've made some improvements! You can update from version {{currentVersion}} to {{lastVersion}}.",
+    "itIsLastVersion": "You're all set! You're using the latest version.",
+    "cancel": "Remind me later",
+    "ok": "Update now",
     "lastVersion": "Latest version"
   },
   "tooltip": {
-    "sideBar": "Toggle sidebar",
-    "goSetting": "Go to settings page"
+    "sideBar": "Open/Close sidebar",
+    "goSetting": "Open settings"
   },
   "setting": {
     "header": "Settings",
     "language": "Language"
+  },
+  "guide": {
+    "next": "Next",
+    "prev": "Previous",
+    "done": "Done",
+    "welcome": {
+      "title": "Welcome to Web Memo! 🎉",
+      "description": "Let's create a memo! Press {{isMac ? 'Option + S' : 'Alt + S'}} to open the side panel!"
+    },
+    "save": {
+      "title": "Save Your Memos",
+      "description": "Great job!\nNow you can write memos in this side panel.\nEnter your memo and press {{isMac ? 'Command + S' : 'Ctrl + S'}} to save it.\nWhen the memo border changes from blue to default, it means your save was successful!\nDon't worry, it also auto-saves every 3 seconds ☺️"
+    },
+    "check": {
+      "title": "Check Your Memos",
+      "description": "Finally, click the refresh button to see your latest memos!"
+    }
+  },
+  "memos": {
+    "emptyState": {
+      "message": "You don't have any saved memos yet. Open the side panel to create your first memo!"
+    }
   }
 }

@@ -8,7 +8,7 @@ import {
 } from '@src/components/ui/dropdown-menu';
 
 import { QUERY_KEY } from '@extension/shared/constants';
-import { useCategoryQuery, useMemoPatchMutation, useMemoPostMutation } from '@extension/shared/hooks';
+import { useCategoryQuery, useMemoPatchMutation, useMemoPostMutation, useMemoQuery } from '@extension/shared/hooks';
 import { requestRefetchTheMemos } from '@extension/shared/utils/extension';
 import useTranslation from '@src/modules/i18n/client';
 import { LanguageType } from '@src/modules/i18n';
@@ -21,6 +21,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { EllipsisVerticalIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { MouseEventHandler } from 'react';
+import { useSearchParams } from '@extension/shared/modules/search-params';
 
 interface MemoOptionProps extends LanguageType {
   memoId: number;
@@ -28,23 +29,21 @@ interface MemoOptionProps extends LanguageType {
 
 export default function MemoOption({ lng, memoId }: MemoOptionProps) {
   const { t } = useTranslation(lng);
-
   const supabaseClient = useSupabaseClient();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const { toast } = useToast();
   const { categories } = useCategoryQuery({ supabaseClient });
   const queryClient = useQueryClient();
+
+  const { memo: memoData } = useMemoQuery({ supabaseClient, id: memoId });
   const { mutate: mutatePatchMemo } = useMemoPatchMutation({
     supabaseClient,
-  });
-
-  const router = useRouter();
-
-  const { mutate: mutateDeleteMemo } = useMemoDeleteMutation({
-    handleSuccess: requestRefetchTheMemos,
   });
   const { mutate: mutatePostMemo } = useMemoPostMutation({
     supabaseClient,
   });
+  const { mutate: mutateDeleteMemo } = useMemoDeleteMutation();
 
   const handleDeleteMemo: MouseEventHandler<HTMLDivElement> = event => {
     event.stopPropagation();
@@ -52,16 +51,18 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
       onSuccess: ({ data }) => {
         if (!data) return;
 
-        const saveMemo = () => mutatePostMemo(data[0]);
+        const deletedMemo = data[0];
+        const handlePostMemo = () => mutatePostMemo(deletedMemo);
 
         toast({
           title: t('toastMessage.memoDeleted'),
           action: (
-            <ToastAction altText={t('toastActionMessage.memoDeleteCancel')} onClick={saveMemo}>
+            <ToastAction altText={t('toastActionMessage.memoDeleteCancel')} onClick={handlePostMemo}>
               {t('toastActionMessage.memoDeleteCancel')}
             </ToastAction>
           ),
         });
+        requestRefetchTheMemos();
       },
     });
   };
@@ -80,7 +81,10 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
               <ToastAction
                 altText={t('toastActionMessage.goTo')}
                 onClick={() => {
-                  router.push(`${PATHS.memos}?category=${category.name}&memoId=${memoId}`);
+                  searchParams.set('category', category.name);
+                  searchParams.set('id', memoId.toString());
+
+                  router.push(searchParams.getUrl());
                 }}>
                 {t('toastActionMessage.goTo')}
               </ToastAction>
@@ -101,22 +105,21 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuGroup>
-          <DropdownMenuItem className="cursor-pointer" onClick={handleDeleteMemo}>
+          <DropdownMenuItem role="button" onClick={handleDeleteMemo}>
             {t('option.deleteMemo')}
           </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer">
-            <Select onValueChange={handleCategoryChange} defaultValue="">
+          <DropdownMenuItem role="button">
+            <Select onValueChange={handleCategoryChange} defaultValue={String(memoData?.category_id)}>
               <SelectTrigger>
                 <SelectValue placeholder={t('option.changeCategory')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  {categories &&
-                    categories.map(category => (
-                      <SelectItem key={category.id} value={String(category.id)} id={String(category.id)}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
+                  {categories?.map(category => (
+                    <SelectItem key={category.id} value={String(category.id)} id={String(category.id)}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
                 </SelectGroup>
               </SelectContent>
             </Select>

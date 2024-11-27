@@ -11,7 +11,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { PropsWithChildren } from 'react';
 import { MemoSidebar, MemoSidebarTrigger } from './components';
-import { getSupabaseClient } from '@src/utils/supabase.server';
+import { getSupabaseClient } from '@src/modules/supabase/util.server';
 
 interface LayoutProps extends LanguageParams, PropsWithChildren {}
 

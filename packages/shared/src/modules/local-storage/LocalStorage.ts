@@ -2,7 +2,8 @@ import { LocalStorageKeyType } from './type';
 
 export default class LocalStorage {
   static get<T>(key: LocalStorageKeyType): T | null {
-    return JSON.parse(localStorage.getItem(key) ?? '');
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : null;
   }
 
   static set(key: LocalStorageKeyType, value: unknown) {

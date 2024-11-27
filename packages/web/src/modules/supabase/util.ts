@@ -4,9 +4,9 @@ import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
+  const nextResponse = NextResponse.next({
     request,
-    headers: setHeader(request),
+    headers: request.headers,
   });
 
   const supabaseClient = createServerClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey, {
@@ -15,13 +15,8 @@ export async function updateSession(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        // 서버 쿠키 설정
-        cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value));
-        supabaseResponse = NextResponse.next({
-          request,
-        });
-        // 브라우저 쿠키 설정
-        cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options));
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        cookiesToSet.forEach(({ name, value, options }) => nextResponse.cookies.set(name, value, options));
       },
     },
   });
@@ -35,11 +30,5 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  return supabaseResponse;
-}
-
-export function setHeader(request: NextRequest) {
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('pathname', request.nextUrl.pathname);
-  return requestHeaders;
+  return nextResponse;
 }

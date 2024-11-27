@@ -8,7 +8,7 @@ import {
 } from '@src/components/ui/dropdown-menu';
 
 import { QUERY_KEY } from '@extension/shared/constants';
-import { useCategoryQuery, useMemoPatchMutation, useMemoPostMutation } from '@extension/shared/hooks';
+import { useCategoryQuery, useMemoPatchMutation, useMemoPostMutation, useMemoQuery } from '@extension/shared/hooks';
 import { requestRefetchTheMemos } from '@extension/shared/utils/extension';
 import useTranslation from '@src/modules/i18n/client';
 import { LanguageType } from '@src/modules/i18n';
@@ -36,6 +36,7 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
   const { categories } = useCategoryQuery({ supabaseClient });
   const queryClient = useQueryClient();
 
+  const { memo: memoData } = useMemoQuery({ supabaseClient, id: memoId });
   const { mutate: mutatePatchMemo } = useMemoPatchMutation({
     supabaseClient,
   });
@@ -50,12 +51,13 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
       onSuccess: ({ data }) => {
         if (!data) return;
 
-        const saveMemo = () => mutatePostMemo(data[0]);
+        const deletedMemo = data[0];
+        const handlePostMemo = () => mutatePostMemo(deletedMemo);
 
         toast({
           title: t('toastMessage.memoDeleted'),
           action: (
-            <ToastAction altText={t('toastActionMessage.memoDeleteCancel')} onClick={saveMemo}>
+            <ToastAction altText={t('toastActionMessage.memoDeleteCancel')} onClick={handlePostMemo}>
               {t('toastActionMessage.memoDeleteCancel')}
             </ToastAction>
           ),
@@ -107,7 +109,7 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
             {t('option.deleteMemo')}
           </DropdownMenuItem>
           <DropdownMenuItem className="cursor-pointer">
-            <Select onValueChange={handleCategoryChange} defaultValue="">
+            <Select onValueChange={handleCategoryChange} defaultValue={String(memoData?.category_id)}>
               <SelectTrigger>
                 <SelectValue placeholder={t('option.changeCategory')} />
               </SelectTrigger>

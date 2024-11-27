@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     sameSite: 'lax',
     path: '/',
   });
-  cookieStore.set(COOKIE_KEY.sideBarState, sessionData.session.refresh_token, {
+  cookieStore.set(COOKIE_KEY.refreshToken, sessionData.session.refresh_token, {
     maxAge: 3600 * 24 * 365, // 1년
     httpOnly: true,
     secure: isProduction,

@@ -26,12 +26,13 @@ export default function useGuide({ lng }: UseGuideProps) {
             title: t('guide.welcome.title'),
             description: t('guide.welcome.description', { key: isMac ? 'Option' : 'Alt' }),
             onPopoverRender: () => {
-              setInterval(() => {
+              const interval = setInterval(() => {
                 requestGetSidePanelOpen(() => {
                   if (driverObj.getActiveIndex() !== 0) return;
                   driverObj.moveNext();
                 });
               }, 500);
+              driverObj.destroy = () => clearInterval(interval);
             },
           },
         },

@@ -1,8 +1,9 @@
 import type { NextRequest } from 'next/server';
 import { cookieName, defaultNS, fallbackLng, languages } from './constant';
 import acceptLanguage from 'accept-language';
+import { Namespace } from 'i18next';
 
-export const getOptions = (lng = fallbackLng, ns = defaultNS) => ({
+export const getOptions = (lng = fallbackLng, ns: Namespace = defaultNS) => ({
   supportedLngs: languages,
   fallbackLng,
   lng,

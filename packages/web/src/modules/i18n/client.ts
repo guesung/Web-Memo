@@ -54,6 +54,7 @@ export default function useTranslation(language: Language, ns?: string, options?
       maxAge: 365 * 24 * 60 * 60,
       secure: isProduction,
       sameSite: 'strict',
+      httpOnly: true,
     });
   }, [language, cookies.i18next]);
 

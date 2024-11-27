@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
-import { cookieName, defaultNS, fallbackLng, languages } from '.';
+import { cookieName, defaultNS, fallbackLng, languages } from './constant';
+import acceptLanguage from 'accept-language';
 
 export const getOptions = (lng = fallbackLng, ns = defaultNS) => ({
   supportedLngs: languages,
@@ -9,7 +10,6 @@ export const getOptions = (lng = fallbackLng, ns = defaultNS) => ({
   defaultNS,
   ns,
 });
-import acceptLanguage from 'accept-language';
 
 export const getLanguage = (request: NextRequest) => {
   acceptLanguage.languages([...languages]);

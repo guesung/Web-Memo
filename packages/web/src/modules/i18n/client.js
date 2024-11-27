@@ -6,7 +6,9 @@ import { initReactI18next, useTranslation as useTranslationOrg } from 'react-i18
 import { useCookies } from 'react-cookie';
 import resourcesToBackend from 'i18next-resources-to-backend';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import { languages, getOptions, cookieName } from '.';
+import { languages, cookieName } from './constant';
+import { getOptions } from './util';
+import { isProduction } from '@extension/shared/utils';
 
 const runsOnServerSide = typeof window === 'undefined';
 
@@ -49,7 +51,7 @@ export default function useTranslation(lng, ns, options) {
     setCookie(cookieName, lng, {
       path: '/',
       maxAge: 365 * 24 * 60 * 60,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isProduction,
       sameSite: 'strict',
     });
   }, [lng, cookies.i18next]);

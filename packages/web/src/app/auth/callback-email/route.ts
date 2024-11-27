@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { COOKIE_KEY } from '@extension/shared/constants';
 import { PATHS } from '@src/constants';
+import { isProduction } from '@src/utils';
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -16,14 +17,14 @@ export async function GET(request: Request) {
   cookieStore.set(COOKIE_KEY.accessToken, sessionData.session.access_token, {
     maxAge: 3600 * 24 * 365, // 1년
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProduction,
     sameSite: 'lax',
     path: '/',
   });
   cookieStore.set(COOKIE_KEY.sideBarState, sessionData.session.refresh_token, {
     maxAge: 3600 * 24 * 365, // 1년
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProduction,
     sameSite: 'lax',
     path: '/',
   });

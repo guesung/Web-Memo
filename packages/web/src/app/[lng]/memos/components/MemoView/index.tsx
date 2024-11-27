@@ -4,9 +4,9 @@ import { useMemosQuery } from '@extension/shared/hooks';
 
 import { LanguageType } from '@src/modules/i18n';
 import { useSupabaseClient } from '@src/hooks';
-import { useGuide } from '../../hooks';
 import MemoGrid from './MemoGrid';
 import { useSearchParams } from '@extension/shared/modules/search-params';
+import { useGuide } from '@src/modules/guide';
 
 interface MemoViewProps extends LanguageType {}
 

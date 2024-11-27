@@ -23,8 +23,8 @@ interface MemoDialog extends LanguageType {}
 export default function MemoDialog({ lng }: MemoDialog) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
-  const router = useRouter();
   const id = searchParams.get('id');
+  const router = useRouter();
   const [row, setRow] = useState(MIN_ROW);
   const supabaseClient = useSupabaseClient();
   const { memo: memoData } = useMemoQuery({ supabaseClient, id: Number(id) });

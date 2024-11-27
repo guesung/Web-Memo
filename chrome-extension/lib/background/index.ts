@@ -19,7 +19,7 @@ import { openai } from '@root/utils/openai';
 chrome.runtime.onInstalled.addListener(async () => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
   const language = await Storage.get(STORAGE_OPTION_LANGUAGE);
-  if (!language) Storage.set(STORAGE_OPTION_LANGUAGE, LANGUAGE_MAP[I18n.getUILanguage()]);
+  if (!language) Storage.set(STORAGE_OPTION_LANGUAGE, LANGUAGE_MAP[I18n.getUILanguage() as keyof typeof LANGUAGE_MAP]);
 });
 
 // 확장 프로그램이 설치되었을 때 가이드 페이지로 이동한다.

@@ -9,8 +9,6 @@ import {
   getMemos as getMemosSupabase,
 } from '@extension/shared/utils';
 import { getSupabaseClient, I18n, Storage } from '@extension/shared/utils/extension';
-import { Toast } from '@extension/ui';
-import { overlay } from 'overlay-kit';
 import { FormEvent, useEffect, useRef } from 'react';
 
 export default function OptionForm() {
@@ -48,7 +46,6 @@ export default function OptionForm() {
     if (!languageRef.current) return;
 
     Storage.set(STORAGE_OPTION_LANGUAGE, languageRef.current?.value);
-    overlay.open(({ unmount }) => <Toast message={I18n.get('toast_save_option')} onClose={unmount} />);
   };
 
   useEffect(() => {

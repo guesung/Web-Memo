@@ -33,8 +33,7 @@
     "update-version:win32": "bash update_version.sh",
     "update-version:default": "./update_version.sh",
     "package": "pnpm i && pnpm clean && pnpm build && pnpm zip",
-    "generate-supabase-type": "supabase gen types --lang=typescript --project-id czwtqukymcqoberdoltq --schema memo > packages/shared/src/types/supabase.ts && prettier --write packages/shared/src/types/supabase.ts",
-    "pre-push": "pnpm type-check && pnpm format"
+    "generate-supabase-type": "supabase gen types --lang=typescript --project-id czwtqukymcqoberdoltq --schema memo > packages/shared/src/types/supabase.ts && prettier --write packages/shared/src/types/supabase.ts"
   },
   "files": [
     "dist"
@@ -101,7 +100,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "prettier --write"
+      "prettier . --write"
     ]
   },
   "packageManager": "pnpm@9.5.0",

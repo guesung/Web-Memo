@@ -2,7 +2,7 @@
   "env": {
     "browser": true,
     "es6": true,
-    "node": true,
+    "node": true
   },
   "extends": [
     "plugin:prettier/recommended",
@@ -11,32 +11,28 @@
     "plugin:@typescript-eslint/recommended",
     "plugin:react-hooks/recommended",
     "plugin:import/recommended",
-    "plugin:jsx-a11y/recommended",
+    "plugin:jsx-a11y/recommended"
   ],
-  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaFeatures": {
-      "jsx": true,
+      "jsx": true
     },
     "ecmaVersion": "latest",
-    "sourceType": "module",
+    "sourceType": "module"
   },
-  "plugins": ["react", "@typescript-eslint", "react-hooks", "import", "jsx-a11y", "prettier", "simple-import-sort"],
+  "plugins": ["prettier", "simple-import-sort", "react", "@typescript-eslint", "react-hooks", "import", "jsx-a11y"],
   "settings": {
     "react": {
-      "version": "detect",
-    },
-    "import/resolver": {
-      "typescript": {},
-    },
+      "version": "detect"
+    }
   },
   "rules": {
     "react/react-in-jsx-scope": "off",
     "import/no-unresolved": "off",
-    "react/prop-types": "off",
+    "react/prop-types": "off"
   },
   "globals": {
-    "chrome": "readonly",
+    "chrome": "readonly"
   },
-  "ignorePatterns": ["watch.js", "dist/**"],
+  "ignorePatterns": ["watch.js", "dist/**"]
 }

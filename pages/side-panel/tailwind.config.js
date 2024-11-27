@@ -1,8 +1,8 @@
-const baseConfig = require('@extension/tailwindcss-config');
-const { withUI } = require('@extension/ui');
+import baseConfig from '@extension/tailwindcss-config';
+import { withUI } from '@extension/ui';
 
 /** @type {import('tailwindcss').Config} */
-module.exports = withUI({
+export default withUI({
   ...baseConfig,
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  content: ['./src/**/*.{js,ts,jsx,tsx}'],
 });

@@ -5,6 +5,7 @@ import { checkLocalStorageTrue, setLocalStorageTrue } from '@extension/shared/mo
 import useTranslation from '../i18n/client';
 import { LanguageType } from '../i18n';
 import { useDidMount } from '@extension/shared/hooks';
+import { isMac } from '@src/utils';
 
 interface UseGuideProps extends LanguageType {}
 
@@ -23,7 +24,7 @@ export default function useGuide({ lng }: UseGuideProps) {
         {
           popover: {
             title: t('guide.welcome.title'),
-            description: t('guide.welcome.description'),
+            description: t('guide.welcome.description', { key: isMac ? 'Option' : 'Alt' }),
             onPopoverRender: () => {
               setInterval(() => {
                 requestGetSidePanelOpen(() => {
@@ -37,7 +38,7 @@ export default function useGuide({ lng }: UseGuideProps) {
         {
           popover: {
             title: t('guide.save.title'),
-            description: t('guide.save.description'),
+            description: t('guide.save.description', { key: isMac ? 'Command' : 'Ctrl' }),
           },
         },
         {

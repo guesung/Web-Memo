@@ -7,10 +7,12 @@ import { useSupabaseClient } from '@src/hooks';
 import MemoGrid from './MemoGrid';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { useGuide } from '@src/modules/guide';
+import { useTranslation } from 'react-i18next';
 
 interface MemoViewProps extends LanguageType {}
 
 export default function MemoView({ lng }: MemoViewProps) {
+  const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
   const supabaseClient = useSupabaseClient();
   const isWish = searchParams.get('isWish') === 'true';
@@ -27,8 +29,6 @@ export default function MemoView({ lng }: MemoViewProps) {
     .filter(memo => (category ? memo.category?.name === category : true));
 
   if (!filteredMemos || filteredMemos.length === 0)
-    return (
-      <p className="mt-8 w-full text-center">아직 저장된 메모가 없어요. 사이드 패널을 열어 메모를 저장해보세요 !</p>
-    );
+    return <p className="mt-8 w-full text-center">{t('memos.emptyState.message')}</p>;
   return <MemoGrid memos={filteredMemos} gridKey={category + isWish} lng={lng} />;
 }

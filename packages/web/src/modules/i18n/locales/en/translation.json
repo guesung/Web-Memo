@@ -64,16 +64,21 @@
     "prev": "Previous",
     "done": "Done",
     "welcome": {
-      "title": "Welcome to Web Memo!",
-      "description": "First, open the side panel to see your memos."
+      "title": "Welcome to Web Memo! 🎉",
+      "description": "Let's create a memo! Press {{isMac ? 'Option + S' : 'Alt + S'}} to open the side panel!"
     },
     "save": {
       "title": "Save Your Memos",
-      "description": "Select text on any webpage and click the memo button to save it."
+      "description": "Great job!\nNow you can write memos in this side panel.\nEnter your memo and press {{isMac ? 'Command + S' : 'Ctrl + S'}} to save it.\nWhen the memo border changes from blue to default, it means your save was successful!\nDon't worry, it also auto-saves every 3 seconds ☺️"
     },
     "check": {
       "title": "Check Your Memos",
-      "description": "Click the refresh button to see your latest memos."
+      "description": "Finally, click the refresh button to see your latest memos!"
+    }
+  },
+  "memos": {
+    "emptyState": {
+      "message": "You don't have any saved memos yet. Open the side panel to create your first memo!"
     }
   }
 }

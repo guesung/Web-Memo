@@ -8,7 +8,7 @@ import { Button } from '@src/components/ui/button';
 import { useToast } from '@src/hooks/use-toast';
 import { RefreshCwIcon } from 'lucide-react';
 import { setLocalStorageTrue } from '@extension/shared/modules/local-storage';
-import { driverObj } from '@src/modules/guide';
+import { useGuide } from '@src/modules/guide';
 
 interface RefreshButtonProps extends LanguageType {}
 
@@ -16,6 +16,7 @@ export default function RefreshButton({ lng }: RefreshButtonProps) {
   const { t } = useTranslation(lng);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { driverObj } = useGuide({ lng });
 
   const handleRefreshClick = async () => {
     driverObj.moveNext();

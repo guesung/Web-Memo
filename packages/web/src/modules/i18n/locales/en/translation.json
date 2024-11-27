@@ -1,6 +1,9 @@
 {
   "common": {
-    "webMemo": "Web Memo"
+    "webMemo": "Web Memo",
+    "next": "Next",
+    "prev": "Previous",
+    "done": "Done"
   },
   "sideBar": {
     "memo": "My Memos",
@@ -55,5 +58,22 @@
   "setting": {
     "header": "Settings",
     "language": "Language"
+  },
+  "guide": {
+    "next": "Next",
+    "prev": "Previous",
+    "done": "Done",
+    "welcome": {
+      "title": "Welcome to Web Memo!",
+      "description": "First, open the side panel to see your memos."
+    },
+    "save": {
+      "title": "Save Your Memos",
+      "description": "Select text on any webpage and click the memo button to save it."
+    },
+    "check": {
+      "title": "Check Your Memos",
+      "description": "Click the refresh button to see your latest memos."
+    }
   }
 }

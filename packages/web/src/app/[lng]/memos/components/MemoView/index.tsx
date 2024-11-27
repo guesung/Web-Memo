@@ -24,7 +24,7 @@ export default function MemoView({ lng }: MemoViewProps) {
     ?.filter(memo => isWish === !!memo.isWish)
     .filter(memo => (category ? memo.category?.name === category : true));
 
-  useGuide();
+  useGuide({ lng });
 
   if (!filteredMemos || filteredMemos.length === 0)
     return (

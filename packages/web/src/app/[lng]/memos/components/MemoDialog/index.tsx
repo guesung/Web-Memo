@@ -11,23 +11,25 @@ import { useToast } from '@src/hooks/use-toast';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useRouter } from 'next/navigation';
-import { FocusEvent, useEffect } from 'react';
+import { FocusEvent, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { MemoInput } from '../../types';
 import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
 
-interface MemoDialog extends LanguageType {}
+interface MemoDialog extends LanguageType {
+  id: string;
+}
 
-export default function MemoDialog({ lng }: MemoDialog) {
+export default function MemoDialog({ lng, id }: MemoDialog) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
-  const id = searchParams.get('id');
   const router = useRouter();
   const supabaseClient = useSupabaseClient();
   const { memo: memoData } = useMemoQuery({ supabaseClient, id: Number(id) });
   const { toast } = useToast();
+  const [open, setOpen] = useState(false);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
   });
@@ -68,10 +70,14 @@ export default function MemoDialog({ lng }: MemoDialog) {
     setValue('memo', memoData?.memo ?? '');
   }, [memoData, setValue]);
 
+  useEffect(() => {
+    setOpen(!!id);
+  }, [id]);
+
   if (!id || !memoData) return;
   return (
-    <Dialog open={!!id}>
-      <DialogContent onClose={closeDialog} className="max-w-[600px] p-0">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="max-w-[600px] p-0" onClose={closeDialog}>
         <Card>
           <MemoCardHeader memo={memoData as GetMemoResponse} />
           <CardContent>
@@ -81,6 +87,7 @@ export default function MemoDialog({ lng }: MemoDialog) {
               })}
               onKeyDown={handleKeyDown}
               onFocus={adjustTextareaHeight}
+              className="outline-none focus:border-gray-300 focus:outline-none"
             />
 
             <div className="h-4" />
@@ -89,7 +96,7 @@ export default function MemoDialog({ lng }: MemoDialog) {
             </span>
           </CardContent>
           <MemoCardFooter memo={memoData as GetMemoResponse} lng={lng} isHovered>
-            <Button onClick={closeDialog} variant="outline" type="button">
+            <Button variant="outline" type="button" onClick={closeDialog}>
               닫기
             </Button>
             <Button variant="outline" onClick={saveMemo}>

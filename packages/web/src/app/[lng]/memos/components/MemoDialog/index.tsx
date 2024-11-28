@@ -1,16 +1,17 @@
 'use client';
 import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
-import { GetMemoResponse } from '@extension/shared/utils';
+import { formatDate, GetMemoResponse } from '@extension/shared/utils';
 import { Button } from '@extension/ui';
 import { Card, CardContent } from '@src/components/ui/card';
 import { Dialog, DialogContent } from '@src/components/ui/dialog';
+import { Textarea } from '@src/components/ui/textarea';
 import { useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { FocusEvent, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { MemoInput } from '../../types';
@@ -38,6 +39,7 @@ export default function MemoDialog({ lng }: MemoDialog) {
   });
 
   const saveMemo = () => {
+    console.log(watch('memo'));
     mutateMemoPatch(
       { id: Number(id), memoRequest: { memo: watch('memo') } },
       {
@@ -46,7 +48,7 @@ export default function MemoDialog({ lng }: MemoDialog) {
     );
   };
 
-  const handleKeyDown = async (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.metaKey && event.key === 's') {
       event.preventDefault();
       saveMemo();
@@ -55,8 +57,11 @@ export default function MemoDialog({ lng }: MemoDialog) {
 
   const closeDialog = () => {
     searchParams.removeAll('id');
-
     router.replace(searchParams.getUrl(), { scroll: false });
+  };
+
+  const adjustTextareaHeight = (event: FocusEvent<HTMLTextAreaElement>) => {
+    event.target.style.height = `${event.target.scrollHeight}px`;
   };
 
   useEffect(() => {
@@ -70,17 +75,19 @@ export default function MemoDialog({ lng }: MemoDialog) {
         <Card>
           <MemoCardHeader memo={memoData as GetMemoResponse} />
           <CardContent>
-            <div
+            <Textarea
+              {...register('memo', {
+                onChange: adjustTextareaHeight,
+              })}
               onKeyDown={handleKeyDown}
-              {...register('memo')}
-              contentEditable={true}
-              aria-multiline={true}
-              role="textbox"
-              tabIndex={0}
-              spellCheck={true}
-              className="whitespace-break-spaces break-all text-sm focus:outline-none">
-              {memoData.memo}
-            </div>
+              onFocus={adjustTextareaHeight}
+              className="focus:outline-none"
+            />
+
+            <div className="h-4" />
+            <span className="text-muted-foreground float-right text-xs">
+              {t('common.updatedAt')} {formatDate(memoData.updated_at, 'yyyy.mm.dd')}
+            </span>
           </CardContent>
           <MemoCardFooter memo={memoData as GetMemoResponse} lng={lng} isHovered>
             <Button onClick={closeDialog} variant="outline" type="button">

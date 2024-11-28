@@ -51,7 +51,6 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
             className="whitespace-break-spaces break-all"
             onClick={handleContentClick}
             id={String(memo.id)}
-            role="button"
             tabIndex={0}
             onKeyDown={e => e.key === 'Enter' && handleContentClick(e)}>
             {memo.memo}

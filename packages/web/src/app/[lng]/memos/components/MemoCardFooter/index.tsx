@@ -11,15 +11,15 @@ import useTranslation from '@src/modules/i18n/client';
 import { cn } from '@src/utils';
 import { HeartIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { MouseEventHandler } from 'react';
+import { MouseEvent, MouseEventHandler, PropsWithChildren } from 'react';
 
-import MemoOption from '../MemoView/MemoOption';
+import MemoOption from './MemoOption';
 
-interface MemoCardFooterProps extends LanguageType {
+interface MemoCardFooterProps extends LanguageType, React.HTMLAttributes<HTMLDivElement>, PropsWithChildren {
   memo: GetMemoResponse;
   isHovered: boolean;
 }
-export default function MemoCardFooter({ memo, lng, isHovered }: MemoCardFooterProps) {
+export default function MemoCardFooter({ memo, lng, isHovered, children, ...props }: MemoCardFooterProps) {
   const { t } = useTranslation(lng);
   const supabaseClient = useSupabaseClient();
   const searchParams = useSearchParams();
@@ -29,7 +29,8 @@ export default function MemoCardFooter({ memo, lng, isHovered }: MemoCardFooterP
   });
   const { toast } = useToast();
 
-  const handleCategoryClick = () => {
+  const handleCategoryClick = (event: MouseEvent<HTMLDivElement>) => {
+    event.stopPropagation();
     if (!memo.category?.name) return;
 
     searchParams.set('category', memo.category?.name);
@@ -71,10 +72,10 @@ export default function MemoCardFooter({ memo, lng, isHovered }: MemoCardFooterP
   };
 
   return (
-    <CardFooter className={cn('flex justify-between p-0 px-4 pb-2 pt-0')}>
+    <CardFooter className={cn('flex justify-between p-0 px-4 pb-2 pt-0')} {...props}>
       <div>
         {memo.category?.name ? (
-          <Badge variant="outline" onClick={handleCategoryClick} className="cursor-pointer">
+          <Badge variant="outline" onClick={handleCategoryClick} className="z-10 cursor-pointer">
             {memo.category?.name}
           </Badge>
         ) : (
@@ -96,6 +97,7 @@ export default function MemoCardFooter({ memo, lng, isHovered }: MemoCardFooterP
           })}
         />
         <MemoOption memoId={memo.id} lng={lng} />
+        {children}
       </div>
     </CardFooter>
   );

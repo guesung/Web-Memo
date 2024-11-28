@@ -99,7 +99,7 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
   };
 
   return (
-    <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
+    <DropdownMenu onOpenChange={setIsOpen} open={isOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="link" size="sm">
           <EllipsisVerticalIcon size={16} />

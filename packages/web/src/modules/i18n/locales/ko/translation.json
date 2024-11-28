@@ -13,7 +13,7 @@
   "header": {
     "logout": "로그아웃하기"
   },
-  "toastMessage": {
+  "toastTitle": {
     "refresh": "새로고침이 완료되었어요!",
     "memoEdited": "메모가 성공적으로 수정되었어요!",
     "categoryEdited": "카테고리가 성공적으로 변경되었어요!",

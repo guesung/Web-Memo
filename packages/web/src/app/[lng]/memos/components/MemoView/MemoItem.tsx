@@ -47,15 +47,13 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
       },
       {
         onSuccess: () => {
-          const toastMessage = memo.isWish
-            ? t('toastMessage.memoWishListDeleted')
-            : t('toastMessage.memoWishListAdded');
+          const toastTitle = memo.isWish ? t('toastTitle.memoWishListDeleted') : t('toastTitle.memoWishListAdded');
 
           toast({
-            title: toastMessage,
+            title: toastTitle,
             action: (
               <ToastAction
-                altText={t('toastAction.goTo')}
+                altText={t('toastActionMessage.goTo')}
                 onClick={() => {
                   searchParams.set('id', memo.id.toString());
 
@@ -64,7 +62,7 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
 
                   router.push(searchParams.getUrl());
                 }}>
-                {t('toastAction.goTo')}
+                {t('toastActionMessage.goTo')}
               </ToastAction>
             ),
           });

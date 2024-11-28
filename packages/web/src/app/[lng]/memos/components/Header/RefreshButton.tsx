@@ -22,7 +22,7 @@ export default function RefreshButton({ lng }: RefreshButtonProps) {
     setLocalStorageTrue('guide');
 
     await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
-    toast({ title: t('toastMessage.refresh') });
+    toast({ title: t('toastTitle.refresh') });
   };
 
   return (

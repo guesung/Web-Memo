@@ -53,7 +53,7 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
         const handlePostMemo = () => mutatePostMemo(deletedMemo);
 
         toast({
-          title: t('toastMessage.memoDeleted'),
+          title: t('toastTitle.memoDeleted'),
           action: (
             <ToastAction altText={t('toastActionMessage.memoDeleteCancel')} onClick={handlePostMemo}>
               {t('toastActionMessage.memoDeleteCancel')}
@@ -74,7 +74,7 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
           if (!category) return;
 
           toast({
-            title: t('toastMessage.categoryEdited'),
+            title: t('toastTitle.categoryEdited'),
             action: (
               <ToastAction
                 altText={t('toastActionMessage.goTo')}

@@ -43,7 +43,7 @@ export default function MemoDialog({ lng }: MemoDialog) {
     mutateMemoPatch(
       { id: Number(id), memoRequest: { memo: watch('memo') } },
       {
-        onSuccess: () => toast({ title: t('toastMessage.memoEdited') }),
+        onSuccess: () => toast({ title: t('toastTitle.memoEdited') }),
       },
     );
   };

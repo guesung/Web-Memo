@@ -13,7 +13,7 @@
   "header": {
     "logout": "Sign Out"
   },
-  "toastMessage": {
+  "toastTitle": {
     "refresh": "Great! The page has been refreshed successfully!",
     "memoEdited": "Your memo has been updated successfully!",
     "categoryEdited": "The category has been changed successfully!",

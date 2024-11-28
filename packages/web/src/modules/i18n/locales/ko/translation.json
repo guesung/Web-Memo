@@ -3,7 +3,8 @@
     "webMemo": "웹 메모",
     "next": "다음",
     "prev": "이전",
-    "done": "완료"
+    "done": "완료",
+    "updatedAt": "마지막 수정:"
   },
   "sideBar": {
     "memo": "나의 메모",

@@ -3,7 +3,8 @@
     "webMemo": "Web Memo",
     "next": "Next",
     "prev": "Previous",
-    "done": "Done"
+    "done": "Done",
+    "updatedAt": "Last updated:"
   },
   "sideBar": {
     "memo": "My Memos",

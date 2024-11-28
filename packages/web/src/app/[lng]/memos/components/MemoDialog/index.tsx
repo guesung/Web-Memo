@@ -81,7 +81,6 @@ export default function MemoDialog({ lng }: MemoDialog) {
               })}
               onKeyDown={handleKeyDown}
               onFocus={adjustTextareaHeight}
-              className="focus:outline-none"
             />
 
             <div className="h-4" />

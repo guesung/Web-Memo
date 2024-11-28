@@ -10,16 +10,16 @@ import { useToast } from '@src/hooks/use-toast';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { cn } from '@src/utils';
-import { motion } from 'framer-motion';
+import { HTMLMotionProps, motion } from 'framer-motion';
 import { HeartIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { HTMLAttributes, KeyboardEvent, memo, MouseEvent, MouseEventHandler, useState } from 'react';
+import { KeyboardEvent, memo, MouseEvent, MouseEventHandler, useState } from 'react';
 
 import MemoOption from './MemoOption';
 
-interface MemoItemProps extends HTMLAttributes<HTMLDivElement>, LanguageType {
+interface MemoItemProps extends HTMLMotionProps<'article'>, LanguageType {
   memo?: GetMemoResponse;
 }
 
@@ -88,12 +88,13 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
   };
 
   return (
-    <motion.article initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-      <Card
-        className="relative box-border w-[300px]"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        {...props}>
+    <motion.article
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="transition-all"
+      {...props}>
+      <Card className="relative box-border w-[300px]" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
         <CardHeader className="py-4">
           <Link className="flex gap-2" href={memo.url} target="_blank">
             {memo?.favIconUrl && (

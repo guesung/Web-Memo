@@ -46,9 +46,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         setItems([...items, ...getMemoItems(nextGroupKey, maxAddItem)]);
       }}>
       {items.map(item => (
-        <article key={item.key + gridKey} data-grid-groupkey={item.groupKey}>
-          <MemoItem memo={memos.at(item.key)} lng={lng} />
-        </article>
+        <MemoItem memo={memos.at(item.key)} lng={lng} data-grid-groupkey={item.groupKey} key={item.key + gridKey} />
       ))}
     </MasonryInfiniteGrid>
   );

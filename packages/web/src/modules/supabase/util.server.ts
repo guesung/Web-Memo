@@ -1,6 +1,6 @@
-import { COOKIE_KEY, SUPABASE } from '@extension/shared/constants';
+import { COOKIE_KEY, PATHS, SUPABASE } from '@extension/shared/constants';
 import { Database, MemoSupabaseClient } from '@extension/shared/types';
-import { CONFIG, PATHS } from '@src/constants';
+import { CONFIG } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
 import type { Provider } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';

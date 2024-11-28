@@ -1,6 +1,6 @@
+import { PATHS } from '@extension/shared/constants';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { PATHS } from './constants';
 import { getLanguage, languages } from './modules/i18n';
 import { updateSession } from './modules/supabase';
 

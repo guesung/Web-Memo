@@ -1,4 +1,4 @@
-import { PATHS } from '@src/constants';
+import { PATHS } from '@extension/shared/constants';
 import { redirect } from 'next/navigation';
 
 export default async function Page() {

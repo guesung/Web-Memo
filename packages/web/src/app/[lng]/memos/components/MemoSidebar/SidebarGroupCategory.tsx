@@ -1,5 +1,6 @@
 'use client';
 
+import { PATHS } from '@extension/shared/constants';
 import { useCategoryQuery } from '@extension/shared/hooks';
 import {
   SidebarGroup,
@@ -9,7 +10,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@src/components/ui/sidebar';
-import { PATHS } from '@src/constants';
 import { useSupabaseClient } from '@src/hooks';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';

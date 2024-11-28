@@ -28,8 +28,6 @@ export default function MemoView({ lng }: MemoViewProps) {
     ?.filter(memo => isWish === !!memo.isWish)
     .filter(memo => (category ? memo.category?.name === category : true));
 
-  console.log(filteredMemos);
-
   if (!filteredMemos || filteredMemos.length === 0)
     return <p className="mt-8 w-full text-center">{t('memos.emptyState.message')}</p>;
   return <MemoGrid memos={filteredMemos} gridKey={category + isWish} lng={lng} />;

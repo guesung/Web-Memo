@@ -34,7 +34,7 @@ export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
+      <DialogContent onClose={handleCloseClick}>
         <DialogHeader>
           <DialogTitle>{extensionDialogInfo.message.title}</DialogTitle>
           <DialogDescription>{extensionDialogInfo.message.description}</DialogDescription>

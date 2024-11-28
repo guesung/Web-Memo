@@ -8,31 +8,32 @@ interface MemoCardHeaderProps {
   memo: GetMemoResponse;
   tooltip?: boolean;
 }
+
 export default function MemoCardHeader({ memo }: MemoCardHeaderProps) {
   return (
     <CardHeader className="py-4 font-normal">
-      <TooltipProvider delayDuration={200}>
-        <Link className="flex gap-2" href={memo.url} target="_blank">
-          {memo?.favIconUrl && (
-            <Image
-              src={memo.favIconUrl}
-              width={12}
-              height={12}
-              alt="favicon"
-              className="float-left"
-              style={{ objectFit: 'contain', height: 'auto' }}
-            />
-          )}
+      <Link href={memo.url} target="_blank" className="flex gap-2">
+        {memo?.favIconUrl && (
+          <Image
+            src={memo.favIconUrl}
+            width={12}
+            height={12}
+            alt="favicon"
+            className="float-left"
+            style={{ objectFit: 'contain', height: 'auto' }}
+          />
+        )}
+        <TooltipProvider delayDuration={200}>
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <span className="line-clamp-1 font-bold">{memo.title}</span>
             </TooltipTrigger>
             <TooltipContent>
               <p>{memo.title}</p>
             </TooltipContent>
           </Tooltip>
-        </Link>
-      </TooltipProvider>
+        </TooltipProvider>
+      </Link>
     </CardHeader>
   );
 }

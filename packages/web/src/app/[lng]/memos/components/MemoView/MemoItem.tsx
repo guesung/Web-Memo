@@ -1,15 +1,13 @@
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { GetMemoResponse } from '@extension/shared/utils';
-import { Card, CardContent, CardHeader } from '@src/components/ui/card';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
+import { Card, CardContent } from '@src/components/ui/card';
 import { LanguageType } from '@src/modules/i18n';
 import { HTMLMotionProps, motion } from 'framer-motion';
-import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { KeyboardEvent, memo, MouseEvent, useState } from 'react';
 
 import MemoCardFooter from '../MemoCardFooter';
+import MemoCardHeader from '../MemoCardHeader';
 
 interface MemoItemProps extends HTMLMotionProps<'article'>, LanguageType {
   memo?: GetMemoResponse;
@@ -47,30 +45,7 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
       className="transition-all"
       {...props}>
       <Card className="relative box-border w-[300px]" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-        <CardHeader className="py-4">
-          <Link className="flex gap-2" href={memo.url} target="_blank">
-            {memo?.favIconUrl && (
-              <Image
-                src={memo.favIconUrl}
-                width={12}
-                height={12}
-                alt="favicon"
-                className="float-left"
-                style={{ objectFit: 'contain', height: 'auto' }}
-              />
-            )}
-            <TooltipProvider delayDuration={200}>
-              <Tooltip>
-                <TooltipTrigger>
-                  <span className="line-clamp-1 font-bold">{memo.title}</span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{memo.title}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </Link>
-        </CardHeader>
+        <MemoCardHeader memo={memo} />
         {memo.memo && (
           <CardContent
             className="whitespace-break-spaces break-all"

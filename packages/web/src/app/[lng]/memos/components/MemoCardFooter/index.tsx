@@ -75,7 +75,7 @@ export default function MemoCardFooter({ memo, lng, isHovered, children, ...prop
     <CardFooter className={cn('flex justify-between p-0 px-4 pb-2 pt-0')} {...props}>
       <div>
         {memo.category?.name ? (
-          <Badge variant="outline" onClick={handleCategoryClick} className="z-10 cursor-pointer">
+          <Badge variant="outline" onClick={handleCategoryClick} role="button" className="z-10">
             {memo.category?.name}
           </Badge>
         ) : (
@@ -92,7 +92,8 @@ export default function MemoCardFooter({ memo, lng, isHovered, children, ...prop
           fill={memo.isWish ? 'pink' : ''}
           fillOpacity={memo.isWish ? 100 : 0}
           onClick={handleIsWishClick}
-          className={cn('cursor-pointer transition-transform hover:scale-110', 'active:scale-95', {
+          role="button"
+          className={cn('transition-transform hover:scale-110', 'active:scale-95', {
             'animate-heart-pop': memo.isWish,
           })}
         />

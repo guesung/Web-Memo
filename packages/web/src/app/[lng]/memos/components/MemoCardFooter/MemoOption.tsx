@@ -110,7 +110,7 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
           <DropdownMenuItem onClick={handleDeleteMemo} className="cursor-pointer">
             {t('option.deleteMemo')}
           </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer">
+          <DropdownMenuItem>
             <Select onValueChange={handleCategoryChange} defaultValue={String(memoData?.category_id)}>
               <SelectTrigger>
                 <SelectValue placeholder={t('option.changeCategory')} />
@@ -118,7 +118,11 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
               <SelectContent>
                 <SelectGroup>
                   {categories?.map(category => (
-                    <SelectItem key={category.id} value={String(category.id)} id={String(category.id)}>
+                    <SelectItem
+                      key={category.id}
+                      value={String(category.id)}
+                      id={String(category.id)}
+                      className="cursor-pointer">
                       {category.name}
                     </SelectItem>
                   ))}

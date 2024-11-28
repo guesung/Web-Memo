@@ -35,7 +35,7 @@ export default memo(function SidebarMenuItemAddCategory() {
       </form>
     );
   return (
-    <p className="flex cursor-pointer justify-center">
+    <p className="flex justify-center" role="button">
       <PlusIcon size={16} onClick={handlePlusIconClick} />
     </p>
   );

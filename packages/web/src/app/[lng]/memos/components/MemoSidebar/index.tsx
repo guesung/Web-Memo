@@ -67,7 +67,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
-              <Link href={PATHS.memosSetting} className="mb-2 ml-2 cursor-pointer">
+              <Link href={PATHS.memosSetting} className="mb-2 ml-2">
                 <SettingsIcon size={16} />
               </Link>
             </TooltipTrigger>

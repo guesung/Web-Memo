@@ -1,5 +1,5 @@
 'use client';
-import { useCloseOnEscape, useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
+import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { Button } from '@extension/ui';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
@@ -63,8 +63,6 @@ export default function MemoDialog({ lng }: MemoDialog) {
 
     router.replace(searchParams.getUrl(), { scroll: false });
   };
-
-  useCloseOnEscape(closeDialog);
 
   useEffect(() => {
     const rowCount = watch('memo').split(/\r\n|\r|\n/).length;

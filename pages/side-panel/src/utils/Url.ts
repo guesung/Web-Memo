@@ -5,8 +5,6 @@ export const getMemoUrl = (id?: number) => {
   const searchParams = new SearchParams([]);
   if (id) searchParams.set('id', String(id));
 
-  console.log(searchParams.getSearchParams(), `${CONFIG.webUrl}/${PATHS.memos}${searchParams.getSearchParams()}`);
-
   return `${CONFIG.webUrl}/${PATHS.memos}${searchParams.getSearchParams()}`;
 };
 

@@ -3,7 +3,6 @@
 import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
 import { GetMemoResponse } from '@extension/shared/utils';
 import { LanguageType } from '@src/modules/i18n';
-import { motion } from 'framer-motion';
 import { useState } from 'react';
 
 import MemoItem from './MemoItem';
@@ -47,13 +46,9 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         setItems([...items, ...getMemoItems(nextGroupKey, maxAddItem)]);
       }}>
       {items.map(item => (
-        <motion.div
-          key={item.key + gridKey}
-          initial={{ opacity: 0, y: 20, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          data-grid-groupkey={item.groupKey}>
+        <article key={item.key + gridKey} data-grid-groupkey={item.groupKey}>
           <MemoItem memo={memos.at(item.key)} lng={lng} />
-        </motion.div>
+        </article>
       ))}
     </MasonryInfiniteGrid>
   );

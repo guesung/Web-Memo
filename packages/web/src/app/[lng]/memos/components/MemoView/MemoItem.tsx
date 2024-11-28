@@ -3,6 +3,7 @@ import { useSearchParams } from '@extension/shared/modules/search-params';
 import { GetMemoResponse } from '@extension/shared/utils';
 import { Badge } from '@src/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader } from '@src/components/ui/card';
+import { ToastAction } from '@src/components/ui/toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
 import { useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
@@ -46,8 +47,27 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
       },
       {
         onSuccess: () => {
-          if (memo.isWish) toast({ title: t('toastMessage.memoWishListDeleted') });
-          else toast({ title: t('toastMessage.memoWishListAdded') });
+          const toastMessage = memo.isWish
+            ? t('toastMessage.memoWishListDeleted')
+            : t('toastMessage.memoWishListAdded');
+
+          toast({
+            title: toastMessage,
+            action: (
+              <ToastAction
+                altText={t('toastAction.goTo')}
+                onClick={() => {
+                  searchParams.set('id', memo.id.toString());
+
+                  if (memo.isWish) searchParams.remove('isWish', 'true');
+                  else searchParams.set('isWish', 'true');
+
+                  router.push(searchParams.getUrl());
+                }}>
+                {t('toastAction.goTo')}
+              </ToastAction>
+            ),
+          });
         },
       },
     );

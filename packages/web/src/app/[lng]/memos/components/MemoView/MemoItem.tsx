@@ -87,6 +87,13 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
     setIsHovered(false);
   };
 
+  const handleCategoryClick = () => {
+    if (!memo.category?.name) return;
+
+    searchParams.set('category', memo.category?.name);
+    router.replace(searchParams.getUrl(), { scroll: false });
+  };
+
   return (
     <motion.article
       initial={{ opacity: 0, y: 10 }}
@@ -131,7 +138,15 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
           </CardContent>
         )}
         <CardFooter className={cn('flex justify-between p-0 px-4 pb-2 pt-0')}>
-          <div>{memo?.category?.name ? <Badge variant="outline">{memo?.category?.name}</Badge> : <span />}</div>
+          <div>
+            {memo.category?.name ? (
+              <Badge variant="outline" onClick={handleCategoryClick} className="cursor-pointer">
+                {memo.category?.name}
+              </Badge>
+            ) : (
+              <span />
+            )}
+          </div>
           <div
             className={cn('flex items-center gap-2 transition', {
               'opacity-0': !isHovered,

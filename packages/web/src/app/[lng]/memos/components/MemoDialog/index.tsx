@@ -1,9 +1,9 @@
 'use client';
 import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
+import { GetMemoResponse } from '@extension/shared/utils';
 import { Button } from '@extension/ui';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
-import { Textarea } from '@src/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@src/components/ui/dialog';
 import { useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
 import { LanguageType } from '@src/modules/i18n';
@@ -11,12 +11,11 @@ import useTranslation from '@src/modules/i18n/client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { MemoInput } from '../../types';
-
-const MIN_ROW = 4;
+import MemoCardFooter from '../MemoCardFooter';
 
 interface MemoDialog extends LanguageType {}
 
@@ -25,7 +24,6 @@ export default function MemoDialog({ lng }: MemoDialog) {
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
   const router = useRouter();
-  const [row, setRow] = useState(MIN_ROW);
   const supabaseClient = useSupabaseClient();
   const { memo: memoData } = useMemoQuery({ supabaseClient, id: Number(id) });
   const { toast } = useToast();
@@ -48,12 +46,9 @@ export default function MemoDialog({ lng }: MemoDialog) {
     );
   };
 
-  const handleKeyDown = async (
-    event: React.KeyboardEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLInputElement>,
-  ) => {
+  const handleKeyDown = async (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.metaKey && event.key === 's') {
       event.preventDefault();
-
       saveMemo();
     }
   };
@@ -63,11 +58,6 @@ export default function MemoDialog({ lng }: MemoDialog) {
 
     router.replace(searchParams.getUrl(), { scroll: false });
   };
-
-  useEffect(() => {
-    const rowCount = watch('memo').split(/\r\n|\r|\n/).length;
-    setRow(rowCount + 2);
-  }, [watch]);
 
   useEffect(() => {
     setValue('memo', memoData?.memo ?? '');
@@ -96,16 +86,26 @@ export default function MemoDialog({ lng }: MemoDialog) {
             </Link>
           </DialogTitle>
           <div className="h-2" />
-          <Textarea rows={row} onKeyDown={handleKeyDown} {...register('memo')} />
+          <div
+            onKeyDown={handleKeyDown}
+            {...register('memo')}
+            contentEditable={true}
+            aria-multiline={true}
+            role="textbox"
+            tabIndex={0}
+            spellCheck={true}
+            className="whitespace-break-spaces break-all text-sm focus:outline-none">
+            {memoData.memo}
+          </div>
         </DialogHeader>
-        <DialogFooter>
+        <MemoCardFooter memo={memoData as GetMemoResponse} lng={lng} isHovered>
           <Button onClick={closeDialog} variant="outline" type="button">
             닫기
           </Button>
           <Button variant="outline" onClick={saveMemo}>
             저장
           </Button>
-        </DialogFooter>
+        </MemoCardFooter>
       </DialogContent>
     </Dialog>
   );

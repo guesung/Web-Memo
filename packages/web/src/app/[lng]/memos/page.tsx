@@ -11,6 +11,8 @@ import { MemoDialog, MemoView } from './components';
 interface PageProps extends LanguageParams {
   searchParams: {
     id?: string;
+    isWish?: string;
+    category?: string;
   };
 }
 
@@ -19,7 +21,7 @@ export default async function Page({ searchParams, params: { lng } }: PageProps)
 
   return (
     <HydrationBoundaryWrapper queryKey={QUERY_KEY.memos()} queryFn={() => getMemos(supabaseClient)}>
-      <MemoView lng={lng} />
+      <MemoView lng={lng} isWish={searchParams.isWish} category={searchParams.category} />
       {searchParams?.id && <MemoDialog lng={lng} id={searchParams.id} />}
     </HydrationBoundaryWrapper>
   );

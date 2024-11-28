@@ -55,8 +55,8 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
         toast({
           title: t('toastTitle.memoDeleted'),
           action: (
-            <ToastAction altText={t('toastActionMessage.memoDeleteCancel')} onClick={handlePostMemo}>
-              {t('toastActionMessage.memoDeleteCancel')}
+            <ToastAction altText={t('toastActionMessage.undo')} onClick={handlePostMemo}>
+              {t('toastActionMessage.undo')}
             </ToastAction>
           ),
         });
@@ -103,10 +103,10 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuGroup>
-          <DropdownMenuItem role="button" onClick={handleDeleteMemo}>
+          <DropdownMenuItem onClick={handleDeleteMemo} className="cursor-pointer">
             {t('option.deleteMemo')}
           </DropdownMenuItem>
-          <DropdownMenuItem role="button">
+          <DropdownMenuItem className="cursor-pointer">
             <Select onValueChange={handleCategoryChange} defaultValue={String(memoData?.category_id)}>
               <SelectTrigger>
                 <SelectValue placeholder={t('option.changeCategory')} />

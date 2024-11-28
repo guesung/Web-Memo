@@ -53,16 +53,16 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
             title: toastTitle,
             action: (
               <ToastAction
-                altText={t('toastActionMessage.goTo')}
+                altText={t('toastActionMessage.undo')}
                 onClick={() => {
-                  searchParams.set('id', memo.id.toString());
-
-                  if (memo.isWish) searchParams.remove('isWish', 'true');
-                  else searchParams.set('isWish', 'true');
-
-                  router.push(searchParams.getUrl());
+                  mutateMemoPatch({
+                    id: memo.id,
+                    memoRequest: {
+                      isWish: memo.isWish,
+                    },
+                  });
                 }}>
-                {t('toastActionMessage.goTo')}
+                {t('toastActionMessage.undo')}
               </ToastAction>
             ),
           });
@@ -142,7 +142,9 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
               fill={memo.isWish ? 'pink' : ''}
               fillOpacity={memo.isWish ? 100 : 0}
               onClick={handleIsWishClick}
-              className="cursor-pointer"
+              className={cn('cursor-pointer transition-transform hover:scale-110', 'active:scale-95', {
+                'animate-heart-pop': memo.isWish,
+              })}
             />
             <MemoOption memoId={memo.id} lng={lng} />
           </div>

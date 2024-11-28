@@ -23,7 +23,7 @@
   },
   "toastActionMessage": {
     "goTo": "Take me there",
-    "memoDeleteCancel": "Undo deletion"
+    "undo": "Undo"
   },
   "option": {
     "deleteMemo": "Delete this memo",

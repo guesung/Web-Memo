@@ -19,7 +19,7 @@ import useTranslation from '@src/modules/i18n/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { EllipsisVerticalIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { MouseEventHandler } from 'react';
+import { MouseEventHandler, useState } from 'react';
 
 interface MemoOptionProps extends LanguageType {
   memoId: number;
@@ -42,6 +42,8 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
     supabaseClient,
   });
   const { mutate: mutateDeleteMemo } = useMemoDeleteMutation();
+
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleDeleteMemo: MouseEventHandler<HTMLDivElement> = event => {
     event.stopPropagation();
@@ -92,10 +94,12 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
         },
       },
     );
+
+    setIsOpen(false);
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="link" size="sm">
           <EllipsisVerticalIcon size={16} />

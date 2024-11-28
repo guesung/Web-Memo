@@ -1,5 +1,6 @@
 'use server';
 
+import { PATHS } from '@extension/shared/constants';
 import {
   Sidebar,
   SidebarContent,
@@ -12,7 +13,6 @@ import {
   SidebarSeparator,
 } from '@src/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
-import { PATHS } from '@src/constants';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/server';
 import { Heart, Home, SettingsIcon } from 'lucide-react';

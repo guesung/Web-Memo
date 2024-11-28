@@ -139,6 +139,9 @@ function MemoForm() {
           fillOpacity={watch('isWish') ? 100 : 0}
           onClick={handleWishClick}
           role="button"
+          className={cn('cursor-pointer transition-transform hover:scale-110', 'active:scale-95', {
+            'animate-heart-pop': watch('isWish'),
+          })}
         />
       </div>
     </form>

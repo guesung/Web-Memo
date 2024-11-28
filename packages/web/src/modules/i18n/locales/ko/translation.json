@@ -3,7 +3,8 @@
     "webMemo": "웹 메모",
     "next": "다음",
     "prev": "이전",
-    "done": "완료"
+    "done": "완료",
+    "updatedAt": "마지막 수정:"
   },
   "sideBar": {
     "memo": "나의 메모",
@@ -13,7 +14,7 @@
   "header": {
     "logout": "로그아웃하기"
   },
-  "toastMessage": {
+  "toastTitle": {
     "refresh": "새로고침이 완료되었어요!",
     "memoEdited": "메모가 성공적으로 수정되었어요!",
     "categoryEdited": "카테고리가 성공적으로 변경되었어요!",
@@ -23,7 +24,7 @@
   },
   "toastActionMessage": {
     "goTo": "바로 이동하기",
-    "memoDeleteCancel": "삭제 취소하기"
+    "undo": "취소하기"
   },
   "option": {
     "deleteMemo": "이 메모 삭제하기",

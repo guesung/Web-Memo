@@ -1,10 +1,9 @@
 'use server';
 
-import { COOKIE_KEY, QUERY_KEY } from '@extension/shared/constants';
+import { COOKIE_KEY, PATHS, QUERY_KEY } from '@extension/shared/constants';
 import { checkUserLogin, getCategories } from '@extension/shared/utils';
 import { Header, HydrationBoundaryWrapper } from '@src/components';
 import { SidebarProvider } from '@src/components/ui/sidebar';
-import { PATHS } from '@src/constants';
 import { LanguageParams } from '@src/modules/i18n';
 import { getSupabaseClient } from '@src/modules/supabase/util.server';
 import { cookies } from 'next/headers';

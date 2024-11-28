@@ -14,9 +14,7 @@ export default function MemoHeader() {
   });
 
   const handleMemoClick = () => {
-    const memoUrl = getMemoUrl(memoData?.id);
-
-    Tab.create({ url: memoUrl });
+    Tab.create({ url: getMemoUrl(memoData?.id) });
   };
 
   useDidMount(() =>

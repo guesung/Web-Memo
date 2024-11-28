@@ -3,7 +3,7 @@ import { SearchParamKeyType, SearchParamType, SearchParamValueType } from '.';
 export default class SearchParams {
   #searchParamsMap: Map<SearchParamKeyType, Set<SearchParamValueType>>;
 
-  constructor(searchParams: SearchParamType[]) {
+  constructor(searchParams: SearchParamType[] = []) {
     this.#searchParamsMap = searchParams.reduce((acc, [key, value]) => {
       if (!acc.has(key)) {
         acc.set(key, new Set());

@@ -3,7 +3,8 @@
     "webMemo": "Web Memo",
     "next": "Next",
     "prev": "Previous",
-    "done": "Done"
+    "done": "Done",
+    "updatedAt": "Last updated:"
   },
   "sideBar": {
     "memo": "My Memos",
@@ -13,7 +14,7 @@
   "header": {
     "logout": "Sign Out"
   },
-  "toastMessage": {
+  "toastTitle": {
     "refresh": "Great! The page has been refreshed successfully!",
     "memoEdited": "Your memo has been updated successfully!",
     "categoryEdited": "The category has been changed successfully!",
@@ -23,7 +24,7 @@
   },
   "toastActionMessage": {
     "goTo": "Take me there",
-    "memoDeleteCancel": "Undo deletion"
+    "undo": "Undo"
   },
   "option": {
     "deleteMemo": "Delete this memo",

@@ -27,8 +27,6 @@ export default function MemoView({ lng, isWish = '', category = '' }: MemoViewPr
     ?.filter(memo => !!isWish === !!memo.isWish)
     .filter(memo => (category ? memo.category?.name === category : true));
 
-  if (!filteredMemos || filteredMemos.length === 0)
-    return <p className="mt-8 w-full text-center">{t('memos.emptyState.message')}</p>;
   return (
     <div className="flex w-full flex-col gap-4">
       <p className="text-muted-foreground text-sm">

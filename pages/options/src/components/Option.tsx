@@ -1,12 +1,20 @@
 import { STORAGE_KEYS } from '@extension/shared/constants';
 import { useDidMount } from '@extension/shared/hooks';
 import { Storage } from '@extension/shared/utils/extension';
-import { Button, Form, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@extension/ui';
-import { useState } from 'react';
+import {
+  Button,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+  useToast,
+} from '@extension/ui';
 import { useForm } from 'react-hook-form';
 
 export default function Option() {
-  const [error, setError] = useState('');
+  const { toast } = useToast();
 
   const { register, handleSubmit, setValue, watch } = useForm({
     defaultValues: {
@@ -17,14 +25,13 @@ export default function Option() {
   });
 
   const onSubmit = handleSubmit(data => {
-    if (data.youtubePrompt.length > 1000 || data.webPrompt.length > 1000) {
-      setError('프롬프트는 최대 1000자까지만 입력할 수 있습니다.');
-      return;
-    }
-
     Storage.set(STORAGE_KEYS.youtubePrompts, data.youtubePrompt);
     Storage.set(STORAGE_KEYS.webPrompts, data.webPrompt);
-    setError('');
+    Storage.set(STORAGE_KEYS.language, data.language);
+
+    toast({
+      title: '설정이 저장되었습니다.',
+    });
   });
 
   useDidMount(async () => {
@@ -41,7 +48,7 @@ export default function Option() {
     <div className="container mx-auto space-y-8 p-4">
       <section className="mb-8">
         <h2 className="mb-4 text-xl font-semibold">언어 설정</h2>
-        <Select defaultValue="ko" onValueChange={value => setValue('language', value)} value={watch('language')}>
+        <Select defaultValue={watch('language')} onValueChange={value => setValue('language', value)}>
           <SelectTrigger className="w-32">
             <SelectValue placeholder="언어 선택" />
           </SelectTrigger>
@@ -55,34 +62,24 @@ export default function Option() {
       <form onSubmit={onSubmit} className="space-y-8">
         <section>
           <h2 className="mb-4 text-xl font-semibold">YouTube 프롬프트 설정</h2>
-          <div className="space-y-2 rounded-lg border p-4">
+          <div className="space-y-2 rounded-lg p-4">
             <div className="flex-1">
-              <textarea
-                className="border-input bg-background min-h-[400px] w-full rounded-md border px-3 py-2"
-                placeholder="프롬프트를 입력하세요"
-                {...register('youtubePrompt')}
-              />
+              <Textarea placeholder="프롬프트를 입력하세요" {...register('youtubePrompt')} className="min-h-[200px]" />
             </div>
           </div>
         </section>
 
         <section>
           <h2 className="mb-4 text-xl font-semibold">웹사이트 프롬프트 설정</h2>
-          <div className="space-y-2 rounded-lg border p-4">
+          <div className="space-y-2 rounded-lg p-4">
             <div className="flex-1">
-              <textarea
-                className="border-input bg-background min-h-[400px] w-full rounded-md border px-3 py-2"
-                placeholder="프롬프트를 입력하세요"
-                {...register('webPrompt')}
-              />
+              <Textarea placeholder="프롬프트를 입력하세요" {...register('webPrompt')} className="min-h-[200px]" />
             </div>
           </div>
         </section>
 
         <Button type="submit">저장</Button>
       </form>
-
-      {error && <p className="text-red-500">{error}</p>}
     </div>
   );
 }

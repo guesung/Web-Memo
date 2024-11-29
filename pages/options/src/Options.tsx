@@ -1,5 +1,7 @@
 import '@src/Options.css';
 
+import { Toaster } from '@extension/ui';
+
 import { Header, Option, QueryProvider } from './components';
 
 export default function Options() {
@@ -9,6 +11,7 @@ export default function Options() {
         <Header />
         <Option />
       </main>
+      <Toaster />
     </QueryProvider>
   );
 }

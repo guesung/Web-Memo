@@ -1,17 +1,14 @@
 import '@src/Options.css';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Header, Option, QueryProvider } from './components';
 
-import { Header, OptionForm } from './components';
-
-const queryClient = new QueryClient();
 export default function Options() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryProvider>
       <main className="mx-auto max-w-[1000px] px-8 text-start text-base">
         <Header />
-        <OptionForm />
+        <Option />
       </main>
-    </QueryClientProvider>
+    </QueryProvider>
   );
 }

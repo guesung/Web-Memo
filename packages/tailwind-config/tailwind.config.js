@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
   theme: {
     extend: {
@@ -66,6 +66,7 @@ module.exports = {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'heart-pop': 'heart-pop 0.3s ease-in-out',
       },
       keyframes: {
         'accordion-down': {
@@ -83,6 +84,10 @@ module.exports = {
           to: {
             height: '0',
           },
+        },
+        'heart-pop': {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.5)' },
         },
       },
     },

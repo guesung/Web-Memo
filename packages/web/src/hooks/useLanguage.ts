@@ -1,5 +1,4 @@
-import { fallbackLng } from '@src/app/i18n/settings';
-import { Language } from '@src/app/i18n/type';
+import { fallbackLng, Language } from '@src/modules/i18n';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -18,7 +17,7 @@ export default function useLanguage() {
     if (!pathnameLanguage) return;
 
     setLanguage(pathnameLanguage as Language);
-  }, []);
+  }, [pathname]);
 
   const setLanguageRouter = (value: Language) => {
     const pathnameWithoutLanguage = pathname.match(REGEXR_PATHNAME_WITHOUT_LANGUAGE)?.[1];

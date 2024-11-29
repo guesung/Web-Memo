@@ -10,8 +10,6 @@
     "build:firefox:watch": "cross-env __DEV__=true __FIREFOX__=true vite build --mode development",
     "dev": "pnpm build:watch",
     "dev:firefox": "pnpm build:firefox:watch",
-    "lint": "eslint ./ --ext .ts,.js,.tsx,.jsx",
-    "lint:fix": "pnpm lint --fix",
     "prettier": "prettier . --write --ignore-path ../.prettierignore",
     "type-check": "tsc --noEmit"
   },

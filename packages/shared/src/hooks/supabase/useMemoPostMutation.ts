@@ -3,13 +3,16 @@ import type { MemoSupabaseClient, MemoSupabaseResponse, MemoTable } from '@src/t
 import { insertMemo } from '@src/utils';
 import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query';
 
-interface UseMemoPostMutationProps extends UseMutationOptions<MemoSupabaseResponse, Error, MemoTable['Insert']> {
+type MutationData = Awaited<ReturnType<typeof insertMemo>>;
+type MutationError = Error;
+
+interface UseMemoPostMutationProps extends UseMutationOptions<MutationData, MutationError, MemoTable['Insert']> {
   supabaseClient: MemoSupabaseClient;
 }
 
 export default function useMemoPostMutation({ supabaseClient, ...useMutationProps }: UseMemoPostMutationProps) {
   const queryClient = useQueryClient();
-  return useMutation<MemoSupabaseResponse, Error, MemoTable['Insert']>({
+  return useMutation<MemoSupabaseResponse, MutationError, MemoTable['Insert']>({
     ...useMutationProps,
     mutationFn: async postMemoProps => await insertMemo(supabaseClient, postMemoProps),
     onSuccess: async (result, variables, context) => {

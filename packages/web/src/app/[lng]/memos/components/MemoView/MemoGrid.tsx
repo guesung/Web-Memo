@@ -1,11 +1,11 @@
 'use client';
 
 import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
-import { GetMemoType } from '@extension/shared/utils';
-import { motion } from 'framer-motion';
+import { GetMemoResponse } from '@extension/shared/utils';
+import { LanguageType } from '@src/modules/i18n';
 import { useState } from 'react';
+
 import MemoItem from './MemoItem';
-import { LanguageType } from '@src/app/i18n/type';
 
 const MEMO_UNIT = 20;
 
@@ -20,7 +20,7 @@ const getMemoItems = (nextGroupKey: number, count: number) => {
 };
 
 interface MemoGridProps extends LanguageType {
-  memos: GetMemoType[];
+  memos: GetMemoResponse[];
   gridKey: string;
 }
 
@@ -46,13 +46,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         setItems([...items, ...getMemoItems(nextGroupKey, maxAddItem)]);
       }}>
       {items.map(item => (
-        <motion.div
-          key={item.key + gridKey}
-          initial={{ opacity: 0, y: 20, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          data-grid-groupkey={item.groupKey}>
-          <MemoItem memo={memos.at(item.key)} lng={lng} />
-        </motion.div>
+        <MemoItem memo={memos.at(item.key)} lng={lng} data-grid-groupkey={item.groupKey} key={item.key + gridKey} />
       ))}
     </MasonryInfiniteGrid>
   );

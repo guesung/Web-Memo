@@ -1,31 +1,19 @@
+import { PATHS } from '@extension/shared/constants';
 import { NextRequest, NextResponse } from 'next/server';
-import { isStringArray, updateSession } from './utils';
-import acceptLanguage from 'accept-language';
-import { fallbackLng, languages, cookieName } from './app/i18n/settings';
 
-if (isStringArray(languages)) acceptLanguage.languages(languages);
+import { getLanguage, languages } from './modules/i18n';
+import { updateSession } from './modules/supabase';
 
 export async function middleware(request: NextRequest) {
-  let lng;
-  if (request.cookies.has(cookieName)) lng = acceptLanguage.get(request.cookies.get(cookieName)?.value);
-  if (!lng) lng = acceptLanguage.get(request.headers.get('Accept-Language'));
-  if (!lng) lng = fallbackLng;
+  const isLanguagePath = languages.some(lng => request.nextUrl.pathname.startsWith(`/${lng}`));
+  const isAuthPath = request.nextUrl.pathname.startsWith(PATHS.auth);
 
-  if (
-    !languages.some(language => request.nextUrl.pathname.startsWith(`/${language}`)) &&
-    !request.nextUrl.pathname.startsWith('/_next') &&
-    !request.nextUrl.pathname.includes('/auth')
-  ) {
-    return NextResponse.redirect(new URL(`/${lng}${request.nextUrl.pathname}${request.nextUrl.search}`, request.url));
-  }
+  const language = getLanguage(request);
 
-  if (request.headers.has('referer')) {
-    const refererUrl = new URL(request.headers.get('referer') ?? '');
-    const lngInReferer = languages.find(l => refererUrl.pathname.startsWith(`/${l}`));
-    const response = NextResponse.next();
-    if (lngInReferer) response.cookies.set(cookieName, lngInReferer);
-    return response;
-  }
+  if (!isLanguagePath && !isAuthPath)
+    return NextResponse.redirect(
+      new URL(`/${language}${request.nextUrl.pathname}${request.nextUrl.search}${request.nextUrl.hash}`, request.url),
+    );
 
   return await updateSession(request);
 }

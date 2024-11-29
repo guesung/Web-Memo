@@ -1,13 +1,11 @@
 'use client';
 
 import { useMemosQuery } from '@extension/shared/hooks';
-import { formatDate } from '@extension/shared/utils';
-import { useMemoDeleteMutation } from '@src/hooks';
-import { getSupabaseClient } from '@src/utils/supabase.client';
+import { useMemoDeleteMutation, useSupabaseClient } from '@src/hooks';
 
 export default function MemoTable() {
-  const { mutate: deleteMemoMutate } = useMemoDeleteMutation({});
-  const supabaseClient = getSupabaseClient();
+  const { mutate: deleteMemoMutate } = useMemoDeleteMutation();
+  const supabaseClient = useSupabaseClient();
   const { memos } = useMemosQuery({
     supabaseClient,
   });

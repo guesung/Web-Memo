@@ -1,5 +1,6 @@
-import { WEB_URL } from '@extension/shared/constants';
+import { CONFIG } from '@extension/shared/constants';
 import { Tab } from '@extension/shared/utils/extension';
+
 import TopRightArrowIcon from '../../public/svgs/top_right_arrow.svg';
 
 export default function LoginSection() {
@@ -10,7 +11,7 @@ export default function LoginSection() {
         type="button"
         className="flex cursor-pointer items-center gap-2"
         onClick={() => {
-          Tab.create({ url: `${WEB_URL}/login` });
+          Tab.create({ url: `${CONFIG.webUrl}/login` });
         }}>
         로그인하러가기
         <TopRightArrowIcon height={16} width={16} />

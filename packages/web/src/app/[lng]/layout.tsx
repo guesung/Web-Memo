@@ -1,15 +1,16 @@
 import '@extension/ui/dist/global.css';
+import './globals.css';
+
 import { Header, QueryProvider, ThemeProvider } from '@src/components';
 import { Toaster } from '@src/components/ui/toaster';
+import { LanguageParams, languages } from '@src/modules/i18n';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { dir } from 'i18next';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { PropsWithChildren } from 'react';
-import './globals.css';
 
-import { languages } from '../i18n/settings';
-import { LanguageParams } from '../i18n/type';
+import { ExtensionDialog } from '../components';
 
 const pretendard = localFont({
   src: '../../fonts/PretendardVariable.woff2',
@@ -31,7 +32,7 @@ interface RootLayoutProps extends PropsWithChildren, LanguageParams {}
 
 export default function RootLayout({ children, params: { lng } }: RootLayoutProps) {
   return (
-    <html lang={lng} className="h-screen" dir={dir(lng)}>
+    <html lang={lng} className="h-screen" dir={dir(lng)} suppressHydrationWarning>
       <body className={`${pretendard.variable} font-pretendard h-full`}>
         <ThemeProvider attribute="class" defaultTheme="system">
           <QueryProvider>
@@ -43,6 +44,7 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
         </ThemeProvider>
 
         <Toaster />
+        <ExtensionDialog lng={lng} />
       </body>
     </html>
   );

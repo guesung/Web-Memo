@@ -7,11 +7,12 @@ interface UseCategoryPostMutationProps {
   supabaseClient: MemoSupabaseClient;
 }
 
+// TODO : 낙관적 업데이트
 export default function useCategoryPostMutation({ supabaseClient }: UseCategoryPostMutationProps) {
   const queryClient = useQueryClient();
 
   return useMutation<CategorySupabaseResponse, Error, CategoryTable['Insert']>({
-    mutationFn: async postCategoryProps => await insertCategory(supabaseClient, postCategoryProps),
+    mutationFn: postCategoryProps => insertCategory(supabaseClient, postCategoryProps),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
     },

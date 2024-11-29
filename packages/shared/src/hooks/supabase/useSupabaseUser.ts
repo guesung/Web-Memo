@@ -8,12 +8,13 @@ interface UseSupabaseUserProps {
 }
 
 export default function useSupabaseUser({ supabaseClient }: UseSupabaseUserProps) {
-  const getUser = async () => {
-    return await supabaseClient.auth.getUser();
-  };
-
-  return useSuspenseQuery<UserResponse, Error>({
-    queryFn: getUser,
+  const query = useSuspenseQuery<UserResponse, Error>({
+    queryFn: () => supabaseClient.auth.getUser(),
     queryKey: QUERY_KEY.user(),
   });
+
+  return {
+    ...query,
+    user: query.data,
+  };
 }

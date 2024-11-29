@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@egjs/react-infinitegrid": "^4.12.0",
@@ -21,7 +22,6 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.2",
     "@radix-ui/react-tooltip": "^1.1.4",
-    "@supabase/ssr": "^0.5.1",
     "accept-language": "^3.0.20",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",

@@ -1,4 +1,5 @@
-import { LanguageParams } from '@src/app/i18n/type';
+import { LanguageParams } from '@src/modules/i18n';
+
 import { Setting, SettingHeader } from './component';
 
 export default function Page({ params: { lng } }: LanguageParams) {

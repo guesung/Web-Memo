@@ -1,9 +1,10 @@
-import { EXTENSION_ID } from '@src/constants';
+import { EXTENSION } from '@src/constants';
+
 import { Runtime } from '../module';
 
 export const BRIDGE_TYPE_GET_EXTENSION_MANIFEST = 'BRIDGE_TYPE_GET_EXTENSION_MANIFEST';
 export const requestGetExtensionManifest = (callbackFn: (response: chrome.runtime.Manifest) => void) => {
-  chrome.runtime.sendMessage(EXTENSION_ID, { type: BRIDGE_TYPE_GET_EXTENSION_MANIFEST }, callbackFn);
+  chrome.runtime.sendMessage(EXTENSION.id, { type: BRIDGE_TYPE_GET_EXTENSION_MANIFEST }, callbackFn);
 };
 export const responseGetExtensionManifest = () => {
   const manifest = chrome.runtime.getManifest();

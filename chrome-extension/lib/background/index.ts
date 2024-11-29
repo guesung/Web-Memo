@@ -1,11 +1,6 @@
-import {
-  LANGUAGE_MAP,
-  STORAGE_OPTION_LANGUAGE,
-  URL_FORM,
-  URL_GUIDE_EN,
-  URL_GUIDE_KO,
-  WEB_URL,
-} from '@extension/shared/constants';
+import 'webextension-polyfill';
+
+import { CONFIG, LANGUAGE_MAP, STORAGE_OPTION_LANGUAGE, URL } from '@extension/shared/constants';
 import { isProduction } from '@extension/shared/utils';
 import {
   I18n,
@@ -19,19 +14,18 @@ import {
 } from '@extension/shared/utils/extension';
 import { getPrompt } from '@root/utils';
 import { openai } from '@root/utils/openai';
-import 'webextension-polyfill';
 
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
 chrome.runtime.onInstalled.addListener(async () => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
   const language = await Storage.get(STORAGE_OPTION_LANGUAGE);
-  if (!language) Storage.set(STORAGE_OPTION_LANGUAGE, LANGUAGE_MAP[I18n.getUILanguage()]);
+  if (!language) Storage.set(STORAGE_OPTION_LANGUAGE, LANGUAGE_MAP[I18n.getUILanguage() as keyof typeof LANGUAGE_MAP]);
 });
 
 // 확장 프로그램이 설치되었을 때 가이드 페이지로 이동한다.
 chrome.runtime.onInstalled.addListener(async () => {
   if (!isProduction) return;
-  await Tab.create({ url: `${WEB_URL}/login` });
+  await Tab.create({ url: `${CONFIG.webUrl}/login` });
 });
 
 // 확장 프로그램이 설치되었을 때 contextMenus를 설정한다.
@@ -55,16 +49,16 @@ if (chrome.contextMenus)
   chrome.contextMenus.onClicked.addListener(async item => {
     switch (item.menuItemId) {
       case CONTEXT_MENU_ID_CHECK_MEMO:
-        await Tab.create({ url: `${WEB_URL}/memos` });
+        await Tab.create({ url: `${CONFIG.webUrl}/memos` });
         break;
       case CONTEXT_MENU_ID_SHOW_GUIDE:
-        if (I18n.getUILanguage() === 'ko') Tab.create({ url: URL_GUIDE_KO });
-        else Tab.create({ url: URL_GUIDE_EN });
+        if (I18n.getUILanguage() === 'ko') Tab.create({ url: URL.guideKo });
+        else Tab.create({ url: URL.guideEn });
         break;
     }
   });
 
-chrome.runtime.setUninstallURL(URL_FORM);
+chrome.runtime.setUninstallURL(URL.googleForm);
 
 // chatGPT에게서 메시지를 받아서 다시 전달한다.
 chrome.runtime.onConnect.addListener(async port => {

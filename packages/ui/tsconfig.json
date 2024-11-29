@@ -9,7 +9,7 @@
       "@/*": ["./src/*"]
     },
     "declaration": true,
-    "target": "esnext",
+    "declarationMap": true,
     "esModuleInterop": true,
     "moduleResolution": "node"
   },

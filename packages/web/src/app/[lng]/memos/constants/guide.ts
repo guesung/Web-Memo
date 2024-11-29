@@ -1,1 +1,0 @@
-export const IS_USER_SEEN_GUIDE = 'IS_USER_SEEN_GUIDE';

@@ -12,8 +12,6 @@
   "scripts": {
     "clean": "rimraf ./dist && rimraf .turbo",
     "ready": "rimraf dist && node build.mjs",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "pnpm lint --fix",
     "prettier": "prettier . --write",
     "type-check": "tsc --noEmit",
     "dev": "vite",

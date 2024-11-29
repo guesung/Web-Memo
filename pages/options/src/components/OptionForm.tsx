@@ -1,10 +1,14 @@
+import '@src/Options.css';
+
 import { LANGUAGE_LIST, STORAGE_OPTION_LANGUAGE } from '@extension/shared/constants';
 import { useOptionQuery } from '@extension/shared/hooks/extension';
-import { convertToCSVBlob, convertToJSONBlob, downloadBlob, getMemo } from '@extension/shared/utils';
+import {
+  convertToCSVBlob,
+  convertToJSONBlob,
+  downloadBlob,
+  getMemos as getMemosSupabase,
+} from '@extension/shared/utils';
 import { getSupabaseClient, I18n, Storage } from '@extension/shared/utils/extension';
-import { Toast } from '@extension/ui';
-import '@src/Options.css';
-import { overlay } from 'overlay-kit';
 import { FormEvent, useEffect, useRef } from 'react';
 
 export default function OptionForm() {
@@ -12,7 +16,7 @@ export default function OptionForm() {
   const { data: option } = useOptionQuery();
   const getMemos = async () => {
     const supabaseClient = await getSupabaseClient();
-    return await getMemo(supabaseClient);
+    return await getMemosSupabase(supabaseClient);
   };
 
   const handleCSVDownloadClick = async () => {
@@ -42,7 +46,6 @@ export default function OptionForm() {
     if (!languageRef.current) return;
 
     Storage.set(STORAGE_OPTION_LANGUAGE, languageRef.current?.value);
-    overlay.open(({ unmount }) => <Toast message={I18n.get('toast_save_option')} onClose={unmount} />);
   };
 
   useEffect(() => {

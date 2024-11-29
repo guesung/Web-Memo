@@ -1,7 +1,6 @@
 'use server';
 
-import { Heart, Home, SettingsIcon } from 'lucide-react';
-
+import { PATHS } from '@extension/shared/constants';
 import {
   Sidebar,
   SidebarContent,
@@ -14,13 +13,13 @@ import {
   SidebarSeparator,
 } from '@src/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
-
+import { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/server';
+import { Heart, Home, SettingsIcon } from 'lucide-react';
 import Link from 'next/link';
+
 import Header from '../Header';
 import SidebarGroupCategory from './SidebarGroupCategory';
-import { LanguageType } from '@src/app/i18n/type';
-import useTranslation from '@src/app/i18n/server';
-import { PATHS } from '@src/constants';
 
 const items = [
   {
@@ -68,7 +67,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
-              <Link href={PATHS.memosSetting} className="mb-2 ml-2 cursor-pointer">
+              <Link href={PATHS.memosSetting} className="mb-2 ml-2">
                 <SettingsIcon size={16} />
               </Link>
             </TooltipTrigger>

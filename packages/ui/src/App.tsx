@@ -1,5 +1,6 @@
-import { Button } from './components';
 import '../global.css';
+
+import { Button } from './components';
 import { Toaster } from './components/toaster';
 import { useToast } from './hooks';
 

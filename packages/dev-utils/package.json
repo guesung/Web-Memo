@@ -13,8 +13,6 @@
   "scripts": {
     "clean": "rimraf ./dist && rimraf ./build",
     "ready": "tsc",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "pnpm lint --fix",
     "prettier": "prettier . --write --ignore-path ../../.prettierignore",
     "type-check": "tsc --noEmit"
   },

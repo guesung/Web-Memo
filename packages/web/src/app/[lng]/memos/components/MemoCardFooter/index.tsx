@@ -38,7 +38,9 @@ export default function MemoCardFooter({ memo, lng, isHovered, children, ...prop
     router.replace(searchParams.getUrl(), { scroll: false });
   };
 
-  const handleIsWishClick = () => {
+  const handleIsWishClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+
     mutateMemoPatch(
       {
         id: memo.id,
@@ -93,7 +95,7 @@ export default function MemoCardFooter({ memo, lng, isHovered, children, ...prop
             size={12}
             fill={memo.isWish ? 'pink' : ''}
             fillOpacity={memo.isWish ? 100 : 0}
-            className={cn('transition-transform hover:scale-110', 'active:scale-95', {
+            className={cn('transition-transform hover:scale-110 active:scale-95', {
               'animate-heart-pop': memo.isWish,
             })}
           />

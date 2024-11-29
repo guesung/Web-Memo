@@ -47,6 +47,7 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
 
   const handleDeleteMemo: MouseEventHandler<HTMLDivElement> = event => {
     event.stopPropagation();
+
     mutateDeleteMemo(memoId, {
       onSuccess: ({ data }) => {
         if (!data) return;
@@ -101,7 +102,7 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
   return (
     <DropdownMenu onOpenChange={setIsOpen} open={isOpen} modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" onClick={e => e.stopPropagation()}>
           <EllipsisVerticalIcon size={16} />
         </Button>
       </DropdownMenuTrigger>

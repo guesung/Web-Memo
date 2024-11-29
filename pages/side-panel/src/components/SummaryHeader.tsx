@@ -7,9 +7,14 @@ import ToggleTheme from './ToggleTheme';
 export default function Header() {
   const { isSummaryLoading, refetchSummary, category } = useSummaryContext();
 
+  const getCategoryText = () => {
+    if (category === 'youtube') return '- 유튜브';
+    return '- 웹페이지';
+  };
+
   return (
     <header className="mt-4 flex items-center justify-between">
-      <div className="text-md font-bold">요약 {category === 'youtube' ? '- 유튜브' : '- 웹페이지'}</div>
+      <div className="text-md font-bold">요약 {getCategoryText()}</div>
       <div className="flex gap-1">
         <ErrorBoundary>
           <ToggleTheme />

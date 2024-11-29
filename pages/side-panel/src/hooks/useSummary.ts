@@ -11,6 +11,7 @@ import { useState } from 'react';
 export default function useSummary() {
   const [summary, setSummary] = useState('');
   const [category, setCategory] = useState<Category>('others');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const startSummary = async () => {
     setSummary('');
@@ -20,7 +21,7 @@ export default function useSummary() {
       pageContent = content;
       setCategory(category);
     } catch (e) {
-      setSummary(I18n.get('error_get_page_content'));
+      setErrorMessage(I18n.get('error_get_page_content'));
       return;
     }
     try {
@@ -30,7 +31,7 @@ export default function useSummary() {
         (message: string) => message && setSummary(prev => prev + message),
       );
     } catch (e) {
-      setSummary(I18n.get('error_get_summary'));
+      setErrorMessage(I18n.get('error_get_summary'));
     }
   };
 
@@ -43,5 +44,6 @@ export default function useSummary() {
     summary,
     refetchSummary,
     category,
+    errorMessage,
   };
 }

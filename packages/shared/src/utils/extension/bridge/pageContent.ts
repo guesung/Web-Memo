@@ -12,7 +12,7 @@ export const requestPageContent = () =>
   Tab.sendMessage<void, { content: string; category: Category }>(BRIDGE_TYPE_PAGE_CONTENT);
 
 const checkYoutube = (url: string) => url.startsWith('https://www.youtube.com/watch?');
-const getCategory = (url: string) => {
+const getCategory = (url: string): Category => {
   if (checkYoutube(url)) return 'youtube';
   return 'others';
 };
@@ -30,11 +30,11 @@ const getContent = async (url: string, category: Category) => {
  * Tab이 페이지 컨텐츠를 전달한다.
  */
 export const responsePageContent = async () => {
-  const url = location.href;
-  const category = getCategory(url);
-  const content = await getContent(url, category);
-
   Runtime.onMessage(BRIDGE_TYPE_PAGE_CONTENT, async (_, __, sendResponse) => {
+    const url = location.href;
+    const category = getCategory(url);
+    const content = await getContent(url, category);
+
     sendResponse({ content, category });
   });
 };

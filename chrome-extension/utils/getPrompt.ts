@@ -14,12 +14,6 @@ export const getPrompt = ({ language = 'English', characterLength = 600 }: GetPr
     #### Key Points
     {List 3-5 key points from the content, using bullet points. Each point should be a brief phrase or sentence that highlights an important aspect of the page.}
 
-    • 
-    • 
-    • 
-    • 
-    • 
-
     #### Highlights
     {Elaborate on the key points with 2-3 sentences, providing context or examples where relevant. Start with a phrase that encapsulates the overall theme.}
 

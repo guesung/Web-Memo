@@ -4,7 +4,9 @@
     "next": "Next",
     "prev": "Previous",
     "done": "Done",
-    "updatedAt": "Last updated:"
+    "updatedAt": "Last updated:",
+    "close": "Close",
+    "save": "Save"
   },
   "sideBar": {
     "memo": "My Memos",
@@ -66,11 +68,11 @@
     "done": "Done",
     "welcome": {
       "title": "Welcome to Web Memo! 🎉",
-      "description": "Let's create a memo! Press {{isMac ? 'Option + S' : 'Alt + S'}} to open the side panel!"
+      "description": "Let's create a memo! Press '{{key}} + S' to open the side panel!"
     },
     "save": {
       "title": "Save Your Memos",
-      "description": "Great job!\nNow you can write memos in this side panel.\nEnter your memo and press {{isMac ? 'Command + S' : 'Ctrl + S'}} to save it.\nWhen the memo border changes from blue to default, it means your save was successful!\nDon't worry, it also auto-saves every 3 seconds ☺️"
+      "description": "Great job!\nNow you can write memos in this side panel.\nEnter your memo and press '{{key}} + S' to save it.\nWhen the memo border changes from blue to default, it means your save was successful!\nDon't worry, it also auto-saves every 3 seconds ☺️"
     },
     "check": {
       "title": "Check Your Memos",
@@ -80,6 +82,7 @@
   "memos": {
     "emptyState": {
       "message": "You don't have any saved memos yet. Open the side panel to create your first memo!"
-    }
+    },
+    "totalMemos": "Total {{total}} memos"
   }
 }

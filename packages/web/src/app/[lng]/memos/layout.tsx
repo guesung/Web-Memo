@@ -10,7 +10,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { PropsWithChildren } from 'react';
 
-import { MemoSidebar, MemoSidebarTrigger } from './components';
+import { MemoSidebar } from './components';
 
 interface LayoutProps extends LanguageParams, PropsWithChildren {}
 
@@ -29,7 +29,6 @@ export default async function Layout({ children, params: { lng } }: LayoutProps)
         <SidebarProvider defaultOpen={defaultOpen}>
           <HydrationBoundaryWrapper queryKey={QUERY_KEY.category()} queryFn={() => getCategories(supabaseClient)}>
             <MemoSidebar lng={lng} />
-            <MemoSidebarTrigger lng={lng} />
           </HydrationBoundaryWrapper>
           {children}
         </SidebarProvider>

@@ -1,5 +1,6 @@
 'use server';
 
+import { PATHS } from '@extension/shared/constants';
 import { checkUserLogin, getUser } from '@extension/shared/utils';
 import { ToggleTheme } from '@src/components';
 import { Avatar, AvatarFallback, AvatarImage } from '@src/components/ui/avatar';
@@ -9,7 +10,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@src/components/ui/dropdown-menu';
-import { PATHS } from '@extension/shared/constants';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/server';
 import { getSupabaseClient, signout } from '@src/modules/supabase/util.server';

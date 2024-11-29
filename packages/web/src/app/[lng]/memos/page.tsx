@@ -8,13 +8,21 @@ import { getSupabaseClient } from '@src/modules/supabase/util.server';
 
 import { MemoDialog, MemoView } from './components';
 
-export default async function Page({ params: { lng } }: LanguageParams) {
+interface PageProps extends LanguageParams {
+  searchParams: {
+    id?: string;
+    isWish?: string;
+    category?: string;
+  };
+}
+
+export default async function Page({ searchParams, params: { lng } }: PageProps) {
   const supabaseClient = getSupabaseClient();
 
   return (
     <HydrationBoundaryWrapper queryKey={QUERY_KEY.memos()} queryFn={() => getMemos(supabaseClient)}>
-      <MemoView lng={lng} />
-      <MemoDialog lng={lng} />
+      <MemoView lng={lng} isWish={searchParams.isWish} category={searchParams.category} />
+      {searchParams?.id && <MemoDialog lng={lng} id={searchParams.id} />}
     </HydrationBoundaryWrapper>
   );
 }

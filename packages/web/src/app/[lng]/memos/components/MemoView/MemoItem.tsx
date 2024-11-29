@@ -21,7 +21,7 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
 
   if (!memo) return null;
 
-  const handleContentClick = (event: MouseEvent<HTMLDivElement> | KeyboardEvent<HTMLDivElement>) => {
+  const handleItemClick = (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
     const id = event.currentTarget.id;
     if (!id) return;
 
@@ -39,24 +39,18 @@ export default memo(function MemoItem({ lng, memo, ...props }: MemoItemProps) {
 
   return (
     <motion.article
+      id={String(memo.id)}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      onClick={handleItemClick}
+      onKeyDown={e => e.key === 'Enter' && handleItemClick(e)}
       className="transition-all"
+      tabIndex={0}
       {...props}>
       <Card className="relative box-border w-[300px]" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
         <MemoCardHeader memo={memo} />
-        {memo.memo && (
-          <CardContent
-            className="whitespace-break-spaces break-all"
-            onClick={handleContentClick}
-            id={String(memo.id)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={e => e.key === 'Enter' && handleContentClick(e)}>
-            {memo.memo}
-          </CardContent>
-        )}
+        {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
         <MemoCardFooter memo={memo} lng={lng} isHovered={isHovered} />
       </Card>
     </motion.article>

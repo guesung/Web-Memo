@@ -12,15 +12,15 @@ interface MemoCardHeaderProps {
 export default function MemoCardHeader({ memo }: MemoCardHeaderProps) {
   return (
     <CardHeader className="py-4 font-normal">
-      <Link href={memo.url} target="_blank" className="flex gap-2">
+      <Link href={memo.url} target="_blank" className="flex items-center gap-2">
         {memo?.favIconUrl && (
           <Image
             src={memo.favIconUrl}
             width={12}
             height={12}
             alt="favicon"
-            className="float-left"
-            style={{ objectFit: 'contain', height: 'auto' }}
+            className="h-3 w-3 object-contain"
+            priority
           />
         )}
         <TooltipProvider delayDuration={200}>

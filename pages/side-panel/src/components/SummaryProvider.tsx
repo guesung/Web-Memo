@@ -5,8 +5,10 @@ interface SummaryContext extends ReturnType<typeof useSummary> {}
 
 const SummaryContext = createContext<SummaryContext>({
   refetchSummary: async () => {},
-  summary: '',
   isSummaryLoading: false,
+  category: 'others',
+  summary: '',
+  errorMessage: '',
 });
 
 export const useSummaryContext = () => {

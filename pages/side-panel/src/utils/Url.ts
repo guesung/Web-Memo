@@ -5,7 +5,7 @@ export const getMemoUrl = (id?: number) => {
   const searchParams = new SearchParams([]);
   if (id) searchParams.set('id', String(id));
 
-  return `${CONFIG.webUrl}/${PATHS.memos}${searchParams.getSearchParams()}`;
+  return `${CONFIG.webUrl}${PATHS.memos}${searchParams.getSearchParams()}`;
 };
 
 export const getMemoWishListUrl = (id?: number) => {
@@ -13,5 +13,5 @@ export const getMemoWishListUrl = (id?: number) => {
   searchParams.set('isWish', 'true');
   if (id) searchParams.set('id', String(id));
 
-  return `${CONFIG.webUrl}/${PATHS.memos}?${searchParams.getSearchParams()}`;
+  return `${CONFIG.webUrl}${PATHS.memos}?${searchParams.getSearchParams()}`;
 };

@@ -22,5 +22,3 @@ export interface BridgeRequest<T> {
   type: BridgeType;
   payload?: T;
 }
-
-export type BridgeResponse = string;

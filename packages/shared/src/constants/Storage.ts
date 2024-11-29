@@ -1,3 +1,5 @@
-export const STORAGE_OPTION_LANGUAGE = 'LANGUAGE';
-
-export const STORAGE_OPTION_LIST = [STORAGE_OPTION_LANGUAGE];
+export const STORAGE_KEYS = {
+  youtubePrompts: 'youtubePrompts',
+  webPrompts: 'webPrompts',
+  language: 'language',
+} as const;

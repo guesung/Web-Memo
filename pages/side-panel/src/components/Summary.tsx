@@ -4,8 +4,9 @@ import remarkGfm from 'remark-gfm';
 import { useSummaryContext } from './SummaryProvider';
 
 export default function Summary() {
-  const { summary } = useSummaryContext();
+  const { summary, errorMessage } = useSummaryContext();
 
+  if (errorMessage) return <p className="whitespace-pre-wrap">{errorMessage}</p>;
   return (
     <Markdown remarkPlugins={[remarkGfm]} className="markdown">
       {summary}

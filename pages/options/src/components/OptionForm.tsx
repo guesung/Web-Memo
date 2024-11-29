@@ -1,6 +1,6 @@
 import '@src/Options.css';
 
-import { LANGUAGE_LIST, STORAGE_OPTION_LANGUAGE } from '@extension/shared/constants';
+import { LANGUAGE_LIST, STORAGE_KEYS } from '@extension/shared/constants';
 import { useOptionQuery } from '@extension/shared/hooks/extension';
 import {
   convertToCSVBlob,
@@ -45,7 +45,7 @@ export default function OptionForm() {
 
     if (!languageRef.current) return;
 
-    Storage.set(STORAGE_OPTION_LANGUAGE, languageRef.current?.value);
+    Storage.set(STORAGE_KEYS.language, languageRef.current?.value);
   };
 
   useEffect(() => {

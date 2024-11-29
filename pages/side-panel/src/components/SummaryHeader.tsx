@@ -1,5 +1,5 @@
 import { Button, ErrorBoundary, Loading } from '@extension/ui';
-import { RefreshCwIcon } from 'lucide-react';
+import { RefreshCwIcon, SettingsIcon } from 'lucide-react';
 
 import { useSummaryContext } from './SummaryProvider';
 import ToggleTheme from './ToggleTheme';
@@ -10,6 +10,10 @@ export default function Header() {
   const getCategoryText = () => {
     if (category === 'youtube') return '- 유튜브';
     return '- 웹페이지';
+  };
+
+  const handleOptionClick = () => {
+    chrome.runtime.openOptionsPage();
   };
 
   return (
@@ -28,6 +32,9 @@ export default function Header() {
             <RefreshCwIcon size={16} />
           </Button>
         )}
+        <Button variant="ghost" size="icon" onClick={handleOptionClick}>
+          <SettingsIcon size={16} />
+        </Button>
       </div>
     </header>
   );

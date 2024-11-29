@@ -125,8 +125,8 @@ function MemoForm() {
         {...register('memo', {
           onChange: handleMemoTextAreaChange,
         })}
-        className={cn('h-full resize-none text-sm', {
-          'border-cyan-900 focus:border-cyan-900': !isSaved,
+        className={cn('h-full resize-none text-sm outline-none', {
+          'border-primary focus:border-primary': !isSaved,
         })}
         id="memo-textarea"
         placeholder={I18n.get('memo')}

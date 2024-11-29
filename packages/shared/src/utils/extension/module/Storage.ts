@@ -3,7 +3,7 @@ import { StorageKeyType } from '@src/types';
 import { I18n } from './I18n';
 
 export class Storage {
-  static async get(key: StorageKeyType) {
+  static async get<T>(key: StorageKeyType): Promise<T> {
     try {
       const storage = await chrome.storage.sync.get(key);
       return storage[key];

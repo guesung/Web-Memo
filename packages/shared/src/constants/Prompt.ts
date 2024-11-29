@@ -1,38 +1,18 @@
 export const DEFAULT_PROMPTS = {
-  youtube: `
-    Instructions: Summarize the provided YouTube video content. Follow this template:
-
-    #### Summary
-    {Provide a concise summary of the video's main topic or purpose in 1-2 sentences}
-
-    #### Key Points
-    {List 3-5 key points from the video using bullet points}
-
-    #### Timeline Highlights
-    {Note 2-3 significant moments/sections from the video with timestamps}
-
-    #### Main Takeaways
-    {Summarize the key lessons or conclusions in 2-3 sentences}
-
-    Note: Keep the response clear, factual and focused on the video content.
-  `,
-  web: `
-    Instructions: Summarize the provided website content. Follow this template:
-
-    #### Summary
-    {Provide a concise summary of the page's main topic in 1-2 sentences}
-
-    #### Key Points
-    {List 3-5 key points from the content using bullet points}
-
-    #### Details
-    {Elaborate on 2-3 most important aspects with brief explanations}
-
-    #### Conclusion
-    {Summarize the main takeaways or conclusions in 1-2 sentences}
-
-    Note: Keep the response clear, factual and focused on the page content.
-  `,
+  youtube: `\
+유튜브 콘텐츠 요약 프롬프트 아래 영상의 내용을 체계적으로 분석하고 핵심 정보를 요약해주세요.
+핵심 내용 요약
+- 영상의 주요 주제 또는 메시지 (2-3문장)
+- 가장 중요한 정보 포인트 (3-5개)
+- 특별히 강조된 내용이나 차별점\
+`,
+  web: `\
+웹사이트 콘텐츠 요약 프롬프트 아래 웹사이트의 내용을 체계적으로 분석하고 핵심 정보를 요약해주세요.
+핵심 내용 요약
+- 주요 주제 또는 메시지 (2-3문장)
+- 가장 중요한 정보 포인트 (3-5개)
+- 특별히 강조된 내용이나 차별점\
+`,
 };
 
 export const PROMPT = {

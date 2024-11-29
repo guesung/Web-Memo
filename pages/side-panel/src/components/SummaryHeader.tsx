@@ -9,7 +9,7 @@ export default function Header() {
 
   return (
     <header className="mt-4 flex items-center justify-between">
-      <div className="text-lg font-bold">{category === 'youtube' ? 'Youtube' : 'Summary'}</div>
+      <div className="text-md font-bold">요약 {category === 'youtube' ? '- 유튜브' : '- 웹페이지'}</div>
       <div className="flex gap-1">
         <ErrorBoundary>
           <ToggleTheme />

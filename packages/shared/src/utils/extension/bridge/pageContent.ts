@@ -8,7 +8,8 @@ export type Category = 'youtube' | 'others';
 /**
  * Tab에게 페이지 컨텐츠를 요청한다.
  */
-export const requestPageContent = () => Tab.sendMessage(BRIDGE_TYPE_PAGE_CONTENT);
+export const requestPageContent = () =>
+  Tab.sendMessage<void, { content: string; category: Category }>(BRIDGE_TYPE_PAGE_CONTENT);
 
 const checkYoutube = (url: string) => url.startsWith('https://www.youtube.com/watch?');
 const getCategory = (url: string) => {

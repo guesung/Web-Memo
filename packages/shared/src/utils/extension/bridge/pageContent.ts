@@ -30,11 +30,11 @@ const getContent = async (url: string, category: Category) => {
  * Tab이 페이지 컨텐츠를 전달한다.
  */
 export const responsePageContent = async () => {
-  Runtime.onMessage(BRIDGE_TYPE_PAGE_CONTENT, async (_, __, sendResponse) => {
-    const url = location.href;
-    const category = getCategory(url);
-    const content = await getContent(url, category);
+  const url = location.href;
+  const category = getCategory(url);
+  const content = await getContent(url, category);
 
+  Runtime.onMessage(BRIDGE_TYPE_PAGE_CONTENT, async (_, __, sendResponse) => {
     sendResponse({ content, category });
   });
 };

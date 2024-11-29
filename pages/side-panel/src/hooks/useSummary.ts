@@ -15,6 +15,8 @@ export default function useSummary() {
 
   const startSummary = async () => {
     setSummary('');
+    setErrorMessage('');
+
     let pageContent = '';
     try {
       const { content, category } = await requestPageContent();

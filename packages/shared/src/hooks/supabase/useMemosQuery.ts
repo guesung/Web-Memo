@@ -20,6 +20,6 @@ export default function useMemosQuery({ supabaseClient, ...useQueryProps }: UseM
 
   return {
     ...query,
-    memos: query.data?.data,
+    memos: query.data?.data ?? [],
   };
 }

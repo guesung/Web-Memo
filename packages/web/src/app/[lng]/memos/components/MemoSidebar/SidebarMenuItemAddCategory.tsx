@@ -1,6 +1,7 @@
 'use client';
 
 import { useCategoryPostMutation } from '@extension/shared/hooks';
+import { Button } from '@src/components/ui/button';
 import { Input } from '@src/components/ui/input';
 import { useSupabaseClient } from '@src/hooks';
 import { PlusIcon } from 'lucide-react';
@@ -28,15 +29,17 @@ export default memo(function SidebarMenuItemAddCategory() {
     setIsEditMode(true);
   };
 
-  if (isEditMode)
-    return (
-      <form onSubmit={onSubmit}>
-        <Input {...register('category')} />
-      </form>
-    );
   return (
-    <p className="flex justify-center" role="button">
-      <PlusIcon size={16} onClick={handlePlusIconClick} />
-    </p>
+    <div className="flex justify-center">
+      {isEditMode ? (
+        <form onSubmit={onSubmit}>
+          <Input {...register('category')} />
+        </form>
+      ) : (
+        <Button className="flex justify-center" role="button" onClick={handlePlusIconClick} variant="ghost" size="icon">
+          <PlusIcon size={16} />
+        </Button>
+      )}
+    </div>
   );
 });

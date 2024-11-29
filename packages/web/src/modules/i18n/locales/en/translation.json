@@ -4,7 +4,9 @@
     "next": "Next",
     "prev": "Previous",
     "done": "Done",
-    "updatedAt": "Last updated:"
+    "updatedAt": "Last updated:",
+    "close": "Close",
+    "save": "Save"
   },
   "sideBar": {
     "memo": "My Memos",

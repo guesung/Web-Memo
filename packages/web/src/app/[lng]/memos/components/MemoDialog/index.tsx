@@ -98,10 +98,10 @@ export default function MemoDialog({ lng, id }: MemoDialog) {
           <MemoCardFooter memo={memoData as GetMemoResponse} lng={lng} isHovered>
             <div className="flex gap-2">
               <Button variant="outline" type="button" onClick={closeDialog}>
-                닫기
+                {t('common.close')}
               </Button>
               <Button variant="outline" onClick={saveMemo}>
-                저장
+                {t('common.save')}
               </Button>
             </div>
           </MemoCardFooter>

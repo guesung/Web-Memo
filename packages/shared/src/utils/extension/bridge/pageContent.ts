@@ -36,5 +36,6 @@ export const responsePageContent = async () => {
 
   Runtime.onMessage(BRIDGE_TYPE_PAGE_CONTENT, async (_, __, sendResponse) => {
     sendResponse({ content, category });
+    return true;
   });
 };

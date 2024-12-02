@@ -68,11 +68,10 @@ chrome.runtime.setUninstallURL(URL.googleForm);
 // chatGPT에게서 메시지를 받아서 다시 전달한다.
 chrome.runtime.onConnect.addListener(async port => {
   port.onMessage.addListener(async message => {
-    const { type, pageContent } = message;
+    const { category, pageContent } = message;
 
-    const language = (await Storage.get(STORAGE_KEYS.language)) ?? 'English';
-
-    const prompt = await getPrompt({ language, type });
+    const language = await Storage.get<string>(STORAGE_KEYS.language);
+    const prompt = await getPrompt({ language, category });
 
     const stream = await openai.chat.completions.create({
       model: 'gpt-4o-mini',

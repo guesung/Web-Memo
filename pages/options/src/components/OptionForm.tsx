@@ -1,7 +1,6 @@
 import '@src/Options.css';
 
 import { LANGUAGE_LIST, STORAGE_KEYS } from '@extension/shared/constants';
-import { useOptionQuery } from '@extension/shared/hooks/extension';
 import {
   convertToCSVBlob,
   convertToJSONBlob,
@@ -9,11 +8,10 @@ import {
   getMemos as getMemosSupabase,
 } from '@extension/shared/utils';
 import { getSupabaseClient, I18n, Storage } from '@extension/shared/utils/extension';
-import { FormEvent, useEffect, useRef } from 'react';
+import { FormEvent, useRef } from 'react';
 
 export default function OptionForm() {
   const languageRef = useRef<HTMLSelectElement>(null);
-  const { data: option } = useOptionQuery();
   const getMemos = async () => {
     const supabaseClient = await getSupabaseClient();
     return await getMemosSupabase(supabaseClient);
@@ -45,12 +43,12 @@ export default function OptionForm() {
 
     if (!languageRef.current) return;
 
-    Storage.set(STORAGE_KEYS.language, languageRef.current?.value);
+    Storage.set(STORAGE_KEYS.language, languageRef.current.value);
   };
 
-  useEffect(() => {
-    if (option) languageRef.current!.value = option;
-  }, [option]);
+  // useEffect(() => {
+  //   if (option) languageRef?.current?.value = option;
+  // }, [option]);
 
   return (
     <form onSubmit={handleFormSubmit}>

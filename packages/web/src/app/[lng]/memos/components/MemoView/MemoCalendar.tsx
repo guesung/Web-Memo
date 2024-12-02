@@ -8,10 +8,14 @@ import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import moment from 'moment';
 import { useRouter } from 'next/navigation';
-import { SyntheticEvent, useCallback, useMemo, useState } from 'react';
-import { Calendar, momentLocalizer, type View, Views } from 'react-big-calendar';
+import { useCallback, useMemo, useState } from 'react';
+import { Calendar, type Event, momentLocalizer, type View } from 'react-big-calendar';
 
 const localizer = momentLocalizer(moment);
+
+interface ExtendedEvent extends Event {
+  id: string;
+}
 
 interface MemoCalendarProps extends LanguageType {
   memos: GetMemoResponse[];
@@ -24,16 +28,9 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const { views } = useMemo(
-    () => ({
-      views: Object.keys(Views).map(k => Views[k as keyof typeof Views]),
-    }),
-    [],
-  );
-
-  const events = useMemo(() => {
+  const events: ExtendedEvent[] = useMemo(() => {
     return memos.map(memo => ({
-      id: memo.id,
+      id: String(memo.id),
       title: memo.title,
       start: moment(memo.created_at).toDate(),
       end: moment(memo.created_at).toDate(),
@@ -41,7 +38,8 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
   }, [memos]);
 
   const handleItemClick = useCallback(
-    (event: SyntheticEvent<HTMLElement>) => {
+    (event: ExtendedEvent) => {
+      console.log(event);
       const id = event.id;
       if (!id) return;
 
@@ -54,7 +52,6 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
   return (
     <Calendar
       localizer={localizer}
-      defaultView={Views.DAY}
       onView={setView}
       view={view}
       date={date}
@@ -62,13 +59,12 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
       events={events}
       startAccessor="start"
       endAccessor="end"
-      // style={{ height: 780, width: '100%' }}
       max={new Date(2025, 12, 31)}
       min={new Date(2024, 10, 1)}
       showMultiDayTimes
-      step={60}
-      views={views}
+      views={['month', 'agenda']}
       onSelectEvent={handleItemClick}
+      popup
     />
   );
 }

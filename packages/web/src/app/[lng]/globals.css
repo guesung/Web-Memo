@@ -89,6 +89,9 @@
         @apply bg-[#4285f4];
       }
     }
+    .rbc-overlay .rbc-event-continues-after {
+      @apply bg-[#4285f4];
+    }
   }
 
   .dark {

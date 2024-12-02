@@ -1,6 +1,5 @@
 import '@extension/ui/dist/global.css';
 import './globals.css';
-import 'moment/locale/ko';
 
 import { Header, QueryProvider, ThemeProvider } from '@src/components';
 import { Toaster } from '@src/components/ui/toaster';

@@ -4,19 +4,21 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import type { GetMemoResponse } from '@extension/shared/utils';
+import { Button } from '@src/components/ui/button';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
+import { cn } from '@src/utils';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
 import { motion } from 'framer-motion';
-import moment from 'moment';
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
-import { Calendar, type Event, momentLocalizer, type View } from 'react-big-calendar';
+import { Calendar, dayjsLocalizer, type Event, type View } from 'react-big-calendar';
 
-const localizer = momentLocalizer(moment);
+dayjs.extend(timezone);
 
-import { Button } from '@src/components/ui/button';
-import { cn } from '@src/utils';
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
+const localizer = dayjsLocalizer(dayjs);
 
 interface ExtendedEvent extends Event {
   id: string;
@@ -34,11 +36,11 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
   const router = useRouter();
 
   const events: ExtendedEvent[] = useMemo(() => {
-    return memos.map(memo => ({
-      id: String(memo.id),
-      title: memo.title,
-      start: moment(memo.created_at).toDate(),
-      end: moment(memo.created_at).toDate(),
+    return memos.map(({ id, title, created_at }) => ({
+      id: String(id),
+      title: title,
+      start: dayjs(created_at).toDate(),
+      end: dayjs(created_at).toDate(),
     }));
   }, [memos]);
 
@@ -67,8 +69,6 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
         events={events}
         startAccessor="start"
         endAccessor="end"
-        max={new Date(2025, 12, 31)}
-        min={new Date(2024, 10, 1)}
         showMultiDayTimes
         views={['month', 'agenda']}
         onSelectEvent={handleItemClick}
@@ -76,15 +76,16 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
         components={{
           month: {
             dateHeader: ({ date }) => {
-              return <div className="text-center">{moment(date).format('DD')}</div>;
+              return <div className="text-center">{dayjs(date).format('DD')}</div>;
             },
             event: ({ event }) => {
               return <div className="text-center">{event.title}a</div>;
             },
           },
           agenda: {
+            // @ts-expect-error: TODO: fix this
             date: ({ day }) => {
-              return <div className="text-center">{moment(day).format('LL')}</div>;
+              return <div className="text-center">{dayjs(day).format('LL')}</div>;
             },
           },
           toolbar: ({ date, view, views, onView, onNavigate }) => {
@@ -102,7 +103,7 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
                   </Button>
                 </div>
 
-                <h2 className="text-xl font-semibold">{moment(date).format('LL')}</h2>
+                <h2 className="text-xl font-semibold">{dayjs(date).format('LL')}</h2>
 
                 <div className="flex gap-2">
                   {(views as View[]).map(name => (

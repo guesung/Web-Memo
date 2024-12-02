@@ -79,7 +79,7 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
               return <div className="text-center">{dayjs(date).format('DD')}</div>;
             },
             event: ({ event }) => {
-              return <div className="text-center">{event.title}a</div>;
+              return <div className="text-center">{event.title}</div>;
             },
           },
           agenda: {

@@ -13,7 +13,6 @@ import { useCallback, useMemo, useState } from 'react';
 import { Calendar, type Event, momentLocalizer, type View } from 'react-big-calendar';
 
 const localizer = momentLocalizer(moment);
-import 'moment/locale/ko';
 
 import { Button } from '@src/components/ui/button';
 import { cn } from '@src/utils';

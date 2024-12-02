@@ -3,7 +3,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@src/*": ["./src/*"]
+      "@src/*": [
+        "./src/*"
+      ]
     },
     "jsx": "preserve",
     "plugins": [
@@ -12,6 +14,12 @@
       }
     ]
   },
-  "include": ["src"],
-  "exclude": ["node_modules", ".next"]
+  "include": [
+    "src",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next"
+  ]
 }

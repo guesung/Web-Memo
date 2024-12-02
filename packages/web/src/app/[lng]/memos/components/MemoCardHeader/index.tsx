@@ -12,7 +12,7 @@ interface MemoCardHeaderProps {
 export default function MemoCardHeader({ memo }: MemoCardHeaderProps) {
   return (
     <CardHeader className="py-4 font-normal">
-      <Link href={memo.url} target="_blank" className="flex gap-2">
+      <Link href={memo.url} target="_blank" className="flex gap-2" onClick={e => e.stopPropagation()}>
         {memo?.favIconUrl && (
           <Image
             src={memo.favIconUrl}

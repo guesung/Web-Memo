@@ -7,14 +7,13 @@ import { ExternalLinkIcon } from 'lucide-react';
 export default function MemoHeader() {
   const { data: tab, refetch: refetchTab } = useTabQuery();
   const { data: supabaseClient } = useSupabaseClientQuery();
-
   const { memo: memoData } = useMemoQuery({
     supabaseClient,
     url: tab.url,
   });
 
   const handleMemoClick = () => {
-    Tab.create({ url: getMemoUrl(memoData?.id) });
+    Tab.create({ url: getMemoUrl(memoData) });
   };
 
   useDidMount(() =>

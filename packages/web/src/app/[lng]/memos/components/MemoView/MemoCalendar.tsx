@@ -53,7 +53,7 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="h-[780px] w-[1000px]">
+      className="h-[780px] w-[calc(100vw-200px)]">
       <Calendar
         localizer={localizer}
         onView={setView}

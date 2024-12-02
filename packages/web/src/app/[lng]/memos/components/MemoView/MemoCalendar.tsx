@@ -6,6 +6,7 @@ import { useSearchParams } from '@extension/shared/modules/search-params';
 import type { GetMemoResponse } from '@extension/shared/utils';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
+import { motion } from 'framer-motion';
 import moment from 'moment';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
@@ -48,22 +49,27 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
   );
 
   return (
-    <Calendar
-      localizer={localizer}
-      onView={setView}
-      view={view}
-      date={date}
-      onNavigate={setDate}
-      events={events}
-      startAccessor="start"
-      endAccessor="end"
-      max={new Date(2025, 12, 31)}
-      min={new Date(2024, 10, 1)}
-      showMultiDayTimes
-      views={['month', 'agenda']}
-      onSelectEvent={handleItemClick}
-      className="h-[780px] w-[1000px]"
-      popup
-    />
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="h-[780px] w-[1000px]">
+      <Calendar
+        localizer={localizer}
+        onView={setView}
+        view={view}
+        date={date}
+        onNavigate={setDate}
+        events={events}
+        startAccessor="start"
+        endAccessor="end"
+        max={new Date(2025, 12, 31)}
+        min={new Date(2024, 10, 1)}
+        showMultiDayTimes
+        views={['month', 'agenda']}
+        onSelectEvent={handleItemClick}
+        popup
+      />
+    </motion.div>
   );
 }

@@ -1,9 +1,11 @@
 import { CONFIG, PATHS } from '@extension/shared/constants';
 import { SearchParams } from '@extension/shared/modules/search-params';
+import { MemoRow } from '@extension/shared/types';
 
-export const getMemoUrl = (id?: number) => {
+export const getMemoUrl = (memo?: MemoRow) => {
   const searchParams = new SearchParams([]);
-  if (id) searchParams.set('id', String(id));
+  if (memo?.id) searchParams.set('id', String(memo.id));
+  if (memo?.isWish) searchParams.set('isWish', 'true');
 
   return `${CONFIG.webUrl}/${PATHS.memos}${searchParams.getSearchParams()}`;
 };

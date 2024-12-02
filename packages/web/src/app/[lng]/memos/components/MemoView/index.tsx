@@ -38,7 +38,7 @@ export default function MemoView({ lng, isWish = '', category = '', view = 'grid
           {category && `${category} | `}
           {t('memos.totalMemos', { total: filteredMemos.length })}
         </p>
-        <ToggleView view={view} lng={lng} />
+        <ToggleView lng={lng} />
       </div>
       {view === 'calendar' ? (
         <MemoCalendar lng={lng} memos={filteredMemos} />

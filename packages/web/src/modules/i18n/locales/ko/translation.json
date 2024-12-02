@@ -83,6 +83,8 @@
     "emptyState": {
       "message": "아직 저장된 메모가 없어요. 사이드 패널을 열어 메모를 저장해보세요!"
     },
-    "totalMemos": "총 {{total}}개의 메모"
+    "totalMemos": "총 {{total}}개의 메모",
+    "grid": "그리드 보기",
+    "calendar": "캘린더 보기"
   }
 }

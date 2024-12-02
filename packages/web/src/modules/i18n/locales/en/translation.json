@@ -83,6 +83,8 @@
     "emptyState": {
       "message": "You don't have any saved memos yet. Open the side panel to create your first memo!"
     },
-    "totalMemos": "Total {{total}} memos"
+    "totalMemos": "Total {{total}} memos",
+    "grid": "Grid view",
+    "calendar": "Calendar view"
   }
 }

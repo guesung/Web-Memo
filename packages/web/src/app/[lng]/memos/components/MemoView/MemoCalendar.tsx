@@ -3,7 +3,7 @@
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 import { useSearchParams } from '@extension/shared/modules/search-params';
-import { GetMemoResponse } from '@extension/shared/utils';
+import type { GetMemoResponse } from '@extension/shared/utils';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import moment from 'moment';
@@ -39,9 +39,7 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
 
   const handleItemClick = useCallback(
     (event: ExtendedEvent) => {
-      console.log(event);
       const id = event.id;
-      if (!id) return;
 
       searchParams.set('id', id);
       router.replace(searchParams.getUrl(), { scroll: false });
@@ -64,6 +62,7 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
       showMultiDayTimes
       views={['month', 'agenda']}
       onSelectEvent={handleItemClick}
+      className="h-[780px] w-[1000px]"
       popup
     />
   );

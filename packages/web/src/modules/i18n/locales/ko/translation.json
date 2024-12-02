@@ -2,9 +2,20 @@
   "common": {
     "webMemo": "웹 메모",
     "next": "다음",
-    "prev": "이전",
+    "previous": "이전",
+    "today": "오늘",
     "done": "완료",
-    "updatedAt": "마지막 수정:"
+    "updatedAt": "마지막 수정:",
+    "month": "월",
+    "agenda": "일정",
+    "day": "일",
+    "week": "주",
+    "allDay": "종일",
+    "date": "날짜",
+    "time": "시간",
+    "event": "이벤트",
+    "more": "더보기",
+    "title": "제목"
   },
   "sideBar": {
     "memo": "나의 메모",

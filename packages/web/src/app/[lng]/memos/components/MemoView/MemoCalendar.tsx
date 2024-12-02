@@ -13,6 +13,11 @@ import { useCallback, useMemo, useState } from 'react';
 import { Calendar, type Event, momentLocalizer, type View } from 'react-big-calendar';
 
 const localizer = momentLocalizer(moment);
+import 'moment/locale/ko';
+
+import { Button } from '@src/components/ui/button';
+import { cn } from '@src/utils';
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 
 interface ExtendedEvent extends Event {
   id: string;
@@ -53,7 +58,7 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="h-[780px] w-[calc(100vw-200px)]">
+      className="h-[780px] w-full md:w-[calc(100vw-200px)]">
       <Calendar
         localizer={localizer}
         onView={setView}
@@ -69,6 +74,70 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
         views={['month', 'agenda']}
         onSelectEvent={handleItemClick}
         popup
+        components={{
+          month: {
+            dateHeader: ({ date }) => {
+              return <div className="text-center">{moment(date).format('DD')}</div>;
+            },
+          },
+          agenda: {
+            date: ({ day }: { day: Date }) => {
+              return <div className="text-center">{moment(day).format('LL')}</div>;
+            },
+          },
+          toolbar: ({ date, view, views, onView, onNavigate }) => {
+            return (
+              <div className="mb-4 flex items-center justify-between px-4">
+                <div className="flex gap-2">
+                  <Button onClick={() => onNavigate('PREV')} variant="ghost">
+                    <ChevronLeftIcon />
+                  </Button>
+                  <Button onClick={() => onNavigate('TODAY')} variant="ghost">
+                    Today
+                  </Button>
+                  <Button onClick={() => onNavigate('NEXT')} variant="ghost">
+                    <ChevronRightIcon />
+                  </Button>
+                </div>
+
+                <h2 className="text-xl font-semibold">{moment(date).format('LL')}</h2>
+
+                <div className="flex gap-2">
+                  {(views as View[]).map(name => (
+                    <Button
+                      key={name}
+                      onClick={() => onView(name as View)}
+                      variant="outline"
+                      className={cn(
+                        'text-primary bg-primary-bg text-primary-dark rounded px-3 py-1.5 hover:text-cyan-600',
+                        {
+                          'text-cyan-600': name === view,
+                        },
+                      )}>
+                      {name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            );
+          },
+        }}
+        messages={{
+          today: t('common.today'),
+          previous: t('common.previous'),
+          next: t('common.next'),
+          month: t('common.month'),
+          agenda: t('common.agenda'),
+          day: t('common.day'),
+          week: t('common.week'),
+          allDay: t('common.allDay'),
+          date: t('common.date'),
+          time: t('common.time'),
+          event: t('common.title'),
+          showMore: (_, __, events) => {
+            return `..${events.length} ${t('common.more')}`;
+          },
+        }}
       />
     </motion.div>
   );

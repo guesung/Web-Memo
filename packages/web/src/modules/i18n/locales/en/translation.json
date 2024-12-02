@@ -2,11 +2,22 @@
   "common": {
     "webMemo": "Web Memo",
     "next": "Next",
-    "prev": "Previous",
+    "previous": "Previous",
+    "today": "Today",
     "done": "Done",
     "updatedAt": "Last updated:",
     "close": "Close",
-    "save": "Save"
+    "save": "Save",
+    "month": "Month",
+    "agenda": "Agenda",
+    "day": "Day",
+    "week": "Week",
+    "allDay": "All Day",
+    "date": "Date",
+    "time": "Time",
+    "event": "Event",
+    "more": "more",
+    "title": "Title"
   },
   "sideBar": {
     "memo": "My Memos",

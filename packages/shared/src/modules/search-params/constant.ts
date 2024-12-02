@@ -1,1 +1,1 @@
-export const SEARCH_PARAMS_KEYS = ['id', 'isWish', 'category'] as const;
+export const SEARCH_PARAMS_KEYS = ['id', 'isWish', 'category', 'view'] as const;

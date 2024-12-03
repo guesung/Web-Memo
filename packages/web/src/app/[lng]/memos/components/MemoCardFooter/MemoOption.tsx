@@ -39,7 +39,7 @@ export default function MemoOption({ lng, memos }: MemoOptionProps) {
   const { mutate: mutateUpsertMemo } = useMemosUpsertMutation({
     supabaseClient,
   });
-  const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
+  const { mutate: mutateDeleteMemo } = useDeleteMemosMutation({ supabaseClient });
 
   const defaultCategoryId = isAllSame(memos.map(memo => memo.category_id)) ? String(memos.at(0)?.category_id) : '';
 
@@ -91,7 +91,7 @@ export default function MemoOption({ lng, memos }: MemoOptionProps) {
               </ToastAction>
             ),
           });
-          // queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+          queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
         },
       },
     );

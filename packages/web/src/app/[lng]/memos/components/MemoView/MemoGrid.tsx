@@ -1,7 +1,7 @@
 'use client';
 
 import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
-import { useCloseOnEscape } from '@extension/shared/hooks';
+import { useKeyboardBind } from '@extension/shared/hooks';
 import { GetMemoResponse } from '@extension/shared/utils';
 import { LanguageType } from '@src/modules/i18n';
 import { KeyboardEvent, MouseEvent, useState } from 'react';
@@ -39,13 +39,15 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
     else setSelectedMemos(prev => [...prev, memos.find(memo => memo.id === id)!]);
   };
 
-  useCloseOnEscape(() => {
+  const closeMemoOption = () => {
     setSelectedMemos([]);
-  });
+  };
+
+  useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
 
   return (
     <>
-      <MemoOptionHeader lng={lng} selectedMemos={selectedMemos} />
+      <MemoOptionHeader lng={lng} selectedMemos={selectedMemos} onXButtonClick={closeMemoOption} />
       <MasonryInfiniteGrid
         className="container"
         gap={16}

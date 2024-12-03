@@ -1,5 +1,5 @@
 import { QUERY_KEY } from '@extension/shared/constants';
-import { useCategoryQuery, useMemosUpsertMutation } from '@extension/shared/hooks';
+import { useCategoryQuery, useKeyboardBind, useMemosUpsertMutation } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { MemoRow } from '@extension/shared/types';
 import { isAllSame } from '@extension/shared/utils';
@@ -21,7 +21,7 @@ import useTranslation from '@src/modules/i18n/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { EllipsisVerticalIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { MouseEventHandler, useState } from 'react';
+import { MouseEvent, useState } from 'react';
 
 interface MemoOptionProps extends LanguageType {
   memos: MemoRow[];
@@ -43,8 +43,8 @@ export default function MemoOption({ lng, memos }: MemoOptionProps) {
 
   const defaultCategoryId = isAllSame(memos.map(memo => memo.category_id)) ? String(memos.at(0)?.category_id) : '';
 
-  const handleDeleteMemo: MouseEventHandler<HTMLDivElement> = event => {
-    event.stopPropagation();
+  const handleDeleteMemo = (event?: MouseEvent<HTMLDivElement>) => {
+    event?.stopPropagation();
 
     mutateDeleteMemo(
       memos.map(memo => memo.id),
@@ -102,6 +102,8 @@ export default function MemoOption({ lng, memos }: MemoOptionProps) {
 
     setIsOpen(false);
   };
+
+  useKeyboardBind({ key: 'Backspace', callback: handleDeleteMemo });
 
   return (
     <DropdownMenu onOpenChange={setIsOpen} open={isOpen} modal={false}>

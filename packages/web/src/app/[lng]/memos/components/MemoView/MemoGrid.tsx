@@ -50,7 +50,12 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
 
   return (
     <>
-      <MemoOptionHeader lng={lng} selectedMemos={selectedMemos} onXButtonClick={closeMemoOption} />
+      <MemoOptionHeader
+        lng={lng}
+        selectedMemos={selectedMemos}
+        onXButtonClick={closeMemoOption}
+        closeMemoOption={closeMemoOption}
+      />
       <MasonryInfiniteGrid
         className="container"
         gap={16}
@@ -68,17 +73,20 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
 
           setItems([...items, ...getMemoItems(nextGroupKey, maxAddItem)]);
         }}>
-        {items.map(item => (
-          <MemoItem
-            key={item.key + gridKey}
-            memo={memos.at(item.key)!}
-            lng={lng}
-            isSelected={isMemoSelected(memos.at(item.key)!.id)}
-            onSelect={handleMemoItemSelect}
-            isSelecting={isAnyMemoSelected}
-            data-grid-groupkey={item.groupKey}
-          />
-        ))}
+        {items.map(
+          item =>
+            memos.at(item.key) && (
+              <MemoItem
+                key={item.key + gridKey}
+                memo={memos.at(item.key)!}
+                lng={lng}
+                isSelected={isMemoSelected(memos.at(item.key)!.id)}
+                onSelect={handleMemoItemSelect}
+                isSelecting={isAnyMemoSelected}
+                data-grid-groupkey={item.groupKey}
+              />
+            ),
+        )}
       </MasonryInfiniteGrid>
     </>
   );

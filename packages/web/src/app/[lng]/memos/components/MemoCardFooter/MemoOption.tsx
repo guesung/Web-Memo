@@ -1,5 +1,5 @@
 import { QUERY_KEY } from '@extension/shared/constants';
-import { useCategoryQuery, useKeyboardBind, useMemosUpsertMutation } from '@extension/shared/hooks';
+import { useCategoryQuery, useMemosUpsertMutation } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { MemoRow } from '@extension/shared/types';
 import { isAllSame } from '@extension/shared/utils';
@@ -25,9 +25,10 @@ import { MouseEvent, useState } from 'react';
 
 interface MemoOptionProps extends LanguageType {
   memos: MemoRow[];
+  closeMemoOption: () => void;
 }
 
-export default function MemoOption({ lng, memos }: MemoOptionProps) {
+export default function MemoOption({ lng, memos, closeMemoOption }: MemoOptionProps) {
   const { t } = useTranslation(lng);
   const supabaseClient = useSupabaseClient();
   const searchParams = useSearchParams();
@@ -68,6 +69,10 @@ export default function MemoOption({ lng, memos }: MemoOptionProps) {
             ),
           });
         },
+        onSettled: () => {
+          setIsOpen(false);
+          closeMemoOption();
+        },
       },
     );
   };
@@ -96,13 +101,12 @@ export default function MemoOption({ lng, memos }: MemoOptionProps) {
           });
           queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
         },
+        onSettled: () => {
+          setIsOpen(false);
+        },
       },
     );
-
-    setIsOpen(false);
   };
-
-  useKeyboardBind({ key: 'Backspace', callback: handleDeleteMemo });
 
   return (
     <DropdownMenu onOpenChange={setIsOpen} open={isOpen} modal={false}>

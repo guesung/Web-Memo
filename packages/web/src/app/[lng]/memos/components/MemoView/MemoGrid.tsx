@@ -4,6 +4,7 @@ import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
 import { useKeyboardBind } from '@extension/shared/hooks';
 import { GetMemoResponse } from '@extension/shared/utils';
 import { LanguageType } from '@src/modules/i18n';
+import { AnimatePresence } from 'framer-motion';
 import { KeyboardEvent, MouseEvent, useCallback, useMemo, useState } from 'react';
 
 import MemoItem from './MemoItem';
@@ -50,12 +51,16 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
 
   return (
     <>
-      <MemoOptionHeader
-        lng={lng}
-        selectedMemos={selectedMemos}
-        onXButtonClick={closeMemoOption}
-        closeMemoOption={closeMemoOption}
-      />
+      <AnimatePresence>
+        {isAnyMemoSelected && (
+          <MemoOptionHeader
+            lng={lng}
+            selectedMemos={selectedMemos}
+            onXButtonClick={closeMemoOption}
+            closeMemoOption={closeMemoOption}
+          />
+        )}
+      </AnimatePresence>
       <MasonryInfiniteGrid
         className="container"
         gap={16}

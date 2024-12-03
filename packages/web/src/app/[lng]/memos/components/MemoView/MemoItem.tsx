@@ -32,7 +32,7 @@ export default memo(function MemoItem({ lng, memo, isSelected, onSelect, isSelec
     }
 
     searchParams.set('id', id);
-    router.replace(searchParams.getUrl(), { scroll: false });
+    router.push(searchParams.getUrl(), { scroll: false });
   };
 
   const handleMouseEnter = () => {

@@ -49,7 +49,7 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
       const id = event.id;
 
       searchParams.set('id', id);
-      router.replace(searchParams.getUrl(), { scroll: false });
+      router.push(searchParams.getUrl(), { scroll: false });
     },
     [searchParams, router],
   );

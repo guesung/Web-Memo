@@ -22,20 +22,20 @@ interface MemoCardFooterProps extends LanguageType, React.HTMLAttributes<HTMLDiv
 }
 export default function MemoCardFooter({ memo, lng, isHovered, children, ...props }: MemoCardFooterProps) {
   const { t } = useTranslation(lng);
+  const { toast } = useToast();
   const supabaseClient = useSupabaseClient();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
   });
-  const { toast } = useToast();
 
   const handleCategoryClick = (event: MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
     if (!memo.category?.name) return;
 
     searchParams.set('category', memo.category?.name);
-    router.replace(searchParams.getUrl(), { scroll: false });
+    router.push(searchParams.getUrl(), { scroll: false });
   };
 
   const handleIsWishClick = (event: MouseEvent<HTMLButtonElement>) => {

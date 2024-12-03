@@ -9,10 +9,10 @@ import { KeyboardEvent, MouseEvent } from 'react';
 
 interface MemoCardHeaderProps {
   memo: GetMemoResponse;
+  onSelect?: (e: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => void;
   tooltip?: boolean;
   isHovered?: boolean;
   isSelected?: boolean;
-  onSelect: (e: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => void;
 }
 
 export default function MemoCardHeader({ memo, isHovered, isSelected, onSelect }: MemoCardHeaderProps) {

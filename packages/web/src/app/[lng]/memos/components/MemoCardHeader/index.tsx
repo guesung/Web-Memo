@@ -20,14 +20,14 @@ export default function MemoCardHeader({ memo, isHovered, isSelected, onSelect }
     <CardHeader className="relative py-4 font-normal">
       <Button
         id={String(memo.id)}
-        variant="ghost"
-        size="icon"
-        className={cn('absolute -left-4 -top-4 z-10 rounded-full bg-white', {
+        variant="outline"
+        size="sm"
+        className={cn('absolute -left-4 -top-4 z-10 rounded-full px-2', {
           'opacity-100': isHovered || isSelected,
           'opacity-0': !isHovered && !isSelected,
         })}
         onClick={onSelect}>
-        <CheckIcon size={12} />
+        <CheckIcon size={8} />
       </Button>
       <Link href={memo.url} target="_blank" className="flex gap-2" onClick={e => e.stopPropagation()}>
         {memo?.favIconUrl && (

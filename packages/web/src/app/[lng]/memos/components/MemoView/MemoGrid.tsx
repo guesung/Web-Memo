@@ -3,7 +3,7 @@
 import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
 import { GetMemoResponse } from '@extension/shared/utils';
 import { LanguageType } from '@src/modules/i18n';
-import { useState } from 'react';
+import { KeyboardEvent, MouseEvent, useState } from 'react';
 
 import MemoItem from './MemoItem';
 
@@ -26,6 +26,17 @@ interface MemoGridProps extends LanguageType {
 
 export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT));
+  const [selectedMemos, setSelectedMemos] = useState<string[]>([]);
+
+  const handleSelect = (e: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
+    e.stopPropagation();
+
+    const id = e.currentTarget.id;
+    if (!id) return;
+
+    if (selectedMemos.includes(id)) setSelectedMemos(prev => prev.filter(memo => memo !== id));
+    else setSelectedMemos(prev => [...prev, id]);
+  };
 
   return (
     <MasonryInfiniteGrid
@@ -46,7 +57,15 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         setItems([...items, ...getMemoItems(nextGroupKey, maxAddItem)]);
       }}>
       {items.map(item => (
-        <MemoItem memo={memos.at(item.key)} lng={lng} data-grid-groupkey={item.groupKey} key={item.key + gridKey} />
+        <MemoItem
+          key={item.key + gridKey}
+          memo={memos.at(item.key)}
+          lng={lng}
+          isSelected={selectedMemos.includes(String(memos.at(item.key)?.id))}
+          onSelect={handleSelect}
+          isSelecting={selectedMemos.length > 0}
+          data-grid-groupkey={item.groupKey}
+        />
       ))}
     </MasonryInfiniteGrid>
   );

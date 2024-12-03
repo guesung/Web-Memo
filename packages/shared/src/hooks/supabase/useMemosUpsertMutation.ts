@@ -1,5 +1,5 @@
-import { NoMemoError, NoMemosError, QUERY_KEY } from '@src/constants';
-import { MemoSupabaseClient, MemoSupabaseResponse, MemoTable } from '@src/types';
+import { NoMemosError, QUERY_KEY } from '@src/constants';
+import { MemoRow, MemoSupabaseClient, MemoSupabaseResponse, MemoTable } from '@src/types';
 import { upsertMemos } from '@src/utils';
 import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query';
 
@@ -30,9 +30,8 @@ export default function useMemosUpsertMutation({ supabaseClient, ...useMutationP
         const currentMemoIndex = previousMemosData.findIndex(previousMemo => previousMemo.id === memo.id);
         const currentMemoBase = previousMemosData.find(previousMemo => previousMemo.id === memo.id);
 
-        if (currentMemoIndex === -1 || !currentMemoBase) throw new NoMemoError();
-
-        previousMemosData.splice(currentMemoIndex, 1, { ...currentMemoBase, ...memo });
+        if (currentMemoIndex === -1 || !currentMemoBase) previousMemosData.unshift(memo as MemoRow);
+        else previousMemosData.splice(currentMemoIndex, 1, { ...currentMemoBase, ...memo });
       });
 
       await queryClient.setQueryData(QUERY_KEY.memos(), { ...previousMemos, data: previousMemosData });

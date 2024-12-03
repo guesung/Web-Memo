@@ -1,3 +1,4 @@
+import { MOTION_VARIANTS } from '@extension/shared/constants';
 import { useMemoPatchMutation } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { GetMemoResponse } from '@extension/shared/utils';
@@ -10,6 +11,7 @@ import { useToast } from '@src/hooks/use-toast';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { cn } from '@src/utils';
+import { AnimatePresence, motion } from 'framer-motion';
 import { HeartIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { MouseEvent, PropsWithChildren } from 'react';
@@ -18,9 +20,9 @@ import MemoOption from './MemoOption';
 
 interface MemoCardFooterProps extends LanguageType, React.HTMLAttributes<HTMLDivElement>, PropsWithChildren {
   memo: GetMemoResponse;
-  isHovered: boolean;
+  isOptionShown: boolean;
 }
-export default function MemoCardFooter({ memo, lng, isHovered, children, ...props }: MemoCardFooterProps) {
+export default function MemoCardFooter({ memo, lng, isOptionShown, children, ...props }: MemoCardFooterProps) {
   const { t } = useTranslation(lng);
   const { toast } = useToast();
   const supabaseClient = useSupabaseClient();
@@ -87,8 +89,7 @@ export default function MemoCardFooter({ memo, lng, isHovered, children, ...prop
       </div>
       <div
         className={cn('flex items-center transition', {
-          'opacity-0': !isHovered,
-          'opacity-100': isHovered,
+          'opacity-0': !isOptionShown,
         })}>
         <Button variant="ghost" size="icon" onClick={handleIsWishClick}>
           <HeartIcon

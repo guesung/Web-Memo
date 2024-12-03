@@ -25,7 +25,7 @@ import { MouseEvent, useState } from 'react';
 
 interface MemoOptionProps extends LanguageType {
   memos: MemoRow[];
-  closeMemoOption: () => void;
+  closeMemoOption?: () => void;
 }
 
 export default function MemoOption({ lng, memos, closeMemoOption }: MemoOptionProps) {
@@ -71,7 +71,7 @@ export default function MemoOption({ lng, memos, closeMemoOption }: MemoOptionPr
         },
         onSettled: () => {
           setIsOpen(false);
-          closeMemoOption();
+          closeMemoOption?.();
         },
       },
     );

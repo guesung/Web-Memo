@@ -1,3 +1,4 @@
+import { MOTION_VARIANTS } from '@extension/shared/constants';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { cn, GetMemoResponse } from '@extension/shared/utils';
 import { Card, CardContent } from '@src/components/ui/card';
@@ -47,9 +48,10 @@ export default memo(function MemoItem({ lng, memo, isSelected, onSelect, isSelec
   return (
     <motion.article
       id={String(memo.id)}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      variants={MOTION_VARIANTS.fadeInAndOut}
+      initial="initial"
+      animate="animate"
+      exit="exit"
       onClick={handleItemClick}
       onKeyDown={e => e.key === 'Enter' && handleItemClick(e)}
       className="transition-all"
@@ -63,7 +65,7 @@ export default memo(function MemoItem({ lng, memo, isSelected, onSelect, isSelec
         onMouseLeave={handleMouseLeave}>
         <MemoCardHeader memo={memo} isHovered={isHovered} isSelected={isSelected} onSelect={onSelect} />
         {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
-        <MemoCardFooter memo={memo} lng={lng} isHovered={isHovered} />
+        <MemoCardFooter memo={memo} lng={lng} isOptionShown={isHovered && !isSelecting} />
       </Card>
     </motion.article>
   );

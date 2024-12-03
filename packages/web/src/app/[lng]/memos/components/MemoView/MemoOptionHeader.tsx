@@ -1,3 +1,4 @@
+import { MOTION_VARIANTS } from '@extension/shared/constants';
 import { MemoRow } from '@extension/shared/types';
 import { Button } from '@src/components/ui/button';
 import { LanguageType } from '@src/modules/i18n';
@@ -20,10 +21,10 @@ export default function MemoOptionHeader({ selectedMemos, lng, closeMemoOption }
   return (
     <motion.header
       className="bg-background fixed inset-x-0 top-0 z-50 flex h-12 w-full items-center justify-between px-4 shadow-sm"
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      exit={{ y: -100, opacity: 0 }}
-      transition={{ duration: 0.3 }}>
+      variants={MOTION_VARIANTS.fadeInAndOut}
+      initial="initial"
+      animate="animate"
+      exit="exit">
       <Button variant="ghost" size="icon" onClick={closeMemoOption}>
         <XIcon className="h-6 w-6" />
       </Button>

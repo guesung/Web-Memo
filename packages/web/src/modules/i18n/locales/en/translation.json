@@ -96,6 +96,7 @@
     },
     "totalMemos": "Total {{total}} memos",
     "grid": "Grid view",
-    "calendar": "Calendar view"
+    "calendar": "Calendar view",
+    "selected": "{{count}} selected"
   }
 }

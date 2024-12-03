@@ -51,7 +51,6 @@ export default function MemoOption({ lng, memos }: MemoOptionProps) {
       {
         onSuccess: () => {
           const handleToastActionClick = () => {
-            console.log('undo', memos);
             mutateUpsertMemo(memos, {
               onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });

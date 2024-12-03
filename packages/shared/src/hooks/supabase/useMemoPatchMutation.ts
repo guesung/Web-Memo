@@ -29,14 +29,16 @@ export default function useMemoPatchMutation({ supabaseClient, ...useMutationPro
 
       if (!previousMemosData) throw new NoMemosError();
 
-      const currentMemoIndex = previousMemosData.findIndex(memo => memo.id === id);
-      const currentMemoBase = previousMemosData.find(memo => memo.id === id);
+      const updatedMemosData = [...previousMemosData];
+
+      const currentMemoIndex = updatedMemosData.findIndex(memo => memo.id === id);
+      const currentMemoBase = updatedMemosData.find(memo => memo.id === id);
 
       if (currentMemoIndex === -1 || !currentMemoBase) throw new NoMemoError();
 
-      previousMemosData.splice(currentMemoIndex, 1, { ...currentMemoBase, ...memoRequest });
+      updatedMemosData.splice(currentMemoIndex, 1, { ...currentMemoBase, ...memoRequest });
 
-      await queryClient.setQueryData(QUERY_KEY.memos(), { ...previousMemos, data: previousMemosData });
+      await queryClient.setQueryData(QUERY_KEY.memos(), { ...previousMemos, data: updatedMemosData });
 
       return { previousMemos };
     },

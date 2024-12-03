@@ -1,6 +1,7 @@
 import { MemoRow } from '@extension/shared/types';
 import { Button } from '@src/components/ui/button';
 import { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/client';
 import { XIcon } from 'lucide-react';
 
 import MemoOption from '../MemoCardFooter/MemoOption';
@@ -11,6 +12,8 @@ interface MemoOptionHeaderProps extends LanguageType {
 }
 
 export default function MemoOptionHeader({ selectedMemos, lng, onXButtonClick }: MemoOptionHeaderProps) {
+  const { t } = useTranslation(lng);
+
   if (selectedMemos.length === 0) return null;
   return (
     <header className="fixed inset-x-0 top-0 z-50 flex h-12 w-full items-center justify-between bg-white px-4 shadow-sm">
@@ -18,7 +21,7 @@ export default function MemoOptionHeader({ selectedMemos, lng, onXButtonClick }:
         <XIcon className="h-6 w-6" />
       </Button>
       <div className="flex items-center gap-2 px-4">
-        <span className="text-md font-semibold">{selectedMemos.length}개 선택됨</span>
+        <span className="text-md font-semibold">{t('memos.selected', { count: selectedMemos.length })}</span>
       </div>
       <div className="flex items-center gap-2 px-4">
         <MemoOption memos={selectedMemos} lng={lng} />

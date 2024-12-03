@@ -4,7 +4,7 @@ import { MasonryInfiniteGrid } from '@egjs/react-infinitegrid';
 import { useKeyboardBind } from '@extension/shared/hooks';
 import { GetMemoResponse } from '@extension/shared/utils';
 import { LanguageType } from '@src/modules/i18n';
-import { KeyboardEvent, MouseEvent, useState } from 'react';
+import { KeyboardEvent, MouseEvent, useCallback, useMemo, useState } from 'react';
 
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
@@ -30,12 +30,15 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT));
   const [selectedMemos, setSelectedMemos] = useState<GetMemoResponse[]>([]);
 
-  const handleSelect = (e: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
-    e.stopPropagation();
+  const isMemoSelected = useCallback((id: number) => selectedMemos.some(memo => memo.id === id), [selectedMemos]);
+  const isAnyMemoSelected = useMemo(() => selectedMemos.length > 0, [selectedMemos]);
 
-    const id = Number(e.currentTarget.id);
+  const handleMemoItemSelect = (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
+    event.stopPropagation();
 
-    if (selectedMemos.some(memo => memo.id === id)) setSelectedMemos(prev => prev.filter(memo => memo.id !== id));
+    const id = Number(event.currentTarget.id);
+
+    if (isMemoSelected(id)) setSelectedMemos(prev => prev.filter(memo => memo.id !== id));
     else setSelectedMemos(prev => [...prev, memos.find(memo => memo.id === id)!]);
   };
 
@@ -68,11 +71,11 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         {items.map(item => (
           <MemoItem
             key={item.key + gridKey}
-            memo={memos.at(item.key)}
+            memo={memos.at(item.key)!}
             lng={lng}
-            isSelected={selectedMemos.some(memo => memo.id === memos.at(item.key)?.id)}
-            onSelect={handleSelect}
-            isSelecting={selectedMemos.length > 0}
+            isSelected={isMemoSelected(memos.at(item.key)!.id)}
+            onSelect={handleMemoItemSelect}
+            isSelecting={isAnyMemoSelected}
             data-grid-groupkey={item.groupKey}
           />
         ))}

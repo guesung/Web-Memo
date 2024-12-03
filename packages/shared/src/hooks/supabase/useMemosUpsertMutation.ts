@@ -26,15 +26,17 @@ export default function useMemosUpsertMutation({ supabaseClient, ...useMutationP
 
       if (!previousMemosData) throw new NoMemosError();
 
-      memoRequest.forEach(memo => {
-        const currentMemoIndex = previousMemosData.findIndex(previousMemo => previousMemo.id === memo.id);
-        const currentMemoBase = previousMemosData.find(previousMemo => previousMemo.id === memo.id);
+      const updatedMemosData = [...previousMemosData];
 
-        if (currentMemoIndex === -1 || !currentMemoBase) previousMemosData.unshift(memo as MemoRow);
-        else previousMemosData.splice(currentMemoIndex, 1, { ...currentMemoBase, ...memo });
+      memoRequest.forEach(memo => {
+        const currentMemoIndex = updatedMemosData.findIndex(previousMemo => previousMemo.id === memo.id);
+        const currentMemoBase = updatedMemosData.find(previousMemo => previousMemo.id === memo.id);
+
+        if (currentMemoIndex === -1 || !currentMemoBase) updatedMemosData.unshift(memo as MemoRow);
+        else updatedMemosData.splice(currentMemoIndex, 1, { ...currentMemoBase, ...memo });
       });
 
-      await queryClient.setQueryData(QUERY_KEY.memos(), { ...previousMemos, data: previousMemosData });
+      await queryClient.setQueryData(QUERY_KEY.memos(), { ...previousMemos, data: updatedMemosData });
 
       return { previousMemos };
     },

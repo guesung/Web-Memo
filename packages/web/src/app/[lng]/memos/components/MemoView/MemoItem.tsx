@@ -10,10 +10,10 @@ import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
 
 interface MemoItemProps extends HTMLMotionProps<'article'>, LanguageType {
-  memo?: GetMemoResponse;
-  isSelected?: boolean;
+  memo: GetMemoResponse;
+  isSelected: boolean;
+  isSelecting: boolean;
   onSelect: (e: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => void;
-  isSelecting?: boolean;
 }
 
 export default memo(function MemoItem({ lng, memo, isSelected, onSelect, isSelecting, ...props }: MemoItemProps) {
@@ -21,8 +21,6 @@ export default memo(function MemoItem({ lng, memo, isSelected, onSelect, isSelec
 
   const searchParams = useSearchParams();
   const router = useRouter();
-
-  if (!memo) return null;
 
   const handleItemClick = (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
     const id = event.currentTarget.id;
@@ -45,6 +43,7 @@ export default memo(function MemoItem({ lng, memo, isSelected, onSelect, isSelec
     setIsHovered(false);
   };
 
+  if (!memo) return null;
   return (
     <motion.article
       id={String(memo.id)}

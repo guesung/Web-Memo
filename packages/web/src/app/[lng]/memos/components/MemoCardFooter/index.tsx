@@ -100,7 +100,7 @@ export default function MemoCardFooter({ memo, lng, isHovered, children, ...prop
             })}
           />
         </Button>
-        <MemoOption memoId={memo.id} lng={lng} />
+        <MemoOption memos={[memo]} lng={lng} />
         {children}
       </div>
     </CardFooter>

@@ -57,8 +57,8 @@ export default memo(function MemoItem({ lng, memo, isSelected, onSelect, isSelec
       tabIndex={0}
       {...props}>
       <Card
-        className={cn('relative box-border w-[300px]', {
-          'border-primary cursor-pointer border-2': isSelected,
+        className={cn('relative box-content w-[300px] transition-all', {
+          'border-primary cursor-pointer': isSelected,
         })}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}>

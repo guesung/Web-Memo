@@ -22,7 +22,7 @@ export const deleteMemo = async (supabaseClient: MemoSupabaseClient, id: number)
 export const deleteMemos = async (supabaseClient: MemoSupabaseClient, idList: number[]) =>
   supabaseClient.from(SUPABASE.schemaMemo).delete().in('id', idList).select();
 
-export const upsertMemo = async (supabaseClient: MemoSupabaseClient, memoRequest: MemoTable['Insert']) =>
+export const upsertMemos = async (supabaseClient: MemoSupabaseClient, memoRequest: MemoTable['Insert'][]) =>
   supabaseClient.from(SUPABASE.schemaMemo).upsert(memoRequest).select();
 
 export const getUser = (supabaseClient: MemoSupabaseClient) => supabaseClient.auth.getUser();

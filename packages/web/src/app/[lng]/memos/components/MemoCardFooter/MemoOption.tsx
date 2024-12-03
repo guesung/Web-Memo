@@ -1,6 +1,7 @@
 import { QUERY_KEY } from '@extension/shared/constants';
-import { useCategoryQuery, useMemoPatchMutation, useMemoPostMutation, useMemoQuery } from '@extension/shared/hooks';
+import { useCategoryQuery, useMemoPostMutation, useMemoQuery, useMemosUpsertMutation } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
+import { MemoRow } from '@extension/shared/types';
 import { requestRefetchTheMemos } from '@extension/shared/utils/extension';
 import { Button } from '@src/components/ui/button';
 import {
@@ -12,7 +13,7 @@ import {
 } from '@src/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@src/components/ui/select';
 import { ToastAction } from '@src/components/ui/toast';
-import { useMemoDeleteMutation, useSupabaseClient } from '@src/hooks';
+import { useDeleteMemosMutation, useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
@@ -22,10 +23,10 @@ import { useRouter } from 'next/navigation';
 import { MouseEventHandler, useState } from 'react';
 
 interface MemoOptionProps extends LanguageType {
-  memoId: number;
+  memos: MemoRow[];
 }
 
-export default function MemoOption({ lng, memoId }: MemoOptionProps) {
+export default function MemoOption({ lng, memos }: MemoOptionProps) {
   const { t } = useTranslation(lng);
   const supabaseClient = useSupabaseClient();
   const searchParams = useSearchParams();
@@ -34,43 +35,46 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
   const { categories } = useCategoryQuery({ supabaseClient });
   const queryClient = useQueryClient();
 
-  const { memo: memoData } = useMemoQuery({ supabaseClient, id: memoId });
-  const { mutate: mutatePatchMemo } = useMemoPatchMutation({
+  const { memo: memoData } = useMemoQuery({ supabaseClient, id: memos.at(0)?.id });
+  const { mutate: mutateUpsertMemo } = useMemosUpsertMutation({
     supabaseClient,
   });
   const { mutate: mutatePostMemo } = useMemoPostMutation({
     supabaseClient,
   });
-  const { mutate: mutateDeleteMemo } = useMemoDeleteMutation();
+  const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
 
   const [isOpen, setIsOpen] = useState(false);
 
   const handleDeleteMemo: MouseEventHandler<HTMLDivElement> = event => {
     event.stopPropagation();
 
-    mutateDeleteMemo(memoId, {
-      onSuccess: ({ data }) => {
-        if (!data) return;
+    mutateDeleteMemo(
+      memos.map(memo => memo.id),
+      {
+        onSuccess: ({ data }) => {
+          if (!data) return;
 
-        const deletedMemo = data[0];
-        const handlePostMemo = () => mutatePostMemo(deletedMemo);
+          const deletedMemo = data[0];
+          const handlePostMemo = () => mutatePostMemo(deletedMemo);
 
-        toast({
-          title: t('toastTitle.memoDeleted'),
-          action: (
-            <ToastAction altText={t('toastActionMessage.undo')} onClick={handlePostMemo}>
-              {t('toastActionMessage.undo')}
-            </ToastAction>
-          ),
-        });
-        requestRefetchTheMemos();
+          toast({
+            title: t('toastTitle.memoDeleted'),
+            action: (
+              <ToastAction altText={t('toastActionMessage.undo')} onClick={handlePostMemo}>
+                {t('toastActionMessage.undo')}
+              </ToastAction>
+            ),
+          });
+          requestRefetchTheMemos();
+        },
       },
-    });
+    );
   };
 
   const handleCategoryChange = (categoryId: string) => {
-    mutatePatchMemo(
-      { id: memoId, memoRequest: { category_id: Number(categoryId) } },
+    mutateUpsertMemo(
+      { memoRequest: memos.map(memo => ({ ...memo, category_id: Number(categoryId) })) },
       {
         onSuccess: () => {
           const category = categories?.find(category => category.id === Number(categoryId));
@@ -83,7 +87,7 @@ export default function MemoOption({ lng, memoId }: MemoOptionProps) {
                 altText={t('toastActionMessage.goTo')}
                 onClick={() => {
                   searchParams.set('category', category.name);
-                  searchParams.set('id', memoId.toString());
+                  searchParams.set('id', memos[0].id.toString());
 
                   router.push(searchParams.getUrl());
                 }}>

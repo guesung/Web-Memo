@@ -28,16 +28,15 @@ interface MemoGridProps extends LanguageType {
 
 export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT));
-  const [selectedMemos, setSelectedMemos] = useState<string[]>([]);
+  const [selectedMemos, setSelectedMemos] = useState<GetMemoResponse[]>([]);
 
   const handleSelect = (e: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
     e.stopPropagation();
 
-    const id = e.currentTarget.id;
-    if (!id) return;
+    const id = Number(e.currentTarget.id);
 
-    if (selectedMemos.includes(id)) setSelectedMemos(prev => prev.filter(memo => memo !== id));
-    else setSelectedMemos(prev => [...prev, id]);
+    if (selectedMemos.some(memo => memo.id === id)) setSelectedMemos(prev => prev.filter(memo => memo.id !== id));
+    else setSelectedMemos(prev => [...prev, memos.find(memo => memo.id === id)!]);
   };
 
   useCloseOnEscape(() => {
@@ -46,7 +45,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
 
   return (
     <>
-      <MemoOptionHeader lng={lng} selectedMemoLength={selectedMemos.length} />
+      <MemoOptionHeader lng={lng} selectedMemos={selectedMemos} />
       <MasonryInfiniteGrid
         className="container"
         gap={16}
@@ -69,7 +68,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
             key={item.key + gridKey}
             memo={memos.at(item.key)}
             lng={lng}
-            isSelected={selectedMemos.includes(String(memos.at(item.key)?.id))}
+            isSelected={selectedMemos.some(memo => memo.id === memos.at(item.key)?.id)}
             onSelect={handleSelect}
             isSelecting={selectedMemos.length > 0}
             data-grid-groupkey={item.groupKey}

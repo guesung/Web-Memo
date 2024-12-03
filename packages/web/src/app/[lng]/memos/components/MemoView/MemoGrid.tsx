@@ -7,6 +7,7 @@ import { LanguageType } from '@src/modules/i18n';
 import { KeyboardEvent, MouseEvent, useState } from 'react';
 
 import MemoItem from './MemoItem';
+import MemoOptionHeader from './MemoOptionHeader';
 
 const MEMO_UNIT = 20;
 
@@ -44,34 +45,37 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   });
 
   return (
-    <MasonryInfiniteGrid
-      className="container"
-      gap={16}
-      align="center"
-      useResizeObserver
-      observeChildren
-      autoResize
-      onRequestAppend={e => {
-        if (items.length >= memos.length) return;
+    <>
+      <MemoOptionHeader lng={lng} selectedMemoLength={selectedMemos.length} />
+      <MasonryInfiniteGrid
+        className="container"
+        gap={16}
+        align="center"
+        useResizeObserver
+        observeChildren
+        autoResize
+        onRequestAppend={e => {
+          if (items.length >= memos.length) return;
 
-        const nextGroupKey = (+e.groupKey! || 0) + 1;
-        const maxAddItem = items.length + MEMO_UNIT > memos.length ? memos.length - items.length : MEMO_UNIT;
+          const nextGroupKey = (+e.groupKey! || 0) + 1;
+          const maxAddItem = items.length + MEMO_UNIT > memos.length ? memos.length - items.length : MEMO_UNIT;
 
-        if (maxAddItem === 0) return;
+          if (maxAddItem === 0) return;
 
-        setItems([...items, ...getMemoItems(nextGroupKey, maxAddItem)]);
-      }}>
-      {items.map(item => (
-        <MemoItem
-          key={item.key + gridKey}
-          memo={memos.at(item.key)}
-          lng={lng}
-          isSelected={selectedMemos.includes(String(memos.at(item.key)?.id))}
-          onSelect={handleSelect}
-          isSelecting={selectedMemos.length > 0}
-          data-grid-groupkey={item.groupKey}
-        />
-      ))}
-    </MasonryInfiniteGrid>
+          setItems([...items, ...getMemoItems(nextGroupKey, maxAddItem)]);
+        }}>
+        {items.map(item => (
+          <MemoItem
+            key={item.key + gridKey}
+            memo={memos.at(item.key)}
+            lng={lng}
+            isSelected={selectedMemos.includes(String(memos.at(item.key)?.id))}
+            onSelect={handleSelect}
+            isSelecting={selectedMemos.length > 0}
+            data-grid-groupkey={item.groupKey}
+          />
+        ))}
+      </MasonryInfiniteGrid>
+    </>
   );
 }

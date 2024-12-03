@@ -1,4 +1,4 @@
 export const EXTENSION = {
   id: 'eaiojpmgklfngpjddhoalgcpkepgkclh',
-  lastVersion: '1.6.4',
+  lastVersion: '1.6.5',
 } as const;

@@ -2,6 +2,7 @@
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
+import { MOTION_VARIANTS } from '@extension/shared/constants';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import type { GetMemoResponse } from '@extension/shared/utils';
 import { Button } from '@src/components/ui/button';
@@ -49,16 +50,17 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
       const id = event.id;
 
       searchParams.set('id', id);
-      router.replace(searchParams.getUrl(), { scroll: false });
+      router.push(searchParams.getUrl(), { scroll: false });
     },
     [searchParams, router],
   );
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      variants={MOTION_VARIANTS.fadeInAndOut}
+      initial="initial"
+      animate="animate"
+      exit="exit"
       className="h-[780px] w-full md:w-[calc(100vw-200px)]">
       <Calendar
         localizer={localizer}

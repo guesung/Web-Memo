@@ -96,6 +96,7 @@
     },
     "totalMemos": "총 {{total}}개의 메모",
     "grid": "그리드 보기",
-    "calendar": "캘린더 보기"
+    "calendar": "캘린더 보기",
+    "selected": "{{count}}개 선택됨"
   }
 }

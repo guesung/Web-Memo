@@ -18,24 +18,24 @@ import MemoOption from './MemoOption';
 
 interface MemoCardFooterProps extends LanguageType, React.HTMLAttributes<HTMLDivElement>, PropsWithChildren {
   memo: GetMemoResponse;
-  isHovered: boolean;
+  isOptionShown: boolean;
 }
-export default function MemoCardFooter({ memo, lng, isHovered, children, ...props }: MemoCardFooterProps) {
+export default function MemoCardFooter({ memo, lng, isOptionShown, children, ...props }: MemoCardFooterProps) {
   const { t } = useTranslation(lng);
+  const { toast } = useToast();
   const supabaseClient = useSupabaseClient();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
   });
-  const { toast } = useToast();
 
   const handleCategoryClick = (event: MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
     if (!memo.category?.name) return;
 
     searchParams.set('category', memo.category?.name);
-    router.replace(searchParams.getUrl(), { scroll: false });
+    router.push(searchParams.getUrl(), { scroll: false });
   };
 
   const handleIsWishClick = (event: MouseEvent<HTMLButtonElement>) => {
@@ -87,8 +87,7 @@ export default function MemoCardFooter({ memo, lng, isHovered, children, ...prop
       </div>
       <div
         className={cn('flex items-center transition', {
-          'opacity-0': !isHovered,
-          'opacity-100': isHovered,
+          'opacity-0': !isOptionShown,
         })}>
         <Button variant="ghost" size="icon" onClick={handleIsWishClick}>
           <HeartIcon
@@ -100,7 +99,7 @@ export default function MemoCardFooter({ memo, lng, isHovered, children, ...prop
             })}
           />
         </Button>
-        <MemoOption memoId={memo.id} lng={lng} />
+        <MemoOption memos={[memo]} lng={lng} />
         {children}
       </div>
     </CardFooter>

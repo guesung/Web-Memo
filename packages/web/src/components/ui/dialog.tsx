@@ -1,6 +1,6 @@
 'use client';
 
-import { useCloseOnEscape } from '@extension/shared/hooks';
+import { useKeyboardBind } from '@extension/shared/hooks';
 import { cn } from '@extension/shared/utils';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { AnimatePresence } from 'framer-motion';
@@ -35,7 +35,7 @@ interface DialogContentProps extends React.ComponentPropsWithoutRef<typeof Dialo
 
 const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.Content>, DialogContentProps>(
   ({ className, children, onClose, ...props }, ref) => {
-    useCloseOnEscape(onClose);
+    useKeyboardBind({ key: 'Escape', callback: onClose });
 
     return (
       <DialogPortal>

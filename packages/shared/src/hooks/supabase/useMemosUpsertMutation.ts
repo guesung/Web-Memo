@@ -3,9 +3,7 @@ import { MemoSupabaseClient, MemoSupabaseResponse, MemoTable } from '@src/types'
 import { upsertMemos } from '@src/utils';
 import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query';
 
-type MutationVariables = {
-  memoRequest: MemoTable['Insert'][];
-};
+type MutationVariables = MemoTable['Insert'][];
 type MutationData = Awaited<ReturnType<typeof upsertMemos>>;
 type MutationError = Error;
 
@@ -17,8 +15,8 @@ export default function useMemosUpsertMutation({ supabaseClient, ...useMutationP
   const queryClient = useQueryClient();
   return useMutation<MutationData, MutationError, MutationVariables>({
     ...useMutationProps,
-    mutationFn: async ({ memoRequest }) => await upsertMemos(supabaseClient, memoRequest),
-    onMutate: async ({ memoRequest }) => {
+    mutationFn: async memoRequest => await upsertMemos(supabaseClient, memoRequest),
+    onMutate: async memoRequest => {
       await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
       const previousMemos = queryClient.getQueryData<MemoSupabaseResponse>(QUERY_KEY.memos());
 
@@ -29,8 +27,8 @@ export default function useMemosUpsertMutation({ supabaseClient, ...useMutationP
       if (!previousMemosData) throw new NoMemosError();
 
       memoRequest.forEach(memo => {
-        const currentMemoIndex = previousMemosData.findIndex(memo => memo.id === memo.id);
-        const currentMemoBase = previousMemosData.find(memo => memo.id === memo.id);
+        const currentMemoIndex = previousMemosData.findIndex(previousMemo => previousMemo.id === memo.id);
+        const currentMemoBase = previousMemosData.find(previousMemo => previousMemo.id === memo.id);
 
         if (currentMemoIndex === -1 || !currentMemoBase) throw new NoMemoError();
 

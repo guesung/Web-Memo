@@ -1,7 +1,8 @@
 import { QUERY_KEY } from '@extension/shared/constants';
-import { useCategoryQuery, useMemoPostMutation, useMemoQuery, useMemosUpsertMutation } from '@extension/shared/hooks';
+import { useCategoryQuery, useMemosUpsertMutation } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { MemoRow } from '@extension/shared/types';
+import { isAllSame } from '@extension/shared/utils';
 import { requestRefetchTheMemos } from '@extension/shared/utils/extension';
 import { Button } from '@src/components/ui/button';
 import {
@@ -31,20 +32,16 @@ export default function MemoOption({ lng, memos }: MemoOptionProps) {
   const supabaseClient = useSupabaseClient();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
   const { categories } = useCategoryQuery({ supabaseClient });
   const queryClient = useQueryClient();
-
-  const { memo: memoData } = useMemoQuery({ supabaseClient, id: memos.at(0)?.id });
   const { mutate: mutateUpsertMemo } = useMemosUpsertMutation({
-    supabaseClient,
-  });
-  const { mutate: mutatePostMemo } = useMemoPostMutation({
     supabaseClient,
   });
   const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
 
-  const [isOpen, setIsOpen] = useState(false);
+  const defaultCategoryId = isAllSame(memos.map(memo => memo.category_id)) ? String(memos.at(0)?.category_id) : '';
 
   const handleDeleteMemo: MouseEventHandler<HTMLDivElement> = event => {
     event.stopPropagation();
@@ -52,16 +49,16 @@ export default function MemoOption({ lng, memos }: MemoOptionProps) {
     mutateDeleteMemo(
       memos.map(memo => memo.id),
       {
-        onSuccess: ({ data }) => {
-          if (!data) return;
-
-          const deletedMemo = data[0];
-          const handlePostMemo = () => mutatePostMemo(deletedMemo);
+        onSuccess: () => {
+          const handleToastActionClick = () => {
+            console.log('undo', memos);
+            mutateUpsertMemo(memos);
+          };
 
           toast({
             title: t('toastTitle.memoDeleted'),
             action: (
-              <ToastAction altText={t('toastActionMessage.undo')} onClick={handlePostMemo}>
+              <ToastAction altText={t('toastActionMessage.undo')} onClick={handleToastActionClick}>
                 {t('toastActionMessage.undo')}
               </ToastAction>
             ),
@@ -74,7 +71,7 @@ export default function MemoOption({ lng, memos }: MemoOptionProps) {
 
   const handleCategoryChange = (categoryId: string) => {
     mutateUpsertMemo(
-      { memoRequest: memos.map(memo => ({ ...memo, category_id: Number(categoryId) })) },
+      memos.map(memo => ({ ...memo, category_id: Number(categoryId) })),
       {
         onSuccess: () => {
           const category = categories?.find(category => category.id === Number(categoryId));
@@ -87,7 +84,6 @@ export default function MemoOption({ lng, memos }: MemoOptionProps) {
                 altText={t('toastActionMessage.goTo')}
                 onClick={() => {
                   searchParams.set('category', category.name);
-                  searchParams.set('id', memos[0].id.toString());
 
                   router.push(searchParams.getUrl());
                 }}>
@@ -95,7 +91,7 @@ export default function MemoOption({ lng, memos }: MemoOptionProps) {
               </ToastAction>
             ),
           });
-          queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+          // queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
         },
       },
     );
@@ -116,7 +112,7 @@ export default function MemoOption({ lng, memos }: MemoOptionProps) {
             {t('option.deleteMemo')}
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Select onValueChange={handleCategoryChange} defaultValue={String(memoData?.category_id)}>
+            <Select onValueChange={handleCategoryChange} defaultValue={defaultCategoryId}>
               <SelectTrigger>
                 <SelectValue placeholder={t('option.changeCategory')} />
               </SelectTrigger>

@@ -1,8 +1,7 @@
 'use client';
 import { QUERY_KEY } from '@extension/shared/constants';
 import { setLocalStorageTrue } from '@extension/shared/modules/local-storage';
-import { Button } from '@src/components/ui';
-import { useToast } from '@src/hooks/use-toast';
+import { Button, useToast } from '@src/components/ui';
 import { useGuide } from '@src/modules/guide';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';

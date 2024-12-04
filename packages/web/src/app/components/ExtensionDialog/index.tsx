@@ -1,7 +1,14 @@
 'use client';
 
-import { Button } from '@src/components/ui';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@src/components/ui';
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 
 import useExtensionDialog from './useExtensionDialog';

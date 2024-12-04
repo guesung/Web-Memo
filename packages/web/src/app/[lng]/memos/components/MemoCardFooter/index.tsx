@@ -1,12 +1,8 @@
 import { useMemoPatchMutation } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { GetMemoResponse } from '@extension/shared/utils';
-import { Badge } from '@src/components/ui';
-import { Button } from '@src/components/ui';
-import { CardFooter } from '@src/components/ui';
-import { ToastAction } from '@src/components/ui';
+import { Badge, Button, CardFooter, ToastAction, useToast } from '@src/components/ui';
 import { useSupabaseClient } from '@src/hooks';
-import { useToast } from '@src/hooks/use-toast';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { cn } from '@src/utils';

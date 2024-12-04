@@ -5,10 +5,8 @@ import {
   useCategoryQuery,
   useCategoryUpsertMutation,
 } from '@extension/shared/hooks';
-import { Button } from '@src/components/ui';
-import { Label } from '@src/components/ui';
+import { Button, Label, useToast } from '@src/components/ui';
 import { useSupabaseClient } from '@src/hooks';
-import { useToast } from '@src/hooks/use-toast';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useQueryClient } from '@tanstack/react-query';

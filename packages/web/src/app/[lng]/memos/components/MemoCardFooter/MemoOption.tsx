@@ -18,9 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
   ToastAction,
+  useToast,
 } from '@src/components/ui';
 import { useDeleteMemosMutation, useSupabaseClient } from '@src/hooks';
-import { useToast } from '@src/hooks/use-toast';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useQueryClient } from '@tanstack/react-query';

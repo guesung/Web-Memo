@@ -79,7 +79,8 @@
     "restartGuide": "Restart guide",
     "category": "Category",
     "addCategory": "Add category",
-    "deleteCategory": "Delete category"
+    "deleteCategory": "Delete category",
+    "defaultCategoryName": "New Category"
   },
   "guide": {
     "next": "Next",

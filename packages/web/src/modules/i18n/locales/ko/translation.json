@@ -79,7 +79,8 @@
     "restartGuide": "가이드 다시 시작하기",
     "category": "카테고리",
     "addCategory": "카테고리 추가하기",
-    "deleteCategory": "카테고리 삭제하기"
+    "deleteCategory": "카테고리 삭제하기",
+    "defaultCategoryName": "새로운 카테고리"
   },
   "guide": {
     "next": "다음",

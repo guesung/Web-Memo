@@ -43,8 +43,10 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
   const queryClient = useQueryClient();
 
   const handleAddCategory = () => {
+    const defaultCategoryName = t('setting.defaultCategoryName');
+
     insertCategory(
-      { name: '' },
+      { name: defaultCategoryName },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });

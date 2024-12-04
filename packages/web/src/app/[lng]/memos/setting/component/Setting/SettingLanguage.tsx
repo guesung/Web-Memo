@@ -15,7 +15,7 @@ export default function SettingLanguage({ lng }: SettingLanguageProps) {
       <Label className="col-span-4 grid place-items-center">{t('setting.language')}</Label>
       <Select onValueChange={setLanguageRouter} value={language} aria-label={t('setting.selectLanguage')}>
         <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Theme" />
+          <SelectValue />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="ko">한글</SelectItem>

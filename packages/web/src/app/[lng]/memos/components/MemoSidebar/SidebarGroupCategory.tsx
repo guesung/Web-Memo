@@ -38,7 +38,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
       <SidebarGroupContent>
         <SidebarMenu>
           {categories?.map(category => (
-            <SidebarMenuItem key={category.name}>
+            <SidebarMenuItem key={category.id}>
               <SidebarMenuButton asChild>
                 <button id={category.name} onClick={handleCategoryClick}>
                   <span>{category.name}</span>

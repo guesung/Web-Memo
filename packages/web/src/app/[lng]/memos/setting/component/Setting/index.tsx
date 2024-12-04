@@ -1,31 +1,26 @@
 'use client';
 
-import { Label } from '@src/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@src/components/ui/select';
-import { useLanguage } from '@src/hooks';
+import { MOTION_VARIANTS } from '@extension/shared/constants';
 import { LanguageType } from '@src/modules/i18n';
-import useTranslation from '@src/modules/i18n/client';
+import { motion } from 'framer-motion';
+
+import SettingCategoryForm from './SettingCategoryForm';
+import SettingGuide from './SettingGuide';
+import SettingLanguage from './SettingLanguage';
 
 interface SettingProps extends LanguageType {}
 
 export default function Setting({ lng }: SettingProps) {
-  const { t } = useTranslation(lng);
-  const { language, setLanguageRouter } = useLanguage();
-
   return (
-    <section className="grid gap-6">
-      <div className="grid grid-cols-12">
-        <Label className="col-span-4 grid place-items-center">{t('setting.language')}</Label>
-        <Select onValueChange={setLanguageRouter} value={language} aria-label={t('setting.selectLanguage')}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Theme" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ko">한글</SelectItem>
-            <SelectItem value="en">English</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-    </section>
+    <motion.section
+      className="grid gap-6"
+      variants={MOTION_VARIANTS.fadeInAndOut}
+      initial="initial"
+      animate="animate"
+      exit="exit">
+      <SettingLanguage lng={lng} />
+      <SettingGuide lng={lng} />
+      <SettingCategoryForm lng={lng} />
+    </motion.section>
   );
 }

@@ -1,12 +1,22 @@
+'use server';
+
+import { QUERY_KEY } from '@extension/shared/constants';
+import { getCategories } from '@extension/shared/utils';
+import { HydrationBoundaryWrapper } from '@src/components';
 import { LanguageParams } from '@src/modules/i18n';
+import { getSupabaseClient } from '@src/modules/supabase/util.server';
 
 import { Setting, SettingHeader } from './component';
 
-export default function Page({ params: { lng } }: LanguageParams) {
+export default async function Page({ params: { lng } }: LanguageParams) {
+  const supabaseClient = getSupabaseClient();
+
   return (
     <main>
       <SettingHeader lng={lng} />
-      <Setting lng={lng} />
+      <HydrationBoundaryWrapper queryKey={QUERY_KEY.category()} queryFn={() => getCategories(supabaseClient)}>
+        <Setting lng={lng} />
+      </HydrationBoundaryWrapper>
     </main>
   );
 }

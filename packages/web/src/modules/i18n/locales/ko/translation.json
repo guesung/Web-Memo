@@ -15,7 +15,8 @@
     "time": "시간",
     "event": "이벤트",
     "more": "더보기",
-    "title": "제목"
+    "title": "제목",
+    "save": "저장"
   },
   "sideBar": {
     "memo": "나의 메모",
@@ -31,7 +32,10 @@
     "categoryEdited": "카테고리가 성공적으로 변경되었어요!",
     "memoDeleted": "메모가 삭제되었어요.",
     "memoWishListDeleted": "위시리스트에서 메모를 제거했어요.",
-    "memoWishListAdded": "위시리스트에 메모를 추가했어요!"
+    "memoWishListAdded": "위시리스트에 메모를 추가했어요!",
+    "saveSuccess": "저장이 완료되었어요!",
+    "deleteSuccess": "삭제가 완료되었어요!",
+    "addSuccess": "추가가 완료되었어요!"
   },
   "toastActionMessage": {
     "goTo": "바로 이동하기",
@@ -54,8 +58,7 @@
     "description": "메모 기능을 사용하시려면 확장 프로그램이 필요합니다. 지금 설치하러 가볼까요?",
     "cancel": "다음에 설치할게요",
     "ok": "네, 설치하러 갈게요",
-    "close": "닫기",
-    "save": "저장"
+    "close": "닫기"
   },
   "dialogVersion": {
     "title": "새로운 버전이 나왔어요!",
@@ -71,7 +74,13 @@
   },
   "setting": {
     "header": "환경설정",
-    "language": "언어 설정"
+    "language": "언어 설정",
+    "guide": "가이드",
+    "restartGuide": "가이드 다시 시작하기",
+    "category": "카테고리",
+    "addCategory": "카테고리 추가하기",
+    "deleteCategory": "카테고리 삭제하기",
+    "defaultCategoryName": "새로운 카테고리"
   },
   "guide": {
     "next": "다음",

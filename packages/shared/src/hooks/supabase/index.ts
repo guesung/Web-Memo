@@ -1,5 +1,8 @@
+export { default as useCategoryDeleteMutation } from './useCategoryDeleteMutation';
+export { default as useCategoryPatchMutation } from './useCategoryPatchMutation';
 export { default as useCategoryPostMutation } from './useCategoryPostMutation';
 export { default as useCategoryQuery } from './useCategoryQuery';
+export { default as useCategoryUpsertMutation } from './useCategoryUpsertMutation';
 export { default as useMemoPatchMutation } from './useMemoPatchMutation';
 export { default as useMemoPostMutation } from './useMemoPostMutation';
 export { default as useMemoQuery } from './useMemoQuery';

@@ -17,8 +17,9 @@ import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import { TrashIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 interface SettingProps extends LanguageType {}
@@ -39,7 +40,7 @@ export default function Setting({ lng }: SettingProps) {
   const { mutate: deleteCategory } = useCategoryDeleteMutation({ supabaseClient });
   const { mutate: upsertCategory } = useCategoryUpsertMutation({ supabaseClient });
   const { mutate: insertCategory } = useCategoryPostMutation({ supabaseClient });
-  const { register, handleSubmit, setValue, watch } = useForm<CategoryForm>({
+  const { register, handleSubmit, setValue } = useForm<CategoryForm>({
     defaultValues: {
       categories: [],
     },
@@ -47,30 +48,47 @@ export default function Setting({ lng }: SettingProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  console.log(watch('categories'));
-
   const handleRestartGuide = () => {
     LocalStorage.remove('guide');
     router.push(PATHS.memos);
   };
 
   const handleAddCategory = () => {
-    insertCategory({ name: '' });
+    insertCategory(
+      { name: '' },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
+          toast({
+            title: t('toastTitle.addSuccess'),
+          });
+        },
+      },
+    );
   };
 
   const handleCategoryDelete = (id: number) => {
-    deleteCategory({ id });
+    deleteCategory(
+      { id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
+          toast({
+            title: t('toastTitle.deleteSuccess'),
+          });
+        },
+      },
+    );
   };
 
   const onCategoryFormSubmit = (data: CategoryForm) => {
-    console.log(data);
     upsertCategory(
       { categoryRequest: data.categories },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
           toast({
-            title: '카테고리 저장 완료',
+            title: t('toastTitleㅋ.saveSuccess'),
           });
         },
       },
@@ -106,13 +124,13 @@ export default function Setting({ lng }: SettingProps) {
         </Select>
       </div>
       <div className="grid grid-cols-12">
-        <Label className="col-span-4 grid place-items-center">가이드</Label>
+        <Label className="col-span-4 grid place-items-center">{t('setting.guide')}</Label>
         <Button variant="outline" className="col-span-2" onClick={handleRestartGuide}>
-          가이드 다시 시작하기
+          {t('setting.restartGuide')}
         </Button>
       </div>
       <form className="grid grid-cols-12" onSubmit={handleSubmit(onCategoryFormSubmit)}>
-        <Label className="col-span-4 grid place-items-center">카테고리</Label>
+        <Label className="col-span-4 grid place-items-center">{t('setting.category')}</Label>
         <div className="col-span-6 space-y-2">
           {categories?.map(({ id }, index) => (
             <div key={id} className="flex items-center gap-2">
@@ -125,32 +143,19 @@ export default function Setting({ lng }: SettingProps) {
                 variant="ghost"
                 size="icon"
                 className="text-destructive h-9 w-9"
+                type="button"
                 onClick={() => handleCategoryDelete(id)}>
-                <span className="sr-only">Delete category</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round">
-                  <path d="M3 6h18" />
-                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                </svg>
+                <TrashIcon size={16} />
               </Button>
             </div>
           ))}
-          <Button variant="outline" className="w-full" onClick={handleAddCategory}>
+          <Button variant="outline" className="w-full" onClick={handleAddCategory} type="button">
             {t('setting.addCategory')}
           </Button>
         </div>
         <div className="col-span-2 grid place-items-center">
           <Button type="submit" variant="outline">
-            저장
+            {t('common.save')}
           </Button>
         </div>
       </form>

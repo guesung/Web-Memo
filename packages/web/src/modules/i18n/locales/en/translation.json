@@ -33,7 +33,10 @@
     "categoryEdited": "The category has been changed successfully!",
     "memoDeleted": "Your memo has been deleted.",
     "memoWishListDeleted": "The memo has been removed from your wish list.",
-    "memoWishListAdded": "The memo has been added to your wish list!"
+    "memoWishListAdded": "The memo has been added to your wish list!",
+    "saveSuccess": "Save completed successfully!",
+    "deleteSuccess": "Delete completed successfully!",
+    "addSuccess": "Add completed successfully!"
   },
   "toastActionMessage": {
     "goTo": "Take me there",
@@ -71,7 +74,12 @@
   },
   "setting": {
     "header": "Settings",
-    "language": "Language"
+    "language": "Language",
+    "guide": "Guide",
+    "restartGuide": "Restart guide",
+    "category": "Category",
+    "addCategory": "Add category",
+    "deleteCategory": "Delete category"
   },
   "guide": {
     "next": "Next",

@@ -61,7 +61,7 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
       initial="initial"
       animate="animate"
       exit="exit"
-      className="h-[780px] w-full md:w-[calc(100vw-200px)]">
+      className="h-[780px] w-full md:w-[calc(100vw-220px)]">
       <Calendar
         localizer={localizer}
         onView={setView}

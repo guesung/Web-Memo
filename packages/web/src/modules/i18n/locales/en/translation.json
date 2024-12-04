@@ -36,7 +36,8 @@
     "memoWishListAdded": "The memo has been added to your wish list!",
     "saveSuccess": "Save completed successfully!",
     "deleteSuccess": "Delete completed successfully!",
-    "addSuccess": "Add completed successfully!"
+    "addSuccess": "Add completed successfully!",
+    "errorSave": "Save failed!"
   },
   "toastActionMessage": {
     "goTo": "Take me there",

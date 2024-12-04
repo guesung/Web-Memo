@@ -35,7 +35,8 @@
     "memoWishListAdded": "위시리스트에 메모를 추가했어요!",
     "saveSuccess": "저장이 완료되었어요!",
     "deleteSuccess": "삭제가 완료되었어요!",
-    "addSuccess": "추가가 완료되었어요!"
+    "addSuccess": "추가가 완료되었어요!",
+    "errorSave": "저장에 실패했어요!"
   },
   "toastActionMessage": {
     "goTo": "바로 이동하기",

@@ -1,6 +1,6 @@
-import { NoMemosError, QUERY_KEY } from '@extension/shared/constants';
-import { MemoSupabaseClient, MemoSupabaseResponse } from '@extension/shared/types';
-import { deleteMemos } from '@extension/shared/utils';
+import { NoMemosError, QUERY_KEY } from '@src/constants';
+import { MemoSupabaseClient, MemoSupabaseResponse } from '@src/types';
+import { deleteMemos } from '@src/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface UseDeleteMemosMutationProps {

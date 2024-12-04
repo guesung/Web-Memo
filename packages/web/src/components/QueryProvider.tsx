@@ -1,5 +1,5 @@
 'use client';
-import { useToast } from '@src/hooks/use-toast';
+import { useToast } from '@extension/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

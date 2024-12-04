@@ -34,7 +34,7 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
   return (
     <html lang={lng} className="h-screen" dir={dir(lng)} suppressHydrationWarning>
       <body className={`${pretendard.variable} font-pretendard h-full`}>
-        <ThemeProvider attribute="class" defaultTheme="system">
+        <ThemeProvider>
           <QueryProvider lng={lng}>
             <Header lng={lng} />
 

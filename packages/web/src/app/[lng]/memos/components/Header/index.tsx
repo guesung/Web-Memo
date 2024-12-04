@@ -3,8 +3,15 @@
 import { PATHS } from '@extension/shared/constants';
 import { checkUserLogin, getUser } from '@extension/shared/utils';
 import { ToggleTheme } from '@src/components';
-import { Avatar, AvatarFallback, AvatarImage } from '@src/components/ui';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from '@src/components/ui';
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/server';
 import { getSupabaseClient, signout } from '@src/modules/supabase/util.server';

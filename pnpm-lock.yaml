@@ -41,6 +41,9 @@ importers:
       next:
         specifier: 14.2.10
         version: 14.2.10(@babel/core@7.25.2)(@playwright/test@1.47.0)(react-dom@18.3.1)(react@18.3.1)
+      next-themes:
+        specifier: ^0.4.3
+        version: 0.4.3(react-dom@18.3.1)(react@18.3.1)
       openai:
         specifier: ^4.57.0
         version: 4.57.0
@@ -534,9 +537,6 @@ importers:
       next-i18next:
         specifier: ^15.3.1
         version: 15.3.1(i18next@23.16.8)(next@14.2.10)(react-i18next@15.1.1)(react@18.3.1)
-      next-themes:
-        specifier: ^0.4.3
-        version: 0.4.3(react-dom@18.3.1)(react@18.3.1)
       react:
         specifier: 18.3.1
         version: 18.3.1

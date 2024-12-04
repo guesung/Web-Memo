@@ -1,5 +1,5 @@
 import { QUERY_KEY } from '@extension/shared/constants';
-import { useCategoryQuery, useMemosUpsertMutation } from '@extension/shared/hooks';
+import { useCategoryQuery, useDeleteMemosMutation, useMemosUpsertMutation } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { MemoRow } from '@extension/shared/types';
 import { isAllSame } from '@extension/shared/utils';
@@ -20,7 +20,7 @@ import {
   ToastAction,
   useToast,
 } from '@src/components/ui';
-import { useDeleteMemosMutation, useSupabaseClient } from '@src/hooks';
+import { useSupabaseClient } from '@src/hooks';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useQueryClient } from '@tanstack/react-query';

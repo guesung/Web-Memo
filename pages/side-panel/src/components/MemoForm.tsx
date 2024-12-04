@@ -104,28 +104,30 @@ function MemoForm() {
   };
 
   return (
-    <form className="relative h-full py-1">
+    <form className="relative flex h-full flex-col gap-1 py-1">
       <Textarea
         {...register('memo', {
           onChange: handleMemoTextAreaChange,
         })}
-        className={cn('resize-none text-sm outline-none', {
+        className={cn('flex-1 resize-none text-sm outline-none', {
           'border-primary focus:border-primary': !isSaved,
         })}
         id="memo-textarea"
         placeholder={I18n.get('memo')}
         onKeyDown={handleKeyDown}
       />
-      <HeartIcon
-        size={16}
-        fill={memoData?.isWish ? 'pink' : ''}
-        fillOpacity={memoData?.isWish ? 100 : 0}
-        onClick={handleWishClick}
-        role="button"
-        className={cn('cursor-pointer transition-transform hover:scale-110', 'active:scale-95', {
-          'animate-heart-pop': memoData?.isWish,
-        })}
-      />
+      <div>
+        <HeartIcon
+          size={16}
+          fill={memoData?.isWish ? 'pink' : ''}
+          fillOpacity={memoData?.isWish ? 100 : 0}
+          onClick={handleWishClick}
+          role="button"
+          className={cn('cursor-pointer transition-transform hover:scale-110 active:scale-95', {
+            'animate-heart-pop': memoData?.isWish,
+          })}
+        />
+      </div>
     </form>
   );
 }

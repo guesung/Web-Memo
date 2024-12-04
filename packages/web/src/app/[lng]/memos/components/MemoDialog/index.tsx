@@ -11,7 +11,7 @@ import { useToast } from '@src/hooks/use-toast';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useRouter } from 'next/navigation';
-import { FocusEvent, useEffect, useState } from 'react';
+import { FocusEvent, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { MemoInput } from '../../types';
@@ -29,6 +29,7 @@ export default function MemoDialog({ lng, id }: MemoDialog) {
   const supabaseClient = useSupabaseClient();
   const { memo: memoData } = useMemoQuery({ supabaseClient, id: Number(id) });
   const { toast } = useToast();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [open, setOpen] = useState(false);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation({
     supabaseClient,
@@ -39,6 +40,14 @@ export default function MemoDialog({ lng, id }: MemoDialog) {
       memo: '',
     },
   });
+  const adjustTextareaHeight = (event: FocusEvent<HTMLTextAreaElement>) => {
+    event.target.style.height = `${event.target.scrollHeight}px`;
+  };
+  const { ref, ...rest } = register('memo', {
+    onChange: adjustTextareaHeight,
+  });
+
+  useImperativeHandle(ref, () => textareaRef.current);
 
   const saveMemo = () => {
     console.log(watch('memo'));
@@ -62,9 +71,11 @@ export default function MemoDialog({ lng, id }: MemoDialog) {
     router.replace(searchParams.getUrl(), { scroll: false });
   };
 
-  const adjustTextareaHeight = (event: FocusEvent<HTMLTextAreaElement>) => {
-    event.target.style.height = `${event.target.scrollHeight}px`;
-  };
+  useEffect(() => {
+    if (!textareaRef.current) return;
+
+    textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+  }, [textareaRef, ref]);
 
   useEffect(() => {
     setValue('memo', memoData?.memo ?? '');
@@ -82,12 +93,10 @@ export default function MemoDialog({ lng, id }: MemoDialog) {
           <MemoCardHeader memo={memoData as GetMemoResponse} />
           <CardContent>
             <Textarea
-              {...register('memo', {
-                onChange: adjustTextareaHeight,
-              })}
+              {...rest}
               onKeyDown={handleKeyDown}
-              onFocus={adjustTextareaHeight}
               className="outline-none focus:border-gray-300 focus:outline-none"
+              ref={textareaRef}
             />
 
             <div className="h-4" />

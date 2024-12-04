@@ -40,6 +40,8 @@ function MemoForm() {
   });
 
   const saveMemo = async () => {
+    abortThrottle();
+
     const memoInfo = await getMemoInfo();
 
     const memo = { ...memoInfo, memo: watch('memo'), isWish: watch('isWish') };
@@ -47,7 +49,6 @@ function MemoForm() {
     if (memoData) mutateMemoPatch({ id: memoData.id, memoRequest: memo });
     else mutateMemoPost(memo);
 
-    abortThrottle();
     setIsSaved(true);
   };
 

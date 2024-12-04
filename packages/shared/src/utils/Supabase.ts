@@ -1,5 +1,5 @@
 import { SUPABASE } from '@src/constants';
-import { CategoryTable, MemoRow, MemoSupabaseClient, MemoTable } from '@src/types';
+import { CategoryRow, CategoryTable, MemoRow, MemoSupabaseClient, MemoTable } from '@src/types';
 import type { QueryData } from '@supabase/supabase-js';
 
 export const getMemos = async (supabaseClient: MemoSupabaseClient) =>
@@ -37,3 +37,17 @@ export const getCategories = async (supabaseClient: MemoSupabaseClient) =>
 
 export const insertCategory = async (supabaseClient: MemoSupabaseClient, categoryRequest: CategoryTable['Insert']) =>
   supabaseClient.from('category').insert(categoryRequest).select();
+
+export const updateCategory = async (
+  supabaseClient: MemoSupabaseClient,
+  id: CategoryRow['id'],
+  categoryRequest: CategoryTable['Update'],
+) => supabaseClient.from('category').update(categoryRequest).eq('id', id).select();
+
+export const deleteCategory = async (supabaseClient: MemoSupabaseClient, id: CategoryRow['id']) =>
+  supabaseClient.from('category').delete().eq('id', id).select();
+
+export const upsertCategories = async (
+  supabaseClient: MemoSupabaseClient,
+  categoryRequest: CategoryTable['Insert'][],
+) => supabaseClient.from('category').upsert(categoryRequest).select();

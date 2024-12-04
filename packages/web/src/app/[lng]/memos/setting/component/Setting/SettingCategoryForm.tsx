@@ -5,8 +5,8 @@ import {
   useCategoryQuery,
   useCategoryUpsertMutation,
 } from '@extension/shared/hooks';
-import { Button } from '@src/components/ui/button';
-import { Label } from '@src/components/ui/label';
+import { Button } from '@src/components/ui';
+import { Label } from '@src/components/ui';
 import { useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
 import { LanguageType } from '@src/modules/i18n';

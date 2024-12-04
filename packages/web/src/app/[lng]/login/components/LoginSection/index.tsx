@@ -1,6 +1,6 @@
 'use server';
 
-import { Button } from '@src/components/ui/button';
+import { Button } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/server';
 import { signInWithOAuth } from '@src/modules/supabase/util.server';

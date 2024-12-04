@@ -2,12 +2,12 @@
 
 import { COOKIE_KEY } from '@extension/shared/constants';
 import { Slot } from '@radix-ui/react-slot';
-import { Button } from '@src/components/ui/button';
-import { Input } from '@src/components/ui/input';
-import { Separator } from '@src/components/ui/separator';
-import { Sheet, SheetContent } from '@src/components/ui/sheet';
-import { Skeleton } from '@src/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui/tooltip';
+import { Button } from '@src/components/ui';
+import { Input } from '@src/components/ui';
+import { Separator } from '@src/components/ui';
+import { Sheet, SheetContent } from '@src/components/ui';
+import { Skeleton } from '@src/components/ui';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui';
 import { useIsMobile } from '@src/hooks/use-mobile';
 import { cn } from '@src/utils';
 import { cva, VariantProps } from 'class-variance-authority';

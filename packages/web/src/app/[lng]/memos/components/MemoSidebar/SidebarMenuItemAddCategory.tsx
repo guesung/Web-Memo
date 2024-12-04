@@ -1,8 +1,8 @@
 'use client';
 
 import { useCategoryPostMutation } from '@extension/shared/hooks';
-import { Button } from '@src/components/ui/button';
-import { Input } from '@src/components/ui/input';
+import { Button } from '@src/components/ui';
+import { Input } from '@src/components/ui';
 import { useSupabaseClient } from '@src/hooks';
 import { PlusIcon } from 'lucide-react';
 import { memo, useState } from 'react';

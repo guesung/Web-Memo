@@ -3,7 +3,7 @@
 import { PATHS, QUERY_KEY } from '@extension/shared/constants';
 import { checkUserLogin, getCategories } from '@extension/shared/utils';
 import { Header, HydrationBoundaryWrapper } from '@src/components';
-import { SidebarProvider } from '@src/components/ui/sidebar';
+import { SidebarProvider } from '@src/components/ui';
 import { LanguageParams } from '@src/modules/i18n';
 import { getSupabaseClient } from '@src/modules/supabase/util.server';
 import { redirect } from 'next/navigation';

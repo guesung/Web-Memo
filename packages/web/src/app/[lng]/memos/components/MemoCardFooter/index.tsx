@@ -1,10 +1,10 @@
 import { useMemoPatchMutation } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { GetMemoResponse } from '@extension/shared/utils';
-import { Badge } from '@src/components/ui/badge';
-import { Button } from '@src/components/ui/button';
-import { CardFooter } from '@src/components/ui/card';
-import { ToastAction } from '@src/components/ui/toast';
+import { Badge } from '@src/components/ui';
+import { Button } from '@src/components/ui';
+import { CardFooter } from '@src/components/ui';
+import { ToastAction } from '@src/components/ui';
 import { useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
 import { LanguageType } from '@src/modules/i18n';

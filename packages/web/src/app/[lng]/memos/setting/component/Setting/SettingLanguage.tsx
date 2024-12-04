@@ -1,5 +1,5 @@
-import { Label } from '@src/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@src/components/ui/select';
+import { Label } from '@src/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@src/components/ui';
 import { useLanguage } from '@src/hooks';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';

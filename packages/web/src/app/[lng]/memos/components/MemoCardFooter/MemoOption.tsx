@@ -4,16 +4,21 @@ import { useSearchParams } from '@extension/shared/modules/search-params';
 import { MemoRow } from '@extension/shared/types';
 import { isAllSame } from '@extension/shared/utils';
 import { requestRefetchTheMemos } from '@extension/shared/utils/extension';
-import { Button } from '@src/components/ui/button';
 import {
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@src/components/ui/dropdown-menu';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@src/components/ui/select';
-import { ToastAction } from '@src/components/ui/toast';
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  ToastAction,
+} from '@src/components/ui';
 import { useDeleteMemosMutation, useSupabaseClient } from '@src/hooks';
 import { useToast } from '@src/hooks/use-toast';
 import { LanguageType } from '@src/modules/i18n';

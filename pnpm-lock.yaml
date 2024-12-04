@@ -279,7 +279,7 @@ importers:
   packages/ui:
     dependencies:
       '@extension/shared':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../shared
       '@hookform/resolvers':
         specifier: ^3.9.1

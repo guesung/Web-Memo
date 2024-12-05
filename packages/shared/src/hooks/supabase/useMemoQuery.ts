@@ -1,5 +1,5 @@
 import { QUERY_KEY } from '@src/constants';
-import { MemoSupabaseClient, MemoSupabaseResponse } from '@src/types';
+import { MemoSupabaseClient } from '@src/types';
 import { formatUrl, MemoService } from '@src/utils';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
@@ -17,7 +17,7 @@ export default function useMemoQuery({ url, id }: Omit<UseMemoQueryProps, 'supab
   const query = useSuspenseQuery({
     queryFn: () => new MemoService(supabaseClient).getMemos(),
     queryKey: QUERY_KEY.memos(),
-    select: ({ data: memos }: MemoSupabaseResponse) => {
+    select: ({ data: memos }) => {
       if (memos?.length === 0) return;
 
       if (id) return memos?.find(memo => memo.id === id);

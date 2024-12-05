@@ -1,6 +1,7 @@
 import { MOTION_VARIANTS } from '@extension/shared/constants';
 import { useSearchParams } from '@extension/shared/modules/search-params';
-import { cn, GetMemoResponse } from '@extension/shared/utils';
+import { GetMemoResponse } from '@extension/shared/types';
+import { cn } from '@extension/shared/utils';
 import { Card, CardContent } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import { HTMLMotionProps, motion } from 'framer-motion';

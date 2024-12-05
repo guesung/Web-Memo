@@ -1,6 +1,5 @@
 import { SUPABASE } from '@src/constants';
 import { CategoryRow, CategoryTable, MemoRow, MemoSupabaseClient, MemoTable } from '@src/types';
-import type { QueryData } from '@supabase/supabase-js';
 
 export class SupabaseService {
   _supabaseClient: MemoSupabaseClient;
@@ -80,6 +79,3 @@ export class AuthService extends SupabaseService {
     return !!user?.data?.user;
   }
 }
-
-// GetMemoResponse 타입은 여전히 필요할 수 있으므로 유지
-export type GetMemoResponse = QueryData<ReturnType<MemoService['getMemos']>>[number];

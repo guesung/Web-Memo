@@ -54,17 +54,14 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
   };
 
   const handleCategoryDelete = (id: number) => {
-    deleteCategory(
-      { id },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
-          toast({
-            title: t('toastTitle.deleteSuccess'),
-          });
-        },
+    deleteCategory(id, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
+        toast({
+          title: t('toastTitle.deleteSuccess'),
+        });
       },
-    );
+    });
   };
 
   const onCategoryFormSubmit = (data: CategoryForm) => {

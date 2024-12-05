@@ -1,81 +1,66 @@
 import { SUPABASE } from '@src/constants';
 import { CategoryRow, CategoryTable, MemoRow, MemoSupabaseClient, MemoTable } from '@src/types';
 
-export class SupabaseService {
-  _supabaseClient: MemoSupabaseClient;
+export class MemoService {
+  supabaseClient: MemoSupabaseClient;
 
   constructor(supabaseClient: MemoSupabaseClient) {
-    this.#validateSupabaseClient(supabaseClient);
-
-    this._supabaseClient = supabaseClient;
+    this.supabaseClient = supabaseClient;
   }
 
-  #validateSupabaseClient(supabaseClient: MemoSupabaseClient) {
-    if (!supabaseClient) throw new Error('Supabase client가 정의되지 않았습니다.');
-  }
+  insertMemo = async (request: MemoTable['Insert']) =>
+    this.supabaseClient.from(SUPABASE.schemaMemo).insert(request).select();
+
+  upsertMemos = async (request: MemoTable['Insert'][]) =>
+    this.supabaseClient.from(SUPABASE.schemaMemo).upsert(request).select();
+
+  getMemos = async () =>
+    this.supabaseClient.from(SUPABASE.schemaMemo).select('*,category(name)').order('created_at', { ascending: false });
+
+  updateMemo = async ({ id, request }: { id: MemoRow['id']; request: MemoTable['Update'] }) =>
+    this.supabaseClient.from(SUPABASE.schemaMemo).update(request).eq('id', id).select();
+
+  deleteMemo = async (id: MemoRow['id']) =>
+    this.supabaseClient.from(SUPABASE.schemaMemo).delete().eq('id', id).select();
+
+  deleteMemos = async (idList: MemoRow['id'][]) =>
+    this.supabaseClient.from(SUPABASE.schemaMemo).delete().in('id', idList).select();
 }
 
-export class MemoService extends SupabaseService {
-  #schema = this._supabaseClient.from(SUPABASE.schemaMemo);
+export class CategoryService {
+  supabaseClient: MemoSupabaseClient;
 
-  async insertMemo(request: MemoTable['Insert']) {
-    return this.#schema.insert(request).select();
+  constructor(supabaseClient: MemoSupabaseClient) {
+    this.supabaseClient = supabaseClient;
   }
 
-  async upsertMemos(request: MemoTable['Insert'][]) {
-    return this.#schema.upsert(request).select();
-  }
+  insertCategory = async (request: CategoryTable['Insert']) =>
+    this.supabaseClient.from(SUPABASE.schemaCategory).insert(request).select();
 
-  async getMemos() {
-    return this.#schema.select('*,category(name)').order('created_at', { ascending: false });
-  }
+  upsertCategories = async (request: CategoryTable['Insert'][]) =>
+    this.supabaseClient.from(SUPABASE.schemaCategory).upsert(request).select();
 
-  async updateMemo(id: MemoRow['id'], request: MemoTable['Update']) {
-    return this.#schema.update(request).eq('id', id).select();
-  }
+  getCategories = async () =>
+    this.supabaseClient.from(SUPABASE.schemaCategory).select('*').order('created_at', { ascending: false });
 
-  async deleteMemo(id: MemoRow['id']) {
-    return this.#schema.delete().eq('id', id).select();
-  }
+  updateCategory = async ({ id, request }: { id: CategoryRow['id']; request: CategoryTable['Update'] }) =>
+    this.supabaseClient.from(SUPABASE.schemaCategory).update(request).eq('id', id).select();
 
-  async deleteMemos(idList: MemoRow['id'][]) {
-    return this.#schema.delete().in('id', idList).select();
-  }
+  deleteCategory = async (id: CategoryRow['id']) =>
+    this.supabaseClient.from(SUPABASE.schemaCategory).delete().eq('id', id).select();
 }
 
-export class CategoryService extends SupabaseService {
-  #schema = this._supabaseClient.from(SUPABASE.schemaCategory);
+export class AuthService {
+  supabaseClient: MemoSupabaseClient;
 
-  async insertCategory(request: CategoryTable['Insert']) {
-    return this.#schema.insert(request).select();
+  constructor(supabaseClient: MemoSupabaseClient) {
+    this.supabaseClient = supabaseClient;
   }
 
-  async upsertCategories(request: CategoryTable['Insert'][]) {
-    return this.#schema.upsert(request).select();
-  }
+  getUser = () => this.supabaseClient.auth.getUser();
 
-  async getCategories() {
-    return this.#schema.select('*').order('created_at', { ascending: false });
-  }
-
-  async updateCategory(id: CategoryRow['id'], request: CategoryTable['Update']) {
-    return this.#schema.update(request).eq('id', id).select();
-  }
-
-  async deleteCategory(id: CategoryRow['id']) {
-    return this.#schema.delete().eq('id', id).select();
-  }
-}
-
-export class AuthService extends SupabaseService {
-  #schema = this._supabaseClient.auth;
-
-  getUser() {
-    return this.#schema.getUser();
-  }
-
-  async checkUserLogin() {
-    const user = await this.#schema.getUser();
+  checkUserLogin = async () => {
+    const user = await this.supabaseClient.auth.getUser();
     return !!user?.data?.user;
-  }
+  };
 }

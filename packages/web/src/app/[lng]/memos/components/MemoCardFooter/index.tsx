@@ -1,11 +1,10 @@
 import { useMemoPatchMutation } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
-import { GetMemoResponse } from '@extension/shared/utils';
+import { cn, GetMemoResponse } from '@extension/shared/utils';
 import { Badge, Button, CardFooter, ToastAction, useToast } from '@src/components/ui';
 import { useSupabaseClient } from '@src/hooks';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
-import { cn } from '@src/utils';
 import { HeartIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { MouseEvent, PropsWithChildren } from 'react';

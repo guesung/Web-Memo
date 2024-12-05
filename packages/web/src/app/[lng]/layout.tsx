@@ -4,7 +4,6 @@ import './globals.css';
 import { Header, QueryProvider, ThemeProvider } from '@src/components';
 import { Toaster } from '@src/components/ui';
 import { LanguageParams, languages } from '@src/modules/i18n';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { dir } from 'i18next';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
@@ -39,7 +38,6 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
             <Header lng={lng} />
 
             {children}
-            <ReactQueryDevtools initialIsOpen={false} />
           </QueryProvider>
         </ThemeProvider>
 

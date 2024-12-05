@@ -21,6 +21,9 @@ export default function QueryProvider({ children, lng }: QueryProviderProps) {
             onError: () => {
               toast({ title: t('toastTitle.errorSave') });
             },
+            onSuccess: () => {
+              toast({ title: t('toastTitle.successSave') });
+            },
           },
         },
       }),

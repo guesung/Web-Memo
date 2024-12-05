@@ -2,7 +2,6 @@
 
 import { useMemosQuery } from '@extension/shared/hooks';
 import type { SearchParamViewType } from '@extension/shared/modules/search-params';
-import { useSupabaseClient } from '@src/hooks';
 import { useGuide } from '@src/modules/guide';
 import { LanguageType } from '@src/modules/i18n';
 import { useTranslation } from 'react-i18next';
@@ -19,11 +18,8 @@ interface MemoViewProps extends LanguageType {
 
 export default function MemoView({ lng, isWish = '', category = '', view = 'grid' }: MemoViewProps) {
   const { t } = useTranslation(lng);
-  const supabaseClient = useSupabaseClient();
 
-  const { memos } = useMemosQuery({
-    supabaseClient,
-  });
+  const { memos } = useMemosQuery();
 
   useGuide({ lng });
 

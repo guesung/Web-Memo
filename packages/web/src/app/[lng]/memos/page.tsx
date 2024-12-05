@@ -2,6 +2,7 @@
 
 import { QUERY_KEY } from '@extension/shared/constants';
 import { SearchParamViewType } from '@extension/shared/modules/search-params';
+import { MemoService } from '@extension/shared/utils';
 import { HydrationBoundaryWrapper } from '@src/components';
 import { LanguageParams } from '@src/modules/i18n';
 import { getSupabaseClient } from '@src/modules/supabase/util.server';

@@ -17,63 +17,66 @@ export class SupabaseService {
 }
 
 export class MemoService extends SupabaseService {
+  #schema = this._supabaseClient.from(SUPABASE.schemaMemo);
+
   async insertMemo(request: MemoTable['Insert']) {
-    return this._supabaseClient.from(SUPABASE.schemaMemo).insert(request).select();
+    return this.#schema.insert(request).select();
   }
 
   async upsertMemos(request: MemoTable['Insert'][]) {
-    return this._supabaseClient.from(SUPABASE.schemaMemo).upsert(request).select();
+    return this.#schema.upsert(request).select();
   }
 
   async getMemos() {
-    return this._supabaseClient
-      .from(SUPABASE.schemaMemo)
-      .select('*,category(name)')
-      .order('created_at', { ascending: false });
+    return this.#schema.select('*,category(name)').order('created_at', { ascending: false });
   }
 
   async updateMemo(id: MemoRow['id'], request: MemoTable['Update']) {
-    return this._supabaseClient.from(SUPABASE.schemaMemo).update(request).eq('id', id).select();
+    return this.#schema.update(request).eq('id', id).select();
   }
 
   async deleteMemo(id: MemoRow['id']) {
-    return this._supabaseClient.from(SUPABASE.schemaMemo).delete().eq('id', id).select();
+    return this.#schema.delete().eq('id', id).select();
   }
 
   async deleteMemos(idList: MemoRow['id'][]) {
-    return this._supabaseClient.from(SUPABASE.schemaMemo).delete().in('id', idList).select();
+    return this.#schema.delete().in('id', idList).select();
   }
 }
 
 export class CategoryService extends SupabaseService {
+  #schema = this._supabaseClient.from(SUPABASE.schemaCategory);
+
   async insertCategory(request: CategoryTable['Insert']) {
-    return this._supabaseClient.from(SUPABASE.schemaCategory).insert(request).select();
+    return this.#schema.insert(request).select();
   }
 
   async upsertCategories(request: CategoryTable['Insert'][]) {
-    return this._supabaseClient.from(SUPABASE.schemaCategory).upsert(request).select();
+    return this.#schema.upsert(request).select();
   }
 
   async getCategories() {
-    return this._supabaseClient.from(SUPABASE.schemaCategory).select('*').order('created_at', { ascending: false });
+    return this.#schema.select('*').order('created_at', { ascending: false });
   }
 
   async updateCategory(id: CategoryRow['id'], request: CategoryTable['Update']) {
-    return this._supabaseClient.from(SUPABASE.schemaCategory).update(request).eq('id', id).select();
+    return this.#schema.update(request).eq('id', id).select();
   }
 
   async deleteCategory(id: CategoryRow['id']) {
-    return this._supabaseClient.from(SUPABASE.schemaCategory).delete().eq('id', id).select();
+    return this.#schema.delete().eq('id', id).select();
   }
 }
 
 export class AuthService extends SupabaseService {
+  #schema = this._supabaseClient.auth;
+
   getUser() {
-    return this._supabaseClient.auth.getUser();
+    return this.#schema.getUser();
   }
 
   async checkUserLogin() {
-    const user = await this._supabaseClient.auth.getUser();
+    const user = await this.#schema.getUser();
     return !!user?.data?.user;
   }
 }

@@ -7,7 +7,7 @@ import useSupabaseQuery from './useSupabaseQuery';
 
 type MutationVariables = {
   id: MemoRow['id'];
-  memoRequest: MemoTable['Update'];
+  request: MemoTable['Update'];
 };
 type MutationData = Awaited<ReturnType<MemoService['updateMemo']>>;
 type MutationError = Error;
@@ -17,8 +17,8 @@ export default function useMemoPatchMutation() {
   const { data: supabaseClient } = useSupabaseQuery();
 
   return useMutation<MutationData, MutationError, MutationVariables>({
-    mutationFn: async ({ id, memoRequest }) => await new MemoService(supabaseClient).updateMemo(id, memoRequest),
-    onMutate: async ({ id, memoRequest }) => {
+    mutationFn: new MemoService(supabaseClient).updateMemo,
+    onMutate: async ({ id, request }) => {
       await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
       const previousMemos = queryClient.getQueryData<MemoSupabaseResponse>(QUERY_KEY.memos());
 
@@ -35,7 +35,7 @@ export default function useMemoPatchMutation() {
 
       if (currentMemoIndex === -1 || !currentMemoBase) throw new NoMemoError();
 
-      updatedMemosData.splice(currentMemoIndex, 1, { ...currentMemoBase, ...memoRequest });
+      updatedMemosData.splice(currentMemoIndex, 1, { ...currentMemoBase, ...request });
 
       await queryClient.setQueryData(QUERY_KEY.memos(), { ...previousMemos, data: updatedMemosData });
 

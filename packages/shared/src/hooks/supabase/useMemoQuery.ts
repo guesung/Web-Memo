@@ -15,7 +15,7 @@ export default function useMemoQuery({ url, id }: Omit<UseMemoQueryProps, 'supab
   const { data: supabaseClient } = useSupabaseQuery();
 
   const query = useSuspenseQuery({
-    queryFn: () => new MemoService(supabaseClient).getMemos(),
+    queryFn: new MemoService(supabaseClient).getMemos,
     queryKey: QUERY_KEY.memos(),
     select: ({ data: memos }) => {
       if (memos?.length === 0) return;

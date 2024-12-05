@@ -9,7 +9,7 @@ export default function useSupabaseUser() {
   const { data: supabaseClient } = useSupabaseQuery();
 
   const query = useSuspenseQuery<UserResponse, Error>({
-    queryFn: () => new AuthService(supabaseClient).getUser(),
+    queryFn: new AuthService(supabaseClient).getUser,
     queryKey: QUERY_KEY.user(),
   });
 

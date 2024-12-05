@@ -36,7 +36,8 @@
     "saveSuccess": "저장이 완료되었어요!",
     "deleteSuccess": "삭제가 완료되었어요!",
     "addSuccess": "추가가 완료되었어요!",
-    "errorSave": "저장에 실패했어요!"
+    "errorSave": "저장에 실패했어요!",
+    "successSave": "변경사항이 저장되었습니다."
   },
   "toastActionMessage": {
     "goTo": "바로 이동하기",

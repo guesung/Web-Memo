@@ -3,7 +3,7 @@ import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { formatDate } from '@extension/shared/utils';
 import { Button } from '@extension/ui';
-import { Card, CardContent, Dialog, DialogContent, Textarea, useToast } from '@src/components/ui';
+import { Card, CardContent, Dialog, DialogContent, Textarea } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useRouter } from 'next/navigation';
@@ -23,7 +23,6 @@ export default function MemoDialog({ lng, id }: MemoDialog) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { memo: memoData } = useMemoQuery({ id: Number(id) });
-  const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [open, setOpen] = useState(false);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
@@ -43,13 +42,7 @@ export default function MemoDialog({ lng, id }: MemoDialog) {
   useImperativeHandle(ref, () => textareaRef.current);
 
   const saveMemo = () => {
-    console.log(watch('memo'));
-    mutateMemoPatch(
-      { id: Number(id), memoRequest: { memo: watch('memo') } },
-      {
-        onSuccess: () => toast({ title: t('toastTitle.memoEdited') }),
-      },
-    );
+    mutateMemoPatch({ id: Number(id), memoRequest: { memo: watch('memo') } });
   };
 
   const handleKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {

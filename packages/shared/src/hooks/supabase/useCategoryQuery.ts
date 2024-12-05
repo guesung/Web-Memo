@@ -8,7 +8,7 @@ export default function useCategoryQuery() {
   const { data: supabaseClient } = useSupabaseQuery();
 
   const query = useSuspenseQuery({
-    queryFn: () => new CategoryService(supabaseClient).getCategories(),
+    queryFn: new CategoryService(supabaseClient).getCategories,
     queryKey: QUERY_KEY.category(),
   });
 

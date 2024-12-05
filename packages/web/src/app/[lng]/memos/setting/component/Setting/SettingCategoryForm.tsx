@@ -1,14 +1,12 @@
-import { QUERY_KEY } from '@extension/shared/constants';
 import {
   useCategoryDeleteMutation,
   useCategoryPostMutation,
   useCategoryQuery,
   useCategoryUpsertMutation,
 } from '@extension/shared/hooks';
-import { Button, Label, useToast } from '@src/components/ui';
+import { Button, Label } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
-import { useQueryClient } from '@tanstack/react-query';
 import { TrashIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -34,48 +32,19 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
       categories: [],
     },
   });
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   const handleAddCategory = () => {
     const defaultCategoryName = t('setting.defaultCategoryName');
 
-    insertCategory(
-      { name: defaultCategoryName },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
-          toast({
-            title: t('toastTitle.addSuccess'),
-          });
-        },
-      },
-    );
+    insertCategory({ name: defaultCategoryName });
   };
 
   const handleCategoryDelete = (id: number) => {
-    deleteCategory(id, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
-        toast({
-          title: t('toastTitle.deleteSuccess'),
-        });
-      },
-    });
+    deleteCategory(id, {});
   };
 
   const onCategoryFormSubmit = (data: CategoryForm) => {
-    upsertCategory(
-      { categoryRequest: data.categories },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
-          toast({
-            title: t('toastTitleㅋ.saveSuccess'),
-          });
-        },
-      },
-    );
+    upsertCategory({ categoryRequest: data.categories }, {});
   };
 
   useEffect(() => {

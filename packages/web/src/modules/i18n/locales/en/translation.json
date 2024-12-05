@@ -37,7 +37,8 @@
     "saveSuccess": "Save completed successfully!",
     "deleteSuccess": "Delete completed successfully!",
     "addSuccess": "Add completed successfully!",
-    "errorSave": "Save failed!"
+    "errorSave": "Save failed!",
+    "successSave": "Changes have been saved."
   },
   "toastActionMessage": {
     "goTo": "Take me there",

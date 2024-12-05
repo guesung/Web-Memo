@@ -6,6 +6,8 @@ import { AuthService } from '../Supabase';
 import { Storage } from './module';
 
 export const getSupabaseClient = async () => {
+  1;
+
   try {
     const supabaseClientInstance = createClient<Database>(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey, {
       db: { schema: SUPABASE.schemaMemo },

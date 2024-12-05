@@ -36,7 +36,7 @@ export default function MemoCardFooter({ memo, lng, isOptionShown, children, ...
     mutateMemoPatch(
       {
         id: memo.id,
-        memoRequest: {
+        request: {
           isWish: !memo.isWish,
         },
       },
@@ -52,7 +52,7 @@ export default function MemoCardFooter({ memo, lng, isOptionShown, children, ...
                 onClick={() => {
                   mutateMemoPatch({
                     id: memo.id,
-                    memoRequest: {
+                    request: {
                       isWish: memo.isWish,
                     },
                   });

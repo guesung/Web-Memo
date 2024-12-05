@@ -44,7 +44,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
   };
 
   const onCategoryFormSubmit = (data: CategoryForm) => {
-    upsertCategory({ categoryRequest: data.categories }, {});
+    upsertCategory(data.categories);
   };
 
   useEffect(() => {

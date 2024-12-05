@@ -42,7 +42,7 @@ export default function MemoDialog({ lng, id }: MemoDialog) {
   useImperativeHandle(ref, () => textareaRef.current);
 
   const saveMemo = () => {
-    mutateMemoPatch({ id: Number(id), memoRequest: { memo: watch('memo') } });
+    mutateMemoPatch({ id: Number(id), request: { memo: watch('memo') } });
   };
 
   const handleKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {

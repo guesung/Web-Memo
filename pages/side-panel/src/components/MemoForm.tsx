@@ -39,7 +39,7 @@ function MemoForm() {
 
     const memo = { ...memoInfo, memo: watch('memo'), isWish: watch('isWish') };
 
-    if (memoData) mutateMemoPatch({ id: memoData.id, memoRequest: memo });
+    if (memoData) mutateMemoPatch({ id: memoData.id, request: memo });
     else mutateMemoPost(memo);
   };
 

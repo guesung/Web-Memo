@@ -12,11 +12,10 @@ import withAuthentication from '@src/hoc/withAuthentication';
 import { MemoInput } from '@src/types/Input';
 import { getMemoWishListUrl } from '@src/utils';
 import { HeartIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 function MemoForm() {
-  const [isSaved, setIsSaved] = useState(true);
   const { toast } = useToast();
   const { throttle, abortThrottle } = useThrottle();
   const { data: tab } = useTabQuery();
@@ -48,8 +47,6 @@ function MemoForm() {
 
     if (memoData) mutateMemoPatch({ id: memoData.id, memoRequest: memo });
     else mutateMemoPost(memo);
-
-    setIsSaved(true);
   };
 
   useDidMount(() => {
@@ -63,7 +60,6 @@ function MemoForm() {
 
   const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setValue('memo', event.target.value);
-    setIsSaved(false);
 
     throttle(saveMemo, 300);
   };
@@ -110,9 +106,7 @@ function MemoForm() {
         {...register('memo', {
           onChange: handleMemoTextAreaChange,
         })}
-        className={cn('flex-1 resize-none text-sm outline-none', {
-          'border-primary focus:border-primary': !isSaved,
-        })}
+        className={cn('flex-1 resize-none text-sm outline-none')}
         id="memo-textarea"
         placeholder={I18n.get('memo')}
         onKeyDown={handleKeyDown}

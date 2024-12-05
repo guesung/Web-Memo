@@ -1,6 +1,8 @@
-import { CategoryRow, MemoSupabaseClient } from '@src/types';
+import { CategoryRow } from '@src/types';
 import { CategoryService } from '@src/utils';
 import { useMutation } from '@tanstack/react-query';
+
+import useSupabaseQuery from './useSupabaseQuery';
 
 type MutationVariables = {
   id: CategoryRow['id'];
@@ -8,11 +10,9 @@ type MutationVariables = {
 type MutationData = Awaited<ReturnType<CategoryService['deleteCategory']>>;
 type MutationError = Error;
 
-interface UseCategoryDeleteMutationProps {
-  supabaseClient: MemoSupabaseClient;
-}
+export default function useCategoryDeleteMutation() {
+  const { data: supabaseClient } = useSupabaseQuery();
 
-export default function useCategoryDeleteMutation({ supabaseClient }: UseCategoryDeleteMutationProps) {
   return useMutation<MutationData, MutationError, MutationVariables>({
     mutationFn: ({ id }) => new CategoryService(supabaseClient).deleteCategory(id),
   });

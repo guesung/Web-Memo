@@ -1,14 +1,13 @@
 import { QUERY_KEY } from '@src/constants';
-import type { CategorySupabaseResponse, CategoryTable, MemoSupabaseClient } from '@src/types';
+import type { CategorySupabaseResponse, CategoryTable } from '@src/types';
 import { CategoryService } from '@src/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-interface UseCategoryPostMutationProps {
-  supabaseClient: MemoSupabaseClient;
-}
+import useSupabaseQuery from './useSupabaseQuery';
 
-export default function useCategoryPostMutation({ supabaseClient }: UseCategoryPostMutationProps) {
+export default function useCategoryPostMutation() {
   const queryClient = useQueryClient();
+  const { data: supabaseClient } = useSupabaseQuery();
 
   return useMutation<CategorySupabaseResponse, Error, CategoryTable['Insert']>({
     mutationFn: categoryRequest => new CategoryService(supabaseClient).insertCategory(categoryRequest),

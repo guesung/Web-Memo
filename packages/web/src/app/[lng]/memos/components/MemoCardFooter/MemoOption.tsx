@@ -20,7 +20,6 @@ import {
   ToastAction,
   useToast,
 } from '@src/components/ui';
-import { useSupabaseClient } from '@src/hooks';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -35,17 +34,14 @@ interface MemoOptionProps extends LanguageType {
 
 export default function MemoOption({ lng, memos, closeMemoOption }: MemoOptionProps) {
   const { t } = useTranslation(lng);
-  const supabaseClient = useSupabaseClient();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
-  const { categories } = useCategoryQuery({ supabaseClient });
+  const { categories } = useCategoryQuery();
   const queryClient = useQueryClient();
-  const { mutate: mutateUpsertMemo } = useMemosUpsertMutation({
-    supabaseClient,
-  });
-  const { mutate: mutateDeleteMemo } = useDeleteMemosMutation({ supabaseClient });
+  const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
+  const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
 
   const defaultCategoryId = isAllSame(memos.map(memo => memo.category_id)) ? String(memos.at(0)?.category_id) : '';
 

@@ -1,6 +1,8 @@
-import { CategoryTable, MemoSupabaseClient } from '@src/types';
+import { CategoryTable } from '@src/types';
 import { CategoryService } from '@src/utils';
 import { useMutation } from '@tanstack/react-query';
+
+import useSupabaseQuery from './useSupabaseQuery';
 
 type MutationVariables = {
   categoryRequest: CategoryTable['Insert'][];
@@ -8,11 +10,9 @@ type MutationVariables = {
 type MutationData = Awaited<ReturnType<CategoryService['upsertCategories']>>;
 type MutationError = Error;
 
-interface UseCategoryUpsertMutationProps {
-  supabaseClient: MemoSupabaseClient;
-}
+export default function useCategoryUpsertMutation() {
+  const { data: supabaseClient } = useSupabaseQuery();
 
-export default function useCategoryUpsertMutation({ supabaseClient }: UseCategoryUpsertMutationProps) {
   return useMutation<MutationData, MutationError, MutationVariables>({
     mutationFn: ({ categoryRequest }) => new CategoryService(supabaseClient).upsertCategories(categoryRequest),
   });

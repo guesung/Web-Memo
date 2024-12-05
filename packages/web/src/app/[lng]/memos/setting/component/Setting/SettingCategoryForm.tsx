@@ -6,7 +6,6 @@ import {
   useCategoryUpsertMutation,
 } from '@extension/shared/hooks';
 import { Button, Label, useToast } from '@src/components/ui';
-import { useSupabaseClient } from '@src/hooks';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -26,12 +25,10 @@ interface SettingCategoryFormProps extends LanguageType {}
 export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
   const { t } = useTranslation(lng);
 
-  const supabaseClient = useSupabaseClient();
-
-  const { categories } = useCategoryQuery({ supabaseClient });
-  const { mutate: deleteCategory } = useCategoryDeleteMutation({ supabaseClient });
-  const { mutate: upsertCategory } = useCategoryUpsertMutation({ supabaseClient });
-  const { mutate: insertCategory } = useCategoryPostMutation({ supabaseClient });
+  const { categories } = useCategoryQuery();
+  const { mutate: deleteCategory } = useCategoryDeleteMutation();
+  const { mutate: upsertCategory } = useCategoryUpsertMutation();
+  const { mutate: insertCategory } = useCategoryPostMutation();
   const { register, handleSubmit, setValue } = useForm<CategoryForm>({
     defaultValues: {
       categories: [],

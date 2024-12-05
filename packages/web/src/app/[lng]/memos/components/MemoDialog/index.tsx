@@ -4,7 +4,6 @@ import { useSearchParams } from '@extension/shared/modules/search-params';
 import { formatDate, GetMemoResponse } from '@extension/shared/utils';
 import { Button } from '@extension/ui';
 import { Card, CardContent, Dialog, DialogContent, Textarea, useToast } from '@src/components/ui';
-import { useSupabaseClient } from '@src/hooks';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useRouter } from 'next/navigation';
@@ -23,14 +22,11 @@ export default function MemoDialog({ lng, id }: MemoDialog) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
   const router = useRouter();
-  const supabaseClient = useSupabaseClient();
-  const { memo: memoData } = useMemoQuery({ supabaseClient, id: Number(id) });
+  const { memo: memoData } = useMemoQuery({ id: Number(id) });
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [open, setOpen] = useState(false);
-  const { mutate: mutateMemoPatch } = useMemoPatchMutation({
-    supabaseClient,
-  });
+  const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 
   const { register, watch, setValue } = useForm<MemoInput>({
     defaultValues: {

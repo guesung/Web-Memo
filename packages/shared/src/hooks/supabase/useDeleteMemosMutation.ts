@@ -1,14 +1,13 @@
 import { NoMemosError, QUERY_KEY } from '@src/constants';
-import { MemoSupabaseClient, MemoSupabaseResponse } from '@src/types';
+import { MemoSupabaseResponse } from '@src/types';
 import { MemoService } from '@src/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-interface UseDeleteMemosMutationProps {
-  supabaseClient: MemoSupabaseClient;
-}
+import useSupabaseQuery from './useSupabaseQuery';
 
-export default function useDeleteMemosMutation({ supabaseClient }: UseDeleteMemosMutationProps) {
+export default function useDeleteMemosMutation() {
   const queryClient = useQueryClient();
+  const { data: supabaseClient } = useSupabaseQuery();
 
   return useMutation<MemoSupabaseResponse, Error, number[]>({
     mutationFn: (idList: number[]) => new MemoService(supabaseClient).deleteMemos(idList),

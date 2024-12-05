@@ -1,9 +1,7 @@
 'use client';
 
 import { useCategoryPostMutation } from '@extension/shared/hooks';
-import { Button } from '@src/components/ui';
-import { Input } from '@src/components/ui';
-import { useSupabaseClient } from '@src/hooks';
+import { Button, Input } from '@src/components/ui';
 import { PlusIcon } from 'lucide-react';
 import { memo, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -11,7 +9,6 @@ import { useForm } from 'react-hook-form';
 import { CategoryInput } from '../../types';
 
 export default memo(function SidebarMenuItemAddCategory() {
-  const supabaseClient = useSupabaseClient();
   const [isEditMode, setIsEditMode] = useState(false);
   const { register, handleSubmit } = useForm<CategoryInput>({
     defaultValues: {
@@ -19,7 +16,7 @@ export default memo(function SidebarMenuItemAddCategory() {
     },
   });
 
-  const { mutate: mutateCategoryPost } = useCategoryPostMutation({ supabaseClient });
+  const { mutate: mutateCategoryPost } = useCategoryPostMutation();
 
   const onSubmit = handleSubmit(({ category }) => {
     mutateCategoryPost({ name: category });

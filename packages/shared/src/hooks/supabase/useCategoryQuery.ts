@@ -1,13 +1,12 @@
 import { QUERY_KEY } from '@src/constants';
-import { MemoSupabaseClient } from '@src/types';
 import { CategoryService } from '@src/utils';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
-interface UseCategoryQueryProps {
-  supabaseClient: MemoSupabaseClient;
-}
+import useSupabaseQuery from './useSupabaseQuery';
 
-export default function useCategoryQuery({ supabaseClient }: UseCategoryQueryProps) {
+export default function useCategoryQuery() {
+  const { data: supabaseClient } = useSupabaseQuery();
+
   const query = useSuspenseQuery({
     queryFn: () => new CategoryService(supabaseClient).getCategories(),
     queryKey: QUERY_KEY.category(),

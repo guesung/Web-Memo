@@ -2,7 +2,6 @@ import { useMemoPatchMutation } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { cn, GetMemoResponse } from '@extension/shared/utils';
 import { Badge, Button, CardFooter, ToastAction, useToast } from '@src/components/ui';
-import { useSupabaseClient } from '@src/hooks';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { HeartIcon } from 'lucide-react';
@@ -18,12 +17,9 @@ interface MemoCardFooterProps extends LanguageType, React.HTMLAttributes<HTMLDiv
 export default function MemoCardFooter({ memo, lng, isOptionShown, children, ...props }: MemoCardFooterProps) {
   const { t } = useTranslation(lng);
   const { toast } = useToast();
-  const supabaseClient = useSupabaseClient();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { mutate: mutateMemoPatch } = useMemoPatchMutation({
-    supabaseClient,
-  });
+  const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 
   const handleCategoryClick = (event: MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();

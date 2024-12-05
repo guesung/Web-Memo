@@ -10,7 +10,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@src/components/ui';
-import { useSupabaseClient } from '@src/hooks';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useRouter } from 'next/navigation';
@@ -20,10 +19,7 @@ import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
 
 export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
   const { t } = useTranslation(lng);
-  const supabaseClient = useSupabaseClient();
-  const { categories } = useCategoryQuery({
-    supabaseClient,
-  });
+  const { categories } = useCategoryQuery();
   const router = useRouter();
 
   const handleCategoryClick: MouseEventHandler<HTMLButtonElement> = event => {

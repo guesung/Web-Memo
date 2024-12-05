@@ -14,7 +14,6 @@
     "ready": "rimraf dist && node build.mjs",
     "prettier": "prettier . --write",
     "type-check": "tsc --noEmit",
-    "dev": "vite",
     "preview": "vite preview"
   },
   "devDependencies": {

@@ -1,7 +1,7 @@
 'use server';
 
 import { PATHS } from '@extension/shared/constants';
-import { checkUserLogin, getUser } from '@extension/shared/utils';
+import { AuthService } from '@extension/shared/utils';
 import { ToggleTheme } from '@src/components';
 import {
   Avatar,
@@ -44,10 +44,10 @@ async function HeaderLeft({ lng }: LanguageType) {
 
 async function HeaderRight({ lng }: LanguageType) {
   const supabaseClient = getSupabaseClient();
-  const user = await getUser(supabaseClient);
+  const user = await new AuthService(supabaseClient).getUser();
   const { t } = await useTranslation(lng);
 
-  const isUserLogin = await checkUserLogin(supabaseClient);
+  const isUserLogin = await new AuthService(supabaseClient).checkUserLogin();
   if (!isUserLogin) return;
 
   const userAvatarUrl =

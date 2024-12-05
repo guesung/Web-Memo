@@ -1,7 +1,7 @@
 'use server';
 
 import { PATHS, QUERY_KEY } from '@extension/shared/constants';
-import { checkUserLogin, getCategories } from '@extension/shared/utils';
+import { AuthService, CategoryService } from '@extension/shared/utils';
 import { Header, HydrationBoundaryWrapper } from '@src/components';
 import { SidebarProvider } from '@src/components/ui';
 import { LanguageParams } from '@src/modules/i18n';
@@ -15,7 +15,7 @@ interface LayoutProps extends LanguageParams, PropsWithChildren {}
 
 export default async function Layout({ children, params: { lng } }: LayoutProps) {
   const supabaseClient = getSupabaseClient();
-  const isUserLogin = await checkUserLogin(supabaseClient);
+  const isUserLogin = await new AuthService(supabaseClient).checkUserLogin();
   if (!isUserLogin) redirect(PATHS.login);
 
   return (
@@ -23,7 +23,9 @@ export default async function Layout({ children, params: { lng } }: LayoutProps)
       <Header.Margin />
       <div className="bg-background flex w-full p-4 text-sm">
         <SidebarProvider>
-          <HydrationBoundaryWrapper queryKey={QUERY_KEY.category()} queryFn={() => getCategories(supabaseClient)}>
+          <HydrationBoundaryWrapper
+            queryKey={QUERY_KEY.category()}
+            queryFn={() => new CategoryService(supabaseClient).getCategories()}>
             <MemoSidebar lng={lng} />
           </HydrationBoundaryWrapper>
           {children}

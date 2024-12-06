@@ -10,7 +10,7 @@ import { getMemoInfo, I18n, responseRefetchTheMemos, Tab } from '@extension/shar
 import { cn, Textarea, toast, ToastAction } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
 import { MemoInput } from '@src/types/Input';
-import { getMemoWishListUrl } from '@src/utils';
+import { getMemoUrl } from '@src/utils';
 import { HeartIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -73,18 +73,18 @@ function MemoForm() {
     await saveMemo();
 
     const getWishToastTitle = (isWish: boolean) => {
-      if (isWish) return I18n.get('wish_list_deleted');
-      return I18n.get('wish_list_added');
+      if (isWish) return I18n.get('wish_list_added');
+      return I18n.get('wish_list_deleted');
     };
 
     const handleWishListClick = () => {
-      const memoWishListUrl = getMemoWishListUrl(memoData?.id);
+      const memoWishListUrl = getMemoUrl({ id: memoData?.id, isWish: watch('isWish') });
 
       Tab.create({ url: memoWishListUrl });
     };
 
     toast({
-      title: getWishToastTitle(!watch('isWish')),
+      title: getWishToastTitle(watch('isWish')),
       action: (
         <ToastAction altText={I18n.get('go_to')} onClick={handleWishListClick}>
           {I18n.get('go_to')}

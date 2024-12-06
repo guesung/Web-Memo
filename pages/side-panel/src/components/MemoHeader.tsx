@@ -11,7 +11,7 @@ export default function MemoHeader() {
   });
 
   const handleMemoClick = () => {
-    Tab.create({ url: getMemoUrl(memoData) });
+    Tab.create({ url: getMemoUrl({ id: memoData?.id, isWish: !!memoData?.isWish }) });
   };
 
   useDidMount(() =>

@@ -1,12 +1,10 @@
 import { QUERY_KEY } from '@src/constants';
-import { MemoSupabaseClient } from '@src/types';
 import { formatUrl, MemoService } from '@src/utils';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
 import useSupabaseQuery from './useSupabaseQuery';
 
 interface UseMemoQueryProps {
-  supabaseClient: MemoSupabaseClient;
   url?: string;
   id?: number;
 }

@@ -2,11 +2,9 @@ import '../global.css';
 
 import { Button } from './components';
 import { Toaster } from './components/toaster';
-import { useToast } from './hooks';
+import { toast } from './hooks';
 
 function App() {
-  const { toast } = useToast();
-
   return (
     <main>
       <Toaster />

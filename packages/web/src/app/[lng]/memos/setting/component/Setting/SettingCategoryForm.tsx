@@ -1,17 +1,12 @@
-import { QUERY_KEY } from '@extension/shared/constants';
 import {
   useCategoryDeleteMutation,
   useCategoryPostMutation,
   useCategoryQuery,
   useCategoryUpsertMutation,
 } from '@extension/shared/hooks';
-import { Button } from '@src/components/ui/button';
-import { Label } from '@src/components/ui/label';
-import { useSupabaseClient } from '@src/hooks';
-import { useToast } from '@src/hooks/use-toast';
+import { Button, Input, Label, toast } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
-import { useQueryClient } from '@tanstack/react-query';
 import { TrashIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -28,19 +23,15 @@ interface SettingCategoryFormProps extends LanguageType {}
 export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
   const { t } = useTranslation(lng);
 
-  const supabaseClient = useSupabaseClient();
-
-  const { categories } = useCategoryQuery({ supabaseClient });
-  const { mutate: deleteCategory } = useCategoryDeleteMutation({ supabaseClient });
-  const { mutate: upsertCategory } = useCategoryUpsertMutation({ supabaseClient });
-  const { mutate: insertCategory } = useCategoryPostMutation({ supabaseClient });
+  const { categories } = useCategoryQuery();
+  const { mutate: deleteCategory } = useCategoryDeleteMutation();
+  const { mutate: upsertCategory } = useCategoryUpsertMutation();
+  const { mutate: insertCategory } = useCategoryPostMutation();
   const { register, handleSubmit, setValue } = useForm<CategoryForm>({
     defaultValues: {
       categories: [],
     },
   });
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   const handleAddCategory = () => {
     const defaultCategoryName = t('setting.defaultCategoryName');
@@ -49,41 +40,26 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
       { name: defaultCategoryName },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
-          toast({
-            title: t('toastTitle.addSuccess'),
-          });
+          toast({ title: t('toastTitle.successSave') });
         },
       },
     );
   };
 
   const handleCategoryDelete = (id: number) => {
-    deleteCategory(
-      { id },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
-          toast({
-            title: t('toastTitle.deleteSuccess'),
-          });
-        },
+    deleteCategory(id, {
+      onSuccess: () => {
+        toast({ title: t('toastTitle.successSave') });
       },
-    );
+    });
   };
 
   const onCategoryFormSubmit = (data: CategoryForm) => {
-    upsertCategory(
-      { categoryRequest: data.categories },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
-          toast({
-            title: t('toastTitleㅋ.saveSuccess'),
-          });
-        },
+    upsertCategory(data.categories, {
+      onSuccess: () => {
+        toast({ title: t('toastTitle.successSave') });
       },
-    );
+    });
   };
 
   useEffect(() => {
@@ -101,11 +77,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
       <div className="col-span-6 space-y-2">
         {categories?.map(({ id }, index) => (
           <div key={id} className="flex items-center gap-2">
-            <input
-              type="text"
-              {...register(`categories.${index}.name`)}
-              className="border-input focus-visible:ring-ring h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1"
-            />
+            <Input {...register(`categories.${index}.name`)} />
             <Button
               variant="ghost"
               size="icon"

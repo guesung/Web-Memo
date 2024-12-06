@@ -1,6 +1,6 @@
 'use server';
 
-import { Label } from '@src/components/ui/label';
+import { Label } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/server';
 

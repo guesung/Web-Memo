@@ -1,21 +1,25 @@
 import { QUERY_KEY } from '@extension/shared/constants';
-import { useCategoryQuery, useMemosUpsertMutation } from '@extension/shared/hooks';
+import { useCategoryQuery, useDeleteMemosMutation, useMemosUpsertMutation } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { MemoRow } from '@extension/shared/types';
 import { isAllSame } from '@extension/shared/utils';
 import { requestRefetchTheMemos } from '@extension/shared/utils/extension';
-import { Button } from '@src/components/ui/button';
 import {
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@src/components/ui/dropdown-menu';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@src/components/ui/select';
-import { ToastAction } from '@src/components/ui/toast';
-import { useDeleteMemosMutation, useSupabaseClient } from '@src/hooks';
-import { useToast } from '@src/hooks/use-toast';
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  toast,
+  ToastAction,
+} from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -30,17 +34,13 @@ interface MemoOptionProps extends LanguageType {
 
 export default function MemoOption({ lng, memos, closeMemoOption }: MemoOptionProps) {
   const { t } = useTranslation(lng);
-  const supabaseClient = useSupabaseClient();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const { toast } = useToast();
-  const { categories } = useCategoryQuery({ supabaseClient });
+  const { categories } = useCategoryQuery();
   const queryClient = useQueryClient();
-  const { mutate: mutateUpsertMemo } = useMemosUpsertMutation({
-    supabaseClient,
-  });
-  const { mutate: mutateDeleteMemo } = useDeleteMemosMutation({ supabaseClient });
+  const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
+  const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
 
   const defaultCategoryId = isAllSame(memos.map(memo => memo.category_id)) ? String(memos.at(0)?.category_id) : '';
 

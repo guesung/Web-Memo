@@ -1,15 +1,10 @@
 import { useMemoPatchMutation } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
-import { GetMemoResponse } from '@extension/shared/utils';
-import { Badge } from '@src/components/ui/badge';
-import { Button } from '@src/components/ui/button';
-import { CardFooter } from '@src/components/ui/card';
-import { ToastAction } from '@src/components/ui/toast';
-import { useSupabaseClient } from '@src/hooks';
-import { useToast } from '@src/hooks/use-toast';
+import { GetMemoResponse } from '@extension/shared/types';
+import { cn } from '@extension/shared/utils';
+import { Badge, Button, CardFooter, toast, ToastAction } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
-import { cn } from '@src/utils';
 import { HeartIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { MouseEvent, PropsWithChildren } from 'react';
@@ -22,13 +17,9 @@ interface MemoCardFooterProps extends LanguageType, React.HTMLAttributes<HTMLDiv
 }
 export default function MemoCardFooter({ memo, lng, isOptionShown, children, ...props }: MemoCardFooterProps) {
   const { t } = useTranslation(lng);
-  const { toast } = useToast();
-  const supabaseClient = useSupabaseClient();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { mutate: mutateMemoPatch } = useMemoPatchMutation({
-    supabaseClient,
-  });
+  const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 
   const handleCategoryClick = (event: MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
@@ -44,7 +35,7 @@ export default function MemoCardFooter({ memo, lng, isOptionShown, children, ...
     mutateMemoPatch(
       {
         id: memo.id,
-        memoRequest: {
+        request: {
           isWish: !memo.isWish,
         },
       },
@@ -60,7 +51,7 @@ export default function MemoCardFooter({ memo, lng, isOptionShown, children, ...
                 onClick={() => {
                   mutateMemoPatch({
                     id: memo.id,
-                    memoRequest: {
+                    request: {
                       isWish: memo.isWish,
                     },
                   });

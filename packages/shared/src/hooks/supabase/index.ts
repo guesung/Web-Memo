@@ -3,6 +3,7 @@ export { default as useCategoryPatchMutation } from './useCategoryPatchMutation'
 export { default as useCategoryPostMutation } from './useCategoryPostMutation';
 export { default as useCategoryQuery } from './useCategoryQuery';
 export { default as useCategoryUpsertMutation } from './useCategoryUpsertMutation';
+export { default as useDeleteMemosMutation } from './useDeleteMemosMutation';
 export { default as useMemoPatchMutation } from './useMemoPatchMutation';
 export { default as useMemoPostMutation } from './useMemoPostMutation';
 export { default as useMemoQuery } from './useMemoQuery';

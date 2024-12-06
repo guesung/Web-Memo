@@ -17,7 +17,10 @@
     "time": "Time",
     "event": "Event",
     "more": "more",
-    "title": "Title"
+    "title": "Title",
+    "tomorrow": "Tomorrow",
+    "yesterday": "Yesterday",
+    "workWeek": "Work Week"
   },
   "sideBar": {
     "memo": "My Memos",
@@ -36,7 +39,9 @@
     "memoWishListAdded": "The memo has been added to your wish list!",
     "saveSuccess": "Save completed successfully!",
     "deleteSuccess": "Delete completed successfully!",
-    "addSuccess": "Add completed successfully!"
+    "addSuccess": "Add completed successfully!",
+    "errorSave": "Save failed!",
+    "successSave": "Changes have been saved."
   },
   "toastActionMessage": {
     "goTo": "Take me there",
@@ -92,7 +97,7 @@
     },
     "save": {
       "title": "Save Your Memos",
-      "description": "Great job!\nNow you can write memos in this side panel.\nEnter your memo and press '{{key}} + S' to save it.\nWhen the memo border changes from blue to default, it means your save was successful!\nDon't worry, it also auto-saves every 3 seconds ☺️"
+      "description": "Great job!\nNow you can write memos in the side panel.\nDon't worry, memos are saved automatically ☺️"
     },
     "check": {
       "title": "Check Your Memos",

@@ -2,7 +2,7 @@ import { CONFIG, COOKIE_KEY, SUPABASE } from '@src/constants';
 import { Database, StorageKeyType } from '@src/types';
 import { createClient } from '@supabase/supabase-js';
 
-import { checkUserLogin } from '../Supabase';
+import { AuthService } from '../Supabase';
 import { Storage } from './module';
 
 export const getSupabaseClient = async () => {
@@ -24,7 +24,7 @@ export const getSupabaseClient = async () => {
       },
     });
 
-    const isUserLogin = await checkUserLogin(supabaseClientInstance);
+    const isUserLogin = await new AuthService(supabaseClientInstance).checkUserLogin();
     if (isUserLogin) return supabaseClientInstance;
 
     const accessTokenFromWeb = await chrome.cookies.get({

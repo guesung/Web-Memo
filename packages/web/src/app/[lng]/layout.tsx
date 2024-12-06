@@ -2,9 +2,8 @@ import '@extension/ui/dist/global.css';
 import './globals.css';
 
 import { Header, QueryProvider, ThemeProvider } from '@src/components';
-import { Toaster } from '@src/components/ui/toaster';
+import { Toaster } from '@src/components/ui';
 import { LanguageParams, languages } from '@src/modules/i18n';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { dir } from 'i18next';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
@@ -34,12 +33,11 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
   return (
     <html lang={lng} className="h-screen" dir={dir(lng)} suppressHydrationWarning>
       <body className={`${pretendard.variable} font-pretendard h-full`}>
-        <ThemeProvider attribute="class" defaultTheme="system">
-          <QueryProvider>
+        <ThemeProvider>
+          <QueryProvider lng={lng}>
             <Header lng={lng} />
 
             {children}
-            <ReactQueryDevtools initialIsOpen={false} />
           </QueryProvider>
         </ThemeProvider>
 

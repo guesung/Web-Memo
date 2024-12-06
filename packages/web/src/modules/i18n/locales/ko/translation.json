@@ -16,7 +16,10 @@
     "event": "이벤트",
     "more": "더보기",
     "title": "제목",
-    "save": "저장"
+    "save": "저장",
+    "tomorrow": "내일",
+    "yesterday": "어제",
+    "workWeek": "주간"
   },
   "sideBar": {
     "memo": "나의 메모",
@@ -35,7 +38,9 @@
     "memoWishListAdded": "위시리스트에 메모를 추가했어요!",
     "saveSuccess": "저장이 완료되었어요!",
     "deleteSuccess": "삭제가 완료되었어요!",
-    "addSuccess": "추가가 완료되었어요!"
+    "addSuccess": "추가가 완료되었어요!",
+    "errorSave": "저장에 실패했어요!",
+    "successSave": "변경사항이 저장되었습니다."
   },
   "toastActionMessage": {
     "goTo": "바로 이동하기",
@@ -92,7 +97,7 @@
     },
     "save": {
       "title": "메모 저장하기",
-      "description": "잘하셨어요 !\n이제 이 사이드 패널에서 메모를 기록하실 수 있답니다.\n메모를 입력하고, '{{key}} + S'를 눌러 저장해보세요.\n메모 테두리가 파랑색 테두리에서 기본 테두리로 돌아왔다면 저장에 성공한 거에요!\n또한, 3초마다 자동으로 저장되니 안심하세요 ☺️"
+      "description": "잘하셨어요!\n이제 사이드 패널에서 메모를 작성할 수 있어요.\n메모는 자동으로 저장되니 걱정하지 마세요 ☺️"
     },
     "check": {
       "title": "메모 확인하기",

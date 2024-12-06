@@ -5,24 +5,20 @@ import {
   useMemoQuery,
   useThrottle,
 } from '@extension/shared/hooks';
-import { useSupabaseClientQuery, useTabQuery } from '@extension/shared/hooks/extension';
+import { useTabQuery } from '@extension/shared/hooks/extension';
 import { getMemoInfo, I18n, responseRefetchTheMemos, Tab } from '@extension/shared/utils/extension';
-import { cn, Textarea, ToastAction, useToast } from '@extension/ui';
+import { cn, Textarea, toast, ToastAction } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
 import { MemoInput } from '@src/types/Input';
-import { getMemoWishListUrl } from '@src/utils';
+import { getMemoUrl } from '@src/utils';
 import { HeartIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 function MemoForm() {
-  const [isSaved, setIsSaved] = useState(true);
-  const { toast } = useToast();
   const { throttle, abortThrottle } = useThrottle();
   const { data: tab } = useTabQuery();
-  const { data: supabaseClient } = useSupabaseClientQuery();
   const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
-    supabaseClient,
     url: tab.url,
   });
   const { register, setValue, watch } = useForm<MemoInput>({
@@ -32,23 +28,18 @@ function MemoForm() {
     },
   });
 
-  const { mutate: mutateMemoPatch } = useMemoPatchMutation({
-    supabaseClient,
-  });
-  const { mutate: mutateMemoPost } = useMemoPostMutation({
-    supabaseClient,
-  });
+  const { mutate: mutateMemoPatch } = useMemoPatchMutation();
+  const { mutate: mutateMemoPost } = useMemoPostMutation();
 
   const saveMemo = async () => {
+    abortThrottle();
+
     const memoInfo = await getMemoInfo();
 
     const memo = { ...memoInfo, memo: watch('memo'), isWish: watch('isWish') };
 
-    if (memoData) mutateMemoPatch({ id: memoData.id, memoRequest: memo });
+    if (memoData) mutateMemoPatch({ id: memoData.id, request: memo });
     else mutateMemoPost(memo);
-
-    abortThrottle();
-    setIsSaved(true);
   };
 
   useDidMount(() => {
@@ -62,7 +53,6 @@ function MemoForm() {
 
   const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setValue('memo', event.target.value);
-    setIsSaved(false);
 
     throttle(saveMemo, 300);
   };
@@ -83,18 +73,18 @@ function MemoForm() {
     await saveMemo();
 
     const getWishToastTitle = (isWish: boolean) => {
-      if (isWish) return I18n.get('wish_list_deleted');
-      return I18n.get('wish_list_added');
+      if (isWish) return I18n.get('wish_list_added');
+      return I18n.get('wish_list_deleted');
     };
 
     const handleWishListClick = () => {
-      const memoWishListUrl = getMemoWishListUrl(memoData?.id);
+      const memoWishListUrl = getMemoUrl({ id: memoData?.id, isWish: watch('isWish') });
 
       Tab.create({ url: memoWishListUrl });
     };
 
     toast({
-      title: getWishToastTitle(!watch('isWish')),
+      title: getWishToastTitle(watch('isWish')),
       action: (
         <ToastAction altText={I18n.get('go_to')} onClick={handleWishListClick}>
           {I18n.get('go_to')}
@@ -109,9 +99,7 @@ function MemoForm() {
         {...register('memo', {
           onChange: handleMemoTextAreaChange,
         })}
-        className={cn('flex-1 resize-none text-sm outline-none', {
-          'border-primary focus:border-primary': !isSaved,
-        })}
+        className={cn('flex-1 resize-none text-sm outline-none')}
         id="memo-textarea"
         placeholder={I18n.get('memo')}
         onKeyDown={handleKeyDown}

@@ -1,15 +1,17 @@
 'use server';
 
 import { PATHS } from '@extension/shared/constants';
-import { checkUserLogin, getUser } from '@extension/shared/utils';
+import { AuthService } from '@extension/shared/utils';
 import { ToggleTheme } from '@src/components';
-import { Avatar, AvatarFallback, AvatarImage } from '@src/components/ui/avatar';
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from '@src/components/ui/dropdown-menu';
+} from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/server';
 import { getSupabaseClient, signout } from '@src/modules/supabase/util.server';
@@ -42,10 +44,10 @@ async function HeaderLeft({ lng }: LanguageType) {
 
 async function HeaderRight({ lng }: LanguageType) {
   const supabaseClient = getSupabaseClient();
-  const user = await getUser(supabaseClient);
+  const user = await new AuthService(supabaseClient).getUser();
   const { t } = await useTranslation(lng);
 
-  const isUserLogin = await checkUserLogin(supabaseClient);
+  const isUserLogin = await new AuthService(supabaseClient).checkUserLogin();
   if (!isUserLogin) return;
 
   const userAvatarUrl =

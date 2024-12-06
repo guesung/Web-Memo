@@ -42,7 +42,6 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
         </ThemeProvider>
 
         <Toaster />
-        <ExtensionDialog lng={lng} />
       </body>
     </html>
   );

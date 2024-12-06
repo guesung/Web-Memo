@@ -1,21 +1,19 @@
 import { NoMemosError, QUERY_KEY } from '@src/constants';
-import type { MemoSupabaseClient, MemoSupabaseResponse, MemoTable } from '@src/types';
-import { insertMemo } from '@src/utils';
-import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query';
+import type { MemoSupabaseResponse, MemoTable } from '@src/types';
+import { MemoService } from '@src/utils';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-type MutationData = Awaited<ReturnType<typeof insertMemo>>;
+import useSupabaseQuery from './useSupabaseQuery';
+
 type MutationError = Error;
 
-interface UseMemoPostMutationProps extends UseMutationOptions<MutationData, MutationError, MemoTable['Insert']> {
-  supabaseClient: MemoSupabaseClient;
-}
-
-export default function useMemoPostMutation({ supabaseClient, ...useMutationProps }: UseMemoPostMutationProps) {
+export default function useMemoPostMutation() {
   const queryClient = useQueryClient();
+  const { data: supabaseClient } = useSupabaseQuery();
+
   return useMutation<MemoSupabaseResponse, MutationError, MemoTable['Insert']>({
-    ...useMutationProps,
-    mutationFn: async postMemoProps => await insertMemo(supabaseClient, postMemoProps),
-    onSuccess: async (result, variables, context) => {
+    mutationFn: new MemoService(supabaseClient).insertMemo,
+    onSuccess: async result => {
       const { data: newData } = result;
 
       await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
@@ -31,8 +29,6 @@ export default function useMemoPostMutation({ supabaseClient, ...useMutationProp
       const newMemosData = newData.concat(previousMemosData);
 
       await queryClient.setQueryData(QUERY_KEY.memos(), { ...previousMemos, data: newMemosData });
-
-      useMutationProps.onSuccess?.(result, variables, context);
 
       return { previousMemos };
     },

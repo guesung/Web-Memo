@@ -3,6 +3,7 @@
   "ui": "tui",
   "tasks": {
     "ready": {
+      "dependsOn": ["^ready"],
       "outputs": ["dist", "build"],
       "cache": false
     },

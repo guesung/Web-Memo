@@ -1,5 +1,5 @@
 import { NEED_AUTH_PAGES, PATHS } from '@extension/shared/constants';
-import { checkUserLogin } from '@extension/shared/utils';
+import { AuthService } from '@extension/shared/utils';
 import { CONFIG } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
@@ -22,7 +22,7 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const isUserLogin = await checkUserLogin(supabaseClient);
+  const isUserLogin = await new AuthService(supabaseClient).checkUserLogin();
   const isNeedAuthPage = NEED_AUTH_PAGES.includes(request.nextUrl.pathname);
 
   if (!isUserLogin && isNeedAuthPage) {

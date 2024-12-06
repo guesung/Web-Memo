@@ -1,8 +1,7 @@
 'use client';
 import { QUERY_KEY } from '@extension/shared/constants';
 import { setLocalStorageTrue } from '@extension/shared/modules/local-storage';
-import { Button } from '@src/components/ui/button';
-import { useToast } from '@src/hooks/use-toast';
+import { Button, toast } from '@src/components/ui';
 import { useGuide } from '@src/modules/guide';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
@@ -13,7 +12,6 @@ interface RefreshButtonProps extends LanguageType {}
 
 export default function RefreshButton({ lng }: RefreshButtonProps) {
   const { t } = useTranslation(lng);
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { driverObj } = useGuide({ lng });
 

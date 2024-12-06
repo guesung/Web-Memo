@@ -2,11 +2,25 @@
   "common": {
     "webMemo": "Web Memo",
     "next": "Next",
-    "prev": "Previous",
+    "previous": "Previous",
+    "today": "Today",
     "done": "Done",
     "updatedAt": "Last updated:",
     "close": "Close",
-    "save": "Save"
+    "save": "Save",
+    "month": "Month",
+    "agenda": "Agenda",
+    "day": "Day",
+    "week": "Week",
+    "allDay": "All Day",
+    "date": "Date",
+    "time": "Time",
+    "event": "Event",
+    "more": "more",
+    "title": "Title",
+    "tomorrow": "Tomorrow",
+    "yesterday": "Yesterday",
+    "workWeek": "Work Week"
   },
   "sideBar": {
     "memo": "My Memos",
@@ -22,7 +36,12 @@
     "categoryEdited": "The category has been changed successfully!",
     "memoDeleted": "Your memo has been deleted.",
     "memoWishListDeleted": "The memo has been removed from your wish list.",
-    "memoWishListAdded": "The memo has been added to your wish list!"
+    "memoWishListAdded": "The memo has been added to your wish list!",
+    "saveSuccess": "Save completed successfully!",
+    "deleteSuccess": "Delete completed successfully!",
+    "addSuccess": "Add completed successfully!",
+    "errorSave": "Save failed!",
+    "successSave": "Changes have been saved."
   },
   "toastActionMessage": {
     "goTo": "Take me there",
@@ -60,7 +79,13 @@
   },
   "setting": {
     "header": "Settings",
-    "language": "Language"
+    "language": "Language",
+    "guide": "Guide",
+    "restartGuide": "Restart guide",
+    "category": "Category",
+    "addCategory": "Add category",
+    "deleteCategory": "Delete category",
+    "defaultCategoryName": "New Category"
   },
   "guide": {
     "next": "Next",
@@ -72,7 +97,7 @@
     },
     "save": {
       "title": "Save Your Memos",
-      "description": "Great job!\nNow you can write memos in this side panel.\nEnter your memo and press '{{key}} + S' to save it.\nWhen the memo border changes from blue to default, it means your save was successful!\nDon't worry, it also auto-saves every 3 seconds ☺️"
+      "description": "Great job!\nNow you can write memos in the side panel.\nDon't worry, memos are saved automatically ☺️"
     },
     "check": {
       "title": "Check Your Memos",
@@ -83,6 +108,9 @@
     "emptyState": {
       "message": "You don't have any saved memos yet. Open the side panel to create your first memo!"
     },
-    "totalMemos": "Total {{total}} memos"
+    "totalMemos": "Total {{total}} memos",
+    "grid": "Grid view",
+    "calendar": "Calendar view",
+    "selected": "{{count}} selected"
   }
 }

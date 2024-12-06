@@ -1,36 +1,66 @@
 import { SUPABASE } from '@src/constants';
-import { CategoryTable, MemoRow, MemoSupabaseClient, MemoTable } from '@src/types';
-import type { QueryData } from '@supabase/supabase-js';
+import { CategoryRow, CategoryTable, MemoRow, MemoSupabaseClient, MemoTable } from '@src/types';
 
-export const getMemos = async (supabaseClient: MemoSupabaseClient) =>
-  supabaseClient.from(SUPABASE.schemaMemo).select('*,category(name)').order('created_at', { ascending: false });
+export class MemoService {
+  supabaseClient: MemoSupabaseClient;
 
-export type GetMemoResponse = QueryData<ReturnType<typeof getMemos>>[number];
+  constructor(supabaseClient: MemoSupabaseClient) {
+    this.supabaseClient = supabaseClient;
+  }
 
-export const insertMemo = async (supabaseClient: MemoSupabaseClient, memoRequest: MemoTable['Insert']) =>
-  supabaseClient.from(SUPABASE.schemaMemo).insert(memoRequest).select();
+  insertMemo = async (request: MemoTable['Insert']) =>
+    this.supabaseClient.from(SUPABASE.schemaMemo).insert(request).select();
 
-export const updateMemo = async (
-  supabaseClient: MemoSupabaseClient,
-  id: MemoRow['id'],
-  memoRequest: MemoTable['Update'],
-) => supabaseClient.from(SUPABASE.schemaMemo).update(memoRequest).eq('id', id).select();
+  upsertMemos = async (request: MemoTable['Insert'][]) =>
+    this.supabaseClient.from(SUPABASE.schemaMemo).upsert(request).select();
 
-export const deleteMemo = async (supabaseClient: MemoSupabaseClient, id: number) =>
-  supabaseClient.from(SUPABASE.schemaMemo).delete().eq('id', id).select();
+  getMemos = async () =>
+    this.supabaseClient.from(SUPABASE.schemaMemo).select('*,category(name)').order('created_at', { ascending: false });
 
-export const upsertMemo = async (supabaseClient: MemoSupabaseClient, memoRequest: MemoTable['Insert']) =>
-  supabaseClient.from(SUPABASE.schemaMemo).upsert(memoRequest).select();
+  updateMemo = async ({ id, request }: { id: MemoRow['id']; request: MemoTable['Update'] }) =>
+    this.supabaseClient.from(SUPABASE.schemaMemo).update(request).eq('id', id).select();
 
-export const getUser = (supabaseClient: MemoSupabaseClient) => supabaseClient.auth.getUser();
+  deleteMemo = async (id: MemoRow['id']) =>
+    this.supabaseClient.from(SUPABASE.schemaMemo).delete().eq('id', id).select();
 
-export const checkUserLogin = async (supabaseClient: MemoSupabaseClient) => {
-  const user = await supabaseClient.auth.getUser();
-  return !!user?.data?.user;
-};
+  deleteMemos = async (idList: MemoRow['id'][]) =>
+    this.supabaseClient.from(SUPABASE.schemaMemo).delete().in('id', idList).select();
+}
 
-export const getCategories = async (supabaseClient: MemoSupabaseClient) =>
-  supabaseClient.from('category').select('*').order('created_at', { ascending: false });
+export class CategoryService {
+  supabaseClient: MemoSupabaseClient;
 
-export const insertCategory = async (supabaseClient: MemoSupabaseClient, categoryRequest: CategoryTable['Insert']) =>
-  supabaseClient.from('category').insert(categoryRequest).select();
+  constructor(supabaseClient: MemoSupabaseClient) {
+    this.supabaseClient = supabaseClient;
+  }
+
+  insertCategory = async (request: CategoryTable['Insert']) =>
+    this.supabaseClient.from(SUPABASE.schemaCategory).insert(request).select();
+
+  upsertCategories = async (request: CategoryTable['Insert'][]) =>
+    this.supabaseClient.from(SUPABASE.schemaCategory).upsert(request).select();
+
+  getCategories = async () =>
+    this.supabaseClient.from(SUPABASE.schemaCategory).select('*').order('created_at', { ascending: false });
+
+  updateCategory = async ({ id, request }: { id: CategoryRow['id']; request: CategoryTable['Update'] }) =>
+    this.supabaseClient.from(SUPABASE.schemaCategory).update(request).eq('id', id).select();
+
+  deleteCategory = async (id: CategoryRow['id']) =>
+    this.supabaseClient.from(SUPABASE.schemaCategory).delete().eq('id', id).select();
+}
+
+export class AuthService {
+  supabaseClient: MemoSupabaseClient;
+
+  constructor(supabaseClient: MemoSupabaseClient) {
+    this.supabaseClient = supabaseClient;
+  }
+
+  getUser = () => this.supabaseClient.auth.getUser();
+
+  checkUserLogin = async () => {
+    const user = await this.supabaseClient.auth.getUser();
+    return !!user?.data?.user;
+  };
+}

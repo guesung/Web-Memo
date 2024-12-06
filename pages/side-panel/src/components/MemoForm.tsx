@@ -5,24 +5,20 @@ import {
   useMemoQuery,
   useThrottle,
 } from '@extension/shared/hooks';
-import { useSupabaseClientQuery, useTabQuery } from '@extension/shared/hooks/extension';
-import { getFormattedMemo, I18n, responseRefetchTheMemos, Tab } from '@extension/shared/utils/extension';
-import { cn, Textarea, ToastAction, useToast } from '@extension/ui';
+import { useTabQuery } from '@extension/shared/hooks/extension';
+import { getMemoInfo, I18n, responseRefetchTheMemos, Tab } from '@extension/shared/utils/extension';
+import { cn, Textarea, toast, ToastAction } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
 import { MemoInput } from '@src/types/Input';
-import { getMemoWishListUrl } from '@src/utils';
+import { getMemoUrl } from '@src/utils';
 import { HeartIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 function MemoForm() {
-  const { toast } = useToast();
-  const [isSaved, setIsSaved] = useState(true);
   const { throttle, abortThrottle } = useThrottle();
   const { data: tab } = useTabQuery();
-  const { data: supabaseClient } = useSupabaseClientQuery();
   const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
-    supabaseClient,
     url: tab.url,
   });
   const { register, setValue, watch } = useForm<MemoInput>({
@@ -32,34 +28,18 @@ function MemoForm() {
     },
   });
 
-  const handleSaveMemoSuccess = () => {
-    setIsSaved(true);
+  const { mutate: mutateMemoPatch } = useMemoPatchMutation();
+  const { mutate: mutateMemoPost } = useMemoPostMutation();
+
+  const saveMemo = async () => {
     abortThrottle();
-  };
 
-  const { mutate: mutateMemoPatch } = useMemoPatchMutation({
-    supabaseClient,
-    onSuccess: handleSaveMemoSuccess,
-    onError: () => {
-      toast({ title: I18n.get('toast_error_save') });
-    },
-  });
-  const { mutate: mutateMemoPost } = useMemoPostMutation({
-    supabaseClient,
-    onSuccess: handleSaveMemoSuccess,
-    onError: () => {
-      toast({ title: I18n.get('toast_error_save') });
-    },
-  });
+    const memoInfo = await getMemoInfo();
 
-  const saveMemo = async (data?: MemoInput) => {
-    const memo = data?.memo ?? watch('memo');
-    const isWish = data?.isWish ?? watch('isWish');
+    const memo = { ...memoInfo, memo: watch('memo'), isWish: watch('isWish') };
 
-    const formattedMemo = await getFormattedMemo({ memo, isWish });
-
-    if (memoData) mutateMemoPatch({ id: memoData.id, memoRequest: formattedMemo });
-    else mutateMemoPost(formattedMemo);
+    if (memoData) mutateMemoPatch({ id: memoData.id, request: memo });
+    else mutateMemoPost(memo);
   };
 
   useDidMount(() => {
@@ -67,17 +47,14 @@ function MemoForm() {
   });
 
   useEffect(() => {
-    if (!tab?.url) return;
-
     setValue('memo', memoData?.memo ?? '');
     setValue('isWish', memoData?.isWish ?? false);
-  }, [memoData?.isWish, memoData?.memo, setValue, tab?.url]);
+  }, [memoData?.memo, memoData?.isWish, setValue]);
 
   const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setValue('memo', event.target.value);
-    setIsSaved(false);
 
-    throttle(saveMemo);
+    throttle(saveMemo, 300);
   };
 
   const handleKeyDown = async (
@@ -87,60 +64,55 @@ function MemoForm() {
       event.preventDefault();
 
       await saveMemo();
-      abortThrottle();
     }
   };
 
-  const getTitle = (isWish: boolean) => {
-    if (isWish) return I18n.get('wish_list_deleted');
-    return I18n.get('wish_list_added');
-  };
-
-  const handleWishListClick = () => {
-    const memoWishListUrl = getMemoWishListUrl(memoData?.id);
-
-    Tab.create({ url: memoWishListUrl });
-  };
-
   const handleWishClick = async () => {
-    const currentIsWish = watch('isWish');
+    setValue('isWish', !watch('isWish'));
 
-    setValue('isWish', !currentIsWish);
+    await saveMemo();
+
+    const getWishToastTitle = (isWish: boolean) => {
+      if (isWish) return I18n.get('wish_list_added');
+      return I18n.get('wish_list_deleted');
+    };
+
+    const handleWishListClick = () => {
+      const memoWishListUrl = getMemoUrl({ id: memoData?.id, isWish: watch('isWish') });
+
+      Tab.create({ url: memoWishListUrl });
+    };
 
     toast({
-      title: getTitle(currentIsWish),
+      title: getWishToastTitle(watch('isWish')),
       action: (
         <ToastAction altText={I18n.get('go_to')} onClick={handleWishListClick}>
           {I18n.get('go_to')}
         </ToastAction>
       ),
     });
-
-    await saveMemo();
   };
 
   return (
-    <form className="relative h-full py-1">
+    <form className="relative flex h-full flex-col gap-1 py-1">
       <Textarea
         {...register('memo', {
           onChange: handleMemoTextAreaChange,
         })}
-        className={cn('h-full resize-none text-sm outline-none', {
-          'border-primary focus:border-primary': !isSaved,
-        })}
+        className={cn('flex-1 resize-none text-sm outline-none')}
         id="memo-textarea"
         placeholder={I18n.get('memo')}
         onKeyDown={handleKeyDown}
       />
-      <div className="absolute bottom-2 left-2">
+      <div>
         <HeartIcon
           size={16}
-          fill={watch('isWish') ? 'pink' : ''}
-          fillOpacity={watch('isWish') ? 100 : 0}
+          fill={memoData?.isWish ? 'pink' : ''}
+          fillOpacity={memoData?.isWish ? 100 : 0}
           onClick={handleWishClick}
           role="button"
-          className={cn('cursor-pointer transition-transform hover:scale-110', 'active:scale-95', {
-            'animate-heart-pop': watch('isWish'),
+          className={cn('cursor-pointer transition-transform hover:scale-110 active:scale-95', {
+            'animate-heart-pop': memoData?.isWish,
           })}
         />
       </div>

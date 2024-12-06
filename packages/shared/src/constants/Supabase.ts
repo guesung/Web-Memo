@@ -3,4 +3,5 @@ export const SUPABASE = {
   testEmail: 'test@test.com',
   testPassword: 'abcd1234',
   schemaMemo: 'memo',
+  schemaCategory: 'category',
 } as const;

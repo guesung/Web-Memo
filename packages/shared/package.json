@@ -23,6 +23,10 @@
       "types": "./dist/utils/extension/index.d.ts",
       "default": "./dist/utils/extension/index.js"
     },
+    "./utils/web": {
+      "types": "./dist/utils/web/index.d.ts",
+      "default": "./dist/utils/web/index.js"
+    },
     "./hooks": {
       "types": "./dist/hooks/index.d.ts",
       "default": "./dist/hooks/index.js"

@@ -1,20 +1,17 @@
 import { useDidMount, useMemoQuery } from '@extension/shared/hooks';
-import { useSupabaseClientQuery, useTabQuery } from '@extension/shared/hooks/extension';
+import { useTabQuery } from '@extension/shared/hooks/extension';
 import { I18n, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
 import { getMemoUrl } from '@src/utils';
 import { ExternalLinkIcon } from 'lucide-react';
 
 export default function MemoHeader() {
   const { data: tab, refetch: refetchTab } = useTabQuery();
-  const { data: supabaseClient } = useSupabaseClientQuery();
-
   const { memo: memoData } = useMemoQuery({
-    supabaseClient,
     url: tab.url,
   });
 
   const handleMemoClick = () => {
-    Tab.create({ url: getMemoUrl(memoData?.id) });
+    Tab.create({ url: getMemoUrl({ id: memoData?.id, isWish: !!memoData?.isWish }) });
   };
 
   useDidMount(() =>

@@ -1,21 +1,18 @@
 import { QUERY_KEY } from '@src/constants';
-import type { MemoSupabaseClient } from '@src/types';
-import { getMemos } from '@src/utils';
-import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
+import { MemoService } from '@src/utils';
+import { useSuspenseQuery } from '@tanstack/react-query';
 
-type QueryData = Awaited<ReturnType<typeof getMemos>>;
+import useSupabaseQuery from './useSupabaseQuery';
+
+type QueryData = Awaited<ReturnType<MemoService['getMemos']>>;
 type QueryError = Error;
 
-interface UseMemosQueryProps extends Omit<UseQueryOptions<QueryData, QueryError>, 'queryKey' | 'queryFn'> {
-  supabaseClient: MemoSupabaseClient;
-}
+export default function useMemosQuery() {
+  const { data: supabaseClient } = useSupabaseQuery();
 
-export default function useMemosQuery({ supabaseClient, ...useQueryProps }: UseMemosQueryProps) {
-  const query = useQuery<QueryData, QueryError>({
-    ...useQueryProps,
-    queryFn: () => getMemos(supabaseClient),
+  const query = useSuspenseQuery<QueryData, QueryError>({
+    queryFn: () => new MemoService(supabaseClient).getMemos(),
     queryKey: QUERY_KEY.memos(),
-    enabled: !!supabaseClient,
   });
 
   return {

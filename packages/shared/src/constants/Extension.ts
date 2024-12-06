@@ -1,4 +1,6 @@
+import packageJson from '../../package.json' assert { type: 'json' };
+
 export const EXTENSION = {
   id: 'eaiojpmgklfngpjddhoalgcpkepgkclh',
-  lastVersion: '1.6.4',
+  lastVersion: packageJson.version,
 } as const;

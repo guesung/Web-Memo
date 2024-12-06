@@ -12,6 +12,6 @@
       }
     ]
   },
-  "include": ["src", ".next/types/**/*.ts", "../shared/src/hooks/supabase/useDeleteMemosMutation.ts"],
+  "include": ["src", ".next/types/**/*.ts"],
   "exclude": ["node_modules", ".next"]
 }

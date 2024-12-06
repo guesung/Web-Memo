@@ -16,7 +16,8 @@
     "dev": "pnpm build:watch",
     "prettier": "prettier . --write --ignore-path ../../.prettierignore",
     "type-check": "tsc --noEmit",
-    "postinstall": "pnpm run build:tailwindcss"
+    "postinstall": "pnpm run build:tailwindcss",
+    "tsc-watch": "tsc-watch"
   },
   "dependencies": {
     "@extension/shared": "workspace:*",

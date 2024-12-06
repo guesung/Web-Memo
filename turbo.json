@@ -59,6 +59,9 @@
     },
     "clean": {
       "cache": false
+    },
+    "tsc-watch": {
+      "cache": false
     }
   }
 }

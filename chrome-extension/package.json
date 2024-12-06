@@ -11,7 +11,8 @@
     "dev": "pnpm build:watch",
     "dev:firefox": "pnpm build:firefox:watch",
     "prettier": "prettier . --write --ignore-path ../.prettierignore",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "tsc-watch": "tsc-watch"
   },
   "type": "module",
   "dependencies": {

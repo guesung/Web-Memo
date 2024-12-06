@@ -3,7 +3,7 @@ import { MemoRow, MemoSupabaseResponse, MemoTable } from '@src/types';
 import { MemoService } from '@src/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import useSupabaseQuery from './useSupabaseQuery';
+import useSupabaseClientQuery from './useSupabaseClientQuery';
 
 type MutationVariables = MemoTable['Insert'][];
 type MutationData = Awaited<ReturnType<MemoService['upsertMemos']>>;
@@ -11,7 +11,7 @@ type MutationError = Error;
 
 export default function useMemosUpsertMutation() {
   const queryClient = useQueryClient();
-  const { data: supabaseClient } = useSupabaseQuery();
+  const { data: supabaseClient } = useSupabaseClientQuery();
 
   return useMutation<MutationData, MutationError, MutationVariables>({
     mutationFn: new MemoService(supabaseClient).upsertMemos,

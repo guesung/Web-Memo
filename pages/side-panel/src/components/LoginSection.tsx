@@ -1,7 +1,6 @@
 import { CONFIG } from '@extension/shared/constants';
 import { Tab } from '@extension/shared/utils/extension';
-
-import TopRightArrowIcon from '../../public/svgs/top_right_arrow.svg';
+import { ExternalLinkIcon } from 'lucide-react';
 
 export default function LoginSection() {
   return (
@@ -14,7 +13,7 @@ export default function LoginSection() {
           Tab.create({ url: `${CONFIG.webUrl}/login` });
         }}>
         로그인하러가기
-        <TopRightArrowIcon height={16} width={16} />
+        <ExternalLinkIcon height={16} width={16} />
       </button>
     </div>
   );

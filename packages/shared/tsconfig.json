@@ -1,20 +1,17 @@
 {
-  "extends": "@extension/tsconfig/utils",
+  "extends": "@extension/tsconfig/react",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
       "@*": ["./*"]
     },
-    "jsx": "react-jsx",
-    "types": ["chrome", "jest"],
+    "noEmit": false,
     "emitDeclarationOnly": false,
     "strictPropertyInitialization": false,
-    "declaration": true,
-    "declarationMap": true,
     "stripInternal": true,
     "declarationDir": "dist",
     "outDir": "dist"
   },
   "include": ["src"],
-  "exclude": ["dist", "node_modules"]
+  "exclude": ["dist"]
 }

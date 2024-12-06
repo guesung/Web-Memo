@@ -2,10 +2,10 @@ import { QUERY_KEY } from '@src/constants';
 import { CategoryService } from '@src/utils';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
-import useSupabaseQuery from './useSupabaseQuery';
+import useSupabaseClientQuery from './useSupabaseClientQuery';
 
 export default function useCategoryQuery() {
-  const { data: supabaseClient } = useSupabaseQuery();
+  const { data: supabaseClient } = useSupabaseClientQuery();
 
   const query = useSuspenseQuery({
     queryFn: new CategoryService(supabaseClient).getCategories,

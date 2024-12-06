@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "tsc-watch": "tsc-watch"
   },
   "dependencies": {
     "@egjs/react-infinitegrid": "^4.12.0",

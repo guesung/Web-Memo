@@ -1,8 +1,7 @@
 {
-  "extends": "@extension/tsconfig/utils",
+  "extends": "@extension/tsconfig/node",
   "compilerOptions": {
-    "outDir": "dist",
-    "types": ["chrome"]
+    "outDir": "dist"
   },
   "exclude": ["lib/injections/**/*"],
   "include": ["lib", "index.ts"]

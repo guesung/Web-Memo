@@ -5,7 +5,7 @@ import { getSupabaseClient as getSupabaseClientExtension } from '@src/utils/exte
 import { getSupabaseClient as getSupabaseClientWeb } from '@src/utils/web';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
-export default function useSupabaseQuery() {
+export default function useSupabaseClientQuery() {
   const query = useSuspenseQuery({
     queryFn: isExtension ? getSupabaseClientExtension : getSupabaseClientWeb,
     queryKey: QUERY_KEY.supabaseClient(),

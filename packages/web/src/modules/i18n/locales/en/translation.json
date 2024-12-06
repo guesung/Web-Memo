@@ -17,7 +17,10 @@
     "time": "Time",
     "event": "Event",
     "more": "more",
-    "title": "Title"
+    "title": "Title",
+    "tomorrow": "Tomorrow",
+    "yesterday": "Yesterday",
+    "workWeek": "Work Week"
   },
   "sideBar": {
     "memo": "My Memos",

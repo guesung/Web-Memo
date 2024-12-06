@@ -21,6 +21,9 @@ dayjs.extend(timezone);
 
 const localizer = dayjsLocalizer(dayjs);
 
+import('dayjs/locale/en');
+import('dayjs/locale/ko');
+
 interface ExtendedEvent extends Event {
   id: string;
 }
@@ -30,7 +33,8 @@ interface MemoCalendarProps extends LanguageType {
 }
 
 export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
-  const { t } = useTranslation(lng);
+  const { t, i18n } = useTranslation(lng);
+  dayjs.locale(i18n.language);
   const [view, setView] = useState<View>('month');
   const [date, setDate] = useState<Date>(new Date());
   const searchParams = useSearchParams();
@@ -98,14 +102,18 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
                     <ChevronLeftIcon />
                   </Button>
                   <Button onClick={() => onNavigate('TODAY')} variant="ghost">
-                    Today
+                    {t('common.today')}
                   </Button>
                   <Button onClick={() => onNavigate('NEXT')} variant="ghost">
                     <ChevronRightIcon />
                   </Button>
                 </div>
 
-                <h2 className="text-xl font-semibold">{dayjs(date).format('LL')}</h2>
+                <h2 className="text-xl font-semibold">
+                  {view === 'month'
+                    ? dayjs(date).format('LL')
+                    : dayjs(date).format('LL') + ' ~ ' + dayjs(date).add(1, 'month').format('LL')}
+                </h2>
 
                 <div className="flex gap-2">
                   {(views as View[]).map(name => (
@@ -119,7 +127,7 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
                           'text-cyan-600': name === view,
                         },
                       )}>
-                      {name}
+                      {t(`common.${name}`)}
                     </Button>
                   ))}
                 </div>
@@ -142,6 +150,10 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
           showMore: (_, __, events) => {
             return `..${events.length} ${t('common.more')}`;
           },
+          noEventsInRange: t('memos.emptyState.message'),
+          tomorrow: t('common.tomorrow'),
+          yesterday: t('common.yesterday'),
+          work_week: t('common.workWeek'),
         }}
       />
     </motion.div>

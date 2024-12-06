@@ -111,7 +111,7 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
 
                 <h2 className="text-xl font-semibold">
                   {view === 'month'
-                    ? dayjs(date).format('LL')
+                    ? dayjs(date).format('MMMM YYYY')
                     : dayjs(date).format('LL') + ' ~ ' + dayjs(date).add(1, 'month').format('LL')}
                 </h2>
 

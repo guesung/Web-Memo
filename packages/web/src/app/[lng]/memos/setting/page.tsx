@@ -16,7 +16,7 @@ export default async function Page({ params: { lng } }: LanguageParams) {
       <SettingHeader lng={lng} />
       <HydrationBoundaryWrapper
         queryKey={QUERY_KEY.category()}
-        queryFn={() => new CategoryService(supabaseClient).getCategories()}>
+        queryFn={new CategoryService(supabaseClient).getCategories}>
         <Setting lng={lng} />
       </HydrationBoundaryWrapper>
     </main>

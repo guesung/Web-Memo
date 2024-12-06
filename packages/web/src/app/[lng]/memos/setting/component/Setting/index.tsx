@@ -1,8 +1,10 @@
 'use client';
 
 import { MOTION_VARIANTS } from '@extension/shared/constants';
+import { Loading } from '@extension/ui';
 import { LanguageType } from '@src/modules/i18n';
 import { motion } from 'framer-motion';
+import { Suspense } from 'react';
 
 import SettingCategoryForm from './SettingCategoryForm';
 import SettingGuide from './SettingGuide';
@@ -18,9 +20,11 @@ export default function Setting({ lng }: SettingProps) {
       initial="initial"
       animate="animate"
       exit="exit">
-      <SettingLanguage lng={lng} />
-      <SettingGuide lng={lng} />
-      <SettingCategoryForm lng={lng} />
+      <Suspense fallback={<Loading />}>
+        <SettingLanguage lng={lng} />
+        <SettingGuide lng={lng} />
+        <SettingCategoryForm lng={lng} />
+      </Suspense>
     </motion.section>
   );
 }

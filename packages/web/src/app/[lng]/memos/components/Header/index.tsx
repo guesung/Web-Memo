@@ -60,7 +60,7 @@ async function HeaderRight({ lng }: LanguageType) {
       <RefreshButton lng={lng} />
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <Avatar>
+          <Avatar className="h-8 w-8">
             <AvatarImage src={userAvatarUrl} alt="avatar" />
             <AvatarFallback>{userName}</AvatarFallback>
           </Avatar>

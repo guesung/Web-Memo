@@ -20,7 +20,7 @@ export default function MemoOptionHeader({ selectedMemos, lng, closeMemoOption }
   if (selectedMemos.length === 0) return null;
   return (
     <motion.header
-      className="bg-background fixed inset-x-0 top-0 z-50 flex h-12 w-full items-center justify-between px-4 shadow-sm"
+      className="bg-background fixed inset-x-0 top-0 z-50 flex h-[3.5rem] w-full items-center justify-between px-4 shadow-sm"
       variants={MOTION_VARIANTS.fadeInAndOut}
       initial="initial"
       animate="animate"

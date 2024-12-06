@@ -23,6 +23,7 @@
     "dev:firefox": "turbo ready && cross-env __FIREFOX__=true turbo watch dev --concurrency 20",
     "dev:web": "turbo run dev --filter web",
     "type-check": "turbo type-check",
+    "tsc-watch": "turbo tsc-watch",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --fix --ext .ts,.tsx",
     "prettier": "turbo prettier --continue -- --cache --cache-location node_modules/.cache/.prettiercache",
@@ -59,6 +60,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-hook-form": "^7.53.2",
+    "ts-watch": "^1.0.8",
     "uvcanvas": "^0.2.2",
     "vite-plugin-svgr": "^4.3.0"
   },

@@ -56,7 +56,8 @@
     "clean": "rimraf ./dist",
     "ready": "rm -rf dist && node build.mjs",
     "prettier": "prettier . --write --ignore-path ../../.prettierignore",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "tsc-watch": "tsc-watch"
   },
   "devDependencies": {
     "@extension/tsconfig": "workspace:*",

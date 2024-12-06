@@ -12,6 +12,7 @@
   "scripts": {
     "clean": "rimraf dist && rimraf .turbo && turbo clean",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "build": "pnpm run build:extension && pnpm run build:web",
     "build:extension": "turbo build --filter=!web",
     "build:web": "turbo build --filter=web",
     "start:web": "turbo start --filter=web",

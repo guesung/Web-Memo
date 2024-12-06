@@ -1,12 +1,11 @@
 {
-  "extends": "@extension/tsconfig/base",
+  "extends": "@extension/tsconfig/react",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@src/*": ["src/*"]
-    },
-    "jsx": "react-jsx",
-    "types": ["chrome"]
+      "@src/*": ["src/*"],
+      "@public/*": ["public/*"]
+    }
   },
   "include": ["src"]
 }

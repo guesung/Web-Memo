@@ -4,7 +4,7 @@ import {
   useCategoryQuery,
   useCategoryUpsertMutation,
 } from '@extension/shared/hooks';
-import { Button, Label } from '@src/components/ui';
+import { Button, Input, Label, toast } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { TrashIcon } from 'lucide-react';
@@ -36,15 +36,30 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
   const handleAddCategory = () => {
     const defaultCategoryName = t('setting.defaultCategoryName');
 
-    insertCategory({ name: defaultCategoryName });
+    insertCategory(
+      { name: defaultCategoryName },
+      {
+        onSuccess: () => {
+          toast({ title: t('toastTitle.successSave') });
+        },
+      },
+    );
   };
 
   const handleCategoryDelete = (id: number) => {
-    deleteCategory(id, {});
+    deleteCategory(id, {
+      onSuccess: () => {
+        toast({ title: t('toastTitle.successSave') });
+      },
+    });
   };
 
   const onCategoryFormSubmit = (data: CategoryForm) => {
-    upsertCategory(data.categories);
+    upsertCategory(data.categories, {
+      onSuccess: () => {
+        toast({ title: t('toastTitle.successSave') });
+      },
+    });
   };
 
   useEffect(() => {
@@ -62,11 +77,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
       <div className="col-span-6 space-y-2">
         {categories?.map(({ id }, index) => (
           <div key={id} className="flex items-center gap-2">
-            <input
-              type="text"
-              {...register(`categories.${index}.name`)}
-              className="border-input focus-visible:ring-ring h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1"
-            />
+            <Input {...register(`categories.${index}.name`)} />
             <Button
               variant="ghost"
               size="icon"

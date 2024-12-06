@@ -17,8 +17,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  toast,
   ToastAction,
-  useToast,
 } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
@@ -37,7 +37,6 @@ export default function MemoOption({ lng, memos, closeMemoOption }: MemoOptionPr
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const { toast } = useToast();
   const { categories } = useCategoryQuery();
   const queryClient = useQueryClient();
   const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();

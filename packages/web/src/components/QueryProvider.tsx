@@ -1,5 +1,5 @@
 'use client';
-import { useToast } from '@extension/ui';
+import { toast } from '@extension/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -10,7 +10,6 @@ interface QueryProviderProps extends PropsWithChildren, LanguageType {}
 
 export default function QueryProvider({ children, lng }: QueryProviderProps) {
   const { t } = useTranslation(lng);
-  const { toast } = useToast();
 
   const [queryClient] = useState(
     () =>
@@ -20,9 +19,6 @@ export default function QueryProvider({ children, lng }: QueryProviderProps) {
           mutations: {
             onError: () => {
               toast({ title: t('toastTitle.errorSave') });
-            },
-            onSuccess: () => {
-              toast({ title: t('toastTitle.successSave') });
             },
           },
         },

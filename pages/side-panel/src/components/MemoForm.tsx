@@ -7,7 +7,7 @@ import {
 } from '@extension/shared/hooks';
 import { useTabQuery } from '@extension/shared/hooks/extension';
 import { getMemoInfo, I18n, responseRefetchTheMemos, Tab } from '@extension/shared/utils/extension';
-import { cn, Textarea, ToastAction, useToast } from '@extension/ui';
+import { cn, Textarea, toast, ToastAction } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
 import { MemoInput } from '@src/types/Input';
 import { getMemoWishListUrl } from '@src/utils';
@@ -16,7 +16,6 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 function MemoForm() {
-  const { toast } = useToast();
   const { throttle, abortThrottle } = useThrottle();
   const { data: tab } = useTabQuery();
   const { memo: memoData, refetch: refetchMemo } = useMemoQuery({

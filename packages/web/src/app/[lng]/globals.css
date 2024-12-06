@@ -11,8 +11,6 @@
     @apply bg-background text-foreground;
   }
 
-  --primary: #4285f4;
-
   :root {
     .rbc-calendar {
       .rbc-event {

@@ -7,7 +7,7 @@ export const getMemoUrl = (memo?: MemoRow) => {
   if (memo?.id) searchParams.set('id', String(memo.id));
   if (memo?.isWish) searchParams.set('isWish', 'true');
 
-  return `${CONFIG.webUrl}/${PATHS.memos}${searchParams.getSearchParams()}`;
+  return `${CONFIG.webUrl}${PATHS.memos}${searchParams.getSearchParams()}`;
 };
 
 export const getMemoWishListUrl = (id?: number) => {
@@ -15,5 +15,5 @@ export const getMemoWishListUrl = (id?: number) => {
   searchParams.set('isWish', 'true');
   if (id) searchParams.set('id', String(id));
 
-  return `${CONFIG.webUrl}/${PATHS.memos}?${searchParams.getSearchParams()}`;
+  return `${CONFIG.webUrl}${PATHS.memos}${searchParams.getSearchParams()}`;
 };

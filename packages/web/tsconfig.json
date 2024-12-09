@@ -1,17 +1,11 @@
 {
-  "extends": "@extension/tsconfig/base",
+  "extends": "@extension/tsconfig/next",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
       "@src/*": ["./src/*"]
-    },
-    "jsx": "preserve",
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ]
+    }
   },
   "include": ["src", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", ".next"]
+  "exclude": [".next"]
 }

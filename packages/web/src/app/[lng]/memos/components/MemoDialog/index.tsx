@@ -1,17 +1,13 @@
 'use client';
 import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
-import { formatDate, GetMemoResponse } from '@extension/shared/utils';
+import { formatDate } from '@extension/shared/utils';
 import { Button } from '@extension/ui';
-import { Card, CardContent } from '@src/components/ui/card';
-import { Dialog, DialogContent } from '@src/components/ui/dialog';
-import { Textarea } from '@src/components/ui/textarea';
-import { useSupabaseClient } from '@src/hooks';
-import { useToast } from '@src/hooks/use-toast';
+import { Card, CardContent, Dialog, DialogContent, Textarea } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useRouter } from 'next/navigation';
-import { FocusEvent, useEffect, useState } from 'react';
+import { FocusEvent, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { MemoInput } from '../../types';
@@ -26,28 +22,27 @@ export default function MemoDialog({ lng, id }: MemoDialog) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
   const router = useRouter();
-  const supabaseClient = useSupabaseClient();
-  const { memo: memoData } = useMemoQuery({ supabaseClient, id: Number(id) });
-  const { toast } = useToast();
+  const { memo: memoData } = useMemoQuery({ id: Number(id) });
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [open, setOpen] = useState(false);
-  const { mutate: mutateMemoPatch } = useMemoPatchMutation({
-    supabaseClient,
-  });
+  const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 
   const { register, watch, setValue } = useForm<MemoInput>({
     defaultValues: {
       memo: '',
     },
   });
+  const adjustTextareaHeight = (event: FocusEvent<HTMLTextAreaElement>) => {
+    event.target.style.height = `${event.target.scrollHeight}px`;
+  };
+  const { ref, ...rest } = register('memo', {
+    onChange: adjustTextareaHeight,
+  });
+
+  useImperativeHandle(ref, () => textareaRef.current);
 
   const saveMemo = () => {
-    console.log(watch('memo'));
-    mutateMemoPatch(
-      { id: Number(id), memoRequest: { memo: watch('memo') } },
-      {
-        onSuccess: () => toast({ title: t('toastTitle.memoEdited') }),
-      },
-    );
+    mutateMemoPatch({ id: Number(id), request: { memo: watch('memo') } });
   };
 
   const handleKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -62,9 +57,11 @@ export default function MemoDialog({ lng, id }: MemoDialog) {
     router.replace(searchParams.getUrl(), { scroll: false });
   };
 
-  const adjustTextareaHeight = (event: FocusEvent<HTMLTextAreaElement>) => {
-    event.target.style.height = `${event.target.scrollHeight}px`;
-  };
+  useEffect(() => {
+    if (!textareaRef.current) return;
+
+    textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+  }, [textareaRef, ref]);
 
   useEffect(() => {
     setValue('memo', memoData?.memo ?? '');
@@ -79,15 +76,13 @@ export default function MemoDialog({ lng, id }: MemoDialog) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-[600px] p-0" onClose={closeDialog}>
         <Card>
-          <MemoCardHeader memo={memoData as GetMemoResponse} />
+          <MemoCardHeader memo={memoData} />
           <CardContent>
             <Textarea
-              {...register('memo', {
-                onChange: adjustTextareaHeight,
-              })}
+              {...rest}
               onKeyDown={handleKeyDown}
-              onFocus={adjustTextareaHeight}
               className="outline-none focus:border-gray-300 focus:outline-none"
+              ref={textareaRef}
             />
 
             <div className="h-4" />
@@ -95,7 +90,7 @@ export default function MemoDialog({ lng, id }: MemoDialog) {
               {t('common.updatedAt')} {formatDate(memoData.updated_at, 'yyyy.mm.dd')}
             </span>
           </CardContent>
-          <MemoCardFooter memo={memoData as GetMemoResponse} lng={lng} isHovered>
+          <MemoCardFooter memo={memoData} lng={lng} isOptionShown>
             <div className="flex gap-2">
               <Button variant="outline" type="button" onClick={closeDialog}>
                 {t('common.close')}

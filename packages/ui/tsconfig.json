@@ -1,17 +1,15 @@
 {
-  "extends": "@extension/tsconfig/utils",
+  "extends": "@extension/tsconfig/react",
   "compilerOptions": {
-    "outDir": "dist",
-    "jsx": "react-jsx",
     "baseUrl": ".",
-    "types": ["chrome", "node"],
     "paths": {
       "@/*": ["./src/*"]
     },
-    "declaration": true,
-    "declarationMap": true,
+    "noEmit": false,
     "esModuleInterop": true,
-    "moduleResolution": "node"
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "outDir": "dist"
   },
   "include": ["src", "index.ts"]
 }

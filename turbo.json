@@ -3,6 +3,7 @@
   "ui": "tui",
   "tasks": {
     "ready": {
+      "dependsOn": ["^ready"],
       "outputs": ["dist", "build"],
       "cache": false
     },
@@ -57,6 +58,9 @@
       "cache": false
     },
     "clean": {
+      "cache": false
+    },
+    "tsc-watch": {
       "cache": false
     }
   }

@@ -14,8 +14,8 @@
     "ready": "rimraf dist && node build.mjs",
     "prettier": "prettier . --write",
     "type-check": "tsc --noEmit",
-    "dev": "vite",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "tsc-watch": "tsc-watch"
   },
   "devDependencies": {
     "@extension/hmr": "workspace:*",
@@ -27,7 +27,7 @@
     "tailwindcss": "^3.4.15"
   },
   "dependencies": {
-    "@extension/shared": "workspace:^",
+    "@extension/shared": "workspace:*",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "^1.2.1",
     "@radix-ui/react-alert-dialog": "^1.1.2",

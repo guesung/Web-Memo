@@ -1,9 +1,35 @@
 'use client';
+import { toast } from '@extension/ui';
+import { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { PropsWithChildren, useState } from 'react';
 
-export default function QueryProvider({ children }: PropsWithChildren) {
-  const [queryClient] = useState(() => new QueryClient());
+interface QueryProviderProps extends PropsWithChildren, LanguageType {}
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+export default function QueryProvider({ children, lng }: QueryProviderProps) {
+  const { t } = useTranslation(lng);
+
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: { refetchOnWindowFocus: true },
+          mutations: {
+            onError: () => {
+              toast({ title: t('toastTitle.errorSave') });
+            },
+          },
+        },
+      }),
+  );
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  );
 }

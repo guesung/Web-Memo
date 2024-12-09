@@ -1,10 +1,9 @@
-import { SUPABASE } from '@extension/shared/constants';
-import { Database } from '@extension/shared/types';
-import { CONFIG } from '@src/constants';
+import { CONFIG, SUPABASE } from '@src/constants';
+import { Database } from '@src/types';
 import { createBrowserClient } from '@supabase/ssr';
 
-export const getSupabaseClient = () =>
-  createBrowserClient<Database>(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey, {
+export const getSupabaseClient = () => {
+  return createBrowserClient<Database>(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey, {
     auth: {
       storage: {
         getItem: key => {
@@ -20,3 +19,4 @@ export const getSupabaseClient = () =>
     },
     db: { schema: SUPABASE.schemaMemo },
   });
+};

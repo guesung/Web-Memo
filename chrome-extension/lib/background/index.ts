@@ -3,7 +3,7 @@ import 'webextension-polyfill';
 import { CONFIG, DEFAULT_PROMPTS, LANGUAGE_MAP, STORAGE_KEYS, URL } from '@extension/shared/constants';
 import { isProduction } from '@extension/shared/utils';
 import {
-  getPrompt,
+  getSystemPrompt,
   I18n,
   requestObserverMemoPage,
   requestUpdateSidePanel,
@@ -71,7 +71,7 @@ chrome.runtime.onConnect.addListener(async port => {
     const { category, pageContent } = message;
 
     const language = await Storage.get<string>(STORAGE_KEYS.language);
-    const prompt = await getPrompt({ language, category });
+    const prompt = await getSystemPrompt({ language, category });
 
     const stream = await openai.chat.completions.create({
       model: 'gpt-4o-mini',

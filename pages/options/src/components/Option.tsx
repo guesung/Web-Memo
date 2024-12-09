@@ -1,5 +1,4 @@
 import { STORAGE_KEYS } from '@extension/shared/constants';
-import { useDidMount } from '@extension/shared/hooks';
 import { Storage } from '@extension/shared/utils/extension';
 import {
   Button,

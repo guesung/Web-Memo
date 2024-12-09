@@ -16,5 +16,6 @@ export const DEFAULT_PROMPTS = {
 };
 
 export const PROMPT = {
+  default: '마크다운 형식이 아니라, 일반적인 텍스트 형태로 답변해주세요.',
   language: 'Language: Respond entirely in',
 };

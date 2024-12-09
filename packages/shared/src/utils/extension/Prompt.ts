@@ -12,8 +12,6 @@ export const getSystemPrompt = async ({ language, category }: GetSystemPromptPro
 
   const languagePrompt = `${PROMPT.language} ${LANGUAGE_MAP[language] ?? 'Korean'}`.repeat(3);
 
-  console.log(category);
-
   if (category === 'youtube') return `${youtubePrompts} ${languagePrompt} ${PROMPT.default}`;
   return `${webPrompts} ${languagePrompt} ${PROMPT.default}`;
 };

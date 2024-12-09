@@ -24,15 +24,15 @@ export default function Header() {
           <ToggleTheme />
         </ErrorBoundary>
         {isSummaryLoading ? (
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="sm">
             <Loading />
           </Button>
         ) : (
-          <Button variant="outline" size="icon" onClick={refetchSummary}>
+          <Button variant="outline" size="sm" onClick={refetchSummary}>
             <RefreshCwIcon size={16} />
           </Button>
         )}
-        <Button variant="ghost" size="icon" onClick={handleOptionClick}>
+        <Button variant="outline" size="sm" onClick={handleOptionClick}>
           <SettingsIcon size={16} />
         </Button>
       </div>

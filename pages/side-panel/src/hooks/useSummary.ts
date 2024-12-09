@@ -15,6 +15,7 @@ export default function useSummary() {
 
   const startSummary = async () => {
     setSummary('');
+    setCategory('others');
     setErrorMessage('');
 
     let pageContent = '';
@@ -36,6 +37,8 @@ export default function useSummary() {
       );
     } catch (e) {
       setErrorMessage(I18n.get('error_get_summary'));
+      setCategory('others');
+      return;
     }
   };
 

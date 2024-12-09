@@ -7,7 +7,7 @@
     },
     "noEmit": false,
     "esModuleInterop": true,
-    "module": "Preserve",
+    "module": "ESNext",
     "moduleResolution": "bundler",
     "outDir": "dist"
   },

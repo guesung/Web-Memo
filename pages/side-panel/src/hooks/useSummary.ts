@@ -18,9 +18,11 @@ export default function useSummary() {
     setErrorMessage('');
 
     let pageContent = '';
+    let currentCategory: Category = 'others';
     try {
       const { content, category } = await requestPageContent();
       pageContent = content;
+      currentCategory = category;
       setCategory(category);
     } catch (e) {
       setErrorMessage(I18n.get('error_get_page_content'));
@@ -29,7 +31,7 @@ export default function useSummary() {
     try {
       await Runtime.connect(
         BRIDGE_TYPE_GET_SUMMARY,
-        { pageContent },
+        { pageContent, category: currentCategory },
         (message: string) => message && setSummary(prev => prev + message),
       );
     } catch (e) {

@@ -11,6 +11,7 @@ import {
   Textarea,
   useToast,
 } from '@extension/ui';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 export default function Option() {
@@ -24,31 +25,35 @@ export default function Option() {
     },
   });
 
-  const onSubmit = handleSubmit(data => {
-    Storage.set(STORAGE_KEYS.youtubePrompts, data.youtubePrompt);
-    Storage.set(STORAGE_KEYS.webPrompts, data.webPrompt);
-    Storage.set(STORAGE_KEYS.language, data.language);
+  const onSubmit = handleSubmit(async data => {
+    await Storage.set(STORAGE_KEYS.youtubePrompts, data.youtubePrompt);
+    await Storage.set(STORAGE_KEYS.webPrompts, data.webPrompt);
+    await Storage.set(STORAGE_KEYS.language, data.language);
 
     toast({
       title: '설정이 저장되었습니다.',
     });
   });
 
-  useDidMount(async () => {
-    const language = await Storage.get<string>(STORAGE_KEYS.language);
-    const youtubePrompts = await Storage.get<string>(STORAGE_KEYS.youtubePrompts);
-    const webPrompts = await Storage.get<string>(STORAGE_KEYS.webPrompts);
+  useEffect(() => {
+    const fetchStorage = async () => {
+      const language = await Storage.get<string>(STORAGE_KEYS.language);
+      const youtubePrompts = await Storage.get<string>(STORAGE_KEYS.youtubePrompts);
+      const webPrompts = await Storage.get<string>(STORAGE_KEYS.webPrompts);
 
-    setValue('language', language);
-    setValue('youtubePrompt', youtubePrompts);
-    setValue('webPrompt', webPrompts);
-  });
+      setValue('language', language);
+      setValue('youtubePrompt', youtubePrompts);
+      setValue('webPrompt', webPrompts);
+    };
+
+    fetchStorage();
+  }, [setValue]);
 
   return (
     <div className="container mx-auto space-y-8 p-4">
       <section className="mb-8">
         <h2 className="mb-4 text-xl font-semibold">언어 설정</h2>
-        <Select defaultValue={watch('language')} onValueChange={value => setValue('language', value)}>
+        <Select value={watch('language')} onValueChange={value => setValue('language', value)}>
           <SelectTrigger className="w-32">
             <SelectValue placeholder="언어 선택" />
           </SelectTrigger>

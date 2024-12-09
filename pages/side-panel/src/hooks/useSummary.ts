@@ -1,27 +1,44 @@
 import { useFetch } from '@extension/shared/hooks';
-import { BRIDGE_TYPE_GET_SUMMARY, I18n, requestPageContent, Runtime } from '@extension/shared/utils/extension';
+import {
+  BRIDGE_TYPE_GET_SUMMARY,
+  Category,
+  I18n,
+  requestPageContent,
+  Runtime,
+} from '@extension/shared/utils/extension';
 import { useState } from 'react';
 
 export default function useSummary() {
   const [summary, setSummary] = useState('');
+  const [category, setCategory] = useState<Category>('others');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const startSummary = async () => {
     setSummary('');
+    setCategory('others');
+    setErrorMessage('');
+
     let pageContent = '';
+    let currentCategory: Category = 'others';
     try {
-      pageContent = await requestPageContent();
+      const { content, category } = await requestPageContent();
+      pageContent = content;
+      currentCategory = category;
+      setCategory(category);
     } catch (e) {
-      setSummary(I18n.get('error_get_page_content'));
+      setErrorMessage(I18n.get('error_get_page_content'));
       return;
     }
     try {
       await Runtime.connect(
         BRIDGE_TYPE_GET_SUMMARY,
-        { pageContent },
+        { pageContent, category: currentCategory },
         (message: string) => message && setSummary(prev => prev + message),
       );
     } catch (e) {
-      setSummary(I18n.get('error_get_summary'));
+      setErrorMessage(I18n.get('error_get_summary'));
+      setCategory('others');
+      return;
     }
   };
 
@@ -33,5 +50,7 @@ export default function useSummary() {
     isSummaryLoading: isLoading,
     summary,
     refetchSummary,
+    category,
+    errorMessage,
   };
 }

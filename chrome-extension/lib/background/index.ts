@@ -1,8 +1,9 @@
 import 'webextension-polyfill';
 
-import { CONFIG, LANGUAGE_MAP, STORAGE_OPTION_LANGUAGE, URL } from '@extension/shared/constants';
+import { CONFIG, DEFAULT_PROMPTS, LANGUAGE_MAP, STORAGE_KEYS, URL } from '@extension/shared/constants';
 import { isProduction } from '@extension/shared/utils';
 import {
+  getSystemPrompt,
   I18n,
   requestObserverMemoPage,
   requestUpdateSidePanel,
@@ -12,14 +13,18 @@ import {
   Storage,
   Tab,
 } from '@extension/shared/utils/extension';
-import { getPrompt } from '@root/utils';
 import { openai } from '@root/utils/openai';
 
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
 chrome.runtime.onInstalled.addListener(async () => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
-  const language = await Storage.get(STORAGE_OPTION_LANGUAGE);
-  if (!language) Storage.set(STORAGE_OPTION_LANGUAGE, LANGUAGE_MAP[I18n.getUILanguage() as keyof typeof LANGUAGE_MAP]);
+  const language = await Storage.get(STORAGE_KEYS.language);
+  const youtubePrompts = await Storage.get(STORAGE_KEYS.youtubePrompts);
+  const webPrompts = await Storage.get(STORAGE_KEYS.webPrompts);
+
+  if (!language) Storage.set(STORAGE_KEYS.language, LANGUAGE_MAP[I18n.getUILanguage()]);
+  if (!youtubePrompts) Storage.set(STORAGE_KEYS.youtubePrompts, DEFAULT_PROMPTS.youtube);
+  if (!webPrompts) Storage.set(STORAGE_KEYS.webPrompts, DEFAULT_PROMPTS.web);
 });
 
 // 확장 프로그램이 설치되었을 때 가이드 페이지로 이동한다.
@@ -63,10 +68,11 @@ chrome.runtime.setUninstallURL(URL.googleForm);
 // chatGPT에게서 메시지를 받아서 다시 전달한다.
 chrome.runtime.onConnect.addListener(async port => {
   port.onMessage.addListener(async message => {
-    const language = (await Storage.get(STORAGE_OPTION_LANGUAGE)) ?? 'English';
+    const { category, pageContent } = message;
 
-    const prompt = getPrompt({ language });
-    const pageContent = message.pageContent;
+    const language = await Storage.get<string>(STORAGE_KEYS.language);
+    const prompt = await getSystemPrompt({ language, category });
+
     const stream = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [

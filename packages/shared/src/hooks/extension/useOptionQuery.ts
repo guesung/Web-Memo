@@ -1,10 +1,10 @@
-import { QUERY_KEY, STORAGE_OPTION_LANGUAGE } from '@src/constants';
+import { QUERY_KEY, STORAGE_KEYS } from '@src/constants';
 import { Storage } from '@src/utils/extension';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
 export default function useOptionQuery() {
   return useSuspenseQuery({
-    queryFn: () => Storage.get(STORAGE_OPTION_LANGUAGE),
+    queryFn: () => Storage.get(STORAGE_KEYS.language),
     queryKey: QUERY_KEY.option(),
   });
 }

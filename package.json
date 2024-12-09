@@ -62,7 +62,8 @@
     "react-hook-form": "^7.53.2",
     "tsc-watch": "^6.2.1",
     "uvcanvas": "^0.2.2",
-    "vite-plugin-svgr": "^4.3.0"
+    "vite-plugin-svgr": "^4.3.0",
+    "youtube-transcript": "^1.2.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0",

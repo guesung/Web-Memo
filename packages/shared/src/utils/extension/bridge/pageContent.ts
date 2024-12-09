@@ -11,12 +11,15 @@ export type Category = 'youtube' | 'others';
 export const requestPageContent = () =>
   Tab.sendMessage<void, { content: string; category: Category }>(BRIDGE_TYPE_PAGE_CONTENT);
 
-const checkYoutube = (url: string) => url.startsWith('https://www.youtube.com/watch?');
+const checkYoutube = (url: string) => {
+  const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+  return youtubeRegex.test(url);
+};
 const getCategory = (url: string): Category => {
   if (checkYoutube(url)) return 'youtube';
   return 'others';
 };
-const getContentFromWeb = () => document.body.innerText;
+const getContentFromWeb = () => document.querySelector('article, main, .content');
 const getContentFromYoutube = async (url: string) => {
   const transcripts = await YoutubeTranscript.fetchTranscript(url);
   return transcripts.map(transcript => transcript.text).join('\n');

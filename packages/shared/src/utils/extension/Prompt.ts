@@ -10,7 +10,9 @@ export const getSystemPrompt = async ({ language, category }: GetSystemPromptPro
   const youtubePrompts = (await Storage.get(STORAGE_KEYS.youtubePrompts)) ?? DEFAULT_PROMPTS.youtube;
   const webPrompts = (await Storage.get(STORAGE_KEYS.webPrompts)) ?? DEFAULT_PROMPTS.web;
 
-  const languagePrompt = `${PROMPT.language} ${LANGUAGE_MAP[language] ?? 'English'}`.repeat(3);
+  const languagePrompt = `${PROMPT.language} ${LANGUAGE_MAP[language] ?? 'Korean'}`.repeat(3);
+
+  console.log(category);
 
   if (category === 'youtube') return `${youtubePrompts} ${languagePrompt} ${PROMPT.default}`;
   return `${webPrompts} ${languagePrompt} ${PROMPT.default}`;

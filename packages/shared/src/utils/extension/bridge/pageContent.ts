@@ -19,7 +19,7 @@ const getCategory = (url: string): Category => {
   if (checkYoutube(url)) return 'youtube';
   return 'others';
 };
-const getContentFromWeb = () => document.querySelector('article, main, .content');
+const getContentFromWeb = () => document.body.innerText;
 const getContentFromYoutube = async (url: string) => {
   const transcripts = await YoutubeTranscript.fetchTranscript(url);
   return transcripts.map(transcript => transcript.text).join('\n');

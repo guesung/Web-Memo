@@ -1,7 +1,7 @@
 import '@extension/ui/dist/global.css';
 import './globals.css';
 
-import { Header, QueryProvider, ThemeProvider } from '@src/components';
+import { QueryProvider, ThemeProvider } from '@src/components';
 import { Toaster } from '@src/components/ui';
 import { LanguageParams, languages } from '@src/modules/i18n';
 import { dir } from 'i18next';
@@ -34,11 +34,7 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
     <html lang={lng} className="h-screen" dir={dir(lng)} suppressHydrationWarning>
       <body className={`${pretendard.variable} font-pretendard h-full`}>
         <ThemeProvider>
-          <QueryProvider lng={lng}>
-            <Header lng={lng} />
-
-            {children}
-          </QueryProvider>
+          <QueryProvider lng={lng}>{children}</QueryProvider>
         </ThemeProvider>
 
         <Toaster />

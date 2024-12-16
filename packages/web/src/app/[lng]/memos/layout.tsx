@@ -33,6 +33,8 @@ export default async function Layout({ children, params: { lng } }: LayoutProps)
           </HydrationBoundaryWrapper>
           {children}
         </SidebarProvider>
+
+        {/* <ExtensionDialog lng={lng} /> */}
       </div>
     </div>
   );

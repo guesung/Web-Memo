@@ -35,8 +35,8 @@ export default function MemoCardHeader({ memo, isHovered, isSelected, onSelect }
             width={12}
             height={12}
             alt="favicon"
-            className="float-left"
-            style={{ objectFit: 'contain', height: 'auto' }}
+            className="h-3 w-3 object-contain"
+            priority
           />
         )}
         <TooltipProvider delayDuration={200}>

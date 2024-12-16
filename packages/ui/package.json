@@ -14,7 +14,8 @@
     "ready": "rimraf dist && node build.mjs",
     "prettier": "prettier . --write",
     "type-check": "tsc --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "tsc-watch": "tsc-watch"
   },
   "devDependencies": {
     "@extension/hmr": "workspace:*",

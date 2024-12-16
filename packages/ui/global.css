@@ -80,3 +80,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+.prose {
+  --tw-prose-headings: var(--foreground);
+
+  strong {
+    color: var(--foreground);
+  }
+}

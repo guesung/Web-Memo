@@ -1,12 +1,12 @@
 {
-  "extensionDescription": {
-    "message": "Meet your perfect web surfing companion! Our extension helps you take notes effortlessly while browsing."
-  },
   "extensionName": {
-    "message": "Web Memo - Your Smart Note-Taking Assistant"
+    "message": "Web Memo - Smart Notes with a Click"
+  },
+  "extensionDescription": {
+    "message": "Make web surfing smarter with Web Memo"
   },
   "no_memo": {
-    "message": "You don't have any memos yet. Ready to create your first one?"
+    "message": "Looks like you haven't created any memos yet! How about starting your journey with your first note? 😊"
   },
   "memo": {
     "message": "My Memo"
@@ -48,22 +48,22 @@
     "message": "Great! Your settings have been saved successfully."
   },
   "toast_error_common": {
-    "message": "Oops! Something went wrong. Please try again."
+    "message": "Sorry. An error occurred. Please try again"
   },
   "toast_saved": {
     "message": "Perfect! Your changes have been saved successfully."
   },
   "error_get_page_content": {
-    "message": "Sorry, but we can't summarize content from New Tab, Chrome Web Store, or Chrome Settings pages. Please visit a different webpage and click the retry button on the right. If you've just installed the app, try refreshing the page once."
+    "message": "Oops! Summary feature isn't available on new tabs, Chrome Web Store, or Chrome settings pages. Would you mind trying again on a different page?\n- If you just installed the extension, please refresh the page once!\n- For YouTube pages, summarizing may take about 3 seconds. Thanks for your patience ⏳"
   },
   "error_get_summary": {
-    "message": "We couldn't create your summary this time. Please try again! If you keep seeing this error, we're here to help - just reach out to us through the contact information in the 'Guide'."
+    "message": "Oh no! We hit a small bump while creating your summary 😥\nCould you try once more? If you keep seeing this message, we'd love to help - just reach out through the contact info in the 'Guide'. We're here for you! 💪"
   },
   "error_get_storage": {
     "message": "We couldn't access your stored data. Please try again."
   },
   "toast_error_storage_exceeded": {
-    "message": "Looks like your storage is full! Try removing some old items to make space."
+    "message": "Your storage is getting cozy! How about clearing some space for your new amazing notes? 🗑️"
   },
   "context_menus_check_memo": {
     "message": "View Your Memos"
@@ -82,5 +82,32 @@
   },
   "toast_error_save": {
     "message": "Sorry, we couldn't save your memo. Please try again."
+  },
+  "prompt_language_setting": {
+    "message": "Prompt Language Settings"
+  },
+  "select_language_placeholder": {
+    "message": "Select Language"
+  },
+  "youtube_prompt_setting": {
+    "message": "YouTube Prompt Settings"
+  },
+  "website_prompt_setting": {
+    "message": "Website Prompt Settings"
+  },
+  "enter_prompt": {
+    "message": "Enter your prompt"
+  },
+  "settings_saved": {
+    "message": "Settings have been saved successfully"
+  },
+  "youtube": {
+    "message": "YouTube"
+  },
+  "webSite": {
+    "message": "Website"
+  },
+  "summary": {
+    "message": "Summary"
   }
 }

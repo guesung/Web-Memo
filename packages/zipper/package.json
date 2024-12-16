@@ -15,7 +15,8 @@
     "zip": "tsx index.ts",
     "ready": "tsc",
     "prettier": "prettier . --write --ignore-path ../../.prettierignore",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "tsc-watch": "tsc-watch"
   },
   "devDependencies": {
     "@extension/tsconfig": "workspace:*",

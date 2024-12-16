@@ -1,9 +1,9 @@
 {
-  "extensionDescription": {
-    "message": "Let's make web surfing more fun together! Your friendly companion for effortless note-taking ✨"
-  },
   "extensionName": {
-    "message": "Web Memo - Your Friendly Web Surfing Buddy"
+    "message": "Web Memo - Smart Notes with a Click"
+  },
+  "extensionDescription": {
+    "message": "Make web surfing smarter with Web Memo"
   },
   "no_memo": {
     "message": "Looks like you haven't created any memos yet! How about starting your journey with your first note? 😊"

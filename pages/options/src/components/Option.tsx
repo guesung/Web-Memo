@@ -1,5 +1,5 @@
 import { STORAGE_KEYS } from '@extension/shared/constants';
-import { Storage } from '@extension/shared/utils/extension';
+import { I18n, Storage } from '@extension/shared/utils/extension';
 import {
   Button,
   Select,
@@ -30,7 +30,7 @@ export default function Option() {
     await Storage.set(STORAGE_KEYS.language, data.language);
 
     toast({
-      title: '설정이 저장되었습니다.',
+      title: I18n.get('settings_saved'),
     });
   });
 
@@ -43,6 +43,7 @@ export default function Option() {
       setValue('language', language);
       setValue('youtubePrompt', youtubePrompts);
       setValue('webPrompt', webPrompts);
+      console.log(language, I18n.getUILanguage());
     };
 
     fetchStorage();
@@ -51,38 +52,42 @@ export default function Option() {
   return (
     <div className="container mx-auto space-y-8 p-4">
       <section className="mb-8">
-        <h2 className="mb-4 text-xl font-semibold">언어 설정</h2>
+        <h2 className="mb-4 text-xl font-semibold">{I18n.get('prompt_language_setting')}</h2>
         <Select value={watch('language')} onValueChange={value => setValue('language', value)}>
           <SelectTrigger className="w-32">
-            <SelectValue placeholder="언어 선택" />
+            <SelectValue placeholder={I18n.get('select_language_placeholder')} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ko">한국어</SelectItem>
-            <SelectItem value="en">English</SelectItem>
+            <SelectItem value="en-US">English</SelectItem>
           </SelectContent>
         </Select>
       </section>
 
       <form onSubmit={onSubmit} className="space-y-8">
         <section>
-          <h2 className="mb-4 text-xl font-semibold">YouTube 프롬프트 설정</h2>
+          <h2 className="mb-4 text-xl font-semibold">{I18n.get('youtube_prompt_setting')}</h2>
           <div className="space-y-2 rounded-lg p-4">
             <div className="flex-1">
-              <Textarea placeholder="프롬프트를 입력하세요" {...register('youtubePrompt')} className="min-h-[200px]" />
+              <Textarea
+                placeholder={I18n.get('enter_prompt')}
+                {...register('youtubePrompt')}
+                className="min-h-[200px]"
+              />
             </div>
           </div>
         </section>
 
         <section>
-          <h2 className="mb-4 text-xl font-semibold">웹사이트 프롬프트 설정</h2>
+          <h2 className="mb-4 text-xl font-semibold">{I18n.get('website_prompt_setting')}</h2>
           <div className="space-y-2 rounded-lg p-4">
             <div className="flex-1">
-              <Textarea placeholder="프롬프트를 입력하세요" {...register('webPrompt')} className="min-h-[200px]" />
+              <Textarea placeholder={I18n.get('enter_prompt')} {...register('webPrompt')} className="min-h-[200px]" />
             </div>
           </div>
         </section>
 
-        <Button type="submit">저장</Button>
+        <Button type="submit">{I18n.get('save')}</Button>
       </form>
     </div>
   );

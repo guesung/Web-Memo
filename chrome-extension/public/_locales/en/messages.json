@@ -48,7 +48,7 @@
     "message": "Great! Your settings have been saved successfully."
   },
   "toast_error_common": {
-    "message": "Oops! Something went wrong. Please try again."
+    "message": "Sorry. An error occurred. Please try again"
   },
   "toast_saved": {
     "message": "Perfect! Your changes have been saved successfully."
@@ -82,5 +82,23 @@
   },
   "toast_error_save": {
     "message": "Sorry, we couldn't save your memo. Please try again."
+  },
+  "prompt_language_setting": {
+    "message": "Prompt Language Settings"
+  },
+  "select_language_placeholder": {
+    "message": "Select Language"
+  },
+  "youtube_prompt_setting": {
+    "message": "YouTube Prompt Settings"
+  },
+  "website_prompt_setting": {
+    "message": "Website Prompt Settings"
+  },
+  "enter_prompt": {
+    "message": "Enter your prompt"
+  },
+  "settings_saved": {
+    "message": "Settings have been saved successfully"
   }
 }

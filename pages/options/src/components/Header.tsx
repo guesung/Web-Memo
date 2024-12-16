@@ -1,3 +1,4 @@
+import { I18n } from '@extension/shared/utils/extension';
 import React from 'react';
 
 export default function Header() {
@@ -6,7 +7,7 @@ export default function Header() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img src="/icon-48.png" alt="logo" className="h-8 w-8" />
-          <h1 className="text-2xl font-bold text-gray-800">설정</h1>
+          <h1 className="text-2xl font-bold text-gray-800">{I18n.get('extensionName')}</h1>
         </div>
       </div>
     </header>

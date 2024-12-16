@@ -1,6 +1,6 @@
 import 'webextension-polyfill';
 
-import { CONFIG, DEFAULT_PROMPTS, LANGUAGE_MAP, STORAGE_KEYS, URL } from '@extension/shared/constants';
+import { CONFIG, DEFAULT_PROMPTS, STORAGE_KEYS, URL } from '@extension/shared/constants';
 import { isProduction } from '@extension/shared/utils';
 import {
   getSystemPrompt,
@@ -22,7 +22,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   const youtubePrompts = await Storage.get(STORAGE_KEYS.youtubePrompts);
   const webPrompts = await Storage.get(STORAGE_KEYS.webPrompts);
 
-  if (!language) Storage.set(STORAGE_KEYS.language, LANGUAGE_MAP[I18n.getUILanguage()]);
+  if (!language) Storage.set(STORAGE_KEYS.language, I18n.getUILanguage());
   if (!youtubePrompts) Storage.set(STORAGE_KEYS.youtubePrompts, DEFAULT_PROMPTS.youtube);
   if (!webPrompts) Storage.set(STORAGE_KEYS.webPrompts, DEFAULT_PROMPTS.web);
 });

@@ -1,9 +1,9 @@
 {
-  "extensionDescription": {
-    "message": "ChatGPT와 함께 웹 페이지를 더 쉽고 재미있게 이해해보세요 ✨"
-  },
   "extensionName": {
-    "message": "웹 메모: 당신의 든든한 웹 서핑 친구"
+    "message": "웹 메모 - 클릭으로 시작하는 스마트 메모"
+  },
+  "extensionDescription": {
+    "message": "웹서핑을 더욱 스마트하게, 웹 메모"
   },
   "no_memo": {
     "message": "아직 작성하신 메모가 없네요! 첫 메모를 남겨보시는 건 어떨까요? 😊"
@@ -82,5 +82,23 @@
   },
   "toast_error_save": {
     "message": "저장하는 중에 문제가 발생했어요. 다시 시도해주세요"
+  },
+  "prompt_language_setting": {
+    "message": "프롬프트 언어 설정"
+  },
+  "select_language_placeholder": {
+    "message": "언어 선택"
+  },
+  "youtube_prompt_setting": {
+    "message": "YouTube 프롬프트 설정"
+  },
+  "website_prompt_setting": {
+    "message": "웹사이트 프롬프트 설정"
+  },
+  "enter_prompt": {
+    "message": "프롬프트를 입력하세요"
+  },
+  "settings_saved": {
+    "message": "설정이 저장되었습니다."
   }
 }

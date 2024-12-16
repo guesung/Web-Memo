@@ -1,3 +1,4 @@
+import { I18n } from '@extension/shared/utils/extension';
 import { Button, ErrorBoundary, Loading } from '@extension/ui';
 import { RefreshCwIcon, SettingsIcon } from 'lucide-react';
 
@@ -8,8 +9,8 @@ export default function Header() {
   const { isSummaryLoading, refetchSummary, category } = useSummaryContext();
 
   const getCategoryText = () => {
-    if (category === 'youtube') return '- 유튜브';
-    return '- 웹페이지';
+    if (category === 'youtube') return I18n.get('youtube');
+    return I18n.get('webSite');
   };
 
   const handleOptionClick = () => {
@@ -18,7 +19,9 @@ export default function Header() {
 
   return (
     <header className="mt-4 flex items-center justify-between">
-      <div className="text-md font-bold">요약 {getCategoryText()}</div>
+      <div className="text-md font-bold">
+        {I18n.get('summary')} - {getCategoryText()}
+      </div>
       <div className="flex gap-1">
         <ErrorBoundary>
           <ToggleTheme />

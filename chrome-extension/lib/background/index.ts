@@ -22,9 +22,16 @@ chrome.runtime.onInstalled.addListener(async () => {
   const youtubePrompts = await Storage.get(STORAGE_KEYS.youtubePrompts);
   const webPrompts = await Storage.get(STORAGE_KEYS.webPrompts);
 
-  if (!language) Storage.set(STORAGE_KEYS.language, I18n.getUILanguage());
-  if (!youtubePrompts) Storage.set(STORAGE_KEYS.youtubePrompts, DEFAULT_PROMPTS.youtube);
-  if (!webPrompts) Storage.set(STORAGE_KEYS.webPrompts, DEFAULT_PROMPTS.web);
+  const uiLanguage = I18n.getUILanguage();
+  if (!language) Storage.set(STORAGE_KEYS.language, uiLanguage);
+  if (!youtubePrompts) {
+    if (uiLanguage === 'ko') Storage.set(STORAGE_KEYS.youtubePrompts, DEFAULT_PROMPTS.youtube.ko);
+    else Storage.set(STORAGE_KEYS.youtubePrompts, DEFAULT_PROMPTS.youtube.en);
+  }
+  if (!webPrompts) {
+    if (uiLanguage === 'ko') Storage.set(STORAGE_KEYS.webPrompts, DEFAULT_PROMPTS.web.ko);
+    else Storage.set(STORAGE_KEYS.webPrompts, DEFAULT_PROMPTS.web.en);
+  }
 });
 
 // 확장 프로그램이 설치되었을 때 가이드 페이지로 이동한다.

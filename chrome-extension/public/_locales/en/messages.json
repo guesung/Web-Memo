@@ -100,5 +100,14 @@
   },
   "settings_saved": {
     "message": "Settings have been saved successfully"
+  },
+  "youtube": {
+    "message": "YouTube"
+  },
+  "webSite": {
+    "message": "Website"
+  },
+  "summary": {
+    "message": "Summary"
   }
 }

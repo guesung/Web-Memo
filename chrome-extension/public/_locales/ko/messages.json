@@ -100,5 +100,14 @@
   },
   "settings_saved": {
     "message": "설정이 저장되었습니다."
+  },
+  "youtube": {
+    "message": "유튜브"
+  },
+  "webSite": {
+    "message": "웹사이트"
+  },
+  "summary": {
+    "message": "요약"
   }
 }

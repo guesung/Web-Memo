@@ -1,11 +1,10 @@
 'use client';
 
+import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { motion } from 'framer-motion';
 
-interface FooterProps {
-  lng: string;
-}
+interface FooterProps extends LanguageType {}
 
 export default function Footer({ lng }: FooterProps) {
   const { t } = useTranslation(lng);

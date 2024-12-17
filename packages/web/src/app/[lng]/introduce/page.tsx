@@ -1,13 +1,9 @@
 'use server';
 
+import { Header } from '@src/components';
 import { LanguageParams } from '@src/modules/i18n';
 
-import AdditionalFeatures from './components/AdditionalFeatures';
-import Features from './components/Features';
-import Footer from './components/Footer';
-import Header from './components/Header';
-import Hero from './components/Hero';
-import QuestionAndAnswer from './components/QuestionAndAnswer';
+import { AdditionalFeatures, Features, Footer, Hero, QuestionAndAnswer } from './components';
 
 interface IntroductPageProps extends LanguageParams {}
 
@@ -15,6 +11,7 @@ export default async function IntroductPage({ params: { lng } }: IntroductPagePr
   return (
     <div className="bg-background min-h-screen">
       <Header lng={lng} />
+      <Header.Margin />
       <main className="container mx-auto px-4 py-16">
         <Hero lng={lng} />
         <Features lng={lng} />

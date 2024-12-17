@@ -2,13 +2,12 @@
 
 import { PATHS } from '@extension/shared/constants';
 import { Button } from '@extension/ui';
+import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-interface HeaderProps {
-  lng: string;
-}
+interface HeaderProps extends LanguageType {}
 
 export default function Header({ lng }: HeaderProps) {
   const { t } = useTranslation(lng);

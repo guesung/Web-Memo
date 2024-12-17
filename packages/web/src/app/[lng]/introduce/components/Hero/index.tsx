@@ -1,13 +1,12 @@
 'use client';
 
 import { URL } from '@extension/shared/constants';
+import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-interface HeroProps {
-  lng: string;
-}
+interface HeroProps extends LanguageType {}
 
 export default function Hero({ lng }: HeroProps) {
   const { t } = useTranslation(lng);

@@ -2,7 +2,7 @@
 
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface ImageSliderProps {
   images: string[];
@@ -11,6 +11,52 @@ interface ImageSliderProps {
 export default function ImageSlider({ images }: ImageSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [scale, setScale] = useState(1);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+
+      const rect = containerRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      const visibleRatio = Math.min(Math.max((viewportHeight - Math.max(0, rect.top)) / rect.height, 0), 1);
+
+      const topRatio = Math.max(0, Math.min(1, 1 - rect.top / viewportHeight));
+
+      const maxScale = 1.5;
+      const newScale = 1 + (maxScale - 1) * Math.min(visibleRatio, topRatio);
+
+      setScale(newScale);
+    };
+
+    const handleIntersection = (entries: IntersectionObserverEntry[]) => {
+      const [entry] = entries;
+      if (entry.isIntersecting) {
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll(); // 초기 스케일 설정
+      } else {
+        window.removeEventListener('scroll', handleScroll);
+      }
+    };
+
+    observerRef.current = new IntersectionObserver(handleIntersection, {
+      threshold: 0,
+    });
+
+    if (containerRef.current) {
+      observerRef.current.observe(containerRef.current);
+    }
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []);
 
   const transition = () => {
     setIsTransitioning(true);
@@ -34,8 +80,13 @@ export default function ImageSlider({ images }: ImageSliderProps) {
   };
 
   return (
-    <div className="relative mx-auto w-full max-w-3xl">
-      <div className="relative aspect-[16/9] w-full overflow-hidden">
+    <div ref={containerRef} className="relative mx-auto w-full max-w-3xl">
+      <div
+        className="relative aspect-[16/9] w-full overflow-hidden"
+        style={{
+          transform: `scale(${scale})`,
+          transition: 'transform 0.2s ease-out',
+        }}>
         {images.map((image, index) => (
           <Image
             key={image}

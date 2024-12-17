@@ -21,7 +21,7 @@ export default async function IntroductPage({ params: { lng } }: IntroductPagePr
       <Header.Margin />
       <main className="container mx-auto px-4 py-16">
         <Hero lng={lng} />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-12">
           <ImageSlider images={images} />
         </div>
         <Features lng={lng} />

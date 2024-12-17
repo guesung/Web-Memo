@@ -9,8 +9,6 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { PropsWithChildren } from 'react';
 
-import { ExtensionDialog } from '../components';
-
 const pretendard = localFont({
   src: '../../fonts/PretendardVariable.woff2',
   display: 'swap',

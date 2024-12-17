@@ -18,8 +18,6 @@ import { getSupabaseClient, signout } from '@src/modules/supabase/util.server';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import RefreshButton from './RefreshButton';
-
 export default async function Header({ lng }: LanguageType) {
   return (
     <header className="bg-background fixed inset-x-0 z-50 flex flex-1 justify-between p-2 shadow-sm">
@@ -33,12 +31,20 @@ async function HeaderLeft({ lng }: LanguageType) {
   const { t } = await useTranslation(lng);
 
   return (
-    <Link href={PATHS.memos}>
-      <div className="flex h-full items-center gap-2 px-4">
-        <Image src="/images/pngs/icon.png" width={16} height={16} alt="logo" className="flex-1" />
-        <span className="text-md font-semibold">{t('common.webMemo')}</span>
-      </div>
-    </Link>
+    <div className="flex items-center gap-4">
+      <Link href={PATHS.memos}>
+        <div className="flex h-full items-center gap-2 px-4">
+          <Image src="/images/pngs/icon.png" width={16} height={16} alt="logo" className="flex-1" />
+          <span className="text-md font-semibold">{t('common.webMemo')}</span>
+        </div>
+      </Link>
+      <Link href={PATHS.introduce} className="text-muted-foreground hover:text-foreground text-sm transition-colors">
+        {t('header.introduce')}
+      </Link>
+      <Link href={PATHS.updates} className="text-muted-foreground hover:text-foreground text-sm transition-colors">
+        {t('header.updateLog')}
+      </Link>
+    </div>
   );
 }
 
@@ -48,31 +54,31 @@ async function HeaderRight({ lng }: LanguageType) {
   const { t } = await useTranslation(lng);
 
   const isUserLogin = await new AuthService(supabaseClient).checkUserLogin();
-  if (!isUserLogin) return;
 
   const userAvatarUrl =
     user?.data?.user?.identities?.[0]?.identity_data?.avatar_url ?? '/images/pngs/default_image_user.png';
   const userName = user?.data?.user?.identities?.[0]?.identity_data?.name;
 
   return (
-    <div className="flex gap-2">
+    <div className="flex items-center gap-2">
       <ToggleTheme />
-      <RefreshButton lng={lng} />
-      <DropdownMenu>
-        <DropdownMenuTrigger>
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={userAvatarUrl} alt="avatar" />
-            <AvatarFallback>{userName}</AvatarFallback>
-          </Avatar>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <form action={signout}>
-            <DropdownMenuLabel>
-              <button>{t('header.logout')}</button>
-            </DropdownMenuLabel>
-          </form>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {isUserLogin && (
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={userAvatarUrl} alt="avatar" />
+              <AvatarFallback>{userName}</AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <form action={signout}>
+              <DropdownMenuLabel>
+                <button>{t('header.logout')}</button>
+              </DropdownMenuLabel>
+            </form>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   );
 }

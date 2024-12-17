@@ -4,6 +4,8 @@ export const PATHS = {
   login: '/login',
   memos: '/memos',
   auth: '/auth',
+  introduce: '/introduce',
+  updates: '/updates',
   memosWish: '/memos?isWish=true',
   memosSetting: '/memos/setting',
   callbackOAuth: '/auth/callback',

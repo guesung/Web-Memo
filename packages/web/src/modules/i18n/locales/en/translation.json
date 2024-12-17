@@ -28,7 +28,70 @@
     "allCategory": "View All Categories"
   },
   "header": {
-    "logout": "Sign Out"
+    "login": "Login",
+    "logout": "Sign Out",
+    "introduce": "Introduce",
+    "updateLog": "Update Log"
+  },
+  "updates": {
+    "title": "Update Log",
+    "versions": {
+      "v1.7.1": {
+        "title": "Enhanced YouTube Features",
+        "content": ["Added YouTube script-based features", "Added summary modification features"]
+      },
+      "v1.7.0": {
+        "title": "Calendar View and Memo Management",
+        "content": [
+          "Added calendar view",
+          "Group memo selection for deletion and modification",
+          "Category settings feature",
+          "Guide restart feature"
+        ]
+      },
+      "v1.6.0": {
+        "title": "Category Feature",
+        "content": ["Added category functionality"]
+      },
+      "v1.5.6": {
+        "title": "Wishlist",
+        "content": ["Added wishlist feature"]
+      },
+      "v1.4.0": {
+        "title": "Login and Data Storage",
+        "content": ["OAuth login (Kakao, Google)", "Permanent data storage with Supabase"]
+      },
+      "v1.1.0": {
+        "title": "Website Migration",
+        "content": ["Migrated from new-tab to our website"]
+      },
+      "v1.0.0": {
+        "title": "Official Release",
+        "content": ["Opened communication channels (Google Form, Instagram, KakaoTalk)", "Fixed light mode bugs"]
+      },
+      "v0.2.0": {
+        "title": "Major Feature Update",
+        "content": [
+          "Added shortcuts: alt + s (Windows) / option + s (Mac)",
+          "Changed trigger to action button",
+          "Summary save feature",
+          "Memo feature",
+          "View memos in New Tab"
+        ]
+      },
+      "v0.1.0": {
+        "title": "Initial Update",
+        "content": [
+          "Migrated from Content-ui to Side Panel",
+          "Streaming data transfer",
+          "Data refresh via button click"
+        ]
+      },
+      "v0.0.2": {
+        "title": "Service Launch",
+        "content": ["First release on Chrome Web Store"]
+      }
+    }
   },
   "toastTitle": {
     "refresh": "Great! The page has been refreshed successfully!",
@@ -92,12 +155,12 @@
     "prev": "Previous",
     "done": "Done",
     "welcome": {
-      "title": "Welcome to Web Memo! 🎉",
+      "title": "Welcome to Web Memo! ",
       "description": "Let's create a memo! Press '{{key}} + S' to open the side panel!"
     },
     "save": {
       "title": "Save Your Memos",
-      "description": "Great job!\nNow you can write memos in the side panel.\nDon't worry, memos are saved automatically ☺️"
+      "description": "Great job!\nNow you can write memos in the side panel.\nDon't worry, memos are saved automatically "
     },
     "check": {
       "title": "Check Your Memos",
@@ -109,8 +172,117 @@
       "message": "You don't have any saved memos yet. Open the side panel to create your first memo!"
     },
     "totalMemos": "Total {{total}} memos",
+    "searchPlaceholder": "Search memos...",
+    "searchTarget": {
+      "all": "Search All",
+      "title": "Search Title Only",
+      "memo": "Search Content Only"
+    },
     "grid": "Grid view",
     "calendar": "Calendar view",
     "selected": "{{count}} selected"
+  },
+  "introduce": {
+    "navigation": {
+      "title": "Web Memo",
+      "login": "Login",
+      "get_started": "Get Started"
+    },
+    "hero": {
+      "title": "A New Way of Web Surfing",
+      "subtitle": "Take notes, get AI summaries, and organize your web content with just one click",
+      "install_button": "Install on Chrome",
+      "mobile_apps": {
+        "ios": "iOS App",
+        "android": "Android App"
+      }
+    },
+    "features": {
+      "memo": {
+        "title": "One-Click Web Notes",
+        "description": "Don't miss any ideas while browsing. Take notes on any webpage with just one click"
+      },
+      "overview": {
+        "title": "At-a-Glance Overview",
+        "description": "See all your web notes at once with our smart, page-organized management system"
+      },
+      "organize": {
+        "title": "Systematic Organization",
+        "description": "Start organizing your information systematically. Classify and arrange notes your way"
+      },
+      "ai_summary": {
+        "title": "AI-Powered Key Points",
+        "description": "Let AI summarize long content while you focus on the essential points"
+      },
+      "wishlist": {
+        "title": "Save Content for Later",
+        "description": "Add interesting content to your wishlist and check it when convenient"
+      }
+    },
+    "how_it_works": {
+      "title": "How It Works",
+      "steps": {
+        "step1": {
+          "title": "Paste URL",
+          "description": "Copy and paste any webpage URL into Web Memo"
+        },
+        "step2": {
+          "title": "AI Processing",
+          "description": "Our AI analyzes and extracts key information"
+        },
+        "step3": {
+          "title": "Get Summary",
+          "description": "Receive a concise, accurate summary instantly"
+        }
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "questions": {
+        "what_is": {
+          "question": "What is Web Memo?",
+          "answer": "Web Memo is a service that makes your web surfing more convenient. You can easily save and manage important information. With just one click, you can take notes, get AI-powered summaries, and organize information systematically."
+        },
+        "is_free": {
+          "question": "Is Web Memo free to use?",
+          "answer": "Yes, of course! All basic features of Web Memo are free. You can freely use all core features including note-taking, basic organization, AI-powered content summaries, and wishlist functionality."
+        },
+        "where_to_save": {
+          "question": "Where can I save my notes?",
+          "answer": "You can easily save notes anywhere through the Chrome extension. No matter which website you're viewing, you can quickly jot down notes!"
+        },
+        "is_data_private": {
+          "question": "Are my notes private?",
+          "answer": "No, not at all. All the notes you save are private and confidential. Only you can access your notes. We prioritize your privacy and take steps to protect your data."
+        },
+        "where_to_find": {
+          "question": "Where can I find my saved notes?",
+          "answer": "You can access your saved notes anytime by logging into the Web Memo website. You can view and manage all your notes at a glance!"
+        },
+        "memo_preservation": {
+          "question": "Will my notes be preserved?",
+          "answer": "Don't worry! Even our developers have stored over 500 notes in this service. We plan to preserve your valuable memo data permanently. Furthermore, we're planning to add features that will allow you to download your memos in csv or json format, so rest assured!"
+        },
+        "how_ai_works": {
+          "question": "How does the AI summary feature work?",
+          "answer": "The AI summary feature is really smart! It automatically analyzes webpage content and extracts only the key points. Thanks to this, you can understand long content in just a few seconds, saving you a lot of time."
+        },
+        "other_browsers": {
+          "question": "Can I use it on browsers other than Chrome?",
+          "answer": "Currently, it's only available on Chrome browser. But don't worry! We're working hard to make it available on other browsers. We'll be the first to let you know when we have a specific release schedule!"
+        }
+      }
+    },
+    "footer": {
+      "title": "Web Memo",
+      "description": "Faster and easier content consumption",
+      "copyright": "Web Memo. All rights reserved.",
+      "social": {
+        "email": "Email",
+        "instagram": "Instagram",
+        "youtube": "YouTube",
+        "kakaotalk": "KakaoTalk Chat"
+      }
+    }
   }
 }

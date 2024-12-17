@@ -173,6 +173,11 @@
     },
     "totalMemos": "총 {{total}}개의 메모",
     "searchPlaceholder": "메모 검색...",
+    "searchTarget": {
+      "all": "전체 검색",
+      "title": "제목만 검색",
+      "memo": "내용만 검색"
+    },
     "grid": "그리드 보기",
     "calendar": "캘린더 보기",
     "selected": "{{count}}개 선택됨"

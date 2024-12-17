@@ -173,6 +173,11 @@
     },
     "totalMemos": "Total {{total}} memos",
     "searchPlaceholder": "Search memos...",
+    "searchTarget": {
+      "all": "Search All",
+      "title": "Search Title Only",
+      "memo": "Search Content Only"
+    },
     "grid": "Grid view",
     "calendar": "Calendar view",
     "selected": "{{count}} selected"

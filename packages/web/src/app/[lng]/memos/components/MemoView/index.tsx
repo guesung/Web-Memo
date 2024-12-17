@@ -5,6 +5,7 @@ import type { SearchParamViewType } from '@extension/shared/modules/search-param
 import { Input } from '@src/components/ui';
 import { useGuide } from '@src/modules/guide';
 import { LanguageType } from '@src/modules/i18n';
+import { getChoseong } from 'es-hangul';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
@@ -39,11 +40,14 @@ export default function MemoView({ lng, isWish = '', category = '', view = 'grid
     .filter(memo => (category ? memo.category?.name === category : true))
     .filter(memo => {
       if (!searchQuery) return true;
+
       const searchLower = searchQuery.toLowerCase();
       return (
         memo.title?.toLowerCase().includes(searchLower) ||
         memo.memo?.toLowerCase().includes(searchLower) ||
-        memo.category?.name.toLowerCase().includes(searchLower)
+        memo.category?.name.toLowerCase().includes(searchLower) ||
+        getChoseong(memo.title).includes(searchQuery) ||
+        getChoseong(memo.memo).includes(searchQuery)
       );
     });
 

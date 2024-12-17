@@ -172,6 +172,7 @@
       "message": "You don't have any saved memos yet. Open the side panel to create your first memo!"
     },
     "totalMemos": "Total {{total}} memos",
+    "searchPlaceholder": "Search memos...",
     "grid": "Grid view",
     "calendar": "Calendar view",
     "selected": "{{count}} selected"

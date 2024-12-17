@@ -251,6 +251,10 @@
           "question": "Where can I save my notes?",
           "answer": "You can easily save notes anywhere through the Chrome extension. No matter which website you're viewing, you can quickly jot down notes!"
         },
+        "is_data_private": {
+          "question": "Are my notes private?",
+          "answer": "No, not at all. All the notes you save are private and confidential. Only you can access your notes. We prioritize your privacy and take steps to protect your data."
+        },
         "where_to_find": {
           "question": "Where can I find my saved notes?",
           "answer": "You can access your saved notes anytime by logging into the Web Memo website. You can view and manage all your notes at a glance!"

@@ -1,6 +1,7 @@
 'use client';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@extension/ui';
+import { FAQ_ITEMS } from '@src/constants';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { motion } from 'framer-motion';
@@ -24,40 +25,12 @@ export default function QuestionAndAnswer({ lng }: LanguageType) {
         {t('introduce.faq.title')}
       </motion.h2>
       <Accordion type="single" collapsible className="w-full">
-        <AccordionItem value="item-1">
-          <AccordionTrigger>{t('introduce.faq.questions.what_is.question')}</AccordionTrigger>
-          <AccordionContent>{t('introduce.faq.questions.what_is.answer')}</AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="item-2">
-          <AccordionTrigger>{t('introduce.faq.questions.is_free.question')}</AccordionTrigger>
-          <AccordionContent>{t('introduce.faq.questions.is_free.answer')}</AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="item-3">
-          <AccordionTrigger>{t('introduce.faq.questions.where_to_save.question')}</AccordionTrigger>
-          <AccordionContent>{t('introduce.faq.questions.where_to_save.answer')}</AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="item-4">
-          <AccordionTrigger>{t('introduce.faq.questions.where_to_find.question')}</AccordionTrigger>
-          <AccordionContent>{t('introduce.faq.questions.where_to_find.answer')}</AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="item-5">
-          <AccordionTrigger>{t('introduce.faq.questions.memo_preservation.question')}</AccordionTrigger>
-          <AccordionContent>{t('introduce.faq.questions.memo_preservation.answer')}</AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="item-6">
-          <AccordionTrigger>{t('introduce.faq.questions.how_ai_works.question')}</AccordionTrigger>
-          <AccordionContent>{t('introduce.faq.questions.how_ai_works.answer')}</AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="item-7">
-          <AccordionTrigger>{t('introduce.faq.questions.other_browsers.question')}</AccordionTrigger>
-          <AccordionContent>{t('introduce.faq.questions.other_browsers.answer')}</AccordionContent>
-        </AccordionItem>
+        {FAQ_ITEMS.map(faqItem => (
+          <AccordionItem key={faqItem} value={faqItem}>
+            <AccordionTrigger>{t(`introduce.faq.questions.${faqItem}.question`)}</AccordionTrigger>
+            <AccordionContent>{t(`introduce.faq.questions.${faqItem}.answer`)}</AccordionContent>
+          </AccordionItem>
+        ))}
       </Accordion>
     </motion.div>
   );

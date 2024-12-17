@@ -14,7 +14,7 @@ export default function UpdateTitle({ lng }: UpdateTitleProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       className="mb-8 text-4xl font-bold">
-      업데이트 소식
+      {t('updates.title')}
     </motion.h1>
   );
 }

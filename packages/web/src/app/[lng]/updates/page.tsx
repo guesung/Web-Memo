@@ -5,8 +5,8 @@ import { Metadata } from 'next';
 import { UpdateList, UpdateTitle } from './components';
 
 export const metadata: Metadata = {
-  title: '업데이트 소식 | Page Summary',
-  description: 'Page Summary의 최신 업데이트 소식을 확인하세요.',
+  title: '업데이트 소식 | Web Memo',
+  description: 'Web Memo의 최신 업데이트 소식을 확인하세요.',
 };
 
 interface UpdatesPageProps extends LanguageParams {}

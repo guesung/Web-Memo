@@ -56,31 +56,32 @@ async function HeaderRight({ lng }: LanguageType) {
   const { t } = await useTranslation(lng);
 
   const isUserLogin = await new AuthService(supabaseClient).checkUserLogin();
-  if (!isUserLogin) return;
 
   const userAvatarUrl =
     user?.data?.user?.identities?.[0]?.identity_data?.avatar_url ?? '/images/pngs/default_image_user.png';
   const userName = user?.data?.user?.identities?.[0]?.identity_data?.name;
 
   return (
-    <div className="flex gap-2">
+    <div className="flex items-center gap-2">
       <ToggleTheme />
       <RefreshButton lng={lng} />
-      <DropdownMenu>
-        <DropdownMenuTrigger>
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={userAvatarUrl} alt="avatar" />
-            <AvatarFallback>{userName}</AvatarFallback>
-          </Avatar>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <form action={signout}>
-            <DropdownMenuLabel>
-              <button>{t('header.logout')}</button>
-            </DropdownMenuLabel>
-          </form>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {isUserLogin && (
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={userAvatarUrl} alt="avatar" />
+              <AvatarFallback>{userName}</AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <form action={signout}>
+              <DropdownMenuLabel>
+                <button>{t('header.logout')}</button>
+              </DropdownMenuLabel>
+            </form>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   );
 }

@@ -28,9 +28,72 @@
     "allCategory": "View All Categories"
   },
   "header": {
+    "login": "Login",
     "logout": "Sign Out",
     "introduce": "Introduce",
     "updateLog": "Update Log"
+  },
+  "updates": {
+    "title": "Update Log",
+    "versions": {
+      "v1.7.0": {
+        "title": "Calendar View and Memo Management",
+        "content": [
+          "Added calendar view",
+          "Group memo selection for deletion and modification",
+          "Category settings feature",
+          "Guide restart feature"
+        ]
+      },
+      "v1.6.0": {
+        "title": "Category Feature",
+        "content": ["Added category functionality"]
+      },
+      "v1.5.6": {
+        "title": "Wishlist",
+        "content": ["Added wishlist feature"]
+      },
+      "v1.4.0": {
+        "title": "Login and Data Storage",
+        "content": [
+          "OAuth login (Kakao, Google)",
+          "Permanent data storage with Supabase"
+        ]
+      },
+      "v1.1.0": {
+        "title": "Website Migration",
+        "content": ["Migrated from new-tab to our website"]
+      },
+      "v1.0.0": {
+        "title": "Official Release",
+        "content": [
+          "Opened communication channels (Google Form, Instagram, KakaoTalk)",
+          "Fixed light mode bugs"
+        ]
+      },
+      "v0.2.0": {
+        "title": "Major Feature Update",
+        "content": [
+          "Added shortcuts: alt + s (Windows) / option + s (Mac)",
+          "Changed trigger to action button",
+          "Summary save feature",
+          "Memo feature",
+          "View memos in New Tab"
+        ]
+      },
+      "v0.1.0": {
+        "title": "Initial Update",
+        "content": [
+          "Migrated from Content-ui to Side Panel",
+          "Streaming data transfer",
+          "Data refresh via button click"
+        ]
+      },
+      "v0.0.2": {
+        "title": "Service Launch",
+        "content": ["First release on Chrome Web Store"]
+      }
+    }
   },
   "toastTitle": {
     "refresh": "Great! The page has been refreshed successfully!",

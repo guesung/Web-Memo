@@ -1,10 +1,11 @@
 import 'driver.js/dist/driver.css';
 
-import { useDidMount } from '@extension/shared/hooks';
 import { checkLocalStorageTrue, setLocalStorageTrue } from '@extension/shared/modules/local-storage';
 import { requestGetSidePanelOpen } from '@extension/shared/utils/extension';
+import { useGetExtensionManifest } from '@src/hooks';
 import { isMac } from '@src/utils';
 import { driver } from 'driver.js';
+import { useEffect } from 'react';
 
 import { LanguageType } from '../i18n';
 import useTranslation from '../i18n/client';
@@ -13,6 +14,7 @@ interface UseGuideProps extends LanguageType {}
 
 export default function useGuide({ lng }: UseGuideProps) {
   const { t } = useTranslation(lng);
+  const manifest = useGetExtensionManifest();
 
   const createDriver = () =>
     driver({
@@ -60,11 +62,12 @@ export default function useGuide({ lng }: UseGuideProps) {
 
   const driverObj = createDriver();
 
-  useDidMount(() => {
-    if (checkLocalStorageTrue('guide')) return;
+  useEffect(() => {
+    if (!manifest || checkLocalStorageTrue('guide')) return;
 
     driverObj.drive();
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [manifest]);
 
   return { driverObj };
 }

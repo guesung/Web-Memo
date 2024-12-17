@@ -23,10 +23,10 @@ export default function ToggleView({ lng }: ToggleViewProps) {
   return (
     <ToggleGroup type="single" onValueChange={handleViewChange}>
       <ToggleGroupItem value="grid" aria-label={t('memos.grid')}>
-        <Grid size={16} />
+        <Grid />
       </ToggleGroupItem>
       <ToggleGroupItem value="calendar" aria-label={t('memos.calendar')}>
-        <Calendar size={16} />
+        <Calendar />
       </ToggleGroupItem>
     </ToggleGroup>
   );

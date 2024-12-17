@@ -53,7 +53,7 @@ export default function MemoView({ lng, isWish = '', category = '', view = 'grid
       searchParams.removeAll('query');
     }
     searchParams.set('searchTarget', searchTarget);
-    router.replace(searchParams.getUrl());
+    router.replace(searchParams.getUrl(), { scroll: false });
   }, [searchQuery, searchTarget, searchParams, router]);
 
   const filteredMemos = memos

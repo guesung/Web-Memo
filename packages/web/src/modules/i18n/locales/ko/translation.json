@@ -29,7 +29,7 @@
   "header": {
     "logout": "로그아웃하기",
     "introduce": "소개",
-    "updateLog": "업데이트 정보"
+    "updateLog": "업데이트 소식"
   },
   "toastTitle": {
     "refresh": "새로고침이 완료되었어요!",

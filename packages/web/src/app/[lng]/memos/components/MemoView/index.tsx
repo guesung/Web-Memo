@@ -93,7 +93,7 @@ export default function MemoView({ lng, isWish = '', category = '', view = 'grid
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-center gap-4">
         <Input
           type="text"
           placeholder={t('memos.searchPlaceholder')}

@@ -1,19 +1,26 @@
 'use client';
 
+import { LanguageType } from '@src/modules/i18n';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
-interface ImageSliderProps {
-  images: string[];
-}
+interface ImageSliderProps extends LanguageType {}
 
-export default function ImageSlider({ images }: ImageSliderProps) {
+export default function ImageSlider({ lng }: ImageSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
+
+  const IMAGES = [
+    `/images/pngs/introduction/${lng}/1.png`,
+    `/images/pngs/introduction/${lng}/2.png`,
+    `/images/pngs/introduction/${lng}/3.png`,
+    `/images/pngs/introduction/${lng}/4.png`,
+    `/images/pngs/introduction/${lng}/5.png`,
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,12 +72,12 @@ export default function ImageSlider({ images }: ImageSliderProps) {
 
   const goToNext = () => {
     transition();
-    setCurrentIndex(prevIndex => (prevIndex + 1) % images.length);
+    setCurrentIndex(prevIndex => (prevIndex + 1) % IMAGES.length);
   };
 
   const goToPrevious = () => {
     transition();
-    setCurrentIndex(prevIndex => (prevIndex - 1 + images.length) % images.length);
+    setCurrentIndex(prevIndex => (prevIndex - 1 + IMAGES.length) % IMAGES.length);
   };
 
   const goToSlide = (index: number) => {
@@ -87,7 +94,7 @@ export default function ImageSlider({ images }: ImageSliderProps) {
           transform: `scale(${scale})`,
           transition: 'transform 0.2s ease-out',
         }}>
-        {images.map((image, index) => (
+        {IMAGES.map((image, index) => (
           <Image
             key={image}
             src={image}
@@ -120,7 +127,7 @@ export default function ImageSlider({ images }: ImageSliderProps) {
       </div>
 
       <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1.5">
-        {images.map((_, index) => (
+        {IMAGES.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}

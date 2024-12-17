@@ -8,21 +8,13 @@ import { AdditionalFeatures, Features, Footer, Hero, ImageSlider, QuestionAndAns
 interface IntroductPageProps extends LanguageParams {}
 
 export default async function IntroductPage({ params: { lng } }: IntroductPageProps) {
-  const images = [
-    '/images/pngs/introduction_1.png',
-    '/images/pngs/introduction_2.png',
-    '/images/pngs/introduction_3.png',
-    '/images/pngs/introduction_4.png',
-    '/images/pngs/introduction_5.png',
-  ];
-
   return (
     <div className="bg-background min-h-screen">
       <Header.Margin />
       <main className="container mx-auto px-4 py-16">
         <Hero lng={lng} />
         <div className="container mx-auto px-4 py-12">
-          <ImageSlider images={images} />
+          <ImageSlider lng={lng} />
         </div>
         <Features lng={lng} />
         <AdditionalFeatures lng={lng} />

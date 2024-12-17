@@ -33,12 +33,20 @@ async function HeaderLeft({ lng }: LanguageType) {
   const { t } = await useTranslation(lng);
 
   return (
-    <Link href={PATHS.memos}>
-      <div className="flex h-full items-center gap-2 px-4">
-        <Image src="/images/pngs/icon.png" width={16} height={16} alt="logo" className="flex-1" />
-        <span className="text-md font-semibold">{t('common.webMemo')}</span>
-      </div>
-    </Link>
+    <div className="flex items-center gap-4">
+      <Link href={PATHS.memos}>
+        <div className="flex h-full items-center gap-2 px-4">
+          <Image src="/images/pngs/icon.png" width={16} height={16} alt="logo" className="flex-1" />
+          <span className="text-md font-semibold">{t('common.webMemo')}</span>
+        </div>
+      </Link>
+      <Link href={PATHS.introduce} className="text-muted-foreground hover:text-foreground text-sm transition-colors">
+        {t('header.introduce')}
+      </Link>
+      <Link href={PATHS.updates} className="text-muted-foreground hover:text-foreground text-sm transition-colors">
+        {t('header.updateLog')}
+      </Link>
+    </div>
   );
 }
 

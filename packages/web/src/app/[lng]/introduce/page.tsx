@@ -10,7 +10,6 @@ interface IntroductPageProps extends LanguageParams {}
 export default async function IntroductPage({ params: { lng } }: IntroductPageProps) {
   return (
     <div className="bg-background min-h-screen">
-      <Header lng={lng} />
       <Header.Margin />
       <main className="container mx-auto px-4 py-16">
         <Hero lng={lng} />

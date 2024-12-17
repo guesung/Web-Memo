@@ -20,7 +20,6 @@ export default async function Layout({ children, params: { lng } }: LayoutProps)
 
   return (
     <div>
-      <Header lng={lng} />
       <Header.Margin />
       <div className="bg-background flex w-full p-4 text-sm">
         <SidebarProvider>

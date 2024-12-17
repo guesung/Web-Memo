@@ -27,7 +27,9 @@
     "allCategory": "모든 카테고리 보기"
   },
   "header": {
-    "logout": "로그아웃하기"
+    "logout": "로그아웃하기",
+    "introduce": "소개",
+    "updateLog": "업데이트 정보"
   },
   "toastTitle": {
     "refresh": "새로고침이 완료되었어요!",

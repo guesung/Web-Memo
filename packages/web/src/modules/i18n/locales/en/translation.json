@@ -28,7 +28,9 @@
     "allCategory": "View All Categories"
   },
   "header": {
-    "logout": "Sign Out"
+    "logout": "Sign Out",
+    "introduce": "Introduce",
+    "updateLog": "Update Log"
   },
   "toastTitle": {
     "refresh": "Great! The page has been refreshed successfully!",

@@ -267,26 +267,14 @@
     },
     "footer": {
       "title": "Web Memo",
-      "description": "Making content consumption easier and faster",
-      "product": {
-        "title": "Product",
-        "features": "Features",
-        "pricing": "Pricing",
-        "use_cases": "Use Cases"
-      },
-      "company": {
-        "title": "Company",
-        "about": "About",
-        "blog": "Blog",
-        "careers": "Careers"
-      },
-      "legal": {
-        "title": "Legal",
-        "privacy_policy": "Privacy Policy",
-        "terms_of_service": "Terms of Service",
-        "contact": "Contact"
-      },
-      "copyright": "Web Memo. All rights reserved."
+      "description": "Faster and easier content consumption",
+      "copyright": "Web Memo. All rights reserved.",
+      "social": {
+        "email": "Email",
+        "instagram": "Instagram",
+        "youtube": "YouTube",
+        "kakaotalk": "KakaoTalk Chat"
+      }
     }
   }
 }

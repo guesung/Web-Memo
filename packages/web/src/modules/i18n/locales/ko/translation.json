@@ -286,7 +286,13 @@
         "terms_of_service": "서비스 이용약관",
         "contact": "문의하기"
       },
-      "copyright": "웹 메모. All rights reserved."
+      "copyright": "Web Memo. All rights reserved.",
+      "social": {
+        "email": "이메일",
+        "instagram": "인스타그램",
+        "youtube": "유튜브",
+        "kakaotalk": "카카오톡 오픈채팅"
+      }
     }
   }
 }

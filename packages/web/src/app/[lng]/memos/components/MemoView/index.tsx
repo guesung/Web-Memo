@@ -13,6 +13,7 @@ import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
+import RefreshButton from '../Header/RefreshButton';
 import MemoCalendar from './MemoCalendar';
 import MemoGrid from './MemoGrid';
 import ToggleView from './ToggleView';
@@ -80,12 +81,17 @@ export default function MemoView({ lng, isWish = '', category = '', view = 'grid
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <p className="text-muted-foreground text-sm">
-          {category && `${category} | `}
-          {t('memos.totalMemos', { total: filteredMemos.length })}
-        </p>
-        <ToggleView lng={lng} />
+      <div className="flex items-center">
+        <div className="flex w-full items-center justify-between">
+          <p className="text-muted-foreground text-sm">
+            {category && `${category} | `}
+            {t('memos.totalMemos', { total: filteredMemos.length })}
+          </p>
+          <div className="flex">
+            <RefreshButton lng={lng} />
+            <ToggleView lng={lng} />
+          </div>
+        </div>
       </div>
       <div className="flex items-center gap-4">
         <Input

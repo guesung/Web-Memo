@@ -18,8 +18,6 @@ import { getSupabaseClient, signout } from '@src/modules/supabase/util.server';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import RefreshButton from './RefreshButton';
-
 export default async function Header({ lng }: LanguageType) {
   return (
     <header className="bg-background fixed inset-x-0 z-50 flex flex-1 justify-between p-2 shadow-sm">
@@ -64,7 +62,6 @@ async function HeaderRight({ lng }: LanguageType) {
   return (
     <div className="flex items-center gap-2">
       <ToggleTheme />
-      <RefreshButton lng={lng} />
       {isUserLogin && (
         <DropdownMenu>
           <DropdownMenuTrigger>

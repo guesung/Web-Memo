@@ -36,6 +36,10 @@
   "updates": {
     "title": "Update Log",
     "versions": {
+      "v1.7.1": {
+        "title": "Enhanced YouTube Features",
+        "content": ["Added YouTube script-based features", "Added summary modification features"]
+      },
       "v1.7.0": {
         "title": "Calendar View and Memo Management",
         "content": [
@@ -55,10 +59,7 @@
       },
       "v1.4.0": {
         "title": "Login and Data Storage",
-        "content": [
-          "OAuth login (Kakao, Google)",
-          "Permanent data storage with Supabase"
-        ]
+        "content": ["OAuth login (Kakao, Google)", "Permanent data storage with Supabase"]
       },
       "v1.1.0": {
         "title": "Website Migration",
@@ -66,10 +67,7 @@
       },
       "v1.0.0": {
         "title": "Official Release",
-        "content": [
-          "Opened communication channels (Google Form, Instagram, KakaoTalk)",
-          "Fixed light mode bugs"
-        ]
+        "content": ["Opened communication channels (Google Form, Instagram, KakaoTalk)", "Fixed light mode bugs"]
       },
       "v0.2.0": {
         "title": "Major Feature Update",

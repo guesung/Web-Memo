@@ -25,6 +25,10 @@ const item = {
 
 const updates: Update[] = [
   {
+    date: '2024.12.18',
+    version: 'v1.7.1',
+  },
+  {
     date: '2024.12.06',
     version: 'v1.7.0',
   },

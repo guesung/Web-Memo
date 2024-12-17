@@ -5,7 +5,7 @@ import { Metadata } from 'next';
 import { UpdateList, UpdateTitle } from './components';
 
 export const metadata: Metadata = {
-  title: '업데이트 소식 | Web Memo',
+  title: 'Web Memo | 업데이트 소식 ',
   description: 'Web Memo의 최신 업데이트 소식을 확인하세요.',
 };
 

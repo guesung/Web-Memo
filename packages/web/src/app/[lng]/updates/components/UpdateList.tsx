@@ -68,7 +68,7 @@ export default function UpdateList({ lng }: UpdateListProps) {
   const { t } = useTranslation(lng);
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-12">
+    <motion.div variants={container} initial="hidden" animate="show" className="mx-auto max-w-4xl space-y-12">
       {updates.map(update => (
         <motion.div key={update.version} variants={item} className="border-border border-b pb-8">
           <div className="mb-4 flex items-baseline gap-4">

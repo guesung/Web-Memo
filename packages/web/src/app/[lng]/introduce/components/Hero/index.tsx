@@ -17,7 +17,6 @@ export default function Hero({ lng }: HeroProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
       className="mx-auto max-w-4xl text-center">
-      {/* Rating Display */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -49,7 +48,6 @@ export default function Hero({ lng }: HeroProps) {
         {t('introduce.hero.subtitle')}
       </motion.p>
 
-      {/* Chrome Installation Button */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

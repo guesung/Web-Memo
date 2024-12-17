@@ -34,7 +34,7 @@ export default function IntroductPage({ params: { lng } }: IntroductPageProps) {
         transition={{ duration: 0.5 }}
         className="container mx-auto max-w-6xl px-4 py-6">
         <div className="flex items-center justify-between">
-          <div className="text-2xl font-bold text-gray-800">{t('introduce.navigation.title')}</div>
+          <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">{t('introduce.navigation.title')}</div>
           <div className="space-x-4">
             <Button variant="ghost">
               <Link href={PATHS.login}>{t('introduce.navigation.login')}</Link>
@@ -55,7 +55,7 @@ export default function IntroductPage({ params: { lng } }: IntroductPageProps) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="mb-8 inline-flex items-center gap-2 rounded-full bg-white/90 px-6 py-2 text-lg">
+            className="mb-8 inline-flex items-center gap-2 rounded-full bg-white/90 px-6 py-2 text-lg dark:bg-gray-800/90">
             <div className="flex">
               {'★★★★★'.split('').map((star, i) => (
                 <span key={i} className="text-yellow-400">
@@ -63,22 +63,22 @@ export default function IntroductPage({ params: { lng } }: IntroductPageProps) {
                 </span>
               ))}
             </div>
-            <span className="font-semibold">5.0</span>
-            <span className="text-gray-600">100+ users</span>
+            <span className="font-semibold dark:text-gray-100">5.0</span>
+            <span className="text-gray-600 dark:text-gray-400">100+ users</span>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="mb-6 text-5xl font-bold text-gray-900">
+            className="mb-6 text-5xl font-bold text-gray-900 dark:text-gray-100">
             {t('introduce.hero.title')}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="mb-12 text-xl text-gray-600">
+            className="mb-12 text-xl text-gray-600 dark:text-gray-400">
             {t('introduce.hero.subtitle')}
           </motion.p>
 
@@ -92,7 +92,7 @@ export default function IntroductPage({ params: { lng } }: IntroductPageProps) {
               href={URL.chromeStore}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-lg font-semibold text-gray-800 shadow-lg transition hover:shadow-xl">
+              className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-lg font-semibold text-gray-800 shadow-lg transition hover:shadow-xl dark:bg-gray-800 dark:text-gray-100">
               <img src="/images/pngs/chrome.png" alt="Chrome" className="h-6 w-6" />
               {t('introduce.hero.install_button')}
             </Link>
@@ -155,12 +155,12 @@ export default function IntroductPage({ params: { lng } }: IntroductPageProps) {
             <motion.div
               key={index}
               variants={fadeInUp}
-              className="rounded-xl bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-md">
+              className="rounded-xl bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-md dark:bg-gray-800">
               <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-${feature.color}-100`}>
                 {feature.icon}
               </div>
               <h3 className="mb-2 text-xl font-semibold">{feature.title}</h3>
-              <p className="text-gray-600">{feature.description}</p>
+              <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -206,12 +206,12 @@ export default function IntroductPage({ params: { lng } }: IntroductPageProps) {
             <motion.div
               key={index}
               variants={fadeInUp}
-              className="rounded-xl bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-md">
+              className="rounded-xl bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-md dark:bg-gray-800">
               <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-${feature.color}-100`}>
                 {feature.icon}
               </div>
               <h3 className="mb-2 text-xl font-semibold">{feature.title}</h3>
-              <p className="text-gray-600">{feature.description}</p>
+              <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -276,9 +276,9 @@ export default function IntroductPage({ params: { lng } }: IntroductPageProps) {
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
         viewport={{ once: true }}
-        className="mt-24 bg-gray-50">
+        className="mt-24 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4 py-12">
-          <div className="pt-8 text-center text-gray-600">
+          <div className="pt-8 text-center text-gray-600 dark:text-gray-400">
             <p>&copy; 2024 {t('introduce.footer.copyright')}</p>
           </div>
         </div>

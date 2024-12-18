@@ -52,29 +52,29 @@ export default class ExtensionBridge {
     return 'others';
   }
 
-  private static getContentFromWeb() {
-    return document.body.innerText;
-  }
-
-  private static async getContentFromYoutube(url: string) {
-    const transcripts = await YoutubeTranscript.fetchTranscript(url);
-    return transcripts.map(transcript => transcript.text).join('\n');
-  }
-
-  private static async getContent(url: string, category: Category) {
-    if (category === 'youtube') return await this.getContentFromYoutube(url);
-    return this.getContentFromWeb();
-  }
-
   static async responsePageContent() {
     const url = location.href;
     const category = this.getCategory(url);
-    const content = await this.getContent(url, category);
+    const content = await this._getContent(url, category);
 
     Runtime.onMessage(BRIDGE_MESSAGE_TYPES.PAGE_CONTENT, async (_, __, sendResponse) => {
       sendResponse({ content, category });
       return true;
     });
+  }
+
+  private static async _getContent(url: string, category: Category) {
+    if (category === 'youtube') return await this._getContentFromYoutube(url);
+    return this._getContentFromWeb();
+  }
+
+  private static async _getContentFromYoutube(url: string) {
+    const transcripts = await YoutubeTranscript.fetchTranscript(url);
+    return transcripts.map(transcript => transcript.text).join('\n');
+  }
+
+  private static _getContentFromWeb() {
+    return document.body.innerText;
   }
 
   static requestRefetchTheMemos() {

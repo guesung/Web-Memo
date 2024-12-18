@@ -17,6 +17,6 @@ export const getSupabaseClient = () => {
         },
       },
     },
-    db: { schema: SUPABASE.schemaMemo },
+    db: { schema: SUPABASE.table.memo },
   });
 };

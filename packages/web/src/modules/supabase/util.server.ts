@@ -23,7 +23,7 @@ export const getSupabaseClient = () => {
         cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
       },
     },
-    db: { schema: SUPABASE.schemaMemo },
+    db: { schema: SUPABASE.table.memo },
   });
 };
 

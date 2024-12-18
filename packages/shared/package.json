@@ -54,6 +54,10 @@
     "./modules/chrome-storage": {
       "types": "./dist/modules/chrome-storage/index.d.ts",
       "default": "./dist/modules/chrome-storage/index.js"
+    },
+    "./modules/extension-bridge": {
+      "types": "./dist/modules/extension-bridge/index.d.ts",
+      "default": "./dist/modules/extension-bridge/index.js"
     }
   },
   "scripts": {

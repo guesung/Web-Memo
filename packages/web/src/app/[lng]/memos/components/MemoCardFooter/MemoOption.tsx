@@ -1,9 +1,9 @@
 import { QUERY_KEY } from '@extension/shared/constants';
 import { useCategoryQuery, useDeleteMemosMutation, useMemosUpsertMutation } from '@extension/shared/hooks';
+import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { MemoRow } from '@extension/shared/types';
 import { isAllSame } from '@extension/shared/utils';
-import { requestRefetchTheMemos } from '@extension/shared/utils/extension';
 import {
   Button,
   DropdownMenu,
@@ -55,7 +55,7 @@ export default function MemoOption({ lng, memos, closeMemoOption }: MemoOptionPr
             mutateUpsertMemo(memos, {
               onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
-                requestRefetchTheMemos();
+                ExtensionBridge.requestRefetchTheMemos();
               },
             });
           };

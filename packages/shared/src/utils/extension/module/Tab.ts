@@ -1,4 +1,4 @@
-import { BridgeRequest, BridgeType } from '../bridge/type';
+import { BRIDGE_MESSAGE_TYPE, BridgeRequest } from '@src/modules/extension-bridge';
 
 export class Tab {
   static async get() {
@@ -6,7 +6,7 @@ export class Tab {
     return tab;
   }
 
-  static async sendMessage<TPayload, TResponse>(type: BridgeType, payload?: TPayload) {
+  static async sendMessage<TPayload, TResponse>(type: BRIDGE_MESSAGE_TYPE, payload?: TPayload) {
     const tab = await this.get();
     if (!tab.id) throw new Error('Tab not found');
 

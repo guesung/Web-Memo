@@ -1,18 +1,15 @@
+import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { isProduction } from '@extension/shared/utils';
-import { OPEN_SIDE_PANEL_ID, responsePageContent } from '@extension/shared/utils/extension';
+import { createRoot } from 'react-dom/client';
 
 import { OpenSidePanelButton } from './components';
-import { attachShadowTree } from './utils';
 
-const renderOpenSidePanelButton = async () => {
-  if (isProduction) return;
+const root = document.createElement('div');
+root.id = 'page-summary-content-ui';
+document.body.appendChild(root);
 
-  attachShadowTree({
-    shadowHostId: OPEN_SIDE_PANEL_ID,
-    shadowTree: <OpenSidePanelButton />,
-  });
-};
+createRoot(root).render(<OpenSidePanelButton />);
 
-responsePageContent();
-
-renderOpenSidePanelButton();
+if (!isProduction) {
+  ExtensionBridge.responsePageContent();
+}

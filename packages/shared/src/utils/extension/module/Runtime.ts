@@ -1,43 +1,45 @@
-import { BridgeRequest, BridgeType } from '../bridge';
+import { BRIDGE_MESSAGE_TYPE, BridgeRequest } from '@src/modules/extension-bridge';
 
 export class Runtime {
-  static sendMessage<TPayload, TResponse>(type: BridgeType, payload?: TPayload): Promise<TResponse> {
+  static sendMessage<TPayload, TResponse>(type: BRIDGE_MESSAGE_TYPE, payload?: TPayload): Promise<TResponse> {
     return chrome.runtime.sendMessage<BridgeRequest<TPayload>, TResponse>({
       type,
       payload,
     });
   }
 
-  static async onMessage<TPayload>(
-    type: BridgeType,
-    callbackFn: (
+  static onMessage<TPayload, TResponse>(
+    type: BRIDGE_MESSAGE_TYPE,
+    callback: (
       request: BridgeRequest<TPayload>,
       sender: chrome.runtime.MessageSender,
-      sendResponse: (response?: unknown) => void,
+      sendResponse: (response: TResponse) => void,
     ) => void,
-  ): Promise<void> {
-    return chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      if (!request?.type || request.type !== type) return;
-      callbackFn(request, sender, sendResponse);
+  ) {
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      if (request.type === type) {
+        callback(request, sender, sendResponse);
+      }
     });
   }
 
-  static async onMessageExternal<TPayload>(
-    type: BridgeType,
-    callbackFn?: (
+  static onMessageExternal<TPayload, TResponse>(
+    type: BRIDGE_MESSAGE_TYPE,
+    callback: (
       request: BridgeRequest<TPayload>,
       sender: chrome.runtime.MessageSender,
-      sendResponse: (response?: unknown) => void,
+      sendResponse: (response: TResponse) => void,
     ) => void,
-  ): Promise<void> {
-    return chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
-      if (!request?.type || request.type !== type) return;
-      callbackFn?.(request, sender, sendResponse);
+  ) {
+    chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
+      if (request.type === type) {
+        callback(request, sender, sendResponse);
+      }
     });
   }
 
   static async connect<TPayload>(
-    type: BridgeType,
+    type: BRIDGE_MESSAGE_TYPE,
     payload: TPayload,
     callbackFn: (message: string) => void,
   ): Promise<void> {

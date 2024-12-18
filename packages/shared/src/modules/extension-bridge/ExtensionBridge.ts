@@ -10,9 +10,7 @@ export default class ExtensionBridge {
   }
 
   static responseGetSidePanelOpen() {
-    Runtime.onMessageExternal(BRIDGE_MESSAGE_TYPES.GET_SIDE_PANEL_OPEN, (_, __, sendResponse) => {
-      sendResponse();
-    });
+    Runtime.onMessageExternal(BRIDGE_MESSAGE_TYPES.GET_SIDE_PANEL_OPEN, (_, __, sendResponse) => sendResponse);
   }
 
   static requestOpenSidePanel() {
@@ -95,5 +93,16 @@ export default class ExtensionBridge {
 
   static responseUpdateSidePanel(callbackFn: Parameters<typeof Runtime.onMessage>[1]) {
     return Runtime.onMessage(BRIDGE_MESSAGE_TYPES.UPDATE_SIDE_PANEL, callbackFn);
+  }
+
+  static requestGetExtensionManifest(callbackFn: (response: chrome.runtime.Manifest) => void) {
+    chrome.runtime.sendMessage(EXTENSION.id, { type: BRIDGE_MESSAGE_TYPES.GET_EXTENSION_MANIFEST }, callbackFn);
+  }
+
+  static responseGetExtensionManifest() {
+    const manifest = chrome.runtime.getManifest();
+    Runtime.onMessageExternal(BRIDGE_MESSAGE_TYPES.GET_EXTENSION_MANIFEST, (_, __, sendResponse) =>
+      sendResponse(manifest),
+    );
   }
 }

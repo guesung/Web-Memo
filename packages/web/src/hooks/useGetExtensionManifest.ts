@@ -1,5 +1,5 @@
 import { useDidMount } from '@extension/shared/hooks';
-import { requestGetExtensionManifest } from '@extension/shared/utils/extension';
+import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { useState } from 'react';
 
 export default function useGetExtensionManifest() {
@@ -7,7 +7,7 @@ export default function useGetExtensionManifest() {
 
   useDidMount(() => {
     try {
-      requestGetExtensionManifest(manifest => setManifest(manifest));
+      ExtensionBridge.requestGetExtensionManifest(manifest => setManifest(manifest));
     } catch (e) {
       setManifest(undefined);
     }

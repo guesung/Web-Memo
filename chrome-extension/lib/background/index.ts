@@ -2,17 +2,9 @@ import 'webextension-polyfill';
 
 import { CONFIG, DEFAULT_PROMPTS, URL } from '@extension/shared/constants';
 import { ChromeSyncStorage, STORAGE_KEYS } from '@extension/shared/modules/chrome-storage';
+import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { isProduction } from '@extension/shared/utils';
-import {
-  getSystemPrompt,
-  I18n,
-  requestObserverMemoPage,
-  requestUpdateSidePanel,
-  responseGetExtensionManifest,
-  responseGetTabs,
-  responseOpenSidePanel,
-  Tab,
-} from '@extension/shared/utils/extension';
+import { getSystemPrompt, I18n, Tab } from '@extension/shared/utils/extension';
 import { openai } from '@root/utils/openai';
 
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
@@ -98,18 +90,16 @@ chrome.runtime.onConnect.addListener(async port => {
 
 chrome.tabs.onActivated.addListener(async () => {
   // 활성화된 탭이 변경되었을 때 사이드 패널을 업데이트한다.
-  requestUpdateSidePanel();
+  ExtensionBridge.requestUpdateSidePanel();
 });
 chrome.tabs.onUpdated.addListener(async () => {
   // 페이지를 이동했을 때 사이드 패널을 업데이트한다.
-  requestUpdateSidePanel();
-  // 페이지를 이동했을 때 메모를 보여주는 페이지인지 체크한다.
-  requestObserverMemoPage();
+  ExtensionBridge.requestUpdateSidePanel();
 });
 
 // content-ui에서 메시지를 전달받아 사이드 패널을 연다.
-responseOpenSidePanel();
+ExtensionBridge.responseOpenSidePanel();
 
-responseGetExtensionManifest();
+ExtensionBridge.responseGetExtensionManifest();
 
-responseGetTabs();
+ExtensionBridge.responseGetTabs();

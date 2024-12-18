@@ -17,9 +17,19 @@ if [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   git add .
   git commit -m "chore: v$1"
 
-  git tag "v$1"
-  git push origin "v$1"
-  git push
+  echo "Creating tag v$1..."
+  if ! git tag -f "v$1"; then
+    echo "Failed to create tag"
+    exit 1
+  fi
+
+  echo "Pushing tag to remote..."
+  if ! git push -f origin "v$1"; then
+    echo "Failed to push tag"
+    exit 1
+  fi
+
+  # git push
 else
   echo "Version format <$1> isn't correct, proper format is <0.0.0>"
 fi

@@ -50,6 +50,10 @@
     "./modules/search-params": {
       "types": "./dist/modules/search-params/index.d.ts",
       "default": "./dist/modules/search-params/index.js"
+    },
+    "./modules/chrome-storage": {
+      "types": "./dist/modules/chrome-storage/index.d.ts",
+      "default": "./dist/modules/chrome-storage/index.js"
     }
   },
   "scripts": {

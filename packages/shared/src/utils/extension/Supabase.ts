@@ -1,9 +1,9 @@
 import { CONFIG, COOKIE_KEY, SUPABASE } from '@src/constants';
-import { Database, StorageKeyType } from '@src/types';
+import { ChromeSyncStorage, StorageKeyType } from '@src/modules/chrome-storage';
+import { Database } from '@src/types';
 import { createClient } from '@supabase/supabase-js';
 
 import { AuthService } from '../Supabase';
-import { Storage } from './module';
 
 export const getSupabaseClient = async () => {
   try {
@@ -12,13 +12,13 @@ export const getSupabaseClient = async () => {
       auth: {
         storage: {
           getItem: async key => {
-            return (await Storage.get(key as StorageKeyType)) ?? null;
+            return (await ChromeSyncStorage.get(key as StorageKeyType)) ?? null;
           },
           setItem: async (key, value) => {
-            return await Storage.set(key as StorageKeyType, value);
+            return await ChromeSyncStorage.set(key as StorageKeyType, value);
           },
           removeItem: async key => {
-            return await Storage.remove(key as StorageKeyType);
+            return await ChromeSyncStorage.remove(key as StorageKeyType);
           },
         },
       },

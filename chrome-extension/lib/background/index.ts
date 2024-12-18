@@ -1,6 +1,7 @@
 import 'webextension-polyfill';
 
-import { CONFIG, DEFAULT_PROMPTS, STORAGE_KEYS, URL } from '@extension/shared/constants';
+import { CONFIG, DEFAULT_PROMPTS, URL } from '@extension/shared/constants';
+import { ChromeSyncStorage, STORAGE_KEYS } from '@extension/shared/modules/chrome-storage';
 import { isProduction } from '@extension/shared/utils';
 import {
   getSystemPrompt,
@@ -10,7 +11,6 @@ import {
   responseGetExtensionManifest,
   responseGetTabs,
   responseOpenSidePanel,
-  Storage,
   Tab,
 } from '@extension/shared/utils/extension';
 import { openai } from '@root/utils/openai';
@@ -18,19 +18,19 @@ import { openai } from '@root/utils/openai';
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
 chrome.runtime.onInstalled.addListener(async () => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
-  const language = await Storage.get(STORAGE_KEYS.language);
-  const youtubePrompts = await Storage.get(STORAGE_KEYS.youtubePrompts);
-  const webPrompts = await Storage.get(STORAGE_KEYS.webPrompts);
+  const language = await ChromeSyncStorage.get(STORAGE_KEYS.language);
+  const youtubePrompts = await ChromeSyncStorage.get(STORAGE_KEYS.youtubePrompts);
+  const webPrompts = await ChromeSyncStorage.get(STORAGE_KEYS.webPrompts);
 
   const uiLanguage = I18n.getUILanguage();
-  if (!language) Storage.set(STORAGE_KEYS.language, uiLanguage);
+  if (!language) ChromeSyncStorage.set(STORAGE_KEYS.language, uiLanguage);
   if (!youtubePrompts) {
-    if (uiLanguage === 'ko') Storage.set(STORAGE_KEYS.youtubePrompts, DEFAULT_PROMPTS.youtube.ko);
-    else Storage.set(STORAGE_KEYS.youtubePrompts, DEFAULT_PROMPTS.youtube.en);
+    if (uiLanguage === 'ko') ChromeSyncStorage.set(STORAGE_KEYS.youtubePrompts, DEFAULT_PROMPTS.youtube.ko);
+    else ChromeSyncStorage.set(STORAGE_KEYS.youtubePrompts, DEFAULT_PROMPTS.youtube.en);
   }
   if (!webPrompts) {
-    if (uiLanguage === 'ko') Storage.set(STORAGE_KEYS.webPrompts, DEFAULT_PROMPTS.web.ko);
-    else Storage.set(STORAGE_KEYS.webPrompts, DEFAULT_PROMPTS.web.en);
+    if (uiLanguage === 'ko') ChromeSyncStorage.set(STORAGE_KEYS.webPrompts, DEFAULT_PROMPTS.web.ko);
+    else ChromeSyncStorage.set(STORAGE_KEYS.webPrompts, DEFAULT_PROMPTS.web.en);
   }
 });
 
@@ -77,7 +77,7 @@ chrome.runtime.onConnect.addListener(async port => {
   port.onMessage.addListener(async message => {
     const { category, pageContent } = message;
 
-    const language = await Storage.get<string>(STORAGE_KEYS.language);
+    const language = await ChromeSyncStorage.get<string>(STORAGE_KEYS.language);
     const prompt = await getSystemPrompt({ language, category });
 
     const stream = await openai.chat.completions.create({

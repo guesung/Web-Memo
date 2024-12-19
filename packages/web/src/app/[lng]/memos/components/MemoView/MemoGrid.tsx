@@ -56,20 +56,17 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
       };
 
       const memoElements = document.querySelectorAll('.memo-item');
-      const selectedIds: number[] = [];
-
-      memoElements.forEach(element => {
-        const rect = element.getBoundingClientRect();
-        const isMemoItemInSelectionArea =
-          rect.left < selectionArea.right &&
-          rect.right > selectionArea.left &&
-          rect.top < selectionArea.bottom &&
-          rect.bottom > selectionArea.top;
-
-        if (isMemoItemInSelectionArea) {
-          selectedIds.push(Number(element.id));
-        }
-      });
+      const selectedIds = [...memoElements]
+        .filter(element => {
+          const rect = element.getBoundingClientRect();
+          return (
+            rect.left < selectionArea.right &&
+            rect.right > selectionArea.left &&
+            rect.top < selectionArea.bottom &&
+            rect.bottom > selectionArea.top
+          );
+        })
+        .map(element => Number(element.id));
 
       setSelectedMemos(memos.filter(memo => selectedIds.includes(memo.id)));
     };

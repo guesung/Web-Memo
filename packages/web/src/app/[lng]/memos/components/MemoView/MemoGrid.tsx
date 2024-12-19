@@ -45,9 +45,6 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
     setDragStart({ x: e.clientX, y: e.clientY });
     setDragEnd({ x: e.clientX, y: e.clientY });
     setSelectedMemos([]);
-    document.querySelectorAll('.memo-item').forEach(item => {
-      item.addEventListener('mousedown', e => e.stopPropagation());
-    });
   };
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -105,16 +102,17 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
     else setSelectedMemos(prev => [...prev, memos.find(memo => memo.id === id)!]);
   };
 
-  const handleMemoItemClick = (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
+  const handleMemoItemMouseDown = (event: MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
     const id = Number(event.currentTarget.id);
-    if (event.metaKey) {
+
+    if (isAnyMemoSelected) {
       if (isMemoSelected(id)) setSelectedMemos(prev => prev.filter(memo => memo.id !== id));
       else setSelectedMemos(prev => [...prev, memos.find(memo => memo.id === id)!]);
-      return;
+    } else {
+      searchParams.set('id', String(id));
+      router.push(searchParams.getUrl(), { scroll: false });
     }
-
-    searchParams.set('id', String(id));
-    router.push(searchParams.getUrl(), { scroll: false });
   };
 
   const closeMemoOption = () => {
@@ -162,7 +160,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
                 lng={lng}
                 isSelected={isMemoSelected(memos.at(item.key)!.id)}
                 handleMemoItemSelect={handleMemoItemSelect}
-                onClick={handleMemoItemClick}
+                onMouseDown={handleMemoItemMouseDown}
                 isSelecting={isAnyMemoSelected}
                 data-grid-groupkey={item.groupKey}
               />

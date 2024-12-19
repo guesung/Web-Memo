@@ -7,15 +7,13 @@ import { cn } from '@extension/shared/utils';
 import { Badge, Button, CardFooter, toast, ToastAction } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
+import dayjs from 'dayjs';
 import { HeartIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { MouseEvent, PropsWithChildren, useMemo } from 'react';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
-import 'dayjs/locale/ko';
+import { MouseEvent, PropsWithChildren } from 'react';
 import MemoOption from './MemoOption';
 
-dayjs.extend(relativeTime);
+import relativeTime from 'dayjs/plugin/relativeTime';
 
 interface MemoCardFooterProps extends LanguageType, React.HTMLAttributes<HTMLDivElement>, PropsWithChildren {
   memo: GetMemoResponse;
@@ -28,14 +26,8 @@ export default function MemoCardFooter({ memo, lng, isOptionShown, children, ...
   const router = useRouter();
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 
-  const formattedDate = useMemo(() => {
-    dayjs.locale(lng === 'ko' ? 'ko' : 'en');
-    const date = dayjs(memo.created_at);
-    return {
-      relative: date.fromNow(),
-      absolute: date.format(lng === 'ko' ? 'YYYY년 MM월 DD일' : 'MMM DD, YYYY'),
-    };
-  }, [memo.created_at, lng]);
+  dayjs.extend(relativeTime);
+  dayjs.locale(lng === 'ko' ? 'ko' : 'en');
 
   const handleCategoryClick = (event: MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
@@ -112,11 +104,10 @@ export default function MemoCardFooter({ memo, lng, isOptionShown, children, ...
       </div>
       <time
         dateTime={memo.created_at}
-        title={formattedDate.absolute}
         className={cn('text-muted-foreground absolute right-4 text-xs', {
           'opacity-0': isOptionShown,
         })}>
-        {formattedDate.relative}
+        {dayjs(memo.created_at).fromNow()}
       </time>
     </CardFooter>
   );

@@ -32,8 +32,12 @@ interface MemoGridProps extends LanguageType {
 }
 
 export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT));
   const [selectedMemos, setSelectedMemos] = useState<GetMemoResponse[]>([]);
+  const [hoveredMemoId, setHoveredMemoId] = useState<number | null>(null);
 
   const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
 
@@ -44,10 +48,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
     setDragEnd({ x: e.clientX, y: e.clientY });
-    setSelectedMemos([]);
   };
-  const searchParams = useSearchParams();
-  const router = useRouter();
 
   useEffect(() => {
     const handleMouseMove = (e: globalThis.MouseEvent) => {
@@ -95,7 +96,9 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
     };
   }, [isDragging]);
 
-  const handleMemoItemSelect = (id: number) => {
+  const handleMemoItemSelect = (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
+    event.stopPropagation();
+    const id = Number(event.currentTarget.id);
     if (isDragging) return;
 
     if (isMemoSelected(id)) setSelectedMemos(prev => prev.filter(memo => memo.id !== id));
@@ -159,8 +162,11 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
                 memo={memos.at(item.key)!}
                 lng={lng}
                 isSelected={isMemoSelected(memos.at(item.key)!.id)}
-                handleMemoItemSelect={handleMemoItemSelect}
+                isHovered={hoveredMemoId === memos.at(item.key)!.id}
                 onMouseDown={handleMemoItemMouseDown}
+                handleMemoItemSelect={handleMemoItemSelect}
+                onMouseEnter={() => setHoveredMemoId(memos.at(item.key)!.id)}
+                onMouseLeave={() => setHoveredMemoId(null)}
                 isSelecting={isAnyMemoSelected}
                 data-grid-groupkey={item.groupKey}
               />

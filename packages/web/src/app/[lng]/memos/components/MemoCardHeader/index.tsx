@@ -8,18 +8,13 @@ import { KeyboardEvent, MouseEvent } from 'react';
 
 interface MemoCardHeaderProps {
   memo: GetMemoResponse;
-  onSelect?: (id: number) => void;
+  onSelect?: (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => void;
   tooltip?: boolean;
   isHovered?: boolean;
   isSelected?: boolean;
 }
 
 export default function MemoCardHeader({ memo, isHovered, isSelected, onSelect }: MemoCardHeaderProps) {
-  const handleMemoSelect = (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
-    event.stopPropagation();
-    onSelect?.(memo.id);
-  };
-
   return (
     <CardHeader className="relative py-4 font-normal">
       <Button
@@ -30,10 +25,11 @@ export default function MemoCardHeader({ memo, isHovered, isSelected, onSelect }
           'opacity-100': isHovered || isSelected,
           'opacity-0': !isHovered && !isSelected,
         })}
-        onClick={handleMemoSelect}>
+        onClick={onSelect}
+        onMouseDown={e => e.stopPropagation()}>
         <CheckIcon size={8} />
       </Button>
-      <Link href={memo.url} target="_blank" className="flex gap-2" onClick={e => e.stopPropagation()}>
+      <Link href={memo.url} target="_blank" className="flex items-center gap-2" onMouseDown={e => e.stopPropagation()}>
         {memo?.favIconUrl && (
           <Image
             src={memo.favIconUrl}

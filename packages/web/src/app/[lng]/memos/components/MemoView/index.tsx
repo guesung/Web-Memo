@@ -41,35 +41,46 @@ export default function MemoView({ lng, isWish = '', category = '', view = 'grid
       searchTarget: (searchParams.get('searchTarget') as SearchTarget) || 'all',
     },
   });
-  const searchQuery = watch('searchQuery');
-  const searchTarget = watch('searchTarget');
   const { memos } = useMemosQuery();
 
   useGuide({ lng });
 
   useEffect(() => {
-    if (searchQuery) {
-      searchParams.set('query', searchQuery);
-    } else {
-      searchParams.removeAll('query');
-    }
-    searchParams.set('searchTarget', searchTarget);
-    router.replace(searchParams.getUrl(), { scroll: false });
-  }, [searchQuery, searchTarget, searchParams, router]);
+    const subscription = watch((value, { name }) => {
+      if (!name) return;
+
+      if (name === 'searchQuery') {
+        if (value.searchQuery) {
+          searchParams.set('query', value.searchQuery);
+        } else {
+          searchParams.removeAll('query');
+        }
+      }
+
+      if (name === 'searchTarget') {
+        searchParams.set('searchTarget', value.searchTarget);
+      }
+
+      router.replace(searchParams.getUrl(), { scroll: false });
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, searchParams, router]);
 
   const filteredMemos = memos
     ?.filter(memo => !!isWish === !!memo.isWish)
     .filter(memo => (category ? memo.category?.name === category : true))
     .filter(memo => {
-      if (!searchQuery) return true;
+      if (!watch('searchQuery')) return true;
 
-      const searchLower = searchQuery.toLowerCase();
+      const searchLower = watch('searchQuery').toLowerCase();
       const matchTitle =
-        memo.title?.toLowerCase().includes(searchLower) || getChoseong(memo.title).includes(searchQuery);
-      const matchMemo = memo.memo?.toLowerCase().includes(searchLower) || getChoseong(memo.memo).includes(searchQuery);
+        memo.title?.toLowerCase().includes(searchLower) || getChoseong(memo.title).includes(watch('searchQuery'));
+      const matchMemo =
+        memo.memo?.toLowerCase().includes(searchLower) || getChoseong(memo.memo).includes(watch('searchQuery'));
       const matchCategory = memo.category?.name.toLowerCase().includes(searchLower);
 
-      switch (searchTarget) {
+      switch (watch('searchTarget')) {
         case 'title':
           return matchTitle || matchCategory;
         case 'memo':

@@ -15,36 +15,19 @@ interface MemoItemProps extends HTMLMotionProps<'article'>, LanguageType {
   memo: GetMemoResponse;
   isSelected: boolean;
   isSelecting: boolean;
-  onSelect: (e: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => void;
+  isHovered: boolean;
+  handleMemoItemSelect: (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => void;
 }
 
-export default memo(function MemoItem({ lng, memo, isSelected, onSelect, isSelecting, ...props }: MemoItemProps) {
-  const [isHovered, setIsHovered] = useState(false);
-
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  const handleItemClick = (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
-    const id = event.currentTarget.id;
-    if (!id) return;
-
-    if (isSelecting) {
-      onSelect(event);
-      return;
-    }
-
-    searchParams.set('id', id);
-    router.push(searchParams.getUrl(), { scroll: false });
-  };
-
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-  };
-
+export default memo(function MemoItem({
+  lng,
+  memo,
+  isSelected,
+  handleMemoItemSelect,
+  isSelecting,
+  isHovered,
+  ...props
+}: MemoItemProps) {
   if (!memo) return null;
   return (
     <motion.article
@@ -53,18 +36,14 @@ export default memo(function MemoItem({ lng, memo, isSelected, onSelect, isSelec
       initial="initial"
       animate="animate"
       exit="exit"
-      onClick={handleItemClick}
-      onKeyDown={e => e.key === 'Enter' && handleItemClick(e)}
-      className="transition-all"
+      className={cn('memo-item select-none', props.className)}
       tabIndex={0}
       {...props}>
       <Card
         className={cn('relative box-content w-[300px] transition-all', {
           'border-primary cursor-pointer': isSelected,
-        })}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}>
-        <MemoCardHeader memo={memo} isHovered={isHovered} isSelected={isSelected} onSelect={onSelect} />
+        })}>
+        <MemoCardHeader memo={memo} isHovered={isHovered} isSelected={isSelected} onSelect={handleMemoItemSelect} />
         {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
         <MemoCardFooter memo={memo} lng={lng} isOptionShown={isHovered && !isSelecting} />
       </Card>

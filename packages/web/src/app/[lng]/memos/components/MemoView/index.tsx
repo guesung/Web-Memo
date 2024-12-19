@@ -2,23 +2,19 @@
 
 import { useMemosQuery } from '@extension/shared/hooks';
 import type { SearchParamViewType } from '@extension/shared/modules/search-params';
-import { useSearchParams } from '@extension/shared/modules/search-params';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@extension/ui';
-import { Input } from '@src/components/ui';
+
 import { useGuide } from '@src/modules/guide';
 import { LanguageType } from '@src/modules/i18n';
 import { getChoseong } from 'es-hangul';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+
 import { useTranslation } from 'react-i18next';
 
 import RefreshButton from '../Header/RefreshButton';
 import MemoCalendar from './MemoCalendar';
 import MemoGrid from './MemoGrid';
 import ToggleView from './ToggleView';
-
-type SearchTarget = 'all' | 'title' | 'memo';
+import SearchForm from './SearchForm';
+import { useForm } from 'react-hook-form';
 
 interface MemoViewProps extends LanguageType {
   isWish?: string;
@@ -26,57 +22,42 @@ interface MemoViewProps extends LanguageType {
   view?: SearchParamViewType;
 }
 
-interface SearchFormValues {
+type SearchTargetType = 'all' | 'title' | 'memo';
+export interface SearchFormValues {
   searchQuery: string;
-  searchTarget: SearchTarget;
+  searchTarget: SearchTargetType;
 }
 
 export default function MemoView({ lng, isWish = '', category = '', view = 'grid' }: MemoViewProps) {
   const { t } = useTranslation(lng);
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { register, watch, control } = useForm<SearchFormValues>({
+
+  const { memos } = useMemosQuery();
+  const { watch, control } = useForm<SearchFormValues>({
     defaultValues: {
-      searchQuery: searchParams.get('query'),
-      searchTarget: (searchParams.get('searchTarget') as SearchTarget) || 'all',
+      searchQuery: '',
+      searchTarget: 'all',
     },
   });
-  const searchQuery = watch('searchQuery');
-  const searchTarget = watch('searchTarget');
-  const { memos } = useMemosQuery();
 
   useGuide({ lng });
-
-  useEffect(() => {
-    if (searchQuery) {
-      searchParams.set('query', searchQuery);
-    } else {
-      searchParams.removeAll('query');
-    }
-    searchParams.set('searchTarget', searchTarget);
-    router.replace(searchParams.getUrl(), { scroll: false });
-  }, [searchQuery, searchTarget, searchParams, router]);
 
   const filteredMemos = memos
     ?.filter(memo => !!isWish === !!memo.isWish)
     .filter(memo => (category ? memo.category?.name === category : true))
     .filter(memo => {
-      if (!searchQuery) return true;
+      if (!watch('searchQuery')) return true;
 
-      const searchLower = searchQuery.toLowerCase();
-      const matchTitle =
-        memo.title?.toLowerCase().includes(searchLower) || getChoseong(memo.title).includes(searchQuery);
-      const matchMemo = memo.memo?.toLowerCase().includes(searchLower) || getChoseong(memo.memo).includes(searchQuery);
-      const matchCategory = memo.category?.name.toLowerCase().includes(searchLower);
+      const searchLower = watch('searchQuery').toLowerCase();
+      const isTitleMatch =
+        memo.title?.toLowerCase().includes(searchLower) || getChoseong(memo.title).includes(watch('searchQuery'));
+      const isMemoMatch =
+        memo.memo?.toLowerCase().includes(searchLower) || getChoseong(memo.memo).includes(watch('searchQuery'));
+      const isCategoryMatch = memo.category?.name.toLowerCase().includes(searchLower);
 
-      switch (searchTarget) {
-        case 'title':
-          return matchTitle || matchCategory;
-        case 'memo':
-          return matchMemo || matchCategory;
-        default:
-          return matchTitle || matchMemo || matchCategory;
-      }
+      if (isCategoryMatch) return true;
+      if (watch('searchTarget') === 'title') return isTitleMatch;
+      if (watch('searchTarget') === 'memo') return isMemoMatch;
+      return isTitleMatch || isMemoMatch;
     });
 
   return (
@@ -93,30 +74,8 @@ export default function MemoView({ lng, isWish = '', category = '', view = 'grid
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-center gap-4">
-        <Input
-          type="text"
-          placeholder={t('memos.searchPlaceholder')}
-          className="max-w-sm"
-          {...register('searchQuery')}
-        />
-        <Controller
-          name="searchTarget"
-          control={control}
-          render={({ field }) => (
-            <Select onValueChange={field.onChange} value={field.value}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder={t('memos.searchTarget.all')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('memos.searchTarget.all')}</SelectItem>
-                <SelectItem value="title">{t('memos.searchTarget.title')}</SelectItem>
-                <SelectItem value="memo">{t('memos.searchTarget.memo')}</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-        />
-      </div>
+      <SearchForm lng={lng} control={control} />
+
       {view === 'calendar' ? (
         <MemoCalendar lng={lng} memos={filteredMemos} />
       ) : (

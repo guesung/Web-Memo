@@ -117,7 +117,10 @@ export default function MemoOption({ lng, memos, closeMemoOption }: MemoOptionPr
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={handleDeleteMemo} className="cursor-pointer">
+          <DropdownMenuItem
+            onClick={handleDeleteMemo}
+            className="cursor-pointer"
+            onMouseDown={e => e.stopPropagation()}>
             {t('option.deleteMemo')}
           </DropdownMenuItem>
           <DropdownMenuItem>
@@ -132,7 +135,8 @@ export default function MemoOption({ lng, memos, closeMemoOption }: MemoOptionPr
                       key={category.id}
                       value={String(category.id)}
                       id={String(category.id)}
-                      className="cursor-pointer">
+                      className="cursor-pointer"
+                      onMouseDown={e => e.stopPropagation()}>
                       {category.name}
                     </SelectItem>
                   ))}

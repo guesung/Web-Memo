@@ -21,9 +21,6 @@ dayjs.extend(timezone);
 
 const localizer = dayjsLocalizer(dayjs);
 
-import('dayjs/locale/en');
-import('dayjs/locale/ko');
-
 interface ExtendedEvent extends Event {
   id: string;
 }

@@ -8,6 +8,7 @@ import { dir } from 'i18next';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { PropsWithChildren } from 'react';
+import 'dayjs/locale/ko';
 
 const pretendard = localFont({
   src: '../../fonts/PretendardVariable.woff2',
@@ -34,7 +35,6 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
         <ThemeProvider>
           <QueryProvider lng={lng}>
             <Header lng={lng} />
-
             {children}
           </QueryProvider>
         </ThemeProvider>

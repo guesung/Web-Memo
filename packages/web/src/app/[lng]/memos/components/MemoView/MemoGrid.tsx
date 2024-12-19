@@ -12,6 +12,7 @@ import MemoOptionHeader from './MemoOptionHeader';
 import { DragBox } from '@src/components';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { useRouter } from 'next/navigation';
+import { useDrag } from '@src/hooks/useDrag';
 
 const MEMO_UNIT = 20;
 
@@ -33,9 +34,8 @@ interface MemoGridProps extends LanguageType {
 export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT));
   const [selectedMemos, setSelectedMemos] = useState<GetMemoResponse[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [dragEnd, setDragEnd] = useState({ x: 0, y: 0 });
+
+  const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
 
   const isMemoSelected = useCallback((id: number) => selectedMemos.some(memo => memo.id === id), [selectedMemos]);
   const isAnyMemoSelected = useMemo(() => selectedMemos.length > 0, [selectedMemos]);

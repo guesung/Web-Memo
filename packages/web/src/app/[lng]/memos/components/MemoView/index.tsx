@@ -18,54 +18,29 @@ import MemoCalendar from './MemoCalendar';
 import MemoGrid from './MemoGrid';
 import ToggleView from './ToggleView';
 
-type SearchTarget = 'all' | 'title' | 'memo';
-
 interface MemoViewProps extends LanguageType {
   isWish?: string;
   category?: string;
   view?: SearchParamViewType;
 }
 
+type SearchTargetType = 'all' | 'title' | 'memo';
 interface SearchFormValues {
   searchQuery: string;
-  searchTarget: SearchTarget;
+  searchTarget: SearchTargetType;
 }
 
 export default function MemoView({ lng, isWish = '', category = '', view = 'grid' }: MemoViewProps) {
   const { t } = useTranslation(lng);
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const { register, watch, control } = useForm<SearchFormValues>({
     defaultValues: {
-      searchQuery: searchParams.get('query'),
-      searchTarget: (searchParams.get('searchTarget') as SearchTarget) || 'all',
+      searchQuery: '',
+      searchTarget: 'all',
     },
   });
   const { memos } = useMemosQuery();
 
   useGuide({ lng });
-
-  useEffect(() => {
-    const subscription = watch((value, { name }) => {
-      if (!name) return;
-
-      if (name === 'searchQuery') {
-        if (value.searchQuery) {
-          searchParams.set('query', value.searchQuery);
-        } else {
-          searchParams.removeAll('query');
-        }
-      }
-
-      if (name === 'searchTarget') {
-        searchParams.set('searchTarget', value.searchTarget);
-      }
-
-      router.replace(searchParams.getUrl(), { scroll: false });
-    });
-
-    return () => subscription.unsubscribe();
-  }, [watch, searchParams, router]);
 
   const filteredMemos = memos
     ?.filter(memo => !!isWish === !!memo.isWish)
@@ -74,20 +49,16 @@ export default function MemoView({ lng, isWish = '', category = '', view = 'grid
       if (!watch('searchQuery')) return true;
 
       const searchLower = watch('searchQuery').toLowerCase();
-      const matchTitle =
+      const isTitleMatch =
         memo.title?.toLowerCase().includes(searchLower) || getChoseong(memo.title).includes(watch('searchQuery'));
-      const matchMemo =
+      const isMemoMatch =
         memo.memo?.toLowerCase().includes(searchLower) || getChoseong(memo.memo).includes(watch('searchQuery'));
-      const matchCategory = memo.category?.name.toLowerCase().includes(searchLower);
+      const isCategoryMatch = memo.category?.name.toLowerCase().includes(searchLower);
 
-      switch (watch('searchTarget')) {
-        case 'title':
-          return matchTitle || matchCategory;
-        case 'memo':
-          return matchMemo || matchCategory;
-        default:
-          return matchTitle || matchMemo || matchCategory;
-      }
+      if (isCategoryMatch) return true;
+      if (watch('searchTarget') === 'title') return isTitleMatch;
+      if (watch('searchTarget') === 'memo') return isMemoMatch;
+      return isTitleMatch || isMemoMatch;
     });
 
   return (

@@ -24,12 +24,14 @@ export default async function Page({ searchParams, params: { lng } }: PageProps)
   const supabaseClient = getSupabaseClient();
 
   return (
-    <HydrationBoundaryWrapper queryKey={QUERY_KEY.memos()} queryFn={() => new MemoService(supabaseClient).getMemos()}>
-      <Suspense fallback={<Loading />}>
-        <Header.Margin />
-        <MemoView lng={lng} isWish={searchParams.isWish} category={searchParams.category} view={searchParams.view} />
-        {searchParams?.id && <MemoDialog lng={lng} id={searchParams.id} />}
-      </Suspense>
-    </HydrationBoundaryWrapper>
+    <main className="w-full px-4">
+      <Header.Margin />
+      <HydrationBoundaryWrapper queryKey={QUERY_KEY.memos()} queryFn={() => new MemoService(supabaseClient).getMemos()}>
+        <Suspense fallback={<Loading />}>
+          <MemoView lng={lng} isWish={searchParams.isWish} category={searchParams.category} view={searchParams.view} />
+          {searchParams?.id && <MemoDialog lng={lng} id={searchParams.id} />}
+        </Suspense>
+      </HydrationBoundaryWrapper>
+    </main>
   );
 }

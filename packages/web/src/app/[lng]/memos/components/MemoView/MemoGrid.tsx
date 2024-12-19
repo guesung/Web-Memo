@@ -41,39 +41,42 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
     setDragEnd({ x: e.clientX, y: e.clientY });
-    setSelectedMemos([]);
+    // setSelectedMemos([]);
   };
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging) return;
-    setDragEnd({ x: e.clientX, y: e.clientY });
-    
-    // Find elements within the selection area
-    const selectionArea = {
-      left: Math.min(dragStart.x, e.clientX),
-      right: Math.max(dragStart.x, e.clientX),
-      top: Math.min(dragStart.y, e.clientY),
-      bottom: Math.max(dragStart.y, e.clientY),
-    };
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (isAnyMemoSelected) return;
+      if (!isDragging) return;
+      setDragEnd({ x: e.clientX, y: e.clientY });
 
-    const memoElements = document.querySelectorAll('.memo-item');
-    const selectedIds: number[] = [];
+      const selectionArea = {
+        left: Math.min(dragStart.x, e.clientX),
+        right: Math.max(dragStart.x, e.clientX),
+        top: Math.min(dragStart.y, e.clientY),
+        bottom: Math.max(dragStart.y, e.clientY),
+      };
 
-    memoElements.forEach((element) => {
-      const rect = element.getBoundingClientRect();
-      if (
-        rect.left < selectionArea.right &&
-        rect.right > selectionArea.left &&
-        rect.top < selectionArea.bottom &&
-        rect.bottom > selectionArea.top
-      ) {
-        const id = Number(element.id);
-        selectedIds.push(id);
-      }
-    });
+      const memoElements = document.querySelectorAll('.memo-item');
+      const selectedIds: number[] = [];
 
-    setSelectedMemos(memos.filter(memo => selectedIds.includes(memo.id)));
-  }, [isDragging, dragStart, memos]);
+      memoElements.forEach(element => {
+        const rect = element.getBoundingClientRect();
+        if (
+          rect.left < selectionArea.right &&
+          rect.right > selectionArea.left &&
+          rect.top < selectionArea.bottom &&
+          rect.bottom > selectionArea.top
+        ) {
+          const id = Number(element.id);
+          selectedIds.push(id);
+        }
+      });
+
+      setSelectedMemos(memos.filter(memo => selectedIds.includes(memo.id)));
+    },
+    [isDragging, dragStart, memos],
+  );
 
   const handleMouseUp = () => {
     setIsDragging(false);
@@ -106,10 +109,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
 
   return (
-    <div 
-      className="relative w-full h-full"
-      onMouseDown={handleMouseDown}
-    >
+    <div className="relative h-full w-full" onMouseDown={handleMouseDown}>
       {isDragging && (
         <div
           style={{

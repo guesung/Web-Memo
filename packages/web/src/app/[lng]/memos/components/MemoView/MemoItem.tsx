@@ -25,6 +25,7 @@ export default memo(function MemoItem({ lng, memo, isSelected, onSelect, isSelec
   const router = useRouter();
 
   const handleItemClick = (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
+    event.stopPropagation();
     const id = event.currentTarget.id;
     if (!id) return;
 

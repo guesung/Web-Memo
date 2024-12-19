@@ -1,11 +1,6 @@
 import { useFetch } from '@extension/shared/hooks';
-import {
-  BRIDGE_TYPE_GET_SUMMARY,
-  Category,
-  I18n,
-  requestPageContent,
-  Runtime,
-} from '@extension/shared/utils/extension';
+import { BRIDGE_MESSAGE_TYPES, Category, ExtensionBridge } from '@extension/shared/modules/extension-bridge';
+import { I18n, Runtime } from '@extension/shared/utils/extension';
 import { useState } from 'react';
 
 export default function useSummary() {
@@ -21,7 +16,7 @@ export default function useSummary() {
     let pageContent = '';
     let currentCategory: Category = 'others';
     try {
-      const { content, category } = await requestPageContent();
+      const { content, category } = await ExtensionBridge.requestPageContent();
       pageContent = content;
       currentCategory = category;
       setCategory(category);
@@ -31,7 +26,7 @@ export default function useSummary() {
     }
     try {
       await Runtime.connect(
-        BRIDGE_TYPE_GET_SUMMARY,
+        BRIDGE_MESSAGE_TYPES.GET_SUMMARY,
         { pageContent, category: currentCategory },
         (message: string) => message && setSummary(prev => prev + message),
       );

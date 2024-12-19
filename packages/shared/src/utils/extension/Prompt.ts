@@ -1,5 +1,6 @@
-import { DEFAULT_PROMPTS, LANGUAGE_MAP, PROMPT, STORAGE_KEYS } from '@src/constants';
-import { Category, Storage } from '@src/utils/extension';
+import { DEFAULT_PROMPTS, LANGUAGE_MAP, PROMPT } from '@src/constants';
+import { ChromeSyncStorage, STORAGE_KEYS } from '@src/modules/chrome-storage';
+import { Category } from '@src/modules/extension-bridge';
 
 interface GetSystemPromptProps {
   language: string;
@@ -7,8 +8,8 @@ interface GetSystemPromptProps {
 }
 
 export const getSystemPrompt = async ({ language, category }: GetSystemPromptProps) => {
-  const youtubePrompts = (await Storage.get(STORAGE_KEYS.youtubePrompts)) ?? DEFAULT_PROMPTS.youtube;
-  const webPrompts = (await Storage.get(STORAGE_KEYS.webPrompts)) ?? DEFAULT_PROMPTS.web;
+  const youtubePrompts = (await ChromeSyncStorage.get(STORAGE_KEYS.youtubePrompts)) ?? DEFAULT_PROMPTS.youtube;
+  const webPrompts = (await ChromeSyncStorage.get(STORAGE_KEYS.webPrompts)) ?? DEFAULT_PROMPTS.web;
 
   const languagePrompt = `${PROMPT.language} ${LANGUAGE_MAP[language] ?? 'Korean'}`.repeat(3);
 

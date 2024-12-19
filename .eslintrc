@@ -20,7 +20,16 @@
     "ecmaVersion": "latest",
     "sourceType": "module",
   },
-  "plugins": ["prettier", "simple-import-sort", "react", "@typescript-eslint", "react-hooks", "import", "jsx-a11y"],
+  "plugins": [
+    "prettier",
+    "simple-import-sort",
+    "react",
+    "@typescript-eslint",
+    "react-hooks",
+    "import",
+    "jsx-a11y",
+    "turbo",
+  ],
   "settings": {
     "react": {
       "version": "detect",

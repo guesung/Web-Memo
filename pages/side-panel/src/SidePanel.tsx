@@ -1,5 +1,5 @@
 import { useDidMount } from '@extension/shared/hooks';
-import { responseGetSidePanelOpen } from '@extension/shared/utils/extension';
+import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { ErrorBoundary, Loading, Toaster } from '@extension/ui';
 import { Suspense } from 'react';
 
@@ -14,7 +14,7 @@ import {
 } from './components';
 
 export default function SidePanel() {
-  useDidMount(responseGetSidePanelOpen);
+  useDidMount(ExtensionBridge.responseGetSidePanelOpen);
 
   return (
     <QueryProvider>

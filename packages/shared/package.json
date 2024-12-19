@@ -50,11 +50,19 @@
     "./modules/search-params": {
       "types": "./dist/modules/search-params/index.d.ts",
       "default": "./dist/modules/search-params/index.js"
+    },
+    "./modules/chrome-storage": {
+      "types": "./dist/modules/chrome-storage/index.d.ts",
+      "default": "./dist/modules/chrome-storage/index.js"
+    },
+    "./modules/extension-bridge": {
+      "types": "./dist/modules/extension-bridge/index.d.ts",
+      "default": "./dist/modules/extension-bridge/index.js"
     }
   },
   "scripts": {
     "clean": "rimraf ./dist",
-    "ready": "rm -rf dist && node build.mjs",
+    "ready": "node build.mjs",
     "prettier": "prettier . --write --ignore-path ../../.prettierignore",
     "type-check": "tsc --noEmit",
     "tsc-watch": "tsc-watch"

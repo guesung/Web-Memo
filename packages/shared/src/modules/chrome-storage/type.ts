@@ -1,3 +1,3 @@
-import { STORAGE_KEYS } from '@src/constants';
+import { STORAGE_KEYS } from './constant';
 
 export type StorageKeyType = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];

@@ -1,5 +1,5 @@
 import { formatUrl } from '../Url';
-import { Tab } from '.';
+import { Tab } from './module';
 
 export const getMemoInfo = async () => {
   const tab = await Tab.get();

@@ -4,8 +4,7 @@
   "tasks": {
     "ready": {
       "dependsOn": ["^ready"],
-      "outputs": ["dist", "build"],
-      "cache": false
+      "outputs": ["dist", "build"]
     },
     "dev": {
       "dependsOn": ["ready"],
@@ -19,7 +18,6 @@
         "WEB_URL",
         "NODE_ENV"
       ],
-      "persistent": true,
       "inputs": [".env"]
     },
     "build": {

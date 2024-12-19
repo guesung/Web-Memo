@@ -1,4 +1,4 @@
-import { Storage } from '@extension/shared/utils/extension';
+import { ChromeSyncStorage } from '@extension/shared/modules/chrome-storage';
 import { Button } from '@extension/ui';
 import { Moon, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -11,13 +11,13 @@ export function useTheme() {
   const setThemeMode = (theme: Theme) => {
     if (theme === 'dark') document.documentElement.classList.add('dark');
     else document.documentElement.classList.remove('dark');
-    Storage.set('theme', theme);
+    ChromeSyncStorage.set('theme', theme);
     setTheme(theme);
   };
 
   useEffect(() => {
     (async () => {
-      const storageTheme = await Storage.get('theme');
+      const storageTheme = await ChromeSyncStorage.get('theme');
 
       const isInitialThemeDark = !storageTheme && window.matchMedia('(prefers-color-scheme: dark)').matches;
       const isStorageThemeDark = storageTheme === 'dark';

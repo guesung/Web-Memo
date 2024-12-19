@@ -5,7 +5,7 @@ import { useKeyboardBind } from '@extension/shared/hooks';
 import { GetMemoResponse } from '@extension/shared/types';
 import { LanguageType } from '@src/modules/i18n';
 import { AnimatePresence } from 'framer-motion';
-import { KeyboardEvent, MouseEvent, useCallback, useMemo, useState } from 'react';
+import { KeyboardEvent, MouseEvent, useCallback, useMemo, useState, useEffect } from 'react';
 
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
@@ -30,9 +30,65 @@ interface MemoGridProps extends LanguageType {
 export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT));
   const [selectedMemos, setSelectedMemos] = useState<GetMemoResponse[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [dragEnd, setDragEnd] = useState({ x: 0, y: 0 });
 
   const isMemoSelected = useCallback((id: number) => selectedMemos.some(memo => memo.id === id), [selectedMemos]);
   const isAnyMemoSelected = useMemo(() => selectedMemos.length > 0, [selectedMemos]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX, y: e.clientY });
+    setDragEnd({ x: e.clientX, y: e.clientY });
+    setSelectedMemos([]);
+  };
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging) return;
+    setDragEnd({ x: e.clientX, y: e.clientY });
+    
+    // Find elements within the selection area
+    const selectionArea = {
+      left: Math.min(dragStart.x, e.clientX),
+      right: Math.max(dragStart.x, e.clientX),
+      top: Math.min(dragStart.y, e.clientY),
+      bottom: Math.max(dragStart.y, e.clientY),
+    };
+
+    const memoElements = document.querySelectorAll('.memo-item');
+    const selectedIds: number[] = [];
+
+    memoElements.forEach((element) => {
+      const rect = element.getBoundingClientRect();
+      if (
+        rect.left < selectionArea.right &&
+        rect.right > selectionArea.left &&
+        rect.top < selectionArea.bottom &&
+        rect.bottom > selectionArea.top
+      ) {
+        const id = Number(element.id);
+        selectedIds.push(id);
+      }
+    });
+
+    setSelectedMemos(memos.filter(memo => selectedIds.includes(memo.id)));
+  }, [isDragging, dragStart, memos]);
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, handleMouseMove]);
 
   const handleMemoItemSelect = (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -50,7 +106,25 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
 
   return (
-    <>
+    <div 
+      className="relative w-full h-full"
+      onMouseDown={handleMouseDown}
+    >
+      {isDragging && (
+        <div
+          style={{
+            position: 'fixed',
+            left: Math.min(dragStart.x, dragEnd.x),
+            top: Math.min(dragStart.y, dragEnd.y),
+            width: Math.abs(dragEnd.x - dragStart.x),
+            height: Math.abs(dragEnd.y - dragStart.y),
+            backgroundColor: 'rgba(66, 153, 225, 0.2)',
+            border: '1px solid rgba(66, 153, 225, 0.5)',
+            pointerEvents: 'none',
+            zIndex: 1000,
+          }}
+        />
+      )}
       <AnimatePresence>
         {isAnyMemoSelected && (
           <MemoOptionHeader
@@ -93,6 +167,6 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
             ),
         )}
       </MasonryInfiniteGrid>
-    </>
+    </div>
   );
 }

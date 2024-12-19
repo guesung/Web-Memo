@@ -55,7 +55,7 @@ export default memo(function MemoItem({ lng, memo, isSelected, onSelect, isSelec
       exit="exit"
       onClick={handleItemClick}
       onKeyDown={e => e.key === 'Enter' && handleItemClick(e)}
-      className="transition-all"
+      className={cn('memo-item select-none', props.className)}
       tabIndex={0}
       {...props}>
       <Card

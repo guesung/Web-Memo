@@ -68,12 +68,18 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         })
         .map(element => Number(element.id));
 
-      setSelectedMemos(memos.filter(memo => selectedIds.includes(memo.id)));
+      setSelectedMemos(prevSelectedMemos => [
+        ...prevSelectedMemos,
+        ...memos.filter(
+          memo => selectedIds.includes(memo.id) && !prevSelectedMemos.some(prevMemo => prevMemo.id === memo.id),
+        ),
+      ]);
     };
 
     const handleMouseUp = () => {
       setIsDragging(false);
     };
+
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);

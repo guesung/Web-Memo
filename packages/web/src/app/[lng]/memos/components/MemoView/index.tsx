@@ -2,21 +2,19 @@
 
 import { useMemosQuery } from '@extension/shared/hooks';
 import type { SearchParamViewType } from '@extension/shared/modules/search-params';
-import { useSearchParams } from '@extension/shared/modules/search-params';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@extension/ui';
-import { Input } from '@src/components/ui';
+
 import { useGuide } from '@src/modules/guide';
 import { LanguageType } from '@src/modules/i18n';
 import { getChoseong } from 'es-hangul';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+
 import { useTranslation } from 'react-i18next';
 
 import RefreshButton from '../Header/RefreshButton';
 import MemoCalendar from './MemoCalendar';
 import MemoGrid from './MemoGrid';
 import ToggleView from './ToggleView';
+import SearchForm from './SearchForm';
+import { useForm } from 'react-hook-form';
 
 interface MemoViewProps extends LanguageType {
   isWish?: string;
@@ -25,20 +23,21 @@ interface MemoViewProps extends LanguageType {
 }
 
 type SearchTargetType = 'all' | 'title' | 'memo';
-interface SearchFormValues {
+export interface SearchFormValues {
   searchQuery: string;
   searchTarget: SearchTargetType;
 }
 
 export default function MemoView({ lng, isWish = '', category = '', view = 'grid' }: MemoViewProps) {
   const { t } = useTranslation(lng);
-  const { register, watch, control } = useForm<SearchFormValues>({
+
+  const { memos } = useMemosQuery();
+  const { watch, control } = useForm<SearchFormValues>({
     defaultValues: {
       searchQuery: '',
       searchTarget: 'all',
     },
   });
-  const { memos } = useMemosQuery();
 
   useGuide({ lng });
 
@@ -75,30 +74,8 @@ export default function MemoView({ lng, isWish = '', category = '', view = 'grid
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-center gap-4">
-        <Input
-          type="text"
-          placeholder={t('memos.searchPlaceholder')}
-          className="max-w-sm"
-          {...register('searchQuery')}
-        />
-        <Controller
-          name="searchTarget"
-          control={control}
-          render={({ field }) => (
-            <Select onValueChange={field.onChange} value={field.value}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder={t('memos.searchTarget.all')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('memos.searchTarget.all')}</SelectItem>
-                <SelectItem value="title">{t('memos.searchTarget.title')}</SelectItem>
-                <SelectItem value="memo">{t('memos.searchTarget.memo')}</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-        />
-      </div>
+      <SearchForm lng={lng} control={control} />
+
       {view === 'calendar' ? (
         <MemoCalendar lng={lng} memos={filteredMemos} />
       ) : (

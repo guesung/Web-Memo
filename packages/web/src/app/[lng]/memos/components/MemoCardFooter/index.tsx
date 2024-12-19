@@ -15,6 +15,9 @@ import MemoOption from './MemoOption';
 
 import relativeTime from 'dayjs/plugin/relativeTime';
 
+import 'dayjs/locale/ko';
+import 'dayjs/locale/en';
+
 interface MemoCardFooterProps extends LanguageType, React.HTMLAttributes<HTMLDivElement>, PropsWithChildren {
   memo: GetMemoResponse;
   isOptionShown: boolean;

@@ -29,11 +29,6 @@ export default memo(function MemoItem({ lng, memo, isSelected, onSelect, isSelec
     const id = event.currentTarget.id;
     if (!id) return;
 
-    if (isSelecting) {
-      onSelect(event);
-      return;
-    }
-
     searchParams.set('id', id);
     router.push(searchParams.getUrl(), { scroll: false });
   };

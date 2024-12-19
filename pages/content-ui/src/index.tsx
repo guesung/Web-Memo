@@ -13,3 +13,9 @@ createRoot(root).render(<OpenSidePanelButton />);
 if (!isProduction) {
   ExtensionBridge.responsePageContent();
 }
+
+const cleanup = () => {
+  root.remove();
+};
+
+window.addEventListener('unload', cleanup);

@@ -15,10 +15,17 @@ interface MemoItemProps extends HTMLMotionProps<'article'>, LanguageType {
   memo: GetMemoResponse;
   isSelected: boolean;
   isSelecting: boolean;
-  onSelect: (e: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => void;
+  handleMemoItemSelect: (id: number) => void;
 }
 
-export default memo(function MemoItem({ lng, memo, isSelected, onSelect, isSelecting, ...props }: MemoItemProps) {
+export default memo(function MemoItem({
+  lng,
+  memo,
+  isSelected,
+  handleMemoItemSelect,
+  isSelecting,
+  ...props
+}: MemoItemProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseEnter = () => {
@@ -46,7 +53,7 @@ export default memo(function MemoItem({ lng, memo, isSelected, onSelect, isSelec
         })}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}>
-        <MemoCardHeader memo={memo} isHovered={isHovered} isSelected={isSelected} onSelect={onSelect} />
+        <MemoCardHeader memo={memo} isHovered={isHovered} isSelected={isSelected} onSelect={handleMemoItemSelect} />
         {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
         <MemoCardFooter memo={memo} lng={lng} isOptionShown={isHovered && !isSelecting} />
       </Card>

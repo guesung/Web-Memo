@@ -98,11 +98,8 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
     };
   }, [isDragging]);
 
-  const handleMemoItemSelect = (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
+  const handleMemoItemSelect = (id: number) => {
     if (isDragging) return;
-    event.stopPropagation();
-
-    const id = Number(event.currentTarget.id);
 
     if (isMemoSelected(id)) setSelectedMemos(prev => prev.filter(memo => memo.id !== id));
     else setSelectedMemos(prev => [...prev, memos.find(memo => memo.id === id)!]);
@@ -164,7 +161,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
                 memo={memos.at(item.key)!}
                 lng={lng}
                 isSelected={isMemoSelected(memos.at(item.key)!.id)}
-                onSelect={handleMemoItemSelect}
+                handleMemoItemSelect={handleMemoItemSelect}
                 onClick={handleMemoItemClick}
                 isSelecting={isAnyMemoSelected}
                 data-grid-groupkey={item.groupKey}

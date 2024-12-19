@@ -21,18 +21,6 @@ interface MemoItemProps extends HTMLMotionProps<'article'>, LanguageType {
 export default memo(function MemoItem({ lng, memo, isSelected, onSelect, isSelecting, ...props }: MemoItemProps) {
   const [isHovered, setIsHovered] = useState(false);
 
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  const handleItemClick = (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
-    event.stopPropagation();
-    const id = event.currentTarget.id;
-    if (!id) return;
-
-    searchParams.set('id', id);
-    router.push(searchParams.getUrl(), { scroll: false });
-  };
-
   const handleMouseEnter = () => {
     setIsHovered(true);
   };
@@ -49,8 +37,6 @@ export default memo(function MemoItem({ lng, memo, isSelected, onSelect, isSelec
       initial="initial"
       animate="animate"
       exit="exit"
-      onClick={handleItemClick}
-      onKeyDown={e => e.key === 'Enter' && handleItemClick(e)}
       className={cn('memo-item select-none', props.className)}
       tabIndex={0}
       {...props}>

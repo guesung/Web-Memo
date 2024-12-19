@@ -9,6 +9,9 @@ import { KeyboardEvent, MouseEvent, useCallback, useMemo, useState, useEffect } 
 
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
+import { DragBox } from '@src/components';
+import { useSearchParams } from '@extension/shared/modules/search-params';
+import { useRouter } from 'next/navigation';
 
 const MEMO_UNIT = 20;
 
@@ -41,7 +44,13 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
     setDragEnd({ x: e.clientX, y: e.clientY });
+    setSelectedMemos([]);
+    document.querySelectorAll('.memo-item').forEach(item => {
+      item.addEventListener('mousedown', e => e.stopPropagation());
+    });
   };
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     const handleMouseMove = (e: globalThis.MouseEvent) => {
@@ -68,12 +77,11 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         })
         .map(element => Number(element.id));
 
-      setSelectedMemos(prevSelectedMemos => [
-        ...prevSelectedMemos,
-        ...memos.filter(
-          memo => selectedIds.includes(memo.id) && !prevSelectedMemos.some(prevMemo => prevMemo.id === memo.id),
-        ),
-      ]);
+      setSelectedMemos(
+        memos.filter(memo => {
+          return selectedIds.includes(memo.id);
+        }),
+      );
     };
 
     const handleMouseUp = () => {
@@ -91,12 +99,25 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   }, [isDragging]);
 
   const handleMemoItemSelect = (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
+    if (isDragging) return;
     event.stopPropagation();
 
     const id = Number(event.currentTarget.id);
 
     if (isMemoSelected(id)) setSelectedMemos(prev => prev.filter(memo => memo.id !== id));
     else setSelectedMemos(prev => [...prev, memos.find(memo => memo.id === id)!]);
+  };
+
+  const handleMemoItemClick = (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
+    const id = Number(event.currentTarget.id);
+    if (event.metaKey) {
+      if (isMemoSelected(id)) setSelectedMemos(prev => prev.filter(memo => memo.id !== id));
+      else setSelectedMemos(prev => [...prev, memos.find(memo => memo.id === id)!]);
+      return;
+    }
+
+    searchParams.set('id', String(id));
+    router.push(searchParams.getUrl(), { scroll: false });
   };
 
   const closeMemoOption = () => {
@@ -107,21 +128,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
 
   return (
     <div className="relative h-full w-full" onMouseDown={handleMouseDown}>
-      {isDragging && (
-        <div
-          style={{
-            position: 'fixed',
-            left: Math.min(dragStart.x, dragEnd.x),
-            top: Math.min(dragStart.y, dragEnd.y),
-            width: Math.abs(dragEnd.x - dragStart.x),
-            height: Math.abs(dragEnd.y - dragStart.y),
-            backgroundColor: 'rgba(66, 153, 225, 0.2)',
-            border: '1px solid rgba(66, 153, 225, 0.5)',
-            pointerEvents: 'none',
-            zIndex: 1000,
-          }}
-        />
-      )}
+      {isDragging && <DragBox dragStart={dragStart} dragEnd={dragEnd} />}
       <AnimatePresence>
         {isAnyMemoSelected && (
           <MemoOptionHeader
@@ -158,6 +165,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
                 lng={lng}
                 isSelected={isMemoSelected(memos.at(item.key)!.id)}
                 onSelect={handleMemoItemSelect}
+                onClick={handleMemoItemClick}
                 isSelecting={isAnyMemoSelected}
                 data-grid-groupkey={item.groupKey}
               />

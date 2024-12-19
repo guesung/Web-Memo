@@ -41,12 +41,10 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
     setDragEnd({ x: e.clientX, y: e.clientY });
-    // setSelectedMemos([]);
   };
 
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      if (isAnyMemoSelected) return;
+  useEffect(() => {
+    const handleMouseMove = (e: globalThis.MouseEvent) => {
       if (!isDragging) return;
       setDragEnd({ x: e.clientX, y: e.clientY });
 
@@ -62,27 +60,23 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
 
       memoElements.forEach(element => {
         const rect = element.getBoundingClientRect();
-        if (
+        const isMemoItemInSelectionArea =
           rect.left < selectionArea.right &&
           rect.right > selectionArea.left &&
           rect.top < selectionArea.bottom &&
-          rect.bottom > selectionArea.top
-        ) {
-          const id = Number(element.id);
-          selectedIds.push(id);
+          rect.bottom > selectionArea.top;
+
+        if (isMemoItemInSelectionArea) {
+          selectedIds.push(Number(element.id));
         }
       });
 
       setSelectedMemos(memos.filter(memo => selectedIds.includes(memo.id)));
-    },
-    [isDragging, dragStart, memos],
-  );
+    };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  useEffect(() => {
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
@@ -91,7 +85,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, handleMouseMove]);
+  }, [isDragging]);
 
   const handleMemoItemSelect = (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
     event.stopPropagation();

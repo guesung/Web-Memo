@@ -16,12 +16,15 @@ if [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   echo "태그 v$1 생성 중..."
   if ! git tag -f "v$1"; then
     echo "태그 생성 실패"
+    git reset HEAD^
     exit 1
   fi
 
   echo "태그를 원격 저장소에 푸시 중..."
   if ! git push -f origin "v$1"; then
     echo "태그 푸시 실패"
+    git tag -d "v$1"
+    git reset HEAD^
     exit 1
   fi
 else

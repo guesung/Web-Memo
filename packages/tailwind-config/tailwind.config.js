@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
   theme: {
     extend: {

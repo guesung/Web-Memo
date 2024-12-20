@@ -1,18 +1,25 @@
 import { Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@src/components/ui';
 import { useLanguage } from '@src/hooks';
-import { LanguageType } from '@src/modules/i18n';
+import { Language, LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
+import { useRouter } from 'next/navigation';
 
 interface SettingLanguageProps extends LanguageType {}
 
 export default function SettingLanguage({ lng }: SettingLanguageProps) {
   const { t } = useTranslation(lng);
   const { language, setLanguageRouter } = useLanguage();
+  const router = useRouter();
+
+  const handleChangeLanguage = (value: Language) => {
+    setLanguageRouter(value);
+    router.refresh();
+  };
 
   return (
     <div className="grid grid-cols-12">
       <Label className="col-span-4 grid place-items-center">{t('setting.language')}</Label>
-      <Select onValueChange={setLanguageRouter} value={language} aria-label={t('setting.selectLanguage')}>
+      <Select onValueChange={handleChangeLanguage} value={language} aria-label={t('setting.selectLanguage')}>
         <SelectTrigger className="w-[180px]">
           <SelectValue />
         </SelectTrigger>

@@ -110,14 +110,17 @@ export default function MemoOption({ lng, memos, closeMemoOption }: MemoOptionPr
 
   return (
     <DropdownMenu onOpenChange={setIsOpen} open={isOpen} modal={false}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" onClick={e => e.stopPropagation()}>
+      <DropdownMenuTrigger asChild onMouseDown={e => e.stopPropagation()}>
+        <Button variant="ghost" size="icon">
           <EllipsisVerticalIcon size={16} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={handleDeleteMemo} className="cursor-pointer">
+          <DropdownMenuItem
+            onClick={handleDeleteMemo}
+            className="cursor-pointer"
+            onMouseDown={e => e.stopPropagation()}>
             {t('option.deleteMemo')}
           </DropdownMenuItem>
           <DropdownMenuItem>
@@ -132,7 +135,8 @@ export default function MemoOption({ lng, memos, closeMemoOption }: MemoOptionPr
                       key={category.id}
                       value={String(category.id)}
                       id={String(category.id)}
-                      className="cursor-pointer">
+                      className="cursor-pointer"
+                      onMouseDown={e => e.stopPropagation()}>
                       {category.name}
                     </SelectItem>
                   ))}

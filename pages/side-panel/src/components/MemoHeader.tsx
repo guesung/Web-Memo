@@ -1,6 +1,7 @@
 import { useDidMount, useMemoQuery } from '@extension/shared/hooks';
 import { useTabQuery } from '@extension/shared/hooks/extension';
-import { I18n, responseUpdateSidePanel, Tab } from '@extension/shared/utils/extension';
+import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
+import { I18n, Tab } from '@extension/shared/utils/extension';
 import { getMemoUrl } from '@src/utils';
 import { ExternalLinkIcon } from 'lucide-react';
 
@@ -15,7 +16,7 @@ export default function MemoHeader() {
   };
 
   useDidMount(() =>
-    responseUpdateSidePanel(() => {
+    ExtensionBridge.responseUpdateSidePanel(() => {
       refetchTab();
     }),
   );

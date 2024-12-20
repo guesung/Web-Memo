@@ -1,5 +1,5 @@
-import { STORAGE_KEYS } from '@extension/shared/constants';
-import { I18n, Storage } from '@extension/shared/utils/extension';
+import { ChromeSyncStorage, STORAGE_KEYS } from '@extension/shared/modules/chrome-storage';
+import { I18n } from '@extension/shared/utils/extension';
 import {
   Button,
   Select,
@@ -25,9 +25,9 @@ export default function Option() {
   });
 
   const onSubmit = handleSubmit(async data => {
-    await Storage.set(STORAGE_KEYS.youtubePrompts, data.youtubePrompt);
-    await Storage.set(STORAGE_KEYS.webPrompts, data.webPrompt);
-    await Storage.set(STORAGE_KEYS.language, data.language);
+    await ChromeSyncStorage.set(STORAGE_KEYS.youtubePrompts, data.youtubePrompt);
+    await ChromeSyncStorage.set(STORAGE_KEYS.webPrompts, data.webPrompt);
+    await ChromeSyncStorage.set(STORAGE_KEYS.language, data.language);
 
     toast({
       title: I18n.get('settings_saved'),
@@ -36,9 +36,9 @@ export default function Option() {
 
   useEffect(() => {
     const fetchStorage = async () => {
-      const language = await Storage.get<string>(STORAGE_KEYS.language);
-      const youtubePrompts = await Storage.get<string>(STORAGE_KEYS.youtubePrompts);
-      const webPrompts = await Storage.get<string>(STORAGE_KEYS.webPrompts);
+      const language = await ChromeSyncStorage.get<string>(STORAGE_KEYS.language);
+      const youtubePrompts = await ChromeSyncStorage.get<string>(STORAGE_KEYS.youtubePrompts);
+      const webPrompts = await ChromeSyncStorage.get<string>(STORAGE_KEYS.webPrompts);
 
       setValue('language', language);
       setValue('youtubePrompt', youtubePrompts);

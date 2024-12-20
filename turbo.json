@@ -19,8 +19,8 @@
         "WEB_URL",
         "NODE_ENV"
       ],
-      "persistent": true,
-      "inputs": [".env"]
+      "inputs": [".env"],
+      "persistent": true
     },
     "build": {
       "dependsOn": ["^build", "ready"],

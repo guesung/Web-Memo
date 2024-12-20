@@ -33,3 +33,6 @@ vite.config.**
 # next
 .next
 .vercel
+
+# Turborepo
+.turbo

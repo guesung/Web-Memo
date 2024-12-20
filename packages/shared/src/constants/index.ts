@@ -7,6 +7,5 @@ export * from './MotionVariants';
 export * from './Path';
 export * from './Prompt';
 export * from './QueryKey';
-export * from './Storage';
 export * from './Supabase';
 export * from './Url';

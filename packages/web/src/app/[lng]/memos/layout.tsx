@@ -19,22 +19,17 @@ export default async function Layout({ children, params: { lng } }: LayoutProps)
   if (!isUserLogin) redirect(PATHS.login);
 
   return (
-    <div>
-      <Header.Margin />
-      <div className="bg-background flex w-full p-4 text-sm">
-        <SidebarProvider>
-          <HydrationBoundaryWrapper
-            queryKey={QUERY_KEY.category()}
-            queryFn={() => new CategoryService(supabaseClient).getCategories()}>
-            <Suspense fallback={<Loading />}>
-              <MemoSidebar lng={lng} />
-            </Suspense>
-          </HydrationBoundaryWrapper>
-          {children}
-        </SidebarProvider>
+    <SidebarProvider className="bg-background flex w-full text-sm">
+      <HydrationBoundaryWrapper
+        queryKey={QUERY_KEY.category()}
+        queryFn={() => new CategoryService(supabaseClient).getCategories()}>
+        <Suspense fallback={<Loading />}>
+          <MemoSidebar lng={lng} />
+        </Suspense>
+      </HydrationBoundaryWrapper>
+      {children}
 
-        {/* <ExtensionDialog lng={lng} /> */}
-      </div>
-    </div>
+      {/* <ExtensionDialog lng={lng} /> */}
+    </SidebarProvider>
   );
 }

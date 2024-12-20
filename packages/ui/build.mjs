@@ -1,10 +1,12 @@
+import { resolve } from 'node:path';
+
+import { exec } from 'child_process';
 import * as esbuild from 'esbuild';
 import * as fs from 'fs';
-import { resolve } from 'node:path';
-import { promisify } from 'util';
-import { exec } from 'child_process';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { promisify } from 'util';
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
@@ -35,6 +37,8 @@ const buildOptions = {
 };
 
 const build = async () => {
+  const startTime = performance.now();
+
   console.log('🚀 빌드 프로세스 시작...');
 
   try {
@@ -47,6 +51,10 @@ const build = async () => {
     const execAsync = promisify(exec);
     await execAsync('tsc --emitDeclarationOnly --outDir dist');
     console.log('✅ TypeScript 선언 파일 생성 완료');
+
+    const endTime = performance.now();
+    const buildTime = (endTime - startTime) / 1000;
+    console.log(`🕒 총 빌드 시간: ${buildTime.toFixed(2)}초`);
   } catch (error) {
     console.error('❌ 빌드 중 오류 발생:', error);
     throw error;

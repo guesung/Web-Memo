@@ -2,6 +2,8 @@ export const SUPABASE = {
   authToken: 'sb-czwtqukymcqoberdoltq-auth-token',
   testEmail: 'test@test.com',
   testPassword: 'abcd1234',
-  schemaMemo: 'memo',
-  schemaCategory: 'category',
+  table: {
+    memo: 'memo',
+    category: 'category',
+  },
 } as const;

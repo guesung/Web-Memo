@@ -1,7 +1,7 @@
 import 'driver.js/dist/driver.css';
 
+import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { checkLocalStorageTrue, setLocalStorageTrue } from '@extension/shared/modules/local-storage';
-import { requestGetSidePanelOpen } from '@extension/shared/utils/extension';
 import { useGetExtensionManifest } from '@src/hooks';
 import { isMac } from '@src/utils';
 import { driver } from 'driver.js';
@@ -31,7 +31,7 @@ export default function useGuide({ lng }: UseGuideProps) {
             description: t('guide.welcome.description', { key: isMac ? 'Option' : 'Alt' }),
             onPopoverRender: () => {
               const interval = setInterval(() => {
-                requestGetSidePanelOpen(() => {
+                ExtensionBridge.requestGetSidePanelOpen(() => {
                   if (driverObj.getActiveIndex() !== 0) return;
                   driverObj.moveNext();
                 });

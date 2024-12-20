@@ -34,7 +34,6 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
         <ThemeProvider>
           <QueryProvider lng={lng}>
             <Header lng={lng} />
-
             {children}
           </QueryProvider>
         </ThemeProvider>

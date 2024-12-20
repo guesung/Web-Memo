@@ -110,8 +110,8 @@ export default function MemoOption({ lng, memos, closeMemoOption }: MemoOptionPr
 
   return (
     <DropdownMenu onOpenChange={setIsOpen} open={isOpen} modal={false}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" onClick={e => e.stopPropagation()}>
+      <DropdownMenuTrigger asChild onMouseDown={e => e.stopPropagation()}>
+        <Button variant="ghost" size="icon">
           <EllipsisVerticalIcon size={16} />
         </Button>
       </DropdownMenuTrigger>

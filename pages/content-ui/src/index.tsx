@@ -4,18 +4,17 @@ import { createRoot } from 'react-dom/client';
 
 import { OpenSidePanelButton } from './components';
 
-const root = document.createElement('div');
-root.id = 'page-summary-content-ui';
-document.body.appendChild(root);
+import { attachShadowTree } from './utils';
 
-createRoot(root).render(<OpenSidePanelButton />);
+const renderOpenSidePanelButton = async () => {
+  if (isProduction) return;
 
-if (!isProduction) {
-  ExtensionBridge.responsePageContent();
-}
-
-const cleanup = () => {
-  root.remove();
+  attachShadowTree({
+    shadowHostId: 'OPEN_SIDE_PANEL',
+    shadowTree: <OpenSidePanelButton />,
+  });
 };
 
-window.addEventListener('unload', cleanup);
+ExtensionBridge.responsePageContent();
+
+renderOpenSidePanelButton();

@@ -36,6 +36,14 @@
   "updates": {
     "title": "Update Log",
     "versions": {
+      "v1.8.0": {
+        "title": "Search Features",
+        "content": [
+          "Added memos search features",
+          "Added drag selection feature for memos",
+          "Added memo creation time display"
+        ]
+      },
       "v1.7.1": {
         "title": "Enhanced YouTube Features",
         "content": ["Added YouTube script-based features", "Added summary modification features"]

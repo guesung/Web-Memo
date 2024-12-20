@@ -33,7 +33,7 @@ jobs:
       - name: Upload Extension
         uses: actions/upload-artifact@v4
         with:
-          name: extension
+          name: ${{ github.ref_name }}
           path: dist-zip/extension.zip
 
   upload-extension:

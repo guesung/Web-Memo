@@ -69,13 +69,5 @@ export default function useGuide({ lng }: UseGuideProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [manifest]);
 
-  useEffect(() => {
-    if (!checkLocalStorageTrue('guide')) {
-      ExtensionBridge.requestGetSidePanelOpen(() => {
-        setLocalStorageTrue('guide');
-      });
-    }
-  }, []);
-
   return { driverObj };
 }

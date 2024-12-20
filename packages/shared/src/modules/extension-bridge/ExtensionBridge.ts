@@ -10,7 +10,9 @@ export default class ExtensionBridge {
   }
 
   static responseGetSidePanelOpen() {
-    Runtime.onMessageExternal(BRIDGE_MESSAGE_TYPES.GET_SIDE_PANEL_OPEN, (_, __, sendResponse) => sendResponse);
+    Runtime.onMessageExternal(BRIDGE_MESSAGE_TYPES.GET_SIDE_PANEL_OPEN, (_, __, sendResponse) => {
+      sendResponse(true);
+    });
   }
 
   static requestOpenSidePanel() {

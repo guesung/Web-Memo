@@ -36,7 +36,7 @@ export default memo(function MemoItem({
       initial="initial"
       animate="animate"
       exit="exit"
-      className={cn('memo-item select-none', props.className)}
+      className={cn('memo-item select-none transition-all', props.className)}
       tabIndex={0}
       {...props}>
       <Card

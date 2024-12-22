@@ -3,7 +3,7 @@
    <h1>웹 메모</h1>
    <p>웹 페이지를 읽으며 간편하게 기록하세요</p>
    <div>
-      <img src="https://github.com/user-attachments/assets/f4001fa8-27e8-44bf-b5d8-0cb2c35b2949" alt="Demo1" />
+      <img width="1533" alt="image" src="https://github.com/user-attachments/assets/3efac82f-d7eb-457c-a092-7472d9628b1c" />
    </div>
    <br />
 </div>

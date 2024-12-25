@@ -50,7 +50,9 @@ export default function MemoOption({ lng, memos, closeMemoOption }: MemoOptionPr
     mutateDeleteMemo(
       memos.map(memo => memo.id),
       {
-        onSuccess: () => {
+        onSuccess: async () => {
+          await ExtensionBridge.requestRefetchTheMemos();
+
           const handleToastActionClick = () => {
             mutateUpsertMemo(memos, {
               onSuccess: async () => {

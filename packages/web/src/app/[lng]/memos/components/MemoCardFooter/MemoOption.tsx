@@ -53,9 +53,9 @@ export default function MemoOption({ lng, memos, closeMemoOption }: MemoOptionPr
         onSuccess: () => {
           const handleToastActionClick = () => {
             mutateUpsertMemo(memos, {
-              onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
-                ExtensionBridge.requestRefetchTheMemos();
+              onSuccess: async () => {
+                await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+                await ExtensionBridge.requestRefetchTheMemos();
               },
             });
           };

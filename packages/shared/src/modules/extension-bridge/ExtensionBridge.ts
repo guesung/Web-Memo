@@ -7,7 +7,7 @@ import { ExtensionError, ExtensionErrorCode, PageContent } from './types';
 export default class ExtensionBridge {
   static async requestGetSidePanelOpen(callbackFn: () => void) {
     try {
-      await chrome.runtime.sendMessage(
+      chrome.runtime.sendMessage(
         EXTENSION.id,
         {
           type: BRIDGE_MESSAGE_TYPES.GET_SIDE_PANEL_OPEN,

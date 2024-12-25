@@ -17,6 +17,10 @@ export default function Header() {
 
   const categoryText = getCategoryText(category);
 
+  const handleRefreshClick = () => {
+    refetchSummary();
+  };
+
   const handleOptionClick = () => {
     chrome.runtime.openOptionsPage();
   };
@@ -35,7 +39,7 @@ export default function Header() {
             <Loading />
           </Button>
         ) : (
-          <Button variant="outline" size="sm" onClick={refetchSummary}>
+          <Button variant="outline" size="sm" onClick={handleRefreshClick}>
             <RefreshCwIcon size={16} />
           </Button>
         )}

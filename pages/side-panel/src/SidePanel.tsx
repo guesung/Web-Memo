@@ -28,9 +28,7 @@ export default function SidePanel() {
           </ErrorBoundary>
         </section>
         <section className="flex h-1/2 flex-col">
-          <ErrorBoundary>
-            <MemoHeader />
-          </ErrorBoundary>
+          <MemoHeader />
           <ErrorBoundary FallbackComponent={LoginSection}>
             <Suspense fallback={<Loading />}>
               <MemoForm />

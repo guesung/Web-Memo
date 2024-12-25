@@ -3,7 +3,7 @@ import { useTabQuery } from '@extension/shared/hooks/extension';
 import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { delay } from '@extension/shared/utils';
 import { I18n, Tab } from '@extension/shared/utils/extension';
-import { Skeleton } from '@extension/ui';
+import { ErrorBoundary, Skeleton } from '@extension/ui';
 import { getMemoUrl } from '@src/utils';
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { ExternalLinkIcon } from 'lucide-react';
@@ -14,14 +14,18 @@ export default function MemoHeader() {
     <div className="flex items-center">
       <div className="flex items-center gap-1">
         <span className="whitespace-nowrap font-bold">{I18n.get('memo')}</span>
-        <Suspense fallback={<ExternalLinkIcon size={16} />}>
-          <MemoLink />
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={<ExternalLinkIcon size={16} />}>
+            <MemoLink />
+          </Suspense>
+        </ErrorBoundary>
       </div>
       <span className="w-4" />
-      <Suspense fallback={<Skeleton className="ml-auto h-full w-32" />}>
-        <TabTitle />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<Skeleton className="ml-auto h-full w-32" />}>
+          <TabTitle />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }

@@ -5,14 +5,17 @@ import { getLanguage, languages } from './modules/i18n';
 import { updateSession } from './modules/supabase';
 
 export async function middleware(request: NextRequest) {
-  const isLanguagePath = languages.some(lng => request.nextUrl.pathname.startsWith(`/${lng}`));
-  const isAuthPath = request.nextUrl.pathname.startsWith(PATHS.auth);
+  const pathname = request.nextUrl.pathname;
+
+  // locale
+  const isLanguagePath = languages.some(lng => pathname.startsWith(`/${lng}`));
+  const isAuthPath = pathname.startsWith(PATHS.auth);
 
   const language = getLanguage(request);
 
   if (!isLanguagePath && !isAuthPath)
     return NextResponse.redirect(
-      new URL(`/${language}${request.nextUrl.pathname}${request.nextUrl.search}${request.nextUrl.hash}`, request.url),
+      new URL(`/${language}${pathname}${request.nextUrl.search}${request.nextUrl.hash}`, request.url),
     );
 
   return await updateSession(request);

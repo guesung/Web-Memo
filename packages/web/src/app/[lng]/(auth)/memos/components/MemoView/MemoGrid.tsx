@@ -34,24 +34,24 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
 
   const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
 
-  const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT, memos));
+  const [gridMemoItems, setGridMemoItemsItems] = useState(() => getMemoItems(0, MEMO_UNIT, memos));
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
   const [hoveredMemoId, setHoveredMemoId] = useState<number[] | null>(null);
 
   const checkMemoSelected = useCallback((id: number) => selectedMemoIds.includes(id), [selectedMemoIds]);
   const isAnyMemoSelected = useMemo(() => selectedMemoIds.length > 0, [selectedMemoIds]);
 
-  const handleMemoItemSelect = useCallback((id: number) => {
+  const selectMemoItem = useCallback((id: number) => {
     if (isDragging) return;
 
     if (checkMemoSelected(id)) setSelectedMemoIds(prevMemoIds => prevMemoIds.filter(prevMemo => prevMemo !== id));
     else setSelectedMemoIds(prevMemoIds => [...prevMemoIds, id]);
   }, []);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handleMouseDown = (event: React.MouseEvent) => {
     setIsDragging(true);
-    setDragStart({ x: e.clientX, y: e.clientY });
-    setDragEnd({ x: e.clientX, y: e.clientY });
+    setDragStart({ x: event.clientX, y: event.clientY });
+    setDragEnd({ x: event.clientX, y: event.clientY });
   };
 
   useEffect(() => {
@@ -100,9 +100,8 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
     event.stopPropagation();
     const id = event.currentTarget.id;
 
-    if (isAnyMemoSelected) {
-      handleMemoItemSelect(Number(id));
-    } else {
+    if (isAnyMemoSelected) selectMemoItem(Number(id));
+    else {
       searchParams.set('id', id);
       router.push(searchParams.getUrl(), { scroll: false });
     }
@@ -113,14 +112,15 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   };
 
   const handleGridRequestAppend = ({ groupKey }: any) => {
-    if (items.length >= memos.length) return;
+    if (gridMemoItems.length >= memos.length) return;
 
     const nextGroupKey = (+groupKey || 0) + 1;
-    const maxAddItem = items.length + MEMO_UNIT > memos.length ? memos.length - items.length : MEMO_UNIT;
+    const maxAddItem =
+      gridMemoItems.length + MEMO_UNIT > memos.length ? memos.length - gridMemoItems.length : MEMO_UNIT;
 
     if (maxAddItem === 0) return;
 
-    setItems([...items, ...getMemoItems(nextGroupKey, maxAddItem, memos)]);
+    setGridMemoItemsItems([...gridMemoItems, ...getMemoItems(nextGroupKey, maxAddItem, memos)]);
   };
 
   useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
@@ -146,18 +146,18 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         observeChildren
         autoResize
         onRequestAppend={handleGridRequestAppend}>
-        {items.map(
+        {gridMemoItems.map(
           ({ groupKey, memo, key }) =>
             memo && (
               <MemoItem
+                lng={lng}
                 data-grid-groupkey={groupKey}
                 key={key + gridKey}
                 memo={memo}
-                lng={lng}
                 isSelected={checkMemoSelected(memo.id)}
                 isHovered={hoveredMemoId === memo.id}
+                selectMemoItem={selectMemoItem}
                 onMouseDown={handleMemoItemMouseDown}
-                handleMemoItemSelect={handleMemoItemSelect}
                 onMouseEnter={() => setHoveredMemoId(memo.id)}
                 onMouseLeave={() => setHoveredMemoId(null)}
                 isSelecting={isAnyMemoSelected}

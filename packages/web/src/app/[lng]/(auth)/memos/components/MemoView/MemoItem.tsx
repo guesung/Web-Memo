@@ -1,34 +1,31 @@
 import { MOTION_VARIANTS } from '@extension/shared/constants';
-import { useSearchParams } from '@extension/shared/modules/search-params';
 import { GetMemoResponse } from '@extension/shared/types';
 import { cn } from '@extension/shared/utils';
 import { Card, CardContent } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import { HTMLMotionProps, motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import { KeyboardEvent, memo, MouseEvent, useState } from 'react';
+import { memo } from 'react';
 
 import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
 
 interface MemoItemProps extends HTMLMotionProps<'article'>, LanguageType {
   memo: GetMemoResponse;
-  isSelected: boolean;
   isSelecting: boolean;
+  selectMemoItem: (id: number) => void;
+  isSelected: boolean;
   isHovered: boolean;
-  handleMemoItemSelect: (id: number) => void;
 }
 
 export default memo(function MemoItem({
   lng,
   memo,
-  isSelected,
-  handleMemoItemSelect,
+  selectMemoItem,
   isSelecting,
+  isSelected,
   isHovered,
   ...props
 }: MemoItemProps) {
-  if (!memo) return null;
   return (
     <motion.article
       id={String(memo.id)}
@@ -43,9 +40,9 @@ export default memo(function MemoItem({
         className={cn('relative box-content w-[300px] transition-all', {
           'border-primary cursor-pointer': isSelected,
         })}>
-        <MemoCardHeader memo={memo} isHovered={isHovered} isSelected={isSelected} onSelect={handleMemoItemSelect} />
+        <MemoCardHeader memo={memo} isHovered={isHovered} isSelected={isSelected} selectMemoItem={selectMemoItem} />
         {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
-        <MemoCardFooter memo={memo} lng={lng} isOptionShown={isHovered && !isSelecting} />
+        <MemoCardFooter memo={memo} lng={lng} isHovered={isHovered} isSelecting={isSelecting} />
       </Card>
     </motion.article>
   );

@@ -45,11 +45,8 @@ export default function MemoView({ lng, isWish = '', category = '', view = 'grid
         </div>
       </div>
 
-      {view === 'calendar' ? (
-        <MemoCalendar lng={lng} memos={memos} />
-      ) : (
-        <MemoGrid memos={memos} gridKey={category + isWish} lng={lng} />
-      )}
+      {view === 'grid' && <MemoGrid memos={memos} gridKey={category + isWish} lng={lng} />}
+      {view === 'calendar' && <MemoCalendar lng={lng} memos={memos} />}
     </div>
   );
 }

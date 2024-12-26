@@ -36,7 +36,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
 
   const [gridMemoItems, setGridMemoItemsItems] = useState(() => getMemoItems(0, MEMO_UNIT, memos));
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
-  const [hoveredMemoId, setHoveredMemoId] = useState<number[] | null>(null);
+  const [hoveredMemoId, setHoveredMemoId] = useState<number | null>(null);
 
   const checkMemoSelected = useCallback((id: number) => selectedMemoIds.includes(id), [selectedMemoIds]);
   const isAnyMemoSelected = useMemo(() => selectedMemoIds.length > 0, [selectedMemoIds]);

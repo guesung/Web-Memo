@@ -21,8 +21,8 @@ export default function RefreshButton({ lng }: RefreshButtonProps) {
     setLocalStorageTrue('guide');
 
     await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
-    await ExtensionBridge.requestRefetchTheMemos();
     toast({ title: t('toastTitle.refresh') });
+    await ExtensionBridge.requestRefetchTheMemos();
   };
 
   return (

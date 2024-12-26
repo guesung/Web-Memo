@@ -1,18 +1,17 @@
-import { LanguageType } from '@src/modules/i18n';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { Control, Controller, useForm } from 'react-hook-form';
-import { useSearchParams } from '@extension/shared/modules/search-params';
+'use client';
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@extension/ui';
 import { Input } from '@src/components/ui';
+import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
+import { Control, Controller, useFormContext } from 'react-hook-form';
 import { SearchFormValues } from '../SearchFormProvider';
 
-interface SearchFormProps extends LanguageType {
-  control: Control<SearchFormValues, any>;
-}
-export default function SearchForm({ lng, control }: SearchFormProps) {
+interface SearchFormProps extends LanguageType {}
+
+export default function SearchForm({ lng }: SearchFormProps) {
   const { t } = useTranslation(lng);
+  const { control } = useFormContext<SearchFormValues>();
 
   return (
     <form className="flex items-center justify-center gap-4" onSubmit={e => e.preventDefault()}>

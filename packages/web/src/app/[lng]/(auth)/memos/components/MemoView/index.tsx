@@ -8,13 +8,12 @@ import { LanguageType } from '@src/modules/i18n';
 
 import { useTranslation } from 'react-i18next';
 
+import { useFormContext } from 'react-hook-form';
 import RefreshButton from '../Header/RefreshButton';
+import { SearchFormValues } from '../SearchFormProvider';
 import MemoCalendar from './MemoCalendar';
 import MemoGrid from './MemoGrid';
 import ToggleView from './ToggleView';
-import SearchForm from './SearchForm';
-import { useForm, useFormContext } from 'react-hook-form';
-import { SearchFormValues } from '../SearchFormProvider';
 
 interface MemoViewProps extends LanguageType {
   isWish?: string;
@@ -24,16 +23,12 @@ interface MemoViewProps extends LanguageType {
 
 export default function MemoView({ lng, isWish = '', category = '', view = 'grid' }: MemoViewProps) {
   const { t } = useTranslation(lng);
-
-  const { watch, control } = useFormContext<SearchFormValues>();
-  const searchQuery = watch('searchQuery');
-  const searchTarget = watch('searchTarget');
-
+  const { watch } = useFormContext<SearchFormValues>();
   const { memos } = useMemosQuery({
     category,
     isWish,
-    searchQuery,
-    searchTarget,
+    searchQuery: watch('searchQuery'),
+    searchTarget: watch('searchTarget'),
   });
 
   useGuide({ lng });
@@ -42,17 +37,13 @@ export default function MemoView({ lng, isWish = '', category = '', view = 'grid
     <div className="flex w-full flex-col gap-4">
       <div className="flex items-center">
         <div className="flex w-full items-center justify-between">
-          <p className="text-muted-foreground text-sm">
-            {category && `${category} | `}
-            {t('memos.totalMemos', { total: memos.length })}
-          </p>
+          <p className="text-muted-foreground text-sm">{t('memos.totalMemos', { total: memos.length })}</p>
           <div className="flex">
             <RefreshButton lng={lng} />
             <ToggleView lng={lng} />
           </div>
         </div>
       </div>
-      <SearchForm lng={lng} control={control} />
 
       {view === 'calendar' ? (
         <MemoCalendar lng={lng} memos={memos} />

@@ -1,5 +1,4 @@
 export { default as Header } from '../app/[lng]/(auth)/memos/components/Header';
-export { default as Footer } from './Footer';
 export { default as HydrationBoundaryWrapper } from './HydrationBoundaryWrapper';
 export { default as QueryProvider } from './QueryProvider';
 export { default as ThemeProvider } from './ThemeProvider';

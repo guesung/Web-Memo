@@ -112,9 +112,5 @@
     ]
   },
   "packageManager": "pnpm@9.5.0",
-  "engines": {
-    "node": "20.17.0",
-    "pnpm": ">=8.14.0"
-  },
   "sideEffects": false
 }

@@ -7,6 +7,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
@@ -41,17 +42,17 @@ async function HeaderLeft({ lng }: LanguageType) {
       <Link href={PATHS.introduce} className="text-muted-foreground hover:text-foreground text-sm transition-colors">
         {t('header.introduce')}
       </Link>
-      <Link href={PATHS.updates} className="text-muted-foreground hover:text-foreground text-sm transition-colors">
-        {t('header.updateLog')}
+      <Link href={PATHS.update} className="text-muted-foreground hover:text-foreground text-sm transition-colors">
+        {t('header.update')}
       </Link>
     </div>
   );
 }
 
 async function HeaderRight({ lng }: LanguageType) {
+  const { t } = await useTranslation(lng);
   const supabaseClient = getSupabaseClient();
   const user = await new AuthService(supabaseClient).getUser();
-  const { t } = await useTranslation(lng);
 
   const isUserLogin = await new AuthService(supabaseClient).checkUserLogin();
 

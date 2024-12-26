@@ -6,8 +6,9 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import useSupabaseClientQuery from './useSupabaseClientQuery';
 import { MemoRow } from '@src/types';
 
-type QueryData = Awaited<ReturnType<MemoService['getMemos']>>;
+type QueryFnData = Awaited<ReturnType<MemoService['getMemos']>>;
 type QueryError = Error;
+type QueryData = MemoRow[];
 
 interface UseMemosQueryProps {
   category?: string;
@@ -16,11 +17,11 @@ interface UseMemosQueryProps {
   searchTarget?: string;
 }
 
-export default function useMemosQuery({ category, isWish, searchQuery, searchTarget }: UseMemosQueryProps) {
+export default function useMemosQuery({ category, isWish, searchQuery, searchTarget }: UseMemosQueryProps = {}) {
   const { data: supabaseClient } = useSupabaseClientQuery();
   const searchQueryLower = searchQuery?.toLowerCase();
 
-  const query = useSuspenseQuery<QueryData, QueryError, MemoRow[]>({
+  const query = useSuspenseQuery<QueryFnData, QueryError, QueryData>({
     queryFn: new MemoService(supabaseClient).getMemos,
     select: ({ data: memos }) => {
       return (

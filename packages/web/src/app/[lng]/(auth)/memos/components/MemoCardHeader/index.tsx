@@ -8,24 +8,27 @@ import { KeyboardEvent, MouseEvent } from 'react';
 
 interface MemoCardHeaderProps {
   memo: GetMemoResponse;
-  onSelect?: (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => void;
+  onSelect?: (id: number) => void;
   tooltip?: boolean;
   isHovered?: boolean;
   isSelected?: boolean;
 }
 
-export default function MemoCardHeader({ memo, isHovered, isSelected, onSelect }: MemoCardHeaderProps) {
+export default function MemoCardHeader({ memo, onSelect, isHovered, isSelected }: MemoCardHeaderProps) {
+  const handleMemoSelect = () => {
+    onSelect?.(memo.id);
+  };
+
   return (
     <CardHeader className="relative py-4 font-normal">
       <Button
-        id={String(memo.id)}
         variant="outline"
         size="sm"
         className={cn('absolute -left-4 -top-4 z-10 rounded-full px-2', {
           'opacity-100': isHovered || isSelected,
           'opacity-0': !isHovered && !isSelected,
         })}
-        onClick={onSelect}
+        onClick={handleMemoSelect}
         onMouseDown={e => e.stopPropagation()}>
         <CheckIcon size={8} />
       </Button>

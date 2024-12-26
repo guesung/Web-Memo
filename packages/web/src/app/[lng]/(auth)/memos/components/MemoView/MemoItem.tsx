@@ -16,7 +16,7 @@ interface MemoItemProps extends HTMLMotionProps<'article'>, LanguageType {
   isSelected: boolean;
   isSelecting: boolean;
   isHovered: boolean;
-  handleMemoItemSelect: (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => void;
+  handleMemoItemSelect: (id: number) => void;
 }
 
 export default memo(function MemoItem({

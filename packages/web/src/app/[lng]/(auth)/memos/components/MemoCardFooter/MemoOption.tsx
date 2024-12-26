@@ -1,5 +1,10 @@
 import { QUERY_KEY } from '@extension/shared/constants';
-import { useCategoryQuery, useDeleteMemosMutation, useMemosUpsertMutation } from '@extension/shared/hooks';
+import {
+  useCategoryQuery,
+  useDeleteMemosMutation,
+  useMemosQuery,
+  useMemosUpsertMutation,
+} from '@extension/shared/hooks';
 import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { MemoRow } from '@extension/shared/types';
@@ -28,11 +33,11 @@ import { useRouter } from 'next/navigation';
 import { MouseEvent, useState } from 'react';
 
 interface MemoOptionProps extends LanguageType {
-  memos: MemoRow[];
+  memoIds: number[];
   closeMemoOption?: () => void;
 }
 
-export default function MemoOption({ lng, memos, closeMemoOption }: MemoOptionProps) {
+export default function MemoOption({ lng, memoIds = [], closeMemoOption }: MemoOptionProps) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -42,19 +47,24 @@ export default function MemoOption({ lng, memos, closeMemoOption }: MemoOptionPr
   const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
   const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
 
-  const defaultCategoryId = isAllSame(memos.map(memo => memo.category_id)) ? String(memos.at(0)?.category_id) : '';
+  const { memos } = useMemosQuery();
+  const selectedMemos = memos.filter(memo => memoIds.includes(memo.id));
+
+  const defaultCategoryId = isAllSame(selectedMemos.map(memo => memo.category_id))
+    ? String(selectedMemos.at(0)?.category_id)
+    : '';
 
   const handleDeleteMemo = (event?: MouseEvent<HTMLDivElement>) => {
     event?.stopPropagation();
 
     mutateDeleteMemo(
-      memos.map(memo => memo.id),
+      selectedMemos.map(memo => memo.id),
       {
         onSuccess: async () => {
           await ExtensionBridge.requestRefetchTheMemos();
 
           const handleToastActionClick = () => {
-            mutateUpsertMemo(memos, {
+            mutateUpsertMemo(selectedMemos, {
               onSuccess: async () => {
                 await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
                 await ExtensionBridge.requestRefetchTheMemos();

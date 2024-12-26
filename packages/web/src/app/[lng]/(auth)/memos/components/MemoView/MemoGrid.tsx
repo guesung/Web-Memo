@@ -16,15 +16,8 @@ import { useDrag } from '@src/hooks/useDrag';
 
 const MEMO_UNIT = 20;
 
-const getMemoItems = (nextGroupKey: number, count: number) => {
-  const nextItems = [];
-  const nextKey = nextGroupKey * MEMO_UNIT;
-
-  for (let i = 0; i < count; ++i) {
-    nextItems.push({ groupKey: nextGroupKey, key: nextKey + i });
-  }
-  return nextItems;
-};
+const getMemoItems = (nextGroupKey: number, count: number) =>
+  Array.from({ length: count }, (_, i) => ({ groupKey: nextGroupKey, key: nextGroupKey * MEMO_UNIT + i }));
 
 interface MemoGridProps extends LanguageType {
   memos: GetMemoResponse[];

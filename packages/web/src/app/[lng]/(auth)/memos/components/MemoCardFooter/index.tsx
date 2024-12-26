@@ -20,17 +20,14 @@ import 'dayjs/locale/en';
 
 interface MemoCardFooterProps extends LanguageType, React.HTMLAttributes<HTMLDivElement>, PropsWithChildren {
   memo: GetMemoResponse;
-  isSelecting: boolean;
-  isHovered: boolean;
+  isShowingOption?: boolean;
 }
 
-export default function MemoCardFooter({ memo, lng, children, isSelecting, isHovered, ...props }: MemoCardFooterProps) {
+export default function MemoCardFooter({ memo, lng, children, isShowingOption = true, ...props }: MemoCardFooterProps) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
   const router = useRouter();
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
-
-  const isShowingOption = isHovered && !isSelecting;
 
   dayjs.extend(relativeTime);
   dayjs.locale(lng === 'ko' ? 'ko' : 'en');

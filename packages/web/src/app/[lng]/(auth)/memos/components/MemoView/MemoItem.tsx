@@ -42,7 +42,7 @@ export default memo(function MemoItem({
         })}>
         <MemoCardHeader memo={memo} isHovered={isHovered} isSelected={isSelected} selectMemoItem={selectMemoItem} />
         {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
-        <MemoCardFooter memo={memo} lng={lng} isHovered={isHovered} isSelecting={isSelecting} />
+        <MemoCardFooter memo={memo} lng={lng} isShowingOption={isHovered && !isSelecting} />
       </Card>
     </motion.article>
   );

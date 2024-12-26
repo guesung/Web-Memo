@@ -4,7 +4,6 @@ import { Button, CardHeader, Tooltip, TooltipContent, TooltipProvider, TooltipTr
 import { CheckIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { KeyboardEvent, MouseEvent } from 'react';
 
 interface MemoCardHeaderProps {
   memo: GetMemoResponse;

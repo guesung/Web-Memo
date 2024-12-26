@@ -90,7 +90,7 @@ export default function MemoDialog({ lng, id }: MemoDialog) {
               {t('common.updatedAt')} {formatDate(memoData.updated_at, 'yyyy.mm.dd')}
             </span>
           </CardContent>
-          <MemoCardFooter memo={memoData} lng={lng} isOptionShown>
+          <MemoCardFooter memo={memoData} lng={lng}>
             <div className="flex gap-2">
               <Button variant="outline" type="button" onClick={closeDialog}>
                 {t('common.close')}

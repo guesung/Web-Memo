@@ -66,6 +66,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 
         <SidebarGroupCategory lng={lng} />
       </SidebarContent>
+
       <SidebarFooter className="p-4">
         <TooltipProvider>
           <Tooltip>

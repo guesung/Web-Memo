@@ -24,6 +24,8 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const currentCategory = searchParams.get('category');
+
   const handleCategoryClick = (category: string) => {
     searchParams.set('category', category);
     router.push(searchParams.getUrl(), { scroll: true });
@@ -39,7 +41,9 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
               <SidebarMenuButton asChild>
                 <button
                   onClick={() => handleCategoryClick(category.name)}
-                  className="hover:bg-accent flex w-full items-center justify-between rounded-md p-2">
+                  className={`hover:bg-accent flex w-full items-center justify-between rounded-md p-2 ${
+                    currentCategory === category.name && 'bg-accent'
+                  }`}>
                   <span>{category.name}</span>
                 </button>
               </SidebarMenuButton>

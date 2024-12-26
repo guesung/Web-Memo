@@ -28,14 +28,21 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
+
   const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT));
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
   const [hoveredMemoId, setHoveredMemoId] = useState<number[] | null>(null);
 
-  const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
-
   const checkMemoSelected = useCallback((id: number) => selectedMemoIds.includes(id), [selectedMemoIds]);
   const isAnyMemoSelected = useMemo(() => selectedMemoIds.length > 0, [selectedMemoIds]);
+
+  const handleMemoItemSelect = useCallback((id: number) => {
+    if (isDragging) return;
+
+    if (checkMemoSelected(id)) setSelectedMemoIds(prevMemoIds => prevMemoIds.filter(prevMemo => prevMemo !== id));
+    else setSelectedMemoIds(prevMemoIds => [...prevMemoIds, id]);
+  }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -84,13 +91,6 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
       window.removeEventListener('mouseup', handleMouseUp);
     };
   }, [isDragging]);
-
-  const handleMemoItemSelect = (id: number) => {
-    if (isDragging) return;
-
-    if (checkMemoSelected(id)) setSelectedMemoIds(prevMemoIds => prevMemoIds.filter(prevMemo => prevMemo !== id));
-    else setSelectedMemoIds(prevMemoIds => [...prevMemoIds, id]);
-  };
 
   const handleMemoItemMouseDown = (event: MouseEvent<HTMLElement>) => {
     event.stopPropagation();

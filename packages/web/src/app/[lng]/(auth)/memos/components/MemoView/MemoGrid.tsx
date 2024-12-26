@@ -25,8 +25,8 @@ interface MemoGridProps extends LanguageType {
 }
 
 export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
-  const searchParams = useSearchParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT));
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
@@ -108,6 +108,17 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
     setSelectedMemoIds([]);
   };
 
+  const handleGridRequestAppend = ({ groupKey }: any) => {
+    if (items.length >= memos.length) return;
+
+    const nextGroupKey = (+groupKey || 0) + 1;
+    const maxAddItem = items.length + MEMO_UNIT > memos.length ? memos.length - items.length : MEMO_UNIT;
+
+    if (maxAddItem === 0) return;
+
+    setItems([...items, ...getMemoItems(nextGroupKey, maxAddItem)]);
+  };
+
   useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
 
   return (
@@ -130,16 +141,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         useResizeObserver
         observeChildren
         autoResize
-        onRequestAppend={e => {
-          if (items.length >= memos.length) return;
-
-          const nextGroupKey = (+e.groupKey! || 0) + 1;
-          const maxAddItem = items.length + MEMO_UNIT > memos.length ? memos.length - items.length : MEMO_UNIT;
-
-          if (maxAddItem === 0) return;
-
-          setItems([...items, ...getMemoItems(nextGroupKey, maxAddItem)]);
-        }}>
+        onRequestAppend={handleGridRequestAppend}>
         {items.map(
           item =>
             memos.at(item.key) && (

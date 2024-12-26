@@ -13,7 +13,8 @@ import MemoCalendar from './MemoCalendar';
 import MemoGrid from './MemoGrid';
 import ToggleView from './ToggleView';
 import SearchForm from './SearchForm';
-import { useForm } from 'react-hook-form';
+import { useForm, useFormContext } from 'react-hook-form';
+import { SearchFormValues } from '../SearchFormProvider';
 
 interface MemoViewProps extends LanguageType {
   isWish?: string;
@@ -21,21 +22,10 @@ interface MemoViewProps extends LanguageType {
   view?: SearchParamViewType;
 }
 
-type SearchTargetType = 'all' | 'title' | 'memo';
-export interface SearchFormValues {
-  searchQuery: string;
-  searchTarget: SearchTargetType;
-}
-
 export default function MemoView({ lng, isWish = '', category = '', view = 'grid' }: MemoViewProps) {
   const { t } = useTranslation(lng);
 
-  const { watch, control } = useForm<SearchFormValues>({
-    defaultValues: {
-      searchQuery: '',
-      searchTarget: 'all',
-    },
-  });
+  const { watch, control } = useFormContext<SearchFormValues>();
   const searchQuery = watch('searchQuery');
   const searchTarget = watch('searchTarget');
 

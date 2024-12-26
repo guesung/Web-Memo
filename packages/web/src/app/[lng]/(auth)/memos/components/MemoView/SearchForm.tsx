@@ -6,7 +6,7 @@ import { useSearchParams } from '@extension/shared/modules/search-params';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@extension/ui';
 import { Input } from '@src/components/ui';
 import useTranslation from '@src/modules/i18n/client';
-import { SearchFormValues } from '.';
+import { SearchFormValues } from '../SearchFormProvider';
 
 interface SearchFormProps extends LanguageType {
   control: Control<SearchFormValues, any>;

@@ -111,6 +111,9 @@
       "prettier . --write"
     ]
   },
+  "sideEffects": false,
   "packageManager": "pnpm@9.5.0",
-  "sideEffects": false
+  "engines": {
+    "node": ">=18.12.0"
+  }
 }

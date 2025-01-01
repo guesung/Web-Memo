@@ -9,7 +9,7 @@ import { LanguageParams } from '@src/modules/i18n';
 import { getSupabaseClient } from '@src/modules/supabase/util.server';
 import { Suspense } from 'react';
 
-import { MemoDialog, MemoView } from './components';
+import { MemoDialog, MemoView, SearchForm, SearchFormProvider } from './components';
 
 interface PageProps extends LanguageParams {
   searchParams: {
@@ -28,7 +28,15 @@ export default async function Page({ searchParams, params: { lng } }: PageProps)
       <Header.Margin />
       <HydrationBoundaryWrapper queryKey={QUERY_KEY.memos()} queryFn={() => new MemoService(supabaseClient).getMemos()}>
         <Suspense fallback={<Loading />}>
-          <MemoView lng={lng} isWish={searchParams.isWish} category={searchParams.category} view={searchParams.view} />
+          <SearchFormProvider>
+            <SearchForm lng={lng} />
+            <MemoView
+              lng={lng}
+              isWish={searchParams.isWish}
+              category={searchParams.category}
+              view={searchParams.view}
+            />
+          </SearchFormProvider>
           {searchParams?.id && <MemoDialog lng={lng} id={searchParams.id} />}
         </Suspense>
       </HydrationBoundaryWrapper>

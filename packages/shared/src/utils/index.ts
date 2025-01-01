@@ -10,3 +10,4 @@ export * from './String';
 export * from './Supabase';
 export * from './Tailwind';
 export * from './Url';
+export * from './Time';

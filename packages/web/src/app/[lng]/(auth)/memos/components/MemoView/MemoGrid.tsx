@@ -16,15 +16,12 @@ import { useDrag } from '@src/hooks/useDrag';
 
 const MEMO_UNIT = 20;
 
-const getMemoItems = (nextGroupKey: number, count: number) => {
-  const nextItems = [];
-  const nextKey = nextGroupKey * MEMO_UNIT;
-
-  for (let i = 0; i < count; ++i) {
-    nextItems.push({ groupKey: nextGroupKey, key: nextKey + i });
-  }
-  return nextItems;
-};
+const getMemoItems = (nextGroupKey: number, count: number, memos: GetMemoResponse[]) =>
+  Array.from({ length: count }, (_, i) => ({
+    groupKey: nextGroupKey,
+    key: nextGroupKey * MEMO_UNIT + i,
+    memo: memos[nextGroupKey * MEMO_UNIT + i],
+  }));
 
 interface MemoGridProps extends LanguageType {
   memos: GetMemoResponse[];
@@ -32,22 +29,29 @@ interface MemoGridProps extends LanguageType {
 }
 
 export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
-  const searchParams = useSearchParams();
   const router = useRouter();
-
-  const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT));
-  const [selectedMemos, setSelectedMemos] = useState<GetMemoResponse[]>([]);
-  const [hoveredMemoId, setHoveredMemoId] = useState<number | null>(null);
+  const searchParams = useSearchParams();
 
   const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
 
-  const isMemoSelected = useCallback((id: number) => selectedMemos.some(memo => memo.id === id), [selectedMemos]);
-  const isAnyMemoSelected = useMemo(() => selectedMemos.length > 0, [selectedMemos]);
+  const [gridMemoItems, setGridMemoItemsItems] = useState(() => getMemoItems(0, MEMO_UNIT, memos));
+  const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
+  const [hoveredMemoId, setHoveredMemoId] = useState<number | null>(null);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const checkMemoSelected = useCallback((id: number) => selectedMemoIds.includes(id), [selectedMemoIds]);
+  const isAnyMemoSelected = useMemo(() => selectedMemoIds.length > 0, [selectedMemoIds]);
+
+  const selectMemoItem = useCallback((id: number) => {
+    if (isDragging) return;
+
+    if (checkMemoSelected(id)) setSelectedMemoIds(prevMemoIds => prevMemoIds.filter(prevMemo => prevMemo !== id));
+    else setSelectedMemoIds(prevMemoIds => [...prevMemoIds, id]);
+  }, []);
+
+  const handleMouseDown = (event: React.MouseEvent) => {
     setIsDragging(true);
-    setDragStart({ x: e.clientX, y: e.clientY });
-    setDragEnd({ x: e.clientX, y: e.clientY });
+    setDragStart({ x: event.clientX, y: event.clientY });
+    setDragEnd({ x: event.clientX, y: event.clientY });
   };
 
   useEffect(() => {
@@ -75,11 +79,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         })
         .map(element => Number(element.id));
 
-      setSelectedMemos(
-        memos.filter(memo => {
-          return selectedIds.includes(memo.id);
-        }),
-      );
+      setSelectedMemoIds(selectedIds);
     };
 
     const handleMouseUp = () => {
@@ -96,30 +96,31 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
     };
   }, [isDragging]);
 
-  const handleMemoItemSelect = (event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => {
-    event.stopPropagation();
-    const id = Number(event.currentTarget.id);
-    if (isDragging) return;
-
-    if (isMemoSelected(id)) setSelectedMemos(prev => prev.filter(memo => memo.id !== id));
-    else setSelectedMemos(prev => [...prev, memos.find(memo => memo.id === id)!]);
-  };
-
   const handleMemoItemMouseDown = (event: MouseEvent<HTMLElement>) => {
     event.stopPropagation();
-    const id = Number(event.currentTarget.id);
+    const id = event.currentTarget.id;
 
-    if (isAnyMemoSelected) {
-      if (isMemoSelected(id)) setSelectedMemos(prev => prev.filter(memo => memo.id !== id));
-      else setSelectedMemos(prev => [...prev, memos.find(memo => memo.id === id)!]);
-    } else {
-      searchParams.set('id', String(id));
+    if (isAnyMemoSelected) selectMemoItem(Number(id));
+    else {
+      searchParams.set('id', id);
       router.push(searchParams.getUrl(), { scroll: false });
     }
   };
 
   const closeMemoOption = () => {
-    setSelectedMemos([]);
+    setSelectedMemoIds([]);
+  };
+
+  const handleGridRequestAppend = ({ groupKey }: any) => {
+    if (gridMemoItems.length >= memos.length) return;
+
+    const nextGroupKey = (+groupKey || 0) + 1;
+    const maxAddItem =
+      gridMemoItems.length + MEMO_UNIT > memos.length ? memos.length - gridMemoItems.length : MEMO_UNIT;
+
+    if (maxAddItem === 0) return;
+
+    setGridMemoItemsItems([...gridMemoItems, ...getMemoItems(nextGroupKey, maxAddItem, memos)]);
   };
 
   useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
@@ -131,7 +132,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         {isAnyMemoSelected && (
           <MemoOptionHeader
             lng={lng}
-            selectedMemos={selectedMemos}
+            selectedMemoIds={selectedMemoIds}
             onXButtonClick={closeMemoOption}
             closeMemoOption={closeMemoOption}
           />
@@ -144,31 +145,22 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         useResizeObserver
         observeChildren
         autoResize
-        onRequestAppend={e => {
-          if (items.length >= memos.length) return;
-
-          const nextGroupKey = (+e.groupKey! || 0) + 1;
-          const maxAddItem = items.length + MEMO_UNIT > memos.length ? memos.length - items.length : MEMO_UNIT;
-
-          if (maxAddItem === 0) return;
-
-          setItems([...items, ...getMemoItems(nextGroupKey, maxAddItem)]);
-        }}>
-        {items.map(
-          item =>
-            memos.at(item.key) && (
+        onRequestAppend={handleGridRequestAppend}>
+        {gridMemoItems.map(
+          ({ groupKey, memo, key }) =>
+            memo && (
               <MemoItem
-                key={item.key + gridKey}
-                memo={memos.at(item.key)!}
                 lng={lng}
-                isSelected={isMemoSelected(memos.at(item.key)!.id)}
-                isHovered={hoveredMemoId === memos.at(item.key)!.id}
+                data-grid-groupkey={groupKey}
+                key={key + gridKey}
+                memo={memo}
+                isSelected={checkMemoSelected(memo.id)}
+                isHovered={hoveredMemoId === memo.id}
+                selectMemoItem={selectMemoItem}
                 onMouseDown={handleMemoItemMouseDown}
-                handleMemoItemSelect={handleMemoItemSelect}
-                onMouseEnter={() => setHoveredMemoId(memos.at(item.key)!.id)}
+                onMouseEnter={() => setHoveredMemoId(memo.id)}
                 onMouseLeave={() => setHoveredMemoId(null)}
                 isSelecting={isAnyMemoSelected}
-                data-grid-groupkey={item.groupKey}
               />
             ),
         )}

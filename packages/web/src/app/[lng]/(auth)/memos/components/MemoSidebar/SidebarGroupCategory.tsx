@@ -13,19 +13,22 @@ import {
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useRouter } from 'next/navigation';
-import { memo, MouseEventHandler } from 'react';
+import { memo } from 'react';
 
 import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
+import { useSearchParams } from '@extension/shared/modules/search-params';
 
 export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
   const { t } = useTranslation(lng);
   const { categories } = useCategoryQuery();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const handleCategoryClick: MouseEventHandler<HTMLButtonElement> = event => {
-    const category = event.currentTarget.id;
+  const currentCategory = searchParams.get('category');
 
-    router.push(`${PATHS.memos}?category=${category}`, { scroll: true });
+  const handleCategoryClick = (category: string) => {
+    searchParams.set('category', category);
+    router.push(searchParams.getUrl(), { scroll: true });
   };
 
   return (
@@ -36,7 +39,11 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
           {categories?.map(category => (
             <SidebarMenuItem key={category.id}>
               <SidebarMenuButton asChild>
-                <button id={category.name} onClick={handleCategoryClick}>
+                <button
+                  onClick={() => handleCategoryClick(category.name)}
+                  className={`hover:bg-accent flex w-full items-center justify-between rounded-md p-2 ${
+                    currentCategory === category.name && 'bg-accent'
+                  }`}>
                   <span>{category.name}</span>
                 </button>
               </SidebarMenuButton>

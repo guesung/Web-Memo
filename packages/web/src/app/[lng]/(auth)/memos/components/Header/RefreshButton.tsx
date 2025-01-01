@@ -1,5 +1,6 @@
 'use client';
 import { QUERY_KEY } from '@extension/shared/constants';
+import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { setLocalStorageTrue } from '@extension/shared/modules/local-storage';
 import { Button, toast } from '@src/components/ui';
 import { useGuide } from '@src/modules/guide';
@@ -21,6 +22,7 @@ export default function RefreshButton({ lng }: RefreshButtonProps) {
 
     await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
     toast({ title: t('toastTitle.refresh') });
+    await ExtensionBridge.requestRefetchTheMemos();
   };
 
   return (

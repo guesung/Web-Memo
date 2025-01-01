@@ -5,7 +5,7 @@ export const PATHS = {
   memos: '/memos',
   auth: '/auth',
   introduce: '/introduce',
-  updates: '/updates',
+  update: '/update',
   memosWish: '/memos?isWish=true',
   memosSetting: '/memos/setting',
   callbackOAuth: '/auth/callback',

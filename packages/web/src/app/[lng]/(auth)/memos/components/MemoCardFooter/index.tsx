@@ -20,10 +20,10 @@ import 'dayjs/locale/en';
 
 interface MemoCardFooterProps extends LanguageType, React.HTMLAttributes<HTMLDivElement>, PropsWithChildren {
   memo: GetMemoResponse;
-  isOptionShown: boolean;
+  isShowingOption?: boolean;
 }
 
-export default function MemoCardFooter({ memo, lng, isOptionShown, children, ...props }: MemoCardFooterProps) {
+export default function MemoCardFooter({ memo, lng, children, isShowingOption = true, ...props }: MemoCardFooterProps) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -89,8 +89,7 @@ export default function MemoCardFooter({ memo, lng, isOptionShown, children, ...
       </div>
       <div
         className={cn('relative z-50 flex items-center transition', {
-          'opacity-0': !isOptionShown,
-          'opacity-100': isOptionShown,
+          'opacity-0': !isShowingOption,
         })}>
         <Button variant="ghost" size="icon" onClick={handleIsWishClick} onMouseDown={e => e.stopPropagation()}>
           <HeartIcon
@@ -102,13 +101,13 @@ export default function MemoCardFooter({ memo, lng, isOptionShown, children, ...
             })}
           />
         </Button>
-        <MemoOption memos={[memo]} lng={lng} />
+        <MemoOption memoIds={[memo.id]} lng={lng} />
         {children}
       </div>
       <time
-        dateTime={memo.created_at}
+        dateTime={memo.created_at ?? ''}
         className={cn('text-muted-foreground absolute right-4 text-xs', {
-          'opacity-0': isOptionShown,
+          'opacity-0': isShowingOption,
         })}>
         {dayjs(memo.created_at).fromNow()}
       </time>

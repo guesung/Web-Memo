@@ -1,9 +1,10 @@
 'use server';
 
+import { SUPABASE } from '@extension/shared/constants';
 import { Button } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/server';
-import { signInWithOAuth } from '@src/modules/supabase/util.server';
+import { signInWithEmail, signInWithOAuth } from '@src/modules/supabase/util.server';
 import Image from 'next/image';
 
 interface LoginSectionProps extends LanguageType {}
@@ -29,9 +30,11 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
           <Image src="/images/svgs/google.svg" width={16} height={16} alt="google" />
           {t('login.googleLogin')}
         </Button>
-        {/* <button formAction={() => signInWithEmail(SUPABASE.testEmail, SUPABASE.testPassword)} className="btn">
+        <Button
+          formAction={signInWithEmail.bind(null, SUPABASE.testEmail, SUPABASE.testPassword)}
+          className="h-12 bg-green-300 text-black hover:bg-green-300">
           테스트 계정으로 로그인
-        </button> */}
+        </Button>
       </form>
     </section>
   );

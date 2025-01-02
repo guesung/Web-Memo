@@ -43,7 +43,7 @@ test.describe('Login Page', () => {
     test('사이드 패널에서 메모를 저장하면 메모를 확인할 수 있다.', async ({ page, sidePanelPage }) => {
       const text = String(new Date());
       await sidePanelPage.locator('#memo-textarea').fill(text);
-      await sidePanelPage.locator('#memo-textarea').press('ControlOrMeta+s');
+      await sidePanelPage.waitForTimeout(500);
 
       await page.reload();
       expect(page.getByText(text)).toBeVisible();

@@ -127,6 +127,7 @@
     "welcomeDescription": "Let's make memo-taking easier and more convenient together!",
     "kakaoLogin": "Continue with Kakao",
     "googleLogin": "Continue with Google",
+    "testLogin": "Continue with Test Account",
     "askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
     "personalInformationInfo": "Don't worry! Your personal information is strictly protected and will never be used for marketing purposes."
   },
@@ -168,7 +169,7 @@
     },
     "save": {
       "title": "Save Your Memos",
-      "description": "Great job!\nNow you can write memos in the side panel.\nDon't worry, memos are saved automatically "
+      "description": "Great job!\nNow you can write memos in the side panel.\nDon't worry, memos are saved automatically"
     },
     "check": {
       "title": "Check Your Memos",

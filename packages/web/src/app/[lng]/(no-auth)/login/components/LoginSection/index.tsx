@@ -20,20 +20,25 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
       <form className="flex w-full flex-col gap-4 px-4">
         {/* 'use server' 함수를 사용하기 위해 bind 사용 */}
         <Button
+          data-testid="kakao-login-button"
           formAction={signInWithOAuth.bind(null, 'kakao')}
           className="h-12 bg-[rgb(247,228,76)] text-black hover:bg-[rgb(247,228,76)]">
           <Image src="/images/svgs/kakao.svg" width={16} height={16} alt="kakao" />
           {t('login.kakaoLogin')}
         </Button>
         {/* 'use server' 함수를 사용하기 위해 bind 사용 */}
-        <Button formAction={signInWithOAuth.bind(null, 'google')} className="h-12 bg-white text-black hover:bg-white">
+        <Button
+          data-testid="google-login-button"
+          formAction={signInWithOAuth.bind(null, 'google')}
+          className="h-12 bg-white text-black hover:bg-white">
           <Image src="/images/svgs/google.svg" width={16} height={16} alt="google" />
           {t('login.googleLogin')}
         </Button>
         <Button
+          data-testid="test-login-button"
           formAction={signInWithEmail.bind(null, SUPABASE.testEmail, SUPABASE.testPassword)}
           className="h-12 bg-green-300 text-black hover:bg-green-300">
-          테스트 계정으로 로그인
+          {t('login.testLogin')}
         </Button>
       </form>
     </section>

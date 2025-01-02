@@ -23,7 +23,7 @@
       "persistent": true
     },
     "build": {
-      "dependsOn": ["^build", "ready"],
+      "dependsOn": ["ready", "^build"],
       "env": [
         "__FIREFOX__",
         "MAKE_WEBHOOK_NOTION_API",

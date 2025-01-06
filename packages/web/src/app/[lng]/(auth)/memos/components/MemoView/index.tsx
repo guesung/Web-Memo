@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemosQuery } from '@extension/shared/hooks';
-import type { SearchParamViewType } from '@extension/shared/modules/search-params';
+import type { SearchParamsType, SearchParamViewType } from '@extension/shared/modules/search-params';
 
 import { useGuide } from '@src/modules/guide';
 import { LanguageType } from '@src/modules/i18n';
@@ -16,17 +16,15 @@ import MemoGrid from './MemoGrid';
 import ToggleView from './ToggleView';
 
 interface MemoViewProps extends LanguageType {
-  isWish?: string;
-  category?: string;
-  view?: SearchParamViewType;
+  searchParams: SearchParamsType;
 }
 
-export default function MemoView({ lng, isWish = '', category = '', view = 'grid' }: MemoViewProps) {
+export default function MemoView({ lng, searchParams: { category = '', isWish = '', view = 'grid' } }: MemoViewProps) {
   const { t } = useTranslation(lng);
   const { watch } = useFormContext<SearchFormValues>();
   const { memos } = useMemosQuery({
-    category,
-    isWish,
+    category: category,
+    isWish: isWish,
     searchQuery: watch('searchQuery'),
     searchTarget: watch('searchTarget'),
   });

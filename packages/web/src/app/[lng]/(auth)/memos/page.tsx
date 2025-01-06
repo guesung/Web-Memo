@@ -1,7 +1,7 @@
 'use server';
 
 import { QUERY_KEY } from '@extension/shared/constants';
-import { SearchParamViewType } from '@extension/shared/modules/search-params';
+import { SearchParamKeyType, SearchParamsType, SearchParamViewType } from '@extension/shared/modules/search-params';
 import { MemoService } from '@extension/shared/utils';
 import { Header, HydrationBoundaryWrapper } from '@src/components';
 import { Loading } from '@src/components/ui';
@@ -12,12 +12,7 @@ import { Suspense } from 'react';
 import { MemoDialog, MemoView, SearchForm, SearchFormProvider } from './components';
 
 interface PageProps extends LanguageParams {
-  searchParams: {
-    id?: string;
-    isWish?: string;
-    category?: string;
-    view?: SearchParamViewType;
-  };
+  searchParams: SearchParamsType;
 }
 
 export default async function Page({ searchParams, params: { lng } }: PageProps) {
@@ -30,14 +25,9 @@ export default async function Page({ searchParams, params: { lng } }: PageProps)
         <Suspense fallback={<Loading />}>
           <SearchFormProvider>
             <SearchForm lng={lng} />
-            <MemoView
-              lng={lng}
-              isWish={searchParams.isWish}
-              category={searchParams.category}
-              view={searchParams.view}
-            />
+            <MemoView lng={lng} searchParams={searchParams} />
           </SearchFormProvider>
-          {searchParams?.id && <MemoDialog lng={lng} id={searchParams.id} />}
+          {searchParams?.id && <MemoDialog lng={lng} searchParams={searchParams} />}
         </Suspense>
       </HydrationBoundaryWrapper>
     </main>

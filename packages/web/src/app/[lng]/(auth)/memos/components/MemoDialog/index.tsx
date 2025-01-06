@@ -22,6 +22,7 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [open, setOpen] = useState(false);
   const { memo: memoData } = useMemoQuery({ id: Number(id) });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
@@ -63,12 +64,16 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
   }, [textareaRef, ref]);
 
   useEffect(() => {
+    setOpen(!!id);
+  }, [id]);
+
+  useEffect(() => {
     setValue('memo', memoData?.memo ?? '');
   }, [memoData, setValue]);
 
   if (!memoData) return;
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-[600px] p-0" onClose={closeDialog}>
         <Card>
           <MemoCardHeader memo={memoData} />

@@ -19,7 +19,10 @@ interface MemoViewProps extends LanguageType {
   searchParams: SearchParamsType;
 }
 
-export default function MemoView({ lng, searchParams: { category = '', isWish = '', view = 'grid' } }: MemoViewProps) {
+export default function MemoView({
+  lng,
+  searchParams: { category = '', isWish = '', view = 'grid', id },
+}: MemoViewProps) {
   const { t } = useTranslation(lng);
   const { watch } = useFormContext<SearchFormValues>();
   const { memos } = useMemosQuery({
@@ -43,7 +46,7 @@ export default function MemoView({ lng, searchParams: { category = '', isWish = 
         </div>
       </div>
 
-      {view === 'grid' && <MemoGrid memos={memos} gridKey={category + isWish} lng={lng} />}
+      {view === 'grid' && <MemoGrid memos={memos} gridKey={category + isWish} lng={lng} id={id} />}
       {view === 'calendar' && <MemoCalendar lng={lng} memos={memos} />}
     </div>
   );

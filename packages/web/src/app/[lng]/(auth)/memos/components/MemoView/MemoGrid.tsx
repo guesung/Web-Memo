@@ -29,9 +29,10 @@ const getMemoItems = (nextGroupKey: number, count: number) => {
 interface MemoGridProps extends LanguageType {
   memos: GetMemoResponse[];
   gridKey: string;
+  id: string;
 }
 
-export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
+export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT));
@@ -165,6 +166,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
                 onMouseEnter={() => setHoveredMemoId(memos.at(item.key)!.id)}
                 onMouseLeave={() => setHoveredMemoId(null)}
                 isSelecting={isAnyMemoSelected}
+                className={memos.at(item.key)!.id !== Number(id) ? '' : 'invisible'}
               />
             ),
         )}

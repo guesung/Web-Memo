@@ -7,7 +7,7 @@ import { Card, CardContent, Dialog, DialogContent, Textarea } from '@src/compone
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useRouter } from 'next/navigation';
-import { FocusEvent, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { FocusEvent, useEffect, useImperativeHandle, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { MemoInput } from '../../types';
@@ -22,7 +22,6 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [open, setOpen] = useState(false);
   const { memo: memoData } = useMemoQuery({ id: Number(id) });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
@@ -64,16 +63,12 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
   }, [textareaRef, ref]);
 
   useEffect(() => {
-    setOpen(!!id);
-  }, [id]);
-
-  useEffect(() => {
     setValue('memo', memoData?.memo ?? '');
   }, [memoData, setValue]);
 
   if (!memoData) return;
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog>
       <DialogContent className="max-w-[600px] p-0" onClose={closeDialog}>
         <Card>
           <MemoCardHeader memo={memoData} />

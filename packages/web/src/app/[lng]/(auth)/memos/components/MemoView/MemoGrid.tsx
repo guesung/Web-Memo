@@ -16,12 +16,15 @@ import { useDrag } from '@src/hooks/useDrag';
 
 const MEMO_UNIT = 20;
 
-const getMemoItems = (nextGroupKey: number, count: number, memos: GetMemoResponse[]) =>
-  Array.from({ length: count }, (_, i) => ({
-    groupKey: nextGroupKey,
-    key: nextGroupKey * MEMO_UNIT + i,
-    memo: memos[nextGroupKey * MEMO_UNIT + i],
-  }));
+const getMemoItems = (nextGroupKey: number, count: number) => {
+  const nextItems = [];
+  const nextKey = nextGroupKey * MEMO_UNIT;
+
+  for (let i = 0; i < count; ++i) {
+    nextItems.push({ groupKey: nextGroupKey, key: nextKey + i });
+  }
+  return nextItems;
+};
 
 interface MemoGridProps extends LanguageType {
   memos: GetMemoResponse[];
@@ -31,10 +34,10 @@ interface MemoGridProps extends LanguageType {
 export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT));
 
   const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
 
-  const [gridMemoItems, setGridMemoItemsItems] = useState(() => getMemoItems(0, MEMO_UNIT, memos));
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
   const [hoveredMemoId, setHoveredMemoId] = useState<number | null>(null);
 
@@ -112,15 +115,14 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   };
 
   const handleGridRequestAppend = ({ groupKey }: any) => {
-    if (gridMemoItems.length >= memos.length) return;
+    if (items.length >= memos.length) return;
 
-    const nextGroupKey = (+groupKey || 0) + 1;
-    const maxAddItem =
-      gridMemoItems.length + MEMO_UNIT > memos.length ? memos.length - gridMemoItems.length : MEMO_UNIT;
+    const nextGroupKey = (+groupKey! || 0) + 1;
+    const maxAddItem = items.length + MEMO_UNIT > memos.length ? memos.length - items.length : MEMO_UNIT;
 
     if (maxAddItem === 0) return;
 
-    setGridMemoItemsItems([...gridMemoItems, ...getMemoItems(nextGroupKey, maxAddItem, memos)]);
+    setItems([...items, ...getMemoItems(nextGroupKey, maxAddItem)]);
   };
 
   useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
@@ -146,19 +148,19 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         observeChildren
         autoResize
         onRequestAppend={handleGridRequestAppend}>
-        {gridMemoItems.map(
-          ({ groupKey, memo, key }) =>
-            memo && (
+        {items.map(
+          item =>
+            memos.at(item.key) && (
               <MemoItem
                 lng={lng}
-                data-grid-groupkey={groupKey}
-                key={key + gridKey}
-                memo={memo}
-                isSelected={checkMemoSelected(memo.id)}
-                isHovered={hoveredMemoId === memo.id}
+                data-grid-groupkey={item.groupKey}
+                key={item.key + gridKey}
+                memo={memos.at(item.key)!}
+                isSelected={checkMemoSelected(memos.at(item.key)!.id)}
+                isHovered={hoveredMemoId === memos.at(item.key)!.id}
                 selectMemoItem={selectMemoItem}
                 onMouseDown={handleMemoItemMouseDown}
-                onMouseEnter={() => setHoveredMemoId(memo.id)}
+                onMouseEnter={() => setHoveredMemoId(memos.at(item.key)!.id)}
                 onMouseLeave={() => setHoveredMemoId(null)}
                 isSelecting={isAnyMemoSelected}
               />

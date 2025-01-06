@@ -5,14 +5,14 @@ import { useKeyboardBind } from '@extension/shared/hooks';
 import { GetMemoResponse } from '@extension/shared/types';
 import { LanguageType } from '@src/modules/i18n';
 import { AnimatePresence } from 'framer-motion';
-import { KeyboardEvent, MouseEvent, useCallback, useMemo, useState, useEffect } from 'react';
+import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
+import { useSearchParams } from '@extension/shared/modules/search-params';
+import { DragBox } from '@src/components';
+import { useDrag } from '@src/hooks/useDrag';
+import { useRouter } from 'next/navigation';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
-import { DragBox } from '@src/components';
-import { useSearchParams } from '@extension/shared/modules/search-params';
-import { useRouter } from 'next/navigation';
-import { useDrag } from '@src/hooks/useDrag';
 
 const MEMO_UNIT = 20;
 
@@ -112,6 +112,8 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
 
   const closeMemoOption = () => {
     setSelectedMemoIds([]);
+    searchParams.removeAll('id');
+    router.replace(searchParams.getUrl(), { scroll: false });
   };
 
   const handleGridRequestAppend = ({ groupKey }: any) => {

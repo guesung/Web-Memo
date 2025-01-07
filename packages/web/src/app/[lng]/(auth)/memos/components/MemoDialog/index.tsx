@@ -68,7 +68,7 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
 
   if (!memoData) return;
   return (
-    <Dialog>
+    <Dialog open>
       <DialogContent className="max-w-[600px] p-0" onClose={closeDialog}>
         <Card>
           <MemoCardHeader memo={memoData} />

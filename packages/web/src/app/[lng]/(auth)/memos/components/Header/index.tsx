@@ -67,8 +67,7 @@ async function HeaderRight({ lng }: LanguageType) {
         <DropdownMenu>
           <DropdownMenuTrigger>
             <Avatar className="h-8 w-8">
-              <AvatarImage src={userAvatarUrl} alt="avatar" />
-              <AvatarFallback>{userName}</AvatarFallback>
+              <Image src={userAvatarUrl} alt="avatar" width={32} height={32} />
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent>

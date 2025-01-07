@@ -13,10 +13,11 @@ import { useDrag } from '@src/hooks/useDrag';
 import { useRouter } from 'next/navigation';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
+import { Loading, Skeleton } from '@extension/ui';
 
 const MEMO_UNIT = 20;
 
-const getMemoItems = (nextGroupKey: number, count: number) => {
+const getItems = (nextGroupKey: number, count: number) => {
   const nextItems = [];
   const nextKey = nextGroupKey * MEMO_UNIT;
 
@@ -35,7 +36,7 @@ interface MemoGridProps extends LanguageType {
 export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [items, setItems] = useState(() => getMemoItems(0, MEMO_UNIT));
+  const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
 
   const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
 
@@ -117,18 +118,9 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
     router.replace(searchParams.getUrl(), { scroll: false });
   };
 
-  const handleGridRequestAppend = ({ groupKey }: any) => {
-    if (items.length >= memos.length) return;
-
-    const nextGroupKey = (+groupKey! || 0) + 1;
-    const maxAddItem = items.length + MEMO_UNIT > memos.length ? memos.length - items.length : MEMO_UNIT;
-
-    if (maxAddItem === 0) return;
-
-    setItems([...items, ...getMemoItems(nextGroupKey, maxAddItem)]);
-  };
-
   useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
+
+  if (!memos) return <Loading />;
 
   return (
     <div className="relative h-full w-full" onMouseDown={handleMouseDown}>
@@ -144,13 +136,30 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
         )}
       </AnimatePresence>
       <MasonryInfiniteGrid
-        className="container"
+        className="container h-screen"
+        placeholder={<Skeleton className="h-[300px] w-[300px]" />}
         gap={16}
         align="center"
         useResizeObserver
         observeChildren
         autoResize
-        onRequestAppend={handleGridRequestAppend}>
+        container={true}
+        onRequestAppend={({ groupKey, currentTarget, wait, ready }: any) => {
+          if (items.length >= memos.length) return;
+
+          const nextGroupKey = (+groupKey! || 0) + 1;
+          const maxAddItem = items.length + MEMO_UNIT > memos.length ? memos.length - items.length : MEMO_UNIT;
+
+          if (maxAddItem === 0) return;
+
+          wait();
+          currentTarget.appendPlaceholders(MEMO_UNIT, nextGroupKey);
+
+          setTimeout(() => {
+            ready();
+            setItems([...items, ...getItems(nextGroupKey, maxAddItem)]);
+          }, 100);
+        }}>
         {items.map(
           item =>
             memos.at(item.key) && (

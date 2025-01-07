@@ -9,7 +9,7 @@ import { LanguageParams } from '@src/modules/i18n';
 import { getSupabaseClient } from '@src/modules/supabase/util.server';
 import { Suspense } from 'react';
 
-import { MemoDialog, MemoView, SearchForm, SearchFormProvider } from './components';
+import { MemoDialog, MemoView, SearchForm, SearchFormProvider } from './_components';
 
 interface PageProps extends LanguageParams {
   searchParams: SearchParamsType;

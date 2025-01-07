@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { FocusEvent, useEffect, useImperativeHandle, useRef } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
-import { MemoInput } from '../../types';
+import { MemoInput } from '../../_types';
 import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
 

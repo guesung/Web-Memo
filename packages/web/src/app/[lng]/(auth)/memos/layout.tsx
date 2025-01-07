@@ -9,7 +9,7 @@ import { getSupabaseClient } from '@src/modules/supabase/util.server';
 import { redirect } from 'next/navigation';
 import { PropsWithChildren, Suspense } from 'react';
 
-import { MemoSidebar } from './components';
+import { MemoSidebar } from './_components';
 
 interface LayoutProps extends LanguageParams, PropsWithChildren {}
 

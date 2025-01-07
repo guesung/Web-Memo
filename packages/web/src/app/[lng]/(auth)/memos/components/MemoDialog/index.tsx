@@ -8,7 +8,7 @@ import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useRouter } from 'next/navigation';
 import { FocusEvent, useEffect, useImperativeHandle, useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
 import { MemoInput } from '../../types';
 import MemoCardFooter from '../MemoCardFooter';
@@ -26,7 +26,7 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 
-  const { register, watch, setValue } = useForm<MemoInput>({
+  const { register, watch, setValue, control } = useForm<MemoInput>({
     defaultValues: {
       memo: '',
     },
@@ -36,6 +36,10 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
   };
   const { ref, ...rest } = register('memo', {
     onChange: adjustTextareaHeight,
+  });
+  useWatch({
+    name: 'memo',
+    control,
   });
 
   useImperativeHandle(ref, () => textareaRef.current);

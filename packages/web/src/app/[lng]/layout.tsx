@@ -1,6 +1,6 @@
 import '@extension/ui/dist/global.css';
 import './globals.css';
-
+import { GoogleAnalytics } from '@next/third-parties/google';
 import { Header, QueryProvider, ThemeProvider } from '@src/components';
 import { Toaster } from '@src/components/ui';
 import { LanguageParams, languages } from '@src/modules/i18n';
@@ -41,6 +41,7 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
         </ThemeProvider>
 
         <WebVitals />
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID as string} />
         <Toaster />
       </body>
     </html>

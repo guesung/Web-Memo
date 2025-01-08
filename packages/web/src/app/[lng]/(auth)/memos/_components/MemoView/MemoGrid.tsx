@@ -41,7 +41,6 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
 
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
-  const [hoveredMemoId, setHoveredMemoId] = useState<number | null>(null);
 
   const checkMemoSelected = useCallback((id: number) => selectedMemoIds.includes(id), [selectedMemoIds]);
   const isAnyMemoSelected = useMemo(() => selectedMemoIds.length > 0, [selectedMemoIds]);
@@ -169,11 +168,8 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
                 key={item.key + gridKey}
                 memo={memos.at(item.key)!}
                 isSelected={checkMemoSelected(memos.at(item.key)!.id)}
-                isHovered={hoveredMemoId === memos.at(item.key)!.id}
                 selectMemoItem={selectMemoItem}
                 onMouseDown={handleMemoItemMouseDown}
-                onMouseEnter={() => setHoveredMemoId(memos.at(item.key)!.id)}
-                onMouseLeave={() => setHoveredMemoId(null)}
                 isSelecting={isAnyMemoSelected}
                 className={memos.at(item.key)!.id !== Number(id) ? '' : 'invisible'}
               />

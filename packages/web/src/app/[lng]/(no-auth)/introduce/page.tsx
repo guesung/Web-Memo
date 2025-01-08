@@ -9,9 +9,9 @@ export const metadata: Metadata = {
   description: '웹 메모를 소개합니다.',
 };
 
-interface IntroductPageProps extends LanguageParams {}
+interface IntroducePageProps extends LanguageParams {}
 
-export default function IntroducePage({ params: { lng } }: IntroductPageProps) {
+export default function IntroducePage({ params: { lng } }: IntroducePageProps) {
   return (
     <div className="bg-background min-h-screen">
       <Header.Margin />

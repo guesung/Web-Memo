@@ -45,12 +45,15 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   const checkMemoSelected = useCallback((id: number) => selectedMemoIds.includes(id), [selectedMemoIds]);
   const isAnyMemoSelected = useMemo(() => selectedMemoIds.length > 0, [selectedMemoIds]);
 
-  const selectMemoItem = useCallback((id: number) => {
-    if (isDragging) return;
+  const selectMemoItem = useCallback(
+    (id: number) => {
+      if (isDragging) return;
 
-    if (checkMemoSelected(id)) setSelectedMemoIds(prevMemoIds => prevMemoIds.filter(prevMemo => prevMemo !== id));
-    else setSelectedMemoIds(prevMemoIds => [...prevMemoIds, id]);
-  }, []);
+      if (checkMemoSelected(id)) setSelectedMemoIds(prevMemoIds => prevMemoIds.filter(prevMemo => prevMemo !== id));
+      else setSelectedMemoIds(prevMemoIds => [...prevMemoIds, id]);
+    },
+    [selectedMemoIds],
+  );
 
   const handleMouseDown = (event: React.MouseEvent) => {
     setIsDragging(true);

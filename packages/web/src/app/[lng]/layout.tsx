@@ -10,6 +10,7 @@ import localFont from 'next/font/local';
 import { PropsWithChildren } from 'react';
 import { WebVitals } from '../_components';
 import { CONFIG } from '@src/constants';
+import type { Viewport } from 'next';
 
 const pretendard = localFont({
   src: '../../fonts/PretendardVariable.woff2',
@@ -27,8 +28,6 @@ export async function generateStaticParams() {
 export const metadata: Metadata = {
   title: '웹 메모',
   description: '웹페이지를 쉽게 저장하고 관리하세요',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
-  themeColor: '#ffffff',
   robots: 'index, follow',
   openGraph: {
     type: 'website',
@@ -37,6 +36,13 @@ export const metadata: Metadata = {
     locale: 'ko_KR',
     siteName: '웹 메모',
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 interface RootLayoutProps extends PropsWithChildren, LanguageParams {}

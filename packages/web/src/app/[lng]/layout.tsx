@@ -17,6 +17,7 @@ const pretendard = localFont({
   weight: '45 920',
   variable: '--font-pretendard',
   preload: true,
+  fallback: ['-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Roboto', 'sans-serif'],
 });
 
 export async function generateStaticParams() {
@@ -25,7 +26,17 @@ export async function generateStaticParams() {
 
 export const metadata: Metadata = {
   title: '웹 메모',
-  description: '웹 메모',
+  description: '웹페이지를 쉽게 저장하고 관리하세요',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+  themeColor: '#ffffff',
+  robots: 'index, follow',
+  openGraph: {
+    type: 'website',
+    title: '웹 메모',
+    description: '웹페이지를 쉽게 저장하고 관리하세요',
+    locale: 'ko_KR',
+    siteName: '웹 메모',
+  },
 };
 
 interface RootLayoutProps extends PropsWithChildren, LanguageParams {}

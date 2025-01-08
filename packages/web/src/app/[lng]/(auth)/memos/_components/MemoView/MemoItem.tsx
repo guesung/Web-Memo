@@ -25,11 +25,7 @@ export default memo(function MemoItem({
   ...props
 }: MemoItemProps) {
   return (
-    <article
-      {...props}
-      id={String(memo.id)}
-      className={cn('memo-item select-none transition-all', props.className)}
-      tabIndex={0}>
+    <article {...props} id={String(memo.id)} className={cn('memo-item select-none transition-all', props.className)}>
       <Card
         className={cn('relative box-content w-[300px] transition-all', {
           'border-primary cursor-pointer': isSelected,

@@ -3,7 +3,7 @@ import './globals.css';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { Header, QueryProvider, ThemeProvider } from '@src/components';
 import { Toaster } from '@src/components/ui';
-import { LanguageParams, languages } from '@src/modules/i18n';
+import { LanguageParams, SUPPORTED_LANGUAGES } from '@src/modules/i18n';
 import { dir } from 'i18next';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
@@ -20,7 +20,7 @@ const pretendard = localFont({
 });
 
 export async function generateStaticParams() {
-  return languages.map(lng => ({ lng }));
+  return SUPPORTED_LANGUAGES.map(lng => ({ lng }));
 }
 
 export const metadata: Metadata = {

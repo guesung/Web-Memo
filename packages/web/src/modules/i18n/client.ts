@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
 import { initReactI18next, useTranslation as useTranslationOrg, type UseTranslationOptions } from 'react-i18next';
 
-import { cookieName, languages } from './constant';
+import { cookieName, SUPPORTED_LANGUAGES } from './constant';
 import { Language } from './type';
 import { getOptions } from './util';
 
@@ -26,7 +26,7 @@ i18next
     detection: {
       order: ['path', 'htmlTag', 'cookie', 'navigator'],
     },
-    preload: runsOnServerSide ? languages : [],
+    preload: runsOnServerSide ? SUPPORTED_LANGUAGES : [],
   });
 
 export default function useTranslation(language: Language, ns?: Namespace, options?: UseTranslationOptions<string>) {

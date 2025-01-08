@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 interface IntroductPageProps extends LanguageParams {}
 
-export default function IntroductPage({ params: { lng } }: IntroductPageProps) {
+export default function IntroducePage({ params: { lng } }: IntroductPageProps) {
   return (
     <div className="bg-background min-h-screen">
       <Header.Margin />

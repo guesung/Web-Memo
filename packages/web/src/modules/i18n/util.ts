@@ -14,7 +14,7 @@ export const getOptions = (lng = DEFAULT_LANGUAGE, ns: Namespace = defaultNS) =>
 });
 
 export const getLanguage = (request: NextRequest) => {
-  acceptLanguage.SUPPORTED_LANGUAGES([...SUPPORTED_LANGUAGES]);
+  acceptLanguage.languages([...SUPPORTED_LANGUAGES]);
   if (request.cookies.has(cookieName)) return acceptLanguage.get(request.cookies.get(cookieName)?.value);
   if (request.headers.get('Accept-Language')) return acceptLanguage.get(request.headers.get('Accept-Language'));
   if (request.headers.get('referer'))

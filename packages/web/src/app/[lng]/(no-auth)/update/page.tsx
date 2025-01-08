@@ -2,7 +2,7 @@ import { Header } from '@src/components';
 import { LanguageParams } from '@src/modules/i18n';
 import { Metadata } from 'next';
 
-import { UpdateList, UpdateTitle } from './components';
+import { UpdateList, UpdateTitle } from './_components';
 
 export const metadata: Metadata = {
   title: 'Web Memo | 업데이트 소식 ',

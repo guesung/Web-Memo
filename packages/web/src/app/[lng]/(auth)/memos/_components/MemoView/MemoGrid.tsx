@@ -5,36 +5,41 @@ import { useKeyboardBind } from '@extension/shared/hooks';
 import { GetMemoResponse } from '@extension/shared/types';
 import { LanguageType } from '@src/modules/i18n';
 import { AnimatePresence } from 'framer-motion';
-import { KeyboardEvent, MouseEvent, useCallback, useMemo, useState, useEffect } from 'react';
+import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
+import { useSearchParams } from '@extension/shared/modules/search-params';
+import { DragBox } from '@src/components';
+import { useDrag } from '@src/hooks/useDrag';
+import { useRouter } from 'next/navigation';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
-import { DragBox } from '@src/components';
-import { useSearchParams } from '@extension/shared/modules/search-params';
-import { useRouter } from 'next/navigation';
-import { useDrag } from '@src/hooks/useDrag';
+import { Loading, Skeleton } from '@extension/ui';
 
 const MEMO_UNIT = 20;
 
-const getMemoItems = (nextGroupKey: number, count: number, memos: GetMemoResponse[]) =>
-  Array.from({ length: count }, (_, i) => ({
-    groupKey: nextGroupKey,
-    key: nextGroupKey * MEMO_UNIT + i,
-    memo: memos[nextGroupKey * MEMO_UNIT + i],
-  }));
+const getItems = (nextGroupKey: number, count: number) => {
+  const nextItems = [];
+  const nextKey = nextGroupKey * MEMO_UNIT;
+
+  for (let i = 0; i < count; ++i) {
+    nextItems.push({ groupKey: nextGroupKey, key: nextKey + i });
+  }
+  return nextItems;
+};
 
 interface MemoGridProps extends LanguageType {
   memos: GetMemoResponse[];
   gridKey: string;
+  id: string;
 }
 
-export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
+export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
 
   const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
 
-  const [gridMemoItems, setGridMemoItemsItems] = useState(() => getMemoItems(0, MEMO_UNIT, memos));
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
   const [hoveredMemoId, setHoveredMemoId] = useState<number | null>(null);
 
@@ -109,21 +114,13 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
 
   const closeMemoOption = () => {
     setSelectedMemoIds([]);
-  };
-
-  const handleGridRequestAppend = ({ groupKey }: any) => {
-    if (gridMemoItems.length >= memos.length) return;
-
-    const nextGroupKey = (+groupKey || 0) + 1;
-    const maxAddItem =
-      gridMemoItems.length + MEMO_UNIT > memos.length ? memos.length - gridMemoItems.length : MEMO_UNIT;
-
-    if (maxAddItem === 0) return;
-
-    setGridMemoItemsItems([...gridMemoItems, ...getMemoItems(nextGroupKey, maxAddItem, memos)]);
+    searchParams.removeAll('id');
+    router.replace(searchParams.getUrl(), { scroll: false });
   };
 
   useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
+
+  if (!memos) return <Loading />;
 
   return (
     <div className="relative h-full w-full" onMouseDown={handleMouseDown}>
@@ -139,28 +136,46 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         )}
       </AnimatePresence>
       <MasonryInfiniteGrid
-        className="container"
+        className="container h-screen"
+        placeholder={<Skeleton className="h-[300px] w-[300px]" />}
         gap={16}
         align="center"
         useResizeObserver
         observeChildren
         autoResize
-        onRequestAppend={handleGridRequestAppend}>
-        {gridMemoItems.map(
-          ({ groupKey, memo, key }) =>
-            memo && (
+        container={true}
+        onRequestAppend={({ groupKey, currentTarget, wait, ready }: any) => {
+          if (items.length >= memos.length) return;
+
+          const nextGroupKey = (+groupKey! || 0) + 1;
+          const maxAddItem = items.length + MEMO_UNIT > memos.length ? memos.length - items.length : MEMO_UNIT;
+
+          if (maxAddItem === 0) return;
+
+          wait();
+          currentTarget.appendPlaceholders(MEMO_UNIT, nextGroupKey);
+
+          setTimeout(() => {
+            ready();
+            setItems([...items, ...getItems(nextGroupKey, maxAddItem)]);
+          }, 100);
+        }}>
+        {items.map(
+          item =>
+            memos.at(item.key) && (
               <MemoItem
                 lng={lng}
-                data-grid-groupkey={groupKey}
-                key={key + gridKey}
-                memo={memo}
-                isSelected={checkMemoSelected(memo.id)}
-                isHovered={hoveredMemoId === memo.id}
+                data-grid-groupkey={item.groupKey}
+                key={item.key + gridKey}
+                memo={memos.at(item.key)!}
+                isSelected={checkMemoSelected(memos.at(item.key)!.id)}
+                isHovered={hoveredMemoId === memos.at(item.key)!.id}
                 selectMemoItem={selectMemoItem}
                 onMouseDown={handleMemoItemMouseDown}
-                onMouseEnter={() => setHoveredMemoId(memo.id)}
+                onMouseEnter={() => setHoveredMemoId(memos.at(item.key)!.id)}
                 onMouseLeave={() => setHoveredMemoId(null)}
                 isSelecting={isAnyMemoSelected}
+                className={memos.at(item.key)!.id !== Number(id) ? '' : 'invisible'}
               />
             ),
         )}

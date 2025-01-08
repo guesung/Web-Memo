@@ -1,33 +1,32 @@
 'use client';
 import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
-import { useSearchParams } from '@extension/shared/modules/search-params';
+import { SearchParamsType, useSearchParams } from '@extension/shared/modules/search-params';
 import { formatDate } from '@extension/shared/utils';
 import { Button } from '@extension/ui';
 import { Card, CardContent, Dialog, DialogContent, Textarea } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useRouter } from 'next/navigation';
-import { FocusEvent, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { FocusEvent, useEffect, useImperativeHandle, useRef } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 
-import { MemoInput } from '../../types';
+import { MemoInput } from '../../_types';
 import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
 
 interface MemoDialog extends LanguageType {
-  id: string;
+  searchParams: SearchParamsType;
 }
 
-export default function MemoDialog({ lng, id }: MemoDialog) {
+export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
   const router = useRouter();
   const { memo: memoData } = useMemoQuery({ id: Number(id) });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [open, setOpen] = useState(false);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 
-  const { register, watch, setValue } = useForm<MemoInput>({
+  const { register, watch, setValue, control } = useForm<MemoInput>({
     defaultValues: {
       memo: '',
     },
@@ -37,6 +36,10 @@ export default function MemoDialog({ lng, id }: MemoDialog) {
   };
   const { ref, ...rest } = register('memo', {
     onChange: adjustTextareaHeight,
+  });
+  useWatch({
+    name: 'memo',
+    control,
   });
 
   useImperativeHandle(ref, () => textareaRef.current);
@@ -67,13 +70,9 @@ export default function MemoDialog({ lng, id }: MemoDialog) {
     setValue('memo', memoData?.memo ?? '');
   }, [memoData, setValue]);
 
-  useEffect(() => {
-    setOpen(!!id);
-  }, [id]);
-
-  if (!id || !memoData) return;
+  if (!memoData) return;
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open>
       <DialogContent className="max-w-[600px] p-0" onClose={closeDialog}>
         <Card>
           <MemoCardHeader memo={memoData} />

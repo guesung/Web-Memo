@@ -2,7 +2,7 @@ import { Header } from '@src/components';
 import { LanguageParams } from '@src/modules/i18n';
 import { Metadata } from 'next';
 
-import { AdditionalFeatures, Features, Footer, Hero, ImageSlider, QuestionAndAnswer } from './components';
+import { AdditionalFeatures, Features, Footer, Hero, ImageSlider, QuestionAndAnswer } from './_components';
 
 export const metadata: Metadata = {
   title: '웹 메모 | 소개 ',

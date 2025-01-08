@@ -61,7 +61,6 @@ export default function MemoOption({ lng, memoIds = [], closeMemoOption }: MemoO
       selectedMemos.map(memo => memo.id),
       {
         onSuccess: async () => {
-          await ExtensionBridge.requestRefetchTheMemos();
 
           const handleToastActionClick = () => {
             mutateUpsertMemo(selectedMemos, {
@@ -80,6 +79,8 @@ export default function MemoOption({ lng, memoIds = [], closeMemoOption }: MemoO
               </ToastAction>
             ),
           });
+
+          await ExtensionBridge.requestRefetchTheMemos();
         },
         onSettled: () => {
           setIsOpen(false);

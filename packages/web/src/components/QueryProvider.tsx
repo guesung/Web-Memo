@@ -15,7 +15,7 @@ export default function QueryProvider({ children, lng }: QueryProviderProps) {
     () =>
       new QueryClient({
         defaultOptions: {
-          queries: { refetchOnWindowFocus: true },
+          queries: { refetchOnWindowFocus: true, staleTime: 1000 * 60 * 5 },
           mutations: {
             onError: () => {
               toast({ title: t('toastTitle.errorSave') });

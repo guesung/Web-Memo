@@ -9,6 +9,7 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { PropsWithChildren } from 'react';
 import { WebVitals } from '../_components';
+import { CONFIG } from '@src/constants';
 
 const pretendard = localFont({
   src: '../../fonts/PretendardVariable.woff2',
@@ -41,7 +42,7 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
         </ThemeProvider>
 
         <WebVitals />
-        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID as string} />
+        <GoogleAnalytics gaId={CONFIG.gaId} />
         <Toaster />
       </body>
     </html>

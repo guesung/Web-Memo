@@ -100,17 +100,6 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
     };
   }, [isDragging]);
 
-  const handleMemoItemMouseDown = (event: MouseEvent<HTMLElement>) => {
-    event.stopPropagation();
-    const id = event.currentTarget.id;
-
-    if (isAnyMemoSelected) selectMemoItem(Number(id));
-    else {
-      searchParams.set('id', id);
-      router.push(searchParams.getUrl(), { scroll: false });
-    }
-  };
-
   const closeMemoOption = () => {
     setSelectedMemoIds([]);
     searchParams.removeAll('id');
@@ -169,7 +158,6 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
                 memo={memos.at(item.key)!}
                 isSelected={checkMemoSelected(memos.at(item.key)!.id)}
                 selectMemoItem={selectMemoItem}
-                onMouseDown={handleMemoItemMouseDown}
                 isSelecting={isAnyMemoSelected}
                 className={memos.at(item.key)!.id !== Number(id) ? '' : 'invisible'}
               />

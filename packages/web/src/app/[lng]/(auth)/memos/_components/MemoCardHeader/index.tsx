@@ -16,7 +16,7 @@ interface MemoCardHeaderProps {
 export default memo(function MemoCardHeader({ memo, selectMemoItem, isHovered, isSelected }: MemoCardHeaderProps) {
   const handleMemoSelect = useCallback(() => {
     selectMemoItem?.(memo.id);
-  }, []);
+  }, [selectMemoItem, memo.id]);
 
   const isShowingSelectButton = isHovered || isSelected;
   return (

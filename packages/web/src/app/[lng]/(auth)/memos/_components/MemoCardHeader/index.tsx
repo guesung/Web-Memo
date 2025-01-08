@@ -4,6 +4,7 @@ import { Button, CardHeader, Tooltip, TooltipContent, TooltipProvider, TooltipTr
 import { CheckIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { memo, useCallback } from 'react';
 
 interface MemoCardHeaderProps {
   memo: GetMemoResponse;
@@ -12,10 +13,10 @@ interface MemoCardHeaderProps {
   isSelected?: boolean;
 }
 
-export default function MemoCardHeader({ memo, selectMemoItem, isHovered, isSelected }: MemoCardHeaderProps) {
-  const handleMemoSelect = () => {
+export default memo(function MemoCardHeader({ memo, selectMemoItem, isHovered, isSelected }: MemoCardHeaderProps) {
+  const handleMemoSelect = useCallback(() => {
     selectMemoItem?.(memo.id);
-  };
+  }, [selectMemoItem, memo.id]);
 
   const isShowingSelectButton = isHovered || isSelected;
   return (
@@ -55,4 +56,4 @@ export default function MemoCardHeader({ memo, selectMemoItem, isHovered, isSele
       </Link>
     </CardHeader>
   );
-}
+});

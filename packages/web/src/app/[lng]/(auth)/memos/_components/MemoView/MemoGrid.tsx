@@ -41,17 +41,19 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
 
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
-  const [hoveredMemoId, setHoveredMemoId] = useState<number | null>(null);
 
   const checkMemoSelected = useCallback((id: number) => selectedMemoIds.includes(id), [selectedMemoIds]);
   const isAnyMemoSelected = useMemo(() => selectedMemoIds.length > 0, [selectedMemoIds]);
 
-  const selectMemoItem = useCallback((id: number) => {
-    if (isDragging) return;
+  const selectMemoItem = useCallback(
+    (id: number) => {
+      if (isDragging) return;
 
-    if (checkMemoSelected(id)) setSelectedMemoIds(prevMemoIds => prevMemoIds.filter(prevMemo => prevMemo !== id));
-    else setSelectedMemoIds(prevMemoIds => [...prevMemoIds, id]);
-  }, []);
+      if (checkMemoSelected(id)) setSelectedMemoIds(prevMemoIds => prevMemoIds.filter(prevMemo => prevMemo !== id));
+      else setSelectedMemoIds(prevMemoIds => [...prevMemoIds, id]);
+    },
+    [selectedMemoIds],
+  );
 
   const handleMouseDown = (event: React.MouseEvent) => {
     setIsDragging(true);
@@ -100,17 +102,6 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
       window.removeEventListener('mouseup', handleMouseUp);
     };
   }, [isDragging]);
-
-  const handleMemoItemMouseDown = (event: MouseEvent<HTMLElement>) => {
-    event.stopPropagation();
-    const id = event.currentTarget.id;
-
-    if (isAnyMemoSelected) selectMemoItem(Number(id));
-    else {
-      searchParams.set('id', id);
-      router.push(searchParams.getUrl(), { scroll: false });
-    }
-  };
 
   const closeMemoOption = () => {
     setSelectedMemoIds([]);
@@ -169,11 +160,7 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
                 key={item.key + gridKey}
                 memo={memos.at(item.key)!}
                 isSelected={checkMemoSelected(memos.at(item.key)!.id)}
-                isHovered={hoveredMemoId === memos.at(item.key)!.id}
                 selectMemoItem={selectMemoItem}
-                onMouseDown={handleMemoItemMouseDown}
-                onMouseEnter={() => setHoveredMemoId(memos.at(item.key)!.id)}
-                onMouseLeave={() => setHoveredMemoId(null)}
                 isSelecting={isAnyMemoSelected}
                 className={memos.at(item.key)!.id !== Number(id) ? '' : 'invisible'}
               />

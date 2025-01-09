@@ -64,7 +64,7 @@ export default function MemoOption({ lng, memoIds = [], closeMemoOption }: MemoO
           const handleToastActionClick = () => {
             mutateUpsertMemo(selectedMemos, {
               onSuccess: async () => {
-                await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
+                await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
                 await ExtensionBridge.requestRefetchTheMemos();
               },
             });
@@ -111,7 +111,7 @@ export default function MemoOption({ lng, memoIds = [], closeMemoOption }: MemoO
               </ToastAction>
             ),
           });
-          queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
+          queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
         },
         onSettled: () => {
           setIsOpen(false);

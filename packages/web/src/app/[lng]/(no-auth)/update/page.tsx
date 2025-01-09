@@ -15,7 +15,6 @@ interface UpdatesPageProps extends LanguageParams {}
 export default async function UpdatesPage({ params: { lng } }: UpdatesPageProps) {
   return (
     <div className="bg-background min-h-screen">
-      <DebugCache path="/update" />
       <HeaderMargin />
       <main className="container mx-auto px-4 py-16">
         <UpdateTitle lng={lng} />

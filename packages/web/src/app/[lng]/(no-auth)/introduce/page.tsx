@@ -15,7 +15,6 @@ interface IntroducePageProps extends LanguageParams {}
 export default function IntroducePage({ params: { lng } }: IntroducePageProps) {
   return (
     <div className="bg-background min-h-screen">
-      <DebugCache path="/introduce" />
       <HeaderMargin />
       <main className="container mx-auto px-4 py-16">
         <Hero lng={lng} />

@@ -90,8 +90,9 @@ export default function MemoOption({ lng, memoIds = [], closeMemoOption }: MemoO
   };
 
   const handleCategoryChange = (categoryId: string) => {
+    const currentMemo = memos.filter(memo => memoIds.includes(memo.id));
     mutateUpsertMemo(
-      memos.map(memo => ({ ...memo, category_id: Number(categoryId) })),
+      currentMemo.map(memo => ({ ...memo, category_id: Number(categoryId) })),
       {
         onSuccess: () => {
           const category = categories?.find(category => category.id === Number(categoryId));

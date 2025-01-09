@@ -1,9 +1,8 @@
 import { LanguageParams } from '@src/modules/i18n';
 import { Metadata } from 'next';
 
-import { AdditionalFeatures, Features, Footer, Hero, ImageSlider, QuestionAndAnswer } from './_components';
 import { HeaderMargin } from '../../(auth)/memos/_components/Header';
-import DebugCache from '@src/components/DebugCache';
+import { AdditionalFeatures, Features, Footer, Hero, ImageSlider, QuestionAndAnswer } from './_components';
 
 export const metadata: Metadata = {
   title: '웹 메모 | 소개 ',

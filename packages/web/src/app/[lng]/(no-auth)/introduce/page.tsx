@@ -16,7 +16,6 @@ export default function IntroducePage({ params: { lng } }: IntroducePageProps) {
   return (
     <div className="bg-background min-h-screen">
       <HeaderMargin />
-      <DebugCache path="/introduce" />
       <main className="container mx-auto px-4 py-16">
         <Hero lng={lng} />
         <div className="container mx-auto px-4 py-12">

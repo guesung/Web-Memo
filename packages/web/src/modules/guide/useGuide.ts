@@ -63,7 +63,7 @@ export default function useGuide({ lng }: UseGuideProps) {
   const driverObj = createDriver();
 
   useEffect(() => {
-    if (!manifest || checkLocalStorageTrue('guide')) return;
+    if (manifest === 'NOT_INSTALLED' || checkLocalStorageTrue('guide')) return;
 
     driverObj.drive();
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -11,6 +11,7 @@ import {
 } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 
+import { setLocalStorageTrue } from '@extension/shared/modules/local-storage';
 import useExtensionDialog from './useExtensionDialog';
 import { useExtensionDialogInfo } from './useExtensionDialogInfo';
 
@@ -23,12 +24,14 @@ export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
 
   if (!dialogType || !extensionDialogInfo) return null;
 
-  const handleUpdateClick = () => {
-    window.open(extensionDialogInfo.link, '_blank', 'noopener,noreferrer');
+  const handleOkClick = () => {
+    setLocalStorageTrue(extensionDialogInfo.localStorageKey);
     handleClose(extensionDialogInfo.localStorageKey);
+    window.open(extensionDialogInfo.link, '_blank', 'noopener,noreferrer');
   };
 
   const handleCloseClick = () => {
+    setLocalStorageTrue(extensionDialogInfo.localStorageKey);
     handleClose(extensionDialogInfo.localStorageKey);
   };
 
@@ -45,7 +48,7 @@ export default function ExtensionDialog({ lng }: ExtensionDialogProps) {
               {extensionDialogInfo.message.cancel}
             </Button>
           )}
-          <Button onClick={handleUpdateClick}>{extensionDialogInfo.message.ok}</Button>
+          <Button onClick={handleOkClick}>{extensionDialogInfo.message.ok}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

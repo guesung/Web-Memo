@@ -36,19 +36,19 @@ export const useExtensionDialogInfo = (
       link: URL.chromeStore,
       localStorageKey: 'install',
     },
-    update: {
-      message: {
-        title: t('dialogVersion.title'),
-        description: t('dialogVersion.description', {
-          currentVersion: manifest?.version,
-          lastVersion: EXTENSION.lastVersion,
-        }),
-        ok: t('dialogVersion.ok'),
-        cancel: t('dialogVersion.cancel'),
-      },
-      link: URL.guideKo,
-      localStorageKey: 'updateVersion',
-    },
+    // update: {
+    //   message: {
+    //     title: t('dialogVersion.title'),
+    //     description: t('dialogVersion.description', {
+    //       currentVersion: manifest?.version,
+    //       lastVersion: EXTENSION.lastVersion,
+    //     }),
+    //     ok: t('dialogVersion.ok'),
+    //     cancel: t('dialogVersion.cancel'),
+    //   },
+    //   link: URL.guideKo,
+    //   localStorageKey: 'updateVersion',
+    // },
   };
   return EXTENSION_DIALOG_INFO_ALL[dialogType];
 };

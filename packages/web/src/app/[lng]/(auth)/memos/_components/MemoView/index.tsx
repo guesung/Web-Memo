@@ -14,6 +14,7 @@ import { SearchFormValues } from '../SearchFormProvider';
 import MemoCalendar from './MemoCalendar';
 import MemoGrid from './MemoGrid';
 import ToggleView from './ToggleView';
+import { ExtensionDialog } from '@src/app/_components';
 
 interface MemoViewProps extends LanguageType {
   searchParams: SearchParamsType;
@@ -48,6 +49,8 @@ export default function MemoView({
 
       {view === 'grid' && <MemoGrid memos={memos} gridKey={category + isWish} lng={lng} id={id} />}
       {view === 'calendar' && <MemoCalendar lng={lng} memos={memos} />}
+
+      <ExtensionDialog lng={lng} />
     </div>
   );
 }

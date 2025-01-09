@@ -18,7 +18,7 @@ export async function middleware(request: NextRequest) {
       new URL(`/${language}${pathname}${request.nextUrl.search}${request.nextUrl.hash}`, request.url),
     );
 
-  return await updateSession(request);
+  return NextResponse.next();
 }
 
 export const config = {

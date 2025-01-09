@@ -1,15 +1,16 @@
 import '@extension/ui/dist/global.css';
-import './globals.css';
 import { GoogleAnalytics } from '@next/third-parties/google';
-import { Header, QueryProvider, ThemeProvider } from '@src/components';
+import { AuthProvider, QueryProvider, ThemeProvider } from '@src/components';
 import { Toaster } from '@src/components/ui';
+import { CONFIG } from '@src/constants';
 import { LanguageParams, SUPPORTED_LANGUAGES } from '@src/modules/i18n';
 import { dir } from 'i18next';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { PropsWithChildren } from 'react';
 import { WebVitals } from '../_components';
-import { CONFIG } from '@src/constants';
+import { Header } from './(auth)/memos/_components';
+import './globals.css';
 
 const pretendard = localFont({
   src: '../../fonts/PretendardVariable.woff2',
@@ -36,8 +37,10 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
       <body className={`${pretendard.variable} font-pretendard h-full`}>
         <ThemeProvider>
           <QueryProvider lng={lng}>
-            <Header lng={lng} />
-            {children}
+            <AuthProvider>
+              <Header lng={lng} />
+              {children}
+            </AuthProvider>
           </QueryProvider>
         </ThemeProvider>
 

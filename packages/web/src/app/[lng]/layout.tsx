@@ -5,7 +5,7 @@ import { Toaster } from '@src/components/ui';
 import { CONFIG } from '@src/constants';
 import { LanguageParams, SUPPORTED_LANGUAGES } from '@src/modules/i18n';
 import { dir } from 'i18next';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import { PropsWithChildren } from 'react';
 import { WebVitals } from '../_components';
@@ -18,6 +18,7 @@ const pretendard = localFont({
   weight: '45 920',
   variable: '--font-pretendard',
   preload: true,
+  fallback: ['-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Roboto', 'sans-serif'],
 });
 
 export async function generateStaticParams() {
@@ -26,7 +27,22 @@ export async function generateStaticParams() {
 
 export const metadata: Metadata = {
   title: '웹 메모',
-  description: '웹 메모',
+  description: '웹페이지를 쉽게 저장하고 관리하세요',
+  robots: 'index, follow',
+  openGraph: {
+    type: 'website',
+    title: '웹 메모',
+    description: '웹페이지를 쉽게 저장하고 관리하세요',
+    locale: 'ko_KR',
+    siteName: '웹 메모',
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 interface RootLayoutProps extends PropsWithChildren, LanguageParams {}

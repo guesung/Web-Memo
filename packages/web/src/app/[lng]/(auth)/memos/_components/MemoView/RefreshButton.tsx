@@ -7,10 +7,11 @@ import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { RefreshCwIcon } from 'lucide-react';
+import { memo } from 'react';
 
 interface RefreshButtonProps extends LanguageType {}
 
-export default function RefreshButton({ lng }: RefreshButtonProps) {
+export default memo(function RefreshButton({ lng }: RefreshButtonProps) {
   const { t } = useTranslation(lng);
   const queryClient = useQueryClient();
   const { driverObj } = useGuide({ lng });
@@ -29,4 +30,4 @@ export default function RefreshButton({ lng }: RefreshButtonProps) {
       <RefreshCwIcon size={16} />
     </Button>
   );
-}
+});

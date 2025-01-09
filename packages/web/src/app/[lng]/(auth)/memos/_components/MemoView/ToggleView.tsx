@@ -5,10 +5,11 @@ import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { Calendar, Grid } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { memo } from 'react';
 
 interface ToggleViewProps extends LanguageType {}
 
-export default function ToggleView({ lng }: ToggleViewProps) {
+export default memo(function ToggleView({ lng }: ToggleViewProps) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -30,4 +31,4 @@ export default function ToggleView({ lng }: ToggleViewProps) {
       </ToggleGroupItem>
     </ToggleGroup>
   );
-}
+});

@@ -48,6 +48,7 @@
   "devDependencies": {
     "@extension/tailwindcss-config": "workspace:*",
     "@extension/tsconfig": "workspace:*",
+    "@next/bundle-analyzer": "^15.1.4",
     "@tailwindcss/typography": "^0.5.14",
     "@types/node": "22.5.2",
     "@types/react": "18.3.5",

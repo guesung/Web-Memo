@@ -31,7 +31,7 @@
     "login": "Login",
     "logout": "Sign Out",
     "introduce": "Introduce",
-    "updateLog": "Update Log"
+    "update": "Update Log"
   },
   "updates": {
     "title": "Update Log",

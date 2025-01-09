@@ -36,3 +36,6 @@ vite.config.**
 
 # Turborepo
 .turbo
+
+# windsurf
+.windsurfrules

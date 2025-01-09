@@ -7,7 +7,7 @@ interface GetMemoUrlParams {
 }
 
 export const getMemoUrl = ({ id, isWish }: GetMemoUrlParams) => {
-  const searchParams = new SearchParams([]);
+  const searchParams = new SearchParams();
   if (id) searchParams.set('id', String(id));
   if (isWish) searchParams.set('isWish', 'true');
 
@@ -15,7 +15,7 @@ export const getMemoUrl = ({ id, isWish }: GetMemoUrlParams) => {
 };
 
 export const getMemoWishListUrl = (id?: number) => {
-  const searchParams = new SearchParams([]);
+  const searchParams = new SearchParams();
   searchParams.set('isWish', 'true');
   if (id) searchParams.set('id', String(id));
 

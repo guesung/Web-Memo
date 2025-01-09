@@ -1,6 +1,6 @@
-import { languages } from './constant';
+import { SUPPORTED_LANGUAGES } from './constant';
 
-export type Language = (typeof languages)[number];
+export type Language = (typeof SUPPORTED_LANGUAGES)[number];
 export type LanguageType = {
   lng: Language;
 };

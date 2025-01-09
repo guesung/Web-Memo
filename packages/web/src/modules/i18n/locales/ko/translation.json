@@ -30,7 +30,7 @@
     "login": "로그인",
     "logout": "로그아웃하기",
     "introduce": "소개",
-    "updateLog": "업데이트 소식"
+    "update": "업데이트 소식"
   },
   "updates": {
     "title": "업데이트 소식",

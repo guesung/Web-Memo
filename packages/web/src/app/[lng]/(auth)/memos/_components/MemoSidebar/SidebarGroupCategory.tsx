@@ -27,6 +27,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
   const currentCategory = searchParams.get('category');
 
   const handleCategoryClick = (category: string) => {
+    searchParams.removeAll('isWish');
     searchParams.set('category', category);
     router.push(searchParams.getUrl(), { scroll: true });
   };

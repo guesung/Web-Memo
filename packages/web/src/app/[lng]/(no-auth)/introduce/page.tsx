@@ -1,8 +1,9 @@
-import { Header } from '@src/components';
 import { LanguageParams } from '@src/modules/i18n';
 import { Metadata } from 'next';
 
 import { AdditionalFeatures, Features, Footer, Hero, ImageSlider, QuestionAndAnswer } from './_components';
+import { HeaderMargin } from '../../(auth)/memos/_components/Header';
+import DebugCache from '@src/components/DebugCache';
 
 export const metadata: Metadata = {
   title: '웹 메모 | 소개 ',
@@ -14,7 +15,8 @@ interface IntroducePageProps extends LanguageParams {}
 export default function IntroducePage({ params: { lng } }: IntroducePageProps) {
   return (
     <div className="bg-background min-h-screen">
-      <Header.Margin />
+      <HeaderMargin />
+      <DebugCache path="/introduce" />
       <main className="container mx-auto px-4 py-16">
         <Hero lng={lng} />
         <div className="container mx-auto px-4 py-12">

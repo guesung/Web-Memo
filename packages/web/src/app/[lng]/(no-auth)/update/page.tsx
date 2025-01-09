@@ -1,7 +1,7 @@
-import { Header } from '@src/components';
 import { LanguageParams } from '@src/modules/i18n';
 import { Metadata } from 'next';
 
+import { HeaderMargin } from '../../(auth)/memos/_components/Header';
 import { UpdateList, UpdateTitle } from './_components';
 
 export const metadata: Metadata = {
@@ -14,7 +14,7 @@ interface UpdatesPageProps extends LanguageParams {}
 export default async function UpdatesPage({ params: { lng } }: UpdatesPageProps) {
   return (
     <div className="bg-background min-h-screen">
-      <Header.Margin />
+      <HeaderMargin />
       <main className="container mx-auto px-4 py-16">
         <UpdateTitle lng={lng} />
         <UpdateList lng={lng} />

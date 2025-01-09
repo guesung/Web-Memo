@@ -21,7 +21,7 @@ import useTranslation from '@src/modules/i18n/server';
 import { Heart, Home, SettingsIcon } from 'lucide-react';
 import Link from 'next/link';
 
-import Header from '../Header';
+import { HeaderMargin } from '../Header';
 import SidebarGroupCategory from './SidebarGroupCategory';
 
 const items = [
@@ -42,7 +42,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 
   return (
     <Sidebar>
-      <Header.Margin />
+      <HeaderMargin />
 
       <SidebarContent>
         <SidebarGroup>

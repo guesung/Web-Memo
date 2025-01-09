@@ -61,11 +61,10 @@ export default function MemoOption({ lng, memoIds = [], closeMemoOption }: MemoO
       selectedMemos.map(memo => memo.id),
       {
         onSuccess: async () => {
-
           const handleToastActionClick = () => {
             mutateUpsertMemo(selectedMemos, {
               onSuccess: async () => {
-                await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+                await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
                 await ExtensionBridge.requestRefetchTheMemos();
               },
             });
@@ -112,7 +111,7 @@ export default function MemoOption({ lng, memoIds = [], closeMemoOption }: MemoO
               </ToastAction>
             ),
           });
-          queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+          queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
         },
         onSettled: () => {
           setIsOpen(false);

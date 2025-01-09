@@ -12,7 +12,7 @@ const HeaderRight = dynamic(() => import('./HeaderRight'), {
 
 export default function Header({ lng }: LanguageType) {
   return (
-    <header className="bg-background fixed inset-x-0 z-50 flex h-16 flex-1 justify-between p-2 shadow-sm">
+    <header className="bg-background fixed inset-x-0 z-50 flex h-12 flex-1 justify-between p-2 shadow-sm">
       <HeaderLeft lng={lng} />
       <HeaderRight lng={lng} />
     </header>

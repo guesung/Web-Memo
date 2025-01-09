@@ -2,7 +2,7 @@
 
 import { PATHS, QUERY_KEY } from '@extension/shared/constants';
 import { AuthService, CategoryService } from '@extension/shared/utils';
-import { Header, HydrationBoundaryWrapper } from '@src/components';
+import { HydrationBoundaryWrapper } from '@src/components';
 import { Loading, SidebarProvider } from '@src/components/ui';
 import { LanguageParams } from '@src/modules/i18n';
 import { getSupabaseClient } from '@src/modules/supabase/util.server';

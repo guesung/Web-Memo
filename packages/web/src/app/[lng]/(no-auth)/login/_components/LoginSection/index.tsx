@@ -30,11 +30,11 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
           <Image src="/images/svgs/google.svg" width={16} height={16} alt="google" />
           {t('login.googleLogin')}
         </Button>
-        <Button
+        {/* <Button
           formAction={signInWithEmail.bind(null, SUPABASE.testEmail, SUPABASE.testPassword)}
           className="h-12 bg-green-300 text-black hover:bg-green-300">
           테스트 계정으로 로그인
-        </Button>
+        </Button> */}
       </form>
     </section>
   );

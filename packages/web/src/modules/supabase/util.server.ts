@@ -55,14 +55,3 @@ export const signInWithEmail = async (email: string, password: string) => {
   revalidatePath(PATHS.root, 'layout');
   redirect(`${CONFIG.webUrl}${PATHS.callbackEmail}`);
 };
-
-export const signout = async () => {
-  'use server';
-  const supabaseClient = getSupabaseClient();
-  await supabaseClient.auth.signOut();
-
-  const cookieStore = cookies();
-  cookieStore.delete(COOKIE_KEY.accessToken);
-  cookieStore.delete(COOKIE_KEY.refreshToken);
-  redirect(PATHS.login);
-};

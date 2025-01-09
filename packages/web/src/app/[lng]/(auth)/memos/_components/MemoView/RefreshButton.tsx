@@ -1,4 +1,3 @@
-'use client';
 import { QUERY_KEY } from '@extension/shared/constants';
 import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { setLocalStorageTrue } from '@extension/shared/modules/local-storage';

@@ -1,4 +1,4 @@
-import { SUPABASE } from '@src/constants';
+import { COOKIE_KEY, SUPABASE } from '@src/constants';
 import { CategoryRow, CategoryTable, MemoRow, MemoSupabaseClient, MemoTable } from '@src/types';
 
 export class MemoService {
@@ -63,4 +63,6 @@ export class AuthService {
     const user = await this.supabaseClient.auth.getUser();
     return !!user?.data?.user;
   };
+
+  signout = () => this.supabaseClient.auth.signOut();
 }

@@ -9,7 +9,7 @@ import { LanguageType } from '@src/modules/i18n';
 import { useTranslation } from 'react-i18next';
 
 import { useFormContext } from 'react-hook-form';
-import RefreshButton from '../Header/RefreshButton';
+import RefreshButton from './RefreshButton';
 import { SearchFormValues } from '../SearchFormProvider';
 import MemoCalendar from './MemoCalendar';
 import MemoGrid from './MemoGrid';

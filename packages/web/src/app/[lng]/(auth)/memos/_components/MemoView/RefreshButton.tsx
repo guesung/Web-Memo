@@ -20,7 +20,7 @@ export default memo(function RefreshButton({ lng }: RefreshButtonProps) {
     driverObj.moveNext();
     setLocalStorageTrue('guide');
 
-    await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
+    await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
     toast({ title: t('toastTitle.refresh') });
     await ExtensionBridge.requestRefetchTheMemos();
   };

@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 
 import { HeaderMargin } from '../../(auth)/memos/_components/Header';
 import { UpdateList, UpdateTitle } from './_components';
+import DebugCache from '@src/components/DebugCache';
 
 export const metadata: Metadata = {
   title: 'Web Memo | 업데이트 소식 ',

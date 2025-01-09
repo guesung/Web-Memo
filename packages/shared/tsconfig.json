@@ -1,6 +1,7 @@
 {
   "extends": "@extension/tsconfig/react",
   "compilerOptions": {
+    "rootDir": ".",
     "baseUrl": ".",
     "paths": {
       "@*": ["./*"]

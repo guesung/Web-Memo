@@ -43,7 +43,7 @@ export default memo(function MemoItem({ lng, memo, selectMemoItem, isSelecting, 
     <article
       {...props}
       id={String(memo.id)}
-      className={cn('memo-item select-none transition-all', props.className)}
+      className={cn('memo-item select-none transition-all [transform:translateZ(0)]', props.className)}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onMouseDown={handleMemoItemMouseDown}>

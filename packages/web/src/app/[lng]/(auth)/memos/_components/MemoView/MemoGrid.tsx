@@ -127,6 +127,7 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
         )}
       </AnimatePresence>
       <MasonryInfiniteGrid
+        useTransform
         className="container h-screen"
         placeholder={<Skeleton className="h-[300px] w-[300px]" />}
         gap={16}
@@ -134,6 +135,9 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
         useResizeObserver
         observeChildren
         autoResize
+        style={{
+          willChange: 'transform',
+        }}
         container={true}
         onRequestAppend={({ groupKey, currentTarget, wait, ready }: any) => {
           if (items.length >= memos.length) return;

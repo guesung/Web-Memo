@@ -9,8 +9,13 @@ import { LanguageParams } from '@src/modules/i18n';
 import { getSupabaseClient } from '@src/modules/supabase/util.server';
 import { Suspense } from 'react';
 
-import { MemoDialog, MemoView, SearchForm, SearchFormProvider } from './_components';
+import { MemoView, SearchForm, SearchFormProvider } from './_components';
 import { HeaderMargin } from './_components/Header';
+import dynamic from 'next/dynamic';
+
+const MemoDialog = dynamic(() => import('./_components/MemoDialog'), {
+  ssr: false,
+});
 
 interface PageProps extends LanguageParams {
   searchParams: SearchParamsType;
@@ -28,8 +33,13 @@ export default async function Page({ searchParams, params: { lng } }: PageProps)
             <SearchForm lng={lng} />
             <MemoView lng={lng} searchParams={searchParams} />
           </SearchFormProvider>
-          {searchParams?.id && <MemoDialog lng={lng} searchParams={searchParams} />}
         </Suspense>
+
+        {searchParams?.id && (
+          <Suspense fallback={<Loading />}>
+            <MemoDialog lng={lng} searchParams={searchParams} />
+          </Suspense>
+        )}
       </HydrationBoundaryWrapper>
     </main>
   );

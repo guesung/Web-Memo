@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemosQuery } from '@extension/shared/hooks';
-import type { SearchParamsType, SearchParamViewType } from '@extension/shared/modules/search-params';
+import type { SearchParamsType } from '@extension/shared/modules/search-params';
 
 import { useGuide } from '@src/modules/guide';
 import { LanguageType } from '@src/modules/i18n';
@@ -9,12 +9,23 @@ import { LanguageType } from '@src/modules/i18n';
 import { useTranslation } from 'react-i18next';
 
 import { useFormContext } from 'react-hook-form';
-import RefreshButton from './RefreshButton';
+
+import dynamic from 'next/dynamic';
 import { SearchFormValues } from '../SearchFormProvider';
-import MemoCalendar from './MemoCalendar';
 import MemoGrid from './MemoGrid';
-import ToggleView from './ToggleView';
-import { ExtensionDialog } from '@src/app/_components';
+
+const RefreshButton = dynamic(() => import('./RefreshButton'), {
+  ssr: false,
+});
+const ToggleView = dynamic(() => import('./ToggleView'), {
+  ssr: false,
+});
+const MemoCalendar = dynamic(() => import('./MemoCalendar'), {
+  ssr: false,
+});
+const ExtensionDialog = dynamic(() => import('@src/app/_components/ExtensionDialog'), {
+  ssr: false,
+});
 
 interface MemoViewProps extends LanguageType {
   searchParams: SearchParamsType;

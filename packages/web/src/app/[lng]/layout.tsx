@@ -21,22 +21,35 @@ const pretendard = localFont({
   fallback: ['-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Roboto', 'sans-serif'],
 });
 
-export async function generateStaticParams() {
-  return SUPPORTED_LANGUAGES.map(lng => ({ lng }));
-}
-
-export const metadata: Metadata = {
+const metadataKorean: Metadata = {
   title: '웹 메모',
   description: '웹페이지를 쉽게 저장하고 관리하세요',
   robots: 'index, follow',
   openGraph: {
     type: 'website',
     title: '웹 메모',
-    description: '웹페이지를 쉽게 저장하고 관리하세요',
+    description: '웹페이지를 쉽게 저장하고 관리해요',
     locale: 'ko_KR',
     siteName: '웹 메모',
   },
 };
+
+const metadataEnglish: Metadata = {
+  title: 'Web Memo',
+  description: 'Store and manage web pages easily',
+  robots: 'index, follow',
+  openGraph: {
+    type: 'website',
+    title: 'Web Memo',
+    description: 'Store and manage web pages easily',
+    locale: 'en_US',
+    siteName: 'Web Memo',
+  },
+};
+
+export async function generateMetadata({ params }: LanguageParams) {
+  return params.lng === 'ko' ? metadataKorean : metadataEnglish;
+}
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -44,6 +57,10 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
 };
+
+export async function generateStaticParams() {
+  return SUPPORTED_LANGUAGES.map(lng => ({ lng }));
+}
 
 interface RootLayoutProps extends PropsWithChildren, LanguageParams {}
 

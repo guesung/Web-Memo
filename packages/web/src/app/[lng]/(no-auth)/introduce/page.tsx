@@ -3,12 +3,20 @@ import { Metadata } from 'next';
 
 import { HeaderMargin } from '../../(auth)/memos/_components/Header';
 import { AdditionalFeatures, Features, Footer, Hero, ImageSlider, QuestionAndAnswer } from './_components';
-import DebugCache from '@src/components/DebugCache';
 
-export const metadata: Metadata = {
+const metadataKorean: Metadata = {
   title: '웹 메모 | 소개 ',
   description: '웹 메모를 소개합니다.',
 };
+
+const metadataEnglish: Metadata = {
+  title: 'Web Memo | Introduce',
+  description: 'Introduce Web Memo.',
+};
+
+export async function generateMetadata({ params }: LanguageParams) {
+  return params.lng === 'ko' ? metadataKorean : metadataEnglish;
+}
 
 interface IntroducePageProps extends LanguageParams {}
 

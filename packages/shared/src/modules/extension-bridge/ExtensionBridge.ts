@@ -186,8 +186,9 @@ export default class ExtensionBridge {
 
   static async requestGetExtensionManifest(callbackFn: (response: chrome.runtime.Manifest) => void) {
     try {
-      await chrome.runtime.sendMessage(EXTENSION.id, { type: BRIDGE_MESSAGE_TYPES.GET_EXTENSION_MANIFEST }, callbackFn);
+      chrome.runtime.sendMessage(EXTENSION.id, { type: BRIDGE_MESSAGE_TYPES.GET_EXTENSION_MANIFEST }, callbackFn);
     } catch (error) {
+      console.log('여기서 에러가 발생했습니다.');
       throw new ExtensionError('Failed to request extension manifest', ExtensionErrorCode.RUNTIME_ERROR, error);
     }
   }

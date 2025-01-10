@@ -8,7 +8,7 @@ import {
 import { useGetExtensionManifest } from '@src/hooks';
 import { useEffect, useState } from 'react';
 
-export type DialogType = 'install' | 'update';
+export type DialogType = 'install';
 
 export default function useExtensionDialog() {
   const manifest = useGetExtensionManifest();
@@ -16,21 +16,21 @@ export default function useExtensionDialog() {
   const [dialogType, setDialogType] = useState<DialogType | undefined>(undefined);
 
   useEffect(() => {
-    if (manifest === null) return;
+    if (!manifest) return;
 
-    const isExtensionInstalled = manifest !== undefined;
-    const isExtensionNotLastVersion = isExtensionInstalled && manifest.version !== EXTENSION.lastVersion;
-
-    if (!isExtensionInstalled && !checkLocalStorageTrue('install')) {
+    if (manifest === 'NOT_INSTALLED' && !checkLocalStorageTrue('install')) {
       setDialogType('install');
       setOpen(true);
       return;
     }
-    if (isExtensionNotLastVersion && !checkLocalStorageTrue('updateVersion')) {
-      setDialogType('update');
-      setOpen(true);
-      return;
-    }
+
+    // const isExtensionNotLastVersion = manifest.version !== EXTENSION.lastVersion;
+
+    // if (isExtensionNotLastVersion && !checkLocalStorageTrue('updateVersion')) {
+    //   setDialogType('update');
+    //   setOpen(true);
+    //   return;
+    // }
   }, [manifest]);
 
   const handleClose = (localStorageKey: LocalStorageKeyType) => {

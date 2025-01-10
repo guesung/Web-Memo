@@ -11,6 +11,8 @@ import { PropsWithChildren } from 'react';
 import { WebVitals } from '../_components';
 import { Header } from './(auth)/memos/_components';
 import './globals.css';
+import Script from 'next/script';
+import JsonLD from '../_components/JsonLD';
 
 const pretendard = localFont({
   src: '../../fonts/PretendardVariable.woff2',
@@ -80,6 +82,8 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
         <WebVitals />
         <GoogleAnalytics gaId={CONFIG.gaId} />
         <Toaster />
+
+        <JsonLD />
       </body>
     </html>
   );

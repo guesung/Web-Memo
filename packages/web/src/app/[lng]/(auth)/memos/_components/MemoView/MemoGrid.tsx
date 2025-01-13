@@ -78,26 +78,37 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
       const isNearBottom = viewportHeight - e.clientY < THRESHOLD;
       const isNearTop = e.clientY < THRESHOLD;
 
-      // 아래쪽 스크롤 처리
-      if (isNearBottom && !bottomTimeoutRef.current) {
+      const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
+      const isAtTop = container.scrollTop === 0;
+
+      if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
         bottomTimeoutRef.current = setInterval(() => {
+          if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
+            clearInterval(bottomTimeoutRef.current!);
+            bottomTimeoutRef.current = null;
+            return;
+          }
           container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
           setDragStart(prev => ({ ...prev, y: prev.y - SCROLL_UNIT }));
           setDragEnd(prev => ({ ...prev, y: prev.y - SCROLL_UNIT }));
         }, 50);
-      } else if (!isNearBottom && bottomTimeoutRef.current) {
+      } else if ((!isNearBottom || isAtBottom) && bottomTimeoutRef.current) {
         clearInterval(bottomTimeoutRef.current);
         bottomTimeoutRef.current = null;
       }
 
-      // 위쪽 스크롤 처리
-      if (isNearTop && !topTimeoutRef.current) {
+      if (isNearTop && !topTimeoutRef.current && !isAtTop) {
         topTimeoutRef.current = setInterval(() => {
+          if (container.scrollTop === 0) {
+            clearInterval(topTimeoutRef.current!);
+            topTimeoutRef.current = null;
+            return;
+          }
           container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
           setDragStart(prev => ({ ...prev, y: prev.y + SCROLL_UNIT }));
           setDragEnd(prev => ({ ...prev, y: prev.y + SCROLL_UNIT }));
         }, 50);
-      } else if (!isNearTop && topTimeoutRef.current) {
+      } else if ((!isNearTop || isAtTop) && topTimeoutRef.current) {
         clearInterval(topTimeoutRef.current);
         topTimeoutRef.current = null;
       }

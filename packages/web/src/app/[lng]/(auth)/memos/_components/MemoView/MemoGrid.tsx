@@ -5,17 +5,21 @@ import { useKeyboardBind } from '@extension/shared/hooks';
 import { GetMemoResponse } from '@extension/shared/types';
 import { LanguageType } from '@src/modules/i18n';
 import { AnimatePresence } from 'framer-motion';
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSearchParams } from '@extension/shared/modules/search-params';
+import { Loading, Skeleton } from '@extension/ui';
 import { DragBox } from '@src/components';
 import { useDrag } from '@src/hooks/useDrag';
 import { useRouter } from 'next/navigation';
+import { useThrottle, useRAF } from '@extension/shared/hooks';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
-import { Loading, Skeleton } from '@extension/ui';
 
 const MEMO_UNIT = 20;
+const THRESHOLD = 50;
+const SCROLL_UNIT = 30;
+const THROTTLE_DELAY = 16; // 약 60fps
 
 const getItems = (nextGroupKey: number, count: number) => {
   const nextItems = [];
@@ -40,15 +44,20 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
 
   const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
 
+  const { throttle, abortThrottle } = useThrottle();
+  const { schedule: scheduleRAF, cancel: cancelRAF } = useRAF();
+  const lastMouseEventRef = useRef<MouseEvent>();
+
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
 
   const checkMemoSelected = useCallback((id: number) => selectedMemoIds.includes(id), [selectedMemoIds]);
   const isAnyMemoSelected = useMemo(() => selectedMemoIds.length > 0, [selectedMemoIds]);
 
+  const bottomTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const topTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const selectMemoItem = useCallback(
     (id: number) => {
-      if (isDragging) return;
-
       if (checkMemoSelected(id)) setSelectedMemoIds(prevMemoIds => prevMemoIds.filter(prevMemo => prevMemo !== id));
       else setSelectedMemoIds(prevMemoIds => [...prevMemoIds, id]);
     },
@@ -56,14 +65,61 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   );
 
   const handleMouseDown = (event: React.MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (!target.closest('#memo-grid') || target.closest('.memo-item')) return;
+
     setIsDragging(true);
     setDragStart({ x: event.clientX, y: event.clientY });
     setDragEnd({ x: event.clientX, y: event.clientY });
   };
 
   useEffect(() => {
-    const handleMouseMove = (e: globalThis.MouseEvent) => {
-      if (!isDragging) return;
+    const updateDragSelection = () => {
+      const e = lastMouseEventRef.current;
+      if (!e) return;
+
+      const container = document.querySelector('.container');
+      if (!container) return;
+
+      const viewportHeight = window.innerHeight;
+      const isNearBottom = viewportHeight - e.clientY < THRESHOLD;
+      const isNearTop = e.clientY < THRESHOLD;
+
+      const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
+      const isAtTop = container.scrollTop === 0;
+
+      if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
+        bottomTimeoutRef.current = setInterval(() => {
+          if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
+            clearInterval(bottomTimeoutRef.current!);
+            bottomTimeoutRef.current = null;
+            return;
+          }
+          container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
+          setDragStart(prev => ({ ...prev, y: prev.y - SCROLL_UNIT }));
+          setDragEnd(prev => ({ ...prev, y: prev.y - SCROLL_UNIT }));
+        }, 50);
+      } else if ((!isNearBottom || isAtBottom) && bottomTimeoutRef.current) {
+        clearInterval(bottomTimeoutRef.current);
+        bottomTimeoutRef.current = null;
+      }
+
+      if (isNearTop && !topTimeoutRef.current && !isAtTop) {
+        topTimeoutRef.current = setInterval(() => {
+          if (container.scrollTop === 0) {
+            clearInterval(topTimeoutRef.current!);
+            topTimeoutRef.current = null;
+            return;
+          }
+          container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
+          setDragStart(prev => ({ ...prev, y: prev.y + SCROLL_UNIT }));
+          setDragEnd(prev => ({ ...prev, y: prev.y + SCROLL_UNIT }));
+        }, 50);
+      } else if ((!isNearTop || isAtTop) && topTimeoutRef.current) {
+        clearInterval(topTimeoutRef.current);
+        topTimeoutRef.current = null;
+      }
+
       setDragEnd({ x: e.clientX, y: e.clientY });
 
       const selectionArea = {
@@ -87,21 +143,44 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
         .map(element => Number(element.id));
 
       setSelectedMemoIds(selectedIds);
+      scheduleRAF(updateDragSelection);
+    };
+
+    const handleMouseMove = (e: globalThis.MouseEvent) => {
+      if (!isDragging) return;
+      lastMouseEventRef.current = e;
+      throttle(() => scheduleRAF(updateDragSelection), THROTTLE_DELAY);
     };
 
     const handleMouseUp = () => {
       setIsDragging(false);
+      abortThrottle();
+      cancelRAF();
+      lastMouseEventRef.current = undefined;
+
+      if (bottomTimeoutRef.current) {
+        clearInterval(bottomTimeoutRef.current);
+        bottomTimeoutRef.current = null;
+      }
+
+      if (topTimeoutRef.current) {
+        clearInterval(topTimeoutRef.current);
+        topTimeoutRef.current = null;
+      }
     };
 
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
     }
+
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      abortThrottle();
+      cancelRAF();
     };
-  }, [isDragging]);
+  }, [isDragging, dragStart]);
 
   const closeMemoOption = () => {
     setSelectedMemoIds([]);
@@ -126,6 +205,7 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
           />
         )}
       </AnimatePresence>
+
       <MasonryInfiniteGrid
         useTransform
         className="container h-screen"
@@ -135,10 +215,11 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
         useResizeObserver
         observeChildren
         autoResize
+        container={true}
+        id="memo-grid"
         style={{
           willChange: 'transform',
         }}
-        container={true}
         onRequestAppend={({ groupKey, currentTarget, wait, ready }: any) => {
           if (items.length >= memos.length) return;
 

@@ -28,8 +28,7 @@ export default memo(function MemoItem({ lng, memo, selectMemoItem, isSelecting, 
     setIsHovered(false);
   };
 
-  const handleMemoItemMouseDown = (event: MouseEvent<HTMLElement>) => {
-    event.stopPropagation();
+  const handleMemoItemClick = (event: MouseEvent<HTMLElement>) => {
     const id = event.currentTarget.id;
 
     if (isSelecting) selectMemoItem(Number(id));
@@ -46,7 +45,7 @@ export default memo(function MemoItem({ lng, memo, selectMemoItem, isSelecting, 
       className={cn('memo-item select-none transition-all [transform:translateZ(0)]', props.className)}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onMouseDown={handleMemoItemMouseDown}>
+      onClick={handleMemoItemClick}>
       <Card
         className={cn('relative box-content w-[300px] transition-all', {
           'border-primary cursor-pointer': isSelected,

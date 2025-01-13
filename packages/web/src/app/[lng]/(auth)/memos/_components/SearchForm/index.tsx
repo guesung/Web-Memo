@@ -19,7 +19,7 @@ export default function SearchForm({ lng }: SearchFormProps) {
         name="searchQuery"
         control={control}
         render={({ field }) => (
-          <Input type="text" placeholder={t('memos.searchPlaceholder')} className="max-w-sm" {...field} />
+          <Input type="text" placeholder={t('memos.searchPlaceholder')} className="max-w-sm select-none" {...field} />
         )}
       />
       <Controller
@@ -27,7 +27,7 @@ export default function SearchForm({ lng }: SearchFormProps) {
         control={control}
         render={({ field }) => (
           <Select onValueChange={field.onChange} value={field.value}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] select-none">
               <SelectValue placeholder={t('memos.searchTarget.all')} />
             </SelectTrigger>
             <SelectContent>

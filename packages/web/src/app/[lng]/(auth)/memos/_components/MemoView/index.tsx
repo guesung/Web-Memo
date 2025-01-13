@@ -50,7 +50,7 @@ export default function MemoView({
     <div className="flex w-full flex-col gap-4">
       <div className="flex items-center">
         <div className="flex w-full items-center justify-between">
-          <p className="text-muted-foreground text-sm">{t('memos.totalMemos', { total: memos.length })}</p>
+          <p className="text-muted-foreground select-none text-sm">{t('memos.totalMemos', { total: memos.length })}</p>
           <div className="flex">
             <RefreshButton lng={lng} />
             <ToggleView lng={lng} />

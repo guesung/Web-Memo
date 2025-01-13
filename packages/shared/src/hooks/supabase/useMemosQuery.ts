@@ -12,12 +12,17 @@ type QueryData = MemoRow[];
 
 interface UseMemosQueryProps {
   category?: string;
-  isWish?: string;
+  isWish?: boolean;
   searchQuery?: string;
   searchTarget?: string;
 }
 
-export default function useMemosQuery({ category, isWish, searchQuery, searchTarget }: UseMemosQueryProps = {}) {
+export default function useMemosQuery({
+  category,
+  isWish = false,
+  searchQuery,
+  searchTarget,
+}: UseMemosQueryProps = {}) {
   const { data: supabaseClient } = useSupabaseClientQuery();
   const searchQueryLower = searchQuery?.toLowerCase();
 

@@ -36,6 +36,14 @@
   "updates": {
     "title": "Update Log",
     "versions": {
+      "v1.8.3": {
+        "title": "Memo Related Bugs",
+        "content": [
+          "Wishlist memo deletion not working",
+          "Blog summary not working",
+          "Memos are not saved every 2 times"
+        ]
+      },
       "v1.8.0": {
         "title": "Search Features",
         "content": [

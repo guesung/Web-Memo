@@ -136,7 +136,11 @@ export default class ExtensionBridge {
 
   private static _getContentFromWeb() {
     try {
-      return document.body.innerText;
+      const text = document.body.innerText;
+      if (text) return text;
+
+      const iframeText = document.querySelector('iframe')?.contentWindow?.document?.body?.innerText;
+      return text + (iframeText ? '\n' + iframeText : '');
     } catch (error) {
       throw new ExtensionError('Failed to get web content', ExtensionErrorCode.CONTENT_ERROR, error);
     }

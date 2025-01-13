@@ -14,9 +14,10 @@ import { useDrag } from '@src/hooks/useDrag';
 import { useRouter } from 'next/navigation';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
-import { flushSync } from 'react-dom';
 
 const MEMO_UNIT = 20;
+const THRESHOLD = 50;
+const SCROLL_UNIT = 30;
 
 const getItems = (nextGroupKey: number, count: number) => {
   const nextItems = [];
@@ -47,6 +48,7 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   const isAnyMemoSelected = useMemo(() => selectedMemoIds.length > 0, [selectedMemoIds]);
 
   const bottomTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const topTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const selectMemoItem = useCallback(
     (id: number) => {
@@ -70,21 +72,34 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
       if (!isDragging) return;
 
       const viewportHeight = window.innerHeight;
-      const bottomThreshold = 50;
+      const container = document.querySelector('.container');
+      if (!container) return;
 
-      const isNearBottom = viewportHeight - e.clientY < bottomThreshold;
+      const isNearBottom = viewportHeight - e.clientY < THRESHOLD;
+      const isNearTop = e.clientY < THRESHOLD;
 
+      // 아래쪽 스크롤 처리
       if (isNearBottom && !bottomTimeoutRef.current) {
-        if (bottomTimeoutRef.current) return;
         bottomTimeoutRef.current = setInterval(() => {
-          document.querySelector('.container')?.scrollBy({ top: 50, behavior: 'auto' });
-          setDragStart(prev => ({ ...prev, y: prev.y - 50 }));
-          setDragEnd(prev => ({ ...prev, y: prev.y - 50 }));
+          container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
+          setDragStart(prev => ({ ...prev, y: prev.y - SCROLL_UNIT }));
+          setDragEnd(prev => ({ ...prev, y: prev.y - SCROLL_UNIT }));
         }, 50);
       } else if (!isNearBottom && bottomTimeoutRef.current) {
         clearInterval(bottomTimeoutRef.current);
-        setDragEnd({ x: e.clientX, y: e.clientY });
         bottomTimeoutRef.current = null;
+      }
+
+      // 위쪽 스크롤 처리
+      if (isNearTop && !topTimeoutRef.current) {
+        topTimeoutRef.current = setInterval(() => {
+          container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
+          setDragStart(prev => ({ ...prev, y: prev.y + SCROLL_UNIT }));
+          setDragEnd(prev => ({ ...prev, y: prev.y + SCROLL_UNIT }));
+        }, 50);
+      } else if (!isNearTop && topTimeoutRef.current) {
+        clearInterval(topTimeoutRef.current);
+        topTimeoutRef.current = null;
       }
 
       setDragEnd({ x: e.clientX, y: e.clientY });
@@ -116,8 +131,13 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
       setIsDragging(false);
 
       if (bottomTimeoutRef.current) {
-        clearTimeout(bottomTimeoutRef.current);
+        clearInterval(bottomTimeoutRef.current);
         bottomTimeoutRef.current = null;
+      }
+
+      if (topTimeoutRef.current) {
+        clearInterval(topTimeoutRef.current);
+        topTimeoutRef.current = null;
       }
     };
 

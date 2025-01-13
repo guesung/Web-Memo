@@ -47,8 +47,6 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
 
   const selectMemoItem = useCallback(
     (id: number) => {
-      if (isDragging) return;
-
       if (checkMemoSelected(id)) setSelectedMemoIds(prevMemoIds => prevMemoIds.filter(prevMemo => prevMemo !== id));
       else setSelectedMemoIds(prevMemoIds => [...prevMemoIds, id]);
     },

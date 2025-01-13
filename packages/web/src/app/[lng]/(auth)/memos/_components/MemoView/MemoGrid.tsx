@@ -12,7 +12,7 @@ import { Loading, Skeleton } from '@extension/ui';
 import { DragBox } from '@src/components';
 import { useDrag } from '@src/hooks/useDrag';
 import { useRouter } from 'next/navigation';
-import { useThrottle } from '@extension/shared/hooks';
+import { useThrottle, useRAF } from '@extension/shared/hooks';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
 
@@ -45,6 +45,8 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
 
   const { throttle, abortThrottle } = useThrottle();
+  const { schedule: scheduleRAF, cancel: cancelRAF } = useRAF();
+  const lastMouseEventRef = useRef<MouseEvent>();
 
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
 
@@ -72,7 +74,10 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   };
 
   useEffect(() => {
-    const updateDragSelection = (e: globalThis.MouseEvent) => {
+    const updateDragSelection = () => {
+      const e = lastMouseEventRef.current;
+      if (!e) return;
+
       const container = document.querySelector('.container');
       if (!container) return;
 
@@ -138,16 +143,20 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
         .map(element => Number(element.id));
 
       setSelectedMemoIds(selectedIds);
+      scheduleRAF(updateDragSelection);
     };
 
     const handleMouseMove = (e: globalThis.MouseEvent) => {
       if (!isDragging) return;
-      throttle(() => updateDragSelection(e), THROTTLE_DELAY);
+      lastMouseEventRef.current = e;
+      throttle(() => scheduleRAF(updateDragSelection), THROTTLE_DELAY);
     };
 
     const handleMouseUp = () => {
       setIsDragging(false);
       abortThrottle();
+      cancelRAF();
+      lastMouseEventRef.current = undefined;
 
       if (bottomTimeoutRef.current) {
         clearInterval(bottomTimeoutRef.current);
@@ -169,6 +178,7 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
       abortThrottle();
+      cancelRAF();
     };
   }, [isDragging, dragStart]);
 

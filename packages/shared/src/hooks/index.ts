@@ -5,3 +5,4 @@ export { default as useFetch } from './useFetch';
 export { default as useKeyboardBind } from './useKeyboardBind';
 export { default as useThrottle } from './useThrottle';
 export { default as useUserPreferDarkMode } from './useUserPreferDarkMode';
+export { default as useDebounce } from './useDebounce';

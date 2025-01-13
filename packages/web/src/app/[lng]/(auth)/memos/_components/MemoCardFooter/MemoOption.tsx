@@ -7,7 +7,6 @@ import {
 } from '@extension/shared/hooks';
 import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { useSearchParams } from '@extension/shared/modules/search-params';
-import { MemoRow } from '@extension/shared/types';
 import { isAllSame } from '@extension/shared/utils';
 import {
   Button,
@@ -47,7 +46,7 @@ export default function MemoOption({ lng, memoIds = [], closeMemoOption }: MemoO
   const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
   const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
 
-  const { memos } = useMemosQuery();
+  const { memos } = useMemosQuery({ isWish: searchParams.get('isWish') === 'true' });
   const selectedMemos = memos.filter(memo => memoIds.includes(memo.id));
 
   const defaultCategoryId = isAllSame(selectedMemos.map(memo => memo.category_id))

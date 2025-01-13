@@ -27,8 +27,8 @@ export default function MemoView({
   const { t } = useTranslation(lng);
   const { watch } = useFormContext<SearchFormValues>();
   const { memos } = useMemosQuery({
-    category: category,
-    isWish: isWish,
+    category,
+    isWish: isWish === 'true',
     searchQuery: watch('searchQuery'),
     searchTarget: watch('searchTarget'),
   });

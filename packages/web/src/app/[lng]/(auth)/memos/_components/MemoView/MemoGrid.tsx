@@ -5,15 +5,15 @@ import { useKeyboardBind } from '@extension/shared/hooks';
 import { GetMemoResponse } from '@extension/shared/types';
 import { LanguageType } from '@src/modules/i18n';
 import { AnimatePresence } from 'framer-motion';
-import { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useSearchParams } from '@extension/shared/modules/search-params';
+import { Loading, Skeleton } from '@extension/ui';
 import { DragBox } from '@src/components';
 import { useDrag } from '@src/hooks/useDrag';
 import { useRouter } from 'next/navigation';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
-import { Loading, Skeleton } from '@extension/ui';
 
 const MEMO_UNIT = 20;
 
@@ -37,7 +37,6 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
-  const memoGridBoxRef = useRef<HTMLDivElement>(null);
 
   const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
 
@@ -166,6 +165,7 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
         useResizeObserver
         observeChildren
         autoResize
+        container={true}
         id="memo-grid"
         style={{
           willChange: 'transform',

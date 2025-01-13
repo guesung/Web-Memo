@@ -5,7 +5,7 @@ import { useKeyboardBind } from '@extension/shared/hooks';
 import { GetMemoResponse } from '@extension/shared/types';
 import { LanguageType } from '@src/modules/i18n';
 import { AnimatePresence } from 'framer-motion';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { Loading, Skeleton } from '@extension/ui';
@@ -14,6 +14,7 @@ import { useDrag } from '@src/hooks/useDrag';
 import { useRouter } from 'next/navigation';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
+import { flushSync } from 'react-dom';
 
 const MEMO_UNIT = 20;
 
@@ -45,6 +46,8 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   const checkMemoSelected = useCallback((id: number) => selectedMemoIds.includes(id), [selectedMemoIds]);
   const isAnyMemoSelected = useMemo(() => selectedMemoIds.length > 0, [selectedMemoIds]);
 
+  const bottomTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const selectMemoItem = useCallback(
     (id: number) => {
       if (checkMemoSelected(id)) setSelectedMemoIds(prevMemoIds => prevMemoIds.filter(prevMemo => prevMemo !== id));
@@ -63,8 +66,6 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   };
 
   useEffect(() => {
-    let autoScrollInterval: NodeJS.Timeout | null = null;
-
     const handleMouseMove = (e: globalThis.MouseEvent) => {
       if (!isDragging) return;
 
@@ -73,16 +74,17 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
 
       const isNearBottom = viewportHeight - e.clientY < bottomThreshold;
 
-      if (isNearBottom && !autoScrollInterval) {
-        autoScrollInterval = setInterval(() => {
-          document.querySelector('.container')?.scrollBy({ top: 50, behavior: 'smooth' });
+      if (isNearBottom && !bottomTimeoutRef.current) {
+        if (bottomTimeoutRef.current) return;
+        bottomTimeoutRef.current = setInterval(() => {
+          document.querySelector('.container')?.scrollBy({ top: 50, behavior: 'auto' });
           setDragStart(prev => ({ ...prev, y: prev.y - 50 }));
           setDragEnd(prev => ({ ...prev, y: prev.y - 50 }));
         }, 50);
-      } else if (!isNearBottom && autoScrollInterval) {
-        clearInterval(autoScrollInterval);
+      } else if (!isNearBottom && bottomTimeoutRef.current) {
+        clearInterval(bottomTimeoutRef.current);
         setDragEnd({ x: e.clientX, y: e.clientY });
-        autoScrollInterval = null;
+        bottomTimeoutRef.current = null;
       }
 
       setDragEnd({ x: e.clientX, y: e.clientY });
@@ -112,9 +114,10 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
 
     const handleMouseUp = () => {
       setIsDragging(false);
-      if (autoScrollInterval) {
-        clearInterval(autoScrollInterval);
-        autoScrollInterval = null;
+
+      if (bottomTimeoutRef.current) {
+        clearTimeout(bottomTimeoutRef.current);
+        bottomTimeoutRef.current = null;
       }
     };
 
@@ -126,9 +129,6 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
-      if (autoScrollInterval) {
-        clearInterval(autoScrollInterval);
-      }
     };
   }, [isDragging, dragStart]);
 

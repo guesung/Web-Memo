@@ -12,12 +12,14 @@ import { Loading, Skeleton } from '@extension/ui';
 import { DragBox } from '@src/components';
 import { useDrag } from '@src/hooks/useDrag';
 import { useRouter } from 'next/navigation';
+import { useThrottle } from '@extension/shared/hooks';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
 
 const MEMO_UNIT = 20;
 const THRESHOLD = 50;
 const SCROLL_UNIT = 30;
+const THROTTLE_DELAY = 16; // 약 60fps
 
 const getItems = (nextGroupKey: number, count: number) => {
   const nextItems = [];
@@ -41,6 +43,8 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
 
   const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
+
+  const { throttle, abortThrottle } = useThrottle();
 
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
 
@@ -68,13 +72,11 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   };
 
   useEffect(() => {
-    const handleMouseMove = (e: globalThis.MouseEvent) => {
-      if (!isDragging) return;
-
-      const viewportHeight = window.innerHeight;
+    const updateDragSelection = (e: globalThis.MouseEvent) => {
       const container = document.querySelector('.container');
       if (!container) return;
 
+      const viewportHeight = window.innerHeight;
       const isNearBottom = viewportHeight - e.clientY < THRESHOLD;
       const isNearTop = e.clientY < THRESHOLD;
 
@@ -138,8 +140,14 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
       setSelectedMemoIds(selectedIds);
     };
 
+    const handleMouseMove = (e: globalThis.MouseEvent) => {
+      if (!isDragging) return;
+      throttle(() => updateDragSelection(e), THROTTLE_DELAY);
+    };
+
     const handleMouseUp = () => {
       setIsDragging(false);
+      abortThrottle();
 
       if (bottomTimeoutRef.current) {
         clearInterval(bottomTimeoutRef.current);
@@ -160,6 +168,7 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      abortThrottle();
     };
   }, [isDragging, dragStart]);
 

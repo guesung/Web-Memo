@@ -2,18 +2,19 @@
 
 import { QUERY_KEY } from '@extension/shared/constants';
 import { CategoryService } from '@extension/shared/utils';
-import { Header, HydrationBoundaryWrapper } from '@src/components';
+import { HydrationBoundaryWrapper } from '@src/components';
 import { LanguageParams } from '@src/modules/i18n';
 import { getSupabaseClient } from '@src/modules/supabase/util.server';
 
-import { Setting, SettingHeader } from './component';
+import { HeaderMargin } from '../_components/Header';
+import { Setting, SettingHeader } from './_components';
 
 export default async function Page({ params: { lng } }: LanguageParams) {
   const supabaseClient = getSupabaseClient();
 
   return (
     <main>
-      <Header.Margin />
+      <HeaderMargin />
       <SettingHeader lng={lng} />
       <HydrationBoundaryWrapper
         queryKey={QUERY_KEY.category()}

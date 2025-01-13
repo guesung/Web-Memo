@@ -1,4 +1,4 @@
-import { fallbackLng, Language } from '@src/modules/i18n';
+import { DEFAULT_LANGUAGE, Language } from '@src/modules/i18n';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -6,7 +6,7 @@ const REGEXR_PATHNAME_WITHOUT_LANGUAGE = /^\/\w+(.+)/;
 const REGEXR_PATHNAME_LANGAUGE = /^\/(\w+)\/.+/;
 
 export default function useLanguage() {
-  const [language, setLanguage] = useState<Language>(fallbackLng);
+  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
 
   const router = useRouter();
   const pathname = usePathname();

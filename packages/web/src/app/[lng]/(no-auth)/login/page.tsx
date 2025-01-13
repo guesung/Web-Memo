@@ -5,7 +5,7 @@ import { LanguageParams } from '@src/modules/i18n';
 import { getSupabaseClient } from '@src/modules/supabase/util.server';
 import { redirect } from 'next/navigation';
 
-import { LoginSection, PersonalInformationInfo } from './components';
+import { LoginSection, PersonalInformationInfo } from './_components';
 
 export default async function page({ params: { lng } }: LanguageParams) {
   const supabaseClient = getSupabaseClient();

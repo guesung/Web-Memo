@@ -9,7 +9,7 @@ interface UseMemoQueryProps {
   id?: number;
 }
 
-export default function useMemoQuery({ url, id }: Omit<UseMemoQueryProps, 'supabaseClient'>) {
+export default function useMemoQuery({ url, id }: UseMemoQueryProps) {
   const { data: supabaseClient } = useSupabaseClientQuery();
 
   const query = useSuspenseQuery({

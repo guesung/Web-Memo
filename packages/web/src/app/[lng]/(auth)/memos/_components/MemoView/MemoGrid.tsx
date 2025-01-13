@@ -55,6 +55,9 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   );
 
   const handleMouseDown = (event: React.MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (!target.closest('#memo-grid') || target.closest('.memo-item')) return;
+
     setIsDragging(true);
     setDragStart({ x: event.clientX, y: event.clientY });
     setDragEnd({ x: event.clientX, y: event.clientY });
@@ -163,10 +166,10 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
         useResizeObserver
         observeChildren
         autoResize
+        id="memo-grid"
         style={{
           willChange: 'transform',
         }}
-        container={true}
         onRequestAppend={({ groupKey, currentTarget, wait, ready }: any) => {
           if (items.length >= memos.length) return;
 

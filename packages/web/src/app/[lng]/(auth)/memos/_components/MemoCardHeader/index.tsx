@@ -28,11 +28,15 @@ export default memo(function MemoCardHeader({ memo, selectMemoItem, isHovered, i
           'opacity-100': isShowingSelectButton,
           'opacity-0': !isShowingSelectButton,
         })}
-        onClick={handleMemoSelect}
-        onMouseDown={e => e.stopPropagation()}>
+        onClick={handleMemoSelect}>
         <CheckIcon size={8} />
       </Button>
-      <Link href={memo.url} target="_blank" className="flex items-center gap-2" onMouseDown={e => e.stopPropagation()}>
+
+      <Link 
+        href={memo.url} 
+        target="_blank" 
+        className="flex items-center gap-2"
+        onClick={(e) => e.stopPropagation()}>
         {memo?.favIconUrl && (
           <Image
             src={memo.favIconUrl}

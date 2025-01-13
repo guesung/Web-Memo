@@ -91,7 +91,7 @@ export default function MemoCardFooter({ memo, lng, children, isShowingOption = 
         className={cn('relative z-50 flex items-center transition', {
           'opacity-0': !isShowingOption,
         })}>
-        <Button variant="ghost" size="icon" onClick={handleIsWishClick} onMouseDown={e => e.stopPropagation()}>
+        <Button variant="ghost" size="icon" onClick={handleIsWishClick}>
           <HeartIcon
             size={12}
             fill={memo.isWish ? 'pink' : ''}

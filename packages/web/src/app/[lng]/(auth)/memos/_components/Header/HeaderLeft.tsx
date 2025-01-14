@@ -5,6 +5,7 @@ import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import Image from 'next/image';
 import Link from 'next/link';
+import { FeedbackContainer } from '@src/components/feedback/FeedbackContainer';
 
 export default function HeaderLeft({ lng }: LanguageType) {
   const { t } = useTranslation(lng);
@@ -23,6 +24,7 @@ export default function HeaderLeft({ lng }: LanguageType) {
       <Link href={PATHS.update} className="text-muted-foreground hover:text-foreground text-sm transition-colors">
         {t('header.update')}
       </Link>
+      <FeedbackContainer lng={lng} />
     </div>
   );
 }

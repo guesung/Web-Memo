@@ -300,5 +300,18 @@
         "kakaotalk": "KakaoTalk Chat"
       }
     }
+  },
+  "feedback": {
+    "button": "Feedback",
+    "title": "Service Feedback",
+    "description": "Please leave your feedback to help us improve our service.",
+    "placeholder": "Please write down any points that you would like to see improved.",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "success": "Feedback has been submitted.",
+    "successDescription": "Thank you for your valuable feedback.",
+    "error": "Failed to submit feedback.",
+    "errorDescription": "Please try again later."
   }
 }

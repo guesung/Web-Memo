@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Button, Textarea } from '@extension/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
+import { useForm } from 'react-hook-form';
 
 interface FeedbackModalProps extends LanguageType {
   isOpen: boolean;
@@ -10,13 +10,17 @@ interface FeedbackModalProps extends LanguageType {
 }
 
 export default function FeedbackModal({ isOpen, onClose, onSubmit, lng }: FeedbackModalProps) {
-  const [content, setContent] = useState('');
   const { t } = useTranslation(lng);
+  const { register, handleSubmit, reset, watch } = useForm({
+    defaultValues: {
+      content: '',
+    },
+  });
 
-  const handleSubmit = () => {
-    onSubmit(content);
-    setContent('');
-  };
+  const onSubmitHandler = handleSubmit(data => {
+    onSubmit(data.content);
+    reset();
+  });
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -25,22 +29,19 @@ export default function FeedbackModal({ isOpen, onClose, onSubmit, lng }: Feedba
           <DialogTitle>{t('feedback.title')}</DialogTitle>
           <DialogDescription>{t('feedback.description')}</DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <Textarea
-            value={content}
-            onChange={e => setContent(e.target.value)}
-            placeholder={t('feedback.placeholder')}
-            className="min-h-[100px]"
-          />
-        </div>
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>
-            {t('feedback.cancel')}
-          </Button>
-          <Button onClick={handleSubmit} disabled={!content}>
-            {t('feedback.submit')}
-          </Button>
-        </div>
+        <form onSubmit={onSubmitHandler} className="space-y-4">
+          <div className="grid gap-2">
+            <Textarea {...register('content')} placeholder={t('feedback.placeholder')} className="min-h-[100px]" />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={onClose}>
+              {t('feedback.cancel')}
+            </Button>
+            <Button type="submit" disabled={watch('content').length === 0}>
+              {t('feedback.submit')}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

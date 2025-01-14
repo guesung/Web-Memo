@@ -15,11 +15,11 @@ export const FeedbackContainer = ({ lng }: LanguageType) => {
   const { t } = useTranslation(lng);
 
   const handleSubmit = (content: string) => {
+    setIsOpen(false);
     mutateFeedback(
       { content },
       {
         onSuccess: () => {
-          setIsOpen(false);
           toast({
             title: t('feedback.success'),
             description: t('feedback.successDescription'),

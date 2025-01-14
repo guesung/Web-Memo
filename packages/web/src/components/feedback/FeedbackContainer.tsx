@@ -42,7 +42,7 @@ export const FeedbackContainer = ({ lng }: LanguageType) => {
         variant="ghost"
         size="sm"
         onClick={() => setIsOpen(true)}
-        className="text-muted-foreground hover:text-primary">
+        className="text-muted-foreground hover:text-foreground text-sm transition-colors">
         {t('feedback.button')}
       </Button>
       <FeedbackModal isOpen={isOpen} onClose={() => setIsOpen(false)} onSubmit={handleSubmit} lng={lng} />

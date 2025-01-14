@@ -22,6 +22,7 @@
     "yesterday": "Yesterday",
     "workWeek": "Work Week"
   },
+
   "sideBar": {
     "memo": "My Memos",
     "wishList": "My Wish List",
@@ -151,6 +152,12 @@
     "cancel": "Remind me later",
     "ok": "Update now",
     "lastVersion": "Latest version"
+  },
+  "dialogUnsavedChanges": {
+    "title": "You have unsaved changes",
+    "description": "Do you want to close without saving?",
+    "cancel": "Close without saving",
+    "ok": "Save and close"
   },
   "tooltip": {
     "sideBar": "Open/Close sidebar",

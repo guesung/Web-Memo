@@ -1,5 +1,13 @@
-import { COOKIE_KEY, SUPABASE } from '@src/constants';
-import { CategoryRow, CategoryTable, MemoRow, MemoSupabaseClient, MemoTable } from '@src/types';
+import { SUPABASE } from '@src/constants';
+import {
+  CategoryRow,
+  CategoryTable,
+  FeedbackSupabaseClient,
+  FeedbackTable,
+  MemoRow,
+  MemoSupabaseClient,
+  MemoTable,
+} from '@src/types';
 
 export class MemoService {
   supabaseClient: MemoSupabaseClient;
@@ -73,4 +81,11 @@ export class AuthService {
   };
 
   signout = () => this.supabaseClient.auth.signOut();
+}
+
+export class FeedbackService {
+  constructor(private readonly feedbackSupabaseClient: FeedbackSupabaseClient) {}
+
+  insertFeedback = async (feedback: FeedbackTable['Insert']) =>
+    this.feedbackSupabaseClient.from('feedbacks').insert(feedback).select();
 }

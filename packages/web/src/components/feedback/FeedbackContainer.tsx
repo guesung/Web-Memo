@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { FeedbackButton } from './FeedbackButton';
 import { FeedbackModal } from './FeedbackModal';
-import { ErrorBoundary, toast } from '@extension/ui';
-import { useFeedback } from '@src/hooks/useFeedback';
+import { Button, ErrorBoundary, toast } from '@extension/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
+import { useFeedbackMutation } from '@extension/shared/hooks';
 
 export const FeedbackContainer = ({ lng }: LanguageType) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { mutate: createFeedback, isPending } = useFeedback();
+  const { mutate: mutateFeedback, isPending } = useFeedbackMutation();
   const { t } = useTranslation(lng);
 
   const handleSubmit = (content: string) => {
-    createFeedback(
+    mutateFeedback(
       { content },
       {
         onSuccess: () => {
@@ -35,7 +35,13 @@ export const FeedbackContainer = ({ lng }: LanguageType) => {
 
   return (
     <ErrorBoundary>
-      <FeedbackButton onClick={() => setIsOpen(true)} lng={lng} />
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setIsOpen(true)}
+        className="text-muted-foreground hover:text-primary">
+        {t('feedback.button')}
+      </Button>
       <FeedbackModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}

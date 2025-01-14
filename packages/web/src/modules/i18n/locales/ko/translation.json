@@ -147,10 +147,10 @@
     "lastVersion": "최신 버전"
   },
   "dialogUnsavedChanges": {
-    "title": "저장되지 않은 변경사항이 있습니다",
-    "description": "저장하지 않고 닫으시겠습니까?",
-    "cancel": "저장하지 않고 닫기",
-    "ok": "저장하고 닫기"
+    "title": "메모를 닫으시겠습니까?",
+    "description": "변경사항이 저장되지 않을 수 있습니다.",
+    "ok": "나가기",
+    "cancel": "취소"
   },
   "tooltip": {
     "sideBar": "사이드바 열기/닫기",

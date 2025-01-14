@@ -99,6 +99,10 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
     router.replace(searchParams.getUrl(), { scroll: false });
   };
 
+  const handleUnChangesAlertClose = () => {
+    setShowAlert(false);
+  };
+
   useEffect(() => {
     if (!textareaRef.current) return;
     textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
@@ -142,7 +146,7 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
         </DialogContent>
       </Dialog>
 
-      <UnsavedChangesAlert open={showAlert} onClose={handleClose} onSave={handleSaveAndClose} lng={lng} />
+      <UnsavedChangesAlert open={showAlert} onCancel={handleUnChangesAlertClose} onOk={handleClose} lng={lng} />
     </>
   );
 }

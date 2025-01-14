@@ -137,9 +137,7 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
                 <Button variant="outline" type="button" onClick={closeDialog}>
                   {t('common.close')}
                 </Button>
-                <Button variant="outline" onClick={handleSaveAndClose}>
-                  {t('common.save')}
-                </Button>
+                <Button onClick={handleSaveAndClose}>{t('common.save')}</Button>
               </div>
             </MemoCardFooter>
           </Card>

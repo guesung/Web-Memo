@@ -11,3 +11,4 @@ export { default as useMemosQuery } from './useMemosQuery';
 export { default as useMemosUpsertMutation } from './useMemosUpsertMutation';
 export { default as useSupabaseUser } from './useSupabaseUser';
 export { default as useSignoutMutation } from './useSignoutMutation';
+export { default as useFeedbackMutation } from './useFeedbackMutation';

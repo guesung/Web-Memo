@@ -1,10 +1,9 @@
-import { useState } from 'react';
-import { FeedbackButton } from './FeedbackButton';
-import { FeedbackModal } from './FeedbackModal';
+import { useFeedbackMutation } from '@extension/shared/hooks';
 import { Button, ErrorBoundary, toast } from '@extension/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
-import { useFeedbackMutation } from '@extension/shared/hooks';
+import { useState } from 'react';
+import { FeedbackModal } from './FeedbackModal';
 
 export const FeedbackContainer = ({ lng }: LanguageType) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,7 +33,7 @@ export const FeedbackContainer = ({ lng }: LanguageType) => {
   };
 
   return (
-    <ErrorBoundary>
+    <>
       <Button
         variant="ghost"
         size="sm"
@@ -49,6 +48,6 @@ export const FeedbackContainer = ({ lng }: LanguageType) => {
         isLoading={isPending}
         lng={lng}
       />
-    </ErrorBoundary>
+    </>
   );
 };

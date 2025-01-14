@@ -7,10 +7,9 @@ interface FeedbackModalProps extends LanguageType {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (content: string) => void;
-  isLoading: boolean;
 }
 
-export const FeedbackModal = ({ isOpen, onClose, onSubmit, isLoading, lng }: FeedbackModalProps) => {
+export default function FeedbackModal({ isOpen, onClose, onSubmit, lng }: FeedbackModalProps) {
   const [content, setContent] = useState('');
   const { t } = useTranslation(lng);
 
@@ -38,11 +37,11 @@ export const FeedbackModal = ({ isOpen, onClose, onSubmit, isLoading, lng }: Fee
           <Button variant="outline" onClick={onClose}>
             {t('feedback.cancel')}
           </Button>
-          <Button onClick={handleSubmit} disabled={!content || isLoading}>
-            {isLoading ? t('feedback.submitting') : t('feedback.submit')}
+          <Button onClick={handleSubmit} disabled={!content}>
+            {t('feedback.submit')}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
   );
-};
+}

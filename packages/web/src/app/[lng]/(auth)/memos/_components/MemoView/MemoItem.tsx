@@ -1,14 +1,12 @@
 import { GetMemoResponse } from '@extension/shared/types';
 import { cn } from '@extension/shared/utils';
-import { Card, CardContent, Loading } from '@src/components/ui';
+import { Card, CardContent } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
-import { HTMLAttributes, memo, MouseEvent, Suspense, useState } from 'react';
+import { HTMLAttributes, memo, MouseEvent, useState } from 'react';
 
+import { useSearchParams } from '@extension/shared/modules/search-params';
 import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
-import { useRouter } from 'next/navigation';
-import { useSearchParams } from '@extension/shared/modules/search-params';
-import dynamic from 'next/dynamic';
 import MemoDialog from '../MemoDialog';
 
 interface MemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
@@ -51,7 +49,11 @@ export default memo(function MemoItem({ lng, memo, selectMemoItem, isSelecting, 
     <article
       {...props}
       id={String(memo.id)}
-      className={cn('memo-item select-none transition-all [transform:translateZ(0)]', props.className)}
+      className={cn(
+        'memo-item select-none transition-all [transform:translateZ(0)]',
+        { invisible: open },
+        props.className,
+      )}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleMemoItemClick}>

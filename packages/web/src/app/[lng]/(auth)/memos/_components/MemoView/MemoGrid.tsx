@@ -247,7 +247,6 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
                 isSelected={checkMemoSelected(memos.at(item.key)!.id)}
                 selectMemoItem={selectMemoItem}
                 isSelecting={isAnyMemoSelected}
-                className={memos.at(item.key)!.id !== Number(id) ? '' : 'invisible'}
               />
             ),
         )}

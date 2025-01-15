@@ -77,8 +77,6 @@ export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
   };
 
   const closeDialog = () => {
-    console.log('closeDialog');
-    // setShowAlert(false);
     setOpen(false);
     searchParams.removeAll('id');
     window.history.replaceState(
@@ -90,10 +88,6 @@ export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
 
   const handleUnChangesAlertClose = () => {
     setShowAlert(false);
-  };
-
-  const handleOpenChange = (open: boolean) => {
-    if (!open) checkEditedAndCloseDialog();
   };
 
   useEffect(() => {
@@ -138,7 +132,7 @@ export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
         </DialogContent>
       </Dialog>
 
-      <UnsavedChangesAlert open={showAlert} onCancel={handleUnChangesAlertClose} onOk={handleSaveAndClose} lng={lng} />
+      <UnsavedChangesAlert open={showAlert} onCancel={handleUnChangesAlertClose} onOk={closeDialog} lng={lng} />
     </>
   );
 }

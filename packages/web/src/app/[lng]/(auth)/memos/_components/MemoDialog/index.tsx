@@ -27,28 +27,22 @@ export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
   const { memo: memoData } = useMemoQuery({ id });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
-  const [isEdited, setIsEdited] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
 
-  const { register, watch, setValue, control } = useForm<MemoInput>({
+  const {
+    register,
+    watch,
+    setValue,
+    control,
+    formState: { touchedFields },
+  } = useForm<MemoInput>({
     defaultValues: {
       memo: '',
     },
   });
 
-  const adjustTextareaHeight = (event: FocusEvent<HTMLTextAreaElement>) => {
-    event.target.style.height = `${event.target.scrollHeight}px`;
-  };
-
   const { ref, ...rest } = register('memo', {
-    onChange: e => {
-      adjustTextareaHeight(e);
-      if (e.target.value !== memoData?.memo) {
-        setIsEdited(true);
-      } else {
-        setIsEdited(false);
-      }
-    },
+    onChange: event => (event.target.style.height = `${event.target.scrollHeight}px`),
   });
 
   useWatch({
@@ -60,7 +54,6 @@ export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
 
   const saveMemo = () => {
     mutateMemoPatch({ id: Number(searchParams.get('id')), request: { memo: watch('memo') } });
-    setIsEdited(false);
   };
 
   const handleKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -71,6 +64,8 @@ export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
   };
 
   const closeDialog = () => {
+    const isEdited = touchedFields.memo && watch('memo') !== memoData?.memo;
+
     if (isEdited) setShowAlert(true);
     else handleClose();
   };
@@ -95,9 +90,7 @@ export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
   };
 
   const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      handleClose();
-    }
+    if (!open) handleClose();
   };
 
   useEffect(() => {

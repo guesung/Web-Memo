@@ -35,13 +35,13 @@ export default memo(function MemoItem({ lng, memo, selectMemoItem, isSelecting, 
 
     if (isSelecting) selectMemoItem(Number(id));
     else {
+      setOpen(true);
       searchParams.set('id', id);
       window.history.replaceState(
         { ...window.history.state, as: searchParams.getUrl(), url: searchParams.getUrl() },
         '',
         searchParams.getUrl(),
       );
-      setOpen(true);
     }
   };
 

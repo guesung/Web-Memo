@@ -29,7 +29,9 @@ export default memo(function MemoItem({ lng, memo, selectMemoItem, isSelecting, 
   };
 
   const handleMemoItemClick = (event: MouseEvent<HTMLElement>) => {
-    if (!(event.target as HTMLElement).closest('.memo-item')) return;
+    const target = event.target as HTMLElement;
+    const isMemoItem = target.closest('.memo-item');
+    if (!isMemoItem) return;
 
     const id = event.currentTarget.id;
 

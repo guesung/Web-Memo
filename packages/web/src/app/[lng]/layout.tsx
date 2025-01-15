@@ -3,6 +3,9 @@ import { LanguageParams, SUPPORTED_LANGUAGES } from '@src/modules/i18n';
 import { dir } from 'i18next';
 import { PropsWithChildren } from 'react';
 import { Header } from './(auth)/memos/_components';
+import './globals.css';
+import Script from 'next/script';
+import JsonLD from '../_components/JsonLD';
 
 interface RootLayoutProps extends PropsWithChildren, LanguageParams {}
 

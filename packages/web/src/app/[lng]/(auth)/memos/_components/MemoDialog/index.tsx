@@ -2,20 +2,8 @@
 import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { SearchParamsType, useSearchParams } from '@extension/shared/modules/search-params';
 import { formatDate } from '@extension/shared/utils';
-import { Button } from '@extension/ui';
-import {
-  Card,
-  CardContent,
-  Dialog,
-  DialogContent,
-  Textarea,
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from '@src/components/ui';
+import { Button, DialogClose, DialogFooter, DialogHeader, DialogTitle } from '@extension/ui';
+import { Card, CardContent, Dialog, DialogContent, Textarea } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useRouter } from 'next/navigation';
@@ -28,41 +16,36 @@ import MemoCardHeader from '../MemoCardHeader';
 import UnsavedChangesAlert from './UnsavedChangesAlert';
 
 interface MemoDialog extends LanguageType {
-  searchParams: SearchParamsType;
+  id: number;
+  open: boolean;
+  setOpen: (open: boolean) => void;
 }
 
-export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
+export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const { memo: memoData } = useMemoQuery({ id: Number(id) });
+  const { memo: memoData } = useMemoQuery({ id });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
-  const [isEdited, setIsEdited] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
 
-  const { register, watch, setValue, control } = useForm<MemoInput>({
+  const {
+    register,
+    watch,
+    setValue,
+    control,
+    formState: { touchedFields },
+  } = useForm<MemoInput>({
     defaultValues: {
       memo: '',
     },
   });
 
-  const adjustTextareaHeight = (event: FocusEvent<HTMLTextAreaElement>) => {
-    event.target.style.height = `${event.target.scrollHeight}px`;
-  };
-
   const { ref, ...rest } = register('memo', {
-    onChange: e => {
-      adjustTextareaHeight(e);
-      if (e.target.value !== memoData?.memo) {
-        setIsEdited(true);
-      } else {
-        setIsEdited(false);
-      }
-    },
+    onChange: event => (event.target.style.height = `${event.target.scrollHeight}px`),
   });
 
-  const memo = useWatch({
+  useWatch({
     name: 'memo',
     control,
   });
@@ -70,8 +53,8 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
   useImperativeHandle(ref, () => textareaRef.current);
 
   const saveMemo = () => {
-    mutateMemoPatch({ id: Number(id), request: { memo: watch('memo') } });
-    setIsEdited(false);
+    console.log(1, searchParams.get('id'), watch('memo'));
+    mutateMemoPatch({ id, request: { memo: watch('memo') } });
   };
 
   const handleKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -81,22 +64,26 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
     }
   };
 
-  const closeDialog = () => {
-    if (isEdited) {
-      setShowAlert(true);
-      return;
-    }
-    handleClose();
+  const checkEditedAndCloseDialog = () => {
+    const isEdited = watch('memo') !== memoData?.memo;
+
+    if (isEdited) setShowAlert(true);
+    else closeDialog();
   };
 
   const handleSaveAndClose = () => {
     saveMemo();
-    handleClose();
+    closeDialog();
   };
 
-  const handleClose = () => {
+  const closeDialog = () => {
+    setOpen(false);
     searchParams.removeAll('id');
-    router.replace(searchParams.getUrl(), { scroll: false });
+    window.history.replaceState(
+      { ...window.history.state, as: searchParams.getUrl(), url: searchParams.getUrl() },
+      '',
+      searchParams.getUrl(),
+    );
   };
 
   const handleUnChangesAlertClose = () => {
@@ -116,7 +103,7 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
   return (
     <>
       <Dialog open>
-        <DialogContent className="max-w-[600px] p-0" onClose={closeDialog}>
+        <DialogContent className="max-w-[600px] p-0" onClose={checkEditedAndCloseDialog}>
           <Card>
             <MemoCardHeader memo={memoData} />
             <CardContent>
@@ -132,9 +119,10 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
                 {t('common.updatedAt')} {formatDate(memoData.updated_at, 'yyyy.mm.dd')}
               </span>
             </CardContent>
+
             <MemoCardFooter memo={memoData} lng={lng}>
               <div className="flex gap-2">
-                <Button variant="outline" type="button" onClick={closeDialog}>
+                <Button variant="outline" type="button" onClick={checkEditedAndCloseDialog}>
                   {t('common.close')}
                 </Button>
                 <Button onClick={handleSaveAndClose}>{t('common.save')}</Button>
@@ -144,7 +132,7 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
         </DialogContent>
       </Dialog>
 
-      <UnsavedChangesAlert open={showAlert} onCancel={handleUnChangesAlertClose} onOk={handleClose} lng={lng} />
+      <UnsavedChangesAlert open={showAlert} onCancel={handleUnChangesAlertClose} onOk={closeDialog} lng={lng} />
     </>
   );
 }

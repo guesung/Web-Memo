@@ -1,23 +1,20 @@
 'use client';
 
 import { cn } from '@extension/ui';
+import { forwardRef, RefObject } from 'react';
 
 interface DragBoxProps {
-  dragStart: { x: number; y: number };
-  dragEnd: { x: number; y: number };
   className?: string;
 }
 
-export default function DragBox({ dragStart, dragEnd, className }: DragBoxProps) {
+export default forwardRef<HTMLDivElement, DragBoxProps>(function DragBox({ className }, ref) {
   return (
     <div
-      className={cn('bg-primary/20 border-primary/50 pointer-events-none fixed z-[1000] border', className)}
-      style={{
-        left: Math.min(dragStart.x, dragEnd.x),
-        top: Math.min(dragStart.y, dragEnd.y),
-        width: Math.abs(dragEnd.x - dragStart.x),
-        height: Math.abs(dragEnd.y - dragStart.y),
-      }}
+      className={cn(
+        'bg-primary/20 pointer-events-none fixed left-0 top-0 z-[1000] h-[1px] w-[1px] origin-top-left',
+        className,
+      )}
+      ref={ref}
     />
   );
-}
+});

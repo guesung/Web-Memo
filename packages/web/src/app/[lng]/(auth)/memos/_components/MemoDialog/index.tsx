@@ -2,7 +2,7 @@
 import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { SearchParamsType, useSearchParams } from '@extension/shared/modules/search-params';
 import { formatDate } from '@extension/shared/utils';
-import { Button } from '@extension/ui';
+import { Button, DialogClose, DialogFooter, DialogHeader, DialogTitle } from '@extension/ui';
 import { Card, CardContent, Dialog, DialogContent, Textarea } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
@@ -53,7 +53,8 @@ export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
   useImperativeHandle(ref, () => textareaRef.current);
 
   const saveMemo = () => {
-    mutateMemoPatch({ id: Number(searchParams.get('id')), request: { memo: watch('memo') } });
+    console.log(1, searchParams.get('id'), watch('memo'));
+    mutateMemoPatch({ id, request: { memo: watch('memo') } });
   };
 
   const handleKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -63,19 +64,21 @@ export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
     }
   };
 
-  const closeDialog = () => {
-    const isEdited = touchedFields.memo && watch('memo') !== memoData?.memo;
+  const checkEditedAndCloseDialog = () => {
+    const isEdited = watch('memo') !== memoData?.memo;
 
     if (isEdited) setShowAlert(true);
-    else handleClose();
+    else closeDialog();
   };
 
   const handleSaveAndClose = () => {
     saveMemo();
-    handleClose();
+    closeDialog();
   };
 
-  const handleClose = () => {
+  const closeDialog = () => {
+    console.log('closeDialog');
+    // setShowAlert(false);
     setOpen(false);
     searchParams.removeAll('id');
     window.history.replaceState(
@@ -90,7 +93,7 @@ export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
   };
 
   const handleOpenChange = (open: boolean) => {
-    if (!open) handleClose();
+    if (!open) checkEditedAndCloseDialog();
   };
 
   useEffect(() => {
@@ -105,8 +108,8 @@ export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
   if (!memoData) return;
   return (
     <>
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-w-[600px] p-0" onClose={closeDialog}>
+      <Dialog open>
+        <DialogContent className="max-w-[600px] p-0" onClose={checkEditedAndCloseDialog}>
           <Card>
             <MemoCardHeader memo={memoData} />
             <CardContent>
@@ -122,9 +125,10 @@ export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
                 {t('common.updatedAt')} {formatDate(memoData.updated_at, 'yyyy.mm.dd')}
               </span>
             </CardContent>
+
             <MemoCardFooter memo={memoData} lng={lng}>
               <div className="flex gap-2">
-                <Button variant="outline" type="button" onClick={closeDialog}>
+                <Button variant="outline" type="button" onClick={checkEditedAndCloseDialog}>
                   {t('common.close')}
                 </Button>
                 <Button onClick={handleSaveAndClose}>{t('common.save')}</Button>
@@ -134,7 +138,7 @@ export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
         </DialogContent>
       </Dialog>
 
-      <UnsavedChangesAlert open={showAlert} onCancel={handleUnChangesAlertClose} onOk={handleClose} lng={lng} />
+      <UnsavedChangesAlert open={showAlert} onCancel={handleUnChangesAlertClose} onOk={handleSaveAndClose} lng={lng} />
     </>
   );
 }

@@ -65,10 +65,7 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
       const isMemoGrid = target.closest('#memo-grid');
       if (!isMemoGrid || isMemoItem) return;
 
-      const dragStartX = event.clientX;
-      const dragStartY = event.clientY;
-
-      onDrag(dragStartX, dragStartY);
+      onDrag(event.clientX, event.clientY);
     };
 
     const onDrag = (dragStartX: number, dragStartY: number) => {

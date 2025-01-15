@@ -88,7 +88,7 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
         dragBox.style.transform = `translate(${left}px, ${top}px) scale(${width}, ${height})`;
 
         // 스크롤
-        const container = document.querySelector('.container');
+        const container = document.getElementById('memo-grid');
         if (container) {
           const isNearTop = dragEndY < THRESHOLD;
           const isNearBottom = window.innerHeight - dragEndY < THRESHOLD;

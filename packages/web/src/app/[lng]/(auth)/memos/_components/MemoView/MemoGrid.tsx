@@ -5,17 +5,19 @@ import { useKeyboardBind } from '@extension/shared/hooks';
 import { GetMemoResponse } from '@extension/shared/types';
 import { LanguageType } from '@src/modules/i18n';
 import { AnimatePresence } from 'framer-motion';
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSearchParams } from '@extension/shared/modules/search-params';
+import { Loading, Skeleton } from '@extension/ui';
 import { DragBox } from '@src/components';
-import { useDrag } from '@src/hooks/useDrag';
 import { useRouter } from 'next/navigation';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
-import { Loading, Skeleton } from '@extension/ui';
 
 const MEMO_UNIT = 20;
+const THRESHOLD = 50;
+const SCROLL_UNIT = 30;
+const THROTTLE_DELAY = 16; // 약 60fps
 
 const getItems = (nextGroupKey: number, count: number) => {
   const nextItems = [];
@@ -37,71 +39,131 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
-
-  const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
+  const dragBoxRef = useRef<HTMLDivElement>(null);
 
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
 
   const checkMemoSelected = useCallback((id: number) => selectedMemoIds.includes(id), [selectedMemoIds]);
   const isAnyMemoSelected = useMemo(() => selectedMemoIds.length > 0, [selectedMemoIds]);
 
+  const bottomTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const topTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const selectMemoItem = useCallback(
     (id: number) => {
-      if (isDragging) return;
-
       if (checkMemoSelected(id)) setSelectedMemoIds(prevMemoIds => prevMemoIds.filter(prevMemo => prevMemo !== id));
       else setSelectedMemoIds(prevMemoIds => [...prevMemoIds, id]);
     },
     [selectedMemoIds],
   );
 
-  const handleMouseDown = (event: React.MouseEvent) => {
-    setIsDragging(true);
-    setDragStart({ x: event.clientX, y: event.clientY });
-    setDragEnd({ x: event.clientX, y: event.clientY });
-  };
-
   useEffect(() => {
-    const handleMouseMove = (e: globalThis.MouseEvent) => {
-      if (!isDragging) return;
-      setDragEnd({ x: e.clientX, y: e.clientY });
+    const handleMouseDown = (event: globalThis.MouseEvent) => {
+      const target = event.target as HTMLElement;
 
-      const selectionArea = {
-        left: Math.min(dragStart.x, e.clientX),
-        right: Math.max(dragStart.x, e.clientX),
-        top: Math.min(dragStart.y, e.clientY),
-        bottom: Math.max(dragStart.y, e.clientY),
+      const isMemoItem = target.closest('.memo-item');
+      const isMemoGrid = target.closest('#memo-grid');
+      if (!isMemoGrid || isMemoItem) return;
+
+      const dragStartX = event.clientX;
+      const dragStartY = event.clientY;
+
+      onDrag(dragStartX, dragStartY);
+    };
+
+    const onDrag = (dragStartX: number, dragStartY: number) => {
+      const dragBox = dragBoxRef.current;
+      if (!dragBox) return;
+
+      document.body.onmousemove = (event: globalThis.MouseEvent) => {
+        event.stopPropagation();
+
+        // 드래그 박스
+        const [dragEndX, dragEndY] = [event.clientX, event.clientY];
+        const [left, top, right, bottom] = [
+          Math.min(dragStartX, dragEndX),
+          Math.min(dragStartY, dragEndY),
+          Math.max(dragStartX, dragEndX),
+          Math.max(dragStartY, dragEndY),
+        ];
+        const [width, height] = [Math.abs(dragEndX - dragStartX), Math.abs(dragEndY - dragStartY)];
+
+        dragBox.style.transform = `translate(${left}px, ${top}px) scale(${width}, ${height})`;
+
+        // 스크롤
+        const container = document.querySelector('.container');
+        if (container) {
+          const isNearTop = dragEndY < THRESHOLD;
+          const isNearBottom = window.innerHeight - dragEndY < THRESHOLD;
+
+          const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
+          const isAtTop = container.scrollTop === 0;
+
+          if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
+            bottomTimeoutRef.current = setInterval(() => {
+              if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
+                clearInterval(bottomTimeoutRef.current!);
+                bottomTimeoutRef.current = null;
+                return;
+              }
+              container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
+            }, 50);
+          } else if (!isNearBottom && bottomTimeoutRef.current) {
+            clearInterval(bottomTimeoutRef.current);
+            bottomTimeoutRef.current = null;
+          }
+
+          if (isNearTop && !topTimeoutRef.current && !isAtTop) {
+            topTimeoutRef.current = setInterval(() => {
+              if (container.scrollTop === 0) {
+                clearInterval(topTimeoutRef.current!);
+                topTimeoutRef.current = null;
+                return;
+              }
+              container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
+            }, 50);
+          } else if (!isNearTop && topTimeoutRef.current) {
+            clearInterval(topTimeoutRef.current);
+            topTimeoutRef.current = null;
+          }
+        }
+
+        // 선택된 메모 업데이트
+        const memoElements = document.querySelectorAll('.memo-item');
+        const selectedIds = [...memoElements]
+          .filter(element => {
+            const rect = element.getBoundingClientRect();
+            return rect.left < right && rect.right > left && rect.top < bottom && rect.bottom > top;
+          })
+          .map(element => Number(element.id));
+
+        setSelectedMemoIds(selectedIds);
       };
-
-      const memoElements = document.querySelectorAll('.memo-item');
-      const selectedIds = [...memoElements]
-        .filter(element => {
-          const rect = element.getBoundingClientRect();
-          return (
-            rect.left < selectionArea.right &&
-            rect.right > selectionArea.left &&
-            rect.top < selectionArea.bottom &&
-            rect.bottom > selectionArea.top
-          );
-        })
-        .map(element => Number(element.id));
-
-      setSelectedMemoIds(selectedIds);
     };
 
     const handleMouseUp = () => {
-      setIsDragging(false);
+      document.body.onmousemove = null;
+
+      if (dragBoxRef.current) dragBoxRef.current.style.transform = '';
+
+      if (bottomTimeoutRef.current) {
+        clearInterval(bottomTimeoutRef.current);
+        bottomTimeoutRef.current = null;
+      }
+
+      if (topTimeoutRef.current) {
+        clearInterval(topTimeoutRef.current);
+        topTimeoutRef.current = null;
+      }
     };
 
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-    }
+    document.body.onmousedown = handleMouseDown;
+    document.body.onmouseup = handleMouseUp;
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      document.body.onmousedown = null;
+      document.body.onmouseup = null;
     };
-  }, [isDragging]);
+  }, []);
 
   const closeMemoOption = () => {
     setSelectedMemoIds([]);
@@ -114,8 +176,8 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   if (!memos) return <Loading />;
 
   return (
-    <div className="relative h-full w-full" onMouseDown={handleMouseDown}>
-      {isDragging && <DragBox dragStart={dragStart} dragEnd={dragEnd} />}
+    <div className="relative h-full w-full">
+      <DragBox ref={dragBoxRef} />
       <AnimatePresence>
         {isAnyMemoSelected && (
           <MemoOptionHeader
@@ -126,6 +188,7 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
           />
         )}
       </AnimatePresence>
+
       <MasonryInfiniteGrid
         useTransform
         className="container h-screen"
@@ -135,10 +198,11 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
         useResizeObserver
         observeChildren
         autoResize
+        container={true}
+        id="memo-grid"
         style={{
           willChange: 'transform',
         }}
-        container={true}
         onRequestAppend={({ groupKey, currentTarget, wait, ready }: any) => {
           if (items.length >= memos.length) return;
 
@@ -166,7 +230,6 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
                 isSelected={checkMemoSelected(memos.at(item.key)!.id)}
                 selectMemoItem={selectMemoItem}
                 isSelecting={isAnyMemoSelected}
-                className={memos.at(item.key)!.id !== Number(id) ? '' : 'invisible'}
               />
             ),
         )}

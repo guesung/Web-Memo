@@ -7,8 +7,8 @@ import { AuthService } from '../Supabase';
 
 export const getSupabaseClient = async () => {
   try {
-    const supabaseClientInstance = createClient<Database>(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey, {
-      db: { schema: SUPABASE.table.memo },
+    const supabaseClientInstance = createClient<Database, 'memo'>(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey, {
+      db: { schema: SUPABASE.schema.memo },
       auth: {
         storage: {
           getItem: async key => {
@@ -47,4 +47,10 @@ export const getSupabaseClient = async () => {
   } catch (e) {
     throw new Error('로그인을 먼저 해주세요');
   }
+};
+
+export const getFeedbackSupabaseClient = () => {
+  return createClient<Database, 'feedback'>(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey, {
+    db: { schema: SUPABASE.schema.feedback },
+  });
 };

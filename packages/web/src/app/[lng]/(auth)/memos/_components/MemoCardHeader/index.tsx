@@ -4,7 +4,7 @@ import { Button, CardHeader, Tooltip, TooltipContent, TooltipProvider, TooltipTr
 import { CheckIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { memo, useCallback } from 'react';
+import { memo, MouseEvent, useCallback } from 'react';
 
 interface MemoCardHeaderProps {
   memo: GetMemoResponse;
@@ -14,9 +14,14 @@ interface MemoCardHeaderProps {
 }
 
 export default memo(function MemoCardHeader({ memo, selectMemoItem, isHovered, isSelected }: MemoCardHeaderProps) {
-  const handleMemoSelect = useCallback(() => {
-    selectMemoItem?.(memo.id);
-  }, [selectMemoItem, memo.id]);
+  const handleCheckButtonClick = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      event.stopPropagation();
+
+      selectMemoItem?.(memo.id);
+    },
+    [selectMemoItem, memo.id],
+  );
 
   const isShowingSelectButton = isHovered || isSelected;
   return (
@@ -28,11 +33,11 @@ export default memo(function MemoCardHeader({ memo, selectMemoItem, isHovered, i
           'opacity-100': isShowingSelectButton,
           'opacity-0': !isShowingSelectButton,
         })}
-        onClick={handleMemoSelect}
-        onMouseDown={e => e.stopPropagation()}>
+        onClick={handleCheckButtonClick}>
         <CheckIcon size={8} />
       </Button>
-      <Link href={memo.url} target="_blank" className="flex items-center gap-2" onMouseDown={e => e.stopPropagation()}>
+
+      <Link href={memo.url} target="_blank" className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
         {memo?.favIconUrl && (
           <Image
             src={memo.favIconUrl}

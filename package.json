@@ -1,6 +1,6 @@
 {
   "name": "web-memo",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "description": "Web Memo - Chrome Extension",
   "bugs": "https://github.com/guesung/Web-Memo/issues",
   "homepage": "https://web-memos.vercel.app",
@@ -35,7 +35,7 @@
     "update-version:win32": "bash update_version.sh",
     "update-version:default": "./update_version.sh",
     "package": "pnpm i && pnpm clean && pnpm build && pnpm zip",
-    "generate-supabase-type": "supabase gen types --lang=typescript --project-id czwtqukymcqoberdoltq --schema memo > packages/shared/src/types/supabase.ts && prettier --write packages/shared/src/types/supabase.ts"
+    "generate-supabase-type": "supabase gen types --lang=typescript --project-id czwtqukymcqoberdoltq --schema feedback --schema memo > packages/shared/src/types/supabase.ts && prettier --write packages/shared/src/types/supabase.ts"
   },
   "files": [
     "dist"

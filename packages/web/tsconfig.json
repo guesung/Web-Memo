@@ -6,6 +6,6 @@
       "@src/*": ["./src/*"]
     }
   },
-  "include": ["src", ".next/types/**/*.ts"],
+  "include": ["src", ".next/types/**/*.ts", "global.d.ts"],
   "exclude": [".next"]
 }

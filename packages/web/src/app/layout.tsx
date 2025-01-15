@@ -43,7 +43,7 @@ export const viewport: Viewport = {
 
 export default function Layout({ children }: LayoutProps) {
   return (
-    <html className="h-screen" suppressHydrationWarning>
+    <html className="h-screen" lang="ko" suppressHydrationWarning>
       <body className={`${pretendard.variable} font-pretendard h-full`}>
         {children}
 

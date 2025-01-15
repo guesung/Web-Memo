@@ -79,22 +79,22 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
         event.stopPropagation();
 
         // 드래그 박스
-        const dragEndX = event.clientX;
-        const dragEndY = event.clientY;
-        const left = Math.min(dragStartX, dragEndX);
-        const top = Math.min(dragStartY, dragEndY);
-        const right = Math.max(dragStartX, dragEndX);
-        const bottom = Math.max(dragStartY, dragEndY);
-        const width = Math.abs(dragEndX - dragStartX);
-        const height = Math.abs(dragEndY - dragStartY);
+        const [dragEndX, dragEndY] = [event.clientX, event.clientY];
+        const [left, top, right, bottom] = [
+          Math.min(dragStartX, dragEndX),
+          Math.min(dragStartY, dragEndY),
+          Math.max(dragStartX, dragEndX),
+          Math.max(dragStartY, dragEndY),
+        ];
+        const [width, height] = [Math.abs(dragEndX - dragStartX), Math.abs(dragEndY - dragStartY)];
 
         dragBox.style.transform = `translate(${left}px, ${top}px) scale(${width}, ${height})`;
 
         // 스크롤
         const container = document.querySelector('.container');
         if (container) {
-          const isNearBottom = window.innerHeight - event.clientY < THRESHOLD;
-          const isNearTop = event.clientY < THRESHOLD;
+          const isNearTop = dragEndY < THRESHOLD;
+          const isNearBottom = window.innerHeight - dragEndY < THRESHOLD;
 
           const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
           const isAtTop = container.scrollTop === 0;
@@ -144,9 +144,7 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
     const handleMouseUp = () => {
       document.body.onmousemove = null;
 
-      const dragBox = dragBoxRef.current;
-      if (!dragBox) return;
-      dragBox.style.transform = '';
+      if (dragBoxRef.current) dragBoxRef.current.style.transform = '';
 
       if (bottomTimeoutRef.current) {
         clearInterval(bottomTimeoutRef.current);
@@ -161,14 +159,9 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
 
     document.body.onmousedown = handleMouseDown;
     document.body.onmouseup = handleMouseUp;
-
     return () => {
       document.body.onmousedown = null;
-      document.body.onmousemove = null;
       document.body.onmouseup = null;
-
-      if (bottomTimeoutRef.current) clearInterval(bottomTimeoutRef.current);
-      if (topTimeoutRef.current) clearInterval(topTimeoutRef.current);
     };
   }, []);
 

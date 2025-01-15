@@ -43,11 +43,10 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
   const dragBoxRef = useRef<HTMLDivElement>(null);
 
-  const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
+  const { setDragStart, setDragEnd } = useDrag();
 
   const { throttle, abortThrottle } = useThrottle();
   const { schedule: scheduleRAF, cancel: cancelRAF } = useRAF();
-  const lastMouseEventRef = useRef<MouseEvent>();
 
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
 
@@ -66,57 +65,6 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   );
 
   useEffect(() => {
-    const updateDragSelection = () => {
-      const lastEvent = lastMouseEventRef.current;
-      if (!lastEvent) return;
-
-      const container = document.querySelector('.container');
-      if (!container) return;
-
-      const viewportHeight = window.innerHeight;
-      const isNearBottom = viewportHeight - lastEvent.clientY < THRESHOLD;
-      const isNearTop = lastEvent.clientY < THRESHOLD;
-
-      const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
-      const isAtTop = container.scrollTop <= 0;
-
-      if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
-        bottomTimeoutRef.current = setInterval(() => {
-          if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
-            clearInterval(bottomTimeoutRef.current!);
-            bottomTimeoutRef.current = null;
-            return;
-          }
-          container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
-          setDragStart(prev => ({ ...prev, y: prev.y - SCROLL_UNIT }));
-          setDragEnd(prev => ({ ...prev, y: prev.y - SCROLL_UNIT }));
-        }, 50);
-      } else if ((!isNearBottom || isAtBottom) && bottomTimeoutRef.current) {
-        clearInterval(bottomTimeoutRef.current);
-        bottomTimeoutRef.current = null;
-      }
-
-      if (isNearTop && !topTimeoutRef.current && !isAtTop) {
-        topTimeoutRef.current = setInterval(() => {
-          if (container.scrollTop === 0) {
-            clearInterval(topTimeoutRef.current!);
-            topTimeoutRef.current = null;
-            return;
-          }
-          container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
-          setDragStart(prev => ({ ...prev, y: prev.y + SCROLL_UNIT }));
-          setDragEnd(prev => ({ ...prev, y: prev.y + SCROLL_UNIT }));
-        }, 50);
-      } else if ((!isNearTop || isAtTop) && topTimeoutRef.current) {
-        clearInterval(topTimeoutRef.current);
-        topTimeoutRef.current = null;
-      }
-
-      setDragEnd({ x: lastEvent.clientX, y: lastEvent.clientY });
-
-      scheduleRAF(updateDragSelection);
-    };
-
     const handleMouseDown = (event: globalThis.MouseEvent) => {
       const target = event.target as HTMLElement;
 
@@ -148,6 +96,46 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
 
         dragBox.style.transform = `translate(${left}px, ${top}px) scale(${width}, ${height})`;
 
+        // 스크롤 처리
+        const container = document.querySelector('.container');
+        if (container) {
+          const viewportHeight = window.innerHeight;
+          const isNearBottom = viewportHeight - event.clientY < THRESHOLD;
+          const isNearTop = event.clientY < THRESHOLD;
+
+          const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
+          const isAtTop = container.scrollTop === 0;
+
+          if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
+            bottomTimeoutRef.current = setInterval(() => {
+              if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
+                clearInterval(bottomTimeoutRef.current!);
+                bottomTimeoutRef.current = null;
+                return;
+              }
+              container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
+            }, 50);
+          } else if (!isNearBottom && bottomTimeoutRef.current) {
+            clearInterval(bottomTimeoutRef.current);
+            bottomTimeoutRef.current = null;
+          }
+
+          if (isNearTop && !topTimeoutRef.current && !isAtTop) {
+            topTimeoutRef.current = setInterval(() => {
+              if (container.scrollTop === 0) {
+                clearInterval(topTimeoutRef.current!);
+                topTimeoutRef.current = null;
+                return;
+              }
+              container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
+            }, 50);
+          } else if (!isNearTop && topTimeoutRef.current) {
+            clearInterval(topTimeoutRef.current);
+            topTimeoutRef.current = null;
+          }
+        }
+
+        // 선택된 메모 업데이트
         const memoElements = document.querySelectorAll('.memo-item');
         const selectedIds = [...memoElements]
           .filter(element => {
@@ -161,15 +149,11 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
     };
 
     const handleMouseUp = () => {
-      abortThrottle();
-
       document.body.onmousemove = null;
 
       const dragBox = dragBoxRef.current;
       if (!dragBox) return;
       dragBox.style.transform = '';
-
-      lastMouseEventRef.current = undefined;
 
       if (bottomTimeoutRef.current) {
         clearInterval(bottomTimeoutRef.current);
@@ -180,6 +164,9 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
         clearInterval(topTimeoutRef.current);
         topTimeoutRef.current = null;
       }
+
+      abortThrottle();
+      cancelRAF();
     };
 
     document.body.onmousedown = handleMouseDown;
@@ -188,11 +175,15 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
     return () => {
       document.body.onmousedown = null;
       document.body.onmousemove = null;
+      document.body.onmouseup = null;
+
+      if (bottomTimeoutRef.current) clearInterval(bottomTimeoutRef.current);
+      if (topTimeoutRef.current) clearInterval(topTimeoutRef.current);
 
       abortThrottle();
       cancelRAF();
     };
-  }, [isDragging, dragStart]);
+  }, []);
 
   const closeMemoOption = () => {
     setSelectedMemoIds([]);

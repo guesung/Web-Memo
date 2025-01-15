@@ -4,10 +4,8 @@ import useTranslation from '@src/modules/i18n/client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-interface NotFoundPresenterProps extends LanguageType {}
-
-const NotFoundPresenter = ({ lng }: NotFoundPresenterProps) => {
-  const { t } = useTranslation(lng);
+const NotFoundPresenter = () => {
+  const { t } = useTranslation();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 px-4">
@@ -17,7 +15,7 @@ const NotFoundPresenter = ({ lng }: NotFoundPresenterProps) => {
           animate={{ scale: 1 }}
           transition={{ duration: 0.5 }}
           className="mb-8 text-9xl font-bold text-gray-300">
-          404
+          404g
         </motion.div>
 
         <motion.div
@@ -25,11 +23,9 @@ const NotFoundPresenter = ({ lng }: NotFoundPresenterProps) => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
           className="space-y-6">
-          <h1 className="text-4xl font-bold text-gray-900">{t('error.404.title', '페이지를 찾을 수 없습니다')}</h1>
+          <h1 className="text-4xl font-bold text-gray-900">{t('error.404.title')}</h1>
 
-          <p className="text-lg text-gray-600">
-            {t('error.404.description', '요청하신 페이지가 사라졌거나 잘못된 경로입니다.')}
-          </p>
+          <p className="text-lg text-gray-600">{t('error.404.description')}</p>
 
           <div className="relative">
             <motion.div
@@ -49,7 +45,7 @@ const NotFoundPresenter = ({ lng }: NotFoundPresenterProps) => {
           <Link
             href="/"
             className="inline-block rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700">
-            {t('error.404.backToHome', '홈으로 돌아가기')}
+            {t('error.404.backToHome')}
           </Link>
         </motion.div>
       </div>

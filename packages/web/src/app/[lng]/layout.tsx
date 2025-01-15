@@ -12,7 +12,7 @@ export async function generateStaticParams() {
 
 export default function RootLayout({ children, params: { lng } }: RootLayoutProps) {
   return (
-    <main lang={lng} dir={dir(lng)} suppressHydrationWarning>
+    <main lang={lng} dir={dir(lng)}>
       <ThemeProvider>
         <QueryProvider lng={lng}>
           <AuthProvider>

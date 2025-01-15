@@ -7,7 +7,7 @@ import { LanguageType } from '@src/modules/i18n';
 
 interface NotFoundContainerProps extends LanguageType {}
 
-const NotFoundContainer = ({ lng }: NotFoundContainerProps) => {
+const NotFoundContainer = () => {
   const pathname = usePathname();
 
   useEffect(() => {
@@ -22,7 +22,7 @@ const NotFoundContainer = ({ lng }: NotFoundContainerProps) => {
     // });
   }, []);
 
-  return <NotFoundPresenter lng={lng} />;
+  return <NotFoundPresenter />;
 };
 
 export default NotFoundContainer;

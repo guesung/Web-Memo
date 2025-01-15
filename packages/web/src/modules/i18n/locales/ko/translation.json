@@ -331,5 +331,12 @@
     "successDescription": "소중한 의견 감사합니다.",
     "error": "피드백 전송에 실패했습니다.",
     "errorDescription": "잠시 후 다시 시도해주세요."
+  },
+  "error": {
+    "404": {
+      "title": "페이지를 찾을 수 없습니다",
+      "description": "요청하신 페이지가 사라졌거나 잘못된 경로입니다.",
+      "backToHome": "홈으로 돌아가기"
+    }
   }
 }

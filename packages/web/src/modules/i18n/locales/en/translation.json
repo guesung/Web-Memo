@@ -320,5 +320,12 @@
     "successDescription": "Thank you for your valuable feedback.",
     "error": "Failed to submit feedback.",
     "errorDescription": "Please try again later."
+  },
+  "error": {
+    "404": {
+      "title": "Page Not Found",
+      "description": "The page you requested has been moved or does not exist.",
+      "backToHome": "Back to Home"
+    }
   }
 }

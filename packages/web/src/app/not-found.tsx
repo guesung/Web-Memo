@@ -1,16 +1,13 @@
 'use client';
-import { Suspense } from 'react';
 import { ErrorBoundary, ErrorFallback, Loading } from '@extension/ui';
 import NotFoundContainer from '@src/components/error/NotFoundContainer';
-import { LanguageParams } from '@src/modules/i18n';
+import { Suspense } from 'react';
 
-interface NotFoundPageProps extends LanguageParams {}
-
-export default function NotFoundPage({ params: { lng } }: NotFoundPageProps) {
+export default function NotFoundPage() {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <Suspense fallback={<Loading />}>
-        <NotFoundContainer lng={lng} />
+        <NotFoundContainer />
       </Suspense>
     </ErrorBoundary>
   );

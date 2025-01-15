@@ -41,6 +41,7 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
+  const dragBoxRef = useRef<HTMLDivElement>(null);
 
   const { dragStart, setDragStart, dragEnd, setDragEnd, isDragging, setIsDragging } = useDrag();
 
@@ -63,15 +64,6 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
     },
     [selectedMemoIds],
   );
-
-  const handleMouseDown = (event: React.MouseEvent) => {
-    const target = event.target as HTMLElement;
-    if (!target.closest('#memo-grid') || target.closest('.memo-item')) return;
-
-    setIsDragging(true);
-    setDragStart({ x: event.clientX, y: event.clientY });
-    setDragEnd({ x: event.clientX, y: event.clientY });
-  };
 
   useEffect(() => {
     const updateDragSelection = () => {
@@ -122,40 +114,61 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
 
       setDragEnd({ x: lastEvent.clientX, y: lastEvent.clientY });
 
-      const selectionArea = {
-        left: Math.min(dragStart.x, lastEvent.clientX),
-        right: Math.max(dragStart.x, lastEvent.clientX),
-        top: Math.min(dragStart.y, lastEvent.clientY),
-        bottom: Math.max(dragStart.y, lastEvent.clientY),
-      };
-
-      const memoElements = document.querySelectorAll('.memo-item');
-      const selectedIds = [...memoElements]
-        .filter(element => {
-          const rect = element.getBoundingClientRect();
-          return (
-            rect.left < selectionArea.right &&
-            rect.right > selectionArea.left &&
-            rect.top < selectionArea.bottom &&
-            rect.bottom > selectionArea.top
-          );
-        })
-        .map(element => Number(element.id));
-
-      setSelectedMemoIds(selectedIds);
       scheduleRAF(updateDragSelection);
     };
 
-    const handleMouseMove = (e: globalThis.MouseEvent) => {
-      if (!isDragging) return;
-      lastMouseEventRef.current = e;
-      throttle(() => scheduleRAF(updateDragSelection), THROTTLE_DELAY);
+    const handleMouseDown = (event: globalThis.MouseEvent) => {
+      const target = event.target as HTMLElement;
+
+      const isMemoItem = target.closest('.memo-item');
+      const isMemoGrid = target.closest('#memo-grid');
+      if (!isMemoGrid || isMemoItem) return;
+
+      const dragStartX = event.pageX;
+      const dragStartY = event.pageY;
+
+      onDrag(dragStartX, dragStartY);
+    };
+
+    const onDrag = (dragStartX: number, dragStartY: number) => {
+      const dragBox = dragBoxRef.current;
+      if (!dragBox) return;
+
+      document.body.onmousemove = (event: globalThis.MouseEvent) => {
+        event.stopPropagation();
+
+        const dragEndX = event.pageX;
+        const dragEndY = event.pageY;
+        const left = Math.min(dragStartX, dragEndX);
+        const top = Math.min(dragStartY, dragEndY);
+        const right = Math.max(dragStartX, dragEndX);
+        const bottom = Math.max(dragStartY, dragEndY);
+        const width = Math.abs(dragEndX - dragStartX);
+        const height = Math.abs(dragEndY - dragStartY);
+
+        dragBox.style.transform = `translate(${left}px, ${top}px) scale(${width}, ${height})`;
+
+        const memoElements = document.querySelectorAll('.memo-item');
+        const selectedIds = [...memoElements]
+          .filter(element => {
+            const rect = element.getBoundingClientRect();
+            return rect.left < right && rect.right > left && rect.top < bottom && rect.bottom > top;
+          })
+          .map(element => Number(element.id));
+
+        setSelectedMemoIds(selectedIds);
+      };
     };
 
     const handleMouseUp = () => {
-      setIsDragging(false);
       abortThrottle();
-      cancelRAF();
+
+      document.body.onmousemove = null;
+
+      const dragBox = dragBoxRef.current;
+      if (!dragBox) return;
+      dragBox.style.transform = '';
+
       lastMouseEventRef.current = undefined;
 
       if (bottomTimeoutRef.current) {
@@ -169,14 +182,13 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
       }
     };
 
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-    }
+    document.body.onmousedown = handleMouseDown;
+    document.body.onmouseup = handleMouseUp;
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      document.body.onmousedown = null;
+      document.body.onmousemove = null;
+
       abortThrottle();
       cancelRAF();
     };
@@ -193,8 +205,8 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   if (!memos) return <Loading />;
 
   return (
-    <div className="relative h-full w-full" onMouseDown={handleMouseDown}>
-      {isDragging && <DragBox dragStart={dragStart} dragEnd={dragEnd} />}
+    <div className="relative h-full w-full">
+      <DragBox ref={dragBoxRef} />
       <AnimatePresence>
         {isAnyMemoSelected && (
           <MemoOptionHeader

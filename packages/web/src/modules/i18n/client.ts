@@ -29,7 +29,7 @@ i18next
     preload: runsOnServerSide ? SUPPORTED_LANGUAGES : [],
   });
 
-export default function useTranslation(language: Language, ns?: Namespace, options?: UseTranslationOptions<string>) {
+export default function useTranslation(language?: Language, ns?: Namespace, options?: UseTranslationOptions<string>) {
   const [cookies, setCookie] = useCookies([cookieName]);
   const ret = useTranslationOrg(ns, options);
   const { i18n } = ret;
@@ -42,11 +42,12 @@ export default function useTranslation(language: Language, ns?: Namespace, optio
 
   useEffect(() => {
     if (!language || i18n.resolvedLanguage === language) return;
+
     i18n.changeLanguage(language);
   }, [language, i18n]);
 
   useEffect(() => {
-    if (cookies.i18next === language) return;
+    if (!language || cookies.i18next === language) return;
     setCookie(cookieName, language, {
       path: '/',
       maxAge: 365 * 24 * 60 * 60,

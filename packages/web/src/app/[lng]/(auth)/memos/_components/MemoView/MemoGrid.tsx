@@ -75,23 +75,13 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
       document.body.onmousemove = (event: globalThis.MouseEvent) => {
         event.stopPropagation();
 
-        // 드래그 박스
         const [dragEndX, dragEndY] = [event.clientX, event.clientY];
-        const [left, top, right, bottom] = [
-          Math.min(dragStartX, dragEndX),
-          Math.min(dragStartY, dragEndY),
-          Math.max(dragStartX, dragEndX),
-          Math.max(dragStartY, dragEndY),
-        ];
-        const [width, height] = [Math.abs(dragEndX - dragStartX), Math.abs(dragEndY - dragStartY)];
-
-        dragBox.style.transform = `translate(${left}px, ${top}px) scale(${width}, ${height})`;
 
         // 스크롤
         const container = document.getElementById('memo-grid');
         if (container) {
-          const isNearTop = dragEndY < THRESHOLD;
           const isNearBottom = window.innerHeight - dragEndY < THRESHOLD;
+          const isNearTop = dragEndY < THRESHOLD;
 
           const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
           const isAtTop = container.scrollTop === 0;
@@ -124,6 +114,17 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
             topTimeoutRef.current = null;
           }
         }
+
+        // 드래그 박스
+        const [left, top, right, bottom] = [
+          Math.min(dragStartX, dragEndX),
+          Math.min(dragStartY, dragEndY),
+          Math.max(dragStartX, dragEndX),
+          Math.max(dragStartY, dragEndY),
+        ];
+        const [width, height] = [Math.abs(dragEndX - dragStartX), Math.abs(dragEndY - dragStartY)];
+
+        dragBox.style.transform = `translate(${left}px, ${top}px) scale(${width}, ${height})`;
 
         // 선택된 메모 업데이트
         const memoElements = document.querySelectorAll('.memo-item');

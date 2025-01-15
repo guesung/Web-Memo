@@ -10,9 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { Loading, Skeleton } from '@extension/ui';
 import { DragBox } from '@src/components';
-import { useDrag } from '@src/hooks/useDrag';
 import { useRouter } from 'next/navigation';
-import { useThrottle, useRAF } from '@extension/shared/hooks';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
 
@@ -43,11 +41,6 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
   const dragBoxRef = useRef<HTMLDivElement>(null);
 
-  const { setDragStart, setDragEnd } = useDrag();
-
-  const { throttle, abortThrottle } = useThrottle();
-  const { schedule: scheduleRAF, cancel: cancelRAF } = useRAF();
-
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
 
   const checkMemoSelected = useCallback((id: number) => selectedMemoIds.includes(id), [selectedMemoIds]);
@@ -72,8 +65,8 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
       const isMemoGrid = target.closest('#memo-grid');
       if (!isMemoGrid || isMemoItem) return;
 
-      const dragStartX = event.pageX;
-      const dragStartY = event.pageY;
+      const dragStartX = event.clientX;
+      const dragStartY = event.clientY;
 
       onDrag(dragStartX, dragStartY);
     };
@@ -85,8 +78,9 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
       document.body.onmousemove = (event: globalThis.MouseEvent) => {
         event.stopPropagation();
 
-        const dragEndX = event.pageX;
-        const dragEndY = event.pageY;
+        // 드래그 박스
+        const dragEndX = event.clientX;
+        const dragEndY = event.clientY;
         const left = Math.min(dragStartX, dragEndX);
         const top = Math.min(dragStartY, dragEndY);
         const right = Math.max(dragStartX, dragEndX);
@@ -96,11 +90,10 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
 
         dragBox.style.transform = `translate(${left}px, ${top}px) scale(${width}, ${height})`;
 
-        // 스크롤 처리
+        // 스크롤
         const container = document.querySelector('.container');
         if (container) {
-          const viewportHeight = window.innerHeight;
-          const isNearBottom = viewportHeight - event.clientY < THRESHOLD;
+          const isNearBottom = window.innerHeight - event.clientY < THRESHOLD;
           const isNearTop = event.clientY < THRESHOLD;
 
           const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
@@ -164,9 +157,6 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
         clearInterval(topTimeoutRef.current);
         topTimeoutRef.current = null;
       }
-
-      abortThrottle();
-      cancelRAF();
     };
 
     document.body.onmousedown = handleMouseDown;
@@ -179,9 +169,6 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
 
       if (bottomTimeoutRef.current) clearInterval(bottomTimeoutRef.current);
       if (topTimeoutRef.current) clearInterval(topTimeoutRef.current);
-
-      abortThrottle();
-      cancelRAF();
     };
   }, []);
 

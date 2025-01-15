@@ -3,19 +3,7 @@ import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { SearchParamsType, useSearchParams } from '@extension/shared/modules/search-params';
 import { formatDate } from '@extension/shared/utils';
 import { Button } from '@extension/ui';
-import {
-  Card,
-  CardContent,
-  Dialog,
-  DialogContent,
-  Textarea,
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from '@src/components/ui';
+import { Card, CardContent, Dialog, DialogContent, Textarea } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useRouter } from 'next/navigation';
@@ -28,14 +16,15 @@ import MemoCardHeader from '../MemoCardHeader';
 import UnsavedChangesAlert from './UnsavedChangesAlert';
 
 interface MemoDialog extends LanguageType {
-  searchParams: SearchParamsType;
+  id: number;
+  open: boolean;
+  setOpen: (open: boolean) => void;
 }
 
-export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
+export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const { memo: memoData } = useMemoQuery({ id: Number(id) });
+  const { memo: memoData } = useMemoQuery({ id });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
   const [isEdited, setIsEdited] = useState(false);
@@ -62,7 +51,7 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
     },
   });
 
-  const memo = useWatch({
+  useWatch({
     name: 'memo',
     control,
   });
@@ -70,7 +59,7 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
   useImperativeHandle(ref, () => textareaRef.current);
 
   const saveMemo = () => {
-    mutateMemoPatch({ id: Number(id), request: { memo: watch('memo') } });
+    mutateMemoPatch({ id: Number(searchParams.get('id')), request: { memo: watch('memo') } });
     setIsEdited(false);
   };
 
@@ -82,11 +71,8 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
   };
 
   const closeDialog = () => {
-    if (isEdited) {
-      setShowAlert(true);
-      return;
-    }
-    handleClose();
+    if (isEdited) setShowAlert(true);
+    else handleClose();
   };
 
   const handleSaveAndClose = () => {
@@ -95,12 +81,23 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
   };
 
   const handleClose = () => {
+    setOpen(false);
     searchParams.removeAll('id');
-    router.replace(searchParams.getUrl(), { scroll: false });
+    window.history.replaceState(
+      { ...window.history.state, as: searchParams.getUrl(), url: searchParams.getUrl() },
+      '',
+      searchParams.getUrl(),
+    );
   };
 
   const handleUnChangesAlertClose = () => {
     setShowAlert(false);
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      handleClose();
+    }
   };
 
   useEffect(() => {
@@ -115,7 +112,7 @@ export default function MemoDialog({ lng, searchParams: { id } }: MemoDialog) {
   if (!memoData) return;
   return (
     <>
-      <Dialog open>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-[600px] p-0" onClose={closeDialog}>
           <Card>
             <MemoCardHeader memo={memoData} />

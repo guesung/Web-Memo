@@ -1,13 +1,15 @@
 import { GetMemoResponse } from '@extension/shared/types';
 import { cn } from '@extension/shared/utils';
-import { Card, CardContent } from '@src/components/ui';
+import { Card, CardContent, Loading } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
-import { HTMLAttributes, memo, MouseEvent, useState } from 'react';
+import { HTMLAttributes, memo, MouseEvent, Suspense, useState } from 'react';
 
 import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from '@extension/shared/modules/search-params';
+import dynamic from 'next/dynamic';
+import MemoDialog from '../MemoDialog';
 
 interface MemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
   memo: GetMemoResponse;
@@ -17,9 +19,9 @@ interface MemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 }
 
 export default memo(function MemoItem({ lng, memo, selectMemoItem, isSelecting, isSelected, ...props }: MemoItemProps) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [isHovered, setIsHovered] = useState(false);
+  const [open, setOpen] = useState(memo.id === Number(searchParams.get('id')));
 
   const handleMouseEnter = () => {
     setIsHovered(true);
@@ -34,7 +36,12 @@ export default memo(function MemoItem({ lng, memo, selectMemoItem, isSelecting, 
     if (isSelecting) selectMemoItem(Number(id));
     else {
       searchParams.set('id', id);
-      router.push(searchParams.getUrl(), { scroll: false });
+      window.history.replaceState(
+        { ...window.history.state, as: searchParams.getUrl(), url: searchParams.getUrl() },
+        '',
+        searchParams.getUrl(),
+      );
+      setOpen(true);
     }
   };
 
@@ -54,6 +61,8 @@ export default memo(function MemoItem({ lng, memo, selectMemoItem, isSelecting, 
         {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
         <MemoCardFooter memo={memo} lng={lng} isShowingOption={isHovered && !isSelecting} />
       </Card>
+
+      {open && <MemoDialog lng={lng} id={memo.id} open={open} setOpen={setOpen} />}
     </article>
   );
 });

@@ -75,18 +75,18 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
 
   useEffect(() => {
     const updateDragSelection = () => {
-      const e = lastMouseEventRef.current;
-      if (!e) return;
+      const lastEvent = lastMouseEventRef.current;
+      if (!lastEvent) return;
 
       const container = document.querySelector('.container');
       if (!container) return;
 
       const viewportHeight = window.innerHeight;
-      const isNearBottom = viewportHeight - e.clientY < THRESHOLD;
-      const isNearTop = e.clientY < THRESHOLD;
+      const isNearBottom = viewportHeight - lastEvent.clientY < THRESHOLD;
+      const isNearTop = lastEvent.clientY < THRESHOLD;
 
       const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
-      const isAtTop = container.scrollTop === 0;
+      const isAtTop = container.scrollTop <= 0;
 
       if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
         bottomTimeoutRef.current = setInterval(() => {
@@ -120,13 +120,13 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
         topTimeoutRef.current = null;
       }
 
-      setDragEnd({ x: e.clientX, y: e.clientY });
+      setDragEnd({ x: lastEvent.clientX, y: lastEvent.clientY });
 
       const selectionArea = {
-        left: Math.min(dragStart.x, e.clientX),
-        right: Math.max(dragStart.x, e.clientX),
-        top: Math.min(dragStart.y, e.clientY),
-        bottom: Math.max(dragStart.y, e.clientY),
+        left: Math.min(dragStart.x, lastEvent.clientX),
+        right: Math.max(dragStart.x, lastEvent.clientX),
+        top: Math.min(dragStart.y, lastEvent.clientY),
+        bottom: Math.max(dragStart.y, lastEvent.clientY),
       };
 
       const memoElements = document.querySelectorAll('.memo-item');

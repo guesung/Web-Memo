@@ -93,6 +93,10 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
                 bottomTimeoutRef.current = null;
                 return;
               }
+              dragStartY -= SCROLL_UNIT;
+              dragBox.style.transform = `translate(${dragStartX}px, ${dragStartY}px) scale(${dragEndX - dragStartX}, ${
+                dragEndY - dragStartY
+              })`;
               container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
             }, 50);
           } else if (!isNearBottom && bottomTimeoutRef.current) {
@@ -107,6 +111,10 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
                 topTimeoutRef.current = null;
                 return;
               }
+              dragStartY += SCROLL_UNIT;
+              dragBox.style.transform = `translate(${dragStartX}px, ${dragStartY}px) scale(${dragEndX - dragStartX}, ${
+                dragEndY - dragStartY
+              })`;
               container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
             }, 50);
           } else if (!isNearTop && topTimeoutRef.current) {

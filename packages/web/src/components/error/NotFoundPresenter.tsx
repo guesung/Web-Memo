@@ -15,7 +15,7 @@ const NotFoundPresenter = () => {
           animate={{ scale: 1 }}
           transition={{ duration: 0.5 }}
           className="mb-8 text-9xl font-bold text-gray-300">
-          404g
+          404
         </motion.div>
 
         <motion.div

@@ -4,17 +4,12 @@ import './globals.css';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { Toaster } from '@src/components/ui';
 import { CONFIG } from '@src/constants';
-import { LanguageParams } from '@src/modules/i18n';
 import type { Viewport } from 'next';
-import { WebVitals } from './_components';
-import { metadataEnglish, metadataKorean, pretendard } from './_constants';
 import { PropsWithChildren } from 'react';
+import { WebVitals } from './_components';
+import { pretendard } from './_constants';
 
 interface LayoutProps extends PropsWithChildren {}
-
-export async function generateMetadata({ params }: LanguageParams) {
-  return params.lng === 'ko' ? metadataKorean : metadataEnglish;
-}
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -25,7 +20,7 @@ export const viewport: Viewport = {
 
 export default function Layout({ children }: LayoutProps) {
   return (
-    <html className="h-screen" lang="ko" suppressHydrationWarning>
+    <html className="h-screen" suppressHydrationWarning>
       <body className={`${pretendard.variable} font-pretendard h-full`}>
         {children}
 

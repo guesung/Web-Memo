@@ -1,5 +1,3 @@
-import 'driver.js/dist/driver.css';
-
 import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { checkLocalStorageTrue, setLocalStorageTrue } from '@extension/shared/modules/local-storage';
 import { useGetExtensionManifest } from '@src/hooks';
@@ -65,8 +63,8 @@ export default function useGuide({ lng }: UseGuideProps) {
   useEffect(() => {
     if (manifest === 'NOT_INSTALLED' || checkLocalStorageTrue('guide')) return;
 
+    import('driver.js/dist/driver.css');
     driverObj.drive();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [manifest]);
 
   return { driverObj };

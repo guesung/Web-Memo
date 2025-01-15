@@ -1,4 +1,4 @@
-@import '../../modules/guide/index.css';
+@import '../modules/guide/index.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

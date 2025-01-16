@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
 import { useDrag } from '@src/hooks';
+import { useScrollSync } from '@src/hooks';
 
 const MEMO_UNIT = 20;
 const THRESHOLD = 50;
@@ -191,6 +192,7 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
   };
 
   useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
+  useScrollSync({ targetId: 'memo-grid' });
 
   if (!memos) return <Loading />;
 

@@ -58,7 +58,7 @@ export default function MemoView({
         </div>
       </div>
 
-      {view === 'grid' && <MemoGrid memos={memos} gridKey={category + isWish} lng={lng} id={id} />}
+      {view === 'grid' && <MemoGrid memos={memos} lng={lng} />}
       {view === 'calendar' && <MemoCalendar lng={lng} memos={memos} />}
 
       <ExtensionDialog lng={lng} />

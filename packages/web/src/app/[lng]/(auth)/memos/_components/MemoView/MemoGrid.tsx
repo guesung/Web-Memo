@@ -16,7 +16,8 @@ import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
 
 const MEMO_UNIT = 20;
-const THRESHOLD = 50;
+const SCROLL_INTERVAL = 50;
+const CONTAINER_ID = 'memo-grid';
 const SCROLL_UNIT = 30;
 const THROTTLE_DELAY = 16; // 약 60fps
 
@@ -63,7 +64,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
       const target = event.target as HTMLElement;
 
       const isMemoItem = target.closest('.memo-item');
-      const isMemoGrid = target.closest('#memo-grid');
+      const isMemoGrid = target.closest(`#${CONTAINER_ID}`);
       if (!isMemoGrid || isMemoItem) return;
 
       const onDrag = (dragStartX: number, dragStartY: number) => {
@@ -76,10 +77,10 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
           const [dragEndX, dragEndY] = [event.clientX, event.clientY];
 
           // 스크롤
-          const container = document.getElementById('memo-grid');
+          const container = document.getElementById(CONTAINER_ID);
           if (container) {
-            const isNearBottom = window.innerHeight - dragEndY < THRESHOLD;
-            const isNearTop = dragEndY < THRESHOLD;
+            const isNearBottom = window.innerHeight - dragEndY < SCROLL_INTERVAL;
+            const isNearTop = dragEndY < SCROLL_INTERVAL;
 
             const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
             const isAtTop = container.scrollTop === 0;
@@ -175,7 +176,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   };
 
   useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
-  useScrollSync({ targetId: 'memo-grid' });
+  useScrollSync({ targetId: CONTAINER_ID });
 
   if (!memos) return <Loading />;
 
@@ -203,7 +204,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         observeChildren
         autoResize
         container={true}
-        id="memo-grid"
+        id={CONTAINER_ID}
         style={{
           willChange: 'transform',
         }}

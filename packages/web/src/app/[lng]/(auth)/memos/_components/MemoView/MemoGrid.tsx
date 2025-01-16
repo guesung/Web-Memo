@@ -13,6 +13,7 @@ import { DragBox } from '@src/components';
 import { useRouter } from 'next/navigation';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
+import { useDrag } from '@src/hooks';
 
 const MEMO_UNIT = 20;
 const THRESHOLD = 50;
@@ -57,119 +58,115 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
     [selectedMemoIds],
   );
 
-  useEffect(() => {
-    const handleMouseDown = (event: globalThis.MouseEvent) => {
+  useDrag({
+    onMouseDown: (event: MouseEvent) => {
       const target = event.target as HTMLElement;
 
       const isMemoItem = target.closest('.memo-item');
       const isMemoGrid = target.closest('#memo-grid');
       if (!isMemoGrid || isMemoItem) return;
 
-      onDrag(event.clientX, event.clientY);
-    };
+      const onDrag = (dragStartX: number, dragStartY: number) => {
+        const dragBox = dragBoxRef.current;
+        if (!dragBox) return;
 
-    const onDrag = (dragStartX: number, dragStartY: number) => {
-      const dragBox = dragBoxRef.current;
-      if (!dragBox) return;
+        const handleMouseMove = (event: globalThis.MouseEvent) => {
+          event.stopPropagation();
 
-      document.body.onmousemove = (event: globalThis.MouseEvent) => {
-        event.stopPropagation();
+          const [dragEndX, dragEndY] = [event.clientX, event.clientY];
 
-        const [dragEndX, dragEndY] = [event.clientX, event.clientY];
+          // 스크롤
+          const container = document.getElementById('memo-grid');
+          if (container) {
+            const isNearBottom = window.innerHeight - dragEndY < THRESHOLD;
+            const isNearTop = dragEndY < THRESHOLD;
 
-        // 스크롤
-        const container = document.getElementById('memo-grid');
-        if (container) {
-          const isNearBottom = window.innerHeight - dragEndY < THRESHOLD;
-          const isNearTop = dragEndY < THRESHOLD;
+            const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
+            const isAtTop = container.scrollTop === 0;
 
-          const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
-          const isAtTop = container.scrollTop === 0;
+            if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
+              bottomTimeoutRef.current = setInterval(() => {
+                if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
+                  clearInterval(bottomTimeoutRef.current!);
+                  bottomTimeoutRef.current = null;
+                  return;
+                }
+                dragStartY -= SCROLL_UNIT;
+                dragBox.style.transform = `translate(${dragStartX}px, ${dragStartY}px) scale(${dragEndX - dragStartX}, ${
+                  dragEndY - dragStartY
+                })`;
+                container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
+              }, 50);
+            } else if (!isNearBottom && bottomTimeoutRef.current) {
+              clearInterval(bottomTimeoutRef.current);
+              bottomTimeoutRef.current = null;
+            }
 
-          if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
-            bottomTimeoutRef.current = setInterval(() => {
-              if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
-                clearInterval(bottomTimeoutRef.current!);
-                bottomTimeoutRef.current = null;
-                return;
-              }
-              dragStartY -= SCROLL_UNIT;
-              dragBox.style.transform = `translate(${dragStartX}px, ${dragStartY}px) scale(${dragEndX - dragStartX}, ${
-                dragEndY - dragStartY
-              })`;
-              container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
-            }, 50);
-          } else if (!isNearBottom && bottomTimeoutRef.current) {
+            if (isNearTop && !topTimeoutRef.current && !isAtTop) {
+              topTimeoutRef.current = setInterval(() => {
+                if (container.scrollTop === 0) {
+                  clearInterval(topTimeoutRef.current!);
+                  topTimeoutRef.current = null;
+                  return;
+                }
+                dragStartY += SCROLL_UNIT;
+                dragBox.style.transform = `translate(${dragStartX}px, ${dragStartY}px) scale(${dragEndX - dragStartX}, ${
+                  dragEndY - dragStartY
+                })`;
+                container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
+              }, 50);
+            } else if (!isNearTop && topTimeoutRef.current) {
+              clearInterval(topTimeoutRef.current);
+              topTimeoutRef.current = null;
+            }
+          }
+
+          // 드래그 박스
+          const [left, top, right, bottom] = [
+            Math.min(dragStartX, dragEndX),
+            Math.min(dragStartY, dragEndY),
+            Math.max(dragStartX, dragEndX),
+            Math.max(dragStartY, dragEndY),
+          ];
+          const [width, height] = [Math.abs(dragEndX - dragStartX), Math.abs(dragEndY - dragStartY)];
+
+          dragBox.style.transform = `translate(${left}px, ${top}px) scale(${width}, ${height})`;
+
+          // 선택된 메모 업데이트
+          const memoElements = document.querySelectorAll('.memo-item');
+          const selectedIds = [...memoElements]
+            .filter(element => {
+              const rect = element.getBoundingClientRect();
+              return rect.left < right && rect.right > left && rect.top < bottom && rect.bottom > top;
+            })
+            .map(element => Number(element.id));
+
+          setSelectedMemoIds(selectedIds);
+        };
+
+        const handleMouseUp = () => {
+          document.body.removeEventListener('mousemove', handleMouseMove);
+
+          if (dragBoxRef.current) dragBoxRef.current.style.transform = '';
+
+          if (bottomTimeoutRef.current) {
             clearInterval(bottomTimeoutRef.current);
             bottomTimeoutRef.current = null;
           }
 
-          if (isNearTop && !topTimeoutRef.current && !isAtTop) {
-            topTimeoutRef.current = setInterval(() => {
-              if (container.scrollTop === 0) {
-                clearInterval(topTimeoutRef.current!);
-                topTimeoutRef.current = null;
-                return;
-              }
-              dragStartY += SCROLL_UNIT;
-              dragBox.style.transform = `translate(${dragStartX}px, ${dragStartY}px) scale(${dragEndX - dragStartX}, ${
-                dragEndY - dragStartY
-              })`;
-              container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
-            }, 50);
-          } else if (!isNearTop && topTimeoutRef.current) {
+          if (topTimeoutRef.current) {
             clearInterval(topTimeoutRef.current);
             topTimeoutRef.current = null;
           }
-        }
+        };
 
-        // 드래그 박스
-        const [left, top, right, bottom] = [
-          Math.min(dragStartX, dragEndX),
-          Math.min(dragStartY, dragEndY),
-          Math.max(dragStartX, dragEndX),
-          Math.max(dragStartY, dragEndY),
-        ];
-        const [width, height] = [Math.abs(dragEndX - dragStartX), Math.abs(dragEndY - dragStartY)];
-
-        dragBox.style.transform = `translate(${left}px, ${top}px) scale(${width}, ${height})`;
-
-        // 선택된 메모 업데이트
-        const memoElements = document.querySelectorAll('.memo-item');
-        const selectedIds = [...memoElements]
-          .filter(element => {
-            const rect = element.getBoundingClientRect();
-            return rect.left < right && rect.right > left && rect.top < bottom && rect.bottom > top;
-          })
-          .map(element => Number(element.id));
-
-        setSelectedMemoIds(selectedIds);
+        document.body.addEventListener('mousemove', handleMouseMove);
+        document.body.addEventListener('mouseup', handleMouseUp);
       };
-    };
 
-    const handleMouseUp = () => {
-      document.body.onmousemove = null;
-
-      if (dragBoxRef.current) dragBoxRef.current.style.transform = '';
-
-      if (bottomTimeoutRef.current) {
-        clearInterval(bottomTimeoutRef.current);
-        bottomTimeoutRef.current = null;
-      }
-
-      if (topTimeoutRef.current) {
-        clearInterval(topTimeoutRef.current);
-        topTimeoutRef.current = null;
-      }
-    };
-
-    document.body.onmousedown = handleMouseDown;
-    document.body.onmouseup = handleMouseUp;
-    return () => {
-      document.body.onmousedown = null;
-      document.body.onmouseup = null;
-    };
-  }, []);
+      onDrag(event.clientX, event.clientY);
+    },
+  });
 
   const closeMemoOption = () => {
     setSelectedMemoIds([]);

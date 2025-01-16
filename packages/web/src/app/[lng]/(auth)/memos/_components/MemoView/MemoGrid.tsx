@@ -14,6 +14,7 @@ import { useDrag, useScrollSync } from '@src/hooks';
 import { useRouter } from 'next/navigation';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
+import MemoDialog from '../MemoDialog';
 
 const MEMO_UNIT = 20;
 const SCROLL_INTERVAL = 50;
@@ -238,6 +239,8 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
             ),
         )}
       </MasonryInfiniteGrid>
+
+      <MemoDialog lng={lng} />
     </div>
   );
 }

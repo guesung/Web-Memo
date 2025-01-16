@@ -30,9 +30,10 @@ export default function usePropagateEvent({
     history.replaceState = _wr('replaceState');
 
     window.addEventListener('replaceState', replaceStateCallbackFn);
-    window.addEventListener('replaceState', pushStateCallbackFn);
+    window.addEventListener('pushState', pushStateCallbackFn);
     return () => {
-      window.removeEventListener('replaceState', pushStateCallbackFn);
+      window.removeEventListener('replaceState', replaceStateCallbackFn);
+      window.removeEventListener('pushState', pushStateCallbackFn);
     };
   }, []);
 }

@@ -5,16 +5,15 @@ import { useKeyboardBind } from '@extension/shared/hooks';
 import { GetMemoResponse } from '@extension/shared/types';
 import { LanguageType } from '@src/modules/i18n';
 import { AnimatePresence } from 'framer-motion';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { Loading, Skeleton } from '@extension/ui';
 import { DragBox } from '@src/components';
+import { useDrag, useScrollSync } from '@src/hooks';
 import { useRouter } from 'next/navigation';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
-import { useDrag } from '@src/hooks';
-import { useScrollSync } from '@src/hooks';
 
 const MEMO_UNIT = 20;
 const THRESHOLD = 50;
@@ -33,9 +32,10 @@ const getItems = (nextGroupKey: number, count: number) => {
 
 interface MemoGridProps extends LanguageType {
   memos: GetMemoResponse[];
+  gridKey: string;
 }
 
-export default function MemoGrid({ lng, memos }: MemoGridProps) {
+export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
@@ -54,23 +54,6 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
       return prev.filter(memoId => memoId !== id);
     });
   }, []);
-
-  const renderMemoItem = useCallback(
-    (memo: GetMemoResponse, groupKey: number) => {
-      return (
-        <MemoItem
-          key={memo.id}
-          lng={lng}
-          memo={memo}
-          isSelected={checkMemoSelected(memo.id)}
-          selectMemoItem={handleSelectMemoItem}
-          isSelecting={isAnyMemoSelected}
-          data-grid-groupkey={groupKey}
-        />
-      );
-    },
-    [checkMemoSelected, handleSelectMemoItem, isAnyMemoSelected, lng],
-  );
 
   const bottomTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const topTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -240,7 +223,20 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
             setItems(prevItems => [...prevItems, ...getItems(nextGroupKey, maxAddItem)]);
           }, 100);
         }}>
-        {items.map(item => memos.at(item.key) && renderMemoItem(memos.at(item.key)!, item.groupKey))}
+        {items.map(
+          item =>
+            memos.at(item.key) && (
+              <MemoItem
+                lng={lng}
+                data-grid-groupkey={item.groupKey}
+                key={item.key + gridKey}
+                memo={memos.at(item.key)!}
+                isSelected={checkMemoSelected(memos.at(item.key)!.id)}
+                selectMemoItem={handleSelectMemoItem}
+                isSelecting={isAnyMemoSelected}
+              />
+            ),
+        )}
       </MasonryInfiniteGrid>
     </div>
   );

@@ -176,7 +176,6 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   };
 
   useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
-  useScrollSync({ targetId: CONTAINER_ID });
 
   if (!memos) return <Loading />;
 

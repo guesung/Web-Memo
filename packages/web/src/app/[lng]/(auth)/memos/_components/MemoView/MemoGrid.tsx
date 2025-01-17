@@ -61,8 +61,8 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   const topTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useDrag({
-    onMouseDown: (startEvent: MouseEvent) => {
-      const target = startEvent.target as HTMLElement;
+    onMouseDown: (mouseDownEvent: MouseEvent) => {
+      const target = mouseDownEvent.target as HTMLElement;
 
       const isMemoItem = target.closest('.memo-item');
       const isMemoGrid = target.closest(`#${CONTAINER_ID}`);
@@ -76,10 +76,10 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         const dragBox = dragBoxRef.current;
         if (!dragBox) return;
 
-        const handleMouseMove = (endEvent: globalThis.MouseEvent) => {
-          endEvent.stopPropagation();
+        const handleMouseMove = (mouseMoveEvent: globalThis.MouseEvent) => {
+          mouseMoveEvent.stopPropagation();
 
-          const [dragEndX, dragEndY] = [endEvent.clientX, endEvent.clientY];
+          const [dragEndX, dragEndY] = [mouseMoveEvent.clientX, mouseMoveEvent.clientY];
 
           // 스크롤
           const isNearBottom = window.innerHeight - dragEndY < SCROLL_INTERVAL;
@@ -162,7 +162,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         document.body.addEventListener('mouseup', handleMouseUp);
       };
 
-      onDrag(startEvent.clientX, startEvent.clientY);
+      onDrag(mouseDownEvent.clientX, mouseDownEvent.clientY);
     },
   });
 

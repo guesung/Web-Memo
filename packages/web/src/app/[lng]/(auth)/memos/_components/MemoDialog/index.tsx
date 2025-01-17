@@ -1,41 +1,33 @@
 'use client';
 import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
-import { SearchParamsType, useSearchParams } from '@extension/shared/modules/search-params';
+import { useSearchParams } from '@extension/shared/modules/search-params';
 import { formatDate } from '@extension/shared/utils';
-import { Button, DialogClose, DialogFooter, DialogHeader, DialogTitle } from '@extension/ui';
+import { Button } from '@extension/ui';
 import { Card, CardContent, Dialog, DialogContent, Textarea } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
-import { useRouter } from 'next/navigation';
-import { FocusEvent, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { MemoInput } from '../../_types';
 import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
 import UnsavedChangesAlert from './UnsavedChangesAlert';
+import { usePropagateEvent } from '@src/hooks';
 
-interface MemoDialog extends LanguageType {
-  id: number;
-  open: boolean;
-  setOpen: (open: boolean) => void;
-}
+interface MemoDialog extends LanguageType {}
 
-export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
+export default function MemoDialog({ lng }: MemoDialog) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
+  const id = Number(searchParams.get('id'));
   const { memo: memoData } = useMemoQuery({ id });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
   const [showAlert, setShowAlert] = useState(false);
+  const [open, setOpen] = useState(!!id);
 
-  const {
-    register,
-    watch,
-    setValue,
-    control,
-    formState: { touchedFields },
-  } = useForm<MemoInput>({
+  const { register, watch, setValue, control } = useForm<MemoInput>({
     defaultValues: {
       memo: '',
     },
@@ -53,7 +45,6 @@ export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
   useImperativeHandle(ref, () => textareaRef.current);
 
   const saveMemo = () => {
-    console.log(1, searchParams.get('id'), watch('memo'));
     mutateMemoPatch({ id, request: { memo: watch('memo') } });
   };
 
@@ -77,13 +68,8 @@ export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
   };
 
   const closeDialog = () => {
-    setOpen(false);
     searchParams.removeAll('id');
-    window.history.replaceState(
-      { ...window.history.state, as: searchParams.getUrl(), url: searchParams.getUrl() },
-      '',
-      searchParams.getUrl(),
-    );
+    window.history.replaceState({ isOpen: false }, '', searchParams.getUrl());
   };
 
   const handleUnChangesAlertClose = () => {
@@ -99,10 +85,16 @@ export default function MemoDialog({ lng, id, open, setOpen }: MemoDialog) {
     setValue('memo', memoData?.memo ?? '');
   }, [memoData, setValue]);
 
+  usePropagateEvent({
+    replaceStateCallbackFn: event => {
+      setOpen(!!searchParams.get('id'));
+    },
+  });
+
   if (!memoData) return;
   return (
     <>
-      <Dialog open>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-[600px] p-0" onClose={checkEditedAndCloseDialog}>
           <Card>
             <MemoCardHeader memo={memoData} />

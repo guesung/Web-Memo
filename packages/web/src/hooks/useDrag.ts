@@ -1,21 +1,15 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 
-interface DragPosition {
-  x: number;
-  y: number;
+interface UseDragProps {
+  onMouseDown: (e: MouseEvent) => void;
 }
 
-export function useDrag() {
-  const [dragStart, setDragStart] = useState<DragPosition>({ x: 0, y: 0 });
-  const [dragEnd, setDragEnd] = useState<DragPosition>({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
+export default function useDrag({ onMouseDown }: UseDragProps) {
+  useEffect(() => {
+    document.body.addEventListener('mousedown', onMouseDown);
 
-  return {
-    dragStart,
-    setDragStart,
-    dragEnd,
-    setDragEnd,
-    isDragging,
-    setIsDragging,
-  };
+    return () => {
+      document.body.removeEventListener('mousedown', onMouseDown);
+    };
+  }, []);
 }

@@ -21,7 +21,7 @@ export default async function Page({ searchParams, params: { lng } }: PageProps)
   const supabaseClient = getSupabaseClient();
 
   return (
-    <main className="w-full px-4">
+    <main className="h-screen w-screen overflow-y-hidden px-4">
       <HeaderMargin />
       <HydrationBoundaryWrapper queryKey={QUERY_KEY.memos()} queryFn={() => new MemoService(supabaseClient).getMemos()}>
         <Suspense fallback={<Loading />}>

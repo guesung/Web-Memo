@@ -61,66 +61,58 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   const topTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useDrag({
-    onMouseDown: (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
+    onMouseDown: (startEvent: MouseEvent) => {
+      const target = startEvent.target as HTMLElement;
 
       const isMemoItem = target.closest('.memo-item');
       const isMemoGrid = target.closest(`#${CONTAINER_ID}`);
       if (!isMemoGrid || isMemoItem) return;
 
+      const container = document.getElementById(CONTAINER_ID);
+      if (!container) return;
+
       const onDrag = (dragStartX: number, dragStartY: number) => {
         const dragBox = dragBoxRef.current;
         if (!dragBox) return;
 
-        const handleMouseMove = (event: globalThis.MouseEvent) => {
-          event.stopPropagation();
+        const handleMouseMove = (endEvent: globalThis.MouseEvent) => {
+          endEvent.stopPropagation();
 
-          const [dragEndX, dragEndY] = [event.clientX, event.clientY];
+          const [dragEndX, dragEndY] = [endEvent.clientX, endEvent.clientY];
 
           // 스크롤
-          const container = document.getElementById(CONTAINER_ID);
-          if (container) {
-            const isNearBottom = window.innerHeight - dragEndY < SCROLL_INTERVAL;
-            const isNearTop = dragEndY < SCROLL_INTERVAL;
+          const isNearBottom = window.innerHeight - dragEndY < SCROLL_INTERVAL;
+          const isNearTop = dragEndY < SCROLL_INTERVAL;
 
-            const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
-            const isAtTop = container.scrollTop === 0;
+          const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
+          const isAtTop = container.scrollTop === 0;
 
-            if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
-              bottomTimeoutRef.current = setInterval(() => {
-                if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
-                  clearInterval(bottomTimeoutRef.current!);
-                  bottomTimeoutRef.current = null;
-                  return;
-                }
-                dragStartY -= SCROLL_UNIT;
-                dragBox.style.transform = `translate(${dragStartX}px, ${dragStartY}px) scale(${dragEndX - dragStartX}, ${
-                  dragEndY - dragStartY
-                })`;
-                container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
-              }, 50);
-            } else if (!isNearBottom && bottomTimeoutRef.current) {
-              clearInterval(bottomTimeoutRef.current);
-              bottomTimeoutRef.current = null;
-            }
+          if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
+            bottomTimeoutRef.current = setInterval(() => {
+              if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
+                clearInterval(bottomTimeoutRef.current!);
+                bottomTimeoutRef.current = null;
+                return;
+              }
+              container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
+            }, 50);
+          } else if (!isNearBottom && bottomTimeoutRef.current) {
+            clearInterval(bottomTimeoutRef.current);
+            bottomTimeoutRef.current = null;
+          }
 
-            if (isNearTop && !topTimeoutRef.current && !isAtTop) {
-              topTimeoutRef.current = setInterval(() => {
-                if (container.scrollTop === 0) {
-                  clearInterval(topTimeoutRef.current!);
-                  topTimeoutRef.current = null;
-                  return;
-                }
-                dragStartY += SCROLL_UNIT;
-                dragBox.style.transform = `translate(${dragStartX}px, ${dragStartY}px) scale(${dragEndX - dragStartX}, ${
-                  dragEndY - dragStartY
-                })`;
-                container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
-              }, 50);
-            } else if (!isNearTop && topTimeoutRef.current) {
-              clearInterval(topTimeoutRef.current);
-              topTimeoutRef.current = null;
-            }
+          if (isNearTop && !topTimeoutRef.current && !isAtTop) {
+            topTimeoutRef.current = setInterval(() => {
+              if (container.scrollTop === 0) {
+                clearInterval(topTimeoutRef.current!);
+                topTimeoutRef.current = null;
+                return;
+              }
+              container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
+            }, 50);
+          } else if (!isNearTop && topTimeoutRef.current) {
+            clearInterval(topTimeoutRef.current);
+            topTimeoutRef.current = null;
           }
 
           // 드래그 박스
@@ -166,7 +158,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         document.body.addEventListener('mouseup', handleMouseUp);
       };
 
-      onDrag(event.clientX, event.clientY);
+      onDrag(startEvent.clientX, startEvent.clientY);
     },
   });
 

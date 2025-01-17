@@ -1,6 +1,6 @@
 import '@extension/ui/dist/global.css';
 import { GoogleAnalytics } from '@next/third-parties/google';
-import { AuthProvider, QueryProvider, ThemeProvider } from '@src/components';
+import { QueryProvider, ThemeProvider } from '@src/components';
 import { Toaster } from '@src/components/ui';
 import { CONFIG } from '@src/constants';
 import { LanguageParams, SUPPORTED_LANGUAGES } from '@src/modules/i18n';
@@ -53,10 +53,8 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
       <body className={`${pretendard.variable} font-pretendard h-full`}>
         <ThemeProvider>
           <QueryProvider lng={lng}>
-            <AuthProvider>
-              <Header lng={lng} />
-              {children}
-            </AuthProvider>
+            <Header lng={lng} />
+            {children}
           </QueryProvider>
         </ThemeProvider>
 

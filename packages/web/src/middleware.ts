@@ -7,7 +7,6 @@ import { updateSession } from './modules/supabase';
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // locale
   const isLanguagePath = SUPPORTED_LANGUAGES.some(lng => pathname.startsWith(`/${lng}`));
   const isAuthPath = pathname.startsWith(PATHS.auth);
 
@@ -18,7 +17,7 @@ export async function middleware(request: NextRequest) {
       new URL(`/${language}${pathname}${request.nextUrl.search}${request.nextUrl.hash}`, request.url),
     );
 
-  return NextResponse.next();
+  return await updateSession(request);
 }
 
 export const config = {

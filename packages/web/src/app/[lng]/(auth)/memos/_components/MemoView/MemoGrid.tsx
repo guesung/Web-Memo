@@ -70,6 +70,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
 
       const container = document.getElementById(CONTAINER_ID);
       if (!container) return;
+      const initialScrollTop = container.scrollTop;
 
       const onDrag = (dragStartX: number, dragStartY: number) => {
         const dragBox = dragBoxRef.current;
@@ -115,14 +116,16 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
             topTimeoutRef.current = null;
           }
 
+          let movedDragStartY = dragStartY - (container.scrollTop - initialScrollTop);
+
           // 드래그 박스
           const [left, top, right, bottom] = [
             Math.min(dragStartX, dragEndX),
-            Math.min(dragStartY, dragEndY),
+            Math.min(movedDragStartY, dragEndY),
             Math.max(dragStartX, dragEndX),
-            Math.max(dragStartY, dragEndY),
+            Math.max(movedDragStartY, dragEndY),
           ];
-          const [width, height] = [Math.abs(dragEndX - dragStartX), Math.abs(dragEndY - dragStartY)];
+          const [width, height] = [Math.abs(dragEndX - dragStartX), Math.abs(dragEndY - movedDragStartY)];
 
           dragBox.style.transform = `translate(${left}px, ${top}px) scale(${width}, ${height})`;
 

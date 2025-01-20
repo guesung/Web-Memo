@@ -71,6 +71,7 @@ export default function MemoDialog({ lng }: MemoDialog) {
 
   const closeDialog = () => {
     searchParams.removeAll('id');
+    setShowAlert(false);
     router.replace(searchParams.getUrl(), { scroll: false });
   };
 

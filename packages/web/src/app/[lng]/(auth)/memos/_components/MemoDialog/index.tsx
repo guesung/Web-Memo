@@ -14,6 +14,7 @@ import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
 import UnsavedChangesAlert from './UnsavedChangesAlert';
 import { usePropagateEvent } from '@src/hooks';
+import { useRouter } from 'next/navigation';
 
 interface MemoDialog extends LanguageType {}
 
@@ -26,6 +27,7 @@ export default function MemoDialog({ lng }: MemoDialog) {
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
   const [showAlert, setShowAlert] = useState(false);
   const [open, setOpen] = useState(!!id);
+  const router = useRouter();
 
   const { register, watch, setValue, control } = useForm<MemoInput>({
     defaultValues: {
@@ -69,7 +71,7 @@ export default function MemoDialog({ lng }: MemoDialog) {
 
   const closeDialog = () => {
     searchParams.removeAll('id');
-    window.history.replaceState({ isOpen: false }, '', searchParams.getUrl());
+    router.replace(searchParams.getUrl(), { scroll: false });
   };
 
   const handleUnChangesAlertClose = () => {
@@ -85,16 +87,10 @@ export default function MemoDialog({ lng }: MemoDialog) {
     setValue('memo', memoData?.memo ?? '');
   }, [memoData, setValue]);
 
-  usePropagateEvent({
-    replaceStateCallbackFn: event => {
-      setOpen(!!searchParams.get('id'));
-    },
-  });
-
   if (!memoData) return;
   return (
     <>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open>
         <DialogContent className="max-w-[600px] p-0" onClose={checkEditedAndCloseDialog}>
           <Card>
             <MemoCardHeader memo={memoData} />

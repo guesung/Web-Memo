@@ -7,6 +7,7 @@ import { HTMLAttributes, memo, MouseEvent, useState } from 'react';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
+import { useRouter } from 'next/navigation';
 
 interface MemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
   memo: GetMemoResponse;
@@ -19,6 +20,7 @@ export default memo(
   function MemoItem({ lng, memo, selectMemoItem, isSelecting, isSelected, ...props }: MemoItemProps) {
     const searchParams = useSearchParams();
     const [isHovered, setIsHovered] = useState(false);
+    const router = useRouter();
 
     const handleMouseEnter = () => {
       setIsHovered(true);
@@ -37,7 +39,7 @@ export default memo(
       if (isSelecting) selectMemoItem(Number(id));
       else {
         searchParams.set('id', id);
-        window.history.replaceState({ isOpen: true }, '', searchParams.getUrl());
+        router.replace(searchParams.getUrl(), { scroll: false });
       }
     };
 

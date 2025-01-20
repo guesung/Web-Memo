@@ -1,6 +1,40 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
+  feedback: {
+    Tables: {
+      feedbacks: {
+        Row: {
+          content: string | null;
+          created_at: string;
+          id: number;
+        };
+        Insert: {
+          content?: string | null;
+          created_at?: string;
+          id?: number;
+        };
+        Update: {
+          content?: string | null;
+          created_at?: string;
+          id?: number;
+        };
+        Relationships: [];
+      };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   memo: {
     Tables: {
       category: {
@@ -76,6 +110,39 @@ export type Database = {
             referencedColumns: ['id'];
           },
         ];
+      };
+      profiles: {
+        Row: {
+          nickname: string | null;
+          share_mode: string | null;
+          user_id: string;
+        };
+        Insert: {
+          nickname?: string | null;
+          share_mode?: string | null;
+          user_id: string;
+        };
+        Update: {
+          nickname?: string | null;
+          share_mode?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      setting: {
+        Row: {
+          id: number;
+          user_id: string | null;
+        };
+        Insert: {
+          id?: number;
+          user_id?: string | null;
+        };
+        Update: {
+          id?: number;
+          user_id?: string | null;
+        };
+        Relationships: [];
       };
     };
     Views: {

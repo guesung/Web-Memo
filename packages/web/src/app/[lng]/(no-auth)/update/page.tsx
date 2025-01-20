@@ -3,12 +3,20 @@ import { Metadata } from 'next';
 
 import { HeaderMargin } from '../../(auth)/memos/_components/Header';
 import { UpdateList, UpdateTitle } from './_components';
-import DebugCache from '@src/components/DebugCache';
 
-export const metadata: Metadata = {
-  title: 'Web Memo | 업데이트 소식 ',
-  description: 'Web Memo의 최신 업데이트 소식을 확인하세요.',
+const metadataKorean: Metadata = {
+  title: '웹 메모 | 업데이트 소식 ',
+  description: '웹 메모의 최신 업데이트 소식을 확인하세요.',
 };
+
+const metadataEnglish: Metadata = {
+  title: 'Web Memo | Updates',
+  description: 'Check out the latest updates for Web Memo.',
+};
+
+export async function generateMetadata({ params }: LanguageParams) {
+  return params.lng === 'ko' ? metadataKorean : metadataEnglish;
+}
 
 interface UpdatesPageProps extends LanguageParams {}
 

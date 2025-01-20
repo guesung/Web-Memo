@@ -22,6 +22,7 @@
     "yesterday": "Yesterday",
     "workWeek": "Work Week"
   },
+
   "sideBar": {
     "memo": "My Memos",
     "wishList": "My Wish List",
@@ -151,6 +152,12 @@
     "cancel": "Remind me later",
     "ok": "Update now",
     "lastVersion": "Latest version"
+  },
+  "dialogUnsavedChanges": {
+    "title": "You have unsaved changes",
+    "description": "Do you want to close without saving?",
+    "cancel": "Close without saving",
+    "ok": "Save and close"
   },
   "tooltip": {
     "sideBar": "Open/Close sidebar",
@@ -299,6 +306,26 @@
         "youtube": "YouTube",
         "kakaotalk": "KakaoTalk Chat"
       }
+    }
+  },
+  "feedback": {
+    "button": "Feedback",
+    "title": "Service Feedback",
+    "description": "Please leave your feedback to help us improve our service.",
+    "placeholder": "Please write down any points that you would like to see improved.",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "success": "Feedback has been submitted.",
+    "successDescription": "Thank you for your valuable feedback.",
+    "error": "Failed to submit feedback.",
+    "errorDescription": "Please try again later."
+  },
+  "error": {
+    "404": {
+      "title": "Page Not Found",
+      "description": "The page you requested has been moved or does not exist.",
+      "backToHome": "Back to Home"
     }
   }
 }

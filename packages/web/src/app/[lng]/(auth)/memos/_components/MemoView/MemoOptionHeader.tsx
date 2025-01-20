@@ -29,7 +29,9 @@ export default function MemoOptionHeader({ selectedMemoIds, lng, closeMemoOption
         <XIcon className="h-6 w-6" />
       </Button>
       <div className="flex items-center gap-2 px-4">
-        <span className="text-md font-semibold">{t('memos.selected', { count: selectedMemoIds.length })}</span>
+        <span className="text-md select-none font-semibold">
+          {t('memos.selected', { count: selectedMemoIds.length })}
+        </span>
       </div>
       <div className="flex items-center gap-2 px-4">
         <MemoOption memoIds={selectedMemoIds} lng={lng} closeMemoOption={closeMemoOption} />

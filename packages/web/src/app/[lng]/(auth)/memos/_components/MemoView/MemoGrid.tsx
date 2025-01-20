@@ -82,39 +82,39 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
           const [dragEndX, dragEndY] = [mouseMoveEvent.clientX, mouseMoveEvent.clientY];
 
           // 스크롤
-          const isNearBottom = window.innerHeight - dragEndY < SCROLL_INTERVAL;
-          const isNearTop = dragEndY < SCROLL_INTERVAL;
+          // const isNearBottom = window.innerHeight - dragEndY < SCROLL_INTERVAL;
+          // const isNearTop = dragEndY < SCROLL_INTERVAL;
 
-          const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
-          const isAtTop = container.scrollTop === 0;
+          // const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
+          // const isAtTop = container.scrollTop === 0;
 
-          if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
-            bottomTimeoutRef.current = setInterval(() => {
-              if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
-                clearInterval(bottomTimeoutRef.current!);
-                bottomTimeoutRef.current = null;
-                return;
-              }
-              container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
-            }, 50);
-          } else if (!isNearBottom && bottomTimeoutRef.current) {
-            clearInterval(bottomTimeoutRef.current);
-            bottomTimeoutRef.current = null;
-          }
+          // if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
+          //   bottomTimeoutRef.current = setInterval(() => {
+          //     if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
+          //       clearInterval(bottomTimeoutRef.current!);
+          //       bottomTimeoutRef.current = null;
+          //       return;
+          //     }
+          //     container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
+          //   }, 50);
+          // } else if (!isNearBottom && bottomTimeoutRef.current) {
+          //   clearInterval(bottomTimeoutRef.current);
+          //   bottomTimeoutRef.current = null;
+          // }
 
-          if (isNearTop && !topTimeoutRef.current && !isAtTop) {
-            topTimeoutRef.current = setInterval(() => {
-              if (container.scrollTop === 0) {
-                clearInterval(topTimeoutRef.current!);
-                topTimeoutRef.current = null;
-                return;
-              }
-              container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
-            }, 50);
-          } else if (!isNearTop && topTimeoutRef.current) {
-            clearInterval(topTimeoutRef.current);
-            topTimeoutRef.current = null;
-          }
+          // if (isNearTop && !topTimeoutRef.current && !isAtTop) {
+          //   topTimeoutRef.current = setInterval(() => {
+          //     if (container.scrollTop === 0) {
+          //       clearInterval(topTimeoutRef.current!);
+          //       topTimeoutRef.current = null;
+          //       return;
+          //     }
+          //     container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
+          //   }, 50);
+          // } else if (!isNearTop && topTimeoutRef.current) {
+          //   clearInterval(topTimeoutRef.current);
+          //   topTimeoutRef.current = null;
+          // }
 
           const containerScrolledY = dragStartY - (container.scrollTop - initialScrollTop);
 

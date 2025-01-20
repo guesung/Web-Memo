@@ -66,7 +66,8 @@ export default memo(
     return (
       prevProps.memo.id === nextProps.memo.id &&
       prevProps.isSelected === nextProps.isSelected &&
-      prevProps.memo.memo === nextProps.memo.memo
+      prevProps.memo.memo === nextProps.memo.memo &&
+      prevProps.memo.category === nextProps.memo.category
     );
   },
 );

@@ -12,7 +12,7 @@ export async function generateStaticParams() {
 
 export default function RootLayout({ children, params: { lng } }: RootLayoutProps) {
   return (
-    <main lang={lng} dir={dir(lng)}>
+    <main lang={lng} dir={dir(lng)} className="h-screen">
       <ThemeProvider>
         <QueryProvider lng={lng}>
           <AuthProvider>

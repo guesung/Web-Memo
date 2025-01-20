@@ -38,13 +38,11 @@ export const FeedbackContainer = ({ lng }: LanguageType) => {
 
   return (
     <>
-      <Button
-        variant="ghost"
-        size="sm"
+      <button
         onClick={() => setIsOpen(true)}
         className="text-muted-foreground hover:text-foreground text-sm transition-colors">
         {t('feedback.button')}
-      </Button>
+      </button>
       <FeedbackModal isOpen={isOpen} onClose={() => setIsOpen(false)} onSubmit={handleSubmit} lng={lng} />
     </>
   );

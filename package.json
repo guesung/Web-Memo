@@ -54,7 +54,7 @@
     "eslint-config-turbo": "^2.3.3",
     "framer-motion": "^11.11.8",
     "lucide-react": "^0.456.0",
-    "next": "14.2.10",
+    "next": "14.2.21",
     "next-themes": "^0.4.3",
     "openai": "^4.57.0",
     "postcss-import": "^16.1.0",
@@ -103,7 +103,7 @@
     "tslib": "^2.6.3",
     "turbo": "^2.1.1",
     "typescript": "5.5.3",
-    "vite": "5.3.3",
+    "vite": "5.3.6",
     "vitest": "^2.1.5"
   },
   "lint-staged": {

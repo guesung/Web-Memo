@@ -5,17 +5,20 @@ import { useKeyboardBind } from '@extension/shared/hooks';
 import { GetMemoResponse } from '@extension/shared/types';
 import { LanguageType } from '@src/modules/i18n';
 import { AnimatePresence } from 'framer-motion';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { Loading, Skeleton } from '@extension/ui';
 import { DragBox } from '@src/components';
+import { useDrag, useScrollSync } from '@src/hooks';
 import { useRouter } from 'next/navigation';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
+import MemoDialog from '../MemoDialog';
 
 const MEMO_UNIT = 20;
-const THRESHOLD = 50;
+const SCROLL_INTERVAL = 50;
+const CONTAINER_ID = 'memo-grid';
 const SCROLL_UNIT = 30;
 const THROTTLE_DELAY = 16; // 약 60fps
 
@@ -32,10 +35,9 @@ const getItems = (nextGroupKey: number, count: number) => {
 interface MemoGridProps extends LanguageType {
   memos: GetMemoResponse[];
   gridKey: string;
-  id: string;
 }
 
-export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
+export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
@@ -44,126 +46,125 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
 
   const checkMemoSelected = useCallback((id: number) => selectedMemoIds.includes(id), [selectedMemoIds]);
+
   const isAnyMemoSelected = useMemo(() => selectedMemoIds.length > 0, [selectedMemoIds]);
+
+  const handleSelectMemoItem = useCallback((id: number) => {
+    setSelectedMemoIds(prev => {
+      const index = prev.indexOf(id);
+      if (index === -1) return [...prev, id];
+      return prev.filter(memoId => memoId !== id);
+    });
+  }, []);
 
   const bottomTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const topTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const selectMemoItem = useCallback(
-    (id: number) => {
-      if (checkMemoSelected(id)) setSelectedMemoIds(prevMemoIds => prevMemoIds.filter(prevMemo => prevMemo !== id));
-      else setSelectedMemoIds(prevMemoIds => [...prevMemoIds, id]);
-    },
-    [selectedMemoIds],
-  );
-
-  useEffect(() => {
-    const handleMouseDown = (event: globalThis.MouseEvent) => {
-      const target = event.target as HTMLElement;
+  useDrag({
+    onMouseDown: (mouseDownEvent: MouseEvent) => {
+      const target = mouseDownEvent.target as HTMLElement;
 
       const isMemoItem = target.closest('.memo-item');
-      const isMemoGrid = target.closest('#memo-grid');
+      const isMemoGrid = target.closest(`#${CONTAINER_ID}`);
       if (!isMemoGrid || isMemoItem) return;
 
-      const dragStartX = event.clientX;
-      const dragStartY = event.clientY;
+      const container = document.getElementById(CONTAINER_ID);
+      if (!container) return;
+      const initialScrollTop = container.scrollTop;
 
-      onDrag(dragStartX, dragStartY);
-    };
+      const onDrag = (dragStartX: number, dragStartY: number) => {
+        const dragBox = dragBoxRef.current;
+        if (!dragBox) return;
 
-    const onDrag = (dragStartX: number, dragStartY: number) => {
-      const dragBox = dragBoxRef.current;
-      if (!dragBox) return;
+        const handleMouseMove = (mouseMoveEvent: globalThis.MouseEvent) => {
+          mouseMoveEvent.stopPropagation();
 
-      document.body.onmousemove = (event: globalThis.MouseEvent) => {
-        event.stopPropagation();
+          const [dragEndX, dragEndY] = [mouseMoveEvent.clientX, mouseMoveEvent.clientY];
 
-        // 드래그 박스
-        const [dragEndX, dragEndY] = [event.clientX, event.clientY];
-        const [left, top, right, bottom] = [
-          Math.min(dragStartX, dragEndX),
-          Math.min(dragStartY, dragEndY),
-          Math.max(dragStartX, dragEndX),
-          Math.max(dragStartY, dragEndY),
-        ];
-        const [width, height] = [Math.abs(dragEndX - dragStartX), Math.abs(dragEndY - dragStartY)];
+          // 스크롤
+          // const isNearBottom = window.innerHeight - dragEndY < SCROLL_INTERVAL;
+          // const isNearTop = dragEndY < SCROLL_INTERVAL;
 
-        dragBox.style.transform = `translate(${left}px, ${top}px) scale(${width}, ${height})`;
+          // const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
+          // const isAtTop = container.scrollTop === 0;
 
-        // 스크롤
-        const container = document.querySelector('.container');
-        if (container) {
-          const isNearTop = dragEndY < THRESHOLD;
-          const isNearBottom = window.innerHeight - dragEndY < THRESHOLD;
+          // if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
+          //   bottomTimeoutRef.current = setInterval(() => {
+          //     if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
+          //       clearInterval(bottomTimeoutRef.current!);
+          //       bottomTimeoutRef.current = null;
+          //       return;
+          //     }
+          //     container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
+          //   }, 50);
+          // } else if (!isNearBottom && bottomTimeoutRef.current) {
+          //   clearInterval(bottomTimeoutRef.current);
+          //   bottomTimeoutRef.current = null;
+          // }
 
-          const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
-          const isAtTop = container.scrollTop === 0;
+          // if (isNearTop && !topTimeoutRef.current && !isAtTop) {
+          //   topTimeoutRef.current = setInterval(() => {
+          //     if (container.scrollTop === 0) {
+          //       clearInterval(topTimeoutRef.current!);
+          //       topTimeoutRef.current = null;
+          //       return;
+          //     }
+          //     container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
+          //   }, 50);
+          // } else if (!isNearTop && topTimeoutRef.current) {
+          //   clearInterval(topTimeoutRef.current);
+          //   topTimeoutRef.current = null;
+          // }
 
-          if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
-            bottomTimeoutRef.current = setInterval(() => {
-              if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
-                clearInterval(bottomTimeoutRef.current!);
-                bottomTimeoutRef.current = null;
-                return;
-              }
-              container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
-            }, 50);
-          } else if (!isNearBottom && bottomTimeoutRef.current) {
+          const containerScrolledY = dragStartY - (container.scrollTop - initialScrollTop);
+
+          // 드래그 박스
+          const [left, top, right, bottom] = [
+            Math.min(dragStartX, dragEndX),
+            Math.min(containerScrolledY, dragEndY),
+            Math.max(dragStartX, dragEndX),
+            Math.max(containerScrolledY, dragEndY),
+          ];
+
+          const [width, height] = [Math.abs(dragEndX - dragStartX), Math.abs(dragEndY - containerScrolledY)];
+
+          dragBox.style.transform = `translate(${left}px, ${top}px) scale(${width}, ${height})`;
+
+          // 선택된 메모 업데이트
+          const memoElements = document.querySelectorAll('.memo-item');
+          const selectedIds = [...memoElements]
+            .filter(element => {
+              const rect = element.getBoundingClientRect();
+              return rect.left < right && rect.right > left && rect.top < bottom && rect.bottom > top;
+            })
+            .map(element => Number(element.id));
+
+          setSelectedMemoIds(selectedIds);
+        };
+
+        const handleMouseUp = () => {
+          document.body.removeEventListener('mousemove', handleMouseMove);
+
+          if (dragBoxRef.current) dragBoxRef.current.style.transform = '';
+
+          if (bottomTimeoutRef.current) {
             clearInterval(bottomTimeoutRef.current);
             bottomTimeoutRef.current = null;
           }
 
-          if (isNearTop && !topTimeoutRef.current && !isAtTop) {
-            topTimeoutRef.current = setInterval(() => {
-              if (container.scrollTop === 0) {
-                clearInterval(topTimeoutRef.current!);
-                topTimeoutRef.current = null;
-                return;
-              }
-              container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
-            }, 50);
-          } else if (!isNearTop && topTimeoutRef.current) {
+          if (topTimeoutRef.current) {
             clearInterval(topTimeoutRef.current);
             topTimeoutRef.current = null;
           }
-        }
+        };
 
-        // 선택된 메모 업데이트
-        const memoElements = document.querySelectorAll('.memo-item');
-        const selectedIds = [...memoElements]
-          .filter(element => {
-            const rect = element.getBoundingClientRect();
-            return rect.left < right && rect.right > left && rect.top < bottom && rect.bottom > top;
-          })
-          .map(element => Number(element.id));
-
-        setSelectedMemoIds(selectedIds);
+        document.body.addEventListener('mousemove', handleMouseMove);
+        document.body.addEventListener('mouseup', handleMouseUp);
       };
-    };
 
-    const handleMouseUp = () => {
-      document.body.onmousemove = null;
-
-      if (dragBoxRef.current) dragBoxRef.current.style.transform = '';
-
-      if (bottomTimeoutRef.current) {
-        clearInterval(bottomTimeoutRef.current);
-        bottomTimeoutRef.current = null;
-      }
-
-      if (topTimeoutRef.current) {
-        clearInterval(topTimeoutRef.current);
-        topTimeoutRef.current = null;
-      }
-    };
-
-    document.body.onmousedown = handleMouseDown;
-    document.body.onmouseup = handleMouseUp;
-    return () => {
-      document.body.onmousedown = null;
-      document.body.onmouseup = null;
-    };
-  }, []);
+      onDrag(mouseDownEvent.clientX, mouseDownEvent.clientY);
+    },
+  });
 
   const closeMemoOption = () => {
     setSelectedMemoIds([]);
@@ -199,11 +200,11 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
         observeChildren
         autoResize
         container={true}
-        id="memo-grid"
+        id={CONTAINER_ID}
         style={{
           willChange: 'transform',
         }}
-        onRequestAppend={({ groupKey, currentTarget, wait, ready }: any) => {
+        onRequestAppend={({ groupKey, currentTarget, wait, ready }) => {
           if (items.length >= memos.length) return;
 
           const nextGroupKey = (+groupKey! || 0) + 1;
@@ -216,7 +217,7 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
 
           setTimeout(() => {
             ready();
-            setItems([...items, ...getItems(nextGroupKey, maxAddItem)]);
+            setItems(prevItems => [...prevItems, ...getItems(nextGroupKey, maxAddItem)]);
           }, 100);
         }}>
         {items.map(
@@ -228,12 +229,14 @@ export default function MemoGrid({ lng, memos, gridKey, id }: MemoGridProps) {
                 key={item.key + gridKey}
                 memo={memos.at(item.key)!}
                 isSelected={checkMemoSelected(memos.at(item.key)!.id)}
-                selectMemoItem={selectMemoItem}
+                selectMemoItem={handleSelectMemoItem}
                 isSelecting={isAnyMemoSelected}
               />
             ),
         )}
       </MasonryInfiniteGrid>
+
+      <MemoDialog lng={lng} />
     </div>
   );
 }

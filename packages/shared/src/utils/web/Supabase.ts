@@ -17,6 +17,12 @@ export const getSupabaseClient = () => {
         },
       },
     },
-    db: { schema: SUPABASE.table.memo },
+    db: { schema: SUPABASE.schema.memo },
+  });
+};
+
+export const getFeedbackSupabaseClient = () => {
+  return createBrowserClient<Database>(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey, {
+    db: { schema: SUPABASE.schema.feedback },
   });
 };

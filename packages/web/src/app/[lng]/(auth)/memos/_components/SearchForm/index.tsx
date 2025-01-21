@@ -6,12 +6,17 @@ import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { Control, Controller, useFormContext } from 'react-hook-form';
 import { SearchFormValues } from '../SearchFormProvider';
+import { X } from 'lucide-react';
 
 interface SearchFormProps extends LanguageType {}
 
 export default function SearchForm({ lng }: SearchFormProps) {
   const { t } = useTranslation(lng);
-  const { control } = useFormContext<SearchFormValues>();
+  const {
+    control,
+    reset,
+    formState: { isDirty },
+  } = useFormContext<SearchFormValues>();
 
   return (
     <form className="flex items-center justify-center gap-4" onSubmit={e => e.preventDefault()}>
@@ -19,7 +24,23 @@ export default function SearchForm({ lng }: SearchFormProps) {
         name="searchQuery"
         control={control}
         render={({ field }) => (
-          <Input type="text" placeholder={t('memos.searchPlaceholder')} className="max-w-sm select-none" {...field} />
+          <div className="relative max-w-sm">
+            <Input
+              type="text"
+              placeholder={t('memos.searchPlaceholder')}
+              className="w-full select-none pr-8"
+              {...field}
+            />
+            {isDirty && (
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                onClick={() => reset()}
+                aria-label="Clear search">
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         )}
       />
       <Controller

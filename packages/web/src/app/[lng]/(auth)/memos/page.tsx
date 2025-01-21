@@ -13,10 +13,6 @@ import { MemoView, SearchForm, SearchFormProvider } from './_components';
 import { HeaderMargin } from './_components/Header';
 import dynamic from 'next/dynamic';
 
-const MemoDialog = dynamic(() => import('./_components/MemoDialog'), {
-  ssr: false,
-});
-
 interface PageProps extends LanguageParams {
   searchParams: SearchParamsType;
 }
@@ -25,7 +21,7 @@ export default async function Page({ searchParams, params: { lng } }: PageProps)
   const supabaseClient = getSupabaseClient();
 
   return (
-    <main className="w-full px-4">
+    <main className="h-screen w-screen overflow-y-hidden px-4">
       <HeaderMargin />
       <HydrationBoundaryWrapper queryKey={QUERY_KEY.memos()} queryFn={() => new MemoService(supabaseClient).getMemos()}>
         <Suspense fallback={<Loading />}>
@@ -34,12 +30,6 @@ export default async function Page({ searchParams, params: { lng } }: PageProps)
             <MemoView lng={lng} searchParams={searchParams} />
           </SearchFormProvider>
         </Suspense>
-
-        {searchParams?.id && (
-          <Suspense fallback={<Loading />}>
-            <MemoDialog lng={lng} searchParams={searchParams} />
-          </Suspense>
-        )}
       </HydrationBoundaryWrapper>
     </main>
   );

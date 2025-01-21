@@ -120,10 +120,14 @@ export default function MemoOption({ lng, memoIds = [], closeMemoOption }: MemoO
     );
   };
 
+  const handleDropdownMenuTriggerClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+  };
+
   return (
-    <DropdownMenu onOpenChange={setIsOpen} open={isOpen} modal={false}>
+    <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" onClick={handleDropdownMenuTriggerClick}>
           <EllipsisVerticalIcon size={16} />
         </Button>
       </DropdownMenuTrigger>

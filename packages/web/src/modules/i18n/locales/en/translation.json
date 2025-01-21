@@ -20,7 +20,8 @@
     "title": "Title",
     "tomorrow": "Tomorrow",
     "yesterday": "Yesterday",
-    "workWeek": "Work Week"
+    "workWeek": "Work Week",
+    "lastUpdated": "Last updated {{time}} ago"
   },
 
   "sideBar": {

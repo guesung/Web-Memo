@@ -1,5 +1,4 @@
 import '@extension/ui/dist/global.css';
-import './globals.css';
 
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { Toaster } from '@src/components/ui';
@@ -7,7 +6,8 @@ import { CONFIG } from '@src/constants';
 import type { Viewport } from 'next';
 import { PropsWithChildren } from 'react';
 import { WebVitals } from './_components';
-import { pretendard } from './_constants';
+import '../fonts/output/PretendardVariable.css';
+import './globals.css';
 
 interface LayoutProps extends PropsWithChildren {}
 
@@ -21,7 +21,7 @@ export const viewport: Viewport = {
 export default function Layout({ children }: LayoutProps) {
   return (
     <html className="h-screen" suppressHydrationWarning>
-      <body className={`${pretendard.variable} font-pretendard h-full`}>
+      <body className="h-full">
         {children}
 
         <WebVitals />

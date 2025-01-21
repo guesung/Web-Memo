@@ -11,6 +11,11 @@
     @apply bg-background text-foreground;
   }
 
+  html,
+  body {
+    font-family: 'Pretendard';
+  }
+
   :root {
     .rbc-calendar {
       .rbc-event {

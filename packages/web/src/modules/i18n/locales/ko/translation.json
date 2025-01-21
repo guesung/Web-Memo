@@ -20,7 +20,8 @@
     "tomorrow": "내일",
     "yesterday": "어제",
     "workWeek": "주간",
-    "close": "닫기"
+    "close": "닫기",
+    "lastUpdated": "{{time}} 전 업데이트"
   },
 
   "sideBar": {
@@ -113,7 +114,8 @@
     "deleteSuccess": "삭제가 완료되었어요!",
     "addSuccess": "추가가 완료되었어요!",
     "errorSave": "저장에 실패했어요!",
-    "successSave": "변경사항이 저장되었습니다."
+    "successSave": "변경사항이 저장되었습니다.",
+    "memo_updated_at": "{{time}}에 수정됨"
   },
   "toastActionMessage": {
     "goTo": "바로 이동하기",

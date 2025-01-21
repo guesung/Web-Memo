@@ -1,7 +1,6 @@
 'use client';
 import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
-import { formatDate } from '@extension/shared/utils';
 import { Button } from '@extension/ui';
 import { Card, CardContent, Dialog, DialogContent, Textarea } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
@@ -9,12 +8,17 @@ import useTranslation from '@src/modules/i18n/client';
 import { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
+import { useRouter } from 'next/navigation';
 import { MemoInput } from '../../_types';
 import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
 import UnsavedChangesAlert from './UnsavedChangesAlert';
-import { usePropagateEvent } from '@src/hooks';
-import { useRouter } from 'next/navigation';
+
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+import dayjs from 'dayjs';
+import 'dayjs/locale/en';
+import 'dayjs/locale/ko';
 
 interface MemoDialog extends LanguageType {}
 
@@ -26,8 +30,10 @@ export default function MemoDialog({ lng }: MemoDialog) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
   const [showAlert, setShowAlert] = useState(false);
-  const [open, setOpen] = useState(!!id);
   const router = useRouter();
+
+  dayjs.extend(relativeTime);
+  dayjs.locale(lng === 'ko' ? 'ko' : 'en');
 
   const { register, watch, setValue, control } = useForm<MemoInput>({
     defaultValues: {
@@ -105,7 +111,7 @@ export default function MemoDialog({ lng }: MemoDialog) {
 
               <div className="h-4" />
               <span className="text-muted-foreground float-right text-xs">
-                {t('common.updatedAt')} {formatDate(memoData.updated_at, 'yyyy.mm.dd')}
+                {t('common.lastUpdated', { time: dayjs(memoData.updated_at).fromNow(true) })}
               </span>
             </CardContent>
 

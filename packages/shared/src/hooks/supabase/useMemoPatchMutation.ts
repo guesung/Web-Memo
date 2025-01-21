@@ -35,7 +35,10 @@ export default function useMemoPatchMutation() {
 
       if (currentMemoIndex === -1 || !currentMemoBase) throw new NoMemoError();
 
-      updatedMemosData.splice(currentMemoIndex, 1, { ...currentMemoBase, ...request });
+      updatedMemosData.splice(currentMemoIndex, 1, {
+        ...{ ...currentMemoBase, updated_at: new Date().toISOString() },
+        ...request,
+      });
 
       await queryClient.setQueryData(QUERY_KEY.memos(), { ...previousMemos, data: updatedMemosData });
 

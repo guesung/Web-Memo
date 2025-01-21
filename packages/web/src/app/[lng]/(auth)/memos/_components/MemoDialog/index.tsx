@@ -1,7 +1,6 @@
 'use client';
 import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
-import { formatDate } from '@extension/shared/utils';
 import { Button } from '@extension/ui';
 import { Card, CardContent, Dialog, DialogContent, Textarea } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
@@ -9,19 +8,17 @@ import useTranslation from '@src/modules/i18n/client';
 import { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
+import { useRouter } from 'next/navigation';
 import { MemoInput } from '../../_types';
 import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
 import UnsavedChangesAlert from './UnsavedChangesAlert';
-import { useRouter } from 'next/navigation';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
 
 import relativeTime from 'dayjs/plugin/relativeTime';
 
-import 'dayjs/locale/ko';
-import 'dayjs/locale/en';
 import dayjs from 'dayjs';
+import 'dayjs/locale/en';
+import 'dayjs/locale/ko';
 
 interface MemoDialog extends LanguageType {}
 

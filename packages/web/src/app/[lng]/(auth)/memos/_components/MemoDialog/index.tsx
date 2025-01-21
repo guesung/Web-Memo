@@ -13,8 +13,15 @@ import { MemoInput } from '../../_types';
 import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
 import UnsavedChangesAlert from './UnsavedChangesAlert';
-import { usePropagateEvent } from '@src/hooks';
 import { useRouter } from 'next/navigation';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+import 'dayjs/locale/ko';
+import 'dayjs/locale/en';
+import dayjs from 'dayjs';
 
 interface MemoDialog extends LanguageType {}
 
@@ -26,8 +33,10 @@ export default function MemoDialog({ lng }: MemoDialog) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
   const [showAlert, setShowAlert] = useState(false);
-  const [open, setOpen] = useState(!!id);
   const router = useRouter();
+
+  dayjs.extend(relativeTime);
+  dayjs.locale(lng === 'ko' ? 'ko' : 'en');
 
   const { register, watch, setValue, control } = useForm<MemoInput>({
     defaultValues: {
@@ -105,7 +114,7 @@ export default function MemoDialog({ lng }: MemoDialog) {
 
               <div className="h-4" />
               <span className="text-muted-foreground float-right text-xs">
-                {t('common.updatedAt')} {formatDate(memoData.updated_at, 'yyyy.mm.dd')}
+                {t('common.lastUpdated', { time: dayjs(memoData.updated_at).fromNow(true) })}
               </span>
             </CardContent>
 

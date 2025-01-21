@@ -1,0 +1,742 @@
+/**
+ * Font Splitter
+ * https://github.com/VdustR/font-splitter
+ */
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Basic-Latin.woff2) format('woff2');
+  unicode-range: U+20-7e;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Latin-1-Supplement.woff2) format('woff2');
+  unicode-range: U+a0-ff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Latin-Extended-A.woff2) format('woff2');
+  unicode-range: U+100-148, U+14a-17f;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Latin-Extended-B.woff2) format('woff2');
+  unicode-range: U+180-1c3, U+1c5-24f;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.IPA-Extensions.woff2) format('woff2');
+  unicode-range: U+250-2af;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Spacing-Modifier-Letters.woff2) format('woff2');
+  unicode-range: U+2b0-2ff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Combining-Diacritical-Marks.woff2) format('woff2');
+  unicode-range: U+300-31e, U+321-36f;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Greek-and-Coptic.woff2) format('woff2');
+  unicode-range: U+370-377, U+37a-37f, U+384-38a, U+38c, U+38e-3a1, U+3a3-3e1, U+3f0-3ff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Cyrillic.woff2) format('woff2');
+  unicode-range: U+400-49d, U+4a0-4ff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Cyrillic-Supplement.woff2) format('woff2');
+  unicode-range: U+52f;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Thai.woff2) format('woff2');
+  unicode-range: U+e3f;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Phonetic-Extensions.woff2) format('woff2');
+  unicode-range: U+1d43, U+1d47-1d49, U+1d4d, U+1d4f-1d50, U+1d52, U+1d56-1d58, U+1d5b, U+1d62-1d65;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Phonetic-Extensions-Supplement.woff2) format('woff2');
+  unicode-range: U+1d9c, U+1da0, U+1dbb, U+1dbf;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Combining-Diacritical-Marks-Supplement.woff2) format('woff2');
+  unicode-range: U+1dc0-1df5, U+1dfc-1dff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Latin-Extended-Additional.woff2) format('woff2');
+  unicode-range: U+1e00-1eff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Greek-Extended.woff2) format('woff2');
+  unicode-range: U+1f00-1f15, U+1f18-1f1d, U+1f20-1f45, U+1f48-1f4d, U+1f50-1f57, U+1f59, U+1f5b, U+1f5d, U+1f5f-1f7d,
+    U+1f80-1fb4, U+1fb6-1fc4, U+1fc6-1fd3, U+1fd6-1fdb, U+1fdd-1fef, U+1ff2-1ff4, U+1ff6-1ffe;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.General-Punctuation.woff2) format('woff2');
+  unicode-range: U+2000-200d, U+2010-2027, U+202f-2060;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Superscripts-and-Subscripts.woff2) format('woff2');
+  unicode-range: U+2070-2071, U+2074-208e, U+2090-209c;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Currency-Symbols.woff2) format('woff2');
+  unicode-range: U+20a0-20bf;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Combining-Diacritical-Marks-for-Symbols.woff2) format('woff2');
+  unicode-range: U+20db-20de, U+20e8, U+20f0;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Letterlike-Symbols.woff2) format('woff2');
+  unicode-range: U+2100-2101, U+2103, U+2105-2106, U+2109, U+2113, U+2116-2117, U+211e-2123, U+2126, U+212a-212b, U+212e,
+    U+2132, U+213b, U+214d, U+214f;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Number-Forms.woff2) format('woff2');
+  unicode-range: U+2153, U+215a-2188;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Arrows.woff2) format('woff2');
+  unicode-range: U+2190-2199, U+21a9-21aa, U+21b0-21b1, U+21b3-21b5, U+21ba-21bb, U+21d0, U+21d2, U+21d4, U+21de-21df,
+    U+21e4-21e5, U+21e7, U+21ea;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Mathematical-Operators.woff2) format('woff2');
+  unicode-range: U+2202, U+2205-2206, U+220f, U+2211-2212, U+221a, U+221e, U+222b, U+2248, U+2260, U+2264-2265,
+    U+226a-226b, U+22ef;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Miscellaneous-Technical.woff2) format('woff2');
+  unicode-range: U+2303, U+2305, U+2318, U+2325-2327, U+2329-232b, U+2380, U+2387, U+238b, U+23ce-23cf;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Control-Pictures.woff2) format('woff2');
+  unicode-range: U+2423;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Enclosed-Alphanumerics.woff2) format('woff2');
+  unicode-range: U+2460-2473, U+24b6-24cf, U+24ea-24f4, U+24ff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Geometric-Shapes.woff2) format('woff2');
+  unicode-range: U+25a0-25a2, U+25aa, U+25b2-25b3, U+25b6-25b7, U+25ba-25bd, U+25c0-25c1, U+25c4-25c7, U+25ca-25cb,
+    U+25cf, U+25e6, U+25ef;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Miscellaneous-Symbols.woff2) format('woff2');
+  unicode-range: U+2600, U+2605-2606, U+263c, U+2661, U+2665, U+266a, U+26a0;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Dingbats.woff2) format('woff2');
+  unicode-range: U+2713, U+2717, U+2756, U+2776-2789;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Miscellaneous-Mathematical-Symbols-A.woff2) format('woff2');
+  unicode-range: U+27ef;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Supplemental-Arrows-A.woff2) format('woff2');
+  unicode-range: U+27f5-27fa;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Miscellaneous-Mathematical-Symbols-B.woff2) format('woff2');
+  unicode-range: U+2985-2986;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Miscellaneous-Symbols-and-Arrows.woff2) format('woff2');
+  unicode-range: U+2b06, U+2b12-2b13, U+2b1c;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Latin-Extended-C.woff2) format('woff2');
+  unicode-range: U+2c7c, U+2c7f;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Cyrillic-Extended-A.woff2) format('woff2');
+  unicode-range: U+2dff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Supplemental-Punctuation.woff2) format('woff2');
+  unicode-range: U+2e18;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.CJK-Symbols-and-Punctuation.woff2) format('woff2');
+  unicode-range: U+3000-3003, U+3008-3011, U+3014-301f;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Hiragana.woff2) format('woff2');
+  unicode-range: U+3041-3094, U+3099-309e;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Katakana.woff2) format('woff2');
+  unicode-range: U+30a1-30fe;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Hangul-Compatibility-Jamo.woff2) format('woff2');
+  unicode-range: U+3131-3164, U+318d;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Enclosed-CJK-Letters-and-Months.woff2) format('woff2');
+  unicode-range: U+321c;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.CJK-Compatibility.woff2) format('woff2');
+  unicode-range: U+3380-3384, U+3388-33ca, U+33cf-33d0, U+33d3, U+33d6, U+33d8, U+33db-33dd;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Cyrillic-Extended-B.woff2) format('woff2');
+  unicode-range: U+a69f;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Latin-Extended-D.woff2) format('woff2');
+  unicode-range: U+a7ff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Kayah-Li.woff2) format('woff2');
+  unicode-range: U+a92e;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Hangul-Syllables-01.woff2) format('woff2');
+  unicode-range: U+ac00-afff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Hangul-Syllables-02.woff2) format('woff2');
+  unicode-range: U+b000-b3ff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Hangul-Syllables-03.woff2) format('woff2');
+  unicode-range: U+b400-b7ff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Hangul-Syllables-04.woff2) format('woff2');
+  unicode-range: U+b800-bbff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Hangul-Syllables-05.woff2) format('woff2');
+  unicode-range: U+bc00-bfff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Hangul-Syllables-06.woff2) format('woff2');
+  unicode-range: U+c000-c3ff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Hangul-Syllables-07.woff2) format('woff2');
+  unicode-range: U+c400-c7ff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Hangul-Syllables-08.woff2) format('woff2');
+  unicode-range: U+c800-cbff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Hangul-Syllables-09.woff2) format('woff2');
+  unicode-range: U+cc00-cfff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Hangul-Syllables-10.woff2) format('woff2');
+  unicode-range: U+d000-d3ff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Hangul-Syllables-11.woff2) format('woff2');
+  unicode-range: U+d400-d7a3;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Private-Use-Area.woff2) format('woff2');
+  unicode-range: U+e000, U+e002-e05e, U+e06a-e080, U+e093-e096, U+e0a5-e0e6, U+e0f3-e11c, U+e11e-e12a, U+e131-e147,
+    U+e14e-e164, U+ee01-ee05, U+f000-f057, U+f6c3;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Combining-Half-Marks.woff2) format('woff2');
+  unicode-range: U+fe20-fe2d;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Arabic-Presentation-Forms-B.woff2) format('woff2');
+  unicode-range: U+feff;
+}
+
+@font-face {
+  font-family: PretendardWeb;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('PretendardWeb'),
+    local('PretendardVariable-Regular'),
+    url(PretendardVariable.Halfwidth-and-Fullwidth-Forms.woff2) format('woff2');
+  unicode-range: U+ff01-ff60, U+ffa1-ffbe, U+ffc2-ffc7, U+ffca-ffcf, U+ffd2-ffd7, U+ffda-ffdc, U+ffe0-ffe1, U+ffe5-ffe6;
+}

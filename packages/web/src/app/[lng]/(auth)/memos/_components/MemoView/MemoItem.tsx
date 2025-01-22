@@ -21,7 +21,6 @@ export default memo(
   function MemoItem({ lng, memo, selectMemoItem, isSelecting, isSelected, setDialogMemoId, ...props }: MemoItemProps) {
     const searchParams = useSearchParams();
     const [isHovered, setIsHovered] = useState(false);
-    const router = useRouter();
 
     const handleMouseEnter = () => {
       setIsHovered(true);

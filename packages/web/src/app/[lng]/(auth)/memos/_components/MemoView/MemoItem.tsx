@@ -41,7 +41,7 @@ export default memo(
       else {
         searchParams.set('id', id);
         setDialogMemoId(Number(id));
-        history.pushState(null, '', searchParams.getUrl());
+        history.pushState({ openedMemoId: Number(id) }, '', searchParams.getUrl());
       }
     };
 

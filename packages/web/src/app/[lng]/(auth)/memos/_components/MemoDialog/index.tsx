@@ -81,7 +81,7 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
     setDialogMemoId(null);
     searchParams.removeAll('id');
 
-    history.back();
+    history.pushState({ openedMemoId: null }, '', searchParams.getUrl());
   };
 
   const handleUnChangesAlertClose = () => {

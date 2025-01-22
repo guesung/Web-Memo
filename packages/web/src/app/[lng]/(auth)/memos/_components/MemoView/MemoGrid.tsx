@@ -180,6 +180,17 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
     setDialogMemoId(Number(currentDialogId));
   }, []);
 
+  useEffect(() => {
+    const handlePopstate = () => {
+      setDialogMemoId(history.state?.openedMemoId);
+    };
+
+    window.addEventListener('popstate', handlePopstate);
+    return () => {
+      window.removeEventListener('popstate', handlePopstate);
+    };
+  }, []);
+
   useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
 
   if (!memos) return <Loading />;

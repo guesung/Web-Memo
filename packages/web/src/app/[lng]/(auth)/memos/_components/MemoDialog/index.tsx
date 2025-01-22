@@ -20,13 +20,15 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/en';
 import 'dayjs/locale/ko';
 
-interface MemoDialog extends LanguageType {}
+interface MemoDialog extends LanguageType {
+  memoId: number;
+  setDialogMemoId: (id: number | null) => void;
+}
 
-export default function MemoDialog({ lng }: MemoDialog) {
+export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
-  const id = Number(searchParams.get('id'));
-  const { memo: memoData } = useMemoQuery({ id });
+  const { memo: memoData } = useMemoQuery({ id: memoId });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
   const [showAlert, setShowAlert] = useState(false);
@@ -53,7 +55,7 @@ export default function MemoDialog({ lng }: MemoDialog) {
   useImperativeHandle(ref, () => textareaRef.current);
 
   const saveMemo = () => {
-    mutateMemoPatch({ id, request: { memo: watch('memo') } });
+    mutateMemoPatch({ id: memoId, request: { memo: watch('memo') } });
   };
 
   const handleKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -76,9 +78,10 @@ export default function MemoDialog({ lng }: MemoDialog) {
   };
 
   const closeDialog = () => {
+    setDialogMemoId(null);
     searchParams.removeAll('id');
-    setShowAlert(false);
-    router.replace(searchParams.getUrl(), { scroll: false });
+
+    history.back();
   };
 
   const handleUnChangesAlertClose = () => {

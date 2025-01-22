@@ -14,10 +14,11 @@ interface MemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
   isSelecting: boolean;
   selectMemoItem: (id: number) => void;
   isSelected: boolean;
+  setDialogMemoId: (id: number) => void;
 }
 
 export default memo(
-  function MemoItem({ lng, memo, selectMemoItem, isSelecting, isSelected, ...props }: MemoItemProps) {
+  function MemoItem({ lng, memo, selectMemoItem, isSelecting, isSelected, setDialogMemoId, ...props }: MemoItemProps) {
     const searchParams = useSearchParams();
     const [isHovered, setIsHovered] = useState(false);
     const router = useRouter();
@@ -39,7 +40,8 @@ export default memo(
       if (isSelecting) selectMemoItem(Number(id));
       else {
         searchParams.set('id', id);
-        router.replace(searchParams.getUrl(), { scroll: false });
+        setDialogMemoId(Number(id));
+        history.pushState(null, '', searchParams.getUrl());
       }
     };
 

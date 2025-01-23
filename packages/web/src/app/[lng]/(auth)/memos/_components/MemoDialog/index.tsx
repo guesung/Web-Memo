@@ -12,7 +12,6 @@ import { MemoInput } from '../../_types';
 import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
 import UnsavedChangesAlert from './UnsavedChangesAlert';
-
 import dayjs from 'dayjs';
 
 interface MemoDialog extends LanguageType {

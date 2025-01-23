@@ -7,15 +7,17 @@ import 'dayjs/locale/ko';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
-
-dayjs.extend(timezone);
-dayjs.extend(utc);
-dayjs.extend(relativeTime);
+import { useEffect } from 'react';
 
 interface InitDayjsProps extends LanguageType {}
 
 export default function InitDayjs({ lng }: InitDayjsProps) {
-  dayjs.locale(lng);
+  useEffect(() => {
+    dayjs.extend(timezone);
+    dayjs.extend(utc);
+    dayjs.extend(relativeTime);
+    dayjs.locale(lng);
+  }, []);
 
   return null;
 }

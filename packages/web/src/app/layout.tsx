@@ -3,13 +3,23 @@ import '@extension/ui/dist/global.css';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { Toaster } from '@src/components/ui';
 import { CONFIG } from '@src/constants';
-import type { Viewport } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { PropsWithChildren } from 'react';
-import { WebVitals } from './_components';
 import '../fonts/output/PretendardVariable.css';
+import { WebVitals } from './_components';
 import './globals.css';
 
 interface LayoutProps extends PropsWithChildren {}
+
+const metadataEnglish: Metadata = {
+  title: 'Web Memo',
+  description:
+    'Web Memo is a service for storing and managing web pages easily. Find important web pages efficiently and conveniently.',
+};
+
+export async function generateMetadata() {
+  return metadataEnglish;
+}
 
 export const viewport: Viewport = {
   width: 'device-width',

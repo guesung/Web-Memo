@@ -5,7 +5,7 @@ import { useKeyboardBind } from '@extension/shared/hooks';
 import { GetMemoResponse } from '@extension/shared/types';
 import { LanguageType } from '@src/modules/i18n';
 import { AnimatePresence } from 'framer-motion';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { Loading, Skeleton } from '@extension/ui';
@@ -42,6 +42,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   const searchParams = useSearchParams();
   const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
   const dragBoxRef = useRef<HTMLDivElement>(null);
+  const [dialogMemoId, setDialogMemoId] = useState<number | null>();
 
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
 
@@ -172,6 +173,24 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
     router.replace(searchParams.getUrl(), { scroll: false });
   };
 
+  useEffect(() => {
+    const currentDialogId = searchParams.get('id');
+    if (!currentDialogId) return;
+
+    setDialogMemoId(Number(currentDialogId));
+  }, []);
+
+  useEffect(() => {
+    const handlePopstate = () => {
+      setDialogMemoId(history.state?.openedMemoId);
+    };
+
+    window.addEventListener('popstate', handlePopstate);
+    return () => {
+      window.removeEventListener('popstate', handlePopstate);
+    };
+  }, []);
+
   useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
 
   if (!memos) return <Loading />;
@@ -231,12 +250,13 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
                 isSelected={checkMemoSelected(memos.at(item.key)!.id)}
                 selectMemoItem={handleSelectMemoItem}
                 isSelecting={isAnyMemoSelected}
+                setDialogMemoId={setDialogMemoId}
               />
             ),
         )}
       </MasonryInfiniteGrid>
 
-      <MemoDialog lng={lng} />
+      {dialogMemoId && <MemoDialog lng={lng} memoId={dialogMemoId} setDialogMemoId={setDialogMemoId} />}
     </div>
   );
 }

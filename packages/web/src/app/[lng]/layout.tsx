@@ -3,11 +3,29 @@ import { LanguageParams, SUPPORTED_LANGUAGES } from '@src/modules/i18n';
 import { dir } from 'i18next';
 import { PropsWithChildren } from 'react';
 import { Header } from './(auth)/memos/_components';
+import { InitDayjs } from '../_components';
+import { Metadata } from 'next';
 
 interface RootLayoutProps extends PropsWithChildren, LanguageParams {}
 
 export async function generateStaticParams() {
   return SUPPORTED_LANGUAGES.map(lng => ({ lng }));
+}
+
+const metadataKorean: Metadata = {
+  title: '웹 메모 ',
+  description:
+    '웹 메모는 웹페이지를 쉽게 저장하고 관리할 수 있는 서비스입니다. 중요한 웹페이지를 효율적으로 정리하고 필요할 때 빠르게 찾아보세요.',
+};
+
+const metadataEnglish: Metadata = {
+  title: 'Web Memo',
+  description:
+    'Web Memo is a service for storing and managing web pages easily. Find important web pages efficiently and conveniently.',
+};
+
+export async function generateMetadata({ params }: LanguageParams) {
+  return params.lng === 'ko' ? metadataKorean : metadataEnglish;
 }
 
 export default function RootLayout({ children, params: { lng } }: RootLayoutProps) {
@@ -21,6 +39,8 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
           </AuthProvider>
         </QueryProvider>
       </ThemeProvider>
+
+      <InitDayjs lng={lng} />
     </main>
   );
 }

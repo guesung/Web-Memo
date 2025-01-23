@@ -3,6 +3,7 @@ import { I18n } from '@extension/shared/utils/extension';
 import { toast } from '@extension/ui';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PropsWithChildren, useState } from 'react';
+import * as Sentry from '@sentry/react';
 
 export default function QueryProvider({ children }: PropsWithChildren) {
   const [queryClient] = useState(
@@ -11,8 +12,11 @@ export default function QueryProvider({ children }: PropsWithChildren) {
         defaultOptions: {
           queries: { refetchOnWindowFocus: true },
           mutations: {
-            onError: () => {
+            onError: error => {
               toast({ title: I18n.get('toast_error_save') });
+              Sentry.captureException(error, {
+                level: 'fatal',
+              });
             },
           },
         },

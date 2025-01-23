@@ -3,6 +3,7 @@ import { LanguageParams, SUPPORTED_LANGUAGES } from '@src/modules/i18n';
 import { dir } from 'i18next';
 import { PropsWithChildren } from 'react';
 import { Header } from './(auth)/memos/_components';
+import { InitDayjs } from '../_components';
 
 interface RootLayoutProps extends PropsWithChildren, LanguageParams {}
 
@@ -21,6 +22,8 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
           </AuthProvider>
         </QueryProvider>
       </ThemeProvider>
+
+      <InitDayjs lng={lng} />
     </main>
   );
 }

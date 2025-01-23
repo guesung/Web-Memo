@@ -7,16 +7,11 @@ import { cn } from '@extension/shared/utils';
 import { Badge, Button, CardFooter, toast, ToastAction } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
-import dayjs from 'dayjs';
 import { HeartIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { MouseEvent, PropsWithChildren } from 'react';
 import MemoOption from './MemoOption';
-
-import relativeTime from 'dayjs/plugin/relativeTime';
-
-import 'dayjs/locale/ko';
-import 'dayjs/locale/en';
+import dayjs from 'dayjs';
 
 interface MemoCardFooterProps extends LanguageType, React.HTMLAttributes<HTMLDivElement>, PropsWithChildren {
   memo: GetMemoResponse;
@@ -28,9 +23,6 @@ export default function MemoCardFooter({ memo, lng, children, isShowingOption = 
   const searchParams = useSearchParams();
   const router = useRouter();
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
-
-  dayjs.extend(relativeTime);
-  dayjs.locale(lng === 'ko' ? 'ko' : 'en');
 
   const handleCategoryClick = (event: MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();

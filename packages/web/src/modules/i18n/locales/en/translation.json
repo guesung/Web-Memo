@@ -21,7 +21,7 @@
     "tomorrow": "Tomorrow",
     "yesterday": "Yesterday",
     "workWeek": "Work Week",
-    "lastUpdated": "Last updated {{time}} ago"
+    "lastUpdated": "Last updated {{time}}"
   },
 
   "sideBar": {

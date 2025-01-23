@@ -10,6 +10,8 @@ import { redirect } from 'next/navigation';
 import { PropsWithChildren, Suspense } from 'react';
 
 import { MemoSidebar } from './_components';
+import InitSentry from './_components/InitSentry';
+import { initSentryUserInfo } from './_utils/Sentry';
 
 interface LayoutProps extends LanguageParams, PropsWithChildren {}
 
@@ -17,6 +19,8 @@ export default async function Layout({ children, params: { lng } }: LayoutProps)
   const supabaseClient = getSupabaseClient();
   const isUserLogin = await new AuthService(supabaseClient).checkUserLogin();
   if (!isUserLogin) redirect(PATHS.login);
+
+  initSentryUserInfo({ lng });
 
   return (
     <SidebarProvider className="bg-background flex w-full text-sm">

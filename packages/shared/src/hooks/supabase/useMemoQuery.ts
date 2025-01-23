@@ -1,5 +1,5 @@
 import { QUERY_KEY } from '@src/constants';
-import { formatUrl, MemoService } from '@src/utils';
+import { normalizeUrl, MemoService } from '@src/utils';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
 import useSupabaseClientQuery from './useSupabaseClientQuery';
@@ -19,7 +19,7 @@ export default function useMemoQuery({ url, id }: UseMemoQueryProps) {
       if (memos?.length === 0) return;
 
       if (id) return memos?.find(memo => memo.id === id);
-      if (url) return memos?.find(memo => memo.url === formatUrl(url));
+      if (url) return memos?.find(memo => memo.url === normalizeUrl(url));
       return;
     },
   });

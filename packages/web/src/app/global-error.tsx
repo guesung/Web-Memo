@@ -9,7 +9,7 @@ interface ErrorPageProps {
 
 export default function ErrorPage({ error, reset }: ErrorPageProps) {
   return (
-    <html>
+    <html lang="ko">
       <body>
         <ErrorContainer error={error} reset={reset} />
       </body>

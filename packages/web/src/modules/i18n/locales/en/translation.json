@@ -204,7 +204,8 @@
     },
     "grid": "Grid view",
     "calendar": "Calendar view",
-    "selected": "{{count}} selected"
+    "selected": "{{count}} selected",
+    "placeholder": "Enter your memo..."
   },
   "introduce": {
     "navigation": {

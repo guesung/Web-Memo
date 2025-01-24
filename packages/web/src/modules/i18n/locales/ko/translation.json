@@ -198,7 +198,8 @@
     },
     "grid": "그리드 보기",
     "calendar": "캘린더 보기",
-    "selected": "{{count}}개 선택됨"
+    "selected": "{{count}}개 선택됨",
+    "placeholder": "메모를 입력해주세요."
   },
   "introduce": {
     "navigation": {

@@ -3,6 +3,7 @@ import { cn } from '@extension/shared/utils';
 import { Card, CardContent } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import { HTMLAttributes, memo, MouseEvent, useState } from 'react';
+import { motion } from 'framer-motion';
 
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import MemoCardFooter from '../MemoCardFooter';
@@ -30,6 +31,7 @@ export default memo(
     };
 
     const handleMemoItemClick = (event: MouseEvent<HTMLElement>) => {
+      // console.log();
       const target = event.target as HTMLElement;
       const isMemoItem = target.closest('.memo-item');
       if (!isMemoItem) return;
@@ -52,14 +54,27 @@ export default memo(
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={handleMemoItemClick}>
-        <Card
-          className={cn('relative box-content w-[300px] transition-all', {
-            'border-primary cursor-pointer': isSelected,
-          })}>
-          <MemoCardHeader memo={memo} isHovered={isHovered} isSelected={isSelected} selectMemoItem={selectMemoItem} />
-          {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
-          <MemoCardFooter memo={memo} lng={lng} isShowingOption={isHovered && !isSelecting} />
-        </Card>
+        <motion.div layoutId={`memo-${memo.id}`}>
+          <Card
+            className={cn('relative box-content w-[300px] transition-all', {
+              'border-primary cursor-pointer': isSelected,
+            })}>
+            <motion.div layoutId={`header-${memo.id}`}>
+              <MemoCardHeader
+                memo={memo}
+                isHovered={isHovered}
+                isSelected={isSelected}
+                selectMemoItem={selectMemoItem}
+              />
+            </motion.div>
+            <motion.div layoutId={`content-${memo.id}`}>
+              {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
+            </motion.div>
+            <motion.div layoutId={`footer-${memo.id}`}>
+              <MemoCardFooter memo={memo} lng={lng} isShowingOption={isHovered && !isSelecting} />
+            </motion.div>
+          </Card>
+        </motion.div>
       </article>
     );
   },
@@ -68,7 +83,8 @@ export default memo(
       prevProps.memo.id === nextProps.memo.id &&
       prevProps.isSelected === nextProps.isSelected &&
       prevProps.memo.memo === nextProps.memo.memo &&
-      prevProps.memo.category === nextProps.memo.category
+      prevProps.memo.category === nextProps.memo.category &&
+      prevProps.isSelecting === nextProps.isSelecting
     );
   },
 );

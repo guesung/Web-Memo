@@ -1,4 +1,7 @@
 'use client';
+
+import * as Sentry from '@sentry/nextjs';
+
 import { toast } from '@extension/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
@@ -17,8 +20,11 @@ export default function QueryProvider({ children, lng }: QueryProviderProps) {
         defaultOptions: {
           queries: { refetchOnWindowFocus: true, staleTime: 1000 * 60 * 5 },
           mutations: {
-            onError: () => {
+            onError: error => {
               toast({ title: t('toastTitle.errorSave') });
+              Sentry.captureException(error, {
+                level: 'fatal',
+              });
             },
           },
         },

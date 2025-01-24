@@ -1,8 +1,6 @@
 'use client';
 
-import { ErrorBoundary, ErrorFallback, Loading } from '@extension/ui';
 import { ErrorContainer } from '@src/app/_components';
-import { Suspense } from 'react';
 
 interface ErrorPageProps {
   error: Error & { digest?: string };
@@ -11,10 +9,10 @@ interface ErrorPageProps {
 
 export default function ErrorPage({ error, reset }: ErrorPageProps) {
   return (
-    <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <Suspense fallback={<Loading />}>
+    <html>
+      <body>
         <ErrorContainer error={error} reset={reset} />
-      </Suspense>
-    </ErrorBoundary>
+      </body>
+    </html>
   );
 }

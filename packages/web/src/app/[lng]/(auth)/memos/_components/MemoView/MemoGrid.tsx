@@ -43,6 +43,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
   const dragBoxRef = useRef<HTMLDivElement>(null);
   const [dialogMemoId, setDialogMemoId] = useState<number | null>();
+  const rafRef = useRef<number>();
 
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
 
@@ -77,45 +78,45 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         const dragBox = dragBoxRef.current;
         if (!dragBox) return;
 
-        const handleMouseMove = (mouseMoveEvent: globalThis.MouseEvent) => {
-          mouseMoveEvent.stopPropagation();
+        let lastMouseEvent: MouseEvent | null = null;
 
-          const [dragEndX, dragEndY] = [mouseMoveEvent.clientX, mouseMoveEvent.clientY];
+        const updateDragBox = () => {
+          if (!lastMouseEvent || !dragBox) return;
+
+          const [dragEndX, dragEndY] = [lastMouseEvent.clientX, lastMouseEvent.clientY];
 
           // 스크롤
-          // const isNearBottom = window.innerHeight - dragEndY < SCROLL_INTERVAL;
-          // const isNearTop = dragEndY < SCROLL_INTERVAL;
+          const isNearBottom = window.innerHeight - dragEndY < SCROLL_INTERVAL;
+          const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
+          if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
+            bottomTimeoutRef.current = setInterval(() => {
+              if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
+                clearInterval(bottomTimeoutRef.current!);
+                bottomTimeoutRef.current = null;
+                return;
+              }
+              container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
+            }, 50);
+          } else if (!isNearBottom && bottomTimeoutRef.current) {
+            clearInterval(bottomTimeoutRef.current);
+            bottomTimeoutRef.current = null;
+          }
 
-          // const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
-          // const isAtTop = container.scrollTop === 0;
-
-          // if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
-          //   bottomTimeoutRef.current = setInterval(() => {
-          //     if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
-          //       clearInterval(bottomTimeoutRef.current!);
-          //       bottomTimeoutRef.current = null;
-          //       return;
-          //     }
-          //     container.scrollBy({ top: SCROLL_UNIT, behavior: 'auto' });
-          //   }, 50);
-          // } else if (!isNearBottom && bottomTimeoutRef.current) {
-          //   clearInterval(bottomTimeoutRef.current);
-          //   bottomTimeoutRef.current = null;
-          // }
-
-          // if (isNearTop && !topTimeoutRef.current && !isAtTop) {
-          //   topTimeoutRef.current = setInterval(() => {
-          //     if (container.scrollTop === 0) {
-          //       clearInterval(topTimeoutRef.current!);
-          //       topTimeoutRef.current = null;
-          //       return;
-          //     }
-          //     container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
-          //   }, 50);
-          // } else if (!isNearTop && topTimeoutRef.current) {
-          //   clearInterval(topTimeoutRef.current);
-          //   topTimeoutRef.current = null;
-          // }
+          const isNearTop = dragEndY < SCROLL_INTERVAL;
+          const isAtTop = container.scrollTop === 0;
+          if (isNearTop && !topTimeoutRef.current && !isAtTop) {
+            topTimeoutRef.current = setInterval(() => {
+              if (container.scrollTop === 0) {
+                clearInterval(topTimeoutRef.current!);
+                topTimeoutRef.current = null;
+                return;
+              }
+              container.scrollBy({ top: -SCROLL_UNIT, behavior: 'auto' });
+            }, 50);
+          } else if (!isNearTop && topTimeoutRef.current) {
+            clearInterval(topTimeoutRef.current);
+            topTimeoutRef.current = null;
+          }
 
           const containerScrolledY = dragStartY - (container.scrollTop - initialScrollTop);
 
@@ -141,10 +142,24 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
             .map(element => Number(element.id));
 
           setSelectedMemoIds(selectedIds);
+          rafRef.current = requestAnimationFrame(updateDragBox);
+        };
+
+        const handleMouseMove = (mouseMoveEvent: globalThis.MouseEvent) => {
+          mouseMoveEvent.stopPropagation();
+          lastMouseEvent = mouseMoveEvent;
+
+          if (!rafRef.current) {
+            rafRef.current = requestAnimationFrame(updateDragBox);
+          }
         };
 
         const handleMouseUp = () => {
           document.body.removeEventListener('mousemove', handleMouseMove);
+          if (rafRef.current) {
+            cancelAnimationFrame(rafRef.current);
+            rafRef.current = undefined;
+          }
 
           if (dragBoxRef.current) dragBoxRef.current.style.transform = '';
 
@@ -193,6 +208,14 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
 
   useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
 
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, []);
+
   if (!memos) return <Loading />;
 
   return (
@@ -214,6 +237,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         className="container h-screen"
         placeholder={<Skeleton className="h-[300px] w-[300px]" />}
         gap={16}
+        useRecycle={false}
         align="center"
         useResizeObserver
         observeChildren
@@ -255,7 +279,6 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
             ),
         )}
       </MasonryInfiniteGrid>
-
       {dialogMemoId && <MemoDialog lng={lng} memoId={dialogMemoId} setDialogMemoId={setDialogMemoId} />}
     </div>
   );

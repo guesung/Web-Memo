@@ -78,13 +78,10 @@ export default memo(
       </article>
     );
   },
-  (prevProps, nextProps) => {
-    return (
-      prevProps.memo.id === nextProps.memo.id &&
-      prevProps.isSelected === nextProps.isSelected &&
-      prevProps.memo.memo === nextProps.memo.memo &&
-      prevProps.memo.category === nextProps.memo.category &&
-      prevProps.isSelecting === nextProps.isSelecting
-    );
-  },
+  (prevProps, nextProps) =>
+    prevProps.memo.id === nextProps.memo.id &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.memo.memo === nextProps.memo.memo &&
+    prevProps.memo.category === nextProps.memo.category &&
+    prevProps.isSelecting === nextProps.isSelecting,
 );

@@ -20,7 +20,6 @@ const MEMO_UNIT = 20;
 const SCROLL_INTERVAL = 50;
 const CONTAINER_ID = 'memo-grid';
 const SCROLL_UNIT = 30;
-const THROTTLE_DELAY = 16; // 약 60fps
 
 const getItems = (nextGroupKey: number, count: number) => {
   const nextItems = [];
@@ -215,8 +214,6 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
       }
     };
   }, []);
-
-  if (!memos) return <Loading />;
 
   return (
     <div className="relative h-full w-full">

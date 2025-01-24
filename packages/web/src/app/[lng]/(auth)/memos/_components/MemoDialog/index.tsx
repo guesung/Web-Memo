@@ -111,7 +111,7 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
                       onKeyDown={handleKeyDown}
                       className="outline-none focus:border-gray-300 focus:outline-none"
                       ref={textareaRef}
-                      placeholder={t('input_memo')}
+                      placeholder={t('memos.placeholder')}
                     />
                     <div className="h-4" />
                     <span className="text-muted-foreground float-right text-xs">

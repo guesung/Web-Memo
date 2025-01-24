@@ -212,6 +212,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         className="container h-screen"
         placeholder={<Skeleton className="h-[300px] w-[300px]" />}
         gap={16}
+        useRecycle={false}
         align="center"
         useResizeObserver
         observeChildren

@@ -3,6 +3,7 @@ import { cn } from '@extension/shared/utils';
 import { Card, CardContent } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import { HTMLAttributes, memo, MouseEvent, useState } from 'react';
+import { motion } from 'framer-motion';
 
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import MemoCardFooter from '../MemoCardFooter';
@@ -52,14 +53,16 @@ export default memo(
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={handleMemoItemClick}>
-        <Card
-          className={cn('relative box-content w-[300px] transition-all', {
-            'border-primary cursor-pointer': isSelected,
-          })}>
-          <MemoCardHeader memo={memo} isHovered={isHovered} isSelected={isSelected} selectMemoItem={selectMemoItem} />
-          {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
-          <MemoCardFooter memo={memo} lng={lng} isShowingOption={isHovered && !isSelecting} />
-        </Card>
+        <motion.div layoutId={`memo-${memo.id}`}>
+          <Card
+            className={cn('relative box-content w-[300px] transition-all', {
+              'border-primary cursor-pointer': isSelected,
+            })}>
+            <MemoCardHeader memo={memo} isHovered={isHovered} isSelected={isSelected} selectMemoItem={selectMemoItem} />
+            {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
+            <MemoCardFooter memo={memo} lng={lng} isShowingOption={isHovered && !isSelecting} />
+          </Card>
+        </motion.div>
       </article>
     );
   },

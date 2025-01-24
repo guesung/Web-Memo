@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import NotFoundPresenter from './NotFoundPresenter';
 import { usePathname, useRouter } from 'next/navigation';
 import { LanguageType } from '@src/modules/i18n';
+import NotFoundPresenter from './NotFoundPresenter';
 
 interface NotFoundContainerProps extends LanguageType {}
 

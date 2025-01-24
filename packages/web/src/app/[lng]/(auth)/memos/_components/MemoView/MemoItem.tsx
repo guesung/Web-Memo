@@ -31,6 +31,7 @@ export default memo(
     };
 
     const handleMemoItemClick = (event: MouseEvent<HTMLElement>) => {
+      // console.log();
       const target = event.target as HTMLElement;
       const isMemoItem = target.closest('.memo-item');
       if (!isMemoItem) return;
@@ -71,7 +72,8 @@ export default memo(
       prevProps.memo.id === nextProps.memo.id &&
       prevProps.isSelected === nextProps.isSelected &&
       prevProps.memo.memo === nextProps.memo.memo &&
-      prevProps.memo.category === nextProps.memo.category
+      prevProps.memo.category === nextProps.memo.category &&
+      prevProps.isSelecting === nextProps.isSelecting
     );
   },
 );

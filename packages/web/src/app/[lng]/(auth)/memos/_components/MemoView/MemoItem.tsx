@@ -59,9 +59,20 @@ export default memo(
             className={cn('relative box-content w-[300px] transition-all', {
               'border-primary cursor-pointer': isSelected,
             })}>
-            <MemoCardHeader memo={memo} isHovered={isHovered} isSelected={isSelected} selectMemoItem={selectMemoItem} />
-            {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
-            <MemoCardFooter memo={memo} lng={lng} isShowingOption={isHovered && !isSelecting} />
+            <motion.div layoutId={`header-${memo.id}`}>
+              <MemoCardHeader
+                memo={memo}
+                isHovered={isHovered}
+                isSelected={isSelected}
+                selectMemoItem={selectMemoItem}
+              />
+            </motion.div>
+            <motion.div layoutId={`content-${memo.id}`}>
+              {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
+            </motion.div>
+            <motion.div layoutId={`footer-${memo.id}`}>
+              <MemoCardFooter memo={memo} lng={lng} isShowingOption={isHovered && !isSelecting} />
+            </motion.div>
           </Card>
         </motion.div>
       </article>

@@ -269,7 +269,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
               <MemoItem
                 lng={lng}
                 data-grid-groupkey={item.groupKey}
-                key={item.key + gridKey}
+                key={memos.at(item.key)!.id}
                 memo={memos.at(item.key)!}
                 isSelected={checkMemoSelected(memos.at(item.key)!.id)}
                 selectMemoItem={handleSelectMemoItem}

@@ -43,6 +43,7 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
   const dragBoxRef = useRef<HTMLDivElement>(null);
   const [dialogMemoId, setDialogMemoId] = useState<number | null>();
+  const rafRef = useRef<number>();
 
   const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
 
@@ -77,10 +78,12 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
         const dragBox = dragBoxRef.current;
         if (!dragBox) return;
 
-        const handleMouseMove = (mouseMoveEvent: globalThis.MouseEvent) => {
-          mouseMoveEvent.stopPropagation();
+        let lastMouseEvent: MouseEvent | null = null;
 
-          const [dragEndX, dragEndY] = [mouseMoveEvent.clientX, mouseMoveEvent.clientY];
+        const updateDragBox = () => {
+          if (!lastMouseEvent || !dragBox) return;
+
+          const [dragEndX, dragEndY] = [lastMouseEvent.clientX, lastMouseEvent.clientY];
 
           // 스크롤
           const isNearBottom = window.innerHeight - dragEndY < SCROLL_INTERVAL;
@@ -139,10 +142,24 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
             .map(element => Number(element.id));
 
           setSelectedMemoIds(selectedIds);
+          rafRef.current = requestAnimationFrame(updateDragBox);
+        };
+
+        const handleMouseMove = (mouseMoveEvent: globalThis.MouseEvent) => {
+          mouseMoveEvent.stopPropagation();
+          lastMouseEvent = mouseMoveEvent;
+
+          if (!rafRef.current) {
+            rafRef.current = requestAnimationFrame(updateDragBox);
+          }
         };
 
         const handleMouseUp = () => {
           document.body.removeEventListener('mousemove', handleMouseMove);
+          if (rafRef.current) {
+            cancelAnimationFrame(rafRef.current);
+            rafRef.current = undefined;
+          }
 
           if (dragBoxRef.current) dragBoxRef.current.style.transform = '';
 
@@ -190,6 +207,14 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
   }, []);
 
   useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, []);
 
   if (!memos) return <Loading />;
 
@@ -254,7 +279,6 @@ export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
             ),
         )}
       </MasonryInfiniteGrid>
-
       {dialogMemoId && <MemoDialog lng={lng} memoId={dialogMemoId} setDialogMemoId={setDialogMemoId} />}
     </div>
   );

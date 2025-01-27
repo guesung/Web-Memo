@@ -203,7 +203,7 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
     setTimeout(() => {
       ready();
       setItems(prevItems => [...prevItems, ...getItems(nextGroupKey, maxAddItem)]);
-    }, 100);
+    }, 1);
   };
 
   useEffect(function updateDialogId() {

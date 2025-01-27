@@ -184,14 +184,14 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
   };
 
   const handleRequestAppend: ComponentProps<typeof MasonryInfiniteGrid>['onRequestAppend'] = ({
-    groupKey,
+    groupKey = 0,
     currentTarget,
     wait,
     ready,
   }) => {
     if (items.length >= memos.length) return;
 
-    const nextGroupKey = (+groupKey! || 0) + 1;
+    const nextGroupKey = +groupKey + 1;
     const maxAddItem = items.length + MEMO_UNIT > memos.length ? memos.length - items.length : MEMO_UNIT;
 
     if (maxAddItem === 0) return;

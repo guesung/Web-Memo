@@ -28,7 +28,7 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
   const [showAlert, setShowAlert] = useState(false);
 
-  const { register, watch, setValue, control } = useForm<MemoInput>({
+  const { register, watch, setValue } = useForm<MemoInput>({
     defaultValues: {
       memo: '',
     },
@@ -37,12 +37,6 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
   const { ref, ...rest } = register('memo', {
     onChange: event => (event.target.style.height = `${event.target.scrollHeight}px`),
   });
-
-  useWatch({
-    name: 'memo',
-    control,
-  });
-
   useImperativeHandle(ref, () => textareaRef.current);
 
   const saveMemo = () => {

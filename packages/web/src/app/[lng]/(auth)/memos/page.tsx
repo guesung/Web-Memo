@@ -9,8 +9,8 @@ import { LanguageParams } from '@src/modules/i18n';
 import { getSupabaseClient } from '@src/modules/supabase/util.server';
 import { Suspense } from 'react';
 
-import { MemoView, MemoSearchForm, MemoSearchFormProvider } from './_components';
 import { HeaderMargin } from '../../_components/Header';
+import { MemoSearchForm, MemoSearchFormProvider, MemoView } from './_components';
 
 interface PageProps extends LanguageParams {
   searchParams: SearchParamsType;

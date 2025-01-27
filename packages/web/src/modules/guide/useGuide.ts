@@ -61,7 +61,7 @@ export default function useGuide({ lng }: UseGuideProps) {
   const driverObj = createDriver();
 
   useEffect(() => {
-    if (manifest === 'NOT_INSTALLED' || checkLocalStorageTrue('guide')) return;
+    if (!manifest || manifest === 'NOT_INSTALLED' || checkLocalStorageTrue('guide')) return;
 
     import('driver.js/dist/driver.css');
     driverObj.drive();

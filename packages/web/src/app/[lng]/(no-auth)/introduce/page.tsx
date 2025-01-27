@@ -1,7 +1,7 @@
 import { LanguageParams } from '@src/modules/i18n';
 import { Metadata } from 'next';
 
-import { HeaderMargin } from '../../(auth)/memos/_components/Header';
+import { HeaderMargin } from '../../_components/Header';
 import { AdditionalFeatures, Features, Footer, Hero, ImageSlider, QuestionAndAnswer } from './_components';
 
 const metadataKorean: Metadata = {

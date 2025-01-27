@@ -6,7 +6,7 @@ import { HydrationBoundaryWrapper } from '@src/components';
 import { LanguageParams } from '@src/modules/i18n';
 import { getSupabaseClient } from '@src/modules/supabase/util.server';
 
-import { HeaderMargin } from '../_components/Header';
+import { HeaderMargin } from '../../../_components/Header';
 import { Setting, SettingHeader } from './_components';
 
 export default async function Page({ params: { lng } }: LanguageParams) {

@@ -23,9 +23,6 @@ const ToggleView = dynamic(() => import('./ToggleView'), {
 const MemoCalendar = dynamic(() => import('./MemoCalendar'), {
   ssr: false,
 });
-const ExtensionDialog = dynamic(() => import('@src/app/_components/ExtensionDialog'), {
-  ssr: false,
-});
 
 interface MemoViewProps extends LanguageType {
   searchParams: SearchParamsType;
@@ -60,8 +57,6 @@ export default function MemoView({
 
       {view === 'grid' && <MemoGrid memos={memos} lng={lng} />}
       {view === 'calendar' && <MemoCalendar lng={lng} memos={memos} />}
-
-      <ExtensionDialog lng={lng} />
     </div>
   );
 }

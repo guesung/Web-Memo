@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 export default function HeaderRight({ lng }: LanguageType) {
   const { t } = useTranslation(lng);
   const { data: user } = useSupabaseUser();
-  const { mutate: signout } = useSignoutMutation();
+  const { mutate: mutateSignout } = useSignoutMutation();
   const router = useRouter();
 
   const isUserLogin = !!user?.data?.user;
@@ -21,11 +21,8 @@ export default function HeaderRight({ lng }: LanguageType) {
     user?.data?.user?.identities?.[0]?.identity_data?.avatar_url ?? '/images/pngs/default_image_user.png';
 
   const handleSignoutClick = () => {
-    signout(void 0, {
-      onSuccess: () => {
-        router.push(PATHS.login);
-      },
-    });
+    mutateSignout();
+    router.push(PATHS.login);
   };
 
   return (

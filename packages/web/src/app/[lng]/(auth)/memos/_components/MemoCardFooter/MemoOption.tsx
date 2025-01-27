@@ -5,7 +5,6 @@ import {
   useMemosQuery,
   useMemosUpsertMutation,
 } from '@extension/shared/hooks';
-import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { isAllSame } from '@extension/shared/utils';
 import {
@@ -53,71 +52,57 @@ export default function MemoOption({ lng, memoIds = [], closeMemoOption }: MemoO
     ? String(selectedMemos.at(0)?.category_id)
     : '';
 
-  const handleDeleteMemo = (event?: MouseEvent<HTMLDivElement>) => {
+  const handleDeleteMemo = async (event?: MouseEvent<HTMLDivElement>) => {
     event?.stopPropagation();
 
-    mutateDeleteMemo(
-      selectedMemos.map(memo => memo.id),
-      {
-        onSuccess: async () => {
-          const handleToastActionClick = () => {
-            mutateUpsertMemo(selectedMemos, {
-              onSuccess: async () => {
-                await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
-                await ExtensionBridge.requestRefetchTheMemos();
-              },
-            });
-          };
+    mutateDeleteMemo(selectedMemos.map(memo => memo.id));
 
-          toast({
-            title: t('toastTitle.memoDeleted'),
-            action: (
-              <ToastAction altText={t('toastActionMessage.undo')} onClick={handleToastActionClick}>
-                {t('toastActionMessage.undo')}
-              </ToastAction>
-            ),
-          });
+    const handleToastActionClick = async () => {
+      mutateUpsertMemo(selectedMemos);
 
-          await ExtensionBridge.requestRefetchTheMemos();
-        },
-        onSettled: () => {
-          setIsOpen(false);
-          closeMemoOption?.();
-        },
-      },
-    );
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+    };
+
+    console.log(1);
+
+    toast({
+      title: t('toastTitle.memoDeleted'),
+      action: (
+        <ToastAction altText={t('toastActionMessage.undo')} onClick={handleToastActionClick}>
+          {t('toastActionMessage.undo')}
+        </ToastAction>
+      ),
+    });
+
+    setIsOpen(false);
+    closeMemoOption?.();
   };
 
-  const handleCategoryChange = (categoryId: string) => {
+  const handleCategoryChange = async (categoryId: string) => {
     const currentMemo = memos.filter(memo => memoIds.includes(memo.id));
-    mutateUpsertMemo(
-      currentMemo.map(memo => ({ ...memo, category_id: Number(categoryId) })),
-      {
-        onSuccess: () => {
-          const category = categories?.find(category => category.id === Number(categoryId));
-          if (!category) return;
+    mutateUpsertMemo(currentMemo.map(memo => ({ ...memo, category_id: Number(categoryId) })));
 
-          toast({
-            title: t('toastTitle.categoryEdited'),
-            action: (
-              <ToastAction
-                altText={t('toastActionMessage.goTo')}
-                onClick={() => {
-                  searchParams.set('category', category.name);
+    const category = categories?.find(category => category.id === Number(categoryId));
+    if (!category) return;
 
-                  router.push(searchParams.getUrl());
-                }}>
-                {t('toastActionMessage.goTo')}
-              </ToastAction>
-            ),
-          });
-          queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
-        },
-        onSettled: () => {
-          setIsOpen(false);
-        },
-      },
-    );
+    toast({
+      title: t('toastTitle.categoryEdited'),
+      action: (
+        <ToastAction
+          altText={t('toastActionMessage.goTo')}
+          onClick={() => {
+            searchParams.set('category', category.name);
+
+            router.push(searchParams.getUrl());
+          }}>
+          {t('toastActionMessage.goTo')}
+        </ToastAction>
+      ),
+    });
+
+    queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+
+    setIsOpen(false);
   };
 
   const handleDropdownMenuTriggerClick = (event: MouseEvent<HTMLButtonElement>) => {

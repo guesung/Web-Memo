@@ -5,7 +5,7 @@ import { useKeyboardBind } from '@extension/shared/hooks';
 import { GetMemoResponse } from '@extension/shared/types';
 import { LanguageType } from '@src/modules/i18n';
 import { AnimatePresence } from 'framer-motion';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ComponentProps, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { Loading, Skeleton } from '@extension/ui';
@@ -183,6 +183,28 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
     router.replace(searchParams.getUrl(), { scroll: false });
   };
 
+  const handleRequestAppend: ComponentProps<typeof MasonryInfiniteGrid>['onRequestAppend'] = ({
+    groupKey,
+    currentTarget,
+    wait,
+    ready,
+  }) => {
+    if (items.length >= memos.length) return;
+
+    const nextGroupKey = (+groupKey! || 0) + 1;
+    const maxAddItem = items.length + MEMO_UNIT > memos.length ? memos.length - items.length : MEMO_UNIT;
+
+    if (maxAddItem === 0) return;
+
+    wait();
+    currentTarget.appendPlaceholders(MEMO_UNIT, nextGroupKey);
+
+    setTimeout(() => {
+      ready();
+      setItems(prevItems => [...prevItems, ...getItems(nextGroupKey, maxAddItem)]);
+    }, 100);
+  };
+
   useEffect(() => {
     // Dialog 업데이트
     const currentDialogId = searchParams.get('id');
@@ -230,35 +252,20 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 
       <MasonryInfiniteGrid
         useTransform
-        className="container h-screen"
-        placeholder={<Skeleton className="h-[300px] w-[300px]" />}
-        gap={16}
-        useRecycle={false}
-        align="center"
         useResizeObserver
         observeChildren
         autoResize
+        className="container h-screen"
         container={true}
+        useRecycle={false}
+        gap={16}
+        align="center"
         id={CONTAINER_ID}
+        placeholder={<Skeleton className="h-[300px] w-[300px]" />}
         style={{
           willChange: 'transform',
         }}
-        onRequestAppend={({ groupKey, currentTarget, wait, ready }) => {
-          if (items.length >= memos.length) return;
-
-          const nextGroupKey = (+groupKey! || 0) + 1;
-          const maxAddItem = items.length + MEMO_UNIT > memos.length ? memos.length - items.length : MEMO_UNIT;
-
-          if (maxAddItem === 0) return;
-
-          wait();
-          currentTarget.appendPlaceholders(MEMO_UNIT, nextGroupKey);
-
-          setTimeout(() => {
-            ready();
-            setItems(prevItems => [...prevItems, ...getItems(nextGroupKey, maxAddItem)]);
-          }, 100);
-        }}>
+        onRequestAppend={handleRequestAppend}>
         {items.map(
           item =>
             memos.at(item.key) && (

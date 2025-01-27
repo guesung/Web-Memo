@@ -10,7 +10,7 @@ import { redirect } from 'next/navigation';
 import { PropsWithChildren, Suspense } from 'react';
 
 import { MemoSidebar, InitSentryUserInfo } from './_components';
-import { initSentryUserInfo } from './_utils/Sentry';
+import { initSentryUserInfo } from './_utils';
 
 interface LayoutProps extends LanguageParams, PropsWithChildren {}
 

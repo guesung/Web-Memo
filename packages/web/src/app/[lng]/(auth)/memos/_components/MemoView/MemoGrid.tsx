@@ -47,7 +47,7 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 
   const checkMemoSelected = useCallback((id: number) => selectedMemoIds.includes(id), [selectedMemoIds]);
 
-  const isAnyMemoSelected = useMemo(() => selectedMemoIds.length > 0, [selectedMemoIds]);
+  const isSelectingMode = useMemo(() => selectedMemoIds.length > 0, [selectedMemoIds]);
 
   const handleSelectMemoItem = useCallback((id: number) => {
     setSelectedMemoIds(prev => {
@@ -224,8 +224,6 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
     };
   }, []);
 
-  useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
-
   useEffect(function closeRAFOnUnmount() {
     return () => {
       if (rafRef.current) {
@@ -234,11 +232,13 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
     };
   }, []);
 
+  useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
+
   return (
     <div className="relative h-full w-full">
       <DragBox ref={dragBoxRef} />
       <AnimatePresence>
-        {isAnyMemoSelected && (
+        {isSelectingMode && (
           <MemoOptionHeader
             lng={lng}
             selectedMemoIds={selectedMemoIds}
@@ -268,13 +268,13 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
           item =>
             memos.at(item.key) && (
               <MemoItem
+                key={memos.at(item.key).id}
                 lng={lng}
                 data-grid-groupkey={item.groupKey}
-                key={memos.at(item.key).id}
                 memo={memos.at(item.key)}
-                isSelected={checkMemoSelected(memos.at(item.key).id)}
+                isMemoSelected={checkMemoSelected(memos.at(item.key).id)}
                 selectMemoItem={handleSelectMemoItem}
-                isSelecting={isAnyMemoSelected}
+                isSelectingMode={isSelectingMode}
                 setDialogMemoId={setDialogMemoId}
               />
             ),

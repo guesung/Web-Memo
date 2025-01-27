@@ -12,22 +12,30 @@ import { useRouter } from 'next/navigation';
 
 interface MemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
   memo: GetMemoResponse;
-  isSelecting: boolean;
+  isSelectingMode: boolean;
   selectMemoItem: (id: number) => void;
-  isSelected: boolean;
+  isMemoSelected: boolean;
   setDialogMemoId: (id: number) => void;
 }
 
 export default memo(
-  function MemoItem({ lng, memo, selectMemoItem, isSelecting, isSelected, setDialogMemoId, ...props }: MemoItemProps) {
+  function MemoItem({
+    lng,
+    memo,
+    selectMemoItem,
+    isSelectingMode,
+    isMemoSelected,
+    setDialogMemoId,
+    ...props
+  }: MemoItemProps) {
     const searchParams = useSearchParams();
-    const [isHovered, setIsHovered] = useState(false);
+    const [isMemoHovering, setIsMemoHovering] = useState(false);
 
     const handleMouseEnter = () => {
-      setIsHovered(true);
+      setIsMemoHovering(true);
     };
     const handleMouseLeave = () => {
-      setIsHovered(false);
+      setIsMemoHovering(false);
     };
 
     const handleMemoItemClick = (event: MouseEvent<HTMLElement>) => {
@@ -38,7 +46,7 @@ export default memo(
 
       const id = event.currentTarget.id;
 
-      if (isSelecting) selectMemoItem(Number(id));
+      if (isSelectingMode) selectMemoItem(Number(id));
       else {
         searchParams.set('id', id);
         setDialogMemoId(Number(id));
@@ -57,13 +65,13 @@ export default memo(
         <motion.div layoutId={`memo-${memo.id}`}>
           <Card
             className={cn('relative box-content w-[300px] transition-all', {
-              'border-primary cursor-pointer': isSelected,
+              'border-primary cursor-pointer': isMemoSelected,
             })}>
             <motion.div layoutId={`header-${memo.id}`}>
               <MemoCardHeader
                 memo={memo}
-                isHovered={isHovered}
-                isSelected={isSelected}
+                isMemoHovering={isMemoHovering}
+                isMemoSelected={isMemoSelected}
                 selectMemoItem={selectMemoItem}
               />
             </motion.div>
@@ -71,7 +79,7 @@ export default memo(
               {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
             </motion.div>
             <motion.div layoutId={`footer-${memo.id}`}>
-              <MemoCardFooter memo={memo} lng={lng} isShowingOption={isHovered && !isSelecting} />
+              <MemoCardFooter memo={memo} lng={lng} isShowingOption={isMemoHovering && !isSelectingMode} />
             </motion.div>
           </Card>
         </motion.div>
@@ -80,8 +88,8 @@ export default memo(
   },
   (prevProps, nextProps) =>
     prevProps.memo.id === nextProps.memo.id &&
-    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.isMemoSelected === nextProps.isMemoSelected &&
     prevProps.memo.memo === nextProps.memo.memo &&
     prevProps.memo.category === nextProps.memo.category &&
-    prevProps.isSelecting === nextProps.isSelecting,
+    prevProps.isSelectingMode === nextProps.isSelectingMode,
 );

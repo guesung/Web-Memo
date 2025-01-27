@@ -8,12 +8,15 @@ interface UseKeyboardBindProps {
 }
 
 export default function useKeyboardBind({ key, callback }: UseKeyboardBindProps) {
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === key) callback();
-    };
+  useEffect(
+    function keyboardBind() {
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === key) callback();
+      };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [key, callback]);
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    },
+    [key, callback],
+  );
 }

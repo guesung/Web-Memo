@@ -21,6 +21,7 @@
     "sourceType": "module",
   },
   "plugins": [
+    "unused-imports",
     "prettier",
     "simple-import-sort",
     "react",
@@ -41,6 +42,7 @@
     "react/prop-types": "off",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
+    "unused-imports/no-unused-imports": "error",
   },
   "globals": {
     "chrome": "readonly",

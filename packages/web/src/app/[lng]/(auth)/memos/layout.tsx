@@ -35,7 +35,6 @@ export default async function Layout({ children, params: { lng } }: LayoutProps)
       <Suspense>
         <InitSentryUserInfo lng={lng} />
       </Suspense>
-      {/* <ExtensionDialog lng={lng} /> */}
     </SidebarProvider>
   );
 }

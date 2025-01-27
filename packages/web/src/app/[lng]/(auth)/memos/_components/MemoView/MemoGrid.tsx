@@ -86,7 +86,7 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
         // 스크롤
         const isNearBottom = window.innerHeight - dragEndY < SCROLL_INTERVAL;
         const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
-        if (isNearBottom && !bottomTimeoutRef.current && !isAtBottom) {
+        if (isNearBottom && !isAtBottom && !bottomTimeoutRef.current) {
           bottomTimeoutRef.current = setInterval(() => {
             if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
               clearInterval(bottomTimeoutRef.current!);
@@ -102,7 +102,7 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 
         const isNearTop = dragEndY < SCROLL_INTERVAL;
         const isAtTop = container.scrollTop === 0;
-        if (isNearTop && !topTimeoutRef.current && !isAtTop) {
+        if (isNearTop && !isAtTop && !topTimeoutRef.current) {
           topTimeoutRef.current = setInterval(() => {
             if (container.scrollTop === 0) {
               clearInterval(topTimeoutRef.current!);
@@ -145,6 +145,7 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 
       const handleMouseMove = (mouseMoveEvent: globalThis.MouseEvent) => {
         mouseMoveEvent.stopPropagation();
+
         lastMouseEvent = mouseMoveEvent;
 
         if (!rafRef.current) {
@@ -205,16 +206,14 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
     }, 100);
   };
 
-  useEffect(() => {
-    // Dialog 업데이트
+  useEffect(function updateDialogId() {
     const currentDialogId = searchParams.get('id');
     if (!currentDialogId) return;
 
     setDialogMemoId(Number(currentDialogId));
   }, []);
 
-  useEffect(() => {
-    // 뒤로가기 시
+  useEffect(function closeDialogOnPopState() {
     const handlePopstate = () => {
       setDialogMemoId(history.state?.openedMemoId);
     };
@@ -227,8 +226,7 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 
   useKeyboardBind({ key: 'Escape', callback: closeMemoOption });
 
-  useEffect(() => {
-    // 컴포넌트 언마운트 시
+  useEffect(function closeRAFOnUnmount() {
     return () => {
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);

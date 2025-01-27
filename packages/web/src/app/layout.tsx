@@ -1,6 +1,6 @@
 import '@extension/ui/dist/global.css';
 
-import { GoogleAnalytics } from '@next/third-parties/google';
+import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google';
 import { Toaster } from '@src/components/ui';
 import { CONFIG } from '@src/constants';
 import type { Metadata, Viewport } from 'next';
@@ -36,6 +36,7 @@ export default function Layout({ children }: LayoutProps) {
 
         <WebVitals />
         <GoogleAnalytics gaId={CONFIG.gaId} />
+        <GoogleTagManager gtmId={CONFIG.gtmId} />
         <Toaster />
       </body>
     </html>

@@ -11,7 +11,11 @@ import { Suspense } from 'react';
 
 import { HeaderMargin } from '../../_components/Header';
 import { MemoSearchForm, MemoSearchFormProvider, MemoView } from './_components';
-import ExtensionDialog from './_components/ExtensionDialog';
+import dynamic from 'next/dynamic';
+
+const ExtensionInstallCheckDialog = dynamic(() => import('./_components/ExtensionInstallCheckDialog'), {
+  ssr: false,
+});
 
 interface PageProps extends LanguageParams {
   searchParams: SearchParamsType;
@@ -32,7 +36,7 @@ export default async function Page({ searchParams, params: { lng } }: PageProps)
         </Suspense>
       </HydrationBoundaryWrapper>
 
-      <ExtensionDialog lng={lng} />
+      <ExtensionInstallCheckDialog lng={lng} />
     </main>
   );
 }

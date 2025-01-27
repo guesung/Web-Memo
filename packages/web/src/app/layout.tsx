@@ -30,7 +30,7 @@ export const viewport: Viewport = {
 
 export default function Layout({ children }: LayoutProps) {
   return (
-    <html className="h-screen" suppressHydrationWarning>
+    <html suppressHydrationWarning>
       <body>
         {children}
 

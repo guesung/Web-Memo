@@ -2,7 +2,7 @@ import { QUERY_KEY } from '@src/constants';
 import { CategoryService } from '@src/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import useSupabaseClientQuery from './useSupabaseClientQuery';
+import { useSupabaseClientQuery } from '../queries';
 
 export default function useCategoryUpsertMutation() {
   const queryClient = useQueryClient();

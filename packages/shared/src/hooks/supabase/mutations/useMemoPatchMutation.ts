@@ -3,7 +3,7 @@ import { MemoRow, MemoSupabaseResponse, MemoTable } from '@src/types';
 import { MemoService } from '@src/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import useSupabaseClientQuery from './useSupabaseClientQuery';
+import { useSupabaseClientQuery } from '../queries';
 
 type MutationVariables = {
   id: MemoRow['id'];

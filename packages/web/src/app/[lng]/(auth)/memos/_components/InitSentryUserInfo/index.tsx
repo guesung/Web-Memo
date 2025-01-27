@@ -1,5 +1,5 @@
 'use client';
-import { useSupabaseUser } from '@extension/shared/hooks';
+import { useSupabaseUserQuery } from '@extension/shared/hooks';
 import * as Sentry from '@sentry/nextjs';
 
 import { Language } from '@src/modules/i18n';
@@ -10,7 +10,7 @@ interface InitSentryUserInfoProps {
 }
 
 export default function InitSentryUserInfo({ lng }: InitSentryUserInfoProps) {
-  const user = useSupabaseUser();
+  const user = useSupabaseUserQuery();
 
   useEffect(() => {
     Sentry.setUser({

@@ -5,7 +5,7 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 
 import useSupabaseClientQuery from './useSupabaseClientQuery';
 
-export default function useSupabaseUser() {
+export default function useSupabaseUserQuery() {
   const { data: supabaseClient } = useSupabaseClientQuery();
 
   const query = useSuspenseQuery<UserResponse, Error>({

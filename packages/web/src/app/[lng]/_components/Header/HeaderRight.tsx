@@ -1,7 +1,7 @@
 'use client';
 
 import { PATHS } from '@extension/shared/constants';
-import { useSignoutMutation, useSupabaseUser } from '@extension/shared/hooks';
+import { useSignoutMutation, useSupabaseUserQuery } from '@extension/shared/hooks';
 import { ToggleTheme } from '@src/components';
 import { Avatar, DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 
 export default function HeaderRight({ lng }: LanguageType) {
   const { t } = useTranslation(lng);
-  const { data: user } = useSupabaseUser();
+  const { data: user } = useSupabaseUserQuery();
   const { mutate: mutateSignout } = useSignoutMutation();
   const router = useRouter();
 

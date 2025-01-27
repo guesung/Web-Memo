@@ -12,7 +12,8 @@ export default function useKeyboardBind({ key, callback, isMetaKey = false }: Us
   useEffect(
     function keyboardBind() {
       const handleKeyDown = (event: KeyboardEvent) => {
-        if (isMetaKey ? event.metaKey : true && event.key === key) {
+        const metaKey = isMetaKey ? event.metaKey : true;
+        if (metaKey && event.key === key) {
           event.preventDefault();
 
           callback();

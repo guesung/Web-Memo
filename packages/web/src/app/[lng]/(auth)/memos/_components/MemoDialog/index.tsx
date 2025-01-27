@@ -1,5 +1,5 @@
 'use client';
-import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
+import { useKeyboardBind, useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { Button } from '@extension/ui';
 import { Card, CardContent, Dialog, DialogContent, Textarea } from '@src/components/ui';
@@ -49,6 +49,8 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
       saveMemo();
     }
   };
+
+  useKeyboardBind({ key: 's', callback: saveMemo, isMetaKey: true });
 
   const checkEditedAndCloseDialog = () => {
     const isEdited = watch('memo') !== memoData?.memo;
@@ -101,7 +103,6 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
                 <CardContent>
                   <Textarea
                     {...rest}
-                    onKeyDown={handleKeyDown}
                     className="outline-none focus:border-gray-300 focus:outline-none"
                     ref={textareaRef}
                     placeholder={t('memos.placeholder')}

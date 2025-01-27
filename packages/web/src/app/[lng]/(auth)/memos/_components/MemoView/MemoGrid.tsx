@@ -258,10 +258,10 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
         className="container h-screen"
         container={true}
         useRecycle={false}
+        id={CONTAINER_ID}
         gap={16}
         align="center"
-        id={CONTAINER_ID}
-        placeholder={<Skeleton className="h-[300px] w-[300px]" />}
+        placeholder={<MemoItemSkeleton />}
         style={{
           willChange: 'transform',
         }}
@@ -272,9 +272,9 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
               <MemoItem
                 lng={lng}
                 data-grid-groupkey={item.groupKey}
-                key={memos.at(item.key)!.id}
-                memo={memos.at(item.key)!}
-                isSelected={checkMemoSelected(memos.at(item.key)!.id)}
+                key={memos.at(item.key).id}
+                memo={memos.at(item.key)}
+                isSelected={checkMemoSelected(memos.at(item.key).id)}
                 selectMemoItem={handleSelectMemoItem}
                 isSelecting={isAnyMemoSelected}
                 setDialogMemoId={setDialogMemoId}
@@ -285,4 +285,8 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
       {dialogMemoId && <MemoDialog lng={lng} memoId={dialogMemoId} setDialogMemoId={setDialogMemoId} />}
     </div>
   );
+}
+
+function MemoItemSkeleton() {
+  return <Skeleton className="h-[300px] w-[300px]" />;
 }

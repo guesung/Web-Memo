@@ -22,7 +22,6 @@ export default memo(function RefreshButton({ lng }: RefreshButtonProps) {
 
     await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
     toast({ title: t('toastTitle.refresh') });
-    await ExtensionBridge.requestRefetchTheMemos();
   };
 
   return (

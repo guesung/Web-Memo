@@ -4,7 +4,7 @@ import { CONFIG } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function updateSession(request: NextRequest) {
+export async function updateAuthorization(request: NextRequest) {
   const nextResponse = NextResponse.next({
     request,
     headers: request.headers,

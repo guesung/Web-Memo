@@ -11,10 +11,10 @@ import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
 
 import dynamic from 'next/dynamic';
-import { SearchFormValues } from '../SearchFormProvider';
+import { SearchFormValues } from '../MemoSearchFormProvider';
 import MemoGrid from './MemoGrid';
 
-const RefreshButton = dynamic(() => import('./RefreshButton'), {
+const MemoRefreshButton = dynamic(() => import('./MemoRefreshButton'), {
   ssr: false,
 });
 const ToggleView = dynamic(() => import('./ToggleView'), {
@@ -52,13 +52,13 @@ export default function MemoView({
         <div className="flex w-full items-center justify-between">
           <p className="text-muted-foreground select-none text-sm">{t('memos.totalMemos', { total: memos.length })}</p>
           <div className="flex">
-            <RefreshButton lng={lng} />
+            <MemoRefreshButton lng={lng} />
             <ToggleView lng={lng} />
           </div>
         </div>
       </div>
 
-      {view === 'grid' && <MemoGrid memos={memos} gridKey={category + isWish} lng={lng} />}
+      {view === 'grid' && <MemoGrid memos={memos} lng={lng} />}
       {view === 'calendar' && <MemoCalendar lng={lng} memos={memos} />}
 
       <ExtensionDialog lng={lng} />

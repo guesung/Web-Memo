@@ -4,13 +4,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
-import { Control, Controller, useFormContext } from 'react-hook-form';
-import { SearchFormValues } from '../SearchFormProvider';
 import { X } from 'lucide-react';
+import { Controller, useFormContext } from 'react-hook-form';
+import { SearchFormValues } from '../MemoSearchFormProvider';
 
-interface SearchFormProps extends LanguageType {}
+interface MemoSearchFormProps extends LanguageType {}
 
-export default function SearchForm({ lng }: SearchFormProps) {
+export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
   const { t } = useTranslation(lng);
   const {
     control,

@@ -11,7 +11,7 @@ import { memo } from 'react';
 
 interface RefreshButtonProps extends LanguageType {}
 
-export default memo(function RefreshButton({ lng }: RefreshButtonProps) {
+export default memo(function MemoRefreshButton({ lng }: RefreshButtonProps) {
   const { t } = useTranslation(lng);
   const queryClient = useQueryClient();
   const { driverObj } = useGuide({ lng });

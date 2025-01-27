@@ -33,10 +33,9 @@ const getItems = (nextGroupKey: number, count: number) => {
 
 interface MemoGridProps extends LanguageType {
   memos: GetMemoResponse[];
-  gridKey: string;
 }
 
-export default function MemoGrid({ lng, memos, gridKey }: MemoGridProps) {
+export default function MemoGrid({ lng, memos }: MemoGridProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));

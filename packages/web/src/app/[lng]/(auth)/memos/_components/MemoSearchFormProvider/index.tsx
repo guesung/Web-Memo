@@ -9,7 +9,7 @@ export interface SearchFormValues {
   searchTarget: SearchTargetType;
 }
 
-export default function SearchFormProvider({ children }: PropsWithChildren) {
+export default function MemoSearchFormProvider({ children }: PropsWithChildren) {
   const methods = useForm<SearchFormValues>({
     defaultValues: {
       searchQuery: '',

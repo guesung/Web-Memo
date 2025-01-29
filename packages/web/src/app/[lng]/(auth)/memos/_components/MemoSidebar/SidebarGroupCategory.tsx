@@ -1,6 +1,5 @@
 'use client';
 
-import { PATHS } from '@extension/shared/constants';
 import { useCategoryQuery } from '@extension/shared/hooks';
 import {
   SidebarGroup,
@@ -15,8 +14,8 @@ import useTranslation from '@src/modules/i18n/util.client';
 import { useRouter } from 'next/navigation';
 import { memo } from 'react';
 
-import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
 import { useSearchParams } from '@extension/shared/modules/search-params';
+import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
 
 export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
   const { t } = useTranslation(lng);

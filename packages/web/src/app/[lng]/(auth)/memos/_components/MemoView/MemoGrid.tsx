@@ -8,13 +8,13 @@ import { AnimatePresence } from 'framer-motion';
 import { ComponentProps, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSearchParams } from '@extension/shared/modules/search-params';
-import { Loading, Skeleton } from '@extension/ui';
+import { Skeleton } from '@extension/ui';
 import { DragBox } from '@src/components';
-import { useDrag, useScrollSync } from '@src/hooks';
+import { useDrag } from '@src/hooks';
 import { useRouter } from 'next/navigation';
+import MemoDialog from '../MemoDialog';
 import MemoItem from './MemoItem';
 import MemoOptionHeader from './MemoOptionHeader';
-import MemoDialog from '../MemoDialog';
 
 const MEMO_UNIT = 20;
 const SCROLL_INTERVAL = 50;

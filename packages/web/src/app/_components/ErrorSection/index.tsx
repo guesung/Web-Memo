@@ -1,10 +1,9 @@
 'use client';
 
-import * as Sentry from '@sentry/nextjs';
-
 import { Button } from '@extension/ui';
-import { useEffect } from 'react';
+import * as Sentry from '@sentry/nextjs';
 import useTranslation from '@src/modules/i18n/util.client';
+import { useEffect } from 'react';
 
 interface ErrorSectionProps {
   error: Error & { digest?: string };

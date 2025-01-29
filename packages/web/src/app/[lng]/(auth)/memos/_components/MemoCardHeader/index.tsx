@@ -1,10 +1,11 @@
-import { GetMemoResponse } from '@extension/shared/types';
+import type { GetMemoResponse } from '@extension/shared/types';
 import { cn } from '@extension/shared/utils';
 import { Button, CardHeader, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui';
 import { CheckIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { memo, MouseEvent, useCallback } from 'react';
+import type { MouseEvent } from 'react';
+import { memo, useCallback } from 'react';
 
 interface MemoCardHeaderProps {
   memo: GetMemoResponse;

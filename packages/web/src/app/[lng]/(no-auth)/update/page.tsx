@@ -1,8 +1,8 @@
-import { LanguageParams } from '@src/modules/i18n';
-import { Metadata } from 'next';
+import { HeaderMargin } from '@src/components/Header';
+import type { LanguageParams } from '@src/modules/i18n';
+import type { Metadata } from 'next';
 
 import { UpdateList, UpdateTitle } from './_components';
-import { HeaderMargin } from '@src/components/Header';
 
 const metadataKorean: Metadata = {
   title: '웹 메모 | 업데이트 소식 ',

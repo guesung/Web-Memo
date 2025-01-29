@@ -2,16 +2,13 @@
 
 import { useMemosQuery } from '@extension/shared/hooks';
 import type { SearchParamsType } from '@extension/shared/modules/search-params';
-
 import { useGuide } from '@src/modules/guide';
-import { LanguageType } from '@src/modules/i18n';
-
+import type { LanguageType } from '@src/modules/i18n';
+import dynamic from 'next/dynamic';
+import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { useFormContext } from 'react-hook-form';
-
-import dynamic from 'next/dynamic';
-import { SearchFormValues } from '../MemoSearchFormProvider';
+import type { SearchFormValues } from '../MemoSearchFormProvider';
 import MemoGrid from './MemoGrid';
 
 const MemoRefreshButton = dynamic(() => import('./MemoRefreshButton'), {

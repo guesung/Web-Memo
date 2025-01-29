@@ -1,5 +1,5 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Button, Textarea } from '@extension/ui';
-import { LanguageType } from '@src/modules/i18n';
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Textarea } from '@extension/ui';
+import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import { useForm } from 'react-hook-form';
 

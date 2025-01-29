@@ -23,12 +23,13 @@ import {
   toast,
   ToastAction,
 } from '@src/components/ui';
-import { LanguageType } from '@src/modules/i18n';
+import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import { useQueryClient } from '@tanstack/react-query';
 import { EllipsisVerticalIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { MouseEvent, useState } from 'react';
+import type { MouseEvent } from 'react';
+import { useState } from 'react';
 
 interface MemoOptionProps extends LanguageType {
   memoIds: number[];

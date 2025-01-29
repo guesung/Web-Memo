@@ -1,10 +1,9 @@
 'use server';
 
-import { SUPABASE } from '@extension/shared/constants';
 import { Button } from '@src/components/ui';
-import { LanguageType } from '@src/modules/i18n';
+import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.server';
-import { signInWithEmail, signInWithOAuth } from '@src/modules/supabase/util.server';
+import { signInWithOAuth } from '@src/modules/supabase/util.server';
 import Image from 'next/image';
 
 interface LoginSectionProps extends LanguageType {}

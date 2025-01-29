@@ -2,7 +2,7 @@ import { createInstance, type Namespace } from 'i18next';
 import resourcesToBackend from 'i18next-resources-to-backend';
 import { initReactI18next } from 'react-i18next/initReactI18next';
 
-import { Language } from './type';
+import type { Language } from './type';
 import { getOptions } from './util';
 
 const initI18next = async (language: Language, ns?: Namespace) => {

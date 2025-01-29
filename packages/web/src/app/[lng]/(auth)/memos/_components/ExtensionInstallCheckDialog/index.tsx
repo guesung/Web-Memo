@@ -1,5 +1,7 @@
 'use client';
 
+import { URL } from '@extension/shared/constants';
+import { checkLocalStorageTrue, setLocalStorageTrue } from '@extension/shared/modules/local-storage';
 import {
   Button,
   Dialog,
@@ -9,18 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@src/components/ui';
-import { LanguageType } from '@src/modules/i18n';
-
-import {
-  checkLocalStorageKey,
-  checkLocalStorageTrue,
-  LocalStorageKeyType,
-  setLocalStorageTrue,
-} from '@extension/shared/modules/local-storage';
-import { useEffect, useState } from 'react';
-import useTranslation from '@src/modules/i18n/util.client';
-import { URL } from '@extension/shared/constants';
 import { useGetExtensionManifest } from '@src/hooks';
+import type { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/util.client';
+import { useEffect, useState } from 'react';
 
 interface ExtensionInstallCheckDialogProps extends LanguageType {}
 export default function ExtensionInstallCheckDialog({ lng }: ExtensionInstallCheckDialogProps) {

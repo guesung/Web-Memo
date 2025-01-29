@@ -1,7 +1,7 @@
 'use server';
 
 import { Label } from '@src/components/ui';
-import { LanguageType } from '@src/modules/i18n';
+import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.server';
 
 interface SettingHeaderProps extends LanguageType {}

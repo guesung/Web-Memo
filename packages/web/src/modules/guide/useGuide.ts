@@ -5,7 +5,7 @@ import { isMac } from '@src/utils';
 import { driver } from 'driver.js';
 import { useEffect } from 'react';
 
-import { LanguageType } from '../i18n';
+import type { LanguageType } from '../i18n';
 import useTranslation from '../i18n/util.client';
 
 interface UseGuideProps extends LanguageType {}

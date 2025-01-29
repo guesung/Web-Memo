@@ -1,14 +1,14 @@
 'use client';
 
-import * as Sentry from '@sentry/nextjs';
-
+import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { toast } from '@extension/ui';
-import { LanguageType } from '@src/modules/i18n';
+import * as Sentry from '@sentry/nextjs';
+import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { PropsWithChildren, useState } from 'react';
-import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
+import type { PropsWithChildren } from 'react';
+import { useState } from 'react';
 
 interface QueryProviderProps extends PropsWithChildren, LanguageType {}
 

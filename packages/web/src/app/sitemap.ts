@@ -1,5 +1,5 @@
 import { SUPPORTED_LANGUAGES } from '@src/modules/i18n';
-import { MetadataRoute } from 'next';
+import type { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://page-summary.com';

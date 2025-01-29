@@ -3,17 +3,17 @@ import { useKeyboardBind, useMemoPatchMutation, useMemoQuery } from '@extension/
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { Button } from '@extension/ui';
 import { Card, CardContent, Dialog, DialogContent, Textarea } from '@src/components/ui';
-import { LanguageType } from '@src/modules/i18n';
+import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
+import dayjs from 'dayjs';
+import { motion } from 'framer-motion';
 import { useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useForm } from 'react-hook-form';
 
-import { MemoInput } from '../../_types';
+import type { MemoInput } from '../../_types';
 import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
 import UnsavedChangesAlert from './UnsavedChangesAlert';
-import dayjs from 'dayjs';
 
 interface MemoDialog extends LanguageType {
   memoId: number;

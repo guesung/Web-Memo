@@ -4,10 +4,10 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 import { MOTION_VARIANTS } from '@extension/shared/constants';
 import { useSearchParams } from '@extension/shared/modules/search-params';
-import { GetMemoResponse } from '@extension/shared/types';
+import type { GetMemoResponse } from '@extension/shared/types';
 import { cn } from '@extension/shared/utils';
 import { Button } from '@src/components/ui';
-import { LanguageType } from '@src/modules/i18n';
+import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';

@@ -1,9 +1,8 @@
 import { QUERY_KEY } from '@extension/shared/constants';
-import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { setLocalStorageTrue } from '@extension/shared/modules/local-storage';
 import { Button, toast } from '@src/components/ui';
 import { useGuide } from '@src/modules/guide';
-import { LanguageType } from '@src/modules/i18n';
+import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import { useQueryClient } from '@tanstack/react-query';
 import { RefreshCwIcon } from 'lucide-react';

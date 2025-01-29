@@ -1,14 +1,14 @@
-import { GetMemoResponse } from '@extension/shared/types';
+import { useSearchParams } from '@extension/shared/modules/search-params';
+import type { GetMemoResponse } from '@extension/shared/types';
 import { cn } from '@extension/shared/utils';
 import { Card, CardContent } from '@src/components/ui';
-import { LanguageType } from '@src/modules/i18n';
-import { HTMLAttributes, memo, MouseEvent, useState } from 'react';
+import type { LanguageType } from '@src/modules/i18n';
 import { motion } from 'framer-motion';
+import type { HTMLAttributes, MouseEvent } from 'react';
+import { memo, useState } from 'react';
 
-import { useSearchParams } from '@extension/shared/modules/search-params';
 import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
-import { useRouter } from 'next/navigation';
 
 interface MemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
   memo: GetMemoResponse;

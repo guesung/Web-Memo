@@ -1,7 +1,8 @@
 import { Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@src/components/ui';
-import { Language, LanguageType } from '@src/modules/i18n';
+import type { Language, LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import { useRouter } from 'next/navigation';
+
 import { useLanguage } from '../../_hooks';
 
 interface SettingLanguageProps extends LanguageType {}

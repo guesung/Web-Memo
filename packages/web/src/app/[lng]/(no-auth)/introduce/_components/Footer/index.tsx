@@ -1,7 +1,7 @@
 'use client';
 
 import { URL } from '@extension/shared/constants';
-import { LanguageType } from '@src/modules/i18n';
+import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import { motion } from 'framer-motion';
 import { MailIcon, MessageCircleIcon, YoutubeIcon } from 'lucide-react';

@@ -1,10 +1,11 @@
 'use client';
 
 import { PATHS } from '@extension/shared/constants';
-import { LanguageType } from '@src/modules/i18n';
+import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import Image from 'next/image';
 import Link from 'next/link';
+
 import { FeedbackSection } from './FeedbackSection';
 
 export default function HeaderLeft({ lng }: LanguageType) {

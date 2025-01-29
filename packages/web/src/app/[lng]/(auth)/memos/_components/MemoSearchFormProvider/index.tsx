@@ -1,6 +1,6 @@
 'use client';
 
-import { PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 type SearchTargetType = 'all' | 'title' | 'memo';

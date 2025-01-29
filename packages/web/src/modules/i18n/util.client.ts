@@ -8,7 +8,7 @@ import { useCookies } from 'react-cookie';
 import { initReactI18next, useTranslation as useTranslationOrg, type UseTranslationOptions } from 'react-i18next';
 
 import { cookieName, SUPPORTED_LANGUAGES } from './constant';
-import { Language } from './type';
+import type { Language } from './type';
 import { getOptions } from './util';
 
 const runsOnServerSide = typeof window === 'undefined';

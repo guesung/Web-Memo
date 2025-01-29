@@ -1,6 +1,6 @@
 'use client';
 import { UPDATE_LIST } from '@src/constants/Update';
-import { LanguageType } from '@src/modules/i18n';
+import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import { motion } from 'framer-motion';
 

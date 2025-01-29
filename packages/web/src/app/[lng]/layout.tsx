@@ -1,10 +1,12 @@
-import { LanguageParams, SUPPORTED_LANGUAGES } from '@src/modules/i18n';
+import Header from '@src/components/Header';
+import type { LanguageParams } from '@src/modules/i18n';
+import { SUPPORTED_LANGUAGES } from '@src/modules/i18n';
 import { dir } from 'i18next';
-import { Metadata } from 'next';
-import { PropsWithChildren } from 'react';
+import type { Metadata } from 'next';
+import type { PropsWithChildren } from 'react';
+
 import { InitDayjs } from '../_components';
 import { QueryProvider, ThemeProvider } from './_components';
-import Header from '@src/components/Header';
 
 interface RootLayoutProps extends PropsWithChildren, LanguageParams {}
 

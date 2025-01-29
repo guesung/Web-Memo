@@ -1,6 +1,7 @@
 'use client';
 
 import { useCategoryQuery } from '@extension/shared/hooks';
+import { useSearchParams } from '@extension/shared/modules/search-params';
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -9,12 +10,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@src/components/ui';
-import { LanguageType } from '@src/modules/i18n';
+import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import { useRouter } from 'next/navigation';
 import { memo } from 'react';
 
-import { useSearchParams } from '@extension/shared/modules/search-params';
 import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
 
 export default memo(function SidebarGroupCategory({ lng }: LanguageType) {

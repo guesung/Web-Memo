@@ -1,4 +1,5 @@
-import { DEFAULT_LANGUAGE, Language } from '@src/modules/i18n';
+import type { Language } from '@src/modules/i18n';
+import { DEFAULT_LANGUAGE } from '@src/modules/i18n';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 

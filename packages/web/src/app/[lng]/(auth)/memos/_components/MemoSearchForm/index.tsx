@@ -2,11 +2,12 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@extension/ui';
 import { Input } from '@src/components/ui';
-import { LanguageType } from '@src/modules/i18n';
+import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import { X } from 'lucide-react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { SearchFormValues } from '../MemoSearchFormProvider';
+
+import type { SearchFormValues } from '../MemoSearchFormProvider';
 
 interface MemoSearchFormProps extends LanguageType {}
 

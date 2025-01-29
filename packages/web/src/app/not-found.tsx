@@ -1,7 +1,8 @@
 'use client';
 import { ErrorBoundary, ErrorFallback, Loading } from '@extension/ui';
-import { NotFoundSection } from '@src/app/_components';
 import { Suspense } from 'react';
+
+import NotFoundSection from './_components/NotFoundSection';
 
 export default function NotFoundPage() {
   return (

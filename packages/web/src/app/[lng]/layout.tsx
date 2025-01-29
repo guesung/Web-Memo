@@ -3,7 +3,8 @@ import { dir } from 'i18next';
 import { Metadata } from 'next';
 import { PropsWithChildren } from 'react';
 import { InitDayjs } from '../_components';
-import { Header, QueryProvider, ThemeProvider } from './_components';
+import { QueryProvider, ThemeProvider } from './_components';
+import Header from '@src/components/Header';
 
 interface RootLayoutProps extends PropsWithChildren, LanguageParams {}
 

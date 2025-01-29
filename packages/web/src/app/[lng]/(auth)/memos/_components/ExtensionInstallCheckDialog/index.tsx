@@ -18,7 +18,7 @@ import {
   setLocalStorageTrue,
 } from '@extension/shared/modules/local-storage';
 import { useEffect, useState } from 'react';
-import useTranslation from '@src/modules/i18n/client';
+import useTranslation from '@src/modules/i18n/util.client';
 import { URL } from '@extension/shared/constants';
 import { useGetExtensionManifest } from '@src/hooks';
 

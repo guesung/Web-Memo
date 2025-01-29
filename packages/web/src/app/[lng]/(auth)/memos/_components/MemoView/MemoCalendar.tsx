@@ -8,7 +8,7 @@ import { GetMemoResponse } from '@extension/shared/types';
 import { cn } from '@extension/shared/utils';
 import { Button } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
-import useTranslation from '@src/modules/i18n/client';
+import useTranslation from '@src/modules/i18n/util.client';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import { motion } from 'framer-motion';

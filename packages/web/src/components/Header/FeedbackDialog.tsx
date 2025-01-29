@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Button, Textarea } from '@extension/ui';
 import { LanguageType } from '@src/modules/i18n';
-import useTranslation from '@src/modules/i18n/client';
+import useTranslation from '@src/modules/i18n/util.client';
 import { useForm } from 'react-hook-form';
 
 interface FeedbackDialogProps extends LanguageType {

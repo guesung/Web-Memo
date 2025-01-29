@@ -24,7 +24,7 @@ import {
   ToastAction,
 } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
-import useTranslation from '@src/modules/i18n/client';
+import useTranslation from '@src/modules/i18n/util.client';
 import { useQueryClient } from '@tanstack/react-query';
 import { EllipsisVerticalIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';

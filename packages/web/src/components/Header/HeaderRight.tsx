@@ -4,7 +4,7 @@ import { PATHS } from '@extension/shared/constants';
 import { useSignoutMutation, useSupabaseUserQuery } from '@extension/shared/hooks';
 import { Avatar, DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
-import useTranslation from '@src/modules/i18n/client';
+import useTranslation from '@src/modules/i18n/util.client';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import ToggleTheme from './ToggleTheme';

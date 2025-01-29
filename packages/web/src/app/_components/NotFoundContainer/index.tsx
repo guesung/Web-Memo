@@ -1,6 +1,6 @@
 'use client';
 
-import useTranslation from '@src/modules/i18n/client';
+import useTranslation from '@src/modules/i18n/util.client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 

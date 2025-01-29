@@ -7,7 +7,7 @@ import {
   AlertDialogTitle,
 } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
-import useTranslation from '@src/modules/i18n/client';
+import useTranslation from '@src/modules/i18n/util.client';
 
 interface UnsavedChangesAlertProps extends LanguageType {
   open: boolean;

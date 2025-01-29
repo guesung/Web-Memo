@@ -2,7 +2,7 @@
 
 import { PATHS } from '@extension/shared/constants';
 import { LanguageType } from '@src/modules/i18n';
-import useTranslation from '@src/modules/i18n/client';
+import useTranslation from '@src/modules/i18n/util.client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FeedbackSection } from './FeedbackSection';

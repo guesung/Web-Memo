@@ -4,7 +4,7 @@ import * as Sentry from '@sentry/nextjs';
 
 import { Button } from '@extension/ui';
 import { useEffect } from 'react';
-import useTranslation from '@src/modules/i18n/client';
+import useTranslation from '@src/modules/i18n/util.client';
 
 interface ErrorSectionProps {
   error: Error & { digest?: string };

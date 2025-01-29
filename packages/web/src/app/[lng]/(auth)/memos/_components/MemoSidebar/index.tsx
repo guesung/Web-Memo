@@ -17,7 +17,7 @@ import {
   TooltipTrigger,
 } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
-import useTranslation from '@src/modules/i18n/server';
+import useTranslation from '@src/modules/i18n/util.server';
 import { Heart, Home, SettingsIcon } from 'lucide-react';
 import Link from 'next/link';
 

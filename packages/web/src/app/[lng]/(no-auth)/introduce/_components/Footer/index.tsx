@@ -2,7 +2,7 @@
 
 import { URL } from '@extension/shared/constants';
 import { LanguageType } from '@src/modules/i18n';
-import useTranslation from '@src/modules/i18n/client';
+import useTranslation from '@src/modules/i18n/util.client';
 import { motion } from 'framer-motion';
 import { MailIcon, MessageCircleIcon, YoutubeIcon } from 'lucide-react';
 import Link from 'next/link';

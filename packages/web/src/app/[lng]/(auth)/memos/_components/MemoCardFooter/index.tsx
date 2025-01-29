@@ -6,7 +6,7 @@ import { GetMemoResponse } from '@extension/shared/types';
 import { cn } from '@extension/shared/utils';
 import { Badge, Button, CardFooter, toast, ToastAction } from '@src/components/ui';
 import { LanguageType } from '@src/modules/i18n';
-import useTranslation from '@src/modules/i18n/client';
+import useTranslation from '@src/modules/i18n/util.client';
 import { HeartIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { MouseEvent, PropsWithChildren } from 'react';

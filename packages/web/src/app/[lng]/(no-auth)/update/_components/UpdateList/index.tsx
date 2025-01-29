@@ -1,7 +1,7 @@
 'use client';
 import { UPDATE_LIST } from '@src/constants/Update';
 import { LanguageType } from '@src/modules/i18n';
-import useTranslation from '@src/modules/i18n/client';
+import useTranslation from '@src/modules/i18n/util.client';
 import { motion } from 'framer-motion';
 
 const container = {

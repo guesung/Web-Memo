@@ -4,11 +4,11 @@ import useTranslation from '@src/modules/i18n/client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-export default function NotFoundContainer() {
+export default function NotFoundSection() {
   const { t } = useTranslation();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 px-4">
+    <section className="flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 px-4">
       <div className="w-full max-w-lg text-center">
         <motion.div
           initial={{ scale: 0 }}
@@ -49,6 +49,6 @@ export default function NotFoundContainer() {
           </Link>
         </motion.div>
       </div>
-    </div>
+    </section>
   );
 }

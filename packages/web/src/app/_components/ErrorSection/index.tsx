@@ -6,12 +6,12 @@ import { Button } from '@extension/ui';
 import { useEffect } from 'react';
 import useTranslation from '@src/modules/i18n/client';
 
-interface ErrorContainerProps {
+interface ErrorSectionProps {
   error: Error & { digest?: string };
   reset: () => void;
 }
 
-export default function ErrorContainer({ error, reset }: ErrorContainerProps) {
+export default function ErrorSection({ error, reset }: ErrorSectionProps) {
   useEffect(() => {
     Sentry.captureException(error, {
       level: 'fatal',

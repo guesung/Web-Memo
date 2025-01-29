@@ -22,12 +22,12 @@ interface UpdatesPageProps extends LanguageParams {}
 
 export default async function UpdatesPage({ params: { lng } }: UpdatesPageProps) {
   return (
-    <div className="bg-background min-h-screen">
+    <main className="bg-background min-h-screen">
       <HeaderMargin />
-      <main className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-16">
         <UpdateTitle lng={lng} />
         <UpdateList lng={lng} />
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }

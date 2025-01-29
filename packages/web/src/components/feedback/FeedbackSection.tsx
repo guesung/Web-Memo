@@ -9,7 +9,9 @@ const FeedbackModal = dynamic(() => import('./FeedbackModal'), {
   ssr: false,
 });
 
-export const FeedbackContainer = ({ lng }: LanguageType) => {
+interface FeedbackSectionProps extends LanguageType {}
+
+export const FeedbackSection = ({ lng }: FeedbackSectionProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { mutate: mutateFeedback } = useFeedbackMutation();
   const { t } = useTranslation(lng);
@@ -24,13 +26,13 @@ export const FeedbackContainer = ({ lng }: LanguageType) => {
   };
 
   return (
-    <>
+    <section>
       <button
         onClick={() => setIsOpen(true)}
         className="text-muted-foreground hover:text-foreground text-sm transition-colors">
         {t('feedback.button')}
       </button>
       <FeedbackModal isOpen={isOpen} onClose={() => setIsOpen(false)} onSubmit={handleSubmit} lng={lng} />
-    </>
+    </section>
   );
 };

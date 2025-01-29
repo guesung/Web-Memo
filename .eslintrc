@@ -29,7 +29,6 @@
     "react-hooks",
     "import",
     "jsx-a11y",
-    "turbo",
   ],
   "settings": {
     "react": {
@@ -37,6 +36,7 @@
     },
   },
   "rules": {
+    "@typescript-eslint/consistent-type-imports": "error",
     "react/react-in-jsx-scope": "off",
     "import/no-unresolved": "off",
     "react/prop-types": "off",

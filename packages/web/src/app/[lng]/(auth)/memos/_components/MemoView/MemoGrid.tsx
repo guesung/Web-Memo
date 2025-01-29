@@ -212,6 +212,7 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
     if (!currentDialogId) return;
 
     setDialogMemoId(Number(currentDialogId));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(function closeDialogOnPopState() {

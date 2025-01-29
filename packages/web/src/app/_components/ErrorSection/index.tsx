@@ -15,7 +15,7 @@ export default function ErrorSection({ error, reset }: ErrorSectionProps) {
     Sentry.captureException(error, {
       level: 'fatal',
     });
-  }, []);
+  }, [error]);
 
   const { t } = useTranslation();
 

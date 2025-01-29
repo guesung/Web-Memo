@@ -19,7 +19,7 @@ export default function InitSentryUserInfo({ lng }: InitSentryUserInfoProps) {
       ip_address: '{{auto}}',
     });
     Sentry.setTag('lng', lng ?? '');
-  }, []);
+  }, [user, lng]);
 
   return null;
 }

@@ -1,9 +1,3 @@
-import dayjs from 'dayjs';
-
-interface DebugCacheProps {
-  path: string;
-}
-
-export default function DebugCache({ path }: DebugCacheProps) {
-  return <div>{dayjs().valueOf()}</div>;
+export default function DebugCache() {
+  return <div>{new Date().toISOString()}</div>;
 }

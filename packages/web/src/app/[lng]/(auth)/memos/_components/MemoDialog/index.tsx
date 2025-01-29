@@ -43,13 +43,6 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
     mutateMemoPatch({ id: memoId, request: { memo: watch('memo') } });
   };
 
-  const handleKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.metaKey && event.key === 's') {
-      event.preventDefault();
-      saveMemo();
-    }
-  };
-
   useKeyboardBind({ key: 's', callback: saveMemo, isMetaKey: true });
 
   const checkEditedAndCloseDialog = () => {

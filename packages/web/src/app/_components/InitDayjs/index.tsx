@@ -18,7 +18,7 @@ export default function InitDayjs({ lng }: InitDayjsProps) {
     dayjs.extend(utc);
     dayjs.extend(relativeTime);
     dayjs.locale(lng);
-  }, []);
+  }, [lng]);
 
   return null;
 }

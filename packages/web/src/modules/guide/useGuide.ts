@@ -65,7 +65,7 @@ export default function useGuide({ lng }: UseGuideProps) {
 
     import('driver.js/dist/driver.css');
     driverObj.drive();
-  }, [manifest]);
+  }, [driverObj, manifest]);
 
   return { driverObj };
 }

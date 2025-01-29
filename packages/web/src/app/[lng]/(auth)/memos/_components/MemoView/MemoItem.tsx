@@ -39,7 +39,6 @@ export default memo(
     };
 
     const handleMemoItemClick = (event: MouseEvent<HTMLElement>) => {
-      // console.log();
       const target = event.target as HTMLElement;
       const isMemoItem = target.closest('.memo-item');
       if (!isMemoItem) return;
@@ -55,13 +54,22 @@ export default memo(
     };
 
     return (
-      <article
+      <div
         {...props}
         id={String(memo.id)}
         className={cn('memo-item select-none transition-all [transform:translateZ(0)]', props.className)}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        onClick={handleMemoItemClick}>
+        onClick={handleMemoItemClick}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleMemoItemClick(e as unknown as MouseEvent<HTMLElement>);
+          }
+        }}
+        tabIndex={0}
+        role="button"
+        aria-label={`메모 ${memo.id}`}>
         <motion.div layoutId={`memo-${memo.id}`}>
           <Card
             className={cn('relative box-content w-[300px] transition-all', {
@@ -83,7 +91,7 @@ export default memo(
             </motion.div>
           </Card>
         </motion.div>
-      </article>
+      </div>
     );
   },
   (prevProps, nextProps) =>

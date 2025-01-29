@@ -5,7 +5,7 @@ import useTranslation from '@src/modules/i18n/client';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 
-const FeedbackModal = dynamic(() => import('./FeedbackModal'), {
+const FeedbackDialog = dynamic(() => import('./FeedbackDialog'), {
   ssr: false,
 });
 
@@ -32,7 +32,7 @@ export const FeedbackSection = ({ lng }: FeedbackSectionProps) => {
         className="text-muted-foreground hover:text-foreground text-sm transition-colors">
         {t('feedback.button')}
       </button>
-      <FeedbackModal isOpen={isOpen} onClose={() => setIsOpen(false)} onSubmit={handleSubmit} lng={lng} />
+      <FeedbackDialog isOpen={isOpen} onClose={() => setIsOpen(false)} onSubmit={handleSubmit} lng={lng} />
     </section>
   );
 };

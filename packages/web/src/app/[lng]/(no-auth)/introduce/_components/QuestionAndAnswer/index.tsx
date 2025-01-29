@@ -1,10 +1,10 @@
 'use client';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@extension/ui';
-import { FAQ_ITEMS } from '@src/constants';
 import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { motion } from 'framer-motion';
+import { FAQ_ITEMS } from '../../_constants/Faq';
 
 export default function QuestionAndAnswer({ lng }: LanguageType) {
   const { t } = useTranslation(lng);

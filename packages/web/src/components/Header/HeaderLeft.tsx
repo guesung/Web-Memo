@@ -5,7 +5,7 @@ import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FeedbackSection } from '../feedback/FeedbackSection';
+import { FeedbackSection } from './FeedbackSection';
 
 export default function HeaderLeft({ lng }: LanguageType) {
   const { t } = useTranslation(lng);

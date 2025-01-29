@@ -3,13 +3,13 @@ import { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/client';
 import { useForm } from 'react-hook-form';
 
-interface FeedbackModalProps extends LanguageType {
+interface FeedbackDialogProps extends LanguageType {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (content: string) => void;
 }
 
-export default function FeedbackModal({ isOpen, onClose, onSubmit, lng }: FeedbackModalProps) {
+export default function FeedbackDialog({ isOpen, onClose, onSubmit, lng }: FeedbackDialogProps) {
   const { t } = useTranslation(lng);
   const { register, handleSubmit, reset, watch } = useForm({
     defaultValues: {

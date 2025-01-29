@@ -9,9 +9,9 @@ import { type LanguageParams } from '@src/modules/i18n';
 import { getSupabaseClient } from '@src/modules/supabase/util.server';
 import { Suspense } from 'react';
 
-import { HeaderMargin } from '../../_components/Header';
 import { MemoSearchForm, MemoSearchFormProvider, MemoView } from './_components';
 import dynamic from 'next/dynamic';
+import { HeaderMargin } from '@src/components/Header';
 
 const ExtensionInstallCheckDialog = dynamic(() => import('./_components/ExtensionInstallCheckDialog'), {
   ssr: false,

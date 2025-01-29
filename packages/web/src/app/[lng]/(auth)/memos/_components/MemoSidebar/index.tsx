@@ -21,8 +21,8 @@ import useTranslation from '@src/modules/i18n/server';
 import { Heart, Home, SettingsIcon } from 'lucide-react';
 import Link from 'next/link';
 
-import { HeaderMargin } from '../../../../_components/Header';
 import SidebarGroupCategory from './SidebarGroupCategory';
+import { HeaderMargin } from '@src/components/Header';
 
 const items = [
   {

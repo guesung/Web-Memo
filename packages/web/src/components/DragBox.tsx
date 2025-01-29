@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@extension/ui';
-import { forwardRef, RefObject } from 'react';
+import { forwardRef } from 'react';
 
 interface DragBoxProps {
   className?: string;

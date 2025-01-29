@@ -1,5 +1,4 @@
 import { I18n } from '@extension/shared/utils/extension';
-import React from 'react';
 
 export default function Header() {
   return (

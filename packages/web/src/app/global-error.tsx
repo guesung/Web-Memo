@@ -1,6 +1,6 @@
 'use client';
 
-import { ErrorContainer } from '@src/app/_components';
+import { ErrorSection } from '@src/app/_components';
 
 interface ErrorPageProps {
   error: Error & { digest?: string };
@@ -11,7 +11,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   return (
     <html lang="ko">
       <body>
-        <ErrorContainer error={error} reset={reset} />
+        <ErrorSection error={error} reset={reset} />
       </body>
     </html>
   );

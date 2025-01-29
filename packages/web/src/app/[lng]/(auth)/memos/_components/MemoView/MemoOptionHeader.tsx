@@ -1,8 +1,7 @@
 import { MOTION_VARIANTS } from '@extension/shared/constants';
-import { MemoRow } from '@extension/shared/types';
 import { Button } from '@src/components/ui';
-import { LanguageType } from '@src/modules/i18n';
-import useTranslation from '@src/modules/i18n/client';
+import type { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/util.client';
 import { motion } from 'framer-motion';
 import { XIcon } from 'lucide-react';
 

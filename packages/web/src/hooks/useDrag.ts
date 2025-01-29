@@ -11,5 +11,5 @@ export default function useDrag({ onMouseDown }: UseDragProps) {
     return () => {
       document.body.removeEventListener('mousedown', onMouseDown);
     };
-  }, []);
+  }, [onMouseDown]);
 }

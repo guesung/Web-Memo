@@ -1,19 +1,25 @@
-import { GetMemoResponse } from '@extension/shared/types';
+import type { GetMemoResponse } from '@extension/shared/types';
 import { cn } from '@extension/shared/utils';
 import { Button, CardHeader, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui';
 import { CheckIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { memo, MouseEvent, useCallback } from 'react';
+import type { MouseEvent } from 'react';
+import { memo, useCallback } from 'react';
 
 interface MemoCardHeaderProps {
   memo: GetMemoResponse;
   selectMemoItem?: (id: number) => void;
-  isHovered?: boolean;
-  isSelected?: boolean;
+  isMemoHovering?: boolean;
+  isMemoSelected?: boolean;
 }
 
-export default memo(function MemoCardHeader({ memo, selectMemoItem, isHovered, isSelected }: MemoCardHeaderProps) {
+export default memo(function MemoCardHeader({
+  memo,
+  selectMemoItem,
+  isMemoHovering = false,
+  isMemoSelected,
+}: MemoCardHeaderProps) {
   const handleCheckButtonClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
@@ -23,7 +29,7 @@ export default memo(function MemoCardHeader({ memo, selectMemoItem, isHovered, i
     [selectMemoItem, memo.id],
   );
 
-  const isShowingSelectButton = isHovered || isSelected;
+  const isShowingSelectButton = isMemoHovering || isMemoSelected;
   return (
     <CardHeader className="relative py-4 font-normal">
       <Button

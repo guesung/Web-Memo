@@ -1,7 +1,7 @@
 'use client';
 
 import { ErrorBoundary, ErrorFallback, Loading } from '@extension/ui';
-import { ErrorContainer } from '@src/app/_components';
+import { ErrorSection } from '@src/app/_components';
 import { Suspense } from 'react';
 
 interface ErrorPageProps {
@@ -13,7 +13,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <Suspense fallback={<Loading />}>
-        <ErrorContainer error={error} reset={reset} />
+        <ErrorSection error={error} reset={reset} />
       </Suspense>
     </ErrorBoundary>
   );

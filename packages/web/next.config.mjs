@@ -1,6 +1,5 @@
-import { withSentryConfig } from '@sentry/nextjs';
-
 import { CONFIG } from '@extension/shared/constants';
+import { withSentryConfig } from '@sentry/nextjs';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -20,4 +19,7 @@ export default withSentryConfig(nextConfig, {
   org: 'guesung',
   project: 'web-memo',
   authToken: CONFIG.sentryAuthToken,
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
 });

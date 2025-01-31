@@ -1,10 +1,12 @@
 name: Playwright Tests
 on:
   workflow_run:
-    workflows: ["CICD Web"]
+    workflows: 
+      - CICD Web
     types:
       - completed
-    
+  
+
 jobs:
   test:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}

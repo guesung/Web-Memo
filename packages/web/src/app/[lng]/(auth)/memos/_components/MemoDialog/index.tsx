@@ -1,19 +1,19 @@
 'use client';
-import { useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
+import { useKeyboardBind, useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import { Button } from '@extension/ui';
 import { Card, CardContent, Dialog, DialogContent, Textarea } from '@src/components/ui';
-import { LanguageType } from '@src/modules/i18n';
-import useTranslation from '@src/modules/i18n/client';
+import type { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/util.client';
+import dayjs from 'dayjs';
+import { motion } from 'framer-motion';
 import { useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useForm } from 'react-hook-form';
 
-import { MemoInput } from '../../_types';
+import type { MemoInput } from '../../_types';
 import MemoCardFooter from '../MemoCardFooter';
 import MemoCardHeader from '../MemoCardHeader';
 import UnsavedChangesAlert from './UnsavedChangesAlert';
-import dayjs from 'dayjs';
 
 interface MemoDialog extends LanguageType {
   memoId: number;
@@ -28,7 +28,7 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
   const [showAlert, setShowAlert] = useState(false);
 
-  const { register, watch, setValue, control } = useForm<MemoInput>({
+  const { register, watch, setValue } = useForm<MemoInput>({
     defaultValues: {
       memo: '',
     },
@@ -37,24 +37,13 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
   const { ref, ...rest } = register('memo', {
     onChange: event => (event.target.style.height = `${event.target.scrollHeight}px`),
   });
-
-  useWatch({
-    name: 'memo',
-    control,
-  });
-
   useImperativeHandle(ref, () => textareaRef.current);
 
   const saveMemo = () => {
     mutateMemoPatch({ id: memoId, request: { memo: watch('memo') } });
   };
 
-  const handleKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.metaKey && event.key === 's') {
-      event.preventDefault();
-      saveMemo();
-    }
-  };
+  useKeyboardBind({ key: 's', callback: saveMemo, isMetaKey: true });
 
   const checkEditedAndCloseDialog = () => {
     const isEdited = watch('memo') !== memoData?.memo;
@@ -107,7 +96,6 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
                 <CardContent>
                   <Textarea
                     {...rest}
-                    onKeyDown={handleKeyDown}
                     className="outline-none focus:border-gray-300 focus:outline-none"
                     ref={textareaRef}
                     placeholder={t('memos.placeholder')}

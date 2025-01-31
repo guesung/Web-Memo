@@ -1,6 +1,7 @@
 import { getQueryClient } from '@src/utils';
-import { dehydrate, FetchQueryOptions, HydrationBoundary } from '@tanstack/react-query';
-import { PropsWithChildren } from 'react';
+import type { FetchQueryOptions } from '@tanstack/react-query';
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import type { PropsWithChildren } from 'react';
 
 interface HydrationBoundaryWrapperProps extends PropsWithChildren<FetchQueryOptions> {}
 

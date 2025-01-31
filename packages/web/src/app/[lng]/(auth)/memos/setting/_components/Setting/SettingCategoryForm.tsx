@@ -5,8 +5,8 @@ import {
   useCategoryUpsertMutation,
 } from '@extension/shared/hooks';
 import { Button, Input, Label, toast } from '@src/components/ui';
-import { LanguageType } from '@src/modules/i18n';
-import useTranslation from '@src/modules/i18n/client';
+import type { LanguageType } from '@src/modules/i18n';
+import useTranslation from '@src/modules/i18n/util.client';
 import { TrashIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';

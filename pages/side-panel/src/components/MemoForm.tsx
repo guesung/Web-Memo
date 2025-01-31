@@ -4,9 +4,8 @@ import {
   useMemoPatchMutation,
   useMemoPostMutation,
   useMemoQuery,
-  useThrottle,
+  useTabQuery,
 } from '@extension/shared/hooks';
-import { useTabQuery } from '@extension/shared/hooks/extension';
 import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { getMemoInfo, I18n, Tab } from '@extension/shared/utils/extension';
 import { cn, Textarea, toast, ToastAction } from '@extension/ui';

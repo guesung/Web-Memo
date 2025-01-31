@@ -2,9 +2,10 @@ import { NEED_AUTH_PAGES, PATHS } from '@extension/shared/constants';
 import { AuthService } from '@extension/shared/utils';
 import { CONFIG } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function updateSession(request: NextRequest) {
+export async function updateAuthorization(request: NextRequest) {
   const nextResponse = NextResponse.next({
     request,
     headers: request.headers,

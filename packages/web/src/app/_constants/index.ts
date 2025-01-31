@@ -1,2 +1,2 @@
-export * from './Metadata';
 export * from './Font';
+export * from './Metadata';

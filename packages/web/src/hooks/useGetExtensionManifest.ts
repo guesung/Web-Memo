@@ -1,6 +1,6 @@
 import { useDidMount } from '@extension/shared/hooks';
 import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export type ManifestType = chrome.runtime.Manifest | null | 'NOT_INSTALLED';
 

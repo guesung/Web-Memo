@@ -20,5 +20,4 @@ export default withSentryConfig(nextConfig, {
   org: 'guesung',
   project: 'web-memo',
   authToken: CONFIG.sentryAuthToken,
-  silent: process.env.NODE_ENV === 'production',
 });

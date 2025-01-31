@@ -6,7 +6,7 @@ import { PlusIcon } from 'lucide-react';
 import { memo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { CategoryInput } from '../../_types';
+import type { CategoryInput } from '../../_types';
 
 export default memo(function SidebarMenuItemAddCategory() {
   const [isEditMode, setIsEditMode] = useState(false);

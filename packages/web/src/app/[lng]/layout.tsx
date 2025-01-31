@@ -1,10 +1,12 @@
-import { AuthProvider, QueryProvider, ThemeProvider } from '@src/components';
-import { LanguageParams, SUPPORTED_LANGUAGES } from '@src/modules/i18n';
+import Header from '@src/components/Header';
+import type { LanguageParams } from '@src/modules/i18n';
+import { SUPPORTED_LANGUAGES } from '@src/modules/i18n';
 import { dir } from 'i18next';
-import { PropsWithChildren } from 'react';
-import { Header } from './(auth)/memos/_components';
+import type { Metadata } from 'next';
+import type { PropsWithChildren } from 'react';
+
 import { InitDayjs } from '../_components';
-import { Metadata } from 'next';
+import { QueryProvider, ThemeProvider } from './_components';
 
 interface RootLayoutProps extends PropsWithChildren, LanguageParams {}
 
@@ -13,7 +15,7 @@ export async function generateStaticParams() {
 }
 
 const metadataKorean: Metadata = {
-  title: '웹 메모 ',
+  title: '웹 메모',
   description:
     '웹 메모는 웹페이지를 쉽게 저장하고 관리할 수 있는 서비스입니다. 중요한 웹페이지를 효율적으로 정리하고 필요할 때 빠르게 찾아보세요.',
 };
@@ -30,17 +32,15 @@ export async function generateMetadata({ params }: LanguageParams) {
 
 export default function RootLayout({ children, params: { lng } }: RootLayoutProps) {
   return (
-    <main lang={lng} dir={dir(lng)} className="h-screen">
+    <div lang={lng} dir={dir(lng)} className="h-screen">
       <ThemeProvider>
         <QueryProvider lng={lng}>
-          <AuthProvider>
-            <Header lng={lng} />
-            {children}
-          </AuthProvider>
+          <Header lng={lng} />
+          {children}
         </QueryProvider>
       </ThemeProvider>
 
       <InitDayjs lng={lng} />
-    </main>
+    </div>
   );
 }

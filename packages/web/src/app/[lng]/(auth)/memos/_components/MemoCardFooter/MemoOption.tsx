@@ -79,7 +79,14 @@ export default function MemoOption({ lng, memoIds = [], closeMemoOption }: MemoO
 
   const handleCategoryChange = async (categoryId: string) => {
     const currentMemo = memos.filter(memo => memoIds.includes(memo.id));
-    mutateUpsertMemo(currentMemo.map(memo => ({ ...memo, category_id: Number(categoryId) })));
+    const currentCategory = categories?.find(category => category.id === Number(categoryId));
+    mutateUpsertMemo(
+      currentMemo.map(memo => ({
+        ...memo,
+        category_id: Number(categoryId),
+        category: { name: currentCategory?.name },
+      })),
+    );
 
     const category = categories?.find(category => category.id === Number(categoryId));
     if (!category) return;

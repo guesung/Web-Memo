@@ -1,6 +1,6 @@
 {
   "name": "web-memo",
-  "version": "1.8.1",
+  "version": "1.8.5",
   "description": "Web Memo - Chrome Extension",
   "bugs": "https://github.com/guesung/Web-Memo/issues",
   "homepage": "https://web-memos.vercel.app",
@@ -35,7 +35,7 @@
     "update-version:win32": "bash update_version.sh",
     "update-version:default": "./update_version.sh",
     "package": "pnpm i && pnpm clean && pnpm build && pnpm zip",
-    "generate-supabase-type": "supabase gen types --lang=typescript --project-id czwtqukymcqoberdoltq --schema memo > packages/shared/src/types/supabase.ts && prettier --write packages/shared/src/types/supabase.ts"
+    "generate-supabase-type": "supabase gen types --lang=typescript --project-id czwtqukymcqoberdoltq --schema feedback --schema memo > packages/shared/src/types/supabase.ts && prettier --write packages/shared/src/types/supabase.ts"
   },
   "files": [
     "dist"
@@ -85,12 +85,14 @@
     "eslint": "8.57.0",
     "eslint-config-airbnb-typescript": "18.0.0",
     "eslint-config-prettier": "9.1.0",
+    "eslint-import-resolver-typescript": "^3.7.0",
     "eslint-plugin-import": "2.29.1",
     "eslint-plugin-jsx-a11y": "6.10.0",
     "eslint-plugin-prettier": "5.2.1",
     "eslint-plugin-react": "7.35.0",
     "eslint-plugin-react-hooks": "4.6.2",
     "eslint-plugin-simple-import-sort": "^12.1.1",
+    "eslint-plugin-unused-imports": "^4.1.4",
     "husky": "^9.1.5",
     "lint-staged": "^15.2.7",
     "overlay-kit": "^1.4.1",

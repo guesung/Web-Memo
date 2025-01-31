@@ -1,5 +1,5 @@
 import { useDidMount, useMemoQuery } from '@extension/shared/hooks';
-import { useTabQuery } from '@extension/shared/hooks/extension';
+import { useTabQuery } from '@extension/shared/hooks';
 import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { delay } from '@extension/shared/utils';
 import { I18n, Tab } from '@extension/shared/utils/extension';

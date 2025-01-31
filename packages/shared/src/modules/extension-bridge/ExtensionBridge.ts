@@ -136,7 +136,11 @@ export default class ExtensionBridge {
 
   private static _getContentFromWeb() {
     try {
-      return document.body.innerText;
+      const text = document.body.innerText;
+      if (text) return text;
+
+      const iframeText = document.querySelector('iframe')?.contentWindow?.document?.body?.innerText;
+      return text + (iframeText ? '\n' + iframeText : '');
     } catch (error) {
       throw new ExtensionError('Failed to get web content', ExtensionErrorCode.CONTENT_ERROR, error);
     }
@@ -186,7 +190,7 @@ export default class ExtensionBridge {
 
   static async requestGetExtensionManifest(callbackFn: (response: chrome.runtime.Manifest) => void) {
     try {
-      await chrome.runtime.sendMessage(EXTENSION.id, { type: BRIDGE_MESSAGE_TYPES.GET_EXTENSION_MANIFEST }, callbackFn);
+      chrome.runtime.sendMessage(EXTENSION.id, { type: BRIDGE_MESSAGE_TYPES.GET_EXTENSION_MANIFEST }, callbackFn);
     } catch (error) {
       throw new ExtensionError('Failed to request extension manifest', ExtensionErrorCode.RUNTIME_ERROR, error);
     }

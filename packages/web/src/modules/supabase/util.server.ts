@@ -1,5 +1,5 @@
-import { COOKIE_KEY, PATHS, SUPABASE } from '@extension/shared/constants';
-import { Database, MemoSupabaseClient } from '@extension/shared/types';
+import { PATHS, SUPABASE } from '@extension/shared/constants';
+import type { Database, MemoSupabaseClient } from '@extension/shared/types';
 import { CONFIG } from '@src/constants';
 import { createServerClient } from '@supabase/ssr';
 import type { Provider } from '@supabase/supabase-js';
@@ -54,15 +54,4 @@ export const signInWithEmail = async (email: string, password: string) => {
   if (error) redirect(PATHS.error);
   revalidatePath(PATHS.root, 'layout');
   redirect(`${CONFIG.webUrl}${PATHS.callbackEmail}`);
-};
-
-export const signout = async () => {
-  'use server';
-  const supabaseClient = getSupabaseClient();
-  await supabaseClient.auth.signOut();
-
-  const cookieStore = cookies();
-  cookieStore.delete(COOKIE_KEY.accessToken);
-  cookieStore.delete(COOKIE_KEY.refreshToken);
-  redirect(PATHS.login);
 };

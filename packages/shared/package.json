@@ -1,12 +1,13 @@
 {
   "name": "@extension/shared",
-  "version": "1.8.1",
+  "version": "1.8.5",
   "description": "chrome extension shared code",
   "private": true,
   "sideEffects": false,
   "files": [
     "dist"
   ],
+  "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

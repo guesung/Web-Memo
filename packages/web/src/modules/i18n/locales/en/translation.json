@@ -5,123 +5,123 @@
     "previous": "Previous",
     "today": "Today",
     "done": "Done",
-    "updatedAt": "Last updated:",
-    "close": "Close",
-    "save": "Save",
+    "updatedAt": "Last modified:",
     "month": "Month",
-    "agenda": "Agenda",
+    "agenda": "Schedule",
     "day": "Day",
     "week": "Week",
-    "allDay": "All Day",
+    "allDay": "All day",
     "date": "Date",
     "time": "Time",
     "event": "Event",
-    "more": "more",
+    "more": "Show more",
     "title": "Title",
+    "save": "Save",
     "tomorrow": "Tomorrow",
     "yesterday": "Yesterday",
-    "workWeek": "Work Week"
+    "workWeek": "This week",
+    "close": "Close",
+    "lastUpdated": "Updated at {{time}}"
   },
+
   "sideBar": {
-    "memo": "My Memos",
-    "wishList": "My Wish List",
-    "allCategory": "View All Categories"
+    "memo": "My memos",
+    "wishList": "My wishlist",
+    "allCategory": "All categories"
   },
+
   "header": {
-    "login": "Login",
-    "logout": "Sign Out",
-    "introduce": "Introduce",
-    "update": "Update Log"
+    "login": "Sign in",
+    "logout": "Sign out",
+    "introduce": "About",
+    "update": "What's new"
   },
+
   "updates": {
-    "title": "Update Log",
+    "title": "What's new",
     "versions": {
+      "v1.8.3": {
+        "title": "Fixed memo saving issues",
+        "content": ["Fixed wishlist memo deletion", "Fixed blog summary", "Fixed duplicate memo saves"]
+      },
       "v1.8.0": {
-        "title": "Search Features",
-        "content": [
-          "Added memos search features",
-          "Added drag selection feature for memos",
-          "Added memo creation time display"
-        ]
+        "title": "Search and select features",
+        "content": ["Memo search", "Drag to select memos", "View memo creation time"]
       },
       "v1.7.1": {
-        "title": "Enhanced YouTube Features",
-        "content": ["Added YouTube script-based features", "Added summary modification features"]
+        "title": "YouTube summary",
+        "content": ["YouTube caption summary", "Summary prompt settings"]
       },
       "v1.7.0": {
-        "title": "Calendar View and Memo Management",
-        "content": [
-          "Added calendar view",
-          "Group memo selection for deletion and modification",
-          "Category settings feature",
-          "Guide restart feature"
-        ]
+        "title": "Calendar view and memo management",
+        "content": ["Calendar view", "Bulk memo management", "Category settings", "Restart guide"]
       },
       "v1.6.0": {
-        "title": "Category Feature",
-        "content": ["Added category functionality"]
+        "title": "Categories",
+        "content": ["Added category feature"]
       },
       "v1.5.6": {
         "title": "Wishlist",
-        "content": ["Added wishlist feature"]
+        "content": ["Added to wishlist"]
       },
       "v1.4.0": {
-        "title": "Login and Data Storage",
-        "content": ["OAuth login (Kakao, Google)", "Permanent data storage with Supabase"]
+        "title": "Login and data storage",
+        "content": ["Kakao and Google login", "Secure data storage"]
       },
       "v1.1.0": {
-        "title": "Website Migration",
-        "content": ["Migrated from new-tab to our website"]
+        "title": "Website migration",
+        "content": ["Moved to website from new tab"]
       },
       "v1.0.0": {
-        "title": "Official Release",
-        "content": ["Opened communication channels (Google Form, Instagram, KakaoTalk)", "Fixed light mode bugs"]
+        "title": "Official launch",
+        "content": ["Opened communication channels", "Fixed light mode"]
       },
       "v0.2.0": {
-        "title": "Major Feature Update",
+        "title": "Key feature updates",
         "content": [
-          "Added shortcuts: alt + s (Windows) / option + s (Mac)",
+          "Added shortcut: alt + s(Windows) / option + s(Mac)",
           "Changed trigger to action button",
-          "Summary save feature",
+          "Save summary feature",
           "Memo feature",
           "View memos in New Tab"
         ]
       },
       "v0.1.0": {
-        "title": "Initial Update",
-        "content": [
-          "Migrated from Content-ui to Side Panel",
-          "Streaming data transfer",
-          "Data refresh via button click"
-        ]
+        "title": "Initial updates",
+        "content": ["Migrated to Side Panel", "Streaming data delivery", "Request data again via button"]
       },
       "v0.0.2": {
-        "title": "Service Launch",
-        "content": ["First release on Chrome Web Store"]
+        "title": "Service launch",
+        "content": ["First Chrome Web Store launch"]
       }
     }
   },
+
   "toastTitle": {
-    "refresh": "Great! The page has been refreshed successfully!",
-    "memoEdited": "Your memo has been updated successfully!",
-    "categoryEdited": "The category has been changed successfully!",
-    "memoDeleted": "Your memo has been deleted.",
-    "memoWishListDeleted": "The memo has been removed from your wish list.",
-    "memoWishListAdded": "The memo has been added to your wish list!",
-    "saveSuccess": "Save completed successfully!",
-    "deleteSuccess": "Delete completed successfully!",
-    "addSuccess": "Add completed successfully!",
-    "errorSave": "Save failed!",
-    "successSave": "Changes have been saved."
+    "refresh": "Refreshed",
+    "memoEdited": "Memo edited",
+    "categoryEdited": "Category changed",
+    "memoDeleted": "Memo deleted",
+    "memoWishListDeleted": "Removed from wishlist",
+    "memoWishListAdded": "Added to wishlist",
+    "saveSuccess": "Saved",
+    "deleteSuccess": "Deleted",
+    "addSuccess": "Added",
+    "errorSave": "Couldn't save",
+    "successSave": "Changes saved",
+    "memo_updated_at": "Modified at {{time}}"
   },
+
   "toastActionMessage": {
-    "goTo": "Take me there",
+    "goTo": "Go to",
     "undo": "Undo"
   },
+
   "option": {
-    "deleteMemo": "Delete this memo",
+    "deleteMemo": "Delete memo",
     "changeCategory": "Change category"
   },
+
   "login": {
     "welcomeTitle": "Welcome to Web Memo!",
     "welcomeDescription": "Let's make memo-taking easier and more convenient together!",
@@ -131,24 +131,36 @@
     "askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
     "personalInformationInfo": "Don't worry! Your personal information is strictly protected and will never be used for marketing purposes."
   },
+
   "dialogInstall": {
-    "title": "Extension Not Installed",
-    "description": "To use all the wonderful memo features, you'll need to install our extension. Would you like to install it now?",
+    "title": "Extension required",
+    "description": "You'll need to install the extension to use memos",
     "cancel": "Maybe later",
-    "ok": "Yes, install now"
+    "ok": "Install now",
+    "close": "Close"
   },
+
   "dialogVersion": {
-    "title": "Exciting News! New Version Available!",
-    "description": "We've made some improvements! You can update from version {{currentVersion}} to {{lastVersion}}.",
-    "itIsLastVersion": "You're all set! You're using the latest version.",
-    "cancel": "Remind me later",
+    "title": "New version available",
+    "description": "Update from {{currentVersion}} to {{lastVersion}}",
+    "itIsLastVersion": "You're using the latest version",
+    "cancel": "Maybe later",
     "ok": "Update now",
     "lastVersion": "Latest version"
   },
-  "tooltip": {
-    "sideBar": "Open/Close sidebar",
-    "goSetting": "Open settings"
+
+  "dialogUnsavedChanges": {
+    "title": "Unsaved changes",
+    "description": "Changes will be lost if you close",
+    "ok": "Close anyway",
+    "cancel": "Keep editing"
   },
+
+  "tooltip": {
+    "sideBar": "Side bar",
+    "goSetting": "Go to settings"
+  },
+
   "setting": {
     "header": "Settings",
     "language": "Language",
@@ -157,141 +169,209 @@
     "category": "Category",
     "addCategory": "Add category",
     "deleteCategory": "Delete category",
-    "defaultCategoryName": "New Category"
+    "defaultCategoryName": "New category"
   },
+
   "guide": {
     "next": "Next",
     "prev": "Previous",
     "done": "Done",
     "welcome": {
-      "title": "Welcome to Web Memo! ",
-      "description": "Let's create a memo! Press '{{key}} + S' to open the side panel!"
+      "title": "Welcome!",
+      "description": "Ready to start? Press '{{key}} + S' to open the side panel"
     },
     "save": {
       "title": "Save Your Memos",
       "description": "Great job!\nNow you can write memos in the side panel.\nDon't worry, memos are saved automatically"
     },
     "check": {
-      "title": "Check Your Memos",
-      "description": "Finally, click the refresh button to see your latest memos!"
+      "title": "Check memos",
+      "description": "Click refresh to see your latest memos"
     }
   },
+
   "memos": {
     "emptyState": {
-      "message": "You don't have any saved memos yet. Open the side panel to create your first memo!"
+      "message": "No memos yet. Start by opening the side panel"
     },
-    "totalMemos": "Total {{total}} memos",
-    "searchPlaceholder": "Search memos...",
+    "totalMemos": "{{total}} memos",
+    "searchPlaceholder": "Search memos",
     "searchTarget": {
-      "all": "Search All",
-      "title": "Search Title Only",
-      "memo": "Search Content Only"
+      "all": "All",
+      "title": "Title",
+      "memo": "Content"
     },
     "grid": "Grid view",
     "calendar": "Calendar view",
-    "selected": "{{count}} selected"
+    "selected": "{{count}} selected",
+    "placeholder": "Write your memo"
   },
+
   "introduce": {
     "navigation": {
       "title": "Web Memo",
-      "login": "Login",
-      "get_started": "Get Started"
+      "login": "Sign in",
+      "get_started": "Get started"
     },
     "hero": {
-      "title": "A New Way of Web Surfing",
-      "subtitle": "Take notes, get AI summaries, and organize your web content with just one click",
-      "install_button": "Install on Chrome",
+      "title": "Easier web browsing",
+      "subtitle": "Save with one click, summarize with AI, organize systematically",
+      "install_button": "Add to Chrome",
       "mobile_apps": {
-        "ios": "iOS App",
-        "android": "Android App"
+        "ios": "iOS",
+        "android": "Android"
       }
     },
     "features": {
       "memo": {
-        "title": "One-Click Web Notes",
-        "description": "Don't miss any ideas while browsing. Take notes on any webpage with just one click"
+        "title": "One-click memos",
+        "description": "Save your thoughts instantly while browsing"
       },
       "overview": {
-        "title": "At-a-Glance Overview",
-        "description": "See all your web notes at once with our smart, page-organized management system"
+        "title": "See everything at once",
+        "description": "All your memos, neatly organized"
       },
       "organize": {
-        "title": "Systematic Organization",
-        "description": "Start organizing your information systematically. Classify and arrange notes your way"
+        "title": "Organize systematically",
+        "description": "Sort and organize memos your way"
       },
       "ai_summary": {
-        "title": "AI-Powered Key Points",
-        "description": "Let AI summarize long content while you focus on the essential points"
+        "title": "AI summaries",
+        "description": "Get the key points instantly"
       },
       "wishlist": {
-        "title": "Save Content for Later",
-        "description": "Add interesting content to your wishlist and check it when convenient"
+        "title": "Save for later",
+        "description": "Keep interesting content in your wishlist"
       }
     },
     "how_it_works": {
-      "title": "How It Works",
+      "title": "How to use",
       "steps": {
         "step1": {
-          "title": "Paste URL",
-          "description": "Copy and paste any webpage URL into Web Memo"
+          "title": "Add URL",
+          "description": "Copy and paste the webpage address"
         },
         "step2": {
-          "title": "AI Processing",
-          "description": "Our AI analyzes and extracts key information"
+          "title": "AI Analysis",
+          "description": "AI analyzes the content"
         },
         "step3": {
-          "title": "Get Summary",
-          "description": "Receive a concise, accurate summary instantly"
+          "title": "Get summary",
+          "description": "See the key points instantly"
         }
       }
     },
     "faq": {
-      "title": "Frequently Asked Questions",
+      "title": "FAQ",
       "questions": {
         "what_is": {
           "question": "What is Web Memo?",
-          "answer": "Web Memo is a service that makes your web surfing more convenient. You can easily save and manage important information. With just one click, you can take notes, get AI-powered summaries, and organize information systematically."
+          "answer": "It's a service that makes web browsing easier. Save with one click, get AI summaries, and organize systematically"
         },
         "is_free": {
-          "question": "Is Web Memo free to use?",
-          "answer": "Yes, of course! All basic features of Web Memo are free. You can freely use all core features including note-taking, basic organization, AI-powered content summaries, and wishlist functionality."
+          "question": "Is it free?",
+          "answer": "Yes! All features are free: memos, organization, AI summaries, and wishlist"
         },
         "where_to_save": {
-          "question": "Where can I save my notes?",
-          "answer": "You can easily save notes anywhere through the Chrome extension. No matter which website you're viewing, you can quickly jot down notes!"
+          "question": "Where can I save memos?",
+          "answer": "Save memos on any website using the Chrome extension"
         },
         "is_data_private": {
-          "question": "Are my notes private?",
-          "answer": "No, not at all. All the notes you save are private and confidential. Only you can access your notes. We prioritize your privacy and take steps to protect your data."
+          "question": "Can others see my memos?",
+          "answer": "No, your memos are private. Your data is securely protected"
         },
         "where_to_find": {
-          "question": "Where can I find my saved notes?",
-          "answer": "You can access your saved notes anytime by logging into the Web Memo website. You can view and manage all your notes at a glance!"
+          "question": "Where can I find my memos?",
+          "answer": "Access your memos anytime by signing in to Web Memo"
         },
         "memo_preservation": {
-          "question": "Will my notes be preserved?",
-          "answer": "Don't worry! Even our developers have stored over 500 notes in this service. We plan to preserve your valuable memo data permanently. Furthermore, we're planning to add features that will allow you to download your memos in csv or json format, so rest assured!"
+          "question": "Will I lose my memos?",
+          "answer": "Don't worry! We store over 500 memos ourselves. Your memos are preserved forever, and we're adding download options soon"
         },
         "how_ai_works": {
-          "question": "How does the AI summary feature work?",
-          "answer": "The AI summary feature is really smart! It automatically analyzes webpage content and extracts only the key points. Thanks to this, you can understand long content in just a few seconds, saving you a lot of time."
+          "question": "How does AI summary work?",
+          "answer": "AI reads the webpage and extracts key points. Understand long content quickly"
         },
         "other_browsers": {
-          "question": "Can I use it on browsers other than Chrome?",
-          "answer": "Currently, it's only available on Chrome browser. But don't worry! We're working hard to make it available on other browsers. We'll be the first to let you know when we have a specific release schedule!"
+          "question": "Does it work in other browsers?",
+          "answer": "Currently Chrome only. Support for other browsers coming soon"
         }
       }
     },
     "footer": {
       "title": "Web Memo",
-      "description": "Faster and easier content consumption",
+      "description": "Easy and fast content organization",
+      "product": {
+        "title": "Product",
+        "features": "Features",
+        "pricing": "Pricing",
+        "use_cases": "Use cases"
+      },
+      "company": {
+        "title": "Company",
+        "about": "About us",
+        "blog": "Blog",
+        "careers": "Careers"
+      },
+      "legal": {
+        "title": "Legal",
+        "privacy_policy": "Privacy Policy",
+        "terms_of_service": "Terms of Service",
+        "contact": "Contact us"
+      },
       "copyright": "Web Memo. All rights reserved.",
       "social": {
         "email": "Email",
         "instagram": "Instagram",
         "youtube": "YouTube",
-        "kakaotalk": "KakaoTalk Chat"
+        "kakaotalk": "KakaoTalk chat"
       }
+    }
+  },
+
+  "feedback": {
+    "button": "Send feedback",
+    "title": "Share your thoughts",
+    "description": "Help us improve our service",
+    "placeholder": "Tell us what could be better",
+    "cancel": "Cancel",
+    "submit": "Send",
+    "submitting": "Sending...",
+    "success": "Feedback received",
+    "successDescription": "Thanks for your feedback",
+    "error": "Couldn't send",
+    "errorDescription": "Please try again later"
+  },
+
+  "error": {
+    "404": {
+      "title": "Page not found",
+      "description": "This page doesn't exist or was moved",
+      "backToHome": "Go to home"
+    },
+    "500": {
+      "title": "Something went wrong",
+      "retry": "Try again"
+    }
+  },
+
+  "sms": {
+    "errors": {
+      "missingParams": "Phone number and message required",
+      "sendFailed": "Couldn't send message",
+      "invalidPhoneNumber": "Invalid phone number"
+    },
+    "success": {
+      "messageSent": "Message sent"
+    },
+    "buttons": {
+      "send": "Send",
+      "cancel": "Cancel"
+    },
+    "labels": {
+      "phoneNumber": "Phone number",
+      "message": "Message",
+      "sendSMS": "Send message"
     }
   }
 }

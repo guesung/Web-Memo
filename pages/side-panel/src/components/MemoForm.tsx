@@ -1,11 +1,11 @@
 import {
+  useDebounce,
   useDidMount,
   useMemoPatchMutation,
   useMemoPostMutation,
   useMemoQuery,
-  useThrottle,
+  useTabQuery,
 } from '@extension/shared/hooks';
-import { useTabQuery } from '@extension/shared/hooks/extension';
 import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { getMemoInfo, I18n, Tab } from '@extension/shared/utils/extension';
 import { cn, Textarea, toast, ToastAction } from '@extension/ui';
@@ -17,7 +17,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 function MemoForm() {
-  const { throttle, abortThrottle } = useThrottle();
+  const { debounce } = useDebounce();
   const { data: tab } = useTabQuery();
   const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
     url: tab.url,
@@ -33,8 +33,6 @@ function MemoForm() {
   const { mutate: mutateMemoPost } = useMemoPostMutation();
 
   const saveMemo = async () => {
-    abortThrottle();
-
     const memoInfo = await getMemoInfo();
 
     const memo = { ...memoInfo, memo: watch('memo'), isWish: watch('isWish') };
@@ -55,15 +53,13 @@ function MemoForm() {
   const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setValue('memo', event.target.value);
 
-    throttle(saveMemo, 300);
+    debounce(saveMemo);
   };
 
   const handleKeyDown = async (
     event: React.KeyboardEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLInputElement>,
   ) => {
-    if (event.metaKey && event.key === 's') {
-      event.preventDefault();
-    }
+    if (event.metaKey && event.key === 's') event.preventDefault();
   };
 
   const handleWishClick = async () => {

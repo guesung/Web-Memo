@@ -1,24 +1,21 @@
 {
   "extensionName": {
-    "message": "Web Memo - Smart Notes with a Click"
+    "message": "Web Notes - Start with one click"
   },
   "extensionDescription": {
-    "message": "Make web surfing smarter with Web Memo"
-  },
-  "no_memo": {
-    "message": "Looks like you haven't created any memos yet! How about starting your journey with your first note? 😊"
+    "message": "Take notes easily while browsing"
   },
   "memo": {
-    "message": "My Memo"
+    "message": "Note"
   },
   "save": {
-    "message": "Save Changes"
+    "message": "Save"
   },
   "number": {
     "message": "Number"
   },
   "reset": {
-    "message": "Start Fresh"
+    "message": "Start over"
   },
   "title": {
     "message": "Title"
@@ -27,79 +24,79 @@
     "message": "Date"
   },
   "delete": {
-    "message": "Remove"
+    "message": "Delete"
   },
   "modal_modal_question_delete": {
-    "message": "Would you like to reset all your data? This action cannot be undone."
+    "message": "Delete all data? This can't be undone"
   },
   "select_language": {
-    "message": "Choose your preferred language for prompt responses"
+    "message": "Select language for AI responses"
   },
   "reset_option": {
-    "message": "Clear All Data"
-  },
-  "download_csv_option": {
-    "message": "Save as CSV file"
-  },
-  "download_json_option": {
-    "message": "Save as JSON file"
+    "message": "Reset data"
   },
   "toast_save_option": {
-    "message": "Great! Your settings have been saved successfully."
+    "message": "Settings saved"
+  },
+  "download_csv_option": {
+    "message": "Export as CSV"
+  },
+  "download_json_option": {
+    "message": "Export as JSON"
   },
   "toast_error_common": {
-    "message": "Sorry. An error occurred. Please try again"
+    "message": "Something went wrong. Please try again"
   },
   "toast_saved": {
-    "message": "Perfect! Your changes have been saved successfully."
+    "message": "Saved"
   },
   "error_get_page_content": {
-    "message": "Oops! Summary feature isn't available on new tabs, Chrome Web Store, or Chrome settings pages. Would you mind trying again on a different page?\n- If you just installed the extension, please refresh the page once!\n- For YouTube pages, summarizing may take about 3 seconds. Thanks for your patience ⏳"
+    "message": "Couldn't read the page.\n1. For YouTube, summarizing takes about 3 seconds. Please try again shortly.\n2. If newly installed, refresh the page.\n3. Summarizing isn't available on new tabs, Chrome Web Store, or Chrome settings. Please go to a different page."
   },
   "error_get_summary": {
-    "message": "Oh no! We hit a small bump while creating your summary 😥\nCould you try once more? If you keep seeing this message, we'd love to help - just reach out through the contact info in the 'Guide'. We're here for you! 💪"
+    "message": "Couldn't create summary. Please try again.\nIf the problem persists, contact us through the guide."
   },
   "error_get_storage": {
-    "message": "We couldn't access your stored data. Please try again."
+    "message": "Couldn't load data. Please try again"
   },
   "toast_error_storage_exceeded": {
-    "message": "Your storage is getting cozy! How about clearing some space for your new amazing notes? 🗑️"
+    "message": "Storage is full. Try removing unnecessary notes"
   },
   "context_menus_check_memo": {
-    "message": "View Your Memos"
+    "message": "View my notes"
   },
   "context_menus_show_guide": {
-    "message": "Open User Guide"
+    "message": "User guide"
   },
   "wish_list_deleted": {
-    "message": "We've removed this item from your wish list!"
+    "message": "Removed from wishlist"
   },
   "wish_list_added": {
-    "message": "Great choice! Added to your wish list successfully!"
+    "message": "Added to wishlist"
   },
   "go_to": {
-    "message": "Take Me There"
+    "message": "Go"
   },
   "toast_error_save": {
-    "message": "Sorry, we couldn't save your memo. Please try again."
+    "message": "Couldn't save. Please try again"
   },
   "prompt_language_setting": {
-    "message": "Prompt Language Settings"
+    "message": "Response language"
   },
   "select_language_placeholder": {
-    "message": "Select Language"
+    "message": "Select language"
   },
   "youtube_prompt_setting": {
-    "message": "YouTube Prompt Settings"
+    "message": "YouTube settings"
   },
   "website_prompt_setting": {
-    "message": "Website Prompt Settings"
+    "message": "Website settings"
   },
   "enter_prompt": {
-    "message": "Enter your prompt"
+    "message": "Enter prompt"
   },
   "settings_saved": {
-    "message": "Settings have been saved successfully"
+    "message": "Settings saved"
   },
   "youtube": {
     "message": "YouTube"

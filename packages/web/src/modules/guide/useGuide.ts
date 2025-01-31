@@ -1,5 +1,3 @@
-import 'driver.js/dist/driver.css';
-
 import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { checkLocalStorageTrue, setLocalStorageTrue } from '@extension/shared/modules/local-storage';
 import { useGetExtensionManifest } from '@src/hooks';
@@ -7,8 +5,8 @@ import { isMac } from '@src/utils';
 import { driver } from 'driver.js';
 import { useEffect } from 'react';
 
-import { LanguageType } from '../i18n';
-import useTranslation from '../i18n/client';
+import type { LanguageType } from '../i18n';
+import useTranslation from '../i18n/util.client';
 
 interface UseGuideProps extends LanguageType {}
 
@@ -63,11 +61,11 @@ export default function useGuide({ lng }: UseGuideProps) {
   const driverObj = createDriver();
 
   useEffect(() => {
-    if (!manifest || checkLocalStorageTrue('guide')) return;
+    if (!manifest || manifest === 'NOT_INSTALLED' || checkLocalStorageTrue('guide')) return;
 
+    import('driver.js/dist/driver.css');
     driverObj.drive();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [manifest]);
+  }, [driverObj, manifest]);
 
   return { driverObj };
 }

@@ -1,45 +1,42 @@
 'use server';
 
 import { QUERY_KEY } from '@extension/shared/constants';
-import { SearchParamViewType } from '@extension/shared/modules/search-params';
+import { type SearchParamsType } from '@extension/shared/modules/search-params';
 import { MemoService } from '@extension/shared/utils';
-import { Header, HydrationBoundaryWrapper } from '@src/components';
+import { HydrationBoundaryWrapper } from '@src/components';
+import { HeaderMargin } from '@src/components/Header';
 import { Loading } from '@src/components/ui';
-import { LanguageParams } from '@src/modules/i18n';
+import { type LanguageParams } from '@src/modules/i18n';
 import { getSupabaseClient } from '@src/modules/supabase/util.server';
+import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 
-import { MemoDialog, MemoView, SearchForm, SearchFormProvider } from './components';
+import { MemoSearchForm, MemoSearchFormProvider, MemoView } from './_components';
+
+const ExtensionInstallCheckDialog = dynamic(() => import('./_components/ExtensionInstallCheckDialog'), {
+  ssr: false,
+});
 
 interface PageProps extends LanguageParams {
-  searchParams: {
-    id?: string;
-    isWish?: string;
-    category?: string;
-    view?: SearchParamViewType;
-  };
+  searchParams: SearchParamsType;
 }
 
 export default async function Page({ searchParams, params: { lng } }: PageProps) {
   const supabaseClient = getSupabaseClient();
 
   return (
-    <main className="w-full px-4">
-      <Header.Margin />
+    <main className="h-screen w-screen overflow-y-hidden px-4">
+      <HeaderMargin />
       <HydrationBoundaryWrapper queryKey={QUERY_KEY.memos()} queryFn={() => new MemoService(supabaseClient).getMemos()}>
         <Suspense fallback={<Loading />}>
-          <SearchFormProvider>
-            <SearchForm lng={lng} />
-            <MemoView
-              lng={lng}
-              isWish={searchParams.isWish}
-              category={searchParams.category}
-              view={searchParams.view}
-            />
-          </SearchFormProvider>
-          {searchParams?.id && <MemoDialog lng={lng} id={searchParams.id} />}
+          <MemoSearchFormProvider>
+            <MemoSearchForm lng={lng} />
+            <MemoView lng={lng} searchParams={searchParams} />
+          </MemoSearchFormProvider>
         </Suspense>
       </HydrationBoundaryWrapper>
+
+      <ExtensionInstallCheckDialog lng={lng} />
     </main>
   );
 }

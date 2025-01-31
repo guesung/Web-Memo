@@ -1,5 +1,5 @@
 import { cn } from '@extension/shared/utils';
-import { IframeHTMLAttributes } from 'react';
+import type { IframeHTMLAttributes } from 'react';
 
 interface YoutubeEmbedProps extends IframeHTMLAttributes<HTMLIFrameElement> {
   embedId: string;

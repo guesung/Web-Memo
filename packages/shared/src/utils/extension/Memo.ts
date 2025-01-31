@@ -1,4 +1,4 @@
-import { formatUrl } from '../Url';
+import { normalizeUrl } from '../Url';
 import { Tab } from './module';
 
 export const getMemoInfo = async () => {
@@ -9,6 +9,6 @@ export const getMemoInfo = async () => {
   return {
     title: tab.title,
     favIconUrl: tab?.favIconUrl,
-    url: formatUrl(tab.url),
+    url: normalizeUrl(tab.url),
   };
 };

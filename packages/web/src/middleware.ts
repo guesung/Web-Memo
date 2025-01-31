@@ -1,24 +1,30 @@
 import { PATHS } from '@extension/shared/constants';
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-import { getLanguage, languages } from './modules/i18n';
-import { updateSession } from './modules/supabase';
+import { getLanguage, SUPPORTED_LANGUAGES } from './modules/i18n';
+import { updateAuthorization } from './modules/supabase';
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // locale
-  const isLanguagePath = languages.some(lng => pathname.startsWith(`/${lng}`));
+  // 루트 페이지
+  const isRootPath = pathname === PATHS.root;
+  if (isRootPath) return NextResponse.redirect(new URL(`${PATHS.memos}`, request.url));
+
+  // lng가 없는 경우 && auth 페이지가 아닌 경우
+  const isLanguagePath = SUPPORTED_LANGUAGES.some(lng => pathname.startsWith(`/${lng}`));
   const isAuthPath = pathname.startsWith(PATHS.auth);
 
   const language = getLanguage(request);
 
   if (!isLanguagePath && !isAuthPath)
     return NextResponse.redirect(
-      new URL(`/${language}${pathname}${request.nextUrl.search}${request.nextUrl.hash}`, request.url),
+      new URL(`${language}${pathname}${request.nextUrl.search}${request.nextUrl.hash}`, request.url),
     );
 
-  return await updateSession(request);
+  // 토큰 업데이트
+  return await updateAuthorization(request);
 }
 
 export const config = {

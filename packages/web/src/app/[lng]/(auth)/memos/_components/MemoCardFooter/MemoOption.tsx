@@ -64,8 +64,6 @@ export default function MemoOption({ lng, memoIds = [], closeMemoOption }: MemoO
       queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
     };
 
-    console.log(1);
-
     toast({
       title: t('toastTitle.memoDeleted'),
       action: (

@@ -2,11 +2,12 @@ name: CICD Web
 
 on:
   - push
-  - pull_request
 
 jobs:
   build-web:
     runs-on: ubuntu-22.04
+    outputs:
+      deployment_url: ${{ steps.deploy.outputs.url || steps.deploy-staging.outputs.url || steps.deploy-prod.outputs.url }}
     env:
       WEB_URL: "${{ github.ref == 'refs/heads/develop' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}"
     steps:
@@ -32,14 +33,25 @@ jobs:
       - name: Vercel Build
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Deploy staging when push on develop branch
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop'}}
+      - name: Deploy development
+        if: ${{ github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/master' }}
+        id: deploy
         run: |
-          VERCEL_DEPOLYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
-          vercel alias set "$VERCEL_DEPOLYED_URL" ${{secrets.STAGING_WEB_URL_WITHOUT_PROTOCOL}} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects
+          VERCEL_DEPLOYED_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$VERCEL_DEPLOYED_URL" >> "$GITHUB_OUTPUT"
 
-      - name: Deploy production when push on master branch
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master'}}
+      - name: Deploy staging
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop'}}
+        id: deploy-staging
         run: |
-          VERCEL_DEPOLYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
-          vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
+          VERCEL_DEPLOYED_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          vercel alias set "$VERCEL_DEPLOYED_URL" ${{secrets.STAGING_WEB_URL_WITHOUT_PROTOCOL}} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects
+          echo "url=$VERCEL_DEPLOYED_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy production
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master'}}
+        id: deploy-prod
+        run: |
+          VERCEL_DEPLOYED_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          vercel alias set "$VERCEL_DEPLOYED_URL" ${{secrets.PROD_WEB_URL_WITHOUT_PROTOCOL}} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects
+          echo "url=$VERCEL_DEPLOYED_URL" >> "$GITHUB_OUTPUT"

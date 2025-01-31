@@ -1,0 +1,44 @@
+name: Playwright Tests
+on:
+  workflow_run:
+    workflows: ["CICD Web"]
+    types:
+      - completed
+    
+jobs:
+  test:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    env:
+      WEB_URL: ${{ github.event.workflow_run.outputs.deployment_url }}
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: pnpm
+      - name: pnpm install
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: setting environment variables
+        run: |
+          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/shared/.env
+          echo WEB_URL=${{ env.WEB_URL }} >> packages/shared/.env
+
+          echo "${{ secrets.WEB_ENV_FILE }}" > packages/web/.env
+          echo NEXT_PUBLIC_WEB_URL=${{ env.WEB_URL }} >> packages/web/.env
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: |
+          turbo telemetry disable
+          pnpm run test
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30

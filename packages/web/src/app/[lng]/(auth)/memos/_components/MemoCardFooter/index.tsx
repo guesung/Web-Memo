@@ -36,37 +36,32 @@ export default function MemoCardFooter({ memo, lng, children, isShowingOption = 
   const handleIsWishClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
 
-    mutateMemoPatch(
-      {
-        id: memo.id,
-        request: {
-          isWish: !memo.isWish,
-        },
+    mutateMemoPatch({
+      id: memo.id,
+      request: {
+        isWish: !memo.isWish,
       },
-      {
-        onSuccess: () => {
-          const toastTitle = memo.isWish ? t('toastTitle.memoWishListDeleted') : t('toastTitle.memoWishListAdded');
+    });
 
-          toast({
-            title: toastTitle,
-            action: (
-              <ToastAction
-                altText={t('toastActionMessage.undo')}
-                onClick={() => {
-                  mutateMemoPatch({
-                    id: memo.id,
-                    request: {
-                      isWish: memo.isWish,
-                    },
-                  });
-                }}>
-                {t('toastActionMessage.undo')}
-              </ToastAction>
-            ),
-          });
-        },
-      },
-    );
+    const toastTitle = memo.isWish ? t('toastTitle.memoWishListDeleted') : t('toastTitle.memoWishListAdded');
+
+    toast({
+      title: toastTitle,
+      action: (
+        <ToastAction
+          altText={t('toastActionMessage.undo')}
+          onClick={() => {
+            mutateMemoPatch({
+              id: memo.id,
+              request: {
+                isWish: memo.isWish,
+              },
+            });
+          }}>
+          {t('toastActionMessage.undo')}
+        </ToastAction>
+      ),
+    });
   };
 
   return (

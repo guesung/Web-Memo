@@ -1,24 +1,21 @@
 {
   "extensionName": {
-    "message": "웹 메모 - 클릭으로 시작하는 스마트 메모"
+    "message": "웹 메모 - 클릭 한 번으로 시작하기"
   },
   "extensionDescription": {
-    "message": "웹서핑을 더욱 스마트하게, 웹 메모"
-  },
-  "no_memo": {
-    "message": "아직 작성하신 메모가 없네요! 첫 메모를 남겨보시는 건 어떨까요? 😊"
+    "message": "웹서핑하면서 간편하게 메모하세요"
   },
   "memo": {
     "message": "메모"
   },
   "save": {
-    "message": "저장하기"
+    "message": "저장"
   },
   "number": {
     "message": "번호"
   },
   "reset": {
-    "message": "처음부터 다시 시작하기"
+    "message": "처음부터 시작하기"
   },
   "title": {
     "message": "제목"
@@ -27,79 +24,79 @@
     "message": "날짜"
   },
   "delete": {
-    "message": "삭제하기"
+    "message": "삭제"
   },
   "modal_modal_question_delete": {
-    "message": "모든 데이터를 초기화할까요? 이 작업은 되돌릴 수 없어요"
+    "message": "모든 데이터를 지울까요? 한 번 지우면 되돌릴 수 없어요"
   },
   "select_language": {
-    "message": "AI 답변을 받고 싶은 언어를 선택해주세요"
+    "message": "AI 답변 받을 언어를 선택하세요"
   },
   "reset_option": {
-    "message": "모든 데이터 초기화하기"
+    "message": "데이터 초기화"
   },
   "toast_save_option": {
-    "message": "설정이 성공적으로 저장되었어요!"
+    "message": "설정을 저장했어요"
   },
   "download_csv_option": {
-    "message": "CSV 파일로 내보내기"
+    "message": "CSV로 내보내기"
   },
   "download_json_option": {
-    "message": "JSON 파일로 내보내기"
+    "message": "JSON으로 내보내기"
   },
   "toast_error_common": {
-    "message": "죄송해요. 문제가 발생했어요. 다시 한 번 시도해주세요"
+    "message": "문제가 생겼어요. 다시 시도해주세요"
   },
   "toast_saved": {
-    "message": "성공적으로 저장되었어요!"
+    "message": "저장했어요"
   },
   "error_get_page_content": {
-    "message": "앗! 페이지 내용을 읽는데 실패했어요.\n1. 유튜브의 경우에는 요약하는데 3초 정도 걸릴 수 있어요. 잠시 후에 다시 시도해주세요.\n2. 새로 설치하신 경우에는 페이지를 한 번 새로고침해주세요!\n3. 새 탭, 크롬 웹스토어, 크롬 설정 페이지에서는 아쉽게도 요약 기능을 사용할 수 없어요 😅 다른 페이지로 이동하신 후 다시 시도 버튼을 눌러주시겠어요?\n \n"
+    "message": "페이지를 읽지 못했어요.\n1. 유튜브는 요약에 3초 정도 걸려요. 잠시 후 다시 시도해주세요.\n2. 새로 설치했다면 페이지를 새로고침해주세요.\n3. 새 탭, 크롬 웹스토어, 크롬 설정에서는 요약할 수 없어요. 다른 페이지로 이동해주세요."
   },
   "error_get_summary": {
-    "message": "앗, 요약하는 중에 문제가 생겼네요 😥 다시 한 번 시도해주시겠어요?\n같은 문제가 계속 발생한다면 '가이드'에 있는 연락처로 편하게 문의해주세요. 최선을 다해 도와드릴게요! 💪"
+    "message": "요약하지 못했어요. 다시 시도해주세요.\n계속 안 된다면 가이드의 연락처로 문의해주세요."
   },
   "error_get_storage": {
-    "message": "저장된 데이터를 불러오는 데 실패했어요. 다시 한 번 시도해주세요"
+    "message": "데이터를 불러오지 못했어요. 다시 시도해주세요"
   },
   "toast_error_storage_exceeded": {
-    "message": "저장 공간이 가득 찼네요! 소중한 메모를 위해 필요 없는 데이터를 정리해보시는 건 어떨까요? 🗑️"
+    "message": "저장 공간이 가득 찼어요. 필요 없는 메모를 지워보세요"
   },
   "context_menus_check_memo": {
-    "message": "내가 작성한 메모 확인하기"
+    "message": "내 메모 보기"
   },
   "context_menus_show_guide": {
-    "message": "사용 가이드 살펴보기"
+    "message": "사용 가이드"
   },
   "wish_list_deleted": {
-    "message": "위시 리스트에서 성공적으로 제거했어요"
+    "message": "위시리스트에서 삭제했어요"
   },
   "wish_list_added": {
-    "message": "위시 리스트에 성공적으로 추가했어요"
+    "message": "위시리스트에 추가했어요"
   },
   "go_to": {
-    "message": "바로 이동하기"
+    "message": "이동"
   },
   "toast_error_save": {
-    "message": "저장하는 중에 문제가 발생했어요. 다시 시도해주세요"
+    "message": "저장하지 못했어요. 다시 시도해주세요"
   },
   "prompt_language_setting": {
-    "message": "프롬프트 언어 설정"
+    "message": "답변 받을 언어"
   },
   "select_language_placeholder": {
     "message": "언어 선택"
   },
   "youtube_prompt_setting": {
-    "message": "YouTube 프롬프트 설정"
+    "message": "유튜브 설정"
   },
   "website_prompt_setting": {
-    "message": "웹사이트 프롬프트 설정"
+    "message": "웹사이트 설정"
   },
   "enter_prompt": {
-    "message": "프롬프트를 입력하세요"
+    "message": "프롬프트 입력"
   },
   "settings_saved": {
-    "message": "설정이 저장되었습니다."
+    "message": "설정을 저장했어요"
   },
   "youtube": {
     "message": "유튜브"

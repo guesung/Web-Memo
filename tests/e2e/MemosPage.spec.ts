@@ -1,8 +1,8 @@
 import { expect, test } from './fixtures';
 
-test.describe('Login Page', () => {
+test.describe('Memo Page', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3000/ko');
+    await page.goto('http://localhost:3000');
     await page.getByTestId('test-login-button').click();
     await page.waitForURL(/.*memos/);
   });
@@ -10,9 +10,10 @@ test.describe('Login Page', () => {
   test.describe('가이드 기능', () => {
     test('메모 페이지 최초 접속시, 가이드를 볼 수 있다.', async ({ page }) => {
       expect(page.locator('#driver-popover-description')).toHaveText(
-        "Let's create a memo! Press 'Option + S' to open the side panel!",
+        "Ready to start? Press 'Option + S' to open the side panel",
       );
     });
+
     test('사이드 패널을 열 시, 다음 가이드 페이지로 이동한다.', async ({ page, baseURL }) => {
       await page.goto('https://blog.toss.im/article/toss-team-culture');
       await page.locator('#open-side-panel').click();
@@ -21,9 +22,10 @@ test.describe('Login Page', () => {
       await page.waitForTimeout(1000);
 
       expect(page.locator('#driver-popover-description')).toContainText(
-        "Great job!\nNow you can write memos in the side panel.\nDon't worry, memos are saved automatically ",
+        "Great job!\nNow you can write memos in the side panel.\nDon't worry, memos are saved automatically",
       );
     });
+
     test('새로고침 버튼을 누르면, 가이드가 종료된다.', async ({ page }) => {
       await page.locator('.driver-popover-next-btn').click();
       await page.locator('.driver-popover-next-btn').click();

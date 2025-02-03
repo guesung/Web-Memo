@@ -1,5 +1,4 @@
 import '@extension/ui/dist/global.css';
-import '../fonts/output/PretendardVariable.css';
 import './globals.css';
 
 import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google';

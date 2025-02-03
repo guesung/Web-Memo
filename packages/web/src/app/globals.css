@@ -10,7 +10,7 @@
   html {
     @apply bg-background text-foreground;
   }
-  /* 
+
   html,
   body {
     font-family:
@@ -29,7 +29,7 @@
       'Segoe UI Emoji',
       'Segoe UI Symbol',
       sans-serif;
-  } */
+  }
 
   :root {
     .rbc-calendar {

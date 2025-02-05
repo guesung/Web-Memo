@@ -28,6 +28,9 @@ const libBuildOptions = {
   alias: {
     '@src': resolve(__dirname, './src'),
   },
+  format: 'esm',
+  outExtension: { '.js': '.js' },
+  sourcemap: true,
 };
 
 const build = async () => {
@@ -36,7 +39,7 @@ const build = async () => {
   console.log('🚀 빌드 프로세스 시작...');
 
   try {
-    await esbuild.build({ ...libBuildOptions, format: 'esm', outExtension: { '.js': '.js' }, sourcemap: true });
+    await esbuild.build(libBuildOptions);
     console.log('✅ esbuild 빌드 완료');
 
     const execAsync = promisify(exec);

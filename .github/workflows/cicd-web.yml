@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: pnpm
+          cache: 'pnpm'
       - name: Web Build
         run: npm install --global vercel@latest
       - name: setting environment variables

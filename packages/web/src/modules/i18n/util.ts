@@ -1,16 +1,19 @@
 import acceptLanguage from 'accept-language';
-import type { Namespace } from 'i18next';
+import type { InitOptions, Namespace } from 'i18next';
 import type { NextRequest } from 'next/server';
 
 import { cookieName, DEFAULT_LANGUAGE, defaultNS, SUPPORTED_LANGUAGES } from './constant';
 
-export const getOptions = (lng = DEFAULT_LANGUAGE, ns: Namespace = defaultNS) => ({
+export const getOptions = (lng = DEFAULT_LANGUAGE, ns: Namespace = defaultNS): InitOptions => ({
   supportedLngs: SUPPORTED_LANGUAGES,
-  DEFAULT_LANGUAGE,
+  fallbackLng: DEFAULT_LANGUAGE,
   lng,
   fallbackNS: defaultNS,
   defaultNS,
   ns,
+  initImmediate: false,
+  debug: true,
+  preload: SUPPORTED_LANGUAGES,
 });
 
 export const getLanguage = (request: NextRequest) => {

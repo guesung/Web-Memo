@@ -8,6 +8,13 @@ import type { PropsWithChildren } from 'react';
 import { InitDayjs } from '../_components';
 import { QueryProvider, ThemeProvider } from './_components';
 
+// const pretendard = localFont({
+//   src: '../../fonts/PretendardVariableSubset.woff2',
+//   variable: '--font-pretendard',
+//   display: 'swap',
+//   weight: '45 920',
+// });
+
 interface RootLayoutProps extends PropsWithChildren, LanguageParams {}
 
 export async function generateStaticParams() {
@@ -32,7 +39,7 @@ export async function generateMetadata({ params }: LanguageParams) {
 
 export default function RootLayout({ children, params: { lng } }: RootLayoutProps) {
   return (
-    <div lang={lng} dir={dir(lng)} className="h-screen">
+    <div lang={lng} dir={dir(lng)} className={`h-screen`}>
       <ThemeProvider>
         <QueryProvider lng={lng}>
           <Header lng={lng} />
@@ -41,6 +48,12 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
       </ThemeProvider>
 
       <InitDayjs lng={lng} />
+
+      <link
+        rel="stylesheet"
+        as="style"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+      />
     </div>
   );
 }

@@ -1,6 +1,5 @@
 'use client';
 import { useKeyboardBind, useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
-import { useSearchParams } from '@extension/shared/modules/search-params';
 import { Button } from '@extension/ui';
 import { Card, CardContent, Dialog, DialogContent, Textarea } from '@src/components/ui';
 import type { LanguageType } from '@src/modules/i18n';
@@ -22,7 +21,6 @@ interface MemoDialog extends LanguageType {
 
 export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog) {
   const { t } = useTranslation(lng);
-  const searchParams = useSearchParams();
   const { memo: memoData } = useMemoQuery({ id: memoId });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
@@ -59,9 +57,9 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
 
   const closeDialog = () => {
     setDialogMemoId(null);
-    searchParams.removeAll('id');
 
-    history.pushState({ openedMemoId: null }, '', searchParams.getUrl());
+    const isHasPreviousPage = history.state?.openedMemoId === memoId;
+    if (isHasPreviousPage) history.back();
   };
 
   const handleUnChangesAlertClose = () => {

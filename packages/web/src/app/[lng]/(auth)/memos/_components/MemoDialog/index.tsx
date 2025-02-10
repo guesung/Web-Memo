@@ -1,5 +1,6 @@
 'use client';
 import { useKeyboardBind, useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
+import { useSearchParams } from '@extension/shared/modules/search-params';
 import { Button } from '@extension/ui';
 import { Card, CardContent, Dialog, DialogContent, Textarea } from '@src/components/ui';
 import type { LanguageType } from '@src/modules/i18n';
@@ -25,6 +26,7 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
   const [showAlert, setShowAlert] = useState(false);
+  const searchParams = useSearchParams();
 
   const { register, watch, setValue } = useForm<MemoInput>({
     defaultValues: {
@@ -60,6 +62,10 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
 
     const isHasPreviousPage = history.state?.openedMemoId === memoId;
     if (isHasPreviousPage) history.back();
+    else {
+      searchParams.removeAll('id');
+      history.pushState({}, '', searchParams.getUrl());
+    }
   };
 
   const handleUnChangesAlertClose = () => {

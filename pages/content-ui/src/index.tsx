@@ -1,9 +1,7 @@
 import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { isProduction } from '@extension/shared/utils';
-import { createRoot } from 'react-dom/client';
 
 import { OpenSidePanelButton } from './components';
-
 import { attachShadowTree } from './utils';
 
 const renderOpenSidePanelButton = async () => {

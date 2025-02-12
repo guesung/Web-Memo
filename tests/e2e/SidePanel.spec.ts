@@ -3,7 +3,7 @@ import { expect, test } from './fixtures';
 test.describe('SidePanel', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000');
-    await page.getByRole('button', { name: '테스트 계정으로 로그인' }).click();
+    await page.getByTestId('test-login-button').click();
     await page.waitForURL(/.*memos/);
 
     await page.goto('https://blog.toss.im/article/toss-team-culture');

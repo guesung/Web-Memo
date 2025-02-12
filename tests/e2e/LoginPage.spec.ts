@@ -10,21 +10,21 @@ test.describe('Login Page', () => {
       expect(page).toHaveURL(REGEXR.page.login);
     });
     test('카카오 로그인 버튼을 클릭하면 카카오 로그인 페이지로 이동한다.', async ({ page }) => {
-      await page.getByRole('button', { name: 'kakao 카카오 로그인' }).click();
+      await page.getByTestId('kakao-login-button').click();
 
       await page.waitForURL(REGEXR.page.kakaoLogin);
 
       expect(page).toHaveURL(REGEXR.page.kakaoLogin);
     });
     test('구글 로그인 버튼을 클릭하면 구글 로그인 페이지로 이동한다.', async ({ page }) => {
-      await page.getByRole('button', { name: 'google 구글 로그인' }).click();
+      await page.getByTestId('google-login-button').click();
 
       await page.waitForURL(REGEXR.page.googleLogin);
 
       expect(page).toHaveURL(REGEXR.page.googleLogin);
     });
     test('테스트 계정으로 로그인 시, memos페이지로 이동한다.', async ({ page }) => {
-      await page.getByRole('button', { name: '테스트 계정으로 로그인' }).click();
+      await page.getByTestId('test-login-button').click();
 
       await page.waitForURL(REGEXR.page.memos);
 

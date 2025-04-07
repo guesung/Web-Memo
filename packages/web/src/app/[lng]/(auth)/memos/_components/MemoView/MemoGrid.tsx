@@ -255,16 +255,13 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
         useResizeObserver
         observeChildren
         autoResize
-        className="container h-screen max-w-full"
+        className="container h-screen max-w-full pb-48 will-change-transform"
         container={true}
         useRecycle={false}
         id={CONTAINER_ID}
         gap={16}
         align="center"
         placeholder={<MemoItemSkeleton />}
-        style={{
-          willChange: 'transform',
-        }}
         onRequestAppend={handleRequestAppend}>
         {items.map(
           item =>

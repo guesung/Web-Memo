@@ -2,11 +2,11 @@ name: CICD Web
 
 on:
   push:
-    # paths:
-    #   - 'packages/web/**'
-    #   - 'packages/shared/**'
-    #   - 'package.json'
-    #   - 'pnpm-lock.yaml'
+    paths:
+      - 'packages/web/**'
+      - 'packages/shared/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
   pull_request:
     paths:
       - 'packages/web/**'
@@ -83,7 +83,7 @@ jobs:
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy staging
-        # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop'}}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop'}}
         run: |
           VERCEL_DEPOLYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
           vercel alias set "$VERCEL_DEPOLYED_URL" ${{secrets.STAGING_WEB_URL_WITHOUT_PROTOCOL}} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects

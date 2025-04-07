@@ -3,10 +3,10 @@ import '@extension/ui/dist/global.css';
 import './globals.css';
 
 import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google';
-import { Toaster } from '@src/components/ui';
+import { Loading, Toaster } from '@src/components/ui';
 import { CONFIG } from '@src/constants';
 import type { Metadata, Viewport } from 'next';
-import type { PropsWithChildren } from 'react';
+import { type PropsWithChildren, Suspense } from 'react';
 
 import { WebVitals } from './_components';
 
@@ -33,7 +33,7 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <html suppressHydrationWarning lang="ko">
       <body>
-        {children}
+        <Suspense fallback={<Loading />}>{children}</Suspense>
 
         <WebVitals />
         <GoogleAnalytics gaId={CONFIG.gaId} />

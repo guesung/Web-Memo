@@ -255,7 +255,7 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
         useResizeObserver
         observeChildren
         autoResize
-        className="container h-screen"
+        className="container h-screen max-w-full"
         container={true}
         useRecycle={false}
         id={CONTAINER_ID}

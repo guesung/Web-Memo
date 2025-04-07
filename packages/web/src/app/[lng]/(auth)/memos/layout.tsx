@@ -33,7 +33,7 @@ export default async function Layout({ children, params: { lng } }: LayoutProps)
       </HydrationBoundaryWrapper>
       {children}
 
-      <Suspense>
+      <Suspense fallback={<Loading />}>
         <InitSentryUserInfo lng={lng} />
       </Suspense>
     </SidebarProvider>

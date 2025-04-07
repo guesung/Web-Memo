@@ -28,12 +28,12 @@ export default async function Page({ searchParams, params: { lng } }: PageProps)
     <main className="h-screen w-screen overflow-y-hidden px-4">
       <HeaderMargin />
       <HydrationBoundaryWrapper queryKey={QUERY_KEY.memos()} queryFn={() => new MemoService(supabaseClient).getMemos()}>
-        <Suspense fallback={<Loading />}>
-          <MemoSearchFormProvider>
-            <MemoSearchForm lng={lng} />
+        <MemoSearchFormProvider>
+          <MemoSearchForm lng={lng} />
+          <Suspense fallback={<Loading />}>
             <MemoView lng={lng} searchParams={searchParams} />
-          </MemoSearchFormProvider>
-        </Suspense>
+          </Suspense>
+        </MemoSearchFormProvider>
       </HydrationBoundaryWrapper>
 
       <ExtensionInstallCheckDialog lng={lng} />

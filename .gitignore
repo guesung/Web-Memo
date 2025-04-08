@@ -11,6 +11,7 @@
 
 # env
 .env*
+!.env.example
 
 # etc
 .DS_Store

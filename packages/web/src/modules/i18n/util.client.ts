@@ -17,9 +17,7 @@ const runsOnServerSide = typeof window === 'undefined';
 i18next
   .use(initReactI18next)
   .use(LanguageDetector)
-  .use(
-    resourcesToBackend((language: Language, namespace: Namespace) => import(`./locales/${language}/${namespace}.json`)),
-  )
+  .use(resourcesToBackend((language: Language) => import(`./locales/${language}/translation.json`)))
   .init({
     ...getOptions(),
     lng: undefined,

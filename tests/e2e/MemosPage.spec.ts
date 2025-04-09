@@ -39,14 +39,15 @@ test.describe('Memos Page', () => {
   test.describe('메모 확인 기능', () => {
     test.beforeEach(async ({ page, baseURL }) => {
       await page.goto('https://blog.toss.im/article/toss-team-culture');
-      await page.locator('#open-side-panel').click();
+      await page.locator('#OPEN_SIDE_PANEL_BUTTON').click();
 
       await page.goto(baseURL!);
     });
     const text = String(new Date());
     test('사이드 패널에서 메모를 저장하면 메모를 확인할 수 있다.', async ({ page, sidePanelPage }) => {
       await sidePanelPage.locator('#memo-textarea').fill(text);
-      await sidePanelPage.locator('#memo-textarea').press('ControlOrMeta+s');
+
+      await page.waitForTimeout(1000);
 
       await page.reload();
       expect(page.getByText(text)).toBeVisible();

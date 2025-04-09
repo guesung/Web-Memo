@@ -12,7 +12,7 @@ export const getOptions = (lng = DEFAULT_LANGUAGE, ns: Namespace = defaultNS): I
   defaultNS,
   ns,
   initImmediate: false,
-  debug: true,
+  debug: false,
   preload: SUPPORTED_LANGUAGES,
 });
 

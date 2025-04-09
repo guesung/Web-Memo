@@ -6,11 +6,11 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : undefined,
-  timeout: 30000,
   reporter: 'html',
   use: {
     trace: 'on-first-retry',
     screenshot: process.env.CI ? undefined : 'only-on-failure',
+    baseURL: 'http://localhost:3000',
   },
   projects: [
     {

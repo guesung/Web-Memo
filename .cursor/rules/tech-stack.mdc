@@ -1,0 +1,83 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: 
+globs: 
+alwaysApply: true
+---
+## Tech Stack - Tools & Technologies
+
+### Core Technologies
+- TypeScript, Node.js, Next.js 14 App Router
+- React 18 with React Server Components (RSC)
+- Supabase for backend, database, and authentication
+- React Hook Form for form management
+- Shadcn UI with Tailwind CSS
+<!-- - Zod for schema validation and type safety -->
+
+### Architecture - Monorepo Structure
+- Turborepo for monorepo management
+- Packages structure:
+  - app/ - Chrome extension application
+  - web/ - Web application
+  - shared/ - Shared utilities and types
+  - ui/ - UI components library
+  - server/ - Backend services
+  - storage/ - Storage management
+  - vite-config/ - Vite configuration
+  - tailwind-config/ - Tailwind CSS configuration
+  - tsconfig/ - TypeScript configuration
+  - dev-utils/ - Development utilities
+  - hmr/ - Hot Module Replacement
+  - zipper/ - Extension packaging
+
+### Backend & Database
+- Supabase
+  - Authentication
+  - Database
+  - Real-time subscriptions
+  - Type generation
+
+### State Management & Data Fetching
+- TanStack Query (React Query) v5
+- React Hook Form for form management
+
+### UI & Styling
+- Tailwind CSS
+- Framer Motion for animations
+- Lucide React for icons
+- Next Themes for theme management
+
+### Testing
+- Vitest for unit testing
+- Playwright for E2E testing
+- Jest for testing utilities
+
+### Development Tools
+- ESLint for code linting
+- Prettier for code formatting
+- Husky for git hooks
+- TypeScript for type safety
+- Sentry for error tracking
+
+### Build & Development
+- Vite for development server
+- Turbo for build system
+- Cross-env for environment variables
+- Rimraf for file system operations
+
+### Chrome Extension Specific
+- Chrome Extension Manifest V3
+- Cross-browser compatibility (Chrome/Firefox)
+
+### Development Workflow
+- Git-based version control
+- GitHub Actions for CI/CD
+- Automated version updates
+- Code quality checks
+- Automated testing
+- Cross-browser testing
+- Error tracking and monitoring 

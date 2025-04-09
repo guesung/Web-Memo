@@ -204,6 +204,9 @@ importers:
       '@extension/shared':
         specifier: workspace:*
         version: link:../packages/shared
+      vite:
+        specifier: 5.3.3
+        version: 5.3.3(@types/node@22.5.2)(terser@5.36.0)
       webextension-polyfill:
         specifier: ^0.12.0
         version: 0.12.0
@@ -14483,7 +14486,7 @@ snapshots:
   vite@5.3.3(@types/node@20.14.15)(terser@5.36.0):
     dependencies:
       esbuild: 0.21.5
-      postcss: 8.4.43
+      postcss: 8.4.49
       rollup: 4.21.2
     optionalDependencies:
       '@types/node': 20.14.15
@@ -14493,7 +14496,7 @@ snapshots:
   vite@5.3.3(@types/node@22.5.2)(terser@5.36.0):
     dependencies:
       esbuild: 0.21.5
-      postcss: 8.4.43
+      postcss: 8.4.49
       rollup: 4.21.2
     optionalDependencies:
       '@types/node': 22.5.2

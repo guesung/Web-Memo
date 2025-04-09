@@ -20,7 +20,7 @@ export async function middleware(request: NextRequest) {
 
   if (!isLanguagePath && !isAuthPath)
     return NextResponse.redirect(
-      new URL(`${language}${pathname}${request.nextUrl.search}${request.nextUrl.hash}`, request.url),
+      new URL(`/${language}${pathname}${request.nextUrl.search}${request.nextUrl.hash}`, request.url),
     );
 
   // 토큰 업데이트

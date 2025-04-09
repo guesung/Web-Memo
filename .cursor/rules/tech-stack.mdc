@@ -3,11 +3,6 @@ description:
 globs: 
 alwaysApply: true
 ---
----
-description: 
-globs: 
-alwaysApply: true
----
 ## Tech Stack - Tools & Technologies
 
 ### Core Technologies

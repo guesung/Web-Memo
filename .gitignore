@@ -40,3 +40,8 @@ vite.config.**
 
 # windsurf
 .windsurfrules
+
+# Task files
+tasks.json
+tasks/ 
+prds/

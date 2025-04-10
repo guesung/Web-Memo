@@ -44,3 +44,4 @@ vite.config.**
 # Task files
 tasks.json
 tasks/ 
+prds/

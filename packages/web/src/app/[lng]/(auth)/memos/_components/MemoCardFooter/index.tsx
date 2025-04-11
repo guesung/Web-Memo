@@ -70,7 +70,7 @@ export default function MemoCardFooter({ memo, lng, children, isShowingOption = 
   };
 
   return (
-    <CardFooter className={cn('flex h-[40px] justify-between p-0 px-4 pb-2 pt-0', props.className)} {...props}>
+    <CardFooter className={cn('flex justify-between p-0 px-4 pb-2 pt-0', props.className)} {...props}>
       <div className="flex flex-wrap items-center gap-2">
         {memo.category?.name ? (
           <Badge

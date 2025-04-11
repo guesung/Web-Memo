@@ -21,7 +21,7 @@ interface PageProps extends LanguageParams {
   searchParams: SearchParamsType;
 }
 
-export default async function Page({ searchParams, params: { lng } }: PageProps) {
+export default async function Page({ params: { lng } }: PageProps) {
   const supabaseClient = getSupabaseClient();
 
   return (
@@ -31,7 +31,7 @@ export default async function Page({ searchParams, params: { lng } }: PageProps)
         <MemoSearchFormProvider>
           <MemoSearchForm lng={lng} />
           <Suspense fallback={<Loading />}>
-            <MemoView lng={lng} searchParams={searchParams} />
+            <MemoView lng={lng} />
           </Suspense>
         </MemoSearchFormProvider>
       </HydrationBoundaryWrapper>

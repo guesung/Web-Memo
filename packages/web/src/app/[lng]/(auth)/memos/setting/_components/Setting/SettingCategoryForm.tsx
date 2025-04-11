@@ -4,6 +4,7 @@ import {
   useCategoryQuery,
   useCategoryUpsertMutation,
 } from '@extension/shared/hooks';
+import { generateRandomPastelColor } from '@extension/shared/utils';
 import { Button, Input, Label, toast } from '@src/components/ui';
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
@@ -15,6 +16,7 @@ interface CategoryForm {
   categories: {
     id: number;
     name: string;
+    color: string;
   }[];
 }
 
@@ -37,7 +39,10 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
     const defaultCategoryName = t('setting.defaultCategoryName');
 
     insertCategory(
-      { name: defaultCategoryName },
+      {
+        name: defaultCategoryName,
+        color: generateRandomPastelColor(),
+      },
       {
         onSuccess: () => {
           toast({ title: t('toastTitle.successSave') });
@@ -67,7 +72,11 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 
     setValue(
       'categories',
-      categories.map(category => ({ id: category.id, name: category.name })),
+      categories.map(category => ({
+        id: category.id,
+        name: category.name,
+        color: category.color || '#000000',
+      })),
     );
   }, [categories, setValue]);
 
@@ -78,6 +87,14 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
         {categories?.map(({ id }, index) => (
           <div key={id} className="flex items-center gap-2">
             <Input {...register(`categories.${index}.name`)} />
+            <Input type="color" {...register(`categories.${index}.color`)} className="h-9 w-14" />
+            <div
+              className="h-9 w-9 rounded border"
+              style={{
+                backgroundColor: categories[index].color + '20',
+                borderColor: categories[index].color || undefined,
+              }}
+            />
             <Button
               variant="ghost"
               size="icon"

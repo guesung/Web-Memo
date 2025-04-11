@@ -29,6 +29,41 @@ import { HeartIcon, XIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+const getCursorPosition = (textarea: HTMLTextAreaElement, position: number) => {
+  // Create a dummy element to measure text
+  const div = document.createElement('div');
+  div.style.cssText = window.getComputedStyle(textarea, null).cssText;
+  div.style.height = 'auto';
+  div.style.position = 'absolute';
+  div.style.visibility = 'hidden';
+  div.style.whiteSpace = 'pre-wrap';
+
+  // Get text before cursor
+  const textBeforeCursor = textarea.value.substring(0, position);
+  div.textContent = textBeforeCursor;
+  document.body.appendChild(div);
+
+  // Calculate cursor position
+  const lineHeight = parseInt(window.getComputedStyle(textarea).lineHeight);
+  const lines = textBeforeCursor.split('\n');
+  const currentLineText = lines[lines.length - 1];
+
+  // Create a span for the current line to measure exact width
+  const span = document.createElement('span');
+  span.textContent = currentLineText;
+  div.appendChild(span);
+
+  const cursorLeft = span.offsetWidth;
+  const cursorTop = (lines.length - 1) * lineHeight;
+
+  document.body.removeChild(div);
+
+  return {
+    left: cursorLeft,
+    top: cursorTop,
+  };
+};
+
 function MemoForm() {
   const { debounce } = useDebounce();
   const { data: tab } = useTabQuery();
@@ -84,41 +119,6 @@ function MemoForm() {
     }
   }, [memoData?.memo, memoData?.isWish, memoData?.category_id, categories, setValue]);
 
-  const getCursorPosition = (textarea: HTMLTextAreaElement, position: number) => {
-    // Create a dummy element to measure text
-    const div = document.createElement('div');
-    div.style.cssText = window.getComputedStyle(textarea, null).cssText;
-    div.style.height = 'auto';
-    div.style.position = 'absolute';
-    div.style.visibility = 'hidden';
-    div.style.whiteSpace = 'pre-wrap';
-
-    // Get text before cursor
-    const textBeforeCursor = textarea.value.substring(0, position);
-    div.textContent = textBeforeCursor;
-    document.body.appendChild(div);
-
-    // Calculate cursor position
-    const lineHeight = parseInt(window.getComputedStyle(textarea).lineHeight);
-    const lines = textBeforeCursor.split('\n');
-    const currentLineText = lines[lines.length - 1];
-
-    // Create a span for the current line to measure exact width
-    const span = document.createElement('span');
-    span.textContent = currentLineText;
-    div.appendChild(span);
-
-    const cursorLeft = span.offsetWidth;
-    const cursorTop = (lines.length - 1) * lineHeight;
-
-    document.body.removeChild(div);
-
-    return {
-      left: cursorLeft,
-      top: cursorTop,
-    };
-  };
-
   const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = event.target.value;
     setValue('memo', text);
@@ -159,6 +159,15 @@ function MemoForm() {
   const handleCategorySelect = (category: { id: number; name: string; color: string | null }) => {
     setShowCategoryList(false);
     setSelectedCategory(category);
+
+    // Remove the # character from the memo text
+    const currentMemo = watch('memo');
+    console.log(currentMemo);
+    const lastHashIndex = currentMemo.lastIndexOf('#');
+    if (lastHashIndex !== -1) {
+      const newText = currentMemo.slice(0, lastHashIndex) + currentMemo.slice(lastHashIndex + 1);
+      setValue('memo', newText);
+    }
 
     // Don't add category name to the text anymore
     if (textareaRef.current) {

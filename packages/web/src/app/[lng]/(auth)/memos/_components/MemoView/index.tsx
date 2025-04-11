@@ -1,10 +1,10 @@
 'use client';
 
 import { useMemosQuery } from '@extension/shared/hooks';
-import type { SearchParamsType } from '@extension/shared/modules/search-params';
 import { useGuide } from '@src/modules/guide';
 import type { LanguageType } from '@src/modules/i18n';
 import dynamic from 'next/dynamic';
+import { useSearchParams } from 'next/navigation';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
@@ -21,16 +21,16 @@ const MemoCalendar = dynamic(() => import('./MemoCalendar'), {
   ssr: false,
 });
 
-interface MemoViewProps extends LanguageType {
-  searchParams: SearchParamsType;
-}
-
-export default function MemoView({
-  lng,
-  searchParams: { category = '', isWish = '', view = 'grid', tag = '' },
-}: MemoViewProps) {
+export default function MemoView({ lng }: LanguageType) {
   const { t } = useTranslation(lng);
   const { watch } = useFormContext<SearchFormValues>();
+  const searchParams = useSearchParams();
+
+  const category = searchParams.get('category') ?? '';
+  const isWish = searchParams.get('isWish') ?? '';
+  const view = searchParams.get('view') ?? 'grid';
+  const tag = searchParams.get('tag') ?? '';
+
   const { memos } = useMemosQuery({
     category,
     isWish: isWish === 'true',

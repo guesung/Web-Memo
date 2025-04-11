@@ -4,6 +4,7 @@ import {
   useCategoryQuery,
   useCategoryUpsertMutation,
 } from '@extension/shared/hooks';
+import { generateRandomPastelColor } from '@extension/shared/utils';
 import { Button, Input, Label, toast } from '@src/components/ui';
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
@@ -40,7 +41,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
     insertCategory(
       {
         name: defaultCategoryName,
-        color: '#000000', // 기본 색상
+        color: generateRandomPastelColor(),
       },
       {
         onSuccess: () => {
@@ -91,7 +92,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
               className="h-9 w-9 rounded border"
               style={{
                 backgroundColor: categories[index].color + '20',
-                borderColor: categories[index].color,
+                borderColor: categories[index].color || undefined,
               }}
             />
             <Button

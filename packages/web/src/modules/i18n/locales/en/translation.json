@@ -27,7 +27,8 @@
   "sideBar": {
     "memo": "My memos",
     "wishList": "My wishlist",
-    "allCategory": "All categories"
+    "allCategory": "All categories",
+    "tags": "Tags"
   },
 
   "header": {

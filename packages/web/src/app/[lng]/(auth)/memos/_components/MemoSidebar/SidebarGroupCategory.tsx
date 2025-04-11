@@ -12,7 +12,7 @@ import {
 } from '@src/components/ui';
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { memo } from 'react';
 
 import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
@@ -20,16 +20,8 @@ import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
 export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
   const { t } = useTranslation(lng);
   const { categories } = useCategoryQuery();
-  const router = useRouter();
   const searchParams = useSearchParams();
-
   const currentCategory = searchParams.get('category');
-
-  const handleCategoryClick = (category: string) => {
-    searchParams.removeAll('isWish');
-    searchParams.set('category', category);
-    router.push(searchParams.getUrl(), { scroll: true });
-  };
 
   return (
     <SidebarGroup>
@@ -38,15 +30,16 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
         <SidebarMenu>
           {categories?.map(category => (
             <SidebarMenuItem key={category.id}>
-              <SidebarMenuButton asChild>
-                <button
-                  onClick={() => handleCategoryClick(category.name)}
-                  className={`hover:bg-accent flex w-full items-center justify-between rounded-md p-2 ${
-                    currentCategory === category.name && 'bg-accent'
-                  }`}>
+              <Link href={`/memos?category=${encodeURIComponent(category.name)}`} className="w-full">
+                <SidebarMenuButton
+                  className={`w-full rounded-md px-3 py-2 ${
+                    currentCategory === category.name
+                      ? 'bg-orange-100 font-medium text-orange-600 dark:bg-orange-900/30 dark:text-orange-300'
+                      : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                  } `}>
                   <span>{category.name}</span>
-                </button>
-              </SidebarMenuButton>
+                </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
           ))}
           <SidebarMenuItemAddCategory />

@@ -123,7 +123,6 @@ function MemoForm() {
     const text = event.target.value;
     setValue('memo', text);
 
-    // Check if # was just typed
     const cursorPosition = event.target.selectionStart;
     const lastChar = text.charAt(cursorPosition - 1);
 
@@ -139,7 +138,6 @@ function MemoForm() {
       });
       setShowCategoryList(true);
 
-      // Remove the # character
       const newText = text.slice(0, cursorPosition - 1) + text.slice(cursorPosition);
       setValue('memo', newText);
       if (textareaRef.current) {
@@ -220,7 +218,16 @@ function MemoForm() {
             left: categoryInputPosition.left + 'px',
           }}>
           <Command>
-            <CommandInput ref={commandInputRef} placeholder={I18n.get('search_category')} />
+            <CommandInput
+              ref={commandInputRef}
+              placeholder={I18n.get('search_category')}
+              onKeyDown={e => {
+                if (e.key === 'Escape') {
+                  setShowCategoryList(false);
+                  textareaRef.current?.focus();
+                }
+              }}
+            />
             <CommandList>
               <CommandEmpty>{I18n.get('no_categories_found')}</CommandEmpty>
               <CommandGroup>

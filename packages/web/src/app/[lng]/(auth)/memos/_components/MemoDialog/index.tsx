@@ -31,6 +31,7 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
   const { register, watch, setValue } = useForm<MemoInput>({
     defaultValues: {
       memo: '',
+      tags: [],
     },
   });
 
@@ -40,10 +41,38 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
   useImperativeHandle(ref, () => textareaRef.current);
 
   const saveMemo = () => {
-    mutateMemoPatch({ id: memoId, request: { memo: watch('memo') } });
+    mutateMemoPatch({
+      id: memoId,
+      request: {
+        memo: watch('memo'),
+        tags: watch('tags') || [],
+      },
+    });
   };
 
   useKeyboardBind({ key: 's', callback: saveMemo, isMetaKey: true });
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === ' ') {
+      const text = event.currentTarget.value;
+      const normalizedText = text.replace(/\n/g, ' ');
+      const words = normalizedText.split(' ');
+      const lastWord = words[words.length - 1];
+
+      if (lastWord.startsWith('#') && lastWord.length > 1) {
+        event.preventDefault();
+        const newTag = lastWord.substring(1);
+        const currentTags = watch('tags') || [];
+
+        if (!currentTags.includes(newTag)) {
+          const newText = text.slice(0, -lastWord.length) + ' ';
+          setValue('memo', newText);
+          setValue('tags', [...currentTags, newTag]);
+          saveMemo();
+        }
+      }
+    }
+  };
 
   const checkEditedAndCloseDialog = () => {
     const isEdited = watch('memo') !== memoData?.memo;
@@ -79,6 +108,7 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
 
   useEffect(() => {
     setValue('memo', memoData?.memo ?? '');
+    setValue('tags', memoData?.tags ?? []);
   }, [memoData, setValue]);
 
   if (!memoData) return null;
@@ -103,6 +133,7 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
                     className="outline-none focus:border-gray-300 focus:outline-none"
                     ref={textareaRef}
                     placeholder={t('memos.placeholder')}
+                    onKeyDown={handleKeyDown}
                   />
                   <div className="h-4" />
                   <span className="text-muted-foreground float-right text-xs">

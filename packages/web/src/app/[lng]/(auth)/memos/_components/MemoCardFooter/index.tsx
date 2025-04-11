@@ -8,7 +8,7 @@ import { Badge, Button, CardFooter, toast, ToastAction } from '@src/components/u
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import dayjs from 'dayjs';
-import { HeartIcon } from 'lucide-react';
+import { FolderIcon, HashIcon, HeartIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { MouseEvent, PropsWithChildren } from 'react';
 
@@ -71,17 +71,29 @@ export default function MemoCardFooter({ memo, lng, children, isShowingOption = 
 
   return (
     <CardFooter className={cn('flex h-[40px] justify-between p-0 px-4 pb-2 pt-0', props.className)} {...props}>
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap items-center gap-2">
         {memo.category?.name ? (
-          <Badge variant="outline" onClick={handleCategoryClick} role="button" className="z-10">
+          <Badge
+            variant="outline"
+            onClick={handleCategoryClick}
+            role="button"
+            className="bg-muted/50 hover:bg-muted z-10 flex items-center gap-1">
+            <FolderIcon size={12} />
             {memo.category?.name}
           </Badge>
         ) : null}
-        {memo.tags?.map(tag => (
-          <Badge key={tag} variant="secondary" className="z-10 cursor-pointer" onClick={() => handleTagClick(tag)}>
-            #{tag}
-          </Badge>
-        ))}
+        <div className="flex flex-wrap gap-1">
+          {memo.tags?.map((tag: string) => (
+            <Badge
+              key={tag}
+              variant="secondary"
+              className="bg-primary/10 text-primary hover:bg-primary/20 z-10 flex cursor-pointer items-center gap-1"
+              onClick={() => handleTagClick(tag)}>
+              <HashIcon size={10} />
+              {tag}
+            </Badge>
+          ))}
+        </div>
       </div>
       <div
         className={cn('relative z-50 flex items-center transition', {

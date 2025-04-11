@@ -73,7 +73,7 @@ function MemoForm() {
   const { categories } = useCategoryQuery();
   const [showCategoryList, setShowCategoryList] = useState(false);
   const [categoryInputPosition, setCategoryInputPosition] = useState({ top: 0, left: 0 });
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const commandInputRef = useRef<HTMLInputElement>(null);
   const [selectedCategory, setSelectedCategory] = useState<{ id: number; name: string; color: string | null } | null>(
     null,
@@ -85,6 +85,7 @@ function MemoForm() {
       isWish: false,
     },
   });
+  const { ref, ...rest } = register('memo');
 
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
   const { mutate: mutateMemoPost } = useMemoPostMutation();
@@ -200,13 +201,19 @@ function MemoForm() {
     });
   };
 
+  console.log(watch('memo'));
+
   return (
     <form className="relative flex h-full flex-col gap-1 py-1">
       <Textarea
         {...register('memo', {
           onChange: handleMemoTextAreaChange,
         })}
-        ref={textareaRef}
+        {...rest}
+        ref={e => {
+          ref(e);
+          textareaRef.current = e;
+        }}
         className={cn('flex-1 resize-none text-sm outline-none')}
         id="memo-textarea"
         placeholder={I18n.get('memo')}

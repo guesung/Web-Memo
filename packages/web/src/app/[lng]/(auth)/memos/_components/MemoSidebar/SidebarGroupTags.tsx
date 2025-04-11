@@ -2,7 +2,6 @@
 
 import { PATHS } from '@extension/shared/constants';
 import { useMemosQuery } from '@extension/shared/hooks';
-import { useSearchParams } from '@extension/shared/modules/search-params';
 import type { MemoRow } from '@extension/shared/types';
 import {
   SidebarGroup,
@@ -10,11 +9,13 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
+  SidebarMenuItem,
 } from '@src/components/ui';
 import type { Language } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface TagInfo {
   name: string;
@@ -26,8 +27,9 @@ export default function SidebarGroupTags({ lng }: { lng: Language }) {
   const { memos } = useMemosQuery();
   const searchParams = useSearchParams();
   const currentTag = searchParams.get('tag');
+  const [tags, setTags] = useState<TagInfo[]>([]);
 
-  const tags = useMemo(() => {
+  useEffect(() => {
     const tagMap = new Map<string, number>();
 
     memos.forEach((memo: MemoRow) => {
@@ -37,35 +39,41 @@ export default function SidebarGroupTags({ lng }: { lng: Language }) {
       });
     });
 
-    return Array.from(tagMap.entries())
-      .map(([name, count]): TagInfo => ({ name, count }))
-      .sort((a, b) => b.count - a.count);
+    setTags(
+      Array.from(tagMap.entries())
+        .map(([name, count]): TagInfo => ({ name, count }))
+        .sort((a, b) => b.count - a.count),
+    );
   }, [memos]);
-
-  if (tags.length === 0) return null;
 
   return (
     <SidebarGroup>
       <SidebarGroupLabel>{t('sideBar.tags')}</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {tags.map(tag => (
-            <Link key={tag.name} href={`${PATHS.memos}?tag=${encodeURIComponent(tag.name)}`} className="w-full" replace>
-              <SidebarMenuButton
-                className={`flex w-full items-center justify-between rounded-md px-3 py-2 ${
-                  currentTag === tag.name
-                    ? 'bg-orange-100 font-medium text-orange-600 dark:bg-orange-900/30 dark:text-orange-300'
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                } `}>
-                <span># {tag.name}</span>
-                <span
-                  className={`text-xs ${
-                    currentTag === tag.name ? 'text-orange-600/80 dark:text-orange-300/80' : 'text-muted-foreground'
-                  }`}>
-                  {tag.count}
-                </span>
-              </SidebarMenuButton>
-            </Link>
+          {tags?.map(tag => (
+            <SidebarMenuItem key={tag.name}>
+              <Link
+                key={tag.name}
+                href={`${PATHS.memos}?tag=${encodeURIComponent(tag.name)}`}
+                className="w-full"
+                replace>
+                <SidebarMenuButton
+                  className={`flex w-full items-center justify-between rounded-md px-3 py-2 ${
+                    currentTag === tag.name
+                      ? 'bg-orange-100 font-medium text-orange-600 dark:bg-orange-900/30 dark:text-orange-300'
+                      : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                  } `}>
+                  <span># {tag.name}</span>
+                  <span
+                    className={`text-xs ${
+                      currentTag === tag.name ? 'text-orange-600/80 dark:text-orange-300/80' : 'text-muted-foreground'
+                    }`}>
+                    {tag.count}
+                  </span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
           ))}
         </SidebarMenu>
       </SidebarGroupContent>

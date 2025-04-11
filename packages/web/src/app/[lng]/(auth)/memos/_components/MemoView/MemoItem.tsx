@@ -72,8 +72,13 @@ export default memo(function MemoItem({
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
         <Card
           className={cn('relative box-content w-[300px] transition-all', {
-            'border-primary cursor-pointer': isMemoSelected,
-          })}>
+            'border-2': isMemoSelected,
+            'border-primary': isMemoSelected,
+          })}
+          style={{
+            borderLeftColor: memo.category?.color || undefined,
+            borderLeftWidth: memo.category?.color ? '4px' : undefined,
+          }}>
           <MemoCardHeader
             memo={memo}
             isMemoHovering={isMemoHovering}

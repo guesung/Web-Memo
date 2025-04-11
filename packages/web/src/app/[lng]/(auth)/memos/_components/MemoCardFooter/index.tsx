@@ -92,7 +92,12 @@ export default function MemoCardFooter({
             variant="outline"
             onClick={handleCategoryClick}
             role="button"
-            className="bg-muted/50 hover:bg-muted z-10 flex items-center gap-1">
+            className="z-10 flex items-center gap-1"
+            style={{
+              backgroundColor: memo.category.color ? `${memo.category.color}20` : 'bg-muted/50',
+              borderColor: memo.category.color || undefined,
+              color: memo.category.color || undefined,
+            }}>
             <FolderIcon size={12} />
             {memo.category?.name}
           </Badge>

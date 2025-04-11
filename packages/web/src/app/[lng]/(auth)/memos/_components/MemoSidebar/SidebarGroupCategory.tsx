@@ -48,7 +48,16 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
                     currentCategory === category.name
                       ? 'bg-gray-100 font-medium dark:bg-gray-800'
                       : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                  } `}>
+                  } `}
+                  style={{
+                    borderLeft: `4px solid ${category.color || 'transparent'}`,
+                    backgroundColor:
+                      currentCategory === category.name
+                        ? category.color
+                          ? `${category.color}20`
+                          : 'bg-gray-100'
+                        : 'transparent',
+                  }}>
                   <span>{category.name}</span>
                   <span
                     className={`text-xs ${

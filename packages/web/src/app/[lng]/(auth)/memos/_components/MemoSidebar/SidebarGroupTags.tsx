@@ -2,6 +2,7 @@
 
 import { PATHS } from '@extension/shared/constants';
 import { useMemosQuery } from '@extension/shared/hooks';
+import { useSearchParams } from '@extension/shared/modules/search-params';
 import type { MemoRow } from '@extension/shared/types';
 import {
   SidebarGroup,
@@ -23,6 +24,8 @@ interface TagInfo {
 export default function SidebarGroupTags({ lng }: { lng: Language }) {
   const { t } = useTranslation(lng);
   const { memos } = useMemosQuery();
+  const searchParams = useSearchParams();
+  const currentTag = searchParams.get('tag');
 
   const tags = useMemo(() => {
     const tagMap = new Map<string, number>();
@@ -47,12 +50,20 @@ export default function SidebarGroupTags({ lng }: { lng: Language }) {
       <SidebarGroupContent>
         <SidebarMenu>
           {tags.map(tag => (
-            <Link key={tag.name} href={`${PATHS.memos}?tag=${encodeURIComponent(tag.name)}`}>
-              <SidebarMenuButton>
-                <span className={tag.count >= 10 ? 'font-bold' : tag.count >= 5 ? 'font-medium' : ''}>
-                  # {tag.name}
+            <Link key={tag.name} href={`${PATHS.memos}?tag=${encodeURIComponent(tag.name)}`} className="w-full">
+              <SidebarMenuButton
+                className={`flex w-full items-center justify-between rounded-md px-3 py-2 ${
+                  currentTag === tag.name
+                    ? 'bg-orange-100 font-medium text-orange-600 dark:bg-orange-900/30 dark:text-orange-300'
+                    : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                } `}>
+                <span># {tag.name}</span>
+                <span
+                  className={`text-xs ${
+                    currentTag === tag.name ? 'text-orange-600/80 dark:text-orange-300/80' : 'text-muted-foreground'
+                  }`}>
+                  {tag.count}
                 </span>
-                <span className="text-muted-foreground ml-auto text-xs">{tag.count}</span>
               </SidebarMenuButton>
             </Link>
           ))}

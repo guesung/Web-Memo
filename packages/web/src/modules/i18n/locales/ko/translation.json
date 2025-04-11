@@ -126,8 +126,9 @@
   "login": {
     "welcomeTitle": "웹 메모에 오신 것을 환영합니다!",
     "welcomeDescription": "웹 메모와 함께 더 쉽고 편리하게 메모를 관리해보세요.",
-    "kakaoLogin": "카카오 계정으로 시작하기",
-    "googleLogin": "구글 계정으로 시작하기",
+    "kakaoLogin": "카카오 계정으로 로그인",
+    "googleLogin": "구글 계정으로 로그인",
+    "testLogin": "테스트 계정으로 로그인",
     "askGoInstallExtension": "메모 기능을 사용하시려면 확장 프로그램이 필요해요. 지금 설치하러 가시겠어요?",
     "personalInformationInfo": "고객님의 소중한 개인정보는 안전하게 보호되며, 마케팅 목적으로는 절대 사용되지 않아요."
   },

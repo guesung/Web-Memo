@@ -126,8 +126,9 @@
   "login": {
     "welcomeTitle": "Welcome to Web Memo!",
     "welcomeDescription": "Let's make memo-taking easier and more convenient together!",
-    "kakaoLogin": "Continue with Kakao",
-    "googleLogin": "Continue with Google",
+    "kakaoLogin": "Login with Kakao",
+    "googleLogin": "Login with Google",
+    "testLogin": "Login with Test",
     "askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
     "personalInformationInfo": "Don't worry! Your personal information is strictly protected and will never be used for marketing purposes."
   },

@@ -61,7 +61,7 @@ export default function SidebarGroupTags({ lng }: { lng: Language }) {
                 <SidebarMenuButton
                   className={`flex w-full items-center justify-between rounded-md px-3 py-2 ${
                     currentTag === tag.name
-                      ? 'bg-orange-100 font-medium text-orange-600 dark:bg-orange-900/30 dark:text-orange-300'
+                      ? 'bg-gray-100 font-medium dark:bg-gray-800'
                       : 'hover:bg-gray-100 dark:hover:bg-gray-800'
                   } `}>
                   <span># {tag.name}</span>

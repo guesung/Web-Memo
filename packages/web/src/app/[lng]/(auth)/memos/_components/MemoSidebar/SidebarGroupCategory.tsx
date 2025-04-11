@@ -32,7 +32,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
                 <SidebarMenuButton
                   className={`w-full rounded-md px-3 py-2 ${
                     currentCategory === category.name
-                      ? 'bg-orange-100 font-medium text-orange-600 dark:bg-orange-900/30 dark:text-orange-300'
+                      ? 'bg-gray-100 font-medium dark:bg-gray-800'
                       : 'hover:bg-gray-100 dark:hover:bg-gray-800'
                   } `}>
                   <span>{category.name}</span>

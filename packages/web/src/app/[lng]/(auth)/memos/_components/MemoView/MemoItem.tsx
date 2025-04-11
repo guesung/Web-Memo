@@ -69,25 +69,19 @@ export default memo(function MemoItem({
       tabIndex={0}
       role="button"
       aria-label={`메모 ${memo.id}`}>
-      <motion.div layoutId={`memo-${memo.id}`}>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
         <Card
           className={cn('relative box-content w-[300px] transition-all', {
             'border-primary cursor-pointer': isMemoSelected,
           })}>
-          <motion.div layoutId={`header-${memo.id}`}>
-            <MemoCardHeader
-              memo={memo}
-              isMemoHovering={isMemoHovering}
-              isMemoSelected={isMemoSelected}
-              selectMemoItem={selectMemoItem}
-            />
-          </motion.div>
-          <motion.div layoutId={`content-${memo.id}`}>
-            {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
-          </motion.div>
-          <motion.div layoutId={`footer-${memo.id}`}>
-            <MemoCardFooter memo={memo} lng={lng} isShowingOption={isMemoHovering && !isSelectingMode} />
-          </motion.div>
+          <MemoCardHeader
+            memo={memo}
+            isMemoHovering={isMemoHovering}
+            isMemoSelected={isMemoSelected}
+            selectMemoItem={selectMemoItem}
+          />
+          {memo.memo && <CardContent className="whitespace-break-spaces break-all">{memo.memo}</CardContent>}
+          <MemoCardFooter memo={memo} lng={lng} isShowingOption={isMemoHovering && !isSelectingMode} />
         </Card>
       </motion.div>
     </div>

@@ -124,41 +124,31 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
     <>
       <Dialog open>
         <DialogContent className="max-w-[600px] p-0" onClose={checkEditedAndCloseDialog}>
-          <motion.div
-            layoutId={`memo-${memoId}`}
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <Card>
-              <motion.div layoutId={`header-${memoId}`}>
-                <MemoCardHeader memo={memoData} />
-              </motion.div>
-              <motion.div layoutId={`content-${memoId}`}>
-                <CardContent>
-                  <Textarea
-                    {...rest}
-                    className="outline-none focus:border-gray-300 focus:outline-none"
-                    ref={textareaRef}
-                    placeholder={t('memos.placeholder')}
-                    onKeyDown={handleKeyDown}
-                  />
+              <MemoCardHeader memo={memoData} />
+              <CardContent>
+                <Textarea
+                  {...rest}
+                  className="outline-none focus:border-gray-300 focus:outline-none"
+                  ref={textareaRef}
+                  placeholder={t('memos.placeholder')}
+                  onKeyDown={handleKeyDown}
+                />
 
-                  <div className="h-4" />
-                  <span className="text-muted-foreground float-right text-xs">
-                    {t('common.lastUpdated', { time: dayjs(memoData.updated_at).fromNow() })}
-                  </span>
-                </CardContent>
-              </motion.div>
-              <motion.div layoutId={`footer-${memoId}`}>
-                <MemoCardFooter memo={memoData} lng={lng} onTagClick={tag => handleTagRemove(tag)}>
-                  <div className="flex gap-2">
-                    <Button variant="outline" type="button" onClick={checkEditedAndCloseDialog}>
-                      {t('common.close')}
-                    </Button>
-                    <Button onClick={handleSaveAndClose}>{t('common.save')}</Button>
-                  </div>
-                </MemoCardFooter>
-              </motion.div>
+                <div className="h-4" />
+                <span className="text-muted-foreground float-right text-xs">
+                  {t('common.lastUpdated', { time: dayjs(memoData.updated_at).fromNow() })}
+                </span>
+              </CardContent>
+              <MemoCardFooter memo={memoData} lng={lng} onTagClick={tag => handleTagRemove(tag)}>
+                <div className="flex gap-2">
+                  <Button variant="outline" type="button" onClick={checkEditedAndCloseDialog}>
+                    {t('common.close')}
+                  </Button>
+                  <Button onClick={handleSaveAndClose}>{t('common.save')}</Button>
+                </div>
+              </MemoCardFooter>
             </Card>
           </motion.div>
         </DialogContent>

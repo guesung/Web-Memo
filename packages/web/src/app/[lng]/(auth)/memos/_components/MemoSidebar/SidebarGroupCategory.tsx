@@ -15,8 +15,6 @@ import useTranslation from '@src/modules/i18n/util.client';
 import Link from 'next/link';
 import { memo } from 'react';
 
-import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
-
 export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
   const { t } = useTranslation(lng);
   const { categories } = useCategoryQuery();
@@ -30,7 +28,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
         <SidebarMenu>
           {categories?.map(category => (
             <SidebarMenuItem key={category.id}>
-              <Link href={`/memos?category=${encodeURIComponent(category.name)}`} className="w-full">
+              <Link href={`/memos?category=${encodeURIComponent(category.name)}`} className="w-full" replace>
                 <SidebarMenuButton
                   className={`w-full rounded-md px-3 py-2 ${
                     currentCategory === category.name
@@ -42,7 +40,6 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
               </Link>
             </SidebarMenuItem>
           ))}
-          <SidebarMenuItemAddCategory />
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

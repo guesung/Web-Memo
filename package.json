@@ -35,7 +35,10 @@
     "update-version:win32": "bash update_version.sh",
     "update-version:default": "./update_version.sh",
     "package": "pnpm i && pnpm clean && pnpm build && pnpm zip",
-    "generate-supabase-type": "supabase gen types --lang=typescript --project-id czwtqukymcqoberdoltq --schema feedback --schema memo > packages/shared/src/types/supabase.ts && prettier --write packages/shared/src/types/supabase.ts"
+    "generate-supabase-type": "supabase gen types --lang=typescript --project-id czwtqukymcqoberdoltq --schema feedback --schema memo > packages/shared/src/types/supabase.ts && prettier --write packages/shared/src/types/supabase.ts",
+    "list": "node scripts/dev.js list",
+    "generate": "node scripts/dev.js generate",
+    "parse-prd": "node scripts/dev.js parse-prd"
   },
   "files": [
     "dist"
@@ -65,7 +68,15 @@
     "tsc-watch": "^6.2.1",
     "uvcanvas": "^0.2.2",
     "vite-plugin-svgr": "^4.3.0",
-    "youtube-transcript": "^1.2.1"
+    "youtube-transcript": "^1.2.1",
+    "@anthropic-ai/sdk": "^0.39.0",
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "figlet": "^1.7.0",
+    "boxen": "^7.1.1",
+    "gradient-string": "^2.0.2",
+    "cli-table3": "^0.6.3",
+    "ora": "^7.0.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0",

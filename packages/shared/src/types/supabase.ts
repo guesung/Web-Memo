@@ -73,7 +73,6 @@ export type Database = {
           id: number;
           isWish: boolean | null;
           memo: string;
-          tags: string[] | null;
           title: string;
           updated_at: string | null;
           url: string;
@@ -87,7 +86,6 @@ export type Database = {
           id?: number;
           isWish?: boolean | null;
           memo: string;
-          tags?: string[] | null;
           title: string;
           updated_at?: string | null;
           url: string;
@@ -101,7 +99,6 @@ export type Database = {
           id?: number;
           isWish?: boolean | null;
           memo?: string;
-          tags?: string[] | null;
           title?: string;
           updated_at?: string | null;
           url?: string;

@@ -4,5 +4,4 @@ export interface CategoryInput {
 
 export type MemoInput = {
   memo: string;
-  tags?: string[];
 };

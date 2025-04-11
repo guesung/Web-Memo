@@ -26,7 +26,6 @@ function MemoForm() {
     defaultValues: {
       memo: '',
       isWish: false,
-      tags: [],
     },
   });
 
@@ -40,7 +39,6 @@ function MemoForm() {
       ...memoInfo,
       memo: watch('memo'),
       isWish: watch('isWish'),
-      tags: watch('tags'),
     };
 
     if (memoData) mutateMemoPatch({ id: memoData.id, request: memo });
@@ -54,41 +52,12 @@ function MemoForm() {
   useEffect(() => {
     setValue('memo', memoData?.memo ?? '');
     setValue('isWish', memoData?.isWish ?? false);
-    setValue('tags', memoData?.tags ?? []);
-  }, [memoData?.memo, memoData?.isWish, memoData?.tags, setValue]);
+  }, [memoData?.memo, memoData?.isWish, setValue]);
 
   const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = event.target.value;
     setValue('memo', text);
     debounce(saveMemo);
-  };
-
-  const handleKeyDown = async (
-    event: React.KeyboardEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLInputElement>,
-  ) => {
-    if (event.metaKey && event.key === 's') event.preventDefault();
-
-    if (event.key === ' ') {
-      const text = event.currentTarget.value;
-      const normalizedText = text.replace(/\n/g, ' ');
-      const words = normalizedText.split(' ');
-      const lastWord = words[words.length - 1];
-
-      if (lastWord.startsWith('#') && lastWord.length > 1) {
-        event.preventDefault();
-        const newTag = lastWord.substring(1);
-        const currentTags = watch('tags') || [];
-
-        if (!currentTags.includes(newTag)) {
-          const newText = text.slice(0, -lastWord.length) + ' ';
-          setValue('memo', newText);
-
-          setValue('tags', [...currentTags, newTag]);
-
-          await saveMemo();
-        }
-      }
-    }
   };
 
   const handleWishClick = async () => {
@@ -117,15 +86,6 @@ function MemoForm() {
     });
   };
 
-  const handleTagRemove = (tagToRemove: string) => {
-    const currentTags = watch('tags') || [];
-    setValue(
-      'tags',
-      currentTags.filter(tag => tag !== tagToRemove),
-    );
-    debounce(saveMemo);
-  };
-
   return (
     <form className="relative flex h-full flex-col gap-1 py-1">
       <Textarea
@@ -135,7 +95,6 @@ function MemoForm() {
         className={cn('flex-1 resize-none text-sm outline-none')}
         id="memo-textarea"
         placeholder={I18n.get('memo')}
-        onKeyDown={handleKeyDown}
       />
       <div className="flex items-center gap-2">
         <HeartIcon
@@ -148,23 +107,6 @@ function MemoForm() {
             'animate-heart-pop': memoData?.isWish,
           })}
         />
-        <div className="flex flex-wrap gap-1">
-          {watch('tags')?.map(tag => (
-            <button
-              key={tag}
-              type="button"
-              className="cursor-pointer rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700 hover:bg-gray-200"
-              onClick={() => handleTagRemove(tag)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  handleTagRemove(tag);
-                }
-              }}>
-              {tag}
-            </button>
-          ))}
-        </div>
       </div>
     </form>
   );

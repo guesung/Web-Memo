@@ -29,14 +29,12 @@ export default function MemoView({ lng }: LanguageType) {
   const category = searchParams.get('category') ?? '';
   const isWish = searchParams.get('isWish') ?? '';
   const view = searchParams.get('view') ?? 'grid';
-  const tag = searchParams.get('tag') ?? '';
 
   const { memos } = useMemosQuery({
     category,
     isWish: isWish === 'true',
     searchQuery: watch('searchQuery'),
     searchTarget: watch('searchTarget'),
-    tag,
   });
 
   useGuide({ lng });

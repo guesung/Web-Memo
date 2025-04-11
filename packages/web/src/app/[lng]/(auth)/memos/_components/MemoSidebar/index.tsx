@@ -7,7 +7,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarSeparator,
@@ -22,7 +21,6 @@ import { Heart, Home, SettingsIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import SidebarGroupCategory from './SidebarGroupCategory';
-import SidebarGroupTags from './SidebarGroupTags';
 
 export default async function MemoSidebar({ lng }: LanguageType) {
   const { t } = await useTranslation(lng);
@@ -32,45 +30,37 @@ export default async function MemoSidebar({ lng }: LanguageType) {
       <HeaderMargin />
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <Link href={PATHS.memos}>
-                <SidebarMenuButton>
-                  <Home className="h-4 w-4" />
-                  <span>{t('sideBar.memo')}</span>
-                </SidebarMenuButton>
-              </Link>
-              <Link href={PATHS.memosWish}>
-                <SidebarMenuButton>
-                  <Heart className="h-4 w-4" />
-                  <span>{t('sideBar.wishList')}</span>
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenu>
-          </SidebarGroupContent>
+          <SidebarMenu>
+            <Link href={PATHS.memos} replace>
+              <SidebarMenuButton>
+                <Home size={16} />
+                {t('sideBar.memo')}
+              </SidebarMenuButton>
+            </Link>
+            <Link href={`${PATHS.memos}?isWish=true`} replace>
+              <SidebarMenuButton>
+                <Heart size={16} />
+                {t('sideBar.wishList')}
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenu>
         </SidebarGroup>
-
         <SidebarSeparator />
-
         <SidebarGroupCategory lng={lng} />
-
-        <SidebarSeparator />
-
-        <SidebarGroupTags lng={lng} />
       </SidebarContent>
-
-      <SidebarFooter className="p-4">
+      <SidebarFooter>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <Link href={PATHS.memosSetting}>
                 <SidebarMenuButton>
-                  <SettingsIcon className="h-4 w-4" />
-                  <span className="sr-only">Settings</span>
+                  <SettingsIcon size={16} />
                 </SidebarMenuButton>
               </Link>
             </TooltipTrigger>
-            <TooltipContent>Settings</TooltipContent>
+            <TooltipContent>
+              <p>{t('settings.title')}</p>
+            </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </SidebarFooter>

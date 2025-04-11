@@ -1,5 +1,5 @@
 import { CONFIG, SUPABASE } from '@src/constants';
-import { Database } from '@src/types';
+import type { Database } from '@src/types';
 import { createBrowserClient } from '@supabase/ssr';
 
 export const getSupabaseClient = () => {

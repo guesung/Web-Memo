@@ -1,4 +1,4 @@
-import { FallbackComponentProps } from './ErrorBoundary';
+import type { FallbackComponentProps } from './ErrorBoundary';
 
 interface ErrorFallbackProps extends FallbackComponentProps {}
 export default function ErrorFallback({ error }: ErrorFallbackProps) {

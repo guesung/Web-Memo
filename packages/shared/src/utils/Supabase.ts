@@ -1,5 +1,5 @@
 import { SUPABASE } from '@src/constants';
-import {
+import type {
   CategoryRow,
   CategoryTable,
   FeedbackSupabaseClient,

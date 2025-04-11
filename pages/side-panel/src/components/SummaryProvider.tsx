@@ -1,5 +1,6 @@
 import { useSummary } from '@src/hooks';
-import { createContext, PropsWithChildren, useContext } from 'react';
+import type { PropsWithChildren } from 'react';
+import { createContext, useContext } from 'react';
 
 interface SummaryContext extends ReturnType<typeof useSummary> {}
 

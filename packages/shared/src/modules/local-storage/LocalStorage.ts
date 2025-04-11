@@ -1,4 +1,4 @@
-import { LocalStorageKeyType } from './type';
+import type { LocalStorageKeyType } from './type';
 
 export default class LocalStorage {
   static get<T>(key: LocalStorageKeyType): T | null {

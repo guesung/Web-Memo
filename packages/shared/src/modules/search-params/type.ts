@@ -1,4 +1,4 @@
-import { SEARCH_PARAMS_KEYS } from './constant';
+import type { SEARCH_PARAMS_KEYS } from './constant';
 
 export type SearchParamViewType = 'grid' | 'calendar';
 export type SearchParamKeyType = (typeof SEARCH_PARAMS_KEYS)[number];

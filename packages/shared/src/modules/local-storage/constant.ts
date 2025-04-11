@@ -1,4 +1,4 @@
-import { BasicStorageKeyType, LocalStorageKeyType, UpdateVersionType } from './type';
+import type { BasicStorageKeyType, LocalStorageKeyType, UpdateVersionType } from './type';
 
 const REGEXR_UPDATE_VERSION_VERSION = /^updateVersion\d+\.\d+\.\d+$/;
 

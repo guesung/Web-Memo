@@ -9,5 +9,5 @@ export * from './Sentry';
 export * from './String';
 export * from './Supabase';
 export * from './Tailwind';
-export * from './Url';
 export * from './Time';
+export * from './Url';

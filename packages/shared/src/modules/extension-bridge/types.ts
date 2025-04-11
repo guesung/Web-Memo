@@ -1,4 +1,4 @@
-import { Category } from './constant';
+import type { Category } from './constant';
 
 export class ExtensionError extends Error {
   constructor(

@@ -1,8 +1,11 @@
 import { EXTENSION } from '@src/constants';
 import { Runtime, Tab } from '@src/utils/extension';
 import { YoutubeTranscript } from 'youtube-transcript';
-import { BRIDGE_MESSAGE_TYPES, Category } from './constant';
-import { ExtensionError, ExtensionErrorCode, PageContent } from './types';
+
+import type { Category } from './constant';
+import { BRIDGE_MESSAGE_TYPES } from './constant';
+import type { PageContent } from './types';
+import { ExtensionError, ExtensionErrorCode } from './types';
 
 export default class ExtensionBridge {
   static async requestGetSidePanelOpen(callbackFn: () => void) {

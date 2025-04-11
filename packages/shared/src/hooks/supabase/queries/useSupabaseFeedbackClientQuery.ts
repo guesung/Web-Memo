@@ -1,5 +1,5 @@
 import { QUERY_KEY } from '@src/constants';
-import { FeedbackSupabaseClient } from '@src/types';
+import type { FeedbackSupabaseClient } from '@src/types';
 import { isExtension } from '@src/utils/Environment';
 import { getFeedbackSupabaseClient as getSupabaseClientExtension } from '@src/utils/extension';
 import { getFeedbackSupabaseClient as getFeedbackSupabaseClientWeb } from '@src/utils/web';

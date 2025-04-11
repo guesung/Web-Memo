@@ -1,4 +1,4 @@
-import { StorageKeyType } from '@src/modules/chrome-storage';
+import type { StorageKeyType } from '@src/modules/chrome-storage';
 import { I18n } from '@src/utils/extension';
 
 export default class ChromeSyncStorage {

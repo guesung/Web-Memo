@@ -1,5 +1,5 @@
 import { QUERY_KEY } from '@src/constants';
-import { MemoSupabaseClient } from '@src/types';
+import type { MemoSupabaseClient } from '@src/types';
 import { isExtension } from '@src/utils/Environment';
 import { getSupabaseClient as getSupabaseClientExtension } from '@src/utils/extension';
 import { getSupabaseClient as getSupabaseClientWeb } from '@src/utils/web';

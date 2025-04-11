@@ -2,7 +2,8 @@
 
 import { usePathname, useSearchParams as useSearchParamsNext } from 'next/navigation';
 
-import { SearchParams, SearchParamType } from '.';
+import type { SearchParamType } from '.';
+import { SearchParams } from '.';
 
 export default function useSearchParams() {
   const searchParams = useSearchParamsNext();

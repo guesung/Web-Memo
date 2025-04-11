@@ -1,5 +1,5 @@
 import LocalStorage from './LocalStorage';
-import { LocalStorageKeyType } from './type';
+import type { LocalStorageKeyType } from './type';
 
 export const setLocalStorageTrue = (key: LocalStorageKeyType) => {
   LocalStorage.set(key, true);

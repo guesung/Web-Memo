@@ -1,9 +1,11 @@
 'use server';
 
+import { SUPABASE } from '@extension/shared/constants';
 import { Button } from '@src/components/ui';
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.server';
-import { signInWithOAuth } from '@src/modules/supabase/util.server';
+import { signInWithEmail, signInWithOAuth } from '@src/modules/supabase/util.server';
+import { isProduction } from '@src/utils';
 import Image from 'next/image';
 
 interface LoginSectionProps extends LanguageType {}
@@ -17,23 +19,23 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
       <p className="text-md text-center">{t('login.welcomeDescription')}</p>
       <div className="h-8" />
       <form className="flex w-full flex-col gap-4 px-4">
-        {/* 'use server' 함수를 사용하기 위해 bind 사용 */}
         <Button
           formAction={signInWithOAuth.bind(null, 'kakao')}
           className="h-12 bg-[rgb(247,228,76)] text-black hover:bg-[rgb(247,228,76)]">
           <Image src="/images/svgs/kakao.svg" width={16} height={16} alt="kakao" />
           {t('login.kakaoLogin')}
         </Button>
-        {/* 'use server' 함수를 사용하기 위해 bind 사용 */}
         <Button formAction={signInWithOAuth.bind(null, 'google')} className="h-12 bg-white text-black hover:bg-white">
           <Image src="/images/svgs/google.svg" width={16} height={16} alt="google" />
           {t('login.googleLogin')}
         </Button>
-        {/* <Button
-          formAction={signInWithEmail.bind(null, SUPABASE.testEmail, SUPABASE.testPassword)}
-          className="h-12 bg-green-300 text-black hover:bg-green-300">
-          테스트 계정으로 로그인
-        </Button> */}
+        {!isProduction && (
+          <Button
+            formAction={signInWithEmail.bind(null, SUPABASE.testEmail, SUPABASE.testPassword)}
+            className="h-12 bg-green-300 text-black hover:bg-green-300">
+            {t('login.testLogin')}
+          </Button>
+        )}
       </form>
     </section>
   );

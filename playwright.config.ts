@@ -6,11 +6,15 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : undefined,
-  timeout: 30000,
   reporter: 'html',
+  webServer: {
+    command: 'pnpm run dev:web',
+    url: 'http://localhost:3000',
+  },
   use: {
     trace: 'on-first-retry',
     screenshot: process.env.CI ? undefined : 'only-on-failure',
+    baseURL: 'http://localhost:3000',
   },
   projects: [
     {
@@ -18,4 +22,5 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
+  timeout: 5 * 60 * 1000,
 });

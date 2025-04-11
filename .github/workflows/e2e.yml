@@ -1,0 +1,76 @@
+name: E2E
+
+on:
+  push
+
+jobs:
+  tests_e2e:
+    name: Run end-to-end tests
+    runs-on: ubuntu-latest
+    env:
+      WEB_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v4
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+      
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/web/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml', 'packages/web/next.config.js') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+      
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      
+      - name: Setting environment variables
+        run: |
+          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/shared/.env
+          echo WEB_URL=${{ env.WEB_URL }} >> packages/shared/.env
+
+          echo "${{ secrets.WEB_ENV_FILE }}" > packages/web/.env
+          echo NEXT_PUBLIC_WEB_URL=${{ env.WEB_URL }} >> packages/web/.env
+
+      
+      - name: Vercel Pull
+        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
+      
+      - name: Check for changes
+        id: check-changes
+        if: github.event_name == 'push'
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q -E '^packages/(web|shared)/'; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install playwright browsers
+        run: npx playwright install --with-deps
+      - name: Run tests
+        run: npx playwright test

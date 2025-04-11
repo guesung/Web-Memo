@@ -49,7 +49,9 @@ export default function SidebarGroupTags({ lng }: { lng: Language }) {
           {tags.map(tag => (
             <Link key={tag.name} href={`${PATHS.memos}?tag=${encodeURIComponent(tag.name)}`}>
               <SidebarMenuButton>
-                <span className={tag.count >= 10 ? 'font-bold' : tag.count >= 5 ? 'font-medium' : ''}>{tag.name}</span>
+                <span className={tag.count >= 10 ? 'font-bold' : tag.count >= 5 ? 'font-medium' : ''}>
+                  # {tag.name}
+                </span>
                 <span className="text-muted-foreground ml-auto text-xs">{tag.count}</span>
               </SidebarMenuButton>
             </Link>

@@ -15,6 +15,7 @@ interface UseMemosQueryProps {
   isWish?: boolean;
   searchQuery?: string;
   searchTarget?: string;
+  tag?: string;
 }
 
 export default function useMemosQuery({
@@ -22,6 +23,7 @@ export default function useMemosQuery({
   isWish = false,
   searchQuery,
   searchTarget,
+  tag,
 }: UseMemosQueryProps = {}) {
   const { data: supabaseClient } = useSupabaseClientQuery();
   const searchQueryLower = searchQuery?.toLowerCase();
@@ -33,6 +35,7 @@ export default function useMemosQuery({
         memos
           ?.filter(memo => !!isWish === !!memo.isWish)
           .filter(memo => (category ? memo.category?.name === category : true))
+          .filter(memo => (tag ? memo.tags?.includes(tag) : true))
           .filter(memo => {
             if (!searchQueryLower) return true;
 

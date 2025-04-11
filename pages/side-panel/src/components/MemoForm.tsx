@@ -121,8 +121,6 @@ function MemoForm() {
 
   const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = event.target.value;
-    setValue('memo', text);
-
     const cursorPosition = event.target.selectionStart;
     const lastChar = text.charAt(cursorPosition - 1);
 
@@ -138,8 +136,10 @@ function MemoForm() {
       });
       setShowCategoryList(true);
 
+      // Remove the # character and update the text
       const newText = text.slice(0, cursorPosition - 1) + text.slice(cursorPosition);
       setValue('memo', newText);
+
       if (textareaRef.current) {
         textareaRef.current.selectionStart = cursorPosition - 1;
         textareaRef.current.selectionEnd = cursorPosition - 1;
@@ -150,6 +150,7 @@ function MemoForm() {
         commandInputRef.current?.focus();
       }, 0);
     } else {
+      setValue('memo', text);
       setShowCategoryList(false);
     }
 
@@ -160,16 +161,7 @@ function MemoForm() {
     setShowCategoryList(false);
     setSelectedCategory(category);
 
-    // Remove the # character from the memo text
-    const currentMemo = watch('memo');
-    console.log(currentMemo);
-    const lastHashIndex = currentMemo.lastIndexOf('#');
-    if (lastHashIndex !== -1) {
-      const newText = currentMemo.slice(0, lastHashIndex) + currentMemo.slice(lastHashIndex + 1);
-      setValue('memo', newText);
-    }
-
-    // Don't add category name to the text anymore
+    // Focus back to textarea without adding any text
     if (textareaRef.current) {
       textareaRef.current.focus();
     }

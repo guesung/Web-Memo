@@ -68,10 +68,10 @@ function MemoForm() {
   ) => {
     if (event.metaKey && event.key === 's') event.preventDefault();
 
-    // Handle tag creation on space
     if (event.key === ' ') {
       const text = event.currentTarget.value;
-      const words = text.split(' ');
+      const normalizedText = text.replace(/\n/g, ' ');
+      const words = normalizedText.split(' ');
       const lastWord = words[words.length - 1];
 
       if (lastWord.startsWith('#') && lastWord.length > 1) {
@@ -80,14 +80,11 @@ function MemoForm() {
         const currentTags = watch('tags') || [];
 
         if (!currentTags.includes(newTag)) {
-          // Remove the #tag from the memo text and add a space
-          const newText = words.slice(0, -1).join(' ') + ' ';
+          const newText = text.slice(0, -lastWord.length) + ' ';
           setValue('memo', newText);
 
-          // Add the new tag
           setValue('tags', [...currentTags, newTag]);
 
-          // Save the changes
           await saveMemo();
         }
       }

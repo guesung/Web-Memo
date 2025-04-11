@@ -39,6 +39,7 @@ function MemoForm() {
   const [showCategoryList, setShowCategoryList] = useState(false);
   const [categoryInputPosition, setCategoryInputPosition] = useState({ top: 0, left: 0 });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const commandInputRef = useRef<HTMLInputElement>(null);
   const [selectedCategory, setSelectedCategory] = useState<{ id: number; name: string; color: string | null } | null>(
     null,
   );
@@ -145,6 +146,11 @@ function MemoForm() {
         textareaRef.current.selectionStart = cursorPosition - 1;
         textareaRef.current.selectionEnd = cursorPosition - 1;
       }
+
+      // Focus the CommandInput after a short delay to ensure the component is mounted
+      setTimeout(() => {
+        commandInputRef.current?.focus();
+      }, 0);
     } else {
       setShowCategoryList(false);
     }
@@ -214,7 +220,7 @@ function MemoForm() {
             left: categoryInputPosition.left + 'px',
           }}>
           <Command>
-            <CommandInput placeholder={I18n.get('search_category')} />
+            <CommandInput ref={commandInputRef} placeholder={I18n.get('search_category')} />
             <CommandList>
               <CommandEmpty>{I18n.get('no_categories_found')}</CommandEmpty>
               <CommandGroup>

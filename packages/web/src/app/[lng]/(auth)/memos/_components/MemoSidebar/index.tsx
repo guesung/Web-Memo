@@ -10,7 +10,6 @@ import {
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
   SidebarSeparator,
   Tooltip,
   TooltipContent,
@@ -23,19 +22,7 @@ import { Heart, Home, SettingsIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import SidebarGroupCategory from './SidebarGroupCategory';
-
-const items = [
-  {
-    i18n: 'sideBar.memo',
-    url: PATHS.memos,
-    icon: Home,
-  },
-  {
-    i18n: 'sideBar.wishList',
-    url: PATHS.memosWish,
-    icon: Heart,
-  },
-];
+import SidebarGroupTags from './SidebarGroupTags';
 
 export default async function MemoSidebar({ lng }: LanguageType) {
   const { t } = await useTranslation(lng);
@@ -43,21 +30,22 @@ export default async function MemoSidebar({ lng }: LanguageType) {
   return (
     <Sidebar>
       <HeaderMargin />
-
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map(item => (
-                <SidebarMenuItem key={item.i18n}>
-                  <SidebarMenuButton asChild>
-                    <Link href={item.url} scroll>
-                      <item.icon />
-                      <span>{t(item.i18n)}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              <Link href={PATHS.memos}>
+                <SidebarMenuButton>
+                  <Home className="h-4 w-4" />
+                  <span>{t('sideBar.memo')}</span>
+                </SidebarMenuButton>
+              </Link>
+              <Link href={PATHS.memosWish}>
+                <SidebarMenuButton>
+                  <Heart className="h-4 w-4" />
+                  <span>{t('sideBar.wishList')}</span>
+                </SidebarMenuButton>
+              </Link>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -65,19 +53,24 @@ export default async function MemoSidebar({ lng }: LanguageType) {
         <SidebarSeparator />
 
         <SidebarGroupCategory lng={lng} />
+
+        <SidebarSeparator />
+
+        <SidebarGroupTags lng={lng} />
       </SidebarContent>
 
       <SidebarFooter className="p-4">
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger>
-              <Link href={PATHS.memosSetting} className="mb-2 ml-2">
-                <SettingsIcon size={16} />
+            <TooltipTrigger asChild>
+              <Link href={PATHS.memosSetting}>
+                <SidebarMenuButton>
+                  <SettingsIcon className="h-4 w-4" />
+                  <span className="sr-only">Settings</span>
+                </SidebarMenuButton>
               </Link>
             </TooltipTrigger>
-            <TooltipContent>
-              <p>{t('tooltip.goSetting')}</p>
-            </TooltipContent>
+            <TooltipContent>Settings</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </SidebarFooter>

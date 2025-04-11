@@ -27,7 +27,8 @@
   "sideBar": {
     "memo": "내 메모",
     "wishList": "내 위시리스트",
-    "allCategory": "전체 카테고리"
+    "allCategory": "전체 카테고리",
+    "tags": "태그"
   },
 
   "header": {

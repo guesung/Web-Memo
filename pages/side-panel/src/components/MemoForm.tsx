@@ -201,8 +201,6 @@ function MemoForm() {
     });
   };
 
-  console.log(watch('memo'));
-
   return (
     <form className="relative flex h-full flex-col gap-1 py-1">
       <Textarea
@@ -231,6 +229,7 @@ function MemoForm() {
               placeholder={I18n.get('search_category')}
               onKeyDown={e => {
                 if (e.key === 'Escape') {
+                  setValue('memo', watch('memo') + '#');
                   setShowCategoryList(false);
                   textareaRef.current?.focus();
                 }

@@ -7,6 +7,7 @@ import { cn } from '@extension/shared/utils';
 import { Badge, Button, CardFooter, toast, ToastAction } from '@src/components/ui';
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
+import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { FolderIcon, HashIcon, HeartIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -17,13 +18,22 @@ import MemoOption from './MemoOption';
 interface MemoCardFooterProps extends LanguageType, React.HTMLAttributes<HTMLDivElement>, PropsWithChildren {
   memo: GetMemoResponse;
   isShowingOption?: boolean;
+  onTagClick?: (tag: string, event: MouseEvent) => void;
 }
 
-export default function MemoCardFooter({ memo, lng, children, isShowingOption = true, ...props }: MemoCardFooterProps) {
+export default function MemoCardFooter({
+  memo,
+  lng,
+  children,
+  isShowingOption = true,
+  onTagClick,
+  ...props
+}: MemoCardFooterProps) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
   const router = useRouter();
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
+  const queryClient = useQueryClient();
 
   const handleCategoryClick = (event: MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
@@ -64,7 +74,15 @@ export default function MemoCardFooter({ memo, lng, children, isShowingOption = 
     });
   };
 
-  const handleTagClick = (tag: string): void => {
+  const handleTagClick = (event: MouseEvent, tag: string): void => {
+    event.stopPropagation();
+
+    if (onTagClick) {
+      onTagClick(tag, event);
+      return;
+    }
+
+    // Default behavior: search by tag
     searchParams.set('tag', tag);
     router.push(searchParams.getUrl(), { scroll: false });
   };
@@ -88,7 +106,7 @@ export default function MemoCardFooter({ memo, lng, children, isShowingOption = 
               key={tag}
               variant="secondary"
               className="bg-primary/10 text-primary hover:bg-primary/20 z-10 flex cursor-pointer items-center gap-1"
-              onClick={() => handleTagClick(tag)}>
+              onClick={e => handleTagClick(e, tag)}>
               <HashIcon size={10} />
               {tag}
             </Badge>

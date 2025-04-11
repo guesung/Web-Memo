@@ -74,6 +74,13 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
     }
   };
 
+  const handleTagRemove = (tag: string) => {
+    if (!memoData || !memoData.tags) return;
+    const newTags = memoData.tags.filter(t => t !== tag);
+    setValue('tags', newTags);
+    saveMemo();
+  };
+
   const checkEditedAndCloseDialog = () => {
     const isEdited = watch('memo') !== memoData?.memo;
 
@@ -135,6 +142,7 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
                     placeholder={t('memos.placeholder')}
                     onKeyDown={handleKeyDown}
                   />
+
                   <div className="h-4" />
                   <span className="text-muted-foreground float-right text-xs">
                     {t('common.lastUpdated', { time: dayjs(memoData.updated_at).fromNow() })}
@@ -142,7 +150,7 @@ export default function MemoDialog({ lng, memoId, setDialogMemoId }: MemoDialog)
                 </CardContent>
               </motion.div>
               <motion.div layoutId={`footer-${memoId}`}>
-                <MemoCardFooter memo={memoData} lng={lng}>
+                <MemoCardFooter memo={memoData} lng={lng} onTagClick={tag => handleTagRemove(tag)}>
                   <div className="flex gap-2">
                     <Button variant="outline" type="button" onClick={checkEditedAndCloseDialog}>
                       {t('common.close')}

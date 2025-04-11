@@ -64,16 +64,24 @@ export default function MemoCardFooter({ memo, lng, children, isShowingOption = 
     });
   };
 
+  const handleTagClick = (tag: string): void => {
+    searchParams.set('tag', tag);
+    router.push(searchParams.getUrl(), { scroll: false });
+  };
+
   return (
     <CardFooter className={cn('flex h-[40px] justify-between p-0 px-4 pb-2 pt-0', props.className)} {...props}>
-      <div className="flex">
+      <div className="flex flex-wrap gap-1">
         {memo.category?.name ? (
           <Badge variant="outline" onClick={handleCategoryClick} role="button" className="z-10">
             {memo.category?.name}
           </Badge>
-        ) : (
-          <span />
-        )}
+        ) : null}
+        {memo.tags?.map(tag => (
+          <Badge key={tag} variant="secondary" className="z-10 cursor-pointer" onClick={() => handleTagClick(tag)}>
+            #{tag}
+          </Badge>
+        ))}
       </div>
       <div
         className={cn('relative z-50 flex items-center transition', {

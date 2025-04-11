@@ -10,7 +10,7 @@ import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { getMemoInfo, I18n, Tab } from '@extension/shared/utils/extension';
 import { cn, Textarea, toast, ToastAction } from '@extension/ui';
 import withAuthentication from '@src/hoc/withAuthentication';
-import { MemoInput } from '@src/types/Input';
+import type { MemoInput } from '@src/types/Input';
 import { getMemoUrl } from '@src/utils';
 import { HeartIcon } from 'lucide-react';
 import { useEffect } from 'react';
@@ -26,6 +26,7 @@ function MemoForm() {
     defaultValues: {
       memo: '',
       isWish: false,
+      tags: [],
     },
   });
 
@@ -35,7 +36,12 @@ function MemoForm() {
   const saveMemo = async () => {
     const memoInfo = await getMemoInfo();
 
-    const memo = { ...memoInfo, memo: watch('memo'), isWish: watch('isWish') };
+    const memo = {
+      ...memoInfo,
+      memo: watch('memo'),
+      isWish: watch('isWish'),
+      tags: watch('tags'),
+    };
 
     if (memoData) mutateMemoPatch({ id: memoData.id, request: memo });
     else mutateMemoPost(memo);
@@ -48,11 +54,12 @@ function MemoForm() {
   useEffect(() => {
     setValue('memo', memoData?.memo ?? '');
     setValue('isWish', memoData?.isWish ?? false);
-  }, [memoData?.memo, memoData?.isWish, setValue]);
+    setValue('tags', memoData?.tags ?? []);
+  }, [memoData?.memo, memoData?.isWish, memoData?.tags, setValue]);
 
   const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setValue('memo', event.target.value);
-
+    const text = event.target.value;
+    setValue('memo', text);
     debounce(saveMemo);
   };
 
@@ -60,6 +67,31 @@ function MemoForm() {
     event: React.KeyboardEvent<HTMLTextAreaElement> | React.KeyboardEvent<HTMLInputElement>,
   ) => {
     if (event.metaKey && event.key === 's') event.preventDefault();
+
+    // Handle tag creation on space
+    if (event.key === ' ') {
+      const text = event.currentTarget.value;
+      const words = text.split(' ');
+      const lastWord = words[words.length - 1];
+
+      if (lastWord.startsWith('#') && lastWord.length > 1) {
+        event.preventDefault();
+        const newTag = lastWord.substring(1);
+        const currentTags = watch('tags') || [];
+
+        if (!currentTags.includes(newTag)) {
+          // Remove the #tag from the memo text and add a space
+          const newText = words.slice(0, -1).join(' ') + ' ';
+          setValue('memo', newText);
+
+          // Add the new tag
+          setValue('tags', [...currentTags, newTag]);
+
+          // Save the changes
+          await saveMemo();
+        }
+      }
+    }
   };
 
   const handleWishClick = async () => {
@@ -88,6 +120,15 @@ function MemoForm() {
     });
   };
 
+  const handleTagRemove = (tagToRemove: string) => {
+    const currentTags = watch('tags') || [];
+    setValue(
+      'tags',
+      currentTags.filter(tag => tag !== tagToRemove),
+    );
+    debounce(saveMemo);
+  };
+
   return (
     <form className="relative flex h-full flex-col gap-1 py-1">
       <Textarea
@@ -99,16 +140,35 @@ function MemoForm() {
         placeholder={I18n.get('memo')}
         onKeyDown={handleKeyDown}
       />
-      <HeartIcon
-        size={16}
-        fill={memoData?.isWish ? 'pink' : ''}
-        fillOpacity={memoData?.isWish ? 100 : 0}
-        onClick={handleWishClick}
-        role="button"
-        className={cn('cursor-pointer transition-transform hover:scale-110 active:scale-95', {
-          'animate-heart-pop': memoData?.isWish,
-        })}
-      />
+      <div className="flex items-center gap-2">
+        <HeartIcon
+          size={16}
+          fill={memoData?.isWish ? 'pink' : ''}
+          fillOpacity={memoData?.isWish ? 100 : 0}
+          onClick={handleWishClick}
+          role="button"
+          className={cn('cursor-pointer transition-transform hover:scale-110 active:scale-95', {
+            'animate-heart-pop': memoData?.isWish,
+          })}
+        />
+        <div className="flex flex-wrap gap-1">
+          {watch('tags')?.map(tag => (
+            <button
+              key={tag}
+              type="button"
+              className="cursor-pointer rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700 hover:bg-gray-200"
+              onClick={() => handleTagRemove(tag)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleTagRemove(tag);
+                }
+              }}>
+              {tag}
+            </button>
+          ))}
+        </div>
+      </div>
     </form>
   );
 }

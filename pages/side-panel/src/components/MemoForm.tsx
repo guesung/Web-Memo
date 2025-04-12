@@ -147,7 +147,9 @@ function MemoForm() {
 
   const handleCategorySelect = (category: CategoryRow) => {
     setShowCategoryList(false);
+
     setValue('categoryId', category.id);
+    setValue('memo', watch('memo').slice(0, -1));
 
     if (textareaRef.current) {
       textareaRef.current.focus();
@@ -156,15 +158,16 @@ function MemoForm() {
     saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: category.id });
   };
 
-  const handleRemoveCategory = () => {
+  const handleCategoryRemove = () => {
     setValue('categoryId', null);
     debounce(() => saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: null }));
   };
 
   const handleWishClick = async () => {
-    setValue('isWish', !watch('isWish'));
+    const newIsWish = !watch('isWish');
+    setValue('isWish', newIsWish);
 
-    await saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: watch('categoryId') });
+    await saveMemo({ memo: watch('memo'), isWish: newIsWish, categoryId: watch('categoryId') });
 
     const getWishToastTitle = (isWish: boolean) => {
       if (isWish) return I18n.get('wish_list_added');
@@ -258,7 +261,7 @@ function MemoForm() {
               style={{ backgroundColor: categories?.find(c => c.id === watch('categoryId'))?.color || '#888888' }}
             />
             {categories?.find(c => c.id === watch('categoryId'))?.name}
-            <XIcon size={12} className="hover:text-destructive ml-1 cursor-pointer" onClick={handleRemoveCategory} />
+            <XIcon size={12} className="hover:text-destructive ml-1 cursor-pointer" onClick={handleCategoryRemove} />
           </Badge>
         )}
       </div>

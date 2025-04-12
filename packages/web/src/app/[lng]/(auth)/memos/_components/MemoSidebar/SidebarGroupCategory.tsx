@@ -44,11 +44,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
             <SidebarMenuItem key={category.id}>
               <Link href={`/memos?category=${encodeURIComponent(category.name)}`} className="w-full" replace>
                 <SidebarMenuButton
-                  className={`flex w-full items-center justify-between rounded-md px-3 py-2 ${
-                    currentCategory === category.name
-                      ? 'bg-gray-100 font-medium dark:bg-gray-800'
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                  } `}
+                  className={`flex w-full items-center justify-between rounded-md px-3 py-2`}
                   style={{
                     borderLeft: `4px solid ${category.color || 'transparent'}`,
                     backgroundColor:
@@ -59,14 +55,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
                         : 'transparent',
                   }}>
                   <span>{category.name}</span>
-                  <span
-                    className={`text-xs ${
-                      currentCategory === category.name
-                        ? 'text-orange-600/80 dark:text-orange-300/80'
-                        : 'text-muted-foreground'
-                    }`}>
-                    {memoCounts[category.id] ?? 0}
-                  </span>
+                  <span className="text-xs text-gray-50">{memoCounts[category.id] ?? 0}</span>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>

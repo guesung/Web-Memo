@@ -31,7 +31,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 const getCursorPosition = (textarea: HTMLTextAreaElement, position: number) => {
-  // Create a dummy element to measure text
   const div = document.createElement('div');
   div.style.cssText = window.getComputedStyle(textarea, null).cssText;
   div.style.height = 'auto';
@@ -39,17 +38,14 @@ const getCursorPosition = (textarea: HTMLTextAreaElement, position: number) => {
   div.style.visibility = 'hidden';
   div.style.whiteSpace = 'pre-wrap';
 
-  // Get text before cursor
   const textBeforeCursor = textarea.value.substring(0, position);
   div.textContent = textBeforeCursor;
   document.body.appendChild(div);
 
-  // Calculate cursor position
   const lineHeight = parseInt(window.getComputedStyle(textarea).lineHeight);
   const lines = textBeforeCursor.split('\n');
   const currentLineText = lines[lines.length - 1];
 
-  // Create a span for the current line to measure exact width
   const span = document.createElement('span');
   span.textContent = currentLineText;
   div.appendChild(span);
@@ -130,7 +126,6 @@ function MemoForm() {
       });
       setShowCategoryList(true);
 
-      // Remove the # character and update the text
       const newText = text.slice(0, cursorPosition - 1) + text.slice(cursorPosition);
       setValue('memo', newText);
 
@@ -139,7 +134,6 @@ function MemoForm() {
         textareaRef.current.selectionEnd = cursorPosition - 1;
       }
 
-      // Focus the CommandInput after a short delay to ensure the component is mounted
       setTimeout(() => {
         commandInputRef.current?.focus();
       }, 0);

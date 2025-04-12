@@ -6,7 +6,7 @@ UPDATE memo.category
 SET memo_count = (
     SELECT COUNT(*)
     FROM memo.memo
-    WHERE memo.categorycategory_id = memo.category.id
+    WHERE memo.category_id = memo.category.id
 );
 
 -- Create function to update memo count

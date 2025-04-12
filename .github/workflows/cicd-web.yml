@@ -93,4 +93,4 @@ jobs:
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master'}}
         run: |
           VERCEL_DEPOLYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
-          vercel alias set "$VERCEL_DEPOLYED_URL" --prod --token=${{ secrets.VERCEL_TOKEN }}
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }}

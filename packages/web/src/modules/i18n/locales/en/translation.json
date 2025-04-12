@@ -41,6 +41,10 @@
   "updates": {
     "title": "What's new",
     "versions": {
+      "v1.8.6": {
+        "title": "Added category feature",
+        "content": ["Add category in side panel with '#'", "Change category color", "View memo count by category"]
+      },
       "v1.8.3": {
         "title": "Fixed memo saving issues",
         "content": ["Fixed wishlist memo deletion", "Fixed blog summary", "Fixed duplicate memo saves"]

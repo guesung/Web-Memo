@@ -76,7 +76,6 @@ function MemoForm() {
   const [categoryInputPosition, setCategoryInputPosition] = useState({ top: 0, left: 0 });
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const commandInputRef = useRef<HTMLInputElement>(null);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryRow | null>(null);
 
   const { register, setValue, watch } = useForm<MemoInput>({
     defaultValues: {
@@ -111,14 +110,8 @@ function MemoForm() {
   useEffect(() => {
     setValue('memo', memoData?.memo ?? '');
     setValue('isWish', memoData?.isWish ?? false);
-
-    if (memoData?.category_id) {
-      const category = categories?.find(c => c.id === memoData.category_id);
-      if (category) setSelectedCategory(category);
-    } else {
-      setSelectedCategory(null);
-    }
-  }, [memoData?.memo, memoData?.isWish, memoData?.category_id, categories, setValue]);
+    setValue('categoryId', memoData?.category_id ?? null);
+  }, [memoData?.memo, memoData?.isWish, memoData?.category_id, setValue]);
 
   const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = event.target.value;
@@ -155,31 +148,29 @@ function MemoForm() {
       setShowCategoryList(false);
     }
 
-    debounce(() => saveMemo({ memo: text, isWish: watch('isWish'), categoryId: selectedCategory?.id ?? null }));
+    debounce(() => saveMemo({ memo: text, isWish: watch('isWish'), categoryId: watch('categoryId') }));
   };
 
   const handleCategorySelect = (category: CategoryRow) => {
     setShowCategoryList(false);
-    setSelectedCategory(category);
+    setValue('categoryId', category.id);
 
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
 
-    saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: category?.id ?? null });
+    saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: category.id });
   };
 
   const handleRemoveCategory = () => {
-    setSelectedCategory(null);
-    debounce(() =>
-      saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: selectedCategory?.id ?? null }),
-    );
+    setValue('categoryId', null);
+    debounce(() => saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: null }));
   };
 
   const handleWishClick = async () => {
     setValue('isWish', !watch('isWish'));
 
-    await saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: selectedCategory?.id ?? null });
+    await saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: watch('categoryId') });
 
     const getWishToastTitle = (isWish: boolean) => {
       if (isWish) return I18n.get('wish_list_added');
@@ -266,10 +257,13 @@ function MemoForm() {
             })}
           />
         </div>
-        {selectedCategory && (
+        {watch('categoryId') && (
           <Badge variant="outline" className="flex items-center gap-1 px-2 py-0.5">
-            <div className="h-2 w-2 rounded-full" style={{ backgroundColor: selectedCategory.color || '#888888' }} />
-            {selectedCategory.name}
+            <div
+              className="h-2 w-2 rounded-full"
+              style={{ backgroundColor: categories?.find(c => c.id === watch('categoryId'))?.color || '#888888' }}
+            />
+            {categories?.find(c => c.id === watch('categoryId'))?.name}
             <XIcon size={12} className="hover:text-destructive ml-1 cursor-pointer" onClick={handleRemoveCategory} />
           </Badge>
         )}

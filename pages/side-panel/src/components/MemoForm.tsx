@@ -8,6 +8,7 @@ import {
   useTabQuery,
 } from '@extension/shared/hooks';
 import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
+import type { CategoryRow } from '@extension/shared/types';
 import { getMemoInfo, I18n, Tab } from '@extension/shared/utils/extension';
 import {
   Badge,
@@ -75,9 +76,7 @@ function MemoForm() {
   const [categoryInputPosition, setCategoryInputPosition] = useState({ top: 0, left: 0 });
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const commandInputRef = useRef<HTMLInputElement>(null);
-  const [selectedCategory, setSelectedCategory] = useState<{ id: number; name: string; color: string | null } | null>(
-    null,
-  );
+  const [selectedCategory, setSelectedCategory] = useState<CategoryRow | null>(null);
 
   const { register, setValue, watch } = useForm<MemoInput>({
     defaultValues: {
@@ -113,13 +112,9 @@ function MemoForm() {
     setValue('memo', memoData?.memo ?? '');
     setValue('isWish', memoData?.isWish ?? false);
 
-    console.log(memoData?.category_id);
-
     if (memoData?.category_id) {
       const category = categories?.find(c => c.id === memoData.category_id);
-      if (category) {
-        setSelectedCategory(category);
-      }
+      if (category) setSelectedCategory(category);
     } else {
       setSelectedCategory(null);
     }
@@ -163,15 +158,13 @@ function MemoForm() {
     debounce(() => saveMemo({ memo: text, isWish: watch('isWish'), categoryId: selectedCategory?.id ?? null }));
   };
 
-  const handleCategorySelect = (category: { id: number; name: string; color: string | null }) => {
+  const handleCategorySelect = (category: CategoryRow) => {
     setShowCategoryList(false);
     setSelectedCategory(category);
 
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
-
-    console.log(category);
 
     saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: category?.id ?? null });
   };
@@ -235,8 +228,8 @@ function MemoForm() {
             <CommandInput
               ref={commandInputRef}
               placeholder={I18n.get('search_category')}
-              onKeyDown={e => {
-                if (e.key === 'Escape') {
+              onKeyDown={event => {
+                if (event.key === 'Escape') {
                   setValue('memo', watch('memo') + '#');
                   setShowCategoryList(false);
                   textareaRef.current?.focus();

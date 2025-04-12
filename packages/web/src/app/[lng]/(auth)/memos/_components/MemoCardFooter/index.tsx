@@ -8,7 +8,7 @@ import { Badge, Button, CardFooter, toast, ToastAction } from '@src/components/u
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import dayjs from 'dayjs';
-import { FolderIcon, HashIcon, HeartIcon } from 'lucide-react';
+import { FolderIcon, HeartIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { MouseEvent, PropsWithChildren } from 'react';
 
@@ -17,17 +17,9 @@ import MemoOption from './MemoOption';
 interface MemoCardFooterProps extends LanguageType, React.HTMLAttributes<HTMLDivElement>, PropsWithChildren {
   memo: GetMemoResponse;
   isShowingOption?: boolean;
-  onTagClick?: (tag: string, event: MouseEvent) => void;
 }
 
-export default function MemoCardFooter({
-  memo,
-  lng,
-  children,
-  isShowingOption = true,
-  onTagClick,
-  ...props
-}: MemoCardFooterProps) {
+export default function MemoCardFooter({ memo, lng, children, isShowingOption = true, ...props }: MemoCardFooterProps) {
   const { t } = useTranslation(lng);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -72,18 +64,6 @@ export default function MemoCardFooter({
     });
   };
 
-  const handleTagClick = (event: MouseEvent, tag: string): void => {
-    event.stopPropagation();
-
-    if (onTagClick) {
-      onTagClick(tag, event);
-      return;
-    }
-
-    searchParams.set('tag', tag);
-    router.push(searchParams.getUrl(), { scroll: false });
-  };
-
   return (
     <CardFooter className={cn('flex justify-between p-0 px-4 pb-2 pt-0', props.className)} {...props}>
       <div className="flex flex-wrap items-center gap-2">
@@ -92,23 +72,16 @@ export default function MemoCardFooter({
             variant="outline"
             onClick={handleCategoryClick}
             role="button"
-            className="bg-muted/50 hover:bg-muted z-10 flex items-center gap-1">
+            className="z-10 flex items-center gap-1"
+            style={{
+              backgroundColor: memo.category.color ? `${memo.category.color}20` : 'bg-muted/50',
+              borderColor: memo.category.color || undefined,
+              color: memo.category.color || undefined,
+            }}>
             <FolderIcon size={12} />
             {memo.category?.name}
           </Badge>
         ) : null}
-        <div className="flex flex-wrap gap-1">
-          {memo.tags?.map((tag: string) => (
-            <Badge
-              key={tag}
-              variant="secondary"
-              className="bg-primary/10 text-primary hover:bg-primary/20 z-10 flex cursor-pointer items-center gap-1"
-              onClick={e => handleTagClick(e, tag)}>
-              <HashIcon size={10} />
-              {tag}
-            </Badge>
-          ))}
-        </div>
       </div>
       <div
         className={cn('relative z-50 flex items-center transition', {

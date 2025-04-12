@@ -1,5 +1,6 @@
 import { useFetch } from '@extension/shared/hooks';
-import { BRIDGE_MESSAGE_TYPES, Category, ExtensionBridge } from '@extension/shared/modules/extension-bridge';
+import type { Category } from '@extension/shared/modules/extension-bridge';
+import { BRIDGE_MESSAGE_TYPES, ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { I18n, Runtime } from '@extension/shared/utils/extension';
 import { useState } from 'react';
 

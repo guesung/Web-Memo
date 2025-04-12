@@ -1,11 +1,8 @@
-import { useDidMount, useMemoQuery } from '@extension/shared/hooks';
-import { useTabQuery } from '@extension/shared/hooks';
+import { useDidMount, useMemoQuery, useTabQuery } from '@extension/shared/hooks';
 import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
-import { delay } from '@extension/shared/utils';
 import { I18n, Tab } from '@extension/shared/utils/extension';
 import { ErrorBoundary, Skeleton } from '@extension/ui';
 import { getMemoUrl } from '@src/utils';
-import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { ExternalLinkIcon } from 'lucide-react';
 import { Suspense } from 'react';
 

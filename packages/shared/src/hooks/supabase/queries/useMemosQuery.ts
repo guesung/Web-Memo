@@ -1,10 +1,10 @@
-import { getChoseong } from 'es-hangul';
 import { QUERY_KEY } from '@src/constants';
+import type { MemoRow } from '@src/types';
 import { MemoService } from '@src/utils';
 import { useSuspenseQuery } from '@tanstack/react-query';
+import { getChoseong } from 'es-hangul';
 
 import useSupabaseClientQuery from './useSupabaseClientQuery';
-import { MemoRow } from '@src/types';
 
 type QueryFnData = Awaited<ReturnType<MemoService['getMemos']>>;
 type QueryError = Error;

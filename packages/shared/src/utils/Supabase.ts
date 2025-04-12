@@ -1,5 +1,5 @@
 import { SUPABASE } from '@src/constants';
-import {
+import type {
   CategoryRow,
   CategoryTable,
   FeedbackSupabaseClient,
@@ -26,7 +26,7 @@ export class MemoService {
     this.supabaseClient
       .schema(SUPABASE.table.memo)
       .from(SUPABASE.table.memo)
-      .select('*,category(name)')
+      .select('*, category(id, name, color)')
       .order('created_at', { ascending: false });
 
   updateMemo = async ({ id, request }: { id: MemoRow['id']; request: MemoTable['Update'] }) =>

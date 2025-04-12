@@ -1,11 +1,10 @@
+import type { Category } from '@extension/shared/modules/extension-bridge';
 import { I18n } from '@extension/shared/utils/extension';
 import { Button, ErrorBoundary, Loading } from '@extension/ui';
 import { RefreshCwIcon, SettingsIcon } from 'lucide-react';
 
 import { useSummaryContext } from './SummaryProvider';
 import ToggleTheme from './ToggleTheme';
-import { Category } from '@extension/shared/modules/extension-bridge';
-import { Suspense } from 'react';
 
 const getCategoryText = (category: Category) => {
   if (category === 'youtube') return I18n.get('youtube');

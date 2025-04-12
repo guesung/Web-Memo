@@ -1,4 +1,4 @@
-import { BRIDGE_MESSAGE_TYPE, BridgeRequest } from '@src/modules/extension-bridge';
+import type { BRIDGE_MESSAGE_TYPE, BridgeRequest } from '@src/modules/extension-bridge';
 
 export class Runtime {
   static sendMessage<TPayload, TResponse>(type: BRIDGE_MESSAGE_TYPE, payload?: TPayload): Promise<TResponse> {

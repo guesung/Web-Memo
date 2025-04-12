@@ -1,4 +1,4 @@
-import { SearchParamKeyType, SearchParamType, SearchParamValueType } from '.';
+import type { SearchParamKeyType, SearchParamType, SearchParamValueType } from '.';
 
 export default class SearchParams {
   #searchParamsMap: Map<SearchParamKeyType, Set<SearchParamValueType>>;

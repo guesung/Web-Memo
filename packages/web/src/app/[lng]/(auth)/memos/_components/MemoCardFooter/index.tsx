@@ -8,7 +8,7 @@ import { Badge, Button, CardFooter, toast, ToastAction } from '@src/components/u
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import dayjs from 'dayjs';
-import { HeartIcon } from 'lucide-react';
+import { FolderIcon, HeartIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { MouseEvent, PropsWithChildren } from 'react';
 
@@ -65,15 +65,23 @@ export default function MemoCardFooter({ memo, lng, children, isShowingOption = 
   };
 
   return (
-    <CardFooter className={cn('flex h-[40px] justify-between p-0 px-4 pb-2 pt-0', props.className)} {...props}>
-      <div className="flex">
+    <CardFooter className={cn('flex justify-between p-0 px-4 pb-2 pt-0', props.className)} {...props}>
+      <div className="flex flex-wrap items-center gap-2">
         {memo.category?.name ? (
-          <Badge variant="outline" onClick={handleCategoryClick} role="button" className="z-10">
+          <Badge
+            variant="outline"
+            onClick={handleCategoryClick}
+            role="button"
+            className="z-10 flex items-center gap-1"
+            style={{
+              backgroundColor: memo.category.color ? `${memo.category.color}20` : 'bg-muted/50',
+              borderColor: memo.category.color || undefined,
+              color: memo.category.color || undefined,
+            }}>
+            <FolderIcon size={12} />
             {memo.category?.name}
           </Badge>
-        ) : (
-          <span />
-        )}
+        ) : null}
       </div>
       <div
         className={cn('relative z-50 flex items-center transition', {

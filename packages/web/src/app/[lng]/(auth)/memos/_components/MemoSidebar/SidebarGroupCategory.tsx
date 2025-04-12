@@ -12,24 +12,14 @@ import {
 } from '@src/components/ui';
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { memo } from 'react';
-
-import SidebarMenuItemAddCategory from './SidebarMenuItemAddCategory';
 
 export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
   const { t } = useTranslation(lng);
   const { categories } = useCategoryQuery();
-  const router = useRouter();
   const searchParams = useSearchParams();
-
   const currentCategory = searchParams.get('category');
-
-  const handleCategoryClick = (category: string) => {
-    searchParams.removeAll('isWish');
-    searchParams.set('category', category);
-    router.push(searchParams.getUrl(), { scroll: true });
-  };
 
   return (
     <SidebarGroup>
@@ -38,18 +28,24 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
         <SidebarMenu>
           {categories?.map(category => (
             <SidebarMenuItem key={category.id}>
-              <SidebarMenuButton asChild>
-                <button
-                  onClick={() => handleCategoryClick(category.name)}
-                  className={`hover:bg-accent flex w-full items-center justify-between rounded-md p-2 ${
-                    currentCategory === category.name && 'bg-accent'
-                  }`}>
+              <Link href={`/memos?category=${encodeURIComponent(category.name)}`} className="w-full" replace>
+                <SidebarMenuButton
+                  className={`flex w-full items-center justify-between rounded-md px-3 py-2`}
+                  style={{
+                    borderLeft: `4px solid ${category.color || 'transparent'}`,
+                    backgroundColor:
+                      currentCategory === category.name
+                        ? category.color
+                          ? `${category.color}20`
+                          : 'bg-gray-100'
+                        : 'transparent',
+                  }}>
                   <span>{category.name}</span>
-                </button>
-              </SidebarMenuButton>
+                  <span className="text-xs text-gray-50">{category.memo_count ?? 0}</span>
+                </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
           ))}
-          <SidebarMenuItemAddCategory />
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

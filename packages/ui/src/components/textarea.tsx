@@ -1,7 +1,8 @@
+import type { HTMLMotionProps } from 'framer-motion';
+import { motion } from 'framer-motion';
 import * as React from 'react';
 
 import { cn } from '@/utils';
-import { HTMLMotionProps, motion } from 'framer-motion';
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, HTMLMotionProps<'textarea'>>(({ className, ...props }, ref) => {
   return (

@@ -1,6 +1,6 @@
 import { DEFAULT_PROMPTS, LANGUAGE_MAP, PROMPT } from '@src/constants';
 import { ChromeSyncStorage, STORAGE_KEYS } from '@src/modules/chrome-storage';
-import { Category } from '@src/modules/extension-bridge';
+import type { Category } from '@src/modules/extension-bridge';
 
 interface GetSystemPromptProps {
   language: string;

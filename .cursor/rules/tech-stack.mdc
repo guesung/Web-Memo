@@ -3,76 +3,88 @@ description:
 globs: 
 alwaysApply: true
 ---
-## Tech Stack - Tools & Technologies
+## Core Technologies
+- **Frontend**
+  - TypeScript
+  - React 18.3.1
+  - Next.js 14.2.10 (for web application)
+  - Vite 5.3.3 (for Chrome extension)
+  - TailwindCSS 3.4.x
 
-### Core Technologies
-- TypeScript, Node.js, Next.js 14 App Router
-- React 18 with React Server Components (RSC)
-- Supabase for backend, database, and authentication
-- React Hook Form for form management
-- Shadcn UI with Tailwind CSS
-<!-- - Zod for schema validation and type safety -->
+- **Backend & Database**
+  - Supabase
+    - Authentication
+    - Database
+    - Type generation
 
-### Architecture - Monorepo Structure
-- Turborepo for monorepo management
-- Packages structure:
-  - app/ - Chrome extension application
-  - web/ - Web application
-  - shared/ - Shared utilities and types
-  - ui/ - UI components library
-  - server/ - Backend services
-  - storage/ - Storage management
-  - vite-config/ - Vite configuration
-  - tailwind-config/ - Tailwind CSS configuration
-  - tsconfig/ - TypeScript configuration
-  - dev-utils/ - Development utilities
-  - hmr/ - Hot Module Replacement
-  - zipper/ - Extension packaging
+## Project Structure
+- **Monorepo Structure (Turborepo)**
+  - `chrome-extension/` - Chrome extension application
+  - `pages/` - Chrome extension Pages (Side Panel, Content UI, etc)
+  - `shared/` - Shared utilities and types
+  - `packages/` - Shared packages
+  - `supabase/` - Supabase configuration and types
+  - `scripts/` - Development scripts
+  - `tests/` - Test files
 
-### Backend & Database
-- Supabase
-  - Authentication
-  - Database
-  - Real-time subscriptions
-  - Type generation
+## State Management & Data Fetching
+- TanStack Query (React Query) v5.59.0
+- React Hook Form 7.53.2
 
-### State Management & Data Fetching
-- TanStack Query (React Query) v5
-- React Hook Form for form management
+## UI & Styling
+- TailwindCSS
+- Framer Motion 11.11.8
+- Lucide React 0.456.0
+- Next Themes
+- Driver.js (for tutorials/guides)
 
-### UI & Styling
-- Tailwind CSS
-- Framer Motion for animations
-- Lucide React for icons
-- Next Themes for theme management
+## Development Tools
+- TypeScript 5.5.3
+- ESLint 8.57.0
+- Prettier 3.3.3
+- Husky (Git hooks)
+- Sentry (error tracking)
 
-### Testing
-- Vitest for unit testing
-- Playwright for E2E testing
-- Jest for testing utilities
+## Testing
+- Vitest
+- Playwright 1.47.0
 
-### Development Tools
-- ESLint for code linting
-- Prettier for code formatting
-- Husky for git hooks
-- TypeScript for type safety
-- Sentry for error tracking
+## Build & Development
+- Turbo 2.1.1
+- Vite 5.3.3
+- Cross-env (environment variables)
+- Rimraf (file system operations)
 
-### Build & Development
-- Vite for development server
-- Turbo for build system
-- Cross-env for environment variables
-- Rimraf for file system operations
-
-### Chrome Extension Specific
+## Chrome Extension Specific
 - Chrome Extension Manifest V3
-- Cross-browser compatibility (Chrome/Firefox)
+- Firefox Compatibility Support
+  - Conditional logic using `__FIREFOX__` environment variable
+- HMR (Hot Module Replacement) support
 
-### Development Workflow
+## Development Workflow
 - Git-based version control
-- GitHub Actions for CI/CD
-- Automated version updates
+- pnpm 9.5.0 package manager
+- Node.js >=18.12.0
+- GitHub Actions CI/CD
+- Automated version updates (`update_version.sh`)
 - Code quality checks
 - Automated testing
 - Cross-browser testing
-- Error tracking and monitoring 
+- Error tracking and monitoring
+
+## Utilities
+- dayjs (date handling)
+- es-hangul (Korean text processing)
+- youtube-transcript (YouTube caption handling)
+- OpenAI API integration
+- uvcanvas (canvas handling)
+
+## Environment Configuration
+- Environment variables managed through `.env` file
+- Supabase project configuration
+- Sentry error tracking setup
+- Cross-browser build configuration
+
+This documentation accurately reflects the current project structure and technologies in use. Each section is based on the actual `package.json` and project structure, including the specific versions currently in use.
+
+The project follows modern web development practices and employs a comprehensive set of tools for development, testing, and deployment. The monorepo structure using Turborepo allows for efficient code sharing and management between the Chrome extension and web application components.

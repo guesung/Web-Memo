@@ -27,7 +27,8 @@
   "sideBar": {
     "memo": "내 메모",
     "wishList": "내 위시리스트",
-    "allCategory": "전체 카테고리"
+    "allCategory": "전체 카테고리",
+    "tags": "태그"
   },
 
   "header": {
@@ -40,6 +41,10 @@
   "updates": {
     "title": "새로운 소식",
     "versions": {
+      "v1.8.4": {
+        "title": "카테고리 기능 추가",
+        "content": ["사이드 패널에서 '#'눌러 카테고리 추가하기", "카테고리 색상 변경하기", "카테고리별 메모 개수 확인"]
+      },
       "v1.8.3": {
         "title": "메모 저장 문제 해결",
         "content": ["위시리스트 메모 삭제 안 되는 문제", "블로그 요약 안 되는 문제", "메모 중복 저장되는 문제"]
@@ -125,8 +130,9 @@
   "login": {
     "welcomeTitle": "웹 메모에 오신 것을 환영합니다!",
     "welcomeDescription": "웹 메모와 함께 더 쉽고 편리하게 메모를 관리해보세요.",
-    "kakaoLogin": "카카오 계정으로 시작하기",
-    "googleLogin": "구글 계정으로 시작하기",
+    "kakaoLogin": "카카오 계정으로 로그인",
+    "googleLogin": "구글 계정으로 로그인",
+    "testLogin": "테스트 계정으로 로그인",
     "askGoInstallExtension": "메모 기능을 사용하시려면 확장 프로그램이 필요해요. 지금 설치하러 가시겠어요?",
     "personalInformationInfo": "고객님의 소중한 개인정보는 안전하게 보호되며, 마케팅 목적으로는 절대 사용되지 않아요."
   },

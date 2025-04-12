@@ -151,9 +151,7 @@ function MemoForm() {
     setValue('categoryId', category.id);
     setValue('memo', watch('memo').slice(0, -1));
 
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-    }
+    if (textareaRef.current) textareaRef.current.focus();
 
     saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: category.id });
   };

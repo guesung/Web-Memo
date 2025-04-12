@@ -1,6 +1,6 @@
 'use client';
 
-import { useCategoryQuery, useMemosQuery } from '@extension/shared/hooks';
+import { useCategoryQuery } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import {
   SidebarGroup,
@@ -13,27 +13,13 @@ import {
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import Link from 'next/link';
-import { memo, useMemo } from 'react';
+import { memo } from 'react';
 
 export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
   const { t } = useTranslation(lng);
   const { categories } = useCategoryQuery();
-  const { memos } = useMemosQuery();
   const searchParams = useSearchParams();
   const currentCategory = searchParams.get('category');
-
-  const memoCounts = useMemo(() => {
-    if (!memos || !categories) return {};
-
-    return memos.reduce(
-      (acc, memo) => {
-        if (!memo.category_id) return acc;
-        acc[memo.category_id] = (acc[memo.category_id] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-  }, [memos, categories]);
 
   return (
     <SidebarGroup>
@@ -55,7 +41,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
                         : 'transparent',
                   }}>
                   <span>{category.name}</span>
-                  <span className="text-xs text-gray-50">{memoCounts[category.id] ?? 0}</span>
+                  <span className="text-xs text-gray-50">{category.memo_count ?? 0}</span>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>

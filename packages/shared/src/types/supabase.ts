@@ -47,6 +47,7 @@ export type Database = {
           id: number;
           name: string;
           user_id: string | null;
+          memo_count: number;
         };
         Insert: {
           color?: string | null;
@@ -54,6 +55,7 @@ export type Database = {
           id?: number;
           name: string;
           user_id?: string | null;
+          memo_count?: number;
         };
         Update: {
           color?: string | null;
@@ -61,6 +63,7 @@ export type Database = {
           id?: number;
           name?: string;
           user_id?: string | null;
+          memo_count?: number;
         };
         Relationships: [];
       };

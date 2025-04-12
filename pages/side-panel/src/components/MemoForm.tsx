@@ -83,25 +83,26 @@ function MemoForm() {
     defaultValues: {
       memo: '',
       isWish: false,
+      categoryId: null,
     },
   });
   const { ref, ...rest } = register('memo');
 
   const { mutate: mutateMemoPatch } = useMemoPatchMutation();
-  const { mutate: mutateMemoPost } = useMemoPostMutation();
+  const { mutate: mutateMemo } = useMemoPostMutation();
 
-  const saveMemo = async () => {
+  const saveMemo = async ({ memo, isWish, categoryId }: MemoInput) => {
     const memoInfo = await getMemoInfo();
 
-    const memo = {
+    const totalMemo = {
       ...memoInfo,
-      memo: watch('memo'),
-      isWish: watch('isWish'),
-      category_id: selectedCategory?.id,
+      memo,
+      isWish,
+      category_id: categoryId,
     };
 
-    if (memoData) mutateMemoPatch({ id: memoData.id, request: memo });
-    else mutateMemoPost(memo);
+    if (memoData) mutateMemoPatch({ id: memoData.id, request: totalMemo });
+    else mutateMemo(totalMemo);
   };
 
   useDidMount(() => {
@@ -111,12 +112,16 @@ function MemoForm() {
   useEffect(() => {
     setValue('memo', memoData?.memo ?? '');
     setValue('isWish', memoData?.isWish ?? false);
-    // 초기 카테고리 설정
+
+    console.log(memoData?.category_id);
+
     if (memoData?.category_id) {
       const category = categories?.find(c => c.id === memoData.category_id);
       if (category) {
         setSelectedCategory(category);
       }
+    } else {
+      setSelectedCategory(null);
     }
   }, [memoData?.memo, memoData?.isWish, memoData?.category_id, categories, setValue]);
 
@@ -155,30 +160,33 @@ function MemoForm() {
       setShowCategoryList(false);
     }
 
-    debounce(saveMemo);
+    debounce(() => saveMemo({ memo: text, isWish: watch('isWish'), categoryId: selectedCategory?.id ?? null }));
   };
 
   const handleCategorySelect = (category: { id: number; name: string; color: string | null }) => {
     setShowCategoryList(false);
     setSelectedCategory(category);
 
-    // Focus back to textarea without adding any text
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
 
-    debounce(saveMemo);
+    console.log(category);
+
+    saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: category?.id ?? null });
   };
 
   const handleRemoveCategory = () => {
     setSelectedCategory(null);
-    debounce(saveMemo);
+    debounce(() =>
+      saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: selectedCategory?.id ?? null }),
+    );
   };
 
   const handleWishClick = async () => {
     setValue('isWish', !watch('isWish'));
 
-    await saveMemo();
+    await saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: selectedCategory?.id ?? null });
 
     const getWishToastTitle = (isWish: boolean) => {
       if (isWish) return I18n.get('wish_list_added');

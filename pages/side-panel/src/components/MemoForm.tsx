@@ -119,13 +119,23 @@ function MemoForm() {
       const { left, top } = getCursorPosition(textarea, cursorPosition);
       const scrollTop = textarea.scrollTop;
 
+      let calculatedLeft = rect.left + left;
+      const calculatedTop = rect.top + top - scrollTop;
+
+      const viewportWidth = window.innerWidth;
+      const CATEGORY_LIST_WIDTH = 256; // w-64 = 16rem = 256px
+
+      if (calculatedLeft + CATEGORY_LIST_WIDTH > viewportWidth) {
+        calculatedLeft = 0;
+      }
+
       const currentText = watch('memo');
       const newText = currentText.slice(0, cursorPosition) + '#' + currentText.slice(cursorPosition);
       setValue('memo', newText);
 
       setCategoryInputPosition({
-        top: rect.top + top - scrollTop,
-        left: rect.left + left,
+        top: calculatedTop,
+        left: calculatedLeft,
       });
       setShowCategoryList(true);
 

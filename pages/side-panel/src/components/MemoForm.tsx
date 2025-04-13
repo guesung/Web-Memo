@@ -119,6 +119,10 @@ function MemoForm() {
       const { left, top } = getCursorPosition(textarea, cursorPosition);
       const scrollTop = textarea.scrollTop;
 
+      const currentText = watch('memo');
+      const newText = currentText.slice(0, cursorPosition) + '#' + currentText.slice(cursorPosition);
+      setValue('memo', newText);
+
       setCategoryInputPosition({
         top: rect.top + top - scrollTop,
         left: rect.left + left,
@@ -140,8 +144,13 @@ function MemoForm() {
   const handleCategorySelect = (category: CategoryRow) => {
     setShowCategoryList(false);
 
-    setValue('categoryId', category.id);
+    const currentText = watch('memo');
+    const hashIndex = currentText.lastIndexOf('#');
+    if (hashIndex !== -1) {
+      setValue('memo', currentText.slice(0, hashIndex) + currentText.slice(hashIndex + 1));
+    }
 
+    setValue('categoryId', category.id);
     if (textareaRef.current) textareaRef.current.focus();
 
     saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: category.id });
@@ -208,7 +217,6 @@ function MemoForm() {
               placeholder={I18n.get('search_category')}
               onKeyDown={event => {
                 if (event.key === 'Escape') {
-                  setValue('memo', watch('memo') + '#');
                   setShowCategoryList(false);
                   textareaRef.current?.focus();
                 }

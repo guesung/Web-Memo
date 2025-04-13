@@ -72,6 +72,7 @@ function MemoForm() {
   const [categoryInputPosition, setCategoryInputPosition] = useState({ top: 0, left: 0 });
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const commandInputRef = useRef<HTMLInputElement>(null);
+  const cursorPositionRef = useRef<number | null>(null);
 
   const { register, setValue, watch } = useForm<MemoInput>({
     defaultValues: {
@@ -115,6 +116,8 @@ function MemoForm() {
 
       const textarea = event.currentTarget;
       const cursorPosition = textarea.selectionStart;
+      cursorPositionRef.current = cursorPosition;
+
       const rect = textarea.getBoundingClientRect();
       const { left, top } = getCursorPosition(textarea, cursorPosition);
       const scrollTop = textarea.scrollTop;
@@ -123,7 +126,7 @@ function MemoForm() {
       const calculatedTop = rect.top + top - scrollTop;
 
       const viewportWidth = window.innerWidth;
-      const CATEGORY_LIST_WIDTH = 256; // w-64 = 16rem = 256px
+      const CATEGORY_LIST_WIDTH = 256;
 
       if (calculatedLeft + CATEGORY_LIST_WIDTH > viewportWidth) {
         calculatedLeft = 0;
@@ -161,7 +164,12 @@ function MemoForm() {
     }
 
     setValue('categoryId', category.id);
-    if (textareaRef.current) textareaRef.current.focus();
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+      if (cursorPositionRef.current !== null) {
+        textareaRef.current.setSelectionRange(cursorPositionRef.current, cursorPositionRef.current);
+      }
+    }
 
     saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: category.id });
   };
@@ -228,7 +236,12 @@ function MemoForm() {
               onKeyDown={event => {
                 if (event.key === 'Escape') {
                   setShowCategoryList(false);
-                  textareaRef.current?.focus();
+                  if (textareaRef.current) {
+                    textareaRef.current.focus();
+                    if (cursorPositionRef.current !== null) {
+                      textareaRef.current.setSelectionRange(cursorPositionRef.current, cursorPositionRef.current);
+                    }
+                  }
                 }
               }}
             />

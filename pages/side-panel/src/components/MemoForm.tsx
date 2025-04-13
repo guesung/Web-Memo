@@ -72,6 +72,7 @@ function MemoForm() {
   const [categoryInputPosition, setCategoryInputPosition] = useState({ top: 0, left: 0 });
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const commandInputRef = useRef<HTMLInputElement>(null);
+  const cursorPositionRef = useRef<number | null>(null);
 
   const { register, setValue, watch } = useForm<MemoInput>({
     defaultValues: {
@@ -109,49 +110,66 @@ function MemoForm() {
     setValue('categoryId', memoData?.category_id ?? null);
   }, [memoData?.memo, memoData?.isWish, memoData?.category_id, setValue]);
 
-  const handleMemoTextAreaChange = async (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const text = event.target.value;
-    const cursorPosition = event.target.selectionStart;
-    const lastChar = text.charAt(cursorPosition - 1);
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === '#') {
+      event.preventDefault();
 
-    if (lastChar === '#') {
-      const textarea = event.target;
+      const textarea = event.currentTarget;
+      const cursorPosition = textarea.selectionStart;
+      cursorPositionRef.current = cursorPosition;
+
       const rect = textarea.getBoundingClientRect();
       const { left, top } = getCursorPosition(textarea, cursorPosition);
       const scrollTop = textarea.scrollTop;
 
-      setCategoryInputPosition({
-        top: rect.top + top - scrollTop,
-        left: rect.left + left,
-      });
-      setShowCategoryList(true);
+      let calculatedLeft = rect.left + left;
+      const calculatedTop = rect.top + top - scrollTop;
 
-      const newText = text.slice(0, cursorPosition - 1) + text.slice(cursorPosition);
+      const viewportWidth = window.innerWidth;
+      const CATEGORY_LIST_WIDTH = 256;
+
+      if (calculatedLeft + CATEGORY_LIST_WIDTH > viewportWidth) {
+        calculatedLeft = 0;
+      }
+
+      const currentText = watch('memo');
+      const newText = currentText.slice(0, cursorPosition) + '#' + currentText.slice(cursorPosition);
       setValue('memo', newText);
 
-      if (textareaRef.current) {
-        textareaRef.current.selectionStart = cursorPosition - 1;
-        textareaRef.current.selectionEnd = cursorPosition - 1;
-      }
+      setCategoryInputPosition({
+        top: calculatedTop,
+        left: calculatedLeft,
+      });
+      setShowCategoryList(true);
 
       setTimeout(() => {
         commandInputRef.current?.focus();
       }, 0);
-    } else {
-      setValue('memo', text);
-      setShowCategoryList(false);
     }
+  };
 
+  const handleMemoChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const text = event.target.value;
+    setValue('memo', text);
     debounce(() => saveMemo({ memo: text, isWish: watch('isWish'), categoryId: watch('categoryId') }));
   };
 
   const handleCategorySelect = (category: CategoryRow) => {
     setShowCategoryList(false);
 
-    setValue('categoryId', category.id);
-    setValue('memo', watch('memo').slice(0, -1));
+    const currentText = watch('memo');
+    const hashIndex = currentText.lastIndexOf('#');
+    if (hashIndex !== -1) {
+      setValue('memo', currentText.slice(0, hashIndex) + currentText.slice(hashIndex + 1));
+    }
 
-    if (textareaRef.current) textareaRef.current.focus();
+    setValue('categoryId', category.id);
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+      if (cursorPositionRef.current !== null) {
+        textareaRef.current.setSelectionRange(cursorPositionRef.current, cursorPositionRef.current);
+      }
+    }
 
     saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: category.id });
   };
@@ -192,13 +210,14 @@ function MemoForm() {
     <form className="relative flex h-full flex-col gap-1 py-1">
       <Textarea
         {...register('memo', {
-          onChange: handleMemoTextAreaChange,
+          onChange: handleMemoChange,
         })}
         {...rest}
         ref={e => {
           ref(e);
           textareaRef.current = e;
         }}
+        onKeyDown={handleKeyDown}
         className={cn('flex-1 resize-none text-sm outline-none')}
         id="memo-textarea"
         placeholder={I18n.get('memo')}
@@ -216,9 +235,13 @@ function MemoForm() {
               placeholder={I18n.get('search_category')}
               onKeyDown={event => {
                 if (event.key === 'Escape') {
-                  setValue('memo', watch('memo') + '#');
                   setShowCategoryList(false);
-                  textareaRef.current?.focus();
+                  if (textareaRef.current) {
+                    textareaRef.current.focus();
+                    if (cursorPositionRef.current !== null) {
+                      textareaRef.current.setSelectionRange(cursorPositionRef.current, cursorPositionRef.current);
+                    }
+                  }
                 }
               }}
             />

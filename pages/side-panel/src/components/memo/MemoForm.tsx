@@ -105,8 +105,8 @@ function MemoForm() {
   }, [memoData?.memo, memoData?.isWish, memoData?.category_id, setValue]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key !== '#') return;
     event.preventDefault();
+    if (event.key !== '#') return;
 
     const textarea = event.currentTarget;
     const cursorPosition = textarea.selectionStart;
@@ -122,9 +122,7 @@ function MemoForm() {
     const viewportWidth = window.innerWidth;
     const CATEGORY_LIST_WIDTH = 256;
 
-    if (calculatedLeft + CATEGORY_LIST_WIDTH > viewportWidth) {
-      calculatedLeft = 0;
-    }
+    if (calculatedLeft + CATEGORY_LIST_WIDTH > viewportWidth) calculatedLeft = 0;
 
     const currentText = watch('memo');
     const newText = currentText.slice(0, cursorPosition) + '#' + currentText.slice(cursorPosition);
@@ -248,9 +246,11 @@ function MemoForm() {
           <Badge variant="outline" className="flex items-center gap-1 px-2 py-0.5">
             <div
               className="h-2 w-2 rounded-full"
-              style={{ backgroundColor: categories?.find(c => c.id === watch('categoryId'))?.color || '#888888' }}
+              style={{
+                backgroundColor: categories?.find(category => category.id === watch('categoryId'))?.color || '#888888',
+              }}
             />
-            {categories?.find(c => c.id === watch('categoryId'))?.name}
+            {categories?.find(category => category.id === watch('categoryId'))?.name}
             <XIcon size={12} className="hover:text-destructive ml-1 cursor-pointer" onClick={handleCategoryRemove} />
           </Badge>
         )}

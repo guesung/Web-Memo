@@ -3,8 +3,8 @@ import { I18n } from '@extension/shared/utils/extension';
 import { Button, ErrorBoundary, Loading } from '@extension/ui';
 import { RefreshCwIcon, SettingsIcon } from 'lucide-react';
 
+import ToggleTheme from '../ToggleTheme';
 import { useSummaryContext } from './SummaryProvider';
-import ToggleTheme from './ToggleTheme';
 
 const getCategoryText = (category: Category) => {
   if (category === 'youtube') return I18n.get('youtube');

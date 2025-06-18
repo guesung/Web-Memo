@@ -17,7 +17,6 @@ export default function useGuide({ lng }: UseGuideProps) {
   const createDriver = () =>
     driver({
       showProgress: true,
-      allowClose: false,
       popoverClass: 'driverjs-theme',
       nextBtnText: t('guide.next'),
       doneBtnText: t('guide.done'),

@@ -110,41 +110,40 @@ function MemoForm() {
   }, [memoData?.memo, memoData?.isWish, memoData?.category_id, setValue]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === '#') {
-      event.preventDefault();
+    if (event.key !== '#') return;
+    event.preventDefault();
 
-      const textarea = event.currentTarget;
-      const cursorPosition = textarea.selectionStart;
-      cursorPositionRef.current = cursorPosition;
+    const textarea = event.currentTarget;
+    const cursorPosition = textarea.selectionStart;
+    cursorPositionRef.current = cursorPosition;
 
-      const rect = textarea.getBoundingClientRect();
-      const { left, top } = getCursorPosition(textarea, cursorPosition);
-      const scrollTop = textarea.scrollTop;
+    const rect = textarea.getBoundingClientRect();
+    const { left, top } = getCursorPosition(textarea, cursorPosition);
+    const scrollTop = textarea.scrollTop;
 
-      let calculatedLeft = rect.left + left;
-      const calculatedTop = rect.top + top - scrollTop;
+    let calculatedLeft = rect.left + left;
+    const calculatedTop = rect.top + top - scrollTop;
 
-      const viewportWidth = window.innerWidth;
-      const CATEGORY_LIST_WIDTH = 256;
+    const viewportWidth = window.innerWidth;
+    const CATEGORY_LIST_WIDTH = 256;
 
-      if (calculatedLeft + CATEGORY_LIST_WIDTH > viewportWidth) {
-        calculatedLeft = 0;
-      }
-
-      const currentText = watch('memo');
-      const newText = currentText.slice(0, cursorPosition) + '#' + currentText.slice(cursorPosition);
-      setValue('memo', newText);
-
-      setCategoryInputPosition({
-        top: calculatedTop,
-        left: calculatedLeft,
-      });
-      setShowCategoryList(true);
-
-      setTimeout(() => {
-        commandInputRef.current?.focus();
-      }, 0);
+    if (calculatedLeft + CATEGORY_LIST_WIDTH > viewportWidth) {
+      calculatedLeft = 0;
     }
+
+    const currentText = watch('memo');
+    const newText = currentText.slice(0, cursorPosition) + '#' + currentText.slice(cursorPosition);
+    setValue('memo', newText);
+
+    setCategoryInputPosition({
+      top: calculatedTop,
+      left: calculatedLeft,
+    });
+    setShowCategoryList(true);
+
+    setTimeout(() => {
+      commandInputRef.current?.focus();
+    }, 0);
   };
 
   const handleMemoChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {

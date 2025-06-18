@@ -23,11 +23,16 @@ import {
   toast,
   ToastAction,
 } from '@extension/ui';
-import type { MemoInput } from '@src/types/Input';
 import { getMemoUrl } from '@src/utils';
 import { HeartIcon, XIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+
+export interface MemoInput {
+  memo: string;
+  isWish: boolean;
+  categoryId: number | null;
+}
 
 const getCursorPosition = (textarea: HTMLTextAreaElement, position: number) => {
   const div = document.createElement('div');

@@ -10,23 +10,13 @@ import {
 import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import type { CategoryRow } from '@extension/shared/types';
 import { getMemoInfo, I18n, Tab } from '@extension/shared/utils/extension';
-import {
-  Badge,
-  cn,
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  Textarea,
-  toast,
-  ToastAction,
-} from '@extension/ui';
+import { Badge, cn, Textarea, toast, ToastAction } from '@extension/ui';
 import { getMemoURL } from '@src/utils';
 import { HeartIcon, XIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+
+import CategorySelector from './CategorySelector';
 
 export interface MemoInput {
   memo: string;
@@ -151,8 +141,8 @@ function MemoForm() {
     }, 0);
   };
 
-  const handleMemoChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const text = event.target.value;
+  const handleMemoChange = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const text = event.currentTarget.value;
     setValue('memo', text);
     debounce(() => saveMemo({ memo: text, isWish: watch('isWish'), categoryId: watch('categoryId') }));
   };
@@ -175,6 +165,14 @@ function MemoForm() {
     }
 
     saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: category.id });
+  };
+
+  const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== 'Escape' || !textareaRef.current || !cursorPositionRef.current) return;
+
+    setShowCategoryList(false);
+    textareaRef.current.focus();
+    textareaRef.current.setSelectionRange(cursorPositionRef.current, cursorPositionRef.current);
   };
 
   const handleCategoryRemove = () => {
@@ -226,44 +224,12 @@ function MemoForm() {
         placeholder={I18n.get('memo')}
       />
       {showCategoryList && (
-        <div
-          className="fixed z-50 w-64 rounded-md bg-white shadow-lg"
-          style={{
-            top: categoryInputPosition.top + 'px',
-            left: categoryInputPosition.left + 'px',
-          }}>
-          <Command>
-            <CommandInput
-              ref={commandInputRef}
-              placeholder={I18n.get('search_category')}
-              onKeyDown={event => {
-                if (event.key === 'Escape') {
-                  setShowCategoryList(false);
-                  if (textareaRef.current) {
-                    textareaRef.current.focus();
-                    if (cursorPositionRef.current !== null) {
-                      textareaRef.current.setSelectionRange(cursorPositionRef.current, cursorPositionRef.current);
-                    }
-                  }
-                }
-              }}
-            />
-            <CommandList>
-              <CommandEmpty>{I18n.get('no_categories_found')}</CommandEmpty>
-              <CommandGroup>
-                {categories?.map(category => (
-                  <CommandItem
-                    key={category.id}
-                    onSelect={() => handleCategorySelect(category)}
-                    className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: category.color || '#888888' }} />
-                    {category.name}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </div>
+        <CategorySelector
+          commandInputRef={commandInputRef}
+          categoryInputPosition={categoryInputPosition}
+          handleInputKeyDown={handleInputKeyDown}
+          handleCategorySelect={handleCategorySelect}
+        />
       )}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">

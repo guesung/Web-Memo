@@ -12,6 +12,9 @@ import {
   SummaryHeader,
   SummaryProvider,
 } from './components';
+import { withAuthentication } from './hoc';
+
+const MemoFormWithAuthentication = withAuthentication(MemoForm);
 
 export default function SidePanel() {
   useDidMount(ExtensionBridge.responseGetSidePanelOpen);
@@ -31,13 +34,12 @@ export default function SidePanel() {
           <MemoHeader />
           <ErrorBoundary FallbackComponent={LoginSection}>
             <Suspense fallback={<Loading />}>
-              <MemoForm />
+              <MemoFormWithAuthentication />
             </Suspense>
           </ErrorBoundary>
         </section>
       </main>
       <Toaster />
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryProvider>
   );
 }

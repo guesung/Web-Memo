@@ -1,1 +1,1 @@
-export { default as withLogin } from './withAuthentication.js';
+export { default as withAuthentication } from './withAuthentication.js';

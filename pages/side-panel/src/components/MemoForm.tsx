@@ -23,7 +23,6 @@ import {
   toast,
   ToastAction,
 } from '@extension/ui';
-import withAuthentication from '@src/hoc/withAuthentication';
 import type { MemoInput } from '@src/types/Input';
 import { getMemoUrl } from '@src/utils';
 import { HeartIcon, XIcon } from 'lucide-react';
@@ -290,4 +289,4 @@ function MemoForm() {
   );
 }
 
-export default withAuthentication(MemoForm);
+export default MemoForm;

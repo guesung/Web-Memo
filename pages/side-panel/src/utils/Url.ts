@@ -6,7 +6,7 @@ interface GetMemoUrlParams {
   isWish?: boolean;
 }
 
-export const getMemoUrl = ({ id, isWish }: GetMemoUrlParams) => {
+export const getMemoURL = ({ id, isWish }: GetMemoUrlParams) => {
   const searchParams = new SearchParams();
   if (id) searchParams.set('id', String(id));
   if (isWish) searchParams.set('isWish', 'true');
@@ -14,7 +14,7 @@ export const getMemoUrl = ({ id, isWish }: GetMemoUrlParams) => {
   return `${CONFIG.webUrl}${PATHS.memos}${searchParams.getSearchParams()}`;
 };
 
-export const getMemoWishListUrl = (id?: number) => {
+export const getMemoWishListURL = (id?: number) => {
   const searchParams = new SearchParams();
   searchParams.set('isWish', 'true');
   if (id) searchParams.set('id', String(id));

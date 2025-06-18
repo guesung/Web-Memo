@@ -23,7 +23,7 @@ import {
   toast,
   ToastAction,
 } from '@extension/ui';
-import { getMemoUrl } from '@src/utils';
+import { getMemoURL } from '@src/utils';
 import { HeartIcon, XIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -194,7 +194,7 @@ function MemoForm() {
     };
 
     const handleWishListClick = () => {
-      const memoWishListUrl = getMemoUrl({ id: memoData?.id, isWish: watch('isWish') });
+      const memoWishListUrl = getMemoURL({ id: memoData?.id, isWish: watch('isWish') });
 
       Tab.create({ url: memoWishListUrl });
     };

@@ -2,7 +2,7 @@ import { useDidMount, useMemoQuery, useTabQuery } from '@extension/shared/hooks'
 import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
 import { I18n, Tab } from '@extension/shared/utils/extension';
 import { ErrorBoundary, Skeleton } from '@extension/ui';
-import { getMemoUrl } from '@src/utils';
+import { getMemoURL } from '@src/utils';
 import { ExternalLinkIcon } from 'lucide-react';
 import { Suspense } from 'react';
 
@@ -34,7 +34,7 @@ function MemoLink() {
   });
 
   const handleMemoClick = () => {
-    Tab.create({ url: getMemoUrl({ id: memoData?.id, isWish: !!memoData?.isWish }) });
+    Tab.create({ url: getMemoURL({ id: memoData?.id, isWish: !!memoData?.isWish }) });
   };
 
   return (

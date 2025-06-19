@@ -465,9 +465,6 @@ importers:
         specifier: ^3.23.8
         version: 3.23.8
     devDependencies:
-      '@extension/hmr':
-        specifier: workspace:*
-        version: link:../hmr
       '@extension/tailwindcss-config':
         specifier: workspace:*
         version: link:../tailwind-config
@@ -698,25 +695,6 @@ importers:
       '@extension/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-    devDependencies:
-      '@extension/tailwindcss-config':
-        specifier: workspace:*
-        version: link:../../packages/tailwind-config
-      '@extension/tsconfig':
-        specifier: workspace:*
-        version: link:../../packages/tsconfig
-      '@extension/vite-config':
-        specifier: workspace:*
-        version: link:../../packages/vite-config
-
-  pages/popup:
-    dependencies:
-      '@extension/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      '@types/node':
-        specifier: ^20.14.10
-        version: 20.14.15
     devDependencies:
       '@extension/tailwindcss-config':
         specifier: workspace:*

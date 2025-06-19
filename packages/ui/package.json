@@ -18,7 +18,6 @@
     "tsc-watch": "tsc-watch"
   },
   "devDependencies": {
-    "@extension/hmr": "workspace:*",
     "@extension/tailwindcss-config": "workspace:*",
     "@extension/tsconfig": "workspace:*",
     "@extension/vite-config": "workspace:*",

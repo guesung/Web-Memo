@@ -59,7 +59,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
               </Link>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{t('settings.title')}</p>
+              <p>{t('sideBar.settings')}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

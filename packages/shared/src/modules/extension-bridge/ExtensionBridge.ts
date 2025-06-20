@@ -1,6 +1,6 @@
-import { EXTENSION } from "@src/constants";
-import { Runtime, Tab } from "@src/utils/extension";
 import { YoutubeTranscript } from "youtube-transcript";
+import { EXTENSION } from "../../constants";
+import { Runtime, Tab } from "../../utils/extension";
 
 import type { Category } from "./constant";
 import { BRIDGE_MESSAGE_TYPES } from "./constant";

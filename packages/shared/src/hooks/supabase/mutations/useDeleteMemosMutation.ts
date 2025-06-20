@@ -1,7 +1,7 @@
-import { NoMemosError, QUERY_KEY } from "@src/constants";
-import type { MemoSupabaseResponse } from "@src/types";
-import { MemoService } from "@src/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { NoMemosError, QUERY_KEY } from "../../../constants";
+import type { MemoSupabaseResponse } from "../../../types";
+import { MemoService } from "../../../utils";
 
 import { useSupabaseClientQuery } from "../queries";
 

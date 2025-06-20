@@ -13,7 +13,7 @@ export const CONFIG = {
 		"SUPABASE_ANON_KEY",
 		process.env.SUPABASE_ANON_KEY,
 	),
-	sentryDsn: getSafeConfig("SENTRY_DSN", process.env.SENTRY_DSN),
+	sentryDsnExtension: getSafeConfig("SENTRY_DSN", process.env.SENTRY_DSN),
 	sentryDsnWeb: getSafeConfig("SENTRY_DSN_WEB", process.env.SENTRY_DSN_WEB),
 	sentryAuthToken: getSafeConfig(
 		"SENTRY_AUTH_TOKEN",

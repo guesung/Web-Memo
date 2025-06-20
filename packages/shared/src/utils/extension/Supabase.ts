@@ -1,8 +1,8 @@
-import { CONFIG, COOKIE_KEY, SUPABASE } from "@src/constants";
-import type { StorageKeyType } from "@src/modules/chrome-storage";
-import { ChromeSyncStorage } from "@src/modules/chrome-storage";
-import type { Database } from "@src/types";
 import { createClient } from "@supabase/supabase-js";
+import { CONFIG, COOKIE_KEY, SUPABASE } from "../../constants";
+import type { StorageKeyType } from "../../modules/chrome-storage";
+import { ChromeSyncStorage } from "../../modules/chrome-storage";
+import type { Database } from "../../types";
 
 import { AuthService } from "../Supabase";
 

@@ -1,6 +1,6 @@
-import { QUERY_KEY } from "@src/constants";
-import { MemoService, normalizeUrl } from "@src/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { QUERY_KEY } from "../../../constants";
+import { MemoService, normalizeUrl } from "../../../utils";
 
 import useSupabaseClientQuery from "./useSupabaseClientQuery";
 

@@ -5,10 +5,10 @@ export * from "./Download";
 export * from "./Environment";
 export * from "./Error";
 export * from "./isAllSame";
-export * from "./Notion";
 export * from "./Sentry";
 export * from "./String";
 export * from "./Supabase";
 export * from "./Tailwind";
 export * from "./Time";
 export * from "./Url";
+

@@ -1,9 +1,9 @@
-import { QUERY_KEY } from "@src/constants";
-import type { MemoSupabaseClient } from "@src/types";
-import { isExtension } from "@src/utils/Environment";
-import { getSupabaseClient as getSupabaseClientExtension } from "@src/utils/extension";
-import { getSupabaseClient as getSupabaseClientWeb } from "@src/utils/web";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { QUERY_KEY } from "../../../constants";
+import type { MemoSupabaseClient } from "../../../types";
+import { isExtension } from "../../../utils/Environment";
+import { getSupabaseClient as getSupabaseClientExtension } from "../../../utils/extension";
+import { getSupabaseClient as getSupabaseClientWeb } from "../../../utils/web";
 
 export default function useSupabaseClientQuery() {
 	const query = useSuspenseQuery({

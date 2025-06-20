@@ -1,5 +1,5 @@
-import { FeedbackService } from "@src/utils";
 import { useMutation } from "@tanstack/react-query";
+import { FeedbackService } from "../../../utils";
 
 import { useSupabaseFeedbackClientQuery } from "../queries";
 

@@ -1,4 +1,4 @@
-import { CONFIG } from "@src/constants";
+import { CONFIG } from "../constants";
 
 export const isProduction = CONFIG.nodeEnv === "production";
 export const isExtension =

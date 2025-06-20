@@ -12,10 +12,6 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    "./utils/date.js": {
-      "types": "./dist/utils/date.d.ts",
-      "default": "./dist/utils/date.js"
-    },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
       "default": "./dist/utils/index.js"

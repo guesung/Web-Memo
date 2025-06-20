@@ -1,11 +1,11 @@
 {
-  "extends": "@extension/tsconfig/react",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@root/*": ["./*"],
-      "@lib/*": ["lib/*"]
-    }
-  },
-  "include": ["lib", "utils", "vite.config.mts"]
+	"extends": "@extension/tsconfig/react",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@root/*": ["./*"],
+			"@lib/*": ["lib/*"]
+		}
+	},
+	"include": ["lib", "utils", "vite.config.mts"]
 }

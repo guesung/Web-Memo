@@ -3,18 +3,19 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    font-family: Pretendard;
-    src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff2') format('woff2');
-    font-size: 1rem;
-    font-display: swap;
-  }
+	html {
+		font-family: Pretendard;
+		src: url("https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff2")
+			format("woff2");
+		font-size: 1rem;
+		font-display: swap;
+	}
 }
 
 *,
 ::before,
 ::after {
-  border-width: 0;
-  border-style: solid;
-  border-color: theme('borderColor.DEFAULT', currentColor);
+	border-width: 0;
+	border-style: solid;
+	border-color: theme("borderColor.DEFAULT", currentColor);
 }

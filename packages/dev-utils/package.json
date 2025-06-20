@@ -1,24 +1,23 @@
 {
-  "name": "@extension/dev-utils",
-  "version": "1.8.5",
-  "description": "chrome extension dev utils",
-  "private": true,
-  "sideEffects": false,
-  "files": [
-    "dist/**"
-  ],
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "index.ts",
-  "scripts": {
-    "clean": "rimraf ./dist && rimraf ./build",
-    "ready": "tsc",
-    "prettier": "prettier . --write --ignore-path ../../.prettierignore",
-    "type-check": "tsc --noEmit",
-    "tsc-watch": "tsc-watch"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "@extension/tsconfig": "workspace:*"
-  }
+	"name": "@extension/dev-utils",
+	"version": "1.8.5",
+	"description": "chrome extension dev utils",
+	"private": true,
+	"sideEffects": false,
+	"files": [
+		"dist/**"
+	],
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "index.ts",
+	"scripts": {
+		"clean": "rimraf ./dist && rimraf ./build",
+		"ready": "tsc",
+		"type-check": "tsc --noEmit",
+		"tsc-watch": "tsc-watch"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"@extension/tsconfig": "workspace:*"
+	}
 }

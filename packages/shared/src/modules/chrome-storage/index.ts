@@ -1,3 +1,3 @@
-export { default as ChromeSyncStorage } from './ChromeSyncStorage';
-export * from './constant';
-export * from './type';
+export { default as ChromeSyncStorage } from "./ChromeSyncStorage";
+export * from "./constant";
+export * from "./type";

@@ -1,2 +1,2 @@
-export * from './supabase';
-export * from './supabaseCustom';
+export * from "./supabase";
+export * from "./supabaseCustom";

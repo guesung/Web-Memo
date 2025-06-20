@@ -1,110 +1,110 @@
 {
-  "extensionName": {
-    "message": "Web Notes - Smart Notes Starting with a Click"
-  },
-  "extensionDescription": {
-    "message": "Take notes easily while browsing"
-  },
-  "memo": {
-    "message": "Note"
-  },
-  "save": {
-    "message": "Save"
-  },
-  "number": {
-    "message": "Number"
-  },
-  "reset": {
-    "message": "Start over"
-  },
-  "title": {
-    "message": "Title"
-  },
-  "date": {
-    "message": "Date"
-  },
-  "delete": {
-    "message": "Delete"
-  },
-  "modal_modal_question_delete": {
-    "message": "Delete all data? This can't be undone"
-  },
-  "select_language": {
-    "message": "Select language for AI responses"
-  },
-  "reset_option": {
-    "message": "Reset data"
-  },
-  "toast_save_option": {
-    "message": "Settings saved"
-  },
-  "download_csv_option": {
-    "message": "Export as CSV"
-  },
-  "download_json_option": {
-    "message": "Export as JSON"
-  },
-  "toast_error_common": {
-    "message": "Something went wrong. Please try again"
-  },
-  "toast_saved": {
-    "message": "Saved"
-  },
-  "error_get_page_content": {
-    "message": "Couldn't read the page.\n1. For YouTube, summarizing takes about 3 seconds. Please try again shortly.\n2. If newly installed, refresh the page.\n3. Summarizing isn't available on new tabs, Chrome Web Store, or Chrome settings. Please go to a different page."
-  },
-  "error_get_summary": {
-    "message": "Couldn't create summary. Please try again.\nIf the problem persists, contact us through the guide."
-  },
-  "error_get_storage": {
-    "message": "Couldn't load data. Please try again"
-  },
-  "toast_error_storage_exceeded": {
-    "message": "Storage is full. Try removing unnecessary notes"
-  },
-  "context_menus_check_memo": {
-    "message": "View my notes"
-  },
-  "context_menus_show_guide": {
-    "message": "User guide"
-  },
-  "wish_list_deleted": {
-    "message": "Removed from wishlist"
-  },
-  "wish_list_added": {
-    "message": "Added to wishlist"
-  },
-  "go_to": {
-    "message": "Go"
-  },
-  "toast_error_save": {
-    "message": "Couldn't save. Please try again"
-  },
-  "prompt_language_setting": {
-    "message": "Response language"
-  },
-  "select_language_placeholder": {
-    "message": "Select language"
-  },
-  "youtube_prompt_setting": {
-    "message": "YouTube settings"
-  },
-  "website_prompt_setting": {
-    "message": "Website settings"
-  },
-  "enter_prompt": {
-    "message": "Enter prompt"
-  },
-  "settings_saved": {
-    "message": "Settings saved"
-  },
-  "youtube": {
-    "message": "YouTube"
-  },
-  "webSite": {
-    "message": "Website"
-  },
-  "summary": {
-    "message": "Summary"
-  }
+	"extensionName": {
+		"message": "Web Notes - Smart Notes Starting with a Click"
+	},
+	"extensionDescription": {
+		"message": "Take notes easily while browsing"
+	},
+	"memo": {
+		"message": "Note"
+	},
+	"save": {
+		"message": "Save"
+	},
+	"number": {
+		"message": "Number"
+	},
+	"reset": {
+		"message": "Start over"
+	},
+	"title": {
+		"message": "Title"
+	},
+	"date": {
+		"message": "Date"
+	},
+	"delete": {
+		"message": "Delete"
+	},
+	"modal_modal_question_delete": {
+		"message": "Delete all data? This can't be undone"
+	},
+	"select_language": {
+		"message": "Select language for AI responses"
+	},
+	"reset_option": {
+		"message": "Reset data"
+	},
+	"toast_save_option": {
+		"message": "Settings saved"
+	},
+	"download_csv_option": {
+		"message": "Export as CSV"
+	},
+	"download_json_option": {
+		"message": "Export as JSON"
+	},
+	"toast_error_common": {
+		"message": "Something went wrong. Please try again"
+	},
+	"toast_saved": {
+		"message": "Saved"
+	},
+	"error_get_page_content": {
+		"message": "Couldn't read the page.\n1. For YouTube, summarizing takes about 3 seconds. Please try again shortly.\n2. If newly installed, refresh the page.\n3. Summarizing isn't available on new tabs, Chrome Web Store, or Chrome settings. Please go to a different page."
+	},
+	"error_get_summary": {
+		"message": "Couldn't create summary. Please try again.\nIf the problem persists, contact us through the guide."
+	},
+	"error_get_storage": {
+		"message": "Couldn't load data. Please try again"
+	},
+	"toast_error_storage_exceeded": {
+		"message": "Storage is full. Try removing unnecessary notes"
+	},
+	"context_menus_check_memo": {
+		"message": "View my notes"
+	},
+	"context_menus_show_guide": {
+		"message": "User guide"
+	},
+	"wish_list_deleted": {
+		"message": "Removed from wishlist"
+	},
+	"wish_list_added": {
+		"message": "Added to wishlist"
+	},
+	"go_to": {
+		"message": "Go"
+	},
+	"toast_error_save": {
+		"message": "Couldn't save. Please try again"
+	},
+	"prompt_language_setting": {
+		"message": "Response language"
+	},
+	"select_language_placeholder": {
+		"message": "Select language"
+	},
+	"youtube_prompt_setting": {
+		"message": "YouTube settings"
+	},
+	"website_prompt_setting": {
+		"message": "Website settings"
+	},
+	"enter_prompt": {
+		"message": "Enter prompt"
+	},
+	"settings_saved": {
+		"message": "Settings saved"
+	},
+	"youtube": {
+		"message": "YouTube"
+	},
+	"webSite": {
+		"message": "Website"
+	},
+	"summary": {
+		"message": "Summary"
+	}
 }

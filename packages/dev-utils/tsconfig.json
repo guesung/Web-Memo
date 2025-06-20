@@ -1,7 +1,7 @@
 {
-  "extends": "@extension/tsconfig/node",
-  "compilerOptions": {
-    "outDir": "dist"
-  },
-  "include": ["index.ts", "lib"]
+	"extends": "@extension/tsconfig/node",
+	"compilerOptions": {
+		"outDir": "dist"
+	},
+	"include": ["index.ts", "lib"]
 }

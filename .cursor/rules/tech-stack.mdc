@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
 ## Core Technologies
@@ -40,9 +40,7 @@ alwaysApply: true
 
 ## Development Tools
 - TypeScript 5.5.3
-- ESLint 8.57.0
-- Prettier 3.3.3
-- Husky (Git hooks)
+- Biome 2.0.0
 - Sentry (error tracking)
 
 ## Testing
@@ -77,7 +75,6 @@ alwaysApply: true
 - es-hangul (Korean text processing)
 - youtube-transcript (YouTube caption handling)
 - OpenAI API integration
-- uvcanvas (canvas handling)
 
 ## Environment Configuration
 - Environment variables managed through `.env` file

@@ -1,32 +1,30 @@
 {
-  "name": "@extension/sidepanel",
-  "version": "1.8.5",
-  "description": "chrome extension sidepanel",
-  "private": true,
-  "sideEffects": true,
-  "files": [
-    "dist/**"
-  ],
-  "scripts": {
-    "clean": "rimraf ./dist",
-    "build": "pnpm run clean&& pnpm type-check && vite build",
-    "build:watch": "cross-env __DEV__=true vite build --mode development",
-    "dev": "pnpm build:watch",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "pnpm lint --fix",
-    "prettier": "prettier . --write --ignore-path ../../.prettierignore",
-    "type-check": "tsc --noEmit",
-    "tsc-watch": "tsc-watch"
-  },
-  "dependencies": {
-    "@extension/shared": "workspace:*",
-    "@extension/ui": "workspace:*",
-    "react-markdown": "^9.0.1",
-    "remark-gfm": "^4.0.0"
-  },
-  "devDependencies": {
-    "@extension/tailwindcss-config": "workspace:*",
-    "@extension/tsconfig": "workspace:*",
-    "@extension/vite-config": "workspace:*"
-  }
+	"name": "@extension/sidepanel",
+	"version": "1.8.5",
+	"description": "chrome extension sidepanel",
+	"private": true,
+	"sideEffects": true,
+	"files": [
+		"dist/**"
+	],
+	"scripts": {
+		"clean": "rimraf ./dist",
+		"build": "pnpm run clean&& pnpm type-check && vite build",
+		"build:watch": "cross-env __DEV__=true vite build --mode development",
+		"dev": "pnpm build:watch",
+		"lint:fix": "pnpm lint --fix",
+		"type-check": "tsc --noEmit",
+		"tsc-watch": "tsc-watch"
+	},
+	"dependencies": {
+		"@extension/shared": "workspace:*",
+		"@extension/ui": "workspace:*",
+		"react-markdown": "^9.0.1",
+		"remark-gfm": "^4.0.0"
+	},
+	"devDependencies": {
+		"@extension/tailwindcss-config": "workspace:*",
+		"@extension/tsconfig": "workspace:*",
+		"@extension/vite-config": "workspace:*"
+	}
 }

@@ -1,9 +1,9 @@
 {
-  "name": "@extension/tsconfig",
-  "version": "1.8.5",
-  "description": "tsconfig for chrome extension",
-  "private": true,
-  "scripts": {
-    "tsc-watch": "tsc-watch"
-  }
+	"name": "@extension/tsconfig",
+	"version": "1.8.5",
+	"description": "tsconfig for chrome extension",
+	"private": true,
+	"scripts": {
+		"tsc-watch": "tsc-watch"
+	}
 }

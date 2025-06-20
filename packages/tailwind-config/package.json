@@ -1,14 +1,17 @@
 {
-  "name": "@extension/tailwindcss-config",
-  "version": "1.8.5",
-  "description": "Tailwind CSS configuration for boilerplate",
-  "main": "./tailwind.config.js",
-  "private": true,
-  "devDependencies": {
-    "tailwindcss-animate": "^1.0.7",
-    "@tailwindcss/typography": "^0.5.14"
-  },
-  "scripts": {
-    "tsc-watch": "tsc-watch"
-  }
+	"name": "@extension/tailwindcss-config",
+	"version": "1.8.5",
+	"description": "Tailwind CSS configuration for boilerplate",
+	"main": "./tailwind.config.js",
+	"private": true,
+	"exports": {
+		".": "./tailwind.config.js"
+	},
+	"devDependencies": {
+		"tailwindcss-animate": "^1.0.7",
+		"@tailwindcss/typography": "^0.5.14"
+	},
+	"scripts": {
+		"tsc-watch": "tsc-watch"
+	}
 }

@@ -1,11 +1,11 @@
 {
-  "extends": "@extension/tsconfig/next",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@src/*": ["./src/*"]
-    }
-  },
-  "include": ["src", ".next/types/**/*.ts", "global.d.ts"],
-  "exclude": [".next"]
+	"extends": "@extension/tsconfig/next",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@src/*": ["./src/*"]
+		}
+	},
+	"include": ["src", ".next/types/**/*.ts", "global.d.ts"],
+	"exclude": [".next"]
 }

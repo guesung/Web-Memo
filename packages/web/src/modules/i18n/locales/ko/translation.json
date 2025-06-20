@@ -1,383 +1,404 @@
 {
-  "common": {
-    "webMemo": "웹 메모",
-    "next": "다음으로",
-    "previous": "이전으로",
-    "today": "오늘",
-    "done": "완료했어요",
-    "updatedAt": "수정 시간:",
-    "month": "월",
-    "agenda": "일정",
-    "day": "일",
-    "week": "주",
-    "allDay": "하루 종일",
-    "date": "날짜",
-    "time": "시간",
-    "event": "일정",
-    "more": "더 보기",
-    "title": "제목",
-    "save": "저장하기",
-    "tomorrow": "내일",
-    "yesterday": "어제",
-    "workWeek": "이번 주",
-    "close": "닫기",
-    "lastUpdated": "{{time}}에 업데이트됨"
-  },
+	"common": {
+		"webMemo": "웹 메모",
+		"next": "다음으로",
+		"previous": "이전으로",
+		"today": "오늘",
+		"done": "완료했어요",
+		"updatedAt": "수정 시간:",
+		"month": "월",
+		"agenda": "일정",
+		"day": "일",
+		"week": "주",
+		"allDay": "하루 종일",
+		"date": "날짜",
+		"time": "시간",
+		"event": "일정",
+		"more": "더 보기",
+		"title": "제목",
+		"save": "저장하기",
+		"tomorrow": "내일",
+		"yesterday": "어제",
+		"workWeek": "이번 주",
+		"close": "닫기",
+		"lastUpdated": "{{time}}에 업데이트됨"
+	},
 
-  "sideBar": {
-    "memo": "내 메모",
-    "wishList": "내 위시리스트",
-    "allCategory": "전체 카테고리",
-    "tags": "태그",
-    "settings": "설정"
-  },
+	"sideBar": {
+		"memo": "내 메모",
+		"wishList": "내 위시리스트",
+		"allCategory": "전체 카테고리",
+		"tags": "태그",
+		"settings": "설정"
+	},
 
-  "header": {
-    "login": "로그인하기",
-    "logout": "로그아웃하기",
-    "introduce": "서비스 소개",
-    "update": "새로운 소식"
-  },
+	"header": {
+		"login": "로그인하기",
+		"logout": "로그아웃하기",
+		"introduce": "서비스 소개",
+		"update": "새로운 소식"
+	},
 
-  "updates": {
-    "title": "새로운 소식",
-    "versions": {
-      "v1.8.4": {
-        "title": "카테고리 기능 추가",
-        "content": ["사이드 패널에서 '#'눌러 카테고리 추가하기", "카테고리 색상 변경하기", "카테고리별 메모 개수 확인"]
-      },
-      "v1.8.3": {
-        "title": "메모 저장 문제 해결",
-        "content": ["위시리스트 메모 삭제 안 되는 문제", "블로그 요약 안 되는 문제", "메모 중복 저장되는 문제"]
-      },
-      "v1.8.0": {
-        "title": "검색과 선택 기능 추가",
-        "content": ["메모 검색하기", "드래그로 메모 선택하기", "메모 작성 시간 보기"]
-      },
-      "v1.7.1": {
-        "title": "유튜브 영상 요약하기",
-        "content": ["유튜브 자막 요약", "요약 설정 수정"]
-      },
-      "v1.7.0": {
-        "title": "캘린더와 메모 관리 추가",
-        "content": ["캘린더로 보기", "여러 메모 한 번에 관리하기", "카테고리 설정하기", "가이드 다시 보기"]
-      },
-      "v1.6.0": {
-        "title": "카테고리로 구분하기",
-        "content": ["카테고리 기능 추가"]
-      },
-      "v1.5.6": {
-        "title": "위시리스트",
-        "content": ["위시리스트에 담기"]
-      },
-      "v1.4.0": {
-        "title": "로그인과 데이터 저장",
-        "content": ["카카오, 구글로 로그인하기", "데이터 안전하게 저장하기"]
-      },
-      "v1.1.0": {
-        "title": "웹사이트로 이동",
-        "content": ["새 탭에서 웹사이트로 이동"]
-      },
-      "v1.0.0": {
-        "title": "정식 출시",
-        "content": ["소통 창구 열기", "화면 밝기 문제 해결"]
-      },
-      "v0.2.0": {
-        "title": "주요 기능 추가",
-        "content": [
-          "단축키로 열기: alt + s(윈도우) / option + s(맥)",
-          "버튼 위치 개선",
-          "요약한 내용 저장하기",
-          "메모 작성하기",
-          "새 탭에서 메모 보기"
-        ]
-      },
-      "v0.1.0": {
-        "title": "처음 업데이트",
-        "content": ["사이드 패널로 변경", "실시간으로 데이터 받기", "버튼으로 다시 요청하기"]
-      },
-      "v0.0.2": {
-        "title": "첫 출시",
-        "content": ["크롬 웹스토어 출시"]
-      }
-    }
-  },
+	"updates": {
+		"title": "새로운 소식",
+		"versions": {
+			"v1.8.4": {
+				"title": "카테고리 기능 추가",
+				"content": [
+					"사이드 패널에서 '#'눌러 카테고리 추가하기",
+					"카테고리 색상 변경하기",
+					"카테고리별 메모 개수 확인"
+				]
+			},
+			"v1.8.3": {
+				"title": "메모 저장 문제 해결",
+				"content": [
+					"위시리스트 메모 삭제 안 되는 문제",
+					"블로그 요약 안 되는 문제",
+					"메모 중복 저장되는 문제"
+				]
+			},
+			"v1.8.0": {
+				"title": "검색과 선택 기능 추가",
+				"content": [
+					"메모 검색하기",
+					"드래그로 메모 선택하기",
+					"메모 작성 시간 보기"
+				]
+			},
+			"v1.7.1": {
+				"title": "유튜브 영상 요약하기",
+				"content": ["유튜브 자막 요약", "요약 설정 수정"]
+			},
+			"v1.7.0": {
+				"title": "캘린더와 메모 관리 추가",
+				"content": [
+					"캘린더로 보기",
+					"여러 메모 한 번에 관리하기",
+					"카테고리 설정하기",
+					"가이드 다시 보기"
+				]
+			},
+			"v1.6.0": {
+				"title": "카테고리로 구분하기",
+				"content": ["카테고리 기능 추가"]
+			},
+			"v1.5.6": {
+				"title": "위시리스트",
+				"content": ["위시리스트에 담기"]
+			},
+			"v1.4.0": {
+				"title": "로그인과 데이터 저장",
+				"content": ["카카오, 구글로 로그인하기", "데이터 안전하게 저장하기"]
+			},
+			"v1.1.0": {
+				"title": "웹사이트로 이동",
+				"content": ["새 탭에서 웹사이트로 이동"]
+			},
+			"v1.0.0": {
+				"title": "정식 출시",
+				"content": ["소통 창구 열기", "화면 밝기 문제 해결"]
+			},
+			"v0.2.0": {
+				"title": "주요 기능 추가",
+				"content": [
+					"단축키로 열기: alt + s(윈도우) / option + s(맥)",
+					"버튼 위치 개선",
+					"요약한 내용 저장하기",
+					"메모 작성하기",
+					"새 탭에서 메모 보기"
+				]
+			},
+			"v0.1.0": {
+				"title": "처음 업데이트",
+				"content": [
+					"사이드 패널로 변경",
+					"실시간으로 데이터 받기",
+					"버튼으로 다시 요청하기"
+				]
+			},
+			"v0.0.2": {
+				"title": "첫 출시",
+				"content": ["크롬 웹스토어 출시"]
+			}
+		}
+	},
 
-  "toastTitle": {
-    "refresh": "새로고침했어요",
-    "memoEdited": "메모를 수정했어요",
-    "categoryEdited": "카테고리를 변경했어요",
-    "memoDeleted": "메모를 삭제했어요",
-    "memoWishListDeleted": "위시리스트에서 삭제했어요",
-    "memoWishListAdded": "위시리스트에 추가했어요",
-    "saveSuccess": "저장했어요",
-    "deleteSuccess": "삭제했어요",
-    "addSuccess": "추가했어요",
-    "errorSave": "저장하지 못했어요",
-    "successSave": "변경사항을 저장했어요",
-    "memo_updated_at": "{{time}}에 수정됨"
-  },
+	"toastTitle": {
+		"refresh": "새로고침했어요",
+		"memoEdited": "메모를 수정했어요",
+		"categoryEdited": "카테고리를 변경했어요",
+		"memoDeleted": "메모를 삭제했어요",
+		"memoWishListDeleted": "위시리스트에서 삭제했어요",
+		"memoWishListAdded": "위시리스트에 추가했어요",
+		"saveSuccess": "저장했어요",
+		"deleteSuccess": "삭제했어요",
+		"addSuccess": "추가했어요",
+		"errorSave": "저장하지 못했어요",
+		"successSave": "변경사항을 저장했어요",
+		"memo_updated_at": "{{time}}에 수정됨"
+	},
 
-  "toastActionMessage": {
-    "goTo": "이동하기",
-    "undo": "되돌리기"
-  },
+	"toastActionMessage": {
+		"goTo": "이동하기",
+		"undo": "되돌리기"
+	},
 
-  "option": {
-    "deleteMemo": "메모 삭제하기",
-    "changeCategory": "카테고리 변경하기"
-  },
+	"option": {
+		"deleteMemo": "메모 삭제하기",
+		"changeCategory": "카테고리 변경하기"
+	},
 
-  "login": {
-    "welcomeTitle": "웹 메모에 오신 것을 환영합니다!",
-    "welcomeDescription": "웹 메모와 함께 더 쉽고 편리하게 메모를 관리해보세요.",
-    "kakaoLogin": "카카오 계정으로 로그인",
-    "googleLogin": "구글 계정으로 로그인",
-    "testLogin": "테스트 계정으로 로그인",
-    "askGoInstallExtension": "메모 기능을 사용하시려면 확장 프로그램이 필요해요. 지금 설치하러 가시겠어요?",
-    "personalInformationInfo": "고객님의 소중한 개인정보는 안전하게 보호되며, 마케팅 목적으로는 절대 사용되지 않아요."
-  },
+	"login": {
+		"welcomeTitle": "웹 메모에 오신 것을 환영합니다!",
+		"welcomeDescription": "웹 메모와 함께 더 쉽고 편리하게 메모를 관리해보세요.",
+		"kakaoLogin": "카카오 계정으로 로그인",
+		"googleLogin": "구글 계정으로 로그인",
+		"testLogin": "테스트 계정으로 로그인",
+		"askGoInstallExtension": "메모 기능을 사용하시려면 확장 프로그램이 필요해요. 지금 설치하러 가시겠어요?",
+		"personalInformationInfo": "고객님의 소중한 개인정보는 안전하게 보호되며, 마케팅 목적으로는 절대 사용되지 않아요."
+	},
 
-  "dialogInstall": {
-    "title": "확장 프로그램이 필요해요",
-    "description": "메모를 사용하려면 확장 프로그램을 설치해야 해요",
-    "cancel": "나중에 할게요",
-    "ok": "설치하러 가기",
-    "close": "닫기"
-  },
+	"dialogInstall": {
+		"title": "확장 프로그램이 필요해요",
+		"description": "메모를 사용하려면 확장 프로그램을 설치해야 해요",
+		"cancel": "나중에 할게요",
+		"ok": "설치하러 가기",
+		"close": "닫기"
+	},
 
-  "dialogVersion": {
-    "title": "새 버전이 나왔어요",
-    "description": "{{currentVersion}}에서 {{lastVersion}}으로 업데이트할 수 있어요",
-    "itIsLastVersion": "이미 최신 버전을 사용하고 있어요",
-    "cancel": "나중에 할게요",
-    "ok": "지금 업데이트하기",
-    "lastVersion": "최신 버전"
-  },
+	"dialogVersion": {
+		"title": "새 버전이 나왔어요",
+		"description": "{{currentVersion}}에서 {{lastVersion}}으로 업데이트할 수 있어요",
+		"itIsLastVersion": "이미 최신 버전을 사용하고 있어요",
+		"cancel": "나중에 할게요",
+		"ok": "지금 업데이트하기",
+		"lastVersion": "최신 버전"
+	},
 
-  "dialogUnsavedChanges": {
-    "title": "저장하지 않은 내용이 있어요",
-    "description": "닫으면 변경사항이 사라져요",
-    "ok": "그래도 닫기",
-    "cancel": "계속 작성하기"
-  },
+	"dialogUnsavedChanges": {
+		"title": "저장하지 않은 내용이 있어요",
+		"description": "닫으면 변경사항이 사라져요",
+		"ok": "그래도 닫기",
+		"cancel": "계속 작성하기"
+	},
 
-  "tooltip": {
-    "sideBar": "사이드바",
-    "goSetting": "설정으로 이동"
-  },
+	"tooltip": {
+		"sideBar": "사이드바",
+		"goSetting": "설정으로 이동"
+	},
 
-  "setting": {
-    "header": "설정",
-    "language": "언어",
-    "guide": "가이드",
-    "restartGuide": "가이드 다시 보기",
-    "category": "카테고리",
-    "addCategory": "카테고리 추가하기",
-    "deleteCategory": "카테고리 삭제하기",
-    "defaultCategoryName": "새 카테고리"
-  },
+	"setting": {
+		"header": "설정",
+		"language": "언어",
+		"guide": "가이드",
+		"restartGuide": "가이드 다시 보기",
+		"category": "카테고리",
+		"addCategory": "카테고리 추가하기",
+		"deleteCategory": "카테고리 삭제하기",
+		"defaultCategoryName": "새 카테고리"
+	},
 
-  "guide": {
-    "next": "다음으로",
-    "prev": "이전으로",
-    "done": "완료했어요",
-    "welcome": {
-      "title": "반가워요! ",
-      "description": "메모를 시작해볼까요? '{{key}} + S'를 눌러 사이드 패널을 열어보세요"
-    },
-    "save": {
-      "title": "메모 저장하기",
-      "description": "잘하셨어요! 이제 메모를 작성할 수 있어요. 자동으로 저장되니 걱정마세요"
-    },
-    "check": {
-      "title": "메모 확인하기",
-      "description": "새로고침을 눌러 최신 메모를 확인해보세요"
-    }
-  },
+	"guide": {
+		"next": "다음으로",
+		"prev": "이전으로",
+		"done": "완료했어요",
+		"welcome": {
+			"title": "반가워요! ",
+			"description": "메모를 시작해볼까요? '{{key}} + S'를 눌러 사이드 패널을 열어보세요"
+		},
+		"save": {
+			"title": "메모 저장하기",
+			"description": "잘하셨어요! 이제 메모를 작성할 수 있어요. 자동으로 저장되니 걱정마세요"
+		},
+		"check": {
+			"title": "메모 확인하기",
+			"description": "새로고침을 눌러 최신 메모를 확인해보세요"
+		}
+	},
 
-  "memos": {
-    "emptyState": {
-      "message": "아직 메모가 없어요. 사이드 패널에서 메모를 시작해보세요"
-    },
-    "totalMemos": "메모 {{total}}개",
-    "searchPlaceholder": "메모 찾기",
-    "searchTarget": {
-      "all": "전체",
-      "title": "제목",
-      "memo": "내용"
-    },
-    "grid": "격자로 보기",
-    "calendar": "달력으로 보기",
-    "selected": "{{count}}개 선택됨",
-    "placeholder": "메모를 입력하세요"
-  },
+	"memos": {
+		"emptyState": {
+			"message": "아직 메모가 없어요. 사이드 패널에서 메모를 시작해보세요"
+		},
+		"totalMemos": "메모 {{total}}개",
+		"searchPlaceholder": "메모 찾기",
+		"searchTarget": {
+			"all": "전체",
+			"title": "제목",
+			"memo": "내용"
+		},
+		"grid": "격자로 보기",
+		"calendar": "달력으로 보기",
+		"selected": "{{count}}개 선택됨",
+		"placeholder": "메모를 입력하세요"
+	},
 
-  "introduce": {
-    "navigation": {
-      "title": "웹 메모",
-      "login": "로그인하기",
-      "get_started": "시작하기"
-    },
-    "hero": {
-      "title": "웹서핑을 더 쉽게",
-      "subtitle": "클릭 한 번으로 메모하고, AI로 요약하고, 체계적으로 관리하세요",
-      "install_button": "크롬에 설치하기",
-      "mobile_apps": {
-        "ios": "iOS",
-        "android": "안드로이드"
-      }
-    },
-    "features": {
-      "memo": {
-        "title": "클릭으로 메모하기",
-        "description": "웹서핑 중 떠오른 생각을 바로 메모하세요"
-      },
-      "overview": {
-        "title": "한눈에 보기",
-        "description": "모든 메모를 깔끔하게 정리해서 보여드려요"
-      },
-      "organize": {
-        "title": "체계적으로 정리하기",
-        "description": "원하는 방식으로 메모를 분류하고 정리하세요"
-      },
-      "ai_summary": {
-        "title": "AI로 요약하기",
-        "description": "핵심 내용을 쏙쏙 뽑아서 보여드려요"
-      },
-      "wishlist": {
-        "title": "나중에 보기",
-        "description": "관심 있는 내용을 위시리스트에 담아두세요"
-      }
-    },
-    "how_it_works": {
-      "title": "이렇게 사용하세요",
-      "steps": {
-        "step1": {
-          "title": "URL 넣기",
-          "description": "웹페이지 주소를 복사해서 붙여넣으세요"
-        },
-        "step2": {
-          "title": "AI 분석",
-          "description": "AI가 내용을 분석해요"
-        },
-        "step3": {
-          "title": "요약 받기",
-          "description": "핵심 내용을 바로 확인하세요"
-        }
-      }
-    },
-    "faq": {
-      "title": "자주 묻는 질문",
-      "questions": {
-        "what_is": {
-          "question": "웹 메모가 뭔가요?",
-          "answer": "웹서핑을 더 편하게 만들어주는 서비스예요. 클릭 한 번으로 메모하고, AI가 내용을 요약하고, 체계적으로 정리할 수 있어요"
-        },
-        "is_free": {
-          "question": "무료인가요?",
-          "answer": "네! 모든 기능을 무료로 사용할 수 있어요. 메모, 정리, AI 요약, 위시리스트까지 모두 무료예요"
-        },
-        "where_to_save": {
-          "question": "어디서 메모할 수 있나요?",
-          "answer": "크롬 확장 프로그램으로 어느 웹사이트에서나 메모할 수 있어요"
-        },
-        "is_data_private": {
-          "question": "다른 사람이 내 메모를 볼 수 있나요?",
-          "answer": "아니요, 메모는 나만 볼 수 있어요. 개인정보도 안전하게 보호하고 있으니 안심하세요"
-        },
-        "where_to_find": {
-          "question": "메모를 어디서 볼 수 있나요?",
-          "answer": "웹 메모 사이트에 로그인하면 언제 어디서나 메모를 볼 수 있어요"
-        },
-        "memo_preservation": {
-          "question": "메모가 사라지지 않을까요?",
-          "answer": "걱정마세요! 저희도 500개가 넘는 메모를 쓰고 있어요. 메모를 평생 보관할 수 있고, 곧 다운로드 기능도 추가할 거예요"
-        },
-        "how_ai_works": {
-          "question": "AI 요약은 어떻게 되나요?",
-          "answer": "AI가 웹페이지를 읽고 핵심 내용만 쏙쏙 뽑아줘요. 긴 내용도 금방 이해할 수 있어요"
-        },
-        "other_browsers": {
-          "question": "크롬 말고 다른 브라우저에서도 되나요?",
-          "answer": "아직은 크롬에서만 사용할 수 있어요. 다른 브라우저도 지원할 예정이니 조금만 기다려주세요"
-        }
-      }
-    },
-    "footer": {
-      "title": "웹 메모",
-      "description": "쉽고 빠른 콘텐츠 정리",
-      "product": {
-        "title": "제품",
-        "features": "기능 살펴보기",
-        "pricing": "요금제",
-        "use_cases": "활용 예시"
-      },
-      "company": {
-        "title": "회사",
-        "about": "회사 소개",
-        "blog": "블로그",
-        "careers": "채용하기"
-      },
-      "legal": {
-        "title": "약관",
-        "privacy_policy": "개인정보처리방침",
-        "terms_of_service": "이용약관",
-        "contact": "문의하기"
-      },
-      "copyright": "Web Memo. All rights reserved.",
-      "social": {
-        "email": "이메일",
-        "instagram": "인스타그램",
-        "youtube": "유튜브",
-        "kakaotalk": "카카오톡 채팅"
-      }
-    }
-  },
+	"introduce": {
+		"navigation": {
+			"title": "웹 메모",
+			"login": "로그인하기",
+			"get_started": "시작하기"
+		},
+		"hero": {
+			"title": "웹서핑을 더 쉽게",
+			"subtitle": "클릭 한 번으로 메모하고, AI로 요약하고, 체계적으로 관리하세요",
+			"install_button": "크롬에 설치하기",
+			"mobile_apps": {
+				"ios": "iOS",
+				"android": "안드로이드"
+			}
+		},
+		"features": {
+			"memo": {
+				"title": "클릭으로 메모하기",
+				"description": "웹서핑 중 떠오른 생각을 바로 메모하세요"
+			},
+			"overview": {
+				"title": "한눈에 보기",
+				"description": "모든 메모를 깔끔하게 정리해서 보여드려요"
+			},
+			"organize": {
+				"title": "체계적으로 정리하기",
+				"description": "원하는 방식으로 메모를 분류하고 정리하세요"
+			},
+			"ai_summary": {
+				"title": "AI로 요약하기",
+				"description": "핵심 내용을 쏙쏙 뽑아서 보여드려요"
+			},
+			"wishlist": {
+				"title": "나중에 보기",
+				"description": "관심 있는 내용을 위시리스트에 담아두세요"
+			}
+		},
+		"how_it_works": {
+			"title": "이렇게 사용하세요",
+			"steps": {
+				"step1": {
+					"title": "URL 넣기",
+					"description": "웹페이지 주소를 복사해서 붙여넣으세요"
+				},
+				"step2": {
+					"title": "AI 분석",
+					"description": "AI가 내용을 분석해요"
+				},
+				"step3": {
+					"title": "요약 받기",
+					"description": "핵심 내용을 바로 확인하세요"
+				}
+			}
+		},
+		"faq": {
+			"title": "자주 묻는 질문",
+			"questions": {
+				"what_is": {
+					"question": "웹 메모가 뭔가요?",
+					"answer": "웹서핑을 더 편하게 만들어주는 서비스예요. 클릭 한 번으로 메모하고, AI가 내용을 요약하고, 체계적으로 정리할 수 있어요"
+				},
+				"is_free": {
+					"question": "무료인가요?",
+					"answer": "네! 모든 기능을 무료로 사용할 수 있어요. 메모, 정리, AI 요약, 위시리스트까지 모두 무료예요"
+				},
+				"where_to_save": {
+					"question": "어디서 메모할 수 있나요?",
+					"answer": "크롬 확장 프로그램으로 어느 웹사이트에서나 메모할 수 있어요"
+				},
+				"is_data_private": {
+					"question": "다른 사람이 내 메모를 볼 수 있나요?",
+					"answer": "아니요, 메모는 나만 볼 수 있어요. 개인정보도 안전하게 보호하고 있으니 안심하세요"
+				},
+				"where_to_find": {
+					"question": "메모를 어디서 볼 수 있나요?",
+					"answer": "웹 메모 사이트에 로그인하면 언제 어디서나 메모를 볼 수 있어요"
+				},
+				"memo_preservation": {
+					"question": "메모가 사라지지 않을까요?",
+					"answer": "걱정마세요! 저희도 500개가 넘는 메모를 쓰고 있어요. 메모를 평생 보관할 수 있고, 곧 다운로드 기능도 추가할 거예요"
+				},
+				"how_ai_works": {
+					"question": "AI 요약은 어떻게 되나요?",
+					"answer": "AI가 웹페이지를 읽고 핵심 내용만 쏙쏙 뽑아줘요. 긴 내용도 금방 이해할 수 있어요"
+				},
+				"other_browsers": {
+					"question": "크롬 말고 다른 브라우저에서도 되나요?",
+					"answer": "아직은 크롬에서만 사용할 수 있어요. 다른 브라우저도 지원할 예정이니 조금만 기다려주세요"
+				}
+			}
+		},
+		"footer": {
+			"title": "웹 메모",
+			"description": "쉽고 빠른 콘텐츠 정리",
+			"product": {
+				"title": "제품",
+				"features": "기능 살펴보기",
+				"pricing": "요금제",
+				"use_cases": "활용 예시"
+			},
+			"company": {
+				"title": "회사",
+				"about": "회사 소개",
+				"blog": "블로그",
+				"careers": "채용하기"
+			},
+			"legal": {
+				"title": "약관",
+				"privacy_policy": "개인정보처리방침",
+				"terms_of_service": "이용약관",
+				"contact": "문의하기"
+			},
+			"copyright": "Web Memo. All rights reserved.",
+			"social": {
+				"email": "이메일",
+				"instagram": "인스타그램",
+				"youtube": "유튜브",
+				"kakaotalk": "카카오톡 채팅"
+			}
+		}
+	},
 
-  "feedback": {
-    "button": "의견 보내기",
-    "title": "의견을 들려주세요",
-    "description": "더 나은 서비스를 만드는데 도움이 돼요",
-    "placeholder": "개선하고 싶은 점을 알려주세요",
-    "cancel": "취소",
-    "submit": "보내기",
-    "submitting": "보내는 중...",
-    "success": "의견을 받았어요",
-    "successDescription": "소중한 의견 고마워요",
-    "error": "전송하지 못했어요",
-    "errorDescription": "잠시 후에 다시 시도해주세요"
-  },
+	"feedback": {
+		"button": "의견 보내기",
+		"title": "의견을 들려주세요",
+		"description": "더 나은 서비스를 만드는데 도움이 돼요",
+		"placeholder": "개선하고 싶은 점을 알려주세요",
+		"cancel": "취소",
+		"submit": "보내기",
+		"submitting": "보내는 중...",
+		"success": "의견을 받았어요",
+		"successDescription": "소중한 의견 고마워요",
+		"error": "전송하지 못했어요",
+		"errorDescription": "잠시 후에 다시 시도해주세요"
+	},
 
-  "error": {
-    "404": {
-      "title": "페이지를 찾을 수 없어요",
-      "description": "주소가 잘못됐거나 더는 없는 페이지예요",
-      "backToHome": "홈으로 가기"
-    },
-    "500": {
-      "title": "문제가 생겼어요",
-      "retry": "다시 시도하기"
-    }
-  },
+	"error": {
+		"404": {
+			"title": "페이지를 찾을 수 없어요",
+			"description": "주소가 잘못됐거나 더는 없는 페이지예요",
+			"backToHome": "홈으로 가기"
+		},
+		"500": {
+			"title": "문제가 생겼어요",
+			"retry": "다시 시도하기"
+		}
+	},
 
-  "sms": {
-    "errors": {
-      "missingParams": "전화번호와 메시지를 입력해주세요",
-      "sendFailed": "메시지를 보내지 못했어요",
-      "invalidPhoneNumber": "전화번호가 올바르지 않아요"
-    },
-    "success": {
-      "messageSent": "메시지를 보냈어요"
-    },
-    "buttons": {
-      "send": "보내기",
-      "cancel": "취소"
-    },
-    "labels": {
-      "phoneNumber": "전화번호",
-      "message": "메시지",
-      "sendSMS": "메시지 보내기"
-    }
-  }
+	"sms": {
+		"errors": {
+			"missingParams": "전화번호와 메시지를 입력해주세요",
+			"sendFailed": "메시지를 보내지 못했어요",
+			"invalidPhoneNumber": "전화번호가 올바르지 않아요"
+		},
+		"success": {
+			"messageSent": "메시지를 보냈어요"
+		},
+		"buttons": {
+			"send": "보내기",
+			"cancel": "취소"
+		},
+		"labels": {
+			"phoneNumber": "전화번호",
+			"message": "메시지",
+			"sendSMS": "메시지 보내기"
+		}
+	}
 }

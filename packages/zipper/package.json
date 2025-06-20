@@ -1,26 +1,26 @@
 {
-  "name": "@extension/zipper",
-  "version": "1.8.5",
-  "description": "chrome extension zipper",
-  "private": true,
-  "sideEffects": false,
-  "files": [
-    "dist/**"
-  ],
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "index.ts",
-  "scripts": {
-    "clean": "rimraf ./dist && rimraf ./build",
-    "zip": "tsx index.ts",
-    "ready": "tsc",
-    "type-check": "tsc --noEmit",
-    "tsc-watch": "tsc-watch"
-  },
-  "devDependencies": {
-    "@extension/tsconfig": "workspace:*",
-    "fast-glob": "^3.3.2",
-    "fflate": "^0.8.2",
-    "tsx": "^4.16.2"
-  }
+	"name": "@extension/zipper",
+	"version": "1.8.5",
+	"description": "chrome extension zipper",
+	"private": true,
+	"sideEffects": false,
+	"files": [
+		"dist/**"
+	],
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "index.ts",
+	"scripts": {
+		"clean": "rimraf ./dist && rimraf ./build",
+		"zip": "tsx index.ts",
+		"ready": "tsc",
+		"type-check": "tsc --noEmit",
+		"tsc-watch": "tsc-watch"
+	},
+	"devDependencies": {
+		"@extension/tsconfig": "workspace:*",
+		"fast-glob": "^3.3.2",
+		"fflate": "^0.8.2",
+		"tsx": "^4.16.2"
+	}
 }

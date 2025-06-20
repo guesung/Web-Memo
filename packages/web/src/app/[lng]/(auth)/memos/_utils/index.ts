@@ -1,1 +1,1 @@
-export * from './Sentry';
+export * from "./Sentry";

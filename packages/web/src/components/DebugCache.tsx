@@ -1,3 +1,3 @@
 export default function DebugCache() {
-  return <div>{new Date().toISOString()}</div>;
+	return <div>{new Date().toISOString()}</div>;
 }

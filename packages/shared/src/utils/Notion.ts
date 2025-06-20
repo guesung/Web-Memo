@@ -1,13 +1,13 @@
-import { CONFIG } from '@src/constants';
+import { CONFIG } from "@src/constants";
 
-import { getMemoInfo } from './extension';
+import { getMemoInfo } from "./extension";
 
 export const saveMemoNotion = async () => {
-  const memoData = await getMemoInfo();
+	const memoData = await getMemoInfo();
 
-  const response = await fetch(CONFIG.makeWebhookNotionApi, {
-    method: 'POST',
-    body: JSON.stringify(memoData),
-  });
-  return response;
+	const response = await fetch(CONFIG.makeWebhookNotionApi, {
+		method: "POST",
+		body: JSON.stringify(memoData),
+	});
+	return response;
 };

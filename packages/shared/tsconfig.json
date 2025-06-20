@@ -1,17 +1,17 @@
 {
-  "extends": "@extension/tsconfig/react",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@*": ["./*"]
-    },
-    "noEmit": false,
-    "emitDeclarationOnly": false,
-    "strictPropertyInitialization": false,
-    "stripInternal": true,
-    "declarationDir": "dist",
-    "outDir": "dist"
-  },
-  "include": ["src"],
-  "exclude": ["dist"]
+	"extends": "@extension/tsconfig/react",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@*": ["./*"]
+		},
+		"noEmit": false,
+		"emitDeclarationOnly": false,
+		"strictPropertyInitialization": false,
+		"stripInternal": true,
+		"declarationDir": "dist",
+		"outDir": "dist"
+	},
+	"include": ["src"],
+	"exclude": ["dist"]
 }

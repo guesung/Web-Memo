@@ -1,63 +1,63 @@
 {
-  "$schema": "https://turbo.build/schema.json",
-  "ui": "tui",
-  "tasks": {
-    "ready": {
-      "dependsOn": ["^ready"],
-      "outputs": ["dist", "build"]
-    },
-    "dev": {
-      "dependsOn": ["ready"],
-      "outputs": ["dist", "build"],
-      "env": [
-        "__FIREFOX__",
-        "MAKE_WEBHOOK_NOTION_API",
-        "OPENAI_API_KEY",
-        "SENTRY_AUTH_TOKEN",
-        "SENTRY_DSN",
-        "WEB_URL",
-        "NODE_ENV"
-      ],
-      "inputs": [".env"],
-      "persistent": true
-    },
-    "build": {
-      "dependsOn": ["ready", "^build"],
-      "env": [
-        "__FIREFOX__",
-        "MAKE_WEBHOOK_NOTION_API",
-        "OPENAI_API_KEY",
-        "SENTRY_AUTH_TOKEN",
-        "SENTRY_DSN",
-        "WEB_URL",
-        "NODE_ENV"
-      ],
-      "outputs": ["dist", "build"],
-      "inputs": [".env"]
-    },
-    "start": {
-      "dependsOn": ["^build", "ready"],
-      "outputs": ["dist", "build", ".next"],
-      "inputs": [".env"]
-    },
-    "zip": {
-      "dependsOn": ["^build"],
-      "cache": false
-    },
-    "type-check": {
-      "cache": false
-    },
-    "lint": {
-      "cache": false
-    },
-    "lint:fix": {
-      "cache": false
-    },
-    "clean": {
-      "cache": false
-    },
-    "tsc-watch": {
-      "cache": false
-    }
-  }
+	"$schema": "https://turbo.build/schema.json",
+	"ui": "tui",
+	"tasks": {
+		"ready": {
+			"dependsOn": ["^ready"],
+			"outputs": ["dist", "build"]
+		},
+		"dev": {
+			"dependsOn": ["ready"],
+			"outputs": ["dist", "build"],
+			"env": [
+				"__FIREFOX__",
+				"MAKE_WEBHOOK_NOTION_API",
+				"OPENAI_API_KEY",
+				"SENTRY_AUTH_TOKEN",
+				"SENTRY_DSN",
+				"WEB_URL",
+				"NODE_ENV"
+			],
+			"inputs": [".env"],
+			"persistent": true
+		},
+		"build": {
+			"dependsOn": ["ready", "^build"],
+			"env": [
+				"__FIREFOX__",
+				"MAKE_WEBHOOK_NOTION_API",
+				"OPENAI_API_KEY",
+				"SENTRY_AUTH_TOKEN",
+				"SENTRY_DSN",
+				"WEB_URL",
+				"NODE_ENV"
+			],
+			"outputs": ["dist", "build"],
+			"inputs": [".env"]
+		},
+		"start": {
+			"dependsOn": ["^build", "ready"],
+			"outputs": ["dist", "build", ".next"],
+			"inputs": [".env"]
+		},
+		"zip": {
+			"dependsOn": ["^build"],
+			"cache": false
+		},
+		"type-check": {
+			"cache": false
+		},
+		"lint": {
+			"cache": false
+		},
+		"lint:fix": {
+			"cache": false
+		},
+		"clean": {
+			"cache": false
+		},
+		"tsc-watch": {
+			"cache": false
+		}
+	}
 }

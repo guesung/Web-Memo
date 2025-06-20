@@ -7,7 +7,7 @@
 			"outputs": ["dist", "build"]
 		},
 		"dev": {
-			"dependsOn": ["ready"],
+			"dependsOn": ["^ready"],
 			"outputs": ["dist", "build"],
 			"env": [
 				"__FIREFOX__",

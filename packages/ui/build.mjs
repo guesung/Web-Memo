@@ -41,6 +41,7 @@ const build = async () => {
 
   console.log('🚀 빌드 프로세스 시작...');
 
+  fs.rmSync(resolve(__dirname, 'dist'), { recursive: true, force: true });
   try {
     await esbuild.build(buildOptions);
     console.log('✅ esbuild 빌드 완료');

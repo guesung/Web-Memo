@@ -6,8 +6,8 @@ import * as React from 'react';
 import type { ControllerProps, FieldPath, FieldValues } from 'react-hook-form';
 import { Controller, FormProvider, useFormContext } from 'react-hook-form';
 
-import { Label } from '@/components/label';
-import { cn } from '@/utils';
+import { Label } from '../components/label';
+import { cn } from '../utils';
 
 const Form = FormProvider;
 

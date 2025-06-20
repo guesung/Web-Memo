@@ -1,4 +1,4 @@
-import '@extension/ui/dist/global.css';
+import '@extension/ui/global.css';
 // import '../fonts/output/PretendardVariable.css';
 import './globals.css';
 

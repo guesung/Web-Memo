@@ -42,6 +42,14 @@
 	"updates": {
 		"title": "What's new",
 		"versions": {
+			"v1.8.4": {
+				"title": "Added category features",
+				"content": [
+					"Add categories by pressing '#' in side panel",
+					"Change category colors",
+					"View memo count by category"
+				]
+			},
 			"v1.8.3": {
 				"title": "Fixed memo saving issues",
 				"content": [

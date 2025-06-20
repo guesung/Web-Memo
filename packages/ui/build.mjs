@@ -47,9 +47,6 @@ const build = async () => {
     await esbuild.build(buildOptions);
     console.log('✅ esbuild 빌드 완료');
 
-    fs.copyFileSync(resolve('global.css'), resolve('dist', 'global.css'));
-    console.log('✅ global.css 파일 복사 완료');
-
     const execAsync = promisify(exec);
     await execAsync('tsc --emitDeclarationOnly --outDir dist');
     console.log('✅ TypeScript 선언 파일 생성 완료');

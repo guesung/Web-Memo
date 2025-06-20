@@ -13,7 +13,6 @@
   "scripts": {
     "clean": "rimraf ./dist && rimraf ./build",
     "ready": "tsc",
-    "prettier": "prettier . --write --ignore-path ../../.prettierignore",
     "type-check": "tsc --noEmit",
     "tsc-watch": "tsc-watch"
   },

@@ -27,7 +27,6 @@
     "tsc-watch": "turbo tsc-watch",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --fix --ext .ts,.tsx",
-    "prettier": "turbo prettier --continue -- --cache --cache-location node_modules/.cache/.prettiercache",
     "prepare": "husky",
     "test:jest": "vitest",
     "test:e2e": "playwright test --ui",

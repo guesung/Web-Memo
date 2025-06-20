@@ -60,7 +60,6 @@
   "scripts": {
     "clean": "rimraf ./dist",
     "ready": "node build.mjs",
-    "prettier": "prettier . --write --ignore-path ../../.prettierignore",
     "type-check": "tsc --noEmit",
     "tsc-watch": "tsc-watch"
   },

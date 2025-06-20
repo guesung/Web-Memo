@@ -76,7 +76,6 @@ alwaysApply: true
 - es-hangul (Korean text processing)
 - youtube-transcript (YouTube caption handling)
 - OpenAI API integration
-- uvcanvas (canvas handling)
 
 ## Environment Configuration
 - Environment variables managed through `.env` file

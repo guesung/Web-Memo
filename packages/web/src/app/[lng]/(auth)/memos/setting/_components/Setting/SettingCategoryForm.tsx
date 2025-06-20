@@ -1,8 +1,8 @@
 import {
-    useCategoryDeleteMutation,
-    useCategoryPostMutation,
-    useCategoryQuery,
-    useCategoryUpsertMutation,
+  useCategoryDeleteMutation,
+  useCategoryPostMutation,
+  useCategoryQuery,
+  useCategoryUpsertMutation,
 } from '@extension/shared/hooks';
 import { generateRandomPastelColor } from '@extension/shared/utils';
 import { Button, Input, Label, toast } from '@extension/ui';

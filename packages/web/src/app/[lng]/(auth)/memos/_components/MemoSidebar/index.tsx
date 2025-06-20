@@ -2,17 +2,17 @@
 
 import { PATHS } from '@extension/shared/constants';
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarGroup,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarSeparator,
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarSeparator,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@extension/ui';
 import { HeaderMargin } from '@src/components/Header';
 import type { LanguageType } from '@src/modules/i18n';

@@ -3,12 +3,12 @@
 import { useCategoryQuery } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import {
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from '@extension/ui';
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';

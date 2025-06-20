@@ -13,7 +13,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  * @type { import("esbuild").BuildOptions }
  */
 const buildOptions = {
-  entryPoints: ['./index.ts', './tailwind.config.js'],
+  entryPoints: ['./src/index.ts', './tailwind.config.js'],
   tsconfig: './tsconfig.json',
   bundle: true,
   target: 'es6',
@@ -42,6 +42,7 @@ const build = async () => {
   console.log('🚀 빌드 프로세스 시작...');
 
   fs.rmSync(resolve(__dirname, 'dist'), { recursive: true, force: true });
+
   try {
     await esbuild.build(buildOptions);
     console.log('✅ esbuild 빌드 완료');

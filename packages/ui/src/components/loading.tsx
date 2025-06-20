@@ -4,7 +4,6 @@ import { cn } from "../utils";
 
 interface LoadingProps extends React.ComponentProps<"svg"> {}
 export function Loading(props: LoadingProps) {
-	console.log(6);
 	return (
 		<LoaderCircle
 			{...props}

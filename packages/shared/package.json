@@ -4,58 +4,19 @@
 	"description": "chrome extension shared code",
 	"private": true,
 	"sideEffects": false,
-	"files": [
-		"dist"
-	],
 	"type": "module",
-	"main": "./dist/index.js",
-	"module": "./dist/index.js",
-	"types": "./dist/index.d.ts",
 	"exports": {
-		"./utils": {
-			"types": "./dist/utils/index.d.ts",
-			"default": "./dist/utils/index.js"
-		},
-		"./utils/extension": {
-			"types": "./dist/utils/extension/index.d.ts",
-			"default": "./dist/utils/extension/index.js"
-		},
-		"./utils/web": {
-			"types": "./dist/utils/web/index.d.ts",
-			"default": "./dist/utils/web/index.js"
-		},
-		"./hooks": {
-			"types": "./dist/hooks/index.d.ts",
-			"default": "./dist/hooks/index.js"
-		},
-		"./hooks/extension": {
-			"types": "./dist/hooks/extension/index.d.ts",
-			"default": "./dist/hooks/extension/index.js"
-		},
-		"./constants": {
-			"types": "./dist/constants/index.d.ts",
-			"default": "./dist/constants/index.js"
-		},
-		"./types": {
-			"types": "./dist/types/index.d.ts",
-			"default": "./dist/types/index.js"
-		},
-		"./modules/local-storage": {
-			"types": "./dist/modules/local-storage/index.d.ts",
-			"default": "./dist/modules/local-storage/index.js"
-		},
-		"./modules/search-params": {
-			"types": "./dist/modules/search-params/index.d.ts",
-			"default": "./dist/modules/search-params/index.js"
-		},
-		"./modules/chrome-storage": {
-			"types": "./dist/modules/chrome-storage/index.d.ts",
-			"default": "./dist/modules/chrome-storage/index.js"
-		},
-		"./modules/extension-bridge": {
-			"types": "./dist/modules/extension-bridge/index.d.ts",
-			"default": "./dist/modules/extension-bridge/index.js"
-		}
+		"./utils": "./src/utils/index.ts",
+		"./utils/extension": "./src/utils/extension/index.ts",
+		"./utils/web": "./src/utils/web/index.ts",
+		"./hooks": "./src/hooks/index.ts",
+		"./hooks/extension": "./src/hooks/extension/index.ts",
+		"./constants": "./src/constants/index.ts",
+		"./types": "./src/types/index.ts",
+		"./modules/local-storage": "./src/modules/local-storage/index.ts",
+		"./modules/search-params": "./src/modules/search-params/index.ts",
+		"./modules/chrome-storage": "./src/modules/chrome-storage/index.ts",
+		"./modules/extension-bridge": "./src/modules/extension-bridge/index.ts"
 	},
 	"scripts": {
 		"clean": "rimraf ./dist",

@@ -25,7 +25,6 @@
 		"zip": "turbo zip",
 		"type-check": "turbo type-check",
 		"tsc-watch": "turbo tsc-watch",
-		"prepare": "husky",
 		"test:jest": "vitest",
 		"test:e2e": "playwright test --ui",
 		"test-report:e2e": "playwright show-report",

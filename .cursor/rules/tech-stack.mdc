@@ -41,7 +41,6 @@ alwaysApply: true
 ## Development Tools
 - TypeScript 5.5.3
 - Biome 2.0.0
-- Husky (Git hooks)
 - Sentry (error tracking)
 
 ## Testing

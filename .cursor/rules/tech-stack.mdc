@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
 ## Core Technologies
@@ -40,8 +40,7 @@ alwaysApply: true
 
 ## Development Tools
 - TypeScript 5.5.3
-- ESLint 8.57.0
-- Prettier 3.3.3
+- Biome 2.0.0
 - Husky (Git hooks)
 - Sentry (error tracking)
 

@@ -1,4 +1,3 @@
-/* eslint-disable import/namespace */
 import * as Sentry from "@sentry/react";
 import { CONFIG } from "@src/constants";
 

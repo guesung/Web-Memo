@@ -33,7 +33,6 @@ export default class ErrorBoundary extends Component<
 	}
 
 	componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-		// eslint-disable-next-line import/namespace
 		Sentry.captureException(error);
 		console.error(error, errorInfo);
 	}

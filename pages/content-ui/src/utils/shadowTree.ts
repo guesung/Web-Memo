@@ -1,4 +1,3 @@
-// eslint-disable-next-line
 // @ts-ignore
 import tailwindcssOutput from "@src/tailwind-output.css?inline";
 import { createRoot } from "react-dom/client";

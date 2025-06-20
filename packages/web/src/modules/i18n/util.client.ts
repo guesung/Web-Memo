@@ -17,7 +17,6 @@ import { getOptions } from "./util";
 
 const runsOnServerSide = typeof window === "undefined";
 
-// eslint-disable-next-line import/no-named-as-default-member
 i18next
 	.use(initReactI18next)
 	.use(LanguageDetector)

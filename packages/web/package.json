@@ -8,8 +8,7 @@
 		"analyze": "ANALYZE=true next build",
 		"start": "next start",
 		"type-check": "tsc --noEmit",
-		"tsc-watch": "tsc-watch",
-		"lint": "eslint . --fix"
+		"tsc-watch": "tsc-watch"
 	},
 	"dependencies": {
 		"@egjs/react-infinitegrid": "^4.12.0",
@@ -32,7 +31,6 @@
 		"accept-language": "^3.0.20",
 		"class-variance-authority": "^0.7.0",
 		"clsx": "^2.1.1",
-		"eslint-config-next": "14.2.7",
 		"i18next": "^23.16.8",
 		"i18next-browser-languagedetector": "^8.0.0",
 		"i18next-resources-to-backend": "^1.2.1",

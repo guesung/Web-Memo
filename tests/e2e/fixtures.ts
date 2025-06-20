@@ -1,5 +1,5 @@
 import type { BrowserContext, Page } from "@playwright/test";
-import { chromium, test as base } from "@playwright/test";
+import { test as base, chromium } from "@playwright/test";
 import path from "path";
 
 process.env.PW_CHROMIUM_ATTACH_TO_OTHER = "1";
@@ -12,7 +12,6 @@ type ExtensionFixture = {
 };
 
 export const test = base.extend<ExtensionFixture>({
-	// eslint-disable-next-line no-empty-pattern
 	context: async ({}, use) => {
 		const context = await chromium.launchPersistentContext("", {
 			headless: false,

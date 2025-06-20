@@ -2,7 +2,7 @@
 
 import { PATHS } from '@extension/shared/constants';
 import { useSignoutMutation, useSupabaseUserQuery } from '@extension/shared/hooks';
-import { Avatar, DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from '@src/components/ui';
+import { Avatar, DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from '@extension/ui';
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import Image from 'next/image';

@@ -2,8 +2,8 @@ import '@extension/ui/global.css';
 // import '../fonts/output/PretendardVariable.css';
 import './globals.css';
 
+import { Loading, Toaster } from '@extension/ui';
 import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google';
-import { Loading, Toaster } from '@src/components/ui';
 import { CONFIG } from '@src/constants';
 import type { Metadata, Viewport } from 'next';
 import { type PropsWithChildren, Suspense } from 'react';

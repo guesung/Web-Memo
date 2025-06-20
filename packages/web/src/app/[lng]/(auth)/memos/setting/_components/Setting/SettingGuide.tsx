@@ -1,6 +1,6 @@
 import { PATHS } from '@extension/shared/constants';
 import { LocalStorage } from '@extension/shared/modules/local-storage';
-import { Button, Label } from '@src/components/ui';
+import { Button, Label } from '@extension/ui';
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import { useRouter } from 'next/navigation';

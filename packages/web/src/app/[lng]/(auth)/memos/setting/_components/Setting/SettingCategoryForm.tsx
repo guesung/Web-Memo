@@ -1,11 +1,11 @@
 import {
-  useCategoryDeleteMutation,
-  useCategoryPostMutation,
-  useCategoryQuery,
-  useCategoryUpsertMutation,
+    useCategoryDeleteMutation,
+    useCategoryPostMutation,
+    useCategoryQuery,
+    useCategoryUpsertMutation,
 } from '@extension/shared/hooks';
 import { generateRandomPastelColor } from '@extension/shared/utils';
-import { Button, Input, Label, toast } from '@src/components/ui';
+import { Button, Input, Label, toast } from '@extension/ui';
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import { TrashIcon } from 'lucide-react';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCategoryPostMutation } from '@extension/shared/hooks';
-import { Button, Input } from '@src/components/ui';
+import { Button, Input } from '@extension/ui';
 import { PlusIcon } from 'lucide-react';
 import { memo, useState } from 'react';
 import { useForm } from 'react-hook-form';

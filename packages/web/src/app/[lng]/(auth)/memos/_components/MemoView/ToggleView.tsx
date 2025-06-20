@@ -1,6 +1,6 @@
 'use client';
 import { useSearchParams } from '@extension/shared/modules/search-params';
-import { ToggleGroup, ToggleGroupItem } from '@src/components/ui';
+import { ToggleGroup, ToggleGroupItem } from '@extension/ui';
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import { Calendar, Grid } from 'lucide-react';

@@ -1,4 +1,4 @@
-import { Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@src/components/ui';
+import { Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@extension/ui';
 import type { Language, LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import { useRouter } from 'next/navigation';

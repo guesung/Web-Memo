@@ -1,5 +1,5 @@
+import { Loading } from '@extension/ui';
 import Header from '@src/components/Header';
-import { Loading } from '@src/components/ui';
 import type { LanguageParams } from '@src/modules/i18n';
 import { SUPPORTED_LANGUAGES } from '@src/modules/i18n';
 import { dir } from 'i18next';

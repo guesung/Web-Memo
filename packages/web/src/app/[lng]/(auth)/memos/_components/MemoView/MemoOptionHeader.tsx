@@ -1,5 +1,5 @@
 import { MOTION_VARIANTS } from '@extension/shared/constants';
-import { Button } from '@src/components/ui';
+import { Button } from '@extension/ui';
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import { motion } from 'framer-motion';

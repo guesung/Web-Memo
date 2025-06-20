@@ -1,20 +1,20 @@
 'use server';
 
 import { PATHS } from '@extension/shared/constants';
-import { HeaderMargin } from '@src/components/Header';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarSeparator,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@src/components/ui';
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarSeparator,
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@extension/ui';
+import { HeaderMargin } from '@src/components/Header';
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.server';
 import { Heart, Home, SettingsIcon } from 'lucide-react';

@@ -1,7 +1,6 @@
 'use client';
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@extension/ui';
-import { Input } from '@src/components/ui';
+import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@extension/ui';
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import { X } from 'lucide-react';

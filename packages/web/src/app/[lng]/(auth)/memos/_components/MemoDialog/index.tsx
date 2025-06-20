@@ -1,8 +1,8 @@
 'use client';
 import { useKeyboardBind, useMemoPatchMutation, useMemoQuery } from '@extension/shared/hooks';
 import { useSearchParams } from '@extension/shared/modules/search-params';
+import { Button, Card, CardContent, Dialog, DialogContent, Textarea } from '@extension/ui';
 import type { MemoInput } from '@src/app/[lng]/(auth)/memos/_types/Input';
-import { Button, Card, CardContent, Dialog, DialogContent, Textarea } from '@src/components/ui';
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';
 import dayjs from 'dayjs';

@@ -1,7 +1,7 @@
 import { useSearchParams } from '@extension/shared/modules/search-params';
 import type { GetMemoResponse } from '@extension/shared/types';
 import { cn } from '@extension/shared/utils';
-import { Card, CardContent } from '@src/components/ui';
+import { Card, CardContent } from '@extension/ui';
 import type { LanguageType } from '@src/modules/i18n';
 import { motion } from 'framer-motion';
 import type { HTMLAttributes, MouseEvent } from 'react';

@@ -1,6 +1,6 @@
 import { QUERY_KEY } from '@extension/shared/constants';
 import { setLocalStorageTrue } from '@extension/shared/modules/local-storage';
-import { Button, toast } from '@src/components/ui';
+import { Button, toast } from '@extension/ui';
 import { useGuide } from '@src/modules/guide';
 import type { LanguageType } from '@src/modules/i18n';
 import useTranslation from '@src/modules/i18n/util.client';

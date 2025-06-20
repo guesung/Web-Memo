@@ -1,6 +1,6 @@
 import type { GetMemoResponse } from '@extension/shared/types';
 import { cn } from '@extension/shared/utils';
-import { Button, CardHeader, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@src/components/ui';
+import { Button, CardHeader, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@extension/ui';
 import { CheckIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';

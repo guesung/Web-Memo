@@ -1,4 +1,4 @@
-import "@extension/ui/dist/global.css";
+import "@extension/ui/global.css";
 import "@src/index.css";
 
 import { initSentry } from "@extension/shared/utils";

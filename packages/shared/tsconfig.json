@@ -5,6 +5,7 @@
 		"paths": {
 			"@*": ["./*"]
 		},
+		"moduleResolution": "bundler",
 		"noEmit": false,
 		"emitDeclarationOnly": false,
 		"strictPropertyInitialization": false,

@@ -7,4 +7,5 @@ export default defineConfig({
   clean: true,
   env: dotenv.config().parsed,
   dts: true,
+  format: ['esm', 'cjs'],
 })

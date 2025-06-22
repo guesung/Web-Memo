@@ -1,0 +1,12 @@
+{
+  "name": "@extension/env",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "ready": "tsup"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

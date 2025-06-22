@@ -19,7 +19,8 @@
 				"NODE_ENV"
 			],
 			"inputs": [".env"],
-			"persistent": true
+			"persistent": true,
+			"cache": false
 		},
 		"build": {
 			"dependsOn": ["ready", "^build"],

@@ -1,5 +1,6 @@
-import { CONFIG, SUPABASE } from "@src/constants";
+import { CONFIG } from "@extension/env";
 import type { Session } from "@supabase/supabase-js";
+import { SUPABASE } from "../../constants";
 
 export const getSession = async () => {
 	const cookie = await chrome.cookies.get({

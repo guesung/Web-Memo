@@ -1,14 +1,14 @@
-import { QUERY_KEY } from "@src/constants";
-import type { MemoRow } from "@src/types";
-import { MemoService } from "@src/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getChoseong } from "es-hangul";
+import { QUERY_KEY } from "../../../constants";
+import type { GetMemoResponse } from "../../../types";
+import { MemoService } from "../../../utils";
 
 import useSupabaseClientQuery from "./useSupabaseClientQuery";
 
 type QueryFnData = Awaited<ReturnType<MemoService["getMemos"]>>;
 type QueryError = Error;
-type QueryData = MemoRow[];
+type QueryData = GetMemoResponse[];
 
 interface UseMemosQueryProps {
 	category?: string;

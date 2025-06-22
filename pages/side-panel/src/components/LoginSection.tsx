@@ -1,4 +1,4 @@
-import { CONFIG } from "@extension/shared/constants";
+import { CONFIG } from "@extension/env";
 import { Tab } from "@extension/shared/utils/extension";
 import { ExternalLinkIcon } from "lucide-react";
 

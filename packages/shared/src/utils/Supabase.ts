@@ -1,4 +1,4 @@
-import { SUPABASE } from "@src/constants";
+import { SUPABASE } from "../constants";
 import type {
 	CategoryRow,
 	CategoryTable,
@@ -6,8 +6,8 @@ import type {
 	FeedbackTable,
 	MemoRow,
 	MemoSupabaseClient,
-	MemoTable,
-} from "@src/types";
+	MemoTable
+} from "../types";
 
 export class MemoService {
 	supabaseClient: MemoSupabaseClient;

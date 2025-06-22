@@ -292,21 +292,22 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 				placeholder={<MemoItemSkeleton />}
 				onRequestAppend={handleRequestAppend}
 			>
-				{items.map(
-					(item) =>
-						memos.at(item.key) && (
-							<MemoItem
-								key={memos.at(item.key).id}
-								lng={lng}
-								data-grid-groupkey={item.groupKey}
-								memo={memos.at(item.key)}
-								isMemoSelected={checkMemoSelected(memos.at(item.key).id)}
-								selectMemoItem={handleSelectMemoItem}
-								isSelectingMode={isSelectingMode}
-								setDialogMemoId={setDialogMemoId}
-							/>
-						),
-				)}
+				{items.map((item) => {
+					const memo = memos.at(item.key);
+					if (!memo) return null;
+					return (
+						<MemoItem
+							key={memo.id}
+							lng={lng}
+							data-grid-groupkey={item.groupKey}
+							memo={memo}
+							isMemoSelected={checkMemoSelected(memo.id)}
+							selectMemoItem={handleSelectMemoItem}
+							isSelectingMode={isSelectingMode}
+							setDialogMemoId={setDialogMemoId}
+						/>
+					);
+				})}
 			</MasonryInfiniteGrid>
 			{dialogMemoId && (
 				<MemoDialog

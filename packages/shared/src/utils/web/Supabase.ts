@@ -1,6 +1,7 @@
-import { CONFIG, SUPABASE } from "@src/constants";
-import type { Database } from "@src/types";
+import { CONFIG } from "@extension/env";
 import { createBrowserClient } from "@supabase/ssr";
+import { SUPABASE } from "../../constants";
+import type { Database } from "../../types";
 
 export const getSupabaseClient = () => {
 	return createBrowserClient<Database>(

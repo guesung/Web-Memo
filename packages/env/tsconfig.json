@@ -1,11 +1,6 @@
 {
-	"extends": "@extension/tsconfig/react",
+	"extends": "@extension/tsconfig/base",
 	"compilerOptions": {
-		"baseUrl": ".",
-		"paths": {
-			"@*": ["./*"]
-		},
-		"moduleResolution": "bundler",
 		"noEmit": false,
 		"emitDeclarationOnly": false,
 		"strictPropertyInitialization": false,

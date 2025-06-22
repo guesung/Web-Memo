@@ -97,7 +97,7 @@ export default function MemoOption({
 			currentMemo.map((memo) => ({
 				...memo,
 				category_id: Number(categoryId),
-				category: { name: currentCategory?.name },
+				category: currentCategory?.name,
 			})),
 		);
 

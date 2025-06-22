@@ -14,7 +14,7 @@ export const getSupabaseClient = () => {
 
 	const cookieStore = cookies();
 
-	return createServerClient<Database>(
+	return createServerClient<Database, "memo", Database["memo"]>(
 		CONFIG.supabaseUrl,
 		CONFIG.supabaseAnonKey,
 		{

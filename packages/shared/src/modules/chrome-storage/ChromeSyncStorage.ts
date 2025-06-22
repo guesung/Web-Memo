@@ -1,5 +1,5 @@
-import type { StorageKeyType } from "@src/modules/chrome-storage";
-import { I18n } from "@src/utils/extension";
+import type { StorageKeyType } from "../../modules/chrome-storage";
+import { I18n } from "../../utils/extension";
 
 export default class ChromeSyncStorage {
 	static async get<T>(key: StorageKeyType): Promise<T> {

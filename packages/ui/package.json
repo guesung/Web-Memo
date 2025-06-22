@@ -18,7 +18,6 @@
 	},
 	"scripts": {
 		"clean": "rimraf ./dist && rimraf .turbo",
-		"ready": "node build.mjs",
 		"type-check": "tsc --noEmit",
 		"preview": "vite preview",
 		"tsc-watch": "tsc-watch"

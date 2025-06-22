@@ -9,7 +9,7 @@
 	],
 	"scripts": {
 		"clean": "rimraf ./dist",
-		"build": "pnpm run clean&& pnpm type-check && vite build",
+		"build": "pnpm run clean && pnpm type-check && vite build",
 		"build:watch": "cross-env __DEV__=true vite build --mode development",
 		"dev": "pnpm build:watch",
 		"type-check": "tsc --noEmit",
@@ -22,6 +22,7 @@
 	"devDependencies": {
 		"@extension/tailwindcss-config": "workspace:*",
 		"@extension/tsconfig": "workspace:*",
-		"@extension/vite-config": "workspace:*"
+		"@extension/vite-config": "workspace:*",
+		"@extension/env": "workspace:*"
 	}
 }

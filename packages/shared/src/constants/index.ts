@@ -1,4 +1,3 @@
-export * from "./Config";
 export * from "./Cookie";
 export * from "./Error";
 export * from "./Extension";

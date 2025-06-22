@@ -1,9 +1,9 @@
-import type { MemoService } from "@src/utils";
 import type {
 	PostgrestSingleResponse,
 	QueryData,
 	SupabaseClient,
 } from "@supabase/supabase-js";
+import type { MemoService } from "../utils";
 
 import type { Database } from "./supabase";
 

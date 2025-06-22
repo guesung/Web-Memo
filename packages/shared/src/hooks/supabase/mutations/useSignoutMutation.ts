@@ -1,5 +1,5 @@
-import { AuthService } from "@src/utils/Supabase";
 import { useMutation } from "@tanstack/react-query";
+import { AuthService } from "../../../utils/Supabase";
 
 import { useSupabaseClientQuery } from "../queries";
 

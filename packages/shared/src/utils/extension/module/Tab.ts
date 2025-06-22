@@ -1,7 +1,7 @@
 import type {
 	BRIDGE_MESSAGE_TYPE,
 	BridgeRequest,
-} from "@src/modules/extension-bridge";
+} from "../../../modules/extension-bridge";
 
 export class Tab {
 	static async get() {

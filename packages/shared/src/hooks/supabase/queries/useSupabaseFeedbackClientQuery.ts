@@ -1,9 +1,9 @@
-import { QUERY_KEY } from "@src/constants";
-import type { FeedbackSupabaseClient } from "@src/types";
-import { isExtension } from "@src/utils/Environment";
-import { getFeedbackSupabaseClient as getSupabaseClientExtension } from "@src/utils/extension";
-import { getFeedbackSupabaseClient as getFeedbackSupabaseClientWeb } from "@src/utils/web";
 import { useQuery } from "@tanstack/react-query";
+import { QUERY_KEY } from "../../../constants";
+import type { FeedbackSupabaseClient } from "../../../types";
+import { isExtension } from "../../../utils/Environment";
+import { getFeedbackSupabaseClient as getSupabaseClientExtension } from "../../../utils/extension";
+import { getFeedbackSupabaseClient as getFeedbackSupabaseClientWeb } from "../../../utils/web";
 
 export default function useSupabaseFeedbackClientQuery() {
 	const query = useQuery({

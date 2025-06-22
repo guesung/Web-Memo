@@ -20,7 +20,6 @@
 	},
 	"scripts": {
 		"clean": "rimraf ./dist",
-		"ready": "node build.mjs",
 		"type-check": "tsc --noEmit",
 		"tsc-watch": "tsc-watch"
 	},

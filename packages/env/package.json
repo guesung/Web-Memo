@@ -2,7 +2,6 @@
   "name": "@extension/env",
   "version": "1.0.0",
   "description": "",
-  "type": "module",
   "scripts": {
     "ready": "tsup"
   },
@@ -12,9 +11,9 @@
   "exports":{
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.js",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.mjs",
+      "require":"./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "devDependencies": {

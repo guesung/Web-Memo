@@ -19,7 +19,6 @@
 		"./modules/extension-bridge": "./src/modules/extension-bridge/index.ts"
 	},
 	"scripts": {
-		"clean": "rimraf ./dist",
 		"type-check": "tsc --noEmit",
 		"tsc-watch": "tsc-watch"
 	},

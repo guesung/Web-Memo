@@ -1,4 +1,5 @@
-import { CONFIG, PATHS } from "@extension/shared/constants";
+import { CONFIG } from "@extension/env";
+import { PATHS } from "@extension/shared/constants";
 import { SearchParams } from "@extension/shared/modules/search-params";
 
 interface GetMemoUrlParams {

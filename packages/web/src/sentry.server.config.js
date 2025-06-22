@@ -1,4 +1,4 @@
-import { CONFIG } from "@extension/shared/constants";
+import { CONFIG } from "@extension/env";
 import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({

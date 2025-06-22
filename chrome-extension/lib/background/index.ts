@@ -1,6 +1,7 @@
 import "webextension-polyfill";
 
-import { CONFIG, DEFAULT_PROMPTS, URL } from "@extension/shared/constants";
+import { CONFIG } from "@extension/env";
+import { DEFAULT_PROMPTS, URL } from "@extension/shared/constants";
 import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,

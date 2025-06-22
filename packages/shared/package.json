@@ -25,8 +25,7 @@
 	},
 	"devDependencies": {
 		"@extension/tsconfig": "workspace:*",
-		"@extension/env": "workspace:*",
-		"esbuild-node-externals": "^1.14.0"
+		"@extension/env": "workspace:*"
 	},
 	"dependencies": {
 		"clsx": "^2.1.1",

@@ -6,5 +6,5 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   env: dotenv.config().parsed,
-
+  dts: true,
 })

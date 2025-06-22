@@ -2,7 +2,7 @@
   "name": "@extension/env",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
     "ready": "tsup"
   },
@@ -10,6 +10,14 @@
   "author": "",
   "license": "ISC",
   "exports":{
-    ".": "./dist/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "devDependencies": {
+    "@extension/tsconfig": "workspace:*"
   }
 }

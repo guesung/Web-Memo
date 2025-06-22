@@ -21,12 +21,12 @@ jobs:
 
       - name: setting environment variables
         run: |
-          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/shared/.env
-          echo WEB_URL=${{ env.WEB_URL }} >> packages/shared/.env
+          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
+          echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
 
       - name: build
         run: pnpm run build:extension
-        
+
       - name: Zip the build files
         run: pnpm run zip
 

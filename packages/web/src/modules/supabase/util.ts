@@ -1,4 +1,5 @@
 import { NEED_AUTH_PAGES, PATHS } from "@extension/shared/constants";
+import { Database } from '@extension/shared/types';
 import { AuthService } from "@extension/shared/utils";
 import { CONFIG } from "@src/constants";
 import { createServerClient } from "@supabase/ssr";
@@ -11,7 +12,7 @@ export async function updateAuthorization(request: NextRequest) {
 		headers: request.headers,
 	});
 
-	const supabaseClient = createServerClient(
+	const supabaseClient = createServerClient<Database,"memo",Database["memo"]>(
 		CONFIG.supabaseUrl,
 		CONFIG.supabaseAnonKey,
 		{

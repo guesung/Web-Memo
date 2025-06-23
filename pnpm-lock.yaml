@@ -11,9 +11,6 @@ importers:
       next:
         specifier: 14.2.10
         version: 14.2.10(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.53.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      tsc-watch:
-        specifier: ^6.2.1
-        version: 6.3.1(typescript@5.5.3)
     devDependencies:
       '@biomejs/biome':
         specifier: 2.0.0
@@ -48,6 +45,9 @@ importers:
       run-script-os:
         specifier: ^1.1.6
         version: 1.1.6
+      tsc-watch:
+        specifier: ^6.2.1
+        version: 6.3.1(typescript@5.5.3)
       turbo:
         specifier: ^2.1.1
         version: 2.5.4
@@ -70,6 +70,12 @@ importers:
         specifier: ^0.12.0
         version: 0.12.0
     devDependencies:
+      '@laynezh/vite-plugin-lib-assets':
+        specifier: ^0.5.23
+        version: 0.5.26(vite@5.3.3(@types/node@22.5.2)(terser@5.43.1))
+      '@types/ws':
+        specifier: ^8.5.11
+        version: 8.18.1
       '@web-memo/dev-utils':
         specifier: workspace:*
         version: link:../packages/dev-utils
@@ -85,12 +91,6 @@ importers:
       '@web-memo/vite-config':
         specifier: workspace:*
         version: link:../packages/vite-config
-      '@laynezh/vite-plugin-lib-assets':
-        specifier: ^0.5.23
-        version: 0.5.26(vite@5.3.3(@types/node@22.5.2)(terser@5.43.1))
-      '@types/ws':
-        specifier: ^8.5.11
-        version: 8.18.1
       deepmerge:
         specifier: ^4.3.1
         version: 4.3.1
@@ -128,15 +128,15 @@ importers:
         specifier: 8.18.0
         version: 8.18.0
     devDependencies:
-      '@web-memo/tsconfig':
-        specifier: workspace:*
-        version: link:../tsconfig
       '@rollup/plugin-sucrase':
         specifier: ^5.0.2
         version: 5.0.2(rollup@4.44.0)
       '@types/ws':
         specifier: ^8.5.11
         version: 8.18.1
+      '@web-memo/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       esm:
         specifier: ^3.2.25
         version: 3.2.25
@@ -213,9 +213,6 @@ importers:
 
   packages/ui:
     dependencies:
-      '@web-memo/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@hookform/resolvers':
         specifier: ^3.9.1
         version: 3.10.0(react-hook-form@7.58.1(react@18.3.1))
@@ -300,6 +297,9 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.1.4
         version: 1.2.7(@types/react-dom@18.3.0)(@types/react@18.3.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@web-memo/shared':
+        specifier: workspace:*
+        version: link:../shared
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.1
@@ -361,6 +361,9 @@ importers:
         specifier: ^3.23.8
         version: 3.25.67
     devDependencies:
+      '@sentry/react':
+        specifier: ^8.30.0
+        version: 8.55.0(react@18.3.1)
       '@web-memo/tailwindcss-config':
         specifier: workspace:*
         version: link:../tailwind-config
@@ -370,9 +373,6 @@ importers:
       '@web-memo/vite-config':
         specifier: workspace:*
         version: link:../vite-config
-      '@sentry/react':
-        specifier: ^8.30.0
-        version: 8.55.0(react@18.3.1)
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.20(postcss@8.5.6)
@@ -392,18 +392,18 @@ importers:
         specifier: 5.3.3
         version: 5.3.3(@types/node@22.5.2)(terser@5.43.1)
     devDependencies:
-      '@web-memo/hmr':
-        specifier: workspace:*
-        version: link:../hmr
-      '@web-memo/tsconfig':
-        specifier: workspace:*
-        version: link:../tsconfig
       '@sentry/vite-plugin':
         specifier: ^2.22.4
         version: 2.23.0
       '@vitejs/plugin-react-swc':
         specifier: ^3.6.0
         version: 3.10.2(vite@5.3.3(@types/node@22.5.2)(terser@5.43.1))
+      '@web-memo/hmr':
+        specifier: workspace:*
+        version: link:../hmr
+      '@web-memo/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       deepmerge:
         specifier: ^4.3.1
         version: 4.3.1
@@ -416,12 +416,6 @@ importers:
       '@egjs/react-infinitegrid':
         specifier: ^4.12.0
         version: 4.12.0
-      '@web-memo/shared':
-        specifier: workspace:*
-        version: link:../shared
-      '@web-memo/ui':
-        specifier: workspace:*
-        version: link:../ui
       '@next/third-parties':
         specifier: ^15.1.3
         version: 15.3.4(next@14.2.10(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.53.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
@@ -437,6 +431,12 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.59.0
         version: 5.80.10(react@18.3.1)
+      '@web-memo/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@web-memo/ui':
+        specifier: workspace:*
+        version: link:../ui
       accept-language:
         specifier: ^3.0.20
         version: 3.0.20
@@ -498,15 +498,6 @@ importers:
         specifier: ^2.4.0
         version: 2.6.0
     devDependencies:
-      '@web-memo/env':
-        specifier: workspace:*
-        version: link:../env
-      '@web-memo/tailwindcss-config':
-        specifier: workspace:*
-        version: link:../tailwind-config
-      '@web-memo/tsconfig':
-        specifier: workspace:*
-        version: link:../tsconfig
       '@next/bundle-analyzer':
         specifier: ^15.1.4
         version: 15.3.4
@@ -528,6 +519,15 @@ importers:
       '@types/react-dom':
         specifier: 18.3.0
         version: 18.3.0
+      '@web-memo/env':
+        specifier: workspace:*
+        version: link:../env
+      '@web-memo/tailwindcss-config':
+        specifier: workspace:*
+        version: link:../tailwind-config
+      '@web-memo/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       autoprefixer:
         specifier: 10.4.20
         version: 10.4.20(postcss@8.4.43)
@@ -564,15 +564,15 @@ importers:
 
   pages/content-ui:
     dependencies:
+      '@tailwindcss/typography':
+        specifier: ^0.5.14
+        version: 0.5.16(tailwindcss@3.4.10(ts-node@10.9.2(@types/node@22.5.2)(typescript@5.5.4)))
       '@web-memo/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@web-memo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@tailwindcss/typography':
-        specifier: ^0.5.14
-        version: 0.5.16(tailwindcss@3.4.10(ts-node@10.9.2(@types/node@22.5.2)(typescript@5.5.4)))
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -586,6 +586,9 @@ importers:
         specifier: ^4.0.0
         version: 4.0.1
     devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.3
+        version: 4.5.2(vite@5.3.3(@types/node@22.5.2)(terser@5.43.1))
       '@web-memo/env':
         specifier: workspace:*
         version: link:../../packages/env
@@ -601,9 +604,6 @@ importers:
       '@web-memo/vite-config':
         specifier: workspace:*
         version: link:../../packages/vite-config
-      '@vitejs/plugin-react':
-        specifier: ^4.3.3
-        version: 4.5.2(vite@5.3.3(@types/node@22.5.2)(terser@5.43.1))
       tailwindcss:
         specifier: ^3.4.10
         version: 3.4.10(ts-node@10.9.2(@types/node@22.5.2)(typescript@5.5.4))
@@ -616,15 +616,15 @@ importers:
 
   pages/options:
     dependencies:
+      '@tanstack/react-query':
+        specifier: ^5.59.0
+        version: 5.80.10(react@18.3.1)
       '@web-memo/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@web-memo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@tanstack/react-query':
-        specifier: ^5.59.0
-        version: 5.80.10(react@18.3.1)
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -635,6 +635,9 @@ importers:
         specifier: ^7.53.2
         version: 7.58.1(react@18.3.1)
     devDependencies:
+      '@tanstack/react-query-devtools':
+        specifier: ^5.59.0
+        version: 5.80.10(@tanstack/react-query@5.80.10(react@18.3.1))(react@18.3.1)
       '@web-memo/env':
         specifier: workspace:*
         version: link:../../packages/env
@@ -647,9 +650,6 @@ importers:
       '@web-memo/vite-config':
         specifier: workspace:*
         version: link:../../packages/vite-config
-      '@tanstack/react-query-devtools':
-        specifier: ^5.59.0
-        version: 5.80.10(@tanstack/react-query@5.80.10(react@18.3.1))(react@18.3.1)
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.20(postcss@8.5.6)
@@ -662,18 +662,18 @@ importers:
 
   pages/side-panel:
     dependencies:
-      '@web-memo/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      '@web-memo/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
       '@sentry/react':
         specifier: ^8.30.0
         version: 8.55.0(react@18.3.1)
       '@tanstack/react-query':
         specifier: ^5.59.0
         version: 5.80.10(react@18.3.1)
+      '@web-memo/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@web-memo/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       lucide-react:
         specifier: ^0.456.0
         version: 0.456.0(react@18.3.1)
@@ -693,6 +693,9 @@ importers:
         specifier: ^4.0.0
         version: 4.0.1
     devDependencies:
+      '@tanstack/react-query-devtools':
+        specifier: ^5.59.0
+        version: 5.80.10(@tanstack/react-query@5.80.10(react@18.3.1))(react@18.3.1)
       '@web-memo/env':
         specifier: workspace:*
         version: link:../../packages/env
@@ -705,9 +708,6 @@ importers:
       '@web-memo/vite-config':
         specifier: workspace:*
         version: link:../../packages/vite-config
-      '@tanstack/react-query-devtools':
-        specifier: ^5.59.0
-        version: 5.80.10(@tanstack/react-query@5.80.10(react@18.3.1))(react@18.3.1)
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.20(postcss@8.5.6)

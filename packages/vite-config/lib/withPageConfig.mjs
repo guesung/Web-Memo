@@ -1,11 +1,10 @@
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import react from "@vitejs/plugin-react-swc";
+import { CONFIG } from '@web-memo/env';
 import { watchRebuildPlugin } from "@web-memo/hmr";
 import deepmerge from "deepmerge";
-import dotenv from "dotenv";
 import { defineConfig } from "vite";
 import { isDev, isProduction } from "./env.mjs";
-dotenv.config();
 
 export const watchOption = isDev
 	? {
@@ -30,7 +29,8 @@ export function withPageConfig(config) {
 						sentryVitePlugin({
 							org: "guesung",
 							project: "web-memo",
-							authToken: process.env.VITE_SENTRY_AUTH_TOKEN,
+							authToken: CONFIG.sentryAuthToken,
+							telemetry: false
 						}),
 				],
 				build: {

@@ -8,10 +8,10 @@
 	"devDependencies": {
 		"@web-memo/hmr": "workspace:*",
 		"@web-memo/tsconfig": "workspace:*",
+		"@web-memo/env": "workspace:*",
 		"@vitejs/plugin-react-swc": "^3.6.0",
 		"deepmerge": "^4.3.1",
-		"@sentry/vite-plugin": "^2.22.4",
-		"dotenv": "^16.4.5"
+		"@sentry/vite-plugin": "^2.22.4"
 	},
 	"scripts": {
 		"tsc-watch": "tsc-watch"

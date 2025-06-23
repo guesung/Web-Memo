@@ -13,5 +13,8 @@
 	},
 	"scripts": {
 		"tsc-watch": "tsc-watch"
+	},
+	"peerDependencies": {
+		"tailwindcss": "^3.4.10"
 	}
 }

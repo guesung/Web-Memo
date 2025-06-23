@@ -16,6 +16,7 @@
 	"type": "module",
 	"dependencies": {
 		"@extension/shared": "workspace:*",
+		"openai": "^4.57.0",
 		"webextension-polyfill": "^0.12.0"
 	},
 	"devDependencies": {
@@ -28,6 +29,7 @@
 		"deepmerge": "^4.3.1",
 		"magic-string": "^0.30.10",
 		"ts-loader": "^9.5.1",
-		"@extension/env": "workspace:*"
+		"@extension/env": "workspace:*",
+		"vite": "5.3.3"
 	}
 }

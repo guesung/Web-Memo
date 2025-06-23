@@ -17,6 +17,8 @@
     }
   },
   "devDependencies": {
-    "@extension/tsconfig": "workspace:*"
+    "@extension/tsconfig": "workspace:*",
+    "dotenv": "^16.4.5",
+    "tsup": "^8.5.0"
   }
 }

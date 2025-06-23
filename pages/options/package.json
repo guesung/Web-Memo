@@ -17,12 +17,20 @@
 	},
 	"dependencies": {
 		"@extension/shared": "workspace:*",
-		"@extension/ui": "workspace:*"
+		"@extension/ui": "workspace:*",
+		"@tanstack/react-query": "^5.59.0",
+		"react-hook-form": "^7.53.2",
+		"react": "18.3.1",
+		"react-dom": "18.3.1"
 	},
 	"devDependencies": {
 		"@extension/tailwindcss-config": "workspace:*",
 		"@extension/tsconfig": "workspace:*",
 		"@extension/vite-config": "workspace:*",
-		"@extension/env": "workspace:*"
+		"tailwindcss": "^3.4.10",
+		"autoprefixer": "^10.4.19",
+		"@extension/env": "workspace:*",
+		"vite": "5.3.3",
+		"@tanstack/react-query-devtools": "^5.59.0"
 	}
 }

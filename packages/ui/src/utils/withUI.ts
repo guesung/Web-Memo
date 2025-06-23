@@ -8,8 +8,8 @@ export const withUI = (tailwindConfig: Config) =>
 		tailwindConfig,
 		deepmerge(config, {
 			content: [
-				"./node_modules/@extension/ui/lib/**/*.{tsx,ts,js,jsx}",
-				"./node_modules/@extension/ui/src/**/*.{tsx,ts,js,jsx}",
+				"./node_modules/@web-memo/ui/lib/**/*.{tsx,ts,js,jsx}",
+				"./node_modules/@web-memo/ui/src/**/*.{tsx,ts,js,jsx}",
 			],
 		}),
 	);

@@ -1,7 +1,7 @@
-import "@extension/ui/global.css";
 import "@src/index.css";
+import "@web-memo/ui/global.css";
 
-import { initSentry } from "@extension/shared/utils";
+import { initSentry } from "@web-memo/shared/utils";
 import { createRoot } from "react-dom/client";
 
 import Options from "./Options";

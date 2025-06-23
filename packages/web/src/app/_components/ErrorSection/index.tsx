@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@extension/ui";
 import * as Sentry from "@sentry/nextjs";
 import useTranslation from "@src/modules/i18n/util.client";
+import { Button } from "@web-memo/ui";
 import { useEffect } from "react";
 
 interface ErrorSectionProps {

@@ -1,5 +1,5 @@
 {
-	"name": "@extension/shared",
+	"name": "@web-memo/shared",
 	"version": "1.8.5",
 	"description": "chrome extension shared code",
 	"private": true,
@@ -36,7 +36,7 @@
 		"youtube-transcript": "^1.2.1"
 	},
 	"devDependencies": {
-		"@extension/env": "workspace:*",
-		"@extension/tsconfig": "workspace:*"
+		"@web-memo/env": "workspace:*",
+		"@web-memo/tsconfig": "workspace:*"
 	}
 }

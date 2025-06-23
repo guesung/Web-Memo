@@ -1,10 +1,10 @@
-import { defineConfig } from "vite";
-import { watchRebuildPlugin } from "@extension/hmr";
-import react from "@vitejs/plugin-react-swc";
-import deepmerge from "deepmerge";
-import { isDev, isProduction } from "./env.mjs";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
+import react from "@vitejs/plugin-react-swc";
+import { watchRebuildPlugin } from "@web-memo/hmr";
+import deepmerge from "deepmerge";
 import dotenv from "dotenv";
+import { defineConfig } from "vite";
+import { isDev, isProduction } from "./env.mjs";
 dotenv.config();
 
 export const watchOption = isDev

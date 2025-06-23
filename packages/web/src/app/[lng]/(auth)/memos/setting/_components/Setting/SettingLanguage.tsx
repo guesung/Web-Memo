@@ -1,13 +1,13 @@
-import {
-	Label,
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@extension/ui";
 import type { Language, LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import {
+    Label,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@web-memo/ui";
 import { useRouter } from "next/navigation";
 
 import { useLanguage } from "../../_hooks";

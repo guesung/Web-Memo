@@ -1,11 +1,11 @@
 "use server";
 
-import { PATHS, QUERY_KEY } from "@extension/shared/constants";
-import { AuthService, CategoryService } from "@extension/shared/utils";
-import { Loading, SidebarProvider } from "@extension/ui";
 import { HydrationBoundaryWrapper } from "@src/components";
 import type { LanguageParams } from "@src/modules/i18n";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
+import { PATHS, QUERY_KEY } from "@web-memo/shared/constants";
+import { AuthService, CategoryService } from "@web-memo/shared/utils";
+import { Loading, SidebarProvider } from "@web-memo/ui";
 import { redirect } from "next/navigation";
 import type { PropsWithChildren } from "react";
 import { Suspense } from "react";

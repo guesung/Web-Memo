@@ -1,5 +1,5 @@
-import { ExtensionBridge } from "@extension/shared/modules/extension-bridge";
-import { isProduction } from "@extension/shared/utils";
+import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { isProduction } from "@web-memo/shared/utils";
 
 import { OpenSidePanelButton } from "./components";
 import { attachShadowTree } from "./utils";

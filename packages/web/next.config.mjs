@@ -1,5 +1,5 @@
-import { CONFIG } from "@extension/env";
 import { withSentryConfig } from "@sentry/nextjs";
+import { CONFIG } from "@web-memo/env";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

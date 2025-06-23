@@ -1,7 +1,7 @@
 "use client";
 
-import { ErrorBoundary, ErrorFallback, Loading } from "@extension/ui";
 import { ErrorSection } from "@src/app/_components";
+import { ErrorBoundary, ErrorFallback, Loading } from "@web-memo/ui";
 import { Suspense } from "react";
 
 interface ErrorPageProps {

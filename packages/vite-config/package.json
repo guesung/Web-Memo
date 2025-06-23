@@ -1,13 +1,13 @@
 {
-	"name": "@extension/vite-config",
+	"name": "@web-memo/vite-config",
 	"version": "1.8.5",
 	"description": "Vite base configuration",
 	"main": "index.mjs",
 	"type": "module",
 	"private": true,
 	"devDependencies": {
-		"@extension/hmr": "workspace:*",
-		"@extension/tsconfig": "workspace:*",
+		"@web-memo/hmr": "workspace:*",
+		"@web-memo/tsconfig": "workspace:*",
 		"@vitejs/plugin-react-swc": "^3.6.0",
 		"deepmerge": "^4.3.1",
 		"@sentry/vite-plugin": "^2.22.4",

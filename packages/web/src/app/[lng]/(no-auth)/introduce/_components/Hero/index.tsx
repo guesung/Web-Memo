@@ -1,8 +1,8 @@
 "use client";
 
-import { URL } from "@extension/shared/constants";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { URL } from "@web-memo/shared/constants";
 import { motion } from "framer-motion";
 import Link from "next/link";
 

@@ -1,10 +1,10 @@
-import { useFetch } from "@extension/shared/hooks";
-import type { Category } from "@extension/shared/modules/extension-bridge";
+import { useFetch } from "@web-memo/shared/hooks";
+import type { Category } from "@web-memo/shared/modules/extension-bridge";
 import {
-	BRIDGE_MESSAGE_TYPES,
-	ExtensionBridge,
-} from "@extension/shared/modules/extension-bridge";
-import { I18n, Runtime } from "@extension/shared/utils/extension";
+    BRIDGE_MESSAGE_TYPES,
+    ExtensionBridge,
+} from "@web-memo/shared/modules/extension-bridge";
+import { I18n, Runtime } from "@web-memo/shared/utils/extension";
 import { useState } from "react";
 
 export default function useSummary() {

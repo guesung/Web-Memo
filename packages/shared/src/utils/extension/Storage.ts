@@ -1,5 +1,5 @@
-import { CONFIG } from "@extension/env";
 import type { Session } from "@supabase/supabase-js";
+import { CONFIG } from "@web-memo/env";
 import { SUPABASE } from "../../constants";
 
 export const getSession = async () => {

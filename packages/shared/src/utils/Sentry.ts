@@ -1,5 +1,5 @@
-import { CONFIG } from "@extension/env";
 import * as Sentry from "@sentry/react";
+import { CONFIG } from "@web-memo/env";
 import { isExtension, isProduction } from "./Environment";
 
 const SENTRY_DSN = isExtension ? CONFIG.sentryDsnExtension : CONFIG.sentryDsnWeb;

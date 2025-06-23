@@ -1,7 +1,7 @@
 "use client";
-import { useSupabaseUserQuery } from "@extension/shared/hooks";
 import * as Sentry from "@sentry/nextjs";
 import type { Language } from "@src/modules/i18n";
+import { useSupabaseUserQuery } from "@web-memo/shared/hooks";
 import { useEffect } from "react";
 
 interface InitSentryUserInfoProps {

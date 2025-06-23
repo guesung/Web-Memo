@@ -1,4 +1,4 @@
-import { withPageConfig } from "@extension/vite-config";
+import { withPageConfig } from "@web-memo/vite-config";
 import { resolve } from "path";
 
 const rootDir = resolve(__dirname);

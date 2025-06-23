@@ -1,5 +1,5 @@
 {
-	"name": "@extension/tailwindcss-config",
+	"name": "@web-memo/tailwindcss-config",
 	"version": "1.8.5",
 	"description": "Tailwind CSS configuration for boilerplate",
 	"main": "./tailwind.config.js",

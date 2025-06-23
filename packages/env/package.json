@@ -1,5 +1,5 @@
 {
-  "name": "@extension/env",
+  "name": "@web-memo/env",
   "version": "1.0.0",
   "description": "",
   "scripts": {
@@ -17,7 +17,7 @@
     }
   },
   "devDependencies": {
-    "@extension/tsconfig": "workspace:*",
+    "@web-memo/tsconfig": "workspace:*",
     "dotenv": "^16.4.5",
     "tsup": "^8.5.0"
   }

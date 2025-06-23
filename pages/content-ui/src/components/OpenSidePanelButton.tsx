@@ -1,4 +1,4 @@
-import { ExtensionBridge } from "@extension/shared/modules/extension-bridge";
+import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 
 export default function OpenSidePanelButton() {
 	return (

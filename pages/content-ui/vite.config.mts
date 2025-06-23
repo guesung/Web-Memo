@@ -1,6 +1,6 @@
+import { makeEntryPointPlugin } from "@web-memo/hmr";
+import { isDev, withPageConfig } from "@web-memo/vite-config";
 import { resolve } from "path";
-import { makeEntryPointPlugin } from "@extension/hmr";
-import { withPageConfig, isDev } from "@extension/vite-config";
 import svgr from "vite-plugin-svgr";
 
 const rootDir = resolve(__dirname);

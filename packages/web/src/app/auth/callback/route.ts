@@ -1,5 +1,5 @@
-import { COOKIE_KEY, PATHS } from "@extension/shared/constants";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
+import { COOKIE_KEY, PATHS } from "@web-memo/shared/constants";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 

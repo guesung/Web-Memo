@@ -1,7 +1,7 @@
-import { useFeedbackMutation } from "@extension/shared/hooks";
-import { toast } from "@extension/ui";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { useFeedbackMutation } from "@web-memo/shared/hooks";
+import { toast } from "@web-memo/ui";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 

@@ -1,5 +1,5 @@
 {
-	"name": "@extension/tsconfig",
+	"name": "@web-memo/tsconfig",
 	"version": "1.8.5",
 	"description": "tsconfig for chrome extension",
 	"private": true,

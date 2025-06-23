@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemoPatchMutation } from "@extension/shared/hooks";
-import { useSearchParams } from "@extension/shared/modules/search-params";
-import type { GetMemoResponse } from "@extension/shared/types";
-import { cn } from "@extension/shared/utils";
-import { Badge, Button, CardFooter, toast, ToastAction } from "@extension/ui";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { useMemoPatchMutation } from "@web-memo/shared/hooks";
+import { useSearchParams } from "@web-memo/shared/modules/search-params";
+import type { GetMemoResponse } from "@web-memo/shared/types";
+import { cn } from "@web-memo/shared/utils";
+import { Badge, Button, CardFooter, toast, ToastAction } from "@web-memo/ui";
 import dayjs from "dayjs";
 import { FolderIcon, HeartIcon } from "lucide-react";
 import { useRouter } from "next/navigation";

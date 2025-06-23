@@ -60,7 +60,7 @@ importers:
 
   chrome-extension:
     dependencies:
-      '@extension/shared':
+      '@web-memo/shared':
         specifier: workspace:*
         version: link:../packages/shared
       openai:
@@ -70,19 +70,19 @@ importers:
         specifier: ^0.12.0
         version: 0.12.0
     devDependencies:
-      '@extension/dev-utils':
+      '@web-memo/dev-utils':
         specifier: workspace:*
         version: link:../packages/dev-utils
-      '@extension/env':
+      '@web-memo/env':
         specifier: workspace:*
         version: link:../packages/env
-      '@extension/hmr':
+      '@web-memo/hmr':
         specifier: workspace:*
         version: link:../packages/hmr
-      '@extension/tsconfig':
+      '@web-memo/tsconfig':
         specifier: workspace:*
         version: link:../packages/tsconfig
-      '@extension/vite-config':
+      '@web-memo/vite-config':
         specifier: workspace:*
         version: link:../packages/vite-config
       '@laynezh/vite-plugin-lib-assets':
@@ -106,13 +106,13 @@ importers:
 
   packages/dev-utils:
     devDependencies:
-      '@extension/tsconfig':
+      '@web-memo/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
 
   packages/env:
     devDependencies:
-      '@extension/tsconfig':
+      '@web-memo/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
       dotenv:
@@ -128,7 +128,7 @@ importers:
         specifier: 8.18.0
         version: 8.18.0
     devDependencies:
-      '@extension/tsconfig':
+      '@web-memo/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
       '@rollup/plugin-sucrase':
@@ -189,10 +189,10 @@ importers:
         specifier: ^1.2.1
         version: 1.2.1
     devDependencies:
-      '@extension/env':
+      '@web-memo/env':
         specifier: workspace:*
         version: link:../env
-      '@extension/tsconfig':
+      '@web-memo/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
 
@@ -213,7 +213,7 @@ importers:
 
   packages/ui:
     dependencies:
-      '@extension/shared':
+      '@web-memo/shared':
         specifier: workspace:*
         version: link:../shared
       '@hookform/resolvers':
@@ -361,13 +361,13 @@ importers:
         specifier: ^3.23.8
         version: 3.25.67
     devDependencies:
-      '@extension/tailwindcss-config':
+      '@web-memo/tailwindcss-config':
         specifier: workspace:*
         version: link:../tailwind-config
-      '@extension/tsconfig':
+      '@web-memo/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
-      '@extension/vite-config':
+      '@web-memo/vite-config':
         specifier: workspace:*
         version: link:../vite-config
       '@sentry/react':
@@ -392,10 +392,10 @@ importers:
         specifier: 5.3.3
         version: 5.3.3(@types/node@22.5.2)(terser@5.43.1)
     devDependencies:
-      '@extension/hmr':
+      '@web-memo/hmr':
         specifier: workspace:*
         version: link:../hmr
-      '@extension/tsconfig':
+      '@web-memo/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
       '@sentry/vite-plugin':
@@ -416,10 +416,10 @@ importers:
       '@egjs/react-infinitegrid':
         specifier: ^4.12.0
         version: 4.12.0
-      '@extension/shared':
+      '@web-memo/shared':
         specifier: workspace:*
         version: link:../shared
-      '@extension/ui':
+      '@web-memo/ui':
         specifier: workspace:*
         version: link:../ui
       '@next/third-parties':
@@ -498,13 +498,13 @@ importers:
         specifier: ^2.4.0
         version: 2.6.0
     devDependencies:
-      '@extension/env':
+      '@web-memo/env':
         specifier: workspace:*
         version: link:../env
-      '@extension/tailwindcss-config':
+      '@web-memo/tailwindcss-config':
         specifier: workspace:*
         version: link:../tailwind-config
-      '@extension/tsconfig':
+      '@web-memo/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
       '@next/bundle-analyzer':
@@ -549,7 +549,7 @@ importers:
 
   packages/zipper:
     devDependencies:
-      '@extension/tsconfig':
+      '@web-memo/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
       fast-glob:
@@ -564,10 +564,10 @@ importers:
 
   pages/content-ui:
     dependencies:
-      '@extension/shared':
+      '@web-memo/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@extension/ui':
+      '@web-memo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@tailwindcss/typography':
@@ -586,19 +586,19 @@ importers:
         specifier: ^4.0.0
         version: 4.0.1
     devDependencies:
-      '@extension/env':
+      '@web-memo/env':
         specifier: workspace:*
         version: link:../../packages/env
-      '@extension/hmr':
+      '@web-memo/hmr':
         specifier: workspace:*
         version: link:../../packages/hmr
-      '@extension/tailwindcss-config':
+      '@web-memo/tailwindcss-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
-      '@extension/tsconfig':
+      '@web-memo/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
-      '@extension/vite-config':
+      '@web-memo/vite-config':
         specifier: workspace:*
         version: link:../../packages/vite-config
       '@vitejs/plugin-react':
@@ -616,10 +616,10 @@ importers:
 
   pages/options:
     dependencies:
-      '@extension/shared':
+      '@web-memo/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@extension/ui':
+      '@web-memo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@tanstack/react-query':
@@ -635,16 +635,16 @@ importers:
         specifier: ^7.53.2
         version: 7.58.1(react@18.3.1)
     devDependencies:
-      '@extension/env':
+      '@web-memo/env':
         specifier: workspace:*
         version: link:../../packages/env
-      '@extension/tailwindcss-config':
+      '@web-memo/tailwindcss-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
-      '@extension/tsconfig':
+      '@web-memo/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
-      '@extension/vite-config':
+      '@web-memo/vite-config':
         specifier: workspace:*
         version: link:../../packages/vite-config
       '@tanstack/react-query-devtools':
@@ -662,10 +662,10 @@ importers:
 
   pages/side-panel:
     dependencies:
-      '@extension/shared':
+      '@web-memo/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@extension/ui':
+      '@web-memo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@sentry/react':
@@ -693,16 +693,16 @@ importers:
         specifier: ^4.0.0
         version: 4.0.1
     devDependencies:
-      '@extension/env':
+      '@web-memo/env':
         specifier: workspace:*
         version: link:../../packages/env
-      '@extension/tailwindcss-config':
+      '@web-memo/tailwindcss-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
-      '@extension/tsconfig':
+      '@web-memo/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
-      '@extension/vite-config':
+      '@web-memo/vite-config':
         specifier: workspace:*
         version: link:../../packages/vite-config
       '@tanstack/react-query-devtools':

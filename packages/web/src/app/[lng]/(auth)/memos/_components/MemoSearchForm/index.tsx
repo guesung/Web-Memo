@@ -1,15 +1,15 @@
 "use client";
 
-import {
-	Input,
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@extension/ui";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import {
+    Input,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@web-memo/ui";
 import { X } from "lucide-react";
 import { Controller, useFormContext } from "react-hook-form";
 

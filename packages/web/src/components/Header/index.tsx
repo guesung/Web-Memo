@@ -1,7 +1,7 @@
 "use client";
 
-import { Loading } from "@extension/ui";
 import type { LanguageType } from "@src/modules/i18n";
+import { Loading } from "@web-memo/ui";
 import dynamic from "next/dynamic";
 
 import HeaderLeft from "./HeaderLeft";

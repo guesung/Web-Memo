@@ -1,7 +1,7 @@
-import { AuthService } from "@extension/shared/utils";
 import * as Sentry from "@sentry/nextjs";
 import type { LanguageType } from "@src/modules/i18n";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
+import { AuthService } from "@web-memo/shared/utils";
 
 interface InitSentryProps extends LanguageType {}
 

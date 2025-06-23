@@ -1,5 +1,5 @@
 {
-	"name": "@extension/content-ui",
+	"name": "@web-memo/content-ui",
 	"version": "1.8.5",
 	"description": "chrome extension content ui",
 	"type": "module",
@@ -19,8 +19,8 @@
 		"tsc-watch": "tsc-watch"
 	},
 	"dependencies": {
-		"@extension/shared": "workspace:*",
-		"@extension/ui": "workspace:*",
+		"@web-memo/shared": "workspace:*",
+		"@web-memo/ui": "workspace:*",
 		"@tailwindcss/typography": "^0.5.14",
 		"react-markdown": "^9.0.1",
 		"remark-gfm": "^4.0.0",
@@ -28,11 +28,11 @@
 		"react-dom": "18.3.1"
 	},
 	"devDependencies": {
-		"@extension/env": "workspace:*",
-		"@extension/hmr": "workspace:*",
-		"@extension/tailwindcss-config": "workspace:*",
-		"@extension/tsconfig": "workspace:*",
-		"@extension/vite-config": "workspace:*",
+		"@web-memo/env": "workspace:*",
+		"@web-memo/hmr": "workspace:*",
+		"@web-memo/tailwindcss-config": "workspace:*",
+		"@web-memo/tsconfig": "workspace:*",
+		"@web-memo/vite-config": "workspace:*",
 		"tailwindcss": "^3.4.10",
 		"@vitejs/plugin-react": "^4.3.3",
 		"vite-plugin-svgr": "^4.3.0",

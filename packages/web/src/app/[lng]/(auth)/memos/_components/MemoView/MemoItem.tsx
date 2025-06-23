@@ -1,8 +1,8 @@
-import { useSearchParams } from "@extension/shared/modules/search-params";
-import type { GetMemoResponse } from "@extension/shared/types";
-import { cn } from "@extension/shared/utils";
-import { Card, CardContent } from "@extension/ui";
 import type { LanguageType } from "@src/modules/i18n";
+import { useSearchParams } from "@web-memo/shared/modules/search-params";
+import type { GetMemoResponse } from "@web-memo/shared/types";
+import { cn } from "@web-memo/shared/utils";
+import { Card, CardContent } from "@web-memo/ui";
 import { motion } from "framer-motion";
 import type { HTMLAttributes, MouseEvent } from "react";
 import { memo, useState } from "react";

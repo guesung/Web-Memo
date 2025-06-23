@@ -1,12 +1,12 @@
 "use client";
 
 import {
-	Button,
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@extension/ui";
+    Button,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@web-memo/ui";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 

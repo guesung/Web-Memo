@@ -1,5 +1,5 @@
 {
-	"name": "@extension/dev-utils",
+	"name": "@web-memo/dev-utils",
 	"version": "1.8.5",
 	"description": "chrome extension dev utils",
 	"private": true,
@@ -18,6 +18,6 @@
 	},
 	"dependencies": {},
 	"devDependencies": {
-		"@extension/tsconfig": "workspace:*"
+		"@web-memo/tsconfig": "workspace:*"
 	}
 }

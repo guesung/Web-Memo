@@ -1,22 +1,22 @@
 "use client";
 
-import { URL } from "@extension/shared/constants";
-import {
-	checkLocalStorageTrue,
-	setLocalStorageTrue,
-} from "@extension/shared/modules/local-storage";
-import {
-	Button,
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@extension/ui";
 import { useGetExtensionManifest } from "@src/hooks";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { URL } from "@web-memo/shared/constants";
+import {
+    checkLocalStorageTrue,
+    setLocalStorageTrue,
+} from "@web-memo/shared/modules/local-storage";
+import {
+    Button,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@web-memo/ui";
 import { useEffect, useState } from "react";
 
 interface ExtensionInstallCheckDialogProps extends LanguageType {}

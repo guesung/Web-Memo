@@ -1,8 +1,8 @@
 "use client";
-import { I18n } from "@extension/shared/utils/extension";
-import { toast } from "@extension/ui";
 import * as Sentry from "@sentry/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { I18n } from "@web-memo/shared/utils/extension";
+import { toast } from "@web-memo/ui";
 import type { PropsWithChildren } from "react";
 import { useState } from "react";
 

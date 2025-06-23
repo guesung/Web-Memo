@@ -1,5 +1,5 @@
 {
-	"extends": "@extension/tsconfig/base",
+	"extends": "@web-memo/tsconfig/base",
 	"compilerOptions": {
 		"noEmit": false,
 		"emitDeclarationOnly": false,

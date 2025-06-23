@@ -1,5 +1,5 @@
-import { CONFIG } from "@extension/env";
 import { createClient } from "@supabase/supabase-js";
+import { CONFIG } from "@web-memo/env";
 import { COOKIE_KEY, SUPABASE } from "../../constants";
 import type { StorageKeyType } from "../../modules/chrome-storage";
 import { ChromeSyncStorage } from "../../modules/chrome-storage";

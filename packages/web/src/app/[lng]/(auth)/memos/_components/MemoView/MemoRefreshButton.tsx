@@ -1,10 +1,10 @@
-import { QUERY_KEY } from "@extension/shared/constants";
-import { setLocalStorageTrue } from "@extension/shared/modules/local-storage";
-import { Button, toast } from "@extension/ui";
 import { useGuide } from "@src/modules/guide";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEY } from "@web-memo/shared/constants";
+import { setLocalStorageTrue } from "@web-memo/shared/modules/local-storage";
+import { Button, toast } from "@web-memo/ui";
 import { RefreshCwIcon } from "lucide-react";
 import { memo } from "react";
 

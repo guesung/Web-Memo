@@ -1,4 +1,4 @@
-import { CONFIG } from "@extension/env";
+import { CONFIG } from "@web-memo/env";
 
 export const isProduction = CONFIG.nodeEnv === "production";
 export const isExtension =

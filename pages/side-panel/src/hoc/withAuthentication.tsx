@@ -1,5 +1,5 @@
-import { useSupabaseUserQuery } from "@extension/shared/hooks";
 import { LoginSection } from "@src/components";
+import { useSupabaseUserQuery } from "@web-memo/shared/hooks";
 
 export default function withAuthentication(
 	WrappedComponent: () => JSX.Element,

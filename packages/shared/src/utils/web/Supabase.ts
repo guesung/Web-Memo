@@ -1,5 +1,5 @@
-import { CONFIG } from "@extension/env";
 import { createBrowserClient } from "@supabase/ssr";
+import { CONFIG } from "@web-memo/env";
 import { SUPABASE } from "../../constants";
 import type { Database } from "../../types";
 

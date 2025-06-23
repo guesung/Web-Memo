@@ -1,31 +1,31 @@
-import { QUERY_KEY } from "@extension/shared/constants";
-import {
-	useCategoryQuery,
-	useDeleteMemosMutation,
-	useMemosQuery,
-	useMemosUpsertMutation,
-} from "@extension/shared/hooks";
-import { useSearchParams } from "@extension/shared/modules/search-params";
-import { isAllSame } from "@extension/shared/utils";
-import {
-	Button,
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuGroup,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-	toast,
-	ToastAction,
-} from "@extension/ui";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEY } from "@web-memo/shared/constants";
+import {
+    useCategoryQuery,
+    useDeleteMemosMutation,
+    useMemosQuery,
+    useMemosUpsertMutation,
+} from "@web-memo/shared/hooks";
+import { useSearchParams } from "@web-memo/shared/modules/search-params";
+import { isAllSame } from "@web-memo/shared/utils";
+import {
+    Button,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+    toast,
+    ToastAction,
+} from "@web-memo/ui";
 import { EllipsisVerticalIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";

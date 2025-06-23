@@ -15,21 +15,21 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@extension/shared": "workspace:*",
+		"@web-memo/shared": "workspace:*",
 		"openai": "^4.57.0",
 		"webextension-polyfill": "^0.12.0"
 	},
 	"devDependencies": {
-		"@extension/dev-utils": "workspace:*",
-		"@extension/hmr": "workspace:*",
-		"@extension/tsconfig": "workspace:*",
-		"@extension/vite-config": "workspace:*",
+		"@web-memo/dev-utils": "workspace:*",
+		"@web-memo/hmr": "workspace:*",
+		"@web-memo/tsconfig": "workspace:*",
+		"@web-memo/vite-config": "workspace:*",
 		"@laynezh/vite-plugin-lib-assets": "^0.5.23",
 		"@types/ws": "^8.5.11",
 		"deepmerge": "^4.3.1",
 		"magic-string": "^0.30.10",
 		"ts-loader": "^9.5.1",
-		"@extension/env": "workspace:*",
+		"@web-memo/env": "workspace:*",
 		"vite": "5.3.3"
 	}
 }

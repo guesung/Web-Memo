@@ -1,8 +1,8 @@
 "use client";
 
-import { MOTION_VARIANTS } from "@extension/shared/constants";
-import { Loading } from "@extension/ui";
 import type { LanguageType } from "@src/modules/i18n";
+import { MOTION_VARIANTS } from "@web-memo/shared/constants";
+import { Loading } from "@web-memo/ui";
 import { motion } from "framer-motion";
 import { Suspense } from "react";
 

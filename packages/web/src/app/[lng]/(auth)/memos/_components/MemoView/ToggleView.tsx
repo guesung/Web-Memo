@@ -1,8 +1,8 @@
 "use client";
-import { useSearchParams } from "@extension/shared/modules/search-params";
-import { ToggleGroup, ToggleGroupItem } from "@extension/ui";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { useSearchParams } from "@web-memo/shared/modules/search-params";
+import { ToggleGroup, ToggleGroupItem } from "@web-memo/ui";
 import { Calendar, Grid } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo } from "react";

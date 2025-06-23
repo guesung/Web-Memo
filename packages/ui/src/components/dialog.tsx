@@ -1,7 +1,7 @@
 "use client";
 
-import { useKeyboardBind } from "@extension/shared/hooks";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { useKeyboardBind } from "@web-memo/shared/hooks";
 import { X } from "lucide-react";
 import * as React from "react";
 
@@ -122,14 +122,15 @@ const DialogDescription = React.forwardRef<
 DialogDescription.displayName = DialogPrimitive.Description.displayName;
 
 export {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogOverlay,
-	DialogPortal,
-	DialogTitle,
-	DialogTrigger,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogOverlay,
+    DialogPortal,
+    DialogTitle,
+    DialogTrigger
 };
+

@@ -1,5 +1,5 @@
 "use client";
-import { ErrorBoundary, ErrorFallback, Loading } from "@extension/ui";
+import { ErrorBoundary, ErrorFallback, Loading } from "@web-memo/ui";
 import { Suspense } from "react";
 
 import NotFoundSection from "./_components/NotFoundSection";

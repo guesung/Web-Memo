@@ -1,5 +1,5 @@
 {
-	"name": "chrome-extension",
+	"name": "@web-memo/chrome-extension",
 	"version": "1.8.5",
 	"description": "chrome extension",
 	"scripts": {

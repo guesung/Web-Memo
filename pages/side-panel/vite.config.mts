@@ -25,8 +25,13 @@ export default withPageConfig({
     rollupOptions: {
       treeshake: "recommended",
       output: {
-        manualChunks: {
-          vendor: ["react", "react-dom"],
+        manualChunks(id: string) {
+          if (id.includes("@sentry-internal+replay")) {
+            return "@sentry-vendor";
+          }
+          if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/")) {
+            return "@react-vendor";
+          }
         },
       },
     },

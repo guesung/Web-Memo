@@ -30,7 +30,15 @@ export function withPageConfig(config) {
 							org: "guesung",
 							project: "web-memo",
 							authToken: CONFIG.sentryAuthToken,
-							telemetry: false
+							telemetry: false,
+							bundleSizeOptimizations: {
+								excludeDebugStatements: true,
+								excludePerformanceMonitoring: true,
+								excludeReplayIframe: true,
+								excludeTracing: true,
+								excludeReplayShadowDom: true,
+								excludeReplayWorker: true,
+							},
 						}),
 				],
 				build: {

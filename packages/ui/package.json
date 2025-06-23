@@ -4,9 +4,6 @@
 	"description": "chrome extension ui components",
 	"private": true,
 	"sideEffects": false,
-	"files": [
-		"dist"
-	],
 	"main": "./src/index.ts",
 	"types": "./src/index.ts",
 	"exports": {
@@ -17,7 +14,6 @@
 		"./global.css": "./global.css"
 	},
 	"scripts": {
-		"clean": "rimraf ./dist && rimraf .turbo",
 		"type-check": "tsc --noEmit",
 		"preview": "vite preview",
 		"tsc-watch": "tsc-watch"

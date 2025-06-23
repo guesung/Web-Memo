@@ -9,10 +9,7 @@ dotenv.config();
 
 export const watchOption = isDev
 	? {
-			buildDelay: 50,
-			chokidar: {
-				ignored: [/\/packages\/.*\.(ts|tsx|map)$/],
-			},
+			buildDelay: 50
 		}
 	: undefined;
 

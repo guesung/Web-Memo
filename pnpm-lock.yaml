@@ -348,9 +348,6 @@ importers:
       sonner:
         specifier: ^1.7.0
         version: 1.7.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      tailwind-merge:
-        specifier: ^2.4.0
-        version: 2.6.0
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.10(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.5.3)))
@@ -494,9 +491,6 @@ importers:
       supabase:
         specifier: ^1.192.5
         version: 1.226.4
-      tailwind-merge:
-        specifier: ^2.4.0
-        version: 2.6.0
     devDependencies:
       '@next/bundle-analyzer':
         specifier: ^15.1.4

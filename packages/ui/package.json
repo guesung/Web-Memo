@@ -61,7 +61,6 @@
 		"react-resizable-panels": "^2.1.7",
 		"recharts": "^2.13.3",
 		"sonner": "^1.7.0",
-		"tailwind-merge": "^2.4.0",
 		"tailwindcss-animate": "^1.0.7",
 		"lucide-react": "^0.456.0",
 		"vaul": "^1.1.1",

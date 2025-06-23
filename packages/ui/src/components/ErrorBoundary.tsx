@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/react";
+import { captureException } from "@sentry/react";
 import type { ComponentType, ErrorInfo, PropsWithChildren } from "react";
 import { Component, createElement } from "react";
 
@@ -33,7 +33,7 @@ export default class ErrorBoundary extends Component<
 	}
 
 	componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-		Sentry.captureException(error);
+		captureException(error);
 		console.error(error, errorInfo);
 	}
 

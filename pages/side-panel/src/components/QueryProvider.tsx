@@ -1,5 +1,5 @@
 "use client";
-import * as Sentry from "@sentry/react";
+import { captureException } from "@sentry/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { toast } from "@web-memo/ui";
@@ -15,7 +15,7 @@ export default function QueryProvider({ children }: PropsWithChildren) {
 					mutations: {
 						onError: (error) => {
 							toast({ title: I18n.get("toast_error_save") });
-							Sentry.captureException(error, {
+							captureException(error, {
 								level: "fatal",
 							});
 						},

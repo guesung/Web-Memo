@@ -1,6 +1,6 @@
 "use client";
 
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import useTranslation from "@src/modules/i18n/util.client";
 import { Button } from "@web-memo/ui";
 import { useEffect } from "react";
@@ -12,7 +12,7 @@ interface ErrorSectionProps {
 
 export default function ErrorSection({ error, reset }: ErrorSectionProps) {
 	useEffect(() => {
-		Sentry.captureException(error, {
+		captureException(error, {
 			level: "fatal",
 		});
 	}, [error]);

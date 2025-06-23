@@ -15,7 +15,7 @@ Add the following to the dependencies in `package.json`.
 ```json
 {
   "dependencies": {
-    "@extension/ui": "workspace:*"
+    "@web-memo/ui": "workspace:*"
   }
 }
 ```
@@ -29,8 +29,8 @@ pnpm install
 Add the following to the `tailwind.config.js` file.
 
 ```js
-const baseConfig = require('@extension/tailwindcss-config');
-const { withUI } = require('@extension/ui');
+const baseConfig = require('@web-memo/tailwindcss-config');
+const { withUI } = require('@web-memo/ui');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = withUI({
@@ -42,7 +42,7 @@ module.exports = withUI({
 Add the following to the `index.tsx` file.
 
 ```tsx
-import '@extension/ui/dist/global.css';
+import '@web-memo/ui/dist/global.css';
 ```
 
 ## Add Component
@@ -81,7 +81,7 @@ export function Button({ theme, className, children, ...props }: ButtonProps) {
 ## Usage
 
 ```tsx
-import { Button } from '@extension/ui';
+import { Button } from '@web-memo/ui';
 
 export default function ToggleButton() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');

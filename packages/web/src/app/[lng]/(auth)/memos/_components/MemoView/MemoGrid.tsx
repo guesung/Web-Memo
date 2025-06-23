@@ -1,13 +1,13 @@
 "use client";
 
 import { MasonryInfiniteGrid } from "@egjs/react-infinitegrid";
-import { useKeyboardBind } from "@extension/shared/hooks";
-import { useSearchParams } from "@extension/shared/modules/search-params";
-import type { GetMemoResponse } from "@extension/shared/types";
-import { Skeleton } from "@extension/ui";
 import { DragBox } from "@src/components";
 import { useDrag } from "@src/hooks";
 import type { LanguageType } from "@src/modules/i18n";
+import { useKeyboardBind } from "@web-memo/shared/hooks";
+import { useSearchParams } from "@web-memo/shared/modules/search-params";
+import type { GetMemoResponse } from "@web-memo/shared/types";
+import { Skeleton } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import type { ComponentProps } from "react";

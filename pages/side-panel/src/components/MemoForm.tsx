@@ -1,3 +1,6 @@
+import withAuthentication from "@src/hoc/withAuthentication";
+import type { MemoInput } from "@src/types/Input";
+import { getMemoUrl } from "@src/utils";
 import {
 	useCategoryQuery,
 	useDebounce,
@@ -6,10 +9,10 @@ import {
 	useMemoPostMutation,
 	useMemoQuery,
 	useTabQuery,
-} from "@extension/shared/hooks";
-import { ExtensionBridge } from "@extension/shared/modules/extension-bridge";
-import type { CategoryRow } from "@extension/shared/types";
-import { getMemoInfo, I18n, Tab } from "@extension/shared/utils/extension";
+} from "@web-memo/shared/hooks";
+import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import type { CategoryRow } from "@web-memo/shared/types";
+import { getMemoInfo, I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
 	Badge,
 	cn,
@@ -22,10 +25,7 @@ import {
 	Textarea,
 	toast,
 	ToastAction,
-} from "@extension/ui";
-import withAuthentication from "@src/hoc/withAuthentication";
-import type { MemoInput } from "@src/types/Input";
-import { getMemoUrl } from "@src/utils";
+} from "@web-memo/ui";
 import { HeartIcon, XIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";

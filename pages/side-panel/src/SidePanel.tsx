@@ -1,16 +1,16 @@
-import { useDidMount } from "@extension/shared/hooks";
-import { ExtensionBridge } from "@extension/shared/modules/extension-bridge";
-import { ErrorBoundary, Loading, Toaster } from "@extension/ui";
+import { useDidMount } from "@web-memo/shared/hooks";
+import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { ErrorBoundary, Loading, Toaster } from "@web-memo/ui";
 import { Suspense } from "react";
 
 import {
-	LoginSection,
-	MemoForm,
-	MemoHeader,
-	QueryProvider,
-	Summary,
-	SummaryHeader,
-	SummaryProvider,
+    LoginSection,
+    MemoForm,
+    MemoHeader,
+    QueryProvider,
+    Summary,
+    SummaryHeader,
+    SummaryProvider,
 } from "./components";
 
 export default function SidePanel() {

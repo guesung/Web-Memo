@@ -1,5 +1,5 @@
 {
-	"name": "@extension/zipper",
+	"name": "@web-memo/zipper",
 	"version": "1.8.5",
 	"description": "chrome extension zipper",
 	"private": true,
@@ -18,7 +18,7 @@
 		"tsc-watch": "tsc-watch"
 	},
 	"devDependencies": {
-		"@extension/tsconfig": "workspace:*",
+		"@web-memo/tsconfig": "workspace:*",
 		"fast-glob": "^3.3.2",
 		"fflate": "^0.8.2",
 		"tsx": "^4.16.2"

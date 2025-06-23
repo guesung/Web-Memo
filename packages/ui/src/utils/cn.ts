@@ -1,1 +1,1 @@
-export { cn } from "@extension/shared/utils";
+export { cn } from "@web-memo/shared/utils";

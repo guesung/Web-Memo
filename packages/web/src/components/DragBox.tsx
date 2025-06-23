@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@extension/ui";
+import { cn } from "@web-memo/ui";
 import { forwardRef } from "react";
 
 interface DragBoxProps {

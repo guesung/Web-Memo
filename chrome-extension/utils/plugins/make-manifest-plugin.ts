@@ -1,4 +1,4 @@
-import { colorLog, ManifestParser } from "@extension/dev-utils";
+import { colorLog, ManifestParser } from "@web-memo/dev-utils";
 import * as fs from "fs";
 import * as path from "path";
 import * as process from "process";

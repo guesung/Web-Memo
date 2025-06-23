@@ -1,4 +1,4 @@
-import { getSafeConfig } from "@extension/env";
+import { getSafeConfig } from "@web-memo/env";
 
 export const CONFIG = {
 	webUrl: getSafeConfig("NEXT_PUBLIC_WEB_URL", process.env.NEXT_PUBLIC_WEB_URL),

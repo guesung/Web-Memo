@@ -1,5 +1,5 @@
 {
-	"name": "@extension/tailwindcss-config",
+	"name": "@web-memo/tailwindcss-config",
 	"version": "1.8.5",
 	"description": "Tailwind CSS configuration for boilerplate",
 	"main": "./tailwind.config.js",
@@ -13,5 +13,8 @@
 	},
 	"scripts": {
 		"tsc-watch": "tsc-watch"
+	},
+	"peerDependencies": {
+		"tailwindcss": "^3.4.10"
 	}
 }

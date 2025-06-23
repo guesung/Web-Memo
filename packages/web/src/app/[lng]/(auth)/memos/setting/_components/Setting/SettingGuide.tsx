@@ -1,8 +1,8 @@
-import { PATHS } from "@extension/shared/constants";
-import { LocalStorage } from "@extension/shared/modules/local-storage";
-import { Button, Label } from "@extension/ui";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { PATHS } from "@web-memo/shared/constants";
+import { LocalStorage } from "@web-memo/shared/modules/local-storage";
+import { Button, Label } from "@web-memo/ui";
 import { useRouter } from "next/navigation";
 
 interface SettingGuideProps extends LanguageType {}

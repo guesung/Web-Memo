@@ -1,5 +1,5 @@
 {
-	"extends": "@extension/tsconfig/next",
+	"extends": "@web-memo/tsconfig/next",
 	"compilerOptions": {
 		"baseUrl": ".",
 		"paths": {

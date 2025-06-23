@@ -1,5 +1,5 @@
-import { ChromeSyncStorage } from "@extension/shared/modules/chrome-storage";
-import { Button } from "@extension/ui";
+import { ChromeSyncStorage } from "@web-memo/shared/modules/chrome-storage";
+import { Button } from "@web-memo/ui";
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 

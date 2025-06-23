@@ -1,14 +1,14 @@
-import {
-	Button,
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	Textarea,
-} from "@extension/ui";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import {
+    Button,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    Textarea,
+} from "@web-memo/ui";
 import { useForm } from "react-hook-form";
 
 interface FeedbackDialogProps extends LanguageType {

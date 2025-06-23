@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemosQuery } from "@extension/shared/hooks";
 import { useGuide } from "@src/modules/guide";
 import type { LanguageType } from "@src/modules/i18n";
+import { useMemosQuery } from "@web-memo/shared/hooks";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useFormContext } from "react-hook-form";

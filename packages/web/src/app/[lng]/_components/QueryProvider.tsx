@@ -1,12 +1,12 @@
 "use client";
 
-import { ExtensionBridge } from "@extension/shared/modules/extension-bridge";
-import { toast } from "@extension/ui";
-import * as Sentry from "@sentry/nextjs";
+import {captureException} from "@sentry/nextjs";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { toast } from "@web-memo/ui";
 import type { PropsWithChildren } from "react";
 import { useState } from "react";
 
@@ -26,7 +26,7 @@ export default function QueryProvider({ children, lng }: QueryProviderProps) {
 						},
 						onError: (error) => {
 							toast({ title: t("toastTitle.errorSave") });
-							Sentry.captureException(error, {
+							captureException(error, {
 								level: "fatal",
 							});
 						},

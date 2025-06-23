@@ -1,12 +1,12 @@
-import {
-	useDidMount,
-	useMemoQuery,
-	useTabQuery,
-} from "@extension/shared/hooks";
-import { ExtensionBridge } from "@extension/shared/modules/extension-bridge";
-import { I18n, Tab } from "@extension/shared/utils/extension";
-import { ErrorBoundary, Skeleton } from "@extension/ui";
 import { getMemoUrl } from "@src/utils";
+import {
+    useDidMount,
+    useMemoQuery,
+    useTabQuery,
+} from "@web-memo/shared/hooks";
+import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { I18n, Tab } from "@web-memo/shared/utils/extension";
+import { ErrorBoundary, Skeleton } from "@web-memo/ui";
 import { ExternalLinkIcon } from "lucide-react";
 import { Suspense } from "react";
 

@@ -1,13 +1,13 @@
-import type { GetMemoResponse } from "@extension/shared/types";
-import { cn } from "@extension/shared/utils";
+import type { GetMemoResponse } from "@web-memo/shared/types";
+import { cn } from "@web-memo/shared/utils";
 import {
-	Button,
-	CardHeader,
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@extension/ui";
+    Button,
+    CardHeader,
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@web-memo/ui";
 import { CheckIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

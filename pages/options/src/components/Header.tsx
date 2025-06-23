@@ -1,4 +1,4 @@
-import { I18n } from "@extension/shared/utils/extension";
+import { I18n } from "@web-memo/shared/utils/extension";
 
 export default function Header() {
 	return (

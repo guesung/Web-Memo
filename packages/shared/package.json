@@ -1,5 +1,5 @@
 {
-	"name": "@extension/shared",
+	"name": "@web-memo/shared",
 	"version": "1.8.5",
 	"description": "chrome extension shared code",
 	"private": true,
@@ -22,12 +22,21 @@
 		"type-check": "tsc --noEmit",
 		"tsc-watch": "tsc-watch"
 	},
-	"devDependencies": {
-		"@extension/tsconfig": "workspace:*",
-		"@extension/env": "workspace:*"
-	},
 	"dependencies": {
+		"@sentry/react": "^8.30.0",
+		"@supabase/ssr": "^0.5.1",
+		"react": "18.3.1",
+		"react-dom": "18.3.1",
+		"@supabase/supabase-js": "^2.45.4",
+		"@tanstack/react-query": "^5.59.0",
 		"clsx": "^2.1.1",
-		"tailwind-merge": "^2.4.0"
+		"es-hangul": "^2.2.4",
+		"supabase": "^1.192.5",
+		"tailwind-merge": "^2.4.0",
+		"youtube-transcript": "^1.2.1"
+	},
+	"devDependencies": {
+		"@web-memo/env": "workspace:*",
+		"@web-memo/tsconfig": "workspace:*"
 	}
 }

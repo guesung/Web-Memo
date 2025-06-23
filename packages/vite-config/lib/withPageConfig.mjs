@@ -1,18 +1,14 @@
-import { defineConfig } from "vite";
-import { watchRebuildPlugin } from "@extension/hmr";
-import react from "@vitejs/plugin-react-swc";
-import deepmerge from "deepmerge";
-import { isDev, isProduction } from "./env.mjs";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
-import dotenv from "dotenv";
-dotenv.config();
+import react from "@vitejs/plugin-react-swc";
+import { CONFIG } from '@web-memo/env';
+import { watchRebuildPlugin } from "@web-memo/hmr";
+import deepmerge from "deepmerge";
+import { defineConfig } from "vite";
+import { isDev, isProduction } from "./env.mjs";
 
 export const watchOption = isDev
 	? {
-			buildDelay: 50,
-			chokidar: {
-				ignored: [/\/packages\/.*\.(ts|tsx|map)$/],
-			},
+			buildDelay: 50
 		}
 	: undefined;
 
@@ -33,7 +29,16 @@ export function withPageConfig(config) {
 						sentryVitePlugin({
 							org: "guesung",
 							project: "web-memo",
-							authToken: process.env.VITE_SENTRY_AUTH_TOKEN,
+							authToken: CONFIG.sentryAuthToken,
+							telemetry: false,
+							bundleSizeOptimizations: {
+								excludeDebugStatements: true,
+								excludePerformanceMonitoring: true,
+								excludeReplayIframe: true,
+								excludeTracing: true,
+								excludeReplayShadowDom: true,
+								excludeReplayWorker: true,
+							},
 						}),
 				],
 				build: {

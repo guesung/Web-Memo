@@ -1,5 +1,5 @@
 {
-	"extends": "@extension/tsconfig/react",
+	"extends": "@web-memo/tsconfig/react",
 	"compilerOptions": {
 		"baseUrl": ".",
 		"paths": {

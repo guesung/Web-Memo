@@ -1,9 +1,8 @@
-import { defineConfig } from "vite";
+import { watchPublicPlugin, watchRebuildPlugin } from "@web-memo/hmr";
+import { isDev, isProduction, watchOption } from "@web-memo/vite-config";
 import { resolve } from "path";
-import libAssetsPlugin from "@laynezh/vite-plugin-lib-assets";
+import { defineConfig } from "vite";
 import makeManifestPlugin from "./utils/plugins/make-manifest-plugin";
-import { watchPublicPlugin, watchRebuildPlugin } from "@extension/hmr";
-import { isDev, isProduction, watchOption } from "@extension/vite-config";
 
 const rootDir = resolve(__dirname);
 const libDir = resolve(rootDir, "lib");

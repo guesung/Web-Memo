@@ -1,5 +1,5 @@
-import { useDidMount } from "@extension/shared/hooks";
-import { ExtensionBridge } from "@extension/shared/modules/extension-bridge";
+import { useDidMount } from "@web-memo/shared/hooks";
+import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { useState } from "react";
 
 export type ManifestType = chrome.runtime.Manifest | null | "NOT_INSTALLED";

@@ -1,13 +1,13 @@
-import {
-	useCategoryDeleteMutation,
-	useCategoryPostMutation,
-	useCategoryQuery,
-	useCategoryUpsertMutation,
-} from "@extension/shared/hooks";
-import { generateRandomPastelColor } from "@extension/shared/utils";
-import { Button, Input, Label, toast } from "@extension/ui";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import {
+    useCategoryDeleteMutation,
+    useCategoryPostMutation,
+    useCategoryQuery,
+    useCategoryUpsertMutation,
+} from "@web-memo/shared/hooks";
+import { generateRandomPastelColor } from "@web-memo/shared/utils";
+import { Button, Input, Label, toast } from "@web-memo/ui";
 import { TrashIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";

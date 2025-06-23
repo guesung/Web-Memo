@@ -1,15 +1,15 @@
 import "webextension-polyfill";
 
-import { CONFIG } from "@extension/env";
-import { DEFAULT_PROMPTS, URL } from "@extension/shared/constants";
-import {
-	ChromeSyncStorage,
-	STORAGE_KEYS,
-} from "@extension/shared/modules/chrome-storage";
-import { ExtensionBridge } from "@extension/shared/modules/extension-bridge";
-import { isProduction } from "@extension/shared/utils";
-import { getSystemPrompt, I18n, Tab } from "@extension/shared/utils/extension";
 import { openai } from "@root/utils/openai";
+import { CONFIG } from "@web-memo/env";
+import { DEFAULT_PROMPTS, URL } from "@web-memo/shared/constants";
+import {
+    ChromeSyncStorage,
+    STORAGE_KEYS,
+} from "@web-memo/shared/modules/chrome-storage";
+import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { isProduction } from "@web-memo/shared/utils";
+import { getSystemPrompt, I18n, Tab } from "@web-memo/shared/utils/extension";
 
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
 chrome.runtime.onInstalled.addListener(async () => {

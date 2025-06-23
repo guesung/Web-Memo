@@ -1,8 +1,8 @@
-import { PATHS, SUPABASE } from "@extension/shared/constants";
-import type { Database, MemoSupabaseClient } from "@extension/shared/types";
 import { CONFIG } from "@src/constants";
 import { createServerClient } from "@supabase/ssr";
 import type { Provider } from "@supabase/supabase-js";
+import { PATHS, SUPABASE } from "@web-memo/shared/constants";
+import type { Database, MemoSupabaseClient } from "@web-memo/shared/types";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";

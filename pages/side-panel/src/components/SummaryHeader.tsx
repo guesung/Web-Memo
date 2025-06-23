@@ -1,6 +1,6 @@
-import type { Category } from "@extension/shared/modules/extension-bridge";
-import { I18n } from "@extension/shared/utils/extension";
-import { Button, ErrorBoundary, Loading } from "@extension/ui";
+import type { Category } from "@web-memo/shared/modules/extension-bridge";
+import { I18n } from "@web-memo/shared/utils/extension";
+import { Button, ErrorBoundary, Loading } from "@web-memo/ui";
 import { RefreshCwIcon, SettingsIcon } from "lucide-react";
 
 import { useSummaryContext } from "./SummaryProvider";

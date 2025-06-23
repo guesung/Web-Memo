@@ -1,14 +1,14 @@
 "use server";
 
-import { SUPABASE } from "@extension/shared/constants";
-import { Button } from "@extension/ui";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
 import {
-	signInWithEmail,
-	signInWithOAuth,
+    signInWithEmail,
+    signInWithOAuth,
 } from "@src/modules/supabase/util.server";
 import { isProduction } from "@src/utils";
+import { SUPABASE } from "@web-memo/shared/constants";
+import { Button } from "@web-memo/ui";
 import Image from "next/image";
 
 interface LoginSectionProps extends LanguageType {}

@@ -1,8 +1,8 @@
 "use server";
 
-import { Label } from "@extension/ui";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
+import { Label } from "@web-memo/ui";
 
 interface SettingHeaderProps extends LanguageType {}
 

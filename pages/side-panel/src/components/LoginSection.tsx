@@ -1,5 +1,5 @@
-import { CONFIG } from "@extension/env";
-import { Tab } from "@extension/shared/utils/extension";
+import { CONFIG } from "@web-memo/env";
+import { Tab } from "@web-memo/shared/utils/extension";
 import { ExternalLinkIcon } from "lucide-react";
 
 export default function LoginSection() {

@@ -1,6 +1,6 @@
 import "@src/Options.css";
 
-import { Toaster } from "@extension/ui";
+import { Toaster } from "@web-memo/ui";
 
 import { Header, Option, QueryProvider } from "./components";
 

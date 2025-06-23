@@ -2,13 +2,13 @@
 
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
-import { MOTION_VARIANTS } from "@extension/shared/constants";
-import { useSearchParams } from "@extension/shared/modules/search-params";
-import type { GetMemoResponse } from "@extension/shared/types";
-import { cn } from "@extension/shared/utils";
-import { Button } from "@extension/ui";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { MOTION_VARIANTS } from "@web-memo/shared/constants";
+import { useSearchParams } from "@web-memo/shared/modules/search-params";
+import type { GetMemoResponse } from "@web-memo/shared/types";
+import { cn } from "@web-memo/shared/utils";
+import { Button } from "@web-memo/ui";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import { motion } from "framer-motion";
@@ -16,10 +16,10 @@ import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import {
-	Calendar,
-	dayjsLocalizer,
-	type Event,
-	type View,
+    Calendar,
+    dayjsLocalizer,
+    type Event,
+    type View,
 } from "react-big-calendar";
 
 dayjs.extend(timezone);

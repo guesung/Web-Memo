@@ -1,4 +1,4 @@
-import { cn } from "@extension/shared/utils";
+import { cn } from "@web-memo/shared/utils";
 import type { IframeHTMLAttributes } from "react";
 
 interface YoutubeEmbedProps extends IframeHTMLAttributes<HTMLIFrameElement> {

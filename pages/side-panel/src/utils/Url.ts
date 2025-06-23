@@ -1,6 +1,6 @@
-import { CONFIG } from "@extension/env";
-import { PATHS } from "@extension/shared/constants";
-import { SearchParams } from "@extension/shared/modules/search-params";
+import { CONFIG } from "@web-memo/env";
+import { PATHS } from "@web-memo/shared/constants";
+import { SearchParams } from "@web-memo/shared/modules/search-params";
 
 interface GetMemoUrlParams {
 	id?: number;

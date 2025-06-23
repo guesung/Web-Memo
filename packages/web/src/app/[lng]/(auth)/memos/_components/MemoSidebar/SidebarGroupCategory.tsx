@@ -1,17 +1,17 @@
 "use client";
 
-import { useCategoryQuery } from "@extension/shared/hooks";
-import { useSearchParams } from "@extension/shared/modules/search-params";
-import {
-	SidebarGroup,
-	SidebarGroupContent,
-	SidebarGroupLabel,
-	SidebarMenu,
-	SidebarMenuButton,
-	SidebarMenuItem,
-} from "@extension/ui";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { useCategoryQuery } from "@web-memo/shared/hooks";
+import { useSearchParams } from "@web-memo/shared/modules/search-params";
+import {
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+} from "@web-memo/ui";
 import Link from "next/link";
 import { memo } from "react";
 

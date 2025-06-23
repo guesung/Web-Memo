@@ -1,7 +1,7 @@
-import { Loading } from "@extension/ui";
 import Header from "@src/components/Header";
 import type { LanguageParams } from "@src/modules/i18n";
 import { SUPPORTED_LANGUAGES } from "@src/modules/i18n";
+import { Loading } from "@web-memo/ui";
 import { dir } from "i18next";
 import type { Metadata } from "next";
 import { type PropsWithChildren, Suspense } from "react";

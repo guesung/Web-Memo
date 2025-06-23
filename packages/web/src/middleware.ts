@@ -1,4 +1,4 @@
-import { PATHS } from "@extension/shared/constants";
+import { PATHS } from "@web-memo/shared/constants";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 

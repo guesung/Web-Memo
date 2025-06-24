@@ -83,8 +83,7 @@ export default memo(function MemoItem({
 				exit={{ opacity: 0 }}
 			>
 				<Card
-					className={cn("relative box-content w-[300px] transition-all", {
-						"border-2": isMemoSelected,
+					className={cn("relative w-[300px] transition-all", {
 						"border-primary": isMemoSelected,
 					})}
 					style={{

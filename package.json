@@ -26,8 +26,8 @@
 		"type-check": "turbo type-check",
 		"tsc-watch": "turbo tsc-watch",
 		"test:jest": "vitest",
-		"test:e2e": "playwright test --ui",
-		"test-report:e2e": "playwright show-report",
+		"test:e2e": "pnpm -F e2e test",
+		"test-report:e2e": "pnpm -F e2e show-report",
 		"update-version": "run-script-os",
 		"update-version:win32": "bash update_version.sh",
 		"update-version:default": "./update_version.sh",
@@ -42,7 +42,6 @@
 	"devDependencies": {
 		"tsc-watch": "^6.2.1",
 		"@biomejs/biome": "2.0.0",
-		"@playwright/test": "^1.47.0",
 		"@types/chrome": "^0.0.268",
 		"@types/jest": "^29.5.14",
 		"@types/node": "^20.14.10",

@@ -2,12 +2,12 @@ import { expect, test } from "./fixtures";
 
 test.describe("SidePanel", () => {
 	test.beforeEach(async ({ page }) => {
-		await page.goto("http://localhost:3000");
-		await page.getByRole("button", { name: "테스트 계정으로 로그인" }).click();
+		await page.goto("/");
+		await page.getByRole("button", { name: "Login with Test" }).click();
 		await page.waitForURL(/.*memos/);
 
 		await page.goto("https://blog.toss.im/article/toss-team-culture");
-		await page.locator("#open-side-panel").click();
+		await page.locator("#OPEN_SIDE_PANEL_BUTTON").click();
 	});
 
 	test("메모가 입력된다.", async ({ sidePanelPage }) => {

@@ -4,7 +4,7 @@ import path from "path";
 
 process.env.PW_CHROMIUM_ATTACH_TO_OTHER = "1";
 
-const pathToExtension = path.join(path.resolve(), "dist");
+const pathToExtension = path.join(path.resolve(), "..","dist");
 
 type ExtensionFixture = {
 	context: BrowserContext;

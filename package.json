@@ -32,7 +32,8 @@
 		"update-version:win32": "bash update_version.sh",
 		"update-version:default": "./update_version.sh",
 		"package": "pnpm i && pnpm clean && pnpm build && pnpm zip",
-		"generate-supabase-type": "supabase gen types --lang=typescript --project-id czwtqukymcqoberdoltq --schema feedback --schema memo > packages/shared/src/types/supabase.ts && pnpm run format"
+		"generate-supabase-type": "supabase gen types --lang=typescript --project-id czwtqukymcqoberdoltq --schema feedback --schema memo > packages/shared/src/types/supabase.ts && pnpm run format",
+		"prepare": "husky"
 	},
 	"type": "module",
 	"dependencies": {
@@ -46,12 +47,15 @@
 		"@types/jest": "^29.5.14",
 		"@types/node": "^20.14.10",
 		"@types/react": "^18.3.5",
+		"@commitlint/cli": "^19.8.1",
+		"@commitlint/config-conventional": "^19.8.1",
 		"@types/react-dom": "^18.3.0",
 		"cross-env": "^7.0.3",
 		"rimraf": "^6.0.1",
 		"run-script-os": "^1.1.6",
 		"turbo": "^2.1.1",
 		"typescript": "5.5.3",
+		"husky": "^9.1.7",
 		"vitest": "^2.1.5",
 		"@vitejs/plugin-react": "^4.3.3"
 	},

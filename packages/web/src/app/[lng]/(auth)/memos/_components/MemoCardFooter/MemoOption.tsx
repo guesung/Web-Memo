@@ -3,28 +3,28 @@ import useTranslation from "@src/modules/i18n/util.client";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import {
-    useCategoryQuery,
-    useDeleteMemosMutation,
-    useMemosQuery,
-    useMemosUpsertMutation,
+	useCategoryQuery,
+	useDeleteMemosMutation,
+	useMemosQuery,
+	useMemosUpsertMutation,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import { isAllSame } from "@web-memo/shared/utils";
 import {
-    Button,
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-    toast,
-    ToastAction,
+	Button,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	toast,
+	ToastAction,
 } from "@web-memo/ui";
 import { EllipsisVerticalIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -97,7 +97,7 @@ export default function MemoOption({
 			currentMemo.map((memo) => ({
 				...memo,
 				category_id: Number(categoryId),
-				category: currentCategory?.name,
+				category: currentCategory,
 			})),
 		);
 

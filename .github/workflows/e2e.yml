@@ -69,10 +69,10 @@ jobs:
             echo "changes=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: move to E2E
-        run: cd e2e
-
       - name: Install playwright browsers
         run: npx playwright install --with-deps
+        working-directory: e2e
+
       - name: Run tests
         run: npx playwright test
+        working-directory: e2e

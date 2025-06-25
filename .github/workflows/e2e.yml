@@ -11,7 +11,7 @@ jobs:
       WEB_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: pnpm/action-setup@v4
 
       - name: Get pnpm store directory
@@ -32,7 +32,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
-      
+
       - name: Cache Next.js build
         uses: actions/cache@v4
         with:
@@ -41,13 +41,13 @@ jobs:
           key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml', 'packages/web/next.config.js') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-
-      
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
-      
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
-      
+
       - name: Setting environment variables
         run: |
           echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/shared/.env
@@ -56,10 +56,9 @@ jobs:
           echo "${{ secrets.WEB_ENV_FILE }}" > packages/web/.env
           echo NEXT_PUBLIC_WEB_URL=${{ env.WEB_URL }} >> packages/web/.env
 
-      
       - name: Vercel Pull
         run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
-      
+
       - name: Check for changes
         id: check-changes
         if: github.event_name == 'push'
@@ -69,6 +68,9 @@ jobs:
           else
             echo "changes=false" >> $GITHUB_OUTPUT
           fi
+
+      - name: move to E2E
+        run: cd e2e
 
       - name: Install playwright browsers
         run: npx playwright install --with-deps

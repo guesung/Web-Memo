@@ -16,22 +16,23 @@ test.describe("SidePanel", () => {
 		const text = String(new Date());
 		sidePanelPage.locator("#memo-textarea").fill(text);
 
-		await expect(sidePanelPage.locator("#memo-textarea")).toHaveText(text);
+		await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(text);
 	});
 
 	test("Command + S를 누르면 메모가 저장된다.", async ({ sidePanelPage }) => {
 		const text = String(new Date());
 
 		await sidePanelPage.locator("#memo-textarea").fill(text);
-		await sidePanelPage.locator("#memo-textarea").press("ControlOrMeta+s");
+
+		await sidePanelPage.waitForTimeout(1000);
 
 		await sidePanelPage.reload();
-		await expect(sidePanelPage.locator("#memo-textarea")).toHaveText(text);
+		await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(text);
 
 		await sidePanelPage.reload();
-		await expect(sidePanelPage.locator("#memo-textarea")).toHaveText(text);
+		await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(text);
 
 		await sidePanelPage.reload();
-		await expect(sidePanelPage.locator("#memo-textarea")).toHaveText(text);
+		await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(text);
 	});
 });

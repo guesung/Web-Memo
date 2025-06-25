@@ -7,7 +7,10 @@ export default defineConfig({
 	retries: process.env.CI ? 2 : 0,
 	workers: process.env.CI ? 2 : undefined,
 	reporter: "html",
-
+	webServer: {
+		command: "pnpm run dev:web",
+		url: "http://localhost:3000",
+	},
 	use: {
 		trace: "on-first-retry",
 		screenshot: process.env.CI ? undefined : "only-on-failure",

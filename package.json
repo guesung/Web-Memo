@@ -17,7 +17,7 @@
 		"dev": "turbo watch dev",
 		"dev-servmer": "pnpm -F hmr ready && pnpm -F hmr dev",
 		"dev:web": "turbo watch dev --filter @web-memo/web",
-		"dev:web:preview": "turbo run dev --filter=@web-memo/web",
+		"dev:web:preview": "turbo run ready && turbo run preview --filter=@web-memo/web",
 		"dev:extension": "turbo watch dev --filter !@web-memo/web",
 		"build": "turbo build",
 		"build:web": "turbo build --filter=@web-memo/web",

@@ -12,7 +12,6 @@ export default defineConfig({
 		url: "http://localhost:3000",
 		reuseExistingServer: !process.env.CI,
 		stdout: 'ignore',
-		timeout:10*1000
 	},
 	use: {
 		trace: "on-first-retry",

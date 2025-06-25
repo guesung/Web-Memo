@@ -22,6 +22,9 @@
 			"persistent": true,
 			"cache": false
 		},
+		"preview":{
+			"cache": false
+		},
 		"build": {
 			"dependsOn": ["ready", "^build"],
 			"env": [

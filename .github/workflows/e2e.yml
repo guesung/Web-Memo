@@ -38,7 +38,7 @@ jobs:
         with:
           path: |
             packages/web/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml', 'packages/web/next.config.js') }}
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml', 'packages/web/next.config.mjs') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-
 

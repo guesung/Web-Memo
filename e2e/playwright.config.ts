@@ -8,7 +8,7 @@ export default defineConfig({
 	workers: process.env.CI ? 2 : undefined,
 	reporter: [["html", { open: "on-failure" }]],
 	webServer: {
-		command: "pnpm run -w dev:web",
+		command: "pnpm run -w build:web && pnpm run -w start:web",
 		url: "http://localhost:3000",
 		reuseExistingServer: !process.env.CI,
 		stdout: 'ignore',

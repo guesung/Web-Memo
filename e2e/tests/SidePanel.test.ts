@@ -2,7 +2,7 @@ import { BrowserContext, Page } from '@playwright/test';
 import { expect, test } from "./fixtures";
 
 // 사이드패널이 열릴 때까지 기다리는 함수
-async function waitForSidePanelPage(context: BrowserContext, url: string, timeout = 3000) {
+async function waitForSidePanelPage(context: BrowserContext, url: string, timeout = 10 * 1000) {
 	// 이미 열려있으면 바로 반환
 	const existing = context.pages().find(page => page.url() === url)
 	if (existing) return existing

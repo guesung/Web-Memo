@@ -70,11 +70,11 @@ jobs:
           fi
 
       - name: Install playwright browsers
-        run: npx playwright install --with-deps
+        run: pnpm exec playwright install --with-deps chromium
         working-directory: e2e
 
       - name: Run tests
-        run: npx playwright test
+        run: pnpm exec playwright test
         working-directory: e2e
 
       - uses: actions/upload-artifact@v4

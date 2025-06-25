@@ -2,7 +2,7 @@
   "name": "e2e",
   "private": true,
   "scripts": {
-    "test": "playwright test --ui"
+    "test": "playwright test"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0"

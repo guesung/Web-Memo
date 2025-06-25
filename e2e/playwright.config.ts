@@ -6,10 +6,13 @@ export default defineConfig({
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,
 	workers: process.env.CI ? 2 : undefined,
-	reporter: "html",
+	reporter: [["html", { open: "on-failure" }]],
 	webServer: {
-		command: "pnpm run dev:web",
+		command: "pnpm run -w dev:web",
 		url: "http://localhost:3000",
+		reuseExistingServer: !process.env.CI,
+		stdout: 'ignore',
+    stderr: 'pipe',
 	},
 	use: {
 		trace: "on-first-retry",

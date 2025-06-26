@@ -12,7 +12,7 @@ test.describe("Memos Page", () => {
 
 	test.describe("가이드 기능", () => {
 		test("메모 페이지 최초 접속시, 가이드를 볼 수 있다.", async ({ page }) => {
-			expect(page.locator("#driver-popover-description")).toHaveText(
+			await expect(page.locator("#driver-popover-description")).toHaveText(
 				"Ready to start? Press 'Alt + S' to open the side panel",
 			);
 		});
@@ -56,7 +56,10 @@ test.describe("Memos Page", () => {
 			await page.waitForTimeout(1000);
 
 			await page.reload();
-			expect(page.getByText(text)).toBeVisible();
+
+			await page.waitForTimeout(1000);
+
+			await expect(page.getByText(text)).toBeVisible();
 		});
 	});
 });

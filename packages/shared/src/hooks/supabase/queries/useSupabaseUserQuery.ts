@@ -1,4 +1,4 @@
-import { type UserResponse } from "@supabase/supabase-js";
+import type { UserResponse } from "@supabase/supabase-js";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { QUERY_KEY } from "../../../constants";
 import { AuthService } from "../../../utils";

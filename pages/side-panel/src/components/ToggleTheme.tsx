@@ -1,19 +1,19 @@
 import { ChromeSyncStorage } from "@web-memo/shared/modules/chrome-storage";
 import { Button } from "@web-memo/ui";
 import { Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type Theme = "dark" | "light";
 
 export function useTheme() {
 	const [theme, setTheme] = useState<Theme>("light");
 
-	const setThemeMode = (theme: Theme) => {
+	const setThemeMode = useCallback((theme: Theme) => {
 		if (theme === "dark") document.documentElement.classList.add("dark");
 		else document.documentElement.classList.remove("dark");
 		ChromeSyncStorage.set("theme", theme);
 		setTheme(theme);
-	};
+	}, []);
 
 	useEffect(() => {
 		(async () => {
@@ -26,7 +26,7 @@ export function useTheme() {
 
 			if (isInitialThemeDark || isStorageThemeDark) setThemeMode("dark");
 		})();
-	}, []);
+	}, [setThemeMode]);
 
 	return { setTheme: setThemeMode, theme };
 }

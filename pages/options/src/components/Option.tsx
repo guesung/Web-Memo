@@ -1,17 +1,17 @@
 import {
-    ChromeSyncStorage,
-    STORAGE_KEYS,
+	ChromeSyncStorage,
+	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
 import { I18n } from "@web-memo/shared/utils/extension";
 import {
-    Button,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-    Textarea,
-    useToast,
+	Button,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Textarea,
+	useToast,
 } from "@web-memo/ui";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";

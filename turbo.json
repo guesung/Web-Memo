@@ -22,7 +22,7 @@
 			"persistent": true,
 			"cache": false
 		},
-		"preview":{
+		"preview": {
 			"cache": false
 		},
 		"build": {

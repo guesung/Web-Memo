@@ -6,7 +6,7 @@ import { useMemoPatchMutation } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
-import { Badge, Button, CardFooter, toast, ToastAction } from "@web-memo/ui";
+import { Badge, Button, CardFooter, ToastAction, toast } from "@web-memo/ui";
 import dayjs from "dayjs";
 import { FolderIcon, HeartIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -86,7 +86,6 @@ export default function MemoCardFooter({
 					<Badge
 						variant="outline"
 						onClick={handleCategoryClick}
-						role="button"
 						className="z-10 flex items-center gap-1"
 						style={{
 							backgroundColor: memo.category.color

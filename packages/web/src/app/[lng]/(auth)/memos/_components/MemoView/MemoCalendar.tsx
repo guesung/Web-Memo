@@ -16,10 +16,10 @@ import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import {
-    Calendar,
-    dayjsLocalizer,
-    type Event,
-    type View,
+	Calendar,
+	dayjsLocalizer,
+	type Event,
+	type View,
 } from "react-big-calendar";
 
 dayjs.extend(timezone);

@@ -25,8 +25,8 @@ export default function Hero({ lng }: HeroProps) {
 				className="mb-8 inline-flex items-center gap-2 rounded-full bg-white/90 px-6 py-2 text-lg dark:bg-gray-800/90"
 			>
 				<div className="flex">
-					{"★★★★★".split("").map((star, i) => (
-						<span key={i} className="text-yellow-400">
+					{"★★★★★".split("").map((star) => (
+						<span key={star} className="text-yellow-400">
 							{star}
 						</span>
 					))}

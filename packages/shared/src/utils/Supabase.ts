@@ -6,7 +6,7 @@ import type {
 	FeedbackTable,
 	MemoRow,
 	MemoSupabaseClient,
-	MemoTable
+	MemoTable,
 } from "../types";
 
 export class MemoService {

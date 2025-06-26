@@ -1,4 +1,4 @@
-import {init} from "@sentry/nextjs";
+import { init } from "@sentry/nextjs";
 import { CONFIG } from "@web-memo/env";
 
 init({

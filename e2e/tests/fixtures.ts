@@ -1,10 +1,10 @@
 import type { BrowserContext, Page } from "@playwright/test";
 import { test as base, chromium } from "@playwright/test";
-import path from "path";
+import path from "node:path";
 
 process.env.PW_CHROMIUM_ATTACH_TO_OTHER = "1";
 
-const pathToExtension = path.join(path.resolve(), "..","dist");
+const pathToExtension = path.join(path.resolve(), "..", "dist");
 
 type ExtensionFixture = {
 	context: BrowserContext;

@@ -1,4 +1,4 @@
-import {setTag,setUser} from "@sentry/nextjs";
+import { setTag, setUser } from "@sentry/nextjs";
 import type { LanguageType } from "@src/modules/i18n";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { AuthService } from "@web-memo/shared/utils";

@@ -28,6 +28,7 @@ export const FeedbackSection = ({ lng }: FeedbackSectionProps) => {
 	return (
 		<section>
 			<button
+				type="button"
 				onClick={() => setIsOpen(true)}
 				className="text-muted-foreground hover:text-foreground text-sm transition-colors"
 			>

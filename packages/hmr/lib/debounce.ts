@@ -3,7 +3,7 @@ export function debounce<A extends unknown[]>(
 	delay: number,
 ) {
 	let timer: NodeJS.Timeout;
-	return function (...args: A) {
+	return (...args: A) => {
 		clearTimeout(timer);
 		timer = setTimeout(() => callback(...args), delay);
 	};

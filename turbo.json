@@ -22,6 +22,9 @@
 			"persistent": true,
 			"cache": false
 		},
+		"preview":{
+			"cache": false
+		},
 		"build": {
 			"dependsOn": ["ready", "^build"],
 			"env": [
@@ -37,7 +40,6 @@
 			"inputs": [".env"]
 		},
 		"start": {
-			"dependsOn": ["^build", "ready"],
 			"outputs": ["dist", "build", ".next"],
 			"inputs": [".env"]
 		},

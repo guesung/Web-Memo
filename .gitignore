@@ -47,3 +47,5 @@ tasks/
 prds/
 
 stats.html
+playwright-report
+test-results

@@ -21,9 +21,6 @@ importers:
       '@commitlint/config-conventional':
         specifier: ^19.8.1
         version: 19.8.1
-      '@playwright/test':
-        specifier: ^1.47.0
-        version: 1.53.1
       '@types/chrome':
         specifier: ^0.0.268
         version: 0.0.268
@@ -112,6 +109,12 @@ importers:
       vite:
         specifier: 5.3.3
         version: 5.3.3(@types/node@22.5.2)(terser@5.43.1)
+
+  e2e:
+    devDependencies:
+      '@playwright/test':
+        specifier: ^1.47.0
+        version: 1.53.1
 
   packages/dev-utils:
     devDependencies:

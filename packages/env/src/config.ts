@@ -24,6 +24,7 @@ export const CONFIG = {
 	),
 	nodeEnv: getSafeConfig("NODE_ENV", process.env.NODE_ENV) as
 		| "development"
+		| "staging"
 		| "production",
 	makeWebhookNotionApi: getSafeConfig(
 		"MAKE_WEBHOOK_NOTION_API",

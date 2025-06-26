@@ -8,7 +8,7 @@ jobs:
   build-extension:
     runs-on: ubuntu-22.04
     env:
-      WEB_URL: "${{ github.ref == 'refs/heads/develop' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}"
+      WEB_URL: ${{ github.ref == 'refs/heads/develop' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -23,6 +23,7 @@ jobs:
         run: |
           echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
           echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
+          echo NODE_ENV=production >> packages/env/.env
 
       - name: build
         run: pnpm run build:extension

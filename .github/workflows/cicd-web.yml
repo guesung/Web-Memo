@@ -3,14 +3,12 @@ name: CICD Web
 on:
   push:
     paths:
-      - 'packages/web/**'
-      - 'packages/shared/**'
+      - 'packages/web|shared|ui|env/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
   pull_request:
     paths:
-      - 'packages/web/**'
-      - 'packages/shared/**'
+      - 'packages/web|shared|ui|env/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
 
@@ -18,7 +16,7 @@ jobs:
   build-web:
     runs-on: ubuntu-latest
     env:
-      WEB_URL: "${{ github.ref == 'refs/heads/develop' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}"
+      WEB_URL: ${{ github.ref == 'refs/heads/develop' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}
     steps:
       - uses: actions/checkout@v4
 
@@ -62,6 +60,7 @@ jobs:
         run: |
           echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
           echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
+          echo NODE_ENV=production >> packages/env/.env
 
           echo "${{ secrets.WEB_ENV_FILE }}" > packages/web/.env
           echo NEXT_PUBLIC_WEB_URL=${{ env.WEB_URL }} >> packages/web/.env

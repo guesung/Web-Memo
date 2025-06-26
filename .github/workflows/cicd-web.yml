@@ -3,18 +3,12 @@ name: CICD Web
 on:
   push:
     paths:
-      - 'packages/web/**'
-      - 'packages/shared/**'
-      - 'packages/ui/**'
-      - 'packages/env/**'
+      - 'packages/web|shared|ui|env/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
   pull_request:
     paths:
-      - 'packages/web/**'
-      - 'packages/shared/**'
-      - 'packages/ui/**'
-      - 'packages/env/**'
+      - 'packages/web|shared|ui|env/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
 

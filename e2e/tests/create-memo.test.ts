@@ -1,5 +1,6 @@
 import { REGEXR } from "../lib/constants";
 import { expect, test } from "./fixtures";
+
 test.describe("메모 생성 기능", () => {
 	test.beforeEach(async ({ page, baseURL }) => {
 		await page.goto("/en/memos", {
@@ -19,13 +20,9 @@ test.describe("메모 생성 기능", () => {
 		sidePanelPage,
 	}) => {
 		await sidePanelPage.locator("#memo-textarea").fill(text);
-
 		await page.waitForTimeout(1000);
-
 		await page.reload();
-
 		await page.waitForTimeout(1000);
-
 		await expect(page.getByText(text)).toBeVisible();
 	});
 });

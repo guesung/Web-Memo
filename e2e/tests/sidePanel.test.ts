@@ -10,6 +10,8 @@ test.describe("SidePanel", () => {
 	test.beforeEach(async ({ loginedPage }) => {
 		await loginedPage.goto("https://blog.toss.im/article/toss-team-culture");
 		await loginedPage.locator("#OPEN_SIDE_PANEL_BUTTON").click();
+
+		await loginedPage.waitForTimeout(1000);
 	});
 
 	test("사이드 패널에서 메모를 입력하면, 메모를 확인할 수 있다.", async ({

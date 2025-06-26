@@ -3,18 +3,18 @@ import type { MemoInput } from "@src/app/[lng]/(auth)/memos/_types/Input";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import {
-    useKeyboardBind,
-    useMemoPatchMutation,
-    useMemoQuery,
+	useKeyboardBind,
+	useMemoPatchMutation,
+	useMemoQuery,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import {
-    Button,
-    Card,
-    CardContent,
-    Dialog,
-    DialogContent,
-    Textarea,
+	Button,
+	Card,
+	CardContent,
+	Dialog,
+	DialogContent,
+	Textarea,
 } from "@web-memo/ui";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";

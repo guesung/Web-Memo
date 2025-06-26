@@ -3,8 +3,8 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
 import {
-    signInWithEmail,
-    signInWithOAuth,
+	signInWithEmail,
+	signInWithOAuth,
 } from "@src/modules/supabase/util.server";
 import { isProduction } from "@src/utils";
 import { SUPABASE } from "@web-memo/shared/constants";

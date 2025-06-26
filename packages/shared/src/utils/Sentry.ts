@@ -1,8 +1,17 @@
-import { browserProfilingIntegration, browserTracingIntegration, captureException, captureMessage, init, replayIntegration } from "@sentry/react";
+import {
+	browserProfilingIntegration,
+	browserTracingIntegration,
+	captureException,
+	captureMessage,
+	init,
+	replayIntegration,
+} from "@sentry/react";
 import { CONFIG } from "@web-memo/env";
 import { isExtension, isProduction } from "./Environment";
 
-const SENTRY_DSN = isExtension ? CONFIG.sentryDsnExtension : CONFIG.sentryDsnWeb;
+const SENTRY_DSN = isExtension
+	? CONFIG.sentryDsnExtension
+	: CONFIG.sentryDsnWeb;
 
 export const testSentry = () => {
 	captureException(new Error(`captureException Error 테스트`));

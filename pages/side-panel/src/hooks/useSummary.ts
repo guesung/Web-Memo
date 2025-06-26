@@ -1,8 +1,8 @@
 import { useFetch } from "@web-memo/shared/hooks";
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
 import {
-    BRIDGE_MESSAGE_TYPES,
-    ExtensionBridge,
+	BRIDGE_MESSAGE_TYPES,
+	ExtensionBridge,
 } from "@web-memo/shared/modules/extension-bridge";
 import { I18n, Runtime } from "@web-memo/shared/utils/extension";
 import { useState } from "react";

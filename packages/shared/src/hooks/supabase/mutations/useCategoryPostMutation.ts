@@ -4,7 +4,6 @@ import { CategoryService } from "../../../utils";
 
 import { useSupabaseClientQuery } from "../queries";
 
-
 export default function useCategoryPostMutation() {
 	const queryClient = useQueryClient();
 	const { data: supabaseClient } = useSupabaseClientQuery();

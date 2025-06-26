@@ -5,17 +5,17 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { URL } from "@web-memo/shared/constants";
 import {
-    checkLocalStorageTrue,
-    setLocalStorageTrue,
+	checkLocalStorageTrue,
+	setLocalStorageTrue,
 } from "@web-memo/shared/modules/local-storage";
 import {
-    Button,
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+	Button,
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from "@web-memo/ui";
 import { useEffect, useState } from "react";
 

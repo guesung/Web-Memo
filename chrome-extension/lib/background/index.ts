@@ -4,8 +4,8 @@ import { openai } from "@root/utils/openai";
 import { CONFIG } from "@web-memo/env";
 import { DEFAULT_PROMPTS, URL } from "@web-memo/shared/constants";
 import {
-    ChromeSyncStorage,
-    STORAGE_KEYS,
+	ChromeSyncStorage,
+	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { isProduction } from "@web-memo/shared/utils";

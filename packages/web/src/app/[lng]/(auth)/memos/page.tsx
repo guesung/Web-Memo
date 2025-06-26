@@ -12,9 +12,9 @@ import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
 import {
-    MemoSearchForm,
-    MemoSearchFormProvider,
-    MemoView,
+	MemoSearchForm,
+	MemoSearchFormProvider,
+	MemoView,
 } from "./_components";
 
 const ExtensionInstallCheckDialog = dynamic(

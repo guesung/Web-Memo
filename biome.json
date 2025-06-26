@@ -9,7 +9,7 @@
 		"ignoreUnknown": false,
 		"includes": [
 			"**/src/**/*",
-			"tests/**/*",
+			"e2e/tests/**/*",
 			"!dist",
 			"!node_modules",
 			"!**/.next/**/*",

@@ -1,5 +1,3 @@
-import { makeEntryPointPlugin } from "@web-memo/hmr";
-import { isProduction } from "@web-memo/shared/utils";
 import { withPageConfig } from "@web-memo/vite-config";
 import { resolve } from "path";
 import svgr from "vite-plugin-svgr";
@@ -14,7 +12,6 @@ export default withPageConfig({
 		},
 	},
 	plugins: [
-		!isProduction() && makeEntryPointPlugin(),
 		svgr({
 			// svgr options: https://react-svgr.com/docs/options/
 			svgrOptions: {

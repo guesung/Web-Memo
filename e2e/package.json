@@ -9,5 +9,8 @@
   "postinstall": "playwright install --with-deps",
   "devDependencies": {
     "@playwright/test": "^1.47.0"
+  },
+  "dependencies": {
+    "@web-memo/shared": "workspace:*"
   }
 }

@@ -1,20 +1,23 @@
 import { expect, test } from "./fixtures";
-import { fillMemo, openSidePanel } from "./utils/helpers";
+import { fillMemo, findSidePanelPage, login, openSidePanel } from "./lib";
 
 test.describe("SidePanel", () => {
-	test.beforeEach(async ({ loginedPage }) => {
-		await openSidePanel(loginedPage);
+	test.beforeEach(async ({ page }) => {
+		await login(page);
+		await openSidePanel(page);
 	});
 
 	test("사이드 패널에서 메모를 입력하면, 메모를 확인할 수 있다.", async ({
-		sidePanelPage,
+		page,
 	}) => {
+		const sidePanelPage = await findSidePanelPage(page);
 		await fillMemo(sidePanelPage, String(new Date()));
 	});
 
 	test("사이드 패널에서 메모를 입력하면, 저장이 되어 새로고침을 해도 메모를 확인할 수 있다.", async ({
-		sidePanelPage,
+		page,
 	}) => {
+		const sidePanelPage = await findSidePanelPage(page);
 		const text = String(new Date());
 		await fillMemo(sidePanelPage, text);
 

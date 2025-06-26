@@ -5,7 +5,7 @@ export default defineConfig({
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,
-	workers: process.env.CI ? 2 : undefined,
+	workers: process.env.CI ? 1 : undefined,
 	reporter: [["html", { open: "on-failure" }]],
 	webServer: {
 		command: "pnpm run -w dev:web:preview",
@@ -15,7 +15,7 @@ export default defineConfig({
 	},
 	use: {
 		trace: "on-first-retry",
-		screenshot: process.env.CI ? undefined : "only-on-failure",
+		screenshot: "on",
 		baseURL: "http://localhost:3000",
 	},
 	projects: [
@@ -24,5 +24,5 @@ export default defineConfig({
 			use: { ...devices["Desktop Chrome"] },
 		},
 	],
-	timeout: 5 * 60 * 1000,
+	timeout: 60 * 1000,
 });

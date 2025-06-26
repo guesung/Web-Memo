@@ -129,15 +129,15 @@ export default class ExtensionBridge {
 	}
 
 	private static getCategory(url: string): Category {
-		if (this.checkYoutube(url)) return "youtube";
+		if (ExtensionBridge.checkYoutube(url)) return "youtube";
 		return "others";
 	}
 
 	static async responsePageContent() {
 		try {
 			const url = location.href;
-			const category = this.getCategory(url);
-			const content = await this._getContent(url, category);
+			const category = ExtensionBridge.getCategory(url);
+			const content = await ExtensionBridge._getContent(url, category);
 
 			Runtime.onMessage(
 				BRIDGE_MESSAGE_TYPES.PAGE_CONTENT,
@@ -165,8 +165,9 @@ export default class ExtensionBridge {
 
 	private static async _getContent(url: string, category: Category) {
 		try {
-			if (category === "youtube") return await this._getContentFromYoutube(url);
-			return this._getContentFromWeb();
+			if (category === "youtube")
+				return await ExtensionBridge._getContentFromYoutube(url);
+			return ExtensionBridge._getContentFromWeb();
 		} catch (error) {
 			throw new ExtensionError(
 				"Failed to get content",

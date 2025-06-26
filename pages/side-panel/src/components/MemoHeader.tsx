@@ -1,9 +1,5 @@
 import { getMemoUrl } from "@src/utils";
-import {
-    useDidMount,
-    useMemoQuery,
-    useTabQuery,
-} from "@web-memo/shared/hooks";
+import { useDidMount, useMemoQuery, useTabQuery } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import { ErrorBoundary, Skeleton } from "@web-memo/ui";

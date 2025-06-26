@@ -5,17 +5,17 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
 import { PATHS } from "@web-memo/shared/constants";
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarGroup,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarSeparator,
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
+	Sidebar,
+	SidebarContent,
+	SidebarFooter,
+	SidebarGroup,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarSeparator,
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
 } from "@web-memo/ui";
 import { Heart, Home, SettingsIcon } from "lucide-react";
 import Link from "next/link";

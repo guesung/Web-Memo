@@ -27,6 +27,8 @@ export default function AdditionalFeatures({ lng }: AdditionalFeaturesProps) {
 		{
 			icon: (
 				<svg
+					aria-label="ai_summary"
+					aria-hidden="true"
 					className="h-6 w-6 text-yellow-600"
 					fill="none"
 					stroke="currentColor"
@@ -47,6 +49,8 @@ export default function AdditionalFeatures({ lng }: AdditionalFeaturesProps) {
 		{
 			icon: (
 				<svg
+					aria-label="wishlist"
+					aria-hidden="true"
 					className="h-6 w-6 text-pink-600"
 					fill="none"
 					stroke="currentColor"
@@ -75,7 +79,7 @@ export default function AdditionalFeatures({ lng }: AdditionalFeaturesProps) {
 		>
 			{features.map((feature, index) => (
 				<motion.div
-					key={index}
+					key={feature.title}
 					variants={fadeInUp}
 					className="rounded-xl bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-md dark:bg-gray-800"
 				>

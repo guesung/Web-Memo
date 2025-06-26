@@ -2,8 +2,8 @@ import { useGetExtensionManifest } from "@src/hooks";
 import { isMac } from "@src/utils";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import {
-    checkLocalStorageTrue,
-    setLocalStorageTrue,
+	checkLocalStorageTrue,
+	setLocalStorageTrue,
 } from "@web-memo/shared/modules/local-storage";
 import { driver } from "driver.js";
 import { useEffect } from "react";

@@ -1,8 +1,8 @@
 import { useFetch } from "@web-memo/shared/hooks";
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
 import {
-    BRIDGE_MESSAGE_TYPES,
-    ExtensionBridge,
+	BRIDGE_MESSAGE_TYPES,
+	ExtensionBridge,
 } from "@web-memo/shared/modules/extension-bridge";
 import { I18n, Runtime } from "@web-memo/shared/utils/extension";
 import { useState } from "react";
@@ -24,7 +24,7 @@ export default function useSummary() {
 			pageContent = content;
 			currentCategory = category;
 			setCategory(category);
-		} catch (e) {
+		} catch {
 			setErrorMessage(I18n.get("error_get_page_content"));
 			return;
 		}
@@ -34,7 +34,7 @@ export default function useSummary() {
 				{ pageContent, category: currentCategory },
 				(message: string) => message && setSummary((prev) => prev + message),
 			);
-		} catch (e) {
+		} catch {
 			setErrorMessage(I18n.get("error_get_summary"));
 			setCategory("others");
 			return;

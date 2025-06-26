@@ -136,8 +136,6 @@ const Carousel = React.forwardRef<
 					ref={ref}
 					onKeyDownCapture={handleKeyDown}
 					className={cn("relative", className)}
-					role="region"
-					aria-roledescription="carousel"
 					{...props}
 				>
 					{children}
@@ -252,9 +250,9 @@ CarouselNext.displayName = "CarouselNext";
 
 export {
 	Carousel,
-	type CarouselApi,
 	CarouselContent,
 	CarouselItem,
 	CarouselNext,
 	CarouselPrevious,
+	type CarouselApi,
 };

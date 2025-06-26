@@ -116,6 +116,7 @@ export default function ImageSlider({ lng }: ImageSliderProps) {
 
 			<div className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-between px-2">
 				<button
+					type="button"
 					onClick={goToPrevious}
 					disabled={isTransitioning}
 					className="rounded-full bg-white/10 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/20 disabled:opacity-50"
@@ -125,6 +126,7 @@ export default function ImageSlider({ lng }: ImageSliderProps) {
 				</button>
 
 				<button
+					type="button"
 					onClick={goToNext}
 					disabled={isTransitioning}
 					className="rounded-full bg-white/10 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/20 disabled:opacity-50"
@@ -135,9 +137,10 @@ export default function ImageSlider({ lng }: ImageSliderProps) {
 			</div>
 
 			<div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1.5">
-				{IMAGES.map((_, index) => (
+				{IMAGES.map((image, index) => (
 					<button
-						key={index}
+						type="button"
+						key={image}
 						onClick={() => goToSlide(index)}
 						disabled={isTransitioning}
 						className={`h-1.5 rounded-full transition-all disabled:opacity-50 ${

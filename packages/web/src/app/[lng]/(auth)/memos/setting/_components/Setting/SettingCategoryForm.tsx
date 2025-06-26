@@ -1,10 +1,10 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import {
-    useCategoryDeleteMutation,
-    useCategoryPostMutation,
-    useCategoryQuery,
-    useCategoryUpsertMutation,
+	useCategoryDeleteMutation,
+	useCategoryPostMutation,
+	useCategoryQuery,
+	useCategoryUpsertMutation,
 } from "@web-memo/shared/hooks";
 import { generateRandomPastelColor } from "@web-memo/shared/utils";
 import { Button, Input, Label, toast } from "@web-memo/ui";

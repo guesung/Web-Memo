@@ -51,7 +51,7 @@ export default function UpdateList({ lng }: UpdateListProps) {
 							}) as string[]
 						).map((item: string, index: number) => (
 							<motion.li
-								key={index}
+								key={item}
 								initial={{ opacity: 0, x: -10 }}
 								animate={{ opacity: 1, x: 0 }}
 								transition={{ delay: index * 0.1 }}

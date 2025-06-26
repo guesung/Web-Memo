@@ -73,9 +73,10 @@ export default memo(function MemoItem({
 					handleMemoItemClick(e as unknown as MouseEvent<HTMLElement>);
 				}
 			}}
-			tabIndex={0}
-			role="button"
 			aria-label={`메모 ${memo.id}`}
+			tabIndex={0}
+			// biome-ignore lint/a11y/useSemanticElements: <explanation>
+			role="button"
 		>
 			<motion.div
 				initial={{ opacity: 0 }}

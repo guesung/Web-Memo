@@ -3,18 +3,18 @@ import type { MemoInput } from "@src/app/[lng]/(auth)/memos/_types/Input";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import {
-    useKeyboardBind,
-    useMemoPatchMutation,
-    useMemoQuery,
+	useKeyboardBind,
+	useMemoPatchMutation,
+	useMemoQuery,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import {
-    Button,
-    Card,
-    CardContent,
-    Dialog,
-    DialogContent,
-    Textarea,
+	Button,
+	Card,
+	CardContent,
+	Dialog,
+	DialogContent,
+	Textarea,
 } from "@web-memo/ui";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
@@ -49,8 +49,9 @@ export default function MemoDialog({
 	});
 
 	const { ref, ...rest } = register("memo", {
-		onChange: (event) =>
-			(event.target.style.height = `${event.target.scrollHeight}px`),
+		onChange: (event) => {
+			event.target.style.height = `${event.target.scrollHeight}px`;
+		},
 	});
 	useImperativeHandle(ref, () => textareaRef.current);
 
@@ -95,7 +96,7 @@ export default function MemoDialog({
 	useEffect(() => {
 		if (!textareaRef.current) return;
 		textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-	}, [textareaRef, ref]);
+	}, []);
 
 	useEffect(() => {
 		setValue("memo", memoData?.memo ?? "");

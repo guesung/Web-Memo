@@ -55,7 +55,7 @@ export const getSupabaseClient = async () => {
 		});
 
 		return supabaseClientInstance;
-	} catch (e) {
+	} catch {
 		throw new Error("로그인을 먼저 해주세요");
 	}
 };

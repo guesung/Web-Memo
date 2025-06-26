@@ -7,8 +7,8 @@ import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import {
 	initReactI18next,
-	useTranslation as useTranslationOrg,
 	type UseTranslationOptions,
+	useTranslation as useTranslationOrg,
 } from "react-i18next";
 
 import { cookieName, SUPPORTED_LANGUAGES } from "./constant";
@@ -48,7 +48,7 @@ export default function useTranslation(
 
 	useEffect(() => {
 		setActiveLng(i18n.resolvedLanguage);
-	}, [activeLng, i18n.resolvedLanguage]);
+	}, [i18n.resolvedLanguage]);
 
 	useEffect(() => {
 		if (!language || i18n.resolvedLanguage === language) return;

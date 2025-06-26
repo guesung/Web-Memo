@@ -27,6 +27,8 @@ export default function Features({ lng }: FeaturesProps) {
 		{
 			icon: (
 				<svg
+					aria-label="memo"
+					aria-hidden="true"
 					className="h-6 w-6 text-blue-600"
 					fill="none"
 					stroke="currentColor"
@@ -47,6 +49,8 @@ export default function Features({ lng }: FeaturesProps) {
 		{
 			icon: (
 				<svg
+					aria-label="overview"
+					aria-hidden="true"
 					className="h-6 w-6 text-green-600"
 					fill="none"
 					stroke="currentColor"
@@ -71,6 +75,8 @@ export default function Features({ lng }: FeaturesProps) {
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
+					aria-label="organize"
+					aria-hidden="true"
 				>
 					<path
 						strokeLinecap="round"
@@ -95,7 +101,7 @@ export default function Features({ lng }: FeaturesProps) {
 		>
 			{features.map((feature, index) => (
 				<motion.div
-					key={index}
+					key={feature.title}
 					variants={fadeInUp}
 					className="rounded-xl bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-md dark:bg-gray-800"
 				>

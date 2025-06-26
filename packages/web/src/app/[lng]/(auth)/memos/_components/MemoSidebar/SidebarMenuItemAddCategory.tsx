@@ -35,7 +35,6 @@ export default memo(function SidebarMenuItemAddCategory() {
 			) : (
 				<Button
 					className="flex justify-center"
-					role="button"
 					onClick={handlePlusIconClick}
 					variant="ghost"
 					size="icon"

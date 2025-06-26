@@ -27,6 +27,6 @@ export default function useKeyboardBind({
 			window.addEventListener("keydown", handleKeyDown);
 			return () => window.removeEventListener("keydown", handleKeyDown);
 		},
-		[key, callback],
+		[key, callback, isMetaKey],
 	);
 }

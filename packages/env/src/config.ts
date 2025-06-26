@@ -1,4 +1,3 @@
-
 export const getSafeConfig = (
 	name: string,
 	value: string | undefined,
@@ -6,8 +5,6 @@ export const getSafeConfig = (
 	if (value === undefined) throw new Error(`${name}이 설정되지 않았습니다.`);
 	else return value;
 };
-
-
 
 export const CONFIG = {
 	webUrl: getSafeConfig("WEB_URL", process.env.WEB_URL),

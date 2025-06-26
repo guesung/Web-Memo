@@ -2,6 +2,8 @@ export const PATHS = {
 	root: "/",
 	error: "/error",
 	login: "/login",
+	kakaoLogin: "/accounts.kakao.com",
+	googleLogin: "/accounts.google.com",
 	memos: "/memos",
 	auth: "/auth",
 	introduce: "/introduce",

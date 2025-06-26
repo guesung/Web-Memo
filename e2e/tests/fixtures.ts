@@ -14,6 +14,7 @@ type ExtensionFixture = {
 };
 
 export const test = base.extend<ExtensionFixture>({
+	// biome-ignore lint/correctness/noEmptyPattern: <explanation>
 	context: async ({}, use) => {
 		const context = await chromium.launchPersistentContext("", {
 			headless: false,

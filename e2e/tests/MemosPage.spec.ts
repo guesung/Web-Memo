@@ -13,7 +13,7 @@ test.describe("Memos Page", () => {
 	test.describe("가이드 기능", () => {
 		test("메모 페이지 최초 접속시, 가이드를 볼 수 있다.", async ({ page }) => {
 			expect(page.locator("#driver-popover-description")).toHaveText(
-				"Ready to start? Press 'Option + S' to open the side panel",
+				"Ready to start? Press 'Alt + S' to open the side panel",
 			);
 		});
 		test("사이드 패널을 열 시, 다음 가이드 페이지로 이동한다.", async ({

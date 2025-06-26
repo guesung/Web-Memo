@@ -1,13 +1,12 @@
 import { useGetExtensionManifest } from "@src/hooks";
-import { isMac } from "@src/utils";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import {
 	checkLocalStorageTrue,
 	setLocalStorageTrue,
 } from "@web-memo/shared/modules/local-storage";
+import { isMac } from "@web-memo/shared/utils";
 import { driver } from "driver.js";
 import { useEffect } from "react";
-
 import type { LanguageType } from "../i18n";
 import useTranslation from "../i18n/util.client";
 
@@ -29,7 +28,7 @@ export default function useGuide({ lng }: UseGuideProps) {
 					popover: {
 						title: t("guide.welcome.title"),
 						description: t("guide.welcome.description", {
-							key: isMac ? "Option" : "Alt",
+							key: isMac() ? "Option" : "Alt",
 						}),
 						onPopoverRender: () => {
 							const interval = setInterval(() => {
@@ -46,7 +45,7 @@ export default function useGuide({ lng }: UseGuideProps) {
 					popover: {
 						title: t("guide.save.title"),
 						description: t("guide.save.description", {
-							key: isMac ? "Command" : "Ctrl",
+							key: isMac() ? "Command" : "Ctrl",
 						}),
 					},
 				},

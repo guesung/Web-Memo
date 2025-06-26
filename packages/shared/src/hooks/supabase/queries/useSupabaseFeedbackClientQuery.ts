@@ -7,7 +7,7 @@ import { getFeedbackSupabaseClient as getFeedbackSupabaseClientWeb } from "../..
 
 export default function useSupabaseFeedbackClientQuery() {
 	const query = useQuery({
-		queryFn: isExtension
+		queryFn: isExtension()
 			? getSupabaseClientExtension
 			: getFeedbackSupabaseClientWeb,
 		queryKey: QUERY_KEY.supabaseClient(),

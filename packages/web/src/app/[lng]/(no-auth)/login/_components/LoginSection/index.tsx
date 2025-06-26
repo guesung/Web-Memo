@@ -6,8 +6,8 @@ import {
 	signInWithEmail,
 	signInWithOAuth,
 } from "@src/modules/supabase/util.server";
-import { isProduction } from "@src/utils";
 import { SUPABASE } from "@web-memo/shared/constants";
+import { isProduction } from "@web-memo/shared/utils";
 import { Button } from "@web-memo/ui";
 import Image from "next/image";
 
@@ -46,7 +46,7 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
 					/>
 					{t("login.googleLogin")}
 				</Button>
-				{!isProduction && (
+				{!isProduction() && (
 					<Button
 						formAction={signInWithEmail.bind(
 							null,

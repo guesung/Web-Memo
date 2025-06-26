@@ -417,9 +417,6 @@ importers:
       '@web-memo/hmr':
         specifier: workspace:*
         version: link:../hmr
-      '@web-memo/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@web-memo/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig

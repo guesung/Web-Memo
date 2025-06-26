@@ -23,6 +23,7 @@ jobs:
         run: |
           echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
           echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
+          echo NODE_ENV=production >> packages/env/.env
 
       - name: build
         run: pnpm run build:extension

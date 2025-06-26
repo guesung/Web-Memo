@@ -5,12 +5,16 @@ on:
     paths:
       - 'packages/web/**'
       - 'packages/shared/**'
+      - 'packages/ui/**'
+      - 'packages/env/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
   pull_request:
     paths:
       - 'packages/web/**'
       - 'packages/shared/**'
+      - 'packages/ui/**'
+      - 'packages/env/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
 
@@ -62,6 +66,7 @@ jobs:
         run: |
           echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
           echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
+          echo NODE_ENV=production >> packages/env/.env
 
           echo "${{ secrets.WEB_ENV_FILE }}" > packages/web/.env
           echo NEXT_PUBLIC_WEB_URL=${{ env.WEB_URL }} >> packages/web/.env

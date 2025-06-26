@@ -36,12 +36,16 @@ export const test = base.extend<ExtensionFixture>({
 					page.url() ===
 					"chrome-extension://eaiojpmgklfngpjddhoalgcpkepgkclh/side-panel/index.html",
 			)!;
+		await sidePanelPage.waitForTimeout(1000);
+
 		use(sidePanelPage);
 	},
 	loginedPage: async ({ page }, use) => {
 		await page.goto("/en/login");
 		await page.getByTestId("test-login-button").click();
 		await page.waitForURL(new RegExp(PATHS.memos));
+		await page.waitForTimeout(1000);
+
 		use(page);
 	},
 	baseURL: "http://localhost:3000",

@@ -2,10 +2,10 @@
 
 import { HydrationBoundaryWrapper } from "@src/components";
 import { HeaderMargin } from "@src/components/Header";
-import { type LanguageParams } from "@src/modules/i18n";
+import type { LanguageParams } from "@src/modules/i18n";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { QUERY_KEY } from "@web-memo/shared/constants";
-import { type SearchParamsType } from "@web-memo/shared/modules/search-params";
+import type { SearchParamsType } from "@web-memo/shared/modules/search-params";
 import { MemoService } from "@web-memo/shared/utils";
 import { Loading } from "@web-memo/ui";
 import dynamic from "next/dynamic";

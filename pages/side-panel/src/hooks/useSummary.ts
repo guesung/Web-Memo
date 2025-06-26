@@ -24,7 +24,7 @@ export default function useSummary() {
 			pageContent = content;
 			currentCategory = category;
 			setCategory(category);
-		} catch (e) {
+		} catch {
 			setErrorMessage(I18n.get("error_get_page_content"));
 			return;
 		}
@@ -34,7 +34,7 @@ export default function useSummary() {
 				{ pageContent, category: currentCategory },
 				(message: string) => message && setSummary((prev) => prev + message),
 			);
-		} catch (e) {
+		} catch {
 			setErrorMessage(I18n.get("error_get_summary"));
 			setCategory("others");
 			return;

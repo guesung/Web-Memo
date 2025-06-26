@@ -8,7 +8,7 @@ export default function ErrorFallback({ error }: ErrorFallbackProps) {
 
 	return (
 		<div className="flex h-full flex-col items-center justify-center gap-4">
-			<button className="btn" onClick={handleRetryClickl}>
+			<button className="btn" onClick={handleRetryClickl} type="button">
 				재시도
 			</button>
 			{error.message}

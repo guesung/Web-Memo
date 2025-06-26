@@ -49,8 +49,9 @@ export default function MemoDialog({
 	});
 
 	const { ref, ...rest } = register("memo", {
-		onChange: (event) =>
-			(event.target.style.height = `${event.target.scrollHeight}px`),
+		onChange: (event) => {
+			event.target.style.height = `${event.target.scrollHeight}px`;
+		},
 	});
 	useImperativeHandle(ref, () => textareaRef.current);
 
@@ -95,7 +96,7 @@ export default function MemoDialog({
 	useEffect(() => {
 		if (!textareaRef.current) return;
 		textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-	}, [textareaRef, ref]);
+	}, []);
 
 	useEffect(() => {
 		setValue("memo", memoData?.memo ?? "");

@@ -4,7 +4,7 @@ import { useSupabaseUserQuery } from "@web-memo/shared/hooks";
 export default function withAuthentication(
 	WrappedComponent: () => JSX.Element,
 ) {
-	const AuthenticatedComponent = function () {
+	const AuthenticatedComponent = () => {
 		const { user } = useSupabaseUserQuery();
 
 		if (user?.data.user) return <WrappedComponent />;

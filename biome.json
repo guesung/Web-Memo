@@ -8,14 +8,12 @@
 	"files": {
 		"ignoreUnknown": false,
 		"includes": [
-			"**",
+			"**/src/**/*",
+			"tests/**/*",
 			"!dist",
 			"!node_modules",
-			"!coverage",
-			"!.turbo",
-			"!.next",
-			"!.cache",
-			"!build"
+			"!**/.next/**/*",
+			"!**/ui/**/*"
 		]
 	},
 	"formatter": {
@@ -25,7 +23,10 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"complexity": {
+				"noStaticOnlyClass": "off"
+			}
 		},
 		"domains": {
 			"react": "recommended"

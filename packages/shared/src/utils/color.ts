@@ -26,7 +26,7 @@ const hslToHex = (h: number, s: number, l: number) => {
 	const saturation = s / 100;
 	const lightness = l / 100;
 
-	let r, g, b;
+	let r: number, g: number, b: number;
 	if (saturation === 0) {
 		r = g = b = lightness;
 	} else {

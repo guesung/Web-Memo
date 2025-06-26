@@ -1,4 +1,4 @@
-import { BrowserContext, Page } from "@playwright/test";
+import type { BrowserContext, Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
 
 // 사이드패널이 열릴 때까지 기다리는 함수

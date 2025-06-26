@@ -236,12 +236,15 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 		}, 1);
 	};
 
-	useEffect(function updateDialogId() {
-		const currentDialogId = searchParams.get("id");
-		if (!currentDialogId) return;
+	useEffect(
+		function updateDialogId() {
+			const currentDialogId = searchParams.get("id");
+			if (!currentDialogId) return;
 
-		setDialogMemoId(Number(currentDialogId));
-	}, []);
+			setDialogMemoId(Number(currentDialogId));
+		},
+		[searchParams],
+	);
 
 	useEffect(function closeDialogOnPopState() {
 		const handlePopstate = () => {

@@ -16,7 +16,7 @@ export class Tab {
 		type: BRIDGE_MESSAGE_TYPE,
 		payload?: TPayload,
 	) {
-		const tab = await this.get();
+		const tab = await Tab.get();
 		if (!tab.id) throw new Error("Tab not found");
 
 		const message = await chrome.tabs.sendMessage<

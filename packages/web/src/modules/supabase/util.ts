@@ -1,7 +1,7 @@
 import { CONFIG } from "@src/constants";
 import { createServerClient } from "@supabase/ssr";
 import { NEED_AUTH_PAGES, PATHS } from "@web-memo/shared/constants";
-import { Database } from "@web-memo/shared/types";
+import type { Database } from "@web-memo/shared/types";
 import { AuthService } from "@web-memo/shared/utils";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";

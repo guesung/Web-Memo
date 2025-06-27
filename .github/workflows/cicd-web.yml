@@ -9,6 +9,7 @@ on:
       - 'packages/env/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
+      - '.github/workflows/cicd-web.yml'
   pull_request:
     paths:
       - 'packages/web/**'
@@ -97,4 +98,4 @@ jobs:
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master'}}
         run: |
           VERCEL_DEPOLYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
-          vercel alias set "$VERCEL_DEPOLYED_URL" --production --token=${{ secrets.VERCEL_TOKEN }}
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }}

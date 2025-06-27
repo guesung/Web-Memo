@@ -136,7 +136,9 @@
 		"addSuccess": "Added",
 		"errorSave": "Couldn't save",
 		"successSave": "Changes saved",
-		"memo_updated_at": "Modified at {{time}}"
+		"memo_updated_at": "Modified at {{time}}",
+		"guideDone": "🎉 Guide completed.",
+		"guideDoneDescription": "Enjoy your memo!"
 	},
 
 	"toastActionMessage": {

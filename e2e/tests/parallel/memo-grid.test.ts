@@ -20,11 +20,14 @@ test.describe("메모 그리드", () => {
 		const sidePanelPage = await findSidePanelPage(page);
 		memoText = String(new Date());
 		await fillMemo(sidePanelPage, memoText);
+		await sidePanelPage.waitForTimeout(1000);
 	});
 	test.beforeEach(async ({ page }) => {
 		// 로그인을 하고 메모 페이지에 접속한다.
 		await login(page);
 		await page.goto(`${LANGUAGE}${PATHS.memos}`);
+		await page.waitForURL(new RegExp(PATHS.memos));
+
 		await skipGuide(page);
 	});
 	test("메모 페이지에 접속하면, 메모를 확인할 수 있다.", async ({ page }) => {

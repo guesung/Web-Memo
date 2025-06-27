@@ -21,6 +21,7 @@ test.describe("가이드 기능", () => {
 	}) => {
 		// 사이드 패널을 열기 위해서는 웹 메모 외의 사이트에 이동해야한다.
 		await page.goto(EXAMPLE_URL);
+		await page.waitForURL(new RegExp(EXAMPLE_URL));
 
 		await openSidePanel(page);
 		await page.goto(`${LANGUAGE}${PATHS.memos}`);

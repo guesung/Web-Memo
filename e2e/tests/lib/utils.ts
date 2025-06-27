@@ -34,3 +34,9 @@ export async function findSidePanelPage(page: Page) {
 				"chrome-extension://eaiojpmgklfngpjddhoalgcpkepgkclh/side-panel/index.html",
 		)!;
 }
+
+export async function skipGuide(page: Page) {
+	await page.locator(".driver-popover-next-btn").click();
+	await page.locator(".driver-popover-next-btn").click();
+	await page.locator(".driver-popover-next-btn").click();
+}

@@ -11,5 +11,6 @@
 	"javascript.preferences.quoteStyle": "single",
 	"typescript.enablePromptUseWorkspaceTsdk": true,
 	"typescript.preferences.importModuleSpecifier": "project-relative",
-	"typescript.preferences.quoteStyle": "single"
+	"typescript.preferences.quoteStyle": "single",
+	"px-to-rem.px-per-rem": 16
 }

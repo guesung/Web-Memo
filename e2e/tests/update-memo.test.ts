@@ -9,8 +9,9 @@ import {
 	skipGuide,
 } from "./lib";
 
-test.describe("메모 그리드", () => {
+test.describe("메모 수정 기능", () => {
 	let memoText: string;
+
 	test.beforeAll(async ({ page }) => {
 		// 메모를 생성한다.
 		await login(page);
@@ -25,11 +26,19 @@ test.describe("메모 그리드", () => {
 		await page.goto(`${LANGUAGE}${PATHS.memos}`);
 		await skipGuide(page);
 	});
-	test("메모 페이지에 접속하면, 메모를 확인할 수 있다.", async ({ page }) => {
-		await expect(page.getByText(memoText)).toBeVisible();
-	});
-	test("메모를 누르면, 메모 상세 페이지가 열린다.", async ({ page }) => {
-		await page.getByText(memoText).click();
-		await expect(page.getByTestId("memo-textarea")).toHaveValue(memoText);
+
+	test("메모를 수정할 수 있다.", async ({ page }) => {
+		const memoItem = page.locator(".memo-item", {
+			hasText: memoText,
+		});
+
+		await memoItem.click();
+
+		const newMemoText = String(new Date());
+
+		await page.getByTestId("memo-textarea").fill(newMemoText);
+		await page.getByTestId("memo-save-button").click();
+
+		await expect(page.getByText(newMemoText)).toBeVisible();
 	});
 });

@@ -3,6 +3,7 @@ import { expect, test } from "../fixtures";
 import {
 	fillMemo,
 	findSidePanelPage,
+	gotoSafely,
 	LANGUAGE,
 	login,
 	openSidePanel,
@@ -22,7 +23,11 @@ test.describe("메모 삭제 기능", () => {
 		memoText = String(new Date());
 		await fillMemo(sidePanelPage, memoText);
 		// 메모 페이지에 접속한다.
-		await page.goto(`${LANGUAGE}${PATHS.memos}`);
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.memos}`,
+			regexp: new RegExp(PATHS.memos),
+		});
 	});
 	test("메모를 삭제하면, 메모 그리드에서 삭제되며 토스트 메시지가 뜬다.", async ({
 		page,

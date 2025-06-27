@@ -8,6 +8,17 @@ export async function fillMemo(page: Page, text: string) {
 	await expect(page.locator("#memo-textarea")).toHaveValue(text);
 }
 
+interface GotoSafeParams {
+	page: Page;
+	url: string;
+	regexp: RegExp;
+}
+
+export async function gotoSafely({ page, url, regexp }: GotoSafeParams) {
+	await page.goto(url);
+	await page.waitForURL(regexp);
+}
+
 export async function openSidePanel(page: Page) {
 	await page.locator("#OPEN_SIDE_PANEL_BUTTON").click();
 }

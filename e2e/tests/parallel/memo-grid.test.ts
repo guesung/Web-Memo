@@ -3,6 +3,7 @@ import { expect, test } from "../fixtures";
 import {
 	fillMemo,
 	findSidePanelPage,
+	gotoSafely,
 	LANGUAGE,
 	login,
 	openSidePanel,
@@ -25,8 +26,11 @@ test.describe("메모 그리드", () => {
 	test.beforeEach(async ({ page }) => {
 		// 로그인을 하고 메모 페이지에 접속한다.
 		await login(page);
-		await page.goto(`${LANGUAGE}${PATHS.memos}`);
-		await page.waitForURL(new RegExp(PATHS.memos));
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.memos}`,
+			regexp: new RegExp(PATHS.memos),
+		});
 
 		await skipGuide(page);
 	});

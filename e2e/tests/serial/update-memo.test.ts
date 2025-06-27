@@ -3,6 +3,7 @@ import { expect, test } from "../fixtures";
 import {
 	fillMemo,
 	findSidePanelPage,
+	gotoSafely,
 	LANGUAGE,
 	login,
 	openSidePanel,
@@ -23,7 +24,11 @@ test.describe("메모 수정 기능", () => {
 		await fillMemo(sidePanelPage, memoText);
 
 		// 메모 페이지에 접속한다.
-		await page.goto(`${LANGUAGE}${PATHS.memos}`);
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.memos}`,
+			regexp: new RegExp(PATHS.memos),
+		});
 	});
 
 	test("메모를 수정할 수 있다.", async ({ page }) => {

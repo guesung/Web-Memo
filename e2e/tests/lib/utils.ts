@@ -35,6 +35,7 @@ export async function findSidePanelPage(page: Page) {
 
 export async function skipGuide(page: Page) {
 	do {
+		await page.waitForTimeout(500);
 		await page.locator(".driver-popover-next-btn").click();
 		await page.waitForTimeout(500);
 	} while (await page.locator(".driver-popover-next-btn").isVisible());

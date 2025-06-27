@@ -2,6 +2,7 @@ import { PATHS } from "@web-memo/shared/constants";
 import { expect, test } from "./fixtures";
 import { LANGUAGE } from "./lib";
 
+test.describe.configure({ mode: "parallel" });
 test.describe("로그인 기능", () => {
 	test("로그인을 하지 않고 메인 페이지에 접속할 경우, 로그인 페이지로 이동한다.", async ({
 		page,

@@ -9,6 +9,7 @@ import {
 	skipGuide,
 } from "./lib";
 
+test.describe.configure({ mode: "serial" });
 test.describe("메모 삭제 기능", () => {
 	let memoText: string;
 

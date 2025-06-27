@@ -11,6 +11,7 @@ test.describe("가이드 기능", () => {
 		await page.goto(`${LANGUAGE}${PATHS.memos}`);
 	});
 	test("메모 페이지 최초 접속시, 가이드를 볼 수 있다.", async ({ page }) => {
+		await page.waitForURL(new RegExp(PATHS.memos));
 		await expect(page.locator("#driver-popover-description")).toHaveText(
 			`Ready to start? Press '${isCI ? "Alt" : "Option"} + S' to open the side panel`,
 		);
@@ -23,11 +24,15 @@ test.describe("가이드 기능", () => {
 
 		await openSidePanel(page);
 		await page.goto(`${LANGUAGE}${PATHS.memos}`);
+		await page.waitForURL(new RegExp(PATHS.memos));
+
 		await expect(page.locator("#driver-popover-description")).toHaveText(
 			"Great! Now you can write memos. Don't worry, they save automatically",
 		);
 	});
 	test("새로고침 버튼을 누르면, 가이드가 종료된다.", async ({ page }) => {
+		await page.waitForURL(new RegExp(PATHS.memos));
+
 		await page.locator(".driver-popover-next-btn").click();
 		await page.locator(".driver-popover-next-btn").click();
 		await page.locator("#refresh").click();

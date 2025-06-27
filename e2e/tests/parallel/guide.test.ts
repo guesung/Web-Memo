@@ -1,6 +1,6 @@
 import { PATHS } from "@web-memo/shared/constants";
-import { expect, test } from "./fixtures";
-import { EXAMPLE_URL, LANGUAGE, login, openSidePanel } from "./lib";
+import { expect, test } from "../fixtures";
+import { EXAMPLE_URL, LANGUAGE, login, openSidePanel } from "../lib";
 
 const isCI = process.env.CI === "true";
 

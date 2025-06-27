@@ -1,5 +1,5 @@
 import { PATHS } from "@web-memo/shared/constants";
-import { expect, test } from "./fixtures";
+import { expect, test } from "../fixtures";
 import {
 	fillMemo,
 	findSidePanelPage,
@@ -7,7 +7,7 @@ import {
 	login,
 	openSidePanel,
 	skipGuide,
-} from "./lib";
+} from "../lib";
 
 test.describe.configure({ mode: "serial" });
 test.describe("메모 수정 기능", () => {

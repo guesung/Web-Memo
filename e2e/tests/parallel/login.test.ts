@@ -1,6 +1,6 @@
 import { PATHS } from "@web-memo/shared/constants";
-import { expect, test } from "./fixtures";
-import { LANGUAGE } from "./lib";
+import { expect, test } from "../fixtures";
+import { LANGUAGE } from "../lib";
 
 test.describe.configure({ mode: "parallel" });
 test.describe("로그인 기능", () => {
@@ -8,6 +8,7 @@ test.describe("로그인 기능", () => {
 		page,
 	}) => {
 		await page.goto(`${LANGUAGE}${PATHS.memos}`);
+		await page.waitForURL(new RegExp(PATHS.login));
 
 		await expect(page).toHaveURL(new RegExp(PATHS.login));
 	});
@@ -17,6 +18,7 @@ test.describe("로그인 기능", () => {
 	}) => {
 		await page.goto(`${LANGUAGE}${PATHS.login}`);
 		await page.getByTestId("kakao-login-button").click();
+		await page.waitForURL(new RegExp(PATHS.kakaoLogin));
 
 		await expect(page).toHaveURL(new RegExp(PATHS.kakaoLogin));
 	});
@@ -25,6 +27,7 @@ test.describe("로그인 기능", () => {
 	}) => {
 		await page.goto(`${LANGUAGE}${PATHS.login}`);
 		await page.getByTestId("google-login-button").click();
+		await page.waitForURL(new RegExp(PATHS.googleLogin));
 
 		await expect(page).toHaveURL(new RegExp(PATHS.googleLogin));
 	});
@@ -33,6 +36,7 @@ test.describe("로그인 기능", () => {
 	}) => {
 		await page.goto(`${LANGUAGE}${PATHS.login}`);
 		await page.getByTestId("test-login-button").click();
+		await page.waitForURL(new RegExp(PATHS.memos));
 
 		await expect(page).toHaveURL(new RegExp(PATHS.memos));
 	});

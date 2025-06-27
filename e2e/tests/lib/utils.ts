@@ -46,9 +46,7 @@ export async function findSidePanelPage(page: Page) {
 }
 
 export async function skipGuide(page: Page) {
-	do {
+	for (let i = 0; i < 3; i++) {
 		await page.locator(".driver-popover-next-btn").click();
-	} while (
-		!(await page.getByText("🎉 Guide completed.", { exact: true }).isVisible())
-	);
+	}
 }

@@ -76,7 +76,8 @@ export default function useGuide({ lng }: UseGuideProps) {
 		if (
 			!manifest ||
 			manifest === "NOT_INSTALLED" ||
-			checkLocalStorageTrue("guide")
+			checkLocalStorageTrue("guide") ||
+			driverObj.getState().isInitialized
 		)
 			return;
 

@@ -1,4 +1,4 @@
-import type { BrowserContext, Page } from "@playwright/test";
+import type { BrowserContext } from "@playwright/test";
 import { test as base, chromium } from "@playwright/test";
 import path from "node:path";
 
@@ -8,10 +8,10 @@ const pathToExtension = path.join(path.resolve(), "..", "dist");
 
 type ExtensionFixture = {
 	context: BrowserContext;
-	sidePanelPage: Page;
 };
 
 export const test = base.extend<ExtensionFixture>({
+	// biome-ignore lint/correctness/noEmptyPattern: <explanation>
 	context: async ({}, use) => {
 		const context = await chromium.launchPersistentContext("", {
 			headless: false,
@@ -23,18 +23,6 @@ export const test = base.extend<ExtensionFixture>({
 		});
 		await use(context);
 		await context.close();
-	},
-	sidePanelPage: async ({ page }, use) => {
-		const sidePanelPage = page
-			.context()
-			.pages()
-			.find(
-				(page) =>
-					page.url() ===
-					"chrome-extension://eaiojpmgklfngpjddhoalgcpkepgkclh/side-panel/index.html",
-			)!;
-
-		use(sidePanelPage);
 	},
 	baseURL: "http://localhost:3000",
 });

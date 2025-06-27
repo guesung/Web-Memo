@@ -7,7 +7,7 @@ import { getSupabaseClient as getSupabaseClientWeb } from "../../../utils/web";
 
 export default function useSupabaseClientQuery() {
 	const query = useSuspenseQuery({
-		queryFn: isExtension ? getSupabaseClientExtension : getSupabaseClientWeb,
+		queryFn: isExtension() ? getSupabaseClientExtension : getSupabaseClientWeb,
 		queryKey: QUERY_KEY.supabaseClient(),
 	});
 

@@ -6,8 +6,8 @@ import {
 	signInWithEmail,
 	signInWithOAuth,
 } from "@src/modules/supabase/util.server";
-import { isProduction } from "@src/utils";
 import { SUPABASE } from "@web-memo/shared/constants";
+import { isProduction } from "@web-memo/shared/utils";
 import { Button } from "@web-memo/ui";
 import Image from "next/image";
 
@@ -25,6 +25,7 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
 				<Button
 					formAction={signInWithOAuth.bind(null, "kakao")}
 					className="h-12 bg-[rgb(247,228,76)] text-black hover:bg-[rgb(247,228,76)]"
+					data-testid="kakao-login-button"
 				>
 					<Image
 						src="/images/svgs/kakao.svg"
@@ -37,6 +38,7 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
 				<Button
 					formAction={signInWithOAuth.bind(null, "google")}
 					className="h-12 bg-white text-black hover:bg-white"
+					data-testid="google-login-button"
 				>
 					<Image
 						src="/images/svgs/google.svg"
@@ -46,7 +48,7 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
 					/>
 					{t("login.googleLogin")}
 				</Button>
-				{!isProduction && (
+				{!isProduction() && (
 					<Button
 						formAction={signInWithEmail.bind(
 							null,
@@ -54,6 +56,7 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
 							SUPABASE.testPassword,
 						)}
 						className="h-12 bg-green-300 text-black hover:bg-green-300"
+						data-testid="test-login-button"
 					>
 						{t("login.testLogin")}
 					</Button>

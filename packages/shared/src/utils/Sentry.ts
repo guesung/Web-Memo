@@ -9,7 +9,7 @@ import {
 import { CONFIG } from "@web-memo/env";
 import { isExtension, isProduction } from "./Environment";
 
-const SENTRY_DSN = isExtension
+const SENTRY_DSN = isExtension()
 	? CONFIG.sentryDsnExtension
 	: CONFIG.sentryDsnWeb;
 
@@ -20,7 +20,7 @@ export const testSentry = () => {
 };
 
 export const initSentry = async () => {
-	if (!isProduction) return;
+	if (!isProduction()) return;
 
 	init({
 		dsn: SENTRY_DSN,
@@ -30,7 +30,7 @@ export const initSentry = async () => {
 			browserProfilingIntegration(),
 		],
 
-		tracesSampleRate: isExtension ? 1.0 : 0,
+		tracesSampleRate: isExtension() ? 1.0 : 0,
 		replaysSessionSampleRate: 0.1,
 		replaysOnErrorSampleRate: 1.0,
 		release: "0.3.1",

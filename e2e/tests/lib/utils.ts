@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { PATHS } from "@web-memo/shared/constants";
 import { expect } from "../fixtures";
-import { LANGUAGE, TEST_BLOG_URL } from "./constants";
+import { LANGUAGE } from "./constants";
 
 export async function fillMemo(page: Page, text: string) {
 	await page.locator("#memo-textarea").fill(text);
@@ -9,9 +9,7 @@ export async function fillMemo(page: Page, text: string) {
 }
 
 export async function openSidePanel(page: Page) {
-	await page.goto(TEST_BLOG_URL);
 	await page.locator("#OPEN_SIDE_PANEL_BUTTON").click();
-	await page.waitForTimeout(1000);
 }
 
 export async function login(page: Page) {

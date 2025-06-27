@@ -17,6 +17,7 @@ test.describe("가이드 기능", () => {
 	test("사이드 패널을 열 시, 다음 가이드 페이지로 이동한다.", async ({
 		page,
 	}) => {
+		``;
 		await openSidePanel(page);
 		await page.goto(`${LANGUAGE}${PATHS.memos}`);
 		await expect(page.locator("#driver-popover-description")).toHaveText(

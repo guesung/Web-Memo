@@ -93,10 +93,11 @@ export default function MemoDialog({
 		setShowAlert(false);
 	};
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		if (!textareaRef.current) return;
 		textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-	}, []);
+	}, [textareaRef, ref]);
 
 	useEffect(() => {
 		setValue("memo", memoData?.memo ?? "");

@@ -12,17 +12,14 @@ import {
 test.describe("메모 삭제 기능", () => {
 	let memoText: string;
 
-	test.beforeAll(async ({ page }) => {
+	test.beforeEach(async ({ page }) => {
 		// 메모를 생성한다.
 		await login(page);
 		await openSidePanel(page);
 		const sidePanelPage = await findSidePanelPage(page);
 		memoText = String(new Date());
 		await fillMemo(sidePanelPage, memoText);
-	});
-	test.beforeEach(async ({ page }) => {
 		// 메모 페이지에 접속한다.
-		await login(page);
 		await page.goto(`${LANGUAGE}${PATHS.memos}`);
 		await skipGuide(page);
 	});

@@ -6,6 +6,7 @@ import { LANGUAGE } from "./constants";
 export async function fillMemo(page: Page, text: string) {
 	await page.locator("#memo-textarea").fill(text);
 	await expect(page.locator("#memo-textarea")).toHaveValue(text);
+	await page.waitForTimeout(1000);
 }
 
 interface GotoSafeParams {
@@ -46,8 +47,8 @@ export async function findSidePanelPage(page: Page) {
 
 export async function skipGuide(page: Page) {
 	do {
-		await page.waitForTimeout(500);
 		await page.locator(".driver-popover-next-btn").click();
-		await page.waitForTimeout(500);
-	} while (await page.locator(".driver-popover-next-btn").isVisible());
+	} while (
+		!(await page.getByText("🎉 Guide completed.", { exact: true }).isVisible())
+	);
 }

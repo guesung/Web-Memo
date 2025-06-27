@@ -16,12 +16,16 @@ test.describe("메모 그리드", () => {
 	test.beforeAll(async ({ page }) => {
 		// 메모를 생성한다.
 		await login(page);
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.memos}`,
+			regexp: new RegExp(PATHS.memos),
+		});
 		await skipGuide(page);
 		await openSidePanel(page);
 		const sidePanelPage = await findSidePanelPage(page);
 		memoText = String(new Date());
 		await fillMemo(sidePanelPage, memoText);
-		await sidePanelPage.waitForTimeout(1000);
 	});
 	test.beforeEach(async ({ page }) => {
 		// 로그인을 하고 메모 페이지에 접속한다.

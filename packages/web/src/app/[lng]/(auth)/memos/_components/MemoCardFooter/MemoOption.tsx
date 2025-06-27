@@ -23,8 +23,8 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-	toast,
 	ToastAction,
+	toast,
 } from "@web-memo/ui";
 import { EllipsisVerticalIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -140,6 +140,7 @@ export default function MemoOption({
 					variant="ghost"
 					size="icon"
 					onClick={handleDropdownMenuTriggerClick}
+					data-testid="memo-option"
 				>
 					<EllipsisVerticalIcon size={16} />
 				</Button>
@@ -149,6 +150,7 @@ export default function MemoOption({
 					<DropdownMenuItem
 						onClick={handleDeleteMemo}
 						className="cursor-pointer"
+						data-testid="memo-delete-button"
 					>
 						{t("option.deleteMemo")}
 					</DropdownMenuItem>

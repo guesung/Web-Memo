@@ -5,7 +5,9 @@ import {
 	setLocalStorageTrue,
 } from "@web-memo/shared/modules/local-storage";
 import { isMac } from "@web-memo/shared/utils";
+import { useToast } from "@web-memo/ui";
 import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
 import { useEffect } from "react";
 import type { LanguageType } from "../i18n";
 import useTranslation from "../i18n/util.client";
@@ -15,6 +17,7 @@ interface UseGuideProps extends LanguageType {}
 export default function useGuide({ lng }: UseGuideProps) {
 	const { t } = useTranslation(lng);
 	const manifest = useGetExtensionManifest();
+	const { toast } = useToast();
 
 	const createDriver = () =>
 		driver({
@@ -23,6 +26,14 @@ export default function useGuide({ lng }: UseGuideProps) {
 			nextBtnText: t("guide.next"),
 			doneBtnText: t("guide.done"),
 			prevBtnText: t("guide.prev"),
+			onDestroyed: () => {
+				setLocalStorageTrue("guide");
+				toast({
+					title: t("toastTitle.guideDone"),
+					description: t("toastTitle.guideDoneDescription"),
+				});
+			},
+			allowClose: false,
 			steps: [
 				{
 					popover: {
@@ -54,10 +65,6 @@ export default function useGuide({ lng }: UseGuideProps) {
 					popover: {
 						title: t("guide.check.title"),
 						description: t("guide.check.description"),
-						onNextClick: () => {
-							setLocalStorageTrue("guide");
-							driverObj.destroy();
-						},
 					},
 				},
 			],
@@ -69,11 +76,11 @@ export default function useGuide({ lng }: UseGuideProps) {
 		if (
 			!manifest ||
 			manifest === "NOT_INSTALLED" ||
-			checkLocalStorageTrue("guide")
+			checkLocalStorageTrue("guide") ||
+			driverObj.getState().isInitialized
 		)
 			return;
 
-		import("driver.js/dist/driver.css");
 		driverObj.drive();
 	}, [driverObj, manifest]);
 

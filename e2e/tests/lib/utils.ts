@@ -1,17 +1,27 @@
 import type { Page } from "@playwright/test";
 import { PATHS } from "@web-memo/shared/constants";
 import { expect } from "../fixtures";
-import { LANGUAGE, TEST_BLOG_URL } from "./constants";
+import { LANGUAGE } from "./constants";
 
 export async function fillMemo(page: Page, text: string) {
 	await page.locator("#memo-textarea").fill(text);
 	await expect(page.locator("#memo-textarea")).toHaveValue(text);
+	await page.waitForTimeout(1000);
+}
+
+interface GotoSafeParams {
+	page: Page;
+	url: string;
+	regexp: RegExp;
+}
+
+export async function gotoSafely({ page, url, regexp }: GotoSafeParams) {
+	await page.goto(url);
+	await page.waitForURL(regexp);
 }
 
 export async function openSidePanel(page: Page) {
-	await page.goto(TEST_BLOG_URL);
 	await page.locator("#OPEN_SIDE_PANEL_BUTTON").click();
-	await page.waitForTimeout(1000);
 }
 
 export async function login(page: Page) {
@@ -33,4 +43,10 @@ export async function findSidePanelPage(page: Page) {
 				page.url() ===
 				"chrome-extension://eaiojpmgklfngpjddhoalgcpkepgkclh/side-panel/index.html",
 		)!;
+}
+
+export async function skipGuide(page: Page) {
+	for (let i = 0; i < 3; i++) {
+		await page.locator(".driver-popover-next-btn").click();
+	}
 }

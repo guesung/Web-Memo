@@ -5,7 +5,7 @@ export default defineConfig({
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,
-	workers: 1,
+	maxFailures: 0,
 	reporter: [["html", { open: "on-failure" }]],
 	webServer: {
 		command: "pnpm run -w dev:web:preview",
@@ -15,13 +15,23 @@ export default defineConfig({
 	},
 	use: {
 		trace: "on-first-retry",
-		screenshot: "on",
+		screenshot: "only-on-failure",
 		baseURL: "http://localhost:3000",
 	},
 	projects: [
 		{
-			name: "chromium",
+			name: "parallel",
 			use: { ...devices["Desktop Chrome"] },
+			testDir: "./tests/parallel",
+			fullyParallel: true,
+			workers:undefined
+		},
+		{
+			name: "serial",
+			use: { ...devices["Desktop Chrome"] },
+			testDir: "./tests/serial",
+			fullyParallel: false,
+			workers: 1,
 		},
 	],
 	timeout: 60 * 1000,

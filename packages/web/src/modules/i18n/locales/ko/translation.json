@@ -136,7 +136,9 @@
 		"addSuccess": "추가했어요",
 		"errorSave": "저장하지 못했어요",
 		"successSave": "변경사항을 저장했어요",
-		"memo_updated_at": "{{time}}에 수정됨"
+		"memo_updated_at": "{{time}}에 수정됨",
+		"guideDone": "🎉 가이드를 완료했어요. ",
+		"guideDoneDescription": "즐거운 메모 하세요!"
 	},
 
 	"toastActionMessage": {

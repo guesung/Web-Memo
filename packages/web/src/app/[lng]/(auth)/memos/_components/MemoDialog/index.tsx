@@ -1,4 +1,5 @@
 "use client";
+
 import type { MemoInput } from "@src/app/[lng]/(auth)/memos/_types/Input";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
@@ -93,10 +94,11 @@ export default function MemoDialog({
 		setShowAlert(false);
 	};
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		if (!textareaRef.current) return;
 		textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-	}, []);
+	}, [textareaRef, ref]);
 
 	useEffect(() => {
 		setValue("memo", memoData?.memo ?? "");
@@ -124,6 +126,7 @@ export default function MemoDialog({
 									className="outline-none focus:border-gray-300 focus:outline-none"
 									ref={textareaRef}
 									placeholder={t("memos.placeholder")}
+									data-testid="memo-textarea"
 								/>
 
 								<div className="h-4" />
@@ -142,7 +145,10 @@ export default function MemoDialog({
 									>
 										{t("common.close")}
 									</Button>
-									<Button onClick={handleSaveAndClose}>
+									<Button
+										onClick={handleSaveAndClose}
+										data-testid="memo-save-button"
+									>
 										{t("common.save")}
 									</Button>
 								</div>

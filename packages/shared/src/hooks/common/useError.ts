@@ -1,10 +1,10 @@
-import { toErrorWithMessage } from '@src/utils';
-import { useState } from 'react';
+import { useState } from "react";
+import { toErrorWithMessage } from "../../utils";
 
 export default function useError() {
-  const [error, setError] = useState<Error | null>(null);
+	const [error, setError] = useState<Error | null>(null);
 
-  if (error) throw toErrorWithMessage(error);
+	if (error) throw toErrorWithMessage(error);
 
-  return { error, setError } as const;
+	return { error, setError } as const;
 }

@@ -1,0 +1,13 @@
+{
+	"extends": "@web-memo/tsconfig/base",
+	"compilerOptions": {
+		"noEmit": false,
+		"emitDeclarationOnly": false,
+		"strictPropertyInitialization": false,
+		"stripInternal": true,
+		"declarationDir": "dist",
+		"outDir": "dist"
+	},
+	"include": ["src"],
+	"exclude": ["dist"]
+}

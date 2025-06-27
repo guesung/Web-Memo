@@ -1,3 +1,3 @@
-'use client';
+"use client";
 
-export * from '@extension/ui';
+export * from "@web-memo/ui";

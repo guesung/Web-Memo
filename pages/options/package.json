@@ -1,28 +1,36 @@
 {
-  "name": "@extension/options",
-  "version": "1.8.7",
-  "description": "chrome extension options",
-  "private": true,
-  "sideEffects": true,
-  "files": [
-    "dist/**"
-  ],
-  "scripts": {
-    "clean": "rimraf ./dist",
-    "build": "pnpm run clean&& pnpm type-check && vite build",
-    "build:watch": "cross-env __DEV__=true vite build --mode development",
-    "dev": "pnpm build:watch",
-    "prettier": "prettier . --write --ignore-path ../../.prettierignore",
-    "type-check": "tsc --noEmit",
-    "tsc-watch": "tsc-watch"
-  },
-  "dependencies": {
-    "@extension/shared": "workspace:*",
-    "@extension/ui": "workspace:*"
-  },
-  "devDependencies": {
-    "@extension/tailwindcss-config": "workspace:*",
-    "@extension/tsconfig": "workspace:*",
-    "@extension/vite-config": "workspace:*"
-  }
+	"name": "@web-memo/options",
+	"version": "1.8.5",
+	"description": "chrome extension options",
+	"private": true,
+	"sideEffects": true,
+	"files": [
+		"dist/**"
+	],
+	"scripts": {
+		"clean": "rimraf ./dist",
+		"build": "pnpm run clean && pnpm type-check && vite build",
+		"build:watch": "cross-env __DEV__=true vite build --mode development",
+		"dev": "pnpm build:watch",
+		"type-check": "tsc --noEmit",
+		"tsc-watch": "tsc-watch"
+	},
+	"dependencies": {
+		"@web-memo/shared": "workspace:*",
+		"@web-memo/ui": "workspace:*",
+		"@tanstack/react-query": "^5.59.0",
+		"react-hook-form": "^7.53.2",
+		"react": "18.3.1",
+		"react-dom": "18.3.1"
+	},
+	"devDependencies": {
+		"@web-memo/tailwindcss-config": "workspace:*",
+		"@web-memo/tsconfig": "workspace:*",
+		"@web-memo/vite-config": "workspace:*",
+		"tailwindcss": "^3.4.10",
+		"autoprefixer": "^10.4.19",
+		"@web-memo/env": "workspace:*",
+		"vite": "5.3.3",
+		"@tanstack/react-query-devtools": "^5.59.0"
+	}
 }

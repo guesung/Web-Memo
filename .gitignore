@@ -43,5 +43,9 @@ vite.config.**
 
 # Task files
 tasks.json
-tasks/ 
+tasks/
 prds/
+
+stats.html
+playwright-report
+test-results

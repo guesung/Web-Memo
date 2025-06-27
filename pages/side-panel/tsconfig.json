@@ -1,11 +1,11 @@
 {
-  "extends": "@extension/tsconfig/react",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@src/*": ["src/*"],
-      "@public/*": ["public/*"]
-    }
-  },
-  "include": ["src", "svg.d.ts"]
+	"extends": "@web-memo/tsconfig/react",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@src/*": ["src/*"],
+			"@public/*": ["public/*"]
+		}
+	},
+	"include": ["src", "svg.d.ts"]
 }

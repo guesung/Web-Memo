@@ -1,8 +1,8 @@
-'use server';
-import { revalidatePath } from 'next/cache';
+"use server";
+import { revalidatePath } from "next/cache";
 
 export async function revalidateFullRouteCache(path: string) {
-  if (path) {
-    revalidatePath(path, 'layout');
-  }
+	if (path) {
+		revalidatePath(path, "layout");
+	}
 }

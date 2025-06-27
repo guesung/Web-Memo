@@ -1,10 +1,10 @@
 {
-  "extends": "@extension/tsconfig/react",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@src/*": ["src/*"]
-    }
-  },
-  "include": ["src", "./vite-env.d.ts"]
+	"extends": "@web-memo/tsconfig/react",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@src/*": ["src/*"]
+		}
+	},
+	"include": ["src", "./vite-env.d.ts"]
 }

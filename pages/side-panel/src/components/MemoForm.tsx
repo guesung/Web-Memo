@@ -1,293 +1,350 @@
+import withAuthentication from "@src/hoc/withAuthentication";
+import type { MemoInput } from "@src/types/Input";
+import { getMemoUrl } from "@src/utils";
 import {
-  useCategoryQuery,
-  useDebounce,
-  useDidMount,
-  useMemoPatchMutation,
-  useMemoPostMutation,
-  useMemoQuery,
-  useTabQuery,
-} from '@extension/shared/hooks';
-import { ExtensionBridge } from '@extension/shared/modules/extension-bridge';
-import type { CategoryRow } from '@extension/shared/types';
-import { getMemoInfo, I18n, Tab } from '@extension/shared/utils/extension';
+	useCategoryQuery,
+	useDebounce,
+	useDidMount,
+	useMemoPatchMutation,
+	useMemoPostMutation,
+	useMemoQuery,
+	useTabQuery,
+} from "@web-memo/shared/hooks";
+import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import type { CategoryRow } from "@web-memo/shared/types";
+import { getMemoInfo, I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
-  Badge,
-  cn,
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  Textarea,
-  toast,
-  ToastAction,
-} from '@extension/ui';
-import withAuthentication from '@src/hoc/withAuthentication';
-import type { MemoInput } from '@src/types/Input';
-import { getMemoUrl } from '@src/utils';
-import { HeartIcon, XIcon } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+	Badge,
+	cn,
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+	Textarea,
+	toast,
+	ToastAction,
+} from "@web-memo/ui";
+import { HeartIcon, XIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 
 const getCursorPosition = (textarea: HTMLTextAreaElement, position: number) => {
-  const div = document.createElement('div');
-  div.style.cssText = window.getComputedStyle(textarea, null).cssText;
-  div.style.height = 'auto';
-  div.style.position = 'absolute';
-  div.style.visibility = 'hidden';
-  div.style.whiteSpace = 'pre-wrap';
+	const div = document.createElement("div");
+	div.style.cssText = window.getComputedStyle(textarea, null).cssText;
+	div.style.height = "auto";
+	div.style.position = "absolute";
+	div.style.visibility = "hidden";
+	div.style.whiteSpace = "pre-wrap";
 
-  const textBeforeCursor = textarea.value.substring(0, position);
-  div.textContent = textBeforeCursor;
-  document.body.appendChild(div);
+	const textBeforeCursor = textarea.value.substring(0, position);
+	div.textContent = textBeforeCursor;
+	document.body.appendChild(div);
 
-  const lineHeight = parseInt(window.getComputedStyle(textarea).lineHeight);
-  const lines = textBeforeCursor.split('\n');
-  const currentLineText = lines[lines.length - 1];
+	const lineHeight = parseInt(window.getComputedStyle(textarea).lineHeight);
+	const lines = textBeforeCursor.split("\n");
+	const currentLineText = lines[lines.length - 1];
 
-  const span = document.createElement('span');
-  span.textContent = currentLineText;
-  div.appendChild(span);
+	const span = document.createElement("span");
+	span.textContent = currentLineText;
+	div.appendChild(span);
 
-  const cursorLeft = span.offsetWidth;
-  const cursorTop = (lines.length - 1) * lineHeight;
+	const cursorLeft = span.offsetWidth;
+	const cursorTop = (lines.length - 1) * lineHeight;
 
-  document.body.removeChild(div);
+	document.body.removeChild(div);
 
-  return {
-    left: cursorLeft,
-    top: cursorTop,
-  };
+	return {
+		left: cursorLeft,
+		top: cursorTop,
+	};
 };
 
 function MemoForm() {
-  const { debounce } = useDebounce();
-  const { data: tab } = useTabQuery();
-  const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
-    url: tab.url,
-  });
-  const { categories } = useCategoryQuery();
-  const [showCategoryList, setShowCategoryList] = useState(false);
-  const [categoryInputPosition, setCategoryInputPosition] = useState({ top: 0, left: 0 });
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const commandInputRef = useRef<HTMLInputElement>(null);
-  const cursorPositionRef = useRef<number | null>(null);
+	const { debounce } = useDebounce();
+	const { data: tab } = useTabQuery();
+	const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
+		url: tab.url,
+	});
+	const { categories } = useCategoryQuery();
+	const [showCategoryList, setShowCategoryList] = useState(false);
+	const [categoryInputPosition, setCategoryInputPosition] = useState({
+		top: 0,
+		left: 0,
+	});
+	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+	const commandInputRef = useRef<HTMLInputElement>(null);
+	const cursorPositionRef = useRef<number | null>(null);
 
-  const { register, setValue, watch } = useForm<MemoInput>({
-    defaultValues: {
-      memo: '',
-      isWish: false,
-      categoryId: null,
-    },
-  });
-  const { ref, ...rest } = register('memo');
+	const { register, setValue, watch } = useForm<MemoInput>({
+		defaultValues: {
+			memo: "",
+			isWish: false,
+			categoryId: null,
+		},
+	});
+	const { ref, ...rest } = register("memo");
 
-  const { mutate: mutateMemoPatch } = useMemoPatchMutation();
-  const { mutate: mutateMemo } = useMemoPostMutation();
+	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
+	const { mutate: mutateMemo } = useMemoPostMutation();
 
-  const saveMemo = async ({ memo, isWish, categoryId }: MemoInput) => {
-    const memoInfo = await getMemoInfo();
+	const saveMemo = async ({ memo, isWish, categoryId }: MemoInput) => {
+		const memoInfo = await getMemoInfo();
 
-    const totalMemo = {
-      ...memoInfo,
-      memo,
-      isWish,
-      category_id: categoryId,
-    };
+		const totalMemo = {
+			...memoInfo,
+			memo,
+			isWish,
+			category_id: categoryId,
+		};
 
-    if (memoData) mutateMemoPatch({ id: memoData.id, request: totalMemo });
-    else mutateMemo(totalMemo);
-  };
+		if (memoData) mutateMemoPatch({ id: memoData.id, request: totalMemo });
+		else mutateMemo(totalMemo);
+	};
 
-  useDidMount(() => {
-    ExtensionBridge.responseRefetchTheMemos(refetchMemo);
-  });
+	useDidMount(() => {
+		ExtensionBridge.responseRefetchTheMemos(refetchMemo);
+	});
 
-  useEffect(() => {
-    setValue('memo', memoData?.memo ?? '');
-    setValue('isWish', memoData?.isWish ?? false);
-    setValue('categoryId', memoData?.category_id ?? null);
-  }, [memoData?.memo, memoData?.isWish, memoData?.category_id, setValue]);
+	useEffect(() => {
+		setValue("memo", memoData?.memo ?? "");
+		setValue("isWish", memoData?.isWish ?? false);
+		setValue("categoryId", memoData?.category_id ?? null);
+	}, [memoData?.memo, memoData?.isWish, memoData?.category_id, setValue]);
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === '#') {
-      event.preventDefault();
+	const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		if (event.key === "#") {
+			event.preventDefault();
 
-      const textarea = event.currentTarget;
-      const cursorPosition = textarea.selectionStart;
-      cursorPositionRef.current = cursorPosition;
+			const textarea = event.currentTarget;
+			const cursorPosition = textarea.selectionStart;
+			cursorPositionRef.current = cursorPosition;
 
-      const rect = textarea.getBoundingClientRect();
-      const { left, top } = getCursorPosition(textarea, cursorPosition);
-      const scrollTop = textarea.scrollTop;
+			const rect = textarea.getBoundingClientRect();
+			const { left, top } = getCursorPosition(textarea, cursorPosition);
+			const scrollTop = textarea.scrollTop;
 
-      let calculatedLeft = rect.left + left;
-      const calculatedTop = rect.top + top - scrollTop;
+			let calculatedLeft = rect.left + left;
+			const calculatedTop = rect.top + top - scrollTop;
 
-      const viewportWidth = window.innerWidth;
-      const CATEGORY_LIST_WIDTH = 256;
+			const viewportWidth = window.innerWidth;
+			const CATEGORY_LIST_WIDTH = 256;
 
-      if (calculatedLeft + CATEGORY_LIST_WIDTH > viewportWidth) {
-        calculatedLeft = 0;
-      }
+			if (calculatedLeft + CATEGORY_LIST_WIDTH > viewportWidth) {
+				calculatedLeft = 0;
+			}
 
-      const currentText = watch('memo');
-      const newText = currentText.slice(0, cursorPosition) + '#' + currentText.slice(cursorPosition);
-      setValue('memo', newText);
+			const currentText = watch("memo");
+			const newText =
+				currentText.slice(0, cursorPosition) +
+				"#" +
+				currentText.slice(cursorPosition);
+			setValue("memo", newText);
 
-      setCategoryInputPosition({
-        top: calculatedTop,
-        left: calculatedLeft,
-      });
-      setShowCategoryList(true);
+			setCategoryInputPosition({
+				top: calculatedTop,
+				left: calculatedLeft,
+			});
+			setShowCategoryList(true);
 
-      setTimeout(() => {
-        commandInputRef.current?.focus();
-      }, 0);
-    }
-  };
+			setTimeout(() => {
+				commandInputRef.current?.focus();
+			}, 0);
+		}
+	};
 
-  const handleMemoChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const text = event.target.value;
-    setValue('memo', text);
-    debounce(() => saveMemo({ memo: text, isWish: watch('isWish'), categoryId: watch('categoryId') }));
-  };
+	const handleMemoChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+		const text = event.target.value;
+		setValue("memo", text);
+		debounce(() =>
+			saveMemo({
+				memo: text,
+				isWish: watch("isWish"),
+				categoryId: watch("categoryId"),
+			}),
+		);
+	};
 
-  const handleCategorySelect = (category: CategoryRow) => {
-    setShowCategoryList(false);
+	const handleCategorySelect = (category: CategoryRow) => {
+		setShowCategoryList(false);
 
-    const currentText = watch('memo');
-    const hashIndex = currentText.lastIndexOf('#');
-    if (hashIndex !== -1) {
-      setValue('memo', currentText.slice(0, hashIndex) + currentText.slice(hashIndex + 1));
-    }
+		const currentText = watch("memo");
+		const hashIndex = currentText.lastIndexOf("#");
+		if (hashIndex !== -1) {
+			setValue(
+				"memo",
+				currentText.slice(0, hashIndex) + currentText.slice(hashIndex + 1),
+			);
+		}
 
-    setValue('categoryId', category.id);
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-      if (cursorPositionRef.current !== null) {
-        textareaRef.current.setSelectionRange(cursorPositionRef.current, cursorPositionRef.current);
-      }
-    }
+		setValue("categoryId", category.id);
+		if (textareaRef.current) {
+			textareaRef.current.focus();
+			if (cursorPositionRef.current !== null) {
+				textareaRef.current.setSelectionRange(
+					cursorPositionRef.current,
+					cursorPositionRef.current,
+				);
+			}
+		}
 
-    saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: category.id });
-  };
+		saveMemo({
+			memo: watch("memo"),
+			isWish: watch("isWish"),
+			categoryId: category.id,
+		});
+	};
 
-  const handleCategoryRemove = () => {
-    setValue('categoryId', null);
-    debounce(() => saveMemo({ memo: watch('memo'), isWish: watch('isWish'), categoryId: null }));
-  };
+	const handleCategoryRemove = () => {
+		setValue("categoryId", null);
+		debounce(() =>
+			saveMemo({
+				memo: watch("memo"),
+				isWish: watch("isWish"),
+				categoryId: null,
+			}),
+		);
+	};
 
-  const handleWishClick = async () => {
-    const newIsWish = !watch('isWish');
-    setValue('isWish', newIsWish);
+	const handleWishClick = async () => {
+		const newIsWish = !watch("isWish");
+		setValue("isWish", newIsWish);
 
-    await saveMemo({ memo: watch('memo'), isWish: newIsWish, categoryId: watch('categoryId') });
+		await saveMemo({
+			memo: watch("memo"),
+			isWish: newIsWish,
+			categoryId: watch("categoryId"),
+		});
 
-    const getWishToastTitle = (isWish: boolean) => {
-      if (isWish) return I18n.get('wish_list_added');
-      return I18n.get('wish_list_deleted');
-    };
+		const getWishToastTitle = (isWish: boolean) => {
+			if (isWish) return I18n.get("wish_list_added");
+			return I18n.get("wish_list_deleted");
+		};
 
-    const handleWishListClick = () => {
-      const memoWishListUrl = getMemoUrl({ id: memoData?.id, isWish: watch('isWish') });
+		const handleWishListClick = () => {
+			const memoWishListUrl = getMemoUrl({
+				id: memoData?.id,
+				isWish: watch("isWish"),
+			});
 
-      Tab.create({ url: memoWishListUrl });
-    };
+			Tab.create({ url: memoWishListUrl });
+		};
 
-    toast({
-      title: getWishToastTitle(watch('isWish')),
-      action: (
-        <ToastAction altText={I18n.get('go_to')} onClick={handleWishListClick}>
-          {I18n.get('go_to')}
-        </ToastAction>
-      ),
-    });
-  };
+		toast({
+			title: getWishToastTitle(watch("isWish")),
+			action: (
+				<ToastAction altText={I18n.get("go_to")} onClick={handleWishListClick}>
+					{I18n.get("go_to")}
+				</ToastAction>
+			),
+		});
+	};
 
-  return (
-    <form className="relative flex h-full flex-col gap-1 py-1">
-      <Textarea
-        {...register('memo', {
-          onChange: handleMemoChange,
-        })}
-        {...rest}
-        ref={e => {
-          ref(e);
-          textareaRef.current = e;
-        }}
-        onKeyDown={handleKeyDown}
-        className={cn('flex-1 resize-none text-sm outline-none')}
-        id="memo-textarea"
-        placeholder={I18n.get('memo')}
-      />
-      {showCategoryList && (
-        <div
-          className="fixed z-50 w-64 rounded-md bg-white shadow-lg"
-          style={{
-            top: categoryInputPosition.top + 'px',
-            left: categoryInputPosition.left + 'px',
-          }}>
-          <Command>
-            <CommandInput
-              ref={commandInputRef}
-              placeholder={I18n.get('search_category')}
-              onKeyDown={event => {
-                if (event.key === 'Escape') {
-                  setShowCategoryList(false);
-                  if (textareaRef.current) {
-                    textareaRef.current.focus();
-                    if (cursorPositionRef.current !== null) {
-                      textareaRef.current.setSelectionRange(cursorPositionRef.current, cursorPositionRef.current);
-                    }
-                  }
-                }
-              }}
-            />
-            <CommandList>
-              <CommandEmpty>{I18n.get('no_categories_found')}</CommandEmpty>
-              <CommandGroup>
-                {categories?.map(category => (
-                  <CommandItem
-                    key={category.id}
-                    onSelect={() => handleCategorySelect(category)}
-                    className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: category.color || '#888888' }} />
-                    {category.name}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </div>
-      )}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <HeartIcon
-            size={16}
-            fill={memoData?.isWish ? 'pink' : ''}
-            fillOpacity={memoData?.isWish ? 100 : 0}
-            onClick={handleWishClick}
-            role="button"
-            className={cn('cursor-pointer transition-transform hover:scale-110 active:scale-95', {
-              'animate-heart-pop': memoData?.isWish,
-            })}
-          />
-        </div>
-        {watch('categoryId') && (
-          <Badge variant="outline" className="flex items-center gap-1 px-2 py-0.5">
-            <div
-              className="h-2 w-2 rounded-full"
-              style={{ backgroundColor: categories?.find(c => c.id === watch('categoryId'))?.color || '#888888' }}
-            />
-            {categories?.find(c => c.id === watch('categoryId'))?.name}
-            <XIcon size={12} className="hover:text-destructive ml-1 cursor-pointer" onClick={handleCategoryRemove} />
-          </Badge>
-        )}
-      </div>
-    </form>
-  );
+	return (
+		<form className="relative flex h-full flex-col gap-1 py-1">
+			<Textarea
+				{...register("memo", {
+					onChange: handleMemoChange,
+				})}
+				{...rest}
+				ref={(e) => {
+					ref(e);
+					textareaRef.current = e;
+				}}
+				onKeyDown={handleKeyDown}
+				className={cn("flex-1 resize-none text-sm outline-none")}
+				id="memo-textarea"
+				placeholder={I18n.get("memo")}
+			/>
+			{showCategoryList && (
+				<div
+					className="fixed z-50 w-64 rounded-md bg-white shadow-lg"
+					style={{
+						top: categoryInputPosition.top + "px",
+						left: categoryInputPosition.left + "px",
+					}}
+				>
+					<Command>
+						<CommandInput
+							ref={commandInputRef}
+							placeholder={I18n.get("search_category")}
+							onKeyDown={(event) => {
+								if (event.key === "Escape") {
+									setShowCategoryList(false);
+									if (textareaRef.current) {
+										textareaRef.current.focus();
+										if (cursorPositionRef.current !== null) {
+											textareaRef.current.setSelectionRange(
+												cursorPositionRef.current,
+												cursorPositionRef.current,
+											);
+										}
+									}
+								}
+							}}
+						/>
+						<CommandList>
+							<CommandEmpty>{I18n.get("no_categories_found")}</CommandEmpty>
+							<CommandGroup>
+								{categories?.map((category) => (
+									<CommandItem
+										key={category.id}
+										onSelect={() => handleCategorySelect(category)}
+										className="flex items-center gap-2"
+									>
+										<div
+											className="h-3 w-3 rounded-full"
+											style={{ backgroundColor: category.color || "#888888" }}
+										/>
+										{category.name}
+									</CommandItem>
+								))}
+							</CommandGroup>
+						</CommandList>
+					</Command>
+				</div>
+			)}
+			<div className="flex items-center justify-between gap-2">
+				<div className="flex items-center gap-2">
+					<HeartIcon
+						size={16}
+						fill={memoData?.isWish ? "pink" : ""}
+						fillOpacity={memoData?.isWish ? 100 : 0}
+						onClick={handleWishClick}
+						role="button"
+						className={cn(
+							"cursor-pointer transition-transform hover:scale-110 active:scale-95",
+							{
+								"animate-heart-pop": memoData?.isWish,
+							},
+						)}
+					/>
+				</div>
+				{watch("categoryId") && (
+					<Badge
+						variant="outline"
+						className="flex items-center gap-1 px-2 py-0.5"
+					>
+						<div
+							className="h-2 w-2 rounded-full"
+							style={{
+								backgroundColor:
+									categories?.find((c) => c.id === watch("categoryId"))
+										?.color || "#888888",
+							}}
+						/>
+						{categories?.find((c) => c.id === watch("categoryId"))?.name}
+						<XIcon
+							size={12}
+							className="hover:text-destructive ml-1 cursor-pointer"
+							onClick={handleCategoryRemove}
+						/>
+					</Badge>
+				)}
+			</div>
+		</form>
+	);
 }
 
 export default withAuthentication(MemoForm);

@@ -1,9 +1,7 @@
 {
-  "i18n": {
-    "prefix": "i18n",
-    "body": [
-      "{I18n.get('$1')}"
-    ],
-    "description": "Generated snippet: i18n"
-  }
+	"i18n": {
+		"prefix": "i18n",
+		"body": ["{I18n.get('$1')}"],
+		"description": "Generated snippet: i18n"
+	}
 }

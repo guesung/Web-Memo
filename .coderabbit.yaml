@@ -66,8 +66,6 @@ reviews:
       enabled: true
     detekt:
       enabled: true
-    eslint:
-      enabled: true
     rubocop:
       enabled: true
     buf:

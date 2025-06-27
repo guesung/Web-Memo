@@ -1,37 +1,36 @@
 {
-  "name": "@extension/hmr",
-  "version": "1.8.7",
-  "description": "chrome extension hot module reload or refresh",
-  "private": true,
-  "sideEffects": true,
-  "files": [
-    "dist/**"
-  ],
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "index.ts",
-  "scripts": {
-    "clean": "rimraf ./dist && rimraf ./build",
-    "build:tsc": "tsc -b tsconfig.build.json",
-    "build:rollup": "rollup --config rollup.config.mjs",
-    "ready": "pnpm run build:tsc && pnpm run build:rollup",
-    "dev": "node dist/lib/initReloadServer.js",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "pnpm lint --fix",
-    "prettier": "prettier . --write --ignore-path ../../.prettierignore",
-    "type-check": "tsc --noEmit",
-    "tsc-watch": "tsc-watch"
-  },
-  "dependencies": {
-    "ws": "8.18.0"
-  },
-  "devDependencies": {
-    "@extension/tsconfig": "workspace:*",
-    "@rollup/plugin-sucrase": "^5.0.2",
-    "@types/ws": "^8.5.11",
-    "esm": "^3.2.25",
-    "fast-glob": "^3.3.2",
-    "rollup": "^4.21.2",
-    "ts-node": "^10.9.2"
-  }
+	"name": "@web-memo/hmr",
+	"version": "1.8.5",
+	"description": "chrome extension hot module reload or refresh",
+	"private": true,
+	"sideEffects": true,
+	"files": [
+		"dist/**"
+	],
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "index.ts",
+	"scripts": {
+		"clean": "rimraf ./dist && rimraf ./build",
+		"build:tsc": "tsc -b tsconfig.build.json",
+		"build:rollup": "rollup --config rollup.config.mjs",
+		"ready": "pnpm run build:tsc && pnpm run build:rollup",
+		"dev": "node dist/lib/initReloadServer.js",
+		"lint:fix": "pnpm lint --fix",
+		"type-check": "tsc --noEmit",
+		"tsc-watch": "tsc-watch"
+	},
+	"dependencies": {
+		"ws": "8.18.0"
+	},
+	"devDependencies": {
+		"@web-memo/tsconfig": "workspace:*",
+		"@rollup/plugin-sucrase": "^5.0.2",
+		"@types/ws": "^8.5.11",
+		"esm": "^3.2.25",
+		"fast-glob": "^3.3.2",
+		"vite": "5.3.3",
+		"rollup": "^4.21.2",
+		"ts-node": "^10.9.2"
+	}
 }

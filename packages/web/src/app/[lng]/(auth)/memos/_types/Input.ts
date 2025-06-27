@@ -1,7 +1,7 @@
 export interface CategoryInput {
-  category: string;
+	category: string;
 }
 
 export type MemoInput = {
-  memo: string;
+	memo: string;
 };

@@ -1,31 +1,38 @@
-import { NoMemosError, QUERY_KEY } from '@src/constants';
-import type { MemoSupabaseResponse } from '@src/types';
-import { MemoService } from '@src/utils';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { NoMemosError, QUERY_KEY } from "../../../constants";
+import type { MemoSupabaseResponse } from "../../../types";
+import { MemoService } from "../../../utils";
 
-import { useSupabaseClientQuery } from '../queries';
+import { useSupabaseClientQuery } from "../queries";
 
 export default function useDeleteMemosMutation() {
-  const queryClient = useQueryClient();
-  const { data: supabaseClient } = useSupabaseClientQuery();
+	const queryClient = useQueryClient();
+	const { data: supabaseClient } = useSupabaseClientQuery();
 
-  return useMutation<MemoSupabaseResponse, Error, number[]>({
-    mutationFn: new MemoService(supabaseClient).deleteMemos,
-    onMutate: async idList => {
-      await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
-      const previousMemos = queryClient.getQueryData<MemoSupabaseResponse>(QUERY_KEY.memos());
+	return useMutation<MemoSupabaseResponse, Error, number[]>({
+		mutationFn: new MemoService(supabaseClient).deleteMemos,
+		onMutate: async (idList) => {
+			await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
+			const previousMemos = queryClient.getQueryData<MemoSupabaseResponse>(
+				QUERY_KEY.memos(),
+			);
 
-      if (!previousMemos) throw new NoMemosError();
+			if (!previousMemos) throw new NoMemosError();
 
-      const { data: previousMemosData } = previousMemos;
+			const { data: previousMemosData } = previousMemos;
 
-      if (!previousMemosData) throw new NoMemosError();
+			if (!previousMemosData) throw new NoMemosError();
 
-      const newMemosData = previousMemosData.filter(memo => !idList.includes(memo.id));
+			const newMemosData = previousMemosData.filter(
+				(memo) => !idList.includes(memo.id),
+			);
 
-      await queryClient.setQueryData(QUERY_KEY.memos(), { ...previousMemos, data: newMemosData });
+			await queryClient.setQueryData(QUERY_KEY.memos(), {
+				...previousMemos,
+				data: newMemosData,
+			});
 
-      return { previousMemos };
-    },
-  });
+			return { previousMemos };
+		},
+	});
 }

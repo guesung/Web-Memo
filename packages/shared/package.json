@@ -1,79 +1,42 @@
 {
-  "name": "@extension/shared",
-  "version": "1.8.7",
-  "description": "chrome extension shared code",
-  "private": true,
-  "sideEffects": false,
-  "files": [
-    "dist"
-  ],
-  "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    "./utils/date.js": {
-      "types": "./dist/utils/date.d.ts",
-      "default": "./dist/utils/date.js"
-    },
-    "./utils": {
-      "types": "./dist/utils/index.d.ts",
-      "default": "./dist/utils/index.js"
-    },
-    "./utils/extension": {
-      "types": "./dist/utils/extension/index.d.ts",
-      "default": "./dist/utils/extension/index.js"
-    },
-    "./utils/web": {
-      "types": "./dist/utils/web/index.d.ts",
-      "default": "./dist/utils/web/index.js"
-    },
-    "./hooks": {
-      "types": "./dist/hooks/index.d.ts",
-      "default": "./dist/hooks/index.js"
-    },
-    "./hooks/extension": {
-      "types": "./dist/hooks/extension/index.d.ts",
-      "default": "./dist/hooks/extension/index.js"
-    },
-    "./constants": {
-      "types": "./dist/constants/index.d.ts",
-      "default": "./dist/constants/index.js"
-    },
-    "./types": {
-      "types": "./dist/types/index.d.ts",
-      "default": "./dist/types/index.js"
-    },
-    "./modules/local-storage": {
-      "types": "./dist/modules/local-storage/index.d.ts",
-      "default": "./dist/modules/local-storage/index.js"
-    },
-    "./modules/search-params": {
-      "types": "./dist/modules/search-params/index.d.ts",
-      "default": "./dist/modules/search-params/index.js"
-    },
-    "./modules/chrome-storage": {
-      "types": "./dist/modules/chrome-storage/index.d.ts",
-      "default": "./dist/modules/chrome-storage/index.js"
-    },
-    "./modules/extension-bridge": {
-      "types": "./dist/modules/extension-bridge/index.d.ts",
-      "default": "./dist/modules/extension-bridge/index.js"
-    }
-  },
-  "scripts": {
-    "clean": "rimraf ./dist",
-    "ready": "node build.mjs",
-    "prettier": "prettier . --write --ignore-path ../../.prettierignore",
-    "type-check": "tsc --noEmit",
-    "tsc-watch": "tsc-watch"
-  },
-  "devDependencies": {
-    "@extension/tsconfig": "workspace:*",
-    "esbuild-node-externals": "^1.14.0"
-  },
-  "dependencies": {
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^2.4.0"
-  }
+	"name": "@web-memo/shared",
+	"version": "1.8.5",
+	"description": "chrome extension shared code",
+	"private": true,
+	"sideEffects": false,
+	"type": "module",
+	"exports": {
+		"./utils": "./src/utils/index.ts",
+		"./utils/extension": "./src/utils/extension/index.ts",
+		"./utils/web": "./src/utils/web/index.ts",
+		"./hooks": "./src/hooks/index.ts",
+		"./hooks/extension": "./src/hooks/extension/index.ts",
+		"./constants": "./src/constants/index.ts",
+		"./types": "./src/types/index.ts",
+		"./modules/local-storage": "./src/modules/local-storage/index.ts",
+		"./modules/search-params": "./src/modules/search-params/index.ts",
+		"./modules/chrome-storage": "./src/modules/chrome-storage/index.ts",
+		"./modules/extension-bridge": "./src/modules/extension-bridge/index.ts"
+	},
+	"scripts": {
+		"type-check": "tsc --noEmit",
+		"tsc-watch": "tsc-watch"
+	},
+	"dependencies": {
+		"@sentry/react": "^8.30.0",
+		"@supabase/ssr": "^0.5.1",
+		"react": "18.3.1",
+		"react-dom": "18.3.1",
+		"@supabase/supabase-js": "^2.45.4",
+		"@tanstack/react-query": "^5.59.0",
+		"clsx": "^2.1.1",
+		"es-hangul": "^2.2.4",
+		"supabase": "^1.192.5",
+		"tailwind-merge": "^2.4.0",
+		"youtube-transcript": "^1.2.1"
+	},
+	"devDependencies": {
+		"@web-memo/env": "workspace:*",
+		"@web-memo/tsconfig": "workspace:*"
+	}
 }

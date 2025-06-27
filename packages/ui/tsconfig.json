@@ -1,15 +1,15 @@
 {
-  "extends": "@extension/tsconfig/react",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
-    "noEmit": false,
-    "esModuleInterop": true,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "outDir": "dist"
-  },
-  "include": ["src", "index.ts"]
+	"extends": "@web-memo/tsconfig/react",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./src/*"]
+		},
+		"noEmit": false,
+		"esModuleInterop": true,
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"outDir": "dist"
+	},
+	"include": ["src", "index.ts"]
 }

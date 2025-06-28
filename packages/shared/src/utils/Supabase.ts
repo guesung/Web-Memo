@@ -4,6 +4,7 @@ import type {
 	CategoryTable,
 	FeedbackSupabaseClient,
 	FeedbackTable,
+	GetMemoResponse,
 	MemoRow,
 	MemoSupabaseClient,
 	MemoTable,
@@ -23,13 +24,15 @@ export class MemoService {
 			.insert(request)
 			.select();
 
-	upsertMemos = async (request: MemoTable["Insert"][]) =>
-		this.supabaseClient
+	upsertMemos = async (request: GetMemoResponse[]) => {
+		// TODO: 직접 카테고리를 제거하는 로직 수정 필요
+		const requestWithoutCategory = request.map(({ category, ...rest }) => rest);
+		return this.supabaseClient
 			.schema(SUPABASE.table.memo)
 			.from(SUPABASE.table.memo)
-			.upsert(request)
+			.upsert(requestWithoutCategory)
 			.select();
-
+	};
 	getMemos = async () =>
 		this.supabaseClient
 			.schema(SUPABASE.table.memo)

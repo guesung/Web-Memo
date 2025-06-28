@@ -1,11 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { NoMemosError, QUERY_KEY } from "../../../constants";
-import type { MemoRow, MemoSupabaseResponse, MemoTable } from "../../../types";
+import type {
+	GetMemoResponse,
+	MemoRow,
+	MemoSupabaseResponse,
+} from "../../../types";
 import { MemoService } from "../../../utils";
 
 import { useSupabaseClientQuery } from "../queries";
 
-type MutationVariables = MemoTable["Insert"][];
+type MutationVariables = GetMemoResponse[];
 type MutationData = Awaited<ReturnType<MemoService["upsertMemos"]>>;
 type MutationError = Error;
 

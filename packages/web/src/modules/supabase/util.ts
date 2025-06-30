@@ -33,7 +33,9 @@ export async function updateAuthorization(request: NextRequest) {
 	);
 
 	const isUserLogin = await new AuthService(supabaseClient).checkUserLogin();
-	const isNeedAuthPage = NEED_AUTH_PAGES.includes(request.nextUrl.pathname);
+	const isNeedAuthPage = NEED_AUTH_PAGES.some((page) =>
+		request.nextUrl.pathname.includes(page),
+	);
 
 	if (!isUserLogin && isNeedAuthPage) {
 		const url = request.nextUrl.clone();

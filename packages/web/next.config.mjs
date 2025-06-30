@@ -14,6 +14,9 @@ const nextConfig = {
 	compiler: {
 		removeConsole: process.env.NODE_ENV === "production",
 	},
+	experimental: {
+		optimizePackageImports: ["@web-memo/ui"],
+	},
 };
 
 const withBundleAnalyzer = bundleAnalyzer({

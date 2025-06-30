@@ -1,20 +1,11 @@
 import Header from "@src/components/Header";
 import type { LanguageParams } from "@src/modules/i18n";
 import { SUPPORTED_LANGUAGES } from "@src/modules/i18n";
-import { Loading } from "@web-memo/ui";
 import { dir } from "i18next";
 import type { Metadata } from "next";
-import { type PropsWithChildren, Suspense } from "react";
-
+import { type PropsWithChildren } from "react";
 import { InitDayjs } from "../_components";
 import { QueryProvider, ThemeProvider } from "./_components";
-
-// const pretendard = localFont({
-//   src: '../../fonts/PretendardVariableSubset.woff2',
-//   variable: '--font-pretendard',
-//   display: 'swap',
-//   weight: '45 920',
-// });
 
 interface RootLayoutProps extends PropsWithChildren, LanguageParams {}
 
@@ -43,21 +34,15 @@ export default function RootLayout({
 	params: { lng },
 }: RootLayoutProps) {
 	return (
-		<div lang={lng} dir={dir(lng)} className={`h-screen`}>
+		<div lang={lng} dir={dir(lng)} className="h-screen">
 			<ThemeProvider>
 				<QueryProvider lng={lng}>
 					<Header lng={lng} />
-					<Suspense fallback={<Loading />}>{children}</Suspense>
+					{children}
 				</QueryProvider>
 			</ThemeProvider>
 
 			<InitDayjs lng={lng} />
-
-			<link
-				rel="stylesheet"
-				as="style"
-				href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
-			/>
 		</div>
 	);
 }

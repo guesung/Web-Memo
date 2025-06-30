@@ -1,3 +1,4 @@
+import bundleAnalyzer from "@next/bundle-analyzer";
 import { withSentryConfig } from "@sentry/nextjs";
 import { CONFIG } from "@web-memo/env";
 
@@ -15,7 +16,11 @@ const nextConfig = {
 	},
 };
 
-export default withSentryConfig(nextConfig, {
+const withBundleAnalyzer = bundleAnalyzer({
+	enabled: process.env.ANALYZE === "true",
+});
+
+export default withSentryConfig(withBundleAnalyzer(nextConfig), {
 	org: "guesung",
 	project: "web-memo",
 	authToken: CONFIG.sentryAuthToken,

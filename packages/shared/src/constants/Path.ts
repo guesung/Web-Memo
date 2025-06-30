@@ -14,4 +14,8 @@ export const PATHS = {
 	callbackEmail: "/auth/callback-email",
 };
 
-export const NEED_AUTH_PAGES = [PATHS.memos, PATHS.memosSetting];
+export const NEED_AUTH_PAGES = [
+	PATHS.memos,
+	PATHS.memosWish,
+	PATHS.memosSetting,
+];

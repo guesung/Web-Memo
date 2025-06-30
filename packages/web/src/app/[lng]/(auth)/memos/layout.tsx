@@ -3,10 +3,9 @@
 import { HydrationBoundaryWrapper } from "@src/components";
 import type { LanguageParams } from "@src/modules/i18n";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
-import { PATHS, QUERY_KEY } from "@web-memo/shared/constants";
-import { AuthService, CategoryService } from "@web-memo/shared/utils";
+import { QUERY_KEY } from "@web-memo/shared/constants";
+import { CategoryService } from "@web-memo/shared/utils";
 import { Loading, SidebarProvider } from "@web-memo/ui";
-import { redirect } from "next/navigation";
 import type { PropsWithChildren } from "react";
 import { Suspense } from "react";
 
@@ -20,10 +19,8 @@ export default async function Layout({
 	params: { lng },
 }: LayoutProps) {
 	const supabaseClient = getSupabaseClient();
-	const isUserLogin = await new AuthService(supabaseClient).checkUserLogin();
-	if (!isUserLogin) redirect(PATHS.login);
 
-	await initSentryUserInfo({ lng });
+	initSentryUserInfo({ lng });
 
 	return (
 		<SidebarProvider className="bg-background flex w-full text-sm">
@@ -35,6 +32,7 @@ export default async function Layout({
 					<MemoSidebar lng={lng} />
 				</Suspense>
 			</HydrationBoundaryWrapper>
+
 			{children}
 
 			<Suspense fallback={<Loading />}>

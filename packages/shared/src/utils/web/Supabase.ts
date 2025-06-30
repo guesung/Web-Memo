@@ -4,7 +4,7 @@ import { SUPABASE } from "../../constants";
 import type { Database } from "../../types";
 
 export const getSupabaseClient = () => {
-	return createBrowserClient<Database>(
+	return createBrowserClient<Database, "memo", Database["memo"]>(
 		CONFIG.supabaseUrl,
 		CONFIG.supabaseAnonKey,
 		{

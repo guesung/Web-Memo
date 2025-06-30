@@ -10,6 +10,8 @@ import type { GetMemoResponse } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
 import { Button } from "@web-memo/ui";
 import dayjs from "dayjs";
+import "dayjs/locale/en";
+import "dayjs/locale/ko";
 import timezone from "dayjs/plugin/timezone";
 import { motion } from "framer-motion";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
@@ -25,9 +27,6 @@ import {
 dayjs.extend(timezone);
 
 const localizer = dayjsLocalizer(dayjs);
-
-import("dayjs/locale/en");
-import("dayjs/locale/ko");
 
 interface ExtendedEvent extends Event {
 	id: string;

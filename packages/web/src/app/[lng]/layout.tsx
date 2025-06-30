@@ -35,7 +35,7 @@ export default function RootLayout({
 	params: { lng },
 }: RootLayoutProps) {
 	return (
-		<div lang={lng} dir={dir(lng)} className={`h-screen`}>
+		<div lang={lng} dir={dir(lng)} className="h-screen">
 			<ThemeProvider>
 				<QueryProvider lng={lng}>
 					<Header lng={lng} />

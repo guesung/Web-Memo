@@ -122,12 +122,12 @@ export default function MemoCardFooter({
 				{children}
 			</div>
 			<time
-				dateTime={memo.created_at ?? ""}
+				dateTime={memo.updated_at ?? ""}
 				className={cn("text-muted-foreground absolute right-4 text-xs", {
 					"opacity-0": isShowingOption,
 				})}
 			>
-				{dayjs(memo.created_at).fromNow()}
+				{dayjs(memo.updated_at).fromNow()}
 			</time>
 		</CardFooter>
 	);

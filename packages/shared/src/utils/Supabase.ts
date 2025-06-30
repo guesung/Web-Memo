@@ -38,7 +38,7 @@ export class MemoService {
 			.schema(SUPABASE.table.memo)
 			.from(SUPABASE.table.memo)
 			.select("*, category(id, name, color)")
-			.order("created_at", { ascending: false });
+			.order("updated_at", { ascending: false });
 
 	updateMemo = async ({
 		id,

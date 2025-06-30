@@ -1,10 +1,9 @@
 import Header from "@src/components/Header";
 import type { LanguageParams } from "@src/modules/i18n";
 import { SUPPORTED_LANGUAGES } from "@src/modules/i18n";
-import { Loading } from "@web-memo/ui";
 import { dir } from "i18next";
 import type { Metadata } from "next";
-import { type PropsWithChildren, Suspense } from "react";
+import { type PropsWithChildren } from "react";
 import { InitDayjs } from "../_components";
 import { QueryProvider, ThemeProvider } from "./_components";
 
@@ -39,7 +38,7 @@ export default function RootLayout({
 			<ThemeProvider>
 				<QueryProvider lng={lng}>
 					<Header lng={lng} />
-					<Suspense fallback={<Loading />}>{children}</Suspense>
+					{children}
 				</QueryProvider>
 			</ThemeProvider>
 

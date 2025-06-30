@@ -32,6 +32,7 @@ export default async function Layout({
 					<MemoSidebar lng={lng} />
 				</Suspense>
 			</HydrationBoundaryWrapper>
+
 			{children}
 
 			<Suspense fallback={<Loading />}>

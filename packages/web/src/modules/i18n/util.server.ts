@@ -1,11 +1,16 @@
-import { createInstance, type Namespace } from "i18next";
+import { createInstance, type i18n, type Namespace } from "i18next";
 import resourcesToBackend from "i18next-resources-to-backend";
 import { initReactI18next } from "react-i18next/initReactI18next";
 
 import type { Language } from "./type";
 import { getOptions } from "./util";
 
+const translationCache = new Map<string, i18n>();
+
 const initI18next = async (language: Language, namespace?: Namespace) => {
+	if (translationCache.has(language))
+		return translationCache.get(language) as i18n;
+
 	const i18nInstance = createInstance();
 	await i18nInstance
 		.use(initReactI18next)
@@ -16,6 +21,9 @@ const initI18next = async (language: Language, namespace?: Namespace) => {
 			),
 		)
 		.init(getOptions(language, namespace));
+
+	translationCache.set(language, i18nInstance);
+
 	return i18nInstance;
 };
 

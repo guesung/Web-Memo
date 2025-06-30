@@ -6,7 +6,7 @@
 		"dev": "next dev",
 		"preview": "next dev",
 		"build": "next build",
-		"analyze": "ANALYZE=true next build",
+		"build:analyze": "ANALYZE=true next build",
 		"start": "next start",
 		"type-check": "tsc --noEmit",
 		"tsc-watch": "tsc-watch"

@@ -5,9 +5,9 @@ import type { LanguageType } from "@src/modules/i18n";
 import { useMemosQuery } from "@web-memo/shared/hooks";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-
 import type { SearchFormValues } from "../MemoSearchFormProvider";
 import MemoGrid from "./MemoGrid";
 
@@ -38,6 +38,10 @@ export default function MemoView({ lng }: LanguageType) {
 	});
 
 	useGuide({ lng });
+
+	useEffect(() => {
+		if (view === "grid") import("./MemoCalendar");
+	}, [view]);
 
 	return (
 		<div className="flex w-full flex-col gap-4">

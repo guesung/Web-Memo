@@ -5,6 +5,9 @@ export default {
 		extend: {
 			fontFamily: {
 				pretendard: ["var(--font-pretendard)"],
+				sans: ["var(--font-sans)"],
+				serif: ["var(--font-serif)"],
+				mono: ["var(--font-mono)"],
 			},
 			borderRadius: {
 				lg: "var(--radius)",
@@ -62,6 +65,21 @@ export default {
 					border: "hsl(var(--sidebar-border))",
 					ring: "hsl(var(--sidebar-ring))",
 				},
+			},
+			boxShadow: {
+				"2xs": "var(--shadow-2xs)",
+				xs: "var(--shadow-xs)",
+				sm: "var(--shadow-sm)",
+				md: "var(--shadow-md)",
+				lg: "var(--shadow-lg)",
+				xl: "var(--shadow-xl)",
+				"2xl": "var(--shadow-2xl)",
+			},
+			letterSpacing: {
+				normal: "var(--tracking-normal)",
+			},
+			spacing: {
+				spacing: "var(--spacing)",
 			},
 			animation: {
 				"accordion-down": "accordion-down 0.2s ease-out",

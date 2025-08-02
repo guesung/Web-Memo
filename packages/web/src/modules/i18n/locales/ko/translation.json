@@ -271,6 +271,22 @@
 			"wishlist": {
 				"title": "나중에 보기",
 				"description": "관심 있는 내용을 위시리스트에 담아두세요"
+			},
+			"shortcuts": {
+				"title": "단축키 지원",
+				"description": "Alt+S, Cmd+S 등 빠른 단축키로 메모 저장"
+			},
+			"export": {
+				"title": "데이터 내보내기",
+				"description": "메모를 엑셀로 다운로드하여 백업"
+			},
+			"privacy": {
+				"title": "개인정보 보호",
+				"description": "메모는 나만 볼 수 있고 안전하게 보호"
+			},
+			"sync": {
+				"title": "실시간 동기화",
+				"description": "모든 기기에서 실시간으로 메모 동기화"
 			}
 		},
 		"how_it_works": {

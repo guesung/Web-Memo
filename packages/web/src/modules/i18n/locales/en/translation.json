@@ -271,6 +271,22 @@
 			"wishlist": {
 				"title": "Save for later",
 				"description": "Keep interesting content in your wishlist"
+			},
+			"shortcuts": {
+				"title": "Keyboard Shortcuts",
+				"description": "Save memos quickly with Alt+S, Cmd+S shortcuts"
+			},
+			"export": {
+				"title": "Data Export",
+				"description": "Download memos as Excel for backup"
+			},
+			"privacy": {
+				"title": "Privacy Protection",
+				"description": "Memos are private and securely protected"
+			},
+			"sync": {
+				"title": "Real-time Sync",
+				"description": "Sync memos in real-time across all devices"
 			}
 		},
 		"how_it_works": {

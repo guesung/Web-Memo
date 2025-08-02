@@ -14,7 +14,7 @@ export const getSupabaseClient = () => {
 
 	const cookieStore = cookies();
 
-	supabaseClient = createServerClient<Database, "memo", Database["memo"]>(
+	return createServerClient<Database, "memo", Database["memo"]>(
 		CONFIG.supabaseUrl,
 		CONFIG.supabaseAnonKey,
 		{
@@ -32,7 +32,6 @@ export const getSupabaseClient = () => {
 		},
 	);
 
-	return supabaseClient;
 };
 
 export const signInWithOAuth = async (provider: Provider) => {

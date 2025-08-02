@@ -8,6 +8,7 @@ import {
 	checkLocalStorageTrue,
 	setLocalStorageTrue,
 } from "@web-memo/shared/modules/local-storage";
+import { isMobile } from '@web-memo/shared/utils';
 import {
 	Button,
 	Dialog,
@@ -20,6 +21,7 @@ import {
 import { useEffect, useState } from "react";
 
 interface ExtensionInstallCheckDialogProps extends LanguageType {}
+
 export default function ExtensionInstallCheckDialog({
 	lng,
 }: ExtensionInstallCheckDialogProps) {
@@ -44,7 +46,8 @@ export default function ExtensionInstallCheckDialog({
 	useEffect(() => {
 		const isInstalled = typeof manifest === "object";
 
-		if (!isInstalled && !checkLocalStorageTrue("install")) setOpen(true);
+		if (!isInstalled && !checkLocalStorageTrue("install") && !isMobile())
+			setOpen(true);
 	}, [manifest]);
 
 	return (

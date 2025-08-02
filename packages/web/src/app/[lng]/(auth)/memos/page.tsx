@@ -7,7 +7,7 @@ import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import type { SearchParamsType } from "@web-memo/shared/modules/search-params";
 import { MemoService } from "@web-memo/shared/utils";
-import { Loading } from "@web-memo/ui";
+import { Loading, SidebarTrigger } from "@web-memo/ui";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
@@ -34,6 +34,9 @@ export default async function Page({ params: { lng } }: PageProps) {
 	return (
 		<main className="h-screen w-screen overflow-y-hidden px-4">
 			<HeaderMargin />
+
+			<SidebarTrigger />
+
 			<HydrationBoundaryWrapper
 				queryKey={QUERY_KEY.memos()}
 				queryFn={() => new MemoService(supabaseClient).getMemos()}

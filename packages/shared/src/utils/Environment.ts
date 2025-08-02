@@ -6,3 +6,6 @@ export const isMac = () =>
 export const isProduction = () => CONFIG.nodeEnv === "production";
 export const isExtension = () =>
 	typeof chrome !== "undefined" && typeof chrome.management !== "undefined";
+export function isServer() {
+	return typeof window === "undefined" || "Deno" in globalThis;
+}

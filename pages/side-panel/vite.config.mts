@@ -13,7 +13,7 @@ export default withPageConfig({
 	},
 	plugins: [
 		visualizer({
-			open: true,
+			open: false,
 			filename: "dist/stats.html",
 			template: "treemap",
 		}),

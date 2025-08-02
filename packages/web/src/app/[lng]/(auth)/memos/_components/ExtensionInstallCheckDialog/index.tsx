@@ -8,7 +8,7 @@ import {
 	checkLocalStorageTrue,
 	setLocalStorageTrue,
 } from "@web-memo/shared/modules/local-storage";
-import { isMobile } from '@web-memo/shared/utils';
+import { isMobile } from "@web-memo/shared/utils";
 import {
 	Button,
 	Dialog,

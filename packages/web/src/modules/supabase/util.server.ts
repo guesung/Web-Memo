@@ -31,7 +31,6 @@ export const getSupabaseClient = () => {
 			db: { schema: SUPABASE.table.memo },
 		},
 	);
-
 };
 
 export const signInWithOAuth = async (provider: Provider) => {

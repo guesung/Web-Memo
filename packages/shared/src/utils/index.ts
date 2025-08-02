@@ -1,6 +1,7 @@
 export * from "./Blob";
 export * from "./color";
 export * from "./Date";
+export * from "./Device";
 export * from "./Download";
 export * from "./Environment";
 export * from "./Error";

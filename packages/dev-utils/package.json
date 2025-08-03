@@ -1,6 +1,6 @@
 {
 	"name": "@web-memo/dev-utils",
-	"version": "1.8.9",
+	"version": "1.8.10",
 	"description": "chrome extension dev utils",
 	"private": true,
 	"sideEffects": false,

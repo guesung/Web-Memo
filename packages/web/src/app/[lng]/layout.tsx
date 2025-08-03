@@ -4,8 +4,8 @@ import { SUPPORTED_LANGUAGES } from "@src/modules/i18n";
 import { dir } from "i18next";
 import type { PropsWithChildren } from "react";
 import { InitDayjs } from "../_components";
-import { metadataEnglish, metadataKorean } from "../_constants";
 import { QueryProvider, ThemeProvider } from "./_components";
+import { metadataEnglish, metadataKorean } from "./_constants";
 
 interface RootLayoutProps extends PropsWithChildren, LanguageParams {}
 

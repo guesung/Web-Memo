@@ -4,7 +4,7 @@ import {
 	BRIDGE_MESSAGE_TYPES,
 	ExtensionBridge,
 } from "@web-memo/shared/modules/extension-bridge";
-import { I18n, Runtime } from "@web-memo/shared/utils/extension";
+import { I18n, Runtime, Tab } from "@web-memo/shared/utils/extension";
 import { useState } from "react";
 
 export default function useSummary() {
@@ -20,10 +20,22 @@ export default function useSummary() {
 		let pageContent = "";
 		let currentCategory: Category = "others";
 		try {
-			const { content, category } = await ExtensionBridge.requestPageContent();
-			pageContent = content;
-			currentCategory = category;
-			setCategory(category);
+			const tabs = await Tab.get();
+
+			const isYoutube = tabs?.url?.includes("youtube.com");
+
+			if (isYoutube) {
+				ExtensionBridge.requestYoutubeContent(tabs?.url || "", (data) => {
+					pageContent = data;
+					currentCategory = "youtube";
+				});
+			} else {
+				const { content } = await ExtensionBridge.requestPageContent();
+				pageContent = content;
+				currentCategory = "others";
+			}
+
+			setCategory(currentCategory);
 		} catch {
 			setErrorMessage(I18n.get("error_get_page_content"));
 			return;

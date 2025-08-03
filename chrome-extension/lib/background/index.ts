@@ -118,3 +118,5 @@ ExtensionBridge.responseOpenSidePanel();
 ExtensionBridge.responseGetExtensionManifest();
 
 ExtensionBridge.responseGetTabs();
+
+ExtensionBridge.responseYoutubeContent();

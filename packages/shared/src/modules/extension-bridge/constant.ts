@@ -7,6 +7,7 @@ export const BRIDGE_MESSAGE_TYPES = {
 	PAGE_CONTENT: "PAGE_CONTENT",
 	REFETCH_THE_MEMO_LIST: "REFETCH_THE_MEMO_LIST",
 	UPDATE_SIDE_PANEL: "UPDATE_SIDE_PANEL",
+	YOUTUBE_SCRIPT: "YOUTUBE_SCRIPT",
 } as const;
 
 export type Category = "youtube" | "others";

@@ -1,8 +1,6 @@
-import { YoutubeTranscript } from "youtube-transcript";
+import { CONFIG } from "@web-memo/env";
 import { EXTENSION } from "../../constants";
 import { Runtime, Tab } from "../../utils/extension";
-
-import type { Category } from "./constant";
 import { BRIDGE_MESSAGE_TYPES } from "./constant";
 import type { PageContent } from "./types";
 import { ExtensionError, ExtensionErrorCode } from "./types";
@@ -123,27 +121,15 @@ export default class ExtensionBridge {
 		}
 	}
 
-	private static checkYoutube(url: string): boolean {
-		const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
-		return youtubeRegex.test(url);
-	}
-
-	private static getCategory(url: string): Category {
-		if (ExtensionBridge.checkYoutube(url)) return "youtube";
-		return "others";
-	}
-
 	static async responsePageContent() {
 		try {
-			const url = location.href;
-			const category = ExtensionBridge.getCategory(url);
-			const content = await ExtensionBridge._getContent(url, category);
-
 			Runtime.onMessage(
 				BRIDGE_MESSAGE_TYPES.PAGE_CONTENT,
 				async (_, __, sendResponse) => {
+					const content = ExtensionBridge._getContentFromWeb();
+
 					try {
-						sendResponse({ content, category });
+						sendResponse({ content });
 						return true;
 					} catch (error) {
 						throw new ExtensionError(
@@ -163,33 +149,6 @@ export default class ExtensionBridge {
 		}
 	}
 
-	private static async _getContent(url: string, category: Category) {
-		try {
-			if (category === "youtube")
-				return await ExtensionBridge._getContentFromYoutube(url);
-			return ExtensionBridge._getContentFromWeb();
-		} catch (error) {
-			throw new ExtensionError(
-				"Failed to get content",
-				ExtensionErrorCode.CONTENT_ERROR,
-				error,
-			);
-		}
-	}
-
-	private static async _getContentFromYoutube(url: string) {
-		try {
-			const transcripts = await YoutubeTranscript.fetchTranscript(url);
-			return transcripts.map((transcript) => transcript.text).join("\n");
-		} catch (error) {
-			throw new ExtensionError(
-				"Failed to get YouTube transcript",
-				ExtensionErrorCode.YOUTUBE_ERROR,
-				error,
-			);
-		}
-	}
-
 	private static _getContentFromWeb() {
 		try {
 			const text = document.body.innerText;
@@ -203,6 +162,49 @@ export default class ExtensionBridge {
 			throw new ExtensionError(
 				"Failed to get web content",
 				ExtensionErrorCode.CONTENT_ERROR,
+				error,
+			);
+		}
+	}
+
+	static async requestYoutubeContent(
+		url: string,
+		callbackFn: (data: string) => void,
+	) {
+		try {
+			console.log(url);
+			chrome.runtime.sendMessage(
+				BRIDGE_MESSAGE_TYPES.YOUTUBE_SCRIPT,
+				{ videoUrl: url },
+				callbackFn,
+			);
+		} catch (error) {
+			throw new ExtensionError(
+				"Failed to request youtube content",
+				ExtensionErrorCode.CONTENT_ERROR,
+				error,
+			);
+		}
+	}
+
+	static async responseYoutubeContent() {
+		try {
+			Runtime.onMessage<{ videoUrl: string }, string>(
+				BRIDGE_MESSAGE_TYPES.YOUTUBE_SCRIPT,
+				async (request, __, sendResponse) => {
+					console.log(request);
+					const response = await fetch(
+						`${CONFIG.webUrl}/api/youtube-script?video=${request.payload?.videoUrl}`,
+					);
+					console.log(response);
+					const data = await response.json();
+					sendResponse(data.stdout);
+				},
+			);
+		} catch (error) {
+			throw new ExtensionError(
+				"Failed to respond to youtube content request",
+				ExtensionErrorCode.RUNTIME_ERROR,
 				error,
 			);
 		}

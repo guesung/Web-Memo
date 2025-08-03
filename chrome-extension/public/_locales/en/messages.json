@@ -1,9 +1,9 @@
 {
 	"extensionName": {
-		"message": "Web Notes - Smart Notes Starting with a Click"
+		"message": "Web Memo - Take notes on websites"
 	},
 	"extensionDescription": {
-		"message": "Take notes easily while browsing"
+		"message": "Take notes easily while browsing websites with a side panel"
 	},
 	"memo": {
 		"message": "Note"

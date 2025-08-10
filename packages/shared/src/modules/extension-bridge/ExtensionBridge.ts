@@ -1,4 +1,3 @@
-import { CONFIG } from "@web-memo/env";
 import { EXTENSION } from "../../constants";
 import { Runtime, Tab } from "../../utils/extension";
 import { BRIDGE_MESSAGE_TYPES } from "./constant";
@@ -162,49 +161,6 @@ export default class ExtensionBridge {
 			throw new ExtensionError(
 				"Failed to get web content",
 				ExtensionErrorCode.CONTENT_ERROR,
-				error,
-			);
-		}
-	}
-
-	static async requestYoutubeContent(
-		url: string,
-		callbackFn: (data: string) => void,
-	) {
-		try {
-			console.log(url);
-			chrome.runtime.sendMessage(
-				BRIDGE_MESSAGE_TYPES.YOUTUBE_SCRIPT,
-				{ videoUrl: url },
-				callbackFn,
-			);
-		} catch (error) {
-			throw new ExtensionError(
-				"Failed to request youtube content",
-				ExtensionErrorCode.CONTENT_ERROR,
-				error,
-			);
-		}
-	}
-
-	static async responseYoutubeContent() {
-		try {
-			Runtime.onMessage<{ videoUrl: string }, string>(
-				BRIDGE_MESSAGE_TYPES.YOUTUBE_SCRIPT,
-				async (request, __, sendResponse) => {
-					console.log(request);
-					const response = await fetch(
-						`${CONFIG.webUrl}/api/youtube-script?video=${request.payload?.videoUrl}`,
-					);
-					console.log(response);
-					const data = await response.json();
-					sendResponse(data.stdout);
-				},
-			);
-		} catch (error) {
-			throw new ExtensionError(
-				"Failed to respond to youtube content request",
-				ExtensionErrorCode.RUNTIME_ERROR,
 				error,
 			);
 		}

@@ -1,3 +1,4 @@
+import { CONFIG } from "@web-memo/env";
 import { useFetch } from "@web-memo/shared/hooks";
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
 import {
@@ -25,10 +26,12 @@ export default function useSummary() {
 			const isYoutube = tabs?.url?.includes("youtube.com");
 
 			if (isYoutube) {
-				ExtensionBridge.requestYoutubeContent(tabs?.url || "", (data) => {
-					pageContent = data;
-					currentCategory = "youtube";
-				});
+				const response = await fetch(
+					`${CONFIG.webUrl}/api/youtube-script?video=${tabs?.url}`,
+				);
+				const data = await response.json();
+				pageContent = data.stdout;
+				currentCategory = "youtube";
 			} else {
 				const { content } = await ExtensionBridge.requestPageContent();
 				pageContent = content;

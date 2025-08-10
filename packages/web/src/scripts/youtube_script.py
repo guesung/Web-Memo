@@ -8,16 +8,16 @@ def get_video_id(video_url):
 
 def main():
     # 명령행 인자 파싱
-    # parser = argparse.ArgumentParser(description='YouTube 동영상 자막을 다운로드합니다.')
-    # parser.add_argument('--video-id', required=True, help='YouTube 동영상 ID')
-    # args = parser.parse_args()
+    parser = argparse.ArgumentParser(description='YouTube 동영상 자막을 다운로드합니다.')
+    parser.add_argument('--video-id', required=True, help='YouTube 동영상 ID')
+    args = parser.parse_args()
 
-    # video_id = args.video_id
+    video_id = args.video_id
 
     ytt_api = YouTubeTranscriptApi()
 
     try:
-        transcript_list = ytt_api.list('rOydU8F_lio')
+        transcript_list = ytt_api.list(video_id)
         transcript = transcript_list.find_transcript(['ko', 'en'])
         transcript_data = transcript.fetch()
 

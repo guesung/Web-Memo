@@ -18,10 +18,11 @@ export async function middleware(request: NextRequest) {
 		pathname.startsWith(`/${lng}`),
 	);
 	const isAuthPath = pathname.startsWith(PATHS.auth);
+	const isApiPath = pathname.startsWith("/api");
 
 	const language = getLanguage(request);
 
-	if (!isLanguagePath && !isAuthPath)
+	if (!isLanguagePath && !isAuthPath && !isApiPath)
 		return NextResponse.redirect(
 			new URL(
 				`/${language}${pathname}${request.nextUrl.search}${request.nextUrl.hash}`,

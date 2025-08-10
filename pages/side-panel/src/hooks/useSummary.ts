@@ -5,7 +5,7 @@ import {
 	BRIDGE_MESSAGE_TYPES,
 	ExtensionBridge,
 } from "@web-memo/shared/modules/extension-bridge";
-import { checkYoutubeUrl } from "@web-memo/shared/utils";
+import { checkYoutubeUrl, extractVideoId } from "@web-memo/shared/utils";
 import { I18n, Runtime, Tab } from "@web-memo/shared/utils/extension";
 import { useState } from "react";
 
@@ -28,9 +28,12 @@ export default function useSummary() {
 			const isYoutube = checkYoutubeUrl(tabs.url);
 
 			if (isYoutube) {
+				const youtubeId = extractVideoId(tabs.url);
 				const response = await fetch(
-					`${CONFIG.webUrl}/api/youtube-script?video=${tabs.url}`,
+					`${CONFIG.webUrl}/api/transcript?video=${youtubeId}`,
 				);
+				if (!response.ok) throw new Error("Failed to fetch transcript");
+
 				const data = await response.json();
 				pageContent = data.transcript;
 				currentCategory = "youtube";

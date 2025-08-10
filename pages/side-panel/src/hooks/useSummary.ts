@@ -32,7 +32,7 @@ export default function useSummary() {
 					`${CONFIG.webUrl}/api/youtube-script?video=${tabs.url}`,
 				);
 				const data = await response.json();
-				pageContent = data.stdout;
+				pageContent = data.transcript;
 				currentCategory = "youtube";
 			} else {
 				const { content } = await ExtensionBridge.requestPageContent();

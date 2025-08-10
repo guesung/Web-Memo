@@ -1,7 +1,7 @@
 import { extractVideoId } from "@web-memo/shared/utils";
-import { exec } from "child_process";
 import { type NextRequest, NextResponse } from "next/server";
-import { promisify } from "util";
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
 
 const execAsync = promisify(exec);
 
@@ -27,13 +27,10 @@ export async function GET(request: NextRequest) {
 
 		const scriptPath = "src/scripts/youtube_script.py";
 		const command = `python ${scriptPath} --video-id="${videoId}"`;
-		const { stdout, stderr } = await execAsync(command);
+		const { stdout } = await execAsync(command);
 
 		return NextResponse.json({
-			stdout,
-			stderr,
-			code: stderr ? 1 : 0,
-			videoId,
+			transcript: stdout.trim(),
 		});
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : String(error);

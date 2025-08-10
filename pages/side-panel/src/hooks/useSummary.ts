@@ -5,6 +5,7 @@ import {
 	BRIDGE_MESSAGE_TYPES,
 	ExtensionBridge,
 } from "@web-memo/shared/modules/extension-bridge";
+import { checkYoutubeUrl } from "@web-memo/shared/utils";
 import { I18n, Runtime, Tab } from "@web-memo/shared/utils/extension";
 import { useState } from "react";
 
@@ -22,12 +23,13 @@ export default function useSummary() {
 		let currentCategory: Category = "others";
 		try {
 			const tabs = await Tab.get();
+			if (!tabs?.url) return;
 
-			const isYoutube = tabs?.url?.includes("youtube.com");
+			const isYoutube = checkYoutubeUrl(tabs.url);
 
 			if (isYoutube) {
 				const response = await fetch(
-					`${CONFIG.webUrl}/api/youtube-script?video=${tabs?.url}`,
+					`${CONFIG.webUrl}/api/youtube-script?video=${tabs.url}`,
 				);
 				const data = await response.json();
 				pageContent = data.stdout;

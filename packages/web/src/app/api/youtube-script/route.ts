@@ -1,33 +1,9 @@
+import { extractVideoId } from "@web-memo/shared/utils";
 import { exec } from "child_process";
 import { type NextRequest, NextResponse } from "next/server";
 import { promisify } from "util";
 
 const execAsync = promisify(exec);
-
-const scriptPath = "src/scripts/youtube_script.py";
-
-// YouTube URL에서 video ID를 추출하는 함수
-function extractVideoId(input: string): string | null {
-	// 이미 video ID인 경우 (11자리)
-	if (/^[a-zA-Z0-9_-]{11}$/.test(input)) {
-		return input;
-	}
-
-	// YouTube URL에서 video ID 추출
-	const urlPatterns = [
-		/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
-		/youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/,
-	];
-
-	for (const pattern of urlPatterns) {
-		const match = input.match(pattern);
-		if (match) {
-			return match[1];
-		}
-	}
-
-	return null;
-}
 
 export async function GET(request: NextRequest) {
 	try {
@@ -49,13 +25,7 @@ export async function GET(request: NextRequest) {
 			);
 		}
 
-		if (!scriptPath) {
-			return NextResponse.json(
-				{ error: "scriptPath is required" },
-				{ status: 400 },
-			);
-		}
-
+		const scriptPath = "src/scripts/youtube_script.py";
 		const args = ["--video-id", videoId];
 		const command = `python ${scriptPath} ${args?.join(" ") || ""}`;
 		const { stdout, stderr } = await execAsync(command);

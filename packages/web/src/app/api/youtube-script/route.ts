@@ -26,8 +26,7 @@ export async function GET(request: NextRequest) {
 		}
 
 		const scriptPath = "src/scripts/youtube_script.py";
-		const args = ["--video-id", videoId];
-		const command = `python ${scriptPath} ${args?.join(" ") || ""}`;
+		const command = `python ${scriptPath} --video-id="${videoId}"`;
 		const { stdout, stderr } = await execAsync(command);
 
 		return NextResponse.json({

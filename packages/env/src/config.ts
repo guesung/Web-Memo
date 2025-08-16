@@ -28,4 +28,8 @@ export const CONFIG = {
 		process.env.MAKE_WEBHOOK_NOTION_API,
 	) as "development" | "production",
 	openApiKey: getSafeConfig("OPENAI_API_KEY", process.env.OPENAI_API_KEY),
+	youtubeTranscriptUrl: getSafeConfig(
+		"YOUTUBE_TRANSCRIPT_URL",
+		process.env.YOUTUBE_TRANSCRIPT_URL,
+	),
 };

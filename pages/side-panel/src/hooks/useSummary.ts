@@ -30,7 +30,7 @@ export default function useSummary() {
 			if (isYoutube) {
 				const youtubeId = extractVideoId(tabs.url);
 				const response = await fetch(
-					`${CONFIG.webUrl}/api/transcript?video=${youtubeId}`,
+					`${CONFIG.youtubeTranscriptUrl}/api/youtube-transcript?video_id=${youtubeId}`,
 				);
 				if (!response.ok) throw new Error("Failed to fetch transcript");
 

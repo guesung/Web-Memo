@@ -1,8 +1,5 @@
-import { YoutubeTranscript } from "youtube-transcript";
 import { EXTENSION } from "../../constants";
 import { Runtime, Tab } from "../../utils/extension";
-
-import type { Category } from "./constant";
 import { BRIDGE_MESSAGE_TYPES } from "./constant";
 import type { PageContent } from "./types";
 import { ExtensionError, ExtensionErrorCode } from "./types";
@@ -123,27 +120,15 @@ export default class ExtensionBridge {
 		}
 	}
 
-	private static checkYoutube(url: string): boolean {
-		const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
-		return youtubeRegex.test(url);
-	}
-
-	private static getCategory(url: string): Category {
-		if (ExtensionBridge.checkYoutube(url)) return "youtube";
-		return "others";
-	}
-
 	static async responsePageContent() {
 		try {
-			const url = location.href;
-			const category = ExtensionBridge.getCategory(url);
-			const content = await ExtensionBridge._getContent(url, category);
-
 			Runtime.onMessage(
 				BRIDGE_MESSAGE_TYPES.PAGE_CONTENT,
 				async (_, __, sendResponse) => {
+					const content = ExtensionBridge._getContentFromWeb();
+
 					try {
-						sendResponse({ content, category });
+						sendResponse({ content });
 						return true;
 					} catch (error) {
 						throw new ExtensionError(
@@ -158,33 +143,6 @@ export default class ExtensionBridge {
 			throw new ExtensionError(
 				"Failed to process page content response",
 				ExtensionErrorCode.CONTENT_ERROR,
-				error,
-			);
-		}
-	}
-
-	private static async _getContent(url: string, category: Category) {
-		try {
-			if (category === "youtube")
-				return await ExtensionBridge._getContentFromYoutube(url);
-			return ExtensionBridge._getContentFromWeb();
-		} catch (error) {
-			throw new ExtensionError(
-				"Failed to get content",
-				ExtensionErrorCode.CONTENT_ERROR,
-				error,
-			);
-		}
-	}
-
-	private static async _getContentFromYoutube(url: string) {
-		try {
-			const transcripts = await YoutubeTranscript.fetchTranscript(url);
-			return transcripts.map((transcript) => transcript.text).join("\n");
-		} catch (error) {
-			throw new ExtensionError(
-				"Failed to get YouTube transcript",
-				ExtensionErrorCode.YOUTUBE_ERROR,
 				error,
 			);
 		}

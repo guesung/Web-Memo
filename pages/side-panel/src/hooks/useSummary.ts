@@ -1,10 +1,12 @@
+import { CONFIG } from "@web-memo/env";
 import { useFetch } from "@web-memo/shared/hooks";
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
 import {
 	BRIDGE_MESSAGE_TYPES,
 	ExtensionBridge,
 } from "@web-memo/shared/modules/extension-bridge";
-import { I18n, Runtime } from "@web-memo/shared/utils/extension";
+import { checkYoutubeUrl, extractVideoId } from "@web-memo/shared/utils";
+import { I18n, Runtime, Tab } from "@web-memo/shared/utils/extension";
 import { useState } from "react";
 
 export default function useSummary() {
@@ -20,10 +22,28 @@ export default function useSummary() {
 		let pageContent = "";
 		let currentCategory: Category = "others";
 		try {
-			const { content, category } = await ExtensionBridge.requestPageContent();
-			pageContent = content;
-			currentCategory = category;
-			setCategory(category);
+			const tabs = await Tab.get();
+			if (!tabs?.url) return;
+
+			const isYoutube = checkYoutubeUrl(tabs.url);
+
+			if (isYoutube) {
+				const youtubeId = extractVideoId(tabs.url);
+				const response = await fetch(
+					`${CONFIG.youtubeTranscriptUrl}/api/youtube-transcript?video_id=${youtubeId}`,
+				);
+				if (!response.ok) throw new Error("Failed to fetch transcript");
+
+				const data = await response.json();
+				pageContent = data.transcript;
+				currentCategory = "youtube";
+			} else {
+				const { content } = await ExtensionBridge.requestPageContent();
+				pageContent = content;
+				currentCategory = "others";
+			}
+
+			setCategory(currentCategory);
 		} catch {
 			setErrorMessage(I18n.get("error_get_page_content"));
 			return;

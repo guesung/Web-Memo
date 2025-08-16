@@ -1,0 +1,14 @@
+{
+  "name": "@web-memo/python-server",
+  "version": "1.0.0",
+  "description": "Python Flask server for YouTube transcript API",
+  "main": "app.py",
+  "scripts": {
+    "start": "python app.py",
+    "dev": "python app.py",
+    "install-deps": "pip install -r requirements.txt"
+  },
+  "keywords": ["youtube", "transcript", "api", "flask"],
+  "author": "",
+  "license": "ISC"
+}

@@ -253,16 +253,16 @@
 		},
 		"features": {
 			"memo": {
-				"title": "One-click memos",
-				"description": "Save your thoughts instantly while browsing"
+				"title": "Quick notes while reading",
+				"description": "Save memorable moments instantly while reading articles"
 			},
 			"overview": {
-				"title": "See everything at once",
-				"description": "All your memos, neatly organized"
+				"title": "YouTube video summaries",
+				"description": "Get AI-powered summaries of YouTube videos in seconds"
 			},
 			"organize": {
-				"title": "Organize systematically",
-				"description": "Sort and organize memos your way"
+				"title": "Save articles for later",
+				"description": "Bookmark interesting articles and access them anytime"
 			},
 			"ai_summary": {
 				"title": "AI summaries",
@@ -326,6 +326,23 @@
 					"answer": "Currently Chrome only. Support for other browsers coming soon"
 				}
 			}
+		},
+		"use_cases": {
+			"title": "Perfect for",
+			"items": [
+				{
+					"title": "📚 Students & Researchers",
+					"description": "Save key points from online courses and research materials"
+				},
+				{
+					"title": "💼 Working Professionals",
+					"description": "Systematically manage competitor analysis and trend monitoring"
+				},
+				{
+					"title": "🎯 Efficient People",
+					"description": "Get key insights with AI summaries instead of reading long articles"
+				}
+			]
 		},
 		"footer": {
 			"title": "Web Memo",

@@ -253,16 +253,16 @@
 		},
 		"features": {
 			"memo": {
-				"title": "One-click memos",
-				"description": "Save your thoughts instantly while browsing"
+				"title": "Quick notes while reading",
+				"description": "Save memorable moments instantly while reading articles"
 			},
 			"overview": {
-				"title": "See everything at once",
-				"description": "All your memos, neatly organized"
+				"title": "YouTube video summaries",
+				"description": "Get AI-powered summaries of YouTube videos in seconds"
 			},
 			"organize": {
-				"title": "Organize systematically",
-				"description": "Sort and organize memos your way"
+				"title": "Save articles for later",
+				"description": "Bookmark interesting articles and access them anytime"
 			},
 			"ai_summary": {
 				"title": "AI summaries",
@@ -295,37 +295,34 @@
 			"questions": {
 				"what_is": {
 					"question": "What is Web Memo?",
-					"answer": "It's a service that makes web browsing easier. Save with one click, get AI summaries, and organize systematically"
+					"answer": "Web Memo is an intelligent note-taking service that revolutionizes internet browsing. \u2022 Instantly memo important parts while reading articles \u2022 AI-powered automatic summarization of YouTube videos \u2022 Save interesting content to your wishlist Unlike regular bookmarks, it's a completely new approach to knowledge management where you can record your own thoughts and insights systematically."
 				},
 				"is_free": {
 					"question": "Is it free?",
-					"answer": "Yes! All features are free: memos, organization, AI summaries, and wishlist"
+					"answer": "Yes! All core features of Web Memo are completely free: \u2022 Unlimited memo storage \u2022 AI-powered content summarization \u2022 Category organization features \u2022 Wishlist management \u2022 YouTube caption summarization \u2022 Mobile app with data synchronization We are committed to providing a great service experience without ads or paid subscriptions."
 				},
 				"where_to_save": {
 					"question": "Where can I save memos?",
-					"answer": "Save memos on any website using the Chrome extension"
-				},
-				"is_data_private": {
-					"question": "Can others see my memos?",
-					"answer": "No, your memos are private. Your data is securely protected"
-				},
-				"where_to_find": {
-					"question": "Where can I find my memos?",
-					"answer": "Access your memos anytime by signing in to Web Memo"
-				},
-				"memo_preservation": {
-					"question": "Will I lose my memos?",
-					"answer": "Don't worry! We store over 500 memos ourselves. Your memos are preserved forever, and we're adding download options soon"
-				},
-				"how_ai_works": {
-					"question": "How does AI summary work?",
-					"answer": "AI reads the webpage and extracts key points. Understand long content quickly"
-				},
-				"other_browsers": {
-					"question": "Does it work in other browsers?",
-					"answer": "Currently Chrome only. Support for other browsers coming soon"
+					"answer": "Web Memo works everywhere on the internet! Install the Chrome extension and you can: \u2022 Take notes on blogs and news sites \u2022 Organize content from online courses and educational materials \u2022 Record insights from YouTube videos \u2022 Save information from shopping or product review sites \u2022 Summarize key points from research papers Simply press Alt+S (Windows) / Option+S (Mac) to open the side panel and start taking notes immediately."
 				}
 			}
+		},
+		"use_cases": {
+			"title": "Perfect for",
+			"items": [
+				{
+					"title": "📚 Students & Researchers",
+					"description": "Save key points from online courses and research materials"
+				},
+				{
+					"title": "💼 Working Professionals",
+					"description": "Systematically manage competitor analysis and trend monitoring"
+				},
+				{
+					"title": "🎯 Efficient People",
+					"description": "Get key insights with AI summaries instead of reading long articles"
+				}
+			]
 		},
 		"footer": {
 			"title": "Web Memo",

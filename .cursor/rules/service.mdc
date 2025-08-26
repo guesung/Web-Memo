@@ -1,3 +1,6 @@
+---
+alwaysApply: true
+---
 # Web Memo Service Overview
 
 ## 🎯 **Service Purpose**
@@ -82,11 +85,3 @@ const UNSUPPORTED_SUMMARY_PAGES = [
 - Keep this rule synchronized with [README.md](mdc:README.md)
 - Update feature descriptions when new capabilities are added
 - Maintain consistency with user-facing documentation
-
----
-
-**Usage**: Apply this rule when working on core service functionality, user experience improvements, or when adding new features to ensure alignment with the service's core purpose and user expectations.
-description:
-globs:
-alwaysApply: true
----

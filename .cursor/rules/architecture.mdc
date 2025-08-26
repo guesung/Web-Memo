@@ -1,3 +1,7 @@
+---
+alwaysApply: true
+---
+
 # Web Memo Technical Architecture
 
 ## 🏗 **Project Structure**
@@ -196,11 +200,3 @@ const { data: memos } = useQuery({
   }
 }
 ```
-
----
-
-**Usage**: Apply this rule when working on technical implementation, architecture decisions, or when adding new features to ensure consistency with established patterns and best practices.
-description:
-globs:
-alwaysApply: true
----

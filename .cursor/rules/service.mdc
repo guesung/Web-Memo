@@ -1,34 +1,87 @@
 ---
-description: 
-globs: 
-alwaysApply: false
+alwaysApply: true
 ---
-- **웹 메모 서비스 소개**
-  - 웹페이지를 읽으며 느낀 불편함(메모의 번거로움, 제목/URL 수동 입력 등)을 해결하기 위해 개발된 크롬 확장 프로그램
-  - 아티클, 유튜브 등 다양한 웹 컨텐츠를 읽으면서 바로 메모를 남길 수 있음
-  - 별도의 노트 앱을 열 필요 없이, 사이드 패널을 통해 즉시 기록 가능
+# Web Memo Service Overview
 
-- **주요 기능**
-  - **메모**: 웹서핑 중 언제든지 아이디어/정보를 빠르게 기록
-  - **페이지 요약**: ChatGPT 기반 웹사이트 요약 제공(일부 사이트 제외)
-  - **메모 확인**: 저장된 메모를 한눈에 확인
-  - **데이터 영구 저장/추출**: 메모 데이터는 영구 저장, 엑셀로 다운로드 가능
-  - **단축키 지원**: 사이드 패널/메모 저장을 위한 단축키 제공(Alt+S, Cmd+S 등)
+## 🎯 **Service Purpose**
+Web Memo is a Chrome extension designed to solve web browsing inconveniences:
+- Eliminates the hassle of manual memo creation during web surfing
+- Removes need for separate note-taking apps
+- Enables instant recording through side panel while browsing
 
-- **사용자 경험**
-  - 웹서핑 중 중요한 정보를 놓치지 않고, 체계적으로 기록/관리 가능
-  - 아티클 읽기와 메모가 자연스럽게 연결되어 생산성 향상
+## 🚀 **Core Features**
 
-- **주의 사항**
-  - 요약 기능은 크롬 웹스토어, 설정, 새 탭, PDF 등 일부 페이지에서는 동작하지 않음(메모는 모든 사이트에서 가능)
+### **Primary Functionality**
+- **Instant Memos**: Quick idea/information recording during web browsing
+- **Page Summaries**: ChatGPT-powered website summaries (limited sites)
+- **Memo Management**: View and organize saved memos
+- **Data Persistence**: Permanent storage with Excel export capability
+- **Keyboard Shortcuts**: Quick access (Alt+S, Cmd+S, etc.)
 
-- **소통 및 피드백**
-  - 이메일, 카카오톡 오픈채팅, 구글 폼 등 다양한 채널로 사용자 의견 수렴
+### **Supported Content Types**
+- Articles, blogs, news sites
+- YouTube videos and transcripts
+- General web content
+- **Note**: Summaries don't work on Chrome Web Store, settings, new tabs, PDFs
 
-- **향후 계획**
-  - 카테고리, 다크모드, 캘린더뷰, 메모 공유 등 추가 기능 예정
+## 💡 **User Experience Principles**
 
-- **참고**
-  - 서비스의 목적, 기능, 사용법, 피드백 채널 등은 항상 최신 README.md와 동기화하여 관리
+### **Seamless Integration**
+- Natural connection between reading and note-taking
+- No context switching required
+- Enhanced productivity through integrated workflow
 
-이 규칙은 프로젝트의 전반적인 소개, 목적, 주요 기능, 사용자 경험, 피드백 채널, 향후 계획 등을 명확하게 전달하기 위해 사용합니다.
+### **Accessibility**
+- Side panel for immediate access
+- Keyboard shortcuts for power users
+- Cross-platform compatibility
+
+## 🛠 **Development Guidelines**
+
+### **When Working on Core Features**
+- Prioritize user experience over technical complexity
+- Ensure memo functionality works on ALL websites
+- Implement graceful degradation for unsupported summary features
+- Focus on performance and reliability
+
+### **When Adding New Features**
+- Consider the core use case: quick memo creation during browsing
+- Maintain the seamless integration principle
+- Test across different content types and websites
+
+## 📋 **Technical Constraints**
+
+### **Summary Feature Limitations**
+```typescript
+// These pages don't support summaries but allow memos
+const UNSUPPORTED_SUMMARY_PAGES = [
+  'chrome://*',
+  'chrome-extension://*',
+  'chrome-search://*',
+  'file://*',
+  'about:*'
+];
+```
+
+### **Memo Functionality**
+- Must work on ALL websites
+- Should handle various content types gracefully
+- Require minimal user input for quick capture
+
+## 🔮 **Future Roadmap**
+- Category organization
+- Dark mode support
+- Calendar view
+- Memo sharing capabilities
+- Enhanced search and filtering
+
+## 📞 **Feedback Channels**
+- Email support
+- KakaoTalk open chat
+- Google Forms
+- GitHub Issues
+
+## 📚 **Reference Documentation**
+- Keep this rule synchronized with [README.md](mdc:README.md)
+- Update feature descriptions when new capabilities are added
+- Maintain consistency with user-facing documentation

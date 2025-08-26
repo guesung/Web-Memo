@@ -8,14 +8,6 @@ export const metadataCommon: Metadata = {
 	alternates: {
 		canonical: "https://web-memo.site",
 	},
-	robots: {
-		index: false,
-		follow: false,
-		googleBot: {
-			index: false,
-			follow: false,
-		},
-	},
 	verification: {
 		google: "OX_jRs67l_-1WTeDzypcPFJEP3yTsBNK-RrXZAcqkq4",
 		other: {

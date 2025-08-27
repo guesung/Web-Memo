@@ -2,6 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { PATHS } from "@web-memo/shared/constants";
 import { useCategoryQuery } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import {
@@ -29,12 +30,15 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 					{categories?.map((category) => (
 						<SidebarMenuItem key={category.id}>
 							<Link
-								href={`/memos?category=${category.name}`}
+								href={{
+									pathname: PATHS.memos,
+									query: { category: category.name },
+								}}
 								className="w-full"
 								replace
 							>
 								<SidebarMenuButton
-									className={`flex w-full items-center justify-between rounded-md px-3 py-2`}
+									className="flex w-full items-center justify-between rounded-md px-3 py-2"
 									style={{
 										borderLeft: `4px solid ${category.color || "transparent"}`,
 										backgroundColor:

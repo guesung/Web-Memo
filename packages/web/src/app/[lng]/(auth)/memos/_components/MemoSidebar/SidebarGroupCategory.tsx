@@ -13,6 +13,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@web-memo/ui";
+import { SettingsIcon } from "lucide-react";
 import Link from "next/link";
 import { memo } from "react";
 
@@ -24,7 +25,14 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 
 	return (
 		<SidebarGroup id="category">
-			<SidebarGroupLabel>{t("sideBar.allCategory")}</SidebarGroupLabel>
+			<div className="flex items-center justify-between">
+				<SidebarGroupLabel>{t("sideBar.allCategory")}</SidebarGroupLabel>
+				<Link href={PATHS.memosSetting}>
+					<button type="button" className="p-1  rounded">
+						<SettingsIcon size={14} className="text-gray-500" />
+					</button>
+				</Link>
+			</div>
 			<SidebarGroupContent>
 				<SidebarMenu>
 					{categories?.map((category) => (

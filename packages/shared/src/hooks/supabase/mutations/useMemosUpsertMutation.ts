@@ -57,5 +57,8 @@ export default function useMemosUpsertMutation() {
 
 			return { previousMemos };
 		},
+		onSuccess:()=>{
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
+		}
 	});
 }

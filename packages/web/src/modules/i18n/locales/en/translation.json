@@ -217,6 +217,10 @@
 			"title": "Explore categories",
 			"description": "Click on a category in the left sidebar to view memos in that category"
 		},
+		"settings": {
+			"title": "Explore settings",
+			"description": "Use the settings button in the bottom left to restart guides, manage categories, and change language settings."
+		},
 		"check": {
 			"title": "Check memos",
 			"description": "Click refresh to see your latest memos"

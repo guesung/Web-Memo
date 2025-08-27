@@ -213,6 +213,10 @@
 			"title": "Save memos",
 			"description": "Great! Now you can write memos. Don't worry, they save automatically"
 		},
+		"category": {
+			"title": "Explore categories",
+			"description": "Click on a category in the left sidebar to view memos in that category"
+		},
 		"check": {
 			"title": "Check memos",
 			"description": "Click refresh to see your latest memos"

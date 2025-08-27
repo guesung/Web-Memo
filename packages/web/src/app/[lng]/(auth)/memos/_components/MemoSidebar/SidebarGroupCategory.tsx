@@ -22,7 +22,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 	const currentCategory = searchParams.get("category");
 
 	return (
-		<SidebarGroup>
+		<SidebarGroup id="category">
 			<SidebarGroupLabel>{t("sideBar.allCategory")}</SidebarGroupLabel>
 			<SidebarGroupContent>
 				<SidebarMenu>

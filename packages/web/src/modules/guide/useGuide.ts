@@ -61,6 +61,13 @@ export default function useGuide({ lng }: UseGuideProps) {
 					},
 				},
 				{
+					element: "#category",
+					popover: {
+						title: t("guide.category.title"),
+						description: t("guide.category.description"),
+					},
+				},
+				{
 					element: "#refresh",
 					popover: {
 						title: t("guide.check.title"),

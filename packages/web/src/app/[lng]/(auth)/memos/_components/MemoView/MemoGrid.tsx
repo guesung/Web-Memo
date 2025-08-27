@@ -7,15 +7,15 @@ import type { LanguageType } from "@src/modules/i18n";
 import { useKeyboardBind } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
-import { isMac } from "@web-memo/shared/utils";
+
 import { Skeleton } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import type { ComponentProps } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import MemoDialog from "../MemoDialog";
+import MemoEmptyState from "./MemoEmptyState";
 import MemoItem from "./MemoItem";
 import MemoOptionHeader from "./MemoOptionHeader";
 
@@ -39,7 +39,6 @@ interface MemoGridProps extends LanguageType {
 }
 
 export default function MemoGrid({ lng, memos }: MemoGridProps) {
-	const { t } = useTranslation(lng);
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
@@ -271,18 +270,7 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 	useKeyboardBind({ key: "Escape", callback: closeMemoOption });
 
 	if (memos.length === 0) {
-		return (
-			<div className="relative h-full w-full flex items-center justify-center">
-				<div className="text-center text-muted-foreground">
-					<p className="mb-2">{t("memos.emptyState.message")}</p>
-					<p className="text-sm">
-						{t("guide.welcome.description", {
-							key: isMac() ? "Option" : "Alt",
-						})}
-					</p>
-				</div>
-			</div>
-		);
+		return <MemoEmptyState lng={lng} />;
 	}
 
 	return (

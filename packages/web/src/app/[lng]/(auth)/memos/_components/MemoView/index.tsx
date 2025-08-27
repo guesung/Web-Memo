@@ -36,7 +36,8 @@ export default function MemoView({ lng }: LanguageType) {
 		<div className="flex w-full flex-col gap-4">
 			<div className="flex items-center">
 				<div className="flex w-full items-center justify-between">
-					<p className="text-muted-foreground select-none text-sm">
+					<p className="text-muted-foreground select-none text-sm flex items-center gap-2">
+						<span className="w-2 h-2 bg-primary rounded-full" />
 						{t("memos.totalMemos", { total: memos.length })}
 					</p>
 					<div className="flex">

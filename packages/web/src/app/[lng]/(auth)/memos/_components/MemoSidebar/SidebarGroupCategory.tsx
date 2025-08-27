@@ -29,7 +29,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 					{categories?.map((category) => (
 						<SidebarMenuItem key={category.id}>
 							<Link
-								href={`/memos?category=${encodeURIComponent(category.name)}`}
+								href={`/memos?category=${category.name}`}
 								className="w-full"
 								replace
 							>
@@ -46,7 +46,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 									}}
 								>
 									<span>{category.name}</span>
-									<span className="text-xs text-gray-50">
+									<span className="text-xs text-slate-500 dark:text-slate-50">
 										{category.memo_count ?? 0}
 									</span>
 								</SidebarMenuButton>

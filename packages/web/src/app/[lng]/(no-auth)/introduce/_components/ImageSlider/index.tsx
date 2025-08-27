@@ -106,7 +106,7 @@ export default function ImageSlider({ lng }: ImageSliderProps) {
 						src={image}
 						alt={`Slide ${index + 1}`}
 						fill
-						className={`absolute inset-0 bg-black/5 object-contain transition-opacity duration-300 ${
+						className={`absolute inset-0 object-contain transition-opacity duration-300 ${
 							index === currentIndex ? "opacity-100" : "opacity-0"
 						}`}
 						priority={index === currentIndex}

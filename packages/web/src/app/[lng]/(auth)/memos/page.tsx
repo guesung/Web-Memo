@@ -32,22 +32,30 @@ export default async function Page({ params: { lng } }: PageProps) {
 	const supabaseClient = getSupabaseClient();
 
 	return (
-		<main className="h-screen w-screen overflow-y-hidden px-4">
+		<main className="h-screen w-screen overflow-y-hidden">
 			<HeaderMargin />
 
-			<SidebarTrigger />
+			<div className="flex h-full">
+				<SidebarTrigger />
 
-			<HydrationBoundaryWrapper
-				queryKey={QUERY_KEY.memos()}
-				queryFn={() => new MemoService(supabaseClient).getMemos()}
-			>
-				<MemoSearchFormProvider>
-					<MemoSearchForm lng={lng} />
-					<Suspense fallback={<Loading />}>
-						<MemoView lng={lng} />
-					</Suspense>
-				</MemoSearchFormProvider>
-			</HydrationBoundaryWrapper>
+				<div className="flex-1 flex flex-col px-4 py-2">
+					<HydrationBoundaryWrapper
+						queryKey={QUERY_KEY.memos()}
+						queryFn={() => new MemoService(supabaseClient).getMemos()}
+					>
+						<MemoSearchFormProvider>
+							<div className="mb-6">
+								<MemoSearchForm lng={lng} />
+							</div>
+							<div className="flex-1 overflow-hidden">
+								<Suspense fallback={<Loading />}>
+									<MemoView lng={lng} />
+								</Suspense>
+							</div>
+						</MemoSearchFormProvider>
+					</HydrationBoundaryWrapper>
+				</div>
+			</div>
 
 			<ExtensionInstallCheckDialog lng={lng} />
 		</main>

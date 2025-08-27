@@ -2,6 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { PATHS } from "@web-memo/shared/constants";
 import { useCategoryQuery } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import {
@@ -22,19 +23,22 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 	const currentCategory = searchParams.get("category");
 
 	return (
-		<SidebarGroup>
+		<SidebarGroup id="category">
 			<SidebarGroupLabel>{t("sideBar.allCategory")}</SidebarGroupLabel>
 			<SidebarGroupContent>
 				<SidebarMenu>
 					{categories?.map((category) => (
 						<SidebarMenuItem key={category.id}>
 							<Link
-								href={`/memos?category=${encodeURIComponent(category.name)}`}
+								href={{
+									pathname: PATHS.memos,
+									query: { category: category.name },
+								}}
 								className="w-full"
 								replace
 							>
 								<SidebarMenuButton
-									className={`flex w-full items-center justify-between rounded-md px-3 py-2`}
+									className="flex w-full items-center justify-between rounded-md px-3 py-2"
 									style={{
 										borderLeft: `4px solid ${category.color || "transparent"}`,
 										backgroundColor:
@@ -46,7 +50,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 									}}
 								>
 									<span>{category.name}</span>
-									<span className="text-xs text-gray-50">
+									<span className="text-xs text-slate-500 dark:text-slate-50">
 										{category.memo_count ?? 0}
 									</span>
 								</SidebarMenuButton>

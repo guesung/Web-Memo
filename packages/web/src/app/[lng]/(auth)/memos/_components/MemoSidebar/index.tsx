@@ -53,7 +53,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 					<Tooltip>
 						<TooltipTrigger asChild>
 							<Link href={PATHS.memosSetting}>
-								<SidebarMenuButton>
+								<SidebarMenuButton id="settings">
 									<SettingsIcon size={16} />
 								</SidebarMenuButton>
 							</Link>

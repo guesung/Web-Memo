@@ -17,10 +17,12 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
 	const { t } = await useTranslation(lng);
 
 	return (
-		<section className="relative flex flex-col items-center justify-center rounded-md bg-zinc-100 px-8 py-12 opacity-80 shadow-xl dark:bg-zinc-900">
+		<section className="relative flex flex-col items-center justify-center rounded-md bg-zinc-100 px-8 py-12 opacity-80 shadow-xl dark:bg-zinc-900 gap-4">
 			<p className="text-center text-2xl">{t("login.welcomeTitle")}</p>
-			<p className="text-md text-center">{t("login.welcomeDescription")}</p>
-			<div className="h-8" />
+			<p className="text-md text-center text-gray-600 dark:text-gray-300">
+				{t("login.welcomeDescription")}
+			</p>
+
 			<form className="flex w-full flex-col gap-4 px-4">
 				<Button
 					formAction={signInWithOAuth.bind(null, "kakao")}

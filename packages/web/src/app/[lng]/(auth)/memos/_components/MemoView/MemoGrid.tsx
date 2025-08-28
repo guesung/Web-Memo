@@ -241,16 +241,17 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 	useEffect(
 		function updateDialogId() {
 			const currentDialogId = searchParams.get("id");
-			if (!currentDialogId) return;
+			const newDialogId = currentDialogId ? Number(currentDialogId) : null;
 
-			setDialogMemoId(Number(currentDialogId));
+			setDialogMemoId(newDialogId);
 		},
 		[searchParams],
 	);
 
 	useEffect(function closeDialogOnPopState() {
 		const handlePopstate = () => {
-			setDialogMemoId(history.state?.openedMemoId);
+			const openedMemoId = history.state?.openedMemoId;
+			setDialogMemoId(openedMemoId || null);
 		};
 
 		window.addEventListener("popstate", handlePopstate);
@@ -313,18 +314,11 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 							isMemoSelected={checkMemoSelected(memo.id)}
 							selectMemoItem={handleSelectMemoItem}
 							isSelectingMode={isSelectingMode}
-							setDialogMemoId={setDialogMemoId}
 						/>
 					);
 				})}
 			</MasonryInfiniteGrid>
-			{dialogMemoId && (
-				<MemoDialog
-					lng={lng}
-					memoId={dialogMemoId}
-					setDialogMemoId={setDialogMemoId}
-				/>
-			)}
+			{dialogMemoId && <MemoDialog lng={lng} memoId={dialogMemoId} />}
 		</div>
 	);
 }

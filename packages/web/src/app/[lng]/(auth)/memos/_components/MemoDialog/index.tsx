@@ -28,13 +28,11 @@ import UnsavedChangesAlert from "./UnsavedChangesAlert";
 
 interface MemoDialog extends LanguageType {
 	memoId: number;
-	setDialogMemoId: (id: number | null) => void;
 }
 
 export default function MemoDialog({
 	lng,
 	memoId,
-	setDialogMemoId,
 }: MemoDialog) {
 	const { t } = useTranslation(lng);
 	const { memo: memoData } = useMemoQuery({ id: memoId });
@@ -80,8 +78,6 @@ export default function MemoDialog({
 	};
 
 	const closeDialog = () => {
-		setDialogMemoId(null);
-
 		const isHasPreviousPage = history.state?.openedMemoId === memoId;
 		if (isHasPreviousPage) history.back();
 		else {

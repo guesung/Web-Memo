@@ -15,7 +15,6 @@ interface MemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	isSelectingMode: boolean;
 	selectMemoItem: (id: number) => void;
 	isMemoSelected: boolean;
-	setDialogMemoId: (id: number) => void;
 }
 
 export default memo(function MemoItem({
@@ -24,7 +23,6 @@ export default memo(function MemoItem({
 	selectMemoItem,
 	isSelectingMode,
 	isMemoSelected,
-	setDialogMemoId,
 	...props
 }: MemoItemProps) {
 	const searchParams = useSearchParams();
@@ -47,7 +45,6 @@ export default memo(function MemoItem({
 		if (isSelectingMode) selectMemoItem(Number(id));
 		else {
 			searchParams.set("id", id);
-			setDialogMemoId(Number(id));
 			history.pushState(
 				{ openedMemoId: Number(id) },
 				"",

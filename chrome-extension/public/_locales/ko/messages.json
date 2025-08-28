@@ -15,7 +15,7 @@
 		"message": "번호"
 	},
 	"reset": {
-		"message": "처음부터 시작하기"
+		"message": "초기화"
 	},
 	"title": {
 		"message": "제목"

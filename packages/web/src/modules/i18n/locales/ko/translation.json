@@ -229,7 +229,8 @@
 
 	"memos": {
 		"emptyState": {
-			"message": "아직 메모가 없어요. 사이드 패널에서 메모를 시작해보세요"
+			"message": "아직 메모가 없어요. 사이드 패널을 열어 메모를 작성해보세요.",
+			"description": "단축키 '{{key}} + S'를 눌러 사이드 패널을 열 수 있어요."
 		},
 		"totalMemos": "메모 {{total}}개",
 		"searchPlaceholder": "메모 찾기",

@@ -46,7 +46,6 @@ function useMemos() {
   return useQuery({
     queryKey: ['memos'],
     queryFn: fetchMemos,
-    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
@@ -168,7 +167,6 @@ const MemoList = memo(function MemoList({ memos }: { memos: Memo[] }) {
 const { data: memos } = useQuery({
   queryKey: ['memos'],
   queryFn: fetchMemos,
-  staleTime: 5 * 60 * 1000,
   cacheTime: 10 * 60 * 1000,
 });
 ```

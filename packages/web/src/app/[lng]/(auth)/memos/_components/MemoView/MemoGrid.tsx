@@ -7,6 +7,7 @@ import type { LanguageType } from "@src/modules/i18n";
 import { useKeyboardBind } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
+
 import { Skeleton } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -14,6 +15,7 @@ import type { ComponentProps } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import MemoDialog from "../MemoDialog";
+import MemoEmptyState from "./MemoEmptyState";
 import MemoItem from "./MemoItem";
 import MemoOptionHeader from "./MemoOptionHeader";
 
@@ -239,16 +241,17 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 	useEffect(
 		function updateDialogId() {
 			const currentDialogId = searchParams.get("id");
-			if (!currentDialogId) return;
+			const newDialogId = currentDialogId ? Number(currentDialogId) : null;
 
-			setDialogMemoId(Number(currentDialogId));
+			setDialogMemoId(newDialogId);
 		},
 		[searchParams],
 	);
 
 	useEffect(function closeDialogOnPopState() {
 		const handlePopstate = () => {
-			setDialogMemoId(history.state?.openedMemoId);
+			const openedMemoId = history.state?.openedMemoId;
+			setDialogMemoId(openedMemoId || null);
 		};
 
 		window.addEventListener("popstate", handlePopstate);
@@ -266,6 +269,10 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 	}, []);
 
 	useKeyboardBind({ key: "Escape", callback: closeMemoOption });
+
+	if (memos.length === 0) {
+		return <MemoEmptyState lng={lng} />;
+	}
 
 	return (
 		<div className="relative h-full w-full">
@@ -286,7 +293,7 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 				useResizeObserver
 				observeChildren
 				autoResize
-				className="container h-screen max-w-full pb-48 will-change-transform"
+				className="container h-screen max-w-full pb-48 will-change-transform pt-4"
 				container={true}
 				useRecycle={false}
 				id={CONTAINER_ID}
@@ -307,18 +314,11 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 							isMemoSelected={checkMemoSelected(memo.id)}
 							selectMemoItem={handleSelectMemoItem}
 							isSelectingMode={isSelectingMode}
-							setDialogMemoId={setDialogMemoId}
 						/>
 					);
 				})}
 			</MasonryInfiniteGrid>
-			{dialogMemoId && (
-				<MemoDialog
-					lng={lng}
-					memoId={dialogMemoId}
-					setDialogMemoId={setDialogMemoId}
-				/>
-			)}
+			{dialogMemoId && <MemoDialog lng={lng} memoId={dialogMemoId} />}
 		</div>
 	);
 }

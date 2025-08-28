@@ -31,6 +31,8 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { getCursorPosition } from "./util";
 
+const CATEGORY_LIST_WIDTH = 256;
+
 function MemoForm() {
 	const { debounce } = useDebounce();
 	const { data: tab } = useTabQuery();
@@ -105,7 +107,6 @@ function MemoForm() {
 		const calculatedTop = rect.top + top - scrollTop;
 
 		const viewportWidth = window.innerWidth;
-		const CATEGORY_LIST_WIDTH = 256;
 
 		if (calculatedLeft + CATEGORY_LIST_WIDTH > viewportWidth)
 			calculatedLeft = 0;

@@ -11,6 +11,7 @@ import dayjs from "dayjs";
 import { FolderIcon, HeartIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { MouseEvent, PropsWithChildren } from "react";
+import { useState } from "react";
 
 import MemoOption from "./MemoOption";
 
@@ -33,6 +34,7 @@ export default function MemoCardFooter({
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
+	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
 	const handleCategoryClick = (event: MouseEvent<HTMLDivElement>) => {
 		event.stopPropagation();
@@ -101,7 +103,7 @@ export default function MemoCardFooter({
 				) : null}
 			</div>
 			<div className="h-[36px] flex items-center">
-				{isShowingOption ? (
+				{isShowingOption || isDropdownOpen ? (
 					<div className="relative z-50 flex items-center transition">
 						<Button variant="ghost" size="icon" onClick={handleIsWishClick}>
 							<HeartIcon
@@ -116,15 +118,17 @@ export default function MemoCardFooter({
 								)}
 							/>
 						</Button>
-						<MemoOption memoIds={[memo.id]} lng={lng} />
+						<MemoOption
+							memoIds={[memo.id]}
+							lng={lng}
+							onOpenChange={setIsDropdownOpen}
+						/>
 						{children}
 					</div>
 				) : (
 					<time
 						dateTime={memo.updated_at ?? ""}
-						className={cn("text-muted-foreground absolute right-4 text-xs", {
-							"opacity-0": isShowingOption,
-						})}
+						className="text-muted-foreground absolute right-4 text-xs"
 					>
 						{dayjs(memo.updated_at).fromNow()}
 					</time>

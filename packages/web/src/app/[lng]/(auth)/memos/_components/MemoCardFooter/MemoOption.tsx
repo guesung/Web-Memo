@@ -30,12 +30,14 @@ import { useState } from "react";
 interface MemoOptionProps extends LanguageType {
 	memoIds: number[];
 	closeMemoOption?: () => void;
+	onOpenChange?: (isOpen: boolean) => void;
 }
 
 export default function MemoOption({
 	lng,
 	memoIds = [],
 	closeMemoOption,
+	onOpenChange,
 }: MemoOptionProps) {
 	const { t } = useTranslation(lng);
 	const searchParams = useSearchParams();
@@ -123,8 +125,13 @@ export default function MemoOption({
 		event.stopPropagation();
 	};
 
+	const handleOpenChange = (open: boolean) => {
+		setIsOpen(open);
+		onOpenChange?.(open);
+	};
+
 	return (
-		<DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
+		<DropdownMenu onOpenChange={handleOpenChange} open={isOpen}>
 			<DropdownMenuTrigger asChild>
 				<Button
 					variant="ghost"

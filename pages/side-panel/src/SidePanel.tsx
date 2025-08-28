@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import {
 	LoginSection,
 	MemoForm,
+	MemoFormSkeleton,
 	MemoHeader,
 	QueryProvider,
 	Summary,
@@ -30,7 +31,7 @@ export default function SidePanel() {
 				<section className="flex h-1/2 flex-col">
 					<MemoHeader />
 					<ErrorBoundary FallbackComponent={LoginSection}>
-						<Suspense fallback={<Loading />}>
+						<Suspense fallback={<MemoFormSkeleton />}>
 							<MemoForm />
 						</Suspense>
 					</ErrorBoundary>

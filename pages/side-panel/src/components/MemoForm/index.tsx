@@ -29,37 +29,9 @@ import {
 import { CheckIcon, HeartIcon, Loader2Icon, XIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { getCursorPosition } from "./util";
 
-const getCursorPosition = (textarea: HTMLTextAreaElement, position: number) => {
-	const div = document.createElement("div");
-	div.style.cssText = window.getComputedStyle(textarea, null).cssText;
-	div.style.height = "auto";
-	div.style.position = "absolute";
-	div.style.visibility = "hidden";
-	div.style.whiteSpace = "pre-wrap";
-
-	const textBeforeCursor = textarea.value.substring(0, position);
-	div.textContent = textBeforeCursor;
-	document.body.appendChild(div);
-
-	const lineHeight = parseInt(window.getComputedStyle(textarea).lineHeight);
-	const lines = textBeforeCursor.split("\n");
-	const currentLineText = lines[lines.length - 1];
-
-	const span = document.createElement("span");
-	span.textContent = currentLineText;
-	div.appendChild(span);
-
-	const cursorLeft = span.offsetWidth;
-	const cursorTop = (lines.length - 1) * lineHeight;
-
-	document.body.removeChild(div);
-
-	return {
-		left: cursorLeft,
-		top: cursorTop,
-	};
-};
+const CATEGORY_LIST_WIDTH = 256;
 
 function MemoForm() {
 	const { debounce } = useDebounce();
@@ -93,26 +65,19 @@ function MemoForm() {
 	const saveMemo = async ({ memo, isWish, categoryId }: MemoInput) => {
 		setIsSaving(true);
 
-		try {
-			const memoInfo = await getMemoInfo();
+		const memoInfo = await getMemoInfo();
 
-			const totalMemo = {
-				...memoInfo,
-				memo,
-				isWish,
-				category_id: categoryId,
-			};
+		const totalMemo = {
+			...memoInfo,
+			memo,
+			isWish,
+			category_id: categoryId,
+		};
 
-			if (memoData) {
-				mutateMemoPatch({ id: memoData.id, request: totalMemo });
-			} else {
-				mutateMemo(totalMemo);
-			}
-		} finally {
-			setTimeout(() => {
-				setIsSaving(false);
-			}, 500);
-		}
+		if (memoData) mutateMemoPatch({ id: memoData.id, request: totalMemo });
+		else mutateMemo(totalMemo);
+
+		setTimeout(() => setIsSaving(false), 500);
 	};
 
 	useDidMount(() => {
@@ -126,44 +91,42 @@ function MemoForm() {
 	}, [memoData?.memo, memoData?.isWish, memoData?.category_id, setValue]);
 
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		if (event.key === "#") {
-			event.preventDefault();
+		if (event.key !== "#") return;
 
-			const textarea = event.currentTarget;
-			const cursorPosition = textarea.selectionStart;
-			cursorPositionRef.current = cursorPosition;
+		event.preventDefault();
 
-			const rect = textarea.getBoundingClientRect();
-			const { left, top } = getCursorPosition(textarea, cursorPosition);
-			const scrollTop = textarea.scrollTop;
+		const textarea = event.currentTarget;
+		const cursorPosition = textarea.selectionStart;
+		cursorPositionRef.current = cursorPosition;
 
-			let calculatedLeft = rect.left + left;
-			const calculatedTop = rect.top + top - scrollTop;
+		const rect = textarea.getBoundingClientRect();
+		const { left, top } = getCursorPosition(textarea, cursorPosition);
+		const scrollTop = textarea.scrollTop;
 
-			const viewportWidth = window.innerWidth;
-			const CATEGORY_LIST_WIDTH = 256;
+		let calculatedLeft = rect.left + left;
+		const calculatedTop = rect.top + top - scrollTop;
 
-			if (calculatedLeft + CATEGORY_LIST_WIDTH > viewportWidth) {
-				calculatedLeft = 0;
-			}
+		const viewportWidth = window.innerWidth;
 
-			const currentText = watch("memo");
-			const newText =
-				currentText.slice(0, cursorPosition) +
-				"#" +
-				currentText.slice(cursorPosition);
-			setValue("memo", newText);
+		if (calculatedLeft + CATEGORY_LIST_WIDTH > viewportWidth)
+			calculatedLeft = 0;
 
-			setCategoryInputPosition({
-				top: calculatedTop,
-				left: calculatedLeft,
-			});
-			setShowCategoryList(true);
+		const currentText = watch("memo");
+		const newText =
+			currentText.slice(0, cursorPosition) +
+			"#" +
+			currentText.slice(cursorPosition);
+		setValue("memo", newText);
 
-			setTimeout(() => {
-				commandInputRef.current?.focus();
-			}, 0);
-		}
+		setCategoryInputPosition({
+			top: calculatedTop,
+			left: calculatedLeft,
+		});
+		setShowCategoryList(true);
+
+		setTimeout(() => {
+			commandInputRef.current?.focus();
+		}, 0);
 	};
 
 	const handleMemoChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {

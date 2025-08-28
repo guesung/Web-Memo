@@ -9,20 +9,16 @@ import {
 	useMemosUpsertMutation,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
-import { isAllSame } from "@web-memo/shared/utils";
 import {
 	Button,
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuGroup,
 	DropdownMenuItem,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
 	ToastAction,
 	toast,
 } from "@web-memo/ui";
@@ -54,12 +50,6 @@ export default function MemoOption({
 		isWish: searchParams.get("isWish") === "true",
 	});
 	const selectedMemos = memos.filter((memo) => memoIds.includes(memo.id));
-
-	const defaultCategoryId = isAllSame(
-		selectedMemos.map((memo) => memo.category_id),
-	)
-		? String(selectedMemos.at(0)?.category_id)
-		: "";
 
 	const handleDeleteMemo = async (event?: MouseEvent<HTMLDivElement>) => {
 		event?.stopPropagation();
@@ -154,30 +144,22 @@ export default function MemoOption({
 					>
 						{t("option.deleteMemo")}
 					</DropdownMenuItem>
-					<DropdownMenuItem>
-						<Select
-							onValueChange={handleCategoryChange}
-							defaultValue={defaultCategoryId}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder={t("option.changeCategory")} />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectGroup>
-									{categories?.map((category) => (
-										<SelectItem
-											key={category.id}
-											value={String(category.id)}
-											id={String(category.id)}
-											className="cursor-pointer"
-										>
-											{category.name}
-										</SelectItem>
-									))}
-								</SelectGroup>
-							</SelectContent>
-						</Select>
-					</DropdownMenuItem>
+					<DropdownMenuSub>
+						<DropdownMenuSubTrigger>
+							{t("option.changeCategory")}
+						</DropdownMenuSubTrigger>
+						<DropdownMenuSubContent>
+							{categories?.map((category) => (
+								<DropdownMenuItem
+									key={category.id}
+									onClick={() => handleCategoryChange(String(category.id))}
+									className="cursor-pointer"
+								>
+									{category.name}
+								</DropdownMenuItem>
+							))}
+						</DropdownMenuSubContent>
+					</DropdownMenuSub>
 				</DropdownMenuGroup>
 			</DropdownMenuContent>
 		</DropdownMenu>

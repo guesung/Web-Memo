@@ -11,7 +11,6 @@ export default function QueryProvider({ children }: PropsWithChildren) {
 		() =>
 			new QueryClient({
 				defaultOptions: {
-					queries: { refetchOnWindowFocus: true },
 					mutations: {
 						onError: (error) => {
 							toast({ title: I18n.get("toast_error_save") });

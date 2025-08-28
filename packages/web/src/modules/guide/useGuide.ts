@@ -73,6 +73,7 @@ export default function useGuide({ lng }: UseGuideProps) {
 						title: t("guide.settings.title"),
 						description: t("guide.settings.description"),
 					},
+					disableActiveInteraction: true,
 				},
 				{
 					element: "#refresh",

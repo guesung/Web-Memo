@@ -3,7 +3,7 @@ import type { LanguageParams } from "@src/modules/i18n";
 import { SUPPORTED_LANGUAGES } from "@src/modules/i18n";
 import { dir } from "i18next";
 import type { Metadata } from "next";
-import { type PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 import { InitDayjs } from "../_components";
 import { QueryProvider, ThemeProvider } from "./_components";
 

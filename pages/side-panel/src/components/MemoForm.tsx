@@ -26,7 +26,7 @@ import {
 	toast,
 	ToastAction,
 } from "@web-memo/ui";
-import { HeartIcon, XIcon } from "lucide-react";
+import { CheckIcon, HeartIcon, Loader2Icon, XIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -73,6 +73,7 @@ function MemoForm() {
 		top: 0,
 		left: 0,
 	});
+	const [isSaving, setIsSaving] = useState(false);
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const commandInputRef = useRef<HTMLInputElement>(null);
 	const cursorPositionRef = useRef<number | null>(null);
@@ -90,17 +91,28 @@ function MemoForm() {
 	const { mutate: mutateMemo } = useMemoPostMutation();
 
 	const saveMemo = async ({ memo, isWish, categoryId }: MemoInput) => {
-		const memoInfo = await getMemoInfo();
+		setIsSaving(true);
 
-		const totalMemo = {
-			...memoInfo,
-			memo,
-			isWish,
-			category_id: categoryId,
-		};
+		try {
+			const memoInfo = await getMemoInfo();
 
-		if (memoData) mutateMemoPatch({ id: memoData.id, request: totalMemo });
-		else mutateMemo(totalMemo);
+			const totalMemo = {
+				...memoInfo,
+				memo,
+				isWish,
+				category_id: categoryId,
+			};
+
+			if (memoData) {
+				mutateMemoPatch({ id: memoData.id, request: totalMemo });
+			} else {
+				mutateMemo(totalMemo);
+			}
+		} finally {
+			setTimeout(() => {
+				setIsSaving(false);
+			}, 500);
+		}
 	};
 
 	useDidMount(() => {
@@ -261,8 +273,8 @@ function MemoForm() {
 				<div
 					className="fixed z-50 w-64 rounded-md bg-white shadow-lg"
 					style={{
-						top: categoryInputPosition.top + "px",
-						left: categoryInputPosition.left + "px",
+						top: `${categoryInputPosition.top}px`,
+						left: `${categoryInputPosition.left}px`,
 					}}
 				>
 					<Command>
@@ -320,6 +332,24 @@ function MemoForm() {
 							},
 						)}
 					/>
+					{/* 저장 상태 인디케이터 */}
+					<div className="flex items-center gap-1">
+						{isSaving ? (
+							<>
+								<Loader2Icon className="w-3 h-3 animate-spin text-muted-foreground" />
+								<span className="text-xs text-muted-foreground">
+									저장 중...
+								</span>
+							</>
+						) : (
+							watch("memo") && (
+								<>
+									<CheckIcon className="w-3 h-3 text-green-500" />
+									<span className="text-xs text-green-600">저장됨</span>
+								</>
+							)
+						)}
+					</div>
 				</div>
 				{watch("categoryId") && (
 					<Badge

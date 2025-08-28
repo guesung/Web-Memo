@@ -19,7 +19,6 @@ export default function QueryProvider({ children, lng }: QueryProviderProps) {
 		() =>
 			new QueryClient({
 				defaultOptions: {
-					queries: { refetchOnWindowFocus: true, staleTime: 1000 * 60 * 5 },
 					mutations: {
 						onSuccess: async () => {
 							await ExtensionBridge.requestRefetchTheMemos();

@@ -1,3 +1,4 @@
+import { DEFAULT_PROMPTS } from "@web-memo/shared/constants";
 import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
@@ -40,6 +41,21 @@ export default function Option() {
 		});
 	});
 
+	const onReset = async () => {
+		const currentLanguage = watch("language");
+		const languageKey = currentLanguage === "ko" ? "ko" : "en";
+
+		const defaultYoutubePrompt = DEFAULT_PROMPTS.youtube[languageKey];
+		const defaultWebPrompt = DEFAULT_PROMPTS.web[languageKey];
+
+		setValue("youtubePrompt", defaultYoutubePrompt);
+		setValue("webPrompt", defaultWebPrompt);
+
+		toast({
+			title: I18n.get("settings_reset"),
+		});
+	};
+
 	useEffect(() => {
 		const fetchStorage = async () => {
 			const language = await ChromeSyncStorage.get<string>(
@@ -55,7 +71,6 @@ export default function Option() {
 			setValue("language", language);
 			setValue("youtubePrompt", youtubePrompts);
 			setValue("webPrompt", webPrompts);
-			console.log(language, I18n.getUILanguage());
 		};
 
 		fetchStorage();
@@ -114,7 +129,12 @@ export default function Option() {
 					</div>
 				</section>
 
-				<Button type="submit">{I18n.get("save")}</Button>
+				<div className="flex gap-2">
+					<Button type="button" variant="outline" onClick={onReset}>
+						{I18n.get("reset")}
+					</Button>
+					<Button type="submit">{I18n.get("save")}</Button>
+				</div>
 			</form>
 		</div>
 	);

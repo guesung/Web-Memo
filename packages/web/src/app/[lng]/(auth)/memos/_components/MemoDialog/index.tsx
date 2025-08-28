@@ -4,6 +4,7 @@ import type { MemoInput } from "@src/app/[lng]/(auth)/memos/_types/Input";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import {
+	useDebounce,
 	useKeyboardBind,
 	useMemoPatchMutation,
 	useMemoQuery,
@@ -19,7 +20,13 @@ import {
 } from "@web-memo/ui";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
-import { useEffect, useImperativeHandle, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useImperativeHandle,
+	useRef,
+	useState,
+} from "react";
 import { useForm } from "react-hook-form";
 
 import MemoCardFooter from "../MemoCardFooter";
@@ -28,20 +35,16 @@ import UnsavedChangesAlert from "./UnsavedChangesAlert";
 
 interface MemoDialog extends LanguageType {
 	memoId: number;
-	setDialogMemoId: (id: number | null) => void;
 }
 
-export default function MemoDialog({
-	lng,
-	memoId,
-	setDialogMemoId,
-}: MemoDialog) {
+export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	const { t } = useTranslation(lng);
 	const { memo: memoData } = useMemoQuery({ id: memoId });
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 	const [showAlert, setShowAlert] = useState(false);
 	const searchParams = useSearchParams();
+	const { debounce } = useDebounce();
 
 	const { register, watch, setValue } = useForm<MemoInput>({
 		defaultValues: {
@@ -65,6 +68,20 @@ export default function MemoDialog({
 		});
 	};
 
+	const autoSaveMemo = useCallback(() => {
+		const currentMemo = watch("memo");
+		const isEdited = currentMemo !== memoData?.memo;
+
+		if (isEdited && currentMemo.trim() !== "") {
+			mutateMemoPatch({
+				id: memoId,
+				request: {
+					memo: currentMemo,
+				},
+			});
+		}
+	}, [watch, memoData?.memo, mutateMemoPatch, memoId]);
+
 	useKeyboardBind({ key: "s", callback: saveMemo, isMetaKey: true });
 
 	const checkEditedAndCloseDialog = () => {
@@ -80,8 +97,6 @@ export default function MemoDialog({
 	};
 
 	const closeDialog = () => {
-		setDialogMemoId(null);
-
 		const isHasPreviousPage = history.state?.openedMemoId === memoId;
 		if (isHasPreviousPage) history.back();
 		else {
@@ -94,7 +109,7 @@ export default function MemoDialog({
 		setShowAlert(false);
 	};
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	// biome-ignore lint/correctness/useExhaustiveDependencies: ref와 textareaRef는 초기화 시에만 필요
 	useEffect(() => {
 		if (!textareaRef.current) return;
 		textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
@@ -103,6 +118,18 @@ export default function MemoDialog({
 	useEffect(() => {
 		setValue("memo", memoData?.memo ?? "");
 	}, [memoData, setValue]);
+
+	useEffect(() => {
+		const subscription = watch((value) => {
+			if (value.memo !== undefined) {
+				debounce(() => {
+					autoSaveMemo();
+				}, 1000);
+			}
+		});
+
+		return () => subscription.unsubscribe();
+	}, [watch, debounce, autoSaveMemo]);
 
 	if (!memoData) return null;
 

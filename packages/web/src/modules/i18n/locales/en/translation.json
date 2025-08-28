@@ -229,7 +229,8 @@
 
 	"memos": {
 		"emptyState": {
-			"message": "No memos yet. Start by opening the side panel"
+			"message": "No memos yet. Open the side panel to start writing memos.",
+			"description": "Press '{{key}} + S' to open the side panel"
 		},
 		"totalMemos": "{{total}} memos",
 		"searchPlaceholder": "Search memos",

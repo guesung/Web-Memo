@@ -295,7 +295,6 @@ function MemoForm() {
 							},
 						)}
 					/>
-					{/* 저장 상태 인디케이터 */}
 					<div className="flex items-center gap-1">
 						{isSaving ? (
 							<>

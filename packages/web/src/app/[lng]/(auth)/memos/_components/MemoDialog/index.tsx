@@ -11,14 +11,12 @@ import {
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import {
-	Button,
 	Card,
 	CardContent,
 	Dialog,
 	DialogContent,
 	Textarea,
 } from "@web-memo/ui";
-import dayjs from "dayjs";
 import { motion } from "framer-motion";
 import {
 	useCallback,
@@ -59,16 +57,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	});
 	useImperativeHandle(ref, () => textareaRef.current);
 
-	const saveMemo = () => {
-		mutateMemoPatch({
-			id: memoId,
-			request: {
-				memo: watch("memo"),
-			},
-		});
-	};
-
-	const autoSaveMemo = useCallback(() => {
+	const saveMemo = useCallback(() => {
 		const currentMemo = watch("memo");
 		const isEdited = currentMemo !== memoData?.memo;
 
@@ -123,13 +112,13 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 		const subscription = watch((value) => {
 			if (value.memo !== undefined) {
 				debounce(() => {
-					autoSaveMemo();
+					saveMemo();
 				}, 1000);
 			}
 		});
 
 		return () => subscription.unsubscribe();
-	}, [watch, debounce, autoSaveMemo]);
+	}, [watch, debounce, saveMemo]);
 
 	if (!memoData) return null;
 
@@ -157,29 +146,12 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 								/>
 
 								<div className="h-4" />
-								<span className="text-muted-foreground float-right text-xs">
-									{t("common.lastUpdated", {
-										time: dayjs(memoData.updated_at).fromNow(),
-									})}
-								</span>
 							</CardContent>
-							<MemoCardFooter memo={memoData} lng={lng}>
-								<div className="flex gap-2">
-									<Button
-										variant="outline"
-										type="button"
-										onClick={checkEditedAndCloseDialog}
-									>
-										{t("common.close")}
-									</Button>
-									<Button
-										onClick={handleSaveAndClose}
-										data-testid="memo-save-button"
-									>
-										{t("common.save")}
-									</Button>
-								</div>
-							</MemoCardFooter>
+							<MemoCardFooter
+								memo={memoData}
+								lng={lng}
+								isShowingOption={false}
+							/>
 						</Card>
 					</motion.div>
 				</DialogContent>

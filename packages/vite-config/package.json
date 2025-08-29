@@ -1,6 +1,6 @@
 {
 	"name": "@web-memo/vite-config",
-	"version": "1.8.11",
+	"version": "1.8.12",
 	"description": "Vite base configuration",
 	"main": "index.mjs",
 	"type": "module",

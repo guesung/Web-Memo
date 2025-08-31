@@ -1,12 +1,9 @@
 import { CONFIG } from "@web-memo/env";
 import { useFetch } from "@web-memo/shared/hooks";
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
-import {
-	BRIDGE_MESSAGE_TYPES,
-	ExtensionBridge,
-} from "@web-memo/shared/modules/extension-bridge";
+import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { checkYoutubeUrl, extractVideoId } from "@web-memo/shared/utils";
-import { I18n, Runtime, Tab } from "@web-memo/shared/utils/extension";
+import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import { useState } from "react";
 
 export default function useSummary() {
@@ -48,13 +45,63 @@ export default function useSummary() {
 			setErrorMessage(I18n.get("error_get_page_content"));
 			return;
 		}
+
+		// Next.js Route Handler로 요약 요청
 		try {
-			await Runtime.connect(
-				BRIDGE_MESSAGE_TYPES.GET_SUMMARY,
-				{ pageContent, category: currentCategory },
-				(message: string) => message && setSummary((prev) => prev + message),
-			);
-		} catch {
+			const response = await fetch(`${CONFIG.webUrl}/api/summarize`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					pageContent,
+					category: currentCategory,
+					language: I18n.getUILanguage(),
+				}),
+			});
+
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			// 스트리밍 응답 처리
+			const reader = response.body?.getReader();
+			if (!reader) {
+				throw new Error("Response body is not readable");
+			}
+
+			const decoder = new TextDecoder();
+			
+			while (true) {
+				const { done, value } = await reader.read();
+				if (done) break;
+
+				const chunk = decoder.decode(value);
+				const lines = chunk.split('\n');
+				
+				for (const line of lines) {
+					if (line.startsWith('data: ')) {
+						const data = line.slice(6);
+						if (data === '[DONE]') {
+							return;
+						}
+						
+						try {
+							const parsed = JSON.parse(data);
+							if (parsed.content) {
+								setSummary((prev) => prev + parsed.content);
+							} else if (parsed.error) {
+								setErrorMessage(parsed.error);
+								return;
+							}
+						} catch {
+							// JSON 파싱 오류는 무시 (빈 줄 등)
+						}
+					}
+				}
+			}
+		} catch (error) {
+			console.error("Summary error:", error);
 			setErrorMessage(I18n.get("error_get_summary"));
 			setCategory("others");
 			return;

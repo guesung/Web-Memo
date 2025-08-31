@@ -7,7 +7,7 @@ import {
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { checkYoutubeUrl, extractVideoId } from "@web-memo/shared/utils";
-import { I18n, Tab } from "@web-memo/shared/utils/extension";
+import { getSystemPrompt, I18n, Tab } from "@web-memo/shared/utils/extension";
 import { useState } from "react";
 
 export default function useSummary() {
@@ -50,18 +50,27 @@ export default function useSummary() {
 			return;
 		}
 
+		// 사용자 설정 프롬프트 생성
 		const language = await ChromeSyncStorage.get<string>(STORAGE_KEYS.language);
+		const systemPrompt = await getSystemPrompt({
+			language: language || "ko",
+			category: currentCategory,
+		});
+
+		// OpenAI API 메시지 형식으로 구성
+		const messages = [
+			{ role: "system", content: systemPrompt },
+			{ role: "user", content: pageContent },
+		];
 
 		try {
-			const response = await fetch(`${CONFIG.webUrl}/api/summarize`, {
+			const response = await fetch(`${CONFIG.webUrl}/api/openai`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					pageContent,
-					category: currentCategory,
-					language,
+					messages,
 				}),
 			});
 

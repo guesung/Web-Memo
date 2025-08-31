@@ -1,6 +1,6 @@
-# Web-Memo 요약 기능 API 가이드
+# Web-Memo OpenAI API 통합 가이드
 
-Chrome 확장 프로그램의 요약 기능을 Background Script에서 Next.js Route Handler로 마이그레이션하는 완전한 가이드입니다.
+Chrome 확장 프로그램의 요약 기능을 Background Script에서 Next.js Route Handler로 마이그레이션하고, 사용자 설정 프롬프트를 활용하는 완전한 가이드입니다.
 
 ## 📋 목차
 - [개요](#개요)
@@ -20,36 +20,38 @@ Chrome 확장 프로그램의 요약 기능을 Background Script에서 Next.js R
 
 ### 변경 후 (새로운 아키텍처)
 ```
-사이드 패널 → Next.js Route Handler → OpenAI API → Next.js Route Handler → 사이드 패널
+사이드 패널 (사용자 프롬프트) → Next.js Route Handler (/api/openai) → OpenAI API → Next.js Route Handler → 사이드 패널
 ```
 
 ### 주요 개선사항
 - ✅ **보안 강화**: API 키가 서버 측에서만 관리됨
-- ✅ **확장성**: 서버리스 환경에서 자동 스케일링
+- ✅ **사용자 맞춤화**: 사용자가 설정한 프롬프트 활용
+- ✅ **확장성**: 일반적인 OpenAI API 엔드포인트로 다양한 용도 지원
 - ✅ **유지보수성**: 중앙화된 API 로직 관리
 - ✅ **모니터링**: 서버 레벨에서 로그 및 메트릭 수집 가능
 
 ## 🏗️ 새로운 아키텍처
 
-### 1. Next.js Route Handler (`/app/api/summarize/route.ts`)
+### 1. Next.js Route Handler (`/app/api/openai/route.ts`)
 
 핵심 기능:
-- POST 요청으로 페이지 콘텐츠 수신
-- OpenAI API와 스트리밍 통신
+- 일반적인 OpenAI API 프록시 서버 역할
+- messages 배열을 직접 받아 OpenAI API 호출
+- 스트리밍/비스트리밍 응답 모두 지원
 - CORS 헤더 설정으로 Chrome Extension 지원
-- 에러 처리 및 토큰 최적화
+- 포괄적인 에러 처리 및 토큰 최적화
 
 주요 특징:
 ```typescript
+// 메시지 형식으로 요청 받기
+const { messages, model = "gpt-4o-mini", stream = true } = body;
+
 // 스트리밍 응답
 const customReadable = new ReadableStream({
   async start(controller) {
-    const stream = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: processedContent },
-      ],
+    const streamResponse = await openai.chat.completions.create({
+      model,
+      messages,
       stream: true,
       max_tokens: 1000,
       temperature: 0.3,
@@ -63,18 +65,34 @@ const customReadable = new ReadableStream({
 
 주요 변경사항:
 - Background Script 의존성 제거
+- 사용자 설정 프롬프트 활용 (getSystemPrompt 함수 사용)
+- OpenAI messages 형식으로 요청 구성
 - 직접 HTTP 요청으로 변경
 - Server-Sent Events(SSE) 스타일 스트리밍 처리
 
 ```typescript
+// 사용자 설정 프롬프트 생성
+const systemPrompt = await getSystemPrompt({ 
+  language: language || "ko", 
+  category: currentCategory 
+});
+
+// OpenAI API 메시지 형식으로 구성
+const messages = [
+  { role: "system", content: systemPrompt },
+  { role: "user", content: pageContent }
+];
+
 // 서버로 직접 요청
-const response = await fetch(`${CONFIG.webUrl}/api/summarize`, {
+const response = await fetch(`${CONFIG.webUrl}/api/openai`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    pageContent,
-    category: currentCategory,
-    language: I18n.getUILanguage(),
+    messages,
+    model: "gpt-4o-mini",
+    stream: true,
+    max_tokens: 1000,
+    temperature: 0.3,
   }),
 });
 
@@ -162,12 +180,16 @@ pnpm zip
 
 #### API 엔드포인트 테스트
 ```bash
-curl -X POST http://localhost:3000/api/summarize \
+curl -X POST http://localhost:3000/api/openai \
   -H "Content-Type: application/json" \
   -d '{
-    "pageContent": "테스트 콘텐츠입니다.",
-    "category": "others",
-    "language": "ko"
+    "messages": [
+      {"role": "system", "content": "당신은 도움이 되는 어시스턴트입니다."},
+      {"role": "user", "content": "안녕하세요!"}
+    ],
+    "model": "gpt-4o-mini",
+    "stream": true,
+    "max_tokens": 100
   }'
 ```
 

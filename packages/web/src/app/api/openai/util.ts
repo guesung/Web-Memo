@@ -9,10 +9,6 @@ import type { ChatCompletionMessageParam } from "openai/resources.mjs";
 import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "./constant";
 import type { ValidationResult } from "./type";
 
-const openai = new OpenAI({
-	apiKey: CONFIG.openApiKey,
-});
-
 export const validateMessages = (messages: unknown): ValidationResult => {
 	if (!messages || !Array.isArray(messages) || messages.length === 0) {
 		return { isValid: false, error: ERROR_MESSAGES.MISSING_MESSAGES };
@@ -72,6 +68,10 @@ export const handleOpenAIError = (error: Error) => {
 export const createStreamingResponse = (
 	messages: ChatCompletionMessageParam[],
 ) => {
+	const openai = new OpenAI({
+		apiKey: CONFIG.openApiKey,
+	});
+
 	const encoder = new TextEncoder();
 
 	const customReadable = new ReadableStream({

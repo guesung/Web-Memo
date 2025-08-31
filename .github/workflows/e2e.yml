@@ -59,6 +59,8 @@ jobs:
 
       - name: Install playwright browsers
         run: pnpm exec playwright install
+        working-directory: e2e
+
 
       - name: Run tests
         run: pnpm run test:e2e

@@ -54,8 +54,7 @@ export async function POST(request: NextRequest) {
 						model: "gpt-4o-mini",
 						messages,
 						stream: true,
-						max_tokens: 1000, // 토큰 수 제한으로 비용 최적화
-						temperature: 0.3, // 일관성 있는 요약을 위한 낮은 temperature
+						temperature: 0.3,
 					});
 
 					for await (const chunk of stream) {

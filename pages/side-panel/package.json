@@ -1,6 +1,6 @@
 {
 	"name": "@web-memo/side-panel",
-	"version": "1.8.14",
+	"version": "1.8.15",
 	"description": "chrome extension sidepanel",
 	"private": true,
 	"sideEffects": true,

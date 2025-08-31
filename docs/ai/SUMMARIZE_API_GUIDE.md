@@ -72,9 +72,9 @@ const customReadable = new ReadableStream({
 
 ```typescript
 // 사용자 설정 프롬프트 생성
-const systemPrompt = await getSystemPrompt({
-  language: language || "ko",
-  category: currentCategory
+const systemPrompt = await getSystemPrompt({ 
+  language: language || "ko", 
+  category: currentCategory 
 });
 
 // OpenAI API 메시지 형식으로 구성
@@ -84,7 +84,7 @@ const messages = [
 ];
 
 // 서버로 직접 요청
-const response = await fetch(`${CLIENT_CONFIG.webUrl}/api/openai`, {
+const response = await fetch(`${CONFIG.webUrl}/api/openai`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({

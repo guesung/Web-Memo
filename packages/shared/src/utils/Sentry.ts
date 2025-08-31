@@ -6,12 +6,12 @@ import {
 	init,
 	replayIntegration,
 } from "@sentry/react";
-import { CLIENT_CONFIG } from "@web-memo/env";
+import { CONFIG } from "@web-memo/env";
 import { isExtension, isProduction } from "./Environment";
 
 const SENTRY_DSN = isExtension()
-	? CLIENT_CONFIG.sentryDsnExtension
-	: CLIENT_CONFIG.sentryDsnWeb;
+	? CONFIG.sentryDsnExtension
+	: CONFIG.sentryDsnWeb;
 
 export const testSentry = () => {
 	captureException(new Error(`captureException Error 테스트`));

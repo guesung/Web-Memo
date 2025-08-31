@@ -1,6 +1,5 @@
 import "webextension-polyfill";
 
-import { openai } from "@root/utils/openai";
 import { CONFIG } from "@web-memo/env";
 import { DEFAULT_PROMPTS, URL } from "@web-memo/shared/constants";
 import {
@@ -9,7 +8,7 @@ import {
 } from "@web-memo/shared/modules/chrome-storage";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { isProduction } from "@web-memo/shared/utils";
-import { getSystemPrompt, I18n, Tab } from "@web-memo/shared/utils/extension";
+import { I18n, Tab } from "@web-memo/shared/utils/extension";
 
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
 chrome.runtime.onInstalled.addListener(async () => {
@@ -78,30 +77,6 @@ if (chrome.contextMenus)
 	});
 
 chrome.runtime.setUninstallURL(URL.googleForm);
-
-// chatGPT에게서 메시지를 받아서 다시 전달한다.
-chrome.runtime.onConnect.addListener(async (port) => {
-	port.onMessage.addListener(async (message) => {
-		const { category, pageContent } = message;
-
-		const language = await ChromeSyncStorage.get<string>(STORAGE_KEYS.language);
-		const prompt = await getSystemPrompt({ language, category });
-
-		const stream = await openai.chat.completions.create({
-			model: "gpt-4o-mini",
-			messages: [
-				{ role: "system", content: prompt },
-				{ role: "user", content: pageContent },
-			],
-			stream: true,
-		});
-
-		for await (const chunk of stream) {
-			const message = chunk.choices[0]?.delta?.content;
-			port.postMessage(message);
-		}
-	});
-});
 
 chrome.tabs.onActivated.addListener(async () => {
 	// 활성화된 탭이 변경되었을 때 사이드 패널을 업데이트한다.

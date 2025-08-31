@@ -1,4 +1,4 @@
-import { CONFIG } from "@web-memo/env";
+import { SERVER_CONFIG } from "@web-memo/env";
 import {
 	STREAM_DATA_PREFIX,
 	STREAM_DONE_MARKER,
@@ -69,7 +69,7 @@ export const createStreamingResponse = (
 	messages: ChatCompletionMessageParam[],
 ) => {
 	const openai = new OpenAI({
-		apiKey: CONFIG.openApiKey,
+		apiKey: SERVER_CONFIG.openApiKey,
 	});
 
 	const encoder = new TextEncoder();

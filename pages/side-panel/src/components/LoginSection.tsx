@@ -1,4 +1,4 @@
-import { CONFIG } from "@web-memo/env";
+import { CLIENT_CONFIG } from "@web-memo/env";
 import { Tab } from "@web-memo/shared/utils/extension";
 import { ExternalLinkIcon } from "lucide-react";
 
@@ -10,7 +10,7 @@ export default function LoginSection() {
 				type="button"
 				className="flex cursor-pointer items-center gap-2"
 				onClick={() => {
-					Tab.create({ url: `${CONFIG.webUrl}/login` });
+					Tab.create({ url: `${CLIENT_CONFIG.webUrl}/login` });
 				}}
 			>
 				로그인하러가기

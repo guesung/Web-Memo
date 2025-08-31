@@ -1,17 +1,16 @@
 import { createClient } from "@supabase/supabase-js";
-import { CONFIG } from "@web-memo/env";
+import { CLIENT_CONFIG } from "@web-memo/env";
 import { COOKIE_KEY, SUPABASE } from "../../constants";
 import type { StorageKeyType } from "../../modules/chrome-storage";
 import { ChromeSyncStorage } from "../../modules/chrome-storage";
 import type { Database } from "../../types";
-
 import { AuthService } from "../Supabase";
 
 export const getSupabaseClient = async () => {
 	try {
 		const supabaseClientInstance = createClient<Database, "memo">(
-			CONFIG.supabaseUrl,
-			CONFIG.supabaseAnonKey,
+			CLIENT_CONFIG.supabaseUrl,
+			CLIENT_CONFIG.supabaseAnonKey,
 			{
 				db: { schema: SUPABASE.schema.memo },
 				auth: {
@@ -39,11 +38,11 @@ export const getSupabaseClient = async () => {
 
 		const accessTokenFromWeb = await chrome.cookies.get({
 			name: COOKIE_KEY.accessToken,
-			url: CONFIG.webUrl,
+			url: CLIENT_CONFIG.webUrl,
 		});
 		const refreshTokenCookieFromWeb = await chrome.cookies.get({
 			name: COOKIE_KEY.refreshToken,
-			url: CONFIG.webUrl,
+			url: CLIENT_CONFIG.webUrl,
 		});
 
 		if (!accessTokenFromWeb || !refreshTokenCookieFromWeb)
@@ -62,8 +61,8 @@ export const getSupabaseClient = async () => {
 
 export const getFeedbackSupabaseClient = () => {
 	return createClient<Database, "feedback">(
-		CONFIG.supabaseUrl,
-		CONFIG.supabaseAnonKey,
+		CLIENT_CONFIG.supabaseUrl,
+		CLIENT_CONFIG.supabaseAnonKey,
 		{
 			db: { schema: SUPABASE.schema.feedback },
 		},

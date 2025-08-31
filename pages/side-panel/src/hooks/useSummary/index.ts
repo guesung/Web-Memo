@@ -1,4 +1,4 @@
-import { CONFIG } from "@web-memo/env";
+import { CLIENT_CONFIG } from "@web-memo/env";
 import { useFetch } from "@web-memo/shared/hooks";
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
@@ -42,7 +42,7 @@ export default function useSummary(): UseSummaryReturn {
 
 			const messages = await getSummaryPrompt(pageContent, currentCategory);
 
-			const response = await fetch(`${CONFIG.webUrl}/api/openai`, {
+			const response = await fetch(`${CLIENT_CONFIG.webUrl}/api/openai`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

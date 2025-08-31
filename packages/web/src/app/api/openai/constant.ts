@@ -4,10 +4,6 @@ export const CORS_HEADERS = {
 	"Access-Control-Allow-Headers": "Content-Type",
 } as const;
 
-export const OPENAI_MODEL = "gpt-4o-mini";
-export const OPENAI_TEMPERATURE = 0.3;
-export const STREAM_DONE_MARKER = "data: [DONE]\n\n";
-
 export const HTTP_STATUS = {
 	BAD_REQUEST: 400,
 	TOO_MANY_REQUESTS: 429,

@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import type { ChatCompletionMessageParam } from "openai/resources.mjs";
-import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "./constant";
+import { ERROR_MESSAGES, HTTP_STATUS } from "./constant";
 import {
 	createErrorResponse,
 	createStreamingResponse,
@@ -34,12 +34,4 @@ export async function POST(request: NextRequest) {
 			HTTP_STATUS.INTERNAL_SERVER_ERROR,
 		);
 	}
-}
-
-// OPTIONS 요청 처리 (CORS preflight)
-export async function OPTIONS() {
-	return new Response(null, {
-		status: 200,
-		headers: CORS_HEADERS,
-	});
 }

@@ -3,6 +3,8 @@ import {
 	DEFAULT_PROMPTS,
 	LANGUAGE_MAP,
 	PROMPT,
+	STREAM_DATA_PREFIX,
+	STREAM_DONE_MARKER,
 } from "@web-memo/shared/constants";
 import {
 	ChromeSyncStorage,
@@ -11,13 +13,7 @@ import {
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { checkYoutubeUrl, extractVideoId } from "@web-memo/shared/utils";
-import {
-	DEFAULT_CATEGORY,
-	DEFAULT_LANGUAGE,
-	STREAM_DATA_PREFIX,
-	STREAM_DATA_PREFIX_LENGTH,
-	STREAM_DONE_MARKER,
-} from "./constant";
+import { DEFAULT_CATEGORY, DEFAULT_LANGUAGE } from "./constant";
 
 interface PageContentResult {
 	content: string;
@@ -117,7 +113,7 @@ export const processStreamingResponse = async (
 
 		for (const line of lines) {
 			if (line.startsWith(STREAM_DATA_PREFIX)) {
-				const data = line.slice(STREAM_DATA_PREFIX_LENGTH);
+				const data = line.slice(STREAM_DATA_PREFIX.length);
 				if (data === STREAM_DONE_MARKER) return;
 
 				try {

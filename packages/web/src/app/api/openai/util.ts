@@ -1,22 +1,18 @@
 import { CONFIG } from "@web-memo/env";
+import {
+	STREAM_DATA_PREFIX,
+	STREAM_DONE_MARKER,
+} from "@web-memo/shared/constants";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources.mjs";
-import {
-	CORS_HEADERS,
-	ERROR_MESSAGES,
-	HTTP_STATUS,
-	OPENAI_MODEL,
-	OPENAI_TEMPERATURE,
-	STREAM_DONE_MARKER,
-} from "./constant";
+import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "./constant";
 import type { ValidationResult } from "./type";
 
 const openai = new OpenAI({
 	apiKey: CONFIG.openApiKey,
 });
 
-// Validation functions
 export const validateMessages = (messages: unknown): ValidationResult => {
 	if (!messages || !Array.isArray(messages) || messages.length === 0) {
 		return { isValid: false, error: ERROR_MESSAGES.MISSING_MESSAGES };
@@ -37,7 +33,6 @@ export const validateMessages = (messages: unknown): ValidationResult => {
 	return { isValid: true };
 };
 
-// Error handling functions
 export const createErrorResponse = (error: string, status: number) => {
 	return NextResponse.json({ error }, { status, headers: CORS_HEADERS });
 };
@@ -74,7 +69,6 @@ export const handleOpenAIError = (error: Error) => {
 	);
 };
 
-// Streaming functions
 export const createStreamingResponse = (
 	messages: ChatCompletionMessageParam[],
 ) => {
@@ -84,28 +78,32 @@ export const createStreamingResponse = (
 		async start(controller) {
 			try {
 				const stream = await openai.chat.completions.create({
-					model: OPENAI_MODEL,
+					model: "gpt-4o-mini",
 					messages,
 					stream: true,
-					temperature: OPENAI_TEMPERATURE,
+					temperature: 0.3,
 				});
 
 				for await (const chunk of stream) {
 					const content = chunk.choices[0]?.delta?.content;
 					if (content) {
 						controller.enqueue(
-							encoder.encode(`data: ${JSON.stringify({ content })}\n\n`),
+							encoder.encode(
+								`${STREAM_DATA_PREFIX}${JSON.stringify({ content })}\n\n`,
+							),
 						);
 					}
 				}
 
-				controller.enqueue(encoder.encode(STREAM_DONE_MARKER));
+				controller.enqueue(
+					encoder.encode(`${STREAM_DATA_PREFIX}${STREAM_DONE_MARKER}\n\n`),
+				);
 				controller.close();
 			} catch (error) {
 				console.error("OpenAI API Error:", error);
 				controller.enqueue(
 					encoder.encode(
-						`data: ${JSON.stringify({ error: ERROR_MESSAGES.STREAMING_ERROR })}\n\n`,
+						`${STREAM_DATA_PREFIX}${JSON.stringify({ error: ERROR_MESSAGES.STREAMING_ERROR })}\n\n`,
 					),
 				);
 				controller.close();

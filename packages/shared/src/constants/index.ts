@@ -3,6 +3,7 @@ export * from "./Error";
 export * from "./Extension";
 export * from "./Language";
 export * from "./MotionVariants";
+export * from "./OpenAI";
 export * from "./Path";
 export * from "./Prompt";
 export * from "./QueryKey";

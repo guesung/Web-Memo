@@ -1,6 +1,6 @@
-import { CONFIG } from "@src/constants";
 import { createServerClient } from "@supabase/ssr";
 import type { Provider } from "@supabase/supabase-js";
+import { CONFIG } from "@web-memo/env";
 import { PATHS, SUPABASE } from "@web-memo/shared/constants";
 import type { Database, MemoSupabaseClient } from "@web-memo/shared/types";
 import { revalidatePath } from "next/cache";

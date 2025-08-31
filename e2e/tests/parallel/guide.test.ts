@@ -47,9 +47,13 @@ test.describe("가이드 기능", () => {
 			"Great! Now you can write memos. Don't worry, they save automatically",
 		);
 	});
-	test("새로고침 버튼을 누르면, 가이드가 종료된다.", async ({ page }) => {
+	test("5단계에서 메모 새로고침 버튼을 누르면, 가이드가 종료된다.", async ({
+		page,
+	}) => {
 		await page.waitForURL(new RegExp(PATHS.memos));
 
+		await page.locator(".driver-popover-next-btn").click();
+		await page.locator(".driver-popover-next-btn").click();
 		await page.locator(".driver-popover-next-btn").click();
 		await page.locator(".driver-popover-next-btn").click();
 		await page.locator("#refresh").click();

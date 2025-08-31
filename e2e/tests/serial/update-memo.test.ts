@@ -41,8 +41,17 @@ test.describe("메모 수정 기능", () => {
 		const newMemoText = String(new Date());
 
 		await page.getByTestId("memo-textarea").fill(newMemoText);
-		await page.getByTestId("memo-save-button").click();
 
-		await expect(page.getByText(newMemoText)).toBeVisible();
+		await page.waitForTimeout(1000);
+
+		await page.getByTestId("memo-close-button").click();
+
+		const newMemoItem = page.locator(".memo-item", {
+			hasText: newMemoText,
+		});
+
+		await newMemoItem.click();
+
+		await expect(page.getByTestId("memo-textarea")).toHaveValue(newMemoText);
 	});
 });

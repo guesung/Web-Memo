@@ -1,5 +1,9 @@
 import { CONFIG } from "@web-memo/env";
 import { useFetch } from "@web-memo/shared/hooks";
+import {
+	ChromeSyncStorage,
+	STORAGE_KEYS,
+} from "@web-memo/shared/modules/chrome-storage";
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { checkYoutubeUrl, extractVideoId } from "@web-memo/shared/utils";
@@ -46,7 +50,8 @@ export default function useSummary() {
 			return;
 		}
 
-		// Next.js Route Handler로 요약 요청
+		const language = await ChromeSyncStorage.get<string>(STORAGE_KEYS.language);
+
 		try {
 			const response = await fetch(`${CONFIG.webUrl}/api/summarize`, {
 				method: "POST",
@@ -56,7 +61,7 @@ export default function useSummary() {
 				body: JSON.stringify({
 					pageContent,
 					category: currentCategory,
-					language: I18n.getUILanguage(),
+					language,
 				}),
 			});
 
@@ -71,21 +76,21 @@ export default function useSummary() {
 			}
 
 			const decoder = new TextDecoder();
-			
+
 			while (true) {
 				const { done, value } = await reader.read();
 				if (done) break;
 
 				const chunk = decoder.decode(value);
-				const lines = chunk.split('\n');
-				
+				const lines = chunk.split("\n");
+
 				for (const line of lines) {
-					if (line.startsWith('data: ')) {
+					if (line.startsWith("data: ")) {
 						const data = line.slice(6);
-						if (data === '[DONE]') {
+						if (data === "[DONE]") {
 							return;
 						}
-						
+
 						try {
 							const parsed = JSON.parse(data);
 							if (parsed.content) {

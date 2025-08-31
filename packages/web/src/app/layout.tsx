@@ -3,7 +3,7 @@ import "../fonts/output/PretendardVariable.css";
 import "./globals.css";
 
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
-import { CONFIG } from "@src/constants";
+import { CONFIG } from "@web-memo/env";
 import { Toaster } from "@web-memo/ui";
 import type { Viewport } from "next";
 import type { PropsWithChildren } from "react";

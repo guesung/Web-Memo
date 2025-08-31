@@ -1,5 +1,5 @@
-import { CONFIG } from "@src/constants";
 import { createServerClient } from "@supabase/ssr";
+import { CONFIG } from "@web-memo/env";
 import { NEED_AUTH_PAGES, PATHS } from "@web-memo/shared/constants";
 import type { Database } from "@web-memo/shared/types";
 import { AuthService } from "@web-memo/shared/utils";

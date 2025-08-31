@@ -32,4 +32,6 @@ export const CONFIG = {
 		"YOUTUBE_TRANSCRIPT_URL",
 		process.env.YOUTUBE_TRANSCRIPT_URL,
 	),
+	gaId: getSafeConfig("GA_ID", process.env.GA_ID),
+	gtmId: getSafeConfig("GTM_ID", process.env.GTM_ID),
 };

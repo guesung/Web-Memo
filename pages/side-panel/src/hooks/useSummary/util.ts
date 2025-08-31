@@ -1,4 +1,4 @@
-import { CLIENT_CONFIG } from "@web-memo/env";
+import { CONFIG } from "@web-memo/env";
 import {
 	DEFAULT_PROMPTS,
 	LANGUAGE_MAP,
@@ -29,7 +29,7 @@ export const fetchYoutubeTranscript = async (
 	videoId: string,
 ): Promise<string> => {
 	const response = await fetch(
-		`${CLIENT_CONFIG.youtubeTranscriptUrl}/api/youtube-transcript?video_id=${videoId}`,
+		`${CONFIG.youtubeTranscriptUrl}/api/youtube-transcript?video_id=${videoId}`,
 	);
 
 	if (!response.ok) throw new Error("Failed to fetch transcript");

@@ -3,7 +3,7 @@ import "../fonts/output/PretendardVariable.css";
 import "./globals.css";
 
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
-import { CLIENT_CONFIG } from "@web-memo/env";
+import { CONFIG } from "@web-memo/env";
 import { Toaster } from "@web-memo/ui";
 import type { Viewport } from "next";
 import type { PropsWithChildren } from "react";
@@ -25,8 +25,8 @@ export default function Layout({ children }: LayoutProps) {
 				{children}
 
 				<WebVitals />
-				<GoogleAnalytics gaId={CLIENT_CONFIG.gaId} />
-				<GoogleTagManager gtmId={CLIENT_CONFIG.gtmId} />
+				<GoogleAnalytics gaId={CONFIG.gaId} />
+				<GoogleTagManager gtmId={CONFIG.gtmId} />
 				<Toaster />
 			</body>
 		</html>

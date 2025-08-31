@@ -1,8 +1,8 @@
-import { init } from "@sentry/nextjs";
-import { CLIENT_CONFIG } from "@web-memo/env";
+import { init, replayIntegration } from "@sentry/nextjs";
+import { CONFIG } from "@web-memo/env";
 
 init({
-	dsn: CLIENT_CONFIG.sentryDsnWeb,
+	dsn: CONFIG.sentryDsnWeb,
 	integrations: [Sentry.replayIntegration()],
 	tracesSampleRate: 1.0,
 	replaysSessionSampleRate: 0.1,

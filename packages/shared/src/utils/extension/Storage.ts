@@ -1,11 +1,11 @@
 import type { Session } from "@supabase/supabase-js";
-import { CLIENT_CONFIG } from "@web-memo/env";
+import { CONFIG } from "@web-memo/env";
 import { SUPABASE } from "../../constants";
 
 export const getSession = async () => {
 	const cookie = await chrome.cookies.get({
 		name: SUPABASE.authToken,
-		url: CLIENT_CONFIG.webUrl,
+		url: CONFIG.webUrl,
 	});
 	if (!cookie) return;
 
@@ -15,6 +15,6 @@ export const getSession = async () => {
 export const removeSession = async () => {
 	await chrome.cookies.remove({
 		name: SUPABASE.authToken,
-		url: CLIENT_CONFIG.webUrl,
+		url: CONFIG.webUrl,
 	});
 };

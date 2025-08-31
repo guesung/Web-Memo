@@ -1,4 +1,4 @@
-import { CLIENT_CONFIG } from "@web-memo/env";
+import { CONFIG } from "@web-memo/env";
 import { PATHS } from "@web-memo/shared/constants";
 import { SearchParams } from "@web-memo/shared/modules/search-params";
 
@@ -12,7 +12,7 @@ export const getMemoUrl = ({ id, isWish }: GetMemoUrlParams) => {
 	if (id) searchParams.set("id", String(id));
 	if (isWish) searchParams.set("isWish", "true");
 
-	return `${CLIENT_CONFIG.webUrl}${PATHS.memos}${searchParams.getSearchParams()}`;
+	return `${CONFIG.webUrl}${PATHS.memos}${searchParams.getSearchParams()}`;
 };
 
 export const getMemoWishListUrl = (id?: number) => {
@@ -20,5 +20,5 @@ export const getMemoWishListUrl = (id?: number) => {
 	searchParams.set("isWish", "true");
 	if (id) searchParams.set("id", String(id));
 
-	return `${CLIENT_CONFIG.webUrl}${PATHS.memos}${searchParams.getSearchParams()}`;
+	return `${CONFIG.webUrl}${PATHS.memos}${searchParams.getSearchParams()}`;
 };

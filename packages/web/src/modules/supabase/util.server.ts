@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import type { Provider } from "@supabase/supabase-js";
-import { CLIENT_CONFIG } from "@web-memo/env";
+import { CONFIG } from "@web-memo/env";
 import { PATHS, SUPABASE } from "@web-memo/shared/constants";
 import type { Database, MemoSupabaseClient } from "@web-memo/shared/types";
 import { revalidatePath } from "next/cache";
@@ -15,8 +15,8 @@ export const getSupabaseClient = () => {
 	const cookieStore = cookies();
 
 	return createServerClient<Database, "memo", Database["memo"]>(
-		CLIENT_CONFIG.supabaseUrl,
-		CLIENT_CONFIG.supabaseAnonKey,
+		CONFIG.supabaseUrl,
+		CONFIG.supabaseAnonKey,
 		{
 			cookies: {
 				getAll() {
@@ -40,7 +40,7 @@ export const signInWithOAuth = async (provider: Provider) => {
 	const { error, data } = await supabaseClient.auth.signInWithOAuth({
 		provider,
 		options: {
-			redirectTo: `${CLIENT_CONFIG.webUrl}${PATHS.callbackOAuth}`,
+			redirectTo: `${CONFIG.webUrl}${PATHS.callbackOAuth}`,
 		},
 	});
 
@@ -59,5 +59,5 @@ export const signInWithEmail = async (email: string, password: string) => {
 
 	if (error) redirect(PATHS.error);
 	revalidatePath(PATHS.root, "layout");
-	redirect(`${CLIENT_CONFIG.webUrl}${PATHS.callbackEmail}`);
+	redirect(`${CONFIG.webUrl}${PATHS.callbackEmail}`);
 };

@@ -1,6 +1,6 @@
 import "webextension-polyfill";
 
-import { CLIENT_CONFIG } from "@web-memo/env";
+import { CONFIG } from "@web-memo/env";
 import { DEFAULT_PROMPTS, URL } from "@web-memo/shared/constants";
 import {
 	ChromeSyncStorage,
@@ -43,7 +43,7 @@ chrome.runtime.onInstalled.addListener(async () => {
 // 확장 프로그램이 설치되었을 때 가이드 페이지로 이동한다.
 chrome.runtime.onInstalled.addListener(async () => {
 	if (!isProduction) return;
-	await Tab.create({ url: `${CLIENT_CONFIG.webUrl}/login` });
+	await Tab.create({ url: `${CONFIG.webUrl}/login` });
 });
 
 // 확장 프로그램이 설치되었을 때 contextMenus를 설정한다.
@@ -67,7 +67,7 @@ if (chrome.contextMenus)
 	chrome.contextMenus.onClicked.addListener(async (item) => {
 		switch (item.menuItemId) {
 			case CONTEXT_MENU_ID_CHECK_MEMO:
-				await Tab.create({ url: `${CLIENT_CONFIG.webUrl}/memos` });
+				await Tab.create({ url: `${CONFIG.webUrl}/memos` });
 				break;
 			case CONTEXT_MENU_ID_SHOW_GUIDE:
 				if (I18n.getUILanguage() === "ko") Tab.create({ url: URL.guideKo });

@@ -1,12 +1,12 @@
 import { createBrowserClient } from "@supabase/ssr";
-import { CLIENT_CONFIG } from "@web-memo/env";
+import { CONFIG } from "@web-memo/env";
 import { SUPABASE } from "../../constants";
 import type { Database } from "../../types";
 
 export const getSupabaseClient = () => {
 	return createBrowserClient<Database, "memo", Database["memo"]>(
-		CLIENT_CONFIG.supabaseUrl,
-		CLIENT_CONFIG.supabaseAnonKey,
+		CONFIG.supabaseUrl,
+		CONFIG.supabaseAnonKey,
 		{
 			auth: {
 				storage: {
@@ -31,8 +31,8 @@ export const getSupabaseClient = () => {
 
 export const getFeedbackSupabaseClient = () => {
 	return createBrowserClient<Database>(
-		CLIENT_CONFIG.supabaseUrl,
-		CLIENT_CONFIG.supabaseAnonKey,
+		CONFIG.supabaseUrl,
+		CONFIG.supabaseAnonKey,
 		{
 			db: { schema: SUPABASE.schema.feedback },
 		},

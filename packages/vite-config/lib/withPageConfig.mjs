@@ -1,6 +1,6 @@
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import react from "@vitejs/plugin-react-swc";
-import { CLIENT_CONFIG } from '@web-memo/env';
+import { CONFIG } from "@web-memo/env";
 import { watchRebuildPlugin } from "@web-memo/hmr";
 import deepmerge from "deepmerge";
 import { defineConfig } from "vite";
@@ -29,7 +29,7 @@ export function withPageConfig(config) {
 						sentryVitePlugin({
 							org: "guesung",
 							project: "web-memo",
-							authToken: CLIENT_CONFIG.sentryAuthToken,
+							authToken: CONFIG.sentryAuthToken,
 							telemetry: false,
 							bundleSizeOptimizations: {
 								excludeDebugStatements: true,

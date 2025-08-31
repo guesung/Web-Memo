@@ -69,9 +69,6 @@ jobs:
           echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
           echo NODE_ENV=production >> packages/env/.env
 
-          echo "${{ secrets.WEB_ENV_FILE }}" > packages/web/.env
-          echo NEXT_PUBLIC_WEB_URL=${{ env.WEB_URL }} >> packages/web/.env
-
       - name: Vercel Pull
         run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
 

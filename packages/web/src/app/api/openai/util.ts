@@ -8,6 +8,8 @@ import type { ChatCompletionMessageParam } from "openai/resources.mjs";
 import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "./constant";
 import type { ValidationResult } from "./type";
 
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
 export const validateMessages = (messages: unknown): ValidationResult => {
 	if (!messages || !Array.isArray(messages) || messages.length === 0) {
 		return { isValid: false, error: ERROR_MESSAGES.MISSING_MESSAGES };
@@ -68,7 +70,7 @@ export const createStreamingResponse = (
 	messages: ChatCompletionMessageParam[],
 ) => {
 	const openai = new OpenAI({
-		apiKey: process.env.OPENAI_API_KEY,
+		apiKey: OPENAI_API_KEY,
 	});
 
 	const encoder = new TextEncoder();
@@ -100,9 +102,13 @@ export const createStreamingResponse = (
 				controller.close();
 			} catch (error) {
 				console.error("OpenAI API Error:", error);
+				let errorMessage = ERROR_MESSAGES.STREAMING_ERROR as string;
+				if (error instanceof Error) {
+					errorMessage = error.message;
+				}
 				controller.enqueue(
 					encoder.encode(
-						`${STREAM_DATA_PREFIX}${JSON.stringify({ error: ERROR_MESSAGES.STREAMING_ERROR })}\n\n`,
+						`${STREAM_DATA_PREFIX}${JSON.stringify({ error: errorMessage })}\n\n`,
 					),
 				);
 				controller.close();

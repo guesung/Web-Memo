@@ -6,6 +6,7 @@ export const CORS_HEADERS = {
 
 export const HTTP_STATUS = {
 	BAD_REQUEST: 400,
+	FORBIDDEN: 403,
 	TOO_MANY_REQUESTS: 429,
 	INTERNAL_SERVER_ERROR: 500,
 } as const;
@@ -18,4 +19,5 @@ export const ERROR_MESSAGES = {
 	CONTEXT_TOO_LONG: "입력 텍스트가 너무 깁니다.",
 	STREAMING_ERROR: "요약 생성 중 오류가 발생했습니다.",
 	GENERAL_SERVER_ERROR: "서버 오류가 발생했습니다.",
+	UNAUTHORIZED: "권한이 없습니다.",
 } as const;

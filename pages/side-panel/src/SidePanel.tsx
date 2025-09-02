@@ -1,6 +1,6 @@
 import { useDidMount } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
-import { ErrorBoundary, Loading, Toaster } from "@web-memo/ui";
+import { ErrorBoundary, Toaster } from "@web-memo/ui";
 import { Suspense } from "react";
 
 import {
@@ -20,7 +20,7 @@ export default function SidePanel() {
 	return (
 		<QueryProvider>
 			<main className="prose prose-sm bg-background text-foreground relative flex h-lvh flex-col px-4 max-w-none overflow-x-hidden">
-				<section className="flex-1 overflow-scroll">
+				<section className="flex-1 overflow-y-scroll">
 					<ErrorBoundary>
 						<SummaryProvider>
 							<SummaryHeader />

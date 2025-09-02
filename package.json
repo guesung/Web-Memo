@@ -1,6 +1,6 @@
 {
 	"name": "web-memo",
-	"version": "1.8.16",
+	"version": "1.8.17",
 	"description": "Web Memo - Chrome Extension",
 	"bugs": "https://github.com/guesung/Web-Memo/issues",
 	"homepage": "https://web-memos.vercel.app",
@@ -23,6 +23,7 @@
 		"build:web": "turbo build --filter=@web-memo/web",
 		"build:extension": "turbo build --filter=!@web-memo/web",
 		"start:web": "turbo start --filter=@web-memo/web",
+		"start:python-server": "turbo start --filter=@web-memo/python-server",
 		"zip": "turbo zip",
 		"type-check": "turbo type-check",
 		"tsc-watch": "turbo tsc-watch",

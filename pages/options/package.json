@@ -1,6 +1,6 @@
 {
 	"name": "@web-memo/options",
-	"version": "1.8.16",
+	"version": "1.8.17",
 	"description": "chrome extension options",
 	"private": true,
 	"sideEffects": true,

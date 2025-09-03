@@ -49,6 +49,7 @@ function MemoForm() {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const commandInputRef = useRef<HTMLInputElement>(null);
 	const cursorPositionRef = useRef<number | null>(null);
+	const [isCreating, setIsCreating] = useState(false);
 
 	const { register, setValue, watch } = useForm<MemoInput>({
 		defaultValues: {
@@ -60,7 +61,7 @@ function MemoForm() {
 	const { ref, ...rest } = register("memo");
 
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
-	const { mutate: mutateMemo } = useMemoPostMutation();
+	const { mutate: mutateMemoPost } = useMemoPostMutation();
 
 	const saveMemo = async ({ memo, isWish, categoryId }: MemoInput) => {
 		setIsSaving(true);
@@ -74,10 +75,29 @@ function MemoForm() {
 			category_id: categoryId,
 		};
 
-		if (memoData) mutateMemoPatch({ id: memoData.id, request: totalMemo });
-		else mutateMemo(totalMemo);
+		if (memoData)
+			mutateMemoPatch(
+				{ id: memoData.id, request: totalMemo },
+				{
+					onSuccess: () => {
+						setTimeout(() => {
+							setIsSaving(false);
+						}, 500);
+					},
+				},
+			);
+		else if (!isCreating) {
+			setIsCreating(true);
 
-		setTimeout(() => setIsSaving(false), 500);
+			mutateMemoPost(totalMemo, {
+				onSuccess: () => {
+					setTimeout(() => {
+						setIsSaving(false);
+					}, 500);
+					setIsCreating(false);
+				},
+			});
+		}
 	};
 
 	useDidMount(() => {

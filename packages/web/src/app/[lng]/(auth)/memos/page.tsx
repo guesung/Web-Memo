@@ -56,8 +56,6 @@ export default async function Page({ params: { lng } }: PageProps) {
 					</HydrationBoundaryWrapper>
 				</div>
 			</div>
-
-			<ExtensionInstallCheckDialog lng={lng} />
 		</main>
 	);
 }

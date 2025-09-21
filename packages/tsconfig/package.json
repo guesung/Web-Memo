@@ -1,6 +1,6 @@
 {
 	"name": "@web-memo/tsconfig",
-	"version": "1.8.18",
+	"version": "1.8.19",
 	"description": "tsconfig for chrome extension",
 	"private": true,
 	"scripts": {

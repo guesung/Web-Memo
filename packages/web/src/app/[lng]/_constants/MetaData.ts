@@ -9,9 +9,9 @@ export const metadataCommon: Metadata = {
 		canonical: "https://web-memo.site",
 	},
 	verification: {
-		google: "OX_jRs67l_-1WTeDzypcPFJEP3yTsBNK-RrXZAcqkq4",
+		google: "e92NNntqJ--8e3A0jAc-YFB3QwHg46AQQ4eplMUvqtQ",
 		other: {
-			"naver-site-verification": "4776de5753e1cb67d3640b59e65016ffe945df0c",
+			"naver-site-verification": "7140428f3bcb61efc36b5e1cfb62305c2e57e181",
 		},
 	},
 };

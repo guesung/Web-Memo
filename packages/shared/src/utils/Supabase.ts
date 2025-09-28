@@ -33,12 +33,24 @@ export class MemoService {
 			.upsert(requestWithoutCategory)
 			.select();
 	};
-	getMemos = async () =>
-		this.supabaseClient
-			.schema(SUPABASE.table.memo)
-			.from(SUPABASE.table.memo)
-			.select("*, category(id, name, color)")
-			.order("updated_at", { ascending: false });
+	getMemos = async () => {
+		const [firstBatch, secondBatch] = await Promise.all([
+			this.supabaseClient
+				.schema(SUPABASE.table.memo)
+				.from(SUPABASE.table.memo)
+				.select("*, category(id, name, color)")
+				.order("updated_at", { ascending: false })
+				.range(0, 999),
+			this.supabaseClient
+				.schema(SUPABASE.table.memo)
+				.from(SUPABASE.table.memo)
+				.select("*, category(id, name, color)")
+				.order("updated_at", { ascending: false })
+				.range(1000, 1999),
+		]);
+		const data = [...(firstBatch?.data ?? []), ...(secondBatch?.data ?? [])];
+		return { ...firstBatch, data };
+	};
 
 	updateMemo = async ({
 		id,

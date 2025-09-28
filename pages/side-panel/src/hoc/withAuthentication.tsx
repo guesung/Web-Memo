@@ -10,10 +10,8 @@ export default function withAuthentication(
 
 		useDidMount(() => {
 			ExtensionBridge.responseSyncLoginStatus(async () => {
-				console.log(0);
 				await refetchSupabaseClient();
 				await refetch();
-				console.log(user);
 			});
 		});
 

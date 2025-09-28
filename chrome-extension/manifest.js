@@ -32,7 +32,7 @@ const manifest = deepmerge(
 			type: "module",
 		},
 		externally_connectable: {
-			matches: ["http://localhost:3000/*", "https://*.web-memo.site/*"],
+			matches: ["http://localhost:3000/*", "https://*.web-memo.site/*","https://*.webmemo.site/*"],
 		},
 		action: {
 			default_popup: "popup/index.html",

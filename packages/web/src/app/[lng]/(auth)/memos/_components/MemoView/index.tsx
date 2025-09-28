@@ -31,7 +31,7 @@ export default function MemoView({ lng }: LanguageType) {
 	});
 
 	useGuide({ lng });
-	useDidMount(ExtensionBridge.requestSyncLoginStatus);
+	useDidMount(() => ExtensionBridge.requestSyncLoginStatus());
 
 	return (
 		<div className="flex w-full flex-col gap-4">

@@ -263,7 +263,7 @@ export default class ExtensionBridge {
 	 */
 	static async requestSyncLoginStatus() {
 		try {
-			chrome.runtime.sendMessage(EXTENSION.id, {
+			return await chrome.runtime.sendMessage(EXTENSION.id, {
 				type: BRIDGE_MESSAGE_TYPES.SYNC_LOGIN_STATUS,
 			});
 		} catch (error) {
@@ -280,7 +280,7 @@ export default class ExtensionBridge {
 	 */
 	static responseSyncLoginStatus(callbackFn: () => void) {
 		try {
-			Runtime.onMessageExternal(
+			return Runtime.onMessageExternal(
 				BRIDGE_MESSAGE_TYPES.SYNC_LOGIN_STATUS,
 				callbackFn,
 			);

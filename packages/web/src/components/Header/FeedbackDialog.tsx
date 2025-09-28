@@ -7,6 +7,8 @@ import {
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
+	Input,
+	Label,
 	Textarea,
 } from "@web-memo/ui";
 import { useForm } from "react-hook-form";
@@ -14,7 +16,7 @@ import { useForm } from "react-hook-form";
 interface FeedbackDialogProps extends LanguageType {
 	isOpen: boolean;
 	onClose: () => void;
-	onSubmit: (content: string) => void;
+	onSubmit: (content: string, email?: string) => void;
 }
 
 export default function FeedbackDialog({
@@ -27,11 +29,12 @@ export default function FeedbackDialog({
 	const { register, handleSubmit, reset, watch } = useForm({
 		defaultValues: {
 			content: "",
+			email: "",
 		},
 	});
 
 	const onSubmitHandler = handleSubmit((data) => {
-		onSubmit(data.content);
+		onSubmit(data.content, data.email || undefined);
 		reset();
 	});
 
@@ -40,19 +43,29 @@ export default function FeedbackDialog({
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
 					<DialogTitle>{t("feedback.title")}</DialogTitle>
-					<DialogDescription>
-						{t("feedback.description-1")}
-						<br />
-						{t("feedback.description-2")}
-					</DialogDescription>
+					<DialogDescription>{t("feedback.description")}</DialogDescription>
 				</DialogHeader>
 				<form onSubmit={onSubmitHandler} className="space-y-4">
-					<div className="grid gap-2">
-						<Textarea
-							{...register("content")}
-							placeholder={t("feedback.placeholder")}
-							className="min-h-[100px]"
-						/>
+					<div className="grid gap-4">
+						<div className="grid gap-2">
+							<Label htmlFor="content">{t("feedback.content-label")}</Label>
+							<Textarea
+								{...register("content")}
+								placeholder={t("feedback.placeholder")}
+								className="min-h-[100px]"
+							/>
+						</div>
+						<div className="grid gap-2">
+							<Label htmlFor="email">{t("feedback.email-label")}</Label>
+							<Input
+								{...register("email")}
+								type="email"
+								placeholder={t("feedback.email-placeholder")}
+							/>
+							<p className="text-sm text-muted-foreground">
+								{t("feedback.email-description")}
+							</p>
+						</div>
 					</div>
 					<div className="flex justify-end gap-2">
 						<Button type="button" variant="outline" onClick={onClose}>

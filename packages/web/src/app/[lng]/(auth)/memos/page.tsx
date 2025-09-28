@@ -11,6 +11,7 @@ import { Loading, SidebarTrigger } from "@web-memo/ui";
 import { Suspense } from "react";
 
 import {
+	ExtensionInstallCheckDialog,
 	MemoSearchForm,
 	MemoSearchFormProvider,
 	MemoView,
@@ -48,6 +49,8 @@ export default async function Page({ params: { lng } }: PageProps) {
 					</HydrationBoundaryWrapper>
 				</div>
 			</div>
+
+			<ExtensionInstallCheckDialog lng={lng} />
 		</main>
 	);
 }

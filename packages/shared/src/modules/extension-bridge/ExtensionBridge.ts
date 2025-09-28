@@ -257,4 +257,39 @@ export default class ExtensionBridge {
 			);
 		}
 	}
+
+	/**
+	 * 웹에서 익스텐션으로 로그인 상태 동기화 요청
+	 */
+	static async requestSyncLoginStatus() {
+		try {
+			return await chrome.runtime.sendMessage(EXTENSION.id, {
+				type: BRIDGE_MESSAGE_TYPES.SYNC_LOGIN_STATUS,
+			});
+		} catch (error) {
+			throw new ExtensionError(
+				"Failed to request login status sync",
+				ExtensionErrorCode.COMMUNICATION_ERROR,
+				error,
+			);
+		}
+	}
+
+	/**
+	 * 익스텐션에서 로그인 상태 동기화 요청 처리
+	 */
+	static responseSyncLoginStatus(callbackFn: () => void) {
+		try {
+			return Runtime.onMessageExternal(
+				BRIDGE_MESSAGE_TYPES.SYNC_LOGIN_STATUS,
+				callbackFn,
+			);
+		} catch (error) {
+			throw new ExtensionError(
+				"Failed to respond to login status sync request",
+				ExtensionErrorCode.RUNTIME_ERROR,
+				error,
+			);
+		}
+	}
 }

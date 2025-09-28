@@ -6,7 +6,8 @@ import { AuthService } from "../../../utils";
 import useSupabaseClientQuery from "./useSupabaseClientQuery";
 
 export default function useSupabaseUserQuery() {
-	const { data: supabaseClient } = useSupabaseClientQuery();
+	const { data: supabaseClient, refetch: refetchSupabaseClient } =
+		useSupabaseClientQuery();
 
 	const query = useSuspenseQuery<UserResponse, Error>({
 		queryFn: new AuthService(supabaseClient).getUser,
@@ -17,5 +18,6 @@ export default function useSupabaseUserQuery() {
 	return {
 		...query,
 		user: query.data,
+		refetchSupabaseClient,
 	};
 }

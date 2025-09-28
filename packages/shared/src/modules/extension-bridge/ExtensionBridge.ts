@@ -257,4 +257,33 @@ export default class ExtensionBridge {
 			);
 		}
 	}
+
+	static async requestSignout() {
+		try {
+			return await chrome.runtime.sendMessage(EXTENSION.id, {
+				type: BRIDGE_MESSAGE_TYPES.SIGN_OUT,
+			});
+		} catch (error) {
+			throw new ExtensionError(
+				"Failed to request signout",
+				ExtensionErrorCode.COMMUNICATION_ERROR,
+				error,
+			);
+		}
+	}
+
+	static responseSignout(callbackFn: () => void) {
+		try {
+			return Runtime.onMessageExternal(
+				BRIDGE_MESSAGE_TYPES.SIGN_OUT,
+				callbackFn,
+			);
+		} catch (error) {
+			throw new ExtensionError(
+				"Failed to respond to signout request",
+				ExtensionErrorCode.RUNTIME_ERROR,
+				error,
+			);
+		}
+	}
 }

@@ -1,6 +1,7 @@
 import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
 import { getMemoUrl } from "@src/utils";
+import { SUPABASE } from "@web-memo/shared/constants";
 import {
 	useCategoryQuery,
 	useDebounce,
@@ -102,6 +103,9 @@ function MemoForm() {
 
 	useDidMount(() => {
 		ExtensionBridge.responseRefetchTheMemos(refetchMemo);
+		ExtensionBridge.responseSignout(async () =>
+			chrome.storage.sync.remove(SUPABASE.authToken),
+		);
 	});
 
 	useEffect(() => {

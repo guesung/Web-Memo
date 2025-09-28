@@ -14,9 +14,9 @@ import {
 	useSignoutMutation,
 	useSupabaseUserQuery,
 } from "@web-memo/shared/hooks";
+import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-
 import ToggleTheme from "./ToggleTheme";
 
 export default function HeaderRight({ lng }: LanguageType) {
@@ -32,6 +32,7 @@ export default function HeaderRight({ lng }: LanguageType) {
 		"/images/pngs/default_image_user.png";
 
 	const handleSignoutClick = () => {
+		ExtensionBridge.requestSignout();
 		mutateSignout();
 		router.push(PATHS.login);
 	};

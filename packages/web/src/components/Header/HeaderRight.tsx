@@ -32,8 +32,8 @@ export default function HeaderRight({ lng }: LanguageType) {
 		"/images/pngs/default_image_user.png";
 
 	const handleSignoutClick = () => {
-		ExtensionBridge.requestSyncLoginStatus();
 		mutateSignout();
+		ExtensionBridge.requestSyncLoginStatus();
 		router.push(PATHS.login);
 	};
 

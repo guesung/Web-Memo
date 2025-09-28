@@ -1,6 +1,6 @@
 {
 	"name": "@web-memo/zipper",
-	"version": "1.8.19",
+	"version": "1.8.20",
 	"description": "chrome extension zipper",
 	"private": true,
 	"sideEffects": false,

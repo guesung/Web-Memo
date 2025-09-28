@@ -40,7 +40,11 @@ export default function FeedbackDialog({
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
 					<DialogTitle>{t("feedback.title")}</DialogTitle>
-					<DialogDescription>{t("feedback.description")}</DialogDescription>
+					<DialogDescription>
+						{t("feedback.description-1")}
+						<br />
+						{t("feedback.description-2")}
+					</DialogDescription>
 				</DialogHeader>
 				<form onSubmit={onSubmitHandler} className="space-y-4">
 					<div className="grid gap-2">

@@ -367,7 +367,8 @@
 	"feedback": {
 		"button": "Send feedback",
 		"title": "Share your thoughts",
-		"description": "Help us improve our service",
+		"description-1": "Help us improve our service.",
+		"description-2": "Real-time notifications are sent to developers for quick response.",
 		"placeholder": "Tell us what could be better",
 		"cancel": "Cancel",
 		"submit": "Send",

@@ -2,7 +2,8 @@
 
 import { useGuide } from "@src/modules/guide";
 import type { LanguageType } from "@src/modules/i18n";
-import { useMemosQuery } from "@web-memo/shared/hooks";
+import { useDidMount, useMemosQuery } from "@web-memo/shared/hooks";
+import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useFormContext } from "react-hook-form";
@@ -21,7 +22,6 @@ export default function MemoView({ lng }: LanguageType) {
 
 	const category = searchParams.get("category") ?? "";
 	const isWish = searchParams.get("isWish") ?? "";
-	// const view = searchParams.get("view") ?? "grid";
 
 	const { memos } = useMemosQuery({
 		category,
@@ -31,6 +31,7 @@ export default function MemoView({ lng }: LanguageType) {
 	});
 
 	useGuide({ lng });
+	useDidMount(ExtensionBridge.requestSyncLoginStatus);
 
 	return (
 		<div className="flex w-full flex-col gap-4">

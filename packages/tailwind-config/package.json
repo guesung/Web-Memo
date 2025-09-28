@@ -1,6 +1,6 @@
 {
 	"name": "@web-memo/tailwindcss-config",
-	"version": "1.8.20",
+	"version": "1.8.21",
 	"description": "Tailwind CSS configuration for boilerplate",
 	"main": "./tailwind.config.js",
 	"private": true,

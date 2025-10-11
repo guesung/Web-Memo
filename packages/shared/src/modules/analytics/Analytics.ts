@@ -1,5 +1,5 @@
 import { CONFIG } from "@web-memo/env";
-import { isExtension } from "../../utils";
+import { isExtension, isProduction } from "../../utils";
 import type { AnalyticsEvent, GA4Event } from "./type";
 
 class Analytics {
@@ -7,7 +7,7 @@ class Analytics {
 	private gaId: string;
 	private apiSecret: string;
 	private isInitialized = false;
-	private userId: string | undefined = undefined; // Supabase User ID
+	private userId: string | undefined = undefined;
 	private readonly GA_ENDPOINT = "https://www.google-analytics.com/mp/collect";
 	private readonly DEFAULT_ENGAGEMENT_TIME_IN_MSEC = 100;
 	private readonly SESSION_EXPIRATION_IN_MIN = 30;
@@ -41,7 +41,7 @@ class Analytics {
 	}
 
 	async trackEvent(event: AnalyticsEvent): Promise<void> {
-		// if (!isProduction()) return;
+		if (!isProduction()) return;
 
 		await this.initialize();
 

@@ -8,6 +8,7 @@ export type EventCategory = "engagement" | "core_action";
 export interface GA4Event {
 	event_category?: EventCategory;
 	engagement_time_msec?: number;
+	user_id?: string;
 
 	page_title?: string;
 	page_location?: string;

@@ -7,6 +7,7 @@ class Analytics {
 	private gaId: string;
 	private apiSecret: string;
 	private isInitialized = false;
+	private userId: string | undefined = undefined; // Supabase User ID
 	private readonly GA_ENDPOINT = "https://www.google-analytics.com/mp/collect";
 	private readonly DEFAULT_ENGAGEMENT_TIME_IN_MSEC = 100;
 	private readonly SESSION_EXPIRATION_IN_MIN = 30;
@@ -14,6 +15,10 @@ class Analytics {
 	private constructor() {
 		this.gaId = CONFIG.gaId;
 		this.apiSecret = CONFIG.gaApiSecret;
+	}
+
+	public setUserId(userId: string | undefined): void {
+		this.userId = userId;
 	}
 
 	public static getInstance(): Analytics {
@@ -67,7 +72,10 @@ class Analytics {
 		eventName: string,
 		parameters: GA4Event,
 	): Promise<void> {
-		window.gtag("event", eventName, parameters);
+		window.gtag("event", eventName, {
+			...parameters,
+			user_id: this.userId,
+		});
 	}
 
 	private async sendEventInExtension(
@@ -78,7 +86,14 @@ class Analytics {
 			const clientId = await this.getOrCreateClientId();
 			const sessionId = await this.getOrCreateSessionId();
 
-			const payload = {
+			const payload: {
+				client_id: string;
+				user_id?: string;
+				events: Array<{
+					name: string;
+					params: Record<string, unknown>;
+				}>;
+			} = {
 				client_id: clientId,
 				events: [
 					{
@@ -90,6 +105,10 @@ class Analytics {
 					},
 				],
 			};
+
+			if (this.userId) {
+				payload.user_id = this.userId;
+			}
 
 			const url = `${this.GA_ENDPOINT}?measurement_id=${this.gaId}&api_secret=${this.apiSecret}`;
 

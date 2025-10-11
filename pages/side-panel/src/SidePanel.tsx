@@ -1,5 +1,8 @@
 import { useDidMount } from "@web-memo/shared/hooks";
-import { analytics } from "@web-memo/shared/modules/analytics";
+import {
+	AnalyticsUserTracking,
+	analytics,
+} from "@web-memo/shared/modules/analytics";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { ErrorBoundary, Toaster } from "@web-memo/ui";
 import { Suspense } from "react";
@@ -42,6 +45,9 @@ export default function SidePanel() {
 				</section>
 			</main>
 			<Toaster />
+			<Suspense>
+				<AnalyticsUserTracking />
+			</Suspense>
 			{/* <ReactQueryDevtools initialIsOpen={false} /> */}
 		</QueryProvider>
 	);

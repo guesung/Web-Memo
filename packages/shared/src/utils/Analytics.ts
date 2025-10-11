@@ -47,88 +47,71 @@ class Analytics {
 		return Analytics.instance;
 	}
 
-	/**
-	 * Google Analytics 초기화
-	 * Extension 환경에서는 Measurement Protocol을 사용하여 직접 전송
-	 */
 	private async initialize(): Promise<void> {
 		if (this.isInitialized) return;
 
 		if (isExtension()) {
-			// Extension 환경: 별도 초기화 불필요
 			this.isInitialized = true;
 		} else {
-			// Web 환경: gtag 함수 사용
 			if (typeof window !== "undefined" && "gtag" in window) {
 				this.isInitialized = true;
 			}
 		}
 	}
 
-	/**
-	 * 사이드 패널 열기 이벤트 추적 (1단계 참여도)
-	 */
 	public async trackSidePanelOpen(): Promise<void> {
 		if (!isProduction()) return;
 
 		await this.initialize();
 
-		if (isExtension()) {
-			// Extension 환경에서 GA4 Measurement Protocol 사용
-			await this.sendEventToGA("side_panel_open", {
-				event_category: "engagement",
-				engagement_time_msec: 100,
-				custom_parameters: {
-					engagement_type: "touch",
-				},
-			});
-		} else {
-			// Web 환경에서 gtag 사용
-			if (typeof window !== "undefined" && "gtag" in window) {
-				window.gtag("event", "side_panel_open", {
-					event_category: "engagement",
-					engagement_time_msec: 100,
-					custom_parameters: {
-						engagement_type: "touch",
-					},
-				});
-			}
-		}
+		await this.sendEvent("side_panel_open", {
+			event_category: "engagement",
+			engagement_time_msec: 100,
+			custom_parameters: {
+				engagement_type: "touch",
+			},
+		});
 	}
 
-	/**
-	 * 메모 작성 이벤트 추적 (2단계 참여도)
-	 */
 	public async trackMemoWrite(): Promise<void> {
 		if (!isProduction()) return;
 
 		await this.initialize();
 
+		await this.sendEvent("memo_write", {
+			event_category: "core_action",
+			engagement_time_msec: 500,
+			custom_parameters: {
+				engagement_type: "active_use",
+			},
+		});
+	}
+
+	private async sendEvent(
+		eventName: string,
+		parameters: GA4Event,
+	): Promise<void> {
 		if (isExtension()) {
-			await this.sendEventToGA("memo_write", {
-				event_category: "core_action",
-				engagement_time_msec: 500,
-				custom_parameters: {
-					engagement_type: "active_use",
-				},
-			});
+			await this.sendEventInExtension(eventName, parameters);
 		} else {
 			if (typeof window !== "undefined" && "gtag" in window) {
-				window.gtag("event", "memo_write", {
-					event_category: "core_action",
-					engagement_time_msec: 500,
-					custom_parameters: {
-						engagement_type: "active_use",
-					},
-				});
+				await this.sendEventInWeb(eventName, parameters);
 			}
 		}
 	}
 
-	/**
-	 * Extension 환경에서 GA4 Measurement Protocol로 이벤트 전송 (Chrome 문서 표준)
-	 */
-	private async sendEventToGA(
+	private async sendEventInWeb(
+		eventName: string,
+		parameters: GA4Event,
+	): Promise<void> {
+		window.gtag("event", eventName, {
+			event_category: parameters.event_category,
+			engagement_time_msec: parameters.engagement_time_msec,
+			custom_parameters: parameters.custom_parameters,
+		});
+	}
+
+	private async sendEventInExtension(
 		eventName: string,
 		parameters: GA4Event,
 	): Promise<void> {
@@ -136,7 +119,6 @@ class Analytics {
 			const clientId = await this.getOrCreateClientId();
 			const sessionId = await this.getOrCreateSessionId();
 
-			// GA4 Measurement Protocol 페이로드
 			const payload = {
 				client_id: clientId,
 				events: [
@@ -154,7 +136,6 @@ class Analytics {
 				],
 			};
 
-			// GA4 Measurement Protocol 엔드포인트 (API secret 포함)
 			const url = `${this.GA_ENDPOINT}?measurement_id=${this.gaId}&api_secret=${this.apiSecret}`;
 
 			await fetch(url, {
@@ -162,35 +143,20 @@ class Analytics {
 				body: JSON.stringify(payload),
 			});
 		} catch (_error) {
-			// 오류가 발생해도 사용자 경험에 영향을 주지 않도록 조용히 실패
 			console.warn("GA4 Analytics tracking failed:", _error);
 		}
 	}
 
-	/**
-	 * 범용 이벤트 추적 함수
-	 */
 	async trackEvent(event: AnalyticsEvent): Promise<void> {
 		if (!isProduction()) return;
 
 		await this.initialize();
 
-		if (isExtension()) {
-			await this.sendEventToGA(event.name, {
-				event_category: "engagement",
-				engagement_time_msec: this.DEFAULT_ENGAGEMENT_TIME_IN_MSEC,
-				custom_parameters: event.params,
-			});
-		} else {
-			// Web 환경에서 gtag 사용
-			if (typeof window !== "undefined" && "gtag" in window) {
-				window.gtag("event", event.name, {
-					event_category: "engagement",
-					engagement_time_msec: this.DEFAULT_ENGAGEMENT_TIME_IN_MSEC,
-					custom_parameters: event.params,
-				});
-			}
-		}
+		await this.sendEvent(event.name, {
+			event_category: "engagement",
+			engagement_time_msec: this.DEFAULT_ENGAGEMENT_TIME_IN_MSEC,
+			custom_parameters: event.params,
+		});
 	}
 
 	/**

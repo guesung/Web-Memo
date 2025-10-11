@@ -16,7 +16,8 @@
 		"./modules/local-storage": "./src/modules/local-storage/index.ts",
 		"./modules/search-params": "./src/modules/search-params/index.ts",
 		"./modules/chrome-storage": "./src/modules/chrome-storage/index.ts",
-		"./modules/extension-bridge": "./src/modules/extension-bridge/index.ts"
+		"./modules/extension-bridge": "./src/modules/extension-bridge/index.ts",
+		"./modules/analytics": "./src/modules/analytics/index.ts"
 	},
 	"scripts": {
 		"type-check": "tsc --noEmit",

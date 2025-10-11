@@ -1,5 +1,5 @@
 import { CONFIG } from "@web-memo/env";
-import { isExtension, isProduction } from "../../utils";
+import { isExtension } from "../../utils";
 import type { AnalyticsEvent, GA4Event } from "./type";
 
 class Analytics {
@@ -36,7 +36,7 @@ class Analytics {
 	}
 
 	async trackEvent(event: AnalyticsEvent): Promise<void> {
-		if (!isProduction()) return;
+		// if (!isProduction()) return;
 
 		await this.initialize();
 

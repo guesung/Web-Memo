@@ -1,8 +1,8 @@
 import { useDidMount } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { ErrorBoundary, Toaster } from "@web-memo/ui";
 import { Suspense } from "react";
-
 import {
 	LoginSection,
 	MemoForm,
@@ -15,7 +15,11 @@ import {
 } from "./components";
 
 export default function SidePanel() {
-	useDidMount(ExtensionBridge.responseGetSidePanelOpen);
+	useDidMount(() => {
+		ExtensionBridge.responseGetSidePanelOpen();
+		analytics.trackSidePanelOpen();
+		analytics.trackPageView("Side Panel", window.location.href);
+	});
 
 	return (
 		<QueryProvider>

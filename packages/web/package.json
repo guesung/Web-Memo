@@ -1,6 +1,6 @@
 {
 	"name": "@web-memo/web",
-	"version": "1.8.21",
+	"version": "1.8.22",
 	"private": true,
 	"scripts": {
 		"dev": "next dev",

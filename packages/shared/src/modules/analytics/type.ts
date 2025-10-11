@@ -1,24 +1,22 @@
 declare global {
 	interface Window {
-		gtag: (
-			command: "event",
-			action: string,
-			parameters: {
-				event_category?: string;
-				engagement_time_msec?: number;
-				custom_parameters?: Record<string, any>;
-			},
-		) => void;
+		gtag: (command: "event", action: string, parameters: GA4Event) => void;
 	}
 }
 
+export type EventCategory = "engagement" | "core_action";
 export interface GA4Event {
-	event_category?: "engagement" | "core_action";
+	event_category?: EventCategory;
 	engagement_time_msec?: number;
-	custom_parameters?: Record<string, any>;
+
+	page_title?: string;
+	page_location?: string;
+
+	button_id?: string;
+	button_text?: string;
 }
 
 export interface AnalyticsEvent {
 	name: string;
-	params?: Record<string, any>;
+	params?: GA4Event;
 }

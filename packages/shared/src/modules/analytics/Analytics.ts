@@ -44,11 +44,9 @@ class Analytics {
 			event.params || {};
 
 		await this.sendEvent(event.name, {
-			event_category:
-				(event_category as GA4Event["event_category"]) || "engagement",
-			engagement_time_msec:
-				engagement_time_msec || this.DEFAULT_ENGAGEMENT_TIME_IN_MSEC,
-			custom_parameters: customParams,
+			event_category,
+			engagement_time_msec,
+			...customParams,
 		});
 	}
 
@@ -69,11 +67,7 @@ class Analytics {
 		eventName: string,
 		parameters: GA4Event,
 	): Promise<void> {
-		window.gtag("event", eventName, {
-			event_category: parameters.event_category,
-			engagement_time_msec: parameters.engagement_time_msec,
-			custom_parameters: parameters.custom_parameters,
-		});
+		window.gtag("event", eventName, parameters);
 	}
 
 	private async sendEventInExtension(
@@ -91,11 +85,7 @@ class Analytics {
 						name: eventName,
 						params: {
 							session_id: sessionId,
-							engagement_time_msec:
-								parameters.engagement_time_msec ||
-								this.DEFAULT_ENGAGEMENT_TIME_IN_MSEC,
-							event_category: parameters.event_category,
-							...parameters.custom_parameters,
+							...parameters,
 						},
 					},
 				],
@@ -165,7 +155,6 @@ class Analytics {
 			params: {
 				event_category: "engagement",
 				engagement_time_msec: 100,
-				engagement_type: "touch",
 			},
 		});
 	}
@@ -176,7 +165,6 @@ class Analytics {
 			params: {
 				event_category: "core_action",
 				engagement_time_msec: 500,
-				engagement_type: "active_use",
 			},
 		});
 	}
@@ -197,16 +185,6 @@ class Analytics {
 			params: {
 				button_id: buttonId,
 				button_text: buttonText,
-			},
-		});
-	}
-
-	async trackError(errorMessage: string, errorStack?: string): Promise<void> {
-		await this.trackEvent({
-			name: "extension_error",
-			params: {
-				error_message: errorMessage,
-				error_stack: errorStack,
 			},
 		});
 	}

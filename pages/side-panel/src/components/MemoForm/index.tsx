@@ -75,7 +75,7 @@ function MemoForm() {
 			category_id: categoryId,
 		};
 
-		if (memoData)
+		if (memoData) {
 			mutateMemoPatch(
 				{ id: memoData.id, request: totalMemo },
 				{
@@ -86,7 +86,7 @@ function MemoForm() {
 					},
 				},
 			);
-		else if (!isCreating) {
+		} else if (!isCreating) {
 			setIsCreating(true);
 
 			mutateMemoPost(totalMemo, {

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { NoMemoError, NoMemosError, QUERY_KEY } from "../../../constants";
+import { analytics } from "../../../modules/analytics";
 import type { MemoRow, MemoSupabaseResponse, MemoTable } from "../../../types";
 import { MemoService } from "../../../utils";
 
@@ -50,6 +51,9 @@ export default function useMemoPatchMutation() {
 			});
 
 			return { previousMemos };
+		},
+		onSuccess: async () => {
+			await analytics.trackMemoWrite();
 		},
 	});
 }

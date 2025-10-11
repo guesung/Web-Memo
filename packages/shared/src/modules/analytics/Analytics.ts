@@ -35,31 +35,20 @@ class Analytics {
 		}
 	}
 
-	public async trackSidePanelOpen(): Promise<void> {
+	async trackEvent(event: AnalyticsEvent): Promise<void> {
 		if (!isProduction()) return;
 
 		await this.initialize();
 
-		await this.sendEvent("side_panel_open", {
-			event_category: "engagement",
-			engagement_time_msec: 100,
-			custom_parameters: {
-				engagement_type: "touch",
-			},
-		});
-	}
+		const { event_category, engagement_time_msec, ...customParams } =
+			event.params || {};
 
-	public async trackMemoWrite(): Promise<void> {
-		if (!isProduction()) return;
-
-		await this.initialize();
-
-		await this.sendEvent("memo_write", {
-			event_category: "core_action",
-			engagement_time_msec: 500,
-			custom_parameters: {
-				engagement_type: "active_use",
-			},
+		await this.sendEvent(event.name, {
+			event_category:
+				(event_category as GA4Event["event_category"]) || "engagement",
+			engagement_time_msec:
+				engagement_time_msec || this.DEFAULT_ENGAGEMENT_TIME_IN_MSEC,
+			custom_parameters: customParams,
 		});
 	}
 
@@ -123,21 +112,75 @@ class Analytics {
 		}
 	}
 
-	async trackEvent(event: AnalyticsEvent): Promise<void> {
-		if (!isProduction()) return;
+	private async getOrCreateClientId(): Promise<string> {
+		if (!isExtension()) return "web-client";
 
-		await this.initialize();
+		try {
+			const result = await chrome.storage.local.get("clientId");
+			let clientId = result.clientId;
 
-		await this.sendEvent(event.name, {
-			event_category: "engagement",
-			engagement_time_msec: this.DEFAULT_ENGAGEMENT_TIME_IN_MSEC,
-			custom_parameters: event.params,
+			if (!clientId) {
+				clientId = self.crypto.randomUUID();
+				await chrome.storage.local.set({ clientId });
+			}
+
+			return clientId;
+		} catch (_error) {
+			return `session-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+		}
+	}
+
+	private async getOrCreateSessionId(): Promise<string> {
+		try {
+			let { sessionData } = await chrome.storage.session.get("sessionData");
+
+			const currentTimeInMs = Date.now();
+			if (sessionData && sessionData.timestamp) {
+				const durationInMin = (currentTimeInMs - sessionData.timestamp) / 60000;
+				if (durationInMin > this.SESSION_EXPIRATION_IN_MIN) {
+					sessionData = null;
+				} else {
+					sessionData.timestamp = currentTimeInMs;
+					await chrome.storage.session.set({ sessionData });
+				}
+			}
+
+			if (!sessionData) {
+				sessionData = {
+					session_id: currentTimeInMs.toString(),
+					timestamp: currentTimeInMs,
+				};
+				await chrome.storage.session.set({ sessionData });
+			}
+
+			return sessionData.session_id;
+		} catch (_error) {
+			return Date.now().toString();
+		}
+	}
+
+	public async trackSidePanelOpen(): Promise<void> {
+		await this.trackEvent({
+			name: "side_panel_open",
+			params: {
+				event_category: "engagement",
+				engagement_time_msec: 100,
+				engagement_type: "touch",
+			},
 		});
 	}
 
-	/**
-	 * 페이지 뷰 추적 (Chrome 문서 표준)
-	 */
+	public async trackMemoWrite(): Promise<void> {
+		await this.trackEvent({
+			name: "memo_write",
+			params: {
+				event_category: "core_action",
+				engagement_time_msec: 500,
+				engagement_type: "active_use",
+			},
+		});
+	}
+
 	async trackPageView(pageTitle: string, pageLocation: string): Promise<void> {
 		await this.trackEvent({
 			name: "page_view",
@@ -148,9 +191,6 @@ class Analytics {
 		});
 	}
 
-	/**
-	 * 버튼 클릭 추적
-	 */
 	async trackButtonClick(buttonId: string, buttonText?: string): Promise<void> {
 		await this.trackEvent({
 			name: "button_clicked",
@@ -161,9 +201,6 @@ class Analytics {
 		});
 	}
 
-	/**
-	 * 에러 추적 (Service Worker용)
-	 */
 	async trackError(errorMessage: string, errorStack?: string): Promise<void> {
 		await this.trackEvent({
 			name: "extension_error",
@@ -172,70 +209,6 @@ class Analytics {
 				error_stack: errorStack,
 			},
 		});
-	}
-
-	/**
-	 * Extension 환경에서 고유한 Client ID 생성 또는 가져오기 (Chrome 문서 표준)
-	 */
-	private async getOrCreateClientId(): Promise<string> {
-		if (!isExtension()) return "web-client";
-
-		try {
-			// Chrome Storage에서 Client ID 가져오기
-			const result = await chrome.storage.local.get("clientId");
-			let clientId = result.clientId;
-
-			if (!clientId) {
-				// Generate a unique client ID, the actual value is not relevant
-				clientId = self.crypto.randomUUID();
-				await chrome.storage.local.set({ clientId });
-			}
-
-			return clientId;
-		} catch (_error) {
-			// 오류 시 세션 기반 ID 반환
-			return `session-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
-		}
-	}
-
-	/**
-	 * Session ID 생성 또는 가져오기 (Chrome 문서 표준)
-	 */
-	private async getOrCreateSessionId(): Promise<string> {
-		try {
-			// Store session in memory storage
-			let { sessionData } = await chrome.storage.session.get("sessionData");
-
-			// Check if session exists and is still valid
-			const currentTimeInMs = Date.now();
-			if (sessionData && sessionData.timestamp) {
-				// Calculate how long ago the session was last updated
-				const durationInMin = (currentTimeInMs - sessionData.timestamp) / 60000;
-				// Check if last update lays past the session expiration threshold
-				if (durationInMin > this.SESSION_EXPIRATION_IN_MIN) {
-					// Delete old session id to start a new session
-					sessionData = null;
-				} else {
-					// Update timestamp to keep session alive
-					sessionData.timestamp = currentTimeInMs;
-					await chrome.storage.session.set({ sessionData });
-				}
-			}
-
-			if (!sessionData) {
-				// Create and store a new session
-				sessionData = {
-					session_id: currentTimeInMs.toString(),
-					timestamp: currentTimeInMs,
-				};
-				await chrome.storage.session.set({ sessionData });
-			}
-
-			return sessionData.session_id;
-		} catch (_error) {
-			// Fallback to timestamp-based session ID
-			return Date.now().toString();
-		}
 	}
 }
 

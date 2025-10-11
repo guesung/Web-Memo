@@ -10,7 +10,6 @@ import {
 	useMemoQuery,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
-import { analytics } from "@web-memo/shared/modules/analytics";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import type { CategoryRow } from "@web-memo/shared/types";
 import { getMemoInfo, I18n, Tab } from "@web-memo/shared/utils/extension";
@@ -99,8 +98,6 @@ function MemoForm() {
 				},
 			});
 		}
-
-		analytics.trackMemoWrite();
 	};
 
 	useDidMount(() => {

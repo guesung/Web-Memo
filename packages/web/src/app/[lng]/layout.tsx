@@ -1,8 +1,9 @@
 import Header from "@src/components/Header";
 import type { LanguageParams } from "@src/modules/i18n";
 import { SUPPORTED_LANGUAGES } from "@src/modules/i18n";
+import { AnalyticsUserTracking } from "@web-memo/shared/modules/analytics";
 import { dir } from "i18next";
-import type { PropsWithChildren } from "react";
+import { type PropsWithChildren, Suspense } from "react";
 import { InitDayjs } from "../_components";
 import { QueryProvider, ThemeProvider } from "./_components";
 import { metadataEnglish, metadataKorean } from "./_constants";
@@ -25,6 +26,9 @@ export default function RootLayout({
 		<div lang={lng} dir={dir(lng)} className="h-screen">
 			<ThemeProvider>
 				<QueryProvider lng={lng}>
+					<Suspense>
+						<AnalyticsUserTracking />
+					</Suspense>
 					<Header lng={lng} />
 					{children}
 				</QueryProvider>

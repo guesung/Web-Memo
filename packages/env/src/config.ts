@@ -33,4 +33,5 @@ export const CONFIG = {
 	),
 	gaId: getSafeConfig("GA_ID", process.env.GA_ID),
 	gtmId: getSafeConfig("GTM_ID", process.env.GTM_ID),
+	gaApiSecret: getSafeConfig("GA_API_SECRET", process.env.GA_API_SECRET),
 };

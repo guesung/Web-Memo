@@ -7,6 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.117.1",
     "youtube-transcript-api>=0.6.2",
+    "uvicorn>=0.30.0",
 ]
 
 [build-system]

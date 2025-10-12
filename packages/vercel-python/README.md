@@ -90,13 +90,27 @@ uv pip install -r requirements.txt
 
 ### 로컬 실행
 
-```bash
-# FastAPI 개발 서버 실행
-uvicorn api.index:app --reload --port 8085
+**방법 1: 통합 개발 서버 (권장)**
 
-# 또는 다른 엔드포인트
-uvicorn api.youtube-transcript:app --reload --port 8085
+```bash
+# 로컬 개발용 통합 앱 실행
+python api/dev.py
+
+# 또는 uvicorn 사용
+uvicorn api.dev:app --reload --port 8085
 ```
+
+**방법 2: Vercel Dev CLI**
+
+```bash
+# Vercel 로컬 개발 환경 (프로덕션과 동일한 환경)
+vercel dev
+```
+
+로컬 실행 후 다음 URL로 접속:
+- http://127.0.0.1:8085/api/youtube-transcript?video_id=Gl1RmDAkFX4
+- http://127.0.0.1:8085/api/health
+- http://127.0.0.1:8085/
 
 ## Vercel 배포
 
@@ -125,8 +139,9 @@ vercel --prod
 ```
 packages/vercel-python/
 ├── api/
-│   ├── index.py                  # 기본 엔드포인트
-│   └── youtube-transcript.py     # YouTube 자막 API
+│   ├── dev.py                    # 로컬 개발용 통합 앱
+│   ├── index.py                  # 기본 엔드포인트 (Vercel Functions)
+│   └── youtube-transcript.py     # YouTube 자막 API (Vercel Functions)
 ├── pyproject.toml                # Python 프로젝트 설정
 ├── requirements.txt              # 의존성 목록
 ├── vercel.json                   # Vercel 설정

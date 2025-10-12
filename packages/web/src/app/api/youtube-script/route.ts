@@ -5,7 +5,6 @@ import { promisify } from "node:util";
 
 const execAsync = promisify(exec);
 
-// Python 명령어 찾기
 async function getPythonCommand(): Promise<string> {
 	const commands = ["python3", "python"];
 
@@ -19,23 +18,19 @@ async function getPythonCommand(): Promise<string> {
 	throw new Error("Python not found. Please install Python 3.");
 }
 
-// Python 패키지 설치 확인 및 설치
 async function ensurePythonPackage(
 	pythonCmd: string,
 	packageName: string,
 ): Promise<void> {
 	try {
-		// 패키지가 설치되어 있는지 확인
 		await execAsync(`${pythonCmd} -c "import ${packageName}"`);
 		console.log(`${packageName} is already installed`);
 	} catch {
-		// 설치되어 있지 않으면 설치
 		console.log(`Installing ${packageName}...`);
 		try {
 			await execAsync(`${pythonCmd} -m pip install ${packageName}`);
 			console.log(`${packageName} installed successfully`);
-		} catch (installError) {
-			// pip 없이 설치 시도 (일부 환경에서 필요)
+		} catch {
 			try {
 				await execAsync(`pip3 install ${packageName}`);
 				console.log(`${packageName} installed successfully with pip3`);
@@ -70,7 +65,6 @@ export async function GET(request: NextRequest) {
 
 		const pythonCmd = await getPythonCommand();
 
-		// youtube_transcript_api 패키지 설치 확인
 		await ensurePythonPackage(pythonCmd, "youtube_transcript_api");
 
 		const scriptPath = "src/scripts/youtube_script.py";

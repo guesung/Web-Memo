@@ -2,11 +2,16 @@
 Vercel FastAPI 엔트리포인트
 모든 API 엔드포인트를 통합한 메인 애플리케이션
 """
+import os
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import TextFormatter
+from dotenv import load_dotenv
+
+# 환경 변수 로드
+load_dotenv()
 
 app = FastAPI(title="YouTube Transcript API")
 
@@ -18,10 +23,49 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def get_proxy_config():
+    """환경 변수에서 proxy 설정을 가져와 적절한 ProxyConfig 객체를 반환"""
+    proxy_type = os.getenv('PROXY_TYPE', 'none').lower()
+
+    if proxy_type == 'webshare':
+        from youtube_transcript_api.proxies import WebshareProxyConfig
+        username = os.getenv('WEBSHARE_PROXY_USERNAME')
+        password = os.getenv('WEBSHARE_PROXY_PASSWORD')
+
+        if not username or not password:
+            print("Warning: WEBSHARE_PROXY_USERNAME or WEBSHARE_PROXY_PASSWORD not set. Using no proxy.")
+            return None
+
+        return WebshareProxyConfig(
+            proxy_username=username,
+            proxy_password=password
+        )
+
+    elif proxy_type == 'generic':
+        from youtube_transcript_api.proxies import GenericProxyConfig
+        http_url = os.getenv('PROXY_HTTP_URL')
+        https_url = os.getenv('PROXY_HTTPS_URL')
+
+        if not http_url or not https_url:
+            print("Warning: PROXY_HTTP_URL or PROXY_HTTPS_URL not set. Using no proxy.")
+            return None
+
+        return GenericProxyConfig(
+            http_url=http_url,
+            https_url=https_url
+        )
+
+    # proxy_type == 'none' or invalid
+    return None
+
 def get_youtube_transcript(video_id: str):
     """YouTube 동영상 자막을 가져오는 함수"""
     try:
-        ytt_api = YouTubeTranscriptApi()
+        # Proxy 설정 가져오기
+        proxy_config = get_proxy_config()
+
+        # YouTubeTranscriptApi 인스턴스 생성 (proxy 설정 포함)
+        ytt_api = YouTubeTranscriptApi(proxy_config=proxy_config)
         transcript_list = ytt_api.list(video_id)
         transcript = transcript_list.find_transcript(['ko', 'en'])
         transcript_data = transcript.fetch()

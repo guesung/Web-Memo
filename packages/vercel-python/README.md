@@ -134,6 +134,67 @@ vercel --prod
 
 필요한 경우 Vercel 대시보드에서 환경 변수를 설정할 수 있습니다.
 
+## Proxy 설정 (YouTube IP 차단 우회)
+
+YouTube에서 IP를 차단하는 경우 proxy를 사용하여 우회할 수 있습니다.
+
+### 1. 환경 변수 파일 생성
+
+`.env.example` 파일을 복사하여 `.env` 파일을 생성합니다:
+
+```bash
+cp .env.example .env
+```
+
+### 2. Proxy 타입 선택
+
+`.env` 파일에서 `PROXY_TYPE`을 설정합니다:
+- `none`: Proxy 사용 안함 (기본값)
+- `webshare`: Webshare proxy 사용 (권장)
+- `generic`: 사용자 지정 proxy 사용
+
+### 3-A. Webshare Proxy 사용 (권장)
+
+Webshare는 무료 티어를 제공합니다 (10개 프록시 + 1GB 대역폭, 신용카드 불필요).
+
+1. [Webshare](https://www.webshare.io/)에 가입
+2. [Dashboard](https://dashboard.webshare.io/)에서 API 자격증명 확인
+3. `.env` 파일에 설정:
+
+```env
+PROXY_TYPE=webshare
+WEBSHARE_PROXY_USERNAME=your-username
+WEBSHARE_PROXY_PASSWORD=your-password
+```
+
+### 3-B. Generic Proxy 사용
+
+무료 또는 유료 proxy 서비스를 사용할 수 있습니다.
+
+```env
+PROXY_TYPE=generic
+PROXY_HTTP_URL=http://user:pass@proxy-server:port
+PROXY_HTTPS_URL=https://user:pass@proxy-server:port
+```
+
+**무료 대안**: [Tor Proxy](https://github.com/dperson/torproxy) (Docker 사용, 속도 느림)
+
+### 4. Vercel 환경 변수 설정
+
+Vercel에 배포할 때는 Vercel 대시보드에서 환경 변수를 설정합니다:
+
+1. Vercel 프로젝트 페이지로 이동
+2. **Settings** → **Environment Variables** 선택
+3. 다음 변수를 추가:
+   - `PROXY_TYPE`: `webshare` 또는 `generic`
+   - Webshare 사용 시:
+     - `WEBSHARE_PROXY_USERNAME`
+     - `WEBSHARE_PROXY_PASSWORD`
+   - Generic 사용 시:
+     - `PROXY_HTTP_URL`
+     - `PROXY_HTTPS_URL`
+4. 재배포하여 적용
+
 ## 프로젝트 구조
 
 ```

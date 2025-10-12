@@ -4,14 +4,44 @@ Python Flask 서버로 YouTube 동영상 자막을 가져오는 API를 제공합
 
 ## 설치
 
+### 1. 가상 환경 생성 및 패키지 설치 (권장)
+
 ```bash
+# pnpm 사용
+pnpm run setup
+
+# 또는 수동으로
+python3 -m venv venv
+source venv/bin/activate  # Mac/Linux
+# venv\Scripts\activate  # Windows
 pip install -r requirements.txt
+```
+
+### 2. 패키지만 설치 (시스템 전역)
+
+```bash
+python3 -m pip install -r requirements.txt
 ```
 
 ## 실행
 
+### pnpm 사용 (가상 환경 자동 활성화)
+
 ```bash
+pnpm run start
+# 또는
+pnpm run dev
+```
+
+### 수동 실행
+
+```bash
+# 가상 환경 사용 시
+source venv/bin/activate
 python app.py
+
+# 시스템 Python 사용 시
+python3 app.py
 ```
 
 서버는 기본적으로 `http://localhost:5000`에서 실행됩니다.

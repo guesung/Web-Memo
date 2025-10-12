@@ -13,6 +13,13 @@
 .env*
 !.env.example
 
+# python
+**/venv
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.egg-info
+
 # etc
 .DS_Store
 .idea

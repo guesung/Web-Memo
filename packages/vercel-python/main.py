@@ -8,10 +8,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import TextFormatter
-from dotenv import load_dotenv
 
-# 환경 변수 로드
-load_dotenv()
+# 환경 변수 로드 (로컬 개발용, Vercel 환경에서는 선택 사항)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # Vercel 환경에서는 dotenv가 없어도 정상 동작
+    pass
 
 app = FastAPI(title="YouTube Transcript API")
 

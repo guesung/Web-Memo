@@ -15,13 +15,14 @@ fi
 
 # 주석과 빈 줄을 제외하고 환경 변수 추출
 grep -v '^#' .env | grep -v '^$' | while IFS='=' read -r key value; do
-    # 앞뒤 공백 제거
-    key=$(echo "$key" | xargs)
-    value=$(echo "$value" | xargs)
+    # 앞뒤 공백 및 줄바꿈 제거
+    key=$(echo "$key" | tr -d '\n\r' | xargs)
+    value=$(echo "$value" | tr -d '\n\r' | xargs)
 
     if [ -n "$key" ] && [ -n "$value" ]; then
         echo "Setting $key..."
-        echo "$value" | vercel env add "$key" "$ENV" 2>/dev/null || echo "  (already exists or failed)"
+        # printf를 사용하여 줄바꿈 없이 전달
+        printf "%s" "$value" | vercel env add "$key" "$ENV" 2>/dev/null || echo "  (already exists or failed)"
     fi
 done
 

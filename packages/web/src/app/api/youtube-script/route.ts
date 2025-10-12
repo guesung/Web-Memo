@@ -5,6 +5,20 @@ import { promisify } from "node:util";
 
 const execAsync = promisify(exec);
 
+// Python 명령어 찾기
+async function getPythonCommand(): Promise<string> {
+	const commands = ["python3", "python"];
+
+	for (const cmd of commands) {
+		try {
+			await execAsync(`which ${cmd}`);
+			return cmd;
+		} catch {}
+	}
+
+	throw new Error("Python not found. Please install Python 3.");
+}
+
 export async function GET(request: NextRequest) {
 	try {
 		const { searchParams } = new URL(request.url);
@@ -25,8 +39,9 @@ export async function GET(request: NextRequest) {
 			);
 		}
 
+		const pythonCmd = await getPythonCommand();
 		const scriptPath = "src/scripts/youtube_script.py";
-		const command = `python ${scriptPath} --video-id="${videoId}"`;
+		const command = `${pythonCmd} ${scriptPath} --video-id="${videoId}"`;
 		const { stdout } = await execAsync(command);
 
 		return NextResponse.json({

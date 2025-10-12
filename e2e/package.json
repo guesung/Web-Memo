@@ -1,7 +1,7 @@
 {
   "name": "e2e",
   "private": true,
-  "version": "1.8.22",
+  "version": "1.8.23",
   "scripts": {
     "test": "playwright test",
     "test:ui": "playwright test --ui",

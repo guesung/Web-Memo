@@ -1,5 +1,6 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { useSuccessToast } from "@src/hooks";
 import {
 	useCategoryDeleteMutation,
 	useCategoryPostMutation,
@@ -7,7 +8,7 @@ import {
 	useCategoryUpsertMutation,
 } from "@web-memo/shared/hooks";
 import { generateRandomPastelColor } from "@web-memo/shared/utils";
-import { Button, Input, Label, toast } from "@web-memo/ui";
+import { Button, Input, Label } from "@web-memo/ui";
 import { TrashIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -35,6 +36,9 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 		},
 	});
 
+	// 공통 성공 Toast 콜백
+	const showSuccessToast = useSuccessToast(t("toastTitle.successSave"));
+
 	const handleAddCategory = () => {
 		const defaultCategoryName = t("setting.defaultCategoryName");
 
@@ -43,28 +47,16 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 				name: defaultCategoryName,
 				color: generateRandomPastelColor(),
 			},
-			{
-				onSuccess: () => {
-					toast({ title: t("toastTitle.successSave") });
-				},
-			},
+			{ onSuccess: showSuccessToast },
 		);
 	};
 
 	const handleCategoryDelete = (id: number) => {
-		deleteCategory(id, {
-			onSuccess: () => {
-				toast({ title: t("toastTitle.successSave") });
-			},
-		});
+		deleteCategory(id, { onSuccess: showSuccessToast });
 	};
 
 	const onCategoryFormSubmit = (data: CategoryForm) => {
-		upsertCategory(data.categories, {
-			onSuccess: () => {
-				toast({ title: t("toastTitle.successSave") });
-			},
-		});
+		upsertCategory(data.categories, { onSuccess: showSuccessToast });
 	};
 
 	useEffect(() => {

@@ -32,7 +32,7 @@ export default function Hero({ lng }: HeroProps) {
 					))}
 				</div>
 				<span className="font-semibold dark:text-gray-100">5.0</span>
-				<span className="text-gray-600 dark:text-gray-400">100+ users</span>
+				<span className="text-gray-600 dark:text-gray-400">250+ users</span>
 			</motion.div>
 
 			<motion.h1

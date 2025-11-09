@@ -56,7 +56,6 @@ export default function useMemosQuery({
 			);
 		},
 		queryKey: QUERY_KEY.memos(),
-		staleTime: 1000 * 60 * 5,
 	});
 
 	return {

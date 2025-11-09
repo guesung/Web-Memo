@@ -119,7 +119,7 @@ export default function MemoCardFooter({
 							/>
 						</Button>
 						<MemoOption
-							memoIds={[memo.id]}
+							selectedMemos={[memo]}
 							lng={lng}
 							onOpenChange={setIsDropdownOpen}
 						/>

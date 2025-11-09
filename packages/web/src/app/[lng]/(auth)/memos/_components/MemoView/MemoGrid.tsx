@@ -54,6 +54,10 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 	const rafRef = useRef<number>();
 
 	const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
+	const selectedMemos = useMemo(
+		() => memos.filter((memo) => selectedMemoIds.includes(memo.id)),
+		[memos, selectedMemoIds],
+	);
 
 	const checkMemoSelected = useCallback(
 		(id: number) => selectedMemoIds.includes(id),
@@ -288,7 +292,7 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 				{isSelectingMode && (
 					<MemoOptionHeader
 						lng={lng}
-						selectedMemoIds={selectedMemoIds}
+						selectedMemos={selectedMemos}
 						onXButtonClick={closeMemoOption}
 						closeMemoOption={closeMemoOption}
 					/>

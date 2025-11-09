@@ -5,7 +5,7 @@
 		"ready": {
 			"dependsOn": ["^ready"],
 			"outputs": ["dist", "build"],
-			"inputs":[".env"]
+			"inputs": [".env"]
 		},
 		"dev": {
 			"dependsOn": ["^ready"],

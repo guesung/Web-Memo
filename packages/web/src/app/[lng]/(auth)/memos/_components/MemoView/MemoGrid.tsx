@@ -12,7 +12,14 @@ import { Skeleton } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import type { ComponentProps } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	Suspense,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 
 import MemoDialog from "../MemoDialog";
 import MemoEmptyState from "./MemoEmptyState";
@@ -318,7 +325,11 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 					);
 				})}
 			</MasonryInfiniteGrid>
-			{dialogMemoId && <MemoDialog lng={lng} memoId={dialogMemoId} />}
+			{dialogMemoId && (
+				<Suspense>
+					<MemoDialog lng={lng} memoId={dialogMemoId} />
+				</Suspense>
+			)}
 		</div>
 	);
 }

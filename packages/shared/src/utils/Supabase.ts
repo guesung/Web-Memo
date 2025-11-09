@@ -65,6 +65,24 @@ export class MemoService {
 		return { ...firstBatch, data };
 	};
 
+	getMemosPaginated = async ({ page, pageSize = 20 }: { page: number; pageSize?: number }) => {
+		const start = page * pageSize;
+		const end = start + pageSize - 1;
+
+		const { data, error } = await this.supabaseClient
+			.schema(SUPABASE.table.memo)
+			.from(SUPABASE.table.memo)
+			.select("*, category(id, name, color)")
+			.order("updated_at", { ascending: false })
+			.range(start, end);
+
+		if (error) {
+			throw new Error(`Failed to fetch memos: ${error.message}`);
+		}
+
+		return data ?? [];
+	};
+
 	getMemoById = async (id: number) =>
 		this.supabaseClient
 			.schema(SUPABASE.table.memo)

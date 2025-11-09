@@ -4,7 +4,7 @@ import { MasonryInfiniteGrid } from "@egjs/react-infinitegrid";
 import { DragBox } from "@src/components";
 import { useDrag } from "@src/hooks";
 import type { LanguageType } from "@src/modules/i18n";
-import { useKeyboardBind } from "@web-memo/shared/hooks";
+import { useInfiniteMemosQuery, useKeyboardBind } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 
@@ -26,32 +26,26 @@ import MemoEmptyState from "./MemoEmptyState";
 import MemoItem from "./MemoItem";
 import MemoOptionHeader from "./MemoOptionHeader";
 
-const MEMO_UNIT = 20;
 const SCROLL_INTERVAL = 50;
 const CONTAINER_ID = "memo-grid";
 const SCROLL_UNIT = 30;
 
-const getItems = (nextGroupKey: number, count: number) => {
-	const nextItems = [];
-	const nextKey = nextGroupKey * MEMO_UNIT;
+interface MemoGridProps extends LanguageType {}
 
-	for (let i = 0; i < count; ++i) {
-		nextItems.push({ groupKey: nextGroupKey, key: nextKey + i });
-	}
-	return nextItems;
-};
-
-interface MemoGridProps extends LanguageType {
-	memos: GetMemoResponse[];
-}
-
-export default function MemoGrid({ lng, memos }: MemoGridProps) {
+export default function MemoGrid({ lng }: MemoGridProps) {
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const [items, setItems] = useState(() => getItems(0, MEMO_UNIT));
 	const dragBoxRef = useRef<HTMLDivElement>(null);
 	const [dialogMemoId, setDialogMemoId] = useState<number | null>();
 	const rafRef = useRef<number>();
+
+	const { data: infiniteMemos, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteMemosQuery();
+
+	// Flatten all pages into a single array
+	const memos = useMemo(() => {
+		if (!infiniteMemos || !infiniteMemos.pages) return [];
+		return infiniteMemos.pages.flat();
+	}, [infiniteMemos]);
 
 	const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
 
@@ -222,27 +216,10 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 
 	const handleRequestAppend: ComponentProps<
 		typeof MasonryInfiniteGrid
-	>["onRequestAppend"] = ({ groupKey = 0, currentTarget, wait, ready }) => {
-		if (items.length >= memos.length) return;
-
-		const nextGroupKey = +groupKey + 1;
-		const maxAddItem =
-			items.length + MEMO_UNIT > memos.length
-				? memos.length - items.length
-				: MEMO_UNIT;
-
-		if (maxAddItem === 0) return;
-
-		wait();
-		currentTarget.appendPlaceholders(MEMO_UNIT, nextGroupKey);
-
-		setTimeout(() => {
-			ready();
-			setItems((prevItems) => [
-				...prevItems,
-				...getItems(nextGroupKey, maxAddItem),
-			]);
-		}, 1);
+	>["onRequestAppend"] = async () => {
+		if (hasNextPage && !isFetchingNextPage) {
+			await fetchNextPage();
+		}
 	};
 
 	useEffect(
@@ -309,21 +286,17 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 				placeholder={<MemoItemSkeleton />}
 				onRequestAppend={handleRequestAppend}
 			>
-				{items.map((item) => {
-					const memo = memos.at(item.key);
-					if (!memo) return null;
-					return (
-						<MemoItem
-							key={memo.id}
-							lng={lng}
-							data-grid-groupkey={item.groupKey}
-							memo={memo}
-							isMemoSelected={checkMemoSelected(memo.id)}
-							selectMemoItem={handleSelectMemoItem}
-							isSelectingMode={isSelectingMode}
-						/>
-					);
-				})}
+				{memos.map((memo: GetMemoResponse) => (
+					<MemoItem
+						key={memo.id}
+						lng={lng}
+						memo={memo}
+						isMemoSelected={checkMemoSelected(memo.id)}
+						selectMemoItem={handleSelectMemoItem}
+						isSelectingMode={isSelectingMode}
+					/>
+				))}
+				{isFetchingNextPage && <MemoItemSkeleton />}
 			</MasonryInfiniteGrid>
 			{dialogMemoId && (
 				<Suspense>

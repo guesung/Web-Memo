@@ -2,13 +2,10 @@
 
 import { useGuide } from "@src/modules/guide";
 import type { LanguageType } from "@src/modules/i18n";
-import { useDidMount, useMemosQuery } from "@web-memo/shared/hooks";
+import { useDidMount, useInfiniteMemosQuery } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import dynamic from "next/dynamic";
-import { useSearchParams } from "next/navigation";
-import { useFormContext } from "react-hook-form";
-import { useTranslation } from "react-i18next";
-import type { SearchFormValues } from "../MemoSearchFormProvider";
+import { useMemo } from "react";
 import MemoGrid from "./MemoGrid";
 
 const MemoRefreshButton = dynamic(() => import("./MemoRefreshButton"), {
@@ -16,19 +13,13 @@ const MemoRefreshButton = dynamic(() => import("./MemoRefreshButton"), {
 });
 
 export default function MemoView({ lng }: LanguageType) {
-	const { t } = useTranslation(lng);
-	const { watch } = useFormContext<SearchFormValues>();
-	const searchParams = useSearchParams();
+	const { data: infiniteMemos } = useInfiniteMemosQuery();
 
-	const category = searchParams.get("category") ?? "";
-	const isWish = searchParams.get("isWish") ?? "";
-
-	const { memos } = useMemosQuery({
-		category,
-		isWish: isWish === "true",
-		searchQuery: watch("searchQuery"),
-		searchTarget: watch("searchTarget"),
-	});
+	// Calculate total memos count
+	const totalMemos = useMemo(() => {
+		if (!infiniteMemos || !infiniteMemos.pages) return 0;
+		return infiniteMemos.pages.flat().length;
+	}, [infiniteMemos]);
 
 	useGuide({ lng });
 	useDidMount(() => ExtensionBridge.requestSyncLoginStatus());
@@ -39,7 +30,7 @@ export default function MemoView({ lng }: LanguageType) {
 				<div className="flex w-full items-center justify-between">
 					<p className="text-muted-foreground select-none text-sm flex items-center gap-2">
 						<span className="w-2 h-2 bg-primary rounded-full" />
-						{t("memos.totalMemos", { total: memos.length })}
+						Total: {totalMemos} memos
 					</p>
 					<div className="flex">
 						<MemoRefreshButton lng={lng} />
@@ -47,7 +38,7 @@ export default function MemoView({ lng }: LanguageType) {
 				</div>
 			</div>
 
-			<MemoGrid memos={memos} lng={lng} />
+			<MemoGrid lng={lng} />
 		</div>
 	);
 }

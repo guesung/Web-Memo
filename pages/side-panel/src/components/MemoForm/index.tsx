@@ -5,9 +5,9 @@ import {
 	useCategoryQuery,
 	useDebounce,
 	useDidMount,
+	useMemoByURLQuery,
 	useMemoPatchMutation,
 	useMemoPostMutation,
-	useMemoQuery,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
@@ -36,9 +36,10 @@ const CATEGORY_LIST_WIDTH = 256;
 function MemoForm() {
 	const { debounce } = useDebounce();
 	const { data: tab } = useTabQuery();
-	const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
-		url: tab.url,
+	const { memo: memoData, refetch: refetchMemo } = useMemoByURLQuery({
+		url: tab?.url,
 	});
+
 	const { categories } = useCategoryQuery();
 	const [showCategoryList, setShowCategoryList] = useState(false);
 	const [categoryInputPosition, setCategoryInputPosition] = useState({

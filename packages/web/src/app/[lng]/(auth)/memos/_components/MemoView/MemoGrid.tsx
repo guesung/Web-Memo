@@ -4,7 +4,7 @@ import { MasonryInfiniteGrid } from "@egjs/react-infinitegrid";
 import { DragBox } from "@src/components";
 import { useDrag } from "@src/hooks";
 import type { LanguageType } from "@src/modules/i18n";
-import { useKeyboardBind } from "@web-memo/shared/hooks";
+import { useCategoryQuery, useKeyboardBind } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 
@@ -52,6 +52,7 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 	const dragBoxRef = useRef<HTMLDivElement>(null);
 	const [dialogMemoId, setDialogMemoId] = useState<number | null>();
 	const rafRef = useRef<number>();
+	const { categories } = useCategoryQuery();
 
 	const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
 	const selectedMemos = useMemo(
@@ -295,6 +296,7 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 						selectedMemos={selectedMemos}
 						onXButtonClick={closeMemoOption}
 						closeMemoOption={closeMemoOption}
+						categories={categories ?? []}
 					/>
 				)}
 			</AnimatePresence>

@@ -3,12 +3,11 @@ import useTranslation from "@src/modules/i18n/util.client";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import {
-	useCategoryQuery,
 	useDeleteMemosMutation,
 	useMemosUpsertMutation,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
-import type { GetMemoResponse } from "@web-memo/shared/types";
+import type { CategoryRow, GetMemoResponse } from "@web-memo/shared/types";
 import {
 	Button,
 	DropdownMenu,
@@ -31,6 +30,7 @@ interface MemoOptionProps extends LanguageType {
 	memos: GetMemoResponse[];
 	closeMemoOption?: () => void;
 	onOpenChange?: (isOpen: boolean) => void;
+	categories: CategoryRow[];
 }
 
 export default function MemoOption({
@@ -38,12 +38,12 @@ export default function MemoOption({
 	memos,
 	closeMemoOption,
 	onOpenChange,
+	categories,
 }: MemoOptionProps) {
 	const { t } = useTranslation(lng);
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const [isOpen, setIsOpen] = useState(false);
-	const { categories } = useCategoryQuery();
 	const queryClient = useQueryClient();
 	const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
 	const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();

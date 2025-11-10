@@ -1,7 +1,7 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { MOTION_VARIANTS } from "@web-memo/shared/constants";
-import type { GetMemoResponse } from "@web-memo/shared/types";
+import type { CategoryRow, GetMemoResponse } from "@web-memo/shared/types";
 import { Button } from "@web-memo/ui";
 import { motion } from "framer-motion";
 import { XIcon } from "lucide-react";
@@ -9,14 +9,16 @@ import { XIcon } from "lucide-react";
 import MemoOption from "../MemoCardFooter/MemoOption";
 
 interface MemoOptionHeaderProps extends LanguageType {
+	categories: CategoryRow[];
 	selectedMemos: GetMemoResponse[];
 	onXButtonClick: () => void;
 	closeMemoOption: () => void;
 }
 
 export default function MemoOptionHeader({
-	selectedMemos,
 	lng,
+	selectedMemos,
+	categories,
 	closeMemoOption,
 }: MemoOptionHeaderProps) {
 	const { t } = useTranslation(lng);
@@ -40,6 +42,7 @@ export default function MemoOptionHeader({
 			</div>
 			<div className="flex items-center gap-2 px-4">
 				<MemoOption
+					categories={categories}
 					memos={selectedMemos}
 					lng={lng}
 					closeMemoOption={closeMemoOption}

@@ -31,7 +31,16 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { getCursorPosition } from "./util";
 
+// Constants
 const CATEGORY_LIST_WIDTH = 256;
+const SAVE_FEEDBACK_DELAY = 500;
+const CATEGORY_TRIGGER_KEY = "#";
+const HASH_SYMBOL = "#";
+
+// Helper functions
+function getWishToastTitle(isWish: boolean): string {
+	return isWish ? I18n.get("wish_list_added") : I18n.get("wish_list_deleted");
+}
 
 function MemoForm() {
 	const { debounce } = useDebounce();
@@ -52,7 +61,7 @@ function MemoForm() {
 	const cursorPositionRef = useRef<number | null>(null);
 	const [isCreating, setIsCreating] = useState(false);
 
-	const { register, setValue, watch } = useForm<MemoInput>({
+	const { register, setValue, watch, getValues } = useForm<MemoInput>({
 		defaultValues: {
 			memo: "",
 			isWish: false,
@@ -64,40 +73,56 @@ function MemoForm() {
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 	const { mutate: mutateMemoPost } = useMemoPostMutation();
 
-	const saveMemo = async ({ memo, isWish, categoryId }: MemoInput) => {
+	// Watch form values
+	const formValues = watch();
+
+	const stopSavingAfterDelay = () => {
+		setTimeout(() => {
+			setIsSaving(false);
+		}, SAVE_FEEDBACK_DELAY);
+	};
+
+	const buildMemoData = async (memoInput: MemoInput) => {
+		const memoInfo = await getMemoInfo();
+		return {
+			...memoInfo,
+			memo: memoInput.memo,
+			isWish: memoInput.isWish,
+			category_id: memoInput.categoryId,
+		};
+	};
+
+	const updateExistingMemo = async (memoInput: MemoInput) => {
+		if (!memoData) return;
+
+		const memoPayload = await buildMemoData(memoInput);
+		mutateMemoPatch(
+			{ id: memoData.id, request: memoPayload },
+			{ onSuccess: stopSavingAfterDelay },
+		);
+	};
+
+	const createNewMemo = async (memoInput: MemoInput) => {
+		if (isCreating) return;
+
+		setIsCreating(true);
+		const memoPayload = await buildMemoData(memoInput);
+
+		mutateMemoPost(memoPayload, {
+			onSuccess: () => {
+				stopSavingAfterDelay();
+				setIsCreating(false);
+			},
+		});
+	};
+
+	const saveMemo = async (memoInput: MemoInput) => {
 		setIsSaving(true);
 
-		const memoInfo = await getMemoInfo();
-
-		const totalMemo = {
-			...memoInfo,
-			memo,
-			isWish,
-			category_id: categoryId,
-		};
-
 		if (memoData) {
-			mutateMemoPatch(
-				{ id: memoData.id, request: totalMemo },
-				{
-					onSuccess: () => {
-						setTimeout(() => {
-							setIsSaving(false);
-						}, 500);
-					},
-				},
-			);
-		} else if (!isCreating) {
-			setIsCreating(true);
-
-			mutateMemoPost(totalMemo, {
-				onSuccess: () => {
-					setTimeout(() => {
-						setIsSaving(false);
-					}, 500);
-					setIsCreating(false);
-				},
-			});
+			await updateExistingMemo(memoInput);
+		} else {
+			await createNewMemo(memoInput);
 		}
 	};
 
@@ -112,7 +137,7 @@ function MemoForm() {
 	}, [memoData?.memo, memoData?.isWish, memoData?.category_id, setValue]);
 
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		if (event.key !== "#") return;
+		if (event.key !== CATEGORY_TRIGGER_KEY) return;
 
 		event.preventDefault();
 
@@ -132,11 +157,10 @@ function MemoForm() {
 		if (calculatedLeft + CATEGORY_LIST_WIDTH > viewportWidth)
 			calculatedLeft = 0;
 
-		const currentText = watch("memo");
 		const newText =
-			currentText.slice(0, cursorPosition) +
-			"#" +
-			currentText.slice(cursorPosition);
+			formValues.memo.slice(0, cursorPosition) +
+			HASH_SYMBOL +
+			formValues.memo.slice(cursorPosition);
 		setValue("memo", newText);
 
 		setCategoryInputPosition({
@@ -156,38 +180,55 @@ function MemoForm() {
 		debounce(() =>
 			saveMemo({
 				memo: text,
-				isWish: watch("isWish"),
-				categoryId: watch("categoryId"),
+				isWish: formValues.isWish,
+				categoryId: formValues.categoryId,
 			}),
 		);
+	};
+
+	const removeHashSymbolFromMemo = () => {
+		const hashIndex = formValues.memo.lastIndexOf(HASH_SYMBOL);
+		if (hashIndex !== -1) {
+			const newMemo =
+				formValues.memo.slice(0, hashIndex) +
+				formValues.memo.slice(hashIndex + 1);
+			setValue("memo", newMemo);
+			return newMemo;
+		}
+		return formValues.memo;
+	};
+
+	const restoreCursorPosition = () => {
+		if (!textareaRef.current) return;
+
+		textareaRef.current.focus();
+		if (cursorPositionRef.current !== null) {
+			textareaRef.current.setSelectionRange(
+				cursorPositionRef.current,
+				cursorPositionRef.current,
+			);
+		}
+	};
+
+	const closeCategoryList = () => {
+		setShowCategoryList(false);
+		restoreCursorPosition();
+	};
+
+	const handleCategoryListEscape = () => {
+		closeCategoryList();
 	};
 
 	const handleCategorySelect = (category: CategoryRow) => {
 		setShowCategoryList(false);
 
-		const currentText = watch("memo");
-		const hashIndex = currentText.lastIndexOf("#");
-		if (hashIndex !== -1) {
-			setValue(
-				"memo",
-				currentText.slice(0, hashIndex) + currentText.slice(hashIndex + 1),
-			);
-		}
-
+		const updatedMemo = removeHashSymbolFromMemo();
 		setValue("categoryId", category.id);
-		if (textareaRef.current) {
-			textareaRef.current.focus();
-			if (cursorPositionRef.current !== null) {
-				textareaRef.current.setSelectionRange(
-					cursorPositionRef.current,
-					cursorPositionRef.current,
-				);
-			}
-		}
+		restoreCursorPosition();
 
 		saveMemo({
-			memo: watch("memo"),
-			isWish: watch("isWish"),
+			memo: updatedMemo,
+			isWish: formValues.isWish,
 			categoryId: category.id,
 		});
 	};
@@ -196,46 +237,59 @@ function MemoForm() {
 		setValue("categoryId", null);
 		debounce(() =>
 			saveMemo({
-				memo: watch("memo"),
-				isWish: watch("isWish"),
+				memo: formValues.memo,
+				isWish: formValues.isWish,
 				categoryId: null,
 			}),
 		);
 	};
 
-	const handleWishClick = async () => {
-		const newIsWish = !watch("isWish");
-		setValue("isWish", newIsWish);
-
-		await saveMemo({
-			memo: watch("memo"),
-			isWish: newIsWish,
-			categoryId: watch("categoryId"),
+	const openMemoInNewTab = (isWish: boolean) => {
+		const memoWishListUrl = getMemoUrl({
+			id: memoData?.id,
+			isWish,
 		});
+		Tab.create({ url: memoWishListUrl });
+	};
 
-		const getWishToastTitle = (isWish: boolean) => {
-			if (isWish) return I18n.get("wish_list_added");
-			return I18n.get("wish_list_deleted");
-		};
-
-		const handleWishListClick = () => {
-			const memoWishListUrl = getMemoUrl({
-				id: memoData?.id,
-				isWish: watch("isWish"),
-			});
-
-			Tab.create({ url: memoWishListUrl });
-		};
-
+	const showWishToast = (isWish: boolean) => {
 		toast({
-			title: getWishToastTitle(watch("isWish")),
+			title: getWishToastTitle(isWish),
 			action: (
-				<ToastAction altText={I18n.get("go_to")} onClick={handleWishListClick}>
+				<ToastAction
+					altText={I18n.get("go_to")}
+					onClick={() => openMemoInNewTab(isWish)}
+				>
 					{I18n.get("go_to")}
 				</ToastAction>
 			),
 		});
 	};
+
+	const handleWishClick = async () => {
+		const newIsWish = !formValues.isWish;
+		setValue("isWish", newIsWish);
+
+		await saveMemo({
+			memo: formValues.memo,
+			isWish: newIsWish,
+			categoryId: formValues.categoryId,
+		});
+
+		showWishToast(newIsWish);
+	};
+
+	const getCategoryColor = (categoryId: number | null) => {
+		return categories?.find((c) => c.id === categoryId)?.color || "#888888";
+	};
+
+	const getCategoryName = (categoryId: number | null) => {
+		return categories?.find((c) => c.id === categoryId)?.name;
+	};
+
+	const shouldShowSavingIndicator = isSaving;
+	const shouldShowSavedIndicator = !isSaving && formValues.memo;
+	const shouldShowCategoryBadge = formValues.categoryId !== null;
 
 	return (
 		<form className="relative flex h-full flex-col gap-1 py-1">
@@ -267,16 +321,7 @@ function MemoForm() {
 							placeholder={I18n.get("search_category")}
 							onKeyDown={(event) => {
 								if (event.key === "Escape") {
-									setShowCategoryList(false);
-									if (textareaRef.current) {
-										textareaRef.current.focus();
-										if (cursorPositionRef.current !== null) {
-											textareaRef.current.setSelectionRange(
-												cursorPositionRef.current,
-												cursorPositionRef.current,
-											);
-										}
-									}
+									handleCategoryListEscape();
 								}
 							}}
 						/>
@@ -317,24 +362,23 @@ function MemoForm() {
 						)}
 					/>
 					<div className="flex items-center gap-1">
-						{isSaving ? (
+						{shouldShowSavingIndicator && (
 							<>
 								<Loader2Icon className="w-3 h-3 animate-spin text-muted-foreground" />
 								<span className="text-xs text-muted-foreground">
 									저장 중...
 								</span>
 							</>
-						) : (
-							watch("memo") && (
-								<>
-									<CheckIcon className="w-3 h-3 text-green-500" />
-									<span className="text-xs text-green-600">저장됨</span>
-								</>
-							)
+						)}
+						{shouldShowSavedIndicator && (
+							<>
+								<CheckIcon className="w-3 h-3 text-green-500" />
+								<span className="text-xs text-green-600">저장됨</span>
+							</>
 						)}
 					</div>
 				</div>
-				{watch("categoryId") && (
+				{shouldShowCategoryBadge && (
 					<Badge
 						variant="outline"
 						className="flex items-center gap-1 px-2 py-0.5"
@@ -342,12 +386,10 @@ function MemoForm() {
 						<div
 							className="h-2 w-2 rounded-full"
 							style={{
-								backgroundColor:
-									categories?.find((c) => c.id === watch("categoryId"))
-										?.color || "#888888",
+								backgroundColor: getCategoryColor(formValues.categoryId),
 							}}
 						/>
-						{categories?.find((c) => c.id === watch("categoryId"))?.name}
+						{getCategoryName(formValues.categoryId)}
 						<XIcon
 							size={12}
 							className="hover:text-destructive ml-1 cursor-pointer"

@@ -2,7 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { useMemoPatchMutation } from "@web-memo/shared/hooks";
+import { useCategoryQuery, useMemoPatchMutation } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
@@ -35,6 +35,7 @@ export default function MemoCardFooter({
 	const router = useRouter();
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const { categories } = useCategoryQuery();
 
 	const handleCategoryClick = (event: MouseEvent<HTMLDivElement>) => {
 		event.stopPropagation();
@@ -119,7 +120,8 @@ export default function MemoCardFooter({
 							/>
 						</Button>
 						<MemoOption
-							selectedMemos={[memo]}
+							memos={[memo]}
+							categories={categories ?? []}
 							lng={lng}
 							onOpenChange={setIsDropdownOpen}
 						/>

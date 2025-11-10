@@ -1,15 +1,8 @@
 "use client";
 
-import type { MemoInput } from "@src/app/[lng]/(auth)/memos/_types/Input";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import {
-	useDebounce,
-	useKeyboardBind,
-	useMemoByIDQuery,
-	useMemoPatchMutation,
-} from "@web-memo/shared/hooks";
-import { useSearchParams } from "@web-memo/shared/modules/search-params";
+import { useMemoByIDQuery } from "@web-memo/shared/hooks";
 import {
 	Card,
 	CardContent,
@@ -18,17 +11,13 @@ import {
 	Textarea,
 } from "@web-memo/ui";
 import { motion } from "framer-motion";
-import {
-	useCallback,
-	useEffect,
-	useImperativeHandle,
-	useRef,
-	useState,
-} from "react";
-import { useForm } from "react-hook-form";
+import { useRef } from "react";
 
 import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
+import { useAutoResizeTextarea } from "./hooks/useAutoResizeTextarea";
+import { useMemoDialog } from "./hooks/useMemoDialog";
+import { useMemoForm } from "./hooks/useMemoForm";
 import UnsavedChangesAlert from "./UnsavedChangesAlert";
 
 interface MemoDialog extends LanguageType {
@@ -39,88 +28,23 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	const { t } = useTranslation(lng);
 	const { data } = useMemoByIDQuery({ id: memoId });
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
-	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
-	const [showAlert, setShowAlert] = useState(false);
-	const searchParams = useSearchParams();
-	const { debounce } = useDebounce();
 
 	const memoData = data?.data;
 
-	const { register, watch, setValue } = useForm<MemoInput>({
-		defaultValues: {
-			memo: "",
-		},
+	const { formRegister, formRef, saveMemo, checkIfEdited } = useMemoForm({
+		memoId,
+		memoData,
+		textareaRef,
 	});
 
-	const { ref, ...rest } = register("memo", {
-		onChange: (event) => {
-			event.target.style.height = `${event.target.scrollHeight}px`;
-		},
-	});
-	useImperativeHandle(ref, () => textareaRef.current);
+	const {
+		showAlert,
+		closeDialog,
+		checkEditedAndCloseDialog,
+		handleCancelAlert,
+	} = useMemoDialog({ memoId, checkIfEdited, saveMemo });
 
-	const saveMemo = useCallback(() => {
-		const currentMemo = watch("memo");
-		const isEdited = currentMemo !== memoData?.memo;
-
-		if (isEdited && currentMemo.trim() !== "") {
-			mutateMemoPatch({
-				id: memoId,
-				request: {
-					memo: currentMemo,
-				},
-			});
-		}
-	}, [watch, memoData?.memo, mutateMemoPatch, memoId]);
-
-	useKeyboardBind({ key: "s", callback: saveMemo, isMetaKey: true });
-
-	const checkEditedAndCloseDialog = () => {
-		const isEdited = watch("memo") !== memoData?.memo;
-
-		if (isEdited) setShowAlert(true);
-		else closeDialog();
-	};
-
-	const handleSaveAndClose = () => {
-		saveMemo();
-		closeDialog();
-	};
-
-	const closeDialog = () => {
-		const isHasPreviousPage = history.state?.openedMemoId === memoId;
-		if (isHasPreviousPage) history.back();
-		else {
-			searchParams.removeAll("id");
-			history.pushState({}, "", searchParams.getUrl());
-		}
-	};
-
-	const handleUnChangesAlertClose = () => {
-		setShowAlert(false);
-	};
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: ref와 textareaRef는 초기화 시에만 필요
-	useEffect(() => {
-		if (!textareaRef.current) return;
-		textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-	}, [textareaRef, ref]);
-
-	useEffect(() => {
-		setValue("memo", memoData?.memo ?? "");
-	}, [memoData, setValue]);
-
-	useEffect(() => {
-		const subscription = watch((value) => {
-			if (value.memo !== undefined) {
-				debounce(() => {
-					saveMemo();
-				}, 1000);
-			}
-		});
-
-		return () => subscription.unsubscribe();
-	}, [watch, debounce, saveMemo]);
+	useAutoResizeTextarea(textareaRef);
 
 	if (!memoData) return null;
 
@@ -140,7 +64,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 							<MemoCardHeader memo={memoData} />
 							<CardContent>
 								<Textarea
-									{...rest}
+									{...formRegister}
 									className="outline-none focus:border-gray-300 focus:outline-none"
 									ref={textareaRef}
 									placeholder={t("memos.placeholder")}
@@ -161,7 +85,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 
 			<UnsavedChangesAlert
 				open={showAlert}
-				onCancel={handleUnChangesAlertClose}
+				onCancel={handleCancelAlert}
 				onOk={closeDialog}
 				lng={lng}
 			/>

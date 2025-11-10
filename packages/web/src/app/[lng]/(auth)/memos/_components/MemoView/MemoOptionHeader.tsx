@@ -1,6 +1,7 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { MOTION_VARIANTS } from "@web-memo/shared/constants";
+import type { CategoryRow, GetMemoResponse } from "@web-memo/shared/types";
 import { Button } from "@web-memo/ui";
 import { motion } from "framer-motion";
 import { XIcon } from "lucide-react";
@@ -8,19 +9,21 @@ import { XIcon } from "lucide-react";
 import MemoOption from "../MemoCardFooter/MemoOption";
 
 interface MemoOptionHeaderProps extends LanguageType {
-	selectedMemoIds: number[];
+	categories: CategoryRow[];
+	selectedMemos: GetMemoResponse[];
 	onXButtonClick: () => void;
 	closeMemoOption: () => void;
 }
 
 export default function MemoOptionHeader({
-	selectedMemoIds,
 	lng,
+	selectedMemos,
+	categories,
 	closeMemoOption,
 }: MemoOptionHeaderProps) {
 	const { t } = useTranslation(lng);
 
-	if (selectedMemoIds.length === 0) return null;
+	if (selectedMemos.length === 0) return null;
 	return (
 		<motion.header
 			className="bg-background fixed inset-x-0 top-0 z-50 flex h-[3.5rem] w-full items-center justify-between px-4 shadow-sm"
@@ -34,12 +37,13 @@ export default function MemoOptionHeader({
 			</Button>
 			<div className="flex items-center gap-2 px-4">
 				<span className="text-md select-none font-semibold">
-					{t("memos.selected", { count: selectedMemoIds.length })}
+					{t("memos.selected", { count: selectedMemos.length })}
 				</span>
 			</div>
 			<div className="flex items-center gap-2 px-4">
 				<MemoOption
-					memoIds={selectedMemoIds}
+					categories={categories}
+					memos={selectedMemos}
 					lng={lng}
 					closeMemoOption={closeMemoOption}
 				/>

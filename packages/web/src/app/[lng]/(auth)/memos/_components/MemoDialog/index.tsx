@@ -6,8 +6,8 @@ import useTranslation from "@src/modules/i18n/util.client";
 import {
 	useDebounce,
 	useKeyboardBind,
+	useMemoByIDQuery,
 	useMemoPatchMutation,
-	useMemoQuery,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import {
@@ -37,12 +37,14 @@ interface MemoDialog extends LanguageType {
 
 export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	const { t } = useTranslation(lng);
-	const { memo: memoData } = useMemoQuery({ id: memoId });
+	const { data } = useMemoByIDQuery({ id: memoId });
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 	const [showAlert, setShowAlert] = useState(false);
 	const searchParams = useSearchParams();
 	const { debounce } = useDebounce();
+
+	const memoData = data?.data;
 
 	const { register, watch, setValue } = useForm<MemoInput>({
 		defaultValues: {

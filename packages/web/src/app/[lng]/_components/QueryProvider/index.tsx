@@ -2,6 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import type { PropsWithChildren } from "react";
 import { useState } from "react";
@@ -26,7 +27,7 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 		<QueryClientProvider client={queryClient}>
 			{children}
 
-			{/* <ReactQueryDevtools initialIsOpen={false} /> */}
+			<ReactQueryDevtools initialIsOpen={false} />
 		</QueryClientProvider>
 	);
 }

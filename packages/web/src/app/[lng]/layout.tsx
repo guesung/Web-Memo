@@ -4,7 +4,7 @@ import { SUPPORTED_LANGUAGES } from "@src/modules/i18n";
 import { AnalyticsUserTracking } from "@web-memo/shared/modules/analytics";
 import { dir } from "i18next";
 import { type PropsWithChildren, Suspense } from "react";
-import { InitDayjs } from "../_components";
+import { InitDayjs, JsonLD } from "../_components";
 import { QueryProvider, ThemeProvider } from "./_components";
 import { metadataEnglish, metadataKorean } from "./_constants";
 
@@ -24,6 +24,7 @@ export default function RootLayout({
 }: RootLayoutProps) {
 	return (
 		<div lang={lng} dir={dir(lng)} className="h-screen">
+			<JsonLD lng={lng} />
 			<ThemeProvider>
 				<QueryProvider lng={lng}>
 					<Suspense>

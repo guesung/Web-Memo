@@ -1,21 +1,10 @@
 import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
 import { getMemoUrl } from "@src/utils";
-import {
-	useCategoryQuery,
-	useDebounce,
-	useDidMount,
-	useMemoPatchMutation,
-	useMemoPostMutation,
-	useMemoQuery,
-	useTabQuery,
-} from "@web-memo/shared/hooks";
-import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
-import type { CategoryRow } from "@web-memo/shared/types";
-import { getMemoInfo, I18n, Tab } from "@web-memo/shared/utils/extension";
+import { useDebounce } from "@web-memo/shared/hooks";
+import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
 	Badge,
-	cn,
 	Command,
 	CommandEmpty,
 	CommandGroup,
@@ -23,194 +12,79 @@ import {
 	CommandItem,
 	CommandList,
 	Textarea,
-	toast,
 	ToastAction,
+	cn,
+	toast,
 } from "@web-memo/ui";
 import { CheckIcon, HeartIcon, Loader2Icon, XIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { useForm } from "react-hook-form";
-import { getCursorPosition } from "./util";
-
-const CATEGORY_LIST_WIDTH = 256;
+import { useMemoCategory } from "./useMemoCategory";
+import { useMemoForm } from "./useMemoForm";
 
 function MemoForm() {
 	const { debounce } = useDebounce();
-	const { data: tab } = useTabQuery();
-	const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
-		url: tab.url,
-	});
-	const { categories } = useCategoryQuery();
-	const [showCategoryList, setShowCategoryList] = useState(false);
-	const [categoryInputPosition, setCategoryInputPosition] = useState({
-		top: 0,
-		left: 0,
-	});
-	const [isSaving, setIsSaving] = useState(false);
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-	const commandInputRef = useRef<HTMLInputElement>(null);
-	const cursorPositionRef = useRef<number | null>(null);
-	const [isCreating, setIsCreating] = useState(false);
 
-	const { register, setValue, watch } = useForm<MemoInput>({
+	const form = useForm<MemoInput>({
 		defaultValues: {
 			memo: "",
 			isWish: false,
 			categoryId: null,
 		},
 	});
+	const { register, watch, setValue } = form;
 	const { ref, ...rest } = register("memo");
 
-	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
-	const { mutate: mutateMemoPost } = useMemoPostMutation();
+	const {
+		memoData,
+		isSaving,
+		saveMemo,
+		handleMemoChange: handleMemoChangeInternal,
+		handleWishClick: handleWishClickInternal,
+	} = useMemoForm({ form });
 
-	const saveMemo = async ({ memo, isWish, categoryId }: MemoInput) => {
-		setIsSaving(true);
-
-		const memoInfo = await getMemoInfo();
-
-		const totalMemo = {
-			...memoInfo,
-			memo,
-			isWish,
-			category_id: categoryId,
-		};
-
-		if (memoData) {
-			mutateMemoPatch(
-				{ id: memoData.id, request: totalMemo },
-				{
-					onSuccess: () => {
-						setTimeout(() => {
-							setIsSaving(false);
-						}, 500);
-					},
-				},
-			);
-		} else if (!isCreating) {
-			setIsCreating(true);
-
-			mutateMemoPost(totalMemo, {
-				onSuccess: () => {
-					setTimeout(() => {
-						setIsSaving(false);
-					}, 500);
-					setIsCreating(false);
-				},
-			});
-		}
-	};
-
-	useDidMount(() => {
-		ExtensionBridge.responseRefetchTheMemos(refetchMemo);
-	});
-
-	useEffect(() => {
-		setValue("memo", memoData?.memo ?? "");
-		setValue("isWish", memoData?.isWish ?? false);
-		setValue("categoryId", memoData?.category_id ?? null);
-	}, [memoData?.memo, memoData?.isWish, memoData?.category_id, setValue]);
-
-	const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		if (event.key !== "#") return;
-
-		event.preventDefault();
-
-		const textarea = event.currentTarget;
-		const cursorPosition = textarea.selectionStart;
-		cursorPositionRef.current = cursorPosition;
-
-		const rect = textarea.getBoundingClientRect();
-		const { left, top } = getCursorPosition(textarea, cursorPosition);
-		const scrollTop = textarea.scrollTop;
-
-		let calculatedLeft = rect.left + left;
-		const calculatedTop = rect.top + top - scrollTop;
-
-		const viewportWidth = window.innerWidth;
-
-		if (calculatedLeft + CATEGORY_LIST_WIDTH > viewportWidth)
-			calculatedLeft = 0;
-
-		const currentText = watch("memo");
-		const newText =
-			currentText.slice(0, cursorPosition) +
-			"#" +
-			currentText.slice(cursorPosition);
-		setValue("memo", newText);
-
-		setCategoryInputPosition({
-			top: calculatedTop,
-			left: calculatedLeft,
-		});
-		setShowCategoryList(true);
-
-		setTimeout(() => {
-			commandInputRef.current?.focus();
-		}, 0);
-	};
-
-	const handleMemoChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-		const text = event.target.value;
-		setValue("memo", text);
-		debounce(() =>
-			saveMemo({
-				memo: text,
-				isWish: watch("isWish"),
-				categoryId: watch("categoryId"),
-			}),
-		);
-	};
-
-	const handleCategorySelect = (category: CategoryRow) => {
-		setShowCategoryList(false);
-
-		const currentText = watch("memo");
-		const hashIndex = currentText.lastIndexOf("#");
-		if (hashIndex !== -1) {
-			setValue(
-				"memo",
-				currentText.slice(0, hashIndex) + currentText.slice(hashIndex + 1),
-			);
-		}
-
-		setValue("categoryId", category.id);
-		if (textareaRef.current) {
-			textareaRef.current.focus();
-			if (cursorPositionRef.current !== null) {
-				textareaRef.current.setSelectionRange(
-					cursorPositionRef.current,
-					cursorPositionRef.current,
-				);
-			}
-		}
-
-		saveMemo({
-			memo: watch("memo"),
-			isWish: watch("isWish"),
-			categoryId: category.id,
-		});
-	};
-
-	const handleCategoryRemove = () => {
-		setValue("categoryId", null);
+	const handleCategoryChange = (categoryId: number | null) => {
 		debounce(() =>
 			saveMemo({
 				memo: watch("memo"),
 				isWish: watch("isWish"),
-				categoryId: null,
+				categoryId,
 			}),
 		);
 	};
 
-	const handleWishClick = async () => {
-		const newIsWish = !watch("isWish");
-		setValue("isWish", newIsWish);
+	const {
+		categories,
+		showCategoryList,
+		categoryInputPosition,
+		commandInputRef,
+		handleKeyDown,
+		handleCategorySelect,
+		handleCategoryRemove,
+		handleCategoryListClose,
+	} = useMemoCategory({
+		watch,
+		setValue,
+		textareaRef,
+		onCategorySelect: (categoryId) => {
+			saveMemo({
+				memo: watch("memo"),
+				isWish: watch("isWish"),
+				categoryId,
+			});
+		},
+		onCategoryRemove: () => {
+			handleCategoryChange(null);
+		},
+	});
 
-		await saveMemo({
-			memo: watch("memo"),
-			isWish: newIsWish,
-			categoryId: watch("categoryId"),
-		});
+	const handleMemoChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+		handleMemoChangeInternal(event.target.value);
+	};
+
+	const handleWishClick = async () => {
+		await handleWishClickInternal();
 
 		const getWishToastTitle = (isWish: boolean) => {
 			if (isWish) return I18n.get("wish_list_added");
@@ -266,16 +140,7 @@ function MemoForm() {
 							placeholder={I18n.get("search_category")}
 							onKeyDown={(event) => {
 								if (event.key === "Escape") {
-									setShowCategoryList(false);
-									if (textareaRef.current) {
-										textareaRef.current.focus();
-										if (cursorPositionRef.current !== null) {
-											textareaRef.current.setSelectionRange(
-												cursorPositionRef.current,
-												cursorPositionRef.current,
-											);
-										}
-									}
+									handleCategoryListClose();
 								}
 							}}
 						/>

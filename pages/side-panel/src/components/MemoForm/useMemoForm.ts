@@ -1,0 +1,107 @@
+import type { MemoInput } from "@src/types/Input";
+import {
+	useDebounce,
+	useDidMount,
+	useMemoPatchMutation,
+	useMemoPostMutation,
+	useMemoQuery,
+	useTabQuery,
+} from "@web-memo/shared/hooks";
+import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { getMemoInfo } from "@web-memo/shared/utils/extension";
+import { useEffect, useState } from "react";
+import type { UseFormReturn } from "react-hook-form";
+
+interface UseMemoFormProps {
+	form: UseFormReturn<MemoInput>;
+}
+
+export function useMemoForm({ form }: UseMemoFormProps) {
+	const { setValue, watch } = form;
+	const { debounce } = useDebounce();
+	const { data: tab } = useTabQuery();
+	const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
+		url: tab.url,
+	});
+	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
+	const { mutate: mutateMemoPost } = useMemoPostMutation();
+	const [isSaving, setIsSaving] = useState(false);
+	const [isCreating, setIsCreating] = useState(false);
+
+	useDidMount(() => {
+		ExtensionBridge.responseRefetchTheMemos(refetchMemo);
+	});
+
+	useEffect(() => {
+		setValue("memo", memoData?.memo ?? "");
+		setValue("isWish", memoData?.isWish ?? false);
+		setValue("categoryId", memoData?.category_id ?? null);
+	}, [memoData?.memo, memoData?.isWish, memoData?.category_id, setValue]);
+
+	const saveMemo = async ({ memo, isWish, categoryId }: MemoInput) => {
+		setIsSaving(true);
+
+		const memoInfo = await getMemoInfo();
+
+		const totalMemo = {
+			...memoInfo,
+			memo,
+			isWish,
+			category_id: categoryId,
+		};
+
+		if (memoData) {
+			mutateMemoPatch(
+				{ id: memoData.id, request: totalMemo },
+				{
+					onSuccess: () => {
+						setTimeout(() => {
+							setIsSaving(false);
+						}, 500);
+					},
+				},
+			);
+		} else if (!isCreating) {
+			setIsCreating(true);
+
+			mutateMemoPost(totalMemo, {
+				onSuccess: () => {
+					setTimeout(() => {
+						setIsSaving(false);
+					}, 500);
+					setIsCreating(false);
+				},
+			});
+		}
+	};
+
+	const handleMemoChange = (text: string) => {
+		setValue("memo", text);
+		debounce(() =>
+			saveMemo({
+				memo: text,
+				isWish: watch("isWish"),
+				categoryId: watch("categoryId"),
+			}),
+		);
+	};
+
+	const handleWishClick = async () => {
+		const newIsWish = !watch("isWish");
+		setValue("isWish", newIsWish);
+
+		await saveMemo({
+			memo: watch("memo"),
+			isWish: newIsWish,
+			categoryId: watch("categoryId"),
+		});
+	};
+
+	return {
+		memoData,
+		isSaving,
+		saveMemo,
+		handleMemoChange,
+		handleWishClick,
+	};
+}

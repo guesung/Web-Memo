@@ -97,23 +97,81 @@ function MemoFormContent() {
 	};
 
 	return (
-		<form className="relative flex h-full flex-col gap-1 py-1">
-			<Textarea
-				{...register("memo", {
-					onChange: (event) => {
-						handleMemoChange(event.target.value);
-					},
-				})}
-				{...rest}
-				ref={(e) => {
-					ref(e);
-					textareaRef.current = e;
-				}}
-				onKeyDown={handleKeyDown}
-				className={cn("flex-1 resize-none text-sm outline-none")}
-				id="memo-textarea"
-				placeholder={I18n.get("memo")}
-			/>
+		<>
+			<form className="relative flex h-full flex-col gap-1 py-1">
+				<Textarea
+					id="memo-textarea"
+					onKeyDown={handleKeyDown}
+					className="flex-1 resize-none text-sm outline-none"
+					placeholder={I18n.get("memo")}
+					{...register("memo", {
+						onChange: (event) => {
+							handleMemoChange(event.target.value);
+						},
+					})}
+					{...rest}
+					ref={(e) => {
+						ref(e);
+						textareaRef.current = e;
+					}}
+				/>
+				<div className="flex items-center justify-between gap-2">
+					<div className="flex items-center gap-2">
+						<HeartIcon
+							size={16}
+							fill={memoData?.isWish ? "pink" : ""}
+							fillOpacity={memoData?.isWish ? 100 : 0}
+							onClick={handleWishClick}
+							role="button"
+							className={cn(
+								"cursor-pointer transition-transform hover:scale-110 active:scale-95",
+								{
+									"animate-heart-pop": memoData?.isWish,
+								},
+							)}
+						/>
+						<div className="flex items-center gap-1">
+							{isSaving ? (
+								<>
+									<Loader2Icon className="w-3 h-3 animate-spin text-muted-foreground" />
+									<span className="text-xs text-muted-foreground">
+										저장 중...
+									</span>
+								</>
+							) : (
+								watch("memo") && (
+									<>
+										<CheckIcon className="w-3 h-3 text-green-500" />
+										<span className="text-xs text-green-600">저장됨</span>
+									</>
+								)
+							)}
+						</div>
+					</div>
+					{watch("categoryId") && (
+						<Badge
+							variant="outline"
+							className="flex items-center gap-1 px-2 py-0.5"
+						>
+							<div
+								className="h-2 w-2 rounded-full"
+								style={{
+									backgroundColor:
+										categories?.find((c) => c.id === watch("categoryId"))
+											?.color || "#888888",
+								}}
+							/>
+							{categories?.find((c) => c.id === watch("categoryId"))?.name}
+							<XIcon
+								size={12}
+								className="hover:text-destructive ml-1 cursor-pointer"
+								onClick={handleCategoryRemove}
+							/>
+						</Badge>
+					)}
+				</div>
+			</form>
+
 			{showCategoryList && (
 				<div
 					className="fixed z-50 w-64 rounded-md bg-white shadow-lg"
@@ -153,62 +211,7 @@ function MemoFormContent() {
 					</Command>
 				</div>
 			)}
-			<div className="flex items-center justify-between gap-2">
-				<div className="flex items-center gap-2">
-					<HeartIcon
-						size={16}
-						fill={memoData?.isWish ? "pink" : ""}
-						fillOpacity={memoData?.isWish ? 100 : 0}
-						onClick={handleWishClick}
-						role="button"
-						className={cn(
-							"cursor-pointer transition-transform hover:scale-110 active:scale-95",
-							{
-								"animate-heart-pop": memoData?.isWish,
-							},
-						)}
-					/>
-					<div className="flex items-center gap-1">
-						{isSaving ? (
-							<>
-								<Loader2Icon className="w-3 h-3 animate-spin text-muted-foreground" />
-								<span className="text-xs text-muted-foreground">
-									저장 중...
-								</span>
-							</>
-						) : (
-							watch("memo") && (
-								<>
-									<CheckIcon className="w-3 h-3 text-green-500" />
-									<span className="text-xs text-green-600">저장됨</span>
-								</>
-							)
-						)}
-					</div>
-				</div>
-				{watch("categoryId") && (
-					<Badge
-						variant="outline"
-						className="flex items-center gap-1 px-2 py-0.5"
-					>
-						<div
-							className="h-2 w-2 rounded-full"
-							style={{
-								backgroundColor:
-									categories?.find((c) => c.id === watch("categoryId"))
-										?.color || "#888888",
-							}}
-						/>
-						{categories?.find((c) => c.id === watch("categoryId"))?.name}
-						<XIcon
-							size={12}
-							className="hover:text-destructive ml-1 cursor-pointer"
-							onClick={handleCategoryRemove}
-						/>
-					</Badge>
-				)}
-			</div>
-		</form>
+		</>
 	);
 }
 

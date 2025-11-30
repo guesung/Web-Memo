@@ -1,6 +1,6 @@
 {
   "name": "@web-memo/python-server",
-  "version": "1.8.19",
+  "version": "1.8.23",
   "description": "Python Flask server for YouTube transcript API",
   "main": "app.py",
   "scripts": {

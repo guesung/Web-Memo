@@ -12,7 +12,7 @@ import { getMemoInfo } from "@web-memo/shared/utils/extension";
 import { useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
-export function useMemoForm() {
+export default function useMemoForm() {
 	const { setValue, watch } = useFormContext<MemoInput>();
 	const { debounce } = useDebounce();
 	const { data: tab } = useTabQuery();

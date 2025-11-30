@@ -19,9 +19,8 @@ import {
 import { HeartIcon, XIcon } from "lucide-react";
 import { useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
-import SaveStatus from "./SaveStatus";
-import { useMemoCategory } from "./useMemoCategory";
-import { useMemoForm } from "./useMemoForm";
+import { SaveStatus } from "./components";
+import { useMemoCategory, useMemoForm } from "./hooks";
 
 function MemoFormContent() {
 	const { debounce } = useDebounce();

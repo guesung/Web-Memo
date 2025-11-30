@@ -3,7 +3,7 @@ import { useCategoryQuery } from "@web-memo/shared/hooks";
 import type { CategoryRow } from "@web-memo/shared/types";
 import { useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { getCursorPosition } from "./util";
+import { getCursorPosition } from "../utils.ts";
 
 const CATEGORY_LIST_WIDTH = 256;
 
@@ -13,7 +13,7 @@ interface UseMemoCategoryProps {
 	onCategoryRemove: () => void;
 }
 
-export function useMemoCategory({
+export default function useMemoCategory({
 	textareaRef,
 	onCategorySelect,
 	onCategoryRemove,

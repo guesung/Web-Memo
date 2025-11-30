@@ -4,7 +4,7 @@ import { MasonryInfiniteGrid } from "@egjs/react-infinitegrid";
 import { DragBox } from "@src/components";
 import { useDrag } from "@src/hooks";
 import type { LanguageType } from "@src/modules/i18n";
-import { useCategoryQuery, useKeyboardBind } from "@web-memo/shared/hooks";
+import { useKeyboardBind } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 
@@ -12,14 +12,7 @@ import { Skeleton } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import type { ComponentProps } from "react";
-import {
-	Suspense,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import MemoDialog from "../MemoDialog";
 import MemoEmptyState from "./MemoEmptyState";
@@ -52,13 +45,8 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 	const dragBoxRef = useRef<HTMLDivElement>(null);
 	const [dialogMemoId, setDialogMemoId] = useState<number | null>();
 	const rafRef = useRef<number>();
-	const { categories } = useCategoryQuery();
 
 	const [selectedMemoIds, setSelectedMemoIds] = useState<number[]>([]);
-	const selectedMemos = useMemo(
-		() => memos.filter((memo) => selectedMemoIds.includes(memo.id)),
-		[memos, selectedMemoIds],
-	);
 
 	const checkMemoSelected = useCallback(
 		(id: number) => selectedMemoIds.includes(id),
@@ -293,10 +281,9 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 				{isSelectingMode && (
 					<MemoOptionHeader
 						lng={lng}
-						selectedMemos={selectedMemos}
+						selectedMemoIds={selectedMemoIds}
 						onXButtonClick={closeMemoOption}
 						closeMemoOption={closeMemoOption}
-						categories={categories ?? []}
 					/>
 				)}
 			</AnimatePresence>
@@ -331,11 +318,7 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 					);
 				})}
 			</MasonryInfiniteGrid>
-			{dialogMemoId && (
-				<Suspense>
-					<MemoDialog lng={lng} memoId={dialogMemoId} />
-				</Suspense>
-			)}
+			{dialogMemoId && <MemoDialog lng={lng} memoId={dialogMemoId} />}
 		</div>
 	);
 }

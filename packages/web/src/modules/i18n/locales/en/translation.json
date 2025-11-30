@@ -42,6 +42,120 @@
 	"updates": {
 		"title": "What's new",
 		"versions": {
+			"v1.8.23": {
+				"title": "Stability improvements",
+				"content": ["Bug fixes and performance improvements"]
+			},
+			"v1.8.22": {
+				"title": "Analytics features",
+				"content": ["Added memo writing and user tracking"]
+			},
+			"v1.8.21": {
+				"title": "Stability improvements",
+				"content": ["Bug fixes and performance improvements"]
+			},
+			"v1.8.20": {
+				"title": "Login and feedback improvements",
+				"content": [
+					"Real-time login sync between web and extension",
+					"Enhanced feedback feature with email input"
+				]
+			},
+			"v1.8.19": {
+				"title": "Stability improvements",
+				"content": ["Bug fixes and performance improvements"]
+			},
+			"v1.8.18": {
+				"title": "Stability improvements",
+				"content": ["Bug fixes and performance improvements"]
+			},
+			"v1.8.17": {
+				"title": "Stability improvements",
+				"content": ["Bug fixes and performance improvements"]
+			},
+			"v1.8.16": {
+				"title": "Environment configuration improvements",
+				"content": [
+					"Server/client environment variables separation and E2E test fixes"
+				]
+			},
+			"v1.8.15": {
+				"title": "Major usability and performance improvements",
+				"content": [
+					"Performance optimization (i18n caching, font improvements, package optimization)",
+					"Mobile device support and theme integration",
+					"YouTube script summary improvements",
+					"Added memo save status indicator",
+					"Design improvements"
+				]
+			},
+			"v1.8.14": {
+				"title": "Security improvements",
+				"content": ["Enhanced OpenAI API Key security"]
+			},
+			"v1.8.13": {
+				"title": "Stability improvements",
+				"content": ["Bug fixes and performance improvements"]
+			},
+			"v1.8.12": {
+				"title": "Performance optimization and YouTube improvements",
+				"content": [
+					"Performance optimization (caching, fonts, package optimization)",
+					"Changed memo sorting to update time",
+					"Mobile device support and theme integration",
+					"YouTube script summary improvements"
+				]
+			},
+			"v1.8.11": {
+				"title": "YouTube summary improvements",
+				"content": [
+					"Fixed YouTube script summary failures",
+					"Built Flask-based summary server"
+				]
+			},
+			"v1.8.10": {
+				"title": "Mobile and performance improvements",
+				"content": [
+					"Supabase client caching",
+					"Mobile device support and theme integration"
+				]
+			},
+			"v1.8.9": {
+				"title": "Performance optimization",
+				"content": [
+					"i18n instance caching",
+					"Font loading improvements",
+					"Changed memo sorting criteria"
+				]
+			},
+			"v1.8.8": {
+				"title": "Build optimization and enhanced testing",
+				"content": [
+					"Build process optimization",
+					"Improved monorepo dependency management",
+					"Added E2E test code"
+				]
+			},
+			"v1.8.7": {
+				"title": "Category issue fixes",
+				"content": ["Fixed category-related bugs"]
+			},
+			"v1.8.6": {
+				"title": "Tags and category features",
+				"content": [
+					"Developed tag feature",
+					"Improved color and category features",
+					"CI/CD optimization"
+				]
+			},
+			"v1.8.5": {
+				"title": "Usability improvements",
+				"content": [
+					"Added error notifications",
+					"Added drag & scroll feature",
+					"Code refactoring"
+				]
+			},
 			"v1.8.4": {
 				"title": "Added category features",
 				"content": [

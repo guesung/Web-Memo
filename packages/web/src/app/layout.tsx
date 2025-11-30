@@ -20,7 +20,7 @@ export const viewport: Viewport = {
 
 export default function Layout({ children }: LayoutProps) {
 	return (
-		<html suppressHydrationWarning lang="ko">
+		<html lang="ko" suppressHydrationWarning>
 			<body>
 				{children}
 

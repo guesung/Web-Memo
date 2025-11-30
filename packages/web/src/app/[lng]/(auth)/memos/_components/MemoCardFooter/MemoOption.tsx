@@ -3,11 +3,12 @@ import useTranslation from "@src/modules/i18n/util.client";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import {
+	useCategoryQuery,
 	useDeleteMemosMutation,
+	useMemosQuery,
 	useMemosUpsertMutation,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
-import type { CategoryRow, GetMemoResponse } from "@web-memo/shared/types";
 import {
 	Button,
 	DropdownMenu,
@@ -27,34 +28,38 @@ import type { MouseEvent } from "react";
 import { useState } from "react";
 
 interface MemoOptionProps extends LanguageType {
-	memos: GetMemoResponse[];
+	memoIds: number[];
 	closeMemoOption?: () => void;
 	onOpenChange?: (isOpen: boolean) => void;
-	categories: CategoryRow[];
 }
 
 export default function MemoOption({
 	lng,
-	memos,
+	memoIds = [],
 	closeMemoOption,
 	onOpenChange,
-	categories,
 }: MemoOptionProps) {
 	const { t } = useTranslation(lng);
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const [isOpen, setIsOpen] = useState(false);
+	const { categories } = useCategoryQuery();
 	const queryClient = useQueryClient();
 	const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
 	const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
 
+	const { memos } = useMemosQuery({
+		isWish: searchParams.get("isWish") === "true",
+	});
+	const selectedMemos = memos.filter((memo) => memoIds.includes(memo.id));
+
 	const handleDeleteMemo = async (event?: MouseEvent<HTMLDivElement>) => {
 		event?.stopPropagation();
 
-		mutateDeleteMemo(memos.map((memo) => memo.id));
+		mutateDeleteMemo(selectedMemos.map((memo) => memo.id));
 
 		const handleToastActionClick = async () => {
-			mutateUpsertMemo(memos);
+			mutateUpsertMemo(selectedMemos);
 
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
 		};
@@ -76,11 +81,12 @@ export default function MemoOption({
 	};
 
 	const handleCategoryChange = async (categoryId: string) => {
+		const currentMemo = memos.filter((memo) => memoIds.includes(memo.id));
 		const currentCategory = categories?.find(
 			(category) => category.id === Number(categoryId),
 		);
 		mutateUpsertMemo(
-			memos.map((memo) => ({
+			currentMemo.map((memo) => ({
 				...memo,
 				category_id: Number(categoryId),
 				category: currentCategory ?? null,

@@ -1,15 +1,19 @@
-import { SUPPORTED_LANGUAGES } from "@src/modules/i18n";
+import { type Language, SUPPORTED_LANGUAGES } from "@src/modules/i18n";
 import Script from "next/script";
 
-const jsonLd = {
+interface JsonLDProps {
+	lng: Language;
+}
+
+const getJsonLd = (lng: Language) => ({
 	"@context": "https://schema.org",
 	"@type": "WebApplication",
-	name: "Page Summary",
-	description: {
-		ko: "웹페이지를 쉽게 저장하고 관리하세요",
-		en: "Store and manage web pages easily",
-	},
-	url: process.env.NEXT_PUBLIC_BASE_URL || "https://page-summary.com",
+	name: lng === "ko" ? "웹 메모" : "Web Memo",
+	description:
+		lng === "ko"
+			? "웹페이지를 쉽게 저장하고 관리하세요"
+			: "Store and manage web pages easily",
+	url: process.env.NEXT_PUBLIC_WEB_URL || "https://web-memo.site",
 	applicationCategory: "WebApplication",
 	operatingSystem: "All",
 	inLanguage: SUPPORTED_LANGUAGES,
@@ -20,11 +24,13 @@ const jsonLd = {
 	},
 	creator: {
 		"@type": "Organization",
-		name: "Page Summary Team",
+		name: "Web Memo",
 	},
-};
+});
 
-export default function JsonLD() {
+export default function JsonLD({ lng }: JsonLDProps) {
+	const jsonLd = getJsonLd(lng);
+
 	return (
 		<Script
 			type="application/ld+json"

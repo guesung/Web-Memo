@@ -1,9 +1,5 @@
 import { getMemoUrl } from "@src/utils";
-import {
-	useDidMount,
-	useMemoByURLQuery,
-	useTabQuery,
-} from "@web-memo/shared/hooks";
+import { useDidMount, useMemoQuery, useTabQuery } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import { ErrorBoundary, Skeleton } from "@web-memo/ui";
@@ -33,7 +29,7 @@ export default function MemoHeader() {
 
 function MemoLink() {
 	const { data: tab } = useTabQuery();
-	const { memo: memoData } = useMemoByURLQuery({
+	const { memo: memoData } = useMemoQuery({
 		url: tab?.url ?? "",
 	});
 

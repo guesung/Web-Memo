@@ -9,7 +9,6 @@ import type {
 	MemoSupabaseClient,
 	MemoTable,
 } from "../types";
-import { normalizeUrl } from "./Url";
 
 export class MemoService {
 	supabaseClient: MemoSupabaseClient;
@@ -47,40 +46,10 @@ export class MemoService {
 				.from(SUPABASE.table.memo)
 				.select("*, category(id, name, color)")
 				.order("updated_at", { ascending: false })
-				.range(1_000, 1_999),
-			this.supabaseClient
-				.schema(SUPABASE.table.memo)
-				.from(SUPABASE.table.memo)
-				.select("*, category(id, name, color)")
-				.order("updated_at", { ascending: false })
-				.range(2_000, 2_999),
-			this.supabaseClient
-				.schema(SUPABASE.table.memo)
-				.from(SUPABASE.table.memo)
-				.select("*, category(id, name, color)")
-				.order("updated_at", { ascending: false })
-				.range(3_000, 3_999),
+				.range(1000, 1999),
 		]);
 		const data = [...(firstBatch?.data ?? []), ...(secondBatch?.data ?? [])];
 		return { ...firstBatch, data };
-	};
-
-	getMemoById = async (id: number) =>
-		this.supabaseClient
-			.schema(SUPABASE.table.memo)
-			.from(SUPABASE.table.memo)
-			.select("*, category(id, name, color)")
-			.eq("id", id)
-			.single();
-
-	getMemoByUrl = async (url?: string) => {
-		if (!url) return null;
-		return this.supabaseClient
-			.schema(SUPABASE.table.memo)
-			.from(SUPABASE.table.memo)
-			.select("*, category(id, name, color)")
-			.eq("url", normalizeUrl(url))
-			.single();
 	};
 
 	updateMemo = async ({

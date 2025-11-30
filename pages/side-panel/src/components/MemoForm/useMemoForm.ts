@@ -9,7 +9,7 @@ import {
 } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { getMemoInfo } from "@web-memo/shared/utils/extension";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 export function useMemoForm() {
@@ -22,17 +22,20 @@ export function useMemoForm() {
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 	const { mutate: mutateMemoPost } = useMemoPostMutation();
 	const [isSaving, setIsSaving] = useState(false);
-	const [isCreating, setIsCreating] = useState(false);
+	const isCreatingRef = useRef(false);
 
 	useDidMount(() => {
 		ExtensionBridge.responseRefetchTheMemos(refetchMemo);
 	});
 
-	useEffect(() => {
-		setValue("memo", memoData?.memo ?? "");
-		setValue("isWish", memoData?.isWish ?? false);
-		setValue("categoryId", memoData?.category_id ?? null);
-	}, [memoData?.memo, memoData?.isWish, memoData?.category_id, setValue]);
+	useEffect(
+		function initMemoData() {
+			setValue("memo", memoData?.memo ?? "");
+			setValue("isWish", memoData?.isWish ?? false);
+			setValue("categoryId", memoData?.category_id ?? null);
+		},
+		[memoData?.memo, memoData?.isWish, memoData?.category_id, setValue],
+	);
 
 	const saveMemo = async ({ memo, isWish, categoryId }: MemoInput) => {
 		setIsSaving(true);
@@ -57,15 +60,18 @@ export function useMemoForm() {
 					},
 				},
 			);
-		} else if (!isCreating) {
-			setIsCreating(true);
+			return;
+		}
+
+		if (!isCreatingRef.current) {
+			isCreatingRef.current = true;
 
 			mutateMemoPost(totalMemo, {
 				onSuccess: () => {
 					setTimeout(() => {
 						setIsSaving(false);
 					}, 500);
-					setIsCreating(false);
+					isCreatingRef.current = false;
 				},
 			});
 		}

@@ -32,7 +32,7 @@ function MemoFormContent() {
 		memoData,
 		isSaving,
 		saveMemo,
-		handleMemoChange: handleMemoChangeInternal,
+		handleMemoChange,
 		handleWishClick: handleWishClickInternal,
 	} = useMemoForm();
 
@@ -69,10 +69,6 @@ function MemoFormContent() {
 		},
 	});
 
-	const handleMemoChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-		handleMemoChangeInternal(event.target.value);
-	};
-
 	const handleWishClick = async () => {
 		await handleWishClickInternal();
 
@@ -104,7 +100,9 @@ function MemoFormContent() {
 		<form className="relative flex h-full flex-col gap-1 py-1">
 			<Textarea
 				{...register("memo", {
-					onChange: handleMemoChange,
+					onChange: (event) => {
+						handleMemoChange(event.target.value);
+					},
 				})}
 				{...rest}
 				ref={(e) => {

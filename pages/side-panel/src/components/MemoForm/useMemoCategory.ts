@@ -2,26 +2,23 @@ import type { MemoInput } from "@src/types/Input";
 import { useCategoryQuery } from "@web-memo/shared/hooks";
 import type { CategoryRow } from "@web-memo/shared/types";
 import { useRef, useState } from "react";
-import type { UseFormSetValue, UseFormWatch } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { getCursorPosition } from "./util";
 
 const CATEGORY_LIST_WIDTH = 256;
 
 interface UseMemoCategoryProps {
-	watch: UseFormWatch<MemoInput>;
-	setValue: UseFormSetValue<MemoInput>;
 	textareaRef: React.RefObject<HTMLTextAreaElement | null>;
 	onCategorySelect: (categoryId: number) => void;
 	onCategoryRemove: () => void;
 }
 
 export function useMemoCategory({
-	watch,
-	setValue,
 	textareaRef,
 	onCategorySelect,
 	onCategoryRemove,
 }: UseMemoCategoryProps) {
+	const { watch, setValue } = useFormContext<MemoInput>();
 	const { categories } = useCategoryQuery();
 	const [showCategoryList, setShowCategoryList] = useState(false);
 	const [categoryInputPosition, setCategoryInputPosition] = useState({

@@ -10,14 +10,10 @@ import {
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { getMemoInfo } from "@web-memo/shared/utils/extension";
 import { useEffect, useState } from "react";
-import type { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 
-interface UseMemoFormProps {
-	form: UseFormReturn<MemoInput>;
-}
-
-export function useMemoForm({ form }: UseMemoFormProps) {
-	const { setValue, watch } = form;
+export function useMemoForm() {
+	const { setValue, watch } = useFormContext<MemoInput>();
 	const { debounce } = useDebounce();
 	const { data: tab } = useTabQuery();
 	const { memo: memoData, refetch: refetchMemo } = useMemoQuery({

@@ -18,22 +18,14 @@ import {
 } from "@web-memo/ui";
 import { CheckIcon, HeartIcon, Loader2Icon, XIcon } from "lucide-react";
 import { useRef } from "react";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { useMemoCategory } from "./useMemoCategory";
 import { useMemoForm } from "./useMemoForm";
 
-function MemoForm() {
+function MemoFormContent() {
 	const { debounce } = useDebounce();
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-	const form = useForm<MemoInput>({
-		defaultValues: {
-			memo: "",
-			isWish: false,
-			categoryId: null,
-		},
-	});
-	const { register, watch, setValue } = form;
+	const { register, watch } = useFormContext<MemoInput>();
 	const { ref, ...rest } = register("memo");
 
 	const {
@@ -42,7 +34,7 @@ function MemoForm() {
 		saveMemo,
 		handleMemoChange: handleMemoChangeInternal,
 		handleWishClick: handleWishClickInternal,
-	} = useMemoForm({ form });
+	} = useMemoForm();
 
 	const handleCategoryChange = (categoryId: number | null) => {
 		debounce(() =>
@@ -64,8 +56,6 @@ function MemoForm() {
 		handleCategoryRemove,
 		handleCategoryListClose,
 	} = useMemoCategory({
-		watch,
-		setValue,
 		textareaRef,
 		onCategorySelect: (categoryId) => {
 			saveMemo({
@@ -221,6 +211,22 @@ function MemoForm() {
 				)}
 			</div>
 		</form>
+	);
+}
+
+function MemoForm() {
+	const form = useForm<MemoInput>({
+		defaultValues: {
+			memo: "",
+			isWish: false,
+			categoryId: null,
+		},
+	});
+
+	return (
+		<FormProvider {...form}>
+			<MemoFormContent />
+		</FormProvider>
 	);
 }
 

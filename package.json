@@ -40,7 +40,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"next": "14.2.10"
+		"next": "14.2.32"
 	},
 	"devDependencies": {
 		"tsc-watch": "^6.2.1",

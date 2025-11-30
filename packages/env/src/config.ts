@@ -23,10 +23,6 @@ export const CONFIG = {
 		| "development"
 		| "staging"
 		| "production",
-	makeWebhookNotionApi: getSafeConfig(
-		"MAKE_WEBHOOK_NOTION_API",
-		process.env.MAKE_WEBHOOK_NOTION_API,
-	) as "development" | "production",
 	youtubeTranscriptUrl: getSafeConfig(
 		"YOUTUBE_TRANSCRIPT_URL",
 		process.env.YOUTUBE_TRANSCRIPT_URL,

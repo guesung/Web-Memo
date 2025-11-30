@@ -16,9 +16,10 @@ import {
 	cn,
 	toast,
 } from "@web-memo/ui";
-import { CheckIcon, HeartIcon, Loader2Icon, XIcon } from "lucide-react";
+import { HeartIcon, XIcon } from "lucide-react";
 import { useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
+import SaveStatus from "./SaveStatus";
 import { useMemoCategory } from "./useMemoCategory";
 import { useMemoForm } from "./useMemoForm";
 
@@ -130,23 +131,7 @@ function MemoFormContent() {
 								},
 							)}
 						/>
-						<div className="flex items-center gap-1">
-							{isSaving ? (
-								<>
-									<Loader2Icon className="w-3 h-3 animate-spin text-muted-foreground" />
-									<span className="text-xs text-muted-foreground">
-										저장 중...
-									</span>
-								</>
-							) : (
-								watch("memo") && (
-									<>
-										<CheckIcon className="w-3 h-3 text-green-500" />
-										<span className="text-xs text-green-600">저장됨</span>
-									</>
-								)
-							)}
-						</div>
+						<SaveStatus isSaving={isSaving} memo={watch("memo")} />
 					</div>
 					{watch("categoryId") && (
 						<Badge
@@ -161,7 +146,11 @@ function MemoFormContent() {
 											?.color || "#888888",
 								}}
 							/>
-							{categories?.find((c) => c.id === watch("categoryId"))?.name}
+							{
+								categories?.find(
+									(category) => category.id === watch("categoryId"),
+								)?.name
+							}
 							<XIcon
 								size={12}
 								className="hover:text-destructive ml-1 cursor-pointer"

@@ -1,6 +1,6 @@
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
 import { I18n } from "@web-memo/shared/utils/extension";
-import { Button, ErrorBoundary, Loading } from "@web-memo/ui";
+import { Button, Loading } from "@web-memo/ui";
 import { RefreshCwIcon, SettingsIcon } from "lucide-react";
 
 import ToggleTheme from "../../ToggleTheme";
@@ -22,9 +22,7 @@ export default function SummaryHeader() {
 				{I18n.get("summary")} - {categoryText}
 			</div>
 			<div className="flex gap-1">
-				<ErrorBoundary>
-					<ToggleTheme />
-				</ErrorBoundary>
+				<ToggleTheme />
 				{isSummaryLoading ? (
 					<Button variant="outline" size="sm">
 						<Loading />

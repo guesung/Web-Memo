@@ -4,13 +4,11 @@ import { useState } from "react";
 interface SelectionMemoButtonProps {
 	selectedText: string;
 	position: { top: number; left: number };
-	onDismiss: () => void;
 }
 
 export default function SelectionMemoButton({
 	selectedText,
 	position,
-	onDismiss,
 }: SelectionMemoButtonProps) {
 	const [state, setState] = useState<
 		"default" | "loading" | "success" | "error"
@@ -28,7 +26,7 @@ export default function SelectionMemoButton({
 				(document.querySelector('link[rel~="icon"]') as HTMLLinkElement)
 					?.href || "";
 
-			ExtensionBridge.requestCreateMemo({
+			await ExtensionBridge.requestCreateMemo({
 				memo: selectedText,
 				url,
 				title,

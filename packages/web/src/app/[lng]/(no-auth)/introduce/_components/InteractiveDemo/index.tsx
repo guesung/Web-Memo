@@ -1,10 +1,17 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
-import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, BarChart3, Sparkles, Heart, FolderOpen } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+	BarChart3,
+	FolderOpen,
+	Globe,
+	Heart,
+	Pencil,
+	Sparkles,
+} from "lucide-react";
 import Image from "next/image";
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface InteractiveDemoProps extends LanguageType {}
 
@@ -18,24 +25,27 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 			id: "memo",
 			icon: Pencil,
 			label: lng === "ko" ? "메모 작성" : "Write Memo",
-			description: lng === "ko" ? "아티클을 읽으며 바로 메모" : "Take notes while reading",
-			image: `/images/introduce/${lng}/1.png`,
+			description:
+				lng === "ko" ? "아티클을 읽으며 바로 메모" : "Take notes while reading",
+			image: `/images/pngs/introduction/${lng}/1.png`,
 			color: "blue",
 		},
 		{
 			id: "overview",
 			icon: BarChart3,
 			label: lng === "ko" ? "한눈에 보기" : "Overview",
-			description: lng === "ko" ? "모든 메모를 한눈에" : "See all memos at a glance",
-			image: `/images/introduce/${lng}/2.png`,
+			description:
+				lng === "ko" ? "모든 메모를 한눈에" : "See all memos at a glance",
+			image: `/images/pngs/introduction/${lng}/2.png`,
 			color: "green",
 		},
 		{
 			id: "ai",
 			icon: Sparkles,
 			label: lng === "ko" ? "AI 요약" : "AI Summary",
-			description: lng === "ko" ? "유튜브 영상을 AI로 요약" : "Summarize YouTube with AI",
-			image: `/images/introduce/${lng}/3.png`,
+			description:
+				lng === "ko" ? "유튜브 영상을 AI로 요약" : "Summarize YouTube with AI",
+			image: `/images/pngs/introduction/${lng}/3.png`,
 			color: "amber",
 		},
 		{
@@ -43,15 +53,16 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 			icon: Heart,
 			label: lng === "ko" ? "위시리스트" : "Wishlist",
 			description: lng === "ko" ? "나중에 볼 콘텐츠 저장" : "Save for later",
-			image: `/images/introduce/${lng}/4.png`,
+			image: `/images/pngs/introduction/${lng}/4.png`,
 			color: "pink",
 		},
 		{
 			id: "organize",
 			icon: FolderOpen,
 			label: lng === "ko" ? "정리하기" : "Organize",
-			description: lng === "ko" ? "카테고리로 체계적 관리" : "Organize with categories",
-			image: `/images/introduce/${lng}/5.png`,
+			description:
+				lng === "ko" ? "카테고리로 체계적 관리" : "Organize with categories",
+			image: `/images/pngs/introduction/${lng}/5.png`,
 			color: "purple",
 		},
 	];
@@ -72,7 +83,7 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 					nextTab();
 					return 0;
 				}
-				return prev + (100 / (AUTO_ROTATE_INTERVAL / 100));
+				return prev + 100 / (AUTO_ROTATE_INTERVAL / 100);
 			});
 		}, 100);
 
@@ -87,7 +98,10 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 	};
 
 	const getColorClasses = (color: string, isActive: boolean) => {
-		const colors: Record<string, { bg: string; text: string; border: string; activeBg: string }> = {
+		const colors: Record<
+			string,
+			{ bg: string; text: string; border: string; activeBg: string }
+		> = {
 			blue: {
 				bg: "bg-blue-100 dark:bg-blue-900/30",
 				text: "text-blue-600 dark:text-blue-400",
@@ -162,9 +176,7 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 							</div>
 							<div className="flex-1 mx-4">
 								<div className="bg-white dark:bg-gray-700 rounded-lg px-4 py-1.5 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2 max-w-md mx-auto">
-									<svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
-									</svg>
+									<Globe className="h-4 w-4 flex-shrink-0" />
 									<span className="truncate">web-memo.site</span>
 								</div>
 							</div>
@@ -211,7 +223,9 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 											}`}
 										>
 											<tab.icon className="h-5 w-5" />
-											<span className="font-medium hidden sm:inline">{tab.label}</span>
+											<span className="font-medium hidden sm:inline">
+												{tab.label}
+											</span>
 
 											{/* Progress indicator for active tab */}
 											{isActive && (

@@ -4,7 +4,7 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { URL } from "@web-memo/shared/constants";
 import { motion } from "framer-motion";
-import { Chrome, Star, Users, Sparkles } from "lucide-react";
+import { Check, Chrome, Globe, Sparkles, Star, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -49,7 +49,9 @@ export default function Hero({ lng }: HeroProps) {
 									/>
 								))}
 							</div>
-							<span className="font-semibold text-gray-900 dark:text-gray-100">5.0</span>
+							<span className="font-semibold text-gray-900 dark:text-gray-100">
+								5.0
+							</span>
 							<div className="w-px h-4 bg-gray-300 dark:bg-gray-600" />
 							<div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
 								<Users className="h-4 w-4" />
@@ -119,15 +121,11 @@ export default function Hero({ lng }: HeroProps) {
 							className="mt-8 flex items-center gap-6 justify-center lg:justify-start text-sm text-gray-500 dark:text-gray-400"
 						>
 							<div className="flex items-center gap-2">
-								<svg className="h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-									<path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-								</svg>
+								<Check className="h-4 w-4 text-green-500" />
 								{lng === "ko" ? "영원히 무료" : "Free Forever"}
 							</div>
 							<div className="flex items-center gap-2">
-								<svg className="h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-									<path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-								</svg>
+								<Check className="h-4 w-4 text-green-500" />
 								{lng === "ko" ? "설치 10초" : "10s Install"}
 							</div>
 						</motion.div>
@@ -152,9 +150,7 @@ export default function Hero({ lng }: HeroProps) {
 									</div>
 									<div className="flex-1 mx-4">
 										<div className="bg-white dark:bg-gray-700 rounded-lg px-4 py-1.5 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
-											<svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
-											</svg>
+											<Globe className="h-4 w-4" />
 											web-memo.site
 										</div>
 									</div>
@@ -163,7 +159,7 @@ export default function Hero({ lng }: HeroProps) {
 								{/* Screenshot */}
 								<div className="relative aspect-[4/3]">
 									<Image
-										src={`/images/introduce/${lng}/1.png`}
+										src={`/images/pngs/introduction/${lng}/1.png`}
 										alt="Web Memo Screenshot"
 										fill
 										className="object-cover object-top"

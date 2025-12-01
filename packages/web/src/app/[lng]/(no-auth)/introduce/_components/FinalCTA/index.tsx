@@ -4,7 +4,7 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { URL } from "@web-memo/shared/constants";
 import { motion } from "framer-motion";
-import { Chrome, ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Chrome } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -109,7 +109,7 @@ export default function FinalCTA({ lng }: FinalCTAProps) {
 								{/* Screenshot */}
 								<div className="relative aspect-[4/3]">
 									<Image
-										src={`/images/introduce/${lng}/1.png`}
+										src={`/images/pngs/introduction/${lng}/1.png`}
 										alt="Web Memo Screenshot"
 										fill
 										className="object-cover object-top opacity-90"

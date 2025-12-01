@@ -8,6 +8,7 @@ import {
 	useTabQuery,
 } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import type { MemoTable } from "@web-memo/shared/types";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -24,7 +25,6 @@ export default function useMemoForm() {
 	const [isSaving, setIsSaving] = useState(false);
 	const isCreatingRef = useRef(false);
 	const isEditingRef = useRef(false);
-	const initializedRef = useRef(false);
 
 	useDidMount(() => {
 		ExtensionBridge.responseRefetchTheMemos(refetchMemo);
@@ -32,36 +32,21 @@ export default function useMemoForm() {
 
 	useEffect(
 		function initMemoData() {
-			// 편집 중이거나 이미 초기화된 경우 memo 값은 덮어쓰지 않음
-			if (!isEditingRef.current && !initializedRef.current) {
-				setValue("memo", memoData?.memo ?? "");
-				if (memoData?.memo !== undefined) {
-					initializedRef.current = true;
-				}
-			}
+			setValue("memo", memoData?.memo ?? "");
 			setValue("isWish", memoData?.isWish ?? false);
 			setValue("categoryId", memoData?.category_id ?? null);
 		},
 		[memoData?.memo, memoData?.isWish, memoData?.category_id, setValue],
 	);
 
-	const saveMemo = async ({ memo, isWish, categoryId }: MemoInput) => {
+	const saveMemo = async (memoInfo: MemoTable["Insert"]) => {
 		setIsSaving(true);
-
-		const tabInfo = await getTabInfo();
-
-		const totalMemo = {
-			...tabInfo,
-			memo,
-			isWish,
-			category_id: categoryId,
-		};
 
 		if (isCreatingRef.current) return;
 
 		if (memoData) {
 			mutateMemoPatch(
-				{ id: memoData.id, request: totalMemo },
+				{ id: memoData.id, request: memoInfo },
 				{
 					onSuccess: () => {
 						setTimeout(() => {
@@ -74,7 +59,7 @@ export default function useMemoForm() {
 		} else {
 			isCreatingRef.current = true;
 
-			mutateMemoPost(totalMemo, {
+			mutateMemoPost(memoInfo, {
 				onSuccess: () => {
 					setTimeout(() => {
 						setIsSaving(false);
@@ -85,17 +70,26 @@ export default function useMemoForm() {
 		}
 	};
 
-	const handleMemoChange = (text: string) => {
+	const handleMemoChange = (text: string, ...props: any) => {
+		console.log(text, props);
 		isEditingRef.current = true;
 		setValue("memo", text);
-		debounce(() => {
-			saveMemo({
+
+		debounce(async () => {
+			const tabInfo = await getTabInfo();
+
+			console.log(tabInfo);
+
+			const memoInfo = {
+				...tabInfo,
 				memo: text,
 				isWish: watch("isWish"),
-				categoryId: watch("categoryId"),
-			});
+				category_id: watch("categoryId"),
+			};
+
+			await saveMemo(memoInfo);
 			isEditingRef.current = false;
-		});
+		}, 1000);
 	};
 
 	return {

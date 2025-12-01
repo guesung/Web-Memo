@@ -1,6 +1,6 @@
 import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
-import { I18n } from "@web-memo/shared/utils/extension";
+import { getTabInfo, I18n } from "@web-memo/shared/utils/extension";
 import {
 	Badge,
 	cn,
@@ -21,44 +21,39 @@ import { useMemoCategory, useMemoForm, useMemoWish } from "./hooks";
 
 function MemoFormContent() {
 	const editorRef = useRef<MarkdownEditorRef>(null);
-	const initializedRef = useRef(false);
-	const { watch, setValue } = useFormContext<MemoInput>();
+	const { watch } = useFormContext<MemoInput>();
 
 	const { memoData, isSaving, saveMemo, handleMemoChange } = useMemoForm();
 
-	// memoData가 처음 로드되면 에디터에 반영 (초기화 시에만)
 	useEffect(() => {
-		if (memoData?.memo && editorRef.current && !initializedRef.current) {
-			editorRef.current.setMarkdown(memoData.memo);
-			setValue("memo", memoData.memo);
-			initializedRef.current = true;
+		if (editorRef.current) {
+			editorRef.current.setMarkdown(memoData?.memo ?? "");
 		}
-	}, [memoData?.memo, setValue]);
-
-	const handleEditorChange = (markdown: string) => {
-		setValue("memo", markdown);
-		handleMemoChange(markdown);
-	};
+	}, [memoData?.memo]);
 
 	const { handleWishClick } = useMemoWish({
 		memoId: memoData?.id,
 		onWishClick: async (isWish) => {
+			const tabInfo = await getTabInfo();
+
 			await saveMemo({
+				...tabInfo,
 				memo: watch("memo"),
 				isWish: !isWish,
-				categoryId: watch("categoryId"),
+				category_id: watch("categoryId"),
 			});
 		},
 	});
 
-	const handleCategoryChange = (categoryId: number | null) => {
-		debounce(() =>
-			saveMemo({
-				memo: watch("memo"),
-				isWish: watch("isWish"),
-				categoryId,
-			}),
-		);
+	const handleCategoryChange = async (categoryId: number | null) => {
+		const tabInfo = await getTabInfo();
+
+		await saveMemo({
+			...tabInfo,
+			memo: watch("memo"),
+			isWish: watch("isWish"),
+			category_id: categoryId,
+		});
 	};
 
 	const {
@@ -71,11 +66,14 @@ function MemoFormContent() {
 		handleCategoryListClose,
 	} = useMemoCategory({
 		textareaRef: { current: null }, // WYSIWYG 에디터에서는 # 단축키 비활성화
-		onCategorySelect: (categoryId) => {
-			saveMemo({
+		onCategorySelect: async (categoryId) => {
+			const tabInfo = await getTabInfo();
+
+			await saveMemo({
+				...tabInfo,
 				memo: watch("memo"),
 				isWish: watch("isWish"),
-				categoryId,
+				category_id: categoryId,
 			});
 		},
 		onCategoryRemove: () => {
@@ -89,7 +87,7 @@ function MemoFormContent() {
 				<MarkdownEditor
 					ref={editorRef}
 					defaultValue={memoData?.memo ?? ""}
-					onChange={handleEditorChange}
+					onChange={handleMemoChange}
 					placeholder={I18n.get("memo")}
 					className="flex-1"
 				/>

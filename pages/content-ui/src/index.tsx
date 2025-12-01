@@ -1,6 +1,6 @@
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { isProduction } from "@web-memo/shared/utils";
-
+import { Suspense } from "react";
 import {
 	OpenSidePanelButton,
 	QueryProvider,
@@ -88,16 +88,18 @@ const setupTextSelectionHandler = () => {
 		buttonRoot = attachShadowTree({
 			shadowTree: (
 				<QueryProvider>
-					<SelectionMemoButton
-						selectedText={text}
-						position={position}
-						onDismiss={() => {
-							if (buttonRoot) {
-								buttonRoot.host.remove();
-								buttonRoot = null;
-							}
-						}}
-					/>
+					<Suspense>
+						<SelectionMemoButton
+							selectedText={text}
+							position={position}
+							onDismiss={() => {
+								if (buttonRoot) {
+									buttonRoot.host.remove();
+									buttonRoot = null;
+								}
+							}}
+						/>
+					</Suspense>
 				</QueryProvider>
 			),
 			shadowHostId: "WEB_MEMO_SELECTION_BUTTON",

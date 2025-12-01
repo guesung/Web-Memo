@@ -1,6 +1,5 @@
 import { useMemoPostMutation } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
-import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useState } from "react";
 
 interface SelectionMemoButtonProps {
@@ -20,24 +19,31 @@ export default function SelectionMemoButton({
 	const { mutateAsync: createMemo } = useMemoPostMutation();
 
 	const handleClick = async () => {
+		console.log("handleClick");
 		if (state === "loading") return;
 
 		setState("loading");
 
 		try {
-			// Get current tab information
-			const tabInfo = await getTabInfo();
+			// Get current page information from DOM (content script context)
+			const url = window.location.href;
+			const title = document.title;
+			const favIconUrl =
+				(document.querySelector('link[rel~="icon"]') as HTMLLinkElement)
+					?.href || "";
+
 
 			// Create memo with selected text
 			await createMemo({
 				memo: selectedText,
-				url: tabInfo.url,
-				title: tabInfo.title,
-				favIconUrl: tabInfo.favIconUrl,
+				url,
+				title,
+				favIconUrl,
 				isWish: false,
 				category_id: null,
 			});
 
+			console.log("Memo created successfully!");
 			setState("success");
 
 			// After 1 second, open side panel and dismiss button
@@ -59,14 +65,18 @@ export default function SelectionMemoButton({
 	return (
 		<button
 			type="button"
-			onClick={handleClick}
+			onMouseDown={() => {
+				handleClick();
+			}}
 			disabled={state === "loading"}
-			className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg transition-all hover:scale-110 hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-70"
+			className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white shadow-lg transition-all hover:scale-110 hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-70"
 			style={{
 				position: "absolute",
 				top: `${position.top}px`,
 				left: `${position.left}px`,
-				zIndex: 2147483646,
+				zIndex: 2147483647,
+				pointerEvents: "auto",
+				cursor: "pointer",
 			}}
 			aria-label="Save selected text as memo"
 		>
@@ -76,6 +86,7 @@ export default function SelectionMemoButton({
 					className="h-5 w-5"
 					viewBox="0 0 20 20"
 					fill="currentColor"
+					style={{ pointerEvents: "none" }}
 				>
 					<path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
 				</svg>
@@ -86,6 +97,7 @@ export default function SelectionMemoButton({
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none"
 					viewBox="0 0 24 24"
+					style={{ pointerEvents: "none" }}
 				>
 					<circle
 						className="opacity-25"
@@ -108,6 +120,7 @@ export default function SelectionMemoButton({
 					className="h-5 w-5 text-green-500"
 					viewBox="0 0 20 20"
 					fill="currentColor"
+					style={{ pointerEvents: "none" }}
 				>
 					<path
 						fillRule="evenodd"
@@ -122,6 +135,7 @@ export default function SelectionMemoButton({
 					className="h-5 w-5 text-red-500"
 					viewBox="0 0 20 20"
 					fill="currentColor"
+					style={{ pointerEvents: "none" }}
 				>
 					<path
 						fillRule="evenodd"

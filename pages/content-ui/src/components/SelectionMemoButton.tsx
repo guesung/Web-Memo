@@ -1,7 +1,7 @@
+import { useMemoPostMutation } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useState } from "react";
-import { useMemoPostMutation } from "@web-memo/shared/hooks";
 
 interface SelectionMemoButtonProps {
 	selectedText: string;
@@ -14,7 +14,9 @@ export default function SelectionMemoButton({
 	position,
 	onDismiss,
 }: SelectionMemoButtonProps) {
-	const [state, setState] = useState<"default" | "loading" | "success" | "error">("default");
+	const [state, setState] = useState<
+		"default" | "loading" | "success" | "error"
+	>("default");
 	const { mutateAsync: createMemo } = useMemoPostMutation();
 
 	const handleClick = async () => {

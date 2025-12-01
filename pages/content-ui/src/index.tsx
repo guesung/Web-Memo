@@ -1,7 +1,11 @@
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { isProduction } from "@web-memo/shared/utils";
 
-import { OpenSidePanelButton, SelectionMemoButton } from "./components";
+import {
+	OpenSidePanelButton,
+	QueryProvider,
+	SelectionMemoButton,
+} from "./components";
 import { attachShadowTree } from "./utils";
 
 const renderOpenSidePanelButton = async () => {
@@ -15,7 +19,7 @@ const renderOpenSidePanelButton = async () => {
 
 const calculateButtonPosition = (
 	selectionRect: DOMRect,
-	buttonSize: { width: number; height: number }
+	buttonSize: { width: number; height: number },
 ): { top: number; left: number } => {
 	const GAP = 8;
 	const viewport = {
@@ -83,16 +87,18 @@ const setupTextSelectionHandler = () => {
 		// Render button
 		buttonRoot = attachShadowTree({
 			shadowTree: (
-				<SelectionMemoButton
-					selectedText={text}
-					position={position}
-					onDismiss={() => {
-						if (buttonRoot) {
-							buttonRoot.host.remove();
-							buttonRoot = null;
-						}
-					}}
-				/>
+				<QueryProvider>
+					<SelectionMemoButton
+						selectedText={text}
+						position={position}
+						onDismiss={() => {
+							if (buttonRoot) {
+								buttonRoot.host.remove();
+								buttonRoot = null;
+							}
+						}}
+					/>
+				</QueryProvider>
 			),
 			shadowHostId: "WEB_MEMO_SELECTION_BUTTON",
 		});

@@ -49,7 +49,7 @@ export default function useMemoInfiniteScroll({
 		if (maxAddItem === 0) return;
 
 		wait();
-		currentTarget.appendPlaceholders(MEMO_UNIT, nextGroupKey);
+		currentTarget.appendPlaceholders(maxAddItem, nextGroupKey);
 
 		setTimeout(() => {
 			ready();

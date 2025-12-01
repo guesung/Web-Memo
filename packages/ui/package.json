@@ -23,6 +23,7 @@
 		"@milkdown/crepe": "^7.17.2",
 		"@milkdown/kit": "^7.17.2",
 		"@milkdown/react": "^7.17.2",
+		"prosemirror-view": "^1.41.3",
 		"@radix-ui/react-accordion": "^1.2.1",
 		"@radix-ui/react-alert-dialog": "^1.1.2",
 		"@radix-ui/react-aspect-ratio": "^1.1.0",

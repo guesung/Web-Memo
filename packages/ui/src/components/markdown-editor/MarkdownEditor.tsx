@@ -5,9 +5,8 @@ import { replaceAll } from "@milkdown/kit/utils";
 // prosemirror base styles - import before crepe styles
 import "prosemirror-view/style/prosemirror.css";
 // crepe theme styles
-import "@milkdown/crepe/theme/frame/style.css";
+import "@milkdown/crepe/theme/frame.css";
 // custom overrides
-import "./styles.css";
 import {
   forwardRef,
   useEffect,
@@ -16,6 +15,7 @@ import {
   useRef,
 } from "react";
 import { cn } from "../../utils/cn";
+import "./styles.css";
 import type { MarkdownEditorProps, MarkdownEditorRef } from "./types";
 
 export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>(
@@ -57,6 +57,10 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
         defaultValue,
         features: {
           [Crepe.Feature.Placeholder]: !!placeholder,
+          [Crepe.Feature.BlockEdit]: false,
+          [Crepe.Feature.LinkTooltip]: false,
+          [Crepe.Feature.Toolbar]: false,
+
         },
         featureConfigs: {
           [Crepe.Feature.Placeholder]: {

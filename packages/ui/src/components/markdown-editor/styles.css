@@ -2,7 +2,7 @@
 
 /* padding 오버라이드 - 기본값 60px 120px를 제거 */
 .markdown-editor .milkdown .ProseMirror {
-  padding: 12px 16px;
+  padding: 12px 16px !important;
 }
 
 /* 에디터 컨테이너 스타일 */

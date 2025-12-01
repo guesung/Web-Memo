@@ -109,5 +109,26 @@
 	},
 	"summary": {
 		"message": "요약"
+	},
+	"search_category": {
+		"message": "카테고리 검색"
+	},
+	"no_categories_found": {
+		"message": "카테고리가 없습니다"
+	},
+	"category_suggesting": {
+		"message": "카테고리 추천 중..."
+	},
+	"category_suggestion_existing": {
+		"message": "추천:"
+	},
+	"category_suggestion_new": {
+		"message": "새 카테고리:"
+	},
+	"category_suggestion_accept": {
+		"message": "적용"
+	},
+	"category_suggestion_dismiss": {
+		"message": "무시"
 	}
 }

@@ -109,5 +109,26 @@
 	},
 	"summary": {
 		"message": "Summary"
+	},
+	"search_category": {
+		"message": "Search category"
+	},
+	"no_categories_found": {
+		"message": "No categories found"
+	},
+	"category_suggesting": {
+		"message": "Suggesting category..."
+	},
+	"category_suggestion_existing": {
+		"message": "Suggest:"
+	},
+	"category_suggestion_new": {
+		"message": "New category:"
+	},
+	"category_suggestion_accept": {
+		"message": "Apply"
+	},
+	"category_suggestion_dismiss": {
+		"message": "Dismiss"
 	}
 }

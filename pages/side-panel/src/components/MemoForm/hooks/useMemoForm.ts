@@ -12,7 +12,11 @@ import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
-export default function useMemoForm() {
+interface UseMemoFormProps {
+	onSaveSuccess?: (memoInput: MemoInput) => void;
+}
+
+export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const { setValue, watch } = useFormContext<MemoInput>();
 	const { debounce } = useDebounce();
 	const { data: tab } = useTabQuery();
@@ -59,6 +63,7 @@ export default function useMemoForm() {
 						setTimeout(() => {
 							setIsSaving(false);
 						}, 500);
+						onSaveSuccess?.({ memo, isWish, categoryId });
 					},
 				},
 			);
@@ -72,6 +77,7 @@ export default function useMemoForm() {
 						setIsSaving(false);
 					}, 500);
 					isCreatingRef.current = false;
+					onSaveSuccess?.({ memo, isWish, categoryId });
 				},
 			});
 		}

@@ -1,7 +1,11 @@
 import { EXTENSION } from "../../constants";
 import { Runtime, Tab } from "../../utils/extension";
 import { BRIDGE_MESSAGE_TYPES } from "./constant";
-import type { PageContent } from "./types";
+import type {
+	CreateMemoPayload,
+	CreateMemoResponse,
+	PageContent,
+} from "./types";
 import { ExtensionError, ExtensionErrorCode } from "./types";
 
 export default class ExtensionBridge {
@@ -287,6 +291,56 @@ export default class ExtensionBridge {
 		} catch (error) {
 			throw new ExtensionError(
 				"Failed to respond to login status sync request",
+				ExtensionErrorCode.RUNTIME_ERROR,
+				error,
+			);
+		}
+	}
+
+	/**
+	 * content-ui에서 background로 메모 생성 요청
+	 */
+	static async requestCreateMemo(
+		payload: CreateMemoPayload,
+	): Promise<CreateMemoResponse> {
+		try {
+			return await Runtime.sendMessage<CreateMemoPayload, CreateMemoResponse>(
+				BRIDGE_MESSAGE_TYPES.CREATE_MEMO,
+				payload,
+			);
+		} catch (error) {
+			throw new ExtensionError(
+				"Failed to request memo creation",
+				ExtensionErrorCode.COMMUNICATION_ERROR,
+				error,
+			);
+		}
+	}
+
+	/**
+	 * background에서 메모 생성 요청 처리
+	 */
+	static responseCreateMemo(
+		callbackFn: (
+			payload: CreateMemoPayload,
+			sender: chrome.runtime.MessageSender,
+			sendResponse: (response: CreateMemoResponse) => void,
+		) => void,
+	) {
+		try {
+			return Runtime.onMessage(
+				BRIDGE_MESSAGE_TYPES.CREATE_MEMO,
+				(request, sender, sendResponse) => {
+					callbackFn(
+						request.payload as CreateMemoPayload,
+						sender,
+						sendResponse,
+					);
+				},
+			);
+		} catch (error) {
+			throw new ExtensionError(
+				"Failed to respond to memo creation request",
 				ExtensionErrorCode.RUNTIME_ERROR,
 				error,
 			);

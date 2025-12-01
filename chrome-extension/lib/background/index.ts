@@ -7,8 +7,8 @@ import {
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
-import { isProduction } from "@web-memo/shared/utils";
-import { I18n, Tab } from "@web-memo/shared/utils/extension";
+import { isProduction, MemoService } from "@web-memo/shared/utils";
+import { getSupabaseClient, I18n, Tab } from "@web-memo/shared/utils/extension";
 
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
 chrome.runtime.onInstalled.addListener(async () => {
@@ -93,3 +93,24 @@ ExtensionBridge.responseOpenSidePanel();
 ExtensionBridge.responseGetExtensionManifest();
 
 ExtensionBridge.responseGetTabs();
+
+// content-ui에서 메모 생성 요청을 받아 처리한다.
+ExtensionBridge.responseCreateMemo(async (payload, _sender, sendResponse) => {
+	try {
+		const supabaseClient = await getSupabaseClient();
+		const memoService = new MemoService(supabaseClient);
+		const result = await memoService.insertMemo(payload);
+
+		if (result.error) {
+			sendResponse({ success: false, error: result.error.message });
+		} else {
+			sendResponse({ success: true });
+		}
+	} catch (error) {
+		sendResponse({
+			success: false,
+			error: error instanceof Error ? error.message : "메모 생성에 실패했습니다.",
+		});
+	}
+	return true;
+});

@@ -49,6 +49,8 @@ export default function useMemoForm() {
 			category_id: categoryId,
 		};
 
+		if (isCreatingRef.current) return;
+
 		if (memoData) {
 			mutateMemoPatch(
 				{ id: memoData.id, request: totalMemo },
@@ -61,9 +63,7 @@ export default function useMemoForm() {
 				},
 			);
 			return;
-		}
-
-		if (!isCreatingRef.current) {
+		} else {
 			isCreatingRef.current = true;
 
 			mutateMemoPost(totalMemo, {

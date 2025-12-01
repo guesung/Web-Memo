@@ -95,16 +95,42 @@ ExtensionBridge.responseGetExtensionManifest();
 ExtensionBridge.responseGetTabs();
 
 // content-ui에서 메모 생성 요청을 받아 처리한다.
+// 기존 메모가 있으면 내용을 추가하고, 없으면 새로 생성한다.
 ExtensionBridge.responseCreateMemo(async (payload, _sender, sendResponse) => {
 	try {
 		const supabaseClient = await getSupabaseClient();
 		const memoService = new MemoService(supabaseClient);
-		const result = await memoService.insertMemo(payload);
 
-		if (result.error) {
-			sendResponse({ success: false, error: result.error.message });
+		// 동일한 URL의 기존 메모가 있는지 확인
+		const existingMemo = await memoService.getMemoByUrl(payload.url);
+
+		if (existingMemo.error) {
+			sendResponse({ success: false, error: existingMemo.error.message });
+			return true;
+		}
+
+		if (existingMemo.data) {
+			// 기존 메모가 있으면 내용을 추가
+			const updatedMemo = `${existingMemo.data.memo}\n\n${payload.memo}`;
+			const result = await memoService.updateMemo({
+				id: existingMemo.data.id,
+				request: { memo: updatedMemo },
+			});
+
+			if (result.error) {
+				sendResponse({ success: false, error: result.error.message });
+			} else {
+				sendResponse({ success: true });
+			}
 		} else {
-			sendResponse({ success: true });
+			// 기존 메모가 없으면 새로 생성
+			const result = await memoService.insertMemo(payload);
+
+			if (result.error) {
+				sendResponse({ success: false, error: result.error.message });
+			} else {
+				sendResponse({ success: true });
+			}
 		}
 	} catch (error) {
 		sendResponse({

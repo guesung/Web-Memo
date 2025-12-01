@@ -170,10 +170,40 @@ export default class ExtensionBridge {
 		}
 	}
 
-	static async requestRefetchTheMemos() {
+	static async requestRefetchTheMemosFromExtension() {
 		try {
+			return await Runtime.sendMessage(
+				BRIDGE_MESSAGE_TYPES.REFETCH_THE_MEMO_LIST_FROM_EXTENSION,
+			);
+		} catch (error) {
+			throw new ExtensionError(
+				"Failed to request memo list refresh",
+				ExtensionErrorCode.COMMUNICATION_ERROR,
+				error,
+			);
+		}
+	}
+
+	static responseRefetchTheMemosFromExtension(callbackFn: () => void) {
+		try {
+			return Runtime.onMessage(
+				BRIDGE_MESSAGE_TYPES.REFETCH_THE_MEMO_LIST_FROM_EXTENSION,
+				callbackFn,
+			);
+		} catch (error) {
+			throw new ExtensionError(
+				"Failed to respond to memo list refresh request",
+				ExtensionErrorCode.RUNTIME_ERROR,
+				error,
+			);
+		}
+	}
+
+	static async requestRefetchTheMemosFromWeb() {
+		try {
+			console.log(1);
 			return await chrome.runtime.sendMessage(EXTENSION.id, {
-				type: BRIDGE_MESSAGE_TYPES.REFETCH_THE_MEMO_LIST,
+				type: BRIDGE_MESSAGE_TYPES.REFETCH_THE_MEMO_LIST_FROM_WEB,
 			});
 		} catch (error) {
 			throw new ExtensionError(
@@ -184,10 +214,10 @@ export default class ExtensionBridge {
 		}
 	}
 
-	static responseRefetchTheMemos(callbackFn: () => void) {
+	static responseRefetchTheMemosFromWeb(callbackFn: () => void) {
 		try {
 			return Runtime.onMessageExternal(
-				BRIDGE_MESSAGE_TYPES.REFETCH_THE_MEMO_LIST,
+				BRIDGE_MESSAGE_TYPES.REFETCH_THE_MEMO_LIST_FROM_WEB,
 				callbackFn,
 			);
 		} catch (error) {

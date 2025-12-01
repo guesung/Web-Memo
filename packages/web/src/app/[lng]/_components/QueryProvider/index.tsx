@@ -15,7 +15,7 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 				defaultOptions: {
 					mutations: {
 						onSuccess: async () => {
-							await ExtensionBridge.requestRefetchTheMemos();
+							await ExtensionBridge.requestRefetchTheMemosFromWeb();
 						},
 					},
 				},

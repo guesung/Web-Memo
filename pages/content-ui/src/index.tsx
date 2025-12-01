@@ -89,16 +89,7 @@ const setupTextSelectionHandler = () => {
 			shadowTree: (
 				<QueryProvider>
 					<Suspense>
-						<SelectionMemoButton
-							selectedText={text}
-							position={position}
-							onDismiss={() => {
-								if (buttonRoot) {
-									buttonRoot.host.remove();
-									buttonRoot = null;
-								}
-							}}
-						/>
+						<SelectionMemoButton selectedText={text} position={position} />
 					</Suspense>
 				</QueryProvider>
 			),

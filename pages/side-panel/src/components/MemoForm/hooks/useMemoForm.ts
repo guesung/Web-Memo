@@ -25,7 +25,8 @@ export default function useMemoForm() {
 	const isCreatingRef = useRef(false);
 
 	useDidMount(() => {
-		ExtensionBridge.responseRefetchTheMemos(refetchMemo);
+		ExtensionBridge.responseRefetchTheMemosFromWeb(refetchMemo);
+		ExtensionBridge.responseRefetchTheMemosFromExtension(refetchMemo);
 	});
 
 	useEffect(

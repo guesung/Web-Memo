@@ -1,4 +1,3 @@
-import { useMemoPostMutation } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { useState } from "react";
 
@@ -16,7 +15,6 @@ export default function SelectionMemoButton({
 	const [state, setState] = useState<
 		"default" | "loading" | "success" | "error"
 	>("default");
-	const { mutateAsync: createMemo } = useMemoPostMutation();
 
 	const handleClick = async () => {
 		if (state === "loading") return;
@@ -24,15 +22,13 @@ export default function SelectionMemoButton({
 		setState("loading");
 
 		try {
-			// Get current page information from DOM (content script context)
 			const url = window.location.href;
 			const title = document.title;
 			const favIconUrl =
 				(document.querySelector('link[rel~="icon"]') as HTMLLinkElement)
 					?.href || "";
 
-			// Create memo with selected text
-			await createMemo({
+			ExtensionBridge.requestCreateMemo({
 				memo: selectedText,
 				url,
 				title,
@@ -43,19 +39,10 @@ export default function SelectionMemoButton({
 
 			setState("success");
 
-			// After 1 second, open side panel and dismiss button
-			setTimeout(() => {
-				ExtensionBridge.requestOpenSidePanel();
-				onDismiss();
-			}, 1000);
+			ExtensionBridge.requestRefetchTheMemosFromExtension();
 		} catch (error) {
 			console.error("Failed to create memo:", error);
 			setState("error");
-
-			// After 3 seconds, dismiss button
-			setTimeout(() => {
-				onDismiss();
-			}, 3000);
 		}
 	};
 

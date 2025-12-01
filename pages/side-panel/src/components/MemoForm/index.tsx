@@ -1,10 +1,10 @@
 import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
-import { getMemoUrl } from "@src/utils";
 import { useDebounce } from "@web-memo/shared/hooks";
-import { I18n, Tab } from "@web-memo/shared/utils/extension";
+import { I18n } from "@web-memo/shared/utils/extension";
 import {
 	Badge,
+	cn,
 	Command,
 	CommandEmpty,
 	CommandGroup,
@@ -12,15 +12,12 @@ import {
 	CommandItem,
 	CommandList,
 	Textarea,
-	ToastAction,
-	cn,
-	toast,
 } from "@web-memo/ui";
 import { HeartIcon, XIcon } from "lucide-react";
 import { useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { SaveStatus } from "./components";
-import { useMemoCategory, useMemoForm } from "./hooks";
+import { useMemoCategory, useMemoForm, useMemoWish } from "./hooks";
 
 function MemoFormContent() {
 	const { debounce } = useDebounce();
@@ -28,13 +25,18 @@ function MemoFormContent() {
 	const { register, watch } = useFormContext<MemoInput>();
 	const { ref, ...rest } = register("memo");
 
-	const {
-		memoData,
-		isSaving,
-		saveMemo,
-		handleMemoChange,
-		handleWishClick: handleWishClickInternal,
-	} = useMemoForm();
+	const { memoData, isSaving, saveMemo, handleMemoChange } = useMemoForm();
+
+	const { handleWishClick } = useMemoWish({
+		memoId: memoData?.id,
+		onWishClick: async (isWish) => {
+			await saveMemo({
+				memo: watch("memo"),
+				isWish: !isWish,
+				categoryId: watch("categoryId"),
+			});
+		},
+	});
 
 	const handleCategoryChange = (categoryId: number | null) => {
 		debounce(() =>
@@ -68,33 +70,6 @@ function MemoFormContent() {
 			handleCategoryChange(null);
 		},
 	});
-
-	const handleWishClick = async () => {
-		await handleWishClickInternal();
-
-		const getWishToastTitle = (isWish: boolean) => {
-			if (isWish) return I18n.get("wish_list_added");
-			return I18n.get("wish_list_deleted");
-		};
-
-		const handleWishListClick = () => {
-			const memoWishListUrl = getMemoUrl({
-				id: memoData?.id,
-				isWish: watch("isWish"),
-			});
-
-			Tab.create({ url: memoWishListUrl });
-		};
-
-		toast({
-			title: getWishToastTitle(watch("isWish")),
-			action: (
-				<ToastAction altText={I18n.get("go_to")} onClick={handleWishListClick}>
-					{I18n.get("go_to")}
-				</ToastAction>
-			),
-		});
-	};
 
 	return (
 		<>

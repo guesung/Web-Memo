@@ -88,22 +88,10 @@ export default function useMemoForm() {
 		);
 	};
 
-	const handleWishClick = async () => {
-		const newIsWish = !watch("isWish");
-		setValue("isWish", newIsWish);
-
-		await saveMemo({
-			memo: watch("memo"),
-			isWish: newIsWish,
-			categoryId: watch("categoryId"),
-		});
-	};
-
 	return {
 		memoData,
 		isSaving,
 		saveMemo,
 		handleMemoChange,
-		handleWishClick,
 	};
 }

@@ -25,6 +25,7 @@ export * from "./input";
 export * from "./input-otp";
 export * from "./label";
 export * from "./loading";
+export * from "./markdown-editor";
 export * from "./menubar";
 export * from "./navigation-menu";
 export * from "./pagination";

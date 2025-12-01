@@ -11,21 +11,37 @@ import {
 	CommandInput,
 	CommandItem,
 	CommandList,
-	Textarea,
+	MarkdownEditor,
+	type MarkdownEditorRef,
 } from "@web-memo/ui";
 import { HeartIcon, XIcon } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { SaveStatus } from "./components";
 import { useMemoCategory, useMemoForm, useMemoWish } from "./hooks";
 
 function MemoFormContent() {
 	const { debounce } = useDebounce();
-	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-	const { register, watch } = useFormContext<MemoInput>();
-	const { ref, ...rest } = register("memo");
+	const editorRef = useRef<MarkdownEditorRef>(null);
+	const { watch, setValue } = useFormContext<MemoInput>();
 
 	const { memoData, isSaving, saveMemo, handleMemoChange } = useMemoForm();
+
+	// memoData가 로드되면 에디터에 반영
+	useEffect(() => {
+		if (memoData?.memo && editorRef.current) {
+			const currentMarkdown = editorRef.current.getMarkdown();
+			if (currentMarkdown !== memoData.memo) {
+				editorRef.current.setMarkdown(memoData.memo);
+				setValue("memo", memoData.memo);
+			}
+		}
+	}, [memoData?.memo, setValue]);
+
+	const handleEditorChange = (markdown: string) => {
+		setValue("memo", markdown);
+		handleMemoChange(markdown);
+	};
 
 	const { handleWishClick } = useMemoWish({
 		memoId: memoData?.id,
@@ -53,12 +69,11 @@ function MemoFormContent() {
 		showCategoryList,
 		categoryInputPosition,
 		commandInputRef,
-		handleKeyDown,
 		handleCategorySelect,
 		handleCategoryRemove,
 		handleCategoryListClose,
 	} = useMemoCategory({
-		textareaRef,
+		textareaRef: { current: null }, // WYSIWYG 에디터에서는 # 단축키 비활성화
 		onCategorySelect: (categoryId) => {
 			saveMemo({
 				memo: watch("memo"),
@@ -74,21 +89,12 @@ function MemoFormContent() {
 	return (
 		<>
 			<form className="relative flex h-full flex-col gap-1 py-1">
-				<Textarea
-					id="memo-textarea"
-					onKeyDown={handleKeyDown}
-					className="flex-1 resize-none text-sm outline-none"
+				<MarkdownEditor
+					ref={editorRef}
+					defaultValue={memoData?.memo ?? ""}
+					onChange={handleEditorChange}
 					placeholder={I18n.get("memo")}
-					{...register("memo", {
-						onChange: (event) => {
-							handleMemoChange(event.target.value);
-						},
-					})}
-					{...rest}
-					ref={(e) => {
-						ref(e);
-						textareaRef.current = e;
-					}}
+					className="flex-1"
 				/>
 				<div className="flex items-center justify-between gap-2">
 					<div className="flex items-center gap-2">

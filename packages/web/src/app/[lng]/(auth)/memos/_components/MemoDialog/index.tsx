@@ -15,16 +15,11 @@ import {
 	CardContent,
 	Dialog,
 	DialogContent,
-	Textarea,
+	MarkdownEditor,
+	type MarkdownEditorRef,
 } from "@web-memo/ui";
 import { motion } from "framer-motion";
-import {
-	useCallback,
-	useEffect,
-	useImperativeHandle,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import MemoCardFooter from "../MemoCardFooter";
@@ -38,24 +33,24 @@ interface MemoDialog extends LanguageType {
 export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	const { t } = useTranslation(lng);
 	const { memo: memoData } = useMemoQuery({ id: memoId });
-	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const editorRef = useRef<MarkdownEditorRef>(null);
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 	const [showAlert, setShowAlert] = useState(false);
 	const searchParams = useSearchParams();
 	const { debounce } = useDebounce();
 
-	const { register, watch, setValue } = useForm<MemoInput>({
+	const { watch, setValue } = useForm<MemoInput>({
 		defaultValues: {
 			memo: "",
 		},
 	});
 
-	const { ref, ...rest } = register("memo", {
-		onChange: (event) => {
-			event.target.style.height = `${event.target.scrollHeight}px`;
+	const handleEditorChange = useCallback(
+		(markdown: string) => {
+			setValue("memo", markdown);
 		},
-	});
-	useImperativeHandle(ref, () => textareaRef.current);
+		[setValue],
+	);
 
 	const saveMemo = useCallback(() => {
 		const currentMemo = watch("memo");
@@ -98,15 +93,18 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 		setShowAlert(false);
 	};
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: ref와 textareaRef는 초기화 시에만 필요
+	// memoData가 로드되면 에디터에 반영
 	useEffect(() => {
-		if (!textareaRef.current) return;
-		textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-	}, [textareaRef, ref]);
-
-	useEffect(() => {
-		setValue("memo", memoData?.memo ?? "");
-	}, [memoData, setValue]);
+		if (memoData?.memo) {
+			setValue("memo", memoData.memo);
+			if (editorRef.current) {
+				const currentMarkdown = editorRef.current.getMarkdown();
+				if (currentMarkdown !== memoData.memo) {
+					editorRef.current.setMarkdown(memoData.memo);
+				}
+			}
+		}
+	}, [memoData?.memo, setValue]);
 
 	useEffect(() => {
 		const subscription = watch((value) => {
@@ -137,12 +135,12 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 						<Card>
 							<MemoCardHeader memo={memoData} />
 							<CardContent>
-								<Textarea
-									{...rest}
-									className="outline-none focus:border-gray-300 focus:outline-none"
-									ref={textareaRef}
+								<MarkdownEditor
+									ref={editorRef}
+									defaultValue={memoData?.memo ?? ""}
+									onChange={handleEditorChange}
 									placeholder={t("memos.placeholder")}
-									data-testid="memo-textarea"
+									className="min-h-[200px]"
 								/>
 
 								<div className="h-4" />

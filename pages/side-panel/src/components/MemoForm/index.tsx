@@ -14,15 +14,18 @@ import {
 	Textarea,
 } from "@web-memo/ui";
 import { HeartIcon, XIcon } from "lucide-react";
-import { useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { CategorySuggestion, SaveStatus } from "./components";
 import {
+	MIN_MEMO_LENGTH,
 	useCategorySuggestion,
 	useMemoCategory,
 	useMemoForm,
 	useMemoWish,
 } from "./hooks";
+
+const SUGGESTION_TRIGGER_DELAY = 300;
 
 function MemoFormContent() {
 	const { debounce } = useDebounce();
@@ -30,14 +33,31 @@ function MemoFormContent() {
 	const { register, watch, setValue } = useFormContext<MemoInput>();
 	const { ref, ...rest } = register("memo");
 
-	const handleCategorySelect = (categoryId: number) => {
-		setValue("categoryId", categoryId);
-		saveMemo({
-			memo: watch("memo"),
-			isWish: watch("isWish"),
-			categoryId,
-		});
-	};
+	const currentCategoryId = watch("categoryId");
+
+	const { memoData, isSaving, saveMemo, handleMemoChange } = useMemoForm({
+		onSaveSuccess: (memoInput) => {
+			// Trigger category suggestion if no category is set
+			if (!memoInput.categoryId && memoInput.memo.length > MIN_MEMO_LENGTH) {
+				// Small delay to let save complete visually
+				setTimeout(() => {
+					triggerSuggestion(memoInput.memo);
+				}, SUGGESTION_TRIGGER_DELAY);
+			}
+		},
+	});
+
+	const handleCategorySelect = useCallback(
+		(categoryId: number) => {
+			setValue("categoryId", categoryId);
+			saveMemo({
+				memo: watch("memo"),
+				isWish: watch("isWish"),
+				categoryId,
+			});
+		},
+		[setValue, saveMemo, watch],
+	);
 
 	const {
 		isLoading: isSuggestionLoading,
@@ -46,20 +66,8 @@ function MemoFormContent() {
 		acceptSuggestion,
 		dismissSuggestion,
 	} = useCategorySuggestion({
-		currentCategoryId: watch("categoryId"),
+		currentCategoryId,
 		onCategorySelect: handleCategorySelect,
-	});
-
-	const { memoData, isSaving, saveMemo, handleMemoChange } = useMemoForm({
-		onSaveSuccess: (memoInput) => {
-			// Trigger category suggestion if no category is set
-			if (!memoInput.categoryId && memoInput.memo.length > 20) {
-				// Small delay to let save complete visually
-				setTimeout(() => {
-					triggerSuggestion(memoInput.memo);
-				}, 300);
-			}
-		},
 	});
 
 	const { handleWishClick } = useMemoWish({
@@ -106,6 +114,11 @@ function MemoFormContent() {
 		},
 	});
 
+	const currentCategory = useMemo(
+		() => categories?.find((c) => c.id === currentCategoryId),
+		[categories, currentCategoryId],
+	);
+
 	return (
 		<>
 			<form className="relative flex h-full flex-col gap-1 py-1">
@@ -144,7 +157,7 @@ function MemoFormContent() {
 					</div>
 					<div className="flex items-center gap-2">
 						{/* Category Suggestion */}
-						{(isSuggestionLoading || suggestion) && !watch("categoryId") && (
+						{(isSuggestionLoading || suggestion) && !currentCategoryId && (
 							<CategorySuggestion
 								isLoading={isSuggestionLoading}
 								suggestion={suggestion}
@@ -153,7 +166,7 @@ function MemoFormContent() {
 							/>
 						)}
 						{/* Current Category Badge */}
-						{watch("categoryId") && (
+						{currentCategory && (
 							<Badge
 								variant="outline"
 								className="flex items-center gap-1 px-2 py-0.5"
@@ -161,16 +174,10 @@ function MemoFormContent() {
 								<div
 									className="h-2 w-2 rounded-full"
 									style={{
-										backgroundColor:
-											categories?.find((c) => c.id === watch("categoryId"))
-												?.color || "#888888",
+										backgroundColor: currentCategory.color || "#888888",
 									}}
 								/>
-								{
-									categories?.find(
-										(category) => category.id === watch("categoryId"),
-									)?.name
-								}
+								{currentCategory.name}
 								<XIcon
 									size={12}
 									className="hover:text-destructive ml-1 cursor-pointer"

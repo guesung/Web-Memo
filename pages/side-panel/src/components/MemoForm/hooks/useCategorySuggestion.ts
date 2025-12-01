@@ -7,48 +7,27 @@ import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-interface CategorySuggestion {
-	categoryName: string;
-	isExisting: boolean;
-	existingCategoryId: number | null;
-	confidence: number;
-}
-
-interface CategorySuggestionResponse {
-	suggestion: CategorySuggestion | null;
-}
-
-interface UseCategorySuggestionProps {
-	currentCategoryId: number | null;
-	onCategorySelect: (categoryId: number) => void;
-}
-
-interface UseCategorySuggestionReturn {
-	isLoading: boolean;
-	suggestion: CategorySuggestion | null;
-	triggerSuggestion: (memoText: string) => void;
-	acceptSuggestion: () => Promise<void>;
-	dismissSuggestion: () => void;
-}
-
 const CONFIDENCE_THRESHOLD = 0.7;
 const AUTO_DISMISS_DELAY = 15000;
 const API_TIMEOUT = 10000;
-const MIN_MEMO_LENGTH = 20;
+const PAGE_CONTENT_SAMPLE_LENGTH = 500;
+const KOREAN_RATIO_THRESHOLD = 0.1;
+
+export const MIN_MEMO_LENGTH = 20;
 
 function detectPageLanguage(
 	pageTitle: string,
 	pageContent: string,
 ): "ko" | "en" {
-	const combined = `${pageTitle} ${pageContent.slice(0, 500)}`;
+	const combined = `${pageTitle} ${pageContent.slice(0, PAGE_CONTENT_SAMPLE_LENGTH)}`;
 	const koreanPattern = /[\uAC00-\uD7AF]/g;
 	const koreanMatches = combined.match(koreanPattern);
 	const koreanRatio = (koreanMatches?.length || 0) / combined.length;
 
-	return koreanRatio > 0.1 ? "ko" : "en";
+	return koreanRatio > KOREAN_RATIO_THRESHOLD ? "ko" : "en";
 }
 
-export default function useCategorySuggestion({
+export function useCategorySuggestion({
 	currentCategoryId,
 	onCategorySelect,
 }: UseCategorySuggestionProps): UseCategorySuggestionReturn {
@@ -235,4 +214,28 @@ export default function useCategorySuggestion({
 		acceptSuggestion,
 		dismissSuggestion,
 	};
+}
+
+interface CategorySuggestion {
+	categoryName: string;
+	isExisting: boolean;
+	existingCategoryId: number | null;
+	confidence: number;
+}
+
+interface CategorySuggestionResponse {
+	suggestion: CategorySuggestion | null;
+}
+
+interface UseCategorySuggestionProps {
+	currentCategoryId: number | null;
+	onCategorySelect: (categoryId: number) => void;
+}
+
+interface UseCategorySuggestionReturn {
+	isLoading: boolean;
+	suggestion: CategorySuggestion | null;
+	triggerSuggestion: (memoText: string) => void;
+	acceptSuggestion: () => Promise<void>;
+	dismissSuggestion: () => void;
 }

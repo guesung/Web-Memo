@@ -6,29 +6,15 @@ import { createErrorResponse, handleOpenAIError } from "../util";
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-interface CategorySuggestionRequest {
-	pageTitle: string;
-	pageUrl: string;
-	pageContent: string;
-	memoText: string;
-	existingCategories: { id: number; name: string }[];
-	pageLanguage: string;
-}
-
-interface CategorySuggestionResponse {
-	suggestion: {
-		categoryName: string;
-		isExisting: boolean;
-		existingCategoryId?: number;
-		confidence: number;
-	} | null;
+if (!OPENAI_API_KEY) {
+	console.warn("OPENAI_API_KEY is not configured");
 }
 
 function buildCategoryPrompt(data: CategorySuggestionRequest): string {
 	const categoryList =
 		data.existingCategories.length > 0
 			? data.existingCategories.map((c) => c.name).join(", ")
-			: "없음 (새로운 카테고리를 제안해 주세요)";
+			: "None (please suggest a new category)";
 
 	return `You are a category classifier for a memo/bookmark application.
 
@@ -74,7 +60,37 @@ function validateRequest(
 	);
 }
 
+function parseAIResponse(responseContent: string): ParsedAIResponse | null {
+	try {
+		const parsed = JSON.parse(responseContent);
+
+		if (
+			typeof parsed.categoryName !== "string" ||
+			typeof parsed.isExisting !== "boolean" ||
+			typeof parsed.confidence !== "number"
+		) {
+			return null;
+		}
+
+		return {
+			categoryName: parsed.categoryName,
+			isExisting: parsed.isExisting,
+			confidence: parsed.confidence,
+		};
+	} catch {
+		return null;
+	}
+}
+
 export async function POST(request: NextRequest) {
+	// Check API key first
+	if (!OPENAI_API_KEY) {
+		return createErrorResponse(
+			"OpenAI API key not configured",
+			HTTP_STATUS.INTERNAL_SERVER_ERROR,
+		);
+	}
+
 	try {
 		const origin = request.headers.get("origin");
 		const validOrigin = `chrome-extension://${EXTENSION.id}`;
@@ -90,7 +106,7 @@ export async function POST(request: NextRequest) {
 
 		if (!validateRequest(body)) {
 			return createErrorResponse(
-				"잘못된 요청 형식입니다.",
+				"Invalid request format",
 				HTTP_STATUS.BAD_REQUEST,
 			);
 		}
@@ -127,11 +143,14 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		const parsed = JSON.parse(responseContent) as {
-			categoryName: string;
-			isExisting: boolean;
-			confidence: number;
-		};
+		const parsed = parseAIResponse(responseContent);
+
+		if (!parsed) {
+			return NextResponse.json(
+				{ suggestion: null } satisfies CategorySuggestionResponse,
+				{ headers: CORS_HEADERS },
+			);
+		}
 
 		// Find matching existing category ID if isExisting is true
 		let existingCategoryId: number | undefined;
@@ -176,4 +195,28 @@ export async function OPTIONS() {
 		status: 200,
 		headers: CORS_HEADERS,
 	});
+}
+
+interface CategorySuggestionRequest {
+	pageTitle: string;
+	pageUrl: string;
+	pageContent: string;
+	memoText: string;
+	existingCategories: { id: number; name: string }[];
+	pageLanguage: string;
+}
+
+interface CategorySuggestionResponse {
+	suggestion: {
+		categoryName: string;
+		isExisting: boolean;
+		existingCategoryId?: number;
+		confidence: number;
+	} | null;
+}
+
+interface ParsedAIResponse {
+	categoryName: string;
+	isExisting: boolean;
+	confidence: number;
 }

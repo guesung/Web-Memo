@@ -3,21 +3,7 @@ import { cn } from "@web-memo/ui";
 import { CheckIcon, LightbulbIcon, Loader2Icon, XIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 
-interface CategorySuggestion {
-	categoryName: string;
-	isExisting: boolean;
-	existingCategoryId: number | null;
-	confidence: number;
-}
-
-interface CategorySuggestionProps {
-	isLoading: boolean;
-	suggestion: CategorySuggestion | null;
-	onAccept: () => void;
-	onDismiss: () => void;
-}
-
-export default function CategorySuggestion({
+export function CategorySuggestion({
 	isLoading,
 	suggestion,
 	onAccept,
@@ -44,14 +30,10 @@ export default function CategorySuggestion({
 	// Loading state - subtle indicator
 	if (isLoading) {
 		return (
-			<div
-				className="flex items-center gap-1 text-muted-foreground"
-				aria-live="polite"
-				aria-label={I18n.get("category_suggesting")}
-			>
-				<Loader2Icon className="h-3 w-3 animate-spin" />
+			<output className="flex items-center gap-1 text-muted-foreground">
+				<Loader2Icon className="h-3 w-3 animate-spin" aria-hidden="true" />
 				<span className="text-xs">{I18n.get("category_suggesting")}</span>
-			</div>
+			</output>
 		);
 	}
 
@@ -71,11 +53,9 @@ export default function CategorySuggestion({
 			role="alert"
 			aria-live="polite"
 			aria-label={`${labelText}: ${suggestion.categoryName}`}
-			tabIndex={0}
 			className={cn(
 				"flex items-center gap-2 rounded-md border bg-background/95 px-2 py-1 shadow-sm",
 				"animate-in fade-in slide-in-from-bottom-1 duration-200",
-				"focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1",
 			)}
 		>
 			<LightbulbIcon className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
@@ -119,4 +99,18 @@ export default function CategorySuggestion({
 			</div>
 		</div>
 	);
+}
+
+interface CategorySuggestionData {
+	categoryName: string;
+	isExisting: boolean;
+	existingCategoryId: number | null;
+	confidence: number;
+}
+
+interface CategorySuggestionProps {
+	isLoading: boolean;
+	suggestion: CategorySuggestionData | null;
+	onAccept: () => void;
+	onDismiss: () => void;
 }

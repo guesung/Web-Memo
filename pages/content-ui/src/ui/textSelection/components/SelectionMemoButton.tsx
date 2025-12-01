@@ -1,6 +1,7 @@
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
-import { Bookmark, Check, Loader2, X } from "lucide-react";
+import { Check, Loader2, X } from "lucide-react";
 import { useState } from "react";
+import Logo from "../../../../public/logo.svg";
 
 interface SelectionMemoButtonProps {
 	selectedText: string;
@@ -42,7 +43,6 @@ export default function SelectionMemoButton({
 				ExtensionBridge.requestRefetchTheMemosFromExtension();
 			}, 1000);
 		} catch (error) {
-			console.log(1);
 			console.error("Failed to create memo:", error);
 			setState("error");
 		}
@@ -67,7 +67,7 @@ export default function SelectionMemoButton({
 			aria-label="Save selected text as memo"
 		>
 			{state === "default" && (
-				<Bookmark className="h-5 w-5" style={{ pointerEvents: "none" }} />
+				<Logo className="h-5 w-5" style={{ pointerEvents: "none" }} />
 			)}
 			{state === "loading" && (
 				<Loader2

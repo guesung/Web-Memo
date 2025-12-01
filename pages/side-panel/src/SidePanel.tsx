@@ -13,8 +13,6 @@ import {
 	MemoHeader,
 	QueryProvider,
 	Summary,
-	SummaryHeader,
-	SummaryProvider,
 } from "./components";
 
 export default function SidePanel() {
@@ -29,10 +27,7 @@ export default function SidePanel() {
 			<main className="prose prose-sm bg-background text-foreground relative flex h-lvh flex-col px-4 max-w-none overflow-x-hidden">
 				<section className="flex-1 overflow-y-scroll">
 					<ErrorBoundary>
-						<SummaryProvider>
-							<SummaryHeader />
-							<Summary />
-						</SummaryProvider>
+						<Summary />
 					</ErrorBoundary>
 				</section>
 				<section className="flex h-1/2 flex-col">

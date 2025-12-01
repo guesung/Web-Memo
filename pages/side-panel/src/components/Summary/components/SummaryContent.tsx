@@ -3,7 +3,7 @@ import remarkGfm from "remark-gfm";
 
 import { useSummaryContext } from "./SummaryProvider";
 
-export default function Summary() {
+export default function SummaryContent() {
 	const { summary, errorMessage } = useSummaryContext();
 
 	if (errorMessage)

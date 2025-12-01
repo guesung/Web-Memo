@@ -7,6 +7,7 @@ import {
 	SelectionMemoButton,
 } from "./components";
 import { attachShadowTree } from "./utils";
+import { calculateButtonPosition } from "./utils/calculateButtonPosition";
 
 const renderOpenSidePanelButton = async () => {
 	if (isProduction()) return;
@@ -17,49 +18,16 @@ const renderOpenSidePanelButton = async () => {
 	});
 };
 
-const calculateButtonPosition = (
-	selectionRect: DOMRect,
-	buttonSize: { width: number; height: number },
-): { top: number; left: number } => {
-	const GAP = 8;
-	const viewport = {
-		width: window.innerWidth,
-		height: window.innerHeight,
-		scrollY: window.scrollY,
-		scrollX: window.scrollX,
-	};
-
-	// Default: top-right of selection
-	let top = selectionRect.top + viewport.scrollY - buttonSize.height - GAP;
-	let left = selectionRect.right + viewport.scrollX + GAP;
-
-	// Check right overflow
-	if (left + buttonSize.width > viewport.width + viewport.scrollX) {
-		// Move to left side
-		left = selectionRect.left + viewport.scrollX - buttonSize.width - GAP;
-	}
-
-	// Check top overflow
-	if (top < viewport.scrollY) {
-		// Move below selection
-		top = selectionRect.bottom + viewport.scrollY + GAP;
-	}
-
-	// Ensure minimum margins (8px)
-	top = Math.max(viewport.scrollY + GAP, top);
-	left = Math.max(GAP, Math.min(viewport.width - buttonSize.width - GAP, left));
-
-	return { top, left };
-};
-
 const setupTextSelectionHandler = () => {
 	let buttonRoot: ShadowRoot | null = null;
 
-	document.addEventListener("mouseup", () => {
+	document.addEventListener("mouseup", (event) => {
 		const selection = window.getSelection();
 		const text = selection?.toString().trim();
 
 		if (buttonRoot) {
+			if (buttonRoot.host.contains(event.target as Node)) return;
+
 			buttonRoot.host.remove();
 			buttonRoot = null;
 		}
@@ -92,7 +60,6 @@ const setupTextSelectionHandler = () => {
 		});
 	});
 
-	// Also dismiss button when clicking outside
 	document.addEventListener("mousedown", (e) => {
 		if (buttonRoot && !buttonRoot.host.contains(e.target as Node)) {
 			buttonRoot.host.remove();

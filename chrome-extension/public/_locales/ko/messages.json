@@ -98,6 +98,9 @@
 	"settings_saved": {
 		"message": "설정을 저장했어요"
 	},
+	"settings_reset": {
+		"message": "설정을 초기화했어요"
+	},
 	"youtube": {
 		"message": "유튜브"
 	},

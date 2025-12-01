@@ -98,6 +98,9 @@
 	"settings_saved": {
 		"message": "Settings saved"
 	},
+	"settings_reset": {
+		"message": "Settings reset"
+	},
 	"youtube": {
 		"message": "YouTube"
 	},

@@ -1,0 +1,23 @@
+/* Milkdown 에디터 커스텀 스타일 */
+
+/* padding 오버라이드 - 기본값 60px 120px를 제거 */
+.markdown-editor .milkdown .ProseMirror {
+  padding: 12px 16px;
+}
+
+/* 에디터 컨테이너 스타일 */
+.markdown-editor .milkdown {
+  min-height: 100%;
+  height: 100%;
+}
+
+/* 에디터 영역이 컨테이너를 채우도록 */
+.markdown-editor .milkdown .ProseMirror {
+  min-height: 100%;
+  outline: none;
+}
+
+/* 포커스 시 스타일 */
+.markdown-editor .milkdown .ProseMirror:focus {
+  outline: none;
+}

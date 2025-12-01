@@ -6,6 +6,8 @@ import { replaceAll } from "@milkdown/kit/utils";
 import "prosemirror-view/style/prosemirror.css";
 // crepe theme styles
 import "@milkdown/crepe/theme/frame/style.css";
+// custom overrides
+import "./styles.css";
 import {
   forwardRef,
   useEffect,

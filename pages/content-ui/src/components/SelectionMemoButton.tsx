@@ -19,7 +19,6 @@ export default function SelectionMemoButton({
 	const { mutateAsync: createMemo } = useMemoPostMutation();
 
 	const handleClick = async () => {
-		console.log("handleClick");
 		if (state === "loading") return;
 
 		setState("loading");
@@ -32,7 +31,6 @@ export default function SelectionMemoButton({
 				(document.querySelector('link[rel~="icon"]') as HTMLLinkElement)
 					?.href || "";
 
-
 			// Create memo with selected text
 			await createMemo({
 				memo: selectedText,
@@ -43,7 +41,6 @@ export default function SelectionMemoButton({
 				category_id: null,
 			});
 
-			console.log("Memo created successfully!");
 			setState("success");
 
 			// After 1 second, open side panel and dismiss button
@@ -69,7 +66,7 @@ export default function SelectionMemoButton({
 				handleClick();
 			}}
 			disabled={state === "loading"}
-			className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white shadow-lg transition-all hover:scale-110 hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-70"
+			className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg transition-all hover:scale-110 hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-70"
 			style={{
 				position: "absolute",
 				top: `${position.top}px`,

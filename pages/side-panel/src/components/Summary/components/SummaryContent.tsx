@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import type { PluggableList } from "unified";
+import type { Options as MarkdownOptions } from "react-markdown";
 
 import { useSummaryContext } from "./SummaryProvider";
 
@@ -7,7 +7,8 @@ import { useSummaryContext } from "./SummaryProvider";
 const Markdown = lazy(() => import("react-markdown"));
 
 function MarkdownContent({ content }: { content: string }) {
-	const [remarkPlugins, setRemarkPlugins] = useState<PluggableList>([]);
+	const [remarkPlugins, setRemarkPlugins] =
+		useState<MarkdownOptions["remarkPlugins"]>(undefined);
 
 	useEffect(() => {
 		import("remark-gfm").then((mod) => {

@@ -38,8 +38,11 @@ export default function SelectionMemoButton({
 
 			setState("success");
 
-			ExtensionBridge.requestRefetchTheMemosFromExtension();
+			setTimeout(() => {
+				ExtensionBridge.requestRefetchTheMemosFromExtension();
+			}, 1000);
 		} catch (error) {
+			console.log(1);
 			console.error("Failed to create memo:", error);
 			setState("error");
 		}
@@ -79,10 +82,7 @@ export default function SelectionMemoButton({
 				/>
 			)}
 			{state === "error" && (
-				<X
-					className="h-5 w-5 text-red-500"
-					style={{ pointerEvents: "none" }}
-				/>
+				<X className="h-5 w-5 text-red-500" style={{ pointerEvents: "none" }} />
 			)}
 		</button>
 	);

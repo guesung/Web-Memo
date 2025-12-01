@@ -21,3 +21,11 @@
 .markdown-editor .milkdown .ProseMirror:focus {
   outline: none;
 }
+
+/* Milkdown ListItem feature가 커스텀 라벨을 렌더링하므로 기본 list-style 숨김 */
+.markdown-editor .milkdown ol,
+.markdown-editor .milkdown ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}

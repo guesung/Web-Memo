@@ -11,18 +11,10 @@ const getCategoryText = (category: Category) => {
 	return I18n.get("webSite");
 };
 
-export default function Header() {
+export default function SummaryHeader() {
 	const { isSummaryLoading, refetchSummary, category } = useSummaryContext();
 
 	const categoryText = getCategoryText(category);
-
-	const handleRefreshClick = () => {
-		refetchSummary();
-	};
-
-	const handleOptionClick = () => {
-		chrome.runtime.openOptionsPage();
-	};
 
 	return (
 		<header className="mt-4 flex items-center justify-between">
@@ -38,11 +30,15 @@ export default function Header() {
 						<Loading />
 					</Button>
 				) : (
-					<Button variant="outline" size="sm" onClick={handleRefreshClick}>
+					<Button variant="outline" size="sm" onClick={refetchSummary}>
 						<RefreshCwIcon size={16} />
 					</Button>
 				)}
-				<Button variant="outline" size="sm" onClick={handleOptionClick}>
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={() => chrome.runtime.openOptionsPage()}
+				>
 					<SettingsIcon size={16} />
 				</Button>
 			</div>

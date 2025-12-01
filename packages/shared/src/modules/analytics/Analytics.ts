@@ -144,7 +144,7 @@ class Analytics {
 			let { sessionData } = await chrome.storage.session.get("sessionData");
 
 			const currentTimeInMs = Date.now();
-			if (sessionData && sessionData.timestamp) {
+			if (sessionData?.timestamp) {
 				const durationInMin = (currentTimeInMs - sessionData.timestamp) / 60000;
 				if (durationInMin > this.SESSION_EXPIRATION_IN_MIN) {
 					sessionData = null;

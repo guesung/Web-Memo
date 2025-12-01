@@ -1,7 +1,6 @@
+import { useDrag } from "@src/hooks";
 import type { RefObject } from "react";
 import { useRef } from "react";
-
-import { useDrag } from "@src/hooks";
 
 const SCROLL_INTERVAL = 50;
 const SCROLL_UNIT = 30;
@@ -32,10 +31,7 @@ export default function useDragSelection({
 		}
 	};
 
-	const handleAutoScroll = (
-		container: HTMLElement,
-		dragEndY: number,
-	): void => {
+	const handleAutoScroll = (container: HTMLElement, dragEndY: number): void => {
 		const isNearBottom = window.innerHeight - dragEndY < SCROLL_INTERVAL;
 		const isAtBottom =
 			container.scrollTop + container.clientHeight >= container.scrollHeight;
@@ -183,7 +179,7 @@ export default function useDragSelection({
 			};
 
 			document.body.addEventListener("mousemove", handleMouseMove);
-			document.body.addEventListener("mouseup", handleMouseUp);
+			document.body.addEventListener("mouseup", handleMouseUp, { once: true });
 		},
 	});
 

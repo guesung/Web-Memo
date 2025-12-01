@@ -8,7 +8,7 @@ import {
 	useTabQuery,
 } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
-import { getMemoInfo } from "@web-memo/shared/utils/extension";
+import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
@@ -40,10 +40,10 @@ export default function useMemoForm() {
 	const saveMemo = async ({ memo, isWish, categoryId }: MemoInput) => {
 		setIsSaving(true);
 
-		const memoInfo = await getMemoInfo();
+		const tabInfo = await getTabInfo();
 
 		const totalMemo = {
-			...memoInfo,
+			...tabInfo,
 			memo,
 			isWish,
 			category_id: categoryId,

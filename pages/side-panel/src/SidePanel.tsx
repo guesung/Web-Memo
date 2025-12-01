@@ -7,7 +7,6 @@ import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { ErrorBoundary, Toaster } from "@web-memo/ui";
 import { Suspense } from "react";
 import {
-	LoginSection,
 	MemoForm,
 	MemoFormSkeleton,
 	MemoHeader,
@@ -32,7 +31,7 @@ export default function SidePanel() {
 				</section>
 				<section className="flex h-1/2 flex-col">
 					<MemoHeader />
-					<ErrorBoundary FallbackComponent={LoginSection}>
+					<ErrorBoundary>
 						<Suspense fallback={<MemoFormSkeleton />}>
 							<MemoForm />
 						</Suspense>

@@ -101,7 +101,6 @@ ExtensionBridge.responseCreateMemo(async (payload, _sender, sendResponse) => {
 		const supabaseClient = await getSupabaseClient();
 		const memoService = new MemoService(supabaseClient);
 
-		// 동일한 URL의 기존 메모가 있는지 확인
 		const existingMemo = await memoService.getMemoByUrl(payload.url);
 
 		if (existingMemo.error) {
@@ -110,8 +109,7 @@ ExtensionBridge.responseCreateMemo(async (payload, _sender, sendResponse) => {
 		}
 
 		if (existingMemo.data) {
-			// 기존 메모가 있으면 내용을 추가
-			const updatedMemo = `${existingMemo.data.memo}\n\n${payload.memo}`;
+			const updatedMemo = `${existingMemo.data.memo}${existingMemo.data.memo ? "\n\n" : ""}${payload.memo}`;
 			const result = await memoService.updateMemo({
 				id: existingMemo.data.id,
 				request: { memo: updatedMemo },
@@ -123,7 +121,6 @@ ExtensionBridge.responseCreateMemo(async (payload, _sender, sendResponse) => {
 				sendResponse({ success: true });
 			}
 		} else {
-			// 기존 메모가 없으면 새로 생성
 			const result = await memoService.insertMemo(payload);
 
 			if (result.error) {

@@ -128,6 +128,13 @@ Components follow functional programming principles:
 - RORO pattern (Receive Object, Return Object)
 - Named exports preferred
 
+### Icons
+- **Always use `lucide-react`** for icons instead of inline SVG
+- Import icons from `lucide-react` package: `import { IconName } from "lucide-react"`
+- Never write inline `<svg>` elements - find the equivalent lucide-react icon
+- Common icons: `Check`, `X`, `ChevronDown`, `Globe`, `Star`, `Users`, `Sparkles`, etc.
+- Browse available icons at https://lucide.dev/icons
+
 ### Error Handling
 - Early returns for error cases
 - Guard clauses for preconditions

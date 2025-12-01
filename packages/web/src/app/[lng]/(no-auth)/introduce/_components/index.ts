@@ -1,6 +1,11 @@
-export { default as AdditionalFeatures } from "./AdditionalFeatures";
 export { default as Features } from "./Features";
+export { default as FinalCTA } from "./FinalCTA";
 export { default as Footer } from "./Footer";
 export { default as Hero } from "./Hero";
-export { default as ImageSlider } from "./ImageSlider";
+export { default as HowItWorks } from "./HowItWorks";
+export { default as InteractiveDemo } from "./InteractiveDemo";
 export { default as QuestionAndAnswer } from "./QuestionAndAnswer";
+export { default as SocialProofBar } from "./SocialProofBar";
+export { default as StatsSection } from "./StatsSection";
+export { default as Testimonials } from "./Testimonials";
+export { default as UseCases } from "./UseCases";

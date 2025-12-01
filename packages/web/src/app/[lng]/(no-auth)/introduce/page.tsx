@@ -3,12 +3,17 @@ import type { LanguageParams } from "@src/modules/i18n";
 import type { Metadata } from "next";
 
 import {
-	AdditionalFeatures,
 	Features,
+	FinalCTA,
 	Footer,
 	Hero,
-	ImageSlider,
+	HowItWorks,
+	InteractiveDemo,
 	QuestionAndAnswer,
+	SocialProofBar,
+	StatsSection,
+	Testimonials,
+	UseCases,
 } from "./_components";
 
 const metadataKorean: Metadata = {
@@ -51,17 +56,40 @@ interface IntroducePageProps extends LanguageParams {}
 
 export default function IntroducePage({ params: { lng } }: IntroducePageProps) {
 	return (
-		<div className="bg-background min-h-screen">
+		<div className="min-h-screen overflow-hidden">
 			<HeaderMargin />
-			<main className="container mx-auto px-4 py-16">
-				<Hero lng={lng} />
-				<div className="container mx-auto px-4 py-12">
-					<ImageSlider lng={lng} />
-				</div>
-				<Features lng={lng} />
-				<AdditionalFeatures lng={lng} />
-			</main>
+
+			{/* Hero Section */}
+			<Hero lng={lng} />
+
+			{/* Social Proof Bar */}
+			<SocialProofBar lng={lng} />
+
+			{/* Interactive Demo */}
+			<InteractiveDemo lng={lng} />
+
+			{/* Features Bento Grid */}
+			<Features lng={lng} />
+
+			{/* Stats Section */}
+			<StatsSection lng={lng} />
+
+			{/* How It Works */}
+			<HowItWorks lng={lng} />
+
+			{/* Use Cases */}
+			<UseCases lng={lng} />
+
+			{/* Testimonials */}
+			<Testimonials lng={lng} />
+
+			{/* FAQ */}
 			<QuestionAndAnswer lng={lng} />
+
+			{/* Final CTA */}
+			<FinalCTA lng={lng} />
+
+			{/* Footer */}
 			<Footer lng={lng} />
 		</div>
 	);

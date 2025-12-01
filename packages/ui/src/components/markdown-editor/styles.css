@@ -29,3 +29,24 @@
   padding-left: 0;
   margin: 0;
 }
+
+/* ListItem 라벨과 내용을 같은 줄에 표시 */
+.markdown-editor .milkdown .list-item {
+  display: flex;
+  align-items: flex-start;
+}
+
+.markdown-editor .milkdown .list-item .label-wrapper {
+  flex-shrink: 0;
+  margin-right: 0.5em;
+}
+
+.markdown-editor .milkdown .list-item .children {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 리스트 아이템 내 p 태그 margin 제거 */
+.markdown-editor .milkdown .list-item .content-dom p {
+  margin: 0;
+}

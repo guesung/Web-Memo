@@ -59,16 +59,13 @@ const setupTextSelectionHandler = () => {
 		const selection = window.getSelection();
 		const text = selection?.toString().trim();
 
-		// Remove existing button
 		if (buttonRoot) {
 			buttonRoot.host.remove();
 			buttonRoot = null;
 		}
 
-		// Validation checks
 		if (!text || text.length < 3) return;
 
-		// Ignore selections inside input/textarea
 		const activeElement = document.activeElement;
 		if (
 			activeElement?.tagName === "INPUT" ||
@@ -78,13 +75,11 @@ const setupTextSelectionHandler = () => {
 			return;
 		}
 
-		// Calculate button position
 		if (!selection || selection.rangeCount === 0) return;
 		const range = selection.getRangeAt(0);
 		const rect = range.getBoundingClientRect();
 		const position = calculateButtonPosition(rect, { width: 40, height: 40 });
 
-		// Render button
 		buttonRoot = attachShadowTree({
 			shadowTree: (
 				<QueryProvider>

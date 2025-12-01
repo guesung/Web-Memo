@@ -1,6 +1,5 @@
 import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
-import { useDebounce } from "@web-memo/shared/hooks";
 import { I18n } from "@web-memo/shared/utils/extension";
 import {
 	Badge,
@@ -21,20 +20,18 @@ import { SaveStatus } from "./components";
 import { useMemoCategory, useMemoForm, useMemoWish } from "./hooks";
 
 function MemoFormContent() {
-	const { debounce } = useDebounce();
 	const editorRef = useRef<MarkdownEditorRef>(null);
+	const initializedRef = useRef(false);
 	const { watch, setValue } = useFormContext<MemoInput>();
 
 	const { memoData, isSaving, saveMemo, handleMemoChange } = useMemoForm();
 
-	// memoData가 로드되면 에디터에 반영
+	// memoData가 처음 로드되면 에디터에 반영 (초기화 시에만)
 	useEffect(() => {
-		if (memoData?.memo && editorRef.current) {
-			const currentMarkdown = editorRef.current.getMarkdown();
-			if (currentMarkdown !== memoData.memo) {
-				editorRef.current.setMarkdown(memoData.memo);
-				setValue("memo", memoData.memo);
-			}
+		if (memoData?.memo && editorRef.current && !initializedRef.current) {
+			editorRef.current.setMarkdown(memoData.memo);
+			setValue("memo", memoData.memo);
+			initializedRef.current = true;
 		}
 	}, [memoData?.memo, setValue]);
 

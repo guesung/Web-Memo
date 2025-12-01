@@ -23,6 +23,8 @@ export default function useMemoForm() {
 	const { mutate: mutateMemoPost } = useMemoPostMutation();
 	const [isSaving, setIsSaving] = useState(false);
 	const isCreatingRef = useRef(false);
+	const isEditingRef = useRef(false);
+	const initializedRef = useRef(false);
 
 	useDidMount(() => {
 		ExtensionBridge.responseRefetchTheMemos(refetchMemo);
@@ -30,7 +32,13 @@ export default function useMemoForm() {
 
 	useEffect(
 		function initMemoData() {
-			setValue("memo", memoData?.memo ?? "");
+			// 편집 중이거나 이미 초기화된 경우 memo 값은 덮어쓰지 않음
+			if (!isEditingRef.current && !initializedRef.current) {
+				setValue("memo", memoData?.memo ?? "");
+				if (memoData?.memo !== undefined) {
+					initializedRef.current = true;
+				}
+			}
 			setValue("isWish", memoData?.isWish ?? false);
 			setValue("categoryId", memoData?.category_id ?? null);
 		},
@@ -78,14 +86,16 @@ export default function useMemoForm() {
 	};
 
 	const handleMemoChange = (text: string) => {
+		isEditingRef.current = true;
 		setValue("memo", text);
-		debounce(() =>
+		debounce(() => {
 			saveMemo({
 				memo: text,
 				isWish: watch("isWish"),
 				categoryId: watch("categoryId"),
-			}),
-		);
+			});
+			isEditingRef.current = false;
+		});
 	};
 
 	return {

@@ -295,7 +295,7 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 				autoResize
 				className="container h-screen max-w-full pb-48 will-change-transform pt-4"
 				container={true}
-				useRecycle={false}
+				useRecycle={true}
 				id={CONTAINER_ID}
 				gap={16}
 				align="center"

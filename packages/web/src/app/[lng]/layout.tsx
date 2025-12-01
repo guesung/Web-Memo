@@ -26,7 +26,7 @@ export default function RootLayout({
 		<div lang={lng} dir={dir(lng)} className="h-screen">
 			<JsonLD lng={lng} />
 			<ThemeProvider>
-				<QueryProvider lng={lng}>
+				<QueryProvider>
 					<Suspense>
 						<AnalyticsUserTracking />
 					</Suspense>

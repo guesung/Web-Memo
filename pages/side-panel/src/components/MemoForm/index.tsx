@@ -14,16 +14,21 @@ import {
 	Textarea,
 } from "@web-memo/ui";
 import { HeartIcon, XIcon } from "lucide-react";
-import { useRef } from "react";
-import { FormProvider, useForm, useFormContext } from "react-hook-form";
+import { useMemo, useRef } from "react";
+import { FormProvider, useForm, useFormContext, useWatch } from "react-hook-form";
 import { SaveStatus } from "./components";
 import { useMemoCategory, useMemoForm, useMemoWish } from "./hooks";
 
 function MemoFormContent() {
 	const { debounce } = useDebounce();
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-	const { register, watch } = useFormContext<MemoInput>();
+	const { register, control, getValues } = useFormContext<MemoInput>();
 	const { ref, ...rest } = register("memo");
+
+	// useWatch로 특정 필드만 구독하여 불필요한 리렌더링 방지
+	const memoValue = useWatch({ control, name: "memo" });
+	const isWishValue = useWatch({ control, name: "isWish" });
+	const categoryIdValue = useWatch({ control, name: "categoryId" });
 
 	const { memoData, isSaving, saveMemo, handleMemoChange } = useMemoForm();
 
@@ -31,9 +36,9 @@ function MemoFormContent() {
 		memoId: memoData?.id,
 		onWishClick: async (isWish) => {
 			await saveMemo({
-				memo: watch("memo"),
+				memo: getValues("memo"),
 				isWish: !isWish,
-				categoryId: watch("categoryId"),
+				categoryId: getValues("categoryId"),
 			});
 		},
 	});
@@ -41,8 +46,8 @@ function MemoFormContent() {
 	const handleCategoryChange = (categoryId: number | null) => {
 		debounce(() =>
 			saveMemo({
-				memo: watch("memo"),
-				isWish: watch("isWish"),
+				memo: getValues("memo"),
+				isWish: getValues("isWish"),
 				categoryId,
 			}),
 		);
@@ -61,8 +66,8 @@ function MemoFormContent() {
 		textareaRef,
 		onCategorySelect: (categoryId) => {
 			saveMemo({
-				memo: watch("memo"),
-				isWish: watch("isWish"),
+				memo: getValues("memo"),
+				isWish: getValues("isWish"),
 				categoryId,
 			});
 		},
@@ -70,6 +75,12 @@ function MemoFormContent() {
 			handleCategoryChange(null);
 		},
 	});
+
+	// 카테고리 정보 메모이제이션
+	const selectedCategory = useMemo(() => {
+		if (!categoryIdValue || !categories) return null;
+		return categories.find((c) => c.id === categoryIdValue);
+	}, [categoryIdValue, categories]);
 
 	return (
 		<>
@@ -105,9 +116,9 @@ function MemoFormContent() {
 								},
 							)}
 						/>
-						<SaveStatus isSaving={isSaving} memo={watch("memo")} />
+						<SaveStatus isSaving={isSaving} memo={memoValue} />
 					</div>
-					{watch("categoryId") && (
+					{selectedCategory && (
 						<Badge
 							variant="outline"
 							className="flex items-center gap-1 px-2 py-0.5"
@@ -115,16 +126,10 @@ function MemoFormContent() {
 							<div
 								className="h-2 w-2 rounded-full"
 								style={{
-									backgroundColor:
-										categories?.find((c) => c.id === watch("categoryId"))
-											?.color || "#888888",
+									backgroundColor: selectedCategory.color || "#888888",
 								}}
 							/>
-							{
-								categories?.find(
-									(category) => category.id === watch("categoryId"),
-								)?.name
-							}
+							{selectedCategory.name}
 							<XIcon
 								size={12}
 								className="hover:text-destructive ml-1 cursor-pointer"

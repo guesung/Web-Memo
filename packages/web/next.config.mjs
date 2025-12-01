@@ -15,8 +15,19 @@ const nextConfig = {
 		removeConsole: process.env.NODE_ENV === "production",
 	},
 	experimental: {
-		optimizePackageImports: ["@web-memo/ui"],
+		optimizePackageImports: [
+			"@web-memo/ui",
+			"@web-memo/shared",
+			"lucide-react",
+			"framer-motion",
+			"dayjs",
+			"@tanstack/react-query",
+		],
 	},
+	// 정적 자산 압축 활성화
+	compress: true,
+	// 소스맵 최적화 (프로덕션에서 숨김)
+	productionBrowserSourceMaps: false,
 };
 
 const withBundleAnalyzer = bundleAnalyzer({

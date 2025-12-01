@@ -5,7 +5,6 @@ import {
 	CardHeader,
 	Tooltip,
 	TooltipContent,
-	TooltipProvider,
 	TooltipTrigger,
 } from "@web-memo/ui";
 import { CheckIcon } from "lucide-react";
@@ -36,6 +35,10 @@ export default memo(function MemoCardHeader({
 		[selectMemoItem, memo.id],
 	);
 
+	const handleLinkClick = useCallback((e: MouseEvent<HTMLAnchorElement>) => {
+		e.stopPropagation();
+	}, []);
+
 	const isShowingSelectButton = isMemoHovering || isMemoSelected;
 	return (
 		<CardHeader className="relative py-4 font-normal">
@@ -55,7 +58,7 @@ export default memo(function MemoCardHeader({
 				href={memo.url}
 				target="_blank"
 				className="flex items-center gap-2"
-				onClick={(e) => e.stopPropagation()}
+				onClick={handleLinkClick}
 			>
 				{memo?.favIconUrl && (
 					<Image
@@ -64,19 +67,17 @@ export default memo(function MemoCardHeader({
 						height={12}
 						alt="favicon"
 						className="h-3 w-3 object-contain"
-						priority
+						loading="lazy"
 					/>
 				)}
-				<TooltipProvider delayDuration={200}>
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<span className="line-clamp-1 font-bold">{memo.title}</span>
-						</TooltipTrigger>
-						<TooltipContent>
-							<p>{memo.title}</p>
-						</TooltipContent>
-					</Tooltip>
-				</TooltipProvider>
+				<Tooltip delayDuration={200}>
+					<TooltipTrigger asChild>
+						<span className="line-clamp-1 font-bold">{memo.title}</span>
+					</TooltipTrigger>
+					<TooltipContent>
+						<p>{memo.title}</p>
+					</TooltipContent>
+				</Tooltip>
 			</Link>
 		</CardHeader>
 	);

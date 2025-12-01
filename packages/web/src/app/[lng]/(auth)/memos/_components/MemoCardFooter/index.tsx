@@ -2,16 +2,15 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { useCategoryQuery, useMemoPatchMutation } from "@web-memo/shared/hooks";
-import { useSearchParams } from "@web-memo/shared/modules/search-params";
+import { useMemoPatchMutation } from "@web-memo/shared/hooks";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
 import { Badge, Button, CardFooter, ToastAction, toast } from "@web-memo/ui";
 import dayjs from "dayjs";
 import { FolderIcon, HeartIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { MouseEvent, PropsWithChildren } from "react";
-import { useState } from "react";
+import { memo, useCallback, useState } from "react";
 
 import MemoOption from "./MemoOption";
 
@@ -23,61 +22,71 @@ interface MemoCardFooterProps
 	isShowingOption?: boolean;
 }
 
-export default function MemoCardFooter({
-	memo,
+export default memo(function MemoCardFooter({
+	memo: memoData,
 	lng,
 	children,
 	isShowingOption = true,
 	...props
 }: MemoCardFooterProps) {
 	const { t } = useTranslation(lng);
-	const searchParams = useSearchParams();
 	const router = useRouter();
+	const searchParams = useSearchParams();
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-	const { categories } = useCategoryQuery();
 
-	const handleCategoryClick = (event: MouseEvent<HTMLDivElement>) => {
-		event.stopPropagation();
-		if (!memo.category?.name) return;
+	const handleCategoryClick = useCallback(
+		(event: MouseEvent<HTMLDivElement>) => {
+			event.stopPropagation();
+			if (!memoData.category?.name) return;
 
-		searchParams.set("category", memo.category?.name);
-		router.push(searchParams.getUrl(), { scroll: false });
-	};
+			const params = new URLSearchParams(searchParams.toString());
+			params.set("category", memoData.category.name);
+			router.push(`?${params.toString()}`, { scroll: false });
+		},
+		[memoData.category?.name, router, searchParams],
+	);
 
-	const handleIsWishClick = (event: MouseEvent<HTMLButtonElement>) => {
-		event.stopPropagation();
+	const handleIsWishClick = useCallback(
+		(event: MouseEvent<HTMLButtonElement>) => {
+			event.stopPropagation();
 
-		mutateMemoPatch({
-			id: memo.id,
-			request: {
-				isWish: !memo.isWish,
-			},
-		});
+			mutateMemoPatch({
+				id: memoData.id,
+				request: {
+					isWish: !memoData.isWish,
+				},
+			});
 
-		const toastTitle = memo.isWish
-			? t("toastTitle.memoWishListDeleted")
-			: t("toastTitle.memoWishListAdded");
+			const toastTitle = memoData.isWish
+				? t("toastTitle.memoWishListDeleted")
+				: t("toastTitle.memoWishListAdded");
 
-		toast({
-			title: toastTitle,
-			action: (
-				<ToastAction
-					altText={t("toastActionMessage.undo")}
-					onClick={() => {
-						mutateMemoPatch({
-							id: memo.id,
-							request: {
-								isWish: memo.isWish,
-							},
-						});
-					}}
-				>
-					{t("toastActionMessage.undo")}
-				</ToastAction>
-			),
-		});
-	};
+			toast({
+				title: toastTitle,
+				action: (
+					<ToastAction
+						altText={t("toastActionMessage.undo")}
+						onClick={() => {
+							mutateMemoPatch({
+								id: memoData.id,
+								request: {
+									isWish: memoData.isWish,
+								},
+							});
+						}}
+					>
+						{t("toastActionMessage.undo")}
+					</ToastAction>
+				),
+			});
+		},
+		[memoData.id, memoData.isWish, mutateMemoPatch, t],
+	);
+
+	const handleDropdownOpenChange = useCallback((open: boolean) => {
+		setIsDropdownOpen(open);
+	}, []);
 
 	return (
 		<CardFooter
@@ -85,21 +94,21 @@ export default function MemoCardFooter({
 			{...props}
 		>
 			<div className="flex flex-wrap items-center gap-2">
-				{memo.category?.name ? (
+				{memoData.category?.name ? (
 					<Badge
 						variant="outline"
 						onClick={handleCategoryClick}
 						className="z-10 flex items-center gap-1"
 						style={{
-							backgroundColor: memo.category.color
-								? `${memo.category.color}20`
+							backgroundColor: memoData.category.color
+								? `${memoData.category.color}20`
 								: "bg-muted/50",
-							borderColor: memo.category.color || undefined,
-							color: memo.category.color || undefined,
+							borderColor: memoData.category.color || undefined,
+							color: memoData.category.color || undefined,
 						}}
 					>
 						<FolderIcon size={12} />
-						{memo.category?.name}
+						{memoData.category?.name}
 					</Badge>
 				) : null}
 			</div>
@@ -109,32 +118,32 @@ export default function MemoCardFooter({
 						<Button variant="ghost" size="icon" onClick={handleIsWishClick}>
 							<HeartIcon
 								size={12}
-								fill={memo.isWish ? "pink" : ""}
-								fillOpacity={memo.isWish ? 100 : 0}
+								fill={memoData.isWish ? "pink" : ""}
+								fillOpacity={memoData.isWish ? 100 : 0}
 								className={cn(
 									"transition-transform hover:scale-110 active:scale-95",
 									{
-										"animate-heart-pop": memo.isWish,
+										"animate-heart-pop": memoData.isWish,
 									},
 								)}
 							/>
 						</Button>
 						<MemoOption
-							memoIds={[memo.id]}
+							memoIds={[memoData.id]}
 							lng={lng}
-							onOpenChange={setIsDropdownOpen}
+							onOpenChange={handleDropdownOpenChange}
 						/>
 						{children}
 					</div>
 				) : (
 					<time
-						dateTime={memo.updated_at ?? ""}
+						dateTime={memoData.updated_at ?? ""}
 						className="text-muted-foreground absolute right-4 text-xs"
 					>
-						{dayjs(memo.updated_at).fromNow()}
+						{dayjs(memoData.updated_at).fromNow()}
 					</time>
 				)}
 			</div>
 		</CardFooter>
 	);
-}
+});

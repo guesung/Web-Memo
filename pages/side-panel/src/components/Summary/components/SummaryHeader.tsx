@@ -1,25 +1,24 @@
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { Button, Loading } from "@web-memo/ui";
-import { RefreshCwIcon, SettingsIcon } from "lucide-react";
+import { GlobeIcon, RefreshCwIcon, SettingsIcon, YoutubeIcon } from "lucide-react";
 
 import ToggleTheme from "../../ToggleTheme";
 import { useSummaryContext } from "./SummaryProvider";
 
-const getCategoryText = (category: Category) => {
-	if (category === "youtube") return I18n.get("youtube");
-	return I18n.get("webSite");
+const CategoryIcon = ({ category }: { category: Category }) => {
+	if (category === "youtube") return <YoutubeIcon size={18} />;
+	return <GlobeIcon size={18} />;
 };
 
 export default function SummaryHeader() {
 	const { isSummaryLoading, refetchSummary, category } = useSummaryContext();
 
-	const categoryText = getCategoryText(category);
-
 	return (
 		<header className="mt-4 flex items-center justify-between">
-			<div className="text-md font-bold">
-				{I18n.get("summary")} - {categoryText}
+			<div className="text-md font-bold flex items-center gap-1.5">
+				<CategoryIcon category={category} />
+				{I18n.get("summary")}
 			</div>
 			<div className="flex gap-1">
 				<ToggleTheme />

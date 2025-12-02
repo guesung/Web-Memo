@@ -74,6 +74,25 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 					</Select>
 				)}
 			/>
+			<Controller
+				name="sortBy"
+				control={control}
+				render={({ field }) => (
+					<Select onValueChange={field.onChange} value={field.value}>
+						<SelectTrigger className="w-[180px] select-none">
+							<SelectValue placeholder={t("memos.sortBy.updated_at")} />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="updated_at">
+								{t("memos.sortBy.updated_at")}
+							</SelectItem>
+							<SelectItem value="created_at">
+								{t("memos.sortBy.created_at")}
+							</SelectItem>
+						</SelectContent>
+					</Select>
+				)}
+			/>
 		</form>
 	);
 }

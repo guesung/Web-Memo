@@ -23,12 +23,14 @@ export default function MemoView({ lng }: LanguageType) {
 	const category = searchParams.get("category") ?? "";
 	const isWish = searchParams.get("isWish") ?? "";
 	const searchQuery = watch("searchQuery");
+	const sortBy = watch("sortBy");
 
 	const { memos, totalCount, hasNextPage, isFetchingNextPage, fetchNextPage } =
 		useMemosInfiniteQuery({
 			category,
 			isWish: isWish === "true",
 			searchQuery: searchQuery || undefined,
+			sortBy,
 		});
 
 	useGuide({ lng });

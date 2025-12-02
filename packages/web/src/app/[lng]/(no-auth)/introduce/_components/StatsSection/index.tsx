@@ -1,6 +1,7 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import { motion, useInView } from "framer-motion";
 import { Users, FileText, Star, Clock } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
@@ -53,13 +54,15 @@ function AnimatedCounter({
 }
 
 export default function StatsSection({ lng, stats }: StatsSectionProps) {
+	const { t } = useTranslation(lng);
+
 	const statItems = [
 		{
 			icon: Users,
 			value: stats?.userCount ?? 250,
 			suffix: "+",
-			label: lng === "ko" ? "활성 사용자" : "Active Users",
-			description: lng === "ko" ? "Chrome 웹스토어 사용자" : "Chrome Web Store users",
+			label: t("introduce.stats.active_users"),
+			description: t("introduce.stats.active_users_desc"),
 			gradient: "from-blue-500 to-cyan-500",
 			iconBg: "bg-blue-500/10",
 			iconColor: "text-blue-500",
@@ -68,8 +71,8 @@ export default function StatsSection({ lng, stats }: StatsSectionProps) {
 			icon: FileText,
 			value: stats?.memoCount ?? 10000,
 			suffix: "+",
-			label: lng === "ko" ? "저장된 메모" : "Memos Saved",
-			description: lng === "ko" ? "사용자들이 저장한 총 메모 개수" : "Total memos saved by users",
+			label: t("introduce.stats.memos_saved"),
+			description: t("introduce.stats.memos_saved_desc"),
 			gradient: "from-purple-500 to-pink-500",
 			iconBg: "bg-purple-500/10",
 			iconColor: "text-purple-500",
@@ -78,8 +81,8 @@ export default function StatsSection({ lng, stats }: StatsSectionProps) {
 			icon: Star,
 			value: stats?.rating ?? 5.0,
 			suffix: "",
-			label: lng === "ko" ? "평균 평점" : "Average Rating",
-			description: lng === "ko" ? "Chrome 웹스토어 평점" : "Chrome Web Store rating",
+			label: t("introduce.stats.average_rating"),
+			description: t("introduce.stats.average_rating_desc"),
 			gradient: "from-yellow-500 to-orange-500",
 			iconBg: "bg-yellow-500/10",
 			iconColor: "text-yellow-500",
@@ -88,9 +91,9 @@ export default function StatsSection({ lng, stats }: StatsSectionProps) {
 		{
 			icon: Clock,
 			value: 10,
-			suffix: lng === "ko" ? "초" : "s",
-			label: lng === "ko" ? "설치 시간" : "Install Time",
-			description: lng === "ko" ? "크롬에 설치하는 데 걸리는 시간" : "Time to install on Chrome",
+			suffix: t("introduce.stats.install_time_suffix"),
+			label: t("introduce.stats.install_time"),
+			description: t("introduce.stats.install_time_desc"),
 			gradient: "from-green-500 to-emerald-500",
 			iconBg: "bg-green-500/10",
 			iconColor: "text-green-500",
@@ -109,12 +112,10 @@ export default function StatsSection({ lng, stats }: StatsSectionProps) {
 					className="text-center mb-16"
 				>
 					<h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-						{lng === "ko" ? "숫자로 보는 웹 메모" : "Web Memo in Numbers"}
+						{t("introduce.section.stats")}
 					</h2>
 					<p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-						{lng === "ko"
-							? "많은 사용자들이 이미 웹 메모와 함께하고 있습니다"
-							: "Many users are already using Web Memo"}
+						{t("introduce.section.stats_desc")}
 					</p>
 				</motion.div>
 

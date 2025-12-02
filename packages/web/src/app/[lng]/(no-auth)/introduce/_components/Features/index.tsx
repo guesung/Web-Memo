@@ -80,12 +80,10 @@ export default function Features({ lng }: FeaturesProps) {
 					className="text-center mb-16"
 				>
 					<h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-						{lng === "ko" ? "핵심 기능" : "Key Features"}
+						{t("introduce.section.key_features")}
 					</h2>
 					<p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-						{lng === "ko"
-							? "웹 서핑을 더 스마트하게 만들어주는 기능들"
-							: "Features that make your web browsing smarter"}
+						{t("introduce.section.key_features_desc")}
 					</p>
 				</motion.div>
 

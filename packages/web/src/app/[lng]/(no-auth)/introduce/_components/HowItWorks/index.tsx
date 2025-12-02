@@ -1,34 +1,37 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import { motion } from "framer-motion";
 import { Download, PanelRightOpen, BookmarkPlus, ArrowRight } from "lucide-react";
 
 interface HowItWorksProps extends LanguageType {}
 
 export default function HowItWorks({ lng }: HowItWorksProps) {
+	const { t } = useTranslation(lng);
+
 	const steps = [
 		{
 			number: 1,
 			icon: Download,
-			title: lng === "ko" ? "확장 프로그램 설치" : "Install Extension",
-			description: lng === "ko" ? "Chrome 웹스토어에서 10초 만에" : "From Chrome Web Store in 10 seconds",
+			title: t("introduce.steps.step1_title"),
+			description: t("introduce.steps.step1_desc"),
 			color: "purple",
 			gradient: "from-purple-500 to-blue-500",
 		},
 		{
 			number: 2,
 			icon: PanelRightOpen,
-			title: lng === "ko" ? "사이드 패널 열기" : "Open Side Panel",
-			description: lng === "ko" ? "단축키로 빠르게 열기" : "Quick access with keyboard shortcut",
+			title: t("introduce.steps.step2_title"),
+			description: t("introduce.steps.step2_desc"),
 			color: "blue",
 			gradient: "from-blue-500 to-cyan-500",
 		},
 		{
 			number: 3,
 			icon: BookmarkPlus,
-			title: lng === "ko" ? "저장하고 정리하기" : "Save & Organize",
-			description: lng === "ko" ? "웹 콘텐츠를 체계적으로 관리" : "Manage web content systematically",
+			title: t("introduce.steps.step3_title"),
+			description: t("introduce.steps.step3_desc"),
 			color: "cyan",
 			gradient: "from-cyan-500 to-green-500",
 		},
@@ -46,12 +49,10 @@ export default function HowItWorks({ lng }: HowItWorksProps) {
 					className="text-center mb-16"
 				>
 					<h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-						{lng === "ko" ? "시작하는 방법" : "How It Works"}
+						{t("introduce.section.how_it_works")}
 					</h2>
 					<p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-						{lng === "ko"
-							? "3단계로 간단하게 시작하세요"
-							: "Get started in 3 simple steps"}
+						{t("introduce.section.how_it_works_desc")}
 					</p>
 				</motion.div>
 

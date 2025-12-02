@@ -1,6 +1,7 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import { useAdminStatsQuery } from "@web-memo/shared/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@web-memo/ui";
 import { Calendar, FileText, TrendingUp, Users } from "lucide-react";
@@ -8,29 +9,30 @@ import { Calendar, FileText, TrendingUp, Users } from "lucide-react";
 interface StatsCardsProps extends LanguageType {}
 
 export default function StatsCards({ lng }: StatsCardsProps) {
+	const { t } = useTranslation(lng);
 	const { stats } = useAdminStatsQuery();
 
 	const cards = [
 		{
-			title: lng === "ko" ? "전체 사용자" : "Total Users",
+			titleKey: "admin.stats.total_users",
 			value: stats?.totalUsers ?? 0,
 			icon: Users,
 			color: "text-blue-500",
 		},
 		{
-			title: lng === "ko" ? "전체 메모" : "Total Memos",
+			titleKey: "admin.stats.total_memos",
 			value: stats?.totalMemos ?? 0,
 			icon: FileText,
 			color: "text-green-500",
 		},
 		{
-			title: lng === "ko" ? "오늘 메모" : "Today's Memos",
+			titleKey: "admin.stats.today_memos",
 			value: stats?.todayMemos ?? 0,
 			icon: TrendingUp,
 			color: "text-purple-500",
 		},
 		{
-			title: lng === "ko" ? "이번 주 메모" : "Weekly Memos",
+			titleKey: "admin.stats.weekly_memos",
 			value: stats?.weeklyMemos ?? 0,
 			icon: Calendar,
 			color: "text-amber-500",
@@ -40,10 +42,10 @@ export default function StatsCards({ lng }: StatsCardsProps) {
 	return (
 		<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 			{cards.map((card) => (
-				<Card key={card.title}>
+				<Card key={card.titleKey}>
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
 						<CardTitle className="text-sm font-medium text-muted-foreground">
-							{card.title}
+							{t(card.titleKey)}
 						</CardTitle>
 						<card.icon className={`h-5 w-5 ${card.color}`} />
 					</CardHeader>

@@ -14,9 +14,9 @@ export default function FinalCTA({ lng }: FinalCTAProps) {
 	const { t } = useTranslation(lng);
 
 	const benefits = [
-		lng === "ko" ? "영원히 무료" : "Free Forever",
-		lng === "ko" ? "신용카드 필요 없음" : "No Credit Card",
-		lng === "ko" ? "10초 만에 설치" : "10s Install",
+		t("introduce.hero.free_forever"),
+		t("introduce.hero.no_credit_card"),
+		t("introduce.hero.quick_install"),
 	];
 
 	return (
@@ -41,12 +41,10 @@ export default function FinalCTA({ lng }: FinalCTAProps) {
 						className="text-center lg:text-left"
 					>
 						<h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
-							{lng === "ko" ? "지금 바로 시작하세요" : "Get Started Today"}
+							{t("introduce.section.cta_title")}
 						</h2>
 						<p className="text-xl text-white/80 mb-8 max-w-lg">
-							{lng === "ko"
-								? "더 스마트한 웹 서핑을 경험해보세요. 무료로, 지금 바로."
-								: "Experience smarter web browsing. Free, right now."}
+							{t("introduce.section.cta_desc")}
 						</p>
 
 						{/* Benefits */}
@@ -81,7 +79,7 @@ export default function FinalCTA({ lng }: FinalCTAProps) {
 								href="#demo"
 								className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-white/30 px-8 py-4 text-lg font-semibold text-white transition-all duration-300 hover:bg-white/10"
 							>
-								{lng === "ko" ? "더 알아보기" : "Learn More"}
+								{t("introduce.hero.learn_more")}
 							</Link>
 						</div>
 					</motion.div>

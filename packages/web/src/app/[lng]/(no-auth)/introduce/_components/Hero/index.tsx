@@ -109,7 +109,7 @@ export default function Hero({ lng }: HeroProps) {
 								className="inline-flex items-center justify-center gap-2 rounded-full glass-card px-8 py-4 text-lg font-semibold text-gray-800 dark:text-gray-100 transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
 							>
 								<Sparkles className="h-5 w-5" />
-								{lng === "ko" ? "기능 살펴보기" : "Explore Features"}
+								{t("introduce.hero.explore_features")}
 							</Link>
 						</motion.div>
 
@@ -122,11 +122,11 @@ export default function Hero({ lng }: HeroProps) {
 						>
 							<div className="flex items-center gap-2">
 								<Check className="h-4 w-4 text-green-500" />
-								{lng === "ko" ? "영원히 무료" : "Free Forever"}
+								{t("introduce.hero.free_forever")}
 							</div>
 							<div className="flex items-center gap-2">
 								<Check className="h-4 w-4 text-green-500" />
-								{lng === "ko" ? "설치 10초" : "10s Install"}
+								{t("introduce.hero.quick_install")}
 							</div>
 						</motion.div>
 					</motion.div>

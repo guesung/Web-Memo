@@ -6,8 +6,16 @@ import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import { CategoryService } from "@web-memo/shared/utils";
 import { Loading, SidebarProvider } from "@web-memo/ui";
+import type { Metadata } from "next";
 import type { PropsWithChildren } from "react";
 import { Suspense } from "react";
+
+export const metadata: Metadata = {
+	robots: {
+		index: false,
+		follow: false,
+	},
+};
 
 import { InitSentryUserInfo, MemoSidebar } from "./_components";
 import { initSentryUserInfo } from "./_utils";

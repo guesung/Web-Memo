@@ -1,5 +1,8 @@
 User-Agent: *
 Allow: /
 Disallow: /private/
+Disallow: /*/memos/
+Disallow: /*/admin/
+Disallow: /*/login
 
-Sitemap: https://acme.com/sitemap.xml
+Sitemap: https://web-memo.site/sitemap.xml

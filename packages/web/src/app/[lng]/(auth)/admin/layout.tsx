@@ -5,10 +5,18 @@ import type { LanguageParams } from "@src/modules/i18n";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { PATHS } from "@web-memo/shared/constants";
 import { AdminService } from "@web-memo/shared/utils";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import type { PropsWithChildren } from "react";
 
 import { AdminSidebar } from "./_components";
+
+export const metadata: Metadata = {
+	robots: {
+		index: false,
+		follow: false,
+	},
+};
 
 interface LayoutProps extends LanguageParams, PropsWithChildren {}
 

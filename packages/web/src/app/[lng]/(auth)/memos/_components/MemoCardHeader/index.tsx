@@ -64,7 +64,7 @@ export default memo(function MemoCardHeader({
 						height={12}
 						alt="favicon"
 						className="h-3 w-3 object-contain"
-						priority
+						loading="lazy"
 					/>
 				)}
 				<TooltipProvider delayDuration={200}>

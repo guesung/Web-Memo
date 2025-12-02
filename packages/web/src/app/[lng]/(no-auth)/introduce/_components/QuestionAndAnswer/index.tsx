@@ -11,7 +11,7 @@ import {
 import { motion } from "framer-motion";
 import { HelpCircle } from "lucide-react";
 
-import { FAQ_ITEMS } from "../../_constants/Faq";
+import { FAQ_ITEMS } from "../../_constants";
 
 export default function QuestionAndAnswer({ lng }: LanguageType) {
 	const { t } = useTranslation(lng);

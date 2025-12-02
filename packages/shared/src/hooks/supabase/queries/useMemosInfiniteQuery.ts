@@ -10,23 +10,26 @@ const PAGE_SIZE = 20;
 interface UseMemosInfiniteQueryProps {
 	category?: string;
 	isWish?: boolean;
+	searchQuery?: string;
 }
 
 export default function useMemosInfiniteQuery({
 	category,
 	isWish = false,
+	searchQuery,
 }: UseMemosInfiniteQueryProps = {}) {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 	const memoService = new MemoService(supabaseClient);
 
 	const query = useSuspenseInfiniteQuery({
-		queryKey: QUERY_KEY.memosPaginated(category, isWish),
+		queryKey: QUERY_KEY.memosPaginated(category, isWish, searchQuery),
 		queryFn: async ({ pageParam }) => {
 			const result = await memoService.getMemosPaginated({
 				cursor: pageParam,
 				limit: PAGE_SIZE,
 				category: category || undefined,
 				isWish,
+				searchQuery: searchQuery || undefined,
 			});
 
 			return {

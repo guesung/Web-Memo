@@ -1,10 +1,10 @@
 export const QUERY_KEY = {
 	tab: () => ["tab"],
 	memos: () => ["memos"],
-	memosPaginated: (category?: string, isWish?: boolean) => [
+	memosPaginated: (category?: string, isWish?: boolean, searchQuery?: string) => [
 		"memos",
 		"paginated",
-		{ category, isWish },
+		{ category, isWish, searchQuery },
 	],
 	option: () => ["option"],
 	supabaseClient: () => ["supabaseClient"],

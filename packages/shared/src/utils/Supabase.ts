@@ -65,11 +65,13 @@ export class MemoService {
 		limit = 20,
 		category,
 		isWish,
+		searchQuery,
 	}: {
 		cursor?: string;
 		limit?: number;
 		category?: string;
 		isWish?: boolean;
+		searchQuery?: string;
 	}) => {
 		const selectQuery = category
 			? "*, category!inner(id, name, color)"
@@ -92,6 +94,11 @@ export class MemoService {
 
 		if (category) {
 			query = query.eq("category.name", category);
+		}
+
+		if (searchQuery) {
+			const pattern = `%${searchQuery}%`;
+			query = query.or(`title.ilike.${pattern},memo.ilike.${pattern}`);
 		}
 
 		return query;

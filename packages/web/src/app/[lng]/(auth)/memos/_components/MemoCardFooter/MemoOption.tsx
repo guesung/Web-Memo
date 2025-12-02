@@ -5,10 +5,10 @@ import { QUERY_KEY } from "@web-memo/shared/constants";
 import {
 	useCategoryQuery,
 	useDeleteMemosMutation,
-	useMemosQuery,
 	useMemosUpsertMutation,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
+import type { GetMemoResponse } from "@web-memo/shared/types";
 import {
 	Button,
 	DropdownMenu,
@@ -28,14 +28,14 @@ import type { MouseEvent } from "react";
 import { useState } from "react";
 
 interface MemoOptionProps extends LanguageType {
-	memoIds: number[];
+	memos: GetMemoResponse[];
 	closeMemoOption?: () => void;
 	onOpenChange?: (isOpen: boolean) => void;
 }
 
 export default function MemoOption({
 	lng,
-	memoIds = [],
+	memos,
 	closeMemoOption,
 	onOpenChange,
 }: MemoOptionProps) {
@@ -48,18 +48,13 @@ export default function MemoOption({
 	const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
 	const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
 
-	const { memos } = useMemosQuery({
-		isWish: searchParams.get("isWish") === "true",
-	});
-	const selectedMemos = memos.filter((memo) => memoIds.includes(memo.id));
-
 	const handleDeleteMemo = async (event?: MouseEvent<HTMLDivElement>) => {
 		event?.stopPropagation();
 
-		mutateDeleteMemo(selectedMemos.map((memo) => memo.id));
+		mutateDeleteMemo(memos.map((memo) => memo.id));
 
 		const handleToastActionClick = async () => {
-			mutateUpsertMemo(selectedMemos);
+			mutateUpsertMemo(memos);
 
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
 		};
@@ -81,12 +76,11 @@ export default function MemoOption({
 	};
 
 	const handleCategoryChange = async (categoryId: string) => {
-		const currentMemo = memos.filter((memo) => memoIds.includes(memo.id));
 		const currentCategory = categories?.find(
 			(category) => category.id === Number(categoryId),
 		);
 		mutateUpsertMemo(
-			currentMemo.map((memo) => ({
+			memos.map((memo) => ({
 				...memo,
 				category_id: Number(categoryId),
 				category: currentCategory ?? null,

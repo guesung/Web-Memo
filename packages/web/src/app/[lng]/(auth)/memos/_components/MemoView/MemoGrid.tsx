@@ -81,6 +81,10 @@ export default function MemoGrid({
 
 	useKeyboardBind({ key: "Escape", callback: closeMemoOption });
 
+	const selectedMemos = memos.filter((memo) =>
+		selectedMemoIds.includes(memo.id),
+	);
+
 	if (memos.length === 0) {
 		return <MemoEmptyState lng={lng} />;
 	}
@@ -92,7 +96,7 @@ export default function MemoGrid({
 				{isSelectingMode && (
 					<MemoOptionHeader
 						lng={lng}
-						selectedMemoIds={selectedMemoIds}
+						selectedMemos={selectedMemos}
 						onXButtonClick={closeMemoOption}
 						closeMemoOption={closeMemoOption}
 					/>

@@ -386,12 +386,14 @@
 		"section": {
 			"key_features": "Key Features",
 			"key_features_desc": "Features that make web browsing smarter",
+			"demo": "See it in action",
 			"demo_title": "See it in action",
 			"demo_desc": "Explore the key features of Web Memo",
 			"how_it_works": "How to get started",
 			"how_it_works_desc": "Get started in 3 simple steps",
 			"use_cases": "Recommended for",
 			"use_cases_desc": "Web Memo helps in various situations",
+			"stats": "Web Memo by the numbers",
 			"stats_title": "Web Memo by the numbers",
 			"stats_desc": "Many users are already using Web Memo",
 			"testimonials_title": "User Reviews",
@@ -403,14 +405,24 @@
 		"demo": {
 			"write_memo": "Write Memo",
 			"write_memo_desc": "Take notes while reading articles",
+			"tab_memo": "Write Memo",
+			"tab_memo_desc": "Take notes while reading articles",
 			"overview": "Overview",
 			"overview_desc": "See all memos at a glance",
+			"tab_overview": "Overview",
+			"tab_overview_desc": "See all memos at a glance",
 			"ai_summary": "AI Summary",
 			"ai_summary_desc": "Summarize YouTube videos with AI",
+			"tab_ai": "AI Summary",
+			"tab_ai_desc": "Summarize YouTube videos with AI",
 			"wishlist": "Wishlist",
 			"wishlist_desc": "Save content for later",
+			"tab_wishlist": "Wishlist",
+			"tab_wishlist_desc": "Save content for later",
 			"organize": "Organize",
-			"organize_desc": "Systematic management with categories"
+			"organize_desc": "Systematic management with categories",
+			"tab_organize": "Organize",
+			"tab_organize_desc": "Systematic management with categories"
 		},
 		"steps": {
 			"step1_title": "Install Extension",
@@ -423,12 +435,18 @@
 		"use_case": {
 			"students_title": "Students & Researchers",
 			"students_desc": "Save key points from online courses and research. Systematically manage references for your papers.",
+			"student_title": "Students & Researchers",
+			"student_desc": "Save key points from online courses and research. Systematically manage references for your papers.",
 			"professionals_title": "Professionals",
 			"professionals_desc": "Systematically manage competitor analysis and trend monitoring. Find work-related information quickly.",
+			"professional_title": "Professionals",
+			"professional_desc": "Systematically manage competitor analysis and trend monitoring. Find work-related information quickly.",
 			"efficiency_title": "Efficient People",
 			"efficiency_desc": "Get key insights with AI summaries instead of reading long articles. Save time and consume more content.",
 			"creators_title": "Content Creators",
-			"creators_desc": "Collect inspiring content and ideas. Manage all your creative references in one place."
+			"creators_desc": "Collect inspiring content and ideas. Manage all your creative references in one place.",
+			"creator_title": "Content Creators",
+			"creator_desc": "Collect inspiring content and ideas. Manage all your creative references in one place."
 		},
 		"stats": {
 			"active_users": "Active Users",
@@ -437,6 +455,8 @@
 			"memos_saved_desc": "Total memos saved by users",
 			"rating": "Average Rating",
 			"rating_desc": "Chrome Web Store rating",
+			"average_rating": "Average Rating",
+			"average_rating_desc": "Chrome Web Store rating",
 			"install_time": "Install Time",
 			"install_time_suffix": "sec",
 			"install_time_desc": "Time to install on Chrome"

@@ -131,6 +131,12 @@
 	"category_suggestion_dismiss": {
 		"message": "무시"
 	},
+	"auto_apply_category_setting": {
+		"message": "카테고리 자동 적용"
+	},
+	"auto_apply_category_description": {
+		"message": "AI가 추천한 카테고리를 자동으로 적용합니다"
+	},
 	"update_notification_title": {
 		"message": "🎉 업데이트 소식"
 	},

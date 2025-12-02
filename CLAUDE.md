@@ -192,6 +192,37 @@ app/[route]/
 - Chrome extension i18n via `_locales/` directories
 - Next.js i18n integration for web application
 
+**IMPORTANT**: Never use `lng === "ko"` pattern for conditional text rendering. Always use `useTranslation` hook with translation keys.
+
+**❌ Wrong Pattern**:
+```tsx
+{lng === "ko" ? "한글 텍스트" : "English Text"}
+```
+
+**✅ Correct Pattern**:
+```tsx
+import useTranslation from "@src/modules/i18n/util.client";
+
+function Component({ lng }: { lng: Language }) {
+  const { t } = useTranslation(lng);
+  return <span>{t("some.translation.key")}</span>;
+}
+```
+
+**Adding New Translations**:
+1. Add translation key to `packages/web/src/modules/i18n/locales/ko/translation.json`
+2. Add same key to `packages/web/src/modules/i18n/locales/en/translation.json`
+3. Use `t("your.new.key")` in component
+
+**Translation File Structure**:
+- Use nested objects for organization: `"section.subsection.key"`
+- Group related translations under common prefixes
+- Example: `introduce.hero.title`, `introduce.hero.subtitle`
+
+**Server vs Client Components**:
+- Client components: `import useTranslation from "@src/modules/i18n/util.client"`
+- Server components: `import useTranslation from "@src/modules/i18n/util.server"` (async)
+
 ### Environment Configuration
 Key environment variables:
 - `__FIREFOX__`: Enable Firefox-specific build modifications

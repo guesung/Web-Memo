@@ -15,7 +15,11 @@ const nextConfig = {
 		removeConsole: process.env.NODE_ENV === "production",
 	},
 	experimental: {
-		optimizePackageImports: ["@web-memo/ui"],
+		optimizePackageImports: [
+			"@web-memo/ui",
+			"lucide-react",
+			"@tanstack/react-query",
+		],
 	},
 };
 

@@ -32,16 +32,19 @@ function AnimatedCounter({
 		if (!isInView) return;
 
 		let startTime: number;
+		let rafId: number;
 		const animate = (currentTime: number) => {
 			if (!startTime) startTime = currentTime;
 			const progress = Math.min((currentTime - startTime) / duration, 1);
 			const easeOutQuart = 1 - Math.pow(1 - progress, 4);
 			setCount(easeOutQuart * end);
 			if (progress < 1) {
-				requestAnimationFrame(animate);
+				rafId = requestAnimationFrame(animate);
 			}
 		};
-		requestAnimationFrame(animate);
+		rafId = requestAnimationFrame(animate);
+
+		return () => cancelAnimationFrame(rafId);
 	}, [isInView, end, duration]);
 
 	return (

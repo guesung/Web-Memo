@@ -1,32 +1,54 @@
 import { useEffect } from "react";
 
-type KeyboardEventKey = "Backspace" | "Escape" | "s";
-
 interface UseKeyboardBindProps {
-	key: KeyboardEventKey;
+	key: string;
 	callback: () => void;
-	isMetaKey?: boolean;
+	ctrlKey?: boolean;
+	metaKey?: boolean;
+	shiftKey?: boolean;
+	altKey?: boolean;
 }
 
 export default function useKeyboardBind({
 	key,
 	callback,
-	isMetaKey = false,
+	ctrlKey = false,
+	metaKey = false,
+	shiftKey = false,
+	altKey = false,
 }: UseKeyboardBindProps) {
 	useEffect(
 		function keyboardBind() {
 			const handleKeyDown = (event: KeyboardEvent) => {
-				const metaKey = isMetaKey ? event.metaKey : true;
-				if (metaKey && event.key === key) {
-					event.preventDefault();
+				const hasModifier = ctrlKey || metaKey || shiftKey || altKey;
 
-					callback();
+				if (hasModifier) {
+					const ctrlMatch = ctrlKey ? event.ctrlKey : true;
+					const metaMatch = metaKey ? event.metaKey : true;
+					const shiftMatch = shiftKey ? event.shiftKey : true;
+					const altMatch = altKey ? event.altKey : true;
+
+					if (
+						ctrlMatch &&
+						metaMatch &&
+						shiftMatch &&
+						altMatch &&
+						event.key.toLowerCase() === key.toLowerCase()
+					) {
+						event.preventDefault();
+						callback();
+					}
+				} else {
+					if (event.key === key && !event.ctrlKey && !event.metaKey) {
+						event.preventDefault();
+						callback();
+					}
 				}
 			};
 
 			window.addEventListener("keydown", handleKeyDown);
 			return () => window.removeEventListener("keydown", handleKeyDown);
 		},
-		[key, callback, isMetaKey],
+		[key, callback, ctrlKey, metaKey, shiftKey, altKey],
 	);
 }

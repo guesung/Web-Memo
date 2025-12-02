@@ -71,7 +71,8 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 		}
 	}, [watch, memoData?.memo, mutateMemoPatch, memoId]);
 
-	useKeyboardBind({ key: "s", callback: saveMemo, isMetaKey: true });
+	useKeyboardBind({ key: "s", callback: saveMemo, metaKey: true });
+	useKeyboardBind({ key: "s", callback: saveMemo, ctrlKey: true });
 
 	const checkEditedAndCloseDialog = () => {
 		const isEdited = watch("memo") !== memoData?.memo;

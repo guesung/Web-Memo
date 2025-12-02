@@ -9,6 +9,7 @@ import { memo, useState } from "react";
 
 import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
+import MemoHoverPreview from "./MemoHoverPreview";
 
 interface MemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	memo: GetMemoResponse;
@@ -54,59 +55,65 @@ export default memo(function MemoItem({
 	};
 
 	return (
-		<div
-			{...props}
-			id={String(memo.id)}
-			className={cn(
-				"memo-item select-none transition-all [transform:translateZ(0)]",
-				props.className,
-			)}
-			onMouseEnter={handleMouseEnter}
-			onMouseLeave={handleMouseLeave}
-			onClick={handleMemoItemClick}
-			onKeyDown={(e) => {
-				if (e.key === "Enter" || e.key === " ") {
-					e.preventDefault();
-					handleMemoItemClick(e as unknown as MouseEvent<HTMLElement>);
-				}
-			}}
-			aria-label={`메모 ${memo.id}`}
-			tabIndex={0}
-			// biome-ignore lint/a11y/useSemanticElements: <explanation>
-			role="button"
-		>
-			<motion.div
-				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
-				exit={{ opacity: 0 }}
+		<MemoHoverPreview lng={lng} memo={memo} enabled={!isSelectingMode}>
+			<div
+				{...props}
+				id={String(memo.id)}
+				className={cn(
+					"memo-item select-none transition-all [transform:translateZ(0)]",
+					props.className,
+				)}
+				onMouseEnter={handleMouseEnter}
+				onMouseLeave={handleMouseLeave}
+				onClick={handleMemoItemClick}
+				onKeyDown={(e) => {
+					if (e.key === "Enter" || e.key === " ") {
+						e.preventDefault();
+						handleMemoItemClick(e as unknown as MouseEvent<HTMLElement>);
+					}
+				}}
+				aria-label={`메모 ${memo.id}`}
+				tabIndex={0}
+				// biome-ignore lint/a11y/useSemanticElements: <explanation>
+				role="button"
 			>
-				<Card
-					className={cn("relative w-[300px] transition-all", {
-						"border-primary": isMemoSelected,
-					})}
-					style={{
-						borderLeftColor: memo.category?.color || undefined,
-						borderLeftWidth: memo.category?.color ? "4px" : undefined,
-					}}
+				<motion.div
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					exit={{ opacity: 0 }}
 				>
-					<MemoCardHeader
-						memo={memo}
-						isMemoHovering={isMemoHovering}
-						isMemoSelected={isMemoSelected}
-						selectMemoItem={selectMemoItem}
-					/>
-					{memo.memo && (
-						<CardContent className="whitespace-break-spaces break-all">
-							{memo.memo}
-						</CardContent>
-					)}
-					<MemoCardFooter
-						memo={memo}
-						lng={lng}
-						isShowingOption={isMemoHovering && !isSelectingMode}
-					/>
-				</Card>
-			</motion.div>
-		</div>
+					<Card
+						className={cn(
+							"relative w-[300px] transition-all duration-200",
+							"hover:-translate-y-0.5 hover:shadow-lg",
+							{
+								"border-primary ring-2 ring-primary/20": isMemoSelected,
+							},
+						)}
+						style={{
+							borderLeftColor: memo.category?.color || undefined,
+							borderLeftWidth: memo.category?.color ? "4px" : undefined,
+						}}
+					>
+						<MemoCardHeader
+							memo={memo}
+							isMemoHovering={isMemoHovering}
+							isMemoSelected={isMemoSelected}
+							selectMemoItem={selectMemoItem}
+						/>
+						{memo.memo && (
+							<CardContent className="whitespace-break-spaces break-all">
+								{memo.memo}
+							</CardContent>
+						)}
+						<MemoCardFooter
+							memo={memo}
+							lng={lng}
+							isShowingOption={isMemoHovering && !isSelectingMode}
+						/>
+					</Card>
+				</motion.div>
+			</div>
+		</MemoHoverPreview>
 	);
 });

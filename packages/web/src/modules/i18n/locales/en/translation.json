@@ -353,6 +353,21 @@
 			"title": "Title",
 			"memo": "Content"
 		},
+		"sort": {
+			"label": "Sort",
+			"updatedAt": "Recently modified",
+			"createdAt": "Recently created",
+			"title": "By title"
+		},
+		"shortcuts": {
+			"label": "Shortcuts",
+			"title": "Keyboard shortcuts",
+			"selectAll": "Select all",
+			"delete": "Delete selected",
+			"escape": "Clear selection",
+			"search": "Search",
+			"help": "Show shortcuts"
+		},
 		"grid": "Grid view",
 		"calendar": "Calendar view",
 		"selected": "{{count}} selected",

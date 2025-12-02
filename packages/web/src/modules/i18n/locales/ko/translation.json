@@ -348,6 +348,21 @@
 			"title": "제목",
 			"memo": "내용"
 		},
+		"sort": {
+			"label": "정렬",
+			"updatedAt": "최근 수정순",
+			"createdAt": "최근 생성순",
+			"title": "제목순"
+		},
+		"shortcuts": {
+			"label": "단축키",
+			"title": "키보드 단축키",
+			"selectAll": "전체 선택",
+			"delete": "선택 삭제",
+			"escape": "선택 해제",
+			"search": "검색",
+			"help": "단축키 도움말"
+		},
 		"grid": "격자로 보기",
 		"calendar": "달력으로 보기",
 		"selected": "{{count}}개 선택됨",

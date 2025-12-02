@@ -7,6 +7,7 @@ interface UseMemoSelectionReturn {
 	handleSelectMemoItem: (id: number) => void;
 	setSelectedMemoIds: React.Dispatch<React.SetStateAction<number[]>>;
 	clearSelection: () => void;
+	selectAll: (allMemoIds: number[]) => void;
 }
 
 export default function useMemoSelection(): UseMemoSelectionReturn {
@@ -34,6 +35,10 @@ export default function useMemoSelection(): UseMemoSelectionReturn {
 		setSelectedMemoIds([]);
 	}, []);
 
+	const selectAll = useCallback((allMemoIds: number[]) => {
+		setSelectedMemoIds(allMemoIds);
+	}, []);
+
 	return {
 		selectedMemoIds,
 		isSelectingMode,
@@ -41,5 +46,6 @@ export default function useMemoSelection(): UseMemoSelectionReturn {
 		handleSelectMemoItem,
 		setSelectedMemoIds,
 		clearSelection,
+		selectAll,
 	};
 }

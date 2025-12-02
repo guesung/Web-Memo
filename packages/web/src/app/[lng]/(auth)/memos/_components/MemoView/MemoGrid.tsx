@@ -3,14 +3,18 @@
 import { MasonryInfiniteGrid } from "@egjs/react-infinitegrid";
 import { DragBox } from "@src/components";
 import type { LanguageType } from "@src/modules/i18n";
-import { useKeyboardBind } from "@web-memo/shared/hooks";
+import useTranslation from "@src/modules/i18n/util.client";
+import {
+	useDeleteMemosMutation,
+	useKeyboardBind,
+} from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 
-import { Skeleton } from "@web-memo/ui";
+import { Skeleton, toast } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import MemoDialog from "../MemoDialog";
 import {
@@ -30,6 +34,7 @@ interface MemoGridProps extends LanguageType {
 }
 
 export default function MemoGrid({ lng, memos }: MemoGridProps) {
+	const { t } = useTranslation(lng);
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const dragBoxRef = useRef<HTMLDivElement>(null);
@@ -41,9 +46,11 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 		handleSelectMemoItem,
 		setSelectedMemoIds,
 		clearSelection,
+		selectAll,
 	} = useMemoSelection();
 
 	const { dialogMemoId } = useMemoDialog();
+	const { mutate: deleteMemos } = useDeleteMemosMutation();
 
 	const { items, handleRequestAppend } = useMemoInfiniteScroll({
 		totalMemoCount: memos.length,
@@ -61,6 +68,27 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 		router.replace(searchParams.getUrl(), { scroll: false });
 	};
 
+	const handleSelectAll = useCallback(() => {
+		const allMemoIds = memos.map((memo) => memo.id);
+		selectAll(allMemoIds);
+	}, [memos, selectAll]);
+
+	const handleDeleteSelected = useCallback(() => {
+		if (selectedMemoIds.length === 0) return;
+		const activeElement = document.activeElement;
+		const isInputFocused =
+			activeElement instanceof HTMLInputElement ||
+			activeElement instanceof HTMLTextAreaElement;
+		if (isInputFocused) return;
+
+		deleteMemos(selectedMemoIds, {
+			onSuccess: () => {
+				toast({ title: t("toastTitle.memoDeleted") });
+				clearSelection();
+			},
+		});
+	}, [selectedMemoIds, deleteMemos, clearSelection, t]);
+
 	useEffect(function closeRAFOnUnmount() {
 		return () => {
 			if (rafRef.current) {
@@ -70,6 +98,10 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 	}, [rafRef]);
 
 	useKeyboardBind({ key: "Escape", callback: closeMemoOption });
+	useKeyboardBind({ key: "a", callback: handleSelectAll, ctrlKey: true });
+	useKeyboardBind({ key: "a", callback: handleSelectAll, metaKey: true });
+	useKeyboardBind({ key: "Delete", callback: handleDeleteSelected });
+	useKeyboardBind({ key: "Backspace", callback: handleDeleteSelected });
 
 	if (memos.length === 0) {
 		return <MemoEmptyState lng={lng} />;

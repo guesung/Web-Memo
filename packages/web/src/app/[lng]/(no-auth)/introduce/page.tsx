@@ -1,5 +1,6 @@
 import { HeaderMargin } from "@src/components/Header";
 import type { LanguageParams } from "@src/modules/i18n";
+import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import type { Metadata } from "next";
 
 import {
@@ -15,6 +16,31 @@ import {
 	Testimonials,
 	UseCases,
 } from "./_components";
+
+// Chrome 웹스토어 기준 통계 (하드코딩)
+const CHROME_STORE_STATS = {
+	userCount: 250,
+	rating: 5.0,
+};
+
+async function getMemoCount(): Promise<number> {
+	try {
+		const supabase = getSupabaseClient();
+		const { data, error } = await supabase.rpc(
+			"get_memo_count" as unknown as never,
+		);
+
+		if (error) {
+			console.error("Failed to fetch memo count:", error);
+			return 10000;
+		}
+
+		return (data as number) ?? 10000;
+	} catch (error) {
+		console.error("Failed to fetch memo count:", error);
+		return 10000;
+	}
+}
 
 const metadataKorean: Metadata = {
 	title: "웹 메모 | 소개 ",
@@ -54,7 +80,16 @@ export async function generateMetadata({ params }: LanguageParams) {
 
 interface IntroducePageProps extends LanguageParams {}
 
-export default function IntroducePage({ params: { lng } }: IntroducePageProps) {
+export default async function IntroducePage({
+	params: { lng },
+}: IntroducePageProps) {
+	const memoCount = await getMemoCount();
+
+	const stats = {
+		...CHROME_STORE_STATS,
+		memoCount,
+	};
+
 	return (
 		<div className="min-h-screen overflow-hidden">
 			<HeaderMargin />
@@ -72,7 +107,7 @@ export default function IntroducePage({ params: { lng } }: IntroducePageProps) {
 			<Features lng={lng} />
 
 			{/* Stats Section */}
-			<StatsSection lng={lng} />
+			<StatsSection lng={lng} stats={stats} />
 
 			{/* How It Works */}
 			<HowItWorks lng={lng} />

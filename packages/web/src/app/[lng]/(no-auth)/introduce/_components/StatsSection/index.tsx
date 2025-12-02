@@ -9,7 +9,7 @@ interface StatsSectionProps extends LanguageType {
 	stats?: {
 		userCount: number;
 		memoCount: number;
-		rating: number;
+		rating?: number;
 	};
 }
 
@@ -59,7 +59,7 @@ export default function StatsSection({ lng, stats }: StatsSectionProps) {
 			value: stats?.userCount ?? 250,
 			suffix: "+",
 			label: lng === "ko" ? "활성 사용자" : "Active Users",
-			description: lng === "ko" ? "매일 웹 메모를 사용하는 사용자" : "Users using Web Memo daily",
+			description: lng === "ko" ? "Chrome 웹스토어 사용자" : "Chrome Web Store users",
 			gradient: "from-blue-500 to-cyan-500",
 			iconBg: "bg-blue-500/10",
 			iconColor: "text-blue-500",

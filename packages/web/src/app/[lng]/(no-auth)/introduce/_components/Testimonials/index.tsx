@@ -2,7 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import { motion } from "framer-motion";
-import { Star, Quote } from "lucide-react";
+import { Quote, Star } from "lucide-react";
 
 interface TestimonialsProps extends LanguageType {}
 

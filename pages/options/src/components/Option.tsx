@@ -6,11 +6,13 @@ import {
 import { I18n } from "@web-memo/shared/utils/extension";
 import {
 	Button,
+	Label,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
+	Switch,
 	Textarea,
 	useToast,
 } from "@web-memo/ui";
@@ -25,6 +27,7 @@ export default function Option() {
 			youtubePrompt: "",
 			webPrompt: "",
 			language: "ko",
+			autoApplyCategory: true,
 		},
 	});
 
@@ -35,6 +38,10 @@ export default function Option() {
 		);
 		await ChromeSyncStorage.set(STORAGE_KEYS.webPrompts, data.webPrompt);
 		await ChromeSyncStorage.set(STORAGE_KEYS.language, data.language);
+		await ChromeSyncStorage.set(
+			STORAGE_KEYS.autoApplyCategory,
+			data.autoApplyCategory,
+		);
 
 		toast({
 			title: I18n.get("settings_saved"),
@@ -67,10 +74,14 @@ export default function Option() {
 			const webPrompts = await ChromeSyncStorage.get<string>(
 				STORAGE_KEYS.webPrompts,
 			);
+			const autoApplyCategory = await ChromeSyncStorage.get<boolean>(
+				STORAGE_KEYS.autoApplyCategory,
+			);
 
 			setValue("language", language);
 			setValue("youtubePrompt", youtubePrompts);
 			setValue("webPrompt", webPrompts);
+			setValue("autoApplyCategory", autoApplyCategory ?? true);
 		};
 
 		fetchStorage();
@@ -96,6 +107,27 @@ export default function Option() {
 						<SelectItem value="en-US">English</SelectItem>
 					</SelectContent>
 				</Select>
+			</section>
+
+			<section className="mb-8">
+				<h2 className="mb-4 text-xl font-semibold">
+					{I18n.get("auto_apply_category_setting")}
+				</h2>
+				<div className="flex items-center space-x-3">
+					<Switch
+						id="auto-apply-category"
+						checked={watch("autoApplyCategory")}
+						onCheckedChange={(checked) =>
+							setValue("autoApplyCategory", checked)
+						}
+					/>
+					<Label
+						htmlFor="auto-apply-category"
+						className="text-sm text-muted-foreground"
+					>
+						{I18n.get("auto_apply_category_description")}
+					</Label>
+				</div>
 			</section>
 
 			<form onSubmit={onSubmit} className="space-y-8">

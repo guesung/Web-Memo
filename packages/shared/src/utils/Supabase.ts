@@ -24,6 +24,14 @@ export class MemoService {
 			.insert(request)
 			.select();
 
+	getMemoByUrl = async (url: string) =>
+		this.supabaseClient
+			.schema(SUPABASE.table.memo)
+			.from(SUPABASE.table.memo)
+			.select("*")
+			.eq("url", url)
+			.maybeSingle();
+
 	upsertMemos = async (request: GetMemoResponse[]) => {
 		// TODO: 직접 카테고리를 제거하는 로직 수정 필요
 		const requestWithoutCategory = request.map(({ category, ...rest }) => rest);

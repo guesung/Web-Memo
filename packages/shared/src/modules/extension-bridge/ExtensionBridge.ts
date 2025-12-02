@@ -1,7 +1,11 @@
 import { EXTENSION } from "../../constants";
 import { Runtime, Tab } from "../../utils/extension";
 import { BRIDGE_MESSAGE_TYPES } from "./constant";
-import type { PageContent } from "./types";
+import type {
+	CreateMemoPayload,
+	CreateMemoResponse,
+	PageContent,
+} from "./types";
 import { ExtensionError, ExtensionErrorCode } from "./types";
 
 export default class ExtensionBridge {
@@ -166,10 +170,40 @@ export default class ExtensionBridge {
 		}
 	}
 
-	static async requestRefetchTheMemos() {
+	static async requestRefetchTheMemosFromExtension() {
 		try {
+			return await Runtime.sendMessage(
+				BRIDGE_MESSAGE_TYPES.REFETCH_THE_MEMO_LIST_FROM_EXTENSION,
+			);
+		} catch (error) {
+			throw new ExtensionError(
+				"Failed to request memo list refresh",
+				ExtensionErrorCode.COMMUNICATION_ERROR,
+				error,
+			);
+		}
+	}
+
+	static responseRefetchTheMemosFromExtension(callbackFn: () => void) {
+		try {
+			return Runtime.onMessage(
+				BRIDGE_MESSAGE_TYPES.REFETCH_THE_MEMO_LIST_FROM_EXTENSION,
+				callbackFn,
+			);
+		} catch (error) {
+			throw new ExtensionError(
+				"Failed to respond to memo list refresh request",
+				ExtensionErrorCode.RUNTIME_ERROR,
+				error,
+			);
+		}
+	}
+
+	static async requestRefetchTheMemosFromWeb() {
+		try {
+			console.log(1);
 			return await chrome.runtime.sendMessage(EXTENSION.id, {
-				type: BRIDGE_MESSAGE_TYPES.REFETCH_THE_MEMO_LIST,
+				type: BRIDGE_MESSAGE_TYPES.REFETCH_THE_MEMO_LIST_FROM_WEB,
 			});
 		} catch (error) {
 			throw new ExtensionError(
@@ -180,10 +214,10 @@ export default class ExtensionBridge {
 		}
 	}
 
-	static responseRefetchTheMemos(callbackFn: () => void) {
+	static responseRefetchTheMemosFromWeb(callbackFn: () => void) {
 		try {
 			return Runtime.onMessageExternal(
-				BRIDGE_MESSAGE_TYPES.REFETCH_THE_MEMO_LIST,
+				BRIDGE_MESSAGE_TYPES.REFETCH_THE_MEMO_LIST_FROM_WEB,
 				callbackFn,
 			);
 		} catch (error) {
@@ -287,6 +321,56 @@ export default class ExtensionBridge {
 		} catch (error) {
 			throw new ExtensionError(
 				"Failed to respond to login status sync request",
+				ExtensionErrorCode.RUNTIME_ERROR,
+				error,
+			);
+		}
+	}
+
+	/**
+	 * content-ui에서 background로 메모 생성 요청
+	 */
+	static async requestCreateMemo(
+		payload: CreateMemoPayload,
+	): Promise<CreateMemoResponse> {
+		try {
+			return await Runtime.sendMessage<CreateMemoPayload, CreateMemoResponse>(
+				BRIDGE_MESSAGE_TYPES.CREATE_MEMO,
+				payload,
+			);
+		} catch (error) {
+			throw new ExtensionError(
+				"Failed to request memo creation",
+				ExtensionErrorCode.COMMUNICATION_ERROR,
+				error,
+			);
+		}
+	}
+
+	/**
+	 * background에서 메모 생성 요청 처리
+	 */
+	static responseCreateMemo(
+		callbackFn: (
+			payload: CreateMemoPayload,
+			sender: chrome.runtime.MessageSender,
+			sendResponse: (response: CreateMemoResponse) => void,
+		) => void,
+	) {
+		try {
+			return Runtime.onMessage(
+				BRIDGE_MESSAGE_TYPES.CREATE_MEMO,
+				(request, sender, sendResponse) => {
+					callbackFn(
+						request.payload as CreateMemoPayload,
+						sender,
+						sendResponse,
+					);
+				},
+			);
+		} catch (error) {
+			throw new ExtensionError(
+				"Failed to respond to memo creation request",
 				ExtensionErrorCode.RUNTIME_ERROR,
 				error,
 			);

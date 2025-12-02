@@ -42,6 +42,19 @@
 	"updates": {
 		"title": "What's new",
 		"versions": {
+			"v1.9.0": {
+				"title": "AI categories and major usability improvements",
+				"content": [
+					"Added AI-powered category recommendations",
+					"Added auto-apply AI category setting",
+					"Added memo list sorting options",
+					"Added side panel resize feature",
+					"Added skeleton loading for memo grid",
+					"Added update notification popup",
+					"Redesigned landing page",
+					"Performance and stability improvements"
+				]
+			},
 			"v1.8.23": {
 				"title": "Stability improvements",
 				"content": ["Bug fixes and performance improvements"]

@@ -1,4 +1,4 @@
-import { useDidMount } from "@web-memo/shared/hooks";
+import useDidMount from "@web-memo/shared/hooks/common/useDidMount";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { useState } from "react";
 

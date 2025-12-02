@@ -2,7 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { useUserGrowthQuery } from "@web-memo/shared/hooks";
+import useUserGrowthQuery from "@web-memo/shared/hooks/supabase/queries/useUserGrowthQuery";
 import {
 	Area,
 	AreaChart,

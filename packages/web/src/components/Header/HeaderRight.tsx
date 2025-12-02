@@ -10,10 +10,8 @@ import {
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { PATHS } from "@web-memo/shared/constants";
-import {
-	useSignoutMutation,
-	useSupabaseUserQuery,
-} from "@web-memo/shared/hooks";
+import useSignoutMutation from "@web-memo/shared/hooks/supabase/mutations/useSignoutMutation";
+import useSupabaseUserQuery from "@web-memo/shared/hooks/supabase/queries/useSupabaseUserQuery";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import Image from "next/image";
 import { useRouter } from "next/navigation";

@@ -2,7 +2,8 @@
 
 import { useGuide } from "@src/modules/guide";
 import type { LanguageType } from "@src/modules/i18n";
-import { useDidMount, useMemosInfiniteQuery } from "@web-memo/shared/hooks";
+import useDidMount from "@web-memo/shared/hooks/common/useDidMount";
+import useMemosInfiniteQuery from "@web-memo/shared/hooks/supabase/queries/useMemosInfiniteQuery";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";

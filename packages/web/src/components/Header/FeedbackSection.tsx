@@ -1,6 +1,6 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { useFeedbackMutation } from "@web-memo/shared/hooks";
+import useFeedbackMutation from "@web-memo/shared/hooks/supabase/mutations/useFeedbackMutation";
 import { toast } from "@web-memo/ui";
 import dynamic from "next/dynamic";
 import { useState } from "react";

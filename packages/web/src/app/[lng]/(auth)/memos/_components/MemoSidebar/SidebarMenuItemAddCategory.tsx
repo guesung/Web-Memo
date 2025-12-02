@@ -1,6 +1,6 @@
 "use client";
 
-import { useCategoryPostMutation } from "@web-memo/shared/hooks";
+import useCategoryPostMutation from "@web-memo/shared/hooks/supabase/mutations/useCategoryPostMutation";
 import { Button, Input } from "@web-memo/ui";
 import { PlusIcon } from "lucide-react";
 import { memo, useState } from "react";

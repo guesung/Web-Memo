@@ -2,11 +2,9 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
-import {
-	useCategoryQuery,
-	useDeleteMemosMutation,
-	useMemosUpsertMutation,
-} from "@web-memo/shared/hooks";
+import useDeleteMemosMutation from "@web-memo/shared/hooks/supabase/mutations/useDeleteMemosMutation";
+import useMemosUpsertMutation from "@web-memo/shared/hooks/supabase/mutations/useMemosUpsertMutation";
+import useCategoryQuery from "@web-memo/shared/hooks/supabase/queries/useCategoryQuery";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import {

@@ -3,7 +3,7 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { PATHS } from "@web-memo/shared/constants";
-import { useCategoryQuery } from "@web-memo/shared/hooks";
+import useCategoryQuery from "@web-memo/shared/hooks/supabase/queries/useCategoryQuery";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import {
 	SidebarGroup,

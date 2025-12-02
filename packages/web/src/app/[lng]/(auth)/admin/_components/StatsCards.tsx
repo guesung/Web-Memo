@@ -2,7 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { useAdminStatsQuery } from "@web-memo/shared/hooks";
+import useAdminStatsQuery from "@web-memo/shared/hooks/supabase/queries/useAdminStatsQuery";
 import { Card, CardContent, CardHeader, CardTitle } from "@web-memo/ui";
 import { Calendar, FileText, TrendingUp, Users } from "lucide-react";
 

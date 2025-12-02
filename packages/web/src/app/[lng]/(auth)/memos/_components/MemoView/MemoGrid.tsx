@@ -3,7 +3,7 @@
 import { MasonryInfiniteGrid } from "@egjs/react-infinitegrid";
 import { DragBox } from "@src/components";
 import type { LanguageType } from "@src/modules/i18n";
-import { useKeyboardBind } from "@web-memo/shared/hooks";
+import useKeyboardBind from "@web-memo/shared/hooks/common/useKeyboardBind";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 

@@ -3,7 +3,7 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { QUERY_KEY } from "@web-memo/shared/constants";
-import { useDebounce } from "@web-memo/shared/hooks";
+import useDebounce from "@web-memo/shared/hooks/common/useDebounce";
 import { Input } from "@web-memo/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { Search } from "lucide-react";

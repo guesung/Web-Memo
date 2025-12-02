@@ -2,7 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { useMemoPatchMutation } from "@web-memo/shared/hooks";
+import useMemoPatchMutation from "@web-memo/shared/hooks/supabase/mutations/useMemoPatchMutation";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";

@@ -3,12 +3,10 @@
 import type { MemoInput } from "@src/app/[lng]/(auth)/memos/_types/Input";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import {
-	useDebounce,
-	useKeyboardBind,
-	useMemoPatchMutation,
-	useMemoQuery,
-} from "@web-memo/shared/hooks";
+import useDebounce from "@web-memo/shared/hooks/common/useDebounce";
+import useKeyboardBind from "@web-memo/shared/hooks/common/useKeyboardBind";
+import useMemoPatchMutation from "@web-memo/shared/hooks/supabase/mutations/useMemoPatchMutation";
+import useMemoQuery from "@web-memo/shared/hooks/supabase/queries/useMemoQuery";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import {
 	Card,

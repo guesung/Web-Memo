@@ -1,11 +1,9 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import {
-	useCategoryDeleteMutation,
-	useCategoryPostMutation,
-	useCategoryQuery,
-	useCategoryUpsertMutation,
-} from "@web-memo/shared/hooks";
+import useCategoryDeleteMutation from "@web-memo/shared/hooks/supabase/mutations/useCategoryDeleteMutation";
+import useCategoryPostMutation from "@web-memo/shared/hooks/supabase/mutations/useCategoryPostMutation";
+import useCategoryUpsertMutation from "@web-memo/shared/hooks/supabase/mutations/useCategoryUpsertMutation";
+import useCategoryQuery from "@web-memo/shared/hooks/supabase/queries/useCategoryQuery";
 import { generateRandomPastelColor } from "@web-memo/shared/utils";
 import { Button, Input, Label, toast } from "@web-memo/ui";
 import { TrashIcon } from "lucide-react";

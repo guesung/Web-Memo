@@ -130,5 +130,11 @@
 	},
 	"category_suggestion_dismiss": {
 		"message": "Dismiss"
+	},
+	"auto_apply_category_setting": {
+		"message": "Auto-apply category"
+	},
+	"auto_apply_category_description": {
+		"message": "Automatically apply AI-suggested categories"
 	}
 }

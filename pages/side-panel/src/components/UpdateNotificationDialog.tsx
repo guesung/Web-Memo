@@ -1,5 +1,8 @@
 import { useDidMount } from "@web-memo/shared/hooks";
-import { ChromeSyncStorage, STORAGE_KEYS } from "@web-memo/shared/modules/chrome-storage";
+import {
+	ChromeSyncStorage,
+	STORAGE_KEYS,
+} from "@web-memo/shared/modules/chrome-storage";
 import { I18n } from "@web-memo/shared/utils/extension";
 import {
 	Button,
@@ -15,7 +18,7 @@ import { useState } from "react";
 const UPDATE_NOTES = [
 	"AI 기반 카테고리 자동 추천 기능 추가",
 	"랜딩 페이지 전면 리디자인",
-	"메모를 선택으로 추가 기능",
+	"드래그로 메모 추가 기능",
 ];
 
 export default function UpdateNotificationDialog() {
@@ -41,7 +44,10 @@ export default function UpdateNotificationDialog() {
 	}
 
 	async function handleDismiss() {
-		await ChromeSyncStorage.set(STORAGE_KEYS.dismissedUpdateVersion, currentVersion);
+		await ChromeSyncStorage.set(
+			STORAGE_KEYS.dismissedUpdateVersion,
+			currentVersion,
+		);
 		setIsOpen(false);
 	}
 
@@ -55,7 +61,10 @@ export default function UpdateNotificationDialog() {
 				<DialogHeader>
 					<DialogTitle>{I18n.get("update_notification_title")}</DialogTitle>
 					<DialogDescription>
-						{I18n.get("update_notification_version").replace("{{VERSION}}", currentVersion)}
+						{I18n.get("update_notification_version").replace(
+							"{{VERSION}}",
+							currentVersion,
+						)}
 					</DialogDescription>
 				</DialogHeader>
 				<div className="py-2">

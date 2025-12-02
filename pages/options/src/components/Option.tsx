@@ -6,11 +6,13 @@ import {
 import { I18n } from "@web-memo/shared/utils/extension";
 import {
 	Button,
+	Label,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
+	Switch,
 	Textarea,
 	useToast,
 } from "@web-memo/ui";
@@ -25,6 +27,7 @@ export default function Option() {
 			youtubePrompt: "",
 			webPrompt: "",
 			language: "ko",
+			autoSummary: true,
 		},
 	});
 
@@ -35,6 +38,7 @@ export default function Option() {
 		);
 		await ChromeSyncStorage.set(STORAGE_KEYS.webPrompts, data.webPrompt);
 		await ChromeSyncStorage.set(STORAGE_KEYS.language, data.language);
+		await ChromeSyncStorage.set(STORAGE_KEYS.autoSummary, data.autoSummary);
 
 		toast({
 			title: I18n.get("settings_saved"),
@@ -67,10 +71,14 @@ export default function Option() {
 			const webPrompts = await ChromeSyncStorage.get<string>(
 				STORAGE_KEYS.webPrompts,
 			);
+			const autoSummary = await ChromeSyncStorage.get<boolean>(
+				STORAGE_KEYS.autoSummary,
+			);
 
 			setValue("language", language);
 			setValue("youtubePrompt", youtubePrompts);
 			setValue("webPrompt", webPrompts);
+			setValue("autoSummary", autoSummary ?? true);
 		};
 
 		fetchStorage();
@@ -96,6 +104,22 @@ export default function Option() {
 						<SelectItem value="en-US">English</SelectItem>
 					</SelectContent>
 				</Select>
+			</section>
+
+			<section className="mb-8">
+				<h2 className="mb-4 text-xl font-semibold">
+					{I18n.get("auto_summary_setting")}
+				</h2>
+				<div className="flex items-center gap-3">
+					<Switch
+						id="auto-summary"
+						checked={watch("autoSummary")}
+						onCheckedChange={(checked) => setValue("autoSummary", checked)}
+					/>
+					<Label htmlFor="auto-summary" className="cursor-pointer">
+						{I18n.get("auto_summary_description")}
+					</Label>
+				</div>
 			</section>
 
 			<form onSubmit={onSubmit} className="space-y-8">

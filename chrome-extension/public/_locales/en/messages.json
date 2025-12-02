@@ -130,5 +130,17 @@
 	},
 	"category_suggestion_dismiss": {
 		"message": "Dismiss"
+	},
+	"auto_summary_setting": {
+		"message": "Auto Summary Settings"
+	},
+	"auto_summary_description": {
+		"message": "Automatically summarize when opening side panel"
+	},
+	"click_to_summarize": {
+		"message": "Click the button to summarize the page"
+	},
+	"start_summary": {
+		"message": "Start Summary"
 	}
 }

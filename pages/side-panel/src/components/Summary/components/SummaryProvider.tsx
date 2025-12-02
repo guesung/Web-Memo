@@ -5,11 +5,12 @@ import { createContext, useContext } from "react";
 interface SummaryContext extends ReturnType<typeof useSummary> {}
 
 const SummaryContext = createContext<SummaryContext>({
-	refetchSummary: async () => {},
+	startSummary: () => {},
 	isSummaryLoading: false,
 	category: "others",
 	summary: "",
 	errorMessage: "",
+	isAutoSummaryEnabled: true,
 });
 
 export const useSummaryContext = () => {

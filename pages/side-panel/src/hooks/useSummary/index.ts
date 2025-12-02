@@ -1,8 +1,12 @@
 import { CONFIG } from "@web-memo/env";
-import { useFetch } from "@web-memo/shared/hooks";
+import { useDidMount } from "@web-memo/shared/hooks";
+import {
+	ChromeSyncStorage,
+	STORAGE_KEYS,
+} from "@web-memo/shared/modules/chrome-storage";
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { DEFAULT_CATEGORY } from "./constant";
 import {
 	getPageContent,
@@ -13,28 +17,35 @@ import {
 interface UseSummaryReturn {
 	isSummaryLoading: boolean;
 	summary: string;
-	refetchSummary: () => void;
+	startSummary: () => void;
 	category: Category;
 	errorMessage: string;
+	isAutoSummaryEnabled: boolean;
 }
 
 export default function useSummary(): UseSummaryReturn {
 	const [summary, setSummary] = useState("");
 	const [category, setCategory] = useState<Category>(DEFAULT_CATEGORY);
 	const [errorMessage, setErrorMessage] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
+	const [isAutoSummaryEnabled, setIsAutoSummaryEnabled] = useState(true);
 
-	const resetSummaryState = () => {
+	const resetSummaryState = useCallback(() => {
 		setSummary("");
 		setCategory(DEFAULT_CATEGORY);
 		setErrorMessage("");
-	};
+	}, []);
 
-	const startSummary = async () => {
+	const executeSummary = useCallback(async () => {
 		resetSummaryState();
+		setIsLoading(true);
 
 		try {
 			const tabs = await Tab.get();
-			if (!tabs?.url) return;
+			if (!tabs?.url) {
+				setIsLoading(false);
+				return;
+			}
 
 			const { content: pageContent, category: currentCategory } =
 				await getPageContent(tabs.url);
@@ -67,18 +78,31 @@ export default function useSummary(): UseSummaryReturn {
 			console.error("Summary error:", error);
 			setErrorMessage(I18n.get("error_get_page_content"));
 			setCategory(DEFAULT_CATEGORY);
+		} finally {
+			setIsLoading(false);
 		}
-	};
+	}, [resetSummaryState]);
 
-	const { isLoading, refetch: refetchSummary } = useFetch({
-		fetchFn: startSummary,
-	});
+	useDidMount(
+		useCallback(async () => {
+			const autoSummary = await ChromeSyncStorage.get<boolean>(
+				STORAGE_KEYS.autoSummary,
+			);
+			const isEnabled = autoSummary ?? true;
+			setIsAutoSummaryEnabled(isEnabled);
+
+			if (isEnabled) {
+				executeSummary();
+			}
+		}, [executeSummary]),
+	);
 
 	return {
 		isSummaryLoading: isLoading,
 		summary,
-		refetchSummary,
+		startSummary: executeSummary,
 		category,
 		errorMessage,
+		isAutoSummaryEnabled,
 	};
 }

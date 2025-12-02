@@ -12,7 +12,7 @@ const getCategoryText = (category: Category) => {
 };
 
 export default function SummaryHeader() {
-	const { isSummaryLoading, refetchSummary, category } = useSummaryContext();
+	const { isSummaryLoading, startSummary, category } = useSummaryContext();
 
 	const categoryText = getCategoryText(category);
 
@@ -28,7 +28,7 @@ export default function SummaryHeader() {
 						<Loading />
 					</Button>
 				) : (
-					<Button variant="outline" size="sm" onClick={refetchSummary}>
+					<Button variant="outline" size="sm" onClick={startSummary}>
 						<RefreshCwIcon size={16} />
 					</Button>
 				)}

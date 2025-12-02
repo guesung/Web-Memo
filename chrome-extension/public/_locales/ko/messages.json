@@ -130,5 +130,17 @@
 	},
 	"category_suggestion_dismiss": {
 		"message": "무시"
+	},
+	"auto_summary_setting": {
+		"message": "자동 요약 설정"
+	},
+	"auto_summary_description": {
+		"message": "사이드 패널을 열 때 자동으로 요약하기"
+	},
+	"click_to_summarize": {
+		"message": "버튼을 눌러 페이지를 요약해보세요"
+	},
+	"start_summary": {
+		"message": "요약 시작"
 	}
 }

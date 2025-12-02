@@ -55,7 +55,7 @@ export default function UpdateNotificationDialog() {
 				<DialogHeader>
 					<DialogTitle>{I18n.get("update_notification_title")}</DialogTitle>
 					<DialogDescription>
-						{I18n.get("update_notification_version").replace("$VERSION$", currentVersion)}
+						{I18n.get("update_notification_version").replace("{{VERSION}}", currentVersion)}
 					</DialogDescription>
 				</DialogHeader>
 				<div className="py-2">

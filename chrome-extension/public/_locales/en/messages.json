@@ -141,12 +141,7 @@
 		"message": "🎉 What's New"
 	},
 	"update_notification_version": {
-		"message": "Version $VERSION$ is now available!",
-		"placeholders": {
-			"version": {
-				"content": "$1"
-			}
-		}
+		"message": "Version {{VERSION}} is now available!"
 	},
 	"update_notification_dismiss": {
 		"message": "Don't show again"

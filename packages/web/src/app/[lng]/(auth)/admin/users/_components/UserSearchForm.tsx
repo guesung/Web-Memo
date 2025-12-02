@@ -1,6 +1,7 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import { useDebounce } from "@web-memo/shared/hooks";
 import { Input } from "@web-memo/ui";
@@ -11,6 +12,7 @@ import { useState } from "react";
 interface UserSearchFormProps extends LanguageType {}
 
 export default function UserSearchForm({ lng }: UserSearchFormProps) {
+	const { t } = useTranslation(lng);
 	const [searchQuery, setSearchQuery] = useState("");
 	const queryClient = useQueryClient();
 	const { debounce } = useDebounce();
@@ -30,11 +32,7 @@ export default function UserSearchForm({ lng }: UserSearchFormProps) {
 			<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 			<Input
 				type="text"
-				placeholder={
-					lng === "ko"
-						? "닉네임 또는 ID로 검색..."
-						: "Search by nickname or ID..."
-				}
+				placeholder={t("admin.users.search_placeholder")}
 				value={searchQuery}
 				onChange={handleChange}
 				className="pl-10"

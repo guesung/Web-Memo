@@ -12,7 +12,7 @@ export default function useAdminUsersQuery(params: GetAdminUsersParams = {}) {
 
 	const query = useSuspenseQuery({
 		queryFn: () => new AdminService(supabaseClient).getUsers(params),
-		queryKey: QUERY_KEY.adminUsers(params.searchQuery, params.pageOffset),
+		queryKey: QUERY_KEY.adminUsers(params.searchQuery),
 		select: (response) => response.data as unknown as AdminUsersResponse,
 	});
 

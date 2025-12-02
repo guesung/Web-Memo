@@ -54,6 +54,7 @@ export default function useMemoPatchMutation() {
 		},
 		onSuccess: async () => {
 			await analytics.trackMemoWrite();
+			queryClient.invalidateQueries({ queryKey: ["memos", "paginated"] });
 		},
 	});
 }

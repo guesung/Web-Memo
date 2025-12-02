@@ -130,5 +130,23 @@
 	},
 	"category_suggestion_dismiss": {
 		"message": "Dismiss"
+	},
+	"auto_apply_category_setting": {
+		"message": "Auto-apply category"
+	},
+	"auto_apply_category_description": {
+		"message": "Automatically apply AI-suggested categories"
+	},
+	"update_notification_title": {
+		"message": "🎉 What's New"
+	},
+	"update_notification_version": {
+		"message": "Version {{VERSION}} is now available!"
+	},
+	"update_notification_dismiss": {
+		"message": "Don't show again"
+	},
+	"update_notification_confirm": {
+		"message": "Got it"
 	}
 }

@@ -3,6 +3,10 @@ import {
 	useCategoryPostMutation,
 	useCategoryQuery,
 } from "@web-memo/shared/hooks";
+import {
+	ChromeSyncStorage,
+	STORAGE_KEYS,
+} from "@web-memo/shared/modules/chrome-storage";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -41,6 +45,29 @@ export function useCategorySuggestion({
 	const dismissedUrlsRef = useRef<Set<string>>(new Set());
 	const currentUrlRef = useRef<string | null>(null);
 	const autoDismissTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+	const applyCategorySuggestionDirect = useCallback(
+		async (suggestionToApply: CategorySuggestion) => {
+			try {
+				let categoryId = suggestionToApply.existingCategoryId;
+
+				if (!suggestionToApply.isExisting || !categoryId) {
+					const result = await createCategory({
+						name: suggestionToApply.categoryName,
+					});
+
+					categoryId = result.data?.[0]?.id ?? null;
+				}
+
+				if (categoryId) {
+					onCategorySelect(categoryId);
+				}
+			} catch (error) {
+				console.error("Failed to auto-apply category:", error);
+			}
+		},
+		[createCategory, onCategorySelect],
+	);
 
 	const clearAutoDismissTimer = useCallback(() => {
 		if (autoDismissTimerRef.current) {
@@ -104,31 +131,25 @@ export function useCategorySuggestion({
 
 				// Create timeout promise
 				const timeoutPromise = new Promise<never>((_, reject) => {
-					setTimeout(
-						() => reject(new Error("Request timeout")),
-						API_TIMEOUT,
-					);
+					setTimeout(() => reject(new Error("Request timeout")), API_TIMEOUT);
 				});
 
 				// Fetch with timeout
-				const fetchPromise = fetch(
-					`${CONFIG.webUrl}/api/openai/category`,
-					{
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify({
-							pageTitle: tabInfo.title || "",
-							pageUrl: tabInfo.url,
-							pageContent,
-							memoText,
-							existingCategories,
-							pageLanguage,
-						}),
-						signal: abortControllerRef.current.signal,
+				const fetchPromise = fetch(`${CONFIG.webUrl}/api/openai/category`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
 					},
-				);
+					body: JSON.stringify({
+						pageTitle: tabInfo.title || "",
+						pageUrl: tabInfo.url,
+						pageContent,
+						memoText,
+						existingCategories,
+						pageLanguage,
+					}),
+					signal: abortControllerRef.current.signal,
+				});
 
 				const response = await Promise.race([fetchPromise, timeoutPromise]);
 
@@ -143,16 +164,30 @@ export function useCategorySuggestion({
 					data.suggestion &&
 					data.suggestion.confidence >= CONFIDENCE_THRESHOLD
 				) {
-					setSuggestion({
+					const suggestionData: CategorySuggestion = {
 						...data.suggestion,
 						existingCategoryId: data.suggestion.existingCategoryId ?? null,
-					});
+					};
 
-					// Set auto-dismiss timer
-					clearAutoDismissTimer();
-					autoDismissTimerRef.current = setTimeout(() => {
-						reset();
-					}, AUTO_DISMISS_DELAY);
+					// Check if auto-apply is enabled
+					const shouldAutoApply =
+						(await ChromeSyncStorage.get<boolean>(
+							STORAGE_KEYS.autoApplyCategory,
+						)) ?? true;
+
+					if (shouldAutoApply) {
+						// Auto-apply the suggestion without showing UI
+						await applyCategorySuggestionDirect(suggestionData);
+					} else {
+						// Show suggestion UI for manual approval
+						setSuggestion(suggestionData);
+
+						// Set auto-dismiss timer
+						clearAutoDismissTimer();
+						autoDismissTimerRef.current = setTimeout(() => {
+							reset();
+						}, AUTO_DISMISS_DELAY);
+					}
 				}
 			} catch (error) {
 				// Silent fail - don't disrupt user
@@ -163,34 +198,20 @@ export function useCategorySuggestion({
 				setIsLoading(false);
 			}
 		},
-		[categories, currentCategoryId, clearAutoDismissTimer, reset],
+		[
+			categories,
+			currentCategoryId,
+			clearAutoDismissTimer,
+			reset,
+			applyCategorySuggestionDirect,
+		],
 	);
 
 	const acceptSuggestion = useCallback(async () => {
 		if (!suggestion) return;
-
-		try {
-			let categoryId = suggestion.existingCategoryId;
-
-			if (!suggestion.isExisting || !categoryId) {
-				// Create new category
-				const result = await createCategory({
-					name: suggestion.categoryName,
-				});
-
-				categoryId = result.data?.[0]?.id ?? null;
-			}
-
-			if (categoryId) {
-				onCategorySelect(categoryId);
-			}
-		} catch (error) {
-			console.error("Failed to apply category:", error);
-			// Could show toast error here
-		} finally {
-			reset();
-		}
-	}, [suggestion, createCategory, onCategorySelect, reset]);
+		await applyCategorySuggestionDirect(suggestion);
+		reset();
+	}, [suggestion, applyCategorySuggestionDirect, reset]);
 
 	// Cleanup on unmount
 	useEffect(() => {

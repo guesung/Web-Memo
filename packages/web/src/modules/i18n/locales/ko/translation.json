@@ -383,10 +383,91 @@
 			"title": "웹서핑을 더 쉽게",
 			"subtitle": "클릭 한 번으로 메모하고, AI로 요약하고, 체계적으로 관리하세요",
 			"install_button": "크롬에 설치하기",
+			"explore_features": "기능 살펴보기",
+			"free_forever": "영원히 무료",
+			"quick_install": "설치 10초",
+			"no_credit_card": "신용카드 필요 없음",
+			"learn_more": "더 알아보기",
 			"mobile_apps": {
 				"ios": "iOS",
 				"android": "안드로이드"
 			}
+		},
+		"section": {
+			"key_features": "핵심 기능",
+			"key_features_desc": "웹 서핑을 더 스마트하게 만들어주는 기능들",
+			"demo_title": "직접 확인해보세요",
+			"demo_desc": "웹 메모의 핵심 기능을 살펴보세요",
+			"how_it_works": "시작하는 방법",
+			"how_it_works_desc": "3단계로 간단하게 시작하세요",
+			"use_cases": "이런 분들에게 추천해요",
+			"use_cases_desc": "다양한 상황에서 웹 메모가 도움이 됩니다",
+			"stats_title": "숫자로 보는 웹 메모",
+			"stats_desc": "많은 사용자들이 이미 웹 메모와 함께하고 있습니다",
+			"testimonials_title": "사용자 후기",
+			"testimonials_desc": "실제 사용자들의 경험을 확인해보세요",
+			"testimonials_note": "* 대표적인 사용 사례를 바탕으로 작성되었습니다",
+			"cta_title": "지금 바로 시작하세요",
+			"cta_desc": "더 스마트한 웹 서핑을 경험해보세요. 무료로, 지금 바로."
+		},
+		"demo": {
+			"write_memo": "메모 작성",
+			"write_memo_desc": "아티클을 읽으며 바로 메모",
+			"overview": "한눈에 보기",
+			"overview_desc": "모든 메모를 한눈에",
+			"ai_summary": "AI 요약",
+			"ai_summary_desc": "유튜브 영상을 AI로 요약",
+			"wishlist": "위시리스트",
+			"wishlist_desc": "나중에 볼 콘텐츠 저장",
+			"organize": "정리하기",
+			"organize_desc": "카테고리로 체계적 관리"
+		},
+		"steps": {
+			"step1_title": "확장 프로그램 설치",
+			"step1_desc": "Chrome 웹스토어에서 10초 만에",
+			"step2_title": "사이드 패널 열기",
+			"step2_desc": "단축키로 빠르게 열기",
+			"step3_title": "저장하고 정리하기",
+			"step3_desc": "웹 콘텐츠를 체계적으로 관리"
+		},
+		"use_case": {
+			"students_title": "학생 & 연구자",
+			"students_desc": "온라인 강의나 자료 조사할 때 핵심 내용만 골라 저장하세요. 논문 작성에 필요한 레퍼런스를 체계적으로 관리할 수 있습니다.",
+			"professionals_title": "직장인",
+			"professionals_desc": "경쟁사 분석이나 트렌드 모니터링을 체계적으로 관리하세요. 업무에 필요한 정보를 빠르게 찾을 수 있습니다.",
+			"efficiency_title": "효율적인 분들",
+			"efficiency_desc": "긴 글 대신 AI 요약으로 핵심만 빠르게 파악하세요. 시간을 절약하며 더 많은 콘텐츠를 소화할 수 있습니다.",
+			"creators_title": "콘텐츠 크리에이터",
+			"creators_desc": "영감을 주는 콘텐츠와 아이디어를 모아두세요. 창작 활동에 필요한 레퍼런스를 한 곳에서 관리할 수 있습니다."
+		},
+		"stats": {
+			"active_users": "활성 사용자",
+			"active_users_desc": "Chrome 웹스토어 사용자",
+			"memos_saved": "저장된 메모",
+			"memos_saved_desc": "사용자들이 저장한 총 메모 개수",
+			"rating": "평균 평점",
+			"rating_desc": "Chrome 웹스토어 평점",
+			"install_time": "설치 시간",
+			"install_time_suffix": "초",
+			"install_time_desc": "크롬에 설치하는 데 걸리는 시간"
+		},
+		"social_proof": {
+			"active_users": "활성 사용자",
+			"rating": "평균 평점",
+			"free_forever": "영원히 무료",
+			"no_tracking": "데이터 추적 없음",
+			"safe": "안전"
+		},
+		"testimonial": {
+			"kim_name": "김**",
+			"kim_role": "대학원생",
+			"kim_quote": "논문 자료 정리가 훨씬 편해졌어요. AI 요약 기능이 정말 유용합니다. 긴 논문도 핵심만 빠르게 파악할 수 있어서 연구 시간이 많이 절약됐습니다.",
+			"lee_name": "이**",
+			"lee_role": "마케터",
+			"lee_quote": "경쟁사 분석할 때 필수 툴이 됐어요. 여러 아티클을 읽으면서 인사이트를 바로바로 정리할 수 있어서 업무 효율이 크게 올랐습니다.",
+			"park_name": "박**",
+			"park_role": "개발자",
+			"park_quote": "기술 블로그나 문서를 읽을 때 항상 사용해요. 나중에 다시 찾아볼 때 메모해둔 내용이 정말 도움이 됩니다. 강력 추천합니다!"
 		},
 		"features": {
 			"memo": {
@@ -429,6 +510,9 @@
 		},
 		"faq": {
 			"title": "자주 묻는 질문",
+			"subtitle": "궁금한 점이 있으신가요?",
+			"other_questions": "다른 질문이 있으신가요?",
+			"contact_us": "이메일로 문의하기",
 			"questions": {
 				"what_is": {
 					"question": "웹 메모가 뭔가요?",
@@ -484,6 +568,9 @@
 		"footer": {
 			"title": "웹 메모",
 			"description": "쉽고 빠른 콘텐츠 정리",
+			"chrome_extension": "Chrome 확장 프로그램",
+			"features_link": "기능 살펴보기",
+			"contact_link": "문의하기",
 			"product": {
 				"title": "제품",
 				"features": "기능 살펴보기",
@@ -559,6 +646,44 @@
 			"phoneNumber": "전화번호",
 			"message": "메시지",
 			"sendSMS": "메시지 보내기"
+		}
+	},
+
+	"admin": {
+		"title": "관리자 대시보드",
+		"sidebar": {
+			"title": "관리자",
+			"dashboard": "대시보드",
+			"users": "사용자 관리",
+			"back_to_memos": "메모로 돌아가기"
+		},
+		"users": {
+			"title": "사용자 관리",
+			"empty": "사용자가 없습니다.",
+			"total": "총 {{count}}명의 사용자",
+			"joined": "가입일",
+			"memos": "메모 수",
+			"search_placeholder": "닉네임 또는 ID로 검색...",
+			"previous": "이전",
+			"next": "다음",
+			"page": "{{current}} / {{total}} 페이지"
+		},
+		"stats": {
+			"total_users": "전체 사용자",
+			"total_memos": "전체 메모",
+			"today_memos": "오늘 메모",
+			"weekly_memos": "이번 주 메모"
+		},
+		"activity": {
+			"title": "메모 활동",
+			"today": "오늘",
+			"this_week": "이번 주",
+			"this_month": "이번 달",
+			"memos": "메모 수"
+		},
+		"growth": {
+			"title": "사용자 증가 추이",
+			"new_users": "신규 가입"
 		}
 	}
 }

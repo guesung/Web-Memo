@@ -57,8 +57,9 @@ export default function useMemosUpsertMutation() {
 
 			return { previousMemos };
 		},
-		onSuccess:()=>{
+		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
+			queryClient.invalidateQueries({ queryKey: ["memos", "paginated"] });
 		}
 	});
 }

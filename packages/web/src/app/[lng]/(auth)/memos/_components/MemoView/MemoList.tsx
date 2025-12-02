@@ -9,10 +9,11 @@ import {
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
-import { toast } from "@web-memo/ui";
+import { Skeleton, toast } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
+import { useInView } from "react-intersection-observer";
 
 import MemoDialog from "../MemoDialog";
 import { useDragSelection, useMemoDialog, useMemoSelection } from "./_hooks";
@@ -24,13 +25,27 @@ const CONTAINER_ID = "memo-list";
 
 interface MemoListProps extends LanguageType {
 	memos: GetMemoResponse[];
+	hasNextPage?: boolean;
+	isFetchingNextPage?: boolean;
+	fetchNextPage?: () => void;
 }
 
-export default function MemoList({ lng, memos }: MemoListProps) {
+export default function MemoList({
+	lng,
+	memos,
+	hasNextPage = false,
+	isFetchingNextPage = false,
+	fetchNextPage,
+}: MemoListProps) {
 	const { t } = useTranslation(lng);
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const dragBoxRef = useRef<HTMLDivElement>(null);
+
+	const { ref: loadMoreRef, inView } = useInView({
+		threshold: 0,
+		rootMargin: "100px",
+	});
 
 	const {
 		selectedMemoIds,
@@ -89,11 +104,21 @@ export default function MemoList({ lng, memos }: MemoListProps) {
 		[rafRef],
 	);
 
+	useEffect(() => {
+		if (inView && hasNextPage && !isFetchingNextPage && fetchNextPage) {
+			fetchNextPage();
+		}
+	}, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
 	useKeyboardBind({ key: "Escape", callback: closeMemoOption });
 	useKeyboardBind({ key: "a", callback: handleSelectAll, ctrlKey: true });
 	useKeyboardBind({ key: "a", callback: handleSelectAll, metaKey: true });
 	useKeyboardBind({ key: "Delete", callback: handleDeleteSelected });
 	useKeyboardBind({ key: "Backspace", callback: handleDeleteSelected });
+
+	const selectedMemos = memos.filter((memo) =>
+		selectedMemoIds.includes(memo.id),
+	);
 
 	if (memos.length === 0) {
 		return <MemoEmptyState lng={lng} />;
@@ -106,7 +131,7 @@ export default function MemoList({ lng, memos }: MemoListProps) {
 				{isSelectingMode && (
 					<MemoOptionHeader
 						lng={lng}
-						selectedMemoIds={selectedMemoIds}
+						selectedMemos={selectedMemos}
 						onXButtonClick={closeMemoOption}
 						closeMemoOption={closeMemoOption}
 					/>
@@ -129,6 +154,12 @@ export default function MemoList({ lng, memos }: MemoListProps) {
 						/>
 					))}
 				</AnimatePresence>
+
+				{hasNextPage && (
+					<div ref={loadMoreRef} className="flex justify-center py-4">
+						{isFetchingNextPage && <Skeleton className="h-16 w-full max-w-md" />}
+					</div>
+				)}
 			</div>
 
 			{dialogMemoId && <MemoDialog lng={lng} memoId={dialogMemoId} />}

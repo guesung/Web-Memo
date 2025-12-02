@@ -1,35 +1,29 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import { PATHS } from "@web-memo/shared/constants";
 import { cn } from "@web-memo/ui";
-import { BarChart3, Home, Users } from "lucide-react";
+import { BarChart3, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 interface AdminSidebarProps extends LanguageType {}
 
 export default function AdminSidebar({ lng }: AdminSidebarProps) {
+	const { t } = useTranslation(lng);
 	const pathname = usePathname();
 
 	const menuItems = [
 		{
 			href: `/${lng}${PATHS.admin}`,
 			icon: BarChart3,
-			labelKo: "대시보드",
-			labelEn: "Dashboard",
+			labelKey: "admin.sidebar.dashboard",
 		},
 		{
 			href: `/${lng}${PATHS.adminUsers}`,
 			icon: Users,
-			labelKo: "사용자 관리",
-			labelEn: "Users",
-		},
-		{
-			href: `/${lng}${PATHS.memos}`,
-			icon: Home,
-			labelKo: "메모로 돌아가기",
-			labelEn: "Back to Memos",
+			labelKey: "admin.sidebar.users",
 		},
 	];
 
@@ -37,7 +31,7 @@ export default function AdminSidebar({ lng }: AdminSidebarProps) {
 		<aside className="w-64 border-r bg-muted/30 p-4">
 			<div className="mb-6">
 				<h2 className="text-lg font-semibold px-3">
-					{lng === "ko" ? "관리자" : "Admin"}
+					{t("admin.sidebar.title")}
 				</h2>
 			</div>
 			<nav className="space-y-1">
@@ -57,7 +51,7 @@ export default function AdminSidebar({ lng }: AdminSidebarProps) {
 							)}
 						>
 							<item.icon className="h-4 w-4" />
-							{lng === "ko" ? item.labelKo : item.labelEn}
+							{t(item.labelKey)}
 						</Link>
 					);
 				})}

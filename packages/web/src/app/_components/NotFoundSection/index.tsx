@@ -2,6 +2,7 @@
 
 import useTranslation from "@src/modules/i18n/util.client";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function NotFoundSection() {
@@ -43,9 +44,11 @@ export default function NotFoundSection() {
 							}}
 							className="mx-auto h-32 w-32"
 						>
-							<img
+							<Image
 								src="/images/error/lost-astronaut.svg"
 								alt="Lost in Space"
+								width={128}
+								height={128}
 								className="h-full w-full"
 							/>
 						</motion.div>

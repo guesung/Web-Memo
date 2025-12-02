@@ -89,7 +89,6 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 							<SelectItem value="created_at">
 								{t("memos.sortBy.created_at")}
 							</SelectItem>
-							<SelectItem value="title">{t("memos.sortBy.title")}</SelectItem>
 						</SelectContent>
 					</Select>
 				)}

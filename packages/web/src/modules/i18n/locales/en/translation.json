@@ -355,8 +355,7 @@
 		},
 		"sortBy": {
 			"updated_at": "Last modified",
-			"created_at": "Date created",
-			"title": "Title"
+			"created_at": "Date created"
 		},
 		"grid": "Grid view",
 		"calendar": "Calendar view",

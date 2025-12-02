@@ -349,9 +349,8 @@
 			"memo": "내용"
 		},
 		"sortBy": {
-			"updated_at": "수정한 순",
-			"created_at": "생성한 순",
-			"title": "제목 순"
+			"updated_at": "수정 순",
+			"created_at": "생성 순"
 		},
 		"grid": "격자로 보기",
 		"calendar": "달력으로 보기",

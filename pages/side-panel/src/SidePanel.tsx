@@ -9,6 +9,7 @@ import { ErrorBoundary, Toaster } from "@web-memo/ui";
 import { GripHorizontal } from "lucide-react";
 import { Suspense } from "react";
 import {
+	LoginSection,
 	MemoForm,
 	MemoFormSkeleton,
 	MemoHeader,
@@ -19,8 +20,13 @@ import {
 import { useResizablePanel } from "./hooks";
 
 export default function SidePanel() {
-	const { summaryHeight, memoHeight, isResizing, containerRef, handleMouseDown } =
-		useResizablePanel();
+	const {
+		summaryHeight,
+		memoHeight,
+		isResizing,
+		containerRef,
+		handleMouseDown,
+	} = useResizablePanel();
 
 	useDidMount(() => {
 		ExtensionBridge.responseGetSidePanelOpen();
@@ -61,7 +67,7 @@ export default function SidePanel() {
 					style={{ height: `${memoHeight}%` }}
 				>
 					<MemoHeader />
-					<ErrorBoundary>
+					<ErrorBoundary FallbackComponent={LoginSection}>
 						<Suspense fallback={<MemoFormSkeleton />}>
 							<MemoForm />
 						</Suspense>
@@ -69,9 +75,11 @@ export default function SidePanel() {
 				</section>
 			</main>
 			<Toaster />
-			<Suspense>
-				<AnalyticsUserTracking />
-			</Suspense>
+			<ErrorBoundary>
+				<Suspense>
+					<AnalyticsUserTracking />
+				</Suspense>
+			</ErrorBoundary>
 			{CONFIG.nodeEnv !== "development" && <UpdateNotificationDialog />}
 			{/* <ReactQueryDevtools initialIsOpen={false} /> */}
 		</QueryProvider>

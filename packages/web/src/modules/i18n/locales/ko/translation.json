@@ -21,7 +21,8 @@
 		"yesterday": "어제",
 		"workWeek": "이번 주",
 		"close": "닫기",
-		"lastUpdated": "{{time}}에 업데이트됨"
+		"lastUpdated": "{{time}}에 업데이트됨",
+		"learn_more": "더 알아보기"
 	},
 
 	"sideBar": {

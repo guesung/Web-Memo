@@ -21,7 +21,8 @@
 		"yesterday": "Yesterday",
 		"workWeek": "This week",
 		"close": "Close",
-		"lastUpdated": "Updated at {{time}}"
+		"lastUpdated": "Updated at {{time}}",
+		"learn_more": "Learn more"
 	},
 
 	"sideBar": {

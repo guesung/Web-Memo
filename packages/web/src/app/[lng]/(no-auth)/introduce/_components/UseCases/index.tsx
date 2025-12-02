@@ -2,8 +2,10 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { PATHS } from "@web-memo/shared/constants";
 import { motion } from "framer-motion";
-import { GraduationCap, Briefcase, Target, Lightbulb } from "lucide-react";
+import { GraduationCap, Briefcase, Target, Lightbulb, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 interface UseCasesProps extends LanguageType {}
 
@@ -18,6 +20,7 @@ export default function UseCases({ lng }: UseCasesProps) {
 			description: t("introduce.use_case.student_desc"),
 			color: "blue",
 			gradient: "from-blue-500 to-indigo-500",
+			href: `/${lng}${PATHS.useCasesLearning}`,
 		},
 		{
 			icon: Briefcase,
@@ -26,6 +29,7 @@ export default function UseCases({ lng }: UseCasesProps) {
 			description: t("introduce.use_case.professional_desc"),
 			color: "purple",
 			gradient: "from-purple-500 to-pink-500",
+			href: `/${lng}${PATHS.useCasesResearch}`,
 		},
 		{
 			icon: Target,
@@ -34,6 +38,7 @@ export default function UseCases({ lng }: UseCasesProps) {
 			description: t("introduce.use_case.efficiency_desc"),
 			color: "green",
 			gradient: "from-green-500 to-emerald-500",
+			href: null,
 		},
 		{
 			icon: Lightbulb,
@@ -42,6 +47,7 @@ export default function UseCases({ lng }: UseCasesProps) {
 			description: t("introduce.use_case.creator_desc"),
 			color: "amber",
 			gradient: "from-amber-500 to-orange-500",
+			href: null,
 		},
 	];
 
@@ -95,6 +101,15 @@ export default function UseCases({ lng }: UseCasesProps) {
 										<p className="text-gray-600 dark:text-gray-400 leading-relaxed">
 											{useCase.description}
 										</p>
+										{useCase.href && (
+											<Link
+												href={useCase.href}
+												className="inline-flex items-center gap-1 mt-4 text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
+											>
+												{t("common.learn_more")}
+												<ArrowRight className="w-4 h-4" />
+											</Link>
+										)}
 									</div>
 								</div>
 

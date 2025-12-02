@@ -56,7 +56,7 @@ export default function useMemosInfiniteQuery({
 		},
 	});
 
-	const memos = query.data?.pages.flatMap((page) => page.data) ?? [];
+	const memos = query.data?.pages.flatMap((page) => page.data);
 	const totalCount = query.data?.pages[0]?.count ?? 0;
 
 	return {

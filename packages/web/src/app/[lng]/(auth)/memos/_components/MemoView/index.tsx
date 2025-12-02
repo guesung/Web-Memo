@@ -25,13 +25,18 @@ export default function MemoView({ lng }: LanguageType) {
 	const searchQuery = watch("searchQuery");
 	const sortBy = watch("sortBy");
 
-	const { memos, totalCount, hasNextPage, isFetchingNextPage, fetchNextPage } =
-		useMemosInfiniteQuery({
-			category,
-			isWish: isWish === "true",
-			searchQuery: searchQuery || undefined,
-			sortBy,
-		});
+	const {
+		memos,
+		totalCount,
+		hasNextPage,
+		isFetchingNextPage,
+		fetchNextPage,
+		isLoading,
+	} = useMemosInfiniteQuery({
+		category,
+		isWish: isWish === "true",
+		searchQuery: searchQuery || undefined,
+	});
 
 	useGuide({ lng });
 	useDidMount(() => ExtensionBridge.requestSyncLoginStatus());
@@ -56,6 +61,7 @@ export default function MemoView({ lng }: LanguageType) {
 				hasNextPage={hasNextPage}
 				isFetchingNextPage={isFetchingNextPage}
 				fetchNextPage={fetchNextPage}
+				isLoading={isLoading}
 			/>
 		</div>
 	);

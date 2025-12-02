@@ -13,11 +13,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 import MemoDialog from "../MemoDialog";
-import {
-	useDragSelection,
-	useMemoDialog,
-	useMemoSelection,
-} from "./_hooks";
+import { useDragSelection, useMemoDialog, useMemoSelection } from "./_hooks";
 import MemoEmptyState from "./MemoEmptyState";
 import MemoItem from "./MemoItem";
 import MemoOptionHeader from "./MemoOptionHeader";
@@ -26,16 +22,18 @@ const CONTAINER_ID = "memo-grid";
 
 interface MemoGridProps extends LanguageType {
 	memos: GetMemoResponse[];
-	hasNextPage?: boolean;
-	isFetchingNextPage?: boolean;
-	fetchNextPage?: () => void;
+	isLoading: boolean;
+	hasNextPage: boolean;
+	isFetchingNextPage: boolean;
+	fetchNextPage: () => void;
 }
 
 export default function MemoGrid({
 	lng,
 	memos,
-	hasNextPage = false,
-	isFetchingNextPage = false,
+	isLoading,
+	hasNextPage,
+	isFetchingNextPage,
 	fetchNextPage,
 }: MemoGridProps) {
 	const router = useRouter();
@@ -71,13 +69,16 @@ export default function MemoGrid({
 		}
 	};
 
-	useEffect(function closeRAFOnUnmount() {
-		return () => {
-			if (rafRef.current) {
-				cancelAnimationFrame(rafRef.current);
-			}
-		};
-	}, [rafRef]);
+	useEffect(
+		function closeRAFOnUnmount() {
+			return () => {
+				if (rafRef.current) {
+					cancelAnimationFrame(rafRef.current);
+				}
+			};
+		},
+		[rafRef],
+	);
 
 	useKeyboardBind({ key: "Escape", callback: closeMemoOption });
 
@@ -86,6 +87,9 @@ export default function MemoGrid({
 	);
 
 	if (memos.length === 0) {
+		if (isLoading) {
+			return <MemoGridSkeleton />;
+		}
 		return <MemoEmptyState lng={lng} />;
 	}
 
@@ -136,4 +140,19 @@ export default function MemoGrid({
 
 function MemoItemSkeleton() {
 	return <Skeleton className="h-[300px] w-[300px]" />;
+}
+
+export function MemoGridSkeleton() {
+	return (
+		<div className="container max-w-full pt-4">
+			<div className="flex flex-wrap justify-center gap-4">
+				{Array.from({ length: 12 }).map((_, index) => (
+					<Skeleton
+						key={index.toString()}
+						className="h-[300px] w-[300px] rounded-lg"
+					/>
+				))}
+			</div>
+		</div>
+	);
 }

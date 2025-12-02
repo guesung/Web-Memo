@@ -60,6 +60,50 @@ export class MemoService {
 		return { ...firstBatch, data };
 	};
 
+	getMemosPaginated = async ({
+		cursor,
+		limit = 20,
+		category,
+		isWish,
+		searchQuery,
+	}: {
+		cursor?: string;
+		limit?: number;
+		category?: string;
+		isWish?: boolean;
+		searchQuery?: string;
+	}) => {
+		const selectQuery = category
+			? "*, category!inner(id, name, color)"
+			: "*, category(id, name, color)";
+
+		let query = this.supabaseClient
+			.schema(SUPABASE.table.memo)
+			.from(SUPABASE.table.memo)
+			.select(selectQuery, { count: "exact" })
+			.order("updated_at", { ascending: false })
+			.limit(limit);
+
+		if (cursor) {
+			query = query.lt("updated_at", cursor);
+		}
+
+		if (isWish !== undefined) {
+			query = query.eq("isWish", isWish);
+		}
+
+		if (category) {
+			query = query.eq("category.name", category);
+		}
+
+		if (searchQuery) {
+			const pattern = `%${searchQuery}%`;
+			query = query.or(`title.ilike.${pattern},memo.ilike.${pattern}`);
+		}
+
+		return query;
+	};
+
 	updateMemo = async ({
 		id,
 		request,

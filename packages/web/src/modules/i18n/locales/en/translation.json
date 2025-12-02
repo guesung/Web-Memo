@@ -424,9 +424,29 @@
 					"question": "Is it free?",
 					"answer": "Yes! All core features of Web Memo are completely free: \u2022 Unlimited memo storage \u2022 AI-powered content summarization \u2022 Category organization features \u2022 Wishlist management \u2022 YouTube caption summarization \u2022 Mobile app with data synchronization We are committed to providing a great service experience without ads or paid subscriptions."
 				},
+				"how_to_use": {
+					"question": "How do I use the service?",
+					"answer": "You can use Web Memo by installing the Chrome extension. Once installed, you can open the side panel on any website to start taking notes."
+				},
 				"where_to_save": {
 					"question": "Where can I save memos?",
-					"answer": "Web Memo works everywhere on the internet! Install the Chrome extension and you can: \u2022 Take notes on blogs and news sites \u2022 Organize content from online courses and educational materials \u2022 Record insights from YouTube videos \u2022 Save information from shopping or product review sites \u2022 Summarize key points from research papers Simply press Alt+S (Windows) / Option+S (Mac) to open the side panel and start taking notes immediately."
+					"answer": "Web Memo works everywhere on the internet! Install the Chrome extension and you can: • Take notes on blogs and news sites • Organize content from online courses and educational materials • Record insights from YouTube videos • Save information from shopping or product review sites • Summarize key points from research papers Simply press Alt+S (Windows) / Option+S (Mac) to open the side panel and start taking notes immediately."
+				},
+				"ai_summary": {
+					"question": "How does the AI summary feature work?",
+					"answer": "The AI summary feature automatically analyzes the content of the webpage or YouTube video you're viewing and summarizes the key points. For YouTube, it summarizes based on video captions, and for webpages, it analyzes the main text content. When you open the side panel, the summary starts automatically, helping you quickly grasp the essentials of long content."
+				},
+				"data_sync": {
+					"question": "Can I sync my memos across multiple devices?",
+					"answer": "Yes! When you log in to Web Memo, all your memos are automatically saved to the cloud. You can access and edit all your memos from any device—PC, laptop, tablet—by logging in with the same account. You can also view your saved memos anytime at web-memo.site."
+				},
+				"supported_browsers": {
+					"question": "Which browsers are supported?",
+					"answer": "Currently, Web Memo is available on Chrome and Chrome-based browsers (Edge, Brave, Arc, etc.). Simply install the extension from the Chrome Web Store to get started. Support for Firefox and Safari is coming soon—stay tuned!"
+				},
+				"data_security": {
+					"question": "Is my memo data secure?",
+					"answer": "Yes, security is our top priority. All data is encrypted and stored securely, accessible only by you. You can export or delete your data at any time. We never sell or share your data with third parties."
 				}
 			}
 		},

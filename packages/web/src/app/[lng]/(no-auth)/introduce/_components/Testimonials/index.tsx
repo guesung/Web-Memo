@@ -9,7 +9,7 @@ interface TestimonialsProps extends LanguageType {}
 export default function Testimonials({ lng }: TestimonialsProps) {
 	const testimonials = [
 		{
-			name: lng === "ko" ? "김민수" : "Alex Kim",
+			name: lng === "ko" ? "김**" : "Alex K.",
 			role: lng === "ko" ? "대학원생" : "Graduate Student",
 			avatar: "MK",
 			quote:
@@ -20,7 +20,7 @@ export default function Testimonials({ lng }: TestimonialsProps) {
 			color: "blue",
 		},
 		{
-			name: lng === "ko" ? "이지현" : "Sarah Lee",
+			name: lng === "ko" ? "이**" : "Sarah L.",
 			role: lng === "ko" ? "마케터" : "Marketer",
 			avatar: "JL",
 			quote:
@@ -31,7 +31,7 @@ export default function Testimonials({ lng }: TestimonialsProps) {
 			color: "purple",
 		},
 		{
-			name: lng === "ko" ? "박준영" : "James Park",
+			name: lng === "ko" ? "박**" : "James P.",
 			role: lng === "ko" ? "개발자" : "Developer",
 			avatar: "JP",
 			quote:

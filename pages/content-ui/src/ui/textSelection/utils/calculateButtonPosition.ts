@@ -11,7 +11,7 @@ export const calculateButtonPosition = (
 	};
 
 	let top = selectionRect.top + viewport.scrollY - buttonSize.height - GAP;
-	let left = selectionRect.right + viewport.scrollX + GAP;
+	let left = selectionRect.left + viewport.scrollX + selectionRect.width / 2 - buttonSize.width / 2;
 
 	if (left + buttonSize.width > viewport.width + viewport.scrollX) {
 		left = selectionRect.left + viewport.scrollX - buttonSize.width - GAP;

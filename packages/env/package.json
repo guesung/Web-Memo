@@ -1,6 +1,6 @@
 {
 	"name": "@web-memo/env",
-	"version": "1.9.0",
+	"version": "1.9.1",
 	"description": "",
 	"scripts": {
 		"ready": "tsup"

@@ -34,9 +34,7 @@ export default function QuestionAndAnswer({ lng }: LanguageType) {
 						{t("introduce.faq.title")}
 					</h2>
 					<p className="text-lg text-gray-600 dark:text-gray-400">
-						{lng === "ko"
-							? "궁금한 점이 있으신가요?"
-							: "Have questions? We've got answers."}
+						{t("introduce.faq.subtitle")}
 					</p>
 				</motion.div>
 
@@ -81,12 +79,12 @@ export default function QuestionAndAnswer({ lng }: LanguageType) {
 					className="text-center mt-12"
 				>
 					<p className="text-gray-600 dark:text-gray-400">
-						{lng === "ko" ? "다른 질문이 있으신가요? " : "Have other questions? "}
+						{t("introduce.faq.other_questions")}{" "}
 						<a
 							href="mailto:pagers@kakao.com"
 							className="text-purple-600 dark:text-purple-400 font-medium hover:underline"
 						>
-							{lng === "ko" ? "이메일로 문의하기" : "Contact us"}
+							{t("introduce.faq.contact_us")}
 						</a>
 					</p>
 				</motion.div>

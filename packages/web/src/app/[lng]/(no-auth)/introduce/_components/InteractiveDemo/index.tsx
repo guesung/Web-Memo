@@ -1,6 +1,7 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import { AnimatePresence, motion } from "framer-motion";
 import {
 	BarChart3,
@@ -16,6 +17,7 @@ import { useCallback, useEffect, useState } from "react";
 interface InteractiveDemoProps extends LanguageType {}
 
 export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
+	const { t } = useTranslation(lng);
 	const [activeTab, setActiveTab] = useState(0);
 	const [progress, setProgress] = useState(0);
 	const [isPaused, setIsPaused] = useState(false);
@@ -24,44 +26,40 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 		{
 			id: "memo",
 			icon: Pencil,
-			label: lng === "ko" ? "메모 작성" : "Write Memo",
-			description:
-				lng === "ko" ? "아티클을 읽으며 바로 메모" : "Take notes while reading",
+			label: t("introduce.demo.tab_memo"),
+			description: t("introduce.demo.tab_memo_desc"),
 			image: `/images/pngs/introduction/${lng}/1.png`,
 			color: "blue",
 		},
 		{
 			id: "overview",
 			icon: BarChart3,
-			label: lng === "ko" ? "한눈에 보기" : "Overview",
-			description:
-				lng === "ko" ? "모든 메모를 한눈에" : "See all memos at a glance",
+			label: t("introduce.demo.tab_overview"),
+			description: t("introduce.demo.tab_overview_desc"),
 			image: `/images/pngs/introduction/${lng}/2.png`,
 			color: "green",
 		},
 		{
 			id: "ai",
 			icon: Sparkles,
-			label: lng === "ko" ? "AI 요약" : "AI Summary",
-			description:
-				lng === "ko" ? "유튜브 영상을 AI로 요약" : "Summarize YouTube with AI",
+			label: t("introduce.demo.tab_ai"),
+			description: t("introduce.demo.tab_ai_desc"),
 			image: `/images/pngs/introduction/${lng}/3.png`,
 			color: "amber",
 		},
 		{
 			id: "wishlist",
 			icon: Heart,
-			label: lng === "ko" ? "위시리스트" : "Wishlist",
-			description: lng === "ko" ? "나중에 볼 콘텐츠 저장" : "Save for later",
+			label: t("introduce.demo.tab_wishlist"),
+			description: t("introduce.demo.tab_wishlist_desc"),
 			image: `/images/pngs/introduction/${lng}/4.png`,
 			color: "pink",
 		},
 		{
 			id: "organize",
 			icon: FolderOpen,
-			label: lng === "ko" ? "정리하기" : "Organize",
-			description:
-				lng === "ko" ? "카테고리로 체계적 관리" : "Organize with categories",
+			label: t("introduce.demo.tab_organize"),
+			description: t("introduce.demo.tab_organize_desc"),
 			image: `/images/pngs/introduction/${lng}/5.png`,
 			color: "purple",
 		},
@@ -148,12 +146,10 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 					className="text-center mb-12"
 				>
 					<h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-						{lng === "ko" ? "직접 확인해보세요" : "See It in Action"}
+						{t("introduce.section.demo")}
 					</h2>
 					<p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-						{lng === "ko"
-							? "웹 메모의 핵심 기능을 살펴보세요"
-							: "Explore the core features of Web Memo"}
+						{t("introduce.section.demo_desc")}
 					</p>
 				</motion.div>
 

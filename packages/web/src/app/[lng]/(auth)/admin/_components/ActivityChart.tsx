@@ -1,6 +1,7 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import { useAdminStatsQuery } from "@web-memo/shared/hooks";
 import {
 	Bar,
@@ -20,26 +21,27 @@ import {
 interface ActivityChartProps extends LanguageType {}
 
 export default function ActivityChart({ lng }: ActivityChartProps) {
+	const { t } = useTranslation(lng);
 	const { stats } = useAdminStatsQuery();
 
 	const activityData = [
 		{
-			name: lng === "ko" ? "오늘" : "Today",
+			name: t("admin.activity.today"),
 			memos: stats?.todayMemos ?? 0,
 		},
 		{
-			name: lng === "ko" ? "이번 주" : "This Week",
+			name: t("admin.activity.this_week"),
 			memos: stats?.weeklyMemos ?? 0,
 		},
 		{
-			name: lng === "ko" ? "이번 달" : "This Month",
+			name: t("admin.activity.this_month"),
 			memos: stats?.monthlyMemos ?? 0,
 		},
 	];
 
 	const chartConfig = {
 		memos: {
-			label: lng === "ko" ? "메모 수" : "Memos",
+			label: t("admin.activity.memos"),
 			color: "hsl(var(--chart-2))",
 		},
 	};
@@ -47,7 +49,7 @@ export default function ActivityChart({ lng }: ActivityChartProps) {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>{lng === "ko" ? "메모 활동" : "Memo Activity"}</CardTitle>
+				<CardTitle>{t("admin.activity.title")}</CardTitle>
 			</CardHeader>
 			<CardContent>
 				<ChartContainer config={chartConfig} className="h-[300px] w-full">

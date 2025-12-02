@@ -1,6 +1,7 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import { useUserGrowthQuery } from "@web-memo/shared/hooks";
 import {
 	Area,
@@ -28,12 +29,13 @@ import { TIME_PERIODS } from "../_constants";
 interface UserGrowthChartProps extends LanguageType {}
 
 export default function UserGrowthChart({ lng }: UserGrowthChartProps) {
+	const { t } = useTranslation(lng);
 	const [period, setPeriod] = useState("30");
 	const { growthData } = useUserGrowthQuery(Number(period));
 
 	const chartConfig = {
 		count: {
-			label: lng === "ko" ? "신규 가입" : "New Users",
+			label: t("admin.growth.new_users"),
 			color: "hsl(var(--chart-1))",
 		},
 	};
@@ -41,9 +43,7 @@ export default function UserGrowthChart({ lng }: UserGrowthChartProps) {
 	return (
 		<Card>
 			<CardHeader className="flex flex-row items-center justify-between">
-				<CardTitle>
-					{lng === "ko" ? "사용자 증가 추이" : "User Growth"}
-				</CardTitle>
+				<CardTitle>{t("admin.growth.title")}</CardTitle>
 				<Select value={period} onValueChange={setPeriod}>
 					<SelectTrigger className="w-32">
 						<SelectValue />

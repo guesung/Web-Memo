@@ -36,12 +36,12 @@ export default function Footer({ lng }: FooterProps) {
 	const productLinks = [
 		{
 			href: URL.chromeStore,
-			label: lng === "ko" ? "Chrome 확장 프로그램" : "Chrome Extension",
+			label: t("introduce.footer.chrome_extension"),
 			external: true,
 		},
 		{
 			href: "#demo",
-			label: lng === "ko" ? "기능 살펴보기" : "Features",
+			label: t("introduce.footer.features_link"),
 			external: false,
 		},
 	];
@@ -49,7 +49,7 @@ export default function Footer({ lng }: FooterProps) {
 	const companyLinks = [
 		{
 			href: "mailto:pagers@kakao.com",
-			label: lng === "ko" ? "문의하기" : "Contact",
+			label: t("introduce.footer.contact_link"),
 			external: false,
 		},
 	];
@@ -97,7 +97,7 @@ export default function Footer({ lng }: FooterProps) {
 					{/* Product Links */}
 					<div>
 						<h3 className="text-white font-semibold mb-4">
-							{lng === "ko" ? "제품" : "Product"}
+							{t("introduce.footer.product.title")}
 						</h3>
 						<ul className="space-y-3">
 							{productLinks.map((link) => (
@@ -119,7 +119,7 @@ export default function Footer({ lng }: FooterProps) {
 					{/* Company Links */}
 					<div>
 						<h3 className="text-white font-semibold mb-4">
-							{lng === "ko" ? "회사" : "Company"}
+							{t("introduce.footer.company.title")}
 						</h3>
 						<ul className="space-y-3">
 							{companyLinks.map((link) => (

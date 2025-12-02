@@ -1,6 +1,7 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import { Button } from "@web-memo/ui";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -16,6 +17,8 @@ export default function UserPagination({
 	totalPages,
 	onPageChange,
 }: UserPaginationProps) {
+	const { t } = useTranslation(lng);
+
 	if (totalPages <= 1) return null;
 
 	return (
@@ -27,12 +30,10 @@ export default function UserPagination({
 				disabled={currentPage <= 1}
 			>
 				<ChevronLeft className="h-4 w-4" />
-				{lng === "ko" ? "이전" : "Previous"}
+				{t("admin.users.previous")}
 			</Button>
 			<span className="text-sm text-muted-foreground px-4">
-				{lng === "ko"
-					? `${currentPage} / ${totalPages} 페이지`
-					: `Page ${currentPage} of ${totalPages}`}
+				{t("admin.users.page", { current: currentPage, total: totalPages })}
 			</span>
 			<Button
 				variant="outline"
@@ -40,7 +41,7 @@ export default function UserPagination({
 				onClick={() => onPageChange(currentPage + 1)}
 				disabled={currentPage >= totalPages}
 			>
-				{lng === "ko" ? "다음" : "Next"}
+				{t("admin.users.next")}
 				<ChevronRight className="h-4 w-4" />
 			</Button>
 		</div>

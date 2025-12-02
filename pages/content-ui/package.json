@@ -37,7 +37,7 @@
 		"@web-memo/tsconfig": "workspace:*",
 		"@web-memo/vite-config": "workspace:*",
 		"tailwindcss": "^3.4.10",
-		"vite": "5.3.3",
+		"vite": "5.4.21",
 		"vite-plugin-svgr": "^4.3.0"
 	}
 }

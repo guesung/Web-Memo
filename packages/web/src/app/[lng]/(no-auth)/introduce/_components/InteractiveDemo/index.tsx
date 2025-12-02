@@ -198,7 +198,6 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 										alt={tabs[activeTab].label}
 										fill
 										className="object-contain"
-										priority
 									/>
 								</motion.div>
 							</AnimatePresence>

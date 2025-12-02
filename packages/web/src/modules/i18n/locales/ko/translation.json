@@ -348,6 +348,11 @@
 			"title": "제목",
 			"memo": "내용"
 		},
+		"sortBy": {
+			"updated_at": "수정한 순",
+			"created_at": "생성한 순",
+			"title": "제목 순"
+		},
 		"grid": "격자로 보기",
 		"calendar": "달력으로 보기",
 		"selected": "{{count}}개 선택됨",

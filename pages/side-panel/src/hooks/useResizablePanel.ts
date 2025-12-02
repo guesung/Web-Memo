@@ -5,7 +5,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const DEFAULT_SUMMARY_HEIGHT = 50;
-const MIN_SUMMARY_HEIGHT = 20;
+const MIN_SUMMARY_HEIGHT = 5;
 const MAX_SUMMARY_HEIGHT = 80;
 
 export default function useResizablePanel() {

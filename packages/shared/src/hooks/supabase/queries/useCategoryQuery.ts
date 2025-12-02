@@ -10,6 +10,7 @@ export default function useCategoryQuery() {
 	const query = useSuspenseQuery({
 		queryFn: new CategoryService(supabaseClient).getCategories,
 		queryKey: QUERY_KEY.category(),
+		staleTime: 1000 * 60 * 5, // 5분간 캐시 유지
 	});
 
 	return {

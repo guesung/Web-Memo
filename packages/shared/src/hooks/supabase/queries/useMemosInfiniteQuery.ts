@@ -27,9 +27,9 @@ export default function useMemosInfiniteQuery({
 			const result = await memoService.getMemosPaginated({
 				cursor: pageParam,
 				limit: PAGE_SIZE,
-				category: category || undefined,
+				category,
 				isWish,
-				searchQuery: searchQuery || undefined,
+				searchQuery,
 			});
 
 			return {

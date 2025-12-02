@@ -394,12 +394,14 @@
 		"section": {
 			"key_features": "핵심 기능",
 			"key_features_desc": "웹 서핑을 더 스마트하게 만들어주는 기능들",
+			"demo": "직접 확인해보세요",
 			"demo_title": "직접 확인해보세요",
 			"demo_desc": "웹 메모의 핵심 기능을 살펴보세요",
 			"how_it_works": "시작하는 방법",
 			"how_it_works_desc": "3단계로 간단하게 시작하세요",
 			"use_cases": "이런 분들에게 추천해요",
 			"use_cases_desc": "다양한 상황에서 웹 메모가 도움이 됩니다",
+			"stats": "숫자로 보는 웹 메모",
 			"stats_title": "숫자로 보는 웹 메모",
 			"stats_desc": "많은 사용자들이 이미 웹 메모와 함께하고 있습니다",
 			"testimonials_title": "사용자 후기",
@@ -411,14 +413,24 @@
 		"demo": {
 			"write_memo": "메모 작성",
 			"write_memo_desc": "아티클을 읽으며 바로 메모",
+			"tab_memo": "메모 작성",
+			"tab_memo_desc": "아티클을 읽으며 바로 메모",
 			"overview": "한눈에 보기",
 			"overview_desc": "모든 메모를 한눈에",
+			"tab_overview": "한눈에 보기",
+			"tab_overview_desc": "모든 메모를 한눈에",
 			"ai_summary": "AI 요약",
 			"ai_summary_desc": "유튜브 영상을 AI로 요약",
+			"tab_ai": "AI 요약",
+			"tab_ai_desc": "유튜브 영상을 AI로 요약",
 			"wishlist": "위시리스트",
 			"wishlist_desc": "나중에 볼 콘텐츠 저장",
+			"tab_wishlist": "위시리스트",
+			"tab_wishlist_desc": "나중에 볼 콘텐츠 저장",
 			"organize": "정리하기",
-			"organize_desc": "카테고리로 체계적 관리"
+			"organize_desc": "카테고리로 체계적 관리",
+			"tab_organize": "정리하기",
+			"tab_organize_desc": "카테고리로 체계적 관리"
 		},
 		"steps": {
 			"step1_title": "확장 프로그램 설치",
@@ -431,12 +443,18 @@
 		"use_case": {
 			"students_title": "학생 & 연구자",
 			"students_desc": "온라인 강의나 자료 조사할 때 핵심 내용만 골라 저장하세요. 논문 작성에 필요한 레퍼런스를 체계적으로 관리할 수 있습니다.",
+			"student_title": "학생 & 연구자",
+			"student_desc": "온라인 강의나 자료 조사할 때 핵심 내용만 골라 저장하세요. 논문 작성에 필요한 레퍼런스를 체계적으로 관리할 수 있습니다.",
 			"professionals_title": "직장인",
 			"professionals_desc": "경쟁사 분석이나 트렌드 모니터링을 체계적으로 관리하세요. 업무에 필요한 정보를 빠르게 찾을 수 있습니다.",
+			"professional_title": "직장인",
+			"professional_desc": "경쟁사 분석이나 트렌드 모니터링을 체계적으로 관리하세요. 업무에 필요한 정보를 빠르게 찾을 수 있습니다.",
 			"efficiency_title": "효율적인 분들",
 			"efficiency_desc": "긴 글 대신 AI 요약으로 핵심만 빠르게 파악하세요. 시간을 절약하며 더 많은 콘텐츠를 소화할 수 있습니다.",
 			"creators_title": "콘텐츠 크리에이터",
-			"creators_desc": "영감을 주는 콘텐츠와 아이디어를 모아두세요. 창작 활동에 필요한 레퍼런스를 한 곳에서 관리할 수 있습니다."
+			"creators_desc": "영감을 주는 콘텐츠와 아이디어를 모아두세요. 창작 활동에 필요한 레퍼런스를 한 곳에서 관리할 수 있습니다.",
+			"creator_title": "콘텐츠 크리에이터",
+			"creator_desc": "영감을 주는 콘텐츠와 아이디어를 모아두세요. 창작 활동에 필요한 레퍼런스를 한 곳에서 관리할 수 있습니다."
 		},
 		"stats": {
 			"active_users": "활성 사용자",
@@ -445,6 +463,8 @@
 			"memos_saved_desc": "사용자들이 저장한 총 메모 개수",
 			"rating": "평균 평점",
 			"rating_desc": "Chrome 웹스토어 평점",
+			"average_rating": "평균 평점",
+			"average_rating_desc": "Chrome 웹스토어 평점",
 			"install_time": "설치 시간",
 			"install_time_suffix": "초",
 			"install_time_desc": "크롬에 설치하는 데 걸리는 시간"

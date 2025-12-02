@@ -20,10 +20,17 @@ export async function middleware(request: NextRequest) {
 	const isAuthPath = pathname.startsWith(PATHS.auth);
 	const isApiPath = pathname.startsWith("/api");
 	const isSitemapPath = pathname.startsWith("/sitemap");
+	const isRobotsPath = pathname.startsWith("/robots");
 
 	const language = getLanguage(request);
 
-	if (!isLanguagePath && !isAuthPath && !isApiPath && !isSitemapPath)
+	if (
+		!isLanguagePath &&
+		!isAuthPath &&
+		!isApiPath &&
+		!isSitemapPath &&
+		!isRobotsPath
+	)
 		return NextResponse.redirect(
 			new URL(
 				`/${language}${pathname}${request.nextUrl.search}${request.nextUrl.hash}`,

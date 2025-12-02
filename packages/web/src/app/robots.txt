@@ -1,0 +1,8 @@
+User-Agent: *
+Allow: /
+Disallow: /private/
+Disallow: /*/memos/
+Disallow: /*/admin/
+Disallow: /*/login
+
+Sitemap: https://webmemo.site/sitemap.xml

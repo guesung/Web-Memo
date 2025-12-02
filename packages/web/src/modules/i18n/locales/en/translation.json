@@ -688,5 +688,239 @@
 			"title": "User Growth",
 			"new_users": "New Users"
 		}
+	},
+
+	"features": {
+		"youtubeSummary": {
+			"hero": {
+				"badge": "YouTube AI Summary",
+				"title": "Long videos?",
+				"titleHighlight": "Get the key points",
+				"description": "Summarize YouTube videos instantly with AI. Extract key points from hour-long videos in minutes.",
+				"cta": "Get Started Free",
+				"learnMore": "Learn More"
+			},
+			"benefits": {
+				"title": "Why YouTube Summary?",
+				"subtitle": "Save time and consume more content",
+				"timeSaving": {
+					"title": "Save Time",
+					"description": "Get the key points of a 1-hour video in 5 minutes. No more wasting time on long videos."
+				},
+				"aiPowered": {
+					"title": "AI-Powered",
+					"description": "Latest AI technology extracts key points accurately. Never miss important content."
+				},
+				"transcript": {
+					"title": "Transcript-Based",
+					"description": "Analyzes YouTube captions for accurate summaries. Works with any video that has subtitles."
+				},
+				"instant": {
+					"title": "Instant Summary",
+					"description": "Summary starts automatically when you open the side panel. Get key points with one click."
+				}
+			},
+			"howItWorks": {
+				"title": "How It Works",
+				"subtitle": "Summarize YouTube videos in 3 simple steps",
+				"step1": {
+					"title": "Play YouTube Video",
+					"description": "Navigate to the YouTube video you want to summarize"
+				},
+				"step2": {
+					"title": "Open Side Panel",
+					"description": "Press Alt+S (Mac: Option+S) to open Web Memo side panel"
+				},
+				"step3": {
+					"title": "Get AI Summary",
+					"description": "AI automatically analyzes and summarizes the key points"
+				}
+			},
+			"cta": {
+				"title": "Start Summarizing YouTube Videos Now",
+				"description": "Install the free Chrome extension and watch videos more efficiently.",
+				"button": "Add to Chrome",
+				"subtext": "Free · 10-second install · No credit card required"
+			}
+		},
+		"memo": {
+			"hero": {
+				"badge": "Browser Notes",
+				"title": "Take notes",
+				"titleHighlight": "while you browse",
+				"description": "Capture your thoughts instantly while reading web pages. Take notes in the side panel and organize them systematically.",
+				"cta": "Get Started Free",
+				"learnMore": "Learn More"
+			},
+			"benefits": {
+				"title": "Why Browser Notes?",
+				"subtitle": "Never lose an idea, stay organized",
+				"shortcut": {
+					"title": "Quick Shortcut",
+					"description": "Press Alt+S (Mac: Option+S) to open the side panel and start taking notes from anywhere."
+				},
+				"organize": {
+					"title": "Organize by Category",
+					"description": "Categorize your notes for easy access. Find what you need quickly when you need it."
+				},
+				"sync": {
+					"title": "Cloud Sync",
+					"description": "Log in to access your notes from any device. Your notes are always with you."
+				},
+				"search": {
+					"title": "Quick Search",
+					"description": "Search your notes by title or content. Find what you're looking for instantly."
+				}
+			},
+			"howItWorks": {
+				"title": "How It Works",
+				"subtitle": "Start taking notes in 3 simple steps",
+				"step1": {
+					"title": "Open Side Panel",
+					"description": "Press Alt+S (Mac: Option+S) to open the side panel from anywhere"
+				},
+				"step2": {
+					"title": "Write Your Note",
+					"description": "Capture your thoughts. They're saved automatically"
+				},
+				"step3": {
+					"title": "Access Anytime",
+					"description": "View and manage all your notes at web-memo.site"
+				}
+			},
+			"cta": {
+				"title": "Start Taking Notes Now",
+				"description": "Install the free Chrome extension and browse smarter.",
+				"button": "Add to Chrome",
+				"subtext": "Free · 10-second install · No credit card required"
+			}
+		},
+		"saveArticles": {
+			"hero": {
+				"badge": "Save Articles",
+				"title": "Articles for later",
+				"titleHighlight": "all in one place",
+				"description": "Save interesting articles to your wishlist. Access them anytime you want.",
+				"cta": "Get Started Free",
+				"learnMore": "Learn More"
+			},
+			"benefits": {
+				"title": "Why Save Articles?",
+				"subtitle": "Never miss content you want to read",
+				"oneClick": {
+					"title": "One-Click Save",
+					"description": "Save the current page to your wishlist with one button. No complicated steps."
+				},
+				"wishlist": {
+					"title": "Wishlist Management",
+					"description": "View and manage saved articles at a glance. Easily track read and unread articles."
+				},
+				"anywhere": {
+					"title": "Access Anywhere",
+					"description": "Access saved articles anytime at web-memo.site. Works on mobile too."
+				},
+				"readLater": {
+					"title": "Read Later",
+					"description": "Save great articles when you're busy and read them when you have time."
+				}
+			},
+			"howItWorks": {
+				"title": "How It Works",
+				"subtitle": "Save articles in 3 simple steps",
+				"step1": {
+					"title": "Add to Wishlist",
+					"description": "Click the heart button in the side panel"
+				},
+				"step2": {
+					"title": "View Your List",
+					"description": "Check saved articles in your wishlist"
+				},
+				"step3": {
+					"title": "Read When Ready",
+					"description": "Read saved articles whenever you have time"
+				}
+			},
+			"cta": {
+				"title": "Start Saving Articles Now",
+				"description": "Install the free Chrome extension and never miss great content.",
+				"button": "Add to Chrome",
+				"subtext": "Free · 10-second install · No credit card required"
+			}
+		}
+	},
+
+	"useCases": {
+		"research": {
+			"hero": {
+				"badge": "Research & Study",
+				"title": "Research",
+				"titleHighlight": "more efficiently",
+				"description": "Take instant notes and organize systematically while researching papers, articles, and web resources.",
+				"cta": "Get Started Free",
+				"learnMore": "Learn More"
+			},
+			"benefits": {
+				"title": "Research Made Easy",
+				"subtitle": "Features that boost your research efficiency",
+				"capture": {
+					"title": "Instant Capture",
+					"description": "Take notes immediately when you find important content. No need to go back and search again."
+				},
+				"summarize": {
+					"title": "AI Summary",
+					"description": "AI summarizes long papers and articles for you. Save time and review more materials."
+				},
+				"organize": {
+					"title": "Systematic Organization",
+					"description": "Categorize your notes. Organize materials by project or topic."
+				},
+				"reference": {
+					"title": "Source Management",
+					"description": "Original URLs are saved with your notes. Verify sources or revisit pages later."
+				}
+			},
+			"cta": {
+				"title": "Start More Efficient Research",
+				"description": "Install the free Chrome extension and boost your research productivity.",
+				"button": "Add to Chrome",
+				"subtext": "Free · 10-second install · No credit card required"
+			}
+		},
+		"learning": {
+			"hero": {
+				"badge": "Online Learning",
+				"title": "Online learning",
+				"titleHighlight": "more effectively",
+				"description": "Take notes and get AI summaries while watching YouTube lectures and online courses.",
+				"cta": "Get Started Free",
+				"learnMore": "Learn More"
+			},
+			"benefits": {
+				"title": "Boost Your Learning",
+				"subtitle": "Learn more efficiently and remember better",
+				"videoSummary": {
+					"title": "Video AI Summary",
+					"description": "AI automatically summarizes YouTube lectures. Get key points quickly from long lectures."
+				},
+				"notes": {
+					"title": "Lecture Notes",
+					"description": "Take notes on important content while watching. Create your personal study notes."
+				},
+				"review": {
+					"title": "Easy Review",
+					"description": "Review saved notes and summaries anytime. Boost learning with efficient review."
+				},
+				"focus": {
+					"title": "Better Focus",
+					"description": "Taking notes while learning improves focus. Active learning helps you remember better."
+				}
+			},
+			"cta": {
+				"title": "Start More Effective Learning",
+				"description": "Install the free Chrome extension and boost your learning efficiency.",
+				"button": "Add to Chrome",
+				"subtext": "Free · 10-second install · No credit card required"
+			}
+		}
 	}
 }

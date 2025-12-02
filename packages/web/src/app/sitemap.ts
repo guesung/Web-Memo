@@ -13,6 +13,31 @@ export default function sitemap(): MetadataRoute.Sitemap {
 			changeFrequency: "weekly" as const,
 		},
 		{ path: PATHS.update, priority: 0.6, changeFrequency: "monthly" as const },
+		{
+			path: PATHS.featuresYoutubeSummary,
+			priority: 0.8,
+			changeFrequency: "monthly" as const,
+		},
+		{
+			path: PATHS.featuresMemo,
+			priority: 0.8,
+			changeFrequency: "monthly" as const,
+		},
+		{
+			path: PATHS.featuresSaveArticles,
+			priority: 0.8,
+			changeFrequency: "monthly" as const,
+		},
+		{
+			path: PATHS.useCasesResearch,
+			priority: 0.7,
+			changeFrequency: "monthly" as const,
+		},
+		{
+			path: PATHS.useCasesLearning,
+			priority: 0.7,
+			changeFrequency: "monthly" as const,
+		},
 	];
 
 	const sitemapEntries: MetadataRoute.Sitemap = [];

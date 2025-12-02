@@ -2,7 +2,7 @@
 
 import { useGuide } from "@src/modules/guide";
 import type { LanguageType } from "@src/modules/i18n";
-import { useDidMount, useMemosQuery } from "@web-memo/shared/hooks";
+import { useDidMount, useMemosInfiniteQuery } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
@@ -22,13 +22,14 @@ export default function MemoView({ lng }: LanguageType) {
 
 	const category = searchParams.get("category") ?? "";
 	const isWish = searchParams.get("isWish") ?? "";
+	const searchQuery = watch("searchQuery");
 
-	const { memos } = useMemosQuery({
-		category,
-		isWish: isWish === "true",
-		searchQuery: watch("searchQuery"),
-		searchTarget: watch("searchTarget"),
-	});
+	const { memos, totalCount, hasNextPage, isFetchingNextPage, fetchNextPage } =
+		useMemosInfiniteQuery({
+			category,
+			isWish: isWish === "true",
+			searchQuery: searchQuery || undefined,
+		});
 
 	useGuide({ lng });
 	useDidMount(() => ExtensionBridge.requestSyncLoginStatus());
@@ -39,7 +40,7 @@ export default function MemoView({ lng }: LanguageType) {
 				<div className="flex w-full items-center justify-between">
 					<p className="text-muted-foreground select-none text-sm flex items-center gap-2">
 						<span className="w-2 h-2 bg-primary rounded-full" />
-						{t("memos.totalMemos", { total: memos.length })}
+						{t("memos.totalMemos", { total: totalCount })}
 					</p>
 					<div className="flex">
 						<MemoRefreshButton lng={lng} />
@@ -47,7 +48,13 @@ export default function MemoView({ lng }: LanguageType) {
 				</div>
 			</div>
 
-			<MemoGrid memos={memos} lng={lng} />
+			<MemoGrid
+				lng={lng}
+				memos={memos}
+				hasNextPage={hasNextPage}
+				isFetchingNextPage={isFetchingNextPage}
+				fetchNextPage={fetchNextPage}
+			/>
 		</div>
 	);
 }

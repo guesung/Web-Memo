@@ -6,3 +6,4 @@ export {
 	type MemoItem,
 } from "./useMemoInfiniteScroll";
 export { default as useMemoSelection } from "./useMemoSelection";
+export { useViewMode, type ViewMode } from "./useViewMode";

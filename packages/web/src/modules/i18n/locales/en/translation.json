@@ -371,7 +371,11 @@
 		"grid": "Grid view",
 		"calendar": "Calendar view",
 		"selected": "{{count}} selected",
-		"placeholder": "Write your memo"
+		"placeholder": "Write your memo",
+		"viewMode": {
+			"grid": "Grid view",
+			"list": "List view"
+		}
 	},
 
 	"introduce": {

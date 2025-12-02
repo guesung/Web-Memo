@@ -2,12 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import { useKeyboardBind } from "@web-memo/shared/hooks";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@web-memo/ui";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@web-memo/ui";
 import { memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 

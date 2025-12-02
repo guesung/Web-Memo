@@ -1,6 +1,5 @@
 "use client";
 
-import { MasonryInfiniteGrid } from "@egjs/react-infinitegrid";
 import { DragBox } from "@src/components";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
@@ -10,30 +9,24 @@ import {
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
-
-import { Skeleton, toast } from "@web-memo/ui";
+import { toast } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
 
 import MemoDialog from "../MemoDialog";
-import {
-	useDragSelection,
-	useMemoDialog,
-	useMemoInfiniteScroll,
-	useMemoSelection,
-} from "./_hooks";
+import { useDragSelection, useMemoDialog, useMemoSelection } from "./_hooks";
 import MemoEmptyState from "./MemoEmptyState";
-import MemoItem from "./MemoItem";
+import MemoListItem from "./MemoListItem";
 import MemoOptionHeader from "./MemoOptionHeader";
 
-const CONTAINER_ID = "memo-grid";
+const CONTAINER_ID = "memo-list";
 
-interface MemoGridProps extends LanguageType {
+interface MemoListProps extends LanguageType {
 	memos: GetMemoResponse[];
 }
 
-export default function MemoGrid({ lng, memos }: MemoGridProps) {
+export default function MemoList({ lng, memos }: MemoListProps) {
 	const { t } = useTranslation(lng);
 	const router = useRouter();
 	const searchParams = useSearchParams();
@@ -51,10 +44,6 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 
 	const { dialogMemoId } = useMemoDialog();
 	const { mutate: deleteMemos } = useDeleteMemosMutation();
-
-	const { items, handleRequestAppend } = useMemoInfiniteScroll({
-		totalMemoCount: memos.length,
-	});
 
 	const { rafRef } = useDragSelection({
 		containerId: CONTAINER_ID,
@@ -124,41 +113,25 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 				)}
 			</AnimatePresence>
 
-			<MasonryInfiniteGrid
-				useTransform
-				useResizeObserver
-				observeChildren
-				autoResize
-				className="container h-screen max-w-full pb-48 will-change-transform pt-4"
-				container={true}
-				useRecycle={false}
+			<div
 				id={CONTAINER_ID}
-				gap={16}
-				align="center"
-				placeholder={<MemoItemSkeleton />}
-				onRequestAppend={handleRequestAppend}
+				className="container max-w-4xl mx-auto flex flex-col gap-2 pb-48 pt-4"
 			>
-				{items.map((item) => {
-					const memo = memos.at(item.key);
-					if (!memo) return null;
-					return (
-						<MemoItem
+				<AnimatePresence mode="popLayout">
+					{memos.map((memo) => (
+						<MemoListItem
 							key={memo.id}
 							lng={lng}
-							data-grid-groupkey={item.groupKey}
 							memo={memo}
 							isMemoSelected={checkMemoSelected(memo.id)}
 							selectMemoItem={handleSelectMemoItem}
 							isSelectingMode={isSelectingMode}
 						/>
-					);
-				})}
-			</MasonryInfiniteGrid>
+					))}
+				</AnimatePresence>
+			</div>
+
 			{dialogMemoId && <MemoDialog lng={lng} memoId={dialogMemoId} />}
 		</div>
 	);
-}
-
-function MemoItemSkeleton() {
-	return <Skeleton className="h-[300px] w-[300px]" />;
 }

@@ -22,8 +22,11 @@ import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import type { SearchFormValues, SortByType } from "../MemoSearchFormProvider";
+import { useViewMode } from "./_hooks";
 import MemoGrid from "./MemoGrid";
 import MemoKeyboardShortcuts from "./MemoKeyboardShortcuts";
+import MemoList from "./MemoList";
+import ViewModeToggle from "./ViewModeToggle";
 
 const MemoRefreshButton = dynamic(() => import("./MemoRefreshButton"), {
 	ssr: false,
@@ -40,6 +43,7 @@ export default function MemoView({ lng }: LanguageType) {
 	const { watch, control } = useFormContext<SearchFormValues>();
 	const searchParams = useSearchParams();
 	const [showShortcuts, setShowShortcuts] = useState(false);
+	const { viewMode } = useViewMode();
 
 	const category = searchParams.get("category") ?? "";
 	const isWish = searchParams.get("isWish") ?? "";
@@ -101,12 +105,17 @@ export default function MemoView({ lng }: LanguageType) {
 								<p>{t("memos.shortcuts.label")}</p>
 							</TooltipContent>
 						</Tooltip>
+						<ViewModeToggle lng={lng} />
 						<MemoRefreshButton lng={lng} />
 					</div>
 				</div>
 			</div>
 
-			<MemoGrid memos={memos} lng={lng} />
+			{viewMode === "grid" ? (
+				<MemoGrid memos={memos} lng={lng} />
+			) : (
+				<MemoList memos={memos} lng={lng} />
+			)}
 
 			<MemoKeyboardShortcuts
 				lng={lng}

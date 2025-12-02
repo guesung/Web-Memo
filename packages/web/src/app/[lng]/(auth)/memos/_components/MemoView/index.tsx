@@ -4,20 +4,34 @@ import { useGuide } from "@src/modules/guide";
 import type { LanguageType } from "@src/modules/i18n";
 import { useDidMount, useMemosQuery } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@web-memo/ui";
+import { ArrowDownAZ, ArrowUpDown } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import { useFormContext } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import type { SearchFormValues } from "../MemoSearchFormProvider";
+import type { SearchFormValues, SortByType } from "../MemoSearchFormProvider";
 import MemoGrid from "./MemoGrid";
 
 const MemoRefreshButton = dynamic(() => import("./MemoRefreshButton"), {
 	ssr: false,
 });
 
+const SORT_OPTIONS: { value: SortByType; icon: typeof ArrowUpDown }[] = [
+	{ value: "updatedAt", icon: ArrowUpDown },
+	{ value: "createdAt", icon: ArrowUpDown },
+	{ value: "title", icon: ArrowDownAZ },
+];
+
 export default function MemoView({ lng }: LanguageType) {
 	const { t } = useTranslation(lng);
-	const { watch } = useFormContext<SearchFormValues>();
+	const { watch, control } = useFormContext<SearchFormValues>();
 	const searchParams = useSearchParams();
 
 	const category = searchParams.get("category") ?? "";
@@ -28,6 +42,8 @@ export default function MemoView({ lng }: LanguageType) {
 		isWish: isWish === "true",
 		searchQuery: watch("searchQuery"),
 		searchTarget: watch("searchTarget"),
+		sortBy: watch("sortBy"),
+		sortOrder: watch("sortOrder"),
 	});
 
 	useGuide({ lng });
@@ -41,7 +57,28 @@ export default function MemoView({ lng }: LanguageType) {
 						<span className="w-2 h-2 bg-primary rounded-full" />
 						{t("memos.totalMemos", { total: memos.length })}
 					</p>
-					<div className="flex">
+					<div className="flex items-center gap-2">
+						<Controller
+							name="sortBy"
+							control={control}
+							render={({ field }) => (
+								<Select onValueChange={field.onChange} value={field.value}>
+									<SelectTrigger className="w-[140px] h-9 text-sm">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										{SORT_OPTIONS.map((option) => (
+											<SelectItem key={option.value} value={option.value}>
+												<span className="flex items-center gap-2">
+													<option.icon className="h-3.5 w-3.5" />
+													{t(`memos.sort.${option.value}`)}
+												</span>
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							)}
+						/>
 						<MemoRefreshButton lng={lng} />
 					</div>
 				</div>

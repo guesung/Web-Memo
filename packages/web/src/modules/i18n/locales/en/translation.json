@@ -353,6 +353,12 @@
 			"title": "Title",
 			"memo": "Content"
 		},
+		"sort": {
+			"label": "Sort",
+			"updatedAt": "Recently modified",
+			"createdAt": "Recently created",
+			"title": "By title"
+		},
 		"grid": "Grid view",
 		"calendar": "Calendar view",
 		"selected": "{{count}} selected",

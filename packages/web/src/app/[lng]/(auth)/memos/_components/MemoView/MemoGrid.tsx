@@ -137,3 +137,15 @@ export default function MemoGrid({
 function MemoItemSkeleton() {
 	return <Skeleton className="h-[300px] w-[300px]" />;
 }
+
+export function MemoGridSkeleton() {
+	return (
+		<div className="container max-w-full pt-4">
+			<div className="flex flex-wrap justify-center gap-4">
+				{Array.from({ length: 12 }).map((_, index) => (
+					<Skeleton key={index} className="h-[300px] w-[300px] rounded-lg" />
+				))}
+			</div>
+		</div>
+	);
+}

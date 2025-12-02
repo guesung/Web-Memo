@@ -1,3 +1,4 @@
+import { CONFIG } from "@web-memo/env";
 import { useDidMount } from "@web-memo/shared/hooks";
 import {
 	AnalyticsUserTracking,
@@ -43,7 +44,7 @@ export default function SidePanel() {
 			<Suspense>
 				<AnalyticsUserTracking />
 			</Suspense>
-			<UpdateNotificationDialog />
+			{CONFIG.nodeEnv !== "development" && <UpdateNotificationDialog />}
 			{/* <ReactQueryDevtools initialIsOpen={false} /> */}
 		</QueryProvider>
 	);

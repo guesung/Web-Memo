@@ -21,7 +21,8 @@
 		"yesterday": "어제",
 		"workWeek": "이번 주",
 		"close": "닫기",
-		"lastUpdated": "{{time}}에 업데이트됨"
+		"lastUpdated": "{{time}}에 업데이트됨",
+		"learn_more": "더 알아보기"
 	},
 
 	"sideBar": {
@@ -702,6 +703,240 @@
 		"growth": {
 			"title": "사용자 증가 추이",
 			"new_users": "신규 가입"
+		}
+	},
+
+	"features": {
+		"youtubeSummary": {
+			"hero": {
+				"badge": "유튜브 AI 요약",
+				"title": "긴 영상도",
+				"titleHighlight": "핵심만 쏙쏙",
+				"description": "유튜브 영상을 AI로 빠르게 요약하세요. 1시간짜리 영상도 몇 분 만에 핵심 내용을 파악할 수 있습니다.",
+				"cta": "무료로 시작하기",
+				"learnMore": "더 알아보기"
+			},
+			"benefits": {
+				"title": "왜 유튜브 요약이 필요한가요?",
+				"subtitle": "시간을 절약하고 더 많은 콘텐츠를 소화하세요",
+				"timeSaving": {
+					"title": "시간 절약",
+					"description": "1시간짜리 영상의 핵심 내용을 5분 만에 파악하세요. 더 이상 긴 영상 때문에 시간 낭비할 필요 없습니다."
+				},
+				"aiPowered": {
+					"title": "AI 기반 요약",
+					"description": "최신 AI 기술이 영상의 핵심 포인트를 정확하게 추출합니다. 중요한 내용을 놓치지 마세요."
+				},
+				"transcript": {
+					"title": "자막 기반 분석",
+					"description": "유튜브 자막을 분석하여 정확한 요약을 제공합니다. 자막이 있는 모든 영상에서 사용 가능합니다."
+				},
+				"instant": {
+					"title": "즉시 요약",
+					"description": "사이드 패널을 열면 자동으로 요약이 시작됩니다. 클릭 한 번으로 핵심 내용을 확인하세요."
+				}
+			},
+			"howItWorks": {
+				"title": "이렇게 사용하세요",
+				"subtitle": "3단계로 간단하게 유튜브 영상을 요약하세요",
+				"step1": {
+					"title": "유튜브 영상 재생",
+					"description": "요약하고 싶은 유튜브 영상 페이지로 이동하세요"
+				},
+				"step2": {
+					"title": "사이드 패널 열기",
+					"description": "Alt+S (맥: Option+S)로 웹 메모 사이드 패널을 여세요"
+				},
+				"step3": {
+					"title": "AI 요약 확인",
+					"description": "AI가 자동으로 영상을 분석하고 핵심 내용을 요약해줍니다"
+				}
+			},
+			"cta": {
+				"title": "지금 바로 유튜브 요약을 시작하세요",
+				"description": "무료 크롬 확장 프로그램을 설치하고 더 효율적으로 영상을 시청하세요.",
+				"button": "크롬에 설치하기",
+				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
+			}
+		},
+		"memo": {
+			"hero": {
+				"badge": "브라우저 메모",
+				"title": "읽으면서",
+				"titleHighlight": "바로 메모하세요",
+				"description": "웹페이지를 읽다가 떠오르는 생각을 즉시 기록하세요. 사이드 패널에서 간편하게 메모하고 체계적으로 관리할 수 있습니다.",
+				"cta": "무료로 시작하기",
+				"learnMore": "더 알아보기"
+			},
+			"benefits": {
+				"title": "왜 브라우저 메모가 필요한가요?",
+				"subtitle": "아이디어를 놓치지 않고 체계적으로 관리하세요",
+				"shortcut": {
+					"title": "단축키로 빠르게",
+					"description": "Alt+S (맥: Option+S) 하나로 어디서든 사이드 패널을 열어 바로 메모를 시작할 수 있습니다."
+				},
+				"organize": {
+					"title": "카테고리로 정리",
+					"description": "메모를 카테고리별로 분류하세요. 나중에 필요한 메모를 쉽게 찾을 수 있습니다."
+				},
+				"sync": {
+					"title": "클라우드 동기화",
+					"description": "로그인하면 모든 기기에서 메모를 확인할 수 있습니다. 어디서든 내 메모에 접근하세요."
+				},
+				"search": {
+					"title": "검색으로 빠르게",
+					"description": "저장한 메모를 제목이나 내용으로 검색하세요. 원하는 메모를 빠르게 찾을 수 있습니다."
+				}
+			},
+			"howItWorks": {
+				"title": "이렇게 사용하세요",
+				"subtitle": "3단계로 간단하게 메모를 시작하세요",
+				"step1": {
+					"title": "사이드 패널 열기",
+					"description": "Alt+S (맥: Option+S)로 어디서든 사이드 패널을 열 수 있어요"
+				},
+				"step2": {
+					"title": "메모 작성하기",
+					"description": "떠오르는 생각을 바로 적으세요. 자동으로 저장됩니다"
+				},
+				"step3": {
+					"title": "언제든 확인",
+					"description": "web-memo.site에서 모든 메모를 확인하고 관리하세요"
+				}
+			},
+			"cta": {
+				"title": "지금 바로 메모를 시작하세요",
+				"description": "무료 크롬 확장 프로그램을 설치하고 더 스마트하게 웹서핑하세요.",
+				"button": "크롬에 설치하기",
+				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
+			}
+		},
+		"saveArticles": {
+			"hero": {
+				"badge": "아티클 저장",
+				"title": "나중에 읽을 아티클",
+				"titleHighlight": "한 곳에 모아두세요",
+				"description": "관심 있는 아티클을 위시리스트에 저장하세요. 언제든지 다시 찾아볼 수 있습니다.",
+				"cta": "무료로 시작하기",
+				"learnMore": "더 알아보기"
+			},
+			"benefits": {
+				"title": "왜 아티클 저장이 필요한가요?",
+				"subtitle": "읽고 싶은 콘텐츠를 놓치지 마세요",
+				"oneClick": {
+					"title": "원클릭 저장",
+					"description": "버튼 하나로 현재 페이지를 위시리스트에 저장하세요. 복잡한 과정 없이 바로 저장됩니다."
+				},
+				"wishlist": {
+					"title": "위시리스트 관리",
+					"description": "저장한 아티클을 한눈에 확인하고 관리하세요. 읽은 것과 읽지 않은 것을 쉽게 구분할 수 있습니다."
+				},
+				"anywhere": {
+					"title": "어디서든 접근",
+					"description": "저장한 아티클은 web-memo.site에서 언제든 확인할 수 있습니다. 모바일에서도 접근 가능합니다."
+				},
+				"readLater": {
+					"title": "나중에 읽기",
+					"description": "바쁠 때 발견한 좋은 아티클을 저장해두고, 시간이 날 때 천천히 읽으세요."
+				}
+			},
+			"howItWorks": {
+				"title": "이렇게 사용하세요",
+				"subtitle": "3단계로 간단하게 아티클을 저장하세요",
+				"step1": {
+					"title": "위시리스트에 추가",
+					"description": "사이드 패널에서 하트 버튼을 클릭하세요"
+				},
+				"step2": {
+					"title": "목록에서 확인",
+					"description": "저장한 아티클을 위시리스트에서 확인하세요"
+				},
+				"step3": {
+					"title": "원할 때 읽기",
+					"description": "시간이 날 때 저장한 아티클을 천천히 읽으세요"
+				}
+			},
+			"cta": {
+				"title": "지금 바로 아티클 저장을 시작하세요",
+				"description": "무료 크롬 확장 프로그램을 설치하고 좋은 콘텐츠를 놓치지 마세요.",
+				"button": "크롬에 설치하기",
+				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
+			}
+		}
+	},
+
+	"useCases": {
+		"research": {
+			"hero": {
+				"badge": "리서치 & 자료 조사",
+				"title": "자료 조사를",
+				"titleHighlight": "더 효율적으로",
+				"description": "논문, 아티클, 웹 자료를 조사할 때 중요한 내용을 바로 메모하고 체계적으로 관리하세요.",
+				"cta": "무료로 시작하기",
+				"learnMore": "더 알아보기"
+			},
+			"benefits": {
+				"title": "리서치가 이렇게 편해집니다",
+				"subtitle": "자료 조사의 효율을 높이는 기능들",
+				"capture": {
+					"title": "즉시 기록",
+					"description": "자료를 읽다가 중요한 내용을 발견하면 바로 메모하세요. 나중에 다시 찾을 필요 없이 핵심만 기록해두세요."
+				},
+				"summarize": {
+					"title": "AI 요약",
+					"description": "긴 논문이나 아티클도 AI가 핵심 내용을 요약해줍니다. 시간을 절약하며 더 많은 자료를 검토하세요."
+				},
+				"organize": {
+					"title": "체계적 정리",
+					"description": "카테고리별로 메모를 분류하세요. 프로젝트나 주제별로 자료를 정리할 수 있습니다."
+				},
+				"reference": {
+					"title": "출처 관리",
+					"description": "메모와 함께 원본 URL이 자동 저장됩니다. 나중에 출처를 확인하거나 다시 방문할 수 있습니다."
+				}
+			},
+			"cta": {
+				"title": "더 효율적인 리서치를 시작하세요",
+				"description": "무료 크롬 확장 프로그램을 설치하고 자료 조사의 효율을 높이세요.",
+				"button": "크롬에 설치하기",
+				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
+			}
+		},
+		"learning": {
+			"hero": {
+				"badge": "온라인 학습",
+				"title": "온라인 학습을",
+				"titleHighlight": "더 효과적으로",
+				"description": "유튜브 강의, 온라인 코스를 보면서 중요한 내용을 메모하고 AI로 요약하세요.",
+				"cta": "무료로 시작하기",
+				"learnMore": "더 알아보기"
+			},
+			"benefits": {
+				"title": "학습 효과를 높이는 기능들",
+				"subtitle": "더 효율적으로 배우고 기억하세요",
+				"videoSummary": {
+					"title": "영상 AI 요약",
+					"description": "유튜브 강의 영상을 AI가 자동으로 요약해줍니다. 긴 강의도 핵심만 빠르게 파악하세요."
+				},
+				"notes": {
+					"title": "강의 노트",
+					"description": "영상을 보면서 중요한 내용을 바로 메모하세요. 나만의 학습 노트를 만들 수 있습니다."
+				},
+				"review": {
+					"title": "복습 용이",
+					"description": "저장한 메모와 요약을 언제든 다시 확인하세요. 효율적인 복습으로 학습 효과를 높이세요."
+				},
+				"focus": {
+					"title": "집중력 향상",
+					"description": "메모하면서 학습하면 집중력이 높아집니다. 능동적인 학습으로 더 잘 기억하세요."
+				}
+			},
+			"cta": {
+				"title": "더 효과적인 학습을 시작하세요",
+				"description": "무료 크롬 확장 프로그램을 설치하고 학습 효율을 높이세요.",
+				"button": "크롬에 설치하기",
+				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
+			}
 		}
 	}
 }

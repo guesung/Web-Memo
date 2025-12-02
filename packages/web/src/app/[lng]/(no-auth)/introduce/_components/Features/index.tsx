@@ -2,8 +2,10 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { PATHS } from "@web-memo/shared/constants";
 import { motion } from "framer-motion";
-import { Pencil, BarChart3, FolderOpen, Sparkles, Heart } from "lucide-react";
+import { Pencil, BarChart3, FolderOpen, Sparkles, Heart, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 interface FeaturesProps extends LanguageType {}
 
@@ -21,6 +23,7 @@ export default function Features({ lng }: FeaturesProps) {
 			iconColor: "text-blue-500",
 			glowColor: "group-hover:shadow-blue-500/25",
 			size: "large",
+			href: `/${lng}${PATHS.featuresMemo}`,
 		},
 		{
 			icon: BarChart3,
@@ -32,6 +35,7 @@ export default function Features({ lng }: FeaturesProps) {
 			iconColor: "text-green-500",
 			glowColor: "group-hover:shadow-green-500/25",
 			size: "small",
+			href: null,
 		},
 		{
 			icon: FolderOpen,
@@ -43,6 +47,7 @@ export default function Features({ lng }: FeaturesProps) {
 			iconColor: "text-purple-500",
 			glowColor: "group-hover:shadow-purple-500/25",
 			size: "small",
+			href: `/${lng}${PATHS.featuresSaveArticles}`,
 		},
 		{
 			icon: Sparkles,
@@ -54,6 +59,7 @@ export default function Features({ lng }: FeaturesProps) {
 			iconColor: "text-amber-500",
 			glowColor: "group-hover:shadow-amber-500/25",
 			size: "large",
+			href: `/${lng}${PATHS.featuresYoutubeSummary}`,
 		},
 		{
 			icon: Heart,
@@ -65,6 +71,7 @@ export default function Features({ lng }: FeaturesProps) {
 			iconColor: "text-pink-500",
 			glowColor: "group-hover:shadow-pink-500/25",
 			size: "full",
+			href: null,
 		},
 	];
 
@@ -132,6 +139,16 @@ export default function Features({ lng }: FeaturesProps) {
 										<p className="text-gray-600 dark:text-gray-400 leading-relaxed">
 											{feature.description}
 										</p>
+
+										{feature.href && (
+											<Link
+												href={feature.href}
+												className="inline-flex items-center gap-1 mt-4 text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
+											>
+												{t("common.learn_more")}
+												<ArrowRight className="w-4 h-4" />
+											</Link>
+										)}
 									</div>
 
 									{/* Decorative Corner Gradient */}

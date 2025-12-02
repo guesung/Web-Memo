@@ -14,6 +14,11 @@ export const PATHS = {
 	callbackEmail: "/auth/callback-email",
 	admin: "/admin",
 	adminUsers: "/admin/users",
+	featuresYoutubeSummary: "/features/youtube-summary",
+	featuresMemo: "/features/memo",
+	featuresSaveArticles: "/features/save-articles",
+	useCasesResearch: "/use-cases/research",
+	useCasesLearning: "/use-cases/learning",
 };
 
 export const NEED_AUTH_PAGES = [

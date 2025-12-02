@@ -223,6 +223,10 @@ function Component({ lng }: { lng: Language }) {
 - Client components: `import useTranslation from "@src/modules/i18n/util.client"`
 - Server components: `import useTranslation from "@src/modules/i18n/util.server"` (async)
 
+**Post-Task Validation**:
+- After completing any task that modifies i18n-related code, always run `/i18n-check` to verify translation completeness
+- This ensures all translation keys exist in both Korean and English locale files
+
 ### Environment Configuration
 Key environment variables:
 - `__FIREFOX__`: Enable Firefox-specific build modifications

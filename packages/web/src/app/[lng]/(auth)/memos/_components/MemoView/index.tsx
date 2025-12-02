@@ -23,6 +23,7 @@ export default function MemoView({ lng }: LanguageType) {
 	const category = searchParams.get("category") ?? "";
 	const isWish = searchParams.get("isWish") ?? "";
 	const searchQuery = watch("searchQuery");
+	const sortBy = watch("sortBy");
 
 	const {
 		memos,

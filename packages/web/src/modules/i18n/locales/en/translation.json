@@ -353,6 +353,10 @@
 			"title": "Title",
 			"memo": "Content"
 		},
+		"sortBy": {
+			"updated_at": "Last modified",
+			"created_at": "Date created"
+		},
 		"grid": "Grid view",
 		"calendar": "Calendar view",
 		"selected": "{{count}} selected",

@@ -66,26 +66,35 @@ export class MemoService {
 		category,
 		isWish,
 		searchQuery,
+		sortBy = "updated_at",
 	}: {
 		cursor?: string;
 		limit?: number;
 		category?: string;
 		isWish?: boolean;
 		searchQuery?: string;
+		sortBy?: "updated_at" | "created_at" | "title";
 	}) => {
 		const selectQuery = category
 			? "*, category!inner(id, name, color)"
 			: "*, category(id, name, color)";
 
+		const ascending = sortBy === "title";
+
 		let query = this.supabaseClient
 			.schema(SUPABASE.table.memo)
 			.from(SUPABASE.table.memo)
 			.select(selectQuery, { count: "exact" })
-			.order("updated_at", { ascending: false })
+			.order(sortBy, { ascending })
+			.order("id", { ascending })
 			.limit(limit);
 
 		if (cursor) {
-			query = query.lt("updated_at", cursor);
+			if (sortBy === "title") {
+				query = query.gt("title", cursor);
+			} else {
+				query = query.lt(sortBy, cursor);
+			}
 		}
 
 		if (isWish !== undefined) {

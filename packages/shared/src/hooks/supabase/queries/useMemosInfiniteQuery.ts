@@ -1,5 +1,5 @@
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import { QUERY_KEY } from "../../../constants";
+import { QUERY_KEY, type MemoSortBy } from "../../../constants";
 import type { GetMemoResponse } from "../../../types";
 import { MemoService } from "../../../utils";
 
@@ -11,18 +11,20 @@ interface UseMemosInfiniteQueryProps {
 	category?: string;
 	isWish?: boolean;
 	searchQuery?: string;
+	sortBy?: MemoSortBy;
 }
 
 export default function useMemosInfiniteQuery({
 	category,
 	isWish = false,
 	searchQuery,
+	sortBy = "updated_at",
 }: UseMemosInfiniteQueryProps = {}) {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 	const memoService = new MemoService(supabaseClient);
 
 	const query = useSuspenseInfiniteQuery({
-		queryKey: QUERY_KEY.memosPaginated(category, isWish, searchQuery),
+		queryKey: QUERY_KEY.memosPaginated(category, isWish, searchQuery, sortBy),
 		queryFn: async ({ pageParam }) => {
 			const result = await memoService.getMemosPaginated({
 				cursor: pageParam,
@@ -30,6 +32,7 @@ export default function useMemosInfiniteQuery({
 				category,
 				isWish,
 				searchQuery,
+				sortBy,
 			});
 
 			return {
@@ -43,6 +46,12 @@ export default function useMemosInfiniteQuery({
 				return undefined;
 			}
 			const lastMemo = lastPage.data.at(-1);
+			if (sortBy === "title") {
+				return lastMemo?.title ?? undefined;
+			}
+			if (sortBy === "created_at") {
+				return lastMemo?.created_at ?? undefined;
+			}
 			return lastMemo?.updated_at ?? undefined;
 		},
 	});

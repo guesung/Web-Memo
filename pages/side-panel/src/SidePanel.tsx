@@ -6,6 +6,7 @@ import {
 } from "@web-memo/shared/modules/analytics";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { ErrorBoundary, Toaster } from "@web-memo/ui";
+import { GripHorizontal } from "lucide-react";
 import { Suspense } from "react";
 import {
 	MemoForm,
@@ -15,8 +16,12 @@ import {
 	Summary,
 	UpdateNotificationDialog,
 } from "./components";
+import { useResizablePanel } from "./hooks";
 
 export default function SidePanel() {
+	const { summaryHeight, memoHeight, isResizing, containerRef, handleMouseDown } =
+		useResizablePanel();
+
 	useDidMount(() => {
 		ExtensionBridge.responseGetSidePanelOpen();
 		analytics.trackSidePanelOpen();
@@ -25,13 +30,36 @@ export default function SidePanel() {
 
 	return (
 		<QueryProvider>
-			<main className="prose prose-sm bg-background text-foreground relative flex h-lvh flex-col px-4 max-w-none overflow-x-hidden">
-				<section className="flex-1 overflow-y-scroll">
+			<main
+				ref={containerRef}
+				className="prose prose-sm bg-background text-foreground relative flex h-lvh flex-col px-4 max-w-none overflow-x-hidden"
+			>
+				<section
+					className="overflow-y-scroll"
+					style={{ height: `${summaryHeight}%` }}
+				>
 					<ErrorBoundary>
 						<Summary />
 					</ErrorBoundary>
 				</section>
-				<section className="flex h-1/2 flex-col">
+				<div
+					role="slider"
+					aria-label="Resize panels"
+					aria-valuemin={20}
+					aria-valuemax={80}
+					aria-valuenow={Math.round(summaryHeight)}
+					tabIndex={0}
+					className="group flex h-3 shrink-0 cursor-row-resize items-center justify-center hover:bg-muted/50 transition-colors"
+					onMouseDown={handleMouseDown}
+				>
+					<GripHorizontal
+						className={`h-4 w-4 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors ${isResizing ? "text-muted-foreground" : ""}`}
+					/>
+				</div>
+				<section
+					className="flex flex-col overflow-hidden"
+					style={{ height: `${memoHeight}%` }}
+				>
 					<MemoHeader />
 					<ErrorBoundary>
 						<Suspense fallback={<MemoFormSkeleton />}>

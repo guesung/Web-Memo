@@ -16,7 +16,6 @@ import MemoDialog from "../MemoDialog";
 import {
 	useDragSelection,
 	useMemoDialog,
-	useMemoInfiniteScroll,
 	useMemoSelection,
 } from "./_hooks";
 import MemoEmptyState from "./MemoEmptyState";
@@ -27,9 +26,18 @@ const CONTAINER_ID = "memo-grid";
 
 interface MemoGridProps extends LanguageType {
 	memos: GetMemoResponse[];
+	hasNextPage?: boolean;
+	isFetchingNextPage?: boolean;
+	fetchNextPage?: () => void;
 }
 
-export default function MemoGrid({ lng, memos }: MemoGridProps) {
+export default function MemoGrid({
+	lng,
+	memos,
+	hasNextPage = false,
+	isFetchingNextPage = false,
+	fetchNextPage,
+}: MemoGridProps) {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const dragBoxRef = useRef<HTMLDivElement>(null);
@@ -45,10 +53,6 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 
 	const { dialogMemoId } = useMemoDialog();
 
-	const { items, handleRequestAppend } = useMemoInfiniteScroll({
-		totalMemoCount: memos.length,
-	});
-
 	const { rafRef } = useDragSelection({
 		containerId: CONTAINER_ID,
 		dragBoxRef,
@@ -59,6 +63,12 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 		clearSelection();
 		searchParams.removeAll("id");
 		router.replace(searchParams.getUrl(), { scroll: false });
+	};
+
+	const handleRequestAppend = () => {
+		if (hasNextPage && !isFetchingNextPage && fetchNextPage) {
+			fetchNextPage();
+		}
 	};
 
 	useEffect(function closeRAFOnUnmount() {
@@ -103,21 +113,17 @@ export default function MemoGrid({ lng, memos }: MemoGridProps) {
 				placeholder={<MemoItemSkeleton />}
 				onRequestAppend={handleRequestAppend}
 			>
-				{items.map((item) => {
-					const memo = memos.at(item.key);
-					if (!memo) return null;
-					return (
-						<MemoItem
-							key={memo.id}
-							lng={lng}
-							data-grid-groupkey={item.groupKey}
-							memo={memo}
-							isMemoSelected={checkMemoSelected(memo.id)}
-							selectMemoItem={handleSelectMemoItem}
-							isSelectingMode={isSelectingMode}
-						/>
-					);
-				})}
+				{memos.map((memo, index) => (
+					<MemoItem
+						key={memo.id}
+						lng={lng}
+						data-grid-groupkey={Math.floor(index / 20)}
+						memo={memo}
+						isMemoSelected={checkMemoSelected(memo.id)}
+						selectMemoItem={handleSelectMemoItem}
+						isSelectingMode={isSelectingMode}
+					/>
+				))}
 			</MasonryInfiniteGrid>
 			{dialogMemoId && <MemoDialog lng={lng} memoId={dialogMemoId} />}
 		</div>

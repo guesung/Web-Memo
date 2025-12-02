@@ -174,6 +174,7 @@ export interface AdminStats {
 	todayMemos: number;
 	weeklyMemos: number;
 	monthlyMemos: number;
+	quarterlyMemos: number;
 }
 
 export interface UserGrowthData {
@@ -183,8 +184,8 @@ export interface UserGrowthData {
 
 export interface AdminUser {
 	user_id: string;
+	email: string | null;
 	nickname: string | null;
-	role: string;
 	created_at: string;
 	memo_count: number;
 }
@@ -196,8 +197,6 @@ export interface AdminUsersResponse {
 
 export interface GetAdminUsersParams {
 	searchQuery?: string;
-	pageSize?: number;
-	pageOffset?: number;
 }
 
 export class AdminService {
@@ -208,23 +207,23 @@ export class AdminService {
 	}
 
 	getAdminStats = async () =>
-		this.supabaseClient.rpc("get_admin_stats" as never);
+		this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			.rpc("get_admin_stats" as never);
 
 	getUserGrowth = async (daysAgo: number = 30) =>
-		this.supabaseClient.rpc("get_user_growth" as never, {
-			days_ago: daysAgo,
-		} as never);
+		this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			.rpc("get_user_growth" as never, {
+				days_ago: daysAgo,
+			} as never);
 
-	getUsers = async ({
-		searchQuery,
-		pageSize = 20,
-		pageOffset = 0,
-	}: GetAdminUsersParams = {}) =>
-		this.supabaseClient.rpc("get_admin_users" as never, {
-			search_query: searchQuery || null,
-			page_size: pageSize,
-			page_offset: pageOffset,
-		} as never);
+	getUsers = async ({ searchQuery }: GetAdminUsersParams = {}) =>
+		this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			.rpc("get_admin_users" as never, {
+				search_query: searchQuery || null,
+			} as never);
 
 	checkIsAdmin = async (userId: string) => {
 		const { data } = await this.supabaseClient

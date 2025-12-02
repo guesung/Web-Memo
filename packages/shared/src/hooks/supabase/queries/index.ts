@@ -7,3 +7,4 @@ export { default as useSupabaseUserQuery } from "./useSupabaseUserQuery";
 export { default as useAdminStatsQuery } from "./useAdminStatsQuery";
 export { default as useUserGrowthQuery } from "./useUserGrowthQuery";
 export { default as useAdminUsersQuery } from "./useAdminUsersQuery";
+export { default as useAdminUsersInfiniteQuery } from "./useAdminUsersInfiniteQuery";

@@ -364,3 +364,18 @@ export {
 	ChartTooltip,
 	ChartTooltipContent,
 };
+
+export {
+	Area,
+	AreaChart,
+	Bar,
+	BarChart,
+	CartesianGrid,
+	Line,
+	LineChart,
+	Pie,
+	PieChart,
+	XAxis,
+	YAxis,
+	ResponsiveContainer,
+} from "recharts";

@@ -1,6 +1,7 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import { motion, useInView } from "framer-motion";
 import { Star, Users, Gift, Shield } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
@@ -32,12 +33,14 @@ function AnimatedCounter({ end, duration = 2000 }: { end: number; duration?: num
 }
 
 export default function SocialProofBar({ lng }: SocialProofBarProps) {
+	const { t } = useTranslation(lng);
+
 	const proofItems = [
 		{
 			icon: Users,
 			value: 250,
 			suffix: "+",
-			label: lng === "ko" ? "활성 사용자" : "Active Users",
+			label: t("introduce.social_proof.active_users"),
 			color: "text-blue-600 dark:text-blue-400",
 			bgColor: "bg-blue-100 dark:bg-blue-900/30",
 		},
@@ -45,7 +48,7 @@ export default function SocialProofBar({ lng }: SocialProofBarProps) {
 			icon: Star,
 			value: 5.0,
 			suffix: "",
-			label: lng === "ko" ? "평균 평점" : "Average Rating",
+			label: t("introduce.social_proof.rating"),
 			color: "text-yellow-600 dark:text-yellow-400",
 			bgColor: "bg-yellow-100 dark:bg-yellow-900/30",
 			isDecimal: true,
@@ -54,7 +57,7 @@ export default function SocialProofBar({ lng }: SocialProofBarProps) {
 			icon: Gift,
 			value: 100,
 			suffix: "%",
-			label: lng === "ko" ? "영원히 무료" : "Free Forever",
+			label: t("introduce.social_proof.free_forever"),
 			color: "text-green-600 dark:text-green-400",
 			bgColor: "bg-green-100 dark:bg-green-900/30",
 		},
@@ -62,10 +65,10 @@ export default function SocialProofBar({ lng }: SocialProofBarProps) {
 			icon: Shield,
 			value: 0,
 			suffix: "",
-			label: lng === "ko" ? "데이터 추적 없음" : "No Data Tracking",
+			label: t("introduce.social_proof.no_tracking"),
 			color: "text-purple-600 dark:text-purple-400",
 			bgColor: "bg-purple-100 dark:bg-purple-900/30",
-			customValue: lng === "ko" ? "안전" : "Safe",
+			customValue: t("introduce.social_proof.safe"),
 		},
 	];
 

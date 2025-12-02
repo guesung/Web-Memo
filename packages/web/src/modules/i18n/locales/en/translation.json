@@ -849,6 +849,19 @@
 		}
 	},
 
+	"youtube": {
+		"summary": {
+			"title": "AI Summary",
+			"views": "views",
+			"watchOnYoutube": "Watch on YouTube",
+			"cta": {
+				"title": "Create your own YouTube summaries",
+				"description": "Summarize any video with AI using our free Chrome extension.",
+				"button": "Add to Chrome"
+			}
+		}
+	},
+
 	"useCases": {
 		"research": {
 			"hero": {

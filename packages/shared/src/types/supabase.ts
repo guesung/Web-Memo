@@ -153,12 +153,68 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			youtube_summaries: {
+				Row: {
+					id: string;
+					video_id: string;
+					video_url: string;
+					title: string;
+					channel_name: string | null;
+					thumbnail_url: string | null;
+					duration: string | null;
+					published_at: string | null;
+					summary: string;
+					language: string;
+					view_count: number;
+					created_at: string;
+					updated_at: string;
+					created_by: string | null;
+				};
+				Insert: {
+					id?: string;
+					video_id: string;
+					video_url: string;
+					title: string;
+					channel_name?: string | null;
+					thumbnail_url?: string | null;
+					duration?: string | null;
+					published_at?: string | null;
+					summary: string;
+					language?: string;
+					view_count?: number;
+					created_at?: string;
+					updated_at?: string;
+					created_by?: string | null;
+				};
+				Update: {
+					id?: string;
+					video_id?: string;
+					video_url?: string;
+					title?: string;
+					channel_name?: string | null;
+					thumbnail_url?: string | null;
+					duration?: string | null;
+					published_at?: string | null;
+					summary?: string;
+					language?: string;
+					view_count?: number;
+					created_at?: string;
+					updated_at?: string;
+					created_by?: string | null;
+				};
+				Relationships: [];
+			};
 		};
 		Views: {
 			[_ in never]: never;
 		};
 		Functions: {
-			[_ in never]: never;
+			increment_youtube_summary_view_count: {
+				Args: {
+					p_video_id: string;
+				};
+				Returns: undefined;
+			};
 		};
 		Enums: {
 			[_ in never]: never;

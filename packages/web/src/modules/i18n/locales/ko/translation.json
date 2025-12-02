@@ -844,6 +844,19 @@
 		}
 	},
 
+	"youtube": {
+		"summary": {
+			"title": "AI 요약",
+			"views": "회 조회",
+			"watchOnYoutube": "YouTube에서 보기",
+			"cta": {
+				"title": "나만의 YouTube 요약을 만들어보세요",
+				"description": "무료 크롬 확장 프로그램으로 어떤 영상이든 AI로 요약할 수 있어요.",
+				"button": "크롬에 설치하기"
+			}
+		}
+	},
+
 	"useCases": {
 		"research": {
 			"hero": {

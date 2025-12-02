@@ -130,5 +130,22 @@
 	},
 	"category_suggestion_dismiss": {
 		"message": "무시"
+	},
+	"update_notification_title": {
+		"message": "🎉 업데이트 소식"
+	},
+	"update_notification_version": {
+		"message": "v$VERSION$ 버전이 출시되었습니다!",
+		"placeholders": {
+			"version": {
+				"content": "$1"
+			}
+		}
+	},
+	"update_notification_dismiss": {
+		"message": "다시 보지 않기"
+	},
+	"update_notification_confirm": {
+		"message": "확인"
 	}
 }

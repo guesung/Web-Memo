@@ -12,6 +12,7 @@ import {
 	MemoHeader,
 	QueryProvider,
 	Summary,
+	UpdateNotificationDialog,
 } from "./components";
 
 export default function SidePanel() {
@@ -42,6 +43,7 @@ export default function SidePanel() {
 			<Suspense>
 				<AnalyticsUserTracking />
 			</Suspense>
+			<UpdateNotificationDialog />
 			{/* <ReactQueryDevtools initialIsOpen={false} /> */}
 		</QueryProvider>
 	);

@@ -56,3 +56,5 @@ prds/
 stats.html
 playwright-report
 test-results
+
+.serena/

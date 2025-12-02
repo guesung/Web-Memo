@@ -7,10 +7,11 @@ import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import type { SearchParamsType } from "@web-memo/shared/modules/search-params";
 import { MemoService } from "@web-memo/shared/utils";
-import { Loading, SidebarTrigger } from "@web-memo/ui";
+import { SidebarTrigger } from "@web-memo/ui";
 import { Suspense } from "react";
 
 import {
+	MemoGridSkeleton,
 	MemoSearchForm,
 	MemoSearchFormProvider,
 	MemoView,
@@ -40,7 +41,7 @@ export default async function Page({ params: { lng } }: PageProps) {
 								<MemoSearchForm lng={lng} />
 							</div>
 							<div className="flex-1 overflow-hidden">
-								<Suspense fallback={<Loading />}>
+								<Suspense fallback={<MemoGridSkeleton />}>
 									<MemoView lng={lng} />
 								</Suspense>
 							</div>

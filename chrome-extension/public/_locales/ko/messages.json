@@ -98,6 +98,9 @@
 	"settings_saved": {
 		"message": "설정을 저장했어요"
 	},
+	"settings_reset": {
+		"message": "설정을 초기화했어요"
+	},
 	"youtube": {
 		"message": "유튜브"
 	},
@@ -106,5 +109,44 @@
 	},
 	"summary": {
 		"message": "요약"
+	},
+	"search_category": {
+		"message": "카테고리 검색"
+	},
+	"no_categories_found": {
+		"message": "카테고리가 없습니다"
+	},
+	"category_suggesting": {
+		"message": "카테고리 추천 중..."
+	},
+	"category_suggestion_existing": {
+		"message": "추천:"
+	},
+	"category_suggestion_new": {
+		"message": "새 카테고리:"
+	},
+	"category_suggestion_accept": {
+		"message": "적용"
+	},
+	"category_suggestion_dismiss": {
+		"message": "무시"
+	},
+	"auto_apply_category_setting": {
+		"message": "카테고리 자동 적용"
+	},
+	"auto_apply_category_description": {
+		"message": "AI가 추천한 카테고리를 자동으로 적용합니다"
+	},
+	"update_notification_title": {
+		"message": "🎉 업데이트 소식"
+	},
+	"update_notification_version": {
+		"message": "v{{VERSION}} 버전이 출시되었습니다!"
+	},
+	"update_notification_dismiss": {
+		"message": "다시 보지 않기"
+	},
+	"update_notification_confirm": {
+		"message": "확인"
 	}
 }

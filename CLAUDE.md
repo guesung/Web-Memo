@@ -128,6 +128,13 @@ Components follow functional programming principles:
 - RORO pattern (Receive Object, Return Object)
 - Named exports preferred
 
+### Icons
+- **Always use `lucide-react`** for icons instead of inline SVG
+- Import icons from `lucide-react` package: `import { IconName } from "lucide-react"`
+- Never write inline `<svg>` elements - find the equivalent lucide-react icon
+- Common icons: `Check`, `X`, `ChevronDown`, `Globe`, `Star`, `Users`, `Sparkles`, etc.
+- Browse available icons at https://lucide.dev/icons
+
 ### Error Handling
 - Early returns for error cases
 - Guard clauses for preconditions
@@ -139,6 +146,33 @@ Components follow functional programming principles:
 - Structure: exports → subcomponents → helpers → types
 - Use descriptive names with auxiliary verbs (isLoading, handleClick)
 - Lowercase with dashes for directories
+- **File names**: Use camelCase (e.g., `getMemoCount.ts`, `chromeStoreStats.ts`)
+
+### Next.js Page File Separation
+
+When creating or modifying `page.tsx` files in Next.js App Router, separate code into appropriate folders:
+
+```
+app/[route]/
+├── page.tsx              # Only component rendering and composition
+├── _components/          # React components (with index.ts barrel export)
+├── _constants/           # Static values, configuration objects (with index.ts)
+├── _utils/               # Helper functions, data fetching, metadata (with index.ts)
+└── _types/               # TypeScript interfaces if needed (with index.ts)
+```
+
+**Separation Rules**:
+- **_constants/**: Hardcoded values, config objects, static arrays
+- **_utils/**: Data fetching functions, transformations, validation, metadata
+- **_components/**: Page-specific React components
+- **page.tsx**: Only imports, generateMetadata export, and component composition
+
+**Standards**:
+- Do NOT write comments unless absolutely necessary for complex business logic
+- Use camelCase for file names (not kebab-case)
+- Create `index.ts` barrel exports in each folder
+- Import from folder index (e.g., `from "./_constants"` not `from "./_constants/stats"`)
+- Keep page.tsx focused on rendering only
 
 ### Testing Strategy
 - **Unit Tests**: Utility functions and hooks (Vitest)
@@ -157,6 +191,37 @@ Components follow functional programming principles:
 - Support for Korean (ko) and English (en) locales
 - Chrome extension i18n via `_locales/` directories
 - Next.js i18n integration for web application
+
+**IMPORTANT**: Never use `lng === "ko"` pattern for conditional text rendering. Always use `useTranslation` hook with translation keys.
+
+**❌ Wrong Pattern**:
+```tsx
+{lng === "ko" ? "한글 텍스트" : "English Text"}
+```
+
+**✅ Correct Pattern**:
+```tsx
+import useTranslation from "@src/modules/i18n/util.client";
+
+function Component({ lng }: { lng: Language }) {
+  const { t } = useTranslation(lng);
+  return <span>{t("some.translation.key")}</span>;
+}
+```
+
+**Adding New Translations**:
+1. Add translation key to `packages/web/src/modules/i18n/locales/ko/translation.json`
+2. Add same key to `packages/web/src/modules/i18n/locales/en/translation.json`
+3. Use `t("your.new.key")` in component
+
+**Translation File Structure**:
+- Use nested objects for organization: `"section.subsection.key"`
+- Group related translations under common prefixes
+- Example: `introduce.hero.title`, `introduce.hero.subtitle`
+
+**Server vs Client Components**:
+- Client components: `import useTranslation from "@src/modules/i18n/util.client"`
+- Server components: `import useTranslation from "@src/modules/i18n/util.server"` (async)
 
 ### Environment Configuration
 Key environment variables:

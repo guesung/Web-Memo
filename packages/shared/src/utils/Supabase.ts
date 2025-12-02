@@ -24,6 +24,14 @@ export class MemoService {
 			.insert(request)
 			.select();
 
+	getMemoByUrl = async (url: string) =>
+		this.supabaseClient
+			.schema(SUPABASE.table.memo)
+			.from(SUPABASE.table.memo)
+			.select("*")
+			.eq("url", url)
+			.maybeSingle();
+
 	upsertMemos = async (request: GetMemoResponse[]) => {
 		// TODO: 직접 카테고리를 제거하는 로직 수정 필요
 		const requestWithoutCategory = request.map(({ category, ...rest }) => rest);
@@ -50,6 +58,59 @@ export class MemoService {
 		]);
 		const data = [...(firstBatch?.data ?? []), ...(secondBatch?.data ?? [])];
 		return { ...firstBatch, data };
+	};
+
+	getMemosPaginated = async ({
+		cursor,
+		limit = 20,
+		category,
+		isWish,
+		searchQuery,
+		sortBy = "updated_at",
+	}: {
+		cursor?: string;
+		limit?: number;
+		category?: string;
+		isWish?: boolean;
+		searchQuery?: string;
+		sortBy?: "updated_at" | "created_at" | "title";
+	}) => {
+		const selectQuery = category
+			? "*, category!inner(id, name, color)"
+			: "*, category(id, name, color)";
+
+		const ascending = sortBy === "title";
+
+		let query = this.supabaseClient
+			.schema(SUPABASE.table.memo)
+			.from(SUPABASE.table.memo)
+			.select(selectQuery, { count: "exact" })
+			.order(sortBy, { ascending })
+			.order("id", { ascending })
+			.limit(limit);
+
+		if (cursor) {
+			if (sortBy === "title") {
+				query = query.gt("title", cursor);
+			} else {
+				query = query.lt(sortBy, cursor);
+			}
+		}
+
+		if (isWish !== undefined) {
+			query = query.eq("isWish", isWish);
+		}
+
+		if (category) {
+			query = query.eq("category.name", category);
+		}
+
+		if (searchQuery) {
+			const pattern = `%${searchQuery}%`;
+			query = query.or(`title.ilike.${pattern},memo.ilike.${pattern}`);
+		}
+
+		return query;
 	};
 
 	updateMemo = async ({
@@ -158,4 +219,72 @@ export class FeedbackService {
 
 	insertFeedback = async (feedback: FeedbackTable["Insert"]) =>
 		this.feedbackSupabaseClient.from("feedbacks").insert(feedback);
+}
+
+export interface AdminStats {
+	totalUsers: number;
+	totalMemos: number;
+	todayMemos: number;
+	weeklyMemos: number;
+	monthlyMemos: number;
+	quarterlyMemos: number;
+}
+
+export interface UserGrowthData {
+	date: string;
+	count: number;
+}
+
+export interface AdminUser {
+	user_id: string;
+	email: string | null;
+	nickname: string | null;
+	created_at: string;
+	memo_count: number;
+}
+
+export interface AdminUsersResponse {
+	users: AdminUser[];
+	totalCount: number;
+}
+
+export interface GetAdminUsersParams {
+	searchQuery?: string;
+}
+
+export class AdminService {
+	supabaseClient: MemoSupabaseClient;
+
+	constructor(supabaseClient: MemoSupabaseClient) {
+		this.supabaseClient = supabaseClient;
+	}
+
+	getAdminStats = async () =>
+		this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			.rpc("get_admin_stats" as never);
+
+	getUserGrowth = async (daysAgo: number = 30) =>
+		this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			.rpc("get_user_growth" as never, {
+				days_ago: daysAgo,
+			} as never);
+
+	getUsers = async ({ searchQuery }: GetAdminUsersParams = {}) =>
+		this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			.rpc("get_admin_users" as never, {
+				search_query: searchQuery || null,
+			} as never);
+
+	checkIsAdmin = async (userId: string) => {
+		const { data } = await this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			.from("profiles")
+			.select("*")
+			.eq("user_id", userId)
+			.single();
+		return (data as { role?: string } | null)?.role === "admin";
+	};
 }

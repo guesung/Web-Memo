@@ -15,18 +15,21 @@ export function useTheme() {
 		setTheme(theme);
 	}, []);
 
-	useEffect(() => {
-		(async () => {
-			const storageTheme = await ChromeSyncStorage.get("theme");
+	useEffect(
+		function initTheme() {
+			(async () => {
+				const storageTheme = await ChromeSyncStorage.get("theme");
 
-			const isInitialThemeDark =
-				!storageTheme &&
-				window.matchMedia("(prefers-color-scheme: dark)").matches;
-			const isStorageThemeDark = storageTheme === "dark";
+				const isInitialThemeDark =
+					!storageTheme &&
+					window.matchMedia("(prefers-color-scheme: dark)").matches;
+				const isStorageThemeDark = storageTheme === "dark";
 
-			if (isInitialThemeDark || isStorageThemeDark) setThemeMode("dark");
-		})();
-	}, [setThemeMode]);
+				if (isInitialThemeDark || isStorageThemeDark) setThemeMode("dark");
+			})();
+		},
+		[setThemeMode],
+	);
 
 	return { setTheme: setThemeMode, theme };
 }

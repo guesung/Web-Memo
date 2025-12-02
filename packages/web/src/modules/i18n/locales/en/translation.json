@@ -353,6 +353,10 @@
 			"title": "Title",
 			"memo": "Content"
 		},
+		"sortBy": {
+			"updated_at": "Last modified",
+			"created_at": "Date created"
+		},
 		"grid": "Grid view",
 		"calendar": "Calendar view",
 		"selected": "{{count}} selected",
@@ -369,10 +373,91 @@
 			"title": "Easier web browsing",
 			"subtitle": "Save with one click, summarize with AI, organize systematically",
 			"install_button": "Add to Chrome",
+			"explore_features": "Explore Features",
+			"free_forever": "Free Forever",
+			"quick_install": "10s Install",
+			"no_credit_card": "No credit card required",
+			"learn_more": "Learn more",
 			"mobile_apps": {
 				"ios": "iOS",
 				"android": "Android"
 			}
+		},
+		"section": {
+			"key_features": "Key Features",
+			"key_features_desc": "Features that make web browsing smarter",
+			"demo_title": "See it in action",
+			"demo_desc": "Explore the key features of Web Memo",
+			"how_it_works": "How to get started",
+			"how_it_works_desc": "Get started in 3 simple steps",
+			"use_cases": "Recommended for",
+			"use_cases_desc": "Web Memo helps in various situations",
+			"stats_title": "Web Memo by the numbers",
+			"stats_desc": "Many users are already using Web Memo",
+			"testimonials_title": "User Reviews",
+			"testimonials_desc": "See what real users are saying",
+			"testimonials_note": "* Based on representative use cases",
+			"cta_title": "Get started now",
+			"cta_desc": "Experience smarter web browsing. Free, right now."
+		},
+		"demo": {
+			"write_memo": "Write Memo",
+			"write_memo_desc": "Take notes while reading articles",
+			"overview": "Overview",
+			"overview_desc": "See all memos at a glance",
+			"ai_summary": "AI Summary",
+			"ai_summary_desc": "Summarize YouTube videos with AI",
+			"wishlist": "Wishlist",
+			"wishlist_desc": "Save content for later",
+			"organize": "Organize",
+			"organize_desc": "Systematic management with categories"
+		},
+		"steps": {
+			"step1_title": "Install Extension",
+			"step1_desc": "10 seconds from Chrome Web Store",
+			"step2_title": "Open Side Panel",
+			"step2_desc": "Quick access with shortcuts",
+			"step3_title": "Save and Organize",
+			"step3_desc": "Systematically manage web content"
+		},
+		"use_case": {
+			"students_title": "Students & Researchers",
+			"students_desc": "Save key points from online courses and research. Systematically manage references for your papers.",
+			"professionals_title": "Professionals",
+			"professionals_desc": "Systematically manage competitor analysis and trend monitoring. Find work-related information quickly.",
+			"efficiency_title": "Efficient People",
+			"efficiency_desc": "Get key insights with AI summaries instead of reading long articles. Save time and consume more content.",
+			"creators_title": "Content Creators",
+			"creators_desc": "Collect inspiring content and ideas. Manage all your creative references in one place."
+		},
+		"stats": {
+			"active_users": "Active Users",
+			"active_users_desc": "Chrome Web Store users",
+			"memos_saved": "Memos Saved",
+			"memos_saved_desc": "Total memos saved by users",
+			"rating": "Average Rating",
+			"rating_desc": "Chrome Web Store rating",
+			"install_time": "Install Time",
+			"install_time_suffix": "sec",
+			"install_time_desc": "Time to install on Chrome"
+		},
+		"social_proof": {
+			"active_users": "Active Users",
+			"rating": "Average Rating",
+			"free_forever": "Free Forever",
+			"no_tracking": "No Data Tracking",
+			"safe": "Safe"
+		},
+		"testimonial": {
+			"kim_name": "Kim**",
+			"kim_role": "Graduate Student",
+			"kim_quote": "Organizing research materials has become much easier. The AI summary feature is really useful. I can quickly grasp the key points of long papers, saving a lot of research time.",
+			"lee_name": "Lee**",
+			"lee_role": "Marketer",
+			"lee_quote": "It's become an essential tool for competitor analysis. I can organize insights while reading multiple articles, greatly improving my work efficiency.",
+			"park_name": "Park**",
+			"park_role": "Developer",
+			"park_quote": "I always use it when reading tech blogs or documentation. The notes I've taken are really helpful when I need to look things up later. Highly recommended!"
 		},
 		"features": {
 			"memo": {
@@ -415,6 +500,9 @@
 		},
 		"faq": {
 			"title": "FAQ",
+			"subtitle": "Have any questions?",
+			"other_questions": "Have other questions?",
+			"contact_us": "Contact us via email",
 			"questions": {
 				"what_is": {
 					"question": "What is Web Memo?",
@@ -424,9 +512,29 @@
 					"question": "Is it free?",
 					"answer": "Yes! All core features of Web Memo are completely free: \u2022 Unlimited memo storage \u2022 AI-powered content summarization \u2022 Category organization features \u2022 Wishlist management \u2022 YouTube caption summarization \u2022 Mobile app with data synchronization We are committed to providing a great service experience without ads or paid subscriptions."
 				},
+				"how_to_use": {
+					"question": "How do I use the service?",
+					"answer": "You can use Web Memo by installing the Chrome extension. Once installed, you can open the side panel on any website to start taking notes."
+				},
 				"where_to_save": {
 					"question": "Where can I save memos?",
-					"answer": "Web Memo works everywhere on the internet! Install the Chrome extension and you can: \u2022 Take notes on blogs and news sites \u2022 Organize content from online courses and educational materials \u2022 Record insights from YouTube videos \u2022 Save information from shopping or product review sites \u2022 Summarize key points from research papers Simply press Alt+S (Windows) / Option+S (Mac) to open the side panel and start taking notes immediately."
+					"answer": "Web Memo works everywhere on the internet! Install the Chrome extension and you can: • Take notes on blogs and news sites • Organize content from online courses and educational materials • Record insights from YouTube videos • Save information from shopping or product review sites • Summarize key points from research papers Simply press Alt+S (Windows) / Option+S (Mac) to open the side panel and start taking notes immediately."
+				},
+				"ai_summary": {
+					"question": "How does the AI summary feature work?",
+					"answer": "The AI summary feature automatically analyzes the content of the webpage or YouTube video you're viewing and summarizes the key points. For YouTube, it summarizes based on video captions, and for webpages, it analyzes the main text content. When you open the side panel, the summary starts automatically, helping you quickly grasp the essentials of long content."
+				},
+				"data_sync": {
+					"question": "Can I sync my memos across multiple devices?",
+					"answer": "Yes! When you log in to Web Memo, all your memos are automatically saved to the cloud. You can access and edit all your memos from any device—PC, laptop, tablet—by logging in with the same account. You can also view your saved memos anytime at web-memo.site."
+				},
+				"supported_browsers": {
+					"question": "Which browsers are supported?",
+					"answer": "Currently, Web Memo is available on Chrome and Chrome-based browsers (Edge, Brave, Arc, etc.). Simply install the extension from the Chrome Web Store to get started. Support for Firefox and Safari is coming soon—stay tuned!"
+				},
+				"data_security": {
+					"question": "Is my memo data secure?",
+					"answer": "Yes, security is our top priority. All data is encrypted and stored securely, accessible only by you. You can export or delete your data at any time. We never sell or share your data with third parties."
 				}
 			}
 		},
@@ -450,6 +558,9 @@
 		"footer": {
 			"title": "Web Memo",
 			"description": "Easy and fast content organization",
+			"chrome_extension": "Chrome Extension",
+			"features_link": "Explore Features",
+			"contact_link": "Contact Us",
 			"product": {
 				"title": "Product",
 				"features": "Features",
@@ -525,6 +636,44 @@
 			"phoneNumber": "Phone number",
 			"message": "Message",
 			"sendSMS": "Send message"
+		}
+	},
+
+	"admin": {
+		"title": "Admin Dashboard",
+		"sidebar": {
+			"title": "Admin",
+			"dashboard": "Dashboard",
+			"users": "Users",
+			"back_to_memos": "Back to Memos"
+		},
+		"users": {
+			"title": "User Management",
+			"empty": "No users found.",
+			"total": "{{count}} users total",
+			"joined": "Joined",
+			"memos": "Memos",
+			"search_placeholder": "Search by nickname or ID...",
+			"previous": "Previous",
+			"next": "Next",
+			"page": "Page {{current}} of {{total}}"
+		},
+		"stats": {
+			"total_users": "Total Users",
+			"total_memos": "Total Memos",
+			"today_memos": "Today's Memos",
+			"weekly_memos": "Weekly Memos"
+		},
+		"activity": {
+			"title": "Memo Activity",
+			"today": "Today",
+			"this_week": "This Week",
+			"this_month": "This Month",
+			"memos": "Memos"
+		},
+		"growth": {
+			"title": "User Growth",
+			"new_users": "New Users"
 		}
 	}
 }

@@ -12,10 +12,14 @@ export const PATHS = {
 	memosSetting: "/memos/setting",
 	callbackOAuth: "/auth/callback",
 	callbackEmail: "/auth/callback-email",
+	admin: "/admin",
+	adminUsers: "/admin/users",
 };
 
 export const NEED_AUTH_PAGES = [
 	PATHS.memos,
 	PATHS.memosWish,
 	PATHS.memosSetting,
+	PATHS.admin,
+	PATHS.adminUsers,
 ];

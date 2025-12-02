@@ -1,6 +1,9 @@
 export { default as useCategoryQuery } from "./useCategoryQuery";
 export { default as useMemoQuery } from "./useMemoQuery";
-export { default as useMemosQuery } from "./useMemosQuery";
+export { default as useMemosInfiniteQuery } from "./useMemosInfiniteQuery";
 export { default as useSupabaseClientQuery } from "./useSupabaseClientQuery";
 export { default as useSupabaseFeedbackClientQuery } from "./useSupabaseFeedbackClientQuery";
 export { default as useSupabaseUserQuery } from "./useSupabaseUserQuery";
+export { default as useAdminStatsQuery } from "./useAdminStatsQuery";
+export { default as useUserGrowthQuery } from "./useUserGrowthQuery";
+export { default as useAdminUsersQuery } from "./useAdminUsersQuery";

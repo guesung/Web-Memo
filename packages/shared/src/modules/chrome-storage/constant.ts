@@ -3,4 +3,7 @@ export const STORAGE_KEYS = {
 	webPrompts: "webPrompts",
 	language: "language",
 	theme: "theme",
+	autoApplyCategory: "autoApplyCategory",
+	dismissedUpdateVersion: "dismissedUpdateVersion",
+	summaryHeight: "summaryHeight",
 } as const;

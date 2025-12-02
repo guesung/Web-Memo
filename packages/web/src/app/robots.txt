@@ -5,4 +5,4 @@ Disallow: /*/memos/
 Disallow: /*/admin/
 Disallow: /*/login
 
-Sitemap: https://web-memo.site/sitemap.xml
+Sitemap: https://webmemo.site/sitemap.xml

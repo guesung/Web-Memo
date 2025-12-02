@@ -3,7 +3,7 @@ import { PATHS } from "@web-memo/shared/constants";
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-	const baseUrl = process.env.NEXT_PUBLIC_WEB_URL || "https://web-memo.site";
+	const baseUrl = process.env.NEXT_PUBLIC_WEB_URL || "https://webmemo.site";
 	const lastModified = new Date().toISOString();
 
 	const pathConfigs = [

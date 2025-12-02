@@ -3,17 +3,9 @@ import type { LanguageParams } from "@src/modules/i18n";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { PATHS } from "@web-memo/shared/constants";
 import { AuthService } from "@web-memo/shared/utils";
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { LoginSection, PersonalInformationInfo } from "./_components";
-
-export const metadata: Metadata = {
-	robots: {
-		index: false,
-		follow: false,
-	},
-};
 
 export default async function page({ params: { lng } }: LanguageParams) {
 	const supabaseClient = getSupabaseClient();

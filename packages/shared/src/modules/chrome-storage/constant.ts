@@ -3,4 +3,5 @@ export const STORAGE_KEYS = {
 	webPrompts: "webPrompts",
 	language: "language",
 	theme: "theme",
+	autoApplyCategory: "autoApplyCategory",
 } as const;

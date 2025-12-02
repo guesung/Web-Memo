@@ -264,3 +264,56 @@ pnpm -F e2e test -- --grep "test name"
 # Run single test file
 pnpm test:jest -- path/to/test.ts
 ```
+
+## Work Documentation (claudedocs)
+
+All development work should be documented in the `claudedocs/` folder for tracking and reference.
+
+### File Naming Convention
+```
+claudedocs/
+├── YYYY-MM-DD-feature-name.md      # Feature implementation
+├── YYYY-MM-DD-bugfix-description.md # Bug fixes
+├── YYYY-MM-DD-refactor-target.md   # Refactoring work
+└── YYYY-MM-DD-analysis-topic.md    # Analysis and research
+```
+
+### Document Template
+```markdown
+# [Task Title]
+
+**Date**: YYYY-MM-DD
+**Type**: feature | bugfix | refactor | analysis | chore
+**Status**: completed | in-progress | blocked
+
+## Summary
+Brief description of what was done.
+
+## Changes Made
+- List of files modified
+- Key changes and decisions
+
+## Technical Details
+Relevant implementation details, patterns used, etc.
+
+## Related Issues/PRs
+- Links to related GitHub issues or PRs
+
+## Notes
+Any additional context or follow-up items.
+```
+
+### When to Create Documentation
+- New feature implementations
+- Bug fixes with significant investigation
+- Refactoring work affecting multiple files
+- Architecture decisions
+- Complex debugging sessions
+- Research and analysis results
+
+### Best Practices
+- Use descriptive file names that indicate the work type
+- Include the date prefix (YYYY-MM-DD) for chronological sorting
+- Keep documentation concise but informative
+- Link to relevant code files using relative paths
+- Update status as work progresses

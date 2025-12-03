@@ -139,5 +139,20 @@
 	},
 	"auto_apply_category_description": {
 		"message": "AI가 추천한 카테고리를 자동으로 적용합니다"
+	},
+	"chat_title": {
+		"message": "AI 채팅"
+	},
+	"chat_input_placeholder": {
+		"message": "페이지 내용에 대해 질문해보세요..."
+	},
+	"chat_send": {
+		"message": "전송"
+	},
+	"chat_clear": {
+		"message": "대화 지우기"
+	},
+	"chat_empty_state": {
+		"message": "페이지 내용에 대해 AI에게 질문해보세요"
 	}
 }

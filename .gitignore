@@ -58,3 +58,5 @@ playwright-report
 test-results
 
 .serena/
+
+*.tsbuildinfo

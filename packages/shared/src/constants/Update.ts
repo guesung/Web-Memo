@@ -2,7 +2,7 @@ import packageJson from "../../../../package.json";
 
 export const CURRENT_VERSION = packageJson.version;
 
-export const UPDATE_NOTES: Record<string, UpdateNotes> = {
+const UPDATE_NOTES: Record<string, UpdateNotes> = {
 	"1.9": {
 		ko: [
 			"AI 기반 카테고리 자동 추천 기능 추가",
@@ -17,11 +17,8 @@ export const UPDATE_NOTES: Record<string, UpdateNotes> = {
 	},
 };
 
-export function getUpdateNotes(
-	version: string,
-	language: "ko" | "en",
-): string[] {
-	const [major, minor] = version.split(".");
+export function getUpdateNotes(language: "ko" | "en"): string[] {
+	const [major, minor] = CURRENT_VERSION.split(".");
 	const key = `${major}.${minor}`;
 	return UPDATE_NOTES[key]?.[language] ?? [];
 }

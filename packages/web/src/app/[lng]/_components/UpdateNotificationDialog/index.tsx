@@ -17,7 +17,7 @@ export default function UpdateNotificationDialog({ lng }: { lng: Language }) {
 		LocalStorage.set("dismissedUpdateVersion", version);
 	}
 
-	const updateNotes = getUpdateNotes(CURRENT_VERSION, lng);
+	const updateNotes = getUpdateNotes(lng);
 
 	const translations = {
 		title: t("updateNotification.title"),

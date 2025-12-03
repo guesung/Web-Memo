@@ -4,6 +4,5 @@ export const STORAGE_KEYS = {
 	language: "language",
 	theme: "theme",
 	autoApplyCategory: "autoApplyCategory",
-	dismissedUpdateVersion: "dismissedUpdateVersion",
 	summaryHeight: "summaryHeight",
 } as const;

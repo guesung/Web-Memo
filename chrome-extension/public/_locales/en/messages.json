@@ -148,8 +148,5 @@
 	},
 	"update_notification_confirm": {
 		"message": "Got it"
-	},
-	"update_notification_notes": {
-		"message": "AI-powered category auto-recommendation|Landing page redesign|Add memo by drag and drop"
 	}
 }

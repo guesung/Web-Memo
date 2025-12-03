@@ -8,4 +8,5 @@ export * from "./Path";
 export * from "./Prompt";
 export * from "./QueryKey";
 export * from "./Supabase";
+export * from "./Update";
 export * from "./Url";

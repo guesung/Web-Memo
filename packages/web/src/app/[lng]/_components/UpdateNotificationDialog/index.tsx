@@ -2,16 +2,12 @@
 
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import {
+	CURRENT_VERSION,
+	getUpdateNotes,
+} from "@web-memo/shared/constants/Update";
 import { LocalStorage } from "@web-memo/shared/modules/local-storage";
 import { UpdateNotificationDialog as BaseUpdateNotificationDialog } from "@web-memo/ui";
-import packageJson from "../../../../../../../package.json";
-
-const CURRENT_VERSION = packageJson.version;
-
-function getVersionKey(version: string): string {
-	const [major, minor] = version.split(".");
-	return `v${major}.${minor}.0`;
-}
 
 export default function UpdateNotificationDialog({ lng }: { lng: Language }) {
 	const { t } = useTranslation(lng);
@@ -24,11 +20,7 @@ export default function UpdateNotificationDialog({ lng }: { lng: Language }) {
 		LocalStorage.set("dismissedUpdateVersion", version);
 	}
 
-	const versionKey = getVersionKey(CURRENT_VERSION);
-	const updateNotes = t(`updates.versions.${versionKey}.content`, {
-		returnObjects: true,
-		defaultValue: [],
-	}) as string[];
+	const updateNotes = getUpdateNotes(CURRENT_VERSION, lng);
 
 	const translations = {
 		title: t("updateNotification.title"),
@@ -40,7 +32,7 @@ export default function UpdateNotificationDialog({ lng }: { lng: Language }) {
 	return (
 		<BaseUpdateNotificationDialog
 			currentVersion={CURRENT_VERSION}
-			updateNotes={Array.isArray(updateNotes) ? updateNotes : []}
+			updateNotes={updateNotes}
 			getDismissedVersion={getDismissedVersion}
 			setDismissedVersion={setDismissedVersion}
 			translations={translations}

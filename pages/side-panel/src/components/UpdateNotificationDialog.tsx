@@ -1,4 +1,8 @@
 import {
+	CURRENT_VERSION,
+	getUpdateNotes,
+} from "@web-memo/shared/constants/Update";
+import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
@@ -6,9 +10,6 @@ import { I18n } from "@web-memo/shared/utils/extension";
 import { UpdateNotificationDialog as BaseUpdateNotificationDialog } from "@web-memo/ui";
 
 export default function UpdateNotificationDialog() {
-	const manifest = chrome.runtime.getManifest();
-	const currentVersion = manifest.version;
-
 	async function getDismissedVersion(): Promise<string | null> {
 		return ChromeSyncStorage.get<string>(STORAGE_KEYS.dismissedUpdateVersion);
 	}
@@ -17,8 +18,8 @@ export default function UpdateNotificationDialog() {
 		await ChromeSyncStorage.set(STORAGE_KEYS.dismissedUpdateVersion, version);
 	}
 
-	const updateNotesRaw = I18n.get("update_notification_notes");
-	const updateNotes = updateNotesRaw ? updateNotesRaw.split("|") : [];
+	const language = I18n.getUILanguage().startsWith("ko") ? "ko" : "en";
+	const updateNotes = getUpdateNotes(CURRENT_VERSION, language);
 
 	const translations = {
 		title: I18n.get("update_notification_title"),
@@ -29,7 +30,7 @@ export default function UpdateNotificationDialog() {
 
 	return (
 		<BaseUpdateNotificationDialog
-			currentVersion={currentVersion}
+			currentVersion={CURRENT_VERSION}
 			updateNotes={updateNotes}
 			getDismissedVersion={getDismissedVersion}
 			setDismissedVersion={setDismissedVersion}

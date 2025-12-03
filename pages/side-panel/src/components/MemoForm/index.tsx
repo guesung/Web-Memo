@@ -1,6 +1,10 @@
 import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
 import { useDebounce } from "@web-memo/shared/hooks";
+import {
+	ChromeSyncStorage,
+	STORAGE_KEYS,
+} from "@web-memo/shared/modules/chrome-storage";
 import { I18n } from "@web-memo/shared/utils/extension";
 import {
 	Badge,
@@ -39,13 +43,21 @@ function MemoFormContent() {
 
 	const currentCategoryId = watch("categoryId");
 
-	const [isFirstSave, setIsFirstSave] = useState(true);
+	const [hasTriggeredSuggestion, setHasTriggeredSuggestion] = useState(false);
 
 	const { memoData, isSaving, saveMemo, handleMemoChange } = useMemoForm({
-		onSaveSuccess: (memoInput) => {
-			// Trigger category suggestion on first save if no category is set
-			if (!memoInput.categoryId && isFirstSave) {
-				setIsFirstSave(false);
+		onSaveSuccess: async (memoInput) => {
+			// Skip if category is already set
+			if (memoInput.categoryId) return;
+
+			const isAutoApplyEnabled =
+				(await ChromeSyncStorage.get<boolean>(STORAGE_KEYS.autoApplyCategory)) ??
+				true;
+
+			// Auto-apply enabled: trigger on every save without category
+			// Auto-apply disabled: trigger only on first save
+			if (isAutoApplyEnabled || !hasTriggeredSuggestion) {
+				setHasTriggeredSuggestion(true);
 				// Small delay to let save complete visually
 				setTimeout(() => {
 					triggerSuggestion(memoInput.memo);

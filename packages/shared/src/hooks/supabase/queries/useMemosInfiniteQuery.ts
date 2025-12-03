@@ -1,5 +1,5 @@
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import { QUERY_KEY, type MemoSortBy } from "../../../constants";
+import { type MemoSortBy, QUERY_KEY } from "../../../constants";
 import type { GetMemoResponse } from "../../../types";
 import { MemoService } from "../../../utils";
 

@@ -43,7 +43,7 @@ export default function SidePanel() {
 						isResizing={isResizing}
 						onMouseDown={handleMouseDown}
 					/>
-					<MemoSection height={memoHeight} />
+					<MemoSection memoHeight={memoHeight} />
 				</main>
 				<Toaster />
 				<ErrorBoundary>

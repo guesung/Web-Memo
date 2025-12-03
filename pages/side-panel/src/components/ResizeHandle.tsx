@@ -1,15 +1,15 @@
+import { cn } from "@web-memo/ui";
 import { GripHorizontal } from "lucide-react";
 
-interface ResizeHandleProps {
+interface ResizeHandleProps extends React.ComponentProps<"div"> {
 	tabHeight: number;
 	isResizing: boolean;
-	onMouseDown: (e: React.MouseEvent) => void;
 }
 
 export default function ResizeHandle({
 	tabHeight,
 	isResizing,
-	onMouseDown,
+	...props
 }: ResizeHandleProps) {
 	return (
 		<div
@@ -20,10 +20,14 @@ export default function ResizeHandle({
 			aria-valuenow={Math.round(tabHeight)}
 			tabIndex={0}
 			className="group flex h-3 shrink-0 cursor-row-resize items-center justify-center hover:bg-muted/50 transition-colors"
-			onMouseDown={onMouseDown}
+			{...props}
 		>
 			<GripHorizontal
-				className={`h-4 w-4 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors ${isResizing ? "text-muted-foreground" : ""}`}
+				className={cn(
+					"h-4 w-4 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors",
+					props.className,
+					isResizing && "text-muted-foreground",
+				)}
 			/>
 		</div>
 	);

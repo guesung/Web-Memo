@@ -174,10 +174,7 @@ function MemoFormContent() {
 							/>
 						)}
 						{/* Category Recommend Button */}
-						{!currentCategoryId &&
-							!isSuggestionLoading &&
-							!suggestion &&
-							memoData && (
+						{!currentCategoryId && !isSuggestionLoading && !suggestion && (
 								<TooltipProvider>
 									<Tooltip>
 										<TooltipTrigger asChild>

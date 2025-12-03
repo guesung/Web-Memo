@@ -20,7 +20,7 @@ export class Runtime {
 			request: BridgeRequest<TPayload>,
 			sender: chrome.runtime.MessageSender,
 			sendResponse: (response: TResponse) => void,
-		) => undefined | boolean | Promise<unknown>,
+		) => void | boolean | Promise<unknown>,
 	) {
 		chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			if (request.type === type) {

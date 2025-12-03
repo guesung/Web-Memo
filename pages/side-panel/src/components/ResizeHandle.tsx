@@ -1,7 +1,13 @@
 import { GripHorizontal } from "lucide-react";
 
+interface ResizeHandleProps {
+	tabHeight: number;
+	isResizing: boolean;
+	onMouseDown: (e: React.MouseEvent) => void;
+}
+
 export default function ResizeHandle({
-	summaryHeight,
+	tabHeight,
 	isResizing,
 	onMouseDown,
 }: ResizeHandleProps) {
@@ -11,7 +17,7 @@ export default function ResizeHandle({
 			aria-label="Resize panels"
 			aria-valuemin={20}
 			aria-valuemax={80}
-			aria-valuenow={Math.round(summaryHeight)}
+			aria-valuenow={Math.round(tabHeight)}
 			tabIndex={0}
 			className="group flex h-3 shrink-0 cursor-row-resize items-center justify-center hover:bg-muted/50 transition-colors"
 			onMouseDown={onMouseDown}
@@ -21,10 +27,4 @@ export default function ResizeHandle({
 			/>
 		</div>
 	);
-}
-
-interface ResizeHandleProps {
-	summaryHeight: number;
-	isResizing: boolean;
-	onMouseDown: (e: React.MouseEvent) => void;
 }

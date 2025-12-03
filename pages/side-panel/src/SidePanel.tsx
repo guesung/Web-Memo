@@ -16,13 +16,8 @@ import { SummaryProvider } from "./components/Summary/components";
 import { useResizablePanel } from "./hooks";
 
 export default function SidePanel() {
-	const {
-		summaryHeight,
-		memoHeight,
-		isResizing,
-		containerRef,
-		handleMouseDown,
-	} = useResizablePanel();
+	const { tabHeight, memoHeight, isResizing, containerRef, handleMouseDown } =
+		useResizablePanel();
 	const [activeTab, setActiveTab] = useState<string>("summary");
 
 	useDidMount(() => {
@@ -41,10 +36,10 @@ export default function SidePanel() {
 					<TabSection
 						activeTab={activeTab}
 						onTabChange={setActiveTab}
-						height={summaryHeight}
+						tabHeight={tabHeight}
 					/>
 					<ResizeHandle
-						summaryHeight={summaryHeight}
+						tabHeight={tabHeight}
 						isResizing={isResizing}
 						onMouseDown={handleMouseDown}
 					/>

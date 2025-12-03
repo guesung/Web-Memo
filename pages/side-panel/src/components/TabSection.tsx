@@ -9,15 +9,21 @@ import {
 import { FileText, MessageSquare } from "lucide-react";
 import { Chat, Summary } from ".";
 
+interface TabSectionProps {
+	activeTab: string;
+	onTabChange: (value: string) => void;
+	tabHeight: number;
+}
+
 export default function TabSection({
 	activeTab,
 	onTabChange,
-	height,
+	tabHeight,
 }: TabSectionProps) {
 	return (
 		<section
 			className="flex flex-col overflow-hidden"
-			style={{ height: `${height}%` }}
+			style={{ height: `${tabHeight}%` }}
 		>
 			<Tabs
 				value={activeTab}
@@ -49,10 +55,4 @@ export default function TabSection({
 			</Tabs>
 		</section>
 	);
-}
-
-interface TabSectionProps {
-	activeTab: string;
-	onTabChange: (value: string) => void;
-	height: number;
 }

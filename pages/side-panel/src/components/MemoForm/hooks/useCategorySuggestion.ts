@@ -17,8 +17,6 @@ const API_TIMEOUT = 10000;
 const PAGE_CONTENT_SAMPLE_LENGTH = 500;
 const KOREAN_RATIO_THRESHOLD = 0.1;
 
-export const MIN_MEMO_LENGTH = 20;
-
 function detectPageLanguage(
 	pageTitle: string,
 	pageContent: string,
@@ -93,7 +91,6 @@ export function useCategorySuggestion({
 		async (memoText: string) => {
 			// Guard conditions
 			if (currentCategoryId) return;
-			if (memoText.length < MIN_MEMO_LENGTH) return;
 
 			try {
 				const tabInfo = await getTabInfo();
@@ -213,6 +210,10 @@ export function useCategorySuggestion({
 		reset();
 	}, [suggestion, applyCategorySuggestionDirect, reset]);
 
+	const triggerSuggestionByPageContent = useCallback(async () => {
+		await triggerSuggestion("");
+	}, [triggerSuggestion]);
+
 	// Cleanup on unmount
 	useEffect(() => {
 		return () => {
@@ -232,6 +233,7 @@ export function useCategorySuggestion({
 		isLoading,
 		suggestion,
 		triggerSuggestion,
+		triggerSuggestionByPageContent,
 		acceptSuggestion,
 		dismissSuggestion,
 	};
@@ -257,6 +259,7 @@ interface UseCategorySuggestionReturn {
 	isLoading: boolean;
 	suggestion: CategorySuggestion | null;
 	triggerSuggestion: (memoText: string) => void;
+	triggerSuggestionByPageContent: () => Promise<void>;
 	acceptSuggestion: () => Promise<void>;
 	dismissSuggestion: () => void;
 }

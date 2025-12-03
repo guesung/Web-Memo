@@ -131,6 +131,9 @@
 	"category_suggestion_dismiss": {
 		"message": "무시"
 	},
+	"recommend_category": {
+		"message": "AI 카테고리 추천"
+	},
 	"auto_apply_category_setting": {
 		"message": "카테고리 자동 적용"
 	},

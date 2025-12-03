@@ -2,9 +2,8 @@ import type { MemoInput } from "@src/types/Input";
 import {
 	useDebounce,
 	useDidMount,
-	useMemoPatchMutation,
-	useMemoPostMutation,
 	useMemoQuery,
+	useMemoUpsertMutation,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
@@ -26,16 +25,11 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const { setValue, getValues } = useFormContext<MemoInput>();
 	const { debounce } = useDebounce();
 	const { data: tab } = useTabQuery();
-	const {
-		memo: memoData,
-		refetch: refetchMemo,
-	} = useMemoQuery({
+	const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
 		url: tab.url,
 	});
-	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
-	const { mutate: mutateMemoPost } = useMemoPostMutation();
+	const { mutate: upsertMemo } = useMemoUpsertMutation();
 	const [isSaving, setIsSaving] = useState(false);
-	const isCreatingRef = useRef(false);
 	const initialTabInfoRef = useRef<TabInfo | null>(null);
 
 	useDidMount(() => {
@@ -69,43 +63,31 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 			const tabInfo = initialTabInfoRef.current ?? (await getTabInfo());
 
-			const totalMemo = {
-				...tabInfo,
-				memo: memoInput.memo,
-				isWish: memoInput.isWish,
-				category_id: memoInput.categoryId,
-			};
-
-			if (isCreatingRef.current) return;
-
-			if (memoData) {
-				mutateMemoPatch(
-					{ id: memoData.id, request: totalMemo },
-					{
-						onSuccess: () => {
-							setTimeout(() => {
-								setIsSaving(false);
-							}, 500);
-							onSaveSuccess?.(memoInput);
-						},
+			upsertMemo(
+				{
+					id: memoData?.id,
+					url: tabInfo.url,
+					data: {
+						...tabInfo,
+						memo: memoInput.memo,
+						isWish: memoInput.isWish,
+						category_id: memoInput.categoryId,
 					},
-				);
-				return;
-			}
-
-			isCreatingRef.current = true;
-
-			mutateMemoPost(totalMemo, {
-				onSuccess: () => {
-					setTimeout(() => {
-						setIsSaving(false);
-					}, 500);
-					isCreatingRef.current = false;
-					onSaveSuccess?.(memoInput);
 				},
-			});
+				{
+					onSuccess: () => {
+						setTimeout(() => {
+							setIsSaving(false);
+						}, 500);
+						onSaveSuccess?.(memoInput);
+					},
+					onError: () => {
+						setIsSaving(false);
+					},
+				},
+			);
 		},
-		[getValues, memoData, mutateMemoPatch, mutateMemoPost, onSaveSuccess],
+		[getValues, memoData?.id, upsertMemo, onSaveSuccess],
 	);
 
 	const handleMemoChange = useCallback(

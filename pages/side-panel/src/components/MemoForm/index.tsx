@@ -1,15 +1,9 @@
 import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
 import { getMemoUrl } from "@src/utils";
-import {
-	ChromeSyncStorage,
-	STORAGE_KEYS,
-} from "@web-memo/shared/modules/chrome-storage";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
 	Badge,
-	Button,
-	cn,
 	Command,
 	CommandEmpty,
 	CommandGroup,
@@ -18,19 +12,14 @@ import {
 	CommandList,
 	Textarea,
 	ToastAction,
+	cn,
 	toast,
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
 } from "@web-memo/ui";
-import { HeartIcon, SparklesIcon, XIcon } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { HeartIcon, XIcon } from "lucide-react";
+import { useMemo, useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
-import { CategorySuggestion, SaveStatus } from "./components";
-import { useCategorySuggestion, useMemoCategory, useMemoForm } from "./hooks";
-
-const SUGGESTION_TRIGGER_DELAY = 300;
+import { SaveStatus } from "./components";
+import { useMemoCategory, useMemoForm } from "./hooks";
 
 function MemoFormContent() {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -39,38 +28,8 @@ function MemoFormContent() {
 
 	const currentCategoryId = watch("categoryId");
 
-	const [hasTriggeredSuggestion, setHasTriggeredSuggestion] = useState(false);
-
 	const { memoData, isSaving, handleMemoChange, updateCategory, toggleWish } =
-		useMemoForm({
-			onSaveSuccess: async (memoInput) => {
-				if (memoInput.categoryId) return;
-
-				const isAutoApplyEnabled =
-					(await ChromeSyncStorage.get<boolean>(
-						STORAGE_KEYS.autoApplyCategory,
-					)) ?? true;
-
-				if (isAutoApplyEnabled || !hasTriggeredSuggestion) {
-					setHasTriggeredSuggestion(true);
-					setTimeout(() => {
-						triggerSuggestion(memoInput.memo);
-					}, SUGGESTION_TRIGGER_DELAY);
-				}
-			},
-		});
-
-	const {
-		isLoading: isSuggestionLoading,
-		suggestion,
-		triggerSuggestion,
-		triggerSuggestionByPageContent,
-		acceptSuggestion,
-		dismissSuggestion,
-	} = useCategorySuggestion({
-		currentCategoryId,
-		onCategorySelect: updateCategory,
-	});
+		useMemoForm();
 
 	const {
 		categories,
@@ -151,34 +110,6 @@ function MemoFormContent() {
 						<SaveStatus isSaving={isSaving} memo={watch("memo")} />
 					</div>
 					<div className="flex items-center gap-2">
-						{(isSuggestionLoading || suggestion) && !currentCategoryId && (
-							<CategorySuggestion
-								isLoading={isSuggestionLoading}
-								suggestion={suggestion}
-								onAccept={acceptSuggestion}
-								onDismiss={dismissSuggestion}
-							/>
-						)}
-						{!currentCategoryId && !isSuggestionLoading && !suggestion && (
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
-											className="h-6 w-6"
-											onClick={triggerSuggestionByPageContent}
-										>
-											<SparklesIcon size={14} />
-										</Button>
-									</TooltipTrigger>
-									<TooltipContent>
-										<p>{I18n.get("recommend_category")}</p>
-									</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						)}
 						{currentCategory && (
 							<Badge
 								variant="outline"

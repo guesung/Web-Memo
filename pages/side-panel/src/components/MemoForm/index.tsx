@@ -7,7 +7,6 @@ import {
 } from "@web-memo/shared/modules/chrome-storage";
 import { I18n } from "@web-memo/shared/utils/extension";
 import {
-	Badge,
 	Button,
 	cn,
 	Command,
@@ -22,10 +21,10 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@web-memo/ui";
-import { HeartIcon, SparklesIcon, XIcon } from "lucide-react";
+import { HeartIcon, SparklesIcon } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
-import { CategorySuggestion, SaveStatus } from "./components";
+import { CategoryBadge, CategorySuggestion, SaveStatus } from "./components";
 import {
 	useCategorySuggestion,
 	useMemoCategory,
@@ -205,23 +204,10 @@ function MemoFormContent() {
 						)}
 						{/* Current Category Badge */}
 						{currentCategory && (
-							<Badge
-								variant="outline"
-								className="flex items-center gap-1 px-2 py-0.5"
-							>
-								<div
-									className="h-2 w-2 rounded-full"
-									style={{
-										backgroundColor: currentCategory.color || "#888888",
-									}}
-								/>
-								{currentCategory.name}
-								<XIcon
-									size={12}
-									className="hover:text-destructive ml-1 cursor-pointer"
-									onClick={handleCategoryRemove}
-								/>
-							</Badge>
+							<CategoryBadge
+								category={currentCategory}
+								onRemove={handleCategoryRemove}
+							/>
 						)}
 					</div>
 				</div>

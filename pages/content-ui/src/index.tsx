@@ -1,9 +1,9 @@
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import {
-	renderOpenSidePanelButton,
-	setupTextSelectionHandler,
 	extractYoutubeTranscript,
 	isYoutubePage,
+	renderOpenSidePanelButton,
+	setupTextSelectionHandler,
 } from "./ui";
 
 ExtensionBridge.responsePageContent();

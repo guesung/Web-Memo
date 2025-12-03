@@ -4,9 +4,18 @@ const { selectors, timing } = TRANSCRIPT_CONFIG;
 
 function findElement(selectorList: readonly string[]): HTMLElement | null {
 	for (const selector of selectorList) {
-		const element = document.querySelector<HTMLElement>(selector);
-		if (element && element.offsetParent !== null) {
-			return element;
+		try {
+			const element = document.querySelector<HTMLElement>(selector);
+			if (element) {
+				const isVisible =
+					element.offsetParent !== null ||
+					getComputedStyle(element).display !== "none";
+				if (isVisible) {
+					return element;
+				}
+			}
+		} catch {
+			// Invalid selector, skip
 		}
 	}
 	return null;
@@ -79,9 +88,34 @@ async function tryThreeDotsMenu(): Promise<boolean> {
 	if (!menuButton) return false;
 
 	await clickElement(menuButton);
-	await new Promise((resolve) => setTimeout(resolve, 300));
+	await new Promise((resolve) => setTimeout(resolve, 500));
 
-	const menuItem = findElement(selectors.transcriptMenuItem);
+	// Try standard selectors first
+	let menuItem = findElement(selectors.transcriptMenuItem);
+
+	// Fallback: search by text content
+	if (!menuItem) {
+		const transcriptKeywords = [
+			"transcript",
+			"스크립트",
+			"文字起こし",
+			"字幕",
+			"transcripción",
+			"transcription",
+		];
+		const menuItems = document.querySelectorAll<HTMLElement>(
+			"ytd-menu-service-item-renderer, tp-yt-paper-item",
+		);
+
+		for (const item of menuItems) {
+			const text = item.textContent?.toLowerCase() || "";
+			if (transcriptKeywords.some((keyword) => text.includes(keyword))) {
+				menuItem = item;
+				break;
+			}
+		}
+	}
+
 	if (menuItem) {
 		await clickElement(menuItem);
 		return true;
@@ -117,7 +151,9 @@ export async function openTranscriptPanel(): Promise<HTMLElement> {
 		}
 	}
 
-	throw new Error("Failed to open transcript panel");
+	throw new Error(
+		"Failed to open transcript panel. This video may not have a transcript available.",
+	);
 }
 
 export function isTranscriptPanelOpen(): boolean {

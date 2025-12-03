@@ -1,7 +1,7 @@
 import {
+	formatTranscriptAsText,
 	openTranscriptPanel,
 	parseTranscriptContainer,
-	formatTranscriptAsText,
 	type TranscriptSegment,
 } from "./utils";
 
@@ -15,7 +15,6 @@ export interface ExtractionResult {
 export async function extractYoutubeTranscript(): Promise<ExtractionResult> {
 	try {
 		const container = await openTranscriptPanel();
-
 		const parseResult = parseTranscriptContainer(container);
 
 		if (!parseResult.success) {

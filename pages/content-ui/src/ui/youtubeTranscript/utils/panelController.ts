@@ -2,11 +2,17 @@ import { TRANSCRIPT_CONFIG } from "../config";
 
 const { selectors, timing } = TRANSCRIPT_CONFIG;
 
-function findElement(selectorList: readonly string[]): HTMLElement | null {
+function findElement(
+	selectorList: readonly string[],
+	requireVisible = false,
+): HTMLElement | null {
 	for (const selector of selectorList) {
 		try {
 			const element = document.querySelector<HTMLElement>(selector);
 			if (element) {
+				if (!requireVisible) {
+					return element;
+				}
 				const isVisible =
 					element.offsetParent !== null ||
 					getComputedStyle(element).display !== "none";
@@ -126,7 +132,7 @@ async function tryThreeDotsMenu(): Promise<boolean> {
 }
 
 export async function openTranscriptPanel(): Promise<HTMLElement> {
-	const existingContainer = findElement(selectors.transcriptContainer);
+	const existingContainer = findElement(selectors.transcriptContainer, true);
 	if (existingContainer) {
 		return existingContainer;
 	}
@@ -157,7 +163,7 @@ export async function openTranscriptPanel(): Promise<HTMLElement> {
 }
 
 export function isTranscriptPanelOpen(): boolean {
-	return findElement(selectors.transcriptContainer) !== null;
+	return findElement(selectors.transcriptContainer, true) !== null;
 }
 
 export function closeTranscriptPanel(): void {

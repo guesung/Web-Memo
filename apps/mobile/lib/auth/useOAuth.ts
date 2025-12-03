@@ -9,7 +9,7 @@ WebBrowser.maybeCompleteAuthSession();
 type OAuthProvider = "google" | "apple" | "kakao";
 
 const redirectUri = AuthSession.makeRedirectUri({
-	scheme: "memozy",
+	scheme: "webmemo",
 });
 
 export function useOAuth() {

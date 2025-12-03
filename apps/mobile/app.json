@@ -1,11 +1,11 @@
 {
 	"expo": {
-		"name": "Memozy",
-		"slug": "memozy",
+		"name": "WebMemo",
+		"slug": "webmemo",
 		"version": "1.0.0",
 		"orientation": "portrait",
 		"icon": "./assets/icon.png",
-		"scheme": "memozy",
+		"scheme": "webmemo",
 		"userInterfaceStyle": "automatic",
 		"newArchEnabled": true,
 		"splash": {
@@ -15,11 +15,11 @@
 		},
 		"ios": {
 			"supportsTablet": true,
-			"bundleIdentifier": "com.memozy.app",
+			"bundleIdentifier": "com.webmemo.app",
 			"infoPlist": {
 				"CFBundleURLTypes": [
 					{
-						"CFBundleURLSchemes": ["memozy"]
+						"CFBundleURLSchemes": ["webmemo"]
 					}
 				]
 			}
@@ -29,14 +29,14 @@
 				"foregroundImage": "./assets/adaptive-icon.png",
 				"backgroundColor": "#ffffff"
 			},
-			"package": "com.memozy.app",
+			"package": "com.webmemo.app",
 			"intentFilters": [
 				{
 					"action": "VIEW",
 					"autoVerify": true,
 					"data": [
 						{
-							"scheme": "memozy"
+							"scheme": "webmemo"
 						}
 					],
 					"category": ["BROWSABLE", "DEFAULT"]

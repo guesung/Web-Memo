@@ -12,7 +12,7 @@ export default function LoginScreen() {
 		<SafeAreaView style={styles.container}>
 			<View style={styles.content}>
 				<View style={styles.header}>
-					<Text style={styles.title}>Memozy</Text>
+					<Text style={styles.title}>WebMemo</Text>
 					<Text style={styles.subtitle}>
 						아티클을 읽으며 메모하세요
 					</Text>

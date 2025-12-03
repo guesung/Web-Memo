@@ -5,7 +5,7 @@ import { AnalyticsUserTracking } from "@web-memo/shared/modules/analytics";
 import { dir } from "i18next";
 import { type PropsWithChildren, Suspense } from "react";
 import { InitDayjs, JsonLD } from "../_components";
-import { QueryProvider, ThemeProvider } from "./_components";
+import { QueryProvider, ThemeProvider, UpdateNotificationDialog } from "./_components";
 import { metadataEnglish, metadataKorean } from "./_constants";
 
 interface RootLayoutProps extends PropsWithChildren, LanguageParams {}
@@ -32,6 +32,7 @@ export default function RootLayout({
 					</Suspense>
 					<Header lng={lng} />
 					{children}
+					<UpdateNotificationDialog lng={lng} />
 				</QueryProvider>
 			</ThemeProvider>
 

@@ -1,4 +1,3 @@
-import { CONFIG } from "@web-memo/env";
 import { useDidMount } from "@web-memo/shared/hooks";
 import {
 	AnalyticsUserTracking,
@@ -15,7 +14,6 @@ import {
 	MemoHeader,
 	QueryProvider,
 	Summary,
-	UpdateNotificationDialog,
 } from "./components";
 import { useResizablePanel } from "./hooks";
 
@@ -80,7 +78,6 @@ export default function SidePanel() {
 					<AnalyticsUserTracking />
 				</Suspense>
 			</ErrorBoundary>
-			{CONFIG.nodeEnv !== "development" && <UpdateNotificationDialog />}
 			{/* <ReactQueryDevtools initialIsOpen={false} /> */}
 		</QueryProvider>
 	);

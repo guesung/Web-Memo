@@ -10,6 +10,7 @@ const SummaryContext = createContext<SummaryContext>({
 	category: "others",
 	summary: "",
 	errorMessage: "",
+	pageContent: "",
 });
 
 export const useSummaryContext = () => {

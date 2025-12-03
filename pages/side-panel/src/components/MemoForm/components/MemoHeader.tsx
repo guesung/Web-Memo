@@ -2,7 +2,7 @@ import { getMemoUrl } from "@src/utils";
 import { useDidMount, useMemoQuery, useTabQuery } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
-import { ErrorBoundary, Skeleton } from "@web-memo/ui";
+import { Button, ErrorBoundary, Skeleton } from "@web-memo/ui";
 import { ExternalLinkIcon } from "lucide-react";
 import { Suspense } from "react";
 
@@ -40,14 +40,17 @@ function MemoLink() {
 	};
 
 	return (
-		<ExternalLinkIcon
-			size={16}
+		<Button
+			variant="ghost"
+			size="icon"
+			className="size-8"
 			onClick={handleMemoClick}
-			role="button"
 			tabIndex={0}
 			aria-label="새 탭 열기"
 			onKeyDown={(e) => e.key === "Enter" && handleMemoClick()}
-		/>
+		>
+			<ExternalLinkIcon className="size-4" />
+		</Button>
 	);
 }
 

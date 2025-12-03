@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { useDidMount } from "@web-memo/shared/hooks";
 import { LocalStorage } from "@web-memo/shared/modules/local-storage";
 import {
 	Button,
@@ -13,7 +13,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@web-memo/ui";
-import packageJson from "../../../../../../package.json";
+import { useState } from "react";
+import packageJson from "../../../../../../../package.json";
 
 const CURRENT_VERSION = packageJson.version;
 
@@ -32,9 +33,9 @@ export default function UpdateNotificationDialog({ lng }: { lng: Language }) {
 		defaultValue: [],
 	}) as string[];
 
-	useEffect(() => {
+	useDidMount(() => {
 		checkForUpdate();
-	}, []);
+	});
 
 	async function checkForUpdate() {
 		const dismissedVersion = LocalStorage.get<string>("dismissedUpdateVersion");

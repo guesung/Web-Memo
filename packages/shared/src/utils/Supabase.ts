@@ -28,9 +28,15 @@ export class MemoService {
 		this.supabaseClient
 			.schema(SUPABASE.table.memo)
 			.from(SUPABASE.table.memo)
-			.select("*")
-			.eq("url", url)
-			.maybeSingle();
+			.select("*, category(id, name, color)")
+			.eq("url", url);
+
+	getMemoById = async (id: number) =>
+		this.supabaseClient
+			.schema(SUPABASE.table.memo)
+			.from(SUPABASE.table.memo)
+			.select("*, category(id, name, color)")
+			.eq("id", id);
 
 	upsertMemos = async (request: GetMemoResponse[]) => {
 		// TODO: 직접 카테고리를 제거하는 로직 수정 필요
@@ -265,18 +271,20 @@ export class AdminService {
 			.rpc("get_admin_stats" as never);
 
 	getUserGrowth = async (daysAgo: number = 30) =>
-		this.supabaseClient
-			.schema(SUPABASE.schema.memo)
-			.rpc("get_user_growth" as never, {
+		this.supabaseClient.schema(SUPABASE.schema.memo).rpc(
+			"get_user_growth" as never,
+			{
 				days_ago: daysAgo,
-			} as never);
+			} as never,
+		);
 
 	getUsers = async ({ searchQuery }: GetAdminUsersParams = {}) =>
-		this.supabaseClient
-			.schema(SUPABASE.schema.memo)
-			.rpc("get_admin_users" as never, {
+		this.supabaseClient.schema(SUPABASE.schema.memo).rpc(
+			"get_admin_users" as never,
+			{
 				search_query: searchQuery || null,
-			} as never);
+			} as never,
+		);
 
 	checkIsAdmin = async (userId: string) => {
 		const { data } = await this.supabaseClient

@@ -26,7 +26,10 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const { setValue, getValues } = useFormContext<MemoInput>();
 	const { debounce } = useDebounce();
 	const { data: tab } = useTabQuery();
-	const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
+	const {
+		memo: memoData,
+		refetch: refetchMemo,
+	} = useMemoQuery({
 		url: tab.url,
 	});
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();

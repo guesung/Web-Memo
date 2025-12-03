@@ -11,21 +11,21 @@ interface UseMemoQueryProps {
 
 export default function useMemoQuery({ url, id }: UseMemoQueryProps) {
 	const { data: supabaseClient } = useSupabaseClientQuery();
+	const memoService = new MemoService(supabaseClient);
+
+	const normalizedUrl = url ? normalizeUrl(url) : undefined;
 
 	const query = useSuspenseQuery({
-		queryFn: new MemoService(supabaseClient).getMemos,
-		queryKey: QUERY_KEY.memos(),
-		select: ({ data: memos }) => {
-			if (memos?.length === 0) return;
-
-			if (id) return memos?.find((memo) => memo.id === id);
-			if (url) return memos?.find((memo) => memo.url === normalizeUrl(url));
-			return;
+		queryFn: async () => {
+			if (id) return memoService.getMemoById(id);
+			if (normalizedUrl) return memoService.getMemoByUrl(normalizedUrl);
+			return undefined;
 		},
+		queryKey: QUERY_KEY.memo({ url: normalizedUrl, id }),
 	});
 
 	return {
 		...query,
-		memo: query.data,
+		memo: query.data?.data?.[0],
 	};
 }

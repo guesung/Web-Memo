@@ -100,7 +100,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 						<div
 							className="h-9 w-9 rounded border"
 							style={{
-								backgroundColor: categories[index].color + "20",
+								backgroundColor: `${categories[index].color}20`,
 								borderColor: categories[index].color || undefined,
 							}}
 						/>

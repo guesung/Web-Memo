@@ -72,7 +72,7 @@ export default memo(function MemoItem({
 			}}
 			aria-label={`메모 ${memo.id}`}
 			tabIndex={0}
-			// biome-ignore lint/a11y/useSemanticElements: <explanation>
+			// biome-ignore lint/a11y/useSemanticElements: Using div with role="button" for complex interaction patterns
 			role="button"
 		>
 			<motion.div

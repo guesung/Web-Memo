@@ -161,7 +161,7 @@ export default class ExtensionBridge {
 			const iframeText =
 				document.querySelector("iframe")?.contentWindow?.document?.body
 					?.innerText;
-			return text + (iframeText ? "\n" + iframeText : "");
+			return text + (iframeText ? `\n${iframeText}` : "");
 		} catch (error) {
 			throw new ExtensionError(
 				"Failed to get web content",

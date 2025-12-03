@@ -95,7 +95,7 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 		setTimeout(() => setIsPaused(false), 3000);
 	};
 
-	const getColorClasses = (color: string, isActive: boolean) => {
+	const getColorClasses = (color: string, _isActive: boolean) => {
 		const colors: Record<
 			string,
 			{ bg: string; text: string; border: string; activeBg: string }

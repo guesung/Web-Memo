@@ -80,7 +80,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 		else closeDialog();
 	};
 
-	const handleSaveAndClose = () => {
+	const _handleSaveAndClose = () => {
 		saveMemo();
 		closeDialog();
 	};

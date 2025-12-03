@@ -50,4 +50,3 @@ export * from "./toaster";
 export * from "./toggle";
 export * from "./toggle-group";
 export * from "./tooltip";
-export * from "./update-notification-dialog";

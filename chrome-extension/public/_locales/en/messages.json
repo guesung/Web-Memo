@@ -131,6 +131,9 @@
 	"category_suggestion_dismiss": {
 		"message": "Dismiss"
 	},
+	"recommend_category": {
+		"message": "AI category recommendation"
+	},
 	"auto_apply_category_setting": {
 		"message": "Auto-apply category"
 	},

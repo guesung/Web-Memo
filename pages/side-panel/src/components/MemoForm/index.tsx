@@ -4,6 +4,7 @@ import { useDebounce } from "@web-memo/shared/hooks";
 import { I18n } from "@web-memo/shared/utils/extension";
 import {
 	Badge,
+	Button,
 	cn,
 	Command,
 	CommandEmpty,
@@ -12,13 +13,16 @@ import {
 	CommandItem,
 	CommandList,
 	Textarea,
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
 } from "@web-memo/ui";
-import { HeartIcon, XIcon } from "lucide-react";
-import { useCallback, useMemo, useRef } from "react";
+import { HeartIcon, SparklesIcon, XIcon } from "lucide-react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { CategorySuggestion, SaveStatus } from "./components";
 import {
-	MIN_MEMO_LENGTH,
 	useCategorySuggestion,
 	useMemoCategory,
 	useMemoForm,
@@ -35,10 +39,13 @@ function MemoFormContent() {
 
 	const currentCategoryId = watch("categoryId");
 
+	const [isFirstSave, setIsFirstSave] = useState(true);
+
 	const { memoData, isSaving, saveMemo, handleMemoChange } = useMemoForm({
 		onSaveSuccess: (memoInput) => {
-			// Trigger category suggestion if no category is set
-			if (!memoInput.categoryId && memoInput.memo.length > MIN_MEMO_LENGTH) {
+			// Trigger category suggestion on first save if no category is set
+			if (!memoInput.categoryId && isFirstSave) {
+				setIsFirstSave(false);
 				// Small delay to let save complete visually
 				setTimeout(() => {
 					triggerSuggestion(memoInput.memo);
@@ -63,6 +70,7 @@ function MemoFormContent() {
 		isLoading: isSuggestionLoading,
 		suggestion,
 		triggerSuggestion,
+		triggerSuggestionByPageContent,
 		acceptSuggestion,
 		dismissSuggestion,
 	} = useCategorySuggestion({
@@ -165,6 +173,30 @@ function MemoFormContent() {
 								onDismiss={dismissSuggestion}
 							/>
 						)}
+						{/* Category Recommend Button */}
+						{!currentCategoryId &&
+							!isSuggestionLoading &&
+							!suggestion &&
+							memoData && (
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												className="h-6 w-6"
+												onClick={triggerSuggestionByPageContent}
+											>
+												<SparklesIcon size={14} />
+											</Button>
+										</TooltipTrigger>
+										<TooltipContent>
+											<p>{I18n.get("recommend_category")}</p>
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							)}
 						{/* Current Category Badge */}
 						{currentCategory && (
 							<Badge

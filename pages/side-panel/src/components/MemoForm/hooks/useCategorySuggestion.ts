@@ -3,16 +3,12 @@ import {
 	useCategoryPostMutation,
 	useCategoryQuery,
 } from "@web-memo/shared/hooks";
-import {
-	ChromeSyncStorage,
-	STORAGE_KEYS,
-} from "@web-memo/shared/modules/chrome-storage";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const CONFIDENCE_THRESHOLD = 0.7;
-const AUTO_DISMISS_DELAY = 15000;
+const AUTO_DISMISS_DELAY = 3_000;
 const API_TIMEOUT = 10000;
 const PAGE_CONTENT_SAMPLE_LENGTH = 500;
 const KOREAN_RATIO_THRESHOLD = 0.1;
@@ -152,21 +148,13 @@ export function useCategorySuggestion({
 						existingCategoryId: data.suggestion.existingCategoryId ?? null,
 					};
 
-					const shouldAutoApply =
-						(await ChromeSyncStorage.get<boolean>(
-							STORAGE_KEYS.autoApplyCategory,
-						)) ?? true;
+					setSuggestion(suggestionData);
 
-					if (shouldAutoApply) {
-						await applyCategorySuggestionDirect(suggestionData);
-					} else {
-						setSuggestion(suggestionData);
+					clearAutoDismissTimer();
 
-						clearAutoDismissTimer();
-						autoDismissTimerRef.current = setTimeout(() => {
-							reset();
-						}, AUTO_DISMISS_DELAY);
-					}
+					autoDismissTimerRef.current = setTimeout(() => {
+						reset();
+					}, AUTO_DISMISS_DELAY);
 				}
 			} catch (error) {
 				if (error instanceof Error && error.name !== "AbortError") {
@@ -176,13 +164,7 @@ export function useCategorySuggestion({
 				setIsLoading(false);
 			}
 		},
-		[
-			categories,
-			currentCategoryId,
-			clearAutoDismissTimer,
-			reset,
-			applyCategorySuggestionDirect,
-		],
+		[categories, currentCategoryId, clearAutoDismissTimer, reset],
 	);
 
 	const acceptSuggestion = useCallback(async () => {

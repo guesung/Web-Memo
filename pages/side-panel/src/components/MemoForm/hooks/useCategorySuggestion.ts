@@ -8,7 +8,7 @@ import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const CONFIDENCE_THRESHOLD = 0.7;
-const AUTO_DISMISS_DELAY = 3_000;
+const AUTO_DISMISS_DELAY = 15_000;
 const API_TIMEOUT = 10000;
 const PAGE_CONTENT_SAMPLE_LENGTH = 500;
 const KOREAN_RATIO_THRESHOLD = 0.1;

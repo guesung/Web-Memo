@@ -47,18 +47,15 @@ function MemoFormContent() {
 
 	const { memoData, isSaving, saveMemo, handleMemoChange } = useMemoForm({
 		onSaveSuccess: async (memoInput) => {
-			// Skip if category is already set
 			if (memoInput.categoryId) return;
 
 			const isAutoApplyEnabled =
-				(await ChromeSyncStorage.get<boolean>(STORAGE_KEYS.autoApplyCategory)) ??
-				true;
+				(await ChromeSyncStorage.get<boolean>(
+					STORAGE_KEYS.autoApplyCategory,
+				)) ?? true;
 
-			// Auto-apply enabled: trigger on every save without category
-			// Auto-apply disabled: trigger only on first save
 			if (isAutoApplyEnabled || !hasTriggeredSuggestion) {
 				setHasTriggeredSuggestion(true);
-				// Small delay to let save complete visually
 				setTimeout(() => {
 					triggerSuggestion(memoInput.memo);
 				}, SUGGESTION_TRIGGER_DELAY);
@@ -187,25 +184,25 @@ function MemoFormContent() {
 						)}
 						{/* Category Recommend Button */}
 						{!currentCategoryId && !isSuggestionLoading && !suggestion && (
-								<TooltipProvider>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon"
-												className="h-6 w-6"
-												onClick={triggerSuggestionByPageContent}
-											>
-												<SparklesIcon size={14} />
-											</Button>
-										</TooltipTrigger>
-										<TooltipContent>
-											<p>{I18n.get("recommend_category")}</p>
-										</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
-							)}
+							<TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Button
+											type="button"
+											variant="ghost"
+											size="icon"
+											className="h-6 w-6"
+											onClick={triggerSuggestionByPageContent}
+										>
+											<SparklesIcon size={14} />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>
+										<p>{I18n.get("recommend_category")}</p>
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
+						)}
 						{/* Current Category Badge */}
 						{currentCategory && (
 							<Badge

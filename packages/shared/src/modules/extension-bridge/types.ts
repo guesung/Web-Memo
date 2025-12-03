@@ -38,3 +38,9 @@ export interface CreateMemoResponse {
 	success: boolean;
 	error?: string;
 }
+
+export interface YoutubeTranscriptResponse {
+	success: boolean;
+	transcript: string;
+	error?: string;
+}

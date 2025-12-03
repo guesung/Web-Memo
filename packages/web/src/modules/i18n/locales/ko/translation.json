@@ -40,6 +40,13 @@
 		"update": "새로운 소식"
 	},
 
+	"updateNotification": {
+		"title": "🎉 업데이트 소식",
+		"version": "v{{VERSION}} 버전이 출시되었습니다!",
+		"dismiss": "다시 보지 않기",
+		"confirm": "확인"
+	},
+
 	"updates": {
 		"title": "새로운 소식",
 		"versions": {

@@ -14,6 +14,7 @@ export const LOCAL_STORAGE_KEYS = [
 	"guide",
 	"updateVersion",
 	"install",
+	"dismissedUpdateVersion",
 ] as const;
 
 const isBasicStorageKey = (value: string): value is BasicStorageKeyType =>

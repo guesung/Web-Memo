@@ -5,6 +5,7 @@ import type {
 	CreateMemoPayload,
 	CreateMemoResponse,
 	PageContent,
+	YoutubeTranscriptResponse,
 } from "./types";
 import { ExtensionError, ExtensionErrorCode } from "./types";
 
@@ -165,6 +166,53 @@ export default class ExtensionBridge {
 			throw new ExtensionError(
 				"Failed to get web content",
 				ExtensionErrorCode.CONTENT_ERROR,
+				error,
+			);
+		}
+	}
+
+	static async requestYoutubeTranscript(): Promise<YoutubeTranscriptResponse> {
+		try {
+			return await Tab.sendMessage<undefined, YoutubeTranscriptResponse>(
+				BRIDGE_MESSAGE_TYPES.YOUTUBE_TRANSCRIPT,
+			);
+		} catch (error) {
+			throw new ExtensionError(
+				"Failed to request YouTube transcript",
+				ExtensionErrorCode.YOUTUBE_ERROR,
+				error,
+			);
+		}
+	}
+
+	static async responseYoutubeTranscript(
+		extractFn: () => Promise<YoutubeTranscriptResponse>,
+	) {
+		try {
+			Runtime.onMessage(
+				BRIDGE_MESSAGE_TYPES.YOUTUBE_TRANSCRIPT,
+				async (_, __, sendResponse) => {
+					try {
+						const result = await extractFn();
+						sendResponse(result);
+						return true;
+					} catch (error) {
+						sendResponse({
+							success: false,
+							transcript: "",
+							error:
+								error instanceof Error
+									? error.message
+									: "Failed to extract transcript",
+						});
+						return true;
+					}
+				},
+			);
+		} catch (error) {
+			throw new ExtensionError(
+				"Failed to setup YouTube transcript response handler",
+				ExtensionErrorCode.YOUTUBE_ERROR,
 				error,
 			);
 		}

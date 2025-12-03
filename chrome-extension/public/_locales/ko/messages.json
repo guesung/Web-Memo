@@ -131,22 +131,13 @@
 	"category_suggestion_dismiss": {
 		"message": "무시"
 	},
+	"recommend_category": {
+		"message": "AI 카테고리 추천"
+	},
 	"auto_apply_category_setting": {
 		"message": "카테고리 자동 적용"
 	},
 	"auto_apply_category_description": {
 		"message": "AI가 추천한 카테고리를 자동으로 적용합니다"
-	},
-	"update_notification_title": {
-		"message": "🎉 업데이트 소식"
-	},
-	"update_notification_version": {
-		"message": "v{{VERSION}} 버전이 출시되었습니다!"
-	},
-	"update_notification_dismiss": {
-		"message": "다시 보지 않기"
-	},
-	"update_notification_confirm": {
-		"message": "확인"
 	}
 }

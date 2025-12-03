@@ -38,18 +38,12 @@ export default function ChatMessage({ message }: ChatMessageProps) {
 						: "bg-muted text-foreground",
 				)}
 			>
-				{isUser ? (
-					<p className="whitespace-pre-wrap break-words leading-normal">
-						{message.content}
-					</p>
-				) : (
-					<Markdown
-						remarkPlugins={[remarkGfm]}
-						className="markdown prose prose-sm max-w-none dark:prose-invert"
-					>
-						{message.content || "..."}
-					</Markdown>
-				)}
+				<Markdown
+					remarkPlugins={[remarkGfm]}
+					className="markdown prose prose-sm max-w-none dark:prose-invert"
+				>
+					{message.content || "..."}
+				</Markdown>
 			</div>
 		</div>
 	);

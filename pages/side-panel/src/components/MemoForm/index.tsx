@@ -1,11 +1,11 @@
 import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
-import { useDebounce } from "@web-memo/shared/hooks";
+import { getMemoUrl } from "@src/utils";
 import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
-import { I18n } from "@web-memo/shared/utils/extension";
+import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
 	Badge,
 	Button,
@@ -17,66 +17,48 @@ import {
 	CommandItem,
 	CommandList,
 	Textarea,
+	ToastAction,
+	toast,
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@web-memo/ui";
 import { HeartIcon, SparklesIcon, XIcon } from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { CategorySuggestion, SaveStatus } from "./components";
-import {
-	useCategorySuggestion,
-	useMemoCategory,
-	useMemoForm,
-	useMemoWish,
-} from "./hooks";
+import { useCategorySuggestion, useMemoCategory, useMemoForm } from "./hooks";
 
 const SUGGESTION_TRIGGER_DELAY = 300;
 
 function MemoFormContent() {
-	const { debounce } = useDebounce();
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-	const { register, watch, setValue } = useFormContext<MemoInput>();
+	const { register, watch } = useFormContext<MemoInput>();
 	const { ref, ...rest } = register("memo");
 
 	const currentCategoryId = watch("categoryId");
 
 	const [hasTriggeredSuggestion, setHasTriggeredSuggestion] = useState(false);
 
-	const { memoData, isSaving, saveMemo, handleMemoChange } = useMemoForm({
-		onSaveSuccess: async (memoInput) => {
-			// Skip if category is already set
-			if (memoInput.categoryId) return;
+	const { memoData, isSaving, handleMemoChange, updateCategory, toggleWish } =
+		useMemoForm({
+			onSaveSuccess: async (memoInput) => {
+				if (memoInput.categoryId) return;
 
-			const isAutoApplyEnabled =
-				(await ChromeSyncStorage.get<boolean>(STORAGE_KEYS.autoApplyCategory)) ??
-				true;
+				const isAutoApplyEnabled =
+					(await ChromeSyncStorage.get<boolean>(
+						STORAGE_KEYS.autoApplyCategory,
+					)) ?? true;
 
-			// Auto-apply enabled: trigger on every save without category
-			// Auto-apply disabled: trigger only on first save
-			if (isAutoApplyEnabled || !hasTriggeredSuggestion) {
-				setHasTriggeredSuggestion(true);
-				// Small delay to let save complete visually
-				setTimeout(() => {
-					triggerSuggestion(memoInput.memo);
-				}, SUGGESTION_TRIGGER_DELAY);
-			}
-		},
-	});
-
-	const handleCategorySelect = useCallback(
-		(categoryId: number) => {
-			setValue("categoryId", categoryId);
-			saveMemo({
-				memo: watch("memo"),
-				isWish: watch("isWish"),
-				categoryId,
-			});
-		},
-		[setValue, saveMemo, watch],
-	);
+				if (isAutoApplyEnabled || !hasTriggeredSuggestion) {
+					setHasTriggeredSuggestion(true);
+					setTimeout(() => {
+						triggerSuggestion(memoInput.memo);
+					}, SUGGESTION_TRIGGER_DELAY);
+				}
+			},
+		});
 
 	const {
 		isLoading: isSuggestionLoading,
@@ -87,29 +69,8 @@ function MemoFormContent() {
 		dismissSuggestion,
 	} = useCategorySuggestion({
 		currentCategoryId,
-		onCategorySelect: handleCategorySelect,
+		onCategorySelect: updateCategory,
 	});
-
-	const { handleWishClick } = useMemoWish({
-		memoId: memoData?.id,
-		onWishClick: async (isWish) => {
-			await saveMemo({
-				memo: watch("memo"),
-				isWish: !isWish,
-				categoryId: watch("categoryId"),
-			});
-		},
-	});
-
-	const handleCategoryChange = (categoryId: number | null) => {
-		debounce(() =>
-			saveMemo({
-				memo: watch("memo"),
-				isWish: watch("isWish"),
-				categoryId,
-			}),
-		);
-	};
 
 	const {
 		categories,
@@ -117,22 +78,36 @@ function MemoFormContent() {
 		categoryInputPosition,
 		commandInputRef,
 		handleKeyDown,
-		handleCategorySelect: handleCategorySelectFromList,
+		handleCategorySelect,
 		handleCategoryRemove,
 		handleCategoryListClose,
 	} = useMemoCategory({
 		textareaRef,
-		onCategorySelect: (categoryId) => {
-			saveMemo({
-				memo: watch("memo"),
-				isWish: watch("isWish"),
-				categoryId,
-			});
-		},
-		onCategoryRemove: () => {
-			handleCategoryChange(null);
-		},
+		onCategoryChange: updateCategory,
 	});
+
+	const handleWishClick = async () => {
+		const newIsWish = await toggleWish();
+
+		const handleWishListClick = () => {
+			const memoWishListUrl = getMemoUrl({
+				id: memoData?.id,
+				isWish: newIsWish,
+			});
+			Tab.create({ url: memoWishListUrl });
+		};
+
+		toast({
+			title: newIsWish
+				? I18n.get("wish_list_added")
+				: I18n.get("wish_list_deleted"),
+			action: (
+				<ToastAction altText={I18n.get("go_to")} onClick={handleWishListClick}>
+					{I18n.get("go_to")}
+				</ToastAction>
+			),
+		});
+	};
 
 	const currentCategory = useMemo(
 		() => categories?.find((c) => c.id === currentCategoryId),
@@ -176,7 +151,6 @@ function MemoFormContent() {
 						<SaveStatus isSaving={isSaving} memo={watch("memo")} />
 					</div>
 					<div className="flex items-center gap-2">
-						{/* Category Suggestion */}
 						{(isSuggestionLoading || suggestion) && !currentCategoryId && (
 							<CategorySuggestion
 								isLoading={isSuggestionLoading}
@@ -185,28 +159,26 @@ function MemoFormContent() {
 								onDismiss={dismissSuggestion}
 							/>
 						)}
-						{/* Category Recommend Button */}
 						{!currentCategoryId && !isSuggestionLoading && !suggestion && (
-								<TooltipProvider>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon"
-												className="h-6 w-6"
-												onClick={triggerSuggestionByPageContent}
-											>
-												<SparklesIcon size={14} />
-											</Button>
-										</TooltipTrigger>
-										<TooltipContent>
-											<p>{I18n.get("recommend_category")}</p>
-										</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
-							)}
-						{/* Current Category Badge */}
+							<TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Button
+											type="button"
+											variant="ghost"
+											size="icon"
+											className="h-6 w-6"
+											onClick={triggerSuggestionByPageContent}
+										>
+											<SparklesIcon size={14} />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>
+										<p>{I18n.get("recommend_category")}</p>
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
+						)}
 						{currentCategory && (
 							<Badge
 								variant="outline"
@@ -254,7 +226,7 @@ function MemoFormContent() {
 								{categories?.map((category) => (
 									<CommandItem
 										key={category.id}
-										onSelect={() => handleCategorySelectFromList(category)}
+										onSelect={() => handleCategorySelect(category)}
 										className="flex items-center gap-2"
 									>
 										<div

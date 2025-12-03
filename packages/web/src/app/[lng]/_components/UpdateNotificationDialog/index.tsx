@@ -2,10 +2,7 @@
 
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import {
-	CURRENT_VERSION,
-	getUpdateNotes,
-} from "@web-memo/shared/constants/Update";
+import { CURRENT_VERSION, getUpdateNotes } from "@web-memo/shared/constants";
 import { LocalStorage } from "@web-memo/shared/modules/local-storage";
 import { UpdateNotificationDialog as BaseUpdateNotificationDialog } from "@web-memo/ui";
 

@@ -1,7 +1,4 @@
-import {
-	CURRENT_VERSION,
-	getUpdateNotes,
-} from "@web-memo/shared/constants/Update";
+import { CURRENT_VERSION, getUpdateNotes } from "@web-memo/shared/constants";
 import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,

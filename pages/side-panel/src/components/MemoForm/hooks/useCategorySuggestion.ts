@@ -39,7 +39,6 @@ export function useCategorySuggestion({
 	const { categories } = useCategoryQuery();
 	const { mutateAsync: createCategory } = useCategoryPostMutation();
 
-	const abortControllerRef = useRef<AbortController | null>(null);
 	const dismissedUrlsRef = useRef<Set<string>>(new Set());
 	const currentUrlRef = useRef<string | null>(null);
 	const autoDismissTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -99,9 +98,6 @@ export function useCategorySuggestion({
 
 				currentUrlRef.current = tabInfo.url;
 
-				abortControllerRef.current?.abort();
-				abortControllerRef.current = new AbortController();
-
 				setIsLoading(true);
 
 				let pageContent = "";
@@ -137,7 +133,6 @@ export function useCategorySuggestion({
 						existingCategories,
 						pageLanguage,
 					}),
-					signal: abortControllerRef.current.signal,
 				});
 
 				const response = await Promise.race([fetchPromise, timeoutPromise]);
@@ -200,15 +195,6 @@ export function useCategorySuggestion({
 		await triggerSuggestion("");
 	}, [triggerSuggestion]);
 
-	// Cleanup on unmount
-	useEffect(() => {
-		return () => {
-			abortControllerRef.current?.abort();
-			clearAutoDismissTimer();
-		};
-	}, [clearAutoDismissTimer]);
-
-	// Reset when category is manually selected
 	useEffect(() => {
 		if (currentCategoryId) {
 			reset();

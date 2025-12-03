@@ -10,12 +10,10 @@ interface ChatMessagesProps {
 }
 
 export default function ChatMessages({ messages }: ChatMessagesProps) {
-	const scrollRef = useRef<HTMLDivElement>(null);
+	const messagesEndRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		if (scrollRef.current) {
-			scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-		}
+		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 	}, [messages]);
 
 	if (messages.length === 0) {
@@ -28,11 +26,12 @@ export default function ChatMessages({ messages }: ChatMessagesProps) {
 	}
 
 	return (
-		<ScrollArea className="flex-1 pr-2" ref={scrollRef}>
+		<ScrollArea className="flex-1 pr-2">
 			<div className="flex flex-col gap-1 py-2">
 				{messages.map((message) => (
 					<ChatMessage key={message.id} message={message} />
 				))}
+				<div ref={messagesEndRef} />
 			</div>
 		</ScrollArea>
 	);

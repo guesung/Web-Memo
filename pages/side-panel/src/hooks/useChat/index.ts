@@ -1,6 +1,7 @@
 import { CONFIG } from "@web-memo/env";
+import { STORAGE_KEYS } from "@web-memo/shared/modules/chrome-storage";
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { processStreamingResponse } from "../useSummary/util";
 
 export interface ChatMessage {
@@ -34,6 +35,44 @@ export default function useChat(): UseChatReturn {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 	const contextRef = useRef<ChatContext>({});
+	const isInitialized = useRef(false);
+
+	useEffect(() => {
+		if (isInitialized.current) return;
+
+		const loadMessages = async () => {
+			try {
+				const stored = await chrome.storage.local.get(
+					STORAGE_KEYS.chatMessages,
+				);
+				if (stored[STORAGE_KEYS.chatMessages]) {
+					setMessages(stored[STORAGE_KEYS.chatMessages]);
+				}
+			} catch (error) {
+				console.error("Failed to load chat messages:", error);
+			} finally {
+				isInitialized.current = true;
+			}
+		};
+
+		loadMessages();
+	}, []);
+
+	useEffect(() => {
+		if (!isInitialized.current) return;
+
+		const saveMessages = async () => {
+			try {
+				await chrome.storage.local.set({
+					[STORAGE_KEYS.chatMessages]: messages,
+				});
+			} catch (error) {
+				console.error("Failed to save chat messages:", error);
+			}
+		};
+
+		saveMessages();
+	}, [messages]);
 
 	const sendMessage = useCallback(
 		async (content: string) => {
@@ -108,7 +147,9 @@ export default function useChat(): UseChatReturn {
 				);
 			} catch (err) {
 				console.error("Chat error:", err);
-				setError(err instanceof Error ? err.message : "채팅 중 오류가 발생했습니다");
+				setError(
+					err instanceof Error ? err.message : "채팅 중 오류가 발생했습니다",
+				);
 				setMessages((prev) => prev.slice(0, -1));
 			} finally {
 				setIsLoading(false);
@@ -117,9 +158,14 @@ export default function useChat(): UseChatReturn {
 		[messages, isLoading],
 	);
 
-	const clearMessages = useCallback(() => {
+	const clearMessages = useCallback(async () => {
 		setMessages([]);
 		setError("");
+		try {
+			await chrome.storage.local.remove(STORAGE_KEYS.chatMessages);
+		} catch (error) {
+			console.error("Failed to clear chat messages from storage:", error);
+		}
 	}, []);
 
 	const updateContext = useCallback((newContext: ChatContext) => {

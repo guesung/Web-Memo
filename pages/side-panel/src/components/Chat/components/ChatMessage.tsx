@@ -39,7 +39,9 @@ export default function ChatMessage({ message }: ChatMessageProps) {
 				)}
 			>
 				{isUser ? (
-					<p className="whitespace-pre-wrap break-words">{message.content}</p>
+					<p className="whitespace-pre-wrap break-words leading-normal">
+						{message.content}
+					</p>
 				) : (
 					<Markdown
 						remarkPlugins={[remarkGfm]}

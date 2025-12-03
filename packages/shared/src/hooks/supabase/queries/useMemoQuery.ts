@@ -19,7 +19,7 @@ export default function useMemoQuery({ url, id }: UseMemoQueryProps) {
 		queryFn: async () => {
 			if (id) return memoService.getMemoById(id);
 			if (normalizedUrl) return memoService.getMemoByUrl(normalizedUrl);
-			return undefined;
+			return { data: [], error: null };
 		},
 		queryKey: QUERY_KEY.memo({ url: normalizedUrl, id }),
 	});

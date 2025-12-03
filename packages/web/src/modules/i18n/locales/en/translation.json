@@ -40,6 +40,13 @@
 		"update": "What's new"
 	},
 
+	"updateNotification": {
+		"title": "🎉 What's New",
+		"version": "Version {{VERSION}} is now available!",
+		"dismiss": "Don't show again",
+		"confirm": "Got it"
+	},
+
 	"updates": {
 		"title": "What's new",
 		"versions": {

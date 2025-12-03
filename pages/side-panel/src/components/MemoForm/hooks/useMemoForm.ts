@@ -16,6 +16,12 @@ interface UseMemoFormProps {
 	onSaveSuccess?: (memoInput: MemoInput) => void;
 }
 
+interface TabInfo {
+	title: string;
+	favIconUrl: string | undefined;
+	url: string;
+}
+
 export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const { setValue, watch } = useFormContext<MemoInput>();
 	const { debounce } = useDebounce();
@@ -27,10 +33,15 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const { mutate: mutateMemoPost } = useMemoPostMutation();
 	const [isSaving, setIsSaving] = useState(false);
 	const isCreatingRef = useRef(false);
+	const initialTabInfoRef = useRef<TabInfo | null>(null);
 
 	useDidMount(() => {
 		ExtensionBridge.responseRefetchTheMemosFromWeb(refetchMemo);
 		ExtensionBridge.responseRefetchTheMemosFromExtension(refetchMemo);
+
+		getTabInfo().then((tabInfo) => {
+			initialTabInfoRef.current = tabInfo;
+		});
 	});
 
 	useEffect(
@@ -45,7 +56,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const saveMemo = async ({ memo, isWish, categoryId }: MemoInput) => {
 		setIsSaving(true);
 
-		const tabInfo = await getTabInfo();
+		const tabInfo = initialTabInfoRef.current ?? (await getTabInfo());
 
 		const totalMemo = {
 			...tabInfo,

@@ -1,5 +1,4 @@
 export { default as useCategoryDeleteMutation } from "./useCategoryDeleteMutation";
-export { default as useCategoryPatchMutation } from "./useCategoryPatchMutation";
 export { default as useCategoryPostMutation } from "./useCategoryPostMutation";
 export { default as useCategoryUpsertMutation } from "./useCategoryUpsertMutation";
 export { default as useDeleteMemosMutation } from "./useDeleteMemosMutation";

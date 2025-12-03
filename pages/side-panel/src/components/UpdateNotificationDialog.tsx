@@ -17,6 +17,9 @@ export default function UpdateNotificationDialog() {
 		await ChromeSyncStorage.set(STORAGE_KEYS.dismissedUpdateVersion, version);
 	}
 
+	const updateNotesRaw = I18n.get("update_notification_notes");
+	const updateNotes = updateNotesRaw ? updateNotesRaw.split("|") : [];
+
 	const translations = {
 		title: I18n.get("update_notification_title"),
 		version: I18n.get("update_notification_version"),
@@ -27,6 +30,7 @@ export default function UpdateNotificationDialog() {
 	return (
 		<BaseUpdateNotificationDialog
 			currentVersion={currentVersion}
+			updateNotes={updateNotes}
 			getDismissedVersion={getDismissedVersion}
 			setDismissedVersion={setDismissedVersion}
 			translations={translations}

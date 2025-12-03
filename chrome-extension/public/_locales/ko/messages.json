@@ -148,5 +148,8 @@
 	},
 	"update_notification_confirm": {
 		"message": "확인"
+	},
+	"update_notification_notes": {
+		"message": "AI 기반 카테고리 자동 추천 기능 추가|랜딩 페이지 전면 리디자인|드래그로 메모 추가 기능"
 	}
 }

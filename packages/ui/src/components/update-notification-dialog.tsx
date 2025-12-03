@@ -11,14 +11,9 @@ import {
 	DialogTitle,
 } from "./dialog";
 
-const UPDATE_NOTES = [
-	"AI 기반 카테고리 자동 추천 기능 추가",
-	"랜딩 페이지 전면 리디자인",
-	"드래그로 메모 추가 기능",
-];
-
 export function UpdateNotificationDialog({
 	currentVersion,
+	updateNotes,
 	getDismissedVersion,
 	setDismissedVersion,
 	translations,
@@ -57,7 +52,7 @@ export function UpdateNotificationDialog({
 				</DialogHeader>
 				<div className="py-2">
 					<ul className="list-disc pl-5 space-y-1.5 text-sm text-foreground/80">
-						{UPDATE_NOTES.map((note) => (
+						{updateNotes.map((note) => (
 							<li key={note}>{note}</li>
 						))}
 					</ul>
@@ -77,6 +72,7 @@ export function UpdateNotificationDialog({
 
 interface UpdateNotificationDialogProps {
 	currentVersion: string;
+	updateNotes: string[];
 	getDismissedVersion: () => Promise<string | null>;
 	setDismissedVersion: (version: string) => Promise<void>;
 	translations: {

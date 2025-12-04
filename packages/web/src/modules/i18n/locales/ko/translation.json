@@ -359,20 +359,29 @@
 
 	"memos": {
 		"emptyState": {
+			"title": "첫 메모를 작성해보세요",
 			"message": "아직 메모가 없어요. 사이드 패널을 열어 메모를 작성해보세요.",
-			"description": "단축키 '{{key}} + S'를 눌러 사이드 패널을 열 수 있어요."
+			"description": "단축키 '{{key}} + S'를 눌러 사이드 패널을 열 수 있어요.",
+			"installExtension": "확장 프로그램 설치하기",
+			"learnHow": "사용 방법 알아보기",
+			"tip1": "사이드 패널에서 메모를 작성하세요",
+			"tip2": "{{key}} + S로 빠르게 열기",
+			"tip3": "자동으로 저장됩니다"
 		},
 		"totalMemos": "메모 {{total}}개",
 		"searchPlaceholder": "메모 찾기",
 		"searchTarget": {
+			"label": "검색 대상",
 			"all": "전체",
 			"title": "제목",
 			"memo": "내용"
 		},
 		"sortBy": {
+			"label": "정렬",
 			"updated_at": "수정 순",
 			"created_at": "생성 순"
 		},
+		"activeFilters": "필터 적용됨",
 		"grid": "격자로 보기",
 		"calendar": "달력으로 보기",
 		"selected": "{{count}}개 선택됨",

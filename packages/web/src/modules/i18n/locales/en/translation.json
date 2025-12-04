@@ -364,20 +364,29 @@
 
 	"memos": {
 		"emptyState": {
+			"title": "Create your first memo",
 			"message": "No memos yet. Open the side panel to start writing memos.",
-			"description": "Press '{{key}} + S' to open the side panel"
+			"description": "Press '{{key}} + S' to open the side panel",
+			"installExtension": "Install Extension",
+			"learnHow": "Learn How to Use",
+			"tip1": "Write memos in the side panel",
+			"tip2": "Quick open with {{key}} + S",
+			"tip3": "Auto-saved automatically"
 		},
 		"totalMemos": "{{total}} memos",
 		"searchPlaceholder": "Search memos",
 		"searchTarget": {
+			"label": "Search in",
 			"all": "All",
 			"title": "Title",
 			"memo": "Content"
 		},
 		"sortBy": {
+			"label": "Sort by",
 			"updated_at": "Last modified",
 			"created_at": "Date created"
 		},
+		"activeFilters": "Filters active",
 		"grid": "Grid view",
 		"calendar": "Calendar view",
 		"selected": "{{count}} selected",

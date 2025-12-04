@@ -8,7 +8,7 @@ import type { GetMemoResponse } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
 import { Badge, Button, CardFooter, ToastAction, toast } from "@web-memo/ui";
 import dayjs from "dayjs";
-import { FolderIcon, HeartIcon } from "lucide-react";
+import { Clock, FolderIcon, HeartIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { MouseEvent, PropsWithChildren } from "react";
 import { useState } from "react";
@@ -80,59 +80,74 @@ export default function MemoCardFooter({
 
 	return (
 		<CardFooter
-			className={cn("flex justify-between p-0 px-4 pb-2 pt-0", props.className)}
+			className={cn(
+				"flex items-center justify-between px-5 py-3 border-t border-gray-100 dark:border-gray-800",
+				props.className,
+			)}
 			{...props}
 		>
-			<div className="flex flex-wrap items-center gap-2">
-				{memo.category?.name ? (
+			<div className="flex flex-col gap-2 flex-1 min-w-0">
+				{memo.category?.name && (
 					<Badge
 						variant="outline"
 						onClick={handleCategoryClick}
-						className="z-10 flex items-center gap-1"
+						className={cn(
+							"inline-flex items-center gap-1.5 w-fit",
+							"px-2.5 py-1 rounded-full",
+							"text-xs font-semibold",
+							"cursor-pointer",
+							"transition-all duration-200",
+							"hover:scale-105 hover:shadow-md",
+						)}
 						style={{
 							backgroundColor: memo.category.color
-								? `${memo.category.color}20`
-								: "bg-muted/50",
+								? `${memo.category.color}15`
+								: undefined,
 							borderColor: memo.category.color || undefined,
 							color: memo.category.color || undefined,
 						}}
 					>
 						<FolderIcon size={12} />
-						{memo.category?.name}
+						<span>{memo.category.name}</span>
 					</Badge>
-				) : null}
-			</div>
-			<div className="h-[36px] flex items-center">
-				{isShowingOption || isDropdownOpen ? (
-					<div className="relative z-50 flex items-center transition">
-						<Button variant="ghost" size="icon" onClick={handleIsWishClick}>
-							<HeartIcon
-								size={12}
-								fill={memo.isWish ? "pink" : ""}
-								fillOpacity={memo.isWish ? 100 : 0}
-								className={cn(
-									"transition-transform hover:scale-110 active:scale-95",
-									{
-										"animate-heart-pop": memo.isWish,
-									},
-								)}
-							/>
-						</Button>
-						<MemoOption
-							memos={[memo]}
-							lng={lng}
-							onOpenChange={setIsDropdownOpen}
-						/>
-						{children}
-					</div>
-				) : (
-					<time
-						dateTime={memo.updated_at ?? ""}
-						className="text-muted-foreground absolute right-4 text-xs"
-					>
-						{dayjs(memo.updated_at).fromNow()}
-					</time>
 				)}
+				<time
+					dateTime={memo.updated_at ?? ""}
+					className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5"
+				>
+					<Clock className="w-3 h-3" />
+					{dayjs(memo.updated_at).fromNow()}
+				</time>
+			</div>
+
+			<div
+				className={cn("flex items-center gap-1 transition-opacity", {
+					"opacity-100": isShowingOption || isDropdownOpen,
+					"opacity-40 hover:opacity-100": !isShowingOption && !isDropdownOpen,
+				})}
+			>
+				<Button
+					variant="ghost"
+					size="sm"
+					className="w-8 h-8 p-0 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-full"
+					onClick={handleIsWishClick}
+				>
+					<HeartIcon
+						size={16}
+						fill={memo.isWish ? "#ec4899" : "none"}
+						className={cn(
+							"transition-all",
+							memo.isWish ? "text-pink-500 scale-110" : "text-gray-400",
+							"hover:scale-125",
+						)}
+					/>
+				</Button>
+				<MemoOption
+					memos={[memo]}
+					lng={lng}
+					onOpenChange={setIsDropdownOpen}
+				/>
+				{children}
 			</div>
 		</CardFooter>
 	);

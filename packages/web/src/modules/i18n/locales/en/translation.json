@@ -50,6 +50,16 @@
 	"updates": {
 		"title": "What's new",
 		"versions": {
+			"v1.9.3": {
+				"title": "AI chat feature and stability improvements",
+				"content": [
+					"Added AI chat feature in side panel",
+					"Fixed duplicate memo creation bug",
+					"Improved category recommendation",
+					"Enhanced YouTube transcript extraction",
+					"UI/UX improvements and performance optimization"
+				]
+			},
 			"v1.9.2": {
 				"title": "SEO optimization and UI improvements",
 				"content": [

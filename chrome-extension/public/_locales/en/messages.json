@@ -154,5 +154,11 @@
 	},
 	"chat_empty_state": {
 		"message": "Ask AI about the page content"
+	},
+	"text_selection_setting": {
+		"message": "Text Selection Memo"
+	},
+	"text_selection_description": {
+		"message": "Show memo button when text is selected (refresh required)"
 	}
 }

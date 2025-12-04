@@ -1,16 +1,11 @@
 import Header from "@src/components/Header";
 import type { LanguageParams } from "@src/modules/i18n";
 import { SUPPORTED_LANGUAGES } from "@src/modules/i18n";
-import { CONFIG } from "@web-memo/env";
 import { AnalyticsUserTracking } from "@web-memo/shared/modules/analytics";
 import { dir } from "i18next";
 import { type PropsWithChildren, Suspense } from "react";
 import { InitDayjs, JsonLD } from "../_components";
-import {
-	QueryProvider,
-	ThemeProvider,
-	UpdateNotificationDialog,
-} from "./_components";
+import { QueryProvider, ThemeProvider } from "./_components";
 import { metadataEnglish, metadataKorean } from "./_constants";
 
 interface RootLayoutProps extends PropsWithChildren, LanguageParams {}
@@ -37,9 +32,6 @@ export default function RootLayout({
 					</Suspense>
 					<Header lng={lng} />
 					{children}
-					{CONFIG.nodeEnv !== "development" && (
-						<UpdateNotificationDialog lng={lng} />
-					)}
 				</QueryProvider>
 			</ThemeProvider>
 

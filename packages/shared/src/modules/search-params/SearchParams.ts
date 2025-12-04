@@ -55,7 +55,7 @@ export default class SearchParams {
 
 		return params.reduce(
 			(acc, [key, value], index) =>
-				acc + `${index === 0 ? "?" : "&"}${key}=${value}`,
+				`${acc}${index === 0 ? "?" : "&"}${key}=${value}`,
 			"",
 		);
 	}

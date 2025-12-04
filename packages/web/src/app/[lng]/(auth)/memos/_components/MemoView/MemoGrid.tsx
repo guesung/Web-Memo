@@ -7,10 +7,10 @@ import { useKeyboardBind } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 
-import { Skeleton } from "@web-memo/ui";
+import { Loading, Skeleton } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { type ComponentProps, Suspense, useEffect, useRef } from "react";
 
 import MemoDialog from "../MemoDialog";
 import { useDragSelection, useMemoDialog, useMemoSelection } from "./_hooks";
@@ -22,7 +22,6 @@ const CONTAINER_ID = "memo-grid";
 
 interface MemoGridProps extends LanguageType {
 	memos: GetMemoResponse[];
-	isLoading: boolean;
 	hasNextPage: boolean;
 	isFetchingNextPage: boolean;
 	fetchNextPage: () => void;
@@ -31,7 +30,6 @@ interface MemoGridProps extends LanguageType {
 export default function MemoGrid({
 	lng,
 	memos,
-	isLoading,
 	hasNextPage,
 	isFetchingNextPage,
 	fetchNextPage,
@@ -63,9 +61,17 @@ export default function MemoGrid({
 		router.replace(searchParams.getUrl(), { scroll: false });
 	};
 
-	const handleRequestAppend = () => {
-		if (hasNextPage && !isFetchingNextPage && fetchNextPage) {
+	const handleRequestAppend: ComponentProps<
+		typeof MasonryInfiniteGrid
+	>["onRequestAppend"] = ({ wait, currentTarget, groupKey, ready }) => {
+		if (hasNextPage && !isFetchingNextPage) {
+			wait();
+
+			currentTarget.appendPlaceholders(20, Number(groupKey) + 1);
+
 			fetchNextPage();
+
+			ready();
 		}
 	};
 
@@ -86,12 +92,7 @@ export default function MemoGrid({
 		selectedMemoIds.includes(memo.id),
 	);
 
-	if (memos.length === 0) {
-		if (isLoading) {
-			return <MemoGridSkeleton />;
-		}
-		return <MemoEmptyState lng={lng} />;
-	}
+	if (memos.length === 0) return <MemoEmptyState lng={lng} />;
 
 	return (
 		<div className="relative h-full w-full">
@@ -133,7 +134,11 @@ export default function MemoGrid({
 					/>
 				))}
 			</MasonryInfiniteGrid>
-			{dialogMemoId && <MemoDialog lng={lng} memoId={dialogMemoId} />}
+			{dialogMemoId && (
+				<Suspense fallback={<Loading />}>
+					<MemoDialog lng={lng} memoId={dialogMemoId} />
+				</Suspense>
+			)}
 		</div>
 	);
 }

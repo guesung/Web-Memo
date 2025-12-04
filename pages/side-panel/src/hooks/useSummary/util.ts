@@ -1,4 +1,3 @@
-import { CONFIG } from "@web-memo/env";
 import {
 	DEFAULT_PROMPTS,
 	LANGUAGE_MAP,
@@ -12,7 +11,7 @@ import {
 } from "@web-memo/shared/modules/chrome-storage";
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
-import { checkYoutubeUrl, extractVideoId } from "@web-memo/shared/utils";
+import { checkYoutubeUrl } from "@web-memo/shared/utils";
 import { DEFAULT_CATEGORY, DEFAULT_LANGUAGE } from "./constant";
 
 interface PageContentResult {
@@ -25,17 +24,14 @@ interface GetSystemPromptProps {
 	category: Category;
 }
 
-export const fetchYoutubeTranscript = async (
-	videoId: string,
-): Promise<string> => {
-	const response = await fetch(
-		`${CONFIG.youtubeTranscriptUrl}/api/youtube-transcript?video_id=${videoId}`,
-	);
+export const fetchYoutubeTranscript = async (): Promise<string> => {
+	const result = await ExtensionBridge.requestYoutubeTranscript();
 
-	if (!response.ok) throw new Error("Failed to fetch transcript");
+	if (!result.success) {
+		throw new Error(result.error ?? "Failed to extract transcript");
+	}
 
-	const data = await response.json();
-	return data.transcript;
+	return result.transcript;
 };
 
 export const getSummaryPrompt = async (content: string, category: Category) => {
@@ -77,21 +73,18 @@ export const getPageContent = async (
 	const isYoutube = checkYoutubeUrl(url);
 
 	if (isYoutube) {
-		const youtubeId = extractVideoId(url);
-		if (!youtubeId) throw new Error("Failed to extract YouTube video ID");
-
-		const transcript = await fetchYoutubeTranscript(youtubeId);
+		const transcript = await fetchYoutubeTranscript();
 		return {
 			content: transcript,
 			category: "youtube",
 		};
-	} else {
-		const { content } = await ExtensionBridge.requestPageContent();
-		return {
-			content,
-			category: DEFAULT_CATEGORY,
-		};
 	}
+
+	const { content } = await ExtensionBridge.requestPageContent();
+	return {
+		content,
+		category: DEFAULT_CATEGORY,
+	};
 };
 
 export const processStreamingResponse = async (

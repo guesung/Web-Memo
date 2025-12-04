@@ -40,6 +40,13 @@
 		"update": "새로운 소식"
 	},
 
+	"updateNotification": {
+		"title": "🎉 업데이트 소식",
+		"version": "v{{VERSION}} 버전이 출시되었습니다!",
+		"dismiss": "다시 보지 않기",
+		"confirm": "확인"
+	},
+
 	"updates": {
 		"title": "새로운 소식",
 		"versions": {
@@ -289,7 +296,12 @@
 		"googleLogin": "구글 계정으로 로그인",
 		"testLogin": "테스트 계정으로 로그인",
 		"askGoInstallExtension": "메모 기능을 사용하시려면 확장 프로그램이 필요해요. 지금 설치하러 가시겠어요?",
-		"personalInformationInfo": "🔒 로그인 정보는 메모 동기화 목적으로만 사용되며, 광고나 마케팅에는 절대 사용하지 않아요."
+		"personalInformationInfo": "로그인 정보는 메모 동기화 목적으로만 사용되며, 광고나 마케팅에는 절대 사용하지 않아요.",
+		"trustSignal": {
+			"secure": "안전한 로그인",
+			"private": "개인정보 보호",
+			"free": "무료"
+		}
 	},
 
 	"dialogInstall": {
@@ -360,20 +372,29 @@
 
 	"memos": {
 		"emptyState": {
+			"title": "첫 메모를 작성해보세요",
 			"message": "아직 메모가 없어요. 사이드 패널을 열어 메모를 작성해보세요.",
-			"description": "단축키 '{{key}} + S'를 눌러 사이드 패널을 열 수 있어요."
+			"description": "단축키 '{{key}} + S'를 눌러 사이드 패널을 열 수 있어요.",
+			"installExtension": "확장 프로그램 설치하기",
+			"learnHow": "사용 방법 알아보기",
+			"tip1": "사이드 패널에서 메모를 작성하세요",
+			"tip2": "{{key}} + S로 빠르게 열기",
+			"tip3": "자동으로 저장됩니다"
 		},
 		"totalMemos": "메모 {{total}}개",
 		"searchPlaceholder": "메모 찾기",
 		"searchTarget": {
+			"label": "검색 대상",
 			"all": "전체",
 			"title": "제목",
 			"memo": "내용"
 		},
 		"sortBy": {
+			"label": "정렬",
 			"updated_at": "수정 순",
 			"created_at": "생성 순"
 		},
+		"activeFilters": "필터 적용됨",
 		"grid": "격자로 보기",
 		"calendar": "달력으로 보기",
 		"selected": "{{count}}개 선택됨",
@@ -403,6 +424,7 @@
 		"section": {
 			"key_features": "핵심 기능",
 			"key_features_desc": "웹 서핑을 더 스마트하게 만들어주는 기능들",
+			"features_badge": "기능",
 			"demo": "직접 확인해보세요",
 			"demo_title": "직접 확인해보세요",
 			"demo_desc": "웹 메모의 핵심 기능을 살펴보세요",
@@ -417,7 +439,8 @@
 			"testimonials_desc": "실제 사용자들의 경험을 확인해보세요",
 			"testimonials_note": "* 대표적인 사용 사례를 바탕으로 작성되었습니다",
 			"cta_title": "지금 바로 시작하세요",
-			"cta_desc": "더 스마트한 웹 서핑을 경험해보세요. 무료로, 지금 바로."
+			"cta_desc": "더 스마트한 웹 서핑을 경험해보세요. 무료로, 지금 바로.",
+			"cta_badge": "지금 시작하세요"
 		},
 		"demo": {
 			"write_memo": "메모 작성",

@@ -34,7 +34,7 @@ export default function JsonLD({ lng }: JsonLDProps) {
 	return (
 		<Script
 			type="application/ld+json"
-			// biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+			// biome-ignore lint/security/noDangerouslySetInnerHtml: Required for JSON-LD structured data injection
 			dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
 		/>
 	);

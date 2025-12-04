@@ -6,7 +6,7 @@ export default class ChromeSyncStorage {
 		try {
 			const storage = await chrome.storage.sync.get(key);
 			return storage[key];
-		} catch (error) {
+		} catch (_error) {
 			throw new Error(I18n.get("error_get_storage"));
 		}
 	}

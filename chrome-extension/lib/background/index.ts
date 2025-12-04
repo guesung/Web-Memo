@@ -109,9 +109,9 @@ ExtensionBridge.responseCreateMemo(async (payload, _sender, sendResponse) => {
 		}
 
 		if (existingMemo.data) {
-			const updatedMemo = `${existingMemo.data.memo}${existingMemo.data.memo ? "\n\n" : ""}${payload.memo}`;
+			const updatedMemo = `${existingMemo.data[0].memo}${existingMemo.data[0].memo ? "\n\n" : ""}${payload.memo}`;
 			const result = await memoService.updateMemo({
-				id: existingMemo.data.id,
+				id: existingMemo.data[0].id,
 				request: { memo: updatedMemo },
 			});
 

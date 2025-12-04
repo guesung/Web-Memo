@@ -1,10 +1,9 @@
 import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
-import { useDebounce } from "@web-memo/shared/hooks";
-import { I18n } from "@web-memo/shared/utils/extension";
+import { getMemoUrl } from "@src/utils";
+import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
 	Badge,
-	cn,
 	Command,
 	CommandEmpty,
 	CommandGroup,
@@ -12,84 +11,25 @@ import {
 	CommandItem,
 	CommandList,
 	Textarea,
+	ToastAction,
+	cn,
+	toast,
 } from "@web-memo/ui";
 import { HeartIcon, XIcon } from "lucide-react";
-import { useCallback, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
-import { CategorySuggestion, SaveStatus } from "./components";
-import {
-	MIN_MEMO_LENGTH,
-	useCategorySuggestion,
-	useMemoCategory,
-	useMemoForm,
-	useMemoWish,
-} from "./hooks";
-
-const SUGGESTION_TRIGGER_DELAY = 300;
+import { SaveStatus } from "./components";
+import { useMemoCategory, useMemoForm } from "./hooks";
 
 function MemoFormContent() {
-	const { debounce } = useDebounce();
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-	const { register, watch, setValue } = useFormContext<MemoInput>();
+	const { register, watch } = useFormContext<MemoInput>();
 	const { ref, ...rest } = register("memo");
 
 	const currentCategoryId = watch("categoryId");
 
-	const { memoData, isSaving, saveMemo, handleMemoChange } = useMemoForm({
-		onSaveSuccess: (memoInput) => {
-			// Trigger category suggestion if no category is set
-			if (!memoInput.categoryId && memoInput.memo.length > MIN_MEMO_LENGTH) {
-				// Small delay to let save complete visually
-				setTimeout(() => {
-					triggerSuggestion(memoInput.memo);
-				}, SUGGESTION_TRIGGER_DELAY);
-			}
-		},
-	});
-
-	const handleCategorySelect = useCallback(
-		(categoryId: number) => {
-			setValue("categoryId", categoryId);
-			saveMemo({
-				memo: watch("memo"),
-				isWish: watch("isWish"),
-				categoryId,
-			});
-		},
-		[setValue, saveMemo, watch],
-	);
-
-	const {
-		isLoading: isSuggestionLoading,
-		suggestion,
-		triggerSuggestion,
-		acceptSuggestion,
-		dismissSuggestion,
-	} = useCategorySuggestion({
-		currentCategoryId,
-		onCategorySelect: handleCategorySelect,
-	});
-
-	const { handleWishClick } = useMemoWish({
-		memoId: memoData?.id,
-		onWishClick: async (isWish) => {
-			await saveMemo({
-				memo: watch("memo"),
-				isWish: !isWish,
-				categoryId: watch("categoryId"),
-			});
-		},
-	});
-
-	const handleCategoryChange = (categoryId: number | null) => {
-		debounce(() =>
-			saveMemo({
-				memo: watch("memo"),
-				isWish: watch("isWish"),
-				categoryId,
-			}),
-		);
-	};
+	const { memoData, isSaving, handleMemoChange, updateCategory, toggleWish } =
+		useMemoForm();
 
 	const {
 		categories,
@@ -97,22 +37,36 @@ function MemoFormContent() {
 		categoryInputPosition,
 		commandInputRef,
 		handleKeyDown,
-		handleCategorySelect: handleCategorySelectFromList,
+		handleCategorySelect,
 		handleCategoryRemove,
 		handleCategoryListClose,
 	} = useMemoCategory({
 		textareaRef,
-		onCategorySelect: (categoryId) => {
-			saveMemo({
-				memo: watch("memo"),
-				isWish: watch("isWish"),
-				categoryId,
-			});
-		},
-		onCategoryRemove: () => {
-			handleCategoryChange(null);
-		},
+		onCategoryChange: updateCategory,
 	});
+
+	const handleWishClick = async () => {
+		const newIsWish = await toggleWish();
+
+		const handleWishListClick = () => {
+			const memoWishListUrl = getMemoUrl({
+				id: memoData?.id,
+				isWish: newIsWish,
+			});
+			Tab.create({ url: memoWishListUrl });
+		};
+
+		toast({
+			title: newIsWish
+				? I18n.get("wish_list_added")
+				: I18n.get("wish_list_deleted"),
+			action: (
+				<ToastAction altText={I18n.get("go_to")} onClick={handleWishListClick}>
+					{I18n.get("go_to")}
+				</ToastAction>
+			),
+		});
+	};
 
 	const currentCategory = useMemo(
 		() => categories?.find((c) => c.id === currentCategoryId),
@@ -156,16 +110,6 @@ function MemoFormContent() {
 						<SaveStatus isSaving={isSaving} memo={watch("memo")} />
 					</div>
 					<div className="flex items-center gap-2">
-						{/* Category Suggestion */}
-						{(isSuggestionLoading || suggestion) && !currentCategoryId && (
-							<CategorySuggestion
-								isLoading={isSuggestionLoading}
-								suggestion={suggestion}
-								onAccept={acceptSuggestion}
-								onDismiss={dismissSuggestion}
-							/>
-						)}
-						{/* Current Category Badge */}
 						{currentCategory && (
 							<Badge
 								variant="outline"
@@ -213,7 +157,7 @@ function MemoFormContent() {
 								{categories?.map((category) => (
 									<CommandItem
 										key={category.id}
-										onSelect={() => handleCategorySelectFromList(category)}
+										onSelect={() => handleCategorySelect(category)}
 										className="flex items-center gap-2"
 									>
 										<div

@@ -4,7 +4,7 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { URL } from "@web-memo/shared/constants";
 import { motion } from "framer-motion";
-import { Check, Chrome, Globe, Sparkles, Star, Users } from "lucide-react";
+import { Check, Chrome, Globe, Sparkles, Star, Users, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -14,16 +14,53 @@ export default function Hero({ lng }: HeroProps) {
 	const { t } = useTranslation(lng);
 
 	return (
-		<section className="relative overflow-hidden">
-			{/* Gradient Background */}
-			<div className="absolute inset-0 gradient-mesh dark:gradient-mesh-dark opacity-10" />
+		<section className="relative overflow-hidden min-h-[90vh] flex items-center">
+			{/* Animated Gradient Background */}
+			<div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950" />
+			<div className="absolute inset-0 gradient-mesh dark:gradient-mesh-dark opacity-5" />
 
-			{/* Background Decorative Elements */}
+			{/* Animated Background Elements */}
 			<div className="absolute inset-0 overflow-hidden pointer-events-none">
-				<div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl" />
-				<div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl" />
-				<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
+				<motion.div
+					animate={{
+						scale: [1, 1.2, 1],
+						opacity: [0.2, 0.3, 0.2],
+					}}
+					transition={{
+						duration: 8,
+						repeat: Number.POSITIVE_INFINITY,
+						ease: "easeInOut",
+					}}
+					className="absolute -top-40 -right-40 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl"
+				/>
+				<motion.div
+					animate={{
+						scale: [1.2, 1, 1.2],
+						opacity: [0.2, 0.3, 0.2],
+					}}
+					transition={{
+						duration: 10,
+						repeat: Number.POSITIVE_INFINITY,
+						ease: "easeInOut",
+					}}
+					className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl"
+				/>
+				<motion.div
+					animate={{
+						scale: [1, 1.1, 1],
+						x: [0, 50, 0],
+					}}
+					transition={{
+						duration: 12,
+						repeat: Number.POSITIVE_INFINITY,
+						ease: "easeInOut",
+					}}
+					className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-3xl"
+				/>
 			</div>
+
+			{/* Grid Pattern Overlay */}
+			<div className="absolute inset-0 bg-grid opacity-30 dark:opacity-10" />
 
 			<div className="relative mx-auto max-w-6xl px-4 py-16 lg:py-24">
 				<div className="grid lg:grid-cols-2 gap-12 items-center">

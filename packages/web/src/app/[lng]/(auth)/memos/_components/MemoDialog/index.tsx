@@ -3,6 +3,8 @@
 import type { MemoInput } from "@src/app/[lng]/(auth)/memos/_types/Input";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEY } from "@web-memo/shared/constants";
 import {
 	useDebounce,
 	useKeyboardBind,
@@ -26,7 +28,6 @@ import {
 	useState,
 } from "react";
 import { useForm } from "react-hook-form";
-
 import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
 import UnsavedChangesAlert from "./UnsavedChangesAlert";
@@ -43,6 +44,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	const [showAlert, setShowAlert] = useState(false);
 	const searchParams = useSearchParams();
 	const { debounce } = useDebounce();
+	const queryClient = useQueryClient();
 
 	const { register, watch, setValue } = useForm<MemoInput>({
 		defaultValues: {
@@ -62,14 +64,23 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 		const isEdited = currentMemo !== memoData?.memo;
 
 		if (isEdited && currentMemo.trim() !== "") {
-			mutateMemoPatch({
-				id: memoId,
-				request: {
-					memo: currentMemo,
+			mutateMemoPatch(
+				{
+					id: memoId,
+					request: {
+						memo: currentMemo,
+					},
 				},
-			});
+				{
+					onSuccess: () => {
+						queryClient.invalidateQueries({
+							queryKey: QUERY_KEY.memo({ id: memoId }),
+						});
+					},
+				},
+			);
 		}
-	}, [watch, memoData?.memo, mutateMemoPatch, memoId]);
+	}, [watch, memoData?.memo, mutateMemoPatch, memoId, queryClient]);
 
 	useKeyboardBind({ key: "s", callback: saveMemo, isMetaKey: true });
 
@@ -80,7 +91,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 		else closeDialog();
 	};
 
-	const handleSaveAndClose = () => {
+	const _handleSaveAndClose = () => {
 		saveMemo();
 		closeDialog();
 	};

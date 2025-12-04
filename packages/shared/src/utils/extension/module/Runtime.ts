@@ -20,12 +20,18 @@ export class Runtime {
 			request: BridgeRequest<TPayload>,
 			sender: chrome.runtime.MessageSender,
 			sendResponse: (response: TResponse) => void,
-		) => void,
+		) => void | boolean | Promise<unknown>,
 	) {
 		chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			if (request.type === type) {
-				callback(request, sender, sendResponse);
+				const result = callback(request, sender, sendResponse);
+				// 비동기 콜백의 경우 true를 반환하여 sendResponse를 유지
+				if (result instanceof Promise) {
+					return true;
+				}
+				return result;
 			}
+			return false;
 		});
 	}
 

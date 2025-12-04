@@ -4,7 +4,7 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { URL } from "@web-memo/shared/constants";
 import { motion } from "framer-motion";
-import { Mail, Youtube, MessageCircle, Chrome, Github, Heart } from "lucide-react";
+import { Mail, Youtube, MessageCircle, Chrome, Heart } from "lucide-react";
 import Link from "next/link";
 
 interface FooterProps extends LanguageType {}

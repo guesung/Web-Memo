@@ -44,7 +44,7 @@ export default function useTranslation(
 	const ret = useTranslationOrg(ns, options);
 	const { i18n } = ret;
 
-	const [activeLng, setActiveLng] = useState(i18n.resolvedLanguage);
+	const [_activeLng, setActiveLng] = useState(i18n.resolvedLanguage);
 
 	useEffect(() => {
 		setActiveLng(i18n.resolvedLanguage);

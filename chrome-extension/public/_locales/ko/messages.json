@@ -131,22 +131,28 @@
 	"category_suggestion_dismiss": {
 		"message": "무시"
 	},
+	"recommend_category": {
+		"message": "AI 카테고리 추천"
+	},
 	"auto_apply_category_setting": {
 		"message": "카테고리 자동 적용"
 	},
 	"auto_apply_category_description": {
 		"message": "AI가 추천한 카테고리를 자동으로 적용합니다"
 	},
-	"update_notification_title": {
-		"message": "🎉 업데이트 소식"
+	"chat_title": {
+		"message": "AI 채팅"
 	},
-	"update_notification_version": {
-		"message": "v{{VERSION}} 버전이 출시되었습니다!"
+	"chat_input_placeholder": {
+		"message": "페이지 내용에 대해 질문해보세요..."
 	},
-	"update_notification_dismiss": {
-		"message": "다시 보지 않기"
+	"chat_send": {
+		"message": "전송"
 	},
-	"update_notification_confirm": {
-		"message": "확인"
+	"chat_clear": {
+		"message": "대화 지우기"
+	},
+	"chat_empty_state": {
+		"message": "페이지 내용에 대해 AI에게 질문해보세요"
 	}
 }

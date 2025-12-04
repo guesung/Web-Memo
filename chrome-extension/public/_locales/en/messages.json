@@ -131,22 +131,28 @@
 	"category_suggestion_dismiss": {
 		"message": "Dismiss"
 	},
+	"recommend_category": {
+		"message": "AI category recommendation"
+	},
 	"auto_apply_category_setting": {
 		"message": "Auto-apply category"
 	},
 	"auto_apply_category_description": {
 		"message": "Automatically apply AI-suggested categories"
 	},
-	"update_notification_title": {
-		"message": "🎉 What's New"
+	"chat_title": {
+		"message": "AI Chat"
 	},
-	"update_notification_version": {
-		"message": "Version {{VERSION}} is now available!"
+	"chat_input_placeholder": {
+		"message": "Ask about the page content..."
 	},
-	"update_notification_dismiss": {
-		"message": "Don't show again"
+	"chat_send": {
+		"message": "Send"
 	},
-	"update_notification_confirm": {
-		"message": "Got it"
+	"chat_clear": {
+		"message": "Clear chat"
+	},
+	"chat_empty_state": {
+		"message": "Ask AI about the page content"
 	}
 }

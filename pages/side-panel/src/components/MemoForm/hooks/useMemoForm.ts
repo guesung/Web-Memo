@@ -2,14 +2,13 @@ import type { MemoInput } from "@src/types/Input";
 import {
 	useDebounce,
 	useDidMount,
-	useMemoPatchMutation,
-	useMemoPostMutation,
 	useMemoQuery,
+	useMemoUpsertMutation,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 interface UseMemoFormProps {
@@ -23,16 +22,14 @@ interface TabInfo {
 }
 
 export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
-	const { setValue, watch } = useFormContext<MemoInput>();
+	const { setValue, getValues } = useFormContext<MemoInput>();
 	const { debounce } = useDebounce();
 	const { data: tab } = useTabQuery();
 	const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
 		url: tab.url,
 	});
-	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
-	const { mutate: mutateMemoPost } = useMemoPostMutation();
+	const { mutate: upsertMemo } = useMemoUpsertMutation();
 	const [isSaving, setIsSaving] = useState(false);
-	const isCreatingRef = useRef(false);
 	const initialTabInfoRef = useRef<TabInfo | null>(null);
 
 	useDidMount(() => {
@@ -53,63 +50,76 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		[memoData?.memo, memoData?.isWish, memoData?.category_id, setValue],
 	);
 
-	const saveMemo = async ({ memo, isWish, categoryId }: MemoInput) => {
-		setIsSaving(true);
+	const saveMemo = useCallback(
+		async (overrides?: Partial<MemoInput>) => {
+			const currentValues = getValues();
+			const memoInput: MemoInput = {
+				memo: overrides?.memo ?? currentValues.memo,
+				isWish: overrides?.isWish ?? currentValues.isWish,
+				categoryId: overrides?.categoryId ?? currentValues.categoryId,
+			};
 
-		const tabInfo = initialTabInfoRef.current ?? (await getTabInfo());
+			setIsSaving(true);
 
-		const totalMemo = {
-			...tabInfo,
-			memo,
-			isWish,
-			category_id: categoryId,
-		};
+			const tabInfo = initialTabInfoRef.current ?? (await getTabInfo());
 
-		if (isCreatingRef.current) return;
-
-		if (memoData) {
-			mutateMemoPatch(
-				{ id: memoData.id, request: totalMemo },
+			upsertMemo(
+				{
+					id: memoData?.id,
+					url: tabInfo.url,
+					data: {
+						...tabInfo,
+						memo: memoInput.memo,
+						isWish: memoInput.isWish,
+						category_id: memoInput.categoryId,
+					},
+				},
 				{
 					onSuccess: () => {
 						setTimeout(() => {
 							setIsSaving(false);
 						}, 500);
-						onSaveSuccess?.({ memo, isWish, categoryId });
+						onSaveSuccess?.(memoInput);
+					},
+					onError: () => {
+						setIsSaving(false);
 					},
 				},
 			);
-			return;
-		} else {
-			isCreatingRef.current = true;
+		},
+		[getValues, memoData?.id, upsertMemo, onSaveSuccess],
+	);
 
-			mutateMemoPost(totalMemo, {
-				onSuccess: () => {
-					setTimeout(() => {
-						setIsSaving(false);
-					}, 500);
-					isCreatingRef.current = false;
-					onSaveSuccess?.({ memo, isWish, categoryId });
-				},
-			});
-		}
-	};
+	const handleMemoChange = useCallback(
+		(text: string) => {
+			setValue("memo", text);
+			debounce(() => saveMemo({ memo: text }));
+		},
+		[setValue, debounce, saveMemo],
+	);
 
-	const handleMemoChange = (text: string) => {
-		setValue("memo", text);
-		debounce(() =>
-			saveMemo({
-				memo: text,
-				isWish: watch("isWish"),
-				categoryId: watch("categoryId"),
-			}),
-		);
-	};
+	const updateCategory = useCallback(
+		(categoryId: number | null) => {
+			setValue("categoryId", categoryId);
+			saveMemo({ categoryId });
+		},
+		[setValue, saveMemo],
+	);
+
+	const toggleWish = useCallback(async () => {
+		const currentIsWish = getValues("isWish");
+		const newIsWish = !currentIsWish;
+		setValue("isWish", newIsWish);
+		await saveMemo({ isWish: newIsWish });
+		return newIsWish;
+	}, [getValues, setValue, saveMemo]);
 
 	return {
 		memoData,
 		isSaving,
 		saveMemo,
 		handleMemoChange,
+		updateCategory,
+		toggleWish,
 	};
 }

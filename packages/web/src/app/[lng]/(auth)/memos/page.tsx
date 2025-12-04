@@ -34,7 +34,12 @@ export default async function Page({ params: { lng } }: PageProps) {
 				<div className="flex-1 flex flex-col px-4 py-2">
 					<HydrationBoundaryWrapper
 						queryKey={QUERY_KEY.memos()}
-						queryFn={() => new MemoService(supabaseClient).getMemos()}
+						queryFn={() =>
+							new MemoService(supabaseClient).getMemosPaginated({
+								limit: 20,
+								sortBy: "updated_at",
+							})
+						}
 					>
 						<MemoSearchFormProvider>
 							<div className="mb-6">

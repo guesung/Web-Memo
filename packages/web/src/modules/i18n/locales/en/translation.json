@@ -293,7 +293,12 @@
 		"googleLogin": "Login with Google",
 		"testLogin": "Login with Test",
 		"askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
-		"personalInformationInfo": "🔒 Login info is only used for memo sync and never for ads or marketing purposes."
+		"personalInformationInfo": "Login info is only used for memo sync and never for ads or marketing purposes.",
+		"trustSignal": {
+			"secure": "Secure",
+			"private": "Private",
+			"free": "Free"
+		}
 	},
 
 	"dialogInstall": {
@@ -364,20 +369,29 @@
 
 	"memos": {
 		"emptyState": {
+			"title": "Create your first memo",
 			"message": "No memos yet. Open the side panel to start writing memos.",
-			"description": "Press '{{key}} + S' to open the side panel"
+			"description": "Press '{{key}} + S' to open the side panel",
+			"installExtension": "Install Extension",
+			"learnHow": "Learn How to Use",
+			"tip1": "Write memos in the side panel",
+			"tip2": "Quick open with {{key}} + S",
+			"tip3": "Auto-saved automatically"
 		},
 		"totalMemos": "{{total}} memos",
 		"searchPlaceholder": "Search memos",
 		"searchTarget": {
+			"label": "Search in",
 			"all": "All",
 			"title": "Title",
 			"memo": "Content"
 		},
 		"sortBy": {
+			"label": "Sort by",
 			"updated_at": "Last modified",
 			"created_at": "Date created"
 		},
+		"activeFilters": "Filters active",
 		"grid": "Grid view",
 		"calendar": "Calendar view",
 		"selected": "{{count}} selected",
@@ -407,6 +421,7 @@
 		"section": {
 			"key_features": "Key Features",
 			"key_features_desc": "Features that make web browsing smarter",
+			"features_badge": "Features",
 			"demo": "See it in action",
 			"demo_title": "See it in action",
 			"demo_desc": "Explore the key features of Web Memo",
@@ -421,7 +436,8 @@
 			"testimonials_desc": "See what real users are saying",
 			"testimonials_note": "* Based on representative use cases",
 			"cta_title": "Get started now",
-			"cta_desc": "Experience smarter web browsing. Free, right now."
+			"cta_desc": "Experience smarter web browsing. Free, right now.",
+			"cta_badge": "Get Started Today"
 		},
 		"demo": {
 			"write_memo": "Write Memo",

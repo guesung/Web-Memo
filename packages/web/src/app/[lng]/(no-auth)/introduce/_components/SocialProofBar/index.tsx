@@ -73,14 +73,14 @@ export default function SocialProofBar({ lng }: SocialProofBarProps) {
 	];
 
 	return (
-		<section className="py-8 bg-gradient-to-r from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 border-y border-gray-100 dark:border-gray-800">
+		<section className="py-10 bg-gradient-to-r from-gray-50/80 via-white to-gray-50/80 dark:from-gray-900/80 dark:via-gray-950 dark:to-gray-900/80 border-y border-gray-200/50 dark:border-gray-800/50 backdrop-blur-sm">
 			<div className="mx-auto max-w-6xl px-4">
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}
 					whileInView={{ opacity: 1, y: 0 }}
 					viewport={{ once: true }}
 					transition={{ duration: 0.5 }}
-					className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
+					className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-10"
 				>
 					{proofItems.map((item, index) => (
 						<motion.div
@@ -89,9 +89,11 @@ export default function SocialProofBar({ lng }: SocialProofBarProps) {
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true }}
 							transition={{ duration: 0.5, delay: index * 0.1 }}
-							className="flex items-center gap-4"
+							className="group flex items-center gap-4 p-4 rounded-2xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors duration-300"
 						>
-							<div className={`p-3 rounded-xl ${item.bgColor}`}>
+							<div
+								className={`p-3.5 rounded-2xl ${item.bgColor} transition-transform duration-300 group-hover:scale-110`}
+							>
 								<item.icon className={`h-6 w-6 ${item.color}`} />
 							</div>
 							<div>
@@ -99,7 +101,10 @@ export default function SocialProofBar({ lng }: SocialProofBarProps) {
 									{item.customValue ? (
 										item.customValue
 									) : item.isDecimal ? (
-										"5.0"
+										<span className="flex items-center gap-0.5">
+											5.0
+											<Star className="h-4 w-4 fill-yellow-400 text-yellow-400 ml-1" />
+										</span>
 									) : (
 										<>
 											<AnimatedCounter end={item.value} />
@@ -107,7 +112,7 @@ export default function SocialProofBar({ lng }: SocialProofBarProps) {
 										</>
 									)}
 								</div>
-								<div className="text-sm text-gray-600 dark:text-gray-400">
+								<div className="text-sm font-medium text-gray-600 dark:text-gray-400">
 									{item.label}
 								</div>
 							</div>

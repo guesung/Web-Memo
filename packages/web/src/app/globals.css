@@ -71,6 +71,135 @@
 .glow-amber { box-shadow: 0 0 20px rgba(245, 158, 11, 0.3); }
 .glow-pink { box-shadow: 0 0 20px rgba(236, 72, 153, 0.3); }
 
+/* Noise Texture */
+.noise-texture {
+	position: relative;
+}
+.noise-texture::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+	opacity: 0.03;
+	pointer-events: none;
+	z-index: 1;
+}
+
+/* Premium Card Styles */
+.card-premium {
+	@apply relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border border-gray-200/50 dark:border-gray-800/50 shadow-lg;
+}
+
+.card-premium::before {
+	content: "";
+	@apply absolute inset-0 bg-gradient-to-br from-white/50 to-transparent dark:from-white/5 opacity-50;
+	pointer-events: none;
+}
+
+/* Gradient Border */
+.gradient-border {
+	position: relative;
+	background: linear-gradient(var(--bg-color, white), var(--bg-color, white)) padding-box,
+		linear-gradient(135deg, #667eea, #764ba2, #6B8DD6) border-box;
+	border: 2px solid transparent;
+}
+
+.dark .gradient-border {
+	--bg-color: #111827;
+}
+
+/* Interactive Hover Effects */
+.hover-lift {
+	@apply transition-all duration-300 ease-out;
+}
+.hover-lift:hover {
+	@apply -translate-y-1 shadow-xl;
+}
+
+.hover-glow {
+	@apply transition-all duration-300;
+}
+.hover-glow:hover {
+	box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+}
+
+/* Button Styles */
+.btn-primary-gradient {
+	@apply bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium rounded-xl shadow-lg;
+	@apply hover:from-purple-700 hover:to-blue-700 hover:shadow-xl hover:-translate-y-0.5;
+	@apply transition-all duration-200;
+}
+
+.btn-secondary-glass {
+	@apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700;
+	@apply text-gray-900 dark:text-white font-medium rounded-xl;
+	@apply hover:bg-white dark:hover:bg-gray-800 hover:shadow-md;
+	@apply transition-all duration-200;
+}
+
+/* Text Gradient Variants */
+.text-gradient-purple-blue {
+	@apply bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent;
+}
+
+.text-gradient-blue-cyan {
+	@apply bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent;
+}
+
+.text-gradient-pink-purple {
+	@apply bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent;
+}
+
+/* Subtle Background Patterns */
+.bg-dots {
+	background-image: radial-gradient(circle, rgba(0,0,0,0.05) 1px, transparent 1px);
+	background-size: 20px 20px;
+}
+
+.dark .bg-dots {
+	background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+}
+
+.bg-grid {
+	background-image: linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+	background-size: 40px 40px;
+}
+
+.dark .bg-grid {
+	background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+}
+
+/* Focus States */
+.focus-ring {
+	@apply focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2;
+}
+
+/* Scrollbar Styling */
+.scrollbar-thin {
+	scrollbar-width: thin;
+	scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+	background-color: rgba(156, 163, 175, 0.5);
+	border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+	background-color: rgba(156, 163, 175, 0.7);
+}
+
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
 	.gradient-mesh,
@@ -82,6 +211,9 @@
 	}
 	.animate-float {
 		animation: none;
+	}
+	.hover-lift:hover {
+		transform: none;
 	}
 }
 

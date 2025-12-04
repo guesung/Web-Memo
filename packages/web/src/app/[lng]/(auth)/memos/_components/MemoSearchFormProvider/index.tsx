@@ -1,6 +1,5 @@
 "use client";
 
-import type { MemoSortBy } from "@web-memo/shared/constants";
 import type { PropsWithChildren } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
@@ -8,7 +7,6 @@ type SearchTargetType = "all" | "title" | "memo";
 export interface SearchFormValues {
 	searchQuery: string;
 	searchTarget: SearchTargetType;
-	sortBy: MemoSortBy;
 }
 
 export default function MemoSearchFormProvider({
@@ -18,7 +16,6 @@ export default function MemoSearchFormProvider({
 		defaultValues: {
 			searchQuery: "",
 			searchTarget: "all",
-			sortBy: "updated_at",
 		},
 	});
 

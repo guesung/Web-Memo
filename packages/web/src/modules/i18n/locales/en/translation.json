@@ -421,6 +421,7 @@
 		"section": {
 			"key_features": "Key Features",
 			"key_features_desc": "Features that make web browsing smarter",
+			"features_badge": "Features",
 			"demo": "See it in action",
 			"demo_title": "See it in action",
 			"demo_desc": "Explore the key features of Web Memo",
@@ -435,7 +436,8 @@
 			"testimonials_desc": "See what real users are saying",
 			"testimonials_note": "* Based on representative use cases",
 			"cta_title": "Get started now",
-			"cta_desc": "Experience smarter web browsing. Free, right now."
+			"cta_desc": "Experience smarter web browsing. Free, right now.",
+			"cta_badge": "Get Started Today"
 		},
 		"demo": {
 			"write_memo": "Write Memo",

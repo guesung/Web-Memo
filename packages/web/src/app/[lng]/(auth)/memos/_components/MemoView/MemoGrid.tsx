@@ -7,10 +7,10 @@ import { useKeyboardBind } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 
-import { Skeleton } from "@web-memo/ui";
+import { Loading, Skeleton } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { type ComponentProps, useEffect, useRef } from "react";
+import { type ComponentProps, Suspense, useEffect, useRef } from "react";
 
 import MemoDialog from "../MemoDialog";
 import { useDragSelection, useMemoDialog, useMemoSelection } from "./_hooks";
@@ -134,7 +134,11 @@ export default function MemoGrid({
 					/>
 				))}
 			</MasonryInfiniteGrid>
-			{dialogMemoId && <MemoDialog lng={lng} memoId={dialogMemoId} />}
+			{dialogMemoId && (
+				<Suspense fallback={<Loading />}>
+					<MemoDialog lng={lng} memoId={dialogMemoId} />
+				</Suspense>
+			)}
 		</div>
 	);
 }

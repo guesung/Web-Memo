@@ -85,6 +85,18 @@ export default {
 				"accordion-down": "accordion-down 0.2s ease-out",
 				"accordion-up": "accordion-up 0.2s ease-out",
 				"heart-pop": "heart-pop 0.3s ease-in-out",
+				"fade-in": "fade-in 0.3s ease-out",
+				"fade-in-up": "fade-in-up 0.4s ease-out",
+				"fade-in-down": "fade-in-down 0.4s ease-out",
+				"scale-in": "scale-in 0.2s ease-out",
+				"slide-in-right": "slide-in-right 0.3s ease-out",
+				"slide-in-left": "slide-in-left 0.3s ease-out",
+				"pulse-soft": "pulse-soft 2s ease-in-out infinite",
+				shimmer: "shimmer 2s linear infinite",
+				float: "float 3s ease-in-out infinite",
+				"spin-slow": "spin 3s linear infinite",
+				"bounce-soft": "bounce-soft 1s ease-in-out infinite",
+				"gradient-shift": "gradient-shift 8s ease infinite",
 			},
 			keyframes: {
 				"accordion-down": {
@@ -106,6 +118,50 @@ export default {
 				"heart-pop": {
 					"0%, 100%": { transform: "scale(1)" },
 					"50%": { transform: "scale(1.5)" },
+				},
+				"fade-in": {
+					"0%": { opacity: "0" },
+					"100%": { opacity: "1" },
+				},
+				"fade-in-up": {
+					"0%": { opacity: "0", transform: "translateY(10px)" },
+					"100%": { opacity: "1", transform: "translateY(0)" },
+				},
+				"fade-in-down": {
+					"0%": { opacity: "0", transform: "translateY(-10px)" },
+					"100%": { opacity: "1", transform: "translateY(0)" },
+				},
+				"scale-in": {
+					"0%": { opacity: "0", transform: "scale(0.95)" },
+					"100%": { opacity: "1", transform: "scale(1)" },
+				},
+				"slide-in-right": {
+					"0%": { transform: "translateX(100%)", opacity: "0" },
+					"100%": { transform: "translateX(0)", opacity: "1" },
+				},
+				"slide-in-left": {
+					"0%": { transform: "translateX(-100%)", opacity: "0" },
+					"100%": { transform: "translateX(0)", opacity: "1" },
+				},
+				"pulse-soft": {
+					"0%, 100%": { opacity: "1" },
+					"50%": { opacity: "0.7" },
+				},
+				shimmer: {
+					"0%": { backgroundPosition: "-200% 0" },
+					"100%": { backgroundPosition: "200% 0" },
+				},
+				float: {
+					"0%, 100%": { transform: "translateY(0)" },
+					"50%": { transform: "translateY(-10px)" },
+				},
+				"bounce-soft": {
+					"0%, 100%": { transform: "translateY(0)" },
+					"50%": { transform: "translateY(-5px)" },
+				},
+				"gradient-shift": {
+					"0%, 100%": { backgroundPosition: "0% 50%" },
+					"50%": { backgroundPosition: "100% 50%" },
 				},
 			},
 		},

@@ -154,5 +154,11 @@
 	},
 	"chat_empty_state": {
 		"message": "페이지 내용에 대해 AI에게 질문해보세요"
+	},
+	"text_selection_setting": {
+		"message": "텍스트 선택 메모"
+	},
+	"text_selection_description": {
+		"message": "텍스트 선택 시 메모 버튼을 표시합니다 (새로고침 필요)"
 	}
 }

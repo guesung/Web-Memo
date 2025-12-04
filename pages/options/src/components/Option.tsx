@@ -28,6 +28,7 @@ export default function Option() {
 			webPrompt: "",
 			language: "ko",
 			autoApplyCategory: true,
+			textSelectionEnabled: false,
 		},
 	});
 
@@ -41,6 +42,10 @@ export default function Option() {
 		await ChromeSyncStorage.set(
 			STORAGE_KEYS.autoApplyCategory,
 			data.autoApplyCategory,
+		);
+		await ChromeSyncStorage.set(
+			STORAGE_KEYS.textSelectionEnabled,
+			data.textSelectionEnabled,
 		);
 
 		toast({
@@ -77,11 +82,15 @@ export default function Option() {
 			const autoApplyCategory = await ChromeSyncStorage.get<boolean>(
 				STORAGE_KEYS.autoApplyCategory,
 			);
+			const textSelectionEnabled = await ChromeSyncStorage.get<boolean>(
+				STORAGE_KEYS.textSelectionEnabled,
+			);
 
 			setValue("language", language);
 			setValue("youtubePrompt", youtubePrompts);
 			setValue("webPrompt", webPrompts);
 			setValue("autoApplyCategory", autoApplyCategory ?? true);
+			setValue("textSelectionEnabled", textSelectionEnabled ?? false);
 		};
 
 		fetchStorage();
@@ -126,6 +135,27 @@ export default function Option() {
 						className="text-sm text-muted-foreground"
 					>
 						{I18n.get("auto_apply_category_description")}
+					</Label>
+				</div>
+			</section>
+
+			<section className="mb-8">
+				<h2 className="mb-4 text-xl font-semibold">
+					{I18n.get("text_selection_setting")}
+				</h2>
+				<div className="flex items-center space-x-3">
+					<Switch
+						id="text-selection-enabled"
+						checked={watch("textSelectionEnabled")}
+						onCheckedChange={(checked) =>
+							setValue("textSelectionEnabled", checked)
+						}
+					/>
+					<Label
+						htmlFor="text-selection-enabled"
+						className="text-sm text-muted-foreground"
+					>
+						{I18n.get("text_selection_description")}
 					</Label>
 				</div>
 			</section>

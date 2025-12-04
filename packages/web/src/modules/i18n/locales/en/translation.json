@@ -43,6 +43,14 @@
 	"updates": {
 		"title": "What's new",
 		"versions": {
+			"v1.9.2": {
+				"title": "SEO optimization and UI improvements",
+				"content": [
+					"Added 5 new landing pages",
+					"Improved category display with icon UI",
+					"Search engine optimization improvements"
+				]
+			},
 			"v1.9.0": {
 				"title": "AI categories and major usability improvements",
 				"content": [

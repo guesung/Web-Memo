@@ -293,7 +293,12 @@
 		"googleLogin": "Login with Google",
 		"testLogin": "Login with Test",
 		"askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
-		"personalInformationInfo": "🔒 Login info is only used for memo sync and never for ads or marketing purposes."
+		"personalInformationInfo": "Login info is only used for memo sync and never for ads or marketing purposes.",
+		"trustSignal": {
+			"secure": "Secure",
+			"private": "Private",
+			"free": "Free"
+		}
 	},
 
 	"dialogInstall": {

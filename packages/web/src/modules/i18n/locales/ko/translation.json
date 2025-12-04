@@ -288,7 +288,12 @@
 		"googleLogin": "구글 계정으로 로그인",
 		"testLogin": "테스트 계정으로 로그인",
 		"askGoInstallExtension": "메모 기능을 사용하시려면 확장 프로그램이 필요해요. 지금 설치하러 가시겠어요?",
-		"personalInformationInfo": "🔒 로그인 정보는 메모 동기화 목적으로만 사용되며, 광고나 마케팅에는 절대 사용하지 않아요."
+		"personalInformationInfo": "로그인 정보는 메모 동기화 목적으로만 사용되며, 광고나 마케팅에는 절대 사용하지 않아요.",
+		"trustSignal": {
+			"secure": "안전한 로그인",
+			"private": "개인정보 보호",
+			"free": "무료"
+		}
 	},
 
 	"dialogInstall": {

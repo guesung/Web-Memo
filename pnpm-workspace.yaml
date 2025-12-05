@@ -1,6 +1,5 @@
 packages:
-  - "chrome-extension"
+  - "apps/*"
   - "pages/*"
   - "packages/*"
-  - "apps/*"
   - "e2e"

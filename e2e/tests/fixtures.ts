@@ -11,7 +11,7 @@ type ExtensionFixture = {
 };
 
 export const test = base.extend<ExtensionFixture>({
-	// biome-ignore lint/correctness/noEmptyPattern: <explanation>
+	// biome-ignore lint/correctness/noEmptyPattern: Playwright fixture API requires empty destructuring
 	context: async ({}, use) => {
 		const context = await chromium.launchPersistentContext("", {
 			headless: false,

@@ -16,17 +16,20 @@ interface UseSummaryReturn {
 	refetchSummary: () => void;
 	category: Category;
 	errorMessage: string;
+	pageContent: string;
 }
 
 export default function useSummary(): UseSummaryReturn {
 	const [summary, setSummary] = useState("");
 	const [category, setCategory] = useState<Category>(DEFAULT_CATEGORY);
 	const [errorMessage, setErrorMessage] = useState("");
+	const [pageContent, setPageContent] = useState("");
 
 	const resetSummaryState = () => {
 		setSummary("");
 		setCategory(DEFAULT_CATEGORY);
 		setErrorMessage("");
+		setPageContent("");
 	};
 
 	const startSummary = async () => {
@@ -36,11 +39,12 @@ export default function useSummary(): UseSummaryReturn {
 			const tabs = await Tab.get();
 			if (!tabs?.url) return;
 
-			const { content: pageContent, category: currentCategory } =
+			const { content: fetchedContent, category: currentCategory } =
 				await getPageContent(tabs.url);
 			setCategory(currentCategory);
+			setPageContent(fetchedContent);
 
-			const messages = await getSummaryPrompt(pageContent, currentCategory);
+			const messages = await getSummaryPrompt(fetchedContent, currentCategory);
 
 			const response = await fetch(`${CONFIG.webUrl}/api/openai`, {
 				method: "POST",
@@ -80,5 +84,6 @@ export default function useSummary(): UseSummaryReturn {
 		refetchSummary,
 		category,
 		errorMessage,
+		pageContent,
 	};
 }

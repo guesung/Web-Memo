@@ -1,3 +1,7 @@
+import {
+	ChromeSyncStorage,
+	STORAGE_KEYS,
+} from "@web-memo/shared/modules/chrome-storage";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import {
 	extractYoutubeTranscript,
@@ -20,4 +24,14 @@ if (isYoutubePage()) {
 }
 
 renderOpenSidePanelButton();
-setupTextSelectionHandler();
+
+async function initTextSelectionHandler() {
+	const textSelectionEnabled = await ChromeSyncStorage.get<boolean>(
+		STORAGE_KEYS.textSelectionEnabled,
+	);
+	if (textSelectionEnabled) {
+		setupTextSelectionHandler();
+	}
+}
+
+initTextSelectionHandler();

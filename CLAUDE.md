@@ -317,3 +317,20 @@ Any additional context or follow-up items.
 - Keep documentation concise but informative
 - Link to relevant code files using relative paths
 - Update status as work progresses
+
+## Task Completion Workflow
+
+**IMPORTANT**: After completing any task, always execute the `/pr` command to create a pull request.
+
+### Standard Workflow
+1. Complete the assigned task
+2. Verify changes with `pnpm type-check` and `pnpm lint`
+3. Run `/pr` command to create a pull request
+
+### PR Command Usage
+The `/pr` command will:
+- Create a new branch from develop (if not already on a feature branch)
+- Commit all changes with a descriptive message
+- Push to remote and create a pull request
+
+This ensures all work is properly tracked and ready for review.

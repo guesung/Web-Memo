@@ -1,0 +1,164 @@
+{
+	"extensionName": {
+		"message": "Web Memo - Take notes on websites"
+	},
+	"extensionDescription": {
+		"message": "Take notes easily while browsing websites with a side panel"
+	},
+	"memo": {
+		"message": "Note"
+	},
+	"save": {
+		"message": "Save"
+	},
+	"number": {
+		"message": "Number"
+	},
+	"reset": {
+		"message": "Reset"
+	},
+	"title": {
+		"message": "Title"
+	},
+	"date": {
+		"message": "Date"
+	},
+	"delete": {
+		"message": "Delete"
+	},
+	"modal_modal_question_delete": {
+		"message": "Delete all data? This can't be undone"
+	},
+	"select_language": {
+		"message": "Select language for AI responses"
+	},
+	"reset_option": {
+		"message": "Reset data"
+	},
+	"toast_save_option": {
+		"message": "Settings saved"
+	},
+	"download_csv_option": {
+		"message": "Export as CSV"
+	},
+	"download_json_option": {
+		"message": "Export as JSON"
+	},
+	"toast_error_common": {
+		"message": "Something went wrong. Please try again"
+	},
+	"toast_saved": {
+		"message": "Saved"
+	},
+	"error_get_page_content": {
+		"message": "Couldn't read the page.\n1. For YouTube, summarizing takes about 3 seconds. Please try again shortly.\n2. If newly installed, refresh the page.\n3. Summarizing isn't available on new tabs, Chrome Web Store, or Chrome settings. Please go to a different page."
+	},
+	"error_get_summary": {
+		"message": "Couldn't create summary. Please try again.\nIf the problem persists, contact us through the guide."
+	},
+	"error_get_storage": {
+		"message": "Couldn't load data. Please try again"
+	},
+	"toast_error_storage_exceeded": {
+		"message": "Storage is full. Try removing unnecessary notes"
+	},
+	"context_menus_check_memo": {
+		"message": "View my notes"
+	},
+	"context_menus_show_guide": {
+		"message": "User guide"
+	},
+	"wish_list_deleted": {
+		"message": "Removed from wishlist"
+	},
+	"wish_list_added": {
+		"message": "Added to wishlist"
+	},
+	"go_to": {
+		"message": "Go"
+	},
+	"toast_error_save": {
+		"message": "Couldn't save. Please try again"
+	},
+	"prompt_language_setting": {
+		"message": "Response language"
+	},
+	"select_language_placeholder": {
+		"message": "Select language"
+	},
+	"youtube_prompt_setting": {
+		"message": "YouTube settings"
+	},
+	"website_prompt_setting": {
+		"message": "Website settings"
+	},
+	"enter_prompt": {
+		"message": "Enter prompt"
+	},
+	"settings_saved": {
+		"message": "Settings saved"
+	},
+	"settings_reset": {
+		"message": "Settings reset"
+	},
+	"youtube": {
+		"message": "YouTube"
+	},
+	"webSite": {
+		"message": "Website"
+	},
+	"summary": {
+		"message": "Summary"
+	},
+	"search_category": {
+		"message": "Search category"
+	},
+	"no_categories_found": {
+		"message": "No categories found"
+	},
+	"category_suggesting": {
+		"message": "Suggesting category..."
+	},
+	"category_suggestion_existing": {
+		"message": "Suggest:"
+	},
+	"category_suggestion_new": {
+		"message": "New category:"
+	},
+	"category_suggestion_accept": {
+		"message": "Apply"
+	},
+	"category_suggestion_dismiss": {
+		"message": "Dismiss"
+	},
+	"recommend_category": {
+		"message": "AI category recommendation"
+	},
+	"auto_apply_category_setting": {
+		"message": "Auto-apply category"
+	},
+	"auto_apply_category_description": {
+		"message": "Automatically apply AI-suggested categories"
+	},
+	"chat_title": {
+		"message": "AI Chat"
+	},
+	"chat_input_placeholder": {
+		"message": "Ask about the page content..."
+	},
+	"chat_send": {
+		"message": "Send"
+	},
+	"chat_clear": {
+		"message": "Clear chat"
+	},
+	"chat_empty_state": {
+		"message": "Ask AI about the page content"
+	},
+	"text_selection_setting": {
+		"message": "Text Selection Memo"
+	},
+	"text_selection_description": {
+		"message": "Show memo button when text is selected (refresh required)"
+	}
+}

@@ -4,5 +4,7 @@ export const STORAGE_KEYS = {
 	language: "language",
 	theme: "theme",
 	autoApplyCategory: "autoApplyCategory",
-	summaryHeight: "summaryHeight",
+	tabHeight: "tabHeight",
+	chatMessages: "chatMessages",
+	textSelectionEnabled: "textSelectionEnabled",
 } as const;

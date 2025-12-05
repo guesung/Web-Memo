@@ -4,23 +4,22 @@ import {
 } from "@web-memo/shared/modules/chrome-storage";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const DEFAULT_SUMMARY_HEIGHT = 50;
-const MIN_SUMMARY_HEIGHT = 5;
-const MAX_SUMMARY_HEIGHT = 80;
+const DEFAULT_TAB_HEIGHT = 60;
+const MIN_TAB_HEIGHT = 5;
+const MAX_TAB_HEIGHT = 80;
 
 export default function useResizablePanel() {
-	const [summaryHeight, setSummaryHeight] = useState(DEFAULT_SUMMARY_HEIGHT);
+	const [tabHeight, setTabHeight] = useState(DEFAULT_TAB_HEIGHT);
 	const [isResizing, setIsResizing] = useState(false);
 	const containerRef = useRef<HTMLElement>(null);
 
-	useEffect(() => {
-		ChromeSyncStorage.get<number>(STORAGE_KEYS.summaryHeight).then(
-			(savedHeight) => {
-				if (savedHeight !== undefined && savedHeight !== null) {
-					setSummaryHeight(savedHeight);
-				}
-			},
-		);
+	useEffect(function initTabHeight() {
+		(async () => {
+			const tabHeight = await ChromeSyncStorage.get<number>(
+				STORAGE_KEYS.tabHeight,
+			);
+			if (tabHeight) setTabHeight(tabHeight);
+		})();
 	}, []);
 
 	const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -38,10 +37,10 @@ export default function useResizablePanel() {
 				((e.clientY - containerRect.top) / containerRect.height) * 100;
 
 			const clampedHeight = Math.min(
-				MAX_SUMMARY_HEIGHT,
-				Math.max(MIN_SUMMARY_HEIGHT, newHeight),
+				MAX_TAB_HEIGHT,
+				Math.max(MIN_TAB_HEIGHT, newHeight),
 			);
-			setSummaryHeight(clampedHeight);
+			setTabHeight(clampedHeight);
 		},
 		[isResizing],
 	);
@@ -49,9 +48,9 @@ export default function useResizablePanel() {
 	const handleMouseUp = useCallback(() => {
 		if (isResizing) {
 			setIsResizing(false);
-			ChromeSyncStorage.set(STORAGE_KEYS.summaryHeight, summaryHeight);
+			ChromeSyncStorage.set(STORAGE_KEYS.tabHeight, tabHeight);
 		}
-	}, [isResizing, summaryHeight]);
+	}, [isResizing, tabHeight]);
 
 	useEffect(() => {
 		if (isResizing) {
@@ -66,8 +65,8 @@ export default function useResizablePanel() {
 	}, [isResizing, handleMouseMove, handleMouseUp]);
 
 	return {
-		summaryHeight,
-		memoHeight: 100 - summaryHeight,
+		tabHeight,
+		memoHeight: 100 - tabHeight,
 		isResizing,
 		containerRef,
 		handleMouseDown,

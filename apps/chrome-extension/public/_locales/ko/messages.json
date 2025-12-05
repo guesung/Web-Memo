@@ -1,0 +1,164 @@
+{
+	"extensionName": {
+		"message": "웹 메모 - 웹사이트에서 즉시 메모하기"
+	},
+	"extensionDescription": {
+		"message": "웹사이트에서 사이드 패널을 열어 즉시 메모할 수 있는 도구입니다."
+	},
+	"memo": {
+		"message": "메모"
+	},
+	"save": {
+		"message": "저장"
+	},
+	"number": {
+		"message": "번호"
+	},
+	"reset": {
+		"message": "초기화"
+	},
+	"title": {
+		"message": "제목"
+	},
+	"date": {
+		"message": "날짜"
+	},
+	"delete": {
+		"message": "삭제"
+	},
+	"modal_modal_question_delete": {
+		"message": "모든 데이터를 지울까요? 한 번 지우면 되돌릴 수 없어요"
+	},
+	"select_language": {
+		"message": "AI 답변 받을 언어를 선택하세요"
+	},
+	"reset_option": {
+		"message": "데이터 초기화"
+	},
+	"toast_save_option": {
+		"message": "설정을 저장했어요"
+	},
+	"download_csv_option": {
+		"message": "CSV로 내보내기"
+	},
+	"download_json_option": {
+		"message": "JSON으로 내보내기"
+	},
+	"toast_error_common": {
+		"message": "문제가 생겼어요. 다시 시도해주세요"
+	},
+	"toast_saved": {
+		"message": "저장했어요"
+	},
+	"error_get_page_content": {
+		"message": "페이지를 읽지 못했어요.\n1. 유튜브는 요약에 3초 정도 걸려요. 잠시 후 다시 시도해주세요.\n2. 새로 설치했다면 페이지를 새로고침해주세요.\n3. 새 탭, 크롬 웹스토어, 크롬 설정에서는 요약할 수 없어요. 다른 페이지로 이동해주세요."
+	},
+	"error_get_summary": {
+		"message": "요약하지 못했어요. 다시 시도해주세요.\n계속 안 된다면 가이드의 연락처로 문의해주세요."
+	},
+	"error_get_storage": {
+		"message": "데이터를 불러오지 못했어요. 다시 시도해주세요"
+	},
+	"toast_error_storage_exceeded": {
+		"message": "저장 공간이 가득 찼어요. 필요 없는 메모를 지워보세요"
+	},
+	"context_menus_check_memo": {
+		"message": "내 메모 보기"
+	},
+	"context_menus_show_guide": {
+		"message": "사용 가이드"
+	},
+	"wish_list_deleted": {
+		"message": "위시리스트에서 삭제했어요"
+	},
+	"wish_list_added": {
+		"message": "위시리스트에 추가했어요"
+	},
+	"go_to": {
+		"message": "이동"
+	},
+	"toast_error_save": {
+		"message": "저장하지 못했어요. 다시 시도해주세요"
+	},
+	"prompt_language_setting": {
+		"message": "답변 받을 언어"
+	},
+	"select_language_placeholder": {
+		"message": "언어 선택"
+	},
+	"youtube_prompt_setting": {
+		"message": "유튜브 설정"
+	},
+	"website_prompt_setting": {
+		"message": "웹사이트 설정"
+	},
+	"enter_prompt": {
+		"message": "프롬프트 입력"
+	},
+	"settings_saved": {
+		"message": "설정을 저장했어요"
+	},
+	"settings_reset": {
+		"message": "설정을 초기화했어요"
+	},
+	"youtube": {
+		"message": "유튜브"
+	},
+	"webSite": {
+		"message": "웹사이트"
+	},
+	"summary": {
+		"message": "요약"
+	},
+	"search_category": {
+		"message": "카테고리 검색"
+	},
+	"no_categories_found": {
+		"message": "카테고리가 없습니다"
+	},
+	"category_suggesting": {
+		"message": "카테고리 추천 중..."
+	},
+	"category_suggestion_existing": {
+		"message": "추천:"
+	},
+	"category_suggestion_new": {
+		"message": "새 카테고리:"
+	},
+	"category_suggestion_accept": {
+		"message": "적용"
+	},
+	"category_suggestion_dismiss": {
+		"message": "무시"
+	},
+	"recommend_category": {
+		"message": "AI 카테고리 추천"
+	},
+	"auto_apply_category_setting": {
+		"message": "카테고리 자동 적용"
+	},
+	"auto_apply_category_description": {
+		"message": "AI가 추천한 카테고리를 자동으로 적용합니다"
+	},
+	"chat_title": {
+		"message": "AI 채팅"
+	},
+	"chat_input_placeholder": {
+		"message": "페이지 내용에 대해 질문해보세요..."
+	},
+	"chat_send": {
+		"message": "전송"
+	},
+	"chat_clear": {
+		"message": "대화 지우기"
+	},
+	"chat_empty_state": {
+		"message": "페이지 내용에 대해 AI에게 질문해보세요"
+	},
+	"text_selection_setting": {
+		"message": "텍스트 선택 메모"
+	},
+	"text_selection_description": {
+		"message": "텍스트 선택 시 메모 버튼을 표시합니다 (새로고침 필요)"
+	}
+}

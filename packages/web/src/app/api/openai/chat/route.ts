@@ -59,24 +59,9 @@ function buildSystemPrompt(context?: ChatContext): string {
 		return CHAT_SYSTEM_PROMPT.DEFAULT;
 	}
 
-	const contentType =
-		context.category === "youtube"
-			? CHAT_SYSTEM_PROMPT.YOUTUBE_CONTEXT
-			: CHAT_SYSTEM_PROMPT.WEB_CONTEXT;
-
-	return `${CHAT_SYSTEM_PROMPT.DEFAULT}
-
-${contentType}
-
-<content>
-${context.pageContent}
-</content>
-
-${context.summary ? `<summary>\n${context.summary}\n</summary>` : ""}`;
+	return `${CHAT_SYSTEM_PROMPT.DEFAULT}${context.pageContent}`;
 }
 
 interface ChatContext {
 	pageContent?: string;
-	summary?: string;
-	category?: "youtube" | "others";
 }

@@ -1,7 +1,6 @@
 import { useChat } from "@src/hooks";
 import type { PropsWithChildren } from "react";
-import { createContext, useContext, useEffect } from "react";
-import { useSummaryContext } from "../../Summary/components";
+import { createContext, useContext } from "react";
 
 type ChatContextType = ReturnType<typeof useChat>;
 
@@ -14,16 +13,7 @@ export const useChatContext = () => {
 };
 
 export default function ChatProvider({ children }: PropsWithChildren) {
-	const { summary, category, pageContent } = useSummaryContext();
 	const chatProps = useChat();
-
-	useEffect(() => {
-		chatProps.setContext({
-			pageContent,
-			summary,
-			category,
-		});
-	}, [pageContent, summary, category, chatProps.setContext]);
 
 	return (
 		<ChatContext.Provider value={chatProps}>{children}</ChatContext.Provider>

@@ -2,9 +2,10 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import type { ExportFormat, GetMemoResponse } from "@web-memo/shared";
+import type { GetMemoResponse } from "@web-memo/shared/types";
+import type { ExportFormat } from "@web-memo/shared/utils";
 import { exportMemos, MemoService } from "@web-memo/shared/utils";
-import { getSupabaseClient } from "@web-memo/shared/utils/web/Supabase";
+import { getSupabaseClient } from "@web-memo/shared/utils/web";
 import {
 	Button,
 	DropdownMenu,

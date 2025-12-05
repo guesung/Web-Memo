@@ -60,6 +60,7 @@ test-results
 .serena/
 
 *.tsbuildinfo
+tsup.config.bundled*
 
 # mobile
 .expo

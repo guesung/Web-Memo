@@ -51,7 +51,9 @@ export async function findSidePanelPage(page: Page, timeout = 10000) {
 
 	// Poll for side panel page instead of fixed wait
 	while (Date.now() - startTime < timeout) {
-		const sidePanelPage = context.pages().find((p) => p.url() === EXTENSION_URL);
+		const sidePanelPage = context
+			.pages()
+			.find((p) => p.url() === EXTENSION_URL);
 		if (sidePanelPage) {
 			// Wait for the side panel to be ready
 			await sidePanelPage

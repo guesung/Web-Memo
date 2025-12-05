@@ -87,11 +87,7 @@ async function handlePost(route: Route, store: MockSupabaseStore) {
 	});
 }
 
-async function handlePatch(
-	route: Route,
-	url: URL,
-	store: MockSupabaseStore,
-) {
+async function handlePatch(route: Route, url: URL, store: MockSupabaseStore) {
 	const request = route.request();
 	const body = request.postDataJSON();
 	const id = parseIdFromUrl(url);

@@ -1,6 +1,6 @@
+import path from "node:path";
 import type { BrowserContext } from "@playwright/test";
 import { test as base, chromium } from "@playwright/test";
-import path from "node:path";
 
 process.env.PW_CHROMIUM_ATTACH_TO_OTHER = "1";
 

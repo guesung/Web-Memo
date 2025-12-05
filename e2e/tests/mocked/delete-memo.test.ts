@@ -1,11 +1,6 @@
 import { PATHS } from "@web-memo/shared/constants";
 import { expect, test } from "../fixtures";
-import {
-	gotoSafely,
-	LANGUAGE,
-	login,
-	skipGuide,
-} from "../lib";
+import { gotoSafely, LANGUAGE, login, skipGuide } from "../lib";
 import {
 	createMockMemo,
 	MockSupabaseStore,

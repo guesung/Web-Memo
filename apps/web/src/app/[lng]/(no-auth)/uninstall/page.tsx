@@ -1,8 +1,9 @@
 import type { LanguageParams } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
 import { Coffee, Gift } from "lucide-react";
+import { Suspense } from "react";
 
-import { UninstallFeedbackForm } from "./_components";
+import { UninstallFeedbackForm, UninstallLogger } from "./_components";
 
 export async function generateMetadata({ params }: LanguageParams) {
 	const isKorean = params.lng === "ko";
@@ -25,6 +26,9 @@ export default async function UninstallPage({
 
 	return (
 		<main className="relative flex min-h-screen items-center justify-center overflow-hidden py-12 px-4">
+			<Suspense fallback={null}>
+				<UninstallLogger />
+			</Suspense>
 			<div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950" />
 
 			<div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-200/50 dark:bg-purple-500/10 rounded-full blur-3xl" />

@@ -2,13 +2,16 @@ import { I18n } from "@web-memo/shared/utils/extension";
 import {
 	Button,
 	ErrorBoundary,
+	Loading,
 	Tabs,
 	TabsContent,
 	TabsList,
 	TabsTrigger,
 } from "@web-memo/ui";
-import { FileText, MessageSquare, SettingsIcon } from "lucide-react";
+import { GlobeIcon, RefreshCwIcon, SettingsIcon, Sparkles, Trash2, Youtube } from "lucide-react";
 import { Chat, Summary, ToggleTheme } from ".";
+import { useChatContext } from "./Chat/components";
+import { useSummaryContext } from "./Summary/components";
 
 interface TabSectionProps {
 	activeTab: string;
@@ -21,6 +24,12 @@ export default function TabSection({
 	onTabChange,
 	tabHeight,
 }: TabSectionProps) {
+	const { isSummaryLoading, refetchSummary, category } = useSummaryContext();
+	const { messages, clearMessages } = useChatContext();
+
+	const CategoryIcon = category === "youtube" ? Youtube : GlobeIcon;
+	const hasMessages = messages.length > 0;
+
 	return (
 		<section
 			className="flex flex-col overflow-hidden"
@@ -46,12 +55,39 @@ export default function TabSection({
 			>
 				<TabsList className="shrink-0 mt-3 w-full grid grid-cols-2">
 					<TabsTrigger value="summary" className="flex items-center gap-1.5">
-						<FileText size={14} />
+						<CategoryIcon size={14} />
 						{I18n.get("summary")}
+						<button
+							type="button"
+							className="ml-1 p-0.5 rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+							disabled={isSummaryLoading}
+							onClick={(e) => {
+								e.stopPropagation();
+								if (!isSummaryLoading) refetchSummary();
+							}}
+						>
+							{isSummaryLoading ? (
+								<Loading className="size-3.5" />
+							) : (
+								<RefreshCwIcon size={14} />
+							)}
+						</button>
 					</TabsTrigger>
 					<TabsTrigger value="chat" className="flex items-center gap-1.5">
-						<MessageSquare size={14} />
+						<Sparkles size={14} />
 						{I18n.get("chat_title")}
+						{hasMessages && (
+							<button
+								type="button"
+								className="ml-1 p-0.5 rounded hover:bg-muted"
+								onClick={(e) => {
+									e.stopPropagation();
+									clearMessages();
+								}}
+							>
+								<Trash2 size={14} />
+							</button>
+						)}
 					</TabsTrigger>
 				</TabsList>
 

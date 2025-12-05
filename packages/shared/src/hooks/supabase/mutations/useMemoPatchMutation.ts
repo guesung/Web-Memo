@@ -24,6 +24,9 @@ export default function useMemoPatchMutation() {
 			queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.memo({ id: data?.[0].id }),
 			});
+			queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.memos(),
+			});
 		},
 	});
 }

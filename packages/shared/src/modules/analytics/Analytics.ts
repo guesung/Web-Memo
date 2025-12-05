@@ -116,8 +116,10 @@ class Analytics {
 				method: "POST",
 				body: JSON.stringify(payload),
 			});
-		} catch (_error) {
-			console.warn("GA4 Analytics tracking failed:", _error);
+		} catch (error) {
+			if (isProduction()) {
+				console.warn("GA4 Analytics tracking failed:", error);
+			}
 		}
 	}
 

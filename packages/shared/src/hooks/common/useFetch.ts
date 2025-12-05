@@ -6,6 +6,7 @@ import useError from "./useError";
 interface UseFetchProps<TData> {
 	fetchFn: () => Promise<TData>;
 	defaultValue?: TData;
+	timeoutMs?: number;
 }
 
 type StatusType = "loading" | "success" | "rejected";
@@ -13,6 +14,7 @@ type StatusType = "loading" | "success" | "rejected";
 export default function useFetch<TData>({
 	fetchFn,
 	defaultValue,
+	timeoutMs = 30000,
 }: UseFetchProps<TData>) {
 	const [data, setData] = useState<TData | undefined>(defaultValue);
 	const [status, setStatus] = useState<StatusType>("loading");
@@ -21,10 +23,14 @@ export default function useFetch<TData>({
 	const fetch = useCallback(async () => {
 		try {
 			setStatus("loading");
-			// setTimeout(() => {
-			//   if (status === 'loading') throw new Error(I18n.get('toast_error_common'));
-			// }, 3000);
-			const data = await fetchFn();
+
+			const timeoutPromise = new Promise<never>((_, reject) => {
+				setTimeout(() => {
+					reject(new Error("Request timed out"));
+				}, timeoutMs);
+			});
+
+			const data = await Promise.race([fetchFn(), timeoutPromise]);
 
 			setData(data);
 			setStatus("success");
@@ -32,7 +38,7 @@ export default function useFetch<TData>({
 			setStatus("rejected");
 			setError(error as Error);
 		}
-	}, [fetchFn, setError]);
+	}, [fetchFn, setError, timeoutMs]);
 
 	useDidMount(fetch);
 

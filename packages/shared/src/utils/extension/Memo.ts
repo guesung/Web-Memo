@@ -4,11 +4,23 @@ import { Tab } from "./module";
 export const getTabInfo = async () => {
 	const tab = await Tab.get();
 
-	if (!tab.url || !tab.title) throw new Error("Save Failed: Invalid URL");
+	if (!tab) {
+		throw new Error("Failed to get current tab");
+	}
 
-	return {
-		title: tab.title,
-		favIconUrl: tab.favIconUrl,
-		url: normalizeUrl(tab.url),
-	};
+	if (!tab.url || !tab.title) {
+		throw new Error("Current tab has no URL or title");
+	}
+
+	try {
+		return {
+			title: tab.title,
+			favIconUrl: tab.favIconUrl ?? undefined,
+			url: normalizeUrl(tab.url),
+		};
+	} catch (error) {
+		throw new Error(
+			`Failed to normalize tab URL: ${error instanceof Error ? error.message : String(error)}`,
+		);
+	}
 };

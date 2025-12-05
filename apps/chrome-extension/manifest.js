@@ -2,7 +2,7 @@ import fs from "node:fs";
 
 import deepmerge from "deepmerge";
 
-const packageJson = JSON.parse(fs.readFileSync("../package.json", "utf8"));
+const packageJson = JSON.parse(fs.readFileSync("../../package.json", "utf8"));
 
 const isFirefox = process.env.__FIREFOX__ === "true";
 

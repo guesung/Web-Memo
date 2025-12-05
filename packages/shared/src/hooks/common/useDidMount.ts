@@ -1,13 +1,18 @@
 import { useEffect, useRef } from "react";
 
 export default function useDidMount(callbackFn: () => void) {
-	const _mountRef = useRef(false);
+	const mountRef = useRef(false);
+	const savedCallback = useRef(callbackFn);
 
 	useEffect(() => {
-		if (_mountRef.current) return;
-		callbackFn();
-		_mountRef.current = true;
-	}, [callbackFn]);
+		savedCallback.current = callbackFn;
+	});
+
+	useEffect(() => {
+		if (mountRef.current) return;
+		savedCallback.current();
+		mountRef.current = true;
+	}, []);
 
 	return null;
 }

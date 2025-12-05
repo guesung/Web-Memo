@@ -70,7 +70,23 @@ if (chrome.contextMenus)
 		}
 	});
 
-chrome.runtime.setUninstallURL(URL.googleForm);
+const setUninstallUrl = async () => {
+	try {
+		const supabaseClient = await getSupabaseClient();
+		const {
+			data: { user },
+		} = await supabaseClient.auth.getUser();
+		const uid = user?.id || "";
+		chrome.runtime.setUninstallURL(
+			uid
+				? `${CONFIG.webUrl}/uninstall?uid=${uid}`
+				: `${CONFIG.webUrl}/uninstall`,
+		);
+	} catch {
+		chrome.runtime.setUninstallURL(`${CONFIG.webUrl}/uninstall`);
+	}
+};
+setUninstallUrl();
 
 chrome.tabs.onActivated.addListener(async () => {
 	// 활성화된 탭이 변경되었을 때 사이드 패널을 업데이트한다.

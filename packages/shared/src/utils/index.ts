@@ -10,3 +10,4 @@ export * from "./Tailwind";
 export * from "./Time";
 export * from "./Url";
 export * from "./Youtube";
+export * from "./Export";

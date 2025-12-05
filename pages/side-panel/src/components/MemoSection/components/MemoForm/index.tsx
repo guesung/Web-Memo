@@ -10,16 +10,16 @@ import {
 	CommandInput,
 	CommandItem,
 	CommandList,
+	cn,
 	Textarea,
 	ToastAction,
-	cn,
 	toast,
 } from "@web-memo/ui";
 import { HeartIcon, XIcon } from "lucide-react";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { SaveStatus } from "./components";
-import { useMemoCategory, useMemoForm } from "./hooks";
+import { useCategorySuggestion, useMemoCategory, useMemoForm } from "./hooks";
 
 function MemoFormContent() {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -44,6 +44,37 @@ function MemoFormContent() {
 		textareaRef,
 		onCategoryChange: updateCategory,
 	});
+
+	const { triggerSuggestion } = useCategorySuggestion({
+		currentCategoryId: currentCategoryId,
+		onCategorySelect: updateCategory,
+	});
+
+	const hasSuggestedForMemoRef = useRef<number | null>(null);
+
+	useEffect(() => {
+		const memoText = watch("memo");
+		const hasMemoData = !!memoData?.created_at;
+		const hasCategory = !!currentCategoryId;
+		const hasMemoText = !!memoText?.trim();
+		const memoId = memoData?.id ?? null;
+
+		if (
+			hasMemoData &&
+			hasMemoText &&
+			!hasCategory &&
+			memoId !== hasSuggestedForMemoRef.current
+		) {
+			hasSuggestedForMemoRef.current = memoId;
+			triggerSuggestion(memoText);
+		}
+	}, [
+		memoData?.created_at,
+		memoData?.id,
+		currentCategoryId,
+		watch,
+		triggerSuggestion,
+	]);
 
 	const handleWishClick = async () => {
 		const newIsWish = await toggleWish();

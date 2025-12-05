@@ -982,6 +982,7 @@
 			"phoneLabel": "전화번호",
 			"phonePlaceholder": "010-0000-0000",
 			"phoneDescription": "기프티콘을 받으실 전화번호를 입력해주세요",
+			"phoneError": "올바른 전화번호 형식이 아니에요 (예: 010-1234-5678)",
 			"optional": "(선택)",
 			"submit": "의견 보내고 기프티콘 받기",
 			"submitting": "보내는 중..."

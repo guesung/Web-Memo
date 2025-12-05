@@ -985,8 +985,9 @@
 			"feedbackLabel": "Any additional feedback?",
 			"feedbackPlaceholder": "What didn't work for you? What features would you like to see?",
 			"phoneLabel": "Phone number",
-			"phonePlaceholder": "+1 (555) 123-4567",
+			"phonePlaceholder": "010-0000-0000",
 			"phoneDescription": "Enter your phone number to receive the gift card",
+			"phoneError": "Invalid phone number format (e.g., 010-1234-5678)",
 			"optional": "(optional)",
 			"submit": "Submit and get gift card",
 			"submitting": "Submitting..."

@@ -31,12 +31,21 @@ const UNINSTALL_REASONS = [
 	"other",
 ] as const;
 
+const KOREAN_PHONE_REGEX = /^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/;
+
+function validateKoreanPhoneNumber(phone: string): boolean {
+	if (!phone) return true;
+	const digitsOnly = phone.replace(/[^0-9]/g, "");
+	return KOREAN_PHONE_REGEX.test(phone) || /^01[0-9][0-9]{7,8}$/.test(digitsOnly);
+}
+
 export default function UninstallFeedbackForm({
 	lng,
 }: UninstallFeedbackFormProps) {
 	const { t } = useTranslation(lng);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isSubmitted, setIsSubmitted] = useState(false);
+	const [phoneError, setPhoneError] = useState<string | null>(null);
 
 	const { register, handleSubmit, watch, setValue } = useForm<FormData>({
 		defaultValues: {
@@ -48,8 +57,16 @@ export default function UninstallFeedbackForm({
 
 	const selectedReason = watch("reason");
 	const feedback = watch("feedback");
+	const phoneNumber = watch("phoneNumber");
 
 	const onSubmit = async (data: FormData) => {
+		setPhoneError(null);
+
+		if (data.phoneNumber && !validateKoreanPhoneNumber(data.phoneNumber)) {
+			setPhoneError(t("uninstall.form.phoneError"));
+			return;
+		}
+
 		setIsSubmitting(true);
 		try {
 			const response = await fetch("/api/uninstall-feedback", {
@@ -67,6 +84,14 @@ export default function UninstallFeedbackForm({
 			console.error("Failed to submit feedback:", error);
 		} finally {
 			setIsSubmitting(false);
+		}
+	};
+
+	const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value;
+		setValue("phoneNumber", value);
+		if (phoneError && validateKoreanPhoneNumber(value)) {
+			setPhoneError(null);
 		}
 	};
 
@@ -150,10 +175,16 @@ export default function UninstallFeedbackForm({
 					id="phoneNumber"
 					type="tel"
 					placeholder={t("uninstall.form.phonePlaceholder")}
+					onChange={handlePhoneChange}
+					className={phoneError ? "border-red-500 focus:border-red-500" : ""}
 				/>
-				<p className="text-sm text-gray-500 dark:text-gray-400">
-					{t("uninstall.form.phoneDescription")}
-				</p>
+				{phoneError ? (
+					<p className="text-sm text-red-500">{phoneError}</p>
+				) : (
+					<p className="text-sm text-gray-500 dark:text-gray-400">
+						{t("uninstall.form.phoneDescription")}
+					</p>
+				)}
 			</div>
 
 			<div className="pt-4">

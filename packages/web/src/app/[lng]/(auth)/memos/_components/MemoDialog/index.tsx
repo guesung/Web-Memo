@@ -108,13 +108,11 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	useEffect(
 		function saveMemoOnChange() {
 			const subscription = watch((value) => {
-				console.log(value);
+				debounce(() => {
+					if (!value.memo) return;
 
-				if (value.memo) {
-					debounce(() => {
-						saveMemo();
-					}, 1000);
-				}
+					saveMemo();
+				}, 500);
 			});
 
 			return () => subscription.unsubscribe();

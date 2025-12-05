@@ -1,4 +1,5 @@
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { type MemoSortBy, QUERY_KEY } from "../../../constants";
 import type { GetMemoResponse } from "../../../types";
 import { MemoService } from "../../../utils";
@@ -21,7 +22,10 @@ export default function useMemosInfiniteQuery({
 	sortBy = "updated_at",
 }: UseMemosInfiniteQueryProps = {}) {
 	const { data: supabaseClient } = useSupabaseClientQuery();
-	const memoService = new MemoService(supabaseClient);
+	const memoService = useMemo(
+		() => new MemoService(supabaseClient),
+		[supabaseClient],
+	);
 
 	const query = useSuspenseInfiniteQuery({
 		queryKey: QUERY_KEY.memosPaginated(category, isWish, searchQuery, sortBy),

@@ -48,12 +48,12 @@ function MemoFormContent() {
 	const handleWishClick = async () => {
 		const newIsWish = await toggleWish();
 
-		const handleWishListClick = () => {
-			const memoWishListUrl = getMemoUrl({
+		const navigateWish = () => {
+			const url = getMemoUrl({
 				id: memoData?.id,
 				isWish: newIsWish,
 			});
-			Tab.create({ url: memoWishListUrl });
+			Tab.create({ url });
 		};
 
 		toast({
@@ -61,7 +61,7 @@ function MemoFormContent() {
 				? I18n.get("wish_list_added")
 				: I18n.get("wish_list_deleted"),
 			action: (
-				<ToastAction altText={I18n.get("go_to")} onClick={handleWishListClick}>
+				<ToastAction altText={I18n.get("go_to")} onClick={navigateWish}>
 					{I18n.get("go_to")}
 				</ToastAction>
 			),

@@ -7,7 +7,7 @@ import makeManifestPlugin from "./utils/plugins/make-manifest-plugin";
 const rootDir = resolve(__dirname);
 const libDir = resolve(rootDir, "lib");
 
-const outDir = resolve(rootDir, "..", "dist");
+const outDir = resolve(rootDir, "..", "..",  "dist");
 export default defineConfig({
 	resolve: {
 		alias: {

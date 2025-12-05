@@ -96,7 +96,6 @@ export default function MemoCalendar({ lng, memos }: MemoCalendarProps) {
 						},
 					},
 					agenda: {
-						// @ts-expect-error: TODO: fix this
 						date: ({ day }) => {
 							return (
 								<div className="text-center">{dayjs(day).format("LL")}</div>

@@ -1,7 +1,7 @@
 import { I18n } from "@web-memo/shared/utils/extension";
 import { Loading, TabsTrigger } from "@web-memo/ui";
 import { GlobeIcon, RefreshCwIcon, Youtube } from "lucide-react";
-import { useSummaryContext } from "../../Summary/components";
+import { useSummaryContext } from "./Summary/components";
 
 export default function SummaryTabTrigger() {
 	const { isSummaryLoading, refetchSummary, category } = useSummaryContext();

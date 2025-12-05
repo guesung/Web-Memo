@@ -14,7 +14,7 @@ export default function ChatMessages({ messages }: ChatMessagesProps) {
 
 	useEffect(() => {
 		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-	}, [messages]);
+	}, []);
 
 	if (messages.length === 0) {
 		return (

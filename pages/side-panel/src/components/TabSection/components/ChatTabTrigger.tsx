@@ -1,7 +1,7 @@
 import { I18n } from "@web-memo/shared/utils/extension";
 import { TabsTrigger } from "@web-memo/ui";
 import { Sparkles, Trash2 } from "lucide-react";
-import { useChatContext } from "../../Chat/components";
+import { useChatContext } from "./Chat/components";
 
 export default function ChatTabTrigger() {
 	const { messages, clearMessages } = useChatContext();

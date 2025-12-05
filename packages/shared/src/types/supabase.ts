@@ -80,7 +80,9 @@ export type Database = {
 					favIconUrl: string | null;
 					id: number;
 					isWish: boolean | null;
+					is_public: boolean | null;
 					memo: string;
+					shared_at: string | null;
 					title: string;
 					updated_at: string | null;
 					url: string;
@@ -92,7 +94,9 @@ export type Database = {
 					favIconUrl?: string | null;
 					id?: number;
 					isWish?: boolean | null;
+					is_public?: boolean | null;
 					memo: string;
+					shared_at?: string | null;
 					title: string;
 					updated_at?: string | null;
 					url: string;
@@ -104,7 +108,9 @@ export type Database = {
 					favIconUrl?: string | null;
 					id?: number;
 					isWish?: boolean | null;
+					is_public?: boolean | null;
 					memo?: string;
+					shared_at?: string | null;
 					title?: string;
 					updated_at?: string | null;
 					url?: string;
@@ -122,19 +128,34 @@ export type Database = {
 			};
 			profiles: {
 				Row: {
+					avatar_url: string | null;
+					bio: string | null;
+					created_at: string | null;
 					nickname: string | null;
 					share_mode: string | null;
+					updated_at: string | null;
 					user_id: string;
+					website: string | null;
 				};
 				Insert: {
+					avatar_url?: string | null;
+					bio?: string | null;
+					created_at?: string | null;
 					nickname?: string | null;
 					share_mode?: string | null;
+					updated_at?: string | null;
 					user_id: string;
+					website?: string | null;
 				};
 				Update: {
+					avatar_url?: string | null;
+					bio?: string | null;
+					created_at?: string | null;
 					nickname?: string | null;
 					share_mode?: string | null;
+					updated_at?: string | null;
 					user_id?: string;
+					website?: string | null;
 				};
 				Relationships: [];
 			};

@@ -963,6 +963,45 @@
 		}
 	},
 
+	"community": {
+		"title": "학습 커뮤니티",
+		"description": "다른 사용자들이 공유한 메모를 탐색하고 함께 배워보세요",
+		"refresh": "새로고침",
+		"loading": "불러오는 중...",
+		"loadMore": "더 보기",
+		"empty": {
+			"title": "아직 공유된 메모가 없어요",
+			"description": "첫 번째로 메모를 공유해보세요!"
+		},
+		"memo": {
+			"sharedBy": "{{name}}님이 공유함",
+			"viewOriginal": "원본 보기",
+			"backToFeed": "목록으로 돌아가기"
+		}
+	},
+
+	"profile": {
+		"title": "프로필",
+		"publicMemos": "공개 메모",
+		"memoCount": "메모 {{count}}개",
+		"noBio": "소개가 없습니다",
+		"edit": "프로필 수정",
+		"website": "웹사이트",
+		"joinedAt": "{{date}} 가입",
+		"empty": {
+			"title": "공개 메모가 없어요",
+			"description": "아직 커뮤니티에 공유한 메모가 없습니다"
+		}
+	},
+
+	"share": {
+		"shareToCommuity": "커뮤니티에 공유",
+		"unshare": "공유 취소",
+		"shared": "공유됨",
+		"shareSuccess": "커뮤니티에 공유했어요",
+		"unshareSuccess": "공유를 취소했어요"
+	},
+
 	"uninstall": {
 		"title": "떠나신다니 아쉬워요",
 		"description": "더 나은 서비스를 만들기 위해 떠나시는 이유를 알려주세요.",

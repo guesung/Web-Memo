@@ -21,4 +21,11 @@ export const QUERY_KEY = {
 	adminStats: () => ["adminStats"],
 	userGrowth: (days: number) => ["userGrowth", days],
 	adminUsers: (search?: string, page?: number) => ["adminUsers", search, page],
+
+	// Community
+	communityMemos: (userId?: string) => ["community", "memos", { userId }],
+	publicMemo: (id: number) => ["community", "memo", id],
+	profile: (userId: string) => ["profile", userId],
+	profileWithStats: (userId: string) => ["profile", userId, "stats"],
+	userPublicMemos: (userId: string) => ["profile", userId, "memos"],
 };

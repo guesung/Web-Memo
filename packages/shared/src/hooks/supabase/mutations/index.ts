@@ -7,4 +7,7 @@ export { default as useMemoPatchMutation } from "./useMemoPatchMutation";
 export { default as useMemoPostMutation } from "./useMemoPostMutation";
 export { default as useMemoUpsertMutation } from "./useMemoUpsertMutation";
 export { default as useMemosUpsertMutation } from "./useMemosUpsertMutation";
+export { default as useShareMemoMutation } from "./useShareMemoMutation";
 export { default as useSignoutMutation } from "./useSignoutMutation";
+export { default as useUnshareMemoMutation } from "./useUnshareMemoMutation";
+export { default as useUpdateProfileMutation } from "./useUpdateProfileMutation";

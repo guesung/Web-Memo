@@ -6,6 +6,8 @@ import {
 	useCategoryQuery,
 	useDeleteMemosMutation,
 	useMemosUpsertMutation,
+	useShareMemoMutation,
+	useUnshareMemoMutation,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
@@ -15,6 +17,7 @@ import {
 	DropdownMenuContent,
 	DropdownMenuGroup,
 	DropdownMenuItem,
+	DropdownMenuSeparator,
 	DropdownMenuSub,
 	DropdownMenuSubContent,
 	DropdownMenuSubTrigger,
@@ -22,7 +25,7 @@ import {
 	ToastAction,
 	toast,
 } from "@web-memo/ui";
-import { EllipsisVerticalIcon } from "lucide-react";
+import { EllipsisVerticalIcon, Globe, GlobeLock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
 import { useState } from "react";
@@ -47,6 +50,12 @@ export default function MemoOption({
 	const queryClient = useQueryClient();
 	const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
 	const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
+	const { mutate: mutateShareMemo } = useShareMemoMutation();
+	const { mutate: mutateUnshareMemo } = useUnshareMemoMutation();
+
+	const isSingleMemo = memos.length === 1;
+	const memo = isSingleMemo ? memos[0] : null;
+	const isShared = memo?.is_public ?? false;
 
 	const handleDeleteMemo = async (event?: MouseEvent<HTMLDivElement>) => {
 		event?.stopPropagation();
@@ -70,6 +79,37 @@ export default function MemoOption({
 				</ToastAction>
 			),
 		});
+
+		setIsOpen(false);
+		closeMemoOption?.();
+	};
+
+	const handleShareToggle = async (event?: MouseEvent<HTMLDivElement>) => {
+		event?.stopPropagation();
+
+		if (!memo) return;
+
+		if (isShared) {
+			mutateUnshareMemo(
+				{ id: memo.id },
+				{
+					onSuccess: () => {
+						toast({ title: t("share.success.unshared") });
+						queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+					},
+				},
+			);
+		} else {
+			mutateShareMemo(
+				{ id: memo.id },
+				{
+					onSuccess: () => {
+						toast({ title: t("share.success.shared") });
+						queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+					},
+				},
+			);
+		}
 
 		setIsOpen(false);
 		closeMemoOption?.();
@@ -162,6 +202,29 @@ export default function MemoOption({
 						</DropdownMenuSubContent>
 					</DropdownMenuSub>
 				</DropdownMenuGroup>
+				{isSingleMemo && (
+					<>
+						<DropdownMenuSeparator />
+						<DropdownMenuGroup>
+							<DropdownMenuItem
+								onClick={handleShareToggle}
+								className="cursor-pointer"
+							>
+								{isShared ? (
+									<>
+										<GlobeLock className="w-4 h-4 mr-2" />
+										{t("share.unshare")}
+									</>
+								) : (
+									<>
+										<Globe className="w-4 h-4 mr-2" />
+										{t("share.shareToCommuity")}
+									</>
+								)}
+							</DropdownMenuItem>
+						</DropdownMenuGroup>
+					</>
+				)}
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);

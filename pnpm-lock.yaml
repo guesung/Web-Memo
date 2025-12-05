@@ -230,6 +230,9 @@ importers:
       accept-language:
         specifier: ^3.0.20
         version: 3.0.20
+      date-fns:
+        specifier: '3'
+        version: 3.6.0
       dayjs:
         specifier: ^1.11.13
         version: 1.11.19
@@ -5113,6 +5116,9 @@ packages:
 
   date-arithmetic@4.1.0:
     resolution: {integrity: sha512-QWxYLR5P/6GStZcdem+V1xoto6DMadYWpMXU82ES3/RfR3Wdwr3D0+be7mgOJ+Ov0G9D5Dmb9T17sNLQYj9XOg==}
+
+  date-fns@3.6.0:
+    resolution: {integrity: sha512-fRHTG8g/Gif+kSh50gaGEdToemgfj74aRX3swtiouboip5JDLAyDE9F11nHMIcvOaXeOC6D7SpNhi7uFyB7Uww==}
 
   date-fns@4.1.0:
     resolution: {integrity: sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==}
@@ -13880,6 +13886,8 @@ snapshots:
   data-uri-to-buffer@4.0.1: {}
 
   date-arithmetic@4.1.0: {}
+
+  date-fns@3.6.0: {}
 
   date-fns@4.1.0: {}
 

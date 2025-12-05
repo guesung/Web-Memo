@@ -968,6 +968,45 @@
 		}
 	},
 
+	"community": {
+		"title": "Community",
+		"description": "Explore memos shared by other users and discover insights.",
+		"refresh": "Refresh",
+		"loading": "Loading...",
+		"loadMore": "Load more",
+		"empty": {
+			"title": "No shared memos yet",
+			"description": "Be the first to share your memo!"
+		},
+		"memo": {
+			"by": "by",
+			"sharedAt": "Shared",
+			"viewOriginal": "View original",
+			"viewProfile": "View profile"
+		}
+	},
+
+	"profile": {
+		"title": "Profile",
+		"publicMemos": "Shared Memos",
+		"memoCount": "{{count}} memos",
+		"noMemos": "No shared memos",
+		"edit": "Edit Profile",
+		"bio": "Bio",
+		"website": "Website",
+		"joinedAt": "Joined"
+	},
+
+	"share": {
+		"shareToCommuity": "Share to Community",
+		"unshare": "Unshare",
+		"shared": "Shared",
+		"success": {
+			"shared": "Memo shared to community",
+			"unshared": "Memo removed from community"
+		}
+	},
+
 	"uninstall": {
 		"title": "We're sorry to see you go",
 		"description": "Please share why you're leaving to help us improve.",

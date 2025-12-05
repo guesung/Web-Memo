@@ -1,13 +1,14 @@
 import { I18n } from "@web-memo/shared/utils/extension";
 import {
+	Button,
 	ErrorBoundary,
 	Tabs,
 	TabsContent,
 	TabsList,
 	TabsTrigger,
 } from "@web-memo/ui";
-import { FileText, MessageSquare } from "lucide-react";
-import { Chat, Summary } from ".";
+import { FileText, MessageSquare, SettingsIcon } from "lucide-react";
+import { Chat, Summary, ToggleTheme } from ".";
 
 interface TabSectionProps {
 	activeTab: string;
@@ -25,12 +26,25 @@ export default function TabSection({
 			className="flex flex-col overflow-hidden"
 			style={{ height: `${tabHeight}%` }}
 		>
+			<header className="mt-4 flex items-center justify-between">
+				<h1 className="text-lg font-bold">Web Memo</h1>
+				<div className="flex gap-1">
+					<ToggleTheme />
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => chrome.runtime.openOptionsPage()}
+					>
+						<SettingsIcon size={16} />
+					</Button>
+				</div>
+			</header>
 			<Tabs
 				value={activeTab}
 				onValueChange={onTabChange}
 				className="flex flex-col h-full"
 			>
-				<TabsList className="mt-4 w-full grid grid-cols-2">
+				<TabsList className="mt-3 w-full grid grid-cols-2">
 					<TabsTrigger value="summary" className="flex items-center gap-1.5">
 						<FileText size={14} />
 						{I18n.get("summary")}

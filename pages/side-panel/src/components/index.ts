@@ -7,3 +7,4 @@ export { default as QueryProvider } from "./QueryProvider";
 export { default as ResizeHandle } from "./ResizeHandle";
 export { default as Summary } from "./Summary";
 export { default as TabSection } from "./TabSection";
+export { default as ToggleTheme } from "./ToggleTheme";

@@ -22,7 +22,7 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
 	};
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {
-		if (e.key === "Enter" && !e.shiftKey) {
+		if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
 			e.preventDefault();
 			handleSubmit(e);
 		}
@@ -36,7 +36,6 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
 				onChange={(e) => setInput(e.target.value)}
 				onKeyDown={handleKeyDown}
 				placeholder={I18n.get("chat_input_placeholder")}
-				disabled={disabled}
 				className="flex-1"
 			/>
 			<Button

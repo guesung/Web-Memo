@@ -1,4 +1,5 @@
 import {
+	closeTranscriptPanel,
 	formatTranscriptAsText,
 	openTranscriptPanel,
 	parseTranscriptContainer,
@@ -40,6 +41,9 @@ export async function extractYoutubeTranscript(): Promise<ExtractionResult> {
 			transcript.substring(0, 200) + "...",
 		);
 
+		closeTranscriptPanel();
+		console.log("[YT Transcript] Panel closed");
+
 		return {
 			success: true,
 			transcript,
@@ -58,9 +62,7 @@ export async function extractYoutubeTranscript(): Promise<ExtractionResult> {
 	}
 }
 
-export function isYoutubePage(): boolean {
-	return (
-		window.location.hostname.includes("youtube.com") &&
-		window.location.pathname === "/watch"
-	);
+export function isYoutubePage() {
+	return window.location.hostname.includes("youtube.com") &&
+		window.location.pathname === "/watch";
 }

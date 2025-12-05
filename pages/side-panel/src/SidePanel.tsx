@@ -12,9 +12,7 @@ import {
 	ResizeHandle,
 	TabSection,
 } from "./components";
-import { ChatProvider } from "./components/Chat/components";
 import GlobalHeader from "./components/GlobalHeader";
-import { SummaryProvider } from "./components/Summary/components";
 import { useResizablePanel } from "./hooks";
 
 export default function SidePanel() {
@@ -35,15 +33,11 @@ export default function SidePanel() {
 				className="prose prose-sm bg-background text-foreground relative flex h-lvh flex-col px-4 max-w-none overflow-x-hidden"
 			>
 				<GlobalHeader />
-				<SummaryProvider>
-					<ChatProvider>
-						<TabSection
-							activeTab={activeTab}
-							onTabChange={setActiveTab}
-							tabHeight={tabHeight}
-						/>
-					</ChatProvider>
-				</SummaryProvider>
+				<TabSection
+					activeTab={activeTab}
+					onTabChange={setActiveTab}
+					tabHeight={tabHeight}
+				/>
 				<ResizeHandle
 					tabHeight={tabHeight}
 					isResizing={isResizing}

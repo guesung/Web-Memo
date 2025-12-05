@@ -2,12 +2,11 @@ import { useChat } from "@src/hooks";
 import type { PropsWithChildren } from "react";
 import { createContext, useContext } from "react";
 
-type ChatContextType = ReturnType<typeof useChat>;
-
-const ChatContext = createContext<ChatContextType | null>(null);
+const ChatContext = createContext<ReturnType<typeof useChat> | null>(null);
 
 export const useChatContext = () => {
-	const context = useContext(ChatContext);
+	const context = useContext<ReturnType<typeof useChat> | null>(ChatContext);
+
 	if (!context) throw new Error("ChatProvider가 없습니다.");
 	return context;
 };

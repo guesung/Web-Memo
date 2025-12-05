@@ -50,6 +50,14 @@
 	"updates": {
 		"title": "What's new",
 		"versions": {
+			"v1.9.5": {
+				"title": "Side panel structure improvements",
+				"content": [
+					"Improved side panel component structure",
+					"Enhanced memo editing stability",
+					"Code quality and maintainability improvements"
+				]
+			},
 			"v1.9.3": {
 				"title": "AI chat feature and stability improvements",
 				"content": [

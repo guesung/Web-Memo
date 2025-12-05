@@ -7,8 +7,7 @@ import {
 	skipGuide,
 } from "../lib";
 
-test.describe.configure({ mode: "serial" });
-test.describe("SidePanel", () => {
+test.describe("SidePanel - Integration", () => {
 	test.beforeEach(async ({ page }) => {
 		await login(page);
 		await skipGuide(page);

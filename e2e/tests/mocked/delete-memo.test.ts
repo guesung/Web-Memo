@@ -1,34 +1,41 @@
 import { PATHS } from "@web-memo/shared/constants";
 import { expect, test } from "../fixtures";
 import {
-	fillMemo,
-	findSidePanelPage,
 	gotoSafely,
 	LANGUAGE,
 	login,
-	openSidePanel,
 	skipGuide,
 } from "../lib";
+import {
+	createMockMemo,
+	MockSupabaseStore,
+	resetMockIds,
+	setupSupabaseMocks,
+} from "../lib/mocks";
 
-test.describe.configure({ mode: "serial" });
-test.describe("메모 삭제 기능", () => {
+test.describe("메모 삭제 기능 (Mocked)", () => {
+	let store: MockSupabaseStore;
 	let memoText: string;
 
 	test.beforeEach(async ({ page }) => {
-		// 메모를 생성한다.
+		resetMockIds();
+		store = new MockSupabaseStore();
+
+		memoText = `Test Memo ${Date.now()}`;
+		const mockMemo = createMockMemo({ memo: memoText, title: memoText });
+		store.addMemo(mockMemo);
+
+		await setupSupabaseMocks(page, store);
+
 		await login(page);
 		await skipGuide(page);
-		await openSidePanel(page);
-		const sidePanelPage = await findSidePanelPage(page);
-		memoText = String(new Date());
-		await fillMemo(sidePanelPage, memoText);
-		// 메모 페이지에 접속한다.
 		await gotoSafely({
 			page,
 			url: `${LANGUAGE}${PATHS.memos}`,
 			regexp: new RegExp(PATHS.memos),
 		});
 	});
+
 	test("메모를 삭제하면, 메모 그리드에서 삭제되며 토스트 메시지가 뜬다.", async ({
 		page,
 	}) => {

@@ -26,7 +26,7 @@ export default function TabSection({
 			className="flex flex-col overflow-hidden"
 			style={{ height: `${tabHeight}%` }}
 		>
-			<header className="mt-4 flex items-center justify-between">
+			<header className="shrink-0 mt-4 flex items-center justify-between">
 				<h1 className="text-lg font-bold">Web Memo</h1>
 				<div className="flex gap-1">
 					<ToggleTheme />
@@ -42,9 +42,9 @@ export default function TabSection({
 			<Tabs
 				value={activeTab}
 				onValueChange={onTabChange}
-				className="flex flex-col h-full"
+				className="flex flex-col flex-1 min-h-0 overflow-hidden"
 			>
-				<TabsList className="mt-3 w-full grid grid-cols-2">
+				<TabsList className="shrink-0 mt-3 w-full grid grid-cols-2">
 					<TabsTrigger value="summary" className="flex items-center gap-1.5">
 						<FileText size={14} />
 						{I18n.get("summary")}

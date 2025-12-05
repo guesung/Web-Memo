@@ -30,7 +30,7 @@ chrome-extension/public/manifest.json
 **/tailwind-output.css
 
 
-vite.config.**
+vite.config.mts.timestamp**
 
 # playwright
 /test-results/

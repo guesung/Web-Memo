@@ -3,21 +3,21 @@ name: CICD Web
 on:
   push:
     paths:
-      - 'packages/web/**'
-      - 'packages/shared/**'
-      - 'packages/ui/**'
-      - 'packages/env/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - '.github/workflows/cicd-web.yml'
+      - "apps/web/**"
+      - "packages/shared/**"
+      - "packages/ui/**"
+      - "packages/env/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/cicd-web.yml"
   pull_request:
     paths:
-      - 'packages/web/**'
-      - 'packages/shared/**'
-      - 'packages/ui/**'
-      - 'packages/env/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
+      - "apps/web/**"
+      - "packages/shared/**"
+      - "packages/ui/**"
+      - "packages/env/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
 
 jobs:
   build-web:
@@ -45,15 +45,15 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
 
       - name: Cache Next.js build
         uses: actions/cache@v4
         with:
           path: |
-            packages/web/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml', 'packages/web/next.config.js') }}
+            apps/web/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml', 'apps/web/next.config.js') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-
 
@@ -67,7 +67,7 @@ jobs:
         run: |
           echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
           echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
-          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> packages/web/.env
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> apps/web/.env
           echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
           echo NODE_ENV=production >> packages/env/.env
 

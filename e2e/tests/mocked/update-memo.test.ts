@@ -1,29 +1,34 @@
 import { PATHS } from "@web-memo/shared/constants";
 import { expect, test } from "../fixtures";
 import {
-	fillMemo,
-	findSidePanelPage,
 	gotoSafely,
 	LANGUAGE,
 	login,
-	openSidePanel,
 	skipGuide,
 } from "../lib";
+import {
+	createMockMemo,
+	MockSupabaseStore,
+	resetMockIds,
+	setupSupabaseMocks,
+} from "../lib/mocks";
 
-test.describe.configure({ mode: "serial" });
-test.describe("메모 수정 기능", () => {
+test.describe("메모 수정 기능 (Mocked)", () => {
+	let store: MockSupabaseStore;
 	let memoText: string;
 
 	test.beforeEach(async ({ page }) => {
-		// 메모를 생성한다.
+		resetMockIds();
+		store = new MockSupabaseStore();
+
+		memoText = `Test Memo ${Date.now()}`;
+		const mockMemo = createMockMemo({ memo: memoText, title: memoText });
+		store.addMemo(mockMemo);
+
+		await setupSupabaseMocks(page, store);
+
 		await login(page);
 		await skipGuide(page);
-		await openSidePanel(page);
-		const sidePanelPage = await findSidePanelPage(page);
-		memoText = String(new Date());
-		await fillMemo(sidePanelPage, memoText);
-
-		// 메모 페이지에 접속한다.
 		await gotoSafely({
 			page,
 			url: `${LANGUAGE}${PATHS.memos}`,
@@ -38,11 +43,11 @@ test.describe("메모 수정 기능", () => {
 
 		await memoItem.click();
 
-		const newMemoText = String(new Date());
+		const newMemoText = `Updated Memo ${Date.now()}`;
 
 		await page.getByTestId("memo-textarea").fill(newMemoText);
 
-		await page.waitForTimeout(1000);
+		await page.waitForTimeout(500);
 
 		await page.getByTestId("memo-close-button").click();
 

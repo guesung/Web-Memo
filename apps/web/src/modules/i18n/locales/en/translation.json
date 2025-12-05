@@ -345,7 +345,9 @@
 		"category": "Category",
 		"addCategory": "Add category",
 		"deleteCategory": "Delete category",
-		"defaultCategoryName": "New category"
+		"defaultCategoryName": "New category",
+		"export": "Export",
+		"exportMemos": "Export memos"
 	},
 
 	"guide": {

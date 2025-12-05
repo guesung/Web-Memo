@@ -67,6 +67,18 @@ export class MemoService {
 				.select("*, category(id, name, color)")
 				.order("updated_at", { ascending: false })
 				.range(1000, 1999),
+			this.supabaseClient
+				.schema(SUPABASE.table.memo)
+				.from(SUPABASE.table.memo)
+				.select("*, category(id, name, color)")
+				.order("updated_at", { ascending: false })
+				.range(2000, 2999),
+			this.supabaseClient
+				.schema(SUPABASE.table.memo)
+				.from(SUPABASE.table.memo)
+				.select("*, category(id, name, color)")
+				.order("updated_at", { ascending: false })
+				.range(3000, 3999),
 		]);
 		const data = [...(firstBatch?.data ?? []), ...(secondBatch?.data ?? [])];
 		return { ...firstBatch, data };

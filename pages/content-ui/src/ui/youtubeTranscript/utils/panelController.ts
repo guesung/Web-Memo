@@ -179,7 +179,7 @@ export async function openTranscriptPanel(): Promise<HTMLElement> {
 	const scrollY = window.scrollY;
 
 	const restoreScroll = () => {
-		window.scrollTo(scrollX, scrollY);
+		window.scrollTo({ top: scrollY, left: scrollX, behavior: "smooth" });
 	};
 
 	const existingContainer = findElement(selectors.transcriptContainer, true);

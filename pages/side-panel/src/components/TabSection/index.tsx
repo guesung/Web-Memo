@@ -1,20 +1,18 @@
 import { ErrorBoundary, Tabs, TabsContent, TabsList } from "@web-memo/ui";
-import { Chat, Summary } from "..";
-import { ChatProvider } from "../Chat/components";
-import { SummaryProvider } from "../Summary/components";
+import { useState } from "react";
 import { ChatTabTrigger, SummaryTabTrigger } from "./components";
+import Chat from "./components/Chat";
+import { ChatProvider } from "./components/Chat/components";
+import Summary from "./components/Summary";
+import { SummaryProvider } from "./components/Summary/components";
 
 interface TabSectionProps {
-	activeTab: string;
-	onTabChange: (value: string) => void;
 	tabHeight: number;
 }
 
-export default function TabSection({
-	activeTab,
-	onTabChange,
-	tabHeight,
-}: TabSectionProps) {
+export default function TabSection({ tabHeight }: TabSectionProps) {
+	const [activeTab, setActiveTab] = useState("summary");
+
 	return (
 		<SummaryProvider>
 			<ChatProvider>
@@ -24,7 +22,7 @@ export default function TabSection({
 				>
 					<Tabs
 						value={activeTab}
-						onValueChange={onTabChange}
+						onValueChange={setActiveTab}
 						className="flex flex-col flex-1 min-h-0 overflow-hidden"
 					>
 						<TabsList className="shrink-0 mt-3 w-full grid grid-cols-2">

@@ -5,20 +5,19 @@ import {
 } from "@web-memo/shared/modules/analytics";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { ErrorBoundary, Toaster } from "@web-memo/ui";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import {
+	Header,
 	MemoSection,
 	QueryProvider,
 	ResizeHandle,
 	TabSection,
 } from "./components";
-import GlobalHeader from "./components/GlobalHeader";
 import { useResizablePanel } from "./hooks";
 
 export default function SidePanel() {
 	const { tabHeight, memoHeight, isResizing, containerRef, handleMouseDown } =
 		useResizablePanel();
-	const [activeTab, setActiveTab] = useState<string>("summary");
 
 	useDidMount(() => {
 		ExtensionBridge.responseGetSidePanelOpen();
@@ -32,12 +31,8 @@ export default function SidePanel() {
 				ref={containerRef}
 				className="prose prose-sm bg-background text-foreground relative flex h-lvh flex-col px-4 max-w-none overflow-x-hidden"
 			>
-				<GlobalHeader />
-				<TabSection
-					activeTab={activeTab}
-					onTabChange={setActiveTab}
-					tabHeight={tabHeight}
-				/>
+				<Header />
+				<TabSection tabHeight={tabHeight} />
 				<ResizeHandle
 					tabHeight={tabHeight}
 					isResizing={isResizing}

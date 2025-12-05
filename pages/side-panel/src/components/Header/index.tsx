@@ -1,8 +1,8 @@
 import { Button } from "@web-memo/ui";
 import { SettingsIcon } from "lucide-react";
-import { ToggleTheme } from ".";
+import { ToggleTheme } from "./components";
 
-export default function GlobalHeader() {
+export default function Header() {
 	return (
 		<header className="shrink-0 mt-4 flex items-center justify-between">
 			<h1 className="text-lg font-bold">Web Memo</h1>

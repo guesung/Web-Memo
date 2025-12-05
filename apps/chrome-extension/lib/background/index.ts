@@ -70,7 +70,7 @@ if (chrome.contextMenus)
 		}
 	});
 
-chrome.runtime.setUninstallURL(URL.googleForm);
+chrome.runtime.setUninstallURL(`${CONFIG.webUrl}/uninstall`);
 
 chrome.tabs.onActivated.addListener(async () => {
 	// 활성화된 탭이 변경되었을 때 사이드 패널을 업데이트한다.

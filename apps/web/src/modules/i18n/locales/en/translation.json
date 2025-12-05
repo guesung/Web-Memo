@@ -966,5 +966,36 @@
 				"subtext": "Free · 10-second install · No credit card required"
 			}
 		}
+	},
+
+	"uninstall": {
+		"title": "We're sorry to see you go",
+		"description": "Please share why you're leaving to help us improve.",
+		"reward": "Share your feedback and get a Starbucks gift card!",
+		"reasons": {
+			"not_useful": "Didn't have the features I needed",
+			"hard_to_use": "Too difficult to use",
+			"found_alternative": "Found a better alternative",
+			"performance_issues": "Slow or buggy",
+			"privacy_concerns": "Privacy concerns",
+			"other": "Other"
+		},
+		"form": {
+			"reasonLabel": "Why are you leaving?",
+			"feedbackLabel": "Any additional feedback?",
+			"feedbackPlaceholder": "What didn't work for you? What features would you like to see?",
+			"phoneLabel": "Phone number",
+			"phonePlaceholder": "010-0000-0000",
+			"phoneDescription": "Enter your phone number to receive the gift card",
+			"phoneError": "Invalid phone number format (e.g., 010-1234-5678)",
+			"optional": "(optional)",
+			"submit": "Submit and get gift card",
+			"submitting": "Submitting..."
+		},
+		"success": {
+			"title": "Thank you for your feedback!",
+			"description": "If you provided your phone number, we'll send you a Starbucks gift card within 3 business days.",
+			"giftNote": "We hope to see you again someday ☕"
+		}
 	}
 }

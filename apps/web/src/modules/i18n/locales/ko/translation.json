@@ -961,5 +961,36 @@
 				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
 			}
 		}
+	},
+
+	"uninstall": {
+		"title": "떠나신다니 아쉬워요",
+		"description": "더 나은 서비스를 만들기 위해 떠나시는 이유를 알려주세요.",
+		"reward": "피드백을 남겨주시면 스타벅스 기프티콘을 100% 드려요!",
+		"reasons": {
+			"not_useful": "필요한 기능이 없어요",
+			"hard_to_use": "사용하기 어려워요",
+			"found_alternative": "다른 서비스를 찾았어요",
+			"performance_issues": "속도가 느리거나 문제가 있어요",
+			"privacy_concerns": "개인정보 보호가 걱정돼요",
+			"other": "기타"
+		},
+		"form": {
+			"reasonLabel": "떠나시는 이유를 선택해주세요",
+			"feedbackLabel": "더 자세한 의견이 있으시면 알려주세요",
+			"feedbackPlaceholder": "어떤 점이 불편하셨나요? 어떤 기능이 있었으면 좋겠나요?",
+			"phoneLabel": "전화번호",
+			"phonePlaceholder": "010-0000-0000",
+			"phoneDescription": "기프티콘을 받으실 전화번호를 입력해주세요",
+			"phoneError": "올바른 전화번호 형식이 아니에요 (예: 010-1234-5678)",
+			"optional": "(선택)",
+			"submit": "의견 보내고 기프티콘 받기",
+			"submitting": "보내는 중..."
+		},
+		"success": {
+			"title": "소중한 의견 감사합니다!",
+			"description": "전화번호를 입력하셨다면 영업일 기준 3일 이내에 스타벅스 기프티콘을 보내드릴게요.",
+			"giftNote": "더 나은 서비스로 다시 찾아뵙겠습니다 ☕"
+		}
 	}
 }

@@ -60,3 +60,8 @@ test-results
 .serena/
 
 *.tsbuildinfo
+
+# mobile
+.expo
+android
+ios

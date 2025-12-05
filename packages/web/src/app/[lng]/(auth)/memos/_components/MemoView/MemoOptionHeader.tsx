@@ -2,7 +2,7 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { MOTION_VARIANTS } from "@web-memo/shared/constants";
 import type { GetMemoResponse } from "@web-memo/shared/types";
-import { Button } from "@web-memo/ui";
+import { Button, cn } from "@web-memo/ui";
 import { motion } from "framer-motion";
 import { XIcon } from "lucide-react";
 
@@ -31,16 +31,16 @@ export default function MemoOptionHeader({
 				"px-4 md:px-6",
 				"border-b border-gray-200 dark:border-gray-800",
 				"shadow-lg shadow-purple-500/5 dark:shadow-purple-500/10",
-				"backdrop-blur-sm bg-white/95 dark:bg-gray-900/95"
+				"backdrop-blur-sm bg-white/95 dark:bg-gray-900/95",
 			)}
 			variants={MOTION_VARIANTS.fadeInAndOut}
 			initial="initial"
 			animate="animate"
 			exit="exit"
 		>
-			<Button 
-				variant="ghost" 
-				size="icon" 
+			<Button
+				variant="ghost"
+				size="icon"
 				onClick={closeMemoOption}
 				className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 hover:scale-110 active:scale-95 rounded-full"
 			>
@@ -54,18 +54,6 @@ export default function MemoOptionHeader({
 				</div>
 				<span className="text-base font-semibold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
 					{t("memos.selected", { count: selectedMemos.length })}
-				</span>
-			</div>
-			<div className="flex items-center gap-2 px-4">
-				<MemoOption
-					memos={selectedMemos}
-					lng={lng}
-					closeMemoOption={closeMemoOption}
-				/>
-			</div>
-		</motion.header>
-	);
-}
 				</span>
 			</div>
 			<div className="flex items-center gap-2 px-4">

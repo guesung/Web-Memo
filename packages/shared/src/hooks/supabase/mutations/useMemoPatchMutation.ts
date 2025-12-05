@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { NoMemoError, NoMemosError, QUERY_KEY } from "../../../constants";
+import { QUERY_KEY } from "../../../constants";
 import { analytics } from "../../../modules/analytics";
-import type { MemoRow, MemoSupabaseResponse, MemoTable } from "../../../types";
+import type { MemoRow, MemoTable } from "../../../types";
 import { MemoService } from "../../../utils";
 
 import { useSupabaseClientQuery } from "../queries";
@@ -19,42 +19,11 @@ export default function useMemoPatchMutation() {
 
 	return useMutation<MutationData, MutationError, MutationVariables>({
 		mutationFn: new MemoService(supabaseClient).updateMemo,
-		onMutate: async ({ id, request }) => {
-			await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
-			const previousMemos = queryClient.getQueryData<MemoSupabaseResponse>(
-				QUERY_KEY.memos(),
-			);
-
-			if (!previousMemos) throw new NoMemosError();
-
-			const { data: previousMemosData } = previousMemos;
-
-			if (!previousMemosData) throw new NoMemosError();
-
-			const updatedMemosData = [...previousMemosData];
-
-			const currentMemoIndex = updatedMemosData.findIndex(
-				(memo) => memo.id === id,
-			);
-			const currentMemoBase = updatedMemosData.find((memo) => memo.id === id);
-
-			if (currentMemoIndex === -1 || !currentMemoBase) throw new NoMemoError();
-
-			updatedMemosData.splice(currentMemoIndex, 1, {
-				...{ ...currentMemoBase, updated_at: new Date().toISOString() },
-				...request,
-			});
-
-			await queryClient.setQueryData(QUERY_KEY.memos(), {
-				...previousMemos,
-				data: updatedMemosData,
-			});
-
-			return { previousMemos };
-		},
-		onSuccess: async () => {
+		onSuccess: async ({ data }) => {
 			await analytics.trackMemoWrite();
-			queryClient.invalidateQueries({ queryKey: ["memos", "paginated"] });
+			queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.memo({ id: data?.[0].id }),
+			});
 		},
 	});
 }

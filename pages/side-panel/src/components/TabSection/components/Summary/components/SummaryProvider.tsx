@@ -2,19 +2,14 @@ import { useSummary } from "@src/hooks";
 import type { PropsWithChildren } from "react";
 import { createContext, useContext } from "react";
 
-interface SummaryContext extends ReturnType<typeof useSummary> {}
-
-const SummaryContext = createContext<SummaryContext>({
-	refetchSummary: async () => {},
-	isSummaryLoading: false,
-	category: "others",
-	summary: "",
-	errorMessage: "",
-	pageContent: "",
-});
+const SummaryContext = createContext<ReturnType<typeof useSummary> | null>(
+	null,
+);
 
 export const useSummaryContext = () => {
-	const context = useContext<SummaryContext>(SummaryContext);
+	const context = useContext<ReturnType<typeof useSummary> | null>(
+		SummaryContext,
+	);
 
 	if (!context) throw new Error("SummaryProvider가 없습니다.");
 	return context;

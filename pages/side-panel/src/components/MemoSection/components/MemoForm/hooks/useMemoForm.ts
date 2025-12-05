@@ -8,7 +8,7 @@ import {
 } from "@web-memo/shared/hooks";
 import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 interface UseMemoFormProps {
@@ -30,15 +30,10 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	});
 	const { mutate: upsertMemo } = useMemoUpsertMutation();
 	const [isSaving, setIsSaving] = useState(false);
-	const initialTabInfoRef = useRef<TabInfo | null>(null);
 
 	useDidMount(() => {
 		ExtensionBridge.responseRefetchTheMemosFromWeb(refetchMemo);
 		ExtensionBridge.responseRefetchTheMemosFromExtension(refetchMemo);
-
-		getTabInfo().then((tabInfo) => {
-			initialTabInfoRef.current = tabInfo;
-		});
 	});
 
 	useEffect(
@@ -61,7 +56,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 			setIsSaving(true);
 
-			const tabInfo = initialTabInfoRef.current ?? (await getTabInfo());
+			const tabInfo = await getTabInfo();
 
 			upsertMemo(
 				{

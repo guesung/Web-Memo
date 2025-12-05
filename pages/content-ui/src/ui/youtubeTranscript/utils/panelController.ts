@@ -131,9 +131,61 @@ async function tryThreeDotsMenu(): Promise<boolean> {
 	return false;
 }
 
+async function waitForSegmentsLoaded(
+	container: HTMLElement,
+	timeout: number,
+): Promise<void> {
+	return new Promise((resolve, reject) => {
+		const checkSegments = () => {
+			const segments = container.querySelectorAll(
+				"ytd-transcript-segment-renderer",
+			);
+			if (segments.length > 0) {
+				return true;
+			}
+			return false;
+		};
+
+		if (checkSegments()) {
+			resolve();
+			return;
+		}
+
+		const observer = new MutationObserver(() => {
+			if (checkSegments()) {
+				observer.disconnect();
+				resolve();
+			}
+		});
+
+		observer.observe(container, {
+			childList: true,
+			subtree: true,
+		});
+
+		setTimeout(() => {
+			observer.disconnect();
+			if (checkSegments()) {
+				resolve();
+			} else {
+				reject(new Error("Timeout waiting for segments to load"));
+			}
+		}, timeout);
+	});
+}
+
 export async function openTranscriptPanel(): Promise<HTMLElement> {
+	const scrollX = window.scrollX;
+	const scrollY = window.scrollY;
+
+	const restoreScroll = () => {
+		window.scrollTo({ top: scrollY, left: scrollX, behavior: "smooth" });
+	};
+
 	const existingContainer = findElement(selectors.transcriptContainer, true);
 	if (existingContainer) {
+		await waitForSegmentsLoaded(existingContainer, timing.panelLoadTimeout);
+		restoreScroll();
 		return existingContainer;
 	}
 
@@ -147,9 +199,14 @@ export async function openTranscriptPanel(): Promise<HTMLElement> {
 					selectors.transcriptContainer,
 					timing.panelLoadTimeout,
 				);
+				await waitForSegmentsLoaded(
+					container as HTMLElement,
+					timing.panelLoadTimeout,
+				);
 				await new Promise((resolve) =>
 					setTimeout(resolve, timing.segmentLoadDelay),
 				);
+				restoreScroll();
 				return container;
 			} catch {
 				continue;

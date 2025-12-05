@@ -4,7 +4,7 @@ import {
 } from "@web-memo/shared/modules/chrome-storage";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const DEFAULT_TAB_HEIGHT = 50;
+const DEFAULT_TAB_HEIGHT = 60;
 const MIN_TAB_HEIGHT = 5;
 const MAX_TAB_HEIGHT = 80;
 
@@ -13,14 +13,13 @@ export default function useResizablePanel() {
 	const [isResizing, setIsResizing] = useState(false);
 	const containerRef = useRef<HTMLElement>(null);
 
-	useEffect(() => {
-		ChromeSyncStorage.get<number>(STORAGE_KEYS.tabHeight).then(
-			(savedHeight) => {
-				if (savedHeight !== undefined && savedHeight !== null) {
-					setTabHeight(savedHeight);
-				}
-			},
-		);
+	useEffect(function initTabHeight() {
+		(async () => {
+			const tabHeight = await ChromeSyncStorage.get<number>(
+				STORAGE_KEYS.tabHeight,
+			);
+			if (tabHeight) setTabHeight(tabHeight);
+		})();
 	}, []);
 
 	const handleMouseDown = useCallback((e: React.MouseEvent) => {

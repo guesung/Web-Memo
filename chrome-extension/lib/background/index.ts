@@ -40,12 +40,6 @@ chrome.runtime.onInstalled.addListener(async () => {
 	}
 });
 
-// 확장 프로그램이 설치되었을 때 가이드 페이지로 이동한다.
-// chrome.runtime.onInstalled.addListener(async () => {
-// 	if (!isProduction) return;
-// 	await Tab.create({ url: `${CONFIG.webUrl}/login` });
-// });
-
 // 확장 프로그램이 설치되었을 때 contextMenus를 설정한다.
 const CONTEXT_MENU_ID_CHECK_MEMO = "CONTEXT_MENU_ID_CHECK_MEMO";
 const CONTEXT_MENU_ID_SHOW_GUIDE = "CONTEXT_MENU_ID_SHOW_GUIDE";

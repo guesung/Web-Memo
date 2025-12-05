@@ -3,8 +3,6 @@
 import type { MemoInput } from "@src/app/[lng]/(auth)/memos/_types/Input";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEY } from "@web-memo/shared/constants";
 import {
 	useDebounce,
 	useKeyboardBind,
@@ -44,7 +42,6 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	const [showAlert, setShowAlert] = useState(false);
 	const searchParams = useSearchParams();
 	const { debounce } = useDebounce();
-	const queryClient = useQueryClient();
 
 	const { register, watch, setValue } = useForm<MemoInput>({
 		defaultValues: {
@@ -64,23 +61,14 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 		const isEdited = currentMemo !== memoData?.memo;
 
 		if (isEdited && currentMemo.trim() !== "") {
-			mutateMemoPatch(
-				{
-					id: memoId,
-					request: {
-						memo: currentMemo,
-					},
+			mutateMemoPatch({
+				id: memoId,
+				request: {
+					memo: currentMemo,
 				},
-				{
-					onSuccess: () => {
-						queryClient.invalidateQueries({
-							queryKey: QUERY_KEY.memo({ id: memoId }),
-						});
-					},
-				},
-			);
+			});
 		}
-	}, [watch, memoData?.memo, mutateMemoPatch, memoId, queryClient]);
+	}, [watch, memoData?.memo, mutateMemoPatch, memoId]);
 
 	useKeyboardBind({ key: "s", callback: saveMemo, isMetaKey: true });
 
@@ -89,11 +77,6 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 
 		if (isEdited) setShowAlert(true);
 		else closeDialog();
-	};
-
-	const _handleSaveAndClose = () => {
-		saveMemo();
-		closeDialog();
 	};
 
 	const closeDialog = () => {
@@ -115,21 +98,27 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 		textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
 	}, [textareaRef, ref]);
 
-	useEffect(() => {
-		setValue("memo", memoData?.memo ?? "");
-	}, [memoData, setValue]);
+	useEffect(
+		function initMemoData() {
+			if (memoData) setValue("memo", memoData.memo);
+		},
+		[memoData, setValue],
+	);
 
-	useEffect(() => {
-		const subscription = watch((value) => {
-			if (value.memo !== undefined) {
+	useEffect(
+		function saveMemoOnChange() {
+			const subscription = watch((value) => {
 				debounce(() => {
-					saveMemo();
-				}, 1000);
-			}
-		});
+					if (!value.memo) return;
 
-		return () => subscription.unsubscribe();
-	}, [watch, debounce, saveMemo]);
+					saveMemo();
+				}, 500);
+			});
+
+			return () => subscription.unsubscribe();
+		},
+		[watch, debounce, saveMemo],
+	);
 
 	if (!memoData) return null;
 

@@ -1,6 +1,6 @@
 import { Button } from "@web-memo/ui";
 import { SettingsIcon } from "lucide-react";
-import { ToggleTheme } from "../..";
+import { ToggleTheme } from ".";
 
 export default function GlobalHeader() {
 	return (

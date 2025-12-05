@@ -13,6 +13,7 @@ import {
 	TabSection,
 } from "./components";
 import { ChatProvider } from "./components/Chat/components";
+import GlobalHeader from "./components/GlobalHeader";
 import { SummaryProvider } from "./components/Summary/components";
 import { useResizablePanel } from "./hooks";
 
@@ -33,6 +34,7 @@ export default function SidePanel() {
 				ref={containerRef}
 				className="prose prose-sm bg-background text-foreground relative flex h-lvh flex-col px-4 max-w-none overflow-x-hidden"
 			>
+				<GlobalHeader />
 				<SummaryProvider>
 					<ChatProvider>
 						<TabSection

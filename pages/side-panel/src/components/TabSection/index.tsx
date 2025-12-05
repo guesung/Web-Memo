@@ -1,6 +1,6 @@
 import { ErrorBoundary, Tabs, TabsContent, TabsList } from "@web-memo/ui";
 import { Chat, Summary } from "..";
-import { ChatTabTrigger, GlobalHeader, SummaryTabTrigger } from "./components";
+import { ChatTabTrigger, SummaryTabTrigger } from "./components";
 
 interface TabSectionProps {
 	activeTab: string;
@@ -18,7 +18,6 @@ export default function TabSection({
 			className="flex flex-col overflow-hidden"
 			style={{ height: `${tabHeight}%` }}
 		>
-			<GlobalHeader />
 			<Tabs
 				value={activeTab}
 				onValueChange={onTabChange}

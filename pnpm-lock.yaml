@@ -169,8 +169,6 @@ importers:
         specifier: 5.3.3
         version: 5.3.3(@types/node@22.5.2)(terser@5.43.1)
 
-  packages/python-server: {}
-
   packages/shared:
     dependencies:
       '@sentry/react':

@@ -13,6 +13,11 @@ export function toErrorWithMessage(maybeError: unknown): Error {
 	if (typeof maybeError === "string") return new Error(maybeError);
 	else return new Error(JSON.stringify(maybeError));
 }
-export function getErrorMeesage(error: unknown) {
+export function getErrorMessage(error: unknown) {
 	return toErrorWithMessage(error).message;
 }
+
+/**
+ * @deprecated Use getErrorMessage instead (typo fix)
+ */
+export const getErrorMeesage = getErrorMessage;

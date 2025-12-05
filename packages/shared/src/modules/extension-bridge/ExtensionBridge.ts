@@ -125,11 +125,11 @@ export default class ExtensionBridge {
 		}
 	}
 
-	static async responsePageContent() {
+	static responsePageContent() {
 		try {
 			Runtime.onMessage(
 				BRIDGE_MESSAGE_TYPES.PAGE_CONTENT,
-				async (_, __, sendResponse) => {
+				(_, __, sendResponse) => {
 					const content = ExtensionBridge._getContentFromWeb();
 
 					try {
@@ -249,7 +249,6 @@ export default class ExtensionBridge {
 
 	static async requestRefetchTheMemosFromWeb() {
 		try {
-			console.log(1);
 			return await chrome.runtime.sendMessage(EXTENSION.id, {
 				type: BRIDGE_MESSAGE_TYPES.REFETCH_THE_MEMO_LIST_FROM_WEB,
 			});

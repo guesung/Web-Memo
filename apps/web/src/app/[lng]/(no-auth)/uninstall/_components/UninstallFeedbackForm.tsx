@@ -36,7 +36,9 @@ const KOREAN_PHONE_REGEX = /^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/;
 function validateKoreanPhoneNumber(phone: string): boolean {
 	if (!phone) return true;
 	const digitsOnly = phone.replace(/[^0-9]/g, "");
-	return KOREAN_PHONE_REGEX.test(phone) || /^01[0-9][0-9]{7,8}$/.test(digitsOnly);
+	return (
+		KOREAN_PHONE_REGEX.test(phone) || /^01[0-9][0-9]{7,8}$/.test(digitsOnly)
+	);
 }
 
 export default function UninstallFeedbackForm({
@@ -128,7 +130,7 @@ export default function UninstallFeedbackForm({
 					className="grid gap-3"
 				>
 					{UNINSTALL_REASONS.map((reason) => (
-						<label
+						<Label
 							key={reason}
 							className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
 								selectedReason === reason
@@ -140,7 +142,7 @@ export default function UninstallFeedbackForm({
 							<span className="text-gray-700 dark:text-gray-300">
 								{t(`uninstall.reasons.${reason}`)}
 							</span>
-						</label>
+						</Label>
 					))}
 				</RadioGroup>
 			</div>

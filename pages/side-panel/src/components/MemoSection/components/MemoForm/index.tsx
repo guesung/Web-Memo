@@ -10,13 +10,13 @@ import {
 	CommandInput,
 	CommandItem,
 	CommandList,
-	cn,
 	Textarea,
 	ToastAction,
+	cn,
 	toast,
 } from "@web-memo/ui";
 import { HeartIcon, XIcon } from "lucide-react";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { SaveStatus } from "./components";
 import { useCategorySuggestion, useMemoCategory, useMemoForm } from "./hooks";
@@ -49,32 +49,6 @@ function MemoFormContent() {
 		currentCategoryId: currentCategoryId,
 		onCategorySelect: updateCategory,
 	});
-
-	const hasSuggestedForMemoRef = useRef<number | null>(null);
-
-	useEffect(() => {
-		const memoText = watch("memo");
-		const hasMemoData = !!memoData?.created_at;
-		const hasCategory = !!currentCategoryId;
-		const hasMemoText = !!memoText?.trim();
-		const memoId = memoData?.id ?? null;
-
-		if (
-			hasMemoData &&
-			hasMemoText &&
-			!hasCategory &&
-			memoId !== hasSuggestedForMemoRef.current
-		) {
-			hasSuggestedForMemoRef.current = memoId;
-			triggerSuggestion(memoText);
-		}
-	}, [
-		memoData?.created_at,
-		memoData?.id,
-		currentCategoryId,
-		watch,
-		triggerSuggestion,
-	]);
 
 	const handleWishClick = async () => {
 		const newIsWish = await toggleWish();
@@ -115,6 +89,21 @@ function MemoFormContent() {
 					{...register("memo", {
 						onChange: (event) => {
 							handleMemoChange(event.target.value);
+
+							const hasMemoData = !!memoData?.created_at;
+							const hasMemoText = !!event.target.value?.trim();
+							const hasCategory = !!currentCategoryId;
+							const memoId = memoData?.id ?? null;
+
+							console.log("hasMemoData", hasMemoData);
+							console.log("hasMemoText", hasMemoText);
+							console.log("hasCategory", hasCategory);
+							console.log("memoId", memoId);
+
+							if (hasMemoData && hasMemoText && !hasCategory) {
+								console.log("triggerSuggestion");
+								triggerSuggestion(event.target.value);
+							}
 						},
 					})}
 					{...rest}

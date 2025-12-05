@@ -63,7 +63,7 @@ function isValidText(text: string): boolean {
 }
 
 function parseSegment(segment: Element): TranscriptSegment | null {
-	if (!(segment instanceof HTMLElement) || segment.offsetParent === null) {
+	if (!(segment instanceof HTMLElement)) {
 		return null;
 	}
 

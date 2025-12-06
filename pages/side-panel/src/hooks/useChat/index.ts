@@ -1,9 +1,5 @@
 import { CONFIG } from "@web-memo/env";
 import { STORAGE_KEYS } from "@web-memo/shared/modules/chrome-storage";
-import {
-	type Category,
-	ExtensionBridge,
-} from "@web-memo/shared/modules/extension-bridge";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { processStreamingResponse } from "../useSummary/util";
 
@@ -14,10 +10,8 @@ export interface ChatMessage {
 	timestamp: number;
 }
 
-interface ChatContext {
-	pageContent?: string;
-	summary?: string;
-	category?: Category;
+interface UseChatProps {
+	pageContent: string;
 }
 
 interface UseChatReturn {
@@ -32,7 +26,7 @@ function generateId(): string {
 	return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-export default function useChat(): UseChatReturn {
+export default function useChat({ pageContent }: UseChatProps): UseChatReturn {
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
@@ -106,9 +100,6 @@ export default function useChat(): UseChatReturn {
 					content: msg.content,
 				}));
 
-				const { content: pageContent } =
-					await ExtensionBridge.requestPageContent();
-
 				const response = await fetch(`${CONFIG.webUrl}/api/openai/chat`, {
 					method: "POST",
 					headers: {
@@ -156,7 +147,7 @@ export default function useChat(): UseChatReturn {
 				setIsLoading(false);
 			}
 		},
-		[messages, isLoading],
+		[messages, isLoading, pageContent],
 	);
 
 	const clearMessages = useCallback(async () => {

@@ -84,6 +84,8 @@ export default function useMemoUpsertMutation() {
 						category_id: data.category_id ?? null,
 						created_at: new Date().toISOString(),
 						updated_at: new Date().toISOString(),
+						is_public: false,
+						shared_at: null,
 					};
 
 			queryClient.setQueryData(QUERY_KEY.memo({ url: normalizedUrl }), {

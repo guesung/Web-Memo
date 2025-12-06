@@ -983,6 +983,19 @@
 			"sharedAt": "Shared",
 			"viewOriginal": "View original",
 			"viewProfile": "View profile"
+		},
+		"anonymous": "Anonymous",
+		"likes": "{{count}} likes",
+		"comments": {
+			"title": "Comments",
+			"placeholder": "Write a comment...",
+			"loginRequired": "Please log in to leave a comment.",
+			"empty": "No comments yet. Be the first to comment!",
+			"loadMore": "Load more comments",
+			"save": "Save",
+			"cancel": "Cancel",
+			"edit": "Edit",
+			"delete": "Delete"
 		}
 	},
 
@@ -994,7 +1007,11 @@
 		"edit": "Edit Profile",
 		"bio": "Bio",
 		"website": "Website",
-		"joinedAt": "Joined"
+		"joinedAt": "Joined",
+		"followers": "{{count}} followers",
+		"following": "{{count}} following",
+		"follow": "Follow",
+		"unfollow": "Unfollow"
 	},
 
 	"share": {

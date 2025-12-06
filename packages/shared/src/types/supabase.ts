@@ -174,6 +174,120 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			memo_likes: {
+				Row: {
+					id: number;
+					memo_id: number;
+					user_id: string;
+					created_at: string;
+				};
+				Insert: {
+					id?: number;
+					memo_id: number;
+					user_id: string;
+					created_at?: string;
+				};
+				Update: {
+					id?: number;
+					memo_id?: number;
+					user_id?: string;
+					created_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "memo_likes_memo_id_fkey";
+						columns: ["memo_id"];
+						isOneToOne: false;
+						referencedRelation: "memo";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			memo_bookmarks: {
+				Row: {
+					id: number;
+					memo_id: number;
+					user_id: string;
+					created_at: string;
+				};
+				Insert: {
+					id?: number;
+					memo_id: number;
+					user_id: string;
+					created_at?: string;
+				};
+				Update: {
+					id?: number;
+					memo_id?: number;
+					user_id?: string;
+					created_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "memo_bookmarks_memo_id_fkey";
+						columns: ["memo_id"];
+						isOneToOne: false;
+						referencedRelation: "memo";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			memo_comments: {
+				Row: {
+					id: number;
+					memo_id: number;
+					user_id: string;
+					content: string;
+					created_at: string;
+					updated_at: string;
+				};
+				Insert: {
+					id?: number;
+					memo_id: number;
+					user_id: string;
+					content: string;
+					created_at?: string;
+					updated_at?: string;
+				};
+				Update: {
+					id?: number;
+					memo_id?: number;
+					user_id?: string;
+					content?: string;
+					created_at?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "memo_comments_memo_id_fkey";
+						columns: ["memo_id"];
+						isOneToOne: false;
+						referencedRelation: "memo";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			user_follows: {
+				Row: {
+					id: number;
+					follower_id: string;
+					following_id: string;
+					created_at: string;
+				};
+				Insert: {
+					id?: number;
+					follower_id: string;
+					following_id: string;
+					created_at?: string;
+				};
+				Update: {
+					id?: number;
+					follower_id?: string;
+					following_id?: string;
+					created_at?: string;
+				};
+				Relationships: [];
+			};
 		};
 		Views: {
 			[_ in never]: never;

@@ -2,7 +2,10 @@
 
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { useCommunityMemosInfiniteQuery } from "@web-memo/shared/hooks";
+import {
+	useCommunityMemosInfiniteQuery,
+	useSupabaseUserQuery,
+} from "@web-memo/shared/hooks";
 import { Button } from "@web-memo/ui";
 import { Loader2, RefreshCw } from "lucide-react";
 
@@ -14,6 +17,8 @@ interface CommunityFeedProps {
 
 export default function CommunityFeed({ lng }: CommunityFeedProps) {
 	const { t } = useTranslation(lng);
+	const { data: userResponse } = useSupabaseUserQuery();
+	const currentUserId = userResponse?.data?.user?.id;
 	const { memos, fetchNextPage, hasNextPage, isFetchingNextPage, refetch, isRefetching } =
 		useCommunityMemosInfiniteQuery();
 
@@ -55,7 +60,12 @@ export default function CommunityFeed({ lng }: CommunityFeedProps) {
 
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
 				{memos.map((memo) => (
-					<CommunityMemoCard key={memo.id} memo={memo} lng={lng} />
+					<CommunityMemoCard
+						key={memo.id}
+						memo={memo}
+						lng={lng}
+						currentUserId={currentUserId}
+					/>
 				))}
 			</div>
 

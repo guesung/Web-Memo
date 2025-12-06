@@ -17,11 +17,12 @@ export class ProfileService {
 			.single();
 	};
 
-	getProfileWithStats = async (userId: string) => {
+	getProfileWithStats = async (userId: string, currentUserId?: string) => {
 		return this.supabaseClient
 			.schema(SUPABASE.schema.memo)
 			.rpc("get_profile_with_stats" as never, {
 				p_user_id: userId,
+				p_current_user_id: currentUserId || null,
 			} as never) as unknown as Promise<{ data: ProfileWithStats[] | null; error: Error | null }>;
 	};
 

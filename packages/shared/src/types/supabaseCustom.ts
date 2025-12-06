@@ -40,6 +40,11 @@ export interface PublicMemo {
 	created_at: string | null;
 	author_nickname: string | null;
 	author_avatar_url: string | null;
+	like_count: number;
+	bookmark_count: number;
+	comment_count: number;
+	is_liked: boolean;
+	is_bookmarked: boolean;
 }
 
 export interface ProfileWithStats {
@@ -50,6 +55,9 @@ export interface ProfileWithStats {
 	website: string | null;
 	created_at: string | null;
 	public_memo_count: number;
+	follower_count: number;
+	following_count: number;
+	is_following: boolean;
 }
 
 export type CategoryTable = Database["memo"]["Tables"]["category"];
@@ -78,4 +86,45 @@ export type FeedbackUpdate = FeedbackTable["Update"];
 export interface FeedbackSupabaseResponse {
 	data: FeedbackRow[] | null;
 	error: Error | null;
+}
+
+// Phase 2 types
+export type MemoLikesTable = Database["memo"]["Tables"]["memo_likes"];
+export type MemoLikesRow = MemoLikesTable["Row"];
+export type MemoLikesInsert = MemoLikesTable["Insert"];
+
+export type MemoBookmarksTable = Database["memo"]["Tables"]["memo_bookmarks"];
+export type MemoBookmarksRow = MemoBookmarksTable["Row"];
+export type MemoBookmarksInsert = MemoBookmarksTable["Insert"];
+
+export type MemoCommentsTable = Database["memo"]["Tables"]["memo_comments"];
+export type MemoCommentsRow = MemoCommentsTable["Row"];
+export type MemoCommentsInsert = MemoCommentsTable["Insert"];
+export type MemoCommentsUpdate = MemoCommentsTable["Update"];
+
+export type UserFollowsTable = Database["memo"]["Tables"]["user_follows"];
+export type UserFollowsRow = UserFollowsTable["Row"];
+export type UserFollowsInsert = UserFollowsTable["Insert"];
+
+export interface MemoComment {
+	id: number;
+	memo_id: number;
+	user_id: string;
+	content: string;
+	created_at: string;
+	updated_at: string;
+	author_nickname: string | null;
+	author_avatar_url: string | null;
+}
+
+export interface BookmarkedMemo extends PublicMemo {
+	bookmarked_at: string;
+}
+
+export interface FollowUser {
+	user_id: string;
+	nickname: string | null;
+	avatar_url: string | null;
+	bio: string | null;
+	followed_at: string;
 }

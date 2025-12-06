@@ -2,15 +2,18 @@
 
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { usePublicMemoQuery } from "@web-memo/shared/hooks";
+import { usePublicMemoQuery, useSupabaseUserQuery } from "@web-memo/shared/hooks";
 import { Avatar, AvatarFallback, AvatarImage, Button } from "@web-memo/ui";
 import { formatDistanceToNow } from "date-fns";
 import { ko, enUS } from "date-fns/locale";
 import { ArrowLeft, ExternalLink, Globe, User } from "lucide-react";
 import Link from "next/link";
+import { CommentSection, MemoInteractionButtons } from "../../../_components";
 
 export default function MemoDetail({ id, lng }: MemoDetailProps) {
 	const { t } = useTranslation(lng);
+	const { data: userResponse } = useSupabaseUserQuery();
+	const currentUserId = userResponse?.data?.user?.id;
 	const { data: memo, isLoading, error } = usePublicMemoQuery(id);
 
 	if (isLoading) {
@@ -108,8 +111,17 @@ export default function MemoDetail({ id, lng }: MemoDetailProps) {
 					</div>
 				</div>
 
+				<div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-800">
+					<MemoInteractionButtons
+						memo={memo}
+						currentUserId={currentUserId}
+						showCommentLink={false}
+						lng={lng}
+					/>
+				</div>
+
 				{memo.url && (
-					<footer className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
+					<footer className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
 						<div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
 							{memo.fav_icon_url && (
 								<img
@@ -125,6 +137,14 @@ export default function MemoDetail({ id, lng }: MemoDetailProps) {
 						</div>
 					</footer>
 				)}
+			</div>
+
+			<div className="mt-8 bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 md:p-8">
+				<CommentSection
+					memoId={id}
+					currentUserId={currentUserId}
+					lng={lng}
+				/>
 			</div>
 		</article>
 	);

@@ -2,15 +2,55 @@
 
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { useProfileWithStatsQuery } from "@web-memo/shared/hooks";
-import { Avatar, AvatarFallback, AvatarImage } from "@web-memo/ui";
+import {
+	useProfileWithStatsQuery,
+	useSupabaseUserQuery,
+	useFollowUserMutation,
+	useUnfollowUserMutation,
+} from "@web-memo/shared/hooks";
+import { Avatar, AvatarFallback, AvatarImage, Button } from "@web-memo/ui";
 import { formatDistanceToNow } from "date-fns";
 import { ko, enUS } from "date-fns/locale";
-import { Calendar, FileText, Globe, User } from "lucide-react";
+import { Calendar, FileText, Globe, Loader2, User, UserMinus, UserPlus, Users } from "lucide-react";
+import { useOptimistic } from "react";
 
 export default function ProfileHeader({ userId, lng }: ProfileHeaderProps) {
 	const { t } = useTranslation(lng);
+	const { data: userResponse } = useSupabaseUserQuery();
+	const currentUserId = userResponse?.data?.user?.id;
 	const { data: profile, isLoading } = useProfileWithStatsQuery(userId);
+	const followMutation = useFollowUserMutation();
+	const unfollowMutation = useUnfollowUserMutation();
+
+	const [optimisticFollowing, setOptimisticFollowing] = useOptimistic(
+		profile?.is_following ?? false,
+	);
+	const [optimisticFollowerCount, setOptimisticFollowerCount] = useOptimistic(
+		profile?.follower_count ?? 0,
+	);
+
+	const isOwnProfile = currentUserId === userId;
+	const canFollow = currentUserId && !isOwnProfile;
+
+	const handleFollow = async () => {
+		if (!currentUserId) return;
+
+		if (optimisticFollowing) {
+			setOptimisticFollowing(false);
+			setOptimisticFollowerCount(Math.max(0, optimisticFollowerCount - 1));
+			await unfollowMutation.mutateAsync({
+				followerId: currentUserId,
+				followingId: userId,
+			});
+		} else {
+			setOptimisticFollowing(true);
+			setOptimisticFollowerCount(optimisticFollowerCount + 1);
+			await followMutation.mutateAsync({
+				followerId: currentUserId,
+				followingId: userId,
+			});
+		}
+	};
 
 	if (isLoading) {
 		return (
@@ -58,9 +98,35 @@ export default function ProfileHeader({ userId, lng }: ProfileHeaderProps) {
 				</Avatar>
 
 				<div className="flex-1">
-					<h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-						{profile.nickname || "Anonymous"}
-					</h1>
+					<div className="flex items-start justify-between gap-4 mb-2">
+						<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+							{profile.nickname || t("community.anonymous")}
+						</h1>
+						{canFollow && (
+							<Button
+								variant={optimisticFollowing ? "outline" : "default"}
+								size="sm"
+								onClick={handleFollow}
+								disabled={
+									followMutation.isPending || unfollowMutation.isPending
+								}
+							>
+								{followMutation.isPending || unfollowMutation.isPending ? (
+									<Loader2 className="w-4 h-4 animate-spin" />
+								) : optimisticFollowing ? (
+									<>
+										<UserMinus className="w-4 h-4 mr-1" />
+										{t("profile.unfollow")}
+									</>
+								) : (
+									<>
+										<UserPlus className="w-4 h-4 mr-1" />
+										{t("profile.follow")}
+									</>
+								)}
+							</Button>
+						)}
+					</div>
 
 					{profile.bio && (
 						<p className="text-gray-600 dark:text-gray-300 mb-4">
@@ -73,6 +139,20 @@ export default function ProfileHeader({ userId, lng }: ProfileHeaderProps) {
 							<FileText className="w-4 h-4" />
 							<span>
 								{t("profile.memoCount", { count: profile.public_memo_count })}
+							</span>
+						</div>
+
+						<div className="flex items-center gap-1">
+							<Users className="w-4 h-4" />
+							<span>
+								{t("profile.followers", { count: optimisticFollowerCount })}
+							</span>
+						</div>
+
+						<div className="flex items-center gap-1">
+							<Users className="w-4 h-4" />
+							<span>
+								{t("profile.following", { count: profile.following_count })}
 							</span>
 						</div>
 

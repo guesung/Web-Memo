@@ -11,7 +11,8 @@ export function useUserPublicMemosInfiniteQuery(userId: string) {
 	return useInfiniteQuery({
 		queryKey: QUERY_KEY.userPublicMemos(userId),
 		queryFn: async ({ pageParam }) => {
-			const communityService = new CommunityService(supabaseClient!);
+			if (!supabaseClient) throw new Error("Supabase client not initialized");
+			const communityService = new CommunityService(supabaseClient);
 			const { data, error } = await communityService.getPublicMemos({
 				cursor: pageParam,
 				limit: PAGE_SIZE,

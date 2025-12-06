@@ -65,3 +65,6 @@ test-results
 .expo
 android
 ios
+
+# MCP config (contains secrets)
+.mcp.json

@@ -3,7 +3,6 @@
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { useUserPublicMemosInfiniteQuery } from "@web-memo/shared/hooks";
-import type { PublicMemo } from "@web-memo/shared/types";
 import { Button } from "@web-memo/ui";
 import { CommunityMemoCard } from "@src/app/[lng]/(no-auth)/community/_components";
 

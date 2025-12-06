@@ -1,20 +1,37 @@
 "use client";
 
 import type { Language } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import type { PublicMemo } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
-import { Avatar, AvatarFallback, AvatarImage, Card, CardContent } from "@web-memo/ui";
+import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+	Card,
+	CardContent,
+} from "@web-memo/ui";
 import { formatDistanceToNow } from "date-fns";
 import { ko, enUS } from "date-fns/locale";
-import { ExternalLink, Globe, User } from "lucide-react";
+import {
+	ExternalLink,
+	Globe,
+} from "lucide-react";
 import Link from "next/link";
+import { MemoInteractionButtons } from "./MemoInteractionButtons";
 
 interface CommunityMemoCardProps {
 	memo: PublicMemo;
 	lng: Language;
+	currentUserId?: string;
 }
 
-export default function CommunityMemoCard({ memo, lng }: CommunityMemoCardProps) {
+export default function CommunityMemoCard({
+	memo,
+	lng,
+	currentUserId,
+}: CommunityMemoCardProps) {
+	const { t } = useTranslation(lng);
 	const locale = lng === "ko" ? ko : enUS;
 	const timeAgo = memo.shared_at
 		? formatDistanceToNow(new Date(memo.shared_at), { addSuffix: true, locale })
@@ -48,7 +65,7 @@ export default function CommunityMemoCard({ memo, lng }: CommunityMemoCardProps)
 							href={`/${lng}/profile/${memo.user_id}`}
 							className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-purple-600 dark:hover:text-purple-400 truncate block"
 						>
-							{memo.author_nickname || "Anonymous"}
+							{memo.author_nickname || t("community.anonymous")}
 						</Link>
 						{timeAgo && (
 							<p className="text-xs text-gray-500 dark:text-gray-400">
@@ -71,27 +88,36 @@ export default function CommunityMemoCard({ memo, lng }: CommunityMemoCardProps)
 				)}
 
 				<div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800">
-					<a
-						href={memo.url}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
-					>
-						{memo.fav_icon_url ? (
-							<img
-								src={memo.fav_icon_url}
-								alt=""
-								className="w-4 h-4 rounded"
-								onError={(e) => {
-									(e.target as HTMLImageElement).style.display = "none";
-								}}
-							/>
-						) : (
-							<Globe className="w-4 h-4" />
-						)}
-						<span className="truncate flex-1">{new URL(memo.url).hostname}</span>
-						<ExternalLink className="w-3 h-3 flex-shrink-0" />
-					</a>
+					<div className="flex items-center justify-between">
+						<a
+							href={memo.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex-1 min-w-0"
+						>
+							{memo.fav_icon_url ? (
+								<img
+									src={memo.fav_icon_url}
+									alt=""
+									className="w-4 h-4 rounded flex-shrink-0"
+									onError={(e) => {
+										(e.target as HTMLImageElement).style.display = "none";
+									}}
+								/>
+							) : (
+								<Globe className="w-4 h-4 flex-shrink-0" />
+							)}
+							<span className="truncate">
+								{new URL(memo.url).hostname}
+							</span>
+							<ExternalLink className="w-3 h-3 flex-shrink-0" />
+						</a>
+						<MemoInteractionButtons
+							memo={memo}
+							currentUserId={currentUserId}
+							compact
+						/>
+					</div>
 				</div>
 			</div>
 		</Card>

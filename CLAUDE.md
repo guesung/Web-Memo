@@ -299,10 +299,11 @@ All development work should be documented in the `claudedocs/` folder for tracki
 ### File Naming Convention
 ```
 claudedocs/
-├── YYYY-MM-DD-feature-name.md      # Feature implementation
-├── YYYY-MM-DD-bugfix-description.md # Bug fixes
-├── YYYY-MM-DD-refactor-target.md   # Refactoring work
-└── YYYY-MM-DD-analysis-topic.md    # Analysis and research
+├── YYYY-MM-DD-feature-name.md        # Feature implementation
+├── YYYY-MM-DD-bugfix-description.md  # Bug fixes
+├── YYYY-MM-DD-refactor-target.md     # Refactoring work
+├── YYYY-MM-DD-analysis-topic.md      # Analysis and research
+└── YYYY-MM-DD-issue-troubleshooting.md # Troubleshooting guides
 ```
 
 ### Document Template
@@ -310,7 +311,7 @@ claudedocs/
 # [Task Title]
 
 **Date**: YYYY-MM-DD
-**Type**: feature | bugfix | refactor | analysis | chore
+**Type**: feature | bugfix | refactor | analysis | chore | troubleshooting
 **Status**: completed | in-progress | blocked
 
 ## Summary
@@ -337,6 +338,7 @@ Any additional context or follow-up items.
 - Architecture decisions
 - Complex debugging sessions
 - Research and analysis results
+- **Troubleshooting sessions** (build failures, environment issues, dependency conflicts)
 
 ### Best Practices
 - Use descriptive file names that indicate the work type
@@ -344,6 +346,41 @@ Any additional context or follow-up items.
 - Keep documentation concise but informative
 - Link to relevant code files using relative paths
 - Update status as work progresses
+
+### Troubleshooting Documentation
+When encountering and resolving build failures, environment issues, or other technical problems, **always create a troubleshooting document** with the following structure:
+
+```markdown
+# [Issue] Troubleshooting
+
+**Date**: YYYY-MM-DD
+**Type**: troubleshooting
+**Status**: completed
+
+## Summary
+Brief description of the problem.
+
+## Problem
+### Error Message
+[Exact error message or logs]
+
+### Symptoms
+[What happened, how to reproduce]
+
+## Root Cause
+[Why the problem occurred]
+
+## Solution
+[Step-by-step fix with commands]
+
+## Prevention
+[How to avoid this issue in the future]
+
+## Verification
+[How to confirm the fix worked]
+```
+
+This helps future debugging sessions by providing quick reference solutions.
 
 ## Task Completion Workflow
 

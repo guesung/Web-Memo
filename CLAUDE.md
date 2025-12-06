@@ -303,7 +303,8 @@ claudedocs/
 ├── YYYY-MM-DD-bugfix-description.md  # Bug fixes
 ├── YYYY-MM-DD-refactor-target.md     # Refactoring work
 ├── YYYY-MM-DD-analysis-topic.md      # Analysis and research
-└── YYYY-MM-DD-issue-troubleshooting.md # Troubleshooting guides
+└── troubleshooting/                  # Troubleshooting guides folder
+    └── YYYY-MM-DD-issue-name.md
 ```
 
 ### Document Template
@@ -348,7 +349,11 @@ Any additional context or follow-up items.
 - Update status as work progresses
 
 ### Troubleshooting Documentation
-When encountering and resolving build failures, environment issues, or other technical problems, **always create a troubleshooting document** with the following structure:
+When encountering and resolving build failures, environment issues, or other technical problems, **always create a troubleshooting document** in `claudedocs/troubleshooting/` folder.
+
+Use the `/sc:troubleshoot-doc` command to automatically generate structured documentation.
+
+**Document structure:**
 
 ```markdown
 # [Issue] Troubleshooting

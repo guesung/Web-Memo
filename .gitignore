@@ -61,7 +61,6 @@ test-results
 
 *.tsbuildinfo
 
-# mobile
-.expo
-android
 ios
+android
+.expo

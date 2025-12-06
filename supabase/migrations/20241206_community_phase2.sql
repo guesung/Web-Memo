@@ -297,6 +297,7 @@ EXECUTE FUNCTION memo.update_comment_updated_at();
 -- ============================================
 
 DROP FUNCTION IF EXISTS memo.get_public_memos(INTEGER, TIMESTAMPTZ, UUID);
+DROP FUNCTION IF EXISTS memo.get_public_memos(INTEGER, TIMESTAMPTZ, UUID, UUID);
 
 CREATE OR REPLACE FUNCTION memo.get_public_memos(
   p_limit INTEGER DEFAULT 20,
@@ -305,7 +306,7 @@ CREATE OR REPLACE FUNCTION memo.get_public_memos(
   p_current_user_id UUID DEFAULT NULL
 )
 RETURNS TABLE (
-  id INTEGER,
+  id BIGINT,
   title TEXT,
   memo TEXT,
   url TEXT,

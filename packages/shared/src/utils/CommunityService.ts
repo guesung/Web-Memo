@@ -31,7 +31,7 @@ export class CommunityService {
 
 	getPublicMemoById = async (id: number, currentUserId?: string) => {
 		const { data, error } = await this.supabaseClient
-			.schema(SUPABASE.table.memo)
+			.schema(SUPABASE.schema.memo)
 			.from(SUPABASE.table.memo)
 			.select("*, profiles:user_id(nickname, avatar_url)")
 			.eq("id", id)
@@ -113,18 +113,18 @@ export class CommunityService {
 
 	shareMemo = async (id: MemoRow["id"]) => {
 		return this.supabaseClient
-			.schema(SUPABASE.table.memo)
+			.schema(SUPABASE.schema.memo)
 			.from(SUPABASE.table.memo)
-			.update({ is_public: true })
+			.update({ is_public: true, shared_at: new Date().toISOString() })
 			.eq("id", id)
 			.select();
 	};
 
 	unshareMemo = async (id: MemoRow["id"]) => {
 		return this.supabaseClient
-			.schema(SUPABASE.table.memo)
+			.schema(SUPABASE.schema.memo)
 			.from(SUPABASE.table.memo)
-			.update({ is_public: false })
+			.update({ is_public: false, shared_at: null })
 			.eq("id", id)
 			.select();
 	};

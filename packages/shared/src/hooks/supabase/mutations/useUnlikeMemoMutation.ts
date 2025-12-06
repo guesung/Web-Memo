@@ -19,10 +19,15 @@ export default function useUnlikeMemoMutation() {
 			new LikeService(supabaseClient).unlikeMemo(memoId, userId),
 		onSuccess: (_, { memoId }) => {
 			queryClient.invalidateQueries({
-				queryKey: QUERY_KEY.publicMemo(memoId),
+				predicate: (query) =>
+					query.queryKey[0] === "community" &&
+					query.queryKey[1] === "memo" &&
+					query.queryKey[2] === memoId,
 			});
 			queryClient.invalidateQueries({
-				queryKey: QUERY_KEY.communityMemos(),
+				predicate: (query) =>
+					query.queryKey[0] === "community" &&
+					query.queryKey[1] === "memos",
 			});
 		},
 	});

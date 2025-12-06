@@ -76,13 +76,29 @@ pnpm generate-supabase-type
 ## Project Architecture
 
 ### Monorepo Structure (Turborepo)
-- **`chrome-extension/`** - Chrome Extension Manifest V3 core application
-- **`pages/`** - Extension UI pages (popup, side-panel, options, content-ui)
+
+**Apps:**
+- **`apps/chrome-extension/`** - Chrome Extension Manifest V3 core application
+- **`apps/web/`** - Next.js 14.2.10 web application
+- **`apps/mobile/`** - React Native/Expo mobile application
+
+**Pages (Extension UI):**
+- **`pages/`** - Extension UI pages (popup, side-panel, options, content-ui, devtools)
+
+**Shared Packages:**
 - **`packages/shared/`** - Shared utilities, hooks, types, and business logic
 - **`packages/ui/`** - Shared UI components library (shadcn/ui based)
-- **`packages/web/`** - Next.js 14.2.10 web application
+- **`packages/env/`** - Environment variable management
+- **`packages/tailwind-config/`** - Shared TailwindCSS configuration
+- **`packages/tsconfig/`** - Shared TypeScript configurations
+- **`packages/vite-config/`** - Shared Vite build configuration
+- **`packages/hmr/`** - Hot Module Replacement utilities for extension
+- **`packages/zipper/`** - Extension packaging utilities
+- **`packages/dev-utils/`** - Development utilities
+- **`packages/supabase-edge-functions/`** - Supabase Edge Functions
+
+**Testing & Infrastructure:**
 - **`e2e/`** - Playwright end-to-end testing suite
-- **`supabase/`** - Database schema and configurations
 
 ### Core Technologies
 - **Frontend**: React 18.3.1, TypeScript 5.5.3, TailwindCSS 3.4.x
@@ -93,20 +109,26 @@ pnpm generate-supabase-type
 - **Code Quality**: Biome 2.0.0 (formatting/linting)
 
 ### Extension Architecture (Manifest V3)
-The chrome extension consists of multiple entry points:
+The chrome extension (`apps/chrome-extension/`) consists of multiple entry points:
 - **Background Script**: Service worker for background operations
 - **Content Scripts**: Injected into web pages for memo collection
 - **Side Panel**: Main memo interface (React app)
 - **Popup**: Quick access interface
 - **Options**: Settings and configuration page
+- **DevTools**: Developer tools panel
 
 ### Shared Packages System
 **`packages/shared/`** contains the core business logic:
 - **hooks/** - TanStack Query hooks for Supabase operations
 - **utils/** - Utility functions (extension-specific and web-specific)
 - **types/** - TypeScript definitions including auto-generated Supabase types
-- **modules/** - Reusable modules (chrome-storage, extension-bridge, local-storage)
+- **modules/** - Reusable modules (chrome-storage, extension-bridge, local-storage, analytics, search-params)
 - **constants/** - Application constants and configuration
+
+**`packages/env/`** manages environment variables:
+- Centralized environment configuration
+- `.env`, `.env.production`, `.env.example` files
+- Built with tsup for distribution
 
 ### State Management Pattern
 - **Server State**: TanStack Query for all Supabase operations
@@ -150,10 +172,10 @@ Components follow functional programming principles:
 
 ### Next.js Page File Separation
 
-When creating or modifying `page.tsx` files in Next.js App Router, separate code into appropriate folders:
+When creating or modifying `page.tsx` files in Next.js App Router (`apps/web/src/app/`), separate code into appropriate folders:
 
 ```
-app/[route]/
+apps/web/src/app/[route]/
 ├── page.tsx              # Only component rendering and composition
 ├── _components/          # React components (with index.ts barrel export)
 ├── _constants/           # Static values, configuration objects (with index.ts)
@@ -210,8 +232,8 @@ function Component({ lng }: { lng: Language }) {
 ```
 
 **Adding New Translations**:
-1. Add translation key to `packages/web/src/modules/i18n/locales/ko/translation.json`
-2. Add same key to `packages/web/src/modules/i18n/locales/en/translation.json`
+1. Add translation key to `apps/web/src/modules/i18n/locales/ko/translation.json`
+2. Add same key to `apps/web/src/modules/i18n/locales/en/translation.json`
 3. Use `t("your.new.key")` in component
 
 **Translation File Structure**:
@@ -219,7 +241,7 @@ function Component({ lng }: { lng: Language }) {
 - Group related translations under common prefixes
 - Example: `introduce.hero.title`, `introduce.hero.subtitle`
 
-**Server vs Client Components**:
+**Server vs Client Components** (in `apps/web/`):
 - Client components: `import useTranslation from "@src/modules/i18n/util.client"`
 - Server components: `import useTranslation from "@src/modules/i18n/util.server"` (async)
 
@@ -228,11 +250,16 @@ function Component({ lng }: { lng: Language }) {
 - This ensures all translation keys exist in both Korean and English locale files
 
 ### Environment Configuration
-Key environment variables:
+Environment variables are managed in `packages/env/`. Key variables:
 - `__FIREFOX__`: Enable Firefox-specific build modifications
 - `OPENAI_API_KEY`: OpenAI integration for page summarization
 - `SENTRY_DSN`: Error tracking and monitoring
 - `WEB_URL`: Web application base URL
+
+Environment files:
+- `packages/env/.env`: Development environment
+- `packages/env/.env.production`: Production environment
+- `packages/env/.env.example`: Template for required variables
 
 ## Common Tasks
 
@@ -247,12 +274,12 @@ Key environment variables:
 3. Use in components via TanStack Query pattern
 
 ### Extension Page Development
-1. Navigate to appropriate `pages/` directory
+1. Navigate to appropriate `pages/` directory (popup, side-panel, options, content-ui, devtools, devtools-panel)
 2. Components use shared packages and UI library
-3. Build system handles hot module replacement
+3. Build system handles hot module replacement via `packages/hmr/`
 
 ### Database Schema Changes
-1. Update Supabase schema
+1. Update Supabase schema (Edge Functions in `packages/supabase-edge-functions/`)
 2. Run `pnpm generate-supabase-type` to regenerate types
 3. Update related queries and mutations
 

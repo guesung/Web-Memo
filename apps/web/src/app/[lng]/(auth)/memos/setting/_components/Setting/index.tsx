@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Suspense } from "react";
 
 import SettingCategoryForm from "./SettingCategoryForm";
+import SettingExport from "./SettingExport";
 import SettingGuide from "./SettingGuide";
 import SettingLanguage from "./SettingLanguage";
 
@@ -24,6 +25,7 @@ export default function Setting({ lng }: SettingProps) {
 			<Suspense fallback={<Loading />}>
 				<SettingLanguage lng={lng} />
 				<SettingGuide lng={lng} />
+				<SettingExport lng={lng} />
 				<SettingCategoryForm lng={lng} />
 			</Suspense>
 		</motion.section>

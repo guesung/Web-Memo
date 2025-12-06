@@ -12,8 +12,7 @@
 			"e2e/tests/**/*",
 			"!dist",
 			"!node_modules",
-			"!**/.next/**/*",
-			"!**/ui/**/*"
+			"!**/.next/**/*"
 		]
 	},
 	"formatter": {

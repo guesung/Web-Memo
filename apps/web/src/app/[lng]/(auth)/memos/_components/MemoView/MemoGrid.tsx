@@ -3,17 +3,32 @@
 import { MasonryInfiniteGrid } from "@egjs/react-infinitegrid";
 import { DragBox } from "@src/components";
 import type { LanguageType } from "@src/modules/i18n";
-import { useKeyboardBind } from "@web-memo/shared/hooks";
+import useTranslation from "@src/modules/i18n/util.client";
+import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEY } from "@web-memo/shared/constants";
+import {
+	useDeleteMemosMutation,
+	useKeyboardBind,
+	useMemosUpsertMutation,
+} from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 
-import { Loading, Skeleton } from "@web-memo/ui";
+import { Loading, Skeleton, ToastAction, toast } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { type ComponentProps, Suspense, useEffect, useRef } from "react";
+import {
+	type ComponentProps,
+	Suspense,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 
 import MemoDialog from "../MemoDialog";
 import { useDragSelection, useMemoDialog, useMemoSelection } from "./_hooks";
+import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import MemoEmptyState from "./MemoEmptyState";
 import MemoItem from "./MemoItem";
 import MemoOptionHeader from "./MemoOptionHeader";
@@ -34,9 +49,15 @@ export default function MemoGrid({
 	isFetchingNextPage,
 	fetchNextPage,
 }: MemoGridProps) {
+	const { t } = useTranslation(lng);
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const dragBoxRef = useRef<HTMLDivElement>(null);
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+	const queryClient = useQueryClient();
+	const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
+	const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
 
 	const {
 		selectedMemoIds,
@@ -55,11 +76,58 @@ export default function MemoGrid({
 		onSelectionChange: setSelectedMemoIds,
 	});
 
-	const closeMemoOption = () => {
+	const closeMemoOption = useCallback(() => {
 		clearSelection();
 		searchParams.removeAll("id");
 		router.replace(searchParams.getUrl(), { scroll: false });
-	};
+	}, [clearSelection, searchParams, router]);
+
+	const selectedMemos = memos.filter((memo) =>
+		selectedMemoIds.includes(memo.id),
+	);
+
+	const handleDeleteSelectedMemos = useCallback(() => {
+		if (selectedMemos.length === 0) return;
+
+		mutateDeleteMemo(selectedMemos.map((memo) => memo.id));
+
+		const handleToastActionClick = () => {
+			mutateUpsertMemo(selectedMemos);
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+		};
+
+		toast({
+			title: t("toastTitle.memoDeleted"),
+			action: (
+				<ToastAction
+					altText={t("toastActionMessage.undo")}
+					onClick={handleToastActionClick}
+				>
+					{t("toastActionMessage.undo")}
+				</ToastAction>
+			),
+		});
+
+		setIsDeleteDialogOpen(false);
+		closeMemoOption();
+	}, [
+		selectedMemos,
+		mutateDeleteMemo,
+		mutateUpsertMemo,
+		queryClient,
+		t,
+		closeMemoOption,
+	]);
+
+	const handleDeleteKeyPress = useCallback(() => {
+		if (!isSelectingMode || selectedMemoIds.length === 0) return;
+
+		if (selectedMemoIds.length > 1) {
+			setIsDeleteDialogOpen(true);
+		} else {
+			handleDeleteSelectedMemos();
+		}
+	}, [isSelectingMode, selectedMemoIds.length, handleDeleteSelectedMemos]);
 
 	const handleRequestAppend: ComponentProps<
 		typeof MasonryInfiniteGrid
@@ -87,10 +155,8 @@ export default function MemoGrid({
 	);
 
 	useKeyboardBind({ key: "Escape", callback: closeMemoOption });
-
-	const selectedMemos = memos.filter((memo) =>
-		selectedMemoIds.includes(memo.id),
-	);
+	useKeyboardBind({ key: "Delete", callback: handleDeleteKeyPress });
+	useKeyboardBind({ key: "Backspace", callback: handleDeleteKeyPress });
 
 	if (memos.length === 0) return <MemoEmptyState lng={lng} />;
 
@@ -139,6 +205,13 @@ export default function MemoGrid({
 					<MemoDialog lng={lng} memoId={dialogMemoId} />
 				</Suspense>
 			)}
+			<DeleteConfirmDialog
+				lng={lng}
+				open={isDeleteDialogOpen}
+				onOpenChange={setIsDeleteDialogOpen}
+				selectedCount={selectedMemoIds.length}
+				onConfirm={handleDeleteSelectedMemos}
+			/>
 		</div>
 	);
 }

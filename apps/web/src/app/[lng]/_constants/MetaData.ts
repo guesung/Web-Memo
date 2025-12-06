@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 
 export const metadataCommon: Metadata = {
-	metadataBase: new URL("https://web-memo.site"),
+	metadataBase: new URL("https://webmemo.site"),
 	icons: {
 		icon: "/favicon.ico",
 	},
 	alternates: {
-		canonical: "https://web-memo.site",
+		canonical: "https://webmemo.site",
 	},
 	verification: {
 		google: "e92NNntqJ--8e3A0jAc-YFB3QwHg46AQQ4eplMUvqtQ",
@@ -28,10 +28,10 @@ export const metadataKorean: Metadata = {
 	applicationName: "웹 메모",
 	category: "웹 메모",
 	alternates: {
-		canonical: "https://web-memo.site/ko",
+		canonical: "https://webmemo.site/ko",
 		languages: {
-			ko: "https://web-memo.site/ko",
-			en: "https://web-memo.site/en",
+			ko: "https://webmemo.site/ko",
+			en: "https://webmemo.site/en",
 		},
 	},
 	openGraph: {
@@ -64,7 +64,7 @@ export const metadataEnglish: Metadata = {
 	publisher: "Gyusung Park",
 	applicationName: "Web Memo",
 	category: "Web Memo",
-	metadataBase: new URL("https://web-memo.site"),
+	metadataBase: new URL("https://webmemo.site"),
 	openGraph: {
 		title: "Web Memo",
 		description:

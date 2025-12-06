@@ -14,10 +14,10 @@ export const metadataKorean: Metadata = {
 		"콘텐츠 저장",
 	],
 	alternates: {
-		canonical: "https://web-memo.site/ko/features/save-articles",
+		canonical: "https://webmemo.site/ko/features/save-articles",
 		languages: {
-			ko: "https://web-memo.site/ko/features/save-articles",
-			en: "https://web-memo.site/en/features/save-articles",
+			ko: "https://webmemo.site/ko/features/save-articles",
+			en: "https://webmemo.site/en/features/save-articles",
 		},
 	},
 	openGraph: {
@@ -43,10 +43,10 @@ export const metadataEnglish: Metadata = {
 		"article organizer",
 	],
 	alternates: {
-		canonical: "https://web-memo.site/en/features/save-articles",
+		canonical: "https://webmemo.site/en/features/save-articles",
 		languages: {
-			ko: "https://web-memo.site/ko/features/save-articles",
-			en: "https://web-memo.site/en/features/save-articles",
+			ko: "https://webmemo.site/ko/features/save-articles",
+			en: "https://webmemo.site/en/features/save-articles",
 		},
 	},
 	openGraph: {

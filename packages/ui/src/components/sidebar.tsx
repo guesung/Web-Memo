@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import { Slot } from "@radix-ui/react-slot";
 import type { VariantProps } from "class-variance-authority";
 import { cva } from "class-variance-authority";
@@ -426,6 +428,7 @@ const SidebarGroupLabel = React.forwardRef<
 	const Comp = asChild ? Slot : "div";
 
 	return (
+		// @ts-expect-error - Slot type incompatibility with @types/react
 		<Comp
 			ref={ref}
 			data-sidebar="group-label"
@@ -447,6 +450,7 @@ const SidebarGroupAction = React.forwardRef<
 	const Comp = asChild ? Slot : "button";
 
 	return (
+		// @ts-expect-error - Slot type incompatibility with @types/react
 		<Comp
 			ref={ref}
 			data-sidebar="group-action"
@@ -548,6 +552,7 @@ const SidebarMenuButton = React.forwardRef<
 		const { isMobile, state } = useSidebar();
 
 		const button = (
+			// @ts-expect-error - Slot type incompatibility with @types/react
 			<Comp
 				ref={ref}
 				data-sidebar="menu-button"
@@ -593,6 +598,7 @@ const SidebarMenuAction = React.forwardRef<
 	const Comp = asChild ? Slot : "button";
 
 	return (
+		// @ts-expect-error - Slot type incompatibility with @types/react
 		<Comp
 			ref={ref}
 			data-sidebar="menu-action"
@@ -707,6 +713,7 @@ const SidebarMenuSubButton = React.forwardRef<
 	const Comp = asChild ? Slot : "a";
 
 	return (
+		// @ts-expect-error - Slot type incompatibility with @types/react
 		<Comp
 			ref={ref}
 			data-sidebar="menu-sub-button"

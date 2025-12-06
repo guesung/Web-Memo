@@ -67,16 +67,24 @@ export async function findSidePanelPage(page: Page, timeout = 10000) {
 }
 
 export async function skipGuide(page: Page) {
-	const nextButton = page.locator(".driver-popover-next-btn");
+	// Set localStorage to mark guide as completed FIRST before any guide can appear
+	await page.evaluate(() => {
+		localStorage.setItem("guide", JSON.stringify(true));
+	});
 
-	for (let i = 0; i < 5; i++) {
-		// Wait for button to be visible before clicking
-		await nextButton.waitFor({ state: "visible", timeout: 3000 });
-		await nextButton.click();
+	const guidePopover = page.locator("#driver-popover-content");
 
-		// Wait for next button to reappear (animation complete) or disappear on last step
-		if (i < 4) {
-			await page.waitForTimeout(200); // Short delay for animation
-		}
+	// Check if guide is visible
+	const isGuideVisible = await guidePopover
+		.waitFor({ state: "visible", timeout: 2000 })
+		.then(() => true)
+		.catch(() => false);
+
+	if (isGuideVisible) {
+		// Guide is already showing, reload to dismiss it
+		await page.reload();
+		await page.waitForLoadState("domcontentloaded");
+		// Wait for guide to be hidden
+		await guidePopover.waitFor({ state: "hidden", timeout: 5000 }).catch(() => {});
 	}
 }

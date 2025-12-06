@@ -32,11 +32,13 @@ test.describe("메모 그리드 (Mocked)", () => {
 	});
 
 	test("메모 페이지에 접속하면, 메모를 확인할 수 있다.", async ({ page }) => {
-		await expect(page.getByText(memoText)).toBeVisible();
+		const memoItem = page.locator(".memo-item", { hasText: memoText });
+		await expect(memoItem).toBeVisible();
 	});
 
 	test("메모를 누르면, 메모 상세 페이지가 열린다.", async ({ page }) => {
-		await page.getByText(memoText).click();
+		const memoItem = page.locator(".memo-item", { hasText: memoText });
+		await memoItem.click();
 		await expect(page.getByTestId("memo-textarea")).toHaveValue(memoText);
 	});
 });

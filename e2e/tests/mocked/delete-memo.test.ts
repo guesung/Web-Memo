@@ -67,6 +67,8 @@ test.describe("메모 삭제 기능 (Mocked)", () => {
 			})
 			.click();
 
-		await expect(page.getByText(memoText)).toBeVisible();
+		// Use .memo-item locator to avoid strict mode violation (text appears in both title and content)
+		const restoredMemo = page.locator(".memo-item", { hasText: memoText });
+		await expect(restoredMemo).toBeVisible();
 	});
 });

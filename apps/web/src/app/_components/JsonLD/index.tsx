@@ -13,7 +13,7 @@ const getJsonLd = (lng: Language) => ({
 		lng === "ko"
 			? "웹페이지를 쉽게 저장하고 관리하세요"
 			: "Store and manage web pages easily",
-	url: process.env.NEXT_PUBLIC_WEB_URL || "https://web-memo.site",
+	url: process.env.NEXT_PUBLIC_WEB_URL || "https://webmemo.site",
 	applicationCategory: "WebApplication",
 	operatingSystem: "All",
 	inLanguage: SUPPORTED_LANGUAGES,

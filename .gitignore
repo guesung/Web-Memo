@@ -60,7 +60,9 @@ test-results
 .serena/
 
 *.tsbuildinfo
+tsup.config.bundled*
 
-ios
-android
+# mobile
 .expo
+android
+ios

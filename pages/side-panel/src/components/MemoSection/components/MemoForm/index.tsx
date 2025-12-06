@@ -19,7 +19,7 @@ import { HeartIcon, XIcon } from "lucide-react";
 import { useMemo, useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { SaveStatus } from "./components";
-import { useMemoCategory, useMemoForm } from "./hooks";
+import { useCategorySuggestion, useMemoCategory, useMemoForm } from "./hooks";
 
 function MemoFormContent() {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -43,6 +43,11 @@ function MemoFormContent() {
 	} = useMemoCategory({
 		textareaRef,
 		onCategoryChange: updateCategory,
+	});
+
+	const { triggerSuggestion } = useCategorySuggestion({
+		currentCategoryId: currentCategoryId,
+		onCategorySelect: updateCategory,
 	});
 
 	const handleWishClick = async () => {
@@ -84,6 +89,21 @@ function MemoFormContent() {
 					{...register("memo", {
 						onChange: (event) => {
 							handleMemoChange(event.target.value);
+
+							const hasMemoData = !!memoData?.created_at;
+							const hasMemoText = !!event.target.value?.trim();
+							const hasCategory = !!currentCategoryId;
+							const memoId = memoData?.id ?? null;
+
+							console.log("hasMemoData", hasMemoData);
+							console.log("hasMemoText", hasMemoText);
+							console.log("hasCategory", hasCategory);
+							console.log("memoId", memoId);
+
+							if (hasMemoData && hasMemoText && !hasCategory) {
+								console.log("triggerSuggestion");
+								triggerSuggestion(event.target.value);
+							}
 						},
 					})}
 					{...rest}

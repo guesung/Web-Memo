@@ -26,6 +26,7 @@ export default class ErrorBoundary extends Component<
 	constructor(props: ErrorBoundaryProps) {
 		super(props);
 		this.state = initialState;
+		this.resetErrorBoundary = this.resetErrorBoundary.bind(this);
 	}
 
 	static getDerivedStateFromError(error: Error) {

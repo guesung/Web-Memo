@@ -39,14 +39,20 @@ export class MemoService {
 			.eq("id", id);
 
 	upsertMemos = async (request: GetMemoResponse[]) => {
-		// TODO: 직접 카테고리를 제거하는 로직 수정 필요
-		const requestWithoutCategory = request.map(({ category, ...rest }) => rest);
+		const requestMapped = request.map(({ category, ...rest }) => ({
+			...rest,
+			category_id: category?.id ?? rest.category_id,
+		}));
 		return this.supabaseClient
 			.schema(SUPABASE.table.memo)
 			.from(SUPABASE.table.memo)
-			.upsert(requestWithoutCategory)
+			.upsert(requestMapped)
 			.select();
 	};
+	/**
+	 * @deprecated Use getMemosPaginated for better performance.
+	 * This method fetches up to 2000 records at once which is inefficient.
+	 */
 	getMemos = async () => {
 		const [firstBatch, secondBatch] = await Promise.all([
 			this.supabaseClient
@@ -61,6 +67,18 @@ export class MemoService {
 				.select("*, category(id, name, color)")
 				.order("updated_at", { ascending: false })
 				.range(1000, 1999),
+			this.supabaseClient
+				.schema(SUPABASE.table.memo)
+				.from(SUPABASE.table.memo)
+				.select("*, category(id, name, color)")
+				.order("updated_at", { ascending: false })
+				.range(2000, 2999),
+			this.supabaseClient
+				.schema(SUPABASE.table.memo)
+				.from(SUPABASE.table.memo)
+				.select("*, category(id, name, color)")
+				.order("updated_at", { ascending: false })
+				.range(3000, 3999),
 		]);
 		const data = [...(firstBatch?.data ?? []), ...(secondBatch?.data ?? [])];
 		return { ...firstBatch, data };
@@ -268,23 +286,24 @@ export class AdminService {
 	getAdminStats = async () =>
 		this.supabaseClient
 			.schema(SUPABASE.schema.memo)
-			.rpc("get_admin_stats" as never);
+			// @ts-expect-error RPC function types not generated in schema
+			.rpc("get_admin_stats");
 
 	getUserGrowth = async (daysAgo: number = 30) =>
-		this.supabaseClient.schema(SUPABASE.schema.memo).rpc(
-			"get_user_growth" as never,
-			{
+		this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			// @ts-expect-error RPC function types not generated in schema
+			.rpc("get_user_growth", {
 				days_ago: daysAgo,
-			} as never,
-		);
+			});
 
 	getUsers = async ({ searchQuery }: GetAdminUsersParams = {}) =>
-		this.supabaseClient.schema(SUPABASE.schema.memo).rpc(
-			"get_admin_users" as never,
-			{
+		this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			// @ts-expect-error RPC function types not generated in schema
+			.rpc("get_admin_users", {
 				search_query: searchQuery || null,
-			} as never,
-		);
+			});
 
 	checkIsAdmin = async (userId: string) => {
 		const { data } = await this.supabaseClient

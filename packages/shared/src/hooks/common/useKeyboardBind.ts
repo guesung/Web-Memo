@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-type KeyboardEventKey = "Backspace" | "Escape" | "s";
+type KeyboardEventKey = "Backspace" | "Delete" | "Escape" | "s";
 
 interface UseKeyboardBindProps {
 	key: KeyboardEventKey;

@@ -325,6 +325,13 @@
 		"cancel": "Keep editing"
 	},
 
+	"dialogDeleteMemos": {
+		"title": "Delete {{count}} memos?",
+		"description": "Selected memos will be deleted. You can undo this action.",
+		"ok": "Delete",
+		"cancel": "Cancel"
+	},
+
 	"tooltip": {
 		"sideBar": "Side bar",
 		"goSetting": "Go to settings"
@@ -338,7 +345,9 @@
 		"category": "Category",
 		"addCategory": "Add category",
 		"deleteCategory": "Delete category",
-		"defaultCategoryName": "New category"
+		"defaultCategoryName": "New category",
+		"export": "Export",
+		"exportMemos": "Export memos"
 	},
 
 	"guide": {

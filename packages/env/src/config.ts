@@ -37,7 +37,6 @@ export const CONFIG = {
 	gaId: getSafeConfig("GA_ID", process.env.GA_ID),
 	gtmId: getSafeConfig("GTM_ID", process.env.GTM_ID),
 	gaApiSecret: getSafeConfig("GA_API_SECRET", process.env.GA_API_SECRET),
-	isFirefox: process.env.__FIREFOX__ === "true",
 	extensionKey: getOptionalConfig(process.env.EXTENSION_KEY),
 	oauth2ClientId: getOptionalConfig(process.env.OAUTH2_CLIENT_ID),
 };

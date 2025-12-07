@@ -1,21 +1,11 @@
 import fs from "node:fs";
 
-import deepmerge from "deepmerge";
 import { CONFIG } from "@web-memo/env";
+import deepmerge from "deepmerge";
 
-import {
-	getExternallyConnectableMatches,
-	getManifestKey,
-	getOAuth2ClientId,
-} from "./lib/manifestConfig.js";
+
 
 const packageJson = JSON.parse(fs.readFileSync("../../package.json", "utf8"));
-
-const sidePanelConfig = {
-	side_panel: {
-		default_path: "side-panel/index.html",
-	},
-};
 
 /**
  * After changing, please reload the extension at `chrome://extensions`
@@ -37,10 +27,9 @@ const manifest = deepmerge(
 			type: "module",
 		},
 		externally_connectable: {
-			matches: getExternallyConnectableMatches(),
+			matches: [`${CONFIG.webUrl}/*`],
 		},
 		action: {
-			default_popup: "popup/index.html",
 			default_icon: "icon-34.png",
 		},
 		icons: {
@@ -77,13 +66,17 @@ const manifest = deepmerge(
 				suggested_key: "Alt+S",
 			},
 		},
-		key: getManifestKey(),
+		key: CONFIG.extensionKey,
 		oauth2: {
-			client_id: getOAuth2ClientId(),
+			client_id: CONFIG.oauth2ClientId,
 			scopes: ["openid", "email", "profile"],
 		},
 	},
-	!CONFIG.isFirefox && sidePanelConfig,
+	{
+		side_panel: {
+			default_path: "side-panel/index.html",
+		},
+	}
 );
 
 export default manifest;

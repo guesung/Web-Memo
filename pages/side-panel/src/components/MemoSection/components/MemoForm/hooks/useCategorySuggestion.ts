@@ -89,32 +89,26 @@ export function useCategorySuggestion({
 
 	const triggerSuggestion = useCallback(
 		async (memoText: string) => {
-			// Guard conditions
 			if (currentCategoryId) return;
 
 			try {
 				const tabInfo = await getTabInfo();
 				if (!tabInfo.url) return;
 
-				// Check if URL was dismissed in this session
 				if (dismissedUrlsRef.current.has(tabInfo.url)) return;
 
 				currentUrlRef.current = tabInfo.url;
 
-				// Cancel previous request
 				abortControllerRef.current?.abort();
 				abortControllerRef.current = new AbortController();
 
 				setIsLoading(true);
 
-				// Get page content
 				let pageContent = "";
 				try {
 					const { content } = await bridge.request.PAGE_CONTENT();
 					pageContent = content || "";
-				} catch {
-					// Silent fail - use empty content
-				}
+				} catch {}
 
 				const pageLanguage = detectPageLanguage(
 					tabInfo.title || "",
@@ -126,12 +120,10 @@ export function useCategorySuggestion({
 					name: c.name,
 				}));
 
-				// Create timeout promise
 				const timeoutPromise = new Promise<never>((_, reject) => {
 					setTimeout(() => reject(new Error("Request timeout")), API_TIMEOUT);
 				});
 
-				// Fetch with timeout
 				const fetchPromise = fetch(`${CONFIG.webUrl}/api/openai/category`, {
 					method: "POST",
 					headers: {
@@ -156,7 +148,6 @@ export function useCategorySuggestion({
 
 				const data: CategorySuggestionResponse = await response.json();
 
-				// Only show if confidence is above threshold
 				if (
 					data.suggestion &&
 					data.suggestion.confidence >= CONFIDENCE_THRESHOLD
@@ -166,20 +157,16 @@ export function useCategorySuggestion({
 						existingCategoryId: data.suggestion.existingCategoryId ?? null,
 					};
 
-					// Check if auto-apply is enabled
 					const shouldAutoApply =
 						(await ChromeSyncStorage.get<boolean>(
 							STORAGE_KEYS.autoApplyCategory,
 						)) ?? true;
 
 					if (shouldAutoApply) {
-						// Auto-apply the suggestion without showing UI
 						await applyCategorySuggestionDirect(suggestionData);
 					} else {
-						// Show suggestion UI for manual approval
 						setSuggestion(suggestionData);
 
-						// Set auto-dismiss timer
 						clearAutoDismissTimer();
 						autoDismissTimerRef.current = setTimeout(() => {
 							reset();
@@ -187,7 +174,6 @@ export function useCategorySuggestion({
 					}
 				}
 			} catch (error) {
-				// Silent fail - don't disrupt user
 				if (error instanceof Error && error.name !== "AbortError") {
 					console.error("Category suggestion error:", error);
 				}
@@ -214,7 +200,6 @@ export function useCategorySuggestion({
 		await triggerSuggestion("");
 	}, [triggerSuggestion]);
 
-	// Cleanup on unmount
 	useEffect(() => {
 		return () => {
 			abortControllerRef.current?.abort();
@@ -222,7 +207,6 @@ export function useCategorySuggestion({
 		};
 	}, [clearAutoDismissTimer]);
 
-	// Reset when category is manually selected
 	useEffect(() => {
 		if (currentCategoryId) {
 			reset();

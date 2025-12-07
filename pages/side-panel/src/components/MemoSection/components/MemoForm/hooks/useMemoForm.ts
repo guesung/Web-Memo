@@ -15,18 +15,12 @@ interface UseMemoFormProps {
 	onSaveSuccess?: (memoInput: MemoInput) => void;
 }
 
-interface TabInfo {
-	title: string;
-	favIconUrl: string | undefined;
-	url: string;
-}
-
 export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const { setValue, getValues } = useFormContext<MemoInput>();
 	const { debounce } = useDebounce();
 	const { data: tab } = useTabQuery();
 	const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
-		url: tab.url,
+		url: tab?.url ?? "",
 	});
 	const { mutate: upsertMemo } = useMemoUpsertMutation();
 	const [isSaving, setIsSaving] = useState(false);

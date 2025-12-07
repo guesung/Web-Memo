@@ -10,34 +10,42 @@ import {
 	setupTextSelectionHandler,
 } from "./ui";
 
-bridge.handle.PAGE_CONTENT((_, __, sendResponse) => {
-	const content = getContentFromWeb();
-	sendResponse({ content });
+bridge.handle.PAGE_CONTENT(async (_, __, sendResponse) => {
+	const title = document.title;
+	const favicon = getFavicon();
+
+	if (isYoutubePage()) {
+		try {
+			const result = await extractYoutubeTranscript();
+			sendResponse({
+				content: result.transcript,
+				category: "youtube",
+				title,
+				favicon,
+			});
+		} catch {
+			const content = getContentFromWeb();
+			sendResponse({ content, category: "youtube", title, favicon });
+		}
+	} else {
+		const content = getContentFromWeb();
+		sendResponse({ content, category: "others", title, favicon });
+	}
 	return true;
 });
 
 bridge.handle.YOUTUBE_TRANSCRIPT(async (_, __, sendResponse) => {
 	if (!isYoutubePage()) {
-		sendResponse({
-			success: false,
-			transcript: "",
-			error: "Not a YouTube video page",
-		});
+		sendResponse("Not a YouTube video page");
 		return;
 	}
 	try {
 		const result = await extractYoutubeTranscript();
-		sendResponse({
-			success: result.success,
-			transcript: result.transcript,
-			error: result.error,
-		});
+		sendResponse(result.transcript);
 	} catch (error) {
-		sendResponse({
-			success: false,
-			transcript: "",
-			error: error instanceof Error ? error.message : "Failed to extract transcript",
-		});
+		sendResponse(
+			error instanceof Error ? error.message : "Failed to extract transcript",
+		);
 	}
 });
 
@@ -66,4 +74,20 @@ function getContentFromWeb() {
 	} catch {
 		return text;
 	}
+}
+
+function getFavicon(): string {
+	const iconLink =
+		document.querySelector<HTMLLinkElement>('link[rel="icon"]') ??
+		document.querySelector<HTMLLinkElement>('link[rel="shortcut icon"]') ??
+		document.querySelector<HTMLLinkElement>(
+			'link[rel="apple-touch-icon-precomposed"]',
+		) ??
+		document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]');
+
+	if (iconLink?.href) {
+		return iconLink.href;
+	}
+
+	return `${window.location.origin}/favicon.ico`;
 }

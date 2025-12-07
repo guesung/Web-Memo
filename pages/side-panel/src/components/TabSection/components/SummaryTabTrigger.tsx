@@ -1,10 +1,12 @@
 import { I18n } from "@web-memo/shared/utils/extension";
 import { Loading, TabsTrigger } from "@web-memo/ui";
 import { GlobeIcon, RefreshCwIcon, Youtube } from "lucide-react";
-import { useSummaryContext } from "./Summary/components";
+import { usePageContentContext } from "../../PageContentProvider";
+import { useSummaryContext } from "./Summary/components/SummaryProvider";
 
 export default function SummaryTabTrigger() {
-	const { isSummaryLoading, refetchSummary, category } = useSummaryContext();
+	const { isSummaryLoading, generateSummary } = useSummaryContext();
+	const { category } = usePageContentContext();
 
 	const CategoryIcon = category === "youtube" ? Youtube : GlobeIcon;
 
@@ -12,13 +14,21 @@ export default function SummaryTabTrigger() {
 		<TabsTrigger value="summary" className="flex items-center gap-1.5">
 			<CategoryIcon size={14} />
 			{I18n.get("summary")}
-			<button
-				type="button"
+			<span
+				// biome-ignore lint/a11y/useSemanticElements: 트리거 버튼 안의 새로고침 버튼
+				role="button"
+				tabIndex={0}
 				className="ml-1 p-0.5 rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-				disabled={isSummaryLoading}
+				aria-disabled={isSummaryLoading}
 				onClick={(e) => {
 					e.stopPropagation();
-					if (!isSummaryLoading) refetchSummary();
+					if (!isSummaryLoading) generateSummary();
+				}}
+				onKeyDown={(e) => {
+					if (e.key === "Enter" || e.key === " ") {
+						e.stopPropagation();
+						if (!isSummaryLoading) generateSummary();
+					}
 				}}
 			>
 				{isSummaryLoading ? (
@@ -26,7 +36,7 @@ export default function SummaryTabTrigger() {
 				) : (
 					<RefreshCwIcon size={14} />
 				)}
-			</button>
+			</span>
 		</TabsTrigger>
 	);
 }

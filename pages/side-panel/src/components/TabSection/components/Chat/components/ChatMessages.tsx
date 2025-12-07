@@ -2,7 +2,7 @@ import type { ChatMessage as ChatMessageType } from "@src/hooks";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { ScrollArea } from "@web-memo/ui";
 import { MessageSquare } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import ChatMessage from "./ChatMessage";
 
 interface ChatMessagesProps {
@@ -10,11 +10,40 @@ interface ChatMessagesProps {
 }
 
 export default function ChatMessages({ messages }: ChatMessagesProps) {
+	const scrollAreaRef = useRef<HTMLDivElement>(null);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
+	const isAtBottomRef = useRef(true);
+
+	const checkIfAtBottom = useCallback(() => {
+		const scrollArea = scrollAreaRef.current?.querySelector(
+			"[data-radix-scroll-area-viewport]",
+		);
+		if (!scrollArea) return true;
+
+		const { scrollTop, scrollHeight, clientHeight } = scrollArea;
+		const threshold = 50;
+		return scrollHeight - scrollTop - clientHeight < threshold;
+	}, []);
+
+	const handleScroll = useCallback(() => {
+		isAtBottomRef.current = checkIfAtBottom();
+	}, [checkIfAtBottom]);
 
 	useEffect(() => {
-		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-	}, []);
+		const scrollArea = scrollAreaRef.current?.querySelector(
+			"[data-radix-scroll-area-viewport]",
+		);
+		if (!scrollArea) return;
+
+		scrollArea.addEventListener("scroll", handleScroll);
+		return () => scrollArea.removeEventListener("scroll", handleScroll);
+	}, [handleScroll]);
+
+	useEffect(() => {
+		if (isAtBottomRef.current) {
+			messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+		}
+	}, [messages]);
 
 	if (messages.length === 0) {
 		return (
@@ -26,7 +55,7 @@ export default function ChatMessages({ messages }: ChatMessagesProps) {
 	}
 
 	return (
-		<ScrollArea className="flex-1 pr-2">
+		<ScrollArea ref={scrollAreaRef} className="flex-1 pr-2">
 			<div className="flex flex-col gap-1 py-2">
 				{messages.map((message) => (
 					<ChatMessage key={message.id} message={message} />

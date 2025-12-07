@@ -25,7 +25,7 @@ type HandleCallback<TPayload, TResponse> =
 			payload: TPayload,
 			sender: chrome.runtime.MessageSender,
 			sendResponse: (response: TResponse) => void,
-	  ) => void | boolean | Promise<void>)
+	  ) => void | boolean | Promise<void> | Promise<boolean>)
 	| (() => void);
 
 type HandleFn<TPayload, TResponse> = (

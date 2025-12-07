@@ -18,13 +18,21 @@ export default function ChatTabTrigger() {
 			<Sparkles size={14} />
 			{I18n.get("chat_title")}
 			{hasMessages && (
-				<button
-					type="button"
+				<span
+					// biome-ignore lint/a11y/useSemanticElements: 트리거 버튼 안의 삭제 버튼
+					role="button"
+					tabIndex={0}
 					className="ml-1 p-0.5 rounded hover:bg-muted"
 					onClick={handleClear}
+					onKeyDown={(e) => {
+						if (e.key === "Enter" || e.key === " ") {
+							e.stopPropagation();
+							clearMessages();
+						}
+					}}
 				>
 					<Trash2 size={14} />
-				</button>
+				</span>
 			)}
 		</TabsTrigger>
 	);

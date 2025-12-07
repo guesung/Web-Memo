@@ -160,5 +160,8 @@
 	},
 	"text_selection_description": {
 		"message": "텍스트 선택 시 메모 버튼을 표시합니다 (새로고침 필요)"
+	},
+	"summary_empty_message": {
+		"message": "위의 새로고침 버튼을 눌러\n요약을 생성해보세요"
 	}
 }

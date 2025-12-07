@@ -6,22 +6,17 @@ import { createContext, useCallback, useContext, useState } from "react";
 interface PageContentState {
 	content: string;
 	category: Category;
-	title: string;
-	favicon: string;
 	isLoading: boolean;
 	error: string;
 }
 
 interface PageContentContextValue extends PageContentState {
 	fetchPageContent: () => Promise<void>;
-	resetPageContent: () => void;
 }
 
 const initialState: PageContentState = {
 	content: "",
 	category: "others",
-	title: "",
-	favicon: "",
 	isLoading: false,
 	error: "",
 };
@@ -41,10 +36,6 @@ export function usePageContentContext() {
 export default function PageContentProvider({ children }: PropsWithChildren) {
 	const [state, setState] = useState<PageContentState>(initialState);
 
-	const resetPageContent = useCallback(() => {
-		setState(initialState);
-	}, []);
-
 	const fetchPageContent = useCallback(async () => {
 		setState((prev) => ({
 			...prev,
@@ -53,14 +44,11 @@ export default function PageContentProvider({ children }: PropsWithChildren) {
 		}));
 
 		try {
-			const { content, category, title, favicon } =
-				await bridge.request.PAGE_CONTENT();
+			const { content, category } = await bridge.request.PAGE_CONTENT();
 
 			setState({
 				content,
 				category,
-				title,
-				favicon,
 				isLoading: false,
 				error: "",
 			});
@@ -79,7 +67,6 @@ export default function PageContentProvider({ children }: PropsWithChildren) {
 	const value: PageContentContextValue = {
 		...state,
 		fetchPageContent,
-		resetPageContent,
 	};
 
 	return (

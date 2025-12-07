@@ -1,10 +1,14 @@
+import { useDidMount } from "@web-memo/shared/hooks";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-
 import { useSummaryContext } from "./SummaryProvider";
 
 export default function SummaryContent() {
-	const { summary, errorMessage } = useSummaryContext();
+	const { summary, errorMessage, generateSummary } = useSummaryContext();
+
+	useDidMount(() => {
+		generateSummary();
+	});
 
 	if (errorMessage)
 		return <p className="whitespace-pre-wrap">{errorMessage}</p>;

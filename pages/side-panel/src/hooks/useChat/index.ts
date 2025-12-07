@@ -1,6 +1,5 @@
 import { CONFIG } from "@web-memo/env";
 import { STORAGE_KEYS } from "@web-memo/shared/modules/chrome-storage";
-import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { processStreamingResponse } from "../useSummary/util";
 
@@ -101,8 +100,6 @@ export default function useChat({ pageContent }: UseChatProps): UseChatReturn {
 					content: msg.content,
 				}));
 
-				const { content: pageContent } = await bridge.request.PAGE_CONTENT();
-
 				const response = await fetch(`${CONFIG.webUrl}/api/openai/chat`, {
 					method: "POST",
 					headers: {
@@ -150,7 +147,7 @@ export default function useChat({ pageContent }: UseChatProps): UseChatReturn {
 				setIsLoading(false);
 			}
 		},
-		[messages, isLoading],
+		[messages, isLoading, pageContent],
 	);
 
 	const clearMessages = useCallback(async () => {

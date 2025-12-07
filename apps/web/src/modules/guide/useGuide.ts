@@ -1,5 +1,5 @@
 import { useGetExtensionManifest } from "@src/hooks";
-import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import {
 	checkLocalStorageTrue,
 	setLocalStorageTrue,
@@ -43,7 +43,8 @@ export default function useGuide({ lng }: UseGuideProps) {
 						}),
 						onPopoverRender: () => {
 							const interval = setInterval(() => {
-								ExtensionBridge.requestGetSidePanelOpen(() => {
+								bridge.request.GET_SIDE_PANEL_OPEN().then((isOpen) => {
+									if (!isOpen) return;
 									if (driverObj.getActiveIndex() !== 0) return;
 									driverObj.moveNext();
 								});

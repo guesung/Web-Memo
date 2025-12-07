@@ -9,8 +9,7 @@ import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
-import type { Category } from "@web-memo/shared/modules/extension-bridge";
-import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { type Category, bridge } from "@web-memo/shared/modules/extension-bridge";
 import { checkYoutubeUrl } from "@web-memo/shared/utils";
 import { DEFAULT_CATEGORY, DEFAULT_LANGUAGE } from "./constant";
 
@@ -25,7 +24,7 @@ interface GetSystemPromptProps {
 }
 
 export const fetchYoutubeTranscript = async (): Promise<string> => {
-	const result = await ExtensionBridge.requestYoutubeTranscript();
+	const result = await bridge.request.YOUTUBE_TRANSCRIPT();
 
 	if (!result.success) {
 		throw new Error(result.error ?? "Failed to extract transcript");
@@ -80,7 +79,7 @@ export const getPageContent = async (
 		};
 	}
 
-	const { content } = await ExtensionBridge.requestPageContent();
+	const { content } = await bridge.request.PAGE_CONTENT();
 	return {
 		content,
 		category: DEFAULT_CATEGORY,

@@ -1,9 +1,6 @@
 import { CONFIG } from "@web-memo/env";
 import { STORAGE_KEYS } from "@web-memo/shared/modules/chrome-storage";
-import {
-	type Category,
-	ExtensionBridge,
-} from "@web-memo/shared/modules/extension-bridge";
+import { type Category, bridge } from "@web-memo/shared/modules/extension-bridge";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { processStreamingResponse } from "../useSummary/util";
 
@@ -106,8 +103,7 @@ export default function useChat(): UseChatReturn {
 					content: msg.content,
 				}));
 
-				const { content: pageContent } =
-					await ExtensionBridge.requestPageContent();
+				const { content: pageContent } = await bridge.request.PAGE_CONTENT();
 
 				const response = await fetch(`${CONFIG.webUrl}/api/openai/chat`, {
 					method: "POST",

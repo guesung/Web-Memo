@@ -1,8 +1,5 @@
-import type { Category } from "./constant";
-
 export interface PageContent {
 	content: string;
-	category: Category;
 }
 
 export interface CreateMemoPayload {

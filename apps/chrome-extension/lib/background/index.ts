@@ -6,7 +6,7 @@ import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
-import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { MemoService } from "@web-memo/shared/utils";
 import { getSupabaseClient, I18n, Tab } from "@web-memo/shared/utils/extension";
 
@@ -90,23 +90,31 @@ setUninstallUrl();
 
 chrome.tabs.onActivated.addListener(async () => {
 	// 활성화된 탭이 변경되었을 때 사이드 패널을 업데이트한다.
-	ExtensionBridge.requestUpdateSidePanel();
+	bridge.request.UPDATE_SIDE_PANEL();
 });
 chrome.tabs.onUpdated.addListener(async () => {
 	// 페이지를 이동했을 때 사이드 패널을 업데이트한다.
-	ExtensionBridge.requestUpdateSidePanel();
+	bridge.request.UPDATE_SIDE_PANEL();
 });
 
 // content-ui에서 메시지를 전달받아 사이드 패널을 연다.
-ExtensionBridge.responseOpenSidePanel();
+bridge.handle.OPEN_SIDE_PANEL((_, sender) => {
+	if (!sender.tab?.windowId) return;
+	chrome.sidePanel.open({ windowId: sender.tab.windowId });
+});
 
-ExtensionBridge.responseGetExtensionManifest();
+bridge.handle.GET_EXTENSION_MANIFEST((_, __, sendResponse) => {
+	sendResponse(chrome.runtime.getManifest());
+});
 
-ExtensionBridge.responseGetTabs();
+bridge.handle.GET_TABS(async (_, __, sendResponse) => {
+	const tabs = await Tab.get();
+	sendResponse(tabs);
+});
 
 // content-ui에서 메모 생성 요청을 받아 처리한다.
 // 기존 메모가 있으면 내용을 추가하고, 없으면 새로 생성한다.
-ExtensionBridge.responseCreateMemo(async (payload, _sender, sendResponse) => {
+bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
 	try {
 		const supabaseClient = await getSupabaseClient();
 		const memoService = new MemoService(supabaseClient);
@@ -115,7 +123,7 @@ ExtensionBridge.responseCreateMemo(async (payload, _sender, sendResponse) => {
 
 		if (existingMemo.error) {
 			sendResponse({ success: false, error: existingMemo.error.message });
-			return true;
+			return;
 		}
 
 		if (existingMemo.data) {
@@ -145,5 +153,4 @@ ExtensionBridge.responseCreateMemo(async (payload, _sender, sendResponse) => {
 			error: error instanceof Error ? error.message : "메모 생성에 실패했습니다.",
 		});
 	}
-	return true;
 });

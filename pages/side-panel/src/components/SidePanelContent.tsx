@@ -19,7 +19,7 @@ export default function SidePanelContent() {
 	return (
 		<main
 			ref={containerRef}
-			className="prose prose-sm bg-background text-foreground relative flex h-lvh flex-col px-4 max-w-none overflow-x-hidden"
+			className="bg-background text-foreground relative flex h-lvh flex-col px-4 max-w-none overflow-x-hidden"
 		>
 			<Header />
 			<TabSection tabHeight={tabHeight} />

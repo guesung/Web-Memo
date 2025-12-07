@@ -13,7 +13,10 @@ export default function SummaryContent() {
 	if (errorMessage)
 		return <p className="whitespace-pre-wrap">{errorMessage}</p>;
 	return (
-		<Markdown remarkPlugins={[remarkGfm]} className="markdown">
+		<Markdown
+			remarkPlugins={[remarkGfm]}
+			className="markdown prose prose-sm text-foreground dark:text-white pt-4"
+		>
 			{summary}
 		</Markdown>
 	);

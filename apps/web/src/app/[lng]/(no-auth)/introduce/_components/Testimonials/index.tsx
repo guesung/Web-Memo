@@ -5,7 +5,7 @@ import useTranslation from "@src/modules/i18n/util.client";
 import { motion } from "framer-motion";
 import { Quote, Star } from "lucide-react";
 
-interface TestimonialsProps extends LanguageType {}
+export interface TestimonialsProps extends LanguageType {}
 
 export default function Testimonials({ lng }: TestimonialsProps) {
 	const { t } = useTranslation(lng);

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-interface FeaturesProps extends LanguageType {}
+export interface FeaturesProps extends LanguageType {}
 
 export default function Features({ lng }: FeaturesProps) {
 	const { t } = useTranslation(lng);

@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { Mail, Youtube, MessageCircle, Chrome, Heart } from "lucide-react";
 import Link from "next/link";
 
-interface FooterProps extends LanguageType {}
+export interface FooterProps extends LanguageType {}
 
 export default function Footer({ lng }: FooterProps) {
 	const { t } = useTranslation(lng);

@@ -8,7 +8,7 @@ import { ArrowRight, Check, Chrome, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-interface FinalCTAProps extends LanguageType {}
+export interface FinalCTAProps extends LanguageType {}
 
 export default function FinalCTA({ lng }: FinalCTAProps) {
 	const { t } = useTranslation(lng);

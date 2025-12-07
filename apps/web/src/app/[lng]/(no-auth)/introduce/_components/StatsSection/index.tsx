@@ -6,7 +6,7 @@ import { motion, useInView } from "framer-motion";
 import { Users, FileText, Star, Clock } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 
-interface StatsSectionProps extends LanguageType {
+export interface StatsSectionProps extends LanguageType {
 	stats?: {
 		userCount: number;
 		memoCount: number;

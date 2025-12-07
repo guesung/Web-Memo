@@ -14,7 +14,9 @@ import { HelpCircle } from "lucide-react";
 import { FAQ_ITEMS } from "../../_constants";
 import FaqJsonLD from "./FaqJsonLD";
 
-export default function QuestionAndAnswer({ lng }: LanguageType) {
+export interface QuestionAndAnswerProps extends LanguageType {}
+
+export default function QuestionAndAnswer({ lng }: QuestionAndAnswerProps) {
 	const { t } = useTranslation(lng);
 
 	return (

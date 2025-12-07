@@ -12,7 +12,7 @@ import {
 
 import HowToJsonLD from "./HowToJsonLD";
 
-interface HowItWorksProps extends LanguageType {}
+export interface HowItWorksProps extends LanguageType {}
 
 export default function HowItWorks({ lng }: HowItWorksProps) {
 	const { t } = useTranslation(lng);

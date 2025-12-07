@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { GraduationCap, Briefcase, Target, Lightbulb, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-interface UseCasesProps extends LanguageType {}
+export interface UseCasesProps extends LanguageType {}
 
 export default function UseCases({ lng }: UseCasesProps) {
 	const { t } = useTranslation(lng);

@@ -14,7 +14,7 @@ import {
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 
-interface InteractiveDemoProps extends LanguageType {}
+export interface InteractiveDemoProps extends LanguageType {}
 
 export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 	const { t } = useTranslation(lng);

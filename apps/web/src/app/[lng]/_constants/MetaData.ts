@@ -30,6 +30,7 @@ export const metadataKorean: Metadata = {
 	alternates: {
 		canonical: "https://webmemo.site/ko",
 		languages: {
+			"x-default": "https://webmemo.site/en",
 			ko: "https://webmemo.site/ko",
 			en: "https://webmemo.site/en",
 		},
@@ -38,7 +39,16 @@ export const metadataKorean: Metadata = {
 		title: "웹 메모",
 		description:
 			"웹 메모는 웹페이지를 읽으며 생각을 즉시 기록할 수 있는 서비스입니다. 아티클을 읽다가 떠오른 아이디어나 중요한 내용을 사이드 패널에서 바로 메모하고 체계적으로 관리하세요.",
-		images: ["/og-image.png"],
+		url: "https://webmemo.site/ko",
+		images: [
+			{
+				url: "/og-image.png",
+				width: 1200,
+				height: 630,
+				alt: "웹 메모 - 웹페이지를 읽으며 메모하세요",
+				type: "image/png",
+			},
+		],
 		siteName: "웹 메모",
 		type: "website",
 		locale: "ko_KR",
@@ -49,7 +59,14 @@ export const metadataKorean: Metadata = {
 		title: "웹 메모",
 		description:
 			"웹 메모는 웹페이지를 읽으며 생각을 즉시 기록할 수 있는 서비스입니다. 아티클을 읽다가 떠오른 아이디어나 중요한 내용을 사이드 패널에서 바로 메모하고 체계적으로 관리하세요.",
-		images: ["/og-image.png"],
+		images: [
+			{
+				url: "/og-image.png",
+				width: 1200,
+				height: 630,
+				alt: "웹 메모 - 웹페이지를 읽으며 메모하세요",
+			},
+		],
 	},
 };
 
@@ -67,6 +84,7 @@ export const metadataEnglish: Metadata = {
 	alternates: {
 		canonical: "https://webmemo.site/en",
 		languages: {
+			"x-default": "https://webmemo.site/en",
 			ko: "https://webmemo.site/ko",
 			en: "https://webmemo.site/en",
 		},
@@ -75,7 +93,16 @@ export const metadataEnglish: Metadata = {
 		title: "Web Memo",
 		description:
 			"Web Memo is a service that lets you instantly record your thoughts while reading web pages. Save ideas and important content that come to mind while reading articles through the side panel and manage them systematically.",
-		images: ["/og-image.png"],
+		url: "https://webmemo.site/en",
+		images: [
+			{
+				url: "/og-image.png",
+				width: 1200,
+				height: 630,
+				alt: "Web Memo - Take notes while reading web pages",
+				type: "image/png",
+			},
+		],
 		siteName: "Web Memo",
 		type: "website",
 		locale: "en_US",
@@ -86,6 +113,13 @@ export const metadataEnglish: Metadata = {
 		title: "Web Memo",
 		description:
 			"Web Memo is a service that lets you instantly record your thoughts while reading web pages. Save ideas and important content that come to mind while reading articles through the side panel and manage them systematically.",
-		images: ["/og-image.png"],
+		images: [
+			{
+				url: "/og-image.png",
+				width: 1200,
+				height: 630,
+				alt: "Web Memo - Take notes while reading web pages",
+			},
+		],
 	},
 };

@@ -8,6 +8,7 @@ import { QUERY_KEY } from "@web-memo/shared/constants";
 import type { SearchParamsType } from "@web-memo/shared/modules/search-params";
 import { MemoService } from "@web-memo/shared/utils";
 import { SidebarTrigger } from "@web-memo/ui";
+import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import {
@@ -19,6 +20,19 @@ import {
 
 interface PageProps extends LanguageParams {
 	searchParams: SearchParamsType;
+}
+
+export async function generateMetadata({
+	params,
+}: LanguageParams): Promise<Metadata> {
+	const isKorean = params.lng === "ko";
+	return {
+		title: isKorean ? "내 메모 | 웹 메모" : "My Memos | Web Memo",
+		robots: {
+			index: false,
+			follow: false,
+		},
+	};
 }
 
 export default async function Page({ params: { lng } }: PageProps) {

@@ -19,6 +19,7 @@ export const PATHS = {
 	featuresSaveArticles: "/features/save-articles",
 	useCasesResearch: "/use-cases/research",
 	useCasesLearning: "/use-cases/learning",
+	uninstall: "/uninstall",
 };
 
 export const NEED_AUTH_PAGES = [

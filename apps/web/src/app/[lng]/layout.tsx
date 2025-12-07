@@ -23,7 +23,7 @@ export default function RootLayout({
 	params: { lng },
 }: RootLayoutProps) {
 	return (
-		<div lang={lng} dir={dir(lng)} className="h-screen">
+		<div dir={dir(lng)} className="h-screen">
 			<JsonLD lng={lng} />
 			<ThemeProvider>
 				<QueryProvider lng={lng}>

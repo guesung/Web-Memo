@@ -14,13 +14,17 @@ interface LayoutProps extends PropsWithChildren {}
 export const viewport: Viewport = {
 	width: "device-width",
 	initialScale: 1,
-	maximumScale: 1,
-	userScalable: false,
+	maximumScale: 5,
+	userScalable: true,
+	themeColor: [
+		{ media: "(prefers-color-scheme: light)", color: "#ffffff" },
+		{ media: "(prefers-color-scheme: dark)", color: "#0f0f23" },
+	],
 };
 
 export default function Layout({ children }: LayoutProps) {
 	return (
-		<html lang="ko" suppressHydrationWarning className={pretendard.variable}>
+		<html suppressHydrationWarning className={pretendard.variable}>
 			<body className={pretendard.className}>
 				{children}
 

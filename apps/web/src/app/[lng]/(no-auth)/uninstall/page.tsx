@@ -14,6 +14,39 @@ export async function generateMetadata({ params }: LanguageParams) {
 		description: isKorean
 			? "소중한 의견을 남겨주시면 스타벅스 기프티콘을 드립니다"
 			: "Share your feedback and receive a Starbucks gift card",
+		openGraph: {
+			title: isKorean
+				? "웹 메모를 삭제하셨군요 | 피드백을 남겨주세요"
+				: "You uninstalled Web Memo | Share your feedback",
+			description: isKorean
+				? "소중한 의견을 남겨주시면 스타벅스 기프티콘을 드립니다"
+				: "Share your feedback and receive a Starbucks gift card",
+			images: [
+				{
+					url: "/og-image.png",
+					width: 1200,
+					height: 630,
+					alt: isKorean ? "웹 메모 피드백" : "Web Memo Feedback",
+				},
+			],
+		},
+		twitter: {
+			card: "summary_large_image",
+			title: isKorean
+				? "웹 메모를 삭제하셨군요 | 피드백을 남겨주세요"
+				: "You uninstalled Web Memo | Share your feedback",
+			description: isKorean
+				? "소중한 의견을 남겨주시면 스타벅스 기프티콘을 드립니다"
+				: "Share your feedback and receive a Starbucks gift card",
+			images: [
+				{
+					url: "/og-image.png",
+					width: 1200,
+					height: 630,
+					alt: isKorean ? "웹 메모 피드백" : "Web Memo Feedback",
+				},
+			],
+		},
 	};
 }
 

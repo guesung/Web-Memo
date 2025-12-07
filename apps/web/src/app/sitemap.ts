@@ -30,12 +30,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
 		},
 		{
 			path: PATHS.useCasesResearch,
-			priority: 0.7,
+			priority: 0.8,
 			changeFrequency: "monthly" as const,
 		},
 		{
 			path: PATHS.useCasesLearning,
-			priority: 0.7,
+			priority: 0.8,
+			changeFrequency: "monthly" as const,
+		},
+		{
+			path: PATHS.uninstall,
+			priority: 0.5,
 			changeFrequency: "monthly" as const,
 		},
 	];

@@ -1,7 +1,7 @@
-export const getCursorPosition = (
+export function getCursorPosition(
 	textarea: HTMLTextAreaElement,
 	position: number,
-) => {
+) {
 	const div = document.createElement("div");
 	div.style.cssText = window.getComputedStyle(textarea, null).cssText;
 	div.style.height = "auto";
@@ -30,4 +30,8 @@ export const getCursorPosition = (
 		left: cursorLeft,
 		top: cursorTop,
 	};
-};
+}
+
+export function adjustTextareaHeight(textarea: HTMLTextAreaElement) {
+	textarea.style.height = `${textarea.scrollHeight}px`;
+}

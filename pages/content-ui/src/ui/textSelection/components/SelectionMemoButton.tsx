@@ -1,4 +1,4 @@
-import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { Check, Loader2, X } from "lucide-react";
 import { useState } from "react";
 import Logo from "../../../../public/logo.svg";
@@ -28,7 +28,7 @@ export default function SelectionMemoButton({
 				(document.querySelector('link[rel~="icon"]') as HTMLLinkElement)
 					?.href || "";
 
-			await ExtensionBridge.requestCreateMemo({
+			await bridge.request.CREATE_MEMO({
 				memo: selectedText,
 				url,
 				title,
@@ -40,7 +40,7 @@ export default function SelectionMemoButton({
 			setState("success");
 
 			setTimeout(() => {
-				ExtensionBridge.requestRefetchTheMemosFromExtension();
+				bridge.request.REFETCH_THE_MEMO_LIST_FROM_EXTENSION();
 			}, 1000);
 		} catch (error) {
 			console.error("Failed to create memo:", error);

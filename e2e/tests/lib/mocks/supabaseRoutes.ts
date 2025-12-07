@@ -1,4 +1,5 @@
 import type { Page, Route } from "@playwright/test";
+import { SUPABASE } from "@web-memo/shared/constants";
 import { createMockMemo } from "./mockData";
 
 interface MockMemo {
@@ -120,7 +121,7 @@ async function handleDelete(route: Route, url: URL, store: MockSupabaseStore) {
 }
 
 export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
-	await page.route("**/rest/v1/memo**", async (route: Route) => {
+	await page.route(`${SUPABASE.url}/rest/v1/memo**`, async (route: Route) => {
 		const request = route.request();
 		const method = request.method();
 		const url = new URL(request.url());

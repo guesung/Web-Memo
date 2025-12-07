@@ -1,3 +1,4 @@
+import { EXTENSION } from "../../../constants";
 import type {
 	BRIDGE_MESSAGE_TYPE,
 	BridgeRequest,
@@ -12,6 +13,24 @@ export class Runtime {
 			type,
 			payload,
 		});
+	}
+
+	static sendMessageToExtension<TResponse>(
+		type: BRIDGE_MESSAGE_TYPE,
+	): Promise<TResponse>;
+	static sendMessageToExtension<TResponse>(
+		type: BRIDGE_MESSAGE_TYPE,
+		callback: (response: TResponse) => void,
+	): void;
+	static sendMessageToExtension<TResponse>(
+		type: BRIDGE_MESSAGE_TYPE,
+		callback?: (response: TResponse) => void,
+	): Promise<TResponse> | void {
+		if (callback) {
+			chrome.runtime.sendMessage(EXTENSION.id, { type }, callback);
+		} else {
+			return chrome.runtime.sendMessage(EXTENSION.id, { type });
+		}
 	}
 
 	static onMessage<TPayload, TResponse>(

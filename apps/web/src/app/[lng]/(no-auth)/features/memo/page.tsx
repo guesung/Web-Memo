@@ -1,3 +1,4 @@
+import { FeatureJsonLD } from "@src/app/_components";
 import { HeaderMargin } from "@src/components/Header";
 import type { LanguageParams } from "@src/modules/i18n";
 
@@ -13,6 +14,7 @@ interface MemoPageProps extends LanguageParams {}
 export default async function MemoPage({ params: { lng } }: MemoPageProps) {
 	return (
 		<div className="min-h-screen overflow-hidden">
+			<FeatureJsonLD lng={lng} feature="memo" />
 			<HeaderMargin />
 			<Hero lng={lng} />
 			<Benefits lng={lng} />

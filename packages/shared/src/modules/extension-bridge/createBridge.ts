@@ -48,6 +48,10 @@ export function defineMessage<TPayload = void, TResponse = void>(
 	return { direction } as MessageDefinition<TPayload, TResponse>;
 }
 
+function isChromeExtensionEnvironment(): boolean {
+	return typeof chrome !== "undefined" && !!chrome.runtime;
+}
+
 export function createBridge<
 	T extends Record<string, MessageDefinition<unknown, unknown>>,
 >(schema: T): BridgeAPI<T> {
@@ -60,6 +64,10 @@ export function createBridge<
 
 		// Request 함수 생성
 		(request as Record<string, unknown>)[key] = ((payload?: unknown) => {
+			if (!isChromeExtensionEnvironment()) {
+				return Promise.resolve(undefined);
+			}
+
 			switch (direction) {
 				case "internal":
 					return Runtime.sendMessage(messageType, payload);
@@ -74,6 +82,10 @@ export function createBridge<
 		(handle as Record<string, unknown>)[key] = ((
 			callback: HandleCallback<unknown, unknown>,
 		) => {
+			if (!isChromeExtensionEnvironment()) {
+				return () => {};
+			}
+
 			const wrappedCallback = (
 				_request: { payload?: unknown },
 				sender: chrome.runtime.MessageSender,

@@ -11,7 +11,7 @@ export interface ChatMessage {
 	timestamp: number;
 }
 
-export interface UseChatReturn {
+interface UseChatReturn {
 	messages: ChatMessage[];
 	isLoading: boolean;
 	error: string;

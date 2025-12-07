@@ -1,5 +1,9 @@
 export const UPDATE_LIST = [
 	{
+		date: "2025.12.07",
+		version: "v1.9.6",
+	},
+	{
 		date: "2025.12.05",
 		version: "v1.9.5",
 	},

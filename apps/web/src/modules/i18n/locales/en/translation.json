@@ -50,6 +50,15 @@
 	"updates": {
 		"title": "What's new",
 		"versions": {
+			"v1.9.6": {
+				"title": "Code quality and SEO improvements",
+				"content": [
+					"Upgraded to Node.js 22.17.0",
+					"Centralized page content logic",
+					"Extension architecture refactoring",
+					"SEO structured data improvements"
+				]
+			},
 			"v1.9.5": {
 				"title": "Side panel structure improvements",
 				"content": [

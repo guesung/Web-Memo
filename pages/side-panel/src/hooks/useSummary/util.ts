@@ -10,29 +10,12 @@ import {
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
-import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
-import { checkYoutubeUrl } from "@web-memo/shared/utils";
-import { DEFAULT_CATEGORY, DEFAULT_LANGUAGE } from "./constant";
-
-interface PageContentResult {
-	content: string;
-	category: Category;
-}
+import { DEFAULT_LANGUAGE } from "./constant";
 
 interface GetSystemPromptProps {
 	language: string;
 	category: Category;
 }
-
-export const fetchYoutubeTranscript = async (): Promise<string> => {
-	const result = await ExtensionBridge.requestYoutubeTranscript();
-
-	if (!result.success) {
-		throw new Error(result.error ?? "Failed to extract transcript");
-	}
-
-	return result.transcript;
-};
 
 export const getSummaryPrompt = async (content: string, category: Category) => {
 	const language = await ChromeSyncStorage.get<string>(STORAGE_KEYS.language);
@@ -65,26 +48,6 @@ const getSystemPrompt = async ({
 		(await ChromeSyncStorage.get(STORAGE_KEYS.webPrompts)) ??
 		DEFAULT_PROMPTS.web;
 	return `${webPrompts} ${languagePrompt} ${PROMPT.default}`;
-};
-
-export const getPageContent = async (
-	url: string,
-): Promise<PageContentResult> => {
-	const isYoutube = checkYoutubeUrl(url);
-
-	if (isYoutube) {
-		const transcript = await fetchYoutubeTranscript();
-		return {
-			content: transcript,
-			category: "youtube",
-		};
-	}
-
-	const { content } = await ExtensionBridge.requestPageContent();
-	return {
-		content,
-		category: DEFAULT_CATEGORY,
-	};
 };
 
 export const processStreamingResponse = async (

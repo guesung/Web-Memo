@@ -2,7 +2,7 @@ import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
-import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import {
 	extractYoutubeTranscript,
 	isYoutubePage,
@@ -10,22 +10,43 @@ import {
 	setupTextSelectionHandler,
 } from "./ui";
 
-ExtensionBridge.responsePageContent();
+bridge.handle.PAGE_CONTENT(async (_, __, sendResponse) => {
+	const title = document.title;
+	const favicon = getFavicon();
 
-ExtensionBridge.responseYoutubeTranscript(async () => {
-	if (!isYoutubePage()) {
-		return {
-			success: false,
-			transcript: "",
-			error: "Not a YouTube video page",
-		};
+	if (isYoutubePage()) {
+		try {
+			const result = await extractYoutubeTranscript();
+			sendResponse({
+				content: result.transcript,
+				category: "youtube",
+				title,
+				favicon,
+			});
+		} catch {
+			const content = getContentFromWeb();
+			sendResponse({ content, category: "youtube", title, favicon });
+		}
+	} else {
+		const content = getContentFromWeb();
+		sendResponse({ content, category: "others", title, favicon });
 	}
-	const result = await extractYoutubeTranscript();
-	return {
-		success: result.success,
-		transcript: result.transcript,
-		error: result.error,
-	};
+	return true;
+});
+
+bridge.handle.YOUTUBE_TRANSCRIPT(async (_, __, sendResponse) => {
+	if (!isYoutubePage()) {
+		sendResponse("Not a YouTube video page");
+		return;
+	}
+	try {
+		const result = await extractYoutubeTranscript();
+		sendResponse(result.transcript);
+	} catch (error) {
+		sendResponse(
+			error instanceof Error ? error.message : "Failed to extract transcript",
+		);
+	}
 });
 
 renderOpenSidePanelButton();
@@ -40,3 +61,33 @@ async function initTextSelectionHandler() {
 }
 
 initTextSelectionHandler();
+
+function getContentFromWeb() {
+	const text = document.body.innerText;
+	if (text) return text;
+
+	try {
+		const iframeText =
+			document.querySelector("iframe")?.contentWindow?.document?.body
+				?.innerText;
+		return text + (iframeText ? `\n${iframeText}` : "");
+	} catch {
+		return text;
+	}
+}
+
+function getFavicon(): string {
+	const iconLink =
+		document.querySelector<HTMLLinkElement>('link[rel="icon"]') ??
+		document.querySelector<HTMLLinkElement>('link[rel="shortcut icon"]') ??
+		document.querySelector<HTMLLinkElement>(
+			'link[rel="apple-touch-icon-precomposed"]',
+		) ??
+		document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]');
+
+	if (iconLink?.href) {
+		return iconLink.href;
+	}
+
+	return `${window.location.origin}/favicon.ico`;
+}

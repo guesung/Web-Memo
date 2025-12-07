@@ -160,5 +160,8 @@
 	},
 	"text_selection_description": {
 		"message": "Show memo button when text is selected (refresh required)"
+	},
+	"summary_empty_message": {
+		"message": "Click the refresh button above\nto generate a summary"
 	}
 }

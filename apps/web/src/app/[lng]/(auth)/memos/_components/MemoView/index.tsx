@@ -3,7 +3,7 @@
 import { useGuide } from "@src/modules/guide";
 import type { LanguageType } from "@src/modules/i18n";
 import { useDidMount, useMemosInfiniteQuery } from "@web-memo/shared/hooks";
-import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useFormContext } from "react-hook-form";
@@ -32,7 +32,7 @@ export default function MemoView({ lng }: LanguageType) {
 		});
 
 	useGuide({ lng });
-	useDidMount(() => ExtensionBridge.requestSyncLoginStatus());
+	useDidMount(() => bridge.request.SYNC_LOGIN_STATUS());
 
 	return (
 		<div className="flex w-full flex-col gap-4">

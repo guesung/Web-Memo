@@ -6,7 +6,7 @@ import {
 	useMemoUpsertMutation,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
-import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useCallback, useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -15,25 +15,19 @@ interface UseMemoFormProps {
 	onSaveSuccess?: (memoInput: MemoInput) => void;
 }
 
-interface TabInfo {
-	title: string;
-	favIconUrl: string | undefined;
-	url: string;
-}
-
 export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const { setValue, getValues } = useFormContext<MemoInput>();
 	const { debounce } = useDebounce();
 	const { data: tab } = useTabQuery();
 	const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
-		url: tab.url,
+		url: tab?.url ?? "",
 	});
 	const { mutate: upsertMemo } = useMemoUpsertMutation();
 	const [isSaving, setIsSaving] = useState(false);
 
 	useDidMount(() => {
-		ExtensionBridge.responseRefetchTheMemosFromWeb(refetchMemo);
-		ExtensionBridge.responseRefetchTheMemosFromExtension(refetchMemo);
+		bridge.handle.REFETCH_THE_MEMO_LIST_FROM_WEB(refetchMemo);
+		bridge.handle.REFETCH_THE_MEMO_LIST_FROM_EXTENSION(refetchMemo);
 	});
 
 	useEffect(

@@ -12,9 +12,7 @@ export const useChatContext = () => {
 };
 
 export default function ChatProvider({ children }: PropsWithChildren) {
-	const chatProps = useChat();
-
 	return (
-		<ChatContext.Provider value={chatProps}>{children}</ChatContext.Provider>
+		<ChatContext.Provider value={useChat()}>{children}</ChatContext.Provider>
 	);
 }

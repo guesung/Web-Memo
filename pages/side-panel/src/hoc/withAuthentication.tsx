@@ -1,6 +1,6 @@
 import { LoginSection } from "@src/components";
 import { useDidMount, useSupabaseUserQuery } from "@web-memo/shared/hooks";
-import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { bridge } from "@web-memo/shared/modules/extension-bridge";
 
 export default function withAuthentication(
 	WrappedComponent: () => JSX.Element,
@@ -9,7 +9,7 @@ export default function withAuthentication(
 		const { user, refetchSupabaseClient, refetch } = useSupabaseUserQuery();
 
 		useDidMount(() => {
-			ExtensionBridge.responseSyncLoginStatus(async () => {
+			bridge.handle.SYNC_LOGIN_STATUS(async () => {
 				await refetchSupabaseClient();
 				await refetch();
 			});

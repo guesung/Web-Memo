@@ -1,24 +1,7 @@
-interface MockMemo {
-	id: number;
-	user_id: string;
-	url: string;
-	title: string;
-	memo: string;
-	favIconUrl: string | null;
-	isWish: boolean | null;
-	category_id: number | null;
-	created_at: string | null;
-	updated_at: string | null;
-}
+import type { Database } from "@aspect/shared";
 
-interface MockCategory {
-	id: number;
-	user_id: string | null;
-	name: string;
-	color: string | null;
-	memo_count: number | null;
-	created_at: string;
-}
+type MockMemo = Database["memo"]["Tables"]["memo"]["Row"];
+type MockCategory = Database["memo"]["Tables"]["category"]["Row"];
 
 let memoIdCounter = 1;
 let categoryIdCounter = 1;

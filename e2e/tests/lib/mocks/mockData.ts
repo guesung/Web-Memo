@@ -1,4 +1,4 @@
-import type { Database } from "@aspect/shared";
+import type { Database } from "@web-memo/shared/types";
 
 type MockMemo = Database["memo"]["Tables"]["memo"]["Row"];
 type MockCategory = Database["memo"]["Tables"]["category"]["Row"];

@@ -1,4 +1,5 @@
 export const SUPABASE = {
+	url: "https://czwtqukymcqoberdoltq.supabase.co",
 	authToken: "sb-czwtqukymcqoberdoltq-auth-token",
 	testEmail: "test@test.com",
 	testPassword: "abcd1234",

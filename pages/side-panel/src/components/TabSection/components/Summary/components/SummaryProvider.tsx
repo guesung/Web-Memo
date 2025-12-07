@@ -1,7 +1,6 @@
 import { useSummary } from "@src/hooks";
 import type { PropsWithChildren } from "react";
 import { createContext, useContext } from "react";
-import { usePageContentContext } from "../../PageContentProvider";
 
 const SummaryContext = createContext<ReturnType<typeof useSummary> | null>(
 	null,
@@ -17,13 +16,7 @@ export const useSummaryContext = () => {
 };
 
 export default function SummaryProvider({ children }: PropsWithChildren) {
-	const { content, category, isLoading } = usePageContentContext();
-
-	const useSummaryProps = useSummary({
-		content,
-		category,
-		isPageContentLoading: isLoading,
-	});
+	const useSummaryProps = useSummary();
 
 	return (
 		<SummaryContext.Provider value={useSummaryProps}>

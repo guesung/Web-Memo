@@ -2,6 +2,7 @@ import { CONFIG } from "@web-memo/env";
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { useCallback, useState } from "react";
+import { usePageContentContext } from "../../components/TabSection/components";
 import { getSummaryPrompt, processStreamingResponse } from "./util";
 
 interface UseSummaryProps {
@@ -17,14 +18,15 @@ interface UseSummaryReturn {
 	generateSummary: () => Promise<void>;
 }
 
-export default function useSummary({
-	content,
-	category,
-	isPageContentLoading,
-}: UseSummaryProps): UseSummaryReturn {
+export default function useSummary(): UseSummaryReturn {
 	const [summary, setSummary] = useState("");
 	const [errorMessage, setErrorMessage] = useState("");
 	const [isGenerating, setIsGenerating] = useState(false);
+	const {
+		content,
+		category,
+		isLoading: isPageContentLoading,
+	} = usePageContentContext();
 
 	const generateSummary = useCallback(async () => {
 		setSummary("");

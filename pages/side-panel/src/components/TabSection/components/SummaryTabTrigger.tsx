@@ -20,6 +20,7 @@ export default function SummaryTabTrigger() {
 				disabled={isSummaryLoading}
 				onClick={(e) => {
 					e.stopPropagation();
+
 					if (!isSummaryLoading) generateSummary();
 				}}
 			>

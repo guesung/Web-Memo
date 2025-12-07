@@ -1,5 +1,5 @@
 import { useDidMount } from "@web-memo/shared/hooks";
-import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { useState } from "react";
 
 export type ManifestType = chrome.runtime.Manifest | null | "NOT_INSTALLED";
@@ -9,9 +9,8 @@ export default function useGetExtensionManifest() {
 
 	useDidMount(async () => {
 		try {
-			await ExtensionBridge.requestGetExtensionManifest((manifest) =>
-				setManifest(manifest),
-			);
+			const result = await bridge.request.GET_EXTENSION_MANIFEST();
+			setManifest(result);
 		} catch {
 			setManifest("NOT_INSTALLED");
 		}

@@ -2,7 +2,7 @@ import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
-import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import {
 	extractYoutubeTranscript,
 	isYoutubePage,
@@ -10,22 +10,35 @@ import {
 	setupTextSelectionHandler,
 } from "./ui";
 
-ExtensionBridge.responsePageContent();
+bridge.handle.PAGE_CONTENT((_, __, sendResponse) => {
+	const content = getContentFromWeb();
+	sendResponse({ content });
+	return true;
+});
 
-ExtensionBridge.responseYoutubeTranscript(async () => {
+bridge.handle.YOUTUBE_TRANSCRIPT(async (_, __, sendResponse) => {
 	if (!isYoutubePage()) {
-		return {
+		sendResponse({
 			success: false,
 			transcript: "",
 			error: "Not a YouTube video page",
-		};
+		});
+		return;
 	}
-	const result = await extractYoutubeTranscript();
-	return {
-		success: result.success,
-		transcript: result.transcript,
-		error: result.error,
-	};
+	try {
+		const result = await extractYoutubeTranscript();
+		sendResponse({
+			success: result.success,
+			transcript: result.transcript,
+			error: result.error,
+		});
+	} catch (error) {
+		sendResponse({
+			success: false,
+			transcript: "",
+			error: error instanceof Error ? error.message : "Failed to extract transcript",
+		});
+	}
 });
 
 renderOpenSidePanelButton();
@@ -40,3 +53,17 @@ async function initTextSelectionHandler() {
 }
 
 initTextSelectionHandler();
+
+function getContentFromWeb() {
+	const text = document.body.innerText;
+	if (text) return text;
+
+	try {
+		const iframeText =
+			document.querySelector("iframe")?.contentWindow?.document?.body
+				?.innerText;
+		return text + (iframeText ? `\n${iframeText}` : "");
+	} catch {
+		return text;
+	}
+}

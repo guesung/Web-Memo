@@ -3,7 +3,7 @@ import {
 	AnalyticsUserTracking,
 	analytics,
 } from "@web-memo/shared/modules/analytics";
-import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { ErrorBoundary, Toaster } from "@web-memo/ui";
 import { Suspense } from "react";
 import {
@@ -20,7 +20,9 @@ export default function SidePanel() {
 		useResizablePanel();
 
 	useDidMount(() => {
-		ExtensionBridge.responseGetSidePanelOpen();
+		bridge.handle.GET_SIDE_PANEL_OPEN((_, __, sendResponse) => {
+			sendResponse(true);
+		});
 		analytics.trackSidePanelOpen();
 		analytics.trackPageView("Side Panel", window.location.href);
 	});

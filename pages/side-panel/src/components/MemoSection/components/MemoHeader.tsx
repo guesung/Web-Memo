@@ -1,6 +1,6 @@
 import { getMemoUrl } from "@src/utils";
 import { useDidMount, useMemoQuery, useTabQuery } from "@web-memo/shared/hooks";
-import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import { Button, ErrorBoundary, Skeleton } from "@web-memo/ui";
 import { ExternalLinkIcon } from "lucide-react";
@@ -58,7 +58,7 @@ function TabTitle() {
 	const { data: tab, refetch: refetchTab } = useTabQuery();
 
 	useDidMount(() =>
-		ExtensionBridge.responseUpdateSidePanel(() => {
+		bridge.handle.UPDATE_SIDE_PANEL(() => {
 			refetchTab();
 		}),
 	);

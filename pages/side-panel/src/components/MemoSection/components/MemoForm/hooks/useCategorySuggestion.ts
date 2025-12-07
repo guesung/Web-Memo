@@ -7,7 +7,7 @@ import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
-import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
+import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -110,7 +110,7 @@ export function useCategorySuggestion({
 				// Get page content
 				let pageContent = "";
 				try {
-					const { content } = await ExtensionBridge.requestPageContent();
+					const { content } = await bridge.request.PAGE_CONTENT();
 					pageContent = content || "";
 				} catch {
 					// Silent fail - use empty content

@@ -12,12 +12,14 @@ import { motion } from "framer-motion";
 import { HelpCircle } from "lucide-react";
 
 import { FAQ_ITEMS } from "../../_constants";
+import FaqJsonLD from "./FaqJsonLD";
 
 export default function QuestionAndAnswer({ lng }: LanguageType) {
 	const { t } = useTranslation(lng);
 
 	return (
 		<section className="py-20 bg-gray-50 dark:bg-gray-900/50">
+			<FaqJsonLD lng={lng} />
 			<div className="mx-auto max-w-4xl px-4">
 				{/* Section Header */}
 				<motion.div

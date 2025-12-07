@@ -29,7 +29,7 @@ export default function SummaryContent() {
 	return (
 		<Markdown
 			remarkPlugins={[remarkGfm]}
-			className="markdown pt-4 prose prose-sm"
+			className="markdown pt-4 prose prose-sm dark:prose-invert text-foreground"
 		>
 			{summary}
 		</Markdown>

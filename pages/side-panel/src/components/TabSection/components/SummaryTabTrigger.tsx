@@ -15,6 +15,7 @@ export default function SummaryTabTrigger() {
 			<CategoryIcon size={14} />
 			{I18n.get("summary")}
 			<span
+				// biome-ignore lint/a11y/useSemanticElements: 트리거 버튼 안의 새로고침 버튼
 				role="button"
 				tabIndex={0}
 				className="ml-1 p-0.5 rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"

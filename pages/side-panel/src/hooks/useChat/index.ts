@@ -1,7 +1,7 @@
 import { CONFIG } from "@web-memo/env";
 import { STORAGE_KEYS } from "@web-memo/shared/modules/chrome-storage";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { usePageContentContext } from "../../components/TabSection/components";
+import { usePageContentContext } from "../../components/PageContentProvider";
 import { processStreamingResponse } from "../useSummary/util";
 
 export interface ChatMessage {

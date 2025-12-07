@@ -1,10 +1,15 @@
 import fs from "node:fs";
 
 import deepmerge from "deepmerge";
+import { CONFIG } from "@web-memo/env";
+
+import {
+	getExternallyConnectableMatches,
+	getManifestKey,
+	getOAuth2ClientId,
+} from "./lib/manifestConfig.js";
 
 const packageJson = JSON.parse(fs.readFileSync("../../package.json", "utf8"));
-
-const isFirefox = process.env.__FIREFOX__ === "true";
 
 const sidePanelConfig = {
 	side_panel: {
@@ -32,7 +37,7 @@ const manifest = deepmerge(
 			type: "module",
 		},
 		externally_connectable: {
-			matches: ["http://localhost:3000/*", "https://*.webmemo.site/*"],
+			matches: getExternallyConnectableMatches(),
 		},
 		action: {
 			default_popup: "popup/index.html",
@@ -50,7 +55,7 @@ const manifest = deepmerge(
 			},
 			{
 				matches: ["http://*/*", "https://*/*", "<all_urls>"],
-				css: ["content.css"], // public folder
+				css: ["content.css"],
 			},
 		],
 		web_accessible_resources: [
@@ -72,14 +77,13 @@ const manifest = deepmerge(
 				suggested_key: "Alt+S",
 			},
 		},
-		key: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAob5nrfpKAihURRka74OiALrnMN9aHytr7Ik7vGzbtoVrc6xecQYj+fw1qHfax0gwQi4bql0/Ah3Zb2u7zPmPPvoPStgittQUgg5IVxJIij1cIbRgY+MvQh3z3YU27lA4zANOauhb7Q8Z9ocDr9OoZqX0rBMk9zXSk/UlgDZhRkMuyG8R1DSVUe0qFSIwKFQFMDWp1VmgMR8p9htrhGoOE8kIPxUxKHiVOHw2Dd+u5jASk462HcS7OptLpfAIZsgk/enj0LumPzjANu062ZUBbTUHUzWUL9540UTI6slfuvcjwRKLAtOpg8FN3yaNvCZKOO5Ot9Qy23zZ4LoItHt+TwIDAQAB",
+		key: getManifestKey(),
 		oauth2: {
-			client_id:
-				"541718063018-1or10fljnf26bg8jgd028t509k22ejfi.apps.googleusercontent.com",
+			client_id: getOAuth2ClientId(),
 			scopes: ["openid", "email", "profile"],
 		},
 	},
-	!isFirefox && sidePanelConfig,
+	!CONFIG.isFirefox && sidePanelConfig,
 );
 
 export default manifest;

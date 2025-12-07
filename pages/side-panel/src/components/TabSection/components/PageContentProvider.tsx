@@ -1,7 +1,5 @@
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
-import { ExtensionBridge } from "@web-memo/shared/modules/extension-bridge";
-import { checkYoutubeUrl } from "@web-memo/shared/utils";
-import { Tab } from "@web-memo/shared/utils/extension";
+import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import type { PropsWithChildren } from "react";
 import { createContext, useCallback, useContext, useState } from "react";
 
@@ -36,36 +34,6 @@ export function usePageContentContext() {
 	return context;
 }
 
-async function fetchYoutubeTranscript(): Promise<string> {
-	const result = await ExtensionBridge.requestYoutubeTranscript();
-
-	if (!result.success) {
-		throw new Error(result.error ?? "Failed to extract transcript");
-	}
-
-	return result.transcript;
-}
-
-async function getPageContent(
-	url: string,
-): Promise<{ content: string; category: Category }> {
-	const isYoutube = checkYoutubeUrl(url);
-
-	if (isYoutube) {
-		const transcript = await fetchYoutubeTranscript();
-		return {
-			content: transcript,
-			category: "youtube",
-		};
-	}
-
-	const { content } = await ExtensionBridge.requestPageContent();
-	return {
-		content,
-		category: "others",
-	};
-}
-
 export default function PageContentProvider({ children }: PropsWithChildren) {
 	const [state, setState] = useState<PageContentState>(initialState);
 
@@ -81,12 +49,7 @@ export default function PageContentProvider({ children }: PropsWithChildren) {
 		}));
 
 		try {
-			const tabs = await Tab.get();
-			if (!tabs?.url) {
-				throw new Error("탭 URL을 가져올 수 없습니다.");
-			}
-
-			const { content, category } = await getPageContent(tabs.url);
+			const { content, category } = await bridge.request.PAGE_CONTENT();
 
 			setState({
 				content,

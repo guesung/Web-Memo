@@ -1,3 +1,10 @@
+import type { Category } from "./constant";
+
+export interface PageContentResponse {
+	content: string;
+	category: Category;
+}
+
 export interface PageContent {
 	content: string;
 }

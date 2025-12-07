@@ -5,7 +5,7 @@ import { usePageContentContext } from "./PageContentProvider";
 import { useSummaryContext } from "./Summary/components";
 
 export default function SummaryTabTrigger() {
-	const { isSummaryLoading, refetchSummary } = useSummaryContext();
+	const { isSummaryLoading, generateSummary } = useSummaryContext();
 	const { category } = usePageContentContext();
 
 	const CategoryIcon = category === "youtube" ? Youtube : GlobeIcon;
@@ -20,7 +20,7 @@ export default function SummaryTabTrigger() {
 				disabled={isSummaryLoading}
 				onClick={(e) => {
 					e.stopPropagation();
-					if (!isSummaryLoading) refetchSummary();
+					if (!isSummaryLoading) generateSummary();
 				}}
 			>
 				{isSummaryLoading ? (

@@ -17,14 +17,12 @@ export const useSummaryContext = () => {
 };
 
 export default function SummaryProvider({ children }: PropsWithChildren) {
-	const { content, category, isLoading, fetchPageContent } =
-		usePageContentContext();
+	const { content, category, isLoading } = usePageContentContext();
 
 	const useSummaryProps = useSummary({
 		content,
 		category,
 		isPageContentLoading: isLoading,
-		fetchPageContent,
 	});
 
 	return (

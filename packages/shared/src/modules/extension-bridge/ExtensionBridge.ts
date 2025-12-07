@@ -1,4 +1,3 @@
-import { EXTENSION } from "../../constants";
 import { Runtime, Tab } from "../../utils/extension";
 import { BRIDGE_MESSAGE_TYPES } from "./constant";
 import type {
@@ -10,9 +9,8 @@ import type {
 
 export default class ExtensionBridge {
 	static requestGetSidePanelOpen(callbackFn: () => void) {
-		chrome.runtime.sendMessage(
-			EXTENSION.id,
-			{ type: BRIDGE_MESSAGE_TYPES.GET_SIDE_PANEL_OPEN },
+		Runtime.sendMessageToExtension(
+			BRIDGE_MESSAGE_TYPES.GET_SIDE_PANEL_OPEN,
 			callbackFn,
 		);
 	}
@@ -128,9 +126,9 @@ export default class ExtensionBridge {
 	}
 
 	static async requestRefetchTheMemosFromWeb() {
-		return chrome.runtime.sendMessage(EXTENSION.id, {
-			type: BRIDGE_MESSAGE_TYPES.REFETCH_THE_MEMO_LIST_FROM_WEB,
-		});
+		return Runtime.sendMessageToExtension(
+			BRIDGE_MESSAGE_TYPES.REFETCH_THE_MEMO_LIST_FROM_WEB,
+		);
 	}
 
 	static responseRefetchTheMemosFromWeb(callbackFn: () => void) {
@@ -156,9 +154,8 @@ export default class ExtensionBridge {
 	static requestGetExtensionManifest(
 		callbackFn: (response: chrome.runtime.Manifest) => void,
 	) {
-		chrome.runtime.sendMessage(
-			EXTENSION.id,
-			{ type: BRIDGE_MESSAGE_TYPES.GET_EXTENSION_MANIFEST },
+		Runtime.sendMessageToExtension(
+			BRIDGE_MESSAGE_TYPES.GET_EXTENSION_MANIFEST,
 			callbackFn,
 		);
 	}
@@ -172,9 +169,9 @@ export default class ExtensionBridge {
 	}
 
 	static async requestSyncLoginStatus() {
-		return chrome.runtime.sendMessage(EXTENSION.id, {
-			type: BRIDGE_MESSAGE_TYPES.SYNC_LOGIN_STATUS,
-		});
+		return Runtime.sendMessageToExtension(
+			BRIDGE_MESSAGE_TYPES.SYNC_LOGIN_STATUS,
+		);
 	}
 
 	static responseSyncLoginStatus(callbackFn: () => void) {

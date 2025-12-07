@@ -2,7 +2,7 @@ import { I18n } from "@web-memo/shared/utils/extension";
 import { RefreshCwIcon } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useSummaryContext } from "./components";
+import { useSummaryContext } from "./components/SummaryProvider";
 
 export default function Summary() {
 	const { summary, errorMessage, isSummaryLoading, generateSummary } =

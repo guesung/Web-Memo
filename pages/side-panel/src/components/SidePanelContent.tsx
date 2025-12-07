@@ -11,8 +11,8 @@ export default function SidePanelContent() {
 
 	useDidMount(() => {
 		bridge.handle.UPDATE_SIDE_PANEL(() => {
-			fetchPageContent();
 			refetchTab();
+			fetchPageContent();
 		});
 	});
 

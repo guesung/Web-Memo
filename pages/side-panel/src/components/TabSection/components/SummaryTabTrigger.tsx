@@ -1,4 +1,3 @@
-import { useDidMount } from "@web-memo/shared/hooks";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { Loading, TabsTrigger } from "@web-memo/ui";
 import { GlobeIcon, RefreshCwIcon, Youtube } from "lucide-react";
@@ -11,22 +10,24 @@ export default function SummaryTabTrigger() {
 
 	const CategoryIcon = category === "youtube" ? Youtube : GlobeIcon;
 
-	useDidMount(() => {
-		generateSummary();
-	});
-
 	return (
 		<TabsTrigger value="summary" className="flex items-center gap-1.5">
 			<CategoryIcon size={14} />
 			{I18n.get("summary")}
-			<button
-				type="button"
+			<span
+				role="button"
+				tabIndex={0}
 				className="ml-1 p-0.5 rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-				disabled={isSummaryLoading}
+				aria-disabled={isSummaryLoading}
 				onClick={(e) => {
 					e.stopPropagation();
-
 					if (!isSummaryLoading) generateSummary();
+				}}
+				onKeyDown={(e) => {
+					if (e.key === "Enter" || e.key === " ") {
+						e.stopPropagation();
+						if (!isSummaryLoading) generateSummary();
+					}
 				}}
 			>
 				{isSummaryLoading ? (
@@ -34,7 +35,7 @@ export default function SummaryTabTrigger() {
 				) : (
 					<RefreshCwIcon size={14} />
 				)}
-			</button>
+			</span>
 		</TabsTrigger>
 	);
 }

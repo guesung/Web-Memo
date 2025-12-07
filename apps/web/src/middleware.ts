@@ -8,10 +8,14 @@ import { updateAuthorization } from "./modules/supabase";
 export async function middleware(request: NextRequest) {
 	const pathname = request.nextUrl.pathname;
 
-	// 루트 페이지
+	// 루트 페이지 - SEO를 위해 소개 페이지로 리다이렉트
 	const isRootPath = pathname === PATHS.root;
-	if (isRootPath)
-		return NextResponse.redirect(new URL(`${PATHS.memos}`, request.url));
+	if (isRootPath) {
+		const language = getLanguage(request);
+		return NextResponse.redirect(
+			new URL(`/${language}${PATHS.introduce}`, request.url),
+		);
+	}
 
 	// lng가 없는 경우 && auth 페이지가 아닌 경우
 	const isLanguagePath = SUPPORTED_LANGUAGES.some((lng) =>

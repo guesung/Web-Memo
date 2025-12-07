@@ -64,7 +64,13 @@ export const metadataEnglish: Metadata = {
 	publisher: "Gyusung Park",
 	applicationName: "Web Memo",
 	category: "Web Memo",
-	metadataBase: new URL("https://webmemo.site"),
+	alternates: {
+		canonical: "https://webmemo.site/en",
+		languages: {
+			ko: "https://webmemo.site/ko",
+			en: "https://webmemo.site/en",
+		},
+	},
 	openGraph: {
 		title: "Web Memo",
 		description:

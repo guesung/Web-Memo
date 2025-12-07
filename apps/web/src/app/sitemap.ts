@@ -42,6 +42,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
 	const sitemapEntries: MetadataRoute.Sitemap = [];
 
+	// 루트 URL 추가 (각 언어별)
+	SUPPORTED_LANGUAGES.forEach((lng) => {
+		sitemapEntries.push({
+			url: `${baseUrl}/${lng}`,
+			lastModified,
+			changeFrequency: "weekly",
+			priority: 1.0,
+		});
+	});
+
 	SUPPORTED_LANGUAGES.forEach((lng) => {
 		pathConfigs.forEach(({ path, priority, changeFrequency }) => {
 			if (path === PATHS.kakaoLogin || path === PATHS.googleLogin) {

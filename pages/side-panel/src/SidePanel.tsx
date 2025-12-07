@@ -7,8 +7,8 @@ import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { ErrorBoundary, Toaster } from "@web-memo/ui";
 import { Suspense } from "react";
 import { QueryProvider } from "./components";
+import PageContentProvider from "./components/PageContentProvider";
 import SidePanelContent from "./components/SidePanelContent";
-import { PageContentProvider } from "./components/TabSection/components";
 
 export default function SidePanel() {
 	useDidMount(() => {

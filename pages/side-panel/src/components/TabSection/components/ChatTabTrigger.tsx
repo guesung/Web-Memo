@@ -19,6 +19,7 @@ export default function ChatTabTrigger() {
 			{I18n.get("chat_title")}
 			{hasMessages && (
 				<span
+					// biome-ignore lint/a11y/useSemanticElements: 트리거 버튼 안의 삭제 버튼
 					role="button"
 					tabIndex={0}
 					className="ml-1 p-0.5 rounded hover:bg-muted"

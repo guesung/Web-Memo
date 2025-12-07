@@ -199,6 +199,7 @@ export default function Hero({ lng }: HeroProps) {
 										src={`/images/pngs/introduction/${lng}/1.png`}
 										alt="Web Memo Screenshot"
 										fill
+										sizes="(max-width: 1024px) 100vw, 50vw"
 										className="object-cover object-top"
 										priority
 									/>

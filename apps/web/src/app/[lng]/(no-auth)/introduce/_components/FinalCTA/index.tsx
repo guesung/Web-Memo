@@ -172,6 +172,8 @@ export default function FinalCTA({ lng }: FinalCTAProps) {
 										src={`/images/pngs/introduction/${lng}/1.png`}
 										alt="Web Memo Screenshot"
 										fill
+										sizes="(max-width: 1024px) 0vw, 50vw"
+										loading="lazy"
 										className="object-cover object-top opacity-90"
 									/>
 								</div>

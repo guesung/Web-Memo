@@ -193,8 +193,9 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 										src={tabs[activeTab].image}
 										alt={tabs[activeTab].label}
 										fill
+										sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1152px"
 										className="object-contain"
-										priority
+										priority={activeTab === 0}
 									/>
 								</motion.div>
 							</AnimatePresence>

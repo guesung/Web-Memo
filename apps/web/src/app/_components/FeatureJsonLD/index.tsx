@@ -65,6 +65,18 @@ export default function FeatureJsonLD({ lng, feature }: FeatureJsonLDProps) {
 			name: lng === "ko" ? "웹 메모" : "Web Memo",
 			applicationCategory: "BrowserApplication",
 			operatingSystem: "Chrome, Edge, Brave, Arc",
+			offers: {
+				"@type": "Offer",
+				price: "0",
+				priceCurrency: "USD",
+			},
+			aggregateRating: {
+				"@type": "AggregateRating",
+				ratingValue: "5.0",
+				ratingCount: "33",
+				bestRating: "5",
+				worstRating: "1",
+			},
 		},
 	};
 

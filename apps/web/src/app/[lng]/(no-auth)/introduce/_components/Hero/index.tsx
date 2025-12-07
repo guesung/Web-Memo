@@ -188,7 +188,7 @@ export default function Hero({ lng }: HeroProps) {
 									<div className="flex-1 mx-4">
 										<div className="bg-white dark:bg-gray-700 rounded-lg px-4 py-1.5 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
 											<Globe className="h-4 w-4" />
-											web-memo.site
+											webmemo.site
 										</div>
 									</div>
 								</div>

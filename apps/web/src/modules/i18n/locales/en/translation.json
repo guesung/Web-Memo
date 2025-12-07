@@ -618,7 +618,7 @@
 				},
 				"data_sync": {
 					"question": "Can I sync my memos across multiple devices?",
-					"answer": "Yes! When you log in to Web Memo, all your memos are automatically saved to the cloud. You can access and edit all your memos from any device—PC, laptop, tablet—by logging in with the same account. You can also view your saved memos anytime at web-memo.site."
+					"answer": "Yes! When you log in to Web Memo, all your memos are automatically saved to the cloud. You can access and edit all your memos from any device—PC, laptop, tablet—by logging in with the same account. You can also view your saved memos anytime at webmemo.site."
 				},
 				"supported_browsers": {
 					"question": "Which browsers are supported?",
@@ -864,7 +864,7 @@
 				},
 				"step3": {
 					"title": "Access Anytime",
-					"description": "View and manage all your notes at web-memo.site"
+					"description": "View and manage all your notes at webmemo.site"
 				}
 			},
 			"cta": {
@@ -896,7 +896,7 @@
 				},
 				"anywhere": {
 					"title": "Access Anywhere",
-					"description": "Access saved articles anytime at web-memo.site. Works on mobile too."
+					"description": "Access saved articles anytime at webmemo.site. Works on mobile too."
 				},
 				"readLater": {
 					"title": "Read Later",

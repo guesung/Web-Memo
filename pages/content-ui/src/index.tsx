@@ -12,16 +12,21 @@ import {
 
 ExtensionBridge.responsePageContent();
 
-if (isYoutubePage()) {
-	ExtensionBridge.responseYoutubeTranscript(async () => {
-		const result = await extractYoutubeTranscript();
+ExtensionBridge.responseYoutubeTranscript(async () => {
+	if (!isYoutubePage()) {
 		return {
-			success: result.success,
-			transcript: result.transcript,
-			error: result.error,
+			success: false,
+			transcript: "",
+			error: "Not a YouTube video page",
 		};
-	});
-}
+	}
+	const result = await extractYoutubeTranscript();
+	return {
+		success: result.success,
+		transcript: result.transcript,
+		error: result.error,
+	};
+});
 
 renderOpenSidePanelButton();
 

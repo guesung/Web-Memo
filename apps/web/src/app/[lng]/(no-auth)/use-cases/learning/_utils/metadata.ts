@@ -14,10 +14,10 @@ export const metadataKorean: Metadata = {
 		"교육 영상 정리",
 	],
 	alternates: {
-		canonical: "https://web-memo.site/ko/use-cases/learning",
+		canonical: "https://webmemo.site/ko/use-cases/learning",
 		languages: {
-			ko: "https://web-memo.site/ko/use-cases/learning",
-			en: "https://web-memo.site/en/use-cases/learning",
+			ko: "https://webmemo.site/ko/use-cases/learning",
+			en: "https://webmemo.site/en/use-cases/learning",
 		},
 	},
 	openGraph: {
@@ -43,10 +43,10 @@ export const metadataEnglish: Metadata = {
 		"educational video notes",
 	],
 	alternates: {
-		canonical: "https://web-memo.site/en/use-cases/learning",
+		canonical: "https://webmemo.site/en/use-cases/learning",
 		languages: {
-			ko: "https://web-memo.site/ko/use-cases/learning",
-			en: "https://web-memo.site/en/use-cases/learning",
+			ko: "https://webmemo.site/ko/use-cases/learning",
+			en: "https://webmemo.site/en/use-cases/learning",
 		},
 	},
 	openGraph: {

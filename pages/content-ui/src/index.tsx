@@ -11,17 +11,25 @@ import {
 } from "./ui";
 
 bridge.handle.PAGE_CONTENT(async (_, __, sendResponse) => {
+	const title = document.title;
+	const favicon = getFavicon();
+
 	if (isYoutubePage()) {
 		try {
 			const result = await extractYoutubeTranscript();
-			sendResponse({ content: result.transcript, category: "youtube" });
+			sendResponse({
+				content: result.transcript,
+				category: "youtube",
+				title,
+				favicon,
+			});
 		} catch {
 			const content = getContentFromWeb();
-			sendResponse({ content, category: "youtube" });
+			sendResponse({ content, category: "youtube", title, favicon });
 		}
 	} else {
 		const content = getContentFromWeb();
-		sendResponse({ content, category: "others" });
+		sendResponse({ content, category: "others", title, favicon });
 	}
 	return true;
 });
@@ -66,4 +74,20 @@ function getContentFromWeb() {
 	} catch {
 		return text;
 	}
+}
+
+function getFavicon(): string {
+	const iconLink =
+		document.querySelector<HTMLLinkElement>('link[rel="icon"]') ??
+		document.querySelector<HTMLLinkElement>('link[rel="shortcut icon"]') ??
+		document.querySelector<HTMLLinkElement>(
+			'link[rel="apple-touch-icon-precomposed"]',
+		) ??
+		document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]');
+
+	if (iconLink?.href) {
+		return iconLink.href;
+	}
+
+	return `${window.location.origin}/favicon.ico`;
 }

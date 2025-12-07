@@ -3,6 +3,8 @@ import type { Category } from "./constant";
 export interface PageContentResponse {
 	content: string;
 	category: Category;
+	title: string;
+	favicon: string;
 }
 
 export interface PageContent {

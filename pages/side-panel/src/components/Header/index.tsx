@@ -1,22 +1,12 @@
 import { useTabQuery } from "@web-memo/shared/hooks";
-import { Button, Skeleton } from "@web-memo/ui";
+import { Button } from "@web-memo/ui";
 import { GlobeIcon, SettingsIcon } from "lucide-react";
-import { Suspense } from "react";
 import { ToggleTheme } from "./components";
 
 export default function Header() {
 	return (
 		<header className="shrink-0 mt-4 flex items-center justify-between gap-2">
-			<Suspense
-				fallback={
-					<div className="flex items-center gap-2 min-w-0 flex-1">
-						<Skeleton className="size-5 rounded" />
-						<Skeleton className="h-5 w-32" />
-					</div>
-				}
-			>
-				<HeaderTabInfo />
-			</Suspense>
+			<HeaderTabInfo />
 			<div className="flex gap-1 shrink-0">
 				<ToggleTheme />
 				<Button

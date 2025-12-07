@@ -1,3 +1,4 @@
+import { useDidMount } from "@web-memo/shared/hooks";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { Loading, TabsTrigger } from "@web-memo/ui";
 import { GlobeIcon, RefreshCwIcon, Youtube } from "lucide-react";
@@ -9,6 +10,10 @@ export default function SummaryTabTrigger() {
 	const { category } = usePageContentContext();
 
 	const CategoryIcon = category === "youtube" ? Youtube : GlobeIcon;
+
+	useDidMount(() => {
+		generateSummary();
+	});
 
 	return (
 		<TabsTrigger value="summary" className="flex items-center gap-1.5">

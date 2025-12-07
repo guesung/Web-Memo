@@ -1,6 +1,7 @@
 import { CONFIG } from "@web-memo/env";
 import { STORAGE_KEYS } from "@web-memo/shared/modules/chrome-storage";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePageContentContext } from "../../components/TabSection/components";
 import { processStreamingResponse } from "../useSummary/util";
 
 export interface ChatMessage {
@@ -8,10 +9,6 @@ export interface ChatMessage {
 	role: "user" | "assistant";
 	content: string;
 	timestamp: number;
-}
-
-interface UseChatProps {
-	pageContent: string;
 }
 
 interface UseChatReturn {
@@ -26,11 +23,13 @@ function generateId(): string {
 	return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-export default function useChat({ pageContent }: UseChatProps): UseChatReturn {
+export default function useChat(): UseChatReturn {
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 	const isInitialized = useRef(false);
+
+	const { content: pageContent } = usePageContentContext();
 
 	useEffect(() => {
 		if (isInitialized.current) return;

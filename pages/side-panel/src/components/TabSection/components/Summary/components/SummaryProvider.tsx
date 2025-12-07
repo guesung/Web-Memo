@@ -6,14 +6,14 @@ const SummaryContext = createContext<ReturnType<typeof useSummary> | null>(
 	null,
 );
 
-export const useSummaryContext = () => {
+export function useSummaryContext(): ReturnType<typeof useSummary> {
 	const context = useContext<ReturnType<typeof useSummary> | null>(
 		SummaryContext,
 	);
 
 	if (!context) throw new Error("SummaryProvider가 없습니다.");
 	return context;
-};
+}
 
 export default function SummaryProvider({ children }: PropsWithChildren) {
 	const useSummaryProps = useSummary();

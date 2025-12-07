@@ -3,7 +3,14 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { motion } from "framer-motion";
-import { Download, PanelRightOpen, BookmarkPlus, ArrowRight } from "lucide-react";
+import {
+	Download,
+	PanelRightOpen,
+	BookmarkPlus,
+	ArrowRight,
+} from "lucide-react";
+
+import HowToJsonLD from "./HowToJsonLD";
 
 interface HowItWorksProps extends LanguageType {}
 
@@ -39,6 +46,7 @@ export default function HowItWorks({ lng }: HowItWorksProps) {
 
 	return (
 		<section className="py-20 bg-white dark:bg-gray-900">
+			<HowToJsonLD lng={lng} />
 			<div className="mx-auto max-w-6xl px-4">
 				{/* Section Header */}
 				<motion.div

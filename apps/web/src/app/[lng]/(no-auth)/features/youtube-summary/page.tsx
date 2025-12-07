@@ -1,3 +1,4 @@
+import { FeatureJsonLD } from "@src/app/_components";
 import { HeaderMargin } from "@src/components/Header";
 import type { LanguageParams } from "@src/modules/i18n";
 
@@ -15,6 +16,7 @@ export default async function YoutubeSummaryPage({
 }: YoutubeSummaryPageProps) {
 	return (
 		<div className="min-h-screen overflow-hidden">
+			<FeatureJsonLD lng={lng} feature="youtube-summary" />
 			<HeaderMargin />
 			<Hero lng={lng} />
 			<Benefits lng={lng} />

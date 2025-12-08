@@ -6,6 +6,13 @@ export const getSafeConfig = (
 	else return value;
 };
 
+export const getOptionalConfig = (
+	value: string | undefined,
+	defaultValue = "",
+): string => {
+	return value ?? defaultValue;
+};
+
 export const CONFIG = {
 	webUrl: getSafeConfig("WEB_URL", process.env.WEB_URL),
 	supabaseUrl: getSafeConfig("SUPABASE_URL", process.env.SUPABASE_URL),
@@ -30,4 +37,6 @@ export const CONFIG = {
 	gaId: getSafeConfig("GA_ID", process.env.GA_ID),
 	gtmId: getSafeConfig("GTM_ID", process.env.GTM_ID),
 	gaApiSecret: getSafeConfig("GA_API_SECRET", process.env.GA_API_SECRET),
+	extensionKey: getOptionalConfig(process.env.EXTENSION_KEY),
+	oauth2ClientId: getOptionalConfig(process.env.OAUTH2_CLIENT_ID),
 };

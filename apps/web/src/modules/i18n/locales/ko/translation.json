@@ -480,14 +480,20 @@
 			"student_desc": "온라인 강의나 자료 조사할 때 핵심 내용만 골라 저장하세요. 논문 작성에 필요한 레퍼런스를 체계적으로 관리할 수 있습니다.",
 			"professionals_title": "직장인",
 			"professionals_desc": "경쟁사 분석이나 트렌드 모니터링을 체계적으로 관리하세요. 업무에 필요한 정보를 빠르게 찾을 수 있습니다.",
-			"professional_title": "직장인",
+			"professional_title": "리서치 & 업무",
 			"professional_desc": "경쟁사 분석이나 트렌드 모니터링을 체계적으로 관리하세요. 업무에 필요한 정보를 빠르게 찾을 수 있습니다.",
 			"efficiency_title": "효율적인 분들",
 			"efficiency_desc": "긴 글 대신 AI 요약으로 핵심만 빠르게 파악하세요. 시간을 절약하며 더 많은 콘텐츠를 소화할 수 있습니다.",
 			"creators_title": "콘텐츠 크리에이터",
 			"creators_desc": "영감을 주는 콘텐츠와 아이디어를 모아두세요. 창작 활동에 필요한 레퍼런스를 한 곳에서 관리할 수 있습니다.",
 			"creator_title": "콘텐츠 크리에이터",
-			"creator_desc": "영감을 주는 콘텐츠와 아이디어를 모아두세요. 창작 활동에 필요한 레퍼런스를 한 곳에서 관리할 수 있습니다."
+			"creator_desc": "영감을 주는 콘텐츠와 아이디어를 모아두세요. 창작 활동에 필요한 레퍼런스를 한 곳에서 관리할 수 있습니다.",
+			"job_hunting_title": "취업 준비생",
+			"job_hunting_desc": "채용 공고와 기업 정보를 한눈에 정리하세요. 면접 준비에 필요한 자료를 효율적으로 관리할 수 있습니다.",
+			"news_reading_title": "뉴스 & 아티클",
+			"news_reading_desc": "중요한 기사와 인사이트를 저장하세요. 나중에 다시 찾아볼 핵심 정보를 체계적으로 관리할 수 있습니다.",
+			"youtube_notes_title": "유튜브 학습",
+			"youtube_notes_desc": "영상의 핵심 내용을 메모하세요. AI 요약과 함께 영상 학습 효율을 높일 수 있습니다."
 		},
 		"stats": {
 			"active_users": "활성 사용자",

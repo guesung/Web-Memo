@@ -485,14 +485,20 @@
 			"student_desc": "Save key points from online courses and research. Systematically manage references for your papers.",
 			"professionals_title": "Professionals",
 			"professionals_desc": "Systematically manage competitor analysis and trend monitoring. Find work-related information quickly.",
-			"professional_title": "Professionals",
+			"professional_title": "Research & Work",
 			"professional_desc": "Systematically manage competitor analysis and trend monitoring. Find work-related information quickly.",
 			"efficiency_title": "Efficient People",
 			"efficiency_desc": "Get key insights with AI summaries instead of reading long articles. Save time and consume more content.",
 			"creators_title": "Content Creators",
 			"creators_desc": "Collect inspiring content and ideas. Manage all your creative references in one place.",
 			"creator_title": "Content Creators",
-			"creator_desc": "Collect inspiring content and ideas. Manage all your creative references in one place."
+			"creator_desc": "Collect inspiring content and ideas. Manage all your creative references in one place.",
+			"job_hunting_title": "Job Seekers",
+			"job_hunting_desc": "Organize job postings and company information at a glance. Efficiently manage materials for interview preparation.",
+			"news_reading_title": "News & Articles",
+			"news_reading_desc": "Save important articles and insights. Systematically manage key information to revisit later.",
+			"youtube_notes_title": "YouTube Learning",
+			"youtube_notes_desc": "Take notes on key video content. Boost your video learning efficiency with AI summaries."
 		},
 		"stats": {
 			"active_users": "Active Users",

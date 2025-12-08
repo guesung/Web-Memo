@@ -974,6 +974,114 @@
 				"button": "Add to Chrome",
 				"subtext": "Free · 10-second install · No credit card required"
 			}
+		},
+		"youtubeNotes": {
+			"hero": {
+				"badge": "YouTube Notes",
+				"title": "Take notes",
+				"titleHighlight": "while watching videos",
+				"description": "Take notes while watching YouTube lectures, tutorials, and reviews. Capture key points and find them easily later.",
+				"cta": "Get Started Free",
+				"learnMore": "Learn More"
+			},
+			"benefits": {
+				"title": "Transform Your YouTube Experience",
+				"subtitle": "Take notes efficiently while watching videos",
+				"realtime": {
+					"title": "Real-time Notes",
+					"description": "Take notes in the side panel without pausing the video. Capture your thoughts without breaking the flow."
+				},
+				"capture": {
+					"title": "Capture Key Points",
+					"description": "Never miss important lecture points or tutorial steps. Record what matters most."
+				},
+				"timestamp": {
+					"title": "Video Info Saved",
+					"description": "Video URL is automatically saved with your notes. Jump back to the video anytime you need to review."
+				},
+				"organize": {
+					"title": "Organize by Category",
+					"description": "Categorize notes by lecture or topic. Keep your learning materials systematically organized."
+				}
+			},
+			"cta": {
+				"title": "Start Taking YouTube Notes",
+				"description": "Install the free Chrome extension and watch videos more efficiently.",
+				"button": "Add to Chrome",
+				"subtext": "Free · 10-second install · No credit card required"
+			}
+		},
+		"newsReading": {
+			"hero": {
+				"badge": "News & Articles",
+				"title": "Capture insights",
+				"titleHighlight": "while you read",
+				"description": "Take notes while reading news, blogs, and articles. Never lose an insight again.",
+				"cta": "Get Started Free",
+				"learnMore": "Learn More"
+			},
+			"benefits": {
+				"title": "Transform Your Reading",
+				"subtitle": "Organize content efficiently as you read",
+				"highlight": {
+					"title": "Instant Capture",
+					"description": "Found something important? Take a note immediately. Capture thoughts the moment they come to you."
+				},
+				"aiSummary": {
+					"title": "AI Summary",
+					"description": "AI summarizes long articles for you. Quickly grasp the content and take notes on what matters."
+				},
+				"categorize": {
+					"title": "Organize by Topic",
+					"description": "Categorize notes by news, tech, business, and more. Keep your interests organized."
+				},
+				"source": {
+					"title": "Source Management",
+					"description": "Original URLs are saved with your notes. Revisit the source anytime."
+				}
+			},
+			"cta": {
+				"title": "Start Smarter Reading",
+				"description": "Install the free Chrome extension and organize content efficiently.",
+				"button": "Add to Chrome",
+				"subtext": "Free · 10-second install · No credit card required"
+			}
+		},
+		"jobHunting": {
+			"hero": {
+				"badge": "Job Hunting",
+				"title": "Organize job search",
+				"titleHighlight": "systematically",
+				"description": "Organize job postings, company info, and interview prep in one place. Track your applications at a glance.",
+				"cta": "Get Started Free",
+				"learnMore": "Learn More"
+			},
+			"benefits": {
+				"title": "Transform Your Job Search",
+				"subtitle": "Get closer to your dream job with organized information",
+				"company": {
+					"title": "Company Research",
+					"description": "Take notes on companies you're interested in. Compare benefits, culture, and tech stack at a glance."
+				},
+				"track": {
+					"title": "Application Tracking",
+					"description": "Track companies and positions you've applied to. Follow progress from resume to interview to result."
+				},
+				"compare": {
+					"title": "Compare Offers",
+					"description": "Compare offers across companies. Organize salary, benefits, and growth potential systematically."
+				},
+				"find": {
+					"title": "Quick Search",
+					"description": "Find saved information quickly. Review company info right before your interview."
+				}
+			},
+			"cta": {
+				"title": "Start Organized Job Hunting",
+				"description": "Install the free Chrome extension and manage job search efficiently.",
+				"button": "Add to Chrome",
+				"subtext": "Free · 10-second install · No credit card required"
+			}
 		}
 	},
 

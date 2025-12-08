@@ -5,5 +5,6 @@ export { default as useSupabaseClientQuery } from "./useSupabaseClientQuery";
 export { default as useSupabaseFeedbackClientQuery } from "./useSupabaseFeedbackClientQuery";
 export { default as useSupabaseUserQuery } from "./useSupabaseUserQuery";
 export { default as useAdminStatsQuery } from "./useAdminStatsQuery";
+export { default as useActiveUsersStatsQuery } from "./useActiveUsersStatsQuery";
 export { default as useUserGrowthQuery } from "./useUserGrowthQuery";
 export { default as useAdminUsersQuery } from "./useAdminUsersQuery";

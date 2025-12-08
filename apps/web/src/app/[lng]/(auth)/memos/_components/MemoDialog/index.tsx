@@ -8,6 +8,7 @@ import {
 	useKeyboardBind,
 	useMemoPatchMutation,
 	useMemoQuery,
+	useTextareaAutoResize,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import {
@@ -22,7 +23,6 @@ import {
 	useCallback,
 	useEffect,
 	useImperativeHandle,
-	useRef,
 	useState,
 } from "react";
 import { useForm } from "react-hook-form";
@@ -37,7 +37,7 @@ interface MemoDialog extends LanguageType {
 export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	const { t } = useTranslation(lng);
 	const { memo: memoData } = useMemoQuery({ id: memoId });
-	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const { textareaRef, handleTextareaChange } = useTextareaAutoResize();
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 	const [showAlert, setShowAlert] = useState(false);
 	const searchParams = useSearchParams();
@@ -51,7 +51,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 
 	const { ref, ...rest } = register("memo", {
 		onChange: (event) => {
-			event.target.style.height = `${event.target.scrollHeight}px`;
+			handleTextareaChange(event);
 		},
 	});
 	useImperativeHandle(ref, () => textareaRef.current);
@@ -91,12 +91,6 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	const handleUnChangesAlertClose = () => {
 		setShowAlert(false);
 	};
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: ref와 textareaRef는 초기화 시에만 필요
-	useEffect(() => {
-		if (!textareaRef.current) return;
-		textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-	}, [textareaRef, ref]);
 
 	useEffect(
 		function initMemoData() {

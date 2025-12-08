@@ -4,7 +4,14 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { PATHS } from "@web-memo/shared/constants";
 import { motion } from "framer-motion";
-import { GraduationCap, Briefcase, Target, Lightbulb, ArrowRight } from "lucide-react";
+import {
+	GraduationCap,
+	Briefcase,
+	Newspaper,
+	Youtube,
+	Search,
+	ArrowRight,
+} from "lucide-react";
 import Link from "next/link";
 
 interface UseCasesProps extends LanguageType {}
@@ -18,36 +25,40 @@ export default function UseCases({ lng }: UseCasesProps) {
 			emoji: "📚",
 			title: t("introduce.use_case.student_title"),
 			description: t("introduce.use_case.student_desc"),
-			color: "blue",
-			gradient: "from-blue-500 to-indigo-500",
+			gradient: "from-indigo-500 to-purple-500",
 			href: `/${lng}${PATHS.useCasesLearning}`,
 		},
 		{
-			icon: Briefcase,
-			emoji: "💼",
+			icon: Search,
+			emoji: "🔍",
 			title: t("introduce.use_case.professional_title"),
 			description: t("introduce.use_case.professional_desc"),
-			color: "purple",
 			gradient: "from-purple-500 to-pink-500",
 			href: `/${lng}${PATHS.useCasesResearch}`,
 		},
 		{
-			icon: Target,
-			emoji: "🎯",
-			title: t("introduce.use_case.efficiency_title"),
-			description: t("introduce.use_case.efficiency_desc"),
-			color: "green",
-			gradient: "from-green-500 to-emerald-500",
-			href: null,
+			icon: Briefcase,
+			emoji: "💼",
+			title: t("introduce.use_case.job_hunting_title"),
+			description: t("introduce.use_case.job_hunting_desc"),
+			gradient: "from-emerald-500 to-teal-500",
+			href: `/${lng}${PATHS.useCasesJobHunting}`,
 		},
 		{
-			icon: Lightbulb,
-			emoji: "💡",
-			title: t("introduce.use_case.creator_title"),
-			description: t("introduce.use_case.creator_desc"),
-			color: "amber",
-			gradient: "from-amber-500 to-orange-500",
-			href: null,
+			icon: Newspaper,
+			emoji: "📰",
+			title: t("introduce.use_case.news_reading_title"),
+			description: t("introduce.use_case.news_reading_desc"),
+			gradient: "from-blue-500 to-cyan-500",
+			href: `/${lng}${PATHS.useCasesNewsReading}`,
+		},
+		{
+			icon: Youtube,
+			emoji: "🎬",
+			title: t("introduce.use_case.youtube_notes_title"),
+			description: t("introduce.use_case.youtube_notes_desc"),
+			gradient: "from-red-500 to-orange-500",
+			href: `/${lng}${PATHS.useCasesYoutubeNotes}`,
 		},
 	];
 
@@ -71,7 +82,7 @@ export default function UseCases({ lng }: UseCasesProps) {
 				</motion.div>
 
 				{/* Use Cases Grid */}
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 					{useCases.map((useCase, index) => (
 						<motion.div
 							key={useCase.title}
@@ -81,43 +92,38 @@ export default function UseCases({ lng }: UseCasesProps) {
 							transition={{ duration: 0.5, delay: index * 0.1 }}
 							className="group"
 						>
-							<div className="relative h-full glass-card rounded-2xl p-8 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] overflow-hidden">
-								{/* Gradient Background on Hover */}
-								<div
-									className={`absolute inset-0 bg-gradient-to-br ${useCase.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}
-								/>
+							<Link href={useCase.href} className="block h-full">
+								<div className="relative h-full glass-card rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] overflow-hidden">
+									{/* Gradient Background on Hover */}
+									<div
+										className={`absolute inset-0 bg-gradient-to-br ${useCase.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}
+									/>
 
-								<div className="relative z-10 flex gap-6">
-									{/* Emoji/Icon */}
-									<div className="flex-shrink-0">
-										<span className="text-5xl">{useCase.emoji}</span>
-									</div>
+									<div className="relative z-10">
+										{/* Emoji/Icon */}
+										<div className="mb-4">
+											<span className="text-4xl">{useCase.emoji}</span>
+										</div>
 
-									{/* Content */}
-									<div>
-										<h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+										{/* Content */}
+										<h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
 											{useCase.title}
 										</h3>
-										<p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+										<p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
 											{useCase.description}
 										</p>
-										{useCase.href && (
-											<Link
-												href={useCase.href}
-												className="inline-flex items-center gap-1 mt-4 text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
-											>
-												{t("common.learn_more")}
-												<ArrowRight className="w-4 h-4" />
-											</Link>
-										)}
+										<span className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100 transition-colors">
+											{t("common.learn_more")}
+											<ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+										</span>
 									</div>
-								</div>
 
-								{/* Decorative Corner Gradient */}
-								<div
-									className={`absolute -bottom-20 -right-20 w-40 h-40 bg-gradient-to-br ${useCase.gradient} opacity-10 rounded-full blur-3xl`}
-								/>
-							</div>
+									{/* Decorative Corner Gradient */}
+									<div
+										className={`absolute -bottom-16 -right-16 w-32 h-32 bg-gradient-to-br ${useCase.gradient} opacity-10 rounded-full blur-3xl`}
+									/>
+								</div>
+							</Link>
 						</motion.div>
 					))}
 				</div>

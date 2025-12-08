@@ -1,9 +1,9 @@
 import type { MemoInput } from "@src/types/Input";
 import { useCategoryQuery } from "@web-memo/shared/hooks";
 import type { CategoryRow } from "@web-memo/shared/types";
+import { getCursorPosition } from "@web-memo/shared/utils";
 import { useCallback, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { getCursorPosition } from "../utils.ts";
 
 const CATEGORY_LIST_WIDTH = 256;
 

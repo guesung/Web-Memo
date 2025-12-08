@@ -9,7 +9,11 @@ export default function Summary() {
 		useSummaryContext();
 
 	if (errorMessage)
-		return <p className="whitespace-pre-wrap">{errorMessage}</p>;
+		return (
+			<p className="pt-4 prose prose-sm dark:prose-invert text-foreground whitespace-pre-wrap">
+				{errorMessage}
+			</p>
+		);
 
 	if (!summary && !isSummaryLoading) {
 		return (

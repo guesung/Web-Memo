@@ -18,10 +18,15 @@ export default function useSummary(): UseSummaryReturn {
 	const {
 		content,
 		category,
-		isLoading: isPageContentLoading,
+		error: pageContentError,
 	} = usePageContentContext();
 
 	const generateSummary = useCallback(async () => {
+		if (pageContentError) {
+			setErrorMessage(I18n.get("error_get_page_content"));
+			return;
+		}
+
 		setSummary("");
 		setErrorMessage("");
 
@@ -56,10 +61,10 @@ export default function useSummary(): UseSummaryReturn {
 		} finally {
 			setIsGenerating(false);
 		}
-	}, [content, category]);
+	}, [content, category, pageContentError]);
 
 	return {
-		isSummaryLoading: isPageContentLoading || isGenerating,
+		isSummaryLoading: isGenerating,
 		summary,
 		generateSummary,
 		errorMessage,

@@ -254,6 +254,12 @@ export interface AdminStats {
 	quarterlyMemos: number;
 }
 
+export interface ActiveUsersStats {
+	dailyActiveUsers: number;
+	weeklyActiveUsers: number;
+	monthlyActiveUsers: number;
+}
+
 export interface UserGrowthData {
 	date: string;
 	count: number;
@@ -296,6 +302,12 @@ export class AdminService {
 			.rpc("get_user_growth", {
 				days_ago: daysAgo,
 			});
+
+	getActiveUsersStats = async () =>
+		this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			// @ts-expect-error RPC function types not generated in schema
+			.rpc("get_active_users_stats");
 
 	getUsers = async ({ searchQuery }: GetAdminUsersParams = {}) =>
 		this.supabaseClient

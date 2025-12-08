@@ -14,6 +14,7 @@ export default function SidePanelContent() {
 			refetchTab();
 			fetchPageContent();
 		});
+		fetchPageContent();
 	});
 
 	return (

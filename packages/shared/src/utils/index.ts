@@ -7,6 +7,7 @@ export * from "./Sentry";
 export * from "./String";
 export * from "./Supabase";
 export * from "./Tailwind";
+export * from "./Textarea";
 export * from "./Time";
 export * from "./Url";
 export * from "./Youtube";

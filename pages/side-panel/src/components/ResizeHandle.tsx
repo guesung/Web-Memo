@@ -15,7 +15,7 @@ export default function ResizeHandle({
 		<div
 			role="slider"
 			aria-label="Resize panels"
-			aria-valuemin={20}
+			aria-valuemin={0}
 			aria-valuemax={80}
 			aria-valuenow={Math.round(tabHeight)}
 			tabIndex={0}

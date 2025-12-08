@@ -11,6 +11,7 @@ import {
 	useTextareaAutoResize,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
+import { adjustTextareaHeight } from "@web-memo/shared/utils";
 import {
 	Card,
 	CardContent,
@@ -19,12 +20,7 @@ import {
 	Textarea,
 } from "@web-memo/ui";
 import { motion } from "framer-motion";
-import {
-	useCallback,
-	useEffect,
-	useImperativeHandle,
-	useState,
-} from "react";
+import { useCallback, useEffect, useImperativeHandle, useState } from "react";
 import { useForm } from "react-hook-form";
 import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
@@ -94,9 +90,14 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 
 	useEffect(
 		function initMemoData() {
-			if (memoData) setValue("memo", memoData.memo);
+			if (memoData) {
+				setValue("memo", memoData.memo);
+				if (textareaRef.current) {
+					adjustTextareaHeight(textareaRef.current);
+				}
+			}
 		},
-		[memoData, setValue],
+		[memoData, setValue, textareaRef.current],
 	);
 
 	useEffect(

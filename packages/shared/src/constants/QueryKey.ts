@@ -19,6 +19,7 @@ export const QUERY_KEY = {
 	user: () => ["user"],
 	category: () => ["cateogory"],
 	adminStats: () => ["adminStats"],
+	activeUsersStats: () => ["activeUsersStats"],
 	userGrowth: (days: number) => ["userGrowth", days],
 	adminUsers: (search?: string, page?: number) => ["adminUsers", search, page],
 };

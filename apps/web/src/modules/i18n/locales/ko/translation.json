@@ -725,6 +725,12 @@
 			"today_memos": "오늘 메모",
 			"weekly_memos": "이번 주 메모"
 		},
+		"activeUsers": {
+			"title": "활성 사용자",
+			"daily": "일간 활성 사용자",
+			"weekly": "주간 활성 사용자",
+			"monthly": "월간 활성 사용자"
+		},
 		"activity": {
 			"title": "메모 활동",
 			"today": "오늘",

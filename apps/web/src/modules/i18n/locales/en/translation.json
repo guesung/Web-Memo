@@ -730,6 +730,12 @@
 			"today_memos": "Today's Memos",
 			"weekly_memos": "Weekly Memos"
 		},
+		"activeUsers": {
+			"title": "Active Users",
+			"daily": "Daily Active Users",
+			"weekly": "Weekly Active Users",
+			"monthly": "Monthly Active Users"
+		},
 		"activity": {
 			"title": "Memo Activity",
 			"today": "Today",

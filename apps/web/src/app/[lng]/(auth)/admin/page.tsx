@@ -9,7 +9,12 @@ import { AdminService } from "@web-memo/shared/utils";
 import { Loading } from "@web-memo/ui";
 import { Suspense } from "react";
 
-import { ActivityChart, StatsCards, UserGrowthChart } from "./_components";
+import {
+	ActiveUsersCard,
+	ActivityChart,
+	StatsCards,
+	UserGrowthChart,
+} from "./_components";
 
 interface PageProps extends LanguageParams {}
 
@@ -30,6 +35,17 @@ export default async function AdminPage({ params: { lng } }: PageProps) {
 					<StatsCards lng={lng} />
 				</Suspense>
 			</HydrationBoundaryWrapper>
+
+			<div className="mt-8">
+				<HydrationBoundaryWrapper
+					queryKey={QUERY_KEY.activeUsersStats()}
+					queryFn={() => adminService.getActiveUsersStats()}
+				>
+					<Suspense fallback={<Loading />}>
+						<ActiveUsersCard lng={lng} />
+					</Suspense>
+				</HydrationBoundaryWrapper>
+			</div>
 
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
 				<HydrationBoundaryWrapper

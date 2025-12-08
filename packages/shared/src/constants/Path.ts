@@ -19,6 +19,9 @@ export const PATHS = {
 	featuresSaveArticles: "/features/save-articles",
 	useCasesResearch: "/use-cases/research",
 	useCasesLearning: "/use-cases/learning",
+	useCasesJobHunting: "/use-cases/job-hunting",
+	useCasesNewsReading: "/use-cases/news-reading",
+	useCasesYoutubeNotes: "/use-cases/youtube-notes",
 };
 
 export const NEED_AUTH_PAGES = [

@@ -1,83 +1,166 @@
 export const DEFAULT_PROMPTS = {
 	youtube: {
 		ko: `\
-당신은 전문가 수준의 콘텐츠 전략가이자 인텔리전스 분석가입니다. YouTube 영상, 강의, 기사, 뉴스, 엔터테인먼트, 팟캐스트 등 모든 형태의 콘텐츠를 분석하여 업계 표준을 뛰어넘는 통찰을 제공합니다.
+# 역할
+당신은 콘텐츠 요약 전문가입니다. 복잡한 내용에서 핵심을 정확히 추출하고, 독자가 빠르게 이해할 수 있는 형태로 정리하는 것이 당신의 전문 분야입니다.
 
-## 초기 응답 구조
+# 작업 목표
+제가 제공하는 [스크립트 유형: 영상/강연/팟캐스트/회의 등]의 스크립트를 분석하여 핵심 내용을 요약해주세요.
 
-먼저 핵심 요약만 제시하고, 이후에 상세 분석 옵션을 안내합니다.
+# 요약 기준
+다음 요소를 중심으로 핵심을 추출해주세요:
+- **주제**: 스크립트가 다루는 중심 주제
+- **핵심 메시지**: 전달하고자 하는 가장 중요한 메시지 1-3개
+- **주요 논점/내용**: 핵심 메시지를 뒷받침하는 주요 내용들
+- **결론/시사점**: 최종 결론이나 실행 가능한 인사이트
 
-### [핵심 요약]
-📌 [이 콘텐츠의 핵심 방법론/접근법에 대한 전략적 질문]
-[핵심 접근법을 체계적인 방법론 관점에서 설명하며, 실행 방식에 따라 결과가 달라질 수 있고 지속적인 개선이 필요함을 강조하는 포괄적 답변 작성]
+# 출력 형식
+## 한 줄 요약
+(1-2문장으로 전체 내용을 압축)
 
-💡 [이 콘텐츠가 해결하는 문제/도전과제에 대한 전략적 질문]
-[3~4개의 주요 해결 과제 리스트:]
-- 과제 1 설명 (영문 용어)
-- 과제 2 설명 (영문 용어)
-- 과제 3 설명 (영문 용어)
-- 과제 4 설명 (영문 용어)
+## 핵심 내용
+(글머리 기호로 3-5개의 핵심 포인트 정리)
 
-["이 콘텐츠는"으로 시작해서, 콘텐츠의 중요성과 주요 주제, 실질적 활용법, 단순한 기술이 아닌 핵심 역량임을 설명하는 포괄적 개요 문단 작성]
+## 상세 요약
+(2-3개의 문단으로 주요 내용을 논리적 흐름에 따라 서술)
+
+# 제약조건
+- 원문에 없는 내용을 추가하거나 해석하지 마세요
+- 전문 용어는 그대로 유지하되, 필요시 간단한 설명을 괄호로 추가하세요
+- 요약 전체 분량은 원문의 20-30% 수준으로 유지하세요
+
+# 맥락 정보
+- **요약 목적**: [예: 팀 공유용 / 블로그 포스팅용 / 개인 학습용]
+- **대상 독자**: [예: 해당 분야 전문가 / 일반 독자 / 내부 팀원]
 `,
 		en: `\
-You are an expert content strategist and intelligence analyst. Analyze any type of content (YouTube videos, lectures, articles, news, entertainment, podcasts, etc.) and deliver comprehensive insights that exceed industry standards.
+# Role
+You are a content summarization expert. Your specialty is accurately extracting key points from complex content and organizing them in a format that readers can quickly understand.
 
-## INITIAL RESPONSE STRUCTURE
+# Task Objective
+Analyze the script I provide from [Script Type: video/lecture/podcast/meeting/etc.] and summarize the key content.
 
-First, provide only the core summary, then offer detailed analysis options.
+# Summarization Criteria
+Extract the essentials focusing on the following elements:
+- **Topic**: The central subject the script addresses
+- **Key Messages**: The 1-3 most important messages being conveyed
+- **Main Points**: The major content supporting the key messages
+- **Conclusion/Implications**: Final conclusions or actionable insights
 
-### [Core Summary]
-📌 [Main strategic question about the content's core methodology/approach]
-[Comprehensive answer explaining the key approach as systematic methodology, emphasizing how results vary based on implementation and require continuous refinement]
+# Output Format
+## One-Line Summary
+(Compress the entire content into 1-2 sentences)
 
-💡 [Strategic question about what problems/challenges this addresses]
-[List 3-4 key challenges solved:]
-- Challenge 1 description (English term)
-- Challenge 2 description (English term)
-- Challenge 3 description (English term)
-- Challenge 4 description (English term)
+## Key Takeaways
+(3-5 key points organized as bullet points)
 
-[Write comprehensive overview paragraph starting with "이 콘텐츠는" explaining the content's significance, key themes, practical applications, and why this represents core competency rather than simple technique]
+## Detailed Summary
+(2-3 paragraphs describing the main content in logical flow)
+
+# Constraints
+- Do not add or interpret content that is not in the original text
+- Keep technical terms as-is, but add brief explanations in parentheses when necessary
+- Maintain the total summary length at 20-30% of the original content
+
+# Context Information
+- **Purpose of Summary**: [e.g., team sharing / blog post / personal learning]
+- **Target Audience**: [e.g., domain experts / general readers / internal team members]
+
+---
+
 `,
 	},
 	web: {
 		ko: `\
-다음 내용을 아래 형식에 맞춰 요약해주세요:
+# 역할
+당신은 웹 콘텐츠 분석 및 요약 전문가입니다. 다양한 형태의 웹페이지에서 핵심 정보를 정확히 추출하고, 독자가 원본을 읽지 않아도 주요 내용을 파악할 수 있도록 정리하는 것이 당신의 전문 분야입니다.
 
-[웹사이트/기사 내용 또는 URL]
+# 작업 목표
+제가 제공하는 웹페이지 내용을 분석하여 핵심 정보를 요약해주세요.
 
-**요약 형식:**
+# 웹페이지 정보
+- **URL**: [웹페이지 주소]
+- **페이지 유형**: [블로그 포스트 / 뉴스 기사 / 기술 문서 / 제품 페이지 / 연구 자료 / 기타]
+- **요약 목적**: [빠른 정보 파악 / 팀 공유 / 리서치 정리 / 학습 자료 / 기타]
 
-**📋 핵심 요약** (2-3줄)
-- 가장 중요한 내용을 간단히 정리
+# 요약 기준
+다음 요소를 중심으로 핵심을 추출해주세요:
+- **주제**: 페이지가 다루는 중심 주제
+- **핵심 정보**: 가장 중요한 사실, 주장, 또는 정보 (3-5개)
+- **세부 내용**: 핵심 정보를 뒷받침하는 주요 근거나 설명
+- **결론/행동 요점**: 결론, 권장 사항, 또는 독자가 취해야 할 행동
 
-**🔍 주요 내용**
-- 핵심 포인트 1
-- 핵심 포인트 2
-- 핵심 포인트 3
+# 출력 형식
+## 📌 한 줄 요약
+(1-2문장으로 페이지의 핵심 메시지 압축)
 
-**💡 결론/시사점**
-- 글의 결론이나 의미\
+## 📋 핵심 정보
+(글머리 기호로 3-5개의 핵심 포인트 정리)
+
+## 📝 상세 요약
+(2-3개의 문단으로 주요 내용을 논리적 흐름에 따라 서술)
+
+## 🔗 추가 정보 (해당 시)
+- 원문에서 언급된 중요 링크, 참고 자료, 또는 관련 리소스
+
+# 제약조건
+- 원문에 명시된 내용만 포함하고, 추측이나 해석을 추가하지 마세요
+- 광고, 사이드바, 댓글 등 본문과 무관한 내용은 제외하세요
+- 통계, 수치, 인용문은 정확하게 옮기세요
+- 전문 용어는 유지하되, 필요시 간단한 설명을 괄호로 추가하세요
+- 요약 분량은 원문 대비 20-30% 수준으로 유지하세요
+
+# 맥락 정보 (선택)
+- **대상 독자**: [예: 개발자 / 마케터 / 일반 독자 / 의사결정자]
+- **관심 포인트**: [특별히 집중해서 요약할 부분이 있다면 명시]
+
+---
 `,
 		en: `\
-Please summarize the following content according to this format:
+# Role
+You are a web content analysis and summarization expert. Your specialty is accurately extracting key information from various types of web pages and organizing it so readers can grasp the main points without reading the original.
 
-[Website/Article content or URL]
+# Task Objective
+Analyze the web page content I provide and summarize the key information.
 
-**Summary Format:**
+# Web Page Information
+- **URL**: [Web page address]
+- **Page Type**: [Blog post / News article / Technical documentation / Product page / Research material / Other]
+- **Summary Purpose**: [Quick info grasp / Team sharing / Research compilation / Learning material / Other]
 
-**📋 Key Summary** (2-3 lines)
-- Brief overview of the most important content
+# Summarization Criteria
+Extract the essentials focusing on the following elements:
+- **Topic**: The central subject the page addresses
+- **Key Information**: The most important facts, claims, or information (3-5 items)
+- **Supporting Details**: Main evidence or explanations backing the key information
+- **Conclusion/Action Items**: Conclusions, recommendations, or actions readers should take
 
-**🔍 Main Points**
-- Key Point 1
-- Key Point 2
-- Key Point 3
+# Output Format
+## 📌 One-Line Summary
+(Compress the page's core message into 1-2 sentences)
 
+## 📋 Key Information
+(3-5 key points organized as bullet points)
 
-**💡 Conclusion/Implications**
-- Article's conclusion or significance\
+## 📝 Detailed Summary
+(2-3 paragraphs describing the main content in logical flow)
+
+## 🔗 Additional Information (if applicable)
+- Important links, references, or related resources mentioned in the original
+
+# Constraints
+- Include only content explicitly stated in the original; do not add speculation or interpretation
+- Exclude content unrelated to the main body such as ads, sidebars, and comments
+- Accurately transcribe statistics, figures, and quotations
+- Keep technical terms as-is, but add brief explanations in parentheses when necessary
+- Maintain the summary length at 20-30% of the original content
+
+# Context Information (Optional)
+- **Target Audience**: [e.g., developers / marketers / general readers / decision-makers]
+- **Focus Areas**: [Specify if there are particular sections to emphasize in the summary]
+
+---
+
 `,
 	},
 };

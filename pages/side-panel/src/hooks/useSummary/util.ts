@@ -13,14 +13,16 @@ import type { Category } from "@web-memo/shared/modules/extension-bridge";
 import { DEFAULT_LANGUAGE } from "./constant";
 
 interface GetSystemPromptProps {
-	language: string;
+	language: "ko" | "en";
 	category: Category;
 }
 
 export const getSummaryPrompt = async (content: string, category: Category) => {
 	const language = await ChromeSyncStorage.get<string>(STORAGE_KEYS.language);
+	const validLanguage: "ko" | "en" =
+		language === "ko" || language === "en" ? language : DEFAULT_LANGUAGE;
 	const systemPrompt = await getSystemPrompt({
-		language: language ?? DEFAULT_LANGUAGE,
+		language: validLanguage,
 		category,
 	});
 
@@ -37,17 +39,9 @@ const getSystemPrompt = async ({
 	const languagePrompt =
 		`${PROMPT.language} ${LANGUAGE_MAP[language] ?? "Korean"}`.repeat(3);
 
-	if (category === "youtube") {
-		const youtubePrompts =
-			(await ChromeSyncStorage.get(STORAGE_KEYS.youtubePrompts)) ??
-			DEFAULT_PROMPTS.youtube;
-		return `${youtubePrompts} ${languagePrompt} ${PROMPT.default}`;
-	}
-
-	const webPrompts =
-		(await ChromeSyncStorage.get(STORAGE_KEYS.webPrompts)) ??
-		DEFAULT_PROMPTS.web;
-	return `${webPrompts} ${languagePrompt} ${PROMPT.default}`;
+	if (category === "youtube")
+		return `${DEFAULT_PROMPTS.youtube[language]} ${languagePrompt} ${PROMPT.default}`;
+	return `${DEFAULT_PROMPTS.web[language]} ${languagePrompt} ${PROMPT.default}`;
 };
 
 export const processStreamingResponse = async (

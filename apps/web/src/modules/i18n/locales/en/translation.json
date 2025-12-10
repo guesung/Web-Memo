@@ -50,6 +50,14 @@
 	"updates": {
 		"title": "What's new",
 		"versions": {
+			"v1.9.7": {
+				"title": "Chrome Web Store info and prompt improvements",
+				"content": [
+					"Updated Chrome Web Store name and description",
+					"Simplified prompt settings and improved default prompts",
+					"Fixed feature image order on introduction page"
+				]
+			},
 			"v1.9.6": {
 				"title": "Code quality and SEO improvements",
 				"content": [

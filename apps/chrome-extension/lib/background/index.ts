@@ -1,7 +1,7 @@
 import "webextension-polyfill";
 
 import { CONFIG } from "@web-memo/env";
-import { DEFAULT_PROMPTS, URL } from "@web-memo/shared/constants";
+import { URL } from "@web-memo/shared/constants";
 import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
@@ -14,30 +14,8 @@ import { getSupabaseClient, I18n, Tab } from "@web-memo/shared/utils/extension";
 chrome.runtime.onInstalled.addListener(async () => {
 	chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 	const language = await ChromeSyncStorage.get(STORAGE_KEYS.language);
-	const youtubePrompts = await ChromeSyncStorage.get(
-		STORAGE_KEYS.youtubePrompts,
-	);
-	const webPrompts = await ChromeSyncStorage.get(STORAGE_KEYS.webPrompts);
-
 	const uiLanguage = I18n.getUILanguage();
 	if (!language) ChromeSyncStorage.set(STORAGE_KEYS.language, uiLanguage);
-	if (!youtubePrompts) {
-		if (uiLanguage === "ko")
-			ChromeSyncStorage.set(
-				STORAGE_KEYS.youtubePrompts,
-				DEFAULT_PROMPTS.youtube.ko,
-			);
-		else
-			ChromeSyncStorage.set(
-				STORAGE_KEYS.youtubePrompts,
-				DEFAULT_PROMPTS.youtube.en,
-			);
-	}
-	if (!webPrompts) {
-		if (uiLanguage === "ko")
-			ChromeSyncStorage.set(STORAGE_KEYS.webPrompts, DEFAULT_PROMPTS.web.ko);
-		else ChromeSyncStorage.set(STORAGE_KEYS.webPrompts, DEFAULT_PROMPTS.web.en);
-	}
 });
 
 // 확장 프로그램이 설치되었을 때 contextMenus를 설정한다.

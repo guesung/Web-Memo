@@ -1,9 +1,9 @@
 {
 	"extensionName": {
-		"message": "웹 메모 - 웹사이트에서 즉시 메모하기"
+		"message": "Web Memo - AI 요약 & 메모"
 	},
 	"extensionDescription": {
-		"message": "웹사이트에서 사이드 패널을 열어 즉시 메모할 수 있는 도구입니다."
+		"message": "클릭 한 번으로 웹페이지와 유튜브를 AI로 요약하고, 메모로 저장하세요. 100% 무료로 사용 가능!"
 	},
 	"memo": {
 		"message": "메모"

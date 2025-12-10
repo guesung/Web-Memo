@@ -1,5 +1,5 @@
 import { EXTENSION } from "@web-memo/shared/constants";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "../constant";
 import { createErrorResponse, handleOpenAIError } from "../util";

@@ -5,12 +5,12 @@ import useTranslation from "@src/modules/i18n/util.client";
 import { PATHS } from "@web-memo/shared/constants";
 import { motion } from "framer-motion";
 import {
-	Pencil,
+	ArrowRight,
 	BarChart3,
 	FolderOpen,
-	Sparkles,
 	Heart,
-	ArrowRight,
+	Pencil,
+	Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 

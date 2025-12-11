@@ -26,7 +26,7 @@ export default async function Hero({ lng }: HeroProps) {
 			<div className="relative mx-auto max-w-6xl px-4 py-16 lg:py-24">
 				<div className="grid lg:grid-cols-2 gap-12 items-center">
 					{/* Left: Text Content - Server Rendered for LCP */}
-					<div className="text-center lg:text-left animate-fade-in">
+					<div className="text-center lg:text-left">
 						{/* Trust Badge */}
 						<div className="mb-6 inline-flex items-center gap-3 rounded-full glass-card px-5 py-2.5 shadow-lg">
 							<div className="flex items-center gap-1">
@@ -100,7 +100,7 @@ export default async function Hero({ lng }: HeroProps) {
 					</div>
 
 					{/* Right: Browser Mockup */}
-					<div className="relative hidden lg:block animate-slide-in-right">
+					<div className="relative hidden lg:block">
 						<div className="animate-float">
 							{/* Browser Frame */}
 							<div className="relative rounded-2xl overflow-hidden shadow-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">

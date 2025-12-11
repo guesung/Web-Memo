@@ -1,83 +1,34 @@
-"use client";
-
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.client";
+import useTranslation from "@src/modules/i18n/util.server";
 import { URL } from "@web-memo/shared/constants";
-import { motion } from "framer-motion";
-import { Check, Chrome, Globe, Sparkles, Star, Users, Zap } from "lucide-react";
+import { Check, Chrome, Globe, Sparkles, Star, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { HeroAnimations } from "./HeroAnimations";
 
 interface HeroProps extends LanguageType {}
 
-export default function Hero({ lng }: HeroProps) {
-	const { t } = useTranslation(lng);
+export default async function Hero({ lng }: HeroProps) {
+	const { t } = await useTranslation(lng);
 
 	return (
 		<section className="relative overflow-hidden min-h-[90vh] flex items-center">
-			{/* Animated Gradient Background */}
+			{/* Static Gradient Background */}
 			<div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950" />
 			<div className="absolute inset-0 gradient-mesh dark:gradient-mesh-dark opacity-5" />
 
-			{/* Animated Background Elements */}
-			<div className="absolute inset-0 overflow-hidden pointer-events-none">
-				<motion.div
-					animate={{
-						scale: [1, 1.2, 1],
-						opacity: [0.2, 0.3, 0.2],
-					}}
-					transition={{
-						duration: 8,
-						repeat: Number.POSITIVE_INFINITY,
-						ease: "easeInOut",
-					}}
-					className="absolute -top-40 -right-40 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl"
-				/>
-				<motion.div
-					animate={{
-						scale: [1.2, 1, 1.2],
-						opacity: [0.2, 0.3, 0.2],
-					}}
-					transition={{
-						duration: 10,
-						repeat: Number.POSITIVE_INFINITY,
-						ease: "easeInOut",
-					}}
-					className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl"
-				/>
-				<motion.div
-					animate={{
-						scale: [1, 1.1, 1],
-						x: [0, 50, 0],
-					}}
-					transition={{
-						duration: 12,
-						repeat: Number.POSITIVE_INFINITY,
-						ease: "easeInOut",
-					}}
-					className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-3xl"
-				/>
-			</div>
+			{/* Animated Background Elements - Client Component */}
+			<HeroAnimations />
 
 			{/* Grid Pattern Overlay */}
 			<div className="absolute inset-0 bg-grid opacity-30 dark:opacity-10" />
 
 			<div className="relative mx-auto max-w-6xl px-4 py-16 lg:py-24">
 				<div className="grid lg:grid-cols-2 gap-12 items-center">
-					{/* Left: Text Content */}
-					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.6 }}
-						className="text-center lg:text-left"
-					>
+					{/* Left: Text Content - Server Rendered for LCP */}
+					<div className="text-center lg:text-left">
 						{/* Trust Badge */}
-						<motion.div
-							initial={{ opacity: 0, scale: 0.9 }}
-							animate={{ opacity: 1, scale: 1 }}
-							transition={{ duration: 0.5, delay: 0.2 }}
-							className="mb-6 inline-flex items-center gap-3 rounded-full glass-card px-5 py-2.5 shadow-lg"
-						>
+						<div className="mb-6 inline-flex items-center gap-3 rounded-full glass-card px-5 py-2.5 shadow-lg">
 							<div className="flex items-center gap-1">
 								{[...Array(5)].map((_, i) => (
 									<Star
@@ -94,40 +45,25 @@ export default function Hero({ lng }: HeroProps) {
 								<Users className="h-4 w-4" />
 								<span>250+ users</span>
 							</div>
-						</motion.div>
+						</div>
 
-						{/* Main Headline */}
-						<motion.h1
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.5, delay: 0.3 }}
-							className="mb-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight"
-						>
+						{/* Main Headline - Critical LCP Element */}
+						<h1 className="mb-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
 							<span className="text-gray-900 dark:text-gray-100">
 								{t("introduce.hero.title").split(" ")[0]}{" "}
 							</span>
 							<span className="gradient-text dark:gradient-text-dark">
 								{t("introduce.hero.title").split(" ").slice(1).join(" ")}
 							</span>
-						</motion.h1>
+						</h1>
 
 						{/* Subtitle */}
-						<motion.p
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.5, delay: 0.4 }}
-							className="mb-8 text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-xl mx-auto lg:mx-0"
-						>
+						<p className="mb-8 text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-xl mx-auto lg:mx-0">
 							{t("introduce.hero.subtitle")}
-						</motion.p>
+						</p>
 
 						{/* CTA Buttons */}
-						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.5, delay: 0.5 }}
-							className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
-						>
+						<div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
 							{/* Primary CTA */}
 							<Link
 								href={URL.chromeStore}
@@ -148,15 +84,10 @@ export default function Hero({ lng }: HeroProps) {
 								<Sparkles className="h-5 w-5" />
 								{t("introduce.hero.explore_features")}
 							</Link>
-						</motion.div>
+						</div>
 
 						{/* Additional Trust Signals */}
-						<motion.div
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-							transition={{ duration: 0.5, delay: 0.7 }}
-							className="mt-8 flex items-center gap-6 justify-center lg:justify-start text-sm text-gray-500 dark:text-gray-400"
-						>
+						<div className="mt-8 flex items-center gap-6 justify-center lg:justify-start text-sm text-gray-500 dark:text-gray-400">
 							<div className="flex items-center gap-2">
 								<Check className="h-4 w-4 text-green-500" />
 								{t("introduce.hero.free_forever")}
@@ -165,16 +96,11 @@ export default function Hero({ lng }: HeroProps) {
 								<Check className="h-4 w-4 text-green-500" />
 								{t("introduce.hero.quick_install")}
 							</div>
-						</motion.div>
-					</motion.div>
+						</div>
+					</div>
 
 					{/* Right: Browser Mockup */}
-					<motion.div
-						initial={{ opacity: 0, x: 50 }}
-						animate={{ opacity: 1, x: 0 }}
-						transition={{ duration: 0.8, delay: 0.3 }}
-						className="relative hidden lg:block"
-					>
+					<div className="relative hidden lg:block">
 						<div className="animate-float">
 							{/* Browser Frame */}
 							<div className="relative rounded-2xl overflow-hidden shadow-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
@@ -208,7 +134,7 @@ export default function Hero({ lng }: HeroProps) {
 							{/* Decorative Glow */}
 							<div className="absolute -inset-4 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-cyan-500/20 rounded-3xl blur-2xl -z-10" />
 						</div>
-					</motion.div>
+					</div>
 				</div>
 			</div>
 		</section>

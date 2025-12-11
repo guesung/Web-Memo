@@ -1,27 +1,19 @@
-"use client";
-
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.client";
-import { motion } from "framer-motion";
+import useTranslation from "@src/modules/i18n/util.server";
 import { Youtube, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 interface HeroProps extends LanguageType {}
 
-export default function Hero({ lng }: HeroProps) {
-	const { t } = useTranslation(lng);
+export default async function Hero({ lng }: HeroProps) {
+	const { t } = await useTranslation(lng);
 
 	return (
 		<section className="relative py-20 lg:py-32 overflow-hidden">
 			<div className="absolute inset-0 bg-gradient-to-br from-red-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800" />
 
 			<div className="relative mx-auto max-w-6xl px-4">
-				<motion.div
-					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.5 }}
-					className="text-center"
-				>
+				<div className="text-center">
 					<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 mb-6">
 						<Youtube className="h-4 w-4" />
 						<span className="text-sm font-medium">
@@ -56,7 +48,7 @@ export default function Hero({ lng }: HeroProps) {
 							{t("features.youtubeSummary.hero.learnMore")}
 						</Link>
 					</div>
-				</motion.div>
+				</div>
 			</div>
 		</section>
 	);

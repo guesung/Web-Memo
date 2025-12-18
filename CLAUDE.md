@@ -2,6 +2,81 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🚨 CRITICAL: Subagent (Task Tool) Usage Policy
+
+**MANDATORY**: Before starting ANY non-trivial task, you MUST evaluate whether to use subagents (Task tool). This is NOT optional.
+
+### When to Use Subagents (REQUIRED)
+
+| Scenario | Required Subagent Type |
+|----------|----------------------|
+| Codebase exploration / "where is X?" | `Explore` |
+| Multi-file search or pattern finding | `Explore` |
+| Understanding code architecture | `Explore` |
+| Implementation planning | `Plan` |
+| Complex multi-step tasks | `general-purpose` |
+| Code quality improvements | `refactoring-expert` |
+| Frontend code refactoring | `frontend-refactor-kr` |
+| Security review | `security-engineer` |
+| Performance optimization | `performance-engineer` |
+| System design decisions | `system-architect` |
+| Creating PRs with proper workflow | `git-pr-workflow` |
+
+### Execution Rules
+
+1. **ALWAYS check subagent applicability FIRST** before doing any work yourself
+2. **Explore agent is MANDATORY** for:
+   - Any question about "where is X in the codebase?"
+   - Any search across multiple directories
+   - Understanding how a feature works
+   - Finding all usages of a function/component
+3. **Plan agent is MANDATORY** for:
+   - Any feature implementation with 3+ steps
+   - Architectural changes
+   - Refactoring across multiple files
+4. **Run subagents in PARALLEL** when possible to maximize efficiency
+5. **DO NOT** manually search/grep when Explore agent can do it faster
+
+### Anti-Patterns (NEVER DO THESE)
+
+```
+❌ Manually running multiple Grep/Glob commands to find code
+   → Use Explore agent instead
+
+❌ Starting implementation without planning for complex tasks
+   → Use Plan agent first
+
+❌ Running subagents sequentially when they could run in parallel
+   → Launch multiple Task tools in single message
+
+❌ Ignoring specialized agents (security, performance, etc.)
+   → Match task type to appropriate agent
+```
+
+### Decision Flowchart
+
+```
+Task received
+    │
+    ├─ "Where is X?" or "Find all Y" → Explore agent (MANDATORY)
+    │
+    ├─ Complex implementation (3+ steps) → Plan agent (MANDATORY)
+    │
+    ├─ Code quality/refactoring → refactoring-expert or frontend-refactor-kr
+    │
+    ├─ Security concerns → security-engineer
+    │
+    ├─ Performance issues → performance-engineer
+    │
+    ├─ PR creation → git-pr-workflow
+    │
+    └─ Simple, single-file change → Do it yourself
+```
+
+**Remember**: Using subagents is FASTER and MORE ACCURATE than doing everything yourself. When in doubt, USE A SUBAGENT.
+
+---
+
 ## Development Commands
 
 **Package Manager**: This project uses `pnpm` (version 9.5.0) and requires Node.js >=18.12.0.

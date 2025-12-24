@@ -43,7 +43,7 @@ export default async function Hero({ lng }: HeroProps) {
 							<div className="w-px h-4 bg-gray-300 dark:bg-gray-600" />
 							<div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
 								<Users className="h-4 w-4" />
-								<span>250+ users</span>
+								<span>300+ users</span>
 							</div>
 						</div>
 

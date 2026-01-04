@@ -41,9 +41,15 @@ const DialogContent = React.forwardRef<
 >(({ className, children, onClose, ...props }, ref) => {
 	useKeyboardBind({ key: "Escape", callback: onClose ?? (() => {}) });
 
+	const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
+		if (event.target === event.currentTarget) {
+			onClose?.();
+		}
+	};
+
 	return (
 		<DialogPortal>
-			<DialogOverlay onClick={onClose} />
+			<DialogOverlay onClick={handleOverlayClick} />
 			<DialogPrimitive.Content
 				ref={ref}
 				className={cn(

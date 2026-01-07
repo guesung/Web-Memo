@@ -646,10 +646,6 @@
 				"supported_browsers": {
 					"question": "Which browsers are supported?",
 					"answer": "Currently, Web Memo is available on Chrome and Chrome-based browsers (Edge, Brave, Arc, etc.). Simply install the extension from the Chrome Web Store to get started. Support for Firefox and Safari is coming soon—stay tuned!"
-				},
-				"data_security": {
-					"question": "Is my memo data secure?",
-					"answer": "Yes, security is our top priority. All data is encrypted and stored securely, accessible only by you. You can export or delete your data at any time. We never sell or share your data with third parties."
 				}
 			}
 		},

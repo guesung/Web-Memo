@@ -6,5 +6,4 @@ export const FAQ_ITEMS = [
 	"ai_summary",
 	"data_sync",
 	"supported_browsers",
-	"data_security",
 ] as const;

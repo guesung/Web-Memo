@@ -6,18 +6,70 @@
 	"sideEffects": false,
 	"type": "module",
 	"exports": {
-		"./utils": "./src/utils/index.ts",
-		"./utils/extension": "./src/utils/extension/index.ts",
-		"./utils/web": "./src/utils/web/index.ts",
-		"./hooks": "./src/hooks/index.ts",
-		"./hooks/extension": "./src/hooks/extension/index.ts",
-		"./constants": "./src/constants/index.ts",
-		"./types": "./src/types/index.ts",
-		"./modules/local-storage": "./src/modules/local-storage/index.ts",
-		"./modules/search-params": "./src/modules/search-params/index.ts",
-		"./modules/chrome-storage": "./src/modules/chrome-storage/index.ts",
-		"./modules/extension-bridge": "./src/modules/extension-bridge/index.ts",
-		"./modules/analytics": "./src/modules/analytics/index.ts"
+		"./utils": {
+			"types": "./src/utils/index.ts",
+			"default": "./src/utils/index.ts"
+		},
+		"./utils/extension": {
+			"types": "./src/utils/extension/index.ts",
+			"default": "./src/utils/extension/index.ts"
+		},
+		"./utils/web": {
+			"types": "./src/utils/web/index.ts",
+			"default": "./src/utils/web/index.ts"
+		},
+		"./hooks": {
+			"types": "./src/hooks/index.ts",
+			"default": "./src/hooks/index.ts"
+		},
+		"./hooks/extension": {
+			"types": "./src/hooks/extension/index.ts",
+			"default": "./src/hooks/extension/index.ts"
+		},
+		"./constants": {
+			"types": "./src/constants/index.ts",
+			"default": "./src/constants/index.ts"
+		},
+		"./types": {
+			"types": "./src/types/index.ts",
+			"default": "./src/types/index.ts"
+		},
+		"./modules/local-storage": {
+			"types": "./src/modules/local-storage/index.ts",
+			"default": "./src/modules/local-storage/index.ts"
+		},
+		"./modules/search-params": {
+			"types": "./src/modules/search-params/index.ts",
+			"default": "./src/modules/search-params/index.ts"
+		},
+		"./modules/chrome-storage": {
+			"types": "./src/modules/chrome-storage/index.ts",
+			"default": "./src/modules/chrome-storage/index.ts"
+		},
+		"./modules/extension-bridge": {
+			"types": "./src/modules/extension-bridge/index.ts",
+			"default": "./src/modules/extension-bridge/index.ts"
+		},
+		"./modules/analytics": {
+			"types": "./src/modules/analytics/index.ts",
+			"default": "./src/modules/analytics/index.ts"
+		}
+	},
+	"typesVersions": {
+		"*": {
+			"utils": ["./src/utils/index.ts"],
+			"utils/extension": ["./src/utils/extension/index.ts"],
+			"utils/web": ["./src/utils/web/index.ts"],
+			"hooks": ["./src/hooks/index.ts"],
+			"hooks/extension": ["./src/hooks/extension/index.ts"],
+			"constants": ["./src/constants/index.ts"],
+			"types": ["./src/types/index.ts"],
+			"modules/local-storage": ["./src/modules/local-storage/index.ts"],
+			"modules/search-params": ["./src/modules/search-params/index.ts"],
+			"modules/chrome-storage": ["./src/modules/chrome-storage/index.ts"],
+			"modules/extension-bridge": ["./src/modules/extension-bridge/index.ts"],
+			"modules/analytics": ["./src/modules/analytics/index.ts"]
+		}
 	},
 	"scripts": {
 		"type-check": "tsc --noEmit",

@@ -2,9 +2,6 @@
 	"extends": "@web-memo/tsconfig/react",
 	"compilerOptions": {
 		"baseUrl": ".",
-		"paths": {
-			"@*": ["./*"]
-		},
 		"moduleResolution": "bundler",
 		"noEmit": false,
 		"emitDeclarationOnly": false,

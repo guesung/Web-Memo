@@ -43,11 +43,6 @@ const FAQ_DATA = {
 			answer:
 				"현재 웹 메모는 Chrome 브라우저와 Chrome 기반 브라우저(Edge, Brave, Arc 등)에서 사용할 수 있습니다. Chrome 웹 스토어에서 확장 프로그램을 설치하면 바로 사용 가능합니다.",
 		},
-		data_security: {
-			question: "내 메모 데이터는 안전한가요?",
-			answer:
-				"네, 보안을 최우선으로 생각합니다. 모든 데이터는 암호화되어 안전하게 저장되며, 본인만 접근할 수 있습니다. 또한 언제든지 내 데이터를 내보내거나 삭제할 수 있어요.",
-		},
 	},
 	en: {
 		what_is: {
@@ -84,11 +79,6 @@ const FAQ_DATA = {
 			question: "Which browsers are supported?",
 			answer:
 				"Currently, Web Memo is available on Chrome and Chrome-based browsers (Edge, Brave, Arc, etc.). Simply install the extension from the Chrome Web Store to get started.",
-		},
-		data_security: {
-			question: "Is my memo data secure?",
-			answer:
-				"Yes, security is our top priority. All data is encrypted and stored securely, accessible only by you. You can export or delete your data at any time.",
 		},
 	},
 };

@@ -4,7 +4,7 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { URL } from "@web-memo/shared/constants";
 import { motion } from "framer-motion";
-import { Mail, Youtube, MessageCircle, Chrome, Heart } from "lucide-react";
+import { Chrome, Heart, Mail, MessageCircle, Youtube } from "lucide-react";
 import Link from "next/link";
 
 interface FooterProps extends LanguageType {}
@@ -48,7 +48,7 @@ export default function Footer({ lng }: FooterProps) {
 
 	const companyLinks = [
 		{
-			href: "mailto:pagers@kakao.com",
+			href: "mailto:gueit214@naver.com",
 			label: t("introduce.footer.contact_link"),
 			external: false,
 		},
@@ -141,12 +141,14 @@ export default function Footer({ lng }: FooterProps) {
 					<div className="flex flex-col md:flex-row justify-between items-center gap-4">
 						{/* Copyright */}
 						<p className="text-gray-500 text-sm">
-							&copy; {new Date().getFullYear()} {t("introduce.footer.copyright")}
+							&copy; {new Date().getFullYear()}{" "}
+							{t("introduce.footer.copyright")}
 						</p>
 
 						{/* Made with Love */}
 						<p className="text-gray-500 text-sm flex items-center gap-1">
-							Made with <Heart className="h-4 w-4 text-red-500 fill-red-500" /> in Korea
+							Made with <Heart className="h-4 w-4 text-red-500 fill-red-500" />{" "}
+							in Korea
 						</p>
 					</div>
 				</div>

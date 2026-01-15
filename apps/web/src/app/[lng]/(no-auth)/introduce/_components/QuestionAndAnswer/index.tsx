@@ -83,7 +83,7 @@ export default function QuestionAndAnswer({ lng }: LanguageType) {
 					<p className="text-gray-600 dark:text-gray-400">
 						{t("introduce.faq.other_questions")}{" "}
 						<a
-							href="mailto:pagers@kakao.com"
+							href="mailto:gueit214@naver.com"
 							className="text-purple-600 dark:text-purple-400 font-medium hover:underline"
 						>
 							{t("introduce.faq.contact_us")}

@@ -16,7 +16,7 @@ const getOrganizationSchema = (lng: Language) => ({
 	],
 	contactPoint: {
 		"@type": "ContactPoint",
-		email: "pagers@kakao.com",
+		email: "gueit214@naver.com",
 		contactType: "customer service",
 		availableLanguage: ["Korean", "English"],
 	},

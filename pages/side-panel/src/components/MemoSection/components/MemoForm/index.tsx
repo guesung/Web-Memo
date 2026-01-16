@@ -15,7 +15,7 @@ import {
 	cn,
 	toast,
 } from "@web-memo/ui";
-import { HeartIcon, XIcon } from "lucide-react";
+import { HeartIcon, Loader2Icon, XIcon } from "lucide-react";
 import { useMemo, useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { SaveStatus } from "./components";
@@ -45,10 +45,11 @@ function MemoFormContent() {
 		onCategoryChange: updateCategory,
 	});
 
-	const { triggerSuggestion } = useCategorySuggestion({
-		currentCategoryId: currentCategoryId,
-		onCategorySelect: updateCategory,
-	});
+	const { isLoading: isSuggestingCategory, triggerSuggestion } =
+		useCategorySuggestion({
+			currentCategoryId: currentCategoryId,
+			onCategorySelect: updateCategory,
+		});
 
 	const handleWishClick = async () => {
 		const newIsWish = await toggleWish();
@@ -130,6 +131,12 @@ function MemoFormContent() {
 						<SaveStatus isSaving={isSaving} memo={watch("memo")} />
 					</div>
 					<div className="flex items-center gap-2">
+						{isSuggestingCategory && (
+							<div className="flex items-center gap-1 text-xs text-muted-foreground">
+								<Loader2Icon size={12} className="animate-spin" />
+								{I18n.get("category_suggesting")}
+							</div>
+						)}
 						{currentCategory && (
 							<Badge
 								variant="outline"

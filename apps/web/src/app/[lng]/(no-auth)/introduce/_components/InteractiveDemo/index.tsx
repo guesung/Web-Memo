@@ -12,7 +12,7 @@ import {
 	Sparkles,
 } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface InteractiveDemoProps extends LanguageType {}
 
@@ -72,20 +72,43 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 		setProgress(0);
 	}, [tabs.length]);
 
-	useEffect(() => {
-		if (isPaused) return;
+	const rafRef = useRef<number | null>(null);
+	const lastTimeRef = useRef<number | null>(null);
 
-		const progressInterval = setInterval(() => {
+	useEffect(() => {
+		if (isPaused) {
+			lastTimeRef.current = null;
+			return;
+		}
+
+		const animate = (timestamp: number) => {
+			if (lastTimeRef.current === null) {
+				lastTimeRef.current = timestamp;
+			}
+
+			const elapsed = timestamp - lastTimeRef.current;
+			const progressIncrement = (elapsed / AUTO_ROTATE_INTERVAL) * 100;
+
 			setProgress((prev) => {
-				if (prev >= 100) {
+				const next = prev + progressIncrement;
+				if (next >= 100) {
 					nextTab();
 					return 0;
 				}
-				return prev + 100 / (AUTO_ROTATE_INTERVAL / 100);
+				return next;
 			});
-		}, 100);
 
-		return () => clearInterval(progressInterval);
+			lastTimeRef.current = timestamp;
+			rafRef.current = requestAnimationFrame(animate);
+		};
+
+		rafRef.current = requestAnimationFrame(animate);
+
+		return () => {
+			if (rafRef.current !== null) {
+				cancelAnimationFrame(rafRef.current);
+			}
+		};
 	}, [isPaused, nextTab]);
 
 	const handleTabClick = (index: number) => {

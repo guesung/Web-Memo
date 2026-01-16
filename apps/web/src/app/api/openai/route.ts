@@ -9,6 +9,8 @@ import {
 	validateMessages,
 } from "./util";
 
+export const runtime = "edge";
+
 export async function POST(request: NextRequest) {
 	try {
 		const origin = request.headers.get("origin");

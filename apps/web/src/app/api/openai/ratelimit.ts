@@ -16,7 +16,7 @@ const ratelimit = isRateLimitEnabled
 				url: UPSTASH_REDIS_REST_URL,
 				token: UPSTASH_REDIS_REST_TOKEN,
 			}),
-			limiter: Ratelimit.slidingWindow(1, "1 h"),
+			limiter: Ratelimit.slidingWindow(60, "1 h"),
 			analytics: true,
 			prefix: "openai-api",
 		})

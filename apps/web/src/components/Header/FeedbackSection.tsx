@@ -7,6 +7,7 @@ import { useState } from "react";
 
 const FeedbackDialog = dynamic(() => import("./FeedbackDialog"), {
 	ssr: false,
+	loading: () => null,
 });
 
 interface FeedbackSectionProps extends LanguageType {}

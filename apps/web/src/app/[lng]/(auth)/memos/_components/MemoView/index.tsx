@@ -4,6 +4,7 @@ import { useGuide } from "@src/modules/guide";
 import type { LanguageType } from "@src/modules/i18n";
 import { useDidMount, useMemosInfiniteQuery } from "@web-memo/shared/hooks";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
+import { Skeleton } from "@web-memo/ui";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useFormContext } from "react-hook-form";
@@ -13,6 +14,7 @@ import MemoGrid from "./MemoGrid";
 
 const MemoRefreshButton = dynamic(() => import("./MemoRefreshButton"), {
 	ssr: false,
+	loading: () => <Skeleton className="h-10 w-10" />,
 });
 
 export default function MemoView({ lng }: LanguageType) {

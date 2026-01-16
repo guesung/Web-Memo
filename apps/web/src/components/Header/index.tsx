@@ -1,14 +1,19 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
-import { Loading } from "@web-memo/ui";
+import { Skeleton } from "@web-memo/ui";
 import dynamic from "next/dynamic";
 
 import HeaderLeft from "./HeaderLeft";
 
 const HeaderRight = dynamic(() => import("./HeaderRight"), {
 	ssr: false,
-	loading: () => <Loading />,
+	loading: () => (
+		<div className="flex items-center gap-2">
+			<Skeleton className="h-10 w-10 rounded-md" />
+			<Skeleton className="h-8 w-8 rounded-full" />
+		</div>
+	),
 });
 
 export default function Header({ lng }: LanguageType) {

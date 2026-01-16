@@ -42,7 +42,7 @@ test.describe("메모 수정 기능 (Mocked)", () => {
 
 		await page.getByTestId("memo-textarea").fill(newMemoText);
 
-		await page.waitForTimeout(500);
+		await page.waitForTimeout(1_500);
 
 		await page.getByTestId("memo-close-button").click();
 

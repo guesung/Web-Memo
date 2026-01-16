@@ -107,7 +107,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 					if (!value.memo) return;
 
 					saveMemo();
-				}, 2000);
+				}, 1_000);
 			});
 
 			return () => subscription.unsubscribe();

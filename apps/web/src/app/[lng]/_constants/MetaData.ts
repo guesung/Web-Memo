@@ -59,9 +59,7 @@ export const metadataEnglish: Metadata = {
 	description:
 		"Web Memo is a service that lets you instantly record your thoughts while reading web pages. Save ideas and important content that come to mind while reading articles through the side panel and manage them systematically.",
 	keywords: ["web memo", "online memo", "notepad", "notes"],
-	authors: [{ name: "Gyusung Park", url: "https://github.com/guesung" }],
-	creator: "Gyusung Park",
-	publisher: "Gyusung Park",
+	authors: [{ url: "https://github.com/guesung" }],
 	applicationName: "Web Memo",
 	category: "Web Memo",
 	alternates: {

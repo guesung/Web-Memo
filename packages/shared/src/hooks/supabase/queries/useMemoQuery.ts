@@ -26,6 +26,6 @@ export default function useMemoQuery({ url, id }: UseMemoQueryProps) {
 
 	return {
 		...query,
-		memo: query.data?.data?.[0],
+		memo: query.data?.data?.at(-1),
 	};
 }

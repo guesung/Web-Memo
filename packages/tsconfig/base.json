@@ -3,6 +3,8 @@
 	"display": "Default",
 	"compilerOptions": {
 		"composite": false,
+		"incremental": true,
+		"tsBuildInfoFile": ".tsbuildinfo",
 		"declaration": true,
 		"declarationMap": true,
 		"esModuleInterop": true,
@@ -21,8 +23,10 @@
 		"allowJs": true,
 		"resolveJsonModule": true,
 		"module": "ESNext",
-		"lib": ["DOM", "ESNext"],
-		"types": ["chrome", "jest", "node"]
+		"target": "ES2022",
+		"lib": ["DOM", "DOM.Iterable", "ESNext"],
+		"types": ["chrome", "jest", "node"],
+		"moduleDetection": "force"
 	},
-	"exclude": ["node_modules"]
+	"exclude": ["node_modules", "dist", "build", ".next"]
 }

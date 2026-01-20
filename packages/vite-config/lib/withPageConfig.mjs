@@ -47,10 +47,30 @@ export function withPageConfig(config) {
 					reportCompressedSize: isProduction,
 					emptyOutDir: isProduction,
 					watch: watchOption,
+					target: "esnext",
+					cssCodeSplit: true,
 					rollupOptions: {
 						external: ["chrome"],
+						treeshake: {
+							preset: "recommended",
+							moduleSideEffects: false,
+						},
 					},
 				},
+				esbuild: {
+					target: "esnext",
+					treeShaking: true,
+					minifyIdentifiers: isProduction,
+					minifySyntax: isProduction,
+					minifyWhitespace: isProduction,
+					legalComments: "none",
+				},
+				optimizeDeps: {
+					esbuildOptions: {
+						target: "esnext",
+					},
+				},
+				cacheDir: "node_modules/.vite",
 				define: {
 					"process.env.NODE_ENV": isDev ? `"development"` : `"production"`,
 				},

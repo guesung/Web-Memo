@@ -7,7 +7,20 @@ const nextConfig = {
 	images: {
 		remotePatterns: [
 			{
-				hostname: "**",
+				protocol: "https",
+				hostname: "*.supabase.co",
+			},
+			{
+				protocol: "https",
+				hostname: "*.supabase.in",
+			},
+			{
+				protocol: "https",
+				hostname: "lh3.googleusercontent.com",
+			},
+			{
+				protocol: "https",
+				hostname: "avatars.githubusercontent.com",
 			},
 		],
 	},
@@ -15,8 +28,24 @@ const nextConfig = {
 		removeConsole: process.env.NODE_ENV === "production",
 	},
 	experimental: {
-		optimizePackageImports: ["@web-memo/ui"],
+		optimizePackageImports: [
+			"@web-memo/ui",
+			"@web-memo/shared",
+			"lucide-react",
+			"@tanstack/react-query",
+			"date-fns",
+			"framer-motion",
+		],
 	},
+	typescript: {
+		ignoreBuildErrors: false,
+	},
+	eslint: {
+		ignoreDuringBuilds: true,
+	},
+	poweredByHeader: false,
+	reactStrictMode: true,
+	productionBrowserSourceMaps: false,
 };
 
 const withBundleAnalyzer = bundleAnalyzer({

@@ -7,7 +7,7 @@ const nextConfig = {
 	images: {
 		remotePatterns: [
 			{
-				hostname: "**",
+				hostname: "*",
 			},
 		],
 	},
@@ -15,8 +15,23 @@ const nextConfig = {
 		removeConsole: process.env.NODE_ENV === "production",
 	},
 	experimental: {
-		optimizePackageImports: ["@web-memo/ui"],
+		optimizePackageImports: [
+			"@web-memo/ui",
+			"@web-memo/shared",
+			"lucide-react",
+			"date-fns",
+			"framer-motion",
+		],
 	},
+	typescript: {
+		ignoreBuildErrors: false,
+	},
+	eslint: {
+		ignoreDuringBuilds: true,
+	},
+	poweredByHeader: false,
+	reactStrictMode: true,
+	productionBrowserSourceMaps: false,
 };
 
 const withBundleAnalyzer = bundleAnalyzer({

@@ -1,49 +1,99 @@
 {
 	"$schema": "https://turbo.build/schema.json",
 	"ui": "tui",
+	"cacheDir": ".turbo/cache",
+	"daemon": true,
+	"envMode": "strict",
 	"tasks": {
 		"ready": {
 			"dependsOn": ["^ready"],
-			"outputs": ["dist", "build"],
-			"cache": false
+			"outputs": ["dist/**", "build/**"],
+			"inputs": ["src/**", "package.json", "tsconfig.json"],
+			"cache": true
 		},
 		"dev": {
 			"dependsOn": ["^ready"],
-			"outputs": ["dist", "build"],
-			"inputs": [".env"],
+			"outputs": [],
+			"inputs": [".env", ".env.*"],
 			"persistent": true,
 			"cache": false
 		},
 		"preview": {
+			"dependsOn": ["build"],
 			"cache": false
 		},
 		"build": {
 			"dependsOn": ["ready", "^build"],
-			"outputs": ["dist", "build"],
-			"inputs": [".env"]
+			"outputs": ["dist/**", "build/**", ".next/**"],
+			"inputs": [
+				"src/**",
+				"public/**",
+				"package.json",
+				"tsconfig.json",
+				"vite.config.*",
+				"next.config.*",
+				"tailwind.config.*",
+				".env",
+				".env.*"
+			]
 		},
 		"start": {
-			"outputs": ["dist", "build", ".next"],
-			"inputs": [".env"]
+			"dependsOn": ["build"],
+			"outputs": [],
+			"inputs": [".env", ".env.*"],
+			"cache": false
 		},
 		"zip": {
-			"dependsOn": ["^build"],
-			"cache": false
+			"dependsOn": ["build"],
+			"outputs": ["*.zip"],
+			"cache": true
 		},
 		"type-check": {
-			"cache": false
+			"dependsOn": ["^ready"],
+			"outputs": [],
+			"inputs": [
+				"src/**/*.ts",
+				"src/**/*.tsx",
+				"tsconfig.json",
+				"tsconfig.*.json",
+				"package.json"
+			],
+			"cache": true
 		},
 		"lint": {
-			"cache": false
+			"dependsOn": ["^ready"],
+			"outputs": [],
+			"inputs": [
+				"src/**/*.ts",
+				"src/**/*.tsx",
+				"src/**/*.js",
+				"src/**/*.jsx",
+				"biome.json",
+				"package.json"
+			],
+			"cache": true
 		},
 		"lint:fix": {
+			"outputs": [],
 			"cache": false
 		},
 		"clean": {
 			"cache": false
 		},
 		"tsc-watch": {
+			"persistent": true,
 			"cache": false
+		},
+		"test": {
+			"outputs": ["coverage/**"],
+			"inputs": [
+				"src/**",
+				"tests/**",
+				"**/*.test.*",
+				"**/*.spec.*",
+				"vitest.config.*"
+			],
+			"cache": true
 		}
 	}
 }

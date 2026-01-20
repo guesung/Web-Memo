@@ -19,7 +19,6 @@ const nextConfig = {
 			"@web-memo/ui",
 			"@web-memo/shared",
 			"lucide-react",
-			"@tanstack/react-query",
 			"date-fns",
 			"framer-motion",
 		],

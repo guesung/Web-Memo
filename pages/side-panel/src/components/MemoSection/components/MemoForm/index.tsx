@@ -23,7 +23,7 @@ import { useCategorySuggestion, useMemoCategory, useMemoForm } from "./hooks";
 
 function MemoFormContent() {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-	const { register, watch } = useFormContext<MemoInput>();
+	const { register, watch, getValues } = useFormContext<MemoInput>();
 	const { ref, ...rest } = register("memo");
 
 	const currentCategoryId = watch("categoryId");
@@ -103,7 +103,10 @@ function MemoFormContent() {
 
 							if (hasMemoData && hasMemoText && !hasCategory) {
 								console.log("triggerSuggestion");
-								triggerSuggestion(event.target.value);
+								triggerSuggestion(event.target.value, {
+									isWish: getValues("isWish") ?? false,
+									memoId: memoData?.id,
+								});
 							}
 						},
 					})}

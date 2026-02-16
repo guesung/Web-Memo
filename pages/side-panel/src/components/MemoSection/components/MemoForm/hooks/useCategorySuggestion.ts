@@ -45,7 +45,7 @@ export function useCategorySuggestion({
 	const autoDismissTimerRef = useRef<NodeJS.Timeout | null>(null);
 
 	const applyCategorySuggestionDirect = useCallback(
-		async (suggestionToApply: CategorySuggestion) => {
+		async (suggestionToApply: CategorySuggestion, saveContext?: CategorySaveContext) => {
 			try {
 				let categoryId = suggestionToApply.existingCategoryId;
 
@@ -58,7 +58,7 @@ export function useCategorySuggestion({
 				}
 
 				if (categoryId) {
-					onCategorySelect(categoryId);
+					onCategorySelect(categoryId, saveContext);
 				}
 			} catch (error) {
 				console.error("Failed to auto-apply category:", error);
@@ -88,7 +88,7 @@ export function useCategorySuggestion({
 	}, [reset]);
 
 	const triggerSuggestion = useCallback(
-		async (memoText: string) => {
+		async (memoText: string, triggerContext?: TriggerContext) => {
 			if (currentCategoryId) return;
 
 			try {
@@ -98,6 +98,13 @@ export function useCategorySuggestion({
 				if (dismissedUrlsRef.current.has(tabInfo.url)) return;
 
 				currentUrlRef.current = tabInfo.url;
+
+				const saveContext: CategorySaveContext = {
+					memo: memoText,
+					isWish: triggerContext?.isWish ?? false,
+					memoId: triggerContext?.memoId,
+					tabInfo,
+				};
 
 				abortControllerRef.current?.abort();
 				abortControllerRef.current = new AbortController();
@@ -163,7 +170,7 @@ export function useCategorySuggestion({
 						)) ?? true;
 
 					if (shouldAutoApply) {
-						await applyCategorySuggestionDirect(suggestionData);
+						await applyCategorySuggestionDirect(suggestionData, saveContext);
 					} else {
 						setSuggestion(suggestionData);
 
@@ -234,15 +241,27 @@ interface CategorySuggestionResponse {
 	suggestion: CategorySuggestion | null;
 }
 
+interface CategorySaveContext {
+	memo: string;
+	isWish: boolean;
+	memoId?: number;
+	tabInfo: { title: string; favIconUrl?: string; url: string };
+}
+
+interface TriggerContext {
+	isWish: boolean;
+	memoId?: number;
+}
+
 interface UseCategorySuggestionProps {
 	currentCategoryId: number | null;
-	onCategorySelect: (categoryId: number) => void;
+	onCategorySelect: (categoryId: number, saveContext?: CategorySaveContext) => void;
 }
 
 interface UseCategorySuggestionReturn {
 	isLoading: boolean;
 	suggestion: CategorySuggestion | null;
-	triggerSuggestion: (memoText: string) => void;
+	triggerSuggestion: (memoText: string, triggerContext?: TriggerContext) => void;
 	triggerSuggestionByPageContent: () => Promise<void>;
 	acceptSuggestion: () => Promise<void>;
 	dismissSuggestion: () => void;

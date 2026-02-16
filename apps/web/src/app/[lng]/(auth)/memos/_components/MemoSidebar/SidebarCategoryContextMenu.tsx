@@ -20,13 +20,15 @@ import {
 	ContextMenuContent,
 	ContextMenuItem,
 	ContextMenuTrigger,
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
 } from "@web-memo/ui";
-import { MoreHorizontal, Palette, Pencil, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Palette, Pencil, Trash2 } from "lucide-react";
+import {
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 
 export default function SidebarCategoryContextMenu({
 	category,
@@ -79,64 +81,28 @@ export default function SidebarCategoryContextMenu({
 
 	return (
 		<>
-			<div className="group/category relative">
-				<ContextMenu>
-					<ContextMenuTrigger asChild>
-						{children}
-					</ContextMenuTrigger>
-					<ContextMenuContent>
-						<ContextMenuItem onClick={handleRename}>
-							<Pencil size={14} className="mr-2" />
-							{t("sideBar.rename")}
-						</ContextMenuItem>
-						<ContextMenuItem onClick={openColorPicker}>
-							<Palette size={14} className="mr-2" />
-							{t("sideBar.changeColor")}
-						</ContextMenuItem>
-						<ContextMenuItem
-							onClick={() => setShowDeleteDialog(true)}
-							className="text-destructive"
-						>
-							<Trash2 size={14} className="mr-2" />
-							{t("sideBar.deleteCategory")}
-						</ContextMenuItem>
-					</ContextMenuContent>
-				</ContextMenu>
+			<ContextMenu>
+				<ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
+				<ContextMenuContent>
+					<ContextMenuItem onClick={handleRename}>
+						<Pencil size={14} className="mr-2" />
+						{t("sideBar.rename")}
+					</ContextMenuItem>
+					<ContextMenuItem onClick={openColorPicker}>
+						<Palette size={14} className="mr-2" />
+						{t("sideBar.changeColor")}
+					</ContextMenuItem>
+					<ContextMenuItem
+						onClick={() => setShowDeleteDialog(true)}
+						className="text-destructive"
+					>
+						<Trash2 size={14} className="mr-2" />
+						{t("sideBar.deleteCategory")}
+					</ContextMenuItem>
+				</ContextMenuContent>
+			</ContextMenu>
 
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<button
-							type="button"
-							className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-1 rounded-md opacity-0 group-hover/category:opacity-100 hover:bg-gray-200 dark:hover:bg-gray-700 transition-opacity"
-						>
-							<MoreHorizontal size={14} className="text-gray-500 dark:text-gray-400" />
-						</button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end" side="right">
-						<DropdownMenuItem onClick={handleRename}>
-							<Pencil size={14} className="mr-2" />
-							{t("sideBar.rename")}
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={openColorPicker}>
-							<Palette size={14} className="mr-2" />
-							{t("sideBar.changeColor")}
-						</DropdownMenuItem>
-						<DropdownMenuItem
-							onClick={() => setShowDeleteDialog(true)}
-							className="text-destructive"
-						>
-							<Trash2 size={14} className="mr-2" />
-							{t("sideBar.deleteCategory")}
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-			</div>
-
-			<input
-				ref={colorInputRef}
-				type="color"
-				className="sr-only"
-			/>
+			<input ref={colorInputRef} type="color" className="sr-only" />
 
 			<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
 				<AlertDialogContent>

@@ -20,10 +20,9 @@ import {
 	ContextMenuContent,
 	ContextMenuItem,
 	ContextMenuTrigger,
-	Input,
 } from "@web-memo/ui";
 import { Palette, Pencil, Trash2 } from "lucide-react";
-import { useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 export default function SidebarCategoryContextMenu({
 	category,
@@ -33,7 +32,6 @@ export default function SidebarCategoryContextMenu({
 }: SidebarCategoryContextMenuProps) {
 	const { t } = useTranslation(lng);
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-	const [showColorPicker, setShowColorPicker] = useState(false);
 	const colorInputRef = useRef<HTMLInputElement>(null);
 
 	const { mutate: updateCategory } = useCategoryUpdateMutation();
@@ -43,13 +41,22 @@ export default function SidebarCategoryContextMenu({
 		onStartEditing();
 	};
 
-	const handleColorBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-		const newColor = e.target.value;
-		setShowColorPicker(false);
-		if (newColor !== (category.color || "#9333ea")) {
-			updateCategory({ id: category.id, request: { color: newColor } });
-		}
-	};
+	const handleColorChange = useCallback(
+		(e: Event) => {
+			const newColor = (e.target as HTMLInputElement).value;
+			if (newColor !== (category.color || "#9333ea")) {
+				updateCategory({ id: category.id, request: { color: newColor } });
+			}
+		},
+		[category.id, category.color, updateCategory],
+	);
+
+	useEffect(() => {
+		const input = colorInputRef.current;
+		if (!input) return;
+		input.addEventListener("change", handleColorChange);
+		return () => input.removeEventListener("change", handleColorChange);
+	}, [handleColorChange]);
 
 	const handleDelete = () => {
 		deleteCategory(category.id, {
@@ -70,8 +77,10 @@ export default function SidebarCategoryContextMenu({
 					</ContextMenuItem>
 					<ContextMenuItem
 						onClick={() => {
-							setShowColorPicker(true);
-							setTimeout(() => colorInputRef.current?.click(), 100);
+							if (colorInputRef.current) {
+								colorInputRef.current.value = category.color || "#9333ea";
+								colorInputRef.current.click();
+							}
 						}}
 					>
 						<Palette size={14} className="mr-2" />
@@ -87,15 +96,11 @@ export default function SidebarCategoryContextMenu({
 				</ContextMenuContent>
 			</ContextMenu>
 
-			{showColorPicker && (
-				<Input
-					ref={colorInputRef}
-					type="color"
-					defaultValue={category.color || "#9333ea"}
-					onBlur={handleColorBlur}
-					className="sr-only"
-				/>
-			)}
+			<input
+				ref={colorInputRef}
+				type="color"
+				className="sr-only"
+			/>
 
 			<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
 				<AlertDialogContent>

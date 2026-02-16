@@ -43,15 +43,12 @@ export default function SidebarCategoryContextMenu({
 		onStartEditing();
 	};
 
-	const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		updateCategory(
-			{ id: category.id, request: { color: e.target.value } },
-			{
-				onSuccess: () => {
-					setShowColorPicker(false);
-				},
-			},
-		);
+	const handleColorBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+		const newColor = e.target.value;
+		setShowColorPicker(false);
+		if (newColor !== (category.color || "#9333ea")) {
+			updateCategory({ id: category.id, request: { color: newColor } });
+		}
 	};
 
 	const handleDelete = () => {
@@ -95,7 +92,7 @@ export default function SidebarCategoryContextMenu({
 					ref={colorInputRef}
 					type="color"
 					defaultValue={category.color || "#9333ea"}
-					onChange={handleColorChange}
+					onBlur={handleColorBlur}
 					className="sr-only"
 				/>
 			)}

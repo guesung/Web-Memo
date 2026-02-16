@@ -11,6 +11,11 @@ import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useCallback, useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
+interface SaveMemoOptions extends Partial<MemoInput> {
+	tabInfo?: { title: string; favIconUrl?: string; url: string };
+	memoId?: number;
+}
+
 interface UseMemoFormProps {
 	onSaveSuccess?: (memoInput: MemoInput) => void;
 }
@@ -40,7 +45,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	);
 
 	const saveMemo = useCallback(
-		async (overrides?: Partial<MemoInput>) => {
+		async (overrides?: SaveMemoOptions) => {
 			const currentValues = getValues();
 			const memoInput: MemoInput = {
 				memo: overrides?.memo ?? currentValues.memo,
@@ -50,11 +55,12 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 			setIsSaving(true);
 
-			const tabInfo = await getTabInfo();
+			const tabInfo = overrides?.tabInfo ?? (await getTabInfo());
+			const memoId = overrides?.memoId ?? memoData?.id;
 
 			upsertMemo(
 				{
-					id: memoData?.id,
+					id: memoId,
 					url: tabInfo.url,
 					data: {
 						...tabInfo,
@@ -88,9 +94,9 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	);
 
 	const updateCategory = useCallback(
-		(categoryId: number | null) => {
+		(categoryId: number | null, saveOptions?: Omit<SaveMemoOptions, "categoryId">) => {
 			setValue("categoryId", categoryId);
-			saveMemo({ categoryId });
+			saveMemo({ ...saveOptions, categoryId });
 		},
 		[setValue, saveMemo],
 	);

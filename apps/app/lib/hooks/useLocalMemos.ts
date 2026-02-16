@@ -1,0 +1,61 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getAllMemos,
+  getMemoByUrl,
+  upsertMemo,
+  deleteMemo,
+} from "@/lib/storage/localMemo";
+import { syncMemosToSupabase } from "@/lib/storage/syncService";
+
+const QUERY_KEY = {
+  localMemos: ["localMemos"] as const,
+  localMemoByUrl: (url: string) => ["localMemo", url] as const,
+};
+
+export function useLocalMemos() {
+  return useQuery({
+    queryKey: QUERY_KEY.localMemos,
+    queryFn: getAllMemos,
+  });
+}
+
+export function useLocalMemoByUrl(url: string) {
+  return useQuery({
+    queryKey: QUERY_KEY.localMemoByUrl(url),
+    queryFn: () => getMemoByUrl(url),
+    enabled: !!url,
+  });
+}
+
+export function useLocalMemoUpsert() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: upsertMemo,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
+    },
+  });
+}
+
+export function useLocalMemoDelete() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteMemo,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
+    },
+  });
+}
+
+export function useSyncMemos() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: syncMemosToSupabase,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
+    },
+  });
+}

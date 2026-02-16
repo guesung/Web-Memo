@@ -8,34 +8,30 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Save, Check } from "lucide-react-native";
-import { useMemoUpsertMutation } from "@/lib/hooks/useMemoMutation";
-import { MemoService } from "@web-memo/shared/utils/services";
-import { supabase } from "@/lib/supabase/client";
+import {
+  useLocalMemoByUrl,
+  useLocalMemoUpsert,
+} from "@/lib/hooks/useLocalMemos";
 
 interface MemoPanelProps {
   url: string;
   pageTitle: string;
 }
 
-const memoService = new MemoService(supabase);
-
 export function MemoPanel({ url, pageTitle }: MemoPanelProps) {
   const [memoText, setMemoText] = useState("");
   const [saved, setSaved] = useState(false);
-  const { mutate, isPending } = useMemoUpsertMutation();
+  const { data: existingMemo } = useLocalMemoByUrl(url);
+  const { mutate, isPending } = useLocalMemoUpsert();
 
   useEffect(() => {
-    if (!url) return;
+    if (existingMemo?.memo) {
+      setMemoText(existingMemo.memo);
+    } else {
+      setMemoText("");
+    }
     setSaved(false);
-
-    memoService.getMemoByUrl(url).then(({ data }) => {
-      if (data && data.length > 0 && data[0].memo) {
-        setMemoText(data[0].memo);
-      } else {
-        setMemoText("");
-      }
-    });
-  }, [url]);
+  }, [existingMemo, url]);
 
   const handleSave = () => {
     if (!memoText.trim()) return;
@@ -58,7 +54,7 @@ export function MemoPanel({ url, pageTitle }: MemoPanelProps) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Memo</Text>
+        <Text style={styles.title}>메모</Text>
         <TouchableOpacity
           style={[styles.saveButton, saved && styles.savedButton]}
           onPress={handleSave}
@@ -72,14 +68,14 @@ export function MemoPanel({ url, pageTitle }: MemoPanelProps) {
             <Save size={16} color="#fff" />
           )}
           <Text style={styles.saveText}>
-            {saved ? "Saved" : "Save"}
+            {saved ? "저장됨" : "저장"}
           </Text>
         </TouchableOpacity>
       </View>
 
       <TextInput
         style={styles.textInput}
-        placeholder="Write a memo about this page..."
+        placeholder="이 페이지에 대한 메모를 작성하세요..."
         value={memoText}
         onChangeText={setMemoText}
         multiline
@@ -91,9 +87,7 @@ export function MemoPanel({ url, pageTitle }: MemoPanelProps) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 0.35,
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
+    flex: 1,
     backgroundColor: "#fff",
     padding: 12,
   },

@@ -30,7 +30,13 @@
 		"wishList": "My wishlist",
 		"allCategory": "All categories",
 		"tags": "Tags",
-		"settings": "Settings"
+		"settings": "Settings",
+		"rename": "Rename",
+		"changeColor": "Change color",
+		"deleteCategory": "Delete",
+		"deleteConfirmTitle": "Delete category?",
+		"deleteConfirmDescription": "Memos in this category will become uncategorized.",
+		"cancel": "Cancel"
 	},
 
 	"header": {
@@ -316,7 +322,8 @@
 		"successSave": "Changes saved",
 		"memo_updated_at": "Modified at {{time}}",
 		"guideDone": "🎉 Guide completed.",
-		"guideDoneDescription": "Enjoy your memo!"
+		"guideDoneDescription": "Enjoy your memo!",
+		"duplicateCategory": "A category with this name already exists"
 	},
 
 	"toastActionMessage": {

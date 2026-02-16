@@ -38,9 +38,18 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 	const handleAddCategory = () => {
 		const defaultCategoryName = t("setting.defaultCategoryName");
 
+		let categoryName = defaultCategoryName;
+		if (categories?.some((c) => c.name.toLowerCase() === categoryName.toLowerCase())) {
+			let counter = 2;
+			while (categories?.some((c) => c.name.toLowerCase() === `${defaultCategoryName} ${counter}`.toLowerCase())) {
+				counter++;
+			}
+			categoryName = `${defaultCategoryName} ${counter}`;
+		}
+
 		insertCategory(
 			{
-				name: defaultCategoryName,
+				name: categoryName,
 				color: generateRandomPastelColor(),
 			},
 			{
@@ -60,6 +69,14 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 	};
 
 	const onCategoryFormSubmit = (data: CategoryForm) => {
+		const names = data.categories.map((c) => c.name.trim().toLowerCase());
+		const hasDuplicates = names.length !== new Set(names).size;
+
+		if (hasDuplicates) {
+			toast({ title: t("toastTitle.duplicateCategory") });
+			return;
+		}
+
 		upsertCategory(data.categories, {
 			onSuccess: () => {
 				toast({ title: t("toastTitle.successSave") });

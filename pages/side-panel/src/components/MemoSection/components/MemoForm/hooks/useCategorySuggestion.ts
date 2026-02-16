@@ -50,11 +50,17 @@ export function useCategorySuggestion({
 				let categoryId = suggestionToApply.existingCategoryId;
 
 				if (!suggestionToApply.isExisting || !categoryId) {
-					const result = await createCategory({
-						name: suggestionToApply.categoryName,
-					});
-
-					categoryId = result.data?.[0]?.id ?? null;
+					try {
+						const result = await createCategory({
+							name: suggestionToApply.categoryName,
+						});
+						categoryId = result.data?.[0]?.id ?? null;
+					} catch {
+						const existing = categories?.find(
+							(c) => c.name.toLowerCase() === suggestionToApply.categoryName.toLowerCase()
+						);
+						if (existing) categoryId = existing.id;
+					}
 				}
 
 				if (categoryId) {
@@ -64,7 +70,7 @@ export function useCategorySuggestion({
 				console.error("Failed to auto-apply category:", error);
 			}
 		},
-		[createCategory, onCategorySelect],
+		[createCategory, onCategorySelect, categories],
 	);
 
 	const clearAutoDismissTimer = useCallback(() => {

@@ -30,7 +30,13 @@
 		"wishList": "내 위시리스트",
 		"allCategory": "전체 카테고리",
 		"tags": "태그",
-		"settings": "설정"
+		"settings": "설정",
+		"rename": "이름 변경",
+		"changeColor": "색상 변경",
+		"deleteCategory": "삭제",
+		"deleteConfirmTitle": "카테고리를 삭제하시겠어요?",
+		"deleteConfirmDescription": "이 카테고리에 속한 메모의 카테고리가 해제됩니다.",
+		"cancel": "취소"
 	},
 
 	"header": {
@@ -311,7 +317,8 @@
 		"successSave": "변경사항을 저장했어요",
 		"memo_updated_at": "{{time}}에 수정됨",
 		"guideDone": "🎉 가이드를 완료했어요. ",
-		"guideDoneDescription": "즐거운 메모 하세요!"
+		"guideDoneDescription": "즐거운 메모 하세요!",
+		"duplicateCategory": "이미 같은 이름의 카테고리가 있어요"
 	},
 
 	"toastActionMessage": {

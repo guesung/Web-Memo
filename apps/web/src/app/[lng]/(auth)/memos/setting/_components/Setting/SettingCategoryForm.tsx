@@ -104,9 +104,9 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 	};
 
 	return (
-		<div className="flex flex-col items-center space-y-2">
-			<Label>{t("setting.category")}</Label>
-			<div className="w-full max-w-xs space-y-1">
+		<div className="relative">
+			<Label className="mb-3 block text-center">{t("setting.category")}</Label>
+			<div className="mx-auto max-w-xs space-y-1">
 				{categories?.map((category) => {
 					const isEditing = editingId === category.id;
 					const categoryColor = category.color || "#9333ea";
@@ -118,7 +118,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 						>
 							<button
 								type="button"
-								className="w-5 h-5 rounded-full flex-shrink-0 ring-2 ring-gray-200 dark:ring-gray-700 hover:ring-gray-400 dark:hover:ring-gray-500 transition-all cursor-pointer hover:scale-110"
+								className="relative w-5 h-5 rounded-full flex-shrink-0 ring-2 ring-gray-200 dark:ring-gray-700 hover:ring-gray-400 dark:hover:ring-gray-500 transition-all cursor-pointer hover:scale-110"
 								style={{ backgroundColor: categoryColor }}
 								onClick={() => openColorPicker(category.id, categoryColor)}
 								aria-label={t("sideBar.changeColor")}
@@ -191,7 +191,11 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 				)}
 			</div>
 
-			<input ref={colorInputRef} type="color" className="sr-only" />
+			<input
+				ref={colorInputRef}
+				type="color"
+				className="absolute opacity-0 pointer-events-none"
+			/>
 		</div>
 	);
 }

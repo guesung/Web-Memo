@@ -22,9 +22,7 @@ export const metadataKorean: Metadata = {
 	description:
 		"웹 메모는 웹페이지를 읽으며 생각을 즉시 기록할 수 있는 서비스입니다. 아티클을 읽다가 떠오른 아이디어나 중요한 내용을 사이드 패널에서 바로 메모하고 체계적으로 관리하세요.",
 	keywords: ["웹 메모", "온라인 메모", "메모장", "노트"],
-	authors: [{ name: "박규성", url: "https://github.com/guesung" }],
-	creator: "박규성",
-	publisher: "박규성",
+	authors: [{ url: "https://github.com/guesung" }],
 	applicationName: "웹 메모",
 	category: "웹 메모",
 	alternates: {

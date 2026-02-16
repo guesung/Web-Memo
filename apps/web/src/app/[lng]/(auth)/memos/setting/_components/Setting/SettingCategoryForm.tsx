@@ -104,11 +104,9 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 	};
 
 	return (
-		<div className="grid grid-cols-12">
-			<Label className="col-span-4 grid place-items-center">
-				{t("setting.category")}
-			</Label>
-			<div className="col-span-8 space-y-1">
+		<div className="flex flex-col items-center space-y-2">
+			<Label>{t("setting.category")}</Label>
+			<div className="w-full max-w-xs space-y-1">
 				{categories?.map((category) => {
 					const isEditing = editingId === category.id;
 					const categoryColor = category.color || "#9333ea";

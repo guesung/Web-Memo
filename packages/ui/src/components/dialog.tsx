@@ -43,8 +43,18 @@ const DialogContent = React.forwardRef<
 			<DialogOverlay />
 			<DialogPrimitive.Content
 				ref={ref}
-				onInteractOutside={() => onClose?.()}
+				onInteractOutside={() => {
+					const hasOpenFloatingLayer = document.querySelector(
+						"[data-radix-popper-content-wrapper]",
+					);
+					if (hasOpenFloatingLayer) return;
+					onClose?.();
+				}}
 				onEscapeKeyDown={(event) => {
+					const hasOpenFloatingLayer = document.querySelector(
+						"[data-radix-popper-content-wrapper]",
+					);
+					if (hasOpenFloatingLayer) return;
 					const target = event.target;
 					if (target instanceof HTMLElement) {
 						const tagName = target.tagName.toLowerCase();
@@ -138,6 +148,5 @@ export {
 	DialogOverlay,
 	DialogPortal,
 	DialogTitle,
-	DialogTrigger
+	DialogTrigger,
 };
-

@@ -43,7 +43,8 @@ test.describe("MemoDialog dismiss 동작 (Mocked)", () => {
 		await dialog.getByTestId("memo-option").click();
 		await expect(page.getByTestId("memo-delete-button")).toBeVisible();
 
-		await dialog.getByTestId("memo-textarea").click();
+		// Click overlay area (outside dialog content) to dismiss only the dropdown
+		await page.mouse.click(10, 10);
 
 		await expect(page.getByTestId("memo-delete-button")).toBeHidden();
 		await expect(dialog.getByTestId("memo-textarea")).toBeVisible();

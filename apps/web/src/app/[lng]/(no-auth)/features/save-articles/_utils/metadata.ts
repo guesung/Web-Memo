@@ -24,7 +24,7 @@ export const metadataKorean: Metadata = {
 		title: "웹페이지 저장 - 아티클 나중에 보기 | 웹 메모",
 		description:
 			"관심 있는 아티클과 웹페이지를 위시리스트에 저장하세요. 나중에 볼 콘텐츠를 체계적으로 관리할 수 있습니다.",
-		images: ["/og-image.png"],
+		images: ["/og-image-ko.png"],
 		type: "website",
 	},
 };
@@ -53,7 +53,7 @@ export const metadataEnglish: Metadata = {
 		title: "Save Web Pages - Read Articles Later | Web Memo",
 		description:
 			"Save interesting articles and web pages to your wishlist. Organize content to read later and easily find them anytime.",
-		images: ["/og-image.png"],
+		images: ["/og-image-en.png"],
 		type: "website",
 	},
 };

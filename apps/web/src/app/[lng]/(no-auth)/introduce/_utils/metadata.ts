@@ -12,7 +12,7 @@ export const metadataKorean: Metadata = {
 		},
 	},
 	openGraph: {
-		images: ["/og-image.png"],
+		images: ["/og-image-ko.png"],
 	},
 };
 
@@ -28,6 +28,6 @@ export const metadataEnglish: Metadata = {
 		},
 	},
 	openGraph: {
-		images: ["/og-image.png"],
+		images: ["/og-image-en.png"],
 	},
 };

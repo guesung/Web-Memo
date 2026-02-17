@@ -25,7 +25,7 @@ export const metadataKorean: Metadata = {
 		title: "유튜브 메모 - 영상 보면서 메모하기 | 웹 메모",
 		description:
 			"유튜브 영상을 보면서 중요한 내용을 바로 메모하세요. 강의, 튜토리얼, 리뷰 영상의 핵심을 기록하세요.",
-		images: ["/og-image.png"],
+		images: ["/og-image-ko.png"],
 		type: "website",
 	},
 };
@@ -55,7 +55,7 @@ export const metadataEnglish: Metadata = {
 		title: "YouTube Notes - Take Notes While Watching | Web Memo",
 		description:
 			"Take notes while watching YouTube videos. Capture key points from lectures, tutorials, and reviews.",
-		images: ["/og-image.png"],
+		images: ["/og-image-en.png"],
 		type: "website",
 	},
 };

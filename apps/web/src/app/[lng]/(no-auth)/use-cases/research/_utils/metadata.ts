@@ -24,7 +24,7 @@ export const metadataKorean: Metadata = {
 		title: "리서치 & 자료 조사를 위한 웹 메모 | 웹 메모",
 		description:
 			"논문, 아티클, 자료 조사를 할 때 웹 메모로 효율적으로 정리하세요.",
-		images: ["/og-image.png"],
+		images: ["/og-image-ko.png"],
 		type: "website",
 	},
 };
@@ -53,7 +53,7 @@ export const metadataEnglish: Metadata = {
 		title: "Web Memo for Research & Study | Web Memo",
 		description:
 			"Organize your research efficiently with Web Memo. Take instant notes on papers and articles, summarize with AI, and manage everything systematically.",
-		images: ["/og-image.png"],
+		images: ["/og-image-en.png"],
 		type: "website",
 	},
 };

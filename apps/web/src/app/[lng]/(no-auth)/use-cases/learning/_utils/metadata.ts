@@ -24,7 +24,7 @@ export const metadataKorean: Metadata = {
 		title: "온라인 학습을 위한 웹 메모 | 웹 메모",
 		description:
 			"온라인 강의, 유튜브 교육 영상을 보면서 효율적으로 학습하세요.",
-		images: ["/og-image.png"],
+		images: ["/og-image-ko.png"],
 		type: "website",
 	},
 };
@@ -53,7 +53,7 @@ export const metadataEnglish: Metadata = {
 		title: "Web Memo for Online Learning | Web Memo",
 		description:
 			"Learn efficiently while watching online courses and YouTube tutorials. Summarize videos with AI, take notes on key content, and review systematically.",
-		images: ["/og-image.png"],
+		images: ["/og-image-en.png"],
 		type: "website",
 	},
 };

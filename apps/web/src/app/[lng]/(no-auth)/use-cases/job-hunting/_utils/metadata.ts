@@ -25,7 +25,7 @@ export const metadataKorean: Metadata = {
 		title: "취업 준비 - 채용공고 & 회사 정보 정리 | 웹 메모",
 		description:
 			"채용공고, 회사 정보, 면접 준비 자료를 체계적으로 정리하세요.",
-		images: ["/og-image.png"],
+		images: ["/og-image-ko.png"],
 		type: "website",
 	},
 };
@@ -55,7 +55,7 @@ export const metadataEnglish: Metadata = {
 		title: "Job Hunting - Organize Job Postings & Company Info | Web Memo",
 		description:
 			"Organize job postings, company information, and interview prep materials systematically.",
-		images: ["/og-image.png"],
+		images: ["/og-image-en.png"],
 		type: "website",
 	},
 };

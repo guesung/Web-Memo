@@ -24,7 +24,7 @@ export const metadataKorean: Metadata = {
 		title: "유튜브 영상 AI 요약 | 웹 메모",
 		description:
 			"유튜브 영상을 AI로 빠르게 요약하세요. 긴 영상도 핵심만 쏙쏙 뽑아 시간을 절약할 수 있습니다.",
-		images: ["/og-image.png"],
+		images: ["/og-image-ko.png"],
 		type: "website",
 	},
 };
@@ -53,7 +53,7 @@ export const metadataEnglish: Metadata = {
 		title: "YouTube Video AI Summary | Web Memo",
 		description:
 			"Summarize YouTube videos instantly with AI. Extract key points from long videos and save time.",
-		images: ["/og-image.png"],
+		images: ["/og-image-en.png"],
 		type: "website",
 	},
 };

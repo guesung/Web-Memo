@@ -60,7 +60,7 @@ export default function HowToJsonLD({ lng }: HowToJsonLDProps) {
 		name: data.name,
 		description: data.description,
 		totalTime: data.totalTime,
-		image: `${baseUrl}/og-image.png`,
+		image: `${baseUrl}/og-image-${lng === "ko" ? "ko" : "en"}.png`,
 		step: data.steps.map((step, index) => ({
 			"@type": "HowToStep",
 			position: index + 1,

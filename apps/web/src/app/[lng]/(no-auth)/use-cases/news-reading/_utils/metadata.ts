@@ -25,7 +25,7 @@ export const metadataKorean: Metadata = {
 		title: "뉴스 & 아티클 정리 - 읽으면서 메모하기 | 웹 메모",
 		description:
 			"뉴스, 블로그, 아티클을 읽으면서 중요한 내용을 바로 메모하세요.",
-		images: ["/og-image.png"],
+		images: ["/og-image-ko.png"],
 		type: "website",
 	},
 };
@@ -55,7 +55,7 @@ export const metadataEnglish: Metadata = {
 		title: "News & Article Notes - Take Notes While Reading | Web Memo",
 		description:
 			"Take notes while reading news, blogs, and articles. Organize insights systematically.",
-		images: ["/og-image.png"],
+		images: ["/og-image-en.png"],
 		type: "website",
 	},
 };

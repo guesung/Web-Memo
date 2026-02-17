@@ -10,7 +10,7 @@ const getOrganizationSchema = (lng: Language) => ({
 	"@type": "Organization",
 	name: lng === "ko" ? "웹 메모" : "Web Memo",
 	url: process.env.NEXT_PUBLIC_WEB_URL || "https://webmemo.site",
-	logo: `${process.env.NEXT_PUBLIC_WEB_URL || "https://webmemo.site"}/og-image.png`,
+	logo: `${process.env.NEXT_PUBLIC_WEB_URL || "https://webmemo.site"}/og-image-${lng === "ko" ? "ko" : "en"}.png`,
 	sameAs: [
 		"https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
 	],
@@ -54,7 +54,7 @@ const getSoftwareApplicationSchema = (lng: Language) => ({
 		"https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
 	installUrl:
 		"https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
-	screenshot: `${process.env.NEXT_PUBLIC_WEB_URL || "https://webmemo.site"}/og-image.png`,
+	screenshot: `${process.env.NEXT_PUBLIC_WEB_URL || "https://webmemo.site"}/og-image-${lng === "ko" ? "ko" : "en"}.png`,
 	featureList:
 		lng === "ko"
 			? [

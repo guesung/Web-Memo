@@ -26,6 +26,7 @@
 	"devDependencies": {
 		"@web-memo/tsconfig": "workspace:*",
 		"@rollup/plugin-sucrase": "^5.0.2",
+		"@types/node": "^20.14.10",
 		"@types/ws": "^8.5.11",
 		"esm": "^3.2.25",
 		"fast-glob": "^3.3.2",

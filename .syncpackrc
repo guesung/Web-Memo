@@ -1,0 +1,26 @@
+{
+	"$schema": "https://unpkg.com/syncpack/dist/schema.json",
+	"formatRepository": false,
+	"formatBugs": false,
+	"indent": "\t",
+	"versionGroups": [
+		{
+			"label": "Expo app uses different TypeScript and @types/react versions",
+			"packages": ["@aspect-app/app"],
+			"dependencies": ["typescript", "@types/react"],
+			"isIgnored": true
+		},
+		{
+			"label": "Use pinned versions for React core",
+			"dependencies": ["react", "react-dom"],
+			"dependencyTypes": ["!peer"],
+			"pinVersion": "18.3.1"
+		},
+		{
+			"label": "Use workspace protocol for internal packages",
+			"dependencies": ["@web-memo/**", "@aspect-app/**"],
+			"dependencyTypes": ["!peer"],
+			"pinVersion": "workspace:*"
+		}
+	]
+}

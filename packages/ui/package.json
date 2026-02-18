@@ -72,7 +72,7 @@
 		"@sentry/react": "^8.30.0",
 		"@types/react": "^18.3.5",
 		"@types/react-dom": "^18.3.0",
-		"autoprefixer": "^10.4.19",
+		"autoprefixer": "10.4.20",
 		"deepmerge": "^4.3.1",
 		"postcss": "^8.4.49",
 		"tailwindcss": "^3.4.10"

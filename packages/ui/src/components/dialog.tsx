@@ -43,14 +43,18 @@ const DialogContent = React.forwardRef<
 			<DialogOverlay />
 			<DialogPrimitive.Content
 				ref={ref}
-				onInteractOutside={() => {
+				onInteractOutside={(event) => {
 					const hasOpenFloatingLayer = document.querySelector(
 						"[data-radix-popper-content-wrapper]",
 					);
-					if (hasOpenFloatingLayer) return;
+					if (hasOpenFloatingLayer) {
+						event.preventDefault();
+						return;
+					}
 					onClose?.();
 				}}
 				onEscapeKeyDown={(event) => {
+					event.preventDefault();
 					const hasOpenFloatingLayer = document.querySelector(
 						"[data-radix-popper-content-wrapper]",
 					);

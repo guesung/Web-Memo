@@ -24,6 +24,7 @@ import Link from "next/link";
 import { memo, useCallback, useRef, useState } from "react";
 
 import SidebarCategoryContextMenu from "./SidebarCategoryContextMenu";
+import SidebarMenuItemAddCategory from "./SidebarMenuItemAddCategory";
 
 export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 	const { t } = useTranslation(lng);
@@ -32,7 +33,9 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 	const searchParams = useSearchParams();
 	const currentCategory = searchParams.get("category");
 
-	const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
+	const [editingCategoryId, setEditingCategoryId] = useState<number | null>(
+		null,
+	);
 	const editInputRef = useRef<HTMLInputElement>(null);
 
 	const handleRenameSubmit = useCallback(
@@ -44,7 +47,9 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 			}
 
 			const isDuplicate = categories?.some(
-				(c) => c.id !== categoryId && c.name.toLowerCase() === trimmedName.toLowerCase(),
+				(c) =>
+					c.id !== categoryId &&
+					c.name.toLowerCase() === trimmedName.toLowerCase(),
 			);
 
 			if (isDuplicate) {
@@ -79,7 +84,10 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 						className="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 transition-all duration-200 hover:scale-110 active:scale-95"
 						aria-label="Category settings"
 					>
-						<SettingsIcon size={14} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors" />
+						<SettingsIcon
+							size={14}
+							className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+						/>
 					</button>
 				</Link>
 			</div>
@@ -110,10 +118,15 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 												defaultValue={category.name}
 												autoFocus
 												className="h-7 text-sm"
-												onBlur={(e) => handleRenameSubmit(category.id, e.target.value)}
+												onBlur={(e) =>
+													handleRenameSubmit(category.id, e.target.value)
+												}
 												onKeyDown={(e) => {
 													if (e.key === "Enter") {
-														handleRenameSubmit(category.id, e.currentTarget.value);
+														handleRenameSubmit(
+															category.id,
+															e.currentTarget.value,
+														);
 													}
 													if (e.key === "Escape") {
 														setEditingCategoryId(null);
@@ -136,7 +149,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 													"hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]",
 													isActive
 														? "bg-gradient-to-r shadow-sm scale-[1.02]"
-														: "hover:bg-gray-100 dark:hover:bg-gray-800/50"
+														: "hover:bg-gray-100 dark:hover:bg-gray-800/50",
 												)}
 												style={{
 													borderLeft: `3px solid ${categoryColor}`,
@@ -150,12 +163,14 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 														className="w-2 h-2 rounded-full flex-shrink-0 ring-2 ring-white dark:ring-gray-900 shadow-sm"
 														style={{ backgroundColor: categoryColor }}
 													/>
-													<span className={cn(
-														"font-medium truncate transition-colors",
-														isActive
-															? "text-gray-900 dark:text-white"
-															: "text-gray-600 dark:text-gray-300"
-													)}>
+													<span
+														className={cn(
+															"font-medium truncate transition-colors",
+															isActive
+																? "text-gray-900 dark:text-white"
+																: "text-gray-600 dark:text-gray-300",
+														)}
+													>
 														{category.name}
 													</span>
 												</div>
@@ -164,9 +179,11 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 														"flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full text-xs font-semibold transition-all",
 														isActive
 															? "text-white shadow-sm"
-															: "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+															: "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300",
 													)}
-													style={isActive ? { backgroundColor: categoryColor } : {}}
+													style={
+														isActive ? { backgroundColor: categoryColor } : {}
+													}
 												>
 													{category.memo_count ?? 0}
 												</span>
@@ -178,6 +195,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 						);
 					})}
 				</SidebarMenu>
+				<SidebarMenuItemAddCategory lng={lng} />
 			</SidebarGroupContent>
 		</SidebarGroup>
 	);

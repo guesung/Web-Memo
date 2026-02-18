@@ -19,9 +19,10 @@
 		"dev:web": "turbo watch dev --filter @web-memo/web",
 		"dev:web:preview": "turbo run preview --filter=@web-memo/web",
 		"dev:extension": "turbo watch dev --filter !@web-memo/web",
+		"dev:app": "turbo watch dev --filter @aspect-app/app",
 		"build": "turbo build",
 		"build:web": "turbo build --filter=@web-memo/web",
-		"build:extension": "turbo build --filter=!@web-memo/web",
+		"build:extension": "turbo build --filter=!@web-memo/web --filter=!@aspect-app/app",
 		"start:web": "turbo start --filter=@web-memo/web",
 		"start:python-server": "turbo start --filter=@web-memo/python-server",
 		"zip": "turbo zip",
@@ -62,8 +63,13 @@
 		"@vitejs/plugin-react": "^4.3.3"
 	},
 	"sideEffects": false,
-	"packageManager": "pnpm@9.5.0",
+	"packageManager": "pnpm@10.23.0",
 	"engines": {
 		"node": ">=22.17.0"
+	},
+	"pnpm": {
+		"overrides": {
+			"@types/node": "^20.14.10"
+		}
 	}
 }

@@ -9,11 +9,7 @@ import type { Database } from "./supabase";
 
 // memo schema
 
-export type MemoSupabaseClient = SupabaseClient<
-	Database,
-	"memo",
-	Database["memo"]
->;
+export type MemoSupabaseClient = SupabaseClient<Database, "memo">;
 
 export type MemoTable = Database["memo"]["Tables"]["memo"];
 export type MemoRow = MemoTable["Row"];
@@ -31,11 +27,7 @@ export type GetMemoResponse = QueryData<
 	ReturnType<MemoService["getMemos"]>
 >[number];
 
-export type FeedbackSupabaseClient = SupabaseClient<
-	Database,
-	"feedback",
-	Database["feedback"]
->;
+export type FeedbackSupabaseClient = SupabaseClient<Database, "feedback">;
 
 // feedback schema
 

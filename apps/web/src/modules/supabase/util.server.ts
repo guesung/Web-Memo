@@ -14,7 +14,7 @@ export const getSupabaseClient = () => {
 
 	const cookieStore = cookies();
 
-	return createServerClient<Database, "memo", Database["memo"]>(
+	return createServerClient<Database, "memo">(
 		CONFIG.supabaseUrl,
 		CONFIG.supabaseAnonKey,
 		{
@@ -22,7 +22,7 @@ export const getSupabaseClient = () => {
 				getAll() {
 					return cookieStore.getAll();
 				},
-				setAll(cookiesToSet) {
+				setAll(cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>) {
 					cookiesToSet.forEach(({ name, value, options }) =>
 						cookieStore.set(name, value, options),
 					);
@@ -30,7 +30,7 @@ export const getSupabaseClient = () => {
 			},
 			db: { schema: SUPABASE.table.memo },
 		},
-	);
+	) as unknown as MemoSupabaseClient;
 };
 
 export const signInWithOAuth = async (provider: Provider) => {

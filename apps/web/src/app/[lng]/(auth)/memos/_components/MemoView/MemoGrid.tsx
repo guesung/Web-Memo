@@ -154,7 +154,6 @@ export default function MemoGrid({
 		[rafRef],
 	);
 
-	useKeyboardBind({ key: "Escape", callback: closeMemoOption });
 	useKeyboardBind({ key: "Delete", callback: handleDeleteKeyPress });
 	useKeyboardBind({ key: "Backspace", callback: handleDeleteKeyPress });
 

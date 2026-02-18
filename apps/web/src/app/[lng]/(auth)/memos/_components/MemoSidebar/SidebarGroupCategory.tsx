@@ -92,6 +92,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 				</Link>
 			</div>
 			<SidebarGroupContent>
+				<SidebarMenuItemAddCategory lng={lng} />
 				<SidebarMenu className="space-y-1">
 					{categories?.map((category) => {
 						const isActive = currentCategory === category.name;
@@ -195,7 +196,6 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 						);
 					})}
 				</SidebarMenu>
-				<SidebarMenuItemAddCategory lng={lng} />
 			</SidebarGroupContent>
 		</SidebarGroup>
 	);

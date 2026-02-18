@@ -38,6 +38,9 @@ importers:
       run-script-os:
         specifier: ^1.1.6
         version: 1.1.6
+      syncpack:
+        specifier: ^14.0.0
+        version: 14.0.0
       tsc-watch:
         specifier: ^6.2.1
         version: 6.3.1(typescript@5.5.3)
@@ -264,7 +267,7 @@ importers:
         version: 14.2.10(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       next-i18next:
         specifier: ^15.3.1
-        version: 15.4.3(@types/react@18.3.5)(i18next@23.16.8)(next@14.2.10(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-i18next@15.7.4(i18next@23.16.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3))(react@18.3.1)
+        version: 15.4.3(@types/react@18.3.28)(i18next@23.16.8)(next@14.2.10(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-i18next@15.7.4(i18next@23.16.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3))(react@18.3.1)
       next-themes:
         specifier: ^0.4.3
         version: 0.4.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -279,7 +282,7 @@ importers:
         version: 1.19.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-cookie:
         specifier: ^7.2.2
-        version: 7.2.2(@types/react@18.3.5)(react@18.3.1)
+        version: 7.2.2(@types/react@18.3.28)(react@18.3.1)
       react-dom:
         specifier: 18.3.1
         version: 18.3.1(react@18.3.1)
@@ -312,13 +315,13 @@ importers:
         specifier: ^20.14.10
         version: 20.19.33
       '@types/react':
-        specifier: 18.3.5
-        version: 18.3.5
+        specifier: ^18.3.5
+        version: 18.3.28
       '@types/react-big-calendar':
         specifier: ^1.16.0
         version: 1.16.3
       '@types/react-dom':
-        specifier: 18.3.0
+        specifier: ^18.3.0
         version: 18.3.0
       '@web-memo/env':
         specifier: workspace:*
@@ -331,15 +334,15 @@ importers:
         version: link:../../packages/tsconfig
       autoprefixer:
         specifier: 10.4.20
-        version: 10.4.20(postcss@8.4.43)
+        version: 10.4.20(postcss@8.5.6)
       postcss:
-        specifier: 8.4.43
-        version: 8.4.43
+        specifier: ^8.4.49
+        version: 8.5.6
       postcss-import:
         specifier: ^16.1.0
-        version: 16.1.1(postcss@8.4.43)
+        version: 16.1.1(postcss@8.5.6)
       tailwindcss:
-        specifier: 3.4.10
+        specifier: ^3.4.10
         version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.5.3))
       tailwindcss-animate:
         specifier: ^1.0.7
@@ -640,7 +643,7 @@ importers:
         specifier: workspace:*
         version: link:../vite-config
       autoprefixer:
-        specifier: ^10.4.19
+        specifier: 10.4.20
         version: 10.4.20(postcss@8.5.6)
       deepmerge:
         specifier: ^4.3.1
@@ -808,7 +811,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/vite-config
       autoprefixer:
-        specifier: ^10.4.19
+        specifier: 10.4.20
         version: 10.4.20(postcss@8.5.6)
       cross-env:
         specifier: ^7.0.3
@@ -878,7 +881,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/vite-config
       autoprefixer:
-        specifier: ^10.4.19
+        specifier: 10.4.20
         version: 10.4.20(postcss@8.5.6)
       cross-env:
         specifier: ^7.0.3
@@ -4294,9 +4297,6 @@ packages:
   '@types/react@18.3.28':
     resolution: {integrity: sha512-z9VXpC7MWrhfWipitjNdgCauoMLRdIILQsAEV+ZesIzBq/oUlxk0m3ApZuMFCXdnS4U7KrI+l3WRUEGQ8K1QKw==}
 
-  '@types/react@18.3.5':
-    resolution: {integrity: sha512-WeqMfGJLGuLCqHGYRGHxnKrXcTitc6L/nBUWfWPcTarG3t9PsquqUMuVeXZeca+mglY4Vo5GZjCi0A3Or2lnxA==}
-
   '@types/shimmer@1.2.0':
     resolution: {integrity: sha512-UE7oxhQLLd9gub6JKIAhDq06T0F6FnztwMNRvYgjeQSBeMc1ZG/tA47EwfduvkuQS8apbkM/lpLpWsaCeYsXVg==}
 
@@ -7388,10 +7388,6 @@ packages:
     resolution: {integrity: sha512-PS08Iboia9mts/2ygV3eLpY5ghnUcfLV/EXTOW1E2qYxJKGGBUtNjN76FYHnMs36RmARn41bC0AZmn+rR0OVpQ==}
     engines: {node: ^10 || ^12 || >=14}
 
-  postcss@8.4.43:
-    resolution: {integrity: sha512-gJAQVYbh5R3gYm33FijzCZj7CHyQ3hWMgJMprLUlIYqCwTeZhBQ19wp0e9mA25BUbEvY5+EXuuaAjqQsrBxQBQ==}
-    engines: {node: ^10 || ^12 || >=14}
-
   postcss@8.4.49:
     resolution: {integrity: sha512-OCVPnIObs4N29kxTjzLfUryOkvZEq+pf8jTF0lg8E7uETuWHA+v7j3c/xJmiqpX450191LlmZfUKkXxkTry7nA==}
     engines: {node: ^10 || ^12 || >=14}
@@ -8206,6 +8202,51 @@ packages:
 
   svg-parser@2.0.4:
     resolution: {integrity: sha512-e4hG1hRwoOdRb37cIMSgzNsxyzKfayW6VOflrwvR+/bzrkyxY/31WkbgnQpgtrNp1SdpJvpUAGTa/ZoiPNDuRQ==}
+
+  syncpack-darwin-arm64@14.0.0:
+    resolution: {integrity: sha512-mEcku9YkOHfM6JOxhq9McgeLvd4djsJvRwNONZXHeoJ6+yqC96DdxZwFjkw3e8Vn95wsxsrwY5ZjMExs5Gbacw==}
+    cpu: [arm64]
+    os: [darwin]
+
+  syncpack-darwin-x64@14.0.0:
+    resolution: {integrity: sha512-qSj3bT3SIZA5NLM5PNVeExapyOrdmptlGSMu0SLVHj9hata/Vqh3xWgwq7wB9uajmlrHljeJ84R/NKAHyzFewA==}
+    cpu: [x64]
+    os: [darwin]
+
+  syncpack-linux-arm64-musl@14.0.0:
+    resolution: {integrity: sha512-i57Chz0tHP7ybKElPLhoygl6Cab1fxyUKS9xRgezX5NDrNxKUgrvqBfYd7288/QKB4C8+IcYHugFPjZjoFlAIA==}
+    cpu: [arm64]
+    os: [linux]
+
+  syncpack-linux-arm64@14.0.0:
+    resolution: {integrity: sha512-votlkb4P/0Bxd9yhBWCSUOjZwaii+LfFn1tZZVN5dfs8qcjcLeqfdG5zbnlJSzZhS3T+BfzejFW+Z95OxZag0A==}
+    cpu: [arm64]
+    os: [linux]
+
+  syncpack-linux-x64-musl@14.0.0:
+    resolution: {integrity: sha512-RKyp+29UlLGE8oYkd3UfwgjWUHN4dLHDyarv0dS6gWVpWM6qHtHS339KBc9JcIS7FD1vNGnQ3GmSaAodxDlkMA==}
+    cpu: [x64]
+    os: [linux]
+
+  syncpack-linux-x64@14.0.0:
+    resolution: {integrity: sha512-sZGy4+uL+P/+nI0yc9jwW/R22u9lw0+NXDYC/9ts9eYiWFyO4+luOeosvVKbED1OavUp/GQJqNV+9KHjMwq0Fw==}
+    cpu: [x64]
+    os: [linux]
+
+  syncpack-windows-arm64@14.0.0:
+    resolution: {integrity: sha512-aNtr0F6HkA7M0azDuDkt//DlPWlplFa4kmvHXirwDmJQ9u3SAvN3ZItW4ZYS96ZbiV1DgO15jIKBI7rDkzcwrQ==}
+    cpu: [arm64]
+    os: [win32]
+
+  syncpack-windows-x64@14.0.0:
+    resolution: {integrity: sha512-usMH61wlonssfh2Q8SJDiiAcsXVzuPzRl8XdHqdavR3XeCSGBIW9ieJpPfiKvDPWslekufWD+GhLNoH+8vV0Cg==}
+    cpu: [x64]
+    os: [win32]
+
+  syncpack@14.0.0:
+    resolution: {integrity: sha512-OfAa3Oip5YC9Ad1jEs92Hw08Wy4JfdpdeequIwaJGsQG0tJtb8gpQfCdLuBefsk6n8WiUdt/5qmzcW+BDXtzbQ==}
+    engines: {node: '>=14.17.0'}
+    hasBin: true
 
   tailwind-merge@2.6.1:
     resolution: {integrity: sha512-Oo6tHdpZsGpkKG88HJ8RR1rg/RdnEkQEfMoEk2x1XRI3F1AxeU+ijRXpiVUF4UbLfcxxRGw6TbUINKYdWVsQTQ==}
@@ -12790,9 +12831,9 @@ snapshots:
     dependencies:
       '@types/unist': 3.0.3
 
-  '@types/hoist-non-react-statics@3.3.7(@types/react@18.3.5)':
+  '@types/hoist-non-react-statics@3.3.7(@types/react@18.3.28)':
     dependencies:
-      '@types/react': 18.3.5
+      '@types/react': 18.3.28
       hoist-non-react-statics: 3.3.2
 
   '@types/istanbul-lib-coverage@2.0.6': {}
@@ -12855,11 +12896,6 @@ snapshots:
       '@types/react': 18.3.28
 
   '@types/react@18.3.28':
-    dependencies:
-      '@types/prop-types': 15.7.15
-      csstype: 3.2.3
-
-  '@types/react@18.3.5':
     dependencies:
       '@types/prop-types': 15.7.15
       csstype: 3.2.3
@@ -13186,16 +13222,6 @@ snapshots:
   asynckit@0.4.0: {}
 
   at-least-node@1.0.0: {}
-
-  autoprefixer@10.4.20(postcss@8.4.43):
-    dependencies:
-      browserslist: 4.28.1
-      caniuse-lite: 1.0.30001770
-      fraction.js: 4.3.7
-      normalize-range: 0.1.2
-      picocolors: 1.1.1
-      postcss: 8.4.43
-      postcss-value-parser: 4.2.0
 
   autoprefixer@10.4.20(postcss@8.5.6):
     dependencies:
@@ -15948,10 +15974,10 @@ snapshots:
 
   nested-error-stacks@2.0.1: {}
 
-  next-i18next@15.4.3(@types/react@18.3.5)(i18next@23.16.8)(next@14.2.10(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-i18next@15.7.4(i18next@23.16.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3))(react@18.3.1):
+  next-i18next@15.4.3(@types/react@18.3.28)(i18next@23.16.8)(next@14.2.10(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-i18next@15.7.4(i18next@23.16.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3))(react@18.3.1):
     dependencies:
       '@babel/runtime': 7.28.6
-      '@types/hoist-non-react-statics': 3.3.7(@types/react@18.3.5)
+      '@types/hoist-non-react-statics': 3.3.7(@types/react@18.3.28)
       core-js: 3.48.0
       hoist-non-react-statics: 3.3.2
       i18next: 23.16.8
@@ -16284,9 +16310,9 @@ snapshots:
       read-cache: 1.0.0
       resolve: 1.22.11
 
-  postcss-import@16.1.1(postcss@8.4.43):
+  postcss-import@16.1.1(postcss@8.5.6):
     dependencies:
-      postcss: 8.4.43
+      postcss: 8.5.6
       postcss-value-parser: 4.2.0
       read-cache: 1.0.0
       resolve: 1.22.11
@@ -16339,12 +16365,6 @@ snapshots:
   postcss-value-parser@4.2.0: {}
 
   postcss@8.4.31:
-    dependencies:
-      nanoid: 3.3.11
-      picocolors: 1.1.1
-      source-map-js: 1.2.1
-
-  postcss@8.4.43:
     dependencies:
       nanoid: 3.3.11
       picocolors: 1.1.1
@@ -16469,9 +16489,9 @@ snapshots:
       react-overlays: 5.2.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       uncontrollable: 7.2.1(react@18.3.1)
 
-  react-cookie@7.2.2(@types/react@18.3.5)(react@18.3.1):
+  react-cookie@7.2.2(@types/react@18.3.28)(react@18.3.1):
     dependencies:
-      '@types/hoist-non-react-statics': 3.3.7(@types/react@18.3.5)
+      '@types/hoist-non-react-statics': 3.3.7(@types/react@18.3.28)
       hoist-non-react-statics: 3.3.2
       react: 18.3.1
       universal-cookie: 7.2.2
@@ -17302,6 +17322,41 @@ snapshots:
   supports-preserve-symlinks-flag@1.0.0: {}
 
   svg-parser@2.0.4: {}
+
+  syncpack-darwin-arm64@14.0.0:
+    optional: true
+
+  syncpack-darwin-x64@14.0.0:
+    optional: true
+
+  syncpack-linux-arm64-musl@14.0.0:
+    optional: true
+
+  syncpack-linux-arm64@14.0.0:
+    optional: true
+
+  syncpack-linux-x64-musl@14.0.0:
+    optional: true
+
+  syncpack-linux-x64@14.0.0:
+    optional: true
+
+  syncpack-windows-arm64@14.0.0:
+    optional: true
+
+  syncpack-windows-x64@14.0.0:
+    optional: true
+
+  syncpack@14.0.0:
+    optionalDependencies:
+      syncpack-darwin-arm64: 14.0.0
+      syncpack-darwin-x64: 14.0.0
+      syncpack-linux-arm64: 14.0.0
+      syncpack-linux-arm64-musl: 14.0.0
+      syncpack-linux-x64: 14.0.0
+      syncpack-linux-x64-musl: 14.0.0
+      syncpack-windows-arm64: 14.0.0
+      syncpack-windows-x64: 14.0.0
 
   tailwind-merge@2.6.1: {}
 

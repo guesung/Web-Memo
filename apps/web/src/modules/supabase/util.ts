@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { CONFIG } from "@web-memo/env";
 import { NEED_AUTH_PAGES, PATHS } from "@web-memo/shared/constants";
-import type { Database } from "@web-memo/shared/types";
+import type { Database, MemoSupabaseClient } from "@web-memo/shared/types";
 import { AuthService } from "@web-memo/shared/utils";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -12,7 +12,7 @@ export async function updateAuthorization(request: NextRequest) {
 		headers: request.headers,
 	});
 
-	const supabaseClient = createServerClient<Database, "memo", Database["memo"]>(
+	const supabaseClient = createServerClient<Database, "memo">(
 		CONFIG.supabaseUrl,
 		CONFIG.supabaseAnonKey,
 		{
@@ -20,7 +20,7 @@ export async function updateAuthorization(request: NextRequest) {
 				getAll() {
 					return request.cookies.getAll();
 				},
-				setAll(cookiesToSet) {
+				setAll(cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>) {
 					cookiesToSet.forEach(({ name, value }) =>
 						request.cookies.set(name, value),
 					);
@@ -32,7 +32,7 @@ export async function updateAuthorization(request: NextRequest) {
 		},
 	);
 
-	const isUserLogin = await new AuthService(supabaseClient).checkUserLogin();
+	const isUserLogin = await new AuthService(supabaseClient as unknown as MemoSupabaseClient).checkUserLogin();
 	const isNeedAuthPage = NEED_AUTH_PAGES.some((page) =>
 		request.nextUrl.pathname.includes(page),
 	);

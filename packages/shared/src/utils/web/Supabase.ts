@@ -4,22 +4,22 @@ import { SUPABASE } from "../../constants";
 import type { Database } from "../../types";
 
 export const getSupabaseClient = () => {
-	return createBrowserClient<Database, "memo", Database["memo"]>(
+	return createBrowserClient<Database, "memo">(
 		CONFIG.supabaseUrl,
 		CONFIG.supabaseAnonKey,
 		{
 			auth: {
 				storage: {
-					getItem: (key) => {
+					getItem: (key: string) => {
 						return (
 							document.cookie.match(new RegExp(`(^| )${key}=([^;]+)`))?.[2] ??
 							""
 						);
 					},
-					setItem: (key, value) => {
+					setItem: (key: string, value: string) => {
 						document.cookie = `${key}=${value}; path=/; max-age=31536000; SameSite=Strict; Secure`;
 					},
-					removeItem: (key) => {
+					removeItem: (key: string) => {
 						document.cookie = `${key}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
 					},
 				},
@@ -30,7 +30,7 @@ export const getSupabaseClient = () => {
 };
 
 export const getFeedbackSupabaseClient = () => {
-	return createBrowserClient<Database>(
+	return createBrowserClient<Database, "feedback">(
 		CONFIG.supabaseUrl,
 		CONFIG.supabaseAnonKey,
 		{

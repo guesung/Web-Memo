@@ -17,14 +17,7 @@ import type { GetMemoResponse } from "@web-memo/shared/types";
 import { Loading, Skeleton, ToastAction, toast } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import {
-	type ComponentProps,
-	Suspense,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 import MemoDialog from "../MemoDialog";
 import { useDragSelection, useMemoDialog, useMemoSelection } from "./_hooks";
@@ -129,9 +122,12 @@ export default function MemoGrid({
 		}
 	}, [isSelectingMode, selectedMemoIds.length, handleDeleteSelectedMemos]);
 
-	const handleRequestAppend: ComponentProps<
-		typeof MasonryInfiniteGrid
-	>["onRequestAppend"] = ({ wait, currentTarget, groupKey, ready }) => {
+	const handleRequestAppend = ({
+		wait,
+		currentTarget,
+		groupKey,
+		ready,
+	}: any) => {
 		if (hasNextPage && !isFetchingNextPage) {
 			wait();
 

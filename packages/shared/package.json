@@ -61,19 +61,45 @@
 	},
 	"typesVersions": {
 		"*": {
-			"utils": ["./src/utils/index.ts"],
-			"utils/extension": ["./src/utils/extension/index.ts"],
-			"utils/web": ["./src/utils/web/index.ts"],
-			"utils/services": ["./src/utils/Supabase.ts"],
-			"hooks": ["./src/hooks/index.ts"],
-			"hooks/extension": ["./src/hooks/extension/index.ts"],
-			"constants": ["./src/constants/index.ts"],
-			"types": ["./src/types/index.ts"],
-			"modules/local-storage": ["./src/modules/local-storage/index.ts"],
-			"modules/search-params": ["./src/modules/search-params/index.ts"],
-			"modules/chrome-storage": ["./src/modules/chrome-storage/index.ts"],
-			"modules/extension-bridge": ["./src/modules/extension-bridge/index.ts"],
-			"modules/analytics": ["./src/modules/analytics/index.ts"]
+			"utils": [
+				"./src/utils/index.ts"
+			],
+			"utils/extension": [
+				"./src/utils/extension/index.ts"
+			],
+			"utils/web": [
+				"./src/utils/web/index.ts"
+			],
+			"utils/services": [
+				"./src/utils/Supabase.ts"
+			],
+			"hooks": [
+				"./src/hooks/index.ts"
+			],
+			"hooks/extension": [
+				"./src/hooks/extension/index.ts"
+			],
+			"constants": [
+				"./src/constants/index.ts"
+			],
+			"types": [
+				"./src/types/index.ts"
+			],
+			"modules/local-storage": [
+				"./src/modules/local-storage/index.ts"
+			],
+			"modules/search-params": [
+				"./src/modules/search-params/index.ts"
+			],
+			"modules/chrome-storage": [
+				"./src/modules/chrome-storage/index.ts"
+			],
+			"modules/extension-bridge": [
+				"./src/modules/extension-bridge/index.ts"
+			],
+			"modules/analytics": [
+				"./src/modules/analytics/index.ts"
+			]
 		}
 	},
 	"scripts": {
@@ -82,13 +108,13 @@
 	},
 	"dependencies": {
 		"@sentry/react": "^8.30.0",
-		"@supabase/ssr": "^0.5.1",
-		"react": "18.3.1",
-		"react-dom": "18.3.1",
+		"@supabase/ssr": "^0.8.0",
 		"@supabase/supabase-js": "^2.45.4",
 		"@tanstack/react-query": "^5.59.0",
 		"clsx": "^2.1.1",
 		"es-hangul": "^2.2.4",
+		"react": "18.3.1",
+		"react-dom": "18.3.1",
 		"supabase": "^1.192.5",
 		"tailwind-merge": "^2.4.0",
 		"youtube-transcript": "^1.2.1"

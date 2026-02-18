@@ -17,8 +17,7 @@ import MemoOption from "./MemoOption";
 
 interface MemoCardFooterProps
 	extends LanguageType,
-		React.HTMLAttributes<HTMLDivElement>,
-		PropsWithChildren {
+		React.HTMLAttributes<HTMLDivElement> {
 	memo: GetMemoResponse;
 	isShowingOption?: boolean;
 }

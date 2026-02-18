@@ -121,6 +121,8 @@
 	},
 	"devDependencies": {
 		"@web-memo/env": "workspace:*",
-		"@web-memo/tsconfig": "workspace:*"
+		"@web-memo/tsconfig": "workspace:*",
+		"@types/chrome": "^0.0.268",
+		"@types/react": "^18.3.5"
 	}
 }

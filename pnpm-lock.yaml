@@ -10,10 +10,6 @@ overrides:
 importers:
 
   .:
-    dependencies:
-      next:
-        specifier: 14.2.10
-        version: 14.2.10(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@biomejs/biome':
         specifier: 2.0.0
@@ -24,30 +20,18 @@ importers:
       '@commitlint/config-conventional':
         specifier: ^19.8.1
         version: 19.8.1
-      '@types/chrome':
-        specifier: ^0.0.268
-        version: 0.0.268
-      '@types/jest':
-        specifier: ^29.5.14
-        version: 29.5.14
       '@types/node':
         specifier: ^20.14.10
         version: 20.19.33
-      '@types/react':
-        specifier: ^18.3.5
-        version: 18.3.28
-      '@types/react-dom':
-        specifier: ^18.3.0
-        version: 18.3.0
       '@vitejs/plugin-react':
         specifier: ^4.3.3
         version: 4.7.0(vite@5.3.3(@types/node@20.19.33)(lightningcss@1.27.0)(terser@5.46.0))
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       husky:
         specifier: ^9.1.7
         version: 9.1.7
+      next:
+        specifier: 14.2.10
+        version: 14.2.10(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       rimraf:
         specifier: ^6.0.1
         version: 6.1.3
@@ -182,6 +166,9 @@ importers:
       '@laynezh/vite-plugin-lib-assets':
         specifier: ^0.5.23
         version: 0.5.26(vite@5.3.3(@types/node@20.19.33)(lightningcss@1.27.0)(terser@5.46.0))
+      '@types/chrome':
+        specifier: ^0.0.268
+        version: 0.0.268
       '@types/ws':
         specifier: ^8.5.11
         version: 8.18.1
@@ -200,6 +187,9 @@ importers:
       '@web-memo/vite-config':
         specifier: workspace:*
         version: link:../../packages/vite-config
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       deepmerge:
         specifier: ^4.3.1
         version: 4.3.1
@@ -315,6 +305,9 @@ importers:
       '@tanstack/react-query-devtools':
         specifier: ^5.59.0
         version: 5.91.3(@tanstack/react-query@5.90.21(react@18.3.1))(react@18.3.1)
+      '@types/chrome':
+        specifier: ^0.0.268
+        version: 0.0.268
       '@types/node':
         specifier: ^20.14.10
         version: 20.19.33
@@ -367,6 +360,9 @@ importers:
 
   packages/dev-utils:
     devDependencies:
+      '@types/chrome':
+        specifier: ^0.0.268
+        version: 0.0.268
       '@web-memo/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
@@ -392,6 +388,9 @@ importers:
       '@rollup/plugin-sucrase':
         specifier: ^5.0.2
         version: 5.0.2(rollup@4.57.1)
+      '@types/chrome':
+        specifier: ^0.0.268
+        version: 0.0.268
       '@types/node':
         specifier: ^20.14.10
         version: 20.19.33
@@ -453,6 +452,12 @@ importers:
         specifier: ^1.2.1
         version: 1.2.1
     devDependencies:
+      '@types/chrome':
+        specifier: ^0.0.268
+        version: 0.0.268
+      '@types/react':
+        specifier: ^18.3.5
+        version: 18.3.28
       '@web-memo/env':
         specifier: workspace:*
         version: link:../env
@@ -625,6 +630,12 @@ importers:
       '@sentry/react':
         specifier: ^8.30.0
         version: 8.55.0(react@18.3.1)
+      '@types/react':
+        specifier: ^18.3.5
+        version: 18.3.28
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.0
       '@web-memo/tailwindcss-config':
         specifier: workspace:*
         version: link:../tailwind-config
@@ -717,6 +728,15 @@ importers:
         specifier: ^4.0.0
         version: 4.0.1
     devDependencies:
+      '@types/chrome':
+        specifier: ^0.0.268
+        version: 0.0.268
+      '@types/react':
+        specifier: ^18.3.5
+        version: 18.3.28
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.0
       '@vitejs/plugin-react':
         specifier: ^4.3.3
         version: 4.7.0(vite@5.3.3(@types/node@20.19.33)(lightningcss@1.27.0)(terser@5.46.0))
@@ -735,6 +755,9 @@ importers:
       '@web-memo/vite-config':
         specifier: workspace:*
         version: link:../../packages/vite-config
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       tailwindcss:
         specifier: ^3.4.10
         version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.5.4))
@@ -769,6 +792,15 @@ importers:
       '@tanstack/react-query-devtools':
         specifier: ^5.59.0
         version: 5.91.3(@tanstack/react-query@5.90.21(react@18.3.1))(react@18.3.1)
+      '@types/chrome':
+        specifier: ^0.0.268
+        version: 0.0.268
+      '@types/react':
+        specifier: ^18.3.5
+        version: 18.3.28
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.0
       '@web-memo/env':
         specifier: workspace:*
         version: link:../../packages/env
@@ -784,6 +816,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.20(postcss@8.5.6)
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       tailwindcss:
         specifier: ^3.4.10
         version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.5.4))
@@ -827,6 +862,15 @@ importers:
       '@tanstack/react-query-devtools':
         specifier: ^5.59.0
         version: 5.91.3(@tanstack/react-query@5.90.21(react@18.3.1))(react@18.3.1)
+      '@types/chrome':
+        specifier: ^0.0.268
+        version: 0.0.268
+      '@types/react':
+        specifier: ^18.3.5
+        version: 18.3.28
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.0
       '@web-memo/env':
         specifier: workspace:*
         version: link:../../packages/env
@@ -842,6 +886,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.20(postcss@8.5.6)
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       rollup-plugin-visualizer:
         specifier: ^6.0.3
         version: 6.0.5(rollup@4.57.1)
@@ -2290,10 +2337,6 @@ packages:
 
   '@jest/environment@29.7.0':
     resolution: {integrity: sha512-aQIfHDq33ExsN4jP1NWGXhxgQ/wixs60gDiKO+XVMd8Mn0NWPWgc34ZQDTb2jKaUWQ7MuwoitXAsN2XVXNMpAw==}
-    engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
-
-  '@jest/expect-utils@29.7.0':
-    resolution: {integrity: sha512-GlsNBWiFQFCVi9QVSx7f5AgMeLxe9YCCs5PuP2O2LdjDAA8Jh9eX7lA1Jq/xdXw3Wb3hyvlFNfZIfcRetSzYcA==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
 
   '@jest/fake-timers@29.7.0':
@@ -4225,9 +4268,6 @@ packages:
   '@types/istanbul-reports@3.0.4':
     resolution: {integrity: sha512-pk2B1NWalF9toCRu6gjBzR69syFjP4Od8WRAX+0mmf9lAjCRicLOWc+ZrxZHx/0XRjotgkF9t6iaMJ+aXcOdZQ==}
 
-  '@types/jest@29.5.14':
-    resolution: {integrity: sha512-ZN+4sdnLUbo8EVvVc2ao0GFW6oVrQRPn4K2lglySj7APvSrgzxHiNNK99us4WDMi57xxA2yggblIAMNhXOotLQ==}
-
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
@@ -5276,10 +5316,6 @@ packages:
   didyoumean@1.2.2:
     resolution: {integrity: sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==}
 
-  diff-sequences@29.6.3:
-    resolution: {integrity: sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==}
-    engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
-
   diff@4.0.4:
     resolution: {integrity: sha512-X07nttJQkwkfKfvTPG/KSnE2OMdcUCao6+eXF3wmnIQRn2aPAHH3VxDbDOdegkd6JbPsXqShpvEOHfAT+nCNwQ==}
     engines: {node: '>=0.3.1'}
@@ -5525,10 +5561,6 @@ packages:
   expect-type@1.3.0:
     resolution: {integrity: sha512-knvyeauYhqjOYvQ66MznSMs83wmHrCycNEN6Ao+2AeYEfxUIkuiVxdEa1qlGEPK+We3n0THiDciYSsCcgW/DoA==}
     engines: {node: '>=12.0.0'}
-
-  expect@29.7.0:
-    resolution: {integrity: sha512-2Zks0hf1VLFYI1kbh0I5jP3KHHyCHpkfyHBzsSXRFgl/Bg9mWYfMW8oD+PdMPlEwy5HNsR9JutYy6pMeOh61nw==}
-    engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
 
   expo-application@6.0.2:
     resolution: {integrity: sha512-qcj6kGq3mc7x5yIb5KxESurFTJCoEKwNEL34RdPEvTB/xhl7SeVZlu05sZBqxB1V4Ryzq/LsCb7NHNfBbb3L7A==}
@@ -6247,10 +6279,6 @@ packages:
     resolution: {integrity: sha512-ykkVRwrYvFm1nb2AJfKKYPr0emF6IiXDYUaFx4Zn9ZuIH7MrzEZ3sD5RlqGXNRpHtvUHJyOnCEFxOlNDtGo7wg==}
     engines: {node: 20 || >=22}
 
-  jest-diff@29.7.0:
-    resolution: {integrity: sha512-LMIgiIrhigmPrs03JHpxUh2yISK3vLFPkAodPeo0+BuF7wA2FoQbkEg1u8gBYBThncu7e1oEDUfIXVuTqLRUjw==}
-    engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
-
   jest-environment-node@29.7.0:
     resolution: {integrity: sha512-DOSwCRqXirTOyheM+4d5YZOrWcdu0LNZ87ewUoywbcb2XR4wKgqiG8vNeYwhjFMbEkfju7wx2GYH0P2gevGvFw==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
@@ -6261,10 +6289,6 @@ packages:
 
   jest-haste-map@29.7.0:
     resolution: {integrity: sha512-fP8u2pyfqx0K1rGn1R9pyE0/KTn+G7PxktWidOBTqFPLYX0b9ksaMFkhK5vrS3DVun09pckLdlx90QthlW7AmA==}
-    engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
-
-  jest-matcher-utils@29.7.0:
-    resolution: {integrity: sha512-sBkD+Xi9DtcChsI3L3u0+N0opgPYnCRPtGcQYrgXmR+hmt/fYfWAL0xRXYU8eWOdfuLgBe0YCW3AFtnRLagq/g==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
 
   jest-message-util@29.7.0:
@@ -10631,10 +10655,6 @@ snapshots:
       '@types/node': 20.19.33
       jest-mock: 29.7.0
 
-  '@jest/expect-utils@29.7.0':
-    dependencies:
-      jest-get-type: 29.6.3
-
   '@jest/fake-timers@29.7.0':
     dependencies:
       '@jest/types': 29.6.3
@@ -12817,11 +12837,6 @@ snapshots:
     dependencies:
       '@types/istanbul-lib-report': 3.0.3
 
-  '@types/jest@29.5.14':
-    dependencies:
-      expect: 29.7.0
-      pretty-format: 29.7.0
-
   '@types/json-schema@7.0.15': {}
 
   '@types/mdast@4.0.4':
@@ -13936,8 +13951,6 @@ snapshots:
 
   didyoumean@1.2.2: {}
 
-  diff-sequences@29.6.3: {}
-
   diff@4.0.4: {}
 
   dir-glob@3.0.1:
@@ -14203,14 +14216,6 @@ snapshots:
       strip-final-newline: 2.0.0
 
   expect-type@1.3.0: {}
-
-  expect@29.7.0:
-    dependencies:
-      '@jest/expect-utils': 29.7.0
-      jest-get-type: 29.6.3
-      jest-matcher-utils: 29.7.0
-      jest-message-util: 29.7.0
-      jest-util: 29.7.0
 
   expo-application@6.0.2(expo@52.0.49(@babel/core@7.29.0)(@babel/preset-env@7.29.0(@babel/core@7.29.0))(@expo/metro-runtime@4.0.1(react-native@0.76.9(@babel/core@7.29.0)(@babel/preset-env@7.29.0(@babel/core@7.29.0))(@types/react@18.3.28)(react@18.3.1)))(react-native-webview@13.12.5(react-native@0.76.9(@babel/core@7.29.0)(@babel/preset-env@7.29.0(@babel/core@7.29.0))(@types/react@18.3.28)(react@18.3.1))(react@18.3.1))(react-native@0.76.9(@babel/core@7.29.0)(@babel/preset-env@7.29.0(@babel/core@7.29.0))(@types/react@18.3.28)(react@18.3.1))(react@18.3.1)):
     dependencies:
@@ -14991,13 +14996,6 @@ snapshots:
     dependencies:
       '@isaacs/cliui': 9.0.0
 
-  jest-diff@29.7.0:
-    dependencies:
-      chalk: 4.1.2
-      diff-sequences: 29.6.3
-      jest-get-type: 29.6.3
-      pretty-format: 29.7.0
-
   jest-environment-node@29.7.0:
     dependencies:
       '@jest/environment': 29.7.0
@@ -15024,13 +15022,6 @@ snapshots:
       walker: 1.0.8
     optionalDependencies:
       fsevents: 2.3.3
-
-  jest-matcher-utils@29.7.0:
-    dependencies:
-      chalk: 4.1.2
-      jest-diff: 29.7.0
-      jest-get-type: 29.6.3
-      pretty-format: 29.7.0
 
   jest-message-util@29.7.0:
     dependencies:

@@ -5,7 +5,8 @@
 		"paths": {
 			"@root/*": ["./*"],
 			"@lib/*": ["lib/*"]
-		}
+		},
+		"types": ["chrome", "node"]
 	},
 	"include": ["lib", "utils", "vite.config.mts"]
 }

@@ -22,7 +22,7 @@
 		"resolveJsonModule": true,
 		"module": "ESNext",
 		"lib": ["DOM", "ESNext"],
-		"types": ["chrome", "jest", "node"]
+		"types": ["node"]
 	},
 	"exclude": ["node_modules"]
 }

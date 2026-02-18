@@ -8,8 +8,9 @@
 		"strictPropertyInitialization": false,
 		"stripInternal": true,
 		"declarationDir": "dist",
-		"outDir": "dist"
+		"outDir": "dist",
+		"types": ["chrome", "node"]
 	},
 	"include": ["src"],
-	"exclude": ["dist"]
+	"exclude": ["dist", "**/*.test.ts"]
 }

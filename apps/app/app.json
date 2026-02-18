@@ -2,6 +2,7 @@
   "expo": {
     "name": "Web Memo",
     "slug": "web-memo",
+    "owner": "guesung",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,10 +17,14 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.webmemo.app",
+      "buildNumber": "1",
       "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
         "CFBundleURLTypes": [
           {
-            "CFBundleURLSchemes": ["webmemo"]
+            "CFBundleURLSchemes": [
+              "webmemo"
+            ]
           }
         ]
       }
@@ -39,7 +44,10 @@
               "scheme": "webmemo"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -62,6 +70,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "e5be4764-47b4-4206-9a6a-d9ae68fa44cf"
+      }
     }
   }
 }

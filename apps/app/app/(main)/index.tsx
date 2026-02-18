@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -11,6 +11,8 @@ import {
   Text,
   FlatList,
   ActivityIndicator,
+  Modal,
+  Alert,
 } from "react-native";
 import { WebView } from "react-native-webview";
 import type { WebViewNavigation } from "react-native-webview";
@@ -25,9 +27,16 @@ import {
   Globe,
   FileText,
   Home,
+  CloudUpload,
+  LogOut,
+  Check,
 } from "lucide-react-native";
+import * as Linking from "expo-linking";
 import { MemoPanel } from "@/components/browser/MemoPanel";
-import { useLocalMemos } from "@/lib/hooks/useLocalMemos";
+import { useLocalMemos, useSyncMemos } from "@/lib/hooks/useLocalMemos";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { useOAuth, createSessionFromUrl } from "@/lib/auth/useOAuth";
+import { SocialLoginButton } from "@/components/auth/SocialLoginButton";
 import type { LocalMemo } from "@/lib/storage/localMemo";
 
 type Mode = "home" | "browser";
@@ -36,7 +45,17 @@ export default function MainScreen() {
   const insets = useSafeAreaInsets();
   const webViewRef = useRef<WebView>(null);
 
-  // Mode: home or browser
+  // Auth
+  const { session, signOut } = useAuth();
+  const { signInWithGoogle, signInWithKakao } = useOAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  // Sync
+  const { mutate: syncMemos, isPending: isSyncing } = useSyncMemos();
+  const [syncResult, setSyncResult] = useState<string | null>(null);
+
+  // Mode
   const [mode, setMode] = useState<Mode>("home");
 
   // Browser state
@@ -53,12 +72,23 @@ export default function MainScreen() {
   // Local memos
   const { data: memos = [], isLoading, refetch } = useLocalMemos();
 
-  const navigateTo = useCallback((url: string) => {
-    setCurrentUrl(url);
-    setMode("browser");
-    setIsMemoOpen(false);
-    slideAnim.setValue(0);
-  }, [slideAnim]);
+  // Deep link listener (backup for OAuth callback)
+  const deepLinkUrl = Linking.useURL();
+  useEffect(() => {
+    if (deepLinkUrl) {
+      createSessionFromUrl(deepLinkUrl).catch(() => {});
+    }
+  }, [deepLinkUrl]);
+
+  const navigateTo = useCallback(
+    (url: string) => {
+      setCurrentUrl(url);
+      setMode("browser");
+      setIsMemoOpen(false);
+      slideAnim.setValue(0);
+    },
+    [slideAnim]
+  );
 
   const goHome = useCallback(() => {
     setMode("home");
@@ -74,7 +104,6 @@ export default function MainScreen() {
     setPageTitle(navState.title ?? "");
     setCanGoBack(navState.canGoBack);
     setCanGoForward(navState.canGoForward);
-
     try {
       const parsed = new URL(navState.url);
       setUrlInput(parsed.hostname.replace("www.", ""));
@@ -86,7 +115,6 @@ export default function MainScreen() {
   const handleUrlSubmit = (input?: string) => {
     let url = (input ?? urlInput).trim();
     if (!url) return;
-
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
       if (url.includes(".") && !url.includes(" ")) {
         url = "https://" + url;
@@ -94,7 +122,6 @@ export default function MainScreen() {
         url = "https://www.google.com/search?q=" + encodeURIComponent(url);
       }
     }
-
     Keyboard.dismiss();
     navigateTo(url);
   };
@@ -116,20 +143,101 @@ export default function MainScreen() {
     outputRange: ["0%", "45%"],
   });
 
+  // ─── Sync / Login ───
+  const doSync = () => {
+    syncMemos(undefined, {
+      onSuccess: (result) => {
+        setSyncResult(
+          result.synced > 0
+            ? `${result.synced}개 메모 동기화 완료`
+            : "모든 메모가 동기화됨"
+        );
+        setTimeout(() => setSyncResult(null), 3000);
+      },
+      onError: () => {
+        setSyncResult("동기화 실패");
+        setTimeout(() => setSyncResult(null), 3000);
+      },
+    });
+  };
+
+  const handleSyncPress = () => {
+    if (!session) {
+      setShowLoginModal(true);
+      return;
+    }
+    doSync();
+  };
+
+  const handleLogin = async (provider: "google" | "kakao") => {
+    try {
+      setLoginLoading(true);
+      if (provider === "google") {
+        await signInWithGoogle();
+      } else {
+        await signInWithKakao();
+      }
+      setShowLoginModal(false);
+      setTimeout(() => doSync(), 500);
+    } catch {
+      Alert.alert("로그인 실패", "다시 시도해주세요.");
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleSignOut = () => {
+    Alert.alert("로그아웃", "로그아웃 하시겠습니까?", [
+      { text: "취소", style: "cancel" },
+      { text: "로그아웃", style: "destructive", onPress: signOut },
+    ]);
+  };
+
   // ─── HOME MODE ───
   if (mode === "home") {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.homeContent}>
-          {/* Branding */}
-          <View style={styles.branding}>
+          {/* Header */}
+          <View style={styles.homeHeader}>
             <Text style={styles.brandTitle}>Web Memo</Text>
-            <Text style={styles.brandSubtitle}>
-              웹서핑하며 메모하세요
-            </Text>
+            {/* TODO: 로그인/동기화 기능 - OAuth 수정 후 활성화
+            <View style={styles.homeHeaderRight}>
+              {session && (
+                <TouchableOpacity onPress={handleSignOut} style={styles.headerBtn}>
+                  <LogOut size={18} color="#999" />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                onPress={handleSyncPress}
+                disabled={isSyncing}
+                style={[styles.syncButton, session && styles.syncButtonLoggedIn]}
+              >
+                {isSyncing ? (
+                  <ActivityIndicator size="small" color={session ? "#fff" : "#111"} />
+                ) : syncResult ? (
+                  <>
+                    <Check size={14} color={session ? "#fff" : "#22c55e"} />
+                    <Text style={[styles.syncText, session && styles.syncTextLoggedIn]}>
+                      {syncResult}
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <CloudUpload size={14} color={session ? "#fff" : "#111"} />
+                    <Text style={[styles.syncText, session && styles.syncTextLoggedIn]}>
+                      {session ? "동기화" : "로그인"}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+            */}
           </View>
 
-          {/* Search / URL Bar */}
+          <Text style={styles.brandSubtitle}>웹서핑하며 메모하세요</Text>
+
+          {/* URL Bar */}
           <View style={styles.homeSearchContainer}>
             <View style={styles.homeSearchBar}>
               <Search size={18} color="#999" />
@@ -147,7 +255,7 @@ export default function MainScreen() {
             </View>
           </View>
 
-          {/* Recent Memos */}
+          {/* Memos */}
           {isLoading ? (
             <ActivityIndicator style={{ marginTop: 40 }} size="large" />
           ) : memos.length > 0 ? (
@@ -157,10 +265,7 @@ export default function MainScreen() {
                 data={memos}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                  <MemoCard
-                    memo={item}
-                    onPress={() => navigateTo(item.url)}
-                  />
+                  <MemoCard memo={item} onPress={() => navigateTo(item.url)} />
                 )}
                 contentContainerStyle={styles.memosList}
                 onRefresh={refetch}
@@ -170,12 +275,48 @@ export default function MainScreen() {
           ) : (
             <View style={styles.emptyState}>
               <Globe size={48} color="#ddd" />
-              <Text style={styles.emptyText}>
-                URL을 입력해서 웹서핑을 시작하세요
-              </Text>
+              <Text style={styles.emptyText}>URL을 입력해서 웹서핑을 시작하세요</Text>
             </View>
           )}
         </View>
+
+        {/* TODO: 로그인 모달 - OAuth 수정 후 활성화
+        <Modal
+          visible={showLoginModal}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setShowLoginModal(false)}
+        >
+          <View style={styles.loginModal}>
+            <View style={styles.loginModalHeader}>
+              <TouchableOpacity onPress={() => setShowLoginModal(false)}>
+                <X size={24} color="#111" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.loginModalContent}>
+              <CloudUpload size={48} color="#111" />
+              <Text style={styles.loginTitle}>메모를 웹에서도 확인하세요</Text>
+              <Text style={styles.loginSubtitle}>
+                로그인하면 메모가 자동으로 동기화되어{"\n"}
+                웹에서도 볼 수 있습니다
+              </Text>
+              <View style={styles.loginButtons}>
+                <SocialLoginButton
+                  provider="google"
+                  onPress={() => handleLogin("google")}
+                  disabled={loginLoading}
+                />
+                <SocialLoginButton
+                  provider="kakao"
+                  onPress={() => handleLogin("kakao")}
+                  disabled={loginLoading}
+                />
+                {loginLoading && <ActivityIndicator size="small" style={{ marginTop: 12 }} />}
+              </View>
+            </View>
+          </View>
+        </Modal>
+        */}
       </View>
     );
   }
@@ -186,12 +327,10 @@ export default function MainScreen() {
       style={[styles.container, { paddingTop: insets.top }]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      {/* Browser Header */}
       <View style={styles.browserHeader}>
         <TouchableOpacity onPress={goHome} style={styles.navBtn}>
           <Home size={20} color="#111" />
         </TouchableOpacity>
-
         <TouchableOpacity
           onPress={() => webViewRef.current?.goBack()}
           disabled={!canGoBack}
@@ -206,7 +345,6 @@ export default function MainScreen() {
         >
           <ChevronRight size={20} color={canGoForward ? "#111" : "#ccc"} />
         </TouchableOpacity>
-
         <View style={styles.browserUrlBar}>
           <Search size={14} color="#999" />
           <TextInput
@@ -223,16 +361,11 @@ export default function MainScreen() {
             selectTextOnFocus
           />
         </View>
-
-        <TouchableOpacity
-          onPress={() => webViewRef.current?.reload()}
-          style={styles.navBtn}
-        >
+        <TouchableOpacity onPress={() => webViewRef.current?.reload()} style={styles.navBtn}>
           <RotateCw size={16} color="#111" />
         </TouchableOpacity>
       </View>
 
-      {/* WebView */}
       <View style={styles.webviewContainer}>
         <WebView
           ref={webViewRef}
@@ -246,54 +379,31 @@ export default function MainScreen() {
         />
       </View>
 
-      {/* Memo Panel */}
       {isMemoOpen && (
-        <Animated.View
-          style={[styles.memoContainer, { height: memoPanelHeight }]}
-        >
+        <Animated.View style={[styles.memoContainer, { height: memoPanelHeight }]}>
           <MemoPanel url={currentUrl} pageTitle={pageTitle} />
         </Animated.View>
       )}
 
-      {/* Floating Memo Button */}
       <TouchableOpacity
-        style={[
-          styles.fab,
-          { bottom: insets.bottom + 20 },
-          isMemoOpen && styles.fabActive,
-        ]}
+        style={[styles.fab, { bottom: insets.bottom + 20 }, isMemoOpen && styles.fabActive]}
         onPress={toggleMemo}
         activeOpacity={0.8}
       >
-        {isMemoOpen ? (
-          <X size={24} color="#fff" />
-        ) : (
-          <PenLine size={24} color="#fff" />
-        )}
+        {isMemoOpen ? <X size={24} color="#fff" /> : <PenLine size={24} color="#fff" />}
       </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 }
 
-// ─── Memo Card Component ───
-function MemoCard({
-  memo,
-  onPress,
-}: {
-  memo: LocalMemo;
-  onPress: () => void;
-}) {
+function MemoCard({ memo, onPress }: { memo: LocalMemo; onPress: () => void }) {
   let domain = "";
   try {
     if (memo.url) domain = new URL(memo.url).hostname.replace("www.", "");
   } catch {}
 
   return (
-    <TouchableOpacity
-      style={styles.memoCard}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
+    <TouchableOpacity style={styles.memoCard} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.memoCardHeader}>
         <FileText size={14} color="#666" />
         <Text style={styles.memoCardTitle} numberOfLines={1}>
@@ -316,35 +426,37 @@ function MemoCard({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container: { flex: 1, backgroundColor: "#fff" },
+
+  // HOME
+  homeContent: { flex: 1 },
+  homeHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 4,
+  },
+  homeHeaderRight: { flexDirection: "row", alignItems: "center", gap: 8 },
+  headerBtn: { padding: 8 },
+  syncButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#ddd",
     backgroundColor: "#fff",
   },
-
-  // ─── HOME ───
-  homeContent: {
-    flex: 1,
-  },
-  branding: {
-    alignItems: "center",
-    paddingTop: 60,
-    paddingBottom: 32,
-  },
-  brandTitle: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: "#111",
-    letterSpacing: -0.5,
-  },
-  brandSubtitle: {
-    fontSize: 15,
-    color: "#888",
-    marginTop: 6,
-  },
-  homeSearchContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
-  },
+  syncButtonLoggedIn: { backgroundColor: "#111", borderColor: "#111" },
+  syncText: { fontSize: 13, fontWeight: "600", color: "#111" },
+  syncTextLoggedIn: { color: "#fff" },
+  brandTitle: { fontSize: 22, fontWeight: "800", color: "#111", letterSpacing: -0.5 },
+  brandSubtitle: { fontSize: 14, color: "#888", paddingHorizontal: 20, marginBottom: 16 },
+  homeSearchContainer: { paddingHorizontal: 20, marginBottom: 24 },
   homeSearchBar: {
     flexDirection: "row",
     alignItems: "center",
@@ -354,25 +466,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     gap: 10,
   },
-  homeSearchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: "#333",
-    padding: 0,
-  },
-  memosSection: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  sectionTitle: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: "#111",
-    marginBottom: 12,
-  },
-  memosList: {
-    paddingBottom: 32,
-  },
+  homeSearchInput: { flex: 1, fontSize: 16, color: "#333", padding: 0 },
+  memosSection: { flex: 1, paddingHorizontal: 20 },
+  sectionTitle: { fontSize: 17, fontWeight: "700", color: "#111", marginBottom: 12 },
+  memosList: { paddingBottom: 32 },
   memoCard: {
     backgroundColor: "#fafafa",
     borderRadius: 12,
@@ -381,44 +478,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#f0f0f0",
   },
-  memoCardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 4,
-  },
-  memoCardTitle: {
+  memoCardHeader: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 },
+  memoCardTitle: { flex: 1, fontSize: 15, fontWeight: "600", color: "#111" },
+  memoCardText: { fontSize: 14, color: "#555", lineHeight: 20, marginBottom: 6 },
+  memoCardFooter: { flexDirection: "row", alignItems: "center", gap: 4 },
+  memoCardDomain: { fontSize: 12, color: "#999" },
+  emptyState: { alignItems: "center", paddingTop: 60, gap: 12 },
+  emptyText: { fontSize: 15, color: "#bbb" },
+
+  // LOGIN MODAL
+  loginModal: { flex: 1, backgroundColor: "#fff" },
+  loginModalHeader: { flexDirection: "row", justifyContent: "flex-end", padding: 16 },
+  loginModalContent: {
     flex: 1,
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#111",
-  },
-  memoCardText: {
-    fontSize: 14,
-    color: "#555",
-    lineHeight: 20,
-    marginBottom: 6,
-  },
-  memoCardFooter: {
-    flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-  },
-  memoCardDomain: {
-    fontSize: 12,
-    color: "#999",
-  },
-  emptyState: {
-    alignItems: "center",
-    paddingTop: 60,
+    justifyContent: "center",
+    paddingHorizontal: 32,
+    paddingBottom: 80,
     gap: 12,
   },
-  emptyText: {
-    fontSize: 15,
-    color: "#bbb",
-  },
+  loginTitle: { fontSize: 22, fontWeight: "700", color: "#111", marginTop: 16 },
+  loginSubtitle: { fontSize: 15, color: "#888", textAlign: "center", lineHeight: 22, marginBottom: 24 },
+  loginButtons: { width: "100%", gap: 12 },
 
-  // ─── BROWSER ───
+  // BROWSER
   browserHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -429,9 +512,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#eee",
     backgroundColor: "#fff",
   },
-  navBtn: {
-    padding: 6,
-  },
+  navBtn: { padding: 6 },
   browserUrlBar: {
     flex: 1,
     flexDirection: "row",
@@ -442,23 +523,10 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     gap: 6,
   },
-  browserUrlInput: {
-    flex: 1,
-    fontSize: 14,
-    color: "#333",
-    padding: 0,
-  },
-  webviewContainer: {
-    flex: 1,
-  },
-  webview: {
-    flex: 1,
-  },
-  memoContainer: {
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-    backgroundColor: "#fff",
-  },
+  browserUrlInput: { flex: 1, fontSize: 14, color: "#333", padding: 0 },
+  webviewContainer: { flex: 1 },
+  webview: { flex: 1 },
+  memoContainer: { borderTopWidth: 1, borderTopColor: "#eee", backgroundColor: "#fff" },
   fab: {
     position: "absolute",
     right: 20,
@@ -474,7 +542,5 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 8,
   },
-  fabActive: {
-    backgroundColor: "#666",
-  },
+  fabActive: { backgroundColor: "#666" },
 });

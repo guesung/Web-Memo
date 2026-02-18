@@ -422,17 +422,17 @@ Any additional context or follow-up items.
 
 ## Task Completion Workflow
 
-**IMPORTANT**: After completing any task, always execute the `/pr` command to create a pull request.
+**MANDATORY**: 모든 작업 완료 후 반드시 `/pr` 명령어를 실행하여 Pull Request를 생성해야 합니다. 예외 없음.
 
 ### Standard Workflow
-1. Complete the assigned task
-2. Verify changes with `pnpm type-check` and `pnpm lint`
-3. Run `/pr` command to create a pull request
+1. 작업 완료
+2. `pnpm type-check` 및 `pnpm lint`로 검증
+3. `/pr` 명령어로 PR 생성
 
 ### PR Command Usage
-The `/pr` command will:
-- Create a new branch from develop (if not already on a feature branch)
-- Commit all changes with a descriptive message
-- Push to remote and create a pull request
+`/pr` 명령어는 다음을 수행합니다:
+- develop 브랜치에서 새 브랜치 생성 (이미 feature 브랜치인 경우 생략)
+- 변경사항을 의미있는 커밋 메시지로 커밋
+- 원격에 푸시 후 PR 생성
 
-This ensures all work is properly tracked and ready for review.
+모든 작업이 PR을 통해 추적되고 리뷰될 수 있도록 합니다.

@@ -21,7 +21,6 @@
 
 	"dependencies": {
 		"@web-memo/shared": "workspace:*",
-		"@hookform/resolvers": "^3.9.1",
 		"@radix-ui/react-accordion": "^1.2.1",
 		"@radix-ui/react-alert-dialog": "^1.1.2",
 		"@radix-ui/react-aspect-ratio": "^1.1.0",
@@ -64,8 +63,7 @@
 		"tailwindcss-animate": "^1.0.7",
 		"lucide-react": "^0.456.0",
 		"vaul": "^1.1.1",
-		"framer-motion": "^11.11.8",
-		"zod": "^3.23.8"
+		"framer-motion": "^11.11.8"
 	},
 	"devDependencies": {
 		"@web-memo/tailwindcss-config": "workspace:*",

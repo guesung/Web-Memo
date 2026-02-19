@@ -10,7 +10,6 @@ import {
 } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Animated,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -20,10 +19,22 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  runOnJS,
+} from "react-native-reanimated";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { WebViewNavigation } from "react-native-webview";
 import { WebView } from "react-native-webview";
 import { useLocalSearchParams } from "expo-router";
+
+const SPRING_CONFIG = { damping: 20, stiffness: 150 };
+const MIN_PANEL_RATIO = 0.15;
+const MAX_PANEL_RATIO = 0.8;
+const DEFAULT_PANEL_RATIO = 0.4;
 
 export default function BrowserScreen() {
   const insets = useSafeAreaInsets();
@@ -35,18 +46,20 @@ export default function BrowserScreen() {
   const [urlInput, setUrlInput] = useState("");
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
-
   const [isMemoOpen, setIsMemoOpen] = useState(false);
-  const slideAnim = useRef(new Animated.Value(0)).current;
+  const [contentHeight, setContentHeight] = useState(0);
+
+  const panelHeight = useSharedValue(0);
+  const dragStartHeight = useSharedValue(0);
 
   useEffect(() => {
     if (paramUrl) {
       const decoded = decodeURIComponent(paramUrl);
       setCurrentUrl(decoded);
       setIsMemoOpen(false);
-      slideAnim.setValue(0);
+      panelHeight.value = withSpring(0, SPRING_CONFIG);
     }
-  }, [paramUrl, slideAnim]);
+  }, [paramUrl]);
 
   const handleNavigationStateChange = (navState: WebViewNavigation) => {
     setCurrentUrl(navState.url);
@@ -73,26 +86,55 @@ export default function BrowserScreen() {
     }
     Keyboard.dismiss();
     setCurrentUrl(url);
+    panelHeight.value = withSpring(0, SPRING_CONFIG);
     setIsMemoOpen(false);
-    slideAnim.setValue(0);
   };
 
   const toggleMemo = useCallback(() => {
-    const toValue = isMemoOpen ? 0 : 1;
-    Animated.spring(slideAnim, {
-      toValue,
-      useNativeDriver: false,
-      tension: 65,
-      friction: 11,
-    }).start();
-    setIsMemoOpen(!isMemoOpen);
-    if (isMemoOpen) Keyboard.dismiss();
-  }, [isMemoOpen, slideAnim]);
+    if (isMemoOpen) {
+      panelHeight.value = withSpring(0, SPRING_CONFIG, (finished) => {
+        if (finished) {
+          runOnJS(setIsMemoOpen)(false);
+        }
+      });
+      Keyboard.dismiss();
+    } else {
+      setIsMemoOpen(true);
+      const defaultH = contentHeight * DEFAULT_PANEL_RATIO;
+      panelHeight.value = withSpring(defaultH, SPRING_CONFIG);
+    }
+  }, [isMemoOpen, contentHeight, panelHeight]);
 
-  const memoPanelHeight = slideAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0%", "45%"],
-  });
+  const resizeGesture = Gesture.Pan()
+    .onStart(() => {
+      dragStartHeight.value = panelHeight.value;
+    })
+    .onUpdate((event) => {
+      const newHeight = dragStartHeight.value - event.translationY;
+      const minH = contentHeight * MIN_PANEL_RATIO;
+      const maxH = contentHeight * MAX_PANEL_RATIO;
+      panelHeight.value = Math.max(minH, Math.min(maxH, newHeight));
+    })
+    .onEnd(() => {
+      const minH = contentHeight * MIN_PANEL_RATIO;
+      if (panelHeight.value <= minH) {
+        panelHeight.value = withSpring(0, SPRING_CONFIG, (finished) => {
+          if (finished) {
+            runOnJS(setIsMemoOpen)(false);
+            runOnJS(Keyboard.dismiss)();
+          }
+        });
+      }
+    });
+
+  const memoAnimatedStyle = useAnimatedStyle(() => ({
+    height: panelHeight.value,
+    overflow: "hidden" as const,
+  }));
+
+  const fabAnimatedStyle = useAnimatedStyle(() => ({
+    bottom: panelHeight.value > 0 ? panelHeight.value + 12 : insets.bottom + 20,
+  }));
 
   if (!currentUrl) {
     return (
@@ -162,32 +204,42 @@ export default function BrowserScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.webviewContainer}>
-        <WebView
-          ref={webViewRef}
-          source={{ uri: currentUrl }}
-          onNavigationStateChange={handleNavigationStateChange}
-          style={styles.webview}
-          javaScriptEnabled
-          domStorageEnabled
-          startInLoadingState
-          allowsBackForwardNavigationGestures
-        />
+      <View
+        style={styles.contentArea}
+        onLayout={(e) => setContentHeight(e.nativeEvent.layout.height)}
+      >
+        <View style={styles.webviewContainer}>
+          <WebView
+            ref={webViewRef}
+            source={{ uri: currentUrl }}
+            onNavigationStateChange={handleNavigationStateChange}
+            style={styles.webview}
+            javaScriptEnabled
+            domStorageEnabled
+            startInLoadingState
+            allowsBackForwardNavigationGestures
+          />
+        </View>
+
+        <Animated.View style={[styles.memoContainer, memoAnimatedStyle]}>
+          <GestureDetector gesture={resizeGesture}>
+            <Animated.View style={styles.dragHandle}>
+              <View style={styles.dragHandleBar} />
+            </Animated.View>
+          </GestureDetector>
+          {isMemoOpen && <MemoPanel url={currentUrl} pageTitle={pageTitle} />}
+        </Animated.View>
       </View>
 
-      {isMemoOpen && (
-        <Animated.View style={[styles.memoContainer, { height: memoPanelHeight }]}>
-          <MemoPanel url={currentUrl} pageTitle={pageTitle} />
-        </Animated.View>
-      )}
-
-      <TouchableOpacity
-        style={[styles.fab, { bottom: insets.bottom + 20 }, isMemoOpen && styles.fabActive]}
-        onPress={toggleMemo}
-        activeOpacity={0.8}
-      >
-        {isMemoOpen ? <X size={24} color="#fff" /> : <PenLine size={24} color="#fff" />}
-      </TouchableOpacity>
+      <Animated.View style={[styles.fabContainer, fabAnimatedStyle]}>
+        <TouchableOpacity
+          style={[styles.fab, isMemoOpen && styles.fabActive]}
+          onPress={toggleMemo}
+          activeOpacity={0.8}
+        >
+          {isMemoOpen ? <X size={24} color="#fff" /> : <PenLine size={24} color="#fff" />}
+        </TouchableOpacity>
+      </Animated.View>
     </KeyboardAvoidingView>
   );
 }
@@ -229,12 +281,30 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   browserUrlInput: { flex: 1, fontSize: 14, color: "#333", padding: 0 },
+  contentArea: { flex: 1 },
   webviewContainer: { flex: 1 },
   webview: { flex: 1 },
-  memoContainer: { borderTopWidth: 1, borderTopColor: "#eee", backgroundColor: "#fff" },
-  fab: {
+  memoContainer: {
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+    backgroundColor: "#fff",
+  },
+  dragHandle: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+  },
+  dragHandleBar: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#d1d5db",
+  },
+  fabContainer: {
     position: "absolute",
     right: 20,
+  },
+  fab: {
     width: 56,
     height: 56,
     borderRadius: 28,

@@ -64,6 +64,13 @@
 	"pnpm": {
 		"overrides": {
 			"@types/node": "^20.14.10"
+		},
+		"packageExtensions": {
+			"@react-native-google-signin/google-signin": {
+				"dependencies": {
+					"@expo/config-plugins": "*"
+				}
+			}
 		}
 	}
 }

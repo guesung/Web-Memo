@@ -1,0 +1,60 @@
+import type { LocalMemo } from "@/lib/storage/localMemo";
+import type { GetMemoResponse } from "@web-memo/shared/types";
+import { FileText, Globe } from "lucide-react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
+export type MemoItem = LocalMemo | GetMemoResponse;
+
+interface MemoCardProps {
+  memo: MemoItem;
+  onPress: () => void;
+}
+
+export function MemoCard({ memo, onPress }: MemoCardProps) {
+  const url = memo.url;
+  let domain = "";
+  try {
+    if (url) domain = new URL(url).hostname.replace("www.", "");
+  } catch {}
+
+  const title = memo.title || "Untitled";
+  const memoText = memo.memo;
+
+  return (
+    <TouchableOpacity style={styles.memoCard} onPress={onPress} activeOpacity={0.7}>
+      <View style={styles.memoCardHeader}>
+        <FileText size={14} color="#666" />
+        <Text style={styles.memoCardTitle} numberOfLines={1}>
+          {title}
+        </Text>
+      </View>
+      {memoText ? (
+        <Text style={styles.memoCardText} numberOfLines={2}>
+          {memoText}
+        </Text>
+      ) : null}
+      {domain ? (
+        <View style={styles.memoCardFooter}>
+          <Globe size={11} color="#999" />
+          <Text style={styles.memoCardDomain}>{domain}</Text>
+        </View>
+      ) : null}
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  memoCard: {
+    backgroundColor: "#fafafa",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
+  },
+  memoCardHeader: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 },
+  memoCardTitle: { flex: 1, fontSize: 15, fontWeight: "600", color: "#111" },
+  memoCardText: { fontSize: 14, color: "#555", lineHeight: 20, marginBottom: 6 },
+  memoCardFooter: { flexDirection: "row", alignItems: "center", gap: 4 },
+  memoCardDomain: { fontSize: 12, color: "#999" },
+});

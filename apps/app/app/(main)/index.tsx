@@ -179,8 +179,9 @@ export default function MainScreen() {
       }
       setShowLoginModal(false);
       setTimeout(() => doSync(), 500);
-    } catch {
-      Alert.alert("로그인 실패", "다시 시도해주세요.");
+    } catch (e) {
+      console.error("[Login Error]", e);
+      Alert.alert("로그인 실패", String(e));
     } finally {
       setLoginLoading(false);
     }

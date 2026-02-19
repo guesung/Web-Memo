@@ -2,15 +2,13 @@ import { MemoCard, type MemoItem } from "@/components/memo/MemoCard";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocalMemos } from "@/lib/hooks/useLocalMemos";
 import { useMemosInfinite } from "@/lib/hooks/useMemos";
-import { Globe, Search } from "lucide-react-native";
-import { useCallback, useState } from "react";
+import { Globe } from "lucide-react-native";
+import { useCallback } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Keyboard,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -21,8 +19,6 @@ export default function MemoScreen() {
   const router = useRouter();
   const { session } = useAuth();
   const isLoggedIn = !!session;
-
-  const [urlInput, setUrlInput] = useState("");
 
   const {
     data: localMemosData,
@@ -54,21 +50,6 @@ export default function MemoScreen() {
     [router],
   );
 
-  const handleUrlSubmit = () => {
-    let url = urlInput.trim();
-    if (!url) return;
-    if (!url.startsWith("http://") && !url.startsWith("https://")) {
-      if (url.includes(".") && !url.includes(" ")) {
-        url = `https://${url}`;
-      } else {
-        url = `https://www.google.com/search?q=${encodeURIComponent(url)}`;
-      }
-    }
-    Keyboard.dismiss();
-    setUrlInput("");
-    navigateToBrowser(url);
-  };
-
   const handleEndReached = () => {
     if (isLoggedIn && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
@@ -84,24 +65,6 @@ export default function MemoScreen() {
         </View>
 
         <Text style={styles.brandSubtitle}>웹서핑하며 메모하세요</Text>
-
-        {/* URL Bar */}
-        <View style={styles.homeSearchContainer}>
-          <View style={styles.homeSearchBar}>
-            <Search size={18} color="#999" />
-            <TextInput
-              style={styles.homeSearchInput}
-              value={urlInput}
-              onChangeText={setUrlInput}
-              onSubmitEditing={handleUrlSubmit}
-              placeholder="URL 입력 또는 검색"
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="url"
-              returnKeyType="go"
-            />
-          </View>
-        </View>
 
         {/* Memos */}
         {isLoading ? (
@@ -157,17 +120,6 @@ const styles = StyleSheet.create({
   },
   brandTitle: { fontSize: 22, fontWeight: "800", color: "#111", letterSpacing: -0.5 },
   brandSubtitle: { fontSize: 14, color: "#888", paddingHorizontal: 20, marginBottom: 16 },
-  homeSearchContainer: { paddingHorizontal: 20, marginBottom: 24 },
-  homeSearchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 10,
-  },
-  homeSearchInput: { flex: 1, fontSize: 16, color: "#333", padding: 0 },
   memosSection: { flex: 1, paddingHorizontal: 20 },
   sectionTitle: { fontSize: 17, fontWeight: "700", color: "#111", marginBottom: 12 },
   memosList: { paddingBottom: 32 },

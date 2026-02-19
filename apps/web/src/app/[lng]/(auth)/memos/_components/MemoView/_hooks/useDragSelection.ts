@@ -16,7 +16,7 @@ export default function useDragSelection({
 	dragBoxRef,
 	onSelectionChange,
 }: UseDragSelectionProps) {
-	const rafRef = useRef<number>();
+	const rafRef = useRef<number | undefined>(undefined);
 	const bottomTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const topTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 

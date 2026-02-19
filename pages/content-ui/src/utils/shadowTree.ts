@@ -1,10 +1,11 @@
 // @ts-ignore
 import tailwindcssOutput from "@src/tailwind-output.css?inline";
+import type { ReactElement } from "react";
 import { createRoot } from "react-dom/client";
 
 interface AttachShadowTree {
 	shadowHostElement?: HTMLElement;
-	shadowTree: JSX.Element;
+	shadowTree: ReactElement;
 	shadowHostId: string;
 }
 

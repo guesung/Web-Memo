@@ -63,7 +63,8 @@
 	},
 	"pnpm": {
 		"overrides": {
-			"@types/node": "^20.14.10"
+			"@types/node": "^20.14.10",
+			"@types/react": "~19.1.17"
 		},
 		"packageExtensions": {
 			"@react-native-google-signin/google-signin": {

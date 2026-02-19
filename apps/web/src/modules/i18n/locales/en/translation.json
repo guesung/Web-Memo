@@ -56,6 +56,14 @@
 	"updates": {
 		"title": "What's new",
 		"versions": {
+			"v1.10.0": {
+				"title": "Category feature improvements",
+				"content": [
+					"Simplified category suggestion to auto-apply",
+					"Added duplicate category prevention",
+					"Added sidebar category context menu"
+				]
+			},
 			"v1.9.7": {
 				"title": "Chrome Web Store info and prompt improvements",
 				"content": [

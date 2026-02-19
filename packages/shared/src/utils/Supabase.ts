@@ -181,7 +181,6 @@ export class CategoryService {
 			.from(SUPABASE.table.category)
 			.insert(request)
 			.select()
-			.throwOnError();
 
 	upsertCategories = async (request: CategoryTable["Insert"][]) =>
 		this.supabaseClient

@@ -47,7 +47,7 @@ function MemoFormContent() {
 
 	const { isLoading: isSuggestingCategory, triggerSuggestion } =
 		useCategorySuggestion({
-			currentCategoryId: currentCategoryId,
+			currentCategoryId,
 			onCategorySelect: updateCategory,
 		});
 
@@ -94,15 +94,13 @@ function MemoFormContent() {
 							const hasMemoData = !!memoData?.created_at;
 							const hasMemoText = !!event.target.value?.trim();
 							const hasCategory = !!currentCategoryId;
-							const memoId = memoData?.id ?? null;
 
-							console.log("hasMemoData", hasMemoData);
-							console.log("hasMemoText", hasMemoText);
-							console.log("hasCategory", hasCategory);
-							console.log("memoId", memoId);
-
-							if (hasMemoData && hasMemoText && !hasCategory) {
-								console.log("triggerSuggestion");
+							if (
+								hasMemoData &&
+								hasMemoText &&
+								!hasCategory &&
+								!isSuggestingCategory
+							) {
 								triggerSuggestion(event.target.value, {
 									isWish: getValues("isWish") ?? false,
 									memoId: memoData?.id,

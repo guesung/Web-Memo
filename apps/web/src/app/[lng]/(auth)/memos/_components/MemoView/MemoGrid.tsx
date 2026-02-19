@@ -1,6 +1,9 @@
 "use client";
 
-import { MasonryInfiniteGrid } from "@egjs/react-infinitegrid";
+import {
+	MasonryInfiniteGrid,
+	type ReactInfiniteGridEvents,
+} from "@egjs/react-infinitegrid";
 import { DragBox } from "@src/components";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
@@ -13,12 +16,10 @@ import {
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
-
 import { Loading, Skeleton, ToastAction, toast } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-
 import MemoDialog from "../MemoDialog";
 import { useDragSelection, useMemoDialog, useMemoSelection } from "./_hooks";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
@@ -99,6 +100,7 @@ export default function MemoGrid({
 					{t("toastActionMessage.undo")}
 				</ToastAction>
 			),
+			duration: 3000,
 		});
 
 		setIsDeleteDialogOpen(false);
@@ -127,7 +129,9 @@ export default function MemoGrid({
 		currentTarget,
 		groupKey,
 		ready,
-	}: any) => {
+	}: Parameters<
+		NonNullable<ReactInfiniteGridEvents["onRequestAppend"]>
+	>[0]) => {
 		if (hasNextPage && !isFetchingNextPage) {
 			wait();
 
@@ -150,6 +154,7 @@ export default function MemoGrid({
 		[rafRef],
 	);
 
+	useKeyboardBind({ key: "Escape", callback: closeMemoOption });
 	useKeyboardBind({ key: "Delete", callback: handleDeleteKeyPress });
 	useKeyboardBind({ key: "Backspace", callback: handleDeleteKeyPress });
 

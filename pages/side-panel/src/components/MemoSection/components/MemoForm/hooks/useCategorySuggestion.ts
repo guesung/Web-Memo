@@ -32,9 +32,8 @@ function detectPageLanguage(
 export function useCategorySuggestion({
 	currentCategoryId,
 	onCategorySelect,
-}: UseCategorySuggestionProps): UseCategorySuggestionReturn {
+}: UseCategorySuggestionProps) {
 	const [isLoading, setIsLoading] = useState(false);
-	const [suggestion, setSuggestion] = useState<CategorySuggestion | null>(null);
 
 	const { categories } = useCategoryQuery();
 	const { mutateAsync: createCategory } = useCategoryPostMutation();
@@ -45,7 +44,10 @@ export function useCategorySuggestion({
 	const autoDismissTimerRef = useRef<NodeJS.Timeout | null>(null);
 
 	const applyCategorySuggestionDirect = useCallback(
-		async (suggestionToApply: CategorySuggestion, saveContext?: CategorySaveContext) => {
+		async (
+			suggestionToApply: CategorySuggestion,
+			saveContext?: CategorySaveContext,
+		) => {
 			try {
 				let categoryId = suggestionToApply.existingCategoryId;
 
@@ -57,7 +59,9 @@ export function useCategorySuggestion({
 						categoryId = result.data?.[0]?.id ?? null;
 					} catch {
 						const existing = categories?.find(
-							(c) => c.name.toLowerCase() === suggestionToApply.categoryName.toLowerCase()
+							(c) =>
+								c.name.toLowerCase() ===
+								suggestionToApply.categoryName.toLowerCase(),
 						);
 						if (existing) categoryId = existing.id;
 					}
@@ -81,17 +85,9 @@ export function useCategorySuggestion({
 	}, []);
 
 	const reset = useCallback(() => {
-		setSuggestion(null);
 		setIsLoading(false);
 		clearAutoDismissTimer();
 	}, [clearAutoDismissTimer]);
-
-	const dismissSuggestion = useCallback(() => {
-		if (currentUrlRef.current) {
-			dismissedUrlsRef.current.add(currentUrlRef.current);
-		}
-		reset();
-	}, [reset]);
 
 	const triggerSuggestion = useCallback(
 		async (memoText: string, triggerContext?: TriggerContext) => {
@@ -178,8 +174,6 @@ export function useCategorySuggestion({
 					if (shouldAutoApply) {
 						await applyCategorySuggestionDirect(suggestionData, saveContext);
 					} else {
-						setSuggestion(suggestionData);
-
 						clearAutoDismissTimer();
 						autoDismissTimerRef.current = setTimeout(() => {
 							reset();
@@ -203,16 +197,6 @@ export function useCategorySuggestion({
 		],
 	);
 
-	const acceptSuggestion = useCallback(async () => {
-		if (!suggestion) return;
-		await applyCategorySuggestionDirect(suggestion);
-		reset();
-	}, [suggestion, applyCategorySuggestionDirect, reset]);
-
-	const triggerSuggestionByPageContent = useCallback(async () => {
-		await triggerSuggestion("");
-	}, [triggerSuggestion]);
-
 	useEffect(() => {
 		return () => {
 			abortControllerRef.current?.abort();
@@ -228,11 +212,7 @@ export function useCategorySuggestion({
 
 	return {
 		isLoading,
-		suggestion,
 		triggerSuggestion,
-		triggerSuggestionByPageContent,
-		acceptSuggestion,
-		dismissSuggestion,
 	};
 }
 
@@ -261,14 +241,8 @@ interface TriggerContext {
 
 interface UseCategorySuggestionProps {
 	currentCategoryId: number | null;
-	onCategorySelect: (categoryId: number, saveContext?: CategorySaveContext) => void;
-}
-
-interface UseCategorySuggestionReturn {
-	isLoading: boolean;
-	suggestion: CategorySuggestion | null;
-	triggerSuggestion: (memoText: string, triggerContext?: TriggerContext) => void;
-	triggerSuggestionByPageContent: () => Promise<void>;
-	acceptSuggestion: () => Promise<void>;
-	dismissSuggestion: () => void;
+	onCategorySelect: (
+		categoryId: number,
+		saveContext?: CategorySaveContext,
+	) => void;
 }

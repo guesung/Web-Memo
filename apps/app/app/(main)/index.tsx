@@ -1,43 +1,43 @@
-import { useRef, useState, useCallback, useEffect } from "react";
+import { SocialLoginButton } from "@/components/auth/SocialLoginButton";
+import { MemoPanel } from "@/components/browser/MemoPanel";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { createSessionFromUrl, useOAuth } from "@/lib/auth/useOAuth";
+import { useLocalMemos, useSyncMemos } from "@/lib/hooks/useLocalMemos";
+import type { LocalMemo } from "@/lib/storage/localMemo";
+import * as Linking from "expo-linking";
 import {
-  View,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Keyboard,
-  Animated,
-  KeyboardAvoidingView,
-  Platform,
-  Text,
-  FlatList,
-  ActivityIndicator,
-  Modal,
-  Alert,
-} from "react-native";
-import { WebView } from "react-native-webview";
-import type { WebViewNavigation } from "react-native-webview";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  Search,
+  Check,
   ChevronLeft,
   ChevronRight,
-  RotateCw,
-  PenLine,
-  X,
-  Globe,
-  FileText,
-  Home,
   CloudUpload,
+  FileText,
+  Globe,
+  Home,
   LogOut,
-  Check,
+  PenLine,
+  RotateCw,
+  Search,
+  X,
 } from "lucide-react-native";
-import * as Linking from "expo-linking";
-import { MemoPanel } from "@/components/browser/MemoPanel";
-import { useLocalMemos, useSyncMemos } from "@/lib/hooks/useLocalMemos";
-import { useAuth } from "@/lib/auth/AuthProvider";
-import { useOAuth, createSessionFromUrl } from "@/lib/auth/useOAuth";
-import { SocialLoginButton } from "@/components/auth/SocialLoginButton";
-import type { LocalMemo } from "@/lib/storage/localMemo";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Animated,
+  FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import type { WebViewNavigation } from "react-native-webview";
+import { WebView } from "react-native-webview";
 
 type Mode = "home" | "browser";
 
@@ -304,11 +304,11 @@ export default function MainScreen() {
                   onPress={() => handleLogin("google")}
                   disabled={loginLoading}
                 />
-                <SocialLoginButton
+                {/* <SocialLoginButton
                   provider="kakao"
                   onPress={() => handleLogin("kakao")}
                   disabled={loginLoading}
-                />
+                /> */}
                 {loginLoading && <ActivityIndicator size="small" style={{ marginTop: 12 }} />}
               </View>
             </View>

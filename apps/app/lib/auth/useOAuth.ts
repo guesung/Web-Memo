@@ -3,7 +3,6 @@ import { supabase } from "@/lib/supabase/client";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { makeRedirectUri } from "expo-auth-session";
 import * as QueryParams from "expo-auth-session/build/QueryParams";
-import * as Crypto from "expo-crypto";
 import * as WebBrowser from "expo-web-browser";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -34,20 +33,7 @@ export async function createSessionFromUrl(url: string) {
   return data.session;
 }
 
-// Android: native sign-in with nonce (iOS SDK doesn't support custom nonce)
 async function signInWithGoogle() {
-  const rawNonce = btoa(
-    String.fromCharCode(...Crypto.getRandomValues(new Uint8Array(32))),
-  )
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/[=]/g, "");
-
-  const nonceDigest = await Crypto.digestStringAsync(
-    Crypto.CryptoDigestAlgorithm.SHA256,
-    rawNonce,
-  );
-
   await GoogleSignin.hasPlayServices();
   const response = await GoogleSignin.signIn();
 
@@ -58,7 +44,6 @@ async function signInWithGoogle() {
   const { error } = await supabase.auth.signInWithIdToken({
     provider: "google",
     token: response.data.idToken,
-    nonce: rawNonce,
   });
 
   if (error) throw error;

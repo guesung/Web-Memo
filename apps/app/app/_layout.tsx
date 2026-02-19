@@ -22,7 +22,11 @@ function SyncOnAuth() {
 
   useEffect(() => {
     if (session) {
-      syncMemosToSupabase().catch(() => {});
+      syncMemosToSupabase()
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ["memos"] });
+        })
+        .catch(() => {});
     }
   }, [session]);
 

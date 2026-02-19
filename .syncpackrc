@@ -6,7 +6,7 @@
 	"versionGroups": [
 		{
 			"label": "Expo app uses different TypeScript and @types/react versions",
-			"packages": ["@aspect-app/app"],
+			"packages": ["@web-memo/app"],
 			"dependencies": ["typescript", "@types/react"],
 			"isIgnored": true
 		},
@@ -18,7 +18,7 @@
 		},
 		{
 			"label": "Use workspace protocol for internal packages",
-			"dependencies": ["@web-memo/**", "@aspect-app/**"],
+			"dependencies": ["@web-memo/**", "@web-memo/**"],
 			"dependencyTypes": ["!peer"],
 			"pinVersion": "workspace:*"
 		}

@@ -72,7 +72,7 @@ export default function MainScreen() {
   // Local memos
   const { data: memos = [], isLoading, refetch } = useLocalMemos();
 
-  // Deep link listener (backup for OAuth callback)
+  // Deep link listener for Kakao OAuth callback (Google uses native sign-in)
   const deepLinkUrl = Linking.useURL();
   useEffect(() => {
     if (deepLinkUrl) {
@@ -201,7 +201,6 @@ export default function MainScreen() {
           {/* Header */}
           <View style={styles.homeHeader}>
             <Text style={styles.brandTitle}>Web Memo</Text>
-            {/* TODO: 로그인/동기화 기능 - OAuth 수정 후 활성화
             <View style={styles.homeHeaderRight}>
               {session && (
                 <TouchableOpacity onPress={handleSignOut} style={styles.headerBtn}>
@@ -232,7 +231,6 @@ export default function MainScreen() {
                 )}
               </TouchableOpacity>
             </View>
-            */}
           </View>
 
           <Text style={styles.brandSubtitle}>웹서핑하며 메모하세요</Text>
@@ -280,7 +278,6 @@ export default function MainScreen() {
           )}
         </View>
 
-        {/* TODO: 로그인 모달 - OAuth 수정 후 활성화
         <Modal
           visible={showLoginModal}
           animationType="slide"
@@ -316,7 +313,6 @@ export default function MainScreen() {
             </View>
           </View>
         </Modal>
-        */}
       </View>
     );
   }

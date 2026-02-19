@@ -1,8 +1,9 @@
+import { getSafeConfig } from '@web-memo/env';
+
 export const SUPABASE_URL =
-  process.env.EXPO_PUBLIC_SUPABASE_URL ??
-  "https://czwtqukymcqoberdoltq.supabase.co";
-export const SUPABASE_ANON_KEY =
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ??
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6d3RxdWt5bWNxb2JlcmRvbHRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjY0NTQ2MzcsImV4cCI6MjA0MjAzMDYzN30.K4bmcOuKM1WBwPyeomTit7_Y2xQGG6N4JPFOTGgyCI0";
+  getSafeConfig("EXPO_PUBLIC_SUPABASE_URL", process.env.EXPO_PUBLIC_SUPABASE_URL);
+export const SUPABASE_ANON_KEY = getSafeConfig("EXPO_PUBLIC_SUPABASE_ANON_KEY", process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY);
 export const WEBAPP_URL =
-  process.env.EXPO_PUBLIC_WEBAPP_URL ?? "https://web-memos.site";
+  getSafeConfig("EXPO_PUBLIC_WEBAPP_URL", process.env.EXPO_PUBLIC_WEBAPP_URL);
+export const GOOGLE_WEB_CLIENT_ID =
+  getSafeConfig("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID", process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID);

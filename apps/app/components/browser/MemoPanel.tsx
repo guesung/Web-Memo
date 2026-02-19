@@ -12,6 +12,9 @@ import {
   useLocalMemoByUrl,
   useLocalMemoUpsert,
 } from "@/lib/hooks/useLocalMemos";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
+import { useMemoUpsertMutation } from "@/lib/hooks/useMemoMutation";
 
 interface MemoPanelProps {
   url: string;
@@ -19,10 +22,21 @@ interface MemoPanelProps {
 }
 
 export function MemoPanel({ url, pageTitle }: MemoPanelProps) {
+  const { session } = useAuth();
+  const isLoggedIn = !!session;
+
   const [memoText, setMemoText] = useState("");
   const [saved, setSaved] = useState(false);
-  const { data: existingMemo } = useLocalMemoByUrl(url);
-  const { mutate, isPending } = useLocalMemoUpsert();
+
+  const { data: localMemo } = useLocalMemoByUrl(url);
+  const { data: supabaseMemo } = useSupabaseMemoByUrl(url, isLoggedIn);
+  const existingMemo = isLoggedIn
+    ? (supabaseMemo ? { memo: supabaseMemo.memo } : null)
+    : localMemo;
+
+  const { mutate: localMutate, isPending: isLocalPending } = useLocalMemoUpsert();
+  const { mutate: supabaseMutate, isPending: isSupabasePending } = useMemoUpsertMutation();
+  const isPending = isLoggedIn ? isSupabasePending : isLocalPending;
 
   useEffect(() => {
     if (existingMemo?.memo) {
@@ -31,24 +45,23 @@ export function MemoPanel({ url, pageTitle }: MemoPanelProps) {
       setMemoText("");
     }
     setSaved(false);
-  }, [existingMemo, url]);
+  }, [existingMemo?.memo, url]);
+
+  const onSaveSuccess = () => {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
 
   const handleSave = () => {
     if (!memoText.trim()) return;
 
-    mutate(
-      {
-        url,
-        title: pageTitle || url,
-        memo: memoText.trim(),
-      },
-      {
-        onSuccess: () => {
-          setSaved(true);
-          setTimeout(() => setSaved(false), 2000);
-        },
-      }
-    );
+    const payload = { url, title: pageTitle || url, memo: memoText.trim() };
+
+    if (isLoggedIn) {
+      supabaseMutate(payload, { onSuccess: onSaveSuccess });
+    } else {
+      localMutate(payload, { onSuccess: onSaveSuccess });
+    }
   };
 
   return (

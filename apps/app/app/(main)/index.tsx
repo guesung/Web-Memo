@@ -1,15 +1,12 @@
-import { SocialLoginButton } from "@/components/auth/SocialLoginButton";
 import { MemoPanel } from "@/components/browser/MemoPanel";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { createSessionFromUrl, useOAuth } from "@/lib/auth/useOAuth";
-import { useLocalMemos, useSyncMemos } from "@/lib/hooks/useLocalMemos";
+import { useLocalMemos } from "@/lib/hooks/useLocalMemos";
+import { useMemosInfinite } from "@/lib/hooks/useMemos";
 import type { LocalMemo } from "@/lib/storage/localMemo";
-import * as Linking from "expo-linking";
+import type { GetMemoResponse } from "@web-memo/shared/types";
 import {
-  Check,
   ChevronLeft,
   ChevronRight,
-  CloudUpload,
   FileText,
   Globe,
   Home,
@@ -19,7 +16,7 @@ import {
   Search,
   X,
 } from "lucide-react-native";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -27,7 +24,6 @@ import {
   FlatList,
   Keyboard,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   StyleSheet,
   Text,
@@ -40,6 +36,7 @@ import type { WebViewNavigation } from "react-native-webview";
 import { WebView } from "react-native-webview";
 
 type Mode = "home" | "browser";
+type MemoItem = LocalMemo | GetMemoResponse;
 
 export default function MainScreen() {
   const insets = useSafeAreaInsets();
@@ -47,13 +44,7 @@ export default function MainScreen() {
 
   // Auth
   const { session, signOut } = useAuth();
-  const { signInWithGoogle, signInWithKakao } = useOAuth();
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [loginLoading, setLoginLoading] = useState(false);
-
-  // Sync
-  const { mutate: syncMemos, isPending: isSyncing } = useSyncMemos();
-  const [syncResult, setSyncResult] = useState<string | null>(null);
+  const isLoggedIn = !!session;
 
   // Mode
   const [mode, setMode] = useState<Mode>("home");
@@ -69,16 +60,26 @@ export default function MainScreen() {
   const [isMemoOpen, setIsMemoOpen] = useState(false);
   const slideAnim = useRef(new Animated.Value(0)).current;
 
-  // Local memos
-  const { data: memos = [], isLoading, refetch } = useLocalMemos();
+  // Data sources
+  const {
+    data: localMemosData,
+    isLoading: isLocalLoading,
+    refetch: refetchLocal,
+  } = useLocalMemos();
+  const {
+    data: supabaseMemosData,
+    isLoading: isSupabaseLoading,
+    refetch: refetchSupabase,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useMemosInfinite();
 
-  // Deep link listener for Kakao OAuth callback (Google uses native sign-in)
-  const deepLinkUrl = Linking.useURL();
-  useEffect(() => {
-    if (deepLinkUrl) {
-      createSessionFromUrl(deepLinkUrl).catch(() => {});
-    }
-  }, [deepLinkUrl]);
+  const memos: MemoItem[] = isLoggedIn
+    ? (supabaseMemosData?.pages.flatMap((p) => p.data) ?? [])
+    : (localMemosData ?? []);
+  const isLoading = isLoggedIn ? isSupabaseLoading : isLocalLoading;
+  const refetch = isLoggedIn ? refetchSupabase : refetchLocal;
 
   const navigateTo = useCallback(
     (url: string) => {
@@ -87,7 +88,7 @@ export default function MainScreen() {
       setIsMemoOpen(false);
       slideAnim.setValue(0);
     },
-    [slideAnim]
+    [slideAnim],
   );
 
   const goHome = useCallback(() => {
@@ -117,9 +118,9 @@ export default function MainScreen() {
     if (!url) return;
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
       if (url.includes(".") && !url.includes(" ")) {
-        url = "https://" + url;
+        url = `https://${url}`;
       } else {
-        url = "https://www.google.com/search?q=" + encodeURIComponent(url);
+        url = `https://www.google.com/search?q=${encodeURIComponent(url)}`;
       }
     }
     Keyboard.dismiss();
@@ -143,55 +144,17 @@ export default function MainScreen() {
     outputRange: ["0%", "45%"],
   });
 
-  // ─── Sync / Login ───
-  const doSync = () => {
-    syncMemos(undefined, {
-      onSuccess: (result) => {
-        setSyncResult(
-          result.synced > 0
-            ? `${result.synced}개 메모 동기화 완료`
-            : "모든 메모가 동기화됨"
-        );
-        setTimeout(() => setSyncResult(null), 3000);
-      },
-      onError: () => {
-        setSyncResult("동기화 실패");
-        setTimeout(() => setSyncResult(null), 3000);
-      },
-    });
-  };
-
-  const handleSyncPress = () => {
-    if (!session) {
-      setShowLoginModal(true);
-      return;
-    }
-    doSync();
-  };
-
-  const handleLogin = async (provider: "google" | "kakao") => {
-    try {
-      setLoginLoading(true);
-      if (provider === "google") {
-        await signInWithGoogle();
-      } else {
-        await signInWithKakao();
-      }
-      setShowLoginModal(false);
-      setTimeout(() => doSync(), 500);
-    } catch (e) {
-      console.error("[Login Error]", e);
-      Alert.alert("로그인 실패", String(e));
-    } finally {
-      setLoginLoading(false);
-    }
-  };
-
   const handleSignOut = () => {
     Alert.alert("로그아웃", "로그아웃 하시겠습니까?", [
       { text: "취소", style: "cancel" },
       { text: "로그아웃", style: "destructive", onPress: signOut },
     ]);
+  };
+
+  const handleEndReached = () => {
+    if (isLoggedIn && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
   };
 
   // ─── HOME MODE ───
@@ -202,36 +165,11 @@ export default function MainScreen() {
           {/* Header */}
           <View style={styles.homeHeader}>
             <Text style={styles.brandTitle}>Web Memo</Text>
-            <View style={styles.homeHeaderRight}>
-              {session && (
-                <TouchableOpacity onPress={handleSignOut} style={styles.headerBtn}>
-                  <LogOut size={18} color="#999" />
-                </TouchableOpacity>
-              )}
-              <TouchableOpacity
-                onPress={handleSyncPress}
-                disabled={isSyncing}
-                style={[styles.syncButton, session && styles.syncButtonLoggedIn]}
-              >
-                {isSyncing ? (
-                  <ActivityIndicator size="small" color={session ? "#fff" : "#111"} />
-                ) : syncResult ? (
-                  <>
-                    <Check size={14} color={session ? "#fff" : "#22c55e"} />
-                    <Text style={[styles.syncText, session && styles.syncTextLoggedIn]}>
-                      {syncResult}
-                    </Text>
-                  </>
-                ) : (
-                  <>
-                    <CloudUpload size={14} color={session ? "#fff" : "#111"} />
-                    <Text style={[styles.syncText, session && styles.syncTextLoggedIn]}>
-                      {session ? "동기화" : "로그인"}
-                    </Text>
-                  </>
-                )}
+            {session && (
+              <TouchableOpacity onPress={handleSignOut} style={styles.headerBtn}>
+                <LogOut size={18} color="#999" />
               </TouchableOpacity>
-            </View>
+            )}
           </View>
 
           <Text style={styles.brandSubtitle}>웹서핑하며 메모하세요</Text>
@@ -262,13 +200,26 @@ export default function MainScreen() {
               <Text style={styles.sectionTitle}>최근 메모</Text>
               <FlatList
                 data={memos}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => String(item.id)}
                 renderItem={({ item }) => (
-                  <MemoCard memo={item} onPress={() => navigateTo(item.url)} />
+                  <MemoCard
+                    memo={item}
+                    onPress={() => {
+                      const url = item.url;
+                      if (url) navigateTo(url);
+                    }}
+                  />
                 )}
                 contentContainerStyle={styles.memosList}
-                onRefresh={refetch}
+                onRefresh={() => refetch()}
                 refreshing={false}
+                onEndReached={handleEndReached}
+                onEndReachedThreshold={0.5}
+                ListFooterComponent={
+                  isFetchingNextPage ? (
+                    <ActivityIndicator style={{ paddingVertical: 16 }} />
+                  ) : null
+                }
               />
             </View>
           ) : (
@@ -278,42 +229,6 @@ export default function MainScreen() {
             </View>
           )}
         </View>
-
-        <Modal
-          visible={showLoginModal}
-          animationType="slide"
-          presentationStyle="pageSheet"
-          onRequestClose={() => setShowLoginModal(false)}
-        >
-          <View style={styles.loginModal}>
-            <View style={styles.loginModalHeader}>
-              <TouchableOpacity onPress={() => setShowLoginModal(false)}>
-                <X size={24} color="#111" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.loginModalContent}>
-              <CloudUpload size={48} color="#111" />
-              <Text style={styles.loginTitle}>메모를 웹에서도 확인하세요</Text>
-              <Text style={styles.loginSubtitle}>
-                로그인하면 메모가 자동으로 동기화되어{"\n"}
-                웹에서도 볼 수 있습니다
-              </Text>
-              <View style={styles.loginButtons}>
-                <SocialLoginButton
-                  provider="google"
-                  onPress={() => handleLogin("google")}
-                  disabled={loginLoading}
-                />
-                {/* <SocialLoginButton
-                  provider="kakao"
-                  onPress={() => handleLogin("kakao")}
-                  disabled={loginLoading}
-                /> */}
-                {loginLoading && <ActivityIndicator size="small" style={{ marginTop: 12 }} />}
-              </View>
-            </View>
-          </View>
-        </Modal>
       </View>
     );
   }
@@ -393,23 +308,27 @@ export default function MainScreen() {
   );
 }
 
-function MemoCard({ memo, onPress }: { memo: LocalMemo; onPress: () => void }) {
+function MemoCard({ memo, onPress }: { memo: MemoItem; onPress: () => void }) {
+  const url = memo.url;
   let domain = "";
   try {
-    if (memo.url) domain = new URL(memo.url).hostname.replace("www.", "");
+    if (url) domain = new URL(url).hostname.replace("www.", "");
   } catch {}
+
+  const title = memo.title || "Untitled";
+  const memoText = memo.memo;
 
   return (
     <TouchableOpacity style={styles.memoCard} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.memoCardHeader}>
         <FileText size={14} color="#666" />
         <Text style={styles.memoCardTitle} numberOfLines={1}>
-          {memo.title || "Untitled"}
+          {title}
         </Text>
       </View>
-      {memo.memo ? (
+      {memoText ? (
         <Text style={styles.memoCardText} numberOfLines={2}>
-          {memo.memo}
+          {memoText}
         </Text>
       ) : null}
       {domain ? (
@@ -435,22 +354,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 4,
   },
-  homeHeaderRight: { flexDirection: "row", alignItems: "center", gap: 8 },
   headerBtn: { padding: 8 },
-  syncButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    backgroundColor: "#fff",
-  },
-  syncButtonLoggedIn: { backgroundColor: "#111", borderColor: "#111" },
-  syncText: { fontSize: 13, fontWeight: "600", color: "#111" },
-  syncTextLoggedIn: { color: "#fff" },
   brandTitle: { fontSize: 22, fontWeight: "800", color: "#111", letterSpacing: -0.5 },
   brandSubtitle: { fontSize: 14, color: "#888", paddingHorizontal: 20, marginBottom: 16 },
   homeSearchContainer: { paddingHorizontal: 20, marginBottom: 24 },
@@ -482,21 +386,6 @@ const styles = StyleSheet.create({
   memoCardDomain: { fontSize: 12, color: "#999" },
   emptyState: { alignItems: "center", paddingTop: 60, gap: 12 },
   emptyText: { fontSize: 15, color: "#bbb" },
-
-  // LOGIN MODAL
-  loginModal: { flex: 1, backgroundColor: "#fff" },
-  loginModalHeader: { flexDirection: "row", justifyContent: "flex-end", padding: 16 },
-  loginModalContent: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 32,
-    paddingBottom: 80,
-    gap: 12,
-  },
-  loginTitle: { fontSize: 22, fontWeight: "700", color: "#111", marginTop: 16 },
-  loginSubtitle: { fontSize: 15, color: "#888", textAlign: "center", lineHeight: 22, marginBottom: 24 },
-  loginButtons: { width: "100%", gap: 12 },
 
   // BROWSER
   browserHeader: {

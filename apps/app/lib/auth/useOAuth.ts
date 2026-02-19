@@ -1,14 +1,18 @@
 import { GOOGLE_WEB_CLIENT_ID } from "@/lib/config";
 import { supabase } from "@/lib/supabase/client";
-import * as Crypto from "expo-crypto";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { makeRedirectUri } from "expo-auth-session";
 import * as QueryParams from "expo-auth-session/build/QueryParams";
+import * as Crypto from "expo-crypto";
 import * as WebBrowser from "expo-web-browser";
 
 WebBrowser.maybeCompleteAuthSession();
 
-GoogleSignin.configure({ webClientId: GOOGLE_WEB_CLIENT_ID, iosClientId: '541718063018-h672i93efg8mmnknsril75ajc1dlu1to.apps.googleusercontent.com' });
+GoogleSignin.configure({
+  webClientId: GOOGLE_WEB_CLIENT_ID,
+  iosClientId:
+    "541718063018-h672i93efg8mmnknsril75ajc1dlu1to.apps.googleusercontent.com",
+});
 
 const redirectTo = makeRedirectUri({
   scheme: "webmemo",
@@ -30,27 +34,26 @@ export async function createSessionFromUrl(url: string) {
   return data.session;
 }
 
+// Android: native sign-in with nonce (iOS SDK doesn't support custom nonce)
 async function signInWithGoogle() {
-  const rawNonce = Array.from(Crypto.getRandomBytes(16), (byte) =>
-    byte.toString(16).padStart(2, "0"),
-  ).join("");
-  const hashedNonce = await Crypto.digestStringAsync(
+  const rawNonce = btoa(
+    String.fromCharCode(...Crypto.getRandomValues(new Uint8Array(32))),
+  )
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/[=]/g, "");
+
+  const nonceDigest = await Crypto.digestStringAsync(
     Crypto.CryptoDigestAlgorithm.SHA256,
     rawNonce,
   );
 
   await GoogleSignin.hasPlayServices();
-  const response = await GoogleSignin.signIn({ nonce: hashedNonce });
+  const response = await GoogleSignin.signIn();
 
   if (!response.data?.idToken) {
     throw new Error("Google Sign-In failed: no idToken");
   }
-
-  // Decode JWT to inspect nonce format
-  const payload = JSON.parse(atob(response.data.idToken.split(".")[1]));
-  console.log("[Google Auth] id_token nonce:", payload.nonce);
-  console.log("[Google Auth] rawNonce:", rawNonce);
-  console.log("[Google Auth] hashedNonce (hex):", hashedNonce);
 
   const { error } = await supabase.auth.signInWithIdToken({
     provider: "google",
@@ -61,13 +64,11 @@ async function signInWithGoogle() {
   if (error) throw error;
 }
 
+
 async function signInWithKakao() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "kakao",
-    options: {
-      redirectTo,
-      skipBrowserRedirect: true,
-    },
+    options: { redirectTo, skipBrowserRedirect: true },
   });
 
   if (error || !data.url) {

@@ -37,7 +37,6 @@ export const supabase = createClient<Database, "memo">(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
-      flowType: "implicit",
     },
   }
 );

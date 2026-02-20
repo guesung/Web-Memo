@@ -38,7 +38,7 @@ export async function extractYoutubeTranscript(): Promise<ExtractionResult> {
 		const transcript = formatTranscriptAsText(parseResult.segments);
 		console.log(
 			"[YT Transcript] Extraction complete:",
-			transcript.substring(0, 200) + "...",
+			`${transcript.substring(0, 200)}...`,
 		);
 
 		closeTranscriptPanel();
@@ -63,6 +63,8 @@ export async function extractYoutubeTranscript(): Promise<ExtractionResult> {
 }
 
 export function isYoutubePage() {
-	return window.location.hostname.includes("youtube.com") &&
-		window.location.pathname === "/watch";
+	return (
+		window.location.hostname.includes("youtube.com") &&
+		window.location.pathname === "/watch"
+	);
 }

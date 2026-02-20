@@ -78,7 +78,7 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 
 	return (
 		<style
-			// biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+			// biome-ignore lint/security/noDangerouslySetInnerHtml: chart theme injection
 			dangerouslySetInnerHTML={{
 				__html: Object.entries(THEMES)
 					.map(
@@ -375,7 +375,7 @@ export {
 	LineChart,
 	Pie,
 	PieChart,
+	ResponsiveContainer,
 	XAxis,
 	YAxis,
-	ResponsiveContainer,
 } from "recharts";

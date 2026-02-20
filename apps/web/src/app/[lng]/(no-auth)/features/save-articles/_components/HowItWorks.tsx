@@ -3,7 +3,7 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { motion } from "framer-motion";
-import { Heart, List, ExternalLink } from "lucide-react";
+import { ExternalLink, Heart, List } from "lucide-react";
 
 interface HowItWorksProps extends LanguageType {}
 

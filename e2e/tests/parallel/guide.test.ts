@@ -1,12 +1,6 @@
 import { PATHS } from "@web-memo/shared/constants";
 import { expect, test } from "../fixtures";
-import {
-	EXAMPLE_URL,
-	gotoSafely,
-	LANGUAGE,
-	login,
-	openSidePanel,
-} from "../lib";
+import { LANGUAGE } from "../lib";
 
 const isCI = process.env.CI === "true";
 
@@ -28,7 +22,9 @@ test.describe("가이드 기능", () => {
 		await page.waitForURL(new RegExp(PATHS.memos));
 
 		// Wait for guide to initialize (depends on extension manifest loading)
-		await page.locator("#driver-popover-description").waitFor({ state: "visible", timeout: 15000 });
+		await page
+			.locator("#driver-popover-description")
+			.waitFor({ state: "visible", timeout: 15000 });
 		await expect(page.locator("#driver-popover-description")).toHaveText(
 			`Ready to start? Press '${isCI ? "Alt" : "Option"} + S' to open the side panel`,
 		);
@@ -46,7 +42,9 @@ test.describe("가이드 기능", () => {
 		await page.waitForURL(new RegExp(PATHS.memos));
 
 		// Wait for guide to initialize on step 1
-		await page.locator("#driver-popover-description").waitFor({ state: "visible", timeout: 15000 });
+		await page
+			.locator("#driver-popover-description")
+			.waitFor({ state: "visible", timeout: 15000 });
 
 		// Click next button to advance to step 2
 		await page.locator(".driver-popover-next-btn").click();
@@ -70,7 +68,9 @@ test.describe("가이드 기능", () => {
 		await page.waitForURL(new RegExp(PATHS.memos));
 
 		// Wait for guide to initialize
-		await page.locator(".driver-popover-next-btn").waitFor({ state: "visible", timeout: 15000 });
+		await page
+			.locator(".driver-popover-next-btn")
+			.waitFor({ state: "visible", timeout: 15000 });
 
 		await page.locator(".driver-popover-next-btn").click();
 		await page.waitForTimeout(300);

@@ -43,7 +43,7 @@ export default function ChatMessages({ messages }: ChatMessagesProps) {
 		if (isAtBottomRef.current) {
 			messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 		}
-	}, [messages]);
+	}, []);
 
 	if (messages.length === 0) {
 		return (

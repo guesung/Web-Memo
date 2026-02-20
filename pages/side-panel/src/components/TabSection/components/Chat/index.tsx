@@ -8,9 +8,7 @@ export default function Chat() {
 			<div className="flex flex-1 flex-col overflow-hidden">
 				<ChatMessages messages={messages} />
 
-				{error && (
-					<p className="text-destructive text-sm py-1">{error}</p>
-				)}
+				{error && <p className="text-destructive text-sm py-1">{error}</p>}
 
 				<div className="pt-2 pb-1">
 					<ChatInput onSend={sendMessage} disabled={isLoading} />

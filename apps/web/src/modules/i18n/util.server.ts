@@ -1,8 +1,8 @@
 import {
 	createInstance,
-	type TFunction,
 	type i18n,
 	type Namespace,
+	type TFunction,
 } from "i18next";
 import resourcesToBackend from "i18next-resources-to-backend";
 import { initReactI18next } from "react-i18next/initReactI18next";

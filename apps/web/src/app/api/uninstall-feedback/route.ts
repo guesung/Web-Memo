@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { CONFIG } from "@web-memo/env";
 import { SUPABASE } from "@web-memo/shared/constants";
 import type { Database } from "@web-memo/shared/types";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 const getFeedbackSupabaseClient = () => {
 	return createClient<Database, "feedback">(

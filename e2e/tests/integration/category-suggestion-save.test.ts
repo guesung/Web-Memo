@@ -56,8 +56,7 @@ test.describe("카테고리 추천 - 페이지 전환 시 저장", () => {
 		const updatedMemo = `${memoText} - updated`;
 		const memoSavePromise = sidePanelPage
 			.waitForResponse(
-				(response) =>
-					response.url().includes("/rest/v1/memo") && response.ok(),
+				(response) => response.url().includes("/rest/v1/memo") && response.ok(),
 				{ timeout: 5000 },
 			)
 			.catch(() => {});

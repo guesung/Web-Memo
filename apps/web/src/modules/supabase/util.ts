@@ -20,7 +20,13 @@ export async function updateAuthorization(request: NextRequest) {
 				getAll() {
 					return request.cookies.getAll();
 				},
-				setAll(cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>) {
+				setAll(
+					cookiesToSet: Array<{
+						name: string;
+						value: string;
+						options?: Record<string, unknown>;
+					}>,
+				) {
 					cookiesToSet.forEach(({ name, value }) =>
 						request.cookies.set(name, value),
 					);
@@ -32,7 +38,9 @@ export async function updateAuthorization(request: NextRequest) {
 		},
 	);
 
-	const isUserLogin = await new AuthService(supabaseClient as unknown as MemoSupabaseClient).checkUserLogin();
+	const isUserLogin = await new AuthService(
+		supabaseClient as unknown as MemoSupabaseClient,
+	).checkUserLogin();
 	const isNeedAuthPage = NEED_AUTH_PAGES.some((page) =>
 		request.nextUrl.pathname.includes(page),
 	);

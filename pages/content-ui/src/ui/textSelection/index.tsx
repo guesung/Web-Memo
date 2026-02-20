@@ -1,6 +1,6 @@
-import { SelectionMemoButton } from '../../components';
-import { attachShadowTree } from '../../utils';
-import { calculateButtonPosition } from './utils';
+import { SelectionMemoButton } from "../../components";
+import { attachShadowTree } from "../../utils";
+import { calculateButtonPosition } from "./utils";
 
 export const setupTextSelectionHandler = () => {
 	let buttonRoot: ShadowRoot | null = null;
@@ -34,7 +34,7 @@ export const setupTextSelectionHandler = () => {
 
 		buttonRoot = attachShadowTree({
 			shadowTree: (
-						<SelectionMemoButton selectedText={text} position={position} />
+				<SelectionMemoButton selectedText={text} position={position} />
 			),
 			shadowHostId: "WEB_MEMO_SELECTION_BUTTON",
 		});

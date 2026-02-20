@@ -1,12 +1,11 @@
 export {
-	openTranscriptPanel,
-	isTranscriptPanelOpen,
-	closeTranscriptPanel,
-} from "./panelController";
-
-export {
-	parseTranscriptContainer,
 	formatTranscriptAsText,
-	type TranscriptSegment,
 	type ParseResult,
+	parseTranscriptContainer,
+	type TranscriptSegment,
 } from "./domParser";
+export {
+	closeTranscriptPanel,
+	isTranscriptPanelOpen,
+	openTranscriptPanel,
+} from "./panelController";

@@ -13,7 +13,8 @@
 			"!**/dist/**",
 			"!**/node_modules/**",
 			"!**/.next/**",
-			"!**/.vercel/**"
+			"!**/.vercel/**",
+			"!**/tailwind-output.css"
 		]
 	},
 	"formatter": {

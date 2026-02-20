@@ -1,9 +1,9 @@
 import { useAuth } from "@/lib/auth/AuthProvider";
+import Constants from "expo-constants";
+import { useRouter } from "expo-router";
 import { LogIn, LogOut, User } from "lucide-react-native";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import Constants from "expo-constants";
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
@@ -22,7 +22,7 @@ export default function SettingsScreen() {
     router.navigate("/(auth)/login");
   };
 
-  const appVersion = Constants.expoConfig?.version ?? "1.0.0";
+  const appVersion = Constants.expoConfig?.version ?? "1.0.1";
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>

@@ -11,13 +11,7 @@
     "preview": {
       "distribution": "internal"
     },
-    "production": {},
-    "ci": {
-      "distribution": "store",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    }
+    "production": {}
   },
   "submit": {
     "production": {}

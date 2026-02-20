@@ -13,9 +13,7 @@
     },
     "production": {},
     "ci": {
-      "ios": {
-        "simulator": true
-      },
+      "distribution": "store",
       "env": {
         "NODE_ENV": "production"
       }

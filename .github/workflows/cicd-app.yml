@@ -50,12 +50,12 @@ jobs:
           echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
           echo "${{ secrets.APP_ENV_FILE }}" >> apps/app/.env
 
-      - name: Build iOS (simulator)
-        run: cd apps/app && eas build --platform ios --profile ci --local --non-interactive --output ./build.tar.gz
+      - name: Build iOS
+        run: cd apps/app && eas build --platform ios --profile ci --local --non-interactive --output ./build.ipa
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ios-simulator-build
-          path: apps/app/build.tar.gz
+          name: ios-build
+          path: apps/app/build.ipa
           retention-days: 7

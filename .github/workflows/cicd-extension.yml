@@ -2,23 +2,37 @@ name: CICD Extension
 
 on:
   push:
-    paths-ignore:
-      - "apps/web/**"
-      - "apps/mobile/**"
-      - "e2e/**"
-      - "**.md"
-      - ".github/workflows/cicd-web.yml"
-      - ".github/workflows/e2e.yml"
-      - ".github/workflows/release.yml"
+    paths:
+      - "apps/chrome-extension/**"
+      - "pages/**"
+      - "packages/shared/**"
+      - "packages/ui/**"
+      - "packages/env/**"
+      - "packages/hmr/**"
+      - "packages/vite-config/**"
+      - "packages/tailwind-config/**"
+      - "packages/tsconfig/**"
+      - "packages/zipper/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/cicd-extension.yml"
+      - ".github/workflows/ci.yml"
   pull_request:
-    paths-ignore:
-      - "apps/web/**"
-      - "apps/mobile/**"
-      - "e2e/**"
-      - "**.md"
-      - ".github/workflows/cicd-web.yml"
-      - ".github/workflows/e2e.yml"
-      - ".github/workflows/release.yml"
+    paths:
+      - "apps/chrome-extension/**"
+      - "pages/**"
+      - "packages/shared/**"
+      - "packages/ui/**"
+      - "packages/env/**"
+      - "packages/hmr/**"
+      - "packages/vite-config/**"
+      - "packages/tailwind-config/**"
+      - "packages/tsconfig/**"
+      - "packages/zipper/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/cicd-extension.yml"
+      - ".github/workflows/ci.yml"
 
 jobs:
   ci:

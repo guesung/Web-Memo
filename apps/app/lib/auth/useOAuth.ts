@@ -1,4 +1,4 @@
-import { GOOGLE_WEB_CLIENT_ID } from "@/lib/config";
+import { CONFIG } from "@/lib/config";
 import { supabase } from "@/lib/supabase/client";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { makeRedirectUri } from "expo-auth-session";
@@ -8,9 +8,8 @@ import * as WebBrowser from "expo-web-browser";
 WebBrowser.maybeCompleteAuthSession();
 
 GoogleSignin.configure({
-  webClientId: GOOGLE_WEB_CLIENT_ID,
-  iosClientId:
-    "541718063018-h672i93efg8mmnknsril75ajc1dlu1to.apps.googleusercontent.com",
+  webClientId: CONFIG.googleWebClientId,
+  iosClientId: CONFIG.googleAppClientId,
 });
 
 const redirectTo = makeRedirectUri({

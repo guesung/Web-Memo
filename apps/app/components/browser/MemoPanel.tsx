@@ -6,8 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Keyboard,
+  Platform,
 } from "react-native";
-import { Save, Check } from "lucide-react-native";
+import { Save, Check, ChevronDown } from "lucide-react-native";
 import {
   useLocalMemoByUrl,
   useLocalMemoUpsert,
@@ -27,6 +29,7 @@ export function MemoPanel({ url, pageTitle }: MemoPanelProps) {
 
   const [memoText, setMemoText] = useState("");
   const [saved, setSaved] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   const { data: localMemo } = useLocalMemoByUrl(url);
   const { data: supabaseMemo } = useSupabaseMemoByUrl(url, isLoggedIn);
@@ -37,6 +40,19 @@ export function MemoPanel({ url, pageTitle }: MemoPanelProps) {
   const { mutate: localMutate, isPending: isLocalPending } = useLocalMemoUpsert();
   const { mutate: supabaseMutate, isPending: isSupabasePending } = useMemoUpsertMutation();
   const isPending = isLoggedIn ? isSupabasePending : isLocalPending;
+
+  useEffect(() => {
+    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const showSub = Keyboard.addListener(showEvent, () => setIsKeyboardVisible(true));
+    const hideSub = Keyboard.addListener(hideEvent, () => setIsKeyboardVisible(false));
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (existingMemo?.memo) {
@@ -68,22 +84,32 @@ export function MemoPanel({ url, pageTitle }: MemoPanelProps) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>메모</Text>
-        <TouchableOpacity
-          style={[styles.saveButton, saved && styles.savedButton]}
-          onPress={handleSave}
-          disabled={isPending || !memoText.trim()}
-        >
-          {isPending ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : saved ? (
-            <Check size={16} color="#fff" />
-          ) : (
-            <Save size={16} color="#fff" />
+        <View style={styles.headerActions}>
+          {isKeyboardVisible && (
+            <TouchableOpacity
+              style={styles.keyboardDismissButton}
+              onPress={() => Keyboard.dismiss()}
+            >
+              <ChevronDown size={16} color="#666" />
+            </TouchableOpacity>
           )}
-          <Text style={styles.saveText}>
-            {saved ? "저장됨" : "저장"}
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.saveButton, saved && styles.savedButton]}
+            onPress={handleSave}
+            disabled={isPending || !memoText.trim()}
+          >
+            {isPending ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : saved ? (
+              <Check size={16} color="#fff" />
+            ) : (
+              <Save size={16} color="#fff" />
+            )}
+            <Text style={styles.saveText}>
+              {saved ? "저장됨" : "저장"}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <TextInput
@@ -110,10 +136,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 8,
   },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   title: {
     fontSize: 16,
     fontWeight: "600",
     color: "#111",
+  },
+  keyboardDismissButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f0f0f0",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 8,
   },
   saveButton: {
     flexDirection: "row",

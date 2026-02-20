@@ -22,8 +22,11 @@ export function useMemoUpsertMutation() {
       }
       return memoService.insertMemo(data);
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+      if (variables.url) {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEY.memo({ url: variables.url }) });
+      }
     },
   });
 }

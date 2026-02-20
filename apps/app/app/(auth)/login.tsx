@@ -1,8 +1,15 @@
-import { useState } from "react";
-import { View, Text, StyleSheet, Alert, ActivityIndicator } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useOAuth } from "@/lib/auth/useOAuth";
 import { SocialLoginButton } from "@/components/auth/SocialLoginButton";
+import { useOAuth } from "@/lib/auth/useOAuth";
+import { Sparkles } from "lucide-react-native";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
 
 export default function LoginScreen() {
   const { signInWithGoogle, signInWithKakao } = useOAuth();
@@ -17,7 +24,7 @@ export default function LoginScreen() {
         await signInWithKakao();
       }
     } catch (error) {
-      Alert.alert("Login Failed", "Please try again.");
+      Alert.alert("로그인 실패", "다시 시도해주세요.");
     } finally {
       setIsLoading(false);
     }
@@ -27,21 +34,26 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.header}>
+          <View style={styles.iconBox}>
+            <Sparkles size={32} color="#fff" />
+          </View>
           <Text style={styles.title}>Web Memo</Text>
           <Text style={styles.subtitle}>
-            Browse the web and save memos easily
+            웹을 탐색하고 메모를 쉽게 저장하세요
           </Text>
         </View>
 
         <View style={styles.buttons}>
-          <SocialLoginButton
-            provider="google"
-            onPress={() => handleLogin("google")}
-            disabled={isLoading}
-          />
+          {/* TODO: 카카오 로그인 임시 비활성화
           <SocialLoginButton
             provider="kakao"
             onPress={() => handleLogin("kakao")}
+            disabled={isLoading}
+          />
+          */}
+          <SocialLoginButton
+            provider="google"
+            onPress={() => handleLogin("google")}
             disabled={isLoading}
           />
           {isLoading && (
@@ -61,20 +73,34 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: "center",
-    paddingHorizontal: 24,
+    paddingHorizontal: 32,
   },
   header: {
     alignItems: "center",
-    marginBottom: 48,
+    marginBottom: 40,
+    gap: 12,
+  },
+  iconBox: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#7c3aed",
+    shadowColor: "#7c3aed",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    marginBottom: 4,
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: "700",
     color: "#111",
-    marginBottom: 8,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#666",
     textAlign: "center",
   },

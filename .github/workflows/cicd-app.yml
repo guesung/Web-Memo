@@ -1,0 +1,61 @@
+name: CICD App
+
+on:
+  push:
+    paths:
+      - "apps/app/**"
+      - "packages/shared/**"
+      - "packages/env/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/cicd-app.yml"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    paths:
+      - "apps/app/**"
+      - "packages/shared/**"
+      - "packages/env/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/cicd-app.yml"
+      - ".github/workflows/ci.yml"
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  build-ios:
+    needs: ci
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Setting environment variables
+        run: |
+          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
+          echo "${{ secrets.APP_ENV_FILE }}" >> apps/app/.env
+
+      - name: Build iOS
+        run: cd apps/app && eas build --platform ios --profile ci --local --non-interactive --output ./build.ipa
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build
+          path: apps/app/build.ipa
+          retention-days: 7

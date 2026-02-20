@@ -4,7 +4,7 @@
 	"description": "Web Memo - Chrome Extension",
 	"bugs": "https://github.com/guesung/Web-Memo/issues",
 	"homepage": "https://web-memos.vercel.app",
-	"license": "MIT",
+	"license": "MIT ",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/guesung/Web-Memo.git"

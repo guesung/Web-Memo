@@ -32,8 +32,9 @@ export function useLocalMemoUpsert() {
 
   return useMutation({
     mutationFn: upsertMemo,
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemoByUrl(variables.url) });
     },
   });
 }

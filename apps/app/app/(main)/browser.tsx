@@ -1,4 +1,5 @@
 import { MemoPanel } from "@/components/browser/MemoPanel";
+import { useAutoOpenMemo } from "@/lib/hooks/useAutoOpenMemo";
 import {
   ChevronLeft,
   ChevronRight,
@@ -56,8 +57,14 @@ export default function BrowserScreen() {
     if (paramUrl) {
       const decoded = decodeURIComponent(paramUrl);
       setCurrentUrl(decoded);
-      setIsMemoOpen(false);
-      panelHeight.value = withSpring(0, SPRING_CONFIG);
+      setPageTitle("");
+      if (isMemoOpen) {
+        panelHeight.value = withSpring(0, SPRING_CONFIG, (finished) => {
+          if (finished) {
+            runOnJS(setIsMemoOpen)(false);
+          }
+        });
+      }
     }
   }, [paramUrl]);
 
@@ -86,24 +93,48 @@ export default function BrowserScreen() {
     }
     Keyboard.dismiss();
     setCurrentUrl(url);
-    panelHeight.value = withSpring(0, SPRING_CONFIG);
-    setIsMemoOpen(false);
-  };
-
-  const toggleMemo = useCallback(() => {
+    setPageTitle("");
     if (isMemoOpen) {
       panelHeight.value = withSpring(0, SPRING_CONFIG, (finished) => {
         if (finished) {
           runOnJS(setIsMemoOpen)(false);
         }
       });
-      Keyboard.dismiss();
-    } else {
-      setIsMemoOpen(true);
-      const defaultH = contentHeight * DEFAULT_PANEL_RATIO;
-      panelHeight.value = withSpring(defaultH, SPRING_CONFIG);
     }
+  };
+
+  const openPanel = useCallback(() => {
+    if (isMemoOpen || contentHeight <= 0) return;
+    setIsMemoOpen(true);
+    const defaultH = contentHeight * DEFAULT_PANEL_RATIO;
+    panelHeight.value = withSpring(defaultH, SPRING_CONFIG);
   }, [isMemoOpen, contentHeight, panelHeight]);
+
+  const closePanel = useCallback(() => {
+    if (!isMemoOpen) return;
+    panelHeight.value = withSpring(0, SPRING_CONFIG, (finished) => {
+      if (finished) {
+        runOnJS(setIsMemoOpen)(false);
+      }
+    });
+    Keyboard.dismiss();
+  }, [isMemoOpen, panelHeight]);
+
+  const { markManuallyClosed } = useAutoOpenMemo({
+    url: currentUrl,
+    isMemoOpen,
+    contentHeight,
+    openPanel,
+  });
+
+  const toggleMemo = useCallback(() => {
+    if (isMemoOpen) {
+      markManuallyClosed(currentUrl);
+      closePanel();
+    } else {
+      openPanel();
+    }
+  }, [isMemoOpen, currentUrl, markManuallyClosed, closePanel, openPanel]);
 
   const resizeGesture = Gesture.Pan()
     .onStart(() => {
@@ -122,6 +153,7 @@ export default function BrowserScreen() {
           if (finished) {
             runOnJS(setIsMemoOpen)(false);
             runOnJS(Keyboard.dismiss)();
+            runOnJS(markManuallyClosed)(currentUrl);
           }
         });
       }

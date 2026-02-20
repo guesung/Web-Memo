@@ -2,19 +2,37 @@ name: E2E
 
 on:
   push:
-    paths-ignore:
-      - "**.md"
-      - ".github/workflows/cicd-web.yml"
-      - ".github/workflows/cicd-extension.yml"
-      - ".github/workflows/ci.yml"
-      - ".github/workflows/release.yml"
+    paths:
+      - "e2e/**"
+      - "apps/web/**"
+      - "apps/chrome-extension/**"
+      - "pages/**"
+      - "packages/shared/**"
+      - "packages/ui/**"
+      - "packages/env/**"
+      - "packages/hmr/**"
+      - "packages/vite-config/**"
+      - "packages/tailwind-config/**"
+      - "packages/tsconfig/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/e2e.yml"
   pull_request:
-    paths-ignore:
-      - "**.md"
-      - ".github/workflows/cicd-web.yml"
-      - ".github/workflows/cicd-extension.yml"
-      - ".github/workflows/ci.yml"
-      - ".github/workflows/release.yml"
+    paths:
+      - "e2e/**"
+      - "apps/web/**"
+      - "apps/chrome-extension/**"
+      - "pages/**"
+      - "packages/shared/**"
+      - "packages/ui/**"
+      - "packages/env/**"
+      - "packages/hmr/**"
+      - "packages/vite-config/**"
+      - "packages/tailwind-config/**"
+      - "packages/tsconfig/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/e2e.yml"
 
 jobs:
   tests_e2e:

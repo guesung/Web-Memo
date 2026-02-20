@@ -5,9 +5,16 @@
 	"indent": "\t",
 	"versionGroups": [
 		{
-			"label": "Expo app uses different TypeScript and @types/react versions",
+			"label": "Expo app uses different TypeScript, @types/react, and React versions",
 			"packages": ["@web-memo/app"],
-			"dependencies": ["typescript", "@types/react"],
+			"dependencies": ["typescript", "@types/react", "react", "react-dom"],
+			"isIgnored": true
+		},
+		{
+			"label": "Shared package supports both React 18 and 19 via peerDeps",
+			"packages": ["@web-memo/shared"],
+			"dependencies": ["react", "react-dom"],
+			"dependencyTypes": ["peer"],
 			"isIgnored": true
 		},
 		{

@@ -40,9 +40,21 @@ test.describe("메모 수정 기능 (Mocked)", () => {
 
 		const newMemoText = `Updated Memo ${Date.now()}`;
 
+		const patchResponsePromise = page.waitForResponse(
+			(resp) =>
+				resp.url().includes("/rest/v1/memo") &&
+				resp.request().method() === "PATCH",
+		);
+
 		await page.getByTestId("memo-textarea").fill(newMemoText);
 
-		await page.waitForTimeout(1_500);
+		await patchResponsePromise;
+
+		await page.waitForResponse(
+			(resp) =>
+				resp.url().includes("/rest/v1/memo") &&
+				resp.request().method() === "GET",
+		);
 
 		await page.getByTestId("memo-close-button").click();
 

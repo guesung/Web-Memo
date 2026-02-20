@@ -10,6 +10,7 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/workflows/cicd-web.yml"
+      - ".github/workflows/ci.yml"
   pull_request:
     paths:
       - "apps/web/**"
@@ -18,9 +19,15 @@ on:
       - "packages/env/**"
       - "package.json"
       - "pnpm-lock.yaml"
+      - ".github/workflows/cicd-web.yml"
+      - ".github/workflows/ci.yml"
 
 jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
   build-web:
+    needs: ci
     runs-on: ubuntu-latest
     env:
       WEB_URL: ${{ github.ref == 'refs/heads/develop' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}
@@ -28,20 +35,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - uses: actions/cache@v4
-        name: Setup pnpm cache
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
 
       - uses: actions/setup-node@v4
         with:
@@ -68,21 +61,10 @@ jobs:
           echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
           echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> apps/web/.env
-          echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
           echo NODE_ENV=production >> packages/env/.env
 
       - name: Vercel Pull
         run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Check for changes
-        id: check-changes
-        if: github.event_name == 'push'
-        run: |
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q -E '^packages/(web|shared)/'; then
-            echo "changes=true" >> $GITHUB_OUTPUT
-          else
-            echo "changes=false" >> $GITHUB_OUTPUT
-          fi
 
       - name: Vercel Build
         env:
@@ -92,11 +74,11 @@ jobs:
       - name: Deploy staging
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop'}}
         run: |
-          VERCEL_DEPOLYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
-          vercel alias set "$VERCEL_DEPOLYED_URL" ${{secrets.STAGING_WEB_URL_WITHOUT_PROTOCOL}} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects
+          VERCEL_DEPLOYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
+          vercel alias set "$VERCEL_DEPLOYED_URL" ${{secrets.STAGING_WEB_URL_WITHOUT_PROTOCOL}} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects
 
       - name: Deploy production
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master'}}
         run: |
-          VERCEL_DEPOLYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
+          VERCEL_DEPLOYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }}

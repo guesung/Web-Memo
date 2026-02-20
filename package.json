@@ -12,6 +12,7 @@
 	"scripts": {
 		"clean": "rimraf dist && rimraf .turbo && turbo clean && rimraf node_modules",
 		"format": "biome format --write",
+		"check": "biome check",
 		"lint": "biome lint",
 		"lint:fix": "biome lint --fix",
 		"lint:syncpack": "syncpack lint",

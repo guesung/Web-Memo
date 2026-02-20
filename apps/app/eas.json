@@ -11,7 +11,15 @@
     "preview": {
       "distribution": "internal"
     },
-    "production": {}
+    "production": {},
+    "ci": {
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
   },
   "submit": {
     "production": {}

@@ -3,12 +3,18 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { motion, useInView } from "framer-motion";
-import { Star, Users, Gift, Shield } from "lucide-react";
-import { useRef, useEffect, useState } from "react";
+import { Gift, Shield, Star, Users } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface SocialProofBarProps extends LanguageType {}
 
-function AnimatedCounter({ end, duration = 2000 }: { end: number; duration?: number }) {
+function AnimatedCounter({
+	end,
+	duration = 2000,
+}: {
+	end: number;
+	duration?: number;
+}) {
 	const [count, setCount] = useState(0);
 	const ref = useRef<HTMLSpanElement>(null);
 	const isInView = useInView(ref, { once: true });

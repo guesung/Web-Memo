@@ -3,7 +3,7 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { motion } from "framer-motion";
-import { Building2, ClipboardList, Star, Search } from "lucide-react";
+import { Building2, ClipboardList, Search, Star } from "lucide-react";
 
 interface BenefitsProps extends LanguageType {}
 

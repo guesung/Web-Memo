@@ -6,6 +6,6 @@ export { default as useDeleteMemosMutation } from "./useDeleteMemosMutation";
 export { default as useFeedbackMutation } from "./useFeedbackMutation";
 export { default as useMemoPatchMutation } from "./useMemoPatchMutation";
 export { default as useMemoPostMutation } from "./useMemoPostMutation";
-export { default as useMemoUpsertMutation } from "./useMemoUpsertMutation";
 export { default as useMemosUpsertMutation } from "./useMemosUpsertMutation";
+export { default as useMemoUpsertMutation } from "./useMemoUpsertMutation";
 export { default as useSignoutMutation } from "./useSignoutMutation";

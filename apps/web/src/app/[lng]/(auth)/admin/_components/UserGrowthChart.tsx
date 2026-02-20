@@ -64,10 +64,13 @@ export default function UserGrowthChart({ lng }: UserGrowthChartProps) {
 						<XAxis
 							dataKey="date"
 							tickFormatter={(value: string) =>
-								new Date(value).toLocaleDateString(lng === "ko" ? "ko-KR" : "en-US", {
-									month: "short",
-									day: "numeric",
-								})
+								new Date(value).toLocaleDateString(
+									lng === "ko" ? "ko-KR" : "en-US",
+									{
+										month: "short",
+										day: "numeric",
+									},
+								)
 							}
 							fontSize={12}
 						/>
@@ -76,7 +79,9 @@ export default function UserGrowthChart({ lng }: UserGrowthChartProps) {
 							content={
 								<ChartTooltipContent
 									labelFormatter={(value) =>
-										new Date(value).toLocaleDateString(lng === "ko" ? "ko-KR" : "en-US")
+										new Date(value).toLocaleDateString(
+											lng === "ko" ? "ko-KR" : "en-US",
+										)
 									}
 								/>
 							}

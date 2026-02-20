@@ -62,7 +62,12 @@ const DialogContent = React.forwardRef<
 					const target = event.target;
 					if (target instanceof HTMLElement) {
 						const tagName = target.tagName.toLowerCase();
-						if (tagName === "input" || tagName === "textarea" || target.isContentEditable) return;
+						if (
+							tagName === "input" ||
+							tagName === "textarea" ||
+							target.isContentEditable
+						)
+							return;
 					}
 					onClose?.();
 				}}

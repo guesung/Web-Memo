@@ -19,7 +19,9 @@ export default function useTextareaAutoResize(
 		[enabled],
 	);
 
-	const handleTextareaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+	const handleTextareaChange = (
+		event: React.ChangeEvent<HTMLTextAreaElement>,
+	) => {
 		if (enabled) {
 			adjustTextareaHeight(event.target);
 		}

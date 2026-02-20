@@ -85,6 +85,8 @@ export async function skipGuide(page: Page) {
 		await page.reload();
 		await page.waitForLoadState("domcontentloaded");
 		// Wait for guide to be hidden
-		await guidePopover.waitFor({ state: "hidden", timeout: 5000 }).catch(() => {});
+		await guidePopover
+			.waitFor({ state: "hidden", timeout: 5000 })
+			.catch(() => {});
 	}
 }

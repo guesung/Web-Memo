@@ -1,14 +1,12 @@
+export { TRANSCRIPT_CONFIG } from "./config";
 export {
+	type ExtractionResult,
 	extractYoutubeTranscript,
 	isYoutubePage,
-	type ExtractionResult,
 } from "./transcriptExtractor";
-
 export {
-	openTranscriptPanel,
-	isTranscriptPanelOpen,
 	closeTranscriptPanel,
+	isTranscriptPanelOpen,
+	openTranscriptPanel,
 	type TranscriptSegment,
 } from "./utils";
-
-export { TRANSCRIPT_CONFIG } from "./config";

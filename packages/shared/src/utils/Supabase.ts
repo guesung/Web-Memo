@@ -180,7 +180,7 @@ export class CategoryService {
 			.schema(SUPABASE.table.memo)
 			.from(SUPABASE.table.category)
 			.insert(request)
-			.select()
+			.select();
 
 	upsertCategories = async (request: CategoryTable["Insert"][]) =>
 		this.supabaseClient

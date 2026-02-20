@@ -10,7 +10,7 @@ import { Badge, Button, CardFooter, ToastAction, toast } from "@web-memo/ui";
 import dayjs from "dayjs";
 import { Clock, FolderIcon, HeartIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { MouseEvent, PropsWithChildren } from "react";
+import type { MouseEvent } from "react";
 import { useState } from "react";
 
 import MemoOption from "./MemoOption";
@@ -141,11 +141,7 @@ export default function MemoCardFooter({
 						)}
 					/>
 				</Button>
-				<MemoOption
-					memos={[memo]}
-					lng={lng}
-					onOpenChange={setIsDropdownOpen}
-				/>
+				<MemoOption memos={[memo]} lng={lng} onOpenChange={setIsDropdownOpen} />
 				{children}
 			</div>
 		</CardFooter>

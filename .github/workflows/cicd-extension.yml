@@ -1,31 +1,54 @@
 name: CICD Extension
 
 on:
-  - push
-  - pull_request
+  push:
+    paths-ignore:
+      - "apps/web/**"
+      - "apps/mobile/**"
+      - "e2e/**"
+      - "**.md"
+      - ".github/workflows/cicd-web.yml"
+      - ".github/workflows/e2e.yml"
+      - ".github/workflows/release.yml"
+  pull_request:
+    paths-ignore:
+      - "apps/web/**"
+      - "apps/mobile/**"
+      - "e2e/**"
+      - "**.md"
+      - ".github/workflows/cicd-web.yml"
+      - ".github/workflows/e2e.yml"
+      - ".github/workflows/release.yml"
 
 jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
   build-extension:
-    runs-on: ubuntu-22.04
+    needs: ci
+    runs-on: ubuntu-latest
     env:
       WEB_URL: ${{ github.ref == 'refs/heads/develop' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: pnpm
-      - name: pnpm install
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: setting environment variables
+      - name: Setting environment variables
         run: |
           echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
           echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
           echo NODE_ENV=production >> packages/env/.env
 
-      - name: build
+      - name: Build
         run: pnpm run build:extension
 
       - name: Zip the build files
@@ -39,9 +62,9 @@ jobs:
 
   upload-extension:
     needs: build-extension
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     name: Upload chrome store when push on master branch
-    if:  ${{ github.event_name == 'push' && github.ref == 'refs/heads/master'}}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master'}}
     steps:
       - name: Download Artifacts
         uses: actions/download-artifact@v4

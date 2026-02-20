@@ -1,12 +1,11 @@
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { FileText, Globe, Search, Settings } from "lucide-react-native";
+import { FileText, Globe, Settings } from "lucide-react-native";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TAB_CONFIG: Record<string, { icon: typeof FileText; label: string }> = {
   index: { icon: FileText, label: "메모" },
   browser: { icon: Globe, label: "브라우저" },
-  search: { icon: Search, label: "검색" },
   settings: { icon: Settings, label: "설정" },
 };
 

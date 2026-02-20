@@ -9,7 +9,7 @@ export default function MainLayout() {
     >
       <Tabs.Screen name="index" />
       <Tabs.Screen name="browser" />
-      <Tabs.Screen name="search" />
+      <Tabs.Screen name="search" options={{ href: null }} />
       <Tabs.Screen name="settings" />
     </Tabs>
   );

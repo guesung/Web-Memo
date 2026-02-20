@@ -31,6 +31,7 @@
 			"cache": false
 		},
 		"type-check": {
+			"dependsOn": ["^ready"],
 			"cache": false
 		},
 		"lint": {

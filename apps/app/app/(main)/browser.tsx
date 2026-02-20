@@ -57,6 +57,7 @@ export default function BrowserScreen() {
     if (paramUrl) {
       const decoded = decodeURIComponent(paramUrl);
       setCurrentUrl(decoded);
+      setPageTitle("");
       if (isMemoOpen) {
         panelHeight.value = withSpring(0, SPRING_CONFIG, (finished) => {
           if (finished) {
@@ -92,6 +93,7 @@ export default function BrowserScreen() {
     }
     Keyboard.dismiss();
     setCurrentUrl(url);
+    setPageTitle("");
     if (isMemoOpen) {
       panelHeight.value = withSpring(0, SPRING_CONFIG, (finished) => {
         if (finished) {

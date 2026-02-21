@@ -21,9 +21,10 @@ import { useMemoUpsertMutation } from "@/lib/hooks/useMemoMutation";
 interface MemoPanelProps {
   url: string;
   pageTitle: string;
+  favIconUrl?: string;
 }
 
-export function MemoPanel({ url, pageTitle }: MemoPanelProps) {
+export function MemoPanel({ url, pageTitle, favIconUrl }: MemoPanelProps) {
   const { session } = useAuth();
   const isLoggedIn = !!session;
 
@@ -71,11 +72,11 @@ export function MemoPanel({ url, pageTitle }: MemoPanelProps) {
   const handleSave = () => {
     if (!memoText.trim()) return;
 
-    const payload = { url, title: pageTitle || url, memo: memoText.trim() };
-
     if (isLoggedIn) {
+      const payload = { url, title: pageTitle || url, memo: memoText.trim(), favIconUrl: favIconUrl ?? null };
       supabaseMutate(payload, { onSuccess: onSaveSuccess });
     } else {
+      const payload = { url, title: pageTitle || url, memo: memoText.trim(), favIconUrl };
       localMutate(payload, { onSuccess: onSaveSuccess });
     }
   };

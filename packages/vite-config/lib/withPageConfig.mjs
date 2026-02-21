@@ -22,6 +22,9 @@ export function withPageConfig(config) {
 		deepmerge(
 			{
 				base: "",
+				resolve: {
+					dedupe: ["react", "react-dom"],
+				},
 				plugins: [
 					react(),
 					isDev && watchRebuildPlugin({ refresh: true }),

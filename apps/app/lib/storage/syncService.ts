@@ -28,6 +28,7 @@ export async function syncMemosToSupabase(): Promise<{
             url: memo.url,
             title: memo.title,
             memo: memo.memo,
+            favIconUrl: memo.favIconUrl ?? null,
           },
         });
       } else {
@@ -35,6 +36,7 @@ export async function syncMemosToSupabase(): Promise<{
           url: memo.url,
           title: memo.title,
           memo: memo.memo,
+          favIconUrl: memo.favIconUrl ?? null,
         });
       }
 

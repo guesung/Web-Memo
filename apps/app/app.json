@@ -73,6 +73,12 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.541718063018-h672i93efg8mmnknsril75ajc1dlu1to"
         }
+      ],
+      [
+        "@react-native-seoul/kakao-login",
+        {
+          "kakaoAppKey": "e70ae71f1cdc768383ad96ab45dc1dd7"
+        }
       ]
     ],
     "experiments": {

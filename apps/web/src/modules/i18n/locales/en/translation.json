@@ -56,6 +56,15 @@
 	"updates": {
 		"title": "What's new",
 		"versions": {
+			"v1.10.1": {
+				"title": "Mobile app improvements and stability",
+				"content": [
+					"Added Kakao/Apple login for mobile app",
+					"Added auto-open memo in in-app browser",
+					"Upgraded to React 19 with dependency fixes",
+					"Stabilized CI/CD workflows"
+				]
+			},
 			"v1.10.0": {
 				"title": "Category feature improvements",
 				"content": [

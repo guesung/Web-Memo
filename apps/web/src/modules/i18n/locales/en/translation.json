@@ -56,6 +56,15 @@
 	"updates": {
 		"title": "What's new",
 		"versions": {
+			"v1.10.2": {
+				"title": "Stability and compatibility improvements",
+				"content": [
+					"Fixed memo rollback bug when setting category",
+					"Added Apple sign-in support",
+					"Upgraded to React 19",
+					"Improved code quality with Biome 2.0"
+				]
+			},
 			"v1.10.0": {
 				"title": "Category feature improvements",
 				"content": [

@@ -3,7 +3,7 @@ import type {
 	QueryData,
 	SupabaseClient,
 } from "@supabase/supabase-js";
-import type { MemoService } from "../utils";
+import type { MemoService } from "../utils/Supabase";
 
 import type { Database } from "./supabase";
 

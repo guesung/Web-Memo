@@ -1,0 +1,235 @@
+name: CI/CD
+
+on:
+  push:
+    paths:
+      - "apps/**"
+      - "pages/**"
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/ci-cd.yml"
+  pull_request:
+    paths:
+      - "apps/**"
+      - "pages/**"
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/ci-cd.yml"
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Check (format + lint)
+        run: pnpm check
+
+      - name: Type check
+        run: pnpm type-check
+
+      - name: Unit tests
+        run: pnpm test:jest --run
+
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.filter.outputs.app }}
+      extension: ${{ steps.filter.outputs.extension }}
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            app:
+              - 'apps/app/**'
+              - 'packages/shared/**'
+              - 'packages/env/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+            extension:
+              - 'apps/chrome-extension/**'
+              - 'pages/**'
+              - 'packages/shared/**'
+              - 'packages/ui/**'
+              - 'packages/env/**'
+              - 'packages/hmr/**'
+              - 'packages/vite-config/**'
+              - 'packages/tailwind-config/**'
+              - 'packages/tsconfig/**'
+              - 'packages/zipper/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+            web:
+              - 'apps/web/**'
+              - 'packages/shared/**'
+              - 'packages/ui/**'
+              - 'packages/env/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+
+  build-ios:
+    needs: [ci, changes]
+    if: needs.changes.outputs.app == 'true'
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Setting environment variables
+        run: |
+          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
+          echo "${{ secrets.APP_ENV_FILE }}" >> apps/app/.env
+
+      - name: Build iOS
+        run: cd apps/app && eas build --platform ios --profile ci --local --non-interactive --output ./build.ipa
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build
+          path: apps/app/build.ipa
+          retention-days: 7
+
+  build-extension:
+    needs: [ci, changes]
+    if: needs.changes.outputs.extension == 'true'
+    runs-on: ubuntu-latest
+    env:
+      WEB_URL: ${{ github.ref == 'refs/heads/develop' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Setting environment variables
+        run: |
+          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
+          echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
+          echo NODE_ENV=production >> packages/env/.env
+
+      - name: Build
+        run: pnpm run build:extension
+
+      - name: Zip the build files
+        run: pnpm run zip
+
+      - name: Upload Extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension
+          path: dist-zip/extension.zip
+
+  upload-extension:
+    needs: build-extension
+    runs-on: ubuntu-latest
+    name: Upload chrome store when push on master branch
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Upload zipped file on chrome store
+        uses: mnao305/chrome-extension-upload@v5.0.0
+        with:
+          file-path: extension/extension.zip
+          extension-id: eaiojpmgklfngpjddhoalgcpkepgkclh
+          client-id: ${{ secrets.CLIENT_ID }}
+          client-secret: ${{ secrets.CLIENT_SECRET }}
+          refresh-token: ${{ secrets.REFRESH_TOKEN }}
+          publish: false
+
+  build-web:
+    needs: [ci, changes]
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    env:
+      WEB_URL: ${{ github.ref == 'refs/heads/develop' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/web/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml', 'apps/web/next.config.js') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Setting environment variables
+        run: |
+          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
+          echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> apps/web/.env
+          echo NODE_ENV=production >> packages/env/.env
+
+      - name: Vercel Pull
+        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Vercel Build
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy staging
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+        run: |
+          VERCEL_DEPLOYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
+          vercel alias set "$VERCEL_DEPLOYED_URL" ${{ secrets.STAGING_WEB_URL_WITHOUT_PROTOCOL }} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects
+
+      - name: Deploy production
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        run: |
+          VERCEL_DEPLOYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }}

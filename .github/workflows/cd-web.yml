@@ -1,0 +1,61 @@
+name: CD - Web (Build + Vercel Deploy)
+
+on:
+  workflow_call:
+
+jobs:
+  build-web:
+    runs-on: ubuntu-latest
+    env:
+      WEB_URL: ${{ github.ref == 'refs/heads/develop' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/web/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml', 'apps/web/next.config.js') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Setting environment variables
+        run: |
+          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
+          echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> apps/web/.env
+          echo NODE_ENV=production >> packages/env/.env
+
+      - name: Vercel Pull
+        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Vercel Build
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy staging
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+        run: |
+          VERCEL_DEPLOYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
+          vercel alias set "$VERCEL_DEPLOYED_URL" ${{ secrets.STAGING_WEB_URL_WITHOUT_PROTOCOL }} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects
+
+      - name: Deploy production
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        run: |
+          VERCEL_DEPLOYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }}

@@ -1,16 +1,21 @@
 import { MemoPanel } from "@/components/browser/MemoPanel";
 import { TechBlogBottomSheet } from "@/components/browser/TechBlogBottomSheet";
 import { TechBlogLinks } from "@/components/browser/TechBlogLinks";
-import { useAutoOpenMemo } from "@/lib/hooks/useAutoOpenMemo";
 import {
   ChevronLeft,
   ChevronRight,
+  Heart,
   LayoutGrid,
   PenLine,
   RotateCw,
   Search,
   X,
 } from "lucide-react-native";
+import * as Haptics from "expo-haptics";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
+import { useLocalMemoByUrl, useLocalMemoWishToggle } from "@/lib/hooks/useLocalMemos";
+import { useMemoWishToggleMutation } from "@/lib/hooks/useMemoMutation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Keyboard,
@@ -66,6 +71,19 @@ export default function BrowserScreen() {
   const [isMemoOpen, setIsMemoOpen] = useState(false);
   const [isBlogSheetOpen, setIsBlogSheetOpen] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
+  const [wishToast, setWishToast] = useState<string | null>(null);
+
+  const { session } = useAuth();
+  const isLoggedIn = !!session;
+
+  const { data: supabaseMemo } = useSupabaseMemoByUrl(currentUrl, isLoggedIn);
+  const { data: localMemo } = useLocalMemoByUrl(currentUrl);
+  const wishToggleSupabase = useMemoWishToggleMutation();
+  const wishToggleLocal = useLocalMemoWishToggle();
+
+  const isCurrentPageWish = isLoggedIn
+    ? supabaseMemo?.isWish ?? false
+    : localMemo?.isWish ?? false;
 
   const panelHeight = useSharedValue(0);
   const dragStartHeight = useSharedValue(0);
@@ -119,6 +137,22 @@ export default function BrowserScreen() {
     }
   };
 
+  const handleWishToggle = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (isLoggedIn) {
+      wishToggleSupabase.mutate({
+        url: currentUrl,
+        title: pageTitle,
+        favIconUrl: pageFavIconUrl,
+        currentIsWish: isCurrentPageWish,
+      });
+    } else {
+      wishToggleLocal.mutate(currentUrl);
+    }
+    setWishToast(isCurrentPageWish ? "위시리스트에서 제거" : "위시리스트에 추가");
+    setTimeout(() => setWishToast(null), 1500);
+  }, [currentUrl, pageTitle, pageFavIconUrl, isLoggedIn, isCurrentPageWish, wishToggleSupabase, wishToggleLocal]);
+
   const openPanel = useCallback(() => {
     if (isMemoOpen || contentHeight <= 0) return;
     setIsMemoOpen(true);
@@ -142,21 +176,13 @@ export default function BrowserScreen() {
     } catch {}
   }, []);
 
-  const { markManuallyClosed } = useAutoOpenMemo({
-    url: currentUrl,
-    isMemoOpen,
-    contentHeight,
-    openPanel,
-  });
-
   const toggleMemo = useCallback(() => {
     if (isMemoOpen) {
-      markManuallyClosed(currentUrl);
       closePanel();
     } else {
       openPanel();
     }
-  }, [isMemoOpen, currentUrl, markManuallyClosed, closePanel, openPanel]);
+  }, [isMemoOpen, closePanel, openPanel]);
 
   const resizeGesture = Gesture.Pan()
     .onStart(() => {
@@ -251,6 +277,13 @@ export default function BrowserScreen() {
         <TouchableOpacity onPress={() => setIsBlogSheetOpen(true)} style={styles.navBtn}>
           <LayoutGrid size={16} color="#111" />
         </TouchableOpacity>
+        <TouchableOpacity onPress={handleWishToggle} style={styles.navBtn}>
+          <Heart
+            size={16}
+            color={isCurrentPageWish ? "#ec4899" : "#111"}
+            fill={isCurrentPageWish ? "#ec4899" : "none"}
+          />
+        </TouchableOpacity>
       </View>
 
       <View
@@ -290,6 +323,13 @@ export default function BrowserScreen() {
           {isMemoOpen ? <X size={24} color="#fff" /> : <PenLine size={24} color="#fff" />}
         </TouchableOpacity>
       </Animated.View>
+
+      {wishToast ? (
+        <View style={[styles.wishToast, { bottom: insets.bottom + 84 }]}>
+          <Heart size={14} fill="#ec4899" color="#ec4899" />
+          <Text style={styles.wishToastText}>{wishToast}</Text>
+        </View>
+      ) : null}
 
       <TechBlogBottomSheet
         visible={isBlogSheetOpen}
@@ -378,4 +418,20 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   fabActive: { backgroundColor: "#666" },
+  wishToast: {
+    position: "absolute",
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "rgba(0,0,0,0.8)",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  wishToastText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
 });

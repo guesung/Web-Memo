@@ -1,14 +1,17 @@
 import { MemoCard, type MemoItem } from "@/components/memo/MemoCard";
+import { MemoDetailModal } from "@/components/memo/MemoDetailModal";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { useLocalMemos } from "@/lib/hooks/useLocalMemos";
+import { useLocalMemoDelete, useLocalMemos, useLocalMemoUpsert, useLocalMemoWishToggle } from "@/lib/hooks/useLocalMemos";
+import { useDeleteMemoMutation, useMemoUpsertMutation, useMemoWishToggleMutation } from "@/lib/hooks/useMemoMutation";
 import { useMemosInfinite } from "@/lib/hooks/useMemos";
-import { Globe } from "lucide-react-native";
-import { useCallback } from "react";
+import { Globe, Heart, Undo2 } from "lucide-react-native";
+import { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,6 +22,54 @@ export default function MemoScreen() {
   const router = useRouter();
   const { session } = useAuth();
   const isLoggedIn = !!session;
+  const [filter, setFilter] = useState<"all" | "wish">("all");
+  const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
+
+  const wishToggleLocal = useLocalMemoWishToggle();
+  const wishToggleSupabase = useMemoWishToggleMutation();
+  const deleteLocal = useLocalMemoDelete();
+  const deleteSupabase = useDeleteMemoMutation();
+  const upsertLocal = useLocalMemoUpsert();
+  const upsertSupabase = useMemoUpsertMutation();
+
+  const [deletedMemo, setDeletedMemo] = useState<MemoItem | null>(null);
+  const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleDelete = useCallback((item: MemoItem) => {
+    if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
+    setDeletedMemo(item);
+    if (isLoggedIn) {
+      deleteSupabase.mutate(item.id as number);
+    } else {
+      deleteLocal.mutate(item.id as string);
+    }
+    deleteTimerRef.current = setTimeout(() => setDeletedMemo(null), 3000);
+  }, [isLoggedIn, deleteSupabase, deleteLocal]);
+
+  const handleUndo = useCallback(() => {
+    if (!deletedMemo) return;
+    if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
+    if (isLoggedIn) {
+      const m = deletedMemo as import("@web-memo/shared/types").GetMemoResponse;
+      upsertSupabase.mutate({
+        url: m.url,
+        title: m.title,
+        memo: m.memo ?? "",
+        favIconUrl: m.favIconUrl ?? undefined,
+        isWish: m.isWish ?? false,
+      });
+    } else {
+      const m = deletedMemo as import("@/lib/storage/localMemo").LocalMemo;
+      upsertLocal.mutate({
+        url: m.url,
+        title: m.title,
+        memo: m.memo,
+        favIconUrl: m.favIconUrl,
+        isWish: m.isWish,
+      });
+    }
+    setDeletedMemo(null);
+  }, [deletedMemo, isLoggedIn, upsertSupabase, upsertLocal]);
 
   const {
     data: localMemosData,
@@ -32,11 +83,13 @@ export default function MemoScreen() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useMemosInfinite();
+  } = useMemosInfinite(
+    isLoggedIn ? { isWish: filter === "wish" } : undefined
+  );
 
   const memos: MemoItem[] = isLoggedIn
     ? (supabaseMemosData?.pages.flatMap((p) => p.data) ?? [])
-    : (localMemosData ?? []);
+    : (localMemosData ?? []).filter((m) => (filter === "wish" ? m.isWish : !m.isWish));
   const isLoading = isLoggedIn ? isSupabaseLoading : isLocalLoading;
   const refetch = isLoggedIn ? refetchSupabase : refetchLocal;
 
@@ -66,22 +119,40 @@ export default function MemoScreen() {
 
         <Text style={styles.brandSubtitle}>웹서핑하며 메모하세요</Text>
 
+        <View style={styles.segmentContainer}>
+          <TouchableOpacity
+            style={[styles.segmentBtn, filter === "all" && styles.segmentBtnActive]}
+            onPress={() => setFilter("all")}
+          >
+            <Text style={[styles.segmentText, filter === "all" && styles.segmentTextActive]}>
+              전체
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.segmentBtn, filter === "wish" && styles.segmentBtnActive]}
+            onPress={() => setFilter("wish")}
+          >
+            <Heart size={12} fill={filter === "wish" ? "#fff" : "#666"} color={filter === "wish" ? "#fff" : "#666"} />
+            <Text style={[styles.segmentText, filter === "wish" && styles.segmentTextActive]}>
+              위시리스트
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Memos */}
         {isLoading ? (
           <ActivityIndicator style={{ marginTop: 40 }} size="large" />
         ) : memos.length > 0 ? (
           <View style={styles.memosSection}>
-            <Text style={styles.sectionTitle}>최근 메모</Text>
+            <Text style={styles.sectionTitle}>{filter === "wish" ? "위시리스트" : "최근 메모"}</Text>
             <FlatList
               data={memos}
               keyExtractor={(item) => String(item.id)}
               renderItem={({ item }) => (
                 <MemoCard
                   memo={item}
-                  onPress={() => {
-                    const url = item.url;
-                    if (url) navigateToBrowser(url);
-                  }}
+                  onPress={() => setSelectedMemo(item)}
+                  onDelete={() => handleDelete(item)}
                 />
               )}
               contentContainerStyle={styles.memosList}
@@ -103,6 +174,39 @@ export default function MemoScreen() {
           </View>
         )}
       </View>
+
+      <MemoDetailModal
+        memo={selectedMemo}
+        onClose={() => setSelectedMemo(null)}
+        onNavigate={(url) => {
+          setSelectedMemo(null);
+          navigateToBrowser(url);
+        }}
+        onWishRemove={(memo) => {
+          if (isLoggedIn) {
+            const favIconUrl = "favIconUrl" in memo ? (memo.favIconUrl ?? undefined) : undefined;
+            wishToggleSupabase.mutate({
+              url: memo.url,
+              title: memo.title,
+              favIconUrl,
+              currentIsWish: true,
+            });
+          } else {
+            wishToggleLocal.mutate(memo.url);
+          }
+          setSelectedMemo(null);
+        }}
+      />
+
+      {deletedMemo ? (
+        <View style={[styles.deleteToast, { bottom: insets.bottom + 24 }]}>
+          <Text style={styles.deleteToastText}>메모가 삭제되었습니다</Text>
+          <TouchableOpacity style={styles.undoBtn} onPress={handleUndo}>
+            <Undo2 size={14} color="#60a5fa" />
+            <Text style={styles.undoBtnText}>되돌리기</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -125,4 +229,57 @@ const styles = StyleSheet.create({
   memosList: { paddingBottom: 32 },
   emptyState: { alignItems: "center", paddingTop: 60, gap: 12 },
   emptyText: { fontSize: 15, color: "#bbb" },
+  segmentContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    marginBottom: 16,
+    gap: 8,
+  },
+  segmentBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: "#f0f0f0",
+  },
+  segmentBtnActive: {
+    backgroundColor: "#111",
+  },
+  segmentText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#666",
+  },
+  segmentTextActive: {
+    color: "#fff",
+  },
+  deleteToast: {
+    position: "absolute",
+    left: 20,
+    right: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#333",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  deleteToastText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  undoBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  undoBtnText: {
+    color: "#60a5fa",
+    fontSize: 14,
+    fontWeight: "600",
+  },
 });

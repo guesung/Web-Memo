@@ -1,16 +1,20 @@
 import type { LocalMemo } from "@/lib/storage/localMemo";
 import type { GetMemoResponse } from "@web-memo/shared/types";
-import { FileText, Globe } from "lucide-react-native";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { FileText, Globe, Heart, Trash2 } from "lucide-react-native";
+import { useRef } from "react";
+import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
 
 export type MemoItem = LocalMemo | GetMemoResponse;
 
 interface MemoCardProps {
   memo: MemoItem;
   onPress: () => void;
+  onDelete?: () => void;
 }
 
-export function MemoCard({ memo, onPress }: MemoCardProps) {
+export function MemoCard({ memo, onPress, onDelete }: MemoCardProps) {
+  const swipeableRef = useRef<Swipeable>(null);
   const url = memo.url;
   let domain = "";
   try {
@@ -20,8 +24,33 @@ export function MemoCard({ memo, onPress }: MemoCardProps) {
   const title = memo.title || "Untitled";
   const memoText = memo.memo;
   const favIconUrl = "favIconUrl" in memo ? memo.favIconUrl : undefined;
+  const isWish = "isWish" in memo ? memo.isWish : false;
 
-  return (
+  const renderRightActions = (_progress: Animated.AnimatedInterpolation<number>, dragX: Animated.AnimatedInterpolation<number>) => {
+    const scale = dragX.interpolate({
+      inputRange: [-80, 0],
+      outputRange: [1, 0.5],
+      extrapolate: "clamp",
+    });
+
+    return (
+      <TouchableOpacity
+        style={styles.deleteAction}
+        onPress={() => {
+          swipeableRef.current?.close();
+          onDelete?.();
+        }}
+        activeOpacity={0.7}
+      >
+        <Animated.View style={[styles.deleteContent, { transform: [{ scale }] }]}>
+          <Trash2 size={18} color="#fff" />
+          <Text style={styles.deleteText}>삭제</Text>
+        </Animated.View>
+      </TouchableOpacity>
+    );
+  };
+
+  const card = (
     <TouchableOpacity style={styles.memoCard} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.memoCardHeader}>
         {favIconUrl ? (
@@ -32,9 +61,10 @@ export function MemoCard({ memo, onPress }: MemoCardProps) {
         <Text style={styles.memoCardTitle} numberOfLines={1}>
           {title}
         </Text>
+        {isWish ? <Heart size={12} fill="#ec4899" color="#ec4899" /> : null}
       </View>
       {memoText ? (
-        <Text style={styles.memoCardText} numberOfLines={2}>
+        <Text style={styles.memoCardText} numberOfLines={10}>
           {memoText}
         </Text>
       ) : null}
@@ -45,6 +75,19 @@ export function MemoCard({ memo, onPress }: MemoCardProps) {
         </View>
       ) : null}
     </TouchableOpacity>
+  );
+
+  if (!onDelete) return card;
+
+  return (
+    <Swipeable
+      ref={swipeableRef}
+      renderRightActions={renderRightActions}
+      overshootRight={false}
+      rightThreshold={40}
+    >
+      {card}
+    </Swipeable>
   );
 }
 
@@ -63,4 +106,23 @@ const styles = StyleSheet.create({
   memoCardText: { fontSize: 14, color: "#555", lineHeight: 20, marginBottom: 6 },
   memoCardFooter: { flexDirection: "row", alignItems: "center", gap: 4 },
   memoCardDomain: { fontSize: 12, color: "#999" },
+  deleteAction: {
+    backgroundColor: "#ef4444",
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    width: 72,
+    marginBottom: 10,
+    marginLeft: 8,
+  },
+  deleteContent: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+  },
+  deleteText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+  },
 });

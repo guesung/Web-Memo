@@ -46,7 +46,9 @@ test.describe("메모 수정 기능 (Mocked)", () => {
 				resp.request().method() === "PATCH",
 		);
 
-		await page.getByTestId("memo-textarea").fill(newMemoText);
+		const textarea = page.getByTestId("memo-textarea");
+		await textarea.selectText();
+		await textarea.pressSequentially(newMemoText);
 
 		await patchResponsePromise;
 

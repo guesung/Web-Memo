@@ -1,7 +1,7 @@
 {
 	"name": "web-memo",
 	"version": "1.9.7",
-	"description": "Web Memo - Chrome Extension ",
+	"description": "Web Memo - Chrome Extension",
 	"bugs": "https://github.com/guesung/Web-Memo/issues",
 	"homepage": "https://web-memos.vercel.app",
 	"license": "MIT",

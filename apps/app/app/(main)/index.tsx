@@ -2,13 +2,14 @@ import { MemoCard, type MemoItem } from "@/components/memo/MemoCard";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocalMemos } from "@/lib/hooks/useLocalMemos";
 import { useMemosInfinite } from "@/lib/hooks/useMemos";
-import { Globe } from "lucide-react-native";
-import { useCallback } from "react";
+import { Globe, Heart } from "lucide-react-native";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,6 +20,7 @@ export default function MemoScreen() {
   const router = useRouter();
   const { session } = useAuth();
   const isLoggedIn = !!session;
+  const [filter, setFilter] = useState<"all" | "wish">("all");
 
   const {
     data: localMemosData,
@@ -32,11 +34,13 @@ export default function MemoScreen() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useMemosInfinite();
+  } = useMemosInfinite(
+    isLoggedIn ? { isWish: filter === "wish" ? true : undefined } : undefined
+  );
 
   const memos: MemoItem[] = isLoggedIn
     ? (supabaseMemosData?.pages.flatMap((p) => p.data) ?? [])
-    : (localMemosData ?? []);
+    : (localMemosData ?? []).filter((m) => (filter === "wish" ? m.isWish : true));
   const isLoading = isLoggedIn ? isSupabaseLoading : isLocalLoading;
   const refetch = isLoggedIn ? refetchSupabase : refetchLocal;
 
@@ -66,12 +70,32 @@ export default function MemoScreen() {
 
         <Text style={styles.brandSubtitle}>웹서핑하며 메모하세요</Text>
 
+        <View style={styles.segmentContainer}>
+          <TouchableOpacity
+            style={[styles.segmentBtn, filter === "all" && styles.segmentBtnActive]}
+            onPress={() => setFilter("all")}
+          >
+            <Text style={[styles.segmentText, filter === "all" && styles.segmentTextActive]}>
+              전체
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.segmentBtn, filter === "wish" && styles.segmentBtnActive]}
+            onPress={() => setFilter("wish")}
+          >
+            <Heart size={12} fill={filter === "wish" ? "#fff" : "#666"} color={filter === "wish" ? "#fff" : "#666"} />
+            <Text style={[styles.segmentText, filter === "wish" && styles.segmentTextActive]}>
+              좋아요
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Memos */}
         {isLoading ? (
           <ActivityIndicator style={{ marginTop: 40 }} size="large" />
         ) : memos.length > 0 ? (
           <View style={styles.memosSection}>
-            <Text style={styles.sectionTitle}>최근 메모</Text>
+            <Text style={styles.sectionTitle}>{filter === "wish" ? "좋아요 메모" : "최근 메모"}</Text>
             <FlatList
               data={memos}
               keyExtractor={(item) => String(item.id)}
@@ -125,4 +149,30 @@ const styles = StyleSheet.create({
   memosList: { paddingBottom: 32 },
   emptyState: { alignItems: "center", paddingTop: 60, gap: 12 },
   emptyText: { fontSize: 15, color: "#bbb" },
+  segmentContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    marginBottom: 16,
+    gap: 8,
+  },
+  segmentBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: "#f0f0f0",
+  },
+  segmentBtnActive: {
+    backgroundColor: "#111",
+  },
+  segmentText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#666",
+  },
+  segmentTextActive: {
+    color: "#fff",
+  },
 });

@@ -1,6 +1,6 @@
 import type { LocalMemo } from "@/lib/storage/localMemo";
 import type { GetMemoResponse } from "@web-memo/shared/types";
-import { FileText, Globe } from "lucide-react-native";
+import { FileText, Globe, Heart } from "lucide-react-native";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export type MemoItem = LocalMemo | GetMemoResponse;
@@ -20,6 +20,7 @@ export function MemoCard({ memo, onPress }: MemoCardProps) {
   const title = memo.title || "Untitled";
   const memoText = memo.memo;
   const favIconUrl = "favIconUrl" in memo ? memo.favIconUrl : undefined;
+  const isWish = "isWish" in memo ? memo.isWish : false;
 
   return (
     <TouchableOpacity style={styles.memoCard} onPress={onPress} activeOpacity={0.7}>
@@ -32,6 +33,7 @@ export function MemoCard({ memo, onPress }: MemoCardProps) {
         <Text style={styles.memoCardTitle} numberOfLines={1}>
           {title}
         </Text>
+        {isWish ? <Heart size={12} fill="#ec4899" color="#ec4899" /> : null}
       </View>
       {memoText ? (
         <Text style={styles.memoCardText} numberOfLines={2}>

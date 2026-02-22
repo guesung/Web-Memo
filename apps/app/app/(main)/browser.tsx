@@ -5,12 +5,18 @@ import { useAutoOpenMemo } from "@/lib/hooks/useAutoOpenMemo";
 import {
   ChevronLeft,
   ChevronRight,
+  Heart,
   LayoutGrid,
   PenLine,
   RotateCw,
   Search,
   X,
 } from "lucide-react-native";
+import * as Haptics from "expo-haptics";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
+import { useLocalMemoByUrl, useLocalMemoWishToggle } from "@/lib/hooks/useLocalMemos";
+import { useMemoWishToggleMutation } from "@/lib/hooks/useMemoMutation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Keyboard,
@@ -66,6 +72,19 @@ export default function BrowserScreen() {
   const [isMemoOpen, setIsMemoOpen] = useState(false);
   const [isBlogSheetOpen, setIsBlogSheetOpen] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
+  const [wishToast, setWishToast] = useState<string | null>(null);
+
+  const { session } = useAuth();
+  const isLoggedIn = !!session;
+
+  const { data: supabaseMemo } = useSupabaseMemoByUrl(currentUrl, isLoggedIn);
+  const { data: localMemo } = useLocalMemoByUrl(currentUrl);
+  const wishToggleSupabase = useMemoWishToggleMutation();
+  const wishToggleLocal = useLocalMemoWishToggle();
+
+  const isCurrentPageWish = isLoggedIn
+    ? supabaseMemo?.isWish ?? false
+    : localMemo?.isWish ?? false;
 
   const panelHeight = useSharedValue(0);
   const dragStartHeight = useSharedValue(0);
@@ -118,6 +137,22 @@ export default function BrowserScreen() {
       panelHeight.value = withSpring(0, SPRING_CONFIG);
     }
   };
+
+  const handleLongPress = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (isLoggedIn) {
+      wishToggleSupabase.mutate({
+        url: currentUrl,
+        title: pageTitle,
+        favIconUrl: pageFavIconUrl,
+        currentIsWish: isCurrentPageWish,
+      });
+    } else {
+      wishToggleLocal.mutate(currentUrl);
+    }
+    setWishToast(isCurrentPageWish ? "좋아요 해제" : "좋아요 추가");
+    setTimeout(() => setWishToast(null), 1500);
+  }, [currentUrl, pageTitle, pageFavIconUrl, isLoggedIn, isCurrentPageWish, wishToggleSupabase, wishToggleLocal]);
 
   const openPanel = useCallback(() => {
     if (isMemoOpen || contentHeight <= 0) return;
@@ -285,11 +320,30 @@ export default function BrowserScreen() {
         <TouchableOpacity
           style={[styles.fab, isMemoOpen && styles.fabActive]}
           onPress={toggleMemo}
+          onLongPress={handleLongPress}
           activeOpacity={0.8}
         >
-          {isMemoOpen ? <X size={24} color="#fff" /> : <PenLine size={24} color="#fff" />}
+          {isMemoOpen ? (
+            <X size={24} color="#fff" />
+          ) : (
+            <View style={styles.fabIconContainer}>
+              <PenLine size={24} color="#fff" />
+              {isCurrentPageWish ? (
+                <View style={styles.fabWishBadge}>
+                  <Heart size={10} fill="#ec4899" color="#ec4899" />
+                </View>
+              ) : null}
+            </View>
+          )}
         </TouchableOpacity>
       </Animated.View>
+
+      {wishToast ? (
+        <View style={[styles.wishToast, { bottom: insets.bottom + 84 }]}>
+          <Heart size={14} fill="#ec4899" color="#ec4899" />
+          <Text style={styles.wishToastText}>{wishToast}</Text>
+        </View>
+      ) : null}
 
       <TechBlogBottomSheet
         visible={isBlogSheetOpen}
@@ -378,4 +432,30 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   fabActive: { backgroundColor: "#666" },
+  fabIconContainer: {
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  fabWishBadge: {
+    position: "absolute",
+    top: -4,
+    right: -6,
+  },
+  wishToast: {
+    position: "absolute",
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "rgba(0,0,0,0.8)",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  wishToastText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
 });

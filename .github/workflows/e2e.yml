@@ -2,6 +2,9 @@ name: E2E
 
 on:
   push:
+    branches:
+      - develop
+      - master
     paths:
       - "e2e/**"
       - "apps/web/**"

@@ -1,7 +1,9 @@
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { FileText, Globe, Settings } from "lucide-react-native";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
 
 const TAB_CONFIG: Record<string, { icon: typeof FileText; label: string }> = {
   index: { icon: FileText, label: "메모" },
@@ -11,9 +13,18 @@ const TAB_CONFIG: Record<string, { icon: typeof FileText; label: string }> = {
 
 export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { tabBarTranslateY, isBrowserActive } = useBrowserScroll();
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateY: isBrowserActive.value === 1 ? tabBarTranslateY.value : 0,
+      },
+    ],
+  }));
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+    <Animated.View style={[styles.container, { paddingBottom: insets.bottom }, animatedStyle]}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;
@@ -59,7 +70,7 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
           </TouchableOpacity>
         );
       })}
-    </View>
+    </Animated.View>
   );
 }
 

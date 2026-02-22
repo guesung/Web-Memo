@@ -10,7 +10,7 @@ import {
   Platform,
   Image,
 } from "react-native";
-import { Save, Check, ChevronDown, FileText } from "lucide-react-native";
+import { Save, Check, ChevronDown, FileText, X } from "lucide-react-native";
 import {
   useLocalMemoByUrl,
   useLocalMemoUpsert,
@@ -23,9 +23,10 @@ interface MemoPanelProps {
   url: string;
   pageTitle: string;
   favIconUrl?: string;
+  onClose?: () => void;
 }
 
-export function MemoPanel({ url, pageTitle, favIconUrl }: MemoPanelProps) {
+export function MemoPanel({ url, pageTitle, favIconUrl, onClose }: MemoPanelProps) {
   const { session } = useAuth();
   const isLoggedIn = !!session;
 
@@ -102,6 +103,14 @@ export function MemoPanel({ url, pageTitle, favIconUrl }: MemoPanelProps) {
               <ChevronDown size={16} color="#666" />
             </TouchableOpacity>
           )}
+          {onClose && (
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={onClose}
+            >
+              <X size={16} color="#999" />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={[styles.saveButton, saved && styles.savedButton]}
             onPress={handleSave}
@@ -175,6 +184,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 8,
     borderRadius: 8,
+  },
+  closeButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 6,
   },
   saveButton: {
     flexDirection: "row",

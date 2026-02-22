@@ -1,6 +1,6 @@
 {
 	"name": "@web-memo/shared",
-	"version": "1.10.0",
+	"version": "1.10.1",
 	"description": "chrome extension shared code",
 	"private": true,
 	"sideEffects": false,

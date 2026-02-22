@@ -18,6 +18,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.webmemo.app",
       "buildNumber": "1",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "CFBundleURLTypes": [

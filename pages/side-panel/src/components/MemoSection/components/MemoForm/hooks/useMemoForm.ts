@@ -2,6 +2,7 @@ import type { MemoInput } from "@src/types/Input";
 import {
 	useDebounce,
 	useDidMount,
+	useMemoPatchMutation,
 	useMemoQuery,
 	useMemoUpsertMutation,
 	useTabQuery,
@@ -28,6 +29,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		url: tab?.url ?? "",
 	});
 	const { mutate: upsertMemo } = useMemoUpsertMutation();
+	const { mutate: patchMemo } = useMemoPatchMutation();
 	const [isSaving, setIsSaving] = useState(false);
 
 	useDidMount(() => {
@@ -94,14 +96,13 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	);
 
 	const updateCategory = useCallback(
-		(
-			categoryId: number | null,
-			saveOptions?: Omit<SaveMemoOptions, "categoryId">,
-		) => {
+		(categoryId: number | null) => {
 			setValue("categoryId", categoryId);
-			saveMemo({ ...saveOptions, categoryId });
+			if (memoData?.id) {
+				patchMemo({ id: memoData.id, request: { category_id: categoryId } });
+			}
 		},
-		[setValue, saveMemo],
+		[setValue, memoData?.id, patchMemo],
 	);
 
 	const toggleWish = useCallback(async () => {

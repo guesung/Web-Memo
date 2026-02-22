@@ -35,12 +35,12 @@ export default function MemoScreen() {
     hasNextPage,
     isFetchingNextPage,
   } = useMemosInfinite(
-    isLoggedIn ? { isWish: filter === "wish" ? true : undefined } : undefined
+    isLoggedIn ? { isWish: filter === "wish" } : undefined
   );
 
   const memos: MemoItem[] = isLoggedIn
     ? (supabaseMemosData?.pages.flatMap((p) => p.data) ?? [])
-    : (localMemosData ?? []).filter((m) => (filter === "wish" ? m.isWish : true));
+    : (localMemosData ?? []).filter((m) => (filter === "wish" ? m.isWish : !m.isWish));
   const isLoading = isLoggedIn ? isSupabaseLoading : isLocalLoading;
   const refetch = isLoggedIn ? refetchSupabase : refetchLocal;
 
@@ -85,7 +85,7 @@ export default function MemoScreen() {
           >
             <Heart size={12} fill={filter === "wish" ? "#fff" : "#666"} color={filter === "wish" ? "#fff" : "#666"} />
             <Text style={[styles.segmentText, filter === "wish" && styles.segmentTextActive]}>
-              좋아요
+              위시리스트
             </Text>
           </TouchableOpacity>
         </View>
@@ -95,7 +95,7 @@ export default function MemoScreen() {
           <ActivityIndicator style={{ marginTop: 40 }} size="large" />
         ) : memos.length > 0 ? (
           <View style={styles.memosSection}>
-            <Text style={styles.sectionTitle}>{filter === "wish" ? "좋아요 메모" : "최근 메모"}</Text>
+            <Text style={styles.sectionTitle}>{filter === "wish" ? "위시리스트" : "최근 메모"}</Text>
             <FlatList
               data={memos}
               keyExtractor={(item) => String(item.id)}

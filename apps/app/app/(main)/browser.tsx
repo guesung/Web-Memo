@@ -138,8 +138,8 @@ export default function BrowserScreen() {
     }
   };
 
-  const handleLongPress = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  const handleWishToggle = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (isLoggedIn) {
       wishToggleSupabase.mutate({
         url: currentUrl,
@@ -150,7 +150,7 @@ export default function BrowserScreen() {
     } else {
       wishToggleLocal.mutate(currentUrl);
     }
-    setWishToast(isCurrentPageWish ? "좋아요 해제" : "좋아요 추가");
+    setWishToast(isCurrentPageWish ? "위시리스트에서 제거" : "위시리스트에 추가");
     setTimeout(() => setWishToast(null), 1500);
   }, [currentUrl, pageTitle, pageFavIconUrl, isLoggedIn, isCurrentPageWish, wishToggleSupabase, wishToggleLocal]);
 
@@ -286,6 +286,13 @@ export default function BrowserScreen() {
         <TouchableOpacity onPress={() => setIsBlogSheetOpen(true)} style={styles.navBtn}>
           <LayoutGrid size={16} color="#111" />
         </TouchableOpacity>
+        <TouchableOpacity onPress={handleWishToggle} style={styles.navBtn}>
+          <Heart
+            size={16}
+            color={isCurrentPageWish ? "#ec4899" : "#111"}
+            fill={isCurrentPageWish ? "#ec4899" : "none"}
+          />
+        </TouchableOpacity>
       </View>
 
       <View
@@ -320,21 +327,9 @@ export default function BrowserScreen() {
         <TouchableOpacity
           style={[styles.fab, isMemoOpen && styles.fabActive]}
           onPress={toggleMemo}
-          onLongPress={handleLongPress}
           activeOpacity={0.8}
         >
-          {isMemoOpen ? (
-            <X size={24} color="#fff" />
-          ) : (
-            <View style={styles.fabIconContainer}>
-              <PenLine size={24} color="#fff" />
-              {isCurrentPageWish ? (
-                <View style={styles.fabWishBadge}>
-                  <Heart size={10} fill="#ec4899" color="#ec4899" />
-                </View>
-              ) : null}
-            </View>
-          )}
+          {isMemoOpen ? <X size={24} color="#fff" /> : <PenLine size={24} color="#fff" />}
         </TouchableOpacity>
       </Animated.View>
 
@@ -432,16 +427,6 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   fabActive: { backgroundColor: "#666" },
-  fabIconContainer: {
-    position: "relative",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  fabWishBadge: {
-    position: "absolute",
-    top: -4,
-    right: -6,
-  },
   wishToast: {
     position: "absolute",
     alignSelf: "center",

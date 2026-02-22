@@ -23,6 +23,7 @@
     "@tanstack/react-query": "^5.59.0",
     "@web-memo/shared": "workspace:*",
     "expo": "~54.0.33",
+    "expo-apple-authentication": "^8.0.8",
     "expo-auth-session": "~7.0.10",
     "expo-constants": "~18.0.13",
     "expo-crypto": "~15.0.8",

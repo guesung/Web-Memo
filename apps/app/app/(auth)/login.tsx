@@ -12,16 +12,18 @@ import {
 } from "react-native";
 
 export default function LoginScreen() {
-  const { signInWithGoogle, signInWithKakao } = useOAuth();
+  const { signInWithGoogle, signInWithKakao, signInWithApple, isAppleAvailable } = useOAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async (provider: "google" | "kakao") => {
+  const handleLogin = async (provider: "google" | "kakao" | "apple") => {
     try {
       setIsLoading(true);
       if (provider === "google") {
         await signInWithGoogle();
-      } else {
+      } else if (provider === "kakao") {
         await signInWithKakao();
+      } else {
+        await signInWithApple();
       }
     } catch (error) {
       console.error("로그인 에러:", error);
@@ -45,6 +47,13 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.buttons}>
+          {isAppleAvailable && (
+            <SocialLoginButton
+              provider="apple"
+              onPress={() => handleLogin("apple")}
+              disabled={isLoading}
+            />
+          )}
           <SocialLoginButton
             provider="kakao"
             onPress={() => handleLogin("kakao")}

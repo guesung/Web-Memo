@@ -79,7 +79,8 @@
         {
           "kakaoAppKey": "e70ae71f1cdc768383ad96ab45dc1dd7"
         }
-      ]
+      ],
+      "expo-apple-authentication"
     ],
     "experiments": {
       "typedRoutes": true

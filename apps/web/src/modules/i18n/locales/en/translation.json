@@ -341,6 +341,7 @@
 		"welcomeDescription": "Login is required to securely save and sync your memos across all devices.",
 		"kakaoLogin": "Login with Kakao",
 		"googleLogin": "Login with Google",
+		"appleLogin": "Login with Apple",
 		"testLogin": "Login with Test",
 		"askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
 		"personalInformationInfo": "Login info is only used for memo sync and never for ads or marketing purposes.",

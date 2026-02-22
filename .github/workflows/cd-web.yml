@@ -46,7 +46,7 @@ jobs:
       - name: Vercel Build
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel build ${{ github.ref == 'refs/heads/master' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy staging
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}

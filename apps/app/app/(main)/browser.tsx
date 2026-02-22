@@ -160,7 +160,7 @@ export default function BrowserScreen() {
     });
 
   const memoAnimatedStyle = useAnimatedStyle(() => ({
-    height: panelHeight.value,
+    height: Math.max(0, panelHeight.value),
     overflow: "hidden" as const,
   }));
 

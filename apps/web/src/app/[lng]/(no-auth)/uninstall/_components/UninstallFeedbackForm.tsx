@@ -59,7 +59,7 @@ export default function UninstallFeedbackForm({
 
 	const selectedReason = watch("reason");
 	const feedback = watch("feedback");
-	const phoneNumber = watch("phoneNumber");
+	const _phoneNumber = watch("phoneNumber");
 
 	const onSubmit = async (data: FormData) => {
 		setPhoneError(null);

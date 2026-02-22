@@ -1,8 +1,5 @@
 import { PAGE_CONTENT_MAX_LENGTH } from "./constant";
-import type {
-	CategorySuggestionRequest,
-	ParsedAIResponse,
-} from "./type";
+import type { CategorySuggestionRequest, ParsedAIResponse } from "./type";
 
 export function buildCategoryPrompt(data: CategorySuggestionRequest): string {
 	const categoryList =
@@ -54,7 +51,9 @@ export function validateRequest(
 	);
 }
 
-export function parseAIResponse(responseContent: string): ParsedAIResponse | null {
+export function parseAIResponse(
+	responseContent: string,
+): ParsedAIResponse | null {
 	try {
 		const parsed = JSON.parse(responseContent);
 

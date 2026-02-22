@@ -109,20 +109,22 @@
 	"dependencies": {
 		"@sentry/react": "^8.30.0",
 		"@supabase/ssr": "^0.8.0",
-		"@supabase/supabase-js": "^2.45.4",
+		"@supabase/supabase-js": "^2.95.3",
 		"@tanstack/react-query": "^5.59.0",
 		"clsx": "^2.1.1",
 		"es-hangul": "^2.2.4",
-		"react": "18.3.1",
-		"react-dom": "18.3.1",
 		"supabase": "^1.192.5",
 		"tailwind-merge": "^2.4.0",
 		"youtube-transcript": "^1.2.1"
+	},
+	"peerDependencies": {
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0"
 	},
 	"devDependencies": {
 		"@web-memo/env": "workspace:*",
 		"@web-memo/tsconfig": "workspace:*",
 		"@types/chrome": "^0.0.268",
-		"@types/react": "^18.3.5"
+		"@types/react": "^19.1.0"
 	}
 }

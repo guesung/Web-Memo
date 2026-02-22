@@ -1,4 +1,9 @@
-import { createInstance, type i18n, type Namespace } from "i18next";
+import {
+	createInstance,
+	type i18n,
+	type Namespace,
+	type TFunction,
+} from "i18next";
 import resourcesToBackend from "i18next-resources-to-backend";
 import { initReactI18next } from "react-i18next/initReactI18next";
 
@@ -35,7 +40,7 @@ export default async function useTranslation(
 	language: Language,
 	namespace?: Namespace,
 	options?: TranslationOptions,
-) {
+): Promise<{ t: TFunction; i18n: i18n }> {
 	const i18nextInstance = await initI18next(language, namespace);
 
 	return {

@@ -4,6 +4,7 @@ import {
   getMemoByUrl,
   upsertMemo,
   deleteMemo,
+  toggleWishByUrl,
 } from "@/lib/storage/localMemo";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
 
@@ -32,8 +33,21 @@ export function useLocalMemoUpsert() {
 
   return useMutation({
     mutationFn: upsertMemo,
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemoByUrl(variables.url) });
+    },
+  });
+}
+
+export function useLocalMemoWishToggle() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (url: string) => toggleWishByUrl(url),
+    onSuccess: (_data, url) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemoByUrl(url) });
     },
   });
 }

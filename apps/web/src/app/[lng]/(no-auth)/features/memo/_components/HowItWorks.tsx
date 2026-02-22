@@ -3,7 +3,7 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { motion } from "framer-motion";
-import { PanelRight, Pencil, CheckCircle } from "lucide-react";
+import { CheckCircle, PanelRight, Pencil } from "lucide-react";
 
 interface HowItWorksProps extends LanguageType {}
 

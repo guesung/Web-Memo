@@ -42,7 +42,7 @@ function extractFromAriaLabel(element: Element): TranscriptSegment | null {
 	if (!ariaLabel) return null;
 
 	const match = ariaLabel.match(/(\d+:\d+|\d+초)\s*(.+)/);
-	if (match && match[2]) {
+	if (match?.[2]) {
 		return {
 			timestamp: match[1],
 			text: match[2].trim(),
@@ -52,7 +52,10 @@ function extractFromAriaLabel(element: Element): TranscriptSegment | null {
 }
 
 function cleanText(text: string): string {
-	return text.replace(/^\d+:\d+\s*/, "").replace(/^\d+초\s*/, "").trim();
+	return text
+		.replace(/^\d+:\d+\s*/, "")
+		.replace(/^\d+초\s*/, "")
+		.trim();
 }
 
 function isValidText(text: string): boolean {

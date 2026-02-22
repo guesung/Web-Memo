@@ -14,7 +14,7 @@
 			"label": "Use pinned versions for React core",
 			"dependencies": ["react", "react-dom"],
 			"dependencyTypes": ["!peer"],
-			"pinVersion": "18.3.1"
+			"pinVersion": "19.1.0"
 		},
 		{
 			"label": "Use workspace protocol for internal packages",

@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import type { Database } from "@web-memo/shared/types";
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/config";
+import { CONFIG } from "@/lib/config";
 
 const ExpoSecureStoreAdapter = {
   getItem: async (key: string): Promise<string | null> => {
@@ -28,8 +28,8 @@ const ExpoSecureStoreAdapter = {
 };
 
 export const supabase = createClient<Database, "memo">(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY,
+  CONFIG.supabaseUrl,
+  CONFIG.supabaseAnonKey,
   {
     db: { schema: "memo" },
     auth: {

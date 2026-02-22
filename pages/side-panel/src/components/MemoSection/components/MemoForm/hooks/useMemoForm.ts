@@ -94,7 +94,10 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	);
 
 	const updateCategory = useCallback(
-		(categoryId: number | null, saveOptions?: Omit<SaveMemoOptions, "categoryId">) => {
+		(
+			categoryId: number | null,
+			saveOptions?: Omit<SaveMemoOptions, "categoryId">,
+		) => {
 			setValue("categoryId", categoryId);
 			saveMemo({ ...saveOptions, categoryId });
 		},

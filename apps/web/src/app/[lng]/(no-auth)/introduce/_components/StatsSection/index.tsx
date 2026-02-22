@@ -3,8 +3,8 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { motion, useInView } from "framer-motion";
-import { Users, FileText, Star, Clock } from "lucide-react";
-import { useRef, useEffect, useState } from "react";
+import { Clock, FileText, Star, Users } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface StatsSectionProps extends LanguageType {
 	stats?: {
@@ -132,10 +132,14 @@ export default function StatsSection({ lng, stats }: StatsSectionProps) {
 						>
 							<div className="relative glass-card rounded-2xl p-6 lg:p-8 text-center transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
 								{/* Gradient Border on Hover */}
-								<div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+								<div
+									className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
+								/>
 
 								{/* Icon */}
-								<div className={`inline-flex p-4 rounded-xl ${stat.iconBg} mb-4`}>
+								<div
+									className={`inline-flex p-4 rounded-xl ${stat.iconBg} mb-4`}
+								>
 									<stat.icon className={`h-8 w-8 ${stat.iconColor}`} />
 								</div>
 

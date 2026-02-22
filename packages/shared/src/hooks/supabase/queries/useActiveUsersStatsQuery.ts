@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { QUERY_KEY } from "../../../constants";
-import { AdminService, type ActiveUsersStats } from "../../../utils";
+import { type ActiveUsersStats, AdminService } from "../../../utils";
 import useSupabaseClientQuery from "./useSupabaseClientQuery";
 
 export default function useActiveUsersStatsQuery() {

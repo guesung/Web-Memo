@@ -1,6 +1,16 @@
-import { Stack } from "expo-router";
+import { CustomTabBar } from "@/components/navigation/CustomTabBar";
+import { Tabs } from "expo-router";
 
 export default function MainLayout() {
-  // 로그인 체크 제거 - 누구나 접근 가능
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
+    >
+      <Tabs.Screen name="index" />
+      <Tabs.Screen name="browser" />
+      <Tabs.Screen name="search" options={{ href: null }} />
+      <Tabs.Screen name="settings" />
+    </Tabs>
+  );
 }

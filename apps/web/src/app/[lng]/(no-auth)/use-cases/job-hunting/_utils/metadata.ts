@@ -23,8 +23,7 @@ export const metadataKorean: Metadata = {
 	},
 	openGraph: {
 		title: "취업 준비 - 채용공고 & 회사 정보 정리 | 웹 메모",
-		description:
-			"채용공고, 회사 정보, 면접 준비 자료를 체계적으로 정리하세요.",
+		description: "채용공고, 회사 정보, 면접 준비 자료를 체계적으로 정리하세요.",
 		images: ["/og-image.png"],
 		type: "website",
 	},

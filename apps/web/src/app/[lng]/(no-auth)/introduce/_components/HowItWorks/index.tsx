@@ -4,10 +4,10 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { motion } from "framer-motion";
 import {
+	ArrowRight,
+	BookmarkPlus,
 	Download,
 	PanelRightOpen,
-	BookmarkPlus,
-	ArrowRight,
 } from "lucide-react";
 
 import HowToJsonLD from "./HowToJsonLD";
@@ -90,10 +90,14 @@ export default function HowItWorks({ lng }: HowItWorksProps) {
 									{/* Step Number & Icon */}
 									<div className="relative mb-6">
 										{/* Outer Glow Ring */}
-										<div className={`absolute inset-0 bg-gradient-to-br ${step.gradient} rounded-full blur-lg opacity-30`} />
+										<div
+											className={`absolute inset-0 bg-gradient-to-br ${step.gradient} rounded-full blur-lg opacity-30`}
+										/>
 
 										{/* Main Circle */}
-										<div className={`relative w-24 h-24 rounded-full bg-gradient-to-br ${step.gradient} flex items-center justify-center shadow-xl`}>
+										<div
+											className={`relative w-24 h-24 rounded-full bg-gradient-to-br ${step.gradient} flex items-center justify-center shadow-xl`}
+										>
 											<step.icon className="h-10 w-10 text-white" />
 										</div>
 

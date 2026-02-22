@@ -1,56 +1,79 @@
+import { CONFIG } from "@/lib/config";
 import { supabase } from "@/lib/supabase/client";
-import * as Linking from "expo-linking";
-import * as QueryParams from "expo-auth-session/build/QueryParams";
-import * as WebBrowser from "expo-web-browser";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { login as kakaoLogin } from "@react-native-seoul/kakao-login";
+import * as AppleAuthentication from "expo-apple-authentication";
+import { Platform } from "react-native";
 
-WebBrowser.maybeCompleteAuthSession();
+GoogleSignin.configure({
+  webClientId: CONFIG.googleWebClientId,
+  iosClientId: CONFIG.googleAppClientId,
+});
 
-const redirectTo = Linking.createURL("/");
+async function signInWithGoogle() {
+  await GoogleSignin.hasPlayServices();
+  const response = await GoogleSignin.signIn();
 
-console.log("📱 OAuth Redirect URI:", redirectTo);
+  if (!response.data?.idToken) {
+    throw new Error("Google Sign-In failed: no idToken");
+  }
 
-type OAuthProvider = "google" | "kakao";
-
-export async function createSessionFromUrl(url: string) {
-  const { params, errorCode } = QueryParams.getQueryParams(url);
-  if (errorCode) throw new Error(errorCode);
-
-  const { access_token, refresh_token } = params;
-  if (!access_token) return null;
-
-  const { data, error } = await supabase.auth.setSession({
-    access_token,
-    refresh_token,
+  const { error } = await supabase.auth.signInWithIdToken({
+    provider: "google",
+    token: response.data.idToken,
   });
+
   if (error) throw error;
-  return data.session;
 }
 
-async function signInWithProvider(provider: OAuthProvider) {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider,
-    options: {
-      redirectTo,
-      skipBrowserRedirect: true,
-    },
+
+async function signInWithKakao() {
+  const result = await kakaoLogin();
+
+  const { data, error: fnError } = await supabase.functions.invoke(
+    "kakao-auth",
+    { body: { kakao_access_token: result.accessToken } },
+  );
+
+  if (fnError || !data) {
+    throw fnError ?? new Error("Failed to authenticate with Kakao");
+  }
+
+  const { error } = await supabase.auth.verifyOtp({
+    token_hash: data.token,
+    type: "magiclink",
   });
 
-  if (error || !data.url) {
-    throw error ?? new Error("Failed to get OAuth URL");
+  if (error) throw error;
+}
+
+const isAppleAvailable = Platform.OS === "ios";
+
+async function signInWithApple() {
+  const credential = await AppleAuthentication.signInAsync({
+    requestedScopes: [
+      AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+      AppleAuthentication.AppleAuthenticationScope.EMAIL,
+    ],
+  });
+
+  if (!credential.identityToken) {
+    throw new Error("Apple Sign-In failed: no identityToken");
   }
 
-  // 앱 내 Safari 시트로 OAuth 진행 (앱을 벗어나지 않음)
-  const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+  const { error } = await supabase.auth.signInWithIdToken({
+    provider: "apple",
+    token: credential.identityToken,
+  });
 
-  if (result.type === "success" && result.url) {
-    await createSessionFromUrl(result.url);
-  }
+  if (error) throw error;
 }
 
 export function useOAuth() {
   return {
-    signInWithGoogle: () => signInWithProvider("google"),
-    signInWithKakao: () => signInWithProvider("kakao"),
-    redirectTo,
+    signInWithGoogle,
+    signInWithKakao,
+    signInWithApple,
+    isAppleAvailable,
   };
 }

@@ -1,5 +1,5 @@
+export { bridge } from "./bridge";
 export * from "./constant";
+export { createBridge, defineMessage } from "./createBridge";
 export * from "./type";
 export * from "./types";
-export { bridge } from "./bridge";
-export { createBridge, defineMessage } from "./createBridge";

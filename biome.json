@@ -10,9 +10,11 @@
 		"includes": [
 			"**/src/**/*",
 			"e2e/tests/**/*",
-			"!dist",
-			"!node_modules",
-			"!**/.next/**/*"
+			"!**/dist/**",
+			"!**/node_modules/**",
+			"!**/.next/**",
+			"!**/.vercel/**",
+			"!**/tailwind-output.css"
 		]
 	},
 	"formatter": {
@@ -25,6 +27,14 @@
 			"recommended": true,
 			"complexity": {
 				"noStaticOnlyClass": "off"
+			},
+			"style": {
+				"noNonNullAssertion": "warn"
+			},
+			"suspicious": {
+				"noArrayIndexKey": "warn",
+				"noConfusingVoidType": "warn",
+				"noDocumentCookie": "warn"
 			}
 		},
 		"domains": {

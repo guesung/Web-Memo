@@ -1,6 +1,6 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
-import { Youtube, Sparkles } from "lucide-react";
+import { Sparkles, Youtube } from "lucide-react";
 import Link from "next/link";
 
 interface HeroProps extends LanguageType {}

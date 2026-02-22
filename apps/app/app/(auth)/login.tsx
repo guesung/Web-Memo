@@ -1,29 +1,33 @@
+import { SocialLoginButton } from "@/components/auth/SocialLoginButton";
+import { useOAuth } from "@/lib/auth/useOAuth";
+import { Sparkles } from "lucide-react-native";
 import { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  Alert,
   ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View
 } from "react-native";
-import { useOAuth } from "@/lib/auth/useOAuth";
-import { SocialLoginButton } from "@/components/auth/SocialLoginButton";
 
 export default function LoginScreen() {
-  const { signInWithGoogle, signInWithKakao } = useOAuth();
+  const { signInWithGoogle, signInWithKakao, signInWithApple, isAppleAvailable } = useOAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async (provider: "google" | "kakao") => {
+  const handleLogin = async (provider: "google" | "kakao" | "apple") => {
     try {
       setIsLoading(true);
       if (provider === "google") {
         await signInWithGoogle();
-      } else {
+      } else if (provider === "kakao") {
         await signInWithKakao();
+      } else {
+        await signInWithApple();
       }
     } catch (error) {
-      Alert.alert("Login Failed", "Please try again.");
+      console.error("로그인 에러:", error);
+      Alert.alert("로그인 실패", String(error));
     } finally {
       setIsLoading(false);
     }
@@ -33,21 +37,31 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.header}>
+          <View style={styles.iconBox}>
+            <Sparkles size={32} color="#fff" />
+          </View>
           <Text style={styles.title}>Web Memo</Text>
           <Text style={styles.subtitle}>
-            Browse the web and save memos easily
+            웹을 탐색하고 메모를 쉽게 저장하세요
           </Text>
         </View>
 
         <View style={styles.buttons}>
-          <SocialLoginButton
-            provider="google"
-            onPress={() => handleLogin("google")}
-            disabled={isLoading}
-          />
+          {isAppleAvailable && (
+            <SocialLoginButton
+              provider="apple"
+              onPress={() => handleLogin("apple")}
+              disabled={isLoading}
+            />
+          )}
           <SocialLoginButton
             provider="kakao"
             onPress={() => handleLogin("kakao")}
+            disabled={isLoading}
+          />
+          <SocialLoginButton
+            provider="google"
+            onPress={() => handleLogin("google")}
             disabled={isLoading}
           />
           {isLoading && (
@@ -67,20 +81,34 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: "center",
-    paddingHorizontal: 24,
+    paddingHorizontal: 32,
   },
   header: {
     alignItems: "center",
-    marginBottom: 48,
+    marginBottom: 40,
+    gap: 12,
+  },
+  iconBox: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#7c3aed",
+    shadowColor: "#7c3aed",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    marginBottom: 4,
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: "700",
     color: "#111",
-    marginBottom: 8,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#666",
     textAlign: "center",
   },

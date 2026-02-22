@@ -60,6 +60,6 @@ export default function useMemosUpsertMutation() {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
 			queryClient.invalidateQueries({ queryKey: ["memos", "paginated"] });
-		}
+		},
 	});
 }

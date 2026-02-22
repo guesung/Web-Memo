@@ -1,9 +1,11 @@
 import { MemoPanel } from "@/components/browser/MemoPanel";
+import { TechBlogBottomSheet } from "@/components/browser/TechBlogBottomSheet";
+import { TechBlogLinks } from "@/components/browser/TechBlogLinks";
 import { useAutoOpenMemo } from "@/lib/hooks/useAutoOpenMemo";
 import {
   ChevronLeft,
   ChevronRight,
-  Globe,
+  LayoutGrid,
   PenLine,
   RotateCw,
   Search,
@@ -14,6 +16,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -61,6 +64,7 @@ export default function BrowserScreen() {
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
   const [isMemoOpen, setIsMemoOpen] = useState(false);
+  const [isBlogSheetOpen, setIsBlogSheetOpen] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
 
   const panelHeight = useSharedValue(0);
@@ -72,11 +76,8 @@ export default function BrowserScreen() {
       setCurrentUrl(decoded);
       setPageTitle("");
       if (isMemoOpen) {
-        panelHeight.value = withSpring(0, SPRING_CONFIG, (finished) => {
-          if (finished) {
-            runOnJS(setIsMemoOpen)(false);
-          }
-        });
+        setIsMemoOpen(false);
+        panelHeight.value = withSpring(0, SPRING_CONFIG);
       }
     }
   }, [paramUrl]);
@@ -113,11 +114,8 @@ export default function BrowserScreen() {
     setCurrentUrl(url);
     setPageTitle("");
     if (isMemoOpen) {
-      panelHeight.value = withSpring(0, SPRING_CONFIG, (finished) => {
-        if (finished) {
-          runOnJS(setIsMemoOpen)(false);
-        }
-      });
+      setIsMemoOpen(false);
+      panelHeight.value = withSpring(0, SPRING_CONFIG);
     }
   };
 
@@ -130,11 +128,8 @@ export default function BrowserScreen() {
 
   const closePanel = useCallback(() => {
     if (!isMemoOpen) return;
-    panelHeight.value = withSpring(0, SPRING_CONFIG, (finished) => {
-      if (finished) {
-        runOnJS(setIsMemoOpen)(false);
-      }
-    });
+    setIsMemoOpen(false);
+    panelHeight.value = withSpring(0, SPRING_CONFIG);
     Keyboard.dismiss();
   }, [isMemoOpen, panelHeight]);
 
@@ -173,51 +168,43 @@ export default function BrowserScreen() {
       const maxH = contentHeight * MAX_PANEL_RATIO;
       panelHeight.value = Math.max(minH, Math.min(maxH, newHeight));
     })
-    .onEnd(() => {
-      const minH = contentHeight * MIN_PANEL_RATIO;
-      if (panelHeight.value <= minH) {
-        panelHeight.value = withSpring(0, SPRING_CONFIG, (finished) => {
-          if (finished) {
-            runOnJS(setIsMemoOpen)(false);
-            runOnJS(Keyboard.dismiss)();
-            runOnJS(markManuallyClosed)(currentUrl);
-          }
-        });
-      }
-    });
+    .onEnd(() => {});
 
   const memoAnimatedStyle = useAnimatedStyle(() => ({
     height: Math.max(0, panelHeight.value),
-    overflow: "hidden" as const,
   }));
 
   const fabAnimatedStyle = useAnimatedStyle(() => ({
     bottom: panelHeight.value > 0 ? panelHeight.value + 12 : insets.bottom + 20,
   }));
 
+  const handleBlogSelect = useCallback((url: string) => {
+    setCurrentUrl(url);
+    setPageTitle("");
+  }, []);
+
   if (!currentUrl) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <View style={styles.emptyContainer}>
-          <View style={styles.emptySearchBar}>
-            <Search size={18} color="#999" />
-            <TextInput
-              style={styles.emptySearchInput}
-              value={urlInput}
-              onChangeText={setUrlInput}
-              onSubmitEditing={handleUrlSubmit}
-              placeholder="URL 입력 또는 검색"
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="url"
-              returnKeyType="go"
-            />
+        <ScrollView style={styles.emptyContainer} keyboardShouldPersistTaps="handled">
+          <View style={styles.emptySearchBarWrap}>
+            <View style={styles.emptySearchBar}>
+              <Search size={18} color="#999" />
+              <TextInput
+                style={styles.emptySearchInput}
+                value={urlInput}
+                onChangeText={setUrlInput}
+                onSubmitEditing={handleUrlSubmit}
+                placeholder="URL 입력 또는 검색"
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                returnKeyType="go"
+              />
+            </View>
           </View>
-          <View style={styles.emptyState}>
-            <Globe size={48} color="#ddd" />
-            <Text style={styles.emptyText}>URL을 입력해서 웹서핑을 시작하세요</Text>
-          </View>
-        </View>
+          <TechBlogLinks onSelectBlog={handleBlogSelect} />
+        </ScrollView>
       </View>
     );
   }
@@ -261,6 +248,9 @@ export default function BrowserScreen() {
         <TouchableOpacity onPress={() => webViewRef.current?.reload()} style={styles.navBtn}>
           <RotateCw size={16} color="#111" />
         </TouchableOpacity>
+        <TouchableOpacity onPress={() => setIsBlogSheetOpen(true)} style={styles.navBtn}>
+          <LayoutGrid size={16} color="#111" />
+        </TouchableOpacity>
       </View>
 
       <View
@@ -287,7 +277,7 @@ export default function BrowserScreen() {
               <View style={styles.dragHandleBar} />
             </Animated.View>
           </GestureDetector>
-          {isMemoOpen && <MemoPanel url={currentUrl} pageTitle={pageTitle} favIconUrl={pageFavIconUrl} />}
+          <MemoPanel url={currentUrl} pageTitle={pageTitle} favIconUrl={pageFavIconUrl} />
         </Animated.View>
       </View>
 
@@ -300,13 +290,24 @@ export default function BrowserScreen() {
           {isMemoOpen ? <X size={24} color="#fff" /> : <PenLine size={24} color="#fff" />}
         </TouchableOpacity>
       </Animated.View>
+
+      <TechBlogBottomSheet
+        visible={isBlogSheetOpen}
+        onClose={() => setIsBlogSheetOpen(false)}
+        onSelectBlog={(url) => {
+          setIsBlogSheetOpen(false);
+          setCurrentUrl(url);
+          setPageTitle("");
+        }}
+      />
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-  emptyContainer: { flex: 1, paddingHorizontal: 20, paddingTop: 16 },
+  emptyContainer: { flex: 1, paddingTop: 16 },
+  emptySearchBarWrap: { paddingHorizontal: 20 },
   emptySearchBar: {
     flexDirection: "row",
     alignItems: "center",
@@ -317,8 +318,6 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   emptySearchInput: { flex: 1, fontSize: 16, color: "#333", padding: 0 },
-  emptyState: { alignItems: "center", paddingTop: 60, gap: 12 },
-  emptyText: { fontSize: 15, color: "#bbb" },
   browserHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -348,6 +347,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#eee",
     backgroundColor: "#fff",
+    overflow: "hidden",
   },
   dragHandle: {
     alignItems: "center",

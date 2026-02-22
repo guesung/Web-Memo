@@ -463,6 +463,7 @@
 			"title": "웹서핑을 더 쉽게",
 			"subtitle": "클릭 한 번으로 메모하고, AI로 요약하고, 체계적으로 관리하세요",
 			"install_button": "크롬에 설치하기",
+			"appstore_button": "App Store에서 다운로드",
 			"explore_features": "기능 살펴보기",
 			"free_forever": "영원히 무료",
 			"quick_install": "설치 10초",
@@ -673,6 +674,7 @@
 			"title": "웹 메모",
 			"description": "쉽고 빠른 콘텐츠 정리",
 			"chrome_extension": "Chrome 확장 프로그램",
+			"ios_app": "iOS 앱",
 			"features_link": "기능 살펴보기",
 			"contact_link": "문의하기",
 			"product": {

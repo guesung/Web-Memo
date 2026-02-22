@@ -40,6 +40,11 @@ export default function Footer({ lng }: FooterProps) {
 			external: true,
 		},
 		{
+			href: URL.appStore,
+			label: t("introduce.footer.ios_app"),
+			external: true,
+		},
+		{
 			href: "#demo",
 			label: t("introduce.footer.features_link"),
 			external: false,

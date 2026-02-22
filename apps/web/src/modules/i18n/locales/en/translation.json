@@ -468,6 +468,7 @@
 			"title": "Easier web browsing",
 			"subtitle": "Save with one click, summarize with AI, organize systematically",
 			"install_button": "Add to Chrome",
+			"appstore_button": "Download on App Store",
 			"explore_features": "Explore Features",
 			"free_forever": "Free Forever",
 			"quick_install": "10s Install",
@@ -678,6 +679,7 @@
 			"title": "Web Memo",
 			"description": "Easy and fast content organization",
 			"chrome_extension": "Chrome Extension",
+			"ios_app": "iOS App",
 			"features_link": "Explore Features",
 			"contact_link": "Contact Us",
 			"product": {

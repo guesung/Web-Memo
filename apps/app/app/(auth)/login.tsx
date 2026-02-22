@@ -24,7 +24,8 @@ export default function LoginScreen() {
         await signInWithKakao();
       }
     } catch (error) {
-      Alert.alert("로그인 실패", "다시 시도해주세요.");
+      console.error("로그인 에러:", error);
+      Alert.alert("로그인 실패", String(error));
     } finally {
       setIsLoading(false);
     }
@@ -44,13 +45,11 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.buttons}>
-          {/* TODO: 카카오 로그인 임시 비활성화
           <SocialLoginButton
             provider="kakao"
             onPress={() => handleLogin("kakao")}
             disabled={isLoading}
           />
-          */}
           <SocialLoginButton
             provider="google"
             onPress={() => handleLogin("google")}

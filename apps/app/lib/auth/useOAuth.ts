@@ -1,36 +1,12 @@
 import { CONFIG } from "@/lib/config";
 import { supabase } from "@/lib/supabase/client";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { makeRedirectUri } from "expo-auth-session";
-import * as QueryParams from "expo-auth-session/build/QueryParams";
-import * as WebBrowser from "expo-web-browser";
-
-WebBrowser.maybeCompleteAuthSession();
+import { login as kakaoLogin } from "@react-native-seoul/kakao-login";
 
 GoogleSignin.configure({
   webClientId: CONFIG.googleWebClientId,
   iosClientId: CONFIG.googleAppClientId,
 });
-
-const redirectTo = makeRedirectUri({
-  scheme: "webmemo",
-  path: "/",
-});
-
-export async function createSessionFromUrl(url: string) {
-  const { params, errorCode } = QueryParams.getQueryParams(url);
-  if (errorCode) throw new Error(errorCode);
-
-  const { access_token, refresh_token } = params;
-  if (!access_token) return null;
-
-  const { data, error } = await supabase.auth.setSession({
-    access_token,
-    refresh_token,
-  });
-  if (error) throw error;
-  return data.session;
-}
 
 async function signInWithGoogle() {
   await GoogleSignin.hasPlayServices();
@@ -50,26 +26,28 @@ async function signInWithGoogle() {
 
 
 async function signInWithKakao() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "kakao",
-    options: { redirectTo, skipBrowserRedirect: true },
+  const result = await kakaoLogin();
+
+  const { data, error: fnError } = await supabase.functions.invoke(
+    "kakao-auth",
+    { body: { kakao_access_token: result.accessToken } },
+  );
+
+  if (fnError || !data) {
+    throw fnError ?? new Error("Failed to authenticate with Kakao");
+  }
+
+  const { error } = await supabase.auth.verifyOtp({
+    token_hash: data.token,
+    type: "magiclink",
   });
 
-  if (error || !data.url) {
-    throw error ?? new Error("Failed to get OAuth URL");
-  }
-
-  const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
-
-  if (result.type === "success" && result.url) {
-    await createSessionFromUrl(result.url);
-  }
+  if (error) throw error;
 }
 
 export function useOAuth() {
   return {
     signInWithGoogle,
     signInWithKakao,
-    redirectTo,
   };
 }

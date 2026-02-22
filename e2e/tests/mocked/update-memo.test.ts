@@ -46,7 +46,15 @@ test.describe("메모 수정 기능 (Mocked)", () => {
 				resp.request().method() === "PATCH",
 		);
 
-		await page.getByTestId("memo-textarea").fill(newMemoText);
+		const textarea = page.getByTestId("memo-textarea");
+		await textarea.evaluate((el, text) => {
+			const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
+				window.HTMLTextAreaElement.prototype,
+				"value",
+			)?.set;
+			nativeTextAreaValueSetter?.call(el, text);
+			el.dispatchEvent(new Event("input", { bubbles: true }));
+		}, newMemoText);
 
 		await patchResponsePromise;
 

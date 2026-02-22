@@ -69,10 +69,13 @@ const DialogContent = React.forwardRef<
 				}}
 				onEscapeKeyDown={(event) => {
 					event.preventDefault();
-					if (hadFloatingLayerRef.current) {
-						hadFloatingLayerRef.current = false;
-						return;
-					}
+					const hadFloating = hadFloatingLayerRef.current;
+					hadFloatingLayerRef.current = false;
+					if (hadFloating) return;
+					const hasFloatingNow = !!document.querySelector(
+						"[data-radix-popper-content-wrapper]",
+					);
+					if (hasFloatingNow) return;
 					const target = event.target;
 					if (target instanceof HTMLElement) {
 						const tagName = target.tagName.toLowerCase();

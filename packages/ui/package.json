@@ -71,15 +71,15 @@
 		"@web-memo/vite-config": "workspace:*",
 		"@sentry/react": "^8.30.0",
 		"@types/chrome": "^0.0.268",
-		"@types/react": "^18.3.5",
-		"@types/react-dom": "^18.3.0",
+		"@types/react": "^19.1.0",
+		"@types/react-dom": "^19.1.0",
 		"autoprefixer": "10.4.20",
 		"deepmerge": "^4.3.1",
 		"postcss": "^8.4.49",
 		"tailwindcss": "^3.4.10"
 	},
 	"peerDependencies": {
-		"react": "^18.3.1 || ^19.1.0",
-		"react-dom": "^18.3.1 || ^19.1.0"
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0"
 	}
 }

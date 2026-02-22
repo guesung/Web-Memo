@@ -18,7 +18,10 @@ export function CategorySuggestion({
 
 			if (event.key === "Escape") {
 				onDismiss();
-			} else if (event.key === "Enter" && event.target === containerRef.current) {
+			} else if (
+				event.key === "Enter" &&
+				event.target === containerRef.current
+			) {
 				onAccept();
 			}
 		}
@@ -62,9 +65,14 @@ export function CategorySuggestion({
 
 			<div className="flex items-center gap-1 text-xs min-w-0">
 				<span className="text-muted-foreground flex-shrink-0">
-					{isNewCategory ? I18n.get("category_suggestion_new") : I18n.get("category_suggestion_existing")}
+					{isNewCategory
+						? I18n.get("category_suggestion_new")
+						: I18n.get("category_suggestion_existing")}
 				</span>
-				<span className="font-medium truncate max-w-[120px]" title={suggestion.categoryName}>
+				<span
+					className="font-medium truncate max-w-[120px]"
+					title={suggestion.categoryName}
+				>
 					{suggestion.categoryName}
 				</span>
 			</div>

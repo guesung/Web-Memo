@@ -1,10 +1,11 @@
-import { useEffect } from "react";
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import * as SplashScreen from "expo-splash-screen";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthProvider";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -22,7 +23,11 @@ function SyncOnAuth() {
 
   useEffect(() => {
     if (session) {
-      syncMemosToSupabase().catch(() => {});
+      syncMemosToSupabase()
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ["memos"] });
+        })
+        .catch(() => {});
     }
   }, [session]);
 
@@ -37,11 +42,13 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <GestureHandlerRootView>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(main)" />
         </Stack>
+        </GestureHandlerRootView>
         <SyncOnAuth />
         <StatusBar style="auto" />
       </AuthProvider>

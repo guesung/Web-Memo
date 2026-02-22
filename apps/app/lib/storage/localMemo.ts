@@ -7,9 +7,11 @@ export interface LocalMemo {
   url: string;
   title: string;
   memo: string;
+  favIconUrl?: string;
   createdAt: string;
   updatedAt: string;
   synced: boolean;
+  isWish?: boolean;
 }
 
 async function getAll(): Promise<LocalMemo[]> {
@@ -38,6 +40,8 @@ export async function upsertMemo(params: {
   url: string;
   title: string;
   memo: string;
+  favIconUrl?: string;
+  isWish?: boolean;
 }): Promise<LocalMemo> {
   const memos = await getAll();
   const now = new Date().toISOString();
@@ -46,6 +50,8 @@ export async function upsertMemo(params: {
   if (existing) {
     existing.title = params.title;
     existing.memo = params.memo;
+    if (params.favIconUrl) existing.favIconUrl = params.favIconUrl;
+    if (params.isWish !== undefined) existing.isWish = params.isWish;
     existing.updatedAt = now;
     existing.synced = false;
     await save(memos);
@@ -57,6 +63,36 @@ export async function upsertMemo(params: {
     url: params.url,
     title: params.title,
     memo: params.memo,
+    favIconUrl: params.favIconUrl,
+    isWish: params.isWish,
+    createdAt: now,
+    updatedAt: now,
+    synced: false,
+  };
+  memos.push(newMemo);
+  await save(memos);
+  return newMemo;
+}
+
+export async function toggleWishByUrl(url: string): Promise<LocalMemo> {
+  const memos = await getAll();
+  const existing = memos.find((m) => m.url === url);
+  const now = new Date().toISOString();
+
+  if (existing) {
+    existing.isWish = !existing.isWish;
+    existing.updatedAt = now;
+    existing.synced = false;
+    await save(memos);
+    return existing;
+  }
+
+  const newMemo: LocalMemo = {
+    id: `local_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    url,
+    title: "",
+    memo: "",
+    isWish: true,
     createdAt: now,
     updatedAt: now,
     synced: false,

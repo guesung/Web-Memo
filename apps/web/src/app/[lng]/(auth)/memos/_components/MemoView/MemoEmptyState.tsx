@@ -5,7 +5,14 @@ import { URL } from "@web-memo/shared/constants";
 import { isMac } from "@web-memo/shared/utils";
 import { Button } from "@web-memo/ui";
 import { motion } from "framer-motion";
-import { BookOpen, Chrome, Keyboard, MousePointer, Sparkles, Zap } from "lucide-react";
+import {
+	BookOpen,
+	Chrome,
+	Keyboard,
+	MousePointer,
+	Sparkles,
+	Zap,
+} from "lucide-react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 
@@ -37,7 +44,11 @@ export default function MemoEmptyState({ lng }: MemoEmptyStateProps) {
 					<motion.div
 						className="w-32 h-32 rounded-full bg-blue-500/10"
 						animate={{ scale: [1, 1.1, 1] }}
-						transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 0.5 }}
+						transition={{
+							duration: 2,
+							repeat: Number.POSITIVE_INFINITY,
+							delay: 0.5,
+						}}
 					/>
 				</div>
 
@@ -60,7 +71,11 @@ export default function MemoEmptyState({ lng }: MemoEmptyStateProps) {
 					className="h-14 px-8 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
 					asChild
 				>
-					<Link href={URL.chromeStore} target="_blank" rel="noopener noreferrer">
+					<Link
+						href={URL.chromeStore}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
 						<Chrome className="h-5 w-5 mr-2" />
 						{t("memos.emptyState.installExtension")}
 					</Link>
@@ -91,7 +106,9 @@ export default function MemoEmptyState({ lng }: MemoEmptyStateProps) {
 						<div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
 							<tip.icon className="h-6 w-6 text-gray-600 dark:text-gray-400" />
 						</div>
-						<p className="text-sm text-gray-600 dark:text-gray-400">{tip.text}</p>
+						<p className="text-sm text-gray-600 dark:text-gray-400">
+							{tip.text}
+						</p>
 					</motion.div>
 				))}
 			</div>

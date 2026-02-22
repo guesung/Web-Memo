@@ -9,8 +9,7 @@ export default function useUserGrowthQuery(days: number = 30) {
 	const query = useSuspenseQuery({
 		queryFn: () => new AdminService(supabaseClient).getUserGrowth(days),
 		queryKey: QUERY_KEY.userGrowth(days),
-		select: (response) =>
-			(response.data as unknown as UserGrowthData[]) ?? [],
+		select: (response) => (response.data as unknown as UserGrowthData[]) ?? [],
 	});
 
 	return {

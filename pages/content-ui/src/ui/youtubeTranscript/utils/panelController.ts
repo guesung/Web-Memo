@@ -60,9 +60,7 @@ function waitForElement(
 
 async function clickElement(element: HTMLElement): Promise<void> {
 	element.click();
-	await new Promise((resolve) =>
-		setTimeout(resolve, timing.buttonClickDelay),
-	);
+	await new Promise((resolve) => setTimeout(resolve, timing.buttonClickDelay));
 }
 
 async function tryDirectButton(): Promise<boolean> {
@@ -208,9 +206,7 @@ export async function openTranscriptPanel(): Promise<HTMLElement> {
 				);
 				restoreScroll();
 				return container;
-			} catch {
-				continue;
-			}
+			} catch {}
 		}
 	}
 

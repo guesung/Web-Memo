@@ -5,6 +5,7 @@ export default defineConfig({
 	plugins: [react()],
 	test: {
 		include: ["**/*.test.ts"],
+		exclude: ["e2e/**", "**/node_modules/**", "**/dist/**"],
 		globals: true,
 	},
 });

@@ -23,7 +23,7 @@ const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_WIDTH = "12rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
-const SIDEBAR_KEYBOARD_SHORTCUT = "b";
+const _SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
 type SidebarContext = {
 	state: "expanded" | "collapsed";
@@ -93,7 +93,7 @@ const SidebarProvider = React.forwardRef<
 			return isMobile
 				? setOpenMobile((open) => !open)
 				: setOpen((open) => !open);
-		}, [isMobile, setOpen, setOpenMobile]);
+		}, [isMobile, setOpen]);
 
 		// We add a state so that we can do data-state="expanded" or "collapsed".
 		// This makes it easier to style the sidebar with Tailwind classes.
@@ -109,15 +109,7 @@ const SidebarProvider = React.forwardRef<
 				setOpenMobile,
 				toggleSidebar,
 			}),
-			[
-				state,
-				open,
-				setOpen,
-				isMobile,
-				openMobile,
-				setOpenMobile,
-				toggleSidebar,
-			],
+			[state, open, setOpen, isMobile, openMobile, toggleSidebar],
 		);
 
 		return (
@@ -750,6 +742,5 @@ export {
 	SidebarRail,
 	SidebarSeparator,
 	SidebarTrigger,
-	useSidebar
+	useSidebar,
 };
-

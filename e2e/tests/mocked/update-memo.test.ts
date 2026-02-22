@@ -40,9 +40,29 @@ test.describe("메모 수정 기능 (Mocked)", () => {
 
 		const newMemoText = `Updated Memo ${Date.now()}`;
 
-		await page.getByTestId("memo-textarea").fill(newMemoText);
+		const patchResponsePromise = page.waitForResponse(
+			(resp) =>
+				resp.url().includes("/rest/v1/memo") &&
+				resp.request().method() === "PATCH",
+		);
 
-		await page.waitForTimeout(1_500);
+		const textarea = page.getByTestId("memo-textarea");
+		await textarea.evaluate((el, text) => {
+			const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
+				window.HTMLTextAreaElement.prototype,
+				"value",
+			)?.set;
+			nativeTextAreaValueSetter?.call(el, text);
+			el.dispatchEvent(new Event("input", { bubbles: true }));
+		}, newMemoText);
+
+		await patchResponsePromise;
+
+		await page.waitForResponse(
+			(resp) =>
+				resp.url().includes("/rest/v1/memo") &&
+				resp.request().method() === "GET",
+		);
 
 		await page.getByTestId("memo-close-button").click();
 

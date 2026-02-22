@@ -1,5 +1,5 @@
 "use client";
-import { setUser, setTag } from "@sentry/nextjs";
+import { setTag, setUser } from "@sentry/nextjs";
 import type { Language } from "@src/modules/i18n";
 import { useSupabaseUserQuery } from "@web-memo/shared/hooks";
 import { useEffect } from "react";

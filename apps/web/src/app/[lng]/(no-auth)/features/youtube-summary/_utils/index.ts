@@ -1,1 +1,1 @@
-export { metadataKorean, metadataEnglish } from "./metadata";
+export { metadataEnglish, metadataKorean } from "./metadata";

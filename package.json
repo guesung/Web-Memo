@@ -12,6 +12,7 @@
 	"scripts": {
 		"clean": "rimraf dist && rimraf .turbo && turbo clean && rimraf node_modules",
 		"format": "biome format --write",
+		"check": "biome check",
 		"lint": "biome lint",
 		"lint:fix": "biome lint --fix",
 		"lint:syncpack": "syncpack lint",
@@ -48,6 +49,8 @@
 		"@vitejs/plugin-react": "^4.3.3",
 		"husky": "^9.1.7",
 		"next": "14.2.10",
+		"react": "19.1.0",
+		"react-dom": "19.1.0",
 		"rimraf": "^6.0.1",
 		"run-script-os": "^1.1.6",
 		"syncpack": "^14.0.0",
@@ -64,6 +67,13 @@
 	"pnpm": {
 		"overrides": {
 			"@types/node": "^20.14.10"
+		},
+		"packageExtensions": {
+			"@react-native-google-signin/google-signin": {
+				"dependencies": {
+					"@expo/config-plugins": "*"
+				}
+			}
 		}
 	}
 }

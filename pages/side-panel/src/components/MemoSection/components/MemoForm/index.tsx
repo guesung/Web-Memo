@@ -10,9 +10,9 @@ import {
 	CommandInput,
 	CommandItem,
 	CommandList,
+	cn,
 	Textarea,
 	ToastAction,
-	cn,
 	toast,
 } from "@web-memo/ui";
 import { HeartIcon, Loader2Icon, XIcon } from "lucide-react";
@@ -23,7 +23,7 @@ import { useCategorySuggestion, useMemoCategory, useMemoForm } from "./hooks";
 
 function MemoFormContent() {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-	const { register, watch, getValues } = useFormContext<MemoInput>();
+	const { register, watch } = useFormContext<MemoInput>();
 	const { ref, ...rest } = register("memo");
 
 	const currentCategoryId = watch("categoryId");
@@ -101,10 +101,7 @@ function MemoFormContent() {
 								!hasCategory &&
 								!isSuggestingCategory
 							) {
-								triggerSuggestion(event.target.value, {
-									isWish: getValues("isWish") ?? false,
-									memoId: memoData?.id,
-								});
+								triggerSuggestion(event.target.value);
 							}
 						},
 					})}

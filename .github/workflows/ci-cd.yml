@@ -1,0 +1,105 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+    paths:
+      - "apps/**"
+      - "pages/**"
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/**"
+  pull_request:
+    paths:
+      - "apps/**"
+      - "pages/**"
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/**"
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Check (format + lint)
+        run: pnpm check
+
+      - name: Type check
+        run: pnpm type-check
+
+      - name: Unit tests
+        run: pnpm test:jest --run
+
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.filter.outputs.app }}
+      extension: ${{ steps.filter.outputs.extension }}
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            app:
+              - 'apps/app/**'
+              - 'packages/shared/**'
+              - 'packages/env/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+            extension:
+              - 'apps/chrome-extension/**'
+              - 'pages/**'
+              - 'packages/shared/**'
+              - 'packages/ui/**'
+              - 'packages/env/**'
+              - 'packages/hmr/**'
+              - 'packages/vite-config/**'
+              - 'packages/tailwind-config/**'
+              - 'packages/tsconfig/**'
+              - 'packages/zipper/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+            web:
+              - 'apps/web/**'
+              - 'packages/shared/**'
+              - 'packages/ui/**'
+              - 'packages/env/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+
+  cd-app:
+    needs: [ci, changes]
+    if: needs.changes.outputs.app == 'true'
+    uses: ./.github/workflows/cd-app.yml
+    secrets: inherit
+
+  cd-extension:
+    needs: [ci, changes]
+    if: needs.changes.outputs.extension == 'true'
+    uses: ./.github/workflows/cd-extension.yml
+    secrets: inherit
+
+  cd-web:
+    needs: [ci, changes]
+    if: needs.changes.outputs.web == 'true'
+    uses: ./.github/workflows/cd-web.yml
+    secrets: inherit

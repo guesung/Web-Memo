@@ -9,7 +9,8 @@
 		"esModuleInterop": true,
 		"module": "ESNext",
 		"moduleResolution": "bundler",
-		"outDir": "dist"
+		"outDir": "dist",
+		"types": ["chrome", "node"]
 	},
 	"include": ["src", "index.ts"]
 }

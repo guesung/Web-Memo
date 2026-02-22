@@ -38,20 +38,6 @@ const DialogContent = React.forwardRef<
 	React.ElementRef<typeof DialogPrimitive.Content>,
 	DialogContentProps
 >(({ className, children, onClose, ...props }, ref) => {
-	const hadFloatingLayerRef = React.useRef(false);
-
-	React.useEffect(() => {
-		const handler = (event: KeyboardEvent) => {
-			if (event.key === "Escape") {
-				hadFloatingLayerRef.current = !!document.querySelector(
-					"[data-radix-popper-content-wrapper]",
-				);
-			}
-		};
-		document.addEventListener("keydown", handler, true);
-		return () => document.removeEventListener("keydown", handler, true);
-	}, []);
-
 	return (
 		<DialogPortal>
 			<DialogOverlay />
@@ -69,8 +55,10 @@ const DialogContent = React.forwardRef<
 				}}
 				onEscapeKeyDown={(event) => {
 					event.preventDefault();
-					if (hadFloatingLayerRef.current) {
-						hadFloatingLayerRef.current = false;
+					const hasOpenFloatingLayer = document.querySelector(
+						"[data-radix-popper-content-wrapper]",
+					);
+					if (hasOpenFloatingLayer) {
 						return;
 					}
 					const target = event.target;

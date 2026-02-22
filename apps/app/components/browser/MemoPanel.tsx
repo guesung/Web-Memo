@@ -8,8 +8,9 @@ import {
   ActivityIndicator,
   Keyboard,
   Platform,
+  Image,
 } from "react-native";
-import { Save, Check, ChevronDown } from "lucide-react-native";
+import { Save, Check, ChevronDown, FileText } from "lucide-react-native";
 import {
   useLocalMemoByUrl,
   useLocalMemoUpsert,
@@ -84,7 +85,14 @@ export function MemoPanel({ url, pageTitle, favIconUrl }: MemoPanelProps) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>메모</Text>
+        <View style={styles.headerTitle}>
+          {favIconUrl ? (
+            <Image source={{ uri: favIconUrl }} style={styles.headerFavicon} />
+          ) : (
+            <FileText size={14} color="#666" />
+          )}
+          <Text style={styles.title} numberOfLines={1}>{pageTitle || "메모"}</Text>
+        </View>
         <View style={styles.headerActions}>
           {isKeyboardVisible && (
             <TouchableOpacity
@@ -146,6 +154,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#111",
+    flex: 1,
+  },
+  headerTitle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    flex: 1,
+    marginRight: 8,
+  },
+  headerFavicon: {
+    width: 14,
+    height: 14,
+    borderRadius: 2,
   },
   keyboardDismissButton: {
     alignItems: "center",

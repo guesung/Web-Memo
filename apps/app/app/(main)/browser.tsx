@@ -1,7 +1,6 @@
 import { MemoPanel } from "@/components/browser/MemoPanel";
 import { TechBlogBottomSheet } from "@/components/browser/TechBlogBottomSheet";
 import { TechBlogLinks } from "@/components/browser/TechBlogLinks";
-import { useAutoOpenMemo } from "@/lib/hooks/useAutoOpenMemo";
 import {
   ChevronLeft,
   ChevronRight,
@@ -177,21 +176,13 @@ export default function BrowserScreen() {
     } catch {}
   }, []);
 
-  const { markManuallyClosed } = useAutoOpenMemo({
-    url: currentUrl,
-    isMemoOpen,
-    contentHeight,
-    openPanel,
-  });
-
   const toggleMemo = useCallback(() => {
     if (isMemoOpen) {
-      markManuallyClosed(currentUrl);
       closePanel();
     } else {
       openPanel();
     }
-  }, [isMemoOpen, currentUrl, markManuallyClosed, closePanel, openPanel]);
+  }, [isMemoOpen, closePanel, openPanel]);
 
   const resizeGesture = Gesture.Pan()
     .onStart(() => {

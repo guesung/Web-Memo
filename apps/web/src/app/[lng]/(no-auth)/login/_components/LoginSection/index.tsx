@@ -69,6 +69,22 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
 					{t("login.googleLogin")}
 				</Button>
 
+				<Button
+					formAction={signInWithOAuth.bind(null, "apple")}
+					className="relative h-14 bg-black hover:bg-gray-900 text-white font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] overflow-hidden group"
+					data-testid="apple-login-button"
+				>
+					<div className="absolute inset-0 bg-gradient-to-r from-gray-800/0 via-gray-700/30 to-gray-800/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+					<Image
+						src="/images/svgs/apple.svg"
+						width={20}
+						height={20}
+						alt="apple"
+						className="mr-2"
+					/>
+					{t("login.appleLogin")}
+				</Button>
+
 				{!isProduction() && (
 					<Button
 						formAction={signInWithEmail.bind(

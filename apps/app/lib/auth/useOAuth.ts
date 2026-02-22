@@ -2,6 +2,8 @@ import { CONFIG } from "@/lib/config";
 import { supabase } from "@/lib/supabase/client";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { login as kakaoLogin } from "@react-native-seoul/kakao-login";
+import * as AppleAuthentication from "expo-apple-authentication";
+import { Platform } from "react-native";
 
 GoogleSignin.configure({
   webClientId: CONFIG.googleWebClientId,
@@ -45,9 +47,33 @@ async function signInWithKakao() {
   if (error) throw error;
 }
 
+const isAppleAvailable = Platform.OS === "ios";
+
+async function signInWithApple() {
+  const credential = await AppleAuthentication.signInAsync({
+    requestedScopes: [
+      AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+      AppleAuthentication.AppleAuthenticationScope.EMAIL,
+    ],
+  });
+
+  if (!credential.identityToken) {
+    throw new Error("Apple Sign-In failed: no identityToken");
+  }
+
+  const { error } = await supabase.auth.signInWithIdToken({
+    provider: "apple",
+    token: credential.identityToken,
+  });
+
+  if (error) throw error;
+}
+
 export function useOAuth() {
   return {
     signInWithGoogle,
     signInWithKakao,
+    signInWithApple,
+    isAppleAvailable,
   };
 }

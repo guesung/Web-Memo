@@ -19,10 +19,10 @@ export default function useMemoPatchMutation() {
 
 	return useMutation<MutationData, MutationError, MutationVariables>({
 		mutationFn: new MemoService(supabaseClient).updateMemo,
-		onSuccess: async ({ data }) => {
+		onSuccess: async () => {
 			await analytics.trackMemoWrite();
 			queryClient.invalidateQueries({
-				queryKey: QUERY_KEY.memo({ id: data?.[0].id }),
+				queryKey: ["memo"],
 			});
 			queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.memos(),

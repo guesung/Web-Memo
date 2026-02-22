@@ -37,6 +37,18 @@ const MIN_PANEL_RATIO = 0.15;
 const MAX_PANEL_RATIO = 0.8;
 const DEFAULT_PANEL_RATIO = 0.4;
 
+const FAVICON_EXTRACT_JS = `
+(function() {
+  var el = document.querySelector('link[rel="icon"]')
+    || document.querySelector('link[rel="shortcut icon"]')
+    || document.querySelector('link[rel="apple-touch-icon-precomposed"]')
+    || document.querySelector('link[rel="apple-touch-icon"]');
+  var href = el && el.href ? el.href : (window.location.origin + '/favicon.ico');
+  window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'favicon', url: href }));
+})();
+true;
+`;
+
 export default function BrowserScreen() {
   const insets = useSafeAreaInsets();
   const webViewRef = useRef<WebView>(null);
@@ -44,6 +56,7 @@ export default function BrowserScreen() {
 
   const [currentUrl, setCurrentUrl] = useState("");
   const [pageTitle, setPageTitle] = useState("");
+  const [pageFavIconUrl, setPageFavIconUrl] = useState<string | undefined>(undefined);
   const [urlInput, setUrlInput] = useState("");
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
@@ -73,11 +86,16 @@ export default function BrowserScreen() {
     setPageTitle(navState.title ?? "");
     setCanGoBack(navState.canGoBack);
     setCanGoForward(navState.canGoForward);
+    setPageFavIconUrl(undefined);
     try {
       const parsed = new URL(navState.url);
       setUrlInput(parsed.hostname.replace("www.", ""));
     } catch {
       setUrlInput(navState.url);
+    }
+
+    if (navState.loading === false) {
+      webViewRef.current?.injectJavaScript(FAVICON_EXTRACT_JS);
     }
   };
 
@@ -119,6 +137,15 @@ export default function BrowserScreen() {
     });
     Keyboard.dismiss();
   }, [isMemoOpen, panelHeight]);
+
+  const handleWebViewMessage = useCallback((event: { nativeEvent: { data: string } }) => {
+    try {
+      const message = JSON.parse(event.nativeEvent.data);
+      if (message.type === "favicon" && message.url) {
+        setPageFavIconUrl(message.url);
+      }
+    } catch {}
+  }, []);
 
   const { markManuallyClosed } = useAutoOpenMemo({
     url: currentUrl,
@@ -245,6 +272,7 @@ export default function BrowserScreen() {
             ref={webViewRef}
             source={{ uri: currentUrl }}
             onNavigationStateChange={handleNavigationStateChange}
+            onMessage={handleWebViewMessage}
             style={styles.webview}
             javaScriptEnabled
             domStorageEnabled
@@ -259,7 +287,7 @@ export default function BrowserScreen() {
               <View style={styles.dragHandleBar} />
             </Animated.View>
           </GestureDetector>
-          {isMemoOpen && <MemoPanel url={currentUrl} pageTitle={pageTitle} />}
+          {isMemoOpen && <MemoPanel url={currentUrl} pageTitle={pageTitle} favIconUrl={pageFavIconUrl} />}
         </Animated.View>
       </View>
 

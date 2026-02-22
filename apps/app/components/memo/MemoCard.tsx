@@ -1,7 +1,7 @@
 import type { LocalMemo } from "@/lib/storage/localMemo";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import { FileText, Globe } from "lucide-react-native";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export type MemoItem = LocalMemo | GetMemoResponse;
 
@@ -19,11 +19,16 @@ export function MemoCard({ memo, onPress }: MemoCardProps) {
 
   const title = memo.title || "Untitled";
   const memoText = memo.memo;
+  const favIconUrl = "favIconUrl" in memo ? memo.favIconUrl : undefined;
 
   return (
     <TouchableOpacity style={styles.memoCard} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.memoCardHeader}>
-        <FileText size={14} color="#666" />
+        {favIconUrl ? (
+          <Image source={{ uri: favIconUrl }} style={styles.favicon} />
+        ) : (
+          <FileText size={14} color="#666" />
+        )}
         <Text style={styles.memoCardTitle} numberOfLines={1}>
           {title}
         </Text>
@@ -52,6 +57,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#f0f0f0",
   },
+  favicon: { width: 14, height: 14, borderRadius: 2 },
   memoCardHeader: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 },
   memoCardTitle: { flex: 1, fontSize: 15, fontWeight: "600", color: "#111" },
   memoCardText: { fontSize: 14, color: "#555", lineHeight: 20, marginBottom: 6 },

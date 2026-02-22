@@ -7,6 +7,7 @@ export interface LocalMemo {
   url: string;
   title: string;
   memo: string;
+  favIconUrl?: string;
   createdAt: string;
   updatedAt: string;
   synced: boolean;
@@ -38,6 +39,7 @@ export async function upsertMemo(params: {
   url: string;
   title: string;
   memo: string;
+  favIconUrl?: string;
 }): Promise<LocalMemo> {
   const memos = await getAll();
   const now = new Date().toISOString();
@@ -46,6 +48,7 @@ export async function upsertMemo(params: {
   if (existing) {
     existing.title = params.title;
     existing.memo = params.memo;
+    if (params.favIconUrl) existing.favIconUrl = params.favIconUrl;
     existing.updatedAt = now;
     existing.synced = false;
     await save(memos);
@@ -57,6 +60,7 @@ export async function upsertMemo(params: {
     url: params.url,
     title: params.title,
     memo: params.memo,
+    favIconUrl: params.favIconUrl,
     createdAt: now,
     updatedAt: now,
     synced: false,

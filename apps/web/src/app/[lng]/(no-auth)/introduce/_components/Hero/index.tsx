@@ -4,6 +4,7 @@ import { URL } from "@web-memo/shared/constants";
 import { Check, Chrome, Globe, Sparkles, Star, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { CHROME_STORE_STATS } from "../../_constants";
 import { HeroAnimations } from "./HeroAnimations";
 
 interface HeroProps extends LanguageType {}
@@ -38,12 +39,12 @@ export default async function Hero({ lng }: HeroProps) {
 								))}
 							</div>
 							<span className="font-semibold text-gray-900 dark:text-gray-100">
-								5.0
+								{CHROME_STORE_STATS.rating}
 							</span>
 							<div className="w-px h-4 bg-gray-300 dark:bg-gray-600" />
 							<div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
 								<Users className="h-4 w-4" />
-								<span>300+ users</span>
+								<span>{CHROME_STORE_STATS.userCount}+ users</span>
 							</div>
 						</div>
 
@@ -64,7 +65,7 @@ export default async function Hero({ lng }: HeroProps) {
 
 						{/* CTA Buttons */}
 						<div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-							{/* Primary CTA */}
+							{/* Chrome CTA */}
 							<Link
 								href={URL.chromeStore}
 								target="_blank"
@@ -76,7 +77,29 @@ export default async function Hero({ lng }: HeroProps) {
 								{t("introduce.hero.install_button")}
 							</Link>
 
-							{/* Secondary CTA */}
+							{/* App Store CTA */}
+							<Link
+								href={URL.appStore}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="group relative inline-flex items-center justify-center gap-2.5 rounded-full bg-black dark:bg-white px-8 py-4 text-lg font-semibold text-white dark:text-black shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] overflow-hidden"
+							>
+								<svg
+									className="h-5 w-5"
+									viewBox="0 0 384 512"
+									fill="currentColor"
+									role="img"
+									aria-label="Apple"
+								>
+									<title>Apple</title>
+									<path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
+								</svg>
+								{t("introduce.hero.appstore_button")}
+							</Link>
+						</div>
+
+						{/* Explore Features - separate row */}
+						<div className="mt-4 flex justify-center lg:justify-start">
 							<Link
 								href="#demo"
 								className="inline-flex items-center justify-center gap-2 rounded-full glass-card px-8 py-4 text-lg font-semibold text-gray-800 dark:text-gray-100 transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"

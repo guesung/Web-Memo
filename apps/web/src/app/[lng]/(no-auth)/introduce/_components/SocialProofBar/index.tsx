@@ -5,6 +5,7 @@ import useTranslation from "@src/modules/i18n/util.client";
 import { motion, useInView } from "framer-motion";
 import { Gift, Shield, Star, Users } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { CHROME_STORE_STATS } from "../../_constants";
 
 interface SocialProofBarProps extends LanguageType {}
 
@@ -44,7 +45,7 @@ export default function SocialProofBar({ lng }: SocialProofBarProps) {
 	const proofItems = [
 		{
 			icon: Users,
-			value: 250,
+			value: CHROME_STORE_STATS.userCount,
 			suffix: "+",
 			label: t("introduce.social_proof.active_users"),
 			color: "text-blue-600 dark:text-blue-400",
@@ -52,7 +53,7 @@ export default function SocialProofBar({ lng }: SocialProofBarProps) {
 		},
 		{
 			icon: Star,
-			value: 5.0,
+			value: CHROME_STORE_STATS.rating,
 			suffix: "",
 			label: t("introduce.social_proof.rating"),
 			color: "text-yellow-600 dark:text-yellow-400",
@@ -108,7 +109,7 @@ export default function SocialProofBar({ lng }: SocialProofBarProps) {
 										item.customValue
 									) : item.isDecimal ? (
 										<span className="flex items-center gap-0.5">
-											5.0
+											{CHROME_STORE_STATS.rating}
 											<Star className="h-4 w-4 fill-yellow-400 text-yellow-400 ml-1" />
 										</span>
 									) : (

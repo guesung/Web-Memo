@@ -1,12 +1,11 @@
+import { DraggableFab } from "@/components/browser/DraggableFab";
 import { MemoPanel } from "@/components/browser/MemoPanel";
 import { TechBlogBottomSheet } from "@/components/browser/TechBlogBottomSheet";
 import { TechBlogLinks } from "@/components/browser/TechBlogLinks";
 import {
-  ChevronLeft,
-  ChevronRight,
   Heart,
+  Home,
   LayoutGrid,
-  PenLine,
   RotateCw,
   Search,
   X,
@@ -16,6 +15,8 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
 import { useLocalMemoByUrl, useLocalMemoWishToggle } from "@/lib/hooks/useLocalMemos";
 import { useMemoWishToggleMutation } from "@/lib/hooks/useMemoMutation";
+import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
+import { getPanelRatio, savePanelRatio } from "@/lib/storage/browserPreferences";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Keyboard,
@@ -32,6 +33,7 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
+  withTiming,
   runOnJS,
 } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -39,11 +41,15 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { WebViewNavigation } from "react-native-webview";
 import { WebView } from "react-native-webview";
 import { useLocalSearchParams } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 
 const SPRING_CONFIG = { damping: 20, stiffness: 150 };
 const MIN_PANEL_RATIO = 0.15;
 const MAX_PANEL_RATIO = 0.8;
 const DEFAULT_PANEL_RATIO = 0.4;
+const HEADER_HEIGHT = 44;
+const TAB_BAR_HEIGHT = 60;
+const HIDE_DURATION = 250;
 
 const FAVICON_EXTRACT_JS = `
 (function() {
@@ -56,6 +62,40 @@ const FAVICON_EXTRACT_JS = `
 })();
 true;
 `;
+
+const SCROLL_DETECT_JS = `
+(function() {
+  if (window.__webmemoScrollSetup) return;
+  window.__webmemoScrollSetup = true;
+  var lastScrollY = window.scrollY;
+  var ticking = false;
+  window.addEventListener('scroll', function() {
+    if (!ticking) {
+      requestAnimationFrame(function() {
+        var currentY = window.scrollY;
+        if (currentY <= 5) {
+          window.ReactNativeWebView.postMessage(JSON.stringify({
+            type: 'scroll', direction: 'top', scrollY: currentY
+          }));
+          lastScrollY = currentY;
+        } else {
+          var delta = currentY - lastScrollY;
+          if (Math.abs(delta) > 5) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              type: 'scroll', direction: delta > 0 ? 'down' : 'up', scrollY: currentY
+            }));
+            lastScrollY = currentY;
+          }
+        }
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+})(); true;
+`;
+
+const INJECTED_JS = `${FAVICON_EXTRACT_JS}\n${SCROLL_DETECT_JS}`;
 
 export default function BrowserScreen() {
   const insets = useSafeAreaInsets();
@@ -72,6 +112,7 @@ export default function BrowserScreen() {
   const [isBlogSheetOpen, setIsBlogSheetOpen] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
   const [wishToast, setWishToast] = useState<string | null>(null);
+  const [savedRatio, setSavedRatio] = useState(DEFAULT_PANEL_RATIO);
 
   const { session } = useAuth();
   const isLoggedIn = !!session;
@@ -87,6 +128,25 @@ export default function BrowserScreen() {
 
   const panelHeight = useSharedValue(0);
   const dragStartHeight = useSharedValue(0);
+
+  const { tabBarTranslateY, headerTranslateY, isBrowserActive } = useBrowserScroll();
+
+  useEffect(() => {
+    getPanelRatio().then((ratio) => {
+      if (ratio !== null) setSavedRatio(ratio);
+    });
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      isBrowserActive.value = 1;
+      return () => {
+        isBrowserActive.value = 0;
+        tabBarTranslateY.value = withTiming(0, { duration: HIDE_DURATION });
+        headerTranslateY.value = withTiming(0, { duration: HIDE_DURATION });
+      };
+    }, [isBrowserActive, tabBarTranslateY, headerTranslateY]),
+  );
 
   useEffect(() => {
     if (paramUrl) {
@@ -114,7 +174,7 @@ export default function BrowserScreen() {
     }
 
     if (navState.loading === false) {
-      webViewRef.current?.injectJavaScript(FAVICON_EXTRACT_JS);
+      webViewRef.current?.injectJavaScript(INJECTED_JS);
     }
   };
 
@@ -147,7 +207,7 @@ export default function BrowserScreen() {
         currentIsWish: isCurrentPageWish,
       });
     } else {
-      wishToggleLocal.mutate(currentUrl);
+      wishToggleLocal.mutate({ url: currentUrl, title: pageTitle, favIconUrl: pageFavIconUrl });
     }
     setWishToast(isCurrentPageWish ? "위시리스트에서 제거" : "위시리스트에 추가");
     setTimeout(() => setWishToast(null), 1500);
@@ -156,9 +216,9 @@ export default function BrowserScreen() {
   const openPanel = useCallback(() => {
     if (isMemoOpen || contentHeight <= 0) return;
     setIsMemoOpen(true);
-    const defaultH = contentHeight * DEFAULT_PANEL_RATIO;
+    const defaultH = contentHeight * savedRatio;
     panelHeight.value = withSpring(defaultH, SPRING_CONFIG);
-  }, [isMemoOpen, contentHeight, panelHeight]);
+  }, [isMemoOpen, contentHeight, panelHeight, savedRatio]);
 
   const closePanel = useCallback(() => {
     if (!isMemoOpen) return;
@@ -167,14 +227,33 @@ export default function BrowserScreen() {
     Keyboard.dismiss();
   }, [isMemoOpen, panelHeight]);
 
-  const handleWebViewMessage = useCallback((event: { nativeEvent: { data: string } }) => {
-    try {
-      const message = JSON.parse(event.nativeEvent.data);
-      if (message.type === "favicon" && message.url) {
-        setPageFavIconUrl(message.url);
+  const handleScrollMessage = useCallback(
+    (direction: string, scrollY: number) => {
+      if (isMemoOpen) return;
+      if (direction === "down") {
+        headerTranslateY.value = withTiming(-HEADER_HEIGHT, { duration: HIDE_DURATION });
+        tabBarTranslateY.value = withTiming(TAB_BAR_HEIGHT + insets.bottom, { duration: HIDE_DURATION });
+      } else if (direction === "up" || direction === "top" || scrollY < 10) {
+        headerTranslateY.value = withTiming(0, { duration: HIDE_DURATION });
+        tabBarTranslateY.value = withTiming(0, { duration: HIDE_DURATION });
       }
-    } catch {}
-  }, []);
+    },
+    [isMemoOpen, headerTranslateY, tabBarTranslateY, insets.bottom],
+  );
+
+  const handleWebViewMessage = useCallback(
+    (event: { nativeEvent: { data: string } }) => {
+      try {
+        const message = JSON.parse(event.nativeEvent.data);
+        if (message.type === "favicon" && message.url) {
+          setPageFavIconUrl(message.url);
+        } else if (message.type === "scroll") {
+          handleScrollMessage(message.direction, message.scrollY);
+        }
+      } catch {}
+    },
+    [handleScrollMessage],
+  );
 
   const toggleMemo = useCallback(() => {
     if (isMemoOpen) {
@@ -183,6 +262,14 @@ export default function BrowserScreen() {
       openPanel();
     }
   }, [isMemoOpen, closePanel, openPanel]);
+
+  const persistRatio = useCallback(
+    (ratio: number) => {
+      setSavedRatio(ratio);
+      savePanelRatio(ratio);
+    },
+    [],
+  );
 
   const resizeGesture = Gesture.Pan()
     .onStart(() => {
@@ -194,14 +281,19 @@ export default function BrowserScreen() {
       const maxH = contentHeight * MAX_PANEL_RATIO;
       panelHeight.value = Math.max(minH, Math.min(maxH, newHeight));
     })
-    .onEnd(() => {});
+    .onEnd(() => {
+      if (contentHeight > 0) {
+        const currentRatio = panelHeight.value / contentHeight;
+        runOnJS(persistRatio)(currentRatio);
+      }
+    });
 
   const memoAnimatedStyle = useAnimatedStyle(() => ({
     height: Math.max(0, panelHeight.value),
   }));
 
-  const fabAnimatedStyle = useAnimatedStyle(() => ({
-    bottom: panelHeight.value > 0 ? panelHeight.value + 12 : insets.bottom + 20,
+  const headerWrapperStyle = useAnimatedStyle(() => ({
+    height: Math.max(0, HEADER_HEIGHT + headerTranslateY.value),
   }));
 
   const handleBlogSelect = useCallback((url: string) => {
@@ -221,10 +313,11 @@ export default function BrowserScreen() {
                 value={urlInput}
                 onChangeText={setUrlInput}
                 onSubmitEditing={handleUrlSubmit}
-                placeholder="URL 입력 또는 검색"
+                placeholder="검색어를 입력하세요"
+                placeholderTextColor="#999"
                 autoCapitalize="none"
                 autoCorrect={false}
-                keyboardType="url"
+                keyboardType="default"
                 returnKeyType="go"
               />
             </View>
@@ -240,51 +333,47 @@ export default function BrowserScreen() {
       style={[styles.container, { paddingTop: insets.top }]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <View style={styles.browserHeader}>
-        <TouchableOpacity
-          onPress={() => webViewRef.current?.goBack()}
-          disabled={!canGoBack}
-          style={styles.navBtn}
-        >
-          <ChevronLeft size={20} color={canGoBack ? "#111" : "#ccc"} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => webViewRef.current?.goForward()}
-          disabled={!canGoForward}
-          style={styles.navBtn}
-        >
-          <ChevronRight size={20} color={canGoForward ? "#111" : "#ccc"} />
-        </TouchableOpacity>
-        <View style={styles.browserUrlBar}>
-          <Search size={14} color="#999" />
-          <TextInput
-            style={styles.browserUrlInput}
-            value={urlInput}
-            onChangeText={setUrlInput}
-            onFocus={() => setUrlInput(currentUrl)}
-            onSubmitEditing={handleUrlSubmit}
-            placeholder="Search or enter URL"
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="url"
-            returnKeyType="go"
-            selectTextOnFocus
-          />
+      <Animated.View style={[styles.headerWrapper, headerWrapperStyle]}>
+        <View style={styles.browserHeader}>
+          <View style={styles.browserUrlBar}>
+            <Search size={14} color="#999" />
+            <TextInput
+              style={styles.browserUrlInput}
+              value={urlInput}
+              onChangeText={setUrlInput}
+              onFocus={() => setUrlInput(currentUrl)}
+              onSubmitEditing={handleUrlSubmit}
+              placeholder="Search or enter URL"
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="url"
+              returnKeyType="go"
+              selectTextOnFocus
+            />
+            {urlInput.length > 0 && (
+              <TouchableOpacity onPress={() => setUrlInput("")} hitSlop={8}>
+                <X size={14} color="#999" />
+              </TouchableOpacity>
+            )}
+          </View>
+          <TouchableOpacity onPress={() => webViewRef.current?.reload()} style={styles.navBtn}>
+            <RotateCw size={16} color="#111" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => { setCurrentUrl(""); setUrlInput(""); setPageTitle(""); }} style={styles.navBtn}>
+            <Home size={16} color="#111" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setIsBlogSheetOpen(true)} style={styles.navBtn}>
+            <LayoutGrid size={16} color="#111" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleWishToggle} style={styles.navBtn}>
+            <Heart
+              size={16}
+              color={isCurrentPageWish ? "#ec4899" : "#111"}
+              fill={isCurrentPageWish ? "#ec4899" : "none"}
+            />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => webViewRef.current?.reload()} style={styles.navBtn}>
-          <RotateCw size={16} color="#111" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setIsBlogSheetOpen(true)} style={styles.navBtn}>
-          <LayoutGrid size={16} color="#111" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleWishToggle} style={styles.navBtn}>
-          <Heart
-            size={16}
-            color={isCurrentPageWish ? "#ec4899" : "#111"}
-            fill={isCurrentPageWish ? "#ec4899" : "none"}
-          />
-        </TouchableOpacity>
-      </View>
+      </Animated.View>
 
       <View
         style={styles.contentArea}
@@ -296,6 +385,7 @@ export default function BrowserScreen() {
             source={{ uri: currentUrl }}
             onNavigationStateChange={handleNavigationStateChange}
             onMessage={handleWebViewMessage}
+            injectedJavaScript={SCROLL_DETECT_JS}
             style={styles.webview}
             javaScriptEnabled
             domStorageEnabled
@@ -310,19 +400,17 @@ export default function BrowserScreen() {
               <View style={styles.dragHandleBar} />
             </Animated.View>
           </GestureDetector>
-          <MemoPanel url={currentUrl} pageTitle={pageTitle} favIconUrl={pageFavIconUrl} />
+          <MemoPanel url={currentUrl} pageTitle={pageTitle} favIconUrl={pageFavIconUrl} onClose={closePanel} />
         </Animated.View>
       </View>
 
-      <Animated.View style={[styles.fabContainer, fabAnimatedStyle]}>
-        <TouchableOpacity
-          style={[styles.fab, isMemoOpen && styles.fabActive]}
+      {!isMemoOpen && (
+        <DraggableFab
           onPress={toggleMemo}
-          activeOpacity={0.8}
-        >
-          {isMemoOpen ? <X size={24} color="#fff" /> : <PenLine size={24} color="#fff" />}
-        </TouchableOpacity>
-      </Animated.View>
+          panelHeight={panelHeight}
+          bottomInset={insets.bottom}
+        />
+      )}
 
       {wishToast ? (
         <View style={[styles.wishToast, { bottom: insets.bottom + 84 }]}>
@@ -358,6 +446,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   emptySearchInput: { flex: 1, fontSize: 16, color: "#333", padding: 0 },
+  headerWrapper: {
+    overflow: "hidden",
+  },
   browserHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -400,24 +491,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: "#d1d5db",
   },
-  fabContainer: {
-    position: "absolute",
-    right: 20,
-  },
-  fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#111",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
-  },
-  fabActive: { backgroundColor: "#666" },
   wishToast: {
     position: "absolute",
     alignSelf: "center",

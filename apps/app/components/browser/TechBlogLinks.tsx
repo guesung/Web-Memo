@@ -1,8 +1,9 @@
-import { ChevronRight } from "lucide-react-native";
+import { ChevronRight, MessageCircle } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import {
   FlatList,
   Image,
+  Linking,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -10,6 +11,7 @@ import {
 } from "react-native";
 import { TechBlogBottomSheet } from "./TechBlogBottomSheet";
 import {
+  BLOG_AGGREGATORS,
   BLOG_LOGO_BASE_URL,
   QUICK_ACCESS_COUNT,
   TECH_BLOGS,
@@ -21,7 +23,9 @@ function BlogItem({
   onPress,
 }: { blog: TechBlog; onPress: (url: string) => void }) {
   const [imgError, setImgError] = useState(false);
-  const logoUri = `${BLOG_LOGO_BASE_URL}${blog.logo}`;
+  const logoUri = blog.logo
+    ? (blog.logo.startsWith("http") ? blog.logo : `${BLOG_LOGO_BASE_URL}${blog.logo}`)
+    : "";
 
   return (
     <TouchableOpacity
@@ -30,7 +34,7 @@ function BlogItem({
       activeOpacity={0.7}
     >
       <View style={styles.logoContainer}>
-        {imgError ? (
+        {!logoUri || imgError ? (
           <View style={styles.logoFallback}>
             <Text style={styles.logoFallbackText}>
               {blog.name.charAt(0)}
@@ -67,7 +71,7 @@ export function TechBlogLinks({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>테크 블로그 바로가기</Text>
+        <Text style={styles.title}>블로그 모음</Text>
         <TouchableOpacity
           style={styles.viewAllBtn}
           onPress={() => setIsBottomSheetVisible(true)}
@@ -79,6 +83,19 @@ export function TechBlogLinks({
       </View>
 
       <FlatList
+        data={BLOG_AGGREGATORS}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.url}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
+      />
+
+      <View style={styles.sectionHeader}>
+        <Text style={styles.title}>테크 블로그</Text>
+      </View>
+
+      <FlatList
         data={TECH_BLOGS.slice(0, QUICK_ACCESS_COUNT)}
         renderItem={renderItem}
         keyExtractor={(item) => item.url}
@@ -86,6 +103,15 @@ export function TechBlogLinks({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
       />
+
+      <TouchableOpacity
+        style={styles.inquiryBtn}
+        onPress={() => Linking.openURL("https://open.kakao.com/o/sido56Pg")}
+        activeOpacity={0.7}
+      >
+        <MessageCircle size={16} color="#666" />
+        <Text style={styles.inquiryText}>블로그 추가 문의하기</Text>
+      </TouchableOpacity>
 
       <TechBlogBottomSheet
         visible={isBottomSheetVisible}
@@ -109,6 +135,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
     paddingHorizontal: 20,
+  },
+  sectionHeader: {
+    marginTop: 28,
+    marginBottom: 16,
+    paddingHorizontal: 20,
+  },
+  sectionHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   title: {
     fontSize: 16,
@@ -165,5 +201,22 @@ const styles = StyleSheet.create({
     color: "#555",
     textAlign: "center",
     lineHeight: 14,
+  },
+  inquiryBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    marginTop: 32,
+    marginBottom: 16,
+    paddingVertical: 12,
+    marginHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: "#f5f5f5",
+  },
+  inquiryText: {
+    fontSize: 14,
+    color: "#666",
+    fontWeight: "500",
   },
 });

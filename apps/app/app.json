@@ -3,7 +3,7 @@
     "name": "Web Memo",
     "slug": "web-memo",
     "owner": "guesung",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "webmemo",
@@ -12,7 +12,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#5b93f0"
     },
     "ios": {
       "supportsTablet": true,
@@ -33,7 +33,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#5b93f0"
       },
       "package": "com.webmemo.app",
       "intentFilters": [
@@ -63,7 +63,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#5b93f0",
           "image": "./assets/splash-icon.png",
           "imageWidth": 200
         }

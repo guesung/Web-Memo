@@ -1,11 +1,12 @@
-import { X } from "lucide-react-native";
-import { useCallback, useEffect, useState } from "react";
+import { MessageCircle, X } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import {
   Dimensions,
-  FlatList,
   Image,
+  Linking,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -17,7 +18,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BLOG_LOGO_BASE_URL, TECH_BLOGS, type TechBlog } from "./techBlogData";
+import { BLOG_AGGREGATORS, BLOG_LOGO_BASE_URL, TECH_BLOGS, type TechBlog } from "./techBlogData";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.7;
@@ -28,7 +29,9 @@ function SheetBlogItem({
   onPress,
 }: { blog: TechBlog; onPress: (url: string) => void }) {
   const [imgError, setImgError] = useState(false);
-  const logoUri = `${BLOG_LOGO_BASE_URL}${blog.logo}`;
+  const logoUri = blog.logo
+    ? (blog.logo.startsWith("http") ? blog.logo : `${BLOG_LOGO_BASE_URL}${blog.logo}`)
+    : "";
 
   return (
     <TouchableOpacity
@@ -37,7 +40,7 @@ function SheetBlogItem({
       activeOpacity={0.7}
     >
       <View style={styles.logoContainer}>
-        {imgError ? (
+        {!logoUri || imgError ? (
           <View style={styles.logoFallback}>
             <Text style={styles.logoFallbackText}>
               {blog.name.charAt(0)}
@@ -56,6 +59,29 @@ function SheetBlogItem({
         {blog.name}
       </Text>
     </TouchableOpacity>
+  );
+}
+
+function BlogGrid({ blogs, onPress }: { blogs: TechBlog[]; onPress: (url: string) => void }) {
+  const rows: TechBlog[][] = [];
+  for (let i = 0; i < blogs.length; i += NUM_COLUMNS) {
+    rows.push(blogs.slice(i, i + NUM_COLUMNS));
+  }
+
+  return (
+    <View>
+      {rows.map((row, rowIndex) => (
+        <View key={rowIndex} style={styles.gridRow}>
+          {row.map((blog) => (
+            <SheetBlogItem key={blog.url} blog={blog} onPress={onPress} />
+          ))}
+          {row.length < NUM_COLUMNS &&
+            Array.from({ length: NUM_COLUMNS - row.length }).map((_, i) => (
+              <View key={`empty-${i}`} style={styles.blogItem} />
+            ))}
+        </View>
+      ))}
+    </View>
   );
 }
 
@@ -94,13 +120,6 @@ export function TechBlogBottomSheet({
     opacity: opacity.value,
   }));
 
-  const renderItem = useCallback(
-    ({ item }: { item: TechBlog }) => (
-      <SheetBlogItem blog={item} onPress={onSelectBlog} />
-    ),
-    [onSelectBlog],
-  );
-
   return (
     <Modal visible={modalVisible} transparent statusBarTranslucent>
       <View style={styles.modalContainer}>
@@ -120,21 +139,28 @@ export function TechBlogBottomSheet({
           </View>
 
           <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>테크 블로그</Text>
+            <Text style={styles.sheetTitle}>바로가기</Text>
             <TouchableOpacity onPress={onClose} activeOpacity={0.7}>
               <X size={22} color="#666" />
             </TouchableOpacity>
           </View>
 
-          <FlatList
-            data={TECH_BLOGS}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.url}
-            numColumns={NUM_COLUMNS}
-            contentContainerStyle={styles.gridContent}
-            columnWrapperStyle={styles.gridRow}
-            showsVerticalScrollIndicator={false}
-          />
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+            <Text style={styles.sectionTitle}>블로그 모음</Text>
+            <BlogGrid blogs={BLOG_AGGREGATORS} onPress={onSelectBlog} />
+
+            <Text style={[styles.sectionTitle, { marginTop: 24 }]}>테크 블로그</Text>
+            <BlogGrid blogs={TECH_BLOGS} onPress={onSelectBlog} />
+
+            <TouchableOpacity
+              style={styles.inquiryBtn}
+              onPress={() => Linking.openURL("https://open.kakao.com/o/sido56Pg")}
+              activeOpacity={0.7}
+            >
+              <MessageCircle size={16} color="#666" />
+              <Text style={styles.inquiryText}>블로그 추가 문의하기</Text>
+            </TouchableOpacity>
+          </ScrollView>
         </Animated.View>
       </View>
     </Modal>
@@ -178,11 +204,19 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#111",
   },
-  gridContent: {
+  scrollContent: {
     paddingHorizontal: 12,
     paddingBottom: 20,
   },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#666",
+    paddingHorizontal: 8,
+    marginBottom: 12,
+  },
   gridRow: {
+    flexDirection: "row",
     marginBottom: 16,
   },
   blogItem: {
@@ -223,5 +257,21 @@ const styles = StyleSheet.create({
     color: "#555",
     textAlign: "center",
     lineHeight: 14,
+  },
+  inquiryBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    marginTop: 24,
+    paddingVertical: 12,
+    marginHorizontal: 8,
+    borderRadius: 12,
+    backgroundColor: "#f5f5f5",
+  },
+  inquiryText: {
+    fontSize: 14,
+    color: "#666",
+    fontWeight: "500",
   },
 });

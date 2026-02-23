@@ -169,8 +169,27 @@ export default function MemoScreen() {
           </View>
         ) : (
           <View style={styles.emptyState}>
-            <Globe size={48} color="#ddd" />
-            <Text style={styles.emptyText}>URL을 입력해서 웹서핑을 시작하세요</Text>
+            {filter === "wish" ? (
+              <Heart size={48} color="#ddd" />
+            ) : (
+              <Globe size={48} color="#ddd" />
+            )}
+            <Text style={styles.emptyText}>
+              {filter === "wish" ? "위시리스트가 비어있습니다" : "저장된 메모가 없습니다"}
+            </Text>
+            <Text style={styles.emptySubText}>
+              {filter === "wish"
+                ? "브라우저에서 마음에 드는 페이지를 저장해보세요"
+                : "브라우저에서 웹서핑하며 메모를 남겨보세요"}
+            </Text>
+            <TouchableOpacity
+              style={styles.emptyButton}
+              onPress={() => router.navigate("/(main)/browser")}
+            >
+              <Text style={styles.emptyButtonText}>
+                {filter === "wish" ? "브라우저에서 페이지 저장하기" : "브라우저에서 웹서핑 시작하기"}
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -192,7 +211,7 @@ export default function MemoScreen() {
               currentIsWish: true,
             });
           } else {
-            wishToggleLocal.mutate(memo.url);
+            wishToggleLocal.mutate({ url: memo.url });
           }
           setSelectedMemo(null);
         }}
@@ -228,7 +247,16 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 17, fontWeight: "700", color: "#111", marginBottom: 12 },
   memosList: { paddingBottom: 32 },
   emptyState: { alignItems: "center", paddingTop: 60, gap: 12 },
-  emptyText: { fontSize: 15, color: "#bbb" },
+  emptyText: { fontSize: 16, fontWeight: "600", color: "#999" },
+  emptySubText: { fontSize: 13, color: "#bbb" },
+  emptyButton: {
+    marginTop: 8,
+    backgroundColor: "#111",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  emptyButtonText: { fontSize: 14, fontWeight: "600", color: "#fff" },
   segmentContainer: {
     flexDirection: "row",
     paddingHorizontal: 20,

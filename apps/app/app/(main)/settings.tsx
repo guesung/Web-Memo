@@ -1,8 +1,8 @@
 import { useAuth } from "@/lib/auth/AuthProvider";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
-import { LogIn, LogOut, User } from "lucide-react-native";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ChevronRight, LogIn, LogOut, MessageCircle, User } from "lucide-react-native";
+import { Alert, Linking, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SettingsScreen() {
@@ -65,13 +65,33 @@ export default function SettingsScreen() {
           <Text style={styles.sectionTitle}>앱 정보</Text>
           <View style={styles.card}>
             <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>앱 이름</Text>
+              <Text style={styles.infoValue}>웹 메모</Text>
+            </View>
+            <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>버전</Text>
               <Text style={styles.infoValue}>{appVersion}</Text>
             </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>앱 이름</Text>
-              <Text style={styles.infoValue}>Web Memo</Text>
-            </View>
+          </View>
+        </View>
+
+        {/* Support Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>지원</Text>
+          <View style={styles.card}>
+            <TouchableOpacity
+              style={styles.infoRow}
+              onPress={() => Linking.openURL("https://open.kakao.com/o/sido56Pg")}
+              activeOpacity={0.6}
+            >
+              <View style={styles.supportRow}>
+                <MessageCircle size={16} color="#555" />
+                <Text style={styles.infoLabel}>문의하기</Text>
+              </View>
+              <View style={styles.supportRow}>
+                <ChevronRight size={14} color="#999" />
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -151,4 +171,13 @@ const styles = StyleSheet.create({
   },
   infoLabel: { fontSize: 15, color: "#555" },
   infoValue: { fontSize: 15, color: "#111", fontWeight: "500" },
+  supportRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  supportHint: {
+    fontSize: 13,
+    color: "#999",
+  },
 });

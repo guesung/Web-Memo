@@ -4,7 +4,6 @@ import { Sparkles } from "lucide-react-native";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -27,7 +26,6 @@ export default function LoginScreen() {
       }
     } catch (error) {
       console.error("로그인 에러:", error);
-      Alert.alert("로그인 실패", String(error));
     } finally {
       setIsLoading(false);
     }

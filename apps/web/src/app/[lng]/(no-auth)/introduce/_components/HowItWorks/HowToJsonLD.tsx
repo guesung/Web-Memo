@@ -1,4 +1,5 @@
 import type { Language } from "@src/modules/i18n";
+import { CONFIG } from "@web-memo/env";
 import Script from "next/script";
 
 interface HowToJsonLDProps {
@@ -52,7 +53,7 @@ const HOW_TO_DATA = {
 
 export default function HowToJsonLD({ lng }: HowToJsonLDProps) {
 	const data = HOW_TO_DATA[lng];
-	const baseUrl = process.env.NEXT_PUBLIC_WEB_URL || "https://webmemo.site";
+	const baseUrl = CONFIG.webUrl;
 
 	const howToSchema = {
 		"@context": "https://schema.org",

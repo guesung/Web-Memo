@@ -1160,6 +1160,78 @@
 				"button": "Add to Chrome",
 				"subtext": "Free · 10-second install · No credit card required"
 			}
+		},
+		"developer": {
+			"hero": {
+				"badge": "For Developers",
+				"title": "Manage dev knowledge",
+				"titleHighlight": "systematically",
+				"description": "Organize scattered dev resources from Stack Overflow, GitHub, and tech blogs in one place.",
+				"cta": "Get Started Free",
+				"learnMore": "Learn More"
+			},
+			"benefits": {
+				"title": "Boost Your Dev Productivity",
+				"subtitle": "Features to manage your development knowledge efficiently",
+				"snippet": {
+					"title": "Save Code Snippets",
+					"description": "Save Stack Overflow answers and code examples instantly. Find and reuse them quickly when you need them."
+				},
+				"blog": {
+					"title": "Organize Tech Blogs",
+					"description": "Take notes on key insights from tech articles. No need to search again — just record the essentials."
+				},
+				"github": {
+					"title": "GitHub Issue Notes",
+					"description": "Record PR discussions, issues, and code review notes. Never miss project decisions and progress."
+				},
+				"docs": {
+					"title": "API Documentation Notes",
+					"description": "Save key points from official docs. Organize frequently referenced materials your own way."
+				}
+			},
+			"cta": {
+				"title": "Start Smarter Development",
+				"description": "Install the free Chrome extension and manage your dev knowledge efficiently.",
+				"button": "Add to Chrome",
+				"subtext": "Free · 10-second install · No credit card required"
+			}
+		},
+		"techArticle": {
+			"hero": {
+				"badge": "Tech Article Organizer",
+				"title": "Never miss",
+				"titleHighlight": "a tech article again",
+				"description": "Organize key insights from tech blogs, newsletters, and dev articles systematically.",
+				"cta": "Get Started Free",
+				"learnMore": "Learn More"
+			},
+			"benefits": {
+				"title": "Transform Your Article Reading",
+				"subtitle": "Features to organize tech articles efficiently",
+				"aiSummary": {
+					"title": "AI Summary",
+					"description": "AI automatically summarizes long tech articles. Quickly grasp the key points without reading everything."
+				},
+				"clipping": {
+					"title": "Key Clipping",
+					"description": "Take instant notes on important paragraphs while reading. Never lose key insights."
+				},
+				"organize": {
+					"title": "Organize by Topic",
+					"description": "Categorize articles by frontend, backend, DevOps, and more. Keep your interests organized."
+				},
+				"source": {
+					"title": "Source Management",
+					"description": "Original URLs are saved automatically so you can revisit anytime. Reference management made easy."
+				}
+			},
+			"cta": {
+				"title": "Organize Tech Articles Smartly",
+				"description": "Install the free Chrome extension and manage tech articles efficiently.",
+				"button": "Add to Chrome",
+				"subtext": "Free · 10-second install · No credit card required"
+			}
 		}
 	},
 

@@ -39,6 +39,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
 			priority: 0.7,
 			changeFrequency: "monthly" as const,
 		},
+		{
+			path: PATHS.useCasesDeveloper,
+			priority: 0.7,
+			changeFrequency: "monthly" as const,
+		},
+		{
+			path: PATHS.useCasesTechArticle,
+			priority: 0.7,
+			changeFrequency: "monthly" as const,
+		},
 	];
 
 	const sitemapEntries: MetadataRoute.Sitemap = [];

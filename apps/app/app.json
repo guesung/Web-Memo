@@ -78,10 +78,21 @@
       [
         "@react-native-seoul/kakao-login",
         {
-          "kakaoAppKey": "e70ae71f1cdc768383ad96ab45dc1dd7"
+          "kakaoAppKey": "e70ae71f1cdc768383ad96ab45dc1dd7",
+          "kotlinVersion": "2.0.21"
         }
       ],
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "2.0.21"
+          }
+        }
+      ],
+      "./plugins/withKakaoMavenRepo",
+      "./plugins/withAndroidGradleMemory"
     ],
     "experiments": {
       "typedRoutes": true

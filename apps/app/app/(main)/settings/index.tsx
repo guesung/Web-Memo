@@ -8,8 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { session, signOut } = useAuth();
-  const isLoggedIn = !!session;
+  const { session, signOut, isLoggedIn} = useAuth();
 
   const handleSignOut = () => {
     Alert.alert("로그아웃", "로그아웃 하시겠습니까?", [
@@ -22,7 +21,7 @@ export default function SettingsScreen() {
     router.navigate("/(auth)/login");
   };
 
-  const appVersion = Constants.expoConfig?.version ?? "1.0.1";
+  const appVersion = Constants.expoConfig?.version;
 
   return (
     <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
@@ -35,7 +34,7 @@ export default function SettingsScreen() {
         <View className="mb-7">
           <Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">계정</Text>
           <View className="bg-card rounded-[14px] p-4 border border-muted">
-            {isLoggedIn ? (
+            {isLoggedIn && session ? (
               <>
                 <View className="flex-row items-center gap-3 mb-4">
                   <View className="w-10 h-10 rounded-full bg-foreground justify-center items-center">

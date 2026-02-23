@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import { Text, TouchableOpacity } from "react-native";
 import Svg, { Circle, G, Path } from "react-native-svg";
 
 interface SocialLoginButtonProps {
@@ -101,46 +101,28 @@ export function SocialLoginButton({
 
   return (
     <TouchableOpacity
+      className="flex-row items-center justify-center h-14 rounded-xl gap-2"
       style={[
-        styles.button,
         {
           backgroundColor: config.backgroundColor,
           borderColor: config.borderColor,
           borderWidth: config.borderWidth,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
         },
-        disabled && styles.disabled,
+        disabled && { opacity: 0.5 },
       ]}
       onPress={onPress}
       disabled={disabled}
       activeOpacity={0.7}
     >
       <Icon />
-      <Text style={[styles.text, { color: config.textColor }]}>
+      <Text className="text-base font-medium" style={{ color: config.textColor }}>
         {config.label}
       </Text>
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 56,
-    borderRadius: 12,
-    gap: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  text: {
-    fontSize: 16,
-    fontWeight: "500",
-  },
-});

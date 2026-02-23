@@ -4,7 +4,6 @@ import {
   FlatList,
   Image,
   Linking,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -29,27 +28,30 @@ function BlogItem({
 
   return (
     <TouchableOpacity
-      style={styles.blogItem}
+      className="w-[76px] items-center gap-2"
       onPress={() => onPress(blog.url)}
       activeOpacity={0.7}
     >
-      <View style={styles.logoContainer}>
+      <View className="w-14 h-14 rounded-[14px] bg-input justify-center items-center overflow-hidden">
         {!logoUri || imgError ? (
-          <View style={styles.logoFallback}>
-            <Text style={styles.logoFallbackText}>
+          <View
+            className="justify-center items-center bg-[#e0e0e0]"
+            style={{ width: 36, height: 36, borderRadius: 4 }}
+          >
+            <Text className="text-base font-bold text-gray-500">
               {blog.name.charAt(0)}
             </Text>
           </View>
         ) : (
           <Image
             source={{ uri: logoUri }}
-            style={styles.logoImage}
+            style={{ width: 36, height: 36, borderRadius: 4 }}
             onError={() => setImgError(true)}
             resizeMode="contain"
           />
         )}
       </View>
-      <Text style={styles.blogName} numberOfLines={1}>
+      <Text className="text-[11px] text-secondary-foreground text-center leading-[14px]" numberOfLines={1}>
         {blog.name}
       </Text>
     </TouchableOpacity>
@@ -69,15 +71,15 @@ export function TechBlogLinks({
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>블로그 모음</Text>
+    <View className="mt-8">
+      <View className="flex-row justify-between items-center mb-4 px-5">
+        <Text className="text-base font-bold text-foreground">블로그 모음</Text>
         <TouchableOpacity
-          style={styles.viewAllBtn}
+          className="flex-row items-center gap-0.5"
           onPress={() => setIsBottomSheetVisible(true)}
           activeOpacity={0.7}
         >
-          <Text style={styles.viewAllText}>전체보기</Text>
+          <Text className="text-[13px] text-muted-foreground">전체보기</Text>
           <ChevronRight size={14} color="#999" />
         </TouchableOpacity>
       </View>
@@ -88,11 +90,11 @@ export function TechBlogLinks({
         keyExtractor={(item) => item.url}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
+        contentContainerClassName="px-4 gap-1"
       />
 
-      <View style={styles.sectionHeader}>
-        <Text style={styles.title}>테크 블로그</Text>
+      <View className="mt-7 mb-4 px-5">
+        <Text className="text-base font-bold text-foreground">테크 블로그</Text>
       </View>
 
       <FlatList
@@ -101,16 +103,16 @@ export function TechBlogLinks({
         keyExtractor={(item) => item.url}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
+        contentContainerClassName="px-4 gap-1"
       />
 
       <TouchableOpacity
-        style={styles.inquiryBtn}
+        className="flex-row items-center justify-center gap-1.5 mt-8 mb-4 py-3 mx-5 rounded-xl bg-input"
         onPress={() => Linking.openURL("https://open.kakao.com/o/sido56Pg")}
         activeOpacity={0.7}
       >
         <MessageCircle size={16} color="#666" />
-        <Text style={styles.inquiryText}>블로그 추가 문의하기</Text>
+        <Text className="text-sm text-gray-500 font-medium">블로그 추가 문의하기</Text>
       </TouchableOpacity>
 
       <TechBlogBottomSheet
@@ -124,99 +126,3 @@ export function TechBlogLinks({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginTop: 32,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-    paddingHorizontal: 20,
-  },
-  sectionHeader: {
-    marginTop: 28,
-    marginBottom: 16,
-    paddingHorizontal: 20,
-  },
-  sectionHeaderRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#111",
-  },
-  viewAllBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 2,
-  },
-  viewAllText: {
-    fontSize: 13,
-    color: "#999",
-  },
-  listContent: {
-    paddingHorizontal: 16,
-    gap: 4,
-  },
-  blogItem: {
-    width: 76,
-    alignItems: "center",
-    gap: 8,
-  },
-  logoContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
-    backgroundColor: "#f5f5f5",
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-  },
-  logoImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 4,
-  },
-  logoFallback: {
-    width: 36,
-    height: 36,
-    borderRadius: 4,
-    backgroundColor: "#e0e0e0",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logoFallbackText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#666",
-  },
-  blogName: {
-    fontSize: 11,
-    color: "#555",
-    textAlign: "center",
-    lineHeight: 14,
-  },
-  inquiryBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    marginTop: 32,
-    marginBottom: 16,
-    paddingVertical: 12,
-    marginHorizontal: 20,
-    borderRadius: 12,
-    backgroundColor: "#f5f5f5",
-  },
-  inquiryText: {
-    fontSize: 14,
-    color: "#666",
-    fontWeight: "500",
-  },
-});

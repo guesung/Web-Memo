@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Dimensions, StyleSheet } from "react-native";
+import { Dimensions } from "react-native";
 import { PenLine } from "lucide-react-native";
 import Animated, {
   useSharedValue,
@@ -91,27 +91,25 @@ export function DraggableFab({ onPress, panelHeight, bottomInset }: DraggableFab
 
   return (
     <GestureDetector gesture={composedGesture}>
-      <Animated.View style={[styles.fabContainer, fabAnimatedStyle]}>
+      <Animated.View
+        className="absolute items-center justify-center bg-foreground"
+        style={[
+          {
+            width: FAB_SIZE,
+            height: FAB_SIZE,
+            borderRadius: FAB_SIZE / 2,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 6,
+            elevation: 8,
+            zIndex: 100,
+          },
+          fabAnimatedStyle,
+        ]}
+      >
         <PenLine size={24} color="#fff" />
       </Animated.View>
     </GestureDetector>
   );
 }
-
-const styles = StyleSheet.create({
-  fabContainer: {
-    position: "absolute",
-    width: FAB_SIZE,
-    height: FAB_SIZE,
-    borderRadius: FAB_SIZE / 2,
-    backgroundColor: "#111",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
-    zIndex: 100,
-  },
-});

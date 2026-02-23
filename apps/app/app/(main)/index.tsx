@@ -9,7 +9,6 @@ import { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -110,30 +109,30 @@ export default function MemoScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.homeContent}>
+    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+      <View className="flex-1">
         {/* Header */}
-        <View style={styles.homeHeader}>
-          <Text style={styles.brandTitle}>Web Memo</Text>
+        <View className="flex-row justify-between items-center px-5 pt-4 pb-1">
+          <Text className="text-[22px] font-extrabold text-foreground tracking-tight">Web Memo</Text>
         </View>
 
-        <Text style={styles.brandSubtitle}>웹서핑하며 메모하세요</Text>
+        <Text className="text-sm text-gray-400 px-5 mb-4">웹서핑하며 메모하세요</Text>
 
-        <View style={styles.segmentContainer}>
+        <View className="flex-row px-5 mb-4 gap-2">
           <TouchableOpacity
-            style={[styles.segmentBtn, filter === "all" && styles.segmentBtnActive]}
+            className={`flex-row items-center gap-1 px-3.5 py-[7px] rounded-[20px] ${filter === "all" ? "bg-foreground" : "bg-muted"}`}
             onPress={() => setFilter("all")}
           >
-            <Text style={[styles.segmentText, filter === "all" && styles.segmentTextActive]}>
+            <Text className={`text-[13px] font-semibold ${filter === "all" ? "text-white" : "text-gray-500"}`}>
               전체
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.segmentBtn, filter === "wish" && styles.segmentBtnActive]}
+            className={`flex-row items-center gap-1 px-3.5 py-[7px] rounded-[20px] ${filter === "wish" ? "bg-foreground" : "bg-muted"}`}
             onPress={() => setFilter("wish")}
           >
             <Heart size={12} fill={filter === "wish" ? "#fff" : "#666"} color={filter === "wish" ? "#fff" : "#666"} />
-            <Text style={[styles.segmentText, filter === "wish" && styles.segmentTextActive]}>
+            <Text className={`text-[13px] font-semibold ${filter === "wish" ? "text-white" : "text-gray-500"}`}>
               위시리스트
             </Text>
           </TouchableOpacity>
@@ -143,8 +142,8 @@ export default function MemoScreen() {
         {isLoading ? (
           <ActivityIndicator style={{ marginTop: 40 }} size="large" />
         ) : memos.length > 0 ? (
-          <View style={styles.memosSection}>
-            <Text style={styles.sectionTitle}>{filter === "wish" ? "위시리스트" : "최근 메모"}</Text>
+          <View className="flex-1 px-5">
+            <Text className="text-[17px] font-bold text-foreground mb-3">{filter === "wish" ? "위시리스트" : "최근 메모"}</Text>
             <FlatList
               data={memos}
               keyExtractor={(item) => String(item.id)}
@@ -155,7 +154,7 @@ export default function MemoScreen() {
                   onDelete={() => handleDelete(item)}
                 />
               )}
-              contentContainerStyle={styles.memosList}
+              contentContainerClassName="pb-8"
               onRefresh={() => refetch()}
               refreshing={false}
               onEndReached={handleEndReached}
@@ -168,25 +167,25 @@ export default function MemoScreen() {
             />
           </View>
         ) : (
-          <View style={styles.emptyState}>
+          <View className="items-center pt-[60px] gap-3">
             {filter === "wish" ? (
               <Heart size={48} color="#ddd" />
             ) : (
               <Globe size={48} color="#ddd" />
             )}
-            <Text style={styles.emptyText}>
+            <Text className="text-base font-semibold text-muted-foreground">
               {filter === "wish" ? "위시리스트가 비어있습니다" : "저장된 메모가 없습니다"}
             </Text>
-            <Text style={styles.emptySubText}>
+            <Text className="text-[13px] text-gray-300">
               {filter === "wish"
                 ? "브라우저에서 마음에 드는 페이지를 저장해보세요"
                 : "브라우저에서 웹서핑하며 메모를 남겨보세요"}
             </Text>
             <TouchableOpacity
-              style={styles.emptyButton}
+              className="mt-2 bg-foreground px-5 py-3 rounded-3xl"
               onPress={() => router.navigate("/(main)/browser")}
             >
-              <Text style={styles.emptyButtonText}>
+              <Text className="text-sm font-semibold text-white">
                 {filter === "wish" ? "브라우저에서 페이지 저장하기" : "브라우저에서 웹서핑 시작하기"}
               </Text>
             </TouchableOpacity>
@@ -218,96 +217,14 @@ export default function MemoScreen() {
       />
 
       {deletedMemo ? (
-        <View style={[styles.deleteToast, { bottom: insets.bottom + 24 }]}>
-          <Text style={styles.deleteToastText}>메모가 삭제되었습니다</Text>
-          <TouchableOpacity style={styles.undoBtn} onPress={handleUndo}>
+        <View className="absolute left-5 right-5 flex-row items-center justify-between bg-[#333] px-4 py-3 rounded-xl" style={{ bottom: insets.bottom + 24 }}>
+          <Text className="text-white text-sm font-medium">메모가 삭제되었습니다</Text>
+          <TouchableOpacity className="flex-row items-center gap-1" onPress={handleUndo}>
             <Undo2 size={14} color="#60a5fa" />
-            <Text style={styles.undoBtnText}>되돌리기</Text>
+            <Text className="text-blue-400 text-sm font-semibold">되돌리기</Text>
           </TouchableOpacity>
         </View>
       ) : null}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  homeContent: { flex: 1 },
-  homeHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 4,
-  },
-  brandTitle: { fontSize: 22, fontWeight: "800", color: "#111", letterSpacing: -0.5 },
-  brandSubtitle: { fontSize: 14, color: "#888", paddingHorizontal: 20, marginBottom: 16 },
-  memosSection: { flex: 1, paddingHorizontal: 20 },
-  sectionTitle: { fontSize: 17, fontWeight: "700", color: "#111", marginBottom: 12 },
-  memosList: { paddingBottom: 32 },
-  emptyState: { alignItems: "center", paddingTop: 60, gap: 12 },
-  emptyText: { fontSize: 16, fontWeight: "600", color: "#999" },
-  emptySubText: { fontSize: 13, color: "#bbb" },
-  emptyButton: {
-    marginTop: 8,
-    backgroundColor: "#111",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 24,
-  },
-  emptyButtonText: { fontSize: 14, fontWeight: "600", color: "#fff" },
-  segmentContainer: {
-    flexDirection: "row",
-    paddingHorizontal: 20,
-    marginBottom: 16,
-    gap: 8,
-  },
-  segmentBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    backgroundColor: "#f0f0f0",
-  },
-  segmentBtnActive: {
-    backgroundColor: "#111",
-  },
-  segmentText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#666",
-  },
-  segmentTextActive: {
-    color: "#fff",
-  },
-  deleteToast: {
-    position: "absolute",
-    left: 20,
-    right: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#333",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  deleteToastText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  undoBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  undoBtnText: {
-    color: "#60a5fa",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-});

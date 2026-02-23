@@ -7,7 +7,6 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -35,27 +34,30 @@ function SheetBlogItem({
 
   return (
     <TouchableOpacity
-      style={styles.blogItem}
+      className="flex-1 items-center gap-2 px-1"
       onPress={() => onPress(blog.url)}
       activeOpacity={0.7}
     >
-      <View style={styles.logoContainer}>
+      <View className="w-14 h-14 rounded-[14px] bg-input justify-center items-center overflow-hidden">
         {!logoUri || imgError ? (
-          <View style={styles.logoFallback}>
-            <Text style={styles.logoFallbackText}>
+          <View
+            className="justify-center items-center bg-[#e0e0e0]"
+            style={{ width: 36, height: 36, borderRadius: 4 }}
+          >
+            <Text className="text-base font-bold text-gray-500">
               {blog.name.charAt(0)}
             </Text>
           </View>
         ) : (
           <Image
             source={{ uri: logoUri }}
-            style={styles.logoImage}
+            style={{ width: 36, height: 36, borderRadius: 4 }}
             onError={() => setImgError(true)}
             resizeMode="contain"
           />
         )}
       </View>
-      <Text style={styles.blogName} numberOfLines={1}>
+      <Text className="text-[11px] text-secondary-foreground text-center leading-[14px]" numberOfLines={1}>
         {blog.name}
       </Text>
     </TouchableOpacity>
@@ -71,13 +73,13 @@ function BlogGrid({ blogs, onPress }: { blogs: TechBlog[]; onPress: (url: string
   return (
     <View>
       {rows.map((row, rowIndex) => (
-        <View key={rowIndex} style={styles.gridRow}>
+        <View key={rowIndex} className="flex-row mb-4">
           {row.map((blog) => (
             <SheetBlogItem key={blog.url} blog={blog} onPress={onPress} />
           ))}
           {row.length < NUM_COLUMNS &&
             Array.from({ length: NUM_COLUMNS - row.length }).map((_, i) => (
-              <View key={`empty-${i}`} style={styles.blogItem} />
+              <View key={`empty-${i}`} className="flex-1 items-center gap-2 px-1" />
             ))}
         </View>
       ))}
@@ -122,43 +124,40 @@ export function TechBlogBottomSheet({
 
   return (
     <Modal visible={modalVisible} transparent statusBarTranslucent>
-      <View style={styles.modalContainer}>
-        <Animated.View style={[styles.overlay, overlayStyle]}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+      <View className="flex-1 justify-end">
+        <Animated.View className="absolute inset-0 bg-black/40" style={overlayStyle}>
+          <Pressable className="absolute inset-0" onPress={onClose} />
         </Animated.View>
 
         <Animated.View
-          style={[
-            styles.sheet,
-            sheetStyle,
-            { paddingBottom: insets.bottom + 16 },
-          ]}
+          className="bg-white rounded-t-[20px]"
+          style={[sheetStyle, { height: SHEET_HEIGHT, paddingBottom: insets.bottom + 16 }]}
         >
-          <View style={styles.dragHandle}>
-            <View style={styles.dragHandleBar} />
+          <View className="items-center py-2.5">
+            <View className="w-9 h-1 rounded-sm bg-gray-300" />
           </View>
 
-          <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>바로가기</Text>
+          <View className="flex-row justify-between items-center px-5 pb-4">
+            <Text className="text-lg font-bold text-foreground">바로가기</Text>
             <TouchableOpacity onPress={onClose} activeOpacity={0.7}>
               <X size={22} color="#666" />
             </TouchableOpacity>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-            <Text style={styles.sectionTitle}>블로그 모음</Text>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 20 }}>
+            <Text className="text-sm font-semibold text-gray-500 px-2 mb-3">블로그 모음</Text>
             <BlogGrid blogs={BLOG_AGGREGATORS} onPress={onSelectBlog} />
 
-            <Text style={[styles.sectionTitle, { marginTop: 24 }]}>테크 블로그</Text>
+            <Text className="text-sm font-semibold text-gray-500 px-2 mb-3 mt-6">테크 블로그</Text>
             <BlogGrid blogs={TECH_BLOGS} onPress={onSelectBlog} />
 
             <TouchableOpacity
-              style={styles.inquiryBtn}
+              className="flex-row items-center justify-center gap-1.5 mt-6 py-3 mx-2 rounded-xl bg-input"
               onPress={() => Linking.openURL("https://open.kakao.com/o/sido56Pg")}
               activeOpacity={0.7}
             >
               <MessageCircle size={16} color="#666" />
-              <Text style={styles.inquiryText}>블로그 추가 문의하기</Text>
+              <Text className="text-sm text-gray-500 font-medium">블로그 추가 문의하기</Text>
             </TouchableOpacity>
           </ScrollView>
         </Animated.View>
@@ -166,112 +165,3 @@ export function TechBlogBottomSheet({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.4)",
-  },
-  sheet: {
-    height: SHEET_HEIGHT,
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  dragHandle: {
-    alignItems: "center",
-    paddingVertical: 10,
-  },
-  dragHandleBar: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#d1d5db",
-  },
-  sheetHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-  },
-  sheetTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#111",
-  },
-  scrollContent: {
-    paddingHorizontal: 12,
-    paddingBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#666",
-    paddingHorizontal: 8,
-    marginBottom: 12,
-  },
-  gridRow: {
-    flexDirection: "row",
-    marginBottom: 16,
-  },
-  blogItem: {
-    flex: 1,
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 4,
-  },
-  logoContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
-    backgroundColor: "#f5f5f5",
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-  },
-  logoImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 4,
-  },
-  logoFallback: {
-    width: 36,
-    height: 36,
-    borderRadius: 4,
-    backgroundColor: "#e0e0e0",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logoFallbackText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#666",
-  },
-  blogName: {
-    fontSize: 11,
-    color: "#555",
-    textAlign: "center",
-    lineHeight: 14,
-  },
-  inquiryBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    marginTop: 24,
-    paddingVertical: 12,
-    marginHorizontal: 8,
-    borderRadius: 12,
-    backgroundColor: "#f5f5f5",
-  },
-  inquiryText: {
-    fontSize: 14,
-    color: "#666",
-    fontWeight: "500",
-  },
-});

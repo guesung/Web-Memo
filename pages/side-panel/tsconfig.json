@@ -8,5 +8,5 @@
 		},
 		"types": ["chrome", "node"]
 	},
-	"include": ["src", "svg.d.ts"]
+	"include": ["src"]
 }

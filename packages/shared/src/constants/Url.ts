@@ -4,7 +4,8 @@ export const URL = {
 	googleForm: "https://forms.gle/qHkL7PeknaCy5QfY6",
 	chromeStore:
 		"https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
-	appStore: "https://apps.apple.com/kr/app/%EC%9B%B9-%EB%A9%94%EB%AA%A8/id6759237784",
+	appStore:
+		"https://apps.apple.com/kr/app/%EC%9B%B9-%EB%A9%94%EB%AA%A8/id6759237784",
 	instagram: "https://www.instagram.com/webmemo",
 	github: "https://github.com/guesung/webmemo",
 	twitter: "https://twitter.com/webmemo",

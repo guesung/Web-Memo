@@ -4,10 +4,6 @@ import baseConfig from "@web-memo/tailwindcss-config";
 export default {
 	...baseConfig,
 	darkMode: ["class"],
-	content: [
-		"./src/**/*.{js,ts,jsx,tsx}",
-		"./node_modules/@web-memo/ui/lib/**/*.{tsx,ts,js,jsx}",
-		"./node_modules/@web-memo/ui/src/**/*.{tsx,ts,js,jsx}",
-	],
+	content: ["./src/**/*.{js,ts,jsx,tsx}", ...baseConfig.content],
 	plugins: [require("@tailwindcss/typography"), require("tailwindcss-animate")],
 };

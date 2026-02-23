@@ -4,6 +4,7 @@ import { URL } from "@web-memo/shared/constants";
 import { Check, Chrome, Globe, Sparkles, Star, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { CHROME_STORE_STATS } from "../../_constants";
 import { HeroAnimations } from "./HeroAnimations";
 
 interface HeroProps extends LanguageType {}
@@ -38,12 +39,12 @@ export default async function Hero({ lng }: HeroProps) {
 								))}
 							</div>
 							<span className="font-semibold text-gray-900 dark:text-gray-100">
-								5.0
+								{CHROME_STORE_STATS.rating}
 							</span>
 							<div className="w-px h-4 bg-gray-300 dark:bg-gray-600" />
 							<div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
 								<Users className="h-4 w-4" />
-								<span>300+ users</span>
+								<span>{CHROME_STORE_STATS.userCount}+ users</span>
 							</div>
 						</div>
 

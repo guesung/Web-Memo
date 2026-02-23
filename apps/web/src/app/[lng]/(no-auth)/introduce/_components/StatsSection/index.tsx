@@ -5,6 +5,7 @@ import useTranslation from "@src/modules/i18n/util.client";
 import { motion, useInView } from "framer-motion";
 import { Clock, FileText, Star, Users } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { CHROME_STORE_STATS } from "../../_constants";
 
 interface StatsSectionProps extends LanguageType {
 	stats?: {
@@ -59,7 +60,7 @@ export default function StatsSection({ lng, stats }: StatsSectionProps) {
 	const statItems = [
 		{
 			icon: Users,
-			value: stats?.userCount ?? 250,
+			value: stats?.userCount ?? CHROME_STORE_STATS.userCount,
 			suffix: "+",
 			label: t("introduce.stats.active_users"),
 			description: t("introduce.stats.active_users_desc"),
@@ -79,7 +80,7 @@ export default function StatsSection({ lng, stats }: StatsSectionProps) {
 		},
 		{
 			icon: Star,
-			value: stats?.rating ?? 5.0,
+			value: stats?.rating ?? CHROME_STORE_STATS.rating,
 			suffix: "",
 			label: t("introduce.stats.average_rating"),
 			description: t("introduce.stats.average_rating_desc"),

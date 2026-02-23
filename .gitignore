@@ -64,3 +64,4 @@ test-results
 ios
 android
 .expo
+*.ipa

@@ -15,7 +15,7 @@
       "backgroundColor": "#5b93f0"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.webmemo.app",
       "buildNumber": "1",
       "usesAppleSignIn": true,

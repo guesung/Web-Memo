@@ -23,6 +23,7 @@
 			"inputs": [".env"]
 		},
 		"start": {
+			"dependsOn": ["build"],
 			"outputs": ["dist", "build", ".next"],
 			"inputs": [".env"]
 		},

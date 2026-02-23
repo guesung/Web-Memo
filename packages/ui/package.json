@@ -1,6 +1,6 @@
 {
 	"name": "@web-memo/ui",
-	"version": "1.9.7",
+	"version": "1.10.2",
 	"description": "chrome extension ui components",
 	"private": true,
 	"sideEffects": false,

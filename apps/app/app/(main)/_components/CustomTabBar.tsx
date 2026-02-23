@@ -1,14 +1,14 @@
+import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { FileText, Globe, Settings } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
 
 const TAB_CONFIG: Record<string, { icon: typeof FileText; label: string }> = {
-  index: { icon: FileText, label: "메모" },
-  browser: { icon: Globe, label: "브라우저" },
-  settings: { icon: Settings, label: "설정" },
+  "index": { icon: FileText, label: "메모" },
+  "browser/index": { icon: Globe, label: "브라우저" },
+  "settings/index": { icon: Settings, label: "설정" },
 };
 
 export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {

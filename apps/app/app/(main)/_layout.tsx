@@ -1,6 +1,6 @@
-import { CustomTabBar } from "./_components/CustomTabBar";
 import { BrowserScrollProvider } from "@/lib/context/BrowserScrollContext";
 import { Tabs } from "expo-router";
+import { CustomTabBar } from "./_components/CustomTabBar";
 
 export default function MainLayout() {
   return (
@@ -11,7 +11,6 @@ export default function MainLayout() {
       >
         <Tabs.Screen name="index" />
         <Tabs.Screen name="browser" />
-        <Tabs.Screen name="search" options={{ href: null }} />
         <Tabs.Screen name="settings" />
       </Tabs>
     </BrowserScrollProvider>

@@ -65,3 +65,4 @@ ios
 android
 .expo
 *.ipa
+*.aab

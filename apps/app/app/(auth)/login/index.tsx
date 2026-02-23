@@ -1,27 +1,32 @@
-import { SocialLoginButton } from "./_components/SocialLoginButton";
 import { useOAuth } from "@/lib/auth/useOAuth";
-import { Sparkles } from "lucide-react-native";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Text,
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { SocialLoginButton } from "./_components/SocialLoginButton";
+import type { Provider } from './_types/provider';
 
 export default function LoginScreen() {
   const { signInWithGoogle, signInWithKakao, signInWithApple, isAppleAvailable } = useOAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async (provider: "google" | "kakao" | "apple") => {
+  const handleLogin = async (provider: Provider) => {
     try {
       setIsLoading(true);
-      if (provider === "google") {
-        await signInWithGoogle();
-      } else if (provider === "kakao") {
-        await signInWithKakao();
-      } else {
-        await signInWithApple();
+      switch (provider) {
+        case "google":
+          await signInWithGoogle();
+          break;
+        case "kakao":
+          await signInWithKakao();
+          break;
+        case "apple":
+          await signInWithApple();
+          break;
       }
     } catch (error) {
       console.error("로그인 에러:", error);
@@ -35,7 +40,7 @@ export default function LoginScreen() {
       <View className="flex-1 justify-center px-8">
         <View className="items-center mb-10 gap-3">
           <View
-            className="w-16 h-16 rounded-2xl items-center justify-center bg-accent mb-1"
+            className="w-16 h-16 rounded-2xl items-center justify-center mb-1 overflow-hidden"
             style={{
               shadowColor: "#7c3aed",
               shadowOffset: { width: 0, height: 4 },
@@ -44,11 +49,15 @@ export default function LoginScreen() {
               elevation: 8,
             }}
           >
-            <Sparkles size={32} color="#fff" />
+            <Image
+              source={require("../../../assets/icon.png")}
+              style={{ width: 64, height: 64 }}
+              resizeMode="contain"
+            />
           </View>
-          <Text className="text-2xl font-bold text-foreground">Web Memo</Text>
+          <Text className="text-2xl font-bold text-foreground">웹 메모</Text>
           <Text className="text-sm text-gray-500 text-center">
-            웹을 탐색하고 메모를 쉽게 저장하세요
+            아티클 읽으며 간편하게 메모하세요.
           </Text>
         </View>
 

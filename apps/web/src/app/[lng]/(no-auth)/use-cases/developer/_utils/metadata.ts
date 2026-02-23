@@ -21,7 +21,8 @@ export const metadataKorean: Metadata = {
 	},
 	openGraph: {
 		title: "개발자를 위한 웹 메모 - 코드 스니펫 & 기술 자료 정리 | 웹 메모",
-		description: "Stack Overflow 답변, GitHub 이슈, 기술 블로그를 체계적으로 정리하세요.",
+		description:
+			"Stack Overflow 답변, GitHub 이슈, 기술 블로그를 체계적으로 정리하세요.",
 		images: ["/og-image.png"],
 		type: "website",
 	},
@@ -47,7 +48,8 @@ export const metadataEnglish: Metadata = {
 		},
 	},
 	openGraph: {
-		title: "Web Memo for Developers - Code Snippets & Tech Resources | Web Memo",
+		title:
+			"Web Memo for Developers - Code Snippets & Tech Resources | Web Memo",
 		description:
 			"Organize Stack Overflow answers, GitHub issues, and tech blogs systematically.",
 		images: ["/og-image.png"],

@@ -20,7 +20,8 @@ export const metadataKorean: Metadata = {
 	},
 	openGraph: {
 		title: "기술 아티클 정리 도구 - 개발 블로그 & 뉴스레터 관리 | 웹 메모",
-		description: "기술 블로그, 뉴스레터, 개발 아티클의 핵심 내용을 체계적으로 정리하세요.",
+		description:
+			"기술 블로그, 뉴스레터, 개발 아티클의 핵심 내용을 체계적으로 정리하세요.",
 		images: ["/og-image.png"],
 		type: "website",
 	},

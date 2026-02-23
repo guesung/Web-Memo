@@ -9,7 +9,7 @@ import Animated, {
   type SharedValue,
 } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { getFabPosition, saveFabPosition } from "@/lib/storage/browserPreferences";
+import { getFabPosition, saveFabPosition } from "../_utils/browserPreferences";
 
 const FAB_SIZE = 56;
 const EDGE_MARGIN = 20;

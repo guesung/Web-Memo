@@ -1,3 +1,4 @@
+import { URL } from "@web-memo/shared/constants";
 import { ChevronRight, MessageCircle } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import {
@@ -15,7 +16,7 @@ import {
   QUICK_ACCESS_COUNT,
   TECH_BLOGS,
   type TechBlog,
-} from "./techBlogData";
+} from "../_constants/techBlogData";
 
 function BlogItem({
   blog,
@@ -108,7 +109,7 @@ export function TechBlogLinks({
 
       <TouchableOpacity
         className="flex-row items-center justify-center gap-1.5 mt-8 mb-4 py-3 mx-5 rounded-xl bg-input"
-        onPress={() => Linking.openURL("https://open.kakao.com/o/sido56Pg")}
+        onPress={() => Linking.openURL(URL.kakaoTalk)}
         activeOpacity={0.7}
       >
         <MessageCircle size={16} color="#666" />

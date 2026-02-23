@@ -1,5 +1,5 @@
-import { MemoCard, type MemoItem } from "@/components/memo/MemoCard";
-import { MemoDetailModal } from "@/components/memo/MemoDetailModal";
+import { MemoCard, type MemoItem } from "./_components/MemoCard";
+import { MemoDetailModal } from "./_components/MemoDetailModal";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocalMemoDelete, useLocalMemos, useLocalMemoUpsert, useLocalMemoWishToggle } from "@/lib/hooks/useLocalMemos";
 import { useDeleteMemoMutation, useMemoUpsertMutation, useMemoWishToggleMutation } from "@/lib/hooks/useMemoMutation";

@@ -1,7 +1,20 @@
-import { DraggableFab } from "@/components/browser/DraggableFab";
-import { MemoPanel } from "@/components/browser/MemoPanel";
-import { TechBlogBottomSheet } from "@/components/browser/TechBlogBottomSheet";
-import { TechBlogLinks } from "@/components/browser/TechBlogLinks";
+import { DraggableFab } from "./_components/DraggableFab";
+import { MemoPanel } from "./_components/MemoPanel";
+import { TechBlogBottomSheet } from "./_components/TechBlogBottomSheet";
+import { TechBlogLinks } from "./_components/TechBlogLinks";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
+import { useLocalMemoByUrl, useLocalMemoWishToggle } from "@/lib/hooks/useLocalMemos";
+import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
+import { useMemoWishToggleMutation } from "@/lib/hooks/useMemoMutation";
+import {
+  INJECTED_JS_ON_NAVIGATION,
+  SCROLL_DETECT_JS,
+} from "./_utils/webViewScripts";
+import { getPanelRatio, savePanelRatio } from "./_utils/browserPreferences";
+import { useFocusEffect } from "@react-navigation/native";
+import * as Haptics from "expo-haptics";
+import { useLocalSearchParams } from "expo-router";
 import {
   Heart,
   Home,
@@ -10,13 +23,6 @@ import {
   Search,
   X,
 } from "lucide-react-native";
-import * as Haptics from "expo-haptics";
-import { useAuth } from "@/lib/auth/AuthProvider";
-import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
-import { useLocalMemoByUrl, useLocalMemoWishToggle } from "@/lib/hooks/useLocalMemos";
-import { useMemoWishToggleMutation } from "@/lib/hooks/useMemoMutation";
-import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
-import { getPanelRatio, savePanelRatio } from "@/lib/storage/browserPreferences";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Keyboard,
@@ -28,19 +34,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
-  useSharedValue,
+  runOnJS,
   useAnimatedStyle,
+  useSharedValue,
   withSpring,
   withTiming,
-  runOnJS,
 } from "react-native-reanimated";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { WebViewNavigation } from "react-native-webview";
 import { WebView } from "react-native-webview";
-import { useLocalSearchParams } from "expo-router";
-import { useFocusEffect } from "@react-navigation/native";
 
 const SPRING_CONFIG = { damping: 20, stiffness: 150 };
 const MIN_PANEL_RATIO = 0.15;
@@ -49,52 +53,6 @@ const DEFAULT_PANEL_RATIO = 0.4;
 const HEADER_HEIGHT = 44;
 const TAB_BAR_HEIGHT = 60;
 const HIDE_DURATION = 250;
-
-const FAVICON_EXTRACT_JS = `
-(function() {
-  var el = document.querySelector('link[rel="icon"]')
-    || document.querySelector('link[rel="shortcut icon"]')
-    || document.querySelector('link[rel="apple-touch-icon-precomposed"]')
-    || document.querySelector('link[rel="apple-touch-icon"]');
-  var href = el && el.href ? el.href : (window.location.origin + '/favicon.ico');
-  window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'favicon', url: href }));
-})();
-true;
-`;
-
-const SCROLL_DETECT_JS = `
-(function() {
-  if (window.__webmemoScrollSetup) return;
-  window.__webmemoScrollSetup = true;
-  var lastScrollY = window.scrollY;
-  var ticking = false;
-  window.addEventListener('scroll', function() {
-    if (!ticking) {
-      requestAnimationFrame(function() {
-        var currentY = window.scrollY;
-        if (currentY <= 5) {
-          window.ReactNativeWebView.postMessage(JSON.stringify({
-            type: 'scroll', direction: 'top', scrollY: currentY
-          }));
-          lastScrollY = currentY;
-        } else {
-          var delta = currentY - lastScrollY;
-          if (Math.abs(delta) > 5) {
-            window.ReactNativeWebView.postMessage(JSON.stringify({
-              type: 'scroll', direction: delta > 0 ? 'down' : 'up', scrollY: currentY
-            }));
-            lastScrollY = currentY;
-          }
-        }
-        ticking = false;
-      });
-      ticking = true;
-    }
-  }, { passive: true });
-})(); true;
-`;
-
-const INJECTED_JS = `${FAVICON_EXTRACT_JS}\n${SCROLL_DETECT_JS}`;
 
 export default function BrowserScreen() {
   const insets = useSafeAreaInsets();
@@ -105,8 +63,6 @@ export default function BrowserScreen() {
   const [pageTitle, setPageTitle] = useState("");
   const [pageFavIconUrl, setPageFavIconUrl] = useState<string | undefined>(undefined);
   const [urlInput, setUrlInput] = useState("");
-  const [canGoBack, setCanGoBack] = useState(false);
-  const [canGoForward, setCanGoForward] = useState(false);
   const [isMemoOpen, setIsMemoOpen] = useState(false);
   const [isBlogSheetOpen, setIsBlogSheetOpen] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
@@ -162,8 +118,6 @@ export default function BrowserScreen() {
   const handleNavigationStateChange = (navState: WebViewNavigation) => {
     setCurrentUrl(navState.url);
     setPageTitle(navState.title ?? "");
-    setCanGoBack(navState.canGoBack);
-    setCanGoForward(navState.canGoForward);
     setPageFavIconUrl(undefined);
     try {
       const parsed = new URL(navState.url);
@@ -173,7 +127,7 @@ export default function BrowserScreen() {
     }
 
     if (navState.loading === false) {
-      webViewRef.current?.injectJavaScript(INJECTED_JS);
+      webViewRef.current?.injectJavaScript(INJECTED_JS_ON_NAVIGATION);
     }
   };
 

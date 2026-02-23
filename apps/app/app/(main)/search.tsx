@@ -1,7 +1,8 @@
-import { MemoCard, type MemoItem } from "@/components/memo/MemoCard";
+import { MemoCard, type MemoItem } from "./_components/MemoCard";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocalMemos } from "@/lib/hooks/useLocalMemos";
 import { useMemosInfinite } from "@/lib/hooks/useMemos";
+import { useRouter } from "expo-router";
 import { Search as SearchIcon } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import {
@@ -12,7 +13,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 
 export default function SearchScreen() {
   const insets = useSafeAreaInsets();
@@ -108,7 +108,7 @@ export default function SearchScreen() {
           renderItem={({ item }) => (
             <MemoCard memo={item} onPress={() => handleMemoPress(item.url)} />
           )}
-          contentContainerClassName="px-5 pb-8"
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 8 }}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}
           ListFooterComponent={

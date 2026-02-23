@@ -1,13 +1,13 @@
-import { SocialLoginButton } from "@/components/auth/SocialLoginButton";
+import { SocialLoginButton } from "./_components/SocialLoginButton";
 import { useOAuth } from "@/lib/auth/useOAuth";
 import { Sparkles } from "lucide-react-native";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  SafeAreaView,
   Text,
   View
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
   const { signInWithGoogle, signInWithKakao, signInWithApple, isAppleAvailable } = useOAuth();

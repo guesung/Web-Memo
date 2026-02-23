@@ -1,3 +1,4 @@
+import { URL } from "@web-memo/shared/constants";
 import { MessageCircle, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -17,7 +18,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BLOG_AGGREGATORS, BLOG_LOGO_BASE_URL, TECH_BLOGS, type TechBlog } from "./techBlogData";
+import { BLOG_AGGREGATORS, BLOG_LOGO_BASE_URL, TECH_BLOGS, type TechBlog } from "../_constants/techBlogData";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.7;
@@ -153,7 +154,7 @@ export function TechBlogBottomSheet({
 
             <TouchableOpacity
               className="flex-row items-center justify-center gap-1.5 mt-6 py-3 mx-2 rounded-xl bg-input"
-              onPress={() => Linking.openURL("https://open.kakao.com/o/sido56Pg")}
+              onPress={() => Linking.openURL(URL.kakaoTalk)}
               activeOpacity={0.7}
             >
               <MessageCircle size={16} color="#666" />

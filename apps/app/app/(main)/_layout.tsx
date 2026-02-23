@@ -1,4 +1,4 @@
-import { CustomTabBar } from "@/components/navigation/CustomTabBar";
+import { CustomTabBar } from "./_components/CustomTabBar";
 import { BrowserScrollProvider } from "@/lib/context/BrowserScrollContext";
 import { Tabs } from "expo-router";
 

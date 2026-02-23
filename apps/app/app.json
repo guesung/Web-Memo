@@ -21,6 +21,7 @@
       "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
+        "UIViewControllerBasedStatusBarAppearance": true,
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [

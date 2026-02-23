@@ -121,7 +121,6 @@
 		"react-dom": "^19.0.0"
 	},
 	"devDependencies": {
-		"supabase": "^1.192.5",
 		"@web-memo/env": "workspace:*",
 		"@web-memo/tsconfig": "workspace:*",
 		"@types/chrome": "^0.0.268",

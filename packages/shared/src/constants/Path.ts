@@ -22,6 +22,8 @@ export const PATHS = {
 	useCasesJobHunting: "/use-cases/job-hunting",
 	useCasesNewsReading: "/use-cases/news-reading",
 	useCasesYoutubeNotes: "/use-cases/youtube-notes",
+	useCasesDeveloper: "/use-cases/developer",
+	useCasesTechArticle: "/use-cases/tech-article",
 };
 
 export const NEED_AUTH_PAGES = [

@@ -40,7 +40,7 @@ export function DraggableFab({ onPress, panelHeight, bottomInset }: DraggableFab
         fabOffsetY.value = Math.min(pos.y, maxY);
       }
     });
-  }, []);
+  }, [fabOffsetX, fabOffsetY, maxY, screenWidth]);
 
   const persistPosition = (x: number, y: number) => {
     saveFabPosition({ x, y });

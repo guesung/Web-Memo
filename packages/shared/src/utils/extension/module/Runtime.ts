@@ -25,7 +25,7 @@ export class Runtime {
 	static sendMessageToExtension<TResponse>(
 		type: BRIDGE_MESSAGE_TYPE,
 		callback?: (response: TResponse) => void,
-	): Promise<TResponse> | void {
+	): Promise<TResponse> | undefined {
 		if (callback) {
 			chrome.runtime.sendMessage(EXTENSION.id, { type }, callback);
 		} else {
@@ -39,7 +39,7 @@ export class Runtime {
 			request: BridgeRequest<TPayload>,
 			sender: chrome.runtime.MessageSender,
 			sendResponse: (response: TResponse) => void,
-		) => void | boolean | Promise<unknown>,
+		) => undefined | boolean | Promise<unknown>,
 	) {
 		chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			if (request.type === type) {

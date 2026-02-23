@@ -112,7 +112,7 @@ export default function BrowserScreen() {
         panelHeight.value = withSpring(0, SPRING_CONFIG);
       }
     }
-  }, [paramUrl]);
+  }, [paramUrl, isMemoOpen, panelHeight]);
 
   const handleNavigationStateChange = (navState: WebViewNavigation) => {
     setCurrentUrl(navState.url);

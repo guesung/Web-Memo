@@ -62,7 +62,7 @@ export function MemoPanel({ url, pageTitle, favIconUrl, onClose }: MemoPanelProp
       setMemoText("");
     }
     setSaved(false);
-  }, [existingMemo?.memo, url]);
+  }, [existingMemo?.memo]);
 
   const onSaveSuccess = () => {
     setSaved(true);

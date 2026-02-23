@@ -1,5 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+	content: [
+		"./node_modules/@web-memo/ui/lib/**/*.{tsx,ts,js,jsx}",
+		"./node_modules/@web-memo/ui/src/**/*.{tsx,ts,js,jsx}",
+	],
 	plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 	theme: {
 		extend: {

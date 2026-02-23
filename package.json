@@ -53,6 +53,7 @@
 		"react-dom": "19.1.0",
 		"rimraf": "^6.0.1",
 		"run-script-os": "^1.1.6",
+		"supabase": "^1.192.5",
 		"syncpack": "^14.0.0",
 		"tsc-watch": "^6.2.1",
 		"turbo": "^2.1.1",

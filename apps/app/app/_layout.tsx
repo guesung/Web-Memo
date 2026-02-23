@@ -50,7 +50,7 @@ export default function RootLayout() {
         </Stack>
         </GestureHandlerRootView>
         <SyncOnAuth />
-        <StatusBar style="auto" />
+        <StatusBar style="dark" />
       </AuthProvider>
     </QueryClientProvider>
   );

@@ -1,22 +1,22 @@
-import { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  Keyboard,
-  Platform,
-  Image,
-} from "react-native";
-import { Save, Check, ChevronDown, FileText, X } from "lucide-react-native";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import {
   useLocalMemoByUrl,
   useLocalMemoUpsert,
 } from "@/lib/hooks/useLocalMemos";
-import { useAuth } from "@/lib/auth/AuthProvider";
 import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
 import { useMemoUpsertMutation } from "@/lib/hooks/useMemoMutation";
+import { Check, ChevronDown, FileText, Save, X } from "lucide-react-native";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Keyboard,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface MemoPanelProps {
   url: string;
@@ -26,8 +26,7 @@ interface MemoPanelProps {
 }
 
 export function MemoPanel({ url, pageTitle, favIconUrl, onClose }: MemoPanelProps) {
-  const { session } = useAuth();
-  const isLoggedIn = !!session;
+  const { isLoggedIn } = useAuth();
 
   const [memoText, setMemoText] = useState("");
   const [saved, setSaved] = useState(false);

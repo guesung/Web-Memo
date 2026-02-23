@@ -1,5 +1,3 @@
-import { MemoCard, type MemoItem } from "./_components/MemoCard";
-import { MemoDetailModal } from "./_components/MemoDetailModal";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocalMemoDelete, useLocalMemos, useLocalMemoUpsert, useLocalMemoWishToggle } from "@/lib/hooks/useLocalMemos";
 import { useDeleteMemoMutation, useMemoUpsertMutation, useMemoWishToggleMutation } from "@/lib/hooks/useMemoMutation";
@@ -15,12 +13,13 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { MemoCard, type MemoItem } from "./_components/MemoCard";
+import { MemoDetailModal } from "./_components/MemoDetailModal";
 
 export default function MemoScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { session } = useAuth();
-  const isLoggedIn = !!session;
+  const { isLoggedIn } = useAuth();
   const [filter, setFilter] = useState<"all" | "wish">("all");
   const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
 

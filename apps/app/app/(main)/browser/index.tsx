@@ -1,17 +1,8 @@
-import { DraggableFab } from "./_components/DraggableFab";
-import { MemoPanel } from "./_components/MemoPanel";
-import { TechBlogBottomSheet } from "./_components/TechBlogBottomSheet";
-import { TechBlogLinks } from "./_components/TechBlogLinks";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
 import { useLocalMemoByUrl, useLocalMemoWishToggle } from "@/lib/hooks/useLocalMemos";
 import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
 import { useMemoWishToggleMutation } from "@/lib/hooks/useMemoMutation";
-import {
-  INJECTED_JS_ON_NAVIGATION,
-  SCROLL_DETECT_JS,
-} from "./_utils/webViewScripts";
-import { getPanelRatio, savePanelRatio } from "./_utils/browserPreferences";
 import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
@@ -45,6 +36,15 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { WebViewNavigation } from "react-native-webview";
 import { WebView } from "react-native-webview";
+import { DraggableFab } from "./_components/DraggableFab";
+import { MemoPanel } from "./_components/MemoPanel";
+import { TechBlogBottomSheet } from "./_components/TechBlogBottomSheet";
+import { TechBlogLinks } from "./_components/TechBlogLinks";
+import { getPanelRatio, savePanelRatio } from "./_utils/browserPreferences";
+import {
+  INJECTED_JS_ON_NAVIGATION,
+  SCROLL_DETECT_JS,
+} from "./_utils/webViewScripts";
 
 const SPRING_CONFIG = { damping: 20, stiffness: 150 };
 const MIN_PANEL_RATIO = 0.15;
@@ -69,8 +69,7 @@ export default function BrowserScreen() {
   const [wishToast, setWishToast] = useState<string | null>(null);
   const [savedRatio, setSavedRatio] = useState(DEFAULT_PANEL_RATIO);
 
-  const { session } = useAuth();
-  const isLoggedIn = !!session;
+  const { isLoggedIn } = useAuth();
 
   const { data: supabaseMemo } = useSupabaseMemoByUrl(currentUrl, isLoggedIn);
   const { data: localMemo } = useLocalMemoByUrl(currentUrl);

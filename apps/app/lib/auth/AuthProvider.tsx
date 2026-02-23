@@ -1,3 +1,5 @@
+import { supabase } from "@/lib/supabase/client";
+import type { Session } from "@supabase/supabase-js";
 import {
   createContext,
   useContext,
@@ -5,18 +7,18 @@ import {
   useState,
   type PropsWithChildren,
 } from "react";
-import type { Session } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase/client";
 
 interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
+  isLoggedIn: boolean;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
   isLoading: true,
+  isLoggedIn: false,
   signOut: async () => {},
 });
 
@@ -44,8 +46,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setSession(null);
   };
 
+  const isLoggedIn = !!session;
+
   return (
-    <AuthContext.Provider value={{ session, isLoading, signOut }}>
+    <AuthContext.Provider value={{ session, isLoading, signOut, isLoggedIn }}>
       {children}
     </AuthContext.Provider>
   );

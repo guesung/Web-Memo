@@ -79,7 +79,7 @@ Task received
 
 ## Development Commands
 
-**Package Manager**: This project uses `pnpm` (version 9.5.0) and requires Node.js >=18.12.0.
+**Package Manager**: This project uses `pnpm` (version 10.23.0) and requires Node.js >=22.17.0.
 
 ### Core Development Commands
 ```bash

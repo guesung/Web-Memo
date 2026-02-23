@@ -1,5 +1,8 @@
 import { type Language, SUPPORTED_LANGUAGES } from "@src/modules/i18n";
+import { CONFIG } from "@web-memo/env";
 import Script from "next/script";
+
+const baseUrl = CONFIG.webUrl;
 
 interface JsonLDProps {
 	lng: Language;
@@ -9,8 +12,8 @@ const getOrganizationSchema = (lng: Language) => ({
 	"@context": "https://schema.org",
 	"@type": "Organization",
 	name: lng === "ko" ? "웹 메모" : "Web Memo",
-	url: process.env.NEXT_PUBLIC_WEB_URL || "https://webmemo.site",
-	logo: `${process.env.NEXT_PUBLIC_WEB_URL || "https://webmemo.site"}/og-image.png`,
+	url: baseUrl,
+	logo: `${baseUrl}/og-image.png`,
 	sameAs: [
 		"https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
 	],
@@ -30,7 +33,7 @@ const getSoftwareApplicationSchema = (lng: Language) => ({
 		lng === "ko"
 			? "웹페이지를 읽으며 생각을 즉시 기록할 수 있는 크롬 확장 프로그램입니다. AI로 유튜브 영상을 요약하고, 아티클을 체계적으로 관리하세요."
 			: "A Chrome extension that lets you instantly record your thoughts while reading web pages. Summarize YouTube videos with AI and manage articles systematically.",
-	url: process.env.NEXT_PUBLIC_WEB_URL || "https://webmemo.site",
+	url: baseUrl,
 	applicationCategory: "BrowserApplication",
 	operatingSystem: "Chrome, Edge, Brave, Arc",
 	inLanguage: SUPPORTED_LANGUAGES,
@@ -54,7 +57,7 @@ const getSoftwareApplicationSchema = (lng: Language) => ({
 		"https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
 	installUrl:
 		"https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
-	screenshot: `${process.env.NEXT_PUBLIC_WEB_URL || "https://webmemo.site"}/og-image.png`,
+	screenshot: `${baseUrl}/og-image.png`,
 	featureList:
 		lng === "ko"
 			? [

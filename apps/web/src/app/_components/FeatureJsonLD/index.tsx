@@ -1,4 +1,5 @@
 import type { Language } from "@src/modules/i18n";
+import { CONFIG } from "@web-memo/env";
 import Script from "next/script";
 
 interface FeatureJsonLDProps {
@@ -47,7 +48,7 @@ const FEATURE_DATA = {
 
 export default function FeatureJsonLD({ lng, feature }: FeatureJsonLDProps) {
 	const data = FEATURE_DATA[feature][lng];
-	const baseUrl = process.env.NEXT_PUBLIC_WEB_URL || "https://webmemo.site";
+	const baseUrl = CONFIG.webUrl;
 
 	const webPageSchema = {
 		"@context": "https://schema.org",

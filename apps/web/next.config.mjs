@@ -1,6 +1,5 @@
 import bundleAnalyzer from "@next/bundle-analyzer";
 import { withSentryConfig } from "@sentry/nextjs";
-import { CONFIG } from "@web-memo/env";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -26,7 +25,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 export default withSentryConfig(withBundleAnalyzer(nextConfig), {
 	org: "guesung",
 	project: "web-memo",
-	authToken: CONFIG.sentryAuthToken,
+	authToken: process.env.SENTRY_AUTH_TOKEN,
 	sourcemaps: {
 		deleteSourcemapsAfterUpload: true,
 	},

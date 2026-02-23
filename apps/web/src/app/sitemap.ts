@@ -1,9 +1,10 @@
 import { SUPPORTED_LANGUAGES } from "@src/modules/i18n";
+import { CONFIG } from "@web-memo/env";
 import { PATHS } from "@web-memo/shared/constants";
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-	const baseUrl = process.env.NEXT_PUBLIC_WEB_URL || "https://webmemo.site";
+	const baseUrl = CONFIG.webUrl;
 	const lastModified = new Date().toISOString();
 
 	const pathConfigs = [
@@ -35,6 +36,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
 		},
 		{
 			path: PATHS.useCasesLearning,
+			priority: 0.7,
+			changeFrequency: "monthly" as const,
+		},
+		{
+			path: PATHS.useCasesDeveloper,
+			priority: 0.7,
+			changeFrequency: "monthly" as const,
+		},
+		{
+			path: PATHS.useCasesTechArticle,
 			priority: 0.7,
 			changeFrequency: "monthly" as const,
 		},

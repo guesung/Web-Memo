@@ -22,10 +22,6 @@ export const CONFIG = {
 	),
 	sentryDsnExtension: getSafeConfig("SENTRY_DSN", process.env.SENTRY_DSN),
 	sentryDsnWeb: getSafeConfig("SENTRY_DSN_WEB", process.env.SENTRY_DSN_WEB),
-	sentryAuthToken: getSafeConfig(
-		"SENTRY_AUTH_TOKEN",
-		process.env.SENTRY_AUTH_TOKEN,
-	),
 	nodeEnv: getSafeConfig("NODE_ENV", process.env.NODE_ENV) as
 		| "development"
 		| "staging"

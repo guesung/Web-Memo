@@ -46,6 +46,7 @@ jobs:
       - name: Vercel Build
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: vercel build ${{ github.ref == 'refs/heads/master' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy staging

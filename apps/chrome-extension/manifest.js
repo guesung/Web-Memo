@@ -67,10 +67,6 @@ const manifest = deepmerge(
 			},
 		},
 		key: CONFIG.extensionKey,
-		oauth2: {
-			client_id: CONFIG.oauth2ClientId,
-			scopes: ["openid", "email", "profile"],
-		},
 	},
 	{
 		side_panel: {

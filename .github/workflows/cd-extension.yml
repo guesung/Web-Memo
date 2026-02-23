@@ -28,6 +28,8 @@ jobs:
           echo NODE_ENV=production >> packages/env/.env
 
       - name: Build
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: pnpm run build:extension
 
       - name: Zip the build files

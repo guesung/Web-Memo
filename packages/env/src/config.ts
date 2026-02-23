@@ -22,21 +22,12 @@ export const CONFIG = {
 	),
 	sentryDsnExtension: getSafeConfig("SENTRY_DSN", process.env.SENTRY_DSN),
 	sentryDsnWeb: getSafeConfig("SENTRY_DSN_WEB", process.env.SENTRY_DSN_WEB),
-	sentryAuthToken: getSafeConfig(
-		"SENTRY_AUTH_TOKEN",
-		process.env.SENTRY_AUTH_TOKEN,
-	),
 	nodeEnv: getSafeConfig("NODE_ENV", process.env.NODE_ENV) as
 		| "development"
 		| "staging"
 		| "production",
-	youtubeTranscriptUrl: getSafeConfig(
-		"YOUTUBE_TRANSCRIPT_URL",
-		process.env.YOUTUBE_TRANSCRIPT_URL,
-	),
 	gaId: getSafeConfig("GA_ID", process.env.GA_ID),
 	gtmId: getSafeConfig("GTM_ID", process.env.GTM_ID),
 	gaApiSecret: getSafeConfig("GA_API_SECRET", process.env.GA_API_SECRET),
 	extensionKey: getOptionalConfig(process.env.EXTENSION_KEY),
-	oauth2ClientId: getOptionalConfig(process.env.OAUTH2_CLIENT_ID),
 };

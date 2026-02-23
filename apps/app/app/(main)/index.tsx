@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocalMemoDelete, useLocalMemos, useLocalMemoUpsert, useLocalMemoWishToggle } from "@/lib/hooks/useLocalMemos";
 import { useDeleteMemoMutation, useMemoUpsertMutation, useMemoWishToggleMutation } from "@/lib/hooks/useMemoMutation";
 import { useMemosInfinite } from "@/lib/hooks/useMemos";
+import { useRouter } from "expo-router";
 import { Globe, Heart, Undo2 } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
 import {
@@ -14,7 +15,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 
 export default function MemoScreen() {
   const insets = useSafeAreaInsets();
@@ -154,7 +154,7 @@ export default function MemoScreen() {
                   onDelete={() => handleDelete(item)}
                 />
               )}
-              contentContainerClassName="pb-8"
+              contentContainerStyle={{ paddingBottom: 8 }}
               onRefresh={() => refetch()}
               refreshing={false}
               onEndReached={handleEndReached}

@@ -23,7 +23,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -303,13 +302,13 @@ export default function BrowserScreen() {
 
   if (!currentUrl) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <ScrollView style={styles.emptyContainer} keyboardShouldPersistTaps="handled">
-          <View style={styles.emptySearchBarWrap}>
-            <View style={styles.emptySearchBar}>
+      <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+        <ScrollView className="flex-1 pt-4" keyboardShouldPersistTaps="handled">
+          <View className="px-5">
+            <View className="flex-row items-center bg-input rounded-[14px] px-3.5 py-3 gap-2.5">
               <Search size={18} color="#999" />
               <TextInput
-                style={styles.emptySearchInput}
+                className="flex-1 text-base text-[#333] p-0"
                 value={urlInput}
                 onChangeText={setUrlInput}
                 onSubmitEditing={handleUrlSubmit}
@@ -330,15 +329,16 @@ export default function BrowserScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { paddingTop: insets.top }]}
+      className="flex-1 bg-white"
+      style={{ paddingTop: insets.top }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <Animated.View style={[styles.headerWrapper, headerWrapperStyle]}>
-        <View style={styles.browserHeader}>
-          <View style={styles.browserUrlBar}>
+      <Animated.View className="overflow-hidden" style={headerWrapperStyle}>
+        <View className="flex-row items-center px-1.5 py-1.5 gap-0.5 border-b border-border bg-white">
+          <View className="flex-1 flex-row items-center bg-input rounded-[10px] px-2.5 py-2 gap-1.5">
             <Search size={14} color="#999" />
             <TextInput
-              style={styles.browserUrlInput}
+              className="flex-1 text-sm text-[#333] p-0"
               value={urlInput}
               onChangeText={setUrlInput}
               onFocus={() => setUrlInput(currentUrl)}
@@ -356,16 +356,16 @@ export default function BrowserScreen() {
               </TouchableOpacity>
             )}
           </View>
-          <TouchableOpacity onPress={() => webViewRef.current?.reload()} style={styles.navBtn}>
+          <TouchableOpacity onPress={() => webViewRef.current?.reload()} className="p-1.5">
             <RotateCw size={16} color="#111" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => { setCurrentUrl(""); setUrlInput(""); setPageTitle(""); }} style={styles.navBtn}>
+          <TouchableOpacity onPress={() => { setCurrentUrl(""); setUrlInput(""); setPageTitle(""); }} className="p-1.5">
             <Home size={16} color="#111" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setIsBlogSheetOpen(true)} style={styles.navBtn}>
+          <TouchableOpacity onPress={() => setIsBlogSheetOpen(true)} className="p-1.5">
             <LayoutGrid size={16} color="#111" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleWishToggle} style={styles.navBtn}>
+          <TouchableOpacity onPress={handleWishToggle} className="p-1.5">
             <Heart
               size={16}
               color={isCurrentPageWish ? "#ec4899" : "#111"}
@@ -376,17 +376,17 @@ export default function BrowserScreen() {
       </Animated.View>
 
       <View
-        style={styles.contentArea}
+        className="flex-1"
         onLayout={(e) => setContentHeight(e.nativeEvent.layout.height)}
       >
-        <View style={styles.webviewContainer}>
+        <View className="flex-1">
           <WebView
             ref={webViewRef}
             source={{ uri: currentUrl }}
             onNavigationStateChange={handleNavigationStateChange}
             onMessage={handleWebViewMessage}
             injectedJavaScript={SCROLL_DETECT_JS}
-            style={styles.webview}
+            className="flex-1"
             javaScriptEnabled
             domStorageEnabled
             startInLoadingState
@@ -394,10 +394,10 @@ export default function BrowserScreen() {
           />
         </View>
 
-        <Animated.View style={[styles.memoContainer, memoAnimatedStyle]}>
+        <Animated.View className="border-t border-border bg-white overflow-hidden" style={memoAnimatedStyle}>
           <GestureDetector gesture={resizeGesture}>
-            <Animated.View style={styles.dragHandle}>
-              <View style={styles.dragHandleBar} />
+            <Animated.View className="items-center justify-center py-2">
+              <View className="w-9 h-1 rounded-sm bg-gray-300" />
             </Animated.View>
           </GestureDetector>
           <MemoPanel url={currentUrl} pageTitle={pageTitle} favIconUrl={pageFavIconUrl} onClose={closePanel} />
@@ -413,9 +413,9 @@ export default function BrowserScreen() {
       )}
 
       {wishToast ? (
-        <View style={[styles.wishToast, { bottom: insets.bottom + 84 }]}>
+        <View className="absolute self-center flex-row items-center gap-1.5 bg-black/80 px-4 py-2.5 rounded-[20px]" style={{ bottom: insets.bottom + 84 }}>
           <Heart size={14} fill="#ec4899" color="#ec4899" />
-          <Text style={styles.wishToastText}>{wishToast}</Text>
+          <Text className="text-white text-sm font-semibold">{wishToast}</Text>
         </View>
       ) : null}
 
@@ -431,80 +431,3 @@ export default function BrowserScreen() {
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  emptyContainer: { flex: 1, paddingTop: 16 },
-  emptySearchBarWrap: { paddingHorizontal: 20 },
-  emptySearchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 10,
-  },
-  emptySearchInput: { flex: 1, fontSize: 16, color: "#333", padding: 0 },
-  headerWrapper: {
-    overflow: "hidden",
-  },
-  browserHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 6,
-    paddingVertical: 6,
-    gap: 2,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-    backgroundColor: "#fff",
-  },
-  navBtn: { padding: 6 },
-  browserUrlBar: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    gap: 6,
-  },
-  browserUrlInput: { flex: 1, fontSize: 14, color: "#333", padding: 0 },
-  contentArea: { flex: 1 },
-  webviewContainer: { flex: 1 },
-  webview: { flex: 1 },
-  memoContainer: {
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-    backgroundColor: "#fff",
-    overflow: "hidden",
-  },
-  dragHandle: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 8,
-  },
-  dragHandleBar: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#d1d5db",
-  },
-  wishToast: {
-    position: "absolute",
-    alignSelf: "center",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "rgba(0,0,0,0.8)",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  wishToastText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-});

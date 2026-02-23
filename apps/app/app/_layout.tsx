@@ -1,3 +1,4 @@
+import "../global.css";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthProvider";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

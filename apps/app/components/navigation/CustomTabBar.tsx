@@ -1,6 +1,6 @@
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { FileText, Globe, Settings } from "lucide-react-native";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
@@ -28,7 +28,8 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
   return (
     <Animated.View style={wrapperStyle}>
       <View
-        style={[styles.container, { paddingBottom: insets.bottom }]}
+        className="flex-row bg-white border-t border-border pt-2"
+        style={{ paddingBottom: insets.bottom }}
         onLayout={(e) => {
           if (barHeight.value === 0) {
             barHeight.value = e.nativeEvent.layout.height;
@@ -70,11 +71,11 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
               accessibilityLabel={options.tabBarAccessibilityLabel}
               onPress={onPress}
               onLongPress={onLongPress}
-              style={styles.tab}
+              className="flex-1 items-center justify-center py-1 gap-0.5"
               activeOpacity={0.7}
             >
               <Icon size={22} color={isFocused ? "#111" : "#999"} />
-              <Text style={[styles.label, isFocused && styles.labelActive]}>
+              <Text className={`text-[11px] mt-0.5 ${isFocused ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
                 {config.label}
               </Text>
             </TouchableOpacity>
@@ -84,29 +85,3 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
     </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-    paddingTop: 8,
-  },
-  tab: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 4,
-    gap: 2,
-  },
-  label: {
-    fontSize: 11,
-    color: "#999",
-    marginTop: 2,
-  },
-  labelActive: {
-    color: "#111",
-    fontWeight: "600",
-  },
-});

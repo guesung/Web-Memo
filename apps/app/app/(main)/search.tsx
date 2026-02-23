@@ -7,7 +7,6 @@ import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -74,16 +73,16 @@ export default function SearchScreen() {
   );
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <Text style={styles.title}>검색</Text>
+    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+      <View className="px-5 pt-4 pb-1">
+        <Text className="text-[22px] font-extrabold text-foreground tracking-tight">검색</Text>
       </View>
 
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
+      <View className="px-5 mt-3 mb-5">
+        <View className="flex-row items-center bg-input rounded-[14px] px-3.5 py-3 gap-2.5">
           <SearchIcon size={18} color="#999" />
           <TextInput
-            style={styles.searchInput}
+            className="flex-1 text-base text-[#333] p-0"
             value={searchQuery}
             onChangeText={setSearchQuery}
             onSubmitEditing={handleSearch}
@@ -96,9 +95,9 @@ export default function SearchScreen() {
       </View>
 
       {!submittedQuery ? (
-        <View style={styles.emptyState}>
+        <View className="items-center pt-[60px] gap-3">
           <SearchIcon size={48} color="#ddd" />
-          <Text style={styles.emptyText}>메모를 검색해보세요</Text>
+          <Text className="text-[15px] text-gray-300">메모를 검색해보세요</Text>
         </View>
       ) : isLoading ? (
         <ActivityIndicator style={{ marginTop: 40 }} size="large" />
@@ -109,7 +108,7 @@ export default function SearchScreen() {
           renderItem={({ item }) => (
             <MemoCard memo={item} onPress={() => handleMemoPress(item.url)} />
           )}
-          contentContainerStyle={styles.resultsList}
+          contentContainerClassName="px-5 pb-8"
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}
           ListFooterComponent={
@@ -117,34 +116,10 @@ export default function SearchScreen() {
           }
         />
       ) : (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>검색 결과가 없습니다</Text>
+        <View className="items-center pt-[60px] gap-3">
+          <Text className="text-[15px] text-gray-300">검색 결과가 없습니다</Text>
         </View>
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 4,
-  },
-  title: { fontSize: 22, fontWeight: "800", color: "#111", letterSpacing: -0.5 },
-  searchContainer: { paddingHorizontal: 20, marginTop: 12, marginBottom: 20 },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 10,
-  },
-  searchInput: { flex: 1, fontSize: 16, color: "#333", padding: 0 },
-  resultsList: { paddingHorizontal: 20, paddingBottom: 32 },
-  emptyState: { alignItems: "center", paddingTop: 60, gap: 12 },
-  emptyText: { fontSize: 15, color: "#bbb" },
-});

@@ -5,7 +5,6 @@ import { useState } from "react";
 import {
   ActivityIndicator,
   SafeAreaView,
-  StyleSheet,
   Text,
   View
 } from "react-native";
@@ -32,19 +31,28 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <View style={styles.iconBox}>
+    <SafeAreaView className="flex-1 bg-white">
+      <View className="flex-1 justify-center px-8">
+        <View className="items-center mb-10 gap-3">
+          <View
+            className="w-16 h-16 rounded-2xl items-center justify-center bg-accent mb-1"
+            style={{
+              shadowColor: "#7c3aed",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
             <Sparkles size={32} color="#fff" />
           </View>
-          <Text style={styles.title}>Web Memo</Text>
-          <Text style={styles.subtitle}>
+          <Text className="text-2xl font-bold text-foreground">Web Memo</Text>
+          <Text className="text-sm text-gray-500 text-center">
             웹을 탐색하고 메모를 쉽게 저장하세요
           </Text>
         </View>
 
-        <View style={styles.buttons}>
+        <View className="gap-3">
           {isAppleAvailable && (
             <SocialLoginButton
               provider="apple"
@@ -63,57 +71,10 @@ export default function LoginScreen() {
             disabled={isLoading}
           />
           {isLoading && (
-            <ActivityIndicator size="small" style={styles.loading} />
+            <ActivityIndicator size="small" className="mt-4" />
           )}
         </View>
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 32,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 40,
-    gap: 12,
-  },
-  iconBox: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#7c3aed",
-    shadowColor: "#7c3aed",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#111",
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-  },
-  buttons: {
-    gap: 12,
-  },
-  loading: {
-    marginTop: 16,
-  },
-});

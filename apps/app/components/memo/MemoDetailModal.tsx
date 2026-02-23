@@ -6,7 +6,6 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -99,34 +98,34 @@ export function MemoDetailModal({
 
   return (
     <Modal visible={modalVisible} transparent statusBarTranslucent>
-      <View style={styles.modalContainer}>
-        <Animated.View style={[styles.overlay, overlayStyle]}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+      <View className="flex-1 justify-end">
+        <Animated.View className="absolute inset-0 bg-black/40" style={overlayStyle}>
+          <Pressable className="absolute inset-0" onPress={onClose} />
         </Animated.View>
 
         <Animated.View
-          style={[
-            styles.sheet,
-            sheetStyle,
-            { paddingBottom: insets.bottom + 16 },
-          ]}
+          className="bg-white rounded-t-[20px]"
+          style={[sheetStyle, { height: SHEET_HEIGHT, paddingBottom: insets.bottom + 16 }]}
         >
-          <View style={styles.dragHandle}>
-            <View style={styles.dragHandleBar} />
+          <View className="items-center py-2.5">
+            <View className="w-9 h-1 rounded-sm bg-gray-300" />
           </View>
 
-          <View style={styles.header}>
+          <View className="flex-row items-center justify-between px-5 pb-3 gap-2">
             {favIconUrl ? (
-              <Image source={{ uri: favIconUrl }} style={styles.favicon} />
+              <Image
+                source={{ uri: favIconUrl }}
+                style={{ width: 14, height: 14, borderRadius: 2 }}
+              />
             ) : (
               <FileText size={14} color="#666" />
             )}
             <TouchableOpacity
-              style={styles.titleContainer}
+              className="flex-1"
               onPress={handleNavigate}
               activeOpacity={0.7}
             >
-              <Text style={styles.title} numberOfLines={1}>
+              <Text className="text-base font-semibold text-foreground" numberOfLines={1}>
                 {title}
               </Text>
             </TouchableOpacity>
@@ -136,35 +135,35 @@ export function MemoDetailModal({
           </View>
 
           <ScrollView
-            style={styles.body}
-            contentContainerStyle={styles.bodyContent}
+            className="flex-1 px-5"
+            contentContainerStyle={{ paddingBottom: 12 }}
             showsVerticalScrollIndicator={false}
           >
-            <Text style={styles.memoText}>{memoText}</Text>
+            <Text className="text-[15px] text-[#333] leading-[22px]">{memoText}</Text>
           </ScrollView>
 
-          <View style={styles.footer}>
-            <View style={styles.footerLeft}>
+          <View className="flex-row items-center justify-between px-5 pt-2 pb-1">
+            <View className="flex-row items-center gap-2">
               {domain ? (
-                <View style={styles.domainRow}>
+                <View className="flex-row items-center gap-1">
                   <Globe size={11} color="#999" />
-                  <Text style={styles.domainText}>{domain}</Text>
+                  <Text className="text-xs text-muted-foreground">{domain}</Text>
                 </View>
               ) : null}
               {formattedDate ? (
-                <Text style={styles.dateText}>{formattedDate}</Text>
+                <Text className="text-xs text-muted-foreground">{formattedDate}</Text>
               ) : null}
             </View>
           </View>
 
           {isWish ? (
             <TouchableOpacity
-              style={styles.wishRemoveButton}
+              className="flex-row items-center justify-center gap-1.5 mx-5 mt-2 py-2.5 border border-wish rounded-lg"
               onPress={handleWishRemove}
               activeOpacity={0.7}
             >
               <HeartOff size={14} color="#ec4899" />
-              <Text style={styles.wishRemoveText}>위시리스트에서 제거</Text>
+              <Text className="text-sm text-wish font-medium">위시리스트에서 제거</Text>
             </TouchableOpacity>
           ) : null}
         </Animated.View>
@@ -172,106 +171,3 @@ export function MemoDetailModal({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.4)",
-  },
-  sheet: {
-    height: SHEET_HEIGHT,
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  dragHandle: {
-    alignItems: "center",
-    paddingVertical: 10,
-  },
-  dragHandleBar: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#d1d5db",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingBottom: 12,
-    gap: 8,
-  },
-  favicon: {
-    width: 14,
-    height: 14,
-    borderRadius: 2,
-  },
-  titleContainer: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#111",
-  },
-  body: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  bodyContent: {
-    paddingBottom: 12,
-  },
-  memoText: {
-    fontSize: 15,
-    color: "#333",
-    lineHeight: 22,
-  },
-  footer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 4,
-  },
-  footerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  domainRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  domainText: {
-    fontSize: 12,
-    color: "#999",
-  },
-  dateText: {
-    fontSize: 12,
-    color: "#999",
-  },
-  wishRemoveButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    marginHorizontal: 20,
-    marginTop: 8,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: "#ec4899",
-    borderRadius: 8,
-  },
-  wishRemoveText: {
-    fontSize: 14,
-    color: "#ec4899",
-    fontWeight: "500",
-  },
-});

@@ -2,7 +2,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { ChevronRight, LogIn, LogOut, MessageCircle, User } from "lucide-react-native";
-import { Alert, Linking, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Linking, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SettingsScreen() {
@@ -25,70 +25,76 @@ export default function SettingsScreen() {
   const appVersion = Constants.expoConfig?.version ?? "1.0.1";
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <Text style={styles.title}>설정</Text>
+    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+      <View className="px-5 pt-4 pb-4">
+        <Text className="text-[22px] font-extrabold text-foreground tracking-tight">설정</Text>
       </View>
 
-      <View style={styles.content}>
+      <View className="flex-1 px-5">
         {/* Account Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>계정</Text>
-          <View style={styles.card}>
+        <View className="mb-7">
+          <Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">계정</Text>
+          <View className="bg-card rounded-[14px] p-4 border border-muted">
             {isLoggedIn ? (
               <>
-                <View style={styles.accountRow}>
-                  <View style={styles.avatar}>
+                <View className="flex-row items-center gap-3 mb-4">
+                  <View className="w-10 h-10 rounded-full bg-foreground justify-center items-center">
                     <User size={20} color="#fff" />
                   </View>
-                  <View style={styles.accountInfo}>
-                    <Text style={styles.email}>{session.user.email}</Text>
-                    <Text style={styles.accountLabel}>로그인됨</Text>
+                  <View className="flex-1">
+                    <Text className="text-[15px] font-semibold text-foreground">{session.user.email}</Text>
+                    <Text className="text-[13px] text-muted-foreground mt-0.5">로그인됨</Text>
                   </View>
                 </View>
-                <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
+                <TouchableOpacity
+                  className="flex-row items-center justify-center gap-2 py-2.5 rounded-[10px] border border-red-100 bg-red-50"
+                  onPress={handleSignOut}
+                >
                   <LogOut size={16} color="#ef4444" />
-                  <Text style={styles.logoutText}>로그아웃</Text>
+                  <Text className="text-sm font-semibold text-destructive">로그아웃</Text>
                 </TouchableOpacity>
               </>
             ) : (
-              <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+              <TouchableOpacity
+                className="flex-row items-center justify-center gap-2 py-3 rounded-[10px] bg-foreground"
+                onPress={handleLogin}
+              >
                 <LogIn size={18} color="#fff" />
-                <Text style={styles.loginText}>로그인</Text>
+                <Text className="text-[15px] font-semibold text-white">로그인</Text>
               </TouchableOpacity>
             )}
           </View>
         </View>
 
         {/* App Info Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>앱 정보</Text>
-          <View style={styles.card}>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>앱 이름</Text>
-              <Text style={styles.infoValue}>웹 메모</Text>
+        <View className="mb-7">
+          <Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">앱 정보</Text>
+          <View className="bg-card rounded-[14px] p-4 border border-muted">
+            <View className="flex-row justify-between items-center py-2">
+              <Text className="text-[15px] text-secondary-foreground">앱 이름</Text>
+              <Text className="text-[15px] text-foreground font-medium">웹 메모</Text>
             </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>버전</Text>
-              <Text style={styles.infoValue}>{appVersion}</Text>
+            <View className="flex-row justify-between items-center py-2">
+              <Text className="text-[15px] text-secondary-foreground">버전</Text>
+              <Text className="text-[15px] text-foreground font-medium">{appVersion}</Text>
             </View>
           </View>
         </View>
 
         {/* Support Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>지원</Text>
-          <View style={styles.card}>
+        <View className="mb-7">
+          <Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">지원</Text>
+          <View className="bg-card rounded-[14px] p-4 border border-muted">
             <TouchableOpacity
-              style={styles.infoRow}
+              className="flex-row justify-between items-center py-2"
               onPress={() => Linking.openURL("https://open.kakao.com/o/sido56Pg")}
               activeOpacity={0.6}
             >
-              <View style={styles.supportRow}>
+              <View className="flex-row items-center gap-2">
                 <MessageCircle size={16} color="#555" />
-                <Text style={styles.infoLabel}>문의하기</Text>
+                <Text className="text-[15px] text-secondary-foreground">문의하기</Text>
               </View>
-              <View style={styles.supportRow}>
+              <View className="flex-row items-center gap-2">
                 <ChevronRight size={14} color="#999" />
               </View>
             </TouchableOpacity>
@@ -98,86 +104,3 @@ export default function SettingsScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
-  },
-  title: { fontSize: 22, fontWeight: "800", color: "#111", letterSpacing: -0.5 },
-  content: { flex: 1, paddingHorizontal: 20 },
-  section: { marginBottom: 28 },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#999",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 10,
-  },
-  card: {
-    backgroundColor: "#fafafa",
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#f0f0f0",
-  },
-  accountRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 16,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#111",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  accountInfo: { flex: 1 },
-  email: { fontSize: 15, fontWeight: "600", color: "#111" },
-  accountLabel: { fontSize: 13, color: "#999", marginTop: 2 },
-  logoutButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#fee2e2",
-    backgroundColor: "#fef2f2",
-  },
-  logoutText: { fontSize: 14, fontWeight: "600", color: "#ef4444" },
-  loginButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: "#111",
-  },
-  loginText: { fontSize: 15, fontWeight: "600", color: "#fff" },
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  infoLabel: { fontSize: 15, color: "#555" },
-  infoValue: { fontSize: 15, color: "#111", fontWeight: "500" },
-  supportRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  supportHint: {
-    fontSize: 13,
-    color: "#999",
-  },
-});

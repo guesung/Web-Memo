@@ -3,12 +3,12 @@ import { MemoPanel } from "@/components/browser/MemoPanel";
 import { TechBlogBottomSheet } from "@/components/browser/TechBlogBottomSheet";
 import { TechBlogLinks } from "@/components/browser/TechBlogLinks";
 import {
-  ChevronLeft,
-  ChevronRight,
   Heart,
+  Home,
   LayoutGrid,
   RotateCw,
   Search,
+  X,
 } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -72,12 +72,20 @@ const SCROLL_DETECT_JS = `
   window.addEventListener('scroll', function() {
     if (!ticking) {
       requestAnimationFrame(function() {
-        var delta = window.scrollY - lastScrollY;
-        if (Math.abs(delta) > 5) {
+        var currentY = window.scrollY;
+        if (currentY <= 5) {
           window.ReactNativeWebView.postMessage(JSON.stringify({
-            type: 'scroll', direction: delta > 0 ? 'down' : 'up', scrollY: window.scrollY
+            type: 'scroll', direction: 'top', scrollY: currentY
           }));
-          lastScrollY = window.scrollY;
+          lastScrollY = currentY;
+        } else {
+          var delta = currentY - lastScrollY;
+          if (Math.abs(delta) > 5) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              type: 'scroll', direction: delta > 0 ? 'down' : 'up', scrollY: currentY
+            }));
+            lastScrollY = currentY;
+          }
         }
         ticking = false;
       });
@@ -199,7 +207,7 @@ export default function BrowserScreen() {
         currentIsWish: isCurrentPageWish,
       });
     } else {
-      wishToggleLocal.mutate(currentUrl);
+      wishToggleLocal.mutate({ url: currentUrl, title: pageTitle, favIconUrl: pageFavIconUrl });
     }
     setWishToast(isCurrentPageWish ? "위시리스트에서 제거" : "위시리스트에 추가");
     setTimeout(() => setWishToast(null), 1500);
@@ -210,9 +218,7 @@ export default function BrowserScreen() {
     setIsMemoOpen(true);
     const defaultH = contentHeight * savedRatio;
     panelHeight.value = withSpring(defaultH, SPRING_CONFIG);
-    headerTranslateY.value = withTiming(0, { duration: HIDE_DURATION });
-    tabBarTranslateY.value = withTiming(0, { duration: HIDE_DURATION });
-  }, [isMemoOpen, contentHeight, panelHeight, savedRatio, headerTranslateY, tabBarTranslateY]);
+  }, [isMemoOpen, contentHeight, panelHeight, savedRatio]);
 
   const closePanel = useCallback(() => {
     if (!isMemoOpen) return;
@@ -226,13 +232,13 @@ export default function BrowserScreen() {
       if (isMemoOpen) return;
       if (direction === "down") {
         headerTranslateY.value = withTiming(-HEADER_HEIGHT, { duration: HIDE_DURATION });
-        tabBarTranslateY.value = withTiming(TAB_BAR_HEIGHT, { duration: HIDE_DURATION });
-      } else if (direction === "up" || scrollY < 10) {
+        tabBarTranslateY.value = withTiming(TAB_BAR_HEIGHT + insets.bottom, { duration: HIDE_DURATION });
+      } else if (direction === "up" || direction === "top" || scrollY < 10) {
         headerTranslateY.value = withTiming(0, { duration: HIDE_DURATION });
         tabBarTranslateY.value = withTiming(0, { duration: HIDE_DURATION });
       }
     },
-    [isMemoOpen, headerTranslateY, tabBarTranslateY],
+    [isMemoOpen, headerTranslateY, tabBarTranslateY, insets.bottom],
   );
 
   const handleWebViewMessage = useCallback(
@@ -286,8 +292,8 @@ export default function BrowserScreen() {
     height: Math.max(0, panelHeight.value),
   }));
 
-  const headerAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: headerTranslateY.value }],
+  const headerWrapperStyle = useAnimatedStyle(() => ({
+    height: Math.max(0, HEADER_HEIGHT + headerTranslateY.value),
   }));
 
   const handleBlogSelect = useCallback((url: string) => {
@@ -307,10 +313,11 @@ export default function BrowserScreen() {
                 value={urlInput}
                 onChangeText={setUrlInput}
                 onSubmitEditing={handleUrlSubmit}
-                placeholder="URL 입력 또는 검색"
+                placeholder="검색어를 입력하세요"
+                placeholderTextColor="#999"
                 autoCapitalize="none"
                 autoCorrect={false}
-                keyboardType="url"
+                keyboardType="default"
                 returnKeyType="go"
               />
             </View>
@@ -326,50 +333,46 @@ export default function BrowserScreen() {
       style={[styles.container, { paddingTop: insets.top }]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <Animated.View style={[styles.browserHeader, headerAnimatedStyle]}>
-        <TouchableOpacity
-          onPress={() => webViewRef.current?.goBack()}
-          disabled={!canGoBack}
-          style={styles.navBtn}
-        >
-          <ChevronLeft size={20} color={canGoBack ? "#111" : "#ccc"} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => webViewRef.current?.goForward()}
-          disabled={!canGoForward}
-          style={styles.navBtn}
-        >
-          <ChevronRight size={20} color={canGoForward ? "#111" : "#ccc"} />
-        </TouchableOpacity>
-        <View style={styles.browserUrlBar}>
-          <Search size={14} color="#999" />
-          <TextInput
-            style={styles.browserUrlInput}
-            value={urlInput}
-            onChangeText={setUrlInput}
-            onFocus={() => setUrlInput(currentUrl)}
-            onSubmitEditing={handleUrlSubmit}
-            placeholder="Search or enter URL"
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="url"
-            returnKeyType="go"
-            selectTextOnFocus
-          />
+      <Animated.View style={[styles.headerWrapper, headerWrapperStyle]}>
+        <View style={styles.browserHeader}>
+          <View style={styles.browserUrlBar}>
+            <Search size={14} color="#999" />
+            <TextInput
+              style={styles.browserUrlInput}
+              value={urlInput}
+              onChangeText={setUrlInput}
+              onFocus={() => setUrlInput(currentUrl)}
+              onSubmitEditing={handleUrlSubmit}
+              placeholder="Search or enter URL"
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="url"
+              returnKeyType="go"
+              selectTextOnFocus
+            />
+            {urlInput.length > 0 && (
+              <TouchableOpacity onPress={() => setUrlInput("")} hitSlop={8}>
+                <X size={14} color="#999" />
+              </TouchableOpacity>
+            )}
+          </View>
+          <TouchableOpacity onPress={() => webViewRef.current?.reload()} style={styles.navBtn}>
+            <RotateCw size={16} color="#111" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => { setCurrentUrl(""); setUrlInput(""); setPageTitle(""); }} style={styles.navBtn}>
+            <Home size={16} color="#111" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setIsBlogSheetOpen(true)} style={styles.navBtn}>
+            <LayoutGrid size={16} color="#111" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleWishToggle} style={styles.navBtn}>
+            <Heart
+              size={16}
+              color={isCurrentPageWish ? "#ec4899" : "#111"}
+              fill={isCurrentPageWish ? "#ec4899" : "none"}
+            />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => webViewRef.current?.reload()} style={styles.navBtn}>
-          <RotateCw size={16} color="#111" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setIsBlogSheetOpen(true)} style={styles.navBtn}>
-          <LayoutGrid size={16} color="#111" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleWishToggle} style={styles.navBtn}>
-          <Heart
-            size={16}
-            color={isCurrentPageWish ? "#ec4899" : "#111"}
-            fill={isCurrentPageWish ? "#ec4899" : "none"}
-          />
-        </TouchableOpacity>
       </Animated.View>
 
       <View
@@ -401,11 +404,13 @@ export default function BrowserScreen() {
         </Animated.View>
       </View>
 
-      <DraggableFab
-        onPress={toggleMemo}
-        panelHeight={panelHeight}
-        bottomInset={insets.bottom}
-      />
+      {!isMemoOpen && (
+        <DraggableFab
+          onPress={toggleMemo}
+          panelHeight={panelHeight}
+          bottomInset={insets.bottom}
+        />
+      )}
 
       {wishToast ? (
         <View style={[styles.wishToast, { bottom: insets.bottom + 84 }]}>
@@ -441,6 +446,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   emptySearchInput: { flex: 1, fontSize: 16, color: "#333", padding: 0 },
+  headerWrapper: {
+    overflow: "hidden",
+  },
   browserHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -450,7 +458,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
     backgroundColor: "#fff",
-    zIndex: 10,
   },
   navBtn: { padding: 6 },
   browserUrlBar: {

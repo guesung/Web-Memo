@@ -44,8 +44,9 @@ export function useLocalMemoWishToggle() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (url: string) => toggleWishByUrl(url),
-    onSuccess: (_data, url) => {
+    mutationFn: ({ url, title, favIconUrl }: { url: string; title?: string; favIconUrl?: string }) =>
+      toggleWishByUrl(url, title, favIconUrl),
+    onSuccess: (_data, { url }) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
       queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemoByUrl(url) });
     },

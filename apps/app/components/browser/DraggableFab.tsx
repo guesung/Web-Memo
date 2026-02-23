@@ -13,6 +13,7 @@ import { getFabPosition, saveFabPosition } from "@/lib/storage/browserPreference
 
 const FAB_SIZE = 56;
 const EDGE_MARGIN = 20;
+const BOTTOM_SAFE_MARGIN = 70;
 const SPRING_CONFIG = { damping: 15, stiffness: 200 };
 
 interface DraggableFabProps {
@@ -30,11 +31,13 @@ export function DraggableFab({ onPress, panelHeight, bottomInset }: DraggableFab
   const dragStartY = useSharedValue(0);
   const isDragging = useSharedValue(false);
 
+  const maxY = screenHeight - FAB_SIZE - bottomInset - BOTTOM_SAFE_MARGIN;
+
   useEffect(() => {
     getFabPosition().then((pos) => {
       if (pos) {
-        fabOffsetX.value = pos.x;
-        fabOffsetY.value = pos.y;
+        fabOffsetX.value = Math.min(pos.x, screenWidth - FAB_SIZE - EDGE_MARGIN);
+        fabOffsetY.value = Math.min(pos.y, maxY);
       }
     });
   }, []);
@@ -56,7 +59,6 @@ export function DraggableFab({ onPress, panelHeight, bottomInset }: DraggableFab
       const minX = EDGE_MARGIN;
       const maxX = screenWidth - FAB_SIZE - EDGE_MARGIN;
       const minY = EDGE_MARGIN;
-      const maxY = screenHeight - FAB_SIZE - EDGE_MARGIN;
       fabOffsetX.value = Math.max(minX, Math.min(maxX, newX));
       fabOffsetY.value = Math.max(minY, Math.min(maxY, newY));
     })

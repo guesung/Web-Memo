@@ -74,7 +74,7 @@ export async function upsertMemo(params: {
   return newMemo;
 }
 
-export async function toggleWishByUrl(url: string): Promise<LocalMemo> {
+export async function toggleWishByUrl(url: string, title?: string, favIconUrl?: string): Promise<LocalMemo> {
   const memos = await getAll();
   const existing = memos.find((m) => m.url === url);
   const now = new Date().toISOString();
@@ -90,8 +90,9 @@ export async function toggleWishByUrl(url: string): Promise<LocalMemo> {
   const newMemo: LocalMemo = {
     id: `local_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     url,
-    title: "",
+    title: title || "",
     memo: "",
+    favIconUrl,
     isWish: true,
     createdAt: now,
     updatedAt: now,

@@ -65,12 +65,12 @@ export default function SettingsScreen() {
           <Text style={styles.sectionTitle}>앱 정보</Text>
           <View style={styles.card}>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>버전</Text>
-              <Text style={styles.infoValue}>{appVersion}</Text>
+              <Text style={styles.infoLabel}>앱 이름</Text>
+              <Text style={styles.infoValue}>웹 메모</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>앱 이름</Text>
-              <Text style={styles.infoValue}>Web Memo</Text>
+              <Text style={styles.infoLabel}>버전</Text>
+              <Text style={styles.infoValue}>{appVersion}</Text>
             </View>
           </View>
         </View>
@@ -86,10 +86,9 @@ export default function SettingsScreen() {
             >
               <View style={styles.supportRow}>
                 <MessageCircle size={16} color="#555" />
-                <Text style={styles.infoLabel}>개발자 연락망</Text>
+                <Text style={styles.infoLabel}>문의하기</Text>
               </View>
               <View style={styles.supportRow}>
-                <Text style={styles.supportHint}>카카오톡</Text>
                 <ChevronRight size={14} color="#999" />
               </View>
             </TouchableOpacity>

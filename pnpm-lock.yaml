@@ -94,6 +94,9 @@ importers:
       '@web-memo/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@web-memo/tailwindcss-config':
+        specifier: workspace:*
+        version: link:../../packages/tailwind-config
       expo:
         specifier: ~54.0.33
         version: 54.0.33(@babel/core@7.29.0)(@expo/metro-runtime@6.1.2)(expo-router@6.0.23)(react-native-webview@13.15.0(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -248,7 +251,7 @@ importers:
         version: 0.30.21
       ts-loader:
         specifier: ^9.5.1
-        version: 9.5.4(typescript@5.5.3)(webpack@5.105.2)
+        version: 9.5.4(typescript@5.9.3)(webpack@5.105.2)
       vite:
         specifier: 5.3.3
         version: 5.3.3(@types/node@20.19.33)(lightningcss@1.31.1)(terser@5.46.0)
@@ -461,7 +464,7 @@ importers:
         version: 4.57.1
       ts-node:
         specifier: ^10.9.2
-        version: 10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.5.3)
+        version: 10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.9.3)
       vite:
         specifier: 5.3.3
         version: 5.3.3(@types/node@20.19.33)(lightningcss@1.31.1)(terser@5.46.0)
@@ -519,14 +522,14 @@ importers:
     dependencies:
       tailwindcss:
         specifier: ^3.4.10
-        version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.5.3))
+        version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.9.3))
     devDependencies:
       '@tailwindcss/typography':
         specifier: ^0.5.14
-        version: 0.5.19(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.5.3)))
+        version: 0.5.19(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.9.3)))
       tailwindcss-animate:
         specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.5.3)))
+        version: 1.0.7(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.9.3)))
 
   packages/tsconfig: {}
 
@@ -666,7 +669,7 @@ importers:
         version: 1.7.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       tailwindcss-animate:
         specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.5.3)))
+        version: 1.0.7(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.9.3)))
       vaul:
         specifier: ^1.1.1
         version: 1.1.2(@types/react-dom@19.2.3(@types/react@19.1.17))(@types/react@19.1.17)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -703,7 +706,7 @@ importers:
         version: 8.5.6
       tailwindcss:
         specifier: ^3.4.10
-        version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.5.3))
+        version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.9.3))
 
   packages/vite-config:
     dependencies:
@@ -868,7 +871,7 @@ importers:
         version: 7.0.3
       tailwindcss:
         specifier: ^3.4.10
-        version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.5.3))
+        version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.9.3))
       vite:
         specifier: 5.3.3
         version: 5.3.3(@types/node@20.19.33)(lightningcss@1.31.1)(terser@5.46.0)
@@ -941,7 +944,7 @@ importers:
         version: 6.0.5(rollup@4.57.1)
       tailwindcss:
         specifier: ^3.4.10
-        version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.5.3))
+        version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.9.3))
       vite:
         specifier: 5.3.3
         version: 5.3.3(@types/node@20.19.33)(lightningcss@1.31.1)(terser@5.46.0)
@@ -16316,6 +16319,10 @@ snapshots:
     dependencies:
       tailwindcss: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.5.3))
 
+  tailwindcss-animate@1.0.7(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.9.3))):
+    dependencies:
+      tailwindcss: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.9.3))
+
   tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.9.3)):
     dependencies:
       '@alloc/quick-lru': 5.2.0
@@ -16512,14 +16519,14 @@ snapshots:
 
   ts-interface-checker@0.1.13: {}
 
-  ts-loader@9.5.4(typescript@5.5.3)(webpack@5.105.2):
+  ts-loader@9.5.4(typescript@5.9.3)(webpack@5.105.2):
     dependencies:
       chalk: 4.1.2
       enhanced-resolve: 5.19.0
       micromatch: 4.0.8
       semver: 7.7.4
       source-map: 0.7.6
-      typescript: 5.5.3
+      typescript: 5.9.3
       webpack: 5.105.2
 
   ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.5.3):
@@ -16541,6 +16548,7 @@ snapshots:
       yn: 3.1.1
     optionalDependencies:
       '@swc/core': 1.15.11
+    optional: true
 
   ts-node@10.9.2(@swc/core@1.15.11)(@types/node@20.19.33)(typescript@5.9.3):
     dependencies:
@@ -16561,7 +16569,6 @@ snapshots:
       yn: 3.1.1
     optionalDependencies:
       '@swc/core': 1.15.11
-    optional: true
 
   tsc-watch@6.3.1(typescript@5.5.3):
     dependencies:

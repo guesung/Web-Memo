@@ -10,8 +10,8 @@ export default function MainLayout() {
         screenOptions={{ headerShown: false }}
       >
         <Tabs.Screen name="index" />
-        <Tabs.Screen name="browser" />
-        <Tabs.Screen name="settings" />
+        <Tabs.Screen name="browser/index" />
+        <Tabs.Screen name="settings/index" />
       </Tabs>
     </BrowserScrollProvider>
   );

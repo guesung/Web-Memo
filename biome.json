@@ -9,6 +9,7 @@
 		"ignoreUnknown": false,
 		"includes": [
 			"**/src/**/*",
+			"**/app/**/*",
 			"e2e/tests/**/*",
 			"!**/dist/**",
 			"!**/node_modules/**",

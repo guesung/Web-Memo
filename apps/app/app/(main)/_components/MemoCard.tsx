@@ -58,18 +58,16 @@ export function MemoCard({ memo, onPress, onDelete }: MemoCardProps) {
 					>
 						{memo.title}
 					</Text>
-					{memo.isWish ? (
-						<Heart size={12} fill="#ec4899" color="#ec4899" />
-					) : null}
+					{memo.isWish && <Heart size={12} fill="#ec4899" color="#ec4899" />}
 				</View>
-				{memo.memo ? (
+				{memo.memo && (
 					<Text
 						className="text-sm text-secondary-foreground leading-5 mb-1.5"
 						numberOfLines={10}
 					>
 						{memo.memo}
 					</Text>
-				) : null}
+				)}
 			</TouchableOpacity>
 		</ReanimatedSwipeable>
 	);

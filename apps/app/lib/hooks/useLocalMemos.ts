@@ -6,7 +6,6 @@ import {
   deleteMemo,
   toggleWishByUrl,
 } from "@/lib/storage/localMemo";
-import { syncMemosToSupabase } from "@/lib/storage/syncService";
 
 const QUERY_KEY = {
   localMemos: ["localMemos"] as const,
@@ -64,13 +63,3 @@ export function useLocalMemoDelete() {
   });
 }
 
-export function useSyncMemos() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: syncMemosToSupabase,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
-    },
-  });
-}

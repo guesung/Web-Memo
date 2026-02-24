@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { useSharedValue, type SharedValue } from "react-native-reanimated";
+import { type SharedValue, useSharedValue } from "react-native-reanimated";
 
 interface BrowserScrollContextValue {
 	tabBarTranslateY: SharedValue<number>;

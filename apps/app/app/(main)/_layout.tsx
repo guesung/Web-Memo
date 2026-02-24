@@ -1,5 +1,5 @@
-import { BrowserScrollProvider } from "@/lib/context/BrowserScrollContext";
 import { Tabs } from "expo-router";
+import { BrowserScrollProvider } from "@/lib/context/BrowserScrollContext";
 import { CustomTabBar } from "./_components/CustomTabBar";
 
 export default function MainLayout() {

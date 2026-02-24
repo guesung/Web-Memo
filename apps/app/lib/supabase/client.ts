@@ -1,8 +1,8 @@
-import { CONFIG } from "@/lib/config";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@web-memo/shared/types";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
+import { CONFIG } from "@/lib/config";
 
 const ExpoSecureStoreAdapter = {
 	getItem: async (key: string): Promise<string | null> => {

@@ -1,12 +1,12 @@
-import { supabase } from "@/lib/supabase/client";
 import type { Session } from "@supabase/supabase-js";
 import {
 	createContext,
+	type PropsWithChildren,
 	useContext,
 	useEffect,
 	useState,
-	type PropsWithChildren,
 } from "react";
+import { supabase } from "@/lib/supabase/client";
 
 interface AuthContextType {
 	session: Session | null;

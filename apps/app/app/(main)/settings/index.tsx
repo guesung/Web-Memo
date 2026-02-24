@@ -1,4 +1,3 @@
-import { useAuth } from "@/lib/auth/AuthProvider";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import {
@@ -10,6 +9,7 @@ import {
 } from "lucide-react-native";
 import { Alert, Linking, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
 export default function SettingsScreen() {
 	const insets = useSafeAreaInsets();

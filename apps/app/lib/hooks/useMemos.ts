@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { MemoService } from "@web-memo/shared/utils/services";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import type { GetMemoResponse } from "@web-memo/shared/types";
+import { MemoService } from "@web-memo/shared/utils/services";
 import { supabase } from "@/lib/supabase/client";
 
 const PAGE_SIZE = 20;

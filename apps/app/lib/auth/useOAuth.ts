@@ -1,9 +1,9 @@
-import { CONFIG } from "@/lib/config";
-import { supabase } from "@/lib/supabase/client";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { login as kakaoLogin } from "@react-native-seoul/kakao-login";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { Platform } from "react-native";
+import { CONFIG } from "@/lib/config";
+import { supabase } from "@/lib/supabase/client";
 
 GoogleSignin.configure({
 	webClientId: CONFIG.googleWebClientId,

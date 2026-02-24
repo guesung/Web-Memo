@@ -1,7 +1,7 @@
-import { useOAuth } from "@/lib/auth/useOAuth";
 import { useState } from "react";
 import { ActivityIndicator, Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useOAuth } from "@/lib/auth/useOAuth";
 import { SocialLoginButton } from "./_components/SocialLoginButton";
 import type { Provider } from "./_types/provider";
 

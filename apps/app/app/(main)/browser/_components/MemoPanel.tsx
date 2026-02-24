@@ -1,10 +1,3 @@
-import { useAuth } from "@/lib/auth/AuthProvider";
-import {
-	useLocalMemoByUrl,
-	useLocalMemoUpsert,
-} from "@/lib/hooks/useLocalMemos";
-import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
-import { useMemoUpsertMutation } from "@/lib/hooks/useMemoMutation";
 import { Check, ChevronDown, FileText, Save, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -17,6 +10,13 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import {
+	useLocalMemoByUrl,
+	useLocalMemoUpsert,
+} from "@/lib/hooks/useLocalMemos";
+import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
+import { useMemoUpsertMutation } from "@/lib/hooks/useMemoMutation";
 
 interface MemoPanelProps {
 	url: string;

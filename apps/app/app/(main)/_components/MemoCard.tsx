@@ -1,4 +1,3 @@
-import type { LocalMemo } from "@/lib/storage/localMemo";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import { FileText, Heart, Trash2 } from "lucide-react-native";
 import { useRef } from "react";
@@ -11,6 +10,7 @@ import Animated, {
 	type SharedValue,
 	useAnimatedStyle,
 } from "react-native-reanimated";
+import type { LocalMemo } from "@/lib/storage/localMemo";
 
 export type MemoItem = LocalMemo | GetMemoResponse;
 

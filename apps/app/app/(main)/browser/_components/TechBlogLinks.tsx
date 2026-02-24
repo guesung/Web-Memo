@@ -9,7 +9,6 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { TechBlogBottomSheet } from "./TechBlogBottomSheet";
 import {
 	BLOG_AGGREGATORS,
 	BLOG_LOGO_BASE_URL,
@@ -17,6 +16,7 @@ import {
 	TECH_BLOGS,
 	type TechBlog,
 } from "../_constants/techBlogData";
+import { TechBlogBottomSheet } from "./TechBlogBottomSheet";
 
 function BlogItem({
 	blog,

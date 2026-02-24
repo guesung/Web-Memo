@@ -15,6 +15,7 @@
 			"!**/node_modules/**",
 			"!**/.next/**",
 			"!**/.vercel/**",
+			"!**/.expo/**",
 			"!**/tailwind-output.css"
 		]
 	},

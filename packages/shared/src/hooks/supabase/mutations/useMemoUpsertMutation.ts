@@ -68,11 +68,11 @@ export default function useMemoUpsertMutation() {
 			const isUpdate = !!previousMemo?.data?.[0];
 
 			const optimisticMemo: MemoRow = isUpdate
-				? {
+				? ({
 						...previousMemo.data?.[0],
 						...data,
 						updated_at: new Date().toISOString(),
-					}
+					} as MemoRow)
 				: {
 						id: -Date.now(),
 						user_id: "",

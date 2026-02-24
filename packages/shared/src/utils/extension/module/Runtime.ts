@@ -28,6 +28,7 @@ export class Runtime {
 	): Promise<TResponse> | undefined {
 		if (callback) {
 			chrome.runtime.sendMessage(EXTENSION.id, { type }, callback);
+			return undefined;
 		} else {
 			return chrome.runtime.sendMessage(EXTENSION.id, { type });
 		}

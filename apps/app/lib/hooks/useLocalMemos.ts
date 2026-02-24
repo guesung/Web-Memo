@@ -1,4 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	deleteMemo,
 	getAllMemos,
@@ -7,15 +6,16 @@ import {
 	upsertMemo,
 } from "@/lib/storage/localMemo";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const QUERY_KEY = {
-	localMemos: ["localMemos"] as const,
+	localMemos: () => ["localMemos"] as const,
 	localMemoByUrl: (url: string) => ["localMemo", url] as const,
 };
 
 export function useLocalMemos() {
 	return useQuery({
-		queryKey: QUERY_KEY.localMemos,
+		queryKey: QUERY_KEY.localMemos(),
 		queryFn: getAllMemos,
 	});
 }
@@ -34,7 +34,7 @@ export function useLocalMemoUpsert() {
 	return useMutation({
 		mutationFn: upsertMemo,
 		onSuccess: (_data, variables) => {
-			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos() });
 			queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.localMemoByUrl(variables.url),
 			});
@@ -56,7 +56,7 @@ export function useLocalMemoWishToggle() {
 			favIconUrl?: string;
 		}) => toggleWishByUrl(url, title, favIconUrl),
 		onSuccess: (_data, { url }) => {
-			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos() });
 			queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.localMemoByUrl(url),
 			});
@@ -70,7 +70,7 @@ export function useLocalMemoDelete() {
 	return useMutation({
 		mutationFn: deleteMemo,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos() });
 		},
 	});
 }
@@ -81,7 +81,7 @@ export function useSyncMemos() {
 	return useMutation({
 		mutationFn: syncMemosToSupabase,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos() });
 		},
 	});
 }

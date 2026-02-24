@@ -8,9 +8,11 @@ import { useMemosInfinite } from "@/lib/hooks/useMemos";
 import { useState } from "react";
 import type { MemoItem } from "../_components/MemoCard";
 
+type MemoFilter = "all" | "wish";
+
 export function useMemoList() {
 	const { isLoggedIn } = useAuth();
-	const [filter, setFilter] = useState<"all" | "wish">("all");
+	const [filter, setFilter] = useState<MemoFilter>("all");
 
 	const wishToggleLocal = useLocalMemoWishToggle();
 	const wishToggleSupabase = useMemoWishToggleMutation();

@@ -1,14 +1,3 @@
-import { useRouter } from "expo-router";
-import { Globe, Heart, Undo2 } from "lucide-react-native";
-import { useCallback, useRef, useState } from "react";
-import {
-	ActivityIndicator,
-	FlatList,
-	Text,
-	TouchableOpacity,
-	View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import {
 	useLocalMemoDelete,
@@ -22,6 +11,17 @@ import {
 	useMemoWishToggleMutation,
 } from "@/lib/hooks/useMemoMutation";
 import { useMemosInfinite } from "@/lib/hooks/useMemos";
+import { useRouter } from "expo-router";
+import { Globe, Heart, Undo2 } from "lucide-react-native";
+import { useCallback, useRef, useState } from "react";
+import {
+	ActivityIndicator,
+	FlatList,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MemoCard, type MemoItem } from "./_components/MemoCard";
 import { MemoDetailModal } from "./_components/MemoDetailModal";
 
@@ -125,12 +125,12 @@ export default function MemoScreen() {
 				{/* Header */}
 				<View className="flex-row justify-between items-center px-5 pt-4 pb-1">
 					<Text className="text-[22px] font-extrabold text-foreground tracking-tight">
-						Web Memo
+						웹 메모
 					</Text>
 				</View>
 
 				<Text className="text-sm text-gray-400 px-5 mb-4">
-					웹서핑하며 메모하세요
+					아티클 읽으며 간편하게 메모하세요
 				</Text>
 
 				<View className="flex-row px-5 mb-4 gap-2">

@@ -45,11 +45,9 @@ export function MemoPanel({
 			: null
 		: localMemo;
 
-	const { mutate: localMutate, isPending: isLocalPending } =
-		useLocalMemoUpsert();
-	const { mutate: supabaseMutate, isPending: isSupabasePending } =
-		useMemoUpsertMutation();
-	const isPending = isLoggedIn ? isSupabasePending : isLocalPending;
+	const localUpsert = useLocalMemoUpsert();
+	const supabaseUpsert = useMemoUpsertMutation();
+	const isPending = isLoggedIn ? supabaseUpsert.isPending : localUpsert.isPending;
 
 	useEffect(() => {
 		const showEvent =
@@ -94,7 +92,7 @@ export function MemoPanel({
 				memo: memoText.trim(),
 				favIconUrl: favIconUrl ?? null,
 			};
-			supabaseMutate(payload, { onSuccess: onSaveSuccess });
+			supabaseUpsert.mutate(payload, { onSuccess: onSaveSuccess });
 		} else {
 			const payload = {
 				url,
@@ -102,7 +100,7 @@ export function MemoPanel({
 				memo: memoText.trim(),
 				favIconUrl,
 			};
-			localMutate(payload, { onSuccess: onSaveSuccess });
+			localUpsert.mutate(payload, { onSuccess: onSaveSuccess });
 		}
 	};
 

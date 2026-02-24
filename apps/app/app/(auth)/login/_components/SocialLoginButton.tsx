@@ -1,4 +1,4 @@
-import { AppleIcon, GoogleIcon, KakaoIcon } from "@/lib/components/icons";
+import { AppleIcon, GoogleIcon, KakaoIcon } from "./icons";
 import { Text, TouchableOpacity } from "react-native";
 
 interface SocialLoginButtonProps {

@@ -1,19 +1,6 @@
-import { useAuth } from "@/lib/auth/AuthProvider";
-import {
-	useLocalMemoDelete,
-	useLocalMemos,
-	useLocalMemoUpsert,
-	useLocalMemoWishToggle,
-} from "@/lib/hooks/useLocalMemos";
-import {
-	useDeleteMemoMutation,
-	useMemoUpsertMutation,
-	useMemoWishToggleMutation,
-} from "@/lib/hooks/useMemoMutation";
-import { useMemosInfinite } from "@/lib/hooks/useMemos";
 import { useRouter } from "expo-router";
 import { Globe, Heart, Undo2 } from "lucide-react-native";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import {
 	ActivityIndicator,
 	FlatList,
@@ -24,84 +11,26 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MemoCard, type MemoItem } from "./_components/MemoCard";
 import { MemoDetailModal } from "./_components/MemoDetailModal";
+import { useDeleteWithUndo } from "./_hooks/useDeleteWithUndo";
+import { useMemoList } from "./_hooks/useMemoList";
 
 export default function MemoScreen() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
-	const { isLoggedIn } = useAuth();
-	const [filter, setFilter] = useState<"all" | "wish">("all");
 	const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
 
-	const wishToggleLocal = useLocalMemoWishToggle();
-	const wishToggleSupabase = useMemoWishToggleMutation();
-	const deleteLocal = useLocalMemoDelete();
-	const deleteSupabase = useDeleteMemoMutation();
-	const upsertLocal = useLocalMemoUpsert();
-	const upsertSupabase = useMemoUpsertMutation();
-
-	const [deletedMemo, setDeletedMemo] = useState<MemoItem | null>(null);
-	const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-	const handleDelete = useCallback(
-		(item: MemoItem) => {
-			if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
-			setDeletedMemo(item);
-			if (isLoggedIn) {
-				deleteSupabase.mutate(item.id as number);
-			} else {
-				deleteLocal.mutate(item.id as string);
-			}
-			deleteTimerRef.current = setTimeout(() => setDeletedMemo(null), 3000);
-		},
-		[isLoggedIn, deleteSupabase, deleteLocal],
-	);
-
-	const handleUndo = useCallback(() => {
-		if (!deletedMemo) return;
-		if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
-		if (isLoggedIn) {
-			const m = deletedMemo as import("@web-memo/shared/types").GetMemoResponse;
-			upsertSupabase.mutate({
-				url: m.url,
-				title: m.title,
-				memo: m.memo ?? "",
-				favIconUrl: m.favIconUrl ?? undefined,
-				isWish: m.isWish ?? false,
-			});
-		} else {
-			const m = deletedMemo as import("@/lib/storage/localMemo").LocalMemo;
-			upsertLocal.mutate({
-				url: m.url,
-				title: m.title,
-				memo: m.memo,
-				favIconUrl: m.favIconUrl,
-				isWish: m.isWish,
-			});
-		}
-		setDeletedMemo(null);
-	}, [deletedMemo, isLoggedIn, upsertSupabase, upsertLocal]);
-
 	const {
-		data: localMemosData,
-		isLoading: isLocalLoading,
-		refetch: refetchLocal,
-	} = useLocalMemos();
-	const {
-		data: supabaseMemosData,
-		isLoading: isSupabaseLoading,
-		refetch: refetchSupabase,
-		fetchNextPage,
-		hasNextPage,
+		filter,
+		setFilter,
+		memos,
+		isLoading,
+		refetch,
 		isFetchingNextPage,
-	} = useMemosInfinite(isLoggedIn ? { isWish: filter === "wish" } : undefined);
+		handleEndReached,
+		handleWishRemove,
+	} = useMemoList();
 
-	const memos: MemoItem[] = isLoggedIn
-		? (supabaseMemosData?.pages.flatMap((p) => p.data) ?? [])
-		: (localMemosData ?? []).filter((m) =>
-				filter === "wish" ? m.isWish : !m.isWish,
-			);
-	const isLoading = isLoggedIn ? isSupabaseLoading : isLocalLoading;
-	const refetch = isLoggedIn ? refetchSupabase : refetchLocal;
+	const { deletedMemo, handleDelete, handleUndo } = useDeleteWithUndo();
 
 	const navigateToBrowser = useCallback(
 		(url: string) => {
@@ -113,16 +42,9 @@ export default function MemoScreen() {
 		[router],
 	);
 
-	const handleEndReached = () => {
-		if (isLoggedIn && hasNextPage && !isFetchingNextPage) {
-			fetchNextPage();
-		}
-	};
-
 	return (
 		<View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
 			<View className="flex-1">
-				{/* Header */}
 				<View className="flex-row justify-between items-center px-5 pt-4 pb-1">
 					<Text className="text-[22px] font-extrabold text-foreground tracking-tight">
 						웹 메모
@@ -161,7 +83,6 @@ export default function MemoScreen() {
 					</TouchableOpacity>
 				</View>
 
-				{/* Memos */}
 				{isLoading ? (
 					<ActivityIndicator style={{ marginTop: 40 }} size="large" />
 				) : memos.length > 0 ? (
@@ -230,18 +151,7 @@ export default function MemoScreen() {
 					navigateToBrowser(url);
 				}}
 				onWishRemove={(memo) => {
-					if (isLoggedIn) {
-						const favIconUrl =
-							"favIconUrl" in memo ? (memo.favIconUrl ?? undefined) : undefined;
-						wishToggleSupabase.mutate({
-							url: memo.url,
-							title: memo.title,
-							favIconUrl,
-							currentIsWish: true,
-						});
-					} else {
-						wishToggleLocal.mutate({ url: memo.url });
-					}
+					handleWishRemove(memo);
 					setSelectedMemo(null);
 				}}
 			/>

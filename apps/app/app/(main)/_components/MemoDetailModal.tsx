@@ -17,6 +17,8 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { MemoItem } from "./MemoCard";
+import { extractDomain } from "../_utils/extractDomain";
+import { formatDate } from "../_utils/formatDate";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.6;
@@ -79,22 +81,13 @@ export function MemoDetailModal({
 	const favIconUrl = memo && "favIconUrl" in memo ? memo.favIconUrl : undefined;
 	const isWish = memo && "isWish" in memo ? memo.isWish : false;
 
-	let domain = "";
-	try {
-		if (memo?.url) domain = new URL(memo.url).hostname.replace("www.", "");
-	} catch {}
-
-	let formattedDate = "";
-	if (memo) {
-		const rawDate = "created_at" in memo ? memo.created_at : memo.createdAt;
-		if (rawDate) {
-			const d = new Date(rawDate);
-			const yyyy = d.getFullYear();
-			const mm = String(d.getMonth() + 1).padStart(2, "0");
-			const dd = String(d.getDate()).padStart(2, "0");
-			formattedDate = `${yyyy}.${mm}.${dd}`;
-		}
-	}
+	const domain = memo?.url ? extractDomain(memo.url) : "";
+	const rawDate = memo
+		? "created_at" in memo
+			? memo.created_at
+			: memo.createdAt
+		: undefined;
+	const formattedDate = rawDate ? formatDate(String(rawDate)) : "";
 
 	return (
 		<Modal visible={modalVisible} transparent statusBarTranslucent>

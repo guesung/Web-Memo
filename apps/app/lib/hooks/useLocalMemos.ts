@@ -1,76 +1,87 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  getAllMemos,
-  getMemoByUrl,
-  upsertMemo,
-  deleteMemo,
-  toggleWishByUrl,
+	getAllMemos,
+	getMemoByUrl,
+	upsertMemo,
+	deleteMemo,
+	toggleWishByUrl,
 } from "@/lib/storage/localMemo";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
 
 const QUERY_KEY = {
-  localMemos: ["localMemos"] as const,
-  localMemoByUrl: (url: string) => ["localMemo", url] as const,
+	localMemos: ["localMemos"] as const,
+	localMemoByUrl: (url: string) => ["localMemo", url] as const,
 };
 
 export function useLocalMemos() {
-  return useQuery({
-    queryKey: QUERY_KEY.localMemos,
-    queryFn: getAllMemos,
-  });
+	return useQuery({
+		queryKey: QUERY_KEY.localMemos,
+		queryFn: getAllMemos,
+	});
 }
 
 export function useLocalMemoByUrl(url: string) {
-  return useQuery({
-    queryKey: QUERY_KEY.localMemoByUrl(url),
-    queryFn: () => getMemoByUrl(url),
-    enabled: !!url,
-  });
+	return useQuery({
+		queryKey: QUERY_KEY.localMemoByUrl(url),
+		queryFn: () => getMemoByUrl(url),
+		enabled: !!url,
+	});
 }
 
 export function useLocalMemoUpsert() {
-  const queryClient = useQueryClient();
+	const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: upsertMemo,
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemoByUrl(variables.url) });
-    },
-  });
+	return useMutation({
+		mutationFn: upsertMemo,
+		onSuccess: (_data, variables) => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
+			queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.localMemoByUrl(variables.url),
+			});
+		},
+	});
 }
 
 export function useLocalMemoWishToggle() {
-  const queryClient = useQueryClient();
+	const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({ url, title, favIconUrl }: { url: string; title?: string; favIconUrl?: string }) =>
-      toggleWishByUrl(url, title, favIconUrl),
-    onSuccess: (_data, { url }) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemoByUrl(url) });
-    },
-  });
+	return useMutation({
+		mutationFn: ({
+			url,
+			title,
+			favIconUrl,
+		}: {
+			url: string;
+			title?: string;
+			favIconUrl?: string;
+		}) => toggleWishByUrl(url, title, favIconUrl),
+		onSuccess: (_data, { url }) => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
+			queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.localMemoByUrl(url),
+			});
+		},
+	});
 }
 
 export function useLocalMemoDelete() {
-  const queryClient = useQueryClient();
+	const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: deleteMemo,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
-    },
-  });
+	return useMutation({
+		mutationFn: deleteMemo,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
+		},
+	});
 }
 
 export function useSyncMemos() {
-  const queryClient = useQueryClient();
+	const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: syncMemosToSupabase,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
-    },
-  });
+	return useMutation({
+		mutationFn: syncMemosToSupabase,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos });
+		},
+	});
 }

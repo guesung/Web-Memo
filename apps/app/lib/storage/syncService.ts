@@ -1,8 +1,5 @@
-import { MemoService } from "@web-memo/shared/utils/services";
-import { supabase } from "@/lib/supabase/client";
+import { supabase, memoService } from "@/lib/supabase/client";
 import { getUnsyncedMemos, markAsSynced } from "./localMemo";
-
-const memoService = new MemoService(supabase);
 
 export async function syncMemosToSupabase(): Promise<{
 	synced: number;

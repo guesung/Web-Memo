@@ -22,13 +22,8 @@ export default function MemoScreen() {
   const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
   const { session } = useAuth();
   const isLoggedIn = !!session;
-  const [filter, setFilter] = useState<"all" | "wish">("all");
-
-  useEffect(() => {
-    if (filterParam === "wish") {
-      setFilter("wish");
-    }
-  }, [filterParam]);
+  const [filter, setFilter] = useState<"all" | "wish">(filterParam === "wish" ? "wish" : "all");
+  const consumedFilterRef = useRef(filterParam);
   const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
 
   const wishToggleLocal = useLocalMemoWishToggle();

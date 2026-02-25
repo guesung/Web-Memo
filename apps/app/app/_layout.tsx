@@ -66,7 +66,7 @@ function ShareIntentHandler() {
     if (hasShareIntent && shareIntent) {
       const url = shareIntent.webUrl || shareIntent.text;
       if (url && url.startsWith("http")) {
-        handleSharedUrl(url)
+        handleSharedUrl(url, shareIntent.meta?.title ?? undefined)
           .then(() => {
             queryClient.invalidateQueries({ queryKey: ["memos"] });
             queryClient.invalidateQueries({ queryKey: ["localMemos"] });
@@ -112,6 +112,7 @@ export default function RootLayout() {
           <Stack.Screen name="index" />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(main)" />
+          <Stack.Screen name="+not-found" />
         </Stack>
         </GestureHandlerRootView>
         <SyncOnAuth />

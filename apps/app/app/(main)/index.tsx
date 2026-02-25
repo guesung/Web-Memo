@@ -48,7 +48,7 @@ export default function MemoScreen() {
 			<View className="flex-1">
 				<View className="flex-row justify-between items-center px-5 pt-4 pb-1">
 					<Text className="text-[22px] font-extrabold text-foreground tracking-tight">
-						Web Memo
+						웹 메모
 					</Text>
 					{!isLoggedIn ? (
 						<TouchableOpacity
@@ -62,7 +62,7 @@ export default function MemoScreen() {
 				</View>
 
 				<Text className="text-sm text-gray-400 px-5 mb-4">
-					웹서핑하며 메모하세요
+					웹서핑하며 간편하게 메모하세요
 				</Text>
 
 				{!isLoggedIn ? (

@@ -1,13 +1,16 @@
 import { DraggableFab } from "@/components/browser/DraggableFab";
+import { FavoriteLinks } from "@/components/browser/FavoriteLinks";
 import { MemoPanel } from "@/components/browser/MemoPanel";
 import { TechBlogBottomSheet } from "@/components/browser/TechBlogBottomSheet";
 import { TechBlogLinks } from "@/components/browser/TechBlogLinks";
+import { useFavoriteToggle, useIsFavorite } from "@/lib/hooks/useFavorites";
 import {
   Heart,
   Home,
   LayoutGrid,
   RotateCw,
   Search,
+  Star,
   X,
 } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
@@ -39,7 +42,7 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { WebViewNavigation } from "react-native-webview";
 import { WebView } from "react-native-webview";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 
 const SPRING_CONFIG = { damping: 20, stiffness: 150 };
@@ -98,6 +101,7 @@ const INJECTED_JS = `${FAVICON_EXTRACT_JS}\n${SCROLL_DETECT_JS}`;
 
 export default function BrowserScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const webViewRef = useRef<WebView>(null);
   const { url: paramUrl } = useLocalSearchParams<{ url?: string }>();
 
@@ -124,6 +128,9 @@ export default function BrowserScreen() {
   const isCurrentPageWish = isLoggedIn
     ? supabaseMemo?.isWish ?? false
     : localMemo?.isWish ?? false;
+
+  const { data: isCurrentPageFavorite } = useIsFavorite(currentUrl);
+  const favoriteToggle = useFavoriteToggle();
 
   const panelHeight = useSharedValue(0);
   const dragStartHeight = useSharedValue(0);
@@ -209,8 +216,18 @@ export default function BrowserScreen() {
       wishToggleLocal.mutate({ url: currentUrl, title: pageTitle, favIconUrl: pageFavIconUrl });
     }
     setWishToast(isCurrentPageWish ? "위시리스트에서 제거" : "위시리스트에 추가");
-    setTimeout(() => setWishToast(null), 1500);
+    setTimeout(() => setWishToast(null), 2500);
   }, [currentUrl, pageTitle, pageFavIconUrl, isLoggedIn, isCurrentPageWish, wishToggleSupabase, wishToggleLocal]);
+
+  const handleFavoriteToggle = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    favoriteToggle.mutate({
+      url: currentUrl,
+      title: pageTitle,
+      favIconUrl: pageFavIconUrl,
+      currentIsFavorite: !!isCurrentPageFavorite,
+    });
+  }, [currentUrl, pageTitle, pageFavIconUrl, isCurrentPageFavorite, favoriteToggle]);
 
   const openPanel = useCallback(() => {
     if (isMemoOpen || contentHeight <= 0) return;
@@ -302,7 +319,7 @@ export default function BrowserScreen() {
 
   if (!currentUrl) {
     return (
-      <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+      <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
         <ScrollView className="flex-1 pt-4" keyboardShouldPersistTaps="handled">
           <View className="px-5">
             <View className="flex-row items-center bg-input rounded-[14px] px-3.5 py-3 gap-2.5">
@@ -321,6 +338,7 @@ export default function BrowserScreen() {
               />
             </View>
           </View>
+          <FavoriteLinks onSelectUrl={handleBlogSelect} />
           <TechBlogLinks onSelectBlog={handleBlogSelect} />
         </ScrollView>
       </View>
@@ -329,7 +347,7 @@ export default function BrowserScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-white"
+      className="flex-1 bg-background"
       style={{ paddingTop: insets.top }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
@@ -364,6 +382,13 @@ export default function BrowserScreen() {
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setIsBlogSheetOpen(true)} className="p-1.5">
             <LayoutGrid size={16} color="#111" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleFavoriteToggle} className="p-1.5">
+            <Star
+              size={16}
+              color={isCurrentPageFavorite ? "#f59e0b" : "#111"}
+              fill={isCurrentPageFavorite ? "#f59e0b" : "none"}
+            />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleWishToggle} className="p-1.5">
             <Heart
@@ -416,6 +441,17 @@ export default function BrowserScreen() {
         <View className="absolute self-center flex-row items-center gap-1.5 bg-black/80 px-4 py-2.5 rounded-[20px]" style={{ bottom: insets.bottom + 84 }}>
           <Heart size={14} fill="#ec4899" color="#ec4899" />
           <Text className="text-white text-sm font-semibold">{wishToast}</Text>
+          {wishToast === "위시리스트에 추가" ? (
+            <TouchableOpacity
+              className="ml-1.5 bg-white/20 px-2.5 py-1 rounded-xl"
+              onPress={() => {
+                setWishToast(null);
+                router.navigate({ pathname: "/(main)", params: { filter: "wish" } });
+              }}
+            >
+              <Text className="text-white text-xs font-semibold">이동하기</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
       ) : null}
 

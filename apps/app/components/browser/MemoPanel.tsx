@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Keyboard,
   Platform,
   Image,
+  ScrollView,
 } from "react-native";
 import { Save, Check, ChevronDown, FileText, X } from "lucide-react-native";
 import {
@@ -56,18 +57,31 @@ export function MemoPanel({ url, pageTitle, favIconUrl, onClose }: MemoPanelProp
     };
   }, []);
 
+  const justSavedRef = useRef(false);
+
   useEffect(() => {
     if (existingMemo?.memo) {
       setMemoText(existingMemo.memo);
     } else {
       setMemoText("");
     }
-    setSaved(false);
+    if (!justSavedRef.current) {
+      setSaved(false);
+    }
   }, [existingMemo?.memo, url]);
 
+  useEffect(() => {
+    setSaved(false);
+    justSavedRef.current = false;
+  }, [url]);
+
   const onSaveSuccess = () => {
+    justSavedRef.current = true;
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setTimeout(() => {
+      setSaved(false);
+      justSavedRef.current = false;
+    }, 2000);
   };
 
   const handleSave = () => {
@@ -83,7 +97,7 @@ export function MemoPanel({ url, pageTitle, favIconUrl, onClose }: MemoPanelProp
   };
 
   return (
-    <View className="flex-1 bg-white p-3">
+    <ScrollView className="flex-1 bg-white p-3" keyboardShouldPersistTaps="handled" scrollEnabled={false} contentContainerStyle={{ flex: 1 }}>
       <View className="flex-row justify-between items-center mb-2">
         <View className="flex-row items-center gap-1.5 flex-1 mr-2">
           {favIconUrl ? (
@@ -137,6 +151,6 @@ export function MemoPanel({ url, pageTitle, favIconUrl, onClose }: MemoPanelProp
         multiline
         textAlignVertical="top"
       />
-    </View>
+    </ScrollView>
   );
 }

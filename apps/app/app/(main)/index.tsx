@@ -4,9 +4,9 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocalMemoDelete, useLocalMemos, useLocalMemoUpsert, useLocalMemoWishToggle } from "@/lib/hooks/useLocalMemos";
 import { useDeleteMemoMutation, useMemoUpsertMutation, useMemoWishToggleMutation } from "@/lib/hooks/useMemoMutation";
 import { useMemosInfinite } from "@/lib/hooks/useMemos";
-import { useRouter } from "expo-router";
-import { Globe, Heart, Undo2 } from "lucide-react-native";
-import { useCallback, useRef, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Globe, Heart, LogIn, Undo2 } from "lucide-react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -19,9 +19,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function MemoScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
   const { session } = useAuth();
   const isLoggedIn = !!session;
-  const [filter, setFilter] = useState<"all" | "wish">("all");
+  const [filter, setFilter] = useState<"all" | "wish">(filterParam === "wish" ? "wish" : "all");
+  const consumedFilterRef = useRef(filterParam);
   const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
 
   const wishToggleLocal = useLocalMemoWishToggle();
@@ -109,14 +111,35 @@ export default function MemoScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+    <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
       <View className="flex-1">
         {/* Header */}
         <View className="flex-row justify-between items-center px-5 pt-4 pb-1">
           <Text className="text-[22px] font-extrabold text-foreground tracking-tight">Web Memo</Text>
+          {!isLoggedIn ? (
+            <TouchableOpacity
+              className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground"
+              onPress={() => router.navigate("/(auth)/login")}
+            >
+              <LogIn size={14} color="#fff" />
+              <Text className="text-xs font-semibold text-white">로그인</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
 
         <Text className="text-sm text-gray-400 px-5 mb-4">웹서핑하며 메모하세요</Text>
+
+        {!isLoggedIn ? (
+          <TouchableOpacity
+            className="flex-row items-center gap-2 mx-5 mb-3 px-3.5 py-2.5 bg-card rounded-xl border border-border"
+            onPress={() => router.navigate("/(auth)/login")}
+            activeOpacity={0.7}
+          >
+            <LogIn size={14} color="#7c3aed" />
+            <Text className="flex-1 text-[13px] text-secondary-foreground">로그인하면 메모가 동기화됩니다</Text>
+            <Text className="text-xs text-accent font-semibold">로그인</Text>
+          </TouchableOpacity>
+        ) : null}
 
         <View className="flex-row px-5 mb-4 gap-2">
           <TouchableOpacity

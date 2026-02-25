@@ -8,7 +8,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: "#ffffff",
+        background: "#f5f5f5",
         foreground: "#111111",
         primary: { DEFAULT: "#111111", foreground: "#ffffff" },
         secondary: { DEFAULT: "#f5f5f5", foreground: "#555555" },
@@ -19,7 +19,7 @@ module.exports = {
         wish: "#ec4899",
         border: "#eeeeee",
         input: "#f5f5f5",
-        card: { DEFAULT: "#fafafa", foreground: "#111111" },
+        card: { DEFAULT: "#ffffff", foreground: "#111111" },
       },
     },
   },

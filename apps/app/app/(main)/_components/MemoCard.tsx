@@ -14,6 +14,24 @@ import type { LocalMemo } from "@/lib/storage/localMemo";
 
 export type MemoItem = LocalMemo | GetMemoResponse;
 
+function formatRelativeDate(dateStr?: string): string {
+	if (!dateStr) return "";
+	const date = new Date(dateStr);
+	const now = new Date();
+	const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+	const target = new Date(
+		date.getFullYear(),
+		date.getMonth(),
+		date.getDate(),
+	);
+	const diffDays = Math.floor(
+		(today.getTime() - target.getTime()) / (1000 * 60 * 60 * 24),
+	);
+	if (diffDays === 0) return "오늘";
+	if (diffDays === 1) return "어제";
+	return `${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
+}
+
 interface MemoCardProps {
 	memo: MemoItem;
 	onPress: () => void;
@@ -22,6 +40,14 @@ interface MemoCardProps {
 
 export function MemoCard({ memo, onPress, onDelete }: MemoCardProps) {
 	const swipeableRef = useRef<SwipeableMethods>(null);
+
+	const rawDate =
+		"updated_at" in memo
+			? (memo as { updated_at?: string }).updated_at
+			: "updatedAt" in memo
+				? (memo as { updatedAt?: string }).updatedAt
+				: undefined;
+	const dateLabel = formatRelativeDate(rawDate);
 
 	return (
 		<ReanimatedSwipeable
@@ -58,6 +84,11 @@ export function MemoCard({ memo, onPress, onDelete }: MemoCardProps) {
 					>
 						{memo.title}
 					</Text>
+					{dateLabel ? (
+						<Text className="text-xs text-muted-foreground">
+							{dateLabel}
+						</Text>
+					) : null}
 					{memo.isWish && <Heart size={12} fill="#ec4899" color="#ec4899" />}
 				</View>
 				{memo.memo && (

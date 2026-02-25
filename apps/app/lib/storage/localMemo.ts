@@ -128,9 +128,9 @@ export async function markAsSynced(ids: string[]): Promise<void> {
 }
 
 export async function clearSyncedMemos(): Promise<number> {
-  const memos = await getAll();
-  const unsyncedMemos = memos.filter((m) => !m.synced);
-  const clearedCount = memos.length - unsyncedMemos.length;
-  await save(unsyncedMemos);
-  return clearedCount;
+	const memos = await getAll();
+	const unsyncedMemos = memos.filter((m) => !m.synced);
+	const clearedCount = memos.length - unsyncedMemos.length;
+	await save(unsyncedMemos);
+	return clearedCount;
 }

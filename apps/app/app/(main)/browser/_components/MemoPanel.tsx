@@ -48,7 +48,9 @@ export function MemoPanel({
 
 	const localUpsert = useLocalMemoUpsert();
 	const supabaseUpsert = useMemoUpsertMutation();
-	const isPending = isLoggedIn ? supabaseUpsert.isPending : localUpsert.isPending;
+	const isPending = isLoggedIn
+		? supabaseUpsert.isPending
+		: localUpsert.isPending;
 
 	const justSavedRef = useRef(false);
 	const prevUrlRef = useRef(url);
@@ -121,7 +123,12 @@ export function MemoPanel({
 	};
 
 	return (
-		<ScrollView className="flex-1 bg-white p-3" keyboardShouldPersistTaps="handled" scrollEnabled={false} contentContainerStyle={{ flex: 1 }}>
+		<ScrollView
+			className="flex-1 bg-white p-3"
+			keyboardShouldPersistTaps="handled"
+			scrollEnabled={false}
+			contentContainerStyle={{ flex: 1 }}
+		>
 			<View className="flex-row justify-between items-center mb-2">
 				<View className="flex-row items-center gap-1.5 flex-1 mr-2">
 					{favIconUrl ? (

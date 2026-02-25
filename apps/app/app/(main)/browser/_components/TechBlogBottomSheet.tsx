@@ -184,7 +184,7 @@ function FavoritesSection({ onPress }: { onPress: (url: string) => void }) {
 		);
 	};
 
-	const rows: typeof favorites[] = [];
+	const rows: (typeof favorites)[] = [];
 	for (let i = 0; i < favorites.length; i += NUM_COLUMNS) {
 		rows.push(favorites.slice(i, i + NUM_COLUMNS));
 	}

@@ -1,6 +1,6 @@
 import type { LocalMemo } from "@/lib/storage/localMemo";
 import type { GetMemoResponse } from "@web-memo/shared/types";
-import { FileText, Globe, Heart, Trash2 } from "lucide-react-native";
+import { FileText, Heart, Trash2 } from "lucide-react-native";
 import { useRef } from "react";
 import { Animated, Image, Text, TouchableOpacity, View } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
@@ -84,12 +84,7 @@ export function MemoCard({ memo, onPress, onDelete }: MemoCardProps) {
           {memoText}
         </Text>
       ) : null}
-      {domain ? (
-        <View className="flex-row items-center gap-1">
-          <Globe size={11} color="#999" />
-          <Text className="text-xs text-muted-foreground">{domain}</Text>
-        </View>
-      ) : null}
+
     </TouchableOpacity>
   );
 

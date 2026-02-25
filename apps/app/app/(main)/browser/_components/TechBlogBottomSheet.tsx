@@ -1,7 +1,9 @@
-import { URL } from "@web-memo/shared/constants";
-import { MessageCircle, X } from "lucide-react-native";
+import { useFavoriteRemove, useFavorites } from "@/lib/hooks/useFavorites";
+import { URL as APP_URL } from "@web-memo/shared/constants";
+import { MessageCircle, Star, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
+	Alert,
 	Dimensions,
 	Image,
 	Linking,
@@ -110,6 +112,114 @@ function BlogGrid({
 	);
 }
 
+function FavoriteGridItem({
+	item,
+	onPress,
+	onLongPress,
+}: {
+	item: { url: string; title: string; favIconUrl?: string };
+	onPress: (url: string) => void;
+	onLongPress: (url: string, title: string) => void;
+}) {
+	const [imgError, setImgError] = useState(false);
+	let domain = "";
+	try {
+		domain = new URL(item.url).hostname.replace("www.", "");
+	} catch {}
+
+	return (
+		<TouchableOpacity
+			className="flex-1 items-center gap-2 px-1"
+			onPress={() => onPress(item.url)}
+			onLongPress={() => onLongPress(item.url, item.title || domain)}
+			activeOpacity={0.7}
+		>
+			<View className="w-14 h-14 rounded-[14px] bg-input justify-center items-center overflow-hidden">
+				{item.favIconUrl && !imgError ? (
+					<Image
+						source={{ uri: item.favIconUrl }}
+						style={{ width: 28, height: 28, borderRadius: 4 }}
+						onError={() => setImgError(true)}
+						resizeMode="contain"
+					/>
+				) : (
+					<View
+						className="justify-center items-center bg-[#e0e0e0]"
+						style={{ width: 36, height: 36, borderRadius: 4 }}
+					>
+						<Text className="text-base font-bold text-gray-500">
+							{(domain || "?").charAt(0).toUpperCase()}
+						</Text>
+					</View>
+				)}
+			</View>
+			<Text
+				className="text-[11px] text-secondary-foreground text-center leading-[14px]"
+				numberOfLines={1}
+			>
+				{domain || item.title}
+			</Text>
+		</TouchableOpacity>
+	);
+}
+
+function FavoritesSection({ onPress }: { onPress: (url: string) => void }) {
+	const { data: favorites } = useFavorites();
+	const removeFavorite = useFavoriteRemove();
+
+	if (!favorites || favorites.length === 0) return null;
+
+	const handleLongPress = (url: string, title: string) => {
+		Alert.alert(
+			"즐겨찾기 삭제",
+			`"${title}" 을(를) 즐겨찾기에서 삭제하시겠습니까?`,
+			[
+				{ text: "취소", style: "cancel" },
+				{
+					text: "삭제",
+					style: "destructive",
+					onPress: () => removeFavorite.mutate(url),
+				},
+			],
+		);
+	};
+
+	const rows: typeof favorites[] = [];
+	for (let i = 0; i < favorites.length; i += NUM_COLUMNS) {
+		rows.push(favorites.slice(i, i + NUM_COLUMNS));
+	}
+
+	return (
+		<>
+			<View className="flex-row items-center gap-1.5 px-2 mb-3">
+				<Star size={14} color="#f59e0b" fill="#f59e0b" />
+				<Text className="text-sm font-semibold text-gray-500">즐겨찾기</Text>
+			</View>
+			<View className="mb-6">
+				{rows.map((row, rowIndex) => (
+					<View key={`fav-row-${rowIndex}`} className="flex-row mb-4">
+						{row.map((fav) => (
+							<FavoriteGridItem
+								key={fav.id}
+								item={fav}
+								onPress={onPress}
+								onLongPress={handleLongPress}
+							/>
+						))}
+						{row.length < NUM_COLUMNS &&
+							Array.from({ length: NUM_COLUMNS - row.length }).map((_, i) => (
+								<View
+									key={`fav-empty-${i}`}
+									className="flex-1 items-center gap-2 px-1"
+								/>
+							))}
+					</View>
+				))}
+			</View>
+		</>
+	);
+}
+
 export function TechBlogBottomSheet({
 	visible,
 	onClose,
@@ -177,6 +287,8 @@ export function TechBlogBottomSheet({
 						showsVerticalScrollIndicator={false}
 						contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 20 }}
 					>
+						<FavoritesSection onPress={onSelectBlog} />
+
 						<Text className="text-sm font-semibold text-gray-500 px-2 mb-3">
 							블로그 모음
 						</Text>
@@ -189,7 +301,7 @@ export function TechBlogBottomSheet({
 
 						<TouchableOpacity
 							className="flex-row items-center justify-center gap-1.5 mt-6 py-3 mx-2 rounded-xl bg-input"
-							onPress={() => Linking.openURL(URL.kakaoTalk)}
+							onPress={() => Linking.openURL(APP_URL.kakaoTalk)}
 							activeOpacity={0.7}
 						>
 							<MessageCircle size={16} color="#666" />

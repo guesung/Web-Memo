@@ -21,6 +21,7 @@ import {
 	useLocalMemoWishToggle,
 } from "@/lib/hooks/useLocalMemos";
 import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
+import { useFavoriteToggle, useIsFavorite } from "@/lib/hooks/useFavorites";
 import { useMemoWishToggleMutation } from "@/lib/hooks/useMemoMutation";
 import { getPanelRatio, savePanelRatio } from "../_utils/browserPreferences";
 import { formatUrl } from "../_utils/formatUrl";
@@ -64,6 +65,9 @@ export function useBrowserState() {
 	const isCurrentPageWish = isLoggedIn
 		? (supabaseMemo?.isWish ?? false)
 		: (localMemo?.isWish ?? false);
+
+	const { data: isCurrentPageFavorite } = useIsFavorite(currentUrl);
+	const favoriteToggle = useFavoriteToggle();
 
 	const panelHeight = useSharedValue(0);
 	const dragStartHeight = useSharedValue(0);
@@ -127,6 +131,22 @@ export function useBrowserState() {
 			panelHeight.value = withSpring(0, SPRING_CONFIG);
 		}
 	};
+
+	const handleFavoriteToggle = useCallback(() => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+		favoriteToggle.mutate({
+			url: currentUrl,
+			title: pageTitle,
+			favIconUrl: pageFavIconUrl,
+			currentIsFavorite: !!isCurrentPageFavorite,
+		});
+	}, [
+		currentUrl,
+		pageTitle,
+		pageFavIconUrl,
+		isCurrentPageFavorite,
+		favoriteToggle,
+	]);
 
 	const handleWishToggle = useCallback(() => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -262,6 +282,8 @@ export function useBrowserState() {
 		pageTitle,
 		pageFavIconUrl,
 		isCurrentPageWish,
+		isCurrentPageFavorite: !!isCurrentPageFavorite,
+		handleFavoriteToggle,
 		panelHeight,
 		headerWrapperStyle,
 		memoAnimatedStyle,

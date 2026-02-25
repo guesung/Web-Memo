@@ -4,6 +4,7 @@ import {
 	LayoutGrid,
 	RotateCw,
 	Search,
+	Star,
 	X,
 } from "lucide-react-native";
 import { TextInput, TouchableOpacity, View } from "react-native";
@@ -16,12 +17,14 @@ interface BrowserHeaderProps {
 	urlInput: string;
 	currentUrl: string;
 	isCurrentPageWish: boolean;
+	isCurrentPageFavorite: boolean;
 	headerWrapperStyle: AnimatedViewStyle;
 	webViewRef: React.RefObject<WebView | null>;
 	onUrlInputChange: (text: string) => void;
 	onUrlSubmit: () => void;
 	onGoHome: () => void;
 	onOpenBlogSheet: () => void;
+	onFavoriteToggle: () => void;
 	onWishToggle: () => void;
 }
 
@@ -29,12 +32,14 @@ export function BrowserHeader({
 	urlInput,
 	currentUrl,
 	isCurrentPageWish,
+	isCurrentPageFavorite,
 	headerWrapperStyle,
 	webViewRef,
 	onUrlInputChange,
 	onUrlSubmit,
 	onGoHome,
 	onOpenBlogSheet,
+	onFavoriteToggle,
 	onWishToggle,
 }: BrowserHeaderProps) {
 	return (
@@ -72,6 +77,13 @@ export function BrowserHeader({
 				</TouchableOpacity>
 				<TouchableOpacity onPress={onOpenBlogSheet} className="p-1.5">
 					<LayoutGrid size={16} color="#111" />
+				</TouchableOpacity>
+				<TouchableOpacity onPress={onFavoriteToggle} className="p-1.5">
+					<Star
+						size={16}
+						color={isCurrentPageFavorite ? "#f59e0b" : "#111"}
+						fill={isCurrentPageFavorite ? "#f59e0b" : "none"}
+					/>
 				</TouchableOpacity>
 				<TouchableOpacity onPress={onWishToggle} className="p-1.5">
 					<Heart

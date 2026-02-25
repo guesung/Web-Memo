@@ -1,6 +1,7 @@
 import { Search } from "lucide-react-native";
 import { ScrollView, TextInput, View } from "react-native";
 import type { EdgeInsets } from "react-native-safe-area-context";
+import { FavoriteLinks } from "./FavoriteLinks";
 import { TechBlogLinks } from "./TechBlogLinks";
 
 interface EmptyBrowserViewProps {
@@ -38,6 +39,7 @@ export function EmptyBrowserView({
 						/>
 					</View>
 				</View>
+				<FavoriteLinks onSelectUrl={onSelectBlog} />
 				<TechBlogLinks onSelectBlog={onSelectBlog} />
 			</ScrollView>
 		</View>

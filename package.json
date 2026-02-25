@@ -62,6 +62,9 @@
 	},
 	"sideEffects": false,
 	"packageManager": "pnpm@10.23.0",
+	"engines": {
+		"node": "24"
+	},
 	"pnpm": {
 		"overrides": {
 			"@types/node": "^20.14.10"

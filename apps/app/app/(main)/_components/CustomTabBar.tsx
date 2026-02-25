@@ -1,3 +1,4 @@
+import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import {
 	FileText,
@@ -11,7 +12,6 @@ import Animated, {
 	useSharedValue,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
 
 interface TabConfig {
 	icon: LucideIcon;
@@ -84,7 +84,7 @@ export function CustomTabBar({
 							<Text
 								className={`text-[11px] mt-0.5 ${isFocused ? "text-foreground font-semibold" : "text-muted-foreground"}`}
 							>
-								{config.label}aa
+								{config.label}
 							</Text>
 						</TouchableOpacity>
 					);

@@ -1,4 +1,3 @@
-import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import {
 	FileText,
@@ -12,6 +11,7 @@ import Animated, {
 	useSharedValue,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
 
 interface TabConfig {
 	icon: LucideIcon;

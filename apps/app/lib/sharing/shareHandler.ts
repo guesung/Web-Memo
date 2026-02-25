@@ -1,5 +1,5 @@
-import { supabase } from "@/lib/supabase/client";
 import { toggleWishByUrl } from "@/lib/storage/localMemo";
+import { supabase } from "@/lib/supabase/client";
 
 function getFavIconUrl(pageUrl: string): string | null {
 	try {

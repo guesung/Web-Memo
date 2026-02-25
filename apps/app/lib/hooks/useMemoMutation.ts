@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { MemoTable } from "@web-memo/shared/types";
 import { QUERY_KEY } from "@web-memo/shared/constants";
+import type { MemoTable } from "@web-memo/shared/types";
 import { memoService } from "@/lib/supabase/client";
 
 export function useMemoUpsertMutation() {

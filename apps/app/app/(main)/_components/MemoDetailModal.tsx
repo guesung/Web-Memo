@@ -16,9 +16,9 @@ import Animated, {
 	withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import type { MemoItem } from "./MemoCard";
 import { extractDomain } from "../_utils/extractDomain";
 import { formatDate } from "../_utils/formatDate";
+import type { MemoItem } from "./MemoCard";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.6;

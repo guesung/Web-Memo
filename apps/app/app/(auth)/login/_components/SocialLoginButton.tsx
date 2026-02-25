@@ -1,5 +1,5 @@
-import { AppleIcon, GoogleIcon, KakaoIcon } from "./icons";
 import { Text, TouchableOpacity } from "react-native";
+import { AppleIcon, GoogleIcon, KakaoIcon } from "./icons";
 
 interface SocialLoginButtonProps {
 	provider: "google" | "kakao" | "apple";

@@ -1,10 +1,10 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	addFavorite,
 	getAllFavorites,
 	isFavorite,
 	removeFavorite,
 } from "@/lib/storage/favorites";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const FAVORITES_KEY = ["favorites"];
 

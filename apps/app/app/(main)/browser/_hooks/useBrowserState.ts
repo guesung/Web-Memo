@@ -12,16 +12,16 @@ import {
 	withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import type { WebViewNavigation } from "react-native-webview";
 import type WebView from "react-native-webview";
+import type { WebViewNavigation } from "react-native-webview";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
+import { useFavoriteToggle, useIsFavorite } from "@/lib/hooks/useFavorites";
 import {
 	useLocalMemoByUrl,
 	useLocalMemoWishToggle,
 } from "@/lib/hooks/useLocalMemos";
 import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
-import { useFavoriteToggle, useIsFavorite } from "@/lib/hooks/useFavorites";
 import { useMemoWishToggleMutation } from "@/lib/hooks/useMemoMutation";
 import { getPanelRatio, savePanelRatio } from "../_utils/browserPreferences";
 import { formatUrl } from "../_utils/formatUrl";

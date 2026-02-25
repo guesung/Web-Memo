@@ -1,4 +1,3 @@
-import { useFavoriteRemove, useFavorites } from "@/lib/hooks/useFavorites";
 import { Star } from "lucide-react-native";
 import { useState } from "react";
 import {
@@ -9,6 +8,7 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import { useFavoriteRemove, useFavorites } from "@/lib/hooks/useFavorites";
 
 interface FavoriteLinksProps {
 	onSelectUrl: (url: string) => void;

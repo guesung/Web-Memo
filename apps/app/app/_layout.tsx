@@ -1,13 +1,13 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter } from "expo-router";
+import { useShareIntent } from "expo-share-intent";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
+import { Check } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Check } from "lucide-react-native";
-import { useShareIntent } from "expo-share-intent";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthProvider";
 import { handleSharedUrl } from "@/lib/sharing/shareHandler";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
@@ -66,7 +66,7 @@ function ShareIntentHandler() {
 	useEffect(() => {
 		if (hasShareIntent && shareIntent) {
 			const url = shareIntent.webUrl || shareIntent.text;
-			if (url && url.startsWith("http")) {
+			if (url?.startsWith("http")) {
 				handleSharedUrl(url, shareIntent.meta?.title ?? undefined)
 					.then(() => {
 						queryClient.invalidateQueries({ queryKey: ["memos"] });

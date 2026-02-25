@@ -1,4 +1,3 @@
-import { useFavoriteRemove, useFavorites } from "@/lib/hooks/useFavorites";
 import { URL as APP_URL } from "@web-memo/shared/constants";
 import { MessageCircle, Star, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -20,6 +19,7 @@ import Animated, {
 	withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFavoriteRemove, useFavorites } from "@/lib/hooks/useFavorites";
 import {
 	BLOG_AGGREGATORS,
 	BLOG_LOGO_BASE_URL,

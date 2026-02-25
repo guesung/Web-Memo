@@ -51,6 +51,7 @@ export function MemoPanel({
 	const isPending = isLoggedIn ? supabaseUpsert.isPending : localUpsert.isPending;
 
 	const justSavedRef = useRef(false);
+	const prevUrlRef = useRef(url);
 
 	useEffect(() => {
 		const showEvent =
@@ -72,6 +73,12 @@ export function MemoPanel({
 	}, []);
 
 	useEffect(() => {
+		if (prevUrlRef.current !== url) {
+			prevUrlRef.current = url;
+			setSaved(false);
+			justSavedRef.current = false;
+		}
+
 		if (existingMemo?.memo) {
 			setMemoText(existingMemo.memo);
 		} else {
@@ -81,11 +88,6 @@ export function MemoPanel({
 			setSaved(false);
 		}
 	}, [existingMemo?.memo, url]);
-
-	useEffect(() => {
-		setSaved(false);
-		justSavedRef.current = false;
-	}, [url]);
 
 	const onSaveSuccess = () => {
 		justSavedRef.current = true;

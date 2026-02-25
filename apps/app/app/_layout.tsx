@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
@@ -60,6 +60,7 @@ function SyncOnAuth() {
 function ShareIntentHandler() {
 	const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent();
 	const insets = useSafeAreaInsets();
+	const router = useRouter();
 	const [shareToast, setShareToast] = useState<string | null>(null);
 
 	useEffect(() => {
@@ -72,6 +73,10 @@ function ShareIntentHandler() {
 						queryClient.invalidateQueries({ queryKey: ["localMemos"] });
 						setShareToast("위시리스트에 저장되었습니다");
 						setTimeout(() => setShareToast(null), 3000);
+						router.navigate({
+							pathname: "/(main)",
+							params: { filter: "wish" },
+						});
 					})
 					.catch(() => {
 						setShareToast("저장에 실패했습니다");
@@ -84,7 +89,7 @@ function ShareIntentHandler() {
 				resetShareIntent();
 			}
 		}
-	}, [hasShareIntent, shareIntent, resetShareIntent]);
+	}, [hasShareIntent, shareIntent, resetShareIntent, router.navigate]);
 
 	if (!shareToast) return null;
 

@@ -1,6 +1,6 @@
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Globe, Heart, LogIn, Undo2 } from "lucide-react-native";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
 	ActivityIndicator,
 	FlatList,
@@ -17,6 +17,7 @@ import { useMemoList } from "./_hooks/useMemoList";
 export default function MemoScreen() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
+	const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
 	const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
 
 	const {
@@ -30,6 +31,12 @@ export default function MemoScreen() {
 		handleEndReached,
 		handleWishRemove,
 	} = useMemoList();
+
+	useEffect(() => {
+		if (filterParam === "wish") {
+			setFilter("wish");
+		}
+	}, [filterParam, setFilter]);
 
 	const { deletedMemo, handleDelete, handleUndo } = useDeleteWithUndo();
 

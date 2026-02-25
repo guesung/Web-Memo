@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import type { Database } from "@web-memo/shared/types";
+import { MemoService } from "@web-memo/shared/utils/services";
 import { CONFIG } from "@/lib/config";
 
 const ExpoSecureStoreAdapter = {
@@ -40,3 +41,5 @@ export const supabase = createClient<Database, "memo">(
     },
   }
 );
+
+export const memoService = new MemoService(supabase);

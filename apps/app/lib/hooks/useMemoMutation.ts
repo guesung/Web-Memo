@@ -13,7 +13,10 @@ export function useMemoUpsertMutation() {
 				if (existing.data && existing.data.length > 0) {
 					return memoService.updateMemo({
 						id: existing.data[0].id,
-						request: data,
+						request: {
+							...data,
+							isWish: data.isWish ?? existing.data[0].isWish,
+						},
 					});
 				}
 			}

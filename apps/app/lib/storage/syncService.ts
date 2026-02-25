@@ -1,5 +1,8 @@
-import { supabase, memoService } from "@/lib/supabase/client";
-import { getUnsyncedMemos, markAsSynced } from "./localMemo";
+import { supabase } from "@/lib/supabase/client";
+import { MemoService } from "@web-memo/shared/utils/services";
+import { clearSyncedMemos, getUnsyncedMemos, markAsSynced } from "./localMemo";
+
+const memoService = new MemoService(supabase);
 
 export async function syncMemosToSupabase(): Promise<{
 	synced: number;
@@ -28,6 +31,7 @@ export async function syncMemosToSupabase(): Promise<{
 						title: memo.title,
 						memo: memo.memo,
 						favIconUrl: memo.favIconUrl ?? null,
+						isWish: memo.isWish ?? existing.data[0].isWish,
 					},
 				});
 			} else {
@@ -36,6 +40,7 @@ export async function syncMemosToSupabase(): Promise<{
 					title: memo.title,
 					memo: memo.memo,
 					favIconUrl: memo.favIconUrl ?? null,
+					isWish: memo.isWish ?? false,
 				});
 			}
 
@@ -47,6 +52,7 @@ export async function syncMemosToSupabase(): Promise<{
 
 	if (syncedIds.length > 0) {
 		await markAsSynced(syncedIds);
+		await clearSyncedMemos();
 	}
 
 	return { synced: syncedIds.length, failed };

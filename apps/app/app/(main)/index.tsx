@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { Globe, Heart, Undo2 } from "lucide-react-native";
+import { Globe, Heart, LogIn, Undo2 } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import {
 	ActivityIndicator,
@@ -20,6 +20,7 @@ export default function MemoScreen() {
 	const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
 
 	const {
+		isLoggedIn,
 		filter,
 		setFilter,
 		memos,
@@ -43,17 +44,40 @@ export default function MemoScreen() {
 	);
 
 	return (
-		<View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+		<View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
 			<View className="flex-1">
 				<View className="flex-row justify-between items-center px-5 pt-4 pb-1">
 					<Text className="text-[22px] font-extrabold text-foreground tracking-tight">
-						웹 메모
+						Web Memo
 					</Text>
+					{!isLoggedIn ? (
+						<TouchableOpacity
+							className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground"
+							onPress={() => router.navigate("/(auth)/login")}
+						>
+							<LogIn size={14} color="#fff" />
+							<Text className="text-xs font-semibold text-white">로그인</Text>
+						</TouchableOpacity>
+					) : null}
 				</View>
 
 				<Text className="text-sm text-gray-400 px-5 mb-4">
-					아티클 읽으며 간편하게 메모하세요
+					웹서핑하며 메모하세요
 				</Text>
+
+				{!isLoggedIn ? (
+					<TouchableOpacity
+						className="flex-row items-center gap-2 mx-5 mb-3 px-3.5 py-2.5 bg-card rounded-xl border border-border"
+						onPress={() => router.navigate("/(auth)/login")}
+						activeOpacity={0.7}
+					>
+						<LogIn size={14} color="#7c3aed" />
+						<Text className="flex-1 text-[13px] text-secondary-foreground">
+							로그인하면 메모가 동기화됩니다
+						</Text>
+						<Text className="text-xs text-accent font-semibold">로그인</Text>
+					</TouchableOpacity>
+				) : null}
 
 				<View className="flex-row px-5 mb-4 gap-2">
 					<TouchableOpacity

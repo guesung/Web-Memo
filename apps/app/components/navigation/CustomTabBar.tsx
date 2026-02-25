@@ -28,7 +28,7 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
   return (
     <Animated.View style={wrapperStyle}>
       <View
-        className="flex-row bg-background border-t border-border pt-2"
+        className="flex-row bg-white border-t border-border pt-2"
         style={{ paddingBottom: insets.bottom }}
         onLayout={(e) => {
           if (barHeight.value === 0) {

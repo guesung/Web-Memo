@@ -1,25 +1,25 @@
 {
-  "cli": {
-    "version": ">= 12.0.0",
-    "appVersionSource": "local"
-  },
-  "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
-    "preview": {
-      "distribution": "internal"
-    },
-    "production": {},
-    "ci": {
-      "distribution": "store",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    }
-  },
-  "submit": {
-    "production": {}
-  }
+	"cli": {
+		"version": ">= 12.0.0",
+		"appVersionSource": "local"
+	},
+	"build": {
+		"development": {
+			"developmentClient": true,
+			"distribution": "internal"
+		},
+		"preview": {
+			"distribution": "internal"
+		},
+		"production": {},
+		"ci": {
+			"distribution": "store",
+			"env": {
+				"NODE_ENV": "production"
+			}
+		}
+	},
+	"submit": {
+		"production": {}
+	}
 }

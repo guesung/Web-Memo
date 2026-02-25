@@ -7,17 +7,14 @@ import { updateAuthorization } from "./modules/supabase";
 
 export async function middleware(request: NextRequest) {
 	const pathname = request.nextUrl.pathname;
+	const language = getLanguage(request);
 
-	// 루트 페이지 - SEO를 위해 소개 페이지로 리다이렉트
 	const isRootPath = pathname === PATHS.root;
-	if (isRootPath) {
-		const language = getLanguage(request);
+	if (isRootPath)
 		return NextResponse.redirect(
 			new URL(`/${language}${PATHS.introduce}`, request.url),
 		);
-	}
 
-	// lng가 없는 경우 && auth 페이지가 아닌 경우
 	const isLanguagePath = SUPPORTED_LANGUAGES.some((lng) =>
 		pathname.startsWith(`/${lng}`),
 	);
@@ -25,16 +22,10 @@ export async function middleware(request: NextRequest) {
 	const isApiPath = pathname.startsWith("/api");
 	const isSitemapPath = pathname.startsWith("/sitemap");
 	const isRobotsPath = pathname.startsWith("/robots");
+	const isNotNeedLanguagePath =
+		isAuthPath || isApiPath || isSitemapPath || isRobotsPath;
 
-	const language = getLanguage(request);
-
-	if (
-		!isLanguagePath &&
-		!isAuthPath &&
-		!isApiPath &&
-		!isSitemapPath &&
-		!isRobotsPath
-	)
+	if (!isLanguagePath && !isNotNeedLanguagePath)
 		return NextResponse.redirect(
 			new URL(
 				`/${language}${pathname}${request.nextUrl.search}${request.nextUrl.hash}`,
@@ -42,7 +33,6 @@ export async function middleware(request: NextRequest) {
 			),
 		);
 
-	// 토큰 업데이트
 	return await updateAuthorization(request);
 }
 

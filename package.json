@@ -45,7 +45,7 @@
 		"@biomejs/biome": "2.0.0",
 		"@commitlint/cli": "^19.8.1",
 		"@commitlint/config-conventional": "^19.8.1",
-		"@types/node": "^20.14.10",
+		"@types/node": "^24.0.0",
 		"@vitejs/plugin-react": "^4.3.3",
 		"husky": "^9.1.7",
 		"next": "14.2.10",
@@ -67,7 +67,7 @@
 	},
 	"pnpm": {
 		"overrides": {
-			"@types/node": "^20.14.10"
+			"@types/node": "^24.0.0"
 		},
 		"packageExtensions": {
 			"@react-native-google-signin/google-signin": {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -57,18 +57,31 @@ export function MemoPanel({ url, pageTitle, favIconUrl, onClose }: MemoPanelProp
     };
   }, []);
 
+  const justSavedRef = useRef(false);
+
   useEffect(() => {
     if (existingMemo?.memo) {
       setMemoText(existingMemo.memo);
     } else {
       setMemoText("");
     }
-    setSaved(false);
+    if (!justSavedRef.current) {
+      setSaved(false);
+    }
   }, [existingMemo?.memo, url]);
 
+  useEffect(() => {
+    setSaved(false);
+    justSavedRef.current = false;
+  }, [url]);
+
   const onSaveSuccess = () => {
+    justSavedRef.current = true;
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setTimeout(() => {
+      setSaved(false);
+      justSavedRef.current = false;
+    }, 2000);
   };
 
   const handleSave = () => {

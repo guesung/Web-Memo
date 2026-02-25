@@ -29,6 +29,7 @@ export async function syncMemosToSupabase(): Promise<{
             title: memo.title,
             memo: memo.memo,
             favIconUrl: memo.favIconUrl ?? null,
+            isWish: memo.isWish ?? existing.data[0].isWish,
           },
         });
       } else {
@@ -37,6 +38,7 @@ export async function syncMemosToSupabase(): Promise<{
           title: memo.title,
           memo: memo.memo,
           favIconUrl: memo.favIconUrl ?? null,
+          isWish: memo.isWish ?? false,
         });
       }
 

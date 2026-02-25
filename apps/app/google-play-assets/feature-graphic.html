@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1024px;
+    height: 500px;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  .container {
+    width: 1024px;
+    height: 500px;
+    background: linear-gradient(135deg, #4A7DE8 0%, #5B93F0 35%, #6BA3F8 70%, #7BB3FF 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Decorative background elements */
+  .bg-circle-1 {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    top: -120px;
+    right: -80px;
+  }
+  .bg-circle-2 {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    bottom: -100px;
+    left: -60px;
+  }
+  .bg-circle-3 {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    top: 60px;
+    left: 180px;
+  }
+
+  /* Subtle dot pattern */
+  .dot-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .content {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .icon-wrapper {
+    width: 160px;
+    height: 160px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.2));
+  }
+
+  .icon-svg {
+    width: 160px;
+    height: 160px;
+  }
+
+  .text-area {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .app-name {
+    font-size: 52px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -1px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    line-height: 1.1;
+  }
+
+  .tagline {
+    font-size: 20px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+  }
+
+  .features {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .feature-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(4px);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+
+  .feature-badge svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="bg-circle-1"></div>
+    <div class="bg-circle-2"></div>
+    <div class="bg-circle-3"></div>
+    <div class="dot-pattern"></div>
+
+    <div class="content">
+      <div class="icon-wrapper">
+        <svg class="icon-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="8" width="84" height="84" rx="22" fill="#ffffff" />
+          <rect x="12" y="12" width="76" height="76" rx="18" fill="#5B93F0" />
+          <path d="M30 32 L70 32" stroke="white" stroke-width="7" stroke-linecap="round" />
+          <path d="M30 50 L62 50" stroke="white" stroke-width="7" stroke-linecap="round" />
+          <path d="M30 68 L52 68" stroke="white" stroke-width="7" stroke-linecap="round" />
+          <circle cx="78" cy="78" r="16" fill="#34A853" stroke="white" stroke-width="3"/>
+          <path d="M73 78 L83 78 M78 73 L78 83" stroke="white" stroke-width="3" stroke-linecap="round" />
+        </svg>
+      </div>
+
+      <div class="text-area">
+        <div class="app-name">Web Memo</div>
+        <div class="tagline">"이거 나중에 봐야지" 하고 넘긴 글,<br/>이제 바로 메모하세요</div>
+        <div class="features">
+          <div class="feature-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            바로 메모
+          </div>
+          <div class="feature-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+            크롬 · 모바일
+          </div>
+          <div class="feature-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+            기술 블로그 25+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

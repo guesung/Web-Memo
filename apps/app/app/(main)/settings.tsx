@@ -25,7 +25,7 @@ export default function SettingsScreen() {
   const appVersion = Constants.expoConfig?.version ?? "1.0.1";
 
   return (
-    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+    <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
       <View className="px-5 pt-4 pb-4">
         <Text className="text-[22px] font-extrabold text-foreground tracking-tight">설정</Text>
       </View>

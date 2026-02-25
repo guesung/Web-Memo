@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
 import { MemoService } from "@web-memo/shared/utils/services";
-import { getUnsyncedMemos, markAsSynced } from "./localMemo";
+import { clearSyncedMemos, getUnsyncedMemos, markAsSynced } from "./localMemo";
 
 const memoService = new MemoService(supabase);
 
@@ -48,6 +48,7 @@ export async function syncMemosToSupabase(): Promise<{
 
   if (syncedIds.length > 0) {
     await markAsSynced(syncedIds);
+    await clearSyncedMemos();
   }
 
   return { synced: syncedIds.length, failed };

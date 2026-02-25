@@ -85,6 +85,16 @@
       ],
       "expo-apple-authentication",
       [
+        "expo-share-intent",
+        {
+          "androidIntentFilters": ["text/*"],
+          "iosActivationRules": {
+            "NSExtensionActivationSupportsWebURLWithMaxCount": 1,
+            "NSExtensionActivationSupportsText": true
+          }
+        }
+      ],
+      [
         "expo-build-properties",
         {
           "android": {

@@ -9,11 +9,15 @@
 		"ignoreUnknown": false,
 		"includes": [
 			"**/src/**/*",
+			"**/app/**/*",
+			"!**/ios/**/*",
+			"!**/android/**/*",
 			"e2e/tests/**/*",
 			"!**/dist/**",
 			"!**/node_modules/**",
 			"!**/.next/**",
 			"!**/.vercel/**",
+			"!**/.expo/**",
 			"!**/tailwind-output.css"
 		]
 	},

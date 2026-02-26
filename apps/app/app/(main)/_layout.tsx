@@ -1,19 +1,18 @@
-import { CustomTabBar } from "@/components/navigation/CustomTabBar";
-import { BrowserScrollProvider } from "@/lib/context/BrowserScrollContext";
 import { Tabs } from "expo-router";
+import { BrowserScrollProvider } from "@/lib/context/BrowserScrollContext";
+import { CustomTabBar } from "./_components/CustomTabBar";
 
 export default function MainLayout() {
-  return (
-    <BrowserScrollProvider>
-      <Tabs
-        tabBar={(props) => <CustomTabBar {...props} />}
-        screenOptions={{ headerShown: false }}
-      >
-        <Tabs.Screen name="index" />
-        <Tabs.Screen name="browser" />
-        <Tabs.Screen name="search" options={{ href: null }} />
-        <Tabs.Screen name="settings" />
-      </Tabs>
-    </BrowserScrollProvider>
-  );
+	return (
+		<BrowserScrollProvider>
+			<Tabs
+				tabBar={(props) => <CustomTabBar {...props} />}
+				screenOptions={{ headerShown: false }}
+			>
+				<Tabs.Screen name="index" />
+				<Tabs.Screen name="browser/index" />
+				<Tabs.Screen name="settings/index" />
+			</Tabs>
+		</BrowserScrollProvider>
+	);
 }

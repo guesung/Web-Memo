@@ -1,110 +1,115 @@
 {
-  "expo": {
-    "name": "Web Memo",
-    "slug": "web-memo",
-    "owner": "guesung",
-    "version": "1.0.3",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "scheme": "webmemo",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#5b93f0"
-    },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.webmemo.app",
-      "buildNumber": "1",
-      "usesAppleSignIn": true,
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false,
-        "UIViewControllerBasedStatusBarAppearance": true,
-        "CFBundleURLTypes": [
-          {
-            "CFBundleURLSchemes": [
-              "webmemo"
-            ]
-          }
-        ]
-      }
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#5b93f0"
-      },
-      "package": "com.webmemo.app",
-      "intentFilters": [
-        {
-          "action": "VIEW",
-          "autoVerify": true,
-          "data": [
-            {
-              "scheme": "webmemo"
-            }
-          ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
-        }
-      ]
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      "expo-router",
-      "expo-secure-store",
-      [
-        "expo-splash-screen",
-        {
-          "backgroundColor": "#5b93f0",
-          "image": "./assets/splash-icon.png",
-          "imageWidth": 200
-        }
-      ],
-      "expo-sqlite",
-      [
-        "@react-native-google-signin/google-signin",
-        {
-          "iosUrlScheme": "com.googleusercontent.apps.541718063018-h672i93efg8mmnknsril75ajc1dlu1to"
-        }
-      ],
-      [
-        "@react-native-seoul/kakao-login",
-        {
-          "kakaoAppKey": "e70ae71f1cdc768383ad96ab45dc1dd7",
-          "kotlinVersion": "2.0.21"
-        }
-      ],
-      "expo-apple-authentication",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "kotlinVersion": "2.0.21"
-          }
-        }
-      ],
-      "./plugins/withKakaoMavenRepo",
-      "./plugins/withAndroidGradleMemory"
-    ],
-    "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "router": {
-        "origin": false
-      },
-      "eas": {
-        "projectId": "e5be4764-47b4-4206-9a6a-d9ae68fa44cf"
-      }
-    }
-  }
+	"expo": {
+		"name": "Web Memo",
+		"slug": "web-memo",
+		"owner": "guesung",
+		"version": "1.0.4",
+		"orientation": "portrait",
+		"icon": "./assets/icon.png",
+		"scheme": "webmemo",
+		"userInterfaceStyle": "automatic",
+		"newArchEnabled": true,
+		"splash": {
+			"image": "./assets/splash-icon.png",
+			"resizeMode": "contain",
+			"backgroundColor": "#5b93f0"
+		},
+		"ios": {
+			"supportsTablet": true,
+			"bundleIdentifier": "com.webmemo.app",
+			"buildNumber": "2",
+			"usesAppleSignIn": true,
+			"infoPlist": {
+				"ITSAppUsesNonExemptEncryption": false,
+				"UIViewControllerBasedStatusBarAppearance": false,
+				"CFBundleURLTypes": [
+					{
+						"CFBundleURLSchemes": ["webmemo"]
+					}
+				]
+			}
+		},
+		"android": {
+			"adaptiveIcon": {
+				"foregroundImage": "./assets/adaptive-icon.png",
+				"backgroundColor": "#5b93f0"
+			},
+			"package": "com.webmemo.app",
+			"intentFilters": [
+				{
+					"action": "VIEW",
+					"autoVerify": true,
+					"data": [
+						{
+							"scheme": "webmemo"
+						}
+					],
+					"category": ["BROWSABLE", "DEFAULT"]
+				}
+			]
+		},
+		"web": {
+			"bundler": "metro",
+			"output": "static",
+			"favicon": "./assets/favicon.png"
+		},
+		"plugins": [
+			"expo-router",
+			"expo-secure-store",
+			[
+				"expo-splash-screen",
+				{
+					"backgroundColor": "#5b93f0",
+					"image": "./assets/splash-icon.png",
+					"imageWidth": 200
+				}
+			],
+			"expo-sqlite",
+			[
+				"@react-native-google-signin/google-signin",
+				{
+					"iosUrlScheme": "com.googleusercontent.apps.541718063018-h672i93efg8mmnknsril75ajc1dlu1to"
+				}
+			],
+			[
+				"@react-native-seoul/kakao-login",
+				{
+					"kakaoAppKey": "e70ae71f1cdc768383ad96ab45dc1dd7",
+					"kotlinVersion": "2.0.21"
+				}
+			],
+			"expo-apple-authentication",
+			[
+				"expo-share-intent",
+				{
+					"androidIntentFilters": ["text/*"],
+					"iosActivationRules": {
+						"NSExtensionActivationSupportsWebURLWithMaxCount": 1,
+						"NSExtensionActivationSupportsText": true
+					}
+				}
+			],
+			[
+				"expo-build-properties",
+				{
+					"android": {
+						"kotlinVersion": "2.0.21"
+					}
+				}
+			],
+			"./plugins/withKakaoMavenRepo",
+			"./plugins/withAndroidGradleMemory"
+		],
+		"experiments": {
+			"typedRoutes": true
+		},
+		"extra": {
+			"router": {
+				"origin": false
+			},
+			"eas": {
+				"projectId": "e5be4764-47b4-4206-9a6a-d9ae68fa44cf"
+			}
+		}
+	}
 }

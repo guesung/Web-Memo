@@ -90,8 +90,8 @@ export function createBridge<
 				_request: { payload?: unknown },
 				sender: chrome.runtime.MessageSender,
 				sendResponse: (response: unknown) => void,
-			) => {
-				return callback(_request.payload, sender, sendResponse);
+			): undefined | boolean | Promise<unknown> => {
+				return callback(_request.payload, sender, sendResponse) ?? undefined;
 			};
 
 			switch (direction) {

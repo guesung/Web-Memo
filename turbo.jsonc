@@ -1,8 +1,13 @@
 {
 	"$schema": "https://turbo.build/schema.json",
 	"ui": "tui",
+
+	// .env, tsconfig.json 변경 시 모든 태스크 캐시 무효화
+	"globalDependencies": [".env", "tsconfig.json"],
 	"globalPassThroughEnv": ["COREPACK_HOME"],
+
 	"tasks": {
+		// 패키지 빌드 준비 (tsup 등)
 		"ready": {
 			"dependsOn": ["^ready"],
 			"outputs": ["dist/**", "build/**"]
@@ -16,20 +21,25 @@
 			"persistent": true,
 			"cache": false
 		},
+
+		// 프로덕션 빌드
 		"build": {
 			"dependsOn": ["ready", "^build"],
-			"outputs": ["dist/**", "build/**", ".next/**", "!.next/cache/**"],
-			"inputs": ["$TURBO_DEFAULT$", ".env"]
+			"outputs": ["dist/**", "build/**", ".next/**", "!.next/cache/**"]
 		},
 		"start": {
 			"dependsOn": ["build"],
 			"persistent": true,
 			"cache": false
 		},
+
+		// 익스텐션 패키징
 		"zip": {
 			"dependsOn": ["^build"],
 			"cache": false
 		},
+
+		// 코드 품질
 		"type-check": {
 			"dependsOn": ["^ready"],
 			"outputs": []
@@ -40,6 +50,8 @@
 		"lint:fix": {
 			"cache": false
 		},
+
+		// 유틸리티
 		"clean": {
 			"cache": false
 		},

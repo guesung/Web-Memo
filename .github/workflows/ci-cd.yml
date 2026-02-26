@@ -24,8 +24,13 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
 
@@ -37,11 +42,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
+      - name: Package boundaries
+        run: pnpm exec turbo boundaries --filter="./packages/*"
+
       - name: Check (format + lint)
         run: pnpm check
 
-      - name: Type check
-        run: pnpm type-check
+      - name: Type check (affected only)
+        run: pnpm exec turbo type-check --affected
 
       - name: Unit tests
         run: pnpm test:jest --run

@@ -8,7 +8,6 @@
 		"dev:clear": "expo start -c",
 		"android": "expo prebuild --clean && expo run:android",
 		"ios": "expo prebuild --clean && expo run:ios",
-		"build": "echo 'Use eas build instead'",
 		"type-check": "tsc --noEmit"
 	},
 	"dependencies": {

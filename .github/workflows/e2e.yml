@@ -42,6 +42,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WEB_URL: http://localhost:3000
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
       - uses: actions/checkout@v4
 
@@ -57,7 +59,7 @@ jobs:
         with:
           path: |
             apps/web/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml', 'apps/web/next.config.js') }}
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml', 'apps/web/next.config.mjs') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-
 

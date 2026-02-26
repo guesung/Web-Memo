@@ -117,6 +117,7 @@
 		"youtube-transcript": "^1.2.1"
 	},
 	"peerDependencies": {
+		"next": ">=14.0.0",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0"
 	},

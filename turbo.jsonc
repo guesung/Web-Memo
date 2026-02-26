@@ -1,0 +1,88 @@
+{
+	"$schema": "https://turbo.build/schema.json",
+	"ui": "tui",
+
+	// .env, tsconfig.json 변경 시 모든 태스크 캐시 무효화
+	"globalDependencies": [".env", "tsconfig.json"],
+	"globalPassThroughEnv": ["COREPACK_HOME"],
+
+	// 패키지 경계 규칙: config → infra → library → app (하위 → 상위)
+	"boundaries": {
+		"tags": {
+			"app": {
+				"dependencies": { "deny": ["app"] }
+			},
+			"library": {
+				"dependencies": { "deny": ["app"] }
+			},
+			"infra": {
+				"dependencies": { "deny": ["app", "library"] }
+			},
+			"config": {
+				"dependencies": { "deny": ["app", "library", "infra"] }
+			}
+		}
+	},
+
+	"tasks": {
+		// 패키지 빌드 준비 (packages/dev-utils|env|hmr|zipper)
+		"ready": {
+			"dependsOn": ["^ready"],
+			"inputs": ["$TURBO_DEFAULT$", "!**/*.md", "!**/*.test.*", "!**/*.spec.*"],
+			"outputs": ["dist/**", "build/**"]
+		},
+		// 패키지 개발 모드 (apps/chrome-extension|web|app, pages/content-ui|options|side-panel, packages/hmr)
+		"dev": {
+			"dependsOn": ["^ready"],
+			"persistent": true,
+			"cache": false
+		},
+		// 패키지 미리보기 모드 (apps/web, packages/ui)
+		"preview": {
+			"persistent": true,
+			"cache": false
+		},
+
+		// 프로덕션 빌드 (apps/app|chrome-extension|web, pages/content-ui|options|side-panel)
+		"build": {
+			"dependsOn": ["ready", "^build"],
+			"inputs": ["$TURBO_DEFAULT$", "!**/*.md", "!**/*.test.*", "!**/*.spec.*", "!**/*.tsbuildinfo"],
+			"outputs": ["dist/**", "build/**", ".next/**", "!.next/cache/**"]
+		},
+		// 프로덕션 서버 실행 (apps/web)
+		"start": {
+			"dependsOn": ["build"],
+			"persistent": true,
+			"cache": false
+		},
+
+		// 익스텐션 패키징 (packages/zipper)
+		"zip": {
+			"dependsOn": ["^build"],
+			"cache": false
+		},
+
+		// 코드 품질 (모든 패키지)
+		"type-check": {
+			"dependsOn": ["^ready"],
+			"inputs": ["$TURBO_DEFAULT$", "!**/*.md", "!**/public/**"],
+			"outputs": []
+		},
+		"lint": {
+			"inputs": ["$TURBO_DEFAULT$", "!**/*.md", "!**/public/**"],
+			"outputs": []
+		},
+		"lint:fix": {
+			"cache": false
+		},
+
+		// 유틸리티
+		"clean": {
+			"cache": false
+		},
+		"tsc-watch": {
+			"persistent": true,
+			"cache": false
+		}
+	}
+}

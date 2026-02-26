@@ -10,6 +10,7 @@
 		// 패키지 빌드 준비 (packages/dev-utils|env|hmr|zipper)
 		"ready": {
 			"dependsOn": ["^ready"],
+			"inputs": ["$TURBO_DEFAULT$", "!**/*.md", "!**/*.test.*", "!**/*.spec.*"],
 			"outputs": ["dist/**", "build/**"]
 		},
 		// 패키지 개발 모드 (apps/chrome-extension|web|app, pages/content-ui|options|side-panel, packages/hmr)
@@ -27,6 +28,7 @@
 		// 프로덕션 빌드 (apps/app|chrome-extension|web, pages/content-ui|options|side-panel)
 		"build": {
 			"dependsOn": ["ready", "^build"],
+			"inputs": ["$TURBO_DEFAULT$", "!**/*.md", "!**/*.test.*", "!**/*.spec.*", "!**/*.tsbuildinfo"],
 			"outputs": ["dist/**", "build/**", ".next/**", "!.next/cache/**"]
 		},
 		// 프로덕션 서버 실행 (apps/web)
@@ -45,9 +47,11 @@
 		// 코드 품질 (모든 패키지)
 		"type-check": {
 			"dependsOn": ["^ready"],
+			"inputs": ["$TURBO_DEFAULT$", "!**/*.md", "!**/public/**"],
 			"outputs": []
 		},
 		"lint": {
+			"inputs": ["$TURBO_DEFAULT$", "!**/*.md", "!**/public/**"],
 			"outputs": []
 		},
 		"lint:fix": {

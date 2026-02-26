@@ -2,8 +2,8 @@
 	"$schema": "https://turbo.build/schema.json",
 	"ui": "tui",
 
-	// .env, tsconfig.json 변경 시 모든 태스크 캐시 무효화
-	"globalDependencies": [".env", "tsconfig.json"],
+	// tsconfig.json 변경 시 모든 태스크 캐시 무효화
+	"globalDependencies": ["tsconfig.json"],
 	"globalPassThroughEnv": ["COREPACK_HOME"],
 
 	// 패키지 경계 규칙: config → infra → library → app (하위 → 상위)

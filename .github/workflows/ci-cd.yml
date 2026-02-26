@@ -46,7 +46,7 @@ jobs:
         run: pnpm check
 
       - name: Type check (affected only)
-        run: pnpm exec turbo type-check --affected --output-logs=new-only
+        run: pnpm exec turbo type-check --affected
 
       - name: Unit tests
         run: pnpm test:jest --run

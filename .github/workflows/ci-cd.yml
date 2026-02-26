@@ -40,13 +40,13 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Package boundaries
-        run: turbo boundaries --filter="./packages/*"
+        run: pnpm exec turbo boundaries --filter="./packages/*"
 
       - name: Check (format + lint)
         run: pnpm check
 
       - name: Type check (affected only)
-        run: turbo type-check --affected --output-logs=new-only
+        run: pnpm exec turbo type-check --affected --output-logs=new-only
 
       - name: Unit tests
         run: pnpm test:jest --run

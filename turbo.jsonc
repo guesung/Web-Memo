@@ -7,39 +7,42 @@
 	"globalPassThroughEnv": ["COREPACK_HOME"],
 
 	"tasks": {
-		// 패키지 빌드 준비 (tsup 등)
+		// 패키지 빌드 준비 (packages/dev-utils|env|hmr|zipper)
 		"ready": {
 			"dependsOn": ["^ready"],
 			"outputs": ["dist/**", "build/**"]
 		},
+		// 패키지 개발 모드 (apps/chrome-extension|web|app, pages/content-ui|options|side-panel, packages/hmr)
 		"dev": {
 			"dependsOn": ["^ready"],
 			"persistent": true,
 			"cache": false
 		},
+		// 패키지 미리보기 모드 (apps/web, packages/ui)
 		"preview": {
 			"persistent": true,
 			"cache": false
 		},
 
-		// 프로덕션 빌드
+		// 프로덕션 빌드 (apps/app|chrome-extension|web, pages/content-ui|options|side-panel)
 		"build": {
 			"dependsOn": ["ready", "^build"],
 			"outputs": ["dist/**", "build/**", ".next/**", "!.next/cache/**"]
 		},
+		// 프로덕션 서버 실행 (apps/web)
 		"start": {
 			"dependsOn": ["build"],
 			"persistent": true,
 			"cache": false
 		},
 
-		// 익스텐션 패키징
+		// 익스텐션 패키징 (packages/zipper)
 		"zip": {
 			"dependsOn": ["^build"],
 			"cache": false
 		},
 
-		// 코드 품질
+		// 코드 품질 (모든 패키지)
 		"type-check": {
 			"dependsOn": ["^ready"],
 			"outputs": []

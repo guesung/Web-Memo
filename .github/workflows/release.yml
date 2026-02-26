@@ -1,23 +1,33 @@
-name: Release new Version
+name: Release
 
 on:
   push:
     tags:
-      - v*
+      - 'extension/v*'
+      - 'web/v*'
+      - 'app/v*'
 
 permissions:
   contents: write
 
 jobs:
-  release-new-version:
-    name: Release new version when push with `v*` tag
+  release:
     runs-on: ubuntu-22.04
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       tag: ${{ github.ref_name }}
     steps:
-      - run: |
+      - name: Parse tag
+        id: parse
+        run: |
+          APP="${tag%%/v*}"
+          VERSION="${tag#*/v}"
+          echo "app=$APP" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        run: |
           gh release create "$tag" \
               --repo="$GITHUB_REPOSITORY" \
-              --title="${GITHUB_REPOSITORY#*/} ${tag#v}" \
+              --title="[${{ steps.parse.outputs.app }}] v${{ steps.parse.outputs.version }}" \
               --generate-notes

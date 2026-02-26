@@ -1,1 +1,10 @@
-{ "extends": ["//"], "tags": ["infra"] }
+{
+	"extends": ["//"],
+	"tags": ["infra"],
+	"tasks": {
+		"ready": {
+			"inputs": ["$TURBO_DEFAULT$", ".env", ".env.production"],
+			"outputs": ["dist/**"]
+		}
+	}
+}

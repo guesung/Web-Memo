@@ -39,6 +39,7 @@ export default function ChatMessages({ messages }: ChatMessagesProps) {
 		return () => scrollArea.removeEventListener("scroll", handleScroll);
 	}, [handleScroll]);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: messages 의존성 제거 시 스크롤 이동 이슈 발생
 	useEffect(() => {
 		if (isAtBottomRef.current) {
 			messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

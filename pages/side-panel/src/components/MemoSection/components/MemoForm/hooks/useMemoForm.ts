@@ -9,7 +9,7 @@ import {
 } from "@web-memo/shared/hooks";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 interface SaveMemoOptions extends Partial<MemoInput> {
@@ -23,7 +23,7 @@ interface UseMemoFormProps {
 
 export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const { setValue, getValues } = useFormContext<MemoInput>();
-	const { debounce } = useDebounce();
+	const { debounce, abortDebounce } = useDebounce();
 	const { data: tab } = useTabQuery();
 	const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
 		url: tab?.url ?? "",
@@ -31,6 +31,12 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const { mutate: upsertMemo } = useMemoUpsertMutation();
 	const { mutate: patchMemo } = useMemoPatchMutation();
 	const [isSaving, setIsSaving] = useState(false);
+	const savingRef = useRef(false);
+	const hasPendingRef = useRef(false);
+	const pendingOverridesRef = useRef<SaveMemoOptions | undefined>(undefined);
+	const saveMemoRef = useRef<
+		((overrides?: SaveMemoOptions) => Promise<void>) | null
+	>(null);
 
 	useDidMount(() => {
 		bridge.handle.REFETCH_THE_MEMO_LIST_FROM_WEB(refetchMemo);
@@ -48,6 +54,13 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 	const saveMemo = useCallback(
 		async (overrides?: SaveMemoOptions) => {
+			if (savingRef.current) {
+				hasPendingRef.current = true;
+				pendingOverridesRef.current = overrides;
+				return;
+			}
+			savingRef.current = true;
+
 			const currentValues = getValues();
 			const memoInput: MemoInput = {
 				memo: overrides?.memo ?? currentValues.memo,
@@ -81,11 +94,22 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 					onError: () => {
 						setIsSaving(false);
 					},
+					onSettled: () => {
+						savingRef.current = false;
+						if (hasPendingRef.current) {
+							hasPendingRef.current = false;
+							const pending = pendingOverridesRef.current;
+							pendingOverridesRef.current = undefined;
+							saveMemoRef.current?.(pending);
+						}
+					},
 				},
 			);
 		},
 		[getValues, memoData?.id, upsertMemo, onSaveSuccess],
 	);
+
+	saveMemoRef.current = saveMemo;
 
 	const handleMemoChange = useCallback(
 		(text: string) => {
@@ -109,9 +133,10 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		const currentIsWish = getValues("isWish");
 		const newIsWish = !currentIsWish;
 		setValue("isWish", newIsWish);
+		abortDebounce();
 		await saveMemo({ isWish: newIsWish });
 		return newIsWish;
-	}, [getValues, setValue, saveMemo]);
+	}, [getValues, setValue, abortDebounce, saveMemo]);
 
 	return {
 		memoData,

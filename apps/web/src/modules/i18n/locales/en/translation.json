@@ -56,6 +56,15 @@
 	"updates": {
 		"title": "What's new",
 		"versions": {
+			"v1.10.3": {
+				"title": "Feature improvements and infrastructure optimization",
+				"content": [
+					"Added auto-scroll for side panel AI chat",
+					"Improved mobile app features (6 enhancements)",
+					"Build system and CI/CD infrastructure improvements",
+					"Cleaned up unused code"
+				]
+			},
 			"v1.10.2": {
 				"title": "Stability and compatibility improvements",
 				"content": [

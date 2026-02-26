@@ -1,17 +1,32 @@
 # Version Update Command
 
-버전 업데이트 시 Update.ts와 translation 파일들을 함께 업데이트합니다.
+앱별 독립 버전 업데이트 시 Update.ts와 translation 파일들을 함께 업데이트합니다.
 
 ## 사용법
 
 ```
-/version-update [version] [description]
+/version-update <app> <version> [description]
 ```
+
+- **app**: `extension` | `web` | `app`
+- **version**: semantic versioning (예: `1.11.0`)
 
 예시:
 ```
-/version-update v1.8.24 "메모 그리드 스켈레톤 로딩 추가"
+/version-update extension 1.11.0 "메모 그리드 스켈레톤 로딩 추가"
+/version-update web 2.0.0 "웹 대시보드 리뉴얼"
+/version-update app 1.1.0 "모바일 오프라인 지원"
 ```
+
+## 버전 관리 구조
+
+| 앱 | 대상 패키지 | 태그 형식 |
+|----|-----------|----------|
+| `extension` | `apps/chrome-extension`, `pages/*` | `extension/vX.Y.Z` |
+| `web` | `apps/web` | `web/vX.Y.Z` |
+| `app` | `apps/app` | `app/vX.Y.Z` |
+
+> internal 패키지(`packages/*`, `e2e`, root)는 `0.0.0` 고정이며 버전 관리 대상이 아닙니다.
 
 ## 실행 절차
 
@@ -44,16 +59,19 @@ git diff HEAD~5 --stat
 ### 2단계: 버전 정보 결정
 
 다음 정보를 확인하거나 사용자에게 질문합니다:
-- **버전 번호**: 현재 최신 버전에서 patch 버전 증가 (예: v1.8.23 → v1.8.24)
+- **대상 앱**: extension | web | app
+- **버전 번호**: 해당 앱의 현재 최신 버전에서 증가 (예: 1.10.2 → 1.11.0)
 - **날짜**: 오늘 날짜 (YYYY.MM.DD 형식)
 - **업데이트 제목 (ko/en)**: 변경 내용을 요약한 제목
 - **업데이트 내용 (ko/en)**: 구체적인 변경 사항 목록
 
-### 3단계: 파일 업데이트
+### 3단계: 파일 업데이트 (extension 또는 web인 경우)
+
+> `app`(모바일)의 경우 이 단계를 건너뛰고 5단계로 이동합니다.
 
 아래 3개 파일을 수정합니다:
 
-#### 1. `packages/web/src/constants/Update.ts`
+#### 1. `apps/web/src/constants/Update.ts`
 배열 맨 앞에 새 버전 추가:
 ```typescript
 {
@@ -62,7 +80,7 @@ git diff HEAD~5 --stat
 },
 ```
 
-#### 2. `packages/web/src/modules/i18n/locales/ko/translation.json`
+#### 2. `apps/web/src/modules/i18n/locales/ko/translation.json`
 `updates.versions` 객체에 새 버전 추가 (기존 버전들 위에):
 ```json
 "vX.Y.Z": {
@@ -72,7 +90,7 @@ git diff HEAD~5 --stat
 ```
 - 사용자 관점에서 보는 업데이트 내용을 작성합니다.
 
-#### 3. `packages/web/src/modules/i18n/locales/en/translation.json`
+#### 3. `apps/web/src/modules/i18n/locales/en/translation.json`
 `updates.versions` 객체에 새 버전 추가 (기존 버전들 위에):
 ```json
 "vX.Y.Z": {
@@ -90,16 +108,23 @@ git diff HEAD~5 --stat
 
 ### 5단계: 패키지 버전 업데이트
 
-package.json 파일들의 버전을 업데이트합니다:
+해당 앱의 package.json 버전을 업데이트합니다:
 
 ```bash
-pnpm run update-version vX.Y.Z
+pnpm run update-version <app> <version>
 ```
 
 예시:
 ```bash
-pnpm run update-version v1.8.24
+pnpm run update-version extension 1.11.0
+pnpm run update-version web 2.0.0
+pnpm run update-version app 1.1.0
 ```
+
+이 명령어는 다음을 자동 수행합니다:
+- 해당 앱의 package.json 버전 업데이트
+- git commit (`chore(<app>): v<version>`)
+- git tag 생성 및 push (`<app>/v<version>`)
 
 ## 업데이트 제목 가이드
 
@@ -117,3 +142,4 @@ pnpm run update-version v1.8.24
 - 날짜 형식은 반드시 `YYYY.MM.DD` 형식
 - translation 파일의 JSON 문법 오류에 주의
 - 새 버전은 항상 목록의 **맨 앞**에 추가
+- 각 앱의 버전은 독립적으로 관리됩니다 (extension과 web의 버전이 달라도 됨)

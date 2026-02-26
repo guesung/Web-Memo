@@ -1,6 +1,6 @@
 {
 	"name": "web-memo",
-	"version": "1.10.2",
+	"version": "0.0.0",
 	"description": "Web Memo - Chrome Extension",
 	"bugs": "https://github.com/guesung/Web-Memo/issues",
 	"homepage": "https://web-memos.vercel.app",
@@ -33,9 +33,7 @@
 		"test:e2e": "cd e2e && pnpm test",
 		"test:e2e:ui": "cd e2e && pnpm test:ui",
 		"test-report:e2e": "pnpm -F e2e show-report",
-		"update-version": "run-script-os",
-		"update-version:win32": "bash update_version.sh",
-		"update-version:default": "./update_version.sh",
+		"update-version": "./update_version.sh",
 		"package": "pnpm i && pnpm clean && pnpm build && pnpm zip",
 		"generate-supabase-type": "supabase gen types --lang=typescript --project-id czwtqukymcqoberdoltq --schema feedback --schema memo > packages/shared/src/types/supabase.ts && pnpm run format",
 		"prepare": "husky"
@@ -52,7 +50,6 @@
 		"react": "19.1.0",
 		"react-dom": "19.1.0",
 		"rimraf": "^6.0.1",
-		"run-script-os": "^1.1.6",
 		"supabase": "^1.192.5",
 		"syncpack": "^14.0.0",
 		"tsc-watch": "^6.2.1",

@@ -1,6 +1,6 @@
 {
 	"name": "@web-memo/hmr",
-	"version": "1.10.2",
+	"version": "1.10.4",
 	"description": "chrome extension hot module reload or refresh",
 	"private": true,
 	"sideEffects": true,

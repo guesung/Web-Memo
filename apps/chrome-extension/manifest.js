@@ -3,8 +3,6 @@ import fs from "node:fs";
 import { CONFIG } from "@web-memo/env";
 import deepmerge from "deepmerge";
 
-
-
 const packageJson = JSON.parse(fs.readFileSync("../../package.json", "utf8"));
 
 /**
@@ -72,7 +70,7 @@ const manifest = deepmerge(
 		side_panel: {
 			default_path: "side-panel/index.html",
 		},
-	}
+	},
 );
 
 export default manifest;

@@ -53,10 +53,11 @@
 				"!**/*.spec.*",
 				"!**/*.tsbuildinfo"
 			],
-			"outputs": ["dist/**", "build/**", ".next/**", "!.next/cache/**"],
-			"web#build": {
-				"cache": false
-			}
+			"outputs": ["dist/**", "build/**", ".next/**", "!.next/cache/**"]
+		},
+		// 웹 앱 빌드: 플랫폼별 캐시 분리 (sharp 네이티브 바이너리 호환성)
+		"@web-memo/web#build": {
+			"env": ["TURBO_CACHE_PLATFORM"]
 		},
 		// 프로덕션 서버 실행 (apps/web)
 		"start": {

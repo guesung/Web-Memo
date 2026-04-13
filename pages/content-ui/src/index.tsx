@@ -14,23 +14,9 @@ bridge.handle.PAGE_CONTENT(async (_, __, sendResponse) => {
 	const title = document.title;
 	const favicon = getFavicon();
 
-	if (isYoutubePage()) {
-		try {
-			const result = await extractYoutubeTranscript();
-			sendResponse({
-				content: result.transcript,
-				category: "youtube",
-				title,
-				favicon,
-			});
-		} catch {
-			const content = getContentFromWeb();
-			sendResponse({ content, category: "youtube", title, favicon });
-		}
-	} else {
-		const content = getContentFromWeb();
-		sendResponse({ content, category: "others", title, favicon });
-	}
+	const content = getContentFromWeb();
+	sendResponse({ content, category: "others", title, favicon });
+
 	return true;
 });
 

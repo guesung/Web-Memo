@@ -51,7 +51,7 @@
 		"message": "Saved"
 	},
 	"error_get_page_content": {
-		"message": "Couldn't read the page.\n1. For YouTube, summarizing takes about 3 seconds. Please try again shortly.\n2. If newly installed, refresh the page.\n3. Summarizing isn't available on new tabs, Chrome Web Store, or Chrome settings. Please go to a different page."
+		"message": "Couldn't read the page content.\n1. If newly installed, refresh the page.\n2. Page content isn't available on new tabs, Chrome Web Store, or Chrome settings. Please go to a different page."
 	},
 	"error_get_summary": {
 		"message": "Couldn't create summary. Please try again.\nIf the problem persists, contact us through the guide."

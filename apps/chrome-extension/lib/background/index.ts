@@ -128,7 +128,8 @@ bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
 	} catch (error) {
 		sendResponse({
 			success: false,
-			error: error instanceof Error ? error.message : "메모 생성에 실패했습니다.",
+			error:
+				error instanceof Error ? error.message : "메모 생성에 실패했습니다.",
 		});
 	}
 });

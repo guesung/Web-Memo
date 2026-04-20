@@ -3,7 +3,12 @@
 	"tags": ["app"],
 	"tasks": {
 		"build": {
-			"outputs": ["../../dist/**", "!../../dist/side-panel/**", "!../../dist/options/**", "!../../dist/content-ui/**"]
+			"outputs": [
+				"../../dist/**",
+				"!../../dist/side-panel/**",
+				"!../../dist/options/**",
+				"!../../dist/content-ui/**"
+			]
 		}
 	}
 }

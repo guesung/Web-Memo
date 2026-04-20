@@ -1,6 +1,6 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [
-    { "source": "/api/transcript", "destination": "/api/transcript.py" }
-  ]
+	"$schema": "https://openapi.vercel.sh/vercel.json",
+	"rewrites": [
+		{ "source": "/api/transcript", "destination": "/api/transcript.py" }
+	]
 }

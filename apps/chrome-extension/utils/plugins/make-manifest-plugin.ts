@@ -1,5 +1,5 @@
-import { colorLog, ManifestParser } from "@web-memo/dev-utils";
 import * as fs from "node:fs";
+import { colorLog, ManifestParser } from "@web-memo/dev-utils";
 import * as path from "path";
 import * as process from "process";
 import { pathToFileURL } from "url";

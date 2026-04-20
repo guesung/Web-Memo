@@ -31,6 +31,7 @@ export default function useMemoUpsertMutation() {
 		MemoUpsertVariables,
 		MemoUpsertContext
 	>({
+		mutationKey: ["memoUpsert"],
 		mutationFn: async ({ id, url, data }) => {
 			const normalizedUrl = url ? normalizeUrl(url) : undefined;
 

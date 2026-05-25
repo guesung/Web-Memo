@@ -31,6 +31,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const { mutate: upsertMemo } = useMemoUpsertMutation();
 	const { mutate: patchMemo } = useMemoPatchMutation();
 	const [isSaving, setIsSaving] = useState(false);
+	const initializedMemoIdRef = useRef<number | null>(null);
 	const pendingDataRef = useRef<SaveMemoOptions | null>(null);
 
 	useDidMount(() => {
@@ -40,11 +41,18 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 	useEffect(
 		function initMemoData() {
-			setValue("memo", memoData?.memo ?? "");
+			const currentMemoId = memoData?.id ?? null;
+			const isNewMemo = initializedMemoIdRef.current !== currentMemoId;
+
+			if (isNewMemo) {
+				setValue("memo", memoData?.memo ?? "");
+				initializedMemoIdRef.current = currentMemoId;
+			}
+
 			setValue("isWish", memoData?.isWish ?? false);
 			setValue("categoryId", memoData?.category_id ?? null);
 		},
-		[memoData?.memo, memoData?.isWish, memoData?.category_id, setValue],
+		[memoData?.id, memoData?.memo, memoData?.isWish, memoData?.category_id, setValue],
 	);
 
 	const saveMemo = useCallback(

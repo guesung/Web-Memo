@@ -9,7 +9,7 @@ import {
 } from "@web-memo/shared/hooks";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 interface SaveMemoOptions extends Partial<MemoInput> {
@@ -31,6 +31,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const { mutate: upsertMemo } = useMemoUpsertMutation();
 	const { mutate: patchMemo } = useMemoPatchMutation();
 	const [isSaving, setIsSaving] = useState(false);
+	const pendingDataRef = useRef<SaveMemoOptions | null>(null);
 
 	useDidMount(() => {
 		bridge.handle.REFETCH_THE_MEMO_LIST_FROM_WEB(refetchMemo);
@@ -48,6 +49,11 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 	const saveMemo = useCallback(
 		async (overrides?: SaveMemoOptions) => {
+			if (isSaving) {
+				pendingDataRef.current = overrides ?? null;
+				return;
+			}
+
 			const currentValues = getValues();
 			const memoInput: MemoInput = {
 				memo: overrides?.memo ?? currentValues.memo,
@@ -56,6 +62,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 			};
 
 			setIsSaving(true);
+			pendingDataRef.current = null;
 
 			const tabInfo = overrides?.tabInfo ?? (await getTabInfo());
 			const memoId = overrides?.memoId ?? memoData?.id;
@@ -75,16 +82,22 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 					onSuccess: () => {
 						setTimeout(() => {
 							setIsSaving(false);
+							if (pendingDataRef.current !== null) {
+								const pendingData = pendingDataRef.current;
+								pendingDataRef.current = null;
+								saveMemo(pendingData);
+							}
 						}, 500);
 						onSaveSuccess?.(memoInput);
 					},
 					onError: () => {
 						setIsSaving(false);
+						pendingDataRef.current = null;
 					},
 				},
 			);
 		},
-		[getValues, memoData?.id, upsertMemo, onSaveSuccess],
+		[isSaving, getValues, memoData?.id, upsertMemo, onSaveSuccess],
 	);
 
 	const handleMemoChange = useCallback(

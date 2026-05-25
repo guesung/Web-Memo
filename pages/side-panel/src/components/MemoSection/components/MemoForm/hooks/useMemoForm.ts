@@ -9,7 +9,7 @@ import {
 } from "@web-memo/shared/hooks";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 interface SaveMemoOptions extends Partial<MemoInput> {
@@ -31,6 +31,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const { mutate: upsertMemo } = useMemoUpsertMutation();
 	const { mutate: patchMemo } = useMemoPatchMutation();
 	const [isSaving, setIsSaving] = useState(false);
+	const initializedMemoIdRef = useRef<number | null>(null);
 
 	useDidMount(() => {
 		bridge.handle.REFETCH_THE_MEMO_LIST_FROM_WEB(refetchMemo);
@@ -39,11 +40,18 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 	useEffect(
 		function initMemoData() {
-			setValue("memo", memoData?.memo ?? "");
+			const currentMemoId = memoData?.id ?? null;
+			const isNewMemo = initializedMemoIdRef.current !== currentMemoId;
+
+			if (isNewMemo) {
+				setValue("memo", memoData?.memo ?? "");
+				initializedMemoIdRef.current = currentMemoId;
+			}
+
 			setValue("isWish", memoData?.isWish ?? false);
 			setValue("categoryId", memoData?.category_id ?? null);
 		},
-		[memoData?.memo, memoData?.isWish, memoData?.category_id, setValue],
+		[memoData?.id, memoData?.memo, memoData?.isWish, memoData?.category_id, setValue],
 	);
 
 	const saveMemo = useCallback(

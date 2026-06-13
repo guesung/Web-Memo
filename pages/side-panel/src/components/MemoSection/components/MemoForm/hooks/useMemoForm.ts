@@ -52,7 +52,13 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 			setValue("isWish", memoData?.isWish ?? false);
 			setValue("categoryId", memoData?.category_id ?? null);
 		},
-		[memoData?.id, memoData?.memo, memoData?.isWish, memoData?.category_id, setValue],
+		[
+			memoData?.id,
+			memoData?.memo,
+			memoData?.isWish,
+			memoData?.category_id,
+			setValue,
+		],
 	);
 
 	const saveMemo = useCallback(

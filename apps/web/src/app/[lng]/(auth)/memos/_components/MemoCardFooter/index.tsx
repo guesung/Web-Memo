@@ -8,7 +8,7 @@ import type { GetMemoResponse } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
 import { Badge, Button, CardFooter, ToastAction, toast } from "@web-memo/ui";
 import dayjs from "dayjs";
-import { Clock, FolderIcon, HeartIcon } from "lucide-react";
+import { Clock, FolderIcon, HeartIcon, StarIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
 import { useState } from "react";
@@ -67,6 +67,40 @@ export default function MemoCardFooter({
 							id: memo.id,
 							request: {
 								isWish: memo.isWish,
+							},
+						});
+					}}
+				>
+					{t("toastActionMessage.undo")}
+				</ToastAction>
+			),
+		});
+	};
+
+	const handleIsStarClick = (event: MouseEvent<HTMLButtonElement>) => {
+		event.stopPropagation();
+
+		mutateMemoPatch({
+			id: memo.id,
+			request: {
+				isStar: !memo.isStar,
+			},
+		});
+
+		const toastTitle = memo.isStar
+			? t("toastTitle.memoStarDeleted")
+			: t("toastTitle.memoStarAdded");
+
+		toast({
+			title: toastTitle,
+			action: (
+				<ToastAction
+					altText={t("toastActionMessage.undo")}
+					onClick={() => {
+						mutateMemoPatch({
+							id: memo.id,
+							request: {
+								isStar: memo.isStar,
 							},
 						});
 					}}
@@ -137,6 +171,22 @@ export default function MemoCardFooter({
 						className={cn(
 							"transition-all",
 							memo.isWish ? "text-pink-500 scale-110" : "text-gray-400",
+							"hover:scale-125",
+						)}
+					/>
+				</Button>
+				<Button
+					variant="ghost"
+					size="sm"
+					className="w-8 h-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-full"
+					onClick={handleIsStarClick}
+				>
+					<StarIcon
+						size={16}
+						fill={memo.isStar ? "#f59e0b" : "none"}
+						className={cn(
+							"transition-all",
+							memo.isStar ? "text-amber-500 scale-110" : "text-gray-400",
 							"hover:scale-125",
 						)}
 					/>

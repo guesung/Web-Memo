@@ -1,4 +1,4 @@
-import { FileText, Globe, HeartOff, X } from "lucide-react-native";
+import { FileText, Globe, HeartOff, Share2, X } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
 	Dimensions,
@@ -16,6 +16,7 @@ import Animated, {
 	withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { shareUrl } from "@/lib/sharing/shareUrl";
 import { extractDomain } from "../_utils/extractDomain";
 import { formatDate } from "../_utils/formatDate";
 import type { MemoItem } from "./MemoCard";
@@ -76,6 +77,12 @@ export function MemoDetailModal({
 		}
 	}, [memo, onWishRemove]);
 
+	const handleShare = useCallback(() => {
+		if (memo?.url) {
+			shareUrl(memo.url, memo.title);
+		}
+	}, [memo]);
+
 	const title = memo?.title || "Untitled";
 	const memoText = memo?.memo ?? "";
 	const favIconUrl = memo && "favIconUrl" in memo ? memo.favIconUrl : undefined;
@@ -130,6 +137,9 @@ export function MemoDetailModal({
 							>
 								{title}
 							</Text>
+						</TouchableOpacity>
+						<TouchableOpacity onPress={handleShare} activeOpacity={0.7}>
+							<Share2 size={20} color="#666" />
 						</TouchableOpacity>
 						<TouchableOpacity onPress={onClose} activeOpacity={0.7}>
 							<X size={22} color="#666" />

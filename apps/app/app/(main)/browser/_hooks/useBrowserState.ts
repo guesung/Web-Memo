@@ -23,6 +23,7 @@ import {
 } from "@/lib/hooks/useLocalMemos";
 import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
 import { useMemoWishToggleMutation } from "@/lib/hooks/useMemoMutation";
+import { shareUrl } from "@/lib/sharing/shareUrl";
 import { getPanelRatio, savePanelRatio } from "../_utils/browserPreferences";
 import { formatUrl } from "../_utils/formatUrl";
 import {
@@ -41,7 +42,10 @@ const HIDE_DURATION = 250;
 export function useBrowserState() {
 	const insets = useSafeAreaInsets();
 	const webViewRef = useRef<WebView>(null);
-	const { url: paramUrl } = useLocalSearchParams<{ url?: string }>();
+	const { url: paramUrl, t: navTs } = useLocalSearchParams<{
+		url?: string;
+		t?: string;
+	}>();
 
 	const [currentUrl, setCurrentUrl] = useState("");
 	const [pageTitle, setPageTitle] = useState("");
@@ -92,17 +96,15 @@ export function useBrowserState() {
 		}, [isBrowserActive, tabBarTranslateY, headerTranslateY]),
 	);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: navTs는 동일 url 재진입 시에도 effect를 재실행시키기 위한 네비게이션 nonce
 	useEffect(() => {
-		if (paramUrl) {
-			const decoded = decodeURIComponent(paramUrl);
-			setCurrentUrl(decoded);
-			setPageTitle("");
-			if (isMemoOpen) {
-				setIsMemoOpen(false);
-				panelHeight.value = withSpring(0, SPRING_CONFIG);
-			}
-		}
-	}, [paramUrl, isMemoOpen, panelHeight]);
+		if (!paramUrl) return;
+		const decoded = decodeURIComponent(paramUrl);
+		setCurrentUrl(decoded);
+		setPageTitle("");
+		setIsMemoOpen(false);
+		panelHeight.value = withSpring(0, SPRING_CONFIG);
+	}, [paramUrl, navTs, panelHeight]);
 
 	const handleNavigationStateChange = (navState: WebViewNavigation) => {
 		setCurrentUrl(navState.url);
@@ -267,6 +269,10 @@ export function useBrowserState() {
 		setPageTitle("");
 	}, []);
 
+	const handleShare = useCallback(() => {
+		shareUrl(currentUrl, pageTitle);
+	}, [currentUrl, pageTitle]);
+
 	return {
 		insets,
 		webViewRef,
@@ -296,6 +302,7 @@ export function useBrowserState() {
 		openPanel,
 		closePanel,
 		handleBlogSelect,
+		handleShare,
 		SCROLL_DETECT_JS,
 	};
 }

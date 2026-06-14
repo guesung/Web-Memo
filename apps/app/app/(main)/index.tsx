@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Globe, Heart, LogIn, Undo2 } from "lucide-react-native";
+import { Globe, Heart, LogIn, Star, Undo2 } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
 	ActivityIndicator,
@@ -30,11 +30,14 @@ export default function MemoScreen() {
 		isFetchingNextPage,
 		handleEndReached,
 		handleWishRemove,
+		handleStarToggle,
 	} = useMemoList();
 
 	useEffect(() => {
 		if (filterParam === "wish") {
 			setFilter("wish");
+		} else if (filterParam === "star") {
+			setFilter("star");
 		}
 	}, [filterParam, setFilter]);
 
@@ -112,6 +115,21 @@ export default function MemoScreen() {
 							위시리스트
 						</Text>
 					</TouchableOpacity>
+					<TouchableOpacity
+						className={`flex-row items-center gap-1 px-3.5 py-[7px] rounded-[20px] ${filter === "star" ? "bg-foreground" : "bg-muted"}`}
+						onPress={() => setFilter("star")}
+					>
+						<Star
+							size={12}
+							fill={filter === "star" ? "#fff" : "#666"}
+							color={filter === "star" ? "#fff" : "#666"}
+						/>
+						<Text
+							className={`text-[13px] font-semibold ${filter === "star" ? "text-white" : "text-gray-500"}`}
+						>
+							중요
+						</Text>
+					</TouchableOpacity>
 				</View>
 
 				{isLoading ? (
@@ -119,7 +137,11 @@ export default function MemoScreen() {
 				) : memos.length > 0 ? (
 					<View className="flex-1 px-5">
 						<Text className="text-[17px] font-bold text-foreground mb-3">
-							{filter === "wish" ? "위시리스트" : "최근 메모"}
+							{filter === "wish"
+								? "위시리스트"
+								: filter === "star"
+									? "중요 메모"
+									: "최근 메모"}
 						</Text>
 						<FlatList
 							data={memos}
@@ -147,18 +169,24 @@ export default function MemoScreen() {
 					<View className="items-center pt-[60px] gap-3">
 						{filter === "wish" ? (
 							<Heart size={48} color="#ddd" />
+						) : filter === "star" ? (
+							<Star size={48} color="#ddd" />
 						) : (
 							<Globe size={48} color="#ddd" />
 						)}
 						<Text className="text-base font-semibold text-muted-foreground">
 							{filter === "wish"
 								? "위시리스트가 비어있습니다"
-								: "저장된 메모가 없습니다"}
+								: filter === "star"
+									? "중요 메모가 비어있습니다"
+									: "저장된 메모가 없습니다"}
 						</Text>
 						<Text className="text-[13px] text-gray-300">
 							{filter === "wish"
 								? "브라우저에서 마음에 드는 페이지를 저장해보세요"
-								: "브라우저에서 웹서핑하며 메모를 남겨보세요"}
+								: filter === "star"
+									? "메모를 길게 눌러 중요 표시를 해보세요"
+									: "브라우저에서 웹서핑하며 메모를 남겨보세요"}
 						</Text>
 						<TouchableOpacity
 							className="mt-2 bg-foreground px-5 py-3 rounded-3xl"
@@ -167,7 +195,9 @@ export default function MemoScreen() {
 							<Text className="text-sm font-semibold text-white">
 								{filter === "wish"
 									? "브라우저에서 페이지 저장하기"
-									: "브라우저에서 웹서핑 시작하기"}
+									: filter === "star"
+										? "브라우저에서 페이지 저장하기"
+										: "브라우저에서 웹서핑 시작하기"}
 							</Text>
 						</TouchableOpacity>
 					</View>
@@ -183,6 +213,10 @@ export default function MemoScreen() {
 				}}
 				onWishRemove={(memo) => {
 					handleWishRemove(memo);
+					setSelectedMemo(null);
+				}}
+				onStarToggle={(memo) => {
+					handleStarToggle(memo);
 					setSelectedMemo(null);
 				}}
 			/>

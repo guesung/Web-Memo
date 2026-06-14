@@ -28,6 +28,7 @@
 	"sideBar": {
 		"memo": "My memos",
 		"wishList": "My wishlist",
+		"importantMemo": "Important",
 		"allCategory": "All categories",
 		"tags": "Tags",
 		"settings": "Settings",
@@ -341,6 +342,8 @@
 		"memoDeleted": "Memo deleted",
 		"memoWishListDeleted": "Removed from wishlist",
 		"memoWishListAdded": "Added to wishlist",
+		"memoStarAdded": "Added to important",
+		"memoStarDeleted": "Removed from important",
 		"saveSuccess": "Saved",
 		"deleteSuccess": "Deleted",
 		"addSuccess": "Added",

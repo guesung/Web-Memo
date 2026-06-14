@@ -38,6 +38,7 @@ export default function BrowserScreen() {
 		toggleMemo,
 		closePanel,
 		handleBlogSelect,
+		handleShare,
 		SCROLL_DETECT_JS,
 	} = useBrowserState();
 
@@ -75,6 +76,7 @@ export default function BrowserScreen() {
 				onOpenBlogSheet={() => setIsBlogSheetOpen(true)}
 				onFavoriteToggle={handleFavoriteToggle}
 				onWishToggle={handleWishToggle}
+				onShare={handleShare}
 			/>
 
 			<View

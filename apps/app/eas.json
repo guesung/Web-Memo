@@ -11,7 +11,9 @@
 		"preview": {
 			"distribution": "internal"
 		},
-		"production": {},
+		"production": {
+			"autoIncrement": true
+		},
 		"ci": {
 			"distribution": "store",
 			"env": {
@@ -20,6 +22,13 @@
 		}
 	},
 	"submit": {
-		"production": {}
+		"production": {
+			"ios": {
+				"ascApiKeyPath": "./asc-api-key.p8",
+				"ascApiKeyId": "HT774VM4W5",
+				"ascApiKeyIssuerId": "ab5c73bd-ddb0-44a7-9797-941c1a211615",
+				"ascAppId": "6759237784"
+			}
+		}
 	}
 }

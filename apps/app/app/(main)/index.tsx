@@ -185,7 +185,7 @@ export default function MemoScreen() {
 							{filter === "wish"
 								? "브라우저에서 마음에 드는 페이지를 저장해보세요"
 								: filter === "star"
-									? "메모를 길게 눌러 중요 표시를 해보세요"
+									? "메모를 눌러 중요 표시를 해보세요"
 									: "브라우저에서 웹서핑하며 메모를 남겨보세요"}
 						</Text>
 						<TouchableOpacity

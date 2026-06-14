@@ -81,6 +81,7 @@ export default function useMemoUpsertMutation() {
 						memo: data.memo ?? "",
 						favIconUrl: data.favIconUrl ?? null,
 						isWish: data.isWish ?? false,
+						isStar: data.isStar ?? false,
 						category_id: data.category_id ?? null,
 						created_at: new Date().toISOString(),
 						updated_at: new Date().toISOString(),

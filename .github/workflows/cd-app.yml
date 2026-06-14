@@ -38,3 +38,13 @@ jobs:
           name: ios-build
           path: apps/app/build.ipa
           retention-days: 7
+
+      - name: Write App Store Connect API key
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')
+        env:
+          ASC_API_KEY_P8: ${{ secrets.EXPO_ASC_API_KEY_P8 }}
+        run: echo "$ASC_API_KEY_P8" > apps/app/asc-api-key.p8
+
+      - name: Submit to TestFlight
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')
+        run: cd apps/app && eas submit --platform ios --profile production --path ./build.ipa --non-interactive

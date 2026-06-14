@@ -1,0 +1,16 @@
+---
+alwaysApply: true
+---
+
+# Cursor Rules → AGENTS.md
+
+이 저장소의 모든 개발 규칙·컨벤션·아키텍처·서비스 정보는 루트 **`AGENTS.md`** 에 단일화되어 있습니다.
+
+코드를 작성하거나 수정하기 전에 반드시 `AGENTS.md`를 읽고 그 규칙을 따르세요.
+
+- 단일 진실 원천(SSOT): [AGENTS.md](mdc:AGENTS.md)
+- 프론트엔드 설계 가이드: [docs/frontend-guidelines.md](mdc:docs/frontend-guidelines.md)
+- 커밋/PR/브랜치 컨벤션: `docs/` 디렉토리
+
+> 규칙을 추가하거나 수정할 때는 이 파일이 아니라 `AGENTS.md`(또는 `docs/`)를 고칩니다.
+> 도구별 규칙 파일에 내용을 중복 작성하지 마세요.

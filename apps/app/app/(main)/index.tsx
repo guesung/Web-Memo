@@ -44,7 +44,7 @@ export default function MemoScreen() {
 		(url: string) => {
 			router.navigate({
 				pathname: "/(main)/browser",
-				params: { url: encodeURIComponent(url) },
+				params: { url: encodeURIComponent(url), t: String(Date.now()) },
 			});
 		},
 		[router],

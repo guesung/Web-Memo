@@ -1,5 +1,5 @@
 import type { GetMemoResponse } from "@web-memo/shared/types";
-import { FileText, Heart, Trash2 } from "lucide-react-native";
+import { FileText, Heart, Star, Trash2 } from "lucide-react-native";
 import { useRef } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import ReanimatedSwipeable, {
@@ -84,6 +84,9 @@ export function MemoCard({ memo, onPress, onDelete }: MemoCardProps) {
 						<Text className="text-xs text-muted-foreground">{dateLabel}</Text>
 					) : null}
 					{memo.isWish && <Heart size={12} fill="#ec4899" color="#ec4899" />}
+					{"isStar" in memo && memo.isStar && (
+						<Star size={12} fill="#f59e0b" color="#f59e0b" />
+					)}
 				</View>
 				{memo.memo && (
 					<Text

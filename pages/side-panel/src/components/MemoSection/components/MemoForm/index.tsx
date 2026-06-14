@@ -15,7 +15,7 @@ import {
 	ToastAction,
 	toast,
 } from "@web-memo/ui";
-import { HeartIcon, Loader2Icon, XIcon } from "lucide-react";
+import { HeartIcon, Loader2Icon, StarIcon, XIcon } from "lucide-react";
 import { useMemo, useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { SaveStatus } from "./components";
@@ -28,8 +28,14 @@ function MemoFormContent() {
 
 	const currentCategoryId = watch("categoryId");
 
-	const { memoData, isSaving, handleMemoChange, updateCategory, toggleWish } =
-		useMemoForm();
+	const {
+		memoData,
+		isSaving,
+		handleMemoChange,
+		updateCategory,
+		toggleWish,
+		toggleStar,
+	} = useMemoForm();
 
 	const {
 		categories,
@@ -68,6 +74,27 @@ function MemoFormContent() {
 				: I18n.get("wish_list_deleted"),
 			action: (
 				<ToastAction altText={I18n.get("go_to")} onClick={navigateWish}>
+					{I18n.get("go_to")}
+				</ToastAction>
+			),
+		});
+	};
+
+	const handleStarClick = async () => {
+		const newIsStar = await toggleStar();
+
+		const navigateStar = () => {
+			const url = getMemoUrl({
+				id: memoData?.id,
+				isStar: newIsStar,
+			});
+			Tab.create({ url });
+		};
+
+		toast({
+			title: newIsStar ? I18n.get("star_added") : I18n.get("star_deleted"),
+			action: (
+				<ToastAction altText={I18n.get("go_to")} onClick={navigateStar}>
 					{I18n.get("go_to")}
 				</ToastAction>
 			),
@@ -123,6 +150,19 @@ function MemoFormContent() {
 								"cursor-pointer transition-transform hover:scale-110 active:scale-95",
 								{
 									"animate-heart-pop": memoData?.isWish,
+								},
+							)}
+						/>
+						<StarIcon
+							size={16}
+							fill={memoData?.isStar ? "#f59e0b" : ""}
+							fillOpacity={memoData?.isStar ? 100 : 0}
+							onClick={handleStarClick}
+							role="button"
+							className={cn(
+								"cursor-pointer transition-transform hover:scale-110 active:scale-95",
+								{
+									"text-amber-500": memoData?.isStar,
 								},
 							)}
 						/>

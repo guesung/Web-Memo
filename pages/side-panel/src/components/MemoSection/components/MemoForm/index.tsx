@@ -206,6 +206,7 @@ function MemoForm() {
 		defaultValues: {
 			memo: "",
 			isWish: false,
+			isStar: false,
 			categoryId: null,
 		},
 	});

@@ -2,13 +2,17 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import {
 	useLocalMemos,
+	useLocalMemoStarToggle,
 	useLocalMemoWishToggle,
 } from "@/lib/hooks/useLocalMemos";
-import { useMemoWishToggleMutation } from "@/lib/hooks/useMemoMutation";
+import {
+	useMemoStarToggleMutation,
+	useMemoWishToggleMutation,
+} from "@/lib/hooks/useMemoMutation";
 import { useMemosInfinite } from "@/lib/hooks/useMemos";
 import type { MemoItem } from "../_components/MemoCard";
 
-type MemoFilter = "all" | "wish";
+type MemoFilter = "all" | "wish" | "star";
 
 export function useMemoList() {
 	const { isLoggedIn } = useAuth();
@@ -16,6 +20,8 @@ export function useMemoList() {
 
 	const wishToggleLocal = useLocalMemoWishToggle();
 	const wishToggleSupabase = useMemoWishToggleMutation();
+	const starToggleLocal = useLocalMemoStarToggle();
+	const starToggleSupabase = useMemoStarToggleMutation();
 
 	const {
 		data: localMemosData,
@@ -29,13 +35,23 @@ export function useMemoList() {
 		fetchNextPage,
 		hasNextPage,
 		isFetchingNextPage,
-	} = useMemosInfinite(isLoggedIn ? { isWish: filter === "wish" } : undefined);
+	} = useMemosInfinite(
+		isLoggedIn
+			? filter === "wish"
+				? { isWish: true }
+				: filter === "star"
+					? { isStar: true }
+					: { isWish: false }
+			: undefined,
+	);
 
 	const memos: MemoItem[] = isLoggedIn
 		? (supabaseMemosData?.pages.flatMap((p) => p.data) ?? [])
-		: (localMemosData ?? []).filter((m) =>
-				filter === "wish" ? m.isWish : !m.isWish,
-			);
+		: (localMemosData ?? []).filter((m) => {
+				if (filter === "wish") return m.isWish;
+				if (filter === "star") return m.isStar;
+				return !m.isWish;
+			});
 	const isLoading = isLoggedIn ? isSupabaseLoading : isLocalLoading;
 	const refetch = isLoggedIn ? refetchSupabase : refetchLocal;
 
@@ -60,6 +76,22 @@ export function useMemoList() {
 		}
 	};
 
+	const handleStarToggle = (memo: MemoItem) => {
+		const currentIsStar = "isStar" in memo ? Boolean(memo.isStar) : false;
+		if (isLoggedIn) {
+			const favIconUrl =
+				"favIconUrl" in memo ? (memo.favIconUrl ?? undefined) : undefined;
+			starToggleSupabase.mutate({
+				url: memo.url,
+				title: memo.title,
+				favIconUrl,
+				currentIsStar,
+			});
+		} else {
+			starToggleLocal.mutate({ url: memo.url });
+		}
+	};
+
 	return {
 		isLoggedIn,
 		filter,
@@ -70,5 +102,6 @@ export function useMemoList() {
 		isFetchingNextPage,
 		handleEndReached,
 		handleWishRemove,
+		handleStarToggle,
 	};
 }

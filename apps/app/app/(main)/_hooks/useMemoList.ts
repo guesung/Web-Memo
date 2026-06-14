@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import {
-	useLocalMemos,
 	useLocalMemoStarToggle,
+	useLocalMemos,
 	useLocalMemoWishToggle,
 } from "@/lib/hooks/useLocalMemos";
 import {

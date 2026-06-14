@@ -5,12 +5,14 @@ import { SearchParams } from "@web-memo/shared/modules/search-params";
 interface GetMemoUrlParams {
 	id?: number;
 	isWish?: boolean;
+	isStar?: boolean;
 }
 
-export const getMemoUrl = ({ id, isWish }: GetMemoUrlParams) => {
+export const getMemoUrl = ({ id, isWish, isStar }: GetMemoUrlParams) => {
 	const searchParams = new SearchParams();
 	if (id) searchParams.set("id", String(id));
 	if (isWish) searchParams.set("isWish", "true");
+	if (isStar) searchParams.set("isStar", "true");
 
 	return `${CONFIG.webUrl}${PATHS.memos}${searchParams.getSearchParams()}`;
 };

@@ -4,6 +4,7 @@ import {
 	LayoutGrid,
 	RotateCw,
 	Search,
+	Share2,
 	Star,
 	X,
 } from "lucide-react-native";
@@ -26,6 +27,7 @@ interface BrowserHeaderProps {
 	onOpenBlogSheet: () => void;
 	onFavoriteToggle: () => void;
 	onWishToggle: () => void;
+	onShare: () => void;
 }
 
 export function BrowserHeader({
@@ -41,6 +43,7 @@ export function BrowserHeader({
 	onOpenBlogSheet,
 	onFavoriteToggle,
 	onWishToggle,
+	onShare,
 }: BrowserHeaderProps) {
 	return (
 		<Animated.View className="overflow-hidden" style={headerWrapperStyle}>
@@ -66,6 +69,9 @@ export function BrowserHeader({
 						</TouchableOpacity>
 					)}
 				</View>
+				<TouchableOpacity onPress={onShare} className="p-1.5">
+					<Share2 size={16} color="#111" />
+				</TouchableOpacity>
 				<TouchableOpacity
 					onPress={() => webViewRef.current?.reload()}
 					className="p-1.5"

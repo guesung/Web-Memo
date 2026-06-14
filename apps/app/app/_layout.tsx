@@ -1,10 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import { useShareIntent } from "expo-share-intent";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { Check } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -60,36 +60,37 @@ function SyncOnAuth() {
 function ShareIntentHandler() {
 	const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent();
 	const insets = useSafeAreaInsets();
-	const router = useRouter();
 	const [shareToast, setShareToast] = useState<string | null>(null);
+	const processingUrlRef = useRef<string | null>(null);
 
 	useEffect(() => {
-		if (hasShareIntent && shareIntent) {
-			const url = shareIntent.webUrl || shareIntent.text;
-			if (url?.startsWith("http")) {
-				handleSharedUrl(url, shareIntent.meta?.title ?? undefined)
-					.then(() => {
-						queryClient.invalidateQueries({ queryKey: ["memos"] });
-						queryClient.invalidateQueries({ queryKey: ["localMemos"] });
-						setShareToast("위시리스트에 저장되었습니다");
-						setTimeout(() => setShareToast(null), 3000);
-						router.navigate({
-							pathname: "/(main)",
-							params: { filter: "wish" },
-						});
-					})
-					.catch(() => {
-						setShareToast("저장에 실패했습니다");
-						setTimeout(() => setShareToast(null), 3000);
-					})
-					.finally(() => {
-						resetShareIntent();
-					});
-			} else {
-				resetShareIntent();
-			}
+		if (!hasShareIntent || !shareIntent) return;
+
+		const url = shareIntent.webUrl || shareIntent.text;
+		if (!url?.startsWith("http")) {
+			resetShareIntent();
+			return;
 		}
-	}, [hasShareIntent, shareIntent, resetShareIntent, router.navigate]);
+
+		if (processingUrlRef.current === url) return;
+		processingUrlRef.current = url;
+
+		handleSharedUrl(url, shareIntent.meta?.title ?? undefined)
+			.then(() => {
+				queryClient.invalidateQueries({ queryKey: ["memos"] });
+				queryClient.invalidateQueries({ queryKey: ["localMemos"] });
+				setShareToast("위시리스트에 추가되었습니다");
+				setTimeout(() => setShareToast(null), 3000);
+			})
+			.catch(() => {
+				setShareToast("저장에 실패했습니다");
+				setTimeout(() => setShareToast(null), 3000);
+			})
+			.finally(() => {
+				processingUrlRef.current = null;
+				resetShareIntent();
+			});
+	}, [hasShareIntent, shareIntent, resetShareIntent]);
 
 	if (!shareToast) return null;
 

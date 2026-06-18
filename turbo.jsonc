@@ -46,7 +46,13 @@
 		// 프로덕션 빌드 (apps/app|chrome-extension|web, pages/content-ui|options|side-panel)
 		"build": {
 			"dependsOn": ["ready", "^build"],
-			"inputs": ["$TURBO_DEFAULT$", "!**/*.md", "!**/*.test.*", "!**/*.spec.*", "!**/*.tsbuildinfo"],
+			"inputs": [
+				"$TURBO_DEFAULT$",
+				"!**/*.md",
+				"!**/*.test.*",
+				"!**/*.spec.*",
+				"!**/*.tsbuildinfo"
+			],
 			"outputs": ["dist/**", "build/**", ".next/**", "!.next/cache/**"]
 		},
 		// 프로덕션 서버 실행 (apps/web)

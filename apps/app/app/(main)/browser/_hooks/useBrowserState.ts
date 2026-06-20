@@ -159,38 +159,55 @@ export function useBrowserState() {
 	const handleWishToggle = useCallback(() => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-		// 위시리스트를 취소할 때, 작성된 메모가 없으면 메모 레코드를 삭제한다
+		// 위시리스트를 취소할 때, 작성된 메모가 없고 별표(중요)도 아니면 메모 레코드를 삭제한다.
+		// 별표만 켜진 빈 메모는 삭제하면 중요 표시가 유실되므로 위시 플래그만 해제한다.
 		const currentMemo = isLoggedIn ? supabaseMemo : localMemo;
 		const shouldDeleteEmptyMemo =
-			isCurrentPageWish && !currentMemo?.memo?.trim();
+			isCurrentPageWish && !currentMemo?.memo?.trim() && !currentMemo?.isStar;
+
+		const wishToastMessage = isCurrentPageWish
+			? "위시리스트에서 제거"
+			: "위시리스트에 추가";
+
+		const showWishToast = (message: string) => {
+			setWishToast(message);
+			setTimeout(() => setWishToast(null), 1500);
+		};
+
+		// mutation 결과에 따라 토스트를 띄운다(실패 시 성공 토스트가 뜨지 않도록)
+		const wishMutationCallbacks = {
+			onSuccess: () => showWishToast(wishToastMessage),
+			onError: () => showWishToast("처리에 실패했어요"),
+		};
 
 		if (isLoggedIn) {
 			if (shouldDeleteEmptyMemo && supabaseMemo) {
-				deleteSupabaseMemo.mutate(supabaseMemo.id);
+				deleteSupabaseMemo.mutate(supabaseMemo.id, wishMutationCallbacks);
 			} else {
-				wishToggleSupabase.mutate({
-					url: currentUrl,
-					title: pageTitle,
-					favIconUrl: pageFavIconUrl,
-					currentIsWish: isCurrentPageWish,
-				});
+				wishToggleSupabase.mutate(
+					{
+						url: currentUrl,
+						title: pageTitle,
+						favIconUrl: pageFavIconUrl,
+						currentIsWish: isCurrentPageWish,
+					},
+					wishMutationCallbacks,
+				);
 			}
 		} else {
 			if (shouldDeleteEmptyMemo && localMemo) {
-				deleteLocalMemo.mutate(localMemo.id);
+				deleteLocalMemo.mutate(localMemo.id, wishMutationCallbacks);
 			} else {
-				wishToggleLocal.mutate({
-					url: currentUrl,
-					title: pageTitle,
-					favIconUrl: pageFavIconUrl,
-				});
+				wishToggleLocal.mutate(
+					{
+						url: currentUrl,
+						title: pageTitle,
+						favIconUrl: pageFavIconUrl,
+					},
+					wishMutationCallbacks,
+				);
 			}
 		}
-
-		setWishToast(
-			isCurrentPageWish ? "위시리스트에서 제거" : "위시리스트에 추가",
-		);
-		setTimeout(() => setWishToast(null), 1500);
 	}, [
 		currentUrl,
 		pageTitle,

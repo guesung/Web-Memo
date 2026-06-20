@@ -74,6 +74,12 @@
 	"wish_list_added": {
 		"message": "위시리스트에 추가했어요"
 	},
+	"star_added": {
+		"message": "중요 메모에 추가했어요"
+	},
+	"star_deleted": {
+		"message": "중요 메모에서 삭제했어요"
+	},
 	"go_to": {
 		"message": "이동"
 	},

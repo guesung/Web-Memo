@@ -17,7 +17,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@web-memo/ui";
-import { Heart, Home, SettingsIcon } from "lucide-react";
+import { Heart, Home, SettingsIcon, Star } from "lucide-react";
 import Link from "next/link";
 
 import SidebarGroupCategory from "./SidebarGroupCategory";
@@ -57,6 +57,21 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 									</div>
 									<span className="font-medium text-gray-700 dark:text-gray-200 group-hover:text-pink-700 dark:group-hover:text-pink-300">
 										{t("sideBar.wishList")}
+									</span>
+								</div>
+							</SidebarMenuButton>
+						</Link>
+						<Link href={`${PATHS.memos}?isStar=true`} replace>
+							<SidebarMenuButton className="group relative overflow-hidden transition-all duration-200 hover:bg-gradient-to-r hover:from-amber-50 hover:to-amber-100/50 dark:hover:from-amber-950/30 dark:hover:to-amber-900/20 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]">
+								<div className="flex items-center gap-3 w-full">
+									<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/40 transition-colors">
+										<Star
+											size={16}
+											className="text-amber-600 dark:text-amber-400"
+										/>
+									</div>
+									<span className="font-medium text-gray-700 dark:text-gray-200 group-hover:text-amber-700 dark:group-hover:text-amber-300">
+										{t("sideBar.importantMemo")}
 									</span>
 								</div>
 							</SidebarMenuButton>

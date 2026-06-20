@@ -28,6 +28,7 @@
 	"sideBar": {
 		"memo": "내 메모",
 		"wishList": "내 위시리스트",
+		"importantMemo": "중요 메모",
 		"allCategory": "전체 카테고리",
 		"tags": "태그",
 		"settings": "설정",
@@ -336,6 +337,8 @@
 		"memoDeleted": "메모를 삭제했어요",
 		"memoWishListDeleted": "위시리스트에서 삭제했어요",
 		"memoWishListAdded": "위시리스트에 추가했어요",
+		"memoStarAdded": "중요 메모에 추가했어요",
+		"memoStarDeleted": "중요 메모에서 삭제했어요",
 		"saveSuccess": "저장했어요",
 		"deleteSuccess": "삭제했어요",
 		"addSuccess": "추가했어요",

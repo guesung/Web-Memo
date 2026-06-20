@@ -8,6 +8,7 @@ const PAGE_SIZE = 20;
 export function useMemosInfinite(params?: {
 	category?: string;
 	isWish?: boolean;
+	isStar?: boolean;
 	searchQuery?: string;
 }) {
 	return useInfiniteQuery({
@@ -15,6 +16,8 @@ export function useMemosInfinite(params?: {
 			params?.category,
 			params?.isWish,
 			params?.searchQuery,
+			undefined,
+			params?.isStar,
 		),
 		queryFn: async ({ pageParam }) => {
 			const result = await memoService.getMemosPaginated({
@@ -22,6 +25,7 @@ export function useMemosInfinite(params?: {
 				limit: PAGE_SIZE,
 				category: params?.category,
 				isWish: params?.isWish,
+				isStar: params?.isStar,
 				searchQuery: params?.searchQuery,
 			});
 			return {

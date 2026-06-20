@@ -11,13 +11,15 @@ const PAGE_SIZE = 20;
 interface UseMemosInfiniteQueryProps {
 	category?: string;
 	isWish?: boolean;
+	isStar?: boolean;
 	searchQuery?: string;
 	sortBy?: MemoSortBy;
 }
 
 export default function useMemosInfiniteQuery({
 	category,
-	isWish = false,
+	isWish,
+	isStar,
 	searchQuery,
 	sortBy = "updated_at",
 }: UseMemosInfiniteQueryProps = {}) {
@@ -28,13 +30,20 @@ export default function useMemosInfiniteQuery({
 	);
 
 	const query = useSuspenseInfiniteQuery({
-		queryKey: QUERY_KEY.memosPaginated(category, isWish, searchQuery, sortBy),
+		queryKey: QUERY_KEY.memosPaginated(
+			category,
+			isWish,
+			searchQuery,
+			sortBy,
+			isStar,
+		),
 		queryFn: async ({ pageParam }) => {
 			const result = await memoService.getMemosPaginated({
 				cursor: pageParam,
 				limit: PAGE_SIZE,
 				category,
 				isWish,
+				isStar,
 				searchQuery,
 				sortBy,
 			});

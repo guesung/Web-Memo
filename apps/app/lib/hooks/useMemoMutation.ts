@@ -16,6 +16,7 @@ export function useMemoUpsertMutation() {
 						request: {
 							...data,
 							isWish: data.isWish ?? existing.data[0].isWish,
+							isStar: data.isStar ?? existing.data[0].isStar,
 						},
 					});
 				}
@@ -42,6 +43,7 @@ export function useDeleteMemoMutation() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+			queryClient.invalidateQueries({ queryKey: ["memo"] });
 		},
 	});
 }
@@ -68,6 +70,40 @@ export function useMemoWishToggleMutation() {
 				title: data.title,
 				memo: "",
 				isWish: true,
+				favIconUrl: data.favIconUrl,
+			});
+		},
+		onSuccess: (_data, variables) => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+			queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.memo({ url: variables.url }),
+			});
+		},
+	});
+}
+
+export function useMemoStarToggleMutation() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (data: {
+			url: string;
+			title: string;
+			favIconUrl?: string;
+			currentIsStar: boolean;
+		}) => {
+			const existing = await memoService.getMemoByUrl(data.url);
+			if (existing.data && existing.data.length > 0) {
+				return memoService.updateMemo({
+					id: existing.data[0].id,
+					request: { isStar: !data.currentIsStar },
+				});
+			}
+			return memoService.insertMemo({
+				url: data.url,
+				title: data.title,
+				memo: "",
+				isStar: true,
 				favIconUrl: data.favIconUrl,
 			});
 		},

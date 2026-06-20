@@ -3,7 +3,7 @@
 		"name": "Web Memo",
 		"slug": "web-memo",
 		"owner": "guesung",
-		"version": "1.0.5",
+		"version": "1.0.6",
 		"orientation": "portrait",
 		"icon": "./assets/icon.png",
 		"scheme": "webmemo",
@@ -17,7 +17,7 @@
 		"ios": {
 			"supportsTablet": true,
 			"bundleIdentifier": "com.webmemo.app",
-			"buildNumber": "4",
+			"buildNumber": "5",
 			"usesAppleSignIn": true,
 			"infoPlist": {
 				"ITSAppUsesNonExemptEncryption": false,

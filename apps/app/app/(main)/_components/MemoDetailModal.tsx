@@ -1,4 +1,12 @@
-import { FileText, Globe, HeartOff, Share2, X } from "lucide-react-native";
+import {
+	FileText,
+	Globe,
+	HeartOff,
+	Share2,
+	Star,
+	StarOff,
+	X,
+} from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
 	Dimensions,
@@ -29,6 +37,7 @@ interface MemoDetailModalProps {
 	onClose: () => void;
 	onNavigate: (url: string) => void;
 	onWishRemove?: (memo: MemoItem) => void;
+	onStarToggle?: (memo: MemoItem) => void;
 }
 
 export function MemoDetailModal({
@@ -36,6 +45,7 @@ export function MemoDetailModal({
 	onClose,
 	onNavigate,
 	onWishRemove,
+	onStarToggle,
 }: MemoDetailModalProps) {
 	const insets = useSafeAreaInsets();
 	const translateY = useSharedValue(SHEET_HEIGHT);
@@ -77,6 +87,12 @@ export function MemoDetailModal({
 		}
 	}, [memo, onWishRemove]);
 
+	const handleStarToggle = useCallback(() => {
+		if (memo && onStarToggle) {
+			onStarToggle(memo);
+		}
+	}, [memo, onStarToggle]);
+
 	const handleShare = useCallback(() => {
 		if (memo?.url) {
 			shareUrl(memo.url, memo.title);
@@ -87,6 +103,7 @@ export function MemoDetailModal({
 	const memoText = memo?.memo ?? "";
 	const favIconUrl = memo && "favIconUrl" in memo ? memo.favIconUrl : undefined;
 	const isWish = memo && "isWish" in memo ? memo.isWish : false;
+	const isStar = memo && "isStar" in memo ? memo.isStar : false;
 
 	const domain = memo?.url ? extractDomain(memo.url) : "";
 	const rawDate = memo
@@ -183,6 +200,27 @@ export function MemoDetailModal({
 							<HeartOff size={14} color="#ec4899" />
 							<Text className="text-sm text-wish font-medium">
 								위시리스트에서 제거
+							</Text>
+						</TouchableOpacity>
+					)}
+
+					{onStarToggle && (
+						<TouchableOpacity
+							className="flex-row items-center justify-center gap-1.5 mx-5 mt-2 py-2.5 border rounded-lg"
+							style={{ borderColor: "#f59e0b" }}
+							onPress={handleStarToggle}
+							activeOpacity={0.7}
+						>
+							{isStar ? (
+								<StarOff size={14} color="#f59e0b" />
+							) : (
+								<Star size={14} color="#f59e0b" fill="#f59e0b" />
+							)}
+							<Text
+								className="text-sm font-medium"
+								style={{ color: "#f59e0b" }}
+							>
+								{isStar ? "중요 해제" : "중요 표시"}
 							</Text>
 						</TouchableOpacity>
 					)}

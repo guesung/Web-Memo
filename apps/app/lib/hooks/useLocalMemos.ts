@@ -3,6 +3,7 @@ import {
 	deleteMemo,
 	getAllMemos,
 	getMemoByUrl,
+	toggleStarByUrl,
 	toggleWishByUrl,
 	upsertMemo,
 } from "@/lib/storage/localMemo";
@@ -64,6 +65,28 @@ export function useLocalMemoWishToggle() {
 	});
 }
 
+export function useLocalMemoStarToggle() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({
+			url,
+			title,
+			favIconUrl,
+		}: {
+			url: string;
+			title?: string;
+			favIconUrl?: string;
+		}) => toggleStarByUrl(url, title, favIconUrl),
+		onSuccess: (_data, { url }) => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos() });
+			queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.localMemoByUrl(url),
+			});
+		},
+	});
+}
+
 export function useLocalMemoDelete() {
 	const queryClient = useQueryClient();
 
@@ -71,6 +94,7 @@ export function useLocalMemoDelete() {
 		mutationFn: deleteMemo,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos() });
+			queryClient.invalidateQueries({ queryKey: ["localMemo"] });
 		},
 	});
 }

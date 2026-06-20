@@ -74,6 +74,12 @@
 	"wish_list_added": {
 		"message": "Added to wishlist"
 	},
+	"star_added": {
+		"message": "Added to important"
+	},
+	"star_deleted": {
+		"message": "Removed from important"
+	},
 	"go_to": {
 		"message": "Go"
 	},

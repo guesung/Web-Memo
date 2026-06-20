@@ -9,7 +9,12 @@ export const QUERY_KEY = {
 		isWish?: boolean,
 		searchQuery?: string,
 		sortBy?: MemoSortBy,
-	) => ["memos", "paginated", { category, isWish, searchQuery, sortBy }],
+		isStar?: boolean,
+	) => [
+		"memos",
+		"paginated",
+		{ category, isWish, searchQuery, sortBy, isStar },
+	],
 	option: () => ["option"],
 	supabaseClient: () => ["supabaseClient"],
 	user: () => ["user"],

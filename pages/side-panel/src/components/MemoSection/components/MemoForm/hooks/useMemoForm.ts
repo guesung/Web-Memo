@@ -50,12 +50,14 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 			}
 
 			setValue("isWish", memoData?.isWish ?? false);
+			setValue("isStar", memoData?.isStar ?? false);
 			setValue("categoryId", memoData?.category_id ?? null);
 		},
 		[
 			memoData?.id,
 			memoData?.memo,
 			memoData?.isWish,
+			memoData?.isStar,
 			memoData?.category_id,
 			setValue,
 		],
@@ -72,6 +74,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 			const memoInput: MemoInput = {
 				memo: overrides?.memo ?? currentValues.memo,
 				isWish: overrides?.isWish ?? currentValues.isWish,
+				isStar: overrides?.isStar ?? currentValues.isStar,
 				categoryId: overrides?.categoryId ?? currentValues.categoryId,
 			};
 
@@ -89,6 +92,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 						...tabInfo,
 						memo: memoInput.memo,
 						isWish: memoInput.isWish,
+						isStar: memoInput.isStar,
 						category_id: memoInput.categoryId,
 					},
 				},
@@ -140,6 +144,14 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		return newIsWish;
 	}, [getValues, setValue, saveMemo]);
 
+	const toggleStar = useCallback(async () => {
+		const currentIsStar = getValues("isStar");
+		const newIsStar = !currentIsStar;
+		setValue("isStar", newIsStar);
+		await saveMemo({ isStar: newIsStar });
+		return newIsStar;
+	}, [getValues, setValue, saveMemo]);
+
 	return {
 		memoData,
 		isSaving,
@@ -147,5 +159,6 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		handleMemoChange,
 		updateCategory,
 		toggleWish,
+		toggleStar,
 	};
 }

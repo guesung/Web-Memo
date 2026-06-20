@@ -19,10 +19,14 @@ import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
 import { useFavoriteToggle, useIsFavorite } from "@/lib/hooks/useFavorites";
 import {
 	useLocalMemoByUrl,
+	useLocalMemoDelete,
 	useLocalMemoWishToggle,
 } from "@/lib/hooks/useLocalMemos";
 import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
-import { useMemoWishToggleMutation } from "@/lib/hooks/useMemoMutation";
+import {
+	useDeleteMemoMutation,
+	useMemoWishToggleMutation,
+} from "@/lib/hooks/useMemoMutation";
 import { shareUrl } from "@/lib/sharing/shareUrl";
 import { getPanelRatio, savePanelRatio } from "../_utils/browserPreferences";
 import { formatUrl } from "../_utils/formatUrl";
@@ -65,6 +69,8 @@ export function useBrowserState() {
 	const { data: localMemo } = useLocalMemoByUrl(currentUrl);
 	const wishToggleSupabase = useMemoWishToggleMutation();
 	const wishToggleLocal = useLocalMemoWishToggle();
+	const deleteSupabaseMemo = useDeleteMemoMutation();
+	const deleteLocalMemo = useLocalMemoDelete();
 
 	const isCurrentPageWish = isLoggedIn
 		? (supabaseMemo?.isWish ?? false)
@@ -152,20 +158,35 @@ export function useBrowserState() {
 
 	const handleWishToggle = useCallback(() => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+		// 위시리스트를 취소할 때, 작성된 메모가 없으면 메모 레코드를 삭제한다
+		const currentMemo = isLoggedIn ? supabaseMemo : localMemo;
+		const shouldDeleteEmptyMemo =
+			isCurrentPageWish && !currentMemo?.memo?.trim();
+
 		if (isLoggedIn) {
-			wishToggleSupabase.mutate({
-				url: currentUrl,
-				title: pageTitle,
-				favIconUrl: pageFavIconUrl,
-				currentIsWish: isCurrentPageWish,
-			});
+			if (shouldDeleteEmptyMemo && supabaseMemo) {
+				deleteSupabaseMemo.mutate(supabaseMemo.id);
+			} else {
+				wishToggleSupabase.mutate({
+					url: currentUrl,
+					title: pageTitle,
+					favIconUrl: pageFavIconUrl,
+					currentIsWish: isCurrentPageWish,
+				});
+			}
 		} else {
-			wishToggleLocal.mutate({
-				url: currentUrl,
-				title: pageTitle,
-				favIconUrl: pageFavIconUrl,
-			});
+			if (shouldDeleteEmptyMemo && localMemo) {
+				deleteLocalMemo.mutate(localMemo.id);
+			} else {
+				wishToggleLocal.mutate({
+					url: currentUrl,
+					title: pageTitle,
+					favIconUrl: pageFavIconUrl,
+				});
+			}
 		}
+
 		setWishToast(
 			isCurrentPageWish ? "위시리스트에서 제거" : "위시리스트에 추가",
 		);
@@ -176,8 +197,12 @@ export function useBrowserState() {
 		pageFavIconUrl,
 		isLoggedIn,
 		isCurrentPageWish,
+		supabaseMemo,
+		localMemo,
 		wishToggleSupabase,
 		wishToggleLocal,
+		deleteSupabaseMemo,
+		deleteLocalMemo,
 	]);
 
 	const openPanel = useCallback(() => {

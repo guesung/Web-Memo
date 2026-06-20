@@ -42,6 +42,7 @@ export function useDeleteMemoMutation() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+			queryClient.invalidateQueries({ queryKey: ["memo"] });
 		},
 	});
 }

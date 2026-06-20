@@ -71,6 +71,7 @@ export function useLocalMemoDelete() {
 		mutationFn: deleteMemo,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos() });
+			queryClient.invalidateQueries({ queryKey: ["localMemo"] });
 		},
 	});
 }

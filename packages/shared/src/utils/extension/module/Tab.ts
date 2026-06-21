@@ -5,9 +5,12 @@ import type {
 
 export class Tab {
 	static async get() {
+		// 사이드 패널은 창마다 별도 인스턴스로 동작한다. lastFocusedWindow를 쓰면
+		// 새 창을 열었을 때 기존 창의 사이드 패널이 새 창의 활성 탭을 가져오므로,
+		// 자신이 속한 창(currentWindow)의 활성 탭을 조회해야 한다.
 		const [tab] = await chrome.tabs.query({
 			active: true,
-			lastFocusedWindow: true,
+			currentWindow: true,
 		});
 		return tab;
 	}

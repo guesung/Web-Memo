@@ -121,7 +121,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 		<>
 			<Dialog open>
 				<DialogContent
-					className="max-w-[600px] p-0"
+					className="max-h-[90dvh] max-w-[600px] overflow-y-auto p-0"
 					onClose={checkEditedAndCloseDialog}
 				>
 					<motion.div

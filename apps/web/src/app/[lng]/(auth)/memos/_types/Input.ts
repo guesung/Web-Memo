@@ -4,4 +4,6 @@ export interface CategoryInput {
 
 export type MemoInput = {
 	memo: string;
+	impression: string;
+	actionItem: string;
 };

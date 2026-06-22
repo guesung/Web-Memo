@@ -125,6 +125,7 @@
 		"@web-memo/env": "workspace:*",
 		"@web-memo/tsconfig": "workspace:*",
 		"@types/chrome": "^0.0.268",
-		"@types/react": "^19.1.0"
+		"@types/react": "^19.1.0",
+		"vitest": "^2.1.5"
 	}
 }

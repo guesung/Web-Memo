@@ -163,7 +163,11 @@ export function useBrowserState() {
 		// 별표만 켜진 빈 메모는 삭제하면 중요 표시가 유실되므로 위시 플래그만 해제한다.
 		const currentMemo = isLoggedIn ? supabaseMemo : localMemo;
 		const shouldDeleteEmptyMemo =
-			isCurrentPageWish && !currentMemo?.memo?.trim() && !currentMemo?.isStar;
+			isCurrentPageWish &&
+			!currentMemo?.memo?.trim() &&
+			!currentMemo?.impression?.trim() &&
+			!currentMemo?.actionItem?.trim() &&
+			!currentMemo?.isStar;
 
 		const wishToastMessage = isCurrentPageWish
 			? "위시리스트에서 제거"

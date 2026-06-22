@@ -1,4 +1,4 @@
-import { Star } from "lucide-react-native";
+import { Bookmark } from "lucide-react-native";
 import { useState } from "react";
 import {
 	Alert,
@@ -25,7 +25,7 @@ export function FavoriteLinks({ onSelectUrl }: FavoriteLinksProps) {
 					즐겨찾기
 				</Text>
 				<View className="items-center py-6 bg-card rounded-xl border border-border">
-					<Star size={24} color="#ddd" />
+					<Bookmark size={24} color="#ddd" />
 					<Text className="text-[13px] text-muted-foreground mt-2">
 						자주 방문하는 페이지를 즐겨찾기에 추가해보세요
 					</Text>

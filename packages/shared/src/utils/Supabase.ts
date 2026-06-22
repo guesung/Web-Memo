@@ -9,6 +9,7 @@ import type {
 	MemoSupabaseClient,
 	MemoTable,
 } from "../types";
+import { getMemoSearchFilter } from "./memoSearchFilter";
 
 export class MemoService {
 	supabaseClient: MemoSupabaseClient;
@@ -136,8 +137,7 @@ export class MemoService {
 		}
 
 		if (searchQuery) {
-			const pattern = `%${searchQuery}%`;
-			query = query.or(`title.ilike.${pattern},memo.ilike.${pattern}`);
+			query = query.or(getMemoSearchFilter(searchQuery));
 		}
 
 		return query;

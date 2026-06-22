@@ -460,6 +460,14 @@
 		}
 	},
 
+	"memoSection": {
+		"memo": "Memo",
+		"impression": "Impression",
+		"impressionPlaceholder": "Write what you felt about this page",
+		"actionItem": "Action items",
+		"actionItemPlaceholder": "Write what to do after reading this page"
+	},
+
 	"memos": {
 		"emptyState": {
 			"title": "Create your first memo",

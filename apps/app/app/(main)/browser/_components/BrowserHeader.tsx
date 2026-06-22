@@ -1,11 +1,11 @@
 import {
+	Bookmark,
 	Heart,
 	Home,
 	LayoutGrid,
 	RotateCw,
 	Search,
 	Share2,
-	Star,
 	X,
 } from "lucide-react-native";
 import { TextInput, TouchableOpacity, View } from "react-native";
@@ -85,7 +85,7 @@ export function BrowserHeader({
 					<LayoutGrid size={16} color="#111" />
 				</TouchableOpacity>
 				<TouchableOpacity onPress={onFavoriteToggle} className="p-1.5">
-					<Star
+					<Bookmark
 						size={16}
 						color={isCurrentPageFavorite ? "#f59e0b" : "#111"}
 						fill={isCurrentPageFavorite ? "#f59e0b" : "none"}

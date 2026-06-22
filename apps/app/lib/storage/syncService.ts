@@ -30,6 +30,8 @@ export async function syncMemosToSupabase(): Promise<{
 						url: memo.url,
 						title: memo.title,
 						memo: memo.memo,
+						impression: memo.impression ?? null,
+						actionItem: memo.actionItem ?? null,
 						favIconUrl: memo.favIconUrl ?? null,
 						isWish: memo.isWish ?? existing.data[0].isWish,
 					},
@@ -39,6 +41,8 @@ export async function syncMemosToSupabase(): Promise<{
 					url: memo.url,
 					title: memo.title,
 					memo: memo.memo,
+					impression: memo.impression ?? null,
+					actionItem: memo.actionItem ?? null,
 					favIconUrl: memo.favIconUrl ?? null,
 					isWish: memo.isWish ?? false,
 				});

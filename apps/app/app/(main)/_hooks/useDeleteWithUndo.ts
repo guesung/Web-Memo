@@ -43,6 +43,8 @@ export function useDeleteWithUndo() {
 				url: m.url,
 				title: m.title,
 				memo: m.memo ?? "",
+				impression: m.impression ?? undefined,
+				actionItem: m.actionItem ?? undefined,
 				favIconUrl: m.favIconUrl ?? undefined,
 				isWish: m.isWish ?? false,
 			});
@@ -52,6 +54,8 @@ export function useDeleteWithUndo() {
 				url: m.url,
 				title: m.title,
 				memo: m.memo,
+				impression: m.impression,
+				actionItem: m.actionItem,
 				favIconUrl: m.favIconUrl,
 				isWish: m.isWish,
 			});

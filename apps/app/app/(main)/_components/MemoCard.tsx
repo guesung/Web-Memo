@@ -96,6 +96,22 @@ export function MemoCard({ memo, onPress, onDelete }: MemoCardProps) {
 						{memo.memo}
 					</Text>
 				)}
+				{memo.impression ? (
+					<Text
+						className="text-sm text-secondary-foreground leading-5 mb-1.5"
+						numberOfLines={4}
+					>
+						느낀 점: {memo.impression}
+					</Text>
+				) : null}
+				{memo.actionItem ? (
+					<Text
+						className="text-sm text-secondary-foreground leading-5 mb-1.5"
+						numberOfLines={4}
+					>
+						액션 아이템: {memo.actionItem}
+					</Text>
+				) : null}
 			</TouchableOpacity>
 		</ReanimatedSwipeable>
 	);

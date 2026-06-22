@@ -451,6 +451,14 @@
 		}
 	},
 
+	"memoSection": {
+		"memo": "메모",
+		"impression": "느낀 점",
+		"impressionPlaceholder": "이 페이지에서 느낀 점을 적어보세요",
+		"actionItem": "액션 아이템",
+		"actionItemPlaceholder": "이 페이지를 보고 할 일을 적어보세요"
+	},
+
 	"memos": {
 		"emptyState": {
 			"title": "첫 메모를 작성해보세요",

@@ -35,6 +35,8 @@ export function MemoPanel({
 	const { isLoggedIn } = useAuth();
 
 	const [memoText, setMemoText] = useState("");
+	const [impressionText, setImpressionText] = useState("");
+	const [actionItemText, setActionItemText] = useState("");
 	const [saved, setSaved] = useState(false);
 	const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
@@ -42,7 +44,11 @@ export function MemoPanel({
 	const { data: supabaseMemo } = useSupabaseMemoByUrl(url, isLoggedIn);
 	const existingMemo = isLoggedIn
 		? supabaseMemo
-			? { memo: supabaseMemo.memo }
+			? {
+					memo: supabaseMemo.memo,
+					impression: supabaseMemo.impression ?? "",
+					actionItem: supabaseMemo.actionItem ?? "",
+				}
 			: null
 		: localMemo;
 
@@ -86,10 +92,17 @@ export function MemoPanel({
 		} else {
 			setMemoText("");
 		}
+		setImpressionText(existingMemo?.impression ?? "");
+		setActionItemText(existingMemo?.actionItem ?? "");
 		if (!justSavedRef.current) {
 			setSaved(false);
 		}
-	}, [existingMemo?.memo, url]);
+	}, [
+		existingMemo?.memo,
+		existingMemo?.impression,
+		existingMemo?.actionItem,
+		url,
+	]);
 
 	const onSaveSuccess = () => {
 		justSavedRef.current = true;
@@ -101,13 +114,16 @@ export function MemoPanel({
 	};
 
 	const handleSave = () => {
-		if (!memoText.trim()) return;
+		if (!memoText.trim() && !impressionText.trim() && !actionItemText.trim())
+			return;
 
 		if (isLoggedIn) {
 			const payload = {
 				url,
 				title: pageTitle || url,
 				memo: memoText.trim(),
+				impression: impressionText.trim(),
+				actionItem: actionItemText.trim(),
 				favIconUrl: favIconUrl ?? null,
 			};
 			supabaseUpsert.mutate(payload, { onSuccess: onSaveSuccess });
@@ -116,6 +132,8 @@ export function MemoPanel({
 				url,
 				title: pageTitle || url,
 				memo: memoText.trim(),
+				impression: impressionText.trim(),
+				actionItem: actionItemText.trim(),
 				favIconUrl,
 			};
 			localUpsert.mutate(payload, { onSuccess: onSaveSuccess });
@@ -126,8 +144,7 @@ export function MemoPanel({
 		<ScrollView
 			className="flex-1 bg-white p-3"
 			keyboardShouldPersistTaps="handled"
-			scrollEnabled={false}
-			contentContainerStyle={{ flex: 1 }}
+			contentContainerStyle={{ flexGrow: 1 }}
 		>
 			<View className="flex-row justify-between items-center mb-2">
 				<View className="flex-row items-center gap-1.5 flex-1 mr-2">
@@ -166,7 +183,12 @@ export function MemoPanel({
 					<TouchableOpacity
 						className={`flex-row items-center gap-1.5 px-3.5 py-2 rounded-lg ${saved ? "bg-success" : "bg-foreground"}`}
 						onPress={handleSave}
-						disabled={isPending || !memoText.trim()}
+						disabled={
+							isPending ||
+							(!memoText.trim() &&
+								!impressionText.trim() &&
+								!actionItemText.trim())
+						}
 					>
 						{isPending ? (
 							<ActivityIndicator size="small" color="#fff" />
@@ -187,6 +209,28 @@ export function MemoPanel({
 				placeholder="이 페이지에 대한 메모를 작성하세요..."
 				value={memoText}
 				onChangeText={setMemoText}
+				multiline
+				textAlignVertical="top"
+			/>
+
+			<Text className="mt-3 text-xs font-semibold text-gray-500">느낀 점</Text>
+			<TextInput
+				className="text-[15px] text-[#333] leading-[22px]"
+				placeholder="이 페이지에서 느낀 점을 적어보세요"
+				value={impressionText}
+				onChangeText={setImpressionText}
+				multiline
+				textAlignVertical="top"
+			/>
+
+			<Text className="mt-3 text-xs font-semibold text-gray-500">
+				액션 아이템
+			</Text>
+			<TextInput
+				className="text-[15px] text-[#333] leading-[22px]"
+				placeholder="이 페이지를 보고 할 일을 적어보세요"
+				value={actionItemText}
+				onChangeText={setActionItemText}
 				multiline
 				textAlignVertical="top"
 			/>

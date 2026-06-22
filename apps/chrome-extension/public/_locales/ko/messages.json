@@ -169,5 +169,9 @@
 	},
 	"summary_empty_message": {
 		"message": "위의 새로고침 버튼을 눌러\n요약을 생성해보세요"
-	}
+	},
+	"impression": { "message": "느낀 점" },
+	"impressionPlaceholder": { "message": "이 페이지에서 느낀 점을 적어보세요" },
+	"actionItem": { "message": "액션 아이템" },
+	"actionItemPlaceholder": { "message": "이 페이지를 보고 할 일을 적어보세요" }
 }

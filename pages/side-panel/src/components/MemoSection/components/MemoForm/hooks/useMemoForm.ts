@@ -15,6 +15,8 @@ import { useFormContext } from "react-hook-form";
 interface SaveMemoOptions extends Partial<MemoInput> {
 	tabInfo?: { title: string; favIconUrl?: string; url: string };
 	memoId?: number;
+	impression?: string;
+	actionItem?: string;
 }
 
 interface UseMemoFormProps {
@@ -46,6 +48,8 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 			if (isNewMemo) {
 				setValue("memo", memoData?.memo ?? "");
+				setValue("impression", memoData?.impression ?? "");
+				setValue("actionItem", memoData?.actionItem ?? "");
 				initializedMemoIdRef.current = currentMemoId;
 			}
 
@@ -56,6 +60,8 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		[
 			memoData?.id,
 			memoData?.memo,
+			memoData?.impression,
+			memoData?.actionItem,
 			memoData?.isWish,
 			memoData?.isStar,
 			memoData?.category_id,
@@ -73,6 +79,8 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 			const currentValues = getValues();
 			const memoInput: MemoInput = {
 				memo: overrides?.memo ?? currentValues.memo,
+				impression: overrides?.impression ?? currentValues.impression,
+				actionItem: overrides?.actionItem ?? currentValues.actionItem,
 				isWish: overrides?.isWish ?? currentValues.isWish,
 				isStar: overrides?.isStar ?? currentValues.isStar,
 				categoryId: overrides?.categoryId ?? currentValues.categoryId,
@@ -91,6 +99,8 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 					data: {
 						...tabInfo,
 						memo: memoInput.memo,
+						impression: memoInput.impression,
+						actionItem: memoInput.actionItem,
 						isWish: memoInput.isWish,
 						isStar: memoInput.isStar,
 						category_id: memoInput.categoryId,
@@ -126,6 +136,22 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		[setValue, debounce, saveMemo],
 	);
 
+	const handleImpressionChange = useCallback(
+		(text: string) => {
+			setValue("impression", text);
+			debounce(() => saveMemo({ impression: text }));
+		},
+		[setValue, debounce, saveMemo],
+	);
+
+	const handleActionItemChange = useCallback(
+		(text: string) => {
+			setValue("actionItem", text);
+			debounce(() => saveMemo({ actionItem: text }));
+		},
+		[setValue, debounce, saveMemo],
+	);
+
 	const updateCategory = useCallback(
 		(categoryId: number | null) => {
 			setValue("categoryId", categoryId);
@@ -157,6 +183,8 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		isSaving,
 		saveMemo,
 		handleMemoChange,
+		handleImpressionChange,
+		handleActionItemChange,
 		updateCategory,
 		toggleWish,
 		toggleStar,

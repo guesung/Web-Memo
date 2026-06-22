@@ -32,6 +32,8 @@ function MemoFormContent() {
 		memoData,
 		isSaving,
 		handleMemoChange,
+		handleImpressionChange,
+		handleActionItemChange,
 		updateCategory,
 		toggleWish,
 		toggleStar,
@@ -137,6 +139,28 @@ function MemoFormContent() {
 						ref(e);
 						textareaRef.current = e;
 					}}
+				/>
+				<label htmlFor="impression-textarea" className="mt-3 text-xs font-semibold text-gray-500">
+					{I18n.get("impression")}
+				</label>
+				<Textarea
+					id="impression-textarea"
+					className="resize-none text-sm outline-none"
+					placeholder={I18n.get("impressionPlaceholder")}
+					{...register("impression", {
+						onChange: (event) => handleImpressionChange(event.target.value),
+					})}
+				/>
+				<label htmlFor="action-item-textarea" className="mt-3 text-xs font-semibold text-gray-500">
+					{I18n.get("actionItem")}
+				</label>
+				<Textarea
+					id="action-item-textarea"
+					className="resize-none text-sm outline-none"
+					placeholder={I18n.get("actionItemPlaceholder")}
+					{...register("actionItem", {
+						onChange: (event) => handleActionItemChange(event.target.value),
+					})}
 				/>
 				<div className="flex items-center justify-between gap-2">
 					<div className="flex items-center gap-2">
@@ -245,6 +269,8 @@ function MemoForm() {
 	const form = useForm<MemoInput>({
 		defaultValues: {
 			memo: "",
+			impression: "",
+			actionItem: "",
 			isWish: false,
 			isStar: false,
 			categoryId: null,

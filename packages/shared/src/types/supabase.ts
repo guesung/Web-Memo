@@ -75,10 +75,12 @@ export type Database = {
 			};
 			memo: {
 				Row: {
+					actionItem: string | null;
 					category_id: number | null;
 					created_at: string | null;
 					favIconUrl: string | null;
 					id: number;
+					impression: string | null;
 					isStar: boolean | null;
 					isWish: boolean | null;
 					memo: string;
@@ -88,10 +90,12 @@ export type Database = {
 					user_id: string;
 				};
 				Insert: {
+					actionItem?: string | null;
 					category_id?: number | null;
 					created_at?: string | null;
 					favIconUrl?: string | null;
 					id?: number;
+					impression?: string | null;
 					isStar?: boolean | null;
 					isWish?: boolean | null;
 					memo: string;
@@ -101,10 +105,12 @@ export type Database = {
 					user_id?: string;
 				};
 				Update: {
+					actionItem?: string | null;
 					category_id?: number | null;
 					created_at?: string | null;
 					favIconUrl?: string | null;
 					id?: number;
+					impression?: string | null;
 					isStar?: boolean | null;
 					isWish?: boolean | null;
 					memo?: string;

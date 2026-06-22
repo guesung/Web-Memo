@@ -74,17 +74,19 @@ export default function useMemoUpsertMutation() {
 						updated_at: new Date().toISOString(),
 					} as MemoRow)
 				: {
-						id: -Date.now(),
-						user_id: "",
-						url: data.url ?? "",
-						title: data.title ?? "",
-						memo: data.memo ?? "",
-						favIconUrl: data.favIconUrl ?? null,
-						isWish: data.isWish ?? false,
-						isStar: data.isStar ?? false,
+						actionItem: data.actionItem ?? null,
 						category_id: data.category_id ?? null,
 						created_at: new Date().toISOString(),
+						favIconUrl: data.favIconUrl ?? null,
+						id: -Date.now(),
+						impression: data.impression ?? null,
+						isStar: data.isStar ?? false,
+						isWish: data.isWish ?? false,
+						memo: data.memo ?? "",
+						title: data.title ?? "",
 						updated_at: new Date().toISOString(),
+						url: data.url ?? "",
+						user_id: "",
 					};
 
 			queryClient.setQueryData(QUERY_KEY.memo({ url: normalizedUrl }), {

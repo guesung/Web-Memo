@@ -15,8 +15,6 @@ import { useFormContext } from "react-hook-form";
 interface SaveMemoOptions extends Partial<MemoInput> {
 	tabInfo?: { title: string; favIconUrl?: string; url: string };
 	memoId?: number;
-	impression?: string;
-	actionItem?: string;
 }
 
 interface UseMemoFormProps {

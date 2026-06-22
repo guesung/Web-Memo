@@ -123,13 +123,17 @@ export default memo(function MemoItem({
 					)}
 					{memo.impression && (
 						<CardContent className="px-5 pb-3 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-break-spaces break-all">
-							<p className="mb-1 text-xs font-semibold text-gray-400">{t("memoSection.impression")}</p>
+							<p className="mb-1 text-xs font-semibold text-gray-400">
+								{t("memoSection.impression")}
+							</p>
 							{memo.impression}
 						</CardContent>
 					)}
 					{memo.actionItem && (
 						<CardContent className="px-5 pb-3 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-break-spaces break-all">
-							<p className="mb-1 text-xs font-semibold text-gray-400">{t("memoSection.actionItem")}</p>
+							<p className="mb-1 text-xs font-semibold text-gray-400">
+								{t("memoSection.actionItem")}
+							</p>
 							{memo.actionItem}
 						</CardContent>
 					)}

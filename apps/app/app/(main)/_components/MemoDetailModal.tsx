@@ -173,14 +173,22 @@ export function MemoDetailModal({
 						</Text>
 						{memo?.impression ? (
 							<View className="mt-3">
-								<Text className="text-xs font-semibold text-gray-500 mb-1">느낀 점</Text>
-								<Text className="text-[15px] text-[#333] leading-[22px]">{memo.impression}</Text>
+								<Text className="text-xs font-semibold text-gray-500 mb-1">
+									느낀 점
+								</Text>
+								<Text className="text-[15px] text-[#333] leading-[22px]">
+									{memo.impression}
+								</Text>
 							</View>
 						) : null}
 						{memo?.actionItem ? (
 							<View className="mt-3">
-								<Text className="text-xs font-semibold text-gray-500 mb-1">액션 아이템</Text>
-								<Text className="text-[15px] text-[#333] leading-[22px]">{memo.actionItem}</Text>
+								<Text className="text-xs font-semibold text-gray-500 mb-1">
+									액션 아이템
+								</Text>
+								<Text className="text-[15px] text-[#333] leading-[22px]">
+									{memo.actionItem}
+								</Text>
 							</View>
 						) : null}
 					</ScrollView>

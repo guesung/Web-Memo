@@ -97,7 +97,12 @@ export function MemoPanel({
 		if (!justSavedRef.current) {
 			setSaved(false);
 		}
-	}, [existingMemo?.memo, existingMemo?.impression, existingMemo?.actionItem, url]);
+	}, [
+		existingMemo?.memo,
+		existingMemo?.impression,
+		existingMemo?.actionItem,
+		url,
+	]);
 
 	const onSaveSuccess = () => {
 		justSavedRef.current = true;
@@ -109,7 +114,8 @@ export function MemoPanel({
 	};
 
 	const handleSave = () => {
-		if (!memoText.trim() && !impressionText.trim() && !actionItemText.trim()) return;
+		if (!memoText.trim() && !impressionText.trim() && !actionItemText.trim())
+			return;
 
 		if (isLoggedIn) {
 			const payload = {
@@ -177,7 +183,12 @@ export function MemoPanel({
 					<TouchableOpacity
 						className={`flex-row items-center gap-1.5 px-3.5 py-2 rounded-lg ${saved ? "bg-success" : "bg-foreground"}`}
 						onPress={handleSave}
-						disabled={isPending || (!memoText.trim() && !impressionText.trim() && !actionItemText.trim())}
+						disabled={
+							isPending ||
+							(!memoText.trim() &&
+								!impressionText.trim() &&
+								!actionItemText.trim())
+						}
 					>
 						{isPending ? (
 							<ActivityIndicator size="small" color="#fff" />
@@ -212,7 +223,9 @@ export function MemoPanel({
 				textAlignVertical="top"
 			/>
 
-			<Text className="mt-3 text-xs font-semibold text-gray-500">액션 아이템</Text>
+			<Text className="mt-3 text-xs font-semibold text-gray-500">
+				액션 아이템
+			</Text>
 			<TextInput
 				className="text-[15px] text-[#333] leading-[22px]"
 				placeholder="이 페이지를 보고 할 일을 적어보세요"

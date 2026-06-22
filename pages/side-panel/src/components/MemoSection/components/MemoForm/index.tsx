@@ -140,7 +140,10 @@ function MemoFormContent() {
 						textareaRef.current = e;
 					}}
 				/>
-				<label htmlFor="impression-textarea" className="mt-3 text-xs font-semibold text-gray-500">
+				<label
+					htmlFor="impression-textarea"
+					className="mt-3 text-xs font-semibold text-gray-500"
+				>
 					{I18n.get("impression")}
 				</label>
 				<Textarea
@@ -151,7 +154,10 @@ function MemoFormContent() {
 						onChange: (event) => handleImpressionChange(event.target.value),
 					})}
 				/>
-				<label htmlFor="action-item-textarea" className="mt-3 text-xs font-semibold text-gray-500">
+				<label
+					htmlFor="action-item-textarea"
+					className="mt-3 text-xs font-semibold text-gray-500"
+				>
 					{I18n.get("actionItem")}
 				</label>
 				<Textarea

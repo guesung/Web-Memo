@@ -1,5 +1,5 @@
 import { URL as APP_URL } from "@web-memo/shared/constants";
-import { MessageCircle, Star, X } from "lucide-react-native";
+import { Bookmark, MessageCircle, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
 	Alert,
@@ -192,7 +192,7 @@ function FavoritesSection({ onPress }: { onPress: (url: string) => void }) {
 	return (
 		<>
 			<View className="flex-row items-center gap-1.5 px-2 mb-3">
-				<Star size={14} color="#f59e0b" fill="#f59e0b" />
+				<Bookmark size={14} color="#f59e0b" fill="#f59e0b" />
 				<Text className="text-sm font-semibold text-gray-500">즐겨찾기</Text>
 			</View>
 			<View className="mb-6">

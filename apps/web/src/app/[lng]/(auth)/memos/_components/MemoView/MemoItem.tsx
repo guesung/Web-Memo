@@ -1,4 +1,5 @@
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
@@ -25,6 +26,7 @@ export default memo(function MemoItem({
 	isMemoSelected,
 	...props
 }: MemoItemProps) {
+	const { t } = useTranslation(lng);
 	const searchParams = useSearchParams();
 	const [isMemoHovering, setIsMemoHovering] = useState(false);
 
@@ -117,6 +119,18 @@ export default memo(function MemoItem({
 					{memo.memo && (
 						<CardContent className="px-5 py-3 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-break-spaces break-all">
 							{memo.memo}
+						</CardContent>
+					)}
+					{memo.impression && (
+						<CardContent className="px-5 pb-3 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-break-spaces break-all">
+							<p className="mb-1 text-xs font-semibold text-gray-400">{t("memoSection.impression")}</p>
+							{memo.impression}
+						</CardContent>
+					)}
+					{memo.actionItem && (
+						<CardContent className="px-5 pb-3 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-break-spaces break-all">
+							<p className="mb-1 text-xs font-semibold text-gray-400">{t("memoSection.actionItem")}</p>
+							{memo.actionItem}
 						</CardContent>
 					)}
 					<MemoCardFooter

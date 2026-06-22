@@ -7,6 +7,8 @@ export interface LocalMemo {
 	url: string;
 	title: string;
 	memo: string;
+	impression?: string;
+	actionItem?: string;
 	favIconUrl?: string;
 	createdAt: string;
 	updatedAt: string;
@@ -41,6 +43,8 @@ export async function upsertMemo(params: {
 	url: string;
 	title: string;
 	memo: string;
+	impression?: string;
+	actionItem?: string;
 	favIconUrl?: string;
 	isWish?: boolean;
 	isStar?: boolean;
@@ -52,6 +56,8 @@ export async function upsertMemo(params: {
 	if (existing) {
 		existing.title = params.title;
 		existing.memo = params.memo;
+		existing.impression = params.impression;
+		existing.actionItem = params.actionItem;
 		if (params.favIconUrl) existing.favIconUrl = params.favIconUrl;
 		if (params.isWish !== undefined) existing.isWish = params.isWish;
 		if (params.isStar !== undefined) existing.isStar = params.isStar;
@@ -66,6 +72,8 @@ export async function upsertMemo(params: {
 		url: params.url,
 		title: params.title,
 		memo: params.memo,
+		impression: params.impression,
+		actionItem: params.actionItem,
 		favIconUrl: params.favIconUrl,
 		isWish: params.isWish,
 		isStar: params.isStar,

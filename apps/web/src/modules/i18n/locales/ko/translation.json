@@ -487,7 +487,12 @@
 		"grid": "격자로 보기",
 		"calendar": "달력으로 보기",
 		"selected": "{{count}}개 선택됨",
-		"placeholder": "메모를 입력하세요"
+		"placeholder": "메모를 입력하세요",
+		"saveStatus": {
+			"saving": "저장 중...",
+			"saved": "모든 변경사항이 저장됨",
+			"error": "저장에 실패했어요"
+		}
 	},
 
 	"introduce": {

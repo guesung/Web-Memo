@@ -24,7 +24,8 @@ import { useCallback, useEffect, useImperativeHandle, useState } from "react";
 import { useForm } from "react-hook-form";
 import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
-import UnsavedChangesAlert from "./UnsavedChangesAlert";
+import type { TMemoSaveStatus } from "./SaveStatusIndicator";
+import SaveStatusIndicator from "./SaveStatusIndicator";
 
 interface MemoDialog extends LanguageType {
 	memoId: number;
@@ -35,9 +36,9 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	const { memo: memoData } = useMemoQuery({ id: memoId });
 	const { textareaRef, handleTextareaChange } = useTextareaAutoResize();
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
-	const [showAlert, setShowAlert] = useState(false);
+	const [saveStatus, setSaveStatus] = useState<TMemoSaveStatus>("idle");
 	const searchParams = useSearchParams();
-	const { debounce } = useDebounce();
+	const { debounce, flushDebounce } = useDebounce();
 
 	const { register, watch, setValue } = useForm<MemoInput>({
 		defaultValues: {
@@ -64,16 +65,26 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 			currentImpression !== (memoData?.impression ?? "") ||
 			currentActionItem !== (memoData?.actionItem ?? "");
 
-		if (isEdited) {
-			mutateMemoPatch({
+		if (!isEdited) {
+			setSaveStatus("idle");
+			return;
+		}
+
+		setSaveStatus("saving");
+		mutateMemoPatch(
+			{
 				id: memoId,
 				request: {
 					memo: currentMemo,
 					impression: currentImpression,
 					actionItem: currentActionItem,
 				},
-			});
-		}
+			},
+			{
+				onSuccess: () => setSaveStatus("saved"),
+				onError: () => setSaveStatus("error"),
+			},
+		);
 	}, [
 		watch,
 		memoData?.memo,
@@ -85,16 +96,6 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 
 	useKeyboardBind({ key: "s", callback: saveMemo, isMetaKey: true });
 
-	const checkEditedAndCloseDialog = () => {
-		const isEdited =
-			watch("memo") !== memoData?.memo ||
-			watch("impression") !== (memoData?.impression ?? "") ||
-			watch("actionItem") !== (memoData?.actionItem ?? "");
-
-		if (isEdited) setShowAlert(true);
-		else closeDialog();
-	};
-
 	const closeDialog = () => {
 		const isHasPreviousPage = history.state?.openedMemoId === memoId;
 		if (isHasPreviousPage) history.back();
@@ -104,8 +105,9 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 		}
 	};
 
-	const handleUnChangesAlertClose = () => {
-		setShowAlert(false);
+	const handleDialogClose = () => {
+		flushDebounce();
+		closeDialog();
 	};
 
 	useEffect(
@@ -125,9 +127,10 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	useEffect(
 		function saveMemoOnChange() {
 			const subscription = watch((value) => {
-				debounce(() => {
-					if (!value.memo && !value.impression && !value.actionItem) return;
+				if (!value.memo && !value.impression && !value.actionItem) return;
 
+				setSaveStatus("saving");
+				debounce(() => {
 					saveMemo();
 				}, 1_000);
 			});
@@ -140,74 +143,63 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	if (!memoData) return null;
 
 	return (
-		<>
-			<Dialog open>
-				<DialogContent
-					className="max-h-[90dvh] max-w-[600px] overflow-y-auto p-0"
-					onClose={checkEditedAndCloseDialog}
+		<Dialog open>
+			<DialogContent
+				className="max-h-[90dvh] max-w-[600px] overflow-y-auto p-0"
+				onClose={handleDialogClose}
+			>
+				<motion.div
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					exit={{ opacity: 0 }}
 				>
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-					>
-						<Card>
-							<MemoCardHeader memo={memoData} />
-							<CardContent>
-								<Textarea
-									{...rest}
-									className="outline-none focus:border-gray-300 focus:outline-none"
-									ref={textareaRef}
-									placeholder={t("memos.placeholder")}
-									data-testid="memo-textarea"
-								/>
-
-								<label
-									htmlFor="impression"
-									className="mt-3 text-xs font-semibold text-gray-500"
-								>
-									{t("memoSection.impression")}
-								</label>
-								<Textarea
-									id="impression"
-									className="outline-none focus:border-gray-300 focus:outline-none"
-									placeholder={t("memoSection.impressionPlaceholder")}
-									{...register("impression")}
-									data-testid="impression-textarea"
-								/>
-
-								<label
-									htmlFor="actionItem"
-									className="mt-3 text-xs font-semibold text-gray-500"
-								>
-									{t("memoSection.actionItem")}
-								</label>
-								<Textarea
-									id="actionItem"
-									className="outline-none focus:border-gray-300 focus:outline-none"
-									placeholder={t("memoSection.actionItemPlaceholder")}
-									{...register("actionItem")}
-									data-testid="action-item-textarea"
-								/>
-
-								<div className="h-4" />
-							</CardContent>
-							<MemoCardFooter
-								memo={memoData}
-								lng={lng}
-								isShowingOption={false}
+					<Card>
+						<MemoCardHeader memo={memoData} />
+						<CardContent>
+							<Textarea
+								{...rest}
+								className="outline-none focus:border-gray-300 focus:outline-none"
+								ref={textareaRef}
+								placeholder={t("memos.placeholder")}
+								data-testid="memo-textarea"
 							/>
-						</Card>
-					</motion.div>
-				</DialogContent>
-			</Dialog>
 
-			<UnsavedChangesAlert
-				open={showAlert}
-				onCancel={handleUnChangesAlertClose}
-				onOk={closeDialog}
-				lng={lng}
-			/>
-		</>
+							<label
+								htmlFor="impression"
+								className="mt-3 text-xs font-semibold text-gray-500"
+							>
+								{t("memoSection.impression")}
+							</label>
+							<Textarea
+								id="impression"
+								className="outline-none focus:border-gray-300 focus:outline-none"
+								placeholder={t("memoSection.impressionPlaceholder")}
+								{...register("impression")}
+								data-testid="impression-textarea"
+							/>
+
+							<label
+								htmlFor="actionItem"
+								className="mt-3 text-xs font-semibold text-gray-500"
+							>
+								{t("memoSection.actionItem")}
+							</label>
+							<Textarea
+								id="actionItem"
+								className="outline-none focus:border-gray-300 focus:outline-none"
+								placeholder={t("memoSection.actionItemPlaceholder")}
+								{...register("actionItem")}
+								data-testid="action-item-textarea"
+							/>
+
+							<div className="mt-3 flex h-4 items-center">
+								<SaveStatusIndicator status={saveStatus} lng={lng} />
+							</div>
+						</CardContent>
+						<MemoCardFooter memo={memoData} lng={lng} isShowingOption={false} />
+					</Card>
+				</motion.div>
+			</DialogContent>
+		</Dialog>
 	);
 }

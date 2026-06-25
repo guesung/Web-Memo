@@ -1,6 +1,8 @@
 import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
 import { getMemoUrl } from "@src/utils";
+import { useTextareaAutoResize } from "@web-memo/shared/hooks";
+import { adjustTextareaHeight } from "@web-memo/shared/utils";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
 	Badge,
@@ -16,7 +18,7 @@ import {
 	toast,
 } from "@web-memo/ui";
 import { HeartIcon, Loader2Icon, StarIcon, XIcon } from "lucide-react";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { SaveStatus } from "./components";
 import { useCategorySuggestion, useMemoCategory, useMemoForm } from "./hooks";
@@ -38,6 +40,46 @@ function MemoFormContent() {
 		toggleWish,
 		toggleStar,
 	} = useMemoForm();
+
+	const {
+		textareaRef: impressionTextareaRef,
+		handleTextareaChange: handleImpressionResize,
+	} = useTextareaAutoResize();
+	const {
+		textareaRef: actionItemTextareaRef,
+		handleTextareaChange: handleActionItemResize,
+	} = useTextareaAutoResize();
+
+	const { ref: impressionFieldRef, ...impressionRest } = register("impression", {
+		onChange: (event) => {
+			handleImpressionChange(event.target.value);
+			handleImpressionResize(event);
+		},
+	});
+	const { ref: actionItemFieldRef, ...actionItemRest } = register("actionItem", {
+		onChange: (event) => {
+			handleActionItemChange(event.target.value);
+			handleActionItemResize(event);
+		},
+	});
+
+	useEffect(
+		function adjustSectionHeightsOnMemoLoad() {
+			if (impressionTextareaRef.current) {
+				adjustTextareaHeight(impressionTextareaRef.current);
+			}
+			if (actionItemTextareaRef.current) {
+				adjustTextareaHeight(actionItemTextareaRef.current);
+			}
+		},
+		[
+			memoData?.id,
+			memoData?.impression,
+			memoData?.actionItem,
+			impressionTextareaRef,
+			actionItemTextareaRef,
+		],
+	);
 
 	const {
 		categories,
@@ -148,11 +190,13 @@ function MemoFormContent() {
 				</label>
 				<Textarea
 					id="impression-textarea"
-					className="resize-none text-sm outline-none"
+					className="resize-none overflow-hidden text-sm outline-none"
 					placeholder={I18n.get("impressionPlaceholder")}
-					{...register("impression", {
-						onChange: (event) => handleImpressionChange(event.target.value),
-					})}
+					{...impressionRest}
+					ref={(element) => {
+						impressionFieldRef(element);
+						impressionTextareaRef.current = element;
+					}}
 				/>
 				<label
 					htmlFor="action-item-textarea"
@@ -162,11 +206,13 @@ function MemoFormContent() {
 				</label>
 				<Textarea
 					id="action-item-textarea"
-					className="resize-none text-sm outline-none"
+					className="resize-none overflow-hidden text-sm outline-none"
 					placeholder={I18n.get("actionItemPlaceholder")}
-					{...register("actionItem", {
-						onChange: (event) => handleActionItemChange(event.target.value),
-					})}
+					{...actionItemRest}
+					ref={(element) => {
+						actionItemFieldRef(element);
+						actionItemTextareaRef.current = element;
+					}}
 				/>
 				<div className="flex items-center justify-between gap-2">
 					<div className="flex items-center gap-2">

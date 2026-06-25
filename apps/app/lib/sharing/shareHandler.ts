@@ -1,45 +1,13 @@
+import { extractPageMetadata } from "@/lib/sharing/pageMetadata";
 import { toggleWishByUrl } from "@/lib/storage/localMemo";
 import { supabase } from "@/lib/supabase/client";
-
-function getFavIconUrl(pageUrl: string): string | null {
-	try {
-		const origin = new URL(pageUrl).origin;
-		return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(origin)}&sz=64`;
-	} catch {
-		return null;
-	}
-}
-
-async function fetchPageTitle(url: string): Promise<string | null> {
-	try {
-		const response = await fetch(url, {
-			headers: { "User-Agent": "Mozilla/5.0" },
-		});
-		const html = await response.text().then((t) => t.slice(0, 50000));
-		const match = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-		return match?.[1]?.trim() || null;
-	} catch {
-		return null;
-	}
-}
 
 export async function handleSharedUrl(
 	url: string,
 	metaTitle?: string,
 ): Promise<{ saved: boolean; title: string }> {
-	let title = metaTitle || "";
-	if (!title) {
-		title = (await fetchPageTitle(url)) || "";
-	}
-	if (!title) {
-		try {
-			title = new URL(url).hostname.replace("www.", "");
-		} catch {
-			title = url;
-		}
-	}
+	const { title, favIconUrl } = await extractPageMetadata(url, metaTitle);
 
-	const favIconUrl = getFavIconUrl(url);
 	const {
 		data: { session },
 	} = await supabase.auth.getSession();

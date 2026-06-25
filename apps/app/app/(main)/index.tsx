@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Globe, Heart, LogIn, Star, Undo2 } from "lucide-react-native";
+import { Globe, Heart, LogIn, Plus, Star, Undo2 } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
 	ActivityIndicator,
@@ -9,6 +9,7 @@ import {
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AddMemoModal } from "./_components/AddMemoModal";
 import { MemoCard, type MemoItem } from "./_components/MemoCard";
 import { MemoDetailModal } from "./_components/MemoDetailModal";
 import { useDeleteWithUndo } from "./_hooks/useDeleteWithUndo";
@@ -19,6 +20,7 @@ export default function MemoScreen() {
 	const router = useRouter();
 	const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
 	const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
+	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
 	const {
 		isLoggedIn,
@@ -60,15 +62,27 @@ export default function MemoScreen() {
 					<Text className="text-[22px] font-extrabold text-foreground tracking-tight">
 						웹 메모
 					</Text>
-					{!isLoggedIn ? (
+					<View className="flex-row items-center gap-2">
+						{!isLoggedIn ? (
+							<TouchableOpacity
+								className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground"
+								onPress={() => router.navigate("/(auth)/login")}
+							>
+								<LogIn size={14} color="#fff" />
+								<Text className="text-xs font-semibold text-white">로그인</Text>
+							</TouchableOpacity>
+						) : null}
 						<TouchableOpacity
-							className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground"
-							onPress={() => router.navigate("/(auth)/login")}
+							className="flex-row items-center gap-1 px-3 py-1.5 rounded-full bg-foreground"
+							onPress={() => setIsAddModalOpen(true)}
+							activeOpacity={0.8}
 						>
-							<LogIn size={14} color="#fff" />
-							<Text className="text-xs font-semibold text-white">로그인</Text>
+							<Plus size={14} color="#fff" />
+							<Text className="text-xs font-semibold text-white">
+								메모 추가
+							</Text>
 						</TouchableOpacity>
-					) : null}
+					</View>
 				</View>
 
 				<Text className="text-sm text-gray-400 px-5 mb-4">
@@ -203,6 +217,11 @@ export default function MemoScreen() {
 					</View>
 				)}
 			</View>
+
+			<AddMemoModal
+				visible={isAddModalOpen}
+				onClose={() => setIsAddModalOpen(false)}
+			/>
 
 			<MemoDetailModal
 				memo={selectedMemo}

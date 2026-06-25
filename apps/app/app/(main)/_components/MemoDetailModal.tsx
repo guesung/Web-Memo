@@ -76,7 +76,7 @@ export function MemoDetailModal({
 	}));
 
 	const handleNavigate = useCallback(() => {
-		if (memo?.url) {
+		if (memo?.url && /^https?:\/\//.test(memo.url)) {
 			onNavigate(memo.url);
 		}
 	}, [memo, onNavigate]);
@@ -104,8 +104,9 @@ export function MemoDetailModal({
 	const favIconUrl = memo && "favIconUrl" in memo ? memo.favIconUrl : undefined;
 	const isWish = memo && "isWish" in memo ? memo.isWish : false;
 	const isStar = memo && "isStar" in memo ? memo.isStar : false;
+	const isWebUrl = !!memo?.url && /^https?:\/\//.test(memo.url);
 
-	const domain = memo?.url ? extractDomain(memo.url) : "";
+	const domain = isWebUrl ? extractDomain(memo.url) : "";
 	const rawDate = memo
 		? "created_at" in memo
 			? memo.created_at
@@ -143,21 +144,48 @@ export function MemoDetailModal({
 						) : (
 							<FileText size={14} color="#666" />
 						)}
-						<TouchableOpacity
-							className="flex-1"
-							onPress={handleNavigate}
-							activeOpacity={0.7}
-						>
-							<Text
-								className="text-base font-semibold text-foreground"
-								numberOfLines={1}
+						{isWebUrl ? (
+							<TouchableOpacity
+								className="flex-1"
+								onPress={handleNavigate}
+								activeOpacity={0.7}
 							>
-								{title}
-							</Text>
-						</TouchableOpacity>
-						<TouchableOpacity onPress={handleShare} activeOpacity={0.7}>
-							<Share2 size={20} color="#666" />
-						</TouchableOpacity>
+								<Text
+									className="text-base font-semibold text-foreground"
+									numberOfLines={1}
+								>
+									{title}
+								</Text>
+							</TouchableOpacity>
+						) : (
+							<View className="flex-1">
+								<Text
+									className="text-base font-semibold text-foreground"
+									numberOfLines={1}
+								>
+									{title}
+								</Text>
+							</View>
+						)}
+						{onStarToggle && (
+							<TouchableOpacity onPress={handleStarToggle} activeOpacity={0.7}>
+								{isStar ? (
+									<StarOff size={20} color="#f59e0b" />
+								) : (
+									<Star size={20} color="#f59e0b" fill="#f59e0b" />
+								)}
+							</TouchableOpacity>
+						)}
+						{isWish && (
+							<TouchableOpacity onPress={handleWishRemove} activeOpacity={0.7}>
+								<HeartOff size={20} color="#ec4899" />
+							</TouchableOpacity>
+						)}
+						{isWebUrl && (
+							<TouchableOpacity onPress={handleShare} activeOpacity={0.7}>
+								<Share2 size={20} color="#666" />
+							</TouchableOpacity>
+						)}
 						<TouchableOpacity onPress={onClose} activeOpacity={0.7}>
 							<X size={22} color="#666" />
 						</TouchableOpacity>
@@ -210,40 +238,6 @@ export function MemoDetailModal({
 							) : null}
 						</View>
 					</View>
-
-					{isWish && (
-						<TouchableOpacity
-							className="flex-row items-center justify-center gap-1.5 mx-5 mt-2 py-2.5 border border-wish rounded-lg"
-							onPress={handleWishRemove}
-							activeOpacity={0.7}
-						>
-							<HeartOff size={14} color="#ec4899" />
-							<Text className="text-sm text-wish font-medium">
-								위시리스트에서 제거
-							</Text>
-						</TouchableOpacity>
-					)}
-
-					{onStarToggle && (
-						<TouchableOpacity
-							className="flex-row items-center justify-center gap-1.5 mx-5 mt-2 py-2.5 border rounded-lg"
-							style={{ borderColor: "#f59e0b" }}
-							onPress={handleStarToggle}
-							activeOpacity={0.7}
-						>
-							{isStar ? (
-								<StarOff size={14} color="#f59e0b" />
-							) : (
-								<Star size={14} color="#f59e0b" fill="#f59e0b" />
-							)}
-							<Text
-								className="text-sm font-medium"
-								style={{ color: "#f59e0b" }}
-							>
-								{isStar ? "중요 해제" : "중요 표시"}
-							</Text>
-						</TouchableOpacity>
-					)}
 				</Animated.View>
 			</View>
 		</Modal>

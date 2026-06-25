@@ -34,7 +34,16 @@ interface MemoDialog extends LanguageType {
 export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	const { t } = useTranslation(lng);
 	const { memo: memoData } = useMemoQuery({ id: memoId });
-	const { textareaRef, handleTextareaChange } = useTextareaAutoResize();
+	const { textareaRef: memoTextareaRef, handleTextareaChange: handleMemoChange } =
+		useTextareaAutoResize();
+	const {
+		textareaRef: impressionTextareaRef,
+		handleTextareaChange: handleImpressionChange,
+	} = useTextareaAutoResize();
+	const {
+		textareaRef: actionItemTextareaRef,
+		handleTextareaChange: handleActionItemChange,
+	} = useTextareaAutoResize();
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 	const [saveStatus, setSaveStatus] = useState<TMemoSaveStatus>("idle");
 	const searchParams = useSearchParams();
@@ -48,12 +57,26 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 		},
 	});
 
-	const { ref, ...rest } = register("memo", {
+	const { ref: memoRef, ...memoRest } = register("memo", {
 		onChange: (event) => {
-			handleTextareaChange(event);
+			handleMemoChange(event);
 		},
 	});
-	useImperativeHandle(ref, () => textareaRef.current);
+	useImperativeHandle(memoRef, () => memoTextareaRef.current);
+
+	const { ref: impressionRef, ...impressionRest } = register("impression", {
+		onChange: (event) => {
+			handleImpressionChange(event);
+		},
+	});
+	useImperativeHandle(impressionRef, () => impressionTextareaRef.current);
+
+	const { ref: actionItemRef, ...actionItemRest } = register("actionItem", {
+		onChange: (event) => {
+			handleActionItemChange(event);
+		},
+	});
+	useImperativeHandle(actionItemRef, () => actionItemTextareaRef.current);
 
 	const saveMemo = useCallback(() => {
 		const currentMemo = watch("memo");
@@ -116,12 +139,24 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 				setValue("memo", memoData.memo);
 				setValue("impression", memoData.impression ?? "");
 				setValue("actionItem", memoData.actionItem ?? "");
-				if (textareaRef.current) {
-					adjustTextareaHeight(textareaRef.current);
+				if (memoTextareaRef.current) {
+					adjustTextareaHeight(memoTextareaRef.current);
+				}
+				if (impressionTextareaRef.current) {
+					adjustTextareaHeight(impressionTextareaRef.current);
+				}
+				if (actionItemTextareaRef.current) {
+					adjustTextareaHeight(actionItemTextareaRef.current);
 				}
 			}
 		},
-		[memoData, setValue, textareaRef.current],
+		[
+			memoData,
+			setValue,
+			memoTextareaRef.current,
+			impressionTextareaRef.current,
+			actionItemTextareaRef.current,
+		],
 	);
 
 	useEffect(
@@ -157,9 +192,9 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 						<MemoCardHeader memo={memoData} />
 						<CardContent>
 							<Textarea
-								{...rest}
-								className="outline-none focus:border-gray-300 focus:outline-none"
-								ref={textareaRef}
+								{...memoRest}
+								className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
+								ref={memoTextareaRef}
 								placeholder={t("memos.placeholder")}
 								data-testid="memo-textarea"
 							/>
@@ -171,10 +206,11 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 								{t("memoSection.impression")}
 							</label>
 							<Textarea
+								{...impressionRest}
 								id="impression"
-								className="outline-none focus:border-gray-300 focus:outline-none"
+								className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
+								ref={impressionTextareaRef}
 								placeholder={t("memoSection.impressionPlaceholder")}
-								{...register("impression")}
 								data-testid="impression-textarea"
 							/>
 
@@ -185,10 +221,11 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 								{t("memoSection.actionItem")}
 							</label>
 							<Textarea
+								{...actionItemRest}
 								id="actionItem"
-								className="outline-none focus:border-gray-300 focus:outline-none"
+								className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
+								ref={actionItemTextareaRef}
 								placeholder={t("memoSection.actionItemPlaceholder")}
-								{...register("actionItem")}
 								data-testid="action-item-textarea"
 							/>
 

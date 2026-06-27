@@ -15,7 +15,7 @@
 
 ## 실행 절차
 
-### 0단계: 브랜치 확인 및 머지
+### 0단계: 브랜치 확인
 
 먼저 현재 브랜치를 확인하고 master 브랜치로 이동합니다:
 
@@ -24,12 +24,11 @@ git branch --show-current
 ```
 
 **master 브랜치가 아닌 경우:**
-1. master 브랜치로 이동
-2. develop 브랜치를 master로 머지
+1. master 브랜치로 이동 후 최신화
 
 ```bash
 git checkout master
-git merge develop
+git pull
 ```
 
 ### 1단계: 변경 내용 분석

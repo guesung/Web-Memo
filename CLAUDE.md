@@ -68,9 +68,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 3. `/pr` 명령어로 PR 생성
 
 `/pr` 명령어는 다음을 수행합니다:
-- develop 브랜치에서 새 브랜치 생성(이미 feature 브랜치면 생략)
+- master 브랜치에서 새 브랜치 생성(이미 feature 브랜치면 생략)
 - 변경사항을 의미 있는 커밋 메시지로 커밋
-- 원격 푸시 후 PR 생성
+- 원격 푸시 후 master를 대상(base)으로 PR 생성 (머지는 Squash가 아닌 머지 커밋 방식)
 
 커밋/PR 제목·본문은 **항상 한글**, 브랜치명은 영문입니다. 자세한 규칙은 [AGENTS.md](AGENTS.md)의 "커밋 & PR 워크플로" 절을 따릅니다.
 

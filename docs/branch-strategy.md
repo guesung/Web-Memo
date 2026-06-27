@@ -2,52 +2,36 @@
 
 This document outlines our Git branch strategy and merging conventions.
 
-## Main Branches
+## Main Branch
 
 ### `master`
 - Production-ready branch that users can rely on
 - Contains stable, tested code
-- Base branch for `develop`
+- The single base branch: all branches are created from `master`, and all work is merged back into `master`
 
-### `develop`
-- Main development branch
+### `feature/*` (and `fix/*`, etc.)
+- Feature/bugfix development branches
 - Branched from `master`
-- When merging to `master`, use **recursive merge**
-  - This preserves the commit history in `master`
+- Merged back into `master` via a Pull Request targeting `master`
+- When merging, use a **merge commit** (do **NOT** use Squash & Merge)
+  - This preserves the individual commit history in `master`
   - Makes it easier to track feature additions in the commit history
+- Naming convention: `feature/feature-name`, `fix/bug-name`
 
-### `feature/*`
-- Feature development branches
-- Branched from `develop`
-- When merging to `develop`, use **Squash & Merge**
-- Naming convention: `feature/feature-name`
+## Pull Request & Merging Conventions
 
-## Merging Conventions
+- **Base branch (target)**: always `master`
+- **Merge method**: **Create a merge commit** — never Squash & Merge, never Rebase & Merge
 
-### feature/* → develop
 ```bash
-# When merging a feature branch to develop
-git checkout develop
-git merge --squash feature/xx-yy-zz
-git commit -m "feat: Add xx-yy-zz feature"
-```
-
-### develop → master
-```bash
-# When merging develop to master
+# Create a feature branch from master
 git checkout master
-git merge develop
+git pull
+git checkout -b feature/xx-yy-zz
+
+# ...work, commit...
+
+# Open a PR targeting master, then merge with a merge commit
+gh pr create --base master
+gh pr merge --merge
 ```
-
-## Special Cases
-
-### Hotfix Synchronization
-When `master` receives hotfixes or critical updates that need to be synchronized with `develop`:
-1. Apply the hotfix to `master`
-2. Merge `master` into `develop` using a regular merge
-```bash
-git checkout develop
-git merge master
-```
-
-This ensures that `develop` stays up-to-date with any critical fixes in `master` while maintaining the commit history.

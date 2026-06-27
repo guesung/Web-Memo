@@ -388,23 +388,25 @@ export function MemoDetailModal({
 						</ScrollView>
 					)}
 
-					<View className="flex-row items-center justify-between px-5 pt-2 pb-1">
-						<View className="flex-row items-center gap-2">
-							{domain ? (
-								<View className="flex-row items-center gap-1">
-									<Globe size={11} color="#999" />
+					{!isEditing && (
+						<View className="flex-row items-center justify-between px-5 pt-2 pb-1">
+							<View className="flex-row items-center gap-2">
+								{domain ? (
+									<View className="flex-row items-center gap-1">
+										<Globe size={11} color="#999" />
+										<Text className="text-xs text-muted-foreground">
+											{domain}
+										</Text>
+									</View>
+								) : null}
+								{formattedDate ? (
 									<Text className="text-xs text-muted-foreground">
-										{domain}
+										{formattedDate}
 									</Text>
-								</View>
-							) : null}
-							{formattedDate ? (
-								<Text className="text-xs text-muted-foreground">
-									{formattedDate}
-								</Text>
-							) : null}
+								) : null}
+							</View>
 						</View>
-					</View>
+					)}
 				</Animated.View>
 			</KeyboardAvoidingView>
 		</Modal>

@@ -141,13 +141,7 @@ export function MemoPanel({
 	};
 
 	return (
-		<ScrollView
-			className="flex-1 bg-white p-3"
-			keyboardShouldPersistTaps="handled"
-			keyboardDismissMode="interactive"
-			contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
-			showsVerticalScrollIndicator={false}
-		>
+		<View className="flex-1 bg-white p-3">
 			<View className="flex-row justify-between items-center mb-2">
 				<View className="flex-row items-center gap-1.5 flex-1 mr-2">
 					{favIconUrl ? (
@@ -206,39 +200,49 @@ export function MemoPanel({
 				</View>
 			</View>
 
-			<TextInput
-				className="min-h-[140px] text-[15px] text-[#333] leading-[22px]"
-				placeholder="이 페이지에 대한 메모를 작성하세요..."
-				value={memoText}
-				onChangeText={setMemoText}
-				multiline
-				scrollEnabled={false}
-				textAlignVertical="top"
-			/>
+			<ScrollView
+				className="flex-1"
+				keyboardShouldPersistTaps="handled"
+				keyboardDismissMode="interactive"
+				contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
+				showsVerticalScrollIndicator={false}
+			>
+				<TextInput
+					className="min-h-[140px] text-[15px] text-[#333] leading-[22px]"
+					placeholder="이 페이지에 대한 메모를 작성하세요..."
+					value={memoText}
+					onChangeText={setMemoText}
+					multiline
+					scrollEnabled={false}
+					textAlignVertical="top"
+				/>
 
-			<Text className="mt-3 text-xs font-semibold text-gray-500">느낀 점</Text>
-			<TextInput
-				className="min-h-[60px] text-[15px] text-[#333] leading-[22px]"
-				placeholder="이 페이지에서 느낀 점을 적어보세요"
-				value={impressionText}
-				onChangeText={setImpressionText}
-				multiline
-				scrollEnabled={false}
-				textAlignVertical="top"
-			/>
+				<Text className="mt-3 text-xs font-semibold text-gray-500">
+					느낀 점
+				</Text>
+				<TextInput
+					className="min-h-[60px] text-[15px] text-[#333] leading-[22px]"
+					placeholder="이 페이지에서 느낀 점을 적어보세요"
+					value={impressionText}
+					onChangeText={setImpressionText}
+					multiline
+					scrollEnabled={false}
+					textAlignVertical="top"
+				/>
 
-			<Text className="mt-3 text-xs font-semibold text-gray-500">
-				액션 아이템
-			</Text>
-			<TextInput
-				className="min-h-[60px] text-[15px] text-[#333] leading-[22px]"
-				placeholder="이 페이지를 보고 할 일을 적어보세요"
-				value={actionItemText}
-				onChangeText={setActionItemText}
-				multiline
-				scrollEnabled={false}
-				textAlignVertical="top"
-			/>
-		</ScrollView>
+				<Text className="mt-3 text-xs font-semibold text-gray-500">
+					액션 아이템
+				</Text>
+				<TextInput
+					className="min-h-[60px] text-[15px] text-[#333] leading-[22px]"
+					placeholder="이 페이지를 보고 할 일을 적어보세요"
+					value={actionItemText}
+					onChangeText={setActionItemText}
+					multiline
+					scrollEnabled={false}
+					textAlignVertical="top"
+				/>
+			</ScrollView>
+		</View>
 	);
 }

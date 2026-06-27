@@ -3,10 +3,12 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import {
 	useLocalMemoStarToggle,
 	useLocalMemos,
+	useLocalMemoUpsert,
 	useLocalMemoWishToggle,
 } from "@/lib/hooks/useLocalMemos";
 import {
 	useMemoStarToggleMutation,
+	useMemoUpsertMutation,
 	useMemoWishToggleMutation,
 } from "@/lib/hooks/useMemoMutation";
 import { useMemosInfinite } from "@/lib/hooks/useMemos";
@@ -22,6 +24,8 @@ export function useMemoList() {
 	const wishToggleSupabase = useMemoWishToggleMutation();
 	const starToggleLocal = useLocalMemoStarToggle();
 	const starToggleSupabase = useMemoStarToggleMutation();
+	const upsertLocal = useLocalMemoUpsert();
+	const upsertSupabase = useMemoUpsertMutation();
 
 	const {
 		data: localMemosData,
@@ -92,6 +96,33 @@ export function useMemoList() {
 		}
 	};
 
+	const handleMemoSave = (
+		memo: MemoItem,
+		next: { memo: string; impression: string; actionItem: string },
+	) => {
+		const favIconUrl =
+			"favIconUrl" in memo ? (memo.favIconUrl ?? undefined) : undefined;
+		if (isLoggedIn) {
+			upsertSupabase.mutate({
+				url: memo.url,
+				title: memo.title,
+				memo: next.memo,
+				impression: next.impression,
+				actionItem: next.actionItem,
+				favIconUrl,
+			});
+		} else {
+			upsertLocal.mutate({
+				url: memo.url,
+				title: memo.title,
+				memo: next.memo,
+				impression: next.impression,
+				actionItem: next.actionItem,
+				favIconUrl,
+			});
+		}
+	};
+
 	return {
 		isLoggedIn,
 		filter,
@@ -103,5 +134,6 @@ export function useMemoList() {
 		handleEndReached,
 		handleWishRemove,
 		handleStarToggle,
+		handleMemoSave,
 	};
 }

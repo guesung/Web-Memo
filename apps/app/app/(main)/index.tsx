@@ -33,6 +33,7 @@ export default function MemoScreen() {
 		handleEndReached,
 		handleWishRemove,
 		handleStarToggle,
+		handleMemoSave,
 	} = useMemoList();
 
 	useEffect(() => {
@@ -230,6 +231,7 @@ export default function MemoScreen() {
 					setSelectedMemo(null);
 					navigateToBrowser(url);
 				}}
+				onSave={handleMemoSave}
 				onWishRemove={(memo) => {
 					handleWishRemove(memo);
 					setSelectedMemo(null);

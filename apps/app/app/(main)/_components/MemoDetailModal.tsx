@@ -1,7 +1,10 @@
 import {
+	Check,
 	FileText,
 	Globe,
 	HeartOff,
+	Pencil,
+	Save,
 	Share2,
 	Star,
 	StarOff,
@@ -11,10 +14,14 @@ import { useCallback, useEffect, useState } from "react";
 import {
 	Dimensions,
 	Image,
+	Keyboard,
+	KeyboardAvoidingView,
 	Modal,
+	Platform,
 	Pressable,
 	ScrollView,
 	Text,
+	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
@@ -38,6 +45,10 @@ interface MemoDetailModalProps {
 	onNavigate: (url: string) => void;
 	onWishRemove?: (memo: MemoItem) => void;
 	onStarToggle?: (memo: MemoItem) => void;
+	onSave?: (
+		memo: MemoItem,
+		next: { memo: string; impression: string; actionItem: string },
+	) => void;
 }
 
 export function MemoDetailModal({
@@ -46,11 +57,17 @@ export function MemoDetailModal({
 	onNavigate,
 	onWishRemove,
 	onStarToggle,
+	onSave,
 }: MemoDetailModalProps) {
 	const insets = useSafeAreaInsets();
 	const translateY = useSharedValue(SHEET_HEIGHT);
 	const opacity = useSharedValue(0);
 	const [modalVisible, setModalVisible] = useState(false);
+	const [isEditing, setIsEditing] = useState(false);
+	const [editedMemo, setEditedMemo] = useState("");
+	const [editedImpression, setEditedImpression] = useState("");
+	const [editedActionItem, setEditedActionItem] = useState("");
+	const [saved, setSaved] = useState(false);
 
 	const visible = memo !== null;
 
@@ -66,6 +83,19 @@ export function MemoDetailModal({
 			return () => clearTimeout(timer);
 		}
 	}, [visible, translateY, opacity]);
+
+	useEffect(
+		function syncEditState() {
+			if (memo) {
+				setEditedMemo(memo.memo ?? "");
+				setEditedImpression(memo.impression ?? "");
+				setEditedActionItem(memo.actionItem ?? "");
+				setIsEditing(false);
+				setSaved(false);
+			}
+		},
+		[memo],
+	);
 
 	const sheetStyle = useAnimatedStyle(() => ({
 		transform: [{ translateY: translateY.value }],
@@ -101,6 +131,43 @@ export function MemoDetailModal({
 
 	const title = memo?.title || "Untitled";
 	const memoText = memo?.memo ?? "";
+	const impressionText = memo?.impression ?? "";
+	const actionItemText = memo?.actionItem ?? "";
+
+	const handleStartEdit = () => {
+		setEditedMemo(memoText);
+		setEditedImpression(impressionText);
+		setEditedActionItem(actionItemText);
+		setIsEditing(true);
+	};
+
+	const handleCancelEdit = () => {
+		setEditedMemo(memoText);
+		setEditedImpression(impressionText);
+		setEditedActionItem(actionItemText);
+		setIsEditing(false);
+		Keyboard.dismiss();
+	};
+
+	const handleSaveMemo = () => {
+		if (!memo) return;
+
+		onSave?.(memo, {
+			memo: editedMemo.trim(),
+			impression: editedImpression.trim(),
+			actionItem: editedActionItem.trim(),
+		});
+		setIsEditing(false);
+		setSaved(true);
+		Keyboard.dismiss();
+		setTimeout(() => setSaved(false), 2000);
+	};
+
+	const isMemoEdited =
+		editedMemo.trim() !== memoText.trim() ||
+		editedImpression.trim() !== impressionText.trim() ||
+		editedActionItem.trim() !== actionItemText.trim();
+
 	const favIconUrl = memo && "favIconUrl" in memo ? memo.favIconUrl : undefined;
 	const isWish = memo && "isWish" in memo ? memo.isWish : false;
 	const isStar = memo && "isStar" in memo ? memo.isStar : false;
@@ -116,7 +183,10 @@ export function MemoDetailModal({
 
 	return (
 		<Modal visible={modalVisible} transparent statusBarTranslucent>
-			<View className="flex-1 justify-end">
+			<KeyboardAvoidingView
+				className="flex-1 justify-end"
+				behavior={Platform.OS === "ios" ? "padding" : undefined}
+			>
 				<Animated.View
 					className="absolute inset-0 bg-black/40"
 					style={overlayStyle}
@@ -167,59 +237,156 @@ export function MemoDetailModal({
 								</Text>
 							</View>
 						)}
-						{onStarToggle && (
-							<TouchableOpacity onPress={handleStarToggle} activeOpacity={0.7}>
-								{isStar ? (
-									<StarOff size={20} color="#f59e0b" />
-								) : (
-									<Star size={20} color="#f59e0b" fill="#f59e0b" />
+						{isEditing ? (
+							<>
+								<TouchableOpacity
+									className="px-2 py-1"
+									onPress={handleCancelEdit}
+									activeOpacity={0.7}
+								>
+									<Text className="text-sm font-medium text-muted-foreground">
+										취소
+									</Text>
+								</TouchableOpacity>
+								<TouchableOpacity
+									className={`flex-row items-center gap-1 px-3 py-1.5 rounded-lg ${isMemoEdited ? "bg-foreground" : "bg-muted"}`}
+									onPress={handleSaveMemo}
+									disabled={!isMemoEdited}
+									activeOpacity={0.7}
+								>
+									<Save size={14} color={isMemoEdited ? "#fff" : "#999"} />
+									<Text
+										className={`text-sm font-semibold ${isMemoEdited ? "text-white" : "text-gray-400"}`}
+									>
+										저장
+									</Text>
+								</TouchableOpacity>
+							</>
+						) : (
+							<>
+								{onSave ? (
+									<TouchableOpacity
+										onPress={handleStartEdit}
+										activeOpacity={0.7}
+									>
+										{saved ? (
+											<Check size={20} color="#22c55e" />
+										) : (
+											<Pencil size={18} color="#666" />
+										)}
+									</TouchableOpacity>
+								) : null}
+								{onStarToggle && (
+									<TouchableOpacity
+										onPress={handleStarToggle}
+										activeOpacity={0.7}
+									>
+										{isStar ? (
+											<StarOff size={20} color="#f59e0b" />
+										) : (
+											<Star size={20} color="#f59e0b" fill="#f59e0b" />
+										)}
+									</TouchableOpacity>
 								)}
-							</TouchableOpacity>
+								{isWish && (
+									<TouchableOpacity
+										onPress={handleWishRemove}
+										activeOpacity={0.7}
+									>
+										<HeartOff size={20} color="#ec4899" />
+									</TouchableOpacity>
+								)}
+								{isWebUrl && (
+									<TouchableOpacity onPress={handleShare} activeOpacity={0.7}>
+										<Share2 size={20} color="#666" />
+									</TouchableOpacity>
+								)}
+								<TouchableOpacity onPress={onClose} activeOpacity={0.7}>
+									<X size={22} color="#666" />
+								</TouchableOpacity>
+							</>
 						)}
-						{isWish && (
-							<TouchableOpacity onPress={handleWishRemove} activeOpacity={0.7}>
-								<HeartOff size={20} color="#ec4899" />
-							</TouchableOpacity>
-						)}
-						{isWebUrl && (
-							<TouchableOpacity onPress={handleShare} activeOpacity={0.7}>
-								<Share2 size={20} color="#666" />
-							</TouchableOpacity>
-						)}
-						<TouchableOpacity onPress={onClose} activeOpacity={0.7}>
-							<X size={22} color="#666" />
-						</TouchableOpacity>
 					</View>
 
-					<ScrollView
-						className="flex-1 px-5"
-						contentContainerStyle={{ paddingBottom: 12 }}
-						showsVerticalScrollIndicator={false}
-					>
-						<Text className="text-[15px] text-[#333] leading-[22px]">
-							{memoText}
-						</Text>
-						{memo?.impression ? (
-							<View className="mt-3">
-								<Text className="text-xs font-semibold text-gray-500 mb-1">
-									느낀 점
-								</Text>
+					{isEditing ? (
+						<ScrollView
+							className="flex-1 px-5"
+							contentContainerStyle={{ paddingBottom: 12 }}
+							keyboardShouldPersistTaps="handled"
+							showsVerticalScrollIndicator={false}
+						>
+							<TextInput
+								className="min-h-[80px] text-[15px] text-[#333] leading-[22px]"
+								value={editedMemo}
+								onChangeText={setEditedMemo}
+								placeholder="메모를 입력하세요..."
+								multiline
+								textAlignVertical="top"
+								scrollEnabled={false}
+								autoFocus
+							/>
+							<Text className="mt-3 text-xs font-semibold text-gray-500">
+								느낀 점
+							</Text>
+							<TextInput
+								className="min-h-[48px] text-[15px] text-[#333] leading-[22px]"
+								value={editedImpression}
+								onChangeText={setEditedImpression}
+								placeholder="이 페이지에서 느낀 점을 적어보세요"
+								multiline
+								textAlignVertical="top"
+								scrollEnabled={false}
+							/>
+							<Text className="mt-3 text-xs font-semibold text-gray-500">
+								액션 아이템
+							</Text>
+							<TextInput
+								className="min-h-[48px] text-[15px] text-[#333] leading-[22px]"
+								value={editedActionItem}
+								onChangeText={setEditedActionItem}
+								placeholder="이 페이지를 보고 할 일을 적어보세요"
+								multiline
+								textAlignVertical="top"
+								scrollEnabled={false}
+							/>
+						</ScrollView>
+					) : (
+						<ScrollView
+							className="flex-1 px-5"
+							contentContainerStyle={{ paddingBottom: 12 }}
+							showsVerticalScrollIndicator={false}
+						>
+							{memoText ? (
 								<Text className="text-[15px] text-[#333] leading-[22px]">
-									{memo.impression}
+									{memoText}
 								</Text>
-							</View>
-						) : null}
-						{memo?.actionItem ? (
-							<View className="mt-3">
-								<Text className="text-xs font-semibold text-gray-500 mb-1">
-									액션 아이템
+							) : (
+								<Text className="text-[15px] text-gray-400 leading-[22px]">
+									메모가 없습니다. 연필 아이콘을 눌러 작성하세요.
 								</Text>
-								<Text className="text-[15px] text-[#333] leading-[22px]">
-									{memo.actionItem}
-								</Text>
-							</View>
-						) : null}
-					</ScrollView>
+							)}
+							{memo?.impression ? (
+								<View className="mt-3">
+									<Text className="text-xs font-semibold text-gray-500 mb-1">
+										느낀 점
+									</Text>
+									<Text className="text-[15px] text-[#333] leading-[22px]">
+										{memo.impression}
+									</Text>
+								</View>
+							) : null}
+							{memo?.actionItem ? (
+								<View className="mt-3">
+									<Text className="text-xs font-semibold text-gray-500 mb-1">
+										액션 아이템
+									</Text>
+									<Text className="text-[15px] text-[#333] leading-[22px]">
+										{memo.actionItem}
+									</Text>
+								</View>
+							) : null}
+						</ScrollView>
+					)}
 
 					<View className="flex-row items-center justify-between px-5 pt-2 pb-1">
 						<View className="flex-row items-center gap-2">
@@ -239,7 +406,7 @@ export function MemoDetailModal({
 						</View>
 					</View>
 				</Animated.View>
-			</View>
+			</KeyboardAvoidingView>
 		</Modal>
 	);
 }

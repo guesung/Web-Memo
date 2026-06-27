@@ -367,8 +367,9 @@ claudedocs/
 
 1. 작업 완료
 2. `pnpm type-check` 및 `pnpm lint`로 검증
-3. develop 브랜치에서 새 브랜치 생성(이미 feature 브랜치면 생략)
-4. 의미 있는 단위로 커밋 → 원격 푸시 → PR 생성
+3. master 브랜치에서 새 브랜치 생성(이미 feature 브랜치면 생략)
+4. 의미 있는 단위로 커밋 → 원격 푸시 → master를 대상(base)으로 PR 생성
+5. 머지는 **Squash & Merge가 아니라 머지 커밋 생성** 방식으로 진행
 
 ### 언어 규칙 (MANDATORY)
 
@@ -376,6 +377,12 @@ claudedocs/
 - **PR 제목**: 한글 (예: `feat: 메모 검색 기능 구현`)
 - **PR 본문**: 요약/변경사항/테스트 계획 모두 한글
 - **브랜치명**: 영문 유지 (예: `feat/memo-search`, `fix/login-error`)
+
+### 브랜치 규칙 (MANDATORY)
+
+- 모든 브랜치는 **`master`에서 분기**한다.
+- 모든 PR의 base(target) 브랜치는 **`master`**다.
+- 머지는 **Squash & Merge를 쓰지 않고 머지 커밋을 생성**해 진행한다. (개별 커밋 히스토리 보존)
 
 ### 세부 컨벤션 문서
 

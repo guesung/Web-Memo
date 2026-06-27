@@ -34,8 +34,10 @@ interface MemoDialog extends LanguageType {
 export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	const { t } = useTranslation(lng);
 	const { memo: memoData } = useMemoQuery({ id: memoId });
-	const { textareaRef: memoTextareaRef, handleTextareaChange: handleMemoChange } =
-		useTextareaAutoResize();
+	const {
+		textareaRef: memoTextareaRef,
+		handleTextareaChange: handleMemoChange,
+	} = useTextareaAutoResize();
 	const {
 		textareaRef: impressionTextareaRef,
 		handleTextareaChange: handleImpressionChange,

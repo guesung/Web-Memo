@@ -1,5 +1,5 @@
 import type { GetMemoResponse } from "@web-memo/shared/types";
-import { FileText, Heart, Star, Trash2 } from "lucide-react-native";
+import { BookOpen, FileText, Heart, Star, Trash2 } from "lucide-react-native";
 import { useRef } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import ReanimatedSwipeable, {
@@ -30,11 +30,18 @@ function formatRelativeDate(dateStr?: string): string {
 
 interface MemoCardProps {
 	memo: MemoItem;
+	/** 0~1 사이의 읽기 진행률. 값이 있으면 '읽는 중' 배지를 표시한다 */
+	readingProgress?: number;
 	onPress: () => void;
 	onDelete: () => void;
 }
 
-export function MemoCard({ memo, onPress, onDelete }: MemoCardProps) {
+export function MemoCard({
+	memo,
+	readingProgress,
+	onPress,
+	onDelete,
+}: MemoCardProps) {
 	const swipeableRef = useRef<SwipeableMethods>(null);
 
 	const rawDate =
@@ -80,6 +87,14 @@ export function MemoCard({ memo, onPress, onDelete }: MemoCardProps) {
 					>
 						{memo.title}
 					</Text>
+					{typeof readingProgress === "number" ? (
+						<View className="flex-row items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-violet-100">
+							<BookOpen size={10} color="#7c3aed" />
+							<Text className="text-[10px] font-semibold text-[#7c3aed]">
+								읽는 중 {Math.round(readingProgress * 100)}%
+							</Text>
+						</View>
+					) : null}
 					{dateLabel ? (
 						<Text className="text-xs text-muted-foreground">{dateLabel}</Text>
 					) : null}

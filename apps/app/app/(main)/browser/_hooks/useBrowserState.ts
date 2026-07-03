@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -27,7 +28,12 @@ import {
 	useDeleteMemoMutation,
 	useMemoWishToggleMutation,
 } from "@/lib/hooks/useMemoMutation";
+import { SCROLL_POSITIONS_QUERY_KEY } from "@/lib/hooks/useScrollPositions";
 import { shareUrl } from "@/lib/sharing/shareUrl";
+import {
+	getScrollPosition,
+	saveScrollPosition,
+} from "@/lib/storage/scrollPositions";
 import { getPanelRatio, savePanelRatio } from "../_utils/browserPreferences";
 import { formatUrl } from "../_utils/formatUrl";
 import {
@@ -64,6 +70,18 @@ export function useBrowserState() {
 	const [savedRatio, setSavedRatio] = useState(DEFAULT_PANEL_RATIO);
 
 	const { isLoggedIn } = useAuth();
+	const queryClient = useQueryClient();
+
+	// 읽기 위치 저장/복원용 ref (스크롤 메시지는 stale closure를 피하려 ref로 현재 URL 참조)
+	const currentUrlRef = useRef("");
+	currentUrlRef.current = currentUrl;
+	const restoredUrlRef = useRef<string | null>(null);
+	const scrollSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const pendingScrollRef = useRef<{
+		url: string;
+		scrollY: number;
+		maxY: number;
+	} | null>(null);
 
 	const { data: supabaseMemo } = useSupabaseMemoByUrl(currentUrl, isLoggedIn);
 	const { data: localMemo } = useLocalMemoByUrl(currentUrl);
@@ -125,8 +143,69 @@ export function useBrowserState() {
 
 		if (navState.loading === false) {
 			webViewRef.current?.injectJavaScript(INJECTED_JS_ON_NAVIGATION);
+
+			if (restoredUrlRef.current !== navState.url) {
+				restoredUrlRef.current = navState.url;
+				restoreScrollPosition(navState.url);
+			}
 		}
 	};
+
+	/** 저장된 읽기 위치가 있으면 해당 위치로 스크롤을 복원한다 */
+	const restoreScrollPosition = async (url: string): Promise<void> => {
+		const saved = await getScrollPosition(url);
+		if (!saved || saved.scrollY <= 0) {
+			return;
+		}
+
+		// ponytail: 로드 직후 레이아웃이 늦게 잡히는 페이지 대비 지연 1회 복원, 부족하면 재시도 로직 추가
+		webViewRef.current?.injectJavaScript(
+			`setTimeout(function() { window.scrollTo(0, ${Math.round(saved.scrollY)}); }, 300); true;`,
+		);
+	};
+
+	/** 스크롤 위치를 스로틀 저장하고 '읽는 중' 배지 쿼리를 갱신한다 */
+	const persistScrollPosition = useCallback(
+		(scrollY: number, maxY: number): void => {
+			const url = currentUrlRef.current;
+			if (!url) {
+				return;
+			}
+
+			pendingScrollRef.current = { url, scrollY, maxY };
+			if (scrollSaveTimerRef.current) {
+				return;
+			}
+
+			scrollSaveTimerRef.current = setTimeout(async () => {
+				scrollSaveTimerRef.current = null;
+				const pending = pendingScrollRef.current;
+				if (!pending) {
+					return;
+				}
+
+				const progress =
+					pending.maxY > 0 ? Math.min(1, pending.scrollY / pending.maxY) : 1;
+				await saveScrollPosition({
+					url: pending.url,
+					scrollY: pending.scrollY,
+					progress,
+				});
+				queryClient.invalidateQueries({
+					queryKey: SCROLL_POSITIONS_QUERY_KEY,
+				});
+			}, 1000);
+		},
+		[queryClient],
+	);
+
+	useEffect(() => {
+		return () => {
+			if (scrollSaveTimerRef.current) {
+				clearTimeout(scrollSaveTimerRef.current);
+			}
+		};
+	}, []);
 
 	const handleUrlSubmit = () => {
 		const url = formatUrl(urlInput);
@@ -243,6 +322,8 @@ export function useBrowserState() {
 	const handleScrollMessage = useCallback(
 		(direction: string, scrollY: number) => {
 			if (isMemoOpen) return;
+			// 최하단 여유 구간: 바운스로 인한 헤더/탭바 토글 버벅임 방지를 위해 상태 유지
+			if (direction === "bottom") return;
 			if (direction === "down") {
 				headerTranslateY.value = withTiming(-HEADER_HEIGHT, {
 					duration: HIDE_DURATION,
@@ -265,11 +346,12 @@ export function useBrowserState() {
 				if (message.type === "favicon" && message.url) {
 					setPageFavIconUrl(message.url);
 				} else if (message.type === "scroll") {
+					persistScrollPosition(message.scrollY, message.maxY ?? 0);
 					handleScrollMessage(message.direction, message.scrollY);
 				}
 			} catch {}
 		},
-		[handleScrollMessage],
+		[handleScrollMessage, persistScrollPosition],
 	);
 
 	const toggleMemo = useCallback(() => {

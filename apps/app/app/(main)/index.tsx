@@ -9,11 +9,14 @@ import {
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useScrollPositions } from "@/lib/hooks/useScrollPositions";
 import { AddMemoModal } from "./_components/AddMemoModal";
 import { MemoCard, type MemoItem } from "./_components/MemoCard";
 import { MemoDetailModal } from "./_components/MemoDetailModal";
 import { useDeleteWithUndo } from "./_hooks/useDeleteWithUndo";
 import { useMemoList } from "./_hooks/useMemoList";
+
+const READ_DONE_PROGRESS = 0.98;
 
 export default function MemoScreen() {
 	const insets = useSafeAreaInsets();
@@ -45,6 +48,20 @@ export default function MemoScreen() {
 	}, [filterParam, setFilter]);
 
 	const { deletedMemo, handleDelete, handleUndo } = useDeleteWithUndo();
+	const { data: scrollPositions } = useScrollPositions();
+
+	const getReadingProgress = (url: string): number | undefined => {
+		const position = scrollPositions?.[url];
+		if (
+			!position ||
+			position.scrollY <= 0 ||
+			position.progress >= READ_DONE_PROGRESS
+		) {
+			return undefined;
+		}
+
+		return position.progress;
+	};
 
 	const navigateToBrowser = useCallback(
 		(url: string) => {
@@ -164,6 +181,7 @@ export default function MemoScreen() {
 							renderItem={({ item }) => (
 								<MemoCard
 									memo={item}
+									readingProgress={getReadingProgress(item.url)}
 									onPress={() => setSelectedMemo(item)}
 									onDelete={() => handleDelete(item)}
 								/>

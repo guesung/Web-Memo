@@ -480,6 +480,9 @@
 			"tip3": "Auto-saved automatically"
 		},
 		"totalMemos": "{{total}} memos",
+		"todayArticles": {
+			"title": "Today's reads"
+		},
 		"searchPlaceholder": "Search memos",
 		"searchTarget": {
 			"label": "Search in",

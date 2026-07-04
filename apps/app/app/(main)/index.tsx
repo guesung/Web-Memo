@@ -13,6 +13,7 @@ import { useScrollPositions } from "@/lib/hooks/useScrollPositions";
 import { AddMemoModal } from "./_components/AddMemoModal";
 import { MemoCard, type MemoItem } from "./_components/MemoCard";
 import { MemoDetailModal } from "./_components/MemoDetailModal";
+import { TodayArticles } from "./_components/TodayArticles";
 import { useDeleteWithUndo } from "./_hooks/useDeleteWithUndo";
 import { useMemoList } from "./_hooks/useMemoList";
 
@@ -186,6 +187,11 @@ export default function MemoScreen() {
 									onDelete={() => handleDelete(item)}
 								/>
 							)}
+							ListHeaderComponent={
+								filter === "all" ? (
+									<TodayArticles onPressArticle={navigateToBrowser} />
+								) : null
+							}
 							contentContainerStyle={{ paddingBottom: 8 }}
 							onRefresh={() => refetch()}
 							refreshing={false}

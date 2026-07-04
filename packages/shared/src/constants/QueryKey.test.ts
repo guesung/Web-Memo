@@ -13,6 +13,7 @@ describe("QUERY_KEY.memosPaginated", () => {
 				searchQuery: "q",
 				sortBy: "updated_at",
 				isStar: true,
+				isReading: undefined,
 			},
 		]);
 	});
@@ -29,6 +30,7 @@ describe("QUERY_KEY.memosPaginated", () => {
 				searchQuery: "q",
 				sortBy: "updated_at",
 				isStar: undefined,
+				isReading: undefined,
 			},
 		]);
 	});

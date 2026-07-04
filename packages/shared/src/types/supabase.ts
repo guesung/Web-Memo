@@ -81,6 +81,7 @@ export type Database = {
 					favIconUrl: string | null;
 					id: number;
 					impression: string | null;
+					isReading: boolean | null;
 					isStar: boolean | null;
 					isWish: boolean | null;
 					memo: string;
@@ -96,6 +97,7 @@ export type Database = {
 					favIconUrl?: string | null;
 					id?: number;
 					impression?: string | null;
+					isReading?: boolean | null;
 					isStar?: boolean | null;
 					isWish?: boolean | null;
 					memo: string;
@@ -111,6 +113,7 @@ export type Database = {
 					favIconUrl?: string | null;
 					id?: number;
 					impression?: string | null;
+					isReading?: boolean | null;
 					isStar?: boolean | null;
 					isWish?: boolean | null;
 					memo?: string;

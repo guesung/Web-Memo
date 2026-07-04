@@ -98,6 +98,7 @@ export function MemoCard({
 					{dateLabel ? (
 						<Text className="text-xs text-muted-foreground">{dateLabel}</Text>
 					) : null}
+					{memo.isReading && <BookOpen size={12} color="#10b981" />}
 					{memo.isWish && <Heart size={12} fill="#ec4899" color="#ec4899" />}
 					{"isStar" in memo && memo.isStar && (
 						<Star size={12} fill="#f59e0b" color="#f59e0b" />

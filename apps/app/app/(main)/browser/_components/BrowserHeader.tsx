@@ -1,5 +1,6 @@
 import {
 	Bookmark,
+	BookOpen,
 	Heart,
 	Home,
 	LayoutGrid,
@@ -18,6 +19,7 @@ interface BrowserHeaderProps {
 	urlInput: string;
 	currentUrl: string;
 	isCurrentPageWish: boolean;
+	isCurrentPageReading: boolean;
 	isCurrentPageFavorite: boolean;
 	headerWrapperStyle: AnimatedViewStyle;
 	webViewRef: React.RefObject<WebView | null>;
@@ -26,6 +28,7 @@ interface BrowserHeaderProps {
 	onGoHome: () => void;
 	onOpenBlogSheet: () => void;
 	onFavoriteToggle: () => void;
+	onReadingToggle: () => void;
 	onWishToggle: () => void;
 	onShare: () => void;
 }
@@ -34,6 +37,7 @@ export function BrowserHeader({
 	urlInput,
 	currentUrl,
 	isCurrentPageWish,
+	isCurrentPageReading,
 	isCurrentPageFavorite,
 	headerWrapperStyle,
 	webViewRef,
@@ -42,6 +46,7 @@ export function BrowserHeader({
 	onGoHome,
 	onOpenBlogSheet,
 	onFavoriteToggle,
+	onReadingToggle,
 	onWishToggle,
 	onShare,
 }: BrowserHeaderProps) {
@@ -89,6 +94,12 @@ export function BrowserHeader({
 						size={16}
 						color={isCurrentPageFavorite ? "#f59e0b" : "#111"}
 						fill={isCurrentPageFavorite ? "#f59e0b" : "none"}
+					/>
+				</TouchableOpacity>
+				<TouchableOpacity onPress={onReadingToggle} className="p-1.5">
+					<BookOpen
+						size={16}
+						color={isCurrentPageReading ? "#10b981" : "#111"}
 					/>
 				</TouchableOpacity>
 				<TouchableOpacity onPress={onWishToggle} className="p-1.5">

@@ -80,6 +80,7 @@ export default function useMemoUpsertMutation() {
 						favIconUrl: data.favIconUrl ?? null,
 						id: -Date.now(),
 						impression: data.impression ?? null,
+						isReading: data.isReading ?? false,
 						isStar: data.isStar ?? false,
 						isWish: data.isWish ?? false,
 						memo: data.memo ?? "",

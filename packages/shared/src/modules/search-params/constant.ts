@@ -2,6 +2,7 @@ export const SEARCH_PARAMS_KEYS = [
 	"id",
 	"isWish",
 	"isStar",
+	"isReading",
 	"category",
 	"view",
 	"query",

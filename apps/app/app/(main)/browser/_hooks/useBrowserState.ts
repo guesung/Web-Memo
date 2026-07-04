@@ -21,11 +21,13 @@ import { useFavoriteToggle, useIsFavorite } from "@/lib/hooks/useFavorites";
 import {
 	useLocalMemoByUrl,
 	useLocalMemoDelete,
+	useLocalMemoReadingToggle,
 	useLocalMemoWishToggle,
 } from "@/lib/hooks/useLocalMemos";
 import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
 import {
 	useDeleteMemoMutation,
+	useMemoReadingToggleMutation,
 	useMemoWishToggleMutation,
 } from "@/lib/hooks/useMemoMutation";
 import { SCROLL_POSITIONS_QUERY_KEY } from "@/lib/hooks/useScrollPositions";
@@ -87,12 +89,18 @@ export function useBrowserState() {
 	const { data: localMemo } = useLocalMemoByUrl(currentUrl);
 	const wishToggleSupabase = useMemoWishToggleMutation();
 	const wishToggleLocal = useLocalMemoWishToggle();
+	const readingToggleSupabase = useMemoReadingToggleMutation();
+	const readingToggleLocal = useLocalMemoReadingToggle();
 	const deleteSupabaseMemo = useDeleteMemoMutation();
 	const deleteLocalMemo = useLocalMemoDelete();
 
 	const isCurrentPageWish = isLoggedIn
 		? (supabaseMemo?.isWish ?? false)
 		: (localMemo?.isWish ?? false);
+
+	const isCurrentPageReading = isLoggedIn
+		? (supabaseMemo?.isReading ?? false)
+		: (localMemo?.isReading ?? false);
 
 	const { data: isCurrentPageFavorite } = useIsFavorite(currentUrl);
 	const favoriteToggle = useFavoriteToggle();
@@ -233,6 +241,32 @@ export function useBrowserState() {
 		pageFavIconUrl,
 		isCurrentPageFavorite,
 		favoriteToggle,
+	]);
+
+	const handleReadingToggle = useCallback(() => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+		if (isLoggedIn) {
+			readingToggleSupabase.mutate({
+				url: currentUrl,
+				title: pageTitle,
+				favIconUrl: pageFavIconUrl,
+				currentIsReading: isCurrentPageReading,
+			});
+		} else {
+			readingToggleLocal.mutate({
+				url: currentUrl,
+				title: pageTitle,
+				favIconUrl: pageFavIconUrl,
+			});
+		}
+	}, [
+		currentUrl,
+		pageTitle,
+		pageFavIconUrl,
+		isLoggedIn,
+		isCurrentPageReading,
+		readingToggleSupabase,
+		readingToggleLocal,
 	]);
 
 	const handleWishToggle = useCallback(() => {
@@ -416,8 +450,10 @@ export function useBrowserState() {
 		pageTitle,
 		pageFavIconUrl,
 		isCurrentPageWish,
+		isCurrentPageReading,
 		isCurrentPageFavorite: !!isCurrentPageFavorite,
 		handleFavoriteToggle,
+		handleReadingToggle,
 		panelHeight,
 		headerWrapperStyle,
 		memoAnimatedStyle,

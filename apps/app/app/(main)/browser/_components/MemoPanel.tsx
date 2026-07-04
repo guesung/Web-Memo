@@ -34,6 +34,7 @@ export function MemoPanel({
 }: MemoPanelProps) {
 	const { isLoggedIn } = useAuth();
 
+	const [titleText, setTitleText] = useState("");
 	const [memoText, setMemoText] = useState("");
 	const [impressionText, setImpressionText] = useState("");
 	const [actionItemText, setActionItemText] = useState("");
@@ -45,6 +46,7 @@ export function MemoPanel({
 	const existingMemo = isLoggedIn
 		? supabaseMemo
 			? {
+					title: supabaseMemo.title,
 					memo: supabaseMemo.memo,
 					impression: supabaseMemo.impression ?? "",
 					actionItem: supabaseMemo.actionItem ?? "",
@@ -87,6 +89,7 @@ export function MemoPanel({
 			justSavedRef.current = false;
 		}
 
+		setTitleText(existingMemo?.title ?? pageTitle ?? "");
 		if (existingMemo?.memo) {
 			setMemoText(existingMemo.memo);
 		} else {
@@ -98,9 +101,11 @@ export function MemoPanel({
 			setSaved(false);
 		}
 	}, [
+		existingMemo?.title,
 		existingMemo?.memo,
 		existingMemo?.impression,
 		existingMemo?.actionItem,
+		pageTitle,
 		url,
 	]);
 
@@ -120,7 +125,7 @@ export function MemoPanel({
 		if (isLoggedIn) {
 			const payload = {
 				url,
-				title: pageTitle || url,
+				title: titleText.trim() || pageTitle || url,
 				memo: memoText.trim(),
 				impression: impressionText.trim(),
 				actionItem: actionItemText.trim(),
@@ -130,7 +135,7 @@ export function MemoPanel({
 		} else {
 			const payload = {
 				url,
-				title: pageTitle || url,
+				title: titleText.trim() || pageTitle || url,
 				memo: memoText.trim(),
 				impression: impressionText.trim(),
 				actionItem: actionItemText.trim(),
@@ -152,12 +157,13 @@ export function MemoPanel({
 					) : (
 						<FileText size={14} color="#666" />
 					)}
-					<Text
-						className="text-base font-semibold text-foreground flex-1"
+					<TextInput
+						className="flex-1 text-base font-semibold text-foreground p-0"
+						value={titleText}
+						onChangeText={setTitleText}
+						placeholder="제목"
 						numberOfLines={1}
-					>
-						{pageTitle || "메모"}
-					</Text>
+					/>
 				</View>
 				<View className="flex-row items-center gap-2">
 					{isKeyboardVisible && (

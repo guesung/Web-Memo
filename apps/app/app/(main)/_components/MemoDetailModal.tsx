@@ -47,7 +47,12 @@ interface MemoDetailModalProps {
 	onStarToggle?: (memo: MemoItem) => void;
 	onSave?: (
 		memo: MemoItem,
-		next: { memo: string; impression: string; actionItem: string },
+		next: {
+			title: string;
+			memo: string;
+			impression: string;
+			actionItem: string;
+		},
 	) => void;
 }
 
@@ -64,6 +69,7 @@ export function MemoDetailModal({
 	const opacity = useSharedValue(0);
 	const [modalVisible, setModalVisible] = useState(false);
 	const [isEditing, setIsEditing] = useState(false);
+	const [editedTitle, setEditedTitle] = useState("");
 	const [editedMemo, setEditedMemo] = useState("");
 	const [editedImpression, setEditedImpression] = useState("");
 	const [editedActionItem, setEditedActionItem] = useState("");
@@ -87,6 +93,7 @@ export function MemoDetailModal({
 	useEffect(
 		function syncEditState() {
 			if (memo) {
+				setEditedTitle(memo.title ?? "");
 				setEditedMemo(memo.memo ?? "");
 				setEditedImpression(memo.impression ?? "");
 				setEditedActionItem(memo.actionItem ?? "");
@@ -135,6 +142,7 @@ export function MemoDetailModal({
 	const actionItemText = memo?.actionItem ?? "";
 
 	const handleStartEdit = () => {
+		setEditedTitle(title);
 		setEditedMemo(memoText);
 		setEditedImpression(impressionText);
 		setEditedActionItem(actionItemText);
@@ -142,6 +150,7 @@ export function MemoDetailModal({
 	};
 
 	const handleCancelEdit = () => {
+		setEditedTitle(title);
 		setEditedMemo(memoText);
 		setEditedImpression(impressionText);
 		setEditedActionItem(actionItemText);
@@ -153,6 +162,7 @@ export function MemoDetailModal({
 		if (!memo) return;
 
 		onSave?.(memo, {
+			title: editedTitle.trim() || title,
 			memo: editedMemo.trim(),
 			impression: editedImpression.trim(),
 			actionItem: editedActionItem.trim(),
@@ -164,6 +174,7 @@ export function MemoDetailModal({
 	};
 
 	const isMemoEdited =
+		(editedTitle.trim() !== "" && editedTitle.trim() !== title.trim()) ||
 		editedMemo.trim() !== memoText.trim() ||
 		editedImpression.trim() !== impressionText.trim() ||
 		editedActionItem.trim() !== actionItemText.trim();
@@ -214,7 +225,14 @@ export function MemoDetailModal({
 						) : (
 							<FileText size={14} color="#666" />
 						)}
-						{isWebUrl ? (
+						{isEditing ? (
+							<TextInput
+								className="flex-1 p-0 text-base font-semibold text-foreground"
+								value={editedTitle}
+								onChangeText={setEditedTitle}
+								placeholder="제목을 입력하세요"
+							/>
+						) : isWebUrl ? (
 							<TouchableOpacity
 								className="flex-1"
 								onPress={handleNavigate}

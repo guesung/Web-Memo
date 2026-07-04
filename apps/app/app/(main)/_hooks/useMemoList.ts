@@ -98,14 +98,19 @@ export function useMemoList() {
 
 	const handleMemoSave = (
 		memo: MemoItem,
-		next: { memo: string; impression: string; actionItem: string },
+		next: {
+			title: string;
+			memo: string;
+			impression: string;
+			actionItem: string;
+		},
 	) => {
 		const favIconUrl =
 			"favIconUrl" in memo ? (memo.favIconUrl ?? undefined) : undefined;
 		if (isLoggedIn) {
 			upsertSupabase.mutate({
 				url: memo.url,
-				title: memo.title,
+				title: next.title,
 				memo: next.memo,
 				impression: next.impression,
 				actionItem: next.actionItem,
@@ -114,7 +119,7 @@ export function useMemoList() {
 		} else {
 			upsertLocal.mutate({
 				url: memo.url,
-				title: memo.title,
+				title: next.title,
 				memo: next.memo,
 				impression: next.impression,
 				actionItem: next.actionItem,

@@ -91,6 +91,7 @@ export class MemoService {
 		category,
 		isWish,
 		isStar,
+		isReading,
 		searchQuery,
 		sortBy = "updated_at",
 	}: {
@@ -99,6 +100,7 @@ export class MemoService {
 		category?: string;
 		isWish?: boolean;
 		isStar?: boolean;
+		isReading?: boolean;
 		searchQuery?: string;
 		sortBy?: "updated_at" | "created_at" | "title";
 	}) => {
@@ -130,6 +132,10 @@ export class MemoService {
 
 		if (isStar !== undefined) {
 			query = query.eq("isStar", isStar);
+		}
+
+		if (isReading !== undefined) {
+			query = query.eq("isReading", isReading);
 		}
 
 		if (category) {

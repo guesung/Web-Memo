@@ -25,8 +25,10 @@ export default function BrowserScreen() {
 		pageTitle,
 		pageFavIconUrl,
 		isCurrentPageWish,
+		isCurrentPageReading,
 		isCurrentPageFavorite,
 		handleFavoriteToggle,
+		handleReadingToggle,
 		panelHeight,
 		headerWrapperStyle,
 		memoAnimatedStyle,
@@ -64,6 +66,7 @@ export default function BrowserScreen() {
 				urlInput={urlInput}
 				currentUrl={currentUrl}
 				isCurrentPageWish={isCurrentPageWish}
+				isCurrentPageReading={isCurrentPageReading}
 				isCurrentPageFavorite={isCurrentPageFavorite}
 				headerWrapperStyle={headerWrapperStyle}
 				webViewRef={webViewRef}
@@ -75,6 +78,7 @@ export default function BrowserScreen() {
 				}}
 				onOpenBlogSheet={() => setIsBlogSheetOpen(true)}
 				onFavoriteToggle={handleFavoriteToggle}
+				onReadingToggle={handleReadingToggle}
 				onWishToggle={handleWishToggle}
 				onShare={handleShare}
 			/>

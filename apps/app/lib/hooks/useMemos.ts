@@ -9,6 +9,7 @@ export function useMemosInfinite(params?: {
 	category?: string;
 	isWish?: boolean;
 	isStar?: boolean;
+	isReading?: boolean;
 	searchQuery?: string;
 }) {
 	return useInfiniteQuery({
@@ -18,6 +19,7 @@ export function useMemosInfinite(params?: {
 			params?.searchQuery,
 			undefined,
 			params?.isStar,
+			params?.isReading,
 		),
 		queryFn: async ({ pageParam }) => {
 			const result = await memoService.getMemosPaginated({
@@ -26,6 +28,7 @@ export function useMemosInfinite(params?: {
 				category: params?.category,
 				isWish: params?.isWish,
 				isStar: params?.isStar,
+				isReading: params?.isReading,
 				searchQuery: params?.searchQuery,
 			});
 			return {

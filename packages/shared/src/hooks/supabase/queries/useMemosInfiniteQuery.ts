@@ -12,6 +12,7 @@ interface UseMemosInfiniteQueryProps {
 	category?: string;
 	isWish?: boolean;
 	isStar?: boolean;
+	isReading?: boolean;
 	searchQuery?: string;
 	sortBy?: MemoSortBy;
 }
@@ -20,6 +21,7 @@ export default function useMemosInfiniteQuery({
 	category,
 	isWish,
 	isStar,
+	isReading,
 	searchQuery,
 	sortBy = "updated_at",
 }: UseMemosInfiniteQueryProps = {}) {
@@ -36,6 +38,7 @@ export default function useMemosInfiniteQuery({
 			searchQuery,
 			sortBy,
 			isStar,
+			isReading,
 		),
 		queryFn: async ({ pageParam }) => {
 			const result = await memoService.getMemosPaginated({
@@ -44,6 +47,7 @@ export default function useMemosInfiniteQuery({
 				category,
 				isWish,
 				isStar,
+				isReading,
 				searchQuery,
 				sortBy,
 			});

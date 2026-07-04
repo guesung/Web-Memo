@@ -14,7 +14,7 @@ import {
 import { useMemosInfinite } from "@/lib/hooks/useMemos";
 import type { MemoItem } from "../_components/MemoCard";
 
-type MemoFilter = "all" | "wish" | "star";
+type MemoFilter = "all" | "wish" | "star" | "reading";
 
 export function useMemoList() {
 	const { isLoggedIn } = useAuth();
@@ -45,7 +45,9 @@ export function useMemoList() {
 				? { isWish: true }
 				: filter === "star"
 					? { isStar: true }
-					: { isWish: false }
+					: filter === "reading"
+						? { isReading: true }
+						: { isWish: false }
 			: undefined,
 	);
 
@@ -54,6 +56,7 @@ export function useMemoList() {
 		: (localMemosData ?? []).filter((m) => {
 				if (filter === "wish") return m.isWish;
 				if (filter === "star") return m.isStar;
+				if (filter === "reading") return m.isReading;
 				return !m.isWish;
 			});
 	const isLoading = isLoggedIn ? isSupabaseLoading : isLocalLoading;

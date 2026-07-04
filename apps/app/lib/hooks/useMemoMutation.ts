@@ -17,6 +17,7 @@ export function useMemoUpsertMutation() {
 							...data,
 							isWish: data.isWish ?? existing.data[0].isWish,
 							isStar: data.isStar ?? existing.data[0].isStar,
+							isReading: data.isReading ?? existing.data[0].isReading,
 						},
 					});
 				}
@@ -70,6 +71,40 @@ export function useMemoWishToggleMutation() {
 				title: data.title,
 				memo: "",
 				isWish: true,
+				favIconUrl: data.favIconUrl,
+			});
+		},
+		onSuccess: (_data, variables) => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+			queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.memo({ url: variables.url }),
+			});
+		},
+	});
+}
+
+export function useMemoReadingToggleMutation() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (data: {
+			url: string;
+			title: string;
+			favIconUrl?: string;
+			currentIsReading: boolean;
+		}) => {
+			const existing = await memoService.getMemoByUrl(data.url);
+			if (existing.data && existing.data.length > 0) {
+				return memoService.updateMemo({
+					id: existing.data[0].id,
+					request: { isReading: !data.currentIsReading },
+				});
+			}
+			return memoService.insertMemo({
+				url: data.url,
+				title: data.title,
+				memo: "",
+				isReading: true,
 				favIconUrl: data.favIconUrl,
 			});
 		},

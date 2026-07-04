@@ -3,6 +3,7 @@ import {
 	deleteMemo,
 	getAllMemos,
 	getMemoByUrl,
+	toggleReadingByUrl,
 	toggleStarByUrl,
 	toggleWishByUrl,
 	upsertMemo,
@@ -78,6 +79,28 @@ export function useLocalMemoStarToggle() {
 			title?: string;
 			favIconUrl?: string;
 		}) => toggleStarByUrl(url, title, favIconUrl),
+		onSuccess: (_data, { url }) => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos() });
+			queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.localMemoByUrl(url),
+			});
+		},
+	});
+}
+
+export function useLocalMemoReadingToggle() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({
+			url,
+			title,
+			favIconUrl,
+		}: {
+			url: string;
+			title?: string;
+			favIconUrl?: string;
+		}) => toggleReadingByUrl(url, title, favIconUrl),
 		onSuccess: (_data, { url }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos() });
 			queryClient.invalidateQueries({

@@ -15,6 +15,7 @@ export interface LocalMemo {
 	synced: boolean;
 	isWish?: boolean;
 	isStar?: boolean;
+	isReading?: boolean;
 }
 
 async function getAll(): Promise<LocalMemo[]> {
@@ -48,6 +49,7 @@ export async function upsertMemo(params: {
 	favIconUrl?: string;
 	isWish?: boolean;
 	isStar?: boolean;
+	isReading?: boolean;
 }): Promise<LocalMemo> {
 	const memos = await getAll();
 	const now = new Date().toISOString();
@@ -63,6 +65,7 @@ export async function upsertMemo(params: {
 		if (params.favIconUrl) existing.favIconUrl = params.favIconUrl;
 		if (params.isWish !== undefined) existing.isWish = params.isWish;
 		if (params.isStar !== undefined) existing.isStar = params.isStar;
+		if (params.isReading !== undefined) existing.isReading = params.isReading;
 		existing.updatedAt = now;
 		existing.synced = false;
 		await save(memos);
@@ -79,6 +82,7 @@ export async function upsertMemo(params: {
 		favIconUrl: params.favIconUrl,
 		isWish: params.isWish,
 		isStar: params.isStar,
+		isReading: params.isReading,
 		createdAt: now,
 		updatedAt: now,
 		synced: false,
@@ -145,6 +149,39 @@ export async function toggleStarByUrl(
 		memo: "",
 		favIconUrl,
 		isStar: true,
+		createdAt: now,
+		updatedAt: now,
+		synced: false,
+	};
+	memos.push(newMemo);
+	await save(memos);
+	return newMemo;
+}
+
+export async function toggleReadingByUrl(
+	url: string,
+	title?: string,
+	favIconUrl?: string,
+): Promise<LocalMemo> {
+	const memos = await getAll();
+	const existing = memos.find((m) => m.url === url);
+	const now = new Date().toISOString();
+
+	if (existing) {
+		existing.isReading = !existing.isReading;
+		existing.updatedAt = now;
+		existing.synced = false;
+		await save(memos);
+		return existing;
+	}
+
+	const newMemo: LocalMemo = {
+		id: `local_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+		url,
+		title: title || "",
+		memo: "",
+		favIconUrl,
+		isReading: true,
 		createdAt: now,
 		updatedAt: now,
 		synced: false,

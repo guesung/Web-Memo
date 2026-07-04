@@ -10,10 +10,11 @@ export const QUERY_KEY = {
 		searchQuery?: string,
 		sortBy?: MemoSortBy,
 		isStar?: boolean,
+		isReading?: boolean,
 	) => [
 		"memos",
 		"paginated",
-		{ category, isWish, searchQuery, sortBy, isStar },
+		{ category, isWish, searchQuery, sortBy, isStar, isReading },
 	],
 	option: () => ["option"],
 	supabaseClient: () => ["supabaseClient"],

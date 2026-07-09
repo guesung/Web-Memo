@@ -16,6 +16,8 @@ chrome.runtime.onInstalled.addListener(async () => {
 	const language = await ChromeSyncStorage.get(STORAGE_KEYS.language);
 	const uiLanguage = I18n.getUILanguage();
 	if (!language) ChromeSyncStorage.set(STORAGE_KEYS.language, uiLanguage);
+	const installDate = await ChromeSyncStorage.get(STORAGE_KEYS.installDate);
+	if (!installDate) ChromeSyncStorage.set(STORAGE_KEYS.installDate, Date.now());
 });
 
 // 확장 프로그램이 설치되었을 때 contextMenus를 설정한다.

@@ -3,10 +3,12 @@ import { KeyboardAvoidingView, Platform, Text, View } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
 import { WebView } from "react-native-webview";
+import { AISheet } from "./_components/AISheet";
 import { BrowserHeader } from "./_components/BrowserHeader";
 import { DraggableFab } from "./_components/DraggableFab";
 import { EmptyBrowserView } from "./_components/EmptyBrowserView";
 import { MemoPanel } from "./_components/MemoPanel";
+import { PageActionsSheet } from "./_components/PageActionsSheet";
 import { TechBlogBottomSheet } from "./_components/TechBlogBottomSheet";
 import { useBrowserState } from "./_hooks/useBrowserState";
 
@@ -26,9 +28,11 @@ export default function BrowserScreen() {
 		pageFavIconUrl,
 		isCurrentPageWish,
 		isCurrentPageReading,
+		isCurrentPageStar,
 		isCurrentPageFavorite,
 		handleFavoriteToggle,
 		handleReadingToggle,
+		handleStarToggle,
 		panelHeight,
 		headerWrapperStyle,
 		memoAnimatedStyle,
@@ -42,6 +46,20 @@ export default function BrowserScreen() {
 		handleBlogSelect,
 		handleShare,
 		SCROLL_DETECT_JS,
+		selectedText,
+		consumeSelectedText,
+		isActionsSheetOpen,
+		setIsActionsSheetOpen,
+		isAISheetOpen,
+		openAISheet,
+		closeAISheet,
+		aiSummary,
+		aiAnswer,
+		aiQuestion,
+		setAiQuestion,
+		isAILoading,
+		aiError,
+		askAIQuestion,
 	} = useBrowserState();
 
 	if (!currentUrl) {
@@ -56,18 +74,22 @@ export default function BrowserScreen() {
 		);
 	}
 
+	const hasActiveStatus =
+		isCurrentPageFavorite ||
+		isCurrentPageReading ||
+		isCurrentPageWish ||
+		isCurrentPageStar;
+
 	return (
 		<KeyboardAvoidingView
-			className="flex-1 bg-white"
+			className="flex-1 bg-white dark:bg-neutral-900"
 			style={{ paddingTop: insets.top }}
 			behavior={Platform.OS === "ios" ? "padding" : undefined}
 		>
 			<BrowserHeader
 				urlInput={urlInput}
 				currentUrl={currentUrl}
-				isCurrentPageWish={isCurrentPageWish}
-				isCurrentPageReading={isCurrentPageReading}
-				isCurrentPageFavorite={isCurrentPageFavorite}
+				hasActiveStatus={hasActiveStatus}
 				headerWrapperStyle={headerWrapperStyle}
 				webViewRef={webViewRef}
 				onUrlInputChange={setUrlInput}
@@ -77,10 +99,7 @@ export default function BrowserScreen() {
 					handleBlogSelect("");
 				}}
 				onOpenBlogSheet={() => setIsBlogSheetOpen(true)}
-				onFavoriteToggle={handleFavoriteToggle}
-				onReadingToggle={handleReadingToggle}
-				onWishToggle={handleWishToggle}
-				onShare={handleShare}
+				onOpenActions={() => setIsActionsSheetOpen(true)}
 			/>
 
 			<View
@@ -103,12 +122,12 @@ export default function BrowserScreen() {
 				</View>
 
 				<Animated.View
-					className="border-t border-border bg-white overflow-hidden"
+					className="border-t border-border dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden"
 					style={memoAnimatedStyle}
 				>
 					<GestureDetector gesture={resizeGesture}>
 						<Animated.View className="items-center justify-center py-2">
-							<View className="w-9 h-1 rounded-sm bg-gray-300" />
+							<View className="w-9 h-1 rounded-sm bg-gray-300 dark:bg-neutral-700" />
 						</Animated.View>
 					</GestureDetector>
 					<MemoPanel
@@ -116,6 +135,8 @@ export default function BrowserScreen() {
 						pageTitle={pageTitle}
 						favIconUrl={pageFavIconUrl}
 						onClose={closePanel}
+						selectedText={selectedText}
+						onSelectedTextConsumed={consumeSelectedText}
 					/>
 				</Animated.View>
 			</View>
@@ -145,6 +166,33 @@ export default function BrowserScreen() {
 					setIsBlogSheetOpen(false);
 					handleBlogSelect(url);
 				}}
+			/>
+
+			<PageActionsSheet
+				visible={isActionsSheetOpen}
+				onClose={() => setIsActionsSheetOpen(false)}
+				isCurrentPageFavorite={isCurrentPageFavorite}
+				isCurrentPageReading={isCurrentPageReading}
+				isCurrentPageWish={isCurrentPageWish}
+				isCurrentPageStar={isCurrentPageStar}
+				onFavoriteToggle={handleFavoriteToggle}
+				onReadingToggle={handleReadingToggle}
+				onWishToggle={handleWishToggle}
+				onStarToggle={handleStarToggle}
+				onShare={handleShare}
+				onOpenAI={openAISheet}
+			/>
+
+			<AISheet
+				visible={isAISheetOpen}
+				onClose={closeAISheet}
+				summary={aiSummary}
+				answer={aiAnswer}
+				question={aiQuestion}
+				onQuestionChange={setAiQuestion}
+				onAskQuestion={askAIQuestion}
+				isLoading={isAILoading}
+				error={aiError}
 			/>
 		</KeyboardAvoidingView>
 	);

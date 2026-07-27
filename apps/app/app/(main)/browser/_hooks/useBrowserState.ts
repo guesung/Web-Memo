@@ -16,18 +16,21 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type WebView from "react-native-webview";
 import type { WebViewNavigation } from "react-native-webview";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { CONFIG } from "@/lib/config";
 import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
 import { useFavoriteToggle, useIsFavorite } from "@/lib/hooks/useFavorites";
 import {
 	useLocalMemoByUrl,
 	useLocalMemoDelete,
 	useLocalMemoReadingToggle,
+	useLocalMemoStarToggle,
 	useLocalMemoWishToggle,
 } from "@/lib/hooks/useLocalMemos";
 import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
 import {
 	useDeleteMemoMutation,
 	useMemoReadingToggleMutation,
+	useMemoStarToggleMutation,
 	useMemoWishToggleMutation,
 } from "@/lib/hooks/useMemoMutation";
 import { SCROLL_POSITIONS_QUERY_KEY } from "@/lib/hooks/useScrollPositions";
@@ -36,9 +39,11 @@ import {
 	getScrollPosition,
 	saveScrollPosition,
 } from "@/lib/storage/scrollPositions";
+import { supabase } from "@/lib/supabase/client";
 import { getPanelRatio, savePanelRatio } from "../_utils/browserPreferences";
 import { formatUrl } from "../_utils/formatUrl";
 import {
+	EXTRACT_PAGE_TEXT_JS,
 	INJECTED_JS_ON_NAVIGATION,
 	SCROLL_DETECT_JS,
 } from "../_utils/webViewScripts";
@@ -70,6 +75,15 @@ export function useBrowserState() {
 	const [contentHeight, setContentHeight] = useState(0);
 	const [wishToast, setWishToast] = useState<string | null>(null);
 	const [savedRatio, setSavedRatio] = useState(DEFAULT_PANEL_RATIO);
+	const [selectedText, setSelectedText] = useState<string | null>(null);
+	const [isActionsSheetOpen, setIsActionsSheetOpen] = useState(false);
+	const [isAISheetOpen, setIsAISheetOpen] = useState(false);
+	const [aiPageText, setAiPageText] = useState("");
+	const [aiSummary, setAiSummary] = useState<string | null>(null);
+	const [aiAnswer, setAiAnswer] = useState<string | null>(null);
+	const [aiQuestion, setAiQuestion] = useState("");
+	const [isAILoading, setIsAILoading] = useState(false);
+	const [aiError, setAiError] = useState<string | null>(null);
 
 	const { isLoggedIn } = useAuth();
 	const queryClient = useQueryClient();
@@ -91,6 +105,8 @@ export function useBrowserState() {
 	const wishToggleLocal = useLocalMemoWishToggle();
 	const readingToggleSupabase = useMemoReadingToggleMutation();
 	const readingToggleLocal = useLocalMemoReadingToggle();
+	const starToggleSupabase = useMemoStarToggleMutation();
+	const starToggleLocal = useLocalMemoStarToggle();
 	const deleteSupabaseMemo = useDeleteMemoMutation();
 	const deleteLocalMemo = useLocalMemoDelete();
 
@@ -101,6 +117,10 @@ export function useBrowserState() {
 	const isCurrentPageReading = isLoggedIn
 		? (supabaseMemo?.isReading ?? false)
 		: (localMemo?.isReading ?? false);
+
+	const isCurrentPageStar = isLoggedIn
+		? (supabaseMemo?.isStar ?? false)
+		: (localMemo?.isStar ?? false);
 
 	const { data: isCurrentPageFavorite } = useIsFavorite(currentUrl);
 	const favoriteToggle = useFavoriteToggle();
@@ -269,6 +289,32 @@ export function useBrowserState() {
 		readingToggleLocal,
 	]);
 
+	const handleStarToggle = useCallback(() => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+		if (isLoggedIn) {
+			starToggleSupabase.mutate({
+				url: currentUrl,
+				title: pageTitle,
+				favIconUrl: pageFavIconUrl,
+				currentIsStar: isCurrentPageStar,
+			});
+		} else {
+			starToggleLocal.mutate({
+				url: currentUrl,
+				title: pageTitle,
+				favIconUrl: pageFavIconUrl,
+			});
+		}
+	}, [
+		currentUrl,
+		pageTitle,
+		pageFavIconUrl,
+		isLoggedIn,
+		isCurrentPageStar,
+		starToggleSupabase,
+		starToggleLocal,
+	]);
+
 	const handleWishToggle = useCallback(() => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
@@ -373,6 +419,47 @@ export function useBrowserState() {
 		[isMemoOpen, headerTranslateY, tabBarTranslateY, insets.bottom],
 	);
 
+	/** 기사 본문을 요약(question 없음) 또는 질의응답(question 있음) API에 요청한다 */
+	const requestArticleAI = useCallback(
+		async (pageText: string, question?: string) => {
+			setIsAILoading(true);
+			setAiError(null);
+			try {
+				const {
+					data: { session },
+				} = await supabase.auth.getSession();
+				const response = await fetch(
+					`${CONFIG.webappUrl}/api/openai/webpage-qa`,
+					{
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							...(session?.access_token
+								? { Authorization: `Bearer ${session.access_token}` }
+								: {}),
+						},
+						body: JSON.stringify({ content: pageText, question }),
+					},
+				);
+				const data = await response.json();
+				if (!response.ok) {
+					setAiError(data.error ?? "요청에 실패했어요");
+					return;
+				}
+				if (question) {
+					setAiAnswer(data.answer ?? null);
+				} else {
+					setAiSummary(data.summary ?? null);
+				}
+			} catch {
+				setAiError("요청에 실패했어요");
+			} finally {
+				setIsAILoading(false);
+			}
+		},
+		[],
+	);
+
 	const handleWebViewMessage = useCallback(
 		(event: { nativeEvent: { data: string } }) => {
 			try {
@@ -382,11 +469,53 @@ export function useBrowserState() {
 				} else if (message.type === "scroll") {
 					persistScrollPosition(message.scrollY, message.maxY ?? 0);
 					handleScrollMessage(message.direction, message.scrollY);
+				} else if (message.type === "textSelected" && message.text) {
+					setSelectedText(message.text);
+					if (!isMemoOpen) openPanel();
+				} else if (message.type === "pageTextExtracted") {
+					const text = message.text ?? "";
+					setAiPageText(text);
+					if (text.trim()) {
+						requestArticleAI(text);
+					} else {
+						setAiError("페이지에서 본문을 찾지 못했어요");
+						setIsAILoading(false);
+					}
 				}
 			} catch {}
 		},
-		[handleScrollMessage, persistScrollPosition],
+		[
+			handleScrollMessage,
+			persistScrollPosition,
+			isMemoOpen,
+			openPanel,
+			requestArticleAI,
+		],
 	);
+
+	const consumeSelectedText = useCallback(() => {
+		setSelectedText(null);
+	}, []);
+
+	const openAISheet = useCallback(() => {
+		setIsAISheetOpen(true);
+		setAiSummary(null);
+		setAiAnswer(null);
+		setAiQuestion("");
+		setAiError(null);
+		setIsAILoading(true);
+		webViewRef.current?.injectJavaScript(EXTRACT_PAGE_TEXT_JS);
+	}, []);
+
+	const closeAISheet = useCallback(() => {
+		setIsAISheetOpen(false);
+	}, []);
+
+	const askAIQuestion = useCallback(() => {
+		if (!aiQuestion.trim() || !aiPageText) return;
+		setAiAnswer(null);
+		requestArticleAI(aiPageText, aiQuestion.trim());
+	}, [aiQuestion, aiPageText, requestArticleAI]);
 
 	const toggleMemo = useCallback(() => {
 		if (isMemoOpen) {
@@ -451,9 +580,11 @@ export function useBrowserState() {
 		pageFavIconUrl,
 		isCurrentPageWish,
 		isCurrentPageReading,
+		isCurrentPageStar,
 		isCurrentPageFavorite: !!isCurrentPageFavorite,
 		handleFavoriteToggle,
 		handleReadingToggle,
+		handleStarToggle,
 		panelHeight,
 		headerWrapperStyle,
 		memoAnimatedStyle,
@@ -468,5 +599,19 @@ export function useBrowserState() {
 		handleBlogSelect,
 		handleShare,
 		SCROLL_DETECT_JS,
+		selectedText,
+		consumeSelectedText,
+		isActionsSheetOpen,
+		setIsActionsSheetOpen,
+		isAISheetOpen,
+		openAISheet,
+		closeAISheet,
+		aiSummary,
+		aiAnswer,
+		aiQuestion,
+		setAiQuestion,
+		isAILoading,
+		aiError,
+		askAIQuestion,
 	};
 }

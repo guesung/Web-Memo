@@ -25,6 +25,9 @@ interface MemoPanelProps {
 	pageTitle: string;
 	favIconUrl?: string;
 	onClose?: () => void;
+	/** 웹뷰에서 드래그로 선택된 텍스트. 값이 바뀔 때마다 메모에 자동으로 덧붙인다 */
+	selectedText?: string | null;
+	onSelectedTextConsumed?: () => void;
 }
 
 export function MemoPanel({
@@ -32,6 +35,8 @@ export function MemoPanel({
 	pageTitle,
 	favIconUrl,
 	onClose,
+	selectedText,
+	onSelectedTextConsumed,
 }: MemoPanelProps) {
 	const { isLoggedIn } = useAuth();
 	const isDark = useColorScheme() === "dark";
@@ -110,6 +115,12 @@ export function MemoPanel({
 		pageTitle,
 		url,
 	]);
+
+	useEffect(() => {
+		if (!selectedText) return;
+		setMemoText((prev) => (prev ? `${prev}\n${selectedText}` : selectedText));
+		onSelectedTextConsumed?.();
+	}, [selectedText, onSelectedTextConsumed]);
 
 	const onSaveSuccess = () => {
 		justSavedRef.current = true;

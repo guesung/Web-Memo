@@ -479,9 +479,6 @@
 			"tip3": "자동으로 저장됩니다"
 		},
 		"totalMemos": "메모 {{total}}개",
-		"todayArticles": {
-			"title": "오늘 읽을 아티클"
-		},
 		"searchPlaceholder": "메모 찾기",
 		"searchTarget": {
 			"label": "검색 대상",

@@ -68,7 +68,12 @@ export function MemoDetailModal({
 }: MemoDetailModalProps) {
 	const insets = useSafeAreaInsets();
 	const { isLoggedIn } = useAuth();
-	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
+	const {
+		showImpression: showImpressionSetting,
+		showActionItem: showActionItemSetting,
+	} = useSettingQuery(isLoggedIn);
+	const showImpression = showImpressionSetting || !!memo?.impression;
+	const showActionItem = showActionItemSetting || !!memo?.actionItem;
 	const translateY = useSharedValue(SHEET_HEIGHT);
 	const opacity = useSharedValue(0);
 	const [modalVisible, setModalVisible] = useState(false);

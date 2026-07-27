@@ -1,4 +1,5 @@
 import { PenLine } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
 import { useEffect } from "react";
 import { Dimensions } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -28,6 +29,7 @@ export function DraggableFab({
 	bottomInset,
 }: DraggableFabProps) {
 	const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+	const isDark = useColorScheme().colorScheme === "dark";
 
 	const fabOffsetX = useSharedValue(screenWidth - FAB_SIZE - EDGE_MARGIN);
 	const fabOffsetY = useSharedValue(screenHeight - FAB_SIZE - bottomInset - 80);
@@ -115,7 +117,7 @@ export function DraggableFab({
 					fabAnimatedStyle,
 				]}
 			>
-				<PenLine size={24} color="#fff" />
+				<PenLine size={24} color={isDark ? "#111" : "#fff"} />
 			</Animated.View>
 		</GestureDetector>
 	);

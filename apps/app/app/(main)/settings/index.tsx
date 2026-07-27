@@ -7,6 +7,7 @@ import {
 	MessageCircle,
 	User,
 } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
 import {
 	Alert,
 	Linking,
@@ -21,13 +22,23 @@ import {
 	useSettingQuery,
 	useSettingUpsertMutation,
 } from "@/lib/hooks/useSetting";
+import { useThemePreference } from "@/lib/hooks/useThemePreference";
+import type { ThemePreference } from "@/lib/preferences/themePreference";
+
+const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
+	{ value: "system", label: "시스템 설정" },
+	{ value: "light", label: "라이트" },
+	{ value: "dark", label: "다크" },
+];
 
 export default function SettingsScreen() {
 	const insets = useSafeAreaInsets();
+	const isDark = useColorScheme().colorScheme === "dark";
 	const router = useRouter();
 	const { session, signOut, isLoggedIn } = useAuth();
 	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
 	const { mutate: upsertSetting } = useSettingUpsertMutation();
+	const { preference, setPreference } = useThemePreference();
 
 	const handleSignOut = () => {
 		Alert.alert("로그아웃", "로그아웃 하시겠습니까?", [
@@ -43,7 +54,10 @@ export default function SettingsScreen() {
 	const appVersion = Constants.expoConfig?.version;
 
 	return (
-		<View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+		<View
+			className="flex-1 bg-white dark:bg-neutral-950"
+			style={{ paddingTop: insets.top }}
+		>
 			<View className="px-5 pt-4 pb-4">
 				<Text className="text-[22px] font-extrabold text-foreground tracking-tight">
 					설정
@@ -61,7 +75,7 @@ export default function SettingsScreen() {
 							<>
 								<View className="flex-row items-center gap-3 mb-4">
 									<View className="w-10 h-10 rounded-full bg-foreground justify-center items-center">
-										<User size={20} color="#fff" />
+										<User size={20} color={isDark ? "#111" : "#fff"} />
 									</View>
 									<View className="flex-1">
 										<Text className="text-[15px] font-semibold text-foreground">
@@ -73,7 +87,7 @@ export default function SettingsScreen() {
 									</View>
 								</View>
 								<TouchableOpacity
-									className="flex-row items-center justify-center gap-2 py-2.5 rounded-[10px] border border-red-100 bg-red-50"
+									className="flex-row items-center justify-center gap-2 py-2.5 rounded-[10px] border border-red-100 dark:border-red-900/40 bg-red-50 dark:bg-red-950/30"
 									onPress={handleSignOut}
 								>
 									<LogOut size={16} color="#ef4444" />
@@ -87,12 +101,37 @@ export default function SettingsScreen() {
 								className="flex-row items-center justify-center gap-2 py-3 rounded-[10px] bg-foreground"
 								onPress={handleLogin}
 							>
-								<LogIn size={18} color="#fff" />
-								<Text className="text-[15px] font-semibold text-white">
+								<LogIn size={18} color={isDark ? "#111" : "#fff"} />
+								<Text className="text-[15px] font-semibold text-background">
 									로그인
 								</Text>
 							</TouchableOpacity>
 						)}
+					</View>
+				</View>
+
+				{/* Theme Section */}
+				<View className="mb-7">
+					<Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">
+						화면 모드
+					</Text>
+					<View className="flex-row bg-card rounded-[14px] p-1 border border-muted">
+						{THEME_OPTIONS.map((option) => {
+							const isSelected = preference === option.value;
+							return (
+								<TouchableOpacity
+									key={option.value}
+									className={`flex-1 items-center py-2 rounded-xl ${isSelected ? "bg-foreground" : ""}`}
+									onPress={() => setPreference(option.value)}
+								>
+									<Text
+										className={`text-[13px] font-semibold ${isSelected ? "text-background" : "text-secondary-foreground"}`}
+									>
+										{option.label}
+									</Text>
+								</TouchableOpacity>
+							);
+						})}
 					</View>
 				</View>
 
@@ -168,13 +207,13 @@ export default function SettingsScreen() {
 							activeOpacity={0.6}
 						>
 							<View className="flex-row items-center gap-2">
-								<MessageCircle size={16} color="#555" />
+								<MessageCircle size={16} color={isDark ? "#aaa" : "#555"} />
 								<Text className="text-[15px] text-secondary-foreground">
 									문의하기
 								</Text>
 							</View>
 							<View className="flex-row items-center gap-2">
-								<ChevronRight size={14} color="#999" />
+								<ChevronRight size={14} color={isDark ? "#777" : "#999"} />
 							</View>
 						</TouchableOpacity>
 					</View>

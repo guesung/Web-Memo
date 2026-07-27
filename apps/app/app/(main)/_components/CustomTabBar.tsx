@@ -5,6 +5,7 @@ import {
 	type LucideIcon,
 	Settings,
 } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
 import { Text, TouchableOpacity, View } from "react-native";
 import Animated, {
 	useAnimatedStyle,
@@ -32,6 +33,7 @@ export function CustomTabBar({
 	navigation,
 }: CustomTabBarProps) {
 	const insets = useSafeAreaInsets();
+	const isDark = useColorScheme().colorScheme === "dark";
 	const { tabBarTranslateY, isBrowserActive } = useBrowserScroll();
 	const barHeight = useSharedValue(0);
 
@@ -47,7 +49,7 @@ export function CustomTabBar({
 	return (
 		<Animated.View style={wrapperStyle}>
 			<View
-				className="flex-row bg-white border-t border-border pt-2"
+				className="flex-row bg-white dark:bg-neutral-900 border-t border-border pt-2"
 				style={{ paddingBottom: insets.bottom }}
 				onLayout={(e) => {
 					if (barHeight.value === 0) {
@@ -80,7 +82,10 @@ export function CustomTabBar({
 							className="flex-1 items-center justify-center py-1 gap-0.5"
 							activeOpacity={0.7}
 						>
-							<Icon size={22} color={isFocused ? "#111" : "#999"} />
+							<Icon
+								size={22}
+								color={isFocused ? (isDark ? "#eee" : "#111") : "#999"}
+							/>
 							<Text
 								className={`text-[11px] mt-0.5 ${isFocused ? "text-foreground font-semibold" : "text-muted-foreground"}`}
 							>

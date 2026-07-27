@@ -8,6 +8,7 @@ import {
 	Star,
 	Undo2,
 } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
 import { useCallback, useEffect, useState } from "react";
 import {
 	ActivityIndicator,
@@ -29,6 +30,7 @@ const READ_DONE_PROGRESS = 0.98;
 
 export default function MemoScreen() {
 	const insets = useSafeAreaInsets();
+	const isDark = useColorScheme().colorScheme === "dark";
 	const router = useRouter();
 	const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
 	const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
@@ -95,8 +97,10 @@ export default function MemoScreen() {
 								className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground"
 								onPress={() => router.navigate("/(auth)/login")}
 							>
-								<LogIn size={14} color="#fff" />
-								<Text className="text-xs font-semibold text-white">로그인</Text>
+								<LogIn size={14} color={isDark ? "#111" : "#fff"} />
+								<Text className="text-xs font-semibold text-background">
+									로그인
+								</Text>
 							</TouchableOpacity>
 						) : null}
 						<TouchableOpacity
@@ -104,15 +108,15 @@ export default function MemoScreen() {
 							onPress={() => setIsAddModalOpen(true)}
 							activeOpacity={0.8}
 						>
-							<Plus size={14} color="#fff" />
-							<Text className="text-xs font-semibold text-white">
+							<Plus size={14} color={isDark ? "#111" : "#fff"} />
+							<Text className="text-xs font-semibold text-background">
 								메모 추가
 							</Text>
 						</TouchableOpacity>
 					</View>
 				</View>
 
-				<Text className="text-sm text-gray-400 px-5 mb-4">
+				<Text className="text-sm text-gray-400 dark:text-neutral-500 px-5 mb-4">
 					웹서핑하며 간편하게 메모하세요
 				</Text>
 
@@ -136,7 +140,7 @@ export default function MemoScreen() {
 						onPress={() => setFilter("all")}
 					>
 						<Text
-							className={`text-[13px] font-semibold ${filter === "all" ? "text-white" : "text-gray-500"}`}
+							className={`text-[13px] font-semibold ${filter === "all" ? "text-background" : "text-gray-500 dark:text-neutral-400"}`}
 						>
 							전체
 						</Text>
@@ -147,11 +151,11 @@ export default function MemoScreen() {
 					>
 						<Heart
 							size={12}
-							fill={filter === "wish" ? "#fff" : "#666"}
-							color={filter === "wish" ? "#fff" : "#666"}
+							fill={filter === "wish" ? (isDark ? "#111" : "#fff") : "#666"}
+							color={filter === "wish" ? (isDark ? "#111" : "#fff") : "#666"}
 						/>
 						<Text
-							className={`text-[13px] font-semibold ${filter === "wish" ? "text-white" : "text-gray-500"}`}
+							className={`text-[13px] font-semibold ${filter === "wish" ? "text-background" : "text-gray-500 dark:text-neutral-400"}`}
 						>
 							위시리스트
 						</Text>
@@ -162,11 +166,11 @@ export default function MemoScreen() {
 					>
 						<Star
 							size={12}
-							fill={filter === "star" ? "#fff" : "#666"}
-							color={filter === "star" ? "#fff" : "#666"}
+							fill={filter === "star" ? (isDark ? "#111" : "#fff") : "#666"}
+							color={filter === "star" ? (isDark ? "#111" : "#fff") : "#666"}
 						/>
 						<Text
-							className={`text-[13px] font-semibold ${filter === "star" ? "text-white" : "text-gray-500"}`}
+							className={`text-[13px] font-semibold ${filter === "star" ? "text-background" : "text-gray-500 dark:text-neutral-400"}`}
 						>
 							중요
 						</Text>
@@ -177,10 +181,10 @@ export default function MemoScreen() {
 					>
 						<BookOpen
 							size={12}
-							color={filter === "reading" ? "#fff" : "#666"}
+							color={filter === "reading" ? (isDark ? "#111" : "#fff") : "#666"}
 						/>
 						<Text
-							className={`text-[13px] font-semibold ${filter === "reading" ? "text-white" : "text-gray-500"}`}
+							className={`text-[13px] font-semibold ${filter === "reading" ? "text-background" : "text-gray-500 dark:text-neutral-400"}`}
 						>
 							읽는 중
 						</Text>
@@ -231,13 +235,13 @@ export default function MemoScreen() {
 				) : (
 					<View className="items-center pt-[60px] gap-3">
 						{filter === "wish" ? (
-							<Heart size={48} color="#ddd" />
+							<Heart size={48} color={isDark ? "#444" : "#ddd"} />
 						) : filter === "star" ? (
-							<Star size={48} color="#ddd" />
+							<Star size={48} color={isDark ? "#444" : "#ddd"} />
 						) : filter === "reading" ? (
-							<BookOpen size={48} color="#ddd" />
+							<BookOpen size={48} color={isDark ? "#444" : "#ddd"} />
 						) : (
-							<Globe size={48} color="#ddd" />
+							<Globe size={48} color={isDark ? "#444" : "#ddd"} />
 						)}
 						<Text className="text-base font-semibold text-muted-foreground">
 							{filter === "wish"
@@ -248,7 +252,7 @@ export default function MemoScreen() {
 										? "읽는 중인 메모가 없습니다"
 										: "저장된 메모가 없습니다"}
 						</Text>
-						<Text className="text-[13px] text-gray-300">
+						<Text className="text-[13px] text-gray-300 dark:text-neutral-600">
 							{filter === "wish"
 								? "브라우저에서 마음에 드는 페이지를 저장해보세요"
 								: filter === "star"
@@ -261,7 +265,7 @@ export default function MemoScreen() {
 							className="mt-2 bg-foreground px-5 py-3 rounded-3xl"
 							onPress={() => router.navigate("/(main)/browser")}
 						>
-							<Text className="text-sm font-semibold text-white">
+							<Text className="text-sm font-semibold text-background">
 								{filter === "wish" || filter === "star" || filter === "reading"
 									? "브라우저에서 페이지 저장하기"
 									: "브라우저에서 웹서핑 시작하기"}

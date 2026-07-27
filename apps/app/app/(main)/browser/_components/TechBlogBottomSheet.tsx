@@ -1,5 +1,6 @@
 import { URL as APP_URL } from "@web-memo/shared/constants";
 import { Bookmark, MessageCircle, X } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
 import { useEffect, useState } from "react";
 import {
 	Alert,
@@ -54,10 +55,10 @@ function SheetBlogItem({
 			<View className="w-14 h-14 rounded-[14px] bg-input justify-center items-center overflow-hidden">
 				{!logoUri || imgError ? (
 					<View
-						className="justify-center items-center bg-[#e0e0e0]"
+						className="justify-center items-center bg-[#e0e0e0] dark:bg-neutral-700"
 						style={{ width: 36, height: 36, borderRadius: 4 }}
 					>
-						<Text className="text-base font-bold text-gray-500">
+						<Text className="text-base font-bold text-gray-500 dark:text-neutral-300">
 							{blog.name.charAt(0)}
 						</Text>
 					</View>
@@ -144,10 +145,10 @@ function FavoriteGridItem({
 					/>
 				) : (
 					<View
-						className="justify-center items-center bg-[#e0e0e0]"
+						className="justify-center items-center bg-[#e0e0e0] dark:bg-neutral-700"
 						style={{ width: 36, height: 36, borderRadius: 4 }}
 					>
-						<Text className="text-base font-bold text-gray-500">
+						<Text className="text-base font-bold text-gray-500 dark:text-neutral-300">
 							{(domain || "?").charAt(0).toUpperCase()}
 						</Text>
 					</View>
@@ -193,7 +194,9 @@ function FavoritesSection({ onPress }: { onPress: (url: string) => void }) {
 		<>
 			<View className="flex-row items-center gap-1.5 px-2 mb-3">
 				<Bookmark size={14} color="#f59e0b" fill="#f59e0b" />
-				<Text className="text-sm font-semibold text-gray-500">즐겨찾기</Text>
+				<Text className="text-sm font-semibold text-gray-500 dark:text-neutral-400">
+					즐겨찾기
+				</Text>
 			</View>
 			<View className="mb-6">
 				{rows.map((row, rowIndex) => (
@@ -230,6 +233,7 @@ export function TechBlogBottomSheet({
 	onSelectBlog: (url: string) => void;
 }) {
 	const insets = useSafeAreaInsets();
+	const isDark = useColorScheme().colorScheme === "dark";
 	const translateY = useSharedValue(SHEET_HEIGHT);
 	const opacity = useSharedValue(0);
 	const [modalVisible, setModalVisible] = useState(false);
@@ -266,20 +270,20 @@ export function TechBlogBottomSheet({
 				</Animated.View>
 
 				<Animated.View
-					className="bg-white rounded-t-[20px]"
+					className="bg-white dark:bg-neutral-900 rounded-t-[20px]"
 					style={[
 						sheetStyle,
 						{ height: SHEET_HEIGHT, paddingBottom: insets.bottom + 16 },
 					]}
 				>
 					<View className="items-center py-2.5">
-						<View className="w-9 h-1 rounded-sm bg-gray-300" />
+						<View className="w-9 h-1 rounded-sm bg-gray-300 dark:bg-neutral-700" />
 					</View>
 
 					<View className="flex-row justify-between items-center px-5 pb-4">
 						<Text className="text-lg font-bold text-foreground">바로가기</Text>
 						<TouchableOpacity onPress={onClose} activeOpacity={0.7}>
-							<X size={22} color="#666" />
+							<X size={22} color={isDark ? "#aaa" : "#666"} />
 						</TouchableOpacity>
 					</View>
 
@@ -289,12 +293,12 @@ export function TechBlogBottomSheet({
 					>
 						<FavoritesSection onPress={onSelectBlog} />
 
-						<Text className="text-sm font-semibold text-gray-500 px-2 mb-3">
+						<Text className="text-sm font-semibold text-gray-500 dark:text-neutral-400 px-2 mb-3">
 							블로그 모음
 						</Text>
 						<BlogGrid blogs={BLOG_AGGREGATORS} onPress={onSelectBlog} />
 
-						<Text className="text-sm font-semibold text-gray-500 px-2 mb-3 mt-6">
+						<Text className="text-sm font-semibold text-gray-500 dark:text-neutral-400 px-2 mb-3 mt-6">
 							테크 블로그
 						</Text>
 						<BlogGrid blogs={TECH_BLOGS} onPress={onSelectBlog} />
@@ -304,8 +308,8 @@ export function TechBlogBottomSheet({
 							onPress={() => Linking.openURL(APP_URL.kakaoTalk)}
 							activeOpacity={0.7}
 						>
-							<MessageCircle size={16} color="#666" />
-							<Text className="text-sm text-gray-500 font-medium">
+							<MessageCircle size={16} color={isDark ? "#aaa" : "#666"} />
+							<Text className="text-sm text-gray-500 dark:text-neutral-400 font-medium">
 								블로그 추가 문의하기
 							</Text>
 						</TouchableOpacity>

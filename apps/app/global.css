@@ -1,3 +1,43 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+	--background: 245 245 245;
+	--foreground: 17 17 17;
+	--primary: 17 17 17;
+	--primary-foreground: 255 255 255;
+	--secondary: 245 245 245;
+	--secondary-foreground: 85 85 85;
+	--muted: 240 240 240;
+	--muted-foreground: 153 153 153;
+	--accent: 124 58 237;
+	--accent-foreground: 255 255 255;
+	--destructive: 239 68 68;
+	--destructive-foreground: 255 255 255;
+	--border: 238 238 238;
+	--input: 245 245 245;
+	--card: 255 255 255;
+	--card-foreground: 17 17 17;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--background: 10 10 10;
+		--foreground: 245 245 245;
+		--primary: 245 245 245;
+		--primary-foreground: 17 17 17;
+		--secondary: 23 23 23;
+		--secondary-foreground: 212 212 212;
+		--muted: 38 38 38;
+		--muted-foreground: 163 163 163;
+		--accent: 167 139 250;
+		--accent-foreground: 17 17 17;
+		--destructive: 239 68 68;
+		--destructive-foreground: 255 255 255;
+		--border: 38 38 38;
+		--input: 38 38 38;
+		--card: 23 23 23;
+		--card-foreground: 245 245 245;
+	}
+}

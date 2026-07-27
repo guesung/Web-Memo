@@ -36,7 +36,7 @@ export default function LoginScreen() {
 	};
 
 	return (
-		<SafeAreaView className="flex-1 bg-white">
+		<SafeAreaView className="flex-1 bg-white dark:bg-neutral-950">
 			<View className="flex-1 justify-center px-8">
 				<View className="items-center mb-10 gap-3">
 					<Image
@@ -45,7 +45,7 @@ export default function LoginScreen() {
 						resizeMode="contain"
 					/>
 					<Text className="text-2xl font-bold text-foreground">웹 메모</Text>
-					<Text className="text-sm text-gray-500 text-center">
+					<Text className="text-sm text-gray-500 dark:text-neutral-400 text-center">
 						아티클 읽으며 간편하게 메모하세요.
 					</Text>
 				</View>

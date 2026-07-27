@@ -207,13 +207,18 @@ export function MemoPanel({
 						}
 					>
 						{isPending ? (
-							<ActivityIndicator size="small" color="#fff" />
+							<ActivityIndicator
+								size="small"
+								color={isDark ? "#111" : "#fff"}
+							/>
 						) : saved ? (
 							<Check size={16} color="#fff" />
 						) : (
-							<Save size={16} color="#fff" />
+							<Save size={16} color={isDark ? "#111" : "#fff"} />
 						)}
-						<Text className="text-white text-sm font-semibold">
+						<Text
+							className={`text-sm font-semibold ${saved ? "text-white" : "text-background"}`}
+						>
 							{saved ? "저장됨" : "저장"}
 						</Text>
 					</TouchableOpacity>

@@ -185,7 +185,7 @@ export function AISheet({
 							onPress={onAskQuestion}
 							disabled={isLoading || !question.trim()}
 						>
-							<Send size={16} color="#fff" />
+							<Send size={16} color={isDark ? "#111" : "#fff"} />
 						</TouchableOpacity>
 					</View>
 				</Animated.View>

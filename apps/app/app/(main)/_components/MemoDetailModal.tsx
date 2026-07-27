@@ -286,10 +286,18 @@ export function MemoDetailModal({
 								>
 									<Save
 										size={14}
-										color={isMemoEdited ? "#fff" : isDark ? "#666" : "#999"}
+										color={
+											isMemoEdited
+												? isDark
+													? "#111"
+													: "#fff"
+												: isDark
+													? "#666"
+													: "#999"
+										}
 									/>
 									<Text
-										className={`text-sm font-semibold ${isMemoEdited ? "text-white" : "text-gray-400 dark:text-neutral-500"}`}
+										className={`text-sm font-semibold ${isMemoEdited ? "text-background" : "text-gray-400 dark:text-neutral-500"}`}
 									>
 										저장
 									</Text>

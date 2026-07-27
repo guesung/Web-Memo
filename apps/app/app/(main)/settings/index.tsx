@@ -13,6 +13,7 @@ import {
 	Switch,
 	Text,
 	TouchableOpacity,
+	useColorScheme,
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -24,6 +25,7 @@ import {
 
 export default function SettingsScreen() {
 	const insets = useSafeAreaInsets();
+	const isDark = useColorScheme() === "dark";
 	const router = useRouter();
 	const { session, signOut, isLoggedIn } = useAuth();
 	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
@@ -43,7 +45,10 @@ export default function SettingsScreen() {
 	const appVersion = Constants.expoConfig?.version;
 
 	return (
-		<View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+		<View
+			className="flex-1 bg-white dark:bg-neutral-950"
+			style={{ paddingTop: insets.top }}
+		>
 			<View className="px-5 pt-4 pb-4">
 				<Text className="text-[22px] font-extrabold text-foreground tracking-tight">
 					설정
@@ -61,7 +66,7 @@ export default function SettingsScreen() {
 							<>
 								<View className="flex-row items-center gap-3 mb-4">
 									<View className="w-10 h-10 rounded-full bg-foreground justify-center items-center">
-										<User size={20} color="#fff" />
+										<User size={20} color={isDark ? "#111" : "#fff"} />
 									</View>
 									<View className="flex-1">
 										<Text className="text-[15px] font-semibold text-foreground">
@@ -73,7 +78,7 @@ export default function SettingsScreen() {
 									</View>
 								</View>
 								<TouchableOpacity
-									className="flex-row items-center justify-center gap-2 py-2.5 rounded-[10px] border border-red-100 bg-red-50"
+									className="flex-row items-center justify-center gap-2 py-2.5 rounded-[10px] border border-red-100 dark:border-red-900/40 bg-red-50 dark:bg-red-950/30"
 									onPress={handleSignOut}
 								>
 									<LogOut size={16} color="#ef4444" />
@@ -87,8 +92,8 @@ export default function SettingsScreen() {
 								className="flex-row items-center justify-center gap-2 py-3 rounded-[10px] bg-foreground"
 								onPress={handleLogin}
 							>
-								<LogIn size={18} color="#fff" />
-								<Text className="text-[15px] font-semibold text-white">
+								<LogIn size={18} color={isDark ? "#111" : "#fff"} />
+								<Text className="text-[15px] font-semibold text-background">
 									로그인
 								</Text>
 							</TouchableOpacity>
@@ -168,13 +173,13 @@ export default function SettingsScreen() {
 							activeOpacity={0.6}
 						>
 							<View className="flex-row items-center gap-2">
-								<MessageCircle size={16} color="#555" />
+								<MessageCircle size={16} color={isDark ? "#aaa" : "#555"} />
 								<Text className="text-[15px] text-secondary-foreground">
 									문의하기
 								</Text>
 							</View>
 							<View className="flex-row items-center gap-2">
-								<ChevronRight size={14} color="#999" />
+								<ChevronRight size={14} color={isDark ? "#777" : "#999"} />
 							</View>
 						</TouchableOpacity>
 					</View>

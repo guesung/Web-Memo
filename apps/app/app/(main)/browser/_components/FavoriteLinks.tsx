@@ -6,6 +6,7 @@ import {
 	Image,
 	Text,
 	TouchableOpacity,
+	useColorScheme,
 	View,
 } from "react-native";
 import { useFavoriteRemove, useFavorites } from "@/lib/hooks/useFavorites";
@@ -17,6 +18,7 @@ interface FavoriteLinksProps {
 export function FavoriteLinks({ onSelectUrl }: FavoriteLinksProps) {
 	const { data: favorites } = useFavorites();
 	const removeFavorite = useFavoriteRemove();
+	const isDark = useColorScheme() === "dark";
 
 	if (!favorites || favorites.length === 0) {
 		return (
@@ -25,7 +27,7 @@ export function FavoriteLinks({ onSelectUrl }: FavoriteLinksProps) {
 					즐겨찾기
 				</Text>
 				<View className="items-center py-6 bg-card rounded-xl border border-border">
-					<Bookmark size={24} color="#ddd" />
+					<Bookmark size={24} color={isDark ? "#444" : "#ddd"} />
 					<Text className="text-[13px] text-muted-foreground mt-2">
 						자주 방문하는 페이지를 즐겨찾기에 추가해보세요
 					</Text>
@@ -104,10 +106,10 @@ function FavoriteItem({
 					/>
 				) : (
 					<View
-						className="justify-center items-center bg-[#e0e0e0]"
+						className="justify-center items-center bg-[#e0e0e0] dark:bg-neutral-700"
 						style={{ width: 36, height: 36, borderRadius: 4 }}
 					>
-						<Text className="text-base font-bold text-gray-500">
+						<Text className="text-base font-bold text-gray-500 dark:text-neutral-300">
 							{(domain || "?").charAt(0).toUpperCase()}
 						</Text>
 					</View>

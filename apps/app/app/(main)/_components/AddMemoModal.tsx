@@ -9,6 +9,7 @@ import {
 	Text,
 	TextInput,
 	TouchableOpacity,
+	useColorScheme,
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -36,6 +37,7 @@ export function AddMemoModal({ visible, onClose }: AddMemoModalProps) {
 	const insets = useSafeAreaInsets();
 	const { isLoggedIn } = useAuth();
 	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
+	const isDark = useColorScheme() === "dark";
 
 	const [titleText, setTitleText] = useState("");
 	const [urlText, setUrlText] = useState("");
@@ -129,16 +131,16 @@ export function AddMemoModal({ visible, onClose }: AddMemoModalProps) {
 				behavior={Platform.OS === "ios" ? "padding" : undefined}
 			>
 				<View
-					className="bg-white rounded-t-[20px] overflow-hidden"
+					className="bg-white dark:bg-neutral-900 rounded-t-[20px] overflow-hidden"
 					style={{ height: "85%", paddingBottom: insets.bottom }}
 				>
-					<View className="flex-row items-center justify-between px-5 pt-4 pb-3 border-b border-border">
-						<Text className="text-base font-semibold text-foreground">
+					<View className="flex-row items-center justify-between px-5 pt-4 pb-3 border-b border-border dark:border-neutral-800">
+						<Text className="text-base font-semibold text-foreground dark:text-white">
 							메모 추가
 						</Text>
 						<View className="flex-row items-center gap-2">
 							<TouchableOpacity
-								className={`flex-row items-center gap-1.5 px-3.5 py-2 rounded-lg ${hasContent ? "bg-foreground" : "bg-muted"}`}
+								className={`flex-row items-center gap-1.5 px-3.5 py-2 rounded-lg ${hasContent ? "bg-foreground" : "bg-muted dark:bg-neutral-700"}`}
 								onPress={handleSave}
 								disabled={!hasContent || isSaving}
 								activeOpacity={0.8}
@@ -146,16 +148,19 @@ export function AddMemoModal({ visible, onClose }: AddMemoModalProps) {
 								{isSaving ? (
 									<ActivityIndicator size="small" color="#fff" />
 								) : (
-									<Save size={16} color={hasContent ? "#fff" : "#999"} />
+									<Save
+										size={16}
+										color={hasContent ? "#fff" : isDark ? "#666" : "#999"}
+									/>
 								)}
 								<Text
-									className={`text-sm font-semibold ${hasContent ? "text-white" : "text-gray-400"}`}
+									className={`text-sm font-semibold ${hasContent ? "text-white" : "text-gray-400 dark:text-neutral-500"}`}
 								>
 									저장
 								</Text>
 							</TouchableOpacity>
 							<TouchableOpacity onPress={handleClose} activeOpacity={0.7}>
-								<X size={22} color="#666" />
+								<X size={22} color={isDark ? "#aaa" : "#666"} />
 							</TouchableOpacity>
 						</View>
 					</View>
@@ -167,37 +172,40 @@ export function AddMemoModal({ visible, onClose }: AddMemoModalProps) {
 						contentContainerStyle={{ paddingTop: 16, paddingBottom: 24 }}
 						showsVerticalScrollIndicator={false}
 					>
-						<View className="flex-row items-center bg-input rounded-[10px] px-3 py-2.5 gap-2">
-							<Type size={16} color="#999" />
+						<View className="flex-row items-center bg-input dark:bg-neutral-800 rounded-[10px] px-3 py-2.5 gap-2">
+							<Type size={16} color={isDark ? "#777" : "#999"} />
 							<TextInput
-								className="flex-1 text-sm text-[#333] p-0"
+								className="flex-1 text-sm text-[#333] dark:text-white p-0"
 								value={titleText}
 								onChangeText={setTitleText}
 								placeholder="제목 (선택)"
+								placeholderTextColor={isDark ? "#666" : "#999"}
 								returnKeyType="next"
 							/>
 						</View>
 
-						<View className="flex-row items-center bg-input rounded-[10px] px-3 py-2.5 gap-2 mt-2">
-							<Link2 size={16} color="#999" />
+						<View className="flex-row items-center bg-input dark:bg-neutral-800 rounded-[10px] px-3 py-2.5 gap-2 mt-2">
+							<Link2 size={16} color={isDark ? "#777" : "#999"} />
 							<TextInput
-								className="flex-1 text-sm text-[#333] p-0"
+								className="flex-1 text-sm text-[#333] dark:text-white p-0"
 								value={urlText}
 								onChangeText={setUrlText}
 								placeholder="URL (선택)"
+								placeholderTextColor={isDark ? "#666" : "#999"}
 								autoCapitalize="none"
 								autoCorrect={false}
 								keyboardType="url"
 								returnKeyType="next"
 							/>
 						</View>
-						<Text className="mt-1.5 text-xs text-gray-400">
+						<Text className="mt-1.5 text-xs text-gray-400 dark:text-neutral-500">
 							URL을 입력하면 제목과 아이콘을 자동으로 가져옵니다
 						</Text>
 
 						<TextInput
-							className="min-h-[140px] mt-4 text-[15px] text-[#333] leading-[22px]"
+							className="min-h-[140px] mt-4 text-[15px] text-[#333] dark:text-white leading-[22px]"
 							placeholder="메모를 작성하세요..."
+							placeholderTextColor={isDark ? "#666" : "#999"}
 							value={memoText}
 							onChangeText={setMemoText}
 							multiline
@@ -207,12 +215,13 @@ export function AddMemoModal({ visible, onClose }: AddMemoModalProps) {
 
 						{showImpression && (
 							<>
-								<Text className="mt-3 text-xs font-semibold text-gray-500">
+								<Text className="mt-3 text-xs font-semibold text-gray-500 dark:text-neutral-400">
 									느낀 점
 								</Text>
 								<TextInput
-									className="min-h-[60px] text-[15px] text-[#333] leading-[22px]"
+									className="min-h-[60px] text-[15px] text-[#333] dark:text-white leading-[22px]"
 									placeholder="느낀 점을 적어보세요"
+									placeholderTextColor={isDark ? "#666" : "#999"}
 									value={impressionText}
 									onChangeText={setImpressionText}
 									multiline
@@ -224,12 +233,13 @@ export function AddMemoModal({ visible, onClose }: AddMemoModalProps) {
 
 						{showActionItem && (
 							<>
-								<Text className="mt-3 text-xs font-semibold text-gray-500">
+								<Text className="mt-3 text-xs font-semibold text-gray-500 dark:text-neutral-400">
 									액션 아이템
 								</Text>
 								<TextInput
-									className="min-h-[60px] text-[15px] text-[#333] leading-[22px]"
+									className="min-h-[60px] text-[15px] text-[#333] dark:text-white leading-[22px]"
 									placeholder="할 일을 적어보세요"
+									placeholderTextColor={isDark ? "#666" : "#999"}
 									value={actionItemText}
 									onChangeText={setActionItemText}
 									multiline

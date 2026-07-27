@@ -15,8 +15,8 @@ export function useSettingQuery(isLoggedIn: boolean) {
 
 	return {
 		...query,
-		showImpression: query.data?.show_impression ?? true,
-		showActionItem: query.data?.show_action_item ?? true,
+		showImpression: query.data?.show_impression ?? false,
+		showActionItem: query.data?.show_action_item ?? false,
 	};
 }
 

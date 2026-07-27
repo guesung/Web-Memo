@@ -15,7 +15,6 @@ import {
 	MemoSearchForm,
 	MemoSearchFormProvider,
 	MemoView,
-	TodayArticles,
 } from "./_components";
 
 interface PageProps extends LanguageParams {
@@ -48,9 +47,6 @@ export default async function Page({ params: { lng } }: PageProps) {
 							<div className="mb-6">
 								<MemoSearchForm lng={lng} />
 							</div>
-							<Suspense fallback={null}>
-								<TodayArticles lng={lng} />
-							</Suspense>
 							<div className="flex-1 overflow-hidden">
 								<Suspense fallback={<MemoGridSkeleton />}>
 									<MemoView lng={lng} />

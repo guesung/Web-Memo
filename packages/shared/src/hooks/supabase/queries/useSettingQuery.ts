@@ -15,7 +15,7 @@ export default function useSettingQuery() {
 
 	return {
 		...query,
-		showImpression: query.data?.data?.show_impression ?? true,
-		showActionItem: query.data?.data?.show_action_item ?? true,
+		showImpression: query.data?.data?.show_impression ?? false,
+		showActionItem: query.data?.data?.show_action_item ?? false,
 	};
 }

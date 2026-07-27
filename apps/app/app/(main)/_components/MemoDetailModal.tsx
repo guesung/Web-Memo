@@ -31,6 +31,8 @@ import Animated, {
 	withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { useSettingQuery } from "@/lib/hooks/useSetting";
 import { shareUrl } from "@/lib/sharing/shareUrl";
 import { extractDomain } from "../_utils/extractDomain";
 import { formatDate } from "../_utils/formatDate";
@@ -65,6 +67,8 @@ export function MemoDetailModal({
 	onSave,
 }: MemoDetailModalProps) {
 	const insets = useSafeAreaInsets();
+	const { isLoggedIn } = useAuth();
+	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
 	const translateY = useSharedValue(SHEET_HEIGHT);
 	const opacity = useSharedValue(0);
 	const [modalVisible, setModalVisible] = useState(false);
@@ -343,30 +347,38 @@ export function MemoDetailModal({
 								scrollEnabled={false}
 								autoFocus
 							/>
-							<Text className="mt-3 text-xs font-semibold text-gray-500">
-								느낀 점
-							</Text>
-							<TextInput
-								className="min-h-[48px] text-[15px] text-[#333] leading-[22px]"
-								value={editedImpression}
-								onChangeText={setEditedImpression}
-								placeholder="이 페이지에서 느낀 점을 적어보세요"
-								multiline
-								textAlignVertical="top"
-								scrollEnabled={false}
-							/>
-							<Text className="mt-3 text-xs font-semibold text-gray-500">
-								액션 아이템
-							</Text>
-							<TextInput
-								className="min-h-[48px] text-[15px] text-[#333] leading-[22px]"
-								value={editedActionItem}
-								onChangeText={setEditedActionItem}
-								placeholder="이 페이지를 보고 할 일을 적어보세요"
-								multiline
-								textAlignVertical="top"
-								scrollEnabled={false}
-							/>
+							{showImpression && (
+								<>
+									<Text className="mt-3 text-xs font-semibold text-gray-500">
+										느낀 점
+									</Text>
+									<TextInput
+										className="min-h-[48px] text-[15px] text-[#333] leading-[22px]"
+										value={editedImpression}
+										onChangeText={setEditedImpression}
+										placeholder="이 페이지에서 느낀 점을 적어보세요"
+										multiline
+										textAlignVertical="top"
+										scrollEnabled={false}
+									/>
+								</>
+							)}
+							{showActionItem && (
+								<>
+									<Text className="mt-3 text-xs font-semibold text-gray-500">
+										액션 아이템
+									</Text>
+									<TextInput
+										className="min-h-[48px] text-[15px] text-[#333] leading-[22px]"
+										value={editedActionItem}
+										onChangeText={setEditedActionItem}
+										placeholder="이 페이지를 보고 할 일을 적어보세요"
+										multiline
+										textAlignVertical="top"
+										scrollEnabled={false}
+									/>
+								</>
+							)}
 						</ScrollView>
 					) : (
 						<ScrollView

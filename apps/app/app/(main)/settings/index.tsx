@@ -7,14 +7,27 @@ import {
 	MessageCircle,
 	User,
 } from "lucide-react-native";
-import { Alert, Linking, Text, TouchableOpacity, View } from "react-native";
+import {
+	Alert,
+	Linking,
+	Switch,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import {
+	useSettingQuery,
+	useSettingUpsertMutation,
+} from "@/lib/hooks/useSetting";
 
 export default function SettingsScreen() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 	const { session, signOut, isLoggedIn } = useAuth();
+	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
+	const { mutate: upsertSetting } = useSettingUpsertMutation();
 
 	const handleSignOut = () => {
 		Alert.alert("로그아웃", "로그아웃 하시겠습니까?", [
@@ -82,6 +95,39 @@ export default function SettingsScreen() {
 						)}
 					</View>
 				</View>
+
+				{/* Memo Fields Section */}
+				{isLoggedIn && (
+					<View className="mb-7">
+						<Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">
+							메모 입력 항목
+						</Text>
+						<View className="bg-card rounded-[14px] p-4 border border-muted gap-3">
+							<View className="flex-row justify-between items-center py-1">
+								<Text className="text-[15px] text-secondary-foreground">
+									느낀 점 입력란 표시
+								</Text>
+								<Switch
+									value={showImpression}
+									onValueChange={(value) =>
+										upsertSetting({ show_impression: value })
+									}
+								/>
+							</View>
+							<View className="flex-row justify-between items-center py-1">
+								<Text className="text-[15px] text-secondary-foreground">
+									액션 아이템 입력란 표시
+								</Text>
+								<Switch
+									value={showActionItem}
+									onValueChange={(value) =>
+										upsertSetting({ show_action_item: value })
+									}
+								/>
+							</View>
+						</View>
+					</View>
+				)}
 
 				{/* App Info Section */}
 				<View className="mb-7">

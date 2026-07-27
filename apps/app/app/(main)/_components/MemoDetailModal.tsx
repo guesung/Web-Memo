@@ -23,6 +23,7 @@ import {
 	Text,
 	TextInput,
 	TouchableOpacity,
+	useColorScheme,
 	View,
 } from "react-native";
 import Animated, {
@@ -74,6 +75,7 @@ export function MemoDetailModal({
 	} = useSettingQuery(isLoggedIn);
 	const showImpression = showImpressionSetting || !!memo?.impression;
 	const showActionItem = showActionItemSetting || !!memo?.actionItem;
+	const isDark = useColorScheme() === "dark";
 	const translateY = useSharedValue(SHEET_HEIGHT);
 	const opacity = useSharedValue(0);
 	const [modalVisible, setModalVisible] = useState(false);
@@ -215,14 +217,14 @@ export function MemoDetailModal({
 				</Animated.View>
 
 				<Animated.View
-					className="bg-white rounded-t-[20px]"
+					className="bg-white dark:bg-neutral-900 rounded-t-[20px]"
 					style={[
 						sheetStyle,
 						{ height: SHEET_HEIGHT, paddingBottom: insets.bottom + 16 },
 					]}
 				>
 					<View className="items-center py-2.5">
-						<View className="w-9 h-1 rounded-sm bg-gray-300" />
+						<View className="w-9 h-1 rounded-sm bg-gray-300 dark:bg-neutral-700" />
 					</View>
 
 					<View className="flex-row items-center justify-between px-5 pb-3 gap-2">
@@ -232,14 +234,15 @@ export function MemoDetailModal({
 								style={{ width: 14, height: 14, borderRadius: 2 }}
 							/>
 						) : (
-							<FileText size={14} color="#666" />
+							<FileText size={14} color={isDark ? "#aaa" : "#666"} />
 						)}
 						{isEditing ? (
 							<TextInput
-								className="flex-1 p-0 text-base font-semibold text-foreground"
+								className="flex-1 p-0 text-base font-semibold text-foreground dark:text-white"
 								value={editedTitle}
 								onChangeText={setEditedTitle}
 								placeholder="제목을 입력하세요"
+								placeholderTextColor={isDark ? "#666" : "#999"}
 							/>
 						) : isWebUrl ? (
 							<TouchableOpacity
@@ -248,7 +251,7 @@ export function MemoDetailModal({
 								activeOpacity={0.7}
 							>
 								<Text
-									className="text-base font-semibold text-foreground"
+									className="text-base font-semibold text-foreground dark:text-white"
 									numberOfLines={1}
 								>
 									{title}
@@ -257,7 +260,7 @@ export function MemoDetailModal({
 						) : (
 							<View className="flex-1">
 								<Text
-									className="text-base font-semibold text-foreground"
+									className="text-base font-semibold text-foreground dark:text-white"
 									numberOfLines={1}
 								>
 									{title}
@@ -271,19 +274,22 @@ export function MemoDetailModal({
 									onPress={handleCancelEdit}
 									activeOpacity={0.7}
 								>
-									<Text className="text-sm font-medium text-muted-foreground">
+									<Text className="text-sm font-medium text-muted-foreground dark:text-neutral-400">
 										취소
 									</Text>
 								</TouchableOpacity>
 								<TouchableOpacity
-									className={`flex-row items-center gap-1 px-3 py-1.5 rounded-lg ${isMemoEdited ? "bg-foreground" : "bg-muted"}`}
+									className={`flex-row items-center gap-1 px-3 py-1.5 rounded-lg ${isMemoEdited ? "bg-foreground" : "bg-muted dark:bg-neutral-700"}`}
 									onPress={handleSaveMemo}
 									disabled={!isMemoEdited}
 									activeOpacity={0.7}
 								>
-									<Save size={14} color={isMemoEdited ? "#fff" : "#999"} />
+									<Save
+										size={14}
+										color={isMemoEdited ? "#fff" : isDark ? "#666" : "#999"}
+									/>
 									<Text
-										className={`text-sm font-semibold ${isMemoEdited ? "text-white" : "text-gray-400"}`}
+										className={`text-sm font-semibold ${isMemoEdited ? "text-white" : "text-gray-400 dark:text-neutral-500"}`}
 									>
 										저장
 									</Text>
@@ -299,7 +305,7 @@ export function MemoDetailModal({
 										{saved ? (
 											<Check size={20} color="#22c55e" />
 										) : (
-											<Pencil size={18} color="#666" />
+											<Pencil size={18} color={isDark ? "#aaa" : "#666"} />
 										)}
 									</TouchableOpacity>
 								) : null}
@@ -325,11 +331,11 @@ export function MemoDetailModal({
 								)}
 								{isWebUrl && (
 									<TouchableOpacity onPress={handleShare} activeOpacity={0.7}>
-										<Share2 size={20} color="#666" />
+										<Share2 size={20} color={isDark ? "#aaa" : "#666"} />
 									</TouchableOpacity>
 								)}
 								<TouchableOpacity onPress={onClose} activeOpacity={0.7}>
-									<X size={22} color="#666" />
+									<X size={22} color={isDark ? "#aaa" : "#666"} />
 								</TouchableOpacity>
 							</>
 						)}
@@ -343,10 +349,11 @@ export function MemoDetailModal({
 							showsVerticalScrollIndicator={false}
 						>
 							<TextInput
-								className="min-h-[80px] text-[15px] text-[#333] leading-[22px]"
+								className="min-h-[80px] text-[15px] text-[#333] dark:text-white leading-[22px]"
 								value={editedMemo}
 								onChangeText={setEditedMemo}
 								placeholder="메모를 입력하세요..."
+								placeholderTextColor={isDark ? "#666" : "#999"}
 								multiline
 								textAlignVertical="top"
 								scrollEnabled={false}
@@ -354,14 +361,15 @@ export function MemoDetailModal({
 							/>
 							{showImpression && (
 								<>
-									<Text className="mt-3 text-xs font-semibold text-gray-500">
+									<Text className="mt-3 text-xs font-semibold text-gray-500 dark:text-neutral-400">
 										느낀 점
 									</Text>
 									<TextInput
-										className="min-h-[48px] text-[15px] text-[#333] leading-[22px]"
+										className="min-h-[48px] text-[15px] text-[#333] dark:text-white leading-[22px]"
 										value={editedImpression}
 										onChangeText={setEditedImpression}
 										placeholder="이 페이지에서 느낀 점을 적어보세요"
+										placeholderTextColor={isDark ? "#666" : "#999"}
 										multiline
 										textAlignVertical="top"
 										scrollEnabled={false}
@@ -370,14 +378,15 @@ export function MemoDetailModal({
 							)}
 							{showActionItem && (
 								<>
-									<Text className="mt-3 text-xs font-semibold text-gray-500">
+									<Text className="mt-3 text-xs font-semibold text-gray-500 dark:text-neutral-400">
 										액션 아이템
 									</Text>
 									<TextInput
-										className="min-h-[48px] text-[15px] text-[#333] leading-[22px]"
+										className="min-h-[48px] text-[15px] text-[#333] dark:text-white leading-[22px]"
 										value={editedActionItem}
 										onChangeText={setEditedActionItem}
 										placeholder="이 페이지를 보고 할 일을 적어보세요"
+										placeholderTextColor={isDark ? "#666" : "#999"}
 										multiline
 										textAlignVertical="top"
 										scrollEnabled={false}
@@ -392,30 +401,30 @@ export function MemoDetailModal({
 							showsVerticalScrollIndicator={false}
 						>
 							{memoText ? (
-								<Text className="text-[15px] text-[#333] leading-[22px]">
+								<Text className="text-[15px] text-[#333] dark:text-white leading-[22px]">
 									{memoText}
 								</Text>
 							) : (
-								<Text className="text-[15px] text-gray-400 leading-[22px]">
+								<Text className="text-[15px] text-gray-400 dark:text-neutral-500 leading-[22px]">
 									메모가 없습니다. 연필 아이콘을 눌러 작성하세요.
 								</Text>
 							)}
 							{memo?.impression ? (
 								<View className="mt-3">
-									<Text className="text-xs font-semibold text-gray-500 mb-1">
+									<Text className="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">
 										느낀 점
 									</Text>
-									<Text className="text-[15px] text-[#333] leading-[22px]">
+									<Text className="text-[15px] text-[#333] dark:text-white leading-[22px]">
 										{memo.impression}
 									</Text>
 								</View>
 							) : null}
 							{memo?.actionItem ? (
 								<View className="mt-3">
-									<Text className="text-xs font-semibold text-gray-500 mb-1">
+									<Text className="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">
 										액션 아이템
 									</Text>
-									<Text className="text-[15px] text-[#333] leading-[22px]">
+									<Text className="text-[15px] text-[#333] dark:text-white leading-[22px]">
 										{memo.actionItem}
 									</Text>
 								</View>
@@ -428,14 +437,14 @@ export function MemoDetailModal({
 							<View className="flex-row items-center gap-2">
 								{domain ? (
 									<View className="flex-row items-center gap-1">
-										<Globe size={11} color="#999" />
-										<Text className="text-xs text-muted-foreground">
+										<Globe size={11} color={isDark ? "#777" : "#999"} />
+										<Text className="text-xs text-muted-foreground dark:text-neutral-500">
 											{domain}
 										</Text>
 									</View>
 								) : null}
 								{formattedDate ? (
-									<Text className="text-xs text-muted-foreground">
+									<Text className="text-xs text-muted-foreground dark:text-neutral-500">
 										{formattedDate}
 									</Text>
 								) : null}

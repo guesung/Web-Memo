@@ -1,7 +1,13 @@
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import { BookOpen, FileText, Heart, Star, Trash2 } from "lucide-react-native";
 import { useRef } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import {
+	Image,
+	Text,
+	TouchableOpacity,
+	useColorScheme,
+	View,
+} from "react-native";
 import ReanimatedSwipeable, {
 	type SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
@@ -43,6 +49,7 @@ export function MemoCard({
 	onDelete,
 }: MemoCardProps) {
 	const swipeableRef = useRef<SwipeableMethods>(null);
+	const isDark = useColorScheme() === "dark";
 
 	const rawDate =
 		"updated_at" in memo
@@ -68,7 +75,7 @@ export function MemoCard({
 			rightThreshold={40}
 		>
 			<TouchableOpacity
-				className="bg-card rounded-xl p-3.5 mb-2.5 border border-muted"
+				className="bg-card dark:bg-neutral-900 rounded-xl p-3.5 mb-2.5 border border-muted dark:border-neutral-800"
 				onPress={onPress}
 				activeOpacity={0.7}
 			>
@@ -79,24 +86,26 @@ export function MemoCard({
 							style={{ width: 14, height: 14, borderRadius: 2 }}
 						/>
 					) : (
-						<FileText size={14} color="#666" />
+						<FileText size={14} color={isDark ? "#aaa" : "#666"} />
 					)}
 					<Text
-						className="flex-1 text-[15px] font-semibold text-foreground"
+						className="flex-1 text-[15px] font-semibold text-foreground dark:text-white"
 						numberOfLines={1}
 					>
 						{memo.title}
 					</Text>
 					{typeof readingProgress === "number" ? (
-						<View className="flex-row items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-violet-100">
-							<BookOpen size={10} color="#7c3aed" />
-							<Text className="text-[10px] font-semibold text-[#7c3aed]">
+						<View className="flex-row items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/40">
+							<BookOpen size={10} color={isDark ? "#c4b5fd" : "#7c3aed"} />
+							<Text className="text-[10px] font-semibold text-[#7c3aed] dark:text-violet-300">
 								읽는 중 {Math.round(readingProgress * 100)}%
 							</Text>
 						</View>
 					) : null}
 					{dateLabel ? (
-						<Text className="text-xs text-muted-foreground">{dateLabel}</Text>
+						<Text className="text-xs text-muted-foreground dark:text-neutral-500">
+							{dateLabel}
+						</Text>
 					) : null}
 					{memo.isReading && <BookOpen size={12} color="#10b981" />}
 					{memo.isWish && <Heart size={12} fill="#ec4899" color="#ec4899" />}
@@ -106,7 +115,7 @@ export function MemoCard({
 				</View>
 				{memo.memo && (
 					<Text
-						className="text-sm text-secondary-foreground leading-5 mb-1.5"
+						className="text-sm text-secondary-foreground dark:text-neutral-300 leading-5 mb-1.5"
 						numberOfLines={10}
 					>
 						{memo.memo}
@@ -114,7 +123,7 @@ export function MemoCard({
 				)}
 				{memo.impression ? (
 					<Text
-						className="text-sm text-secondary-foreground leading-5 mb-1.5"
+						className="text-sm text-secondary-foreground dark:text-neutral-300 leading-5 mb-1.5"
 						numberOfLines={4}
 					>
 						느낀 점: {memo.impression}
@@ -122,7 +131,7 @@ export function MemoCard({
 				) : null}
 				{memo.actionItem ? (
 					<Text
-						className="text-sm text-secondary-foreground leading-5 mb-1.5"
+						className="text-sm text-secondary-foreground dark:text-neutral-300 leading-5 mb-1.5"
 						numberOfLines={4}
 					>
 						액션 아이템: {memo.actionItem}

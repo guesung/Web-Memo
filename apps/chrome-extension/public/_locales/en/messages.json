@@ -146,6 +146,15 @@
 	"auto_apply_category_description": {
 		"message": "Automatically apply AI-suggested categories"
 	},
+	"memo_fields_setting": {
+		"message": "Memo fields"
+	},
+	"show_impression_setting": {
+		"message": "Show impression field"
+	},
+	"show_action_item_setting": {
+		"message": "Show action item field"
+	},
 	"chat_title": {
 		"message": "AI Chat"
 	},

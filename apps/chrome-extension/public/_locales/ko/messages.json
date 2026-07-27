@@ -146,6 +146,15 @@
 	"auto_apply_category_description": {
 		"message": "AI가 추천한 카테고리를 자동으로 적용합니다"
 	},
+	"memo_fields_setting": {
+		"message": "메모 입력 항목"
+	},
+	"show_impression_setting": {
+		"message": "느낀 점 입력란 표시"
+	},
+	"show_action_item_setting": {
+		"message": "액션 아이템 입력란 표시"
+	},
 	"chat_title": {
 		"message": "AI 채팅"
 	},

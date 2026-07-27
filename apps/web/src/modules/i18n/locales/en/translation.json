@@ -429,6 +429,7 @@
 		"language": "Language",
 		"guide": "Guide",
 		"restartGuide": "Restart guide",
+		"memoFields": "Memo Fields",
 		"category": "Category",
 		"addCategory": "Add category",
 		"deleteCategory": "Delete category",

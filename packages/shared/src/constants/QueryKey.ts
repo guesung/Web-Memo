@@ -20,6 +20,7 @@ export const QUERY_KEY = {
 	supabaseClient: () => ["supabaseClient"],
 	user: () => ["user"],
 	category: () => ["cateogory"],
+	setting: () => ["setting"],
 	adminStats: () => ["adminStats"],
 	activeUsersStats: () => ["activeUsersStats"],
 	userGrowth: (days: number) => ["userGrowth", days],

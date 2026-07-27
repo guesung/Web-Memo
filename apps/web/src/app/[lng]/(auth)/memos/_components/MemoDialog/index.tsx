@@ -8,6 +8,7 @@ import {
 	useKeyboardBind,
 	useMemoPatchMutation,
 	useMemoQuery,
+	useSettingQuery,
 	useTextareaAutoResize,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
@@ -34,6 +35,7 @@ interface MemoDialog extends LanguageType {
 export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	const { t } = useTranslation(lng);
 	const { memo: memoData } = useMemoQuery({ id: memoId });
+	const { showImpression, showActionItem } = useSettingQuery();
 	const {
 		textareaRef: memoTextareaRef,
 		handleTextareaChange: handleMemoChange,
@@ -201,35 +203,43 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 								data-testid="memo-textarea"
 							/>
 
-							<label
-								htmlFor="impression"
-								className="mt-3 text-xs font-semibold text-gray-500"
-							>
-								{t("memoSection.impression")}
-							</label>
-							<Textarea
-								{...impressionRest}
-								id="impression"
-								className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
-								ref={impressionTextareaRef}
-								placeholder={t("memoSection.impressionPlaceholder")}
-								data-testid="impression-textarea"
-							/>
+							{showImpression && (
+								<>
+									<label
+										htmlFor="impression"
+										className="mt-3 text-xs font-semibold text-gray-500"
+									>
+										{t("memoSection.impression")}
+									</label>
+									<Textarea
+										{...impressionRest}
+										id="impression"
+										className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
+										ref={impressionTextareaRef}
+										placeholder={t("memoSection.impressionPlaceholder")}
+										data-testid="impression-textarea"
+									/>
+								</>
+							)}
 
-							<label
-								htmlFor="actionItem"
-								className="mt-3 text-xs font-semibold text-gray-500"
-							>
-								{t("memoSection.actionItem")}
-							</label>
-							<Textarea
-								{...actionItemRest}
-								id="actionItem"
-								className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
-								ref={actionItemTextareaRef}
-								placeholder={t("memoSection.actionItemPlaceholder")}
-								data-testid="action-item-textarea"
-							/>
+							{showActionItem && (
+								<>
+									<label
+										htmlFor="actionItem"
+										className="mt-3 text-xs font-semibold text-gray-500"
+									>
+										{t("memoSection.actionItem")}
+									</label>
+									<Textarea
+										{...actionItemRest}
+										id="actionItem"
+										className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
+										ref={actionItemTextareaRef}
+										placeholder={t("memoSection.actionItemPlaceholder")}
+										data-testid="action-item-textarea"
+									/>
+								</>
+							)}
 
 							<div className="mt-3 flex h-4 items-center">
 								<SaveStatusIndicator status={saveStatus} lng={lng} />

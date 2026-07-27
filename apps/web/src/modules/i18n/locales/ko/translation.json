@@ -424,6 +424,7 @@
 		"language": "언어",
 		"guide": "가이드",
 		"restartGuide": "가이드 다시 보기",
+		"memoFields": "메모 입력 항목",
 		"category": "카테고리",
 		"addCategory": "카테고리 추가하기",
 		"deleteCategory": "카테고리 삭제하기",

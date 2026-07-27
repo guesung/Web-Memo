@@ -1,15 +1,17 @@
 import {
-	Bookmark,
-	BookOpen,
-	Heart,
 	Home,
 	LayoutGrid,
+	MoreHorizontal,
 	RotateCw,
 	Search,
-	Share2,
 	X,
 } from "lucide-react-native";
-import { TextInput, TouchableOpacity, View } from "react-native";
+import {
+	TextInput,
+	TouchableOpacity,
+	useColorScheme,
+	View,
+} from "react-native";
 import Animated from "react-native-reanimated";
 import type WebView from "react-native-webview";
 
@@ -18,50 +20,43 @@ type AnimatedViewStyle = React.ComponentProps<typeof Animated.View>["style"];
 interface BrowserHeaderProps {
 	urlInput: string;
 	currentUrl: string;
-	isCurrentPageWish: boolean;
-	isCurrentPageReading: boolean;
-	isCurrentPageFavorite: boolean;
+	hasActiveStatus: boolean;
 	headerWrapperStyle: AnimatedViewStyle;
 	webViewRef: React.RefObject<WebView | null>;
 	onUrlInputChange: (text: string) => void;
 	onUrlSubmit: () => void;
 	onGoHome: () => void;
 	onOpenBlogSheet: () => void;
-	onFavoriteToggle: () => void;
-	onReadingToggle: () => void;
-	onWishToggle: () => void;
-	onShare: () => void;
+	onOpenActions: () => void;
 }
 
 export function BrowserHeader({
 	urlInput,
 	currentUrl,
-	isCurrentPageWish,
-	isCurrentPageReading,
-	isCurrentPageFavorite,
+	hasActiveStatus,
 	headerWrapperStyle,
 	webViewRef,
 	onUrlInputChange,
 	onUrlSubmit,
 	onGoHome,
 	onOpenBlogSheet,
-	onFavoriteToggle,
-	onReadingToggle,
-	onWishToggle,
-	onShare,
+	onOpenActions,
 }: BrowserHeaderProps) {
+	const isDark = useColorScheme() === "dark";
+
 	return (
 		<Animated.View className="overflow-hidden" style={headerWrapperStyle}>
-			<View className="flex-row items-center px-1.5 py-1.5 gap-0.5 border-b border-border bg-white">
-				<View className="flex-1 flex-row items-center bg-input rounded-[10px] px-2.5 py-2 gap-1.5">
-					<Search size={14} color="#999" />
+			<View className="flex-row items-center px-1.5 py-1.5 gap-0.5 border-b border-border dark:border-neutral-800 bg-white dark:bg-neutral-900">
+				<View className="flex-1 flex-row items-center bg-input dark:bg-neutral-800 rounded-[10px] px-2.5 py-2 gap-1.5">
+					<Search size={14} color={isDark ? "#777" : "#999"} />
 					<TextInput
-						className="flex-1 text-sm text-[#333] p-0"
+						className="flex-1 text-sm text-[#333] dark:text-white p-0"
 						value={urlInput}
 						onChangeText={onUrlInputChange}
 						onFocus={() => onUrlInputChange(currentUrl)}
 						onSubmitEditing={onUrlSubmit}
 						placeholder="Search or enter URL"
+						placeholderTextColor={isDark ? "#666" : "#999"}
 						autoCapitalize="none"
 						autoCorrect={false}
 						keyboardType="url"
@@ -70,44 +65,29 @@ export function BrowserHeader({
 					/>
 					{urlInput.length > 0 && (
 						<TouchableOpacity onPress={() => onUrlInputChange("")} hitSlop={8}>
-							<X size={14} color="#999" />
+							<X size={14} color={isDark ? "#777" : "#999"} />
 						</TouchableOpacity>
 					)}
 				</View>
-				<TouchableOpacity onPress={onShare} className="p-1.5">
-					<Share2 size={16} color="#111" />
-				</TouchableOpacity>
 				<TouchableOpacity
 					onPress={() => webViewRef.current?.reload()}
 					className="p-1.5"
 				>
-					<RotateCw size={16} color="#111" />
+					<RotateCw size={16} color={isDark ? "#eee" : "#111"} />
 				</TouchableOpacity>
 				<TouchableOpacity onPress={onGoHome} className="p-1.5">
-					<Home size={16} color="#111" />
+					<Home size={16} color={isDark ? "#eee" : "#111"} />
 				</TouchableOpacity>
 				<TouchableOpacity onPress={onOpenBlogSheet} className="p-1.5">
-					<LayoutGrid size={16} color="#111" />
+					<LayoutGrid size={16} color={isDark ? "#eee" : "#111"} />
 				</TouchableOpacity>
-				<TouchableOpacity onPress={onFavoriteToggle} className="p-1.5">
-					<Bookmark
-						size={16}
-						color={isCurrentPageFavorite ? "#f59e0b" : "#111"}
-						fill={isCurrentPageFavorite ? "#f59e0b" : "none"}
-					/>
-				</TouchableOpacity>
-				<TouchableOpacity onPress={onReadingToggle} className="p-1.5">
-					<BookOpen
-						size={16}
-						color={isCurrentPageReading ? "#10b981" : "#111"}
-					/>
-				</TouchableOpacity>
-				<TouchableOpacity onPress={onWishToggle} className="p-1.5">
-					<Heart
-						size={16}
-						color={isCurrentPageWish ? "#ec4899" : "#111"}
-						fill={isCurrentPageWish ? "#ec4899" : "none"}
-					/>
+				<TouchableOpacity onPress={onOpenActions} className="p-1.5">
+					<View>
+						<MoreHorizontal size={16} color={isDark ? "#eee" : "#111"} />
+						{hasActiveStatus && (
+							<View className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />
+						)}
+					</View>
 				</TouchableOpacity>
 			</View>
 		</Animated.View>

@@ -1,4 +1,5 @@
 import { Bookmark } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
 import { useState } from "react";
 import {
 	Alert,
@@ -6,7 +7,6 @@ import {
 	Image,
 	Text,
 	TouchableOpacity,
-	useColorScheme,
 	View,
 } from "react-native";
 import { useFavoriteRemove, useFavorites } from "@/lib/hooks/useFavorites";
@@ -18,7 +18,7 @@ interface FavoriteLinksProps {
 export function FavoriteLinks({ onSelectUrl }: FavoriteLinksProps) {
 	const { data: favorites } = useFavorites();
 	const removeFavorite = useFavoriteRemove();
-	const isDark = useColorScheme() === "dark";
+	const isDark = useColorScheme().colorScheme === "dark";
 
 	if (!favorites || favorites.length === 0) {
 		return (

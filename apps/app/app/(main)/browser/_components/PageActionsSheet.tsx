@@ -7,15 +7,9 @@ import {
 	Star,
 	X,
 } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
 import { useEffect, useState } from "react";
-import {
-	Modal,
-	Pressable,
-	Text,
-	TouchableOpacity,
-	useColorScheme,
-	View,
-} from "react-native";
+import { Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
 import Animated, {
 	useAnimatedStyle,
 	useSharedValue,
@@ -77,7 +71,7 @@ export function PageActionsSheet({
 	onOpenAI,
 }: PageActionsSheetProps) {
 	const insets = useSafeAreaInsets();
-	const isDark = useColorScheme() === "dark";
+	const isDark = useColorScheme().colorScheme === "dark";
 	const translateY = useSharedValue(SHEET_ANIMATION_DISTANCE);
 	const opacity = useSharedValue(0);
 	const [modalVisible, setModalVisible] = useState(false);

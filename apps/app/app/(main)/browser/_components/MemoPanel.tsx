@@ -1,4 +1,5 @@
 import { Check, ChevronDown, FileText, Save, X } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
 import { useEffect, useRef, useState } from "react";
 import {
 	ActivityIndicator,
@@ -9,7 +10,6 @@ import {
 	Text,
 	TextInput,
 	TouchableOpacity,
-	useColorScheme,
 	View,
 } from "react-native";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -39,7 +39,7 @@ export function MemoPanel({
 	onSelectedTextConsumed,
 }: MemoPanelProps) {
 	const { isLoggedIn } = useAuth();
-	const isDark = useColorScheme() === "dark";
+	const isDark = useColorScheme().colorScheme === "dark";
 
 	const [titleText, setTitleText] = useState("");
 	const [memoText, setMemoText] = useState("");

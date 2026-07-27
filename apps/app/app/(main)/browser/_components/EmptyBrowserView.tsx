@@ -1,5 +1,6 @@
 import { Search } from "lucide-react-native";
-import { ScrollView, TextInput, useColorScheme, View } from "react-native";
+import { useColorScheme } from "nativewind";
+import { ScrollView, TextInput, View } from "react-native";
 import type { EdgeInsets } from "react-native-safe-area-context";
 import { FavoriteLinks } from "./FavoriteLinks";
 import { TechBlogLinks } from "./TechBlogLinks";
@@ -19,7 +20,7 @@ export function EmptyBrowserView({
 	onUrlSubmit,
 	onSelectBlog,
 }: EmptyBrowserViewProps) {
-	const isDark = useColorScheme() === "dark";
+	const isDark = useColorScheme().colorScheme === "dark";
 
 	return (
 		<View

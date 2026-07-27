@@ -7,13 +7,13 @@ import {
 	MessageCircle,
 	User,
 } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
 import {
 	Alert,
 	Linking,
 	Switch,
 	Text,
 	TouchableOpacity,
-	useColorScheme,
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,14 +22,23 @@ import {
 	useSettingQuery,
 	useSettingUpsertMutation,
 } from "@/lib/hooks/useSetting";
+import { useThemePreference } from "@/lib/hooks/useThemePreference";
+import type { ThemePreference } from "@/lib/preferences/themePreference";
+
+const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
+	{ value: "system", label: "시스템 설정" },
+	{ value: "light", label: "라이트" },
+	{ value: "dark", label: "다크" },
+];
 
 export default function SettingsScreen() {
 	const insets = useSafeAreaInsets();
-	const isDark = useColorScheme() === "dark";
+	const isDark = useColorScheme().colorScheme === "dark";
 	const router = useRouter();
 	const { session, signOut, isLoggedIn } = useAuth();
 	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
 	const { mutate: upsertSetting } = useSettingUpsertMutation();
+	const { preference, setPreference } = useThemePreference();
 
 	const handleSignOut = () => {
 		Alert.alert("로그아웃", "로그아웃 하시겠습니까?", [
@@ -98,6 +107,31 @@ export default function SettingsScreen() {
 								</Text>
 							</TouchableOpacity>
 						)}
+					</View>
+				</View>
+
+				{/* Theme Section */}
+				<View className="mb-7">
+					<Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">
+						화면 모드
+					</Text>
+					<View className="flex-row bg-card rounded-[14px] p-1 border border-muted">
+						{THEME_OPTIONS.map((option) => {
+							const isSelected = preference === option.value;
+							return (
+								<TouchableOpacity
+									key={option.value}
+									className={`flex-1 items-center py-2 rounded-xl ${isSelected ? "bg-foreground" : ""}`}
+									onPress={() => setPreference(option.value)}
+								>
+									<Text
+										className={`text-[13px] font-semibold ${isSelected ? "text-background" : "text-secondary-foreground"}`}
+									>
+										{option.label}
+									</Text>
+								</TouchableOpacity>
+							);
+						})}
 					</View>
 				</View>
 

@@ -8,13 +8,13 @@ import {
 	Star,
 	Undo2,
 } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
 import { useCallback, useEffect, useState } from "react";
 import {
 	ActivityIndicator,
 	FlatList,
 	Text,
 	TouchableOpacity,
-	useColorScheme,
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -30,7 +30,7 @@ const READ_DONE_PROGRESS = 0.98;
 
 export default function MemoScreen() {
 	const insets = useSafeAreaInsets();
-	const isDark = useColorScheme() === "dark";
+	const isDark = useColorScheme().colorScheme === "dark";
 	const router = useRouter();
 	const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
 	const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);

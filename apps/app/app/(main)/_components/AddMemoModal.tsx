@@ -1,4 +1,5 @@
 import { Link2, Save, Type, X } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
 import { useState } from "react";
 import {
 	ActivityIndicator,
@@ -9,7 +10,6 @@ import {
 	Text,
 	TextInput,
 	TouchableOpacity,
-	useColorScheme,
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -37,7 +37,7 @@ export function AddMemoModal({ visible, onClose }: AddMemoModalProps) {
 	const insets = useSafeAreaInsets();
 	const { isLoggedIn } = useAuth();
 	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
-	const isDark = useColorScheme() === "dark";
+	const isDark = useColorScheme().colorScheme === "dark";
 
 	const [titleText, setTitleText] = useState("");
 	const [urlText, setUrlText] = useState("");

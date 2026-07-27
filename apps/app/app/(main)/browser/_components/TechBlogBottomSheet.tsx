@@ -1,5 +1,6 @@
 import { URL as APP_URL } from "@web-memo/shared/constants";
 import { Bookmark, MessageCircle, X } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
 import { useEffect, useState } from "react";
 import {
 	Alert,
@@ -11,7 +12,6 @@ import {
 	ScrollView,
 	Text,
 	TouchableOpacity,
-	useColorScheme,
 	View,
 } from "react-native";
 import Animated, {
@@ -233,7 +233,7 @@ export function TechBlogBottomSheet({
 	onSelectBlog: (url: string) => void;
 }) {
 	const insets = useSafeAreaInsets();
-	const isDark = useColorScheme() === "dark";
+	const isDark = useColorScheme().colorScheme === "dark";
 	const translateY = useSharedValue(SHEET_HEIGHT);
 	const opacity = useSharedValue(0);
 	const [modalVisible, setModalVisible] = useState(false);

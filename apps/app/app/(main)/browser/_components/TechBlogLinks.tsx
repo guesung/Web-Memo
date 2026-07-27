@@ -1,5 +1,6 @@
 import { URL } from "@web-memo/shared/constants";
 import { ChevronRight, MessageCircle } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
 import { useCallback, useState } from "react";
 import {
 	FlatList,
@@ -7,7 +8,6 @@ import {
 	Linking,
 	Text,
 	TouchableOpacity,
-	useColorScheme,
 	View,
 } from "react-native";
 import {
@@ -74,7 +74,7 @@ export function TechBlogLinks({
 	onSelectBlog: (url: string) => void;
 }) {
 	const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
-	const isDark = useColorScheme() === "dark";
+	const isDark = useColorScheme().colorScheme === "dark";
 
 	const renderItem = useCallback(
 		({ item }: { item: TechBlog }) => (

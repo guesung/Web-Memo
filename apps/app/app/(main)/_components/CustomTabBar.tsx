@@ -5,7 +5,8 @@ import {
 	type LucideIcon,
 	Settings,
 } from "lucide-react-native";
-import { Text, TouchableOpacity, useColorScheme, View } from "react-native";
+import { useColorScheme } from "nativewind";
+import { Text, TouchableOpacity, View } from "react-native";
 import Animated, {
 	useAnimatedStyle,
 	useSharedValue,
@@ -32,7 +33,7 @@ export function CustomTabBar({
 	navigation,
 }: CustomTabBarProps) {
 	const insets = useSafeAreaInsets();
-	const isDark = useColorScheme() === "dark";
+	const isDark = useColorScheme().colorScheme === "dark";
 	const { tabBarTranslateY, isBrowserActive } = useBrowserScroll();
 	const barHeight = useSharedValue(0);
 

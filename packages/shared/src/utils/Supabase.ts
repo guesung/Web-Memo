@@ -8,6 +8,7 @@ import type {
 	MemoRow,
 	MemoSupabaseClient,
 	MemoTable,
+	SettingTable,
 } from "../types";
 import { getMemoSearchFilter } from "./memoSearchFilter";
 
@@ -229,6 +230,34 @@ export class CategoryService {
 			.delete()
 			.eq("id", id)
 			.select();
+}
+
+export class SettingService {
+	supabaseClient: MemoSupabaseClient;
+
+	constructor(supabaseClient: MemoSupabaseClient) {
+		this.supabaseClient = supabaseClient;
+	}
+
+	getSetting = async () =>
+		this.supabaseClient
+			.schema(SUPABASE.table.memo)
+			.from(SUPABASE.table.setting)
+			.select("*")
+			.maybeSingle();
+
+	upsertSetting = async (request: Omit<SettingTable["Insert"], "user_id">) => {
+		const {
+			data: { user },
+		} = await this.supabaseClient.auth.getUser();
+
+		return this.supabaseClient
+			.schema(SUPABASE.table.memo)
+			.from(SUPABASE.table.setting)
+			.upsert({ ...request, user_id: user?.id }, { onConflict: "user_id" })
+			.select()
+			.single();
+	};
 }
 
 export class AuthService {

@@ -8,4 +8,5 @@ export { default as useMemoPatchMutation } from "./useMemoPatchMutation";
 export { default as useMemoPostMutation } from "./useMemoPostMutation";
 export { default as useMemosUpsertMutation } from "./useMemosUpsertMutation";
 export { default as useMemoUpsertMutation } from "./useMemoUpsertMutation";
+export { default as useSettingUpsertMutation } from "./useSettingUpsertMutation";
 export { default as useSignoutMutation } from "./useSignoutMutation";

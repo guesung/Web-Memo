@@ -153,14 +153,20 @@ export type Database = {
 			setting: {
 				Row: {
 					id: number;
+					show_action_item: boolean;
+					show_impression: boolean;
 					user_id: string | null;
 				};
 				Insert: {
 					id?: number;
+					show_action_item?: boolean;
+					show_impression?: boolean;
 					user_id?: string | null;
 				};
 				Update: {
 					id?: number;
+					show_action_item?: boolean;
+					show_impression?: boolean;
 					user_id?: string | null;
 				};
 				Relationships: [];

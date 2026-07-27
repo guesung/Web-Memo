@@ -10,5 +10,6 @@ export const SUPABASE = {
 	table: {
 		memo: "memo",
 		category: "category",
+		setting: "setting",
 	},
 } as const;

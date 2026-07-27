@@ -4,6 +4,7 @@ export { default as useAdminUsersQuery } from "./useAdminUsersQuery";
 export { default as useCategoryQuery } from "./useCategoryQuery";
 export { default as useMemoQuery } from "./useMemoQuery";
 export { default as useMemosInfiniteQuery } from "./useMemosInfiniteQuery";
+export { default as useSettingQuery } from "./useSettingQuery";
 export { default as useSupabaseClientQuery } from "./useSupabaseClientQuery";
 export { default as useSupabaseFeedbackClientQuery } from "./useSupabaseFeedbackClientQuery";
 export { default as useSupabaseUserQuery } from "./useSupabaseUserQuery";

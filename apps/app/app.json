@@ -34,6 +34,7 @@
 				"foregroundImage": "./assets/adaptive-icon.png",
 				"backgroundColor": "#5b93f0"
 			},
+			"softwareKeyboardLayoutMode": "resize",
 			"package": "com.webmemo.app",
 			"intentFilters": [
 				{

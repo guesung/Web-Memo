@@ -28,7 +28,10 @@ function MemoFormContent() {
 	const { ref, ...rest } = register("memo");
 
 	const currentCategoryId = watch("categoryId");
-	const { showImpression, showActionItem } = useSettingQuery();
+	const {
+		showImpression: showImpressionSetting,
+		showActionItem: showActionItemSetting,
+	} = useSettingQuery();
 
 	const {
 		memoData,
@@ -40,6 +43,9 @@ function MemoFormContent() {
 		toggleWish,
 		toggleStar,
 	} = useMemoForm();
+
+	const showImpression = showImpressionSetting || !!memoData?.impression;
+	const showActionItem = showActionItemSetting || !!memoData?.actionItem;
 
 	const {
 		categories,

@@ -58,6 +58,10 @@
 	"updates": {
 		"title": "What's new",
 		"versions": {
+			"v1.10.12": {
+				"title": "Website address changed",
+				"content": ["The website address changed to web-memos.vercel.app"]
+			},
 			"v1.10.5": {
 				"title": "Removed YouTube summary feature",
 				"content": ["Removed YouTube summary feature"]

@@ -58,6 +58,10 @@
 	"updates": {
 		"title": "새로운 소식",
 		"versions": {
+			"v1.10.12": {
+				"title": "웹사이트 주소 변경",
+				"content": ["웹사이트 주소가 web-memos.vercel.app으로 변경되었습니다"]
+			},
 			"v1.10.5": {
 				"title": "유튜브 요약 기능 제거",
 				"content": ["유튜브 요약 기능 제거"]

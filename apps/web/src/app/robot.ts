@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
 			allow: "/",
 			disallow: "/api/",
 		},
-		sitemap: "https://webmemo.site/sitemap.xml",
+		sitemap: "https://web-memos.vercel.app/sitemap.xml",
 	};
 }

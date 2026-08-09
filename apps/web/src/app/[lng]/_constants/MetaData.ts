@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 
 export const metadataCommon: Metadata = {
-	metadataBase: new URL("https://webmemo.site"),
+	metadataBase: new URL("https://web-memos.vercel.app"),
 	icons: {
 		icon: "/favicon.ico",
 	},
 	alternates: {
-		canonical: "https://webmemo.site",
+		canonical: "https://web-memos.vercel.app",
 	},
 	verification: {
 		google: "e92NNntqJ--8e3A0jAc-YFB3QwHg46AQQ4eplMUvqtQ",
@@ -26,10 +26,10 @@ export const metadataKorean: Metadata = {
 	applicationName: "웹 메모",
 	category: "웹 메모",
 	alternates: {
-		canonical: "https://webmemo.site/ko",
+		canonical: "https://web-memos.vercel.app/ko",
 		languages: {
-			ko: "https://webmemo.site/ko",
-			en: "https://webmemo.site/en",
+			ko: "https://web-memos.vercel.app/ko",
+			en: "https://web-memos.vercel.app/en",
 		},
 	},
 	openGraph: {
@@ -61,10 +61,10 @@ export const metadataEnglish: Metadata = {
 	applicationName: "Web Memo",
 	category: "Web Memo",
 	alternates: {
-		canonical: "https://webmemo.site/en",
+		canonical: "https://web-memos.vercel.app/en",
 		languages: {
-			ko: "https://webmemo.site/ko",
-			en: "https://webmemo.site/en",
+			ko: "https://web-memos.vercel.app/ko",
+			en: "https://web-memos.vercel.app/en",
 		},
 	},
 	openGraph: {

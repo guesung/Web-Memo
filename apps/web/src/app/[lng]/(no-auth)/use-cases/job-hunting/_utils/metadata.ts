@@ -15,10 +15,10 @@ export const metadataKorean: Metadata = {
 		"지원 관리",
 	],
 	alternates: {
-		canonical: "https://webmemo.site/ko/use-cases/job-hunting",
+		canonical: "https://web-memos.vercel.app/ko/use-cases/job-hunting",
 		languages: {
-			ko: "https://webmemo.site/ko/use-cases/job-hunting",
-			en: "https://webmemo.site/en/use-cases/job-hunting",
+			ko: "https://web-memos.vercel.app/ko/use-cases/job-hunting",
+			en: "https://web-memos.vercel.app/en/use-cases/job-hunting",
 		},
 	},
 	openGraph: {
@@ -44,10 +44,10 @@ export const metadataEnglish: Metadata = {
 		"application management",
 	],
 	alternates: {
-		canonical: "https://webmemo.site/en/use-cases/job-hunting",
+		canonical: "https://web-memos.vercel.app/en/use-cases/job-hunting",
 		languages: {
-			ko: "https://webmemo.site/ko/use-cases/job-hunting",
-			en: "https://webmemo.site/en/use-cases/job-hunting",
+			ko: "https://web-memos.vercel.app/ko/use-cases/job-hunting",
+			en: "https://web-memos.vercel.app/en/use-cases/job-hunting",
 		},
 	},
 	openGraph: {

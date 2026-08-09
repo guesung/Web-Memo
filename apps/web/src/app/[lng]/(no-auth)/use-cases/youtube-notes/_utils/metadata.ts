@@ -15,10 +15,10 @@ export const metadataKorean: Metadata = {
 		"유튜브 학습",
 	],
 	alternates: {
-		canonical: "https://webmemo.site/ko/use-cases/youtube-notes",
+		canonical: "https://web-memos.vercel.app/ko/use-cases/youtube-notes",
 		languages: {
-			ko: "https://webmemo.site/ko/use-cases/youtube-notes",
-			en: "https://webmemo.site/en/use-cases/youtube-notes",
+			ko: "https://web-memos.vercel.app/ko/use-cases/youtube-notes",
+			en: "https://web-memos.vercel.app/en/use-cases/youtube-notes",
 		},
 	},
 	openGraph: {
@@ -45,10 +45,10 @@ export const metadataEnglish: Metadata = {
 		"note taking app",
 	],
 	alternates: {
-		canonical: "https://webmemo.site/en/use-cases/youtube-notes",
+		canonical: "https://web-memos.vercel.app/en/use-cases/youtube-notes",
 		languages: {
-			ko: "https://webmemo.site/ko/use-cases/youtube-notes",
-			en: "https://webmemo.site/en/use-cases/youtube-notes",
+			ko: "https://web-memos.vercel.app/ko/use-cases/youtube-notes",
+			en: "https://web-memos.vercel.app/en/use-cases/youtube-notes",
 		},
 	},
 	openGraph: {

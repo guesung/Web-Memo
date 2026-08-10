@@ -1,6 +1,6 @@
 {
 	"name": "@web-memo/app",
-	"version": "1.10.13",
+	"version": "1.10.14",
 	"main": "expo-router/entry",
 	"private": true,
 	"scripts": {

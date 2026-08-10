@@ -1,5 +1,4 @@
 import { Link2, Save, Type, X } from "lucide-react-native";
-import { useColorScheme } from "nativewind";
 import { useState } from "react";
 import {
 	ActivityIndicator,
@@ -10,6 +9,7 @@ import {
 	Text,
 	TextInput,
 	TouchableOpacity,
+	useColorScheme,
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -37,7 +37,7 @@ export function AddMemoModal({ visible, onClose }: AddMemoModalProps) {
 	const insets = useSafeAreaInsets();
 	const { isLoggedIn } = useAuth();
 	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
-	const isDark = useColorScheme().colorScheme === "dark";
+	const isDark = useColorScheme() === "dark";
 
 	const [titleText, setTitleText] = useState("");
 	const [urlText, setUrlText] = useState("");
@@ -146,26 +146,15 @@ export function AddMemoModal({ visible, onClose }: AddMemoModalProps) {
 								activeOpacity={0.8}
 							>
 								{isSaving ? (
-									<ActivityIndicator
-										size="small"
-										color={isDark ? "#111" : "#fff"}
-									/>
+									<ActivityIndicator size="small" color="#fff" />
 								) : (
 									<Save
 										size={16}
-										color={
-											hasContent
-												? isDark
-													? "#111"
-													: "#fff"
-												: isDark
-													? "#666"
-													: "#999"
-										}
+										color={hasContent ? "#fff" : isDark ? "#666" : "#999"}
 									/>
 								)}
 								<Text
-									className={`text-sm font-semibold ${hasContent ? "text-background" : "text-gray-400 dark:text-neutral-500"}`}
+									className={`text-sm font-semibold ${hasContent ? "text-white" : "text-gray-400 dark:text-neutral-500"}`}
 								>
 									저장
 								</Text>

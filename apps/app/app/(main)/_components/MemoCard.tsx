@@ -1,8 +1,13 @@
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import { BookOpen, FileText, Heart, Star, Trash2 } from "lucide-react-native";
-import { useColorScheme } from "nativewind";
 import { useRef } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import {
+	Image,
+	Text,
+	TouchableOpacity,
+	useColorScheme,
+	View,
+} from "react-native";
 import ReanimatedSwipeable, {
 	type SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
@@ -44,7 +49,7 @@ export function MemoCard({
 	onDelete,
 }: MemoCardProps) {
 	const swipeableRef = useRef<SwipeableMethods>(null);
-	const isDark = useColorScheme().colorScheme === "dark";
+	const isDark = useColorScheme() === "dark";
 
 	const rawDate =
 		"updated_at" in memo

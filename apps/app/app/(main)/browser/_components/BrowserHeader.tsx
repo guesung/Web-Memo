@@ -6,8 +6,12 @@ import {
 	Search,
 	X,
 } from "lucide-react-native";
-import { useColorScheme } from "nativewind";
-import { TextInput, TouchableOpacity, View } from "react-native";
+import {
+	TextInput,
+	TouchableOpacity,
+	useColorScheme,
+	View,
+} from "react-native";
 import Animated from "react-native-reanimated";
 import type WebView from "react-native-webview";
 
@@ -38,7 +42,7 @@ export function BrowserHeader({
 	onOpenBlogSheet,
 	onOpenActions,
 }: BrowserHeaderProps) {
-	const isDark = useColorScheme().colorScheme === "dark";
+	const isDark = useColorScheme() === "dark";
 
 	return (
 		<Animated.View className="overflow-hidden" style={headerWrapperStyle}>

@@ -1,6 +1,5 @@
 import { URL } from "@web-memo/shared/constants";
 import { ChevronRight, MessageCircle } from "lucide-react-native";
-import { useColorScheme } from "nativewind";
 import { useCallback, useState } from "react";
 import {
 	FlatList,
@@ -42,10 +41,10 @@ function BlogItem({
 			<View className="w-14 h-14 rounded-[14px] bg-input justify-center items-center overflow-hidden">
 				{!logoUri || imgError ? (
 					<View
-						className="justify-center items-center bg-[#e0e0e0] dark:bg-neutral-700"
+						className="justify-center items-center bg-[#e0e0e0]"
 						style={{ width: 36, height: 36, borderRadius: 4 }}
 					>
-						<Text className="text-base font-bold text-gray-500 dark:text-neutral-300">
+						<Text className="text-base font-bold text-gray-500">
 							{blog.name.charAt(0)}
 						</Text>
 					</View>
@@ -74,7 +73,6 @@ export function TechBlogLinks({
 	onSelectBlog: (url: string) => void;
 }) {
 	const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
-	const isDark = useColorScheme().colorScheme === "dark";
 
 	const renderItem = useCallback(
 		({ item }: { item: TechBlog }) => (
@@ -93,7 +91,7 @@ export function TechBlogLinks({
 					activeOpacity={0.7}
 				>
 					<Text className="text-[13px] text-muted-foreground">전체보기</Text>
-					<ChevronRight size={14} color={isDark ? "#777" : "#999"} />
+					<ChevronRight size={14} color="#999" />
 				</TouchableOpacity>
 			</View>
 
@@ -124,8 +122,8 @@ export function TechBlogLinks({
 				onPress={() => Linking.openURL(URL.kakaoTalk)}
 				activeOpacity={0.7}
 			>
-				<MessageCircle size={16} color={isDark ? "#aaa" : "#666"} />
-				<Text className="text-sm text-gray-500 dark:text-neutral-400 font-medium">
+				<MessageCircle size={16} color="#666" />
+				<Text className="text-sm text-gray-500 font-medium">
 					블로그 추가 문의하기
 				</Text>
 			</TouchableOpacity>

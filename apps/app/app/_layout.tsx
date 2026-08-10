@@ -4,13 +4,11 @@ import { useShareIntent } from "expo-share-intent";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { Check } from "lucide-react-native";
-import { useColorScheme } from "nativewind";
 import { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthProvider";
-import { useThemePreference } from "@/lib/hooks/useThemePreference";
 import { handleSharedUrl } from "@/lib/sharing/shareHandler";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
 import "../global.css";
@@ -108,9 +106,6 @@ function ShareIntentHandler() {
 }
 
 export default function RootLayout() {
-	useThemePreference();
-	const { colorScheme } = useColorScheme();
-
 	useEffect(() => {
 		SplashScreen.hideAsync();
 	}, []);
@@ -128,7 +123,7 @@ export default function RootLayout() {
 				</GestureHandlerRootView>
 				<SyncOnAuth />
 				<ShareIntentHandler />
-				<StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+				<StatusBar style="dark" />
 			</AuthProvider>
 		</QueryClientProvider>
 	);

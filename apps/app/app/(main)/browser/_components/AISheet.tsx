@@ -1,5 +1,4 @@
 import { Send, Sparkles, X } from "lucide-react-native";
-import { useColorScheme } from "nativewind";
 import { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
@@ -11,6 +10,7 @@ import {
 	Text,
 	TextInput,
 	TouchableOpacity,
+	useColorScheme,
 	View,
 } from "react-native";
 import Animated, {
@@ -47,7 +47,7 @@ export function AISheet({
 	error,
 }: AISheetProps) {
 	const insets = useSafeAreaInsets();
-	const isDark = useColorScheme().colorScheme === "dark";
+	const isDark = useColorScheme() === "dark";
 	const translateY = useSharedValue(SHEET_ANIMATION_DISTANCE);
 	const opacity = useSharedValue(0);
 	const [modalVisible, setModalVisible] = useState(false);
@@ -185,7 +185,7 @@ export function AISheet({
 							onPress={onAskQuestion}
 							disabled={isLoading || !question.trim()}
 						>
-							<Send size={16} color={isDark ? "#111" : "#fff"} />
+							<Send size={16} color="#fff" />
 						</TouchableOpacity>
 					</View>
 				</Animated.View>

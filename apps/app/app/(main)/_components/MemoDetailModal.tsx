@@ -10,7 +10,6 @@ import {
 	StarOff,
 	X,
 } from "lucide-react-native";
-import { useColorScheme } from "nativewind";
 import { useCallback, useEffect, useState } from "react";
 import {
 	Dimensions,
@@ -24,6 +23,7 @@ import {
 	Text,
 	TextInput,
 	TouchableOpacity,
+	useColorScheme,
 	View,
 } from "react-native";
 import Animated, {
@@ -75,7 +75,7 @@ export function MemoDetailModal({
 	} = useSettingQuery(isLoggedIn);
 	const showImpression = showImpressionSetting || !!memo?.impression;
 	const showActionItem = showActionItemSetting || !!memo?.actionItem;
-	const isDark = useColorScheme().colorScheme === "dark";
+	const isDark = useColorScheme() === "dark";
 	const translateY = useSharedValue(SHEET_HEIGHT);
 	const opacity = useSharedValue(0);
 	const [modalVisible, setModalVisible] = useState(false);
@@ -286,18 +286,10 @@ export function MemoDetailModal({
 								>
 									<Save
 										size={14}
-										color={
-											isMemoEdited
-												? isDark
-													? "#111"
-													: "#fff"
-												: isDark
-													? "#666"
-													: "#999"
-										}
+										color={isMemoEdited ? "#fff" : isDark ? "#666" : "#999"}
 									/>
 									<Text
-										className={`text-sm font-semibold ${isMemoEdited ? "text-background" : "text-gray-400 dark:text-neutral-500"}`}
+										className={`text-sm font-semibold ${isMemoEdited ? "text-white" : "text-gray-400 dark:text-neutral-500"}`}
 									>
 										저장
 									</Text>

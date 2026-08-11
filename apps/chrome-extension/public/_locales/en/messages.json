@@ -140,6 +140,15 @@
 	"recommend_category": {
 		"message": "AI category recommendation"
 	},
+	"memo_section_setting": {
+		"message": "Memo sections"
+	},
+	"impression_section_description": {
+		"message": "Show the impression field when writing a memo"
+	},
+	"action_item_section_description": {
+		"message": "Show the action items field when writing a memo"
+	},
 	"auto_apply_category_setting": {
 		"message": "Auto-apply category"
 	},

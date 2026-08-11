@@ -140,6 +140,15 @@
 	"recommend_category": {
 		"message": "AI 카테고리 추천"
 	},
+	"memo_section_setting": {
+		"message": "메모 섹션 표시"
+	},
+	"impression_section_description": {
+		"message": "메모 작성 시 느낀 점 입력란을 표시합니다"
+	},
+	"action_item_section_description": {
+		"message": "메모 작성 시 액션 아이템 입력란을 표시합니다"
+	},
 	"auto_apply_category_setting": {
 		"message": "카테고리 자동 적용"
 	},

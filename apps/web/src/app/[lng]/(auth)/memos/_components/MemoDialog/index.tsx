@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemoSectionVisibility } from "@src/app/[lng]/(auth)/memos/_hooks";
 import type { MemoInput } from "@src/app/[lng]/(auth)/memos/_types/Input";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
@@ -34,8 +35,10 @@ interface MemoDialog extends LanguageType {
 export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	const { t } = useTranslation(lng);
 	const { memo: memoData } = useMemoQuery({ id: memoId });
-	const { textareaRef: memoTextareaRef, handleTextareaChange: handleMemoChange } =
-		useTextareaAutoResize();
+	const {
+		textareaRef: memoTextareaRef,
+		handleTextareaChange: handleMemoChange,
+	} = useTextareaAutoResize();
 	const {
 		textareaRef: impressionTextareaRef,
 		handleTextareaChange: handleImpressionChange,
@@ -48,6 +51,14 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	const [saveStatus, setSaveStatus] = useState<TMemoSaveStatus>("idle");
 	const searchParams = useSearchParams();
 	const { debounce, flushDebounce } = useDebounce();
+	const { isImpressionSectionEnabled, isActionItemSectionEnabled } =
+		useMemoSectionVisibility();
+
+	// 설정을 꺼도 이미 작성된 내용이 있으면 유실로 오해하지 않도록 계속 노출한다.
+	const isImpressionSectionVisible =
+		isImpressionSectionEnabled || !!memoData?.impression;
+	const isActionItemSectionVisible =
+		isActionItemSectionEnabled || !!memoData?.actionItem;
 
 	const { register, watch, setValue } = useForm<MemoInput>({
 		defaultValues: {
@@ -199,35 +210,43 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 								data-testid="memo-textarea"
 							/>
 
-							<label
-								htmlFor="impression"
-								className="mt-3 text-xs font-semibold text-gray-500"
-							>
-								{t("memoSection.impression")}
-							</label>
-							<Textarea
-								{...impressionRest}
-								id="impression"
-								className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
-								ref={impressionTextareaRef}
-								placeholder={t("memoSection.impressionPlaceholder")}
-								data-testid="impression-textarea"
-							/>
+							{isImpressionSectionVisible && (
+								<>
+									<label
+										htmlFor="impression"
+										className="mt-3 text-xs font-semibold text-gray-500"
+									>
+										{t("memoSection.impression")}
+									</label>
+									<Textarea
+										{...impressionRest}
+										id="impression"
+										className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
+										ref={impressionTextareaRef}
+										placeholder={t("memoSection.impressionPlaceholder")}
+										data-testid="impression-textarea"
+									/>
+								</>
+							)}
 
-							<label
-								htmlFor="actionItem"
-								className="mt-3 text-xs font-semibold text-gray-500"
-							>
-								{t("memoSection.actionItem")}
-							</label>
-							<Textarea
-								{...actionItemRest}
-								id="actionItem"
-								className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
-								ref={actionItemTextareaRef}
-								placeholder={t("memoSection.actionItemPlaceholder")}
-								data-testid="action-item-textarea"
-							/>
+							{isActionItemSectionVisible && (
+								<>
+									<label
+										htmlFor="actionItem"
+										className="mt-3 text-xs font-semibold text-gray-500"
+									>
+										{t("memoSection.actionItem")}
+									</label>
+									<Textarea
+										{...actionItemRest}
+										id="actionItem"
+										className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
+										ref={actionItemTextareaRef}
+										placeholder={t("memoSection.actionItemPlaceholder")}
+										data-testid="action-item-textarea"
+									/>
+								</>
+							)}
 
 							<div className="mt-3 flex h-4 items-center">
 								<SaveStatusIndicator status={saveStatus} lng={lng} />

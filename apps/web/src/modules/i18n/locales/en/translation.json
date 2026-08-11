@@ -431,7 +431,10 @@
 		"deleteCategory": "Delete category",
 		"defaultCategoryName": "New category",
 		"export": "Export",
-		"exportMemos": "Export memos"
+		"exportMemos": "Export memos",
+		"memoSection": "Memo sections",
+		"showImpressionSection": "Show the impression field when writing a memo",
+		"showActionItemSection": "Show the action items field when writing a memo"
 	},
 
 	"guide": {

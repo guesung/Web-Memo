@@ -1,7 +1,10 @@
 import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
 import { getMemoUrl } from "@src/utils";
-import { useTextareaAutoResize } from "@web-memo/shared/hooks";
+import {
+	useMemoSectionVisibility,
+	useTextareaAutoResize,
+} from "@web-memo/shared/hooks";
 import { adjustTextareaHeight } from "@web-memo/shared/utils";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
@@ -50,19 +53,35 @@ function MemoFormContent() {
 		handleTextareaChange: handleActionItemResize,
 	} = useTextareaAutoResize();
 
-	const { ref: impressionFieldRef, ...impressionRest } = register("impression", {
-		onChange: (event) => {
-			handleImpressionChange(event.target.value);
-			handleImpressionResize(event);
-		},
-	});
-	const { ref: actionItemFieldRef, ...actionItemRest } = register("actionItem", {
-		onChange: (event) => {
-			handleActionItemChange(event.target.value);
-			handleActionItemResize(event);
-		},
-	});
+	const { isImpressionSectionEnabled, isActionItemSectionEnabled } =
+		useMemoSectionVisibility();
 
+	// 설정을 꺼도 이미 작성된 내용이 있으면 유실로 오해하지 않도록 계속 노출한다.
+	const isImpressionSectionVisible =
+		isImpressionSectionEnabled || !!memoData?.impression;
+	const isActionItemSectionVisible =
+		isActionItemSectionEnabled || !!memoData?.actionItem;
+
+	const { ref: impressionFieldRef, ...impressionRest } = register(
+		"impression",
+		{
+			onChange: (event) => {
+				handleImpressionChange(event.target.value);
+				handleImpressionResize(event);
+			},
+		},
+	);
+	const { ref: actionItemFieldRef, ...actionItemRest } = register(
+		"actionItem",
+		{
+			onChange: (event) => {
+				handleActionItemChange(event.target.value);
+				handleActionItemResize(event);
+			},
+		},
+	);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: 메모 데이터가 로드·교체될 때 높이를 다시 계산해야 하므로 콜백에서 직접 읽지 않는 memoData 값도 의존성에 둔다.
 	useEffect(
 		function adjustSectionHeightsOnMemoLoad() {
 			if (impressionTextareaRef.current) {
@@ -182,38 +201,46 @@ function MemoFormContent() {
 						textareaRef.current = e;
 					}}
 				/>
-				<label
-					htmlFor="impression-textarea"
-					className="mt-3 text-xs font-semibold text-gray-500"
-				>
-					{I18n.get("impression")}
-				</label>
-				<Textarea
-					id="impression-textarea"
-					className="resize-none overflow-hidden text-sm outline-none"
-					placeholder={I18n.get("impressionPlaceholder")}
-					{...impressionRest}
-					ref={(element) => {
-						impressionFieldRef(element);
-						impressionTextareaRef.current = element;
-					}}
-				/>
-				<label
-					htmlFor="action-item-textarea"
-					className="mt-3 text-xs font-semibold text-gray-500"
-				>
-					{I18n.get("actionItem")}
-				</label>
-				<Textarea
-					id="action-item-textarea"
-					className="resize-none overflow-hidden text-sm outline-none"
-					placeholder={I18n.get("actionItemPlaceholder")}
-					{...actionItemRest}
-					ref={(element) => {
-						actionItemFieldRef(element);
-						actionItemTextareaRef.current = element;
-					}}
-				/>
+				{isImpressionSectionVisible && (
+					<>
+						<label
+							htmlFor="impression-textarea"
+							className="mt-3 text-xs font-semibold text-gray-500"
+						>
+							{I18n.get("impression")}
+						</label>
+						<Textarea
+							id="impression-textarea"
+							className="resize-none overflow-hidden text-sm outline-none"
+							placeholder={I18n.get("impressionPlaceholder")}
+							{...impressionRest}
+							ref={(element) => {
+								impressionFieldRef(element);
+								impressionTextareaRef.current = element;
+							}}
+						/>
+					</>
+				)}
+				{isActionItemSectionVisible && (
+					<>
+						<label
+							htmlFor="action-item-textarea"
+							className="mt-3 text-xs font-semibold text-gray-500"
+						>
+							{I18n.get("actionItem")}
+						</label>
+						<Textarea
+							id="action-item-textarea"
+							className="resize-none overflow-hidden text-sm outline-none"
+							placeholder={I18n.get("actionItemPlaceholder")}
+							{...actionItemRest}
+							ref={(element) => {
+								actionItemFieldRef(element);
+								actionItemTextareaRef.current = element;
+							}}
+						/>
+					</>
+				)}
 				<div className="flex items-center justify-between gap-2">
 					<div className="flex items-center gap-2">
 						<HeartIcon

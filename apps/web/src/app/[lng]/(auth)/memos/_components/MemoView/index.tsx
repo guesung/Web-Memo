@@ -2,7 +2,11 @@
 
 import { useGuide } from "@src/modules/guide";
 import type { LanguageType } from "@src/modules/i18n";
-import { useDidMount, useMemosInfiniteQuery } from "@web-memo/shared/hooks";
+import {
+	useDebouncedValue,
+	useDidMount,
+	useMemosInfiniteQuery,
+} from "@web-memo/shared/hooks";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { Skeleton } from "@web-memo/ui";
 import dynamic from "next/dynamic";
@@ -26,13 +30,17 @@ export default function MemoView({ lng }: LanguageType) {
 	const isWishView = searchParams.get("isWish") === "true";
 	const isStarView = searchParams.get("isStar") === "true";
 	const searchQuery = watch("searchQuery");
+	const searchTarget = watch("searchTarget");
+	// 타이핑마다 Suspense가 걸려 목록이 깜빡이지 않도록 검색어는 디바운스해서 조회한다.
+	const debouncedSearchQuery = useDebouncedValue(searchQuery);
 
 	const { memos, totalCount, hasNextPage, isFetchingNextPage, fetchNextPage } =
 		useMemosInfiniteQuery({
 			category,
 			isWish: isStarView ? undefined : isWishView,
 			isStar: isStarView ? true : undefined,
-			searchQuery: searchQuery || undefined,
+			searchQuery: debouncedSearchQuery || undefined,
+			searchTarget,
 		});
 
 	useGuide({ lng });

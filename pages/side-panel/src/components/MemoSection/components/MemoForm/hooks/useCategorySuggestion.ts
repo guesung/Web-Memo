@@ -8,7 +8,10 @@ import {
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
-import { getTabInfo } from "@web-memo/shared/utils/extension";
+import {
+	getSupabaseAccessToken,
+	getTabInfo,
+} from "@web-memo/shared/utils/extension";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const CONFIDENCE_THRESHOLD = 0.7;
@@ -123,10 +126,13 @@ export function useCategorySuggestion({
 					setTimeout(() => reject(new Error("Request timeout")), API_TIMEOUT);
 				});
 
+				const accessToken = await getSupabaseAccessToken();
+
 				const fetchPromise = fetch(`${CONFIG.webUrl}/api/openai/category`, {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
+						...(accessToken && { Authorization: `Bearer ${accessToken}` }),
 					},
 					body: JSON.stringify({
 						pageTitle: tabInfo.title || "",

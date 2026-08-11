@@ -7,7 +7,7 @@ import {
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
-import { MemoService } from "@web-memo/shared/utils";
+import { MemoService, normalizeUrl } from "@web-memo/shared/utils";
 import { getSupabaseClient, I18n, Tab } from "@web-memo/shared/utils/extension";
 
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
@@ -22,15 +22,18 @@ chrome.runtime.onInstalled.addListener(async () => {
 const CONTEXT_MENU_ID_CHECK_MEMO = "CONTEXT_MENU_ID_CHECK_MEMO";
 const CONTEXT_MENU_ID_SHOW_GUIDE = "CONTEXT_MENU_ID_SHOW_GUIDE";
 chrome.runtime.onInstalled.addListener(() => {
-	chrome.contextMenus.create({
-		title: I18n.get("context_menus_check_memo"),
-		id: CONTEXT_MENU_ID_CHECK_MEMO,
-		contexts: ["all"],
-	});
-	chrome.contextMenus.create({
-		title: I18n.get("context_menus_show_guide"),
-		id: CONTEXT_MENU_ID_SHOW_GUIDE,
-		contexts: ["all"],
+	// onInstalled는 확장 업데이트 때도 발생하므로, 중복 id 생성 에러가 나지 않게 기존 메뉴를 먼저 정리한다.
+	chrome.contextMenus.removeAll(() => {
+		chrome.contextMenus.create({
+			title: I18n.get("context_menus_check_memo"),
+			id: CONTEXT_MENU_ID_CHECK_MEMO,
+			contexts: ["all"],
+		});
+		chrome.contextMenus.create({
+			title: I18n.get("context_menus_show_guide"),
+			id: CONTEXT_MENU_ID_SHOW_GUIDE,
+			contexts: ["all"],
+		});
 	});
 });
 
@@ -64,14 +67,29 @@ const setUninstallUrl = async () => {
 		chrome.runtime.setUninstallURL(`${CONFIG.webUrl}/uninstall`);
 	}
 };
-setUninstallUrl();
+// setUninstallURL은 브라우저에 유지되므로 매 service worker 기동마다가 아니라
+// 설치·업데이트와 브라우저 시작 시에만 갱신해 불필요한 네트워크 요청을 줄인다.
+chrome.runtime.onInstalled.addListener(() => {
+	setUninstallUrl();
+});
+chrome.runtime.onStartup.addListener(() => {
+	setUninstallUrl();
+});
 
 chrome.tabs.onActivated.addListener(async () => {
 	// 활성화된 탭이 변경되었을 때 사이드 패널을 업데이트한다.
 	bridge.request.UPDATE_SIDE_PANEL();
 });
-chrome.tabs.onUpdated.addListener(async () => {
+chrome.tabs.onUpdated.addListener(async (_tabId, changeInfo, tab) => {
 	// 페이지를 이동했을 때 사이드 패널을 업데이트한다.
+	// onUpdated는 로딩 상태·favicon 변경 등으로 모든 탭에서 수시로 발생하므로
+	// 활성 탭의 URL 변경·로드 완료에만 반응해 불필요한 재조회를 막는다.
+	const isActiveTab = tab.active;
+	const isMeaningfulChange =
+		!!changeInfo.url || changeInfo.status === "complete";
+
+	if (!isActiveTab || !isMeaningfulChange) return;
+
 	bridge.request.UPDATE_SIDE_PANEL();
 });
 
@@ -97,17 +115,22 @@ bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
 		const supabaseClient = await getSupabaseClient();
 		const memoService = new MemoService(supabaseClient);
 
-		const existingMemo = await memoService.getMemoByUrl(payload.url);
+		// 사이드 패널·웹과 같은 기준으로 메모를 찾도록 URL을 정규화한다.
+		const normalizedUrl = normalizeUrl(payload.url);
+		const existingMemo = await memoService.getMemoByUrl(normalizedUrl);
 
 		if (existingMemo.error) {
 			sendResponse({ success: false, error: existingMemo.error.message });
 			return;
 		}
 
-		if (existingMemo.data) {
-			const updatedMemo = `${existingMemo.data[0].memo}${existingMemo.data[0].memo ? "\n\n" : ""}${payload.memo}`;
+		// Supabase는 결과가 없을 때 빈 배열을 돌려주므로 첫 번째 요소로 존재 여부를 판단한다.
+		const currentMemo = existingMemo.data?.[0];
+
+		if (currentMemo) {
+			const updatedMemo = `${currentMemo.memo}${currentMemo.memo ? "\n\n" : ""}${payload.memo}`;
 			const result = await memoService.updateMemo({
-				id: existingMemo.data[0].id,
+				id: currentMemo.id,
 				request: { memo: updatedMemo },
 			});
 
@@ -117,7 +140,10 @@ bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
 				sendResponse({ success: true });
 			}
 		} else {
-			const result = await memoService.insertMemo(payload);
+			const result = await memoService.insertMemo({
+				...payload,
+				url: normalizedUrl,
+			});
 
 			if (result.error) {
 				sendResponse({ success: false, error: result.error.message });
@@ -128,7 +154,8 @@ bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
 	} catch (error) {
 		sendResponse({
 			success: false,
-			error: error instanceof Error ? error.message : "메모 생성에 실패했습니다.",
+			error:
+				error instanceof Error ? error.message : I18n.get("toast_error_save"),
 		});
 	}
 });

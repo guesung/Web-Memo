@@ -9,7 +9,20 @@ import type {
 	MemoSupabaseClient,
 	MemoTable,
 } from "../types";
-import { getMemoSearchFilter } from "./memoSearchFilter";
+import { getMemoSearchFilter, type MemoSearchTarget } from "./memoSearchFilter";
+
+/** 메모 목록 페이지네이션 커서. 정렬 컬럼 값과 id의 조합으로 다음 페이지 시작점을 가리킨다. */
+export interface MemoPageCursor {
+	value: string;
+	id: number;
+}
+
+/**
+ * PostgREST `.or()` 필터에 넣을 값을 인용한다.
+ * @description 제목 커서처럼 사용자 데이터가 콤마·괄호를 포함해도 필터 문법이 깨지지 않게 한다.
+ */
+const quoteFilterValue = (value: string): string =>
+	`"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 
 export class MemoService {
 	supabaseClient: MemoSupabaseClient;
@@ -51,39 +64,52 @@ export class MemoService {
 			.select();
 	};
 	/**
-	 * @deprecated Use getMemosPaginated for better performance.
-	 * This method fetches up to 2000 records at once which is inefficient.
+	 * 내보내기처럼 전체 메모가 필요한 경우에만 사용한다. 목록 조회는 getMemosPaginated를 쓴다.
+	 * @description Supabase는 요청당 반환 행 수에 상한이 있으므로 마지막 페이지에 도달할 때까지 순회한다.
+	 * updated_at이 같은 행의 순서가 요청마다 뒤바뀌어 누락·중복이 생기지 않도록 id를 보조 정렬 기준으로 둔다.
 	 */
 	getMemos = async () => {
-		const [firstBatch, secondBatch] = await Promise.all([
-			this.supabaseClient
-				.schema(SUPABASE.table.memo)
-				.from(SUPABASE.table.memo)
-				.select("*, category(id, name, color)")
-				.order("updated_at", { ascending: false })
-				.range(0, 999),
-			this.supabaseClient
-				.schema(SUPABASE.table.memo)
-				.from(SUPABASE.table.memo)
-				.select("*, category(id, name, color)")
-				.order("updated_at", { ascending: false })
-				.range(1000, 1999),
-			this.supabaseClient
-				.schema(SUPABASE.table.memo)
-				.from(SUPABASE.table.memo)
-				.select("*, category(id, name, color)")
-				.order("updated_at", { ascending: false })
-				.range(2000, 2999),
-			this.supabaseClient
-				.schema(SUPABASE.table.memo)
-				.from(SUPABASE.table.memo)
-				.select("*, category(id, name, color)")
-				.order("updated_at", { ascending: false })
-				.range(3000, 3999),
-		]);
-		const data = [...(firstBatch?.data ?? []), ...(secondBatch?.data ?? [])];
-		return { ...firstBatch, data };
+		const PAGE_SIZE = 1000;
+		const MAX_PAGE_COUNT = 100;
+		const memos: GetMemoResponse[] = [];
+
+		let page = 0;
+		let result = await this.getMemoPage({ page, pageSize: PAGE_SIZE });
+
+		while (page < MAX_PAGE_COUNT) {
+			if (result.error) {
+				return { ...result, data: memos };
+			}
+
+			const batch = (result.data ?? []) as GetMemoResponse[];
+			memos.push(...batch);
+
+			if (batch.length < PAGE_SIZE) {
+				break;
+			}
+
+			page += 1;
+			result = await this.getMemoPage({ page, pageSize: PAGE_SIZE });
+		}
+
+		return { ...result, data: memos };
 	};
+
+	/** getMemos의 페이지 단위 조회. GetMemoResponse 타입 추론의 기준이기도 하다. */
+	getMemoPage = async ({
+		page,
+		pageSize,
+	}: {
+		page: number;
+		pageSize: number;
+	}) =>
+		this.supabaseClient
+			.schema(SUPABASE.table.memo)
+			.from(SUPABASE.table.memo)
+			.select("*, category(id, name, color)")
+			.order("updated_at", { ascending: false })
+			.order("id", { ascending: false })
+			.range(page * pageSize, (page + 1) * pageSize - 1);
 
 	getMemosPaginated = async ({
 		cursor,
@@ -92,14 +118,16 @@ export class MemoService {
 		isWish,
 		isStar,
 		searchQuery,
+		searchTarget = "all",
 		sortBy = "updated_at",
 	}: {
-		cursor?: string;
+		cursor?: MemoPageCursor;
 		limit?: number;
 		category?: string;
 		isWish?: boolean;
 		isStar?: boolean;
 		searchQuery?: string;
+		searchTarget?: MemoSearchTarget;
 		sortBy?: "updated_at" | "created_at" | "title";
 	}) => {
 		const selectQuery = category
@@ -117,11 +145,12 @@ export class MemoService {
 			.limit(limit);
 
 		if (cursor) {
-			if (sortBy === "title") {
-				query = query.gt("title", cursor);
-			} else {
-				query = query.lt(sortBy, cursor);
-			}
+			// 정렬 컬럼 값이 같은 행이 여러 개여도 건너뛰지 않도록 (정렬 값, id) 복합 커서를 쓴다.
+			const operator = ascending ? "gt" : "lt";
+			const value = quoteFilterValue(cursor.value);
+			query = query.or(
+				`${sortBy}.${operator}.${value},and(${sortBy}.eq.${value},id.${operator}.${cursor.id})`,
+			);
 		}
 
 		if (isWish !== undefined) {
@@ -137,7 +166,7 @@ export class MemoService {
 		}
 
 		if (searchQuery) {
-			query = query.or(getMemoSearchFilter(searchQuery));
+			query = query.or(getMemoSearchFilter(searchQuery, searchTarget));
 		}
 
 		return query;

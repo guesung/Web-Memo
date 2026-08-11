@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocalMemoUpsert } from "@/lib/hooks/useLocalMemos";
 import { useMemoUpsertMutation } from "@/lib/hooks/useMemoMutation";
+import { useMemoSectionSettings } from "@/lib/hooks/useMemoSectionSettings";
 import {
 	extractPageMetadata,
 	getFavIconUrl,
@@ -34,6 +35,8 @@ interface AddMemoModalProps {
 export function AddMemoModal({ visible, onClose }: AddMemoModalProps) {
 	const insets = useSafeAreaInsets();
 	const { isLoggedIn } = useAuth();
+	const { isImpressionSectionEnabled, isActionItemSectionEnabled } =
+		useMemoSectionSettings();
 
 	const [titleText, setTitleText] = useState("");
 	const [urlText, setUrlText] = useState("");
@@ -203,31 +206,39 @@ export function AddMemoModal({ visible, onClose }: AddMemoModalProps) {
 							textAlignVertical="top"
 						/>
 
-						<Text className="mt-3 text-xs font-semibold text-gray-500">
-							느낀 점
-						</Text>
-						<TextInput
-							className="min-h-[60px] text-[15px] text-[#333] leading-[22px]"
-							placeholder="느낀 점을 적어보세요"
-							value={impressionText}
-							onChangeText={setImpressionText}
-							multiline
-							scrollEnabled={false}
-							textAlignVertical="top"
-						/>
+						{isImpressionSectionEnabled && (
+							<>
+								<Text className="mt-3 text-xs font-semibold text-gray-500">
+									느낀 점
+								</Text>
+								<TextInput
+									className="min-h-[60px] text-[15px] text-[#333] leading-[22px]"
+									placeholder="느낀 점을 적어보세요"
+									value={impressionText}
+									onChangeText={setImpressionText}
+									multiline
+									scrollEnabled={false}
+									textAlignVertical="top"
+								/>
+							</>
+						)}
 
-						<Text className="mt-3 text-xs font-semibold text-gray-500">
-							액션 아이템
-						</Text>
-						<TextInput
-							className="min-h-[60px] text-[15px] text-[#333] leading-[22px]"
-							placeholder="할 일을 적어보세요"
-							value={actionItemText}
-							onChangeText={setActionItemText}
-							multiline
-							scrollEnabled={false}
-							textAlignVertical="top"
-						/>
+						{isActionItemSectionEnabled && (
+							<>
+								<Text className="mt-3 text-xs font-semibold text-gray-500">
+									액션 아이템
+								</Text>
+								<TextInput
+									className="min-h-[60px] text-[15px] text-[#333] leading-[22px]"
+									placeholder="할 일을 적어보세요"
+									value={actionItemText}
+									onChangeText={setActionItemText}
+									multiline
+									scrollEnabled={false}
+									textAlignVertical="top"
+								/>
+							</>
+						)}
 					</ScrollView>
 				</View>
 			</KeyboardAvoidingView>

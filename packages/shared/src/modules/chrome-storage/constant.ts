@@ -7,4 +7,6 @@ export const STORAGE_KEYS = {
 	tabHeight: "tabHeight",
 	chatMessages: "chatMessages",
 	textSelectionEnabled: "textSelectionEnabled",
+	impressionSectionEnabled: "impressionSectionEnabled",
+	actionItemSectionEnabled: "actionItemSectionEnabled",
 } as const;

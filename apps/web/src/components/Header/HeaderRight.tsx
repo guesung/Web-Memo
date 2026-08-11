@@ -44,7 +44,14 @@ export default function HeaderRight({ lng }: LanguageType) {
 				<DropdownMenu>
 					<DropdownMenuTrigger>
 						<Avatar className="h-8 w-8">
-							<Image src={userAvatarUrl} alt="avatar" width={32} height={32} />
+							{/* 아바타는 외부(소셜 로그인) 도메인에서 오므로 이미지 프록시를 태우지 않는다. */}
+							<Image
+								src={userAvatarUrl}
+								alt="avatar"
+								width={32}
+								height={32}
+								unoptimized
+							/>
 						</Avatar>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent>

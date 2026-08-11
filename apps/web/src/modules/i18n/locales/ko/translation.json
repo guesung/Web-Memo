@@ -426,7 +426,12 @@
 		"deleteCategory": "카테고리 삭제하기",
 		"defaultCategoryName": "새 카테고리",
 		"export": "내보내기",
-		"exportMemos": "메모 내보내기"
+		"exportMemos": "메모 내보내기",
+		"exportEmpty": "내보낼 메모가 없어요",
+		"exportError": "메모를 내보내지 못했어요. 다시 시도해주세요",
+		"memoSection": "메모 섹션 표시",
+		"showImpressionSection": "메모 작성 시 느낀 점 입력란을 표시합니다",
+		"showActionItemSection": "메모 작성 시 액션 아이템 입력란을 표시합니다"
 	},
 
 	"guide": {

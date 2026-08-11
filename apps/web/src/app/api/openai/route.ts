@@ -1,30 +1,17 @@
 import { EXTENSION } from "@web-memo/shared/constants";
 import type { NextRequest } from "next/server";
 import type { ChatCompletionMessageParam } from "openai/resources.mjs";
-import { ERROR_MESSAGES, HTTP_STATUS } from "./constant";
+import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "./constant";
 import { checkRateLimit, formatRemainingTime } from "./ratelimit";
 import {
 	createErrorResponse,
 	createStreamingResponse,
 	handleOpenAIError,
 	validateMessages,
+	verifyAuthorization,
 } from "./util";
 
 export const runtime = "edge";
-
-function getClientIp(request: NextRequest): string {
-	const forwardedFor = request.headers.get("x-forwarded-for");
-	if (forwardedFor) {
-		return forwardedFor.split(",")[0].trim();
-	}
-
-	const realIp = request.headers.get("x-real-ip");
-	if (realIp) {
-		return realIp;
-	}
-
-	return "unknown";
-}
 
 export async function POST(request: NextRequest) {
 	try {
@@ -38,8 +25,15 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		const clientIp = getClientIp(request);
-		const rateLimitResult = await checkRateLimit(clientIp);
+		const auth = await verifyAuthorization(request);
+		if (!auth) {
+			return createErrorResponse(
+				ERROR_MESSAGES.LOGIN_REQUIRED,
+				HTTP_STATUS.UNAUTHORIZED,
+			);
+		}
+
+		const rateLimitResult = await checkRateLimit(auth.userId);
 
 		if (!rateLimitResult.success) {
 			const remainingTime = formatRemainingTime(rateLimitResult.resetInSeconds);
@@ -74,4 +68,11 @@ export async function POST(request: NextRequest) {
 			HTTP_STATUS.INTERNAL_SERVER_ERROR,
 		);
 	}
+}
+
+export async function OPTIONS() {
+	return new Response(null, {
+		status: 200,
+		headers: CORS_HEADERS,
+	});
 }

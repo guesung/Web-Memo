@@ -7,14 +7,42 @@ import {
 	MessageCircle,
 	User,
 } from "lucide-react-native";
-import { Alert, Linking, Text, TouchableOpacity, View } from "react-native";
+import {
+	Alert,
+	Linking,
+	Switch,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import {
+	useMemoSectionSettings,
+	useMemoSectionSettingsSave,
+} from "@/lib/hooks/useMemoSectionSettings";
 
 export default function SettingsScreen() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 	const { session, signOut, isLoggedIn } = useAuth();
+	const { isImpressionSectionEnabled, isActionItemSectionEnabled } =
+		useMemoSectionSettings();
+	const { mutate: saveMemoSectionSettings } = useMemoSectionSettingsSave();
+
+	const handleImpressionSectionToggle = (isEnabled: boolean) => {
+		saveMemoSectionSettings({
+			isImpressionSectionEnabled: isEnabled,
+			isActionItemSectionEnabled,
+		});
+	};
+
+	const handleActionItemSectionToggle = (isEnabled: boolean) => {
+		saveMemoSectionSettings({
+			isImpressionSectionEnabled,
+			isActionItemSectionEnabled: isEnabled,
+		});
+	};
 
 	const handleSignOut = () => {
 		Alert.alert("로그아웃", "로그아웃 하시겠습니까?", [
@@ -80,6 +108,43 @@ export default function SettingsScreen() {
 								</Text>
 							</TouchableOpacity>
 						)}
+					</View>
+				</View>
+
+				{/* Memo Section Visibility */}
+				<View className="mb-7">
+					<Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">
+						메모 작성
+					</Text>
+					<View className="bg-card rounded-[14px] p-4 border border-muted">
+						<View className="flex-row justify-between items-center py-2">
+							<View className="flex-1 mr-3">
+								<Text className="text-[15px] text-secondary-foreground">
+									느낀 점 입력란 표시
+								</Text>
+								<Text className="text-[13px] text-muted-foreground mt-0.5">
+									이미 작성한 내용은 계속 보여요
+								</Text>
+							</View>
+							<Switch
+								value={isImpressionSectionEnabled}
+								onValueChange={handleImpressionSectionToggle}
+							/>
+						</View>
+						<View className="flex-row justify-between items-center py-2">
+							<View className="flex-1 mr-3">
+								<Text className="text-[15px] text-secondary-foreground">
+									액션 아이템 입력란 표시
+								</Text>
+								<Text className="text-[13px] text-muted-foreground mt-0.5">
+									이미 작성한 내용은 계속 보여요
+								</Text>
+							</View>
+							<Switch
+								value={isActionItemSectionEnabled}
+								onValueChange={handleActionItemSectionToggle}
+							/>
+						</View>
 					</View>
 				</View>
 

@@ -10,6 +10,7 @@ import SettingCategoryForm from "./SettingCategoryForm";
 import SettingExport from "./SettingExport";
 import SettingGuide from "./SettingGuide";
 import SettingLanguage from "./SettingLanguage";
+import SettingMemoSection from "./SettingMemoSection";
 
 interface SettingProps extends LanguageType {}
 
@@ -24,6 +25,7 @@ export default function Setting({ lng }: SettingProps) {
 		>
 			<Suspense fallback={<Loading />}>
 				<SettingLanguage lng={lng} />
+				<SettingMemoSection lng={lng} />
 				<SettingGuide lng={lng} />
 				<SettingExport lng={lng} />
 				<SettingCategoryForm lng={lng} />

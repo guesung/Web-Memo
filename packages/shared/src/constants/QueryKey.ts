@@ -1,19 +1,25 @@
+import type { MemoSearchTarget } from "../utils/memoSearchFilter";
+
 export type MemoSortBy = "updated_at" | "created_at" | "title";
+
+/** 메모 목록(무한 스크롤) 쿼리를 구분하는 필터 조합 */
+export interface MemosPaginatedKeyParams {
+	category?: string;
+	isWish?: boolean;
+	isStar?: boolean;
+	searchQuery?: string;
+	searchTarget?: MemoSearchTarget;
+	sortBy?: MemoSortBy;
+}
 
 export const QUERY_KEY = {
 	tab: () => ["tab"],
 	memos: () => ["memos"],
 	memo: (params: { url?: string; id?: number }) => ["memo", params],
-	memosPaginated: (
-		category?: string,
-		isWish?: boolean,
-		searchQuery?: string,
-		sortBy?: MemoSortBy,
-		isStar?: boolean,
-	) => [
+	memosPaginated: (params: MemosPaginatedKeyParams) => [
 		"memos",
 		"paginated",
-		{ category, isWish, searchQuery, sortBy, isStar },
+		params,
 	],
 	option: () => ["option"],
 	supabaseClient: () => ["supabaseClient"],

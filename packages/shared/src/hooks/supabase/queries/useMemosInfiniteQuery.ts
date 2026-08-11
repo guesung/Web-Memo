@@ -2,7 +2,11 @@ import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { type MemoSortBy, QUERY_KEY } from "../../../constants";
 import type { GetMemoResponse } from "../../../types";
-import { MemoService } from "../../../utils";
+import {
+	type MemoPageCursor,
+	type MemoSearchTarget,
+	MemoService,
+} from "../../../utils";
 
 import useSupabaseClientQuery from "./useSupabaseClientQuery";
 
@@ -13,7 +17,27 @@ interface UseMemosInfiniteQueryProps {
 	isWish?: boolean;
 	isStar?: boolean;
 	searchQuery?: string;
+	searchTarget?: MemoSearchTarget;
 	sortBy?: MemoSortBy;
+}
+
+/** 페이지의 마지막 메모에서 다음 페이지 조회에 쓸 복합 커서를 만든다. */
+function getNextCursor(
+	lastMemo: GetMemoResponse | undefined,
+	sortBy: MemoSortBy,
+): MemoPageCursor | undefined {
+	if (!lastMemo) return undefined;
+
+	const value =
+		sortBy === "title"
+			? lastMemo.title
+			: sortBy === "created_at"
+				? lastMemo.created_at
+				: lastMemo.updated_at;
+
+	if (value === null || value === undefined) return undefined;
+
+	return { value, id: lastMemo.id };
 }
 
 export default function useMemosInfiniteQuery({
@@ -21,6 +45,7 @@ export default function useMemosInfiniteQuery({
 	isWish,
 	isStar,
 	searchQuery,
+	searchTarget,
 	sortBy = "updated_at",
 }: UseMemosInfiniteQueryProps = {}) {
 	const { data: supabaseClient } = useSupabaseClientQuery();
@@ -30,13 +55,14 @@ export default function useMemosInfiniteQuery({
 	);
 
 	const query = useSuspenseInfiniteQuery({
-		queryKey: QUERY_KEY.memosPaginated(
+		queryKey: QUERY_KEY.memosPaginated({
 			category,
 			isWish,
-			searchQuery,
-			sortBy,
 			isStar,
-		),
+			searchQuery,
+			searchTarget,
+			sortBy,
+		}),
 		queryFn: async ({ pageParam }) => {
 			const result = await memoService.getMemosPaginated({
 				cursor: pageParam,
@@ -45,6 +71,7 @@ export default function useMemosInfiniteQuery({
 				isWish,
 				isStar,
 				searchQuery,
+				searchTarget,
 				sortBy,
 			});
 
@@ -53,19 +80,13 @@ export default function useMemosInfiniteQuery({
 				count: result.count ?? 0,
 			};
 		},
-		initialPageParam: undefined as string | undefined,
+		initialPageParam: undefined as MemoPageCursor | undefined,
 		getNextPageParam: (lastPage) => {
 			if (lastPage.data.length < PAGE_SIZE) {
 				return undefined;
 			}
-			const lastMemo = lastPage.data.at(-1);
-			if (sortBy === "title") {
-				return lastMemo?.title ?? undefined;
-			}
-			if (sortBy === "created_at") {
-				return lastMemo?.created_at ?? undefined;
-			}
-			return lastMemo?.updated_at ?? undefined;
+
+			return getNextCursor(lastPage.data.at(-1), sortBy);
 		},
 	});
 

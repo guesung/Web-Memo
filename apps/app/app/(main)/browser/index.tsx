@@ -33,6 +33,7 @@ export default function BrowserScreen() {
 		resizeGesture,
 		handleUrlSubmit,
 		handleNavigationStateChange,
+		handleShouldStartLoadWithRequest,
 		handleWebViewMessage,
 		handleWishToggle,
 		toggleMemo,
@@ -89,12 +90,15 @@ export default function BrowserScreen() {
 						source={{ uri: currentUrl }}
 						onNavigationStateChange={handleNavigationStateChange}
 						onMessage={handleWebViewMessage}
+						onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
 						injectedJavaScript={SCROLL_DETECT_JS}
 						className="flex-1"
 						javaScriptEnabled
 						domStorageEnabled
 						startInLoadingState
 						allowsBackForwardNavigationGestures
+						// target="_blank" 링크가 외부 브라우저로 빠지지 않고 현재 웹뷰에서 열리도록 한다(Android)
+						setSupportMultipleWindows={false}
 					/>
 				</View>
 

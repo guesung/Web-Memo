@@ -14,6 +14,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type WebView from "react-native-webview";
 import type { WebViewNavigation } from "react-native-webview";
+import type { ShouldStartLoadRequest } from "react-native-webview/lib/WebViewTypes";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
 import { useFavoriteToggle, useIsFavorite } from "@/lib/hooks/useFavorites";
@@ -30,6 +31,10 @@ import {
 import { shareUrl } from "@/lib/sharing/shareUrl";
 import { getPanelRatio, savePanelRatio } from "../_utils/browserPreferences";
 import { formatUrl } from "../_utils/formatUrl";
+import {
+	isInAppLoadableUrl,
+	openExternalUrl,
+} from "../_utils/webViewNavigation";
 import {
 	INJECTED_JS_ON_NAVIGATION,
 	SCROLL_DETECT_JS,
@@ -127,6 +132,22 @@ export function useBrowserState() {
 			webViewRef.current?.injectJavaScript(INJECTED_JS_ON_NAVIGATION);
 		}
 	};
+
+	// 웹 링크는 앱 내 웹뷰에서 그대로 로드하고, 앱을 여는 스킴(intent://, market://, tel: 등)만 외부로 넘긴다.
+	const handleShouldStartLoadWithRequest = useCallback(
+		(request: ShouldStartLoadRequest) => {
+			if (isInAppLoadableUrl(request.url)) return true;
+
+			const openExternalWithFallback = async () => {
+				const fallbackUrl = await openExternalUrl(request.url);
+				if (fallbackUrl) setCurrentUrl(fallbackUrl);
+			};
+			openExternalWithFallback();
+
+			return false;
+		},
+		[],
+	);
 
 	const handleUrlSubmit = () => {
 		const url = formatUrl(urlInput);
@@ -342,6 +363,7 @@ export function useBrowserState() {
 		resizeGesture,
 		handleUrlSubmit,
 		handleNavigationStateChange,
+		handleShouldStartLoadWithRequest,
 		handleWebViewMessage,
 		handleWishToggle,
 		toggleMemo,

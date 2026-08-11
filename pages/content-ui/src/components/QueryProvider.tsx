@@ -1,5 +1,9 @@
 "use client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+	MutationCache,
+	QueryClient,
+	QueryClientProvider,
+} from "@tanstack/react-query";
 import type { PropsWithChildren } from "react";
 import { useState } from "react";
 
@@ -7,13 +11,12 @@ export default function QueryProvider({ children }: PropsWithChildren) {
 	const [queryClient] = useState(
 		() =>
 			new QueryClient({
-				defaultOptions: {
-					mutations: {
-						onError: (error) => {
-							console.error("Mutation error:", error);
-						},
+				// 개별 useMutation의 onError에 덮어써지지 않도록 MutationCache에 등록한다.
+				mutationCache: new MutationCache({
+					onError: (error) => {
+						console.error("Mutation error:", error);
 					},
-				},
+				}),
 			}),
 	);
 

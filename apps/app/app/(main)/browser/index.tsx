@@ -21,6 +21,7 @@ export default function BrowserScreen() {
 		isBlogSheetOpen,
 		setIsBlogSheetOpen,
 		setContentHeight,
+		keyboardBottomInset,
 		wishToast,
 		pageTitle,
 		pageFavIconUrl,
@@ -58,7 +59,7 @@ export default function BrowserScreen() {
 	return (
 		<KeyboardAvoidingView
 			className="flex-1 bg-white"
-			style={{ paddingTop: insets.top }}
+			style={{ paddingTop: insets.top, paddingBottom: keyboardBottomInset }}
 			behavior={Platform.OS === "ios" ? "padding" : undefined}
 		>
 			<BrowserHeader

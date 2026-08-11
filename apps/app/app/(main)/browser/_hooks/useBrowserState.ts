@@ -2,7 +2,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Keyboard } from "react-native";
+import { Keyboard, Platform } from "react-native";
 import { Gesture } from "react-native-gesture-handler";
 import {
 	runOnJS,
@@ -18,6 +18,7 @@ import type { ShouldStartLoadRequest } from "react-native-webview/lib/WebViewTyp
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
 import { useFavoriteToggle, useIsFavorite } from "@/lib/hooks/useFavorites";
+import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
 import {
 	useLocalMemoByUrl,
 	useLocalMemoDelete,
@@ -86,6 +87,16 @@ export function useBrowserState() {
 
 	const panelHeight = useSharedValue(0);
 	const dragStartHeight = useSharedValue(0);
+
+	const { keyboardHeight } = useKeyboardHeight();
+
+	// iOS는 KeyboardAvoidingView가 키보드만큼 화면을 밀어 올리지만,
+	// Android는 edge-to-edge에서 창이 리사이즈되지 않아 그 동작이 먹지 않는다.
+	// 키보드 높이(내비게이션 바 제외)에 하단 인셋을 더해 직접 여백을 만든다.
+	const keyboardBottomInset =
+		Platform.OS === "android" && keyboardHeight > 0
+			? keyboardHeight + insets.bottom
+			: 0;
 
 	const { tabBarTranslateY, headerTranslateY, isBrowserActive } =
 		useBrowserScroll();
@@ -323,9 +334,16 @@ export function useBrowserState() {
 			}
 		});
 
-	const memoAnimatedStyle = useAnimatedStyle(() => ({
-		height: Math.max(0, panelHeight.value),
-	}));
+	// 키보드가 올라오면 콘텐츠 영역이 줄어드는데 panelHeight는 픽셀 고정값이라 패널이 잘릴 수 있다.
+	// 렌더 높이만 가용 영역으로 제한하고 panelHeight 자체는 유지해, 키보드가 내려가면 원래 높이로 돌아온다.
+	const memoAnimatedStyle = useAnimatedStyle(() => {
+		const availableHeight =
+			contentHeight > 0 ? contentHeight : panelHeight.value;
+
+		return {
+			height: Math.max(0, Math.min(panelHeight.value, availableHeight)),
+		};
+	});
 
 	const headerWrapperStyle = useAnimatedStyle(() => ({
 		height: Math.max(0, HEADER_HEIGHT + headerTranslateY.value),
@@ -351,6 +369,7 @@ export function useBrowserState() {
 		setIsBlogSheetOpen,
 		contentHeight,
 		setContentHeight,
+		keyboardBottomInset,
 		wishToast,
 		pageTitle,
 		pageFavIconUrl,

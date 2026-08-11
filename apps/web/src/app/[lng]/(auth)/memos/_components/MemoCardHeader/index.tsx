@@ -79,6 +79,8 @@ export default memo(function MemoCardHeader({
 							alt="favicon"
 							className="w-full h-full object-contain"
 							priority
+							// 파비콘은 임의 도메인에서 오므로 이미지 프록시(과금 대상)를 태우지 않고 원본을 그대로 쓴다.
+							unoptimized
 						/>
 					</div>
 				) : (

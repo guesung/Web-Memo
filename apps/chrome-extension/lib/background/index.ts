@@ -7,7 +7,7 @@ import {
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
-import { MemoService } from "@web-memo/shared/utils";
+import { MemoService, normalizeUrl } from "@web-memo/shared/utils";
 import { getSupabaseClient, I18n, Tab } from "@web-memo/shared/utils/extension";
 
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
@@ -97,17 +97,22 @@ bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
 		const supabaseClient = await getSupabaseClient();
 		const memoService = new MemoService(supabaseClient);
 
-		const existingMemo = await memoService.getMemoByUrl(payload.url);
+		// 사이드 패널·웹과 같은 기준으로 메모를 찾도록 URL을 정규화한다.
+		const normalizedUrl = normalizeUrl(payload.url);
+		const existingMemo = await memoService.getMemoByUrl(normalizedUrl);
 
 		if (existingMemo.error) {
 			sendResponse({ success: false, error: existingMemo.error.message });
 			return;
 		}
 
-		if (existingMemo.data) {
-			const updatedMemo = `${existingMemo.data[0].memo}${existingMemo.data[0].memo ? "\n\n" : ""}${payload.memo}`;
+		// Supabase는 결과가 없을 때 빈 배열을 돌려주므로 첫 번째 요소로 존재 여부를 판단한다.
+		const currentMemo = existingMemo.data?.[0];
+
+		if (currentMemo) {
+			const updatedMemo = `${currentMemo.memo}${currentMemo.memo ? "\n\n" : ""}${payload.memo}`;
 			const result = await memoService.updateMemo({
-				id: existingMemo.data[0].id,
+				id: currentMemo.id,
 				request: { memo: updatedMemo },
 			});
 
@@ -117,7 +122,10 @@ bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
 				sendResponse({ success: true });
 			}
 		} else {
-			const result = await memoService.insertMemo(payload);
+			const result = await memoService.insertMemo({
+				...payload,
+				url: normalizedUrl,
+			});
 
 			if (result.error) {
 				sendResponse({ success: false, error: result.error.message });
@@ -128,7 +136,8 @@ bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
 	} catch (error) {
 		sendResponse({
 			success: false,
-			error: error instanceof Error ? error.message : "메모 생성에 실패했습니다.",
+			error:
+				error instanceof Error ? error.message : I18n.get("toast_error_save"),
 		});
 	}
 });

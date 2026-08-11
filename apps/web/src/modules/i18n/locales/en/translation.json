@@ -432,6 +432,8 @@
 		"defaultCategoryName": "New category",
 		"export": "Export",
 		"exportMemos": "Export memos",
+		"exportEmpty": "There are no memos to export",
+		"exportError": "Couldn't export your memos. Please try again",
 		"memoSection": "Memo sections",
 		"showImpressionSection": "Show the impression field when writing a memo",
 		"showActionItemSection": "Show the action items field when writing a memo"

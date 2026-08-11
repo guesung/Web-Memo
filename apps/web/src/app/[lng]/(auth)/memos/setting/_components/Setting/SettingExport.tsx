@@ -1,5 +1,6 @@
 "use client";
 
+import { captureException } from "@sentry/nextjs";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import type { GetMemoResponse } from "@web-memo/shared/types";
@@ -13,6 +14,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 	Label,
+	toast,
 } from "@web-memo/ui";
 import {
 	Download,
@@ -37,13 +39,21 @@ export default function SettingExport({ lng }: SettingExportProps) {
 		try {
 			const supabaseClient = getSupabaseClient();
 			const memoService = new MemoService(supabaseClient);
-			const { data } = await memoService.getMemos();
+			const { data, error } = await memoService.getMemos();
 
-			if (data && data.length > 0) {
-				exportMemos(data as GetMemoResponse[], format);
+			if (error) {
+				throw error;
 			}
+
+			if (!data || data.length === 0) {
+				toast({ title: t("setting.exportEmpty") });
+				return;
+			}
+
+			exportMemos(data as GetMemoResponse[], format);
 		} catch (error) {
-			console.error("Export failed:", error);
+			captureException(error);
+			toast({ title: t("setting.exportError") });
 		} finally {
 			setIsLoading(false);
 		}

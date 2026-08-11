@@ -2,7 +2,12 @@ import { EXTENSION } from "@web-memo/shared/constants";
 import { type NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "../constant";
-import { createErrorResponse, handleOpenAIError } from "../util";
+import { checkRateLimit, formatRemainingTime } from "../ratelimit";
+import {
+	createErrorResponse,
+	handleOpenAIError,
+	verifyAuthorization,
+} from "../util";
 import { OPENAI_MODEL, OPENAI_SETTINGS, SYSTEM_MESSAGE } from "./constant";
 import type { CategorySuggestionResponse } from "./type";
 import {
@@ -35,6 +40,24 @@ export async function POST(request: NextRequest) {
 				ERROR_MESSAGES.UNAUTHORIZED,
 				HTTP_STATUS.FORBIDDEN,
 			);
+		}
+
+		const auth = await verifyAuthorization(request);
+		if (!auth) {
+			return createErrorResponse(
+				ERROR_MESSAGES.LOGIN_REQUIRED,
+				HTTP_STATUS.UNAUTHORIZED,
+			);
+		}
+
+		const rateLimitResult = await checkRateLimit(auth.userId);
+		if (!rateLimitResult.success) {
+			const remainingTime = formatRemainingTime(rateLimitResult.resetInSeconds);
+			const errorMessage = ERROR_MESSAGES.RATE_LIMIT_EXCEEDED.replace(
+				"{time}",
+				remainingTime,
+			);
+			return createErrorResponse(errorMessage, HTTP_STATUS.TOO_MANY_REQUESTS);
 		}
 
 		const body = await request.json();

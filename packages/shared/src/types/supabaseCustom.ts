@@ -23,8 +23,10 @@ export type CategorySupabaseResponse = PostgrestSingleResponse<
 	Array<CategoryTable["Row"]>
 >;
 
+// getMemos는 내부에서 GetMemoResponse를 사용하므로 순환 참조를 피해
+// 실제 select 구문을 가진 getMemoPage에서 행 타입을 끌어온다.
 export type GetMemoResponse = QueryData<
-	ReturnType<MemoService["getMemos"]>
+	ReturnType<MemoService["getMemoPage"]>
 >[number];
 
 export type FeedbackSupabaseClient = SupabaseClient<Database, "feedback">;

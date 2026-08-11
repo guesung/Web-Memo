@@ -1,5 +1,5 @@
 import { CONFIG } from "@web-memo/env";
-import { I18n } from "@web-memo/shared/utils/extension";
+import { getSupabaseAccessToken, I18n } from "@web-memo/shared/utils/extension";
 import { useCallback, useState } from "react";
 import { usePageContentContext } from "../../components/PageContentProvider";
 import { getSummaryPrompt, processStreamingResponse } from "./util";
@@ -34,11 +34,13 @@ export default function useSummary(): UseSummaryReturn {
 
 		try {
 			const messages = await getSummaryPrompt(content, category);
+			const accessToken = await getSupabaseAccessToken();
 
 			const response = await fetch(`${CONFIG.webUrl}/api/openai`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
+					...(accessToken && { Authorization: `Bearer ${accessToken}` }),
 				},
 				body: JSON.stringify({ messages }),
 			});

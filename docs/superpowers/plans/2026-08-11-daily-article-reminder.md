@@ -32,7 +32,7 @@
 **Interfaces:**
 - Produces: `memo.notification_setting(user_id, "isEnabled", "notifyTime", timezone, updated_at)`, `memo.push_token(id, user_id, token, platform, updated_at)`, `memo.notification_log(id, user_id, memo_id, sent_at)` — Task 2(타입), Task 4(Edge Function), Task 6~7(앱 훅)이 이 스키마에 의존
 
-- [ ] **Step 1: 마이그레이션 SQL 작성**
+- [x] **Step 1: 마이그레이션 SQL 작성**
 
 ```sql
 -- 매일 아침 아티클 리마인더 알림용 테이블 3개.
@@ -96,12 +96,12 @@ GRANT USAGE, SELECT ON SEQUENCE memo.push_token_id_seq TO authenticated;
 GRANT USAGE, SELECT ON SEQUENCE memo.notification_log_id_seq TO authenticated;
 ```
 
-- [ ] **Step 2: SQL 문법 셀프 체크**
+- [x] **Step 2: SQL 문법 셀프 체크**
 
 로컬 Supabase가 있으면 `supabase db reset`(또는 `supabase migration up`)으로 적용 확인.
 없으면 위 SQL을 눈으로 재검토(따옴표 camelCase 컬럼, FK 대상 `memo.memo(id)` 존재 확인 — `packages/shared/src/types/supabase.ts:84` 근처의 memo Row와 대조).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add packages/supabase-edge-functions/supabase/migrations/20260811_add_notification_tables.sql
@@ -119,7 +119,7 @@ git commit -m "feat: 알림 설정·푸시 토큰·발송 로그 테이블 마�
 - Consumes: Task 1의 테이블 스키마
 - Produces: `Database["memo"]["Tables"]["notification_setting" | "push_token" | "notification_log"]` 타입 — Task 6~7의 앱 훅이 사용
 
-- [ ] **Step 1: 타입 추가**
+- [x] **Step 1: 타입 추가**
 
 `memo` 테이블 블록(`Relationships: [...]` 닫힌 직후, category와 같은 들여쓰기 레벨)에 아래 3개 테이블을 추가:
 
@@ -205,12 +205,12 @@ git commit -m "feat: 알림 설정·푸시 토큰·발송 로그 테이블 마�
 
 > 참고: 원칙은 `pnpm generate-supabase-type` 재생성이지만, 마이그레이션이 원격 DB에 적용되기 전이므로 수동 추가한다. 원격 적용 후 재생성하면 동일 결과가 나오도록 실제 스키마와 1:1로 맞춘다.
 
-- [ ] **Step 2: 타입 체크**
+- [x] **Step 2: 타입 체크**
 
 Run: `pnpm type-check`
 Expected: PASS (기존 에러 0 유지)
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add packages/shared/src/types/supabase.ts
@@ -232,7 +232,7 @@ git commit -m "feat: 알림 테이블 Supabase 타입 추가"
   - Task 4의 Edge Function이 `./timeBucket.ts`로 import (Deno 스타일 확장자 포함)
 - 제약: **Deno/Node 양쪽에서 동작해야 하므로 import 0개, Web 표준 API(Intl)만 사용**
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `timeBucket.test.ts`:
 
@@ -291,12 +291,12 @@ describe("getLocalDateString", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실패 확인**
+- [x] **Step 2: 테스트 실패 확인**
 
 Run: `pnpm test:jest -- packages/supabase-edge-functions/supabase/functions/daily-article-reminder/timeBucket.test.ts`
 Expected: FAIL — `Cannot find module './timeBucket'` 류 에러
 
-- [ ] **Step 3: 구현**
+- [x] **Step 3: 구현**
 
 `timeBucket.ts`:
 
@@ -353,12 +353,12 @@ export function getLocalDateString(date: Date, timezone: string): string {
 }
 ```
 
-- [ ] **Step 4: 테스트 통과 확인**
+- [x] **Step 4: 테스트 통과 확인**
 
 Run: `pnpm test:jest -- packages/supabase-edge-functions/supabase/functions/daily-article-reminder/timeBucket.test.ts`
 Expected: PASS (8 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add packages/supabase-edge-functions/supabase/functions/daily-article-reminder/
@@ -378,7 +378,7 @@ git commit -m "feat: 알림 시각 30분 버킷 판정 순수 함수 추가"
 - 환경 변수: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`(Supabase가 자동 주입), `CRON_SECRET`(수동 등록)
 - 푸시 페이로드 `data`: `{ url: string, memoId: number }` — Task 8의 observer가 `data.url`을 읽음
 
-- [ ] **Step 1: 구현**
+- [x] **Step 1: 구현**
 
 ```typescript
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
@@ -577,7 +577,7 @@ serve(async (req) => {
 });
 ```
 
-- [ ] **Step 2: 로컬 수동 검증 (가능한 경우)**
+- [x] **Step 2: 로컬 수동 검증 (가능한 경우)**
 
 로컬 Supabase가 구동 중이면:
 
@@ -593,7 +593,7 @@ curl -i -X POST http://127.0.0.1:54321/functions/v1/daily-article-reminder \
 
 로컬 환경이 없으면 코드 리뷰로 대체하고 배포 후 검증(Task 9 체크리스트)로 미룬다.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts
@@ -612,7 +612,7 @@ git commit -m "feat: 매일 아침 아티클 리마인더 Edge Function 추가"
 - Produces: 30분마다 함수를 호출하는 cron job `daily-article-reminder`
 - 전제: Supabase Vault에 `project_url`, `cron_secret` 시크릿이 등록돼 있어야 함(사람 작업, Task 9)
 
-- [ ] **Step 1: cron 마이그레이션 작성**
+- [x] **Step 1: cron 마이그레이션 작성**
 
 ```sql
 -- 30분마다 daily-article-reminder Edge Function을 호출한다.
@@ -647,7 +647,7 @@ SELECT cron.schedule(
 );
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add packages/supabase-edge-functions/supabase/migrations/20260812_schedule_article_reminder_cron.sql
@@ -666,7 +666,7 @@ git commit -m "feat: 아티클 리마인더 30분 주기 pg_cron 잡 등록"
 - Consumes: Task 2 타입(`push_token` upsert), `supabase` 클라이언트(`@/lib/supabase/client`)
 - Produces: `async function registerPushToken(): Promise<boolean>` — 권한 요청→토큰 발급→upsert. 성공 시 true. Task 7의 설정 훅과 Task 8의 앱 시작 로직이 호출
 
-- [ ] **Step 1: 의존성 설치**
+- [x] **Step 1: 의존성 설치**
 
 ```bash
 cd apps/app
@@ -675,7 +675,7 @@ pnpm add expo-notifications expo-device
 
 Expected: package.json dependencies에 두 패키지 추가됨 (expo SDK 54 호환 버전)
 
-- [ ] **Step 2: app.json plugins에 expo-notifications 추가**
+- [x] **Step 2: app.json plugins에 expo-notifications 추가**
 
 `apps/app/app.json`의 `plugins` 배열에서 `"expo-sqlite"` 항목 뒤에 추가:
 
@@ -689,7 +689,7 @@ Expected: package.json dependencies에 두 패키지 추가됨 (expo SDK 54 호�
 			],
 ```
 
-- [ ] **Step 3: registerPushToken.ts 작성**
+- [x] **Step 3: registerPushToken.ts 작성**
 
 ```typescript
 import Constants from "expo-constants";
@@ -751,12 +751,12 @@ export async function registerPushToken(): Promise<boolean> {
 }
 ```
 
-- [ ] **Step 4: 타입 체크**
+- [x] **Step 4: 타입 체크**
 
 Run: `pnpm type-check`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/app/package.json apps/app/app.json apps/app/lib/notifications/registerPushToken.ts pnpm-lock.yaml
@@ -780,7 +780,7 @@ git commit -m "feat: expo-notifications 도입 및 푸시 토큰 등록 모듈 �
   - `interface IFNotificationSetting { isEnabled: boolean; notifyTime: string }` (notifyTime은 `"HH:MM"`)
   - `function NotificationTimePicker({ value, onTimeChange }: IFNotificationTimePickerProps)` — 30분 단위 시간 선택 모달
 
-- [ ] **Step 1: useNotificationSetting.ts 작성**
+- [x] **Step 1: useNotificationSetting.ts 작성**
 
 ```typescript
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -871,7 +871,7 @@ export function useNotificationSettingSave() {
 }
 ```
 
-- [ ] **Step 2: NotificationTimePicker.tsx 작성**
+- [x] **Step 2: NotificationTimePicker.tsx 작성**
 
 30분 단위 48개 옵션을 모달 FlatList로 보여주는 단순 피커:
 
@@ -971,7 +971,7 @@ export function NotificationTimePicker({
 }
 ```
 
-- [ ] **Step 3: 설정 화면에 "알림" 섹션 추가**
+- [x] **Step 3: 설정 화면에 "알림" 섹션 추가**
 
 `apps/app/app/(main)/settings/index.tsx` 수정:
 
@@ -1059,12 +1059,12 @@ JSX — "메모 작성" 섹션(`{/* Memo Section Visibility */}` 블록) 다음�
 				)}
 ```
 
-- [ ] **Step 4: 타입 체크 + 린트**
+- [x] **Step 4: 타입 체크 + 린트**
 
 Run: `pnpm type-check && pnpm lint`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/app/lib/hooks/useNotificationSetting.ts "apps/app/app/(main)/settings/_components/NotificationTimePicker.tsx" "apps/app/app/(main)/settings/index.tsx"
@@ -1083,7 +1083,7 @@ git commit -m "feat: 앱 설정에 매일 아침 알림 토글·시간 설정 �
 - Consumes: Task 4가 보내는 페이로드 `data: { url, memoId }`, Task 6의 `registerPushToken`
 - Produces: 알림 탭 시 `/(main)/browser?url=<url>&t=<ts>` 라우팅 (브라우저 화면은 이미 `url`/`t` 파라미터를 처리함 — `useBrowserState.ts:55`)
 
-- [ ] **Step 1: useNotificationObserver.ts 작성**
+- [x] **Step 1: useNotificationObserver.ts 작성**
 
 ```typescript
 import * as Notifications from "expo-notifications";
@@ -1120,7 +1120,7 @@ export function useNotificationObserver() {
 }
 ```
 
-- [ ] **Step 2: _layout.tsx에 핸들러·옵저버·토큰 재등록 연결**
+- [x] **Step 2: _layout.tsx에 핸들러·옵저버·토큰 재등록 연결**
 
 `apps/app/app/_layout.tsx` 수정:
 
@@ -1172,12 +1172,12 @@ function NotificationBridge() {
 				<ShareIntentHandler />
 ```
 
-- [ ] **Step 3: 타입 체크 + 린트**
+- [x] **Step 3: 타입 체크 + 린트**
 
 Run: `pnpm type-check && pnpm lint`
 Expected: PASS
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/app/lib/notifications/useNotificationObserver.ts apps/app/app/_layout.tsx
@@ -1195,7 +1195,7 @@ git commit -m "feat: 알림 탭 시 앱 내 브라우저로 아티클 여는 딥
 - Consumes: Task 1~8 전체
 - Produces: AGENTS.md 규칙에 따른 작업 문서 + 사람이 해야 하는 배포 절차 체크리스트
 
-- [ ] **Step 1: 문서 작성**
+- [x] **Step 1: 문서 작성**
 
 AGENTS.md 템플릿(Summary/Changes Made/Technical Details/Related Issues/Notes)에 맞춰 작성.
 Notes 절에 **사람이 해야 하는 배포 체크리스트**를 반드시 포함:
@@ -1215,12 +1215,12 @@ Notes 절에 **사람이 해야 하는 배포 체크리스트**를 반드시 포
 - [ ] cron 검증: 설정 시각을 다음 30분 버킷으로 맞추고 실제 푸시 도착 확인
 ```
 
-- [ ] **Step 2: 최종 전체 검증**
+- [x] **Step 2: 최종 전체 검증**
 
 Run: `pnpm type-check && pnpm lint && pnpm test:jest`
 Expected: 모두 PASS
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add claudedocs/2026-08-11-daily-article-reminder.md

@@ -3277,7 +3277,7 @@ pnpm test:jest run "apps/web/src/app/[lng]/(auth)/highlights/_utils/groupByUrl.t
 ```typescript
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import type { HighlightRow } from "@web-memo/shared/types";
-import { HighlightService } from "@web-memo/shared/utils/services";
+import { HighlightService } from "@web-memo/shared/utils";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { useSupabaseClientQuery } from "@web-memo/shared/hooks";
 
@@ -3323,7 +3323,15 @@ export function useHighlightList({ searchQuery }: { searchQuery?: string }) {
 export * from "./useHighlightList";
 ```
 
-`useSupabaseClientQuery`의 실제 export 경로는 `packages/shared/src/hooks/supabase/queries/useSupabaseClientQuery.ts`를 확인해 맞춘다.
+`useSupabaseClientQuery`는 `packages/shared/src/hooks/supabase/queries/index.ts`에서 **default export를 named로 re-export**한다(`export { default as useSupabaseClientQuery } from "./useSupabaseClientQuery"`). 따라서 `@web-memo/shared/hooks`에서 named import로 가져오면 된다.
+
+**페이지 props 타입은 `LanguageParams`를 쓴다.** `apps/web/src/modules/i18n/type.ts`에 정의돼 있고 기존 `memos/page.tsx`가 그렇게 쓴다:
+
+```typescript
+import type { LanguageParams } from "@src/modules/i18n";
+
+export default async function Page({ params: { lng } }: LanguageParams) {
+```
 
 - [ ] **Step 7: 컴포넌트 작성**
 
@@ -3483,11 +3491,11 @@ export * from "./HighlightEmptyState";
 ```tsx
 "use server";
 
-import HydrationBoundaryWrapper from "@src/components/HydrationBoundaryWrapper";
+import { HydrationBoundaryWrapper } from "@src/components";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import type { Language } from "@web-memo/shared/constants";
-import { HighlightService } from "@web-memo/shared/utils/services";
+import { HighlightService } from "@web-memo/shared/utils";
 import { Suspense } from "react";
 import { HighlightView } from "./_components";
 
@@ -3496,7 +3504,7 @@ export default async function HighlightsPage({
 }: {
 	params: { lng: Language };
 }) {
-	const supabaseClient = await getSupabaseClient();
+	const supabaseClient = getSupabaseClient();
 	const highlightService = new HighlightService(supabaseClient);
 
 	return (
@@ -3666,7 +3674,7 @@ git commit -m "feat: 하이라이트 페이지 사이드바 진입점과 번역 
 
 ```typescript
 import { QUERY_KEY } from "@web-memo/shared/constants";
-import { HighlightService } from "@web-memo/shared/utils/services";
+import { HighlightService } from "@web-memo/shared/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSupabaseClientQuery } from "@web-memo/shared/hooks";
 

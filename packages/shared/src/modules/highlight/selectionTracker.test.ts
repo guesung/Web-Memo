@@ -160,4 +160,17 @@ describe("createSelectionTracker", () => {
 
 		tracker.stop();
 	});
+
+	it("디바운스 타이머가 끝나기 전에 조회해도 앵커를 즉시 계산해 반환한다", () => {
+		const root = render("<p>가나다라마바사아자차</p>");
+		const tracker = createSelectionTracker();
+		tracker.start();
+
+		selectText(root, "라마바");
+		// vi.runAllTimers()를 호출하지 않는다. 네이티브 메뉴를 디바운스 지연 안에 탭한
+		// 상황을 재현한다 — 이때도 커밋이 조용히 무시되면 안 된다.
+		expect(tracker.getPendingAnchor()?.exact).toBe("라마바");
+
+		tracker.stop();
+	});
 });

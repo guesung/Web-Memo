@@ -52,6 +52,8 @@ export function isSelectableTarget(node: Node | null): boolean {
  */
 export function createSelectionTracker() {
 	let pendingAnchor: HighlightAnchor | null = null;
+	/** 디바운스 타이머가 아직 안 끝났을 때 조회가 들어오면 이 Range로 즉시 계산한다. */
+	let pendingRange: Range | null = null;
 	let rejection: "tooLong" | null = null;
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -62,8 +64,23 @@ export function createSelectionTracker() {
 		}
 	}
 
+	/**
+	 * `pendingRange`로 앵커를 계산해 `pendingAnchor`에 반영한다.
+	 * @description 디바운스 타이머 콜백과 조기 조회(flush) 양쪽에서 공유한다.
+	 * `document.getSelection()`을 다시 읽지 않고 selectionchange 시점에 캡처해 둔
+	 * Range를 그대로 쓴다 — 조회 시점에는 네이티브 메뉴가 뜨며 선택이 이미 해제됐을 수
+	 * 있고, 애초에 앵커를 미리 캐싱하는 이유가 그것이기 때문이다.
+	 */
+	function computeAnchorNow(): void {
+		if (pendingRange) {
+			pendingAnchor = createAnchor(pendingRange);
+		}
+		pendingRange = null;
+	}
+
 	function handleSelectionChange(): void {
 		pendingAnchor = null;
+		pendingRange = null;
 		rejection = null;
 		cancelPendingCompute();
 
@@ -90,9 +107,10 @@ export function createSelectionTracker() {
 			return;
 		}
 
+		pendingRange = range;
 		debounceTimer = setTimeout(() => {
 			debounceTimer = null;
-			pendingAnchor = createAnchor(range);
+			computeAnchorNow();
 		}, ANCHOR_COMPUTE_DEBOUNCE_MS);
 	}
 
@@ -103,8 +121,22 @@ export function createSelectionTracker() {
 		stop() {
 			document.removeEventListener("selectionchange", handleSelectionChange);
 			cancelPendingCompute();
+			pendingRange = null;
 		},
-		getPendingAnchor: () => pendingAnchor,
+		getPendingAnchor: () => {
+			/**
+			 * 타이머가 아직 안 끝났는데 커밋(네이티브 메뉴 탭)이 먼저 들어온 경우다.
+			 * 여기서 플러시하지 않으면 pendingAnchor가 null인 채로 조용히 커밋이
+			 * 무시된다 — 성능을 위한 디바운스가 기능을 깨뜨리면 안 되므로, 조회
+			 * 시점에는 항상 최신 값을 동기적으로 보장한다.
+			 */
+			if (debounceTimer !== null) {
+				cancelPendingCompute();
+				computeAnchorNow();
+			}
+
+			return pendingAnchor;
+		},
 		getRejection: () => rejection,
 	};
 }

@@ -7,8 +7,10 @@ export const HIGHLIGHT_COLORS = [
 	"purple",
 ] as const;
 
+/** 하이라이트 색상 값 타입. */
 export type HighlightColor = (typeof HIGHLIGHT_COLORS)[number];
 
+/** 색상을 지정하지 않았을 때 쓰는 기본 하이라이트 색상. */
 export const DEFAULT_HIGHLIGHT_COLOR: HighlightColor = "yellow";
 
 /**

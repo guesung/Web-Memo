@@ -1,3 +1,4 @@
+import type { HighlightColor } from "@web-memo/shared/constants";
 import type { HighlightItem } from "@web-memo/shared/modules/highlight";
 import { normalizeUrl } from "@web-memo/shared/utils";
 import { useCallback, useEffect, useState } from "react";
@@ -5,8 +6,26 @@ import type { RefObject } from "react";
 import type WebView from "react-native-webview";
 import type { WebViewCustomMenuItems } from "react-native-webview/lib/WebViewTypes";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { useHighlightCreateMutation } from "@/lib/hooks/useHighlightMutation";
+import {
+	useHighlightCreateMutation,
+	useHighlightDeleteMutation,
+	useHighlightUpdateMutation,
+} from "@/lib/hooks/useHighlightMutation";
 import { useHighlightsByUrl } from "@/lib/hooks/useHighlights";
+
+/** 하이라이트 수정 입력. 색상 변경 시 WebView 밑줄 색도 함께 갱신한다. */
+interface UpdateHighlightInput {
+	id: number;
+	url: string;
+	color?: HighlightColor;
+	note?: string;
+}
+
+/** 하이라이트 삭제 입력. */
+interface DeleteHighlightInput {
+	id: number;
+	url: string;
+}
 
 const HIGHLIGHT_MENU_KEY = "webmemo-highlight";
 
@@ -42,6 +61,8 @@ export function useWebViewHighlights({
 	const normalizedUrl = pageUrl ? normalizeUrl(pageUrl) : "";
 	const { data: highlights } = useHighlightsByUrl(normalizedUrl);
 	const { mutate: createHighlight } = useHighlightCreateMutation();
+	const { mutate: mutateHighlightUpdate } = useHighlightUpdateMutation();
+	const { mutate: mutateHighlightDelete } = useHighlightDeleteMutation();
 
 	/**
 	 * 비로그인 상태에서는 메뉴 항목을 노출하지 않는다 (설계 §6-5).
@@ -158,6 +179,45 @@ export function useWebViewHighlights({
 		setTappedHighlightId(null);
 	}, []);
 
+	/**
+	 * 하이라이트 편집 바텀시트에서 색상/코멘트를 바꾼다.
+	 * @description 색상 변경은 서버 반영이 확인된 뒤(`onSuccess`)에야 WebView 밑줄 색도
+	 * 바꾼다. `useHighlightCreateMutation`과 같은 이유(설계 §6-2)로, 화면에 보이는 색과
+	 * 서버에 저장된 색이 어긋나는 상태를 만들지 않기 위함이다.
+	 */
+	const updateHighlight = useCallback(
+		(input: UpdateHighlightInput) => {
+			mutateHighlightUpdate(input, {
+				onSuccess: (saved) => {
+					if (input.color === undefined) {
+						return;
+					}
+
+					webViewRef.current?.injectJavaScript(
+						`window.__webmemoSetColor(${saved.id}, ${JSON.stringify(saved.color)}); true;`,
+					);
+				},
+				onError: () => showToast("하이라이트를 수정하지 못했습니다"),
+			});
+		},
+		[mutateHighlightUpdate, showToast, webViewRef],
+	);
+
+	/** 하이라이트를 삭제하고, 서버 반영이 확인된 뒤 WebView의 밑줄도 지운다. */
+	const deleteHighlight = useCallback(
+		(input: DeleteHighlightInput) => {
+			mutateHighlightDelete(input, {
+				onSuccess: () => {
+					webViewRef.current?.injectJavaScript(
+						`window.__webmemoRemove(${input.id}); true;`,
+					);
+				},
+				onError: () => showToast("하이라이트를 삭제하지 못했습니다"),
+			});
+		},
+		[mutateHighlightDelete, showToast, webViewRef],
+	);
+
 	return {
 		menuItems,
 		handleCustomMenuSelection,
@@ -167,5 +227,7 @@ export function useWebViewHighlights({
 		tappedHighlightId,
 		clearTappedHighlight,
 		highlightToast,
+		updateHighlight,
+		deleteHighlight,
 	};
 }

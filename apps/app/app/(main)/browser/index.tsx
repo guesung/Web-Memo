@@ -7,6 +7,7 @@ import { WebView } from "react-native-webview";
 import { BrowserHeader } from "./_components/BrowserHeader";
 import { DraggableFab } from "./_components/DraggableFab";
 import { EmptyBrowserView } from "./_components/EmptyBrowserView";
+import { HighlightEditSheet } from "./_components/HighlightEditSheet";
 import { MemoPanel } from "./_components/MemoPanel";
 import { TechBlogBottomSheet } from "./_components/TechBlogBottomSheet";
 import { useBrowserState } from "./_hooks/useBrowserState";
@@ -70,6 +71,13 @@ export default function BrowserScreen() {
 	useEffect(() => {
 		handleHighlightMessageRef.current = highlights.handleHighlightMessage;
 	}, [highlights.handleHighlightMessage]);
+
+	const tappedHighlight =
+		highlights.tappedHighlightId === null
+			? null
+			: (highlights.rows.find(
+					(row) => row.id === highlights.tappedHighlightId,
+				) ?? null);
 
 	if (!currentUrl) {
 		return (
@@ -186,6 +194,13 @@ export default function BrowserScreen() {
 					setIsBlogSheetOpen(false);
 					handleBlogSelect(url);
 				}}
+			/>
+
+			<HighlightEditSheet
+				highlight={tappedHighlight}
+				onClose={highlights.clearTappedHighlight}
+				onUpdate={highlights.updateHighlight}
+				onDelete={highlights.deleteHighlight}
 			/>
 		</KeyboardAvoidingView>
 	);

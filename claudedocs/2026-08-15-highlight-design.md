@@ -392,5 +392,5 @@ URL별로 묶인 카드 목록이다. 카드 상단에 페이지 제목·파비�
 
 ## Notes
 
-- 브랜치는 현재 `fix/critical-bug-security-fixes`이므로, 구현은 `develop`에서 새 브랜치를 따서 진행한다.
+- 이 설계 문서는 `feat/daily-article-reminder` 브랜치에 커밋했다. 하이라이트 구현은 별개 작업이므로 `develop`에서 새 브랜치(`feat/highlight`)를 따서 진행한다.
 - 스키마 마이그레이션은 `packages/supabase-edge-functions/supabase/migrations/`에 날짜 접두사 파일로 추가한다.

@@ -18,7 +18,7 @@
 - 타입에 `IF`/`T` 접두사를 붙이지 않는다. 기존 코드(`MemoSortBy`, `MemosPaginatedKeyParams`)를 따른다.
 - 인라인 `<svg>` 금지 — 아이콘은 항상 `lucide-react`(웹) / `lucide-react-native`(앱).
 - 조건부 텍스트에 `lng === "ko"` 패턴 금지. 항상 `useTranslation` + 번역 키.
-- 테스트 파일은 소스 옆에 `*.test.ts`로 둔다(기존 관례: `packages/shared/src/utils/Supabase.test.ts`).
+- 테스트 파일은 소스 옆에 `*.test.ts`로 둔다(기존 관례: `packages/shared/src/utils/memoSearchFilter.test.ts`).
 - `vitest`는 **루트** devDependency다. 테스트 러너가 직접 해석하는 것(jsdom 같은 environment)은 루트에 설치하고(`pnpm add -w -D`), 소스 코드가 import하는 런타임 의존성만 해당 패키지에 설치한다(`pnpm -F @web-memo/shared add`).
 - 루트 `vitest.config.ts`의 기본 environment는 **node**다. DOM이 필요한 테스트 파일은 첫 줄에 `// @vitest-environment jsdom`을 넣는다.
 - 테스트 실행: **`pnpm test:jest run <path>`** (검증 완료된 형태). 전체 검증: `pnpm type-check && pnpm lint`.
@@ -2011,7 +2011,7 @@ git commit -m "feat: 하이라이트 주입 스크립트 esbuild 번들 빌드 �
 
 **Files:**
 - Modify: `packages/shared/src/utils/Supabase.ts`
-- Test: `packages/shared/src/utils/Supabase.test.ts`
+- Test: `packages/shared/src/utils/highlightService.test.ts` (**신규 생성**)
 
 **Interfaces:**
 - Consumes: `SUPABASE` (Task 2), `HighlightRow` / `HighlightTable` (Task 2), `MemoSupabaseClient`
@@ -2029,9 +2029,88 @@ git commit -m "feat: 하이라이트 주입 스크립트 esbuild 번들 빌드 �
 
 - [ ] **Step 2: 실패하는 테스트 작성**
 
-`packages/shared/src/utils/Supabase.test.ts`에 추가한다. 기존 파일의 Supabase 클라이언트 모킹 방식을 먼저 읽고 같은 방식을 쓴다.
+**`packages/shared/src/utils/highlightService.test.ts`를 새로 만든다.** 이 레포에는 Supabase 서비스 클래스를 검증하는 기존 테스트가 없으므로 따라 할 모킹 패턴이 없다. 아래 모킹을 그대로 쓴다.
+
+이 테스트가 검증하려는 것은 **쿼리 빌더에 어떤 필터 문자열이 전달되는가**다. 커서 필터와 검색 필터는 문자열을 손으로 조립하기 때문에 오타가 나기 쉽고, 오타가 나면 조용히 잘못된 결과를 반환한다(에러가 아니라 빈 목록이나 중복 행으로 나타난다). 그래서 전달 인자를 기록하는 가짜 빌더를 쓴다.
+
+DOM이 필요 없으므로 `// @vitest-environment jsdom`을 넣지 않는다.
 
 ```typescript
+import { describe, expect, it } from "vitest";
+import type { MemoSupabaseClient } from "../types";
+import { HighlightService } from "./Supabase";
+
+/** 가짜 빌더가 기록한 호출 인자 */
+interface RecordedCalls {
+	schema: string[];
+	from: string[];
+	select: string[];
+	eq: [string, unknown][];
+	or: string[];
+	order: [string, unknown][];
+	limit: number[];
+}
+
+/**
+ * Supabase 쿼리 빌더를 흉내 내는 최소 목.
+ * @description 체이닝 메서드는 자기 자신을 돌려주고, await 되는 시점에 빈 결과를 반환한다.
+ * HighlightService가 실제로 쓰는 메서드만 구현한다.
+ */
+function createMockClient(): { client: MemoSupabaseClient; calls: RecordedCalls } {
+	const calls: RecordedCalls = {
+		schema: [],
+		from: [],
+		select: [],
+		eq: [],
+		or: [],
+		order: [],
+		limit: [],
+	};
+
+	const builder = {
+		select: (columns: string) => {
+			calls.select.push(columns);
+			return builder;
+		},
+		eq: (column: string, value: unknown) => {
+			calls.eq.push([column, value]);
+			return builder;
+		},
+		or: (filter: string) => {
+			calls.or.push(filter);
+			return builder;
+		},
+		order: (column: string, options: unknown) => {
+			calls.order.push([column, options]);
+			return builder;
+		},
+		limit: (count: number) => {
+			calls.limit.push(count);
+			return builder;
+		},
+		insert: () => builder,
+		update: () => builder,
+		delete: () => builder,
+		/** await 되면 빈 결과를 준다. 이 테스트는 반환값이 아니라 전달 인자를 검증한다. */
+		then: (resolve: (value: { data: unknown[]; error: null }) => unknown) =>
+			resolve({ data: [], error: null }),
+	};
+
+	const client = {
+		schema: (name: string) => {
+			calls.schema.push(name);
+			return {
+				from: (table: string) => {
+					calls.from.push(table);
+					return builder;
+				},
+			};
+		},
+	} as unknown as MemoSupabaseClient;
+
+	return { client, calls };
+}
+
 describe("HighlightService.getHighlightsPaginated", () => {
 	it("검색어가 있으면 exact_text와 note를 대상으로 필터를 건다", async () => {
 		const { client, calls } = createMockClient();
@@ -2055,16 +2134,42 @@ describe("HighlightService.getHighlightsPaginated", () => {
 			"created_at.lt.2026-08-15T00:00:00Z,and(created_at.eq.2026-08-15T00:00:00Z,id.lt.42)",
 		);
 	});
+
+	it("색상 필터가 있으면 color로 eq 조건을 건다", async () => {
+		const { client, calls } = createMockClient();
+		await new HighlightService(client).getHighlightsPaginated({ color: "yellow" });
+
+		expect(calls.eq).toContainEqual(["color", "yellow"]);
+	});
+
+	it("정렬은 created_at 내림차순 뒤에 id 내림차순을 보조로 건다", async () => {
+		const { client, calls } = createMockClient();
+		await new HighlightService(client).getHighlightsPaginated({});
+
+		expect(calls.order.map(([column]) => column)).toEqual(["created_at", "id"]);
+	});
+});
+
+describe("HighlightService.getHighlightsByUrl", () => {
+	it("url로 조회하고 id 오름차순으로 정렬한다", async () => {
+		const { client, calls } = createMockClient();
+		await new HighlightService(client).getHighlightsByUrl("https://a.com");
+
+		expect(calls.eq).toContainEqual(["url", "https://a.com"]);
+		expect(calls.order).toContainEqual(["id", { ascending: true }]);
+	});
 });
 ```
+
+`getHighlightsPaginated`가 `limit` 인자를 주지 않았을 때 기본값 20을 쓰는지도 `calls.limit`으로 확인할 수 있다. 위 테스트에 이미 포함되어 있지 않으므로 필요하면 추가한다.
 
 - [ ] **Step 3: 테스트 실패 확인**
 
 ```bash
-pnpm test:jest run packages/shared/src/utils/Supabase.test.ts
+pnpm test:jest run packages/shared/src/utils/highlightService.test.ts
 ```
 
-기대: FAIL — `HighlightService is not defined`
+기대: FAIL — `HighlightService`를 `./Supabase`에서 import할 수 없음
 
 - [ ] **Step 4: 구현**
 
@@ -2153,7 +2258,7 @@ export class HighlightService {
 - [ ] **Step 5: 테스트 통과 확인**
 
 ```bash
-pnpm test:jest run packages/shared/src/utils/Supabase.test.ts
+pnpm test:jest run packages/shared/src/utils/highlightService.test.ts
 ```
 
 기대: PASS
@@ -2170,7 +2275,7 @@ wc -l packages/shared/src/utils/Supabase.ts
 
 ```bash
 pnpm type-check && pnpm lint
-git add packages/shared/src/utils/Supabase.ts packages/shared/src/utils/Supabase.test.ts
+git add packages/shared/src/utils/Supabase.ts packages/shared/src/utils/highlightService.test.ts
 git commit -m "feat: 하이라이트 조회/저장 서비스 계층 추가"
 ```
 

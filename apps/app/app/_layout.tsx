@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import { useShareIntent } from "expo-share-intent";
 import * as SplashScreen from "expo-splash-screen";
@@ -9,11 +10,23 @@ import { Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthProvider";
+import { registerPushToken } from "@/lib/notifications/registerPushToken";
+import { useNotificationObserver } from "@/lib/notifications/useNotificationObserver";
 import { handleSharedUrl } from "@/lib/sharing/shareHandler";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
 import "../global.css";
 
 SplashScreen.preventAutoHideAsync();
+
+Notifications.setNotificationHandler({
+	handleNotification: async () => ({
+		// SDK 54의 expo-notifications는 shouldShowAlert 대신 Banner/List를 사용한다.
+		shouldShowBanner: true,
+		shouldShowList: true,
+		shouldPlaySound: false,
+		shouldSetBadge: false,
+	}),
+});
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -55,6 +68,21 @@ function SyncOnAuth() {
 			<Text className="text-white text-sm font-semibold">{syncToast}</Text>
 		</View>
 	);
+}
+
+function NotificationBridge() {
+	const { session } = useAuth();
+	useNotificationObserver();
+
+	useEffect(() => {
+		if (!session) return;
+
+		// 토큰이 바뀌었을 수 있으므로 앱 시작마다 재등록을 시도한다.
+		// 권한이 없거나 실패해도 조용히 무시된다.
+		registerPushToken().catch(() => {});
+	}, [session]);
+
+	return null;
 }
 
 function ShareIntentHandler() {
@@ -122,6 +150,7 @@ export default function RootLayout() {
 					</Stack>
 				</GestureHandlerRootView>
 				<SyncOnAuth />
+				<NotificationBridge />
 				<ShareIntentHandler />
 				<StatusBar style="dark" />
 			</AuthProvider>

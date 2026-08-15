@@ -21,6 +21,12 @@ import {
 	useMemoSectionSettings,
 	useMemoSectionSettingsSave,
 } from "@/lib/hooks/useMemoSectionSettings";
+import {
+	useNotificationSetting,
+	useNotificationSettingSave,
+} from "@/lib/hooks/useNotificationSetting";
+import { registerPushToken } from "@/lib/notifications/registerPushToken";
+import { NotificationTimePicker } from "./_components/NotificationTimePicker";
 
 export default function SettingsScreen() {
 	const insets = useSafeAreaInsets();
@@ -29,6 +35,31 @@ export default function SettingsScreen() {
 	const { isImpressionSectionEnabled, isActionItemSectionEnabled } =
 		useMemoSectionSettings();
 	const { mutate: saveMemoSectionSettings } = useMemoSectionSettingsSave();
+	const { setting: notificationSetting } = useNotificationSetting();
+	const { mutate: saveNotificationSetting } = useNotificationSettingSave();
+
+	const handleNotificationToggle = async (isEnabled: boolean) => {
+		if (!isEnabled) {
+			saveNotificationSetting({ ...notificationSetting, isEnabled: false });
+			return;
+		}
+
+		const isRegistered = await registerPushToken();
+
+		if (!isRegistered) {
+			Alert.alert("알림 권한 필요", "설정 앱에서 웹 메모의 알림을 허용해주세요.", [
+				{ text: "취소", style: "cancel" },
+				{ text: "설정 열기", onPress: () => Linking.openSettings() },
+			]);
+			return;
+		}
+
+		saveNotificationSetting({ ...notificationSetting, isEnabled: true });
+	};
+
+	const handleNotifyTimeChange = (notifyTime: string) => {
+		saveNotificationSetting({ ...notificationSetting, notifyTime });
+	};
 
 	const handleImpressionSectionToggle = (isEnabled: boolean) => {
 		saveMemoSectionSettings({
@@ -147,6 +178,42 @@ export default function SettingsScreen() {
 						</View>
 					</View>
 				</View>
+
+				{/* Notification Section */}
+				{isLoggedIn && (
+					<View className="mb-7">
+						<Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">
+							알림
+						</Text>
+						<View className="bg-card rounded-[14px] p-4 border border-muted">
+							<View className="flex-row justify-between items-center py-2">
+								<View className="flex-1 mr-3">
+									<Text className="text-[15px] text-secondary-foreground">
+										매일 아침 읽을거리 알림
+									</Text>
+									<Text className="text-[13px] text-muted-foreground mt-0.5">
+										위시리스트에서 하나씩 골라 알려드려요
+									</Text>
+								</View>
+								<Switch
+									value={notificationSetting.isEnabled}
+									onValueChange={handleNotificationToggle}
+								/>
+							</View>
+							{notificationSetting.isEnabled && (
+								<View className="flex-row justify-between items-center py-2">
+									<Text className="text-[15px] text-secondary-foreground">
+										알림 시간
+									</Text>
+									<NotificationTimePicker
+										value={notificationSetting.notifyTime}
+										onTimeChange={handleNotifyTimeChange}
+									/>
+								</View>
+							)}
+						</View>
+					</View>
+				)}
 
 				{/* App Info Section */}
 				<View className="mb-7">

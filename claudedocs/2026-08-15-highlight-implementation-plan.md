@@ -2630,6 +2630,9 @@ git commit -m "feat: 모바일 하이라이트 조회/저장 훅 추가"
 ### Task 12: 모바일 WebView 통합
 
 **Files:**
+- Modify: `packages/shared/src/modules/highlight/types.ts` (`highlight:page` 메시지 추가)
+- Modify: `packages/shared/src/modules/highlight/injected/entry.ts` (페이지 URL 보고)
+- Modify: `packages/shared/src/modules/highlight/injected/highlightScript.ts` (재생성 결과)
 - Modify: `apps/app/app/(main)/browser/_utils/webViewScripts.ts`
 - Modify: `apps/app/app/(main)/browser/_hooks/useBrowserState.ts`
 - Modify: `apps/app/app/(main)/browser/index.tsx`
@@ -2638,9 +2641,54 @@ git commit -m "feat: 모바일 하이라이트 조회/저장 훅 추가"
 **Interfaces:**
 - Consumes: `HIGHLIGHT_SCRIPT` (Task 9), `useHighlightsByUrl` / `useHighlightCreateMutation` (Task 11), `HighlightOutboundMessage` / `HighlightItem` (Task 5)
 - Produces:
-  - `useWebViewHighlights({ webViewRef, currentUrl }): { menuItems, handleCustomMenuSelection, handleHighlightMessage, restoreHighlights, rows, tappedHighlightId, clearTappedHighlight, highlightToast }`
+  - `useWebViewHighlights({ webViewRef }): { menuItems, handleCustomMenuSelection, handleHighlightMessage, restoreHighlights, rows, tappedHighlightId, clearTappedHighlight, highlightToast }`
+  - **`currentUrl`을 인자로 받지 않는다.** 페이지 URL은 주입 스크립트가 `highlight:page`로 보고한 값을 훅 내부 state로 관리한다(Step 0 참고).
   - `rows: HighlightRow[]` — Task 13이 탭된 하이라이트를 찾는 데 쓴다
   - `highlightToast: string | null` — 기존 `wishToast`와 같은 방식으로 화면에 띄운다
+
+- [ ] **Step 0: 주입 스크립트가 자기 페이지 URL을 보고하도록 확장**
+
+이 태스크의 가장 중요한 변경이다. 저장과 조회가 **같은 출처의 URL**을 써야 한다.
+
+`packages/shared/src/modules/highlight/types.ts`의 `HighlightOutboundMessage`에 항목을 추가한다.
+
+```typescript
+	/** 스크립트가 자기 페이지 URL을 알린다. 저장·조회 양쪽의 단일 출처다. */
+	| { type: "highlight:page"; url: string }
+```
+
+`packages/shared/src/modules/highlight/injected/entry.ts`에서 초기화 직후 한 번 보내고, **URL이 바뀔 때마다 다시 보낸다.** SPA 라우팅은 `window`가 유지되어 재주입 가드에 걸리므로 스크립트가 스스로 감지해야 한다.
+
+```typescript
+	function reportPageUrl(): void {
+		post({ type: "highlight:page", url: window.location.href });
+	}
+
+	reportPageUrl();
+
+	/** SPA 라우팅 감지. history API를 감싸고 뒤로가기·해시 변경도 함께 듣는다. */
+	for (const method of ["pushState", "replaceState"] as const) {
+		const original = history[method];
+		history[method] = function patched(this: History, ...args: Parameters<History["pushState"]>) {
+			const result = original.apply(this, args);
+			reportPageUrl();
+			return result;
+		};
+	}
+
+	window.addEventListener("popstate", reportPageUrl);
+	window.addEventListener("hashchange", reportPageUrl);
+```
+
+`normalizeUrl`이 해시를 떼므로 `hashchange`는 대개 같은 값을 다시 보내지만, 사이트에 따라 해시 라우팅을 쓰는 경우가 있어 듣는다. 같은 값이 와도 RN 쪽 `setPageUrl`이 동일 값이면 리렌더가 없으므로 비용이 없다.
+
+**스크립트를 고쳤으므로 번들을 재생성해야 한다**(Task 9에서 만든 스텝):
+
+```bash
+pnpm -F @web-memo/shared build:injected
+```
+
+재생성된 `injected/highlightScript.ts`도 커밋에 포함한다.
 
 - [ ] **Step 1: 주입 스크립트에 하이라이트 번들 합치기**
 
@@ -2675,10 +2723,8 @@ const HIGHLIGHT_MENU_KEY = "webmemo-highlight";
 
 export function useWebViewHighlights({
 	webViewRef,
-	currentUrl,
 }: {
 	webViewRef: React.RefObject<WebView | null>;
-	currentUrl: string;
 }) {
 	const { isLoggedIn } = useAuth();
 	const [tappedHighlightId, setTappedHighlightId] = useState<number | null>(null);
@@ -2690,7 +2736,18 @@ export function useWebViewHighlights({
 		setTimeout(() => setHighlightToast(null), 3000);
 	}, []);
 
-	const normalizedUrl = currentUrl ? normalizeUrl(currentUrl) : "";
+	/**
+	 * 페이지 URL은 반드시 **주입 스크립트가 보고한 값**을 쓴다. RN의 `currentUrl`을 쓰지 않는다.
+	 * @description 저장 경로(`highlight:create`의 url)와 조회 경로가 같은 출처여야 한다.
+	 * `getHighlightsByUrl`은 `.eq()` 정확 일치로 조회하므로, 두 값이 어긋나면 방금 저장한
+	 * 하이라이트가 목록에서 아예 보이지 않는다(캐시 무효화 실패가 아니라 DB 조회 자체가 빗나감).
+	 * 밑줄은 스크립트가 DOM에 직접 그리므로 사용자는 눈치채지 못하고, 나중에 같은 문장을 또 그어
+	 * 중복 행이 생기는 식으로 조용히 드러난다.
+	 * `currentUrl`은 `onNavigationStateChange` 타이밍에 뒤처지고, SPA 라우팅에서는 아예 갱신되지 않는다.
+	 */
+	const [pageUrl, setPageUrl] = useState("");
+
+	const normalizedUrl = pageUrl ? normalizeUrl(pageUrl) : "";
 	const { data: highlights } = useHighlightsByUrl(normalizedUrl);
 	const { mutate: createHighlight } = useHighlightCreateMutation();
 
@@ -2712,6 +2769,12 @@ export function useWebViewHighlights({
 
 	const handleHighlightMessage = useCallback(
 		(message: { type: string; [key: string]: unknown }) => {
+			/** 스크립트가 알려준 페이지 URL이 조회·저장 양쪽의 단일 출처다 */
+			if (message.type === "highlight:page") {
+				setPageUrl(message.url as string);
+				return;
+			}
+
 			if (message.type === "highlight:create") {
 				createHighlight(
 					{
@@ -2828,7 +2891,7 @@ export function useWebViewHighlights({
 `apps/app/app/(main)/browser/index.tsx`에서 훅을 연결하고 `<WebView>`에 prop을 추가한다.
 
 ```tsx
-const highlights = useWebViewHighlights({ webViewRef, currentUrl });
+const highlights = useWebViewHighlights({ webViewRef });
 ```
 
 `useBrowserState` 호출에 `onHighlightMessage: highlights.handleHighlightMessage`를 넘기고, `<WebView>`에 아래를 추가한다.
@@ -2836,11 +2899,12 @@ const highlights = useWebViewHighlights({ webViewRef, currentUrl });
 ```tsx
 menuItems={highlights.menuItems}
 onCustomMenuSelection={highlights.handleCustomMenuSelection}
-onLoadEnd={highlights.restoreHighlights}
 injectedJavaScript={INJECTED_JS_ON_LOAD}
 ```
 
 기존 `injectedJavaScript={SCROLL_DETECT_JS}`를 `INJECTED_JS_ON_LOAD`로 바꾸는 것이다. `import`도 함께 고친다.
+
+**`onLoadEnd`로 복원을 트리거하지 않는다.** 복원 시점은 "페이지 로드가 끝났을 때"가 아니라 **"그 페이지의 하이라이트 데이터가 도착했을 때"**다. 스크립트가 `highlight:page`로 URL을 알리면 조회가 시작되고, 데이터가 오면 훅 내부의 `useEffect`가 `restoreHighlights`를 호출한다(브리프의 `useEffect(() => { restoreHighlights(); }, [restoreHighlights])`가 이미 그 역할을 한다). `onLoadEnd`를 함께 걸면 데이터가 없는 시점에 한 번 더 불려 의미 없는 주입이 발생한다.
 
 토스트도 렌더한다. `browser/index.tsx` 132행 부근의 `wishToast` 블록을 찾아 바로 아래에 같은 형식으로 추가한다.
 
@@ -2875,6 +2939,8 @@ pnpm dev:app
 8. 로그아웃한다 → 선택 메뉴에 "하이라이트"가 보이지 않는다
 9. Supabase 대시보드에서 `memo.highlight` 행을 확인한다
 10. **iOS 17.2 미만 기기가 있으면 거기서도 1~7을 반복한다.** 그 기기는 CSS Custom Highlight API가 없어 `<span>` 래핑 폴백을 타므로 렌더 경로가 완전히 다르다. 없으면 시뮬레이터로 확인한다.
+11. **리다이렉트되는 URL로 접속해 하이라이트한다.** 단축 URL(bit.ly 등)이나 AMP처럼 최종 URL이 입력과 다른 경우다. 저장 후 **그 페이지를 나갔다 다시 들어와 밑줄이 복원되는지** 확인한다. 저장은 됐는데 복원이 안 되면 저장 URL과 조회 URL이 어긋난 것이다(Step 0에서 막으려는 문제).
+12. **SPA 라우팅 사이트에서 페이지를 이동하며 하이라이트한다.** 예컨대 뉴스 앱형 사이트에서 기사 목록 → 기사 A → 기사 B로 이동하며 각각 하이라이트한 뒤, 다시 A로 돌아가 **A의 하이라이트만 보이는지** 확인한다. B의 것이 A에 나타나거나 A의 것이 안 보이면 `highlight:page` 감지가 동작하지 않는 것이다.
 
 - [ ] **Step 6: 커밋**
 

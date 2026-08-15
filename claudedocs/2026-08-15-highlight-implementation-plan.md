@@ -21,8 +21,9 @@
 - 테스트 파일은 소스 옆에 `*.test.ts`로 둔다(기존 관례: `packages/shared/src/utils/Supabase.test.ts`).
 - `vitest`는 **루트** devDependency다. 테스트 러너가 직접 해석하는 것(jsdom 같은 environment)은 루트에 설치하고(`pnpm add -w -D`), 소스 코드가 import하는 런타임 의존성만 해당 패키지에 설치한다(`pnpm -F @web-memo/shared add`).
 - 루트 `vitest.config.ts`의 기본 environment는 **node**다. DOM이 필요한 테스트 파일은 첫 줄에 `// @vitest-environment jsdom`을 넣는다.
-- 테스트 실행: `pnpm test:jest -- --run <path>`. 전체 검증: `pnpm type-check && pnpm lint`.
-  **`--run`을 반드시 붙인다.** 루트 `test:jest`는 그냥 `vitest`라서 빼면 watch 모드로 들어가 명령이 끝나지 않는다.
+- 테스트 실행: **`pnpm test:jest run <path>`** (검증 완료된 형태). 전체 검증: `pnpm type-check && pnpm lint`.
+  루트 `test:jest`는 그냥 `vitest`라서 `run` 하위 명령을 빼면 watch 모드로 들어가 명령이 끝나지 않는다.
+  `pnpm test:jest -- --run <path>` 형태는 쓰지 않는다 — pnpm이 `--` 뒤를 그대로 넘기는 바람에 `--run`이 플래그가 아니라 경로 필터로 처리되어, 지정한 파일만 도는 대신 전체가 돌고 그대로 watch 모드에 빠진다.
 - 색상은 `yellow | green | blue | pink | purple` 5종 고정. DB CHECK 제약과 TS 타입이 일치해야 한다.
 - 하이라이트는 **로그인 필수**. 비로그인 로컬 저장은 v1 범위 밖이다.
 - 각 Task 끝의 커밋은 해당 Task가 만든 파일만 담는다. `git add .` 금지.
@@ -252,7 +253,7 @@ describe("QUERY_KEY.highlightsPaginated", () => {
 - [ ] **Step 7: 테스트 실패 확인**
 
 ```bash
-pnpm test:jest -- --run packages/shared/src/constants/QueryKey.test.ts
+pnpm test:jest run packages/shared/src/constants/QueryKey.test.ts
 ```
 
 기대: FAIL — `QUERY_KEY.highlightsByUrl is not a function`
@@ -283,7 +284,7 @@ export interface HighlightsPaginatedKeyParams {
 - [ ] **Step 9: 테스트 통과 확인**
 
 ```bash
-pnpm test:jest -- --run packages/shared/src/constants/QueryKey.test.ts
+pnpm test:jest run packages/shared/src/constants/QueryKey.test.ts
 ```
 
 기대: PASS
@@ -429,7 +430,7 @@ describe("offsetToPoint / pointToOffset", () => {
 - [ ] **Step 3: 테스트 실패 확인**
 
 ```bash
-pnpm test:jest -- --run packages/shared/src/modules/highlight/documentText.test.ts
+pnpm test:jest run packages/shared/src/modules/highlight/documentText.test.ts
 ```
 
 기대: FAIL — 모듈을 찾을 수 없음
@@ -525,7 +526,7 @@ export function pointToOffset(
 - [ ] **Step 5: 테스트 통과 확인**
 
 ```bash
-pnpm test:jest -- --run packages/shared/src/modules/highlight/documentText.test.ts
+pnpm test:jest run packages/shared/src/modules/highlight/documentText.test.ts
 ```
 
 기대: PASS (7 케이스)
@@ -631,7 +632,7 @@ describe("matchQuote", () => {
 - [ ] **Step 3: 테스트 실패 확인**
 
 ```bash
-pnpm test:jest -- --run packages/shared/src/modules/highlight/matchQuote.test.ts
+pnpm test:jest run packages/shared/src/modules/highlight/matchQuote.test.ts
 ```
 
 기대: FAIL — 모듈을 찾을 수 없음
@@ -787,7 +788,7 @@ function similarityFromStart(actual: string, expected: string): number {
 - [ ] **Step 5: 테스트 통과 확인**
 
 ```bash
-pnpm test:jest -- --run packages/shared/src/modules/highlight/matchQuote.test.ts
+pnpm test:jest run packages/shared/src/modules/highlight/matchQuote.test.ts
 ```
 
 기대: PASS (7 케이스)
@@ -945,7 +946,7 @@ describe("createAnchor", () => {
 - [ ] **Step 3: 테스트 실패 확인**
 
 ```bash
-pnpm test:jest -- --run packages/shared/src/modules/highlight/createAnchor.test.ts
+pnpm test:jest run packages/shared/src/modules/highlight/createAnchor.test.ts
 ```
 
 기대: FAIL — 모듈을 찾을 수 없음
@@ -993,7 +994,7 @@ export function createAnchor(
 - [ ] **Step 5: 테스트 통과 확인**
 
 ```bash
-pnpm test:jest -- --run packages/shared/src/modules/highlight/createAnchor.test.ts
+pnpm test:jest run packages/shared/src/modules/highlight/createAnchor.test.ts
 ```
 
 기대: PASS (5 케이스)
@@ -1114,7 +1115,7 @@ describe("resolveAnchor", () => {
 - [ ] **Step 2: 테스트 실패 확인**
 
 ```bash
-pnpm test:jest -- --run packages/shared/src/modules/highlight/resolveAnchor.test.ts
+pnpm test:jest run packages/shared/src/modules/highlight/resolveAnchor.test.ts
 ```
 
 기대: FAIL — 모듈을 찾을 수 없음
@@ -1165,7 +1166,7 @@ export function resolveAnchor(
 - [ ] **Step 4: 테스트 통과 확인**
 
 ```bash
-pnpm test:jest -- --run packages/shared/src/modules/highlight/resolveAnchor.test.ts
+pnpm test:jest run packages/shared/src/modules/highlight/resolveAnchor.test.ts
 ```
 
 기대: PASS (5 케이스)
@@ -1270,7 +1271,7 @@ describe("createHighlightRenderer (폴백 경로)", () => {
 - [ ] **Step 2: 테스트 실패 확인**
 
 ```bash
-pnpm test:jest -- --run packages/shared/src/modules/highlight/renderHighlights.test.ts
+pnpm test:jest run packages/shared/src/modules/highlight/renderHighlights.test.ts
 ```
 
 기대: FAIL — 모듈을 찾을 수 없음
@@ -1497,7 +1498,7 @@ function ensureHighlightStyles(): void {
 - [ ] **Step 4: 테스트 통과 확인**
 
 ```bash
-pnpm test:jest -- --run packages/shared/src/modules/highlight/renderHighlights.test.ts
+pnpm test:jest run packages/shared/src/modules/highlight/renderHighlights.test.ts
 ```
 
 기대: PASS (5 케이스)
@@ -1579,7 +1580,7 @@ describe("isSelectableTarget", () => {
 - [ ] **Step 2: 테스트 실패 확인**
 
 ```bash
-pnpm test:jest -- --run packages/shared/src/modules/highlight/selectionTracker.test.ts
+pnpm test:jest run packages/shared/src/modules/highlight/selectionTracker.test.ts
 ```
 
 기대: FAIL — 모듈을 찾을 수 없음
@@ -1674,7 +1675,7 @@ export function createSelectionTracker() {
 - [ ] **Step 4: 테스트 통과 확인**
 
 ```bash
-pnpm test:jest -- --run packages/shared/src/modules/highlight/selectionTracker.test.ts
+pnpm test:jest run packages/shared/src/modules/highlight/selectionTracker.test.ts
 ```
 
 기대: PASS (5 케이스)
@@ -2020,7 +2021,7 @@ describe("HighlightService.getHighlightsPaginated", () => {
 - [ ] **Step 3: 테스트 실패 확인**
 
 ```bash
-pnpm test:jest -- --run packages/shared/src/utils/Supabase.test.ts
+pnpm test:jest run packages/shared/src/utils/Supabase.test.ts
 ```
 
 기대: FAIL — `HighlightService is not defined`
@@ -2112,7 +2113,7 @@ export class HighlightService {
 - [ ] **Step 5: 테스트 통과 확인**
 
 ```bash
-pnpm test:jest -- --run packages/shared/src/utils/Supabase.test.ts
+pnpm test:jest run packages/shared/src/utils/Supabase.test.ts
 ```
 
 기대: PASS
@@ -2831,7 +2832,7 @@ describe("groupHighlightsByUrl", () => {
 - [ ] **Step 3: 테스트 실패 확인**
 
 ```bash
-pnpm test:jest -- --run "apps/web/src/app/[lng]/(auth)/highlights/_utils/groupByUrl.test.ts"
+pnpm test:jest run "apps/web/src/app/[lng]/(auth)/highlights/_utils/groupByUrl.test.ts"
 ```
 
 기대: FAIL — 모듈을 찾을 수 없음
@@ -2884,7 +2885,7 @@ export * from "./groupByUrl";
 - [ ] **Step 5: 테스트 통과 확인**
 
 ```bash
-pnpm test:jest -- --run "apps/web/src/app/[lng]/(auth)/highlights/_utils/groupByUrl.test.ts"
+pnpm test:jest run "apps/web/src/app/[lng]/(auth)/highlights/_utils/groupByUrl.test.ts"
 ```
 
 기대: PASS (4 케이스)
@@ -3254,7 +3255,7 @@ pnpm dev:web
 - [ ] **Step 6: 전체 검증 후 커밋**
 
 ```bash
-pnpm type-check && pnpm lint && pnpm test:jest -- --run
+pnpm type-check && pnpm lint && pnpm test:jest run
 git add packages/shared/src/constants/Path.ts \
         apps/web/src/modules/i18n/locales/ko/translation.json \
         apps/web/src/modules/i18n/locales/en/translation.json \
@@ -3464,7 +3465,7 @@ pnpm test:e2e -- --grep "하이라이트"
 - [ ] **Step 6: 전체 검증**
 
 ```bash
-pnpm type-check && pnpm lint && pnpm test:jest -- --run
+pnpm type-check && pnpm lint && pnpm test:jest run
 ```
 
 기대: 전부 통과

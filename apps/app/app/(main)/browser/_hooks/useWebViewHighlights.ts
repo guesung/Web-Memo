@@ -3,6 +3,7 @@ import { normalizeUrl } from "@web-memo/shared/utils";
 import { useCallback, useEffect, useState } from "react";
 import type { RefObject } from "react";
 import type WebView from "react-native-webview";
+import type { WebViewCustomMenuItems } from "react-native-webview/lib/WebViewTypes";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useHighlightCreateMutation } from "@/lib/hooks/useHighlightMutation";
 import { useHighlightsByUrl } from "@/lib/hooks/useHighlights";
@@ -10,7 +11,7 @@ import { useHighlightsByUrl } from "@/lib/hooks/useHighlights";
 const HIGHLIGHT_MENU_KEY = "webmemo-highlight";
 
 /** WebView가 postMessage로 올려보내는 하이라이트 메시지 (JSON.parse 결과이므로 느슨한 형태) */
-type WebViewHighlightMessage = { type: string; [key: string]: unknown };
+export type WebViewHighlightMessage = { type: string; [key: string]: unknown };
 
 /**
  * 인앱 브라우저 WebView에서 텍스트 하이라이팅을 저장·조회·복원한다.
@@ -42,10 +43,18 @@ export function useWebViewHighlights({
 	const { data: highlights } = useHighlightsByUrl(normalizedUrl);
 	const { mutate: createHighlight } = useHighlightCreateMutation();
 
-	/** 비로그인 상태에서는 메뉴 항목을 노출하지 않는다 (설계 §6-5) */
-	const menuItems = isLoggedIn
+	/**
+	 * 비로그인 상태에서는 메뉴 항목을 노출하지 않는다 (설계 §6-5).
+	 * @description 반드시 `undefined`여야 한다. iOS 네이티브 구현(`RNCWebViewImpl.m`)은
+	 * `menuItems`를 Objective-C 포인터로 다루는데, 빈 배열(`[]`)은 `nil`이 아니라서
+	 * `canPerformAction:`이 `self.menuItems`가 존재한다고 판단해 "하이라이트"뿐 아니라
+	 * 복사·전체선택 등 iOS 기본 텍스트 선택 메뉴 전체를 차단해 버린다. 빈 배열로 되돌리면
+	 * 비로그인 사용자가 인앱 브라우저의 모든 페이지에서 텍스트를 복사할 수 없게 되는
+	 * 회귀가 재발한다.
+	 */
+	const menuItems: WebViewCustomMenuItems[] | undefined = isLoggedIn
 		? [{ label: "하이라이트", key: HIGHLIGHT_MENU_KEY }]
-		: [];
+		: undefined;
 
 	const handleCustomMenuSelection = useCallback(
 		(event: { nativeEvent: { key: string } }) => {

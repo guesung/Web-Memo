@@ -10,11 +10,11 @@ import { EmptyBrowserView } from "./_components/EmptyBrowserView";
 import { MemoPanel } from "./_components/MemoPanel";
 import { TechBlogBottomSheet } from "./_components/TechBlogBottomSheet";
 import { useBrowserState } from "./_hooks/useBrowserState";
-import { useWebViewHighlights } from "./_hooks/useWebViewHighlights";
+import {
+	type WebViewHighlightMessage,
+	useWebViewHighlights,
+} from "./_hooks/useWebViewHighlights";
 import { INJECTED_JS_ON_LOAD } from "./_utils/webViewScripts";
-
-/** WebView가 postMessage로 올려보내는 하이라이트 메시지 (JSON.parse 결과이므로 느슨한 형태) */
-type WebViewHighlightMessage = { type: string; [key: string]: unknown };
 
 export default function BrowserScreen() {
 	/**

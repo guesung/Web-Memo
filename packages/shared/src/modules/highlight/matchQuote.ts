@@ -10,15 +10,21 @@ import { CONTEXT_LENGTH } from "./constants";
 /** 근사 매칭 시 허용할 최대 오류 수의 상한 */
 const MAX_ERRORS_CAP = 256;
 
+/**
+ * 근사 매칭에서 허용할 오차 비율.
+ * @description 매칭 엄격도는 오직 이 값으로만 통제한다. 사후 점수 컷을 두지 말 것 —
+ * approx-string-match는 errors <= maxErrors인 후보만 반환하므로 인용문 점수가 항상
+ * 1 - MAX_ERROR_RATIO 이상으로 보장되고, 그 값에서 유도한 컷은 어떤 입력에서도 걸리지 않는 죽은 코드가 된다.
+ * hypothesis는 0.5를 쓰지만, 밑줄이 사라지는 것보다 엉뚱한 문장에 그어지는 게 더 나쁘다고 보아 0.3으로 좁혔다.
+ */
+const MAX_ERROR_RATIO = 0.3;
+
 const SCORE_WEIGHT = {
 	quote: 50,
 	prefix: 20,
 	suffix: 20,
 	position: 2,
 } as const;
-
-/** 근사 매칭이 엉뚱한 위치를 고르는 것을 막기 위한 최소 점수 컷 (인용문 가중치의 절반) */
-const MIN_SCORE = SCORE_WEIGHT.quote * 0.5;
 
 /** 인용문 매칭 결과 */
 export interface QuoteMatch {
@@ -52,13 +58,7 @@ export function matchQuote(
 		score: scoreCandidate({ text, quote, candidate, options }),
 	}));
 
-	const best = scored.reduce((best, current) => (current.score > best.score ? current : best));
-
-	if (best.score < MIN_SCORE) {
-		return null;
-	}
-
-	return best;
+	return scored.reduce((best, current) => (current.score > best.score ? current : best));
 }
 
 /** 근사 매칭 후보 (오류 수 포함) */
@@ -82,7 +82,7 @@ function findCandidates(text: string, quote: string): Candidate[] {
 		return exact;
 	}
 
-	const maxErrors = Math.min(MAX_ERRORS_CAP, Math.floor(quote.length / 2));
+	const maxErrors = Math.min(MAX_ERRORS_CAP, Math.floor(quote.length * MAX_ERROR_RATIO));
 
 	return search(text, quote, maxErrors);
 }

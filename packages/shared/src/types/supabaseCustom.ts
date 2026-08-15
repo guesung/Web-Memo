@@ -23,6 +23,9 @@ export type CategorySupabaseResponse = PostgrestSingleResponse<
 	Array<CategoryTable["Row"]>
 >;
 
+export type HighlightTable = Database["memo"]["Tables"]["highlight"];
+export type HighlightRow = HighlightTable["Row"];
+
 export type GetMemoResponse = QueryData<
 	ReturnType<MemoService["getMemos"]>
 >[number];

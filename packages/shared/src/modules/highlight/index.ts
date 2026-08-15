@@ -6,3 +6,4 @@ export * from "./createAnchor";
 export * from "./resolveAnchor";
 export * from "./renderHighlights";
 export * from "./selectionTracker";
+export * from "./injected/highlightScript";

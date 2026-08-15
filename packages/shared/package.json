@@ -57,6 +57,10 @@
 		"./modules/analytics": {
 			"types": "./src/modules/analytics/index.ts",
 			"default": "./src/modules/analytics/index.ts"
+		},
+		"./modules/highlight": {
+			"types": "./src/modules/highlight/index.ts",
+			"default": "./src/modules/highlight/index.ts"
 		}
 	},
 	"typesVersions": {
@@ -99,11 +103,15 @@
 			],
 			"modules/analytics": [
 				"./src/modules/analytics/index.ts"
+			],
+			"modules/highlight": [
+				"./src/modules/highlight/index.ts"
 			]
 		}
 	},
 	"scripts": {
-		"type-check": "tsc --noEmit",
+		"build:injected": "node scripts/buildInjectedScript.mjs",
+		"type-check": "pnpm build:injected && tsc --noEmit",
 		"tsc-watch": "tsc-watch"
 	},
 	"dependencies": {
@@ -127,6 +135,7 @@
 		"@types/react": "^19.1.0",
 		"@web-memo/env": "workspace:*",
 		"@web-memo/tsconfig": "workspace:*",
+		"esbuild": "^0.28.2",
 		"vitest": "^2.1.5"
 	}
 }

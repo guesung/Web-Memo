@@ -45,7 +45,13 @@ export function buildDocumentTextIndex(root: Node): DocumentTextIndex {
 	return { text, nodes };
 }
 
-/** 문서 텍스트 offset을 텍스트 노드 위치로 변환한다. 범위를 벗어나면 null. */
+/**
+ * 문서 텍스트 offset을 텍스트 노드 위치로 변환한다. 범위를 벗어나면 null.
+ * @description 두 텍스트 노드가 맞닿은 경계 offset(한 노드의 끝이자 다음 노드의 시작)에서는
+ * 항상 다음 노드의 시작점(offset 0)을 반환한다. 문서 텍스트의 끝(offset === text.length)에는
+ * 다음 노드가 없으므로 이 경우만 예외적으로 마지막 노드의 끝점을 반환한다.
+ * resolveAnchor가 이 함수로 Range의 시작점/끝점을 만들 때 이 비대칭 규칙에 의존하게 된다.
+ */
 export function offsetToPoint(
 	index: DocumentTextIndex,
 	offset: number,

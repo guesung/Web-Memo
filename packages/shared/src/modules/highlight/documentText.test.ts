@@ -36,8 +36,12 @@ describe("offsetToPoint / pointToOffset", () => {
 		const index = buildDocumentTextIndex(root);
 		const point = offsetToPoint(index, 2);
 
-		expect(point?.node.textContent).toBe("강조");
-		expect(point?.offset).toBe(1);
+		if (!point) {
+			throw new Error("offset 2를 텍스트 노드 위치로 변환하지 못했다");
+		}
+
+		expect(point.node.textContent).toBe("강조");
+		expect(point.offset).toBe(1);
 	});
 
 	it("변환이 왕복으로 일치한다", () => {
@@ -45,7 +49,11 @@ describe("offsetToPoint / pointToOffset", () => {
 		const index = buildDocumentTextIndex(root);
 		const point = offsetToPoint(index, 3);
 
-		expect(pointToOffset(index, point!.node, point!.offset)).toBe(3);
+		if (!point) {
+			throw new Error("offset 3을 텍스트 노드 위치로 변환하지 못했다");
+		}
+
+		expect(pointToOffset(index, point.node, point.offset)).toBe(3);
 	});
 
 	it("범위를 벗어난 offset은 null을 반환한다", () => {

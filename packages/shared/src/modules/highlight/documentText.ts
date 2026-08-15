@@ -48,16 +48,27 @@ export function buildDocumentTextIndex(root: Node): DocumentTextIndex {
 /**
  * 문서 텍스트 offset을 텍스트 노드 위치로 변환한다. 범위를 벗어나면 null.
  * @description 두 텍스트 노드가 맞닿은 경계 offset(한 노드의 끝이자 다음 노드의 시작)에서는
- * 항상 다음 노드의 시작점(offset 0)을 반환한다. 문서 텍스트의 끝(offset === text.length)에는
+ * 기본적으로 다음 노드의 시작점(offset 0)을 반환한다. 문서 텍스트의 끝(offset === text.length)에는
  * 다음 노드가 없으므로 이 경우만 예외적으로 마지막 노드의 끝점을 반환한다.
- * resolveAnchor가 이 함수로 Range의 시작점/끝점을 만들 때 이 비대칭 규칙에 의존하게 된다.
+ * `preferEnd: true`를 주면 경계 offset에서 다음 노드의 시작점 대신 이전 노드의 끝점을 반환한다.
+ * Range의 끝점을 만들 때 다음 노드 시작(offset 0)을 그대로 쓰면 CSS Custom Highlight 렌더링에서
+ * 다음 요소 시작 지점에 빈 하이라이트 조각이 생길 수 있어, resolveAnchor는 이 옵션으로 보정한다.
  */
 export function offsetToPoint(
 	index: DocumentTextIndex,
 	offset: number,
+	options: { preferEnd?: boolean } = {},
 ): { node: Text; offset: number } | null {
 	if (offset < 0 || offset > index.text.length) {
 		return null;
+	}
+
+	if (options.preferEnd) {
+		const previousNodeEnd = findNodeEndingAt(index, offset);
+
+		if (previousNodeEnd) {
+			return previousNodeEnd;
+		}
 	}
 
 	for (let i = index.nodes.length - 1; i >= 0; i -= 1) {
@@ -65,6 +76,22 @@ export function offsetToPoint(
 
 		if (offset >= entry.start) {
 			return { node: entry.node, offset: offset - entry.start };
+		}
+	}
+
+	return null;
+}
+
+/** offset이 어떤 텍스트 노드의 끝 경계와 정확히 일치하면 그 노드의 끝점을 반환한다. */
+function findNodeEndingAt(
+	index: DocumentTextIndex,
+	offset: number,
+): { node: Text; offset: number } | null {
+	for (const entry of index.nodes) {
+		const end = entry.start + entry.node.data.length;
+
+		if (end === offset) {
+			return { node: entry.node, offset: entry.node.data.length };
 		}
 	}
 

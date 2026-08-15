@@ -53,6 +53,8 @@ Supabase pg_cron이 30분마다 Edge Function `daily-article-reminder`를 호출
 
 **보안**: Edge Function은 `x-cron-secret` 헤더가 `CRON_SECRET` 환경 변수와 일치할 때만 동작한다. 불일치 시 401. 새 테이블 3개는 모두 RLS로 `user_id = auth.uid()` 행만 접근 가능하고, Edge Function은 service_role로 우회한다.
 
+**JWT 검증 비활성화**: `config.toml`에 `[functions.daily-article-reminder] verify_jwt = false`를 넣었다. pg_cron의 `net.http_post`는 Authorization 헤더를 보내지 않으므로, Supabase 게이트웨이의 기본 JWT 검증(`verify_jwt = true`)을 켜둔 채로 배포하면 함수 본문에 닿기도 전에 401로 막힌다. 인증은 `x-cron-secret` 헤더가 대신한다.
+
 ## Related Issues/PRs
 
 - 설계 스펙: `docs/superpowers/specs/2026-08-11-daily-article-reminder-design.md`
@@ -67,6 +69,9 @@ Supabase pg_cron이 30분마다 Edge Function `daily-article-reminder`를 호출
 - [ ] Supabase 대시보드: Vault에 `project_url`(`https://<ref>.supabase.co`), `cron_secret`(랜덤 문자열) 등록
 - [ ] Edge Function 환경 변수 `CRON_SECRET`을 Vault의 `cron_secret`과 같은 값으로 등록
 - [ ] `supabase db push`로 마이그레이션 2개 적용 (pg_cron/pg_net 확장 활성화 포함)
+  - ⚠️ **develop 계열 브랜치에서는 `db push`가 거부된다.** 원격에 적용된 `20260704`·`20260727`·`20260727120000` 마이그레이션이 master에만 있고 develop에는 없어, CLI가 "Remote migration versions not found in local migrations directory"로 막는다. master 기준 워크트리에서 push 하거나, develop에 master를 먼저 반영해야 한다.
+  - ⚠️ 설치된 supabase CLI 2.48.3은 8자리(`20260727`)와 14자리(`20260727120000`) 버전이 섞여 있을 때 정렬을 잘못해 매칭에 실패한다. 최신 CLI(2.114+)를 쓰는 편이 안전하다.
+  - 순서 주의: cron 마이그레이션(`20260812`)은 Vault 시크릿 등록과 함수 배포가 끝난 뒤에 적용해야 한다. 먼저 적용하면 30분마다 실패하는 잡이 돈다.
 - [ ] `supabase functions deploy daily-article-reminder`
 - [ ] `pnpm generate-supabase-type` 재실행해 수동 추가한 타입과 실제 스키마가 일치하는지 확인
 - [ ] 개발 빌드 재생성 (`expo prebuild --clean` 포함된 `pnpm android` / `pnpm ios`) — expo-notifications는 네이티브 모듈이라 기존 빌드로는 동작하지 않는다

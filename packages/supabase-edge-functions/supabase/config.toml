@@ -219,6 +219,11 @@ enabled = true
 policy = "oneshot"
 inspector_port = 8083
 
+# pg_cron이 net.http_post로 호출할 때는 Authorization 헤더가 없어 기본 JWT 검증에 막힌다.
+# 이 함수는 x-cron-secret 헤더로 자체 인증하므로 게이트웨이 JWT 검증을 끈다.
+[functions.daily-article-reminder]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

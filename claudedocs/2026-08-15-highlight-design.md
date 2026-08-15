@@ -159,7 +159,7 @@ injected/entry.ts  --esbuild(iife, minify)-->  dist/injected/highlight.js
                               (export const HIGHLIGHT_SCRIPT = "...")
 ```
 
-`packages/env`가 이미 tsup 빌드 스텝을 갖고 있어 모노레포에 낯선 패턴은 아니다. 번들에는 `approx-string-match`가 함께 포함되며, 대상 환경은 iOS Safari 17 / Chrome 105 수준으로 잡는다.
+`packages/env`가 이미 tsup 빌드 스텝을 갖고 있어 모노레포에 낯선 패턴은 아니다. 번들에는 `approx-string-match`가 함께 포함되며, **대상 환경은 앱의 최소 지원 환경인 iOS Safari 15 / Chrome 105로 잡는다**(`apps/app/ios/Podfile:19`의 deployment target이 15.1). 렌더링 API 지원 여부와 스크립트 자체의 파싱 가능 여부는 별개다 — Custom Highlight API를 못 써서 폴백을 타는 사용자에게도 스크립트는 돌아가야 한다.
 
 ### 3-3. 앵커 타입
 
@@ -263,7 +263,11 @@ iOS는 텍스트를 선택하면 시스템이 "복사 / 조회 / 공유" 콜아�
 
 `CSS.highlights` + `new Highlight(range)` + `::highlight()` 로 색을 입힌다. **DOM을 전혀 건드리지 않으므로** React 기반 사이트를 망가뜨리지 않고, 사이트가 리렌더해도 우리가 삽입한 노드가 날아가는 문제가 없다.
 
-지원 범위는 iOS Safari 17.2+ / Chrome 105+ (Android WebView 포함)로, 앱의 실질 타겟을 충분히 덮는다. 다만 Baseline "Widely available"은 아직 아니므로 **미지원 환경에서는 `<span data-webmemo-hl>` 래핑으로 폴백**한다. 폴백 경로에서는 사이트 리렌더로 밑줄이 사라질 수 있는데, 이는 감수한다.
+지원 범위는 iOS Safari 17.2+ / Chrome 105+ (Android WebView 포함)이고, 미지원 환경에서는 **`<span data-webmemo-hl>` 래핑으로 폴백**한다.
+
+**폴백은 예비 경로가 아니라 실제 사용자 몫이 타는 경로다.** 앱의 iOS deployment target이 **15.1**(`apps/app/ios/Podfile:19`)이고 WKWebView는 시스템 WebKit을 쓰므로, **iOS 15.1~17.1 사용자는 예외 없이 폴백을 탄다.** (Android는 WebView가 Play 스토어로 갱신되고 Chrome 105면 충분하므로 사실상 전부 Custom Highlight 경로다.)
+
+따라서 폴백 경로의 결함을 "구형 환경이니 감수한다"로 넘기지 않는다. 지켜야 할 경계는 이렇다 — **밑줄이 사라지는 것은 감수하되(React 사이트 리렌더로 `<span>`이 날아가는 경우), 틀린 위치에 그어지거나 글자가 깨지는 것은 감수하지 않는다.** 리렌더 대응(MutationObserver 재삽입)은 후속 과제로 둔다.
 
 ### 5-2. 히트테스트
 

@@ -2038,8 +2038,10 @@ const result = await build({
 	bundle: true,
 	format: "iife",
 	minify: true,
-	// WebView 최소 지원 환경. 설계 §5-1 참고.
-	target: ["safari17", "chrome105"],
+	// 앱의 최소 지원 환경에 맞춘다. iOS deployment target이 15.1(apps/app/ios/Podfile:19)이므로
+	// safari15가 하한이다. safari17로 잡으면 CSS Custom Highlight API를 못 써서 폴백을 타는
+	// 바로 그 사용자들(iOS 15.1~17.1)의 WebView에서 스크립트 자체가 파싱되지 않을 수 있다.
+	target: ["safari15", "chrome105"],
 	write: false,
 });
 

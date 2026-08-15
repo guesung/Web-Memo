@@ -27,6 +27,28 @@
 - 색상은 `yellow | green | blue | pink | purple` 5종 고정. DB CHECK 제약과 TS 타입이 일치해야 한다.
 - 하이라이트는 **로그인 필수**. 비로그인 로컬 저장은 v1 범위 밖이다.
 - 각 Task 끝의 커밋은 해당 Task가 만든 파일만 담는다. `git add .` 금지.
+- **non-null assertion(`!`)을 쓰지 않는다.** `biome.json`에 `noNonNullAssertion: "warn"`이 설정되어 있고, `pnpm lint` 출력은 깨끗해야 한다.
+  이 계획서의 테스트 코드 블록 일부에 `!`가 남아 있는데(`point!.node`, `createAnchor(...)!`, `root.querySelector("p")!` 등), **그대로 옮기지 말고 아래 패턴으로 바꿔서 구현한다.** 계획서의 의도는 유지하되 표기만 바꾸는 것이다.
+
+  ```typescript
+  // ❌ 계획서에 적힌 형태
+  const anchor = createAnchor(rangeOf(root, "라마바"), root)!;
+  expect(pointToOffset(index, point!.node, point!.offset)).toBe(3);
+
+  // ✅ 이렇게 바꾼다 — 값이 없으면 테스트가 그 자리에서 명확히 실패한다
+  const anchor = createAnchor(rangeOf(root, "라마바"), root);
+  if (!anchor) {
+      throw new Error("앵커 생성에 실패했다");
+  }
+
+  const point = offsetToPoint(index, 3);
+  if (!point) {
+      throw new Error("offset 3을 텍스트 노드 위치로 변환하지 못했다");
+  }
+  expect(pointToOffset(index, point.node, point.offset)).toBe(3);
+  ```
+
+  DOM 조회(`root.querySelector("p")!`)도 마찬가지로 가드를 세운다. 가드는 타입을 좁혀주므로 이후 코드에서 `?.`도 필요 없어진다.
 
 ---
 

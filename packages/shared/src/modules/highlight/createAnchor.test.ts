@@ -108,4 +108,67 @@ describe("createAnchor", () => {
 
 		expect(anchor?.exact).toBe("앞강조뒤");
 	});
+
+	it("인라인 요소 끝 경계에서 시작하는 선택도 앵커를 만든다", () => {
+		const root = render("<p>앞<strong>강조</strong>뒤</p>");
+		const paragraph = root.querySelector("p");
+		const strong = paragraph?.querySelector("strong");
+		const 뒤노드 = strong?.nextSibling;
+
+		if (!paragraph || !strong || !뒤노드) {
+			throw new Error("문단 구조를 찾지 못했다");
+		}
+
+		const range = document.createRange();
+		// "강조" 바로 뒤, 즉 "뒤"가 시작하는 지점 — 브라우저가 인라인 요소 경계에서
+		// 실제로 반환하는 형태(요소 컨테이너 + childNodes.length)
+		range.setStart(strong, strong.childNodes.length);
+		range.setEnd(뒤노드, 뒤노드.textContent?.length ?? 0);
+
+		const anchor = createAnchor(range, root);
+
+		expect(anchor?.exact).toBe("뒤");
+	});
+
+	it("인라인 요소 시작 경계에서 끝나는 선택도 앵커를 만든다", () => {
+		const root = render("<p>앞<strong>강조</strong>뒤</p>");
+		const paragraph = root.querySelector("p");
+		const strong = paragraph?.querySelector("strong");
+		const 앞노드 = paragraph?.firstChild;
+
+		if (!paragraph || !strong || !앞노드) {
+			throw new Error("문단 구조를 찾지 못했다");
+		}
+
+		const range = document.createRange();
+		range.setStart(앞노드, 0);
+		// "강조" 바로 앞 — 요소 컨테이너 + offset 0
+		range.setEnd(strong, 0);
+
+		const anchor = createAnchor(range, root);
+
+		expect(anchor?.exact).toBe("앞");
+	});
+
+	it("빈 텍스트 노드가 앞에 있어도 앵커를 만든다", () => {
+		const root = render("<p>가나다</p>");
+		const paragraph = root.querySelector("p");
+		const realTextNode = paragraph?.firstChild;
+
+		if (!paragraph || !realTextNode) {
+			throw new Error("문단을 찾지 못했다");
+		}
+
+		const emptyTextNode = document.createTextNode("");
+		paragraph.insertBefore(emptyTextNode, realTextNode);
+
+		const range = document.createRange();
+		// 인덱스에 없는 빈 텍스트 노드를 건너뛰고 <p> 시작 지점에서 선택을 시작한다
+		range.setStart(paragraph, 0);
+		range.setEnd(realTextNode, realTextNode.textContent?.length ?? 0);
+
+		const anchor = createAnchor(range, root);
+
+		expect(anchor?.exact).toBe("가나다");
+	});
 });

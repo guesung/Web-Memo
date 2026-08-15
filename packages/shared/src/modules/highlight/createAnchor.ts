@@ -1,5 +1,9 @@
 import { CONTEXT_LENGTH } from "./constants";
-import { buildDocumentTextIndex, pointToOffset } from "./documentText";
+import {
+	buildDocumentTextIndex,
+	type DocumentTextIndex,
+	pointToOffset,
+} from "./documentText";
 import type { HighlightAnchor } from "./types";
 
 /**
@@ -17,15 +21,12 @@ export function createAnchor(
 	}
 
 	const index = buildDocumentTextIndex(root);
-	const startPoint = resolveStartPoint(range.startContainer, range.startOffset);
-	const endPoint = resolveEndPoint(range.endContainer, range.endOffset);
-
-	if (!startPoint || !endPoint) {
-		return null;
-	}
-
-	const start = pointToOffset(index, startPoint.node, startPoint.offset);
-	const end = pointToOffset(index, endPoint.node, endPoint.offset);
+	const start = resolveStartOffset(
+		index,
+		range.startContainer,
+		range.startOffset,
+	);
+	const end = resolveEndOffset(index, range.endContainer, range.endOffset);
 
 	if (start === null || end === null || end <= start) {
 		return null;
@@ -40,26 +41,34 @@ export function createAnchor(
 }
 
 /**
- * Range의 시작점을 텍스트 노드 위치로 보정한다.
- * @description `window.getSelection()`이 문단 전체 선택 등에서 `startContainer`로
- * 요소 노드를 주는 경우가 흔하다. 이때는 `childNodes[startOffset]`부터 문서 순서로 훑어
- * 첫 텍스트 노드를 찾고 그 노드의 offset 0을 시작점으로 쓴다.
+ * Range 시작점을 문서 텍스트 offset으로 변환한다.
+ * @description `container`가 인덱스에 있는 텍스트 노드면 `pointToOffset`으로 바로 변환된다.
+ * 요소 노드(문단 전체 선택, 인라인 요소 경계 선택 등)이거나 길이 0인 텍스트 노드처럼
+ * 인덱스에 없는 지점이면, 문서 순서상 그 지점과 같거나 그 뒤에 오는 첫 텍스트 노드를 찾아
+ * 그 시작 offset을 쓴다.
  */
-function resolveStartPoint(
+function resolveStartOffset(
+	index: DocumentTextIndex,
 	container: Node,
 	offset: number,
-): { node: Text; offset: number } | null {
-	if (container.nodeType === Node.TEXT_NODE) {
-		return { node: container as Text, offset };
+): number | null {
+	const direct = pointToOffset(index, container, offset);
+
+	if (direct !== null) {
+		return direct;
 	}
 
-	const children = Array.from(container.childNodes);
+	const probe = createProbeRange(container, offset);
 
-	for (let i = offset; i < children.length; i += 1) {
-		const found = findFirstTextNode(children[i]);
+	if (!probe) {
+		return null;
+	}
 
-		if (found) {
-			return { node: found, offset: 0 };
+	for (const entry of index.nodes) {
+		const comparison = comparePointSafe(probe, entry.node, 0);
+
+		if (comparison !== null && comparison >= 0) {
+			return entry.start;
 		}
 	}
 
@@ -67,63 +76,68 @@ function resolveStartPoint(
 }
 
 /**
- * Range의 끝점을 텍스트 노드 위치로 보정한다.
- * @description `endContainer`가 요소 노드면 `childNodes[endOffset - 1]` 하위에서
- * 마지막 텍스트 노드를 찾고 그 노드의 끝(길이)을 끝점으로 쓴다.
+ * Range 끝점을 문서 텍스트 offset으로 변환한다.
+ * @description `resolveStartOffset`과 대칭이다. 인덱스에 없는 지점이면 문서 순서상
+ * 그 지점과 같거나 그 앞에 오는 마지막 텍스트 노드를 찾아 그 끝 offset을 쓴다.
  */
-function resolveEndPoint(
+function resolveEndOffset(
+	index: DocumentTextIndex,
 	container: Node,
 	offset: number,
-): { node: Text; offset: number } | null {
-	if (container.nodeType === Node.TEXT_NODE) {
-		return { node: container as Text, offset };
+): number | null {
+	const direct = pointToOffset(index, container, offset);
+
+	if (direct !== null) {
+		return direct;
 	}
 
-	const children = Array.from(container.childNodes);
+	const probe = createProbeRange(container, offset);
 
-	for (let i = offset - 1; i >= 0; i -= 1) {
-		const found = findLastTextNode(children[i]);
+	if (!probe) {
+		return null;
+	}
 
-		if (found) {
-			return { node: found, offset: found.data.length };
+	for (let i = index.nodes.length - 1; i >= 0; i -= 1) {
+		const entry = index.nodes[i];
+		const comparison = comparePointSafe(
+			probe,
+			entry.node,
+			entry.node.data.length,
+		);
+
+		if (comparison !== null && comparison <= 0) {
+			return entry.start + entry.node.data.length;
 		}
 	}
 
 	return null;
 }
 
-/** 주어진 노드부터 문서 순서로 훑어 첫 텍스트 노드를 찾는다. */
-function findFirstTextNode(node: Node): Text | null {
-	if (node.nodeType === Node.TEXT_NODE) {
-		return node as Text;
+/** (container, offset) 지점을 가리키는 collapsed Range를 만든다. 유효하지 않으면 null. */
+function createProbeRange(container: Node, offset: number): Range | null {
+	try {
+		const probe = document.createRange();
+		probe.setStart(container, offset);
+		probe.collapse(true);
+		return probe;
+	} catch {
+		return null;
 	}
-
-	for (const child of Array.from(node.childNodes)) {
-		const found = findFirstTextNode(child);
-
-		if (found) {
-			return found;
-		}
-	}
-
-	return null;
 }
 
-/** 주어진 노드부터 문서 역순으로 훑어 마지막 텍스트 노드를 찾는다. */
-function findLastTextNode(node: Node): Text | null {
-	if (node.nodeType === Node.TEXT_NODE) {
-		return node as Text;
+/**
+ * `Range.comparePoint`를 안전하게 호출한다.
+ * @description 노드가 다른 문서에 있거나 Document/DocumentType처럼 비교 불가능한
+ * 노드 타입이면 예외를 던지므로 감싸서 null로 흡수한다.
+ */
+function comparePointSafe(
+	probe: Range,
+	node: Node,
+	offset: number,
+): number | null {
+	try {
+		return probe.comparePoint(node, offset);
+	} catch {
+		return null;
 	}
-
-	const children = Array.from(node.childNodes);
-
-	for (let i = children.length - 1; i >= 0; i -= 1) {
-		const found = findLastTextNode(children[i]);
-
-		if (found) {
-			return found;
-		}
-	}
-
-	return null;
 }

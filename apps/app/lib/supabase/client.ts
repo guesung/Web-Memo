@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@web-memo/shared/types";
-import { MemoService } from "@web-memo/shared/utils/services";
+import { HighlightService, MemoService } from "@web-memo/shared/utils/services";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import { CONFIG } from "@/lib/config";
@@ -43,3 +43,4 @@ export const supabase = createClient<Database, "memo">(
 );
 
 export const memoService = new MemoService(supabase);
+export const highlightService = new HighlightService(supabase);

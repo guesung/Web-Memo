@@ -110,9 +110,9 @@ DOM 경로(XPath/CSS selector) 방식을 쓰지 않는 결정적 이유는 **모
 | `anchor-quote` | WORK IN PROGRESS 상태로 아카이브 |
 | **hypothesis/client `match-quote.ts`** | **현재 프로덕션에서 가장 활발히 쓰이는 구현. BSD-2-Clause** |
 
-따라서 **hypothesis/client의 `src/annotator/anchoring/match-quote.ts`를 포팅**하고, 그것이 의존하는 [`approx-string-match`](https://www.npmjs.com/package/approx-string-match)(MIT, 유지보수 중)는 npm에서 설치한다. BSD-2-Clause이므로 라이선스 고지를 남기면 포팅에 문제가 없다.
+따라서 **hypothesis의 매칭 전략을 따라 직접 구현**하고, 근사 문자열 매칭만 [`approx-string-match`](https://www.npmjs.com/package/approx-string-match)(MIT, 유지보수 중)를 npm에서 설치해 쓴다. 코드를 그대로 옮기는 대신 알고리즘을 따라 우리 코드로 쓰는 편이 라이선스 관리도 단순하고, 우리 타입 체계에 맞춰 테스트를 붙이기도 쉽다. 참고 출처는 구현 파일 주석에 남긴다.
 
-hypothesis의 매칭 전략을 그대로 따른다:
+전략은 다음과 같다:
 
 1. `indexOf()`로 정확 매칭을 먼저 시도한다
 2. 실패했을 때만 `approxSearch()`로 근사 매칭한다 (`maxErrors = min(256, quote.length / 2)`)
@@ -120,9 +120,9 @@ hypothesis의 매칭 전략을 그대로 따른다:
 
 정확 매칭을 먼저 거치는 순서가 성능상 중요하다. 근사 매칭은 대형 문서에서 눈에 띄게 느려서 hypothesis에도 관련 이슈가 있다. 대부분의 하이라이트는 원문이 그대로이므로 1단계에서 끝난다.
 
-### 2-3. 라이선스
+### 2-3. 타입 네이밍
 
-포팅한 파일 상단에 출처와 BSD-2-Clause 고지를 남기고, 레포 루트에 `THIRD_PARTY_NOTICES.md`가 없다면 함께 추가한다.
+기존 코드(`MemoSortBy`, `MemosPaginatedKeyParams`)가 타입에 접두사를 쓰지 않으므로 같은 관례를 따른다 — `HighlightAnchor`, `HighlightColor`, `HighlightItem`.
 
 ---
 
@@ -165,7 +165,7 @@ injected/entry.ts  --esbuild(iife, minify)-->  dist/injected/highlight.js
 
 ```typescript
 /** 하이라이트의 위치를 텍스트로 기억하는 앵커 (W3C TextQuoteSelector 기반) */
-interface IFHighlightAnchor {
+interface HighlightAnchor {
   /** 실제로 선택된 문장 */
   exact: string;
   /** 앞 문맥 32자 */
@@ -250,7 +250,7 @@ iOS는 텍스트를 선택하면 시스템이 "복사 / 조회 / 공유" 콜아�
 | `highlight:tap` | WebView → RN | `{ id }` |
 | `highlight:restored` | WebView → RN | `{ resolved, unresolved }` |
 | `window.__webmemoCommitHighlight()` | RN → WebView | (인자 없음, 캐시된 앵커 커밋) |
-| `window.__webmemoRestore(list)` | RN → WebView | `IFHighlightWithId[]` |
+| `window.__webmemoRestore(list)` | RN → WebView | `HighlightItem[]` |
 | `window.__webmemoAdd(item)` | RN → WebView | 저장 성공 직후 즉시 렌더 |
 | `window.__webmemoRemove(id)` | RN → WebView | 삭제 후 지우기 |
 | `window.__webmemoSetColor(id, color)` | RN → WebView | 색 변경 반영 |
@@ -299,7 +299,9 @@ CSS Custom Highlight API에는 "이 좌표가 어떤 하이라이트인가"를 �
 
 ### 6-3. 앵커를 못 찾은 경우 (원문 변경)
 
-렌더를 건너뛰되 데이터는 지우지 않는다. 하이라이트 목록에서는 정상 노출하고, "원문에서 찾을 수 없음" 배지를 붙인다. `exact_text`가 남아 있으므로 사용자는 자기가 뭘 그었는지 항상 볼 수 있다.
+렌더를 건너뛰되 데이터는 지우지 않는다. `exact_text`가 남아 있으므로 사용자는 하이라이트 목록에서 자기가 뭘 그었는지 항상 볼 수 있다.
+
+"원문에서 찾을 수 없음" 배지는 **웹 목록에 붙이지 않는다.** 앵커 해석은 그 페이지의 DOM이 있어야 가능한데 웹 대시보드는 원문을 불러오지 않으므로, 웹은 어떤 하이라이트가 아직 살아 있는지 알 방법이 없다. 해석 실패는 실제로 페이지를 연 WebView만 알 수 있으므로, `highlight:restored`의 `unresolved` 개수는 모바일에서만 쓴다. v1에서는 이 값을 별도로 표시하지 않고 향후 진단용으로 남겨둔다.
 
 ### 6-4. 중복 하이라이트
 

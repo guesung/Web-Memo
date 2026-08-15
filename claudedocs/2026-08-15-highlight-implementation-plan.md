@@ -2751,10 +2751,17 @@ export function useWebViewHighlights({
 	const { data: highlights } = useHighlightsByUrl(normalizedUrl);
 	const { mutate: createHighlight } = useHighlightCreateMutation();
 
-	/** 비로그인 상태에서는 메뉴 항목을 노출하지 않는다 (설계 §6-5) */
+	/**
+	 * 비로그인 상태에서는 메뉴 항목을 노출하지 않는다 (설계 §6-5).
+	 * @description **빈 배열이 아니라 `undefined`여야 한다.** react-native-webview의 네이티브 구현
+	 * (`RNCWebViewImpl.m`의 `canPerformAction`)은 `self.menuItems`가 nil일 때만 기본 메뉴를 허용하고,
+	 * 그렇지 않으면 모든 액션에 NO를 반환한다. Objective-C 포인터라 **빈 NSArray는 nil이 아니므로**,
+	 * `[]`를 주면 "하이라이트" 항목만 빠지는 게 아니라 복사·전체선택 등 기본 텍스트 선택 메뉴가 통째로 사라진다.
+	 * 라이브러리 타입 정의에도 "An empty array will suppress the menu"로 명시되어 있다.
+	 */
 	const menuItems = isLoggedIn
 		? [{ label: "하이라이트", key: HIGHLIGHT_MENU_KEY }]
-		: [];
+		: undefined;
 
 	const handleCustomMenuSelection = useCallback(
 		(event: { nativeEvent: { key: string } }) => {

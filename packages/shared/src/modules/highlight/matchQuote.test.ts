@@ -40,6 +40,15 @@ describe("matchQuote", () => {
 		expect(match).not.toBeNull();
 	});
 
+	it("구조는 비슷하지만 내용이 다른 문장은 찾지 않는다", () => {
+		const match = matchQuote(
+			"서울에서 부산까지 기차로 세 시간 걸립니다",
+			"제주에서 광주까지 배로 다섯 시간 걸립니다",
+		);
+
+		expect(match).toBeNull();
+	});
+
 	it("원문에서 사라진 문장은 null을 반환한다", () => {
 		const match = matchQuote("완전히 다른 내용만 들어 있는 문서", "존재하지 않는 문장입니다");
 

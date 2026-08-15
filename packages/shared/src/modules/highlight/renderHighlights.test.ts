@@ -111,6 +111,44 @@ describe("createHighlightRenderer (폴백 경로)", () => {
 		expect(root.textContent).toBe("가나다라마바사아자차");
 	});
 
+	it("겹치는 하이라이트를 지우면 조각이 남지 않는다", () => {
+		const root = document.createElement("div");
+		root.innerHTML = "<p>가나다라마바사</p>";
+		document.body.appendChild(root);
+
+		const renderer = createHighlightRenderer();
+
+		const firstNode = root.querySelector("p")?.firstChild;
+		if (!(firstNode instanceof Text)) {
+			throw new Error("첫 텍스트 노드를 찾지 못했다");
+		}
+		const first = document.createRange();
+		first.setStart(firstNode, 3);
+		first.setEnd(firstNode, 6);
+		renderer.add(1, first, "yellow");
+
+		// id=1 영역과 겹치는 범위를 추가하면 id=1의 span이 여러 DOM 조각으로 쪼개진다.
+		const overlapStart = root.querySelector("p")?.firstChild;
+		const overlapEndNode = root.querySelector('[data-webmemo-hl="1"]')?.firstChild;
+		if (!(overlapStart instanceof Text) || !(overlapEndNode instanceof Text)) {
+			throw new Error("겹칠 텍스트 노드를 찾지 못했다");
+		}
+		const second = document.createRange();
+		second.setStart(overlapStart, 2);
+		second.setEnd(overlapEndNode, 2);
+		renderer.add(2, second, "green");
+
+		// id=1의 span이 실제로 2개 이상의 조각으로 쪼개졌는지 전제를 확인한다.
+		expect(
+			root.querySelectorAll('[data-webmemo-hl="1"]').length,
+		).toBeGreaterThan(1);
+
+		renderer.remove(1);
+
+		expect(root.querySelectorAll('[data-webmemo-hl="1"]')).toHaveLength(0);
+		expect(root.textContent).toBe("가나다라마바사");
+	});
+
 	it("요소를 가로지르는 선택을 감싸도 페이지 텍스트가 보존된다", () => {
 		const root = document.createElement("div");
 		root.innerHTML = "<p>앞<strong>강조</strong>뒤</p>";

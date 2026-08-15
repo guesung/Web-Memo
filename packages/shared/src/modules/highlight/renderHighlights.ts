@@ -85,23 +85,32 @@ export function createHighlightRenderer(): HighlightRenderer {
 		range.insertNode(span);
 	}
 
-	function findFallbackSpan(id: number): HTMLElement | null {
-		return document.querySelector<HTMLElement>(`[${DATA_ATTRIBUTE}="${id}"]`);
+	/**
+	 * id에 해당하는 폴백 span을 모두 찾는다.
+	 * @description 겹치는 하이라이트를 추가하면 기존 span이 여러 DOM 조각으로 쪼개지므로
+	 * 같은 id를 가진 span이 2개 이상 존재할 수 있다. 그래서 단수(`querySelector`)가 아닌
+	 * 복수(`querySelectorAll`)로 모든 조각을 찾는다.
+	 */
+	function findFallbackSpans(id: number): HTMLElement[] {
+		return [
+			...document.querySelectorAll<HTMLElement>(`[${DATA_ATTRIBUTE}="${id}"]`),
+		];
 	}
 
 	function removeFallbackSpan(id: number): void {
-		const span = findFallbackSpan(id);
+		for (const span of findFallbackSpans(id)) {
+			const parent = span.parentNode;
 
-		if (!span?.parentNode) {
-			return;
-		}
+			if (!parent) {
+				continue;
+			}
 
-		const parent = span.parentNode;
-		while (span.firstChild) {
-			parent.insertBefore(span.firstChild, span);
+			while (span.firstChild) {
+				parent.insertBefore(span.firstChild, span);
+			}
+			parent.removeChild(span);
+			parent.normalize();
 		}
-		parent.removeChild(span);
-		parent.normalize();
 	}
 
 	return {
@@ -141,9 +150,7 @@ export function createHighlightRenderer(): HighlightRenderer {
 				return;
 			}
 
-			const span = findFallbackSpan(id);
-
-			if (span) {
+			for (const span of findFallbackSpans(id)) {
 				span.style.backgroundColor = HIGHLIGHT_COLOR_STYLE[color].background;
 			}
 		},

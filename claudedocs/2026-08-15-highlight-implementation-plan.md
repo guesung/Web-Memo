@@ -1779,6 +1779,26 @@ export function isSelectableTarget(node: Node | null): boolean {
 	return true;
 }
 
+/**
+ * ★ 아래 구현에는 디바운스가 없다. 실제 구현에서는 반드시 넣되, 아래 규칙을 지킬 것.
+ *
+ * `selectionchange`는 드래그하는 내내 발생하는데 `createAnchor`는 TreeWalker로 문서 전체를
+ * 재인덱싱하는 비싼 연산이다. 긴 기사에서 체감 렉이 되므로 **비싼 계산만 지연**시킨다
+ * (`isCollapsed`/길이/`isSelectableTarget` 같은 값싼 판정은 동기로 유지 — 거절 사유가
+ * 늦게 세팅되면 "너무 긴 선택" 토스트가 안 뜬다).
+ *
+ * **그리고 `getPendingAnchor()`는 대기 중인 타이머가 있으면 동기적으로 플러시해야 한다.**
+ * 이게 없으면 선택 후 디바운스 시간 안에 커밋이 호출됐을 때 앵커가 아직 `null`이라
+ * 커밋 핸들러가 아무 메시지도 보내지 않고 조용히 종료된다 — 사용자는 "하이라이트"를 눌렀는데
+ * 아무 일도 안 일어나는 걸 보고 원인을 알 수 없다. 실제로 이 버그가 한 번 발생했다.
+ *
+ * 발생 경로가 흔하다: 단어 더블탭은 선택이 즉시 확정되고 메뉴가 바로 뜬다. 더 흔한 건
+ * 선택 핸들을 드래그해 범위를 조정하는 경우로, 드래그 내내 타이머가 리셋되므로
+ * 손을 떼고 곧바로 탭하면 거의 확실히 디바운스 창 안이다.
+ *
+ * 플러시하려면 마지막 유효 Range를 보관해 둔다. 플러시 시점에는 선택이 이미 해제됐을 수 있고,
+ * 그게 애초에 앵커를 미리 캐싱하는 이유이기도 하다.
+ */
 export function createSelectionTracker() {
 	let pendingAnchor: HighlightAnchor | null = null;
 	let rejection: "tooLong" | null = null;

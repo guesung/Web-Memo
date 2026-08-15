@@ -1873,7 +1873,8 @@ git commit -m "feat: 하이라이트 선택 추적기와 WebView 주입 엔트�
 
 **Files:**
 - Create: `packages/shared/scripts/buildInjectedScript.mjs`
-- Create: `packages/shared/src/modules/highlight/injected/.gitignore`
+- Create: `packages/shared/src/modules/highlight/injected/README.md`
+- Create(생성물, 커밋함): `packages/shared/src/modules/highlight/injected/highlightScript.ts`
 - Modify: `packages/shared/package.json`
 - Modify: `packages/shared/src/modules/highlight/index.ts`
 
@@ -1923,12 +1924,28 @@ writeFileSync(
 console.log(`highlightScript.ts 생성 완료 (${code.length} bytes)`);
 ```
 
-- [ ] **Step 3: 생성 파일을 git에서 제외**
+- [ ] **Step 3: 생성 파일을 저장소에 커밋한다 (gitignore 하지 않는다)**
 
-`packages/shared/src/modules/highlight/injected/.gitignore`:
+생성 파일이니 gitignore 하고 싶어지지만, **이 레포에서는 그러면 안 된다.** `packages/shared`는 빌드 산출물이 아니라 **raw TypeScript 소스로 직접 소비**된다 — `package.json`의 `exports`가 `./src/...`를 그대로 가리키고, 소비자(Metro, Next.js, Vite)가 TS를 직접 컴파일한다. 즉 `packages/shared`에는 소비 전에 실행되는 빌드 단계가 없다.
 
-```
-highlightScript.ts
+따라서 `highlightScript.ts`를 gitignore 하면 새로 클론한 사람이 `pnpm dev:app`을 돌릴 때 Metro가 존재하지 않는 파일을 import하려다 실패한다. CI도 마찬가지다.
+
+**생성 파일을 커밋한다.** 대신 사람이 손으로 고치지 않도록 파일 첫 줄에 생성 파일임을 명시한다(Step 2의 스크립트가 이미 그 헤더를 넣는다).
+
+`injected/entry.ts`나 그 의존 모듈을 수정할 때마다 `pnpm -F @web-memo/shared build:injected`를 다시 돌려 재생성한 결과를 함께 커밋해야 한다. 이 사실을 `packages/shared/src/modules/highlight/injected/README.md`에 한 문단으로 남긴다.
+
+```markdown
+# injected
+
+`entry.ts`는 WebView에 주입되는 스크립트의 엔트리다. esbuild가 이를 IIFE로 번들해
+`highlightScript.ts`(`export const HIGHLIGHT_SCRIPT`)를 생성한다.
+
+`highlightScript.ts`는 **생성 파일이지만 저장소에 커밋한다.** `packages/shared`는 빌드 없이
+raw TypeScript로 소비되므로, 커밋하지 않으면 클론 직후 소비자 빌드가 깨진다.
+
+`entry.ts` 또는 그것이 import하는 모듈을 고쳤다면 반드시 다시 생성해서 함께 커밋한다.
+
+    pnpm -F @web-memo/shared build:injected
 ```
 
 - [ ] **Step 4: package.json에 스크립트 등록**
@@ -1980,7 +1997,8 @@ head -c 300 packages/shared/src/modules/highlight/injected/highlightScript.ts
 ```bash
 pnpm type-check && pnpm lint
 git add packages/shared/scripts/buildInjectedScript.mjs \
-        packages/shared/src/modules/highlight/injected/.gitignore \
+        packages/shared/src/modules/highlight/injected/README.md \
+        packages/shared/src/modules/highlight/injected/highlightScript.ts \
         packages/shared/package.json \
         packages/shared/src/modules/highlight/index.ts \
         pnpm-lock.yaml

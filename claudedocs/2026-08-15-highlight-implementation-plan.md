@@ -570,7 +570,11 @@ git commit -m "feat: 하이라이트 앵커용 문서 텍스트 인덱스 구현
 
 문서 텍스트에서 저장된 문장을 다시 찾는다. 정확 매칭을 먼저 시도하고, 실패했을 때만 근사 매칭으로 넘어간다. 이 순서가 성능상 중요하다 — 근사 매칭은 큰 문서에서 눈에 띄게 느리고, 대부분의 하이라이트는 원문이 그대로라 1단계에서 끝난다.
 
-hypothesis 클라이언트의 매칭 전략(정확 매칭 우선, `maxErrors = min(256, quote.length / 2)`, 인용문 50 / prefix 20 / suffix 20 / 위치 2 가중 스코어링)을 따른다.
+hypothesis 클라이언트의 매칭 전략(정확 매칭 우선, 인용문 50 / prefix 20 / suffix 20 / 위치 2 가중 스코어링)을 따르되, **오차 한도는 더 엄격하게 `maxErrors = min(256, floor(quote.length * 0.3))`으로 잡는다.**
+
+hypothesis는 50%를 쓰지만 우리는 30%로 간다. 50%면 20자 문장에서 10글자가 틀려도 매칭으로 인정되는데, 짧거나 흔한 문장에서는 전혀 다른 문장이 매칭될 수 있다. **밑줄이 사라지는 것보다 엉뚱한 문장에 그어지는 게 더 나쁘다** — 못 찾은 하이라이트는 목록에서 원문 그대로 볼 수 있지만, 잘못 그어진 밑줄은 사용자가 자기가 강조한 적 없는 문장을 강조했다고 믿게 만든다.
+
+**사후 점수 컷(`MIN_SCORE`)은 두지 않는다.** 매칭 엄격도는 `maxErrors` 한 곳에서만 통제한다. 점수 컷은 구조적으로 도달할 수 없어 죽은 코드가 되기 때문이다 — `approx-string-match`는 `errors <= maxErrors`인 후보만 반환하므로 인용문 점수가 항상 `1 - maxErrors/quote.length` 이상으로 보장되고, 그 값에서 유도한 컷은 어떤 입력에서도 걸리지 않는다. 이 사실을 코드 주석에 남겨 나중에 누군가 "안전장치"라며 다시 넣지 않게 한다.
 
 **Files:**
 - Create: `packages/shared/src/modules/highlight/matchQuote.ts`
@@ -676,6 +680,15 @@ import { CONTEXT_LENGTH } from "./constants";
 /** 근사 매칭 시 허용할 최대 오류 수의 상한 */
 const MAX_ERRORS_CAP = 256;
 
+/**
+ * 근사 매칭에서 허용할 오차 비율.
+ * @description 매칭 엄격도는 오직 이 값으로만 통제한다. 사후 점수 컷을 두지 말 것 —
+ * approx-string-match는 errors <= maxErrors인 후보만 반환하므로 인용문 점수가 항상
+ * 1 - MAX_ERROR_RATIO 이상으로 보장되고, 그 값에서 유도한 컷은 어떤 입력에서도 걸리지 않는 죽은 코드가 된다.
+ * hypothesis는 0.5를 쓰지만, 밑줄이 사라지는 것보다 엉뚱한 문장에 그어지는 게 더 나쁘다고 보아 0.3으로 좁혔다.
+ */
+const MAX_ERROR_RATIO = 0.3;
+
 const SCORE_WEIGHT = {
 	quote: 50,
 	prefix: 20,
@@ -734,7 +747,10 @@ function findCandidates(text: string, quote: string): Candidate[] {
 		return exact;
 	}
 
-	const maxErrors = Math.min(MAX_ERRORS_CAP, Math.floor(quote.length / 2));
+	const maxErrors = Math.min(
+		MAX_ERRORS_CAP,
+		Math.floor(quote.length * MAX_ERROR_RATIO),
+	);
 
 	return search(text, quote, maxErrors);
 }
@@ -815,7 +831,22 @@ pnpm test:jest run packages/shared/src/modules/highlight/matchQuote.test.ts
 
 기대: PASS (7 케이스)
 
-"원문에서 사라진 문장은 null" 케이스가 실패하면(근사 매칭이 엉뚱한 위치를 반환하면) `matchQuote` 끝에 최소 점수 컷을 추가한다. 인용문 가중치가 50이므로 `SCORE_WEIGHT.quote * 0.5`(= 25) 미만이면 `null`을 반환하도록 한다.
+"원문에서 사라진 문장은 null" 케이스가 실패하면(근사 매칭이 엉뚱한 위치를 반환하면) **점수 컷을 추가하지 말고 `MAX_ERROR_RATIO`를 더 낮춘다.** 사후 점수 컷은 도달할 수 없어 죽은 코드가 된다(위 §2-2 참고).
+
+또한 아래 테스트를 추가해, 30% 한도가 실제로 무언가를 걸러내는지 확인한다. 이 케이스는 50% 한도에서는 통과하고 30%에서는 null이 되어야 한다.
+
+```typescript
+	it("문장이 절반 가까이 바뀌면 찾지 않는다", () => {
+		const match = matchQuote(
+			"오늘 점심에는 김치찌개를 먹었고 저녁에는 파스타를 먹었다",
+			"오늘 점심에는 김치찌개를 먹었다",
+		);
+
+		expect(match).toBeNull();
+	});
+```
+
+이 테스트가 통과하지 않으면(즉 매칭이 잡히면) `MAX_ERROR_RATIO`가 여전히 느슨한 것이므로 값을 더 낮추고, 동시에 "원문이 조금 바뀌어도 근사 매칭으로 찾는다" 테스트가 계속 통과하는지 확인한다. 두 테스트가 동시에 통과하는 값을 찾는 것이 목표이며, 못 찾으면 BLOCKED로 보고한다.
 
 - [ ] **Step 6: 커밋**
 

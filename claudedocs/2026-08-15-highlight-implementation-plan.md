@@ -19,6 +19,7 @@
 - 인라인 `<svg>` 금지 — 아이콘은 항상 `lucide-react`(웹) / `lucide-react-native`(앱).
 - 조건부 텍스트에 `lng === "ko"` 패턴 금지. 항상 `useTranslation` + 번역 키.
 - 테스트 파일은 소스 옆에 `*.test.ts`로 둔다(기존 관례: `packages/shared/src/utils/Supabase.test.ts`).
+- `vitest`는 **루트** devDependency다. 테스트 러너가 직접 해석하는 것(jsdom 같은 environment)은 루트에 설치하고(`pnpm add -w -D`), 소스 코드가 import하는 런타임 의존성만 해당 패키지에 설치한다(`pnpm -F @web-memo/shared add`).
 - 루트 `vitest.config.ts`의 기본 environment는 **node**다. DOM이 필요한 테스트 파일은 첫 줄에 `// @vitest-environment jsdom`을 넣는다.
 - 테스트 실행: `pnpm test:jest -- --run <path>`. 전체 검증: `pnpm type-check && pnpm lint`.
   **`--run`을 반드시 붙인다.** 루트 `test:jest`는 그냥 `vitest`라서 빼면 watch 모드로 들어가 명령이 끝나지 않는다.
@@ -332,10 +333,18 @@ git commit -m "feat: 하이라이트 테이블 스키마와 공용 상수/타입
   - `offsetToPoint(index: DocumentTextIndex, offset: number): { node: Text; offset: number } | null`
   - `pointToOffset(index: DocumentTextIndex, node: Node, offset: number): number | null`
 
-- [ ] **Step 1: jsdom 설치**
+- [ ] **Step 1: jsdom 설치 (루트에)**
+
+`vitest`는 **루트** `package.json`의 devDependency이고 루트 `vitest.config.ts`가 `**/*.test.ts`를 전부 잡는다. `environment`는 vitest 프로세스가 자기 위치에서 해석하므로, jsdom이 하위 패키지에 있으면 루트에서 도는 vitest가 찾지 못한다. 이 레포에는 `.npmrc`가 없어 pnpm 기본 격리가 적용되므로 호이스팅에 기대서도 안 된다.
 
 ```bash
-pnpm -F @web-memo/shared add -D jsdom @types/jsdom
+pnpm add -w -D jsdom @types/jsdom
+```
+
+설치 후 실제로 해석되는지 먼저 확인한다. 이게 실패하면 이후 모든 DOM 테스트가 막힌다.
+
+```bash
+node -e "require.resolve('jsdom'); console.log('jsdom 해석 가능')"
 ```
 
 - [ ] **Step 1-1: 모듈 공용 상수 파일 작성**
@@ -528,7 +537,7 @@ pnpm type-check && pnpm lint
 git add packages/shared/src/modules/highlight/constants.ts \
         packages/shared/src/modules/highlight/documentText.ts \
         packages/shared/src/modules/highlight/documentText.test.ts \
-        packages/shared/package.json pnpm-lock.yaml
+        package.json pnpm-lock.yaml
 git commit -m "feat: 하이라이트 앵커용 문서 텍스트 인덱스 구현"
 ```
 

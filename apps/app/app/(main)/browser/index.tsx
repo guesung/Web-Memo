@@ -1,4 +1,5 @@
 import { Heart } from "lucide-react-native";
+import { useCallback, useEffect, useRef } from "react";
 import { KeyboardAvoidingView, Platform, Text, View } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
@@ -9,8 +10,29 @@ import { EmptyBrowserView } from "./_components/EmptyBrowserView";
 import { MemoPanel } from "./_components/MemoPanel";
 import { TechBlogBottomSheet } from "./_components/TechBlogBottomSheet";
 import { useBrowserState } from "./_hooks/useBrowserState";
+import { useWebViewHighlights } from "./_hooks/useWebViewHighlights";
+import { INJECTED_JS_ON_LOAD } from "./_utils/webViewScripts";
+
+/** WebView가 postMessage로 올려보내는 하이라이트 메시지 (JSON.parse 결과이므로 느슨한 형태) */
+type WebViewHighlightMessage = { type: string; [key: string]: unknown };
 
 export default function BrowserScreen() {
+	/**
+	 * useBrowserState()가 반환하는 webViewRef가 있어야 useWebViewHighlights를 호출할 수
+	 * 있는데, useBrowserState() 호출에는 highlights.handleHighlightMessage가 필요해
+	 * 같은 렌더 안에서 서로를 먼저 요구한다. ref로 감싼 forwarding 콜백으로 순환을 끊는다.
+	 */
+	const handleHighlightMessageRef = useRef<
+		(message: WebViewHighlightMessage) => void
+	>(() => {});
+
+	const forwardHighlightMessage = useCallback(
+		(message: WebViewHighlightMessage) => {
+			handleHighlightMessageRef.current(message);
+		},
+		[],
+	);
+
 	const {
 		insets,
 		webViewRef,
@@ -41,8 +63,13 @@ export default function BrowserScreen() {
 		closePanel,
 		handleBlogSelect,
 		handleShare,
-		SCROLL_DETECT_JS,
-	} = useBrowserState();
+	} = useBrowserState({ onHighlightMessage: forwardHighlightMessage });
+
+	const highlights = useWebViewHighlights({ webViewRef });
+
+	useEffect(() => {
+		handleHighlightMessageRef.current = highlights.handleHighlightMessage;
+	}, [highlights.handleHighlightMessage]);
 
 	if (!currentUrl) {
 		return (
@@ -92,7 +119,9 @@ export default function BrowserScreen() {
 						onNavigationStateChange={handleNavigationStateChange}
 						onMessage={handleWebViewMessage}
 						onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
-						injectedJavaScript={SCROLL_DETECT_JS}
+						injectedJavaScript={INJECTED_JS_ON_LOAD}
+						menuItems={highlights.menuItems}
+						onCustomMenuSelection={highlights.handleCustomMenuSelection}
 						className="flex-1"
 						javaScriptEnabled
 						domStorageEnabled
@@ -136,6 +165,17 @@ export default function BrowserScreen() {
 				>
 					<Heart size={14} fill="#ec4899" color="#ec4899" />
 					<Text className="text-white text-sm font-semibold">{wishToast}</Text>
+				</View>
+			) : null}
+
+			{highlights.highlightToast ? (
+				<View
+					className="absolute self-center flex-row items-center gap-1.5 bg-black/80 px-4 py-2.5 rounded-[20px]"
+					style={{ bottom: insets.bottom + 84 }}
+				>
+					<Text className="text-white text-sm font-semibold">
+						{highlights.highlightToast}
+					</Text>
 				</View>
 			) : null}
 

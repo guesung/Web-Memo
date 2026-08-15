@@ -136,4 +136,32 @@ if (!window.__webmemoHighlightReady) {
 			post({ type: "highlight:tap", id });
 		}
 	});
+
+	/**
+	 * 페이지 URL의 단일 출처. 저장(`highlight:create`)과 조회(RN 쪽 `useHighlightsByUrl`)가
+	 * 서로 다른 URL을 쓰면 `.eq()` 정확 일치 조회가 어긋나 방금 저장한 하이라이트가
+	 * 목록에서 보이지 않는다. RN의 `currentUrl`은 네비게이션 타이밍에 뒤처지고
+	 * SPA 라우팅에서는 갱신되지 않으므로 쓰지 않는다.
+	 */
+	function reportPageUrl(): void {
+		post({ type: "highlight:page", url: window.location.href });
+	}
+
+	reportPageUrl();
+
+	/** SPA 라우팅 감지. history API를 감싸고 뒤로가기·해시 변경도 함께 듣는다. */
+	for (const method of ["pushState", "replaceState"] as const) {
+		const original = history[method];
+		history[method] = function patched(
+			this: History,
+			...args: Parameters<History["pushState"]>
+		) {
+			const result = original.apply(this, args);
+			reportPageUrl();
+			return result;
+		};
+	}
+
+	window.addEventListener("popstate", reportPageUrl);
+	window.addEventListener("hashchange", reportPageUrl);
 }

@@ -31,4 +31,6 @@ export type HighlightOutboundMessage =
 	| { type: "highlight:tap"; id: number }
 	| { type: "highlight:restored"; resolved: number; unresolved: number }
 	/** 저장하지 않고 거절한 경우. 앱이 사용자에게 이유를 알린다(설계 §6-4, §6-6). */
-	| { type: "highlight:rejected"; reason: "tooLong" | "duplicate" };
+	| { type: "highlight:rejected"; reason: "tooLong" | "duplicate" }
+	/** 스크립트가 자기 페이지 URL을 알린다. 저장·조회 양쪽의 단일 출처다. */
+	| { type: "highlight:page"; url: string };

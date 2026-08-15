@@ -36,10 +36,7 @@ import {
 	isInAppLoadableUrl,
 	openExternalUrl,
 } from "../_utils/webViewNavigation";
-import {
-	INJECTED_JS_ON_NAVIGATION,
-	SCROLL_DETECT_JS,
-} from "../_utils/webViewScripts";
+import { INJECTED_JS_ON_NAVIGATION } from "../_utils/webViewScripts";
 
 const SPRING_CONFIG = { damping: 20, stiffness: 150 };
 const MIN_PANEL_RATIO = 0.15;
@@ -49,7 +46,15 @@ const HEADER_HEIGHT = 44;
 const TAB_BAR_HEIGHT = 60;
 const HIDE_DURATION = 250;
 
-export function useBrowserState() {
+export function useBrowserState({
+	onHighlightMessage,
+}: {
+	/** 하이라이트 메시지(`highlight:` 접두사)를 상위(useWebViewHighlights)로 위임한다 */
+	onHighlightMessage?: (message: {
+		type: string;
+		[key: string]: unknown;
+	}) => void;
+} = {}) {
 	const insets = useSafeAreaInsets();
 	const webViewRef = useRef<WebView>(null);
 	const { url: paramUrl, t: navTs } = useLocalSearchParams<{
@@ -298,10 +303,15 @@ export function useBrowserState() {
 					setPageFavIconUrl(message.url);
 				} else if (message.type === "scroll") {
 					handleScrollMessage(message.direction, message.scrollY);
+				} else if (
+					typeof message.type === "string" &&
+					message.type.startsWith("highlight:")
+				) {
+					onHighlightMessage?.(message);
 				}
 			} catch {}
 		},
-		[handleScrollMessage],
+		[handleScrollMessage, onHighlightMessage],
 	);
 
 	const toggleMemo = useCallback(() => {
@@ -390,6 +400,5 @@ export function useBrowserState() {
 		closePanel,
 		handleBlogSelect,
 		handleShare,
-		SCROLL_DETECT_JS,
 	};
 }

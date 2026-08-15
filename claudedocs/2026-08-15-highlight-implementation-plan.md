@@ -1245,6 +1245,18 @@ git commit -m "feat: 텍스트 앵커를 현재 문서 Range로 복원하는 로
 
 CSS Custom Highlight API로 색을 입힌다. DOM을 건드리지 않으므로 React 기반 사이트를 망가뜨리지 않는다. 미지원 환경에서는 `<span>` 래핑으로 폴백한다.
 
+**폴백은 예비 경로가 아니라 실제 사용자 몫이 타는 경로다.** `apps/app/ios/Podfile:19`의 iOS deployment target이 **15.1**이고 CSS Custom Highlight API는 **iOS 17.2+**에서만 동작한다. WKWebView는 시스템 WebKit을 쓰므로 **iOS 15.1~17.1 사용자는 예외 없이 폴백을 탄다.** (Android는 WebView가 Play 스토어로 갱신되고 Chrome 105면 충분하므로 사실상 전부 Custom Highlight 경로다.)
+
+따라서 폴백 경로의 결함을 "구형 환경이니 감수한다"로 넘기지 않는다. 아래 두 가지를 반드시 처리한다.
+
+**(1) 여러 하이라이트가 함께 있을 때 위치가 틀어지지 않아야 한다.**
+`<span>` 삽입은 텍스트 노드를 쪼개지만 문서 전체 텍스트는 바꾸지 않으므로, 하이라이트를 **하나씩 그때그때 다시 찾아 삽입하면** offset 기준이 유지된다. 즉 "모든 Range를 먼저 구해두고 나중에 한꺼번에 삽입"하면 안 되고, `injected/entry.ts`의 복원 루프처럼 매 항목마다 `resolveAnchor` → `add`를 반복해야 한다. 이 전제가 renderer 쪽에서도 깨지지 않는지 확인하고, **하이라이트 2개를 연달아 추가한 뒤 둘 다 올바른 텍스트를 감싸는지 검증하는 테스트를 반드시 추가한다.**
+
+**(2) 요소를 가로지르는 선택에서 원문 텍스트가 보존되어야 한다.**
+`range.extractContents()` + `insertNode()`는 범위가 여러 요소에 걸치면 그 요소를 쪼갠다. 예컨대 `<p>앞<strong>강조</strong>뒤</p>`에서 `"강조뒤"`를 감싸면 `<strong>`이 분리된다. 시각적으로는 대체로 괜찮지만 DOM 구조가 예상보다 크게 바뀐다. **이 경우에도 페이지의 텍스트 내용이 그대로 유지되는지**(글자가 사라지거나 순서가 바뀌지 않는지) 검증하는 테스트를 추가한다.
+
+React 기반 사이트가 리렌더하면 폴백의 `<span>`이 날아갈 수 있다. 이건 v1에서 다루지 않는다(MutationObserver 재삽입은 후속 과제). 다만 **밑줄이 사라지는 것**은 감수 가능하고, **틀린 위치에 그어지거나 글자가 깨지는 것**은 감수하지 않는다 — 위 (1)(2)가 그 경계다.
+
 **Files:**
 - Create: `packages/shared/src/modules/highlight/renderHighlights.ts`
 - Test: `packages/shared/src/modules/highlight/renderHighlights.test.ts`
@@ -1321,6 +1333,59 @@ describe("createHighlightRenderer (폴백 경로)", () => {
 		renderer.clear();
 
 		expect(root.querySelectorAll("[data-webmemo-hl]")).toHaveLength(0);
+	});
+
+	it("하이라이트를 두 개 추가해도 둘 다 올바른 텍스트를 감싼다", () => {
+		const root = document.createElement("div");
+		root.innerHTML = "<p>가나다라마바사아자차</p>";
+		document.body.appendChild(root);
+
+		const renderer = createHighlightRenderer();
+
+		// 앞쪽부터 하나씩 추가한다. span 삽입으로 텍스트 노드가 쪼개지므로
+		// 두 번째 Range는 삽입 후의 DOM에서 새로 만들어야 한다.
+		const first = document.createRange();
+		const firstNode = root.querySelector("p")?.firstChild;
+		if (!(firstNode instanceof Text)) {
+			throw new Error("첫 텍스트 노드를 찾지 못했다");
+		}
+		first.setStart(firstNode, 0);
+		first.setEnd(firstNode, 3);
+		renderer.add(1, first, "yellow");
+
+		const remaining = root.querySelector("p")?.lastChild;
+		if (!(remaining instanceof Text)) {
+			throw new Error("남은 텍스트 노드를 찾지 못했다");
+		}
+		const second = document.createRange();
+		second.setStart(remaining, 3);
+		second.setEnd(remaining, 6);
+		renderer.add(2, second, "green");
+
+		const marks = [...root.querySelectorAll("[data-webmemo-hl]")];
+		expect(marks.map((mark) => mark.textContent)).toEqual(["가나다", "바사아"]);
+		expect(root.textContent).toBe("가나다라마바사아자차");
+	});
+
+	it("요소를 가로지르는 선택을 감싸도 페이지 텍스트가 보존된다", () => {
+		const root = document.createElement("div");
+		root.innerHTML = "<p>앞<strong>강조</strong>뒤</p>";
+		document.body.appendChild(root);
+
+		const paragraph = root.querySelector("p");
+		const strongText = root.querySelector("strong")?.firstChild;
+		const tail = paragraph?.lastChild;
+		if (!(strongText instanceof Text) || !(tail instanceof Text)) {
+			throw new Error("대상 텍스트 노드를 찾지 못했다");
+		}
+
+		const range = document.createRange();
+		range.setStart(strongText, 0);
+		range.setEnd(tail, 1);
+		createHighlightRenderer().add(1, range, "yellow");
+
+		expect(root.textContent).toBe("앞강조뒤");
+		expect(root.querySelector("[data-webmemo-hl]")?.textContent).toBe("강조뒤");
 	});
 });
 ```

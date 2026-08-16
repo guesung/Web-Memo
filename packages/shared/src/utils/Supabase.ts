@@ -174,10 +174,11 @@ export class MemoService {
 			.select();
 }
 
-/** {@link HighlightService}와 {@link HighlightPageCursor}는 파일 길이 제한으로 별도 파일로 분리되어 있다. */
+/** {@link HighlightService}와 {@link HighlightPageCursor}, {@link HighlightCountRow}는 파일 길이 제한으로 별도 파일로 분리되어 있다. */
 export {
 	HighlightService,
 	type HighlightPageCursor,
+	type HighlightCountRow,
 } from "./supabase/highlightService";
 
 export class CategoryService {

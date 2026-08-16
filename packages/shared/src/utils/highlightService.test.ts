@@ -11,6 +11,7 @@ interface RecordedCalls {
 	or: string[];
 	order: [string, unknown][];
 	limit: number[];
+	rpc: [string, unknown][];
 }
 
 /**
@@ -27,6 +28,7 @@ function createMockClient(): { client: MemoSupabaseClient; calls: RecordedCalls 
 		or: [],
 		order: [],
 		limit: [],
+		rpc: [],
 	};
 
 	const builder = {
@@ -65,6 +67,10 @@ function createMockClient(): { client: MemoSupabaseClient; calls: RecordedCalls 
 			return {
 				from: (table: string) => {
 					calls.from.push(table);
+					return builder;
+				},
+				rpc: (fn: string, params: unknown) => {
+					calls.rpc.push([fn, params]);
 					return builder;
 				},
 			};
@@ -127,5 +133,27 @@ describe("HighlightService.getHighlightsByUrl", () => {
 
 		expect(calls.eq).toContainEqual(["url", "https://a.com"]);
 		expect(calls.order).toContainEqual(["id", { ascending: true }]);
+	});
+});
+
+describe("HighlightService.getHighlightCounts", () => {
+	it("URL 배열을 target_urls 파라미터로 넘긴다", async () => {
+		const { client, calls } = createMockClient();
+		await new HighlightService(client).getHighlightCounts([
+			"https://a.com",
+			"https://b.com",
+		]);
+
+		expect(calls.rpc).toContainEqual([
+			"get_highlight_counts",
+			{ target_urls: ["https://a.com", "https://b.com"] },
+		]);
+	});
+
+	it("memo 스키마에서 호출한다", async () => {
+		const { client, calls } = createMockClient();
+		await new HighlightService(client).getHighlightCounts(["https://a.com"]);
+
+		expect(calls.schema).toContain("memo");
 	});
 });

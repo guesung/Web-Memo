@@ -53,3 +53,27 @@ describe("QUERY_KEY.highlightsPaginated", () => {
 		]);
 	});
 });
+
+describe("QUERY_KEY.highlightCounts", () => {
+	it("URL 배열을 키에 포함한다", () => {
+		expect(QUERY_KEY.highlightCounts(["https://a.com"])).toEqual([
+			"highlights",
+			"counts",
+			["https://a.com"],
+		]);
+	});
+
+	it("URL 순서가 달라도 같은 키를 만든다", () => {
+		const first = QUERY_KEY.highlightCounts(["https://b.com", "https://a.com"]);
+		const second = QUERY_KEY.highlightCounts(["https://a.com", "https://b.com"]);
+
+		expect(first).toEqual(second);
+	});
+
+	it("원본 배열을 변형하지 않는다", () => {
+		const urls = ["https://b.com", "https://a.com"];
+		QUERY_KEY.highlightCounts(urls);
+
+		expect(urls).toEqual(["https://b.com", "https://a.com"]);
+	});
+});

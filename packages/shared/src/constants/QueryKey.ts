@@ -37,4 +37,6 @@ export const QUERY_KEY = {
 		"paginated",
 		params,
 	],
+	/** `[...urls]`로 복사한 뒤 정렬해 원본 배열을 변형하지 않으면서 순서 무관 캐시 키를 만든다. */
+	highlightCounts: (urls: string[]) => ["highlights", "counts", [...urls].sort()],
 };

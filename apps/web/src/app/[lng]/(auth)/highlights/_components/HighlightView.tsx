@@ -14,7 +14,8 @@ interface HighlightViewProps {
 /** 하이라이트를 URL별로 묶어 무한스크롤로 보여준다 */
 export function HighlightView({ lng }: HighlightViewProps) {
 	const { t } = useTranslation(lng);
-	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useHighlightList({});
+	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+		useHighlightList({});
 	const rows = data.pages.flat();
 
 	if (rows.length === 0) {

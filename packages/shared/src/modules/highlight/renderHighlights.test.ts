@@ -129,7 +129,9 @@ describe("createHighlightRenderer (폴백 경로)", () => {
 
 		// id=1 영역과 겹치는 범위를 추가하면 id=1의 span이 여러 DOM 조각으로 쪼개진다.
 		const overlapStart = root.querySelector("p")?.firstChild;
-		const overlapEndNode = root.querySelector('[data-webmemo-hl="1"]')?.firstChild;
+		const overlapEndNode = root.querySelector(
+			'[data-webmemo-hl="1"]',
+		)?.firstChild;
 		if (!(overlapStart instanceof Text) || !(overlapEndNode instanceof Text)) {
 			throw new Error("겹칠 텍스트 노드를 찾지 못했다");
 		}

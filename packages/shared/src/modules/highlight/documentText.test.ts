@@ -19,7 +19,9 @@ describe("buildDocumentTextIndex", () => {
 	});
 
 	it("script와 style의 내용은 제외한다", () => {
-		const root = render("<p>본문</p><script>var a=1;</script><style>p{}</style>");
+		const root = render(
+			"<p>본문</p><script>var a=1;</script><style>p{}</style>",
+		);
 		expect(buildDocumentTextIndex(root).text).toBe("본문");
 	});
 

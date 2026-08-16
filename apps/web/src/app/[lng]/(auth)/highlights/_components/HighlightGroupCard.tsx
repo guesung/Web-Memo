@@ -1,15 +1,17 @@
 "use client";
 
+import type { Language } from "@src/modules/i18n";
 import { ExternalLink } from "lucide-react";
 import type { HighlightGroup } from "../_utils";
 import { HighlightQuote } from "./HighlightQuote";
 
 interface HighlightGroupCardProps {
 	group: HighlightGroup;
+	lng: Language;
 }
 
 /** 같은 URL에서 그은 하이라이트를 한 카드로 모아 보여준다 */
-export function HighlightGroupCard({ group }: HighlightGroupCardProps) {
+export function HighlightGroupCard({ group, lng }: HighlightGroupCardProps) {
 	return (
 		<article className="rounded-xl border border-border bg-card p-4">
 			<a
@@ -27,7 +29,7 @@ export function HighlightGroupCard({ group }: HighlightGroupCardProps) {
 
 			<ul className="divide-y divide-border">
 				{group.highlights.map((highlight) => (
-					<HighlightQuote key={highlight.id} highlight={highlight} />
+					<HighlightQuote key={highlight.id} highlight={highlight} lng={lng} />
 				))}
 			</ul>
 		</article>

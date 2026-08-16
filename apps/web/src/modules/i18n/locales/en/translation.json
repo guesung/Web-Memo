@@ -513,6 +513,10 @@
 		"empty": {
 			"title": "No highlights yet",
 			"description": "Select text in the mobile app browser to highlight it."
+		},
+		"note": {
+			"label": "Highlight note",
+			"placeholder": "Add a note"
 		}
 	},
 

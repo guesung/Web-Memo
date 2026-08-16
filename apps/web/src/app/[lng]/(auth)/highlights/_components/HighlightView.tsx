@@ -24,7 +24,7 @@ export function HighlightView({ lng }: HighlightViewProps) {
 	return (
 		<div className="flex flex-col gap-4">
 			{groupHighlightsByUrl(rows).map((group) => (
-				<HighlightGroupCard key={group.url} group={group} />
+				<HighlightGroupCard key={group.url} group={group} lng={lng} />
 			))}
 
 			{hasNextPage ? (

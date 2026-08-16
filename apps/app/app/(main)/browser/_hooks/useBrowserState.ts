@@ -2,7 +2,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Keyboard } from "react-native";
+import { Keyboard, Platform } from "react-native";
 import { Gesture } from "react-native-gesture-handler";
 import {
 	runOnJS,
@@ -14,9 +14,11 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type WebView from "react-native-webview";
 import type { WebViewNavigation } from "react-native-webview";
+import type { ShouldStartLoadRequest } from "react-native-webview/lib/WebViewTypes";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
 import { useFavoriteToggle, useIsFavorite } from "@/lib/hooks/useFavorites";
+import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
 import {
 	useLocalMemoByUrl,
 	useLocalMemoDelete,
@@ -31,9 +33,10 @@ import { shareUrl } from "@/lib/sharing/shareUrl";
 import { getPanelRatio, savePanelRatio } from "../_utils/browserPreferences";
 import { formatUrl } from "../_utils/formatUrl";
 import {
-	INJECTED_JS_ON_NAVIGATION,
-	SCROLL_DETECT_JS,
-} from "../_utils/webViewScripts";
+	isInAppLoadableUrl,
+	openExternalUrl,
+} from "../_utils/webViewNavigation";
+import { INJECTED_JS_ON_NAVIGATION } from "../_utils/webViewScripts";
 
 const SPRING_CONFIG = { damping: 20, stiffness: 150 };
 const MIN_PANEL_RATIO = 0.15;
@@ -43,7 +46,15 @@ const HEADER_HEIGHT = 44;
 const TAB_BAR_HEIGHT = 60;
 const HIDE_DURATION = 250;
 
-export function useBrowserState() {
+export function useBrowserState({
+	onHighlightMessage,
+}: {
+	/** 하이라이트 메시지(`highlight:` 접두사)를 상위(useWebViewHighlights)로 위임한다 */
+	onHighlightMessage?: (message: {
+		type: string;
+		[key: string]: unknown;
+	}) => void;
+} = {}) {
 	const insets = useSafeAreaInsets();
 	const webViewRef = useRef<WebView>(null);
 	const { url: paramUrl, t: navTs } = useLocalSearchParams<{
@@ -81,6 +92,16 @@ export function useBrowserState() {
 
 	const panelHeight = useSharedValue(0);
 	const dragStartHeight = useSharedValue(0);
+
+	const { keyboardHeight } = useKeyboardHeight();
+
+	// iOS는 KeyboardAvoidingView가 키보드만큼 화면을 밀어 올리지만,
+	// Android는 edge-to-edge에서 창이 리사이즈되지 않아 그 동작이 먹지 않는다.
+	// 키보드 높이(내비게이션 바 제외)에 하단 인셋을 더해 직접 여백을 만든다.
+	const keyboardBottomInset =
+		Platform.OS === "android" && keyboardHeight > 0
+			? keyboardHeight + insets.bottom
+			: 0;
 
 	const { tabBarTranslateY, headerTranslateY, isBrowserActive } =
 		useBrowserScroll();
@@ -127,6 +148,22 @@ export function useBrowserState() {
 			webViewRef.current?.injectJavaScript(INJECTED_JS_ON_NAVIGATION);
 		}
 	};
+
+	// 웹 링크는 앱 내 웹뷰에서 그대로 로드하고, 앱을 여는 스킴(intent://, market://, tel: 등)만 외부로 넘긴다.
+	const handleShouldStartLoadWithRequest = useCallback(
+		(request: ShouldStartLoadRequest) => {
+			if (isInAppLoadableUrl(request.url)) return true;
+
+			const openExternalWithFallback = async () => {
+				const fallbackUrl = await openExternalUrl(request.url);
+				if (fallbackUrl) setCurrentUrl(fallbackUrl);
+			};
+			openExternalWithFallback();
+
+			return false;
+		},
+		[],
+	);
 
 	const handleUrlSubmit = () => {
 		const url = formatUrl(urlInput);
@@ -266,10 +303,15 @@ export function useBrowserState() {
 					setPageFavIconUrl(message.url);
 				} else if (message.type === "scroll") {
 					handleScrollMessage(message.direction, message.scrollY);
+				} else if (
+					typeof message.type === "string" &&
+					message.type.startsWith("highlight:")
+				) {
+					onHighlightMessage?.(message);
 				}
 			} catch {}
 		},
-		[handleScrollMessage],
+		[handleScrollMessage, onHighlightMessage],
 	);
 
 	const toggleMemo = useCallback(() => {
@@ -302,9 +344,16 @@ export function useBrowserState() {
 			}
 		});
 
-	const memoAnimatedStyle = useAnimatedStyle(() => ({
-		height: Math.max(0, panelHeight.value),
-	}));
+	// 키보드가 올라오면 콘텐츠 영역이 줄어드는데 panelHeight는 픽셀 고정값이라 패널이 잘릴 수 있다.
+	// 렌더 높이만 가용 영역으로 제한하고 panelHeight 자체는 유지해, 키보드가 내려가면 원래 높이로 돌아온다.
+	const memoAnimatedStyle = useAnimatedStyle(() => {
+		const availableHeight =
+			contentHeight > 0 ? contentHeight : panelHeight.value;
+
+		return {
+			height: Math.max(0, Math.min(panelHeight.value, availableHeight)),
+		};
+	});
 
 	const headerWrapperStyle = useAnimatedStyle(() => ({
 		height: Math.max(0, HEADER_HEIGHT + headerTranslateY.value),
@@ -330,6 +379,7 @@ export function useBrowserState() {
 		setIsBlogSheetOpen,
 		contentHeight,
 		setContentHeight,
+		keyboardBottomInset,
 		wishToast,
 		pageTitle,
 		pageFavIconUrl,
@@ -342,6 +392,7 @@ export function useBrowserState() {
 		resizeGesture,
 		handleUrlSubmit,
 		handleNavigationStateChange,
+		handleShouldStartLoadWithRequest,
 		handleWebViewMessage,
 		handleWishToggle,
 		toggleMemo,
@@ -349,6 +400,5 @@ export function useBrowserState() {
 		closePanel,
 		handleBlogSelect,
 		handleShare,
-		SCROLL_DETECT_JS,
 	};
 }

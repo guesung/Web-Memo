@@ -33,3 +33,23 @@ describe("QUERY_KEY.memosPaginated", () => {
 		]);
 	});
 });
+
+describe("QUERY_KEY.highlightsByUrl", () => {
+	it("url을 키에 포함한다", () => {
+		expect(QUERY_KEY.highlightsByUrl("https://a.com")).toEqual([
+			"highlights",
+			"byUrl",
+			"https://a.com",
+		]);
+	});
+});
+
+describe("QUERY_KEY.highlightsPaginated", () => {
+	it("필터 조합을 키에 포함한다", () => {
+		expect(QUERY_KEY.highlightsPaginated({ searchQuery: "리액트" })).toEqual([
+			"highlights",
+			"paginated",
+			{ searchQuery: "리액트" },
+		]);
+	});
+});

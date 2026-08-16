@@ -5,13 +5,14 @@ import {
 	type LucideIcon,
 	Settings,
 } from "lucide-react-native";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Platform, Text, TouchableOpacity, View } from "react-native";
 import Animated, {
 	useAnimatedStyle,
 	useSharedValue,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
+import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
 
 interface TabConfig {
 	icon: LucideIcon;
@@ -34,6 +35,7 @@ export function CustomTabBar({
 	const insets = useSafeAreaInsets();
 	const { tabBarTranslateY, isBrowserActive } = useBrowserScroll();
 	const barHeight = useSharedValue(0);
+	const { isKeyboardVisible } = useKeyboardHeight();
 
 	const wrapperStyle = useAnimatedStyle(() => {
 		if (isBrowserActive.value !== 1 || barHeight.value === 0) return {};
@@ -43,6 +45,12 @@ export function CustomTabBar({
 			overflow: "hidden" as const,
 		};
 	});
+
+	// Android는 키보드가 창을 밀어내지 않아 탭바가 키보드에 가려진 채로 공간만 차지한다.
+	// 화면 아래 공간을 그대로 키보드에 내주어야 위쪽 콘텐츠가 정확히 키보드 위에 놓인다.
+	if (Platform.OS === "android" && isKeyboardVisible) {
+		return null;
+	}
 
 	return (
 		<Animated.View style={wrapperStyle}>

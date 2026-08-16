@@ -15,8 +15,25 @@ interface MockMemo {
 	updated_at: string | null;
 }
 
+interface MockHighlight {
+	id: number;
+	user_id: string;
+	url: string;
+	title: string | null;
+	favIconUrl: string | null;
+	exact_text: string;
+	note: string | null;
+	color: string;
+	prefix_text: string | null;
+	suffix_text: string | null;
+	text_position_start: number | null;
+	created_at: string;
+	updated_at: string;
+}
+
 export class MockSupabaseStore {
 	private memos: Map<number, MockMemo> = new Map();
+	private highlights: Map<number, MockHighlight> = new Map();
 
 	addMemo(memo: MockMemo) {
 		this.memos.set(memo.id, memo);
@@ -55,8 +72,32 @@ export class MockSupabaseStore {
 		return memo;
 	}
 
+	addHighlight(highlight: MockHighlight) {
+		this.highlights.set(highlight.id, highlight);
+		return highlight;
+	}
+
+	getAllHighlights() {
+		return Array.from(this.highlights.values());
+	}
+
+	updateHighlight(id: number, updates: Partial<MockHighlight>) {
+		const highlight = this.highlights.get(id);
+		if (highlight) {
+			const updated = {
+				...highlight,
+				...updates,
+				updated_at: new Date().toISOString(),
+			};
+			this.highlights.set(id, updated);
+			return updated;
+		}
+		return null;
+	}
+
 	clear() {
 		this.memos.clear();
+		this.highlights.clear();
 	}
 }
 
@@ -120,6 +161,36 @@ async function handleDelete(route: Route, url: URL, store: MockSupabaseStore) {
 	}
 }
 
+async function handleHighlightGet(route: Route, store: MockSupabaseStore) {
+	const highlights = store.getAllHighlights();
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(highlights),
+	});
+}
+
+async function handleHighlightPatch(
+	route: Route,
+	url: URL,
+	store: MockSupabaseStore,
+) {
+	const request = route.request();
+	const body = request.postDataJSON();
+	const id = parseIdFromUrl(url);
+
+	if (id) {
+		const updated = store.updateHighlight(id, body);
+		await route.fulfill({
+			status: 200,
+			contentType: "application/json",
+			body: JSON.stringify(updated ? [updated] : []),
+		});
+	} else {
+		await route.continue();
+	}
+}
+
 export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
 	await page.route(`${SUPABASE.url}/rest/v1/memo**`, async (route: Route) => {
 		const request = route.request();
@@ -143,4 +214,24 @@ export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
 				await route.continue();
 		}
 	});
+
+	await page.route(
+		`${SUPABASE.url}/rest/v1/highlight**`,
+		async (route: Route) => {
+			const request = route.request();
+			const method = request.method();
+			const url = new URL(request.url());
+
+			switch (method) {
+				case "GET":
+					await handleHighlightGet(route, store);
+					break;
+				case "PATCH":
+					await handleHighlightPatch(route, url, store);
+					break;
+				default:
+					await route.continue();
+			}
+		},
+	);
 }

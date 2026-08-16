@@ -28,6 +28,7 @@
 	"sideBar": {
 		"memo": "My memos",
 		"wishList": "My wishlist",
+		"highlight": "Highlights",
 		"importantMemo": "Important",
 		"allCategory": "All categories",
 		"tags": "Tags",
@@ -431,7 +432,10 @@
 		"deleteCategory": "Delete category",
 		"defaultCategoryName": "New category",
 		"export": "Export",
-		"exportMemos": "Export memos"
+		"exportMemos": "Export memos",
+		"memoSection": "Memo sections",
+		"showImpressionSection": "Show the impression field when writing a memo",
+		"showActionItemSection": "Show the action items field when writing a memo"
 	},
 
 	"guide": {
@@ -501,6 +505,18 @@
 			"saving": "Saving...",
 			"saved": "All changes saved",
 			"error": "Failed to save"
+		}
+	},
+
+	"highlight": {
+		"loadMore": "Load more",
+		"empty": {
+			"title": "No highlights yet",
+			"description": "Select text in the mobile app browser to highlight it."
+		},
+		"note": {
+			"label": "Highlight note",
+			"placeholder": "Add a note"
 		}
 	},
 

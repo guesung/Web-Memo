@@ -1,5 +1,11 @@
 export type MemoSortBy = "updated_at" | "created_at" | "title";
 
+/** 하이라이트 목록(무한 스크롤) 쿼리를 구분하는 필터 조합 */
+export interface HighlightsPaginatedKeyParams {
+	searchQuery?: string;
+	color?: string;
+}
+
 export const QUERY_KEY = {
 	tab: () => ["tab"],
 	memos: () => ["memos"],
@@ -23,4 +29,12 @@ export const QUERY_KEY = {
 	activeUsersStats: () => ["activeUsersStats"],
 	userGrowth: (days: number) => ["userGrowth", days],
 	adminUsers: (search?: string, page?: number) => ["adminUsers", search, page],
+	/** `highlightsByUrl`/`highlightsPaginated`의 공통 접두사. prefix 매칭으로 둘 다 무효화할 때 쓴다(memos()와 같은 패턴). */
+	highlights: () => ["highlights"],
+	highlightsByUrl: (url: string) => ["highlights", "byUrl", url],
+	highlightsPaginated: (params: HighlightsPaginatedKeyParams) => [
+		"highlights",
+		"paginated",
+		params,
+	],
 };

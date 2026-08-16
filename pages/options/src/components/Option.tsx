@@ -27,6 +27,8 @@ export default function Option() {
 			language: "ko",
 			autoApplyCategory: true,
 			textSelectionEnabled: false,
+			impressionSectionEnabled: true,
+			actionItemSectionEnabled: true,
 		},
 	});
 
@@ -44,6 +46,14 @@ export default function Option() {
 		await ChromeSyncStorage.set(
 			STORAGE_KEYS.textSelectionEnabled,
 			data.textSelectionEnabled,
+		);
+		await ChromeSyncStorage.set(
+			STORAGE_KEYS.impressionSectionEnabled,
+			data.impressionSectionEnabled,
+		);
+		await ChromeSyncStorage.set(
+			STORAGE_KEYS.actionItemSectionEnabled,
+			data.actionItemSectionEnabled,
 		);
 
 		toast({
@@ -68,12 +78,20 @@ export default function Option() {
 			const textSelectionEnabled = await ChromeSyncStorage.get<boolean>(
 				STORAGE_KEYS.textSelectionEnabled,
 			);
+			const impressionSectionEnabled = await ChromeSyncStorage.get<boolean>(
+				STORAGE_KEYS.impressionSectionEnabled,
+			);
+			const actionItemSectionEnabled = await ChromeSyncStorage.get<boolean>(
+				STORAGE_KEYS.actionItemSectionEnabled,
+			);
 
 			setValue("language", language);
 			setValue("youtubePrompt", youtubePrompts);
 			setValue("webPrompt", webPrompts);
 			setValue("autoApplyCategory", autoApplyCategory ?? true);
 			setValue("textSelectionEnabled", textSelectionEnabled ?? false);
+			setValue("impressionSectionEnabled", impressionSectionEnabled ?? true);
+			setValue("actionItemSectionEnabled", actionItemSectionEnabled ?? true);
 		};
 
 		fetchStorage();
@@ -119,6 +137,44 @@ export default function Option() {
 					>
 						{I18n.get("auto_apply_category_description")}
 					</Label>
+				</div>
+			</section>
+
+			<section className="mb-8">
+				<h2 className="mb-4 text-xl font-semibold">
+					{I18n.get("memo_section_setting")}
+				</h2>
+				<div className="flex flex-col gap-3">
+					<div className="flex items-center space-x-3">
+						<Switch
+							id="impression-section-enabled"
+							checked={watch("impressionSectionEnabled")}
+							onCheckedChange={(checked) =>
+								setValue("impressionSectionEnabled", checked)
+							}
+						/>
+						<Label
+							htmlFor="impression-section-enabled"
+							className="text-sm text-muted-foreground"
+						>
+							{I18n.get("impression_section_description")}
+						</Label>
+					</div>
+					<div className="flex items-center space-x-3">
+						<Switch
+							id="action-item-section-enabled"
+							checked={watch("actionItemSectionEnabled")}
+							onCheckedChange={(checked) =>
+								setValue("actionItemSectionEnabled", checked)
+							}
+						/>
+						<Label
+							htmlFor="action-item-section-enabled"
+							className="text-sm text-muted-foreground"
+						>
+							{I18n.get("action_item_section_description")}
+						</Label>
+					</div>
 				</div>
 			</section>
 

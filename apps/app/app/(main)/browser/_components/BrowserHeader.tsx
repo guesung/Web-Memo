@@ -1,6 +1,8 @@
+import { HIGHLIGHT_COLOR_STYLE } from "@web-memo/shared/constants";
 import {
 	Bookmark,
 	Heart,
+	Highlighter,
 	Home,
 	LayoutGrid,
 	RotateCw,
@@ -8,7 +10,7 @@ import {
 	Share2,
 	X,
 } from "lucide-react-native";
-import { TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import Animated from "react-native-reanimated";
 import type WebView from "react-native-webview";
 
@@ -21,6 +23,8 @@ interface BrowserHeaderProps {
 	isCurrentPageFavorite: boolean;
 	headerWrapperStyle: AnimatedViewStyle;
 	webViewRef: React.RefObject<WebView | null>;
+	/** 현재 페이지에 저장된 하이라이트 개수. 0이면 표시하지 않는다 */
+	highlightCount: number;
 	onUrlInputChange: (text: string) => void;
 	onUrlSubmit: () => void;
 	onGoHome: () => void;
@@ -37,6 +41,7 @@ export function BrowserHeader({
 	isCurrentPageFavorite,
 	headerWrapperStyle,
 	webViewRef,
+	highlightCount,
 	onUrlInputChange,
 	onUrlSubmit,
 	onGoHome,
@@ -98,6 +103,14 @@ export function BrowserHeader({
 						fill={isCurrentPageWish ? "#ec4899" : "none"}
 					/>
 				</TouchableOpacity>
+				{highlightCount > 0 ? (
+					<View className="flex-row items-center gap-1 px-1">
+						<Highlighter size={16} color={HIGHLIGHT_COLOR_STYLE.yellow.bar} />
+						<Text className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">
+							{highlightCount}
+						</Text>
+					</View>
+				) : null}
 			</View>
 		</Animated.View>
 	);

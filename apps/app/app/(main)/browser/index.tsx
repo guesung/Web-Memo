@@ -104,6 +104,7 @@ export default function BrowserScreen() {
 				isCurrentPageFavorite={isCurrentPageFavorite}
 				headerWrapperStyle={headerWrapperStyle}
 				webViewRef={webViewRef}
+				highlightCount={highlights.rows.length}
 				onUrlInputChange={setUrlInput}
 				onUrlSubmit={handleUrlSubmit}
 				onGoHome={() => {

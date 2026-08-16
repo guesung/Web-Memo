@@ -7,4 +7,5 @@ export * from "./matchQuote";
 export * from "./renderHighlights";
 export * from "./resolveAnchor";
 export * from "./selectionTracker";
+export * from "./toHighlightItem";
 export * from "./types";

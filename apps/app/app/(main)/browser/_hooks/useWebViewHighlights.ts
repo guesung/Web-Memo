@@ -1,6 +1,8 @@
 import type { HighlightColor } from "@web-memo/shared/constants";
-import type { HighlightItem } from "@web-memo/shared/modules/highlight";
-import type { HighlightRow } from "@web-memo/shared/types";
+import {
+	type HighlightItem,
+	toHighlightItem,
+} from "@web-memo/shared/modules/highlight";
 import { normalizeUrl } from "@web-memo/shared/utils";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useState } from "react";
@@ -32,25 +34,6 @@ const HIGHLIGHT_MENU_KEY = "webmemo-highlight";
 
 /** WebView가 postMessage로 올려보내는 하이라이트 메시지 (JSON.parse 결과이므로 느슨한 형태) */
 export type WebViewHighlightMessage = { type: string; [key: string]: unknown };
-
-/**
- * Supabase의 `HighlightRow`를 스크립트가 이해하는 `HighlightItem`으로 변환한다.
- * @description 저장 직후 응답(`highlight:create`)과 조회 결과(`useHighlightsByUrl`)를
- * 렌더하는 두 경로가 완전히 같은 필드·null 폴백을 쓰므로 한 곳으로 모았다. 한쪽만 고치면
- * 서버에는 있는데 화면엔 다르게 그려지는 식으로 조용히 갈라질 수 있다.
- */
-function toHighlightItem(row: HighlightRow): HighlightItem {
-	return {
-		id: row.id,
-		anchor: {
-			exact: row.exact_text,
-			prefix: row.prefix_text ?? "",
-			suffix: row.suffix_text ?? "",
-			textPositionStart: row.text_position_start ?? 0,
-		},
-		color: row.color as HighlightItem["color"],
-	};
-}
 
 /**
  * 인앱 브라우저 WebView에서 텍스트 하이라이팅을 저장·조회·복원한다.

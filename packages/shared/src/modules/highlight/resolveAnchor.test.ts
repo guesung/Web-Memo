@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import { createAnchor } from "./createAnchor";
-import { resolveAnchor } from "./resolveAnchor";
+import { resolveAnchor, resolveAnchors } from "./resolveAnchor";
 
 function render(html: string): HTMLElement {
 	const root = document.createElement("div");
@@ -148,5 +148,72 @@ describe("resolveAnchor", () => {
 		expect(resolved.toString()).toBe("앞강조");
 		expect(resolved.endContainer).toBe(emphasized);
 		expect(resolved.endOffset).toBe((emphasized as Text).data.length);
+	});
+});
+
+describe("resolveAnchors", () => {
+	it("여러 앵커를 입력 순서대로 복원한다", () => {
+		document.body.innerHTML = "<p>알파 브라보 찰리 델타 에코</p>";
+
+		const ranges = resolveAnchors([
+			{
+				exact: "브라보",
+				prefix: "알파 ",
+				suffix: " 찰리",
+				textPositionStart: 3,
+			},
+			{
+				exact: "델타",
+				prefix: "찰리 ",
+				suffix: " 에코",
+				textPositionStart: 11,
+			},
+		]);
+
+		expect(ranges).toHaveLength(2);
+		expect(ranges[0]?.toString()).toBe("브라보");
+		expect(ranges[1]?.toString()).toBe("델타");
+	});
+
+	it("찾지 못한 앵커 자리에는 null을 넣고 나머지는 그대로 복원한다", () => {
+		document.body.innerHTML = "<p>알파 브라보 찰리</p>";
+
+		const ranges = resolveAnchors([
+			{ exact: "없는문장", prefix: "", suffix: "", textPositionStart: 0 },
+			{
+				exact: "브라보",
+				prefix: "알파 ",
+				suffix: " 찰리",
+				textPositionStart: 3,
+			},
+		]);
+
+		expect(ranges[0]).toBeNull();
+		expect(ranges[1]?.toString()).toBe("브라보");
+	});
+
+	it("빈 배열에는 빈 배열을 돌려준다", () => {
+		document.body.innerHTML = "<p>알파</p>";
+
+		expect(resolveAnchors([])).toEqual([]);
+	});
+
+	it("resolveAnchor와 같은 Range를 만든다", () => {
+		document.body.innerHTML = "<p>알파 <strong>브라보</strong> 찰리</p>";
+		const anchor = {
+			exact: "브라보",
+			prefix: "알파 ",
+			suffix: " 찰리",
+			textPositionStart: 3,
+		};
+
+		const single = resolveAnchor(anchor);
+		const batched = resolveAnchors([anchor])[0];
+
+		expect(batched?.toString()).toBe(single?.toString());
+		expect(batched?.startContainer).toBe(single?.startContainer);
+		expect(batched?.startOffset).toBe(single?.startOffset);
+		expect(batched?.endContainer).toBe(single?.endContainer);
+		expect(batched?.endOffset).toBe(single?.endOffset);
 	});
 });

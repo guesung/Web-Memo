@@ -2,6 +2,8 @@ import { createBridge, defineMessage } from "./createBridge";
 import type {
 	CreateMemoPayload,
 	CreateMemoResponse,
+	GetHighlightsByUrlPayload,
+	GetHighlightsByUrlResponse,
 	PageContentResponse,
 } from "./types";
 
@@ -19,6 +21,10 @@ export const bridge = createBridge({
 	),
 	SYNC_LOGIN_STATUS: defineMessage<void, void>("toExtension"),
 	CREATE_MEMO: defineMessage<CreateMemoPayload, CreateMemoResponse>("internal"),
+	GET_HIGHLIGHTS_BY_URL: defineMessage<
+		GetHighlightsByUrlPayload,
+		GetHighlightsByUrlResponse
+	>("internal"),
 });
 
 export type Bridge = typeof bridge;

@@ -1,5 +1,6 @@
 import type { HighlightColor } from "@web-memo/shared/constants";
 import type { HighlightItem } from "@web-memo/shared/modules/highlight";
+import type { HighlightRow } from "@web-memo/shared/types";
 import { normalizeUrl } from "@web-memo/shared/utils";
 import { useCallback, useEffect, useState } from "react";
 import type { RefObject } from "react";
@@ -33,6 +34,25 @@ const HIGHLIGHT_MENU_KEY = "webmemo-highlight";
 export type WebViewHighlightMessage = { type: string; [key: string]: unknown };
 
 /**
+ * Supabase의 `HighlightRow`를 스크립트가 이해하는 `HighlightItem`으로 변환한다.
+ * @description 저장 직후 응답(`highlight:create`)과 조회 결과(`useHighlightsByUrl`)를
+ * 렌더하는 두 경로가 완전히 같은 필드·null 폴백을 쓰므로 한 곳으로 모았다. 한쪽만 고치면
+ * 서버에는 있는데 화면엔 다르게 그려지는 식으로 조용히 갈라질 수 있다.
+ */
+function toHighlightItem(row: HighlightRow): HighlightItem {
+	return {
+		id: row.id,
+		anchor: {
+			exact: row.exact_text,
+			prefix: row.prefix_text ?? "",
+			suffix: row.suffix_text ?? "",
+			textPositionStart: row.text_position_start ?? 0,
+		},
+		color: row.color as HighlightItem["color"],
+	};
+}
+
+/**
  * 인앱 브라우저 WebView에서 텍스트 하이라이팅을 저장·조회·복원한다.
  * @description 페이지 URL은 RN의 `currentUrl`이 아니라 주입 스크립트가 `highlight:page`로
  * 보고한 값을 단일 출처로 쓴다. `currentUrl`은 `onNavigationStateChange` 타이밍에 뒤처지고
@@ -51,6 +71,14 @@ export function useWebViewHighlights({
 	);
 	const [highlightToast, setHighlightToast] = useState<string | null>(null);
 	const [pageUrl, setPageUrl] = useState("");
+	/**
+	 * 스크립트가 `highlight:page`를 보낼 때마다(최초 진입뿐 아니라 새로고침으로 스크립트
+	 * 전역이 리셋된 경우도 포함) 증가하는 카운터. 새로고침은 같은 URL을 다시 보고하므로
+	 * `pageUrl`이 안 바뀌고, 그 URL의 쿼리 데이터도 이미 캐시돼 있어 `highlights` 참조도
+	 * 안 바뀐다 — 둘 다 안 바뀌면 복원 effect가 트리거될 신호가 없어진다. 이 카운터가
+	 * "스크립트가 다시 떴다"는 사실 자체를 신호로 만든다.
+	 */
+	const [pageEpoch, setPageEpoch] = useState(0);
 
 	/** 앱에 토스트 라이브러리가 없어 기존 wishToast와 같은 방식으로 3초 후 스스로 사라지게 한다 */
 	const showToast = useCallback((message: string) => {
@@ -59,7 +87,8 @@ export function useWebViewHighlights({
 	}, []);
 
 	const normalizedUrl = pageUrl ? normalizeUrl(pageUrl) : "";
-	const { data: highlights } = useHighlightsByUrl(normalizedUrl);
+	const { data: highlights, isSuccess: isHighlightsSuccess } =
+		useHighlightsByUrl(normalizedUrl);
 	const { mutate: createHighlight } = useHighlightCreateMutation();
 	const { mutate: mutateHighlightUpdate } = useHighlightUpdateMutation();
 	const { mutate: mutateHighlightDelete } = useHighlightDeleteMutation();
@@ -92,9 +121,14 @@ export function useWebViewHighlights({
 
 	const handleHighlightMessage = useCallback(
 		(message: WebViewHighlightMessage) => {
-			/** 스크립트가 알려준 페이지 URL이 조회·저장 양쪽의 단일 출처다 */
+			/**
+			 * 스크립트가 알려준 페이지 URL이 조회·저장 양쪽의 단일 출처다.
+			 * epoch를 항상 증가시켜, URL이 안 바뀌는 새로고침(스크립트만 리셋)에서도
+			 * 복원 effect가 트리거되게 한다.
+			 */
 			if (message.type === "highlight:page") {
 				setPageUrl(message.url as string);
+				setPageEpoch((epoch) => epoch + 1);
 				return;
 			}
 
@@ -108,16 +142,7 @@ export function useWebViewHighlights({
 					},
 					{
 						onSuccess: (saved) => {
-							const item: HighlightItem = {
-								id: saved.id,
-								anchor: {
-									exact: saved.exact_text,
-									prefix: saved.prefix_text ?? "",
-									suffix: saved.suffix_text ?? "",
-									textPositionStart: saved.text_position_start ?? 0,
-								},
-								color: saved.color as HighlightItem["color"],
-							};
+							const item = toHighlightItem(saved);
 
 							webViewRef.current?.injectJavaScript(
 								`window.__webmemoAdd(${JSON.stringify(item)}); true;`,
@@ -145,22 +170,22 @@ export function useWebViewHighlights({
 		[createHighlight, showToast, webViewRef],
 	);
 
-	/** 저장된 하이라이트를 WebView에 내려보낸다 */
+	/**
+	 * 저장된 하이라이트를 WebView에 내려보낸다.
+	 * @description `highlights`가 `undefined`(로딩 중)일 때만 건너뛴다. 빈 배열(`[]`,
+	 * 즉 "조회는 끝났는데 하이라이트가 0건")은 반드시 내려보내야 한다 — 그래야 스크립트가
+	 * `__webmemoRestore([])`를 받아 `renderer.clear()`로 화면의 밑줄을 지우고
+	 * `savedAnchors`를 빈 배열로 재구성한다. 이 신호가 없으면 마지막 하이라이트를 삭제한
+	 * 뒤에도 스크립트의 `savedAnchors`에 지운 앵커가 남아, 같은 문장을 다시 그으려 하면
+	 * "이미 하이라이트한 문장입니다"로 잘못 거절된다(entry.ts의 `savedAnchors`는
+	 * `__webmemoRestore`에서만 재구성되기 때문).
+	 */
 	const restoreHighlights = useCallback(() => {
-		if (!highlights?.length) {
+		if (!highlights) {
 			return;
 		}
 
-		const items: HighlightItem[] = highlights.map((row) => ({
-			id: row.id,
-			anchor: {
-				exact: row.exact_text,
-				prefix: row.prefix_text ?? "",
-				suffix: row.suffix_text ?? "",
-				textPositionStart: row.text_position_start ?? 0,
-			},
-			color: row.color as HighlightItem["color"],
-		}));
+		const items: HighlightItem[] = highlights.map(toHighlightItem);
 
 		webViewRef.current?.injectJavaScript(
 			`window.__webmemoRestore(${JSON.stringify(items)}); true;`,
@@ -169,11 +194,31 @@ export function useWebViewHighlights({
 
 	/**
 	 * 복원 시점은 "페이지 로드가 끝났을 때"가 아니라 "그 페이지의 하이라이트 데이터가
-	 * 도착했을 때"다. `highlights` 쿼리 결과가 바뀔 때마다(URL 변경, 조회 완료 등) 다시 그린다.
+	 * 도착했을 때"다.
+	 * @description 의존성이 두 겹인 이유:
+	 * - `restoreHighlights`(= `highlights` 변경): URL이 바뀌어 새 쿼리 데이터가 도착했을 때.
+	 * - `pageEpoch`: URL이 안 바뀌는 새로고침처럼, 스크립트 전역은 리셋됐지만 쿼리 데이터는
+	 *   이미 캐시돼 있어 `highlights` 참조가 그대로인 경우. 이 경우 `restoreHighlights`의
+	 *   identity가 안 바뀌므로 그것만 의존하면 트리거가 안 된다.
+	 *
+	 * `isHighlightsSuccess` 게이트: `pageUrl`과 `pageEpoch`는 같은 렌더에서 함께 바뀌므로,
+	 * URL이 바뀐 직후의 렌더에서 `highlights`는 이미 새 URL의 쿼리 상태를 가리킨다(로딩 중이면
+	 * `undefined`) — 이전 URL의 데이터가 새 URL의 `highlights`로 새어 들어오지는 않는다.
+	 * 지금 이 훅은 `placeholderData`/`keepPreviousData`를 쓰지 않으므로 이 게이트는 사실상
+	 * `restoreHighlights` 내부의 `!highlights` 가드와 같은 시점에 같은 걸 막는 이중 방어다.
+	 * 다만 나중에 로딩 깜빡임을 줄이려고 `placeholderData`가 추가되면 얘기가 달라진다 —
+	 * TanStack Query v5에서 `placeholderData`가 있으면 이전 키의 데이터를 보여주는 동안에도
+	 * `isSuccess`가 true가 되므로, 그 시점엔 이 조건을 `isSuccess`가 아니라
+	 * `!isPlaceholderData`로 바꿔야 이전 URL의 하이라이트가 새 URL에 잘못 그려지는 걸 막는다.
 	 */
+	// biome-ignore lint/correctness/useExhaustiveDependencies: pageEpoch는 본문에서 읽지 않지만, 같은 URL을 다시 보고하는 새로고침에서도 effect를 재실행시키기 위한 nonce
 	useEffect(() => {
+		if (!isHighlightsSuccess) {
+			return;
+		}
+
 		restoreHighlights();
-	}, [restoreHighlights]);
+	}, [pageEpoch, isHighlightsSuccess, restoreHighlights]);
 
 	const clearTappedHighlight = useCallback(() => {
 		setTappedHighlightId(null);

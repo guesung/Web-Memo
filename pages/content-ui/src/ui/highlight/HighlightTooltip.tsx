@@ -13,6 +13,7 @@ interface TooltipState {
 	y: number;
 }
 
+/** HighlightTooltip에 전달하는 인자 */
 interface HighlightTooltipProps {
 	/** 좌표로 하이라이트 id를 찾는다. 없으면 null */
 	hitTest: (x: number, y: number) => number | null;
@@ -35,17 +36,10 @@ export function HighlightTooltip({
 
 	useEffect(() => {
 		let lastRunAt = 0;
+		let trailingTimer: ReturnType<typeof setTimeout> | null = null;
 
-		function handleMouseMove(event: MouseEvent): void {
-			const now = Date.now();
-
-			if (now - lastRunAt < HOVER_THROTTLE_MS) {
-				return;
-			}
-
-			lastRunAt = now;
-
-			const id = hitTest(event.clientX, event.clientY);
+		function evaluate(x: number, y: number): void {
+			const id = hitTest(x, y);
 			const note = id === null ? undefined : notesById.get(id);
 
 			if (!note) {
@@ -53,13 +47,41 @@ export function HighlightTooltip({
 				return;
 			}
 
-			setTooltip({ note, x: event.clientX, y: event.clientY });
+			setTooltip({ note, x, y });
+		}
+
+		function handleMouseMove(event: MouseEvent): void {
+			const now = Date.now();
+			const elapsed = now - lastRunAt;
+
+			if (elapsed < HOVER_THROTTLE_MS) {
+				if (trailingTimer !== null) {
+					clearTimeout(trailingTimer);
+				}
+
+				const { clientX, clientY } = event;
+
+				trailingTimer = setTimeout(() => {
+					trailingTimer = null;
+					lastRunAt = Date.now();
+					evaluate(clientX, clientY);
+				}, HOVER_THROTTLE_MS - elapsed);
+
+				return;
+			}
+
+			lastRunAt = now;
+			evaluate(event.clientX, event.clientY);
 		}
 
 		document.addEventListener("mousemove", handleMouseMove, { passive: true });
 
 		return () => {
 			document.removeEventListener("mousemove", handleMouseMove);
+
+			if (trailingTimer !== null) {
+				clearTimeout(trailingTimer);
+			}
 		};
 	}, [hitTest, notesById]);
 

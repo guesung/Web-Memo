@@ -69,6 +69,15 @@ export function HighlightEditSheet({
 	const [note, setNote] = useState("");
 	/** 마지막으로 note를 동기화한 하이라이트 id. 같은 하이라이트의 refetch로 인한 리렌더에서 입력 중인 note를 덮어쓰지 않기 위해 둔다. */
 	const syncedHighlightIdRef = useRef<number | null>(null);
+	/**
+	 * 마지막으로 저장 요청을 보낸 note 값.
+	 * @description `flushNote`의 변경 여부 판단 기준을 `highlight.note`(서버 refetch가
+	 * 끝나야 갱신되는 stale 값)가 아니라 이 값으로 삼는다. 배경 터치로 시트를 닫으면
+	 * `TextInput`의 `onBlur`(flushNote)와 배경 `Pressable`의 `onClose`(flushNote)가
+	 * 연달아 발화하는데, 첫 호출 시점에 이 ref를 즉시 갱신해두면 두 번째 호출은
+	 * "이미 보낸 값과 같다"고 판단해 중복 저장 요청을 만들지 않는다.
+	 */
+	const lastFlushedNoteRef = useRef<string | null>(null);
 
 	const visible = highlight !== null;
 
@@ -94,6 +103,7 @@ export function HighlightEditSheet({
 	useEffect(() => {
 		if (!highlight) {
 			syncedHighlightIdRef.current = null;
+			lastFlushedNoteRef.current = null;
 			return;
 		}
 
@@ -102,6 +112,7 @@ export function HighlightEditSheet({
 		}
 
 		syncedHighlightIdRef.current = highlight.id;
+		lastFlushedNoteRef.current = highlight.note ?? "";
 		setNote(highlight.note ?? "");
 	}, [highlight]);
 
@@ -118,10 +129,11 @@ export function HighlightEditSheet({
 			return;
 		}
 
-		if (note === (highlight.note ?? "")) {
+		if (note === lastFlushedNoteRef.current) {
 			return;
 		}
 
+		lastFlushedNoteRef.current = note;
 		onUpdate({ id: highlight.id, url: highlight.url, note });
 	}, [highlight, note, onUpdate]);
 

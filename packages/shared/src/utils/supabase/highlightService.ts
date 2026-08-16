@@ -7,6 +7,12 @@ export interface HighlightPageCursor {
 	id: number;
 }
 
+/** URL별 하이라이트 개수. `get_highlight_counts` RPC의 반환 행 */
+export interface HighlightCountRow {
+	url: string;
+	count: number;
+}
+
 export class HighlightService {
 	supabaseClient: MemoSupabaseClient;
 
@@ -75,4 +81,15 @@ export class HighlightService {
 			.select();
 
 	deleteHighlight = async (id: number) => this.table.delete().eq("id", id);
+
+	/**
+	 * URL별 하이라이트 개수를 조회한다.
+	 * @description RLS가 적용되므로 호출자 본인의 하이라이트만 집계된다.
+	 * 개수가 0인 URL은 결과에 포함되지 않으므로, 호출 측이 없으면 0으로 취급해야 한다.
+	 */
+	getHighlightCounts = async (urls: string[]) =>
+		this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			// @ts-expect-error RPC function types not generated in schema
+			.rpc("get_highlight_counts", { target_urls: urls });
 }

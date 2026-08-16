@@ -2,7 +2,7 @@
 
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { useHighlightList } from "../_hooks";
+import { useHighlightCounts, useHighlightList } from "../_hooks";
 import { groupHighlightsByUrl } from "../_utils";
 import { HighlightEmptyState } from "./HighlightEmptyState";
 import { HighlightGroupCard } from "./HighlightGroupCard";
@@ -17,6 +17,8 @@ export function HighlightView({ lng }: HighlightViewProps) {
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		useHighlightList({});
 	const rows = data.pages.flat();
+	const groups = groupHighlightsByUrl(rows);
+	const counts = useHighlightCounts(groups.map((group) => group.url));
 
 	if (rows.length === 0) {
 		return <HighlightEmptyState lng={lng} />;
@@ -24,8 +26,13 @@ export function HighlightView({ lng }: HighlightViewProps) {
 
 	return (
 		<div className="flex flex-col gap-4">
-			{groupHighlightsByUrl(rows).map((group) => (
-				<HighlightGroupCard key={group.url} group={group} lng={lng} />
+			{groups.map((group) => (
+				<HighlightGroupCard
+					key={group.url}
+					group={group}
+					lng={lng}
+					count={counts.get(group.url) ?? 0}
+				/>
 			))}
 
 			{hasNextPage ? (

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useHighlightCounts } from "@/lib/hooks/useHighlightCounts";
 import {
 	useLocalMemoStarToggle,
 	useLocalMemos,
@@ -55,6 +56,8 @@ export function useMemoList() {
 	const isLoading = isLoggedIn ? isSupabaseLoading : isLocalLoading;
 	const refetch = isLoggedIn ? refetchSupabase : refetchLocal;
 
+	const highlightCounts = useHighlightCounts(memos.map((memo) => memo.url));
+
 	const handleEndReached = () => {
 		if (isLoggedIn && hasNextPage && !isFetchingNextPage) {
 			fetchNextPage();
@@ -103,5 +106,6 @@ export function useMemoList() {
 		handleEndReached,
 		handleWishRemove,
 		handleStarToggle,
+		highlightCounts,
 	};
 }

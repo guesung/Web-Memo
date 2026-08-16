@@ -505,6 +505,7 @@
 
 	"highlight": {
 		"loadMore": "더 보기",
+		"count": "{{count}}개",
 		"empty": {
 			"title": "아직 하이라이트가 없어요",
 			"description": "모바일 앱 브라우저에서 문장을 선택해 밑줄을 그어보세요."

@@ -4,6 +4,7 @@ export * from "./documentText";
 export * from "./matchQuote";
 export * from "./createAnchor";
 export * from "./resolveAnchor";
+export * from "./toHighlightItem";
 export * from "./renderHighlights";
 export * from "./selectionTracker";
 export * from "./injected/highlightScript";

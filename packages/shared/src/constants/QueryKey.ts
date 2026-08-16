@@ -38,5 +38,11 @@ export const QUERY_KEY = {
 		params,
 	],
 	/** `[...urls]`로 복사한 뒤 정렬해 원본 배열을 변형하지 않으면서 순서 무관 캐시 키를 만든다. */
-	highlightCounts: (urls: string[]) => ["highlights", "counts", [...urls].sort()],
+	highlightCounts: (urls: string[]) => [
+		"highlights",
+		"counts",
+		[...urls].sort(),
+	],
+	/** `highlightCounts`의 공통 접두사. URL 배열을 모르는 뮤테이션에서 prefix 매칭으로 무효화할 때 쓴다. */
+	highlightCountsPrefix: () => ["highlights", "counts"],
 };

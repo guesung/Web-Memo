@@ -58,6 +58,7 @@ export function useHighlightCreateMutation() {
 			queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.highlightsByUrl(highlight.url),
 			});
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.highlightCountsPrefix() });
 		},
 	});
 }
@@ -114,6 +115,7 @@ export function useHighlightDeleteMutation() {
 			queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.highlightsByUrl(variables.url),
 			});
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.highlightCountsPrefix() });
 		},
 	});
 }

@@ -1,5 +1,5 @@
-import type { HighlightRow } from "../../types";
 import { describe, expect, it } from "vitest";
+import type { HighlightRow } from "../../types";
 import { toHighlightItem } from "./toHighlightItem";
 
 function createRow(overrides: Partial<HighlightRow> = {}): HighlightRow {

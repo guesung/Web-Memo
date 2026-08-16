@@ -58,7 +58,9 @@ export function matchQuote(
 		score: scoreCandidate({ text, quote, candidate, options }),
 	}));
 
-	return scored.reduce((best, current) => (current.score > best.score ? current : best));
+	return scored.reduce((best, current) =>
+		current.score > best.score ? current : best,
+	);
 }
 
 /** 근사 매칭 후보 (오류 수 포함) */
@@ -82,7 +84,10 @@ function findCandidates(text: string, quote: string): Candidate[] {
 		return exact;
 	}
 
-	const maxErrors = Math.min(MAX_ERRORS_CAP, Math.floor(quote.length * MAX_ERROR_RATIO));
+	const maxErrors = Math.min(
+		MAX_ERRORS_CAP,
+		Math.floor(quote.length * MAX_ERROR_RATIO),
+	);
 
 	return search(text, quote, maxErrors);
 }
@@ -103,13 +108,19 @@ function scoreCandidate({
 
 	const prefixScore = options.prefix
 		? similarityFromEnd(
-				text.slice(Math.max(0, candidate.start - CONTEXT_LENGTH), candidate.start),
+				text.slice(
+					Math.max(0, candidate.start - CONTEXT_LENGTH),
+					candidate.start,
+				),
 				options.prefix,
 			)
 		: 0;
 
 	const suffixScore = options.suffix
-		? similarityFromStart(text.slice(candidate.end, candidate.end + CONTEXT_LENGTH), options.suffix)
+		? similarityFromStart(
+				text.slice(candidate.end, candidate.end + CONTEXT_LENGTH),
+				options.suffix,
+			)
 		: 0;
 
 	const positionScore =
@@ -132,7 +143,8 @@ function similarityFromEnd(actual: string, expected: string): number {
 
 	while (
 		matched < limit &&
-		actual[actual.length - 1 - matched] === expected[expected.length - 1 - matched]
+		actual[actual.length - 1 - matched] ===
+			expected[expected.length - 1 - matched]
 	) {
 		matched += 1;
 	}

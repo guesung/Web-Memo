@@ -510,6 +510,7 @@
 
 	"highlight": {
 		"loadMore": "Load more",
+		"count": "{{count}}",
 		"empty": {
 			"title": "No highlights yet",
 			"description": "Select text in the mobile app browser to highlight it."

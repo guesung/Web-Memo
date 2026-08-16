@@ -156,8 +156,18 @@ describe("resolveAnchors", () => {
 		document.body.innerHTML = "<p>알파 브라보 찰리 델타 에코</p>";
 
 		const ranges = resolveAnchors([
-			{ exact: "브라보", prefix: "알파 ", suffix: " 찰리", textPositionStart: 3 },
-			{ exact: "델타", prefix: "찰리 ", suffix: " 에코", textPositionStart: 11 },
+			{
+				exact: "브라보",
+				prefix: "알파 ",
+				suffix: " 찰리",
+				textPositionStart: 3,
+			},
+			{
+				exact: "델타",
+				prefix: "찰리 ",
+				suffix: " 에코",
+				textPositionStart: 11,
+			},
 		]);
 
 		expect(ranges).toHaveLength(2);
@@ -170,7 +180,12 @@ describe("resolveAnchors", () => {
 
 		const ranges = resolveAnchors([
 			{ exact: "없는문장", prefix: "", suffix: "", textPositionStart: 0 },
-			{ exact: "브라보", prefix: "알파 ", suffix: " 찰리", textPositionStart: 3 },
+			{
+				exact: "브라보",
+				prefix: "알파 ",
+				suffix: " 찰리",
+				textPositionStart: 3,
+			},
 		]);
 
 		expect(ranges[0]).toBeNull();

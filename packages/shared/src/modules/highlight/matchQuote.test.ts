@@ -50,7 +50,10 @@ describe("matchQuote", () => {
 	});
 
 	it("원문에서 사라진 문장은 null을 반환한다", () => {
-		const match = matchQuote("완전히 다른 내용만 들어 있는 문서", "존재하지 않는 문장입니다");
+		const match = matchQuote(
+			"완전히 다른 내용만 들어 있는 문서",
+			"존재하지 않는 문장입니다",
+		);
 
 		expect(match).toBeNull();
 	});

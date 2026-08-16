@@ -4,8 +4,8 @@ import {
 	toHighlightItem,
 } from "@web-memo/shared/modules/highlight";
 import { normalizeUrl } from "@web-memo/shared/utils";
-import { useCallback, useEffect, useState } from "react";
 import type { RefObject } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type WebView from "react-native-webview";
 import type { WebViewCustomMenuItems } from "react-native-webview/lib/WebViewTypes";
 import { useAuth } from "@/lib/auth/AuthProvider";

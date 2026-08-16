@@ -12,8 +12,8 @@ import { MemoPanel } from "./_components/MemoPanel";
 import { TechBlogBottomSheet } from "./_components/TechBlogBottomSheet";
 import { useBrowserState } from "./_hooks/useBrowserState";
 import {
-	type WebViewHighlightMessage,
 	useWebViewHighlights,
+	type WebViewHighlightMessage,
 } from "./_hooks/useWebViewHighlights";
 import { INJECTED_JS_ON_LOAD } from "./_utils/webViewScripts";
 

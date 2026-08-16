@@ -2,7 +2,10 @@
 
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { HIGHLIGHT_COLOR_STYLE, type HighlightColor } from "@web-memo/shared/constants";
+import {
+	HIGHLIGHT_COLOR_STYLE,
+	type HighlightColor,
+} from "@web-memo/shared/constants";
 import type { HighlightRow } from "@web-memo/shared/types";
 import { useEffect, useRef, useState } from "react";
 import { useHighlightNoteMutation } from "../_hooks";
@@ -46,7 +49,9 @@ export function HighlightQuote({ highlight, lng }: HighlightQuoteProps) {
 				style={{ backgroundColor: style.bar }}
 			/>
 			<div className="min-w-0 flex-1">
-				<p className="text-sm leading-6 text-foreground">{highlight.exact_text}</p>
+				<p className="text-sm leading-6 text-foreground">
+					{highlight.exact_text}
+				</p>
 
 				{isEditing ? (
 					<textarea

@@ -1,5 +1,6 @@
+import { HIGHLIGHT_COLOR_STYLE } from "@web-memo/shared/constants";
 import type { GetMemoResponse } from "@web-memo/shared/types";
-import { FileText, Heart, Star, Trash2 } from "lucide-react-native";
+import { FileText, Heart, Highlighter, Star, Trash2 } from "lucide-react-native";
 import { useRef } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import ReanimatedSwipeable, {
@@ -30,11 +31,18 @@ function formatRelativeDate(dateStr?: string): string {
 
 interface MemoCardProps {
 	memo: MemoItem;
+	/** 이 메모 URL에 저장된 하이라이트 개수. 0이면 표시하지 않는다 */
+	highlightCount: number;
 	onPress: () => void;
 	onDelete: () => void;
 }
 
-export function MemoCard({ memo, onPress, onDelete }: MemoCardProps) {
+export function MemoCard({
+	memo,
+	highlightCount,
+	onPress,
+	onDelete,
+}: MemoCardProps) {
 	const swipeableRef = useRef<SwipeableMethods>(null);
 
 	const rawDate =
@@ -87,6 +95,14 @@ export function MemoCard({ memo, onPress, onDelete }: MemoCardProps) {
 					{"isStar" in memo && memo.isStar && (
 						<Star size={12} fill="#f59e0b" color="#f59e0b" />
 					)}
+					{highlightCount > 0 ? (
+						<View className="flex-row items-center gap-0.5">
+							<Highlighter size={12} color={HIGHLIGHT_COLOR_STYLE.yellow.bar} />
+							<Text className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400">
+								{highlightCount}
+							</Text>
+						</View>
+					) : null}
 				</View>
 				{memo.memo && (
 					<Text

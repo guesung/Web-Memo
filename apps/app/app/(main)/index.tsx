@@ -33,6 +33,7 @@ export default function MemoScreen() {
 		handleEndReached,
 		handleWishRemove,
 		handleStarToggle,
+		highlightCounts,
 	} = useMemoList();
 
 	useEffect(() => {
@@ -163,6 +164,7 @@ export default function MemoScreen() {
 							renderItem={({ item }) => (
 								<MemoCard
 									memo={item}
+									highlightCount={highlightCounts.get(item.url) ?? 0}
 									onPress={() => setSelectedMemo(item)}
 									onDelete={() => handleDelete(item)}
 								/>

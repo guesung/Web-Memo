@@ -14,7 +14,11 @@ interface HighlightGroupCardProps {
 }
 
 /** 같은 URL에서 그은 하이라이트를 한 카드로 모아 보여준다 */
-export function HighlightGroupCard({ group, lng, count }: HighlightGroupCardProps) {
+export function HighlightGroupCard({
+	group,
+	lng,
+	count,
+}: HighlightGroupCardProps) {
 	const { t } = useTranslation(lng);
 
 	return (
@@ -30,9 +34,11 @@ export function HighlightGroupCard({ group, lng, count }: HighlightGroupCardProp
 				) : null}
 				<span className="truncate">{group.title ?? group.url}</span>
 				<ExternalLink className="size-3.5 shrink-0 text-muted-foreground" />
-				<span className="shrink-0 text-xs text-muted-foreground">
-					{t("highlight.count", { count })}
-				</span>
+				{count > 0 ? (
+					<span className="shrink-0 text-xs text-muted-foreground">
+						{t("highlight.count", { count })}
+					</span>
+				) : null}
 			</a>
 
 			<ul className="divide-y divide-border">

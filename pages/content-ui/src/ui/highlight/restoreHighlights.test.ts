@@ -148,4 +148,22 @@ describe("startHighlightRestore", () => {
 
 		expect(observeSpy).not.toHaveBeenCalled();
 	});
+
+	it("SPA 이동으로 URL이 바뀌면 더 이상 렌더하지 않는다", async () => {
+		document.body.innerHTML = "<p>알파</p>";
+		const renderer = createFakeRenderer();
+
+		startHighlightRestore({
+			items: [createItem(1, "브라보")],
+			renderer,
+			debounceMs: 10,
+		});
+		expect(renderer.added).toEqual([]);
+
+		window.history.pushState({}, "", "/other");
+		document.body.innerHTML = "<p>알파 브라보 찰리</p>";
+		await flush(60);
+
+		expect(renderer.added).toEqual([]);
+	});
 });

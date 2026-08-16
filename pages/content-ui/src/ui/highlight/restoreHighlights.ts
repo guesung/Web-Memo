@@ -43,6 +43,7 @@ export function startHighlightRestore({
 	let observer: MutationObserver | null = null;
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 	let timeoutTimer: ReturnType<typeof setTimeout> | null = null;
+	const startUrl = location.href;
 
 	function stop(): void {
 		observer?.disconnect();
@@ -61,6 +62,11 @@ export function startHighlightRestore({
 
 	/** 아직 못 찾은 앵커만 다시 시도하고, 찾은 것은 pending에서 뺀다 */
 	function attempt(): void {
+		if (location.href !== startUrl) {
+			stop();
+			return;
+		}
+
 		const ranges = resolveAnchors(
 			pending.map((item) => item.anchor),
 			root,

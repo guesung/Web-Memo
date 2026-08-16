@@ -16,7 +16,8 @@ export function useHighlightCounts(urls: string[]): Map<string, number> {
 	const { data } = useQuery({
 		queryKey: QUERY_KEY.highlightCounts(urls),
 		queryFn: async () => {
-			const { data: rows, error } = await highlightService.getHighlightCounts(urls);
+			const { data: rows, error } =
+				await highlightService.getHighlightCounts(urls);
 
 			if (error) {
 				throw new Error(error.message);

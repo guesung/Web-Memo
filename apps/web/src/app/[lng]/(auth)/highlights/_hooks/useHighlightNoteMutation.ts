@@ -10,7 +10,9 @@ export function useHighlightNoteMutation() {
 
 	return useMutation<void, Error, { id: number; note: string }>({
 		mutationFn: async ({ id, note }) => {
-			const { error } = await new HighlightService(supabaseClient).updateHighlight({
+			const { error } = await new HighlightService(
+				supabaseClient,
+			).updateHighlight({
 				id,
 				request: { note },
 			});

@@ -15,8 +15,12 @@ export function HighlightEmptyState({ lng }: HighlightEmptyStateProps) {
 	return (
 		<div className="flex flex-col items-center gap-3 py-20 text-center">
 			<Highlighter className="size-8 text-muted-foreground" />
-			<p className="text-sm text-muted-foreground">{t("highlight.empty.title")}</p>
-			<p className="text-xs text-muted-foreground">{t("highlight.empty.description")}</p>
+			<p className="text-sm text-muted-foreground">
+				{t("highlight.empty.title")}
+			</p>
+			<p className="text-xs text-muted-foreground">
+				{t("highlight.empty.description")}
+			</p>
 		</div>
 	);
 }

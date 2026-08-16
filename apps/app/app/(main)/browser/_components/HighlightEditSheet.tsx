@@ -1,6 +1,6 @@
 import {
-	HIGHLIGHT_COLORS,
 	HIGHLIGHT_COLOR_STYLE,
+	HIGHLIGHT_COLORS,
 	type HighlightColor,
 } from "@web-memo/shared/constants";
 import type { HighlightRow } from "@web-memo/shared/types";

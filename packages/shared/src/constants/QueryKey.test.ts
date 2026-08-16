@@ -65,7 +65,10 @@ describe("QUERY_KEY.highlightCounts", () => {
 
 	it("URL 순서가 달라도 같은 키를 만든다", () => {
 		const first = QUERY_KEY.highlightCounts(["https://b.com", "https://a.com"]);
-		const second = QUERY_KEY.highlightCounts(["https://a.com", "https://b.com"]);
+		const second = QUERY_KEY.highlightCounts([
+			"https://a.com",
+			"https://b.com",
+		]);
 
 		expect(first).toEqual(second);
 	});
@@ -81,8 +84,8 @@ describe("QUERY_KEY.highlightCounts", () => {
 describe("QUERY_KEY.highlightCountsPrefix", () => {
 	it("highlightCounts의 접두사와 일치한다", () => {
 		expect(QUERY_KEY.highlightCountsPrefix()).toEqual(["highlights", "counts"]);
-		expect(
-			QUERY_KEY.highlightCounts(["https://a.com"]).slice(0, 2),
-		).toEqual(QUERY_KEY.highlightCountsPrefix());
+		expect(QUERY_KEY.highlightCounts(["https://a.com"]).slice(0, 2)).toEqual(
+			QUERY_KEY.highlightCountsPrefix(),
+		);
 	});
 });

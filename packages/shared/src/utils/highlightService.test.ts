@@ -19,7 +19,10 @@ interface RecordedCalls {
  * @description 체이닝 메서드는 자기 자신을 돌려주고, await 되는 시점에 빈 결과를 반환한다.
  * HighlightService가 실제로 쓰는 메서드만 구현한다.
  */
-function createMockClient(): { client: MemoSupabaseClient; calls: RecordedCalls } {
+function createMockClient(): {
+	client: MemoSupabaseClient;
+	calls: RecordedCalls;
+} {
 	const calls: RecordedCalls = {
 		schema: [],
 		from: [],
@@ -90,7 +93,9 @@ describe("HighlightService.getHighlightsPaginated", () => {
 		expect(calls.or).toContainEqual(
 			expect.stringContaining("exact_text.ilike.%리액트%"),
 		);
-		expect(calls.or).toContainEqual(expect.stringContaining("note.ilike.%리액트%"));
+		expect(calls.or).toContainEqual(
+			expect.stringContaining("note.ilike.%리액트%"),
+		);
 	});
 
 	it("커서가 있으면 (created_at, id) 복합 조건으로 다음 페이지를 요청한다", async () => {
@@ -106,7 +111,9 @@ describe("HighlightService.getHighlightsPaginated", () => {
 
 	it("색상 필터가 있으면 color로 eq 조건을 건다", async () => {
 		const { client, calls } = createMockClient();
-		await new HighlightService(client).getHighlightsPaginated({ color: "yellow" });
+		await new HighlightService(client).getHighlightsPaginated({
+			color: "yellow",
+		});
 
 		expect(calls.eq).toContainEqual(["color", "yellow"]);
 	});

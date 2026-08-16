@@ -7,6 +7,7 @@ import {
 	extractYoutubeTranscript,
 	isYoutubePage,
 	renderOpenSidePanelButton,
+	setupHighlightRestore,
 	setupTextSelectionHandler,
 } from "./ui";
 
@@ -47,6 +48,7 @@ async function initTextSelectionHandler() {
 }
 
 initTextSelectionHandler();
+setupHighlightRestore();
 
 function getContentFromWeb() {
 	const text = document.body.innerText;

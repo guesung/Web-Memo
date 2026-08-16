@@ -7,7 +7,11 @@ import {
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
-import { MemoService, normalizeUrl } from "@web-memo/shared/utils";
+import {
+	HighlightService,
+	MemoService,
+	normalizeUrl,
+} from "@web-memo/shared/utils";
 import { getSupabaseClient, I18n, Tab } from "@web-memo/shared/utils/extension";
 
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
@@ -139,5 +143,28 @@ bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
 			error:
 				error instanceof Error ? error.message : I18n.get("toast_error_save"),
 		});
+	}
+});
+
+// content-ui가 현재 페이지의 하이라이트를 조회한다.
+// 실패해도 빈 배열을 돌려준다 — 남의 페이지 위에서 조용히 실패해야 한다(설계 §8).
+bridge.handle.GET_HIGHLIGHTS_BY_URL(async (payload, _sender, sendResponse) => {
+	try {
+		const supabaseClient = await getSupabaseClient();
+		const highlightService = new HighlightService(supabaseClient);
+
+		// 앱·웹과 같은 기준으로 찾도록 URL을 정규화한다.
+		const normalizedUrl = normalizeUrl(payload.url);
+		const { data, error } =
+			await highlightService.getHighlightsByUrl(normalizedUrl);
+
+		if (error) {
+			sendResponse({ highlights: [] });
+			return;
+		}
+
+		sendResponse({ highlights: data ?? [] });
+	} catch {
+		sendResponse({ highlights: [] });
 	}
 });

@@ -2,12 +2,23 @@ name: CD - App (iOS Build)
 
 on:
   workflow_call:
+    inputs:
+      deploy_target:
+        description: "배포 대상 (none = 빌드만, production = TestFlight 제출)"
+        type: string
+        default: "none"
+      ref:
+        description: "체크아웃할 커밋/태그 (비우면 호출한 워크플로의 기본 ref)"
+        type: string
+        default: ""
 
 jobs:
   build-ios:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
 
       - uses: pnpm/action-setup@v4
 
@@ -40,11 +51,11 @@ jobs:
           retention-days: 7
 
       - name: Write App Store Connect API key
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')
+        if: ${{ inputs.deploy_target == 'production' }}
         env:
           ASC_API_KEY_P8: ${{ secrets.EXPO_ASC_API_KEY_P8 }}
         run: echo "$ASC_API_KEY_P8" > apps/app/asc-api-key.p8
 
       - name: Submit to TestFlight
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')
+        if: ${{ inputs.deploy_target == 'production' }}
         run: cd apps/app && eas submit --platform ios --profile production --path ./build.ipa --non-interactive

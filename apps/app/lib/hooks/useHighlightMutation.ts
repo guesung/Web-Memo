@@ -6,7 +6,7 @@ import {
 } from "@web-memo/shared/constants";
 import type { HighlightAnchor } from "@web-memo/shared/modules/highlight";
 import type { HighlightRow } from "@web-memo/shared/types";
-import { normalizeUrl } from "@web-memo/shared/utils";
+import { normalizeUrl } from "@web-memo/shared/utils/url";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { highlightService } from "@/lib/supabase/client";
 

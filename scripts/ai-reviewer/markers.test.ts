@@ -47,6 +47,41 @@ describe("parseMarker", () => {
 		const body = "<!-- ai-review:senior:q2 --> 추가 텍스트";
 		expect(parseMarker(body)).toBeNull();
 	});
+
+	it("마커 끝에 개행이 있어도 파싱한다", () => {
+		const body = "질문입니다\n\n<!-- ai-review:senior:q2 -->\n";
+		expect(parseMarker(body)).toEqual({ persona: "senior", kind: "q2" });
+	});
+
+	it("마커 끝에 CRLF가 있어도 파싱한다", () => {
+		const body = "질문입니다\n\n<!-- ai-review:intern:q1 -->\r\n";
+		expect(parseMarker(body)).toEqual({ persona: "intern", kind: "q1" });
+	});
+
+	it("마커 끝에 공백이 있어도 파싱한다", () => {
+		const body = "질문입니다\n\n<!-- ai-review:senior:scan --> ";
+		expect(parseMarker(body)).toEqual({ persona: "senior", kind: "scan" });
+	});
+
+	it("마커가 탭으로 들여쓰기되어 있어도 파싱한다", () => {
+		const body = "질문입니다\n\n\t<!-- ai-review:intern:reply -->";
+		expect(parseMarker(body)).toEqual({ persona: "intern", kind: "reply" });
+	});
+
+	it("마커가 스페이스로 들여쓰기되어 있어도 파싱한다", () => {
+		const body = "질문입니다\n\n  <!-- ai-review:senior:q3 -->";
+		expect(parseMarker(body)).toEqual({ persona: "senior", kind: "q3" });
+	});
+
+	it("인용 마커는 파싱하지 않는다", () => {
+		const body = `> ${buildMarker({ persona: "intern", kind: "q1" })}`;
+		expect(parseMarker(body)).toBeNull();
+	});
+
+	it("인용 마커 다음에 일반 텍스트가 있어도 인용 마커는 무시한다", () => {
+		const body = `> <!-- ai-review:senior:q2 -->\n나는 이렇게 생각합니다.`;
+		expect(parseMarker(body)).toBeNull();
+	});
 });
 
 describe("buildMarker validation", () => {

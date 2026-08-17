@@ -9,7 +9,7 @@ export interface IFMarker {
 	kind: string;
 }
 
-const MARKER_PATTERN = /<!--\s*ai-review:(intern|senior):([a-z0-9_-]+)\s*-->$/;
+const MARKER_PATTERN = /(?:^|\n)[ \t]*<!--\s*ai-review:(intern|senior):([a-z0-9_-]+)\s*-->\s*$/;
 const KIND_VALIDATION_PATTERN = /^[a-z0-9_-]+$/;
 
 /**
@@ -22,14 +22,15 @@ export const buildMarker = (marker: IFMarker): string => {
 	if (!KIND_VALIDATION_PATTERN.test(marker.kind)) {
 		throw new Error(`Invalid kind: "${marker.kind}" contains characters not in [a-z0-9_-]`);
 	}
+
 	return `<!-- ai-review:${marker.persona}:${marker.kind} -->`;
 };
 
 /**
  * 코멘트 본문에서 마커를 찾아 파싱한다.
  * @description 봇 식별을 `user.login`이 아니라 이 마커로 하므로, App 이름을
- * 바꿔도 기존 스레드 식별이 깨지지 않는다. 마커는 본문의 끝에만 인식되며,
- * 중간에 있거나 형식이 다르면 null을 반환한다.
+ * 바꿔도 기존 스레드 식별이 깨지지 않는다. 마커는 본문의 끝에 자기 자신의 줄에서만
+ * 인식되며 (인용 마커 제외), 뒤에 따라오는 공백은 허용된다. 형식이 다르면 null.
  */
 export const parseMarker = (body: string): IFMarker | null => {
 	const matched = body.match(MARKER_PATTERN);

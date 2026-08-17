@@ -69,3 +69,5 @@ android
 
 # worktrees
 .worktrees/
+# AI 리뷰 봇 자격 증명 (절대 커밋 금지 — public 레포)
+*.pem

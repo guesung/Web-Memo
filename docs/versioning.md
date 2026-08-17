@@ -20,10 +20,25 @@ Each channel imposes its own constraint:
 - **Chrome Web Store** rejects re-uploading the same version and requires
   monotonically increasing numbers. The extension version must move only when
   the extension itself ships.
-- **App Store** has its own numbering. `ios.buildNumber` is *not* managed in the
-  repo — `eas.json` sets `appVersionSource: "remote"` with `autoIncrement: true`,
-  so EAS increments the build number server-side. Only `version` in `app.json`
-  is edited by hand.
+- **App Store** has its own numbering, split into two values:
+  - `version` (the marketing version, `CFBundleShortVersionString`) lives in
+    `app.json` and is **always** edited by hand. `autoIncrement` never touches it.
+  - The build number is **not** in the repo at all. `eas.json` sets
+    `appVersionSource: "remote"` with `autoIncrement: true`, so EAS stores and
+    increments it server-side.
+
+  This holds for `eas build --local`, which is what `cd-app.yml` runs. `--local`
+  only moves the compile step onto the runner; EAS CLI still talks to EAS servers
+  for credentials and versioning. A real CI log confirms it:
+
+  ```
+  ✔ Incremented buildNumber from 48 to 49.
+  ios.buildNumber field in app config is ignored when version source is set to
+  remote. It's recommended to remove this value from app config.
+  ```
+
+  `ios.buildNumber` was therefore removed from `app.json` — it had drifted to a
+  stale `"6"` while the server was at 49, and it was being ignored anyway.
 - **Web** has no version at all. It is a single continuously deployed instance;
   there is no such thing as "the version a user has installed". To identify a
   deployment, use the commit SHA or the Vercel deployment ID.

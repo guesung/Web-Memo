@@ -59,24 +59,6 @@ export const SCROLL_DETECT_JS = `
 })(); true;
 `;
 
-/** 텍스트 드래그 선택 감지 후 postMessage로 전달 (선택 종료 시 메모에 자동 기입용) */
-export const TEXT_SELECT_JS = `
-(function() {
-  if (window.__webmemoSelectSetup) return;
-  window.__webmemoSelectSetup = true;
-  var debounceTimer = null;
-  document.addEventListener('selectionchange', function() {
-    if (debounceTimer) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(function() {
-      var text = (window.getSelection() || '').toString().trim();
-      if (text.length > 1) {
-        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'textSelected', text: text }));
-      }
-    }, 400);
-  });
-})(); true;
-`;
-
 /** 현재 페이지 본문 텍스트를 추출해 postMessage로 전달 (AI 요약/질의응답용) */
 export const EXTRACT_PAGE_TEXT_JS = `
 (function() {
@@ -90,7 +72,7 @@ export const EXTRACT_PAGE_TEXT_JS = `
 `;
 
 /** 네비게이션 완료 시 injectJavaScript로 주입할 전체 스크립트 */
-export const INJECTED_JS_ON_NAVIGATION = `${FAVICON_EXTRACT_JS}\n${SCROLL_DETECT_JS}\n${TEXT_SELECT_JS}\n${HIGHLIGHT_SCRIPT}\ntrue;`;
+export const INJECTED_JS_ON_NAVIGATION = `${FAVICON_EXTRACT_JS}\n${SCROLL_DETECT_JS}\n${HIGHLIGHT_SCRIPT}\ntrue;`;
 
 /** WebView 최초 로드 시 주입할 스크립트 */
 export const INJECTED_JS_ON_LOAD = `${SCROLL_DETECT_JS}\n${HIGHLIGHT_SCRIPT}\ntrue;`;

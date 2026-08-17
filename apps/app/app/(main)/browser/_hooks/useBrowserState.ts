@@ -89,7 +89,6 @@ export function useBrowserState({
 	const [contentHeight, setContentHeight] = useState(0);
 	const [wishToast, setWishToast] = useState<string | null>(null);
 	const [savedRatio, setSavedRatio] = useState(DEFAULT_PANEL_RATIO);
-	const [selectedText, setSelectedText] = useState<string | null>(null);
 	const [isActionsSheetOpen, setIsActionsSheetOpen] = useState(false);
 	const [isAISheetOpen, setIsAISheetOpen] = useState(false);
 	const [aiPageText, setAiPageText] = useState("");
@@ -509,9 +508,6 @@ export function useBrowserState({
 				} else if (message.type === "scroll") {
 					persistScrollPosition(message.scrollY, message.maxY ?? 0);
 					handleScrollMessage(message.direction, message.scrollY);
-				} else if (message.type === "textSelected" && message.text) {
-					setSelectedText(message.text);
-					if (!isMemoOpen) openPanel();
 				} else if (message.type === "pageTextExtracted") {
 					const text = message.text ?? "";
 					setAiPageText(text);
@@ -532,16 +528,10 @@ export function useBrowserState({
 		[
 			handleScrollMessage,
 			persistScrollPosition,
-			isMemoOpen,
-			openPanel,
 			requestArticleAI,
 			onHighlightMessage,
 		],
 	);
-
-	const consumeSelectedText = useCallback(() => {
-		setSelectedText(null);
-	}, []);
 
 	const openAISheet = useCallback(() => {
 		setIsAISheetOpen(true);
@@ -654,8 +644,6 @@ export function useBrowserState({
 		handleBlogSelect,
 		handleShare,
 		SCROLL_DETECT_JS,
-		selectedText,
-		consumeSelectedText,
 		isActionsSheetOpen,
 		setIsActionsSheetOpen,
 		isAISheetOpen,

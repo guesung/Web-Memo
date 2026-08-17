@@ -14,7 +14,9 @@ created from `master`, and only `master` accumulates permanent history.
 - The base branch for every other branch, including `develop`
 - The only branch that permanently accumulates history
 - Updated exclusively through pull requests from working branches
-- Pushing to `master` deploys production (see `.github/workflows/ci-cd.yml`)
+- Pushing to `master` only builds and verifies — it does **not** deploy
+  (see `.github/workflows/ci.yml`). Production deploys are triggered manually
+  (see [Releasing](#releasing))
 
 ### `develop`
 
@@ -66,6 +68,33 @@ git checkout feat/memo-search   # go back to the working branch
 
 Merging into `develop` does **not** finish the work. The working branch still
 needs its own pull request into `master`.
+
+### Releasing
+
+Merging into `master` never deploys anything. Releases are an explicit,
+separate action.
+
+1. **Bump the version on a working branch.** Run `/version-update` locally — it
+   writes the release notes (`Update.ts`, `ko`/`en` `translation.json`) and bumps
+   every `package.json`, then commits and pushes the `v*` tag. Open a PR into
+   `master` and merge it.
+   - The `v*` tag push creates a GitHub Release
+     (`.github/workflows/github-release.yml`).
+2. **Deploy the targets you want.** Actions → **Release** → *Run workflow*, then
+   check `app` / `extension` / `web`. Leave `ref` empty to deploy the latest
+   `master`, or pass a tag/commit to deploy that exact revision.
+   - `app` — iOS build + TestFlight submission
+   - `extension` — build + Chrome Web Store upload (publishing stays manual)
+   - `web` — Vercel production deploy
+3. **Reset `develop`** (below).
+
+| Trigger                | What runs                                          |
+| ---------------------- | -------------------------------------------------- |
+| PR (any branch)        | Lint, type-check, tests, and build verification     |
+| Push to `develop`      | The above + web deploy to the staging/test server   |
+| Push to `master`       | The above only — no deploy                          |
+| Actions → **Release**  | Production deploy of the checked targets            |
+| Push of a `v*` tag     | GitHub Release creation                             |
 
 ### Resetting `develop` (after a release)
 

@@ -302,4 +302,38 @@ describe("upsertFollowupSection", () => {
 		expect(result).toContain("  - [ ] 하위 세부 항목");
 		expect(result).toContain("- [ ] 신규 항목");
 	});
+
+	it("빈 문자열·공백만 있는 항목은 걸러내 텍스트 없는 체크박스를 만들지 않는다", () => {
+		const result = upsertFollowupSection({
+			body: "## 작업 내용",
+			items: ["", "   ", "실제 항목"],
+		});
+
+		expect(result).toContain("- [ ] 실제 항목");
+		expect(result).not.toMatch(/-\s\[ \]\s*(\n|$)/);
+	});
+
+	it("모든 항목이 빈 문자열·공백뿐이면 본문을 바이트 단위로 그대로 반환한다", () => {
+		const body = "## 작업 내용\n\n메모 목록 캐시 개선";
+
+		const result = upsertFollowupSection({ body, items: ["", "   ", "\t"] });
+
+		expect(result).toBe(body);
+	});
+
+	it("마커가 온전한 섹션에 빈 항목이 섞여 있어도 실제 항목만 append한다", () => {
+		const body = [
+			"<!-- ai-followup:start -->",
+			"## 🔭 후속 작업 (시니어 리뷰)",
+			"",
+			"- [ ] 기존 항목",
+			"<!-- ai-followup:end -->",
+		].join("\n");
+
+		const result = upsertFollowupSection({ body, items: ["", "신규 항목", "  "] });
+
+		expect(result).toContain("- [ ] 기존 항목");
+		expect(result).toContain("- [ ] 신규 항목");
+		expect(result).not.toMatch(/-\s\[ \]\s*(\n|$)/);
+	});
 });

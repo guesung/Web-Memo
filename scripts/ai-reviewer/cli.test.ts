@@ -159,6 +159,69 @@ describe("validatePostInput", () => {
 		expect(thrown?.message).toContain("questions[0].persona");
 		expect(thrown?.message).toContain("questions[0].kind");
 	});
+
+	it("questions[].line이 문자열이면(예: LLM이 '34'로 씀) 인덱스를 명시하며 거부한다", () => {
+		expect(() => {
+			validatePostInput({
+				questions: [
+					// @ts-expect-error line이 문자열로 올 수 있는 런타임 상황을 재현한다
+					{ persona: "intern", path: "a.ts", line: "34", body: "q", kind: "q1" },
+				],
+				replies: [],
+				scan: null,
+			});
+		}).toThrow(/questions\[0\]\.line/);
+	});
+
+	it("questions[].line이 0 이하이거나 정수가 아니면 거부한다", () => {
+		expect(() => {
+			validatePostInput({
+				questions: [{ persona: "intern", path: "a.ts", line: 0, body: "q", kind: "q1" }],
+				replies: [],
+				scan: null,
+			});
+		}).toThrow(/questions\[0\]\.line/);
+
+		expect(() => {
+			validatePostInput({
+				questions: [{ persona: "intern", path: "a.ts", line: 1.5, body: "q", kind: "q1" }],
+				replies: [],
+				scan: null,
+			});
+		}).toThrow(/questions\[0\]\.line/);
+	});
+
+	it("replies[].rootId가 정수가 아니면 인덱스를 명시하며 거부한다", () => {
+		expect(() => {
+			validatePostInput({
+				questions: [],
+				// @ts-expect-error rootId가 문자열로 올 수 있는 런타임 상황을 재현한다
+				replies: [{ persona: "intern", rootId: "123", body: "답글" }],
+				scan: null,
+			});
+		}).toThrow(/replies\[0\]\.rootId/);
+	});
+
+	it("line과 persona가 동시에 잘못되면 하나의 에러 메시지에 둘 다 나열한다", () => {
+		let thrown: Error | undefined;
+
+		try {
+			validatePostInput({
+				questions: [
+					// @ts-expect-error 두 필드가 동시에 틀린 런타임 상황을 재현한다
+					{ persona: "junior", path: "a.ts", line: -1, body: "q", kind: "q1" },
+				],
+				replies: [],
+				scan: null,
+			});
+		} catch (error) {
+			thrown = error as Error;
+		}
+
+		expect(thrown).toBeDefined();
+		expect(thrown?.message).toContain("questions[0].persona");
+		expect(thrown?.message).toContain("questions[0].line");
+	});
 });
 
 describe("runPostWithInput", () => {
@@ -323,5 +386,27 @@ describe("CLI 인자 검증 (실제 서브프로세스 실행)", () => {
 
 		expect(result.status).toBe(1);
 		expect(result.stderr).toContain("--pr 값이 숫자가 아닙니다: abc");
+	});
+
+	it("--pr 이 빈 문자열이면 Number('')가 0으로 NaN 검사를 통과하는 함정을 막고 exit code 1을 반환한다", () => {
+		const result = spawnSync("node", [cliPath, "pending", "--pr", ""], { encoding: "utf8" });
+
+		expect(result.status).toBe(1);
+		expect(result.stderr).toContain("--pr 값은 양의 정수여야 합니다");
+	});
+
+	it("--pr 이 0이거나 음수면 exit code 1을 반환한다", () => {
+		const zeroResult = spawnSync("node", [cliPath, "pending", "--pr", "0"], { encoding: "utf8" });
+		expect(zeroResult.status).toBe(1);
+		expect(zeroResult.stderr).toContain("--pr 값은 양의 정수여야 합니다");
+
+		// "-1"을 "--pr" 다음 토큰으로 그냥 넘기면 node:util의 parseArgs가 옵션처럼
+		// 보인다며 자체적으로 거부하므로(ERR_PARSE_ARGS_INVALID_OPTION_VALUE), 음수를
+		// 명시적으로 넘기려면 `--pr=-1` 형태를 써야 한다.
+		const negativeResult = spawnSync("node", [cliPath, "pending", "--pr=-1"], {
+			encoding: "utf8",
+		});
+		expect(negativeResult.status).toBe(1);
+		expect(negativeResult.stderr).toContain("--pr 값은 양의 정수여야 합니다");
 	});
 });

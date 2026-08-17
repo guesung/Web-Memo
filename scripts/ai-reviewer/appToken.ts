@@ -106,6 +106,9 @@ const collectConfigProblems = (config: Record<string, unknown>): string[] => {
  * 실패하면 설정 경로를 담아 안내한다. 파싱에 성공하면 이 모듈이 실제로 쓰는 모든 필드
  * (최상위 `repo`/`prAuthor`, 각 페르소나의 `displayName`/`role`/`appId`/
  * `installationId`/`privateKeyPath`)의 누락·공백을 전부 모아 하나의 에러로 던진다.
+ * `config.json`이 `null`이거나 객체가 아닌 값(배열·문자열·숫자 등)으로 파싱되면,
+ * `collectConfigProblems`가 그 값의 속성에 접근하다 경로 정보 없는 raw `TypeError`를
+ * 던지게 되므로 그 전에 걸러 다른 설정 에러와 같은 형식의 안내로 바꾼다.
  * @throws 문제가 하나라도 있으면 Error. 메시지에 configPath와 문제된 필드를 모두 나열한다.
  */
 export const parseReviewerConfig = ({
@@ -123,6 +126,10 @@ export const parseReviewerConfig = ({
 		const reason = cause instanceof Error ? cause.message : String(cause);
 
 		throw new Error(`${configPath} 이(가) 올바른 JSON이 아닙니다: ${reason}`);
+	}
+
+	if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+		throw new Error(`${configPath} 설정이 올바르지 않습니다:\n- 최상위 값이 객체가 아닙니다`);
 	}
 
 	const config = parsed as Record<string, unknown>;
@@ -152,7 +159,7 @@ export const loadReviewerConfig = (configPath: string = CONFIG_PATH): IFReviewer
 	} catch {
 		throw new Error(
 			`봇 설정 파일을 찾을 수 없습니다: ${configPath}\n` +
-				"docs/superpowers/plans/2026-08-17-ai-review-personas.md 의 Task 4를 먼저 수행하세요.",
+				"scripts/ai-reviewer/README.md 의 설정 방법을 먼저 수행하세요.",
 		);
 	}
 

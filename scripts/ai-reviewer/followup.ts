@@ -118,6 +118,9 @@ const appendNewSection = ({ body, items }: { body: string; items: string[] }): s
  * 하위 불릿이든)을 절대 재작성하지 않고 보존하며, end 마커 바로 앞에 신규 항목만 append한다.
  * 이미 존재하는 항목은 공백 정규화·대소문자 무시 비교로 중복 추가하지 않는다.
  * 마커가 없거나 한쪽만 있어 손상된 경우에는 덮어쓰지 않고 본문 끝에 새 섹션을 만든다.
+ * 빈 문자열·공백만 있는 항목은 섹션을 구성하기 전에 걸러낸다 — 이 섹션은 append 전용으로
+ * 설계돼 있어, 한 번 `- [ ] ` 처럼 텍스트 없는 체크박스가 들어가면 이 시스템 안에서는
+ * 아무것도 그것을 지울 수 없고 PR 본문을 사람이 직접 고쳐야 한다.
  */
 export const upsertFollowupSection = ({
 	body,
@@ -126,7 +129,9 @@ export const upsertFollowupSection = ({
 	body: string;
 	items: string[];
 }): string => {
-	if (items.length === 0) {
+	const nonBlankItems = items.filter((item) => item.trim().length > 0);
+
+	if (nonBlankItems.length === 0) {
 		return body;
 	}
 
@@ -135,8 +140,8 @@ export const upsertFollowupSection = ({
 	const isIntact = startIndex !== -1 && endIndex !== -1 && endIndex > startIndex;
 
 	if (isIntact) {
-		return appendItemsIntoIntactSection({ body, startIndex, endIndex, items });
+		return appendItemsIntoIntactSection({ body, startIndex, endIndex, items: nonBlankItems });
 	}
 
-	return appendNewSection({ body, items });
+	return appendNewSection({ body, items: nonBlankItems });
 };

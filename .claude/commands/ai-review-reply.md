@@ -295,7 +295,7 @@ content-ui/restoreHighlights.ts 복원 렌더가 자기 옵저버를 다시 깨�
 
 ### 7. 입력 파일 작성과 게시
 
-`$GITDIR/ai-review-reply.json` 에 쓴다
+`$GITDIR/ai-review-reply.json` 에 쓴다 (`.git/` 안이라 커밋되지 않는다).
 > **입력 파일 경로 주의.** `.git` 은 **worktree에서 디렉토리가 아니라 파일**이다 (`gitdir: ...` 한 줄을 담은 텍스트 파일). 그대로 `.git/xxx.json` 에 쓰려 하면
 > `NotADirectoryError` / `ENOTDIR` 로 즉시 죽는다. 아래처럼 실제 gitdir을 구해서 쓴다.
 >
@@ -305,7 +305,6 @@ content-ui/restoreHighlights.ts 복원 렌더가 자기 옵저버를 다시 깨�
 >
 > 일반 클론에서는 `.git`, worktree에서는 실제 gitdir 경로가 나오므로 양쪽 모두 동작한다.
 > 아래의 모든 `.git/` 표기는 `$GITDIR/` 로 읽는다.
- (`.git/` 안이라 커밋되지 않는다).
 
 ```json
 {
@@ -323,9 +322,13 @@ content-ui/restoreHighlights.ts 복원 렌더가 자기 옵저버를 다시 깨�
   다른 값이면 `cli.ts`가 **첫 네트워크 호출 전에** 배치 전체를 거부하고 아무것도 게시하지
   않는다. **(검증됨)**
 - `rootId` — `pending` 출력의 `rootId` 그대로. **숫자다. 문자열로 쓰지 않는다.**
-- **`cli.ts`가 검사하는 것은 `persona`(와 questions의 `kind`)뿐이다.**
-  `rootId`도 `body`도 검사하지 않는다. `rootId`가 틀리면 게시가 시작된 뒤 GitHub이
-  거부하며, **그 시점엔 앞선 답글이 이미 나가 있다.** 값을 옮겨 적을 때 확인한다.
+  1 이상의 정수가 아니면(문자열·0·음수·소수 등) `cli.ts`가 같은 사전 검증에서
+  배치 전체를 거부한다. **(검증됨)**
+- **`cli.ts`가 검사하는 것은 `persona`와 `rootId`(와 questions의 `kind`·`line`)뿐이다.**
+  `body`는 검사하지 않는다. `rootId` 검증은 **형식(1 이상의 정수인지)만** 본다 —
+  숫자이기만 하면 통과하고, **그 rootId를 가진 스레드가 실제로 존재하는지는 검사하지
+  않는다.** 존재하지 않는 rootId면 게시가 시작된 뒤 GitHub이 거부하며, **그 시점엔
+  앞선 답글이 이미 나가 있다.** `pending` 출력에서 옮겨 적은 값이 맞는지 확인한다.
 - `questions`·`scan` 키는 이 커맨드에서 쓰지 않는다 (`/ai-review` 전용).
 - **마커(`<!-- ai-review:... -->`)를 `body`에 쓰지 않는다.** CLI가 `intern:reply` /
   `senior:reply`로 붙인다. 작성한 JSON에 `ai-review:` 문자열이 있으면 지우고 다시 쓴다.

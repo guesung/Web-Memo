@@ -124,7 +124,7 @@ describe("loadReviewerConfig", () => {
 			const message = (error as Error).message;
 
 			expect(message).toContain(configPath);
-			expect(message).toMatch(/Task 4/);
+			expect(message).toMatch(/README/);
 		}
 	});
 });
@@ -239,6 +239,21 @@ describe("parseReviewerConfig", () => {
 			expect(err.message).toMatch(/JSON/);
 			expect(err.name).not.toBe("SyntaxError");
 		}
+	});
+
+	it("config.json이 literal null이면 경로 정보 없는 raw TypeError 대신 설정 경로를 담은 안내 에러를 던진다", () => {
+		expect(() => parseReviewerConfig({ raw: "null", configPath: FAKE_CONFIG_PATH })).toThrowError(
+			expect.not.objectContaining({ name: "TypeError" }),
+		);
+		expect(() => parseReviewerConfig({ raw: "null", configPath: FAKE_CONFIG_PATH })).toThrowError(
+			new RegExp(FAKE_CONFIG_PATH.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+		);
+	});
+
+	it("config.json이 배열이면 같은 방식으로 거부한다", () => {
+		expect(() => parseReviewerConfig({ raw: "[]", configPath: FAKE_CONFIG_PATH })).toThrowError(
+			new RegExp(FAKE_CONFIG_PATH.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+		);
 	});
 
 	it("유효한 설정이면 파싱된 객체를 그대로 돌려준다", () => {

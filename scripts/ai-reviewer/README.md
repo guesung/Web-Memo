@@ -45,10 +45,15 @@
 - **아바타**: 페르소나를 구분하기 쉽게 서로 다른 이미지로 설정한다
 - **Webhook**: 비활성화 (이 워크플로우는 webhook을 쓰지 않는다)
 - **Repository permissions**:
-  - `Pull requests`: **Read and write** — 리뷰 코멘트·답글·PR 본문 수정에 필요
-  - `Contents`: **Read-only** — `getPullRequest`가 head 커밋을 읽는 데 필요
+  - `Pull requests`: **Read and write** — 리뷰 코멘트, 스레드 답글, 시니어의 지적 요약
+    코멘트, PR 본문 수정까지 **전부** 이 권한 하나로 커버된다
+  - `Contents`: **Read-only** — 현재 코드 경로에서 직접 요구하지는 않는다.
+    실제 설치 App에 포함돼 있고 검증도 이 조합으로 마쳤으므로 그대로 둔다.
   - `Metadata`: **Read-only** — App 설치 시 GitHub이 강제하는 최소 권한
-- 그 외 권한은 추가하지 않는다
+- 그 외 권한은 추가하지 않는다. **특히 `Issues` 권한은 필요 없다.**
+  지적 요약은 `POST /issues/{pr}/comments` 로 게시하지만, PR에 대한 이 엔드포인트는
+  `Pull requests` 권한으로 동작한다 — 위 세 권한만으로 실제 게시되는 것을
+  PR #416에서 확인했다.
 
 ### 2. 레포에 설치
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { LATEST_RELEASE_VERSION } from "@src/constants/Update";
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { useDidMount } from "@web-memo/shared/hooks";
@@ -14,21 +15,15 @@ import {
 	DialogTitle,
 } from "@web-memo/ui";
 import { useState } from "react";
-import packageJson from "../../../../../../../package.json";
 
-const CURRENT_VERSION = packageJson.version;
-
-function getVersionKey(version: string): string {
-	const [major, minor] = version.split(".");
-	return `v${major}.${minor}.0`;
-}
+/** 알림 문구에 넣을 버전 문자열. 번역문이 `v`를 붙이므로 접두사를 떼어 전달합니다. */
+const DISPLAY_VERSION = LATEST_RELEASE_VERSION.replace(/^v/, "");
 
 export default function UpdateNotificationDialog({ lng }: { lng: Language }) {
 	const [isOpen, setIsOpen] = useState(false);
 	const { t } = useTranslation(lng);
 
-	const versionKey = getVersionKey(CURRENT_VERSION);
-	const updateNotes = t(`updates.versions.${versionKey}.content`, {
+	const updateNotes = t(`updates.versions.${LATEST_RELEASE_VERSION}.content`, {
 		returnObjects: true,
 		defaultValue: [],
 	}) as string[];
@@ -40,13 +35,13 @@ export default function UpdateNotificationDialog({ lng }: { lng: Language }) {
 	async function checkForUpdate() {
 		const dismissedVersion = LocalStorage.get<string>("dismissedUpdateVersion");
 
-		if (dismissedVersion !== CURRENT_VERSION && updateNotes.length > 0) {
+		if (dismissedVersion !== LATEST_RELEASE_VERSION && updateNotes.length > 0) {
 			setIsOpen(true);
 		}
 	}
 
 	function handleDismiss() {
-		LocalStorage.set("dismissedUpdateVersion", CURRENT_VERSION);
+		LocalStorage.set("dismissedUpdateVersion", LATEST_RELEASE_VERSION);
 		setIsOpen(false);
 	}
 
@@ -64,7 +59,7 @@ export default function UpdateNotificationDialog({ lng }: { lng: Language }) {
 				<DialogHeader>
 					<DialogTitle>{t("updateNotification.title")}</DialogTitle>
 					<DialogDescription>
-						{t("updateNotification.version", { VERSION: CURRENT_VERSION })}
+						{t("updateNotification.version", { VERSION: DISPLAY_VERSION })}
 					</DialogDescription>
 				</DialogHeader>
 				<div className="py-2">

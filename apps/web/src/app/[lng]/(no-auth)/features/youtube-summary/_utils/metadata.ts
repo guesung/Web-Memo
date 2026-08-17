@@ -14,10 +14,10 @@ export const metadataKorean: Metadata = {
 		"영상 핵심 정리",
 	],
 	alternates: {
-		canonical: "https://webmemo.site/ko/features/youtube-summary",
+		canonical: "https://web-memos.vercel.app/ko/features/youtube-summary",
 		languages: {
-			ko: "https://webmemo.site/ko/features/youtube-summary",
-			en: "https://webmemo.site/en/features/youtube-summary",
+			ko: "https://web-memos.vercel.app/ko/features/youtube-summary",
+			en: "https://web-memos.vercel.app/en/features/youtube-summary",
 		},
 	},
 	openGraph: {
@@ -43,10 +43,10 @@ export const metadataEnglish: Metadata = {
 		"video key points",
 	],
 	alternates: {
-		canonical: "https://webmemo.site/en/features/youtube-summary",
+		canonical: "https://web-memos.vercel.app/en/features/youtube-summary",
 		languages: {
-			ko: "https://webmemo.site/ko/features/youtube-summary",
-			en: "https://webmemo.site/en/features/youtube-summary",
+			ko: "https://web-memos.vercel.app/ko/features/youtube-summary",
+			en: "https://web-memos.vercel.app/en/features/youtube-summary",
 		},
 	},
 	openGraph: {

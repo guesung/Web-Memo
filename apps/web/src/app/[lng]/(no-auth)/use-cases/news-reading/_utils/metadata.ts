@@ -15,10 +15,10 @@ export const metadataKorean: Metadata = {
 		"콘텐츠 정리",
 	],
 	alternates: {
-		canonical: "https://webmemo.site/ko/use-cases/news-reading",
+		canonical: "https://web-memos.vercel.app/ko/use-cases/news-reading",
 		languages: {
-			ko: "https://webmemo.site/ko/use-cases/news-reading",
-			en: "https://webmemo.site/en/use-cases/news-reading",
+			ko: "https://web-memos.vercel.app/ko/use-cases/news-reading",
+			en: "https://web-memos.vercel.app/en/use-cases/news-reading",
 		},
 	},
 	openGraph: {
@@ -45,10 +45,10 @@ export const metadataEnglish: Metadata = {
 		"web clipping",
 	],
 	alternates: {
-		canonical: "https://webmemo.site/en/use-cases/news-reading",
+		canonical: "https://web-memos.vercel.app/en/use-cases/news-reading",
 		languages: {
-			ko: "https://webmemo.site/ko/use-cases/news-reading",
-			en: "https://webmemo.site/en/use-cases/news-reading",
+			ko: "https://web-memos.vercel.app/ko/use-cases/news-reading",
+			en: "https://web-memos.vercel.app/en/use-cases/news-reading",
 		},
 	},
 	openGraph: {

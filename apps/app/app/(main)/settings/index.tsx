@@ -5,6 +5,9 @@ import {
 	LogIn,
 	LogOut,
 	MessageCircle,
+	Moon,
+	Smartphone,
+	Sun,
 	User,
 } from "lucide-react-native";
 import {
@@ -17,10 +20,23 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useTheme } from "@/lib/context/ThemeContext";
 import {
 	useSettingQuery,
 	useSettingUpsertMutation,
 } from "@/lib/hooks/useSetting";
+import type { TThemePreference } from "@/lib/storage/themePreference";
+
+/** 설정 화면에 노출할 테마 선택 항목 */
+const THEME_OPTIONS: {
+	value: TThemePreference;
+	label: string;
+	Icon: typeof Sun;
+}[] = [
+	{ value: "system", label: "시스템", Icon: Smartphone },
+	{ value: "light", label: "라이트", Icon: Sun },
+	{ value: "dark", label: "다크", Icon: Moon },
+];
 
 export default function SettingsScreen() {
 	const insets = useSafeAreaInsets();
@@ -28,6 +44,7 @@ export default function SettingsScreen() {
 	const { session, signOut, isLoggedIn } = useAuth();
 	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
 	const { mutate: upsertSetting } = useSettingUpsertMutation();
+	const { themePreference, isDark, setThemePreference } = useTheme();
 
 	const handleSignOut = () => {
 		Alert.alert("로그아웃", "로그아웃 하시겠습니까?", [
@@ -43,9 +60,12 @@ export default function SettingsScreen() {
 	const appVersion = Constants.expoConfig?.version;
 
 	return (
-		<View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+		<View
+			className="flex-1 bg-white dark:bg-neutral-950"
+			style={{ paddingTop: insets.top }}
+		>
 			<View className="px-5 pt-4 pb-4">
-				<Text className="text-[22px] font-extrabold text-foreground tracking-tight">
+				<Text className="text-[22px] font-extrabold text-foreground dark:text-white tracking-tight">
 					설정
 				</Text>
 			</View>
@@ -53,27 +73,27 @@ export default function SettingsScreen() {
 			<View className="flex-1 px-5">
 				{/* Account Section */}
 				<View className="mb-7">
-					<Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">
+					<Text className="text-sm font-semibold text-muted-foreground dark:text-neutral-500 uppercase tracking-wide mb-2.5">
 						계정
 					</Text>
-					<View className="bg-card rounded-[14px] p-4 border border-muted">
+					<View className="bg-card dark:bg-neutral-900 rounded-[14px] p-4 border border-muted dark:border-neutral-800">
 						{isLoggedIn && session ? (
 							<>
 								<View className="flex-row items-center gap-3 mb-4">
-									<View className="w-10 h-10 rounded-full bg-foreground justify-center items-center">
+									<View className="w-10 h-10 rounded-full bg-foreground dark:bg-neutral-700 justify-center items-center">
 										<User size={20} color="#fff" />
 									</View>
 									<View className="flex-1">
-										<Text className="text-[15px] font-semibold text-foreground">
+										<Text className="text-[15px] font-semibold text-foreground dark:text-white">
 											{session.user.email}
 										</Text>
-										<Text className="text-[13px] text-muted-foreground mt-0.5">
+										<Text className="text-[13px] text-muted-foreground dark:text-neutral-500 mt-0.5">
 											로그인됨
 										</Text>
 									</View>
 								</View>
 								<TouchableOpacity
-									className="flex-row items-center justify-center gap-2 py-2.5 rounded-[10px] border border-red-100 bg-red-50"
+									className="flex-row items-center justify-center gap-2 py-2.5 rounded-[10px] border border-red-100 dark:border-red-900/50 bg-red-50 dark:bg-red-950/40"
 									onPress={handleSignOut}
 								>
 									<LogOut size={16} color="#ef4444" />
@@ -84,7 +104,7 @@ export default function SettingsScreen() {
 							</>
 						) : (
 							<TouchableOpacity
-								className="flex-row items-center justify-center gap-2 py-3 rounded-[10px] bg-foreground"
+								className="flex-row items-center justify-center gap-2 py-3 rounded-[10px] bg-foreground dark:bg-neutral-700"
 								onPress={handleLogin}
 							>
 								<LogIn size={18} color="#fff" />
@@ -96,19 +116,65 @@ export default function SettingsScreen() {
 					</View>
 				</View>
 
+				{/* Theme Section */}
+				<View className="mb-7">
+					<Text className="text-sm font-semibold text-muted-foreground dark:text-neutral-500 uppercase tracking-wide mb-2.5">
+						화면 테마
+					</Text>
+					<View className="bg-card dark:bg-neutral-900 rounded-[14px] p-4 border border-muted dark:border-neutral-800">
+						<View className="flex-row gap-2">
+							{THEME_OPTIONS.map(({ value, label, Icon }) => {
+								const isSelected = themePreference === value;
+
+								return (
+									<TouchableOpacity
+										key={value}
+										className={`flex-1 items-center gap-1.5 py-3 rounded-[10px] border ${
+											isSelected
+												? "bg-foreground dark:bg-neutral-700 border-transparent"
+												: "bg-muted dark:bg-neutral-800 border-transparent"
+										}`}
+										onPress={() => setThemePreference(value)}
+										activeOpacity={0.7}
+									>
+										<Icon
+											size={18}
+											color={
+												isSelected ? "#fff" : isDark ? "#a3a3a3" : "#555555"
+											}
+										/>
+										<Text
+											className={`text-[13px] font-semibold ${
+												isSelected
+													? "text-white"
+													: "text-secondary-foreground dark:text-neutral-400"
+											}`}
+										>
+											{label}
+										</Text>
+									</TouchableOpacity>
+								);
+							})}
+						</View>
+						<Text className="text-[13px] text-muted-foreground dark:text-neutral-500 mt-3">
+							시스템을 고르면 기기 설정을 따라가요
+						</Text>
+					</View>
+				</View>
+
 				{/* Memo Fields Section */}
 				{isLoggedIn && (
 					<View className="mb-7">
-						<Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">
+						<Text className="text-sm font-semibold text-muted-foreground dark:text-neutral-500 uppercase tracking-wide mb-2.5">
 							메모 입력 항목
 						</Text>
-						<View className="bg-card rounded-[14px] p-4 border border-muted gap-3">
+						<View className="bg-card dark:bg-neutral-900 rounded-[14px] p-4 border border-muted dark:border-neutral-800 gap-3">
 							<View className="flex-row justify-between items-center py-1">
 								<View className="flex-1 mr-3">
-									<Text className="text-[15px] text-secondary-foreground">
+									<Text className="text-[15px] text-secondary-foreground dark:text-neutral-300">
 										느낀 점 입력란 표시
 									</Text>
-									<Text className="text-[13px] text-muted-foreground mt-0.5">
+									<Text className="text-[13px] text-muted-foreground dark:text-neutral-500 mt-0.5">
 										이미 작성한 내용은 계속 보여요
 									</Text>
 								</View>
@@ -121,10 +187,10 @@ export default function SettingsScreen() {
 							</View>
 							<View className="flex-row justify-between items-center py-1">
 								<View className="flex-1 mr-3">
-									<Text className="text-[15px] text-secondary-foreground">
+									<Text className="text-[15px] text-secondary-foreground dark:text-neutral-300">
 										액션 아이템 입력란 표시
 									</Text>
-									<Text className="text-[13px] text-muted-foreground mt-0.5">
+									<Text className="text-[13px] text-muted-foreground dark:text-neutral-500 mt-0.5">
 										이미 작성한 내용은 계속 보여요
 									</Text>
 								</View>
@@ -141,23 +207,23 @@ export default function SettingsScreen() {
 
 				{/* App Info Section */}
 				<View className="mb-7">
-					<Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">
+					<Text className="text-sm font-semibold text-muted-foreground dark:text-neutral-500 uppercase tracking-wide mb-2.5">
 						앱 정보
 					</Text>
-					<View className="bg-card rounded-[14px] p-4 border border-muted">
+					<View className="bg-card dark:bg-neutral-900 rounded-[14px] p-4 border border-muted dark:border-neutral-800">
 						<View className="flex-row justify-between items-center py-2">
-							<Text className="text-[15px] text-secondary-foreground">
+							<Text className="text-[15px] text-secondary-foreground dark:text-neutral-300">
 								앱 이름
 							</Text>
-							<Text className="text-[15px] text-foreground font-medium">
+							<Text className="text-[15px] text-foreground dark:text-white font-medium">
 								웹 메모
 							</Text>
 						</View>
 						<View className="flex-row justify-between items-center py-2">
-							<Text className="text-[15px] text-secondary-foreground">
+							<Text className="text-[15px] text-secondary-foreground dark:text-neutral-300">
 								버전
 							</Text>
-							<Text className="text-[15px] text-foreground font-medium">
+							<Text className="text-[15px] text-foreground dark:text-white font-medium">
 								{appVersion}
 							</Text>
 						</View>
@@ -166,10 +232,10 @@ export default function SettingsScreen() {
 
 				{/* Support Section */}
 				<View className="mb-7">
-					<Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">
+					<Text className="text-sm font-semibold text-muted-foreground dark:text-neutral-500 uppercase tracking-wide mb-2.5">
 						지원
 					</Text>
-					<View className="bg-card rounded-[14px] p-4 border border-muted">
+					<View className="bg-card dark:bg-neutral-900 rounded-[14px] p-4 border border-muted dark:border-neutral-800">
 						<TouchableOpacity
 							className="flex-row justify-between items-center py-2"
 							onPress={() =>
@@ -178,13 +244,13 @@ export default function SettingsScreen() {
 							activeOpacity={0.6}
 						>
 							<View className="flex-row items-center gap-2">
-								<MessageCircle size={16} color="#555" />
-								<Text className="text-[15px] text-secondary-foreground">
+								<MessageCircle size={16} color={isDark ? "#a3a3a3" : "#555"} />
+								<Text className="text-[15px] text-secondary-foreground dark:text-neutral-300">
 									문의하기
 								</Text>
 							</View>
 							<View className="flex-row items-center gap-2">
-								<ChevronRight size={14} color="#999" />
+								<ChevronRight size={14} color={isDark ? "#737373" : "#999"} />
 							</View>
 						</TouchableOpacity>
 					</View>

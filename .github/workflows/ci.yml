@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI
 
 on:
   push:
@@ -27,6 +27,10 @@ jobs:
     env:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      # turbo가 이벤트에서 읽은 base 브랜치명(예: master)은 체크아웃에 로컬 ref가
+      # 없어 해석에 실패하고, --affected가 "전부 변경됨"으로 폴백합니다.
+      # PR은 원격 추적 ref를, push는 직전 커밋을 기준으로 명시합니다.
+      TURBO_SCM_BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.event.pull_request.base.ref) || github.event.before }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -94,20 +98,29 @@ jobs:
               - 'package.json'
               - 'pnpm-lock.yaml'
 
+  # 앱·확장은 CI에서 빌드 검증만 하고 배포하지 않습니다.
+  # 실제 배포(TestFlight 제출 / 웹스토어 업로드 / 웹 프로덕션)는 release.yml에서 수동으로 실행합니다.
   cd-app:
     needs: [ci, changes]
     if: needs.changes.outputs.app == 'true'
     uses: ./.github/workflows/cd-app.yml
     secrets: inherit
+    with:
+      deploy_target: "none"
 
   cd-extension:
     needs: [ci, changes]
     if: needs.changes.outputs.extension == 'true'
     uses: ./.github/workflows/cd-extension.yml
     secrets: inherit
+    with:
+      deploy_target: "none"
 
+  # 웹은 develop push일 때만 스테이징(테스트 서버)에 자동 배포합니다.
   cd-web:
     needs: [ci, changes]
     if: needs.changes.outputs.web == 'true'
     uses: ./.github/workflows/cd-web.yml
     secrets: inherit
+    with:
+      deploy_target: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/develop') && 'staging' || 'none' }}

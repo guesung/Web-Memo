@@ -2,16 +2,27 @@ name: CD - Extension (Build + Chrome Store Upload)
 
 on:
   workflow_call:
+    inputs:
+      deploy_target:
+        description: "배포 대상 (none = 빌드만, production = 크롬 웹스토어 업로드)"
+        type: string
+        default: "none"
+      ref:
+        description: "체크아웃할 커밋/태그 (비우면 호출한 워크플로의 기본 ref)"
+        type: string
+        default: ""
 
 jobs:
   build-extension:
     runs-on: ubuntu-latest
     env:
-      WEB_URL: ${{ github.ref == 'refs/heads/develop' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}
+      WEB_URL: ${{ inputs.deploy_target == 'staging' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
 
       - uses: pnpm/action-setup@v4
 
@@ -46,8 +57,8 @@ jobs:
   upload-extension:
     needs: build-extension
     runs-on: ubuntu-latest
-    name: Upload chrome store when push on master branch
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+    name: Upload chrome store on production release
+    if: ${{ inputs.deploy_target == 'production' }}
     steps:
       - name: Download Artifacts
         uses: actions/download-artifact@v4

@@ -1,23 +1,83 @@
-name: Release new Version
+name: Release
 
+# master 기준 수동 릴리스 워크플로. 체크한 타깃만 프로덕션으로 배포합니다.
+#
+# 버전업(package.json / Update.ts / translation.json)은 이 워크플로가 하지 않습니다.
+# 릴리스 노트는 사람이 써야 하므로 로컬 `/version-update`로 처리한 뒤 master PR로 머지하고,
+# 그 다음 이 워크플로를 실행하세요.
 on:
-  push:
-    tags:
-      - v*
+  workflow_dispatch:
+    inputs:
+      app:
+        description: "앱 배포 (iOS 빌드 + TestFlight 제출)"
+        type: boolean
+        default: false
+      extension:
+        description: "확장 배포 (빌드 + 크롬 웹스토어 업로드, 게시는 수동)"
+        type: boolean
+        default: false
+      web:
+        description: "웹 배포 (Vercel 프로덕션)"
+        type: boolean
+        default: false
+      ref:
+        description: "배포할 커밋/태그 (비우면 워크플로를 실행한 브랜치의 최신 커밋)"
+        type: string
+        required: false
+        default: ""
 
-permissions:
-  contents: write
+# 릴리스가 동시에 두 번 돌지 않도록 직렬화합니다.
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
-  release-new-version:
-    name: Release new version when push with `v*` tag
-    runs-on: ubuntu-22.04
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      tag: ${{ github.ref_name }}
+  # 타깃을 하나도 고르지 않으면 아무 잡도 돌지 않아 실행이 조용히 끝납니다.
+  # 그 경우를 명시적인 실패로 알립니다.
+  preflight:
+    name: 릴리스 대상 확인
+    runs-on: ubuntu-latest
     steps:
-      - run: |
-          gh release create "$tag" \
-              --repo="$GITHUB_REPOSITORY" \
-              --title="${GITHUB_REPOSITORY#*/} ${tag#v}" \
-              --generate-notes
+      - name: Check at least one target
+        env:
+          APP: ${{ inputs.app }}
+          EXTENSION: ${{ inputs.extension }}
+          WEB: ${{ inputs.web }}
+          REF: ${{ inputs.ref || github.ref_name }}
+        run: |
+          if [[ "$APP" != "true" && "$EXTENSION" != "true" && "$WEB" != "true" ]]; then
+            echo "::error::배포할 타깃을 하나 이상 선택하세요 (app / extension / web)"
+            exit 1
+          fi
+          echo "app=$APP extension=$EXTENSION web=$WEB"
+          echo "ref=$REF"
+
+  release-app:
+    name: 앱 릴리스
+    needs: preflight
+    if: ${{ inputs.app }}
+    uses: ./.github/workflows/cd-app.yml
+    secrets: inherit
+    with:
+      deploy_target: "production"
+      ref: ${{ inputs.ref }}
+
+  release-extension:
+    name: 확장 릴리스
+    needs: preflight
+    if: ${{ inputs.extension }}
+    uses: ./.github/workflows/cd-extension.yml
+    secrets: inherit
+    with:
+      deploy_target: "production"
+      ref: ${{ inputs.ref }}
+
+  release-web:
+    name: 웹 릴리스
+    needs: preflight
+    if: ${{ inputs.web }}
+    uses: ./.github/workflows/cd-web.yml
+    secrets: inherit
+    with:
+      deploy_target: "production"
+      ref: ${{ inputs.ref }}

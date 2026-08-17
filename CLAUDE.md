@@ -103,3 +103,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 커밋/PR 제목·본문은 **항상 한글**, 브랜치명은 영문입니다. 자세한 규칙은 [AGENTS.md](AGENTS.md)의 "커밋 & PR 워크플로" 절을 따릅니다.
 
 > i18n 관련 코드를 수정한 작업 후에는 `/i18n-check`로 번역 완전성을 검증합니다.
+
+> 원인이 바로 짐작되지 않던 버그를 해결했다면 `/bug-log`로 증상·원인·검증을
+> Notion에 남깁니다. 한 환경에서만 터졌거나 며칠간 방치됐던 버그는 특히 그렇습니다.

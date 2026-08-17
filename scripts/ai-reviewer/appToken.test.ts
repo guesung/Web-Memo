@@ -1,6 +1,27 @@
 import { createVerify, generateKeyPairSync } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { buildAppJwt, loadReviewerConfig } from "./appToken.ts";
+import { buildAppJwt, loadReviewerConfig, parseReviewerConfig } from "./appToken.ts";
+
+const FAKE_CONFIG_PATH = "/fake/path/web-memo-bots/config.json";
+
+const VALID_BOT = {
+	displayName: "이도현",
+	role: "인턴 개발자",
+	appId: "1234567",
+	installationId: "7654321",
+	privateKeyPath: "/fake/path/key.pem",
+};
+
+const buildValidConfig = (): Record<string, unknown> => {
+	return {
+		repo: "guesung/web-memo",
+		prAuthor: "guesung",
+		bots: {
+			intern: { ...VALID_BOT },
+			senior: { ...VALID_BOT, appId: "7654321", installationId: "1234567" },
+		},
+	};
+};
 
 const { privateKey, publicKey } = generateKeyPairSync("rsa", {
 	modulusLength: 2048,
@@ -83,5 +104,127 @@ describe("buildAppJwt", () => {
 describe("loadReviewerConfig", () => {
 	it("설정 파일이 없으면 예상 경로를 포함한 에러를 던진다", () => {
 		expect(() => loadReviewerConfig()).toThrowError(/config\.json/);
+	});
+});
+
+describe("parseReviewerConfig", () => {
+	it("최상위 repo가 없으면 repo와 설정 경로를 메시지에 담아 던진다", () => {
+		const config = buildValidConfig();
+		delete config.repo;
+		const raw = JSON.stringify(config);
+
+		try {
+			parseReviewerConfig({ raw, configPath: FAKE_CONFIG_PATH });
+			expect.unreachable("repo가 없는데도 던지지 않았다");
+		} catch (error) {
+			const message = (error as Error).message;
+
+			expect(message).toMatch(/repo/);
+			expect(message).toContain(FAKE_CONFIG_PATH);
+		}
+	});
+
+	it("repo에 '/'가 없으면 거부한다", () => {
+		const config = buildValidConfig();
+		config.repo = "web-memo";
+		const raw = JSON.stringify(config);
+
+		expect(() => parseReviewerConfig({ raw, configPath: FAKE_CONFIG_PATH })).toThrowError(/repo/);
+	});
+
+	it("prAuthor가 없으면 메시지에 이름이 담긴다", () => {
+		const config = buildValidConfig();
+		delete config.prAuthor;
+		const raw = JSON.stringify(config);
+
+		expect(() => parseReviewerConfig({ raw, configPath: FAKE_CONFIG_PATH })).toThrowError(
+			/prAuthor/,
+		);
+	});
+
+	it("bots.senior가 통째로 없으면 메시지에 이름이 담긴다", () => {
+		const config = buildValidConfig();
+		const bots = config.bots as Record<string, unknown>;
+		delete bots.senior;
+		const raw = JSON.stringify(config);
+
+		expect(() => parseReviewerConfig({ raw, configPath: FAKE_CONFIG_PATH })).toThrowError(
+			/bots\.senior/,
+		);
+	});
+
+	it("bots.intern.privateKeyPath가 없으면 메시지에 정확히 그 경로가 담긴다", () => {
+		const config = buildValidConfig();
+		const bots = config.bots as Record<string, Record<string, unknown>>;
+		delete bots.intern.privateKeyPath;
+		const raw = JSON.stringify(config);
+
+		expect(() => parseReviewerConfig({ raw, configPath: FAKE_CONFIG_PATH })).toThrowError(
+			/bots\.intern\.privateKeyPath/,
+		);
+	});
+
+	it("appId가 빈 문자열이면 없는 것으로 취급한다", () => {
+		const config = buildValidConfig();
+		const bots = config.bots as Record<string, Record<string, unknown>>;
+		bots.intern.appId = "";
+		const raw = JSON.stringify(config);
+
+		expect(() => parseReviewerConfig({ raw, configPath: FAKE_CONFIG_PATH })).toThrowError(
+			/bots\.intern\.appId/,
+		);
+	});
+
+	it("appId가 공백 문자열이면 없는 것으로 취급한다", () => {
+		const config = buildValidConfig();
+		const bots = config.bots as Record<string, Record<string, unknown>>;
+		bots.intern.appId = "   ";
+		const raw = JSON.stringify(config);
+
+		expect(() => parseReviewerConfig({ raw, configPath: FAKE_CONFIG_PATH })).toThrowError(
+			/bots\.intern\.appId/,
+		);
+	});
+
+	it("여러 필드가 동시에 없으면 하나의 에러 메시지에 전부 담긴다", () => {
+		const config = buildValidConfig();
+		delete config.prAuthor;
+		const bots = config.bots as Record<string, Record<string, unknown>>;
+		delete bots.intern.appId;
+		delete bots.senior.installationId;
+		const raw = JSON.stringify(config);
+
+		try {
+			parseReviewerConfig({ raw, configPath: FAKE_CONFIG_PATH });
+			expect.unreachable("설정이 잘못되었는데도 던지지 않았다");
+		} catch (error) {
+			const message = (error as Error).message;
+
+			expect(message).toMatch(/prAuthor/);
+			expect(message).toMatch(/bots\.intern\.appId/);
+			expect(message).toMatch(/bots\.senior\.installationId/);
+		}
+	});
+
+	it("JSON 형식이 잘못되면 설정 경로를 담고, 단순 SyntaxError가 아닌 안내 메시지를 던진다", () => {
+		try {
+			parseReviewerConfig({ raw: "{ not valid json", configPath: FAKE_CONFIG_PATH });
+			expect.unreachable("잘못된 JSON인데도 던지지 않았다");
+		} catch (error) {
+			const err = error as Error;
+
+			expect(err.message).toContain(FAKE_CONFIG_PATH);
+			expect(err.message).toMatch(/JSON/);
+			expect(err.name).not.toBe("SyntaxError");
+		}
+	});
+
+	it("유효한 설정이면 파싱된 객체를 그대로 돌려준다", () => {
+		const config = buildValidConfig();
+		const raw = JSON.stringify(config);
+
+		const result = parseReviewerConfig({ raw, configPath: FAKE_CONFIG_PATH });
+
+		expect(result).toEqual(config);
 	});
 });

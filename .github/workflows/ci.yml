@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI
 
 on:
   push:
@@ -94,20 +94,29 @@ jobs:
               - 'package.json'
               - 'pnpm-lock.yaml'
 
+  # 앱·확장은 CI에서 빌드 검증만 하고 배포하지 않습니다.
+  # 실제 배포(TestFlight 제출 / 웹스토어 업로드 / 웹 프로덕션)는 release.yml에서 수동으로 실행합니다.
   cd-app:
     needs: [ci, changes]
     if: needs.changes.outputs.app == 'true'
     uses: ./.github/workflows/cd-app.yml
     secrets: inherit
+    with:
+      deploy_target: "none"
 
   cd-extension:
     needs: [ci, changes]
     if: needs.changes.outputs.extension == 'true'
     uses: ./.github/workflows/cd-extension.yml
     secrets: inherit
+    with:
+      deploy_target: "none"
 
+  # 웹은 develop push일 때만 스테이징(테스트 서버)에 자동 배포합니다.
   cd-web:
     needs: [ci, changes]
     if: needs.changes.outputs.web == 'true'
     uses: ./.github/workflows/cd-web.yml
     secrets: inherit
+    with:
+      deploy_target: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/develop') && 'staging' || 'none' }}

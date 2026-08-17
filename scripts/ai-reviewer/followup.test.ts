@@ -109,7 +109,7 @@ describe("upsertFollowupSection", () => {
 		expect(result).toContain("- [ ] 항목");
 	});
 
-	it("기존 항목 줄 앞뒤에 공백·탭 들여쓰기가 있어도 정상 파싱한다", () => {
+	it("기존 항목 줄 앞뒤에 공백·탭 들여쓰기가 있어도 정상 파싱하고 원문은 그대로 보존한다", () => {
 		const body = [
 			"<!-- ai-followup:start -->",
 			"\t- [ ]  탭으로 들여쓴 항목  ",
@@ -119,8 +119,8 @@ describe("upsertFollowupSection", () => {
 
 		const result = upsertFollowupSection({ body, items: ["신규 항목"] });
 
-		expect(result).toContain("- [ ] 탭으로 들여쓴 항목");
-		expect(result).toContain("- [x] 공백으로 들여쓴 항목");
+		expect(result).toContain("\t- [ ]  탭으로 들여쓴 항목  ");
+		expect(result).toContain("  - [x] 공백으로 들여쓴 항목");
 		expect(result).toContain("- [ ] 신규 항목");
 	});
 
@@ -193,5 +193,113 @@ describe("upsertFollowupSection", () => {
 		});
 
 		expect(reapplied.match(/체크박스처럼 보이는 항목/g)).toHaveLength(1);
+	});
+
+	it("체크박스 항목 뒤에 이어지는 산문 줄은 재실행 후에도 보존된다", () => {
+		const body = [
+			"<!-- ai-followup:start -->",
+			"- [ ] 기존 항목",
+			"이 항목은 다음 스프린트로 미룬 이유가 있다.",
+			"<!-- ai-followup:end -->",
+		].join("\n");
+
+		const result = upsertFollowupSection({ body, items: ["신규 항목"] });
+
+		expect(result).toContain("이 항목은 다음 스프린트로 미룬 이유가 있다.");
+		expect(result).toContain("- [ ] 기존 항목");
+		expect(result).toContain("- [ ] 신규 항목");
+	});
+
+	it("섹션 내 커스텀 소제목은 재실행 후에도 보존된다", () => {
+		const body = [
+			"<!-- ai-followup:start -->",
+			"### 보류",
+			"- [ ] 검토 필요",
+			"<!-- ai-followup:end -->",
+		].join("\n");
+
+		const result = upsertFollowupSection({ body, items: ["신규 항목"] });
+
+		expect(result).toContain("### 보류");
+		expect(result).toContain("- [ ] 검토 필요");
+		expect(result).toContain("- [ ] 신규 항목");
+	});
+
+	it("대괄호 앞에 공백이 두 칸인 기존 항목도 동일 항목으로 인식해 중복 추가하지 않는다", () => {
+		const body = ["<!-- ai-followup:start -->", "-  [ ] 기존", "<!-- ai-followup:end -->"].join(
+			"\n",
+		);
+
+		const result = upsertFollowupSection({ body, items: ["기존"] });
+
+		expect(result.match(/기존/g)).toHaveLength(1);
+		expect(result).toBe(body);
+	});
+
+	it("기존 항목이 * 불릿으로 작성돼 있어도 동일 항목으로 인식해 중복 추가하지 않는다", () => {
+		const body = ["<!-- ai-followup:start -->", "* [ ] 기존", "<!-- ai-followup:end -->"].join(
+			"\n",
+		);
+
+		const result = upsertFollowupSection({ body, items: ["기존"] });
+
+		expect(result.match(/기존/g)).toHaveLength(1);
+		expect(result).toBe(body);
+	});
+
+	it("기존 항목과 신규 항목의 내부 공백 개수가 달라도 동일 항목으로 인식해 중복 추가하지 않는다", () => {
+		const body = [
+			"<!-- ai-followup:start -->",
+			"- [ ] 캐시   무효화",
+			"<!-- ai-followup:end -->",
+		].join("\n");
+
+		const result = upsertFollowupSection({ body, items: ["캐시 무효화"] });
+
+		expect(result.match(/캐시\s+무효화/g)).toHaveLength(1);
+		expect(result).toBe(body);
+	});
+
+	it("기존 항목과 신규 항목이 대소문자만 다르면 동일 항목으로 인식해 중복 추가하지 않는다", () => {
+		const body = [
+			"<!-- ai-followup:start -->",
+			"- [ ] Fix Cache Invalidation",
+			"<!-- ai-followup:end -->",
+		].join("\n");
+
+		const result = upsertFollowupSection({ body, items: ["fix cache invalidation"] });
+
+		expect(result.match(/Fix Cache Invalidation/gi)).toHaveLength(1);
+		expect(result).toBe(body);
+	});
+
+	it("전달된 모든 항목이 이미 존재하면 본문을 바이트 단위로 그대로 반환한다", () => {
+		const body = [
+			"<!-- ai-followup:start -->",
+			"- [ ] 첫 번째 항목",
+			"- [x] 두 번째 항목",
+			"<!-- ai-followup:end -->",
+		].join("\n");
+
+		const result = upsertFollowupSection({
+			body,
+			items: ["  두 번째 항목  ", "첫 번째 항목"],
+		});
+
+		expect(result).toBe(body);
+	});
+
+	it("사람이 하위 불릿으로 들여쓴 기존 항목은 재실행 후에도 들여쓰기가 유지된다", () => {
+		const body = [
+			"<!-- ai-followup:start -->",
+			"- [ ] 상위 항목",
+			"  - [ ] 하위 세부 항목",
+			"<!-- ai-followup:end -->",
+		].join("\n");
+
+		const result = upsertFollowupSection({ body, items: ["신규 항목"] });
+
+		expect(result).toContain("  - [ ] 하위 세부 항목");
+		expect(result).toContain("- [ ] 신규 항목");
 	});
 });

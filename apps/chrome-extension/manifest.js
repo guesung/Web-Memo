@@ -5,7 +5,9 @@ import deepmerge from "deepmerge";
 
 
 
-const packageJson = JSON.parse(fs.readFileSync("../../package.json", "utf8"));
+// 확장 버전의 단일 진실 원천은 확장 자신의 package.json입니다.
+// 루트 package.json은 버전을 갖지 않습니다. (docs/versioning.md 참고)
+const packageJson = JSON.parse(fs.readFileSync("./package.json", "utf8"));
 
 /**
  * After changing, please reload the extension at `chrome://extensions`

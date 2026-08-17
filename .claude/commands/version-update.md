@@ -1,31 +1,45 @@
-# Version Update Command
+---
+name: version-update
+description: 릴리스 대상(확장/앱/릴리스 노트)을 골라 해당 버전만 올리고, 릴리스 노트를 ko/en으로 작성한다.
+---
 
-버전 업데이트 시 Update.ts와 translation 파일들을 함께 업데이트합니다.
+# /version-update — 트랙별 버전 올리기
+
+> 이 레포는 **버전 트랙이 3개**이며 서로 동기화하지 않습니다.
+> 전체 규칙은 [docs/versioning.md](../../docs/versioning.md)를 따릅니다.
+
+| 트랙 | 파일 | 올리는 시점 |
+| --- | --- | --- |
+| 확장 | `apps/chrome-extension/package.json` → `version` | 확장을 웹스토어에 올릴 때 |
+| 앱 | `apps/app/app.json` → `version` | iOS 앱을 릴리스할 때 (buildNumber는 EAS가 자동 증가) |
+| 릴리스 노트 | `apps/web/src/constants/Update.ts` + ko/en `translation.json` | 사용자에게 알릴 변경이 있을 때 |
+
+**웹에는 버전이 없습니다.** 웹 배포만 하는 경우 올릴 버전이 없습니다.
 
 ## 사용법
 
 ```
-/version-update [version] [description]
+/version-update [트랙] [버전] [설명]
 ```
 
 예시:
 ```
-/version-update v1.8.24 "메모 그리드 스켈레톤 로딩 추가"
+/version-update extension 1.10.15 "메모 그리드 스켈레톤 로딩 추가"
+/version-update notes 1.10.15 "하이라이트 기능 추가"
+/version-update app 1.0.8
 ```
+
+인자가 없으면 어떤 트랙을 올릴지 사용자에게 먼저 묻습니다.
 
 ## 실행 절차
 
 ### 0단계: 브랜치 확인
 
-먼저 현재 브랜치를 확인하고 최신 master를 기준으로 작업합니다:
-
 ```bash
 git branch --show-current
 ```
 
-**master 브랜치가 아닌 경우:**
-1. master 브랜치로 이동 후 최신화
-2. 버전 업데이트용 작업 브랜치를 master에서 분기
+`master`이면 최신화한 뒤 작업 브랜치를 분기합니다:
 
 ```bash
 git checkout master
@@ -39,27 +53,30 @@ git checkout -b chore/version-update
 
 ### 1단계: 변경 내용 분석
 
-먼저 최근 git 변경 내용을 분석하여 업데이트 내용을 파악합니다:
-
 ```bash
 git log --oneline -10
 git diff HEAD~5 --stat
 ```
 
-### 2단계: 버전 정보 결정
+무엇이 바뀌었는지 파악해 어떤 트랙을 올려야 하는지 판단합니다.
+확장 코드가 안 바뀌었으면 확장 버전을 올리지 않습니다.
 
-다음 정보를 확인하거나 사용자에게 질문합니다:
-- **버전 번호**: 현재 최신 버전에서 patch 버전 증가 (예: v1.8.23 → v1.8.24)
-- **날짜**: 오늘 날짜 (YYYY.MM.DD 형식)
-- **업데이트 제목 (ko/en)**: 변경 내용을 요약한 제목
-- **업데이트 내용 (ko/en)**: 구체적인 변경 사항 목록
+### 2단계: 버전 결정
 
-### 3단계: 파일 업데이트
+- 현재 값을 읽고 patch를 올립니다 (예: `1.10.14` → `1.10.15`).
+- 확장 버전은 **웹스토어가 단조 증가를 강제**하므로 절대 내리거나 재사용하지 않습니다.
 
-아래 3개 파일을 수정합니다:
+### 3단계: 트랙별 파일 수정
 
-#### 1. `packages/web/src/constants/Update.ts`
-배열 맨 앞에 새 버전 추가:
+**확장을 올리는 경우** — `apps/chrome-extension/package.json`의 `version`만 수정합니다.
+다른 `package.json`에는 `version` 필드가 없으며, **다시 추가하지 않습니다.**
+
+**앱을 올리는 경우** — `apps/app/app.json`의 `version`만 수정합니다.
+`ios.buildNumber`는 EAS가 서버에서 자동 증가시키므로 건드리지 않습니다.
+
+**릴리스 노트를 올리는 경우** — 아래 3개 파일을 함께 수정합니다.
+
+`apps/web/src/constants/Update.ts` — 배열 **맨 앞**에 추가:
 ```typescript
 {
     date: "YYYY.MM.DD",
@@ -67,49 +84,43 @@ git diff HEAD~5 --stat
 },
 ```
 
-#### 2. `packages/web/src/modules/i18n/locales/ko/translation.json`
-`updates.versions` 객체에 새 버전 추가 (기존 버전들 위에):
+`apps/web/src/modules/i18n/locales/ko/translation.json` — `updates.versions`에 추가:
 ```json
 "vX.Y.Z": {
     "title": "업데이트 제목",
     "content": ["변경 내용 1", "변경 내용 2"]
 },
 ```
-- 사용자 관점에서 보는 업데이트 내용을 작성합니다.
 
-#### 3. `packages/web/src/modules/i18n/locales/en/translation.json`
-`updates.versions` 객체에 새 버전 추가 (기존 버전들 위에):
-```json
-"vX.Y.Z": {
-    "title": "Update title",
-    "content": ["Change 1", "Change 2"]
-},
-```
-- 사용자 관점에서 보는 업데이트 내용을 작성합니다.
+`apps/web/src/modules/i18n/locales/en/translation.json` — 같은 키로 영문 추가.
+
+- 사용자 관점의 문장으로 씁니다. 내부 구현 용어는 쓰지 않습니다.
+- `Update.ts`의 `version` 문자열은 두 `translation.json`의 키와 **정확히 일치**해야 합니다.
+- 여기에 항목을 추가하면 웹에서 업데이트 알림 모달이 한 번 뜹니다.
+  알릴 가치가 없는 변경은 추가하지 않습니다.
 
 ### 4단계: 검증
 
-- 모든 파일이 올바른 JSON/TypeScript 문법인지 확인
-- 버전 번호가 일관되게 적용되었는지 확인
-- ko/en 번역 내용이 적절한지 확인
-
-### 5단계: 패키지 버전 업데이트
-
-package.json 파일들의 버전을 업데이트합니다:
-
 ```bash
-pnpm run update-version vX.Y.Z
+pnpm check
+pnpm exec turbo type-check --affected
 ```
 
-예시:
-```bash
-pnpm run update-version v1.8.24
-```
+- ko/en 양쪽에 같은 키가 있는지 확인합니다 (`/i18n-check`).
+- `Update.ts`의 버전 문자열과 translation 키가 일치하는지 확인합니다.
+
+### 5단계: PR
+
+`/pr`로 `master` 대상 Draft PR을 올립니다.
+릴리스 노트를 올린 경우, 머지 후 릴리스 커밋에 `v<버전>` 태그를 답니다
+(태그 push가 GitHub Release를 생성합니다).
+
+배포는 별개입니다 — Actions → **Release**에서 대상을 골라 실행합니다.
 
 ## 업데이트 제목 가이드
 
 | 변경 유형 | 한국어 | English |
-|----------|--------|---------|
+| --- | --- | --- |
 | 버그 수정 | 안정성 개선 | Stability improvements |
 | 새 기능 | [기능명] 추가 | Added [feature] |
 | 성능 개선 | 성능 최적화 | Performance optimization |
@@ -118,7 +129,12 @@ pnpm run update-version v1.8.24
 
 ## 주의사항
 
-- 버전은 semantic versioning을 따릅니다 (major.minor.patch)
-- 날짜 형식은 반드시 `YYYY.MM.DD` 형식
-- translation 파일의 JSON 문법 오류에 주의
-- 새 버전은 항상 목록의 **맨 앞**에 추가
+- **트랙을 섞지 않습니다.** 웹만 배포하는데 확장 버전을 올리지 않습니다.
+- 버전은 semantic versioning을 따릅니다 (major.minor.patch).
+- 날짜 형식은 반드시 `YYYY.MM.DD`.
+- 새 릴리스 노트는 항상 목록의 **맨 앞**에 추가합니다.
+- `apps/chrome-extension` 외의 `package.json`에 `version`을 추가하지 않습니다.
+
+## 인자
+
+`$ARGUMENTS` — 트랙(`extension` / `app` / `notes`), 버전, 설명 (모두 선택).

@@ -1,3 +1,10 @@
+/**
+ * 사용자에게 알릴 만한 제품 릴리스 이력. 최신 릴리스가 항상 맨 앞에 옵니다.
+ * @description
+ * `version`은 `translation.json`의 `updates.versions` 키와 정확히 일치해야 합니다.
+ * 이 목록이 제품 릴리스 버전의 단일 진실 원천이며, 확장/앱의 배포 버전과는 별개입니다.
+ * (docs/versioning.md 참고)
+ */
 export const UPDATE_LIST = [
 	{
 		date: "2026.08.09",
@@ -172,3 +179,11 @@ export const UPDATE_LIST = [
 		version: "v0.0.2",
 	},
 ] as const;
+
+/**
+ * 가장 최근 제품 릴리스 버전 (예: `v1.10.12`).
+ * @description
+ * 업데이트 알림 모달이 "사용자가 이미 확인한 릴리스인지" 판단하는 기준값입니다.
+ * `UPDATE_LIST`에 새 항목을 추가하면 자동으로 갱신됩니다.
+ */
+export const LATEST_RELEASE_VERSION = UPDATE_LIST[0].version;

@@ -147,10 +147,9 @@ pnpm test:jest         # 단위 테스트 (Vitest)
 pnpm test:e2e          # E2E (Playwright)
 pnpm test-report:e2e
 
-# 확장 배포
+# 확장 빌드 & 패키징
 pnpm package
 pnpm zip
-pnpm update-version
 
 # Supabase 타입 생성
 pnpm generate-supabase-type
@@ -402,6 +401,9 @@ claudedocs/
 - 커밋 컨벤션: [docs/commit-convention.md](docs/commit-convention.md)
 - PR 컨벤션: [docs/pull-request-convention.md](docs/pull-request-convention.md)
 - 브랜치 전략: [docs/branch-strategy.md](docs/branch-strategy.md)
+- 버전 관리: [docs/versioning.md](docs/versioning.md) — 확장·앱·릴리스 노트가
+  **각각 독립된 버전 트랙**이며, `apps/chrome-extension` 외의 `package.json`에는
+  `version` 필드를 두지 않습니다
 - PR 본문은 항상 레포의 `PULL_REQUEST_TEMPLATE.md`를 따름
 
 ---

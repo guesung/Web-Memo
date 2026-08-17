@@ -295,7 +295,17 @@ content-ui/restoreHighlights.ts 복원 렌더가 자기 옵저버를 다시 깨�
 
 ### 7. 입력 파일 작성과 게시
 
-`.git/ai-review-reply.json` 에 쓴다 (`.git/` 안이라 커밋되지 않는다).
+`.git/ai-review-reply.json` 에 쓴다
+> **입력 파일 경로 주의.** `.git` 은 **worktree에서 디렉토리가 아니라 파일**이다 (`gitdir: ...` 한 줄을 담은 텍스트 파일). 그대로 `.git/xxx.json` 에 쓰려 하면
+> `NotADirectoryError` / `ENOTDIR` 로 즉시 죽는다. 아래처럼 실제 gitdir을 구해서 쓴다.
+>
+> ```bash
+> GITDIR=$(git rev-parse --git-dir)
+> ```
+>
+> 일반 클론에서는 `.git`, worktree에서는 실제 gitdir 경로가 나오므로 양쪽 모두 동작한다.
+> 아래의 모든 `.git/` 표기는 `$GITDIR/` 로 읽는다.
+ (`.git/` 안이라 커밋되지 않는다).
 
 ```json
 {
@@ -322,7 +332,7 @@ content-ui/restoreHighlights.ts 복원 렌더가 자기 옵저버를 다시 깨�
   (2단계의 `question` 본문을 복사해 오면 이게 딸려 온다.)
 
 ```bash
-node scripts/ai-reviewer/cli.ts post --pr <번호> --input .git/ai-review-reply.json
+node scripts/ai-reviewer/cli.ts post --pr <번호> --input "$GITDIR/ai-review-reply.json"
 ```
 
 후속 작업 항목이 **하나라도 있으면** `.git/ai-review-followup.json`:
@@ -336,7 +346,7 @@ node scripts/ai-reviewer/cli.ts post --pr <번호> --input .git/ai-review-reply.
 ```
 
 ```bash
-node scripts/ai-reviewer/cli.ts followup --pr <번호> --input .git/ai-review-followup.json
+node scripts/ai-reviewer/cli.ts followup --pr <번호> --input "$GITDIR/ai-review-followup.json"
 ```
 
 **항목이 하나도 없으면 이 명령을 실행하지 않는다.**

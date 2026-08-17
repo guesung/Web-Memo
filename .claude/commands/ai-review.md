@@ -149,7 +149,17 @@ git diff origin/master...HEAD --unified=0 -- <파일>
 
 ### 7. 입력 파일 작성
 
-`.git/ai-review-input.json` 에 쓴다 (`.git/` 안이라 커밋되지 않는다).
+`.git/ai-review-input.json` 에 쓴다
+> **입력 파일 경로 주의.** `.git` 은 **worktree에서 디렉토리가 아니라 파일**이다 (`gitdir: ...` 한 줄을 담은 텍스트 파일). 그대로 `.git/xxx.json` 에 쓰려 하면
+> `NotADirectoryError` / `ENOTDIR` 로 즉시 죽는다. 아래처럼 실제 gitdir을 구해서 쓴다.
+>
+> ```bash
+> GITDIR=$(git rev-parse --git-dir)
+> ```
+>
+> 일반 클론에서는 `.git`, worktree에서는 실제 gitdir 경로가 나오므로 양쪽 모두 동작한다.
+> 아래의 모든 `.git/` 표기는 `$GITDIR/` 로 읽는다.
+ (`.git/` 안이라 커밋되지 않는다).
 
 ```json
 {
@@ -203,7 +213,7 @@ CLI가 마지막에 붙인 마커가 이긴다. 다만 렌더된 코멘트 중�
 억지로 질문을 만들어 개수를 채우지 않는다.
 
 ```bash
-node scripts/ai-reviewer/cli.ts post --pr <번호> --input .git/ai-review-input.json
+node scripts/ai-reviewer/cli.ts post --pr <번호> --input "$GITDIR/ai-review-input.json"
 ```
 
 ### 9. 결과 보고

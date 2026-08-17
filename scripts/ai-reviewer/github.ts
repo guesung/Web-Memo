@@ -43,6 +43,10 @@ export const githubRequest = async ({
 /**
  * PR의 리뷰 코멘트를 전부 가져온다.
  * @description 페이지당 100건씩 끝까지 순회한다. 읽기 전용이라 인턴 봇 토큰을 사용한다.
+ * 시니어가 답글을 달 스레드를 고르는 흐름(findPendingThreads)도 이 함수의 결과를
+ * 먼저 거쳐야 하므로, 인턴 App이 설치 해제되면 시니어 흐름도 함께 멈춘다 — 이때
+ * 에러 메시지는 "senior"가 아니라 "intern" 봇을 지목하니 원인을 헷갈리지 않도록
+ * 유의한다.
  */
 export const listReviewComments = async (pullNumber: number): Promise<IFReviewComment[]> => {
 	const { repo } = loadReviewerConfig();
@@ -66,7 +70,13 @@ export const listReviewComments = async (pullNumber: number): Promise<IFReviewCo
 	}
 };
 
-/** PR의 head 커밋 SHA와 본문을 가져온다 */
+/**
+ * PR의 head 커밋 SHA와 본문을 가져온다.
+ * @description 읽기 전용이라 인턴 봇 토큰을 사용한다. 시니어 페르소나의 쓰기 작업
+ * (postReviewComment 등)도 commitSha를 얻기 위해 이 함수를 거치므로, 인턴 App이
+ * 설치 해제되면 시니어 흐름도 함께 실패한다 — 이때 에러 메시지는 "senior"가 아니라
+ * "intern" 봇을 지목하니 원인을 헷갈리지 않도록 유의한다.
+ */
 export const getPullRequest = async (
 	pullNumber: number,
 ): Promise<{ headSha: string; body: string }> => {

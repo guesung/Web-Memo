@@ -8,6 +8,14 @@ const CONFIG_PATH = resolve(homedir(), ".config/web-memo-bots/config.json");
 const JWT_LIFETIME_SECONDS = 540;
 const GITHUB_API_BASE = "https://api.github.com";
 
+/**
+ * 페르소나별로 발급받은 installation access token을 프로세스 생애주기 동안 캐싱한다.
+ * @description installation token은 1시간 유효한데 이 CLI 프로세스는 수 초 안에
+ * 종료되므로, 만료·갱신 로직 없이 최초 1회 발급한 값을 그대로 재사용해도 안전하다.
+ * 프로세스가 오래 살아남는 호출자가 생기면 그때 TTL을 추가한다.
+ */
+const installationTokenCache = new Map<TPersona, string>();
+
 /** 봇 하나의 GitHub App 자격 정보 */
 export interface IFBotConfig {
 	/** 코멘트 서명에 쓰는 한글 이름 (예: 이도현) */
@@ -178,9 +186,16 @@ export const buildAppJwt = ({
 
 /**
  * 해당 페르소나 봇의 installation access token을 발급받는다.
- * @description 토큰 수명은 1시간이며 캐싱하지 않고 호출 시마다 새로 발급한다.
+ * @description 토큰 수명은 1시간이므로 페르소나별로 프로세스 생애주기 동안 한 번만
+ * 발급받아 캐싱하고, 이후 호출은 캐시된 값을 그대로 돌려준다.
  */
 export const issueInstallationToken = async (persona: TPersona): Promise<string> => {
+	const cached = installationTokenCache.get(persona);
+
+	if (cached !== undefined) {
+		return cached;
+	}
+
 	const config = loadReviewerConfig();
 	const bot = config.bots[persona];
 	const privateKeyPath = expandHome(bot.privateKeyPath);
@@ -216,6 +231,8 @@ export const issueInstallationToken = async (persona: TPersona): Promise<string>
 	}
 
 	const body = (await response.json()) as { token: string };
+
+	installationTokenCache.set(persona, body.token);
 
 	return body.token;
 };

@@ -1,7 +1,7 @@
 import { createVerify, generateKeyPairSync, randomUUID } from "node:crypto";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildAppJwt, loadReviewerConfig, parseReviewerConfig } from "./appToken.ts";
 
 const FAKE_CONFIG_PATH = "/fake/path/web-memo-bots/config.json";
@@ -248,5 +248,123 @@ describe("parseReviewerConfig", () => {
 		const result = parseReviewerConfig({ raw, configPath: FAKE_CONFIG_PATH });
 
 		expect(result).toEqual(config);
+	});
+});
+
+describe("issueInstallationToken 캐싱", () => {
+	/**
+	 * 페르소나별로 다른 App 설정을 가진 가짜 설정 객체를 만든다.
+	 * @description installationId를 다르게 둬서, fetch가 어느 페르소나의
+	 * access_tokens 엔드포인트를 호출했는지 URL로 구분할 수 있게 한다.
+	 */
+	const buildCacheTestConfig = (): Record<string, unknown> => {
+		return {
+			repo: "guesung/web-memo",
+			prAuthor: "guesung",
+			bots: {
+				intern: { ...VALID_BOT, installationId: "111", privateKeyPath: "/fake/intern.pem" },
+				senior: { ...VALID_BOT, installationId: "222", privateKeyPath: "/fake/senior.pem" },
+			},
+		};
+	};
+
+	/**
+	 * node:fs와 fetch를 모킹한 뒤 appToken.ts를 새로 import해 캐시가 비어 있는
+	 * 상태의 issueInstallationToken을 돌려준다.
+	 * @description 모듈 최상위의 캐시 Map은 프로세스(=모듈 인스턴스) 생애주기 동안
+	 * 유지되므로, 테스트마다 독립된 캐시를 보장하려면 vi.resetModules로 모듈
+	 * 레지스트리를 비우고 다시 import해야 한다. 반환되는 토큰은 호출 순서대로
+	 * tokenSequence를 소비하며, 소진되면 마지막 값을 반복한다.
+	 */
+	const loadFreshIssueInstallationToken = async ({
+		tokenSequence,
+	}: {
+		tokenSequence: string[];
+	}): Promise<{
+		issueInstallationToken: (persona: "intern" | "senior") => Promise<string>;
+		fetchMock: ReturnType<typeof vi.fn>;
+	}> => {
+		let callCount = 0;
+		const fetchMock = vi.fn().mockImplementation(async () => {
+			const token = tokenSequence[callCount] ?? tokenSequence[tokenSequence.length - 1];
+			callCount += 1;
+
+			return new Response(JSON.stringify({ token }), {
+				status: 200,
+				headers: { "content-type": "application/json" },
+			});
+		});
+		vi.stubGlobal("fetch", fetchMock);
+
+		vi.doMock("node:fs", async (importOriginal) => {
+			const actual = await importOriginal<typeof import("node:fs")>();
+
+			return {
+				...actual,
+				readFileSync: vi.fn((path: string) => {
+					if (String(path).includes("config.json")) {
+						return JSON.stringify(buildCacheTestConfig());
+					}
+
+					return privateKey;
+				}),
+			};
+		});
+
+		vi.resetModules();
+		const freshModule = await import("./appToken.ts");
+
+		return { issueInstallationToken: freshModule.issueInstallationToken, fetchMock };
+	};
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+		vi.doUnmock("node:fs");
+		vi.resetModules();
+	});
+
+	it("같은 페르소나로 두 번 호출하면 토큰 발급 요청은 한 번만 일어난다", async () => {
+		const { issueInstallationToken, fetchMock } = await loadFreshIssueInstallationToken({
+			tokenSequence: ["token-a"],
+		});
+
+		const first = await issueInstallationToken("intern");
+		const second = await issueInstallationToken("intern");
+
+		expect(first).toBe("token-a");
+		expect(second).toBe("token-a");
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+	});
+
+	it("페르소나가 다르면 각각 자신의 토큰을 따로 발급받는다", async () => {
+		const { issueInstallationToken, fetchMock } = await loadFreshIssueInstallationToken({
+			tokenSequence: ["token-intern", "token-senior"],
+		});
+
+		const internToken = await issueInstallationToken("intern");
+		const seniorToken = await issueInstallationToken("senior");
+
+		expect(internToken).toBe("token-intern");
+		expect(seniorToken).toBe("token-senior");
+		expect(internToken).not.toBe(seniorToken);
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+
+		const [internUrl] = fetchMock.mock.calls[0];
+		const [seniorUrl] = fetchMock.mock.calls[1];
+		expect(internUrl).toContain("/installations/111/access_tokens");
+		expect(seniorUrl).toContain("/installations/222/access_tokens");
+	});
+
+	it("같은 페르소나로 연속 세 번 호출해도 최초 발급된 토큰이 그대로 재사용된다", async () => {
+		const { issueInstallationToken, fetchMock } = await loadFreshIssueInstallationToken({
+			tokenSequence: ["token-a"],
+		});
+
+		const first = await issueInstallationToken("intern");
+		const second = await issueInstallationToken("intern");
+		const third = await issueInstallationToken("intern");
+
+		expect([first, second, third]).toEqual(["token-a", "token-a", "token-a"]);
+		expect(fetchMock).toHaveBeenCalledTimes(1);
 	});
 });

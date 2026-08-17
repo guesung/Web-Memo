@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       app:
-        description: "앱 배포 (iOS 빌드 + TestFlight 제출)"
+        description: "앱 배포 (iOS → TestFlight, Android → Play 내부 테스트)"
         type: boolean
         default: false
       extension:

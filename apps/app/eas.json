@@ -20,6 +20,10 @@
 			"env": {
 				"NODE_ENV": "production"
 			}
+		},
+		"verify": {
+			"extends": "ci",
+			"autoIncrement": false
 		}
 	},
 	"submit": {
@@ -29,6 +33,11 @@
 				"ascApiKeyId": "HT774VM4W5",
 				"ascApiKeyIssuerId": "ab5c73bd-ddb0-44a7-9797-941c1a211615",
 				"ascAppId": "6759237784"
+			},
+			"android": {
+				"serviceAccountKeyPath": "./play-service-account.json",
+				"track": "internal",
+				"releaseStatus": "completed"
 			}
 		}
 	}

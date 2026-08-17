@@ -9,6 +9,8 @@ dist/
 *.key
 *.mobileprovision
 *.ipa
+*.aab
+play-service-account.json
 *.orig.*
 web-build/
 

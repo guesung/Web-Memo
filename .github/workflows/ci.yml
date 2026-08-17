@@ -21,6 +21,13 @@ on:
       - "pnpm-lock.yaml"
       - ".github/workflows/**"
 
+# 같은 브랜치에 연속으로 푸시하면 이전 run을 취소해 중복 빌드를 막습니다.
+# 다만 master는 run에 배포가 걸려 있어 중간에 끊기면 안 되므로 취소하지 않고,
+# 대신 직렬로 줄을 세워 제출이 동시에 두 번 나가지 않게 합니다.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
 jobs:
   ci:
     runs-on: ubuntu-latest
@@ -98,16 +105,20 @@ jobs:
               - 'package.json'
               - 'pnpm-lock.yaml'
 
-  # 앱·확장은 CI에서 빌드 검증만 하고 배포하지 않습니다.
-  # 실제 배포(TestFlight 제출 / 웹스토어 업로드 / 웹 프로덕션)는 release.yml에서 수동으로 실행합니다.
+  # 앱은 master push(= PR 머지)일 때 테스트 배포까지 자동으로 진행합니다.
+  # iOS는 TestFlight, Android는 Play 내부 테스트 트랙으로 올라가며 둘 다 스토어
+  # 정식 출시가 아니라 테스터 대상 배포입니다. 정식 출시 승격은 수동으로 합니다.
+  # PR에서는 빌드 검증만 하고(none) 제출하지 않습니다.
   cd-app:
     needs: [ci, changes]
     if: needs.changes.outputs.app == 'true'
     uses: ./.github/workflows/cd-app.yml
     secrets: inherit
     with:
-      deploy_target: "none"
+      deploy_target: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') && 'production' || 'none' }}
 
+  # 확장은 CI에서 빌드 검증만 하고 배포하지 않습니다.
+  # 웹스토어 업로드는 release.yml에서 수동으로 실행합니다.
   cd-extension:
     needs: [ci, changes]
     if: needs.changes.outputs.extension == 'true'

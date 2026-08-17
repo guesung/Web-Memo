@@ -86,7 +86,7 @@ describe("parseMarker", () => {
 
 describe("buildMarker validation", () => {
 	it("kind에 하이픈이 포함되면 라운드트립된다", () => {
-		const marker = { persona: "senior", kind: "q-1" };
+		const marker = { persona: "senior", kind: "q-1" } as const;
 		const built = buildMarker(marker);
 		expect(parseMarker(`본문\n${built}`)).toEqual(marker);
 	});

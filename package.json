@@ -28,6 +28,7 @@
 		"start:web": "turbo start --filter=@web-memo/web",
 		"zip": "turbo zip",
 		"type-check": "turbo type-check",
+		"type-check:scripts": "tsc -p scripts/ai-reviewer --noEmit",
 		"tsc-watch": "turbo tsc-watch",
 		"test:jest": "vitest",
 		"test:e2e": "cd e2e && pnpm test",

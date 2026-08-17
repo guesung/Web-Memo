@@ -21,6 +21,10 @@
 			"types": "./src/utils/Supabase.ts",
 			"default": "./src/utils/Supabase.ts"
 		},
+		"./utils/url": {
+			"types": "./src/utils/Url.ts",
+			"default": "./src/utils/Url.ts"
+		},
 		"./hooks": {
 			"types": "./src/hooks/index.ts",
 			"default": "./src/hooks/index.ts"
@@ -75,6 +79,9 @@
 			],
 			"utils/services": [
 				"./src/utils/Supabase.ts"
+			],
+			"utils/url": [
+				"./src/utils/Url.ts"
 			],
 			"hooks": [
 				"./src/hooks/index.ts"

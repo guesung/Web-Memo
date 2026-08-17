@@ -3,7 +3,7 @@ import {
 	type HighlightItem,
 	toHighlightItem,
 } from "@web-memo/shared/modules/highlight";
-import { normalizeUrl } from "@web-memo/shared/utils";
+import { normalizeUrl } from "@web-memo/shared/utils/url";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useState } from "react";
 import type WebView from "react-native-webview";

@@ -363,13 +363,32 @@ claudedocs/
 
 작업 완료 후 PR을 통해 변경을 추적/리뷰합니다. (Claude Code는 `/pr` 스킬 사용 — 자세한 내용은 `CLAUDE.md`)
 
+### 브랜치 전략 (MANDATORY)
+
+**`master`가 유일한 베이스 브랜치입니다.** `develop`은 테스트 서버 배포 전용
+일회성 브랜치이며, 작업 브랜치의 베이스가 아닙니다.
+
+| 항목 | 규칙 |
+| --- | --- |
+| 작업 브랜치 분기 기준 | `master` |
+| PR base 브랜치 | `master` |
+| `develop` 분기 기준 | `master` (릴리스 후 리셋) |
+| `develop` → `master` 머지 | **금지** |
+| `develop` → 작업 브랜치 머지 | **금지** (작업 브랜치 최신화는 `master` 머지) |
+| PR 머지 방식 | **머지 커밋 생성** (Squash & Merge / Rebase & Merge 금지) |
+
+`develop`에 머지하는 것은 테스트 서버에 올려보는 행위일 뿐이며 작업 완료가
+아닙니다. 모든 변경은 반드시 `master`로 향하는 PR을 거칩니다.
+자세한 내용은 [docs/branch-strategy.md](docs/branch-strategy.md) 참조.
+
 ### 표준 흐름
 
 1. 작업 완료
 2. `pnpm type-check` 및 `pnpm lint`로 검증
-3. master 브랜치에서 새 브랜치 생성(이미 feature 브랜치면 생략)
-4. 의미 있는 단위로 커밋 → 원격 푸시 → master를 대상(base)으로 PR 생성
-5. 머지는 **Squash & Merge가 아니라 머지 커밋 생성** 방식으로 진행
+3. master 브랜치에서 새 브랜치 생성(이미 작업 브랜치면 생략)
+4. (선택) `develop`에 머지 후 push → 테스트 서버에서 검증
+5. 의미 있는 단위로 커밋 → 원격 푸시 → master를 대상(base)으로 PR 생성
+6. 머지는 **Squash & Merge가 아니라 머지 커밋 생성** 방식으로 진행
 
 ### 언어 규칙 (MANDATORY)
 
@@ -377,12 +396,6 @@ claudedocs/
 - **PR 제목**: 한글 (예: `feat: 메모 검색 기능 구현`)
 - **PR 본문**: 요약/변경사항/테스트 계획 모두 한글
 - **브랜치명**: 영문 유지 (예: `feat/memo-search`, `fix/login-error`)
-
-### 브랜치 규칙 (MANDATORY)
-
-- 모든 브랜치는 **`master`에서 분기**한다.
-- 모든 PR의 base(target) 브랜치는 **`master`**다.
-- 머지는 **Squash & Merge를 쓰지 않고 머지 커밋을 생성**해 진행한다. (개별 커밋 히스토리 보존)
 
 ### 세부 컨벤션 문서
 

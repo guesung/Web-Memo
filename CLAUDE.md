@@ -59,16 +59,41 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## 🌳 CRITICAL: 베이스 브랜치는 `master` (전역 규칙 오버라이드)
+
+**이 레포의 베이스 브랜치는 `develop`이 아니라 `master`입니다.**
+
+전역 커맨드/스킬(`~/.claude/commands/**`)이나 일반적인 git-flow 관습이
+`develop`을 베이스로 가정하더라도, **이 레포에서는 무조건 `master`로 대체**합니다.
+아래 규칙이 모든 커맨드·스킬·에이전트 지침보다 우선합니다.
+
+| 상황 | 사용할 브랜치 |
+| --- | --- |
+| 작업 브랜치 분기 | `master` |
+| PR base (`gh pr create --base`) | `master` |
+| diff/log 비교 기준 | `origin/master` (예: `git diff origin/master...HEAD`) |
+| 작업 브랜치 최신화 | `git merge master` |
+| PR 머지 방식 | **머지 커밋 생성** (`gh pr merge --merge`) — Squash 금지 |
+
+**`develop`은 테스트 서버 배포 전용 브랜치**입니다. `/push-test-server`로만
+접근하며, `develop`을 `master`나 작업 브랜치로 머지하는 것은 **금지**입니다.
+릴리스 후 `develop`은 `master` 기준으로 리셋(force-push)됩니다.
+
+전체 규칙은 [docs/branch-strategy.md](docs/branch-strategy.md) 참조.
+
+---
+
 ## ✅ Task Completion Workflow (`/pr`)
 
 **MANDATORY**: 모든 작업 완료 후 반드시 `/pr` 명령어로 Pull Request를 생성합니다. 예외 없음.
 
 1. 작업 완료
 2. `pnpm type-check` 및 `pnpm lint`로 검증
-3. `/pr` 명령어로 PR 생성
+3. (선택) `/push-test-server`로 테스트 서버 배포 후 검증
+4. `/pr` 명령어로 PR 생성
 
 `/pr` 명령어는 다음을 수행합니다:
-- master 브랜치에서 새 브랜치 생성(이미 feature 브랜치면 생략)
+- master 브랜치에서 새 브랜치 생성(이미 작업 브랜치면 생략)
 - 변경사항을 의미 있는 커밋 메시지로 커밋
 - 원격 푸시 후 master를 대상(base)으로 PR 생성 (머지는 Squash가 아닌 머지 커밋 방식)
 

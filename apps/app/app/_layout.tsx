@@ -9,6 +9,7 @@ import { Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthProvider";
+import { ThemeProvider, useTheme } from "@/lib/context/ThemeContext";
 import { handleSharedUrl } from "@/lib/sharing/shareHandler";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
 import "../global.css";
@@ -105,6 +106,25 @@ function ShareIntentHandler() {
 	);
 }
 
+/** 화면 전환 중 테마와 어긋나는 배경이 비치지 않도록 스택 배경색을 테마에 맞춘다 */
+function ThemedStack() {
+	const { isDark } = useTheme();
+
+	return (
+		<Stack
+			screenOptions={{
+				headerShown: false,
+				contentStyle: { backgroundColor: isDark ? "#171717" : "#ffffff" },
+			}}
+		>
+			<Stack.Screen name="index" />
+			<Stack.Screen name="(auth)" />
+			<Stack.Screen name="(main)" />
+			<Stack.Screen name="+not-found" />
+		</Stack>
+	);
+}
+
 export default function RootLayout() {
 	useEffect(() => {
 		SplashScreen.hideAsync();
@@ -112,19 +132,16 @@ export default function RootLayout() {
 
 	return (
 		<QueryClientProvider client={queryClient}>
-			<AuthProvider>
-				<GestureHandlerRootView>
-					<Stack screenOptions={{ headerShown: false }}>
-						<Stack.Screen name="index" />
-						<Stack.Screen name="(auth)" />
-						<Stack.Screen name="(main)" />
-						<Stack.Screen name="+not-found" />
-					</Stack>
-				</GestureHandlerRootView>
-				<SyncOnAuth />
-				<ShareIntentHandler />
-				<StatusBar style="dark" />
-			</AuthProvider>
+			<ThemeProvider>
+				<AuthProvider>
+					<GestureHandlerRootView>
+						<ThemedStack />
+					</GestureHandlerRootView>
+					<SyncOnAuth />
+					<ShareIntentHandler />
+					<StatusBar style="auto" />
+				</AuthProvider>
+			</ThemeProvider>
 		</QueryClientProvider>
 	);
 }

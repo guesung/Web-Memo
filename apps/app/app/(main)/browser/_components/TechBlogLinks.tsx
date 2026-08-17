@@ -7,6 +7,7 @@ import {
 	Linking,
 	Text,
 	TouchableOpacity,
+	useColorScheme,
 	View,
 } from "react-native";
 import {
@@ -38,13 +39,13 @@ function BlogItem({
 			onPress={() => onPress(blog.url)}
 			activeOpacity={0.7}
 		>
-			<View className="w-14 h-14 rounded-[14px] bg-input justify-center items-center overflow-hidden">
+			<View className="w-14 h-14 rounded-[14px] bg-input dark:bg-neutral-800 justify-center items-center overflow-hidden">
 				{!logoUri || imgError ? (
 					<View
-						className="justify-center items-center bg-[#e0e0e0]"
+						className="justify-center items-center bg-[#e0e0e0] dark:bg-neutral-700"
 						style={{ width: 36, height: 36, borderRadius: 4 }}
 					>
-						<Text className="text-base font-bold text-gray-500">
+						<Text className="text-base font-bold text-gray-500 dark:text-neutral-300">
 							{blog.name.charAt(0)}
 						</Text>
 					</View>
@@ -58,7 +59,7 @@ function BlogItem({
 				)}
 			</View>
 			<Text
-				className="text-[11px] text-secondary-foreground text-center leading-[14px]"
+				className="text-[11px] text-secondary-foreground dark:text-neutral-400 text-center leading-[14px]"
 				numberOfLines={1}
 			>
 				{blog.name}
@@ -73,6 +74,7 @@ export function TechBlogLinks({
 	onSelectBlog: (url: string) => void;
 }) {
 	const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
+	const isDark = useColorScheme() === "dark";
 
 	const renderItem = useCallback(
 		({ item }: { item: TechBlog }) => (
@@ -84,14 +86,18 @@ export function TechBlogLinks({
 	return (
 		<View className="mt-8">
 			<View className="flex-row justify-between items-center mb-4 px-5">
-				<Text className="text-base font-bold text-foreground">블로그 모음</Text>
+				<Text className="text-base font-bold text-foreground dark:text-white">
+					블로그 모음
+				</Text>
 				<TouchableOpacity
 					className="flex-row items-center gap-0.5"
 					onPress={() => setIsBottomSheetVisible(true)}
 					activeOpacity={0.7}
 				>
-					<Text className="text-[13px] text-muted-foreground">전체보기</Text>
-					<ChevronRight size={14} color="#999" />
+					<Text className="text-[13px] text-muted-foreground dark:text-neutral-500">
+						전체보기
+					</Text>
+					<ChevronRight size={14} color={isDark ? "#737373" : "#999"} />
 				</TouchableOpacity>
 			</View>
 
@@ -105,7 +111,9 @@ export function TechBlogLinks({
 			/>
 
 			<View className="mt-7 mb-4 px-5">
-				<Text className="text-base font-bold text-foreground">테크 블로그</Text>
+				<Text className="text-base font-bold text-foreground dark:text-white">
+					테크 블로그
+				</Text>
 			</View>
 
 			<FlatList
@@ -118,12 +126,12 @@ export function TechBlogLinks({
 			/>
 
 			<TouchableOpacity
-				className="flex-row items-center justify-center gap-1.5 mt-8 mb-4 py-3 mx-5 rounded-xl bg-input"
+				className="flex-row items-center justify-center gap-1.5 mt-8 mb-4 py-3 mx-5 rounded-xl bg-input dark:bg-neutral-800"
 				onPress={() => Linking.openURL(URL.kakaoTalk)}
 				activeOpacity={0.7}
 			>
-				<MessageCircle size={16} color="#666" />
-				<Text className="text-sm text-gray-500 font-medium">
+				<MessageCircle size={16} color={isDark ? "#a3a3a3" : "#666"} />
+				<Text className="text-sm text-gray-500 dark:text-neutral-300 font-medium">
 					블로그 추가 문의하기
 				</Text>
 			</TouchableOpacity>

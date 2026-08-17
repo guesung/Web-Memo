@@ -17,6 +17,7 @@ import {
 	Text,
 	TextInput,
 	TouchableOpacity,
+	useColorScheme,
 	View,
 } from "react-native";
 import Animated, {
@@ -63,6 +64,7 @@ export function HighlightEditSheet({
 	onDelete,
 }: HighlightEditSheetProps) {
 	const insets = useSafeAreaInsets();
+	const isDark = useColorScheme() === "dark";
 	const translateY = useSharedValue(SHEET_HEIGHT);
 	const opacity = useSharedValue(0);
 	const [modalVisible, setModalVisible] = useState(false);
@@ -192,14 +194,14 @@ export function HighlightEditSheet({
 				</Animated.View>
 
 				<Animated.View
-					className="bg-white rounded-t-[20px]"
+					className="bg-white dark:bg-neutral-900 rounded-t-[20px]"
 					style={[
 						sheetStyle,
 						{ height: SHEET_HEIGHT, paddingBottom: insets.bottom + 16 },
 					]}
 				>
 					<View className="items-center py-2.5">
-						<View className="w-9 h-1 rounded-sm bg-gray-300" />
+						<View className="w-9 h-1 rounded-sm bg-gray-300 dark:bg-neutral-700" />
 					</View>
 
 					<ScrollView
@@ -208,7 +210,7 @@ export function HighlightEditSheet({
 						showsVerticalScrollIndicator={false}
 					>
 						<Text
-							className="mb-4 text-[15px] leading-[22px] text-foreground"
+							className="mb-4 text-[15px] leading-[22px] text-foreground dark:text-white"
 							numberOfLines={4}
 						>
 							{highlight?.exact_text ?? ""}
@@ -223,7 +225,7 @@ export function HighlightEditSheet({
 									style={{ backgroundColor: HIGHLIGHT_COLOR_STYLE[color].bar }}
 									className={`h-9 w-9 rounded-full ${
 										highlight?.color === color
-											? "border-2 border-foreground"
+											? "border-2 border-foreground dark:border-white"
 											: ""
 									}`}
 								/>
@@ -235,15 +237,16 @@ export function HighlightEditSheet({
 							onChangeText={setNote}
 							onBlur={flushNote}
 							placeholder="메모 남기기"
+							placeholderTextColor={isDark ? "#666" : "#999"}
 							multiline
 							textAlignVertical="top"
-							className="mb-4 min-h-20 rounded-lg bg-input p-3 text-[15px] text-foreground"
+							className="mb-4 min-h-20 rounded-lg bg-input dark:bg-neutral-800 p-3 text-[15px] text-foreground dark:text-white"
 						/>
 
 						<TouchableOpacity
 							onPress={handleDeletePress}
 							activeOpacity={0.7}
-							className="flex-row items-center justify-center gap-2 rounded-[10px] border border-red-100 bg-red-50 py-2.5"
+							className="flex-row items-center justify-center gap-2 rounded-[10px] border border-red-100 dark:border-red-900/50 bg-red-50 dark:bg-red-950/40 py-2.5"
 						>
 							<Trash2 size={16} color="#ef4444" />
 							<Text className="text-sm font-semibold text-destructive">

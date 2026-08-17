@@ -6,6 +6,7 @@ import {
 	Image,
 	Text,
 	TouchableOpacity,
+	useColorScheme,
 	View,
 } from "react-native";
 import { useFavoriteRemove, useFavorites } from "@/lib/hooks/useFavorites";
@@ -17,16 +18,17 @@ interface FavoriteLinksProps {
 export function FavoriteLinks({ onSelectUrl }: FavoriteLinksProps) {
 	const { data: favorites } = useFavorites();
 	const removeFavorite = useFavoriteRemove();
+	const isDark = useColorScheme() === "dark";
 
 	if (!favorites || favorites.length === 0) {
 		return (
 			<View className="mt-7 px-5">
-				<Text className="text-base font-bold text-foreground mb-3">
+				<Text className="text-base font-bold text-foreground dark:text-white mb-3">
 					즐겨찾기
 				</Text>
-				<View className="items-center py-6 bg-card rounded-xl border border-border">
-					<Bookmark size={24} color="#ddd" />
-					<Text className="text-[13px] text-muted-foreground mt-2">
+				<View className="items-center py-6 bg-card dark:bg-neutral-900 rounded-xl border border-border dark:border-neutral-800">
+					<Bookmark size={24} color={isDark ? "#404040" : "#ddd"} />
+					<Text className="text-[13px] text-muted-foreground dark:text-neutral-500 mt-2">
 						자주 방문하는 페이지를 즐겨찾기에 추가해보세요
 					</Text>
 				</View>
@@ -52,7 +54,9 @@ export function FavoriteLinks({ onSelectUrl }: FavoriteLinksProps) {
 	return (
 		<View className="mt-7">
 			<View className="flex-row justify-between items-center mb-4 px-5">
-				<Text className="text-base font-bold text-foreground">즐겨찾기</Text>
+				<Text className="text-base font-bold text-foreground dark:text-white">
+					즐겨찾기
+				</Text>
 			</View>
 			<FlatList
 				data={favorites}
@@ -94,7 +98,7 @@ function FavoriteItem({
 			onLongPress={() => onLongPress(item.url, item.title || domain)}
 			activeOpacity={0.7}
 		>
-			<View className="w-14 h-14 rounded-[14px] bg-input justify-center items-center overflow-hidden">
+			<View className="w-14 h-14 rounded-[14px] bg-input dark:bg-neutral-800 justify-center items-center overflow-hidden">
 				{item.favIconUrl && !imgError ? (
 					<Image
 						source={{ uri: item.favIconUrl }}
@@ -104,17 +108,17 @@ function FavoriteItem({
 					/>
 				) : (
 					<View
-						className="justify-center items-center bg-[#e0e0e0]"
+						className="justify-center items-center bg-[#e0e0e0] dark:bg-neutral-700"
 						style={{ width: 36, height: 36, borderRadius: 4 }}
 					>
-						<Text className="text-base font-bold text-gray-500">
+						<Text className="text-base font-bold text-gray-500 dark:text-neutral-300">
 							{(domain || "?").charAt(0).toUpperCase()}
 						</Text>
 					</View>
 				)}
 			</View>
 			<Text
-				className="text-[11px] text-secondary-foreground text-center leading-[14px]"
+				className="text-[11px] text-secondary-foreground dark:text-neutral-400 text-center leading-[14px]"
 				numberOfLines={1}
 			>
 				{domain || item.title}

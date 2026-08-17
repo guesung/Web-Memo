@@ -14,6 +14,7 @@ import {
 	FlatList,
 	Text,
 	TouchableOpacity,
+	useColorScheme,
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -27,9 +28,19 @@ import { useMemoList } from "./_hooks/useMemoList";
 
 const READ_DONE_PROGRESS = 0.98;
 
+/** 선택된 필터 칩의 배경 클래스 */
+const SELECTED_FILTER_CLASS = "bg-foreground dark:bg-neutral-700";
+/** 선택되지 않은 필터 칩의 배경 클래스 */
+const UNSELECTED_FILTER_CLASS = "bg-muted dark:bg-neutral-800";
+/** 선택된 필터 칩의 글자 클래스 */
+const SELECTED_FILTER_TEXT_CLASS = "text-white";
+/** 선택되지 않은 필터 칩의 글자 클래스 */
+const UNSELECTED_FILTER_TEXT_CLASS = "text-gray-500 dark:text-neutral-400";
+
 export default function MemoScreen() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
+	const isDark = useColorScheme() === "dark";
 	const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
 	const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
 	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -73,6 +84,9 @@ export default function MemoScreen() {
 		return position.progress;
 	};
 
+	const unselectedFilterIconColor = isDark ? "#a3a3a3" : "#666";
+	const emptyStateIconColor = isDark ? "#404040" : "#ddd";
+
 	const navigateToBrowser = useCallback(
 		(url: string) => {
 			router.navigate({
@@ -84,16 +98,19 @@ export default function MemoScreen() {
 	);
 
 	return (
-		<View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
+		<View
+			className="flex-1 bg-background dark:bg-neutral-950"
+			style={{ paddingTop: insets.top }}
+		>
 			<View className="flex-1">
 				<View className="flex-row justify-between items-center px-5 pt-4 pb-1">
-					<Text className="text-[22px] font-extrabold text-foreground tracking-tight">
+					<Text className="text-[22px] font-extrabold text-foreground dark:text-white tracking-tight">
 						웹 메모
 					</Text>
 					<View className="flex-row items-center gap-2">
 						{!isLoggedIn ? (
 							<TouchableOpacity
-								className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground"
+								className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground dark:bg-neutral-700"
 								onPress={() => router.navigate("/(auth)/login")}
 							>
 								<LogIn size={14} color="#fff" />
@@ -101,7 +118,7 @@ export default function MemoScreen() {
 							</TouchableOpacity>
 						) : null}
 						<TouchableOpacity
-							className="flex-row items-center gap-1 px-3 py-1.5 rounded-full bg-foreground"
+							className="flex-row items-center gap-1 px-3 py-1.5 rounded-full bg-foreground dark:bg-neutral-700"
 							onPress={() => setIsAddModalOpen(true)}
 							activeOpacity={0.8}
 						>
@@ -113,18 +130,18 @@ export default function MemoScreen() {
 					</View>
 				</View>
 
-				<Text className="text-sm text-gray-400 px-5 mb-4">
+				<Text className="text-sm text-gray-400 dark:text-neutral-500 px-5 mb-4">
 					웹서핑하며 간편하게 메모하세요
 				</Text>
 
 				{!isLoggedIn ? (
 					<TouchableOpacity
-						className="flex-row items-center gap-2 mx-5 mb-3 px-3.5 py-2.5 bg-card rounded-xl border border-border"
+						className="flex-row items-center gap-2 mx-5 mb-3 px-3.5 py-2.5 bg-card dark:bg-neutral-900 rounded-xl border border-border dark:border-neutral-800"
 						onPress={() => router.navigate("/(auth)/login")}
 						activeOpacity={0.7}
 					>
 						<LogIn size={14} color="#7c3aed" />
-						<Text className="flex-1 text-[13px] text-secondary-foreground">
+						<Text className="flex-1 text-[13px] text-secondary-foreground dark:text-neutral-300">
 							로그인하면 메모가 동기화됩니다
 						</Text>
 						<Text className="text-xs text-accent font-semibold">로그인</Text>
@@ -133,55 +150,55 @@ export default function MemoScreen() {
 
 				<View className="flex-row px-5 mb-4 gap-2">
 					<TouchableOpacity
-						className={`flex-row items-center gap-1 px-3.5 py-[7px] rounded-[20px] ${filter === "all" ? "bg-foreground" : "bg-muted"}`}
+						className={`flex-row items-center gap-1 px-3.5 py-[7px] rounded-[20px] ${filter === "all" ? SELECTED_FILTER_CLASS : UNSELECTED_FILTER_CLASS}`}
 						onPress={() => setFilter("all")}
 					>
 						<Text
-							className={`text-[13px] font-semibold ${filter === "all" ? "text-white" : "text-gray-500"}`}
+							className={`text-[13px] font-semibold ${filter === "all" ? SELECTED_FILTER_TEXT_CLASS : UNSELECTED_FILTER_TEXT_CLASS}`}
 						>
 							전체
 						</Text>
 					</TouchableOpacity>
 					<TouchableOpacity
-						className={`flex-row items-center gap-1 px-3.5 py-[7px] rounded-[20px] ${filter === "wish" ? "bg-foreground" : "bg-muted"}`}
+						className={`flex-row items-center gap-1 px-3.5 py-[7px] rounded-[20px] ${filter === "wish" ? SELECTED_FILTER_CLASS : UNSELECTED_FILTER_CLASS}`}
 						onPress={() => setFilter("wish")}
 					>
 						<Heart
 							size={12}
-							fill={filter === "wish" ? "#fff" : "#666"}
-							color={filter === "wish" ? "#fff" : "#666"}
+							fill={filter === "wish" ? "#fff" : unselectedFilterIconColor}
+							color={filter === "wish" ? "#fff" : unselectedFilterIconColor}
 						/>
 						<Text
-							className={`text-[13px] font-semibold ${filter === "wish" ? "text-white" : "text-gray-500"}`}
+							className={`text-[13px] font-semibold ${filter === "wish" ? SELECTED_FILTER_TEXT_CLASS : UNSELECTED_FILTER_TEXT_CLASS}`}
 						>
 							위시리스트
 						</Text>
 					</TouchableOpacity>
 					<TouchableOpacity
-						className={`flex-row items-center gap-1 px-3.5 py-[7px] rounded-[20px] ${filter === "star" ? "bg-foreground" : "bg-muted"}`}
+						className={`flex-row items-center gap-1 px-3.5 py-[7px] rounded-[20px] ${filter === "star" ? SELECTED_FILTER_CLASS : UNSELECTED_FILTER_CLASS}`}
 						onPress={() => setFilter("star")}
 					>
 						<Star
 							size={12}
-							fill={filter === "star" ? "#fff" : "#666"}
-							color={filter === "star" ? "#fff" : "#666"}
+							fill={filter === "star" ? "#fff" : unselectedFilterIconColor}
+							color={filter === "star" ? "#fff" : unselectedFilterIconColor}
 						/>
 						<Text
-							className={`text-[13px] font-semibold ${filter === "star" ? "text-white" : "text-gray-500"}`}
+							className={`text-[13px] font-semibold ${filter === "star" ? SELECTED_FILTER_TEXT_CLASS : UNSELECTED_FILTER_TEXT_CLASS}`}
 						>
 							중요
 						</Text>
 					</TouchableOpacity>
 					<TouchableOpacity
-						className={`flex-row items-center gap-1 px-3.5 py-[7px] rounded-[20px] ${filter === "reading" ? "bg-foreground" : "bg-muted"}`}
+						className={`flex-row items-center gap-1 px-3.5 py-[7px] rounded-[20px] ${filter === "reading" ? SELECTED_FILTER_CLASS : UNSELECTED_FILTER_CLASS}`}
 						onPress={() => setFilter("reading")}
 					>
 						<BookOpen
 							size={12}
-							color={filter === "reading" ? "#fff" : "#666"}
+							color={filter === "reading" ? "#fff" : unselectedFilterIconColor}
 						/>
 						<Text
-							className={`text-[13px] font-semibold ${filter === "reading" ? "text-white" : "text-gray-500"}`}
+							className={`text-[13px] font-semibold ${filter === "reading" ? SELECTED_FILTER_TEXT_CLASS : UNSELECTED_FILTER_TEXT_CLASS}`}
 						>
 							읽는 중
 						</Text>
@@ -192,7 +209,7 @@ export default function MemoScreen() {
 					<ActivityIndicator style={{ marginTop: 40 }} size="large" />
 				) : memos.length > 0 ? (
 					<View className="flex-1 px-5">
-						<Text className="text-[17px] font-bold text-foreground mb-3">
+						<Text className="text-[17px] font-bold text-foreground dark:text-white mb-3">
 							{filter === "wish"
 								? "위시리스트"
 								: filter === "star"
@@ -233,15 +250,15 @@ export default function MemoScreen() {
 				) : (
 					<View className="items-center pt-[60px] gap-3">
 						{filter === "wish" ? (
-							<Heart size={48} color="#ddd" />
+							<Heart size={48} color={emptyStateIconColor} />
 						) : filter === "star" ? (
-							<Star size={48} color="#ddd" />
+							<Star size={48} color={emptyStateIconColor} />
 						) : filter === "reading" ? (
-							<BookOpen size={48} color="#ddd" />
+							<BookOpen size={48} color={emptyStateIconColor} />
 						) : (
-							<Globe size={48} color="#ddd" />
+							<Globe size={48} color={emptyStateIconColor} />
 						)}
-						<Text className="text-base font-semibold text-muted-foreground">
+						<Text className="text-base font-semibold text-muted-foreground dark:text-neutral-400">
 							{filter === "wish"
 								? "위시리스트가 비어있습니다"
 								: filter === "star"
@@ -250,7 +267,7 @@ export default function MemoScreen() {
 										? "읽는 중인 메모가 없습니다"
 										: "저장된 메모가 없습니다"}
 						</Text>
-						<Text className="text-[13px] text-gray-300">
+						<Text className="text-[13px] text-gray-300 dark:text-neutral-600">
 							{filter === "wish"
 								? "브라우저에서 마음에 드는 페이지를 저장해보세요"
 								: filter === "star"
@@ -260,7 +277,7 @@ export default function MemoScreen() {
 										: "브라우저에서 웹서핑하며 메모를 남겨보세요"}
 						</Text>
 						<TouchableOpacity
-							className="mt-2 bg-foreground px-5 py-3 rounded-3xl"
+							className="mt-2 bg-foreground dark:bg-neutral-700 px-5 py-3 rounded-3xl"
 							onPress={() => router.navigate("/(main)/browser")}
 						>
 							<Text className="text-sm font-semibold text-white">

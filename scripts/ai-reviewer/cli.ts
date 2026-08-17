@@ -64,30 +64,62 @@ export const withMarker = ({
 	return `${body.trimEnd()}\n\n${buildMarker({ persona, kind })}`;
 };
 
-/**
- * `questions` 배열의 모든 `kind`가 buildMarker가 허용하는 형식인지 미리 검사한다.
- * @description `kind`는 LLM이 작성한 JSON에서 오므로 형식이 어긋날 수 있다. 게시
- * 루프 도중에야 buildMarker가 던지면 그 앞의 질문들은 이미 GitHub에 실제로
- * 게시된 뒤라, 재실행 시 중복 게시로 이어진다. 그래서 첫 네트워크 호출보다
- * 먼저 배치 전체를 검사하고, 문제 있는 항목을 전부 모아 한 번에 보고한다.
- * @throws 하나라도 유효하지 않으면 Error. 메시지에 인덱스·persona·kind를 모두 나열한다.
- */
-export const validateQuestionKinds = (questions: IFQuestionInput[]): void => {
-	const invalidEntries: string[] = [];
+/** buildMarker/appToken.ts가 아는 유효한 persona 값. LLM 출력 검증에 쓴다 */
+const VALID_PERSONAS: readonly string[] = ["intern", "senior"] satisfies readonly TPersona[];
 
-	for (const [index, question] of questions.entries()) {
+/** 런타임에 들어온 값이 유효한 TPersona인지 검사한다 (타입은 신뢰하지 않는다) */
+const isValidPersona = (value: unknown): value is TPersona => {
+	return typeof value === "string" && VALID_PERSONAS.includes(value);
+};
+
+/**
+ * `post` 입력 전체(questions/replies/scan)의 `persona`·`kind`를 미리 검사한다.
+ * @description `persona`와 `kind`는 둘 다 LLM이 작성한 JSON에서 오므로 형식이 어긋날 수
+ * 있다. `buildMarker`는 `kind`만 정규식으로 검사하고 `persona`는 그대로 문자열 템플릿에
+ * 꽂아 넣어 통과시키므로, 잘못된 persona("junior" 같은 오타·빈 문자열 등)는 kind 검증만으로는
+ * 걸러지지 않고 게시 루프를 통과해 `appToken.ts`의 `config.bots[persona]`에서 원인을 알기
+ * 어려운 형태로 터진다. 그 시점엔 이미 앞선 항목들이 GitHub에 게시된 뒤일 수 있다. 그래서
+ * kind와 마찬가지로 persona도 첫 네트워크 호출보다 먼저, questions/replies/scan 전체에 걸쳐
+ * 검사하고, 문제 있는 항목을 전부 모아 한 번에 보고한다.
+ * @throws 하나라도 유효하지 않으면 Error. 배열 이름과 인덱스(`questions[1].kind` 등)로
+ * 위치를 명시하며, kind 문제와 persona 문제가 함께 있으면 같은 메시지에 모두 나열한다.
+ */
+export const validatePostInput = ({
+	questions,
+	replies,
+	scan,
+}: {
+	questions: IFQuestionInput[];
+	replies: IFReplyInput[];
+	scan: { persona: TPersona; body: string } | null;
+}): void => {
+	const problems: string[] = [];
+
+	questions.forEach((question, index) => {
+		if (!isValidPersona(question.persona)) {
+			problems.push(`questions[${index}].persona 가 유효하지 않습니다: "${question.persona}"`);
+		}
+
 		try {
 			buildMarker({ persona: question.persona, kind: question.kind });
 		} catch {
-			invalidEntries.push(`#${index} (persona: ${question.persona}, kind: "${question.kind}")`);
+			problems.push(`questions[${index}].kind 가 유효하지 않습니다: "${question.kind}"`);
 		}
+	});
+
+	replies.forEach((reply, index) => {
+		if (!isValidPersona(reply.persona)) {
+			problems.push(`replies[${index}].persona 가 유효하지 않습니다: "${reply.persona}"`);
+		}
+	});
+
+	if (scan !== null && !isValidPersona(scan.persona)) {
+		problems.push(`scan.persona 가 유효하지 않습니다: "${scan.persona}"`);
 	}
 
-	if (invalidEntries.length > 0) {
+	if (problems.length > 0) {
 		throw new Error(
-			`questions에 유효하지 않은 kind가 있어 게시를 중단합니다:\n${invalidEntries
-				.map((entry) => `- ${entry}`)
-				.join("\n")}`,
+			`post 입력이 유효하지 않아 게시를 중단합니다:\n${problems.map((problem) => `- ${problem}`).join("\n")}`,
 		);
 	}
 };
@@ -101,6 +133,41 @@ const runPending = async (pullNumber: number): Promise<void> => {
 };
 
 /**
+ * 게시가 어느 항목에서 멈췄는지를 진단 로그용 위치 문자열로 나타낸다.
+ * @description questions → replies → scan은 항상 순차로 진행되고 각 항목은 완전히
+ * 성공하거나 아예 실패하므로, "성공한 개수"만으로 실패 지점을 역산할 수 있다.
+ */
+const describeFailurePosition = ({
+	questionsTotal,
+	questionsPosted,
+	repliesTotal,
+	repliesPosted,
+	hasScan,
+	scanPosted,
+}: {
+	questionsTotal: number;
+	questionsPosted: number;
+	repliesTotal: number;
+	repliesPosted: number;
+	hasScan: boolean;
+	scanPosted: boolean;
+}): string => {
+	if (questionsPosted < questionsTotal) {
+		return `questions[${questionsPosted}]`;
+	}
+
+	if (repliesPosted < repliesTotal) {
+		return `replies[${repliesPosted}]`;
+	}
+
+	if (hasScan && !scanPosted) {
+		return "scan";
+	}
+
+	return "알 수 없음";
+};
+
+/**
  * `post` 서브커맨드의 게시 로직 본체.
  * @description 이미 파싱된 입력 객체를 받으므로 파일 I/O 없이 테스트할 수 있다.
  * questions → replies → scan 순서로 진행하되, 각 단계 내부는 반드시 for...of + await로
@@ -108,7 +175,10 @@ const runPending = async (pullNumber: number): Promise<void> => {
  * 캐싱하는데, 캐싱 대상이 "발급 중인 Promise"가 아니라 "발급된 값"이라 같은 페르소나에
  * 대한 동시 호출은 각자 토큰을 중복 발급받는 경쟁이 생긴다. 순차 게시는 이 경쟁을
  * 막을 뿐 아니라, 실패 시 정확히 몇 번째 코멘트까지 게시됐는지 보고할 수 있게 해준다.
- * questions 게시는 validateQuestionKinds로 전체 배치를 먼저 검증한 뒤에만 시작한다.
+ * 게시는 validatePostInput으로 전체 배치(persona·kind)를 먼저 검증한 뒤에만 시작한다.
+ * 쓰기는 되돌릴 수 없고 복구는 운영자가 수동으로 해야 하므로, 각 게시 로그에 몇 번째/전체
+ * 건수인지 명시하고, 도중에 실패하면 무엇이 이미 게시됐고 어디서 멈췄는지 stderr에 남긴 뒤
+ * 원본 에러를 그대로 전파한다(재시도·롤백·재개 로직은 없다 — 보고만 한다).
  */
 export const runPostWithInput = async ({
 	pullNumber,
@@ -119,46 +189,75 @@ export const runPostWithInput = async ({
 }): Promise<void> => {
 	const questions = input.questions ?? [];
 	const replies = input.replies ?? [];
+	const scan = input.scan ?? null;
 
-	validateQuestionKinds(questions);
+	validatePostInput({ questions, replies, scan });
 
-	if (questions.length > 0) {
-		const { headSha } = await getPullRequest(pullNumber);
+	let questionsPosted = 0;
+	let repliesPosted = 0;
+	let scanPosted = false;
 
-		for (const question of questions) {
-			await postReviewComment({
-				persona: question.persona,
-				pullNumber,
-				path: question.path,
-				line: question.line,
-				commitSha: headSha,
-				body: withMarker({
-					body: question.body,
+	try {
+		if (questions.length > 0) {
+			const { headSha } = await getPullRequest(pullNumber);
+
+			for (const [index, question] of questions.entries()) {
+				await postReviewComment({
 					persona: question.persona,
-					kind: question.kind,
-				}),
-			});
-			console.error(`질문 게시: ${question.persona} ${question.path}:${question.line}`);
+					pullNumber,
+					path: question.path,
+					line: question.line,
+					commitSha: headSha,
+					body: withMarker({
+						body: question.body,
+						persona: question.persona,
+						kind: question.kind,
+					}),
+				});
+				questionsPosted += 1;
+				console.error(
+					`질문 게시 ${index + 1}/${questions.length}: ${question.persona} ${question.path}:${question.line}`,
+				);
+			}
 		}
-	}
 
-	for (const reply of replies) {
-		await postReviewReply({
-			persona: reply.persona,
-			pullNumber,
-			rootId: reply.rootId,
-			body: withMarker({ body: reply.body, persona: reply.persona, kind: "reply" }),
-		});
-		console.error(`재답변 게시: ${reply.persona} 스레드 ${reply.rootId}`);
-	}
+		for (const [index, reply] of replies.entries()) {
+			await postReviewReply({
+				persona: reply.persona,
+				pullNumber,
+				rootId: reply.rootId,
+				body: withMarker({ body: reply.body, persona: reply.persona, kind: "reply" }),
+			});
+			repliesPosted += 1;
+			console.error(`재답변 게시 ${index + 1}/${replies.length}: ${reply.persona} 스레드 ${reply.rootId}`);
+		}
 
-	if (input.scan !== null && input.scan !== undefined) {
-		await postIssueComment({
-			persona: input.scan.persona,
-			pullNumber,
-			body: withMarker({ body: input.scan.body, persona: input.scan.persona, kind: "scan" }),
+		if (scan !== null) {
+			await postIssueComment({
+				persona: scan.persona,
+				pullNumber,
+				body: withMarker({ body: scan.body, persona: scan.persona, kind: "scan" }),
+			});
+			scanPosted = true;
+			console.error("지적 요약 코멘트 게시");
+		}
+	} catch (error) {
+		const failurePosition = describeFailurePosition({
+			questionsTotal: questions.length,
+			questionsPosted,
+			repliesTotal: replies.length,
+			repliesPosted,
+			hasScan: scan !== null,
+			scanPosted,
 		});
-		console.error("지적 요약 코멘트 게시");
+
+		console.error(
+			`게시 중단 (실패 지점: ${failurePosition}) — 성공: questions ${questionsPosted}/${questions.length}건, ` +
+				`replies ${repliesPosted}/${replies.length}건, scan ${scan === null ? "대상 없음" : scanPosted ? "게시됨" : "미게시"}. ` +
+				"이미 게시된 항목은 GitHub에 그대로 남아 있으니 재실행 전에 확인하세요.",
+		);
+
+		throw error;
 	}
 };
 

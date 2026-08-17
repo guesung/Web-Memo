@@ -104,6 +104,21 @@ Turborepo 기반 모노레포입니다.
 **Testing & Infra**
 - `e2e/` — Playwright E2E 테스트 스위트
 
+### ⚠️ `apps/app`(React Native)에서 `@web-memo/shared` import 규칙
+
+**앱에서는 배럴 export(`@web-memo/shared/utils`)를 import하지 않습니다.**
+좁은 하위 경로(`@web-memo/shared/utils/url` 등)를 씁니다.
+
+`src/utils/index.ts`는 `Environment.ts`와 `Sentry.ts`를 재export하고, 이 둘은
+`@web-memo/env`를 import합니다. `@web-memo/env`는 `tsup`이 빌드 시점에 환경변수
+값을 인라인한 `dist/`만 노출하는데, `dist/`는 gitignore 대상이라 EAS 빌드
+샌드박스에 복사되지 않습니다. 그래서 Metro가 `@web-memo/env`를 해석하지 못하고
+**iOS 빌드가 실패**합니다. 웹/확장은 자체 번들러가 `dist/`를 갖고 있어 문제가
+드러나지 않으므로, 앱 빌드에서만 터집니다.
+
+필요한 심볼이 좁은 경로로 노출돼 있지 않다면 `packages/shared/package.json`의
+`exports`와 `typesVersions`에 하위 경로를 추가하세요.
+
 ### 확장 프로그램 진입점 (Manifest V3)
 
 - **Background Script**: 백그라운드 작업용 service worker

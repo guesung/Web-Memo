@@ -163,7 +163,7 @@ export const parseMarker = (body: string): IFMarker | null => {
 - [ ] **Step 4: 테스트 통과 확인**
 
 Run: `pnpm exec vitest run scripts/ai-reviewer/markers.test.ts`
-Expected: PASS (6 tests)
+Expected: PASS (7 tests)
 
 - [ ] **Step 5: 커밋**
 
@@ -449,14 +449,17 @@ export const findPendingThreads = ({
 		}
 
 		const replies = repliesByRoot.get(root.id) ?? [];
-		const lastAuthorIndex = replies.findLastIndex((reply) => reply.user.login === prAuthor);
+		const authorReplies = replies.filter((reply) => reply.user.login === prAuthor);
 
-		if (lastAuthorIndex === -1) {
+		if (authorReplies.length === 0) {
 			continue;
 		}
 
+		// 조건 3의 판정 기준은 작성자의 *첫* 답글이다. 마지막 답글로 판정하면
+		// 봇이 답한 뒤 작성자가 답글을 더 달 때 1턴 제한이 깨진다 (스펙 §4.4).
+		const firstAuthorIndex = replies.findIndex((reply) => reply.user.login === prAuthor);
 		const hasBotReplyAfter = replies
-			.slice(lastAuthorIndex + 1)
+			.slice(firstAuthorIndex + 1)
 			.some((reply) => parseMarker(reply.body)?.persona === marker.persona);
 
 		if (hasBotReplyAfter) {
@@ -469,7 +472,7 @@ export const findPendingThreads = ({
 			path: root.path,
 			line: root.line,
 			question: root.body,
-			authorReply: replies[lastAuthorIndex].body,
+			authorReply: authorReplies[authorReplies.length - 1].body,
 		});
 	}
 
@@ -1615,7 +1618,7 @@ Expected: `--pr <번호> 가 필요합니다.` 출력 후 exit code 1
 - [ ] **Step 3: 기존 테스트가 모두 통과하는지 확인**
 
 Run: `pnpm exec vitest run scripts/ai-reviewer`
-Expected: PASS (34 tests: markers 6, threads 10, followup 9, appToken 5, github 4)
+Expected: PASS (39 tests: markers 7, threads 14, followup 9, appToken 5, github 4)
 
 - [ ] **Step 4: 커밋**
 

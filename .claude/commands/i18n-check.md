@@ -1,111 +1,120 @@
-# i18n Translation Check & Fill Command
+# i18n 번역 점검 & 채우기 커맨드
 
-Check and fill missing translations in web and chrome extension i18n files.
+웹과 크롬 확장 프로그램의 i18n 파일에서 누락된 번역을 점검하고 채웁니다.
 
-## Your Task
+## 수행할 작업
 
-Analyze and synchronize translation files across the project:
+프로젝트 전반의 번역 파일을 분석하고 동기화합니다.
 
-### Step 1: Read Translation Files
+### 1단계: 번역 파일 읽기
 
-Read all 4 translation files:
-1. `packages/web/src/modules/i18n/locales/en/translation.json` (Web English)
-2. `packages/web/src/modules/i18n/locales/ko/translation.json` (Web Korean)
-3. `chrome-extension/public/_locales/en/messages.json` (Extension English)
-4. `chrome-extension/public/_locales/ko/messages.json` (Extension Korean)
+번역 파일 4개를 모두 읽습니다.
 
-### Step 2: Compare and Identify Missing Keys
+1. `apps/web/src/modules/i18n/locales/en/translation.json` (웹 영어)
+2. `apps/web/src/modules/i18n/locales/ko/translation.json` (웹 한국어)
+3. `apps/chrome-extension/public/_locales/en/messages.json` (확장 프로그램 영어)
+4. `apps/chrome-extension/public/_locales/ko/messages.json` (확장 프로그램 한국어)
 
-**For Web Translation Files:**
-- Compare all nested keys between EN and KO
-- Identify keys present in EN but missing in KO
-- Identify keys present in KO but missing in EN
-- Report the full key path (e.g., `introduce.hero.title`)
+### 2단계: 비교하고 누락된 키 찾기
 
-**For Chrome Extension Messages:**
-- Compare top-level keys between EN and KO
-- Identify keys present in EN but missing in KO
-- Identify keys present in KO but missing in EN
-- Note: Extension messages use `{ "message": "..." }` format
+**웹 번역 파일:**
 
-### Step 3: Report Findings
+- EN과 KO의 모든 중첩 키를 비교
+- EN에는 있지만 KO에 없는 키를 식별
+- KO에는 있지만 EN에 없는 키를 식별
+- 전체 키 경로를 보고 (예: `introduce.hero.title`)
 
-Create a summary report in this format:
+**크롬 확장 프로그램 메시지:**
+
+- EN과 KO의 최상위 키를 비교
+- EN에는 있지만 KO에 없는 키를 식별
+- KO에는 있지만 EN에 없는 키를 식별
+- 참고: 확장 프로그램 메시지는 `{ "message": "..." }` 형식을 사용
+
+### 3단계: 결과 보고
+
+아래 형식으로 요약 리포트를 작성합니다.
 
 ```
-## Web Translation Files
+## 웹 번역 파일
 
-### Missing in KO (exists in EN):
+### KO에 누락 (EN에는 존재):
 - key.path.here
 
-### Missing in EN (exists in KO):
+### EN에 누락 (KO에는 존재):
 - key.path.here
 
-## Chrome Extension Messages
+## 크롬 확장 프로그램 메시지
 
-### Missing in KO (exists in EN):
+### KO에 누락 (EN에는 존재):
 - keyName
 
-### Missing in EN (exists in KO):
+### EN에 누락 (KO에는 존재):
 - keyName
 ```
 
-### Step 4: Fill Missing Translations
+### 4단계: 누락된 번역 채우기
 
-For each missing translation:
+누락된 번역마다 아래를 수행합니다.
 
-**If missing in KO:**
-- Translate the EN text to natural Korean
-- Match the tone and style of existing KO translations
-- Preserve any interpolation variables like `{{variable}}`
+**KO에 누락된 경우:**
 
-**If missing in EN:**
-- Translate the KO text to natural English
-- Match the tone and style of existing EN translations
-- Preserve any interpolation variables like `{{variable}}`
+- EN 텍스트를 자연스러운 한국어로 번역
+- 기존 KO 번역의 어조와 문체를 맞춤
+- `{{variable}}` 같은 보간 변수는 그대로 유지
 
-**Extension Message Format:**
+**EN에 누락된 경우:**
+
+- KO 텍스트를 자연스러운 영어로 번역
+- 기존 EN 번역의 어조와 문체를 맞춤
+- `{{variable}}` 같은 보간 변수는 그대로 유지
+
+**확장 프로그램 메시지 형식:**
+
 ```json
 {
   "keyName": {
-    "message": "Translated text here"
+    "message": "번역된 텍스트"
   }
 }
 ```
 
-**Web Translation Format:**
-- Maintain the same nested structure
-- Use proper JSON formatting with tabs for indentation
+**웹 번역 형식:**
 
-### Step 5: Apply Changes
+- 동일한 중첩 구조를 유지
+- 들여쓰기는 탭을 사용해 올바른 JSON 형식으로 작성
 
-Edit the translation files to add the missing translations:
-- Insert new keys in alphabetical order within their section when possible
-- Maintain consistent formatting (tabs, not spaces)
-- Preserve the existing structure
+### 5단계: 변경사항 적용
 
-### Quality Guidelines
+번역 파일을 수정해 누락된 번역을 추가합니다.
 
-1. **Tone Consistency:**
-   - Korean: Friendly, casual tone with "~해요" endings (e.g., "저장했어요", "확인해주세요")
-   - English: Clear, concise, user-friendly
+- 가능하면 해당 섹션 안에서 알파벳 순서로 새 키를 삽입
+- 일관된 포매팅 유지 (스페이스가 아닌 탭)
+- 기존 구조를 보존
 
-2. **Technical Terms:**
-   - Keep technical terms consistent (memo, category, wishlist, etc.)
-   - Don't over-translate brand/feature names
+### 품질 가이드라인
 
-3. **Variables:**
-   - Never translate `{{variable}}` placeholders
-   - Ensure variable positions make grammatical sense in target language
+1. **어조 일관성:**
+   - 한국어: "~해요" 어미의 친근하고 편안한 어조 (예: "저장했어요", "확인해주세요")
+   - 영어: 명확하고 간결하며 사용자 친화적으로
 
-4. **Format Preservation:**
-   - Maintain newlines (`\n`) as in source
-   - Keep Unicode escapes if present
-   - Preserve bullet point formatting
+2. **기술 용어:**
+   - 기술 용어는 일관되게 유지 (memo, category, wishlist 등)
+   - 브랜드명·기능명을 과도하게 번역하지 않기
 
-## Output
+3. **변수:**
+   - `{{variable}}` 플레이스홀더는 절대 번역하지 않기
+   - 대상 언어에서 변수 위치가 문법적으로 자연스러운지 확인
 
-After completing the task, provide:
-1. Summary of all missing translations found
-2. List of translations added with before/after context
-3. Confirmation that files have been updated
+4. **형식 보존:**
+   - 원본의 줄바꿈(`\n`)을 유지
+   - 유니코드 이스케이프가 있다면 유지
+   - 불릿 포인트 포매팅을 보존
+
+## 출력
+
+작업을 마친 뒤 다음을 제공합니다.
+
+1. 발견한 누락 번역 전체 요약
+2. 추가한 번역 목록과 전후 맥락
+3. 파일이 수정되었다는 확인

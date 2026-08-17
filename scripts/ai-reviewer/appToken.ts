@@ -1,0 +1,245 @@
+import { createSign } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { resolve } from "node:path";
+import type { TPersona } from "./markers.ts";
+
+const CONFIG_PATH = resolve(homedir(), ".config/web-memo-bots/config.json");
+const JWT_LIFETIME_SECONDS = 540;
+const GITHUB_API_BASE = "https://api.github.com";
+
+/**
+ * 페르소나별로 발급받은 installation access token을 프로세스 생애주기 동안 캐싱한다.
+ * @description installation token은 1시간 유효한데 이 CLI 프로세스는 수 초 안에
+ * 종료되므로, 만료·갱신 로직 없이 최초 1회 발급한 값을 그대로 재사용해도 안전하다.
+ * 프로세스가 오래 살아남는 호출자가 생기면 그때 TTL을 추가한다.
+ */
+const installationTokenCache = new Map<TPersona, string>();
+
+/** 봇 하나의 GitHub App 자격 정보 */
+export interface IFBotConfig {
+	/** 코멘트 서명에 쓰는 한글 이름 (예: 이도현) */
+	displayName: string;
+	/** 코멘트 서명에 쓰는 직급 (예: 인턴 개발자) */
+	role: string;
+	appId: string;
+	installationId: string;
+	/** private key 경로. `~` 확장을 지원한다 */
+	privateKeyPath: string;
+}
+
+/** `~/.config/web-memo-bots/config.json` 전체 스키마 */
+export interface IFReviewerConfig {
+	/** `owner/repo` 형식 */
+	repo: string;
+	/** PR 작성자 GitHub 로그인. 미답변 스레드 판별에 쓴다 */
+	prAuthor: string;
+	bots: Record<TPersona, IFBotConfig>;
+}
+
+const expandHome = (path: string): string => {
+	return path.startsWith("~/") ? resolve(homedir(), path.slice(2)) : path;
+};
+
+/** 봇 하나가 갖춰야 하는 필드 목록. `IFBotConfig`의 키와 일치시켜 둔다 */
+const REQUIRED_BOT_FIELDS = [
+	"displayName",
+	"role",
+	"appId",
+	"installationId",
+	"privateKeyPath",
+] as const;
+
+/** 값이 빈 문자열이거나 공백만으로 이루어졌으면 "없는 값"으로 취급한다 */
+const isBlank = (value: unknown): boolean => {
+	return typeof value !== "string" || value.trim().length === 0;
+};
+
+/**
+ * 파싱된 설정 객체에서 이 모듈이 실제로 의존하는 모든 필드의 누락·공백을 모아 돌려준다.
+ * @description 문제를 발견하는 즉시 던지지 않고 전부 모아서 반환한다.
+ * 사용자가 손으로 설정 파일을 고칠 때 한 번에 여러 문제를 확인할 수 있게 하기 위해서다.
+ */
+const collectConfigProblems = (config: Record<string, unknown>): string[] => {
+	const problems: string[] = [];
+	const repo = config.repo;
+
+	if (isBlank(repo)) {
+		problems.push("repo 가 없습니다");
+	} else if (!(repo as string).includes("/")) {
+		problems.push(`repo 는 "owner/repo" 형식이어야 합니다 (현재 값: "${repo}")`);
+	}
+
+	if (isBlank(config.prAuthor)) {
+		problems.push("prAuthor 가 없습니다");
+	}
+
+	const bots = config.bots as Record<string, Record<string, unknown>> | undefined | null;
+
+	if (bots === undefined || bots === null) {
+		problems.push("bots 가 없습니다");
+
+		return problems;
+	}
+
+	for (const persona of ["intern", "senior"] as const) {
+		const bot = bots[persona];
+
+		if (bot === undefined || bot === null) {
+			problems.push(`bots.${persona} 가 없습니다`);
+			continue;
+		}
+
+		for (const field of REQUIRED_BOT_FIELDS) {
+			if (isBlank(bot[field])) {
+				problems.push(`bots.${persona}.${field} 가 없습니다`);
+			}
+		}
+	}
+
+	return problems;
+};
+
+/**
+ * 설정 JSON 문자열을 파싱하고 유효성을 검사한다.
+ * @description 파일 IO를 하지 않으므로 문자열만으로 테스트할 수 있다. JSON 파싱에
+ * 실패하면 설정 경로를 담아 안내한다. 파싱에 성공하면 이 모듈이 실제로 쓰는 모든 필드
+ * (최상위 `repo`/`prAuthor`, 각 페르소나의 `displayName`/`role`/`appId`/
+ * `installationId`/`privateKeyPath`)의 누락·공백을 전부 모아 하나의 에러로 던진다.
+ * `config.json`이 `null`이거나 객체가 아닌 값(배열·문자열·숫자 등)으로 파싱되면,
+ * `collectConfigProblems`가 그 값의 속성에 접근하다 경로 정보 없는 raw `TypeError`를
+ * 던지게 되므로 그 전에 걸러 다른 설정 에러와 같은 형식의 안내로 바꾼다.
+ * @throws 문제가 하나라도 있으면 Error. 메시지에 configPath와 문제된 필드를 모두 나열한다.
+ */
+export const parseReviewerConfig = ({
+	raw,
+	configPath,
+}: {
+	raw: string;
+	configPath: string;
+}): IFReviewerConfig => {
+	let parsed: unknown;
+
+	try {
+		parsed = JSON.parse(raw);
+	} catch (cause) {
+		const reason = cause instanceof Error ? cause.message : String(cause);
+
+		throw new Error(`${configPath} 이(가) 올바른 JSON이 아닙니다: ${reason}`);
+	}
+
+	if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+		throw new Error(`${configPath} 설정이 올바르지 않습니다:\n- 최상위 값이 객체가 아닙니다`);
+	}
+
+	const config = parsed as Record<string, unknown>;
+	const problems = collectConfigProblems(config);
+
+	if (problems.length > 0) {
+		throw new Error(
+			`${configPath} 설정이 올바르지 않습니다:\n${problems.map((problem) => `- ${problem}`).join("\n")}`,
+		);
+	}
+
+	return config as unknown as IFReviewerConfig;
+};
+
+/**
+ * 봇 설정 파일을 읽어와 파싱한다.
+ * @description 파일이 없으면 경로를 안내하며 던진다. 파일을 읽는 데 성공하면
+ * 실제 유효성 검사는 `parseReviewerConfig`에 위임한다.
+ * @param configPath 설정 파일 경로. 생략하면 `CONFIG_PATH`(`~/.config/web-memo-bots/config.json`)를 쓴다.
+ * 테스트에서 실제 홈 디렉터리를 건드리지 않고 검증할 수 있도록 주입 지점을 열어 둔다.
+ */
+export const loadReviewerConfig = (configPath: string = CONFIG_PATH): IFReviewerConfig => {
+	let raw: string;
+
+	try {
+		raw = readFileSync(configPath, "utf8");
+	} catch {
+		throw new Error(
+			`봇 설정 파일을 찾을 수 없습니다: ${configPath}\n` +
+				"scripts/ai-reviewer/README.md 의 설정 방법을 먼저 수행하세요.",
+		);
+	}
+
+	return parseReviewerConfig({ raw, configPath });
+};
+
+/**
+ * GitHub App 인증용 JWT를 만든다.
+ * @description GitHub는 만료를 10분 이내로 요구하므로 9분으로 둔다.
+ * 서버 시계가 앞설 때를 대비해 iat를 60초 앞당긴다.
+ */
+export const buildAppJwt = ({
+	appId,
+	privateKeyPem,
+}: {
+	appId: string;
+	privateKeyPem: string;
+}): string => {
+	const encode = (value: object): string => {
+		return Buffer.from(JSON.stringify(value)).toString("base64url");
+	};
+
+	const issuedAt = Math.floor(Date.now() / 1000) - 60;
+	const header = encode({ alg: "RS256", typ: "JWT" });
+	const payload = encode({ iat: issuedAt, exp: issuedAt + JWT_LIFETIME_SECONDS, iss: appId });
+	const signer = createSign("RSA-SHA256");
+	signer.update(`${header}.${payload}`);
+
+	return `${header}.${payload}.${signer.sign(privateKeyPem, "base64url")}`;
+};
+
+/**
+ * 해당 페르소나 봇의 installation access token을 발급받는다.
+ * @description 토큰 수명은 1시간이므로 페르소나별로 프로세스 생애주기 동안 한 번만
+ * 발급받아 캐싱하고, 이후 호출은 캐시된 값을 그대로 돌려준다.
+ */
+export const issueInstallationToken = async (persona: TPersona): Promise<string> => {
+	const cached = installationTokenCache.get(persona);
+
+	if (cached !== undefined) {
+		return cached;
+	}
+
+	const config = loadReviewerConfig();
+	const bot = config.bots[persona];
+	const privateKeyPath = expandHome(bot.privateKeyPath);
+	let privateKeyPem: string;
+
+	try {
+		privateKeyPem = readFileSync(privateKeyPath, "utf8");
+	} catch {
+		throw new Error(
+			`${persona} 봇의 private key 파일을 읽을 수 없습니다: ${privateKeyPath}\n` +
+				`bots.${persona}.privateKeyPath 설정을 확인하세요.`,
+		);
+	}
+
+	const jwt = buildAppJwt({ appId: bot.appId, privateKeyPem });
+
+	const response = await fetch(
+		`${GITHUB_API_BASE}/app/installations/${bot.installationId}/access_tokens`,
+		{
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${jwt}`,
+				Accept: "application/vnd.github+json",
+				"X-GitHub-Api-Version": "2022-11-28",
+			},
+		},
+	);
+
+	if (!response.ok) {
+		throw new Error(
+			`${persona} 봇 토큰 발급 실패 (${response.status}): ${await response.text()}`,
+		);
+	}
+
+	const body = (await response.json()) as { token: string };
+
+	installationTokenCache.set(persona, body.token);
+
+	return body.token;
+};

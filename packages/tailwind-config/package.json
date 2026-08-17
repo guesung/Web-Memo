@@ -1,6 +1,5 @@
 {
 	"name": "@web-memo/tailwindcss-config",
-	"version": "1.10.14",
 	"description": "Tailwind CSS configuration for boilerplate",
 	"main": "./tailwind.config.js",
 	"private": true,

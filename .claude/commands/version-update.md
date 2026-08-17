@@ -17,7 +17,7 @@
 
 ### 0단계: 브랜치 확인
 
-먼저 현재 브랜치를 확인하고 master 브랜치로 이동합니다:
+먼저 현재 브랜치를 확인하고 최신 master를 기준으로 작업합니다:
 
 ```bash
 git branch --show-current
@@ -25,11 +25,17 @@ git branch --show-current
 
 **master 브랜치가 아닌 경우:**
 1. master 브랜치로 이동 후 최신화
+2. 버전 업데이트용 작업 브랜치를 master에서 분기
 
 ```bash
 git checkout master
-git pull
+git pull origin master
+git checkout -b chore/version-update
 ```
+
+> ⚠️ `develop`을 `master`로 머지하지 않습니다. `develop`은 테스트 서버 전용
+> 브랜치이며, 모든 변경은 작업 브랜치 → `master` PR로만 반영됩니다.
+> ([docs/branch-strategy.md](../../docs/branch-strategy.md))
 
 ### 1단계: 변경 내용 분석
 

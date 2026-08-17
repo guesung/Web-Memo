@@ -1,4 +1,4 @@
-# Web Memo PRD (Product Requirements Document)
+# Web Memo 제품 요구사항 정의서 (PRD)
 
 ## 1. 문제 정의
 

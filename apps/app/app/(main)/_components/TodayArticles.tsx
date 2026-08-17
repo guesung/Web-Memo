@@ -32,7 +32,7 @@ export function TodayArticles({ onPressArticle }: TodayArticlesProps) {
 		<View className="mb-4">
 			<View className="flex-row items-center gap-1.5 mb-2.5">
 				<BookOpen size={16} color="#a855f7" />
-				<Text className="text-[15px] font-bold text-foreground">
+				<Text className="text-[15px] font-bold text-foreground dark:text-white">
 					오늘 읽을 아티클
 				</Text>
 			</View>
@@ -40,7 +40,7 @@ export function TodayArticles({ onPressArticle }: TodayArticlesProps) {
 				{todayArticleList.map((memo) => (
 					<TouchableOpacity
 						key={memo.id}
-						className="flex-row items-center gap-2.5 rounded-xl border-2 border-muted bg-card px-3.5 py-3"
+						className="flex-row items-center gap-2.5 rounded-xl border-2 border-muted dark:border-neutral-800 bg-card dark:bg-neutral-900 px-3.5 py-3"
 						onPress={() => onPressArticle(memo.url)}
 						activeOpacity={0.7}
 					>
@@ -53,7 +53,7 @@ export function TodayArticles({ onPressArticle }: TodayArticlesProps) {
 							<BookOpen size={20} color="#9ca3af" />
 						)}
 						<Text
-							className="flex-1 text-sm text-secondary-foreground"
+							className="flex-1 text-sm text-secondary-foreground dark:text-neutral-300"
 							numberOfLines={1}
 						>
 							{memo.title}

@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity } from "react-native";
+import { Text, TouchableOpacity, useColorScheme } from "react-native";
 import { AppleIcon, GoogleIcon, KakaoIcon } from "./icons";
 
 interface SocialLoginButtonProps {
@@ -41,6 +41,10 @@ export function SocialLoginButton({
 }: SocialLoginButtonProps) {
 	const config = PROVIDER_CONFIG[provider];
 	const Icon = config.icon;
+	const isDark = useColorScheme() === "dark";
+
+	// 검정 배경인 Apple 버튼은 다크 테마에서 화면 배경과 붙어버리므로 테두리로 경계를 만든다.
+	const isBorderlessOnDark = isDark && provider === "apple";
 
 	return (
 		<TouchableOpacity
@@ -48,8 +52,8 @@ export function SocialLoginButton({
 			style={[
 				{
 					backgroundColor: config.backgroundColor,
-					borderColor: config.borderColor,
-					borderWidth: config.borderWidth,
+					borderColor: isBorderlessOnDark ? "#3f3f46" : config.borderColor,
+					borderWidth: isBorderlessOnDark ? 1 : config.borderWidth,
 					shadowColor: "#000",
 					shadowOffset: { width: 0, height: 2 },
 					shadowOpacity: 0.1,

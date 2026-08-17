@@ -133,20 +133,22 @@ export const parseReviewerConfig = ({
  * 봇 설정 파일을 읽어와 파싱한다.
  * @description 파일이 없으면 경로를 안내하며 던진다. 파일을 읽는 데 성공하면
  * 실제 유효성 검사는 `parseReviewerConfig`에 위임한다.
+ * @param configPath 설정 파일 경로. 생략하면 `CONFIG_PATH`(`~/.config/web-memo-bots/config.json`)를 쓴다.
+ * 테스트에서 실제 홈 디렉터리를 건드리지 않고 검증할 수 있도록 주입 지점을 열어 둔다.
  */
-export const loadReviewerConfig = (): IFReviewerConfig => {
+export const loadReviewerConfig = (configPath: string = CONFIG_PATH): IFReviewerConfig => {
 	let raw: string;
 
 	try {
-		raw = readFileSync(CONFIG_PATH, "utf8");
+		raw = readFileSync(configPath, "utf8");
 	} catch {
 		throw new Error(
-			`봇 설정 파일을 찾을 수 없습니다: ${CONFIG_PATH}\n` +
+			`봇 설정 파일을 찾을 수 없습니다: ${configPath}\n` +
 				"docs/superpowers/plans/2026-08-17-ai-review-personas.md 의 Task 4를 먼저 수행하세요.",
 		);
 	}
 
-	return parseReviewerConfig({ raw, configPath: CONFIG_PATH });
+	return parseReviewerConfig({ raw, configPath });
 };
 
 /**

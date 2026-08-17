@@ -1,8 +1,20 @@
-import { createVerify, generateKeyPairSync } from "node:crypto";
+import { createVerify, generateKeyPairSync, randomUUID } from "node:crypto";
+import { tmpdir } from "node:os";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { buildAppJwt, loadReviewerConfig, parseReviewerConfig } from "./appToken.ts";
 
 const FAKE_CONFIG_PATH = "/fake/path/web-memo-bots/config.json";
+
+/**
+ * 존재하지 않는 것이 보장된 설정 파일 경로를 만든다.
+ * @description 실제로 생성하지 않는다. 이 머신에 진짜 설정 파일이 있는지 없는지와
+ * 무관하게 항상 "파일 없음" 경로를 테스트하기 위해 OS 임시 디렉터리 아래
+ * 매번 다른 UUID 서브디렉터리를 조합해 경로 충돌 가능성을 없앤다.
+ */
+const buildNonexistentConfigPath = (): string => {
+	return resolve(tmpdir(), `web-memo-bots-test-${randomUUID()}`, "config.json");
+};
 
 const VALID_BOT = {
 	displayName: "이도현",
@@ -102,8 +114,18 @@ describe("buildAppJwt", () => {
 });
 
 describe("loadReviewerConfig", () => {
-	it("설정 파일이 없으면 예상 경로를 포함한 에러를 던진다", () => {
-		expect(() => loadReviewerConfig()).toThrowError(/config\.json/);
+	it("설정 파일이 없으면 그 경로와 설정 안내를 포함한 에러를 던진다", () => {
+		const configPath = buildNonexistentConfigPath();
+
+		try {
+			loadReviewerConfig(configPath);
+			expect.unreachable("설정 파일이 없는데도 던지지 않았다");
+		} catch (error) {
+			const message = (error as Error).message;
+
+			expect(message).toContain(configPath);
+			expect(message).toMatch(/Task 4/);
+		}
 	});
 });
 

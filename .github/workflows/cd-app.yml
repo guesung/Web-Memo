@@ -19,6 +19,10 @@ jobs:
     # 플랫폼 전용 단계만 if로 분기합니다.
     name: ${{ matrix.platform }} 빌드
     runs-on: ${{ matrix.runner }}
+    env:
+      # 릴리스만 빌드 번호를 올립니다(ci). PR 검증 빌드는 버려지는 산출물이라
+      # 번호를 올리면 안 되므로 autoIncrement만 끈 verify 프로파일을 씁니다.
+      BUILD_PROFILE: ${{ inputs.deploy_target == 'production' && 'ci' || 'verify' }}
     strategy:
       # 한쪽 플랫폼이 실패해도 나머지는 끝까지 돌려서 원인을 한 번에 봅니다.
       fail-fast: false
@@ -67,7 +71,7 @@ jobs:
       # 서명 키(iOS 인증서 / Android 키스토어)는 EAS 서버에 등록된 것을 받아 씁니다.
       # 따라서 러너에는 EXPO_TOKEN 외에 별도 서명 시크릿이 필요 없습니다.
       - name: Build ${{ matrix.platform }}
-        run: cd apps/app && eas build --platform ${{ matrix.platform }} --profile ci --local --non-interactive --output ./${{ matrix.output }}
+        run: cd apps/app && eas build --platform ${{ matrix.platform }} --profile "$BUILD_PROFILE" --local --non-interactive --output ./${{ matrix.output }}
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4

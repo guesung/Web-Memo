@@ -20,6 +20,10 @@
 			"env": {
 				"NODE_ENV": "production"
 			}
+		},
+		"verify": {
+			"extends": "ci",
+			"autoIncrement": false
 		}
 	},
 	"submit": {

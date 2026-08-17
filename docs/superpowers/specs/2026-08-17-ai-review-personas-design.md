@@ -341,9 +341,19 @@ scripts/ai-reviewer/
 
 - App private key로 JWT(RS256) 서명 → `POST /app/installations/{id}/access_tokens`
 - 발급 토큰 수명 1시간 — 커맨드 실행 시점에 매번 새로 발급 (캐싱하지 않음)
-- 추가 의존성: **`@octokit/auth-app` 하나**
+- **추가 의존성 없음** — Node 내장 `node:crypto`(RS256 서명)와 전역 `fetch`만 사용한다
 
-이 레포에 pnpm·tsx가 이미 있으므로 실행 환경은 추가 설정이 필요 없다.
+### 8.2 실행 환경
+
+- **`.nvmrc` = v24. Node 24는 TypeScript를 네이티브로 실행한다** (타입 스트리핑).
+  `node scripts/ai-reviewer/cli.ts` 로 바로 실행되며 `tsx`나 빌드 단계가 필요 없다.
+  - 제약: 타입 스트리핑은 *지울 수 있는 문법*만 지원한다. `enum`, `namespace`,
+    생성자 파라미터 프로퍼티는 쓸 수 없고, 타입 전용 import는 `import type`으로 명시해야 한다.
+- 테스트는 루트 vitest를 쓴다. `vitest.config.ts`의 `include`가 `**/*.test.ts`이므로
+  `scripts/ai-reviewer/*.test.ts`가 자동으로 수집된다.
+- **biome는 `scripts/`를 검사하지 않는다** (`biome.json`의 `files.includes`가
+  `**/src/**`, `**/app/**`, `e2e/tests/**`로 한정). `pnpm lint`가 이 코드를 잡아주지
+  않으므로 포맷(탭 인덴트)은 수동으로 맞춘다.
 
 ---
 

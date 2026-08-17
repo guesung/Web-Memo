@@ -1618,7 +1618,7 @@ Expected: `--pr <번호> 가 필요합니다.` 출력 후 exit code 1
 - [ ] **Step 3: 기존 테스트가 모두 통과하는지 확인**
 
 Run: `pnpm exec vitest run scripts/ai-reviewer`
-Expected: PASS (39 tests: markers 7, threads 14, followup 9, appToken 5, github 4)
+Expected: PASS (44 tests: markers 7, threads 14, followup 14, appToken 5, github 4)
 
 - [ ] **Step 4: 커밋**
 

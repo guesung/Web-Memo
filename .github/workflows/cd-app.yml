@@ -1,10 +1,10 @@
-name: CD - App (iOS Build)
+name: CD - App (iOS / Android Build)
 
 on:
   workflow_call:
     inputs:
       deploy_target:
-        description: "배포 대상 (none = 빌드만, production = TestFlight 제출)"
+        description: "배포 대상 (none = 빌드만, production = 스토어 제출)"
         type: string
         default: "none"
       ref:
@@ -13,8 +13,24 @@ on:
         default: ""
 
 jobs:
-  build-ios:
-    runs-on: macos-26
+  build:
+    # iOS는 macOS 러너가 필수지만 Android는 ubuntu에서 돌려야 러너 과금이 절약됩니다.
+    # 빌드 전 단계(체크아웃~환경변수)가 두 플랫폼 동일해 matrix로 묶고,
+    # 플랫폼 전용 단계만 if로 분기합니다.
+    name: ${{ matrix.platform }} 빌드
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      # 한쪽 플랫폼이 실패해도 나머지는 끝까지 돌려서 원인을 한 번에 봅니다.
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ios
+            runner: macos-26
+            output: build.ipa
+          - platform: android
+            runner: ubuntu-latest
+            output: build.aab
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,6 +42,14 @@ jobs:
         with:
           node-version-file: ".nvmrc"
           cache: "pnpm"
+
+      # Gradle이 JDK 17을 요구합니다. ubuntu 러너의 기본 JDK 버전에 의존하지 않도록 명시합니다.
+      - name: Set up JDK
+        if: matrix.platform == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
 
       - uses: expo/expo-github-action@v8
         with:
@@ -40,22 +64,31 @@ jobs:
           echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
           echo "${{ secrets.APP_ENV_FILE }}" >> apps/app/.env
 
-      - name: Build iOS
-        run: cd apps/app && eas build --platform ios --profile ci --local --non-interactive --output ./build.ipa
+      # 서명 키(iOS 인증서 / Android 키스토어)는 EAS 서버에 등록된 것을 받아 씁니다.
+      # 따라서 러너에는 EXPO_TOKEN 외에 별도 서명 시크릿이 필요 없습니다.
+      - name: Build ${{ matrix.platform }}
+        run: cd apps/app && eas build --platform ${{ matrix.platform }} --profile ci --local --non-interactive --output ./${{ matrix.output }}
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ios-build
-          path: apps/app/build.ipa
+          name: ${{ matrix.platform }}-build
+          path: apps/app/${{ matrix.output }}
           retention-days: 7
 
       - name: Write App Store Connect API key
-        if: ${{ inputs.deploy_target == 'production' }}
+        if: ${{ inputs.deploy_target == 'production' && matrix.platform == 'ios' }}
         env:
           ASC_API_KEY_P8: ${{ secrets.EXPO_ASC_API_KEY_P8 }}
         run: echo "$ASC_API_KEY_P8" > apps/app/asc-api-key.p8
 
-      - name: Submit to TestFlight
+      - name: Write Google Play service account key
+        if: ${{ inputs.deploy_target == 'production' && matrix.platform == 'android' }}
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.EXPO_ANDROID_SERVICE_ACCOUNT_JSON }}
+        run: echo "$PLAY_SERVICE_ACCOUNT_JSON" > apps/app/play-service-account.json
+
+      # iOS는 TestFlight, Android는 Play Console 내부 테스트 트랙으로 올라갑니다.
+      - name: Submit to store
         if: ${{ inputs.deploy_target == 'production' }}
-        run: cd apps/app && eas submit --platform ios --profile production --path ./build.ipa --non-interactive
+        run: cd apps/app && eas submit --platform ${{ matrix.platform }} --profile production --path ./${{ matrix.output }} --non-interactive

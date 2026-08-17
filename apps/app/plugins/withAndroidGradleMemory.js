@@ -1,4 +1,4 @@
-const { withGradleProperties } = require("@expo/config-plugins");
+const { withGradleProperties } = require("expo/config-plugins");
 
 function withAndroidGradleMemory(config) {
 	return withGradleProperties(config, (config) => {

@@ -1,4 +1,4 @@
-const { withProjectBuildGradle } = require("@expo/config-plugins");
+const { withProjectBuildGradle } = require("expo/config-plugins");
 
 const KAKAO_MAVEN_REPO =
 	"maven { url 'https://devrepo.kakao.com/nexus/content/groups/public/' }";

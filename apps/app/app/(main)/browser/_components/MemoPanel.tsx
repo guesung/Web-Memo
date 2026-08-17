@@ -4,7 +4,6 @@ import {
 	ActivityIndicator,
 	Image,
 	Keyboard,
-	Platform,
 	ScrollView,
 	Text,
 	TextInput,
@@ -13,12 +12,14 @@ import {
 	View,
 } from "react-native";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
 import {
 	useLocalMemoByUrl,
 	useLocalMemoUpsert,
 } from "@/lib/hooks/useLocalMemos";
 import { useSupabaseMemoByUrl } from "@/lib/hooks/useMemoByUrl";
 import { useMemoUpsertMutation } from "@/lib/hooks/useMemoMutation";
+import { useSettingQuery } from "@/lib/hooks/useSetting";
 
 interface MemoPanelProps {
 	url: string;
@@ -46,7 +47,9 @@ export function MemoPanel({
 	const [impressionText, setImpressionText] = useState("");
 	const [actionItemText, setActionItemText] = useState("");
 	const [saved, setSaved] = useState(false);
-	const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+	const { isKeyboardVisible } = useKeyboardHeight();
+	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
 
 	const { data: localMemo } = useLocalMemoByUrl(url);
 	const { data: supabaseMemo } = useSupabaseMemoByUrl(url, isLoggedIn);
@@ -69,25 +72,6 @@ export function MemoPanel({
 
 	const justSavedRef = useRef(false);
 	const prevUrlRef = useRef(url);
-
-	useEffect(() => {
-		const showEvent =
-			Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-		const hideEvent =
-			Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
-
-		const showSub = Keyboard.addListener(showEvent, () =>
-			setIsKeyboardVisible(true),
-		);
-		const hideSub = Keyboard.addListener(hideEvent, () =>
-			setIsKeyboardVisible(false),
-		);
-
-		return () => {
-			showSub.remove();
-			hideSub.remove();
-		};
-	}, []);
 
 	useEffect(() => {
 		if (prevUrlRef.current !== url) {
@@ -121,6 +105,12 @@ export function MemoPanel({
 		setMemoText((prev) => (prev ? `${prev}\n${selectedText}` : selectedText));
 		onSelectedTextConsumed?.();
 	}, [selectedText, onSelectedTextConsumed]);
+
+	// 설정을 꺼도 이미 작성된 내용이 있으면 유실로 오해하지 않도록 계속 노출한다.
+	const isImpressionSectionVisible =
+		showImpression || !!existingMemo?.impression;
+	const isActionItemSectionVisible =
+		showActionItem || !!existingMemo?.actionItem;
 
 	const onSaveSuccess = () => {
 		justSavedRef.current = true;
@@ -238,33 +228,41 @@ export function MemoPanel({
 					textAlignVertical="top"
 				/>
 
-				<Text className="mt-3 text-xs font-semibold text-gray-500 dark:text-neutral-400">
-					느낀 점
-				</Text>
-				<TextInput
-					className="min-h-[60px] text-[15px] text-[#333] dark:text-white leading-[22px]"
-					placeholder="이 페이지에서 느낀 점을 적어보세요"
-					placeholderTextColor={isDark ? "#666" : "#999"}
-					value={impressionText}
-					onChangeText={setImpressionText}
-					multiline
-					scrollEnabled={false}
-					textAlignVertical="top"
-				/>
+				{isImpressionSectionVisible && (
+					<>
+						<Text className="mt-3 text-xs font-semibold text-gray-500 dark:text-neutral-400">
+							느낀 점
+						</Text>
+						<TextInput
+							className="min-h-[60px] text-[15px] text-[#333] dark:text-white leading-[22px]"
+							placeholder="이 페이지에서 느낀 점을 적어보세요"
+							placeholderTextColor={isDark ? "#666" : "#999"}
+							value={impressionText}
+							onChangeText={setImpressionText}
+							multiline
+							scrollEnabled={false}
+							textAlignVertical="top"
+						/>
+					</>
+				)}
 
-				<Text className="mt-3 text-xs font-semibold text-gray-500 dark:text-neutral-400">
-					액션 아이템
-				</Text>
-				<TextInput
-					className="min-h-[60px] text-[15px] text-[#333] dark:text-white leading-[22px]"
-					placeholder="이 페이지를 보고 할 일을 적어보세요"
-					placeholderTextColor={isDark ? "#666" : "#999"}
-					value={actionItemText}
-					onChangeText={setActionItemText}
-					multiline
-					scrollEnabled={false}
-					textAlignVertical="top"
-				/>
+				{isActionItemSectionVisible && (
+					<>
+						<Text className="mt-3 text-xs font-semibold text-gray-500 dark:text-neutral-400">
+							액션 아이템
+						</Text>
+						<TextInput
+							className="min-h-[60px] text-[15px] text-[#333] dark:text-white leading-[22px]"
+							placeholder="이 페이지를 보고 할 일을 적어보세요"
+							placeholderTextColor={isDark ? "#666" : "#999"}
+							value={actionItemText}
+							onChangeText={setActionItemText}
+							multiline
+							scrollEnabled={false}
+							textAlignVertical="top"
+						/>
+					</>
+				)}
 			</ScrollView>
 		</View>
 	);

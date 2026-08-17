@@ -73,6 +73,54 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			highlight: {
+				Row: {
+					color: string;
+					created_at: string;
+					exact_text: string;
+					favIconUrl: string | null;
+					id: number;
+					note: string | null;
+					prefix_text: string | null;
+					suffix_text: string | null;
+					text_position_start: number | null;
+					title: string | null;
+					updated_at: string;
+					url: string;
+					user_id: string;
+				};
+				Insert: {
+					color?: string;
+					created_at?: string;
+					exact_text: string;
+					favIconUrl?: string | null;
+					id?: number;
+					note?: string | null;
+					prefix_text?: string | null;
+					suffix_text?: string | null;
+					text_position_start?: number | null;
+					title?: string | null;
+					updated_at?: string;
+					url: string;
+					user_id: string;
+				};
+				Update: {
+					color?: string;
+					created_at?: string;
+					exact_text?: string;
+					favIconUrl?: string | null;
+					id?: number;
+					note?: string | null;
+					prefix_text?: string | null;
+					suffix_text?: string | null;
+					text_position_start?: number | null;
+					title?: string | null;
+					updated_at?: string;
+					url?: string;
+					user_id?: string;
+				};
+				Relationships: [];
+			};
 			memo: {
 				Row: {
 					actionItem: string | null;

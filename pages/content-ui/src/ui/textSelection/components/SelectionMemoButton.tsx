@@ -28,7 +28,7 @@ export default function SelectionMemoButton({
 				(document.querySelector('link[rel~="icon"]') as HTMLLinkElement)
 					?.href || "";
 
-			await bridge.request.CREATE_MEMO({
+			const response = await bridge.request.CREATE_MEMO({
 				memo: selectedText,
 				url,
 				title,
@@ -36,6 +36,13 @@ export default function SelectionMemoButton({
 				isWish: false,
 				category_id: null,
 			});
+
+			// 백그라운드는 실패를 예외가 아닌 success 플래그로 알려준다.
+			if (!response?.success) {
+				console.error("Failed to create memo:", response?.error);
+				setState("error");
+				return;
+			}
 
 			setState("success");
 

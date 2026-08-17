@@ -18,6 +18,7 @@
 			"!**/.next/**",
 			"!**/.vercel/**",
 			"!**/.expo/**",
+			"!**/injected/highlightScript.ts",
 			"!**/tailwind-output.css"
 		]
 	},

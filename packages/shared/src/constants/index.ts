@@ -1,6 +1,7 @@
 export * from "./Cookie";
 export * from "./Error";
 export * from "./Extension";
+export * from "./Highlight";
 export * from "./Language";
 export * from "./MotionVariants";
 export * from "./OpenAI";

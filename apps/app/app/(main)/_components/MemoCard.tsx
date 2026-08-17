@@ -1,5 +1,13 @@
+import { HIGHLIGHT_COLOR_STYLE } from "@web-memo/shared/constants";
 import type { GetMemoResponse } from "@web-memo/shared/types";
-import { BookOpen, FileText, Heart, Star, Trash2 } from "lucide-react-native";
+import {
+	BookOpen,
+	FileText,
+	Heart,
+	Highlighter,
+	Star,
+	Trash2,
+} from "lucide-react-native";
 import { useRef } from "react";
 import {
 	Image,
@@ -38,6 +46,8 @@ interface MemoCardProps {
 	memo: MemoItem;
 	/** 0~1 사이의 읽기 진행률. 값이 있으면 '읽는 중' 배지를 표시한다 */
 	readingProgress?: number;
+	/** 이 메모 URL에 저장된 하이라이트 개수. 0이면 표시하지 않는다 */
+	highlightCount: number;
 	onPress: () => void;
 	onDelete: () => void;
 }
@@ -45,6 +55,7 @@ interface MemoCardProps {
 export function MemoCard({
 	memo,
 	readingProgress,
+	highlightCount,
 	onPress,
 	onDelete,
 }: MemoCardProps) {
@@ -99,6 +110,14 @@ export function MemoCard({
 							<BookOpen size={10} color={isDark ? "#c4b5fd" : "#7c3aed"} />
 							<Text className="text-[10px] font-semibold text-[#7c3aed] dark:text-violet-300">
 								읽는 중 {Math.round(readingProgress * 100)}%
+							</Text>
+						</View>
+					) : null}
+					{highlightCount > 0 ? (
+						<View className="flex-row items-center gap-0.5">
+							<Highlighter size={12} color={HIGHLIGHT_COLOR_STYLE.yellow.bar} />
+							<Text className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400">
+								{highlightCount}
 							</Text>
 						</View>
 					) : null}

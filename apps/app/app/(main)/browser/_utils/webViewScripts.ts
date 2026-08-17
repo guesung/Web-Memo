@@ -1,3 +1,5 @@
+import { HIGHLIGHT_SCRIPT } from "@web-memo/shared/modules/highlight";
+
 /**
  * WebView에 주입되는 JavaScript 스크립트들.
  * ReactNativeWebView.postMessage로 앱과 통신한다.
@@ -88,4 +90,7 @@ export const EXTRACT_PAGE_TEXT_JS = `
 `;
 
 /** 네비게이션 완료 시 injectJavaScript로 주입할 전체 스크립트 */
-export const INJECTED_JS_ON_NAVIGATION = `${FAVICON_EXTRACT_JS}\n${SCROLL_DETECT_JS}\n${TEXT_SELECT_JS}`;
+export const INJECTED_JS_ON_NAVIGATION = `${FAVICON_EXTRACT_JS}\n${SCROLL_DETECT_JS}\n${TEXT_SELECT_JS}\n${HIGHLIGHT_SCRIPT}\ntrue;`;
+
+/** WebView 최초 로드 시 주입할 스크립트 */
+export const INJECTED_JS_ON_LOAD = `${SCROLL_DETECT_JS}\n${HIGHLIGHT_SCRIPT}\ntrue;`;

@@ -57,6 +57,10 @@
 		"./modules/analytics": {
 			"types": "./src/modules/analytics/index.ts",
 			"default": "./src/modules/analytics/index.ts"
+		},
+		"./modules/highlight": {
+			"types": "./src/modules/highlight/index.ts",
+			"default": "./src/modules/highlight/index.ts"
 		}
 	},
 	"typesVersions": {
@@ -99,11 +103,15 @@
 			],
 			"modules/analytics": [
 				"./src/modules/analytics/index.ts"
+			],
+			"modules/highlight": [
+				"./src/modules/highlight/index.ts"
 			]
 		}
 	},
 	"scripts": {
-		"type-check": "tsc --noEmit",
+		"build:injected": "node scripts/buildInjectedScript.mjs",
+		"type-check": "pnpm build:injected && tsc --noEmit",
 		"tsc-watch": "tsc-watch"
 	},
 	"dependencies": {
@@ -111,6 +119,7 @@
 		"@supabase/ssr": "^0.8.0",
 		"@supabase/supabase-js": "^2.95.3",
 		"@tanstack/react-query": "^5.59.0",
+		"approx-string-match": "^2.0.0",
 		"clsx": "^2.1.1",
 		"es-hangul": "^2.2.4",
 		"tailwind-merge": "^2.4.0",
@@ -122,10 +131,11 @@
 		"react-dom": "^19.0.0"
 	},
 	"devDependencies": {
-		"@web-memo/env": "workspace:*",
-		"@web-memo/tsconfig": "workspace:*",
 		"@types/chrome": "^0.0.268",
 		"@types/react": "^19.1.0",
+		"@web-memo/env": "workspace:*",
+		"@web-memo/tsconfig": "workspace:*",
+		"esbuild": "^0.28.2",
 		"vitest": "^2.1.5"
 	}
 }

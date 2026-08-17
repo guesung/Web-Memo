@@ -1,4 +1,5 @@
 import { Heart } from "lucide-react-native";
+import { useCallback, useEffect, useRef } from "react";
 import { KeyboardAvoidingView, Platform, Text, View } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
@@ -7,12 +8,34 @@ import { AISheet } from "./_components/AISheet";
 import { BrowserHeader } from "./_components/BrowserHeader";
 import { DraggableFab } from "./_components/DraggableFab";
 import { EmptyBrowserView } from "./_components/EmptyBrowserView";
+import { HighlightEditSheet } from "./_components/HighlightEditSheet";
 import { MemoPanel } from "./_components/MemoPanel";
 import { PageActionsSheet } from "./_components/PageActionsSheet";
 import { TechBlogBottomSheet } from "./_components/TechBlogBottomSheet";
 import { useBrowserState } from "./_hooks/useBrowserState";
+import {
+	useWebViewHighlights,
+	type WebViewHighlightMessage,
+} from "./_hooks/useWebViewHighlights";
+import { INJECTED_JS_ON_LOAD } from "./_utils/webViewScripts";
 
 export default function BrowserScreen() {
+	/**
+	 * useBrowserState()가 반환하는 webViewRef가 있어야 useWebViewHighlights를 호출할 수
+	 * 있는데, useBrowserState() 호출에는 highlights.handleHighlightMessage가 필요해
+	 * 같은 렌더 안에서 서로를 먼저 요구한다. ref로 감싼 forwarding 콜백으로 순환을 끊는다.
+	 */
+	const handleHighlightMessageRef = useRef<
+		(message: WebViewHighlightMessage) => void
+	>(() => {});
+
+	const forwardHighlightMessage = useCallback(
+		(message: WebViewHighlightMessage) => {
+			handleHighlightMessageRef.current(message);
+		},
+		[],
+	);
+
 	const {
 		insets,
 		webViewRef,
@@ -23,6 +46,7 @@ export default function BrowserScreen() {
 		isBlogSheetOpen,
 		setIsBlogSheetOpen,
 		setContentHeight,
+		keyboardBottomInset,
 		wishToast,
 		pageTitle,
 		pageFavIconUrl,
@@ -39,6 +63,7 @@ export default function BrowserScreen() {
 		resizeGesture,
 		handleUrlSubmit,
 		handleNavigationStateChange,
+		handleShouldStartLoadWithRequest,
 		handleWebViewMessage,
 		handleWishToggle,
 		toggleMemo,
@@ -60,7 +85,20 @@ export default function BrowserScreen() {
 		isAILoading,
 		aiError,
 		askAIQuestion,
-	} = useBrowserState();
+	} = useBrowserState({ onHighlightMessage: forwardHighlightMessage });
+
+	const highlights = useWebViewHighlights({ webViewRef });
+
+	useEffect(() => {
+		handleHighlightMessageRef.current = highlights.handleHighlightMessage;
+	}, [highlights.handleHighlightMessage]);
+
+	const tappedHighlight =
+		highlights.tappedHighlightId === null
+			? null
+			: (highlights.rows.find(
+					(row) => row.id === highlights.tappedHighlightId,
+				) ?? null);
 
 	if (!currentUrl) {
 		return (
@@ -83,7 +121,7 @@ export default function BrowserScreen() {
 	return (
 		<KeyboardAvoidingView
 			className="flex-1 bg-white dark:bg-neutral-900"
-			style={{ paddingTop: insets.top }}
+			style={{ paddingTop: insets.top, paddingBottom: keyboardBottomInset }}
 			behavior={Platform.OS === "ios" ? "padding" : undefined}
 		>
 			<BrowserHeader
@@ -112,12 +150,17 @@ export default function BrowserScreen() {
 						source={{ uri: currentUrl }}
 						onNavigationStateChange={handleNavigationStateChange}
 						onMessage={handleWebViewMessage}
-						injectedJavaScript={SCROLL_DETECT_JS}
+						onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
+						injectedJavaScript={INJECTED_JS_ON_LOAD}
+						menuItems={highlights.menuItems}
+						onCustomMenuSelection={highlights.handleCustomMenuSelection}
 						className="flex-1"
 						javaScriptEnabled
 						domStorageEnabled
 						startInLoadingState
 						allowsBackForwardNavigationGestures
+						// target="_blank" 링크가 외부 브라우저로 빠지지 않고 현재 웹뷰에서 열리도록 한다(Android)
+						setSupportMultipleWindows={false}
 					/>
 				</View>
 
@@ -159,6 +202,17 @@ export default function BrowserScreen() {
 				</View>
 			) : null}
 
+			{highlights.highlightToast ? (
+				<View
+					className="absolute self-center flex-row items-center gap-1.5 bg-black/80 px-4 py-2.5 rounded-[20px]"
+					style={{ bottom: insets.bottom + 84 }}
+				>
+					<Text className="text-white text-sm font-semibold">
+						{highlights.highlightToast}
+					</Text>
+				</View>
+			) : null}
+
 			<TechBlogBottomSheet
 				visible={isBlogSheetOpen}
 				onClose={() => setIsBlogSheetOpen(false)}
@@ -193,6 +247,13 @@ export default function BrowserScreen() {
 				onAskQuestion={askAIQuestion}
 				isLoading={isAILoading}
 				error={aiError}
+			/>
+
+			<HighlightEditSheet
+				highlight={tappedHighlight}
+				onClose={highlights.clearTappedHighlight}
+				onUpdate={highlights.updateHighlight}
+				onDelete={highlights.deleteHighlight}
 			/>
 		</KeyboardAvoidingView>
 	);

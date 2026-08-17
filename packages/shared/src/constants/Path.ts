@@ -5,6 +5,7 @@ export const PATHS = {
 	kakaoLogin: "/accounts.kakao.com",
 	googleLogin: "/accounts.google.com",
 	memos: "/memos",
+	highlights: "/highlights",
 	auth: "/auth",
 	introduce: "/introduce",
 	update: "/update",
@@ -30,6 +31,7 @@ export const NEED_AUTH_PAGES = [
 	PATHS.memos,
 	PATHS.memosWish,
 	PATHS.memosSetting,
+	PATHS.highlights,
 	PATHS.admin,
 	PATHS.adminUsers,
 ];

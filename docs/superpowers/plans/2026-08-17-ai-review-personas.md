@@ -2047,8 +2047,14 @@ Task 4(GitHub App 생성)와 Task 9까지 완료된 뒤 수행한다.
 
 - [ ] **Step 1: 검증용 PR 생성**
 
+> **베이스 브랜치 주의.** 검증 브랜치는 `master`가 아니라 **작업 브랜치에서 분기**한다.
+> `master`에는 Task 1~9의 `scripts/ai-reviewer/`가 없어 `/ai-review`가 실행되지 않는다.
+> PR base도 작업 브랜치로 두어야 diff에 리뷰어 코드가 섞이지 않는다.
+
 ```bash
-git checkout master && git pull
+WORK_BRANCH=guesung/코드-리뷰-워크플로우-만들기
+git checkout "$WORK_BRANCH"
+git push -u origin "$WORK_BRANCH"   # PR base로 쓰려면 원격에 있어야 한다
 git checkout -b guesung/ai-review-smoke-test
 ```
 
@@ -2070,8 +2076,13 @@ export const calculateRetryDelay = (attempt: number): number => {
 git add packages/shared/src/utils/smokeTest.ts
 git commit -m "test: AI 리뷰 워크플로우 검증용 임시 파일 추가"
 git push -u origin guesung/ai-review-smoke-test
-gh pr create --base master --title "test: AI 리뷰 워크플로우 검증" --body "검증 후 닫습니다."
+gh pr create --base "$WORK_BRANCH" --title "test: AI 리뷰 워크플로우 검증" --body "검증 후 닫습니다."
 ```
+
+**이 검증 한정으로 `/ai-review`의 diff 기준을 바꾼다.** 커맨드는 기본적으로
+`origin/master...HEAD`를 쓰지만, 이 PR은 base가 작업 브랜치이므로 실행 시
+`git diff origin/guesung/코드-리뷰-워크플로우-만들기...HEAD`를 쓰도록 지시한다.
+그래야 diff가 `smokeTest.ts` 한 파일로 좁혀지고, 리뷰어 자기 코드가 섞이지 않는다.
 
 - [ ] **Step 2: `/ai-review` 실행 및 확인**
 

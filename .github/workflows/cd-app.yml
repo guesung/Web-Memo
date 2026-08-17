@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       deploy_target:
-        description: "배포 대상 (none = 빌드만, production = 스토어 제출)"
+        description: "배포 대상 (none = 빌드 검증만, production = iOS TestFlight + Android Play 내부 테스트 제출)"
         type: string
         default: "none"
       ref:

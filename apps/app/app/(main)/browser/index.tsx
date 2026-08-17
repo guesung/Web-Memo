@@ -71,8 +71,6 @@ export default function BrowserScreen() {
 		handleBlogSelect,
 		handleShare,
 		SCROLL_DETECT_JS,
-		selectedText,
-		consumeSelectedText,
 		isActionsSheetOpen,
 		setIsActionsSheetOpen,
 		isAISheetOpen,
@@ -178,8 +176,6 @@ export default function BrowserScreen() {
 						pageTitle={pageTitle}
 						favIconUrl={pageFavIconUrl}
 						onClose={closePanel}
-						selectedText={selectedText}
-						onSelectedTextConsumed={consumeSelectedText}
 					/>
 				</Animated.View>
 			</View>

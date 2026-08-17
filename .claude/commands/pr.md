@@ -1,9 +1,9 @@
 ---
 name: pr
-description: 현재 커밋 작업사항을 바탕으로 master 대상 PR을 생성한다. 현재 브랜치가 master라면 /branch-new로 새 브랜치를 먼저 만든 뒤 PR을 올린다.
+description: 현재 커밋 작업사항을 바탕으로 master 대상 Draft PR을 생성한다. 현재 브랜치가 master라면 /branch-new로 새 브랜치를 먼저 만든 뒤 PR을 올린다.
 ---
 
-# /pr — 현재 작업을 master 대상 PR로 올리기
+# /pr — 현재 작업을 master 대상 Draft PR로 올리기
 
 > 이 파일은 전역 `~/.claude/commands/pr.md`를 **오버라이드**합니다.
 > 이 레포의 PR base는 `develop`이 아니라 `master`입니다.
@@ -25,12 +25,16 @@ description: 현재 커밋 작업사항을 바탕으로 master 대상 PR을 생�
 5. **모든 커밋**을 훑어서 PR 제목/본문을 작성한다 (최신 커밋만 보지 말 것).
    - 제목: 70자 이내의 짧고 명확한 한글 문장. 상세는 본문에.
    - 본문은 레포의 `PULL_REQUEST_TEMPLATE.md`를 따르며, HEREDOC으로 전달한다.
-6. `gh pr create --base master --title "..." --body "$(cat <<'EOF' ... EOF)"` 로 PR을 생성한다.
-7. 생성된 PR URL을 사용자에게 반환한다.
+6. `gh pr create --draft --base master --title "..." --body "$(cat <<'EOF' ... EOF)"` 로
+   **Draft PR**을 생성한다.
+7. 생성된 PR URL을 사용자에게 반환한다. 리뷰 준비가 되면 `gh pr ready <번호>`로
+   전환하면 된다는 것도 함께 안내한다.
 
 ## 주의
 
 - **base 브랜치는 항상 `master`**다. `--base develop`은 이 레포에서 금지다.
+- **PR은 항상 Draft로 생성**한다(`--draft`). 사용자가 명시적으로 "바로 리뷰 요청"이나
+  "ready로 올려줘"라고 하지 않는 한 예외 없다. Ready 전환은 사용자가 직접 판단한다.
 - **머지는 머지 커밋 방식**(`gh pr merge --merge`)이다. Squash & Merge와
   Rebase & Merge는 금지 — 개별 커밋 히스토리를 `master`에 보존한다.
 - `develop`에 이미 머지해서 테스트 서버에서 확인했더라도, 작업은 끝난 게 아니다.

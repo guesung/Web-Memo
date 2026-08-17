@@ -37,4 +37,31 @@ describe("parseMarker", () => {
 		const marker = { persona: "senior", kind: "q2" } as const;
 		expect(parseMarker(`본문\n${buildMarker(marker)}`)).toEqual(marker);
 	});
+
+	it("본문 중간의 인용된 마커를 무시하고 끝의 진짜 마커를 파싱한다", () => {
+		const body = "다른 댓글이 이렇게 인용했어요:\n\n> <!-- ai-review:intern:q1 -->\n\n그런데 내 실제 마커는:\n\n<!-- ai-review:senior:q2 -->";
+		expect(parseMarker(body)).toEqual({ persona: "senior", kind: "q2" });
+	});
+
+	it("마커가 끝에 없고 뒤에 더 있으면 null을 반환한다", () => {
+		const body = "<!-- ai-review:senior:q2 --> 추가 텍스트";
+		expect(parseMarker(body)).toBeNull();
+	});
+});
+
+describe("buildMarker validation", () => {
+	it("kind에 하이픈이 포함되면 라운드트립된다", () => {
+		const marker = { persona: "senior", kind: "q-1" };
+		const built = buildMarker(marker);
+		expect(parseMarker(`본문\n${built}`)).toEqual(marker);
+	});
+
+	it("kind가 패턴에서 거부되는 문자를 포함하면 throws", () => {
+		expect(() => {
+			buildMarker({ persona: "senior", kind: "q_1!" });
+		}).toThrow();
+		expect(() => {
+			buildMarker({ persona: "intern", kind: "Q1" });
+		}).toThrow();
+	});
 });

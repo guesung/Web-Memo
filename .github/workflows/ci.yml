@@ -21,6 +21,13 @@ on:
       - "pnpm-lock.yaml"
       - ".github/workflows/**"
 
+# 같은 브랜치에 연속으로 푸시하면 이전 run을 취소해 중복 빌드를 막습니다.
+# 다만 master는 run에 배포가 걸려 있어 중간에 끊기면 안 되므로 취소하지 않고,
+# 대신 직렬로 줄을 세워 제출이 동시에 두 번 나가지 않게 합니다.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
 jobs:
   ci:
     runs-on: ubuntu-latest

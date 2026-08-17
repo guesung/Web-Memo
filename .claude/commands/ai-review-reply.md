@@ -295,7 +295,7 @@ content-ui/restoreHighlights.ts 복원 렌더가 자기 옵저버를 다시 깨�
 
 ### 7. 입력 파일 작성과 게시
 
-`.git/ai-review-reply.json` 에 쓴다
+`$GITDIR/ai-review-reply.json` 에 쓴다
 > **입력 파일 경로 주의.** `.git` 은 **worktree에서 디렉토리가 아니라 파일**이다 (`gitdir: ...` 한 줄을 담은 텍스트 파일). 그대로 `.git/xxx.json` 에 쓰려 하면
 > `NotADirectoryError` / `ENOTDIR` 로 즉시 죽는다. 아래처럼 실제 gitdir을 구해서 쓴다.
 >
@@ -335,7 +335,7 @@ content-ui/restoreHighlights.ts 복원 렌더가 자기 옵저버를 다시 깨�
 node scripts/ai-reviewer/cli.ts post --pr <번호> --input "$GITDIR/ai-review-reply.json"
 ```
 
-후속 작업 항목이 **하나라도 있으면** `.git/ai-review-followup.json`:
+후속 작업 항목이 **하나라도 있으면** `$GITDIR/ai-review-followup.json`:
 
 ```json
 {
@@ -393,7 +393,7 @@ node scripts/ai-reviewer/cli.ts followup --pr <번호> --input "$GITDIR/ai-revie
 - **후속 작업 항목이 유실되지 않게 한다.** `post`가 성공한 스레드는 `pending`에서
   사라지므로, `followup`을 실행하기 전에 재실행하면 **그 스레드의 후속 작업 항목을 다시
   만들 수 없다.** 그래서 `post`가 중간에 실패했더라도
-  **`.git/ai-review-followup.json`은 지우지 말고 `followup`을 먼저 실행한다.**
+  **`$GITDIR/ai-review-followup.json`은 지우지 말고 `followup`을 먼저 실행한다.**
   같은 파일을 그대로 다시 실행하는 것은 안전하다(문장이 글자까지 같으므로 중복 제거가
   걸린다). 위험한 것은 **재실행하면서 항목을 새로 쓰는 경우**다 — 6-0단계에서 PR 본문의
   기존 항목을 먼저 읽고 문장을 그대로 재사용한다.

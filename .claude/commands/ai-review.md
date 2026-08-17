@@ -149,7 +149,7 @@ git diff origin/master...HEAD --unified=0 -- <파일>
 
 ### 7. 입력 파일 작성
 
-`.git/ai-review-input.json` 에 쓴다
+`$GITDIR/ai-review-input.json` 에 쓴다
 > **입력 파일 경로 주의.** `.git` 은 **worktree에서 디렉토리가 아니라 파일**이다 (`gitdir: ...` 한 줄을 담은 텍스트 파일). 그대로 `.git/xxx.json` 에 쓰려 하면
 > `NotADirectoryError` / `ENOTDIR` 로 즉시 죽는다. 아래처럼 실제 gitdir을 구해서 쓴다.
 >

@@ -1,16 +1,16 @@
-# UI Package
+# UI 패키지
 
-This package provides components that make up the UI.
+UI를 구성하는 컴포넌트를 제공하는 패키지입니다.
 
-## Installation
+## 설치
 
-First, move to the page you want to use.
+먼저 사용하려는 페이지로 이동합니다.
 
 ```shell
 cd pages/options
 ```
 
-Add the following to the dependencies in `package.json`.
+`package.json`의 dependencies에 아래 내용을 추가합니다.
 
 ```json
 {
@@ -20,13 +20,13 @@ Add the following to the dependencies in `package.json`.
 }
 ```
 
-Then, run `pnpm install`.
+그다음 `pnpm install`을 실행합니다.
 
 ```shell
 pnpm install
 ```
 
-Add the following to the `tailwind.config.js` file.
+`tailwind.config.js` 파일에 아래 내용을 추가합니다.
 
 ```js
 const baseConfig = require('@web-memo/tailwindcss-config');
@@ -39,21 +39,21 @@ module.exports = withUI({
 });
 ```
 
-Add the following to the `index.tsx` file.
+`index.tsx` 파일에 아래 내용을 추가합니다.
 
 ```tsx
 import '@web-memo/ui/dist/global.css';
 ```
 
-## Add Component
+## 컴포넌트 추가
 
-Add the following to the `lib/components/index.ts` file.
+`lib/components/index.ts` 파일에 아래 내용을 추가합니다.
 
 ```tsx
 export * from './Button';
 ```
 
-Add the following to the `lib/components/Button.tsx` file.
+`lib/components/Button.tsx` 파일에 아래 내용을 추가합니다.
 
 ```tsx
 import { ComponentPropsWithoutRef } from 'react';
@@ -78,7 +78,7 @@ export function Button({ theme, className, children, ...props }: ButtonProps) {
 }
 ```
 
-## Usage
+## 사용법
 
 ```tsx
 import { Button } from '@web-memo/ui';
@@ -98,10 +98,10 @@ export default function ToggleButton() {
 }
 ```
 
-## Modifying the tailwind config of the UI library
+## UI 라이브러리의 tailwind 설정 수정
 
-Modify the `tailwind.config.ts` file to make global style changes to the package.
+패키지 전역 스타일을 바꾸려면 `tailwind.config.ts` 파일을 수정하세요.
 
-## Modifying the css variable of the UI library
+## UI 라이브러리의 css 변수 수정
 
-Modify the css variable in the `ui/lib/global.css` code to change the css variable of the package.
+패키지의 css 변수를 바꾸려면 `ui/lib/global.css` 코드의 css 변수를 수정하세요.

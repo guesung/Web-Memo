@@ -53,6 +53,7 @@ import {
 	INJECTED_JS_ON_NAVIGATION,
 	SCROLL_DETECT_JS,
 } from "../_utils/webViewScripts";
+import { useAndroidWebViewBack } from "./useAndroidWebViewBack";
 
 const SPRING_CONFIG = { damping: 20, stiffness: 150 };
 const MIN_PANEL_RATIO = 0.15;
@@ -154,6 +155,8 @@ export function useBrowserState({
 	const { tabBarTranslateY, headerTranslateY, isBrowserActive } =
 		useBrowserScroll();
 
+	const { syncCanGoBack } = useAndroidWebViewBack({ webViewRef });
+
 	useEffect(() => {
 		getPanelRatio().then((ratio) => {
 			if (ratio !== null) setSavedRatio(ratio);
@@ -182,6 +185,7 @@ export function useBrowserState({
 	}, [paramUrl, navTs, panelHeight]);
 
 	const handleNavigationStateChange = (navState: WebViewNavigation) => {
+		syncCanGoBack(navState.canGoBack);
 		setCurrentUrl(navState.url);
 		setPageTitle(navState.title ?? "");
 		setPageFavIconUrl(undefined);

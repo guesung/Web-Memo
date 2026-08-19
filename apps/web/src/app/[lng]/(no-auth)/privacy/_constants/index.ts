@@ -1,0 +1,7 @@
+export {
+	PRIVACY_COLLECT_GROUPS,
+	PRIVACY_PERMISSIONS,
+	PRIVACY_SECTIONS,
+	PRIVACY_THIRD_PARTIES,
+	type TPrivacySectionKey,
+} from "./sections";

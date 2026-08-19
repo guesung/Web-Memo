@@ -150,6 +150,14 @@ export default function Footer({ lng }: FooterProps) {
 							{t("introduce.footer.copyright")}
 						</p>
 
+						{/* Legal Links */}
+						<Link
+							href={`/${lng}/privacy`}
+							className="text-gray-500 text-sm hover:text-white transition-colors"
+						>
+							{t("introduce.footer.legal.privacy_policy")}
+						</Link>
+
 						{/* Made with Love */}
 						<p className="text-gray-500 text-sm flex items-center gap-1">
 							Made with <Heart className="h-4 w-4 text-red-500 fill-red-500" />{" "}

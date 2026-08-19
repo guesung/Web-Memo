@@ -1318,5 +1318,307 @@
 			"description": "If you provided your phone number, we'll send you a Starbucks gift card within 3 business days.",
 			"giftNote": "We hope to see you again someday ☕"
 		}
+	},
+
+	"privacy": {
+		"title": "Privacy Policy",
+		"subtitle": "How Web Memo collects, uses, retains, and shares your data.",
+		"effective_label": "Effective date",
+		"effective_date": "August 19, 2026",
+		"updated_label": "Last updated",
+		"updated_date": "August 19, 2026",
+		"summary": {
+			"title": "Summary",
+			"items": [
+				"We store only the notes and highlights you explicitly save, along with the address and title of the page they came from.",
+				"The content of a web page is sent to OpenAI only when you actively run an AI feature.",
+				"The extension does not collect or store your general browsing history.",
+				"We never sell your data and never use it for advertising."
+			]
+		},
+		"toc_title": "Contents",
+		"sections": {
+			"scope": {
+				"title": "Scope",
+				"body": [
+					"This policy applies to the Web Memo Chrome extension, the Web Memo iOS app, and the website at https://web-memos.vercel.app, referred to together as the \"Service\".",
+					"By using the Service you agree to the data practices described here. If you do not agree, you may stop using the Service and remove the extension at any time."
+				]
+			},
+			"collect": {
+				"title": "Data we collect",
+				"body": [
+					"Web Memo collects the categories of data listed below. For each category we state exactly when it is collected and what it contains."
+				],
+				"groups": {
+					"account": {
+						"title": "a. Account information",
+						"description": "Collected when you sign in with your Google account, and used for authentication and syncing your data across devices.",
+						"items": [
+							"Email address",
+							"Name and profile image",
+							"A unique user identifier issued by the Service",
+							"Nickname and note-sharing preference, if you set them"
+						]
+					},
+					"content": {
+						"title": "b. Content you save",
+						"description": "Collected only at the moment you press save or create a highlight. We do not collect information about pages you did not save.",
+						"items": [
+							"Note text, impressions, and action items you type",
+							"The URL, page title, and favicon address of the page you saved a note or highlight from",
+							"The highlighted sentence plus the surrounding text and position values needed to restore the highlight later",
+							"Highlight color and any note attached to a highlight",
+							"Category names and colors you create, and starred / reading / wishlist flags"
+						]
+					},
+					"page_content": {
+						"title": "c. Web page content (only when you use an AI feature)",
+						"description": "Only when you actively run AI summarization, AI question answering, or automatic category suggestion, the text of the page you are viewing is sent through our server to OpenAI. This data is processed solely to generate a response and is not separately stored in our database.",
+						"items": [
+							"The body text and title of the page you are currently viewing",
+							"The questions you type and the conversation history in the AI chat feature",
+							"Note titles and bodies sent for automatic category classification"
+						]
+					},
+					"usage": {
+						"title": "d. Usage data",
+						"description": "Collected through Google Analytics to understand how features are used and to improve the Service.",
+						"items": [
+							"Names of feature events and their parameters",
+							"Pages visited, page titles, and time spent",
+							"Browser type and version, operating system, device type, and approximate region",
+							"IP address (processed under Google Analytics policy, and also used to rate-limit API requests)",
+							"A unique user identifier used to associate events with your account"
+						]
+					},
+					"diagnostics": {
+						"title": "e. Diagnostic data",
+						"description": "Collected through Sentry to identify and fix errors. This includes session replay, which records how you interact with the Service screen.",
+						"items": [
+							"Error messages, stack traces, and the screen path where the error occurred",
+							"Browser, operating system, device details, and performance measurements",
+							"Session replay: a record of clicks, inputs, and navigation within the Service (approximately 10% of all sessions, and 100% of sessions where an error occurs)",
+							"A unique user identifier and email address used to associate errors with your account"
+						]
+					},
+					"feedback": {
+						"title": "f. Support and feedback data",
+						"description": "Collected only when you submit feedback or answer the uninstall survey yourself.",
+						"items": [
+							"The feedback text you write",
+							"An email address you optionally provide so we can reply",
+							"A record of visiting the uninstall page and the removal reason you select"
+						]
+					},
+					"local": {
+						"title": "g. Data stored only on your device",
+						"description": "The following is kept in your browser storage and is never transmitted to us.",
+						"items": [
+							"Your preferences such as language, theme, and side panel visibility",
+							"Authentication tokens that keep you signed in",
+							"Login cookies for the Web Memo domain (web-memos.vercel.app), read solely to carry your website sign-in into the extension. We never access cookies belonging to any other website."
+						]
+					}
+				}
+			},
+			"not_collect": {
+				"title": "Data we do not collect",
+				"body": ["Web Memo does not collect any of the following."],
+				"items": [
+					"Your password. Sign-in is handled entirely by Google, and we never store passwords.",
+					"Payment information such as credit card numbers. The Service is free and processes no payments.",
+					"The content of pages where you neither saved a note or highlight nor ran an AI feature.",
+					"Your general browsing history or search history.",
+					"Government identification numbers, health information, political opinions, or other sensitive categories of data."
+				]
+			},
+			"use": {
+				"title": "How we use your data",
+				"body": [
+					"We use collected data only for the purposes below, and delete it once those purposes are fulfilled."
+				],
+				"items": [
+					"Authenticating you and syncing notes and highlights across your devices",
+					"Letting you view, search, organize, and restore the notes and highlights you saved",
+					"Providing AI summarization, AI question answering, and automatic category suggestion",
+					"Diagnosing errors and improving the stability of the Service",
+					"Analyzing feature usage in order to improve the Service",
+					"Responding to your inquiries and sending service announcements",
+					"Preventing abnormal use and API abuse"
+				]
+			},
+			"permissions": {
+				"title": "Extension permissions and why we need them",
+				"body": [
+					"The Web Memo Chrome extension requests the following permissions for the stated reasons."
+				],
+				"columns": {
+					"permission": "Permission",
+					"reason": "Why it is needed"
+				}
+			},
+			"share": {
+				"title": "Third parties we share data with",
+				"body": [
+					"We engage the service providers listed below to operate the Service. We do not share user data with any third party outside this list.",
+					"Beyond this list, data may be disclosed only in response to a lawful request from authorities under applicable law, or where you have given separate consent."
+				],
+				"columns": {
+					"name": "Recipient",
+					"purpose": "Purpose",
+					"data": "Data shared",
+					"policy": "Privacy policy"
+				}
+			},
+			"limited_use": {
+				"title": "Limited use of data",
+				"body": [
+					"Web Memo's use of user data complies with the Limited Use requirements of the Chrome Web Store User Data Policy. Specifically, we affirm the following."
+				],
+				"items": [
+					"We do not sell user data.",
+					"We do not use or transfer user data for any advertising purpose, including personalized advertising.",
+					"We do not use user data for creditworthiness or lending purposes, and we do not transfer it to data brokers.",
+					"We do not use user data for any purpose other than providing the features described in this policy.",
+					"No human, including the operator, reads user data. The only exceptions are where you have given explicit consent, where it is necessary for security purposes, where it is required to comply with applicable law, or where the data has been aggregated and anonymized so that no individual can be identified."
+				]
+			},
+			"retention": {
+				"title": "Retention and deletion",
+				"body": ["Retention periods differ by data category, as follows."],
+				"items": [
+					"Notes, highlights, and categories you saved: retained until you delete them yourself or request account deletion.",
+					"Account information: retained while your account exists, and deleted together with related data when you request account deletion.",
+					"Page content and conversations sent to AI features: not stored in our database after the response is generated. Retention on OpenAI's side is governed by OpenAI's own policy.",
+					"Usage data (Google Analytics): automatically deleted no later than 14 months after collection.",
+					"Diagnostic data and session replays (Sentry): automatically deleted no later than 90 days after collection.",
+					"Support and feedback data: deleted once the inquiry is resolved and the service improvement purpose is fulfilled.",
+					"Where applicable law requires retention, data is stored separately for the required period and then destroyed."
+				]
+			},
+			"rights": {
+				"title": "Your rights and how to exercise them",
+				"body": [
+					"You have the following rights regarding your data and may exercise them at any time.",
+					"For the notes and highlights you saved, you can view, edit, and delete them directly inside the Service. To delete your account and all associated data, contact us using the details below; we will complete the request and reply within 30 days."
+				],
+				"items": [
+					"Request access to, and a copy of, the data we hold about you",
+					"Correct inaccurate data",
+					"Delete individual notes and highlights (available directly in the Service)",
+					"Request deletion of your account and all associated data",
+					"Stop all collection by removing the extension",
+					"Opt out of Google Analytics by installing the browser opt-out add-on or removing the extension"
+				]
+			},
+			"security": {
+				"title": "Data security",
+				"body": ["We apply the following measures to protect your data."],
+				"items": [
+					"All data in transit is encrypted with HTTPS/TLS.",
+					"Row Level Security is enforced in the database so that you can access only your own data.",
+					"Authentication is handled exclusively through Google OAuth, and we store no passwords.",
+					"API requests are rate-limited to block abnormal access and abuse."
+				]
+			},
+			"international": {
+				"title": "International transfers",
+				"body": [
+					"Some of the service providers we use operate servers outside the Republic of Korea. As a result, your data may be transferred to, stored in, and processed in the United States and other countries. The destination country, the categories of data transferred, and the purpose for each provider are described in that provider's privacy policy, linked in the third-party table above."
+				]
+			},
+			"children": {
+				"title": "Children's privacy",
+				"body": [
+					"Web Memo is not directed to children under 14, and we do not knowingly collect personal data from children under 14. If we learn that such data has been collected, we delete it without delay. If you are a parent or guardian and believe this has occurred, please contact us using the details below."
+				]
+			},
+			"changes": {
+				"title": "Changes to this policy",
+				"body": [
+					"If this policy changes, we will post the revised version on this page and update the last-updated date. For changes that materially affect your rights, such as adding a new category of collected data or changing the purpose of processing, we will provide notice in the Service or by email at least 7 days before the change takes effect."
+				]
+			},
+			"contact": {
+				"title": "Contact",
+				"body": [
+					"For questions about this policy, or to request access to or deletion of your data, please contact us.",
+					"Data protection officer: Kuesung Park",
+					"Email: gueit214@naver.com",
+					"We respond to requests within 30 days."
+				]
+			}
+		},
+		"permission_items": {
+			"storage": {
+				"name": "storage",
+				"reason": "Saves your sign-in state and preferences such as language and theme in your browser."
+			},
+			"tabs": {
+				"name": "tabs",
+				"reason": "Reads the address and title of the current tab so they can be attached to the note you are saving."
+			},
+			"sidePanel": {
+				"name": "sidePanel",
+				"reason": "Displays the note-taking interface in the browser's side panel."
+			},
+			"contextMenus": {
+				"name": "contextMenus",
+				"reason": "Adds right-click menu actions for highlighting selected text or saving it as a note."
+			},
+			"cookies": {
+				"name": "cookies",
+				"reason": "Reads authentication cookies for the Web Memo domain (web-memos.vercel.app) only, so that your website sign-in carries over to the extension. Cookies belonging to any other website are never accessed."
+			},
+			"host_permissions": {
+				"name": "Access to all sites (<all_urls>)",
+				"reason": "Required so you can save notes and display or restore highlights on any website. Page content is read only at the moment you save it or actively run an AI feature; we never automatically collect or transmit the pages you visit."
+			}
+		},
+		"third_party_items": {
+			"supabase": {
+				"name": "Supabase, Inc.",
+				"purpose": "Authentication and database hosting",
+				"data": "Account information, saved notes, highlights, categories, and feedback content",
+				"url": "https://supabase.com/privacy"
+			},
+			"openai": {
+				"name": "OpenAI, L.L.C.",
+				"purpose": "AI summarization, AI question answering, and automatic category suggestion",
+				"data": "Body text and title of the page where you ran an AI feature, AI conversation content, and note content sent for classification",
+				"url": "https://openai.com/policies/privacy-policy"
+			},
+			"google_auth": {
+				"name": "Google LLC (Google Sign-In)",
+				"purpose": "Authenticating you through your Google account",
+				"data": "Email address, name, and profile image",
+				"url": "https://policies.google.com/privacy"
+			},
+			"google_analytics": {
+				"name": "Google LLC (Google Analytics)",
+				"purpose": "Analyzing how the Service is used",
+				"data": "Feature events, page paths, browser and device information, IP address, and a unique user identifier",
+				"url": "https://policies.google.com/privacy"
+			},
+			"sentry": {
+				"name": "Functional Software, Inc. (Sentry)",
+				"purpose": "Error diagnostics and stability improvements",
+				"data": "Error logs and stack traces, browser and device information, session replay recordings, and a unique user identifier and email address",
+				"url": "https://sentry.io/privacy/"
+			},
+			"vercel": {
+				"name": "Vercel Inc.",
+				"purpose": "Website and API server hosting",
+				"data": "Request IP address, request headers, and other access logs",
+				"url": "https://vercel.com/legal/privacy-policy"
+			},
+			"upstash": {
+				"name": "Upstash, Inc.",
+				"purpose": "Rate limiting and abuse prevention for AI features",
+				"data": "Requester IP address and request counts",
+				"url": "https://upstash.com/trust/privacy.pdf"
+			}
+		}
 	}
 }

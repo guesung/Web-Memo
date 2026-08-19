@@ -26,6 +26,7 @@ import Animated, {
 	withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.5;
@@ -65,6 +66,7 @@ export function HighlightEditSheet({
 }: HighlightEditSheetProps) {
 	const insets = useSafeAreaInsets();
 	const isDark = useColorScheme() === "dark";
+	const { keyboardHeight } = useKeyboardHeight();
 	const translateY = useSharedValue(SHEET_HEIGHT);
 	const opacity = useSharedValue(0);
 	const [modalVisible, setModalVisible] = useState(false);
@@ -82,6 +84,27 @@ export function HighlightEditSheet({
 	const lastFlushedNoteRef = useRef<string | null>(null);
 
 	const visible = highlight !== null;
+
+	/**
+	 * 키보드가 화면 하단을 가리는 높이.
+	 * @description iOS는 `KeyboardAvoidingView`가 시트를 밀어 올리지만, Android는
+	 * edge-to-edge에서 창이 리사이즈되지 않아 그 동작이 먹지 않는다. 키보드 높이
+	 * (내비게이션 바 제외)에 하단 인셋을 더해 시트를 직접 밀어 올린다.
+	 */
+	const keyboardBottomInset =
+		Platform.OS === "android" && keyboardHeight > 0
+			? keyboardHeight + insets.bottom
+			: 0;
+
+	/**
+	 * 실제로 렌더할 시트 높이.
+	 * @description 키보드가 올라와 남은 영역이 시트보다 작으면 렌더 높이만 줄여
+	 * 시트 상단이 화면 밖으로 잘리지 않게 한다. 키보드가 내려가면 원래 높이로 돌아온다.
+	 */
+	const sheetHeight = Math.min(
+		SHEET_HEIGHT,
+		SCREEN_HEIGHT - keyboardBottomInset - insets.top,
+	);
 
 	useEffect(() => {
 		if (visible) {
@@ -197,7 +220,11 @@ export function HighlightEditSheet({
 					className="bg-white dark:bg-neutral-900 rounded-t-[20px]"
 					style={[
 						sheetStyle,
-						{ height: SHEET_HEIGHT, paddingBottom: insets.bottom + 16 },
+						{
+							height: sheetHeight,
+							marginBottom: keyboardBottomInset,
+							paddingBottom: (keyboardBottomInset > 0 ? 0 : insets.bottom) + 16,
+						},
 					]}
 				>
 					<View className="items-center py-2.5">

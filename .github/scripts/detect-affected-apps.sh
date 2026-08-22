@@ -29,28 +29,23 @@ if ! git diff --quiet "$BASE_REF...HEAD" -- pnpm-lock.yaml package.json; then
   exit 0
 fi
 
+export TURBO_SCM_BASE="$BASE_REF"
 # turbo 버전은 루트 package.json 하나만 보고 따라갑니다.
-TURBO_VERSION="$(node -p "require('./package.json').devDependencies.turbo")"
+TURBO="turbo@$(node -p "require('./package.json').devDependencies.turbo")"
 
-# 실패하면 잡을 실패시킵니다. 빈 결과로 넘어가면 배포 잡이 조용히 스킵됩니다.
-AFFECTED_JSON="$(TURBO_SCM_BASE="$BASE_REF" npx --yes "turbo@${TURBO_VERSION}" \
-  ls --affected --output=json --skip-infer)"
+# 넘긴 필터에 걸리는 affected 패키지가 하나라도 있는지만 봅니다.
+# turbo가 실패하면 set -e로 잡이 실패합니다. 빈 결과로 넘기면 배포가 조용히 스킵됩니다.
+affected() {
+  local label="$1" count
+  shift
+  count=$(npx --yes "$TURBO" ls --affected --output=json --skip-infer "$@" | jq '.packages.count')
+  echo "  $label: ${count}개" >&2
+  [ "$count" -gt 0 ] && echo true || echo false
+}
 
-PACKAGES="$(jq -r '.packages.items[].name' <<<"$AFFECTED_JSON")"
-echo "affected 패키지:"
-echo "${PACKAGES:-  (없음)}" | sed 's/^/  /'
-
-has() { grep -qxF "$1" <<<"$PACKAGES"; }
-
-APP=false;       has '@web-memo/app' && APP=true
-WEB=false;       has '@web-memo/web' && WEB=true
-
-# 확장은 여러 패키지로 나뉘어 있어(pages/*, packages/*) 이름 하나로 판정할 수 없습니다.
-# build:extension이 web·app을 제외한 전부를 빌드하므로 같은 기준을 씁니다.
-# e2e는 확장 빌드 그래프에 끌려오지만 build 스크립트가 없는 no-op이라 제외합니다.
-EXTENSION=false
-if grep -qvxE '@web-memo/(web|app)|e2e' <<<"$PACKAGES" 2>/dev/null && [ -n "$PACKAGES" ]; then
-  EXTENSION=true
-fi
-
-emit "$APP" "$EXTENSION" "$WEB"
+# 확장은 pages/*·packages/*로 나뉘어 있어 이름 하나로 못 짚습니다. build:extension이
+# web·app을 뺀 전부를 빌드하므로 같은 기준을 씁니다(e2e는 build가 없는 no-op이라 제외).
+emit \
+  "$(affected app       -F @web-memo/app)" \
+  "$(affected extension -F '!@web-memo/web' -F '!@web-memo/app' -F '!e2e')" \
+  "$(affected web       -F @web-memo/web)"

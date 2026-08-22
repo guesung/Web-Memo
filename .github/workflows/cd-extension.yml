@@ -14,6 +14,7 @@ on:
 
 jobs:
   build-extension:
+    name: 확장 빌드
     runs-on: ubuntu-latest
     env:
       WEB_URL: ${{ inputs.deploy_target == 'staging' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}
@@ -57,7 +58,7 @@ jobs:
   upload-extension:
     needs: build-extension
     runs-on: ubuntu-latest
-    name: Upload chrome store on production release
+    name: 크롬 웹스토어 업로드
     if: ${{ inputs.deploy_target == 'production' }}
     steps:
       - name: Download Artifacts

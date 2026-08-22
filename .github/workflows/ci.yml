@@ -109,6 +109,13 @@ jobs:
   # 둘 다 스토어 정식 출시가 아닙니다. 정식 출시 승격은 수동으로 합니다.
   cd-app:
     needs: [ci, changes]
+    # cd-app의 notify 잡은 플랫폼별 결과를 조회하려고 actions:read를 씁니다.
+    # 재사용 워크플로의 잡은 호출자가 가진 권한을 넘어설 수 없고, 이 레포의
+    # 기본 토큰 권한은 read뿐이라 호출하는 쪽에서 먼저 넓혀 줘야 합니다.
+    # 이게 없으면 워크플로가 startup_failure로 파싱 단계에서 죽습니다.
+    permissions:
+      contents: read
+      actions: read
     if: >-
       needs.changes.outputs.app == 'true' &&
       (github.event_name != 'pull_request' ||

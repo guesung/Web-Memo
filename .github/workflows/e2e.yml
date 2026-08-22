@@ -1,45 +1,24 @@
 name: E2E
 
+# ci.yml과 같은 이유로 경로를 거르지 않습니다.
+# required status check는 잡이 실행되지 않으면 "대기중"으로 남아 머지를 막습니다.
 on:
   push:
     branches:
       - develop
       - master
-    paths:
-      - "e2e/**"
-      - "apps/web/**"
-      - "apps/chrome-extension/**"
-      - "pages/**"
-      - "packages/shared/**"
-      - "packages/ui/**"
-      - "packages/env/**"
-      - "packages/hmr/**"
-      - "packages/vite-config/**"
-      - "packages/tailwind-config/**"
-      - "packages/tsconfig/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/e2e.yml"
   pull_request:
-    paths:
-      - "e2e/**"
-      - "apps/web/**"
-      - "apps/chrome-extension/**"
-      - "pages/**"
-      - "packages/shared/**"
-      - "packages/ui/**"
-      - "packages/env/**"
-      - "packages/hmr/**"
-      - "packages/vite-config/**"
-      - "packages/tailwind-config/**"
-      - "packages/tsconfig/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/e2e.yml"
+
+# PR에 연속으로 푸시하면 이전 run을 취소합니다.
+# master는 배포 판단의 근거가 되는 결과라 끝까지 돌립니다.
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
   tests_e2e:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       WEB_URL: http://localhost:3000
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -67,19 +46,26 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Setting environment variables
+        env:
+          SHARED_ENV_FILE: ${{ secrets.SHARED_ENV_FILE }}
+          WEB_ENV_FILE: ${{ secrets.WEB_ENV_FILE }}
         run: |
-          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
-          echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
-          echo NODE_ENV=development >> packages/env/.env
+          {
+            printf '%s\n' "$SHARED_ENV_FILE"
+            echo "WEB_URL=$WEB_URL"
+            echo "NODE_ENV=development"
+          } >> packages/env/.env
 
-          echo "${{ secrets.WEB_ENV_FILE }}" > apps/web/.env
-          echo NEXT_PUBLIC_WEB_URL=${{ env.WEB_URL }} >> apps/web/.env
+          {
+            printf '%s\n' "$WEB_ENV_FILE"
+            echo "NEXT_PUBLIC_WEB_URL=$WEB_URL"
+          } > apps/web/.env
 
       - name: Build The Extension
         run: pnpm run build:extension
 
       - name: Install playwright browsers
-        run: pnpm exec playwright install
+        run: pnpm exec playwright install chromium
         working-directory: e2e
 
       - name: Run tests

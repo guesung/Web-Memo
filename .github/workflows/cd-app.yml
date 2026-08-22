@@ -1,4 +1,4 @@
-name: CD - App (iOS / Android Build)
+name: CD - App (iOS / Android Build + Store Submit)
 
 on:
   workflow_call:
@@ -13,10 +13,12 @@ on:
         default: ""
 
 jobs:
-  build:
+  build-app:
     # iOS는 macOS 러너가 필수지만 Android는 ubuntu에서 돌려야 러너 과금이 절약됩니다.
     # 빌드 전 단계(체크아웃~환경변수)가 두 플랫폼 동일해 matrix로 묶고,
     # 플랫폼 전용 단계만 if로 분기합니다.
+    # 이 표시 이름은 notify-app-release.sh가 플랫폼별 결과를 찾는 데 씁니다.
+    # 바꾸면 스크립트의 매칭 문자열도 같이 고쳐야 알림이 결과를 읽습니다.
     name: ${{ matrix.platform }} 빌드
     runs-on: ${{ matrix.runner }}
     env:
@@ -101,7 +103,7 @@ jobs:
   # 검증 빌드(deploy_target = none)는 PR마다 돌아 채널이 시끄러워지므로 알리지 않습니다.
   notify:
     name: Slack 알림
-    needs: build
+    needs: build-app
     # 빌드가 깨지거나 취소돼도 알려야 하므로 always()로 항상 실행합니다.
     if: ${{ always() && inputs.deploy_target == 'production' }}
     runs-on: ubuntu-latest
@@ -118,5 +120,5 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           GH_TOKEN: ${{ github.token }}
-          BUILD_RESULT: ${{ needs.build.result }}
+          BUILD_RESULT: ${{ needs['build-app'].result }}
         run: .github/scripts/notify-app-release.sh

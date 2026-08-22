@@ -1,25 +1,18 @@
 name: CI
 
+# required status check로 등록하려면 잡이 모든 PR에서 실행돼야 합니다.
+# paths로 걸러 잡이 아예 뜨지 않으면 체크가 "대기중"에 머물러 머지가 영영 막힙니다.
+# 그래서 여기서는 경로를 거르지 않고, 무거운 배포 잡만 아래 changes 필터로 건너뜁니다.
+#
+# labeled/unlabeled를 받는 이유는 cd-app의 `build-app` 라벨 때문입니다.
+# PR을 연 뒤에 라벨을 붙여도 앱 빌드가 다시 돌아야 합니다.
 on:
   push:
     branches:
       - develop
       - master
-    paths:
-      - "apps/**"
-      - "pages/**"
-      - "packages/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/**"
   pull_request:
-    paths:
-      - "apps/**"
-      - "pages/**"
-      - "packages/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/**"
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 # 같은 브랜치에 연속으로 푸시하면 이전 run을 취소해 중복 빌드를 막습니다.
 # 다만 master는 run에 배포가 걸려 있어 중간에 끊기면 안 되므로 취소하지 않고,
@@ -31,6 +24,7 @@ concurrency:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
@@ -67,6 +61,7 @@ jobs:
 
   changes:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       app: ${{ steps.filter.outputs.app }}
       extension: ${{ steps.filter.outputs.extension }}
@@ -105,13 +100,19 @@ jobs:
               - 'package.json'
               - 'pnpm-lock.yaml'
 
-  # 앱은 master push(= PR 머지)일 때 테스트 배포까지 자동으로 진행합니다.
-  # iOS는 TestFlight, Android는 Play 내부 테스트 트랙으로 올라가며 둘 다 스토어
-  # 정식 출시가 아니라 테스터 대상 배포입니다. 정식 출시 승격은 수동으로 합니다.
-  # PR에서는 빌드 검증만 하고(none) 제출하지 않습니다.
+  # 앱 빌드는 iOS 22분 + Android 29분으로 CI 전체 시간을 지배합니다.
+  # packages/shared는 웹·확장도 함께 쓰므로 앱과 무관한 PR까지 빌드를 끌고 옵니다.
+  # 그래서 PR에서는 `build-app` 라벨을 붙였을 때만 검증 빌드를 돌립니다.
+  #
+  # master push(= PR 머지)일 때는 라벨과 무관하게 항상 빌드하고 테스트 배포까지
+  # 진행합니다. iOS는 TestFlight, Android는 Play 내부 테스트 트랙으로 올라가며
+  # 둘 다 스토어 정식 출시가 아닙니다. 정식 출시 승격은 수동으로 합니다.
   cd-app:
     needs: [ci, changes]
-    if: needs.changes.outputs.app == 'true'
+    if: >-
+      needs.changes.outputs.app == 'true' &&
+      (github.event_name != 'pull_request' ||
+      contains(github.event.pull_request.labels.*.name, 'build-app'))
     uses: ./.github/workflows/cd-app.yml
     secrets: inherit
     with:

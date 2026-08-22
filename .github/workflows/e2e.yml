@@ -1,7 +1,6 @@
 name: E2E
 
-# ci.yml과 같은 이유로 경로를 거르지 않습니다.
-# required status check는 잡이 실행되지 않으면 "대기중"으로 남아 머지를 막습니다.
+# ci.yml과 같은 이유로 경로를 거르지 않습니다(required check는 잡이 안 뜨면 영영 대기중).
 on:
   push:
     branches:
@@ -9,8 +8,7 @@ on:
       - master
   pull_request:
 
-# PR에 연속으로 푸시하면 이전 run을 취소합니다.
-# master는 배포 판단의 근거가 되는 결과라 끝까지 돌립니다.
+# master는 배포 판단의 근거가 되는 결과라 취소하지 않고 끝까지 돌립니다.
 concurrency:
   group: e2e-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
@@ -71,8 +69,7 @@ jobs:
       - name: Run tests
         run: pnpm run test:e2e
 
-      # 리포트는 playwright.config가 있는 e2e/ 기준으로 생성됩니다.
-      # 루트 경로로 올리면 업로드할 파일이 없어 아티팩트가 조용히 비어버립니다.
+      # 리포트는 playwright.config가 있는 e2e/ 기준이라, 루트 경로로 올리면 조용히 빕니다.
       - uses: actions/upload-artifact@v4
         if: always()
         with:

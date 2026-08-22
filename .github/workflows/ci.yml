@@ -2,10 +2,7 @@ name: CI
 
 # required status check로 등록하려면 잡이 모든 PR에서 실행돼야 합니다.
 # paths로 걸러 잡이 아예 뜨지 않으면 체크가 "대기중"에 머물러 머지가 영영 막힙니다.
-# 그래서 여기서는 경로를 거르지 않고, 무거운 배포 잡만 아래 changes 필터로 건너뜁니다.
-#
-# labeled/unlabeled를 받는 이유는 cd-app의 `build-app` 라벨 때문입니다.
-# PR을 연 뒤에 라벨을 붙여도 앱 빌드가 다시 돌아야 합니다.
+# labeled/unlabeled는 PR을 연 뒤 build-app 라벨을 붙여도 앱 빌드가 돌게 하려고 받습니다.
 on:
   push:
     branches:
@@ -14,9 +11,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, labeled, unlabeled]
 
-# 같은 브랜치에 연속으로 푸시하면 이전 run을 취소해 중복 빌드를 막습니다.
-# 다만 master는 run에 배포가 걸려 있어 중간에 끊기면 안 되므로 취소하지 않고,
-# 대신 직렬로 줄을 세워 제출이 동시에 두 번 나가지 않게 합니다.
+# master는 run에 배포가 걸려 있어 중간에 끊기면 안 되므로 취소하지 않고 줄을 세웁니다.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
@@ -28,9 +23,8 @@ jobs:
     env:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
-      # turbo가 이벤트에서 읽은 base 브랜치명(예: master)은 체크아웃에 로컬 ref가
-      # 없어 해석에 실패하고, --affected가 "전부 변경됨"으로 폴백합니다.
-      # PR은 원격 추적 ref를, push는 직전 커밋을 기준으로 명시합니다.
+      # 이벤트에서 읽은 base 브랜치명은 로컬 ref가 없어 해석에 실패하고,
+      # --affected가 조용히 "전부 변경됨"으로 폴백합니다. 그래서 기준을 명시합니다.
       TURBO_SCM_BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.event.pull_request.base.ref) || github.event.before }}
     steps:
       - uses: actions/checkout@v4
@@ -100,19 +94,12 @@ jobs:
               - 'package.json'
               - 'pnpm-lock.yaml'
 
-  # 앱 빌드는 iOS 22분 + Android 29분으로 CI 전체 시간을 지배합니다.
-  # packages/shared는 웹·확장도 함께 쓰므로 앱과 무관한 PR까지 빌드를 끌고 옵니다.
-  # 그래서 PR에서는 `build-app` 라벨을 붙였을 때만 검증 빌드를 돌립니다.
-  #
-  # master push(= PR 머지)일 때는 라벨과 무관하게 항상 빌드하고 테스트 배포까지
-  # 진행합니다. iOS는 TestFlight, Android는 Play 내부 테스트 트랙으로 올라가며
-  # 둘 다 스토어 정식 출시가 아닙니다. 정식 출시 승격은 수동으로 합니다.
+  # 앱 빌드는 iOS 22분 + Android 29분입니다. packages/shared를 웹·확장이 함께 써서
+  # 앱과 무관한 PR까지 빌드를 끌고 오므로, PR에서는 build-app 라벨이 있을 때만 돌립니다.
   cd-app:
     needs: [ci, changes]
-    # cd-app의 notify 잡은 플랫폼별 결과를 조회하려고 actions:read를 씁니다.
-    # 재사용 워크플로의 잡은 호출자가 가진 권한을 넘어설 수 없고, 이 레포의
-    # 기본 토큰 권한은 read뿐이라 호출하는 쪽에서 먼저 넓혀 줘야 합니다.
-    # 이게 없으면 워크플로가 startup_failure로 파싱 단계에서 죽습니다.
+    # 재사용 워크플로의 잡은 호출자 권한을 넘어설 수 없습니다. cd-app의 notify가
+    # actions:read를 써서, 여기서 넓히지 않으면 startup_failure로 파싱 단계에서 죽습니다.
     permissions:
       contents: read
       actions: read
@@ -125,8 +112,6 @@ jobs:
     with:
       deploy_target: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') && 'production' || 'none' }}
 
-  # 확장은 CI에서 빌드 검증만 하고 배포하지 않습니다.
-  # 웹스토어 업로드는 release.yml에서 수동으로 실행합니다.
   cd-extension:
     needs: [ci, changes]
     if: needs.changes.outputs.extension == 'true'
@@ -135,7 +120,6 @@ jobs:
     with:
       deploy_target: "none"
 
-  # 웹은 develop push일 때만 스테이징(테스트 서버)에 자동 배포합니다.
   cd-web:
     needs: [ci, changes]
     if: needs.changes.outputs.web == 'true'

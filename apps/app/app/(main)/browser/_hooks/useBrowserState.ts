@@ -1,5 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
+import { URL as APP_URL } from "@web-memo/shared/constants";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -17,7 +18,6 @@ import type WebView from "react-native-webview";
 import type { WebViewNavigation } from "react-native-webview";
 import type { ShouldStartLoadRequest } from "react-native-webview/lib/WebViewTypes";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { CONFIG } from "@/lib/config";
 import { useBrowserScroll } from "@/lib/context/BrowserScrollContext";
 import { useFavoriteToggle, useIsFavorite } from "@/lib/hooks/useFavorites";
 import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
@@ -471,19 +471,16 @@ export function useBrowserState({
 				const {
 					data: { session },
 				} = await supabase.auth.getSession();
-				const response = await fetch(
-					`${CONFIG.webappUrl}/api/openai/webpage-qa`,
-					{
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-							...(session?.access_token
-								? { Authorization: `Bearer ${session.access_token}` }
-								: {}),
-						},
-						body: JSON.stringify({ content: pageText, question }),
+				const response = await fetch(`${APP_URL.web}/api/openai/webpage-qa`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						...(session?.access_token
+							? { Authorization: `Bearer ${session.access_token}` }
+							: {}),
 					},
-				);
+					body: JSON.stringify({ content: pageText, question }),
+				});
 				const data = await response.json();
 				if (!response.ok) {
 					setAiError(data.error ?? "요청에 실패했어요");

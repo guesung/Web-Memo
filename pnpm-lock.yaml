@@ -206,12 +206,12 @@ importers:
       '@types/react':
         specifier: ~19.1.17
         version: 19.1.17
-      '@web-memo/env':
-        specifier: workspace:*
-        version: link:../../packages/env
       babel-preset-expo:
         specifier: ^54.0.10
         version: 54.0.10(@babel/core@7.29.0)(@babel/runtime@7.28.6)(expo@54.0.36)(react-refresh@0.17.0)
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.6.1
       typescript:
         specifier: ~5.9.3
         version: 5.9.3

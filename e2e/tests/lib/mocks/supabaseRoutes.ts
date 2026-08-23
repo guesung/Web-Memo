@@ -161,8 +161,41 @@ async function handleDelete(route: Route, url: URL, store: MockSupabaseStore) {
 	}
 }
 
-async function handleHighlightGet(route: Route, store: MockSupabaseStore) {
-	const highlights = store.getAllHighlights();
+/**
+ * PostgREST의 `or=(exact_text.ilike.%q%,note.ilike.%q%)` 파라미터에서 검색어를 꺼낸다.
+ * 커서용 `or=(created_at.lt...)`는 검색어가 아니므로 undefined를 돌려준다.
+ */
+function extractSearchQuery(url: URL): string | undefined {
+	const matched = url.searchParams
+		.getAll("or")
+		.map((value) => value.match(/exact_text\.ilike\.%(.*?)%/))
+		.find(Boolean);
+
+	return matched?.[1] ? decodeURIComponent(matched[1]) : undefined;
+}
+
+async function handleHighlightGet(
+	route: Route,
+	url: URL,
+	store: MockSupabaseStore,
+) {
+	const colorParam = url.searchParams.get("color");
+	const color = colorParam?.startsWith("eq.") ? colorParam.slice(3) : undefined;
+	const searchQuery = extractSearchQuery(url)?.toLowerCase();
+
+	const highlights = store.getAllHighlights().filter((highlight) => {
+		if (color && highlight.color !== color) {
+			return false;
+		}
+		if (
+			searchQuery &&
+			!highlight.exact_text.toLowerCase().includes(searchQuery) &&
+			!(highlight.note ?? "").toLowerCase().includes(searchQuery)
+		) {
+			return false;
+		}
+		return true;
+	});
 	await route.fulfill({
 		status: 200,
 		contentType: "application/json",
@@ -224,7 +257,7 @@ export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
 
 			switch (method) {
 				case "GET":
-					await handleHighlightGet(route, store);
+					await handleHighlightGet(route, url, store);
 					break;
 				case "PATCH":
 					await handleHighlightPatch(route, url, store);

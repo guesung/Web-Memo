@@ -43,6 +43,61 @@ test.describe("하이라이트 페이지 (Mocked)", () => {
 		await expect(page.getByText("No highlights yet")).toBeVisible();
 	});
 
+	test("검색어를 입력하면 문장·메모에 포함된 하이라이트만 남는다.", async ({
+		page,
+	}) => {
+		store.addHighlight(createMockHighlight({ exact_text: "Apple pie recipe" }));
+		store.addHighlight(
+			createMockHighlight({ exact_text: "Banana bread", note: "apple note" }),
+		);
+		store.addHighlight(createMockHighlight({ exact_text: "Cherry tart" }));
+
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.highlights}`,
+			regexp: new RegExp(PATHS.highlights),
+		});
+
+		await expect(page.getByText("Cherry tart")).toBeVisible();
+
+		await page.getByLabel("Search text or notes").fill("apple");
+
+		await expect(page.getByText("Apple pie recipe")).toBeVisible();
+		await expect(page.getByText("Banana bread")).toBeVisible();
+		await expect(page.getByText("Cherry tart")).not.toBeVisible();
+	});
+
+	test("색상 칩을 고르면 그 색 하이라이트만 남고, 없으면 결과 없음 문구를 보여준다.", async ({
+		page,
+	}) => {
+		store.addHighlight(
+			createMockHighlight({ exact_text: "Yellow one", color: "yellow" }),
+		);
+		store.addHighlight(
+			createMockHighlight({ exact_text: "Green one", color: "green" }),
+		);
+
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.highlights}`,
+			regexp: new RegExp(PATHS.highlights),
+		});
+
+		await page.getByRole("button", { name: "green" }).click();
+
+		await expect(page.getByText("Green one")).toBeVisible();
+		await expect(page.getByText("Yellow one")).not.toBeVisible();
+
+		await page.getByRole("button", { name: "pink" }).click();
+
+		await expect(page.getByText("No matching highlights")).toBeVisible();
+
+		await page.getByRole("button", { name: "All" }).click();
+
+		await expect(page.getByText("Yellow one")).toBeVisible();
+		await expect(page.getByText("Green one")).toBeVisible();
+	});
+
 	test("코멘트를 입력하고 포커스를 잃으면 저장된다.", async ({ page }) => {
 		const exactText = `Sample highlight ${Date.now()}`;
 		const mockHighlight = createMockHighlight({

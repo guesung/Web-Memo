@@ -76,8 +76,6 @@ jobs:
   # 앱과 무관한 PR까지 빌드를 끌고 오므로, PR에서는 build-app 라벨이 있을 때만 돌립니다.
   cd-app:
     needs: [ci, changes]
-    # 재사용 워크플로의 잡은 호출자 권한을 넘어설 수 없습니다. cd-app의 notify가
-    # actions:read를 써서, 여기서 넓히지 않으면 startup_failure로 파싱 단계에서 죽습니다.
     permissions:
       contents: read
       actions: read

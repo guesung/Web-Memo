@@ -36,13 +36,20 @@
 
 1. **메모** : 유튜브 영상을 보다가, 혹은 글을 읽다가 번뜩이는 아이디어가 떠오르면 언제든지 사이드 패널을 열어 기록하세요!
 2. **페이지 요약** : ChatGPT가 웹사이트 내용을 요약해주어 효율적으로 글을 읽을 수 있도록 도와드립니다.
-3. **메모 확인** : 한 눈에 들어
-4. **데이터 영구 저장 및 추출** : 데이터는 손실될 걱정 없이 영구 저장됩니다. 필요에 따라 엑셀 파일로 다운로드하실 수 있습니다.
-5. **단축키** 
-    - 사이드 패널을 쉽게 열고 닫을 수 있습니다 : Alt + S / Options + S
-    - 메모를 손쉽게 저장할 수 있습니다 : Windows + S / Command + S
+3. **하이라이트** : 웹 페이지에서 중요한 문장을 바로 강조해두고, 나중에 모아서 볼 수 있습니다.
+4. **메모 관리** : 저장한 메모를 웹에서 한눈에 확인합니다. 카테고리로 묶고, 그리드 뷰와 캘린더 뷰를 오가며 볼 수 있습니다.
+5. **데이터 영구 저장 및 추출** : 데이터는 손실될 걱정 없이 영구 저장됩니다. 필요에 따라 엑셀 파일로 다운로드하실 수 있습니다.
+6. **단축키**
+    - `Alt + S` (macOS는 `Option + S`) : 사이드 패널 열기·닫기
+    - `Cmd + S` : 웹 메모 상세 창에서 메모 저장 (macOS 전용)
 
-## 🚨 주의 사항
+## 📱 다운로드
+
+- **Chrome 확장 프로그램** : [Chrome 웹 스토어](https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh)
+- **iOS 앱** : [App Store](https://apps.apple.com/app/id6759237784)
+- **웹** : https://web-memos.vercel.app
+
+## 🚨 주의 사항
 
 - 요약 기능의 경우 특정 사이트에서 동작하지 않아요
     - e.g. 크롬 웹스토어, 크롬 설정 페이지, 새 탭, PDF파일
@@ -55,10 +62,8 @@
 
 - 이메일 : [gueit214@naver.com](mailto:gueit214@naver.com)
 - 카카오톡 : https://open.kakao.com/o/sido56Pg
-- 구글 폼 : https://forms.gle/NP1oxsDP6Xrj6WxR8
+- 구글 폼 : https://forms.gle/qHkL7PeknaCy5QfY6
 
 ## **🤔 추가 계획 중인 기능**
 
-- 카테고리 기능
-- 캘린더뷰
 - 메모 공유

@@ -308,7 +308,7 @@ function Component({ lng }: { lng: Language }) {
 | --- | --- | --- | --- |
 | `packages/env/.env.{development,staging,production}` | 확장·웹이 공유하며 환경마다 다른 값 (`NODE_ENV`, `WEB_URL`) | ✅ 커밋 | `tsup`이 빌드 시 인라인 |
 | `packages/env/.env` | 위 값의 로컬 오버라이드 (선택) | ❌ | 동상 |
-| `apps/web/.env` | 웹에서만 쓰는 서버 시크릿 (`OPENAI_API_KEY`, `UPSTASH_*`) | ❌ | Next.js가 자동 로드 |
+| `apps/web/.env` | 웹에서만 쓰는 서버 시크릿 (`OPENAI_API_KEY`, `UPSTASH_*`) | ❌ | Next.js가 자동 로드 (로컬·e2e 전용) |
 | `packages/shared/src/constants/` | 환경과 무관한 고정값 (Supabase, Sentry DSN, GA/GTM ID, OAuth) | ✅ | 그냥 import |
 
 ### 환경별 파일을 커밋하는 이유
@@ -335,6 +335,15 @@ pnpm dev                             # .env.development
 `.env.staging`의 `NODE_ENV`가 `production`인 것은 의도된 것입니다. `isProduction()`이
 Sentry·Analytics 활성화와 쿠키 `secure`를 좌우하는데, 스테이징에서도 운영과 같은
 동작을 확인해야 하기 때문입니다.
+
+### 웹 배포의 런타임 값은 Vercel 프로젝트 환경변수입니다
+
+`apps/web/.env`는 로컬 개발과 e2e에서만 쓰입니다. 배포된 서버리스 함수가 읽는 값은
+Vercel 프로젝트 설정에서 오고, 워크플로는 `vercel pull`로 그것을 받아옵니다.
+
+그래서 워크플로에서 셸 환경 변수로 덧씌우지 않습니다. GitHub Secrets에 등록되지
+않은 이름을 쓰면 **빈 값이 Vercel의 실제 값을 덮어써** 조용히 망가집니다.
+런타임 값을 바꾸려면 Vercel 대시보드에서 바꿉니다.
 
 ### ⚠️ 이 파일들의 값은 공개됩니다
 

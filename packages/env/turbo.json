@@ -4,6 +4,7 @@
 	"tasks": {
 		"ready": {
 			"inputs": ["$TURBO_DEFAULT$", ".env"],
+			"env": ["BUILD_ENV"],
 			"outputs": ["dist/**"]
 		}
 	}

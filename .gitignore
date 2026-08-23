@@ -10,8 +10,13 @@
 **/dist-zip
 
 # env
+# 환경별 파일은 공개돼도 되는 값(웹 URL·NODE_ENV)만 담으므로 추적합니다.
+# 비밀은 apps/web/.env(추적 제외)에 둡니다.
 .env*
 !.env.example
+!.env.development
+!.env.staging
+!.env.production
 
 # python
 **/venv

@@ -1,4 +1,4 @@
-import { URL as APP_URL } from "@web-memo/shared/constants";
+import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import { Bookmark, MessageCircle, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -307,7 +307,7 @@ export function TechBlogBottomSheet({
 
 						<TouchableOpacity
 							className="flex-row items-center justify-center gap-1.5 mt-6 py-3 mx-2 rounded-xl bg-input dark:bg-neutral-800"
-							onPress={() => Linking.openURL(APP_URL.kakaoTalk)}
+							onPress={() => Linking.openURL(EXTERNAL_LINK.kakaoOpenChat)}
 							activeOpacity={0.7}
 						>
 							<MessageCircle size={16} color={isDark ? "#a3a3a3" : "#666"} />

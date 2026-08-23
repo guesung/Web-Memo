@@ -1,4 +1,4 @@
-import { EXTENSION } from "../../../constants";
+import { CHROME_EXTENSION_ID } from "../../../constants";
 import type {
 	BRIDGE_MESSAGE_TYPE,
 	BridgeRequest,
@@ -27,10 +27,10 @@ export class Runtime {
 		callback?: (response: TResponse) => void,
 	): Promise<TResponse> | undefined {
 		if (callback) {
-			chrome.runtime.sendMessage(EXTENSION.id, { type }, callback);
+			chrome.runtime.sendMessage(CHROME_EXTENSION_ID, { type }, callback);
 			return undefined;
 		} else {
-			return chrome.runtime.sendMessage(EXTENSION.id, { type });
+			return chrome.runtime.sendMessage(CHROME_EXTENSION_ID, { type });
 		}
 	}
 

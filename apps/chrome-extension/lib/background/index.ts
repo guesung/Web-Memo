@@ -1,7 +1,7 @@
 import "webextension-polyfill";
 
 import { CONFIG } from "@web-memo/env";
-import { URL } from "@web-memo/shared/constants";
+import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
@@ -46,8 +46,8 @@ if (chrome.contextMenus)
 				await Tab.create({ url: `${CONFIG.webUrl}/memos` });
 				break;
 			case CONTEXT_MENU_ID_SHOW_GUIDE:
-				if (I18n.getUILanguage() === "ko") Tab.create({ url: URL.guideKo });
-				else Tab.create({ url: URL.guideEn });
+				if (I18n.getUILanguage() === "ko") Tab.create({ url: EXTERNAL_LINK.notionGuideKo });
+				else Tab.create({ url: EXTERNAL_LINK.notionGuideEn });
 				break;
 		}
 	});

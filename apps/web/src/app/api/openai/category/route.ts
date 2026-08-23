@@ -1,4 +1,4 @@
-import { EXTENSION } from "@web-memo/shared/constants";
+import { CHROME_EXTENSION_ID } from "@web-memo/shared/constants";
 import { type NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "../constant";
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
 	try {
 		const origin = request.headers.get("origin");
-		const validOrigin = `chrome-extension://${EXTENSION.id}`;
+		const validOrigin = `chrome-extension://${CHROME_EXTENSION_ID}`;
 
 		if (origin !== validOrigin) {
 			return createErrorResponse(

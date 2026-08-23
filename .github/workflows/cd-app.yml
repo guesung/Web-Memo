@@ -59,11 +59,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: Setting environment variables
-        run: |
-          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
-          echo "${{ secrets.APP_ENV_FILE }}" >> apps/app/.env
-
       # 서명 키는 EAS 서버에 등록된 것을 받아 쓰므로 러너에 별도 시크릿이 필요 없습니다.
       - name: Build ${{ matrix.platform }}
         run: cd apps/app && eas build --platform ${{ matrix.platform }} --profile "$BUILD_PROFILE" --local --non-interactive --output ./${{ matrix.output }}

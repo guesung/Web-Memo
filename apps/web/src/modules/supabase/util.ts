@@ -1,6 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
-import { CONFIG } from "@web-memo/env";
-import { NEED_AUTH_PAGES, PATHS } from "@web-memo/shared/constants";
+import { NEED_AUTH_PAGES, PATHS, SUPABASE } from "@web-memo/shared/constants";
 import type { Database, MemoSupabaseClient } from "@web-memo/shared/types";
 import { AuthService } from "@web-memo/shared/utils";
 import type { NextRequest } from "next/server";
@@ -13,8 +12,8 @@ export async function updateAuthorization(request: NextRequest) {
 	});
 
 	const supabaseClient = createServerClient<Database, "memo">(
-		CONFIG.supabaseUrl,
-		CONFIG.supabaseAnonKey,
+		SUPABASE.url,
+		SUPABASE.anonKey,
 		{
 			cookies: {
 				getAll() {

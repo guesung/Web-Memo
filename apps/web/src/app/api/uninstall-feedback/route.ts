@@ -1,17 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
-import { CONFIG } from "@web-memo/env";
 import { SUPABASE } from "@web-memo/shared/constants";
 import type { Database } from "@web-memo/shared/types";
 import { type NextRequest, NextResponse } from "next/server";
 
 const getFeedbackSupabaseClient = () => {
-	return createClient<Database, "feedback">(
-		CONFIG.supabaseUrl,
-		CONFIG.supabaseAnonKey,
-		{
-			db: { schema: SUPABASE.schema.feedback },
-		},
-	);
+	return createClient<Database, "feedback">(SUPABASE.url, SUPABASE.anonKey, {
+		db: { schema: SUPABASE.schema.feedback },
+	});
 };
 
 interface UninstallFeedbackRequest {

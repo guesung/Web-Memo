@@ -1,13 +1,13 @@
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { login as kakaoLogin } from "@react-native-seoul/kakao-login";
+import { OAUTH } from "@web-memo/shared/constants";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { Platform } from "react-native";
-import { CONFIG } from "@/lib/config";
 import { supabase } from "@/lib/supabase/client";
 
 GoogleSignin.configure({
-	webClientId: CONFIG.googleWebClientId,
-	iosClientId: CONFIG.googleAppClientId,
+	webClientId: OAUTH.googleWebClientId,
+	iosClientId: OAUTH.googleAppClientId,
 });
 
 async function signInWithGoogle() {

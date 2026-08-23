@@ -18,14 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      WEB_URL: http://localhost:3000
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
@@ -45,19 +42,8 @@ jobs:
 
       - name: Setting environment variables
         env:
-          SHARED_ENV_FILE: ${{ secrets.SHARED_ENV_FILE }}
           WEB_ENV_FILE: ${{ secrets.WEB_ENV_FILE }}
-        run: |
-          {
-            printf '%s\n' "$SHARED_ENV_FILE"
-            echo "WEB_URL=$WEB_URL"
-            echo "NODE_ENV=development"
-          } >> packages/env/.env
-
-          {
-            printf '%s\n' "$WEB_ENV_FILE"
-            echo "NEXT_PUBLIC_WEB_URL=$WEB_URL"
-          } > apps/web/.env
+        run: printf '%s\n' "$WEB_ENV_FILE" > apps/web/.env
 
       - name: Build The Extension
         run: pnpm run build:extension

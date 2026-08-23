@@ -119,6 +119,10 @@ Turborepo 기반 모노레포입니다.
 필요한 심볼이 좁은 경로로 노출돼 있지 않다면 `packages/shared/package.json`의
 `exports`와 `typesVersions`에 하위 경로를 추가하세요.
 
+앱은 환경 변수를 쓰지 않습니다. 필요한 값(웹 URL, Supabase, OAuth 클라이언트 ID)이
+모두 환경과 무관한 고정값이라 `@web-memo/shared/constants`의 상수로 읽습니다.
+그래서 앱 빌드에는 `.env`도 `packages/env/dist`도 필요하지 않습니다.
+
 ### 확장 프로그램 진입점 (Manifest V3)
 
 - **Background Script**: 백그라운드 작업용 service worker
@@ -298,17 +302,61 @@ function Component({ lng }: { lng: Language }) {
 
 ## 🔧 환경 설정
 
-환경 변수는 `packages/env/`에서 관리합니다.
+값을 어디에 둘지는 **"환경에 따라 달라지는가"**로 정합니다. 노출 여부가 아닙니다.
 
-- `__FIREFOX__`: Firefox 전용 빌드 수정 활성화
-- `OPENAI_API_KEY`: 페이지 요약용 OpenAI 연동
-- `SENTRY_DSN`: 에러 추적/모니터링
-- `WEB_URL`: 웹 애플리케이션 기본 URL
+| 위치 | 담는 것 | 추적 | 읽는 쪽 |
+| --- | --- | --- | --- |
+| `packages/env/.env.{development,staging,production}` | 확장·웹이 공유하며 환경마다 다른 값 (`NODE_ENV`, `WEB_URL`) | ✅ 커밋 | `tsup`이 빌드 시 인라인 |
+| `packages/env/.env` | 위 값의 로컬 오버라이드 (선택) | ❌ | 동상 |
+| `apps/web/.env` | 웹에서만 쓰는 서버 시크릿 (`OPENAI_API_KEY`, `UPSTASH_*`) | ❌ | Next.js가 자동 로드 (로컬·e2e 전용) |
+| `packages/shared/src/constants/` | 환경과 무관한 고정값 (Supabase, Sentry DSN, GA/GTM ID, OAuth) | ✅ | 그냥 import |
 
-환경 파일:
-- `packages/env/.env` (개발)
-- `packages/env/.env.production` (운영)
-- `packages/env/.env.example` (템플릿)
+### 환경별 파일을 커밋하는 이유
+
+담기는 값이 웹 URL과 `NODE_ENV`뿐이라 감출 것이 없습니다. 커밋해두면 클론 직후
+바로 빌드되고, 값이 시크릿 안에 숨지 않아 추적할 수 있습니다.
+
+빌드 대상은 **셸 `BUILD_ENV`**로 고릅니다 (없으면 `development`).
+
+```bash
+BUILD_ENV=production pnpm build      # .env.production
+BUILD_ENV=staging    pnpm build      # .env.staging
+pnpm dev                             # .env.development
+```
+
+`packages/env/.env`를 만들면 환경별 파일 위에 덮어씁니다. 일부 키만 적어도 됩니다
+(`WEB_URL`만 바꾸고 `NODE_ENV`는 그대로 두는 식).
+
+> ⚠️ 분기 기준이 **셸** 변수라는 점이 중요합니다. 예전에는 `NODE_ENV`로 파일을
+> 골랐는데 CI가 그 값을 `.env` 파일 *안에* 써넣어, 분기가 영영 뒤집히지 않고
+> `.env.production`이 유령 파일이 된 적이 있습니다. 파일 선택은 파일을 읽기 전에
+> 끝나므로 파일 안의 값으로는 바꿀 수 없습니다.
+
+`.env.staging`의 `NODE_ENV`가 `production`인 것은 의도된 것입니다. `isProduction()`이
+Sentry·Analytics 활성화와 쿠키 `secure`를 좌우하는데, 스테이징에서도 운영과 같은
+동작을 확인해야 하기 때문입니다.
+
+### 웹 배포의 런타임 값은 Vercel 프로젝트 환경변수입니다
+
+`apps/web/.env`는 로컬 개발과 e2e에서만 쓰입니다. 배포된 서버리스 함수가 읽는 값은
+Vercel 프로젝트 설정에서 오고, 워크플로는 `vercel pull`로 그것을 받아옵니다.
+
+그래서 워크플로에서 셸 환경 변수로 덧씌우지 않습니다. GitHub Secrets에 등록되지
+않은 이름을 쓰면 **빈 값이 Vercel의 실제 값을 덮어써** 조용히 망가집니다.
+런타임 값을 바꾸려면 Vercel 대시보드에서 바꿉니다.
+
+### ⚠️ 이 파일들의 값은 공개됩니다
+
+`packages/env/src/config.ts`가 참조하는 키는 `tsup`이 번들에 인라인하므로
+확장·웹 클라이언트에 그대로 실립니다. **서버 시크릿을 여기 추가하지 마세요.**
+비밀이 필요하면 `apps/web/.env`에 두고 서버에서만 읽습니다.
+
+### 그 외
+
+앱(`apps/app`)은 환경 변수를 쓰지 않습니다 — 필요한 값이 전부 고정값이라 상수만 읽습니다.
+Edge Functions는 Supabase 플랫폼이 주입하는 예약 변수(`SUPABASE_SERVICE_ROLE_KEY` 등)를 씁니다.
+
+빌드 플래그: `__FIREFOX__`(Firefox 전용 빌드), `__DEV__`(확장 개발 모드)
 
 ---
 

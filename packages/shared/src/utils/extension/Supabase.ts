@@ -10,8 +10,8 @@ import { AuthService } from "../Supabase";
 export const getSupabaseClient = async () => {
 	try {
 		const supabaseClientInstance = createClient<Database, "memo">(
-			CONFIG.supabaseUrl,
-			CONFIG.supabaseAnonKey,
+			SUPABASE.url,
+			SUPABASE.anonKey,
 			{
 				db: { schema: SUPABASE.schema.memo },
 				auth: {
@@ -61,11 +61,7 @@ export const getSupabaseClient = async () => {
 };
 
 export const getFeedbackSupabaseClient = () => {
-	return createClient<Database, "feedback">(
-		CONFIG.supabaseUrl,
-		CONFIG.supabaseAnonKey,
-		{
-			db: { schema: SUPABASE.schema.feedback },
-		},
-	);
+	return createClient<Database, "feedback">(SUPABASE.url, SUPABASE.anonKey, {
+		db: { schema: SUPABASE.schema.feedback },
+	});
 };

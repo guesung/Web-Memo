@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 import { CONFIG } from "@web-memo/env";
+import { ANALYTICS } from "@web-memo/shared/constants";
 import { Toaster } from "@web-memo/ui";
 import type { Metadata, Viewport } from "next";
 import type { PropsWithChildren } from "react";
@@ -37,8 +38,8 @@ export default function Layout({ children }: LayoutProps) {
 				{children}
 
 				<WebVitals />
-				<GoogleAnalytics gaId={CONFIG.gaId} />
-				<GoogleTagManager gtmId={CONFIG.gtmId} />
+				<GoogleAnalytics gaId={ANALYTICS.gaId} />
+				<GoogleTagManager gtmId={ANALYTICS.gtmId} />
 				<Toaster />
 			</body>
 		</html>

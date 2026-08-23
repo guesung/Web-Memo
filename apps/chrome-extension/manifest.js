@@ -3,6 +3,12 @@ import fs from "node:fs";
 import { CONFIG } from "@web-memo/env";
 import deepmerge from "deepmerge";
 
+// 확장 ID를 고정하는 공개 키입니다. manifest.json에 실려 배포되므로 비밀이 아닙니다.
+// 이 파일은 vite 번들을 거치지 않고 make-manifest 플러그인이 Node로 직접 읽어서,
+// TS 상수 모듈을 import할 수 없어 여기 둡니다.
+const EXTENSION_KEY =
+	"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAob5nrfpKAihURRka74OiALrnMN9aHytr7Ik7vGzbtoVrc6xecQYj+fw1qHfax0gwQi4bql0/Ah3Zb2u7zPmPPvoPStgittQUgg5IVxJIij1cIbRgY+MvQh3z3YU27lA4zANOauhb7Q8Z9ocDr9OoZqX0rBMk9zXSk/UlgDZhRkMuyG8R1DSVUe0qFSIwKFQFMDWp1VmgMR8p9htrhGoOE8kIPxUxKHiVOHw2Dd+u5jASk462HcS7OptLpfAIZsgk/enj0LumPzjANu062ZUBbTUHUzWUL9540UTI6slfuvcjwRKLAtOpg8FN3yaNvCZKOO5Ot9Qy23zZ4LoItHt+TwIDAQAB";
+
 
 
 // 확장 버전의 단일 진실 원천은 확장 자신의 package.json입니다.
@@ -68,7 +74,7 @@ const manifest = deepmerge(
 				suggested_key: "Alt+S",
 			},
 		},
-		key: CONFIG.extensionKey,
+		key: EXTENSION_KEY,
 	},
 	{
 		side_panel: {

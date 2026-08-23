@@ -14,29 +14,25 @@ export const getSupabaseClient = () => {
 
 	const cookieStore = cookies();
 
-	return createServerClient<Database, "memo">(
-		CONFIG.supabaseUrl,
-		CONFIG.supabaseAnonKey,
-		{
-			cookies: {
-				getAll() {
-					return cookieStore.getAll();
-				},
-				setAll(
-					cookiesToSet: Array<{
-						name: string;
-						value: string;
-						options?: Record<string, unknown>;
-					}>,
-				) {
-					cookiesToSet.forEach(({ name, value, options }) =>
-						cookieStore.set(name, value, options),
-					);
-				},
+	return createServerClient<Database, "memo">(SUPABASE.url, SUPABASE.anonKey, {
+		cookies: {
+			getAll() {
+				return cookieStore.getAll();
 			},
-			db: { schema: SUPABASE.table.memo },
+			setAll(
+				cookiesToSet: Array<{
+					name: string;
+					value: string;
+					options?: Record<string, unknown>;
+				}>,
+			) {
+				cookiesToSet.forEach(({ name, value, options }) =>
+					cookieStore.set(name, value, options),
+				);
+			},
 		},
-	) as unknown as MemoSupabaseClient;
+		db: { schema: SUPABASE.table.memo },
+	}) as unknown as MemoSupabaseClient;
 };
 
 export const signInWithOAuth = async (provider: Provider) => {

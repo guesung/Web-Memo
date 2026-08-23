@@ -17,7 +17,7 @@ jobs:
     name: 확장 빌드
     runs-on: ubuntu-latest
     env:
-      WEB_URL: ${{ inputs.deploy_target == 'staging' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}
+      BUILD_ENV: ${{ inputs.deploy_target == 'staging' && 'staging' || 'production' }}
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
@@ -34,12 +34,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Setting environment variables
-        run: |
-          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
-          echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
-          echo NODE_ENV=production >> packages/env/.env
 
       - name: Build
         env:

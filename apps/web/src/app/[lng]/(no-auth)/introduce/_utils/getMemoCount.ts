@@ -1,5 +1,4 @@
 import { createClient } from "@supabase/supabase-js";
-import { CONFIG } from "@web-memo/env";
 import { SUPABASE } from "@web-memo/shared/constants";
 import { unstable_cache } from "next/cache";
 
@@ -7,7 +6,7 @@ const DEFAULT_MEMO_COUNT = 10000;
 
 const fetchMemoCount = async (): Promise<number> => {
 	try {
-		const supabase = createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey, {
+		const supabase = createClient(SUPABASE.url, SUPABASE.anonKey, {
 			db: { schema: SUPABASE.table.memo },
 		});
 		const { data, error } = await supabase.rpc(

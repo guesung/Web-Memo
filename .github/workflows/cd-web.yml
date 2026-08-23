@@ -17,7 +17,7 @@ jobs:
     name: 웹 빌드·배포
     runs-on: ubuntu-latest
     env:
-      WEB_URL: ${{ inputs.deploy_target == 'staging' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}
+      BUILD_ENV: ${{ inputs.deploy_target == 'staging' && 'staging' || 'production' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,20 +45,16 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
-      - name: Setting environment variables
-        run: |
-          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
-          echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
-          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> apps/web/.env
-          echo NODE_ENV=production >> packages/env/.env
-
+      # 아래 Vercel Build와 같은 기준으로 환경을 골라야 짝이 맞습니다.
+      # staging은 --prod 없이 빌드해 Preview로 나가므로 Preview 환경 값을 받습니다.
+      # --environment를 비우면 Development 값을 받아, Production에만 등록된 값이
+      # 빠진 채로 빌드와 배포가 그냥 성공합니다.
       - name: Vercel Pull
-        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --environment=${{ inputs.deploy_target == 'production' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
 
+      # 런타임·빌드 환경 변수는 vercel pull이 받아온 Vercel 프로젝트 설정을 씁니다.
+      # 셸로 덧씌우면 등록되지 않은 시크릿이 빈 값으로 덮어쓸 수 있습니다.
       - name: Vercel Build
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: vercel build ${{ inputs.deploy_target == 'production' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy staging

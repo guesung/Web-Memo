@@ -165,7 +165,7 @@ Protocol로 직접 이벤트를 보내는 현재 구조상 이미 번들에 인�
 배포 파이프라인이 외부 서비스에 인증할 때만 씁니다. 애플리케이션 코드가 읽는 값은
 하나도 없습니다.
 
-현재 등록된 12개입니다 (`gh secret list -R guesung/Web-Memo`).
+현재 등록된 13개입니다 (`gh secret list -R guesung/Web-Memo`).
 
 | 이름 | 용도 | 쓰는 워크플로 |
 | --- | --- | --- |
@@ -181,18 +181,22 @@ Protocol로 직접 이벤트를 보내는 현재 구조상 이미 번들에 인�
 | `EXPO_ANDROID_SERVICE_ACCOUNT_JSON` | Google Play 서비스 계정 키 (내부 테스트 제출) | `cd-app.yml` |
 | `SLACK_WEBHOOK_URL` | 앱 릴리스 결과 알림 | `cd-app.yml` |
 | `WEB_ENV_FILE` | e2e에서 `apps/web/.env`를 통째로 복원 | `e2e.yml` |
+| `SENTRY_AUTH_TOKEN` | 확장 빌드의 Sentry 소스맵 업로드 인증 | `cd-extension.yml` |
 
 `GITHUB_TOKEN`은 GitHub Actions가 자동으로 제공하므로 등록하지 않습니다.
 
-### ⚠️ `SENTRY_AUTH_TOKEN`은 참조되지만 등록돼 있지 않습니다
+### `SENTRY_AUTH_TOKEN`은 확장과 웹이 서로 다른 경로로 받습니다
 
-`cd-extension.yml`이 `${{ secrets.SENTRY_AUTH_TOKEN }}`을 넘기는데 위 목록에 없고,
-워크플로에 `environment:` 지정도 없어 Environment 시크릿으로 주입되지도 않습니다.
-빈 문자열이 들어가므로 **확장 빌드의 Sentry 소스맵 업로드가 조용히 실패**하고 있을
-가능성이 높습니다. 소스맵 업로드는 실패해도 빌드가 통과해 드러나지 않습니다.
+같은 이름이지만 공급처가 둘로 갈립니다.
 
-웹 빌드는 이 값을 셸로 받지 않고 `vercel pull`이 가져오는 Vercel 프로젝트
-환경변수에 의존합니다. 확장 쪽 소스맵을 살리려면 GitHub Secrets에 등록해야 합니다.
+- **확장**: `cd-extension.yml`의 Build 스텝이 `${{ secrets.SENTRY_AUTH_TOKEN }}`을
+  셸 환경 변수로 넘깁니다. → GitHub Secrets에 등록 (2026-08-23 등록 완료)
+- **웹**: 셸로 받지 않고 `vercel pull`이 가져오는 Vercel 프로젝트 환경변수에
+  의존합니다. → Vercel 대시보드에 등록
+
+그래서 **양쪽 모두에 등록해야** 소스맵이 올라갑니다. 한쪽만 있으면 그쪽만 동작하고
+다른 쪽은 조용히 실패합니다. 소스맵 업로드는 실패해도 빌드가 통과하므로 드러나지
+않습니다. Sentry에서 스택 트레이스가 난독화된 채로 보이면 이 값부터 확인하세요.
 
 ### 그 밖의 주의점
 

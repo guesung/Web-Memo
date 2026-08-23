@@ -1,7 +1,7 @@
 import { init } from "@sentry/nextjs";
-import { CONFIG } from "@web-memo/env";
+import { SENTRY } from "@web-memo/shared/constants";
 
 init({
-	dsn: CONFIG.sentryDsnWeb,
+	dsn: SENTRY.dsnWeb,
 	tracesSampleRate: 0.1,
 });

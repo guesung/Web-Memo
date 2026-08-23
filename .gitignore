@@ -12,11 +12,13 @@
 # env
 # 환경별 파일은 공개돼도 되는 값(웹 URL·NODE_ENV)만 담으므로 추적합니다.
 # 비밀은 apps/web/.env(추적 제외)에 둡니다.
+# 부정 패턴에 슬래시를 붙여 packages/env로 한정합니다. 슬래시가 없으면 경로 제한이
+# 없어져 apps/web/.env.production 같은 동명 파일까지 추적 대상이 됩니다.
 .env*
 !.env.example
-!.env.development
-!.env.staging
-!.env.production
+!/packages/env/.env.development
+!/packages/env/.env.staging
+!/packages/env/.env.production
 
 # python
 **/venv

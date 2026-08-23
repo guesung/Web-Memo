@@ -9,6 +9,13 @@ export interface IFMarker {
 	kind: string;
 }
 
+/**
+ * 질문이 아닌 마커 종류.
+ * @description CLI가 붙이는 재답변(`reply`)·지적 요약(`scan`)·승인(`approve`)은
+ * 스레드를 새로 여는 질문이 아니다.
+ */
+const NON_QUESTION_KINDS: readonly string[] = ["reply", "scan", "approve"];
+
 const MARKER_PATTERN = /(?:^|\n)[ \t]*<!--\s*ai-review:(intern|senior):([a-z0-9_-]+)\s*-->\s*$/;
 const KIND_VALIDATION_PATTERN = /^[a-z0-9_-]+$/;
 
@@ -40,4 +47,15 @@ export const parseMarker = (body: string): IFMarker | null => {
 	}
 
 	return { persona: matched[1] as TPersona, kind: matched[2] };
+};
+
+/**
+ * 이 마커가 봇이 새로 던진 질문인지 판별한다.
+ * @description 질문 kind는 `q1`~`qN`처럼 붙지만 `reply`·`scan`·`approve`는 질문이 아니다.
+ * 답글은 보통 `in_reply_to_id`가 있어 스레드 루트로 잡히지 않는데, **부모 코멘트가 삭제되면
+ * GitHub이 답글을 루트로 승격시킨다.** 그때 kind를 보지 않으면 재답변 코멘트가 "작성자가
+ * 답하지 않은 질문"으로 둔갑해 승인이 영영 거부된다 — 실제로 겪은 오탐이다.
+ */
+export const isQuestionMarker = (marker: IFMarker | null): marker is IFMarker => {
+	return marker !== null && !NON_QUESTION_KINDS.includes(marker.kind);
 };

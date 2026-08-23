@@ -1,10 +1,7 @@
 name: Release
 
-# master 기준 수동 릴리스 워크플로. 체크한 타깃만 프로덕션으로 배포합니다.
-#
 # 버전업(package.json / Update.ts / translation.json)은 이 워크플로가 하지 않습니다.
-# 릴리스 노트는 사람이 써야 하므로 로컬 `/version-update`로 처리한 뒤 master PR로 머지하고,
-# 그 다음 이 워크플로를 실행하세요.
+# 로컬 `/version-update`로 처리해 master에 머지한 뒤 실행하세요.
 on:
   workflow_dispatch:
     inputs:
@@ -26,14 +23,12 @@ on:
         required: false
         default: ""
 
-# 릴리스가 동시에 두 번 돌지 않도록 직렬화합니다.
 concurrency:
   group: release
   cancel-in-progress: false
 
 jobs:
-  # 타깃을 하나도 고르지 않으면 아무 잡도 돌지 않아 실행이 조용히 끝납니다.
-  # 그 경우를 명시적인 실패로 알립니다.
+  # 타깃을 하나도 안 고르면 아무 잡도 안 돌아 실행이 조용히 끝납니다. 명시적 실패로 바꿉니다.
   preflight:
     name: 릴리스 대상 확인
     runs-on: ubuntu-latest
@@ -55,10 +50,8 @@ jobs:
   release-app:
     name: 앱 릴리스
     needs: preflight
-    # cd-app의 notify 잡은 플랫폼별 결과를 조회하려고 actions:read를 씁니다.
-    # 재사용 워크플로의 잡은 호출자가 가진 권한을 넘어설 수 없고, 이 레포의
-    # 기본 토큰 권한은 read뿐이라 호출하는 쪽에서 먼저 넓혀 줘야 합니다.
-    # 이게 없으면 워크플로가 startup_failure로 파싱 단계에서 죽습니다.
+    # 재사용 워크플로의 잡은 호출자 권한을 넘어설 수 없습니다. cd-app의 notify가
+    # actions:read를 써서, 여기서 넓히지 않으면 startup_failure로 파싱 단계에서 죽습니다.
     permissions:
       contents: read
       actions: read

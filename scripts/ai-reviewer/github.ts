@@ -185,3 +185,66 @@ export const updatePullRequestBody = async ({
 		body: { body },
 	});
 };
+
+/** PR에 등록된 리뷰 중 이 워크플로우가 사용하는 필드만 추린 형태 */
+export interface IFReview {
+	id: number;
+	/** `APPROVED` · `COMMENTED` · `CHANGES_REQUESTED` · `DISMISSED` 중 하나 */
+	state: string;
+	/** 리뷰를 남긴 주체. App 봇이면 `이도현[bot]` 처럼 `[bot]` 접미사가 붙는다 */
+	user: { login: string } | null;
+	/** 리뷰 본문. 봇 마커가 붙어 있어 어느 페르소나의 승인인지 판별할 수 있다 */
+	body: string;
+}
+
+/**
+ * PR에 등록된 리뷰를 전부 가져온다.
+ * @description 페이지당 100건씩 끝까지 순회한다. 읽기 전용이라 인턴 봇 토큰을 사용한다.
+ * 같은 봇이 이미 승인했는지 판별해 중복 승인을 막는 데 쓴다.
+ */
+export const listReviews = async (pullNumber: number): Promise<IFReview[]> => {
+	const { repo } = loadReviewerConfig();
+	const collected: IFReview[] = [];
+	let page = 1;
+
+	while (true) {
+		const chunk = (await githubRequest({
+			persona: "intern",
+			method: "GET",
+			path: `/repos/${repo}/pulls/${pullNumber}/reviews?per_page=${PAGE_SIZE}&page=${page}`,
+		})) as IFReview[];
+
+		collected.push(...chunk);
+
+		if (chunk.length < PAGE_SIZE) {
+			return collected;
+		}
+
+		page += 1;
+	}
+};
+
+/**
+ * 지정한 페르소나 봇 명의로 PR을 승인한다.
+ * @description 봇은 PR 작성자와 다른 주체라 GitHub의 self-approve 제한에 걸리지 않고,
+ * 이 승인은 브랜치 보호 규칙의 필수 승인 수(`required_approving_review_count`)에
+ * 그대로 반영된다. `commit_id`를 넘기지 않으므로 승인은 호출 시점의 head 커밋에 붙는다.
+ */
+export const postReviewApproval = async ({
+	persona,
+	pullNumber,
+	body,
+}: {
+	persona: TPersona;
+	pullNumber: number;
+	body: string;
+}): Promise<void> => {
+	const { repo } = loadReviewerConfig();
+
+	await githubRequest({
+		persona,
+		method: "POST",
+		path: `/repos/${repo}/pulls/${pullNumber}/reviews`,
+		body: { event: "APPROVE", body },
+	});
+};

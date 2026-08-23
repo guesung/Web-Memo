@@ -13,7 +13,7 @@ export default function HeaderLeft({ lng }: LanguageType) {
 
 	return (
 		<div className="flex flex-1 items-center gap-4">
-			<Link href={PATHS.memos}>
+			<Link href={`/${lng}${PATHS.memos}`}>
 				<div className="flex h-full items-center gap-2 px-4">
 					<Image
 						src="/images/pngs/icon.png"

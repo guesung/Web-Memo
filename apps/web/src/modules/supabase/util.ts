@@ -1,9 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
-import { NEED_AUTH_PAGES, PATHS, SUPABASE } from "@web-memo/shared/constants";
+import { PATHS, SUPABASE } from "@web-memo/shared/constants";
 import type { Database, MemoSupabaseClient } from "@web-memo/shared/types";
 import { AuthService } from "@web-memo/shared/utils";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+
+/** 비로그인 상태로 접근하면 로그인 페이지로 돌려보낼 경로들. */
+const NEED_AUTH_PAGES = [
+	PATHS.memos,
+	PATHS.memosWish,
+	PATHS.memosSetting,
+	PATHS.highlights,
+	PATHS.admin,
+	PATHS.adminUsers,
+];
 
 export async function updateAuthorization(request: NextRequest) {
 	const nextResponse = NextResponse.next({

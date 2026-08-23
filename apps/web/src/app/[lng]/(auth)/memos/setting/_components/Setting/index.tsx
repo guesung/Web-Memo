@@ -1,11 +1,10 @@
 "use client";
 
+import { MOTION_VARIANTS } from "@src/constants";
 import type { LanguageType } from "@src/modules/i18n";
-import { MOTION_VARIANTS } from "@web-memo/shared/constants";
 import { Loading } from "@web-memo/ui";
 import { motion } from "framer-motion";
 import { Suspense } from "react";
-
 import SettingCategoryForm from "./SettingCategoryForm";
 import SettingExport from "./SettingExport";
 import SettingGuide from "./SettingGuide";

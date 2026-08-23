@@ -26,12 +26,3 @@ export const PATHS = {
 	useCasesDeveloper: "/use-cases/developer",
 	useCasesTechArticle: "/use-cases/tech-article",
 };
-
-export const NEED_AUTH_PAGES = [
-	PATHS.memos,
-	PATHS.memosWish,
-	PATHS.memosSetting,
-	PATHS.highlights,
-	PATHS.admin,
-	PATHS.adminUsers,
-];

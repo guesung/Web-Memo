@@ -69,9 +69,17 @@ export function CustomTabBar({
 			<View
 				className="flex-row bg-white dark:bg-neutral-900 border-t border-border dark:border-neutral-800 pt-2"
 				style={{ paddingBottom: insets.bottom }}
+				// 폴더블을 접거나 펴면 액티비티 재생성 없이 레이아웃만 다시 잡혀 inset과 바 높이가 바뀐다.
+				// 최초 한 번만 기록하면 옛 높이 기준으로 visibleHeight가 0에 고정되어 탭바가 사라지므로,
+				// 높이가 바뀔 때마다 갱신하고 스크롤 숨김 오프셋도 되돌려 탭바를 다시 보인다.
 				onLayout={(e) => {
-					if (barHeight.value === 0) {
-						barHeight.value = e.nativeEvent.layout.height;
+					const nextHeight = e.nativeEvent.layout.height;
+					if (nextHeight === barHeight.value) return;
+
+					const hadHeight = barHeight.value !== 0;
+					barHeight.value = nextHeight;
+					if (hadHeight) {
+						tabBarTranslateY.value = 0;
 					}
 				}}
 			>

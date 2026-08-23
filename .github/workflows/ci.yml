@@ -72,7 +72,7 @@ jobs:
           BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.event.pull_request.base.ref) || github.event.before }}
         run: .github/scripts/detect-affected-apps.sh
 
-  # 앱 빌드는 iOS 22분 + Android 29분입니다. packages/shared를 웹·확장이 함께 써서
+  # 앱 빌드는 약 30분입니다. packages/shared를 웹·확장이 함께 써서
   # 앱과 무관한 PR까지 빌드를 끌고 오므로, PR에서는 build-app 라벨이 있을 때만 돌립니다.
   cd-app:
     needs: [ci, changes]

@@ -1,6 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
-import { URL as APP_URL } from "@web-memo/shared/constants";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -42,6 +41,7 @@ import {
 	saveScrollPosition,
 } from "@/lib/storage/scrollPositions";
 import { supabase } from "@/lib/supabase/client";
+import { WEB_API_ORIGIN } from "../_constants/webApi";
 import { getPanelRatio, savePanelRatio } from "../_utils/browserPreferences";
 import { formatUrl } from "../_utils/formatUrl";
 import {
@@ -471,16 +471,19 @@ export function useBrowserState({
 				const {
 					data: { session },
 				} = await supabase.auth.getSession();
-				const response = await fetch(`${APP_URL.web}/api/openai/webpage-qa`, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						...(session?.access_token
-							? { Authorization: `Bearer ${session.access_token}` }
-							: {}),
+				const response = await fetch(
+					`${WEB_API_ORIGIN}/api/openai/webpage-qa`,
+					{
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							...(session?.access_token
+								? { Authorization: `Bearer ${session.access_token}` }
+								: {}),
+						},
+						body: JSON.stringify({ content: pageText, question }),
 					},
-					body: JSON.stringify({ content: pageText, question }),
-				});
+				);
 				const data = await response.json();
 				if (!response.ok) {
 					setAiError(data.error ?? "요청에 실패했어요");

@@ -4,6 +4,7 @@ export * from "./Device";
 export * from "./Environment";
 export * from "./Error";
 export * from "./Export";
+export * from "./memoSearchFilter";
 export * from "./Sentry";
 export * from "./Supabase";
 export * from "./Tailwind";

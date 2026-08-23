@@ -2,7 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { URL } from "@web-memo/shared/constants";
+import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import { motion } from "framer-motion";
 import { Chrome, Heart, Mail, MessageCircle, Youtube } from "lucide-react";
 import Link from "next/link";
@@ -15,19 +15,19 @@ export default function Footer({ lng }: FooterProps) {
 	const socialLinks = [
 		{
 			icon: Mail,
-			href: URL.email,
+			href: EXTERNAL_LINK.contactEmail,
 			label: t("introduce.footer.social.email"),
 			color: "hover:text-blue-500",
 		},
 		{
 			icon: Youtube,
-			href: URL.youtube,
+			href: EXTERNAL_LINK.youtubeChannel,
 			label: t("introduce.footer.social.youtube"),
 			color: "hover:text-red-500",
 		},
 		{
 			icon: MessageCircle,
-			href: URL.kakaoTalk,
+			href: EXTERNAL_LINK.kakaoOpenChat,
 			label: t("introduce.footer.social.kakaotalk"),
 			color: "hover:text-yellow-500",
 		},
@@ -35,12 +35,12 @@ export default function Footer({ lng }: FooterProps) {
 
 	const productLinks = [
 		{
-			href: URL.chromeStore,
+			href: EXTERNAL_LINK.chromeWebStoreListing,
 			label: t("introduce.footer.chrome_extension"),
 			external: true,
 		},
 		{
-			href: URL.appStore,
+			href: EXTERNAL_LINK.iosAppStoreListing,
 			label: t("introduce.footer.ios_app"),
 			external: true,
 		},

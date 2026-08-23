@@ -2,7 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { URL } from "@web-memo/shared/constants";
+import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import { motion } from "framer-motion";
 import { ArrowRight, Check, Chrome, Sparkles } from "lucide-react";
 import Image from "next/image";
@@ -126,7 +126,7 @@ export default function FinalCTA({ lng }: FinalCTAProps) {
 							className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
 						>
 							<Link
-								href={URL.chromeStore}
+								href={EXTERNAL_LINK.chromeWebStoreListing}
 								target="_blank"
 								rel="noopener noreferrer"
 								className="group relative inline-flex items-center justify-center gap-2.5 rounded-full bg-white px-8 py-4 text-lg font-semibold text-gray-900 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] overflow-hidden"
@@ -138,7 +138,7 @@ export default function FinalCTA({ lng }: FinalCTAProps) {
 							</Link>
 
 							<Link
-								href={URL.appStore}
+								href={EXTERNAL_LINK.iosAppStoreListing}
 								target="_blank"
 								rel="noopener noreferrer"
 								className="group inline-flex items-center justify-center gap-2.5 rounded-full bg-black/80 backdrop-blur-sm border border-white/20 px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] hover:bg-black"

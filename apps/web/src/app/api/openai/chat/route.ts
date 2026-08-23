@@ -1,4 +1,4 @@
-import { EXTENSION } from "@web-memo/shared/constants";
+import { CHROME_EXTENSION_ID } from "@web-memo/shared/constants";
 import type { NextRequest } from "next/server";
 import type { ChatCompletionMessageParam } from "openai/resources.mjs";
 import { ERROR_MESSAGES, HTTP_STATUS } from "../constant";
@@ -13,7 +13,7 @@ import { CHAT_SYSTEM_PROMPT } from "./constant";
 export async function POST(request: NextRequest) {
 	try {
 		const origin = request.headers.get("origin");
-		const validOrigin = `chrome-extension://${EXTENSION.id}`;
+		const validOrigin = `chrome-extension://${CHROME_EXTENSION_ID}`;
 
 		if (origin !== validOrigin) {
 			return createErrorResponse(

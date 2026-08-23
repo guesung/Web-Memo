@@ -1,3 +1,4 @@
+/** 카테고리·언어별 요약 시스템 프롬프트 본문. */
 export const DEFAULT_PROMPTS = {
 	youtube: {
 		ko: `\
@@ -165,6 +166,7 @@ Extract the essentials focusing on the following elements:
 	},
 };
 
+/** 요약 프롬프트 뒤에 덧붙이는 공통 지시문 조각. */
 export const PROMPT = {
 	default: "마크다운 문법을 사용하지 말아주세요.",
 	language: "Language: Respond entirely in",

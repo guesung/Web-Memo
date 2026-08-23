@@ -1,11 +1,10 @@
+import { MOTION_VARIANTS } from "@src/constants";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { MOTION_VARIANTS } from "@web-memo/shared/constants";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import { Button, cn } from "@web-memo/ui";
 import { motion } from "framer-motion";
 import { XIcon } from "lucide-react";
-
 import MemoOption from "../MemoCardFooter/MemoOption";
 
 interface MemoOptionHeaderProps extends LanguageType {

@@ -3,7 +3,7 @@
 import { useGetExtensionManifest } from "@src/hooks";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { URL } from "@web-memo/shared/constants";
+import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import {
 	checkLocalStorageTrue,
 	setLocalStorageTrue,
@@ -35,7 +35,11 @@ export default function ExtensionInstallCheckDialog({
 	};
 
 	const handleOkClick = () => {
-		window.open(URL.chromeStore, "_blank", "noopener,noreferrer");
+		window.open(
+			EXTERNAL_LINK.chromeWebStoreListing,
+			"_blank",
+			"noopener,noreferrer",
+		);
 		closeDialog();
 	};
 

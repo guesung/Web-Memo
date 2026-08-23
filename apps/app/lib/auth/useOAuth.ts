@@ -1,13 +1,18 @@
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { login as kakaoLogin } from "@react-native-seoul/kakao-login";
-import { OAUTH } from "@web-memo/shared/constants";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { Platform } from "react-native";
 import { supabase } from "@/lib/supabase/client";
 
+/** Google Cloud 콘솔에 등록된 OAuth 클라이언트 ID. 웹/네이티브가 서로 다른 값을 쓴다. */
+const GOOGLE_WEB_CLIENT_ID =
+	"541718063018-q46chejne6pct5n4cd9ljfkgrvlhqs0q.apps.googleusercontent.com";
+const GOOGLE_APP_CLIENT_ID =
+	"541718063018-h672i93efg8mmnknsril75ajc1dlu1to.apps.googleusercontent.com";
+
 GoogleSignin.configure({
-	webClientId: OAUTH.googleWebClientId,
-	iosClientId: OAUTH.googleAppClientId,
+	webClientId: GOOGLE_WEB_CLIENT_ID,
+	iosClientId: GOOGLE_APP_CLIENT_ID,
 });
 
 async function signInWithGoogle() {

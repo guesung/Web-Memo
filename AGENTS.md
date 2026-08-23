@@ -329,7 +329,7 @@ function Component({ lng }: { lng: Language }) {
 
 | 위치 | 담는 것 | 추적 |
 | --- | --- | --- |
-| `packages/env/.env.{development,staging,production}` | 확장·웹이 공유하며 환경마다 다른 값 (`NODE_ENV`, `WEB_URL`) | ✅ 커밋 |
+| `packages/env/.env.{development,staging,production}` | 확장·웹이 공유하며 환경마다 다른 값 (`WEB_URL`) | ✅ 커밋 |
 | `packages/env/.env` | 위 값의 로컬 오버라이드 (선택) | ❌ |
 | `apps/web/.env` | 웹에서만 쓰는 서버 시크릿 (`OPENAI_API_KEY`, `UPSTASH_*`) | ❌ |
 | Vercel 프로젝트 환경변수 | 배포된 웹의 런타임 값 | — |
@@ -343,6 +343,12 @@ BUILD_ENV=production pnpm build      # .env.production
 BUILD_ENV=staging    pnpm build      # .env.staging
 pnpm dev                             # .env.development
 ```
+
+이 값은 파일 선택에만 쓰이지 않고 번들에도 인라인됩니다. 코드에서 환경을 분기할
+때는 `CONFIG.buildEnv`(`"development" | "staging" | "production"`)를 쓰고,
+`NODE_ENV`로 판단하지 마세요 — Next·Vite가 자기 값으로 치환하는 이름이라 staging과
+production을 구분하지 못합니다. `isProduction()`은 `buildEnv !== "development"`라
+스테이징에서도 운영과 같이 동작합니다.
 
 작업할 때 반드시 지켜야 하는 것 세 가지입니다.
 

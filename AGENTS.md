@@ -119,6 +119,10 @@ Turborepo 기반 모노레포입니다.
 필요한 심볼이 좁은 경로로 노출돼 있지 않다면 `packages/shared/package.json`의
 `exports`와 `typesVersions`에 하위 경로를 추가하세요.
 
+앱은 환경 변수를 쓰지 않습니다. 필요한 값(웹 URL, Supabase, OAuth 클라이언트 ID)이
+모두 환경과 무관한 고정값이라 `@web-memo/shared/constants`의 상수로 읽습니다.
+그래서 앱 빌드에는 `.env`도 `packages/env/dist`도 필요하지 않습니다.
+
 ### 확장 프로그램 진입점 (Manifest V3)
 
 - **Background Script**: 백그라운드 작업용 service worker
@@ -298,17 +302,29 @@ function Component({ lng }: { lng: Language }) {
 
 ## 🔧 환경 설정
 
-환경 변수는 `packages/env/`에서 관리합니다.
+값은 세 곳 중 하나에 둡니다. **기준은 "노출 여부"가 아니라 "환경에 따라 달라지는가"입니다.**
 
-- `__FIREFOX__`: Firefox 전용 빌드 수정 활성화
-- `OPENAI_API_KEY`: 페이지 요약용 OpenAI 연동
-- `SENTRY_DSN`: 에러 추적/모니터링
-- `WEB_URL`: 웹 애플리케이션 기본 URL
+| 위치 | 담는 것 | 예 |
+| --- | --- | --- |
+| `packages/env/.env` | 환경(개발/스테이징/운영)마다 값이 다른 것 | `NODE_ENV`, `WEB_URL` |
+| `packages/shared/src/constants/` | 환경과 무관한 고정 공개값 | Supabase URL·anon key, Sentry DSN, GA/GTM ID, OAuth 클라이언트 ID |
+| `apps/web/.env` | 노출되면 안 되는 서버 전용 시크릿 | `OPENAI_API_KEY`, `UPSTASH_*`, `SENTRY_AUTH_TOKEN` |
+
+`packages/env`의 값은 `tsup`이 빌드 시점에 번들로 **인라인하므로 전부 공개됩니다.**
+비밀이 필요하면 `apps/web/.env`에 두고 서버에서만 읽으세요.
+
+예외: `GA_API_SECRET`은 본래 서버 시크릿이지만, 확장이 GA로 직접 이벤트를 보내는
+현재 구조상 이미 번들에 노출됩니다. 서버 프록시로 옮기기 전까지 `packages/env`에 둡니다.
+
+앱(`apps/app`)은 환경 변수를 쓰지 않습니다 — 필요한 값이 전부 고정값이라 상수만 읽습니다.
+Edge Functions는 Supabase 플랫폼이 주입하는 예약 변수(`SUPABASE_SERVICE_ROLE_KEY` 등)를 씁니다.
+
+빌드 플래그: `__FIREFOX__`(Firefox 전용 빌드), `__DEV__`(확장 개발 모드)
 
 환경 파일:
-- `packages/env/.env` (개발)
-- `packages/env/.env.production` (운영)
+- `packages/env/.env` (로컬)
 - `packages/env/.env.example` (템플릿)
+- CI에서는 워크플로가 `SHARED_ENV_FILE` 시크릿으로 `.env`를 만듭니다.
 
 ---
 

@@ -15,7 +15,7 @@ on:
 jobs:
   build:
     # iOS는 macOS 러너가 필수지만 Android는 ubuntu에서 돌려야 러너 과금이 절약됩니다.
-    # 빌드 전 단계(체크아웃~환경변수)가 두 플랫폼 동일해 matrix로 묶고,
+    # 빌드 전 단계(체크아웃~의존성 설치)가 두 플랫폼 동일해 matrix로 묶고,
     # 플랫폼 전용 단계만 if로 분기합니다.
     name: ${{ matrix.platform }} 빌드
     runs-on: ${{ matrix.runner }}
@@ -62,11 +62,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Setting environment variables
-        run: |
-          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
-          echo "${{ secrets.APP_ENV_FILE }}" >> apps/app/.env
 
       # 서명 키(iOS 인증서 / Android 키스토어)는 EAS 서버에 등록된 것을 받아 씁니다.
       # 따라서 러너에는 EXPO_TOKEN 외에 별도 서명 시크릿이 필요 없습니다.

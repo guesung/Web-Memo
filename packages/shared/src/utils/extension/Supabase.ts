@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { CONFIG } from "@web-memo/env";
-import { COOKIE_KEY, SUPABASE } from "../../constants";
+import { SUPABASE } from "../../constants";
 import type { StorageKeyType } from "../../modules/chrome-storage";
 import { ChromeSyncStorage } from "../../modules/chrome-storage";
 import type { Database } from "../../types";
@@ -38,11 +38,11 @@ export const getSupabaseClient = async () => {
 		if (isUserLogin) return supabaseClientInstance;
 
 		const accessTokenFromWeb = await chrome.cookies.get({
-			name: COOKIE_KEY.accessToken,
+			name: SUPABASE.authCookie.accessToken,
 			url: CONFIG.webUrl,
 		});
 		const refreshTokenCookieFromWeb = await chrome.cookies.get({
-			name: COOKIE_KEY.refreshToken,
+			name: SUPABASE.authCookie.refreshToken,
 			url: CONFIG.webUrl,
 		});
 

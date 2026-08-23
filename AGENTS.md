@@ -4,8 +4,10 @@
 
 도구별 진입점은 이 파일을 가리키는 얇은 포인터로만 유지합니다.
 
-- `CLAUDE.md` → 이 파일 + Claude Code 고유 항목(서브에이전트/Task tool, `/pr` 워크플로)
 - `.cursor/rules/main.mdc` → 이 파일
+
+도구가 자체 규칙 파일을 요구하면 이 파일을 가리키는 포인터만 두고, 규칙 본문은
+옮기지 않습니다.
 
 > **규칙을 수정할 때는 항상 이 `AGENTS.md`만 고칩니다.** 도구별 파일에 규칙을 중복 작성하지 마세요.
 
@@ -58,7 +60,7 @@ const UNSUPPORTED_SUMMARY_PAGES = [
 
 ## 🛠 기술 스택
 
-- **프론트엔드**: TypeScript 5.5.3, React 18.3.1, Next.js 14.2.10(웹 앱), Vite 5.3.3(확장), TailwindCSS 3.4.x
+- **프론트엔드**: TypeScript 5.5.3, React 19.1.0, Next.js 14.2.10(웹 앱), Vite 5.3.3(확장), TailwindCSS 3.4.x
 - **상태/데이터**: TanStack Query (React Query) v5.59.0, React Hook Form 7.53.2
 - **UI/스타일링**: TailwindCSS, Framer Motion 11.11.8, Lucide React 0.456.0, Next Themes, Driver.js(튜토리얼/가이드)
 - **백엔드/DB**: Supabase (인증, 데이터베이스, 타입 생성, 실시간)
@@ -67,7 +69,10 @@ const UNSUPPORTED_SUMMARY_PAGES = [
 - **코드 품질**: Biome 2.0.0
 - **모니터링**: Sentry
 - **유틸리티**: dayjs(날짜), es-hangul(한글 처리), youtube-transcript(자막), OpenAI API
-- **패키지 매니저/런타임**: pnpm 10.23.0, Node.js >=22.17.0
+- **패키지 매니저/런타임**: pnpm 10.23.0, Node.js 24 (`.nvmrc`, 루트 `engines`)
+
+`apps/app`(React Native)만 TypeScript `~5.9.3`, TailwindCSS `3.3.2`로 다릅니다 —
+Expo SDK가 요구하는 버전이라 나머지와 맞추지 않습니다.
 
 ### 크로스 브라우저
 
@@ -87,7 +92,9 @@ Turborepo 기반 모노레포입니다.
 - `apps/app/` — React Native/Expo 모바일 애플리케이션
 
 **Pages (확장 UI)**
-- `pages/` — 확장 UI 페이지 (popup, side-panel, options, content-ui, devtools, devtools-panel)
+- `pages/side-panel/` — 메인 메모 인터페이스
+- `pages/options/` — 설정 페이지
+- `pages/content-ui/` — 웹 페이지에 주입되는 UI
 
 **Shared Packages**
 - `packages/shared/` — 공용 유틸/훅/타입/비즈니스 로직 (hooks, utils, types, modules, constants)
@@ -103,6 +110,8 @@ Turborepo 기반 모노레포입니다.
 
 **Testing & Infra**
 - `e2e/` — Playwright E2E 테스트 스위트
+- `scripts/ai-reviewer/` — PR AI 리뷰 스크립트 (워크스페이스 밖, `pnpm type-check:scripts`로 검사)
+- `.github/scripts/` — 워크플로가 호출하는 셸 스크립트 (변경 앱 판정, 릴리스 알림)
 
 ### ⚠️ `apps/app`(React Native)에서 `@web-memo/shared` import 규칙
 
@@ -125,12 +134,17 @@ Turborepo 기반 모노레포입니다.
 
 ### 확장 프로그램 진입점 (Manifest V3)
 
-- **Background Script**: 백그라운드 작업용 service worker
-- **Content Scripts**: 메모 수집을 위해 웹 페이지에 주입
-- **Side Panel**: 메인 메모 인터페이스(React 앱)
-- **Popup**: 빠른 접근 인터페이스
-- **Options**: 설정 페이지
-- **DevTools**: 개발자 도구 패널
+`apps/chrome-extension/manifest.js`가 단일 진실 원천입니다.
+
+- **Background Script**: `background.iife.js` — service worker
+- **Content Scripts**: `content-ui/index.iife.js` + `content.css` — 모든 URL에 주입
+- **Side Panel**: `side-panel/index.html` — 메인 메모 인터페이스(React 앱)
+- **Options**: `options/index.html` — 설정 페이지
+- **Action**: 아이콘 클릭 시 사이드 패널을 엽니다 (`default_popup` 없음)
+- **Commands**: `_execute_action`에 `Alt+S`
+
+팝업과 DevTools 패널은 없습니다. 진입점을 추가하려면 `pages/`에 패키지를 만들고
+`manifest.js`에 등록해야 합니다.
 
 ### 상태 관리 패턴
 
@@ -148,22 +162,31 @@ Turborepo 기반 모노레포입니다.
 pnpm i
 
 # 개발
-pnpm dev               # 전체
+pnpm dev               # 전체 (앱 제외)
 pnpm dev:extension     # 확장만
 pnpm dev:web           # 웹만
+pnpm dev:app           # 앱만 (Expo)
 
 # 빌드
 pnpm build             # 전체
-pnpm build:extension   # 확장만 (Firefox: pnpm build:extension -- --firefox)
+pnpm build:extension   # 확장만
 pnpm build:web         # 웹만
+pnpm start:web         # 웹 프로덕션 서버
+
+# Firefox 빌드는 확장 패키지의 스크립트를 직접 부릅니다
+pnpm -F @web-memo/chrome-extension build:firefox
 
 # 품질 & 테스트
 pnpm format            # Biome 포매팅
+pnpm check             # 포매팅 + 린트 (CI가 쓰는 것)
 pnpm lint
 pnpm lint:fix
+pnpm lint:syncpack     # 패키지 간 의존성 버전 정합
 pnpm type-check
+pnpm type-check:scripts  # scripts/ai-reviewer (워크스페이스 밖이라 별도)
 pnpm test:jest         # 단위 테스트 (Vitest)
 pnpm test:e2e          # E2E (Playwright)
+pnpm test:e2e:ui       # E2E UI 모드
 pnpm test-report:e2e
 
 # 확장 빌드 & 패키징
@@ -368,41 +391,9 @@ pnpm dev                             # .env.development
 
 ---
 
-## 📝 작업 문서화 (claudedocs)
-
-모든 개발 작업은 추적/참조를 위해 `claudedocs/` 폴더에 문서화합니다.
-
-**파일명 규칙**
-```
-claudedocs/
-├── YYYY-MM-DD-feature-name.md       # 기능 구현
-├── YYYY-MM-DD-bugfix-description.md  # 버그 수정
-├── YYYY-MM-DD-refactor-target.md    # 리팩토링
-└── YYYY-MM-DD-analysis-topic.md     # 분석/리서치
-```
-
-**템플릿**
-```markdown
-# [Task Title]
-
-**Date**: YYYY-MM-DD
-**Type**: feature | bugfix | refactor | analysis | chore
-**Status**: completed | in-progress | blocked
-
-## Summary
-## Changes Made
-## Technical Details
-## Related Issues/PRs
-## Notes
-```
-
-**작성 시점**: 새 기능, 조사가 필요한 버그 수정, 다중 파일 리팩토링, 아키텍처 결정, 복잡한 디버깅, 리서치/분석 결과.
-
----
-
 ## 🔀 커밋 & PR 워크플로
 
-작업 완료 후 PR을 통해 변경을 추적/리뷰합니다. (Claude Code는 `/pr` 스킬 사용 — 자세한 내용은 `CLAUDE.md`)
+작업 완료 후 PR을 통해 변경을 추적/리뷰합니다.
 
 ### 브랜치 전략 (MANDATORY)
 
@@ -436,17 +427,21 @@ claudedocs/
 - **커밋 메시지**: 한글 (예: `feat: 메모 검색 기능 추가`)
 - **PR 제목**: 한글 (예: `feat: 메모 검색 기능 구현`)
 - **PR 본문**: 요약/변경사항/테스트 계획 모두 한글
-- **브랜치명**: 영문 유지 (예: `feat/memo-search`, `fix/login-error`)
+- **브랜치명**: 한글·영문 모두 허용. 두 형태가 쓰입니다
+  - `<타입>/<kebab-case>` (예: `feat/memo-search`, `fix/login-error`)
+  - `<작성자>/<한글-설명>` (예: `guesung/환경변수-관리-방식-개선`)
 
 ### 세부 컨벤션 문서
 
 - 커밋 컨벤션: [docs/commit-convention.md](docs/commit-convention.md)
-- PR 컨벤션: [docs/pull-request-convention.md](docs/pull-request-convention.md)
 - 브랜치 전략: [docs/branch-strategy.md](docs/branch-strategy.md)
+- 환경 변수: [docs/environment-variables.md](docs/environment-variables.md)
 - 버전 관리: [docs/versioning.md](docs/versioning.md) — 확장·앱·릴리스 노트가
   **각각 독립된 버전 트랙**이며, `apps/chrome-extension` 외의 `package.json`에는
   `version` 필드를 두지 않습니다
-- PR 본문은 항상 레포의 `PULL_REQUEST_TEMPLATE.md`를 따름
+PR 템플릿 파일은 레포에 없습니다. 최근 PR들이 쓰는 형식을 따릅니다 —
+`## 설명` / `## 관련 이슈` / `## 변경 유형` / `## 체크리스트`, 필요하면
+`## 이번 PR과 무관하게 발견한 것`.
 
 ---
 

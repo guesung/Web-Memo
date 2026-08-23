@@ -1,0 +1,15 @@
+# Orca 워크스페이스 훅.
+#
+# 워크스페이스를 만들면 노션 "문제 해결 DB"에 작업카드가 생기고,
+# 워크스페이스를 지우면 그 카드가 "완료"로 넘어간다.
+#
+# 로직과 노션 토큰은 레포 밖(~/.orca/)에 있다. 훅 스크립트가 없는 머신에서는
+# 아무 일도 일어나지 않는다.
+scripts:
+  setup: |
+    hook="$HOME/.orca/hooks/notion-workcard.sh"
+    if [ -x "$hook" ]; then "$hook" create; fi
+
+  archive: |
+    hook="$HOME/.orca/hooks/notion-workcard.sh"
+    if [ -x "$hook" ]; then "$hook" archive; fi

@@ -302,26 +302,40 @@ function Component({ lng }: { lng: Language }) {
 
 ## 🔧 환경 설정
 
-값은 세 곳 중 하나에 둡니다. **기준은 "노출 여부"가 아니라 "환경에 따라 달라지는가"입니다.**
+값을 어디에 둘지는 **"환경에 따라 달라지는가"**로 정합니다. 노출 여부가 아닙니다.
 
-| 위치 | 담는 것 | 예 |
+| 위치 | 담는 것 | 읽는 쪽 |
 | --- | --- | --- |
-| `packages/env/.env` | 환경(개발/스테이징/운영)마다 값이 다른 것 | `NODE_ENV`, `WEB_URL` |
-| `packages/shared/src/constants/` | 환경과 무관한 고정 공개값 | Supabase URL·anon key, Sentry DSN, GA/GTM ID, OAuth 클라이언트 ID |
-| `apps/web/.env` | 노출되면 안 되는 서버 전용 시크릿 | `OPENAI_API_KEY`, `UPSTASH_*`, `SENTRY_AUTH_TOKEN` |
+| `packages/env/.env` | 확장·웹이 공유하며 환경마다 다른 값 (`NODE_ENV`, `WEB_URL`) | `tsup`이 빌드 시 인라인 |
+| `apps/web/.env` | 웹에서만 쓰는 서버 시크릿 (`OPENAI_API_KEY`, `UPSTASH_*`, `SENTRY_AUTH_TOKEN`) | Next.js가 자동 로드, 서버에서만 |
+| `packages/shared/src/constants/` | 환경과 무관한 고정값 (Supabase, Sentry DSN, GA/GTM ID, OAuth 클라이언트 ID) | 그냥 import |
 
-`packages/env`의 값은 `tsup`이 빌드 시점에 번들로 **인라인하므로 전부 공개됩니다.**
-비밀이 필요하면 `apps/web/.env`에 두고 서버에서만 읽으세요.
+각각 `.env.example`이 템플릿입니다.
+
+### 왜 파일이 둘인가
+
+읽는 주체가 다릅니다.
+
+`packages/env/.env`는 그 패키지의 `tsup`만 읽습니다. 값을 인라인한 `dist`를 만들어
+확장·pages·웹에 `CONFIG`로 공급하므로, 소비자들은 번들러가 서로 달라도 `import`만 하면
+됩니다. 이 패키지가 번들러 차이를 흡수하는 덕분에 웹은 공유 `.env`를 읽을 필요가 없습니다.
+
+`apps/web/.env`는 Next.js가 자동으로 읽습니다. 여기 담긴 값은 웹 서버에서만 쓰이므로
+공유할 이유가 없고, Next 기본 동작을 그대로 쓰면 `dotenv-cli` 같은 장치도 필요 없습니다.
+
+### ⚠️ `packages/env/.env`의 값은 공개됩니다
+
+`packages/env/src/config.ts`가 참조하는 키는 `tsup`이 번들에 인라인하므로
+확장·웹 클라이언트에 그대로 실립니다. **서버 시크릿을 여기 추가하지 마세요.**
+비밀이 필요하면 `apps/web/.env`에 두고 서버에서만 읽습니다.
+
+### 그 외
 
 앱(`apps/app`)은 환경 변수를 쓰지 않습니다 — 필요한 값이 전부 고정값이라 상수만 읽습니다.
 Edge Functions는 Supabase 플랫폼이 주입하는 예약 변수(`SUPABASE_SERVICE_ROLE_KEY` 등)를 씁니다.
+CI에서는 워크플로가 필요한 값만 골라 두 파일을 만듭니다.
 
 빌드 플래그: `__FIREFOX__`(Firefox 전용 빌드), `__DEV__`(확장 개발 모드)
-
-환경 파일:
-- `packages/env/.env` (로컬)
-- `packages/env/.env.example` (템플릿)
-- CI에서는 워크플로가 `SHARED_ENV_FILE` 시크릿으로 `.env`를 만듭니다.
 
 ---
 

@@ -68,10 +68,8 @@ jobs:
 
       - name: Setting environment variables
         run: |
-          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
           echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
           echo NODE_ENV=development >> packages/env/.env
-
           echo "${{ secrets.WEB_ENV_FILE }}" > apps/web/.env
 
       - name: Build The Extension

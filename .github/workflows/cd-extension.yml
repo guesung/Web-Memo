@@ -36,7 +36,6 @@ jobs:
 
       - name: Setting environment variables
         run: |
-          echo "${{ secrets.SHARED_ENV_FILE }}" >> packages/env/.env
           echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
           echo NODE_ENV=production >> packages/env/.env
 

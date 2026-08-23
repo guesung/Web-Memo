@@ -1,7 +1,7 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
-import { URL } from "@web-memo/shared/constants";
+import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import { isMac } from "@web-memo/shared/utils";
 import { Button } from "@web-memo/ui";
 import { motion } from "framer-motion";
@@ -72,7 +72,7 @@ export default function MemoEmptyState({ lng }: MemoEmptyStateProps) {
 					asChild
 				>
 					<Link
-						href={URL.chromeStore}
+						href={EXTERNAL_LINK.chromeWebStoreListing}
 						target="_blank"
 						rel="noopener noreferrer"
 					>

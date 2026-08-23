@@ -1,6 +1,6 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
-import { URL } from "@web-memo/shared/constants";
+import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import { Check, Chrome, Globe, Sparkles, Star, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -67,7 +67,7 @@ export default async function Hero({ lng }: HeroProps) {
 						<div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
 							{/* Chrome CTA */}
 							<Link
-								href={URL.chromeStore}
+								href={EXTERNAL_LINK.chromeWebStoreListing}
 								target="_blank"
 								rel="noopener noreferrer"
 								className="group relative inline-flex items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] overflow-hidden"
@@ -79,7 +79,7 @@ export default async function Hero({ lng }: HeroProps) {
 
 							{/* App Store CTA */}
 							<Link
-								href={URL.appStore}
+								href={EXTERNAL_LINK.iosAppStoreListing}
 								target="_blank"
 								rel="noopener noreferrer"
 								className="group relative inline-flex items-center justify-center gap-2.5 rounded-full bg-black dark:bg-white px-8 py-4 text-lg font-semibold text-white dark:text-black shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] overflow-hidden"

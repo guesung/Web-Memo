@@ -1,3 +1,4 @@
+/** framer-motion 공통 애니메이션 variants. */
 export const MOTION_VARIANTS = {
 	fadeInAndOut: {
 		initial: { opacity: 0, y: 10 },

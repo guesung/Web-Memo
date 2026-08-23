@@ -1,8 +1,6 @@
 import {
 	browserProfilingIntegration,
 	browserTracingIntegration,
-	captureException,
-	captureMessage,
 	init,
 	replayIntegration,
 } from "@sentry/react";
@@ -10,12 +8,6 @@ import { SENTRY } from "../constants";
 import { isExtension, isProduction } from "./Environment";
 
 const SENTRY_DSN = isExtension() ? SENTRY.dsnExtension : SENTRY.dsnWeb;
-
-export const testSentry = () => {
-	captureException(new Error(`captureException Error 테스트`));
-	captureException(`captureException String 테스트1`);
-	captureMessage(`captureMessage 테스트2`);
-};
 
 export const initSentry = async () => {
 	if (!isProduction()) return;

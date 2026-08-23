@@ -16,8 +16,3 @@ export function toErrorWithMessage(maybeError: unknown): Error {
 export function getErrorMessage(error: unknown) {
 	return toErrorWithMessage(error).message;
 }
-
-/**
- * @deprecated Use getErrorMessage instead (typo fix)
- */
-export const getErrorMeesage = getErrorMessage;

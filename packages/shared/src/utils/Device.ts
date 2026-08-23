@@ -1,6 +1,6 @@
 import { isServer } from "./Environment";
 
-export function isIOS() {
+function isIOS() {
 	if (isServer()) {
 		return false;
 	}
@@ -8,7 +8,7 @@ export function isIOS() {
 	return navigator.userAgent.match(/ipad|iphone/i) !== null;
 }
 
-export function isAndroid() {
+function isAndroid() {
 	if (isServer()) {
 		return false;
 	}

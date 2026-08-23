@@ -1,7 +1,4 @@
 import {
-	DEFAULT_PROMPTS,
-	LANGUAGE_MAP,
-	PROMPT,
 	STREAM_DATA_PREFIX,
 	STREAM_DONE_MARKER,
 } from "@web-memo/shared/constants";
@@ -10,7 +7,8 @@ import {
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
 import type { Category } from "@web-memo/shared/modules/extension-bridge";
-import { DEFAULT_LANGUAGE } from "./constant";
+import { DEFAULT_LANGUAGE, LANGUAGE_NAME } from "./constant";
+import { DEFAULT_PROMPTS, PROMPT } from "./prompt";
 
 interface GetSystemPromptProps {
 	language: "ko" | "en";
@@ -36,8 +34,9 @@ const getSystemPrompt = async ({
 	language,
 	category,
 }: GetSystemPromptProps) => {
-	const languagePrompt =
-		`${PROMPT.language} ${LANGUAGE_MAP[language] ?? "Korean"}`.repeat(3);
+	const languagePrompt = `${PROMPT.language} ${LANGUAGE_NAME[language]}`.repeat(
+		3,
+	);
 
 	if (category === "youtube")
 		return `${DEFAULT_PROMPTS.youtube[language]} ${languagePrompt} ${PROMPT.default}`;

@@ -6,28 +6,11 @@ export const getSafeConfig = (
 	else return value;
 };
 
-export const getOptionalConfig = (
-	value: string | undefined,
-	defaultValue = "",
-): string => {
-	return value ?? defaultValue;
-};
-
 export const CONFIG = {
 	webUrl: getSafeConfig("WEB_URL", process.env.WEB_URL),
-	supabaseUrl: getSafeConfig("SUPABASE_URL", process.env.SUPABASE_URL),
-	supabaseAnonKey: getSafeConfig(
-		"SUPABASE_ANON_KEY",
-		process.env.SUPABASE_ANON_KEY,
-	),
-	sentryDsnExtension: getSafeConfig("SENTRY_DSN", process.env.SENTRY_DSN),
-	sentryDsnWeb: getSafeConfig("SENTRY_DSN_WEB", process.env.SENTRY_DSN_WEB),
 	nodeEnv: getSafeConfig("NODE_ENV", process.env.NODE_ENV) as
 		| "development"
 		| "staging"
 		| "production",
-	gaId: getSafeConfig("GA_ID", process.env.GA_ID),
-	gtmId: getSafeConfig("GTM_ID", process.env.GTM_ID),
 	gaApiSecret: getSafeConfig("GA_API_SECRET", process.env.GA_API_SECRET),
-	extensionKey: getOptionalConfig(process.env.EXTENSION_KEY),
 };

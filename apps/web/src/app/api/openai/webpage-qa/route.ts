@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { CONFIG } from "@web-memo/env";
+import { SUPABASE } from "@web-memo/shared/constants";
 import { type NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "../constant";
@@ -24,7 +24,7 @@ const verifyUser = async (request: NextRequest) => {
 	const token = authHeader?.replace("Bearer ", "");
 	if (!token) return null;
 
-	const supabase = createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
+	const supabase = createClient(SUPABASE.url, SUPABASE.anonKey);
 	const {
 		data: { user },
 	} = await supabase.auth.getUser(token);

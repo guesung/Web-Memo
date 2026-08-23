@@ -1,4 +1,5 @@
 import { CONFIG } from "@web-memo/env";
+import { ANALYTICS } from "../../constants";
 import { isExtension, isProduction } from "../../utils";
 import type { AnalyticsEvent, GA4Event } from "./type";
 
@@ -13,7 +14,7 @@ class Analytics {
 	private readonly SESSION_EXPIRATION_IN_MIN = 30;
 
 	private constructor() {
-		this.gaId = CONFIG.gaId;
+		this.gaId = ANALYTICS.gaId;
 		this.apiSecret = CONFIG.gaApiSecret;
 	}
 

@@ -2,6 +2,7 @@ export * from "./constants";
 export * from "./countMap";
 export * from "./createAnchor";
 export * from "./documentText";
+export * from "./groupByUrl";
 export * from "./injected/highlightScript";
 export * from "./matchQuote";
 export * from "./renderHighlights";

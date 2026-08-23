@@ -1,4 +1,4 @@
-import type { HighlightRow } from "@web-memo/shared/types";
+import type { HighlightRow } from "../../types";
 
 /** 한 페이지에서 그은 하이라이트 묶음 */
 export interface HighlightGroup {

@@ -2,6 +2,7 @@ import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import {
 	FileText,
 	Globe,
+	Highlighter,
 	type LucideIcon,
 	Settings,
 } from "lucide-react-native";
@@ -28,6 +29,7 @@ interface TabConfig {
 const TAB_CONFIG: Record<string, TabConfig> = {
 	index: { icon: FileText, label: "메모" },
 	"browser/index": { icon: Globe, label: "브라우저" },
+	"highlights/index": { icon: Highlighter, label: "하이라이트" },
 	"settings/index": { icon: Settings, label: "설정" },
 };
 

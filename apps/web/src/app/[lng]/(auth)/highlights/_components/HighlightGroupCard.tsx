@@ -2,8 +2,8 @@
 
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import type { HighlightGroup } from "@web-memo/shared/modules/highlight";
 import { ExternalLink } from "lucide-react";
-import type { HighlightGroup } from "../_utils";
 import { HighlightQuote } from "./HighlightQuote";
 
 interface HighlightGroupCardProps {

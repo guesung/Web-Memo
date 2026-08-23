@@ -11,6 +11,7 @@ export default function MainLayout() {
 			>
 				<Tabs.Screen name="index" />
 				<Tabs.Screen name="browser/index" />
+				<Tabs.Screen name="highlights/index" />
 				<Tabs.Screen name="settings/index" />
 			</Tabs>
 		</BrowserScrollProvider>

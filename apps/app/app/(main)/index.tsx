@@ -4,7 +4,6 @@ import {
 	Globe,
 	Heart,
 	LogIn,
-	Plus,
 	Star,
 	Undo2,
 } from "lucide-react-native";
@@ -19,7 +18,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useScrollPositions } from "@/lib/hooks/useScrollPositions";
-import { AddMemoModal } from "./_components/AddMemoModal";
 import { MemoCard, type MemoItem } from "./_components/MemoCard";
 import { MemoDetailModal } from "./_components/MemoDetailModal";
 import { TodayArticles } from "./_components/TodayArticles";
@@ -43,7 +41,6 @@ export default function MemoScreen() {
 	const isDark = useColorScheme() === "dark";
 	const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
 	const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
-	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
 	const {
 		isLoggedIn,
@@ -117,16 +114,6 @@ export default function MemoScreen() {
 								<Text className="text-xs font-semibold text-white">로그인</Text>
 							</TouchableOpacity>
 						) : null}
-						<TouchableOpacity
-							className="flex-row items-center gap-1 px-3 py-1.5 rounded-full bg-foreground dark:bg-neutral-700"
-							onPress={() => setIsAddModalOpen(true)}
-							activeOpacity={0.8}
-						>
-							<Plus size={14} color="#fff" />
-							<Text className="text-xs font-semibold text-white">
-								메모 추가
-							</Text>
-						</TouchableOpacity>
 					</View>
 				</View>
 
@@ -289,11 +276,6 @@ export default function MemoScreen() {
 					</View>
 				)}
 			</View>
-
-			<AddMemoModal
-				visible={isAddModalOpen}
-				onClose={() => setIsAddModalOpen(false)}
-			/>
 
 			<MemoDetailModal
 				memo={selectedMemo}

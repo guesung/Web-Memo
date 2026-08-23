@@ -1,5 +1,5 @@
 import type { TPersona } from "./markers.ts";
-import { parseMarker } from "./markers.ts";
+import { isQuestionMarker, parseMarker } from "./markers.ts";
 
 /** GitHub 리뷰 코멘트 중 이 워크플로우가 사용하는 필드만 추린 형태 */
 export interface IFReviewComment {
@@ -103,7 +103,7 @@ export const findPendingThreads = ({
 	for (const root of roots) {
 		const marker = parseMarker(root.body);
 
-		if (marker === null) {
+		if (!isQuestionMarker(marker)) {
 			continue;
 		}
 
@@ -185,7 +185,7 @@ export const findUnansweredThreads = ({
 	for (const root of roots) {
 		const marker = parseMarker(root.body);
 
-		if (marker === null) {
+		if (!isQuestionMarker(marker)) {
 			continue;
 		}
 

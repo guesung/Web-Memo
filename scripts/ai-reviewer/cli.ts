@@ -13,7 +13,7 @@ import {
 	postReviewReply,
 	updatePullRequestBody,
 } from "./github.ts";
-import { buildMarker, parseMarker } from "./markers.ts";
+import { buildMarker, isQuestionMarker, parseMarker } from "./markers.ts";
 import type { TPersona } from "./markers.ts";
 import { findPendingThreads, findUnansweredThreads } from "./threads.ts";
 import type { IFReviewComment } from "./threads.ts";
@@ -359,8 +359,9 @@ const countRootQuestions = ({
 }): number => {
 	return comments.filter((comment) => {
 		const isRoot = comment.in_reply_to_id === null || comment.in_reply_to_id === undefined;
+		const marker = parseMarker(comment.body);
 
-		return isRoot && parseMarker(comment.body)?.persona === persona;
+		return isRoot && isQuestionMarker(marker) && marker.persona === persona;
 	}).length;
 };
 

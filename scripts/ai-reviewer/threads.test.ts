@@ -227,3 +227,39 @@ describe("findUnansweredThreads", () => {
 		expect(findUnansweredThreads({ comments, prAuthor: PR_AUTHOR })).toEqual([]);
 	});
 });
+
+describe("부모가 삭제돼 루트로 승격된 봇 답글", () => {
+	// GitHub은 부모 코멘트가 삭제되면 답글의 in_reply_to_id를 비우고 루트로 올린다.
+	// 이때 kind를 보지 않으면 재답변이 "작성자가 답하지 않은 질문"으로 둔갑한다.
+	const promotedReply = () =>
+		makeComment({ id: 1, in_reply_to_id: null, body: "재답변입니다\n<!-- ai-review:intern:reply -->" });
+
+	it("미답변 질문으로 세지 않는다", () => {
+		expect(findUnansweredThreads({ comments: [promotedReply()], prAuthor: PR_AUTHOR })).toEqual([]);
+	});
+
+	it("재답변 대상으로도 세지 않는다", () => {
+		const comments = [
+			promotedReply(),
+			makeComment({ id: 2, in_reply_to_id: 1, body: "네 확인했습니다", user: { login: PR_AUTHOR } }),
+		];
+
+		expect(findPendingThreads({ comments, prAuthor: PR_AUTHOR })).toEqual([]);
+	});
+
+	it("지적 요약·승인 마커도 질문이 아니다", () => {
+		for (const kind of ["scan", "approve"]) {
+			const comments = [
+				makeComment({ id: 1, in_reply_to_id: null, body: `본문\n<!-- ai-review:senior:${kind} -->` }),
+			];
+
+			expect(findUnansweredThreads({ comments, prAuthor: PR_AUTHOR })).toEqual([]);
+		}
+	});
+
+	it("질문 마커는 그대로 인식한다", () => {
+		const comments = [makeComment({ id: 1, body: "질문\n<!-- ai-review:intern:q1 -->" })];
+
+		expect(findUnansweredThreads({ comments, prAuthor: PR_AUTHOR })).toHaveLength(1);
+	});
+});

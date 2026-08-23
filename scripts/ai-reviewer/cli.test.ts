@@ -1,7 +1,13 @@
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { runFollowupWithItems, runPostWithInput, validatePostInput, withMarker } from "./cli.ts";
+import {
+	runFollowupWithItems,
+	runPostWithInput,
+	validateApproveInput,
+	validatePostInput,
+	withMarker,
+} from "./cli.ts";
 import { parseMarker } from "./markers.ts";
 import type { TPersona } from "./markers.ts";
 
@@ -371,7 +377,7 @@ describe("CLI 인자 검증 (실제 서브프로세스 실행)", () => {
 		const result = spawnSync("node", [cliPath, "bogus", "--pr", "1"], { encoding: "utf8" });
 
 		expect(result.status).toBe(1);
-		expect(result.stderr).toContain("알 수 없는 서브커맨드: bogus (pending | post | followup)");
+		expect(result.stderr).toContain("알 수 없는 서브커맨드: bogus (pending | post | followup | approve)");
 	});
 
 	it("--pr 이 없으면 에러 메시지와 함께 exit code 1을 반환한다", () => {
@@ -408,5 +414,61 @@ describe("CLI 인자 검증 (실제 서브프로세스 실행)", () => {
 		});
 		expect(negativeResult.status).toBe(1);
 		expect(negativeResult.stderr).toContain("--pr 값은 양의 정수여야 합니다");
+	});
+});
+
+describe("validateApproveInput", () => {
+	it("정상 입력을 그대로 돌려준다", () => {
+		const approvals = [
+			{ persona: "intern" as TPersona, body: "설명 납득했습니다" },
+			{ persona: "senior" as TPersona, body: "케이스 확인했습니다" },
+		];
+
+		expect(validateApproveInput({ approvals })).toEqual(approvals);
+	});
+
+	it("approvals 가 비어 있으면 거부한다", () => {
+		expect(() => validateApproveInput({ approvals: [] })).toThrow("approvals 가 비어 있습니다");
+		expect(() => validateApproveInput({})).toThrow("approvals 가 비어 있습니다");
+	});
+
+	it("알 수 없는 persona 를 거부한다", () => {
+		expect(() =>
+			validateApproveInput({ approvals: [{ persona: "pm" as TPersona, body: "승인" }] }),
+		).toThrow("approvals[0].persona");
+	});
+
+	it("같은 persona 가 두 번 승인하는 입력을 거부한다", () => {
+		expect(() =>
+			validateApproveInput({
+				approvals: [
+					{ persona: "intern" as TPersona, body: "승인" },
+					{ persona: "intern" as TPersona, body: "또 승인" },
+				],
+			}),
+		).toThrow("approvals[1].persona 가 중복입니다");
+	});
+
+	it("빈 body 를 거부한다", () => {
+		expect(() =>
+			validateApproveInput({ approvals: [{ persona: "intern" as TPersona, body: "   " }] }),
+		).toThrow("approvals[0].body 가 비어 있습니다");
+	});
+
+	it("문제를 하나로 모아서 던진다", () => {
+		try {
+			validateApproveInput({
+				approvals: [
+					{ persona: "intern" as TPersona, body: "" },
+					{ persona: "pm" as TPersona, body: "승인" },
+				],
+			});
+			expect.unreachable("검증을 통과하면 안 된다");
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+
+			expect(message).toContain("approvals[0].body");
+			expect(message).toContain("approvals[1].persona");
+		}
 	});
 });

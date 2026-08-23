@@ -12,6 +12,8 @@ export default defineConfig({
 		url: "http://localhost:3000",
 		reuseExistingServer: !process.env.CI,
 		stdout: "ignore",
+		// preview가 next build를 거치므로 기본 60초로는 부족하다.
+		timeout: 5 * 60 * 1000,
 	},
 	use: {
 		trace: "on-first-retry",

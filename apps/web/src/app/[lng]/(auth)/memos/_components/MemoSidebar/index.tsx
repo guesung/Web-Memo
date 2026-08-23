@@ -38,7 +38,10 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 			<SidebarContent className="bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-950">
 				<SidebarGroup className="pt-4">
 					<SidebarMenu className="space-y-1">
-						<Link href={PATHS.memos} replace>
+						{/* href에 lng를 붙이지 않으면 i18n 미들웨어가 307로 리다이렉트하고,
+						    Next는 리다이렉트된 RSC 요청을 클라이언트 네비게이션으로 잇지 못해
+						    전체 페이지를 다시 받는다. */}
+						<Link href={`/${lng}${PATHS.memos}`} replace>
 							<SidebarMenuButton className="group relative overflow-hidden transition-all duration-200 hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100/50 dark:hover:from-purple-950/30 dark:hover:to-purple-900/20 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]">
 								<div className="flex items-center gap-3 w-full">
 									<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 group-hover:bg-purple-200 dark:group-hover:bg-purple-800/40 transition-colors">
@@ -53,7 +56,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 								</div>
 							</SidebarMenuButton>
 						</Link>
-						<Link href={`${PATHS.memos}?isWish=true`} replace>
+						<Link href={`/${lng}${PATHS.memos}?isWish=true`} replace>
 							<SidebarMenuButton className="group relative overflow-hidden transition-all duration-200 hover:bg-gradient-to-r hover:from-pink-50 hover:to-pink-100/50 dark:hover:from-pink-950/30 dark:hover:to-pink-900/20 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]">
 								<div className="flex items-center gap-3 w-full">
 									<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-pink-100 dark:bg-pink-900/30 group-hover:bg-pink-200 dark:group-hover:bg-pink-800/40 transition-colors">
@@ -68,7 +71,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 								</div>
 							</SidebarMenuButton>
 						</Link>
-						<Link href={PATHS.highlights} replace>
+						<Link href={`/${lng}${PATHS.highlights}`} replace>
 							<SidebarMenuButton className="group relative overflow-hidden transition-all duration-200 hover:bg-gradient-to-r hover:from-amber-50 hover:to-amber-100/50 dark:hover:from-amber-950/30 dark:hover:to-amber-900/20 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]">
 								<div className="flex items-center gap-3 w-full">
 									<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/40 transition-colors">
@@ -83,7 +86,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 								</div>
 							</SidebarMenuButton>
 						</Link>
-						<Link href={`${PATHS.memos}?isStar=true`} replace>
+						<Link href={`/${lng}${PATHS.memos}?isStar=true`} replace>
 							<SidebarMenuButton className="group relative overflow-hidden transition-all duration-200 hover:bg-gradient-to-r hover:from-amber-50 hover:to-amber-100/50 dark:hover:from-amber-950/30 dark:hover:to-amber-900/20 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]">
 								<div className="flex items-center gap-3 w-full">
 									<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/40 transition-colors">
@@ -98,7 +101,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 								</div>
 							</SidebarMenuButton>
 						</Link>
-						<Link href={`${PATHS.memos}?isReading=true`} replace>
+						<Link href={`/${lng}${PATHS.memos}?isReading=true`} replace>
 							<SidebarMenuButton className="group relative overflow-hidden transition-all duration-200 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100/50 dark:hover:from-emerald-950/30 dark:hover:to-emerald-900/20 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]">
 								<div className="flex items-center gap-3 w-full">
 									<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800/40 transition-colors">
@@ -122,7 +125,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 				<TooltipProvider>
 					<Tooltip>
 						<TooltipTrigger asChild>
-							<Link href={PATHS.memosSetting}>
+							<Link href={`/${lng}${PATHS.memosSetting}`}>
 								<SidebarMenuButton
 									id="settings"
 									className="group w-full justify-center hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100/50 dark:hover:from-blue-950/30 dark:hover:to-blue-900/20 hover:shadow-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"

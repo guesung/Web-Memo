@@ -78,7 +78,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 				<SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
 					{t("sideBar.allCategory")}
 				</SidebarGroupLabel>
-				<Link href={PATHS.memosSetting}>
+				<Link href={`/${lng}${PATHS.memosSetting}`}>
 					<button
 						type="button"
 						className="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 transition-all duration-200 hover:scale-110 active:scale-95"

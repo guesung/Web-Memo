@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { IFReviewComment } from "./threads.ts";
-import { findPendingThreads } from "./threads.ts";
+import { findPendingThreads, findUnansweredThreads } from "./threads.ts";
 
 const PR_AUTHOR = "guesung";
 
@@ -175,5 +175,91 @@ describe("findPendingThreads", () => {
 				authorReply: "답변",
 			},
 		]);
+	});
+});
+
+describe("findUnansweredThreads", () => {
+	it("작성자가 아직 답하지 않은 봇 질문을 찾는다", () => {
+		const comments = [makeComment({ id: 1, body: "이 코드 뭔가요?\n<!-- ai-review:intern:q1 -->" })];
+
+		expect(findUnansweredThreads({ comments, prAuthor: PR_AUTHOR })).toEqual([
+			{
+				rootId: 1,
+				persona: "intern",
+				path: "src/foo.ts",
+				line: 10,
+				question: "이 코드 뭔가요?\n<!-- ai-review:intern:q1 -->",
+			},
+		]);
+	});
+
+	it("작성자가 답했으면 대상이 아니다", () => {
+		const comments = [
+			makeComment({ id: 1, body: "질문\n<!-- ai-review:intern:q1 -->" }),
+			makeComment({ id: 2, in_reply_to_id: 1, body: "캐시 때문입니다", user: { login: PR_AUTHOR } }),
+		];
+
+		expect(findUnansweredThreads({ comments, prAuthor: PR_AUTHOR })).toEqual([]);
+	});
+
+	it("봇끼리만 주고받은 스레드는 여전히 미답변이다", () => {
+		const comments = [
+			makeComment({ id: 1, body: "질문\n<!-- ai-review:intern:q1 -->" }),
+			makeComment({ id: 2, in_reply_to_id: 1, body: "거들기\n<!-- ai-review:senior:q1 -->" }),
+		];
+
+		expect(findUnansweredThreads({ comments, prAuthor: PR_AUTHOR })).toHaveLength(1);
+	});
+
+	it("마커가 없는 스레드는 이 워크플로우 대상이 아니라 세지 않는다", () => {
+		const comments = [makeComment({ id: 1, body: "사람이 직접 남긴 리뷰 코멘트" })];
+
+		expect(findUnansweredThreads({ comments, prAuthor: PR_AUTHOR })).toEqual([]);
+	});
+
+	it("답글의 답글로 이어진 작성자 답변도 인식한다", () => {
+		const comments = [
+			makeComment({ id: 1, body: "질문\n<!-- ai-review:intern:q1 -->" }),
+			makeComment({ id: 2, in_reply_to_id: 1, body: "되묻기\n<!-- ai-review:intern:q1 -->" }),
+			makeComment({ id: 3, in_reply_to_id: 2, body: "답변합니다", user: { login: PR_AUTHOR } }),
+		];
+
+		expect(findUnansweredThreads({ comments, prAuthor: PR_AUTHOR })).toEqual([]);
+	});
+});
+
+describe("부모가 삭제돼 루트로 승격된 봇 답글", () => {
+	// GitHub은 부모 코멘트가 삭제되면 답글의 in_reply_to_id를 비우고 루트로 올린다.
+	// 이때 kind를 보지 않으면 재답변이 "작성자가 답하지 않은 질문"으로 둔갑한다.
+	const promotedReply = () =>
+		makeComment({ id: 1, in_reply_to_id: null, body: "재답변입니다\n<!-- ai-review:intern:reply -->" });
+
+	it("미답변 질문으로 세지 않는다", () => {
+		expect(findUnansweredThreads({ comments: [promotedReply()], prAuthor: PR_AUTHOR })).toEqual([]);
+	});
+
+	it("재답변 대상으로도 세지 않는다", () => {
+		const comments = [
+			promotedReply(),
+			makeComment({ id: 2, in_reply_to_id: 1, body: "네 확인했습니다", user: { login: PR_AUTHOR } }),
+		];
+
+		expect(findPendingThreads({ comments, prAuthor: PR_AUTHOR })).toEqual([]);
+	});
+
+	it("지적 요약·승인 마커도 질문이 아니다", () => {
+		for (const kind of ["scan", "approve"]) {
+			const comments = [
+				makeComment({ id: 1, in_reply_to_id: null, body: `본문\n<!-- ai-review:senior:${kind} -->` }),
+			];
+
+			expect(findUnansweredThreads({ comments, prAuthor: PR_AUTHOR })).toEqual([]);
+		}
+	});
+
+	it("질문 마커는 그대로 인식한다", () => {
+		const comments = [makeComment({ id: 1, body: "질문\n<!-- ai-review:intern:q1 -->" })];
+
+		expect(findUnansweredThreads({ comments, prAuthor: PR_AUTHOR })).toHaveLength(1);
 	});
 });

@@ -6,14 +6,17 @@ import { upsertFollowupSection } from "./followup.ts";
 import {
 	getPullRequest,
 	listReviewComments,
+	listReviews,
 	postIssueComment,
+	postReviewApproval,
 	postReviewComment,
 	postReviewReply,
 	updatePullRequestBody,
 } from "./github.ts";
-import { buildMarker } from "./markers.ts";
+import { buildMarker, parseMarker } from "./markers.ts";
 import type { TPersona } from "./markers.ts";
-import { findPendingThreads } from "./threads.ts";
+import { findPendingThreads, findUnansweredThreads } from "./threads.ts";
+import type { IFReviewComment } from "./threads.ts";
 
 /** `post` 서브커맨드 입력의 질문 하나 */
 export interface IFQuestionInput {
@@ -42,6 +45,18 @@ export interface IFPostInput {
 /** `followup` 서브커맨드 입력 파일 스키마 */
 export interface IFFollowupInput {
 	items: string[];
+}
+
+/** `approve` 서브커맨드 입력의 승인 하나 */
+export interface IFApprovalInput {
+	persona: TPersona;
+	/** 무엇에 납득해서 승인하는지 적은 본문. 서명은 호출자가 직접 넣는다 */
+	body: string;
+}
+
+/** `approve` 서브커맨드 입력 파일 스키마 */
+export interface IFApproveInput {
+	approvals?: IFApprovalInput[];
 }
 
 const readJsonFile = <TValue>(path: string): TValue => {
@@ -327,6 +342,167 @@ const runFollowup = async ({
 	await runFollowupWithItems({ pullNumber, items });
 };
 
+/** 승인 리뷰 본문에 붙이는 마커 종류. 같은 봇의 중복 승인을 판별하는 데 쓴다 */
+const APPROVE_MARKER_KIND = "approve";
+
+/**
+ * 해당 페르소나가 이 PR에 던진 루트 질문 개수를 센다.
+ * @description 답글은 세지 않는다 — `in_reply_to_id`가 없는 코멘트만 스레드 루트다.
+ * 질문을 한 번도 던지지 않은 봇이 승인부터 하는 상황을 막는 데 쓴다.
+ */
+const countRootQuestions = ({
+	comments,
+	persona,
+}: {
+	comments: IFReviewComment[];
+	persona: TPersona;
+}): number => {
+	return comments.filter((comment) => {
+		const isRoot = comment.in_reply_to_id === null || comment.in_reply_to_id === undefined;
+
+		return isRoot && parseMarker(comment.body)?.persona === persona;
+	}).length;
+};
+
+/** 스레드 위치를 `경로:라인` 으로 표기한다. 라인이 없으면 경로만 쓴다 */
+const describeThreadLocation = ({ path, line }: { path: string; line: number | null }): string => {
+	return line === null ? path : `${path}:${line}`;
+};
+
+/**
+ * `approve` 입력을 검증해 승인 목록을 돌려준다.
+ * @description 첫 네트워크 호출 전에 배치 전체를 검사한다. persona가 유효한 값인지,
+ * 같은 페르소나가 중복되지 않는지, body가 비어 있지 않은지를 본다.
+ * @throws 문제가 하나라도 있으면 전부 모아 하나의 Error로 던진다.
+ */
+export const validateApproveInput = (input: IFApproveInput): IFApprovalInput[] => {
+	const approvals = input.approvals ?? [];
+	const problems: string[] = [];
+
+	if (approvals.length === 0) {
+		problems.push("approvals 가 비어 있습니다");
+	}
+
+	const seenPersonas = new Set<TPersona>();
+
+	approvals.forEach((approval, index) => {
+		if (!isValidPersona(approval.persona)) {
+			problems.push(
+				`approvals[${index}].persona 가 올바르지 않습니다: ${JSON.stringify(approval.persona)}`,
+			);
+
+			return;
+		}
+
+		if (seenPersonas.has(approval.persona)) {
+			problems.push(`approvals[${index}].persona 가 중복입니다: ${approval.persona}`);
+		}
+
+		seenPersonas.add(approval.persona);
+
+		if (typeof approval.body !== "string" || approval.body.trim().length === 0) {
+			problems.push(`approvals[${index}].body 가 비어 있습니다`);
+		}
+	});
+
+	if (problems.length > 0) {
+		throw new Error(
+			`approve 입력이 유효하지 않아 승인을 중단합니다:\n${problems.map((problem) => `- ${problem}`).join("\n")}`,
+		);
+	}
+
+	return approvals;
+};
+
+/**
+ * `approve` 서브커맨드의 승인 로직 본체.
+ * @description 승인은 브랜치 보호가 켜진 상태에서 곧바로 머지를 여는 행위라 되돌리기가
+ * 번거롭다. 그래서 게시 전에 세 가지를 모두 확인하고, 하나라도 걸리면 아무것도 승인하지
+ * 않은 채 무엇이 남았는지 전부 나열한다.
+ * 1) 각 페르소나가 이 PR에 질문을 실제로 던졌는가 — 질문 없이 승인만 받아 가는 것을 막는다.
+ * 2) 작성자가 답하지 않은 질문이 남아 있지 않은가.
+ * 3) 작성자 답변에 봇이 재답변하지 않은 스레드가 남아 있지 않은가 — 남아 있다면 아직
+ *    납득 판단 전이라는 뜻이다.
+ * 검사를 통과하면 페르소나별로 순차 승인한다. 이미 승인한 봇은 건너뛰므로 재실행해도
+ * 승인이 중복 쌓이지 않는다.
+ */
+export const runApproveWithInput = async ({
+	pullNumber,
+	input,
+}: {
+	pullNumber: number;
+	input: IFApproveInput;
+}): Promise<void> => {
+	const approvals = validateApproveInput(input);
+	const { prAuthor } = loadReviewerConfig();
+	const comments = await listReviewComments(pullNumber);
+	const problems: string[] = [];
+
+	for (const approval of approvals) {
+		if (countRootQuestions({ comments, persona: approval.persona }) === 0) {
+			problems.push(
+				`${approval.persona} 봇이 이 PR에 던진 질문이 없습니다 — 먼저 /ai-review 로 질문을 게시하세요`,
+			);
+		}
+	}
+
+	for (const thread of findUnansweredThreads({ comments, prAuthor })) {
+		problems.push(
+			`작성자 답변이 없는 질문이 남아 있습니다: ${describeThreadLocation(thread)} (${thread.persona})`,
+		);
+	}
+
+	for (const thread of findPendingThreads({ comments, prAuthor })) {
+		problems.push(
+			`봇 재답변이 없는 스레드가 남아 있습니다: ${describeThreadLocation(thread)} (${thread.persona}) — /ai-review-reply 를 먼저 실행하세요`,
+		);
+	}
+
+	if (problems.length > 0) {
+		throw new Error(
+			`승인 조건을 만족하지 않아 아무것도 승인하지 않았습니다:\n${problems.map((problem) => `- ${problem}`).join("\n")}`,
+		);
+	}
+
+	const approvedPersonas = new Set(
+		(await listReviews(pullNumber))
+			.filter((review) => review.state === "APPROVED")
+			.map((review) => parseMarker(review.body)?.persona)
+			.filter((persona): persona is TPersona => persona !== undefined),
+	);
+
+	for (const [index, approval] of approvals.entries()) {
+		const position = `(${index + 1}/${approvals.length})`;
+
+		if (approvedPersonas.has(approval.persona)) {
+			console.log(`${position} ${approval.persona} 는 이미 승인한 상태라 건너뜁니다.`);
+			continue;
+		}
+
+		await postReviewApproval({
+			persona: approval.persona,
+			pullNumber,
+			body: withMarker({
+				body: approval.body,
+				persona: approval.persona,
+				kind: APPROVE_MARKER_KIND,
+			}),
+		});
+
+		console.log(`${position} ${approval.persona} 승인 완료`);
+	}
+};
+
+const runApprove = async ({
+	pullNumber,
+	inputPath,
+}: {
+	pullNumber: number;
+	inputPath: string;
+}): Promise<void> => {
+	await runApproveWithInput({ pullNumber, input: readJsonFile<IFApproveInput>(inputPath) });
+};
+
 const main = async (): Promise<void> => {
 	const [subcommand] = process.argv.slice(2);
 	const { values } = parseArgs({
@@ -358,10 +534,12 @@ const main = async (): Promise<void> => {
 		return;
 	}
 
-	// post/followup 인지 먼저 확인해, --input 누락 에러가 미지의 서브커맨드를
+	// post/followup/approve 인지 먼저 확인해, --input 누락 에러가 미지의 서브커맨드를
 	// 가려버리지 않도록 한다.
-	if (subcommand !== "post" && subcommand !== "followup") {
-		throw new Error(`알 수 없는 서브커맨드: ${subcommand} (pending | post | followup)`);
+	if (subcommand !== "post" && subcommand !== "followup" && subcommand !== "approve") {
+		throw new Error(
+			`알 수 없는 서브커맨드: ${subcommand} (pending | post | followup | approve)`,
+		);
 	}
 
 	if (values.input === undefined) {
@@ -370,6 +548,11 @@ const main = async (): Promise<void> => {
 
 	if (subcommand === "post") {
 		await runPost({ pullNumber, inputPath: values.input });
+		return;
+	}
+
+	if (subcommand === "approve") {
+		await runApprove({ pullNumber, inputPath: values.input });
 		return;
 	}
 

@@ -14,6 +14,7 @@ on:
 
 jobs:
   build-web:
+    name: 웹 빌드·배포
     runs-on: ubuntu-latest
     env:
       BUILD_ENV: ${{ inputs.deploy_target == 'staging' && 'staging' || 'production' }}

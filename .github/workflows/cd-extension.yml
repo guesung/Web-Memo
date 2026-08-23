@@ -14,6 +14,7 @@ on:
 
 jobs:
   build-extension:
+    name: 확장 빌드
     runs-on: ubuntu-latest
     env:
       BUILD_ENV: ${{ inputs.deploy_target == 'staging' && 'staging' || 'production' }}
@@ -51,7 +52,7 @@ jobs:
   upload-extension:
     needs: build-extension
     runs-on: ubuntu-latest
-    name: Upload chrome store on production release
+    name: 크롬 웹스토어 업로드
     if: ${{ inputs.deploy_target == 'production' }}
     steps:
       - name: Download Artifacts

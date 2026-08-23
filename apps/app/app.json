@@ -104,7 +104,8 @@
 				}
 			],
 			"./plugins/withKakaoMavenRepo",
-			"./plugins/withAndroidGradleMemory"
+			"./plugins/withAndroidGradleMemory",
+			"./plugins/withAndroidConfigChanges"
 		],
 		"experiments": {
 			"typedRoutes": true

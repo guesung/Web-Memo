@@ -2,7 +2,7 @@ import type { GetMemoResponse } from "../types";
 
 export type ExportFormat = "json" | "csv" | "markdown";
 
-export function exportMemosToJSON(memos: GetMemoResponse[]): string {
+function exportMemosToJSON(memos: GetMemoResponse[]): string {
 	const exportData = memos.map((memo) => ({
 		id: memo.id,
 		title: memo.title,
@@ -17,7 +17,7 @@ export function exportMemosToJSON(memos: GetMemoResponse[]): string {
 	return JSON.stringify(exportData, null, 2);
 }
 
-export function exportMemosToCSV(memos: GetMemoResponse[]): string {
+function exportMemosToCSV(memos: GetMemoResponse[]): string {
 	const escapeCSV = (value: string | null | undefined): string => {
 		if (value == null) return "";
 		const stringValue = String(value);
@@ -58,7 +58,7 @@ export function exportMemosToCSV(memos: GetMemoResponse[]): string {
 	return [headers.join(","), ...rows].join("\n");
 }
 
-export function exportMemosToMarkdown(memos: GetMemoResponse[]): string {
+function exportMemosToMarkdown(memos: GetMemoResponse[]): string {
 	const lines: string[] = [
 		"# My Memos",
 		"",
@@ -106,7 +106,7 @@ export function exportMemosToMarkdown(memos: GetMemoResponse[]): string {
 	return lines.join("\n");
 }
 
-export function downloadFile(
+function downloadFile(
 	content: string,
 	filename: string,
 	mimeType: string,

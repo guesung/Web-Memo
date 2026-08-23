@@ -16,7 +16,7 @@ jobs:
   build-web:
     runs-on: ubuntu-latest
     env:
-      WEB_URL: ${{ inputs.deploy_target == 'staging' && secrets.STAGING_WEB_URL || secrets.PROD_WEB_URL }}
+      BUILD_ENV: ${{ inputs.deploy_target == 'staging' && 'staging' || 'production' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,10 +45,7 @@ jobs:
         run: npm install --global vercel@latest
 
       - name: Setting environment variables
-        run: |
-          echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
-          echo NODE_ENV=production >> packages/env/.env
-          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> apps/web/.env
+        run: echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> apps/web/.env
 
       - name: Vercel Pull
         run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}

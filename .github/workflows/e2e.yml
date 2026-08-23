@@ -41,7 +41,6 @@ jobs:
   tests_e2e:
     runs-on: ubuntu-latest
     env:
-      WEB_URL: http://localhost:3000
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
@@ -67,10 +66,7 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Setting environment variables
-        run: |
-          echo WEB_URL=${{ env.WEB_URL }} >> packages/env/.env
-          echo NODE_ENV=development >> packages/env/.env
-          echo "${{ secrets.WEB_ENV_FILE }}" > apps/web/.env
+        run: echo "${{ secrets.WEB_ENV_FILE }}" > apps/web/.env
 
       - name: Build The Extension
         run: pnpm run build:extension

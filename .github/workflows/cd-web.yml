@@ -17,7 +17,10 @@ jobs:
     name: 웹 빌드·배포
     runs-on: ubuntu-latest
     env:
-      BUILD_ENV: ${{ inputs.deploy_target == 'staging' && 'staging' || 'production' }}
+      # 아래 Vercel Pull·Build와 같은 기준(== 'production')으로 판정해야 합니다.
+      # deploy_target은 none·staging·production 셋인데 기준이 갈리면 none이 양쪽에서
+      # 다른 쪽으로 떨어져, 상수는 production인데 Vercel 값은 Preview인 조합이 됩니다.
+      BUILD_ENV: ${{ inputs.deploy_target == 'production' && 'production' || 'staging' }}
     steps:
       - uses: actions/checkout@v4
         with:

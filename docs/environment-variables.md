@@ -30,12 +30,14 @@
 
 ## 1. `packages/env` — 확장·웹이 공유하는 환경별 값
 
-현재 담긴 값은 두 개뿐입니다.
+현재 파일에 담긴 값은 `WEB_URL` 하나뿐입니다.
 
 | 키 | development | staging | production |
 | --- | --- | --- | --- |
-| `NODE_ENV` | `development` | `production` | `production` |
 | `WEB_URL` | `http://localhost:3000` | `https://web-memo-staging.vercel.app` | `https://web-memos.vercel.app` |
+
+여기에 더해 `tsup`이 셸 `BUILD_ENV`를 번들에 함께 인라인하므로, 코드에서는
+`CONFIG.buildEnv`로 `"development" | "staging" | "production"`을 읽을 수 있습니다.
 
 `packages/env/src/config.ts`가 이 값을 읽어 `CONFIG` 객체로 내보내고, 소비하는 쪽은
 `import { CONFIG } from "@web-memo/env"`로 씁니다. `getSafeConfig`가 `undefined`를
@@ -44,7 +46,7 @@
 
 ### 환경별 파일을 커밋하는 이유
 
-담기는 값이 웹 URL과 `NODE_ENV`뿐이라 감출 것이 없습니다. 커밋해두면 클론 직후
+담기는 값이 웹 URL뿐이라 감출 것이 없습니다. 커밋해두면 클론 직후
 바로 빌드되고, 값이 시크릿 안에 숨지 않아 히스토리로 추적할 수 있습니다.
 
 `.gitignore`는 `.env*`를 무시한 뒤 이 세 파일만 부정 패턴으로 되살립니다. 이때
@@ -61,7 +63,8 @@ pnpm dev                             # .env.development (기본값)
 
 `packages/env/tsup.config.ts`가 `BUILD_ENV`로 파일을 고른 뒤, 추적되지 않는
 `packages/env/.env`를 그 위에 덮어씁니다. 로컬 오버라이드는 일부 키만 적어도
-됩니다 (`WEB_URL`만 바꾸고 `NODE_ENV`는 그대로 두는 식).
+됩니다. 단 `BUILD_ENV`는 셸 값이 항상 이깁니다 — `.env` 안에 적어도 파일 선택은
+이미 끝난 뒤라, 파일 내용으로 분기를 뒤집는 착각을 막기 위해 마지막에 덮어씁니다.
 
 `packages/env/turbo.json`의 `ready` 태스크가 `env: ["BUILD_ENV"]`를 선언하므로
 환경별로 캐시가 갈립니다. 이게 없으면 staging 빌드가 production 캐시를 재사용합니다.
@@ -71,10 +74,24 @@ pnpm dev                             # .env.development (기본값)
 > 파일 선택은 파일을 읽기 전에 끝나므로 파일 안의 값으로는 분기를 뒤집을 수 없고,
 > 결과적으로 `.env.production`이 한 번도 선택되지 않는 유령 파일이 됐습니다.
 
-### `.env.staging`의 `NODE_ENV`가 `production`인 것은 의도된 것입니다
+### 환경 분기는 `CONFIG.buildEnv` 하나로 합니다
 
-`isProduction()`이 Sentry·Analytics 활성화와 쿠키 `secure` 플래그를 좌우합니다.
-스테이징에서도 운영과 같은 동작을 확인해야 하므로 `production`을 넣습니다.
+`isProduction()`이 Sentry·Analytics 활성화와 쿠키 `secure` 플래그를 좌우하는데,
+스테이징에서도 운영과 같은 동작을 확인해야 하므로 **개발만 제외**하는 정의입니다.
+
+```ts
+export const isProduction = () => CONFIG.buildEnv !== "development";
+```
+
+> 예전에는 이 판단을 `NODE_ENV`로 했고, 그래서 `.env.staging`에 `NODE_ENV=production`을
+> 적어야 했습니다. 그러면 staging과 production이 코드에서 **같은 값**이 되어 구분할
+> 수단이 사라집니다. 실제로 `config.ts`의 타입에는 `"staging"`이 있었지만 어떤 `.env`
+> 파일에도 그 값이 없어, 런타임에 도달할 수 없는 타입이었습니다.
+>
+> 이름도 겹쳤습니다. `NODE_ENV`는 Next·Vite가 자기 값으로 치환하는 이름이라, 같은
+> 식별자에 공급처가 둘이었습니다. `BUILD_ENV`로 바꾸면서 이 충돌도 사라졌습니다.
+> 툴체인이 쓰는 `process.env.NODE_ENV`(`next.config.mjs`의 `removeConsole` 등)는
+> 그대로 두면 됩니다 — `packages/env`와 무관하게 각 도구가 알아서 넣습니다.
 
 ### ⚠️ 여기 값은 공개됩니다
 
@@ -111,7 +128,41 @@ Vercel 프로젝트 설정에서 옵니다.
 
 등록해야 하는 값은 `apps/web/.env.example`의 세 개(`OPENAI_API_KEY`,
 `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`)와, 소스맵 업로드에 쓰는
-`SENTRY_AUTH_TOKEN`입니다. 변경은 Vercel 대시보드에서 합니다.
+`SENTRY_AUTH_TOKEN`, 그리고 빌드 시스템 플래그 `ENABLE_EXPERIMENTAL_COREPACK`입니다.
+변경은 Vercel 대시보드나 `vercel env` CLI로 합니다.
+
+| 키 | 환경 | 없으면 생기는 일 |
+| --- | --- | --- |
+| `OPENAI_API_KEY` | Production·Preview·Development | AI 기능 전체가 실패 |
+| `UPSTASH_REDIS_REST_URL` | 동상 | 레이트 리밋이 **조용히 꺼짐** |
+| `UPSTASH_REDIS_REST_TOKEN` | 동상 | 동상 |
+| `SENTRY_AUTH_TOKEN` | Production·Preview | 소스맵 업로드가 **조용히 실패** |
+| `ENABLE_EXPERIMENTAL_COREPACK` | 전 환경 | corepack이 꺼져 `packageManager`의 pnpm 버전이 무시됨 |
+
+`ENABLE_EXPERIMENTAL_COREPACK`은 코드가 읽는 값이 아니라 Vercel 빌드 시스템이 보는
+플래그입니다. 코드에서 grep해도 나오지 않으므로 "안 쓰는 값"으로 오인하기 쉽지만,
+루트 `package.json`의 `packageManager` 필드를 따르게 하는 값이라 지우면 빌드가 쓰는
+pnpm 버전이 바뀝니다.
+
+### 여기에 등록하지 않는 값
+
+Supabase URL·anon key, Sentry DSN, `WEB_URL`은 **Vercel에 두지 않습니다.** 각각
+`packages/shared`의 상수와 `packages/env`의 커밋된 `.env` 파일에서 옵니다. Vercel에
+같은 이름으로 등록해도 코드가 읽지 않으므로 값만 두 곳으로 갈라져 혼란을 만듭니다.
+
+> 실제로 이 이름들이 리팩토링 이후에도 Vercel에 남아 있다가 2026-08-23에 정리됐습니다
+> (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_URL`,
+> `SUPABASE_ANON_KEY`, `SENTRY_DSN`, `WEB_URL`, `GOOGLE_SERVICE_ACCOUNT_EMAIL`,
+> `GOOGLE_PRIVATE_KEY`, `MAKE_WEBHOOK_NOTION_API` 9개).
+> **코드에서 `process.env` 참조를 지울 때 Vercel 쪽 값도 같이 지워야 합니다.**
+> 남겨둬도 빌드가 깨지지 않아 몇 년이든 방치됩니다.
+
+현황 확인은 아래로 합니다. 값은 암호화돼 있어 이름·환경만 보입니다.
+
+```bash
+vercel link                      # 최초 1회
+vercel env ls production
+```
 
 ### 셸 환경 변수로 덧씌우지 않습니다
 
@@ -190,9 +241,11 @@ Protocol로 직접 이벤트를 보내는 현재 구조상 이미 번들에 인�
 같은 이름이지만 공급처가 둘로 갈립니다.
 
 - **확장**: `cd-extension.yml`의 Build 스텝이 `${{ secrets.SENTRY_AUTH_TOKEN }}`을
-  셸 환경 변수로 넘깁니다. → GitHub Secrets에 등록 (2026-08-23 등록 완료)
+  셸 환경 변수로 넘깁니다. → GitHub Secrets에 등록
 - **웹**: 셸로 받지 않고 `vercel pull`이 가져오는 Vercel 프로젝트 환경변수에
-  의존합니다. → Vercel 대시보드에 등록
+  의존합니다. → Vercel 프로젝트 환경변수(Production·Preview)에 등록
+
+둘 다 2026-08-23에 등록을 마쳤습니다.
 
 그래서 **양쪽 모두에 등록해야** 소스맵이 올라갑니다. 한쪽만 있으면 그쪽만 동작하고
 다른 쪽은 조용히 실패합니다. 소스맵 업로드는 실패해도 빌드가 통과하므로 드러나지
@@ -237,7 +290,7 @@ gitignore 대상이라 EAS 샌드박스에 복사되지 않아 iOS 빌드가 깨
 
 | 이름 | 의미 | 설정하는 곳 |
 | --- | --- | --- |
-| `BUILD_ENV` | `packages/env`가 읽을 `.env.{환경}` 선택 | 셸 / 워크플로 `env` |
+| `BUILD_ENV` | `.env.{환경}` 선택 + `CONFIG.buildEnv`로 번들에 인라인 | 셸 / 워크플로 `env` |
 | `__FIREFOX__` | Firefox 전용 빌드 (manifest 분기) | 빌드 스크립트 |
 | `__DEV__` | 확장 개발 모드 (HMR·소스맵) | `packages/vite-config` |
 | `ANALYZE` | Next.js 번들 분석 활성화 | 로컬에서 수동 |

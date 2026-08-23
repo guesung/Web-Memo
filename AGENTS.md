@@ -313,9 +313,6 @@ function Component({ lng }: { lng: Language }) {
 `packages/env`의 값은 `tsup`이 빌드 시점에 번들로 **인라인하므로 전부 공개됩니다.**
 비밀이 필요하면 `apps/web/.env`에 두고 서버에서만 읽으세요.
 
-예외: `GA_API_SECRET`은 본래 서버 시크릿이지만, 확장이 GA로 직접 이벤트를 보내는
-현재 구조상 이미 번들에 노출됩니다. 서버 프록시로 옮기기 전까지 `packages/env`에 둡니다.
-
 앱(`apps/app`)은 환경 변수를 쓰지 않습니다 — 필요한 값이 전부 고정값이라 상수만 읽습니다.
 Edge Functions는 Supabase 플랫폼이 주입하는 예약 변수(`SUPABASE_SERVICE_ROLE_KEY` 등)를 씁니다.
 

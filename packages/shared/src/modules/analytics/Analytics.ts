@@ -1,4 +1,3 @@
-import { CONFIG } from "@web-memo/env";
 import { ANALYTICS } from "../../constants";
 import { isExtension, isProduction } from "../../utils";
 import type { AnalyticsEvent, GA4Event } from "./type";
@@ -15,7 +14,7 @@ class Analytics {
 
 	private constructor() {
 		this.gaId = ANALYTICS.gaId;
-		this.apiSecret = CONFIG.gaApiSecret;
+		this.apiSecret = ANALYTICS.gaApiSecret;
 	}
 
 	public setUserId(userId: string | undefined): void {

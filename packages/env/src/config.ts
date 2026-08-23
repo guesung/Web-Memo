@@ -12,5 +12,4 @@ export const CONFIG = {
 		| "development"
 		| "staging"
 		| "production",
-	gaApiSecret: getSafeConfig("GA_API_SECRET", process.env.GA_API_SECRET),
 };

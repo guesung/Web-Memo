@@ -99,6 +99,11 @@ Slack에서 `/배포현황`(등록한 슬래시 커맨드)을 실행하면 `vers
 
 ### 1. Slack App 설정
 
+> **⚠️ 웹훅을 보내는 앱과 Interactivity를 켜는 앱이 반드시 같아야 합니다.**
+> 버튼 클릭은 그 메시지를 보낸 앱에 등록된 Request URL로만 갑니다. 다른 앱에
+> 켜두면 버튼을 눌러도 **아무 일도 일어나지 않고 에러도 뜨지 않습니다** —
+> 요청 자체가 서버에 도달하지 않기 때문입니다. 실제로 이걸로 한 번 헤맸습니다.
+
 **기존 `Web Memo CI` 앱에 그대로 추가합니다.** 새 앱을 만들면 알림을 보내는 앱과
 버튼을 받는 앱이 갈라지고 Signing Secret도 둘이 되므로, `SLACK_WEBHOOK_URL`을
 소유한 앱 하나로 유지합니다.
@@ -122,6 +127,32 @@ Slack에서 `/배포현황`(등록한 슬래시 커맨드)을 실행하면 `vers
 스코프를 추가하면 재설치가 필요합니다. 기존 Incoming Webhook URL은 재설치해도
 유지되지만, 재설치 직후 빌드 알림이 한 번 정상적으로 오는지 확인하세요.
 
+#### 버튼이 아무 반응 없을 때
+
+증상이 "에러도 안 뜨고 그냥 아무 일도 안 일어남"이면 요청이 서버에 도달조차
+못 한 것입니다. 서버 문제가 아니므로 코드를 보지 말고 아래를 순서대로 봅니다.
+
+1. **슬래시 커맨드는 되는가?** 된다면 도메인·서명 시크릿·라우트는 모두 정상입니다.
+   두 경로는 같은 앱, 같은 도메인, 같은 서명 검증 코드를 씁니다. 그러면 남는 차이는
+   Interactivity 설정 하나뿐입니다.
+2. **Interactivity를 켠 앱이 웹훅을 보내는 그 앱인가?** (위 경고 참고)
+3. **Request URL에 오타는 없는가?** 흔한 것들:
+   `web-memo`(s 빠짐) / `interactive`(끝 3글자 빠짐) / 끝에 붙은 슬래시.
+4. **Save Changes를 눌렀는가?** 버튼이 화면 오른쪽 맨 아래에 있어 스크롤하지 않으면
+   보이지 않습니다.
+
+요청이 도달하기만 하면 실패는 반드시 Slack 메시지로 사유가 뜹니다
+(`views.open 실패: …`). 그러니 **아무 메시지도 없다 = 도달 안 함**으로 읽으면 됩니다.
+
+Vercel 런타임 로그에서 `POST /api/slack/interactivity` 유무로도 확인할 수 있습니다.
+
+```bash
+vercel logs https://web-memos.vercel.app --scope gueit214s-projects
+```
+
+다만 이 로그는 `console.error` 출력이 누락되는 경우가 있어, **로그가 없다는 것이
+에러가 없다는 증거는 아닙니다.** 요청 도달 여부 판단에만 쓰세요.
+
 ### 2. GitHub PAT 만들기
 
 <https://github.com/settings/personal-access-tokens> 에서 fine-grained 토큰을
@@ -136,6 +167,11 @@ Slack에서 `/배포현황`(등록한 슬래시 커맨드)을 실행하면 `vers
 | `SLACK_BOT_TOKEN` | `xoxb-`로 시작하는 봇 토큰 |
 | `GITHUB_DISPATCH_TOKEN` | 위에서 만든 PAT |
 | `GITHUB_DISPATCH_REPOSITORY` | (선택) 기본값 `guesung/Web-Memo` |
+
+`--sensitive`로 등록하면 런타임에는 정상적으로 주입되지만 `vercel env pull`이 실제 값
+대신 `[SENSITIVE]` 문자열을 돌려줍니다. 그 값을 그대로 API에 보내면 `invalid_auth`가
+나므로, **토큰이 틀렸다고 오진하기 쉽습니다.** 값 검증은 `vercel env pull`이 아니라
+발급처(Slack App 페이지, GitHub 토큰 설정)에서 하세요.
 
 이 값들은 **의도적으로 `@web-memo/env`의 `CONFIG`에 넣지 않았습니다.** `CONFIG`는
 `packages/env/.env`에서 오고 그 파일은 확장 프로그램 빌드도 함께 읽으므로,

@@ -14,8 +14,8 @@ on:
 
 jobs:
   build-app:
-    # 이 표시 이름은 notify-app-release.sh가 플랫폼별 결과를 찾는 데 씁니다.
-    # 바꾸면 스크립트의 매칭 문자열도 같이 고쳐야 합니다.
+    # 이 표시 이름은 notify-release-result.mjs가 플랫폼별 결과를 찾는 데 씁니다.
+    # 바꾸면 스크립트의 매칭 문자열("ios 빌드" / "android 빌드")도 같이 고쳐야 합니다.
     name: ${{ matrix.platform }} 빌드
     runs-on: ${{ matrix.runner }}
     env:
@@ -85,25 +85,3 @@ jobs:
       - name: Submit to store
         if: ${{ inputs.deploy_target == 'production' }}
         run: cd apps/app && eas submit --platform ${{ matrix.platform }} --profile production --path ./${{ matrix.output }} --non-interactive
-
-  # 검증 빌드(deploy_target = none)는 PR마다 돌아 채널이 시끄러워지므로 알리지 않습니다.
-  notify:
-    name: Slack 알림
-    needs: build-app
-    if: ${{ always() && inputs.deploy_target == 'production' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      # 플랫폼별 잡 결과를 조회하는 데 필요합니다.
-      actions: read
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref }}
-
-      - name: Notify Slack
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          GH_TOKEN: ${{ github.token }}
-          BUILD_RESULT: ${{ needs['build-app'].result }}
-        run: .github/scripts/notify-app-release.sh

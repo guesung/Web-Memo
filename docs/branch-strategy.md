@@ -89,19 +89,24 @@ git checkout feat/memo-search   # 작업 브랜치로 복귀
    `master`로 PR을 열어 머지합니다.
    - `v*` 태그 푸시는 GitHub Release를 생성합니다
      (`.github/workflows/github-release.yml`).
-2. **원하는 대상을 배포합니다.** Actions → **Release** → *Run workflow*에서
-   `app` / `extension` / `web`을 체크합니다. `ref`를 비워 두면 최신 `master`를
-   배포하고, 태그나 커밋을 넘기면 해당 리비전을 배포합니다.
+2. **Slack에서 배포합니다.** `master` 빌드가 끝나면 스토어 현황과 배포 버튼이
+   담긴 메시지가 Slack에 옵니다. 원하는 대상 버튼을 누르면 그 커밋이 배포되고,
+   **다른 버전…**을 누르면 대상과 리비전을 골라 배포합니다. 전체 흐름과 설정은
+   [release-flow.md](release-flow.md)를 참고하세요.
    - `app` — iOS 빌드 + TestFlight 제출
    - `extension` — 빌드 + Chrome 웹 스토어 업로드(게시는 수동)
    - `web` — Vercel 프로덕션 배포
+
+   Slack이 막혔다면 Actions → **Release** → *Run workflow*로 같은 일을 할 수
+   있습니다. 버튼은 이 워크플로를 대신 실행해 줄 뿐입니다.
 3. **`develop`을 리셋합니다** (아래 참고).
 
 | 트리거                 | 실행되는 작업                                       |
 | ---------------------- | -------------------------------------------------- |
 | PR (모든 브랜치)       | 린트, 타입 체크, 테스트, 빌드 검증                  |
 | `develop`에 푸시       | 위 작업 + 스테이징/테스트 서버로 web 배포           |
-| `master`에 푸시        | 위 작업만 수행 — 배포 없음                          |
+| `master`에 푸시        | 위 작업 + Slack에 빌드 결과·스토어 현황 게시 — 배포 없음 |
+| Slack 배포 버튼        | 체크한 대상의 프로덕션 배포 (Release 워크플로 실행) |
 | Actions → **Release**  | 체크한 대상의 프로덕션 배포                         |
 | `v*` 태그 푸시         | GitHub Release 생성                                 |
 

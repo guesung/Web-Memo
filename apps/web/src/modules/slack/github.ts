@@ -104,9 +104,12 @@ export const fetchRefOptions = async (): Promise<IFRefOption[]> => {
 	const repository = getGithubRepository();
 	const headers = buildHeaders();
 
-	// trigger_id가 3초 안에 만료되므로, 목록을 못 받아도 모달은 떠야 합니다.
+	// 모달을 띄운 뒤 views.update로 채우므로 trigger_id 3초 제한은 벗어났지만,
+	// Slack이 상호작용 응답을 3초 안에 받아야 하는 제한은 그대로입니다.
+	// 예산: views.open(~300ms) + 여기(≤1s) + views.update(~300ms) ≈ 1.6s.
+	// 못 받으면 알림 시점 커밋만 있는 모달로 남습니다 — 대부분의 배포는 그 커밋입니다.
 	const withTimeout = (url: string) =>
-		fetch(url, { headers, signal: AbortSignal.timeout(1500) })
+		fetch(url, { headers, signal: AbortSignal.timeout(1000) })
 			.then((response) => (response.ok ? response.json() : []))
 			.catch(() => []);
 

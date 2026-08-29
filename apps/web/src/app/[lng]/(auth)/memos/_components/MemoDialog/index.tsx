@@ -21,7 +21,13 @@ import {
 	Textarea,
 } from "@web-memo/ui";
 import { motion } from "framer-motion";
-import { useCallback, useEffect, useImperativeHandle, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useImperativeHandle,
+	useRef,
+	useState,
+} from "react";
 import { useForm } from "react-hook-form";
 import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
@@ -142,10 +148,17 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 		closeDialog();
 	};
 
+	// 저장이 끝나면 useMemoPatchMutation이 memo 쿼리를 무효화해 memoData가 새로 온다.
+	// 그때 폼을 다시 채우면 그 사이에 사용자가 친 글자가 서버 값으로 덮여 사라진다.
+	// 그래서 폼 초기화는 다루는 메모가 바뀔 때 한 번만 한다.
+	const initializedMemoIdRef = useRef<number | null>(null);
+
 	useEffect(
 		function initMemoData() {
 			if (!memoData) return;
+			if (initializedMemoIdRef.current === memoData.id) return;
 
+			initializedMemoIdRef.current = memoData.id;
 			setValue("memo", memoData.memo);
 			setValue("impression", memoData.impression ?? "");
 			setValue("actionItem", memoData.actionItem ?? "");

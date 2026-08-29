@@ -78,4 +78,30 @@ test.describe("메모 수정 기능 (Mocked)", () => {
 
 		await expect(page.getByTestId("memo-textarea")).toHaveValue(newMemoText);
 	});
+
+	test("저장이 끝난 뒤에 이어서 입력해도, 그 입력이 사라지지 않는다.", async ({
+		page,
+	}) => {
+		await page.locator(".memo-item", { hasText: memoText }).click();
+
+		const textarea = page.getByTestId("memo-textarea");
+		await expect(textarea).toHaveValue(memoText);
+
+		const patchResponsePromise = page.waitForResponse(
+			(resp) =>
+				resp.url().includes("/rest/v1/memo") &&
+				resp.request().method() === "PATCH",
+		);
+
+		await textarea.fill("먼저 친 글");
+		await patchResponsePromise;
+
+		// 저장이 성공하면 memo 쿼리가 무효화돼 memoData가 새로 온다.
+		// 그 뒤에 친 글자가 서버 값으로 덮이면 안 된다.
+		await textarea.fill("먼저 친 글 그리고 이어서 친 글");
+
+		await expect(textarea).toHaveValue("먼저 친 글 그리고 이어서 친 글");
+		await page.waitForTimeout(1500);
+		await expect(textarea).toHaveValue("먼저 친 글 그리고 이어서 친 글");
+	});
 });

@@ -1,0 +1,43 @@
+name: Versions
+
+# 각 스토어에 지금 올라가 있는 버전과 레포의 빌드 버전을 대조해 Slack에 게시합니다.
+# Slack의 슬래시 커맨드가 apps/web의 /api/slack/commands를 거쳐 이 워크플로를 킥합니다.
+#
+# 조회 자격 증명(ASC 키, Play 서비스 계정, 크롬 웹 스토어 토큰)을 Vercel에 복제하지 않기
+# 위해 조회를 여기서 돌립니다. 자세한 배경은 docs/release-flow.md 참고.
+on:
+  workflow_dispatch:
+    inputs:
+      requested_by:
+        description: "요청한 Slack 사용자 ID (멘션용, 비워도 됩니다)"
+        type: string
+        required: false
+        default: ""
+
+concurrency:
+  group: versions
+  cancel-in-progress: true
+
+jobs:
+  report:
+    name: 배포 현황 조회
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      # 조회 스크립트는 의존성이 없습니다(node:crypto + fetch). pnpm install을 건너뜁니다.
+      - name: Report store versions
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          REQUESTED_BY: ${{ inputs.requested_by }}
+          ASC_API_KEY_P8: ${{ secrets.EXPO_ASC_API_KEY_P8 }}
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.EXPO_ANDROID_SERVICE_ACCOUNT_JSON }}
+          CWS_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+        run: node .github/scripts/report-store-versions.mjs

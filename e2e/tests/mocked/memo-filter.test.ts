@@ -65,6 +65,7 @@ test.describe("메모 검색·필터 (Mocked)", () => {
 
 	test("기본 목록에는 즐겨찾기하지 않은 메모만 나온다.", async ({ page }) => {
 		await expect(page.locator(".memo-item")).toHaveCount(3);
+		await expect(page.getByText("3 memos")).toBeVisible();
 		await expect(
 			page.locator(".memo-item", { hasText: "즐겨찾기한 메모" }),
 		).toHaveCount(0);

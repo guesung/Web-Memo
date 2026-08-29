@@ -226,6 +226,8 @@ async function handleMemoGet(route: Route, url: URL, store: MockSupabaseStore) {
 		contentType: "application/json",
 		headers: {
 			"content-range": `0-${Math.max(page.length - 1, 0)}/${sorted.length}`,
+			// 다른 오리진이라 이 헤더를 노출해 주지 않으면 supabase-js가 count를 못 읽는다.
+			"access-control-expose-headers": "content-range",
 		},
 		body: JSON.stringify(page),
 	});

@@ -7,6 +7,9 @@ export const EXAMPLE_URL = "https://example.com";
  */
 export const EXTENSION_ID = "eaiojpmgklfngpjddhoalgcpkepgkclh";
 
-/** 확장 페이지의 절대 URL을 만든다. 예: `getExtensionUrl("options/index.html")` */
+/**
+ * 확장 페이지의 절대 URL을 만든다.
+ * @description 예: `getExtensionUrl("options/index.html")`
+ */
 export const getExtensionUrl = (path: string) =>
 	`chrome-extension://${EXTENSION_ID}/${path}`;

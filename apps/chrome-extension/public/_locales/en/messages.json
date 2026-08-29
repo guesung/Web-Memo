@@ -179,17 +179,19 @@
 	"chat_empty_state": {
 		"message": "Ask AI about the page content"
 	},
-	"text_selection_setting": {
-		"message": "Text Selection Memo"
-	},
-	"text_selection_description": {
-		"message": "Show memo button when text is selected (refresh required)"
-	},
 	"summary_empty_message": {
 		"message": "Click the refresh button above\nto generate a summary"
 	},
-	"impression": { "message": "Impression" },
-	"impressionPlaceholder": { "message": "Write what you felt about this page" },
-	"actionItem": { "message": "Action items" },
-	"actionItemPlaceholder": { "message": "Write what to do after reading this page" }
+	"impression": {
+		"message": "Impression"
+	},
+	"impressionPlaceholder": {
+		"message": "Write what you felt about this page"
+	},
+	"actionItem": {
+		"message": "Action items"
+	},
+	"actionItemPlaceholder": {
+		"message": "Write what to do after reading this page"
+	}
 }

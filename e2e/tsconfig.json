@@ -2,7 +2,7 @@
 	"extends": "@web-memo/tsconfig/base",
 	"compilerOptions": {
 		"noEmit": true,
-		"types": ["node"]
+		"types": ["node", "chrome"]
 	},
 	"include": ["tests", "playwright.config.ts"]
 }

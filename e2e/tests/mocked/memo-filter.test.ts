@@ -46,7 +46,7 @@ test.describe("메모 검색·필터 (Mocked)", () => {
 		);
 		store.addMemo(
 			createMockMemo({
-				title: "즐겨찾기한 메모",
+				title: "위시리스트에 담은 메모",
 				memo: "나중에 읽는다",
 				isWish: true,
 			}),
@@ -63,11 +63,13 @@ test.describe("메모 검색·필터 (Mocked)", () => {
 		});
 	});
 
-	test("기본 목록에는 즐겨찾기하지 않은 메모만 나온다.", async ({ page }) => {
+	test("기본 목록에는 위시리스트에 담지 않은 메모만 나온다.", async ({
+		page,
+	}) => {
 		await expect(page.locator(".memo-item")).toHaveCount(3);
 		await expect(page.getByText("3 memos")).toBeVisible();
 		await expect(
-			page.locator(".memo-item", { hasText: "즐겨찾기한 메모" }),
+			page.locator(".memo-item", { hasText: "위시리스트에 담은 메모" }),
 		).toHaveCount(0);
 	});
 
@@ -107,13 +109,15 @@ test.describe("메모 검색·필터 (Mocked)", () => {
 		await expect(page.locator(".memo-item")).toHaveCount(3);
 	});
 
-	test("위시리스트로 이동하면, 즐겨찾기한 메모만 남는다.", async ({ page }) => {
+	test("위시리스트로 이동하면, 위시리스트에 담은 메모만 남는다.", async ({
+		page,
+	}) => {
 		await page.getByRole("link", { name: "My wishlist" }).click();
 
 		await expect(page).toHaveURL(/isWish=true/);
 		await expect(page.locator(".memo-item")).toHaveCount(1);
 		await expect(
-			page.locator(".memo-item", { hasText: "즐겨찾기한 메모" }),
+			page.locator(".memo-item", { hasText: "위시리스트에 담은 메모" }),
 		).toBeVisible();
 	});
 

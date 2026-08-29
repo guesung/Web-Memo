@@ -40,13 +40,17 @@ test.describe("메모 수정 기능 (Mocked)", () => {
 
 		const newMemoText = `Updated Memo ${Date.now()}`;
 
+		// 원래 메모가 채워지기 전에 값을 흘리면 react-hook-form이 변경을 구독하기 전이라
+		// 디바운스 저장이 아예 걸리지 않는다. 로드가 끝난 뒤에 입력한다.
+		const textarea = page.getByTestId("memo-textarea");
+		await expect(textarea).toHaveValue(memoText);
+
 		const patchResponsePromise = page.waitForResponse(
 			(resp) =>
 				resp.url().includes("/rest/v1/memo") &&
 				resp.request().method() === "PATCH",
 		);
 
-		const textarea = page.getByTestId("memo-textarea");
 		await textarea.evaluate((el, text) => {
 			const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
 				window.HTMLTextAreaElement.prototype,

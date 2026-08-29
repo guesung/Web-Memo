@@ -46,17 +46,31 @@ test.describe("확장 옵션 페이지", () => {
 		const optionsPage = await page.context().newPage();
 		await optionsPage.goto(getExtensionUrl("options/index.html"));
 
+		// 폼 기본값이 checked라, 저장소를 unchecked로 만들어 두지 않으면
+		// "다시 열었을 때 checked" 확인이 저장소와 무관하게 항상 통과한다.
 		await optionsPage.locator("#auto-apply-category").click();
+		await optionsPage.getByRole("button", { name: /^(Save|저장)$/ }).click();
+		await expect(
+			optionsPage.getByText(/Settings saved|설정을 저장했어요/).first(),
+		).toBeVisible();
+
+		await optionsPage.reload();
 		await expect(optionsPage.locator("#auto-apply-category")).toHaveAttribute(
 			"data-state",
 			"unchecked",
+		);
+
+		await optionsPage.locator("#auto-apply-category").click();
+		await expect(optionsPage.locator("#auto-apply-category")).toHaveAttribute(
+			"data-state",
+			"checked",
 		);
 
 		await optionsPage.reload();
 
 		await expect(optionsPage.locator("#auto-apply-category")).toHaveAttribute(
 			"data-state",
-			"checked",
+			"unchecked",
 		);
 	});
 });

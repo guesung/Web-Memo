@@ -1,5 +1,6 @@
+import { getExtensionUrl } from "@web-memo/shared/constants";
 import { expect, test } from "../fixtures";
-import { getExtensionUrl, login, skipGuide } from "../lib";
+import { login, skipGuide } from "../lib";
 
 test.describe("확장 옵션 페이지", () => {
 	test.beforeEach(async ({ page }) => {

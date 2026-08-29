@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
-import { PATHS } from "@web-memo/shared/constants";
+import { getExtensionUrl, PATHS } from "@web-memo/shared/constants";
 import { expect } from "../fixtures";
-import { getExtensionUrl, LANGUAGE } from "./constants";
+import { LANGUAGE } from "./constants";
 
 const SIDE_PANEL_URL = getExtensionUrl("side-panel/index.html");
 

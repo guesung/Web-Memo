@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
-import { PATHS } from "@web-memo/shared/constants";
+import { getExtensionUrl, PATHS } from "@web-memo/shared/constants";
 import { expect, test } from "../fixtures";
-import { getExtensionUrl, LANGUAGE } from "../lib";
+import { LANGUAGE } from "../lib";
 
 const SELECTION_BUTTON = 'button[aria-label="Save selected text as memo"]';
 

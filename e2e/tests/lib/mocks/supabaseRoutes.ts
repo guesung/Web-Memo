@@ -4,22 +4,16 @@ import type { Database } from "@web-memo/shared/types";
 import { createMockMemo } from "./mockData";
 
 type MemoRow = Database["memo"]["Tables"]["memo"]["Row"];
-type CategoryRow = Database["memo"]["Tables"]["category"]["Row"];
 type HighlightRow = Database["memo"]["Tables"]["highlight"]["Row"];
-
-/** 앱이 받는 메모 한 건. `select("*, category(...)")`의 응답 모양이다. */
-type MemoWithCategory = MemoRow & {
-	category: Pick<CategoryRow, "id" | "name" | "color"> | null;
-};
 
 /**
  * 목 Supabase의 저장소. 테스트가 시드를 넣고, 라우트 핸들러가 여기서 읽는다.
- * @description 실제 PostgREST처럼 필터를 적용해 응답한다. 저장소가 필터를 흉내내지
- * 않으면 "검색해도 전부 보인다" 같은 결함을 테스트가 통과시켜 버린다.
+ * @description 서버가 하는 일(검색·필터·정렬·페이지네이션)은 흉내내지 않는다.
+ * 흉내내려면 PostgREST의 쿼리 의미론을 여기에 두 번째로 구현하게 되고, 두 구현은
+ * 반드시 어긋나 결함을 통과시킨다. 목은 UI 상태를 재현하는 데까지만 쓴다.
  */
 export class MockSupabaseStore {
 	private memos: Map<number, MemoRow> = new Map();
-	private categories: Map<number, CategoryRow> = new Map();
 	private highlights: Map<number, HighlightRow> = new Map();
 
 	/** 메모 한 건을 저장소에 넣는다. */
@@ -46,7 +40,9 @@ export class MockSupabaseStore {
 	/** 메모를 부분 갱신한다. 없으면 null. */
 	updateMemo(id: number, updates: Partial<MemoRow>) {
 		const memo = this.memos.get(id);
-		if (!memo) return null;
+		if (!memo) {
+			return null;
+		}
 
 		const updated = {
 			...memo,
@@ -65,17 +61,6 @@ export class MockSupabaseStore {
 		return memo;
 	}
 
-	/** 카테고리 한 건을 저장소에 넣는다. */
-	addCategory(category: CategoryRow) {
-		this.categories.set(category.id, category);
-		return category;
-	}
-
-	/** 저장된 카테고리 전체를 돌려준다. */
-	getAllCategories() {
-		return Array.from(this.categories.values());
-	}
-
 	/** 하이라이트 한 건을 저장소에 넣는다. */
 	addHighlight(highlight: HighlightRow) {
 		this.highlights.set(highlight.id, highlight);
@@ -90,7 +75,9 @@ export class MockSupabaseStore {
 	/** 하이라이트를 부분 갱신한다. 없으면 null. */
 	updateHighlight(id: number, updates: Partial<HighlightRow>) {
 		const highlight = this.highlights.get(id);
-		if (!highlight) return null;
+		if (!highlight) {
+			return null;
+		}
 
 		const updated = {
 			...highlight,
@@ -102,23 +89,9 @@ export class MockSupabaseStore {
 		return updated;
 	}
 
-	/** 메모에 category_id로 연결된 카테고리를 붙여 앱이 받는 모양으로 만든다. */
-	toMemoWithCategory(memo: MemoRow): MemoWithCategory {
-		const category =
-			memo.category_id === null ? null : this.categories.get(memo.category_id);
-
-		return {
-			...memo,
-			category: category
-				? { id: category.id, name: category.name, color: category.color }
-				: null,
-		};
-	}
-
 	/** 저장소를 비운다. */
 	clear() {
 		this.memos.clear();
-		this.categories.clear();
 		this.highlights.clear();
 	}
 }
@@ -130,7 +103,7 @@ interface HandlerParams {
 	store: MockSupabaseStore;
 }
 
-/** PostgREST의 `id=eq.3`, `url=eq.https://...` 같은 동등 필터를 읽는다. */
+/** PostgREST의 `id=eq.3`, `color=eq.yellow` 같은 동등 필터를 읽는다. */
 const parseEqualsFilter = (url: URL, column: string): string | undefined => {
 	const value = url.searchParams.get(column);
 	if (!value?.startsWith("eq.")) {
@@ -140,7 +113,7 @@ const parseEqualsFilter = (url: URL, column: string): string | undefined => {
 	return value.slice(3);
 };
 
-/** PostgREST의 `id=eq.3` 같은 파라미터에서 숫자 id를 꺼낸다. */
+/** PostgREST의 `id=eq.3` 파라미터에서 숫자 id를 꺼낸다. */
 const parseIdFromUrl = (url: URL): number | null => {
 	const id = parseEqualsFilter(url, "id");
 	if (!id) {
@@ -150,21 +123,10 @@ const parseIdFromUrl = (url: URL): number | null => {
 	return Number.parseInt(id, 10);
 };
 
-/** PostgREST의 `isWish=eq.true` 같은 불리언 필터를 읽는다. 파라미터가 없으면 undefined. */
-const parseBooleanFilter = (url: URL, column: string): boolean | undefined => {
-	const value = url.searchParams.get(column);
-	if (value !== "eq.true" && value !== "eq.false") {
-		return undefined;
-	}
-
-	return value === "eq.true";
-};
-
 /**
  * `or=(<column>.ilike.%검색어%,...)`에서 검색어를 꺼낸다.
- * @description `or`에는 여러 컬럼의 조건이 함께 실리므로 지정한 컬럼의 ilike만 본다.
- * URLSearchParams가 이미 디코드해서 주므로 여기서 또 풀면 안 된다 — 검색어에 `%`가
- * 들어가면 값이 잘리거나 URIError로 죽는다.
+ * @description URLSearchParams가 이미 디코드해서 주므로 여기서 또 풀면 안 된다 —
+ * 검색어에 `%`가 들어가면 값이 잘리거나 URIError로 죽는다.
  */
 const extractIlikeQuery = (url: URL, column: string): string | undefined => {
 	const matchedIlike = url.searchParams
@@ -180,136 +142,15 @@ const matchesIlike = (value: string | null, query: string): boolean =>
 	(value ?? "").toLowerCase().includes(query.toLowerCase());
 
 /**
- * 커서 페이지네이션 필터를 적용한다.
- * @description 앱은 offset이 아니라 정렬 키의 `lt`/`gt`로 다음 장을 요청한다
- * (packages/shared의 getMemosPaginated). 여기서 안 걸러주면 2페이지가 1페이지와
- * 같은 응답이 되어 무한 스크롤 결함이 테스트를 그대로 통과한다.
+ * 메모 목록 조회. 저장소에 있는 것을 그대로 돌려준다.
+ * @description 검색·필터·정렬·페이지네이션은 서버가 하는 일이라 여기서 흉내내지
+ * 않는다. 그 동작을 검증하려면 실제 Supabase가 필요하다.
  */
-const matchesCursor = (memo: MemoRow, url: URL): boolean => {
-	for (const column of ["updated_at", "created_at", "title"] as const) {
-		const condition = url.searchParams.get(column);
-		if (!condition) {
-			continue;
-		}
-
-		// 정렬과 같은 비교자를 써야 한다. 커서는 원시 비교, 정렬은 localeCompare로
-		// 갈리면 title 정렬에서 같은 메모가 두 장에 걸쳐 중복된다.
-		const compared = String(memo[column] ?? "").localeCompare(
-			condition.slice(3),
-		);
-		if (condition.startsWith("lt.") && compared >= 0) {
-			return false;
-		}
-		if (condition.startsWith("gt.") && compared <= 0) {
-			return false;
-		}
-	}
-
-	return true;
-};
-
-/**
- * `order=updated_at.desc,id.desc`를 읽는다.
- * @description 앱은 정렬 키가 같을 때를 대비해 `id`를 2차 키로 함께 보낸다.
- */
-const parseOrder = (url: URL) => {
-	const [firstOrderClause, secondOrderClause] = (
-		url.searchParams.get("order") ?? ""
-	).split(",");
-	const [column, direction] = firstOrderClause.split(".");
-	const ascending = direction === "asc";
-
-	return {
-		column:
-			column === "created_at" || column === "title" ? column : "updated_at",
-		ascending,
-		secondColumn: secondOrderClause
-			? secondOrderClause.split(".")[0]
-			: undefined,
-	} as const;
-};
-
-/**
- * 메모 목록 조회. 앱이 보낸 PostgREST 필터를 그대로 적용한다.
- * @description count는 Content-Range 헤더로만 전달되고, 다른 오리진이라 노출까지
- * 해줘야 supabase-js가 읽는다.
- */
-const handleMemoGet = async ({ route, url, store }: HandlerParams) => {
-	const isWish = parseBooleanFilter(url, "isWish");
-	const isStar = parseBooleanFilter(url, "isStar");
-	const isReading = parseBooleanFilter(url, "isReading");
-	const categoryName = parseEqualsFilter(url, "category.name");
-	const searchQuery = extractIlikeQuery(url, "title");
-	// 한 건 조회(getMemoById·getMemoByUrl)도 같은 GET으로 온다. 여기서 안 걸러주면
-	// 저장소의 모든 메모가 돌아가고, 호출부의 at(-1)이 엉뚱한 메모를 집는다.
-	const targetId = parseEqualsFilter(url, "id");
-	const targetUrl = parseEqualsFilter(url, "url");
-
-	const filtered = store
-		.getAllMemos()
-		.map((memo) => store.toMemoWithCategory(memo))
-		.filter((memo) => {
-			if (targetId !== undefined && String(memo.id) !== targetId) {
-				return false;
-			}
-			if (targetUrl !== undefined && memo.url !== targetUrl) {
-				return false;
-			}
-			if (isWish !== undefined && (memo.isWish ?? false) !== isWish) {
-				return false;
-			}
-			if (isStar !== undefined && (memo.isStar ?? false) !== isStar) {
-				return false;
-			}
-			if (isReading !== undefined && (memo.isReading ?? false) !== isReading) {
-				return false;
-			}
-			if (categoryName && memo.category?.name !== categoryName) {
-				return false;
-			}
-			if (!matchesCursor(memo, url)) {
-				return false;
-			}
-			if (
-				searchQuery &&
-				!matchesIlike(memo.title, searchQuery) &&
-				!matchesIlike(memo.memo, searchQuery) &&
-				!matchesIlike(memo.impression, searchQuery) &&
-				!matchesIlike(memo.actionItem, searchQuery)
-			) {
-				return false;
-			}
-
-			return true;
-		});
-
-	const { column, ascending, secondColumn } = parseOrder(url);
-	const sorted = filtered.sort((a, b) => {
-		const compared = String(a[column] ?? "").localeCompare(
-			String(b[column] ?? ""),
-		);
-		if (compared !== 0) {
-			return ascending ? compared : -compared;
-		}
-
-		if (secondColumn !== "id") {
-			return 0;
-		}
-
-		return ascending ? a.id - b.id : b.id - a.id;
-	});
-
-	const limit = Number(url.searchParams.get("limit") ?? sorted.length);
-	const pagedMemos = sorted.slice(0, limit);
-
+const handleMemoGet = async ({ route, store }: HandlerParams) => {
 	await route.fulfill({
 		status: 200,
 		contentType: "application/json",
-		headers: {
-			"content-range": `0-${Math.max(pagedMemos.length - 1, 0)}/${sorted.length}`,
-			"access-control-expose-headers": "content-range",
-		},
-		body: JSON.stringify(pagedMemos),
+		body: JSON.stringify(store.getAllMemos()),
 	});
 };
 
@@ -337,7 +178,7 @@ const handleMemoPatch = async ({ route, url, store }: HandlerParams) => {
 	await route.fulfill({
 		status: 200,
 		contentType: "application/json",
-		body: JSON.stringify(updated ? [store.toMemoWithCategory(updated)] : []),
+		body: JSON.stringify(updated ? [updated] : []),
 	});
 };
 
@@ -354,15 +195,6 @@ const handleMemoDelete = async ({ route, url, store }: HandlerParams) => {
 		status: 200,
 		contentType: "application/json",
 		body: JSON.stringify(deleted ? [deleted] : []),
-	});
-};
-
-/** 카테고리 목록 조회. 메모의 카테고리 뱃지가 여기서 온다. */
-const handleCategoryGet = async ({ route, store }: HandlerParams) => {
-	await route.fulfill({
-		status: 200,
-		contentType: "application/json",
-		body: JSON.stringify(store.getAllCategories()),
 	});
 };
 
@@ -415,8 +247,7 @@ const handleHighlightPatch = async ({ route, url, store }: HandlerParams) => {
  */
 export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
 	await page.route(`${SUPABASE.url}/rest/v1/memo**`, async (route: Route) => {
-		const url = new URL(route.request().url());
-		const params = { route, url, store };
+		const params = { route, url: new URL(route.request().url()), store };
 
 		switch (route.request().method()) {
 			case "GET":
@@ -437,26 +268,9 @@ export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
 	});
 
 	await page.route(
-		`${SUPABASE.url}/rest/v1/category**`,
-		async (route: Route) => {
-			if (route.request().method() !== "GET") {
-				await route.continue();
-				return;
-			}
-
-			await handleCategoryGet({
-				route,
-				url: new URL(route.request().url()),
-				store,
-			});
-		},
-	);
-
-	await page.route(
 		`${SUPABASE.url}/rest/v1/highlight**`,
 		async (route: Route) => {
-			const url = new URL(route.request().url());
-			const params = { route, url, store };
+			const params = { route, url: new URL(route.request().url()), store };
 
 			switch (route.request().method()) {
 				case "GET":

@@ -154,7 +154,17 @@ export default function MemoGrid({
 		[rafRef],
 	);
 
-	useKeyboardBind({ key: "Escape", callback: closeMemoOption });
+	useKeyboardBind({
+		key: "Escape",
+		callback: () => {
+			// 드롭다운이 열려 있으면 Escape의 주인은 그 레이어다. Radix는 최상위 레이어에만
+			// Escape를 주므로 DialogContent의 onEscapeKeyDown은 아예 불리지 않고,
+			// window 리스너인 여기만 돌아 메모 상세까지 닫혀버린다.
+			if (document.querySelector("[data-radix-popper-content-wrapper]")) return;
+
+			closeMemoOption();
+		},
+	});
 	useKeyboardBind({ key: "Delete", callback: handleDeleteKeyPress });
 	useKeyboardBind({ key: "Backspace", callback: handleDeleteKeyPress });
 

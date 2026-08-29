@@ -10,13 +10,15 @@ const SELECTION_BUTTON = 'button[aria-label="Save selected text as memo"]';
  * @description content script는 document의 mouseup에서 window.getSelection()을 읽는다.
  * 마우스 드래그로 선택하면 영역이 페이지 레이아웃을 타 불안정하므로 Range로 직접 만든다.
  */
-async function selectFirstParagraph(page: Page) {
+const selectFirstParagraph = async (page: Page) => {
 	await page.evaluate(() => {
 		const target = Array.from(document.querySelectorAll("p, h1, h2, li")).find(
 			(element) => (element.textContent ?? "").trim().length >= 10,
 		);
 
-		if (!target) throw new Error("선택할 만한 문단을 찾지 못했다");
+		if (!target) {
+			throw new Error("선택할 만한 문단을 찾지 못했다");
+		}
 
 		const range = document.createRange();
 		range.selectNodeContents(target);
@@ -27,10 +29,10 @@ async function selectFirstParagraph(page: Page) {
 
 		document.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
 	});
-}
+};
 
 /** 확장 저장소에 값을 넣는다. content script는 로드 시점에 이 값을 읽는다. */
-async function setSyncStorage(page: Page, values: Record<string, unknown>) {
+const setSyncStorage = async (page: Page, values: Record<string, unknown>) => {
 	const extensionPage = await page.context().newPage();
 	await extensionPage.goto(getExtensionUrl("options/index.html"));
 	await extensionPage.evaluate(
@@ -38,7 +40,7 @@ async function setSyncStorage(page: Page, values: Record<string, unknown>) {
 		values,
 	);
 	await extensionPage.close();
-}
+};
 
 test.describe("확장 텍스트 선택 메모 버튼", () => {
 	test("설정이 켜져 있으면, 텍스트를 선택했을 때 메모 저장 버튼이 뜬다.", async ({

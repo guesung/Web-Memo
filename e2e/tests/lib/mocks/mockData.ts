@@ -8,17 +8,23 @@ let memoIdCounter = 1;
 let categoryIdCounter = 1;
 let highlightIdCounter = 1;
 
+/** 메모 한 건을 만든다. 실제 테이블 컬럼을 모두 채워 앱이 받는 모양과 어긋나지 않게 한다. */
 export function createMockMemo(overrides: Partial<MockMemo> = {}): MockMemo {
 	const id = memoIdCounter++;
 	const now = new Date().toISOString();
+
 	return {
 		id,
 		user_id: "test-user-id",
 		url: `https://example.com/page-${id}`,
 		title: `Test Memo ${id}`,
 		memo: `Test memo content ${id}`,
+		impression: null,
+		actionItem: null,
 		favIconUrl: null,
 		isWish: false,
+		isStar: false,
+		isReading: false,
 		category_id: null,
 		created_at: now,
 		updated_at: now,
@@ -26,6 +32,7 @@ export function createMockMemo(overrides: Partial<MockMemo> = {}): MockMemo {
 	};
 }
 
+/** 카테고리 한 건을 만든다. */
 export function createMockCategory(
 	overrides: Partial<MockCategory> = {},
 ): MockCategory {
@@ -41,6 +48,7 @@ export function createMockCategory(
 	};
 }
 
+/** 하이라이트 한 건을 만든다. */
 export function createMockHighlight(
 	overrides: Partial<MockHighlight> = {},
 ): MockHighlight {
@@ -64,6 +72,7 @@ export function createMockHighlight(
 	};
 }
 
+/** 테스트마다 id를 1부터 다시 매긴다. */
 export function resetMockIds() {
 	memoIdCounter = 1;
 	categoryIdCounter = 1;

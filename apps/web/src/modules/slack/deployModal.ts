@@ -25,10 +25,13 @@ export const buildDeployModal = ({
 	refOptions,
 	defaultRef,
 	responseUrl,
+	isLoading = false,
 }: {
 	refOptions: Array<{ label: string; value: string }>;
 	defaultRef: string;
 	responseUrl: string;
+	/** 태그·커밋 목록을 아직 못 받은 상태. 목록이 채워지면 views.update로 교체됩니다. */
+	isLoading?: boolean;
 }): Record<string, unknown> => {
 	const options = refOptions.map(({ label, value }) => ({
 		text: { type: "plain_text", text: label },
@@ -69,6 +72,16 @@ export const buildDeployModal = ({
 					...(initialOption ? { initial_option: initialOption } : {}),
 				},
 			},
+			...(isLoading
+				? [
+						{
+							type: "context",
+							elements: [
+								{ type: "mrkdwn", text: "_태그·커밋 목록을 불러오는 중…_" },
+							],
+						},
+					]
+				: []),
 		],
 	};
 };

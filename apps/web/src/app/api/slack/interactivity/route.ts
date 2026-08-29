@@ -6,10 +6,11 @@ import {
 	dispatchRelease,
 	fetchRefOptions,
 	getGithubRepository,
+	notifySlackSafely,
 	openSlackModal,
 	readVerifiedSlackForm,
-	respondToSlack,
 	type TDeployTarget,
+	updateSlackModal,
 } from "@src/modules/slack";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -53,13 +54,20 @@ const handleDeployButton = async ({
 
 	await dispatchRelease({ targets: [value.target], ref: value.ref });
 
-	await respondToSlack({
+	await notifySlackSafely({
 		responseUrl,
 		text: `🚀 <@${userId}> 님이 *${DEPLOY_TARGET_LABELS[value.target]}* 배포를 시작했습니다 — \`${value.ref.slice(0, 7)}\`\n<${buildRunUrl()}|워크플로 보기>`,
 	});
 };
 
-/** "다른 버전…" 버튼 — 대상과 ref를 고르는 모달을 엽니다. */
+/**
+ * "다른 버전…" 버튼 — 대상과 ref를 고르는 모달을 엽니다.
+ *
+ * @description trigger_id는 발급 후 3초 안에 써야 합니다. 그 앞에 GitHub 조회를 두면
+ * 콜드 스타트와 겹쳐 `expired_trigger_id`로 죽고, 사용자에게는 버튼이 아무 반응 없는
+ * 것처럼 보입니다. 그래서 외부 호출 없이 모달을 **먼저** 띄우고, 태그·커밋 목록은
+ * views.update로 나중에 채웁니다.
+ */
 const handleCustomDeployButton = async ({
 	value,
 	triggerId,
@@ -69,24 +77,38 @@ const handleCustomDeployButton = async ({
 	triggerId: string;
 	responseUrl: string;
 }): Promise<void> => {
-	const refOptions = await fetchRefOptions();
+	const fallbackOption = {
+		label: `${value.ref.slice(0, 7)} (알림 시점 커밋)`,
+		value: value.ref,
+	};
 
-	await openSlackModal({
+	const viewId = await openSlackModal({
 		triggerId,
 		view: buildDeployModal({
-			refOptions:
-				refOptions.length > 0
-					? refOptions
-					: [
-							{
-								label: `${value.ref.slice(0, 7)} (알림 시점 커밋)`,
-								value: value.ref,
-							},
-						],
+			refOptions: [fallbackOption],
 			defaultRef: value.ref,
 			responseUrl,
+			isLoading: true,
 		}),
 	});
+
+	// 목록을 못 받아도 모달은 이미 떠 있고 알림 시점 커밋으로는 배포할 수 있습니다.
+	try {
+		const refOptions = await fetchRefOptions();
+
+		if (refOptions.length === 0) return;
+
+		await updateSlackModal({
+			viewId,
+			view: buildDeployModal({
+				refOptions,
+				defaultRef: value.ref,
+				responseUrl,
+			}),
+		});
+	} catch (error) {
+		console.error("모달의 ref 목록 갱신 실패:", error);
+	}
 };
 
 /** 모달 제출 — 여러 대상을 한 번에 배포합니다. */
@@ -147,7 +169,7 @@ const handleModalSubmission = async (payload: {
 		.map((target) => DEPLOY_TARGET_LABELS[target])
 		.join(", ");
 
-	await respondToSlack({
+	await notifySlackSafely({
 		responseUrl,
 		text: `🚀 <@${payload.user.id}> 님이 *${targetLabels}* 배포를 시작했습니다 — \`${ref.slice(0, 7)}\`\n<${buildRunUrl()}|워크플로 보기>`,
 	});
@@ -217,7 +239,7 @@ export async function POST(request: NextRequest) {
 		const responseUrl = JSON.parse(rawPayload)?.response_url;
 
 		if (responseUrl) {
-			await respondToSlack({
+			await notifySlackSafely({
 				responseUrl,
 				isEphemeral: true,
 				text: `⚠️ 배포를 시작하지 못했습니다 — ${error instanceof Error ? error.message : String(error)}`,

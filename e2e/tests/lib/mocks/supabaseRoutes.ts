@@ -140,6 +140,16 @@ const parseIdFromUrl = (url: URL): number | null => {
 	return Number.parseInt(idParam.replace("eq.", ""), 10);
 };
 
+/** PostgREST의 `id=eq.3`, `url=eq.https://...` 같은 동등 필터를 읽는다. */
+const parseEqualsFilter = (url: URL, column: string): string | undefined => {
+	const value = url.searchParams.get(column);
+	if (!value?.startsWith("eq.")) {
+		return undefined;
+	}
+
+	return value.slice(3);
+};
+
 /** PostgREST의 `isWish=eq.true` 같은 불리언 필터를 읽는다. 파라미터가 없으면 undefined. */
 const parseBooleanFilter = (url: URL, column: string): boolean | undefined => {
 	const value = url.searchParams.get(column);
@@ -182,11 +192,15 @@ const matchesCursor = (memo: MemoRow, url: URL): boolean => {
 			continue;
 		}
 
-		const value = String(memo[column] ?? "");
-		if (condition.startsWith("lt.") && value >= condition.slice(3)) {
+		// 정렬과 같은 비교자를 써야 한다. 커서는 원시 비교, 정렬은 localeCompare로
+		// 갈리면 title 정렬에서 같은 메모가 두 장에 걸쳐 중복된다.
+		const compared = String(memo[column] ?? "").localeCompare(
+			condition.slice(3),
+		);
+		if (condition.startsWith("lt.") && compared >= 0) {
 			return false;
 		}
-		if (condition.startsWith("gt.") && value <= condition.slice(3)) {
+		if (condition.startsWith("gt.") && compared <= 0) {
 			return false;
 		}
 	}
@@ -220,15 +234,23 @@ const handleMemoGet = async ({ route, url, store }: HandlerParams) => {
 	const isWish = parseBooleanFilter(url, "isWish");
 	const isStar = parseBooleanFilter(url, "isStar");
 	const isReading = parseBooleanFilter(url, "isReading");
-	const categoryName = url.searchParams
-		.get("category.name")
-		?.replace("eq.", "");
+	const categoryName = parseEqualsFilter(url, "category.name");
 	const searchQuery = extractIlikeQuery(url, "title");
+	// 한 건 조회(getMemoById·getMemoByUrl)도 같은 GET으로 온다. 여기서 안 걸러주면
+	// 저장소의 모든 메모가 돌아가고, 호출부의 at(-1)이 엉뚱한 메모를 집는다.
+	const targetId = parseEqualsFilter(url, "id");
+	const targetUrl = parseEqualsFilter(url, "url");
 
 	const filtered = store
 		.getAllMemos()
 		.map((memo) => store.toMemoWithCategory(memo))
 		.filter((memo) => {
+			if (targetId !== undefined && String(memo.id) !== targetId) {
+				return false;
+			}
+			if (targetUrl !== undefined && memo.url !== targetUrl) {
+				return false;
+			}
 			if (isWish !== undefined && (memo.isWish ?? false) !== isWish) {
 				return false;
 			}

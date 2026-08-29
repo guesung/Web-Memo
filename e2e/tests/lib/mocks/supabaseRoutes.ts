@@ -123,60 +123,100 @@ export class MockSupabaseStore {
 	}
 }
 
+/** 라우트 핸들러가 공통으로 받는 것들. */
+interface HandlerParams {
+	route: Route;
+	url: URL;
+	store: MockSupabaseStore;
+}
+
 /** PostgREST의 `id=eq.3` 같은 파라미터에서 숫자 id를 꺼낸다. */
-function parseIdFromUrl(url: URL): number | null {
+const parseIdFromUrl = (url: URL): number | null => {
 	const idParam = url.searchParams.get("id");
-	if (!idParam) return null;
+	if (!idParam) {
+		return null;
+	}
 
 	return Number.parseInt(idParam.replace("eq.", ""), 10);
-}
+};
 
 /** PostgREST의 `isWish=eq.true` 같은 불리언 필터를 읽는다. 파라미터가 없으면 undefined. */
-function parseBooleanFilter(url: URL, column: string): boolean | undefined {
+const parseBooleanFilter = (url: URL, column: string): boolean | undefined => {
 	const value = url.searchParams.get(column);
-	if (value !== "eq.true" && value !== "eq.false") return undefined;
+	if (value !== "eq.true" && value !== "eq.false") {
+		return undefined;
+	}
 
 	return value === "eq.true";
-}
+};
 
 /**
  * `or=(<column>.ilike.%검색어%,...)`에서 검색어를 꺼낸다.
- * @description 커서 조건도 `or=`로 실릴 수 있으므로 지정한 컬럼의 ilike만 본다.
+ * @description `or`에는 여러 컬럼의 조건이 함께 실리므로 지정한 컬럼의 ilike만 본다.
+ * URLSearchParams가 이미 디코드해서 주므로 여기서 또 풀면 안 된다 — 검색어에 `%`가
+ * 들어가면 값이 잘리거나 URIError로 죽는다.
  */
-function extractIlikeQuery(url: URL, column: string): string | undefined {
+const extractIlikeQuery = (url: URL, column: string): string | undefined => {
 	const matched = url.searchParams
 		.getAll("or")
 		.map((value) => value.match(new RegExp(`${column}\\.ilike\\.%(.*?)%`)))
 		.find(Boolean);
 
-	return matched?.[1] ? decodeURIComponent(matched[1]) : undefined;
-}
+	return matched?.[1];
+};
 
 /** 대소문자를 무시하고 부분 일치를 본다. PostgREST의 ilike에 대응한다. */
-function matchesIlike(value: string | null, query: string): boolean {
-	return (value ?? "").toLowerCase().includes(query.toLowerCase());
-}
+const matchesIlike = (value: string | null, query: string): boolean =>
+	(value ?? "").toLowerCase().includes(query.toLowerCase());
 
 /**
- * `order=updated_at.desc,id.desc`의 첫 정렬 기준을 읽는다.
- * @description 앱은 updated_at·created_at·title 중 하나로만 정렬한다.
+ * 커서 페이지네이션 필터를 적용한다.
+ * @description 앱은 offset이 아니라 정렬 키의 `lt`/`gt`로 다음 장을 요청한다
+ * (packages/shared의 getMemosPaginated). 여기서 안 걸러주면 2페이지가 1페이지와
+ * 같은 응답이 되어 무한 스크롤 결함이 테스트를 그대로 통과한다.
  */
-function parseOrder(url: URL): { column: keyof MemoRow; ascending: boolean } {
-	const [first] = (url.searchParams.get("order") ?? "").split(",");
-	const [column, direction] = first.split(".");
+const matchesCursor = (memo: MemoRow, url: URL): boolean => {
+	for (const column of ["updated_at", "created_at", "title"] as const) {
+		const condition = url.searchParams.get(column);
+		if (!condition) {
+			continue;
+		}
 
-	if (column !== "created_at" && column !== "title") {
-		return { column: "updated_at", ascending: direction === "asc" };
+		const value = String(memo[column] ?? "");
+		if (condition.startsWith("lt.") && value >= condition.slice(3)) {
+			return false;
+		}
+		if (condition.startsWith("gt.") && value <= condition.slice(3)) {
+			return false;
+		}
 	}
 
-	return { column, ascending: direction === "asc" };
-}
+	return true;
+};
+
+/**
+ * `order=updated_at.desc,id.desc`를 읽는다.
+ * @description 앱은 정렬 키가 같을 때를 대비해 `id`를 2차 키로 함께 보낸다.
+ */
+const parseOrder = (url: URL) => {
+	const [first, second] = (url.searchParams.get("order") ?? "").split(",");
+	const [column, direction] = first.split(".");
+	const ascending = direction === "asc";
+
+	return {
+		column:
+			column === "created_at" || column === "title" ? column : "updated_at",
+		ascending,
+		secondColumn: second ? second.split(".")[0] : undefined,
+	} as const;
+};
 
 /**
  * 메모 목록 조회. 앱이 보낸 PostgREST 필터를 그대로 적용한다.
- * @description count는 Content-Range 헤더로만 전달된다. 본문에 넣으면 supabase-js가 못 읽는다.
+ * @description count는 Content-Range 헤더로만 전달되고, 다른 오리진이라 노출까지
+ * 해줘야 supabase-js가 읽는다.
  */
-async function handleMemoGet(route: Route, url: URL, store: MockSupabaseStore) {
+const handleMemoGet = async ({ route, url, store }: HandlerParams) => {
 	const isWish = parseBooleanFilter(url, "isWish");
 	const isStar = parseBooleanFilter(url, "isStar");
 	const isReading = parseBooleanFilter(url, "isReading");
@@ -189,14 +229,21 @@ async function handleMemoGet(route: Route, url: URL, store: MockSupabaseStore) {
 		.getAllMemos()
 		.map((memo) => store.toMemoWithCategory(memo))
 		.filter((memo) => {
-			if (isWish !== undefined && (memo.isWish ?? false) !== isWish)
+			if (isWish !== undefined && (memo.isWish ?? false) !== isWish) {
 				return false;
-			if (isStar !== undefined && (memo.isStar ?? false) !== isStar)
+			}
+			if (isStar !== undefined && (memo.isStar ?? false) !== isStar) {
 				return false;
+			}
 			if (isReading !== undefined && (memo.isReading ?? false) !== isReading) {
 				return false;
 			}
-			if (categoryName && memo.category?.name !== categoryName) return false;
+			if (categoryName && memo.category?.name !== categoryName) {
+				return false;
+			}
+			if (!matchesCursor(memo, url)) {
+				return false;
+			}
 			if (
 				searchQuery &&
 				!matchesIlike(memo.title, searchQuery) &&
@@ -210,31 +257,38 @@ async function handleMemoGet(route: Route, url: URL, store: MockSupabaseStore) {
 			return true;
 		});
 
-	const { column, ascending } = parseOrder(url);
+	const { column, ascending, secondColumn } = parseOrder(url);
 	const sorted = filtered.sort((a, b) => {
-		const order = String(a[column] ?? "").localeCompare(
+		const compared = String(a[column] ?? "").localeCompare(
 			String(b[column] ?? ""),
 		);
-		return ascending ? order : -order;
+		if (compared !== 0) {
+			return ascending ? compared : -compared;
+		}
+
+		if (secondColumn !== "id") {
+			return 0;
+		}
+
+		return ascending ? a.id - b.id : b.id - a.id;
 	});
 
 	const limit = Number(url.searchParams.get("limit") ?? sorted.length);
-	const page = sorted.slice(0, limit);
+	const pagedMemos = sorted.slice(0, limit);
 
 	await route.fulfill({
 		status: 200,
 		contentType: "application/json",
 		headers: {
-			"content-range": `0-${Math.max(page.length - 1, 0)}/${sorted.length}`,
-			// 다른 오리진이라 이 헤더를 노출해 주지 않으면 supabase-js가 count를 못 읽는다.
+			"content-range": `0-${Math.max(pagedMemos.length - 1, 0)}/${sorted.length}`,
 			"access-control-expose-headers": "content-range",
 		},
-		body: JSON.stringify(page),
+		body: JSON.stringify(pagedMemos),
 	});
-}
+};
 
 /** 메모 생성. */
-async function handleMemoPost(route: Route, store: MockSupabaseStore) {
+const handleMemoPost = async ({ route, store }: HandlerParams) => {
 	const newMemo = createMockMemo(route.request().postDataJSON());
 	store.addMemo(newMemo);
 
@@ -243,14 +297,10 @@ async function handleMemoPost(route: Route, store: MockSupabaseStore) {
 		contentType: "application/json",
 		body: JSON.stringify([newMemo]),
 	});
-}
+};
 
 /** 메모 수정. */
-async function handleMemoPatch(
-	route: Route,
-	url: URL,
-	store: MockSupabaseStore,
-) {
+const handleMemoPatch = async ({ route, url, store }: HandlerParams) => {
 	const id = parseIdFromUrl(url);
 	if (!id) {
 		await route.continue();
@@ -263,14 +313,10 @@ async function handleMemoPatch(
 		contentType: "application/json",
 		body: JSON.stringify(updated ? [store.toMemoWithCategory(updated)] : []),
 	});
-}
+};
 
 /** 메모 삭제. */
-async function handleMemoDelete(
-	route: Route,
-	url: URL,
-	store: MockSupabaseStore,
-) {
+const handleMemoDelete = async ({ route, url, store }: HandlerParams) => {
 	const id = parseIdFromUrl(url);
 	if (!id) {
 		await route.continue();
@@ -283,28 +329,26 @@ async function handleMemoDelete(
 		contentType: "application/json",
 		body: JSON.stringify(deleted ? [deleted] : []),
 	});
-}
+};
 
-/** 카테고리 목록 조회. 사이드바와 메모의 카테고리 뱃지가 여기서 온다. */
-async function handleCategoryGet(route: Route, store: MockSupabaseStore) {
+/** 카테고리 목록 조회. 메모의 카테고리 뱃지가 여기서 온다. */
+const handleCategoryGet = async ({ route, store }: HandlerParams) => {
 	await route.fulfill({
 		status: 200,
 		contentType: "application/json",
 		body: JSON.stringify(store.getAllCategories()),
 	});
-}
+};
 
 /** 하이라이트 목록 조회. 색상과 검색어 필터를 적용한다. */
-async function handleHighlightGet(
-	route: Route,
-	url: URL,
-	store: MockSupabaseStore,
-) {
+const handleHighlightGet = async ({ route, url, store }: HandlerParams) => {
 	const color = url.searchParams.get("color")?.replace("eq.", "");
 	const searchQuery = extractIlikeQuery(url, "exact_text");
 
 	const highlights = store.getAllHighlights().filter((highlight) => {
-		if (color && highlight.color !== color) return false;
+		if (color && highlight.color !== color) {
+			return false;
+		}
 		if (
 			searchQuery &&
 			!matchesIlike(highlight.exact_text, searchQuery) &&
@@ -321,14 +365,10 @@ async function handleHighlightGet(
 		contentType: "application/json",
 		body: JSON.stringify(highlights),
 	});
-}
+};
 
 /** 하이라이트 수정. 코멘트 저장이 여기로 온다. */
-async function handleHighlightPatch(
-	route: Route,
-	url: URL,
-	store: MockSupabaseStore,
-) {
+const handleHighlightPatch = async ({ route, url, store }: HandlerParams) => {
 	const id = parseIdFromUrl(url);
 	if (!id) {
 		await route.continue();
@@ -341,7 +381,7 @@ async function handleHighlightPatch(
 		contentType: "application/json",
 		body: JSON.stringify(updated ? [updated] : []),
 	});
-}
+};
 
 /**
  * Supabase REST 호출을 저장소로 가로챈다.
@@ -350,19 +390,20 @@ async function handleHighlightPatch(
 export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
 	await page.route(`${SUPABASE.url}/rest/v1/memo**`, async (route: Route) => {
 		const url = new URL(route.request().url());
+		const params = { route, url, store };
 
 		switch (route.request().method()) {
 			case "GET":
-				await handleMemoGet(route, url, store);
+				await handleMemoGet(params);
 				break;
 			case "POST":
-				await handleMemoPost(route, store);
+				await handleMemoPost(params);
 				break;
 			case "PATCH":
-				await handleMemoPatch(route, url, store);
+				await handleMemoPatch(params);
 				break;
 			case "DELETE":
-				await handleMemoDelete(route, url, store);
+				await handleMemoDelete(params);
 				break;
 			default:
 				await route.continue();
@@ -377,7 +418,11 @@ export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
 				return;
 			}
 
-			await handleCategoryGet(route, store);
+			await handleCategoryGet({
+				route,
+				url: new URL(route.request().url()),
+				store,
+			});
 		},
 	);
 
@@ -385,13 +430,14 @@ export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
 		`${SUPABASE.url}/rest/v1/highlight**`,
 		async (route: Route) => {
 			const url = new URL(route.request().url());
+			const params = { route, url, store };
 
 			switch (route.request().method()) {
 				case "GET":
-					await handleHighlightGet(route, url, store);
+					await handleHighlightGet(params);
 					break;
 				case "PATCH":
-					await handleHighlightPatch(route, url, store);
+					await handleHighlightPatch(params);
 					break;
 				default:
 					await route.continue();

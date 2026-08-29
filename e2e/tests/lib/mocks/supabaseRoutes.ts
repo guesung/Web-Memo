@@ -130,16 +130,6 @@ interface HandlerParams {
 	store: MockSupabaseStore;
 }
 
-/** PostgREST의 `id=eq.3` 같은 파라미터에서 숫자 id를 꺼낸다. */
-const parseIdFromUrl = (url: URL): number | null => {
-	const idParam = url.searchParams.get("id");
-	if (!idParam) {
-		return null;
-	}
-
-	return Number.parseInt(idParam.replace("eq.", ""), 10);
-};
-
 /** PostgREST의 `id=eq.3`, `url=eq.https://...` 같은 동등 필터를 읽는다. */
 const parseEqualsFilter = (url: URL, column: string): string | undefined => {
 	const value = url.searchParams.get(column);
@@ -148,6 +138,16 @@ const parseEqualsFilter = (url: URL, column: string): string | undefined => {
 	}
 
 	return value.slice(3);
+};
+
+/** PostgREST의 `id=eq.3` 같은 파라미터에서 숫자 id를 꺼낸다. */
+const parseIdFromUrl = (url: URL): number | null => {
+	const id = parseEqualsFilter(url, "id");
+	if (!id) {
+		return null;
+	}
+
+	return Number.parseInt(id, 10);
 };
 
 /** PostgREST의 `isWish=eq.true` 같은 불리언 필터를 읽는다. 파라미터가 없으면 undefined. */
@@ -167,12 +167,12 @@ const parseBooleanFilter = (url: URL, column: string): boolean | undefined => {
  * 들어가면 값이 잘리거나 URIError로 죽는다.
  */
 const extractIlikeQuery = (url: URL, column: string): string | undefined => {
-	const matched = url.searchParams
+	const matchedIlike = url.searchParams
 		.getAll("or")
 		.map((value) => value.match(new RegExp(`${column}\\.ilike\\.%(.*?)%`)))
 		.find(Boolean);
 
-	return matched?.[1];
+	return matchedIlike?.[1];
 };
 
 /** 대소문자를 무시하고 부분 일치를 본다. PostgREST의 ilike에 대응한다. */
@@ -213,15 +213,19 @@ const matchesCursor = (memo: MemoRow, url: URL): boolean => {
  * @description 앱은 정렬 키가 같을 때를 대비해 `id`를 2차 키로 함께 보낸다.
  */
 const parseOrder = (url: URL) => {
-	const [first, second] = (url.searchParams.get("order") ?? "").split(",");
-	const [column, direction] = first.split(".");
+	const [firstOrderClause, secondOrderClause] = (
+		url.searchParams.get("order") ?? ""
+	).split(",");
+	const [column, direction] = firstOrderClause.split(".");
 	const ascending = direction === "asc";
 
 	return {
 		column:
 			column === "created_at" || column === "title" ? column : "updated_at",
 		ascending,
-		secondColumn: second ? second.split(".")[0] : undefined,
+		secondColumn: secondOrderClause
+			? secondOrderClause.split(".")[0]
+			: undefined,
 	} as const;
 };
 
@@ -364,7 +368,7 @@ const handleCategoryGet = async ({ route, store }: HandlerParams) => {
 
 /** 하이라이트 목록 조회. 색상과 검색어 필터를 적용한다. */
 const handleHighlightGet = async ({ route, url, store }: HandlerParams) => {
-	const color = url.searchParams.get("color")?.replace("eq.", "");
+	const color = parseEqualsFilter(url, "color");
 	const searchQuery = extractIlikeQuery(url, "exact_text");
 
 	const highlights = store.getAllHighlights().filter((highlight) => {

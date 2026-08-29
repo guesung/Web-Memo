@@ -12,16 +12,16 @@ const SELECTION_BUTTON = 'button[aria-label="Save selected text as memo"]';
  */
 const selectFirstParagraph = async (page: Page) => {
 	await page.evaluate(() => {
-		const target = Array.from(document.querySelectorAll("p, h1, h2, li")).find(
-			(element) => (element.textContent ?? "").trim().length >= 10,
-		);
+		const targetElement = Array.from(
+			document.querySelectorAll("p, h1, h2, li"),
+		).find((element) => (element.textContent ?? "").trim().length >= 10);
 
-		if (!target) {
+		if (!targetElement) {
 			throw new Error("선택할 만한 문단을 찾지 못했다");
 		}
 
 		const range = document.createRange();
-		range.selectNodeContents(target);
+		range.selectNodeContents(targetElement);
 
 		const selection = window.getSelection();
 		selection?.removeAllRanges();

@@ -55,8 +55,8 @@ test.describe("메모 무한 스크롤 (Mocked)", () => {
 		await page.mouse.move(640, 400);
 		for (let scroll = 0; scroll < 10; scroll++) {
 			await page.mouse.wheel(0, 2000);
-			const count = await page.locator(".memo-item").count();
-			if (count > PAGE_SIZE) {
+			const memoCount = await page.locator(".memo-item").count();
+			if (memoCount > PAGE_SIZE) {
 				break;
 			}
 		}

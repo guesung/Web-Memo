@@ -71,6 +71,16 @@ test.describe("메모 검색·필터 (Mocked)", () => {
 		).toHaveCount(0);
 	});
 
+	test("메모를 누르면, 다른 메모가 아니라 누른 메모의 상세가 열린다.", async ({
+		page,
+	}) => {
+		await page.locator(".memo-item", { hasText: "주말 등산 코스" }).click();
+
+		await expect(page.getByTestId("memo-textarea")).toHaveValue(
+			"북한산에 다녀오기",
+		);
+	});
+
 	test("검색어를 입력하면, 제목이나 본문에 그 말이 있는 메모만 남는다.", async ({
 		page,
 	}) => {

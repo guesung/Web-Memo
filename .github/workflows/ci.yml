@@ -76,9 +76,10 @@ jobs:
   # 앱과 무관한 PR까지 빌드를 끌고 오므로, PR에서는 build-app 라벨이 있을 때만 돌립니다.
   cd-app:
     needs: [ci, changes]
+    # 재사용 워크플로의 잡은 호출자 권한을 넘어설 수 없습니다.
+    # cd-app.yml은 체크아웃만 하므로 contents:read면 충분합니다.
     permissions:
       contents: read
-      actions: read
     if: >-
       needs.changes.outputs.app == 'true' &&
       (github.event_name != 'pull_request' ||
@@ -86,7 +87,10 @@ jobs:
     uses: ./.github/workflows/cd-app.yml
     secrets: inherit
     with:
-      deploy_target: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') && 'production' || 'none' }}
+      # master에 머지돼도 자동으로 스토어에 올리지 않습니다. 여기서는 빌드가 되는지만 봅니다.
+      # 실제 제출은 아래 notify가 보낸 Slack 메시지의 버튼 → release.yml 한 경로뿐입니다.
+      # (docs/release-flow.md)
+      deploy_target: "none"
 
   cd-extension:
     needs: [ci, changes]
@@ -103,3 +107,36 @@ jobs:
     secrets: inherit
     with:
       deploy_target: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/develop') && 'staging' || 'none' }}
+
+  # 빌드 결과와 스토어 현황을 함께 Slack으로 알리고, 배포 버튼을 답니다.
+  # 버튼을 누르면 apps/web의 /api/slack/interactivity가 release.yml을 실행합니다.
+  notify:
+    name: Slack 알림
+    needs: [ci, changes, cd-app, cd-extension, cd-web]
+    # 앞 잡이 실패해도 알려야 하므로 always()입니다. 대신 master push에서만 돕니다.
+    if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      # 알림 스크립트는 의존성이 없습니다(node:crypto + fetch). pnpm install을 건너뜁니다.
+      - name: Notify Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          # skipped는 실패가 아니라 "변경이 없어 안 돎"입니다. 스크립트가 그렇게 해석합니다.
+          BUILD_RESULTS: >-
+            {"ci":"${{ needs.ci.result }}",
+            "app":"${{ needs['cd-app'].result }}",
+            "web":"${{ needs['cd-web'].result }}",
+            "extension":"${{ needs['cd-extension'].result }}"}
+          ASC_API_KEY_P8: ${{ secrets.EXPO_ASC_API_KEY_P8 }}
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.EXPO_ANDROID_SERVICE_ACCOUNT_JSON }}
+          CWS_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+        run: node .github/scripts/notify-build-ready.mjs

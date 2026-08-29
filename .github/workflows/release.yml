@@ -50,11 +50,10 @@ jobs:
   release-app:
     name: 앱 릴리스
     needs: preflight
-    # 재사용 워크플로의 잡은 호출자 권한을 넘어설 수 없습니다. cd-app의 notify가
-    # actions:read를 써서, 여기서 넓히지 않으면 startup_failure로 파싱 단계에서 죽습니다.
+    # 재사용 워크플로의 잡은 호출자 권한을 넘어설 수 없습니다.
+    # cd-app.yml은 체크아웃만 하므로 contents:read면 충분합니다.
     permissions:
       contents: read
-      actions: read
     if: ${{ inputs.app }}
     uses: ./.github/workflows/cd-app.yml
     secrets: inherit
@@ -81,3 +80,42 @@ jobs:
     with:
       deploy_target: "production"
       ref: ${{ inputs.ref }}
+
+  # Slack 버튼을 누른 사람에게 "정말 올라갔는지"를 알리는 유일한 신호입니다.
+  # 세 타깃을 한 메시지로 묶어 보냅니다(앱만 플랫폼별로 갈라 조회).
+  notify:
+    name: Slack 알림
+    needs: [preflight, release-app, release-extension, release-web]
+    # 실패했을 때야말로 알려야 하므로 always()입니다.
+    # 타깃을 하나도 안 골라 preflight가 막은 경우에는 알릴 내용이 없습니다.
+    if: ${{ always() && needs.preflight.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      # matrix 잡의 플랫폼별 결과를 조회하는 데 필요합니다.
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      # 알림 스크립트는 의존성이 없습니다(fetch만 씁니다). pnpm install을 건너뜁니다.
+      - name: Notify Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_REF: ${{ inputs.ref || github.ref_name }}
+          TARGETS: >-
+            {"app":${{ inputs.app }},
+            "extension":${{ inputs.extension }},
+            "web":${{ inputs.web }}}
+          RESULTS: >-
+            {"app":"${{ needs['release-app'].result }}",
+            "extension":"${{ needs['release-extension'].result }}",
+            "web":"${{ needs['release-web'].result }}"}
+        run: node .github/scripts/notify-release-result.mjs

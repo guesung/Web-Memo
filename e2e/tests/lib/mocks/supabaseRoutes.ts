@@ -16,6 +16,14 @@ type MemoWithCategory = MemoRow & {
  * 목 Supabase의 저장소. 테스트가 시드를 넣고, 라우트 핸들러가 여기서 읽는다.
  * @description 실제 PostgREST처럼 필터를 적용해 응답한다. 저장소가 필터를 흉내내지
  * 않으면 "검색해도 전부 보인다" 같은 결함을 테스트가 통과시켜 버린다.
+ *
+ * 다만 이건 PostgREST의 쿼리 의미론을 두 번째로 구현한 것이라 원본과 어긋날 수 있다.
+ * 실제로 필터 전체 무시, 커서 무시, `id=eq.N` 무시, 컬럼 누락 네 번이 어긋난 적이
+ * 있고 넷 다 테스트가 아니라 사람이 발견했다. 그러므로 여기 붙는 테스트가 지키는 것은
+ * "앱이 올바른 쿼리를 보내고 응답을 올바르게 그리는가"까지다. "그 쿼리가 Supabase에서
+ * 의도대로 동작하는가"는 실제 인스턴스가 있어야 지킬 수 있다.
+ *
+ * 앱의 쿼리를 바꾸면(packages/shared의 getMemosPaginated 등) 여기도 같이 맞춰야 한다.
  */
 export class MockSupabaseStore {
 	private memos: Map<number, MemoRow> = new Map();

@@ -144,29 +144,29 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 
 	useEffect(
 		function initMemoData() {
-			if (memoData) {
-				setValue("memo", memoData.memo);
-				setValue("impression", memoData.impression ?? "");
-				setValue("actionItem", memoData.actionItem ?? "");
-				if (memoTextareaRef.current) {
-					adjustTextareaHeight(memoTextareaRef.current);
-				}
-				if (impressionTextareaRef.current) {
-					adjustTextareaHeight(impressionTextareaRef.current);
-				}
-				if (actionItemTextareaRef.current) {
-					adjustTextareaHeight(actionItemTextareaRef.current);
-				}
-			}
+			if (!memoData) return;
+
+			setValue("memo", memoData.memo);
+			setValue("impression", memoData.impression ?? "");
+			setValue("actionItem", memoData.actionItem ?? "");
 		},
-		[
-			memoData,
-			setValue,
-			memoTextareaRef.current,
-			impressionTextareaRef.current,
-			actionItemTextareaRef.current,
-		],
+		[memoData, setValue],
 	);
+
+	// 값 주입과 높이 보정을 한 이펙트에 두고 ref.current를 의존성에 넣으면, textarea ref가
+	// 뒤늦게 붙는 렌더에서 이펙트가 다시 돌아 사용자가 방금 친 글자를 서버 값으로 덮어쓴다.
+	// 그러면 디바운스 저장도 "바뀐 게 없다"고 판단해 조용히 넘어간다.
+	useEffect(function adjustTextareaHeights() {
+		for (const textareaRef of [
+			memoTextareaRef,
+			impressionTextareaRef,
+			actionItemTextareaRef,
+		]) {
+			if (textareaRef.current) {
+				adjustTextareaHeight(textareaRef.current);
+			}
+		}
+	});
 
 	useEffect(
 		function saveMemoOnChange() {

@@ -24,7 +24,6 @@
 		"lastUpdated": "Updated at {{time}}",
 		"learn_more": "Learn more"
 	},
-
 	"sideBar": {
 		"memo": "My memos",
 		"wishList": "My wishlist",
@@ -41,21 +40,18 @@
 		"deleteConfirmDescription": "Memos in this category will become uncategorized.",
 		"cancel": "Cancel"
 	},
-
 	"header": {
 		"login": "Sign in",
 		"logout": "Sign out",
 		"introduce": "About",
 		"update": "What's new"
 	},
-
 	"updateNotification": {
 		"title": "🎉 What's New",
 		"version": "Version {{VERSION}} is now available!",
 		"dismiss": "Don't show again",
 		"confirm": "Got it"
 	},
-
 	"updates": {
 		"title": "What's new",
 		"versions": {
@@ -344,7 +340,6 @@
 			}
 		}
 	},
-
 	"toastTitle": {
 		"refresh": "Refreshed",
 		"memoEdited": "Memo edited",
@@ -366,17 +361,14 @@
 		"guideDoneDescription": "Enjoy your memo!",
 		"duplicateCategory": "A category with this name already exists"
 	},
-
 	"toastActionMessage": {
 		"goTo": "Go to",
 		"undo": "Undo"
 	},
-
 	"option": {
 		"deleteMemo": "Delete memo",
 		"changeCategory": "Change category"
 	},
-
 	"login": {
 		"welcomeTitle": "Welcome to Web Memo!",
 		"welcomeDescription": "Login is required to securely save and sync your memos across all devices.",
@@ -392,7 +384,6 @@
 			"free": "Free"
 		}
 	},
-
 	"dialogInstall": {
 		"title": "Extension required",
 		"description": "You'll need to install the extension to use memos",
@@ -400,7 +391,6 @@
 		"ok": "Install now",
 		"close": "Close"
 	},
-
 	"dialogVersion": {
 		"title": "New version available",
 		"description": "Update from {{currentVersion}} to {{lastVersion}}",
@@ -409,26 +399,22 @@
 		"ok": "Update now",
 		"lastVersion": "Latest version"
 	},
-
 	"dialogUnsavedChanges": {
 		"title": "Unsaved changes",
 		"description": "Changes will be lost if you close",
 		"ok": "Close anyway",
 		"cancel": "Keep editing"
 	},
-
 	"dialogDeleteMemos": {
 		"title": "Delete {{count}} memos?",
 		"description": "Selected memos will be deleted. You can undo this action.",
 		"ok": "Delete",
 		"cancel": "Cancel"
 	},
-
 	"tooltip": {
 		"sideBar": "Side bar",
 		"goSetting": "Go to settings"
 	},
-
 	"setting": {
 		"header": "Settings",
 		"language": "Language",
@@ -445,7 +431,6 @@
 		"showImpressionSection": "Show the impression field when writing a memo",
 		"showActionItemSection": "Show the action items field when writing a memo"
 	},
-
 	"guide": {
 		"next": "Next",
 		"prev": "Previous",
@@ -471,7 +456,6 @@
 			"description": "Click refresh to see your latest memos"
 		}
 	},
-
 	"memoSection": {
 		"memo": "Memo",
 		"impression": "Impression",
@@ -479,7 +463,6 @@
 		"actionItem": "Action items",
 		"actionItemPlaceholder": "Write what to do after reading this page"
 	},
-
 	"memos": {
 		"emptyState": {
 			"title": "Create your first memo",
@@ -490,6 +473,11 @@
 			"tip1": "Write memos in the side panel",
 			"tip2": "Quick open with {{key}} + S",
 			"tip3": "Auto-saved automatically"
+		},
+		"searchEmptyState": {
+			"title": "No results",
+			"message": "We couldn't find any memo matching '{{query}}'.",
+			"hint": "Try a different keyword."
 		},
 		"totalMemos": "{{total}} memos",
 		"searchPlaceholder": "Search memos",
@@ -515,7 +503,6 @@
 			"error": "Failed to save"
 		}
 	},
-
 	"highlight": {
 		"loadMore": "Load more",
 		"count": "{{count}}",
@@ -535,7 +522,6 @@
 			"placeholder": "Add a note"
 		}
 	},
-
 	"introduce": {
 		"navigation": {
 			"title": "Web Memo",
@@ -708,11 +694,11 @@
 			"questions": {
 				"what_is": {
 					"question": "What is Web Memo?",
-					"answer": "Web Memo is an intelligent note-taking service that revolutionizes internet browsing. \u2022 Instantly memo important parts while reading articles \u2022 AI-powered automatic summarization of YouTube videos \u2022 Save interesting content to your wishlist Unlike regular bookmarks, it's a completely new approach to knowledge management where you can record your own thoughts and insights systematically."
+					"answer": "Web Memo is an intelligent note-taking service that revolutionizes internet browsing. • Instantly memo important parts while reading articles • AI-powered automatic summarization of YouTube videos • Save interesting content to your wishlist Unlike regular bookmarks, it's a completely new approach to knowledge management where you can record your own thoughts and insights systematically."
 				},
 				"is_free": {
 					"question": "Is it free?",
-					"answer": "Yes! All core features of Web Memo are completely free: \u2022 Unlimited memo storage \u2022 AI-powered content summarization \u2022 Category organization features \u2022 Wishlist management \u2022 YouTube caption summarization \u2022 Mobile app with data synchronization We are committed to providing a great service experience without ads or paid subscriptions."
+					"answer": "Yes! All core features of Web Memo are completely free: • Unlimited memo storage • AI-powered content summarization • Category organization features • Wishlist management • YouTube caption summarization • Mobile app with data synchronization We are committed to providing a great service experience without ads or paid subscriptions."
 				},
 				"how_to_use": {
 					"question": "How do I use the service?",
@@ -787,7 +773,6 @@
 			}
 		}
 	},
-
 	"feedback": {
 		"button": "Send feedback",
 		"title": "Share your thoughts",
@@ -805,7 +790,6 @@
 		"error": "Couldn't send",
 		"errorDescription": "Please try again later"
 	},
-
 	"error": {
 		"404": {
 			"title": "Page not found",
@@ -817,7 +801,6 @@
 			"retry": "Try again"
 		}
 	},
-
 	"sms": {
 		"errors": {
 			"missingParams": "Phone number and message required",
@@ -837,7 +820,6 @@
 			"sendSMS": "Send message"
 		}
 	},
-
 	"admin": {
 		"title": "Admin Dashboard",
 		"sidebar": {
@@ -881,7 +863,6 @@
 			"new_users": "New Users"
 		}
 	},
-
 	"features": {
 		"youtubeSummary": {
 			"hero": {
@@ -1040,7 +1021,6 @@
 			}
 		}
 	},
-
 	"useCases": {
 		"research": {
 			"hero": {
@@ -1295,7 +1275,6 @@
 			}
 		}
 	},
-
 	"uninstall": {
 		"title": "We're sorry to see you go",
 		"description": "Please share why you're leaving to help us improve.",
@@ -1326,7 +1305,6 @@
 			"giftNote": "We hope to see you again someday ☕"
 		}
 	},
-
 	"privacy": {
 		"title": "Privacy Policy",
 		"subtitle": "How Web Memo collects, uses, retains, and shares your data.",

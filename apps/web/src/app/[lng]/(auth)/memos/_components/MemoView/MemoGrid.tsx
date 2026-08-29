@@ -26,11 +26,13 @@ import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import MemoEmptyState from "./MemoEmptyState";
 import MemoItem from "./MemoItem";
 import MemoOptionHeader from "./MemoOptionHeader";
+import MemoSearchEmptyState from "./MemoSearchEmptyState";
 
 const CONTAINER_ID = "memo-grid";
 
 interface MemoGridProps extends LanguageType {
 	memos: GetMemoResponse[];
+	searchQuery: string;
 	hasNextPage: boolean;
 	isFetchingNextPage: boolean;
 	fetchNextPage: () => void;
@@ -39,6 +41,7 @@ interface MemoGridProps extends LanguageType {
 export default function MemoGrid({
 	lng,
 	memos,
+	searchQuery,
 	hasNextPage,
 	isFetchingNextPage,
 	fetchNextPage,
@@ -193,7 +196,15 @@ export default function MemoGrid({
 	useKeyboardBind({ key: "Delete", callback: handleDeleteKeyPress });
 	useKeyboardBind({ key: "Backspace", callback: handleDeleteKeyPress });
 
-	if (memos.length === 0) return <MemoEmptyState lng={lng} />;
+	// 검색 결과가 없는 것과 메모가 하나도 없는 것은 다른 상황이다. 같은 화면을 보여주면
+	// 검색 중인 사용자에게 "첫 메모를 만들어보세요"가 뜬다.
+	if (memos.length === 0 && searchQuery) {
+		return <MemoSearchEmptyState lng={lng} searchQuery={searchQuery} />;
+	}
+
+	if (memos.length === 0) {
+		return <MemoEmptyState lng={lng} />;
+	}
 
 	return (
 		<div className="relative h-full w-full">

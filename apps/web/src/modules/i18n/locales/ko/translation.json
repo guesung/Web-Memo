@@ -24,7 +24,6 @@
 		"lastUpdated": "{{time}}에 업데이트됨",
 		"learn_more": "더 알아보기"
 	},
-
 	"sideBar": {
 		"memo": "내 메모",
 		"wishList": "내 위시리스트",
@@ -41,21 +40,18 @@
 		"deleteConfirmDescription": "이 카테고리에 속한 메모의 카테고리가 해제됩니다.",
 		"cancel": "취소"
 	},
-
 	"header": {
 		"login": "로그인하기",
 		"logout": "로그아웃하기",
 		"introduce": "서비스 소개",
 		"update": "새로운 소식"
 	},
-
 	"updateNotification": {
 		"title": "🎉 업데이트 소식",
 		"version": "v{{VERSION}} 버전이 출시되었습니다!",
 		"dismiss": "다시 보지 않기",
 		"confirm": "확인"
 	},
-
 	"updates": {
 		"title": "새로운 소식",
 		"versions": {
@@ -339,7 +335,6 @@
 			}
 		}
 	},
-
 	"toastTitle": {
 		"refresh": "새로고침했어요",
 		"memoEdited": "메모를 수정했어요",
@@ -361,17 +356,14 @@
 		"guideDoneDescription": "즐거운 메모 하세요!",
 		"duplicateCategory": "이미 같은 이름의 카테고리가 있어요"
 	},
-
 	"toastActionMessage": {
 		"goTo": "이동하기",
 		"undo": "되돌리기"
 	},
-
 	"option": {
 		"deleteMemo": "메모 삭제하기",
 		"changeCategory": "카테고리 변경하기"
 	},
-
 	"login": {
 		"welcomeTitle": "웹 메모에 오신 것을 환영합니다!",
 		"welcomeDescription": "내 메모를 모든 기기에서 안전하게 저장하고 동기화하려면 로그인이 필요해요.",
@@ -387,7 +379,6 @@
 			"free": "무료"
 		}
 	},
-
 	"dialogInstall": {
 		"title": "확장 프로그램이 필요해요",
 		"description": "메모를 사용하려면 확장 프로그램을 설치해야 해요",
@@ -395,7 +386,6 @@
 		"ok": "설치하러 가기",
 		"close": "닫기"
 	},
-
 	"dialogVersion": {
 		"title": "새 버전이 나왔어요",
 		"description": "{{currentVersion}}에서 {{lastVersion}}으로 업데이트할 수 있어요",
@@ -404,26 +394,22 @@
 		"ok": "지금 업데이트하기",
 		"lastVersion": "최신 버전"
 	},
-
 	"dialogUnsavedChanges": {
 		"title": "저장하지 않은 내용이 있어요",
 		"description": "닫으면 변경사항이 사라져요",
 		"ok": "그래도 닫기",
 		"cancel": "계속 작성하기"
 	},
-
 	"dialogDeleteMemos": {
 		"title": "{{count}}개의 메모를 삭제할까요?",
 		"description": "선택한 메모가 삭제됩니다. 이 작업은 되돌릴 수 있어요.",
 		"ok": "삭제하기",
 		"cancel": "취소"
 	},
-
 	"tooltip": {
 		"sideBar": "사이드바",
 		"goSetting": "설정으로 이동"
 	},
-
 	"setting": {
 		"header": "설정",
 		"language": "언어",
@@ -440,7 +426,6 @@
 		"showImpressionSection": "메모 작성 시 느낀 점 입력란을 표시합니다",
 		"showActionItemSection": "메모 작성 시 액션 아이템 입력란을 표시합니다"
 	},
-
 	"guide": {
 		"next": "다음으로",
 		"prev": "이전으로",
@@ -466,7 +451,6 @@
 			"description": "새로고침을 눌러 최신 메모를 확인해보세요"
 		}
 	},
-
 	"memoSection": {
 		"memo": "메모",
 		"impression": "느낀 점",
@@ -474,7 +458,6 @@
 		"actionItem": "액션 아이템",
 		"actionItemPlaceholder": "이 페이지를 보고 할 일을 적어보세요"
 	},
-
 	"memos": {
 		"emptyState": {
 			"title": "첫 메모를 작성해보세요",
@@ -485,6 +468,11 @@
 			"tip1": "사이드 패널에서 메모를 작성하세요",
 			"tip2": "{{key}} + S로 빠르게 열기",
 			"tip3": "자동으로 저장됩니다"
+		},
+		"searchEmptyState": {
+			"title": "검색 결과가 없어요",
+			"message": "'{{query}}'와 일치하는 메모를 찾지 못했어요.",
+			"hint": "다른 말로 찾아보세요."
 		},
 		"totalMemos": "메모 {{total}}개",
 		"searchPlaceholder": "메모 찾기",
@@ -510,7 +498,6 @@
 			"error": "저장에 실패했어요"
 		}
 	},
-
 	"highlight": {
 		"loadMore": "더 보기",
 		"count": "{{count}}개",
@@ -530,7 +517,6 @@
 			"placeholder": "메모 추가"
 		}
 	},
-
 	"introduce": {
 		"navigation": {
 			"title": "웹 메모",
@@ -782,7 +768,6 @@
 			}
 		}
 	},
-
 	"feedback": {
 		"button": "의견 보내기",
 		"title": "의견을 들려주세요",
@@ -800,7 +785,6 @@
 		"error": "전송하지 못했어요",
 		"errorDescription": "잠시 후에 다시 시도해주세요"
 	},
-
 	"error": {
 		"404": {
 			"title": "페이지를 찾을 수 없어요",
@@ -812,7 +796,6 @@
 			"retry": "다시 시도하기"
 		}
 	},
-
 	"sms": {
 		"errors": {
 			"missingParams": "전화번호와 메시지를 입력해주세요",
@@ -832,7 +815,6 @@
 			"sendSMS": "메시지 보내기"
 		}
 	},
-
 	"admin": {
 		"title": "관리자 대시보드",
 		"sidebar": {
@@ -876,7 +858,6 @@
 			"new_users": "신규 가입"
 		}
 	},
-
 	"features": {
 		"youtubeSummary": {
 			"hero": {
@@ -1035,7 +1016,6 @@
 			}
 		}
 	},
-
 	"useCases": {
 		"research": {
 			"hero": {
@@ -1290,7 +1270,6 @@
 			}
 		}
 	},
-
 	"uninstall": {
 		"title": "떠나신다니 아쉬워요",
 		"description": "더 나은 서비스를 만들기 위해 떠나시는 이유를 알려주세요.",
@@ -1321,7 +1300,6 @@
 			"giftNote": "더 나은 서비스로 다시 찾아뵙겠습니다 ☕"
 		}
 	},
-
 	"privacy": {
 		"title": "개인정보처리방침",
 		"subtitle": "웹 메모(Web Memo)가 수집하는 데이터와 그 이용·보관·공유 방식을 설명합니다.",

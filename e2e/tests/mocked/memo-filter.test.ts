@@ -109,6 +109,16 @@ test.describe("메모 검색·필터 (Mocked)", () => {
 		await expect(page.locator(".memo-item")).toHaveCount(3);
 	});
 
+	test("검색 결과가 없으면, 첫 메모 안내 대신 검색 결과 없음을 보여준다.", async ({
+		page,
+	}) => {
+		await page.getByPlaceholder("Search memos").fill("어느메모에도없는말");
+
+		await expect(page.locator(".memo-item")).toHaveCount(0);
+		await expect(page.getByText("No results")).toBeVisible();
+		await expect(page.getByText("Create your first memo")).toHaveCount(0);
+	});
+
 	test("위시리스트로 이동하면, 위시리스트에 담은 메모만 남는다.", async ({
 		page,
 	}) => {

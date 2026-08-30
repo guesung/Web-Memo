@@ -23,8 +23,10 @@ interface PageProps extends LanguageParams {
 export default async function Page({ params: { lng } }: PageProps) {
 	const supabaseClient = getSupabaseClient();
 
+	// 헤더 여백(HeaderMargin, 4rem)은 layout이 이미 넣는다. 100vh를 그대로 쓰면
+	// 그만큼 문서가 길어져 내용이 짧아도 스크롤이 생긴다.
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
+		<div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
 			<div className="md:hidden fixed top-20 left-4 z-40">
 				<SidebarTrigger className="shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700 transition-all duration-200 hover:scale-110 active:scale-95" />
 			</div>

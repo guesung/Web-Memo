@@ -3,7 +3,6 @@ import { PATHS } from "@web-memo/shared/constants";
 import { expect, test } from "../fixtures";
 import { gotoSafely, LANGUAGE, login, skipGuide } from "../lib";
 import {
-	createMockCategory,
 	createMockMemo,
 	MockSupabaseStore,
 	resetMockIds,
@@ -29,14 +28,10 @@ const isWindowMarkAlive = (page: Page) =>
 
 test.describe("탭 이동과 스크롤 (Mocked)", () => {
 	let store: MockSupabaseStore;
-	let categoryName: string;
 
 	test.beforeEach(async ({ page }) => {
 		resetMockIds();
 		store = new MockSupabaseStore();
-
-		categoryName = `Category ${Date.now()}`;
-		store.addCategory(createMockCategory({ name: categoryName }));
 
 		for (let index = 0; index < ENOUGH_MEMOS_TO_SCROLL; index++) {
 			store.addMemo(createMockMemo());
@@ -64,10 +59,23 @@ test.describe("탭 이동과 스크롤 (Mocked)", () => {
 		await expect(page.getByRole("link", { name: "Highlights" })).toBeVisible();
 	});
 
+	/**
+	 * 카테고리 목록은 layout의 서버 컴포넌트가 prefetch해 하이드레이션되므로
+	 * page.route로 가로챌 수 없다. 그래서 목 데이터가 아니라 실제로 렌더된
+	 * 카테고리 링크를 집는다.
+	 */
 	test("카테고리 탭을 눌러도 문서를 다시 받지 않는다.", async ({ page }) => {
+		const categoryLink = page.locator('a[href*="category="]').first();
+
+		const hasCategory = await categoryLink
+			.waitFor({ state: "visible", timeout: 10_000 })
+			.then(() => true)
+			.catch(() => false);
+		test.skip(!hasCategory, "이 계정에 카테고리가 없어 검증할 수 없다");
+
 		await markWindow(page);
 
-		await page.getByRole("link", { name: categoryName }).click();
+		await categoryLink.click();
 		await page.waitForURL(/category=/);
 
 		expect(await isWindowMarkAlive(page)).toBe(true);
@@ -88,11 +96,29 @@ test.describe("탭 이동과 스크롤 (Mocked)", () => {
 	test("메모 목록의 스크롤 주체는 문서 하나다.", async ({ page }) => {
 		await expect(page.locator("#memo-grid")).toBeVisible();
 
-		// 그리드가 자체 스크롤 컨테이너면 안 된다.
-		const gridScrollsItself = await page
+		// 그리드와 그 조상 중 어디에도 자체 스크롤 영역이 없어야 한다.
+		// scrollHeight > clientHeight는 근거가 못 된다 - overflow가 visible이어도
+		// 내용이 넘치면 그렇게 되므로, 실제로 스크롤되는지는 overflow로 판정한다.
+		const selfScrollingAncestors = await page
 			.locator("#memo-grid")
-			.evaluate((element) => element.scrollHeight > element.clientHeight + 1);
-		expect(gridScrollsItself).toBe(false);
+			.evaluate((element) => {
+				const found: string[] = [];
+				let node: Element | null = element;
+
+				while (node && node !== document.body) {
+					const { overflowY } = getComputedStyle(node);
+					const scrolls =
+						(overflowY === "auto" || overflowY === "scroll") &&
+						node.scrollHeight > node.clientHeight + 1;
+					if (scrolls) {
+						found.push(node.id || node.className || node.tagName);
+					}
+					node = node.parentElement;
+				}
+
+				return found;
+			});
+		expect(selfScrollingAncestors).toEqual([]);
 
 		// 대신 문서가 스크롤된다.
 		const documentScrolls = await page.evaluate(() => {

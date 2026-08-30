@@ -230,7 +230,7 @@ Protocol로 직접 이벤트를 보내는 현재 구조상 이미 번들에 인�
 | `EXPO_TOKEN` | EAS 로그인 | `cd-app.yml` |
 | `EXPO_ASC_API_KEY_P8` | App Store Connect API 키 (TestFlight 제출) | `cd-app.yml` |
 | `EXPO_ANDROID_SERVICE_ACCOUNT_JSON` | Google Play 서비스 계정 키 (내부 테스트 제출) | `cd-app.yml` |
-| `SLACK_WEBHOOK_URL` | 앱 릴리스 결과 알림 | `cd-app.yml` |
+| `SLACK_WEBHOOK_URL` | 빌드·배포 결과 Slack 알림 | `ci.yml`, `release.yml`, `versions.yml` |
 | `WEB_ENV_FILE` | e2e에서 `apps/web/.env`를 통째로 복원 | `e2e.yml` |
 | `SENTRY_AUTH_TOKEN` | 확장 빌드의 Sentry 소스맵 업로드 인증 | `cd-extension.yml` |
 

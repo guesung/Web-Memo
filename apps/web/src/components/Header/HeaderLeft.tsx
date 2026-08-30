@@ -26,13 +26,13 @@ export default function HeaderLeft({ lng }: LanguageType) {
 				</div>
 			</Link>
 			<Link
-				href={PATHS.introduce}
+				href={`/${lng}${PATHS.introduce}`}
 				className="text-muted-foreground hover:text-foreground text-sm transition-colors"
 			>
 				{t("header.introduce")}
 			</Link>
 			<Link
-				href={PATHS.update}
+				href={`/${lng}${PATHS.update}`}
 				className="text-muted-foreground hover:text-foreground text-sm transition-colors"
 			>
 				{t("header.update")}

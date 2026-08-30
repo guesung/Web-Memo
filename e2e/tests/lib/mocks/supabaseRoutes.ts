@@ -10,9 +10,29 @@ interface MockMemo {
 	memo: string;
 	favIconUrl: string | null;
 	isWish: boolean | null;
+	isStar: boolean | null;
+	isReading: boolean | null;
+	impression: string | null;
+	actionItem: string | null;
 	category_id: number | null;
 	created_at: string | null;
 	updated_at: string | null;
+}
+
+interface MockCategory {
+	id: number;
+	user_id: string | null;
+	name: string;
+	color: string | null;
+	memo_count: number | null;
+	created_at: string;
+}
+
+interface MockSetting {
+	id: number;
+	user_id: string | null;
+	show_impression: boolean;
+	show_action_item: boolean;
 }
 
 interface MockHighlight {
@@ -34,6 +54,27 @@ interface MockHighlight {
 export class MockSupabaseStore {
 	private memos: Map<number, MockMemo> = new Map();
 	private highlights: Map<number, MockHighlight> = new Map();
+	private categories: Map<number, MockCategory> = new Map();
+	private setting: MockSetting | null = null;
+
+	addCategory(category: MockCategory) {
+		this.categories.set(category.id, category);
+		return category;
+	}
+
+	getAllCategories() {
+		return Array.from(this.categories.values());
+	}
+
+	/** null이면 설정 행이 아직 없는 신규 사용자를 뜻한다. */
+	setSetting(setting: MockSetting | null) {
+		this.setting = setting;
+		return setting;
+	}
+
+	getSetting() {
+		return this.setting;
+	}
 
 	addMemo(memo: MockMemo) {
 		this.memos.set(memo.id, memo);
@@ -98,6 +139,8 @@ export class MockSupabaseStore {
 	clear() {
 		this.memos.clear();
 		this.highlights.clear();
+		this.categories.clear();
+		this.setting = null;
 	}
 }
 
@@ -224,7 +267,79 @@ async function handleHighlightPatch(
 	}
 }
 
+async function handleCategoryGet(route: Route, store: MockSupabaseStore) {
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(store.getAllCategories()),
+	});
+}
+
+/**
+ * SettingService.getSetting은 GET + maybeSingle이라 postgrest-js가 배열 응답을 기대한다.
+ * 설정 행이 없으면 빈 배열을 돌려줘야 useSettingQuery의 `?? false` 기본값 경로를 탄다.
+ */
+async function handleSettingGet(route: Route, store: MockSupabaseStore) {
+	const setting = store.getSetting();
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(setting ? [setting] : []),
+	});
+}
+
+/** upsertSetting은 POST + single이라 배열이 아닌 객체 하나를 돌려줘야 한다. */
+async function handleSettingUpsert(route: Route, store: MockSupabaseStore) {
+	const body = route.request().postDataJSON();
+	const patch = Array.isArray(body) ? body[0] : body;
+	const updated = {
+		id: 1,
+		user_id: "test-user-id",
+		show_impression: false,
+		show_action_item: false,
+		...store.getSetting(),
+		...patch,
+	};
+	store.setSetting(updated);
+
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(updated),
+	});
+}
+
 export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
+	await page.route(
+		`${SUPABASE.url}/rest/v1/category**`,
+		async (route: Route) => {
+			if (route.request().method() === "GET") {
+				await handleCategoryGet(route, store);
+				return;
+			}
+			await route.continue();
+		},
+	);
+
+	await page.route(
+		`${SUPABASE.url}/rest/v1/setting**`,
+		async (route: Route) => {
+			const method = route.request().method();
+
+			switch (method) {
+				case "GET":
+					await handleSettingGet(route, store);
+					break;
+				case "POST":
+				case "PATCH":
+					await handleSettingUpsert(route, store);
+					break;
+				default:
+					await route.continue();
+			}
+		},
+	);
+
 	await page.route(`${SUPABASE.url}/rest/v1/memo**`, async (route: Route) => {
 		const request = route.request();
 		const method = request.method();

@@ -48,6 +48,10 @@ interface MemoCardProps {
 	readingProgress?: number;
 	/** 이 메모 URL에 저장된 하이라이트 개수. 0이면 표시하지 않는다 */
 	highlightCount: number;
+	/** 느낀 점 설정이 켜져 있는지. 꺼져 있으면 내용이 있어도 표시하지 않는다 */
+	showImpression: boolean;
+	/** 액션 아이템 설정이 켜져 있는지. 꺼져 있으면 내용이 있어도 표시하지 않는다 */
+	showActionItem: boolean;
 	onPress: () => void;
 	onDelete: () => void;
 }
@@ -56,6 +60,8 @@ export function MemoCard({
 	memo,
 	readingProgress,
 	highlightCount,
+	showImpression,
+	showActionItem,
 	onPress,
 	onDelete,
 }: MemoCardProps) {
@@ -140,7 +146,7 @@ export function MemoCard({
 						{memo.memo}
 					</Text>
 				)}
-				{memo.impression ? (
+				{showImpression && memo.impression ? (
 					<Text
 						className="text-sm text-secondary-foreground dark:text-neutral-300 leading-5 mb-1.5"
 						numberOfLines={4}
@@ -148,7 +154,7 @@ export function MemoCard({
 						느낀 점: {memo.impression}
 					</Text>
 				) : null}
-				{memo.actionItem ? (
+				{showActionItem && memo.actionItem ? (
 					<Text
 						className="text-sm text-secondary-foreground dark:text-neutral-300 leading-5 mb-1.5"
 						numberOfLines={4}

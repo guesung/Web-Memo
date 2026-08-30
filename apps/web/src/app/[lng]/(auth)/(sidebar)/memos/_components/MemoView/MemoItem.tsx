@@ -16,6 +16,10 @@ interface MemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	isSelectingMode: boolean;
 	selectMemoItem: (id: number) => void;
 	isMemoSelected: boolean;
+	/** 느낀 점 설정이 켜져 있는지. 꺼져 있으면 내용이 있어도 표시하지 않는다 */
+	showImpression: boolean;
+	/** 액션 아이템 설정이 켜져 있는지. 꺼져 있으면 내용이 있어도 표시하지 않는다 */
+	showActionItem: boolean;
 }
 
 export default memo(function MemoItem({
@@ -24,6 +28,8 @@ export default memo(function MemoItem({
 	selectMemoItem,
 	isSelectingMode,
 	isMemoSelected,
+	showImpression,
+	showActionItem,
 	...props
 }: MemoItemProps) {
 	const { t } = useTranslation(lng);
@@ -121,7 +127,7 @@ export default memo(function MemoItem({
 							{memo.memo}
 						</CardContent>
 					)}
-					{memo.impression && (
+					{showImpression && memo.impression && (
 						<CardContent className="px-5 pb-3 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-break-spaces break-all">
 							<p className="mb-1 text-xs font-semibold text-gray-400">
 								{t("memoSection.impression")}
@@ -129,7 +135,7 @@ export default memo(function MemoItem({
 							{memo.impression}
 						</CardContent>
 					)}
-					{memo.actionItem && (
+					{showActionItem && memo.actionItem && (
 						<CardContent className="px-5 pb-3 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-break-spaces break-all">
 							<p className="mb-1 text-xs font-semibold text-gray-400">
 								{t("memoSection.actionItem")}

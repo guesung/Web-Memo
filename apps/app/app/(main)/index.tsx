@@ -18,6 +18,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useScrollPositions } from "@/lib/hooks/useScrollPositions";
+import { useSettingQuery } from "@/lib/hooks/useSetting";
 import { MemoCard, type MemoItem } from "./_components/MemoCard";
 import { MemoDetailModal } from "./_components/MemoDetailModal";
 import { TodayArticles } from "./_components/TodayArticles";
@@ -56,6 +57,7 @@ export default function MemoScreen() {
 		handleMemoSave,
 		highlightCounts,
 	} = useMemoList();
+	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
 
 	useEffect(() => {
 		if (filterParam === "wish") {
@@ -213,6 +215,8 @@ export default function MemoScreen() {
 									memo={item}
 									readingProgress={getReadingProgress(item.url)}
 									highlightCount={highlightCounts.get(item.url) ?? 0}
+									showImpression={showImpression}
+									showActionItem={showActionItem}
 									onPress={() => setSelectedMemo(item)}
 									onDelete={() => handleDelete(item)}
 								/>

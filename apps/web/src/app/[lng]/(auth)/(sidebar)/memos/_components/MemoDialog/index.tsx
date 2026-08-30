@@ -1,6 +1,6 @@
 "use client";
 
-import type { MemoInput } from "@src/app/[lng]/(auth)/memos/_types/Input";
+import type { MemoInput } from "@src/app/[lng]/(auth)/(sidebar)/memos/_types/Input";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import {
@@ -35,12 +35,7 @@ interface MemoDialog extends LanguageType {
 export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	const { t } = useTranslation(lng);
 	const { memo: memoData } = useMemoQuery({ id: memoId });
-	const {
-		showImpression: showImpressionSetting,
-		showActionItem: showActionItemSetting,
-	} = useSettingQuery();
-	const showImpression = showImpressionSetting || !!memoData?.impression;
-	const showActionItem = showActionItemSetting || !!memoData?.actionItem;
+	const { showImpression, showActionItem } = useSettingQuery();
 	const {
 		textareaRef: memoTextareaRef,
 		handleTextareaChange: handleMemoChange,

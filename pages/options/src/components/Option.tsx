@@ -5,6 +5,10 @@ import {
 import { I18n } from "@web-memo/shared/utils/extension";
 import {
 	Button,
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
 	Label,
 	Select,
 	SelectContent,
@@ -89,54 +93,58 @@ export default function Option() {
 	}, [setValue]);
 
 	return (
-		<div className="container mx-auto space-y-8 p-4">
-			<section className="mb-8">
-				<h2 className="mb-4 text-xl font-semibold">
-					{I18n.get("prompt_language_setting")}
-				</h2>
-				<Select
-					value={watch("language")}
-					onValueChange={(value) => setValue("language", value)}
-				>
-					<SelectTrigger className="w-32">
-						<SelectValue
-							placeholder={I18n.get("select_language_placeholder")}
-						/>
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="ko">한국어</SelectItem>
-						<SelectItem value="en-US">English</SelectItem>
-					</SelectContent>
-				</Select>
-			</section>
-
-			<section className="mb-8">
-				<h2 className="mb-4 text-xl font-semibold">
-					{I18n.get("auto_apply_category_setting")}
-				</h2>
-				<div className="flex items-center space-x-3">
-					<Switch
-						id="auto-apply-category"
-						checked={watch("autoApplyCategory")}
-						onCheckedChange={(checked) =>
-							setValue("autoApplyCategory", checked)
-						}
-					/>
-					<Label
-						htmlFor="auto-apply-category"
-						className="text-sm text-muted-foreground"
+		<div className="flex flex-col gap-6">
+			<Card>
+				<CardHeader>
+					<CardTitle>{I18n.get("prompt_language_setting")}</CardTitle>
+				</CardHeader>
+				<CardContent className="pb-6">
+					<Select
+						value={watch("language")}
+						onValueChange={(value) => setValue("language", value)}
 					>
-						{I18n.get("auto_apply_category_description")}
-					</Label>
-				</div>
-			</section>
+						<SelectTrigger className="w-40">
+							<SelectValue
+								placeholder={I18n.get("select_language_placeholder")}
+							/>
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="ko">한국어</SelectItem>
+							<SelectItem value="en-US">English</SelectItem>
+						</SelectContent>
+					</Select>
+				</CardContent>
+			</Card>
 
-			<section className="mb-8">
-				<h2 className="mb-4 text-xl font-semibold">
-					{I18n.get("memo_section_setting")}
-				</h2>
-				<div className="flex flex-col gap-3">
-					<div className="flex items-center space-x-3">
+			<Card>
+				<CardHeader>
+					<CardTitle>{I18n.get("auto_apply_category_setting")}</CardTitle>
+				</CardHeader>
+				<CardContent className="pb-6">
+					<div className="flex items-center gap-3">
+						<Switch
+							id="auto-apply-category"
+							checked={watch("autoApplyCategory")}
+							onCheckedChange={(checked) =>
+								setValue("autoApplyCategory", checked)
+							}
+						/>
+						<Label
+							htmlFor="auto-apply-category"
+							className="text-sm font-normal"
+						>
+							{I18n.get("auto_apply_category_description")}
+						</Label>
+					</div>
+				</CardContent>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<CardTitle>{I18n.get("memo_section_setting")}</CardTitle>
+				</CardHeader>
+				<CardContent className="flex flex-col gap-4 pb-6">
+					<div className="flex items-center gap-3">
 						<Switch
 							id="impression-section-enabled"
 							checked={watch("impressionSectionEnabled")}
@@ -146,12 +154,12 @@ export default function Option() {
 						/>
 						<Label
 							htmlFor="impression-section-enabled"
-							className="text-sm text-muted-foreground"
+							className="text-sm font-normal"
 						>
 							{I18n.get("impression_section_description")}
 						</Label>
 					</div>
-					<div className="flex items-center space-x-3">
+					<div className="flex items-center gap-3">
 						<Switch
 							id="action-item-section-enabled"
 							checked={watch("actionItemSectionEnabled")}
@@ -161,15 +169,15 @@ export default function Option() {
 						/>
 						<Label
 							htmlFor="action-item-section-enabled"
-							className="text-sm text-muted-foreground"
+							className="text-sm font-normal"
 						>
 							{I18n.get("action_item_section_description")}
 						</Label>
 					</div>
-				</div>
-			</section>
+				</CardContent>
+			</Card>
 
-			<div className="flex gap-2">
+			<div className="flex justify-end">
 				<Button type="submit" onClick={onSubmit}>
 					{I18n.get("save")}
 				</Button>

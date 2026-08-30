@@ -96,7 +96,15 @@ const TabsTrigger = React.forwardRef<
 			ref={ref}
 			value={value}
 			className={cn(
-				"ring-offset-background focus-visible:ring-ring data-[state=active]:text-foreground relative isolate inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+				"ring-offset-background focus-visible:ring-ring data-[state=active]:text-foreground relative inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+				// 인디케이터는 활성 트리거 안에 있고 layout 애니메이션 동안 옆 트리거
+				// 위까지 넘어간다. isolate 로 만든 스택 컨텍스트가 뒤 형제를 덮으므로,
+				// 비활성 트리거를 위로 올려 라벨이 가려지지 않게 한다.
+				isActive ? "isolate" : "z-10",
+				// Tabs 래퍼 없이 TabsPrimitive.Root 와 조합하면 인디케이터가 없다.
+				// 그때도 활성 탭이 구분되도록 원래의 표시를 폴백으로 남긴다.
+				!indicatorContext &&
+					"data-[state=active]:bg-background data-[state=active]:shadow",
 				className,
 			)}
 			{...props}

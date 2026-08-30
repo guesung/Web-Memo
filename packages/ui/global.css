@@ -20,7 +20,7 @@
 		--accent-foreground: 0 0% 4%;
 		--destructive: 0 72.2222% 50.5882%;
 		--destructive-foreground: 0 0% 99%;
-		--border: 0 0% 93%;
+		--border: 0 0% 89%;
 		--input: 0 0% 90%;
 		--ring: 221.2121 83.1933% 53.3333%;
 		--chart-1: 221.2121 83.1933% 53.3333%;
@@ -34,9 +34,9 @@
 		--sidebar-primary-foreground: 0 0% 99%;
 		--sidebar-accent: 0 0% 93%;
 		--sidebar-accent-foreground: 0 0% 4%;
-		--sidebar-border: 0 0% 93%;
+		--sidebar-border: 0 0% 89%;
 		--sidebar-ring: 221.2121 83.1933% 53.3333%;
-		--font-sans: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+		--font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
 		--font-serif: Lora, Georgia, Cambria, serif;
 		--font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 		--radius: 0.625rem;
@@ -68,7 +68,7 @@
 		--accent-foreground: 0 0% 95%;
 		--destructive: 0 84.2365% 60.1961%;
 		--destructive-foreground: 0 0% 95%;
-		--border: 0 0% 13%;
+		--border: 0 0% 20%;
 		--input: 0 0% 17%;
 		--ring: 217.2193 91.2195% 59.8039%;
 		--chart-1: 217.2193 91.2195% 59.8039%;
@@ -82,7 +82,7 @@
 		--sidebar-primary-foreground: 0 0% 8%;
 		--sidebar-accent: 0 0% 17%;
 		--sidebar-accent-foreground: 0 0% 95%;
-		--sidebar-border: 0 0% 13%;
+		--sidebar-border: 0 0% 20%;
 		--sidebar-ring: 217.2193 91.2195% 59.8039%;
 		--shadow-2xs: 0 1px 2px 0 hsl(0 0% 0% / 0.20);
 		--shadow-xs: 0 1px 3px 0 hsl(0 0% 0% / 0.24), 0 1px 2px -1px hsl(0 0% 0% / 0.24);

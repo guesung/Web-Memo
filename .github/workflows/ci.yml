@@ -56,6 +56,10 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # 성공한 이전 런을 조회하려면 actions:read가 필요합니다.
+    permissions:
+      contents: read
+      actions: read
     outputs:
       app: ${{ steps.detect.outputs.app }}
       extension: ${{ steps.detect.outputs.extension }}
@@ -66,10 +70,19 @@ jobs:
           # turbo가 base와 비교하려면 전체 히스토리가 필요합니다.
           fetch-depth: 0
 
+      - id: base
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          BRANCH: ${{ github.ref_name }}
+          WORKFLOW_FILE: ci.yml
+          FALLBACK_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.event.pull_request.base.ref) || github.event.before }}
+        run: .github/scripts/resolve-affected-base.sh
+
       # 판정은 turbo 바이너리만 쓰므로 pnpm install이 필요 없습니다(러너 기본 node로 5초).
       - id: detect
         env:
-          BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.event.pull_request.base.ref) || github.event.before }}
+          BASE_REF: ${{ steps.base.outputs.base_ref }}
         run: .github/scripts/detect-affected-apps.sh
 
   # 앱 빌드는 약 30분입니다. packages/shared를 웹·확장이 함께 써서

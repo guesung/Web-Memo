@@ -86,17 +86,23 @@ function MemoFormContent() {
 		});
 
 	const handleMemoStatusClick = async (statusKey: TMemoStatusKey) => {
-		const isStatusOn = await toggleMemoStatus(statusKey);
+		const nextStatusValue = await toggleMemoStatus(statusKey);
+		const isSaveFailed = nextStatusValue === null;
+
+		// 실패는 MutationCache가 이미 토스트로 알렸다. 여기서 할 일은 그 위에 성공 토스트를 덮지 않는 것뿐이다.
+		if (isSaveFailed) {
+			return;
+		}
 
 		const toastMessageKey = {
-			isWish: isStatusOn ? "wish_list_added" : "wish_list_deleted",
-			isStar: isStatusOn ? "star_added" : "star_deleted",
-			isReading: isStatusOn ? "reading_added" : "reading_deleted",
+			isWish: nextStatusValue ? "wish_list_added" : "wish_list_deleted",
+			isStar: nextStatusValue ? "star_added" : "star_deleted",
+			isReading: nextStatusValue ? "reading_added" : "reading_deleted",
 		}[statusKey];
 
 		const navigateToMemoList = () => {
 			const memoUrlParams: IFMemoUrlParams = { id: memoData?.id };
-			memoUrlParams[statusKey] = isStatusOn;
+			memoUrlParams[statusKey] = nextStatusValue;
 
 			Tab.create({ url: getMemoUrl(memoUrlParams) });
 		};

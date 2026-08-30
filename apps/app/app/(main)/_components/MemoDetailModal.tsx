@@ -69,12 +69,7 @@ export function MemoDetailModal({
 }: MemoDetailModalProps) {
 	const insets = useSafeAreaInsets();
 	const { isLoggedIn } = useAuth();
-	const {
-		showImpression: showImpressionSetting,
-		showActionItem: showActionItemSetting,
-	} = useSettingQuery(isLoggedIn);
-	const showImpression = showImpressionSetting || !!memo?.impression;
-	const showActionItem = showActionItemSetting || !!memo?.actionItem;
+	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
 	const isDark = useColorScheme() === "dark";
 	const translateY = useSharedValue(SHEET_HEIGHT);
 	const opacity = useSharedValue(0);
@@ -409,7 +404,7 @@ export function MemoDetailModal({
 									메모가 없습니다. 연필 아이콘을 눌러 작성하세요.
 								</Text>
 							)}
-							{memo?.impression ? (
+							{showImpression && memo?.impression ? (
 								<View className="mt-3">
 									<Text className="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">
 										느낀 점
@@ -419,7 +414,7 @@ export function MemoDetailModal({
 									</Text>
 								</View>
 							) : null}
-							{memo?.actionItem ? (
+							{showActionItem && memo?.actionItem ? (
 								<View className="mt-3">
 									<Text className="text-xs font-semibold text-gray-500 dark:text-neutral-400 mb-1">
 										액션 아이템

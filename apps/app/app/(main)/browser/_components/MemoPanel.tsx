@@ -95,12 +95,6 @@ export function MemoPanel({
 		url,
 	]);
 
-	// 설정을 꺼도 이미 작성된 내용이 있으면 유실로 오해하지 않도록 계속 노출한다.
-	const isImpressionSectionVisible =
-		showImpression || !!existingMemo?.impression;
-	const isActionItemSectionVisible =
-		showActionItem || !!existingMemo?.actionItem;
-
 	const onSaveSuccess = () => {
 		justSavedRef.current = true;
 		setSaved(true);
@@ -217,7 +211,7 @@ export function MemoPanel({
 					textAlignVertical="top"
 				/>
 
-				{isImpressionSectionVisible && (
+				{showImpression && (
 					<>
 						<Text className="mt-3 text-xs font-semibold text-gray-500 dark:text-neutral-400">
 							느낀 점
@@ -235,7 +229,7 @@ export function MemoPanel({
 					</>
 				)}
 
-				{isActionItemSectionVisible && (
+				{showActionItem && (
 					<>
 						<Text className="mt-3 text-xs font-semibold text-gray-500 dark:text-neutral-400">
 							액션 아이템

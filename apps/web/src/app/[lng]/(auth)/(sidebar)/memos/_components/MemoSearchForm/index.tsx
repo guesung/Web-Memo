@@ -2,6 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { cn } from "@web-memo/shared/utils";
 import {
 	Button,
@@ -27,6 +28,17 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 		formState: { isDirty },
 	} = useFormContext<SearchFormValues>();
 
+	const handleSearchTargetChange = (
+		searchTarget: string,
+		onChange: (value: string) => void,
+	) => {
+		onChange(searchTarget);
+		analytics.trackEvent({
+			name: "memo_filter",
+			params: { search_target: searchTarget },
+		});
+	};
+
 	return (
 		<form
 			className="w-full max-w-4xl mx-auto"
@@ -37,7 +49,12 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 					name="searchTarget"
 					control={control}
 					render={({ field }) => (
-						<Select onValueChange={field.onChange} value={field.value}>
+						<Select
+							onValueChange={(searchTarget) =>
+								handleSearchTargetChange(searchTarget, field.onChange)
+							}
+							value={field.value}
+						>
 							<SelectTrigger
 								className={cn(
 									"w-auto min-w-[130px] h-12",

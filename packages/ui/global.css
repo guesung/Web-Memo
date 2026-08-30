@@ -130,7 +130,7 @@ body {
 	background-size: 200% 100%;
 	background-clip: text;
 	color: transparent;
-	animation: text-shimmer var(--text-shimmer-duration, 2.5s) linear infinite;
+	animation: text-shimmer 2.5s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       deploy_target:
-        description: "배포 대상 (none = 빌드만, production = 크롬 웹스토어 업로드)"
+        description: "배포 대상 (none = production으로 빌드만, staging = staging으로 빌드만, production = 크롬 웹스토어 업로드)"
         type: string
         default: "none"
       ref:

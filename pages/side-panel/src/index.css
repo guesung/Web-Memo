@@ -1,18 +1,17 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
 	html {
-		font-family: Pretendard, sans-serif;
-		src: url("https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff2")
-			format("woff2");
+		font-family: var(--font-sans);
 		font-size: 1rem;
-		font-display: swap;
 	}
 	* {
 		scrollbar-width: thin;
-		scrollbar-color: var(--primary) var(--background);
+		scrollbar-color: hsl(var(--muted-foreground) / 0.35) transparent;
 	}
 }
 

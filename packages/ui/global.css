@@ -36,9 +36,9 @@
 		--sidebar-accent-foreground: 0 0% 4%;
 		--sidebar-border: 0 0% 93%;
 		--sidebar-ring: 221.2121 83.1933% 53.3333%;
-		--font-sans: Inter;
-		--font-serif: Lora;
-		--font-mono: JetBrains Mono;
+		--font-sans: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+		--font-serif: Lora, Georgia, Cambria, serif;
+		--font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 		--radius: 0.625rem;
 		--shadow-2xs: 0 1px 2px 0 hsl(0 0% 0% / 0.04);
 		--shadow-xs: 0 1px 3px 0 hsl(0 0% 0% / 0.05), 0 1px 2px -1px hsl(0 0% 0% / 0.05);

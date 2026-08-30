@@ -1,9 +1,58 @@
 import * as TabsPrimitive from "@radix-ui/react-tabs";
+import { motion, useReducedMotion } from "framer-motion";
 import * as React from "react";
 
+import { SPRING_LAYOUT } from "../motion";
 import { cn } from "../utils";
 
-const Tabs = TabsPrimitive.Root;
+/** 활성 탭 인디케이터가 자기 자리를 찾는 데 필요한 값 */
+interface IFTabsIndicatorContext {
+	/** 현재 선택된 탭의 value */
+	activeValue: string | undefined;
+	/** 같은 Tabs 안의 인디케이터끼리 이어지도록 묶는 식별자 */
+	layoutId: string;
+}
+
+const TabsIndicatorContext =
+	React.createContext<IFTabsIndicatorContext | null>(null);
+
+/**
+ * Radix Tabs 위에 활성 탭 인디케이터를 얹은 탭.
+ *
+ * @description
+ * 키보드 이동·aria 는 Radix 가 그대로 담당하고, 이 래퍼는 인디케이터가
+ * 어느 트리거에 붙어야 하는지 알기 위해 선택값만 들고 있는다. controlled·
+ * uncontrolled 둘 다 원래대로 쓸 수 있다.
+ */
+const Tabs = React.forwardRef<
+	React.ElementRef<typeof TabsPrimitive.Root>,
+	React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root>
+>(({ value, defaultValue, onValueChange, ...props }, ref) => {
+	const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue);
+	const layoutId = React.useId();
+
+	const isControlled = value !== undefined;
+	const activeValue = isControlled ? value : uncontrolledValue;
+
+	const handleValueChange = (nextValue: string) => {
+		if (!isControlled) {
+			setUncontrolledValue(nextValue);
+		}
+		onValueChange?.(nextValue);
+	};
+
+	return (
+		<TabsIndicatorContext.Provider value={{ activeValue, layoutId }}>
+			<TabsPrimitive.Root
+				ref={ref}
+				value={activeValue}
+				onValueChange={handleValueChange}
+				{...props}
+			/>
+		</TabsIndicatorContext.Provider>
+	);
+});
+Tabs.displayName = TabsPrimitive.Root.displayName;
 
 const TabsList = React.forwardRef<
 	React.ElementRef<typeof TabsPrimitive.List>,
@@ -23,16 +72,34 @@ TabsList.displayName = TabsPrimitive.List.displayName;
 const TabsTrigger = React.forwardRef<
 	React.ElementRef<typeof TabsPrimitive.Trigger>,
 	React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, ...props }, ref) => (
-	<TabsPrimitive.Trigger
-		ref={ref}
-		className={cn(
-			"ring-offset-background focus-visible:ring-ring data-[state=active]:bg-background data-[state=active]:text-foreground inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow",
-			className,
-		)}
-		{...props}
-	/>
-));
+>(({ className, children, value, ...props }, ref) => {
+	const indicator = React.useContext(TabsIndicatorContext);
+	const prefersReducedMotion = useReducedMotion();
+
+	const isActive = indicator?.activeValue === value;
+
+	return (
+		<TabsPrimitive.Trigger
+			ref={ref}
+			value={value}
+			className={cn(
+				"ring-offset-background focus-visible:ring-ring data-[state=active]:text-foreground relative isolate inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+				className,
+			)}
+			{...props}
+		>
+			{isActive && indicator ? (
+				<motion.span
+					aria-hidden
+					layoutId={indicator.layoutId}
+					className="bg-background shadow absolute inset-0 -z-10 rounded-md"
+					transition={prefersReducedMotion ? { duration: 0 } : SPRING_LAYOUT}
+				/>
+			) : null}
+			{children}
+		</TabsPrimitive.Trigger>
+	);
+});
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 
 const TabsContent = React.forwardRef<

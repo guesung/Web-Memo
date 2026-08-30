@@ -4,7 +4,8 @@
  * .github/workflows/cd-web.yml 의 배포 잡에서 마지막 스텝으로 호출합니다.
  *
  * 배포한 그 잡 안에서 보내므로 웹 변경이 없어 잡이 아예 안 돌면 알림도 없습니다.
- * 올라간 것이 없으면 알릴 것도 없다는 뜻입니다.
+ * 올라간 것이 없으면 알릴 것도 없다는 뜻입니다. 취소된 run도 마찬가지로 알리지
+ * 않습니다 — develop은 cancel-in-progress라 뒤이은 run이 곧 배포하고 다시 알립니다.
  *
  * 배포된 커밋이 실제로 응답하는지는 확인하지 않습니다. 스테이징은 `--prod` 없이
  * 배포되는 Preview라 Vercel Deployment Protection이 걸려 있어, 자격 증명 없는
@@ -16,7 +17,7 @@
  *
  *   GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=<run id> \
  *   GITHUB_SHA=$(git rev-parse HEAD) \
- *   DEPLOY_OUTCOME=success JOB_STATUS=success \
+ *   DEPLOY_OUTCOME=success \
  *   node .github/scripts/notify-staging-deploy.mjs
  */
 
@@ -28,7 +29,6 @@ const HEADLINES = {
 	deployed: "🚀 테스트 서버 배포 완료",
 	deployFailed: "❌ 테스트 서버 배포 실패",
 	buildFailed: "❌ 테스트 서버 빌드 실패",
-	cancelled: "⚠️ 테스트 서버 배포 취소됨",
 };
 
 // 배포가 안 나간 경우는 헤드라인만으로 사정이 드러나지 않아 한 줄을 덧붙입니다.
@@ -38,22 +38,19 @@ const DETAILS = {
 };
 
 /**
- * 배포 스텝의 결과와 잡 상태를 사람이 읽을 하나의 상태로 접습니다.
+ * 배포 스텝의 결과를 사람이 읽을 상태로 옮깁니다.
  *
  * 배포 스텝이 skipped라는 것은 그 앞(설치·Vercel 빌드)에서 멈췄다는 뜻입니다.
  * outcome 하나만 보면 그것과 "배포하다 실패"가 같은 실패로 뭉개집니다.
+ * 취소된 잡에서는 이 스텝 자체가 돌지 않으므로 여기서 다루지 않습니다.
  */
-const resolveDeployState = ({ outcome, jobStatus }) => {
+const resolveDeployState = (outcome) => {
 	if (outcome === "success") {
 		return "deployed";
 	}
 
 	if (outcome === "failure") {
 		return "deployFailed";
-	}
-
-	if (jobStatus === "cancelled") {
-		return "cancelled";
 	}
 
 	return "buildFailed";
@@ -66,10 +63,7 @@ const main = async () => {
 	const serverUrl = process.env.GITHUB_SERVER_URL ?? "https://github.com";
 	const actor = process.env.GITHUB_ACTOR ?? "";
 
-	const state = resolveDeployState({
-		outcome: process.env.DEPLOY_OUTCOME,
-		jobStatus: process.env.JOB_STATUS,
-	});
+	const state = resolveDeployState(process.env.DEPLOY_OUTCOME);
 	const shortSha = commitSha.slice(0, 7);
 	const stagingUrl = readWebUrl("staging");
 	const runUrl = `${serverUrl}/${repository}/actions/runs/${runId}`;

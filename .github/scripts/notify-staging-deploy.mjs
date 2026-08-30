@@ -45,7 +45,9 @@ const DETAILS = {
 const requireEnv = (name) => {
 	const value = process.env[name];
 
-	if (!value) throw new Error(`${name} 이(가) 설정되지 않았습니다`);
+	if (!value) {
+		throw new Error(`${name} 이(가) 설정되지 않았습니다`);
+	}
 
 	return value;
 };
@@ -67,15 +69,21 @@ const readCommitSubject = (commitSha) => {
  * (웹 변경이 없었거나, 앞 잡이 깨져 아예 못 돌았거나) 앞 잡 결과로 갈라 읽습니다.
  */
 const resolveDeployState = (results) => {
-	if (results.web === "success") return "deployed";
+	if (results.web === "success") {
+		return "deployed";
+	}
 
-	if (FAILED_RESULTS.includes(results.web)) return "failed";
+	if (FAILED_RESULTS.includes(results.web)) {
+		return "failed";
+	}
 
 	const hasBlockingFailure = [results.ci, results.changes].some((result) =>
 		FAILED_RESULTS.includes(result),
 	);
 
-	if (hasBlockingFailure) return "blocked";
+	if (hasBlockingFailure) {
+		return "blocked";
+	}
 
 	return "unchanged";
 };
@@ -98,9 +106,13 @@ const main = async () => {
 	const authoredBy = actor ? ` · ${actor}` : "";
 	const contextLines = [];
 
-	if (commitSubject) contextLines.push(`${commitSubject}${authoredBy}`);
+	if (commitSubject) {
+		contextLines.push(`${commitSubject}${authoredBy}`);
+	}
 
-	if (DETAILS[state]) contextLines.push(DETAILS[state]);
+	if (DETAILS[state]) {
+		contextLines.push(DETAILS[state]);
+	}
 
 	// 실패한 배포에는 링크를 달지 않습니다. 그 주소는 아직 이전 커밋을 서빙합니다.
 	const linkButtons = [

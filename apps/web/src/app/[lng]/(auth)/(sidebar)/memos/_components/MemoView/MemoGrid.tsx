@@ -13,6 +13,7 @@ import {
 	useDeleteMemosMutation,
 	useKeyboardBind,
 	useMemosUpsertMutation,
+	useSettingQuery,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
@@ -52,6 +53,7 @@ export default function MemoGrid({
 	const queryClient = useQueryClient();
 	const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
 	const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
+	const { showImpression, showActionItem } = useSettingQuery();
 
 	const {
 		selectedMemoIds,
@@ -196,6 +198,8 @@ export default function MemoGrid({
 						isMemoSelected={checkMemoSelected(memo.id)}
 						selectMemoItem={handleSelectMemoItem}
 						isSelectingMode={isSelectingMode}
+						showImpression={showImpression}
+						showActionItem={showActionItem}
 					/>
 				))}
 			</MasonryInfiniteGrid>

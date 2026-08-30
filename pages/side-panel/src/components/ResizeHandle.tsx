@@ -2,12 +2,13 @@ import { cn } from "@web-memo/ui";
 import { GripHorizontal } from "lucide-react";
 
 interface ResizeHandleProps extends React.ComponentProps<"div"> {
-	tabHeight: number;
+	/** 핸들 바로 위 영역이 차지한 비율(%). 스크린 리더가 읽는 slider 현재값이다. */
+	upperSectionRatio: number;
 	isResizing: boolean;
 }
 
 export default function ResizeHandle({
-	tabHeight,
+	upperSectionRatio,
 	isResizing,
 	...props
 }: ResizeHandleProps) {
@@ -16,8 +17,8 @@ export default function ResizeHandle({
 			role="slider"
 			aria-label="Resize panels"
 			aria-valuemin={0}
-			aria-valuemax={80}
-			aria-valuenow={Math.round(tabHeight)}
+			aria-valuemax={100}
+			aria-valuenow={Math.round(upperSectionRatio)}
 			tabIndex={0}
 			className="group flex h-3 shrink-0 cursor-row-resize items-center justify-center hover:bg-muted/50 transition-colors"
 			{...props}

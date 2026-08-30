@@ -14,10 +14,11 @@ export type TMemoFieldKey = "memo" | "impression" | "actionItem";
  */
 export type TMemoFieldRatios = Record<TMemoFieldKey, number>;
 
+// 조절 전 기본값은 메모가 대부분을 차지하던 기존 화면에 가깝게 잡는다.
 const DEFAULT_MEMO_FIELD_RATIOS: TMemoFieldRatios = {
-	memo: 50,
-	impression: 25,
-	actionItem: 25,
+	memo: 60,
+	impression: 20,
+	actionItem: 20,
 };
 const MIN_MEMO_FIELD_RATIO = 8;
 

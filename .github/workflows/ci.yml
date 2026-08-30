@@ -108,35 +108,6 @@ jobs:
     with:
       deploy_target: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/develop') && 'staging' || 'none' }}
 
-  # develop 머지는 웹 스테이징(테스트 서버) 배포로 이어집니다. 그 결과를 알립니다.
-  # master의 notify와 달리 스토어를 조회하지도, 배포 버튼을 달지도 않습니다.
-  # 여기서 나가는 것은 웹 하나뿐이고 그 배포는 이미 끝난 뒤라 누를 것이 없습니다.
-  notify-staging:
-    name: Slack 알림 (테스트 서버)
-    # cd-web이 skipped인 이유가 "웹 변경 없음"인지 "앞 잡이 깨짐"인지 갈라 읽으려면
-    # ci·changes 결과가 필요합니다. cd-web 결과만으로는 둘을 구분할 수 없습니다.
-    needs: [ci, changes, cd-web]
-    # 배포가 깨졌을 때야말로 알려야 하므로 always()입니다. develop push에서만 돕니다.
-    if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-
-      # 알림 스크립트는 의존성이 없습니다(fetch만 씁니다). pnpm install을 건너뜁니다.
-      - name: Notify Slack
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          DEPLOY_RESULTS: >-
-            {"ci":"${{ needs.ci.result }}",
-            "changes":"${{ needs.changes.result }}",
-            "web":"${{ needs['cd-web'].result }}"}
-        run: node .github/scripts/notify-staging-deploy.mjs
-
   # 빌드 결과와 스토어 현황을 함께 Slack으로 알리고, 배포 버튼을 답니다.
   # 버튼을 누르면 apps/web의 /api/slack/interactivity가 release.yml을 실행합니다.
   notify:

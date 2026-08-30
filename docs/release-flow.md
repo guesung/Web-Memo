@@ -96,38 +96,50 @@ Slack에서 `/배포현황`(등록한 슬래시 커맨드)을 실행하면 `vers
 ## develop 머지는 테스트 서버로 나갑니다
 
 `develop`에 푸시하면 `cd-web.yml`이 `deploy_target: staging`으로 돌아 Vercel에
-배포하고 스테이징 별칭을 새 배포로 옮깁니다. 그 결과를 `notify-staging` 잡이
+배포하고 스테이징 별칭을 새 배포로 옮깁니다. 그 결과를 **같은 잡의 마지막 스텝**이
 같은 Slack 채널에 알립니다.
 
 ```
 develop 푸시
    │
    ├─ ci.yml : 린트·타입·테스트 + 영향받은 앱 빌드 검증
-   ├─ cd-web (deploy_target: staging) : Vercel 배포 + 별칭 이동
    │
-   └─ ci.yml / notify-staging
-        └─ Slack 게시  ┌────────────────────────────────────────┐
-                       │ 🚀 테스트 서버 배포 완료 — a1b2c3d       │
-                       │ feat: 메모 정렬 추가 · guesung          │
-                       │ [🌐 테스트 서버 열기][실행 로그 보기]     │
-                       └────────────────────────────────────────┘
+   └─ cd-web (deploy_target: staging)
+        ├─ Vercel 배포 + 별칭 이동
+        └─ Notify staging deploy
+             └─ Slack 게시  ┌────────────────────────────────────────┐
+                            │ 🚀 테스트 서버 배포 완료 — a1b2c3d       │
+                            │ feat: 메모 정렬 추가 · guesung          │
+                            │ [🌐 테스트 서버 열기][실행 로그 보기]     │
+                            └────────────────────────────────────────┘
 ```
 
 master 알림과 달리 스토어를 조회하지 않고 배포 버튼도 달지 않습니다. 여기서
 나가는 것은 웹 하나뿐이고 그 배포는 이미 끝난 뒤라 누를 것이 없습니다.
 
-메시지는 develop 푸시마다 **항상** 옵니다. 배포가 안 나간 경우도 왜 안 나갔는지
-드러내야 "머지했는데 왜 반영이 안 되지"를 혼자 헤매지 않습니다.
-
 | 상태 | 언제 |
 | --- | --- |
-| 🚀 테스트 서버 배포 완료 | `cd-web`이 성공 |
-| ❌ 테스트 서버 배포 실패 | `cd-web`이 실패 |
-| ❌ develop CI 실패 | 린트·타입·테스트가 깨져 배포까지 못 감 |
-| ⏭️ 테스트 서버 배포 없음 | 웹 변경이 없어 `cd-web`이 아예 안 돎 |
+| 🚀 테스트 서버 배포 완료 | 배포 스텝 성공 |
+| ❌ 테스트 서버 배포 실패 | Vercel 배포 또는 별칭 이동에서 실패 |
+| ❌ 테스트 서버 빌드 실패 | 설치·Vercel 빌드에서 멈춰 배포까지 못 감 |
+| ⚠️ 테스트 서버 배포 취소됨 | 잡이 취소됨 |
 
-`cd-web`의 `skipped`는 뒤의 두 경우를 같은 값으로 돌려주므로, 스크립트가 `ci`·
-`changes` 잡 결과까지 받아 갈라 읽습니다.
+배포 스텝의 `outcome`만으로는 뒤의 두 경우가 같은 실패로 뭉개지므로, `job.status`를
+함께 넘겨 스크립트가 갈라 읽습니다.
+
+**웹 변경이 없어 `cd-web`이 아예 안 돌면 알림도 없습니다.** 올라간 것이 없으면 알릴
+것도 없습니다.
+
+### 왜 별도 잡이 아니라 스텝인가
+
+별도 잡으로 빼면 `needs`가 정적이라 브랜치별로 다르게 줄 수 없습니다. master 알림과
+같은 모양(`needs: [ci, changes, cd-app, cd-extension, cd-web]`)을 쓰면 테스트 서버
+알림이 앱 빌드(약 30분)를 기다리게 됩니다. `apps/app`과 `apps/web`이 둘 다
+`@web-memo/shared`에 의존해 shared를 한 줄만 고쳐도 앱 빌드가 딸려 오므로, 그 대기는
+드물지 않습니다.
+
+배포한 잡 안에서 보내면 배포 직후 곧바로 나가고, 체크아웃·node 셋업도 이미 그 잡에
+있는 것을 그대로 씁니다.
 
 ### 배포된 커밋을 확인하지 않는 이유
 
@@ -248,7 +260,7 @@ App Store Connect의 키 ID·발급자 ID·앱 ID는 시크릿이 아니라
 | 파일 | 역할 |
 | --- | --- |
 | `.github/workflows/ci.yml` (`notify`) | master 빌드 결과 + 스토어 현황을 Slack에 게시 |
-| `.github/workflows/ci.yml` (`notify-staging`) | develop 테스트 서버 배포 결과를 Slack에 게시 |
+| `.github/workflows/cd-web.yml` (`Notify staging deploy`) | develop 테스트 서버 배포 결과를 Slack에 게시 |
 | `.github/workflows/versions.yml` | 배포 현황만 조회해 게시 |
 | `.github/workflows/release.yml` | 실제 스토어 제출 (버튼이 이걸 실행) + 결과 알림 |
 | `.github/scripts/notify-release-result.mjs` | 릴리스 성패를 타깃별로 Slack에 보고 |
@@ -277,7 +289,7 @@ GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 GITHUB_SHA=$(git rev-parse HE
 
 # 테스트 서버 배포 알림에 나갈 Slack 페이로드 확인
 GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 GITHUB_SHA=$(git rev-parse HEAD) \
-  DEPLOY_RESULTS='{"ci":"success","changes":"success","web":"success"}' \
+  DEPLOY_OUTCOME=success JOB_STATUS=success \
   node .github/scripts/notify-staging-deploy.mjs
 ```
 

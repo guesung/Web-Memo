@@ -61,10 +61,28 @@ jobs:
         run: vercel build ${{ inputs.deploy_target == 'production' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy staging
+        id: deploy-staging
         if: ${{ inputs.deploy_target == 'staging' }}
         run: |
           VERCEL_DEPLOYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
           vercel alias set "$VERCEL_DEPLOYED_URL" ${{ secrets.STAGING_WEB_URL_WITHOUT_PROTOCOL }} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects
+
+      # 배포한 이 잡에서 바로 알립니다. 별도 잡으로 빼면 needs가 정적이라 앱 빌드(약 30분)를
+      # 기다리게 되고, develop 푸시에서는 apps/app과 apps/web이 @web-memo/shared를 함께 써
+      # 그 대기가 흔하게 걸립니다. 여기서는 배포 직후 곧바로 나갑니다.
+      #
+      # 이 잡이 아예 안 도는 경우(웹 변경 없음)에는 알리지 않습니다. 올라간 것이 없으면
+      # 알릴 것도 없습니다. 프로덕션 배포는 release.yml의 notify가 따로 보고합니다.
+      - name: Notify staging deploy
+        # 배포가 깨졌을 때야말로 알려야 하므로 always()입니다.
+        if: ${{ always() && inputs.deploy_target == 'staging' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          # 배포 스텝의 outcome만으로는 "배포하다 실패"와 "빌드에서 멈춰 배포까지 못 감"이
+          # 둘 다 실패로 뭉개집니다. 잡 상태를 함께 넘겨 스크립트가 갈라 읽습니다.
+          DEPLOY_OUTCOME: ${{ steps.deploy-staging.outcome }}
+          JOB_STATUS: ${{ job.status }}
+        run: node .github/scripts/notify-staging-deploy.mjs
 
       - name: Deploy production
         if: ${{ inputs.deploy_target == 'production' }}

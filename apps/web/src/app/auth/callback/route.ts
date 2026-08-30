@@ -29,6 +29,14 @@ export async function GET(request: Request) {
 				maxAge: 3600 * 24 * 365, // 1년
 			},
 		);
+
+		// 로그인 성공은 여기서 끝나지만 서버라 gtag가 없습니다. 도착한 클라이언트가
+		// 대신 찍을 수 있게 로그인 수단을 실어 보냅니다.
+		const loginMethod = sessionData.session.user.app_metadata.provider;
+
+		return NextResponse.redirect(
+			`${requestUrl.origin}${PATHS.memos}?login=${encodeURIComponent(loginMethod ?? "unknown")}`,
+		);
 	}
 
 	return NextResponse.redirect(requestUrl.origin + PATHS.memos);

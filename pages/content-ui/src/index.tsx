@@ -1,14 +1,9 @@
-import {
-	ChromeSyncStorage,
-	STORAGE_KEYS,
-} from "@web-memo/shared/modules/chrome-storage";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import {
 	extractYoutubeTranscript,
 	isYoutubePage,
 	renderOpenSidePanelButton,
 	setupHighlightRestore,
-	setupTextSelectionHandler,
 } from "./ui";
 
 bridge.handle.PAGE_CONTENT(async (_, __, sendResponse) => {
@@ -38,16 +33,6 @@ bridge.handle.YOUTUBE_TRANSCRIPT(async (_, __, sendResponse) => {
 
 renderOpenSidePanelButton();
 
-async function initTextSelectionHandler() {
-	const textSelectionEnabled = await ChromeSyncStorage.get<boolean>(
-		STORAGE_KEYS.textSelectionEnabled,
-	);
-	if (textSelectionEnabled) {
-		setupTextSelectionHandler();
-	}
-}
-
-initTextSelectionHandler();
 setupHighlightRestore();
 
 function getContentFromWeb() {

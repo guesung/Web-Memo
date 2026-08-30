@@ -87,6 +87,7 @@ export default function MemoView({ lng }: LanguageType) {
 				key={tabKey}
 				lng={lng}
 				memos={memos}
+				searchQuery={searchQuery}
 				hasNextPage={hasNextPage}
 				isFetchingNextPage={isFetchingNextPage}
 				fetchNextPage={fetchNextPage}

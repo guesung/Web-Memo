@@ -25,7 +25,7 @@ export default function SidePanelContent() {
 			<Header />
 			<TabSection tabHeight={tabHeight} />
 			<ResizeHandle
-				tabHeight={tabHeight}
+				upperSectionRatio={tabHeight}
 				isResizing={isResizing}
 				onMouseDown={handleMouseDown}
 			/>

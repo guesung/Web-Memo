@@ -45,7 +45,9 @@ export type TAnalyticsEvent =
 	| { name: "chat_message_send" }
 	| { name: "tab_change"; params: { tab_name: string } }
 	| { name: "setting_change"; params: { setting_keys: string } }
-	| { name: "memo_filter"; params: { search_target: string } };
+	| { name: "memo_filter"; params: { search_target: string } }
+	| { name: "youtube_transcript_extract"; params: { is_success: boolean } }
+	| { name: "side_panel_open_click" };
 
 /** 이벤트 이름만 추린 유니온. */
 export type TAnalyticsEventName = TAnalyticsEvent["name"];
@@ -65,4 +67,6 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	tab_change: "engagement",
 	setting_change: "engagement",
 	memo_filter: "engagement",
+	youtube_transcript_extract: "core_action",
+	side_panel_open_click: "engagement",
 };

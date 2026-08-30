@@ -59,6 +59,9 @@
 		// 익스텐션 패키징 (packages/zipper)
 		"zip": {
 			"dependsOn": ["^build"],
+			// turbo 2의 기본 envMode는 strict라, 선언하지 않으면 zipper가 셸의 BUILD_ENV를
+			// 못 봅니다. zip 파일 이름에 환경을 박는 데 씁니다.
+			"env": ["BUILD_ENV"],
 			"cache": false
 		},
 

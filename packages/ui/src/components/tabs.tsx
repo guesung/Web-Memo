@@ -2,7 +2,6 @@ import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { motion, useReducedMotion } from "framer-motion";
 import * as React from "react";
 
-import { SPRING_LAYOUT } from "../motion";
 import { cn } from "../utils";
 
 /** 활성 탭 인디케이터가 자기 자리를 찾는 데 필요한 값 */
@@ -12,6 +11,15 @@ interface IFTabsIndicatorContext {
 	/** 같은 Tabs 안의 인디케이터끼리 이어지도록 묶는 식별자 */
 	layoutId: string;
 }
+
+// 활성 탭 배경이 탭 사이를 건너가는 물리값. 살짝 무겁게 잡아 스냅이 아니라
+// 활공으로 읽히게 한다. 출처: https://beui.dev (MIT License) — lib/ease.ts
+const INDICATOR_SPRING = {
+	type: "spring",
+	stiffness: 360,
+	damping: 32,
+	mass: 0.6,
+} as const;
 
 const TabsIndicatorContext =
 	React.createContext<IFTabsIndicatorContext | null>(null);
@@ -41,11 +49,16 @@ const Tabs = React.forwardRef<
 		onValueChange?.(nextValue);
 	};
 
+	// uncontrolled 일 때 value 를 넘기면 첫 클릭 전까지 undefined 라, Radix 가
+	// uncontrolled 로 시작했다가 값이 생기는 순간 controlled 로 넘어간다.
+	// 넘기는 prop 자체를 갈라 Radix 쪽 모드가 중간에 바뀌지 않게 한다.
+	const rootValueProps = isControlled ? { value } : { defaultValue };
+
 	return (
 		<TabsIndicatorContext.Provider value={{ activeValue, layoutId }}>
 			<TabsPrimitive.Root
 				ref={ref}
-				value={activeValue}
+				{...rootValueProps}
 				onValueChange={handleValueChange}
 				{...props}
 			/>
@@ -73,10 +86,10 @@ const TabsTrigger = React.forwardRef<
 	React.ElementRef<typeof TabsPrimitive.Trigger>,
 	React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
 >(({ className, children, value, ...props }, ref) => {
-	const indicator = React.useContext(TabsIndicatorContext);
+	const indicatorContext = React.useContext(TabsIndicatorContext);
 	const prefersReducedMotion = useReducedMotion();
 
-	const isActive = indicator?.activeValue === value;
+	const isActive = indicatorContext?.activeValue === value;
 
 	return (
 		<TabsPrimitive.Trigger
@@ -88,12 +101,12 @@ const TabsTrigger = React.forwardRef<
 			)}
 			{...props}
 		>
-			{isActive && indicator ? (
+			{isActive && indicatorContext ? (
 				<motion.span
 					aria-hidden
-					layoutId={indicator.layoutId}
+					layoutId={indicatorContext.layoutId}
 					className="bg-background shadow absolute inset-0 -z-10 rounded-md"
-					transition={prefersReducedMotion ? { duration: 0 } : SPRING_LAYOUT}
+					transition={prefersReducedMotion ? { duration: 0 } : INDICATOR_SPRING}
 				/>
 			) : null}
 			{children}

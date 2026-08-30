@@ -122,13 +122,17 @@ master 알림과 달리 스토어를 조회하지 않고 배포 버튼도 달지
 | 🚀 테스트 서버 배포 완료 | 배포 스텝 성공 |
 | ❌ 테스트 서버 배포 실패 | Vercel 배포 또는 별칭 이동에서 실패 |
 | ❌ 테스트 서버 빌드 실패 | 설치·Vercel 빌드에서 멈춰 배포까지 못 감 |
-| ⚠️ 테스트 서버 배포 취소됨 | 잡이 취소됨 |
 
-배포 스텝의 `outcome`만으로는 뒤의 두 경우가 같은 실패로 뭉개지므로, `job.status`를
-함께 넘겨 스크립트가 갈라 읽습니다.
+배포 스텝의 `outcome`이 `skipped`라는 것은 그 앞에서 멈췄다는 뜻이라, 뒤의 두 경우를
+그것으로 갈라 읽습니다.
 
 **웹 변경이 없어 `cd-web`이 아예 안 돌면 알림도 없습니다.** 올라간 것이 없으면 알릴
 것도 없습니다.
+
+**취소된 run도 알리지 않습니다.** `develop`은 `cancel-in-progress`라 푸시가 연달아
+들어오면 앞선 run이 매번 취소되는데, 뒤이은 run이 어차피 배포하고 그 결과를 다시
+알리므로 취소 알림은 소음만 됩니다. 그래서 스텝 조건이 `always()`가 아니라
+`!cancelled()`입니다 — 실패는 통과시키고 취소만 뺍니다.
 
 ### 왜 별도 잡이 아니라 스텝인가
 
@@ -290,7 +294,7 @@ GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 GITHUB_SHA=$(git rev-parse HE
 
 # 테스트 서버 배포 알림에 나갈 Slack 페이로드 확인
 GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 GITHUB_SHA=$(git rev-parse HEAD) \
-  DEPLOY_OUTCOME=success JOB_STATUS=success \
+  DEPLOY_OUTCOME=success \
   node .github/scripts/notify-staging-deploy.mjs
 ```
 

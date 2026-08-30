@@ -57,11 +57,11 @@ export default function MemoEmptyState({ lng }: MemoEmptyStateProps) {
 				</div>
 			</div>
 
-			<h3 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-4 text-center">
+			<h3 className="text-2xl lg:text-3xl font-bold text-foreground mb-4 text-center">
 				{t("memos.emptyState.title")}
 			</h3>
 
-			<p className="text-lg text-gray-600 dark:text-gray-400 mb-8 text-center max-w-md">
+			<p className="text-lg text-muted-foreground mb-8 text-center max-w-md">
 				{t("memos.emptyState.message")}
 			</p>
 
@@ -84,7 +84,7 @@ export default function MemoEmptyState({ lng }: MemoEmptyStateProps) {
 				<Button
 					variant="outline"
 					size="lg"
-					className="h-14 px-8 border-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+					className="h-14 px-8 border-2 rounded-xl hover:bg-muted transition-all"
 					asChild
 				>
 					<Link href={`/${lng}/introduce`}>
@@ -103,12 +103,10 @@ export default function MemoEmptyState({ lng }: MemoEmptyStateProps) {
 						transition={{ delay: 0.3 + index * 0.1 }}
 						className="flex flex-col items-center text-center"
 					>
-						<div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
-							<tip.icon className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+						<div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+							<tip.icon className="h-6 w-6 text-muted-foreground" />
 						</div>
-						<p className="text-sm text-gray-600 dark:text-gray-400">
-							{tip.text}
-						</p>
+						<p className="text-sm text-muted-foreground">{tip.text}</p>
 					</motion.div>
 				))}
 			</div>

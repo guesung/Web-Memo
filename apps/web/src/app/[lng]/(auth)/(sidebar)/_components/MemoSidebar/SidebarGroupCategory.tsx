@@ -75,18 +75,18 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 	return (
 		<SidebarGroup id="category" className="px-2">
 			<div className="flex items-center justify-between mb-3 px-2">
-				<SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
+				<SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 					{t("sideBar.allCategory")}
 				</SidebarGroupLabel>
 				<Link href={`/${lng}${PATHS.memosSetting}`}>
 					<button
 						type="button"
-						className="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 transition-all duration-200 hover:scale-110 active:scale-95"
+						className="p-1.5 rounded-md hover:bg-accent transition-all duration-200 hover:scale-110 active:scale-95"
 						aria-label="Category settings"
 					>
 						<SettingsIcon
 							size={14}
-							className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+							className="text-muted-foreground hover:text-foreground transition-colors"
 						/>
 					</button>
 				</Link>
@@ -152,7 +152,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 													"hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]",
 													isActive
 														? "bg-gradient-to-r shadow-sm scale-[1.02]"
-														: "hover:bg-gray-100 dark:hover:bg-gray-800/50",
+														: "hover:bg-muted dark:hover:bg-muted/50",
 												)}
 												style={{
 													borderLeft: `3px solid ${categoryColor}`,
@@ -170,8 +170,8 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 														className={cn(
 															"font-medium truncate transition-colors",
 															isActive
-																? "text-gray-900 dark:text-white"
-																: "text-gray-600 dark:text-gray-300",
+																? "text-foreground"
+																: "text-muted-foreground",
 														)}
 													>
 														{category.name}
@@ -179,10 +179,10 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 												</div>
 												<span
 													className={cn(
-														"flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full text-xs font-semibold transition-all",
+														"flex items-center justify-center min-w-6 h-6 px-2 rounded-full text-xs font-semibold transition-all",
 														isActive
 															? "text-white shadow-sm"
-															: "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300",
+															: "bg-muted text-muted-foreground",
 													)}
 													style={
 														isActive ? { backgroundColor: categoryColor } : {}

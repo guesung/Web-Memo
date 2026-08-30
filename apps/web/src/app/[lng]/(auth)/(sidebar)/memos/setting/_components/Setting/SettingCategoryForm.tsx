@@ -114,7 +114,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 					return (
 						<div
 							key={category.id}
-							className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
+							className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-muted dark:hover:bg-muted/50 transition-colors group"
 						>
 							<button
 								type="button"
@@ -141,7 +141,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 							) : (
 								<button
 									type="button"
-									className="flex-1 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer truncate hover:text-gray-900 dark:hover:text-white transition-colors text-left"
+									className="flex-1 text-sm font-medium text-foreground cursor-pointer truncate hover:text-foreground transition-colors text-left"
 									onClick={() => {
 										setEditingId(category.id);
 										setTimeout(() => editInputRef.current?.focus(), 50);
@@ -165,7 +165,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 
 				{isAdding ? (
 					<div className="flex items-center gap-3 rounded-lg px-3 py-2">
-						<div className="w-5 h-5 rounded-full flex-shrink-0 bg-gray-300 dark:bg-gray-600" />
+						<div className="w-5 h-5 rounded-full flex-shrink-0 bg-muted-foreground/40" />
 						<Input
 							ref={addInputRef}
 							autoFocus
@@ -181,7 +181,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 				) : (
 					<Button
 						variant="ghost"
-						className="w-full justify-start gap-3 px-3 py-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+						className="w-full justify-start gap-3 px-3 py-2 text-muted-foreground hover:text-foreground"
 						onClick={() => setIsAdding(true)}
 						type="button"
 					>

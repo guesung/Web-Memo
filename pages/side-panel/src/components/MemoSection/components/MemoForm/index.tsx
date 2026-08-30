@@ -124,6 +124,8 @@ function MemoFormContent() {
 				>
 					<Textarea
 						id="memo-textarea"
+						// 드래그 중에는 framer-motion 레이아웃 애니메이션이 매 프레임 다시 시작돼 핸들을 따라오지 못한다.
+						layout={resizingFieldKey === null}
 						onKeyDown={handleKeyDown}
 						className="min-h-0 flex-1 resize-none text-sm outline-none"
 						placeholder={I18n.get("memo")}
@@ -171,6 +173,8 @@ function MemoFormContent() {
 							</label>
 							<Textarea
 								id="impression-textarea"
+								// 드래그 중에는 framer-motion 레이아웃 애니메이션이 매 프레임 다시 시작돼 핸들을 따라오지 못한다.
+								layout={resizingFieldKey === null}
 								className="min-h-0 flex-1 resize-none text-sm outline-none"
 								placeholder={I18n.get("impressionPlaceholder")}
 								{...register("impression", {
@@ -202,6 +206,8 @@ function MemoFormContent() {
 							</label>
 							<Textarea
 								id="action-item-textarea"
+								// 드래그 중에는 framer-motion 레이아웃 애니메이션이 매 프레임 다시 시작돼 핸들을 따라오지 못한다.
+								layout={resizingFieldKey === null}
 								className="min-h-0 flex-1 resize-none text-sm outline-none"
 								placeholder={I18n.get("actionItemPlaceholder")}
 								{...register("actionItem", {

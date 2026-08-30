@@ -12,8 +12,13 @@ interface IFTabsIndicatorContext {
 	layoutId: string;
 }
 
-// 활성 탭 배경이 탭 사이를 건너가는 물리값. 살짝 무겁게 잡아 스냅이 아니라
-// 활공으로 읽히게 한다. 출처: https://beui.dev (MIT License) — lib/ease.ts
+/**
+ * 활성 탭 배경이 탭 사이를 건너갈 때 쓰는 스프링 물리값
+ *
+ * @description
+ * 살짝 무겁게 잡아 스냅이 아니라 활공으로 읽히게 한다.
+ * 출처: https://beui.dev (MIT License) — lib/ease.ts
+ */
 const INDICATOR_SPRING = {
 	type: "spring",
 	stiffness: 360,

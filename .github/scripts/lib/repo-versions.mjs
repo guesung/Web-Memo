@@ -61,20 +61,23 @@ export const readExtensionId = () => {
 };
 
 /**
- * 프로덕션 웹 주소.
+ * 배포 환경별 웹 주소.
  *
- * packages/env/.env.production 이 이미 이 값을 갖고 있고 레포에 추적되므로
+ * packages/env/.env.{production,staging} 이 이미 이 값을 갖고 있고 레포에 추적되므로
  * (공개돼도 되는 값만 담는 파일입니다) 여기에 URL을 또 박아두지 않습니다.
+ *
+ * @param environment 읽을 env 파일의 접미사. production(기본) 또는 staging.
  */
-export const readWebUrl = () => {
+export const readWebUrl = (environment = "production") => {
+	const envFileName = `.env.${environment}`;
 	const envFile = readFileSync(
-		join(REPO_ROOT, "packages/env/.env.production"),
+		join(REPO_ROOT, "packages/env", envFileName),
 		"utf8",
 	);
 	const matched = envFile.match(/^WEB_URL=(.+)$/m);
 
 	if (!matched) {
-		throw new Error(".env.production에서 WEB_URL을 찾지 못했습니다");
+		throw new Error(`${envFileName}에서 WEB_URL을 찾지 못했습니다`);
 	}
 
 	return matched[1].trim();

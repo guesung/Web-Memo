@@ -3,6 +3,7 @@ import type { Database } from "@web-memo/shared/types";
 type MockMemo = Database["memo"]["Tables"]["memo"]["Row"];
 type MockCategory = Database["memo"]["Tables"]["category"]["Row"];
 type MockHighlight = Database["memo"]["Tables"]["highlight"]["Row"];
+type MockSetting = Database["memo"]["Tables"]["setting"]["Row"];
 
 let memoIdCounter = 1;
 let categoryIdCounter = 1;
@@ -32,6 +33,24 @@ export function createMockMemo(overrides: Partial<MockMemo> = {}): MockMemo {
 		category_id: null,
 		created_at: now,
 		updated_at: now,
+		...overrides,
+	};
+}
+
+/**
+ * 메모 필드 노출 설정(setting) 행을 만든다.
+ *
+ * @description 기본값은 제품 기본값과 동일하게 느낀 점·액션 아이템 모두 꺼짐이다.
+ * 설정 행 자체가 없는 상황은 이 함수 대신 store.setSetting(null)로 표현한다.
+ */
+export function createMockSetting(
+	overrides: Partial<MockSetting> = {},
+): MockSetting {
+	return {
+		id: 1,
+		user_id: "test-user-id",
+		show_impression: false,
+		show_action_item: false,
 		...overrides,
 	};
 }

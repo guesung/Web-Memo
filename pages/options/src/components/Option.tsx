@@ -26,8 +26,8 @@ export default function Option() {
 			webPrompt: "",
 			language: "ko",
 			autoApplyCategory: true,
-			impressionSectionEnabled: true,
-			actionItemSectionEnabled: true,
+			impressionSectionEnabled: false,
+			actionItemSectionEnabled: false,
 		},
 	});
 
@@ -81,8 +81,8 @@ export default function Option() {
 			setValue("youtubePrompt", youtubePrompts);
 			setValue("webPrompt", webPrompts);
 			setValue("autoApplyCategory", autoApplyCategory ?? true);
-			setValue("impressionSectionEnabled", impressionSectionEnabled ?? true);
-			setValue("actionItemSectionEnabled", actionItemSectionEnabled ?? true);
+			setValue("impressionSectionEnabled", impressionSectionEnabled ?? false);
+			setValue("actionItemSectionEnabled", actionItemSectionEnabled ?? false);
 		};
 
 		fetchStorage();

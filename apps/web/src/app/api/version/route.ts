@@ -8,6 +8,12 @@ import { NextResponse } from "next/server";
  * 롤백이 있어도 "지금 응답하는 인스턴스"의 진실이 하나로 유지되기 때문입니다.
  *
  * .github/scripts/lib/store-versions.mjs 의 fetchWebVersion이 이 응답을 읽습니다.
+ *
+ * 밖에서 읽히는 것은 프로덕션뿐입니다. 스테이징은 `--prod` 없이 배포되는 Preview라
+ * Vercel Deployment Protection에 막혀, 자격 증명 없는 요청은 JSON 대신 vercel.com
+ * 로그인 페이지를 받습니다. 실패가 401이 아니라 `Unexpected token '<'` 라는 JSON 파싱
+ * 에러로 나와 엔드포인트가 깨진 것처럼 보이므로, 스테이징 배포 검증에 이걸 쓰려다
+ * 헛다리를 짚기 쉽습니다. 쓰려면 Protection Bypass for Automation 시크릿이 필요합니다.
  */
 
 /** 배포 식별 정보. 값이 없으면 로컬 개발 등 Vercel 밖에서 돌고 있다는 뜻입니다. */

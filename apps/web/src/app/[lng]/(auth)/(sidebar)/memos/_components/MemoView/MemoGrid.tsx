@@ -13,6 +13,7 @@ import {
 	useDeleteMemosMutation,
 	useKeyboardBind,
 	useMemosUpsertMutation,
+	useSettingQuery,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
@@ -55,6 +56,7 @@ export default function MemoGrid({
 	const queryClient = useQueryClient();
 	const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
 	const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
+	const { showImpression, showActionItem } = useSettingQuery();
 
 	const {
 		selectedMemoIds,
@@ -207,7 +209,7 @@ export default function MemoGrid({
 	}
 
 	return (
-		<div className="relative h-full w-full">
+		<div className="relative w-full">
 			<DragBox ref={dragBoxRef} />
 			<AnimatePresence>
 				{isSelectingMode && (
@@ -225,8 +227,7 @@ export default function MemoGrid({
 				useResizeObserver
 				observeChildren
 				autoResize
-				className="container h-screen max-w-full pb-48 will-change-transform pt-4"
-				container={true}
+				className="container max-w-full pb-48 will-change-transform pt-4"
 				useRecycle={false}
 				id={CONTAINER_ID}
 				gap={16}
@@ -243,6 +244,8 @@ export default function MemoGrid({
 						isMemoSelected={checkMemoSelected(memo.id)}
 						selectMemoItem={handleSelectMemoItem}
 						isSelectingMode={isSelectingMode}
+						showImpression={showImpression}
+						showActionItem={showActionItem}
 					/>
 				))}
 			</MasonryInfiniteGrid>

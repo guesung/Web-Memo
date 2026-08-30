@@ -6,6 +6,7 @@ import { createMockMemo } from "./mockData";
 type MemoRow = Database["memo"]["Tables"]["memo"]["Row"];
 type CategoryRow = Database["memo"]["Tables"]["category"]["Row"];
 type HighlightRow = Database["memo"]["Tables"]["highlight"]["Row"];
+type SettingRow = Database["memo"]["Tables"]["setting"]["Row"];
 
 /** 앱이 받는 메모 한 건. `select("*, category(...)")`의 응답 모양이다. */
 type MemoWithCategory = MemoRow & {
@@ -29,6 +30,7 @@ export class MockSupabaseStore {
 	private memos: Map<number, MemoRow> = new Map();
 	private categories: Map<number, CategoryRow> = new Map();
 	private highlights: Map<number, HighlightRow> = new Map();
+	private setting: SettingRow | null = null;
 
 	/** 메모 한 건을 저장소에 넣는다. */
 	addMemo(memo: MemoRow) {
@@ -84,6 +86,17 @@ export class MockSupabaseStore {
 		return Array.from(this.categories.values());
 	}
 
+	/** 메모 필드 노출 설정을 넣는다. null이면 설정 행이 아직 없는 신규 사용자를 뜻한다. */
+	setSetting(setting: SettingRow | null) {
+		this.setting = setting;
+		return setting;
+	}
+
+	/** 저장된 설정을 돌려준다. 없으면 null. */
+	getSetting() {
+		return this.setting;
+	}
+
 	/** 하이라이트 한 건을 저장소에 넣는다. */
 	addHighlight(highlight: HighlightRow) {
 		this.highlights.set(highlight.id, highlight);
@@ -128,6 +141,7 @@ export class MockSupabaseStore {
 		this.memos.clear();
 		this.categories.clear();
 		this.highlights.clear();
+		this.setting = null;
 	}
 }
 
@@ -418,6 +432,41 @@ const handleHighlightPatch = async ({ route, url, store }: HandlerParams) => {
 };
 
 /**
+ * 메모 필드 노출 설정 조회.
+ * @description 설정 행이 없으면 빈 배열을 돌려줘야 useSettingQuery의 `?? false` 기본값 경로를 탄다.
+ */
+const handleSettingGet = async ({ route, store }: HandlerParams) => {
+	const setting = store.getSetting();
+
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(setting ? [setting] : []),
+	});
+};
+
+/** 설정 저장. upsertSetting은 POST + single이라 배열이 아닌 객체 하나를 돌려줘야 한다. */
+const handleSettingUpsert = async ({ route, store }: HandlerParams) => {
+	const body = route.request().postDataJSON();
+	const patch = Array.isArray(body) ? body[0] : body;
+	const updated = {
+		id: 1,
+		user_id: "test-user-id",
+		show_impression: false,
+		show_action_item: false,
+		...store.getSetting(),
+		...patch,
+	};
+	store.setSetting(updated);
+
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(updated),
+	});
+};
+
+/**
  * Supabase REST 호출을 저장소로 가로챈다.
  * @description 브라우저가 보내는 요청만 가로챈다. 서버 컴포넌트의 프리페치는 여기 걸리지 않는다.
  */
@@ -457,6 +506,25 @@ export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
 				url: new URL(route.request().url()),
 				store,
 			});
+		},
+	);
+
+	await page.route(
+		`${SUPABASE.url}/rest/v1/setting**`,
+		async (route: Route) => {
+			const params = { route, url: new URL(route.request().url()), store };
+
+			switch (route.request().method()) {
+				case "GET":
+					await handleSettingGet(params);
+					break;
+				case "POST":
+				case "PATCH":
+					await handleSettingUpsert(params);
+					break;
+				default:
+					await route.continue();
+			}
 		},
 	);
 

@@ -12,8 +12,7 @@
  *   node .github/scripts/notify-build-ready.mjs
  */
 
-import { execFileSync } from "node:child_process";
-
+import { readCommitSubject, requireEnv } from "./lib/run-context.mjs";
 import {
 	buildActionBlock,
 	buildVersionSection,
@@ -22,24 +21,6 @@ import {
 import { fetchStoreVersions } from "./lib/store-versions.mjs";
 
 const DEPLOY_TARGETS = ["app", "web", "extension"];
-
-const requireEnv = (name) => {
-	const value = process.env[name];
-
-	if (!value) throw new Error(`${name} 이(가) 설정되지 않았습니다`);
-
-	return value;
-};
-
-const readCommitSubject = (commitSha) => {
-	try {
-		return execFileSync("git", ["log", "-1", "--format=%s", commitSha], {
-			encoding: "utf8",
-		}).trim();
-	} catch {
-		return "";
-	}
-};
 
 const main = async () => {
 	const repository = requireEnv("GITHUB_REPOSITORY");

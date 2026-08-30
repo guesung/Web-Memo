@@ -18,14 +18,14 @@ export interface IFMemoUrlParams
 /**
  * 주어진 조건이 걸린 웹 메모 목록 URL을 만든다.
  */
-export const getMemoUrl = (params: IFMemoUrlParams) => {
+export const getMemoUrl = (memoUrlParams: IFMemoUrlParams) => {
 	const searchParams = new SearchParams();
 
-	if (params.id) {
-		searchParams.set("id", String(params.id));
+	if (memoUrlParams.id) {
+		searchParams.set("id", String(memoUrlParams.id));
 	}
 	MEMO_STATUS_KEYS.forEach((statusKey) => {
-		if (params[statusKey]) {
+		if (memoUrlParams[statusKey]) {
 			searchParams.set(statusKey, "true");
 		}
 	});

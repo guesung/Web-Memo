@@ -22,7 +22,10 @@ const DEFAULT_MEMO_FIELD_RATIOS: TMemoFieldRatios = {
 };
 const MIN_MEMO_FIELD_RATIO = 8;
 
-interface UseMemoFieldResizeProps {
+/**
+ * 지금 화면에 떠 있는 영역만 위에서 아래 순서로 담는다. 꺼진 영역은 빼고 넘긴다.
+ */
+interface IFUseMemoFieldResizeProps {
 	visibleFieldKeys: TMemoFieldKey[];
 }
 
@@ -34,7 +37,7 @@ interface UseMemoFieldResizeProps {
  */
 export default function useMemoFieldResize({
 	visibleFieldKeys,
-}: UseMemoFieldResizeProps) {
+}: IFUseMemoFieldResizeProps) {
 	const [fieldRatios, setFieldRatios] = useState(DEFAULT_MEMO_FIELD_RATIOS);
 	const [resizingFieldKey, setResizingFieldKey] =
 		useState<TMemoFieldKey | null>(null);

@@ -14,9 +14,13 @@ import {
 	SelectValue,
 } from "@web-memo/ui";
 import { FileText, Search, StickyNote, X } from "lucide-react";
+import { useEffect } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
 import type { SearchFormValues } from "../MemoSearchFormProvider";
+
+/** 이 시간 동안 입력이 없으면 검색을 한 번 기록한다. */
+const SEARCH_TRACK_DEBOUNCE_MS = 800;
 
 interface MemoSearchFormProps extends LanguageType {}
 
@@ -25,8 +29,28 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 	const {
 		control,
 		reset,
+		watch,
 		formState: { isDirty },
 	} = useFormContext<SearchFormValues>();
+	const searchQuery = watch("searchQuery");
+
+	/**
+	 * 입력이 멈추면 검색을 한 번 기록한다.
+	 * @description 검색어는 매 키 입력마다 갱신되므로 그대로 찍으면 글자 수만큼 쌓인다.
+	 * 검색어 원문은 개인정보라 싣지 않고 길이만 남긴다.
+	 */
+	useEffect(() => {
+		if (!searchQuery) return;
+
+		const timer = setTimeout(() => {
+			analytics.trackEvent({
+				name: "memo_search",
+				params: { query_length: searchQuery.length },
+			});
+		}, SEARCH_TRACK_DEBOUNCE_MS);
+
+		return () => clearTimeout(timer);
+	}, [searchQuery]);
 
 	const handleSearchTargetChange = (
 		searchTarget: string,

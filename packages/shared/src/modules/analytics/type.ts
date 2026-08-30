@@ -49,7 +49,8 @@ export type TAnalyticsEvent =
 	| { name: "youtube_transcript_extract"; params: { is_success: boolean } }
 	| { name: "side_panel_open_click" }
 	| { name: "highlight_note_update" }
-	| { name: "login"; params: { method: string } };
+	| { name: "login"; params: { method: string } }
+	| { name: "memo_search"; params: { query_length: number } };
 
 /** 이벤트 이름만 추린 유니온. */
 export type TAnalyticsEventName = TAnalyticsEvent["name"];
@@ -73,4 +74,5 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	side_panel_open_click: "engagement",
 	highlight_note_update: "core_action",
 	login: "core_action",
+	memo_search: "core_action",
 };

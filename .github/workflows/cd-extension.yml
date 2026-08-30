@@ -16,6 +16,8 @@ jobs:
   build-extension:
     name: 확장 빌드
     runs-on: ubuntu-latest
+    outputs:
+      zip_name: ${{ steps.zip.outputs.name }}
     env:
       BUILD_ENV: ${{ inputs.deploy_target == 'staging' && 'staging' || 'production' }}
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -43,11 +45,26 @@ jobs:
       - name: Zip the build files
         run: pnpm run zip
 
+      # zip 이름에 환경과 버전이 들어갑니다(extension-production-v1.10.14.zip).
+      # 아티팩트 이름도 같이 맞춰야 다운로드한 파일만 보고 무엇인지 알 수 있습니다.
+      - name: Resolve zip name
+        id: zip
+        run: |
+          shopt -s nullglob
+          files=(dist-zip/*.zip)
+          if [[ ${#files[@]} -ne 1 ]]; then
+            echo "::error::dist-zip에 zip이 정확히 1개가 아닙니다: ${files[*]:-(없음)}"
+            exit 1
+          fi
+          name="$(basename "${files[0]}" .zip)"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "zip: $name.zip"
+
       - name: Upload Extension
         uses: actions/upload-artifact@v4
         with:
-          name: extension
-          path: dist-zip/extension.zip
+          name: ${{ steps.zip.outputs.name }}
+          path: dist-zip/${{ steps.zip.outputs.name }}.zip
 
   upload-extension:
     needs: build-extension
@@ -55,13 +72,16 @@ jobs:
     name: 크롬 웹스토어 업로드
     if: ${{ inputs.deploy_target == 'production' }}
     steps:
+      # 이름을 지정하면 아티팩트 내용물이 하위 디렉터리 없이 그대로 풀립니다.
       - name: Download Artifacts
         uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-extension.outputs.zip_name }}
 
       - name: Upload zipped file on chrome store
         uses: mnao305/chrome-extension-upload@v5.0.0
         with:
-          file-path: extension/extension.zip
+          file-path: ${{ needs.build-extension.outputs.zip_name }}.zip
           extension-id: eaiojpmgklfngpjddhoalgcpkepgkclh
           client-id: ${{ secrets.CLIENT_ID }}
           client-secret: ${{ secrets.CLIENT_SECRET }}

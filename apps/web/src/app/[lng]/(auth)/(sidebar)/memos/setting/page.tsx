@@ -1,7 +1,6 @@
 "use server";
 
 import { HydrationBoundaryWrapper } from "@src/components";
-import { HeaderMargin } from "@src/components/Header";
 import type { LanguageParams } from "@src/modules/i18n";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { QUERY_KEY } from "@web-memo/shared/constants";
@@ -13,8 +12,7 @@ export default async function Page({ params: { lng } }: LanguageParams) {
 	const supabaseClient = getSupabaseClient();
 
 	return (
-		<main>
-			<HeaderMargin />
+		<div>
 			<SettingHeader lng={lng} />
 			<HydrationBoundaryWrapper
 				queryKey={QUERY_KEY.category()}
@@ -22,6 +20,6 @@ export default async function Page({ params: { lng } }: LanguageParams) {
 			>
 				<Setting lng={lng} />
 			</HydrationBoundaryWrapper>
-		</main>
+		</div>
 	);
 }

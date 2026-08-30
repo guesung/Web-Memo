@@ -15,6 +15,15 @@ interface MockMemo {
 	updated_at: string | null;
 }
 
+interface MockCategory {
+	id: number;
+	user_id: string | null;
+	name: string;
+	color: string | null;
+	memo_count: number | null;
+	created_at: string;
+}
+
 interface MockHighlight {
 	id: number;
 	user_id: string;
@@ -34,6 +43,16 @@ interface MockHighlight {
 export class MockSupabaseStore {
 	private memos: Map<number, MockMemo> = new Map();
 	private highlights: Map<number, MockHighlight> = new Map();
+	private categories: Map<number, MockCategory> = new Map();
+
+	addCategory(category: MockCategory) {
+		this.categories.set(category.id, category);
+		return category;
+	}
+
+	getAllCategories() {
+		return Array.from(this.categories.values());
+	}
 
 	addMemo(memo: MockMemo) {
 		this.memos.set(memo.id, memo);
@@ -98,6 +117,7 @@ export class MockSupabaseStore {
 	clear() {
 		this.memos.clear();
 		this.highlights.clear();
+		this.categories.clear();
 	}
 }
 
@@ -224,7 +244,26 @@ async function handleHighlightPatch(
 	}
 }
 
+async function handleCategoryGet(route: Route, store: MockSupabaseStore) {
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(store.getAllCategories()),
+	});
+}
+
 export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
+	await page.route(
+		`${SUPABASE.url}/rest/v1/category**`,
+		async (route: Route) => {
+			if (route.request().method() === "GET") {
+				await handleCategoryGet(route, store);
+				return;
+			}
+			await route.continue();
+		},
+	);
+
 	await page.route(`${SUPABASE.url}/rest/v1/memo**`, async (route: Route) => {
 		const request = route.request();
 		const method = request.method();

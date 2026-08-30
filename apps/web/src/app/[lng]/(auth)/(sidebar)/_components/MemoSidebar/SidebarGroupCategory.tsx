@@ -136,9 +136,11 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 											/>
 										</div>
 									) : (
+										// href에 lng를 붙이지 않으면 i18n 미들웨어가 307로 리다이렉트하고,
+										// 그 RSC 요청은 하드 네비게이션으로 폴백돼 스크롤이 초기화된다.
 										<Link
 											href={{
-												pathname: PATHS.memos,
+												pathname: `/${lng}${PATHS.memos}`,
 												query: { category: category.name },
 											}}
 											className="w-full"

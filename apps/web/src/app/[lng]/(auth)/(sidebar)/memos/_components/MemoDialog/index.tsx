@@ -1,6 +1,6 @@
 "use client";
 
-import type { MemoInput } from "@src/app/[lng]/(auth)/memos/_types/Input";
+import type { MemoInput } from "@src/app/[lng]/(auth)/(sidebar)/memos/_types/Input";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import {

@@ -2,17 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+	font-family: Pretendard;
+	font-style: normal;
+	font-weight: 45 920;
+	font-display: swap;
+	src: url("/fonts/PretendardVariableSubset.woff2") format("woff2-variations");
+}
+
 @layer base {
 	html {
-		font-family: Pretendard, sans-serif;
-		src: url("https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff2")
-			format("woff2");
+		font-family: var(--font-sans);
 		font-size: 1rem;
-		font-display: swap;
 	}
 	* {
 		scrollbar-width: thin;
-		scrollbar-color: var(--primary) var(--background);
+		scrollbar-color: hsl(var(--muted-foreground) / 0.35) transparent;
 	}
 }
 

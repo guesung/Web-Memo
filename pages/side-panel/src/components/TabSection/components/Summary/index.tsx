@@ -1,4 +1,5 @@
 import { I18n } from "@web-memo/shared/utils/extension";
+import { TextShimmer } from "@web-memo/ui";
 import { RefreshCwIcon } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -14,6 +15,16 @@ export default function Summary() {
 				{errorMessage}
 			</p>
 		);
+
+	if (isSummaryLoading && !summary) {
+		return (
+			<div className="flex h-full flex-1 items-center justify-center">
+				<TextShimmer className="text-sm">
+					{I18n.get("summary_loading_message")}
+				</TextShimmer>
+			</div>
+		);
+	}
 
 	if (!summary && !isSummaryLoading) {
 		return (

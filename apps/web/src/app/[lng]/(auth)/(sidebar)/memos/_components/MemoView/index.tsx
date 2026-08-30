@@ -75,6 +75,7 @@ export default function MemoView({ lng }: LanguageType) {
 			<MemoGrid
 				lng={lng}
 				memos={memos}
+				searchQuery={searchQuery}
 				hasNextPage={hasNextPage}
 				isFetchingNextPage={isFetchingNextPage}
 				fetchNextPage={fetchNextPage}

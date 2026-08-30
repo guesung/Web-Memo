@@ -68,6 +68,27 @@ test.describe("MemoDialog dismiss 동작 (Mocked)", () => {
 		await expect(dialog.getByTestId("memo-textarea")).toBeVisible();
 	});
 
+	test("드롭다운을 Escape로 닫은 직후 다시 Escape를 누르면, Dialog가 닫힌다.", async ({
+		page,
+	}) => {
+		const memoItem = page.locator(".memo-item", { hasText: memoText });
+		await memoItem.click();
+
+		const dialog = page.locator('[role="dialog"]');
+		await expect(dialog.getByTestId("memo-textarea")).toBeVisible();
+
+		await dialog.getByTestId("memo-option").click();
+		await expect(page.getByTestId("memo-delete-button")).toBeVisible();
+
+		// Radix는 닫히는 애니메이션 동안 포퍼 래퍼를 붙잡아 둔다. 그 사이에 누른
+		// 두 번째 Escape가 삼켜지면 안 되므로, 드롭다운이 사라지길 기다리지 않고
+		// 곧바로 다시 누른다. 기다리면 애니메이션 창을 지나쳐 회귀를 못 잡는다.
+		await page.keyboard.press("Escape");
+		await page.keyboard.press("Escape");
+
+		await expect(dialog).toBeHidden();
+	});
+
 	test("닫기 버튼을 클릭하면, Dialog가 정상적으로 닫힌다.", async ({
 		page,
 	}) => {

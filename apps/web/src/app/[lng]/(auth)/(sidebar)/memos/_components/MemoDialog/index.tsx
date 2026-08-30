@@ -21,7 +21,13 @@ import {
 	Textarea,
 } from "@web-memo/ui";
 import { motion } from "framer-motion";
-import { useCallback, useEffect, useImperativeHandle, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useImperativeHandle,
+	useRef,
+	useState,
+} from "react";
 import { useForm } from "react-hook-form";
 import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
@@ -137,31 +143,38 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 		closeDialog();
 	};
 
+	// 저장이 끝나면 useMemoPatchMutation이 memo 쿼리를 무효화해 memoData가 새로 온다.
+	// 그때 폼을 다시 채우면 그 사이에 사용자가 친 글자가 서버 값으로 덮여 사라진다.
+	// 그래서 폼 초기화는 다루는 메모가 바뀔 때 한 번만 한다.
+	const initializedMemoIdRef = useRef<number | null>(null);
+
 	useEffect(
 		function initMemoData() {
-			if (memoData) {
-				setValue("memo", memoData.memo);
-				setValue("impression", memoData.impression ?? "");
-				setValue("actionItem", memoData.actionItem ?? "");
-				if (memoTextareaRef.current) {
-					adjustTextareaHeight(memoTextareaRef.current);
-				}
-				if (impressionTextareaRef.current) {
-					adjustTextareaHeight(impressionTextareaRef.current);
-				}
-				if (actionItemTextareaRef.current) {
-					adjustTextareaHeight(actionItemTextareaRef.current);
-				}
-			}
+			if (!memoData) return;
+			if (initializedMemoIdRef.current === memoData.id) return;
+
+			initializedMemoIdRef.current = memoData.id;
+			setValue("memo", memoData.memo);
+			setValue("impression", memoData.impression ?? "");
+			setValue("actionItem", memoData.actionItem ?? "");
 		},
-		[
-			memoData,
-			setValue,
-			memoTextareaRef.current,
-			impressionTextareaRef.current,
-			actionItemTextareaRef.current,
-		],
+		[memoData, setValue],
 	);
+
+	// 값 주입과 높이 보정을 한 이펙트에 두고 ref.current를 의존성에 넣으면, textarea ref가
+	// 뒤늦게 붙는 렌더에서 이펙트가 다시 돌아 사용자가 방금 친 글자를 서버 값으로 덮어쓴다.
+	// 그러면 디바운스 저장도 "바뀐 게 없다"고 판단해 조용히 넘어간다.
+	useEffect(function adjustTextareaHeights() {
+		for (const textareaRef of [
+			memoTextareaRef,
+			impressionTextareaRef,
+			actionItemTextareaRef,
+		]) {
+			if (textareaRef.current) {
+				adjustTextareaHeight(textareaRef.current);
+			}
+		}
+	});
 
 	useEffect(
 		function saveMemoOnChange() {

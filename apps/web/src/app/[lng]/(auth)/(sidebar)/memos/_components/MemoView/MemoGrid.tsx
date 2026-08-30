@@ -27,11 +27,13 @@ import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import MemoEmptyState from "./MemoEmptyState";
 import MemoItem from "./MemoItem";
 import MemoOptionHeader from "./MemoOptionHeader";
+import MemoSearchEmptyState from "./MemoSearchEmptyState";
 
 const CONTAINER_ID = "memo-grid";
 
 interface MemoGridProps extends LanguageType {
 	memos: GetMemoResponse[];
+	searchQuery: string;
 	hasNextPage: boolean;
 	isFetchingNextPage: boolean;
 	fetchNextPage: () => void;
@@ -40,6 +42,7 @@ interface MemoGridProps extends LanguageType {
 export default function MemoGrid({
 	lng,
 	memos,
+	searchQuery,
 	hasNextPage,
 	isFetchingNextPage,
 	fetchNextPage,
@@ -156,11 +159,54 @@ export default function MemoGrid({
 		[rafRef],
 	);
 
-	useKeyboardBind({ key: "Escape", callback: closeMemoOption });
+	// 메뉴가 열려 있으면 Escape의 주인은 그 레이어다. Radix는 최상위 레이어에만 Escape를
+	// 주므로 DialogContent의 onEscapeKeyDown은 아예 불리지 않고, window 리스너인
+	// useKeyboardBind만 돌아 메모 상세까지 닫혀버린다.
+	//
+	// 판정은 눌린 순간에 해야 한다. window 버블 시점엔 Radix가 이미 메뉴를 닫아
+	// data-state가 closed이고, 포퍼 래퍼로 보면 툴팁·팝오버가 걸리는 데다 닫히는
+	// 애니메이션 동안 래퍼가 남아 직후의 Escape까지 삼킨다.
+	const wasMenuOpenOnEscapeRef = useRef(false);
+
+	useEffect(function trackMenuOpenOnEscape() {
+		const handleDocumentKeyDownCapture = (event: KeyboardEvent) => {
+			if (event.key !== "Escape") return;
+
+			wasMenuOpenOnEscapeRef.current = !!document.querySelector(
+				'[role="menu"][data-state="open"]',
+			);
+		};
+
+		document.addEventListener("keydown", handleDocumentKeyDownCapture, true);
+		return () => {
+			document.removeEventListener(
+				"keydown",
+				handleDocumentKeyDownCapture,
+				true,
+			);
+		};
+	}, []);
+
+	useKeyboardBind({
+		key: "Escape",
+		callback: () => {
+			if (wasMenuOpenOnEscapeRef.current) return;
+
+			closeMemoOption();
+		},
+	});
 	useKeyboardBind({ key: "Delete", callback: handleDeleteKeyPress });
 	useKeyboardBind({ key: "Backspace", callback: handleDeleteKeyPress });
 
-	if (memos.length === 0) return <MemoEmptyState lng={lng} />;
+	// 검색 결과가 없는 것과 메모가 하나도 없는 것은 다른 상황이다. 같은 화면을 보여주면
+	// 검색 중인 사용자에게 "첫 메모를 만들어보세요"가 뜬다.
+	if (memos.length === 0 && searchQuery) {
+		return <MemoSearchEmptyState lng={lng} searchQuery={searchQuery} />;
+	}
+
+	if (memos.length === 0) {
+		return <MemoEmptyState lng={lng} />;
+	}
 
 	return (
 		<div className="relative w-full">

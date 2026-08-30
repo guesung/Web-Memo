@@ -72,14 +72,28 @@ test.describe("가이드 기능", () => {
 			.locator(".driver-popover-next-btn")
 			.waitFor({ state: "visible", timeout: 15000 });
 
-		await page.locator(".driver-popover-next-btn").click();
-		await page.waitForTimeout(300);
-		await page.locator(".driver-popover-next-btn").click();
-		await page.waitForTimeout(300);
-		await page.locator(".driver-popover-next-btn").click();
-		await page.waitForTimeout(300);
-		await page.locator(".driver-popover-next-btn").click();
-		await page.waitForTimeout(300);
+		// 고정 대기로 단계를 넘기면 하이라이트가 아직 이동 중이라 오버레이가 클릭을
+		// 가로챈다. driver.js가 대상에 붙이는 driver-active-element를 기다린다.
+		const nextButton = page.locator(".driver-popover-next-btn");
+
+		await nextButton.click();
+		await expect(page.locator("#driver-popover-description")).toHaveText(
+			"Great! Now you can write memos. Don't worry, they save automatically",
+		);
+
+		await nextButton.click();
+		await expect(page.locator("#category")).toHaveClass(
+			/driver-active-element/,
+		);
+
+		await nextButton.click();
+		await expect(page.locator("#settings")).toHaveClass(
+			/driver-active-element/,
+		);
+
+		await nextButton.click();
+		await expect(page.locator("#refresh")).toHaveClass(/driver-active-element/);
+
 		await page.locator("#refresh").click();
 
 		await expect(page.locator("#driver-popover")).toBeHidden();

@@ -233,4 +233,9 @@ class Analytics {
 	}
 }
 
+/**
+ * GA4 이벤트 전송 진입점.
+ * @description 웹은 gtag, 확장은 Measurement Protocol로 나가지만 호출부는 그 차이를 몰라도 됩니다.
+ * 빌드 환경에 따라 전송 여부와 콘솔 출력이 갈립니다. 환경별 동작은 Analytics.test.ts를 보세요.
+ */
 export const analytics = Analytics.getInstance();

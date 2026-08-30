@@ -214,14 +214,21 @@ class Analytics {
 		}
 	}
 
+	/** 사이드패널이 열렸을 때 기록합니다. */
 	public async trackSidePanelOpen(): Promise<void> {
 		await this.trackEvent({ name: "side_panel_open" });
 	}
 
+	/** 메모를 새로 쓰거나 고쳐 저장했을 때 기록합니다. */
 	public async trackMemoWrite(): Promise<void> {
 		await this.trackEvent({ name: "memo_write" });
 	}
 
+	/**
+	 * 화면 조회를 기록합니다.
+	 * @description 웹은 GoogleAnalytics 컴포넌트가 자동으로 수집하므로 부르지 않습니다.
+	 * gtag가 없는 사이드패널에서만 씁니다.
+	 */
 	public async trackPageView(
 		pageTitle: string,
 		pageLocation: string,

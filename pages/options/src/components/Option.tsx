@@ -26,7 +26,6 @@ export default function Option() {
 			webPrompt: "",
 			language: "ko",
 			autoApplyCategory: true,
-			textSelectionEnabled: false,
 			impressionSectionEnabled: false,
 			actionItemSectionEnabled: false,
 		},
@@ -42,10 +41,6 @@ export default function Option() {
 		await ChromeSyncStorage.set(
 			STORAGE_KEYS.autoApplyCategory,
 			data.autoApplyCategory,
-		);
-		await ChromeSyncStorage.set(
-			STORAGE_KEYS.textSelectionEnabled,
-			data.textSelectionEnabled,
 		);
 		await ChromeSyncStorage.set(
 			STORAGE_KEYS.impressionSectionEnabled,
@@ -75,9 +70,6 @@ export default function Option() {
 			const autoApplyCategory = await ChromeSyncStorage.get<boolean>(
 				STORAGE_KEYS.autoApplyCategory,
 			);
-			const textSelectionEnabled = await ChromeSyncStorage.get<boolean>(
-				STORAGE_KEYS.textSelectionEnabled,
-			);
 			const impressionSectionEnabled = await ChromeSyncStorage.get<boolean>(
 				STORAGE_KEYS.impressionSectionEnabled,
 			);
@@ -89,7 +81,6 @@ export default function Option() {
 			setValue("youtubePrompt", youtubePrompts);
 			setValue("webPrompt", webPrompts);
 			setValue("autoApplyCategory", autoApplyCategory ?? true);
-			setValue("textSelectionEnabled", textSelectionEnabled ?? false);
 			setValue("impressionSectionEnabled", impressionSectionEnabled ?? false);
 			setValue("actionItemSectionEnabled", actionItemSectionEnabled ?? false);
 		};

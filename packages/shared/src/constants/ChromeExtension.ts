@@ -6,3 +6,11 @@
  * 크롬 웹스토어 등록 URL에도 이 값이 들어가므로 EXTERNAL_LINK가 이 상수를 참조한다.
  */
 export const CHROME_EXTENSION_ID = "eaiojpmgklfngpjddhoalgcpkepgkclh";
+
+/**
+ * 확장 페이지의 절대 URL을 만든다.
+ * @description 예: `getExtensionUrl("options/index.html")` →
+ * `chrome-extension://<id>/options/index.html`
+ */
+export const getExtensionUrl = (path: string) =>
+	`chrome-extension://${CHROME_EXTENSION_ID}/${path}`;

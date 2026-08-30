@@ -9,21 +9,27 @@ let memoIdCounter = 1;
 let categoryIdCounter = 1;
 let highlightIdCounter = 1;
 
+/**
+ * 메모 한 건을 만든다. 실제 테이블 컬럼을 모두 채워 앱이 받는 모양과 어긋나지 않게 한다.
+ * @description 시각은 id마다 1초씩 벌린다. 같은 시각으로 만들면 정렬 키가 전부 동률이라
+ * 정렬이 뒤집혀도 삽입 순서가 그대로 나와, 정렬 결함을 원리적으로 관측할 수 없다.
+ */
 export function createMockMemo(overrides: Partial<MockMemo> = {}): MockMemo {
 	const id = memoIdCounter++;
-	const now = new Date().toISOString();
+	const now = new Date(Date.now() - id * 1000).toISOString();
+
 	return {
 		id,
 		user_id: "test-user-id",
 		url: `https://example.com/page-${id}`,
 		title: `Test Memo ${id}`,
 		memo: `Test memo content ${id}`,
+		impression: null,
+		actionItem: null,
 		favIconUrl: null,
 		isWish: false,
 		isStar: false,
 		isReading: false,
-		impression: null,
-		actionItem: null,
 		category_id: null,
 		created_at: now,
 		updated_at: now,
@@ -49,6 +55,7 @@ export function createMockSetting(
 	};
 }
 
+/** 카테고리 한 건을 만든다. */
 export function createMockCategory(
 	overrides: Partial<MockCategory> = {},
 ): MockCategory {
@@ -64,6 +71,7 @@ export function createMockCategory(
 	};
 }
 
+/** 하이라이트 한 건을 만든다. */
 export function createMockHighlight(
 	overrides: Partial<MockHighlight> = {},
 ): MockHighlight {
@@ -87,6 +95,7 @@ export function createMockHighlight(
 	};
 }
 
+/** 테스트마다 id를 1부터 다시 매긴다. */
 export function resetMockIds() {
 	memoIdCounter = 1;
 	categoryIdCounter = 1;

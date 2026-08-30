@@ -1,10 +1,9 @@
 import type { Page } from "@playwright/test";
-import { PATHS } from "@web-memo/shared/constants";
+import { getExtensionUrl, PATHS } from "@web-memo/shared/constants";
 import { expect } from "../fixtures";
 import { LANGUAGE } from "./constants";
 
-const EXTENSION_URL =
-	"chrome-extension://eaiojpmgklfngpjddhoalgcpkepgkclh/side-panel/index.html";
+const SIDE_PANEL_URL = getExtensionUrl("side-panel/index.html");
 
 export async function fillMemo(page: Page, text: string) {
 	await page.locator("#memo-textarea").fill(text);
@@ -53,7 +52,7 @@ export async function findSidePanelPage(page: Page, timeout = 10000) {
 	while (Date.now() - startTime < timeout) {
 		const sidePanelPage = context
 			.pages()
-			.find((p) => p.url() === EXTENSION_URL);
+			.find((p) => p.url() === SIDE_PANEL_URL);
 		if (sidePanelPage) {
 			// Wait for the side panel to be ready
 			await sidePanelPage

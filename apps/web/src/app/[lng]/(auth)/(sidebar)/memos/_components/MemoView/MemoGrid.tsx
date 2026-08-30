@@ -161,7 +161,7 @@ export default function MemoGrid({
 	if (memos.length === 0) return <MemoEmptyState lng={lng} />;
 
 	return (
-		<div className="relative h-full w-full">
+		<div className="relative w-full">
 			<DragBox ref={dragBoxRef} />
 			<AnimatePresence>
 				{isSelectingMode && (
@@ -179,8 +179,7 @@ export default function MemoGrid({
 				useResizeObserver
 				observeChildren
 				autoResize
-				className="container h-screen max-w-full pb-48 will-change-transform pt-4"
-				container={true}
+				className="container max-w-full pb-48 will-change-transform pt-4"
 				useRecycle={false}
 				id={CONTAINER_ID}
 				gap={16}

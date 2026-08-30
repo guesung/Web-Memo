@@ -31,22 +31,22 @@ export default function useDragSelection({
 		}
 	};
 
-	const handleAutoScroll = (container: HTMLElement, dragEndY: number): void => {
+	const handleAutoScroll = (scroller: Element, dragEndY: number): void => {
 		const isNearBottom = window.innerHeight - dragEndY < SCROLL_INTERVAL;
 		const isAtBottom =
-			container.scrollTop + container.clientHeight >= container.scrollHeight;
+			scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight;
 
 		if (isNearBottom && !isAtBottom && !bottomTimeoutRef.current) {
 			bottomTimeoutRef.current = setInterval(() => {
 				if (
-					container.scrollTop + container.clientHeight >=
-					container.scrollHeight
+					scroller.scrollTop + scroller.clientHeight >=
+					scroller.scrollHeight
 				) {
 					clearInterval(bottomTimeoutRef.current!);
 					bottomTimeoutRef.current = null;
 					return;
 				}
-				container.scrollBy({ top: SCROLL_UNIT, behavior: "auto" });
+				scroller.scrollBy({ top: SCROLL_UNIT, behavior: "auto" });
 			}, 50);
 		} else if (!isNearBottom && bottomTimeoutRef.current) {
 			clearInterval(bottomTimeoutRef.current);
@@ -54,16 +54,16 @@ export default function useDragSelection({
 		}
 
 		const isNearTop = dragEndY < SCROLL_INTERVAL;
-		const isAtTop = container.scrollTop === 0;
+		const isAtTop = scroller.scrollTop === 0;
 
 		if (isNearTop && !isAtTop && !topTimeoutRef.current) {
 			topTimeoutRef.current = setInterval(() => {
-				if (container.scrollTop === 0) {
+				if (scroller.scrollTop === 0) {
 					clearInterval(topTimeoutRef.current!);
 					topTimeoutRef.current = null;
 					return;
 				}
-				container.scrollBy({ top: -SCROLL_UNIT, behavior: "auto" });
+				scroller.scrollBy({ top: -SCROLL_UNIT, behavior: "auto" });
 			}, 50);
 		} else if (!isNearTop && topTimeoutRef.current) {
 			clearInterval(topTimeoutRef.current);
@@ -113,9 +113,10 @@ export default function useDragSelection({
 			const isMemoGrid = dragStartTarget.closest(`#${containerId}`);
 			if (!isMemoGrid || isMemoItem) return;
 
-			const container = document.getElementById(containerId);
-			if (!container) return;
-			const initialScrollTop = container.scrollTop;
+			// 스크롤 주체는 그리드가 아니라 문서다. 드래그 시작 판정만 그리드로 한다.
+			const scroller = document.scrollingElement;
+			if (!scroller) return;
+			const initialScrollTop = scroller.scrollTop;
 
 			const dragBox = dragBoxRef.current;
 			if (!dragBox) return;
@@ -130,21 +131,21 @@ export default function useDragSelection({
 					lastMouseEvent.clientY,
 				];
 
-				handleAutoScroll(container, dragEndY);
+				handleAutoScroll(scroller, dragEndY);
 
-				const containerScrolledY =
-					dragStartY - (container.scrollTop - initialScrollTop);
+				const scrolledDragStartY =
+					dragStartY - (scroller.scrollTop - initialScrollTop);
 
 				const [left, top, right, bottom] = [
 					Math.min(dragStartX, dragEndX),
-					Math.min(containerScrolledY, dragEndY),
+					Math.min(scrolledDragStartY, dragEndY),
 					Math.max(dragStartX, dragEndX),
-					Math.max(containerScrolledY, dragEndY),
+					Math.max(scrolledDragStartY, dragEndY),
 				];
 
 				const [width, height] = [
 					Math.abs(dragEndX - dragStartX),
-					Math.abs(dragEndY - containerScrolledY),
+					Math.abs(dragEndY - scrolledDragStartY),
 				];
 
 				updateDragBoxPosition(dragBox, left, top, width, height);

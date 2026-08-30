@@ -26,8 +26,9 @@ const INDICATOR_SPRING = {
 	mass: 0.6,
 } as const;
 
-const TabsIndicatorContext =
-	React.createContext<IFTabsIndicatorContext | null>(null);
+const TabsIndicatorContext = React.createContext<IFTabsIndicatorContext | null>(
+	null,
+);
 
 /**
  * Radix Tabs 위에 활성 탭 인디케이터를 얹은 탭.
@@ -41,7 +42,8 @@ const Tabs = React.forwardRef<
 	React.ElementRef<typeof TabsPrimitive.Root>,
 	React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root>
 >(({ value, defaultValue, onValueChange, ...props }, ref) => {
-	const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue);
+	const [uncontrolledValue, setUncontrolledValue] =
+		React.useState(defaultValue);
 	const layoutId = React.useId();
 
 	const isControlled = value !== undefined;

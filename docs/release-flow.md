@@ -93,6 +93,69 @@ Slack에서 `/배포현황`(등록한 슬래시 커맨드)을 실행하면 `vers
 있지 않기 때문입니다. "언제 무엇이 올라갔는가"의 답이 항상 Release 워크플로
 실행 기록 하나로 모입니다.
 
+## develop 머지는 테스트 서버로 나갑니다
+
+`develop`에 푸시하면 `cd-web.yml`이 `deploy_target: staging`으로 돌아 Vercel에
+배포하고 스테이징 별칭을 새 배포로 옮깁니다. 그 결과를 **같은 잡의 마지막 스텝**이
+같은 Slack 채널에 알립니다.
+
+```
+develop 푸시
+   │
+   ├─ ci.yml : 린트·타입·테스트 + 영향받은 앱 빌드 검증
+   │
+   └─ cd-web (deploy_target: staging)
+        ├─ Vercel 배포 + 별칭 이동
+        └─ Notify staging deploy
+             └─ Slack 게시  ┌────────────────────────────────────────┐
+                            │ 🚀 테스트 서버 배포 완료 — a1b2c3d       │
+                            │ feat: 메모 정렬 추가 · guesung          │
+                            │ [🌐 테스트 서버 열기][실행 로그 보기]     │
+                            └────────────────────────────────────────┘
+```
+
+master 알림과 달리 스토어를 조회하지 않고 배포 버튼도 달지 않습니다. 여기서
+나가는 것은 웹 하나뿐이고 그 배포는 이미 끝난 뒤라 누를 것이 없습니다.
+
+| 상태 | 언제 |
+| --- | --- |
+| 🚀 테스트 서버 배포 완료 | 배포 스텝 성공 |
+| ❌ 테스트 서버 배포 실패 | Vercel 배포 또는 별칭 이동에서 실패 |
+| ❌ 테스트 서버 빌드 실패 | 설치·Vercel 빌드에서 멈춰 배포까지 못 감 |
+
+배포 스텝의 `outcome`이 `skipped`라는 것은 그 앞에서 멈췄다는 뜻이라, 뒤의 두 경우를
+그것으로 갈라 읽습니다.
+
+**웹 변경이 없어 `cd-web`이 아예 안 돌면 알림도 없습니다.** 올라간 것이 없으면 알릴
+것도 없습니다.
+
+**취소된 run도 알리지 않습니다.** `develop`은 `cancel-in-progress`라 푸시가 연달아
+들어오면 앞선 run이 매번 취소되는데, 뒤이은 run이 어차피 배포하고 그 결과를 다시
+알리므로 취소 알림은 소음만 됩니다. 그래서 스텝 조건이 `always()`가 아니라
+`!cancelled()`입니다 — 실패는 통과시키고 취소만 뺍니다.
+
+### 왜 별도 잡이 아니라 스텝인가
+
+별도 잡으로 빼면 `needs`가 정적이라 브랜치별로 다르게 줄 수 없습니다. master 알림과
+같은 모양(`needs: [ci, changes, cd-app, cd-extension, cd-web]`)을 쓰면 테스트 서버
+알림이 앱 빌드(약 30분)를 기다리게 됩니다. `apps/app`과 `apps/web`이 둘 다
+`@web-memo/shared`에 의존해 shared를 한 줄만 고쳐도 앱 빌드가 딸려 오므로, 그 대기는
+드물지 않습니다.
+
+배포한 잡 안에서 보내면 배포 직후 곧바로 나가고, 체크아웃·node 셋업도 이미 그 잡에
+있는 것을 그대로 씁니다.
+
+### 배포된 커밋을 확인하지 않는 이유
+
+스테이징은 `--prod` 없이 빌드해 **Preview 배포**로 나갑니다. Vercel Deployment
+Protection이 Preview에 걸려 있어, 자격 증명 없는 요청은 `/api/version` 대신
+`vercel.com/login` 리다이렉트를 받습니다. 그래서 master 알림이 웹에 대해 하는
+"배포 커밋 대조"를 여기서는 할 수 없습니다. 넣어두면 항상 실패로 찍혀 경고가
+무의미해지므로 아예 넣지 않았습니다.
+
+확인까지 하고 싶다면 Vercel의 Protection Bypass for Automation 시크릿을 만들어
+`x-vercel-protection-bypass` 헤더로 요청해야 합니다. 시크릿이 하나 늘어납니다.
+
 ## 설정
 
 코드만으로는 동작하지 않습니다. Slack App과 환경변수를 한 번 만들어야 합니다.
@@ -200,12 +263,15 @@ App Store Connect의 키 ID·발급자 ID·앱 ID는 시크릿이 아니라
 
 | 파일 | 역할 |
 | --- | --- |
-| `.github/workflows/ci.yml` (`notify`) | 빌드 결과 + 스토어 현황을 Slack에 게시 |
+| `.github/workflows/ci.yml` (`notify`) | master 빌드 결과 + 스토어 현황을 Slack에 게시 |
+| `.github/workflows/cd-web.yml` (`Notify staging deploy`) | develop 테스트 서버 배포 결과를 Slack에 게시 |
 | `.github/workflows/versions.yml` | 배포 현황만 조회해 게시 |
 | `.github/workflows/release.yml` | 실제 스토어 제출 (버튼이 이걸 실행) + 결과 알림 |
 | `.github/scripts/notify-release-result.mjs` | 릴리스 성패를 타깃별로 Slack에 보고 |
+| `.github/scripts/notify-staging-deploy.mjs` | 테스트 서버 배포 성패를 Slack에 보고 |
 | `.github/scripts/lib/store-versions.mjs` | 스토어 4곳 버전 조회 |
 | `.github/scripts/lib/repo-versions.mjs` | 레포에 커밋된 빌드 버전 읽기 |
+| `.github/scripts/lib/run-context.mjs` | 워크플로 실행 맥락(환경변수·커밋 제목) 읽기 |
 | `.github/scripts/lib/slack-blocks.mjs` | Slack 메시지·버튼 조립 |
 | `apps/web/src/modules/slack/` | 서명 검증, workflow_dispatch, 모달 |
 | `apps/web/src/app/api/slack/interactivity/` | 버튼·모달 제출 수신 |
@@ -225,6 +291,11 @@ GITHUB_SHA=$(git rev-parse HEAD) node .github/scripts/report-store-versions.mjs
 GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 GITHUB_SHA=$(git rev-parse HEAD) \
   BUILD_RESULTS='{"ci":"success","app":"success","web":"skipped","extension":"success"}' \
   node .github/scripts/notify-build-ready.mjs
+
+# 테스트 서버 배포 알림에 나갈 Slack 페이로드 확인
+GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 GITHUB_SHA=$(git rev-parse HEAD) \
+  DEPLOY_OUTCOME=success \
+  node .github/scripts/notify-staging-deploy.mjs
 ```
 
 버튼이 만드는 `workflow_dispatch`가 제대로 도는지는 `gh`로 먼저 확인할 수 있습니다.

@@ -14,15 +14,8 @@
  */
 
 import { readAppConfig, readExtensionVersion } from "./lib/repo-versions.mjs";
+import { requireEnv } from "./lib/run-context.mjs";
 import { postToSlack } from "./lib/slack-blocks.mjs";
-
-const requireEnv = (name) => {
-	const value = process.env[name];
-
-	if (!value) throw new Error(`${name} 이(가) 설정되지 않았습니다`);
-
-	return value;
-};
 
 const DESCRIPTIONS = {
 	success: "✅ 완료",

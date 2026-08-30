@@ -61,10 +61,29 @@ jobs:
         run: vercel build ${{ inputs.deploy_target == 'production' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy staging
+        id: deploy-staging
         if: ${{ inputs.deploy_target == 'staging' }}
         run: |
           VERCEL_DEPLOYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
           vercel alias set "$VERCEL_DEPLOYED_URL" ${{ secrets.STAGING_WEB_URL_WITHOUT_PROTOCOL }} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects
+
+      # 배포한 이 잡에서 바로 알립니다. 별도 잡으로 빼면 needs가 정적이라 앱 빌드(약 30분)를
+      # 기다리게 되고, develop 푸시에서는 apps/app과 apps/web이 @web-memo/shared를 함께 써
+      # 그 대기가 흔하게 걸립니다. 여기서는 배포 직후 곧바로 나갑니다.
+      #
+      # 이 잡이 아예 안 도는 경우(웹 변경 없음)에는 알리지 않습니다. 올라간 것이 없으면
+      # 알릴 것도 없습니다. 프로덕션 배포는 release.yml의 notify가 따로 보고합니다.
+      - name: Notify staging deploy
+        # 배포가 깨졌을 때야말로 알려야 하므로 실패해도 돌립니다(!cancelled()는 실패를 통과시킵니다).
+        # 취소만 뺍니다. develop은 cancel-in-progress라 푸시가 연달으면 앞선 run이 매번 취소되는데,
+        # 뒤이은 run이 어차피 배포하고 그 결과를 다시 알리므로 취소 알림은 소음만 됩니다.
+        if: ${{ !cancelled() && inputs.deploy_target == 'staging' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          # 배포 스텝의 outcome만으로는 "배포하다 실패"와 "빌드에서 멈춰 배포까지 못 감"이
+          # 둘 다 실패로 뭉개집니다. skipped는 앞 스텝에서 멈췄다는 뜻입니다.
+          DEPLOY_OUTCOME: ${{ steps.deploy-staging.outcome }}
+        run: node .github/scripts/notify-staging-deploy.mjs
 
       - name: Deploy production
         if: ${{ inputs.deploy_target == 'production' }}

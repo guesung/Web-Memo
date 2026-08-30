@@ -1,4 +1,5 @@
 import type { MemoInput } from "@src/types/Input";
+import type { TMemoStatusKey } from "@web-memo/shared/constants";
 import {
 	useDebounce,
 	useDidMount,
@@ -53,6 +54,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 			setValue("isWish", memoData?.isWish ?? false);
 			setValue("isStar", memoData?.isStar ?? false);
+			setValue("isReading", memoData?.isReading ?? false);
 			setValue("categoryId", memoData?.category_id ?? null);
 		},
 		[
@@ -62,6 +64,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 			memoData?.actionItem,
 			memoData?.isWish,
 			memoData?.isStar,
+			memoData?.isReading,
 			memoData?.category_id,
 			setValue,
 		],
@@ -81,6 +84,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 				actionItem: overrides?.actionItem ?? currentValues.actionItem,
 				isWish: overrides?.isWish ?? currentValues.isWish,
 				isStar: overrides?.isStar ?? currentValues.isStar,
+				isReading: overrides?.isReading ?? currentValues.isReading,
 				categoryId: overrides?.categoryId ?? currentValues.categoryId,
 			};
 
@@ -101,6 +105,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 						actionItem: memoInput.actionItem,
 						isWish: memoInput.isWish,
 						isStar: memoInput.isStar,
+						isReading: memoInput.isReading,
 						category_id: memoInput.categoryId,
 					},
 				},
@@ -160,21 +165,16 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		[setValue, memoData?.id, patchMemo],
 	);
 
-	const toggleWish = useCallback(async () => {
-		const currentIsWish = getValues("isWish");
-		const newIsWish = !currentIsWish;
-		setValue("isWish", newIsWish);
-		await saveMemo({ isWish: newIsWish });
-		return newIsWish;
-	}, [getValues, setValue, saveMemo]);
+	const toggleMemoStatus = async (statusKey: TMemoStatusKey) => {
+		const nextStatusValue = !getValues(statusKey);
+		const statusOverride: Partial<MemoInput> = {};
+		statusOverride[statusKey] = nextStatusValue;
 
-	const toggleStar = useCallback(async () => {
-		const currentIsStar = getValues("isStar");
-		const newIsStar = !currentIsStar;
-		setValue("isStar", newIsStar);
-		await saveMemo({ isStar: newIsStar });
-		return newIsStar;
-	}, [getValues, setValue, saveMemo]);
+		setValue(statusKey, nextStatusValue);
+		await saveMemo(statusOverride);
+
+		return nextStatusValue;
+	};
 
 	return {
 		memoData,
@@ -184,7 +184,6 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		handleImpressionChange,
 		handleActionItemChange,
 		updateCategory,
-		toggleWish,
-		toggleStar,
+		toggleMemoStatus,
 	};
 }

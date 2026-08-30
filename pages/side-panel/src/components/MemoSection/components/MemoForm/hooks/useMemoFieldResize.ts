@@ -78,7 +78,8 @@ export default function useMemoFieldResize({
 
 				const nextFieldRatios = { ...fieldRatiosRef.current };
 				nextFieldRatios[dragStart.upperFieldKey] = nextUpperRatio;
-				nextFieldRatios[resizingFieldKey] = dragStart.pairRatio - nextUpperRatio;
+				nextFieldRatios[resizingFieldKey] =
+					dragStart.pairRatio - nextUpperRatio;
 
 				fieldRatiosRef.current = nextFieldRatios;
 				setFieldRatios(nextFieldRatios);

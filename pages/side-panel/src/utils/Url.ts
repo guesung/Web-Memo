@@ -1,18 +1,34 @@
 import { CONFIG } from "@web-memo/env";
-import { PATHS } from "@web-memo/shared/constants";
+import {
+	MEMO_STATUS_KEYS,
+	PATHS,
+	type TMemoStatusKey,
+} from "@web-memo/shared/constants";
 import { SearchParams } from "@web-memo/shared/modules/search-params";
 
-interface GetMemoUrlParams {
+/**
+ * 웹 메모 목록 URL을 만들 때 넘기는 조건.
+ * @description 상태 키는 이름 그대로 검색 파라미터가 되므로 따로 매핑하지 않는다.
+ */
+export interface IFMemoUrlParams
+	extends Partial<Record<TMemoStatusKey, boolean>> {
 	id?: number;
-	isWish?: boolean;
-	isStar?: boolean;
 }
 
-export const getMemoUrl = ({ id, isWish, isStar }: GetMemoUrlParams) => {
+/**
+ * 주어진 조건이 걸린 웹 메모 목록 URL을 만든다.
+ */
+export const getMemoUrl = (params: IFMemoUrlParams) => {
 	const searchParams = new SearchParams();
-	if (id) searchParams.set("id", String(id));
-	if (isWish) searchParams.set("isWish", "true");
-	if (isStar) searchParams.set("isStar", "true");
+
+	if (params.id) {
+		searchParams.set("id", String(params.id));
+	}
+	MEMO_STATUS_KEYS.forEach((statusKey) => {
+		if (params[statusKey]) {
+			searchParams.set(statusKey, "true");
+		}
+	});
 
 	return `${CONFIG.webUrl}${PATHS.memos}${searchParams.getSearchParams()}`;
 };

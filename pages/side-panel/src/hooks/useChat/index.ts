@@ -1,4 +1,5 @@
 import { CONFIG } from "@web-memo/env";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { STORAGE_KEYS } from "@web-memo/shared/modules/chrome-storage";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePageContentContext } from "../../components/PageContentProvider";
@@ -92,6 +93,8 @@ export default function useChat(): UseChatReturn {
 			};
 
 			setMessages((prev) => [...prev, assistantMessage]);
+
+			analytics.trackEvent({ name: "chat_message_send" });
 
 			try {
 				const chatMessages = [...messages, userMessage].map((msg) => ({

@@ -38,7 +38,12 @@ export interface IFGa4EventParams {
 export type TAnalyticsEvent =
 	| { name: "side_panel_open" }
 	| { name: "page_view"; params: { page_title: string; page_location: string } }
-	| { name: "memo_write" };
+	| { name: "memo_write" }
+	| { name: "memo_delete"; params: { memo_count: number } }
+	| { name: "summary_run" }
+	| { name: "summary_complete"; params: { duration_msec: number } }
+	| { name: "chat_message_send" }
+	| { name: "tab_change"; params: { tab_name: string } };
 
 /** 이벤트 이름만 추린 유니온. */
 export type TAnalyticsEventName = TAnalyticsEvent["name"];
@@ -51,4 +56,9 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	side_panel_open: "engagement",
 	page_view: "engagement",
 	memo_write: "core_action",
+	memo_delete: "core_action",
+	summary_run: "core_action",
+	summary_complete: "core_action",
+	chat_message_send: "core_action",
+	tab_change: "engagement",
 };

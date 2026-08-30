@@ -45,6 +45,7 @@ export { default as ToggleTheme } from "./ToggleTheme";
 export * from "./table";
 export * from "./tabs";
 export * from "./textarea";
+export * from "./TextShimmer";
 export * from "./toast";
 export * from "./toaster";
 export * from "./toggle";

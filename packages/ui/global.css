@@ -106,6 +106,41 @@ body {
 	}
 }
 
+/* 로딩 중 텍스트를 쓸어내리는 shimmer.
+   출처: https://beui.dev (MIT License) — components/motion/text-shimmer
+   원본은 그라데이션에 var(--muted-foreground) 를 색으로 바로 넣는다.
+   이 레포의 토큰은 raw HSL(0 0% 39%) 이라 그대로 두면 색이 되지 않아
+   hsl() 로 감쌌고, 인라인 style 대신 클래스로 옮겼다. */
+@keyframes text-shimmer {
+	from {
+		background-position: 200% 0;
+	}
+	to {
+		background-position: -200% 0;
+	}
+}
+
+.text-shimmer {
+	background-image: linear-gradient(
+		110deg,
+		hsl(var(--muted-foreground)) 30%,
+		hsl(var(--foreground)) 50%,
+		hsl(var(--muted-foreground)) 70%
+	);
+	background-size: 200% 100%;
+	background-clip: text;
+	color: transparent;
+	animation: text-shimmer var(--text-shimmer-duration, 2.5s) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.text-shimmer {
+		background-image: none;
+		color: hsl(var(--muted-foreground));
+		animation: none;
+	}
+}
+
 .prose {
 	--tw-prose-headings: var(--foreground);
 

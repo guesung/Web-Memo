@@ -45,6 +45,9 @@ export { default as ToggleTheme } from "./ToggleTheme";
 export * from "./table";
 export * from "./tabs";
 export * from "./textarea";
+/**
+ * 로딩 대기 중 텍스트를 쓸어내리는 shimmer
+ */
 export * from "./TextShimmer";
 export * from "./toast";
 export * from "./toaster";

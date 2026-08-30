@@ -12,6 +12,25 @@ on:
         type: string
         default: ""
 
+  # ci.yml이 부르는 경로에는 배포가 조용히 스킵되는 틈이 있습니다. CI가 실패한
+  # 커밋의 변경분은 배포되지 못한 채 지나가고, 다음 커밋의 affected 판정은 직전
+  # 커밋만 기준으로 삼아 그 변경분을 다시 잡지 않습니다. 실패가 아니라 스킵이라
+  # 알림도 뜨지 않으므로, 사람이 손으로 밀어 넣을 수 있는 문을 둡니다.
+  # production을 뺀 것은 의도입니다 — 실제 배포는 release.yml 한 경로로 유지합니다.
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: "배포 대상"
+        type: choice
+        options:
+          - none
+          - staging
+        default: "none"
+      ref:
+        description: "체크아웃할 커밋/태그 (비우면 실행한 브랜치)"
+        type: string
+        default: ""
+
 jobs:
   build-extension:
     name: 확장 빌드

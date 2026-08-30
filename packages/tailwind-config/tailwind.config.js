@@ -8,7 +8,6 @@ export default {
 	theme: {
 		extend: {
 			fontFamily: {
-				pretendard: ["var(--font-pretendard)"],
 				sans: ["var(--font-sans)"],
 				serif: ["var(--font-serif)"],
 				mono: ["var(--font-mono)"],

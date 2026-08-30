@@ -163,7 +163,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 											>
 												<div className="flex items-center gap-3 flex-1 min-w-0">
 													<div
-														className="w-2 h-2 rounded-full flex-shrink-0 ring-2 ring-white dark:ring-gray-900 shadow-sm"
+														className="w-2 h-2 rounded-full flex-shrink-0 ring-2 ring-sidebar shadow-sm"
 														style={{ backgroundColor: categoryColor }}
 													/>
 													<span

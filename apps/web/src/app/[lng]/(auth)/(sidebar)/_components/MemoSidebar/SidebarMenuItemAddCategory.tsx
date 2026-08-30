@@ -92,7 +92,7 @@ export default memo(function SidebarMenuItemAddCategory({ lng }: LanguageType) {
 			style={{ borderLeft: `3px solid ${color}` }}
 		>
 			<div
-				className="relative w-2 h-2 rounded-full flex-shrink-0 ring-2 ring-white dark:ring-gray-900 shadow-sm cursor-pointer"
+				className="relative w-2 h-2 rounded-full flex-shrink-0 ring-2 ring-sidebar shadow-sm cursor-pointer"
 				style={{ backgroundColor: color }}
 			>
 				<input

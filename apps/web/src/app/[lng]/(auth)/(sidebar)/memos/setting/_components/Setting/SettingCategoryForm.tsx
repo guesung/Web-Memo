@@ -118,7 +118,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 						>
 							<button
 								type="button"
-								className="relative w-5 h-5 rounded-full flex-shrink-0 ring-2 ring-gray-200 dark:ring-gray-700 hover:ring-gray-400 dark:hover:ring-gray-500 transition-all cursor-pointer hover:scale-110"
+								className="relative w-5 h-5 rounded-full flex-shrink-0 ring-2 ring-border hover:ring-muted-foreground transition-all cursor-pointer hover:scale-110"
 								style={{ backgroundColor: categoryColor }}
 								onClick={() => openColorPicker(category.id, categoryColor)}
 								aria-label={t("sideBar.changeColor")}

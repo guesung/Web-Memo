@@ -118,10 +118,10 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 						</Link>
 					</SidebarMenu>
 				</SidebarGroup>
-				<SidebarSeparator className="my-4 bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
+				<SidebarSeparator className="my-4 bg-gradient-to-r from-transparent via-border to-transparent" />
 				<SidebarGroupCategory lng={lng} />
 			</SidebarContent>
-			<SidebarFooter className="border-t border-border bg-muted/50 p-3">
+			<SidebarFooter className="border-t border-border bg-sidebar-accent p-3">
 				<TooltipProvider>
 					<Tooltip>
 						<TooltipTrigger asChild>

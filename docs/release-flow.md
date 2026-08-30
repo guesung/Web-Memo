@@ -267,6 +267,7 @@ App Store Connect의 키 ID·발급자 ID·앱 ID는 시크릿이 아니라
 | `.github/scripts/notify-staging-deploy.mjs` | 테스트 서버 배포 성패를 Slack에 보고 |
 | `.github/scripts/lib/store-versions.mjs` | 스토어 4곳 버전 조회 |
 | `.github/scripts/lib/repo-versions.mjs` | 레포에 커밋된 빌드 버전 읽기 |
+| `.github/scripts/lib/run-context.mjs` | 워크플로 실행 맥락(환경변수·커밋 제목) 읽기 |
 | `.github/scripts/lib/slack-blocks.mjs` | Slack 메시지·버튼 조립 |
 | `apps/web/src/modules/slack/` | 서명 검증, workflow_dispatch, 모달 |
 | `apps/web/src/app/api/slack/interactivity/` | 버튼·모달 제출 수신 |

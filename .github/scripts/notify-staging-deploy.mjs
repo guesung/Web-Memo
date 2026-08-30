@@ -20,9 +20,8 @@
  *   node .github/scripts/notify-staging-deploy.mjs
  */
 
-import { execFileSync } from "node:child_process";
-
 import { readWebUrl } from "./lib/repo-versions.mjs";
+import { readCommitSubject, requireEnv } from "./lib/run-context.mjs";
 import { postToSlack } from "./lib/slack-blocks.mjs";
 
 const HEADLINES = {
@@ -36,26 +35,6 @@ const HEADLINES = {
 const DETAILS = {
 	deployFailed: "Vercel 배포 또는 별칭 이동에서 실패했습니다.",
 	buildFailed: "배포 단계까지 가지 못했습니다.",
-};
-
-const requireEnv = (name) => {
-	const value = process.env[name];
-
-	if (!value) {
-		throw new Error(`${name} 이(가) 설정되지 않았습니다`);
-	}
-
-	return value;
-};
-
-const readCommitSubject = (commitSha) => {
-	try {
-		return execFileSync("git", ["log", "-1", "--format=%s", commitSha], {
-			encoding: "utf8",
-		}).trim();
-	} catch {
-		return "";
-	}
 };
 
 /**

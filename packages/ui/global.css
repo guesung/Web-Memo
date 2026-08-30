@@ -8,7 +8,7 @@
 		--foreground: 0 0% 4%;
 		--card: 0 0% 96%;
 		--card-foreground: 0 0% 4%;
-		--popover: 0 0% 100%;
+		--popover: 0 0% 96%;
 		--popover-foreground: 0 0% 4%;
 		--primary: 221.2121 83.1933% 53.3333%;
 		--primary-foreground: 0 0% 99%;
@@ -21,7 +21,7 @@
 		--destructive: 0 72.2222% 50.5882%;
 		--destructive-foreground: 0 0% 99%;
 		--border: 0 0% 89%;
-		--input: 0 0% 90%;
+		--input: 0 0% 85%;
 		--ring: 221.2121 83.1933% 53.3333%;
 		--chart-1: 221.2121 83.1933% 53.3333%;
 		--chart-2: 161.3793 93.5484% 30.3922%;
@@ -69,7 +69,7 @@
 		--destructive: 0 84.2365% 60.1961%;
 		--destructive-foreground: 0 0% 95%;
 		--border: 0 0% 20%;
-		--input: 0 0% 17%;
+		--input: 0 0% 26%;
 		--ring: 217.2193 91.2195% 59.8039%;
 		--chart-1: 217.2193 91.2195% 59.8039%;
 		--chart-2: 160.1183 84.0796% 39.4118%;
@@ -120,24 +120,26 @@ body {
 	}
 }
 
-.text-shimmer {
-	background-image: linear-gradient(
-		110deg,
-		hsl(var(--muted-foreground)) 30%,
-		hsl(var(--foreground)) 50%,
-		hsl(var(--muted-foreground)) 70%
-	);
-	background-size: 200% 100%;
-	background-clip: text;
-	color: transparent;
-	animation: text-shimmer 2.5s linear infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
+@layer utilities {
 	.text-shimmer {
-		background-image: none;
-		color: hsl(var(--muted-foreground));
-		animation: none;
+		background-image: linear-gradient(
+			110deg,
+			hsl(var(--muted-foreground)) 30%,
+			hsl(var(--foreground)) 50%,
+			hsl(var(--muted-foreground)) 70%
+		);
+		background-size: 200% 100%;
+		background-clip: text;
+		color: transparent;
+		animation: text-shimmer 2.5s linear infinite;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.text-shimmer {
+			background-image: none;
+			color: hsl(var(--muted-foreground));
+			animation: none;
+		}
 	}
 }
 

@@ -17,6 +17,8 @@ interface IFTextShimmerProps {
  * 스피너와 달리 "무엇을 기다리는지"를 문장으로 말할 수 있어, 요약·응답
  * 생성처럼 몇 초 이상 걸리는 대기에 쓴다. 그라데이션과
  * prefers-reduced-motion 대응은 global.css 의 .text-shimmer 에 있다.
+ * 글자색은 이 컴포넌트가 정한다. className 으로 색 유틸을 넘겨도
+ * 덮이지 않으니 크기·여백만 넘긴다.
  */
 export function TextShimmer({ children, className }: IFTextShimmerProps) {
 	return (

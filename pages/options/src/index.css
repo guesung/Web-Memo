@@ -7,7 +7,7 @@
 	font-style: normal;
 	font-weight: 45 920;
 	font-display: swap;
-	src: url("/fonts/PretendardVariableSubset.woff2") format("woff2-variations");
+	src: url("/fonts/PretendardVariableSubset.woff2") format("woff2");
 }
 
 @layer base {

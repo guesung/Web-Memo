@@ -115,4 +115,38 @@ test.describe("MemoDialog dismiss 동작 (Mocked)", () => {
 
 		await expect(dialog).toBeHidden();
 	});
+
+	test("드롭다운을 연 채 Dialog를 닫아도, 목록을 다시 열 수 있다.", async ({
+		page,
+	}) => {
+		const memoItem = page.locator(".memo-item", { hasText: memoText });
+		await memoItem.click();
+
+		const dialog = page.locator('[role="dialog"]');
+		await expect(dialog.getByTestId("memo-textarea")).toBeVisible();
+
+		await dialog.getByTestId("memo-option").click();
+		await expect(page.getByTestId("memo-delete-button")).toBeVisible();
+
+		await page.keyboard.press("Escape");
+		await expect(page.getByTestId("memo-delete-button")).toBeHidden();
+		await page.keyboard.press("Escape");
+		await expect(dialog).toBeHidden();
+
+		/**
+		 * 닫은 뒤에도 목록이 클릭을 받아야 한다.
+		 *
+		 * @description Dialog와 드롭다운은 둘 다 열릴 때 body에 pointer-events: none을 건다.
+		 * 둘이 겹쳐 닫히면 복구 순서가 어긋나 none이 남고, 그러면 화면 전체가 클릭을 먹지 않는다.
+		 * 화면은 멀쩡해 보이므로 "메모를 눌러도 아무 반응이 없다"로만 드러난다.
+		 */
+		await expect
+			.poll(() =>
+				page.evaluate(() => getComputedStyle(document.body).pointerEvents),
+			)
+			.not.toBe("none");
+
+		await memoItem.click();
+		await expect(dialog.getByTestId("memo-textarea")).toBeVisible();
+	});
 });

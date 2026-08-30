@@ -19,7 +19,9 @@ export default function MemoFieldsOption() {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>{I18n.get("memo_fields_setting")}</CardTitle>
+				<CardTitle asChild>
+					<h2 className="text-lg">{I18n.get("memo_fields_setting")}</h2>
+				</CardTitle>
 			</CardHeader>
 			<CardContent className="flex flex-col gap-4 pb-6">
 				<div className="flex items-center gap-3">

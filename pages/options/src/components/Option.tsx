@@ -96,7 +96,9 @@ export default function Option() {
 		<div className="flex flex-col gap-6">
 			<Card>
 				<CardHeader>
-					<CardTitle>{I18n.get("prompt_language_setting")}</CardTitle>
+					<CardTitle asChild>
+						<h2 className="text-lg">{I18n.get("prompt_language_setting")}</h2>
+					</CardTitle>
 				</CardHeader>
 				<CardContent className="pb-6">
 					<Select
@@ -118,7 +120,11 @@ export default function Option() {
 
 			<Card>
 				<CardHeader>
-					<CardTitle>{I18n.get("auto_apply_category_setting")}</CardTitle>
+					<CardTitle asChild>
+						<h2 className="text-lg">
+							{I18n.get("auto_apply_category_setting")}
+						</h2>
+					</CardTitle>
 				</CardHeader>
 				<CardContent className="pb-6">
 					<div className="flex items-center gap-3">
@@ -141,7 +147,9 @@ export default function Option() {
 
 			<Card>
 				<CardHeader>
-					<CardTitle>{I18n.get("memo_section_setting")}</CardTitle>
+					<CardTitle asChild>
+						<h2 className="text-lg">{I18n.get("memo_section_setting")}</h2>
+					</CardTitle>
 				</CardHeader>
 				<CardContent className="flex flex-col gap-4 pb-6">
 					<div className="flex items-center gap-3">

@@ -36,7 +36,7 @@
 		--sidebar-accent-foreground: 0 0% 4%;
 		--sidebar-border: 0 0% 89%;
 		--sidebar-ring: 221.2121 83.1933% 53.3333%;
-		--font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+		--font-sans: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
 		--font-serif: Lora, Georgia, Cambria, serif;
 		--font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 		--radius: 0.625rem;

@@ -62,6 +62,7 @@ interface PageActionsSheetProps {
 	onStarToggle: () => void;
 	onShare: () => void;
 	onOpenAI: () => void;
+	/** 현재 도메인의 드래그 잠금 해제를 켜거나 끈다 */
 	onSelectionUnlockToggle: () => void;
 }
 

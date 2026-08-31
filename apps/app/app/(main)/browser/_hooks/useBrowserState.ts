@@ -646,7 +646,7 @@ export function useBrowserState({
 	 * @description 켤 때는 지금 보고 있는 문서에 즉시 주입한다. 끌 때는 이미 주입한
 	 * 스타일과 리스너를 되돌릴 방법이 없으므로 페이지를 다시 읽어 원래 동작으로 돌린다.
 	 */
-	const handleSelectionUnlockToggle = useCallback(async () => {
+	const handleSelectionUnlockToggle = async () => {
 		const hostname = getHostname(currentUrl);
 		if (!hostname) {
 			return;
@@ -664,7 +664,7 @@ export function useBrowserState({
 		await addUnlockedDomain(hostname);
 		setUnlockedDomains((domains) => [...domains, hostname]);
 		webViewRef.current?.injectJavaScript(UNLOCK_SELECTION_JS);
-	}, [currentUrl, isSelectionUnlocked]);
+	};
 
 	return {
 		insets,

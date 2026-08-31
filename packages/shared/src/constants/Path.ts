@@ -11,6 +11,7 @@ export const PATHS = {
 	update: "/update",
 	memosWish: "/memos?isWish=true",
 	memosSetting: "/memos/setting",
+	memosTrash: "/memos/trash",
 	callbackOAuth: "/auth/callback",
 	callbackEmail: "/auth/callback-email",
 	admin: "/admin",

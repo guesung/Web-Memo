@@ -13,6 +13,7 @@ import {
 import {
 	Alert,
 	Linking,
+	ScrollView,
 	Switch,
 	Text,
 	TouchableOpacity,
@@ -70,7 +71,13 @@ export default function SettingsScreen() {
 				</Text>
 			</View>
 
-			<View className="flex-1 px-5">
+			{/* 섹션이 화면 높이를 넘어가므로 스크롤 주체가 필요하다. 일반 View로 두면
+			    넘치는 섹션(로그인 시 메모 필드부터)이 잘린 채 닿을 방법이 없다. */}
+			<ScrollView
+				className="flex-1 px-5"
+				contentContainerStyle={{ paddingBottom: 32 }}
+				showsVerticalScrollIndicator={false}
+			>
 				{/* Account Section */}
 				<View className="mb-7">
 					<Text className="text-sm font-semibold text-muted-foreground dark:text-neutral-500 uppercase tracking-wide mb-2.5">
@@ -255,7 +262,7 @@ export default function SettingsScreen() {
 						</TouchableOpacity>
 					</View>
 				</View>
-			</View>
+			</ScrollView>
 		</View>
 	);
 }

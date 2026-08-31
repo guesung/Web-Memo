@@ -70,6 +70,8 @@ export default function BrowserScreen() {
 		closePanel,
 		handleBlogSelect,
 		handleShare,
+		isSelectionUnlocked,
+		handleSelectionUnlockToggle,
 		SCROLL_DETECT_JS,
 		isActionsSheetOpen,
 		setIsActionsSheetOpen,
@@ -233,6 +235,8 @@ export default function BrowserScreen() {
 				onStarToggle={handleStarToggle}
 				onShare={handleShare}
 				onOpenAI={openAISheet}
+				isSelectionUnlocked={isSelectionUnlocked}
+				onSelectionUnlockToggle={handleSelectionUnlockToggle}
 			/>
 
 			<AISheet

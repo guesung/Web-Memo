@@ -42,7 +42,13 @@ import {
 } from "@/lib/storage/scrollPositions";
 import { supabase } from "@/lib/supabase/client";
 import { WEB_API_ORIGIN } from "../_constants/webApi";
-import { getPanelRatio, savePanelRatio } from "../_utils/browserPreferences";
+import {
+	addUnlockedDomain,
+	getPanelRatio,
+	getUnlockedDomains,
+	removeUnlockedDomain,
+	savePanelRatio,
+} from "../_utils/browserPreferences";
 import { formatUrl } from "../_utils/formatUrl";
 import {
 	isInAppLoadableUrl,
@@ -52,6 +58,7 @@ import {
 	EXTRACT_PAGE_TEXT_JS,
 	INJECTED_JS_ON_NAVIGATION,
 	SCROLL_DETECT_JS,
+	UNLOCK_SELECTION_JS,
 } from "../_utils/webViewScripts";
 import { useAndroidWebViewBack } from "./useAndroidWebViewBack";
 
@@ -98,6 +105,7 @@ export function useBrowserState({
 	const [aiQuestion, setAiQuestion] = useState("");
 	const [isAILoading, setIsAILoading] = useState(false);
 	const [aiError, setAiError] = useState<string | null>(null);
+	const [unlockedDomains, setUnlockedDomains] = useState<string[]>([]);
 
 	const { isLoggedIn } = useAuth();
 	const queryClient = useQueryClient();
@@ -163,6 +171,10 @@ export function useBrowserState({
 		});
 	}, []);
 
+	useEffect(() => {
+		getUnlockedDomains().then(setUnlockedDomains);
+	}, []);
+
 	useFocusEffect(
 		useCallback(() => {
 			isBrowserActive.value = 1;
@@ -198,6 +210,11 @@ export function useBrowserState({
 
 		if (navState.loading === false) {
 			webViewRef.current?.injectJavaScript(INJECTED_JS_ON_NAVIGATION);
+
+			// 해제해 둔 도메인은 사용자가 다시 누르지 않아도 풀려 있어야 한다.
+			if (isDomainUnlocked(navState.url, unlockedDomains)) {
+				webViewRef.current?.injectJavaScript(UNLOCK_SELECTION_JS);
+			}
 
 			if (restoredUrlRef.current !== navState.url) {
 				restoredUrlRef.current = navState.url;
@@ -611,6 +628,44 @@ export function useBrowserState({
 		shareUrl(currentUrl, pageTitle);
 	}, [currentUrl, pageTitle]);
 
+	const isSelectionUnlocked = isDomainUnlocked(currentUrl, unlockedDomains);
+
+	// 저장소 읽기가 첫 페이지 로드보다 늦게 끝나면 handleNavigationStateChange의
+	// 자동 주입이 빈 목록을 보고 지나간다. 목록이 도착한 뒤 한 번 더 맞춘다.
+	// UNLOCK_SELECTION_JS는 같은 문서에 두 번 들어가도 첫 줄에서 빠져나온다.
+	useEffect(() => {
+		if (!isSelectionUnlocked) {
+			return;
+		}
+
+		webViewRef.current?.injectJavaScript(UNLOCK_SELECTION_JS);
+	}, [isSelectionUnlocked]);
+
+	/**
+	 * 현재 도메인의 드래그 잠금 해제를 켜거나 끈다.
+	 * @description 켤 때는 지금 보고 있는 문서에 즉시 주입한다. 끌 때는 이미 주입한
+	 * 스타일과 리스너를 되돌릴 방법이 없으므로 페이지를 다시 읽어 원래 동작으로 돌린다.
+	 */
+	const handleSelectionUnlockToggle = useCallback(async () => {
+		const hostname = getHostname(currentUrl);
+		if (!hostname) {
+			return;
+		}
+
+		if (isSelectionUnlocked) {
+			await removeUnlockedDomain(hostname);
+			setUnlockedDomains((domains) =>
+				domains.filter((domain) => domain !== hostname),
+			);
+			webViewRef.current?.reload();
+			return;
+		}
+
+		await addUnlockedDomain(hostname);
+		setUnlockedDomains((domains) => [...domains, hostname]);
+		webViewRef.current?.injectJavaScript(UNLOCK_SELECTION_JS);
+	}, [currentUrl, isSelectionUnlocked]);
+
 	return {
 		insets,
 		webViewRef,
@@ -647,6 +702,8 @@ export function useBrowserState({
 		closePanel,
 		handleBlogSelect,
 		handleShare,
+		isSelectionUnlocked,
+		handleSelectionUnlockToggle,
 		SCROLL_DETECT_JS,
 		isActionsSheetOpen,
 		setIsActionsSheetOpen,
@@ -661,4 +718,23 @@ export function useBrowserState({
 		aiError,
 		askAIQuestion,
 	};
+}
+
+/** URL에서 hostname을 뽑는다. 파싱할 수 없는 값이면 null */
+function getHostname(url: string): string | null {
+	try {
+		return new URL(url).hostname;
+	} catch {
+		return null;
+	}
+}
+
+/** 해당 URL의 도메인이 드래그 잠금 해제 목록에 있는지 */
+function isDomainUnlocked(url: string, unlockedDomains: string[]): boolean {
+	const hostname = getHostname(url);
+	if (!hostname) {
+		return false;
+	}
+
+	return unlockedDomains.includes(hostname);
 }

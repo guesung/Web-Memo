@@ -116,9 +116,11 @@ export default function BrowserScreen() {
 		isCurrentPageWish ||
 		isCurrentPageStar;
 
+	// 다크 배경은 다른 탭 화면과 같은 neutral-950이어야 한다. 900으로 두면
+	// 탭을 오갈 때 배경색이 한 단계 튀어 잔상처럼 보인다.
 	return (
 		<KeyboardAvoidingView
-			className="flex-1 bg-white dark:bg-neutral-900"
+			className="flex-1 bg-white dark:bg-neutral-950"
 			style={{ paddingTop: insets.top, paddingBottom: keyboardBottomInset }}
 			behavior={Platform.OS === "ios" ? "padding" : undefined}
 		>

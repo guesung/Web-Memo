@@ -31,6 +31,7 @@ export class MemoService {
 			.schema(SUPABASE.table.memo)
 			.from(SUPABASE.table.memo)
 			.select("*, category(id, name, color)")
+			.is("deleted_at", null)
 			.eq("url", url);
 
 	getMemoById = async (id: number) =>
@@ -38,6 +39,7 @@ export class MemoService {
 			.schema(SUPABASE.table.memo)
 			.from(SUPABASE.table.memo)
 			.select("*, category(id, name, color)")
+			.is("deleted_at", null)
 			.eq("id", id);
 
 	upsertMemos = async (request: GetMemoResponse[]) => {
@@ -61,24 +63,28 @@ export class MemoService {
 				.schema(SUPABASE.table.memo)
 				.from(SUPABASE.table.memo)
 				.select("*, category(id, name, color)")
+				.is("deleted_at", null)
 				.order("updated_at", { ascending: false })
 				.range(0, 999),
 			this.supabaseClient
 				.schema(SUPABASE.table.memo)
 				.from(SUPABASE.table.memo)
 				.select("*, category(id, name, color)")
+				.is("deleted_at", null)
 				.order("updated_at", { ascending: false })
 				.range(1000, 1999),
 			this.supabaseClient
 				.schema(SUPABASE.table.memo)
 				.from(SUPABASE.table.memo)
 				.select("*, category(id, name, color)")
+				.is("deleted_at", null)
 				.order("updated_at", { ascending: false })
 				.range(2000, 2999),
 			this.supabaseClient
 				.schema(SUPABASE.table.memo)
 				.from(SUPABASE.table.memo)
 				.select("*, category(id, name, color)")
+				.is("deleted_at", null)
 				.order("updated_at", { ascending: false })
 				.range(3000, 3999),
 		]);
@@ -115,6 +121,7 @@ export class MemoService {
 			.schema(SUPABASE.table.memo)
 			.from(SUPABASE.table.memo)
 			.select(selectQuery, { count: "exact" })
+			.is("deleted_at", null)
 			.order(sortBy, { ascending })
 			.order("id", { ascending })
 			.limit(limit);
@@ -164,19 +171,56 @@ export class MemoService {
 			.eq("id", id)
 			.select();
 
-	deleteMemo = async (id: MemoRow["id"]) =>
-		this.supabaseClient
-			.schema(SUPABASE.table.memo)
-			.from(SUPABASE.table.memo)
-			.delete()
-			.eq("id", id)
-			.select();
+	/**
+	 * 메모를 휴지통으로 보낸다.
+	 * @description 행을 지우지 않고 `deleted_at`만 찍는다. 하이라이트·카테고리
+	 * 관계가 그대로 남아 복구가 UPDATE 한 번으로 끝난다. 영구 삭제는
+	 * {@link deleteMemosPermanently}가 따로 맡는다.
+	 */
+	deleteMemo = async (id: MemoRow["id"]) => this.deleteMemos([id]);
 
+	/** 메모 여러 개를 휴지통으로 보낸다 */
 	deleteMemos = async (idList: MemoRow["id"][]) =>
 		this.supabaseClient
 			.schema(SUPABASE.table.memo)
 			.from(SUPABASE.table.memo)
+			.update({ deleted_at: new Date().toISOString() })
+			.in("id", idList)
+			.select();
+
+	/**
+	 * 휴지통에 있는 메모를 최근에 버린 순으로 가져온다.
+	 * @description 다른 조회는 전부 `deleted_at is null`로 거르므로, 삭제된 행을
+	 * 읽는 경로는 여기 하나뿐이다.
+	 */
+	getDeletedMemos = async () =>
+		this.supabaseClient
+			.schema(SUPABASE.table.memo)
+			.from(SUPABASE.table.memo)
+			.select("*, category(id, name, color)")
+			.not("deleted_at", "is", null)
+			.order("deleted_at", { ascending: false });
+
+	/** 휴지통의 메모를 되살린다 */
+	restoreMemos = async (idList: MemoRow["id"][]) =>
+		this.supabaseClient
+			.schema(SUPABASE.table.memo)
+			.from(SUPABASE.table.memo)
+			.update({ deleted_at: null })
+			.in("id", idList)
+			.select();
+
+	/**
+	 * 메모를 완전히 지운다. 되돌릴 수 없다.
+	 * @description 휴지통 안에서만 부른다. 실수로 살아있는 메모를 지우지 않도록
+	 * `deleted_at`이 찍힌 행으로 대상을 한 번 더 좁힌다.
+	 */
+	deleteMemosPermanently = async (idList: MemoRow["id"][]) =>
+		this.supabaseClient
+			.schema(SUPABASE.table.memo)
+			.from(SUPABASE.table.memo)
 			.delete()
+			.not("deleted_at", "is", null)
 			.in("id", idList)
 			.select();
 }

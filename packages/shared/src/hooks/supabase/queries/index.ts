@@ -2,6 +2,7 @@ export { default as useActiveUsersStatsQuery } from "./useActiveUsersStatsQuery"
 export { default as useAdminStatsQuery } from "./useAdminStatsQuery";
 export { default as useAdminUsersQuery } from "./useAdminUsersQuery";
 export { default as useCategoryQuery } from "./useCategoryQuery";
+export { default as useDeletedMemosQuery } from "./useDeletedMemosQuery";
 export { default as useMemoQuery } from "./useMemoQuery";
 export { default as useMemosInfiniteQuery } from "./useMemosInfiniteQuery";
 export { default as useSettingQuery } from "./useSettingQuery";

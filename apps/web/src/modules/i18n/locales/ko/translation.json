@@ -38,7 +38,8 @@
 		"deleteCategory": "삭제",
 		"deleteConfirmTitle": "카테고리를 삭제하시겠어요?",
 		"deleteConfirmDescription": "이 카테고리에 속한 메모의 카테고리가 해제됩니다.",
-		"cancel": "취소"
+		"cancel": "취소",
+		"trash": "휴지통"
 	},
 	"header": {
 		"login": "로그인하기",
@@ -402,7 +403,7 @@
 	},
 	"dialogDeleteMemos": {
 		"title": "{{count}}개의 메모를 삭제할까요?",
-		"description": "선택한 메모가 삭제됩니다. 이 작업은 되돌릴 수 있어요.",
+		"description": "선택한 메모가 휴지통으로 이동합니다. 휴지통에서 되살릴 수 있어요.",
 		"ok": "삭제하기",
 		"cancel": "취소"
 	},
@@ -1602,5 +1603,17 @@
 				"url": "https://upstash.com/trust/privacy.pdf"
 			}
 		}
+	},
+	"trash": {
+		"title": "휴지통",
+		"description": "삭제한 메모는 여기 남습니다. 되살리거나 완전히 지울 수 있어요.",
+		"empty": "휴지통이 비어 있어요.",
+		"restore": "되살리기",
+		"deletePermanently": "완전히 삭제",
+		"emptyTrash": "휴지통 비우기",
+		"confirmTitle": "{{count}}개의 메모를 완전히 삭제할까요?",
+		"confirmDescription": "이 작업은 되돌릴 수 없어요.",
+		"ok": "완전히 삭제",
+		"cancel": "취소"
 	}
 }

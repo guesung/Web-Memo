@@ -8,6 +8,7 @@ import {
 	Moon,
 	Smartphone,
 	Sun,
+	Trash2,
 	User,
 } from "lucide-react-native";
 import {
@@ -234,6 +235,28 @@ export default function SettingsScreen() {
 								{appVersion}
 							</Text>
 						</View>
+					</View>
+				</View>
+
+				{/* Trash Section */}
+				<View className="mb-7">
+					<Text className="text-sm font-semibold text-muted-foreground dark:text-neutral-500 uppercase tracking-wide mb-2.5">
+						메모
+					</Text>
+					<View className="bg-card dark:bg-neutral-900 rounded-[14px] p-4 border border-muted dark:border-neutral-800">
+						<TouchableOpacity
+							className="flex-row justify-between items-center py-2"
+							onPress={() => router.push("/trash")}
+							activeOpacity={0.6}
+						>
+							<View className="flex-row items-center gap-2">
+								<Trash2 size={16} color={isDark ? "#a3a3a3" : "#555"} />
+								<Text className="text-[15px] text-secondary-foreground dark:text-neutral-300">
+									휴지통
+								</Text>
+							</View>
+							<ChevronRight size={14} color={isDark ? "#737373" : "#999"} />
+						</TouchableOpacity>
 					</View>
 				</View>
 

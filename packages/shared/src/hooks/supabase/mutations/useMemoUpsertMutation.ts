@@ -77,6 +77,7 @@ export default function useMemoUpsertMutation() {
 						actionItem: data.actionItem ?? null,
 						category_id: data.category_id ?? null,
 						created_at: new Date().toISOString(),
+						deleted_at: null,
 						favIconUrl: data.favIconUrl ?? null,
 						id: -Date.now(),
 						impression: data.impression ?? null,

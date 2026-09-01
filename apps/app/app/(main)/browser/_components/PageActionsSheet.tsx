@@ -5,6 +5,7 @@ import {
 	Share2,
 	Sparkles,
 	Star,
+	TextCursorInput,
 	X,
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -53,12 +54,16 @@ interface PageActionsSheetProps {
 	isCurrentPageReading: boolean;
 	isCurrentPageWish: boolean;
 	isCurrentPageStar: boolean;
+	/** 현재 도메인의 드래그 잠금이 풀려 있는지 */
+	isSelectionUnlocked: boolean;
 	onFavoriteToggle: () => void;
 	onReadingToggle: () => void;
 	onWishToggle: () => void;
 	onStarToggle: () => void;
 	onShare: () => void;
 	onOpenAI: () => void;
+	/** 현재 도메인의 드래그 잠금 해제를 켜거나 끈다 */
+	onSelectionUnlockToggle: () => void;
 }
 
 /** 브라우저 헤더의 여러 상태 토글 버튼(즐겨찾기/읽는 중/위시/중요/공유/AI)을 하나의 버튼으로 모은 액션 시트 */
@@ -69,12 +74,14 @@ export function PageActionsSheet({
 	isCurrentPageReading,
 	isCurrentPageWish,
 	isCurrentPageStar,
+	isSelectionUnlocked,
 	onFavoriteToggle,
 	onReadingToggle,
 	onWishToggle,
 	onStarToggle,
 	onShare,
 	onOpenAI,
+	onSelectionUnlockToggle,
 }: PageActionsSheetProps) {
 	const insets = useSafeAreaInsets();
 	const isDark = useColorScheme() === "dark";
@@ -193,6 +200,20 @@ export function PageActionsSheet({
 						icon={<Sparkles size={20} color="#7c3aed" />}
 						label="AI 요약/질문하기"
 						onPress={withClose(onOpenAI)}
+					/>
+					<ActionRow
+						icon={
+							<TextCursorInput
+								size={20}
+								color={
+									isSelectionUnlocked ? "#10b981" : isDark ? "#aaa" : "#666"
+								}
+							/>
+						}
+						label={
+							isSelectionUnlocked ? "드래그 잠금 다시 걸기" : "드래그 잠금 해제"
+						}
+						onPress={withClose(onSelectionUnlockToggle)}
 					/>
 				</Animated.View>
 			</View>

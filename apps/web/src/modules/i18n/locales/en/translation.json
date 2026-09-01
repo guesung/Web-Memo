@@ -38,7 +38,8 @@
 		"deleteCategory": "Delete",
 		"deleteConfirmTitle": "Delete category?",
 		"deleteConfirmDescription": "Memos in this category will become uncategorized.",
-		"cancel": "Cancel"
+		"cancel": "Cancel",
+		"trash": "Trash"
 	},
 	"header": {
 		"login": "Sign in",
@@ -407,7 +408,7 @@
 	},
 	"dialogDeleteMemos": {
 		"title": "Delete {{count}} memos?",
-		"description": "Selected memos will be deleted. You can undo this action.",
+		"description": "Selected memos will be moved to the trash. You can restore them from there.",
 		"ok": "Delete",
 		"cancel": "Cancel"
 	},
@@ -1605,5 +1606,17 @@
 				"url": "https://upstash.com/trust/privacy.pdf"
 			}
 		}
+	},
+	"trash": {
+		"title": "Trash",
+		"description": "Deleted memos stay here. You can restore them or delete them for good.",
+		"empty": "Trash is empty.",
+		"restore": "Restore",
+		"deletePermanently": "Delete permanently",
+		"emptyTrash": "Empty trash",
+		"confirmTitle": "Permanently delete {{count}} memos?",
+		"confirmDescription": "This action cannot be undone.",
+		"ok": "Delete permanently",
+		"cancel": "Cancel"
 	}
 }

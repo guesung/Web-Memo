@@ -91,6 +91,9 @@ jobs:
       # 실제 제출은 아래 notify가 보낸 Slack 메시지의 버튼 → release.yml 한 경로뿐입니다.
       # (docs/release-flow.md)
       deploy_target: "none"
+      # master 머지분은 release.yml이 그대로 내려받아 제출하므로 스토어에 올릴 수 있는
+      # 빌드여야 합니다(ci = autoIncrement on). PR 검증 빌드는 버려지므로 verify입니다.
+      build_profile: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') && 'ci' || 'verify' }}
 
   cd-extension:
     needs: [ci, changes]

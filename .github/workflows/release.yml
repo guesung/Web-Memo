@@ -51,9 +51,10 @@ jobs:
     name: 앱 릴리스
     needs: preflight
     # 재사용 워크플로의 잡은 호출자 권한을 넘어설 수 없습니다.
-    # cd-app.yml은 체크아웃만 하므로 contents:read면 충분합니다.
+    # actions:read는 master CI가 올려둔 빌드 아티팩트를 찾아 내려받는 데 필요합니다.
     permissions:
       contents: read
+      actions: read
     if: ${{ inputs.app }}
     uses: ./.github/workflows/cd-app.yml
     secrets: inherit
@@ -64,6 +65,10 @@ jobs:
   release-extension:
     name: 확장 릴리스
     needs: preflight
+    # actions:read는 master CI가 올려둔 빌드 아티팩트를 찾아 내려받는 데 필요합니다.
+    permissions:
+      contents: read
+      actions: read
     if: ${{ inputs.extension }}
     uses: ./.github/workflows/cd-extension.yml
     secrets: inherit

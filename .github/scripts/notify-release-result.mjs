@@ -1,21 +1,29 @@
 #!/usr/bin/env node
 /**
- * 릴리스(스토어 제출) 결과를 Slack으로 알립니다.
- * .github/workflows/release.yml 의 notify 잡에서 호출합니다.
+ * 릴리스(스토어 제출) 결과를 타깃 하나 단위로 Slack에 알립니다.
+ * .github/workflows/notify-release.yml 이 타깃별로 한 번씩 호출합니다.
  *
  * 이 알림은 Slack 버튼을 누른 사람이 "정말 올라갔는지"를 확인하는 유일한 신호입니다.
  * 그래서 성공·실패를 가리지 않고 항상(always) 보냅니다.
  *
+ * 셋을 한 메시지로 묶던 것을 타깃별로 쪼갠 이유는, 묶으면 알림이 가장 느린 타깃
+ * (앱 빌드 약 30분)을 기다려야 해서 이미 끝난 웹·확장 결과까지 그만큼 늦게 나가기
+ * 때문입니다. 배포마다 따로 나가면 각자 끝나는 대로 알립니다.
+ *
  * 로컬 실행 (SLACK_WEBHOOK_URL 없이 돌리면 페이로드만 stdout에 찍습니다):
  *   GH_TOKEN=$(gh auth token) GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=<run id> \
- *   TARGETS='{"app":true,"web":false,"extension":true}' \
- *   RESULTS='{"app":"success","web":"skipped","extension":"failure"}' \
- *   node .github/scripts/notify-release-result.mjs
+ *   TARGET=app RESULT=success node .github/scripts/notify-release-result.mjs
  */
 
 import { readAppConfig, readExtensionVersion } from "./lib/repo-versions.mjs";
 import { requireEnv } from "./lib/run-context.mjs";
 import { postToSlack } from "./lib/slack-blocks.mjs";
+
+const TARGET_LABELS = {
+	app: "앱",
+	extension: "확장",
+	web: "웹",
+};
 
 const DESCRIPTIONS = {
 	success: "✅ 완료",
@@ -59,17 +67,9 @@ const fetchJobConclusions = async ({ repository, runId, token }) => {
 const findConclusionBySuffix = (jobs, suffix) =>
 	jobs.find((job) => job.name.endsWith(suffix))?.conclusion ?? "unknown";
 
-const main = async () => {
-	const repository = requireEnv("GITHUB_REPOSITORY");
-	const runId = requireEnv("GITHUB_RUN_ID");
-	const serverUrl = process.env.GITHUB_SERVER_URL ?? "https://github.com";
-	const targets = JSON.parse(process.env.TARGETS ?? "{}");
-	const results = JSON.parse(process.env.RESULTS ?? "{}");
-	const ref = process.env.RELEASE_REF || "master 최신";
-
-	const lines = [];
-
-	if (targets.app) {
+/** 타깃별 본문 줄과 버전 표기를 만듭니다. */
+const buildDetail = async ({ target, result, repository, runId }) => {
+	if (target === "app") {
 		// 앱만 플랫폼별로 갈라져 있어 잡 목록을 따로 조회합니다.
 		const jobs = process.env.GH_TOKEN
 			? await fetchJobConclusions({
@@ -79,41 +79,60 @@ const main = async () => {
 				})
 			: [];
 
-		lines.push(
-			`📱 iOS (TestFlight)  ${describe(findConclusionBySuffix(jobs, "ios 빌드"))}`,
-			`🤖 Android (Play 내부 테스트)  ${describe(findConclusionBySuffix(jobs, "android 빌드"))}`,
-		);
+		return {
+			version: `앱 v${readAppConfig().version}`,
+			lines: [
+				`📱 iOS (TestFlight)  ${describe(findConclusionBySuffix(jobs, "ios 빌드"))}`,
+				`🤖 Android (Play 내부 테스트)  ${describe(findConclusionBySuffix(jobs, "android 빌드"))}`,
+			],
+		};
 	}
 
-	if (targets.extension) {
-		const conclusion = describe(results.extension);
+	if (target === "extension") {
 		// 업로드까지만 자동이고 게시는 사람이 눌러야 합니다. 매번 같이 적어 둡니다.
 		const note =
-			results.extension === "success"
+			result === "success"
 				? " — 업로드 완료, 게시는 크롬 웹 스토어 대시보드에서 수동"
 				: "";
 
-		lines.push(`🧩 확장  ${conclusion}${note}`);
+		return {
+			version: `확장 v${readExtensionVersion()}`,
+			lines: [`🧩 확장  ${describe(result)}${note}`],
+		};
 	}
 
-	if (targets.web) {
-		lines.push(`🌐 웹 (Vercel 프로덕션)  ${describe(results.web)}`);
+	return {
+		version: "",
+		lines: [`🌐 웹 (Vercel 프로덕션)  ${describe(result)}`],
+	};
+};
+
+const main = async () => {
+	const repository = requireEnv("GITHUB_REPOSITORY");
+	const runId = requireEnv("GITHUB_RUN_ID");
+	const target = requireEnv("TARGET");
+	const result = requireEnv("RESULT");
+	const serverUrl = process.env.GITHUB_SERVER_URL ?? "https://github.com";
+	const ref = process.env.RELEASE_REF || "master 최신";
+
+	const label = TARGET_LABELS[target];
+	if (!label) {
+		throw new Error(`알 수 없는 릴리스 타깃입니다: ${target}`);
 	}
 
-	const hasFailure = Object.entries(results).some(
-		([target, result]) => targets[target] && result !== "success",
-	);
-	const versions = [
-		targets.app ? `앱 v${readAppConfig().version}` : null,
-		targets.extension ? `확장 v${readExtensionVersion()}` : null,
-	]
-		.filter(Boolean)
-		.join(" · ");
+	const { version, lines } = await buildDetail({
+		target,
+		result,
+		repository,
+		runId,
+	});
 
-	const headline = hasFailure
-		? "❌ 릴리스 실패"
-		: "✅ 릴리스 완료";
-	const subtitle = [versions, `\`${ref}\``].filter(Boolean).join(" · ");
+	const HEADLINES = {
+		success: `✅ ${label} 릴리스 완료`,
+		cancelled: `⚪️ ${label} 릴리스 취소됨`,
+	};
+	const headline = HEADLINES[result] ?? `❌ ${label} 릴리스 실패`;
+	const subtitle = [version, `\`${ref}\``].filter(Boolean).join(" · ");
 
 	const payload = {
 		text: headline,

@@ -6,4 +6,4 @@
  * 그래서 프로덕션 주소를 여기 고정해 둔다. 개발 중에도 프로덕션 API를 호출하게 되므로,
  * 환경별 분기가 필요해지면 `EXPO_PUBLIC_WEB_URL` 도입이 먼저다.
  */
-export const WEB_API_ORIGIN = "https://web-memos.vercel.app";
+export const WEB_API_ORIGIN = "https://webmemo.xyz";

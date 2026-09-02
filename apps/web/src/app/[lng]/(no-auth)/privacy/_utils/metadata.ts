@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-const CANONICAL_KOREAN = "https://web-memos.vercel.app/ko/privacy";
-const CANONICAL_ENGLISH = "https://web-memos.vercel.app/en/privacy";
+const CANONICAL_KOREAN = "https://webmemo.xyz/ko/privacy";
+const CANONICAL_ENGLISH = "https://webmemo.xyz/en/privacy";
 
 export const metadataKorean: Metadata = {
 	title: "개인정보처리방침 | 웹 메모",

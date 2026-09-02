@@ -13,10 +13,10 @@ export const metadataKorean: Metadata = {
 		"개발 문서 정리",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/ko/use-cases/developer",
+		canonical: "https://webmemo.xyz/ko/use-cases/developer",
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/use-cases/developer",
-			en: "https://web-memos.vercel.app/en/use-cases/developer",
+			ko: "https://webmemo.xyz/ko/use-cases/developer",
+			en: "https://webmemo.xyz/en/use-cases/developer",
 		},
 	},
 	openGraph: {
@@ -41,10 +41,10 @@ export const metadataEnglish: Metadata = {
 		"documentation notes",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/en/use-cases/developer",
+		canonical: "https://webmemo.xyz/en/use-cases/developer",
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/use-cases/developer",
-			en: "https://web-memos.vercel.app/en/use-cases/developer",
+			ko: "https://webmemo.xyz/ko/use-cases/developer",
+			en: "https://webmemo.xyz/en/use-cases/developer",
 		},
 	},
 	openGraph: {

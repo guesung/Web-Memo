@@ -61,6 +61,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 
 	const { register, watch, setValue } = useForm<MemoInput>({
 		defaultValues: {
+			title: "",
 			memo: "",
 			impression: "",
 			actionItem: "",
@@ -89,11 +90,13 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	useImperativeHandle(actionItemRef, () => actionItemTextareaRef.current);
 
 	const saveMemo = useCallback(() => {
+		const currentTitle = watch("title");
 		const currentMemo = watch("memo");
 		const currentImpression = watch("impression");
 		const currentActionItem = watch("actionItem");
 
 		const isEdited =
+			currentTitle !== memoData?.title ||
 			currentMemo !== memoData?.memo ||
 			currentImpression !== (memoData?.impression ?? "") ||
 			currentActionItem !== (memoData?.actionItem ?? "");
@@ -108,6 +111,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 			{
 				id: memoId,
 				request: {
+					title: currentTitle,
 					memo: currentMemo,
 					impression: currentImpression,
 					actionItem: currentActionItem,
@@ -120,6 +124,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 		);
 	}, [
 		watch,
+		memoData?.title,
 		memoData?.memo,
 		memoData?.impression,
 		memoData?.actionItem,
@@ -154,6 +159,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 			if (initializedMemoIdRef.current === memoData.id) return;
 
 			initializedMemoIdRef.current = memoData.id;
+			setValue("title", memoData.title);
 			setValue("memo", memoData.memo);
 			setValue("impression", memoData.impression ?? "");
 			setValue("actionItem", memoData.actionItem ?? "");
@@ -179,7 +185,14 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	useEffect(
 		function saveMemoOnChange() {
 			const subscription = watch((value) => {
-				if (!value.memo && !value.impression && !value.actionItem) return;
+				if (
+					!value.title &&
+					!value.memo &&
+					!value.impression &&
+					!value.actionItem
+				) {
+					return;
+				}
 
 				setSaveStatus("saving");
 				debounce(() => {
@@ -206,7 +219,12 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 					exit={{ opacity: 0 }}
 				>
 					<Card>
-						<MemoCardHeader memo={memoData} />
+						<MemoCardHeader
+							memo={memoData}
+							onTitleChange={(title) =>
+								setValue("title", title, { shouldDirty: true })
+							}
+						/>
 						<CardContent>
 							<Textarea
 								{...memoRest}

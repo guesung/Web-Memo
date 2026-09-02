@@ -14,6 +14,7 @@ import {
 	CommandItem,
 	CommandList,
 	cn,
+	Input,
 	Textarea,
 	ToastAction,
 	toast,
@@ -58,6 +59,7 @@ function MemoFormContent() {
 	const {
 		memoData,
 		isSaving,
+		handleTitleChange,
 		handleMemoChange,
 		handleImpressionChange,
 		handleActionItemChange,
@@ -124,6 +126,14 @@ function MemoFormContent() {
 	return (
 		<>
 			<form className="relative flex min-h-0 flex-1 flex-col py-1">
+				<Input
+					id="memo-title-input"
+					className="mb-1 h-8 shrink-0 border-none px-0 text-sm font-bold shadow-none focus-visible:ring-0"
+					placeholder={I18n.get("titlePlaceholder")}
+					{...register("title", {
+						onChange: (event) => handleTitleChange(event.target.value),
+					})}
+				/>
 				<div
 					className="flex min-h-0 flex-col"
 					style={{ flexGrow: fieldRatios.memo, flexBasis: 0 }}
@@ -344,6 +354,7 @@ function MemoFormContent() {
 function MemoForm() {
 	const form = useForm<MemoInput>({
 		defaultValues: {
+			title: "",
 			memo: "",
 			impression: "",
 			actionItem: "",

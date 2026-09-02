@@ -46,6 +46,8 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 			const isNewMemo = initializedMemoIdRef.current !== currentMemoId;
 
 			if (isNewMemo) {
+				// 메모가 아직 없으면 현재 탭 제목이 그대로 저장될 값이라 그것을 채운다.
+				setValue("title", memoData?.title ?? tab?.title ?? "");
 				setValue("memo", memoData?.memo ?? "");
 				setValue("impression", memoData?.impression ?? "");
 				setValue("actionItem", memoData?.actionItem ?? "");
@@ -59,7 +61,9 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		},
 		[
 			memoData?.id,
+			memoData?.title,
 			memoData?.memo,
+			tab?.title,
 			memoData?.impression,
 			memoData?.actionItem,
 			memoData?.isWish,
@@ -81,6 +85,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 			const currentValues = getValues();
 			const memoInput: MemoInput = {
+				title: overrides?.title ?? currentValues.title,
 				memo: overrides?.memo ?? currentValues.memo,
 				impression: overrides?.impression ?? currentValues.impression,
 				actionItem: overrides?.actionItem ?? currentValues.actionItem,
@@ -103,6 +108,8 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 						url: tabInfo.url,
 						data: {
 							...tabInfo,
+							// 사용자가 고친 제목이 탭 제목보다 우선이다. 비어 있을 때만 탭 제목으로 되돌린다.
+							title: memoInput.title.trim() || tabInfo.title,
 							memo: memoInput.memo,
 							impression: memoInput.impression,
 							actionItem: memoInput.actionItem,
@@ -137,6 +144,14 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 			});
 		},
 		[isSaving, getValues, memoData?.id, upsertMemo, onSaveSuccess],
+	);
+
+	const handleTitleChange = useCallback(
+		(text: string) => {
+			setValue("title", text);
+			debounce(() => saveMemo({ title: text }));
+		},
+		[setValue, debounce, saveMemo],
 	);
 
 	const handleMemoChange = useCallback(
@@ -200,6 +215,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		memoData,
 		isSaving,
 		saveMemo,
+		handleTitleChange,
 		handleMemoChange,
 		handleImpressionChange,
 		handleActionItemChange,

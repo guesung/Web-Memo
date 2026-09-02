@@ -1,4 +1,5 @@
 export interface MemoInput {
+	title: string;
 	memo: string;
 	impression: string;
 	actionItem: string;

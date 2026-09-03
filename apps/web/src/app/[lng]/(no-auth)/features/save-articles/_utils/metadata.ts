@@ -1,3 +1,4 @@
+import { CONFIG } from "@web-memo/env";
 import type { Metadata } from "next";
 
 export const metadataKorean: Metadata = {
@@ -14,10 +15,10 @@ export const metadataKorean: Metadata = {
 		"콘텐츠 저장",
 	],
 	alternates: {
-		canonical: "https://webmemo.xyz/ko/features/save-articles",
+		canonical: `${CONFIG.webUrl}/ko/features/save-articles`,
 		languages: {
-			ko: "https://webmemo.xyz/ko/features/save-articles",
-			en: "https://webmemo.xyz/en/features/save-articles",
+			ko: `${CONFIG.webUrl}/ko/features/save-articles`,
+			en: `${CONFIG.webUrl}/en/features/save-articles`,
 		},
 	},
 	openGraph: {
@@ -43,10 +44,10 @@ export const metadataEnglish: Metadata = {
 		"article organizer",
 	],
 	alternates: {
-		canonical: "https://webmemo.xyz/en/features/save-articles",
+		canonical: `${CONFIG.webUrl}/en/features/save-articles`,
 		languages: {
-			ko: "https://webmemo.xyz/ko/features/save-articles",
-			en: "https://webmemo.xyz/en/features/save-articles",
+			ko: `${CONFIG.webUrl}/ko/features/save-articles`,
+			en: `${CONFIG.webUrl}/en/features/save-articles`,
 		},
 	},
 	openGraph: {

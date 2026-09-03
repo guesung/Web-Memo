@@ -1,7 +1,8 @@
+import { CONFIG } from "@web-memo/env";
 import type { Metadata } from "next";
 
-const CANONICAL_KOREAN = "https://webmemo.xyz/ko/privacy";
-const CANONICAL_ENGLISH = "https://webmemo.xyz/en/privacy";
+const CANONICAL_KOREAN = `${CONFIG.webUrl}/ko/privacy`;
+const CANONICAL_ENGLISH = `${CONFIG.webUrl}/en/privacy`;
 
 export const metadataKorean: Metadata = {
 	title: "개인정보처리방침 | 웹 메모",

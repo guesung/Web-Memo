@@ -39,6 +39,10 @@
 여기에 더해 `tsup`이 셸 `BUILD_ENV`를 번들에 함께 인라인하므로, 코드에서는
 `CONFIG.buildEnv`로 `"development" | "staging" | "production"`을 읽을 수 있습니다.
 
+`CONFIG.webHost`는 `webUrl`에서 프로토콜을 뗀 값(`webmemo.xyz`)입니다. 주소창
+목업이나 안내 문구처럼 **사용자에게 도메인만 보여주는 자리**에서 씁니다. 파생값이라
+원천은 여전히 `WEB_URL` 하나입니다.
+
 `packages/env/src/config.ts`가 이 값을 읽어 `CONFIG` 객체로 내보내고, 소비하는 쪽은
 `import { CONFIG } from "@web-memo/env"`로 씁니다. `getSafeConfig`가 `undefined`를
 막으므로, 값이 빠지면 모듈이 로드되는 즉시 `WEB_URL이 설정되지 않았습니다` 형태로
@@ -47,9 +51,16 @@
 ### 도메인을 바꿀 때 레포 밖에서 함께 해야 하는 것
 
 `WEB_URL`은 레포 안의 여러 값을 끌고 다닙니다. 확장 매니페스트의
-`externally_connectable`, 웹의 `metadataBase`·canonical, `robots.txt`·`sitemap.xml`이
-모두 이 값에서 나옵니다. 그래서 이 파일만 고치면 레포 쪽은 끝나지만, 아래는
-콘솔에서 직접 해야 하고 빠뜨리면 **에러 없이 로그인·연동만 조용히 죽습니다.**
+`externally_connectable`, 웹의 `metadataBase`·canonical·`alternates`,
+`robots.txt`·`sitemap.xml`, 그리고 `translation.json`의 `{{webHost}}` 보간이 모두
+이 값에서 나옵니다.
+
+**레포에서 도메인이 하드코딩된 곳은 `apps/app/.../_constants/webApi.ts` 하나뿐입니다.**
+Expo는 `EXPO_PUBLIC_` 접두사가 없는 환경변수를 번들에 인라인하지 않아 이 앱만
+`@web-memo/env`를 읽지 못합니다. 도메인을 바꾸면 여기도 함께 고쳐야 합니다.
+
+레포 쪽은 그 둘이 전부고, 아래는 콘솔에서 직접 해야 하며 빠뜨리면 **에러 없이
+로그인·연동만 조용히 죽습니다.**
 
 | 대상 | 해야 하는 것 |
 | --- | --- |

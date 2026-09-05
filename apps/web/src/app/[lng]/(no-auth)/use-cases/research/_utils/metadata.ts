@@ -1,3 +1,4 @@
+import { CONFIG } from "@web-memo/env";
 import type { Metadata } from "next";
 
 export const metadataKorean: Metadata = {
@@ -14,10 +15,10 @@ export const metadataKorean: Metadata = {
 		"자료 수집",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/ko/use-cases/research",
+		canonical: `${CONFIG.webUrl}/ko/use-cases/research`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/use-cases/research",
-			en: "https://web-memos.vercel.app/en/use-cases/research",
+			ko: `${CONFIG.webUrl}/ko/use-cases/research`,
+			en: `${CONFIG.webUrl}/en/use-cases/research`,
 		},
 	},
 	openGraph: {
@@ -43,10 +44,10 @@ export const metadataEnglish: Metadata = {
 		"information gathering",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/en/use-cases/research",
+		canonical: `${CONFIG.webUrl}/en/use-cases/research`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/use-cases/research",
-			en: "https://web-memos.vercel.app/en/use-cases/research",
+			ko: `${CONFIG.webUrl}/ko/use-cases/research`,
+			en: `${CONFIG.webUrl}/en/use-cases/research`,
 		},
 	},
 	openGraph: {

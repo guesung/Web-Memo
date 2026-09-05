@@ -1,3 +1,4 @@
+import { CONFIG } from "@web-memo/env";
 import type { Metadata } from "next";
 
 export const metadataKorean: Metadata = {
@@ -14,10 +15,10 @@ export const metadataKorean: Metadata = {
 		"영상 핵심 정리",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/ko/features/youtube-summary",
+		canonical: `${CONFIG.webUrl}/ko/features/youtube-summary`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/features/youtube-summary",
-			en: "https://web-memos.vercel.app/en/features/youtube-summary",
+			ko: `${CONFIG.webUrl}/ko/features/youtube-summary`,
+			en: `${CONFIG.webUrl}/en/features/youtube-summary`,
 		},
 	},
 	openGraph: {
@@ -43,10 +44,10 @@ export const metadataEnglish: Metadata = {
 		"video key points",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/en/features/youtube-summary",
+		canonical: `${CONFIG.webUrl}/en/features/youtube-summary`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/features/youtube-summary",
-			en: "https://web-memos.vercel.app/en/features/youtube-summary",
+			ko: `${CONFIG.webUrl}/ko/features/youtube-summary`,
+			en: `${CONFIG.webUrl}/en/features/youtube-summary`,
 		},
 	},
 	openGraph: {

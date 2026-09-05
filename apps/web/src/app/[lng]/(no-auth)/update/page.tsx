@@ -1,5 +1,6 @@
 import { HeaderMargin } from "@src/components/Header";
 import type { LanguageParams } from "@src/modules/i18n";
+import { CONFIG } from "@web-memo/env";
 import type { Metadata } from "next";
 
 import { UpdateList, UpdateTitle } from "./_components";
@@ -8,10 +9,10 @@ const metadataKorean: Metadata = {
 	title: "웹 메모 | 업데이트 소식 ",
 	description: "웹 메모의 최신 업데이트 소식을 확인하세요.",
 	alternates: {
-		canonical: "https://web-memos.vercel.app/ko/update",
+		canonical: `${CONFIG.webUrl}/ko/update`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/update",
-			en: "https://web-memos.vercel.app/en/update",
+			ko: `${CONFIG.webUrl}/ko/update`,
+			en: `${CONFIG.webUrl}/en/update`,
 		},
 	},
 	openGraph: {
@@ -23,10 +24,10 @@ const metadataEnglish: Metadata = {
 	title: "Web Memo | Updates",
 	description: "Check out the latest updates for Web Memo.",
 	alternates: {
-		canonical: "https://web-memos.vercel.app/en/update",
+		canonical: `${CONFIG.webUrl}/en/update`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/update",
-			en: "https://web-memos.vercel.app/en/update",
+			ko: `${CONFIG.webUrl}/ko/update`,
+			en: `${CONFIG.webUrl}/en/update`,
 		},
 	},
 	openGraph: {

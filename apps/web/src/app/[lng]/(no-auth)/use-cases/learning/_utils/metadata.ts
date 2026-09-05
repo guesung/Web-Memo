@@ -1,3 +1,4 @@
+import { CONFIG } from "@web-memo/env";
 import type { Metadata } from "next";
 
 export const metadataKorean: Metadata = {
@@ -14,10 +15,10 @@ export const metadataKorean: Metadata = {
 		"교육 영상 정리",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/ko/use-cases/learning",
+		canonical: `${CONFIG.webUrl}/ko/use-cases/learning`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/use-cases/learning",
-			en: "https://web-memos.vercel.app/en/use-cases/learning",
+			ko: `${CONFIG.webUrl}/ko/use-cases/learning`,
+			en: `${CONFIG.webUrl}/en/use-cases/learning`,
 		},
 	},
 	openGraph: {
@@ -43,10 +44,10 @@ export const metadataEnglish: Metadata = {
 		"educational video notes",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/en/use-cases/learning",
+		canonical: `${CONFIG.webUrl}/en/use-cases/learning`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/use-cases/learning",
-			en: "https://web-memos.vercel.app/en/use-cases/learning",
+			ko: `${CONFIG.webUrl}/ko/use-cases/learning`,
+			en: `${CONFIG.webUrl}/en/use-cases/learning`,
 		},
 	},
 	openGraph: {

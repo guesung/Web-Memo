@@ -1,5 +1,6 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
+import { CONFIG } from "@web-memo/env";
 import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import { Check, Chrome, Globe, Sparkles, Star, Users } from "lucide-react";
 import Image from "next/image";
@@ -137,7 +138,7 @@ export default async function Hero({ lng }: HeroProps) {
 									<div className="flex-1 mx-4">
 										<div className="bg-white dark:bg-gray-700 rounded-lg px-4 py-1.5 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
 											<Globe className="h-4 w-4" />
-											web-memos.vercel.app
+											{CONFIG.webDisplayHost}
 										</div>
 									</div>
 								</div>

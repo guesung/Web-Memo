@@ -1,3 +1,4 @@
+import { CONFIG } from "@web-memo/env";
 import type { Metadata } from "next";
 
 export const metadataKorean: Metadata = {
@@ -5,10 +6,10 @@ export const metadataKorean: Metadata = {
 	description:
 		"웹 메모는 웹페이지를 읽으며 생각을 즉시 기록하는 크롬 확장 프로그램입니다. 사이드 패널에서 아티클을 바로 메모하고, 유튜브 영상을 AI로 요약하며, 저장한 메모를 체계적으로 관리하세요. 무료로 시작하세요.",
 	alternates: {
-		canonical: "https://web-memos.vercel.app/ko/introduce",
+		canonical: `${CONFIG.webUrl}/ko/introduce`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/introduce",
-			en: "https://web-memos.vercel.app/en/introduce",
+			ko: `${CONFIG.webUrl}/ko/introduce`,
+			en: `${CONFIG.webUrl}/en/introduce`,
 		},
 	},
 	openGraph: {
@@ -21,10 +22,10 @@ export const metadataEnglish: Metadata = {
 	description:
 		"Web Memo is a Chrome extension that lets you instantly capture thoughts while reading web pages. Take notes on articles from the side panel, summarize YouTube videos with AI, and organize your saved memos systematically. Free to start.",
 	alternates: {
-		canonical: "https://web-memos.vercel.app/en/introduce",
+		canonical: `${CONFIG.webUrl}/en/introduce`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/introduce",
-			en: "https://web-memos.vercel.app/en/introduce",
+			ko: `${CONFIG.webUrl}/ko/introduce`,
+			en: `${CONFIG.webUrl}/en/introduce`,
 		},
 	},
 	openGraph: {

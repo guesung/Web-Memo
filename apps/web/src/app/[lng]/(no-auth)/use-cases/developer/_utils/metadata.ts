@@ -1,3 +1,4 @@
+import { CONFIG } from "@web-memo/env";
 import type { Metadata } from "next";
 
 export const metadataKorean: Metadata = {
@@ -13,10 +14,10 @@ export const metadataKorean: Metadata = {
 		"개발 문서 정리",
 	],
 	alternates: {
-		canonical: "https://www.webmemo.xyz/ko/use-cases/developer",
+		canonical: `${CONFIG.webUrl}/ko/use-cases/developer`,
 		languages: {
-			ko: "https://www.webmemo.xyz/ko/use-cases/developer",
-			en: "https://www.webmemo.xyz/en/use-cases/developer",
+			ko: `${CONFIG.webUrl}/ko/use-cases/developer`,
+			en: `${CONFIG.webUrl}/en/use-cases/developer`,
 		},
 	},
 	openGraph: {
@@ -41,10 +42,10 @@ export const metadataEnglish: Metadata = {
 		"documentation notes",
 	],
 	alternates: {
-		canonical: "https://www.webmemo.xyz/en/use-cases/developer",
+		canonical: `${CONFIG.webUrl}/en/use-cases/developer`,
 		languages: {
-			ko: "https://www.webmemo.xyz/ko/use-cases/developer",
-			en: "https://www.webmemo.xyz/en/use-cases/developer",
+			ko: `${CONFIG.webUrl}/ko/use-cases/developer`,
+			en: `${CONFIG.webUrl}/en/use-cases/developer`,
 		},
 	},
 	openGraph: {

@@ -1,3 +1,4 @@
+import { CONFIG } from "@web-memo/env";
 import type { Metadata } from "next";
 
 export const metadataKorean: Metadata = {
@@ -15,10 +16,10 @@ export const metadataKorean: Metadata = {
 		"콘텐츠 정리",
 	],
 	alternates: {
-		canonical: "https://www.webmemo.xyz/ko/use-cases/news-reading",
+		canonical: `${CONFIG.webUrl}/ko/use-cases/news-reading`,
 		languages: {
-			ko: "https://www.webmemo.xyz/ko/use-cases/news-reading",
-			en: "https://www.webmemo.xyz/en/use-cases/news-reading",
+			ko: `${CONFIG.webUrl}/ko/use-cases/news-reading`,
+			en: `${CONFIG.webUrl}/en/use-cases/news-reading`,
 		},
 	},
 	openGraph: {
@@ -45,10 +46,10 @@ export const metadataEnglish: Metadata = {
 		"web clipping",
 	],
 	alternates: {
-		canonical: "https://www.webmemo.xyz/en/use-cases/news-reading",
+		canonical: `${CONFIG.webUrl}/en/use-cases/news-reading`,
 		languages: {
-			ko: "https://www.webmemo.xyz/ko/use-cases/news-reading",
-			en: "https://www.webmemo.xyz/en/use-cases/news-reading",
+			ko: `${CONFIG.webUrl}/ko/use-cases/news-reading`,
+			en: `${CONFIG.webUrl}/en/use-cases/news-reading`,
 		},
 	},
 	openGraph: {

@@ -5,16 +5,13 @@ import { ExternalLinkIcon } from "lucide-react";
 
 export default function LoginSection() {
 	/**
-	 * 로그인 탭을 엽니다.
+	 * 로그인 페이지를 새 탭으로 엽니다.
 	 * @description 확장의 client_id를 쿼리로 실어 보냅니다. 사이드패널은 비로그인이고
 	 * 로그인은 웹 탭에서 끝나는데, 확장과 웹은 서로 다른 식별자를 써서 그냥 두면
 	 * "사이드패널까지 왔다가 가입하지 않은 사람"을 셀 수 없습니다.
 	 */
 	const handleLoginButtonClick = async () => {
-		analytics.trackEvent({
-			name: "login_start",
-			params: { surface: "side_panel" },
-		});
+		analytics.trackEvent({ name: "side_panel_login_click" });
 
 		const clientId = await analytics.getExtensionClientId();
 		const loginUrl = new URL(`${CONFIG.webUrl}/login`);

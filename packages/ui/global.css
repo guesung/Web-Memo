@@ -4,99 +4,94 @@
 
 @layer base {
 	:root {
-		--background: 0 0% 100%;
-		--foreground: 222.8571 84.0000% 4.9020%;
-		--card: 0 0% 100%;
-		--card-foreground: 222.8571 84.0000% 4.9020%;
-		--popover: 0 0% 100%;
-		--popover-foreground: 222.8571 84.0000% 4.9020%;
+		--background: 0 0% 99%;
+		--foreground: 0 0% 4%;
+		--card: 0 0% 96%;
+		--card-foreground: 0 0% 4%;
+		--popover: 0 0% 96%;
+		--popover-foreground: 0 0% 4%;
 		--primary: 221.2121 83.1933% 53.3333%;
-		--primary-foreground: 210.0000 40.0000% 98.0392%;
-		--secondary: 210.0000 40.0000% 96.0784%;
-		--secondary-foreground: 222.2222 47.3684% 11.1765%;
-		--muted: 210.0000 40.0000% 96.0784%;
-		--muted-foreground: 215.3846 16.3180% 46.8627%;
-		--accent: 210.0000 40.0000% 96.0784%;
-		--accent-foreground: 222.2222 47.3684% 11.1765%;
+		--primary-foreground: 0 0% 99%;
+		--secondary: 0 0% 96%;
+		--secondary-foreground: 0 0% 4%;
+		--muted: 0 0% 96%;
+		--muted-foreground: 0 0% 39%;
+		--accent: 0 0% 93%;
+		--accent-foreground: 0 0% 4%;
 		--destructive: 0 72.2222% 50.5882%;
-		--destructive-foreground: 210.0000 40.0000% 98.0392%;
-		--border: 214.2857 31.8182% 91.3725%;
-		--input: 214.2857 31.8182% 91.3725%;
+		--destructive-foreground: 0 0% 99%;
+		--border: 0 0% 89%;
+		--input: 0 0% 85%;
 		--ring: 221.2121 83.1933% 53.3333%;
 		--chart-1: 221.2121 83.1933% 53.3333%;
 		--chart-2: 161.3793 93.5484% 30.3922%;
 		--chart-3: 20.5405 90.2439% 48.2353%;
 		--chart-4: 262.1229 83.2558% 57.8431%;
 		--chart-5: 333.3333 71.4286% 50.5882%;
-		--sidebar: 210.0000 40.0000% 98.0392%;
-		--sidebar-foreground: 215.3846 16.3180% 46.8627%;
+		--sidebar: 0 0% 97%;
+		--sidebar-foreground: 0 0% 39%;
 		--sidebar-primary: 221.2121 83.1933% 53.3333%;
-		--sidebar-primary-foreground: 210.0000 40.0000% 98.0392%;
-		--sidebar-accent: 214.2857 31.8182% 91.3725%;
-		--sidebar-accent-foreground: 222.2222 47.3684% 11.1765%;
-		--sidebar-border: 214.2857 31.8182% 91.3725%;
+		--sidebar-primary-foreground: 0 0% 99%;
+		--sidebar-accent: 0 0% 93%;
+		--sidebar-accent-foreground: 0 0% 4%;
+		--sidebar-border: 0 0% 89%;
 		--sidebar-ring: 221.2121 83.1933% 53.3333%;
-		--font-sans: Inter;
-		--font-serif: Lora;
-		--font-mono: JetBrains Mono;
-		--radius: 0.5rem;
-		--shadow-2xs: 0px 2px 4px 0px hsl(0 0% 0% / 0.03);
-		--shadow-xs: 0px 2px 4px 0px hsl(0 0% 0% / 0.03);
-		--shadow-sm: 0px 2px 4px 0px hsl(0 0% 0% / 0.05), 0px 1px 2px -1px hsl(0 0% 0% / 0.05);
-		--shadow: 0px 2px 4px 0px hsl(0 0% 0% / 0.05), 0px 1px 2px -1px hsl(0 0% 0% / 0.05);
-		--shadow-md: 0px 2px 4px 0px hsl(0 0% 0% / 0.05), 0px 2px 4px -1px hsl(0 0% 0% / 0.05);
-		--shadow-lg: 0px 2px 4px 0px hsl(0 0% 0% / 0.05), 0px 4px 6px -1px hsl(0 0% 0% / 0.05);
-		--shadow-xl: 0px 2px 4px 0px hsl(0 0% 0% / 0.05), 0px 8px 10px -1px hsl(0 0% 0% / 0.05);
-		--shadow-2xl: 0px 2px 4px 0px hsl(0 0% 0% / 0.13);
+		--font-sans: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+		--font-serif: Lora, Georgia, Cambria, serif;
+		--font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+		--radius: 0.625rem;
+		--shadow-2xs: 0 1px 2px 0 hsl(0 0% 0% / 0.04);
+		--shadow-xs: 0 1px 3px 0 hsl(0 0% 0% / 0.05), 0 1px 2px -1px hsl(0 0% 0% / 0.05);
+		--shadow-sm: 0 2px 4px -1px hsl(0 0% 0% / 0.06), 0 1px 2px -1px hsl(0 0% 0% / 0.04);
+		--shadow: 0 4px 8px -2px hsl(0 0% 0% / 0.07), 0 2px 4px -2px hsl(0 0% 0% / 0.04);
+		--shadow-md: 0 8px 16px -4px hsl(0 0% 0% / 0.08), 0 4px 6px -4px hsl(0 0% 0% / 0.04);
+		--shadow-lg: 0 16px 32px -8px hsl(0 0% 0% / 0.10), 0 6px 12px -6px hsl(0 0% 0% / 0.05);
+		--shadow-xl: 0 24px 48px -12px hsl(0 0% 0% / 0.13), 0 8px 16px -8px hsl(0 0% 0% / 0.06);
+		--shadow-2xl: 0 32px 64px -16px hsl(0 0% 0% / 0.18);
 		--tracking-normal: 0rem;
-		--spacing: 0.25rem;
 	}
 
 	.dark {
-		--background: 222.8571 84.0000% 4.9020%;
-		--foreground: 210.0000 40.0000% 98.0392%;
-		--card: 222.8571 84.0000% 4.9020%;
-		--card-foreground: 210.0000 40.0000% 98.0392%;
-		--popover: 222.8571 84.0000% 4.9020%;
-		--popover-foreground: 210.0000 40.0000% 98.0392%;
+		--background: 0 0% 8%;
+		--foreground: 0 0% 95%;
+		--card: 0 0% 11%;
+		--card-foreground: 0 0% 95%;
+		--popover: 0 0% 11%;
+		--popover-foreground: 0 0% 95%;
 		--primary: 217.2193 91.2195% 59.8039%;
-		--primary-foreground: 210.0000 40.0000% 98.0392%;
-		--secondary: 217.2414 32.5843% 17.4510%;
-		--secondary-foreground: 210.0000 40.0000% 98.0392%;
-		--muted: 217.2414 32.5843% 17.4510%;
-		--muted-foreground: 215.0000 20.2247% 65.0980%;
-		--accent: 217.2414 32.5843% 17.4510%;
-		--accent-foreground: 210.0000 40.0000% 98.0392%;
+		--primary-foreground: 0 0% 8%;
+		--secondary: 0 0% 11%;
+		--secondary-foreground: 0 0% 95%;
+		--muted: 0 0% 11%;
+		--muted-foreground: 0 0% 53%;
+		--accent: 0 0% 17%;
+		--accent-foreground: 0 0% 95%;
 		--destructive: 0 84.2365% 60.1961%;
-		--destructive-foreground: 210.0000 40.0000% 98.0392%;
-		--border: 217.2414 32.5843% 17.4510%;
-		--input: 217.2414 32.5843% 17.4510%;
+		--destructive-foreground: 0 0% 95%;
+		--border: 0 0% 20%;
+		--input: 0 0% 26%;
 		--ring: 217.2193 91.2195% 59.8039%;
 		--chart-1: 217.2193 91.2195% 59.8039%;
 		--chart-2: 160.1183 84.0796% 39.4118%;
 		--chart-3: 24.5815 94.9791% 53.1373%;
 		--chart-4: 258.3117 89.5349% 66.2745%;
 		--chart-5: 330.3659 81.1881% 60.3922%;
-		--sidebar: 222.2222 47.3684% 11.1765%;
-		--sidebar-foreground: 215.0000 20.2247% 65.0980%;
+		--sidebar: 0 0% 10%;
+		--sidebar-foreground: 0 0% 53%;
 		--sidebar-primary: 217.2193 91.2195% 59.8039%;
-		--sidebar-primary-foreground: 210.0000 40.0000% 98.0392%;
-		--sidebar-accent: 217.2414 32.5843% 17.4510%;
-		--sidebar-accent-foreground: 210.0000 40.0000% 98.0392%;
-		--sidebar-border: 217.2414 32.5843% 17.4510%;
+		--sidebar-primary-foreground: 0 0% 8%;
+		--sidebar-accent: 0 0% 17%;
+		--sidebar-accent-foreground: 0 0% 95%;
+		--sidebar-border: 0 0% 20%;
 		--sidebar-ring: 217.2193 91.2195% 59.8039%;
-		--font-sans: Inter;
-		--font-serif: Lora;
-		--font-mono: JetBrains Mono;
-		--radius: 0.5rem;
-		--shadow-2xs: 0px 2px 4px 0px hsl(0 0% 0% / 0.05);
-		--shadow-xs: 0px 2px 4px 0px hsl(0 0% 0% / 0.05);
-		--shadow-sm: 0px 2px 4px 0px hsl(0 0% 0% / 0.10), 0px 1px 2px -1px hsl(0 0% 0% / 0.10);
-		--shadow: 0px 2px 4px 0px hsl(0 0% 0% / 0.10), 0px 1px 2px -1px hsl(0 0% 0% / 0.10);
-		--shadow-md: 0px 2px 4px 0px hsl(0 0% 0% / 0.10), 0px 2px 4px -1px hsl(0 0% 0% / 0.10);
-		--shadow-lg: 0px 2px 4px 0px hsl(0 0% 0% / 0.10), 0px 4px 6px -1px hsl(0 0% 0% / 0.10);
-		--shadow-xl: 0px 2px 4px 0px hsl(0 0% 0% / 0.10), 0px 8px 10px -1px hsl(0 0% 0% / 0.10);
-		--shadow-2xl: 0px 2px 4px 0px hsl(0 0% 0% / 0.25);
+		--shadow-2xs: 0 1px 2px 0 hsl(0 0% 0% / 0.20);
+		--shadow-xs: 0 1px 3px 0 hsl(0 0% 0% / 0.24), 0 1px 2px -1px hsl(0 0% 0% / 0.24);
+		--shadow-sm: 0 2px 4px -1px hsl(0 0% 0% / 0.28), 0 1px 2px -1px hsl(0 0% 0% / 0.20);
+		--shadow: 0 4px 8px -2px hsl(0 0% 0% / 0.32), 0 2px 4px -2px hsl(0 0% 0% / 0.22);
+		--shadow-md: 0 8px 16px -4px hsl(0 0% 0% / 0.36), 0 4px 6px -4px hsl(0 0% 0% / 0.24);
+		--shadow-lg: 0 16px 32px -8px hsl(0 0% 0% / 0.42), 0 6px 12px -6px hsl(0 0% 0% / 0.28);
+		--shadow-xl: 0 24px 48px -12px hsl(0 0% 0% / 0.50), 0 8px 16px -8px hsl(0 0% 0% / 0.32);
+		--shadow-2xl: 0 32px 64px -16px hsl(0 0% 0% / 0.62);
 	}
 
 body {
@@ -108,6 +103,43 @@ body {
 	}
 	html {
 		@apply bg-background text-foreground;
+	}
+}
+
+/* 로딩 중 텍스트를 쓸어내리는 shimmer.
+   출처: https://beui.dev (MIT License) — components/motion/text-shimmer
+   원본은 그라데이션에 var(--muted-foreground) 를 색으로 바로 넣는다.
+   이 레포의 토큰은 raw HSL(0 0% 39%) 이라 그대로 두면 색이 되지 않아
+   hsl() 로 감쌌고, 인라인 style 대신 클래스로 옮겼다. */
+@keyframes text-shimmer {
+	from {
+		background-position: 200% 0;
+	}
+	to {
+		background-position: -200% 0;
+	}
+}
+
+@layer utilities {
+	.text-shimmer {
+		background-image: linear-gradient(
+			110deg,
+			hsl(var(--muted-foreground)) 30%,
+			hsl(var(--foreground)) 50%,
+			hsl(var(--muted-foreground)) 70%
+		);
+		background-size: 200% 100%;
+		background-clip: text;
+		color: transparent;
+		animation: text-shimmer 2.5s linear infinite;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.text-shimmer {
+			background-image: none;
+			color: hsl(var(--muted-foreground));
+			animation: none;
+		}
 	}
 }
 

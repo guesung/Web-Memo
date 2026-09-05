@@ -1,3 +1,4 @@
+import { Slot } from "@radix-ui/react-slot";
 import * as React from "react";
 
 import { cn } from "../utils";
@@ -29,16 +30,31 @@ const CardHeader = React.forwardRef<
 ));
 CardHeader.displayName = "CardHeader";
 
+/**
+ * 카드의 제목.
+ *
+ * @description
+ * 기본은 `div` 라 문서의 heading 개요에 잡히지 않는다. 제목이 실제로
+ * 섹션을 여는 자리라면 `asChild` 로 heading 을 넘겨 의미를 살린다.
+ * `<CardTitle asChild><h2>설정</h2></CardTitle>`
+ */
 const CardTitle = React.forwardRef<
 	HTMLDivElement,
-	React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-	<div
-		ref={ref}
-		className={cn("font-semibold leading-none tracking-tight", className)}
-		{...props}
-	/>
-));
+	React.HTMLAttributes<HTMLDivElement> & {
+		/** true 면 자식 요소를 그대로 쓰고 스타일만 얹는다 */
+		asChild?: boolean;
+	}
+>(({ className, asChild = false, ...props }, ref) => {
+	const Comp = asChild ? Slot : "div";
+
+	return (
+		<Comp
+			ref={ref}
+			className={cn("font-semibold leading-none tracking-tight", className)}
+			{...props}
+		/>
+	);
+});
 CardTitle.displayName = "CardTitle";
 
 const CardDescription = React.forwardRef<

@@ -254,7 +254,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 						<CardContent>
 							<Textarea
 								{...memoRest}
-								className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
+								className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none"
 								ref={memoTextareaRef}
 								placeholder={t("memos.placeholder")}
 								data-testid="memo-textarea"
@@ -264,14 +264,14 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 								<>
 									<label
 										htmlFor="impression"
-										className="mt-3 text-xs font-semibold text-gray-500"
+										className="mt-3 text-xs font-semibold text-muted-foreground"
 									>
 										{t("memoSection.impression")}
 									</label>
 									<Textarea
 										{...impressionRest}
 										id="impression"
-										className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
+										className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none"
 										ref={impressionTextareaRef}
 										placeholder={t("memoSection.impressionPlaceholder")}
 										data-testid="impression-textarea"
@@ -283,14 +283,14 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 								<>
 									<label
 										htmlFor="actionItem"
-										className="mt-3 text-xs font-semibold text-gray-500"
+										className="mt-3 text-xs font-semibold text-muted-foreground"
 									>
 										{t("memoSection.actionItem")}
 									</label>
 									<Textarea
 										{...actionItemRest}
 										id="actionItem"
-										className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
+										className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none"
 										ref={actionItemTextareaRef}
 										placeholder={t("memoSection.actionItemPlaceholder")}
 										data-testid="action-item-textarea"

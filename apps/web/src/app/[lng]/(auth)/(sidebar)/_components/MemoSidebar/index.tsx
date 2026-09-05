@@ -34,9 +34,9 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 	const { t } = await useTranslation(lng);
 
 	return (
-		<Sidebar className="border-r border-gray-200 dark:border-gray-800">
+		<Sidebar className="border-r border-border">
 			<HeaderMargin />
-			<SidebarContent className="bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-950">
+			<SidebarContent className="bg-sidebar">
 				<SidebarGroup className="pt-4">
 					<SidebarMenu className="space-y-1">
 						{/* href에 lng를 붙이지 않으면 i18n 미들웨어가 307로 리다이렉트하고,
@@ -51,7 +51,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 											className="text-purple-600 dark:text-purple-400"
 										/>
 									</div>
-									<span className="font-medium text-gray-700 dark:text-gray-200 group-hover:text-purple-700 dark:group-hover:text-purple-300">
+									<span className="font-medium text-foreground group-hover:text-purple-700 dark:group-hover:text-purple-300">
 										{t("sideBar.memo")}
 									</span>
 								</div>
@@ -66,7 +66,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 											className="text-pink-600 dark:text-pink-400"
 										/>
 									</div>
-									<span className="font-medium text-gray-700 dark:text-gray-200 group-hover:text-pink-700 dark:group-hover:text-pink-300">
+									<span className="font-medium text-foreground group-hover:text-pink-700 dark:group-hover:text-pink-300">
 										{t("sideBar.wishList")}
 									</span>
 								</div>
@@ -81,7 +81,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 											className="text-amber-600 dark:text-amber-400"
 										/>
 									</div>
-									<span className="font-medium text-gray-700 dark:text-gray-200 group-hover:text-amber-700 dark:group-hover:text-amber-300">
+									<span className="font-medium text-foreground group-hover:text-amber-700 dark:group-hover:text-amber-300">
 										{t("sideBar.highlight")}
 									</span>
 								</div>
@@ -96,7 +96,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 											className="text-amber-600 dark:text-amber-400"
 										/>
 									</div>
-									<span className="font-medium text-gray-700 dark:text-gray-200 group-hover:text-amber-700 dark:group-hover:text-amber-300">
+									<span className="font-medium text-foreground group-hover:text-amber-700 dark:group-hover:text-amber-300">
 										{t("sideBar.importantMemo")}
 									</span>
 								</div>
@@ -111,22 +111,19 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 											className="text-emerald-600 dark:text-emerald-400"
 										/>
 									</div>
-									<span className="font-medium text-gray-700 dark:text-gray-200 group-hover:text-emerald-700 dark:group-hover:text-emerald-300">
+									<span className="font-medium text-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-300">
 										{t("sideBar.readingMemo")}
 									</span>
 								</div>
 							</SidebarMenuButton>
 						</Link>
 						<Link href={`/${lng}${PATHS.memosTrash}`} replace>
-							<SidebarMenuButton className="group relative overflow-hidden transition-all duration-200 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-200/50 dark:hover:from-gray-800/40 dark:hover:to-gray-800/20 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]">
+							<SidebarMenuButton className="group relative overflow-hidden transition-all duration-200 hover:bg-accent hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]">
 								<div className="flex items-center gap-3 w-full">
-									<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
-										<Trash2
-											size={16}
-											className="text-gray-600 dark:text-gray-400"
-										/>
+									<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-foreground/5 group-hover:bg-foreground/10 transition-colors">
+										<Trash2 size={16} className="text-muted-foreground" />
 									</div>
-									<span className="font-medium text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-100">
+									<span className="font-medium text-foreground/80 group-hover:text-foreground">
 										{t("sideBar.trash")}
 									</span>
 								</div>
@@ -134,10 +131,10 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 						</Link>
 					</SidebarMenu>
 				</SidebarGroup>
-				<SidebarSeparator className="my-4 bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
+				<SidebarSeparator className="my-4 bg-gradient-to-r from-transparent via-border to-transparent" />
 				<SidebarGroupCategory lng={lng} />
 			</SidebarContent>
-			<SidebarFooter className="border-t border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 p-3">
+			<SidebarFooter className="border-t border-border bg-sidebar-accent p-3">
 				<TooltipProvider>
 					<Tooltip>
 						<TooltipTrigger asChild>
@@ -157,7 +154,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 						</TooltipTrigger>
 						<TooltipContent
 							side="right"
-							className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 border-gray-700 dark:border-gray-300"
+							className="bg-foreground text-background border-border"
 						>
 							<p>{t("sideBar.settings")}</p>
 						</TooltipContent>

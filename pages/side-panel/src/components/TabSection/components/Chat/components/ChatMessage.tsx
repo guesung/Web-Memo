@@ -40,7 +40,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
 			>
 				<Markdown
 					remarkPlugins={[remarkGfm]}
-					className="markdown max-w-none prose prose-sm dark:prose-invert text-foreground"
+					className="markdown max-w-none prose prose-sm text-foreground"
 				>
 					{message.content || "..."}
 				</Markdown>

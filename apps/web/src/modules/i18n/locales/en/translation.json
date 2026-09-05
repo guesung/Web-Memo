@@ -715,7 +715,7 @@
 				},
 				"data_sync": {
 					"question": "Can I sync my memos across multiple devices?",
-					"answer": "Yes! When you log in to Web Memo, all your memos are automatically saved to the cloud. You can access and edit all your memos from any device—PC, laptop, tablet—by logging in with the same account. You can also view your saved memos anytime at webmemo.xyz."
+					"answer": "Yes! When you log in to Web Memo, all your memos are automatically saved to the cloud. You can access and edit all your memos from any device—PC, laptop, tablet—by logging in with the same account. You can also view your saved memos anytime at www.webmemo.xyz."
 				},
 				"supported_browsers": {
 					"question": "Which browsers are supported?",
@@ -959,7 +959,7 @@
 				},
 				"step3": {
 					"title": "Access Anytime",
-					"description": "View and manage all your notes at webmemo.xyz"
+					"description": "View and manage all your notes at www.webmemo.xyz"
 				}
 			},
 			"cta": {
@@ -991,7 +991,7 @@
 				},
 				"anywhere": {
 					"title": "Access Anywhere",
-					"description": "Access saved articles anytime at webmemo.xyz. Works on mobile too."
+					"description": "Access saved articles anytime at www.webmemo.xyz. Works on mobile too."
 				},
 				"readLater": {
 					"title": "Read Later",
@@ -1327,7 +1327,7 @@
 			"scope": {
 				"title": "Scope",
 				"body": [
-					"This policy applies to the Web Memo Chrome extension, the Web Memo iOS app, and the website at https://webmemo.xyz, referred to together as the \"Service\".",
+					"This policy applies to the Web Memo Chrome extension, the Web Memo iOS app, and the website at https://www.webmemo.xyz, referred to together as the \"Service\".",
 					"By using the Service you agree to the data practices described here. If you do not agree, you may stop using the Service and remove the extension at any time."
 				]
 			},
@@ -1403,7 +1403,7 @@
 						"items": [
 							"Your preferences such as language, theme, and side panel visibility",
 							"Authentication tokens that keep you signed in",
-							"Login cookies for the Web Memo domain (webmemo.xyz), read solely to carry your website sign-in into the extension. We never access cookies belonging to any other website."
+							"Login cookies for the Web Memo domain (www.webmemo.xyz), read solely to carry your website sign-in into the extension. We never access cookies belonging to any other website."
 						]
 					}
 				}
@@ -1555,7 +1555,7 @@
 			},
 			"cookies": {
 				"name": "cookies",
-				"reason": "Reads authentication cookies for the Web Memo domain (webmemo.xyz) only, so that your website sign-in carries over to the extension. Cookies belonging to any other website are never accessed."
+				"reason": "Reads authentication cookies for the Web Memo domain (www.webmemo.xyz) only, so that your website sign-in carries over to the extension. Cookies belonging to any other website are never accessed."
 			},
 			"host_permissions": {
 				"name": "Access to all sites (<all_urls>)",

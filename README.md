@@ -47,7 +47,7 @@
 
 - **Chrome 확장 프로그램** : [Chrome 웹 스토어](https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh)
 - **iOS 앱** : [App Store](https://apps.apple.com/app/id6759237784)
-- **웹** : https://webmemo.xyz
+- **웹** : https://www.webmemo.xyz
 
 ## 🚨 주의 사항
 

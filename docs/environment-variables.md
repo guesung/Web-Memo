@@ -34,7 +34,7 @@
 
 | 키 | development | staging | production |
 | --- | --- | --- | --- |
-| `WEB_URL` | `http://localhost:3000` | `https://staging.webmemo.xyz` | `https://webmemo.xyz` |
+| `WEB_URL` | `http://localhost:3000` | `https://staging.webmemo.xyz` | `https://www.webmemo.xyz` |
 
 여기에 더해 `tsup`이 셸 `BUILD_ENV`를 번들에 함께 인라인하므로, 코드에서는
 `CONFIG.buildEnv`로 `"development" | "staging" | "production"`을 읽을 수 있습니다.
@@ -64,11 +64,20 @@ Expo는 `EXPO_PUBLIC_` 접두사가 없는 환경변수를 번들에 인라인�
 
 | 대상 | 해야 하는 것 |
 | --- | --- |
-| Vercel | 프로젝트에 도메인 연결 + DNS. 프로덕션은 `webmemo.xyz`, 스테이징 alias는 `staging.webmemo.xyz` |
+| Vercel | 프로젝트에 도메인 연결 + DNS. 프로덕션은 `www.webmemo.xyz`, 스테이징 alias는 `staging.webmemo.xyz` |
 | GitHub Secrets | `STAGING_WEB_URL_WITHOUT_PROTOCOL`을 새 스테이징 도메인으로 (`cd-web.yml`의 alias) |
 | Supabase Auth | Site URL과 Redirect URLs에 새 도메인 추가 |
 | Google OAuth | 승인된 자바스크립트 원본·리디렉션 URI에 새 도메인 추가 |
 | Slack 앱 | Interactivity·슬래시 커맨드 Request URL (`docs/release-flow.md` 참고) |
+
+**`WEB_URL`에는 리다이렉트 호스트가 아니라 실제로 응답하는 호스트를 적습니다.**
+`webmemo.xyz`(apex)는 Vercel에서 `www.webmemo.xyz`로 308 리다이렉트만 하므로
+`WEB_URL`은 `https://www.webmemo.xyz`입니다. apex를 적으면 확장 매니페스트의
+`externally_connectable`이 `https://webmemo.xyz/*`가 되는데, **크롬 match 패턴은
+`webmemo.xyz`와 `www.webmemo.xyz`를 같은 호스트로 보지 않습니다.** 사용자는 항상
+www에 도착하므로 `chrome.runtime`이 주입되지 않고, 웹↔확장 연동이 에러 없이
+`isExtension()` false 경로로 새 버립니다. 리다이렉트가 걸려 있어 브라우저로 열어
+보면 멀쩡해 보이는 것이 이 실패의 고약한 점입니다.
 
 **옛 도메인은 한동안 살려 둡니다.** 크롬 웹 스토어에 이미 게시된 확장은 옛
 `externally_connectable`을 들고 있어, 사용자가 새 버전으로 갱신되기 전까지는 옛

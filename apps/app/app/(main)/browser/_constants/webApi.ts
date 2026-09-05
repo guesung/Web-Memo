@@ -9,4 +9,4 @@
  * 레포에서 도메인이 하드코딩된 유일한 자리다. 도메인을 바꾸면
  * `packages/env/.env.production`의 `WEB_URL`과 함께 여기도 고쳐야 한다.
  */
-export const WEB_API_ORIGIN = "https://webmemo.xyz";
+export const WEB_API_ORIGIN = "https://www.webmemo.xyz";

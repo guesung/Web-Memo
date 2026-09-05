@@ -16,6 +16,12 @@ import { useFormContext } from "react-hook-form";
 interface SaveMemoOptions extends Partial<MemoInput> {
 	tabInfo?: { title: string; favIconUrl?: string; url: string };
 	memoId?: number;
+	/**
+	 * 저장 표시("저장 중...")를 띄우지 않고 조용히 저장한다.
+	 * @description 제목처럼 계속 타이핑하는 필드가 아닌 변경에 쓴다. 동시 저장을 막는
+	 * 내부 큐(isSaving)는 그대로 타므로 저장 순서는 달라지지 않는다.
+	 */
+	isSilent?: boolean;
 }
 
 interface UseMemoFormProps {
@@ -31,7 +37,10 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	});
 	const { mutate: upsertMemo } = useMemoUpsertMutation();
 	const { mutate: patchMemo } = useMemoPatchMutation();
+	// isSaving은 동시 upsert를 막는 내부 큐용이고, 화면에 보여줄지는 따로 판단한다.
+	// 둘을 하나로 합치면 조용한 저장이 큐를 건너뛰어 저장이 서로 덮어쓴다.
 	const [isSaving, setIsSaving] = useState(false);
+	const [isSaveStatusVisible, setIsSaveStatusVisible] = useState(false);
 	const initializedMemoIdRef = useRef<number | null>(null);
 	const pendingDataRef = useRef<SaveMemoOptions | null>(null);
 
@@ -96,6 +105,10 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 			};
 
 			setIsSaving(true);
+			if (!overrides?.isSilent) {
+				setIsSaveStatusVisible(true);
+			}
+
 			pendingDataRef.current = null;
 
 			const tabInfo = overrides?.tabInfo ?? (await getTabInfo());
@@ -123,6 +136,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 						onSuccess: () => {
 							setTimeout(() => {
 								setIsSaving(false);
+								setIsSaveStatusVisible(false);
 								if (pendingDataRef.current !== null) {
 									const pendingData = pendingDataRef.current;
 									pendingDataRef.current = null;
@@ -136,6 +150,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 							// 실패 토스트와 Sentry 보고는 QueryProvider의 MutationCache가 이미 맡는다.
 							// 여기서는 저장 상태만 되돌리고, 성패는 호출부가 UI 분기에 쓰도록 넘긴다.
 							setIsSaving(false);
+							setIsSaveStatusVisible(false);
 							pendingDataRef.current = null;
 							resolveIsSaved(false);
 						},
@@ -149,7 +164,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const handleTitleChange = useCallback(
 		(text: string) => {
 			setValue("title", text);
-			debounce(() => saveMemo({ title: text }));
+			debounce(() => saveMemo({ title: text, isSilent: true }));
 		},
 		[setValue, debounce, saveMemo],
 	);
@@ -213,7 +228,8 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 	return {
 		memoData,
-		isSaving,
+		/** 저장 표시용. 제목처럼 조용히 저장하는 변경(isSilent)에는 켜지지 않는다. */
+		isSaving: isSaveStatusVisible,
 		saveMemo,
 		handleTitleChange,
 		handleMemoChange,

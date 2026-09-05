@@ -1,5 +1,6 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
@@ -7,9 +8,10 @@ import { Card, CardContent } from "@web-memo/ui";
 import { motion } from "framer-motion";
 import type { HTMLAttributes, MouseEvent } from "react";
 import { memo, useState } from "react";
-
+import { useFormContext } from "react-hook-form";
 import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
+import type { SearchFormValues } from "../MemoSearchFormProvider";
 
 interface MemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	memo: GetMemoResponse;
@@ -34,6 +36,7 @@ export default memo(function MemoItem({
 }: MemoItemProps) {
 	const { t } = useTranslation(lng);
 	const searchParams = useSearchParams();
+	const { watch } = useFormContext<SearchFormValues>();
 	const [isMemoHovering, setIsMemoHovering] = useState(false);
 
 	const handleMouseEnter = () => {
@@ -52,6 +55,13 @@ export default memo(function MemoItem({
 
 		if (isSelectingMode) selectMemoItem(Number(id));
 		else {
+			// 메모를 다시 꺼내 보는 동작입니다. 저장(memo_write)만 재면 쌓이기만 하는지
+			// 실제로 쓰이는지 구분할 수 없어, 읽기 쪽도 같이 남깁니다.
+			analytics.trackEvent({
+				name: "memo_open",
+				params: { has_search_query: Boolean(watch("searchQuery")) },
+			});
+
 			searchParams.set("id", id);
 			history.pushState(
 				{ openedMemoId: Number(id) },

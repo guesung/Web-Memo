@@ -206,6 +206,9 @@
 	"actionItem": {
 		"message": "Action items"
 	},
+	"titlePlaceholder": {
+		"message": "Title"
+	},
 	"actionItemPlaceholder": {
 		"message": "Write what to do after reading this page"
 	}

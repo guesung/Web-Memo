@@ -206,6 +206,9 @@
 	"actionItem": {
 		"message": "액션 아이템"
 	},
+	"titlePlaceholder": {
+		"message": "제목"
+	},
 	"actionItemPlaceholder": {
 		"message": "이 페이지를 보고 할 일을 적어보세요"
 	}

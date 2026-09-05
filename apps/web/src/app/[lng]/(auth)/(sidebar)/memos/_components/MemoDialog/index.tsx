@@ -61,6 +61,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 
 	const { register, watch, setValue } = useForm<MemoInput>({
 		defaultValues: {
+			title: "",
 			memo: "",
 			impression: "",
 			actionItem: "",
@@ -88,38 +89,64 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	});
 	useImperativeHandle(actionItemRef, () => actionItemTextareaRef.current);
 
+	// 제목은 헤더에서 곧바로 반영되고, 본문처럼 계속 타이핑하는 필드가 아니다.
+	// 제목만 바꿔도 하단에 "저장 중"이 떴다 사라지는 것이 산만해서 저장 표시에서 뺀다.
+	// 저장 자체는 같은 경로로 나가고, 표시 여부만 이 값으로 가른다.
+	const hasPendingMemoFieldEditRef = useRef(false);
+
 	const saveMemo = useCallback(() => {
+		const shouldIndicateSaveStatus = hasPendingMemoFieldEditRef.current;
+		const currentTitle = watch("title");
 		const currentMemo = watch("memo");
 		const currentImpression = watch("impression");
 		const currentActionItem = watch("actionItem");
 
 		const isEdited =
+			currentTitle !== memoData?.title ||
 			currentMemo !== memoData?.memo ||
 			currentImpression !== (memoData?.impression ?? "") ||
 			currentActionItem !== (memoData?.actionItem ?? "");
 
 		if (!isEdited) {
-			setSaveStatus("idle");
+			if (shouldIndicateSaveStatus) {
+				setSaveStatus("idle");
+			}
+
 			return;
 		}
 
-		setSaveStatus("saving");
+		if (shouldIndicateSaveStatus) {
+			setSaveStatus("saving");
+		}
+
 		mutateMemoPatch(
 			{
 				id: memoId,
 				request: {
+					title: currentTitle,
 					memo: currentMemo,
 					impression: currentImpression,
 					actionItem: currentActionItem,
 				},
 			},
 			{
-				onSuccess: () => setSaveStatus("saved"),
-				onError: () => setSaveStatus("error"),
+				onSuccess: () => {
+					hasPendingMemoFieldEditRef.current = false;
+
+					if (shouldIndicateSaveStatus) {
+						setSaveStatus("saved");
+					}
+				},
+				onError: () => {
+					if (shouldIndicateSaveStatus) {
+						setSaveStatus("error");
+					}
+				},
 			},
 		);
 	}, [
 		watch,
+		memoData?.title,
 		memoData?.memo,
 		memoData?.impression,
 		memoData?.actionItem,
@@ -154,6 +181,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 			if (initializedMemoIdRef.current === memoData.id) return;
 
 			initializedMemoIdRef.current = memoData.id;
+			setValue("title", memoData.title);
 			setValue("memo", memoData.memo);
 			setValue("impression", memoData.impression ?? "");
 			setValue("actionItem", memoData.actionItem ?? "");
@@ -178,10 +206,21 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 
 	useEffect(
 		function saveMemoOnChange() {
-			const subscription = watch((value) => {
-				if (!value.memo && !value.impression && !value.actionItem) return;
+			const subscription = watch((value, { name }) => {
+				if (
+					!value.title &&
+					!value.memo &&
+					!value.impression &&
+					!value.actionItem
+				) {
+					return;
+				}
 
-				setSaveStatus("saving");
+				if (name !== "title") {
+					hasPendingMemoFieldEditRef.current = true;
+					setSaveStatus("saving");
+				}
+
 				debounce(() => {
 					saveMemo();
 				}, 1_000);
@@ -206,7 +245,12 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 					exit={{ opacity: 0 }}
 				>
 					<Card>
-						<MemoCardHeader memo={memoData} />
+						<MemoCardHeader
+							memo={memoData}
+							onTitleChange={(title) =>
+								setValue("title", title, { shouldDirty: true })
+							}
+						/>
 						<CardContent>
 							<Textarea
 								{...memoRest}

@@ -398,6 +398,9 @@ importers:
       '@playwright/test':
         specifier: ^1.47.0
         version: 1.58.2
+      '@supabase/supabase-js':
+        specifier: ^2.95.3
+        version: 2.95.3
       '@types/chrome':
         specifier: ^0.0.268
         version: 0.0.268

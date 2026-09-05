@@ -31,6 +31,7 @@ export const QUERY_KEY = {
 	deletedMemos: () => ["memos", "deleted"],
 	option: () => ["option"],
 	supabaseClient: () => ["supabaseClient"],
+	supabaseFeedbackClient: () => ["supabaseFeedbackClient"],
 	user: () => ["user"],
 	category: () => ["cateogory"],
 	setting: () => ["setting"],

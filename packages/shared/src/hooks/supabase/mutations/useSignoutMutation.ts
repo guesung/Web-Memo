@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
+import { analytics } from "../../../modules/analytics";
 import { AuthService } from "../../../utils/Supabase";
-
 import { useSupabaseClientQuery } from "../queries";
 
 export default function useSignoutMutation() {
@@ -8,5 +8,8 @@ export default function useSignoutMutation() {
 
 	return useMutation({
 		mutationFn: new AuthService(supabaseClient).signout,
+		onSuccess: () => {
+			analytics.trackEvent({ name: "logout" });
+		},
 	});
 }

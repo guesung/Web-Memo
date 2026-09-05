@@ -93,15 +93,15 @@ export default memo(function MemoCardHeader({
 
 	const isShowingSelectButton = isMemoHovering || isMemoSelected;
 	return (
-		<CardHeader className="relative px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+		<CardHeader className="relative px-5 py-4 border-b border-border">
 			<Button
 				variant="outline"
 				size="sm"
 				className={cn(
 					"absolute -left-3 -top-3 z-20",
 					"w-7 h-7 p-0 rounded-full",
-					"bg-white dark:bg-gray-900",
-					"border-2 border-gray-300 dark:border-gray-700",
+					"bg-card",
+					"border-2 border-border",
 					"shadow-md hover:shadow-lg",
 					"transition-all duration-200",
 					{
@@ -146,7 +146,7 @@ export default memo(function MemoCardHeader({
 							<Tooltip>
 								<TooltipTrigger asChild>
 									<span
-										className="line-clamp-1 font-bold text-gray-900 dark:text-white group-hover/link:text-purple-600 dark:group-hover/link:text-purple-400 transition-colors"
+										className="line-clamp-1 font-bold text-foreground group-hover/link:text-purple-600 dark:group-hover/link:text-purple-400 transition-colors"
 										data-testid="memo-title"
 									>
 										{displayedTitle}
@@ -157,13 +157,13 @@ export default memo(function MemoCardHeader({
 								</TooltipContent>
 							</Tooltip>
 						</TooltipProvider>
-						<ExternalLink className="w-4 h-4 text-gray-400 opacity-0 group-hover/link:opacity-100 transition-opacity flex-shrink-0" />
+						<ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover/link:opacity-100 transition-opacity flex-shrink-0" />
 					</Link>
 					{onTitleChange ? (
 						<Button
 							variant="ghost"
 							size="icon"
-							className="size-6 flex-shrink-0 text-gray-400 opacity-0 group-hover/link:opacity-100 transition-opacity"
+							className="size-6 flex-shrink-0 text-muted-foreground opacity-0 group-hover/link:opacity-100 transition-opacity"
 							aria-label="제목 수정"
 							onClick={handleTitleEditButtonClick}
 							data-testid="memo-title-edit-button"
@@ -179,7 +179,7 @@ export default memo(function MemoCardHeader({
 
 function MemoFavIcon({ favIconUrl }: { favIconUrl?: string | null }) {
 	if (!favIconUrl) {
-		return <Globe className="w-5 h-5 text-gray-400 flex-shrink-0" />;
+		return <Globe className="w-5 h-5 text-muted-foreground flex-shrink-0" />;
 	}
 
 	return (

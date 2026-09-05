@@ -26,19 +26,19 @@ export default function MemoSearchEmptyState({
 			animate={{ opacity: 1, y: 0 }}
 			className="flex flex-col items-center justify-center min-h-[60vh] px-4"
 		>
-			<div className="w-20 h-20 mb-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-				<SearchX className="h-10 w-10 text-gray-400" />
+			<div className="w-20 h-20 mb-6 rounded-full bg-muted flex items-center justify-center">
+				<SearchX className="h-10 w-10 text-muted-foreground" />
 			</div>
 
-			<h3 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-3 text-center">
+			<h3 className="text-xl lg:text-2xl font-bold text-foreground mb-3 text-center">
 				{t("memos.searchEmptyState.title")}
 			</h3>
 
-			<p className="text-gray-600 dark:text-gray-400 text-center max-w-md break-all">
+			<p className="text-muted-foreground text-center max-w-md break-all">
 				{t("memos.searchEmptyState.message", { query: searchQuery })}
 			</p>
 
-			<p className="mt-2 text-sm text-gray-500 dark:text-gray-500 text-center">
+			<p className="mt-2 text-sm text-muted-foreground text-center">
 				{t("memos.searchEmptyState.hint")}
 			</p>
 		</motion.div>

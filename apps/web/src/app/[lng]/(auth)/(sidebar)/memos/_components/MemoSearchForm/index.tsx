@@ -83,8 +83,8 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 								className={cn(
 									"w-auto min-w-[130px] h-12",
 									"rounded-xl",
-									"border-2 border-gray-200 dark:border-gray-800",
-									"bg-white dark:bg-gray-900",
+									"border-2 border-border",
+									"bg-card",
 									"hover:border-purple-300 dark:hover:border-purple-700",
 									"transition-colors",
 								)}
@@ -120,7 +120,7 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 					control={control}
 					render={({ field }) => (
 						<div className="relative flex-1">
-							<Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+							<Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
 							<Input
 								type="text"
 								placeholder={t("memos.searchPlaceholder")}
@@ -128,8 +128,8 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 									"w-full h-12 pl-12 pr-12",
 									"text-base",
 									"rounded-xl",
-									"border-2 border-gray-200 dark:border-gray-800",
-									"bg-white dark:bg-gray-900",
+									"border-2 border-border",
+									"bg-card",
 									"shadow-sm",
 									"focus:border-purple-500 dark:focus:border-purple-500",
 									"focus:ring-4 focus:ring-purple-500/20",
@@ -142,7 +142,7 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 									type="button"
 									variant="ghost"
 									size="sm"
-									className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+									className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 p-0 rounded-full hover:bg-muted"
 									onClick={() => reset()}
 									aria-label="Clear search"
 								>

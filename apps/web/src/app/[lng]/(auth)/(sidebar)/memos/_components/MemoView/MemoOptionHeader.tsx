@@ -24,13 +24,13 @@ export default function MemoOptionHeader({
 	return (
 		<motion.header
 			className={cn(
-				"bg-white dark:bg-gray-900",
+				"bg-card",
 				"fixed inset-x-0 top-0 z-50",
 				"flex h-[3.5rem] w-full items-center justify-between",
 				"px-4 md:px-6",
-				"border-b border-gray-200 dark:border-gray-800",
+				"border-b border-border",
 				"shadow-lg shadow-purple-500/5 dark:shadow-purple-500/10",
-				"backdrop-blur-sm bg-white/95 dark:bg-gray-900/95",
+				"backdrop-blur-sm bg-card/95",
 			)}
 			variants={MOTION_VARIANTS.fadeInAndOut}
 			initial="initial"
@@ -41,9 +41,9 @@ export default function MemoOptionHeader({
 				variant="ghost"
 				size="icon"
 				onClick={closeMemoOption}
-				className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 hover:scale-110 active:scale-95 rounded-full"
+				className="hover:bg-muted transition-all duration-200 hover:scale-110 active:scale-95 rounded-full"
 			>
-				<XIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+				<XIcon className="h-5 w-5 text-muted-foreground" />
 			</Button>
 			<div className="flex items-center gap-3 px-4">
 				<div className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30">

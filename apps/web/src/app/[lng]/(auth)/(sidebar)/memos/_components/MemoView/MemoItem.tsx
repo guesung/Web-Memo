@@ -93,8 +93,8 @@ export default memo(function MemoItem({
 				<Card
 					className={cn(
 						"relative w-[300px]",
-						"bg-white dark:bg-gray-900",
-						"border-2 border-gray-200 dark:border-gray-800",
+						"bg-card",
+						"border-2 border-border",
 						"rounded-2xl shadow-md",
 						"transition-all duration-300",
 						"hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1",
@@ -123,21 +123,21 @@ export default memo(function MemoItem({
 						selectMemoItem={selectMemoItem}
 					/>
 					{memo.memo && (
-						<CardContent className="px-5 py-3 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-break-spaces break-all">
+						<CardContent className="px-5 py-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
 							{memo.memo}
 						</CardContent>
 					)}
 					{showImpression && memo.impression && (
-						<CardContent className="px-5 pb-3 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-break-spaces break-all">
-							<p className="mb-1 text-xs font-semibold text-gray-400">
+						<CardContent className="px-5 pb-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
+							<p className="mb-1 text-xs font-semibold text-muted-foreground">
 								{t("memoSection.impression")}
 							</p>
 							{memo.impression}
 						</CardContent>
 					)}
 					{showActionItem && memo.actionItem && (
-						<CardContent className="px-5 pb-3 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-break-spaces break-all">
-							<p className="mb-1 text-xs font-semibold text-gray-400">
+						<CardContent className="px-5 pb-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
+							<p className="mb-1 text-xs font-semibold text-muted-foreground">
 								{t("memoSection.actionItem")}
 							</p>
 							{memo.actionItem}

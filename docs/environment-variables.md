@@ -55,9 +55,19 @@
 | --- | --- |
 | Vercel | 프로젝트에 도메인 연결 + DNS. 프로덕션은 `www.webmemo.xyz`, 스테이징 alias는 `staging.webmemo.xyz` |
 | GitHub Secrets | `STAGING_WEB_URL_WITHOUT_PROTOCOL`을 새 스테이징 도메인으로 (`cd-web.yml`의 alias) |
-| Supabase Auth | Site URL과 Redirect URLs에 새 도메인 추가 |
-| Google OAuth | 승인된 자바스크립트 원본·리디렉션 URI에 새 도메인 추가 |
+| Supabase Auth | URL Configuration → Site URL을 `https://www.webmemo.xyz`로, Redirect URLs에 `https://www.webmemo.xyz/**`와 `https://staging.webmemo.xyz/**` 추가 |
 | Slack 앱 | Interactivity·슬래시 커맨드 Request URL (`docs/release-flow.md` 참고) |
+
+**Google·Kakao·Apple 개발자 콘솔은 건드릴 것이 없습니다.** 로그인은
+`signInWithOAuth`로 Supabase를 거치므로, 각 제공자에 등록된 리디렉션 URI는
+Supabase의 `/auth/v1/callback`이지 우리 도메인이 아닙니다. 우리 도메인이 들어가는
+곳은 `redirectTo`로 넘기는 `${CONFIG.webUrl}/auth/callback` 하나뿐이고, 그것은
+Supabase의 **Redirect URLs 허용 목록**에서 검사합니다. 거기에 새 도메인이 없으면
+로그인이 콜백에서 튕깁니다.
+
+세션 쿠키는 `domain` 없이 심겨 서빙 호스트에만 붙고, 확장은
+`chrome.cookies.get({ url: CONFIG.webUrl })`로 같은 호스트에서 읽습니다. `WEB_URL`이
+실제 서빙 호스트여야 하는 이유가 여기에도 걸립니다.
 
 **`WEB_URL`에는 리다이렉트 호스트가 아니라 실제로 응답하는 호스트를 적습니다.**
 `webmemo.xyz`(apex)는 Vercel에서 `www.webmemo.xyz`로 308 리다이렉트만 하므로

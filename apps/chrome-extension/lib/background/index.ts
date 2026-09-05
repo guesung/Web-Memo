@@ -13,9 +13,13 @@ import {
 	normalizeUrl,
 } from "@web-memo/shared/utils";
 import { getSupabaseClient, I18n, Tab } from "@web-memo/shared/utils/extension";
+import { analytics } from "@web-memo/shared/modules/analytics";
 
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
 chrome.runtime.onInstalled.addListener(async () => {
+	// 퍼널의 출발점입니다. 설치 대비 사이드패널 사용, 가입 전환을 여기서부터 셉니다.
+	analytics.trackEvent({ name: "extension_installed" });
+
 	chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 	const language = await ChromeSyncStorage.get(STORAGE_KEYS.language);
 	const uiLanguage = I18n.getUILanguage();

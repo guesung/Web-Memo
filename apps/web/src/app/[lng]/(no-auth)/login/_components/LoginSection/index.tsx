@@ -18,7 +18,7 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
 	const { t } = await useTranslation(lng);
 
 	return (
-		<section className="relative flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl px-8 py-10 shadow-2xl border border-gray-200/50 dark:border-gray-800/50 gap-6">
+		<section className="relative flex flex-col items-center justify-center rounded-3xl bg-card/80 backdrop-blur-xl px-8 py-10 shadow-2xl border border-border/50 gap-6">
 			<div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-3xl opacity-10 blur" />
 
 			<div className="relative flex flex-col items-center gap-4">
@@ -27,10 +27,10 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
 				</div>
 
 				<div className="text-center space-y-2">
-					<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+					<h1 className="text-2xl font-bold text-foreground">
 						{t("login.welcomeTitle")}
 					</h1>
-					<p className="text-sm text-gray-600 dark:text-gray-400 max-w-xs">
+					<p className="text-sm text-muted-foreground max-w-xs">
 						{t("login.welcomeDescription")}
 					</p>
 				</div>

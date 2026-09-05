@@ -83,8 +83,8 @@ export function CategorySuggestion({
 					onClick={onAccept}
 					className={cn(
 						"rounded p-0.5 transition-colors",
-						"hover:bg-green-100 hover:text-green-700",
-						"focus:outline-none focus:ring-1 focus:ring-green-500",
+						"hover:bg-green-500/15 hover:text-green-700 dark:hover:text-green-400",
+						"focus:ring-1 focus:ring-green-500 focus:outline-none",
 					)}
 					aria-label={I18n.get("category_suggestion_accept")}
 					title={I18n.get("category_suggestion_accept")}
@@ -96,8 +96,8 @@ export function CategorySuggestion({
 					onClick={onDismiss}
 					className={cn(
 						"rounded p-0.5 transition-colors",
-						"hover:bg-red-100 hover:text-red-700",
-						"focus:outline-none focus:ring-1 focus:ring-red-500",
+						"hover:bg-destructive/15 hover:text-destructive",
+						"focus:ring-destructive focus:ring-1 focus:outline-none",
 					)}
 					aria-label={I18n.get("category_suggestion_dismiss")}
 					title={I18n.get("category_suggestion_dismiss")}

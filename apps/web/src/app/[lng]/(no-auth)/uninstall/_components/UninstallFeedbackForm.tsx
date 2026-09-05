@@ -104,14 +104,14 @@ export default function UninstallFeedbackForm({
 					<Gift className="w-10 h-10 text-white" />
 				</div>
 				<div className="space-y-2">
-					<h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+					<h2 className="text-2xl font-bold text-foreground">
 						{t("uninstall.success.title")}
 					</h2>
-					<p className="text-gray-600 dark:text-gray-400 max-w-md">
+					<p className="text-muted-foreground max-w-md">
 						{t("uninstall.success.description")}
 					</p>
 				</div>
-				<p className="text-sm text-gray-500 dark:text-gray-500">
+				<p className="text-sm text-muted-foreground">
 					{t("uninstall.success.giftNote")}
 				</p>
 			</div>
@@ -121,7 +121,7 @@ export default function UninstallFeedbackForm({
 	return (
 		<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 			<div className="space-y-4">
-				<Label className="text-base font-semibold text-gray-900 dark:text-white">
+				<Label className="text-base font-semibold text-foreground">
 					{t("uninstall.form.reasonLabel")}
 				</Label>
 				<RadioGroup
@@ -135,11 +135,11 @@ export default function UninstallFeedbackForm({
 							className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
 								selectedReason === reason
 									? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
-									: "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+									: "border-border hover:border-muted-foreground/50"
 							}`}
 						>
 							<RadioGroupItem value={reason} id={reason} />
-							<span className="text-gray-700 dark:text-gray-300">
+							<span className="text-foreground">
 								{t(`uninstall.reasons.${reason}`)}
 							</span>
 						</Label>
@@ -150,7 +150,7 @@ export default function UninstallFeedbackForm({
 			<div className="space-y-3">
 				<Label
 					htmlFor="feedback"
-					className="text-base font-semibold text-gray-900 dark:text-white"
+					className="text-base font-semibold text-foreground"
 				>
 					{t("uninstall.form.feedbackLabel")}
 				</Label>
@@ -165,10 +165,10 @@ export default function UninstallFeedbackForm({
 			<div className="space-y-3">
 				<Label
 					htmlFor="phoneNumber"
-					className="text-base font-semibold text-gray-900 dark:text-white"
+					className="text-base font-semibold text-foreground"
 				>
 					{t("uninstall.form.phoneLabel")}
-					<span className="ml-2 text-sm font-normal text-gray-500">
+					<span className="ml-2 text-sm font-normal text-muted-foreground">
 						{t("uninstall.form.optional")}
 					</span>
 				</Label>
@@ -183,7 +183,7 @@ export default function UninstallFeedbackForm({
 				{phoneError ? (
 					<p className="text-sm text-red-500">{phoneError}</p>
 				) : (
-					<p className="text-sm text-gray-500 dark:text-gray-400">
+					<p className="text-sm text-muted-foreground">
 						{t("uninstall.form.phoneDescription")}
 					</p>
 				)}

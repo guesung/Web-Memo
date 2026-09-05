@@ -80,7 +80,7 @@ export default function SocialProofBar({ lng }: SocialProofBarProps) {
 	];
 
 	return (
-		<section className="py-10 bg-gradient-to-r from-gray-50/80 via-white to-gray-50/80 dark:from-gray-900/80 dark:via-gray-950 dark:to-gray-900/80 border-y border-gray-200/50 dark:border-gray-800/50 backdrop-blur-sm">
+		<section className="py-10 bg-gradient-to-r from-muted/50 via-background to-muted/50 border-y border-border/50 backdrop-blur-sm">
 			<div className="mx-auto max-w-6xl px-4">
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}
@@ -96,7 +96,7 @@ export default function SocialProofBar({ lng }: SocialProofBarProps) {
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true }}
 							transition={{ duration: 0.5, delay: index * 0.1 }}
-							className="group flex items-center gap-4 p-4 rounded-2xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors duration-300"
+							className="group flex items-center gap-4 p-4 rounded-2xl hover:bg-muted/50 transition-colors duration-300"
 						>
 							<div
 								className={`p-3.5 rounded-2xl ${item.bgColor} transition-transform duration-300 group-hover:scale-110`}
@@ -104,7 +104,7 @@ export default function SocialProofBar({ lng }: SocialProofBarProps) {
 								<item.icon className={`h-6 w-6 ${item.color}`} />
 							</div>
 							<div>
-								<div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+								<div className="text-2xl font-bold text-foreground">
 									{item.customValue ? (
 										item.customValue
 									) : item.isDecimal ? (
@@ -119,7 +119,7 @@ export default function SocialProofBar({ lng }: SocialProofBarProps) {
 										</>
 									)}
 								</div>
-								<div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+								<div className="text-sm font-medium text-muted-foreground">
 									{item.label}
 								</div>
 							</div>

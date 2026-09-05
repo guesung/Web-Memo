@@ -18,7 +18,7 @@ export default function QuestionAndAnswer({ lng }: LanguageType) {
 	const { t } = useTranslation(lng);
 
 	return (
-		<section className="py-20 bg-gray-50 dark:bg-gray-900/50">
+		<section className="py-20 bg-muted/50">
 			<FaqJsonLD lng={lng} />
 			<div className="mx-auto max-w-4xl px-4">
 				{/* Section Header */}
@@ -32,10 +32,10 @@ export default function QuestionAndAnswer({ lng }: LanguageType) {
 					<div className="inline-flex items-center justify-center p-3 rounded-xl bg-purple-100 dark:bg-purple-900/30 mb-4">
 						<HelpCircle className="h-8 w-8 text-purple-600 dark:text-purple-400" />
 					</div>
-					<h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+					<h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
 						{t("introduce.faq.title")}
 					</h2>
-					<p className="text-lg text-gray-600 dark:text-gray-400">
+					<p className="text-lg text-muted-foreground">
 						{t("introduce.faq.subtitle")}
 					</p>
 				</motion.div>
@@ -60,10 +60,10 @@ export default function QuestionAndAnswer({ lng }: LanguageType) {
 									value={faqItem}
 									className="glass-card rounded-xl border-0 px-6 overflow-hidden"
 								>
-									<AccordionTrigger className="text-left font-semibold text-gray-900 dark:text-gray-100 hover:no-underline py-5">
+									<AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
 										{t(`introduce.faq.questions.${faqItem}.question`)}
 									</AccordionTrigger>
-									<AccordionContent className="text-gray-600 dark:text-gray-400 pb-5 leading-relaxed">
+									<AccordionContent className="text-muted-foreground pb-5 leading-relaxed">
 										{t(`introduce.faq.questions.${faqItem}.answer`)}
 									</AccordionContent>
 								</AccordionItem>
@@ -80,7 +80,7 @@ export default function QuestionAndAnswer({ lng }: LanguageType) {
 					transition={{ duration: 0.5, delay: 0.5 }}
 					className="text-center mt-12"
 				>
-					<p className="text-gray-600 dark:text-gray-400">
+					<p className="text-muted-foreground">
 						{t("introduce.faq.other_questions")}{" "}
 						<a
 							href="mailto:gueit214@naver.com"

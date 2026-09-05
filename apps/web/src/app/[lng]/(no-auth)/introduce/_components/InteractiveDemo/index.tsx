@@ -159,7 +159,7 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 	};
 
 	return (
-		<section id="demo" className="py-20 bg-white dark:bg-gray-900">
+		<section id="demo" className="py-20 bg-background">
 			<div className="mx-auto max-w-6xl px-4">
 				{/* Section Header */}
 				<motion.div
@@ -169,10 +169,10 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 					transition={{ duration: 0.5 }}
 					className="text-center mb-12"
 				>
-					<h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+					<h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
 						{t("introduce.section.demo")}
 					</h2>
-					<p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						{t("introduce.section.demo_desc")}
 					</p>
 				</motion.div>
@@ -186,16 +186,16 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 					onMouseLeave={() => setIsPaused(false)}
 				>
 					{/* Browser Mockup */}
-					<div className="relative rounded-2xl overflow-hidden shadow-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+					<div className="relative rounded-2xl overflow-hidden shadow-2xl bg-card border border-border">
 						{/* Browser Header */}
-						<div className="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+						<div className="flex items-center gap-2 px-4 py-3 bg-muted border-b border-border">
 							<div className="flex gap-1.5">
 								<div className="w-3 h-3 rounded-full bg-red-500" />
 								<div className="w-3 h-3 rounded-full bg-yellow-500" />
 								<div className="w-3 h-3 rounded-full bg-green-500" />
 							</div>
 							<div className="flex-1 mx-4">
-								<div className="bg-white dark:bg-gray-700 rounded-lg px-4 py-1.5 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2 max-w-md mx-auto">
+								<div className="bg-card rounded-lg px-4 py-1.5 text-sm text-muted-foreground flex items-center gap-2 max-w-md mx-auto">
 									<Globe className="h-4 w-4 flex-shrink-0" />
 									<span className="truncate">{CONFIG.webDisplayHost}</span>
 								</div>
@@ -203,7 +203,7 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 						</div>
 
 						{/* Screenshot Area */}
-						<div className="relative aspect-[16/9] bg-gray-50 dark:bg-gray-800">
+						<div className="relative aspect-[16/9] bg-muted/50">
 							<AnimatePresence mode="wait">
 								<motion.div
 									key={activeTab}
@@ -225,7 +225,7 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 						</div>
 
 						{/* Tab Navigation */}
-						<div className="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
+						<div className="bg-muted/50 border-t border-border p-4">
 							<div className="flex flex-wrap justify-center gap-2 md:gap-4">
 								{tabs.map((tab, index) => {
 									const isActive = activeTab === index;
@@ -239,7 +239,7 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 											className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 ${
 												isActive
 													? `${colors.bg} ${colors.text} shadow-md`
-													: "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+													: "text-muted-foreground hover:bg-muted"
 											}`}
 										>
 											<tab.icon className="h-5 w-5" />
@@ -249,7 +249,7 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 
 											{/* Progress indicator for active tab */}
 											{isActive && (
-												<div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+												<div className="absolute bottom-0 left-0 right-0 h-0.5 bg-muted rounded-full overflow-hidden">
 													<motion.div
 														className={`h-full ${colors.activeBg}`}
 														style={{ width: `${progress}%` }}
@@ -269,7 +269,7 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 									animate={{ opacity: 1, y: 0 }}
 									exit={{ opacity: 0, y: -10 }}
 									transition={{ duration: 0.2 }}
-									className="text-center mt-4 text-gray-600 dark:text-gray-400"
+									className="text-center mt-4 text-muted-foreground"
 								>
 									{tabs[activeTab].description}
 								</motion.p>

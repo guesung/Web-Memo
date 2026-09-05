@@ -39,9 +39,12 @@
 여기에 더해 `tsup`이 셸 `BUILD_ENV`를 번들에 함께 인라인하므로, 코드에서는
 `CONFIG.buildEnv`로 `"development" | "staging" | "production"`을 읽을 수 있습니다.
 
-`CONFIG.webHost`는 `webUrl`에서 프로토콜을 뗀 값(`webmemo.xyz`)입니다. 주소창
-목업이나 안내 문구처럼 **사용자에게 도메인만 보여주는 자리**에서 씁니다. 파생값이라
-원천은 여전히 `WEB_URL` 하나입니다.
+`CONFIG.webDisplayHost`는 `webUrl`에서 프로토콜과 `www.`를 뗀 값(`webmemo.xyz`)입니다.
+주소창 목업이나 안내 문구처럼 **사용자에게 도메인만 보여주는 자리**에서 씁니다.
+파생값이라 원천은 여전히 `WEB_URL` 하나입니다.
+
+**origin이 일치해야 하는 값에는 `webUrl`을 그대로 쓰세요.** 확장 매니페스트의
+`externally_connectable`처럼 `www`가 빠지면 조용히 죽는 자리가 있습니다(아래 참고).
 
 `packages/env/src/config.ts`가 이 값을 읽어 `CONFIG` 객체로 내보내고, 소비하는 쪽은
 `import { CONFIG } from "@web-memo/env"`로 씁니다. `getSafeConfig`가 `undefined`를
@@ -52,7 +55,7 @@
 
 `WEB_URL`은 레포 안의 여러 값을 끌고 다닙니다. 확장 매니페스트의
 `externally_connectable`, 웹의 `metadataBase`·canonical·`alternates`,
-`robots.txt`·`sitemap.xml`, 그리고 `translation.json`의 `{{webHost}}` 보간이 모두
+`robots.txt`·`sitemap.xml`, 그리고 `translation.json`의 `{{webDisplayHost}}` 보간이 모두
 이 값에서 나옵니다.
 
 **레포에서 도메인이 하드코딩된 곳은 `apps/app/.../_constants/webApi.ts` 하나뿐입니다.**

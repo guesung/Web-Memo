@@ -197,7 +197,7 @@ export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
 							<div className="flex-1 mx-4">
 								<div className="bg-white dark:bg-gray-700 rounded-lg px-4 py-1.5 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2 max-w-md mx-auto">
 									<Globe className="h-4 w-4 flex-shrink-0" />
-									<span className="truncate">{CONFIG.webHost}</span>
+									<span className="truncate">{CONFIG.webDisplayHost}</span>
 								</div>
 							</div>
 						</div>

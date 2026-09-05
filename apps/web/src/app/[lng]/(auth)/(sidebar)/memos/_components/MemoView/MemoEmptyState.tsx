@@ -38,7 +38,7 @@ export default function MemoEmptyState({ lng }: MemoEmptyStateProps) {
 		>
 			<div className="relative mb-8">
 				<div className="absolute inset-0 flex items-center justify-center">
-					<div className="w-48 h-48 rounded-full bg-purple-500/10 animate-pulse" />
+					<div className="w-48 h-48 rounded-full bg-primary/10 animate-pulse" />
 				</div>
 				<div className="absolute inset-0 flex items-center justify-center">
 					<motion.div
@@ -52,7 +52,7 @@ export default function MemoEmptyState({ lng }: MemoEmptyStateProps) {
 					/>
 				</div>
 
-				<div className="relative z-10 w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-2xl">
+				<div className="relative z-10 w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary to-cyan-500 flex items-center justify-center shadow-2xl">
 					<Sparkles className="h-12 w-12 text-white" />
 				</div>
 			</div>
@@ -68,7 +68,7 @@ export default function MemoEmptyState({ lng }: MemoEmptyStateProps) {
 			<div className="flex flex-col sm:flex-row gap-4">
 				<Button
 					size="lg"
-					className="h-14 px-8 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+					className="h-14 px-8 bg-gradient-to-r from-primary to-cyan-500 hover:from-primary/90 hover:to-cyan-500/90 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
 					asChild
 				>
 					<Link

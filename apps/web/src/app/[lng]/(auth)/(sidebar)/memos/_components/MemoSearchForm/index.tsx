@@ -44,7 +44,7 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 									"rounded-xl",
 									"border-2 border-border",
 									"bg-card",
-									"hover:border-purple-300 dark:hover:border-purple-700",
+									"hover:border-primary/50",
 									"transition-colors",
 								)}
 							>
@@ -90,8 +90,8 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 									"border-2 border-border",
 									"bg-card",
 									"shadow-sm",
-									"focus:border-purple-500 dark:focus:border-purple-500",
-									"focus:ring-4 focus:ring-purple-500/20",
+									"focus:border-primary",
+									"focus:ring-4 focus:ring-primary/20",
 									"transition-all",
 								)}
 								{...field}

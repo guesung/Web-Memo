@@ -240,6 +240,7 @@ export default function MemoGrid({
 						key={memo.id}
 						lng={lng}
 						data-grid-groupkey={Math.floor(index / 20)}
+						index={index}
 						memo={memo}
 						isMemoSelected={checkMemoSelected(memo.id)}
 						selectMemoItem={handleSelectMemoItem}

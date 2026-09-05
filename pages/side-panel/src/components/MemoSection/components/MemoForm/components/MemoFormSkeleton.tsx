@@ -1,4 +1,4 @@
-import { Badge } from "@web-memo/ui";
+import { Badge, Skeleton } from "@web-memo/ui";
 import { HeartIcon } from "lucide-react";
 
 export default function MemoFormSkeleton() {
@@ -6,9 +6,9 @@ export default function MemoFormSkeleton() {
 		<form className="relative flex h-full flex-col gap-1 py-1">
 			<div className="flex-1 resize-none text-sm outline-none border border-input bg-background rounded-md p-3">
 				<div className="space-y-2">
-					<div className="h-4 bg-muted rounded animate-pulse" />
-					<div className="h-4 bg-muted rounded animate-pulse w-3/4" />
-					<div className="h-4 bg-muted rounded animate-pulse w-1/2" />
+					<Skeleton className="h-4" />
+					<Skeleton className="h-4 w-3/4" />
+					<Skeleton className="h-4 w-1/2" />
 				</div>
 			</div>
 
@@ -19,8 +19,8 @@ export default function MemoFormSkeleton() {
 						className="cursor-pointer text-muted-foreground/50"
 					/>
 					<div className="flex items-center gap-1">
-						<div className="w-3 h-3 bg-muted rounded-full animate-pulse" />
-						<div className="h-3 w-12 bg-muted rounded animate-pulse" />
+						<Skeleton className="size-3 rounded-full" />
+						<Skeleton className="h-3 w-12" />
 					</div>
 				</div>
 
@@ -28,8 +28,8 @@ export default function MemoFormSkeleton() {
 					variant="outline"
 					className="flex items-center gap-1 px-2 py-0.5 opacity-50"
 				>
-					<div className="h-2 w-2 rounded-full bg-muted animate-pulse" />
-					<div className="h-3 w-16 bg-muted rounded animate-pulse" />
+					<Skeleton className="size-2 rounded-full" />
+					<Skeleton className="h-3 w-16" />
 				</Badge>
 			</div>
 		</form>

@@ -168,6 +168,45 @@ body {
 	--tw-prose-quote-borders: hsl(var(--border));
 }
 
+@layer utilities {
+	/*
+	 * 스켈레톤 셰이딩
+	 *
+	 * @description
+	 * animate-pulse 는 판 전체가 같이 깜빡여 "무엇이 얼마나 남았는지"를 못 알린다.
+	 * 한 방향으로 훑고 지나가는 빛은 진행 중이라는 인상을 준다.
+	 * 색을 foreground 알파로 잡는 이유는, 스켈레톤이 페이지 바닥과 카드 안
+	 * 양쪽에 놓이는데 --muted 가 --card 와 같은 값이라 카드 위에서 사라지기
+	 * 때문이다. 알파는 아래 깔린 것이 무엇이든 그 위에 얹힌다.
+	 *
+	 * 출처: https://beui.dev (MIT License) — 셰이딩 방식 참고
+	 */
+	.skeleton-shimmer {
+		position: relative;
+		overflow: hidden;
+	}
+
+	.skeleton-shimmer::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		transform: translateX(-100%);
+		background-image: linear-gradient(
+			90deg,
+			transparent,
+			hsl(var(--foreground) / 0.07),
+			transparent
+		);
+		animation: skeleton-shimmer 1.6s var(--ease-in-out) infinite;
+	}
+
+	@keyframes skeleton-shimmer {
+		100% {
+			transform: translateX(100%);
+		}
+	}
+}
+
 @layer base {
 	/* 모션을 줄이겠다고 한 사용자에게는 전환을 없앤다.
 	   framer-motion 은 JS 로 transform 을 쓰므로 이 규칙이 닿지 않는다.

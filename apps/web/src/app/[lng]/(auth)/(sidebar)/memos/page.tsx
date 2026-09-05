@@ -28,7 +28,7 @@ export default async function Page({ params: { lng } }: PageProps) {
 	return (
 		<div className="min-h-[calc(100vh-4rem)]">
 			<div className="md:hidden fixed top-20 left-4 z-40">
-				<SidebarTrigger className="shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 bg-card border border-border hover:border-purple-300 dark:hover:border-purple-700 transition-all duration-200 hover:scale-110 active:scale-95" />
+				<SidebarTrigger className="shadow-lg shadow-primary/10 hover:shadow-primary/20 bg-card border border-border hover:border-primary/50 transition-all duration-200 hover:scale-110 active:scale-95" />
 			</div>
 
 			<div className="flex flex-col px-4 md:px-6 py-4">

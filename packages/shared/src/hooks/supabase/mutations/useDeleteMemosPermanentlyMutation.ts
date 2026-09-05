@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "../../../constants";
+import { analytics } from "../../../modules/analytics";
 import type { MemoSupabaseResponse } from "../../../types";
 import { MemoService } from "../../../utils";
-
 import { useSupabaseClientQuery } from "../queries";
 
 /**
@@ -16,6 +16,12 @@ export default function useDeleteMemosPermanentlyMutation() {
 
 	return useMutation<MemoSupabaseResponse, Error, number[]>({
 		mutationFn: new MemoService(supabaseClient).deleteMemosPermanently,
+		onSuccess: (_, idList) => {
+			analytics.trackEvent({
+				name: "memo_delete_permanently",
+				params: { memo_count: idList.length },
+			});
+		},
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
 		},

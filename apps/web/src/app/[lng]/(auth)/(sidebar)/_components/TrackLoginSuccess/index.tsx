@@ -6,6 +6,8 @@ import { useEffect } from "react";
 
 /** 로그인 성공 직후 콜백 라우트가 붙이는 쿼리 파라미터. 값은 로그인 수단입니다. */
 const LOGIN_METHOD_PARAM = "login";
+/** 신규 가입일 때만 붙는 쿼리 파라미터. */
+const SIGN_UP_PARAM = "signup";
 
 /**
  * 로그인 성공을 한 번 기록합니다.
@@ -23,10 +25,19 @@ export default function TrackLoginSuccess() {
 
 		if (!loginMethod) return;
 
+		// 신규 가입은 로그인과 따로 셉니다. 재로그인과 섞이면 퍼널 전환율이 나오지 않습니다.
+		if (searchParams.get(SIGN_UP_PARAM) === "true") {
+			analytics.trackEvent({
+				name: "sign_up",
+				params: { method: loginMethod },
+			});
+		}
+
 		analytics.trackEvent({ name: "login", params: { method: loginMethod } });
 
 		const nextSearchParams = new URLSearchParams(searchParams.toString());
 		nextSearchParams.delete(LOGIN_METHOD_PARAM);
+		nextSearchParams.delete(SIGN_UP_PARAM);
 
 		const query = nextSearchParams.toString();
 		router.replace(query ? `${pathname}?${query}` : pathname);

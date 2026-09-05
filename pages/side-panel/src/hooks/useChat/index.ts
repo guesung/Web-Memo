@@ -141,6 +141,10 @@ export default function useChat(): UseChatReturn {
 				);
 			} catch (err) {
 				console.error("Chat error:", err);
+				analytics.trackEvent({
+					name: "chat_fail",
+					params: { reason: err instanceof Error ? err.message : "unknown" },
+				});
 				setError(
 					err instanceof Error ? err.message : "채팅 중 오류가 발생했습니다",
 				);

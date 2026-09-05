@@ -7,11 +7,15 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-let supabaseClient: MemoSupabaseClient;
-
+/**
+ * 요청마다 새 서버 클라이언트를 만든다.
+ * @description 모듈 스코프에 캐시하지 않는 것이 의도다. 서버에서는 모듈 변수가 요청 사이에
+ * 공유되므로 인스턴스를 재사용하면 한 사용자의 세션이 다른 요청으로 새어 나간다. 예전에는
+ * `let supabaseClient`를 선언하고 싱글턴처럼 보이는 분기가 있었지만 어디에서도 대입하지 않아
+ * 실제로는 매번 새로 만들고 있었다. "싱글턴이 안 되고 있네" 하고 고치면 세션이 섞이므로,
+ * 오해를 없애려고 그 분기를 걷어냈다.
+ */
 export const getSupabaseClient = () => {
-	if (supabaseClient) return supabaseClient;
-
 	const cookieStore = cookies();
 
 	return createServerClient<Database, "memo">(SUPABASE.url, SUPABASE.anonKey, {

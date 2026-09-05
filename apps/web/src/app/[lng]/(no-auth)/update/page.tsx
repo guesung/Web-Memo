@@ -8,10 +8,10 @@ const metadataKorean: Metadata = {
 	title: "웹 메모 | 업데이트 소식 ",
 	description: "웹 메모의 최신 업데이트 소식을 확인하세요.",
 	alternates: {
-		canonical: "https://webmemo.xyz/ko/update",
+		canonical: "https://www.webmemo.xyz/ko/update",
 		languages: {
-			ko: "https://webmemo.xyz/ko/update",
-			en: "https://webmemo.xyz/en/update",
+			ko: "https://www.webmemo.xyz/ko/update",
+			en: "https://www.webmemo.xyz/en/update",
 		},
 	},
 	openGraph: {
@@ -23,10 +23,10 @@ const metadataEnglish: Metadata = {
 	title: "Web Memo | Updates",
 	description: "Check out the latest updates for Web Memo.",
 	alternates: {
-		canonical: "https://webmemo.xyz/en/update",
+		canonical: "https://www.webmemo.xyz/en/update",
 		languages: {
-			ko: "https://webmemo.xyz/ko/update",
-			en: "https://webmemo.xyz/en/update",
+			ko: "https://www.webmemo.xyz/ko/update",
+			en: "https://www.webmemo.xyz/en/update",
 		},
 	},
 	openGraph: {

@@ -15,10 +15,10 @@ export const metadataKorean: Metadata = {
 		"콘텐츠 정리",
 	],
 	alternates: {
-		canonical: "https://webmemo.xyz/ko/use-cases/news-reading",
+		canonical: "https://www.webmemo.xyz/ko/use-cases/news-reading",
 		languages: {
-			ko: "https://webmemo.xyz/ko/use-cases/news-reading",
-			en: "https://webmemo.xyz/en/use-cases/news-reading",
+			ko: "https://www.webmemo.xyz/ko/use-cases/news-reading",
+			en: "https://www.webmemo.xyz/en/use-cases/news-reading",
 		},
 	},
 	openGraph: {
@@ -45,10 +45,10 @@ export const metadataEnglish: Metadata = {
 		"web clipping",
 	],
 	alternates: {
-		canonical: "https://webmemo.xyz/en/use-cases/news-reading",
+		canonical: "https://www.webmemo.xyz/en/use-cases/news-reading",
 		languages: {
-			ko: "https://webmemo.xyz/ko/use-cases/news-reading",
-			en: "https://webmemo.xyz/en/use-cases/news-reading",
+			ko: "https://www.webmemo.xyz/ko/use-cases/news-reading",
+			en: "https://www.webmemo.xyz/en/use-cases/news-reading",
 		},
 	},
 	openGraph: {

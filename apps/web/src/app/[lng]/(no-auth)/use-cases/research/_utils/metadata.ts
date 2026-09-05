@@ -14,10 +14,10 @@ export const metadataKorean: Metadata = {
 		"자료 수집",
 	],
 	alternates: {
-		canonical: "https://webmemo.xyz/ko/use-cases/research",
+		canonical: "https://www.webmemo.xyz/ko/use-cases/research",
 		languages: {
-			ko: "https://webmemo.xyz/ko/use-cases/research",
-			en: "https://webmemo.xyz/en/use-cases/research",
+			ko: "https://www.webmemo.xyz/ko/use-cases/research",
+			en: "https://www.webmemo.xyz/en/use-cases/research",
 		},
 	},
 	openGraph: {
@@ -43,10 +43,10 @@ export const metadataEnglish: Metadata = {
 		"information gathering",
 	],
 	alternates: {
-		canonical: "https://webmemo.xyz/en/use-cases/research",
+		canonical: "https://www.webmemo.xyz/en/use-cases/research",
 		languages: {
-			ko: "https://webmemo.xyz/ko/use-cases/research",
-			en: "https://webmemo.xyz/en/use-cases/research",
+			ko: "https://www.webmemo.xyz/ko/use-cases/research",
+			en: "https://www.webmemo.xyz/en/use-cases/research",
 		},
 	},
 	openGraph: {

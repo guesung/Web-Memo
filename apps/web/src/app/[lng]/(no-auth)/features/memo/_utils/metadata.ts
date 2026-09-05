@@ -14,10 +14,10 @@ export const metadataKorean: Metadata = {
 		"온라인 메모",
 	],
 	alternates: {
-		canonical: "https://webmemo.xyz/ko/features/memo",
+		canonical: "https://www.webmemo.xyz/ko/features/memo",
 		languages: {
-			ko: "https://webmemo.xyz/ko/features/memo",
-			en: "https://webmemo.xyz/en/features/memo",
+			ko: "https://www.webmemo.xyz/ko/features/memo",
+			en: "https://www.webmemo.xyz/en/features/memo",
 		},
 	},
 	openGraph: {
@@ -43,10 +43,10 @@ export const metadataEnglish: Metadata = {
 		"reading notes",
 	],
 	alternates: {
-		canonical: "https://webmemo.xyz/en/features/memo",
+		canonical: "https://www.webmemo.xyz/en/features/memo",
 		languages: {
-			ko: "https://webmemo.xyz/ko/features/memo",
-			en: "https://webmemo.xyz/en/features/memo",
+			ko: "https://www.webmemo.xyz/ko/features/memo",
+			en: "https://www.webmemo.xyz/en/features/memo",
 		},
 	},
 	openGraph: {

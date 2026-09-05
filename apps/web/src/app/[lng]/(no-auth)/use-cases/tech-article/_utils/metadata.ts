@@ -1,3 +1,4 @@
+import { CONFIG } from "@web-memo/env";
 import type { Metadata } from "next";
 
 export const metadataKorean: Metadata = {
@@ -12,10 +13,10 @@ export const metadataKorean: Metadata = {
 		"개발 레퍼런스 관리",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/ko/use-cases/tech-article",
+		canonical: `${CONFIG.webUrl}/ko/use-cases/tech-article`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/use-cases/tech-article",
-			en: "https://web-memos.vercel.app/en/use-cases/tech-article",
+			ko: `${CONFIG.webUrl}/ko/use-cases/tech-article`,
+			en: `${CONFIG.webUrl}/en/use-cases/tech-article`,
 		},
 	},
 	openGraph: {
@@ -39,10 +40,10 @@ export const metadataEnglish: Metadata = {
 		"technical reference manager",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/en/use-cases/tech-article",
+		canonical: `${CONFIG.webUrl}/en/use-cases/tech-article`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/use-cases/tech-article",
-			en: "https://web-memos.vercel.app/en/use-cases/tech-article",
+			ko: `${CONFIG.webUrl}/ko/use-cases/tech-article`,
+			en: `${CONFIG.webUrl}/en/use-cases/tech-article`,
 		},
 	},
 	openGraph: {

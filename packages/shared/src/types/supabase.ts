@@ -126,6 +126,7 @@ export type Database = {
 					actionItem: string | null;
 					category_id: number | null;
 					created_at: string | null;
+					deleted_at: string | null;
 					favIconUrl: string | null;
 					id: number;
 					impression: string | null;
@@ -142,6 +143,7 @@ export type Database = {
 					actionItem?: string | null;
 					category_id?: number | null;
 					created_at?: string | null;
+					deleted_at?: string | null;
 					favIconUrl?: string | null;
 					id?: number;
 					impression?: string | null;
@@ -158,6 +160,7 @@ export type Database = {
 					actionItem?: string | null;
 					category_id?: number | null;
 					created_at?: string | null;
+					deleted_at?: string | null;
 					favIconUrl?: string | null;
 					id?: number;
 					impression?: string | null;

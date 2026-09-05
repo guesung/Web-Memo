@@ -1,3 +1,4 @@
+import { CONFIG } from "@web-memo/env";
 import type { Metadata } from "next";
 
 export const metadataKorean: Metadata = {
@@ -14,10 +15,10 @@ export const metadataKorean: Metadata = {
 		"온라인 메모",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/ko/features/memo",
+		canonical: `${CONFIG.webUrl}/ko/features/memo`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/features/memo",
-			en: "https://web-memos.vercel.app/en/features/memo",
+			ko: `${CONFIG.webUrl}/ko/features/memo`,
+			en: `${CONFIG.webUrl}/en/features/memo`,
 		},
 	},
 	openGraph: {
@@ -43,10 +44,10 @@ export const metadataEnglish: Metadata = {
 		"reading notes",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/en/features/memo",
+		canonical: `${CONFIG.webUrl}/en/features/memo`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/features/memo",
-			en: "https://web-memos.vercel.app/en/features/memo",
+			ko: `${CONFIG.webUrl}/ko/features/memo`,
+			en: `${CONFIG.webUrl}/en/features/memo`,
 		},
 	},
 	openGraph: {

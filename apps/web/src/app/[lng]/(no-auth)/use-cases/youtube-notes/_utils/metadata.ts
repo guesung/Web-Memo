@@ -1,3 +1,4 @@
+import { CONFIG } from "@web-memo/env";
 import type { Metadata } from "next";
 
 export const metadataKorean: Metadata = {
@@ -15,10 +16,10 @@ export const metadataKorean: Metadata = {
 		"유튜브 학습",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/ko/use-cases/youtube-notes",
+		canonical: `${CONFIG.webUrl}/ko/use-cases/youtube-notes`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/use-cases/youtube-notes",
-			en: "https://web-memos.vercel.app/en/use-cases/youtube-notes",
+			ko: `${CONFIG.webUrl}/ko/use-cases/youtube-notes`,
+			en: `${CONFIG.webUrl}/en/use-cases/youtube-notes`,
 		},
 	},
 	openGraph: {
@@ -45,10 +46,10 @@ export const metadataEnglish: Metadata = {
 		"note taking app",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/en/use-cases/youtube-notes",
+		canonical: `${CONFIG.webUrl}/en/use-cases/youtube-notes`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/use-cases/youtube-notes",
-			en: "https://web-memos.vercel.app/en/use-cases/youtube-notes",
+			ko: `${CONFIG.webUrl}/ko/use-cases/youtube-notes`,
+			en: `${CONFIG.webUrl}/en/use-cases/youtube-notes`,
 		},
 	},
 	openGraph: {

@@ -17,7 +17,9 @@ master 머지
    └─ ci.yml / notify
         ├─ 스토어 4곳의 현재 버전 조회
         └─ Slack 게시  ┌──────────────────────────────────────┐
-                       │ ✅ master 빌드 성공 — a1b2c3d          │
+                       │ ✅ master 빌드 성공                    │
+                       │ 메모 목록 정렬 옵션을 추가한다          │
+                       │ a1b2c3d                               │
                        │ 📱 iOS   TestFlight 1.0.8 (49) …      │
                        │ 🤖 Android internal 1.0.7 (49) …      │
                        │ 🧩 확장  게시 1.10.13 · 초안 1.10.14   │
@@ -31,9 +33,10 @@ master 머지
                                     ▼
         release.yml → cd-app / cd-web / cd-extension → 스토어 제출
                                     │
-                                    └─ release.yml / notify
+                                    └─ notify-release.yml (타깃마다 한 번씩)
                                          └─ Slack ┌──────────────────────────────┐
-                                                  │ ✅ 릴리스 완료 — 앱 v1.0.8     │
+                                                  │ ✅ 앱 릴리스 완료              │
+                                                  │ 앱 v1.0.8 · 정렬 옵션 추가     │
                                                   │ 📱 iOS (TestFlight)  ✅ 완료   │
                                                   │ 🤖 Android           ❌ 실패   │
                                                   │ [워크플로 실행 보기]           │
@@ -43,6 +46,11 @@ master 머지
 버튼을 누른 직후에는 "🚀 배포를 시작했습니다"가 곧바로 올라오고, 실제 제출이
 끝나면 위와 같은 결과 메시지가 한 번 더 옵니다. 앱만 iOS/Android로 갈라 보고하는
 이유는 그 둘이 별개의 matrix 잡이어서 한쪽만 깨질 수 있기 때문입니다.
+
+**결과 알림은 웹·앱·확장이 각자 따로 옵니다.** 셋을 한 메시지로 묶으면 `needs`가
+정적이라 알림이 가장 느린 타깃(앱 빌드 약 30분)을 기다립니다. 그러면 1분이면 끝나는
+웹 배포 결과도 30분 뒤에야 나갑니다. 타깃마다 `notify-release.yml`을 따로 불러
+각자 끝나는 대로 알립니다.
 
 ## 배포하는 방법
 
@@ -82,16 +90,30 @@ Slack에서 `/배포현황`(등록한 슬래시 커맨드)을 실행하면 `vers
 확장은 `cd-extension.yml`이 `publish: false`로 올리므로 게시본과 초안이 거의
 항상 다릅니다. 게시는 크롬 웹 스토어 대시보드에서 직접 눌러야 합니다.
 
-## master 푸시는 스토어에 올리지 않습니다
+## master 푸시는 스토어에 올리지 않습니다 (빌드는 재사용합니다)
 
-`ci.yml`의 `cd-app`은 `deploy_target: "none"`으로 고정되어 있습니다. 빌드가
-되는지만 확인하고 산출물은 버립니다(EAS `verify` 프로필이라 빌드 번호도
-올라가지 않습니다).
-
-그래서 버튼을 눌렀을 때 앱은 처음부터 다시 빌드합니다(약 30분). 검증 빌드를
-재사용하지 않는 이유는 그 빌드에 스토어가 요구하는 단조 증가 빌드 번호가 붙어
-있지 않기 때문입니다. "언제 무엇이 올라갔는가"의 답이 항상 Release 워크플로
+`ci.yml`의 `cd-app`·`cd-extension`은 `deploy_target: "none"`으로 고정되어
+있습니다. 빌드만 하고 스토어에는 아무것도 올리지 않습니다. 제출은 Slack 버튼
+→ `release.yml` 한 경로뿐이라, "언제 무엇이 올라갔는가"의 답이 Release 워크플로
 실행 기록 하나로 모입니다.
+
+**대신 그 빌드 산출물은 릴리스에서 그대로 재사용합니다.** 버튼을 눌렀을 때
+`release.yml`은 배포할 커밋에서 CI가 올려둔 아티팩트를 먼저 찾고
+(`.github/scripts/find-reusable-artifact.sh`), 있으면 내려받아 제출만 합니다.
+앱은 플랫폼당 약 30분, 확장은 약 3분을 아낍니다.
+
+- **앱 아티팩트에는 프로파일이 이름에 붙습니다** (`ios-build-ci` /
+  `ios-build-verify`). PR 검증 빌드는 버려지는 산출물이라 `verify`(빌드 번호
+  고정)로 굽고, master 머지분만 `ci`(빌드 번호 자동 증가)로 구워 제출 가능한
+  상태로 남깁니다. 릴리스는 `-ci`로 끝나는 것만 찾습니다.
+  `/reset-develop`으로 develop을 master로 리셋하면 두 브랜치가 같은 커밋을
+  갖게 되는데, 그때 develop CI가 만드는 `verify` 산출물을 제출하면 스토어가
+  중복 빌드 번호로 거절합니다. 이름을 가르는 이유가 이것입니다.
+- **확장은 CI에서도 `BUILD_ENV=production`으로 굽습니다.** `staging`이 아니면
+  production이라 릴리스가 구울 것과 같은 산출물입니다.
+- **못 찾으면 기존대로 새로 빌드합니다.** 아티팩트는 7일 뒤 만료되고, 변경이
+  없어 CI가 그 앱을 아예 안 빌드했을 수도 있습니다. 태그·과거 커밋을 `ref`로
+  넘겨 배포할 때도 마찬가지입니다.
 
 ## develop 머지는 테스트 서버로 나갑니다
 
@@ -174,10 +196,10 @@ Protection이 Preview에 걸려 있어, 자격 증명 없는 요청은 `/api/ver
 <https://api.slack.com/apps> → **Web Memo CI**
 
 - **Interactivity & Shortcuts** → 켜고 Request URL에
-  `https://web-memos.vercel.app/api/slack/interactivity`
+  `https://www.webmemo.xyz/api/slack/interactivity`
 - **Slash Commands** → **Create New Command**
   - Command: `/배포현황` (원하는 이름으로)
-  - Request URL: `https://web-memos.vercel.app/api/slack/commands`
+  - Request URL: `https://www.webmemo.xyz/api/slack/commands`
 - **OAuth & Permissions** → Bot Token Scopes에 `commands` 추가 → 워크스페이스에
   재설치 → `xoxb-`로 시작하는 **Bot User OAuth Token** 복사
 - **Basic Information** → **Signing Secret** 복사 (이미 있는 값 그대로)
@@ -210,7 +232,7 @@ Protection이 Preview에 걸려 있어, 자격 증명 없는 요청은 `/api/ver
 Vercel 런타임 로그에서 `POST /api/slack/interactivity` 유무로도 확인할 수 있습니다.
 
 ```bash
-vercel logs https://web-memos.vercel.app --scope gueit214s-projects
+vercel logs https://www.webmemo.xyz --scope gueit214s-projects
 ```
 
 다만 이 로그는 `console.error` 출력이 누락되는 경우가 있어, **로그가 없다는 것이
@@ -266,7 +288,8 @@ App Store Connect의 키 ID·발급자 ID·앱 ID는 시크릿이 아니라
 | `.github/workflows/ci.yml` (`notify`) | master 빌드 결과 + 스토어 현황을 Slack에 게시 |
 | `.github/workflows/cd-web.yml` (`Notify staging deploy`) | develop 테스트 서버 배포 결과를 Slack에 게시 |
 | `.github/workflows/versions.yml` | 배포 현황만 조회해 게시 |
-| `.github/workflows/release.yml` | 실제 스토어 제출 (버튼이 이걸 실행) + 결과 알림 |
+| `.github/workflows/release.yml` | 실제 스토어 제출 (버튼이 이걸 실행) |
+| `.github/workflows/notify-release.yml` | 릴리스 타깃 하나의 결과를 Slack에 게시 (release.yml이 타깃별로 호출) |
 | `.github/scripts/notify-release-result.mjs` | 릴리스 성패를 타깃별로 Slack에 보고 |
 | `.github/scripts/notify-staging-deploy.mjs` | 테스트 서버 배포 성패를 Slack에 보고 |
 | `.github/scripts/lib/store-versions.mjs` | 스토어 4곳 버전 조회 |
@@ -291,6 +314,11 @@ GITHUB_SHA=$(git rev-parse HEAD) node .github/scripts/report-store-versions.mjs
 GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 GITHUB_SHA=$(git rev-parse HEAD) \
   BUILD_RESULTS='{"ci":"success","app":"success","web":"skipped","extension":"success"}' \
   node .github/scripts/notify-build-ready.mjs
+
+# 릴리스 결과 알림에 나갈 Slack 페이로드 확인 (TARGET: app / extension / web)
+GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 \
+  TARGET=extension RESULT=success \
+  node .github/scripts/notify-release-result.mjs
 
 # 테스트 서버 배포 알림에 나갈 Slack 페이로드 확인
 GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 GITHUB_SHA=$(git rev-parse HEAD) \

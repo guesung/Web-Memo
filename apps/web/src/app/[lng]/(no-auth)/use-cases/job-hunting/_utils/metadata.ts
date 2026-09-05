@@ -1,3 +1,4 @@
+import { CONFIG } from "@web-memo/env";
 import type { Metadata } from "next";
 
 export const metadataKorean: Metadata = {
@@ -15,10 +16,10 @@ export const metadataKorean: Metadata = {
 		"지원 관리",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/ko/use-cases/job-hunting",
+		canonical: `${CONFIG.webUrl}/ko/use-cases/job-hunting`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/use-cases/job-hunting",
-			en: "https://web-memos.vercel.app/en/use-cases/job-hunting",
+			ko: `${CONFIG.webUrl}/ko/use-cases/job-hunting`,
+			en: `${CONFIG.webUrl}/en/use-cases/job-hunting`,
 		},
 	},
 	openGraph: {
@@ -44,10 +45,10 @@ export const metadataEnglish: Metadata = {
 		"application management",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/en/use-cases/job-hunting",
+		canonical: `${CONFIG.webUrl}/en/use-cases/job-hunting`,
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/use-cases/job-hunting",
-			en: "https://web-memos.vercel.app/en/use-cases/job-hunting",
+			ko: `${CONFIG.webUrl}/ko/use-cases/job-hunting`,
+			en: `${CONFIG.webUrl}/en/use-cases/job-hunting`,
 		},
 	},
 	openGraph: {

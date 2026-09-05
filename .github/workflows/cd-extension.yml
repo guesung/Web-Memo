@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       deploy_target:
-        description: "배포 대상 (none = 빌드만, production = 크롬 웹스토어 업로드)"
+        description: "배포 대상 (none = production으로 빌드만, staging = staging으로 빌드만, production = 크롬 웹스토어 업로드)"
         type: string
         default: "none"
       ref:
@@ -27,26 +27,53 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
+      # 스토어에 올릴 커밋은 master CI에서 이미 production으로 빌드돼 아티팩트로
+      # 올라가 있습니다(BUILD_ENV가 staging이 아니면 production이라 같은 산출물입니다).
+      # 있으면 그것을 내려받아 쓰고, 없으면(만료·확장 변경 없음) 아래에서 새로 빌드합니다.
+      - name: Find reusable build
+        id: reuse
+        if: ${{ inputs.deploy_target == 'production' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_PREFIX: extension-production-
+        run: .github/scripts/find-reusable-artifact.sh
+
+      - name: Download reusable build
+        if: ${{ steps.reuse.outputs.found == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download "${{ steps.reuse.outputs.run_id }}" \
+            --name "${{ steps.reuse.outputs.name }}" \
+            --dir dist-zip
+
       - uses: pnpm/action-setup@v4
+        if: ${{ steps.reuse.outputs.found != 'true' }}
 
       - uses: actions/setup-node@v4
+        if: ${{ steps.reuse.outputs.found != 'true' }}
         with:
           node-version-file: ".nvmrc"
           cache: "pnpm"
 
       - name: Install dependencies
+        if: ${{ steps.reuse.outputs.found != 'true' }}
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Build
+        if: ${{ steps.reuse.outputs.found != 'true' }}
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: pnpm run build:extension
 
       - name: Zip the build files
+        if: ${{ steps.reuse.outputs.found != 'true' }}
         run: pnpm run zip
 
       # zip 이름에 환경과 버전이 들어갑니다(extension-production-v1.10.14.zip).
       # 아티팩트 이름도 같이 맞춰야 다운로드한 파일만 보고 무엇인지 알 수 있습니다.
+      # 새로 빌드했든 CI 아티팩트를 내려받았든 dist-zip에 zip 하나가 있는 것은 같아
+      # 아래 두 스텝은 양쪽 경로에서 그대로 돕니다.
       - name: Resolve zip name
         id: zip
         run: |

@@ -120,6 +120,8 @@ function ThemedStack() {
 			<Stack.Screen name="index" />
 			<Stack.Screen name="(auth)" />
 			<Stack.Screen name="(main)" />
+			{/* 탭 밖의 상세 화면이라 탭바 없이 뜬다 */}
+			<Stack.Screen name="trash" />
 			<Stack.Screen name="+not-found" />
 		</Stack>
 	);

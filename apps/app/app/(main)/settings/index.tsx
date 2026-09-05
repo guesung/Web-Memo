@@ -8,11 +8,13 @@ import {
 	Moon,
 	Smartphone,
 	Sun,
+	Trash2,
 	User,
 } from "lucide-react-native";
 import {
 	Alert,
 	Linking,
+	ScrollView,
 	Switch,
 	Text,
 	TouchableOpacity,
@@ -70,7 +72,13 @@ export default function SettingsScreen() {
 				</Text>
 			</View>
 
-			<View className="flex-1 px-5">
+			{/* 섹션이 화면 높이를 넘어가므로 스크롤 주체가 필요하다. 일반 View로 두면
+			    넘치는 섹션(로그인 시 메모 필드부터)이 잘린 채 닿을 방법이 없다. */}
+			<ScrollView
+				className="flex-1 px-5"
+				contentContainerStyle={{ paddingBottom: 32 }}
+				showsVerticalScrollIndicator={false}
+			>
 				{/* Account Section */}
 				<View className="mb-7">
 					<Text className="text-sm font-semibold text-muted-foreground dark:text-neutral-500 uppercase tracking-wide mb-2.5">
@@ -230,6 +238,28 @@ export default function SettingsScreen() {
 					</View>
 				</View>
 
+				{/* Trash Section */}
+				<View className="mb-7">
+					<Text className="text-sm font-semibold text-muted-foreground dark:text-neutral-500 uppercase tracking-wide mb-2.5">
+						메모
+					</Text>
+					<View className="bg-card dark:bg-neutral-900 rounded-[14px] p-4 border border-muted dark:border-neutral-800">
+						<TouchableOpacity
+							className="flex-row justify-between items-center py-2"
+							onPress={() => router.push("/trash")}
+							activeOpacity={0.6}
+						>
+							<View className="flex-row items-center gap-2">
+								<Trash2 size={16} color={isDark ? "#a3a3a3" : "#555"} />
+								<Text className="text-[15px] text-secondary-foreground dark:text-neutral-300">
+									휴지통
+								</Text>
+							</View>
+							<ChevronRight size={14} color={isDark ? "#737373" : "#999"} />
+						</TouchableOpacity>
+					</View>
+				</View>
+
 				{/* Support Section */}
 				<View className="mb-7">
 					<Text className="text-sm font-semibold text-muted-foreground dark:text-neutral-500 uppercase tracking-wide mb-2.5">
@@ -255,7 +285,7 @@ export default function SettingsScreen() {
 						</TouchableOpacity>
 					</View>
 				</View>
-			</View>
+			</ScrollView>
 		</View>
 	);
 }

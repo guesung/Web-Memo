@@ -24,6 +24,7 @@ import {
 	Home,
 	SettingsIcon,
 	Star,
+	Trash2,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -112,6 +113,18 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 									</div>
 									<span className="font-medium text-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-300">
 										{t("sideBar.readingMemo")}
+									</span>
+								</div>
+							</SidebarMenuButton>
+						</Link>
+						<Link href={`/${lng}${PATHS.memosTrash}`} replace>
+							<SidebarMenuButton className="group relative overflow-hidden transition-all duration-200 hover:bg-accent hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]">
+								<div className="flex items-center gap-3 w-full">
+									<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-foreground/5 group-hover:bg-foreground/10 transition-colors">
+										<Trash2 size={16} className="text-muted-foreground" />
+									</div>
+									<span className="font-medium text-foreground/80 group-hover:text-foreground">
+										{t("sideBar.trash")}
 									</span>
 								</div>
 							</SidebarMenuButton>

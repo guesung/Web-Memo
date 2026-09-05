@@ -34,15 +34,72 @@
 
 | 키 | development | staging | production |
 | --- | --- | --- | --- |
-| `WEB_URL` | `http://localhost:3000` | `https://web-memo-staging.vercel.app` | `https://web-memos.vercel.app` |
+| `WEB_URL` | `http://localhost:3000` | `https://staging.webmemo.xyz` | `https://www.webmemo.xyz` |
 
 여기에 더해 `tsup`이 셸 `BUILD_ENV`를 번들에 함께 인라인하므로, 코드에서는
 `CONFIG.buildEnv`로 `"development" | "staging" | "production"`을 읽을 수 있습니다.
+
+`CONFIG.webDisplayHost`는 `webUrl`에서 프로토콜과 `www.`를 뗀 값(`webmemo.xyz`)입니다.
+주소창 목업이나 안내 문구처럼 **사용자에게 도메인만 보여주는 자리**에서 씁니다.
+파생값이라 원천은 여전히 `WEB_URL` 하나입니다.
+
+**origin이 일치해야 하는 값에는 `webUrl`을 그대로 쓰세요.** 확장 매니페스트의
+`externally_connectable`처럼 `www`가 빠지면 조용히 죽는 자리가 있습니다(아래 참고).
 
 `packages/env/src/config.ts`가 이 값을 읽어 `CONFIG` 객체로 내보내고, 소비하는 쪽은
 `import { CONFIG } from "@web-memo/env"`로 씁니다. `getSafeConfig`가 `undefined`를
 막으므로, 값이 빠지면 모듈이 로드되는 즉시 `WEB_URL이 설정되지 않았습니다` 형태로
 터집니다. 빈 문자열이 조용히 흘러다니지 않습니다.
+
+### 도메인을 바꿀 때 레포 밖에서 함께 해야 하는 것
+
+`WEB_URL`은 레포 안의 여러 값을 끌고 다닙니다. 확장 매니페스트의
+`externally_connectable`, 웹의 `metadataBase`·canonical·`alternates`,
+`robots.txt`·`sitemap.xml`, 그리고 `translation.json`의 `{{webDisplayHost}}` 보간이 모두
+이 값에서 나옵니다.
+
+**레포에서 도메인이 하드코딩된 곳은 `apps/app/.../_constants/webApi.ts` 하나뿐입니다.**
+Expo는 `EXPO_PUBLIC_` 접두사가 없는 환경변수를 번들에 인라인하지 않아 이 앱만
+`@web-memo/env`를 읽지 못합니다. 도메인을 바꾸면 여기도 함께 고쳐야 합니다.
+
+레포 쪽은 그 둘이 전부고, 아래는 콘솔에서 직접 해야 하며 빠뜨리면 **에러 없이
+로그인·연동만 조용히 죽습니다.**
+
+| 대상 | 해야 하는 것 |
+| --- | --- |
+| Vercel | 프로젝트에 도메인 연결 + DNS. 프로덕션은 `www.webmemo.xyz`, 스테이징 alias는 `staging.webmemo.xyz` |
+| GitHub Secrets | `STAGING_WEB_URL_WITHOUT_PROTOCOL`을 새 스테이징 도메인으로 (`cd-web.yml`의 alias) |
+| Supabase Auth | URL Configuration → Site URL을 `https://www.webmemo.xyz`로, Redirect URLs에 `https://www.webmemo.xyz/**`와 `https://staging.webmemo.xyz/**` 추가 |
+| Slack 앱 | Interactivity·슬래시 커맨드 Request URL (`docs/release-flow.md` 참고) |
+
+**Google·Kakao·Apple 개발자 콘솔은 건드릴 것이 없습니다.** 로그인은
+`signInWithOAuth`로 Supabase를 거치므로, 각 제공자에 등록된 리디렉션 URI는
+Supabase의 `/auth/v1/callback`이지 우리 도메인이 아닙니다. 우리 도메인이 들어가는
+곳은 `redirectTo`로 넘기는 `${CONFIG.webUrl}/auth/callback` 하나뿐이고, 그것은
+Supabase의 **Redirect URLs 허용 목록**에서 검사합니다. 거기에 새 도메인이 없으면
+로그인이 콜백에서 튕깁니다.
+
+세션 쿠키는 `domain` 없이 심겨 서빙 호스트에만 붙고, 확장은
+`chrome.cookies.get({ url: CONFIG.webUrl })`로 같은 호스트에서 읽습니다. `WEB_URL`이
+실제 서빙 호스트여야 하는 이유가 여기에도 걸립니다.
+
+**`WEB_URL`에는 리다이렉트 호스트가 아니라 실제로 응답하는 호스트를 적습니다.**
+`webmemo.xyz`(apex)는 Vercel에서 `www.webmemo.xyz`로 308 리다이렉트만 하므로
+`WEB_URL`은 `https://www.webmemo.xyz`입니다. apex를 적으면 확장 매니페스트의
+`externally_connectable`이 `https://webmemo.xyz/*`가 되는데, **크롬 match 패턴은
+`webmemo.xyz`와 `www.webmemo.xyz`를 같은 호스트로 보지 않습니다.** 사용자는 항상
+www에 도착하므로 `chrome.runtime`이 주입되지 않고, 웹↔확장 연동이 에러 없이
+`isExtension()` false 경로로 새 버립니다. 리다이렉트가 걸려 있어 브라우저로 열어
+보면 멀쩡해 보이는 것이 이 실패의 고약한 점입니다.
+
+반대로 **사용자에게 보여주는 문구·주소창 목업에는 `www`를 뗀 `webmemo.xyz`를 씁니다.**
+apex도 리다이렉트로 살아 있어 눌러도 도달하고, 브랜드로 읽히는 쪽은 짧은 이름입니다.
+기능용(origin이 일치해야 하는 값)과 표시용(사람이 읽는 값)이 다르다는 것만 기억하면
+됩니다.
+
+**옛 도메인은 한동안 살려 둡니다.** 크롬 웹 스토어에 이미 게시된 확장은 옛
+`externally_connectable`을 들고 있어, 사용자가 새 버전으로 갱신되기 전까지는 옛
+도메인으로만 웹↔확장 연동이 됩니다.
 
 ### 환경별 파일을 커밋하는 이유
 

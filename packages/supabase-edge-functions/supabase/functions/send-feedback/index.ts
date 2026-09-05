@@ -1,34 +1,138 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 
-const GATE_API_URL = "https://pbix60v3vk.execute-api.ap-northeast-2.amazonaws.com/send-feedback"
+/** 언인스톨 폼이 feedbacks.content에 JSON 문자열로 넣는 값 */
+interface IFUninstallFeedbackContent {
+  type: "uninstall";
+  reason: string;
+  feedback: string;
+  phoneNumber: string | null;
+  timestamp: string;
+}
+
+/** feedbacks 테이블에 새로 생긴 행. Supabase Database Webhook이 record로 넘겨준다 */
+interface IFFeedbackRecord {
+  id: string;
+  content: string;
+  user_id: string | null;
+  created_at: string;
+}
+
+/**
+ * feedbacks.content를 JSON으로 읽어 본다. 파싱에 실패하면 null
+ * @description feedbacks 테이블에는 인입 경로가 셋이다. 헤더 피드백은 사용자가 쓴 평문이고,
+ * 언인스톨 폼은 type이 uninstall인 JSON, 언인스톨 페이지 방문 로그는 type이
+ * uninstall_page_visit인 JSON이다. 평문은 파싱에 실패하는 것이 정상 경로이므로
+ * null을 오류로 다루지 않는다.
+ */
+const parseFeedbackContent = (content: string) => {
+  try {
+    return JSON.parse(content);
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * 전화번호를 010-****-1234 형태로 가린다
+ * @description 채널 메시지는 오래 남고 여러 사람이 보므로 원본 번호를 싣지 않는다.
+ * 실제로 연락할 일이 생기면 DB에서 조회한다. 숫자가 7자리 미만이면 형태를 만들 수
+ * 없으므로 전체를 가린다.
+ */
+const maskPhoneNumber = (phoneNumber: string) => {
+  const digits = phoneNumber.replace(/\D/g, "");
+
+  if (digits.length < 7) {
+    return "***";
+  }
+
+  return `${digits.slice(0, 3)}-****-${digits.slice(-4)}`;
+};
+
+/**
+ * feedbacks 행 하나를 슬랙에 보낼 메시지로 만든다. 알리지 않을 행이면 null
+ * @description 방문 로그(uninstall_page_visit)는 사용자가 남긴 말이 아니라 지표라
+ * null을 돌려 전송을 건너뛴다. 피드백 채널에 섞이면 진짜 피드백이 묻히기 때문이다.
+ * 언인스톨 폼은 항목별로 나눠 싣고, 그 밖의 content는 평문 피드백으로 보고 그대로 싣는다.
+ */
+const buildSlackMessage = (record: IFFeedbackRecord) => {
+  const parsedContent = parseFeedbackContent(record.content);
+
+  if (parsedContent?.type === "uninstall_page_visit") {
+    return null;
+  }
+
+  const writer = record.user_id ?? "비로그인";
+  const footer = `작성자 ${writer} · ${record.created_at}`;
+
+  if (parsedContent?.type !== "uninstall") {
+    return [":speech_balloon: 새 피드백 (일반)", record.content, footer].join("\n");
+  }
+
+  const uninstallContent = parsedContent as IFUninstallFeedbackContent;
+  const phoneNumber = uninstallContent.phoneNumber
+    ? maskPhoneNumber(uninstallContent.phoneNumber)
+    : "없음";
+
+  return [
+    ":wave: 새 피드백 (언인스톨)",
+    `사유: ${uninstallContent.reason || "없음"}`,
+    `내용: ${uninstallContent.feedback || "없음"}`,
+    `연락처: ${phoneNumber}`,
+    footer,
+  ].join("\n");
+};
 
 serve(async (req) => {
-  const webhookPayload = await req.json();
-
-  const newRecord = webhookPayload.record;
-  const content = newRecord.content;
-
-  const targetUrl = new URL(GATE_API_URL);
-  targetUrl.searchParams.append("content", content);
-
-  console.log("Gate API URL:", targetUrl.toString());
-
   try {
-    const response = await fetch(targetUrl.toString(), {
-      method: "GET",
+    const slackWebhookUrl = Deno.env.get("SLACK_FEEDBACK_WEBHOOK_URL");
+
+    if (!slackWebhookUrl) {
+      throw new Error(
+        "SLACK_FEEDBACK_WEBHOOK_URL 시크릿이 없습니다. supabase secrets set SLACK_FEEDBACK_WEBHOOK_URL=... 로 등록하세요.",
+      );
+    }
+
+    const webhookPayload = await req.json();
+    const record: IFFeedbackRecord = webhookPayload.record;
+
+    const slackMessage = buildSlackMessage(record);
+
+    if (slackMessage === null) {
+      return new Response(JSON.stringify({ status: "skipped" }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const slackResponse = await fetch(slackWebhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: slackMessage }),
     });
 
-    const result = await response.json();
-    console.log("Gate API 응답:", result);
+    // Incoming Webhook은 실패해도 사유를 본문(no_service, invalid_payload 등)으로 준다.
+    // 이번 장애가 "조용히 끊겨서 아무도 몰랐다"는 형태였으므로 상태와 본문을 둘 다 본다.
+    const slackResponseBody = await slackResponse.text();
 
-    return new Response(JSON.stringify({ status: "success", data: result }), {
+    if (!slackResponse.ok || slackResponseBody !== "ok") {
+      throw new Error(
+        `Slack 전송 실패 — status ${slackResponse.status}, body ${slackResponseBody}`,
+      );
+    }
+
+    return new Response(JSON.stringify({ status: "success" }), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Gate API 요청 중 오류 발생:", error);
-    return new Response(JSON.stringify({ status: "error", message: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    const reason = error instanceof Error ? error.message : String(error);
+
+    console.error("피드백 Slack 알림 실패:", reason);
+
+    return new Response(
+      JSON.stringify({ status: "error", message: reason }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 });

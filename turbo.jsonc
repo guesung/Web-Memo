@@ -47,6 +47,10 @@
 		"build": {
 			"dependsOn": ["ready", "^build"],
 			"inputs": ["$TURBO_DEFAULT$", "!**/*.md", "!**/*.test.*", "!**/*.spec.*", "!**/*.tsbuildinfo"],
+			// turbo 2의 기본 envMode는 strict라, 선언하지 않으면 빌드가 셸의 BUILD_ENV를
+			// 못 봅니다. next.config가 이 값으로 콘솔 제거 여부를 가르고, 캐시도 환경별로
+			// 갈라져야 staging 산출물이 production 캐시를 물지 않습니다.
+			"env": ["BUILD_ENV"],
 			"outputs": ["dist/**", "build/**", ".next/**", "!.next/cache/**"]
 		},
 		// 프로덕션 서버 실행 (apps/web)

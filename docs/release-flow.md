@@ -174,10 +174,10 @@ Protection이 Preview에 걸려 있어, 자격 증명 없는 요청은 `/api/ver
 <https://api.slack.com/apps> → **Web Memo CI**
 
 - **Interactivity & Shortcuts** → 켜고 Request URL에
-  `https://web-memos.vercel.app/api/slack/interactivity`
+  `https://webmemo.xyz/api/slack/interactivity`
 - **Slash Commands** → **Create New Command**
   - Command: `/배포현황` (원하는 이름으로)
-  - Request URL: `https://web-memos.vercel.app/api/slack/commands`
+  - Request URL: `https://webmemo.xyz/api/slack/commands`
 - **OAuth & Permissions** → Bot Token Scopes에 `commands` 추가 → 워크스페이스에
   재설치 → `xoxb-`로 시작하는 **Bot User OAuth Token** 복사
 - **Basic Information** → **Signing Secret** 복사 (이미 있는 값 그대로)
@@ -210,7 +210,7 @@ Protection이 Preview에 걸려 있어, 자격 증명 없는 요청은 `/api/ver
 Vercel 런타임 로그에서 `POST /api/slack/interactivity` 유무로도 확인할 수 있습니다.
 
 ```bash
-vercel logs https://web-memos.vercel.app --scope gueit214s-projects
+vercel logs https://webmemo.xyz --scope gueit214s-projects
 ```
 
 다만 이 로그는 `console.error` 출력이 누락되는 경우가 있어, **로그가 없다는 것이

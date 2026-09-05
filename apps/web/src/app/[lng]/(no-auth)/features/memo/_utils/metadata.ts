@@ -14,10 +14,10 @@ export const metadataKorean: Metadata = {
 		"온라인 메모",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/ko/features/memo",
+		canonical: "https://webmemo.xyz/ko/features/memo",
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/features/memo",
-			en: "https://web-memos.vercel.app/en/features/memo",
+			ko: "https://webmemo.xyz/ko/features/memo",
+			en: "https://webmemo.xyz/en/features/memo",
 		},
 	},
 	openGraph: {
@@ -43,10 +43,10 @@ export const metadataEnglish: Metadata = {
 		"reading notes",
 	],
 	alternates: {
-		canonical: "https://web-memos.vercel.app/en/features/memo",
+		canonical: "https://webmemo.xyz/en/features/memo",
 		languages: {
-			ko: "https://web-memos.vercel.app/ko/features/memo",
-			en: "https://web-memos.vercel.app/en/features/memo",
+			ko: "https://webmemo.xyz/ko/features/memo",
+			en: "https://webmemo.xyz/en/features/memo",
 		},
 	},
 	openGraph: {

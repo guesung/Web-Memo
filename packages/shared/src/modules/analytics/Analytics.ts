@@ -18,6 +18,12 @@ class Analytics {
 	private gaId: string;
 	private apiSecret: string;
 	private userId: string | undefined = undefined;
+	/**
+	 * 확장에서 넘어온 client_id.
+	 * @description 사이드패널(비로그인)과 웹 가입을 잇는 유일한 끈입니다. 확장은 자체
+	 * client_id를, 웹은 gtag의 _ga 쿠키를 쓰기 때문에 그냥 두면 서로 다른 사용자가 됩니다.
+	 */
+	private extensionClientId: string | undefined = undefined;
 	private readonly GA_ENDPOINT = "https://www.google-analytics.com/mp/collect";
 	private readonly SESSION_EXPIRATION_IN_MIN = 30;
 
@@ -28,6 +34,18 @@ class Analytics {
 
 	public setUserId(userId: string | undefined): void {
 		this.userId = userId;
+	}
+
+	/** 확장에서 웹으로 넘길 client_id를 얻습니다. 확장 컨텍스트가 아니면 undefined입니다. */
+	public async getExtensionClientId(): Promise<string | undefined> {
+		if (!isExtension()) return undefined;
+
+		return this.getOrCreateClientId();
+	}
+
+	/** 확장에서 넘어온 client_id를 이후 모든 이벤트에 싣습니다. 웹에서 호출합니다. */
+	public setExtensionClientId(clientId: string | undefined): void {
+		this.extensionClientId = clientId;
 	}
 
 	public static getInstance(): Analytics {
@@ -85,6 +103,9 @@ class Analytics {
 					? CORE_ACTION_ENGAGEMENT_TIME_MSEC
 					: DEFAULT_ENGAGEMENT_TIME_MSEC,
 			build_env: CONFIG.buildEnv,
+			...(this.extensionClientId
+				? { ext_client_id: this.extensionClientId }
+				: {}),
 			...(this.isDebugMode() ? { debug_mode: true as const } : {}),
 		};
 	}

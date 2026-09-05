@@ -31,9 +31,9 @@ master 머지
                                     ▼
         release.yml → cd-app / cd-web / cd-extension → 스토어 제출
                                     │
-                                    └─ release.yml / notify
+                                    └─ notify-release.yml (타깃마다 한 번씩)
                                          └─ Slack ┌──────────────────────────────┐
-                                                  │ ✅ 릴리스 완료 — 앱 v1.0.8     │
+                                                  │ ✅ 앱 릴리스 완료 — 앱 v1.0.8  │
                                                   │ 📱 iOS (TestFlight)  ✅ 완료   │
                                                   │ 🤖 Android           ❌ 실패   │
                                                   │ [워크플로 실행 보기]           │
@@ -43,6 +43,11 @@ master 머지
 버튼을 누른 직후에는 "🚀 배포를 시작했습니다"가 곧바로 올라오고, 실제 제출이
 끝나면 위와 같은 결과 메시지가 한 번 더 옵니다. 앱만 iOS/Android로 갈라 보고하는
 이유는 그 둘이 별개의 matrix 잡이어서 한쪽만 깨질 수 있기 때문입니다.
+
+**결과 알림은 웹·앱·확장이 각자 따로 옵니다.** 셋을 한 메시지로 묶으면 `needs`가
+정적이라 알림이 가장 느린 타깃(앱 빌드 약 30분)을 기다립니다. 그러면 1분이면 끝나는
+웹 배포 결과도 30분 뒤에야 나갑니다. 타깃마다 `notify-release.yml`을 따로 불러
+각자 끝나는 대로 알립니다.
 
 ## 배포하는 방법
 
@@ -266,7 +271,8 @@ App Store Connect의 키 ID·발급자 ID·앱 ID는 시크릿이 아니라
 | `.github/workflows/ci.yml` (`notify`) | master 빌드 결과 + 스토어 현황을 Slack에 게시 |
 | `.github/workflows/cd-web.yml` (`Notify staging deploy`) | develop 테스트 서버 배포 결과를 Slack에 게시 |
 | `.github/workflows/versions.yml` | 배포 현황만 조회해 게시 |
-| `.github/workflows/release.yml` | 실제 스토어 제출 (버튼이 이걸 실행) + 결과 알림 |
+| `.github/workflows/release.yml` | 실제 스토어 제출 (버튼이 이걸 실행) |
+| `.github/workflows/notify-release.yml` | 릴리스 타깃 하나의 결과를 Slack에 게시 (release.yml이 타깃별로 호출) |
 | `.github/scripts/notify-release-result.mjs` | 릴리스 성패를 타깃별로 Slack에 보고 |
 | `.github/scripts/notify-staging-deploy.mjs` | 테스트 서버 배포 성패를 Slack에 보고 |
 | `.github/scripts/lib/store-versions.mjs` | 스토어 4곳 버전 조회 |
@@ -291,6 +297,11 @@ GITHUB_SHA=$(git rev-parse HEAD) node .github/scripts/report-store-versions.mjs
 GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 GITHUB_SHA=$(git rev-parse HEAD) \
   BUILD_RESULTS='{"ci":"success","app":"success","web":"skipped","extension":"success"}' \
   node .github/scripts/notify-build-ready.mjs
+
+# 릴리스 결과 알림에 나갈 Slack 페이로드 확인 (TARGET: app / extension / web)
+GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 \
+  TARGET=extension RESULT=success \
+  node .github/scripts/notify-release-result.mjs
 
 # 테스트 서버 배포 알림에 나갈 Slack 페이로드 확인
 GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 GITHUB_SHA=$(git rev-parse HEAD) \

@@ -11,6 +11,7 @@ import { isProduction } from "@web-memo/shared/utils";
 import { Button } from "@web-memo/ui";
 import { Sparkles } from "lucide-react";
 import Image from "next/image";
+import TrackLoginStartForm from "../TrackLoginStartForm";
 
 interface LoginSectionProps extends LanguageType {}
 
@@ -36,9 +37,10 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
 				</div>
 			</div>
 
-			<form className="relative flex w-full flex-col gap-3 mt-2">
+			<TrackLoginStartForm className="relative flex w-full flex-col gap-3 mt-2">
 				<Button
 					formAction={signInWithOAuth.bind(null, "kakao")}
+					data-login-method="kakao"
 					className="relative h-14 bg-[#FEE500] hover:bg-[#F5DC00] text-gray-900 font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] overflow-hidden group"
 					data-testid="kakao-login-button"
 				>
@@ -55,6 +57,7 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
 
 				<Button
 					formAction={signInWithOAuth.bind(null, "google")}
+					data-login-method="google"
 					className="relative h-14 bg-white hover:bg-gray-50 text-gray-900 font-medium rounded-xl border-2 border-gray-200 hover:border-gray-300 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] overflow-hidden group"
 					data-testid="google-login-button"
 				>
@@ -71,6 +74,7 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
 
 				<Button
 					formAction={signInWithOAuth.bind(null, "apple")}
+					data-login-method="apple"
 					className="relative h-14 bg-black hover:bg-gray-900 text-white font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] overflow-hidden group"
 					data-testid="apple-login-button"
 				>
@@ -92,13 +96,14 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
 							SUPABASE.testEmail,
 							SUPABASE.testPassword,
 						)}
+						data-login-method="email"
 						className="h-14 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
 						data-testid="test-login-button"
 					>
 						{t("login.testLogin")}
 					</Button>
 				)}
-			</form>
+			</TrackLoginStartForm>
 		</section>
 	);
 }

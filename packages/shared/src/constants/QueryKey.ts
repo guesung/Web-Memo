@@ -24,8 +24,6 @@ export const QUERY_KEY = {
 	],
 	option: () => ["option"],
 	supabaseClient: () => ["supabaseClient"],
-	/** 메모 스키마 클라이언트와 캐시가 섞이지 않도록 키를 분리한다. 같은 키를 쓰면 먼저
-	 * 채워진 쪽이 양쪽 훅에 반환되어 피드백 뮤테이션이 메모 스키마 클라이언트를 받는다. */
 	supabaseFeedbackClient: () => ["supabaseFeedbackClient"],
 	user: () => ["user"],
 	category: () => ["cateogory"],

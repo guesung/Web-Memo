@@ -66,7 +66,8 @@ export type TAnalyticsEvent =
 	| { name: "view_change"; params: { view: string } }
 	| { name: "logout" }
 	| { name: "extension_installed" }
-	| { name: "login_start"; params: { surface: "web" | "side_panel" } }
+	| { name: "login_start"; params: { method: string } }
+	| { name: "side_panel_login_click" }
 	| { name: "sign_up"; params: { method: string } };
 
 /** 이벤트 이름만 추린 유니온. */
@@ -106,5 +107,6 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	logout: "engagement",
 	extension_installed: "engagement",
 	login_start: "engagement",
+	side_panel_login_click: "engagement",
 	sign_up: "core_action",
 };

@@ -33,6 +33,8 @@ interface IFDeployButtonValue {
 	target?: TDeployTarget;
 	/** 배포할 커밋 SHA */
 	ref: string;
+	/** ref의 커밋 제목. 해시만으로는 무엇을 올리는지 알 수 없어 함께 실어 보냅니다. */
+	subject?: string;
 }
 
 const buildRunUrl = (): string =>
@@ -56,7 +58,11 @@ const handleDeployButton = async ({
 
 	await notifySlackSafely({
 		responseUrl,
-		text: `🚀 <@${userId}> 님이 *${DEPLOY_TARGET_LABELS[value.target]}* 배포를 시작했습니다 — \`${value.ref.slice(0, 7)}\`\n<${buildRunUrl()}|워크플로 보기>`,
+		text: [
+			`🚀 <@${userId}> 님이 *${DEPLOY_TARGET_LABELS[value.target]}* 배포를 시작했습니다`,
+			value.subject ?? `\`${value.ref.slice(0, 7)}\``,
+			`<${buildRunUrl()}|워크플로 보기>`,
+		].join("\n"),
 	});
 };
 
@@ -128,11 +134,14 @@ const handleModalSubmission = async (payload: {
 		)?.selected_options ?? []
 	).map(({ value }) => value as TDeployTarget);
 
-	const ref = (
+	// 선택지 라벨에는 커밋 제목이 이미 들어 있습니다("8ae32c1 확장 버전을 올린다").
+	// 배포 시작 메시지에 해시 대신 그 라벨을 그대로 씁니다.
+	const selectedRefOption = (
 		values[DEPLOY_MODAL_FIELDS.ref.blockId]?.[
 			DEPLOY_MODAL_FIELDS.ref.actionId
-		] as { selected_option?: { value: string } }
-	)?.selected_option?.value;
+		] as { selected_option?: { value: string; text?: { text?: string } } }
+	)?.selected_option;
+	const ref = selectedRefOption?.value;
 
 	// 대상을 하나도 안 고르면 워크플로의 preflight가 실패로 끝납니다.
 	// 그 전에 모달 안에서 바로 알려주는 편이 낫습니다.
@@ -171,7 +180,11 @@ const handleModalSubmission = async (payload: {
 
 	await notifySlackSafely({
 		responseUrl,
-		text: `🚀 <@${payload.user.id}> 님이 *${targetLabels}* 배포를 시작했습니다 — \`${ref.slice(0, 7)}\`\n<${buildRunUrl()}|워크플로 보기>`,
+		text: [
+			`🚀 <@${payload.user.id}> 님이 *${targetLabels}* 배포를 시작했습니다`,
+			selectedRefOption?.text?.text ?? `\`${ref.slice(0, 7)}\``,
+			`<${buildRunUrl()}|워크플로 보기>`,
+		].join("\n"),
 	});
 
 	return new NextResponse(null, { status: 200 });

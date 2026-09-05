@@ -16,7 +16,7 @@
  */
 
 import { readAppConfig, readExtensionVersion } from "./lib/repo-versions.mjs";
-import { requireEnv } from "./lib/run-context.mjs";
+import { readCommitSubject, requireEnv } from "./lib/run-context.mjs";
 import { postToSlack } from "./lib/slack-blocks.mjs";
 
 const TARGET_LABELS = {
@@ -132,16 +132,26 @@ const main = async () => {
 		cancelled: `⚪️ ${label} 릴리스 취소됨`,
 	};
 	const headline = HEADLINES[result] ?? `❌ ${label} 릴리스 실패`;
-	const subtitle = [version, `\`${ref}\``].filter(Boolean).join(" · ");
+	// 워크플로가 ref를 체크아웃한 뒤 이 스크립트를 돌리므로 HEAD가 곧 배포한 커밋입니다.
+	// 무엇이 올라갔는지는 ref 문자열보다 커밋 제목이 알려줍니다.
+	const commitSubject = readCommitSubject("HEAD");
+	const subtitle = [version, commitSubject].filter(Boolean).join(" · ");
 
 	const payload = {
-		text: headline,
+		text: [headline, commitSubject].filter(Boolean).join(" — "),
 		blocks: [
 			{
 				type: "section",
-				text: { type: "mrkdwn", text: `*${headline}* — ${subtitle}` },
+				text: {
+					type: "mrkdwn",
+					text: subtitle ? `*${headline}*\n${subtitle}` : `*${headline}*`,
+				},
 			},
 			{ type: "section", text: { type: "mrkdwn", text: lines.join("\n") } },
+			{
+				type: "context",
+				elements: [{ type: "mrkdwn", text: `배포 ref \`${ref}\`` }],
+			},
 			{
 				type: "actions",
 				elements: [

@@ -47,9 +47,10 @@ const main = async () => {
 
 	const shortSha = commitSha.slice(0, 7);
 	const commitSubject = readCommitSubject(commitSha);
-	const headline = hasFailure
-		? `❌ master 빌드 실패 — \`${shortSha}\``
-		: `✅ master 빌드 성공 — \`${shortSha}\``;
+	const commitUrl = `${serverUrl}/${repository}/commit/${commitSha}`;
+	// 해시는 어느 커밋인지 되짚을 때만 필요합니다. 채널에서 읽히는 건 커밋 제목이라
+	// 제목 줄은 제목에 내주고, 해시는 아래 context에 링크로 답니다.
+	const headline = hasFailure ? "❌ master 빌드 실패" : "✅ master 빌드 성공";
 
 	const storeVersions = await fetchStoreVersions();
 
@@ -62,6 +63,10 @@ const main = async () => {
 					? `*${headline}*\n${commitSubject}`
 					: `*${headline}*`,
 			},
+		},
+		{
+			type: "context",
+			elements: [{ type: "mrkdwn", text: `<${commitUrl}|\`${shortSha}\`>` }],
 		},
 		{ type: "divider" },
 		buildVersionSection({ storeVersions, commitSha }),
@@ -83,12 +88,18 @@ const main = async () => {
 		buildActionBlock({
 			targets: succeededTargets,
 			ref: commitSha,
+			refSubject: commitSubject,
 			linkUrl: `${serverUrl}/${repository}/actions/runs/${runId}`,
 			linkLabel: "워크플로 보기",
 		}),
 	);
 
-	const payload = { text: headline.replace(/[*`]/g, ""), blocks };
+	// 푸시 알림 미리보기로 쓰이는 줄입니다. 여기에도 해시가 아니라 제목이 보여야
+	// 채널을 열지 않고도 무엇이 올라갔는지 알 수 있습니다.
+	const payload = {
+		text: [headline, commitSubject].filter(Boolean).join(" — "),
+		blocks,
+	};
 
 	// 웹훅이 없으면(로컬 확인, 시크릿 미설정) 보낼 페이로드만 찍고 끝냅니다.
 	if (!process.env.SLACK_WEBHOOK_URL) {

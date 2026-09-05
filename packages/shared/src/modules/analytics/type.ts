@@ -26,6 +26,8 @@ export interface IFGa4EventParams {
 	debug_mode?: true;
 	user_id?: string;
 	session_id?: string;
+	/** 확장에서 넘어온 client_id. 확장→웹 퍼널을 잇습니다. */
+	ext_client_id?: string;
 	[key: string]: unknown;
 }
 
@@ -50,7 +52,22 @@ export type TAnalyticsEvent =
 	| { name: "side_panel_open_click" }
 	| { name: "highlight_note_update" }
 	| { name: "login"; params: { method: string } }
-	| { name: "memo_search"; params: { query_length: number } };
+	| { name: "memo_search"; params: { query_length: number } }
+	| { name: "memo_open"; params: { has_search_query: boolean } }
+	| { name: "memo_source_open" }
+	| { name: "memo_restore"; params: { memo_count: number } }
+	| { name: "memo_delete_permanently"; params: { memo_count: number } }
+	| { name: "summary_fail"; params: { reason: string } }
+	| { name: "chat_fail"; params: { reason: string } }
+	| { name: "category_create" }
+	| { name: "category_update" }
+	| { name: "category_delete" }
+	| { name: "feedback_submit" }
+	| { name: "view_change"; params: { view: string } }
+	| { name: "logout" }
+	| { name: "extension_installed" }
+	| { name: "login_start"; params: { surface: "web" | "side_panel" } }
+	| { name: "sign_up"; params: { method: string } };
 
 /** 이벤트 이름만 추린 유니온. */
 export type TAnalyticsEventName = TAnalyticsEvent["name"];
@@ -75,4 +92,19 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	highlight_note_update: "core_action",
 	login: "core_action",
 	memo_search: "core_action",
+	memo_open: "core_action",
+	memo_source_open: "core_action",
+	memo_restore: "core_action",
+	memo_delete_permanently: "core_action",
+	summary_fail: "core_action",
+	chat_fail: "core_action",
+	category_create: "core_action",
+	category_update: "core_action",
+	category_delete: "core_action",
+	feedback_submit: "core_action",
+	view_change: "engagement",
+	logout: "engagement",
+	extension_installed: "engagement",
+	login_start: "engagement",
+	sign_up: "core_action",
 };

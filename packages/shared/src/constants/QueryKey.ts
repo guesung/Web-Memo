@@ -22,6 +22,13 @@ export const QUERY_KEY = {
 		"paginated",
 		{ category, isWish, searchQuery, sortBy, isStar, isReading },
 	],
+	/**
+	 * 휴지통 목록.
+	 * @description `memos()` 접두사를 일부러 공유한다. 메모를 버리거나 되살리면
+	 * 목록과 휴지통이 같이 바뀌므로, 한쪽만 무효화해 다른 쪽이 옛 데이터를
+	 * 들고 있는 상황을 만들지 않기 위해서다.
+	 */
+	deletedMemos: () => ["memos", "deleted"],
 	option: () => ["option"],
 	supabaseClient: () => ["supabaseClient"],
 	user: () => ["user"],

@@ -80,6 +80,21 @@
 	"star_deleted": {
 		"message": "Removed from important"
 	},
+	"reading_added": {
+		"message": "Added to reading"
+	},
+	"reading_deleted": {
+		"message": "Removed from reading"
+	},
+	"wish_list": {
+		"message": "Wishlist"
+	},
+	"important_memo": {
+		"message": "Important"
+	},
+	"reading_memo": {
+		"message": "Reading"
+	},
 	"go_to": {
 		"message": "Go"
 	},
@@ -193,6 +208,9 @@
 	},
 	"actionItem": {
 		"message": "Action items"
+	},
+	"titlePlaceholder": {
+		"message": "Title"
 	},
 	"actionItemPlaceholder": {
 		"message": "Write what to do after reading this page"

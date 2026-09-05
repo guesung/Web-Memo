@@ -1,4 +1,5 @@
 import type { MemoInput } from "@src/types/Input";
+import type { TMemoStatusKey } from "@web-memo/shared/constants";
 import {
 	useDebounce,
 	useDidMount,
@@ -45,6 +46,8 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 			const isNewMemo = initializedMemoIdRef.current !== currentMemoId;
 
 			if (isNewMemo) {
+				// 메모가 아직 없으면 현재 탭 제목이 그대로 저장될 값이라 그것을 채운다.
+				setValue("title", memoData?.title ?? tab?.title ?? "");
 				setValue("memo", memoData?.memo ?? "");
 				setValue("impression", memoData?.impression ?? "");
 				setValue("actionItem", memoData?.actionItem ?? "");
@@ -53,15 +56,19 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 			setValue("isWish", memoData?.isWish ?? false);
 			setValue("isStar", memoData?.isStar ?? false);
+			setValue("isReading", memoData?.isReading ?? false);
 			setValue("categoryId", memoData?.category_id ?? null);
 		},
 		[
 			memoData?.id,
+			memoData?.title,
 			memoData?.memo,
+			tab?.title,
 			memoData?.impression,
 			memoData?.actionItem,
 			memoData?.isWish,
 			memoData?.isStar,
+			memoData?.isReading,
 			memoData?.category_id,
 			setValue,
 		],
@@ -69,18 +76,22 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 	const saveMemo = useCallback(
 		async (overrides?: SaveMemoOptions) => {
+			// 이미 저장 중이면 이 변경은 큐에 실려 다음 저장에 함께 나간다. 그 저장의 성패는
+			// 이 호출이 아니라 그때의 onError가 들고 있으므로 여기서는 실패로 보지 않는다.
 			if (isSaving) {
 				pendingDataRef.current = overrides ?? null;
-				return;
+				return true;
 			}
 
 			const currentValues = getValues();
 			const memoInput: MemoInput = {
+				title: overrides?.title ?? currentValues.title,
 				memo: overrides?.memo ?? currentValues.memo,
 				impression: overrides?.impression ?? currentValues.impression,
 				actionItem: overrides?.actionItem ?? currentValues.actionItem,
 				isWish: overrides?.isWish ?? currentValues.isWish,
 				isStar: overrides?.isStar ?? currentValues.isStar,
+				isReading: overrides?.isReading ?? currentValues.isReading,
 				categoryId: overrides?.categoryId ?? currentValues.categoryId,
 			};
 
@@ -90,40 +101,57 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 			const tabInfo = overrides?.tabInfo ?? (await getTabInfo());
 			const memoId = overrides?.memoId ?? memoData?.id;
 
-			upsertMemo(
-				{
-					id: memoId,
-					url: tabInfo.url,
-					data: {
-						...tabInfo,
-						memo: memoInput.memo,
-						impression: memoInput.impression,
-						actionItem: memoInput.actionItem,
-						isWish: memoInput.isWish,
-						isStar: memoInput.isStar,
-						category_id: memoInput.categoryId,
+			return new Promise<boolean>((resolveIsSaved) => {
+				upsertMemo(
+					{
+						id: memoId,
+						url: tabInfo.url,
+						data: {
+							...tabInfo,
+							// 사용자가 고친 제목이 탭 제목보다 우선이다. 비어 있을 때만 탭 제목으로 되돌린다.
+							title: memoInput.title.trim() || tabInfo.title,
+							memo: memoInput.memo,
+							impression: memoInput.impression,
+							actionItem: memoInput.actionItem,
+							isWish: memoInput.isWish,
+							isStar: memoInput.isStar,
+							isReading: memoInput.isReading,
+							category_id: memoInput.categoryId,
+						},
 					},
-				},
-				{
-					onSuccess: () => {
-						setTimeout(() => {
+					{
+						onSuccess: () => {
+							setTimeout(() => {
+								setIsSaving(false);
+								if (pendingDataRef.current !== null) {
+									const pendingData = pendingDataRef.current;
+									pendingDataRef.current = null;
+									saveMemo(pendingData);
+								}
+							}, 500);
+							onSaveSuccess?.(memoInput);
+							resolveIsSaved(true);
+						},
+						onError: () => {
+							// 실패 토스트와 Sentry 보고는 QueryProvider의 MutationCache가 이미 맡는다.
+							// 여기서는 저장 상태만 되돌리고, 성패는 호출부가 UI 분기에 쓰도록 넘긴다.
 							setIsSaving(false);
-							if (pendingDataRef.current !== null) {
-								const pendingData = pendingDataRef.current;
-								pendingDataRef.current = null;
-								saveMemo(pendingData);
-							}
-						}, 500);
-						onSaveSuccess?.(memoInput);
+							pendingDataRef.current = null;
+							resolveIsSaved(false);
+						},
 					},
-					onError: () => {
-						setIsSaving(false);
-						pendingDataRef.current = null;
-					},
-				},
-			);
+				);
+			});
 		},
 		[isSaving, getValues, memoData?.id, upsertMemo, onSaveSuccess],
+	);
+
+	const handleTitleChange = useCallback(
+		(text: string) => {
+			setValue("title", text);
+			debounce(() => saveMemo({ title: text }));
+		},
+		[setValue, debounce, saveMemo],
 	);
 
 	const handleMemoChange = useCallback(
@@ -160,31 +188,38 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		[setValue, memoData?.id, patchMemo],
 	);
 
-	const toggleWish = useCallback(async () => {
-		const currentIsWish = getValues("isWish");
-		const newIsWish = !currentIsWish;
-		setValue("isWish", newIsWish);
-		await saveMemo({ isWish: newIsWish });
-		return newIsWish;
-	}, [getValues, setValue, saveMemo]);
+	/**
+	 * 메모 상태 하나를 반전시켜 저장한다.
+	 * @description 저장에 실패하면 낙관적으로 바꿔둔 폼 값을 되돌리고 `null`을 준다.
+	 * 호출부는 이 `null`로 성공 토스트를 건너뛴다. 실패 알림 자체는 QueryProvider의 MutationCache가 맡는다.
+	 */
+	const toggleMemoStatus = async (statusKey: TMemoStatusKey) => {
+		const previousStatusValue = getValues(statusKey);
+		const nextStatusValue = !previousStatusValue;
+		const statusOverride: Partial<MemoInput> = {};
+		statusOverride[statusKey] = nextStatusValue;
 
-	const toggleStar = useCallback(async () => {
-		const currentIsStar = getValues("isStar");
-		const newIsStar = !currentIsStar;
-		setValue("isStar", newIsStar);
-		await saveMemo({ isStar: newIsStar });
-		return newIsStar;
-	}, [getValues, setValue, saveMemo]);
+		setValue(statusKey, nextStatusValue);
+
+		const isSaved = await saveMemo(statusOverride);
+
+		if (!isSaved) {
+			setValue(statusKey, previousStatusValue);
+			return null;
+		}
+
+		return nextStatusValue;
+	};
 
 	return {
 		memoData,
 		isSaving,
 		saveMemo,
+		handleTitleChange,
 		handleMemoChange,
 		handleImpressionChange,
 		handleActionItemChange,
 		updateCategory,
-		toggleWish,
-		toggleStar,
+		toggleMemoStatus,
 	};
 }

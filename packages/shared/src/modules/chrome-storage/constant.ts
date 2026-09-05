@@ -5,6 +5,7 @@ export const STORAGE_KEYS = {
 	theme: "theme",
 	autoApplyCategory: "autoApplyCategory",
 	tabHeight: "tabHeight",
+	memoFieldRatios: "memoFieldRatios",
 	chatMessages: "chatMessages",
 	impressionSectionEnabled: "impressionSectionEnabled",
 	actionItemSectionEnabled: "actionItemSectionEnabled",

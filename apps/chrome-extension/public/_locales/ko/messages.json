@@ -80,6 +80,21 @@
 	"star_deleted": {
 		"message": "중요 메모에서 삭제했어요"
 	},
+	"reading_added": {
+		"message": "읽는 중에 추가했어요"
+	},
+	"reading_deleted": {
+		"message": "읽는 중에서 삭제했어요"
+	},
+	"wish_list": {
+		"message": "위시리스트"
+	},
+	"important_memo": {
+		"message": "중요 메모"
+	},
+	"reading_memo": {
+		"message": "읽는 중"
+	},
 	"go_to": {
 		"message": "이동"
 	},
@@ -193,6 +208,9 @@
 	},
 	"actionItem": {
 		"message": "액션 아이템"
+	},
+	"titlePlaceholder": {
+		"message": "제목"
 	},
 	"actionItemPlaceholder": {
 		"message": "이 페이지를 보고 할 일을 적어보세요"

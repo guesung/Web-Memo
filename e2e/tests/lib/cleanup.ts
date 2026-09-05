@@ -10,6 +10,14 @@ import type { Database } from "@web-memo/shared/types";
 export const E2E_MEMO_URL_PREFIX = "https://example.com/test-";
 
 /**
+ * 사이드 패널을 여는 메모 목록 페이지의 URL.
+ * @description 패널은 열릴 때의 탭 URL에 메모를 붙인다. 통합 테스트는 로그인 직후
+ * 이 페이지에서 패널을 열므로, 테스트가 쓴 메모가 여기 남는다. 테스트 전용 계정이라
+ * 이 URL의 메모는 전부 테스트 산물이다.
+ */
+export const E2E_SIDE_PANEL_HOST_URL = "http://localhost:3000/en/memos";
+
+/**
  * E2E가 만드는 카테고리 이름의 접두사 목록.
  * @description 카테고리 추천 테스트가 `<접두사> <timestamp>` 꼴로 이름을 짓는다.
  */
@@ -105,13 +113,22 @@ export const cleanupE2EResidue = async () => {
 	try {
 		const client = await createCleanupClient();
 
-		const { error: memoError } = await client
+		const { error: prefixError } = await client
 			.from("memo")
 			.delete()
 			.like("url", `${E2E_MEMO_URL_PREFIX}%`);
 
-		if (memoError) {
-			throw new Error(`잔여 메모 삭제 실패: ${memoError.message}`);
+		if (prefixError) {
+			throw new Error(`잔여 메모 삭제 실패: ${prefixError.message}`);
+		}
+
+		const { error: hostError } = await client
+			.from("memo")
+			.delete()
+			.eq("url", E2E_SIDE_PANEL_HOST_URL);
+
+		if (hostError) {
+			throw new Error(`잔여 메모 삭제 실패: ${hostError.message}`);
 		}
 
 		for (const prefix of E2E_CATEGORY_NAME_PREFIXES) {

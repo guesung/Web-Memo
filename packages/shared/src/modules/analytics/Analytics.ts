@@ -1,15 +1,24 @@
+import { CONFIG } from "@web-memo/env";
+
 import { ANALYTICS } from "../../constants";
-import { isExtension, isProduction } from "../../utils";
-import type { AnalyticsEvent, GA4Event } from "./type";
+import { isExtension } from "../../utils";
+import {
+	EVENT_CATEGORY,
+	type IFGa4EventParams,
+	type TAnalyticsEvent,
+} from "./type";
+
+/** core_action 이벤트의 참여 시간. 사용자가 의도를 갖고 한 동작이라 길게 잡습니다. */
+const CORE_ACTION_ENGAGEMENT_TIME_MSEC = 500;
+/** engagement 이벤트의 참여 시간. */
+const DEFAULT_ENGAGEMENT_TIME_MSEC = 100;
 
 class Analytics {
 	private static instance: Analytics;
 	private gaId: string;
 	private apiSecret: string;
-	private isInitialized = false;
 	private userId: string | undefined = undefined;
 	private readonly GA_ENDPOINT = "https://www.google-analytics.com/mp/collect";
-	private readonly DEFAULT_ENGAGEMENT_TIME_IN_MSEC = 100;
 	private readonly SESSION_EXPIRATION_IN_MIN = 30;
 
 	private constructor() {
@@ -28,50 +37,81 @@ class Analytics {
 		return Analytics.instance;
 	}
 
-	private async initialize(): Promise<void> {
-		if (this.isInitialized) return;
-
-		if (isExtension()) {
-			this.isInitialized = true;
-		} else {
-			if (typeof window !== "undefined" && "gtag" in window) {
-				this.isInitialized = true;
-			}
-		}
+	/**
+	 * GA4로 이벤트를 전송할지 여부.
+	 * 개발 빌드는 보내지 않습니다. staging은 테섭에서 실제 도착을 확인해야 하므로 보냅니다.
+	 */
+	private shouldSend(): boolean {
+		return CONFIG.buildEnv !== "development";
 	}
 
-	async trackEvent(event: AnalyticsEvent): Promise<void> {
-		if (!isProduction()) return;
+	/**
+	 * 콘솔에 이벤트를 찍을지 여부.
+	 * 개발과 staging에서 켜집니다. 로깅이 나갔는지 눈으로 확인할 수 있는 유일한 수단입니다.
+	 */
+	private shouldLogToConsole(): boolean {
+		return CONFIG.buildEnv !== "production";
+	}
 
-		await this.initialize();
+	/** staging에서만 참. GA4 DebugView에 실시간으로 표시되게 합니다. */
+	private isDebugMode(): boolean {
+		return CONFIG.buildEnv === "staging";
+	}
 
-		const { event_category, engagement_time_msec, ...customParams } =
-			event.params || {};
+	async trackEvent(event: TAnalyticsEvent): Promise<void> {
+		const parameters = this.buildParameters(event);
 
-		await this.sendEvent(event.name, {
-			event_category,
-			engagement_time_msec,
-			...customParams,
-		});
+		if (this.shouldLogToConsole()) {
+			console.info(`[analytics] ${event.name}`, parameters);
+		}
+
+		if (!this.shouldSend()) return;
+
+		await this.sendEvent(event.name, parameters);
+	}
+
+	/**
+	 * 이벤트별 파라미터에 모든 이벤트가 공유하는 값을 얹습니다.
+	 * @description 호출부가 매번 적지 않게 여기서 한 번에 붙입니다. 빠뜨리는 곳이 생기지 않게 하는 게 목적입니다.
+	 */
+	private buildParameters(event: TAnalyticsEvent): IFGa4EventParams {
+		const eventCategory = EVENT_CATEGORY[event.name];
+
+		return {
+			...("params" in event ? event.params : {}),
+			event_category: eventCategory,
+			engagement_time_msec:
+				eventCategory === "core_action"
+					? CORE_ACTION_ENGAGEMENT_TIME_MSEC
+					: DEFAULT_ENGAGEMENT_TIME_MSEC,
+			build_env: CONFIG.buildEnv,
+			...(this.isDebugMode() ? { debug_mode: true as const } : {}),
+		};
 	}
 
 	private async sendEvent(
 		eventName: string,
-		parameters: GA4Event,
+		parameters: IFGa4EventParams,
 	): Promise<void> {
 		if (isExtension()) {
 			await this.sendEventInExtension(eventName, parameters);
-		} else {
-			if (typeof window !== "undefined" && "gtag" in window) {
-				await this.sendEventInWeb(eventName, parameters);
-			}
+			return;
 		}
+
+		this.sendEventInWeb(eventName, parameters);
 	}
 
-	private async sendEventInWeb(
+	private sendEventInWeb(
 		eventName: string,
-		parameters: GA4Event,
-	): Promise<void> {
+		parameters: IFGa4EventParams,
+	): void {
+		if (typeof window === "undefined" || !("gtag" in window)) {
+			console.warn(
+				`[analytics] gtag를 찾지 못해 "${eventName}"을 전송하지 못했습니다. GoogleAnalytics 스크립트가 로드됐는지 확인하세요.`,
+			);
+			return;
+		}
+
 		window.gtag("event", eventName, {
 			...parameters,
 			user_id: this.userId,
@@ -80,7 +120,7 @@ class Analytics {
 
 	private async sendEventInExtension(
 		eventName: string,
-		parameters: GA4Event,
+		parameters: IFGa4EventParams,
 	): Promise<void> {
 		try {
 			const clientId = await this.getOrCreateClientId();
@@ -91,7 +131,7 @@ class Analytics {
 				user_id?: string;
 				events: Array<{
 					name: string;
-					params: Record<string, unknown>;
+					params: IFGa4EventParams;
 				}>;
 			} = {
 				client_id: clientId,
@@ -112,14 +152,18 @@ class Analytics {
 
 			const url = `${this.GA_ENDPOINT}?measurement_id=${this.gaId}&api_secret=${this.apiSecret}`;
 
-			await fetch(url, {
+			const response = await fetch(url, {
 				method: "POST",
 				body: JSON.stringify(payload),
 			});
-		} catch (error) {
-			if (isProduction()) {
-				console.warn("GA4 Analytics tracking failed:", error);
+
+			if (!response.ok) {
+				console.warn(
+					`[analytics] "${eventName}" 전송이 ${response.status}로 실패했습니다.`,
+				);
 			}
+		} catch (error) {
+			console.warn(`[analytics] "${eventName}" 전송에 실패했습니다.`, error);
 		}
 	}
 
@@ -171,44 +215,27 @@ class Analytics {
 	}
 
 	public async trackSidePanelOpen(): Promise<void> {
-		await this.trackEvent({
-			name: "side_panel_open",
-			params: {
-				event_category: "engagement",
-				engagement_time_msec: 100,
-			},
-		});
+		await this.trackEvent({ name: "side_panel_open" });
 	}
 
 	public async trackMemoWrite(): Promise<void> {
-		await this.trackEvent({
-			name: "memo_write",
-			params: {
-				event_category: "core_action",
-				engagement_time_msec: 500,
-			},
-		});
+		await this.trackEvent({ name: "memo_write" });
 	}
 
-	async trackPageView(pageTitle: string, pageLocation: string): Promise<void> {
+	public async trackPageView(
+		pageTitle: string,
+		pageLocation: string,
+	): Promise<void> {
 		await this.trackEvent({
 			name: "page_view",
-			params: {
-				page_title: pageTitle,
-				page_location: pageLocation,
-			},
-		});
-	}
-
-	async trackButtonClick(buttonId: string, buttonText?: string): Promise<void> {
-		await this.trackEvent({
-			name: "button_clicked",
-			params: {
-				button_id: buttonId,
-				button_text: buttonText,
-			},
+			params: { page_title: pageTitle, page_location: pageLocation },
 		});
 	}
 }
 
+/**
+ * GA4 이벤트 전송 진입점.
+ * @description 웹은 gtag, 확장은 Measurement Protocol로 나가지만 호출부는 그 차이를 몰라도 됩니다.
+ * 빌드 환경에 따라 전송 여부와 콘솔 출력이 갈립니다. 환경별 동작은 Analytics.test.ts를 보세요.
+ */
 export const analytics = Analytics.getInstance();

@@ -70,6 +70,8 @@ export default memo(function MemoItem({
 			id={String(memo.id)}
 			className={cn(
 				"memo-item select-none transition-all duration-300 [transform:translateZ(0)]",
+				// tabIndex 는 있는데 포커스 표시가 없어, 키보드로 훑으면 지금 어디인지 안 보였다
+				"focus-visible:ring-ring focus-visible:ring-offset-background rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
 				props.className,
 			)}
 			onMouseEnter={handleMouseEnter}

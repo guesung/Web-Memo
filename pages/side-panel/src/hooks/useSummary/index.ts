@@ -60,6 +60,10 @@ export default function useSummary(): UseSummaryReturn {
 				(error) => {
 					setErrorMessage(error);
 					hasStreamError = true;
+					analytics.trackEvent({
+						name: "summary_fail",
+						params: { reason: error },
+					});
 				},
 			);
 
@@ -72,6 +76,10 @@ export default function useSummary(): UseSummaryReturn {
 			}
 		} catch (error) {
 			console.error("Summary error:", error);
+			analytics.trackEvent({
+				name: "summary_fail",
+				params: { reason: error instanceof Error ? error.message : "unknown" },
+			});
 			setErrorMessage(I18n.get("error_get_page_content"));
 		} finally {
 			setIsGenerating(false);

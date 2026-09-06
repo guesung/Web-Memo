@@ -1,3 +1,4 @@
+import { analytics } from "@web-memo/shared/modules/analytics";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
 import {
@@ -65,6 +66,12 @@ export default memo(function MemoCardHeader({
 		event.stopPropagation();
 		setEditedTitle(displayedTitle);
 		setIsTitleEditing(true);
+	};
+
+	/** 메모에서 원본 페이지로 돌아가는 동작. 메모가 실제로 쓰였다는 가장 강한 신호입니다. */
+	const handleSourceLinkClick = (event: MouseEvent<HTMLAnchorElement>) => {
+		event.stopPropagation();
+		analytics.trackEvent({ name: "memo_source_open" });
 	};
 
 	const handleTitleEditFinish = () => {
@@ -139,7 +146,7 @@ export default memo(function MemoCardHeader({
 						href={memo.url}
 						target="_blank"
 						className="flex min-w-0 items-center gap-2.5 hover:translate-x-0.5 transition-transform"
-						onClick={(e) => e.stopPropagation()}
+						onClick={handleSourceLinkClick}
 					>
 						<MemoFavIcon favIconUrl={memo.favIconUrl} />
 						<TooltipProvider delayDuration={200}>

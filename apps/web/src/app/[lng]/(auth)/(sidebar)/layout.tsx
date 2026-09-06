@@ -14,6 +14,7 @@ import {
 	InitSentryUserInfo,
 	MemoSidebar,
 	TrackLoginSuccess,
+	TrackViewChange,
 } from "./_components";
 import { initSentryUserInfo } from "./_utils";
 
@@ -58,6 +59,10 @@ export default async function Layout({
 
 			<Suspense>
 				<TrackLoginSuccess />
+			</Suspense>
+
+			<Suspense>
+				<TrackViewChange />
 			</Suspense>
 		</SidebarProvider>
 	);

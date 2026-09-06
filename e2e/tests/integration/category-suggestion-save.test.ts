@@ -1,5 +1,7 @@
 import { expect, test } from "../fixtures";
 import {
+	cleanupTestData,
+	E2E_MEMO_URL_PREFIX,
 	fillMemo,
 	findSidePanelPage,
 	login,
@@ -8,10 +10,21 @@ import {
 } from "../lib";
 
 test.describe("카테고리 추천 - 페이지 전환 시 저장", () => {
+	// 실제 Supabase에 쓰므로 afterEach에서 지울 대상을 여기 모아 둔다.
+	let memoUrls: string[] = [];
+	let categoryNames: string[] = [];
+
 	test.beforeEach(async ({ page }) => {
+		memoUrls = [];
+		categoryNames = [];
+
 		await login(page);
 		await skipGuide(page);
 		await openSidePanel(page);
+	});
+
+	test.afterEach(async () => {
+		await cleanupTestData({ memoUrls, categoryNames });
 	});
 
 	test("카테고리 추천 중 다른 페이지로 이동해도 원래 페이지의 메모에 카테고리가 적용된다", async ({
@@ -20,7 +33,8 @@ test.describe("카테고리 추천 - 페이지 전환 시 저장", () => {
 		const sidePanelPage = await findSidePanelPage(page);
 
 		const timestamp = Date.now();
-		const pageAUrl = `https://example.com/test-a-${timestamp}`;
+		const pageAUrl = `${E2E_MEMO_URL_PREFIX}a-${timestamp}`;
+		memoUrls.push(pageAUrl);
 		await page.goto(pageAUrl);
 		await sidePanelPage.waitForTimeout(1000);
 
@@ -31,6 +45,7 @@ test.describe("카테고리 추천 - 페이지 전환 시 저장", () => {
 
 		// 2. 카테고리 API를 지연 응답하도록 모킹
 		const categoryName = `E2E Category ${timestamp}`;
+		categoryNames.push(categoryName);
 		let resolveCategoryApi!: () => void;
 		const categoryApiGate = new Promise<void>((resolve) => {
 			resolveCategoryApi = resolve;
@@ -66,7 +81,8 @@ test.describe("카테고리 추천 - 페이지 전환 시 저장", () => {
 		await sidePanelPage.waitForTimeout(500);
 
 		// 4. 카테고리 추천 중에 페이지 B로 이동
-		const pageBUrl = `https://httpbin.org/get?t=${timestamp}`;
+		const pageBUrl = `${E2E_MEMO_URL_PREFIX}b-page-${timestamp}`;
+		memoUrls.push(pageBUrl);
 		await page.goto(pageBUrl);
 		await sidePanelPage.waitForTimeout(1000);
 
@@ -95,7 +111,8 @@ test.describe("카테고리 추천 - 페이지 전환 시 저장", () => {
 		const sidePanelPage = await findSidePanelPage(page);
 
 		const timestamp = Date.now();
-		const pageAUrl = `https://example.com/test-b-${timestamp}`;
+		const pageAUrl = `${E2E_MEMO_URL_PREFIX}b-${timestamp}`;
+		memoUrls.push(pageAUrl);
 		await page.goto(pageAUrl);
 		await sidePanelPage.waitForTimeout(1000);
 
@@ -106,6 +123,7 @@ test.describe("카테고리 추천 - 페이지 전환 시 저장", () => {
 
 		// 2. 카테고리 API 즉시 응답 모킹 (페이지 전환 없이)
 		const categoryName = `Badge Test ${timestamp}`;
+		categoryNames.push(categoryName);
 		await sidePanelPage.route("**/api/openai/category", async (route) => {
 			await route.fulfill({
 				status: 200,

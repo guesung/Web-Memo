@@ -183,7 +183,7 @@ function MemoFormContent() {
 						>
 							<label
 								htmlFor="impression-textarea"
-								className="shrink-0 text-xs font-semibold text-gray-500"
+								className="text-muted-foreground shrink-0 text-xs font-semibold"
 							>
 								{I18n.get("impression")}
 							</label>
@@ -216,7 +216,7 @@ function MemoFormContent() {
 						>
 							<label
 								htmlFor="action-item-textarea"
-								className="shrink-0 text-xs font-semibold text-gray-500"
+								className="text-muted-foreground shrink-0 text-xs font-semibold"
 							>
 								{I18n.get("actionItem")}
 							</label>
@@ -252,7 +252,7 @@ function MemoFormContent() {
 						/>
 						<StarIcon
 							size={16}
-							fill={memoData?.isStar ? "#f59e0b" : ""}
+							fill={memoData?.isStar ? "currentColor" : ""}
 							fillOpacity={memoData?.isStar ? 100 : 0}
 							onClick={() => handleMemoStatusClick("isStar")}
 							role="button"
@@ -310,7 +310,7 @@ function MemoFormContent() {
 
 			{showCategoryList && (
 				<div
-					className="fixed z-50 w-64 rounded-md bg-white shadow-lg"
+					className="bg-popover fixed z-50 w-64 rounded-md border shadow-lg"
 					style={{
 						top: `${categoryInputPosition.top}px`,
 						left: `${categoryInputPosition.left}px`,

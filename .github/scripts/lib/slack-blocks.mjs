@@ -117,17 +117,26 @@ export const buildVersionSection = ({ storeVersions, commitSha }) => {
  * 스토어 제출은 되돌리기 어렵고 채널에 그대로 노출되므로,
  * 한 번 더 묻는 confirm을 답니다. 클릭 수는 그대로 하나입니다.
  */
-const buildDeployButton = ({ label, detail, target, ref }) => ({
+const buildDeployButton = ({ label, detail, target, ref, refSubject }) => ({
 	type: "button",
 	action_id: `deploy_${target}`,
 	text: { type: "plain_text", text: label, emoji: true },
-	value: JSON.stringify({ target, ref }),
+	// subject는 버튼을 누른 뒤 나가는 확인 메시지에 그대로 실립니다.
+	// value는 2000자까지라 제목을 잘라 담습니다.
+	value: JSON.stringify({ target, ref, subject: refSubject?.slice(0, 200) }),
 	style: "primary",
 	confirm: {
 		title: { type: "plain_text", text: "배포할까요?" },
 		text: {
 			type: "mrkdwn",
-			text: `\`${ref.slice(0, 7)}\` 을 올립니다.\n${detail}`,
+			// 무엇을 올리는지는 해시보다 커밋 제목이 알려줍니다. 제목을 먼저 둡니다.
+			text: [
+				refSubject && `*${refSubject}*`,
+				`\`${ref.slice(0, 7)}\` 을 올립니다.`,
+				detail,
+			]
+				.filter(Boolean)
+				.join("\n"),
 		},
 		confirm: { type: "plain_text", text: "배포" },
 		deny: { type: "plain_text", text: "취소" },
@@ -147,12 +156,19 @@ const DEPLOY_TARGETS = [
  *
  * @param targets 버튼을 노출할 대상 목록. 빌드 알림에서는 방금 빌드가 성공한 것만
  *   넘깁니다 — 빌드도 안 된 커밋을 올리는 길을 열어두지 않기 위해서입니다.
+ * @param refSubject ref의 커밋 제목. 확인 창과 배포 시작 메시지에 쓰입니다.
  */
-export const buildActionBlock = ({ targets, ref, linkUrl, linkLabel }) => {
+export const buildActionBlock = ({
+	targets,
+	ref,
+	refSubject,
+	linkUrl,
+	linkLabel,
+}) => {
 	const elements = DEPLOY_TARGETS.filter(({ target }) =>
 		targets.includes(target),
 	).map(({ target, label, detail }) =>
-		buildDeployButton({ label, detail, target, ref }),
+		buildDeployButton({ label, detail, target, ref, refSubject }),
 	);
 
 	elements.push({

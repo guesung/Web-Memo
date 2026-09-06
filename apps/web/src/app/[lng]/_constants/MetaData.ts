@@ -1,12 +1,13 @@
+import { CONFIG } from "@web-memo/env";
 import type { Metadata } from "next";
 
 export const metadataCommon: Metadata = {
-	metadataBase: new URL("https://www.webmemo.xyz"),
+	metadataBase: new URL(CONFIG.webUrl),
 	icons: {
 		icon: "/favicon.ico",
 	},
 	alternates: {
-		canonical: "https://www.webmemo.xyz",
+		canonical: CONFIG.webUrl,
 	},
 	verification: {
 		google: "e92NNntqJ--8e3A0jAc-YFB3QwHg46AQQ4eplMUvqtQ",
@@ -26,10 +27,10 @@ export const metadataKorean: Metadata = {
 	applicationName: "웹 메모",
 	category: "웹 메모",
 	alternates: {
-		canonical: "https://www.webmemo.xyz/ko",
+		canonical: `${CONFIG.webUrl}/ko`,
 		languages: {
-			ko: "https://www.webmemo.xyz/ko",
-			en: "https://www.webmemo.xyz/en",
+			ko: `${CONFIG.webUrl}/ko`,
+			en: `${CONFIG.webUrl}/en`,
 		},
 	},
 	openGraph: {
@@ -61,10 +62,10 @@ export const metadataEnglish: Metadata = {
 	applicationName: "Web Memo",
 	category: "Web Memo",
 	alternates: {
-		canonical: "https://www.webmemo.xyz/en",
+		canonical: `${CONFIG.webUrl}/en`,
 		languages: {
-			ko: "https://www.webmemo.xyz/ko",
-			en: "https://www.webmemo.xyz/en",
+			ko: `${CONFIG.webUrl}/ko`,
+			en: `${CONFIG.webUrl}/en`,
 		},
 	},
 	openGraph: {

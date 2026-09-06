@@ -11,7 +11,7 @@ export default function Summary() {
 
 	if (errorMessage)
 		return (
-			<p className="pt-4 prose prose-sm dark:prose-invert text-foreground whitespace-pre-wrap">
+			<p className="pt-4 prose prose-sm text-foreground whitespace-pre-wrap">
 				{errorMessage}
 			</p>
 		);
@@ -44,7 +44,7 @@ export default function Summary() {
 	return (
 		<Markdown
 			remarkPlugins={[remarkGfm]}
-			className="markdown pt-4 prose prose-sm dark:prose-invert text-foreground"
+			className="markdown pt-4 prose prose-sm text-foreground"
 		>
 			{summary}
 		</Markdown>

@@ -11,6 +11,10 @@ on:
         description: "체크아웃할 커밋/태그 (비우면 호출한 워크플로의 기본 ref)"
         type: string
         default: ""
+      build_profile:
+        description: "EAS 빌드 프로파일 (ci = 빌드 번호 자동 증가·스토어 제출 가능, verify = 버려지는 검증 빌드)"
+        type: string
+        default: "verify"
 
 jobs:
   build-app:
@@ -20,7 +24,8 @@ jobs:
     runs-on: ${{ matrix.runner }}
     env:
       # PR 검증 빌드는 버려지는 산출물이라 빌드 번호를 올리면 안 됩니다(verify = autoIncrement off).
-      BUILD_PROFILE: ${{ inputs.deploy_target == 'production' && 'ci' || 'verify' }}
+      # master 머지분은 릴리스에서 그대로 재사용하므로 호출부가 ci를 넘깁니다.
+      BUILD_PROFILE: ${{ inputs.deploy_target == 'production' && 'ci' || inputs.build_profile }}
     strategy:
       fail-fast: false
       matrix:
@@ -37,6 +42,30 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
+      # 스토어에 올릴 커밋은 master CI에서 ci 프로파일로 이미 빌드돼 아티팩트로
+      # 올라가 있습니다. 있으면 그것을 내려받아 제출만 합니다. EAS 빌드가 플랫폼당
+      # 약 30분이라 같은 커밋을 다시 빌드하는 비용이 릴리스 시간의 거의 전부입니다.
+      # 없으면(만료·앱 변경 없음·다른 ref) 아래에서 기존대로 새로 빌드합니다.
+      - name: Find reusable build
+        id: reuse
+        if: ${{ inputs.deploy_target == 'production' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # 프로파일을 이름에 넣어 찾습니다. develop을 master로 리셋하면 두 브랜치가 같은
+          # 커밋을 갖게 되는데, develop CI는 verify(빌드 번호 고정)로 빌드하므로 그
+          # 산출물을 제출하면 스토어가 중복 빌드 번호로 거절합니다.
+          ARTIFACT_PREFIX: ${{ matrix.platform }}-build-ci
+        run: .github/scripts/find-reusable-artifact.sh
+
+      - name: Download reusable build
+        if: ${{ steps.reuse.outputs.found == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download "${{ steps.reuse.outputs.run_id }}" \
+            --name "${{ steps.reuse.outputs.name }}" \
+            --dir apps/app
+
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
@@ -45,7 +74,7 @@ jobs:
           cache: "pnpm"
 
       - name: Set up JDK
-        if: matrix.platform == 'android'
+        if: ${{ matrix.platform == 'android' && steps.reuse.outputs.found != 'true' }}
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -56,17 +85,22 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
+      # 빌드를 건너뛸 때도 설치는 합니다. eas submit이 프로젝트를 해석하는 데 필요하고,
+      # 20~30초라 30분짜리 빌드를 아끼려다 제출이 깨지는 위험을 감수할 이유가 없습니다.
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
       # 서명 키는 EAS 서버에 등록된 것을 받아 쓰므로 러너에 별도 시크릿이 필요 없습니다.
       - name: Build ${{ matrix.platform }}
+        if: ${{ steps.reuse.outputs.found != 'true' }}
         run: cd apps/app && eas build --platform ${{ matrix.platform }} --profile "$BUILD_PROFILE" --local --non-interactive --output ./${{ matrix.output }}
 
       - name: Upload build artifact
+        if: ${{ steps.reuse.outputs.found != 'true' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.platform }}-build
+          # 프로파일이 이름에 들어갑니다. 릴리스가 ci 빌드만 골라 재사용합니다.
+          name: ${{ matrix.platform }}-build-${{ env.BUILD_PROFILE }}
           path: apps/app/${{ matrix.output }}
           retention-days: 7
 

@@ -89,7 +89,13 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 	});
 	useImperativeHandle(actionItemRef, () => actionItemTextareaRef.current);
 
+	// 제목은 헤더에서 곧바로 반영되고, 본문처럼 계속 타이핑하는 필드가 아니다.
+	// 제목만 바꿔도 하단에 "저장 중"이 떴다 사라지는 것이 산만해서 저장 표시에서 뺀다.
+	// 저장 자체는 같은 경로로 나가고, 표시 여부만 이 값으로 가른다.
+	const hasPendingMemoFieldEditRef = useRef(false);
+
 	const saveMemo = useCallback(() => {
+		const shouldIndicateSaveStatus = hasPendingMemoFieldEditRef.current;
 		const currentTitle = watch("title");
 		const currentMemo = watch("memo");
 		const currentImpression = watch("impression");
@@ -102,11 +108,17 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 			currentActionItem !== (memoData?.actionItem ?? "");
 
 		if (!isEdited) {
-			setSaveStatus("idle");
+			if (shouldIndicateSaveStatus) {
+				setSaveStatus("idle");
+			}
+
 			return;
 		}
 
-		setSaveStatus("saving");
+		if (shouldIndicateSaveStatus) {
+			setSaveStatus("saving");
+		}
+
 		mutateMemoPatch(
 			{
 				id: memoId,
@@ -118,8 +130,18 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 				},
 			},
 			{
-				onSuccess: () => setSaveStatus("saved"),
-				onError: () => setSaveStatus("error"),
+				onSuccess: () => {
+					hasPendingMemoFieldEditRef.current = false;
+
+					if (shouldIndicateSaveStatus) {
+						setSaveStatus("saved");
+					}
+				},
+				onError: () => {
+					if (shouldIndicateSaveStatus) {
+						setSaveStatus("error");
+					}
+				},
 			},
 		);
 	}, [
@@ -184,7 +206,7 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 
 	useEffect(
 		function saveMemoOnChange() {
-			const subscription = watch((value) => {
+			const subscription = watch((value, { name }) => {
 				if (
 					!value.title &&
 					!value.memo &&
@@ -194,7 +216,11 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 					return;
 				}
 
-				setSaveStatus("saving");
+				if (name !== "title") {
+					hasPendingMemoFieldEditRef.current = true;
+					setSaveStatus("saving");
+				}
+
 				debounce(() => {
 					saveMemo();
 				}, 1_000);

@@ -102,7 +102,7 @@ export default function StatsSection({ lng, stats }: StatsSectionProps) {
 	];
 
 	return (
-		<section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+		<section className="py-20 bg-gradient-to-b from-muted/50 to-background">
 			<div className="mx-auto max-w-6xl px-4">
 				{/* Section Header */}
 				<motion.div
@@ -112,10 +112,10 @@ export default function StatsSection({ lng, stats }: StatsSectionProps) {
 					transition={{ duration: 0.5 }}
 					className="text-center mb-16"
 				>
-					<h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+					<h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
 						{t("introduce.section.stats")}
 					</h2>
-					<p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						{t("introduce.section.stats_desc")}
 					</p>
 				</motion.div>
@@ -145,7 +145,7 @@ export default function StatsSection({ lng, stats }: StatsSectionProps) {
 								</div>
 
 								{/* Value */}
-								<div className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+								<div className="text-4xl lg:text-5xl font-bold text-foreground mb-2">
 									<AnimatedCounter
 										end={stat.value}
 										suffix={stat.suffix}
@@ -154,12 +154,12 @@ export default function StatsSection({ lng, stats }: StatsSectionProps) {
 								</div>
 
 								{/* Label */}
-								<div className="font-semibold text-gray-800 dark:text-gray-200 mb-1">
+								<div className="font-semibold text-foreground mb-1">
 									{stat.label}
 								</div>
 
 								{/* Description */}
-								<div className="text-sm text-gray-500 dark:text-gray-400">
+								<div className="text-sm text-muted-foreground">
 									{stat.description}
 								</div>
 							</div>

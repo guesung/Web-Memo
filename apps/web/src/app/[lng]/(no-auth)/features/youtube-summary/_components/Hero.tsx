@@ -10,7 +10,7 @@ export default async function Hero({ lng }: HeroProps) {
 
 	return (
 		<section className="relative py-20 lg:py-32 overflow-hidden">
-			<div className="absolute inset-0 bg-gradient-to-br from-red-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800" />
+			<div className="absolute inset-0 bg-gradient-to-br from-red-50 via-background to-orange-50 dark:from-background dark:via-background dark:to-muted" />
 
 			<div className="relative mx-auto max-w-6xl px-4">
 				<div className="text-center">
@@ -21,14 +21,14 @@ export default async function Hero({ lng }: HeroProps) {
 						</span>
 					</div>
 
-					<h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+					<h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
 						{t("features.youtubeSummary.hero.title")}
 						<span className="block text-red-500 mt-2">
 							{t("features.youtubeSummary.hero.titleHighlight")}
 						</span>
 					</h1>
 
-					<p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8">
+					<p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
 						{t("features.youtubeSummary.hero.description")}
 					</p>
 
@@ -43,7 +43,7 @@ export default async function Hero({ lng }: HeroProps) {
 						</Link>
 						<Link
 							href={`/${lng}/introduce`}
-							className="inline-flex items-center gap-2 px-8 py-4 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 font-semibold rounded-xl transition-all duration-200"
+							className="inline-flex items-center gap-2 px-8 py-4 bg-secondary text-secondary-foreground hover:bg-secondary/80 font-semibold rounded-xl transition-all duration-200"
 						>
 							{t("features.youtubeSummary.hero.learnMore")}
 						</Link>

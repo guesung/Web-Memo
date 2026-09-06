@@ -1,0 +1,46 @@
+name: Notify - Release Result
+
+# 릴리스 타깃 하나의 결과를 Slack에 알립니다. release.yml이 타깃별로 한 번씩 호출합니다.
+#
+# 셋을 한 잡으로 묶으면 needs가 정적이라 알림이 가장 느린 타깃(앱 빌드 약 30분)을
+# 기다립니다. 그러면 1분이면 끝나는 웹 배포 결과도 30분 뒤에야 나갑니다.
+# 타깃마다 이 워크플로를 따로 부르면 각자 끝나는 대로 알립니다.
+on:
+  workflow_call:
+    inputs:
+      target:
+        description: "알릴 릴리스 타깃 (app / extension / web)"
+        type: string
+        required: true
+      result:
+        description: "해당 릴리스 잡의 result (success / failure / cancelled)"
+        type: string
+        required: true
+      ref:
+        description: "배포한 커밋/태그 (표시용, 비워도 됩니다)"
+        type: string
+        default: ""
+
+jobs:
+  notify:
+    name: Slack 알림
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      # 알림 스크립트는 의존성이 없습니다(fetch만 씁니다). pnpm install을 건너뜁니다.
+      - name: Notify Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_REF: ${{ inputs.ref || github.ref_name }}
+          TARGET: ${{ inputs.target }}
+          RESULT: ${{ inputs.result }}
+        run: node .github/scripts/notify-release-result.mjs

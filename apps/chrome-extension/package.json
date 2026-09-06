@@ -1,7 +1,7 @@
 {
 	"name": "@web-memo/chrome-extension",
 	"private": true,
-	"version": "1.10.14",
+	"version": "1.10.15",
 	"description": "chrome extension",
 	"scripts": {
 		"clean": "rimraf ../../dist",

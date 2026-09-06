@@ -43,15 +43,12 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 						    Next는 리다이렉트된 RSC 요청을 클라이언트 네비게이션으로 잇지 못해
 						    전체 페이지를 다시 받는다. */}
 						<Link href={`/${lng}${PATHS.memos}`} replace>
-							<SidebarMenuButton className="group relative overflow-hidden transition-all duration-200 hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100/50 dark:hover:from-purple-950/30 dark:hover:to-purple-900/20 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]">
+							<SidebarMenuButton className="group relative overflow-hidden transition-all duration-200 hover:bg-primary/5 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]">
 								<div className="flex items-center gap-3 w-full">
-									<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 group-hover:bg-purple-200 dark:group-hover:bg-purple-800/40 transition-colors">
-										<Home
-											size={16}
-											className="text-purple-600 dark:text-purple-400"
-										/>
+									<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+										<Home size={16} className="text-primary" />
 									</div>
-									<span className="font-medium text-foreground group-hover:text-purple-700 dark:group-hover:text-purple-300">
+									<span className="font-medium text-foreground group-hover:text-primary">
 										{t("sideBar.memo")}
 									</span>
 								</div>
@@ -118,15 +115,12 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 							</SidebarMenuButton>
 						</Link>
 						<Link href={`/${lng}${PATHS.memosTrash}`} replace>
-							<SidebarMenuButton className="group relative overflow-hidden transition-all duration-200 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-200/50 dark:hover:from-gray-800/40 dark:hover:to-gray-800/20 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]">
+							<SidebarMenuButton className="group relative overflow-hidden transition-all duration-200 hover:bg-accent hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]">
 								<div className="flex items-center gap-3 w-full">
-									<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
-										<Trash2
-											size={16}
-											className="text-gray-600 dark:text-gray-400"
-										/>
+									<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-foreground/5 group-hover:bg-foreground/10 transition-colors">
+										<Trash2 size={16} className="text-muted-foreground" />
 									</div>
-									<span className="font-medium text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-100">
+									<span className="font-medium text-foreground/80 group-hover:text-foreground">
 										{t("sideBar.trash")}
 									</span>
 								</div>

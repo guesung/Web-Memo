@@ -39,6 +39,13 @@
 여기에 더해 `tsup`이 셸 `BUILD_ENV`를 번들에 함께 인라인하므로, 코드에서는
 `CONFIG.buildEnv`로 `"development" | "staging" | "production"`을 읽을 수 있습니다.
 
+`CONFIG.webDisplayHost`는 `webUrl`에서 프로토콜과 `www.`를 뗀 값(`webmemo.xyz`)입니다.
+주소창 목업이나 안내 문구처럼 **사용자에게 도메인만 보여주는 자리**에서 씁니다.
+파생값이라 원천은 여전히 `WEB_URL` 하나입니다.
+
+**origin이 일치해야 하는 값에는 `webUrl`을 그대로 쓰세요.** 확장 매니페스트의
+`externally_connectable`처럼 `www`가 빠지면 조용히 죽는 자리가 있습니다(아래 참고).
+
 `packages/env/src/config.ts`가 이 값을 읽어 `CONFIG` 객체로 내보내고, 소비하는 쪽은
 `import { CONFIG } from "@web-memo/env"`로 씁니다. `getSafeConfig`가 `undefined`를
 막으므로, 값이 빠지면 모듈이 로드되는 즉시 `WEB_URL이 설정되지 않았습니다` 형태로
@@ -47,17 +54,34 @@
 ### 도메인을 바꿀 때 레포 밖에서 함께 해야 하는 것
 
 `WEB_URL`은 레포 안의 여러 값을 끌고 다닙니다. 확장 매니페스트의
-`externally_connectable`, 웹의 `metadataBase`·canonical, `robots.txt`·`sitemap.xml`이
-모두 이 값에서 나옵니다. 그래서 이 파일만 고치면 레포 쪽은 끝나지만, 아래는
-콘솔에서 직접 해야 하고 빠뜨리면 **에러 없이 로그인·연동만 조용히 죽습니다.**
+`externally_connectable`, 웹의 `metadataBase`·canonical·`alternates`,
+`robots.txt`·`sitemap.xml`, 그리고 `translation.json`의 `{{webDisplayHost}}` 보간이 모두
+이 값에서 나옵니다.
+
+**레포에서 도메인이 하드코딩된 곳은 `apps/app/.../_constants/webApi.ts` 하나뿐입니다.**
+Expo는 `EXPO_PUBLIC_` 접두사가 없는 환경변수를 번들에 인라인하지 않아 이 앱만
+`@web-memo/env`를 읽지 못합니다. 도메인을 바꾸면 여기도 함께 고쳐야 합니다.
+
+레포 쪽은 그 둘이 전부고, 아래는 콘솔에서 직접 해야 하며 빠뜨리면 **에러 없이
+로그인·연동만 조용히 죽습니다.**
 
 | 대상 | 해야 하는 것 |
 | --- | --- |
 | Vercel | 프로젝트에 도메인 연결 + DNS. 프로덕션은 `www.webmemo.xyz`, 스테이징 alias는 `staging.webmemo.xyz` |
 | GitHub Secrets | `STAGING_WEB_URL_WITHOUT_PROTOCOL`을 새 스테이징 도메인으로 (`cd-web.yml`의 alias) |
-| Supabase Auth | Site URL과 Redirect URLs에 새 도메인 추가 |
-| Google OAuth | 승인된 자바스크립트 원본·리디렉션 URI에 새 도메인 추가 |
+| Supabase Auth | URL Configuration → Site URL을 `https://www.webmemo.xyz`로, Redirect URLs에 `https://www.webmemo.xyz/**`와 `https://staging.webmemo.xyz/**` 추가 |
 | Slack 앱 | Interactivity·슬래시 커맨드 Request URL (`docs/release-flow.md` 참고) |
+
+**Google·Kakao·Apple 개발자 콘솔은 건드릴 것이 없습니다.** 로그인은
+`signInWithOAuth`로 Supabase를 거치므로, 각 제공자에 등록된 리디렉션 URI는
+Supabase의 `/auth/v1/callback`이지 우리 도메인이 아닙니다. 우리 도메인이 들어가는
+곳은 `redirectTo`로 넘기는 `${CONFIG.webUrl}/auth/callback` 하나뿐이고, 그것은
+Supabase의 **Redirect URLs 허용 목록**에서 검사합니다. 거기에 새 도메인이 없으면
+로그인이 콜백에서 튕깁니다.
+
+세션 쿠키는 `domain` 없이 심겨 서빙 호스트에만 붙고, 확장은
+`chrome.cookies.get({ url: CONFIG.webUrl })`로 같은 호스트에서 읽습니다. `WEB_URL`이
+실제 서빙 호스트여야 하는 이유가 여기에도 걸립니다.
 
 **`WEB_URL`에는 리다이렉트 호스트가 아니라 실제로 응답하는 호스트를 적습니다.**
 `webmemo.xyz`(apex)는 Vercel에서 `www.webmemo.xyz`로 308 리다이렉트만 하므로

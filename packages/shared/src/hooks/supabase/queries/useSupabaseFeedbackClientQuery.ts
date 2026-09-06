@@ -10,7 +10,7 @@ export default function useSupabaseFeedbackClientQuery() {
 		queryFn: isExtension()
 			? getSupabaseClientExtension
 			: getFeedbackSupabaseClientWeb,
-		queryKey: QUERY_KEY.supabaseClient(),
+		queryKey: QUERY_KEY.supabaseFeedbackClient(),
 	});
 
 	return {

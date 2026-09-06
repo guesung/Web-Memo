@@ -22,6 +22,16 @@ import {
 	ContextMenuTrigger,
 } from "@web-memo/ui";
 import { Palette, Pencil, Trash2 } from "lucide-react";
+
+/**
+ * 색을 아직 고르지 않은 카테고리의 색상 선택기 기본값
+ *
+ * @description
+ * 브랜드 --primary(221 83% 53%)와 같은 값이다. 예전엔 purple-600(#9333ea)이라
+ * 메모 화면이 파랑으로 통일된 뒤에도 여기만 보라가 떴다.
+ */
+const DEFAULT_CATEGORY_COLOR = "#2563eb";
+
 import {
 	type ReactNode,
 	useCallback,
@@ -49,7 +59,7 @@ export default function SidebarCategoryContextMenu({
 
 	const openColorPicker = () => {
 		if (colorInputRef.current) {
-			colorInputRef.current.value = category.color || "#9333ea";
+			colorInputRef.current.value = category.color || DEFAULT_CATEGORY_COLOR;
 			colorInputRef.current.click();
 		}
 	};
@@ -57,7 +67,7 @@ export default function SidebarCategoryContextMenu({
 	const handleColorChange = useCallback(
 		(e: Event) => {
 			const newColor = (e.target as HTMLInputElement).value;
-			if (newColor !== (category.color || "#9333ea")) {
+			if (newColor !== (category.color || DEFAULT_CATEGORY_COLOR)) {
 				updateCategory({ id: category.id, request: { color: newColor } });
 			}
 		},

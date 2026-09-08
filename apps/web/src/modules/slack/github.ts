@@ -265,10 +265,15 @@ export const fetchDefaultBranchSha = async (): Promise<string> => {
 	return object.sha;
 };
 
-/** 파일 원문 그대로. Contents API의 raw 미디어 타입을 씁니다. */
-const fetchFileSource = async (path: string): Promise<string> => {
+/**
+ * 파일 원문 그대로. Contents API의 raw 미디어 타입을 씁니다.
+ *
+ * @param ref 읽을 시점. 브랜치명이 아니라 커밋 SHA를 넘겨 고정합니다 — 브랜치로 읽으면
+ *   파일마다 다른 시점을 볼 수 있어 트리가 어느 커밋의 것도 아니게 됩니다.
+ */
+const fetchFileSource = async (path: string, ref: string): Promise<string> => {
 	const response = await fetch(
-		`${GITHUB_API_ORIGIN}/repos/${getGithubRepository()}/contents/${path}?ref=${GITHUB_DEFAULT_BRANCH}`,
+		`${GITHUB_API_ORIGIN}/repos/${getGithubRepository()}/contents/${path}?ref=${ref}`,
 		{
 			headers: { ...buildHeaders(), accept: "application/vnd.github.raw+json" },
 		},
@@ -287,14 +292,19 @@ interface IFVersionBumpInput {
 	extensionVersion?: string;
 	/** 커밋 본문에 남길 요청자. 자동 생성 커밋의 출처를 되짚을 수 있게 합니다. */
 	requestedBy: string;
+	/**
+	 * 검증 때 확인한 master의 커밋 SHA. 필수입니다 — 안 넘기는 경로를 두면
+	 * 검증한 트리와 배포되는 트리가 갈리는 구멍이 그대로 남습니다.
+	 */
+	expectedBaseSha: string;
 }
 
 /** 커밋 제목. 두 트랙을 함께 올릴 때는 한 줄에 둘 다 적습니다. */
-const buildBumpCommitMessage = ({
+export const buildBumpCommitMessage = ({
 	appVersion,
 	extensionVersion,
 	requestedBy,
-}: IFVersionBumpInput): string => {
+}: Omit<IFVersionBumpInput, "expectedBaseSha">): string => {
 	const subject =
 		appVersion && extensionVersion
 			? `chore: 앱 ${appVersion} · 확장 ${extensionVersion}로 버전을 올린다`
@@ -319,6 +329,7 @@ export const commitVersionBump = async ({
 	appVersion,
 	extensionVersion,
 	requestedBy,
+	expectedBaseSha,
 }: IFVersionBumpInput): Promise<string> => {
 	const targets = [
 		...(appVersion ? [{ file: VERSION_FILES.app, version: appVersion }] : []),
@@ -331,14 +342,26 @@ export const commitVersionBump = async ({
 		throw new Error("올릴 버전이 하나도 없습니다");
 	}
 
+	// 검증은 응답 전에, 커밋은 응답 뒤에 일어납니다. 그 사이 master가 움직였다면
+	// 사용자가 화면에서 고르고 통과시킨 것과 다른 트리가 배포됩니다 — 모달은 이미
+	// 닫혀 개입할 지점이 없으므로, 아무것도 만들기 전에 여기서 멈춥니다.
+	// `git/refs` PATCH의 force: false로도 막히지만 그때는 blob·tree·commit을 다 만든
+	// 뒤라 쓰레기 오브젝트가 남습니다.
 	const baseCommitSha = await fetchDefaultBranchSha();
+
+	if (baseCommitSha !== expectedBaseSha) {
+		throw new Error(
+			`검증 이후 master가 ${baseCommitSha.slice(0, 7)}로 움직여 버전 커밋을 만들지 않았습니다 — 다시 시도하세요`,
+		);
+	}
+
 	const baseCommit = await requestGithub<{ tree: { sha: string } }>(
 		`/git/commits/${baseCommitSha}`,
 	);
 
 	const treeEntries = await Promise.all(
 		targets.map(async ({ file, version }) => {
-			const source = await fetchFileSource(file.path);
+			const source = await fetchFileSource(file.path, baseCommitSha);
 			const currentVersion = file.read(JSON.parse(source));
 
 			if (!currentVersion) {

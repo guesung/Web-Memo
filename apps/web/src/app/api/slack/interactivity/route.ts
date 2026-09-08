@@ -199,7 +199,9 @@ const validateVersionBump = async ({
 	requested: Array<{ track: TVersionTrack; input: string }>;
 	targets: TDeployTarget[];
 	ref: string;
-}): Promise<{ error: IFModalError } | { currentVersions: string[] }> => {
+}): Promise<
+	{ error: IFModalError } | { currentVersions: string[]; baseSha: string }
+> => {
 	for (const { track } of requested) {
 		// 대상에 없는 트랙의 버전만 올리면 커밋만 남고 아무것도 배포되지 않습니다.
 		if (!targets.includes(track)) {
@@ -271,7 +273,7 @@ const validateVersionBump = async ({
 		currentVersions.push(result.value);
 	}
 
-	return { currentVersions };
+	return { currentVersions, baseSha: branchResult.value };
 };
 
 /** 모달 제출 — 여러 대상을 한 번에 배포합니다. */
@@ -373,6 +375,9 @@ const handleModalSubmission = async (payload: {
 				appVersion,
 				extensionVersion,
 				requestedBy: payload.user.username ?? payload.user.id,
+				// 검증 때 확인한 그 커밋 위에만 얹습니다. 그 사이 master가 움직였으면
+				// 커밋을 만들지 않고 던지고, 아래 catch가 "버전은 그대로" 경로로 알립니다.
+				expectedBaseSha: validated.baseSha,
 			});
 
 			await dispatchRelease({ targets, ref: bumpCommitSha });

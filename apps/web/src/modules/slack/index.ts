@@ -4,3 +4,4 @@ export * from "./deployModal";
 export * from "./github";
 export * from "./request";
 export * from "./verifyRequest";
+export * from "./version";

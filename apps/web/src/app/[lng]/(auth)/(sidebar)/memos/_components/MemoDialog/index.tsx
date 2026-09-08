@@ -245,64 +245,74 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 					exit={{ opacity: 0 }}
 				>
 					<Card>
+						{/* 닫기 버튼(right-4)이 제목 위로 겹친다. 그만큼 오른쪽을 비운다. */}
 						<MemoCardHeader
 							memo={memoData}
 							onTitleChange={(title) =>
 								setValue("title", title, { shouldDirty: true })
 							}
+							className="pr-12"
 						/>
-						<CardContent>
+						{/* CardContent 의 기본값은 px-6 뿐이라 세로 여백이 아예 없다.
+						    헤더·푸터가 px-5 를 쓰므로 가로도 거기에 맞춘다. */}
+						<CardContent className="space-y-4 px-5 py-4">
 							<Textarea
 								{...memoRest}
-								className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
+								className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none"
 								ref={memoTextareaRef}
 								placeholder={t("memos.placeholder")}
 								data-testid="memo-textarea"
 							/>
 
 							{showImpression && (
-								<>
+								<div className="space-y-1.5">
+									{/* label 은 inline 이라 세로 마진이 무시된다. block 이어야 간격이 생긴다. */}
 									<label
 										htmlFor="impression"
-										className="mt-3 text-xs font-semibold text-gray-500"
+										className="block text-xs font-semibold text-muted-foreground"
 									>
 										{t("memoSection.impression")}
 									</label>
 									<Textarea
 										{...impressionRest}
 										id="impression"
-										className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
+										className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none"
 										ref={impressionTextareaRef}
 										placeholder={t("memoSection.impressionPlaceholder")}
 										data-testid="impression-textarea"
 									/>
-								</>
+								</div>
 							)}
 
 							{showActionItem && (
-								<>
+								<div className="space-y-1.5">
 									<label
 										htmlFor="actionItem"
-										className="mt-3 text-xs font-semibold text-gray-500"
+										className="block text-xs font-semibold text-muted-foreground"
 									>
 										{t("memoSection.actionItem")}
 									</label>
 									<Textarea
 										{...actionItemRest}
 										id="actionItem"
-										className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
+										className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none"
 										ref={actionItemTextareaRef}
 										placeholder={t("memoSection.actionItemPlaceholder")}
 										data-testid="action-item-textarea"
 									/>
-								</>
+								</div>
 							)}
 
-							<div className="mt-3 flex h-4 items-center">
+							<div className="flex h-4 items-center">
 								<SaveStatusIndicator status={saveStatus} lng={lng} />
 							</div>
 						</CardContent>
-						<MemoCardFooter memo={memoData} lng={lng} isShowingOption={false} />
+						<MemoCardFooter
+							memo={memoData}
+							lng={lng}
+							isShowingOption={false}
+							className="py-4"
+						/>
 					</Card>
 				</motion.div>
 			</DialogContent>

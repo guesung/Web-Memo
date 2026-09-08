@@ -51,7 +51,7 @@ export default function Trash({ lng }: TrashProps) {
 
 	if (!deletedMemos || deletedMemos.length === 0) {
 		return (
-			<p className="py-16 text-center text-sm text-gray-500 dark:text-gray-400">
+			<p className="py-16 text-center text-sm text-muted-foreground">
 				{t("trash.empty")}
 			</p>
 		);
@@ -134,10 +134,8 @@ function TrashItem({
 			<Card className="flex items-center justify-between gap-4 p-4">
 				<div className="min-w-0 flex-1">
 					<p className="truncate font-medium">{memo.title}</p>
-					<p className="truncate text-xs text-gray-500 dark:text-gray-400">
-						{memo.url}
-					</p>
-					<p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+					<p className="truncate text-xs text-muted-foreground">{memo.url}</p>
+					<p className="mt-1 text-xs text-muted-foreground/70">
 						{dayjs(memo.deleted_at).fromNow()}
 					</p>
 				</div>

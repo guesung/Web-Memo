@@ -22,6 +22,8 @@ interface MemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	showImpression: boolean;
 	/** 액션 아이템 설정이 켜져 있는지. 꺼져 있으면 내용이 있어도 표시하지 않는다 */
 	showActionItem: boolean;
+	/** 목록에서의 순서. 등장 애니메이션을 계단식으로 미루는 데 쓴다 */
+	index: number;
 }
 
 export default memo(function MemoItem({
@@ -32,6 +34,7 @@ export default memo(function MemoItem({
 	isMemoSelected,
 	showImpression,
 	showActionItem,
+	index,
 	...props
 }: MemoItemProps) {
 	const { t } = useTranslation(lng);
@@ -77,6 +80,8 @@ export default memo(function MemoItem({
 			id={String(memo.id)}
 			className={cn(
 				"memo-item select-none transition-all duration-300 [transform:translateZ(0)]",
+				// tabIndex 는 있는데 포커스 표시가 없어, 키보드로 훑으면 지금 어디인지 안 보였다
+				"focus-visible:ring-ring focus-visible:ring-offset-background rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
 				props.className,
 			)}
 			onMouseEnter={handleMouseEnter}
@@ -97,20 +102,26 @@ export default memo(function MemoItem({
 				initial={{ opacity: 0, y: 10 }}
 				animate={{ opacity: 1, y: 0 }}
 				exit={{ opacity: 0, y: -10 }}
-				transition={{ duration: 0.2 }}
+				// 20개 묶음 안에서만 계단을 만든다. 순서를 그대로 곱하면 무한 스크롤로
+				// 뒤에 붙는 카드일수록 지연이 끝없이 길어진다.
+				transition={{
+					duration: 0.24,
+					delay: (index % 20) * 0.025,
+					ease: [0.22, 1, 0.36, 1],
+				}}
 				className="group"
 			>
 				<Card
 					className={cn(
 						"relative w-[300px]",
-						"bg-white dark:bg-gray-900",
-						"border-2 border-gray-200 dark:border-gray-800",
-						"rounded-2xl shadow-md",
-						"transition-all duration-300",
-						"hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1",
+						"bg-card",
+						"border border-border",
+						"rounded-2xl shadow-sm",
+						"transition-[box-shadow,transform,border-color] duration-base",
+						// 그림자·이동·확대를 한꺼번에 주면 신호가 셋이라 산만하다. 들어올리기만 남긴다.
+						"hover:shadow-lg hover:-translate-y-1",
 						{
-							"border-purple-500 dark:border-purple-500 ring-4 ring-purple-500/20 shadow-lg":
-								isMemoSelected,
+							"border-primary ring-4 ring-primary/20 shadow-lg": isMemoSelected,
 						},
 					)}
 					style={{
@@ -133,21 +144,21 @@ export default memo(function MemoItem({
 						selectMemoItem={selectMemoItem}
 					/>
 					{memo.memo && (
-						<CardContent className="px-5 py-3 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-break-spaces break-all">
+						<CardContent className="px-5 py-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
 							{memo.memo}
 						</CardContent>
 					)}
 					{showImpression && memo.impression && (
-						<CardContent className="px-5 pb-3 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-break-spaces break-all">
-							<p className="mb-1 text-xs font-semibold text-gray-400">
+						<CardContent className="px-5 pb-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
+							<p className="mb-1 text-xs font-semibold text-muted-foreground">
 								{t("memoSection.impression")}
 							</p>
 							{memo.impression}
 						</CardContent>
 					)}
 					{showActionItem && memo.actionItem && (
-						<CardContent className="px-5 pb-3 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-break-spaces break-all">
-							<p className="mb-1 text-xs font-semibold text-gray-400">
+						<CardContent className="px-5 pb-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
+							<p className="mb-1 text-xs font-semibold text-muted-foreground">
 								{t("memoSection.actionItem")}
 							</p>
 							{memo.actionItem}
@@ -158,7 +169,7 @@ export default memo(function MemoItem({
 						lng={lng}
 						isShowingOption={isMemoHovering && !isSelectingMode}
 					/>
-					<div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-2xl opacity-0 group-hover:opacity-[0.08] blur transition-opacity duration-300 -z-10" />
+					<div className="absolute -inset-0.5 bg-gradient-to-r from-primary via-primary to-cyan-500 rounded-2xl opacity-0 group-hover:opacity-[0.08] blur transition-opacity duration-300 -z-10" />
 				</Card>
 			</motion.div>
 		</div>

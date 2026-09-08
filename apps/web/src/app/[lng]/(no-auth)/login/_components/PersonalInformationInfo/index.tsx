@@ -10,7 +10,7 @@ export default async function PersonalInformationInfo({
 	const { t } = await useTranslation(lng);
 	return (
 		<footer className="absolute inset-x-0 bottom-6 flex flex-col items-center gap-4 px-4">
-			<div className="flex items-center justify-center gap-6 text-gray-500 dark:text-gray-400">
+			<div className="flex items-center justify-center gap-6 text-muted-foreground">
 				<div className="flex items-center gap-1.5 text-xs">
 					<Shield className="w-3.5 h-3.5" />
 					<span>{t("login.trustSignal.secure")}</span>
@@ -24,7 +24,7 @@ export default async function PersonalInformationInfo({
 					<span>{t("login.trustSignal.free")}</span>
 				</div>
 			</div>
-			<p className="text-xs text-gray-400 dark:text-gray-500 text-center max-w-md">
+			<p className="text-xs text-muted-foreground text-center max-w-md">
 				{t("login.personalInformationInfo")}
 			</p>
 		</footer>

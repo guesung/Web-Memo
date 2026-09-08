@@ -197,6 +197,9 @@
 	"summary_empty_message": {
 		"message": "Click the refresh button above\nto generate a summary"
 	},
+	"summary_loading_message": {
+		"message": "Generating summary…"
+	},
 	"impression": {
 		"message": "Impression"
 	},

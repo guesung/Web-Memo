@@ -13,9 +13,7 @@ export default async function TrashHeader({ lng }: TrashHeaderProps) {
 	return (
 		<div className="flex flex-col items-center gap-2 py-10">
 			<Label className="text-xl">{t("trash.title")}</Label>
-			<p className="text-sm text-gray-500 dark:text-gray-400">
-				{t("trash.description")}
-			</p>
+			<p className="text-sm text-muted-foreground">{t("trash.description")}</p>
 		</div>
 	);
 }

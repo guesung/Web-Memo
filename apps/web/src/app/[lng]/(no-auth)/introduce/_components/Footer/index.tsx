@@ -145,7 +145,7 @@ export default function Footer({ lng }: FooterProps) {
 				<div className="border-t border-gray-800 pt-8">
 					<div className="flex flex-col md:flex-row justify-between items-center gap-4">
 						{/* Copyright */}
-						<p className="text-gray-500 text-sm">
+						<p className="text-gray-400 text-sm">
 							&copy; {new Date().getFullYear()}{" "}
 							{t("introduce.footer.copyright")}
 						</p>
@@ -153,13 +153,13 @@ export default function Footer({ lng }: FooterProps) {
 						{/* Legal Links */}
 						<Link
 							href={`/${lng}/privacy`}
-							className="text-gray-500 text-sm hover:text-white transition-colors"
+							className="text-gray-400 text-sm hover:text-white transition-colors"
 						>
 							{t("introduce.footer.legal.privacy_policy")}
 						</Link>
 
 						{/* Made with Love */}
-						<p className="text-gray-500 text-sm flex items-center gap-1">
+						<p className="text-gray-400 text-sm flex items-center gap-1">
 							Made with <Heart className="h-4 w-4 text-red-500 fill-red-500" />{" "}
 							in Korea
 						</p>

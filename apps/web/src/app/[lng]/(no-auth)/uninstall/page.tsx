@@ -29,13 +29,13 @@ export default async function UninstallPage({
 			<Suspense fallback={null}>
 				<UninstallLogger />
 			</Suspense>
-			<div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950" />
+			<div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-background to-blue-50 dark:from-background dark:via-background dark:to-purple-950" />
 
 			<div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-200/50 dark:bg-purple-500/10 rounded-full blur-3xl" />
 			<div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-200/50 dark:bg-blue-500/10 rounded-full blur-3xl" />
 
 			<div className="relative z-10 w-full max-w-lg">
-				<section className="relative flex flex-col rounded-3xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl px-8 py-10 shadow-2xl border border-gray-200/50 dark:border-gray-800/50 gap-8">
+				<section className="relative flex flex-col rounded-3xl bg-card/80 backdrop-blur-xl px-8 py-10 shadow-2xl border border-border/50 gap-8">
 					<div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-3xl opacity-10 blur" />
 
 					<div className="relative flex flex-col items-center gap-4 text-center">
@@ -44,10 +44,10 @@ export default async function UninstallPage({
 						</div>
 
 						<div className="space-y-3">
-							<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+							<h1 className="text-2xl font-bold text-foreground">
 								{t("uninstall.title")}
 							</h1>
-							<p className="text-gray-600 dark:text-gray-400">
+							<p className="text-muted-foreground">
 								{t("uninstall.description")}
 							</p>
 						</div>

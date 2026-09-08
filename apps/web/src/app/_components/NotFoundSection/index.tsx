@@ -25,11 +25,13 @@ export default function NotFoundSection() {
 					transition={{ delay: 0.2 }}
 					className="space-y-6"
 				>
-					<h1 className="text-4xl font-bold text-gray-900">
+					<h1 className="text-4xl font-bold text-foreground">
 						{t("error.404.title")}
 					</h1>
 
-					<p className="text-lg text-gray-600">{t("error.404.description")}</p>
+					<p className="text-lg text-muted-foreground">
+						{t("error.404.description")}
+					</p>
 
 					<div className="relative">
 						<motion.div

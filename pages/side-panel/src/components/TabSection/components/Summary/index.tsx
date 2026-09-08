@@ -1,4 +1,5 @@
 import { I18n } from "@web-memo/shared/utils/extension";
+import { TextShimmer } from "@web-memo/ui";
 import { RefreshCwIcon } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -10,10 +11,20 @@ export default function Summary() {
 
 	if (errorMessage)
 		return (
-			<p className="pt-4 prose prose-sm dark:prose-invert text-foreground whitespace-pre-wrap">
+			<p className="pt-4 prose prose-sm text-foreground whitespace-pre-wrap">
 				{errorMessage}
 			</p>
 		);
+
+	if (isSummaryLoading && !summary) {
+		return (
+			<div className="flex h-full flex-1 items-center justify-center">
+				<TextShimmer className="text-sm">
+					{I18n.get("summary_loading_message")}
+				</TextShimmer>
+			</div>
+		);
+	}
 
 	if (!summary && !isSummaryLoading) {
 		return (
@@ -33,7 +44,7 @@ export default function Summary() {
 	return (
 		<Markdown
 			remarkPlugins={[remarkGfm]}
-			className="markdown pt-4 prose prose-sm dark:prose-invert text-foreground"
+			className="markdown pt-4 prose prose-sm text-foreground"
 		>
 			{summary}
 		</Markdown>

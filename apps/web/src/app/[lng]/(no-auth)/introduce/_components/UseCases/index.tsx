@@ -63,7 +63,7 @@ export default function UseCases({ lng }: UseCasesProps) {
 	];
 
 	return (
-		<section className="py-20 bg-gray-50 dark:bg-gray-900/50">
+		<section className="py-20 bg-muted/50">
 			<div className="mx-auto max-w-6xl px-4">
 				{/* Section Header */}
 				<motion.div
@@ -73,10 +73,10 @@ export default function UseCases({ lng }: UseCasesProps) {
 					transition={{ duration: 0.5 }}
 					className="text-center mb-16"
 				>
-					<h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+					<h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
 						{t("introduce.section.use_cases")}
 					</h2>
-					<p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						{t("introduce.section.use_cases_desc")}
 					</p>
 				</motion.div>
@@ -106,13 +106,13 @@ export default function UseCases({ lng }: UseCasesProps) {
 										</div>
 
 										{/* Content */}
-										<h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
+										<h3 className="text-lg font-bold text-foreground mb-2">
 											{useCase.title}
 										</h3>
-										<p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+										<p className="text-sm text-muted-foreground leading-relaxed mb-4">
 											{useCase.description}
 										</p>
-										<span className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100 transition-colors">
+										<span className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
 											{t("common.learn_more")}
 											<ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
 										</span>

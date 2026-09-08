@@ -43,15 +43,12 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 						    Next는 리다이렉트된 RSC 요청을 클라이언트 네비게이션으로 잇지 못해
 						    전체 페이지를 다시 받는다. */}
 						<Link href={`/${lng}${PATHS.memos}`} replace>
-							<SidebarMenuButton className="group relative overflow-hidden transition-all duration-200 hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100/50 dark:hover:from-purple-950/30 dark:hover:to-purple-900/20 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]">
+							<SidebarMenuButton className="group relative overflow-hidden transition-all duration-200 hover:bg-primary/5 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]">
 								<div className="flex items-center gap-3 w-full">
-									<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 group-hover:bg-purple-200 dark:group-hover:bg-purple-800/40 transition-colors">
-										<Home
-											size={16}
-											className="text-purple-600 dark:text-purple-400"
-										/>
+									<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+										<Home size={16} className="text-primary" />
 									</div>
-									<span className="font-medium text-foreground group-hover:text-purple-700 dark:group-hover:text-purple-300">
+									<span className="font-medium text-foreground group-hover:text-primary">
 										{t("sideBar.memo")}
 									</span>
 								</div>

@@ -41,10 +41,10 @@ export default function HowItWorks({ lng }: HowItWorksProps) {
 					transition={{ duration: 0.5 }}
 					className="text-center mb-16"
 				>
-					<h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+					<h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
 						{t("features.saveArticles.howItWorks.title")}
 					</h2>
-					<p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						{t("features.saveArticles.howItWorks.subtitle")}
 					</p>
 				</motion.div>
@@ -68,13 +68,11 @@ export default function HowItWorks({ lng }: HowItWorksProps) {
 									{step.step}
 								</div>
 
-								<h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+								<h3 className="text-xl font-bold text-foreground mb-3">
 									{step.title}
 								</h3>
 
-								<p className="text-gray-600 dark:text-gray-400">
-									{step.description}
-								</p>
+								<p className="text-muted-foreground">{step.description}</p>
 							</div>
 
 							{index < steps.length - 1 && (

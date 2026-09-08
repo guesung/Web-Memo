@@ -42,7 +42,7 @@ export default function Benefits({ lng }: BenefitsProps) {
 	];
 
 	return (
-		<section className="py-20 bg-gray-50 dark:bg-gray-900/50">
+		<section className="py-20 bg-muted/50">
 			<div className="mx-auto max-w-6xl px-4">
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}
@@ -51,10 +51,10 @@ export default function Benefits({ lng }: BenefitsProps) {
 					transition={{ duration: 0.5 }}
 					className="text-center mb-16"
 				>
-					<h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+					<h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
 						{t("useCases.developer.benefits.title")}
 					</h2>
-					<p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						{t("useCases.developer.benefits.subtitle")}
 					</p>
 				</motion.div>
@@ -69,18 +69,18 @@ export default function Benefits({ lng }: BenefitsProps) {
 							transition={{ duration: 0.5, delay: index * 0.1 }}
 							className="group"
 						>
-							<div className="relative h-full bg-white dark:bg-gray-800 rounded-2xl p-8 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border border-gray-100 dark:border-gray-700">
+							<div className="relative h-full bg-card rounded-2xl p-8 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border border-border">
 								<div
 									className={`inline-flex p-4 rounded-xl ${benefit.iconBg} mb-6`}
 								>
 									<benefit.icon className={`h-8 w-8 ${benefit.iconColor}`} />
 								</div>
 
-								<h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+								<h3 className="text-xl font-bold text-foreground mb-3">
 									{benefit.title}
 								</h3>
 
-								<p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+								<p className="text-muted-foreground leading-relaxed">
 									{benefit.description}
 								</p>
 							</div>

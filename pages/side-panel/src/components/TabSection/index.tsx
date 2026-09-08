@@ -38,7 +38,11 @@ export default function TabSection({ tabHeight }: TabSectionProps) {
 							</ErrorBoundary>
 						</TabsContent>
 
-						<TabsContent value="chat" className="flex-1 overflow-hidden mt-0">
+						<TabsContent
+							value="chat"
+							// 채팅 입력창도 같은 이유로 포커스 링이 좌우로 잘린다
+							className="flex-1 overflow-hidden mt-0 px-0.5"
+						>
 							<ErrorBoundary>
 								<Chat />
 							</ErrorBoundary>

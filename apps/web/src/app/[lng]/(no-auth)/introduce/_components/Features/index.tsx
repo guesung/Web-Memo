@@ -90,7 +90,7 @@ export default function Features({ lng }: FeaturesProps) {
 	return (
 		<section id="demo" className="py-24 relative overflow-hidden">
 			{/* Background */}
-			<div className="absolute inset-0 bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900" />
+			<div className="absolute inset-0 bg-gradient-to-b from-muted/50 via-background to-muted/50" />
 			<div className="absolute inset-0 bg-dots" />
 
 			<div className="relative mx-auto max-w-6xl px-4">
@@ -111,10 +111,10 @@ export default function Features({ lng }: FeaturesProps) {
 					>
 						{t("introduce.section.features_badge") || "Features"}
 					</motion.span>
-					<h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+					<h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
 						{t("introduce.section.key_features")}
 					</h2>
-					<p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						{t("introduce.section.key_features_desc")}
 					</p>
 				</motion.div>
@@ -139,7 +139,7 @@ export default function Features({ lng }: FeaturesProps) {
 								className={`group relative ${gridClass}`}
 							>
 								<div
-									className={`relative h-full bg-white dark:bg-gray-900 rounded-2xl p-8 border border-gray-200/60 dark:border-gray-800 transition-all duration-300 hover:shadow-2xl ${feature.glowColor} ${feature.borderGlow} hover:-translate-y-1 overflow-hidden`}
+									className={`relative h-full bg-card rounded-2xl p-8 border border-border/60 transition-all duration-300 hover:shadow-2xl ${feature.glowColor} ${feature.borderGlow} hover:-translate-y-1 overflow-hidden`}
 								>
 									{/* Gradient Background on Hover */}
 									<div
@@ -158,12 +158,12 @@ export default function Features({ lng }: FeaturesProps) {
 										</div>
 
 										{/* Title */}
-										<h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+										<h3 className="text-xl font-bold text-foreground mb-3">
 											{feature.title}
 										</h3>
 
 										{/* Description */}
-										<p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+										<p className="text-muted-foreground leading-relaxed">
 											{feature.description}
 										</p>
 

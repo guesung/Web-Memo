@@ -16,8 +16,10 @@ export default function SaveStatus({ isSaving, memo }: SaveStatusProps) {
 			) : (
 				memo && (
 					<>
-						<CheckIcon className="w-3 h-3 text-green-500" />
-						<span className="text-xs text-green-600">저장됨</span>
+						<CheckIcon className="h-3 w-3 text-green-600 dark:text-green-400" />
+						<span className="text-xs text-green-600 dark:text-green-400">
+							저장됨
+						</span>
 					</>
 				)
 			)}

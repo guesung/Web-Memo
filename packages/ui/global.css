@@ -49,6 +49,17 @@
 		--shadow-xl: 0 24px 48px -12px hsl(0 0% 0% / 0.13), 0 8px 16px -8px hsl(0 0% 0% / 0.06);
 		--shadow-2xl: 0 32px 64px -16px hsl(0 0% 0% / 0.18);
 		--tracking-normal: 0rem;
+		/* 모션 — 지속시간과 이징을 한 곳에서 정한다.
+		   지금까지 전환 40곳 중 이징이 지정된 건 5곳뿐이었고 나머지는 전부
+		   Tailwind 기본값이라, 어디를 만져도 "기본값처럼" 움직였다.
+		   테마와 무관한 값이라 .dark 에는 두지 않는다. */
+		--duration-fast: 150ms;
+		--duration-base: 220ms;
+		--duration-slow: 320ms;
+		/* 등장은 빠르게 나와 천천히 멎고(out), 퇴장은 반대로 붙었다 떨어진다(in) */
+		--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+		--ease-in: cubic-bezier(0.64, 0, 0.78, 0);
+		--ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 	}
 
 	.dark {
@@ -143,10 +154,76 @@ body {
 	}
 }
 
+/* 토큰은 hsl() 없이는 색이 아니다 — --foreground 는 "0 0% 9%" 같은 삼중항이라
+   그대로 넣으면 선언이 통째로 무시된다. 요약 탭의 마크다운이 이 클래스를 쓴다. */
 .prose {
-	--tw-prose-headings: var(--foreground);
+	--tw-prose-headings: hsl(var(--foreground));
+	--tw-prose-body: hsl(var(--foreground));
+	--tw-prose-bold: hsl(var(--foreground));
+	--tw-prose-links: hsl(var(--primary));
+	--tw-prose-code: hsl(var(--foreground));
+	--tw-prose-quotes: hsl(var(--muted-foreground));
+	--tw-prose-bullets: hsl(var(--muted-foreground));
+	--tw-prose-hr: hsl(var(--border));
+	--tw-prose-quote-borders: hsl(var(--border));
+}
 
-	strong {
-		color: var(--foreground);
+@layer utilities {
+	/*
+	 * 스켈레톤 셰이딩
+	 *
+	 * @description
+	 * animate-pulse 는 판 전체가 같이 깜빡여 "무엇이 얼마나 남았는지"를 못 알린다.
+	 * 한 방향으로 훑고 지나가는 빛은 진행 중이라는 인상을 준다.
+	 * 색을 foreground 알파로 잡는 이유는, 스켈레톤이 페이지 바닥과 카드 안
+	 * 양쪽에 놓이는데 --muted 가 --card 와 같은 값이라 카드 위에서 사라지기
+	 * 때문이다. 알파는 아래 깔린 것이 무엇이든 그 위에 얹힌다.
+	 *
+	 * 출처: https://beui.dev (MIT License) — 셰이딩 방식 참고
+	 */
+	.skeleton-shimmer {
+		position: relative;
+		overflow: hidden;
+	}
+
+	.skeleton-shimmer::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		transform: translateX(-100%);
+		background-image: linear-gradient(
+			90deg,
+			transparent,
+			hsl(var(--foreground) / 0.07),
+			transparent
+		);
+		animation: skeleton-shimmer 1.6s var(--ease-in-out) infinite;
+	}
+
+	@keyframes skeleton-shimmer {
+		100% {
+			transform: translateX(100%);
+		}
+	}
+}
+
+@layer base {
+	/* 모션을 줄이겠다고 한 사용자에게는 전환을 없앤다.
+	   framer-motion 은 JS 로 transform 을 쓰므로 이 규칙이 닿지 않는다.
+	   그쪽은 컴포넌트에서 useReducedMotion 으로 따로 처리한다(tabs.tsx). */
+	@media (prefers-reduced-motion: reduce) {
+		*,
+		*::before,
+		*::after {
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+			scroll-behavior: auto !important;
+		}
+
+		/* 로딩 표시는 남긴다. 멈춘 스피너는 "느림"이 아니라 "고장"으로 읽힌다. */
+		.animate-spin {
+			animation: spin 1s linear infinite !important;
+		}
 	}
 }

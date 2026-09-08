@@ -25,6 +25,8 @@ interface MemoCardHeaderProps {
 	 * 목록 카드처럼 편집이 필요 없는 곳에서 실수로 제목이 바뀌는 것을 막기 위해 선택 prop이다.
 	 */
 	onTitleChange?: (title: string) => void;
+	/** 헤더 컨테이너에 덧붙일 클래스. Dialog 처럼 닫기 버튼이 겹치는 곳에서 여백을 더 준다 */
+	className?: string;
 }
 
 export default memo(function MemoCardHeader({
@@ -33,6 +35,7 @@ export default memo(function MemoCardHeader({
 	isMemoHovering = false,
 	isMemoSelected,
 	onTitleChange,
+	className,
 }: MemoCardHeaderProps) {
 	const [isTitleEditing, setIsTitleEditing] = useState(false);
 	const [editedTitle, setEditedTitle] = useState(memo.title);
@@ -93,7 +96,9 @@ export default memo(function MemoCardHeader({
 
 	const isShowingSelectButton = isMemoHovering || isMemoSelected;
 	return (
-		<CardHeader className="relative px-5 py-4 border-b border-border">
+		<CardHeader
+			className={cn("relative px-5 py-4 border-b border-border", className)}
+		>
 			<Button
 				variant="outline"
 				size="sm"
@@ -107,7 +112,7 @@ export default memo(function MemoCardHeader({
 					{
 						"opacity-100 scale-100": isShowingSelectButton,
 						"opacity-0 scale-75 pointer-events-none": !isShowingSelectButton,
-						"bg-purple-600 border-purple-600 text-white hover:bg-purple-700 hover:text-white":
+						"bg-primary border-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground":
 							isMemoSelected,
 					},
 				)}
@@ -146,7 +151,7 @@ export default memo(function MemoCardHeader({
 							<Tooltip>
 								<TooltipTrigger asChild>
 									<span
-										className="line-clamp-1 font-bold text-foreground group-hover/link:text-purple-600 dark:group-hover/link:text-purple-400 transition-colors"
+										className="line-clamp-1 font-bold text-foreground group-hover/link:text-primary transition-colors"
 										data-testid="memo-title"
 									>
 										{displayedTitle}

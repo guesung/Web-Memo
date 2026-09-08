@@ -47,7 +47,7 @@ export default function Testimonials({ lng }: TestimonialsProps) {
 	};
 
 	return (
-		<section className="py-20 bg-white dark:bg-gray-900">
+		<section className="py-20 bg-background">
 			<div className="mx-auto max-w-6xl px-4">
 				{/* Section Header */}
 				<motion.div
@@ -57,10 +57,10 @@ export default function Testimonials({ lng }: TestimonialsProps) {
 					transition={{ duration: 0.5 }}
 					className="text-center mb-16"
 				>
-					<h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+					<h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
 						{t("introduce.section.testimonials_title")}
 					</h2>
-					<p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						{t("introduce.section.testimonials_desc")}
 					</p>
 				</motion.div>
@@ -78,7 +78,7 @@ export default function Testimonials({ lng }: TestimonialsProps) {
 						>
 							<div className="relative h-full glass-card rounded-2xl p-8 transition-all duration-300 hover:shadow-xl">
 								{/* Quote Icon */}
-								<div className="absolute top-6 right-6 text-gray-200 dark:text-gray-700">
+								<div className="absolute top-6 right-6 text-border">
 									<Quote className="h-10 w-10" />
 								</div>
 
@@ -93,7 +93,7 @@ export default function Testimonials({ lng }: TestimonialsProps) {
 								</div>
 
 								{/* Quote */}
-								<p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+								<p className="text-muted-foreground mb-6 leading-relaxed">
 									"{testimonial.quote}"
 								</p>
 
@@ -105,10 +105,10 @@ export default function Testimonials({ lng }: TestimonialsProps) {
 										{testimonial.avatar}
 									</div>
 									<div>
-										<div className="font-semibold text-gray-900 dark:text-gray-100">
+										<div className="font-semibold text-foreground">
 											{testimonial.name}
 										</div>
-										<div className="text-sm text-gray-500 dark:text-gray-400">
+										<div className="text-sm text-muted-foreground">
 											{testimonial.role}
 										</div>
 									</div>
@@ -124,7 +124,7 @@ export default function Testimonials({ lng }: TestimonialsProps) {
 					whileInView={{ opacity: 1 }}
 					viewport={{ once: true }}
 					transition={{ duration: 0.5, delay: 0.5 }}
-					className="text-center mt-8 text-sm text-gray-400 dark:text-gray-500"
+					className="text-center mt-8 text-sm text-muted-foreground"
 				>
 					{t("introduce.section.testimonials_note")}
 				</motion.p>

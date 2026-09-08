@@ -12,6 +12,21 @@ export default {
 				serif: ["var(--font-serif)"],
 				mono: ["var(--font-mono)"],
 			},
+			// 전환의 기본값을 디자인 값으로 바꾼다. DEFAULT 를 두는 이유는
+			// transition-colors 같은 기존 클래스가 유틸을 더 붙이지 않고도
+			// 같은 이징을 타게 하려는 것이다.
+			transitionDuration: {
+				DEFAULT: "var(--duration-fast)",
+				fast: "var(--duration-fast)",
+				base: "var(--duration-base)",
+				slow: "var(--duration-slow)",
+			},
+			transitionTimingFunction: {
+				DEFAULT: "var(--ease-out)",
+				"out-quart": "var(--ease-out)",
+				"in-quart": "var(--ease-in)",
+				"in-out-quart": "var(--ease-in-out)",
+			},
 			borderRadius: {
 				lg: "var(--radius)",
 				md: "calc(var(--radius) - 2px)",

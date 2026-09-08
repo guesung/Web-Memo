@@ -45,7 +45,7 @@ export default function HowItWorks({ lng }: HowItWorksProps) {
 	];
 
 	return (
-		<section className="py-20 bg-white dark:bg-gray-900">
+		<section className="py-20 bg-background">
 			<HowToJsonLD lng={lng} />
 			<div className="mx-auto max-w-6xl px-4">
 				{/* Section Header */}
@@ -56,10 +56,10 @@ export default function HowItWorks({ lng }: HowItWorksProps) {
 					transition={{ duration: 0.5 }}
 					className="text-center mb-16"
 				>
-					<h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+					<h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
 						{t("introduce.section.how_it_works")}
 					</h2>
-					<p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						{t("introduce.section.how_it_works_desc")}
 					</p>
 				</motion.div>
@@ -82,7 +82,7 @@ export default function HowItWorks({ lng }: HowItWorksProps) {
 								{/* Arrow for Mobile */}
 								{index < steps.length - 1 && (
 									<div className="lg:hidden flex justify-center my-4">
-										<ArrowRight className="h-6 w-6 text-gray-400 rotate-90" />
+										<ArrowRight className="h-6 w-6 text-muted-foreground rotate-90" />
 									</div>
 								)}
 
@@ -102,18 +102,18 @@ export default function HowItWorks({ lng }: HowItWorksProps) {
 										</div>
 
 										{/* Step Number Badge */}
-										<div className="absolute -top-2 -right-2 w-8 h-8 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-lg border-2 border-gray-100 dark:border-gray-700">
-											<span className="text-sm font-bold text-gray-900 dark:text-gray-100">
+										<div className="absolute -top-2 -right-2 w-8 h-8 bg-card rounded-full flex items-center justify-center shadow-lg border-2 border-border">
+											<span className="text-sm font-bold text-foreground">
 												{step.number}
 											</span>
 										</div>
 									</div>
 
 									{/* Content */}
-									<h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+									<h3 className="text-xl font-bold text-foreground mb-2">
 										{step.title}
 									</h3>
-									<p className="text-gray-600 dark:text-gray-400 max-w-xs">
+									<p className="text-muted-foreground max-w-xs">
 										{step.description}
 									</p>
 								</div>

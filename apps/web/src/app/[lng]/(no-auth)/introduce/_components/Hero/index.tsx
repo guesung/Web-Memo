@@ -16,7 +16,7 @@ export default async function Hero({ lng }: HeroProps) {
 	return (
 		<section className="relative overflow-hidden min-h-[90vh] flex items-center">
 			{/* Static Gradient Background */}
-			<div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950" />
+			<div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-background to-blue-50 dark:from-background dark:via-background dark:to-purple-950" />
 			<div className="absolute inset-0 gradient-mesh dark:gradient-mesh-dark opacity-5" />
 
 			{/* Animated Background Elements - Client Component */}
@@ -39,11 +39,11 @@ export default async function Hero({ lng }: HeroProps) {
 									/>
 								))}
 							</div>
-							<span className="font-semibold text-gray-900 dark:text-gray-100">
+							<span className="font-semibold text-foreground">
 								{CHROME_STORE_STATS.rating}
 							</span>
-							<div className="w-px h-4 bg-gray-300 dark:bg-gray-600" />
-							<div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+							<div className="w-px h-4 bg-border" />
+							<div className="flex items-center gap-1.5 text-muted-foreground">
 								<Users className="h-4 w-4" />
 								<span>{CHROME_STORE_STATS.userCount}+ users</span>
 							</div>
@@ -51,7 +51,7 @@ export default async function Hero({ lng }: HeroProps) {
 
 						{/* Main Headline - Critical LCP Element */}
 						<h1 className="mb-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
-							<span className="text-gray-900 dark:text-gray-100">
+							<span className="text-foreground">
 								{t("introduce.hero.title").split(" ")[0]}{" "}
 							</span>
 							<span className="gradient-text dark:gradient-text-dark">
@@ -60,7 +60,7 @@ export default async function Hero({ lng }: HeroProps) {
 						</h1>
 
 						{/* Subtitle */}
-						<p className="mb-8 text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-xl mx-auto lg:mx-0">
+						<p className="mb-8 text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0">
 							{t("introduce.hero.subtitle")}
 						</p>
 
@@ -83,7 +83,7 @@ export default async function Hero({ lng }: HeroProps) {
 								href={EXTERNAL_LINK.iosAppStoreListing}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="group relative inline-flex items-center justify-center gap-2.5 rounded-full bg-black dark:bg-white px-8 py-4 text-lg font-semibold text-white dark:text-black shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] overflow-hidden"
+								className="group relative inline-flex items-center justify-center gap-2.5 rounded-full bg-foreground px-8 py-4 text-lg font-semibold text-background shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] overflow-hidden"
 							>
 								<svg
 									className="h-5 w-5"
@@ -103,7 +103,7 @@ export default async function Hero({ lng }: HeroProps) {
 						<div className="mt-4 flex justify-center lg:justify-start">
 							<Link
 								href="#demo"
-								className="inline-flex items-center justify-center gap-2 rounded-full glass-card px-8 py-4 text-lg font-semibold text-gray-800 dark:text-gray-100 transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
+								className="inline-flex items-center justify-center gap-2 rounded-full glass-card px-8 py-4 text-lg font-semibold text-foreground transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
 							>
 								<Sparkles className="h-5 w-5" />
 								{t("introduce.hero.explore_features")}
@@ -111,7 +111,7 @@ export default async function Hero({ lng }: HeroProps) {
 						</div>
 
 						{/* Additional Trust Signals */}
-						<div className="mt-8 flex items-center gap-6 justify-center lg:justify-start text-sm text-gray-500 dark:text-gray-400">
+						<div className="mt-8 flex items-center gap-6 justify-center lg:justify-start text-sm text-muted-foreground">
 							<div className="flex items-center gap-2">
 								<Check className="h-4 w-4 text-green-500" />
 								{t("introduce.hero.free_forever")}
@@ -127,16 +127,16 @@ export default async function Hero({ lng }: HeroProps) {
 					<div className="relative hidden lg:block">
 						<div className="animate-float">
 							{/* Browser Frame */}
-							<div className="relative rounded-2xl overflow-hidden shadow-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+							<div className="relative rounded-2xl overflow-hidden shadow-2xl bg-card border border-border">
 								{/* Browser Header */}
-								<div className="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+								<div className="flex items-center gap-2 px-4 py-3 bg-muted border-b border-border">
 									<div className="flex gap-1.5">
 										<div className="w-3 h-3 rounded-full bg-red-500" />
 										<div className="w-3 h-3 rounded-full bg-yellow-500" />
 										<div className="w-3 h-3 rounded-full bg-green-500" />
 									</div>
 									<div className="flex-1 mx-4">
-										<div className="bg-white dark:bg-gray-700 rounded-lg px-4 py-1.5 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+										<div className="bg-card rounded-lg px-4 py-1.5 text-sm text-muted-foreground flex items-center gap-2">
 											<Globe className="h-4 w-4" />
 											{CONFIG.webDisplayHost}
 										</div>

@@ -1,13 +1,18 @@
 import {
 	buildDeployModal,
+	commitVersionBump,
 	DEPLOY_MODAL_CALLBACK_ID,
 	DEPLOY_MODAL_FIELDS,
 	DEPLOY_TARGET_LABELS,
 	dispatchRelease,
+	fetchCurrentVersions,
+	fetchDefaultBranchSha,
 	fetchRefOptions,
 	getGithubRepository,
+	isVersionAhead,
 	notifySlackSafely,
 	openSlackModal,
+	parseSemver,
 	readVerifiedSlackForm,
 	type TDeployTarget,
 	updateSlackModal,
@@ -100,21 +105,124 @@ const handleCustomDeployButton = async ({
 
 	// 목록을 못 받아도 모달은 이미 떠 있고 알림 시점 커밋으로는 배포할 수 있습니다.
 	try {
-		const refOptions = await fetchRefOptions();
+		// 순차로 기다리면 3초 예산(views.open ~300ms + 조회 ≤1s + views.update ~300ms)을
+		// 넘깁니다. 두 조회는 서로 독립이므로 함께 보냅니다.
+		const [refOptions, currentVersions] = await Promise.all([
+			fetchRefOptions(),
+			fetchCurrentVersions(),
+		]);
 
-		if (refOptions.length === 0) return;
+		// 둘 다 비면 갱신할 내용이 없습니다. 지금 떠 있는 모달 그대로가 최선입니다.
+		if (
+			refOptions.length === 0 &&
+			!currentVersions.app &&
+			!currentVersions.extension
+		) {
+			return;
+		}
 
 		await updateSlackModal({
 			viewId,
 			view: buildDeployModal({
-				refOptions,
+				refOptions: refOptions.length > 0 ? refOptions : [fallbackOption],
 				defaultRef: value.ref,
 				responseUrl,
+				currentVersions,
 			}),
 		});
 	} catch (error) {
 		console.error("모달의 ref 목록 갱신 실패:", error);
 	}
+};
+
+/** 모달 안에 그대로 띄울 반려 사유. 어느 칸이 틀렸는지 보이도록 blockId를 함께 답니다. */
+interface IFModalError {
+	blockId: string;
+	message: string;
+}
+
+const respondWithModalError = ({
+	blockId,
+	message,
+}: IFModalError): NextResponse =>
+	NextResponse.json({
+		response_action: "errors",
+		errors: { [blockId]: message },
+	});
+
+/** 실제로 올린 버전 한 건. 배포 시작 메시지에 그대로 실립니다. */
+interface IFVersionBump {
+	target: TDeployTarget;
+	/** 올리기 전 버전. 조회에 실패했으면 없습니다. */
+	from?: string;
+	to: string;
+}
+
+const VERSION_FIELDS: Record<
+	"app" | "extension",
+	{ blockId: string; actionId: string }
+> = {
+	app: DEPLOY_MODAL_FIELDS.appVersion,
+	extension: DEPLOY_MODAL_FIELDS.extensionVersion,
+};
+
+/** plain_text_input의 값. 비었으면 undefined — 두 버전 칸은 optional입니다. */
+const readTextInput = (
+	values: Record<string, Record<string, unknown>>,
+	field: { blockId: string; actionId: string },
+): string | undefined =>
+	(
+		(
+			values[field.blockId]?.[field.actionId] as
+				| { value?: string | null }
+				| undefined
+		)?.value ?? ""
+	).trim() || undefined;
+
+/**
+ * 버전 입력 한 칸을 검증합니다. 통과하면 null.
+ *
+ * @description 반려 사유는 그 값을 적은 입력 블록에 붙입니다. 대상 체크박스 쪽에
+ * 몰아 붙이면 어느 칸이 틀렸는지 보이지 않습니다.
+ */
+const validateVersionInput = ({
+	input,
+	target,
+	targets,
+	currentVersion,
+}: {
+	input: string;
+	target: "app" | "extension";
+	targets: TDeployTarget[];
+	currentVersion?: string;
+}): IFModalError | null => {
+	const { blockId } = VERSION_FIELDS[target];
+
+	// 대상에 없는 트랙의 버전만 올리면 커밋만 남고 아무것도 배포되지 않습니다.
+	if (!targets.includes(target)) {
+		return {
+			blockId,
+			message: `버전을 올리려면 배포 대상에 ${DEPLOY_TARGET_LABELS[target]}을(를) 함께 고르세요`,
+		};
+	}
+
+	const parsed = parseSemver(input);
+
+	if (!parsed) {
+		return {
+			blockId,
+			message: `버전은 1.2.3 형식으로 적으세요 — 받은 값 "${input}"`,
+		};
+	}
+
+	if (!isVersionAhead({ nextVersion: parsed, currentVersion })) {
+		return {
+			blockId,
+			message: `현재 ${currentVersion}보다 높은 버전을 적으세요`,
+		};
+	}
+
+	return null;
 };
 
 /** 모달 제출 — 여러 대상을 한 번에 배포합니다. */
@@ -123,7 +231,7 @@ const handleModalSubmission = async (payload: {
 		private_metadata: string;
 		state: { values: Record<string, Record<string, unknown>> };
 	};
-	user: { id: string };
+	user: { id: string; username?: string };
 }): Promise<NextResponse> => {
 	const { values } = payload.view.state;
 	const targets = (
@@ -146,28 +254,98 @@ const handleModalSubmission = async (payload: {
 	// 대상을 하나도 안 고르면 워크플로의 preflight가 실패로 끝납니다.
 	// 그 전에 모달 안에서 바로 알려주는 편이 낫습니다.
 	if (targets.length === 0 || !ref) {
-		return NextResponse.json({
-			response_action: "errors",
-			errors: {
-				[DEPLOY_MODAL_FIELDS.targets.blockId]:
-					"배포할 대상을 하나 이상 고르세요",
-			},
+		return respondWithModalError({
+			blockId: DEPLOY_MODAL_FIELDS.targets.blockId,
+			message: "배포할 대상을 하나 이상 고르세요",
 		});
 	}
 
+	const appVersion = readTextInput(values, DEPLOY_MODAL_FIELDS.appVersion);
+	const extensionVersion = readTextInput(
+		values,
+		DEPLOY_MODAL_FIELDS.extensionVersion,
+	);
+
+	let deployRef = ref;
+	let bumpCommitSha: string | undefined;
+	const bumps: IFVersionBump[] = [];
+
+	if (appVersion || extensionVersion) {
+		try {
+			const [currentVersions, defaultBranchSha] = await Promise.all([
+				fetchCurrentVersions(),
+				fetchDefaultBranchSha(),
+			]);
+
+			// 버전 커밋은 master 끝에 쌓이는데 배포할 내용이 과거면 둘이 다른 트리가 됩니다.
+			// 태그를 고른 경우도 SHA가 다르므로 여기서 함께 걸립니다.
+			if (ref !== defaultBranchSha) {
+				return respondWithModalError({
+					blockId: DEPLOY_MODAL_FIELDS.ref.blockId,
+					message: `버전을 올리려면 master 최신 커밋(${defaultBranchSha.slice(0, 7)})을 고르세요 — 과거 커밋·태그에는 버전 커밋을 쌓을 수 없습니다`,
+				});
+			}
+
+			// 커밋을 만들기 전에 두 칸을 모두 검증합니다. 하나라도 틀리면 master는 그대로입니다.
+			const requested: Array<{ target: "app" | "extension"; input: string }> = [
+				...(appVersion ? [{ target: "app" as const, input: appVersion }] : []),
+				...(extensionVersion
+					? [{ target: "extension" as const, input: extensionVersion }]
+					: []),
+			];
+
+			for (const { target, input } of requested) {
+				const error = validateVersionInput({
+					input,
+					target,
+					targets,
+					currentVersion: currentVersions[target],
+				});
+
+				if (error) return respondWithModalError(error);
+			}
+
+			bumpCommitSha = await commitVersionBump({
+				appVersion,
+				extensionVersion,
+				requestedBy: payload.user.username ?? payload.user.id,
+			});
+			deployRef = bumpCommitSha;
+
+			bumps.push(
+				...requested.map(({ target, input }) => ({
+					target,
+					from: currentVersions[target],
+					to: input,
+				})),
+			);
+		} catch (error) {
+			console.error("버전 커밋 실패:", error);
+
+			return respondWithModalError({
+				blockId: DEPLOY_MODAL_FIELDS.ref.blockId,
+				message: `버전 커밋을 만들지 못했습니다 — ${error instanceof Error ? error.message.slice(0, 150) : String(error)}`,
+			});
+		}
+	}
+
 	try {
-		await dispatchRelease({ targets, ref });
+		await dispatchRelease({ targets, ref: deployRef });
 	} catch (error) {
 		// 모달에는 response_url이 없어 후속 메시지를 보낼 수 없습니다.
 		// 실패 사유를 모달 안에 그대로 띄워야 사용자가 알 수 있습니다.
 		console.error("모달에서 배포 실행 실패:", error);
 
-		return NextResponse.json({
-			response_action: "errors",
-			errors: {
-				[DEPLOY_MODAL_FIELDS.ref.blockId]:
-					`배포를 시작하지 못했습니다 — ${error instanceof Error ? error.message.slice(0, 150) : String(error)}`,
-			},
+		const detail =
+			error instanceof Error ? error.message.slice(0, 150) : String(error);
+
+		return respondWithModalError({
+			blockId: DEPLOY_MODAL_FIELDS.ref.blockId,
+			// 커밋은 이미 master에 남았습니다. 이 사실을 빼면 다음 시도에서 버전이
+			// "현재 버전 이하"로 반려되는데 왜 그런지 알 길이 없습니다.
+			message: bumpCommitSha
+				? `배포를 시작하지 못했습니다 — ${detail} / 버전 커밋 ${bumpCommitSha.slice(0, 7)}은 master에 이미 올라갔으니 그 커밋으로 다시 배포하세요`
+				: `배포를 시작하지 못했습니다 — ${detail}`,
 		});
 	}
 
@@ -182,7 +360,15 @@ const handleModalSubmission = async (payload: {
 		responseUrl,
 		text: [
 			`🚀 <@${payload.user.id}> 님이 *${targetLabels}* 배포를 시작했습니다`,
-			selectedRefOption?.text?.text ?? `\`${ref.slice(0, 7)}\``,
+			...bumps.map(
+				({ target, from, to }) =>
+					`${DEPLOY_TARGET_LABELS[target]} ${from ?? "?"} → *${to}*`,
+			),
+			// 버전업 배포는 방금 만든 커밋을 올립니다. 선택지 라벨(고른 커밋의 제목)을
+			// 그대로 쓰면 실제로 배포되는 커밋과 다른 것을 가리키게 됩니다.
+			bumpCommitSha
+				? `버전 커밋 \`${bumpCommitSha.slice(0, 7)}\`을 master에 만들고 그 커밋을 배포합니다`
+				: (selectedRefOption?.text?.text ?? `\`${ref.slice(0, 7)}\``),
 			`<${buildRunUrl()}|워크플로 보기>`,
 		].join("\n"),
 	});

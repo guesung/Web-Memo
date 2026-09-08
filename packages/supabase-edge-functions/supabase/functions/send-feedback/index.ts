@@ -1,14 +1,5 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 
-/** 언인스톨 폼이 feedbacks.content에 JSON 문자열로 넣는 값 */
-interface IFUninstallFeedbackContent {
-  type: "uninstall";
-  reason: string;
-  feedback: string;
-  phoneNumber: string | null;
-  timestamp: string;
-}
-
 /** feedbacks 테이블에 새로 생긴 행. Supabase Database Webhook이 record로 넘겨준다 */
 interface IFFeedbackRecord {
   id: string;
@@ -18,68 +9,14 @@ interface IFFeedbackRecord {
 }
 
 /**
- * feedbacks.content를 JSON으로 읽어 본다. 파싱에 실패하면 null
- * @description feedbacks 테이블에는 인입 경로가 셋이다. 헤더 피드백은 사용자가 쓴 평문이고,
- * 언인스톨 폼은 type이 uninstall인 JSON, 언인스톨 페이지 방문 로그는 type이
- * uninstall_page_visit인 JSON이다. 평문은 파싱에 실패하는 것이 정상 경로이므로
- * null을 오류로 다루지 않는다.
- */
-const parseFeedbackContent = (content: string) => {
-  try {
-    return JSON.parse(content);
-  } catch {
-    return null;
-  }
-};
-
-/**
- * 전화번호를 010-****-1234 형태로 가린다
- * @description 채널 메시지는 오래 남고 여러 사람이 보므로 원본 번호를 싣지 않는다.
- * 실제로 연락할 일이 생기면 DB에서 조회한다. 숫자가 7자리 미만이면 형태를 만들 수
- * 없으므로 전체를 가린다.
- */
-const maskPhoneNumber = (phoneNumber: string) => {
-  const digits = phoneNumber.replace(/\D/g, "");
-
-  if (digits.length < 7) {
-    return "***";
-  }
-
-  return `${digits.slice(0, 3)}-****-${digits.slice(-4)}`;
-};
-
-/**
- * feedbacks 행 하나를 슬랙에 보낼 메시지로 만든다. 알리지 않을 행이면 null
- * @description 방문 로그(uninstall_page_visit)는 사용자가 남긴 말이 아니라 지표라
- * null을 돌려 전송을 건너뛴다. 피드백 채널에 섞이면 진짜 피드백이 묻히기 때문이다.
- * 언인스톨 폼은 항목별로 나눠 싣고, 그 밖의 content는 평문 피드백으로 보고 그대로 싣는다.
+ * feedbacks 행 하나를 슬랙에 보낼 메시지로 만든다
+ * @description feedbacks.content는 사용자가 헤더 피드백에 쓴 평문이다. 그대로 싣는다.
  */
 const buildSlackMessage = (record: IFFeedbackRecord) => {
-  const parsedContent = parseFeedbackContent(record.content);
-
-  if (parsedContent?.type === "uninstall_page_visit") {
-    return null;
-  }
-
   const writer = record.user_id ?? "비로그인";
   const footer = `작성자 ${writer} · ${record.created_at}`;
 
-  if (parsedContent?.type !== "uninstall") {
-    return [":speech_balloon: 새 피드백 (일반)", record.content, footer].join("\n");
-  }
-
-  const uninstallContent = parsedContent as IFUninstallFeedbackContent;
-  const phoneNumber = uninstallContent.phoneNumber
-    ? maskPhoneNumber(uninstallContent.phoneNumber)
-    : "없음";
-
-  return [
-    ":wave: 새 피드백 (언인스톨)",
-    `사유: ${uninstallContent.reason || "없음"}`,
-    `내용: ${uninstallContent.feedback || "없음"}`,
-    `연락처: ${phoneNumber}`,
-    footer,
-  ].join("\n");
+  return [":speech_balloon: 새 피드백", record.content, footer].join("\n");
 };
 
 serve(async (req) => {
@@ -96,12 +33,6 @@ serve(async (req) => {
     const record: IFFeedbackRecord = webhookPayload.record;
 
     const slackMessage = buildSlackMessage(record);
-
-    if (slackMessage === null) {
-      return new Response(JSON.stringify({ status: "skipped" }), {
-        headers: { "Content-Type": "application/json" },
-      });
-    }
 
     const slackResponse = await fetch(slackWebhookUrl, {
       method: "POST",

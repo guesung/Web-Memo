@@ -28,26 +28,32 @@ export const compareSemver = (a: TSemver, b: TSemver): number => {
 	return 0;
 };
 
+/** 버전 입력을 반려하는 사유. 통과하면 null입니다. */
+export type TVersionRejection = "not-semver" | "not-ahead";
+
 /**
- * 입력한 버전이 현재 버전보다 실제로 높은지 봅니다.
+ * 입력한 버전을 그대로 써도 되는지 판정합니다.
  *
- * @description 현재 버전을 못 읽었을 때(`currentVersion`이 없음)는 비교를 건너뛰고
- * 통과시킵니다 — 조회 실패 때문에 정상적인 버전업까지 막으면 안 됩니다.
+ * @description 현재 버전은 필수입니다 — 모르는 채로 통과시키면 조회 실패가 곧
+ * "검증 없이 master에 커밋"이 됩니다. 조회 실패는 호출부가 반려로 처리합니다.
+ * 다만 현재 버전 쪽이 semver가 아니면 비교할 근거가 없으므로 형식만 보고 넘깁니다.
  */
-export const isVersionAhead = ({
-	nextVersion,
+export const rejectVersionInput = ({
+	input,
 	currentVersion,
 }: {
-	nextVersion: TSemver;
-	currentVersion?: string;
-}): boolean => {
-	if (!currentVersion) return true;
+	input: string;
+	currentVersion: string;
+}): TVersionRejection | null => {
+	const parsed = parseSemver(input);
 
-	const parsedCurrent = parseSemver(currentVersion);
+	if (!parsed) return "not-semver";
 
-	if (!parsedCurrent) return true;
+	const current = parseSemver(currentVersion);
 
-	return compareSemver(nextVersion, parsedCurrent) > 0;
+	if (!current) return null;
+
+	return compareSemver(parsed, current) <= 0 ? "not-ahead" : null;
 };
 
 /**

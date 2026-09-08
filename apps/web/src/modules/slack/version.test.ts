@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
 	compareSemver,
-	isVersionAhead,
 	parseSemver,
+	rejectVersionInput,
 	replaceVersionInJson,
 } from "./version";
 
@@ -39,31 +39,36 @@ describe("compareSemver", () => {
 	});
 });
 
-describe("isVersionAhead", () => {
+describe("rejectVersionInput", () => {
 	it("현재보다 높으면 통과시킨다", () => {
 		expect(
-			isVersionAhead({ nextVersion: [1, 10, 17], currentVersion: "1.10.16" }),
-		).toBe(true);
+			rejectVersionInput({ input: "1.10.17", currentVersion: "1.10.16" }),
+		).toBeNull();
 	});
 
-	it("현재와 같으면 막는다", () => {
+	it("현재와 같으면 반려한다", () => {
 		expect(
-			isVersionAhead({ nextVersion: [1, 10, 16], currentVersion: "1.10.16" }),
-		).toBe(false);
+			rejectVersionInput({ input: "1.10.16", currentVersion: "1.10.16" }),
+		).toBe("not-ahead");
 	});
 
-	it("현재보다 낮으면 막는다", () => {
+	it("현재보다 낮으면 반려한다", () => {
 		expect(
-			isVersionAhead({ nextVersion: [1, 9, 99], currentVersion: "1.10.0" }),
-		).toBe(false);
+			rejectVersionInput({ input: "1.9.99", currentVersion: "1.10.0" }),
+		).toBe("not-ahead");
 	});
 
-	it("현재 버전을 못 읽었으면 비교를 건너뛴다", () => {
-		// 조회 실패 때문에 정상적인 버전업까지 막히면 안 됩니다.
-		expect(isVersionAhead({ nextVersion: [1, 0, 0] })).toBe(true);
+	it("semver가 아니면 비교 전에 반려한다", () => {
 		expect(
-			isVersionAhead({ nextVersion: [1, 0, 0], currentVersion: "이상한값" }),
-		).toBe(true);
+			rejectVersionInput({ input: "v1.10.17", currentVersion: "1.10.16" }),
+		).toBe("not-semver");
+	});
+
+	it("현재 버전 쪽이 semver가 아니면 형식만 보고 넘긴다", () => {
+		// 비교할 근거가 없습니다. 형식이 맞으면 사람 판단을 믿습니다.
+		expect(
+			rejectVersionInput({ input: "1.0.0", currentVersion: "이상한값" }),
+		).toBeNull();
 	});
 });
 

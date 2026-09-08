@@ -141,6 +141,9 @@ export const fetchRefOptions = async (): Promise<IFRefOption[]> => {
 		.map(({ label, value }) => ({ label: label.slice(0, 75), value }));
 };
 
+/** 버전을 갖는 배포 트랙. 웹은 버전이 없습니다(docs/versioning.md). */
+export type TVersionTrack = "app" | "extension";
+
 /** 버전 트랙 하나의 단일 진실 원천 파일. */
 interface IFVersionFile {
 	path: string;
@@ -149,7 +152,7 @@ interface IFVersionFile {
 }
 
 /** 버전 트랙별 단일 진실 원천 파일. docs/versioning.md의 표와 일대일입니다. */
-const VERSION_FILES: Record<"app" | "extension", IFVersionFile> = {
+const VERSION_FILES: Record<TVersionTrack, IFVersionFile> = {
 	app: {
 		path: "apps/app/app.json",
 		// app.json은 Expo 설정이라 버전이 `expo` 아래에 있습니다.
@@ -161,47 +164,74 @@ const VERSION_FILES: Record<"app" | "extension", IFVersionFile> = {
 	},
 };
 
-/** `fetchCurrentVersions`가 돌려주는 현재 버전. 조회에 실패한 쪽은 빠집니다. */
+/** master의 버전 파일 하나를 읽습니다. 못 읽으면 던집니다. */
+const fetchVersion = async ({
+	track,
+	timeoutMs,
+}: {
+	track: TVersionTrack;
+	timeoutMs: number;
+}): Promise<string> => {
+	const file = VERSION_FILES[track];
+	const response = await fetch(
+		`${GITHUB_API_ORIGIN}/repos/${getGithubRepository()}/contents/${file.path}?ref=${GITHUB_DEFAULT_BRANCH}`,
+		{
+			headers: { ...buildHeaders(), accept: "application/vnd.github.raw+json" },
+			signal: AbortSignal.timeout(timeoutMs),
+		},
+	);
+
+	if (!response.ok) {
+		throw new Error(`${file.path} 조회 실패: ${response.status}`);
+	}
+
+	const version = file.read(JSON.parse(await response.text()));
+
+	if (typeof version !== "string") {
+		throw new Error(`${file.path}에서 버전을 읽지 못했습니다`);
+	}
+
+	return version;
+};
+
+/** `fetchCurrentVersionsForModal`이 돌려주는 현재 버전. 조회에 실패한 쪽은 빠집니다. */
 export interface IFCurrentVersions {
 	app?: string;
 	extension?: string;
 }
 
 /**
- * master에 올라가 있는 앱·확장 버전을 읽습니다.
+ * 모달 placeholder("현재 1.10.16")에 채울 현재 버전.
  *
- * @description 모달의 placeholder("현재 1.10.16")를 채우는 용도라 실패해도 조용히
- * 넘어갑니다. 이 호출은 `views.update` 경로에 얹히므로 Slack의 3초 예산 안에서
- * 끝나야 합니다 — `fetchRefOptions`와 같은 1초 타임아웃을 씁니다.
+ * @description **판정에 쓰지 마세요.** 실패를 빈 값으로 삼키므로, 이 값으로 버전을
+ * 비교하면 조회가 죽었을 때 "현재 이하" 게이트가 조용히 통과합니다. 검증에는
+ * 반드시 `fetchVersionForBump`를 쓰세요 — 그쪽은 실패하면 던집니다.
+ *
+ * 이 호출은 `views.update` 경로에 얹히므로 Slack의 3초 예산 안에서 끝나야 합니다.
+ * `fetchRefOptions`와 같은 1초 타임아웃을 쓰고, 못 받으면 placeholder만 빠집니다.
  */
-export const fetchCurrentVersions = async (): Promise<IFCurrentVersions> => {
-	const repository = getGithubRepository();
-	const headers = buildHeaders();
+export const fetchCurrentVersionsForModal =
+	async (): Promise<IFCurrentVersions> => {
+		const forModal = (track: TVersionTrack) =>
+			fetchVersion({ track, timeoutMs: 1000 }).catch(() => undefined);
 
-	const fetchVersion = (file: IFVersionFile) =>
-		fetch(
-			`${GITHUB_API_ORIGIN}/repos/${repository}/contents/${file.path}?ref=${GITHUB_DEFAULT_BRANCH}`,
-			{
-				headers: { ...headers, accept: "application/vnd.github.raw+json" },
-				signal: AbortSignal.timeout(1000),
-			},
-		)
-			.then(async (response) => {
-				if (!response.ok) return undefined;
+		const [app, extension] = await Promise.all([
+			forModal("app"),
+			forModal("extension"),
+		]);
 
-				const version = file.read(JSON.parse(await response.text()));
+		return { app, extension };
+	};
 
-				return typeof version === "string" ? version : undefined;
-			})
-			.catch(() => undefined);
-
-	const [app, extension] = await Promise.all([
-		fetchVersion(VERSION_FILES.app),
-		fetchVersion(VERSION_FILES.extension),
-	]);
-
-	return { app, extension };
-};
+/**
+ * 버전을 올리기 전에 확인하는 현재 버전. 못 읽으면 던집니다.
+ *
+ * @description 반환 타입에 `undefined`가 없는 것이 요점입니다 — 현재 버전을 모르는
+ * 채로 master에 커밋을 쌓는 것보다 "다시 시도하세요"가 낫습니다. 커밋·배포를 배경으로
+ * 넘긴 뒤라 동기 구간에 여유가 있어 모달 경로보다 넉넉한 타임아웃을 씁니다.
+ */
+export const fetchVersionForBump = (track: TVersionTrack): Promise<string> =>
+	fetchVersion({ track, timeoutMs: 2500 });
 
 /** 실패를 삼키지 않는 GitHub API 호출. 버전 커밋 경로는 조용히 넘어가면 안 됩니다. */
 const requestGithub = async <T>(

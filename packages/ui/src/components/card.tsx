@@ -73,7 +73,13 @@ const CardContent = React.forwardRef<
 	HTMLDivElement,
 	React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-	<div ref={ref} className={cn("px-6", className)} {...props} />
+	<div
+		ref={ref}
+		// 아래 여백이 없으면 내용이 카드 밑변에 붙는다. shadcn 원본의 p-6 pt-0 과
+		// 같은 값이며, #193 에서 Dialog 버그를 고치다 함께 빠졌던 것을 되돌린다.
+		className={cn("px-6 pb-6", className)}
+		{...props}
+	/>
 ));
 CardContent.displayName = "CardContent";
 
@@ -83,7 +89,7 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
 	<div
 		ref={ref}
-		className={cn("flex items-center px-6", className)}
+		className={cn("flex items-center px-6 pb-6", className)}
 		{...props}
 	/>
 ));

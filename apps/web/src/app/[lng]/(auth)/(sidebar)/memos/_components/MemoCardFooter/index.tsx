@@ -201,7 +201,7 @@ export default function MemoCardFooter({
 				>
 					<HeartIcon
 						size={16}
-						fill={memo.isWish ? "#ec4899" : "none"}
+						fill={memo.isWish ? "currentColor" : "none"}
 						className={cn(
 							"transition-all",
 							memo.isWish ? "text-pink-500 scale-110" : "text-muted-foreground",
@@ -234,7 +234,7 @@ export default function MemoCardFooter({
 				>
 					<StarIcon
 						size={16}
-						fill={memo.isStar ? "#f59e0b" : "none"}
+						fill={memo.isStar ? "currentColor" : "none"}
 						className={cn(
 							"transition-all",
 							memo.isStar

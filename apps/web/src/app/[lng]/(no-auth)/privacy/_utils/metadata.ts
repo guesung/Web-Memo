@@ -13,6 +13,7 @@ export const metadataKorean: Metadata = {
 		languages: {
 			ko: CANONICAL_KOREAN,
 			en: CANONICAL_ENGLISH,
+			"x-default": CANONICAL_ENGLISH,
 		},
 	},
 	openGraph: {
@@ -37,6 +38,7 @@ export const metadataEnglish: Metadata = {
 		languages: {
 			ko: CANONICAL_KOREAN,
 			en: CANONICAL_ENGLISH,
+			"x-default": CANONICAL_ENGLISH,
 		},
 	},
 	openGraph: {

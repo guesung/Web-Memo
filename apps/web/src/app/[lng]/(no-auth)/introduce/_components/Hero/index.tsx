@@ -39,8 +39,12 @@ export default async function Hero({ lng }: HeroProps) {
 									/>
 								))}
 							</div>
+							{/* ratingCount는 JSON-LD에도 마크업되므로 화면에 보여야 한다 */}
 							<span className="font-semibold text-foreground">
 								{CHROME_STORE_STATS.rating}
+							</span>
+							<span className="text-muted-foreground">
+								({CHROME_STORE_STATS.reviewCount})
 							</span>
 							<div className="w-px h-4 bg-border" />
 							<div className="flex items-center gap-1.5 text-muted-foreground">

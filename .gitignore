@@ -78,3 +78,6 @@ android
 .worktrees/
 # AI 리뷰 봇 자격 증명 (절대 커밋 금지 — public 레포)
 *.pem
+
+# /gs 파이프라인 상태 파일
+.omc/

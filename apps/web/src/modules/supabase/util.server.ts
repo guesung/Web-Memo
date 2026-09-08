@@ -7,11 +7,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-let supabaseClient: MemoSupabaseClient;
-
 export const getSupabaseClient = () => {
-	if (supabaseClient) return supabaseClient;
-
 	const cookieStore = cookies();
 
 	return createServerClient<Database, "memo">(SUPABASE.url, SUPABASE.anonKey, {

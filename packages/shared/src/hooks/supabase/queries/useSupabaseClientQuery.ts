@@ -9,6 +9,8 @@ export default function useSupabaseClientQuery() {
 	const query = useSuspenseQuery({
 		queryFn: isExtension() ? getSupabaseClientExtension : getSupabaseClientWeb,
 		queryKey: QUERY_KEY.supabaseClient(),
+		staleTime: Number.POSITIVE_INFINITY,
+		gcTime: Number.POSITIVE_INFINITY,
 	});
 
 	return {

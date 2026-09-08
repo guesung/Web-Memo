@@ -1,3 +1,4 @@
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { ErrorBoundary, Tabs, TabsContent, TabsList } from "@web-memo/ui";
 import { useState } from "react";
 import { ChatTabTrigger, SummaryTabTrigger } from "./components";
@@ -13,6 +14,11 @@ interface TabSectionProps {
 export default function TabSection({ tabHeight }: TabSectionProps) {
 	const [activeTab, setActiveTab] = useState("summary");
 
+	const handleTabChange = (tabName: string) => {
+		setActiveTab(tabName);
+		analytics.trackEvent({ name: "tab_change", params: { tab_name: tabName } });
+	};
+
 	return (
 		<SummaryProvider>
 			<ChatProvider>
@@ -22,7 +28,7 @@ export default function TabSection({ tabHeight }: TabSectionProps) {
 				>
 					<Tabs
 						value={activeTab}
-						onValueChange={setActiveTab}
+						onValueChange={handleTabChange}
 						className="flex flex-col flex-1 min-h-0 overflow-hidden"
 					>
 						<TabsList className="shrink-0 mt-3 w-full grid grid-cols-2">

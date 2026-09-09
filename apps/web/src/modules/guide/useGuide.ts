@@ -8,6 +8,7 @@ import { isMac } from "@web-memo/shared/utils";
 import { useToast } from "@web-memo/ui";
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { useEffect } from "react";
 import type { LanguageType } from "../i18n";
 import useTranslation from "../i18n/util.client";
@@ -27,6 +28,7 @@ export default function useGuide({ lng }: UseGuideProps) {
 			doneBtnText: t("guide.done"),
 			prevBtnText: t("guide.prev"),
 			onDestroyed: () => {
+				analytics.trackEvent({ name: "guide_finish" });
 				setLocalStorageTrue("guide");
 				toast({
 					title: t("toastTitle.guideDone"),

@@ -7,9 +7,56 @@ export const DEPLOY_MODAL_CALLBACK_ID = "deploy_modal";
 export const DEPLOY_MODAL_FIELDS = {
 	targets: { blockId: "targets_block", actionId: "targets_action" },
 	ref: { blockId: "ref_block", actionId: "ref_action" },
+	appVersion: { blockId: "app_version_block", actionId: "app_version_action" },
+	extensionVersion: {
+		blockId: "extension_version_block",
+		actionId: "extension_version_action",
+	},
 } as const;
 
 const TARGET_ORDER: TDeployTarget[] = ["app", "web", "extension"];
+
+/**
+ * 버전 입력 블록 하나를 만듭니다.
+ *
+ * @description 버전업은 master에 커밋을 만드는 되돌리기 어려운 동작이라, 제출 뒤에 안내하지 않고
+ * hint로 모달 안에서 미리 알립니다. 비워 두면 버전업을 건너뛴다는 뜻이므로 `optional: true`입니다.
+ *
+ * @param currentVersion 현재 배포된 버전. placeholder로만 쓰이며, 없으면 placeholder를 아예 넣지
+ *   않습니다 — 빈 문자열 placeholder는 Slack이 거부합니다.
+ */
+function buildVersionInputBlock({
+	field,
+	label,
+	currentVersion,
+}: {
+	field: { blockId: string; actionId: string };
+	label: string;
+	currentVersion?: string;
+}): Record<string, unknown> {
+	return {
+		type: "input",
+		block_id: field.blockId,
+		optional: true,
+		label: { type: "plain_text", text: label },
+		element: {
+			type: "plain_text_input",
+			action_id: field.actionId,
+			...(currentVersion
+				? {
+						placeholder: {
+							type: "plain_text",
+							text: `현재 ${currentVersion}`,
+						},
+					}
+				: {}),
+		},
+		hint: {
+			type: "plain_text",
+			text: "입력하면 master에 버전 커밋을 만든 뒤 그 커밋을 배포합니다.",
+		},
+	};
+}
 
 /**
  * "다른 버전…" 모달의 view를 만듭니다.
@@ -20,16 +67,21 @@ const TARGET_ORDER: TDeployTarget[] = ["app", "web", "extension"];
  *
  * @param responseUrl 제출 결과를 되돌려 보낼 원본 메시지의 response_url.
  *   모달에는 response_url이 없어 private_metadata로 실어 나릅니다.
+ * @param currentVersions 현재 배포된 앱·확장 버전. placeholder로만 쓰이므로 선택입니다 —
+ *   모달을 먼저 띄우고(`isLoading: true`) 나중에 views.update로 채우는 2단 구조라
+ *   첫 호출에는 아직 값이 없습니다.
  */
 export const buildDeployModal = ({
 	refOptions,
 	defaultRef,
 	responseUrl,
+	currentVersions,
 	isLoading = false,
 }: {
 	refOptions: Array<{ label: string; value: string }>;
 	defaultRef: string;
 	responseUrl: string;
+	currentVersions?: { app?: string; extension?: string };
 	/** 태그·커밋 목록을 아직 못 받은 상태. 목록이 채워지면 views.update로 교체됩니다. */
 	isLoading?: boolean;
 }): Record<string, unknown> => {
@@ -72,6 +124,16 @@ export const buildDeployModal = ({
 					...(initialOption ? { initial_option: initialOption } : {}),
 				},
 			},
+			buildVersionInputBlock({
+				field: DEPLOY_MODAL_FIELDS.appVersion,
+				label: "앱 버전 (비우면 그대로)",
+				currentVersion: currentVersions?.app,
+			}),
+			buildVersionInputBlock({
+				field: DEPLOY_MODAL_FIELDS.extensionVersion,
+				label: "확장 버전 (비우면 그대로)",
+				currentVersion: currentVersions?.extension,
+			}),
 			...(isLoading
 				? [
 						{

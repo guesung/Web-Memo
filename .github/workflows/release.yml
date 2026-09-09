@@ -23,10 +23,6 @@ on:
         required: false
         default: ""
 
-concurrency:
-  group: release
-  cancel-in-progress: false
-
 jobs:
   # 타깃을 하나도 안 고르면 아무 잡도 안 돌아 실행이 조용히 끝납니다. 명시적 실패로 바꿉니다.
   preflight:
@@ -56,6 +52,12 @@ jobs:
       contents: read
       actions: read
     if: ${{ inputs.app }}
+    # 타깃별로 줄을 세웁니다. 워크플로 전체를 한 그룹으로 묶으면 앱 빌드(약 30분)가
+    # 도는 동안 1분이면 끝나는 웹 배포까지 통째로 대기합니다.
+    # 같은 타깃의 중복 배포(스토어 이중 제출)는 그대로 막습니다.
+    concurrency:
+      group: release-app
+      cancel-in-progress: false
     uses: ./.github/workflows/cd-app.yml
     secrets: inherit
     with:
@@ -70,6 +72,12 @@ jobs:
       contents: read
       actions: read
     if: ${{ inputs.extension }}
+    # 타깃별로 줄을 세웁니다. 워크플로 전체를 한 그룹으로 묶으면 앱 빌드(약 30분)가
+    # 도는 동안 1분이면 끝나는 웹 배포까지 통째로 대기합니다.
+    # 같은 타깃의 중복 배포(스토어 이중 제출)는 그대로 막습니다.
+    concurrency:
+      group: release-extension
+      cancel-in-progress: false
     uses: ./.github/workflows/cd-extension.yml
     secrets: inherit
     with:
@@ -80,6 +88,12 @@ jobs:
     name: 웹 릴리스
     needs: preflight
     if: ${{ inputs.web }}
+    # 타깃별로 줄을 세웁니다. 워크플로 전체를 한 그룹으로 묶으면 앱 빌드(약 30분)가
+    # 도는 동안 1분이면 끝나는 웹 배포까지 통째로 대기합니다.
+    # 같은 타깃의 중복 배포(스토어 이중 제출)는 그대로 막습니다.
+    concurrency:
+      group: release-web
+      cancel-in-progress: false
     uses: ./.github/workflows/cd-web.yml
     secrets: inherit
     with:

@@ -9,7 +9,7 @@
 | 트랙 | 단일 진실 원천 | 사용하는 곳 | 올리는 시점 |
 | --- | --- | --- | --- |
 | **확장 프로그램(Extension)** | `apps/chrome-extension/package.json` → `version` | `apps/chrome-extension/manifest.js` | 확장 프로그램을 릴리스할 때 |
-| **앱(App)** | `apps/app/app.json` → `version` | App Store / TestFlight | iOS 앱을 릴리스할 때 |
+| **앱(App)** | `apps/app/app.json` → `expo.version` | App Store / TestFlight | iOS 앱을 릴리스할 때 |
 | **제품 릴리스 노트** | `apps/web/src/constants/Update.ts` → 첫 번째 항목 | `/update` 페이지, 업데이트 알림 모달 | 사용자에게 알릴 만한 변경이 있을 때 |
 
 이 외에는 버전을 갖는 대상이 없습니다.
@@ -77,7 +77,7 @@
 $EDITOR apps/chrome-extension/package.json     # "version": "1.10.15"
 
 # 앱 — iOS 앱 릴리스 전
-$EDITOR apps/app/app.json                      # "version": "1.0.8"
+$EDITOR apps/app/app.json                      # expo.version: "1.0.8"
 
 # 제품 릴리스 노트 — 사용자에게 알려야 할 때
 $EDITOR apps/web/src/constants/Update.ts                        # 최상단에 새 항목 추가
@@ -86,6 +86,12 @@ $EDITOR apps/web/src/modules/i18n/locales/en/translation.json   # updates.versio
 ```
 
 릴리스 노트 초안까지 함께 작성하려면 `/version-update`를 사용하세요.
+
+**Slack에서 올릴 수도 있습니다.** 배포 알림의 **다른 버전…** 버튼을 눌러 `앱 버전` /
+`확장 버전` 칸에 새 버전을 적고 배포하면, `master`에 버전 커밋이 자동으로 생기고 그
+커밋이 그대로 배포됩니다. 릴리스 노트(`Update.ts`·`translation.json`)는 여기서 받지
+않습니다 — 사람이 쓰는 문장이라 위 방법으로 따로 넣습니다. 자세한 제약은
+[release-flow.md](release-flow.md)의 "버전을 올려서 배포할 때"에 있습니다.
 
 버전 변경은 일반적인 Pull Request를 통해 `master`로 들어갑니다 —
 [branch-strategy.md](branch-strategy.md)를 참고하세요. 릴리스 커밋에

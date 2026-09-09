@@ -20,6 +20,7 @@ export const metadataKorean: Metadata = {
 		languages: {
 			ko: `${CONFIG.webUrl}/ko/use-cases/job-hunting`,
 			en: `${CONFIG.webUrl}/en/use-cases/job-hunting`,
+			"x-default": `${CONFIG.webUrl}/en/use-cases/job-hunting`,
 		},
 	},
 	openGraph: {
@@ -49,6 +50,7 @@ export const metadataEnglish: Metadata = {
 		languages: {
 			ko: `${CONFIG.webUrl}/ko/use-cases/job-hunting`,
 			en: `${CONFIG.webUrl}/en/use-cases/job-hunting`,
+			"x-default": `${CONFIG.webUrl}/en/use-cases/job-hunting`,
 		},
 	},
 	openGraph: {

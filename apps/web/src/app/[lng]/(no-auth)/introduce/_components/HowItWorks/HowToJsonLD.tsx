@@ -1,6 +1,6 @@
+import { JsonLdScript } from "@src/app/_components";
 import type { Language } from "@src/modules/i18n";
 import { CONFIG } from "@web-memo/env";
-import Script from "next/script";
 
 interface HowToJsonLDProps {
 	lng: Language;
@@ -71,12 +71,5 @@ export default function HowToJsonLD({ lng }: HowToJsonLDProps) {
 		})),
 	};
 
-	return (
-		<Script
-			id="howto-jsonld"
-			type="application/ld+json"
-			// biome-ignore lint/security/noDangerouslySetInnerHtml: Required for JSON-LD structured data injection
-			dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
-		/>
-	);
+	return <JsonLdScript id="howto-jsonld" schema={howToSchema} />;
 }

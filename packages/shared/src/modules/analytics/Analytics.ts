@@ -1,6 +1,7 @@
 import { CONFIG } from "@web-memo/env";
 
 import { ANALYTICS } from "../../constants";
+import type { MemoTable } from "../../types";
 import { isExtension } from "../../utils";
 import {
 	EVENT_CATEGORY,
@@ -240,9 +241,47 @@ class Analytics {
 		await this.trackEvent({ name: "side_panel_open" });
 	}
 
-	/** 메모를 새로 쓰거나 고쳐 저장했을 때 기록합니다. */
-	public async trackMemoWrite(): Promise<void> {
-		await this.trackEvent({ name: "memo_write" });
+	/**
+	 * 메모 변경 요청의 키를 보고 무엇을 바꿨는지 가려 기록합니다.
+	 * @description 상태 토글·카테고리·본문 수정이 전부 같은 뮤테이션을 지나므로, 호출부마다
+	 * 심는 대신 여기서 한 번 가릅니다. 예전 memo_write는 이 셋을 한 덩어리로 세서 어느
+	 * 필드가 실제로 쓰이는지 알 수 없었습니다.
+	 */
+	public async trackMemoUpdate(
+		request: Partial<MemoTable["Update"]>,
+	): Promise<void> {
+		const STATUS_KEYS = ["isWish", "isStar", "isReading"] as const;
+		const CONTENT_KEYS = ["memo", "title", "impression", "actionItem"] as const;
+
+		for (const statusKey of STATUS_KEYS) {
+			if (!(statusKey in request)) continue;
+
+			await this.trackEvent({
+				name: "memo_status_toggle",
+				params: {
+					status: statusKey.replace(/^is/, "").toLowerCase() as
+						| "wish"
+						| "star"
+						| "reading",
+					enabled: Boolean(request[statusKey]),
+				},
+			});
+		}
+
+		if ("category_id" in request) {
+			await this.trackEvent({ name: "memo_category_change" });
+		}
+
+		const changedContentKeys = CONTENT_KEYS.filter(
+			(contentKey) => contentKey in request,
+		);
+
+		if (changedContentKeys.length > 0) {
+			await this.trackEvent({
+				name: "memo_write",
+				params: { fields: [...changedContentKeys].sort().join(",") },
+			});
+		}
 	}
 
 	/**

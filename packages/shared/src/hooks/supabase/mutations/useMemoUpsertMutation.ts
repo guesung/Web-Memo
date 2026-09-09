@@ -106,9 +106,9 @@ export default function useMemoUpsertMutation() {
 				);
 			}
 		},
-		onSuccess: async (result, _variables, context) => {
+		onSuccess: async (result, variables, context) => {
 			if (context?.isUpdate) {
-				await analytics.trackMemoWrite();
+				await analytics.trackMemoUpdate(variables.data);
 			}
 
 			queryClient.invalidateQueries({ queryKey: ["memos", "paginated"] });

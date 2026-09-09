@@ -49,32 +49,19 @@ if (chrome.contextMenus)
 	chrome.contextMenus.onClicked.addListener(async (item) => {
 		switch (item.menuItemId) {
 			case CONTEXT_MENU_ID_CHECK_MEMO:
+				analytics.trackEvent({
+					name: "open_web_from_extension",
+					params: { from: "context_menu" },
+				});
 				await Tab.create({ url: `${CONFIG.webUrl}/memos` });
 				break;
 			case CONTEXT_MENU_ID_SHOW_GUIDE:
+				analytics.trackEvent({ name: "guide_open", params: { from: "context_menu" } });
 				if (I18n.getUILanguage() === "ko") Tab.create({ url: EXTERNAL_LINK.notionGuideKo });
 				else Tab.create({ url: EXTERNAL_LINK.notionGuideEn });
 				break;
 		}
 	});
-
-const setUninstallUrl = async () => {
-	try {
-		const supabaseClient = await getSupabaseClient();
-		const {
-			data: { user },
-		} = await supabaseClient.auth.getUser();
-		const uid = user?.id || "";
-		chrome.runtime.setUninstallURL(
-			uid
-				? `${CONFIG.webUrl}/uninstall?uid=${uid}`
-				: `${CONFIG.webUrl}/uninstall`,
-		);
-	} catch {
-		chrome.runtime.setUninstallURL(`${CONFIG.webUrl}/uninstall`);
-	}
-};
-setUninstallUrl();
 
 chrome.tabs.onActivated.addListener(async () => {
 	// 활성화된 탭이 변경되었을 때 사이드 패널을 업데이트한다.

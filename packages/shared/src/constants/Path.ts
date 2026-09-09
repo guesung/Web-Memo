@@ -9,6 +9,8 @@ export const PATHS = {
 	auth: "/auth",
 	introduce: "/introduce",
 	update: "/update",
+	privacy: "/privacy",
+	uninstall: "/uninstall",
 	memosWish: "/memos?isWish=true",
 	memosSetting: "/memos/setting",
 	memosTrash: "/memos/trash",

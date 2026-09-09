@@ -1,8 +1,18 @@
 import { type Language, SUPPORTED_LANGUAGES } from "@src/modules/i18n";
 import { CONFIG } from "@web-memo/env";
-import Script from "next/script";
+import JsonLdScript from "../JsonLdScript";
 
 const baseUrl = CONFIG.webUrl;
+
+/**
+ * SoftwareApplication 엔티티의 전역 식별자.
+ *
+ * @description
+ * 이 스키마는 전 페이지 레이아웃에서 렌더되지만 별점 배지는 introduce 에만 보인다.
+ * aggregateRating 을 여기 넣으면 배지가 없는 페이지까지 "보이지 않는 값"을 마크업하게
+ * 되므로, 별점은 introduce 에서 같은 @id 로 별도 노드를 내보내 병합시킨다.
+ */
+export const SOFTWARE_APPLICATION_ID = `${baseUrl}/#software-application`;
 
 interface JsonLDProps {
 	lng: Language;
@@ -28,6 +38,7 @@ const getOrganizationSchema = (lng: Language) => ({
 const getSoftwareApplicationSchema = (lng: Language) => ({
 	"@context": "https://schema.org",
 	"@type": "SoftwareApplication",
+	"@id": SOFTWARE_APPLICATION_ID,
 	name: lng === "ko" ? "웹 메모" : "Web Memo",
 	description:
 		lng === "ko"
@@ -41,13 +52,6 @@ const getSoftwareApplicationSchema = (lng: Language) => ({
 		"@type": "Offer",
 		price: "0",
 		priceCurrency: "USD",
-	},
-	aggregateRating: {
-		"@type": "AggregateRating",
-		ratingValue: "5.0",
-		ratingCount: "33",
-		bestRating: "5",
-		worstRating: "1",
 	},
 	author: {
 		"@type": "Organization",
@@ -82,19 +86,10 @@ export default function JsonLD({ lng }: JsonLDProps) {
 
 	return (
 		<>
-			<Script
-				id="organization-jsonld"
-				type="application/ld+json"
-				// biome-ignore lint/security/noDangerouslySetInnerHtml: Required for JSON-LD structured data injection
-				dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-			/>
-			<Script
+			<JsonLdScript id="organization-jsonld" schema={organizationSchema} />
+			<JsonLdScript
 				id="software-application-jsonld"
-				type="application/ld+json"
-				// biome-ignore lint/security/noDangerouslySetInnerHtml: Required for JSON-LD structured data injection
-				dangerouslySetInnerHTML={{
-					__html: JSON.stringify(softwareApplicationSchema),
-				}}
+				schema={softwareApplicationSchema}
 			/>
 		</>
 	);

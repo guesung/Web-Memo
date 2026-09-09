@@ -1,13 +1,22 @@
 import { CONFIG } from "@web-memo/env";
 import type { Metadata } from "next";
 
+/**
+ * 로케일 레이아웃 공통 메타데이터.
+ *
+ * @description
+ * 여기에 alternates(canonical/hreflang)를 두면 안 된다. Next의 metadata 는 하위
+ * 라우트로 상속되므로, 자체 alternates 가 없는 페이지(`/ko/uninstall` 등)가 레이아웃의
+ * canonical 을 그대로 달아 "다른 페이지"를 정본으로 지목하게 된다. 크로스 페이지
+ * canonical 은 그 페이지를 색인에서 지운다.
+ *
+ * canonical·hreflang 은 페이지별 metadata 에서 선언하고, 선언하지 않는 페이지는
+ * 색인 대상이 아니므로 robots.index=false 를 준다.
+ */
 export const metadataCommon: Metadata = {
 	metadataBase: new URL(CONFIG.webUrl),
 	icons: {
 		icon: "/favicon.ico",
-	},
-	alternates: {
-		canonical: CONFIG.webUrl,
 	},
 	verification: {
 		google: "e92NNntqJ--8e3A0jAc-YFB3QwHg46AQQ4eplMUvqtQ",
@@ -26,13 +35,6 @@ export const metadataKorean: Metadata = {
 	authors: [{ url: "https://github.com/guesung" }],
 	applicationName: "웹 메모",
 	category: "웹 메모",
-	alternates: {
-		canonical: `${CONFIG.webUrl}/ko`,
-		languages: {
-			ko: `${CONFIG.webUrl}/ko`,
-			en: `${CONFIG.webUrl}/en`,
-		},
-	},
 	openGraph: {
 		title: "웹 메모",
 		description:
@@ -61,13 +63,6 @@ export const metadataEnglish: Metadata = {
 	authors: [{ url: "https://github.com/guesung" }],
 	applicationName: "Web Memo",
 	category: "Web Memo",
-	alternates: {
-		canonical: `${CONFIG.webUrl}/en`,
-		languages: {
-			ko: `${CONFIG.webUrl}/ko`,
-			en: `${CONFIG.webUrl}/en`,
-		},
-	},
 	openGraph: {
 		title: "Web Memo",
 		description:

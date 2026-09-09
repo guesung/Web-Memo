@@ -5,37 +5,46 @@ import type { StorageKeyType } from "../../modules/chrome-storage";
 import { ChromeSyncStorage } from "../../modules/chrome-storage";
 import type { Database } from "../../types";
 
-import { AuthService } from "../Supabase";
+const createMemoSupabaseClient = () =>
+	createClient<Database, "memo">(SUPABASE.url, SUPABASE.anonKey, {
+		db: { schema: SUPABASE.schema.memo },
+		auth: {
+			storage: {
+				getItem: async (key) => {
+					return (await ChromeSyncStorage.get(key as StorageKeyType)) ?? null;
+				},
+				setItem: async (key, value) => {
+					return await ChromeSyncStorage.set(key as StorageKeyType, value);
+				},
+				removeItem: async (key) => {
+					return await ChromeSyncStorage.remove(key as StorageKeyType);
+				},
+			},
+		},
+	});
+
+const createFeedbackSupabaseClient = () =>
+	createClient<Database, "feedback">(SUPABASE.url, SUPABASE.anonKey, {
+		db: { schema: SUPABASE.schema.feedback },
+	});
+
+let memoSupabaseClient: ReturnType<typeof createMemoSupabaseClient> | null =
+	null;
+
+let feedbackSupabaseClient: ReturnType<
+	typeof createFeedbackSupabaseClient
+> | null = null;
 
 export const getSupabaseClient = async () => {
 	try {
-		const supabaseClientInstance = createClient<Database, "memo">(
-			SUPABASE.url,
-			SUPABASE.anonKey,
-			{
-				db: { schema: SUPABASE.schema.memo },
-				auth: {
-					storage: {
-						getItem: async (key) => {
-							return (
-								(await ChromeSyncStorage.get(key as StorageKeyType)) ?? null
-							);
-						},
-						setItem: async (key, value) => {
-							return await ChromeSyncStorage.set(key as StorageKeyType, value);
-						},
-						removeItem: async (key) => {
-							return await ChromeSyncStorage.remove(key as StorageKeyType);
-						},
-					},
-				},
-			},
-		);
+		if (!memoSupabaseClient) {
+			memoSupabaseClient = createMemoSupabaseClient();
+		}
 
-		const isUserLogin = await new AuthService(
-			supabaseClientInstance,
-		).checkUserLogin();
-		if (isUserLogin) return supabaseClientInstance;
+		const {
+			data: { session },
+		} = await memoSupabaseClient.auth.getSession();
+		if (session) return memoSupabaseClient;
 
 		const accessTokenFromWeb = await chrome.cookies.get({
 			name: SUPABASE.authCookie.accessToken,
@@ -46,22 +55,25 @@ export const getSupabaseClient = async () => {
 			url: CONFIG.webUrl,
 		});
 
-		if (!accessTokenFromWeb || !refreshTokenCookieFromWeb)
+		if (!accessTokenFromWeb || !refreshTokenCookieFromWeb) {
 			throw new Error("로그인을 먼저 해주세요.");
+		}
 
-		await supabaseClientInstance.auth.setSession({
+		await memoSupabaseClient.auth.setSession({
 			access_token: accessTokenFromWeb.value,
 			refresh_token: refreshTokenCookieFromWeb.value,
 		});
 
-		return supabaseClientInstance;
+		return memoSupabaseClient;
 	} catch {
 		throw new Error("로그인을 먼저 해주세요");
 	}
 };
 
 export const getFeedbackSupabaseClient = () => {
-	return createClient<Database, "feedback">(SUPABASE.url, SUPABASE.anonKey, {
-		db: { schema: SUPABASE.schema.feedback },
-	});
+	if (!feedbackSupabaseClient) {
+		feedbackSupabaseClient = createFeedbackSupabaseClient();
+	}
+
+	return feedbackSupabaseClient;
 };

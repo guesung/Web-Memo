@@ -5,6 +5,7 @@ export { default as Hero } from "./Hero";
 export { default as HowItWorks } from "./HowItWorks";
 export { default as InteractiveDemo } from "./InteractiveDemo";
 export { default as QuestionAndAnswer } from "./QuestionAndAnswer";
+export { default as RatingJsonLD } from "./RatingJsonLD";
 export { default as SocialProofBar } from "./SocialProofBar";
 export { default as StatsSection } from "./StatsSection";
 export { default as Testimonials } from "./Testimonials";

@@ -10,6 +10,7 @@ export const metadataKorean: Metadata = {
 		languages: {
 			ko: `${CONFIG.webUrl}/ko/introduce`,
 			en: `${CONFIG.webUrl}/en/introduce`,
+			"x-default": `${CONFIG.webUrl}/en/introduce`,
 		},
 	},
 	openGraph: {
@@ -26,6 +27,7 @@ export const metadataEnglish: Metadata = {
 		languages: {
 			ko: `${CONFIG.webUrl}/ko/introduce`,
 			en: `${CONFIG.webUrl}/en/introduce`,
+			"x-default": `${CONFIG.webUrl}/en/introduce`,
 		},
 	},
 	openGraph: {

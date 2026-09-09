@@ -6,13 +6,15 @@ import type { Metadata } from "next";
 import { UpdateList, UpdateTitle } from "./_components";
 
 const metadataKorean: Metadata = {
-	title: "웹 메모 | 업데이트 소식 ",
-	description: "웹 메모의 최신 업데이트 소식을 확인하세요.",
+	title: "업데이트 소식 | 웹 메모",
+	description:
+		"웹 메모의 새 기능과 개선 사항을 버전별로 정리했습니다. AI 요약, 사이드 패널, 메모 관리 기능이 어떻게 바뀌어 왔는지 최신 릴리스 노트에서 확인하세요.",
 	alternates: {
 		canonical: `${CONFIG.webUrl}/ko/update`,
 		languages: {
 			ko: `${CONFIG.webUrl}/ko/update`,
 			en: `${CONFIG.webUrl}/en/update`,
+			"x-default": `${CONFIG.webUrl}/en/update`,
 		},
 	},
 	openGraph: {
@@ -21,13 +23,15 @@ const metadataKorean: Metadata = {
 };
 
 const metadataEnglish: Metadata = {
-	title: "Web Memo | Updates",
-	description: "Check out the latest updates for Web Memo.",
+	title: "Product Updates | Web Memo",
+	description:
+		"Release notes for Web Memo, version by version. See how AI summaries, the side panel, and memo management have evolved in the latest updates.",
 	alternates: {
 		canonical: `${CONFIG.webUrl}/en/update`,
 		languages: {
 			ko: `${CONFIG.webUrl}/ko/update`,
 			en: `${CONFIG.webUrl}/en/update`,
+			"x-default": `${CONFIG.webUrl}/en/update`,
 		},
 	},
 	openGraph: {

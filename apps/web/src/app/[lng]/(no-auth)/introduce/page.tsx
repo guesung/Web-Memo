@@ -9,6 +9,7 @@ import {
 	HowItWorks,
 	InteractiveDemo,
 	QuestionAndAnswer,
+	RatingJsonLD,
 	SocialProofBar,
 	StatsSection,
 	Testimonials,
@@ -36,6 +37,7 @@ export default async function IntroducePage({
 	return (
 		<div className="min-h-screen overflow-hidden">
 			<HeaderMargin />
+			<RatingJsonLD />
 			<Hero lng={lng} />
 			<SocialProofBar lng={lng} />
 			<InteractiveDemo lng={lng} />

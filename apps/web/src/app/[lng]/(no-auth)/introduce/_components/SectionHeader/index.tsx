@@ -1,4 +1,4 @@
-import { cn } from "@web-memo/ui";
+import { cn } from "@web-memo/shared/utils";
 
 /**
  * 랜딩 섹션의 제목 묶음.

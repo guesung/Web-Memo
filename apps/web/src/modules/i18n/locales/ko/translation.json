@@ -524,7 +524,7 @@
 		},
 		"hero": {
 			"title": "웹서핑을 더 쉽게",
-			"subtitle": "클릭 한 번으로 메모하고, AI로 요약하고, 체계적으로 관리하세요",
+			"subtitle": "읽던 페이지에서 사이드 패널을 열어 메모하고, 긴 글과 영상은 AI가 요약합니다",
 			"install_button": "Chrome에 추가",
 			"appstore_button": "App Store",
 			"playstore_button": "Google Play",
@@ -537,7 +537,7 @@
 		},
 		"section": {
 			"key_features": "핵심 기능",
-			"key_features_desc": "웹 서핑을 더 스마트하게 만들어주는 기능들",
+			"key_features_desc": "읽는 중에 필요한 것만 남기는 다섯 가지",
 			"features_badge": "기능",
 			"demo": "직접 확인해보세요",
 			"demo_title": "직접 확인해보세요",
@@ -548,12 +548,12 @@
 			"use_cases_desc": "다양한 상황에서 웹 메모가 도움이 됩니다",
 			"stats": "숫자로 보는 웹 메모",
 			"stats_title": "숫자로 보는 웹 메모",
-			"stats_desc": "많은 사용자들이 이미 웹 메모와 함께하고 있습니다",
+			"stats_desc": "지금까지 쌓인 숫자입니다",
 			"testimonials_title": "사용자 후기",
 			"testimonials_desc": "실제 사용자들의 경험을 확인해보세요",
 			"testimonials_note": "* 대표적인 사용 사례를 바탕으로 작성되었습니다",
 			"cta_title": "지금 바로 시작하세요",
-			"cta_desc": "더 스마트한 웹 서핑을 경험해보세요. 무료로, 지금 바로.",
+			"cta_desc": "설치하고 첫 메모까지 10초면 됩니다. 전부 무료입니다.",
 			"cta_badge": "지금 시작하세요"
 		},
 		"demo": {
@@ -574,9 +574,9 @@
 			"tab_wishlist": "위시리스트",
 			"tab_wishlist_desc": "나중에 볼 콘텐츠 저장",
 			"organize": "정리하기",
-			"organize_desc": "카테고리로 체계적 관리",
+			"organize_desc": "카테고리로 묶어서 정리",
 			"tab_organize": "정리하기",
-			"tab_organize_desc": "카테고리로 체계적 관리"
+			"tab_organize_desc": "카테고리로 묶어서 정리"
 		},
 		"steps": {
 			"step1_title": "확장 프로그램 설치",
@@ -584,17 +584,17 @@
 			"step2_title": "사이드 패널 열기",
 			"step2_desc": "단축키로 빠르게 열기",
 			"step3_title": "저장하고 정리하기",
-			"step3_desc": "웹 콘텐츠를 체계적으로 관리"
+			"step3_desc": "카테고리로 묶어 두고 다시 찾기"
 		},
 		"use_case": {
 			"students_title": "학생 & 연구자",
 			"students_desc": "온라인 강의나 자료 조사할 때 핵심 내용만 골라 저장하세요. 논문 작성에 필요한 레퍼런스를 체계적으로 관리할 수 있습니다.",
 			"student_title": "학생 & 연구자",
-			"student_desc": "온라인 강의나 자료 조사할 때 핵심 내용만 골라 저장하세요. 논문 작성에 필요한 레퍼런스를 체계적으로 관리할 수 있습니다.",
+			"student_desc": "온라인 강의나 자료를 조사할 때 핵심만 골라 저장하세요. 논문에 인용할 레퍼런스를 출처와 함께 모아둘 수 있습니다.",
 			"professionals_title": "직장인",
 			"professionals_desc": "경쟁사 분석이나 트렌드 모니터링을 체계적으로 관리하세요. 업무에 필요한 정보를 빠르게 찾을 수 있습니다.",
 			"professional_title": "리서치 & 업무",
-			"professional_desc": "경쟁사 분석이나 트렌드 모니터링을 체계적으로 관리하세요. 업무에 필요한 정보를 빠르게 찾을 수 있습니다.",
+			"professional_desc": "경쟁사 분석과 트렌드 조사를 한곳에 모으세요. 필요할 때 검색으로 바로 꺼낼 수 있습니다.",
 			"efficiency_title": "효율적인 분들",
 			"efficiency_desc": "긴 글 대신 AI 요약으로 핵심만 빠르게 파악하세요. 시간을 절약하며 더 많은 콘텐츠를 소화할 수 있습니다.",
 			"creators_title": "콘텐츠 크리에이터",
@@ -602,17 +602,19 @@
 			"creator_title": "콘텐츠 크리에이터",
 			"creator_desc": "영감을 주는 콘텐츠와 아이디어를 모아두세요. 창작 활동에 필요한 레퍼런스를 한 곳에서 관리할 수 있습니다.",
 			"job_hunting_title": "취업 준비생",
-			"job_hunting_desc": "채용 공고와 기업 정보를 한눈에 정리하세요. 면접 준비에 필요한 자료를 효율적으로 관리할 수 있습니다.",
+			"job_hunting_desc": "채용 공고와 기업 정보를 한곳에 정리하세요. 면접 전에 다시 읽을 자료를 모아둘 수 있습니다.",
 			"news_reading_title": "뉴스 & 아티클",
-			"news_reading_desc": "중요한 기사와 인사이트를 저장하세요. 나중에 다시 찾아볼 핵심 정보를 체계적으로 관리할 수 있습니다.",
+			"news_reading_desc": "중요한 기사와 인사이트를 저장하세요. 다시 찾아볼 대목만 메모로 남길 수 있습니다.",
 			"youtube_notes_title": "유튜브 학습",
-			"youtube_notes_desc": "영상의 핵심 내용을 메모하세요. AI 요약과 함께 영상 학습 효율을 높일 수 있습니다."
+			"youtube_notes_desc": "영상의 핵심을 메모하세요. 자막을 읽은 AI 요약과 함께 남길 수 있습니다."
 		},
 		"stats": {
 			"active_users": "활성 사용자",
 			"active_users_desc": "Chrome 웹스토어 사용자",
 			"memos_saved": "저장된 메모",
 			"memos_saved_desc": "사용자들이 저장한 총 메모 개수",
+			"free_forever": "영원히 무료",
+			"no_tracking": "데이터 추적 없음",
 			"rating": "평균 평점",
 			"rating_desc": "Chrome 웹스토어 평점",
 			"average_rating": "평균 평점",
@@ -736,6 +738,7 @@
 			"description": "쉽고 빠른 콘텐츠 정리",
 			"chrome_extension": "Chrome 확장 프로그램",
 			"ios_app": "iOS 앱",
+			"android_app": "Android 앱",
 			"features_link": "기능 살펴보기",
 			"contact_link": "문의하기",
 			"product": {

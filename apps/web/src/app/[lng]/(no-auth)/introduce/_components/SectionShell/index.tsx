@@ -1,4 +1,4 @@
-import { cn } from "@web-memo/ui";
+import { cn } from "@web-memo/shared/utils";
 import type { ReactNode } from "react";
 
 /**
@@ -13,7 +13,7 @@ import type { ReactNode } from "react";
  */
 
 /** 섹션 배경 밴드. `canvas`와 `fog`를 번갈아 쓴다 */
-type TSectionBackground = "canvas" | "fog";
+export type TSectionBackground = "canvas" | "fog";
 
 interface SectionShellProps {
 	children: ReactNode;

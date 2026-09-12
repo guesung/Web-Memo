@@ -1,7 +1,7 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
 import { EXTERNAL_LINK } from "@web-memo/shared/constants";
-import { cn } from "@web-memo/ui";
+import { cn } from "@web-memo/shared/utils";
 import { ArrowRight, Chrome } from "lucide-react";
 import Link from "next/link";
 import { AppleIcon, GooglePlayIcon } from "../StoreIcon";

@@ -529,7 +529,7 @@
 		},
 		"hero": {
 			"title": "Easier web browsing",
-			"subtitle": "Save with one click, summarize with AI, organize systematically",
+			"subtitle": "Open the side panel on the page you're reading — AI summarizes long articles and videos",
 			"install_button": "Add to Chrome",
 			"appstore_button": "App Store",
 			"playstore_button": "Google Play",
@@ -542,7 +542,7 @@
 		},
 		"section": {
 			"key_features": "Key Features",
-			"key_features_desc": "Features that make web browsing smarter",
+			"key_features_desc": "Five things that keep only what you need while you read",
 			"features_badge": "Features",
 			"demo": "See it in action",
 			"demo_title": "See it in action",
@@ -553,12 +553,12 @@
 			"use_cases_desc": "Web Memo helps in various situations",
 			"stats": "Web Memo by the numbers",
 			"stats_title": "Web Memo by the numbers",
-			"stats_desc": "Many users are already using Web Memo",
+			"stats_desc": "The numbers so far",
 			"testimonials_title": "User Reviews",
 			"testimonials_desc": "See what real users are saying",
 			"testimonials_note": "* Based on representative use cases",
 			"cta_title": "Get started now",
-			"cta_desc": "Experience smarter web browsing. Free, right now.",
+			"cta_desc": "Ten seconds from install to your first note. All of it free.",
 			"cta_badge": "Get Started Today"
 		},
 		"demo": {
@@ -579,9 +579,9 @@
 			"tab_wishlist": "Wishlist",
 			"tab_wishlist_desc": "Save content for later",
 			"organize": "Organize",
-			"organize_desc": "Systematic management with categories",
+			"organize_desc": "Group notes into categories",
 			"tab_organize": "Organize",
-			"tab_organize_desc": "Systematic management with categories"
+			"tab_organize_desc": "Group notes into categories"
 		},
 		"steps": {
 			"step1_title": "Install Extension",
@@ -589,17 +589,17 @@
 			"step2_title": "Open Side Panel",
 			"step2_desc": "Quick access with shortcuts",
 			"step3_title": "Save and Organize",
-			"step3_desc": "Systematically manage web content"
+			"step3_desc": "Group them into categories and find them later"
 		},
 		"use_case": {
 			"students_title": "Students & Researchers",
 			"students_desc": "Save key points from online courses and research. Systematically manage references for your papers.",
 			"student_title": "Students & Researchers",
-			"student_desc": "Save key points from online courses and research. Systematically manage references for your papers.",
+			"student_desc": "Save just the key points from online lectures and research. Keep references for your paper together with their sources.",
 			"professionals_title": "Professionals",
 			"professionals_desc": "Systematically manage competitor analysis and trend monitoring. Find work-related information quickly.",
 			"professional_title": "Research & Work",
-			"professional_desc": "Systematically manage competitor analysis and trend monitoring. Find work-related information quickly.",
+			"professional_desc": "Collect competitor analysis and trend research in one place. Pull it back up by search when you need it.",
 			"efficiency_title": "Efficient People",
 			"efficiency_desc": "Get key insights with AI summaries instead of reading long articles. Save time and consume more content.",
 			"creators_title": "Content Creators",
@@ -607,17 +607,19 @@
 			"creator_title": "Content Creators",
 			"creator_desc": "Collect inspiring content and ideas. Manage all your creative references in one place.",
 			"job_hunting_title": "Job Seekers",
-			"job_hunting_desc": "Organize job postings and company information at a glance. Efficiently manage materials for interview preparation.",
+			"job_hunting_desc": "Keep job postings and company research in one place. Gather what you'll reread before the interview.",
 			"news_reading_title": "News & Articles",
-			"news_reading_desc": "Save important articles and insights. Systematically manage key information to revisit later.",
+			"news_reading_desc": "Save the articles and insights that matter. Leave a note on the parts you'll come back to.",
 			"youtube_notes_title": "YouTube Learning",
-			"youtube_notes_desc": "Take notes on key video content. Boost your video learning efficiency with AI summaries."
+			"youtube_notes_desc": "Note the key moments of a video, alongside a caption-based AI summary."
 		},
 		"stats": {
 			"active_users": "Active Users",
 			"active_users_desc": "Chrome Web Store users",
 			"memos_saved": "Memos Saved",
 			"memos_saved_desc": "Total memos saved by users",
+			"free_forever": "Free forever",
+			"no_tracking": "No data tracking",
 			"rating": "Average Rating",
 			"rating_desc": "Chrome Web Store rating",
 			"average_rating": "Average Rating",
@@ -741,6 +743,7 @@
 			"description": "Easy and fast content organization",
 			"chrome_extension": "Chrome Extension",
 			"ios_app": "iOS App",
+			"android_app": "Android App",
 			"features_link": "Explore Features",
 			"contact_link": "Contact Us",
 			"product": {

@@ -1400,7 +1400,8 @@
 					"Diagnosing errors and improving the stability of the Service",
 					"Analyzing feature usage in order to improve the Service",
 					"Responding to your inquiries and sending service announcements",
-					"Preventing abnormal use and API abuse"
+					"Preventing abnormal use and API abuse",
+					"Sending service guidance emails, such as the sign-up welcome email"
 				]
 			},
 			"permissions": {
@@ -1573,6 +1574,12 @@
 				"purpose": "Rate limiting and abuse prevention for AI features",
 				"data": "Requester IP address and request counts",
 				"url": "https://upstash.com/trust/privacy.pdf"
+			},
+			"resend": {
+				"name": "Resend (Plus Five Five, Inc.)",
+				"purpose": "Sending service guidance emails",
+				"data": "Email address",
+				"url": "https://resend.com/legal/privacy-policy"
 			}
 		}
 	},

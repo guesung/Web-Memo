@@ -2,15 +2,21 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
-import { Label } from "@web-memo/ui";
 
-interface SettingHeaderProps extends LanguageType {}
+interface IFSettingHeaderProps extends LanguageType {}
 
-export default async function SettingHeader({ lng }: SettingHeaderProps) {
+/** 설정 화면의 제목 줄 */
+export default async function SettingHeader({ lng }: IFSettingHeaderProps) {
 	const { t } = await useTranslation(lng);
+
 	return (
-		<Label className="flex justify-center py-10 text-xl">
-			{t("setting.header")}
-		</Label>
+		<div className="mb-6 flex flex-col gap-1">
+			<h1 className="text-xl font-semibold text-foreground">
+				{t("setting.header")}
+			</h1>
+			<p className="text-sm text-muted-foreground">
+				{t("setting.headerDescription")}
+			</p>
+		</div>
 	);
 }

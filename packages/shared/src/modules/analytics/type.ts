@@ -68,7 +68,9 @@ export type TAnalyticsEvent =
 	| { name: "extension_installed" }
 	| { name: "login_start"; params: { method: string } }
 	| { name: "side_panel_login_click" }
-	| { name: "sign_up"; params: { method: string } };
+	| { name: "sign_up"; params: { method: string } }
+	| { name: "guide_step"; params: { step_name: string } }
+	| { name: "guide_exit"; params: { last_step_name: string } };
 
 /** 이벤트 이름만 추린 유니온. */
 export type TAnalyticsEventName = TAnalyticsEvent["name"];
@@ -109,4 +111,6 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	login_start: "engagement",
 	side_panel_login_click: "engagement",
 	sign_up: "core_action",
+	guide_step: "engagement",
+	guide_exit: "engagement",
 };

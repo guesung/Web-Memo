@@ -328,6 +328,31 @@ export class AuthService {
 	signout = () => this.supabaseClient.auth.signOut();
 }
 
+/** 관리자 화면이 읽어가는 피드백 한 건. `id`는 bigint라 number다. */
+export interface IFFeedback {
+	id: number;
+	content: string | null;
+	user_id: string | null;
+	email: string | null;
+	created_at: string;
+}
+
+/** 피드백 목록 조회 조건. 검색어는 내용(content)에만 걸린다. */
+export interface IFGetFeedbacksParams {
+	searchQuery?: string;
+	page?: number;
+	pageSize?: number;
+}
+
+/** 피드백 목록 조회 결과. `count`는 필터를 적용한 전체 건수다. */
+export interface IFFeedbacksResponse {
+	data: IFFeedback[];
+	count: number;
+}
+
+/** 피드백 목록의 기본 페이지 크기 */
+export const FEEDBACK_PAGE_SIZE = 20;
+
 export class FeedbackService {
 	constructor(
 		private readonly feedbackSupabaseClient: FeedbackSupabaseClient,
@@ -335,6 +360,58 @@ export class FeedbackService {
 
 	insertFeedback = async (feedback: FeedbackTable["Insert"]) =>
 		this.feedbackSupabaseClient.from("feedbacks").insert(feedback);
+
+	/**
+	 * 피드백 목록을 최신순으로 읽는다.
+	 * @description 검색어가 있을 때만 content에 ilike를 건다. 빈 문자열로도 필터를 걸면
+	 * content가 null인 행이 통째로 빠지기 때문이다.
+	 */
+	getFeedbacks = async ({
+		searchQuery,
+		page = 1,
+		pageSize = FEEDBACK_PAGE_SIZE,
+	}: IFGetFeedbacksParams = {}): Promise<IFFeedbacksResponse> => {
+		const from = (page - 1) * pageSize;
+		const to = from + pageSize - 1;
+
+		let query = this.feedbackSupabaseClient
+			.schema(SUPABASE.schema.feedback)
+			.from("feedbacks")
+			.select("id, content, user_id, email, created_at", { count: "exact" });
+
+		if (searchQuery) {
+			query = query.ilike("content", `%${searchQuery}%`);
+		}
+
+		const { data, count, error } = await query
+			.order("created_at", { ascending: false })
+			.range(from, to);
+
+		if (error) {
+			throw new Error(error.message);
+		}
+
+		return { data: (data ?? []) as IFFeedback[], count: count ?? 0 };
+	};
+
+	/**
+	 * 피드백 한 건을 id로 읽는다.
+	 * @description 슬랙 알림의 `?id=` 링크로 들어왔는데 그 행이 현재 페이지에 없을 때 쓴다.
+	 */
+	getFeedback = async (id: number): Promise<IFFeedback | null> => {
+		const { data, error } = await this.feedbackSupabaseClient
+			.schema(SUPABASE.schema.feedback)
+			.from("feedbacks")
+			.select("id, content, user_id, email, created_at")
+			.eq("id", id)
+			.maybeSingle();
+
+		if (error) {
+			throw new Error(error.message);
+		}
+
+		return data as IFFeedback | null;
+	};
 }
 
 export interface AdminStats {

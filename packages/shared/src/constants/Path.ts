@@ -20,6 +20,7 @@ export const PATHS = {
 	callbackEmail: "/auth/callback-email",
 	admin: "/admin",
 	adminUsers: "/admin/users",
+	adminFeedback: "/admin/feedback",
 	featuresYoutubeSummary: "/features/youtube-summary",
 	featuresMemo: "/features/memo",
 	featuresSaveArticles: "/features/save-articles",

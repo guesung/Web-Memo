@@ -847,6 +847,7 @@
 			"title": "Admin",
 			"dashboard": "Dashboard",
 			"users": "Users",
+			"feedback": "Feedback",
 			"back_to_memos": "Back to Memos"
 		},
 		"users": {
@@ -856,6 +857,23 @@
 			"joined": "Joined",
 			"memos": "Memos",
 			"search_placeholder": "Search by nickname or ID...",
+			"previous": "Previous",
+			"next": "Next",
+			"page": "Page {{current}} of {{total}}"
+		},
+		"feedback": {
+			"title": "Feedback",
+			"empty": "No feedback yet.",
+			"total": "{{count}} feedback total",
+			"received_at": "Received",
+			"content": "Content",
+			"writer": "Writer",
+			"anonymous": "Not signed in",
+			"reply_to": "Reply to {{email}}",
+			"search_placeholder": "Search by content...",
+			"search_empty": "No feedback matches '{{query}}'.",
+			"clear_search": "Clear search",
+			"back_to_list": "Back to all feedback",
 			"previous": "Previous",
 			"next": "Next",
 			"page": "Page {{current}} of {{total}}"

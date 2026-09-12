@@ -44,8 +44,7 @@
 	"header": {
 		"login": "Sign in",
 		"logout": "Sign out",
-		"introduce": "About",
-		"update": "What's new"
+		"introduce": "About"
 	},
 	"updateNotification": {
 		"title": "🎉 What's New",
@@ -54,7 +53,6 @@
 		"confirm": "Got it"
 	},
 	"updates": {
-		"title": "What's new",
 		"versions": {
 			"v1.10.12": {
 				"title": "Website address changed",

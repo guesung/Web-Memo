@@ -44,8 +44,7 @@
 	"header": {
 		"login": "로그인하기",
 		"logout": "로그아웃하기",
-		"introduce": "서비스 소개",
-		"update": "새로운 소식"
+		"introduce": "서비스 소개"
 	},
 	"updateNotification": {
 		"title": "🎉 업데이트 소식",
@@ -54,7 +53,6 @@
 		"confirm": "확인"
 	},
 	"updates": {
-		"title": "새로운 소식",
 		"versions": {
 			"v1.10.12": {
 				"title": "웹사이트 주소 변경",

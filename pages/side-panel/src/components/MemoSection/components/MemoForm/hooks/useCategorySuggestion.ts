@@ -9,6 +9,7 @@ import {
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
+import { generateRandomPastelColor } from "@web-memo/shared/utils";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -53,6 +54,7 @@ export function useCategorySuggestion({
 					try {
 						const result = await createCategory({
 							name: suggestionToApply.categoryName,
+							color: generateRandomPastelColor(),
 						});
 						categoryId = result.data?.[0]?.id ?? null;
 					} catch {

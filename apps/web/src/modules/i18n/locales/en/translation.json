@@ -531,16 +531,14 @@
 			"title": "Easier web browsing",
 			"subtitle": "Save with one click, summarize with AI, organize systematically",
 			"install_button": "Add to Chrome",
-			"appstore_button": "Download on App Store",
+			"appstore_button": "App Store",
+			"playstore_button": "Google Play",
 			"explore_features": "Explore Features",
 			"free_forever": "Free Forever",
 			"quick_install": "10s Install",
 			"no_credit_card": "No credit card required",
 			"learn_more": "Learn more",
-			"mobile_apps": {
-				"ios": "iOS",
-				"android": "Android"
-			}
+			"desktop_extension_hint": "Also available as a Chrome extension on desktop"
 		},
 		"section": {
 			"key_features": "Key Features",

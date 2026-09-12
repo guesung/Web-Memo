@@ -525,17 +525,15 @@
 		"hero": {
 			"title": "웹서핑을 더 쉽게",
 			"subtitle": "클릭 한 번으로 메모하고, AI로 요약하고, 체계적으로 관리하세요",
-			"install_button": "크롬에 설치하기",
-			"appstore_button": "App Store에서 다운로드",
+			"install_button": "Chrome에 추가",
+			"appstore_button": "App Store",
+			"playstore_button": "Google Play",
 			"explore_features": "기능 살펴보기",
 			"free_forever": "영원히 무료",
 			"quick_install": "설치 10초",
 			"no_credit_card": "신용카드 필요 없음",
 			"learn_more": "더 알아보기",
-			"mobile_apps": {
-				"ios": "iOS",
-				"android": "안드로이드"
-			}
+			"desktop_extension_hint": "PC에서는 Chrome 확장으로도 쓸 수 있어요"
 		},
 		"section": {
 			"key_features": "핵심 기능",

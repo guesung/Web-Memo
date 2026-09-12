@@ -13,7 +13,11 @@
  *   node .github/scripts/notify-release-result.mjs
  */
 
-import { readAppConfig, readExtensionVersion } from "./lib/repo-versions.mjs";
+import {
+	readAppConfig,
+	readExtensionVersion,
+	readWebUrl,
+} from "./lib/repo-versions.mjs";
 import { requireEnv } from "./lib/run-context.mjs";
 import { postToSlack } from "./lib/slack-blocks.mjs";
 
@@ -66,10 +70,20 @@ const main = async () => {
 	const targets = JSON.parse(process.env.TARGETS ?? "{}");
 	const results = JSON.parse(process.env.RESULTS ?? "{}");
 	const ref = process.env.RELEASE_REF || "master 최신";
+	// 버전 커밋 단계가 깨지면 빌드 잡이 전부 skipped로 찍혀 "결과 확인 불가"로 뭉개집니다.
+	// 그 경우에는 타깃별 줄 대신 멈춘 지점을 그대로 알립니다.
+	const hasResolveFailed =
+		(process.env.RESOLVE_RESULT ?? "success") !== "success";
 
 	const lines = [];
 
-	if (targets.app) {
+	if (hasResolveFailed) {
+		lines.push(
+			"⚠️ 버전을 올려 커밋하는 단계에서 멈췄습니다 — 아무것도 배포되지 않았습니다.",
+		);
+	}
+
+	if (!hasResolveFailed && targets.app) {
 		// 앱만 플랫폼별로 갈라져 있어 잡 목록을 따로 조회합니다.
 		const jobs = process.env.GH_TOKEN
 			? await fetchJobConclusions({
@@ -85,7 +99,7 @@ const main = async () => {
 		);
 	}
 
-	if (targets.extension) {
+	if (!hasResolveFailed && targets.extension) {
 		const conclusion = describe(results.extension);
 		// 업로드까지만 자동이고 게시는 사람이 눌러야 합니다. 매번 같이 적어 둡니다.
 		const note =
@@ -96,13 +110,16 @@ const main = async () => {
 		lines.push(`🧩 확장  ${conclusion}${note}`);
 	}
 
-	if (targets.web) {
+	if (!hasResolveFailed && targets.web) {
 		lines.push(`🌐 웹 (Vercel 프로덕션)  ${describe(results.web)}`);
 	}
 
-	const hasFailure = Object.entries(results).some(
-		([target, result]) => targets[target] && result !== "success",
-	);
+	const hasFailure =
+		hasResolveFailed ||
+		Object.entries(results).some(
+			([target, result]) => targets[target] && result !== "success",
+		);
+	// 체크아웃이 버전 커밋을 가리키므로 여기서 읽는 값이 방금 올린 버전입니다.
 	const versions = [
 		targets.app ? `앱 v${readAppConfig().version}` : null,
 		targets.extension ? `확장 v${readExtensionVersion()}` : null,
@@ -110,9 +127,7 @@ const main = async () => {
 		.filter(Boolean)
 		.join(" · ");
 
-	const headline = hasFailure
-		? "❌ 릴리스 실패"
-		: "✅ 릴리스 완료";
+	const headline = hasFailure ? "❌ 릴리스 실패" : "✅ 릴리스 완료";
 	const subtitle = [versions, `\`${ref}\``].filter(Boolean).join(" · ");
 
 	const payload = {
@@ -126,6 +141,22 @@ const main = async () => {
 			{
 				type: "actions",
 				elements: [
+					// 웹이 실제로 올라갔을 때만 답니다. 실패한 배포에 링크를 달면
+					// 그 주소는 아직 이전 배포를 서빙해, 성공한 것처럼 보입니다.
+					...(targets.web && results.web === "success"
+						? [
+								{
+									type: "button",
+									action_id: "open_web",
+									text: {
+										type: "plain_text",
+										text: "🌐 웹 사이트 열기",
+										emoji: true,
+									},
+									url: readWebUrl("production"),
+								},
+							]
+						: []),
 					{
 						type: "button",
 						action_id: "open_run",

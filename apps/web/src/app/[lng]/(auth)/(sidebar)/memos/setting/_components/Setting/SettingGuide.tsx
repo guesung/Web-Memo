@@ -1,34 +1,38 @@
+"use client";
+
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { PATHS } from "@web-memo/shared/constants";
 import { LocalStorage } from "@web-memo/shared/modules/local-storage";
-import { Button, Label } from "@web-memo/ui";
+import { Button } from "@web-memo/ui";
 import { useRouter } from "next/navigation";
 
-interface SettingGuideProps extends LanguageType {}
+import SettingRow from "./SettingRow";
 
-export default function SettingGuide({ lng }: SettingGuideProps) {
+interface IFSettingGuideProps extends LanguageType {}
+
+/** 첫 사용 안내를 처음부터 다시 보는 설정 */
+export default function SettingGuide({ lng }: IFSettingGuideProps) {
 	const { t } = useTranslation(lng);
-
 	const router = useRouter();
 
-	const handleRestartGuide = () => {
+	const handleRestartGuideClick = () => {
 		LocalStorage.remove("guide");
 		router.push(`/${lng}${PATHS.memos}`);
 	};
 
 	return (
-		<div className="grid grid-cols-12">
-			<Label className="col-span-4 grid place-items-center">
-				{t("setting.guide")}
-			</Label>
+		<SettingRow
+			label={t("setting.guide")}
+			description={t("setting.guideDescription")}
+		>
 			<Button
 				variant="outline"
-				className="col-span-2"
-				onClick={handleRestartGuide}
+				className="max-sm:w-full"
+				onClick={handleRestartGuideClick}
 			>
 				{t("setting.restartGuide")}
 			</Button>
-		</div>
+		</SettingRow>
 	);
 }

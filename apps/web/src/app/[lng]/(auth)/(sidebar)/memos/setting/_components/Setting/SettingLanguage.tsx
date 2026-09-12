@@ -1,7 +1,8 @@
+"use client";
+
 import type { Language, LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import {
-	Label,
 	Select,
 	SelectContent,
 	SelectItem,
@@ -11,30 +12,32 @@ import {
 import { useRouter } from "next/navigation";
 
 import { useLanguage } from "../../_hooks";
+import SettingRow from "./SettingRow";
 
-interface SettingLanguageProps extends LanguageType {}
+interface IFSettingLanguageProps extends LanguageType {}
 
-export default function SettingLanguage({ lng }: SettingLanguageProps) {
+/** 화면에 쓰는 언어를 고르는 설정 */
+export default function SettingLanguage({ lng }: IFSettingLanguageProps) {
 	const { t } = useTranslation(lng);
 	const { language, setLanguageRouter } = useLanguage();
 	const router = useRouter();
 
-	const handleChangeLanguage = (value: Language) => {
+	const handleLanguageChange = (value: Language) => {
 		setLanguageRouter(value);
 		router.refresh();
 	};
 
 	return (
-		<div className="grid grid-cols-12">
-			<Label className="col-span-4 grid place-items-center">
-				{t("setting.language")}
-			</Label>
+		<SettingRow
+			label={t("setting.language")}
+			description={t("setting.languageDescription")}
+		>
 			<Select
-				onValueChange={handleChangeLanguage}
+				onValueChange={handleLanguageChange}
 				value={language}
 				aria-label={t("setting.selectLanguage")}
 			>
-				<SelectTrigger className="w-[180px]">
+				<SelectTrigger className="w-full sm:w-[180px]">
 					<SelectValue />
 				</SelectTrigger>
 				<SelectContent>
@@ -42,6 +45,6 @@ export default function SettingLanguage({ lng }: SettingLanguageProps) {
 					<SelectItem value="en">English</SelectItem>
 				</SelectContent>
 			</Select>
-		</div>
+		</SettingRow>
 	);
 }

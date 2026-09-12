@@ -122,9 +122,9 @@ test.describe("메모 검색·필터 (Mocked)", () => {
 	test("위시리스트로 이동하면, 위시리스트에 담은 메모만 남는다.", async ({
 		page,
 	}) => {
-		await page.getByRole("link", { name: "My wishlist" }).click();
+		await page.getByRole("link", { name: "Wishlist" }).click();
 
-		await expect(page).toHaveURL(/isWish=true/);
+		await expect(page).toHaveURL(new RegExp(`${PATHS.memosWish}$`));
 		await expect(page.locator(".memo-item")).toHaveCount(1);
 		await expect(
 			page.locator(".memo-item", { hasText: "위시리스트에 담은 메모" }),

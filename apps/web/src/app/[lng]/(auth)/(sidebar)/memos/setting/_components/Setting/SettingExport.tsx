@@ -12,7 +12,6 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-	Label,
 } from "@web-memo/ui";
 import {
 	Download,
@@ -23,9 +22,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-interface SettingExportProps extends LanguageType {}
+import SettingRow from "./SettingRow";
 
-export default function SettingExport({ lng }: SettingExportProps) {
+interface IFSettingExportProps extends LanguageType {}
+
+/** 메모 전체를 파일로 내려받는 설정 */
+export default function SettingExport({ lng }: IFSettingExportProps) {
 	const { t } = useTranslation(lng);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isOpen, setIsOpen] = useState(false);
@@ -50,13 +52,17 @@ export default function SettingExport({ lng }: SettingExportProps) {
 	};
 
 	return (
-		<div className="grid grid-cols-12">
-			<Label className="col-span-4 grid place-items-center">
-				{t("setting.export")}
-			</Label>
+		<SettingRow
+			label={t("setting.export")}
+			description={t("setting.exportDescription")}
+		>
 			<DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
 				<DropdownMenuTrigger asChild>
-					<Button variant="outline" className="col-span-3" disabled={isLoading}>
+					<Button
+						variant="outline"
+						className="max-sm:w-full"
+						disabled={isLoading}
+					>
 						{isLoading ? (
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 						) : (
@@ -80,6 +86,6 @@ export default function SettingExport({ lng }: SettingExportProps) {
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
-		</div>
+		</SettingRow>
 	);
 }

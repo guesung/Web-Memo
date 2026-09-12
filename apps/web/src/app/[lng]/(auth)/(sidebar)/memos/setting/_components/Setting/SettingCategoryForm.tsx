@@ -7,11 +7,26 @@ import {
 	useCategoryUpdateMutation,
 } from "@web-memo/shared/hooks";
 import { generateRandomPastelColor } from "@web-memo/shared/utils";
-import { Button, Input, Label, toast } from "@web-memo/ui";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	Button,
+	Input,
+	toast,
+} from "@web-memo/ui";
 import { PlusIcon, TrashIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
+/** 메모를 묶는 카테고리를 만들고 이름·색을 바꾸고 지우는 설정 */
+export default function SettingCategoryForm({
+	lng,
+}: IFSettingCategoryFormProps) {
 	const { t } = useTranslation(lng);
 
 	const { categories } = useCategoryQuery();
@@ -21,6 +36,9 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 
 	const [editingId, setEditingId] = useState<number | null>(null);
 	const [isAdding, setIsAdding] = useState(false);
+	const [categoryIdToDelete, setCategoryIdToDelete] = useState<number | null>(
+		null,
+	);
 	const editInputRef = useRef<HTMLInputElement>(null);
 	const addInputRef = useRef<HTMLInputElement>(null);
 	const colorInputRef = useRef<HTMLInputElement>(null);
@@ -89,10 +107,13 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 		);
 	};
 
-	const handleCategoryDelete = (id: number) => {
-		deleteCategory(id, {
+	const handleCategoryDeleteConfirm = () => {
+		if (!categoryIdToDelete) return;
+
+		deleteCategory(categoryIdToDelete, {
 			onSuccess: () => toast({ title: t("toastTitle.successSave") }),
 		});
+		setCategoryIdToDelete(null);
 	};
 
 	const openColorPicker = (categoryId: number, currentColor: string) => {
@@ -105,8 +126,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 
 	return (
 		<div className="relative">
-			<Label className="mb-3 block text-center">{t("setting.category")}</Label>
-			<div className="mx-auto max-w-xs space-y-1">
+			<div className="space-y-1">
 				{categories?.map((category) => {
 					const isEditing = editingId === category.id;
 					const categoryColor = category.color || "#9333ea";
@@ -155,13 +175,19 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 								size="icon"
 								className="text-destructive h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
 								type="button"
-								onClick={() => handleCategoryDelete(category.id)}
+								onClick={() => setCategoryIdToDelete(category.id)}
 							>
 								<TrashIcon size={14} />
 							</Button>
 						</div>
 					);
 				})}
+
+				{categories?.length === 0 && !isAdding && (
+					<p className="px-3 py-2 text-sm text-muted-foreground">
+						{t("setting.categoryEmpty")}
+					</p>
+				)}
 
 				{isAdding ? (
 					<div className="flex items-center gap-3 rounded-lg px-3 py-2">
@@ -196,8 +222,34 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 				type="color"
 				className="absolute opacity-0 pointer-events-none"
 			/>
+
+			<AlertDialog
+				open={categoryIdToDelete !== null}
+				onOpenChange={(open) => {
+					if (!open) {
+						setCategoryIdToDelete(null);
+					}
+				}}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							{t("sideBar.deleteConfirmTitle")}
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							{t("sideBar.deleteConfirmDescription")}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>{t("sideBar.cancel")}</AlertDialogCancel>
+						<AlertDialogAction onClick={handleCategoryDeleteConfirm}>
+							{t("sideBar.deleteCategory")}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }
 
-interface SettingCategoryFormProps extends LanguageType {}
+interface IFSettingCategoryFormProps extends LanguageType {}

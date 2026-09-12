@@ -1,5 +1,6 @@
 import { type Language, SUPPORTED_LANGUAGES } from "@src/modules/i18n";
 import { CONFIG } from "@web-memo/env";
+import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import JsonLdScript from "../JsonLdScript";
 
 const baseUrl = CONFIG.webUrl;
@@ -24,9 +25,7 @@ const getOrganizationSchema = (lng: Language) => ({
 	name: lng === "ko" ? "웹 메모" : "Web Memo",
 	url: baseUrl,
 	logo: `${baseUrl}/og-image.png`,
-	sameAs: [
-		"https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
-	],
+	sameAs: [EXTERNAL_LINK.chromeWebStoreListing],
 	contactPoint: {
 		"@type": "ContactPoint",
 		email: "gueit214@naver.com",
@@ -57,10 +56,8 @@ const getSoftwareApplicationSchema = (lng: Language) => ({
 		"@type": "Organization",
 		name: "Web Memo",
 	},
-	downloadUrl:
-		"https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
-	installUrl:
-		"https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
+	downloadUrl: EXTERNAL_LINK.chromeWebStoreListing,
+	installUrl: EXTERNAL_LINK.chromeWebStoreListing,
 	screenshot: `${baseUrl}/og-image.png`,
 	featureList:
 		lng === "ko"

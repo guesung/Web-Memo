@@ -14,6 +14,17 @@ export async function GET(request: NextRequest) {
 	// 로케일 없는 경로로 보내면 미들웨어가 /{lng}로 한 번 더 리다이렉트합니다.
 	// 로그인 직후 화면이 뜨기까지 왕복이 하나 더 늘어나므로 여기서 붙여 보냅니다.
 	const language = getLanguage(request) ?? DEFAULT_LANGUAGE;
+
+	// OAuth 제공자가 취소·실패를 error 쿼리로 돌려줍니다. 그대로 /memos로 보내면
+	// 미들웨어가 다시 로그인 화면으로 튕겨 사용자는 아무 안내 없이 제자리로 옵니다.
+	// 실패했다는 사실만 플래그로 넘기고 사유 원문은 싣지 않습니다.
+	if (requestUrl.searchParams.has("error")) {
+		const loginUrl = new URL(`${requestUrl.origin}/${language}${PATHS.login}`);
+		loginUrl.searchParams.set("error", "1");
+
+		return NextResponse.redirect(loginUrl);
+	}
+
 	const code = requestUrl.searchParams.get("code");
 
 	if (code) {

@@ -1,17 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { QUERY_KEY } from "../../../constants";
-import { FeedbackService, type IFGetFeedbacksParams } from "../../../utils";
-import useSupabaseFeedbackClientQuery from "./useSupabaseFeedbackClientQuery";
+import { AdminService, type IFGetFeedbacksParams } from "../../../utils";
+import useSupabaseClientQuery from "./useSupabaseClientQuery";
 
 /**
  * 관리자 피드백 목록 조회.
- * @description 피드백 클라이언트는 브라우저에서만 만들어지므로 클라이언트가 준비된 뒤에만 조회한다.
+ * @description 피드백은 관리자 RPC로만 읽히므로 로그인 세션이 붙은 클라이언트를 쓴다.
+ * 익명 피드백 클라이언트로는 `auth.uid()`가 비어 권한 검사에서 막힌다.
  */
 export default function useFeedbacksQuery(params: IFGetFeedbacksParams = {}) {
-	const { data: supabaseClient } = useSupabaseFeedbackClientQuery();
+	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	const query = useQuery({
-		queryFn: () => new FeedbackService(supabaseClient).getFeedbacks(params),
+		queryFn: () => new AdminService(supabaseClient).getFeedbacks(params),
 		queryKey: QUERY_KEY.feedbacks(params.searchQuery, params.page),
 		enabled: !!supabaseClient,
 	});

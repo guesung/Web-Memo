@@ -435,8 +435,8 @@
 		"export": "내보내기",
 		"exportMemos": "메모 내보내기",
 		"memoSection": "메모 섹션 표시",
-		"showImpressionSection": "메모 작성 시 느낀 점 입력란을 표시합니다",
-		"showActionItemSection": "메모 작성 시 액션 아이템 입력란을 표시합니다"
+		"showImpressionSection": "메모를 쓸 때 느낀 점 칸을 보여줘요",
+		"showActionItemSection": "메모를 쓸 때 할 일 칸을 보여줘요"
 	},
 	"guide": {
 		"next": "다음으로",
@@ -1586,7 +1586,7 @@
 	},
 	"trash": {
 		"title": "휴지통",
-		"description": "삭제한 메모는 여기 남습니다. 되살리거나 완전히 지울 수 있어요.",
+		"description": "삭제한 메모는 여기 남아요. 되살리거나 완전히 지울 수 있어요.",
 		"empty": "휴지통이 비어 있어요.",
 		"restore": "되살리기",
 		"deletePermanently": "완전히 삭제",

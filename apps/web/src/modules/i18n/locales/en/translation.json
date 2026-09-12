@@ -1588,9 +1588,13 @@
 		}
 	},
 	"trash": {
-		"title": "Trash",
-		"description": "Deleted memos stay here. You can restore them or delete them for good.",
 		"empty": "Trash is empty.",
+		"totalMemos": "{{total}} in trash",
+		"deletedAt": "Deleted {{time}}",
+		"emptyDescription": "Deleted memos gather here. Nothing has been thrown away yet.",
+		"backToMemos": "Back to memos",
+		"restoreFailed": "Couldn't restore it. Please try again in a moment.",
+		"deleteFailed": "Couldn't delete it for good. Please try again in a moment.",
 		"restore": "Restore",
 		"deletePermanently": "Delete permanently",
 		"emptyTrash": "Empty trash",

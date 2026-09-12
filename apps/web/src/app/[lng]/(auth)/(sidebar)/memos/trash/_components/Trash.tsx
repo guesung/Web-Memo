@@ -7,7 +7,6 @@ import {
 	useDeleteMemosPermanentlyMutation,
 	useRestoreMemosMutation,
 } from "@web-memo/shared/hooks";
-import type { GetMemoResponse } from "@web-memo/shared/types";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -18,17 +17,19 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 	Button,
-	Card,
-	Loading,
+	toast,
 } from "@web-memo/ui";
-import dayjs from "dayjs";
-import { RotateCcw, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useState } from "react";
 
-interface TrashProps extends LanguageType {}
+import { MemoGridSkeleton } from "../../_components";
+import TrashEmptyState from "./TrashEmptyState";
+import TrashGrid from "./TrashGrid";
+
+interface IFTrashProps extends LanguageType {}
 
 /** 삭제한 메모 목록. 되살리거나 완전히 지운다 */
-export default function Trash({ lng }: TrashProps) {
+export default function Trash({ lng }: IFTrashProps) {
 	const { t } = useTranslation(lng);
 	const { data: deletedMemos, isLoading } = useDeletedMemosQuery();
 	const { mutate: mutateRestoreMemos } = useRestoreMemosMutation();
@@ -36,54 +37,58 @@ export default function Trash({ lng }: TrashProps) {
 		useDeleteMemosPermanentlyMutation();
 	const [memoIdsToDelete, setMemoIdsToDelete] = useState<number[]>([]);
 
-	const handleRestoreClick = (id: number) => {
-		mutateRestoreMemos([id]);
+	const handleRestoreClick = (memoId: number) => {
+		mutateRestoreMemos([memoId], {
+			onError: () => toast({ title: t("trash.restoreFailed") }),
+		});
 	};
 
 	const handleConfirmDelete = () => {
-		mutateDeleteMemosPermanently(memoIdsToDelete);
+		mutateDeleteMemosPermanently(memoIdsToDelete, {
+			onError: () => toast({ title: t("trash.deleteFailed") }),
+		});
 		setMemoIdsToDelete([]);
 	};
 
+	const handleDeleteClick = (memoId: number) => {
+		setMemoIdsToDelete([memoId]);
+	};
+
+	const handleEmptyTrashClick = () => {
+		if (!deletedMemos) {
+			return;
+		}
+
+		setMemoIdsToDelete(deletedMemos.map((memo) => memo.id));
+	};
+
 	if (isLoading) {
-		return <Loading />;
+		return <MemoGridSkeleton />;
 	}
 
 	if (!deletedMemos || deletedMemos.length === 0) {
-		return (
-			<p className="py-16 text-center text-sm text-muted-foreground">
-				{t("trash.empty")}
-			</p>
-		);
+		return <TrashEmptyState lng={lng} />;
 	}
 
 	return (
-		<>
-			<div className="mb-4 flex justify-end">
-				<Button
-					variant="outline"
-					size="sm"
-					onClick={() =>
-						setMemoIdsToDelete(deletedMemos.map((memo) => memo.id))
-					}
-				>
+		<div className="flex w-full flex-col gap-4">
+			<div className="flex w-full items-center justify-between">
+				<p className="text-muted-foreground select-none text-sm flex items-center gap-2">
+					<span className="w-2 h-2 bg-primary rounded-full" />
+					{t("trash.totalMemos", { total: deletedMemos.length })}
+				</p>
+				<Button variant="outline" size="sm" onClick={handleEmptyTrashClick}>
 					<Trash2 size={14} className="mr-1" />
 					{t("trash.emptyTrash")}
 				</Button>
 			</div>
 
-			<ul className="grid gap-3 pb-10">
-				{deletedMemos.map((memo) => (
-					<TrashItem
-						key={memo.id}
-						memo={memo}
-						restoreLabel={t("trash.restore")}
-						deleteLabel={t("trash.deletePermanently")}
-						onRestoreClick={handleRestoreClick}
-						onDeleteClick={(id) => setMemoIdsToDelete([id])}
-					/>
-				))}
-			</ul>
+			<TrashGrid
+				lng={lng}
+				memos={deletedMemos}
+				onRestoreClick={handleRestoreClick}
+				onDeleteClick={handleDeleteClick}
+			/>
 
 			<AlertDialog
 				open={memoIdsToDelete.length > 0}
@@ -110,55 +115,6 @@ export default function Trash({ lng }: TrashProps) {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</>
-	);
-}
-
-interface TrashItemProps {
-	memo: GetMemoResponse;
-	restoreLabel: string;
-	deleteLabel: string;
-	onRestoreClick: (id: number) => void;
-	onDeleteClick: (id: number) => void;
-}
-
-function TrashItem({
-	memo,
-	restoreLabel,
-	deleteLabel,
-	onRestoreClick,
-	onDeleteClick,
-}: TrashItemProps) {
-	return (
-		<li>
-			<Card className="flex items-center justify-between gap-4 p-4">
-				<div className="min-w-0 flex-1">
-					<p className="truncate font-medium">{memo.title}</p>
-					<p className="truncate text-xs text-muted-foreground">{memo.url}</p>
-					<p className="mt-1 text-xs text-muted-foreground/70">
-						{dayjs(memo.deleted_at).fromNow()}
-					</p>
-				</div>
-
-				<div className="flex shrink-0 gap-2">
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => onRestoreClick(memo.id)}
-					>
-						<RotateCcw size={14} className="mr-1" />
-						{restoreLabel}
-					</Button>
-					<Button
-						variant="ghost"
-						size="sm"
-						className="text-red-600 hover:text-red-700 dark:text-red-400"
-						onClick={() => onDeleteClick(memo.id)}
-					>
-						{deleteLabel}
-					</Button>
-				</div>
-			</Card>
-		</li>
+		</div>
 	);
 }

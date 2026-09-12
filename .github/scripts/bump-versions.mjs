@@ -84,7 +84,9 @@ const main = () => {
 	for (const track of TRACKS) {
 		const next = (process.env[track.envName] ?? "").trim();
 
-		if (!next) continue;
+		if (!next) {
+			continue;
+		}
 
 		const current = track.readCurrent();
 

@@ -217,7 +217,9 @@ const handleModalSubmission = async (payload: {
 			const currentVersion = currentVersions[target];
 
 			// 못 받았으면 건너뜁니다. 워크플로의 bump 스크립트가 같은 검사를 다시 합니다.
-			if (!currentVersion) continue;
+			if (!currentVersion) {
+				continue;
+			}
 
 			if (!isGreaterVersion(value, currentVersion)) {
 				errors[field.blockId] =

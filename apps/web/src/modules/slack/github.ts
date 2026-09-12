@@ -142,7 +142,9 @@ export const fetchCurrentVersions = async (): Promise<
 				{ headers, signal: AbortSignal.timeout(800) },
 			);
 
-			if (!response.ok) return null;
+			if (!response.ok) {
+				return null;
+			}
 
 			return (await response.json()) as T;
 		} catch {

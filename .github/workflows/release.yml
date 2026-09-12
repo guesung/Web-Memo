@@ -1,7 +1,9 @@
 name: Release
 
-# 버전업(package.json / Update.ts / translation.json)은 이 워크플로가 하지 않습니다.
-# 로컬 `/version-update`로 처리해 master에 머지한 뒤 실행하세요.
+# 릴리스 노트(Update.ts / translation.json)는 이 워크플로가 건드리지 않습니다.
+# 문구를 사람이 써야 하므로 로컬 `/version-update`로 처리해 master에 머지하세요.
+# 앱·확장의 버전 번호만 슬랙 모달에서 적어 보낼 수 있고, 그 값은 아래 resolve-ref가
+# master에 직접 커밋합니다.
 on:
   workflow_dispatch:
     inputs:
@@ -22,6 +24,16 @@ on:
         type: string
         required: false
         default: ""
+      app_version:
+        description: "올릴 앱 버전 (x.y.z). 적으면 master에 커밋되고 ref는 무시됩니다"
+        type: string
+        required: false
+        default: ""
+      extension_version:
+        description: "올릴 확장 버전 (x.y.z). 적으면 master에 커밋되고 ref는 무시됩니다"
+        type: string
+        required: false
+        default: ""
 
 concurrency:
   group: release
@@ -39,17 +51,93 @@ jobs:
           EXTENSION: ${{ inputs.extension }}
           WEB: ${{ inputs.web }}
           REF: ${{ inputs.ref || github.ref_name }}
+          APP_VERSION: ${{ inputs.app_version }}
+          EXTENSION_VERSION: ${{ inputs.extension_version }}
         run: |
           if [[ "$APP" != "true" && "$EXTENSION" != "true" && "$WEB" != "true" ]]; then
             echo "::error::배포할 타깃을 하나 이상 선택하세요 (app / extension / web)"
             exit 1
           fi
+
+          # 버전만 올려놓고 그 대상을 안 내보내면, 아무도 쓰지 않는 버전 커밋이 master에 남습니다.
+          if [[ -n "$APP_VERSION" && "$APP" != "true" ]]; then
+            echo "::error::앱 버전을 적었지만 앱이 배포 대상이 아닙니다"
+            exit 1
+          fi
+          if [[ -n "$EXTENSION_VERSION" && "$EXTENSION" != "true" ]]; then
+            echo "::error::확장 버전을 적었지만 확장이 배포 대상이 아닙니다"
+            exit 1
+          fi
+
           echo "app=$APP extension=$EXTENSION web=$WEB"
           echo "ref=$REF"
+          echo "app_version=${APP_VERSION:-(그대로)} extension_version=${EXTENSION_VERSION:-(그대로)}"
+
+  # 실제로 빌드할 커밋을 결정합니다.
+  # 버전을 적어 보냈으면 그 값을 기본 브랜치에 커밋하고 그 커밋을 쓰고, 안 적었으면
+  # 모달에서 고른 ref를 그대로 통과시킵니다.
+  #
+  # 잡 자체를 조건부(`if`)로 두면 건너뛸 때 skipped가 되어, 이 잡을 needs로 받는
+  # 빌드 잡들까지 함께 죽습니다. 그래서 잡은 항상 돌리고 안에서 갈라집니다.
+  resolve-ref:
+    name: 배포할 커밋 결정
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      ref: ${{ steps.resolve.outputs.ref }}
+      summary: ${{ steps.resolve.outputs.summary }}
+    env:
+      APP_VERSION: ${{ inputs.app_version }}
+      EXTENSION_VERSION: ${{ inputs.extension_version }}
+      HAS_VERSION: ${{ (inputs.app_version != '' || inputs.extension_version != '') && 'true' || 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+        if: ${{ env.HAS_VERSION == 'true' }}
+        with:
+          # 버전 커밋은 기본 브랜치 위에 쌓습니다. inputs.ref(과거 커밋)를 체크아웃하면
+          # 그 위의 커밋이 master를 되감게 되므로, 버전을 올릴 때는 ref를 쓰지 않습니다.
+          ref: ${{ github.ref_name }}
+          # 기본 GITHUB_TOKEN은 github-actions 봇이라 master 보호(리뷰 2인)에 막힙니다.
+          # 사람 소유 PAT라야 통과합니다(enforce_admins가 꺼져 있어 admin은 우회됩니다).
+          # 이 토큰에는 contents:write 가 있어야 합니다.
+          token: ${{ secrets.GITHUB_DISPATCH_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        if: ${{ env.HAS_VERSION == 'true' }}
+        with:
+          node-version-file: ".nvmrc"
+
+      # 버전 스크립트는 의존성이 없습니다(node 표준 모듈만 씁니다). pnpm install을 건너뜁니다.
+      - name: Resolve deploy ref
+        id: resolve
+        env:
+          FALLBACK_REF: ${{ inputs.ref }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          if [[ "$HAS_VERSION" != "true" ]]; then
+            echo "ref=$FALLBACK_REF" >> "$GITHUB_OUTPUT"
+            echo "summary=" >> "$GITHUB_OUTPUT"
+            echo "버전 입력이 없어 고른 ref로 배포합니다: ${FALLBACK_REF:-$BRANCH 최신}"
+            exit 0
+          fi
+
+          # 형식·증가 검증은 스크립트 안에서 합니다. 실패하면 커밋 없이 여기서 끝납니다.
+          summary="$(node .github/scripts/bump-versions.mjs)"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/app/app.json apps/chrome-extension/package.json
+          git commit -m "chore: 배포 버전을 올린다 ($summary)"
+          git push origin "HEAD:$BRANCH"
+
+          echo "ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "summary=$summary" >> "$GITHUB_OUTPUT"
+          echo "$summary 로 올려 $BRANCH 에 커밋했습니다"
 
   release-app:
     name: 앱 릴리스
-    needs: preflight
+    needs: [preflight, resolve-ref]
     # 재사용 워크플로의 잡은 호출자 권한을 넘어설 수 없습니다.
     # cd-app.yml은 체크아웃만 하므로 contents:read면 충분합니다.
     permissions:
@@ -59,33 +147,33 @@ jobs:
     secrets: inherit
     with:
       deploy_target: "production"
-      ref: ${{ inputs.ref }}
+      ref: ${{ needs['resolve-ref'].outputs.ref }}
 
   release-extension:
     name: 확장 릴리스
-    needs: preflight
+    needs: [preflight, resolve-ref]
     if: ${{ inputs.extension }}
     uses: ./.github/workflows/cd-extension.yml
     secrets: inherit
     with:
       deploy_target: "production"
-      ref: ${{ inputs.ref }}
+      ref: ${{ needs['resolve-ref'].outputs.ref }}
 
   release-web:
     name: 웹 릴리스
-    needs: preflight
+    needs: [preflight, resolve-ref]
     if: ${{ inputs.web }}
     uses: ./.github/workflows/cd-web.yml
     secrets: inherit
     with:
       deploy_target: "production"
-      ref: ${{ inputs.ref }}
+      ref: ${{ needs['resolve-ref'].outputs.ref }}
 
   # Slack 버튼을 누른 사람에게 "정말 올라갔는지"를 알리는 유일한 신호입니다.
   # 세 타깃을 한 메시지로 묶어 보냅니다(앱만 플랫폼별로 갈라 조회).
   notify:
     name: Slack 알림
-    needs: [preflight, release-app, release-extension, release-web]
+    needs: [preflight, resolve-ref, release-app, release-extension, release-web]
     # 실패했을 때야말로 알려야 하므로 always()입니다.
     # 타깃을 하나도 안 골라 preflight가 막은 경우에는 알릴 내용이 없습니다.
     if: ${{ always() && needs.preflight.result == 'success' }}
@@ -98,7 +186,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref }}
+          # 버전 커밋이 있었다면 그 커밋을 읽어야 알림에 새 버전이 찍힙니다.
+          # inputs.ref를 그대로 쓰면 방금 올린 버전 대신 이전 값을 보고하게 됩니다.
+          ref: ${{ needs['resolve-ref'].outputs.ref }}
 
       - uses: actions/setup-node@v4
         with:
@@ -109,7 +199,11 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           GH_TOKEN: ${{ github.token }}
-          RELEASE_REF: ${{ inputs.ref || github.ref_name }}
+          RELEASE_REF: ${{ needs['resolve-ref'].outputs.ref || github.ref_name }}
+          # 버전 커밋 단계가 깨지면 아무것도 배포되지 않습니다.
+          # 뒤 잡이 전부 skipped로 찍혀 "결과 확인 불가"로 뭉개지므로 따로 넘깁니다.
+          RESOLVE_RESULT: ${{ needs['resolve-ref'].result }}
+          VERSION_SUMMARY: ${{ needs['resolve-ref'].outputs.summary }}
           TARGETS: >-
             {"app":${{ inputs.app }},
             "extension":${{ inputs.extension }},

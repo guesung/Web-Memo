@@ -863,6 +863,16 @@
 			"new_users": "New Users"
 		}
 	},
+	"landing": {
+		"install": {
+			"button": "Add to Chrome",
+			"mobile_hint": "There's a mobile app too"
+		},
+		"related": {
+			"title": "Read next",
+			"description": "Other ways people use the same tool"
+		}
+	},
 	"features": {
 		"youtubeSummary": {
 			"hero": {

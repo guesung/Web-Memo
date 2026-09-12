@@ -858,6 +858,16 @@
 			"new_users": "신규 가입"
 		}
 	},
+	"landing": {
+		"install": {
+			"button": "Chrome에 추가",
+			"mobile_hint": "모바일 앱도 있어요"
+		},
+		"related": {
+			"title": "이어서 볼 것",
+			"description": "같은 도구를 다르게 쓰는 방법들입니다"
+		}
+	},
 	"features": {
 		"youtubeSummary": {
 			"hero": {

@@ -4,12 +4,14 @@ import {
 	DEPLOY_MODAL_FIELDS,
 	DEPLOY_TARGET_LABELS,
 	dispatchRelease,
+	fetchCurrentVersions,
 	fetchRefOptions,
 	getGithubRepository,
 	notifySlackSafely,
 	openSlackModal,
 	readVerifiedSlackForm,
 	type TDeployTarget,
+	type TVersionedTarget,
 	updateSlackModal,
 } from "@src/modules/slack";
 import { type NextRequest, NextResponse } from "next/server";
@@ -37,6 +39,32 @@ interface IFDeployButtonValue {
 
 const buildRunUrl = (): string =>
 	`https://github.com/${getGithubRepository()}/actions/workflows/release.yml`;
+
+/**
+ * 올릴 버전 문자열 형식.
+ *
+ * @description .github/scripts/bump-versions.mjs 가 같은 규칙을 다시 검사합니다.
+ * 런타임이 달라 상수를 공유할 수 없어 양쪽에 둡니다 — 한쪽만 고치지 마세요.
+ */
+const VERSION_PATTERN = /^\d+\.\d+\.\d+$/;
+
+/**
+ * `1.2.10` 이 `1.2.9` 보다 크다고 판정합니다.
+ *
+ * @description 문자열 비교로는 `"1.2.10" < "1.2.9"` 가 되어 정상적인 버전업이 막힙니다.
+ */
+const isGreaterVersion = (next: string, current: string): boolean => {
+	const nextParts = next.split(".").map(Number);
+	const currentParts = current.split(".").map(Number);
+
+	for (let index = 0; index < 3; index += 1) {
+		if (nextParts[index] !== currentParts[index]) {
+			return nextParts[index] > currentParts[index];
+		}
+	}
+
+	return false;
+};
 
 /** 버튼 하나로 즉시 배포하는 경로. */
 const handleDeployButton = async ({
@@ -134,20 +162,85 @@ const handleModalSubmission = async (payload: {
 		] as { selected_option?: { value: string } }
 	)?.selected_option?.value;
 
+	const readVersionInput = (field: { blockId: string; actionId: string }) =>
+		(
+			values[field.blockId]?.[field.actionId] as { value?: string | null }
+		)?.value?.trim() ?? "";
+
+	const versionInputs: Array<{
+		target: TVersionedTarget;
+		label: string;
+		field: { blockId: string; actionId: string };
+		value: string;
+	}> = [
+		{
+			target: "app",
+			label: "앱",
+			field: DEPLOY_MODAL_FIELDS.appVersion,
+			value: readVersionInput(DEPLOY_MODAL_FIELDS.appVersion),
+		},
+		{
+			target: "extension",
+			label: "확장",
+			field: DEPLOY_MODAL_FIELDS.extensionVersion,
+			value: readVersionInput(DEPLOY_MODAL_FIELDS.extensionVersion),
+		},
+	];
+	const enteredVersions = versionInputs.filter(({ value }) => value !== "");
+
+	const errors: Record<string, string> = {};
+
 	// 대상을 하나도 안 고르면 워크플로의 preflight가 실패로 끝납니다.
 	// 그 전에 모달 안에서 바로 알려주는 편이 낫습니다.
 	if (targets.length === 0 || !ref) {
-		return NextResponse.json({
-			response_action: "errors",
-			errors: {
-				[DEPLOY_MODAL_FIELDS.targets.blockId]:
-					"배포할 대상을 하나 이상 고르세요",
-			},
-		});
+		errors[DEPLOY_MODAL_FIELDS.targets.blockId] =
+			"배포할 대상을 하나 이상 고르세요";
 	}
 
+	for (const { target, label, field, value } of enteredVersions) {
+		if (!VERSION_PATTERN.test(value)) {
+			errors[field.blockId] = "x.y.z 형식으로 적으세요 (예: 1.0.9)";
+			continue;
+		}
+
+		// 버전만 올려놓고 그 대상을 안 내보내면 아무도 쓰지 않는 커밋이 master에 남습니다.
+		if (!targets.includes(target)) {
+			errors[field.blockId] = `${label}을 배포 대상으로 함께 고르세요`;
+		}
+	}
+
+	// 형식이 이미 틀렸으면 현재 버전을 받아올 이유가 없습니다(3초 예산을 아낍니다).
+	if (Object.keys(errors).length === 0 && enteredVersions.length > 0) {
+		const currentVersions = await fetchCurrentVersions();
+
+		for (const { target, field, value } of enteredVersions) {
+			const currentVersion = currentVersions[target];
+
+			// 못 받았으면 건너뜁니다. 워크플로의 bump 스크립트가 같은 검사를 다시 합니다.
+			if (!currentVersion) continue;
+
+			if (!isGreaterVersion(value, currentVersion)) {
+				errors[field.blockId] =
+					`현재 ${currentVersion} 보다 큰 버전을 적으세요`;
+			}
+		}
+	}
+
+	if (Object.keys(errors).length > 0) {
+		return NextResponse.json({ response_action: "errors", errors });
+	}
+
+	const appVersion = versionInputs[0].value;
+	const extensionVersion = versionInputs[1].value;
+
 	try {
-		await dispatchRelease({ targets, ref });
+		await dispatchRelease({
+			targets,
+			// 위에서 빈 ref는 이미 걸렀습니다. 워크플로는 빈 값을 "브랜치 최신"으로 읽습니다.
+			ref: ref ?? "",
+			appVersion,
+			extensionVersion,
+		});
 	} catch (error) {
 		// 모달에는 response_url이 없어 후속 메시지를 보낼 수 없습니다.
 		// 실패 사유를 모달 안에 그대로 띄워야 사용자가 알 수 있습니다.
@@ -168,10 +261,16 @@ const handleModalSubmission = async (payload: {
 	const targetLabels = targets
 		.map((target) => DEPLOY_TARGET_LABELS[target])
 		.join(", ");
+	// 버전을 올릴 때는 고른 ref가 쓰이지 않습니다. 메시지에도 그대로 드러냅니다 —
+	// 과거 커밋을 골라놓고 최신이 나간 줄 모르는 상황을 만들지 않기 위해서입니다.
+	const sourceLabel =
+		enteredVersions.length > 0
+			? `${enteredVersions.map(({ label, value }) => `${label} v${value}`).join(" · ")} 로 올려 master 최신에서`
+			: `\`${(ref ?? "").slice(0, 7)}\` 으로`;
 
 	await notifySlackSafely({
 		responseUrl,
-		text: `🚀 <@${payload.user.id}> 님이 *${targetLabels}* 배포를 시작했습니다 — \`${ref.slice(0, 7)}\`\n<${buildRunUrl()}|워크플로 보기>`,
+		text: `🚀 <@${payload.user.id}> 님이 *${targetLabels}* 배포를 시작했습니다 — ${sourceLabel}\n<${buildRunUrl()}|워크플로 보기>`,
 	});
 
 	return new NextResponse(null, { status: 200 });

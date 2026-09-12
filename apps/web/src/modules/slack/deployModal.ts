@@ -7,6 +7,11 @@ export const DEPLOY_MODAL_CALLBACK_ID = "deploy_modal";
 export const DEPLOY_MODAL_FIELDS = {
 	targets: { blockId: "targets_block", actionId: "targets_action" },
 	ref: { blockId: "ref_block", actionId: "ref_action" },
+	appVersion: { blockId: "app_version_block", actionId: "app_version_action" },
+	extensionVersion: {
+		blockId: "extension_version_block",
+		actionId: "extension_version_action",
+	},
 } as const;
 
 const TARGET_ORDER: TDeployTarget[] = ["app", "web", "extension"];
@@ -17,6 +22,10 @@ const TARGET_ORDER: TDeployTarget[] = ["app", "web", "extension"];
  * @description 되돌리기 어려운 스토어 제출이므로 대상과 ref를 모두 명시적으로 고르게 합니다.
  * 버튼으로 바로 배포하는 경로와 달리 여기에는 confirm을 두지 않습니다 — 모달 제출 자체가
  * 이미 한 번의 확인이기 때문입니다.
+ *
+ * 버전 칸은 비워 둘 수 있습니다. 적으면 워크플로가 그 값을 기본 브랜치에 커밋하고 그
+ * 커밋으로 빌드하므로, 이때 ref 선택은 의미가 없어집니다. 앱과 확장은 스토어 제약이
+ * 달라 버전을 공유하지 않으므로(docs/versioning.md) 칸도 따로 둡니다.
  *
  * @param responseUrl 제출 결과를 되돌려 보낼 원본 메시지의 response_url.
  *   모달에는 response_url이 없어 private_metadata로 실어 나릅니다.
@@ -64,12 +73,45 @@ export const buildDeployModal = ({
 			{
 				type: "input",
 				block_id: DEPLOY_MODAL_FIELDS.ref.blockId,
-				label: { type: "plain_text", text: "배포할 커밋 / 태그" },
+				label: {
+					type: "plain_text",
+					text: "배포할 커밋 / 태그 (아래에 버전을 적으면 무시됩니다)",
+				},
 				element: {
 					type: "static_select",
 					action_id: DEPLOY_MODAL_FIELDS.ref.actionId,
 					options,
 					...(initialOption ? { initial_option: initialOption } : {}),
+				},
+			},
+			{
+				type: "input",
+				block_id: DEPLOY_MODAL_FIELDS.appVersion.blockId,
+				optional: true,
+				label: { type: "plain_text", text: "올릴 앱 버전" },
+				hint: {
+					type: "plain_text",
+					text: "비우면 레포에 적힌 버전 그대로 빌드합니다.",
+				},
+				element: {
+					type: "plain_text_input",
+					action_id: DEPLOY_MODAL_FIELDS.appVersion.actionId,
+					placeholder: { type: "plain_text", text: "예: 1.0.9" },
+				},
+			},
+			{
+				type: "input",
+				block_id: DEPLOY_MODAL_FIELDS.extensionVersion.blockId,
+				optional: true,
+				label: { type: "plain_text", text: "올릴 확장 버전" },
+				hint: {
+					type: "plain_text",
+					text: "비우면 레포에 적힌 버전 그대로 빌드합니다.",
+				},
+				element: {
+					type: "plain_text_input",
+					action_id: DEPLOY_MODAL_FIELDS.extensionVersion.actionId,
+					placeholder: { type: "plain_text", text: "예: 1.10.15" },
 				},
 			},
 			...(isLoading

@@ -16,6 +16,14 @@ const buildHeaders = (): HeadersInit => ({
 /** 배포 대상. release.yml의 boolean 입력 이름과 일대일로 대응합니다. */
 export type TDeployTarget = "app" | "web" | "extension";
 
+/**
+ * 버전 번호를 가진 배포 대상.
+ *
+ * @description 웹은 지속 배포되는 단일 인스턴스라 버전 개념이 없습니다(docs/versioning.md).
+ * 그래서 `TDeployTarget` 에서 web을 뺀 이 타입이 "버전을 올릴 수 있는 것"의 경계입니다.
+ */
+export type TVersionedTarget = Exclude<TDeployTarget, "web">;
+
 /** 배포 대상별 한글 라벨. Slack 메시지와 모달이 공유합니다. */
 export const DEPLOY_TARGET_LABELS: Record<TDeployTarget, string> = {
 	app: "📱 앱",
@@ -29,13 +37,24 @@ export const DEPLOY_TARGET_LABELS: Record<TDeployTarget, string> = {
  * @description 워크플로는 항상 기본 브랜치(master)에서 실행하고, 실제로 체크아웃할
  * 커밋은 `ref` 입력으로 따로 넘깁니다. 워크플로 정의는 최신을 쓰면서 배포 대상만
  * 과거 커밋으로 되돌릴 수 있어야 하기 때문입니다.
+ *
+ * 버전을 넘기면 워크플로가 그 값을 기본 브랜치에 커밋하고 그 커밋을 빌드하므로,
+ * 이때 `ref` 는 쓰이지 않습니다. 여기서 거르지 않고 그대로 넘기는 이유는 무엇이
+ * 무시됐는지를 워크플로 로그에도 남기기 위해서입니다.
+ *
+ * @param appVersion 올릴 앱 버전(x.y.z). 비우면 레포에 적힌 값을 그대로 씁니다.
+ * @param extensionVersion 올릴 확장 버전(x.y.z). 비우면 레포에 적힌 값을 그대로 씁니다.
  */
 export const dispatchRelease = async ({
 	targets,
 	ref,
+	appVersion = "",
+	extensionVersion = "",
 }: {
 	targets: TDeployTarget[];
 	ref: string;
+	appVersion?: string;
+	extensionVersion?: string;
 }): Promise<void> => {
 	const response = await fetch(
 		`${GITHUB_API_ORIGIN}/repos/${getGithubRepository()}/actions/workflows/release.yml/dispatches`,
@@ -49,6 +68,8 @@ export const dispatchRelease = async ({
 					web: String(targets.includes("web")),
 					extension: String(targets.includes("extension")),
 					ref,
+					app_version: appVersion,
+					extension_version: extensionVersion,
 				},
 			}),
 		},
@@ -84,6 +105,60 @@ export const dispatchVersionReport = async ({
 			`versions.yml 실행 실패: ${response.status} ${await response.text()}`,
 		);
 	}
+};
+
+/** apps/app/app.json 에서 읽어야 하는 부분만. */
+interface IFAppConfigFile {
+	expo?: { version?: string };
+}
+
+/** apps/chrome-extension/package.json 에서 읽어야 하는 부분만. */
+interface IFPackageFile {
+	version?: string;
+}
+
+/**
+ * 기본 브랜치에 적혀 있는 앱·확장의 현재 버전을 읽습니다.
+ *
+ * @description 모달 제출도 Slack 3초 제한 안에서 끝나야 하므로 둘을 병렬로 받고 짧게
+ * 끊습니다. 못 받으면 null을 돌려주고 호출한 쪽은 증가 여부 검사를 건너뜁니다 —
+ * 워크플로의 bump 스크립트가 같은 검사를 다시 하므로, 낮은 버전이 그대로 스토어까지
+ * 흘러가지는 않습니다. 여기서 하는 것은 "채널에 실패 알림이 남기 전에 막는" 것뿐입니다.
+ */
+export const fetchCurrentVersions = async (): Promise<
+	Record<TVersionedTarget, string | null>
+> => {
+	const repository = getGithubRepository();
+	const headers: HeadersInit = {
+		accept: "application/vnd.github.raw+json",
+		authorization: `Bearer ${getGithubDispatchToken()}`,
+		"x-github-api-version": "2022-11-28",
+	};
+
+	const readJson = async <T>(path: string): Promise<T | null> => {
+		try {
+			const response = await fetch(
+				`${GITHUB_API_ORIGIN}/repos/${repository}/contents/${path}?ref=${GITHUB_DEFAULT_BRANCH}`,
+				{ headers, signal: AbortSignal.timeout(800) },
+			);
+
+			if (!response.ok) return null;
+
+			return (await response.json()) as T;
+		} catch {
+			return null;
+		}
+	};
+
+	const [appConfig, extensionPackage] = await Promise.all([
+		readJson<IFAppConfigFile>("apps/app/app.json"),
+		readJson<IFPackageFile>("apps/chrome-extension/package.json"),
+	]);
+
+	return {
+		app: appConfig?.expo?.version ?? null,
+		extension: extensionPackage?.version ?? null,
+	};
 };
 
 /** 모달의 ref 드롭다운에 채울 선택지 하나. */

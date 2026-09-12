@@ -341,6 +341,24 @@ gitignore 대상이라 EAS 샌드박스에 복사되지 않아 iOS 빌드가 깨
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
+아래는 우리가 `supabase secrets set <이름>=<값>`으로 직접 등록하는 값입니다.
+레포에도 `.env`에도 두지 않습니다.
+
+| 이름 | 쓰는 함수 | 용도 |
+| --- | --- | --- |
+| `SLACK_FEEDBACK_WEBHOOK_URL` | `send-feedback` | 피드백 슬랙 알림 |
+| `RESEND_API_KEY` | `send-welcome-email` | 가입 안내 메일 발송 |
+
+`send-welcome-email`을 부르는 트리거는 호출 주소와 service role 키를 DB 설정에서
+읽습니다. 마이그레이션 적용 전에 한 번 넣어야 합니다.
+
+```sql
+alter database postgres
+  set app.settings.edge_function_url = 'https://<ref>.supabase.co/functions/v1';
+alter database postgres
+  set app.settings.service_role_key = '<service role key>';
+```
+
 ### 빌드 플래그
 
 값이라기보다 분기 스위치입니다.

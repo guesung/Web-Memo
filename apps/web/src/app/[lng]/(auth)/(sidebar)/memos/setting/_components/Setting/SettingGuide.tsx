@@ -14,7 +14,7 @@ export default function SettingGuide({ lng }: SettingGuideProps) {
 
 	const handleRestartGuide = () => {
 		LocalStorage.remove("guide");
-		router.push(PATHS.memos);
+		router.push(`/${lng}${PATHS.memos}`);
 	};
 
 	return (

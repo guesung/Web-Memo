@@ -371,18 +371,29 @@
 		"changeCategory": "Change category"
 	},
 	"login": {
-		"welcomeTitle": "Welcome to Web Memo!",
-		"welcomeDescription": "Login is required to securely save and sync your memos across all devices.",
-		"kakaoLogin": "Login with Kakao",
-		"googleLogin": "Login with Google",
-		"appleLogin": "Login with Apple",
+		"welcomeTitle": "See the memos you left while reading, all in one place",
+		"welcomeDescription": "New here? That's fine. Tapping a button below creates your account along the way.",
+		"kakaoLogin": "Continue with Kakao",
+		"googleLogin": "Continue with Google",
+		"appleLogin": "Continue with Apple",
 		"testLogin": "Login with Test",
+		"providerPending": "Taking you to {{provider}}",
+		"providerName": {
+			"kakao": "Kakao",
+			"google": "Google",
+			"apple": "Apple"
+		},
+		"errorAlert": "Login didn't finish. Please tap the button once more.",
 		"askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
-		"personalInformationInfo": "Login info is only used for memo sync and never for ads or marketing purposes.",
-		"trustSignal": {
-			"secure": "Secure",
-			"private": "Private",
-			"free": "Free"
+		"personalInformationInfo": "We use your login info only to keep your memos connected. Never for ads or marketing.",
+		"aside": {
+			"rating": "{{rating}} rating",
+			"userCount": "{{users}}+ users",
+			"reviewCount": "{{reviews}} reviews",
+			"crossDevice": "Chrome, web, and iOS see the same memos",
+			"persistent": "Your memos stay even if you clear the browser",
+			"minimalData": "We ask for nothing but your email address",
+			"noMarketing": "We never use it for ads or marketing"
 		}
 	},
 	"dialogInstall": {

@@ -16,8 +16,11 @@ const PROVIDER_BUTTON_CLASS_NAME: Record<TLoginProviderId, string> = {
 
 /**
  * OAuth 제공자 로그인 버튼 3종입니다.
- * @description 버튼을 누르면 제공자 화면으로 떠나기까지 시간이 걸려 같은 버튼을 다시 누르는
- * 일이 잦습니다. 누른 버튼은 진행 중 라벨로 바뀌고 세 버튼 모두 잠깁니다.
+ * @description 버튼을 누르면 제공자 화면으로 떠나기까지 시간이 걸려 아무 일도 일어나지 않은
+ * 것처럼 보입니다. 누른 버튼은 진행 중 라벨로 바뀌고 나머지 버튼은 잠깁니다.
+ *
+ * 누른 버튼까지 잠그면 React가 클릭 처리 중에 disabled를 반영해 form 제출 자체가 사라지므로
+ * 그 버튼은 열어 둡니다.
  *
  * 서버 액션은 formAction으로 묶여 있어 상위 서버 컴포넌트에서 만들어 내려받습니다.
  */
@@ -41,7 +44,7 @@ export default function LoginProviderButtons({
 						key={id}
 						formAction={signIn}
 						onClick={() => handleProviderButtonClick(id)}
-						disabled={pendingProviderId !== null}
+						disabled={pendingProviderId !== null && !isPending}
 						data-login-method={id}
 						data-testid={`${id}-login-button`}
 						className={`h-12 gap-2 rounded-xl font-medium shadow-sm transition-colors ${PROVIDER_BUTTON_CLASS_NAME[id]}`}

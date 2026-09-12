@@ -370,6 +370,31 @@ export interface AdminUsersResponse {
 	totalCount: number;
 }
 
+/** 관리자 화면이 읽어가는 피드백 한 건. `id`는 bigint라 number다. */
+export interface IFFeedback {
+	id: number;
+	content: string | null;
+	user_id: string | null;
+	email: string | null;
+	created_at: string;
+}
+
+/** 피드백 목록 조회 조건. 검색어는 내용(content)에만 걸린다. */
+export interface IFGetFeedbacksParams {
+	searchQuery?: string;
+	page?: number;
+	pageSize?: number;
+}
+
+/** 피드백 목록 조회 결과. `count`는 필터를 적용한 전체 건수다. */
+export interface IFFeedbacksResponse {
+	data: IFFeedback[];
+	count: number;
+}
+
+/** 피드백 목록의 기본 페이지 크기 */
+export const FEEDBACK_PAGE_SIZE = 20;
+
 export interface GetAdminUsersParams {
 	searchQuery?: string;
 }
@@ -408,6 +433,53 @@ export class AdminService {
 			.rpc("get_admin_users", {
 				search_query: searchQuery || null,
 			});
+
+	/**
+	 * 피드백 목록을 최신순으로 읽는다.
+	 * @description `feedback.feedbacks`에는 SELECT 정책이 없어 클라이언트가 직접 읽을 수 없다.
+	 * 관리자 여부를 함수 안에서 판정하는 SECURITY DEFINER RPC로만 읽는다.
+	 */
+	getFeedbacks = async ({
+		searchQuery,
+		page = 1,
+		pageSize = FEEDBACK_PAGE_SIZE,
+	}: IFGetFeedbacksParams = {}): Promise<IFFeedbacksResponse> => {
+		const { data, error } = await this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			// @ts-expect-error RPC function types not generated in schema
+			.rpc("get_admin_feedbacks", {
+				search_query: searchQuery || null,
+				page_offset: (page - 1) * pageSize,
+				page_limit: pageSize,
+			});
+
+		if (error) {
+			throw new Error(error.message);
+		}
+
+		const response = data as IFFeedbacksResponse | null;
+
+		return { data: response?.data ?? [], count: response?.count ?? 0 };
+	};
+
+	/**
+	 * 피드백 한 건을 id로 읽는다.
+	 * @description 슬랙 알림의 `?id=` 링크로 들어왔는데 그 행이 현재 페이지에 없을 때 쓴다.
+	 */
+	getFeedback = async (id: number): Promise<IFFeedback | null> => {
+		const { data, error } = await this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			// @ts-expect-error RPC function types not generated in schema
+			.rpc("get_admin_feedback", {
+				feedback_id: id,
+			});
+
+		if (error) {
+			throw new Error(error.message);
+		}
+
+		return (data as IFFeedback | null) ?? null;
+	};
 
 	checkIsAdmin = async (userId: string) => {
 		const { data } = await this.supabaseClient

@@ -842,6 +842,7 @@
 			"title": "관리자",
 			"dashboard": "대시보드",
 			"users": "사용자 관리",
+			"feedback": "피드백",
 			"back_to_memos": "메모로 돌아가기"
 		},
 		"users": {
@@ -851,6 +852,23 @@
 			"joined": "가입일",
 			"memos": "메모 수",
 			"search_placeholder": "닉네임 또는 ID로 검색...",
+			"previous": "이전",
+			"next": "다음",
+			"page": "{{current}} / {{total}} 페이지"
+		},
+		"feedback": {
+			"title": "피드백",
+			"empty": "아직 받은 피드백이 없어요.",
+			"total": "총 {{count}}건의 피드백",
+			"received_at": "받은 날짜",
+			"content": "내용",
+			"writer": "작성자",
+			"anonymous": "비로그인",
+			"reply_to": "회신 {{email}}",
+			"search_placeholder": "내용으로 검색...",
+			"search_empty": "'{{query}}'와 맞는 피드백이 없어요.",
+			"clear_search": "검색어 지우기",
+			"back_to_list": "전체 목록 보기",
 			"previous": "이전",
 			"next": "다음",
 			"page": "{{current}} / {{total}} 페이지"

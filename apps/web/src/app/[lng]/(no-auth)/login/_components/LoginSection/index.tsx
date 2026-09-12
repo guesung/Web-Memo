@@ -7,7 +7,7 @@ import {
 	signInWithOAuth,
 } from "@src/modules/supabase/util.server";
 import { SUPABASE } from "@web-memo/shared/constants";
-import { isProduction } from "@web-memo/shared/utils";
+import { isProductionBuild } from "@web-memo/shared/utils";
 import { Button } from "@web-memo/ui";
 import { Sparkles } from "lucide-react";
 import Image from "next/image";
@@ -85,7 +85,7 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
 					{t("login.appleLogin")}
 				</Button>
 
-				{!isProduction() && (
+				{!isProductionBuild() && (
 					<Button
 						formAction={signInWithEmail.bind(
 							null,

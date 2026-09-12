@@ -381,11 +381,6 @@
 		"errorAlert": "로그인이 끝나지 않았어요. 다시 한 번 눌러주세요.",
 		"askGoInstallExtension": "메모 기능을 사용하시려면 확장 프로그램이 필요해요. 지금 설치하러 가시겠어요?",
 		"personalInformationInfo": "로그인 정보는 메모를 잇는 데만 써요. 광고나 마케팅에는 쓰지 않아요.",
-		"trustSignal": {
-			"secure": "안전한 로그인",
-			"private": "개인정보 보호",
-			"free": "무료"
-		},
 		"aside": {
 			"rating": "{{rating}}점",
 			"userCount": "사용자 {{users}}명+",

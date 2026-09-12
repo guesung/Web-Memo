@@ -65,10 +65,10 @@ export default function LoginProviderButtons({
 }
 
 /** 로그인 제공자 식별자입니다. */
-type TLoginProviderId = "kakao" | "google" | "apple";
+export type TLoginProviderId = "kakao" | "google" | "apple";
 
 /** 로그인 제공자 버튼 하나에 필요한 값입니다. */
-type TLoginProvider = {
+export type TLoginProvider = {
 	/** 제공자 식별자. 로고 파일명·트래킹 값으로도 씁니다 */
 	id: TLoginProviderId;
 	/** 평상시 버튼 라벨 */

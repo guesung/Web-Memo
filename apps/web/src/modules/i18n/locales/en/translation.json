@@ -386,11 +386,6 @@
 		"errorAlert": "Login didn't finish. Please tap the button once more.",
 		"askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
 		"personalInformationInfo": "We use your login info only to keep your memos connected. Never for ads or marketing.",
-		"trustSignal": {
-			"secure": "Secure",
-			"private": "Private",
-			"free": "Free"
-		},
 		"aside": {
 			"rating": "{{rating}} rating",
 			"userCount": "{{users}}+ users",

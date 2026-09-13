@@ -1,5 +1,6 @@
 import { type Language, SUPPORTED_LANGUAGES } from "@src/modules/i18n";
 import { CONFIG } from "@web-memo/env";
+import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import JsonLdScript from "../JsonLdScript";
 
 const baseUrl = CONFIG.webUrl;
@@ -8,9 +9,9 @@ const baseUrl = CONFIG.webUrl;
  * SoftwareApplication 엔티티의 전역 식별자.
  *
  * @description
- * 이 스키마는 전 페이지 레이아웃에서 렌더되지만 별점 배지는 introduce 에만 보인다.
- * aggregateRating 을 여기 넣으면 배지가 없는 페이지까지 "보이지 않는 값"을 마크업하게
- * 되므로, 별점은 introduce 에서 같은 @id 로 별도 노드를 내보내 병합시킨다.
+ * 이 스키마는 전 페이지 레이아웃에서 렌더된다. 별점은 화면 어디에도 보이지 않으므로
+ * aggregateRating 을 마크업하지 않는다 — 보이지 않는 값을 구조화 데이터로 내보내면
+ * 리치 결과에서 빠지거나 수동 조치 대상이 된다.
  */
 export const SOFTWARE_APPLICATION_ID = `${baseUrl}/#software-application`;
 
@@ -24,9 +25,7 @@ const getOrganizationSchema = (lng: Language) => ({
 	name: lng === "ko" ? "웹 메모" : "Web Memo",
 	url: baseUrl,
 	logo: `${baseUrl}/og-image.png`,
-	sameAs: [
-		"https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
-	],
+	sameAs: [EXTERNAL_LINK.chromeWebStoreListing],
 	contactPoint: {
 		"@type": "ContactPoint",
 		email: "gueit214@naver.com",
@@ -57,10 +56,8 @@ const getSoftwareApplicationSchema = (lng: Language) => ({
 		"@type": "Organization",
 		name: "Web Memo",
 	},
-	downloadUrl:
-		"https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
-	installUrl:
-		"https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
+	downloadUrl: EXTERNAL_LINK.chromeWebStoreListing,
+	installUrl: EXTERNAL_LINK.chromeWebStoreListing,
 	screenshot: `${baseUrl}/og-image.png`,
 	featureList:
 		lng === "ko"

@@ -1,15 +1,7 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
 import { Separator } from "@web-memo/ui";
-import {
-	Cloud,
-	Globe,
-	Mail,
-	MessageCircle,
-	ShieldCheck,
-	Star,
-	Users,
-} from "lucide-react";
+import { Cloud, Globe, Mail, ShieldCheck, Users } from "lucide-react";
 
 import { CHROME_STORE_STATS } from "../../../introduce/_constants";
 
@@ -33,18 +25,8 @@ export default async function LoginAside({ lng }: IFLoginAsideProps) {
 		<aside className="flex flex-col gap-6">
 			<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
 				<span className="flex items-center gap-1.5 font-medium text-foreground">
-					<Star className="h-4 w-4 fill-current" />
-					{t("login.aside.rating", { rating: CHROME_STORE_STATS.rating })}
-				</span>
-				<span className="flex items-center gap-1.5">
 					<Users className="h-4 w-4" />
 					{t("login.aside.userCount", { users: CHROME_STORE_STATS.userCount })}
-				</span>
-				<span className="flex items-center gap-1.5">
-					<MessageCircle className="h-4 w-4" />
-					{t("login.aside.reviewCount", {
-						reviews: CHROME_STORE_STATS.reviewCount,
-					})}
 				</span>
 			</div>
 

@@ -152,6 +152,21 @@ const PRODUCTION_FILTER = {
 	},
 };
 
+/**
+ * 미출시 판정 전용. production 만 보면 build_env 가 붙기 전(2026-08-30 이전)의
+ * 운영 트래픽이 (not set) 으로 통째로 빠져, 오래전부터 쓰이던 이벤트가 "미출시"로
+ * 잘못 분류됩니다. 그래서 staging 만 걸러냅니다 — 스테이징에서만 시험한 이벤트는
+ * 여전히 미출시로 남고, development 빌드는 애초에 GA4 로 보내지 않습니다.
+ */
+const NOT_STAGING_FILTER = {
+	notExpression: {
+		filter: {
+			fieldName: "customEvent:build_env",
+			stringFilter: { matchType: "EXACT", value: "staging" },
+		},
+	},
+};
+
 const runReport = async ({ accessToken, propertyId, body }) =>
 	await requestJson(
 		`https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`,
@@ -328,7 +343,7 @@ export const fetchDailyGa4Report = async ({
 				dateRanges: [{ startDate: OBSERVATION_SINCE, endDate: targetDate }],
 				dimensions: [{ name: "eventName" }],
 				metrics: [{ name: "eventCount" }],
-				dimensionFilter: PRODUCTION_FILTER,
+				dimensionFilter: NOT_STAGING_FILTER,
 				limit: REPORT_ROW_LIMIT,
 			},
 		}),

@@ -71,16 +71,34 @@ export class HighlightService {
 	updateHighlight = async ({
 		id,
 		request,
+		scope,
 	}: {
+		scope?: { url: string; userId: string };
 		id: number;
 		request: HighlightTable["Update"];
-	}) =>
-		this.table
+	}) => {
+		let query = this.table
 			.update({ ...request, updated_at: new Date().toISOString() })
-			.eq("id", id)
-			.select();
+			.eq("id", id);
+		if (scope) {
+			query = query.eq("url", scope.url).eq("user_id", scope.userId);
+		}
 
-	deleteHighlight = async (id: number) => this.table.delete().eq("id", id);
+		return query.select();
+	};
+
+	/** 삭제된 행을 반환해 RLS 또는 범위 불일치로 삭제되지 않은 요청을 구분한다. */
+	deleteHighlight = async (
+		id: number,
+		scope?: { url: string; userId: string },
+	) => {
+		let query = this.table.delete().eq("id", id);
+		if (scope) {
+			query = query.eq("url", scope.url).eq("user_id", scope.userId);
+		}
+
+		return query.select();
+	};
 
 	/**
 	 * URL별 하이라이트 개수를 조회한다.

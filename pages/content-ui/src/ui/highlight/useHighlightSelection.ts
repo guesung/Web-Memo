@@ -9,6 +9,10 @@ import {
 	createHighlightController,
 	type IFHighlightSelectionState,
 } from "./createHighlightController";
+import {
+	createHighlightEditor,
+	type IFHighlightEditState,
+} from "./createHighlightEditor";
 import { startHighlightRestore } from "./restoreHighlights";
 
 /** 생성과 복원이 공유하는 렌더러 및 중복 판정에 필요한 기존 행. */
@@ -19,6 +23,10 @@ export interface IFHighlightSelectionOptions {
 
 /** 텍스트 선택 추적과 메시지 저장의 생명주기를 관리한다. */
 export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
+	const [editState, setEditState] = useState<IFHighlightEditState | null>(null);
+	const editorRef = useRef<ReturnType<typeof createHighlightEditor> | null>(
+		null,
+	);
 	const [selectionState, setSelectionState] =
 		useState<IFHighlightSelectionState | null>(null);
 	const controllerRef = useRef<ReturnType<
@@ -43,13 +51,18 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 					return;
 				}
 				const rows = response?.highlights ?? [];
-				for (const row of rows) {
+				const unseenRows = controller.registerRows(rows);
+				for (const row of unseenRows) {
 					if (row.note) {
 						options.notesById.set(row.id, row.note);
 					}
 				}
 				stopRestore = startHighlightRestore({
-					items: controller.registerRows(rows).map(toHighlightItem),
+					items: unseenRows.map(toHighlightItem),
+					getCurrentItem: (id) => {
+						const row = controller.getRow(id);
+						return row ? toHighlightItem(row) : undefined;
+					},
 					renderer: options.renderer,
 				});
 			} catch {
@@ -64,6 +77,16 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 				void restorePage();
 			},
 		});
+		const editor = createHighlightEditor({
+			renderer: options.renderer,
+			notesById: options.notesById,
+			getRow: controller.getRow,
+			updateRow: controller.updateRow,
+			removeRow: controller.removeRow,
+			onChange: setEditState,
+			requestEdit: bridge.request.EDIT_HIGHLIGHT,
+		});
+		editorRef.current = editor;
 		void restorePage();
 		controllerRef.current = controller;
 
@@ -71,6 +94,8 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			isStopped = true;
 			generation += 1;
 			stopRestore?.();
+			editor.stop();
+			editorRef.current = null;
 			controller.stop();
 			controllerRef.current = null;
 		};
@@ -79,5 +104,12 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 		await controllerRef.current?.save();
 	};
 
-	return { selectionState, handleHighlightButtonClick };
+	return {
+		selectionState,
+		handleHighlightButtonClick,
+		editState,
+		handleHighlightEdit: (
+			action: Parameters<ReturnType<typeof createHighlightEditor>["edit"]>[0],
+		) => editorRef.current?.edit(action),
+	};
 };

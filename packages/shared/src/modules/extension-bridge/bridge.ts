@@ -5,8 +5,10 @@ import type {
 	GetHighlightsByUrlPayload,
 	GetHighlightsByUrlResponse,
 	IFCreateHighlightPayload,
+	IFEditHighlightPayload,
 	PageContentResponse,
 	TCreateHighlightResponse,
+	TEditHighlightResponse,
 } from "./types";
 
 /** 확장 UI와 background 사이의 타입 지정 메시지 계약. */
@@ -27,6 +29,9 @@ export const bridge = createBridge({
 		IFCreateHighlightPayload,
 		TCreateHighlightResponse
 	>("internal"),
+	EDIT_HIGHLIGHT: defineMessage<IFEditHighlightPayload, TEditHighlightResponse>(
+		"internal",
+	),
 	CREATE_MEMO: defineMessage<CreateMemoPayload, CreateMemoResponse>("internal"),
 	GET_HIGHLIGHTS_BY_URL: defineMessage<
 		GetHighlightsByUrlPayload,

@@ -217,3 +217,23 @@ describe("확장 하이라이트 생성", () => {
 		expect(onPageChange).toHaveBeenCalledOnce();
 	});
 });
+
+it("삭제된 행의 중복 키를 해제해 같은 문장을 다시 저장할 수 있다", async () => {
+	const requestCreate = vi.fn(
+		async () => ({ success: true, highlight: ROW }) as TCreateHighlightResponse,
+	);
+	const controller = createHighlightController({
+		renderer: createRenderer(),
+		requestCreate,
+		onSelectionChange: vi.fn(),
+	});
+	stop = controller.stop;
+	controller.registerRows([ROW]);
+	controller.removeRow(ROW.id);
+	expect(controller.getRow(ROW.id)).toBeUndefined();
+	expect(controller.registerRows([ROW])).toEqual([]);
+	expect(controller.getRow(ROW.id)).toBeUndefined();
+	selectText();
+	await controller.save();
+	expect(requestCreate).toHaveBeenCalledOnce();
+});

@@ -58,3 +58,14 @@ export type TCreateHighlightResponse =
 			success: false;
 			error: "unauthenticated" | "invalid_request" | "save_failed";
 	  };
+
+/** 현재 페이지에서 실행하는 하이라이트 색 변경 또는 삭제. */
+export interface IFEditHighlightPayload {
+	id: number;
+	url: string;
+	action: "color" | "delete";
+	color?: import("../../constants/Highlight").HighlightColor;
+}
+
+/** 실제 변경된 행 또는 검증·인증·저장 오류. */
+export type TEditHighlightResponse = TCreateHighlightResponse;

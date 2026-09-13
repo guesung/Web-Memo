@@ -15,6 +15,8 @@ export const RETRY_DEBOUNCE_MS = 300;
 interface StartHighlightRestoreParams {
 	/** 복원할 하이라이트 목록 */
 	items: HighlightItem[];
+	/** 재시도 시 삭제·색 변경을 반영할 최신 항목 조회. */
+	getCurrentItem?: (id: number) => HighlightItem | undefined;
 	/** 밑줄을 그릴 렌더러 */
 	renderer: HighlightRenderer;
 	/** 탐색 기준 노드 */
@@ -35,6 +37,7 @@ interface StartHighlightRestoreParams {
  */
 export function startHighlightRestore({
 	items,
+	getCurrentItem,
 	renderer,
 	root = document.body,
 	timeoutMs = RESTORE_TIMEOUT_MS,
@@ -68,6 +71,13 @@ export function startHighlightRestore({
 			return;
 		}
 
+		if (getCurrentItem) {
+			pending = pending.flatMap((item) => {
+				const currentItem = getCurrentItem(item.id);
+
+				return currentItem ? [currentItem] : [];
+			});
+		}
 		const ranges = resolveAnchors(
 			pending.map((item) => item.anchor),
 			root,

@@ -214,5 +214,38 @@
 	},
 	"actionItemPlaceholder": {
 		"message": "Write what to do after reading this page"
+	},
+	"billing_ai_signin": {
+		"message": "Please check your sign-in status. Ordinary memos are still available."
+	},
+	"billing_ai_paid": {
+		"message": "Summaries, automatic categories and page chat require a paid subscription."
+	},
+	"billing_ai_limit": {
+		"message": "Your AI usage is limited. You can still save ordinary memos."
+	},
+	"billing_ai_failed": {
+		"message": "The AI request could not complete. Your memos and existing responses are preserved."
+	},
+	"billing_loading": {
+		"message": "Checking your subscription."
+	},
+	"billing_load_failed": {
+		"message": "Subscription status is unavailable. This does not mean your plan changed to free."
+	},
+	"billing_ai_usage": {
+		"message": "AI uses this period:"
+	},
+	"billing_memo_limit": {
+		"message": "All 50 cloud memo slots are used, including trash. Existing memos remain editable and unsaved input is preserved."
+	},
+	"billing_ai_safety": {
+		"message": "Up to 30 AI uses per period; a cost safety limit may restrict use earlier."
+	},
+	"billing_view_pricing": {
+		"message": "View pricing on the web"
+	},
+	"billing_refresh": {
+		"message": "Refresh status"
 	}
 }

@@ -10,7 +10,8 @@ import { toast } from "@web-memo/ui";
 import type { PropsWithChildren } from "react";
 import { useState } from "react";
 
-export default function QueryProvider({ children }: PropsWithChildren) {
+/** 메모 저장 실패와 구독 한도 오류를 안내하는 쿼리 제공자입니다. */
+const QueryProvider = ({ children }: PropsWithChildren) => {
 	const [queryClient] = useState(
 		() =>
 			new QueryClient({
@@ -18,7 +19,13 @@ export default function QueryProvider({ children }: PropsWithChildren) {
 				// MutationCache의 onError는 항상 함께 실행되므로 저장 실패를 놓치지 않는다.
 				mutationCache: new MutationCache({
 					onError: (error) => {
-						toast({ title: I18n.get("toast_error_save") });
+						toast({
+							title: I18n.get(
+								error.message.includes("FREE_MEMO_LIMIT")
+									? "billing_memo_limit"
+									: "toast_error_save",
+							),
+						});
 						captureException(error, {
 							level: "fatal",
 						});
@@ -30,4 +37,6 @@ export default function QueryProvider({ children }: PropsWithChildren) {
 	return (
 		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 	);
-}
+};
+
+export default QueryProvider;

@@ -503,7 +503,23 @@ export function useBrowserState({
 				);
 				const data = await response.json();
 				if (!response.ok) {
-					setAiError(data.error ?? "요청에 실패했어요");
+					if (response.status === 401) {
+						setAiError(
+							"로그인 상태를 확인해 주세요. 작성 중인 메모는 그대로 유지돼요.",
+						);
+					} else if (response.status === 402 || response.status === 403) {
+						setAiError(
+							"현재 계정 또는 앱에서는 이 AI 기능을 사용할 수 없어요. 일반 메모는 계속 사용할 수 있어요.",
+						);
+					} else if (response.status === 429) {
+						setAiError(
+							"AI 이용 한도에 도달했어요. 일반 메모는 계속 사용할 수 있어요.",
+						);
+					} else {
+						setAiError(
+							"AI 요청을 완료하지 못했어요. 작성 중인 메모는 그대로 유지돼요.",
+						);
+					}
 					return;
 				}
 				if (question) {

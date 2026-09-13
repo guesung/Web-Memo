@@ -1,9 +1,13 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { CONFIG } from "@web-memo/env";
 import {
 	useCategoryPostMutation,
 	useCategoryQuery,
 } from "@web-memo/shared/hooks";
-import { analytics } from "@web-memo/shared/modules/analytics";
+import {
+	hasPaidSubscription,
+	useSubscriptionQuery,
+} from "@web-memo/shared/hooks/billing";
 import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
@@ -11,227 +15,113 @@ import {
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { generateRandomPastelColor } from "@web-memo/shared/utils";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { requestAi } from "../../../../../utils/aiRequest";
 
-const CONFIDENCE_THRESHOLD = 0.7;
-const AUTO_DISMISS_DELAY = 15000;
-const API_TIMEOUT = 10000;
-const PAGE_CONTENT_SAMPLE_LENGTH = 500;
-const KOREAN_RATIO_THRESHOLD = 0.1;
-
-function detectPageLanguage(
-	pageTitle: string,
-	pageContent: string,
-): "ko" | "en" {
-	const combined = `${pageTitle} ${pageContent.slice(0, PAGE_CONTENT_SAMPLE_LENGTH)}`;
-	const koreanPattern = /[\uAC00-\uD7AF]/g;
-	const koreanMatches = combined.match(koreanPattern);
-	const koreanRatio = (koreanMatches?.length || 0) / combined.length;
-
-	return koreanRatio > KOREAN_RATIO_THRESHOLD ? "ko" : "en";
+/** 편집 중인 카테고리와 결과 적용 콜백입니다. */
+interface IFCategorySuggestionProps {
+	currentCategoryId: number | null;
+	onCategorySelect: (categoryId: number) => void;
 }
-
-export function useCategorySuggestion({
-	currentCategoryId,
-	onCategorySelect,
-}: UseCategorySuggestionProps) {
-	const [isLoading, setIsLoading] = useState(false);
-
-	const { categories } = useCategoryQuery();
-	const { mutateAsync: createCategory } = useCategoryPostMutation();
-
-	const abortControllerRef = useRef<AbortController | null>(null);
-	const dismissedUrlsRef = useRef<Set<string>>(new Set());
-	const currentUrlRef = useRef<string | null>(null);
-	const autoDismissTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-	const applyCategorySuggestionDirect = useCallback(
-		async (suggestionToApply: CategorySuggestion) => {
-			try {
-				let categoryId = suggestionToApply.existingCategoryId;
-
-				if (!suggestionToApply.isExisting || !categoryId) {
-					try {
-						const result = await createCategory({
-							name: suggestionToApply.categoryName,
-							color: generateRandomPastelColor(),
-						});
-						categoryId = result.data?.[0]?.id ?? null;
-					} catch {
-						const existing = categories?.find(
-							(c) =>
-								c.name.toLowerCase() ===
-								suggestionToApply.categoryName.toLowerCase(),
-						);
-						if (existing) categoryId = existing.id;
-					}
-				}
-
-				if (categoryId) {
-					onCategorySelect(categoryId);
-					// OpenAI를 호출하는 기능입니다. 제안이 실제로 받아들여지는지 모르면 비용 대비
-					// 가치를 판단할 수 없습니다.
-					analytics.trackEvent({
-						name: "category_suggestion_apply",
-						params: { is_new_category: !suggestionToApply.isExisting },
-					});
-				}
-			} catch (error) {
-				console.error("Failed to auto-apply category:", error);
-			}
-		},
-		[createCategory, onCategorySelect, categories],
-	);
-
-	const clearAutoDismissTimer = useCallback(() => {
-		if (autoDismissTimerRef.current) {
-			clearTimeout(autoDismissTimerRef.current);
-			autoDismissTimerRef.current = null;
-		}
-	}, []);
-
-	const reset = useCallback(() => {
-		setIsLoading(false);
-		clearAutoDismissTimer();
-	}, [clearAutoDismissTimer]);
-
-	const triggerSuggestion = useCallback(
-		async (memoText: string) => {
-			if (currentCategoryId) return;
-
-			try {
-				const tabInfo = await getTabInfo();
-				if (!tabInfo.url) return;
-
-				if (dismissedUrlsRef.current.has(tabInfo.url)) return;
-
-				currentUrlRef.current = tabInfo.url;
-
-				abortControllerRef.current?.abort();
-				abortControllerRef.current = new AbortController();
-
-				setIsLoading(true);
-
-				let pageContent = "";
-				try {
-					const { content } = await bridge.request.PAGE_CONTENT();
-					pageContent = content || "";
-				} catch {}
-
-				const pageLanguage = detectPageLanguage(
-					tabInfo.title || "",
-					pageContent,
-				);
-
-				const existingCategories = (categories || []).map((c) => ({
-					id: c.id,
-					name: c.name,
-				}));
-
-				const timeoutPromise = new Promise<never>((_, reject) => {
-					setTimeout(() => reject(new Error("Request timeout")), API_TIMEOUT);
-				});
-
-				const fetchPromise = fetch(`${CONFIG.webUrl}/api/openai/category`, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						pageTitle: tabInfo.title || "",
-						pageUrl: tabInfo.url,
-						pageContent,
-						memoText,
-						existingCategories,
-						pageLanguage,
-					}),
-					signal: abortControllerRef.current.signal,
-				});
-
-				const response = await Promise.race([fetchPromise, timeoutPromise]);
-
-				if (!response.ok) {
-					throw new Error(`HTTP error: ${response.status}`);
-				}
-
-				const data: CategorySuggestionResponse = await response.json();
-
-				if (
-					data.suggestion &&
-					data.suggestion.confidence >= CONFIDENCE_THRESHOLD
-				) {
-					const suggestionData: CategorySuggestion = {
-						...data.suggestion,
-						existingCategoryId: data.suggestion.existingCategoryId ?? null,
-					};
-
-					analytics.trackEvent({
-						name: "category_suggestion_show",
-						params: { is_new_category: !suggestionData.isExisting },
-					});
-
-					const shouldAutoApply =
-						(await ChromeSyncStorage.get<boolean>(
-							STORAGE_KEYS.autoApplyCategory,
-						)) ?? true;
-
-					if (shouldAutoApply) {
-						await applyCategorySuggestionDirect(suggestionData);
-					} else {
-						clearAutoDismissTimer();
-						autoDismissTimerRef.current = setTimeout(() => {
-							reset();
-						}, AUTO_DISMISS_DELAY);
-					}
-				}
-			} catch (error) {
-				if (error instanceof Error && error.name !== "AbortError") {
-					console.error("Category suggestion error:", error);
-				}
-			} finally {
-				setIsLoading(false);
-			}
-		},
-		[
-			categories,
-			currentCategoryId,
-			clearAutoDismissTimer,
-			reset,
-			applyCategorySuggestionDirect,
-		],
-	);
-
-	useEffect(() => {
-		return () => {
-			abortControllerRef.current?.abort();
-			clearAutoDismissTimer();
-		};
-	}, [clearAutoDismissTimer]);
-
-	useEffect(() => {
-		if (currentCategoryId) {
-			reset();
-		}
-	}, [currentCategoryId, reset]);
-
-	return {
-		isLoading,
-		triggerSuggestion,
-	};
-}
-
-interface CategorySuggestion {
+/** 서버의 카테고리 분류 응답입니다. */
+interface IFCategorySuggestion {
 	categoryName: string;
 	isExisting: boolean;
 	existingCategoryId: number | null;
 	confidence: number;
 }
 
-interface CategorySuggestionResponse {
-	suggestion: CategorySuggestion | null;
-}
+/** 유료 사용자가 자동 적용을 허용한 경우에만 페이지당 한 번 분류합니다. */
+export const useCategorySuggestion = (props: IFCategorySuggestionProps) => {
+	const [isLoading, setIsLoading] = useState(false);
+	const { categories } = useCategoryQuery();
+	const { mutateAsync: createCategory } = useCategoryPostMutation();
+	const subscriptionQuery = useSubscriptionQuery(CONFIG.webUrl);
+	const queryClient = useQueryClient();
+	const controllerRef = useRef<AbortController | null>(null);
+	const requestedUrlsRef = useRef(new Set<string>());
+	const currentCategoryRef = useRef(props.currentCategoryId);
+	currentCategoryRef.current = props.currentCategoryId;
+	useEffect(() => () => controllerRef.current?.abort(), []);
+	const triggerSuggestion = async (memoText: string) => {
+		if (
+			currentCategoryRef.current ||
+			controllerRef.current ||
+			!hasPaidSubscription(subscriptionQuery.data?.subscription ?? null)
+		) {
+			return;
+		}
+		const shouldAutoApply =
+			(await ChromeSyncStorage.get<boolean>(STORAGE_KEYS.autoApplyCategory)) ??
+			true;
+		if (!shouldAutoApply) {
+			return;
+		}
+		const tabInfo = await getTabInfo();
+		if (!tabInfo.url || requestedUrlsRef.current.has(tabInfo.url)) {
+			return;
+		}
+		const controller = new AbortController();
+		controllerRef.current = controller;
+		requestedUrlsRef.current.add(tabInfo.url);
+		setIsLoading(true);
+		const timeoutId = setTimeout(() => controller.abort(), 10000);
+		try {
+			const page = await bridge.request.PAGE_CONTENT();
+			const response = await requestAi({
+				path: "/category",
+				body: {
+					pageTitle: tabInfo.title || "",
+					pageUrl: tabInfo.url,
+					pageContent: page.content || "",
+					memoText,
+					pageLanguage: /[가-힣]/.test(
+						`${tabInfo.title} ${page.content?.slice(0, 500)}`,
+					)
+						? "ko"
+						: "en",
+					existingCategories: (categories ?? []).map((category) => ({
+						id: category.id,
+						name: category.name,
+					})),
+				},
+				signal: controller.signal,
+			});
+			const result: { suggestion: IFCategorySuggestion | null } =
+				await response.json();
+			const suggestion = result.suggestion;
+			if (
+				!suggestion ||
+				suggestion.confidence < 0.7 ||
+				currentCategoryRef.current ||
+				(await getTabInfo()).url !== tabInfo.url
+			) {
+				return;
+			}
+			let categoryId = suggestion.existingCategoryId;
+			if (!suggestion.isExisting || !categoryId) {
+				const categoryResult = await createCategory({
+					name: suggestion.categoryName,
+					color: generateRandomPastelColor(),
+				});
+				categoryId = categoryResult.data?.[0]?.id ?? null;
+			}
+			if (
+				categoryId &&
+				!currentCategoryRef.current &&
+				(await getTabInfo()).url === tabInfo.url
+			) {
+				props.onCategorySelect(categoryId);
+			}
+		} catch {
+			/** AI 실패 시 일반 메모와 사용자가 선택한 카테고리를 유지합니다. */
+		} finally {
+			clearTimeout(timeoutId);
+			controllerRef.current = null;
+			setIsLoading(false);
+			await queryClient.invalidateQueries({ queryKey: ["billing"] });
+		}
+	};
 
-interface UseCategorySuggestionProps {
-	currentCategoryId: number | null;
-	onCategorySelect: (categoryId: number) => void;
-}
+	return { isLoading, triggerSuggestion };
+};

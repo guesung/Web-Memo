@@ -3,21 +3,30 @@ import { Button, Input } from "@web-memo/ui";
 import { SendHorizontal } from "lucide-react";
 import { useRef, useState } from "react";
 
-interface ChatInputProps {
-	onSend: (message: string) => void;
+/** 전송 확인 후에만 입력을 비우는 채팅 입력 속성입니다. */
+interface IFChatInputProps {
+	onSend: (message: string) => Promise<boolean>;
 	disabled?: boolean;
 }
 
-export default function ChatInput({ onSend, disabled }: ChatInputProps) {
+/** AI 실패에서도 질문 입력을 유지하는 채팅 입력창입니다. */
+const ChatInput = ({ onSend, disabled }: IFChatInputProps) => {
 	const [input, setInput] = useState("");
 	const inputRef = useRef<HTMLInputElement>(null);
 
-	const handleSubmit = (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!input.trim() || disabled) return;
+		if (!input.trim() || disabled) {
+			return;
+		}
 
-		onSend(input.trim());
-		setInput("");
+		const sentInput = input.trim();
+		const isSent = await onSend(sentInput);
+		if (isSent) {
+			setInput((currentInput) =>
+				currentInput.trim() === sentInput ? "" : currentInput,
+			);
+		}
 		inputRef.current?.focus();
 	};
 
@@ -36,6 +45,7 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
 				onChange={(e) => setInput(e.target.value)}
 				onKeyDown={handleKeyDown}
 				placeholder={I18n.get("chat_input_placeholder")}
+				aria-label={I18n.get("chat_input_placeholder")}
 				className="flex-1"
 			/>
 			<Button
@@ -48,4 +58,6 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
 			</Button>
 		</form>
 	);
-}
+};
+
+export default ChatInput;

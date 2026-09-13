@@ -1,41 +1,62 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { NoMemosError, QUERY_KEY } from "../../../constants";
+import { QUERY_KEY } from "../../../constants";
 import type { MemoSupabaseResponse, MemoTable } from "../../../types";
 import { MemoService } from "../../../utils";
 
 import { useSupabaseClientQuery } from "../queries";
 
-type MutationError = Error;
+/** 메모 생성 실패입니다. */
+type TMutationError = Error;
 
-export default function useMemoPostMutation() {
+/** DB 제한 오류를 생성 성공으로 취급하지 않는 메모 생성 훅입니다. */
+const useMemoPostMutation = () => {
 	const queryClient = useQueryClient();
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
-	return useMutation<MemoSupabaseResponse, MutationError, MemoTable["Insert"]>({
-		mutationFn: new MemoService(supabaseClient).insertMemo,
-		onSuccess: async (result) => {
-			const { data: newData } = result;
+	return useMutation<MemoSupabaseResponse, TMutationError, MemoTable["Insert"]>(
+		{
+			mutationFn: async (request) => {
+				const result = await new MemoService(supabaseClient).insertMemo(
+					request,
+				);
+				if (result.error) {
+					throw result.error;
+				}
 
-			await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
+				return result;
+			},
+			onSuccess: async (result) => {
+				const { data: newData } = result;
 
-			const previousMemos = queryClient.getQueryData<MemoSupabaseResponse>(
-				QUERY_KEY.memos(),
-			);
+				await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
 
-			if (!previousMemos || !newData) throw new NoMemosError();
+				const previousMemos = queryClient.getQueryData<MemoSupabaseResponse>(
+					QUERY_KEY.memos(),
+				);
 
-			const { data: previousMemosData } = previousMemos;
+				if (!previousMemos || !newData) {
+					await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+					return;
+				}
 
-			if (!previousMemosData) throw new NoMemosError();
+				const { data: previousMemosData } = previousMemos;
 
-			const newMemosData = newData.concat(previousMemosData);
+				if (!previousMemosData) {
+					await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+					return;
+				}
 
-			await queryClient.setQueryData(QUERY_KEY.memos(), {
-				...previousMemos,
-				data: newMemosData,
-			});
+				const newMemosData = newData.concat(previousMemosData);
 
-			return { previousMemos };
+				await queryClient.setQueryData(QUERY_KEY.memos(), {
+					...previousMemos,
+					data: newMemosData,
+				});
+
+				return { previousMemos };
+			},
 		},
-	});
-}
+	);
+};
+
+export default useMemoPostMutation;

@@ -3,11 +3,13 @@ import {
 	useCategoryPostMutation,
 	useCategoryQuery,
 } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
+import { generateRandomPastelColor } from "@web-memo/shared/utils";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -52,6 +54,7 @@ export function useCategorySuggestion({
 					try {
 						const result = await createCategory({
 							name: suggestionToApply.categoryName,
+							color: generateRandomPastelColor(),
 						});
 						categoryId = result.data?.[0]?.id ?? null;
 					} catch {
@@ -66,6 +69,12 @@ export function useCategorySuggestion({
 
 				if (categoryId) {
 					onCategorySelect(categoryId);
+					// OpenAI를 호출하는 기능입니다. 제안이 실제로 받아들여지는지 모르면 비용 대비
+					// 가치를 판단할 수 없습니다.
+					analytics.trackEvent({
+						name: "category_suggestion_apply",
+						params: { is_new_category: !suggestionToApply.isExisting },
+					});
 				}
 			} catch (error) {
 				console.error("Failed to auto-apply category:", error);
@@ -155,6 +164,11 @@ export function useCategorySuggestion({
 						...data.suggestion,
 						existingCategoryId: data.suggestion.existingCategoryId ?? null,
 					};
+
+					analytics.trackEvent({
+						name: "category_suggestion_show",
+						params: { is_new_category: !suggestionData.isExisting },
+					});
 
 					const shouldAutoApply =
 						(await ChromeSyncStorage.get<boolean>(

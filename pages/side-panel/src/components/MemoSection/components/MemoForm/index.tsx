@@ -2,7 +2,10 @@ import ResizeHandle from "@src/components/ResizeHandle";
 import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
 import { getMemoUrl, type IFMemoUrlParams } from "@src/utils";
-import type { TMemoStatusKey } from "@web-memo/shared/constants";
+import {
+	DEFAULT_CATEGORY_COLOR,
+	type TMemoStatusKey,
+} from "@web-memo/shared/constants";
 import { useSettingQuery } from "@web-memo/shared/hooks";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
@@ -289,7 +292,8 @@ function MemoFormContent() {
 								<div
 									className="h-2 w-2 rounded-full"
 									style={{
-										backgroundColor: currentCategory.color || "#888888",
+										backgroundColor:
+											currentCategory.color || DEFAULT_CATEGORY_COLOR,
 									}}
 								/>
 								{currentCategory.name}
@@ -333,7 +337,10 @@ function MemoFormContent() {
 									>
 										<div
 											className="h-3 w-3 rounded-full"
-											style={{ backgroundColor: category.color || "#888888" }}
+											style={{
+												backgroundColor:
+													category.color || DEFAULT_CATEGORY_COLOR,
+											}}
 										/>
 										{category.name}
 									</CommandItem>

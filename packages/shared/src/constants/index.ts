@@ -1,4 +1,5 @@
 export * from "./Analytics";
+export * from "./Category";
 export * from "./ChromeExtension";
 export * from "./ExternalLink";
 export * from "./Highlight";

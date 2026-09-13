@@ -353,3 +353,74 @@
 		}
 	}
 }
+
+/* ===== 랜딩 스코프 토큰 =====
+   소개·기능·유스케이스 페이지에만 입히는 시각 언어입니다.
+   `(auth)` 도구 화면·확장 사이드패널·Expo 앱은 이 블록의 영향을 받지 않습니다.
+
+   shadcn 역할 토큰을 같은 이름으로 덮어쓰므로, 컴포넌트는 평소대로
+   `bg-background`·`text-muted-foreground` 같은 역할 이름만 쓰면 됩니다.
+   색상 코드를 컴포넌트에 직접 적지 않는 관행이 그대로 유지됩니다.
+
+   radius는 덮지 않습니다 — `--radius`를 키우면 작은 컨트롤까지 둥글어집니다.
+   카드는 `rounded-3xl`(24px), 버튼은 `rounded-full`을 클래스로 직접 씁니다.
+
+   유채색은 peach/sienna 한 쌍뿐이고 **페이지당 한 곳에서만** 씁니다.
+   현재 자리는 StatsSection입니다. */
+.landing {
+	--background: 0 0% 100%;
+	--foreground: 220 10% 10%;
+	--card: 0 0% 100%;
+	--card-foreground: 220 10% 10%;
+	--popover: 0 0% 100%;
+	--popover-foreground: 220 10% 10%;
+	--primary: 220 10% 10%;
+	--primary-foreground: 0 0% 100%;
+	--secondary: 240 2% 95%;
+	--secondary-foreground: 220 10% 10%;
+	--muted: 240 5% 98%;
+	--muted-foreground: 222 7% 49%;
+	--accent: 240 2% 95%;
+	--accent-foreground: 220 10% 10%;
+	--border: 240 3% 91%;
+	--input: 240 3% 91%;
+	--ring: 220 10% 10%;
+
+	/* 유일한 유채색 한 쌍. 다크에서는 면과 글자가 뒤바뀝니다. */
+	--landing-accent-surface: 26 77% 90%;
+	--landing-accent-ink: 14 57% 23%;
+}
+
+.dark .landing {
+	--background: 220 7% 8%;
+	--foreground: 240 2% 95%;
+	--card: 220 8% 11%;
+	--card-foreground: 240 2% 95%;
+	--popover: 220 8% 11%;
+	--popover-foreground: 240 2% 95%;
+	--primary: 240 2% 95%;
+	--primary-foreground: 220 7% 8%;
+	--secondary: 222 8% 14%;
+	--secondary-foreground: 240 2% 95%;
+	--muted: 220 8% 11%;
+	--muted-foreground: 219 11% 64%;
+	--accent: 222 8% 14%;
+	--accent-foreground: 240 2% 95%;
+	--border: 220 6% 20%;
+	--input: 220 6% 20%;
+	--ring: 240 2% 95%;
+
+	--landing-accent-surface: 14 57% 23%;
+	--landing-accent-ink: 26 77% 90%;
+}
+
+/* peach 면. 라이트에서는 peach 위 sienna 글자, 다크에서는 sienna 위 peach 글자. */
+.landing-accent {
+	background-color: hsl(var(--landing-accent-surface));
+	color: hsl(var(--landing-accent-ink));
+}
+
+/* 레퍼런스의 hairline — 경계를 긋되 존재를 주장하지 않습니다. */
+.landing-hairline {
+	border: 1px solid hsl(var(--border));
+}

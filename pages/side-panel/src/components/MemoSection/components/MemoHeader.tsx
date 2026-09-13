@@ -1,5 +1,6 @@
 import { getMemoUrl } from "@src/utils";
 import { useMemoQuery, useTabQuery } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import { Button, ErrorBoundary } from "@web-memo/ui";
 import { ExternalLinkIcon } from "lucide-react";
@@ -25,6 +26,10 @@ function MemoLink() {
 	});
 
 	const handleMemoClick = () => {
+		analytics.trackEvent({
+			name: "open_web_from_extension",
+			params: { from: "side_panel_memo" },
+		});
 		Tab.create({
 			url: getMemoUrl({ id: memoData?.id, isWish: !!memoData?.isWish }),
 		});

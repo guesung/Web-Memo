@@ -3,19 +3,18 @@ import type { LanguageParams } from "@src/modules/i18n";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { PATHS } from "@web-memo/shared/constants";
 import { AuthService } from "@web-memo/shared/utils";
-import { Separator } from "@web-memo/ui";
 import { redirect } from "next/navigation";
 
-import { LoginAside, LoginErrorAlert, LoginSection } from "./_components";
+import { LoginErrorAlert, LoginSection } from "./_components";
 
-export default async function page({
-	params: { lng },
-	searchParams,
-}: IFPageProps) {
+/** 로그인 상태와 오류에 맞춰 로그인 화면을 표시합니다. */
+const LoginPage = async ({ params: { lng }, searchParams }: IFPageProps) => {
 	const supabaseClient = getSupabaseClient();
 	const isUserLogin = await new AuthService(supabaseClient).checkUserLogin();
 
-	if (isUserLogin) redirect(`/${lng}${PATHS.memos}`);
+	if (isUserLogin) {
+		redirect(`/${lng}${PATHS.memos}`);
+	}
 
 	const hasLoginError = Boolean(searchParams.error);
 
@@ -27,15 +26,13 @@ export default async function page({
 				<div className="flex w-full max-w-sm flex-col gap-8">
 					{hasLoginError && <LoginErrorAlert lng={lng} />}
 					<LoginSection lng={lng} />
-
-					<Separator />
-
-					<LoginAside lng={lng} />
 				</div>
 			</div>
 		</main>
 	);
-}
+};
+
+export default LoginPage;
 
 /** 로그인 페이지의 props입니다. */
 interface IFPageProps extends LanguageParams {

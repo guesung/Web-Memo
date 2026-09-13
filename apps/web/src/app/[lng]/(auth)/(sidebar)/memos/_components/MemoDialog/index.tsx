@@ -31,16 +31,22 @@ import {
 import { useForm } from "react-hook-form";
 import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
+import { useMemoHighlights } from "../MemoView/_hooks/useMemoHighlights";
+import { MemoHighlights } from "../MemoView/MemoHighlights";
 import type { TMemoSaveStatus } from "./SaveStatusIndicator";
 import SaveStatusIndicator from "./SaveStatusIndicator";
 
-interface MemoDialog extends LanguageType {
+/** 메모 상세 대화상자의 언어와 조회할 메모 ID. */
+interface IFMemoDialogProps extends LanguageType {
 	memoId: number;
 }
 
-export default function MemoDialog({ lng, memoId }: MemoDialog) {
+/** 메모를 편집하고 같은 원문의 하이라이트를 함께 표시한다. */
+const MemoDialog = ({ lng, memoId }: IFMemoDialogProps) => {
 	const { t } = useTranslation(lng);
 	const { memo: memoData } = useMemoQuery({ id: memoId });
+	const { highlightsByUrl, isHighlightLoadError, refetchHighlights } =
+		useMemoHighlights(memoData?.url ? [memoData.url] : []);
 	const { showImpression, showActionItem } = useSettingQuery();
 	const {
 		textareaRef: memoTextareaRef,
@@ -303,6 +309,26 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 								</div>
 							)}
 
+							{isHighlightLoadError && (
+								<div
+									role="alert"
+									className="flex items-center gap-2 text-sm text-destructive"
+								>
+									<p>{t("highlight.loadError")}</p>
+									<button
+										type="button"
+										onClick={() => void refetchHighlights()}
+										className="underline"
+									>
+										{t("error.500.retry")}
+									</button>
+								</div>
+							)}
+							<MemoHighlights
+								highlights={highlightsByUrl.get(memoData.url)}
+								label={t("sideBar.highlight")}
+							/>
+
 							<div className="flex h-4 items-center">
 								<SaveStatusIndicator status={saveStatus} lng={lng} />
 							</div>
@@ -318,4 +344,6 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 			</DialogContent>
 		</Dialog>
 	);
-}
+};
+
+export default MemoDialog;

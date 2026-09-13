@@ -8,7 +8,6 @@ export const PATHS = {
 	highlights: "/highlights",
 	auth: "/auth",
 	introduce: "/introduce",
-	update: "/update",
 	privacy: "/privacy",
 	uninstall: "/uninstall",
 	memosWish: "/memos?isWish=true",

@@ -31,12 +31,6 @@ export default function HeaderLeft({ lng }: LanguageType) {
 			>
 				{t("header.introduce")}
 			</Link>
-			<Link
-				href={`/${lng}${PATHS.update}`}
-				className="text-muted-foreground hover:text-foreground text-sm transition-colors"
-			>
-				{t("header.update")}
-			</Link>
 			<FeedbackSection lng={lng} />
 		</div>
 	);

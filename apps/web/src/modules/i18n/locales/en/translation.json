@@ -369,19 +369,20 @@
 		"changeCategory": "Change category"
 	},
 	"login": {
-		"welcomeTitle": "Welcome to Web Memo!",
-		"welcomeDescription": "Login is required to securely save and sync your memos across all devices.",
+		"welcomeTitle": "Easily take notes while browsing websites.",
 		"kakaoLogin": "Login with Kakao",
-		"googleLogin": "Login with Google",
-		"appleLogin": "Login with Apple",
+		"googleLogin": "Sign in with Google",
+		"appleLogin": "Sign in with Apple",
 		"testLogin": "Login with Test",
+		"providerPending": "Taking you to {{provider}}",
+		"providerName": {
+			"kakao": "Kakao",
+			"google": "Google",
+			"apple": "Apple"
+		},
+		"errorAlert": "Login didn't finish. Please tap the button once more.",
 		"askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
-		"personalInformationInfo": "Login info is only used for memo sync and never for ads or marketing purposes.",
-		"trustSignal": {
-			"secure": "Secure",
-			"private": "Private",
-			"free": "Free"
-		}
+		"personalInformationInfo": "Signing in is used to sync your memos."
 	},
 	"dialogInstall": {
 		"title": "Extension required",

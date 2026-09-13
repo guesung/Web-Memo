@@ -4,36 +4,69 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 interface IFSignedUpUserRecord {
   id: string;
   email: string | null;
+  /** OAuth 제공자가 준 표시 이름. Apple·이메일 가입자는 대개 없다 */
+  name: string | null;
   created_at: string;
 }
 
 const SENDER = "웹 메모 <hello@webmemo.xyz>";
 const REPLY_TO = "gueit214@naver.com";
-const SUBJECT = "웹 메모에 가입하셨어요. 이제 읽던 자리에서 바로 남길 수 있어요";
 
 const CHROME_WEB_STORE_URL =
   "https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh";
-const IOS_APP_STORE_URL = "https://apps.apple.com/app/id6759237784";
 const MEMOS_URL = "https://webmemo.xyz/memos";
+
+/**
+ * 사용자 입력을 HTML에 넣을 수 있게 이스케이프한다
+ * @description 이름은 사용자가 OAuth 제공자에 직접 정한 값이라 태그가 섞일 수 있다
+ */
+const escapeHtml = (value: string) =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+
+/**
+ * 가입 안내 메일 제목을 만든다
+ * @description 이름이 없으면 "님"만 남지 않도록 호칭을 통째로 뺀다
+ */
+const buildWelcomeEmailSubject = (name: string | null) => {
+  if (!name) {
+    return "웹 메모에 오신 걸 환영해요";
+  }
+
+  return `${name}님, 웹 메모에 오신 걸 환영해요`;
+};
 
 /**
  * 가입 안내 메일 본문을 만든다
  * @description
- * 세 진입점(확장·웹·앱)을 한 번씩 짚는 1회성 안내다. 기능을 나열하거나 자랑하지 않는다.
+ * 확장으로 읽으며 메모하기 · 하이라이트 · 웹에서 모아 보기를 한 번씩 짚는 1회성 안내다.
  * 메일 클라이언트마다 CSS 지원이 제각각이라 템플릿 엔진 없이 인라인 스타일만 쓴다.
  */
-const buildWelcomeEmailHtml = () => {
-  const steps = [
-    `<li style="margin-bottom:12px;">먼저 <a href="${CHROME_WEB_STORE_URL}">크롬 확장</a>을 설치해 주세요.</li>`,
-    "<li style=\"margin-bottom:12px;\">읽던 페이지에서 사이드 패널을 열면 그 자리에서 메모를 남길 수 있어요.</li>",
-    `<li style="margin-bottom:12px;">남긴 메모는 <a href="${MEMOS_URL}">웹</a>과 <a href="${IOS_APP_STORE_URL}">iOS 앱</a>에서 모아 볼 수 있어요.</li>`,
-  ].join("");
+const buildWelcomeEmailHtml = (name: string | null) => {
+  let greeting = "안녕하세요.";
+
+  if (name) {
+    greeting = `안녕하세요, ${escapeHtml(name)}님.`;
+  }
+
+  const sectionTitleStyle = "margin:24px 0 4px;font-weight:600;";
+  const sectionBodyStyle = "margin:0;";
 
   return [
     '<div style="font-family:-apple-system,BlinkMacSystemFont,\'Apple SD Gothic Neo\',sans-serif;font-size:15px;line-height:1.7;color:#111;">',
-    "<p>웹 메모에 가입해 주셔서 고마워요.</p>",
-    `<ol style="padding-left:20px;">${steps}</ol>`,
-    "<p>쓰시다가 불편한 점이 있으면 이 메일에 그대로 답장해 주세요. 저에게 옵니다.</p>",
+    `<p>${greeting}</p>`,
+    "<p>웹 메모에 가입해 주셔서 고마워요. 이렇게 쓰시면 돼요.</p>",
+    `<p style="${sectionTitleStyle}">1. 읽으면서 바로 메모하기</p>`,
+    `<p style="${sectionBodyStyle}">아티클을 읽거나 유튜브를 보다가 그 자리에서 메모를 남길 수 있어요.<br>크롬 확장을 설치한 뒤, Windows는 Alt + S, macOS는 Option + S로 열어요.<br>확장 설치: <a href="${CHROME_WEB_STORE_URL}">크롬 웹스토어</a></p>`,
+    `<p style="${sectionTitleStyle}">2. 하이라이트 남기기</p>`,
+    `<p style="${sectionBodyStyle}">다시 보고 싶은 문장을 드래그하면 나오는 버튼으로 하이라이트를 남길 수 있어요.</p>`,
+    `<p style="margin-top:24px;">남긴 메모와 하이라이트는 웹에서 모아 볼 수 있어요: <a href="${MEMOS_URL}">${MEMOS_URL}</a></p>`,
+    "<p>쓰시다가 불편한 점이 있으면 이 메일에 답장해 주세요. 제가 직접 읽어요.</p>",
+    "<p>웹 메모를 만드는 박규성 드림</p>",
     "</div>",
   ].join("");
 };
@@ -72,6 +105,9 @@ serve(async (req) => {
       });
     }
 
+    // 제목 헤더에 줄바꿈이 섞이면 메일이 깨지므로 공백으로 편다.
+    const recipientName = record.name?.replace(/\s+/g, " ").trim() || null;
+
     const resendResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -82,8 +118,8 @@ serve(async (req) => {
         from: SENDER,
         to: [record.email],
         reply_to: REPLY_TO,
-        subject: SUBJECT,
-        html: buildWelcomeEmailHtml(),
+        subject: buildWelcomeEmailSubject(recipientName),
+        html: buildWelcomeEmailHtml(recipientName),
       }),
     });
 

@@ -28,6 +28,7 @@ begin
       'record', jsonb_build_object(
         'id', new.id,
         'email', new.email,
+        'name', coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name'),
         'created_at', new.created_at
       )
     )

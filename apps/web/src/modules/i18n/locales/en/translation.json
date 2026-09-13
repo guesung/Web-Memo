@@ -44,8 +44,7 @@
 	"header": {
 		"login": "Sign in",
 		"logout": "Sign out",
-		"introduce": "About",
-		"update": "What's new"
+		"introduce": "About"
 	},
 	"updateNotification": {
 		"title": "🎉 What's New",
@@ -54,7 +53,6 @@
 		"confirm": "Got it"
 	},
 	"updates": {
-		"title": "What's new",
 		"versions": {
 			"v1.10.12": {
 				"title": "Website address changed",
@@ -371,11 +369,10 @@
 		"changeCategory": "Change category"
 	},
 	"login": {
-		"welcomeTitle": "See the memos you left while reading, all in one place",
-		"welcomeDescription": "New here? That's fine. Tapping a button below creates your account along the way.",
-		"kakaoLogin": "Continue with Kakao",
-		"googleLogin": "Continue with Google",
-		"appleLogin": "Continue with Apple",
+		"welcomeTitle": "Easily take notes while browsing websites.",
+		"kakaoLogin": "Login with Kakao",
+		"googleLogin": "Sign in with Google",
+		"appleLogin": "Sign in with Apple",
 		"testLogin": "Login with Test",
 		"providerPending": "Taking you to {{provider}}",
 		"providerName": {
@@ -385,14 +382,7 @@
 		},
 		"errorAlert": "Login didn't finish. Please tap the button once more.",
 		"askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
-		"personalInformationInfo": "We use your login info only to keep your memos connected. Never for ads or marketing.",
-		"aside": {
-			"installCount": "{{installs}}+ installs",
-			"crossDevice": "Chrome, web, and iOS see the same memos",
-			"persistent": "Your memos stay even if you clear the browser",
-			"minimalData": "We ask for nothing but your email address",
-			"noMarketing": "We never use it for ads or marketing"
-		}
+		"personalInformationInfo": "Signing in is used to sync your memos."
 	},
 	"dialogInstall": {
 		"title": "Extension required",
@@ -549,22 +539,21 @@
 		},
 		"hero": {
 			"title": "Easier web browsing",
-			"subtitle": "Save with one click, summarize with AI, organize systematically",
+			"subtitle": "Open the side panel on the page you're reading — AI summarizes long articles and videos",
 			"install_button": "Add to Chrome",
-			"appstore_button": "Download on App Store",
+			"appstore_button": "App Store",
+			"playstore_button": "Google Play",
 			"explore_features": "Explore Features",
 			"free_forever": "Free Forever",
 			"quick_install": "10s Install",
 			"no_credit_card": "No credit card required",
 			"learn_more": "Learn more",
-			"mobile_apps": {
-				"ios": "iOS",
-				"android": "Android"
-			}
+			"desktop_extension_hint": "Also available as a Chrome extension on desktop",
+			"installs_badge": "installs"
 		},
 		"section": {
 			"key_features": "Key Features",
-			"key_features_desc": "Features that make web browsing smarter",
+			"key_features_desc": "Five things that keep only what you need while you read",
 			"features_badge": "Features",
 			"demo": "See it in action",
 			"demo_title": "See it in action",
@@ -575,12 +564,12 @@
 			"use_cases_desc": "Web Memo helps in various situations",
 			"stats": "Web Memo by the numbers",
 			"stats_title": "Web Memo by the numbers",
-			"stats_desc": "Many users are already using Web Memo",
+			"stats_desc": "The numbers so far",
 			"testimonials_title": "User Reviews",
 			"testimonials_desc": "See what real users are saying",
 			"testimonials_note": "* Based on representative use cases",
 			"cta_title": "Get started now",
-			"cta_desc": "Experience smarter web browsing. Free, right now.",
+			"cta_desc": "Ten seconds from install to your first note. All of it free.",
 			"cta_badge": "Get Started Today"
 		},
 		"demo": {
@@ -601,9 +590,9 @@
 			"tab_wishlist": "Wishlist",
 			"tab_wishlist_desc": "Save content for later",
 			"organize": "Organize",
-			"organize_desc": "Systematic management with categories",
+			"organize_desc": "Group notes into categories",
 			"tab_organize": "Organize",
-			"tab_organize_desc": "Systematic management with categories"
+			"tab_organize_desc": "Group notes into categories"
 		},
 		"steps": {
 			"step1_title": "Install Extension",
@@ -611,17 +600,17 @@
 			"step2_title": "Open Side Panel",
 			"step2_desc": "Quick access with shortcuts",
 			"step3_title": "Save and Organize",
-			"step3_desc": "Systematically manage web content"
+			"step3_desc": "Group them into categories and find them later"
 		},
 		"use_case": {
 			"students_title": "Students & Researchers",
 			"students_desc": "Save key points from online courses and research. Systematically manage references for your papers.",
 			"student_title": "Students & Researchers",
-			"student_desc": "Save key points from online courses and research. Systematically manage references for your papers.",
+			"student_desc": "Save just the key points from online lectures and research. Keep references for your paper together with their sources.",
 			"professionals_title": "Professionals",
 			"professionals_desc": "Systematically manage competitor analysis and trend monitoring. Find work-related information quickly.",
 			"professional_title": "Research & Work",
-			"professional_desc": "Systematically manage competitor analysis and trend monitoring. Find work-related information quickly.",
+			"professional_desc": "Collect competitor analysis and trend research in one place. Pull it back up by search when you need it.",
 			"efficiency_title": "Efficient People",
 			"efficiency_desc": "Get key insights with AI summaries instead of reading long articles. Save time and consume more content.",
 			"creators_title": "Content Creators",
@@ -629,17 +618,19 @@
 			"creator_title": "Content Creators",
 			"creator_desc": "Collect inspiring content and ideas. Manage all your creative references in one place.",
 			"job_hunting_title": "Job Seekers",
-			"job_hunting_desc": "Organize job postings and company information at a glance. Efficiently manage materials for interview preparation.",
+			"job_hunting_desc": "Keep job postings and company research in one place. Gather what you'll reread before the interview.",
 			"news_reading_title": "News & Articles",
-			"news_reading_desc": "Save important articles and insights. Systematically manage key information to revisit later.",
+			"news_reading_desc": "Save the articles and insights that matter. Leave a note on the parts you'll come back to.",
 			"youtube_notes_title": "YouTube Learning",
-			"youtube_notes_desc": "Take notes on key video content. Boost your video learning efficiency with AI summaries."
+			"youtube_notes_desc": "Note the key moments of a video, alongside a caption-based AI summary."
 		},
 		"stats": {
-			"active_users": "Active Users",
-			"active_users_desc": "Chrome Web Store users",
+			"installs": "Installs",
+			"installs_desc": "Chrome Web Store installs",
 			"memos_saved": "Memos Saved",
 			"memos_saved_desc": "Total memos saved by users",
+			"free_forever": "Free forever",
+			"no_tracking": "No data tracking",
 			"rating": "Average Rating",
 			"rating_desc": "Chrome Web Store rating",
 			"average_rating": "Average Rating",
@@ -649,8 +640,6 @@
 			"install_time_desc": "Time to install on Chrome"
 		},
 		"social_proof": {
-			"active_users": "Active Users",
-			"rating": "Average Rating",
 			"free_forever": "Free Forever",
 			"no_tracking": "No Data Tracking",
 			"safe": "Safe"
@@ -763,6 +752,7 @@
 			"description": "Easy and fast content organization",
 			"chrome_extension": "Chrome Extension",
 			"ios_app": "iOS App",
+			"android_app": "Android App",
 			"features_link": "Explore Features",
 			"contact_link": "Contact Us",
 			"product": {
@@ -900,160 +890,158 @@
 			"new_users": "New Users"
 		}
 	},
+	"landing": {
+		"install": {
+			"button": "Add to Chrome",
+			"mobile_hint": "There's a mobile app too"
+		},
+		"related": {
+			"title": "Read next",
+			"description": "Other ways people use the same tool"
+		}
+	},
 	"features": {
 		"youtubeSummary": {
 			"hero": {
 				"badge": "YouTube AI Summary",
-				"title": "Long videos?",
-				"titleHighlight": "Get the key points",
-				"description": "Summarize YouTube videos instantly with AI. Extract key points from hour-long videos in minutes.",
-				"cta": "Get Started Free",
-				"learnMore": "Learn More"
+				"title": "Read the point before you watch the hour",
+				"description": "AI reads the video's captions and lays out the key points, so you can decide whether to watch and where to start."
 			},
 			"benefits": {
-				"title": "Why YouTube Summary?",
-				"subtitle": "Save time and consume more content",
+				"title": "What you can know before watching",
+				"subtitle": "Runtime and the time you actually need are not the same",
 				"timeSaving": {
-					"title": "Save Time",
-					"description": "Get the key points of a 1-hour video in 5 minutes. No more wasting time on long videos."
+					"title": "Decide before you commit",
+					"description": "Read the summary of an hour-long video first and decide whether it's worth the hour."
 				},
 				"aiPowered": {
-					"title": "AI-Powered",
-					"description": "Latest AI technology extracts key points accurately. Never miss important content."
+					"title": "Built from the whole transcript",
+					"description": "The summary comes from the full transcript, not just the opening minutes."
 				},
 				"transcript": {
-					"title": "Transcript-Based",
-					"description": "Analyzes YouTube captions for accurate summaries. Works with any video that has subtitles."
+					"title": "Works wherever captions exist",
+					"description": "Any video with captions can be summarized, auto-generated ones included."
 				},
 				"instant": {
-					"title": "Instant Summary",
-					"description": "Summary starts automatically when you open the side panel. Get key points with one click."
+					"title": "Starts when the panel opens",
+					"description": "Open the side panel on a video page and the summary begins on its own."
 				}
 			},
 			"howItWorks": {
-				"title": "How It Works",
-				"subtitle": "Summarize YouTube videos in 3 simple steps",
+				"title": "Three moves to a summary",
+				"subtitle": "After installing, this is all there is",
 				"step1": {
-					"title": "Play YouTube Video",
-					"description": "Navigate to the YouTube video you want to summarize"
+					"title": "Open a YouTube video",
+					"description": "Go to the video you want summarized"
 				},
 				"step2": {
-					"title": "Open Side Panel",
-					"description": "Press Alt+S (Mac: Option+S) to open Web Memo side panel"
+					"title": "Open the side panel",
+					"description": "Press Alt+S (Mac: Option+S)"
 				},
 				"step3": {
-					"title": "Get AI Summary",
-					"description": "AI automatically analyzes and summarizes the key points"
+					"title": "Read the summary",
+					"description": "Read it, then note the parts worth keeping"
 				}
 			},
 			"cta": {
-				"title": "Start Summarizing YouTube Videos Now",
-				"description": "Install the free Chrome extension and watch videos more efficiently.",
-				"button": "Add to Chrome",
+				"title": "Read the summary before your next video",
+				"description": "Add it to Chrome and use it on the video you're watching now.",
 				"subtext": "Free · 10-second install · No credit card required"
 			}
 		},
 		"memo": {
 			"hero": {
 				"badge": "Browser Notes",
-				"title": "Take notes",
-				"titleHighlight": "while you browse",
-				"description": "Capture your thoughts instantly while reading web pages. Take notes in the side panel and organize them systematically.",
-				"cta": "Get Started Free",
-				"learnMore": "Learn More"
+				"title": "Take notes without leaving the page",
+				"description": "Write what comes to mind in a side panel next to what you're reading. The page URL is saved with every note."
 			},
 			"benefits": {
-				"title": "Why Browser Notes?",
-				"subtitle": "Never lose an idea, stay organized",
+				"title": "Why the notes belong in the browser",
+				"subtitle": "Short to write, short to find again",
 				"shortcut": {
-					"title": "Quick Shortcut",
-					"description": "Press Alt+S (Mac: Option+S) to open the side panel and start taking notes from anywhere."
+					"title": "One shortcut to open it",
+					"description": "Press Alt+S (Mac: Option+S) and the panel opens beside the page you're reading. No tab switching, no second app."
 				},
 				"organize": {
-					"title": "Organize by Category",
-					"description": "Categorize your notes for easy access. Find what you need quickly when you need it."
+					"title": "Group them by category",
+					"description": "Tag a note with a category and the list will show you that group alone."
 				},
 				"sync": {
-					"title": "Cloud Sync",
-					"description": "Log in to access your notes from any device. Your notes are always with you."
+					"title": "Signed in, notes follow you",
+					"description": "Notes live in your account. Write one on your work PC and open it on your laptop at home."
 				},
 				"search": {
-					"title": "Quick Search",
-					"description": "Search your notes by title or content. Find what you're looking for instantly."
+					"title": "Search title and body",
+					"description": "Find a note by a single word, even once hundreds have piled up. You don't have to remember which page it came from."
 				}
 			},
 			"howItWorks": {
-				"title": "How It Works",
-				"subtitle": "Start taking notes in 3 simple steps",
+				"title": "Three moves to your first note",
+				"subtitle": "After installing, this is all there is",
 				"step1": {
-					"title": "Open Side Panel",
-					"description": "Press Alt+S (Mac: Option+S) to open the side panel from anywhere"
+					"title": "Open the side panel",
+					"description": "Alt+S (Mac: Option+S). The page you're reading stays put"
 				},
 				"step2": {
-					"title": "Write Your Note",
-					"description": "Capture your thoughts. They're saved automatically"
+					"title": "Write the note",
+					"description": "Type it out — it saves without a save button"
 				},
 				"step3": {
-					"title": "Access Anytime",
-					"description": "View and manage all your notes at {{webDisplayHost}}"
+					"title": "Read it back",
+					"description": "See everything you've written at {{webDisplayHost}}"
 				}
 			},
 			"cta": {
-				"title": "Start Taking Notes Now",
-				"description": "Install the free Chrome extension and browse smarter.",
-				"button": "Add to Chrome",
+				"title": "Start with the next thing you read",
+				"description": "Add it to Chrome and use it on the tab you already have open.",
 				"subtext": "Free · 10-second install · No credit card required"
 			}
 		},
 		"saveArticles": {
 			"hero": {
 				"badge": "Save Articles",
-				"title": "Articles for later",
-				"titleHighlight": "all in one place",
-				"description": "Save interesting articles to your wishlist. Access them anytime you want.",
-				"cta": "Get Started Free",
-				"learnMore": "Learn More"
+				"title": "Keep what you'll read later in one list",
+				"description": "Save the articles you have no time for now, and pull them from the list when you do."
 			},
 			"benefits": {
-				"title": "Why Save Articles?",
-				"subtitle": "Never miss content you want to read",
+				"title": "Instead of thirty tabs left open",
+				"subtitle": "One list you can actually get to the end of",
 				"oneClick": {
-					"title": "One-Click Save",
-					"description": "Save the current page to your wishlist with one button. No complicated steps."
+					"title": "Save it with the heart",
+					"description": "Press the heart in the side panel and the page joins your list. Title and URL fill themselves in."
 				},
 				"wishlist": {
-					"title": "Wishlist Management",
-					"description": "View and manage saved articles at a glance. Easily track read and unread articles."
+					"title": "Read and unread, kept apart",
+					"description": "Check off what you've read and the next visit shows you only what's left."
 				},
 				"anywhere": {
-					"title": "Access Anywhere",
-					"description": "Access saved articles anytime at {{webDisplayHost}}. Works on mobile too."
+					"title": "Save on desktop, read on your phone",
+					"description": "Saved articles open at {{webDisplayHost}} and in the app, from the same list."
 				},
 				"readLater": {
-					"title": "Read Later",
-					"description": "Save great articles when you're busy and read them when you have time."
+					"title": "Something to read on the commute",
+					"description": "Save the good one you found while busy and it's waiting when you have time."
 				}
 			},
 			"howItWorks": {
-				"title": "How It Works",
-				"subtitle": "Save articles in 3 simple steps",
+				"title": "Save it, then read it",
+				"subtitle": "After installing, this is all there is",
 				"step1": {
-					"title": "Add to Wishlist",
-					"description": "Click the heart button in the side panel"
+					"title": "Add it to the list",
+					"description": "Press the heart button in the side panel"
 				},
 				"step2": {
-					"title": "View Your List",
-					"description": "Check saved articles in your wishlist"
+					"title": "Check the list",
+					"description": "Saved articles stack up, newest first"
 				},
 				"step3": {
-					"title": "Read When Ready",
-					"description": "Read saved articles whenever you have time"
+					"title": "Read when you can",
+					"description": "Open one from the list and check it off"
 				}
 			},
 			"cta": {
-				"title": "Start Saving Articles Now",
-				"description": "Install the free Chrome extension and never miss great content.",
-				"button": "Add to Chrome",
+				"title": "Stop losing the articles you meant to read",
+				"description": "Add it to Chrome and start with the tab you already have open.",
 				"subtext": "Free · 10-second install · No credit card required"
 			}
 		}
@@ -1062,252 +1050,224 @@
 		"research": {
 			"hero": {
 				"badge": "Research & Study",
-				"title": "Research",
-				"titleHighlight": "more efficiently",
-				"description": "Take instant notes and organize systematically while researching papers, articles, and web resources.",
-				"cta": "Get Started Free",
-				"learnMore": "Learn More"
+				"title": "Find it once, not twice",
+				"description": "Note the passage that matters while you read the paper, and the source URL stays attached to it."
 			},
 			"benefits": {
-				"title": "Research Made Easy",
-				"subtitle": "Features that boost your research efficiency",
+				"title": "Where research time actually goes",
+				"subtitle": "Finding, reading, finding again — we remove the last one",
 				"capture": {
-					"title": "Instant Capture",
-					"description": "Take notes immediately when you find important content. No need to go back and search again."
+					"title": "Write it where you found it",
+					"description": "When a passage matters, note it in the panel beside the page instead of switching tabs."
 				},
 				"summarize": {
-					"title": "AI Summary",
-					"description": "AI summarizes long papers and articles for you. Save time and review more materials."
+					"title": "Summarize the long ones first",
+					"description": "Read an AI summary of a long paper or article before deciding to read it closely."
 				},
 				"organize": {
-					"title": "Systematic Organization",
-					"description": "Categorize your notes. Organize materials by project or topic."
+					"title": "Split them by topic",
+					"description": "Make a category per project or subject and file your notes into it."
 				},
 				"reference": {
-					"title": "Source Management",
-					"description": "Original URLs are saved with your notes. Verify sources or revisit pages later."
+					"title": "The source comes along",
+					"description": "Every note carries the page URL, so citing it later doesn't mean retracing your steps."
 				}
 			},
 			"cta": {
-				"title": "Start More Efficient Research",
-				"description": "Install the free Chrome extension and boost your research productivity.",
-				"button": "Add to Chrome",
+				"title": "Take notes on your next search",
+				"description": "Add it to Chrome and use it on the source you already have open.",
 				"subtext": "Free · 10-second install · No credit card required"
 			}
 		},
 		"learning": {
 			"hero": {
 				"badge": "Online Learning",
-				"title": "Online learning",
-				"titleHighlight": "more effectively",
-				"description": "Take notes and get AI summaries while watching YouTube lectures and online courses.",
-				"cta": "Get Started Free",
-				"learnMore": "Learn More"
+				"title": "Take lecture notes without pausing",
+				"description": "Write in the side panel while a lecture plays, and read a summary first when it runs long."
 			},
 			"benefits": {
-				"title": "Boost Your Learning",
-				"subtitle": "Learn more efficiently and remember better",
+				"title": "What's left after the lecture ends",
+				"subtitle": "So you never replay an hour to find one minute",
 				"videoSummary": {
-					"title": "Video AI Summary",
-					"description": "AI automatically summarizes YouTube lectures. Get key points quickly from long lectures."
+					"title": "See the outline first",
+					"description": "A caption-based summary shows what a long lecture covers before you start it."
 				},
 				"notes": {
-					"title": "Lecture Notes",
-					"description": "Take notes on important content while watching. Create your personal study notes."
+					"title": "Write while it plays",
+					"description": "Note things in the side panel without pausing the video."
 				},
 				"review": {
-					"title": "Easy Review",
-					"description": "Review saved notes and summaries anytime. Boost learning with efficient review."
+					"title": "Notes point back to the lecture",
+					"description": "Each note keeps the lecture URL, so review takes you straight back to that video."
 				},
 				"focus": {
-					"title": "Better Focus",
-					"description": "Taking notes while learning improves focus. Active learning helps you remember better."
+					"title": "Writing keeps you listening",
+					"description": "Taking notes leaves less room for drifting, and the notes are the proof."
 				}
 			},
 			"cta": {
-				"title": "Start More Effective Learning",
-				"description": "Install the free Chrome extension and boost your learning efficiency.",
-				"button": "Add to Chrome",
+				"title": "Take notes in your next lecture",
+				"description": "Add it to Chrome and use it on the lecture you're watching now.",
 				"subtext": "Free · 10-second install · No credit card required"
 			}
 		},
 		"youtubeNotes": {
 			"hero": {
 				"badge": "YouTube Notes",
-				"title": "Take notes",
-				"titleHighlight": "while watching videos",
-				"description": "Take notes while watching YouTube lectures, tutorials, and reviews. Capture key points and find them easily later.",
-				"cta": "Get Started Free",
-				"learnMore": "Learn More"
+				"title": "Write it down while the video plays",
+				"description": "Note what you need from tutorials and reviews, and the video URL is saved alongside it."
 			},
 			"benefits": {
-				"title": "Transform Your YouTube Experience",
-				"subtitle": "Take notes efficiently while watching videos",
+				"title": "Keeping what a video gave you",
+				"subtitle": "So you don't scrub through it a second time",
 				"realtime": {
-					"title": "Real-time Notes",
-					"description": "Take notes in the side panel without pausing the video. Capture your thoughts without breaking the flow."
+					"title": "No pausing required",
+					"description": "Write in the side panel while the video keeps playing."
 				},
 				"capture": {
-					"title": "Capture Key Points",
-					"description": "Never miss important lecture points or tutorial steps. Record what matters most."
+					"title": "Only the parts worth keeping",
+					"description": "The command from a tutorial, the verdict from a review — note those and skip the rest."
 				},
 				"timestamp": {
-					"title": "Video Info Saved",
-					"description": "Video URL is automatically saved with your notes. Jump back to the video anytime you need to review."
+					"title": "The video URL is saved",
+					"description": "Click the note and you're back at the video. No searching the title again."
 				},
 				"organize": {
-					"title": "Organize by Category",
-					"description": "Categorize notes by lecture or topic. Keep your learning materials systematically organized."
+					"title": "Sort by channel or topic",
+					"description": "Add categories and a lecture series keeps its notes together."
 				}
 			},
 			"cta": {
-				"title": "Start Taking YouTube Notes",
-				"description": "Install the free Chrome extension and watch videos more efficiently.",
-				"button": "Add to Chrome",
+				"title": "Take notes on your next video",
+				"description": "Add it to Chrome and use it on the video you're watching now.",
 				"subtext": "Free · 10-second install · No credit card required"
 			}
 		},
 		"newsReading": {
 			"hero": {
 				"badge": "News & Articles",
-				"title": "Capture insights",
-				"titleHighlight": "while you read",
-				"description": "Take notes while reading news, blogs, and articles. Never lose an insight again.",
-				"cta": "Get Started Free",
-				"learnMore": "Learn More"
+				"title": "Read so that something stays",
+				"description": "Note the line that catches you while reading news and blogs, and keep the source URL with it."
 			},
 			"benefits": {
-				"title": "Transform Your Reading",
-				"subtitle": "Organize content efficiently as you read",
+				"title": "Why articles don't stick",
+				"subtitle": "One line written while reading changes that",
 				"highlight": {
-					"title": "Instant Capture",
-					"description": "Found something important? Take a note immediately. Capture thoughts the moment they come to you."
+					"title": "Write it the moment it lands",
+					"description": "Don't save it for later — leave one line right where you're reading."
 				},
 				"aiSummary": {
-					"title": "AI Summary",
-					"description": "AI summarizes long articles for you. Quickly grasp the content and take notes on what matters."
+					"title": "Summary first on long pieces",
+					"description": "For a long article, read the AI summary to see the argument, then read on."
 				},
 				"categorize": {
-					"title": "Organize by Topic",
-					"description": "Categorize notes by news, tech, business, and more. Keep your interests organized."
+					"title": "Split them by interest",
+					"description": "Make categories like news, tech, or business and file your notes into them."
 				},
 				"source": {
-					"title": "Source Management",
-					"description": "Original URLs are saved with your notes. Revisit the source anytime."
+					"title": "One click back to the original",
+					"description": "The article URL rides along with the note, so rechecking the source is one click."
 				}
 			},
 			"cta": {
-				"title": "Start Smarter Reading",
-				"description": "Install the free Chrome extension and organize content efficiently.",
-				"button": "Add to Chrome",
+				"title": "Leave one line on what you read today",
+				"description": "Add it to Chrome and use it on the article you already have open.",
 				"subtext": "Free · 10-second install · No credit card required"
 			}
 		},
 		"jobHunting": {
 			"hero": {
 				"badge": "Job Hunting",
-				"title": "Organize job search",
-				"titleHighlight": "systematically",
-				"description": "Organize job postings, company info, and interview prep in one place. Track your applications at a glance.",
-				"cta": "Get Started Free",
-				"learnMore": "Learn More"
+				"title": "See every application in one list",
+				"description": "Write down postings and company details company by company, and reopen just those notes before an interview."
 			},
 			"benefits": {
-				"title": "Transform Your Job Search",
-				"subtitle": "Get closer to your dream job with organized information",
+				"title": "What gets confusing as applications pile up",
+				"subtitle": "Don't leave \"where did I write that\" to memory",
 				"company": {
-					"title": "Company Research",
-					"description": "Take notes on companies you're interested in. Compare benefits, culture, and tech stack at a glance."
+					"title": "A note per company",
+					"description": "Record benefits, tech stack, and team size from the posting. The posting may come down; the note stays."
 				},
 				"track": {
-					"title": "Application Tracking",
-					"description": "Track companies and positions you've applied to. Follow progress from resume to interview to result."
+					"title": "Where each one stands",
+					"description": "Add resume, interview, and result to the same note and your applications live in one list."
 				},
 				"compare": {
-					"title": "Compare Offers",
-					"description": "Compare offers across companies. Organize salary, benefits, and growth potential systematically."
+					"title": "Put the offers side by side",
+					"description": "Record salary and working conditions under the same headings and comparison gets easy."
 				},
 				"find": {
-					"title": "Quick Search",
-					"description": "Find saved information quickly. Review company info right before your interview."
+					"title": "Pull it up before the interview",
+					"description": "Search the company name and everything you wrote about it comes back at once."
 				}
 			},
 			"cta": {
-				"title": "Start Organized Job Hunting",
-				"description": "Install the free Chrome extension and manage job search efficiently.",
-				"button": "Add to Chrome",
+				"title": "Note your next posting",
+				"description": "Add it to Chrome and use it on the posting you already have open.",
 				"subtext": "Free · 10-second install · No credit card required"
 			}
 		},
 		"developer": {
 			"hero": {
 				"badge": "For Developers",
-				"title": "Manage dev knowledge",
-				"titleHighlight": "systematically",
-				"description": "Organize scattered dev resources from Stack Overflow, GitHub, and tech blogs in one place.",
-				"cta": "Get Started Free",
-				"learnMore": "Learn More"
+				"title": "Never search for the same fix twice",
+				"description": "Note what actually worked, right on the Stack Overflow answer, GitHub issue, or doc page where you found it."
 			},
 			"benefits": {
-				"title": "Boost Your Dev Productivity",
-				"subtitle": "Features to manage your development knowledge efficiently",
+				"title": "So the same search doesn't happen twice",
+				"subtitle": "The thirty minutes you spent finding it, spent once",
 				"snippet": {
-					"title": "Save Code Snippets",
-					"description": "Save Stack Overflow answers and code examples instantly. Find and reuse them quickly when you need them."
+					"title": "Keep the answer that worked",
+					"description": "Note the Stack Overflow answer that actually worked and why, so you don't reread the whole thread next time."
 				},
 				"blog": {
-					"title": "Organize Tech Blogs",
-					"description": "Take notes on key insights from tech articles. No need to search again — just record the essentials."
+					"title": "The conclusion of what you read",
+					"description": "Leave a line or two of what an article concluded. A bookmarked title won't remind you of the content."
 				},
 				"github": {
-					"title": "GitHub Issue Notes",
-					"description": "Record PR discussions, issues, and code review notes. Never miss project decisions and progress."
+					"title": "Decisions made in the thread",
+					"description": "Record why a PR or issue went the way it did, so the discussion doesn't restart from scratch later."
 				},
 				"docs": {
-					"title": "API Documentation Notes",
-					"description": "Save key points from official docs. Organize frequently referenced materials your own way."
+					"title": "The parts of the docs you keep returning to",
+					"description": "Note the options and signatures you look up every time and build your own reference."
 				}
 			},
 			"cta": {
-				"title": "Start Smarter Development",
-				"description": "Install the free Chrome extension and manage your dev knowledge efficiently.",
-				"button": "Add to Chrome",
+				"title": "Note the next problem you search your way out of",
+				"description": "Add it to Chrome and use it on the doc page you already have open.",
 				"subtext": "Free · 10-second install · No credit card required"
 			}
 		},
 		"techArticle": {
 			"hero": {
 				"badge": "Tech Article Organizer",
-				"title": "Never miss",
-				"titleHighlight": "a tech article again",
-				"description": "Organize key insights from tech blogs, newsletters, and dev articles systematically.",
-				"cta": "Get Started Free",
-				"learnMore": "Learn More"
+				"title": "Bookmarks pile up, the content doesn't",
+				"description": "Note what a tech blog or newsletter actually concluded, with the original URL attached."
 			},
 			"benefits": {
-				"title": "Transform Your Article Reading",
-				"subtitle": "Features to organize tech articles efficiently",
+				"title": "About those articles saved for later",
+				"subtitle": "Keep the content, not just the title",
 				"aiSummary": {
-					"title": "AI Summary",
-					"description": "AI automatically summarizes long tech articles. Quickly grasp the key points without reading everything."
+					"title": "Summary first on long pieces",
+					"description": "For a long article, an AI summary tells you what it's about before you commit."
 				},
 				"clipping": {
-					"title": "Key Clipping",
-					"description": "Take instant notes on important paragraphs while reading. Never lose key insights."
+					"title": "Copy only the paragraph that matters",
+					"description": "Move the paragraph that catches you into a note as you read. No need to save the whole page."
 				},
 				"organize": {
-					"title": "Organize by Topic",
-					"description": "Categorize articles by frontend, backend, DevOps, and more. Keep your interests organized."
+					"title": "Split them by area",
+					"description": "Make categories like frontend, backend, or DevOps and file articles into them."
 				},
 				"source": {
-					"title": "Source Management",
-					"description": "Original URLs are saved automatically so you can revisit anytime. Reference management made easy."
+					"title": "Back to the original",
+					"description": "The source URL stays on the note, so quoting it or rereading it is one click away."
 				}
 			},
 			"cta": {
-				"title": "Organize Tech Articles Smartly",
-				"description": "Install the free Chrome extension and manage tech articles efficiently.",
-				"button": "Add to Chrome",
+				"title": "Leave a line on what you read today",
+				"description": "Add it to Chrome and use it on the article you already have open.",
 				"subtext": "Free · 10-second install · No credit card required"
 			}
 		}

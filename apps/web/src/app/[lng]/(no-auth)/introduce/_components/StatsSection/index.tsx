@@ -17,7 +17,7 @@ import SectionShell, { type TSectionBackground } from "../SectionShell";
 interface StatsSectionProps extends LanguageType {
 	/** `page.tsx`가 `getMemoCount()` 결과와 함께 넘긴다. 폴백은 그쪽이 갖는다 */
 	stats: {
-		userCount: number;
+		installCount: number;
 		memoCount: number;
 	};
 	background?: TSectionBackground;
@@ -33,9 +33,9 @@ export default async function StatsSection({
 	const countedStats = [
 		{
 			icon: Users,
-			value: `${stats.userCount.toLocaleString("en-US")}+`,
-			label: t("introduce.stats.active_users"),
-			description: t("introduce.stats.active_users_desc"),
+			value: `${stats.installCount.toLocaleString("en-US")}+`,
+			label: t("introduce.stats.installs"),
+			description: t("introduce.stats.installs_desc"),
 		},
 		{
 			icon: FileText,

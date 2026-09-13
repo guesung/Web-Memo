@@ -30,7 +30,8 @@ export default async function Hero({ lng, background }: HeroProps) {
 				<div className="text-center lg:text-left">
 					<div className="mb-8 inline-flex items-center gap-2 rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground">
 						<Users className="h-4 w-4" />
-						{CHROME_STORE_STATS.userCount}+ {t("introduce.stats.active_users")}
+						{CHROME_STORE_STATS.installCount}+{" "}
+						{t("introduce.hero.installs_badge")}
 					</div>
 
 					<h1 className="text-4xl font-normal leading-[1.1] tracking-[-0.025em] sm:text-5xl lg:text-6xl">

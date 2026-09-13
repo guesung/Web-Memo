@@ -11,8 +11,9 @@
  * 삼키고 { error } 를 돌려줍니다. 호출부는 값이 없을 수 있다고 가정해야 합니다.
  */
 
-import { createSign, sign as signBuffer } from "node:crypto";
+import { sign as signBuffer } from "node:crypto";
 
+import { exchangeServiceAccountToken } from "./google-auth.mjs";
 import {
 	readAppConfig,
 	readAscIdentifiers,
@@ -67,38 +68,6 @@ const createAscToken = ({ keyId, issuerId, privateKey }) => {
 	});
 
 	return `${signingInput}.${toBase64Url(signature)}`;
-};
-
-/** 서비스 계정 JSON으로 RS256 JWT를 만들어 OAuth 액세스 토큰과 교환합니다. */
-const exchangeServiceAccountToken = async ({ serviceAccount, scope }) => {
-	const issuedAt = nowInSeconds();
-	const signingInput = [
-		toBase64Url(JSON.stringify({ alg: "RS256", typ: "JWT" })),
-		toBase64Url(
-			JSON.stringify({
-				iss: serviceAccount.client_email,
-				scope,
-				aud: "https://oauth2.googleapis.com/token",
-				iat: issuedAt,
-				exp: issuedAt + 900,
-			}),
-		),
-	].join(".");
-
-	const signer = createSign("RSA-SHA256");
-	signer.update(signingInput);
-	const assertion = `${signingInput}.${toBase64Url(signer.sign(serviceAccount.private_key))}`;
-
-	const token = await requestJson("https://oauth2.googleapis.com/token", {
-		method: "POST",
-		headers: { "content-type": "application/x-www-form-urlencoded" },
-		body: new URLSearchParams({
-			grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-			assertion,
-		}),
-	});
-
-	return token.access_token;
 };
 
 /**

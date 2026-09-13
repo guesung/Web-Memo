@@ -364,11 +364,10 @@
 		"changeCategory": "카테고리 변경하기"
 	},
 	"login": {
-		"welcomeTitle": "읽던 자리에서 남긴 메모를 한곳에서 봐요",
-		"welcomeDescription": "처음이어도 괜찮아요. 아래 버튼을 누르면 계정이 같이 만들어져요.",
-		"kakaoLogin": "카카오로 시작하기",
-		"googleLogin": "구글로 시작하기",
-		"appleLogin": "Apple로 시작하기",
+		"welcomeTitle": "웹사이트 보며 간편하게 메모하세요.",
+		"kakaoLogin": "카카오 로그인",
+		"googleLogin": "Google 계정으로 로그인",
+		"appleLogin": "Apple로 로그인",
 		"testLogin": "테스트 계정으로 로그인",
 		"providerPending": "{{provider}}로 이동하고 있어요",
 		"providerName": {
@@ -378,14 +377,7 @@
 		},
 		"errorAlert": "로그인이 끝나지 않았어요. 다시 한 번 눌러주세요.",
 		"askGoInstallExtension": "메모 기능을 사용하시려면 확장 프로그램이 필요해요. 지금 설치하러 가시겠어요?",
-		"personalInformationInfo": "로그인 정보는 메모를 잇는 데만 써요. 광고나 마케팅에는 쓰지 않아요.",
-		"aside": {
-			"installCount": "설치 {{installs}}+",
-			"crossDevice": "크롬·웹·iOS가 같은 메모를 봐요",
-			"persistent": "브라우저를 지워도 메모는 남아요",
-			"minimalData": "이메일 주소 말고는 받지 않아요",
-			"noMarketing": "광고·마케팅에 쓰지 않아요"
-		}
+		"personalInformationInfo": "로그인은 메모를 동기화하는데 사용합니다."
 	},
 	"dialogInstall": {
 		"title": "확장 프로그램이 필요해요",

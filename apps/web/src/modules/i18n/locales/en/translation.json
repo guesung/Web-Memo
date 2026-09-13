@@ -369,11 +369,10 @@
 		"changeCategory": "Change category"
 	},
 	"login": {
-		"welcomeTitle": "See the memos you left while reading, all in one place",
-		"welcomeDescription": "New here? That's fine. Tapping a button below creates your account along the way.",
-		"kakaoLogin": "Continue with Kakao",
-		"googleLogin": "Continue with Google",
-		"appleLogin": "Continue with Apple",
+		"welcomeTitle": "Easily take notes while browsing websites.",
+		"kakaoLogin": "Login with Kakao",
+		"googleLogin": "Sign in with Google",
+		"appleLogin": "Sign in with Apple",
 		"testLogin": "Login with Test",
 		"providerPending": "Taking you to {{provider}}",
 		"providerName": {
@@ -383,14 +382,7 @@
 		},
 		"errorAlert": "Login didn't finish. Please tap the button once more.",
 		"askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
-		"personalInformationInfo": "We use your login info only to keep your memos connected. Never for ads or marketing.",
-		"aside": {
-			"installCount": "{{installs}}+ installs",
-			"crossDevice": "Chrome, web, and iOS see the same memos",
-			"persistent": "Your memos stay even if you clear the browser",
-			"minimalData": "We ask for nothing but your email address",
-			"noMarketing": "We never use it for ads or marketing"
-		}
+		"personalInformationInfo": "Signing in is used to sync your memos."
 	},
 	"dialogInstall": {
 		"title": "Extension required",

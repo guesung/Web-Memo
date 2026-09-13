@@ -135,6 +135,11 @@ export async function middleware(request: NextRequest) {
 			),
 		);
 
+	const legacyMemoFilterRedirect = getLegacyMemoFilterRedirect(request);
+	if (legacyMemoFilterRedirect) {
+		return legacyMemoFilterRedirect;
+	}
+
 	const pathWithoutLanguage = removeLanguagePrefix(pathname);
 	const legacyDestination = LEGACY_REDIRECTS[pathWithoutLanguage];
 	if (legacyDestination) {
@@ -147,11 +152,6 @@ export async function middleware(request: NextRequest) {
 			new URL(`${languagePrefix}${legacyDestination}`, request.url),
 			308,
 		);
-	}
-
-	const legacyMemoFilterRedirect = getLegacyMemoFilterRedirect(request);
-	if (legacyMemoFilterRedirect) {
-		return legacyMemoFilterRedirect;
 	}
 
 	const response = await updateAuthorization(request);

@@ -28,6 +28,27 @@ async function loadAnalytics({
 
 const EVENT: TAnalyticsEvent = { name: "side_panel_open" };
 
+/** chrome.storage를 스텁합니다. 넘긴 것만 갈아끼우고 나머지는 기본 동작을 씁니다. */
+function stubChromeStorage({
+	get = vi.fn().mockResolvedValue({ clientId: "c" }),
+	set = vi.fn(),
+	remove = vi.fn(),
+}: {
+	get?: ReturnType<typeof vi.fn>;
+	set?: ReturnType<typeof vi.fn>;
+	remove?: ReturnType<typeof vi.fn>;
+} = {}) {
+	vi.stubGlobal("chrome", {
+		storage: {
+			local: { get, set, remove },
+			session: {
+				get: vi.fn().mockResolvedValue({ sessionData: null }),
+				set: vi.fn(),
+			},
+		},
+	});
+}
+
 describe("Analytics 환경별 동작", () => {
 	let gtag: ReturnType<typeof vi.fn>;
 	let fetchMock: ReturnType<typeof vi.fn>;
@@ -153,5 +174,63 @@ describe("Analytics 환경별 동작", () => {
 
 		expect(fetchMock).toHaveBeenCalled();
 		expect(console.warn).toHaveBeenCalledWith(expect.stringContaining("400"));
+	});
+
+	it("확장에서 setUserId를 부르면 user_id를 storage에도 남긴다", async () => {
+		const set = vi.fn();
+		stubChromeStorage({ set });
+
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+		analytics.setUserId("user-1");
+
+		expect(set).toHaveBeenCalledWith({ analyticsUserId: "user-1" });
+	});
+
+	it("setUserId가 불린 적 없어도 storage에 남은 user_id를 실어 보낸다", async () => {
+		stubChromeStorage({
+			get: vi.fn().mockResolvedValue({
+				clientId: "c",
+				analyticsUserId: "user-1",
+			}),
+		});
+
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+
+		await analytics.trackEvent(EVENT);
+
+		const [, request] = fetchMock.mock.calls[0];
+		expect(JSON.parse(request.body).user_id).toBe("user-1");
+	});
+
+	it("로그아웃하면 storage에 남긴 user_id를 지운다", async () => {
+		const remove = vi.fn();
+		stubChromeStorage({ remove });
+
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+		analytics.setUserId(undefined);
+
+		expect(remove).toHaveBeenCalledWith("analyticsUserId");
+	});
+
+	it("웹에서는 user_id를 storage에 남기지 않는다", async () => {
+		const set = vi.fn();
+		stubChromeStorage({ set });
+
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: false,
+		});
+		analytics.setUserId("user-1");
+
+		expect(set).not.toHaveBeenCalled();
 	});
 });

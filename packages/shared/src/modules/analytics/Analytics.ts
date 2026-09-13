@@ -1,6 +1,7 @@
 import { CONFIG } from "@web-memo/env";
 
 import { ANALYTICS } from "../../constants";
+import type { MemoTable } from "../../types";
 import { isExtension } from "../../utils";
 import {
 	EVENT_CATEGORY,
@@ -26,14 +27,61 @@ class Analytics {
 	private extensionClientId: string | undefined = undefined;
 	private readonly GA_ENDPOINT = "https://www.google-analytics.com/mp/collect";
 	private readonly SESSION_EXPIRATION_IN_MIN = 30;
+	private readonly USER_ID_STORAGE_KEY = "analyticsUserId";
 
 	private constructor() {
 		this.gaId = ANALYTICS.gaId;
 		this.apiSecret = ANALYTICS.gaApiSecret;
 	}
 
+	/**
+	 * 이후 이벤트에 실을 user_id를 정합니다.
+	 * @description 확장에서는 storage에도 남깁니다. background·content-ui·options는
+	 * 사이드패널과 다른 실행 환경이라 이 싱글턴을 공유하지 않고, service worker는
+	 * 할 일이 없으면 죽어 메모리에 둔 값이 사라지기 때문입니다.
+	 */
 	public setUserId(userId: string | undefined): void {
 		this.userId = userId;
+
+		if (!isExtension()) {
+			return;
+		}
+
+		void this.persistUserId(userId);
+	}
+
+	/** user_id를 확장 storage에 남깁니다. 로그아웃이면 지웁니다. */
+	private async persistUserId(userId: string | undefined): Promise<void> {
+		try {
+			if (!userId) {
+				await chrome.storage.local.remove(this.USER_ID_STORAGE_KEY);
+				return;
+			}
+
+			await chrome.storage.local.set({ [this.USER_ID_STORAGE_KEY]: userId });
+		} catch (_error) {
+			console.warn("[analytics] user_id를 storage에 남기지 못했습니다.");
+		}
+	}
+
+	/**
+	 * 전송 시점의 user_id를 얻습니다.
+	 * @description 이 컨텍스트에서 setUserId가 불린 적이 없으면 storage에서 보충합니다.
+	 * 사이드패널이 열리자마자 나가는 side_panel_open·page_view도 이 경로로 user_id를 얻습니다.
+	 * 사용자 조회가 끝나기를 기다리지 않기 때문입니다.
+	 */
+	private async resolveUserId(): Promise<string | undefined> {
+		if (this.userId) {
+			return this.userId;
+		}
+
+		try {
+			const result = await chrome.storage.local.get(this.USER_ID_STORAGE_KEY);
+
+			return result[this.USER_ID_STORAGE_KEY];
+		} catch (_error) {
+			return undefined;
+		}
 	}
 
 	/** 확장에서 웹으로 넘길 client_id를 얻습니다. 확장 컨텍스트가 아니면 undefined입니다. */
@@ -146,6 +194,7 @@ class Analytics {
 		try {
 			const clientId = await this.getOrCreateClientId();
 			const sessionId = await this.getOrCreateSessionId();
+			const userId = await this.resolveUserId();
 
 			const payload: {
 				client_id: string;
@@ -167,8 +216,8 @@ class Analytics {
 				],
 			};
 
-			if (this.userId) {
-				payload.user_id = this.userId;
+			if (userId) {
+				payload.user_id = userId;
 			}
 
 			const url = `${this.GA_ENDPOINT}?measurement_id=${this.gaId}&api_secret=${this.apiSecret}`;
@@ -239,8 +288,47 @@ class Analytics {
 		await this.trackEvent({ name: "side_panel_open" });
 	}
 
-	public async trackMemoWrite(): Promise<void> {
-		await this.trackEvent({ name: "memo_write" });
+	/**
+	 * 메모 변경 요청의 키를 보고 무엇을 바꿨는지 가려 기록합니다.
+	 * @description 상태 토글·카테고리·본문 수정이 전부 같은 뮤테이션을 지나므로, 호출부마다
+	 * 심는 대신 여기서 한 번 가릅니다. 예전 memo_write는 이 셋을 한 덩어리로 세서 어느
+	 * 필드가 실제로 쓰이는지 알 수 없었습니다.
+	 */
+	public async trackMemoUpdate(
+		request: Partial<MemoTable["Update"]>,
+	): Promise<void> {
+		const STATUS_KEYS = ["isWish", "isStar", "isReading"] as const;
+		const CONTENT_KEYS = ["memo", "title", "impression", "actionItem"] as const;
+
+		for (const statusKey of STATUS_KEYS) {
+			if (!(statusKey in request)) continue;
+
+			await this.trackEvent({
+				name: "memo_status_toggle",
+				params: {
+					status: statusKey.replace(/^is/, "").toLowerCase() as
+						| "wish"
+						| "star"
+						| "reading",
+					enabled: Boolean(request[statusKey]),
+				},
+			});
+		}
+
+		if ("category_id" in request) {
+			await this.trackEvent({ name: "memo_category_change" });
+		}
+
+		const changedContentKeys = CONTENT_KEYS.filter(
+			(contentKey) => contentKey in request,
+		);
+
+		if (changedContentKeys.length > 0) {
+			await this.trackEvent({
+				name: "memo_write",
+				params: { fields: [...changedContentKeys].sort().join(",") },
+			});
+		}
 	}
 
 	public async trackPageView(

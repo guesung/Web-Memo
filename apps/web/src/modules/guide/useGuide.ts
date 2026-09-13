@@ -52,6 +52,7 @@ export default function useGuide({ lng }: UseGuideProps) {
 				});
 			},
 			onDestroyed: () => {
+				analytics.trackEvent({ name: "guide_finish" });
 				setLocalStorageTrue("guide");
 				toast({
 					title: t("toastTitle.guideDone"),

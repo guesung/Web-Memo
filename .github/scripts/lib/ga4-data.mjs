@@ -43,10 +43,14 @@ const OUTLIER_ABSOLUTE = 5;
  */
 export const TRAFFIC_EVENTS = ["first_visit", "page_view"];
 
-/** 매일 표에 올리는 이벤트. 나머지는 이상치로 걸릴 때만 등장합니다. */
+/**
+ * 매일 표에 올리는 이벤트. 나머지는 이상치로 걸릴 때만 등장합니다.
+ *
+ * 퍼널 2종(side_panel_open·memo_write)은 일부러 뺐습니다. 퍼널 섹션이 이미
+ * 그 둘을 "몇 명이 썼나"로 보여주고 있어, 여기 두면 같은 이벤트가 단위만
+ * 바뀐 채 한 메시지에 두 번 나옵니다. 빠진 게 아니라 옮겨간 것입니다.
+ */
 export const CORE_EVENTS = [
-	"side_panel_open",
-	"memo_write",
 	"memo_open",
 	"memo_search",
 	"summary_complete",

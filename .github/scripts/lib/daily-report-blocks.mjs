@@ -20,10 +20,11 @@ const FUNNEL_STEPS = [
 	{ eventName: "memo_write", label: "메모 작성" },
 ];
 
-/** 표에 올릴 이름. 이상치·미출시는 42종 전체가 대상이라 원래 이벤트 이름을 그대로 씁니다. */
+/**
+ * 핵심 이벤트 표에 올릴 이름. 퍼널 2종은 FUNNEL_STEPS 가 자기 라벨을 갖습니다.
+ * 이상치·미출시는 42종 전체가 대상이라 원래 이벤트 이름을 그대로 씁니다.
+ */
 const EVENT_LABELS = {
-	side_panel_open: "사이드 패널 열기",
-	memo_write: "메모 작성",
 	memo_open: "메모 열기",
 	memo_search: "메모 검색",
 	summary_complete: "요약 성공",
@@ -101,8 +102,10 @@ const buildFunnelBlock = (events) => {
 };
 
 /**
- * 핵심 이벤트는 사람 수가 아니라 발생 건수로 봅니다.
- * 이 리포트가 묻는 것은 "몇 명이 왔나"가 아니라 "로깅이 살아 있나"입니다.
+ * 두 섹션은 묻는 것이 다릅니다.
+ * 퍼널은 "몇 명이 썼나"라서 사람 수(activeUsers)를 세고, 핵심 이벤트는
+ * "로깅이 살아 있나"라서 발생 건수(eventCount)를 셉니다. 그래서 퍼널에 있는
+ * side_panel_open·memo_write 는 CORE_EVENTS 에서 빼 중복 등장을 없앴습니다.
  */
 const buildCoreEventsBlock = (events) => {
 	const lines = CORE_EVENTS.map((eventName) => {

@@ -26,7 +26,9 @@ export default async function LoginAside({ lng }: IFLoginAsideProps) {
 			<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
 				<span className="flex items-center gap-1.5 font-medium text-foreground">
 					<Users className="h-4 w-4" />
-					{t("login.aside.userCount", { users: CHROME_STORE_STATS.userCount })}
+					{t("login.aside.installCount", {
+						installs: CHROME_STORE_STATS.installCount,
+					})}
 				</span>
 			</div>
 

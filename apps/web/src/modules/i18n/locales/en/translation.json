@@ -387,7 +387,7 @@
 		"askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
 		"personalInformationInfo": "We use your login info only to keep your memos connected. Never for ads or marketing.",
 		"aside": {
-			"userCount": "{{users}}+ users",
+			"installCount": "{{installs}}+ installs",
 			"crossDevice": "Chrome, web, and iOS see the same memos",
 			"persistent": "Your memos stay even if you clear the browser",
 			"minimalData": "We ask for nothing but your email address",

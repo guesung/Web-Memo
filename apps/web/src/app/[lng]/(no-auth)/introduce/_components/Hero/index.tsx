@@ -49,7 +49,7 @@ export default async function Hero({ lng }: HeroProps) {
 							<div className="w-px h-4 bg-border" />
 							<div className="flex items-center gap-1.5 text-muted-foreground">
 								<Users className="h-4 w-4" />
-								<span>{CHROME_STORE_STATS.userCount}+ users</span>
+								<span>{CHROME_STORE_STATS.installCount}+ users</span>
 							</div>
 						</div>
 

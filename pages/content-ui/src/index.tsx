@@ -4,6 +4,7 @@ import {
 	extractYoutubeTranscript,
 	isYoutubePage,
 	renderOpenSidePanelButton,
+	setupFloatingPanel,
 	setupHighlightRestore,
 } from "./ui";
 
@@ -41,6 +42,8 @@ bridge.handle.YOUTUBE_TRANSCRIPT(async (_, __, sendResponse) => {
 });
 
 renderOpenSidePanelButton();
+
+setupFloatingPanel();
 
 setupHighlightRestore();
 

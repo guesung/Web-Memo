@@ -36,7 +36,7 @@ export default async function IntroducePage({
 	const memoCount = await getMemoCount();
 
 	const stats = {
-		userCount: CHROME_STORE_STATS.userCount,
+		installCount: CHROME_STORE_STATS.installCount,
 		memoCount,
 	};
 

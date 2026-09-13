@@ -551,7 +551,8 @@
 			"quick_install": "설치 10초",
 			"no_credit_card": "신용카드 필요 없음",
 			"learn_more": "더 알아보기",
-			"desktop_extension_hint": "PC에서는 Chrome 확장으로도 쓸 수 있어요"
+			"desktop_extension_hint": "PC에서는 Chrome 확장으로도 쓸 수 있어요",
+			"installs_badge": "설치"
 		},
 		"section": {
 			"key_features": "핵심 기능",
@@ -627,8 +628,8 @@
 			"youtube_notes_desc": "영상의 핵심을 메모하세요. 자막을 읽은 AI 요약과 함께 남길 수 있습니다."
 		},
 		"stats": {
-			"active_users": "활성 사용자",
-			"active_users_desc": "Chrome 웹스토어 사용자",
+			"installs": "설치 수",
+			"installs_desc": "Chrome 웹스토어 설치 수",
 			"memos_saved": "저장된 메모",
 			"memos_saved_desc": "사용자들이 저장한 총 메모 개수",
 			"free_forever": "영원히 무료",
@@ -642,8 +643,6 @@
 			"install_time_desc": "크롬에 설치하는 데 걸리는 시간"
 		},
 		"social_proof": {
-			"active_users": "활성 사용자",
-			"rating": "평균 평점",
 			"free_forever": "영원히 무료",
 			"no_tracking": "데이터 추적 없음",
 			"safe": "안전"

@@ -556,7 +556,8 @@
 			"quick_install": "10s Install",
 			"no_credit_card": "No credit card required",
 			"learn_more": "Learn more",
-			"desktop_extension_hint": "Also available as a Chrome extension on desktop"
+			"desktop_extension_hint": "Also available as a Chrome extension on desktop",
+			"installs_badge": "installs"
 		},
 		"section": {
 			"key_features": "Key Features",
@@ -632,8 +633,8 @@
 			"youtube_notes_desc": "Note the key moments of a video, alongside a caption-based AI summary."
 		},
 		"stats": {
-			"active_users": "Active Users",
-			"active_users_desc": "Chrome Web Store users",
+			"installs": "Installs",
+			"installs_desc": "Chrome Web Store installs",
 			"memos_saved": "Memos Saved",
 			"memos_saved_desc": "Total memos saved by users",
 			"free_forever": "Free forever",
@@ -647,8 +648,6 @@
 			"install_time_desc": "Time to install on Chrome"
 		},
 		"social_proof": {
-			"active_users": "Active Users",
-			"rating": "Average Rating",
 			"free_forever": "Free Forever",
 			"no_tracking": "No Data Tracking",
 			"safe": "Safe"

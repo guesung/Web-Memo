@@ -19,7 +19,8 @@ const MemoRefreshButton = dynamic(() => import("./MemoRefreshButton"), {
 	loading: () => <Skeleton className="h-10 w-10" />,
 });
 
-export default function MemoView({ lng, filter }: IFMemoViewProps) {
+/** 라우트 필터에 해당하는 메모 목록과 검색 결과를 표시한다. */
+const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 	const { t } = useTranslation(lng);
 	const { watch } = useFormContext<SearchFormValues>();
 	const searchParams = useSearchParams();
@@ -31,10 +32,7 @@ export default function MemoView({ lng, filter }: IFMemoViewProps) {
 	const { memos, totalCount, hasNextPage, isFetchingNextPage, fetchNextPage } =
 		useMemosInfiniteQuery({
 			category,
-			isWish:
-				filter === "star" || filter === "reading"
-					? undefined
-					: filter === "wish",
+			isWish: getWishlistFilter(filter),
 			isStar: filter === "star" ? true : undefined,
 			isReading: filter === "reading" ? true : undefined,
 			searchQuery: searchQuery || undefined,
@@ -64,12 +62,9 @@ export default function MemoView({ lng, filter }: IFMemoViewProps) {
 	 * egjs 보정이 곧바로 덮어쓰고, 리마운트만 있으면 이전 스크롤이 남는다.
 	 */
 	// biome-ignore lint/correctness/useExhaustiveDependencies: 탭이 바뀔 때만 올려야 한다
-	useEffect(
-		function scrollToTopOnTabChange() {
-			window.scrollTo(0, 0);
-		},
-		[tabKey],
-	);
+	useEffect(() => {
+		window.scrollTo(0, 0);
+	}, [tabKey]);
 
 	return (
 		<div className="flex w-full flex-col gap-4">
@@ -96,8 +91,24 @@ export default function MemoView({ lng, filter }: IFMemoViewProps) {
 			/>
 		</div>
 	);
-}
+};
 
+export default MemoView;
+
+/** 기본 목록에서는 위시 메모를 제외하고 별표·읽는 중에서는 위시 여부를 제한하지 않는다. */
+const getWishlistFilter = (filter: TMemoFilter): boolean | undefined => {
+	if (filter === "all") {
+		return false;
+	}
+
+	if (filter === "wish") {
+		return true;
+	}
+
+	return undefined;
+};
+
+/** 메모 목록의 언어와 라우트 필터. */
 interface IFMemoViewProps extends LanguageType {
 	/** 라우트가 정한 메모 범위 */
 	filter: TMemoFilter;

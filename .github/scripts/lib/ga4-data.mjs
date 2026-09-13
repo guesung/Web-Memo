@@ -44,6 +44,13 @@ const OUTLIER_RATIO = 0.5;
 const OUTLIER_ABSOLUTE = 5;
 
 /**
+ * "어제 0"을 끊김으로 볼 최소 7일 평균. 평균 0.1 짜리 이벤트는 원래 대부분의 날이
+ * 0이라 하루 비었다고 알릴 일이 아닙니다. 첫 실데이터에서 이상치 8건 중 5건이
+ * 이런 경우여서, 매일 도배되는 경고가 이상치 섹션 전체를 읽히지 않게 만들었습니다.
+ */
+const OUTLIER_DROP_MIN_AVERAGE = 1;
+
+/**
  * gtag 가 자동으로 쏘는 유입 이벤트. build_env 파라미터가 붙지 않아
  * 다른 지표와 같은 필터로는 잡히지 않습니다. 참고치로만 따로 조회합니다.
  */
@@ -142,6 +149,21 @@ const PRODUCTION_FILTER = {
 	filter: {
 		fieldName: "customEvent:build_env",
 		stringFilter: { matchType: "EXACT", value: "production" },
+	},
+};
+
+/**
+ * 미출시 판정 전용. production 만 보면 build_env 가 붙기 전(2026-08-30 이전)의
+ * 운영 트래픽이 (not set) 으로 통째로 빠져, 오래전부터 쓰이던 이벤트가 "미출시"로
+ * 잘못 분류됩니다. 그래서 staging 만 걸러냅니다 — 스테이징에서만 시험한 이벤트는
+ * 여전히 미출시로 남고, development 빌드는 애초에 GA4 로 보내지 않습니다.
+ */
+const NOT_STAGING_FILTER = {
+	notExpression: {
+		filter: {
+			fieldName: "customEvent:build_env",
+			stringFilter: { matchType: "EXACT", value: "staging" },
+		},
 	},
 };
 
@@ -262,6 +284,8 @@ export const detectOutliers = (events) =>
 		if (average7 <= 0) return null;
 
 		if (yesterday === 0) {
+			if (average7 < OUTLIER_DROP_MIN_AVERAGE) return null;
+
 			return { eventName, yesterday, average7, kind: "dropped" };
 		}
 
@@ -319,7 +343,7 @@ export const fetchDailyGa4Report = async ({
 				dateRanges: [{ startDate: OBSERVATION_SINCE, endDate: targetDate }],
 				dimensions: [{ name: "eventName" }],
 				metrics: [{ name: "eventCount" }],
-				dimensionFilter: PRODUCTION_FILTER,
+				dimensionFilter: NOT_STAGING_FILTER,
 				limit: REPORT_ROW_LIMIT,
 			},
 		}),

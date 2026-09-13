@@ -3,6 +3,7 @@ import {
 	type HighlightRenderer,
 	resolveAnchors,
 } from "@web-memo/shared/modules/highlight";
+import { normalizeUrl } from "@web-memo/shared/utils/url";
 
 /** 늦게 그려지는 본문을 기다리는 한계. 이후에는 옵저버를 해제한다 */
 export const RESTORE_TIMEOUT_MS = 10_000;
@@ -43,7 +44,7 @@ export function startHighlightRestore({
 	let observer: MutationObserver | null = null;
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 	let timeoutTimer: ReturnType<typeof setTimeout> | null = null;
-	const startUrl = location.href;
+	const startUrl = normalizeUrl(location.href);
 
 	function stop(): void {
 		observer?.disconnect();
@@ -62,7 +63,7 @@ export function startHighlightRestore({
 
 	/** 아직 못 찾은 앵커만 다시 시도하고, 찾은 것은 pending에서 뺀다 */
 	function attempt(): void {
-		if (location.href !== startUrl) {
+		if (normalizeUrl(location.href) !== startUrl) {
 			stop();
 			return;
 		}

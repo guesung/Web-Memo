@@ -35,6 +35,10 @@ let feedbackSupabaseClient: ReturnType<
 	typeof createFeedbackSupabaseClient
 > | null = null;
 
+/** 로그인 쿠키와 저장 세션이 모두 없는 경우. 다른 인증 장애와 구분한다. */
+export class SupabaseSessionRequiredError extends Error {}
+
+/** 확장 세션을 복원하고 안전한 사용자용 오류 메시지와 원인 정보를 유지한다. */
 export const getSupabaseClient = async () => {
 	try {
 		if (!memoSupabaseClient) {
@@ -43,8 +47,14 @@ export const getSupabaseClient = async () => {
 
 		const {
 			data: { session },
+			error: sessionError,
 		} = await memoSupabaseClient.auth.getSession();
-		if (session) return memoSupabaseClient;
+		if (sessionError) {
+			throw sessionError;
+		}
+		if (session) {
+			return memoSupabaseClient;
+		}
 
 		const accessTokenFromWeb = await chrome.cookies.get({
 			name: SUPABASE.authCookie.accessToken,
@@ -56,20 +66,27 @@ export const getSupabaseClient = async () => {
 		});
 
 		if (!accessTokenFromWeb || !refreshTokenCookieFromWeb) {
-			throw new Error("로그인을 먼저 해주세요.");
+			throw new SupabaseSessionRequiredError("로그인을 먼저 해주세요");
 		}
 
-		await memoSupabaseClient.auth.setSession({
+		const { error: restoreError } = await memoSupabaseClient.auth.setSession({
 			access_token: accessTokenFromWeb.value,
 			refresh_token: refreshTokenCookieFromWeb.value,
 		});
+		if (restoreError) {
+			throw restoreError;
+		}
 
 		return memoSupabaseClient;
-	} catch {
-		throw new Error("로그인을 먼저 해주세요");
+	} catch (error) {
+		if (error instanceof SupabaseSessionRequiredError) {
+			throw error;
+		}
+		throw new Error("로그인을 먼저 해주세요", { cause: error });
 	}
 };
 
+/** 피드백 스키마 전용 클라이언트를 재사용한다. */
 export const getFeedbackSupabaseClient = () => {
 	if (!feedbackSupabaseClient) {
 		feedbackSupabaseClient = createFeedbackSupabaseClient();

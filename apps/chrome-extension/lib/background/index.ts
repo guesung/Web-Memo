@@ -1,3 +1,4 @@
+import { handleCreateHighlight } from "./createHighlight";
 import "webextension-polyfill";
 
 import { CONFIG } from "@web-memo/env";
@@ -160,4 +161,9 @@ bridge.handle.GET_HIGHLIGHTS_BY_URL(async (payload, _sender, sendResponse) => {
 	} catch {
 		sendResponse({ highlights: [] });
 	}
+});
+
+/** 선택된 텍스트는 인증된 background에서만 저장한다. */
+bridge.handle.CREATE_HIGHLIGHT(async (payload, sender, sendResponse) => {
+ sendResponse(await handleCreateHighlight({ payload, sender }));
 });

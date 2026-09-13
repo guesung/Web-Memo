@@ -8,7 +8,7 @@ import { CHROME_STORE_STATS } from "../../../introduce/_constants";
 /**
  * 로그인 화면에서 계정이 왜 필요한지 설명하는 영역입니다.
  * @description 로그인 페이지까지 온 사람이 버튼을 누르지 않고 떠나는 것이 문제라, 웹스토어
- * 수치로 먼저 믿을 근거를 주고 계정으로 얻는 것 네 가지를 덧붙입니다. 수치는 구조화 데이터와
+ * 사용자 수로 먼저 믿을 근거를 주고 계정으로 얻는 것 네 가지를 덧붙입니다. 수치는 구조화 데이터와
  * 어긋나면 안 되므로 소개 페이지와 같은 CHROME_STORE_STATS를 씁니다.
  */
 export default async function LoginAside({ lng }: IFLoginAsideProps) {
@@ -26,7 +26,9 @@ export default async function LoginAside({ lng }: IFLoginAsideProps) {
 			<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
 				<span className="flex items-center gap-1.5 font-medium text-foreground">
 					<Users className="h-4 w-4" />
-					{t("login.aside.userCount", { users: CHROME_STORE_STATS.userCount })}
+					{t("login.aside.installCount", {
+						installs: CHROME_STORE_STATS.installCount,
+					})}
 				</span>
 			</div>
 

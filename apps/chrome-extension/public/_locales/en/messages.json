@@ -214,5 +214,15 @@
 	},
 	"actionItemPlaceholder": {
 		"message": "Write what to do after reading this page"
+	},
+	"highlight_create": { "message": "Highlight" },
+	"highlight_saving": { "message": "Saving…" },
+	"highlight_save_failed": { "message": "Could not save. Please try again." },
+	"highlight_login_required": {
+		"message": "Sign in to Web Memo, then try again."
+	},
+	"highlight_duplicate": { "message": "This highlight is already saved." },
+	"highlight_selection_too_long": {
+		"message": "Select no more than 5,000 characters."
 	}
 }

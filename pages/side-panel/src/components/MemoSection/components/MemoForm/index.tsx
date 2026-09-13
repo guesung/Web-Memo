@@ -25,6 +25,7 @@ import {
 import {
 	BookOpenIcon,
 	HeartIcon,
+	LinkIcon,
 	Loader2Icon,
 	StarIcon,
 	XIcon,
@@ -63,6 +64,8 @@ function MemoFormContent() {
 		memoData,
 		isSaving,
 		handleTitleChange,
+		handleTitleSyncClick,
+		isTitleSyncAvailable,
 		handleMemoChange,
 		handleImpressionChange,
 		handleActionItemChange,
@@ -129,14 +132,26 @@ function MemoFormContent() {
 	return (
 		<>
 			<form className="relative flex min-h-0 flex-1 flex-col py-1">
-				<Input
-					id="memo-title-input"
-					className="mb-1 h-8 shrink-0 border-none px-0 text-sm font-bold shadow-none focus-visible:ring-0"
-					placeholder={I18n.get("titlePlaceholder")}
-					{...register("title", {
-						onChange: (event) => handleTitleChange(event.target.value),
-					})}
-				/>
+				<div className="mb-1 flex shrink-0 items-center gap-1">
+					<Input
+						id="memo-title-input"
+						className="h-8 min-w-0 border-none px-0 text-sm font-bold shadow-none focus-visible:ring-0"
+						placeholder={I18n.get("titlePlaceholder")}
+						{...register("title", {
+							onChange: (event) => handleTitleChange(event.target.value),
+						})}
+					/>
+					<button
+						type="button"
+						className="shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-50"
+						aria-label={I18n.get("memo_title_sync")}
+						title={I18n.get("memo_title_sync")}
+						disabled={!isTitleSyncAvailable}
+						onClick={handleTitleSyncClick}
+					>
+						<LinkIcon className="size-4" aria-hidden="true" />
+					</button>
+				</div>
 				<div
 					className="flex min-h-0 flex-col"
 					style={{ flexGrow: fieldRatios.memo, flexBasis: 0 }}

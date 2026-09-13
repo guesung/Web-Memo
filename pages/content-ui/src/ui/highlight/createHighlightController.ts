@@ -41,6 +41,8 @@ export const createHighlightController = (
 	let currentUrl = normalizeUrl(location.href);
 	let selectionTimer: ReturnType<typeof setTimeout> | undefined;
 	const savedAnchors = new Set<string>();
+	const rowsById = new Map<number, HighlightRow>();
+	const deletedIds = new Set<number>();
 	const getAnchorKey = (payload: IFCreateHighlightPayload) =>
 		JSON.stringify([payload.anchor.exact, payload.anchor.textPositionStart]);
 	const emit = () => options.onSelectionChange(state);
@@ -53,6 +55,8 @@ export const createHighlightController = (
 		selectionPayload = null;
 		state = null;
 		savedAnchors.clear();
+		rowsById.clear();
+		deletedIds.clear();
 		options.renderer.clear();
 		emit();
 		options.onPageChange?.();
@@ -181,6 +185,7 @@ export const createHighlightController = (
 				return;
 			}
 			savedAnchors.add(getAnchorKey(payload));
+			rowsById.set(response.highlight.id, response.highlight);
 			const range = resolveAnchor(payload.anchor);
 			if (range) {
 				options.renderer.add(response.highlight.id, range, "yellow");
@@ -212,9 +217,39 @@ export const createHighlightController = (
 
 	return {
 		save,
+		getRow: (id: number) => rowsById.get(id),
+		updateRow: (row: HighlightRow) => rowsById.set(row.id, row),
+		removeRow: (id: number) => {
+			const row = rowsById.get(id);
+			deletedIds.add(id);
+			rowsById.delete(id);
+			if (row) {
+				const key = JSON.stringify([
+					row.exact_text,
+					row.text_position_start ?? 0,
+				]);
+				if (
+					![...rowsById.values()].some(
+						(other) =>
+							JSON.stringify([
+								other.exact_text,
+								other.text_position_start ?? 0,
+							]) === key,
+					)
+				) {
+					savedAnchors.delete(key);
+				}
+			}
+		},
 		registerRows: (rows: HighlightRow[]) => {
 			const unseenRows: HighlightRow[] = [];
 			for (const row of rows) {
+				if (deletedIds.has(row.id)) {
+					continue;
+				}
+				if (!rowsById.has(row.id)) {
+					rowsById.set(row.id, row);
+				}
 				const key = JSON.stringify([
 					row.exact_text,
 					row.text_position_start ?? 0,

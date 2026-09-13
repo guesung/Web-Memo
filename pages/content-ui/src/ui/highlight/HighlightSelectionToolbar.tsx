@@ -1,5 +1,6 @@
 import { I18n } from "@web-memo/shared/utils/extension";
 import { Highlighter } from "lucide-react";
+import { HighlightEditToolbar } from "./HighlightEditToolbar";
 import {
 	type IFHighlightSelectionOptions,
 	useHighlightSelection,
@@ -9,8 +10,20 @@ import {
 export const HighlightSelectionToolbar = (
 	props: IFHighlightSelectionOptions,
 ) => {
-	const { selectionState, handleHighlightButtonClick } =
-		useHighlightSelection(props);
+	const {
+		selectionState,
+		handleHighlightButtonClick,
+		editState,
+		handleHighlightEdit,
+	} = useHighlightSelection(props);
+	if (editState) {
+		return (
+			<HighlightEditToolbar
+				state={editState}
+				onHighlightEdit={handleHighlightEdit}
+			/>
+		);
+	}
 	if (!selectionState) {
 		return null;
 	}

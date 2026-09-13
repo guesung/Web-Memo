@@ -7,6 +7,12 @@
  * 이벤트 목록은 packages/shared/src/modules/analytics/type.ts 의 TAnalyticsEvent 가
  * 단일 진실 원천입니다. 이 스크립트는 의존성 없이 도는 .mjs 라 TS 를 import 할 수
  * 없어 아래 ANALYTICS_EVENTS 로 옮겨 적습니다. 이벤트를 추가하면 여기도 고칩니다.
+ *
+ * ⚠️ 두 목록이 어긋나도 아무것도 실패하지 않습니다. type.ts 에만 있는 이벤트는
+ * 이상치 판정 모집단에서 빠져 로깅이 죽어도 영영 리포트에 뜨지 않고, 미출시
+ * 목록에도 오르지 않아 "한 번도 안 나온 이벤트"로도 드러나지 않습니다. 반대로
+ * 여기에만 남은 이벤트는 미출시로 영구히 오분류됩니다. 리포트가 조용한 것과
+ * 목록이 어긋난 것을 채널에서는 구분할 수 없습니다.
  */
 
 import { exchangeServiceAccountToken } from "./google-auth.mjs";
@@ -241,9 +247,15 @@ export const readEventStat = (events, eventName) =>
  * (b) 7일 평균 대비 ±50% 이상 변동하면서 절대 차이도 5 이상
  *
  * 평균이 0 인 이벤트는 (b)의 분모가 없어 판정하지 않습니다. 그쪽은 "미출시"가 답합니다.
+ *
+ * 유입 이벤트(first_visit·page_view)는 모집단에서 뺍니다. 볼륨이 다른 이벤트보다
+ * 두 자릿수 커서 평소의 트래픽 등락만으로도 ±50% 규칙에 상시 걸립니다. 매일 걸리는
+ * 줄은 이상치 섹션 전체를 읽히지 않게 만듭니다. 이 둘은 유입 참고치 줄이 맡습니다.
  */
 export const detectOutliers = (events) =>
-	ANALYTICS_EVENTS.map((eventName) => {
+	ANALYTICS_EVENTS.filter(
+		(eventName) => !TRAFFIC_EVENTS.includes(eventName),
+	).map((eventName) => {
 		const { count } = readEventStat(events, eventName);
 		const { yesterday, average7 } = count;
 

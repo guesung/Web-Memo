@@ -9,7 +9,7 @@ import { isMac } from "@web-memo/shared/utils";
 import { useToast } from "@web-memo/ui";
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import type { LanguageType } from "../i18n";
 import useTranslation from "../i18n/util.client";
 
@@ -31,7 +31,6 @@ export default function useGuide({ lng }: UseGuideProps) {
 	const { t } = useTranslation(lng);
 	const manifest = useGetExtensionManifest();
 	const { toast } = useToast();
-	const lastStepNameRef = useRef<string>(GUIDE_STEP_NAMES[0]);
 
 	const createDriver = () =>
 		driver({
@@ -47,18 +46,12 @@ export default function useGuide({ lng }: UseGuideProps) {
 					return;
 				}
 
-				lastStepNameRef.current = stepName;
 				analytics.trackEvent({
 					name: "guide_step",
 					params: { step_name: stepName },
 				});
 			},
 			onDestroyed: () => {
-				analytics.trackEvent({
-					name: "guide_exit",
-					params: { last_step_name: lastStepNameRef.current },
-				});
-
 				setLocalStorageTrue("guide");
 				toast({
 					title: t("toastTitle.guideDone"),

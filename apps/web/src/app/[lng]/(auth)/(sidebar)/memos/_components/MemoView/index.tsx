@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import type { SearchFormValues } from "../MemoSearchFormProvider";
+import { useMemoHighlights } from "./_hooks/useMemoHighlights";
 import MemoGrid from "./MemoGrid";
 
 const MemoRefreshButton = dynamic(() => import("./MemoRefreshButton"), {
@@ -37,6 +38,9 @@ export default function MemoView({ lng }: LanguageType) {
 			isReading: isReadingView ? true : undefined,
 			searchQuery: searchQuery || undefined,
 		});
+
+	const { highlightsByUrl, isHighlightLoadError, refetchHighlights } =
+		useMemoHighlights(memos.map((memo) => memo.url));
 
 	useGuide({ lng });
 	useDidMount(() => bridge.request.SYNC_LOGIN_STATUS());
@@ -83,10 +87,26 @@ export default function MemoView({ lng }: LanguageType) {
 				</div>
 			</div>
 
+			{isHighlightLoadError && (
+				<div
+					role="alert"
+					className="flex items-center gap-2 text-sm text-destructive"
+				>
+					<p>{t("highlight.loadError")}</p>
+					<button
+						type="button"
+						onClick={() => void refetchHighlights()}
+						className="underline"
+					>
+						{t("error.500.retry")}
+					</button>
+				</div>
+			)}
 			<MemoGrid
 				key={tabKey}
 				lng={lng}
 				memos={memos}
+				highlightsByUrl={highlightsByUrl}
 				searchQuery={searchQuery}
 				hasNextPage={hasNextPage}
 				isFetchingNextPage={isFetchingNextPage}

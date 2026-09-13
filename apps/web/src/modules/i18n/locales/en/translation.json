@@ -503,6 +503,7 @@
 		}
 	},
 	"highlight": {
+		"loadError": "Could not load highlights. Please try again.",
 		"loadMore": "Load more",
 		"count": "{{count}}",
 		"empty": {

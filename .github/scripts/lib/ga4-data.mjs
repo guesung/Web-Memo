@@ -44,6 +44,13 @@ const OUTLIER_RATIO = 0.5;
 const OUTLIER_ABSOLUTE = 5;
 
 /**
+ * "어제 0"을 끊김으로 볼 최소 7일 평균. 평균 0.1 짜리 이벤트는 원래 대부분의 날이
+ * 0이라 하루 비었다고 알릴 일이 아닙니다. 첫 실데이터에서 이상치 8건 중 5건이
+ * 이런 경우여서, 매일 도배되는 경고가 이상치 섹션 전체를 읽히지 않게 만들었습니다.
+ */
+const OUTLIER_DROP_MIN_AVERAGE = 1;
+
+/**
  * gtag 가 자동으로 쏘는 유입 이벤트. build_env 파라미터가 붙지 않아
  * 다른 지표와 같은 필터로는 잡히지 않습니다. 참고치로만 따로 조회합니다.
  */
@@ -262,6 +269,8 @@ export const detectOutliers = (events) =>
 		if (average7 <= 0) return null;
 
 		if (yesterday === 0) {
+			if (average7 < OUTLIER_DROP_MIN_AVERAGE) return null;
+
 			return { eventName, yesterday, average7, kind: "dropped" };
 		}
 

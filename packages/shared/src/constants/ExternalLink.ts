@@ -9,6 +9,8 @@ import { CHROME_EXTENSION_ID } from "./ChromeExtension";
 export const EXTERNAL_LINK = {
 	chromeWebStoreListing: `https://chromewebstore.google.com/detail/web-memo/${CHROME_EXTENSION_ID}`,
 	iosAppStoreListing: "https://apps.apple.com/app/id6759237784",
+	playStoreListing:
+		"https://play.google.com/store/apps/details?id=com.webmemo.app",
 	notionGuideKo: "https://guesung.notion.site/8a740938aa6547b88d09dbab7cb2222b",
 	notionGuideEn: "https://guesung.notion.site/10d89de02fde803c99c9e3027c2d10d5",
 	youtubeChannel: "https://www.youtube.com/@web-memo",

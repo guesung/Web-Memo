@@ -1,3 +1,4 @@
+import { analytics } from "@web-memo/shared/modules/analytics";
 import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
@@ -24,7 +25,12 @@ import { useForm } from "react-hook-form";
 export default function Option() {
 	const { toast } = useToast();
 
-	const { handleSubmit, setValue, watch } = useForm({
+	const {
+		handleSubmit,
+		setValue,
+		watch,
+		formState: { dirtyFields },
+	} = useForm({
 		defaultValues: {
 			youtubePrompt: "",
 			webPrompt: "",
@@ -54,6 +60,17 @@ export default function Option() {
 			STORAGE_KEYS.actionItemSectionEnabled,
 			data.actionItemSectionEnabled,
 		);
+
+		// 폼은 전체를 저장하지만 실제로 손댄 항목만 남깁니다. autoApplyCategory가 꺼지는
+		// 비율이 카테고리 제안의 체감 품질을 말해줍니다.
+		const changedKeys = Object.keys(dirtyFields).sort().join(",");
+
+		if (changedKeys) {
+			analytics.trackEvent({
+				name: "extension_setting_change",
+				params: { keys: changedKeys },
+			});
+		}
 
 		toast({
 			title: I18n.get("settings_saved"),

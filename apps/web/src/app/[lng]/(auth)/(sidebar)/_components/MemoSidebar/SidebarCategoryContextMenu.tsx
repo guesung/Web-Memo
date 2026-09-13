@@ -2,6 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { DEFAULT_CATEGORY_COLOR } from "@web-memo/shared/constants";
 import {
 	useCategoryDeleteMutation,
 	useCategoryUpdateMutation,
@@ -22,15 +23,6 @@ import {
 	ContextMenuTrigger,
 } from "@web-memo/ui";
 import { Palette, Pencil, Trash2 } from "lucide-react";
-
-/**
- * 색을 아직 고르지 않은 카테고리의 색상 선택기 기본값
- *
- * @description
- * 브랜드 --primary(221 83% 53%)와 같은 값이다. 예전엔 purple-600(#9333ea)이라
- * 메모 화면이 파랑으로 통일된 뒤에도 여기만 보라가 떴다.
- */
-const DEFAULT_CATEGORY_COLOR = "#2563eb";
 
 import {
 	type ReactNode,

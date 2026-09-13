@@ -31,12 +31,27 @@ const NOINDEX_PATHS = [
 	PATHS.uninstall,
 ];
 
-function isNoindexPath(pathname: string) {
-	const pathWithoutLanguage = SUPPORTED_LANGUAGES.reduce(
+/**
+ * 제거된 레거시 경로와 대체 목적지. 로케일 접두사를 뗀 형태로 비교합니다.
+ *
+ * `/update`(새로운 소식) 페이지는 제거했지만 sitemap 에 올라가 있어 색인된 URL 이
+ * 남아 있습니다. 404 로 두면 유입이 그대로 끊기므로 소개 페이지로 영구 이동시킵니다.
+ * 경로 문자열을 `PATHS` 에 남길 이유가 없어 여기서만 직접 적습니다.
+ */
+const LEGACY_REDIRECTS: Record<string, string> = {
+	"/update": PATHS.introduce,
+};
+
+function removeLanguagePrefix(pathname: string) {
+	return SUPPORTED_LANGUAGES.reduce(
 		(path, lng) =>
 			path.startsWith(`/${lng}/`) ? path.slice(lng.length + 1) : path,
 		pathname,
 	);
+}
+
+function isNoindexPath(pathname: string) {
+	const pathWithoutLanguage = removeLanguagePrefix(pathname);
 
 	return NOINDEX_PATHS.some(
 		(path) =>
@@ -123,6 +138,20 @@ export async function middleware(request: NextRequest) {
 	const legacyMemoFilterRedirect = getLegacyMemoFilterRedirect(request);
 	if (legacyMemoFilterRedirect) {
 		return legacyMemoFilterRedirect;
+	}
+
+	const pathWithoutLanguage = removeLanguagePrefix(pathname);
+	const legacyDestination = LEGACY_REDIRECTS[pathWithoutLanguage];
+	if (legacyDestination) {
+		const languagePrefix = pathname.slice(
+			0,
+			pathname.length - pathWithoutLanguage.length,
+		);
+
+		return NextResponse.redirect(
+			new URL(`${languagePrefix}${legacyDestination}`, request.url),
+			308,
+		);
 	}
 
 	const response = await updateAuthorization(request);

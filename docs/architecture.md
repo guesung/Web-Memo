@@ -17,7 +17,7 @@
 | 실행 | `pnpm dev`(앱 제외 전체) · `pnpm dev:web` · `pnpm dev:extension` · `pnpm dev:app`<br>`pnpm build` / `build:web` / `build:extension` · `pnpm zip`(확장 패키징) |
 | 검증 | **`pnpm check`(biome)가 CI 게이트입니다.** 타입체크·빌드가 다 통과해도 포맷 한 줄로 깨지므로 PR 전에 반드시 돌립니다.<br>`pnpm type-check` · `pnpm type-check:scripts`(워크스페이스 밖이라 별도) · `pnpm lint:syncpack`(패키지 간 버전 정합) · `pnpm test:jest`(Vitest) · `pnpm test:e2e`(Playwright) |
 | 포맷 | Biome 2.0.0, **탭 들여쓰기**. `biome.json`의 `includes`에 걸리지 않는 경로(예: Edge Functions)는 어떤 검사에도 안 걸리므로 손으로 확인합니다 |
-| 배포 | 웹 → Vercel(`www.webmemo.xyz`) · 확장 → 크롬 웹스토어 · 앱 → App Store. 모두 `.github/workflows/`의 `cd-*.yml`이 담당하며 릴리스는 `release.yml`·`versions.yml` |
+| 배포 | 웹 → Vercel(`www.webmemo.xyz`) · 확장 → 크롬 웹스토어 · 앱 → App Store. 모두 `.github/workflows/`의 `cd-*.yml`이 담당하며 릴리스는 `release.yml`·`versions.yml`입니다.<br>`daily-ga-report.yml`은 매일 07:00 KST에 GA4 지표를 슬랙 전용 채널로 보냅니다.<br>레포 유지보수 자동화는 `cleanup-unused.yml` — 월 1회 knip으로 미사용 파일을 찾아 정리 PR을 엽니다(설정은 루트 `knip.jsonc`) |
 | 브랜치 | **`master`가 유일한 베이스입니다.** `develop`은 테스트 서버 배포 전용 일회성 브랜치이고 작업 브랜치의 베이스가 아닙니다. 머지는 **머지 커밋 생성**(Squash/Rebase 금지). 자세한 내용은 [`branch-strategy.md`](branch-strategy.md) |
 | 환경 변수 | 이름과 용도만 적습니다 — 값은 각 `.env`가 갖습니다.<br>· `packages/env/.env.{development,staging,production}` → `WEB_URL`(커밋됨, 확장·웹 공유)<br>· `apps/web/.env` → `OPENAI_API_KEY`, `UPSTASH_*` 등 **서버 시크릿**(커밋 안 함)<br>· `packages/shared/src/constants/` → 환경 무관 고정값(Supabase URL·anon key, Sentry DSN, GA/GTM, OAuth)<br>· 빌드 대상은 셸 `BUILD_ENV`로 고릅니다. 코드에서 환경 분기는 **`CONFIG.buildEnv`**를 쓰고 `NODE_ENV`로 판단하지 않습니다(staging을 표현할 수 없음).<br>· **`packages/env`에 서버 시크릿을 넣지 않습니다** — `tsup`이 번들에 인라인해 클라이언트로 실립니다. 전체 규칙은 [`environment-variables.md`](environment-variables.md) |
 | 모니터링 | Sentry (웹·확장·앱) |

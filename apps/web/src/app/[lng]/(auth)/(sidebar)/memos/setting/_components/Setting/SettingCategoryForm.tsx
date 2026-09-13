@@ -1,5 +1,6 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { DEFAULT_CATEGORY_COLOR } from "@web-memo/shared/constants";
 import {
 	useCategoryDeleteMutation,
 	useCategoryPostMutation,
@@ -51,7 +52,7 @@ export default function SettingCategoryForm({
 			if (!targetId) return;
 
 			const current = categories?.find((c) => c.id === targetId);
-			if (current && newColor !== (current.color || "#000000")) {
+			if (current && newColor !== (current.color || DEFAULT_CATEGORY_COLOR)) {
 				updateCategory({ id: targetId, request: { color: newColor } });
 			}
 		},
@@ -119,7 +120,7 @@ export default function SettingCategoryForm({
 	const openColorPicker = (categoryId: number, currentColor: string) => {
 		colorTargetIdRef.current = categoryId;
 		if (colorInputRef.current) {
-			colorInputRef.current.value = currentColor || "#000000";
+			colorInputRef.current.value = currentColor || DEFAULT_CATEGORY_COLOR;
 			colorInputRef.current.click();
 		}
 	};
@@ -129,7 +130,7 @@ export default function SettingCategoryForm({
 			<div className="space-y-1">
 				{categories?.map((category) => {
 					const isEditing = editingId === category.id;
-					const categoryColor = category.color || "#9333ea";
+					const categoryColor = category.color || DEFAULT_CATEGORY_COLOR;
 
 					return (
 						<div

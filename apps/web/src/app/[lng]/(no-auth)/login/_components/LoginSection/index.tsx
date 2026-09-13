@@ -9,7 +9,7 @@ import {
 import { SUPABASE } from "@web-memo/shared/constants";
 import { isProduction } from "@web-memo/shared/utils";
 import { Button } from "@web-memo/ui";
-import { Sparkles } from "lucide-react";
+import Image from "next/image";
 
 import LoginProviderButtons, {
 	type TLoginProvider,
@@ -17,7 +17,8 @@ import LoginProviderButtons, {
 import PersonalInformationInfo from "../PersonalInformationInfo";
 import TrackLoginStartForm from "../TrackLoginStartForm";
 
-export default async function LoginSection({ lng }: IFLoginSectionProps) {
+/** 웹 메모 소개와 로그인 제공자 버튼을 표시합니다. */
+const LoginSection = async ({ lng }: IFLoginSectionProps) => {
 	const { t } = await useTranslation(lng);
 
 	const providers: TLoginProvider[] = [
@@ -50,16 +51,17 @@ export default async function LoginSection({ lng }: IFLoginSectionProps) {
 	return (
 		<section className="flex flex-col gap-6 rounded-2xl border border-border bg-card px-6 py-8 shadow-sm">
 			<div className="flex flex-col gap-3">
-				<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary">
-					<Sparkles className="h-6 w-6 text-primary-foreground" />
-				</div>
+				<Image
+					src="/images/pngs/icon.png"
+					width={48}
+					height={48}
+					alt={t("common.webMemo")}
+					className="rounded-2xl"
+				/>
 
 				<h1 className="text-2xl font-bold text-foreground">
 					{t("login.welcomeTitle")}
 				</h1>
-				<p className="text-sm text-muted-foreground">
-					{t("login.welcomeDescription")}
-				</p>
 			</div>
 
 			<TrackLoginStartForm className="flex w-full flex-col gap-3">
@@ -85,7 +87,9 @@ export default async function LoginSection({ lng }: IFLoginSectionProps) {
 			<PersonalInformationInfo lng={lng} />
 		</section>
 	);
-}
+};
+
+export default LoginSection;
 
 /** LoginSection의 props입니다. */
 interface IFLoginSectionProps extends LanguageType {}

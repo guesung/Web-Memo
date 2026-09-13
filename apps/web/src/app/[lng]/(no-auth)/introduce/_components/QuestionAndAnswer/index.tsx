@@ -2,95 +2,75 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import {
 	Accordion,
 	AccordionContent,
 	AccordionItem,
 	AccordionTrigger,
 } from "@web-memo/ui";
-import { motion } from "framer-motion";
-import { HelpCircle } from "lucide-react";
 
 import { FAQ_ITEMS } from "../../_constants";
+import SectionHeader from "../SectionHeader";
+import SectionShell, { type TSectionBackground } from "../SectionShell";
 import FaqJsonLD from "./FaqJsonLD";
 
-export default function QuestionAndAnswer({ lng }: LanguageType) {
+/**
+ * 자주 묻는 질문.
+ * @description
+ * 접기·펼치기는 Radix 아코디언 그대로 두고 시각만 정리했다. 카드 대신 hairline
+ * 구분선으로 항목을 나눈다.
+ */
+
+interface QuestionAndAnswerProps extends LanguageType {
+	background?: TSectionBackground;
+}
+
+export default function QuestionAndAnswer({
+	lng,
+	background,
+}: QuestionAndAnswerProps) {
 	const { t } = useTranslation(lng);
 
 	return (
-		<section className="py-20 bg-muted/50">
+		<SectionShell background={background} className="max-w-3xl">
 			<FaqJsonLD lng={lng} />
-			<div className="mx-auto max-w-4xl px-4">
-				{/* Section Header */}
-				<motion.div
-					initial={{ opacity: 0, y: 20 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true }}
-					transition={{ duration: 0.5 }}
-					className="text-center mb-12"
-				>
-					<div className="inline-flex items-center justify-center p-3 rounded-xl bg-purple-100 dark:bg-purple-900/30 mb-4">
-						<HelpCircle className="h-8 w-8 text-purple-600 dark:text-purple-400" />
-					</div>
-					<h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-						{t("introduce.faq.title")}
-					</h2>
-					<p className="text-lg text-muted-foreground">
-						{t("introduce.faq.subtitle")}
-					</p>
-				</motion.div>
 
-				{/* FAQ Accordion */}
-				<motion.div
-					initial={{ opacity: 0, y: 20 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true }}
-					transition={{ duration: 0.5, delay: 0.2 }}
-				>
-					<Accordion type="single" collapsible className="w-full space-y-4">
-						{FAQ_ITEMS.map((faqItem, index) => (
-							<motion.div
-								key={faqItem}
-								initial={{ opacity: 0, y: 20 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ duration: 0.3, delay: index * 0.1 }}
-							>
-								<AccordionItem
-									value={faqItem}
-									className="glass-card rounded-xl border-0 px-6 overflow-hidden"
-								>
-									<AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
-										{t(`introduce.faq.questions.${faqItem}.question`)}
-									</AccordionTrigger>
-									<AccordionContent className="text-muted-foreground pb-5 leading-relaxed">
-										{t(`introduce.faq.questions.${faqItem}.answer`)}
-									</AccordionContent>
-								</AccordionItem>
-							</motion.div>
-						))}
-					</Accordion>
-				</motion.div>
+			<SectionHeader
+				title={t("introduce.faq.title")}
+				description={t("introduce.faq.subtitle")}
+			/>
 
-				{/* Contact CTA */}
-				<motion.div
-					initial={{ opacity: 0 }}
-					whileInView={{ opacity: 1 }}
-					viewport={{ once: true }}
-					transition={{ duration: 0.5, delay: 0.5 }}
-					className="text-center mt-12"
+			<Accordion
+				type="single"
+				collapsible
+				className="w-full border-t border-border"
+			>
+				{FAQ_ITEMS.map((faqItem) => (
+					<AccordionItem
+						key={faqItem}
+						value={faqItem}
+						className="border-border"
+					>
+						<AccordionTrigger className="py-6 text-left text-lg tracking-[-0.015em] hover:no-underline">
+							{t(`introduce.faq.questions.${faqItem}.question`)}
+						</AccordionTrigger>
+						<AccordionContent className="pb-6 leading-relaxed text-muted-foreground">
+							{t(`introduce.faq.questions.${faqItem}.answer`)}
+						</AccordionContent>
+					</AccordionItem>
+				))}
+			</Accordion>
+
+			<p className="mt-12 text-center text-muted-foreground">
+				{t("introduce.faq.other_questions")}{" "}
+				<a
+					href={EXTERNAL_LINK.contactEmail}
+					className="text-foreground underline underline-offset-4"
 				>
-					<p className="text-muted-foreground">
-						{t("introduce.faq.other_questions")}{" "}
-						<a
-							href="mailto:gueit214@naver.com"
-							className="text-purple-600 dark:text-purple-400 font-medium hover:underline"
-						>
-							{t("introduce.faq.contact_us")}
-						</a>
-					</p>
-				</motion.div>
-			</div>
-		</section>
+					{t("introduce.faq.contact_us")}
+				</a>
+			</p>
+		</SectionShell>
 	);
 }

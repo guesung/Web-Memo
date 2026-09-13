@@ -10,7 +10,7 @@
 | --- | --- | --- | --- |
 | **확장 프로그램(Extension)** | `apps/chrome-extension/package.json` → `version` | `apps/chrome-extension/manifest.js` | 확장 프로그램을 릴리스할 때 |
 | **앱(App)** | `apps/app/app.json` → `expo.version` | App Store / TestFlight | iOS 앱을 릴리스할 때 |
-| **제품 릴리스 노트** | `apps/web/src/constants/Update.ts` → 첫 번째 항목 | `/update` 페이지, 업데이트 알림 모달 | 사용자에게 알릴 만한 변경이 있을 때 |
+| **제품 릴리스 노트** | `apps/web/src/constants/Update.ts` → 첫 번째 항목 | 업데이트 알림 모달 | 사용자에게 알릴 만한 변경이 있을 때 |
 
 이 외에는 버전을 갖는 대상이 없습니다.
 

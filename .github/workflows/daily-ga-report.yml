@@ -50,17 +50,21 @@ jobs:
       # 매일 도는 무인 잡이라 실패가 알림 부재와 구분되지 않습니다. 리포트가 안 온 날이
       # "조용한 날"인지 "잡이 깨진 날"인지 채널에서 바로 드러나야 합니다.
       # 실패 알림에 별도 스크립트를 두지 않습니다 — 그 스크립트가 깨지면 같은 문제가 반복됩니다.
+      #
+      # 본 알림과 웹훅을 일부러 가릅니다. 리포트는 SLACK_REPORT_WEBHOOK_URL 로 가지만
+      # 실패는 CI·릴리스 채널(SLACK_WEBHOOK_URL)로 보냅니다. 리포트 채널 웹훅이 폐기되거나
+      # 만료되면 본 알림과 그 실패 알림이 같이 죽어 아무 일도 없는 것처럼 보입니다.
       - name: Notify failure
         if: ${{ failure() }}
         env:
-          SLACK_REPORT_WEBHOOK_URL: ${{ secrets.SLACK_REPORT_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          if [ -z "$SLACK_REPORT_WEBHOOK_URL" ]; then
-            echo "::warning::SLACK_REPORT_WEBHOOK_URL 이 없어 실패 알림을 건너뜁니다"
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::warning::SLACK_WEBHOOK_URL 이 없어 실패 알림을 건너뜁니다"
             exit 0
           fi
           curl --silent --show-error --fail-with-body \
             --header "content-type: application/json" \
             --data "{\"text\":\"❌ 데일리 GA 리포트 실패 — <$RUN_URL|실행 로그 보기>\"}" \
-            "$SLACK_REPORT_WEBHOOK_URL"
+            "$SLACK_WEBHOOK_URL"

@@ -26,7 +26,7 @@
 	},
 	"sideBar": {
 		"memo": "내 메모",
-		"wishList": "내 위시리스트",
+		"wishList": "위시리스트",
 		"highlight": "하이라이트",
 		"importantMemo": "중요 메모",
 		"readingMemo": "읽는 중",
@@ -366,18 +366,29 @@
 		"changeCategory": "카테고리 변경하기"
 	},
 	"login": {
-		"welcomeTitle": "웹 메모에 오신 것을 환영합니다!",
-		"welcomeDescription": "내 메모를 모든 기기에서 안전하게 저장하고 동기화하려면 로그인이 필요해요.",
-		"kakaoLogin": "카카오 계정으로 로그인",
-		"googleLogin": "구글 계정으로 로그인",
-		"appleLogin": "Apple 계정으로 로그인",
+		"welcomeTitle": "읽던 자리에서 남긴 메모를 한곳에서 봐요",
+		"welcomeDescription": "처음이어도 괜찮아요. 아래 버튼을 누르면 계정이 같이 만들어져요.",
+		"kakaoLogin": "카카오로 시작하기",
+		"googleLogin": "구글로 시작하기",
+		"appleLogin": "Apple로 시작하기",
 		"testLogin": "테스트 계정으로 로그인",
+		"providerPending": "{{provider}}로 이동하고 있어요",
+		"providerName": {
+			"kakao": "카카오",
+			"google": "구글",
+			"apple": "Apple"
+		},
+		"errorAlert": "로그인이 끝나지 않았어요. 다시 한 번 눌러주세요.",
 		"askGoInstallExtension": "메모 기능을 사용하시려면 확장 프로그램이 필요해요. 지금 설치하러 가시겠어요?",
-		"personalInformationInfo": "로그인 정보는 메모 동기화 목적으로만 사용되며, 광고나 마케팅에는 절대 사용하지 않아요.",
-		"trustSignal": {
-			"secure": "안전한 로그인",
-			"private": "개인정보 보호",
-			"free": "무료"
+		"personalInformationInfo": "로그인 정보는 메모를 잇는 데만 써요. 광고나 마케팅에는 쓰지 않아요.",
+		"aside": {
+			"rating": "{{rating}}점",
+			"userCount": "사용자 {{users}}명+",
+			"reviewCount": "리뷰 {{reviews}}개",
+			"crossDevice": "크롬·웹·iOS가 같은 메모를 봐요",
+			"persistent": "브라우저를 지워도 메모는 남아요",
+			"minimalData": "이메일 주소 말고는 받지 않아요",
+			"noMarketing": "광고·마케팅에 쓰지 않아요"
 		}
 	},
 	"dialogInstall": {
@@ -413,19 +424,28 @@
 	},
 	"setting": {
 		"header": "설정",
+		"headerDescription": "메모를 쓰는 방식을 바꿔요",
+		"sectionGeneral": "일반",
+		"sectionMemoWriting": "메모 작성",
+		"sectionMemoWritingDescription": "메모를 쓸 때 어떤 칸을 보여줄지 정해요",
+		"sectionData": "데이터",
+		"languageDescription": "화면에 보이는 언어를 골라요",
+		"guideDescription": "첫 사용 안내를 처음부터 다시 봐요",
+		"exportDescription": "메모 전체를 파일로 내려받아요",
+		"categoryDescription": "메모를 묶는 카테고리를 관리해요",
+		"categoryEmpty": "아직 카테고리가 없어요. 하나 만들어 볼까요?",
 		"language": "언어",
+		"selectLanguage": "언어 선택",
 		"guide": "가이드",
 		"restartGuide": "가이드 다시 보기",
-		"memoFields": "메모 입력 항목",
 		"category": "카테고리",
 		"addCategory": "카테고리 추가하기",
 		"deleteCategory": "카테고리 삭제하기",
 		"defaultCategoryName": "새 카테고리",
 		"export": "내보내기",
 		"exportMemos": "메모 내보내기",
-		"memoSection": "메모 섹션 표시",
-		"showImpressionSection": "메모 작성 시 느낀 점 입력란을 표시합니다",
-		"showActionItemSection": "메모 작성 시 액션 아이템 입력란을 표시합니다"
+		"showImpressionSection": "메모를 쓸 때 느낀 점 칸을 보여줘요",
+		"showActionItemSection": "메모를 쓸 때 할 일 칸을 보여줘요"
 	},
 	"guide": {
 		"next": "다음으로",
@@ -822,6 +842,7 @@
 			"title": "관리자",
 			"dashboard": "대시보드",
 			"users": "사용자 관리",
+			"feedback": "피드백",
 			"back_to_memos": "메모로 돌아가기"
 		},
 		"users": {
@@ -831,6 +852,23 @@
 			"joined": "가입일",
 			"memos": "메모 수",
 			"search_placeholder": "닉네임 또는 ID로 검색...",
+			"previous": "이전",
+			"next": "다음",
+			"page": "{{current}} / {{total}} 페이지"
+		},
+		"feedback": {
+			"title": "피드백",
+			"empty": "아직 받은 피드백이 없어요.",
+			"total": "총 {{count}}건의 피드백",
+			"received_at": "받은 날짜",
+			"content": "내용",
+			"writer": "작성자",
+			"anonymous": "비로그인",
+			"reply_to": "회신 {{email}}",
+			"search_placeholder": "내용으로 검색...",
+			"search_empty": "'{{query}}'와 맞는 피드백이 없어요.",
+			"clear_search": "검색어 지우기",
+			"back_to_list": "전체 목록 보기",
 			"previous": "이전",
 			"next": "다음",
 			"page": "{{current}} / {{total}} 페이지"
@@ -1574,9 +1612,13 @@
 		}
 	},
 	"trash": {
-		"title": "휴지통",
-		"description": "삭제한 메모는 여기 남습니다. 되살리거나 완전히 지울 수 있어요.",
 		"empty": "휴지통이 비어 있어요.",
+		"totalMemos": "휴지통에 {{total}}개",
+		"deletedAt": "{{time}} 삭제",
+		"emptyDescription": "지운 메모가 여기 모여요. 아직 버린 메모가 없네요.",
+		"backToMemos": "메모로 돌아가기",
+		"restoreFailed": "되살리지 못했어요. 잠시 뒤 다시 시도해 주세요.",
+		"deleteFailed": "완전히 지우지 못했어요. 잠시 뒤 다시 시도해 주세요.",
 		"restore": "되살리기",
 		"deletePermanently": "완전히 삭제",
 		"emptyTrash": "휴지통 비우기",

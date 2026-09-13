@@ -34,7 +34,7 @@ export default function HeaderRight({ lng }: LanguageType) {
 	const handleSignoutClick = () => {
 		mutateSignout();
 		bridge.request.SYNC_LOGIN_STATUS();
-		router.push(PATHS.login);
+		router.push(`/${lng}${PATHS.login}`);
 	};
 
 	return (

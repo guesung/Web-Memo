@@ -10,84 +10,60 @@ import { SUPABASE } from "@web-memo/shared/constants";
 import { isProduction } from "@web-memo/shared/utils";
 import { Button } from "@web-memo/ui";
 import { Sparkles } from "lucide-react";
-import Image from "next/image";
+
+import LoginProviderButtons, {
+	type TLoginProvider,
+} from "../LoginProviderButtons";
+import PersonalInformationInfo from "../PersonalInformationInfo";
 import TrackLoginStartForm from "../TrackLoginStartForm";
 
-interface LoginSectionProps extends LanguageType {}
-
-export default async function LoginSection({ lng }: LoginSectionProps) {
+export default async function LoginSection({ lng }: IFLoginSectionProps) {
 	const { t } = await useTranslation(lng);
 
+	const providers: TLoginProvider[] = [
+		{
+			id: "kakao",
+			label: t("login.kakaoLogin"),
+			pendingLabel: t("login.providerPending", {
+				provider: t("login.providerName.kakao"),
+			}),
+			signIn: signInWithOAuth.bind(null, "kakao"),
+		},
+		{
+			id: "google",
+			label: t("login.googleLogin"),
+			pendingLabel: t("login.providerPending", {
+				provider: t("login.providerName.google"),
+			}),
+			signIn: signInWithOAuth.bind(null, "google"),
+		},
+		{
+			id: "apple",
+			label: t("login.appleLogin"),
+			pendingLabel: t("login.providerPending", {
+				provider: t("login.providerName.apple"),
+			}),
+			signIn: signInWithOAuth.bind(null, "apple"),
+		},
+	];
+
 	return (
-		<section className="relative flex flex-col items-center justify-center rounded-3xl bg-card/80 backdrop-blur-xl px-8 py-10 shadow-2xl border border-border/50 gap-6">
-			<div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-3xl opacity-10 blur" />
-
-			<div className="relative flex flex-col items-center gap-4">
-				<div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-lg">
-					<Sparkles className="w-8 h-8 text-white" />
+		<section className="flex flex-col gap-6 rounded-2xl border border-border bg-card px-6 py-8 shadow-sm">
+			<div className="flex flex-col gap-3">
+				<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary">
+					<Sparkles className="h-6 w-6 text-primary-foreground" />
 				</div>
 
-				<div className="text-center space-y-2">
-					<h1 className="text-2xl font-bold text-foreground">
-						{t("login.welcomeTitle")}
-					</h1>
-					<p className="text-sm text-muted-foreground max-w-xs">
-						{t("login.welcomeDescription")}
-					</p>
-				</div>
+				<h1 className="text-2xl font-bold text-foreground">
+					{t("login.welcomeTitle")}
+				</h1>
+				<p className="text-sm text-muted-foreground">
+					{t("login.welcomeDescription")}
+				</p>
 			</div>
 
-			<TrackLoginStartForm className="relative flex w-full flex-col gap-3 mt-2">
-				<Button
-					formAction={signInWithOAuth.bind(null, "kakao")}
-					data-login-method="kakao"
-					className="relative h-14 bg-[#FEE500] hover:bg-[#F5DC00] text-gray-900 font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] overflow-hidden group"
-					data-testid="kakao-login-button"
-				>
-					<div className="absolute inset-0 bg-gradient-to-r from-yellow-400/0 via-yellow-300/30 to-yellow-400/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-					<Image
-						src="/images/svgs/kakao.svg"
-						width={20}
-						height={20}
-						alt="kakao"
-						className="mr-2"
-					/>
-					{t("login.kakaoLogin")}
-				</Button>
-
-				<Button
-					formAction={signInWithOAuth.bind(null, "google")}
-					data-login-method="google"
-					className="relative h-14 bg-white hover:bg-gray-50 text-gray-900 font-medium rounded-xl border-2 border-gray-200 hover:border-gray-300 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] overflow-hidden group"
-					data-testid="google-login-button"
-				>
-					<div className="absolute inset-0 bg-gradient-to-r from-gray-100/0 via-gray-200/50 to-gray-100/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-					<Image
-						src="/images/svgs/google.svg"
-						width={20}
-						height={20}
-						alt="google"
-						className="mr-2"
-					/>
-					{t("login.googleLogin")}
-				</Button>
-
-				<Button
-					formAction={signInWithOAuth.bind(null, "apple")}
-					data-login-method="apple"
-					className="relative h-14 bg-black hover:bg-gray-900 text-white font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] overflow-hidden group"
-					data-testid="apple-login-button"
-				>
-					<div className="absolute inset-0 bg-gradient-to-r from-gray-800/0 via-gray-700/30 to-gray-800/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-					<Image
-						src="/images/svgs/apple.svg"
-						width={20}
-						height={20}
-						alt="apple"
-						className="mr-2"
-					/>
-					{t("login.appleLogin")}
-				</Button>
+			<TrackLoginStartForm className="flex w-full flex-col gap-3">
+				<LoginProviderButtons providers={providers} />
 
 				{!isProduction() && (
 					<Button
@@ -97,13 +73,19 @@ export default async function LoginSection({ lng }: LoginSectionProps) {
 							SUPABASE.testPassword,
 						)}
 						data-login-method="email"
-						className="h-14 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
 						data-testid="test-login-button"
+						variant="outline"
+						className="h-12 rounded-xl"
 					>
 						{t("login.testLogin")}
 					</Button>
 				)}
 			</TrackLoginStartForm>
+
+			<PersonalInformationInfo lng={lng} />
 		</section>
 	);
 }
+
+/** LoginSection의 props입니다. */
+interface IFLoginSectionProps extends LanguageType {}

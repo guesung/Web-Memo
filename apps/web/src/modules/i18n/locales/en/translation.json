@@ -26,7 +26,7 @@
 	},
 	"sideBar": {
 		"memo": "My memos",
-		"wishList": "My wishlist",
+		"wishList": "Wishlist",
 		"highlight": "Highlights",
 		"importantMemo": "Important",
 		"readingMemo": "Reading",
@@ -371,18 +371,29 @@
 		"changeCategory": "Change category"
 	},
 	"login": {
-		"welcomeTitle": "Welcome to Web Memo!",
-		"welcomeDescription": "Login is required to securely save and sync your memos across all devices.",
-		"kakaoLogin": "Login with Kakao",
-		"googleLogin": "Login with Google",
-		"appleLogin": "Login with Apple",
+		"welcomeTitle": "See the memos you left while reading, all in one place",
+		"welcomeDescription": "New here? That's fine. Tapping a button below creates your account along the way.",
+		"kakaoLogin": "Continue with Kakao",
+		"googleLogin": "Continue with Google",
+		"appleLogin": "Continue with Apple",
 		"testLogin": "Login with Test",
+		"providerPending": "Taking you to {{provider}}",
+		"providerName": {
+			"kakao": "Kakao",
+			"google": "Google",
+			"apple": "Apple"
+		},
+		"errorAlert": "Login didn't finish. Please tap the button once more.",
 		"askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
-		"personalInformationInfo": "Login info is only used for memo sync and never for ads or marketing purposes.",
-		"trustSignal": {
-			"secure": "Secure",
-			"private": "Private",
-			"free": "Free"
+		"personalInformationInfo": "We use your login info only to keep your memos connected. Never for ads or marketing.",
+		"aside": {
+			"rating": "{{rating}} rating",
+			"userCount": "{{users}}+ users",
+			"reviewCount": "{{reviews}} reviews",
+			"crossDevice": "Chrome, web, and iOS see the same memos",
+			"persistent": "Your memos stay even if you clear the browser",
+			"minimalData": "We ask for nothing but your email address",
+			"noMarketing": "We never use it for ads or marketing"
 		}
 	},
 	"dialogInstall": {
@@ -418,17 +429,26 @@
 	},
 	"setting": {
 		"header": "Settings",
+		"headerDescription": "Change how you write memos",
+		"sectionGeneral": "General",
+		"sectionMemoWriting": "Writing memos",
+		"sectionMemoWritingDescription": "Choose which fields show up while you write",
+		"sectionData": "Data",
+		"languageDescription": "Choose the language you see",
+		"guideDescription": "Walk through the first-time guide again",
+		"exportDescription": "Download all of your memos as a file",
+		"categoryDescription": "Manage the categories you group memos with",
+		"categoryEmpty": "No categories yet. Want to make one?",
 		"language": "Language",
+		"selectLanguage": "Select language",
 		"guide": "Guide",
 		"restartGuide": "Restart guide",
-		"memoFields": "Memo Fields",
 		"category": "Category",
 		"addCategory": "Add category",
 		"deleteCategory": "Delete category",
 		"defaultCategoryName": "New category",
 		"export": "Export",
 		"exportMemos": "Export memos",
-		"memoSection": "Memo sections",
 		"showImpressionSection": "Show the impression field when writing a memo",
 		"showActionItemSection": "Show the action items field when writing a memo"
 	},
@@ -827,6 +847,7 @@
 			"title": "Admin",
 			"dashboard": "Dashboard",
 			"users": "Users",
+			"feedback": "Feedback",
 			"back_to_memos": "Back to Memos"
 		},
 		"users": {
@@ -836,6 +857,23 @@
 			"joined": "Joined",
 			"memos": "Memos",
 			"search_placeholder": "Search by nickname or ID...",
+			"previous": "Previous",
+			"next": "Next",
+			"page": "Page {{current}} of {{total}}"
+		},
+		"feedback": {
+			"title": "Feedback",
+			"empty": "No feedback yet.",
+			"total": "{{count}} feedback total",
+			"received_at": "Received",
+			"content": "Content",
+			"writer": "Writer",
+			"anonymous": "Not signed in",
+			"reply_to": "Reply to {{email}}",
+			"search_placeholder": "Search by content...",
+			"search_empty": "No feedback matches '{{query}}'.",
+			"clear_search": "Clear search",
+			"back_to_list": "Back to all feedback",
 			"previous": "Previous",
 			"next": "Next",
 			"page": "Page {{current}} of {{total}}"
@@ -1577,9 +1615,13 @@
 		}
 	},
 	"trash": {
-		"title": "Trash",
-		"description": "Deleted memos stay here. You can restore them or delete them for good.",
 		"empty": "Trash is empty.",
+		"totalMemos": "{{total}} in trash",
+		"deletedAt": "Deleted {{time}}",
+		"emptyDescription": "Deleted memos gather here. Nothing has been thrown away yet.",
+		"backToMemos": "Back to memos",
+		"restoreFailed": "Couldn't restore it. Please try again in a moment.",
+		"deleteFailed": "Couldn't delete it for good. Please try again in a moment.",
 		"restore": "Restore",
 		"deletePermanently": "Delete permanently",
 		"emptyTrash": "Empty trash",

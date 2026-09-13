@@ -45,6 +45,48 @@ function isNoindexPath(pathname: string) {
 	);
 }
 
+/**
+ * 쿼리 파라미터로 필터를 걸던 구 URL과, 그것이 옮겨간 라우트.
+ *
+ * @description 앞에 있는 것이 먼저 이긴다. 예전 `/memos`는 `isStar`·`isReading`이 켜지면
+ * `isWish`를 무시했는데, 그 암묵적 우선순위를 그대로 옮긴 순서다.
+ */
+const LEGACY_MEMO_FILTER_QUERIES = [
+	{ query: "isStar", path: PATHS.memosStar },
+	{ query: "isReading", path: PATHS.memosReading },
+	{ query: "isWish", path: PATHS.memosWish },
+];
+
+/**
+ * `/memos?isWish=true` 같은 구 URL을 새 라우트로 돌려보낸다. 해당이 없으면 null.
+ *
+ * @description 308(영구)이 아니라 307(임시)이다. 크롬 확장이 사이드 패널에서 웹 URL을
+ * 런타임에 조립하는데, 확장은 웹스토어 심사를 거쳐 당일 롤아웃이 불가능하다. 브라우저에
+ * 영구 리다이렉트가 캐시되면 되돌릴 방법이 없다.
+ */
+function getLegacyMemoFilterRedirect(request: NextRequest) {
+	const { pathname, searchParams } = request.nextUrl;
+
+	if (!pathname.endsWith(PATHS.memos)) {
+		return null;
+	}
+
+	const matched = LEGACY_MEMO_FILTER_QUERIES.find(
+		({ query }) => searchParams.get(query) === "true",
+	);
+	if (!matched) {
+		return null;
+	}
+
+	const url = request.nextUrl.clone();
+	url.pathname = `${pathname}${matched.path.slice(PATHS.memos.length)}`;
+	for (const { query } of LEGACY_MEMO_FILTER_QUERIES) {
+		url.searchParams.delete(query);
+	}
+
+	return NextResponse.redirect(url, 307);
+}
+
 export async function middleware(request: NextRequest) {
 	const pathname = request.nextUrl.pathname;
 
@@ -77,6 +119,11 @@ export async function middleware(request: NextRequest) {
 				request.url,
 			),
 		);
+
+	const legacyMemoFilterRedirect = getLegacyMemoFilterRedirect(request);
+	if (legacyMemoFilterRedirect) {
+		return legacyMemoFilterRedirect;
+	}
 
 	const response = await updateAuthorization(request);
 

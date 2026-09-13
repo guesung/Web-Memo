@@ -85,7 +85,8 @@ export type TAnalyticsEvent =
 	  }
 	| { name: "guide_open"; params: { from: "context_menu" } }
 	| { name: "guide_finish" }
-	| { name: "extension_setting_change"; params: { keys: string } };
+	| { name: "extension_setting_change"; params: { keys: string } }
+	| { name: "guide_step"; params: { step_name: string } };
 
 /** 이벤트 이름만 추린 유니온. */
 export type TAnalyticsEventName = TAnalyticsEvent["name"];
@@ -137,4 +138,5 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	guide_open: "engagement",
 	guide_finish: "engagement",
 	extension_setting_change: "engagement",
+	guide_step: "engagement",
 };

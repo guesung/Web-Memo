@@ -17,9 +17,9 @@ export const FeedbackSection = ({ lng }: FeedbackSectionProps) => {
 	const { mutate: mutateFeedback } = useFeedbackMutation();
 	const { t } = useTranslation(lng);
 
-	const handleSubmit = (content: string) => {
+	const handleSubmit = (content: string, email?: string) => {
 		setIsOpen(false);
-		mutateFeedback({ content });
+		mutateFeedback({ content, email: email ?? null });
 		toast({
 			title: t("feedback.success"),
 			description: t("feedback.successDescription"),

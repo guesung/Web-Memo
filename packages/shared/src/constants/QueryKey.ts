@@ -39,6 +39,10 @@ export const QUERY_KEY = {
 	activeUsersStats: () => ["activeUsersStats"],
 	userGrowth: (days: number) => ["userGrowth", days],
 	adminUsers: (search?: string, page?: number) => ["adminUsers", search, page],
+	/** 관리자 피드백 목록. 검색어·페이지 조합마다 별도 캐시다. */
+	feedbacks: (search?: string, page?: number) => ["feedbacks", search, page],
+	/** 피드백 한 건. `?id=`로 들어온 행이 현재 페이지에 없을 때만 쓴다. */
+	feedback: (id: number) => ["feedbacks", "detail", id],
 	/** `highlightsByUrl`/`highlightsPaginated`의 공통 접두사. prefix 매칭으로 둘 다 무효화할 때 쓴다(memos()와 같은 패턴). */
 	highlights: () => ["highlights"],
 	highlightsByUrl: (url: string) => ["highlights", "byUrl", url],

@@ -348,16 +348,12 @@ gitignore 대상이라 EAS 샌드박스에 복사되지 않아 iOS 빌드가 깨
 | --- | --- | --- |
 | `SLACK_FEEDBACK_WEBHOOK_URL` | `send-feedback` | 피드백 슬랙 알림 |
 | `RESEND_API_KEY` | `send-welcome-email` | 가입 안내 메일 발송 |
+| `CRON_SECRET` | `daily-article-reminder`, `send-welcome-email` | DB에서 부르는 함수의 호출자 확인. Vault `cron_secret`과 같은 값 |
 
-`send-welcome-email`을 부르는 트리거는 호출 주소와 service role 키를 DB 설정에서
-읽습니다. 마이그레이션 적용 전에 한 번 넣어야 합니다.
-
-```sql
-alter database postgres
-  set app.settings.edge_function_url = 'https://<ref>.supabase.co/functions/v1';
-alter database postgres
-  set app.settings.service_role_key = '<service role key>';
-```
+`send-welcome-email`은 JWT 검증을 끄고(`--no-verify-jwt`) 배포하며, 호출자는
+`x-cron-secret` 헤더로 확인합니다. 트리거가 이 헤더와 호출 주소를 Vault의
+`cron_secret`·`project_url`에서 읽으므로 `daily-article-reminder`와 같은 두 값을
+공유합니다. 새로 넣을 DB 설정은 없습니다.
 
 ### 빌드 플래그
 

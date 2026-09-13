@@ -39,6 +39,17 @@ const buildWelcomeEmailHtml = () => {
 };
 
 serve(async (req) => {
+  // DB 트리거만 부르는 함수다. JWT 검증을 끄고 배포하므로(verify_jwt = false)
+  // daily-article-reminder와 같은 공유 비밀 헤더로 호출자를 확인한다.
+  const cronSecret = Deno.env.get("CRON_SECRET");
+
+  if (!cronSecret || req.headers.get("x-cron-secret") !== cronSecret) {
+    return new Response(JSON.stringify({ status: "unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
 

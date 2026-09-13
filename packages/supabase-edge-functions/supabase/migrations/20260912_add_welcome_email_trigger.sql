@@ -3,36 +3,26 @@
 -- 로그인으로 갈라져 있어 웹 콜백 라우트에 얹으면 앱 가입이 빠진다. auth.users 행은
 -- 어느 경로로 가입하든 정확히 한 번 생긴다.
 --
--- pg_net.http_post은 fire-and-forget이라 요청을 큐에 넣고 즉시 반환한다. Edge Function이
--- 느리거나 실패해도 가입 트랜잭션은 영향받지 않는다.
+-- net.http_post은 요청을 큐에 넣고 즉시 반환한다. Edge Function이 느리거나 실패해도
+-- 가입 트랜잭션은 영향받지 않는다.
 --
--- 호출 주소와 service role 키는 DB 설정에서 읽는다. 키를 레포에 커밋하지 않기
--- 위해서다. 이 마이그레이션을 적용하기 전에 아래를 먼저 실행해야 한다.
---
---   alter database postgres
---     set app.settings.edge_function_url = 'https://<ref>.supabase.co/functions/v1';
---   alter database postgres
---     set app.settings.service_role_key = '<service role key>';
---
--- 그리고 supabase secrets set RESEND_API_KEY=... 로 함수 쪽 키를 등록한다.
--- 설정이 비어 있으면 http_post 호출이 실패하지만 pg_net이 비동기라 가입은 그대로
--- 성공한다 — 메일만 조용히 안 나간다.
-create extension if not exists pg_net with schema extensions;
-
-create function auth.send_welcome_email()
+-- 호출 주소와 공유 비밀은 Vault의 project_url · cron_secret에서 읽는다.
+-- daily-article-reminder cron이 이미 같은 두 값을 쓰고 있어 새로 넣을 값이 없다.
+-- 함수는 auth 스키마가 아니라 memo 스키마에 둔다. auth 스키마에는 postgres 롤에
+-- CREATE 권한이 없고, 기존 가입 트리거 함수(memo.create_default_user_data)도 memo에 있다.
+create function memo.send_welcome_email()
 returns trigger
 language plpgsql
 security definer
 set search_path = ''
 as $$
 begin
-  perform extensions.http_post(
-    url := current_setting('app.settings.edge_function_url', true)
-      || '/send-welcome-email',
+  perform net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'project_url')
+      || '/functions/v1/send-welcome-email',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'Authorization', 'Bearer '
-        || current_setting('app.settings.service_role_key', true)
+      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
     ),
     body := jsonb_build_object(
       'record', jsonb_build_object(
@@ -44,13 +34,18 @@ begin
   );
 
   return new;
+exception when others then
+  -- 트리거는 가입 INSERT와 같은 트랜잭션에서 돈다. 여기서 던지면 가입이 롤백되므로
+  -- Vault 값이 비었거나 pg_net이 거부해도 경고만 남기고 가입은 통과시킨다.
+  raise warning 'send_welcome_email 실패 (user %): %', new.id, sqlerrm;
+  return new;
 end;
 $$;
 
-create trigger on_auth_user_created_send_welcome_email
+create trigger send_welcome_email_trigger
 after insert on auth.users
 for each row
-execute function auth.send_welcome_email();
+execute function memo.send_welcome_email();
 
-comment on function auth.send_welcome_email() is
+comment on function memo.send_welcome_email() is
   'Queues a one-time welcome email via the send-welcome-email Edge Function. Asynchronous (pg_net), so signup never blocks on delivery.';

@@ -16,10 +16,12 @@ import {
 } from "@web-memo/shared/hooks";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ToggleTheme from "./ToggleTheme";
 
-export default function HeaderRight({ lng }: LanguageType) {
+/** 로그인 상태에 맞는 계정 메뉴와 요금제 진입점을 표시합니다. */
+const HeaderRight = ({ lng }: LanguageType) => {
 	const { t } = useTranslation(lng);
 	const { data: user } = useSupabaseUserQuery();
 	const { mutate: mutateSignout } = useSignoutMutation();
@@ -39,6 +41,9 @@ export default function HeaderRight({ lng }: LanguageType) {
 
 	return (
 		<div className="flex items-center gap-2">
+			<Link href={`/${lng}/pricing`} className="text-sm text-primary underline">
+				{t("billing.pricingTitle")}
+			</Link>
 			<ToggleTheme />
 			{isUserLogin && (
 				<DropdownMenu>
@@ -49,6 +54,9 @@ export default function HeaderRight({ lng }: LanguageType) {
 					</DropdownMenuTrigger>
 					<DropdownMenuContent>
 						<DropdownMenuLabel>
+							<Link href={`/${lng}/billing`}>{t("billing.manage")}</Link>
+						</DropdownMenuLabel>
+						<DropdownMenuLabel>
 							<button type="button" onClick={handleSignoutClick}>
 								{t("header.logout")}
 							</button>
@@ -58,4 +66,6 @@ export default function HeaderRight({ lng }: LanguageType) {
 			)}
 		</div>
 	);
-}
+};
+
+export default HeaderRight;

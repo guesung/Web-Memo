@@ -136,8 +136,8 @@ test.describe("탭 이동과 스크롤 (Mocked)", () => {
 			.poll(() => page.evaluate(() => window.scrollY))
 			.toBeGreaterThan(0);
 
-		await page.getByRole("link", { name: "My wishlist" }).click();
-		await page.waitForURL(/isWish=true/);
+		await page.getByRole("link", { name: "Wishlist" }).click();
+		await page.waitForURL(new RegExp(`${PATHS.memosWish}$`));
 
 		await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 	});

@@ -4,7 +4,7 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { PATHS } from "@web-memo/shared/constants";
 import { cn } from "@web-memo/ui";
-import { BarChart3, Users } from "lucide-react";
+import { BarChart3, MessageSquare, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -24,6 +24,11 @@ export default function AdminSidebar({ lng }: AdminSidebarProps) {
 			href: `/${lng}${PATHS.adminUsers}`,
 			icon: Users,
 			labelKey: "admin.sidebar.users",
+		},
+		{
+			href: `/${lng}${PATHS.adminFeedback}`,
+			icon: MessageSquare,
+			labelKey: "admin.sidebar.feedback",
 		},
 	];
 

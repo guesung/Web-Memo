@@ -10,6 +10,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import type { TMemoFilter } from "../../_types";
 import type { SearchFormValues } from "../MemoSearchFormProvider";
 import { useMemoHighlights } from "./_hooks/useMemoHighlights";
 import MemoGrid from "./MemoGrid";
@@ -19,23 +20,22 @@ const MemoRefreshButton = dynamic(() => import("./MemoRefreshButton"), {
 	loading: () => <Skeleton className="h-10 w-10" />,
 });
 
-export default function MemoView({ lng }: LanguageType) {
+/** 라우트 필터에 해당하는 메모 목록과 검색 결과를 표시한다. */
+const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 	const { t } = useTranslation(lng);
 	const { watch } = useFormContext<SearchFormValues>();
 	const searchParams = useSearchParams();
 
+	// 카테고리는 사이드바 하단에서 고르는 가로지르는 조건이라 필터와 달리 쿼리로 남는다.
 	const category = searchParams.get("category") ?? "";
-	const isWishView = searchParams.get("isWish") === "true";
-	const isStarView = searchParams.get("isStar") === "true";
-	const isReadingView = searchParams.get("isReading") === "true";
 	const searchQuery = watch("searchQuery");
 
 	const { memos, totalCount, hasNextPage, isFetchingNextPage, fetchNextPage } =
 		useMemosInfiniteQuery({
 			category,
-			isWish: isStarView || isReadingView ? undefined : isWishView,
-			isStar: isStarView ? true : undefined,
-			isReading: isReadingView ? true : undefined,
+			isWish: getWishlistFilter(filter),
+			isStar: filter === "star" ? true : undefined,
+			isReading: filter === "reading" ? true : undefined,
 			searchQuery: searchQuery || undefined,
 		});
 
@@ -55,23 +55,20 @@ export default function MemoView({ lng }: LanguageType) {
 	 * 검색어와 id(메모 다이얼로그)는 넣지 않는다. 넣으면 글자를 칠 때마다,
 	 * 다이얼로그를 여닫을 때마다 그리드가 통째로 다시 그려진다.
 	 */
-	const tabKey = `${category}|${isWishView}|${isStarView}|${isReadingView}`;
+	const tabKey = `${category}|${filter}`;
 
 	/**
 	 * 탭이 바뀌면 목록을 맨 위에서 보여준다.
 	 *
-	 * @description 사이드바 탭은 searchParams만 바꾸는 같은 라우트 전환이라 Next가
+	 * @description 카테고리 전환은 searchParams만 바꾸는 같은 라우트 전환이라 Next가
 	 * 스크롤을 맨 위로 올려주지 않는다. 위의 리마운트만으로는 이미 내려가 있던 문서
 	 * 스크롤이 그대로 남으므로 여기서 직접 올린다. 둘 다 필요하다 - 이것만 있으면
 	 * egjs 보정이 곧바로 덮어쓰고, 리마운트만 있으면 이전 스크롤이 남는다.
 	 */
 	// biome-ignore lint/correctness/useExhaustiveDependencies: 탭이 바뀔 때만 올려야 한다
-	useEffect(
-		function scrollToTopOnTabChange() {
-			window.scrollTo(0, 0);
-		},
-		[tabKey],
-	);
+	useEffect(() => {
+		window.scrollTo(0, 0);
+	}, [tabKey]);
 
 	return (
 		<div className="flex w-full flex-col gap-4">
@@ -114,4 +111,25 @@ export default function MemoView({ lng }: LanguageType) {
 			/>
 		</div>
 	);
+};
+
+export default MemoView;
+
+/** 기본 목록에서는 위시 메모를 제외하고 별표·읽는 중에서는 위시 여부를 제한하지 않는다. */
+const getWishlistFilter = (filter: TMemoFilter): boolean | undefined => {
+	if (filter === "all") {
+		return false;
+	}
+
+	if (filter === "wish") {
+		return true;
+	}
+
+	return undefined;
+};
+
+/** 메모 목록의 언어와 라우트 필터. */
+interface IFMemoViewProps extends LanguageType {
+	/** 라우트가 정한 메모 범위 */
+	filter: TMemoFilter;
 }

@@ -10,6 +10,7 @@
  */
 
 import { exchangeServiceAccountToken } from "./google-auth.mjs";
+import { requestJson } from "./http.mjs";
 
 /** GA4 Data API 는 읽기 전용 scope 로 충분합니다. */
 const GA4_SCOPE = "https://www.googleapis.com/auth/analytics.readonly";
@@ -95,18 +96,6 @@ export const ANALYTICS_EVENTS = [
 	"guide_finish",
 	"extension_setting_change",
 ];
-
-/** 응답이 2xx가 아니면 본문까지 담아 던집니다. 빈 에러 메시지는 디버깅이 불가능합니다. */
-const requestJson = async (url, options = {}) => {
-	const response = await fetch(url, options);
-
-	if (!response.ok) {
-		const body = await response.text();
-		throw new Error(`${response.status} ${url} — ${body.slice(0, 300)}`);
-	}
-
-	return await response.json();
-};
 
 /**
  * 주어진 시각을 서울 기준 YYYY-MM-DD 로 적습니다.

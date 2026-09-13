@@ -14,33 +14,14 @@
 import { sign as signBuffer } from "node:crypto";
 
 import { exchangeServiceAccountToken } from "./google-auth.mjs";
+import { requestJson } from "./http.mjs";
+import { nowInSeconds, toBase64Url } from "./jwt.mjs";
 import {
 	readAppConfig,
 	readAscIdentifiers,
 	readExtensionId,
 	readWebUrl,
 } from "./repo-versions.mjs";
-
-const toBase64Url = (input) =>
-	Buffer.from(input)
-		.toString("base64")
-		.replace(/\+/g, "-")
-		.replace(/\//g, "_")
-		.replace(/=+$/, "");
-
-const nowInSeconds = () => Math.floor(Date.now() / 1000);
-
-/** 응답이 2xx가 아니면 본문까지 담아 던집니다. 빈 에러 메시지는 디버깅이 불가능합니다. */
-const requestJson = async (url, options = {}) => {
-	const response = await fetch(url, options);
-
-	if (!response.ok) {
-		const body = await response.text();
-		throw new Error(`${response.status} ${url} — ${body.slice(0, 300)}`);
-	}
-
-	return await response.json();
-};
 
 /**
  * App Store Connect가 요구하는 ES256 JWT.

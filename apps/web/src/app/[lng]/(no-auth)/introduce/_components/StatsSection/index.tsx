@@ -9,7 +9,7 @@ import { CHROME_STORE_STATS } from "../../_constants";
 
 interface StatsSectionProps extends LanguageType {
 	stats?: {
-		userCount: number;
+		installCount: number;
 		memoCount: number;
 		rating?: number;
 	};
@@ -60,7 +60,7 @@ export default function StatsSection({ lng, stats }: StatsSectionProps) {
 	const statItems = [
 		{
 			icon: Users,
-			value: stats?.userCount ?? CHROME_STORE_STATS.userCount,
+			value: stats?.installCount ?? CHROME_STORE_STATS.installCount,
 			suffix: "+",
 			label: t("introduce.stats.active_users"),
 			description: t("introduce.stats.active_users_desc"),

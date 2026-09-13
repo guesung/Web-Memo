@@ -45,7 +45,7 @@ export default function SocialProofBar({ lng }: SocialProofBarProps) {
 	const proofItems = [
 		{
 			icon: Users,
-			value: CHROME_STORE_STATS.userCount,
+			value: CHROME_STORE_STATS.installCount,
 			suffix: "+",
 			label: t("introduce.social_proof.active_users"),
 			color: "text-blue-600 dark:text-blue-400",

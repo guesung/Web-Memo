@@ -1,172 +1,91 @@
-"use client";
-
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.client";
-import { motion, useInView } from "framer-motion";
-import { Clock, FileText, Star, Users } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { CHROME_STORE_STATS } from "../../_constants";
+import useTranslation from "@src/modules/i18n/util.server";
+import { FileText, Gift, Shield, Users } from "lucide-react";
+import SectionHeader from "../SectionHeader";
+import SectionShell, { type TSectionBackground } from "../SectionShell";
+
+/**
+ * 숫자로 보는 웹 메모.
+ * @description
+ * **페이지에서 유일하게 peach를 쓰는 자리다.** 유채색이 한 곳에만 있어야 그 한 곳이
+ * 강조로 읽히므로 `.landing-accent`를 다른 섹션에 쓰지 않는다.
+ *
+ * 세는 값(사용자 수·메모 수)과 세지 않는 약속(무료·추적 없음)을 한 판에 두되
+ * 서로 다른 크기로 둔다. "설치 10초"는 지표가 아니라 카피라서 여기 없다.
+ */
 
 interface StatsSectionProps extends LanguageType {
-	stats?: {
-		userCount: number;
+	/** `page.tsx`가 `getMemoCount()` 결과와 함께 넘긴다. 폴백은 그쪽이 갖는다 */
+	stats: {
+		installCount: number;
 		memoCount: number;
-		rating?: number;
 	};
+	background?: TSectionBackground;
 }
 
-function AnimatedCounter({
-	end,
-	duration = 2000,
-	suffix = "",
-	decimals = 0,
-}: {
-	end: number;
-	duration?: number;
-	suffix?: string;
-	decimals?: number;
-}) {
-	const [count, setCount] = useState(0);
-	const ref = useRef<HTMLSpanElement>(null);
-	const isInView = useInView(ref, { once: true });
+export default async function StatsSection({
+	lng,
+	stats,
+	background,
+}: StatsSectionProps) {
+	const { t } = await useTranslation(lng);
 
-	useEffect(() => {
-		if (!isInView) return;
-
-		let startTime: number;
-		const animate = (currentTime: number) => {
-			if (!startTime) startTime = currentTime;
-			const progress = Math.min((currentTime - startTime) / duration, 1);
-			const easeOutQuart = 1 - (1 - progress) ** 4;
-			setCount(easeOutQuart * end);
-			if (progress < 1) {
-				requestAnimationFrame(animate);
-			}
-		};
-		requestAnimationFrame(animate);
-	}, [isInView, end, duration]);
-
-	return (
-		<span ref={ref}>
-			{decimals > 0 ? count.toFixed(decimals) : Math.floor(count)}
-			{suffix}
-		</span>
-	);
-}
-
-export default function StatsSection({ lng, stats }: StatsSectionProps) {
-	const { t } = useTranslation(lng);
-
-	const statItems = [
+	const countedStats = [
 		{
 			icon: Users,
-			value: stats?.userCount ?? CHROME_STORE_STATS.userCount,
-			suffix: "+",
-			label: t("introduce.stats.active_users"),
-			description: t("introduce.stats.active_users_desc"),
-			gradient: "from-blue-500 to-cyan-500",
-			iconBg: "bg-blue-500/10",
-			iconColor: "text-blue-500",
+			value: `${stats.installCount.toLocaleString("en-US")}+`,
+			label: t("introduce.stats.installs"),
+			description: t("introduce.stats.installs_desc"),
 		},
 		{
 			icon: FileText,
-			value: stats?.memoCount ?? 10000,
-			suffix: "+",
+			value: `${stats.memoCount.toLocaleString("en-US")}+`,
 			label: t("introduce.stats.memos_saved"),
 			description: t("introduce.stats.memos_saved_desc"),
-			gradient: "from-purple-500 to-pink-500",
-			iconBg: "bg-purple-500/10",
-			iconColor: "text-purple-500",
-		},
-		{
-			icon: Star,
-			value: stats?.rating ?? CHROME_STORE_STATS.rating,
-			suffix: "",
-			label: t("introduce.stats.average_rating"),
-			description: t("introduce.stats.average_rating_desc"),
-			gradient: "from-yellow-500 to-orange-500",
-			iconBg: "bg-yellow-500/10",
-			iconColor: "text-yellow-500",
-			decimals: 1,
-		},
-		{
-			icon: Clock,
-			value: 10,
-			suffix: t("introduce.stats.install_time_suffix"),
-			label: t("introduce.stats.install_time"),
-			description: t("introduce.stats.install_time_desc"),
-			gradient: "from-green-500 to-emerald-500",
-			iconBg: "bg-green-500/10",
-			iconColor: "text-green-500",
 		},
 	];
 
+	const promises = [
+		{ icon: Gift, label: t("introduce.stats.free_forever") },
+		{ icon: Shield, label: t("introduce.stats.no_tracking") },
+	];
+
 	return (
-		<section className="py-20 bg-gradient-to-b from-muted/50 to-background">
-			<div className="mx-auto max-w-6xl px-4">
-				{/* Section Header */}
-				<motion.div
-					initial={{ opacity: 0, y: 20 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true }}
-					transition={{ duration: 0.5 }}
-					className="text-center mb-16"
-				>
-					<h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-						{t("introduce.section.stats")}
-					</h2>
-					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-						{t("introduce.section.stats_desc")}
-					</p>
-				</motion.div>
+		<SectionShell background={background}>
+			<SectionHeader
+				title={t("introduce.section.stats")}
+				description={t("introduce.section.stats_desc")}
+			/>
 
-				{/* Stats Grid */}
-				<div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-					{statItems.map((stat, index) => (
-						<motion.div
-							key={stat.label}
-							initial={{ opacity: 0, y: 30 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true }}
-							transition={{ duration: 0.5, delay: index * 0.1 }}
-							className="group relative"
+			<div className="landing-accent rounded-3xl px-8 py-14 lg:px-16">
+				<dl className="grid gap-12 sm:grid-cols-2">
+					{countedStats.map((stat) => (
+						<div key={stat.label} className="text-center">
+							<stat.icon className="mx-auto h-6 w-6 opacity-60" />
+
+							<dd className="mt-5 text-5xl tracking-[-0.025em] lg:text-6xl">
+								{stat.value}
+							</dd>
+
+							<dt className="mt-3 text-lg">{stat.label}</dt>
+
+							<p className="mt-1 text-sm opacity-70">{stat.description}</p>
+						</div>
+					))}
+				</dl>
+
+				<div className="mt-14 flex flex-wrap justify-center gap-3">
+					{promises.map((promise) => (
+						<span
+							key={promise.label}
+							className="inline-flex items-center gap-2 rounded-full border border-current px-4 py-1.5 text-sm opacity-70"
 						>
-							<div className="relative glass-card rounded-2xl p-6 lg:p-8 text-center transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
-								{/* Gradient Border on Hover */}
-								<div
-									className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
-								/>
-
-								{/* Icon */}
-								<div
-									className={`inline-flex p-4 rounded-xl ${stat.iconBg} mb-4`}
-								>
-									<stat.icon className={`h-8 w-8 ${stat.iconColor}`} />
-								</div>
-
-								{/* Value */}
-								<div className="text-4xl lg:text-5xl font-bold text-foreground mb-2">
-									<AnimatedCounter
-										end={stat.value}
-										suffix={stat.suffix}
-										decimals={stat.decimals}
-									/>
-								</div>
-
-								{/* Label */}
-								<div className="font-semibold text-foreground mb-1">
-									{stat.label}
-								</div>
-
-								{/* Description */}
-								<div className="text-sm text-muted-foreground">
-									{stat.description}
-								</div>
-							</div>
-						</motion.div>
+							<promise.icon className="h-4 w-4" />
+							{promise.label}
+						</span>
 					))}
 				</div>
 			</div>
-		</section>
+		</SectionShell>
 	);
 }

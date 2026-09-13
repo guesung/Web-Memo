@@ -44,8 +44,7 @@
 	"header": {
 		"login": "로그인하기",
 		"logout": "로그아웃하기",
-		"introduce": "서비스 소개",
-		"update": "새로운 소식"
+		"introduce": "서비스 소개"
 	},
 	"updateNotification": {
 		"title": "🎉 업데이트 소식",
@@ -54,7 +53,6 @@
 		"confirm": "확인"
 	},
 	"updates": {
-		"title": "새로운 소식",
 		"versions": {
 			"v1.10.12": {
 				"title": "웹사이트 주소 변경",
@@ -526,22 +524,21 @@
 		},
 		"hero": {
 			"title": "웹서핑을 더 쉽게",
-			"subtitle": "클릭 한 번으로 메모하고, AI로 요약하고, 체계적으로 관리하세요",
-			"install_button": "크롬에 설치하기",
-			"appstore_button": "App Store에서 다운로드",
+			"subtitle": "읽던 페이지에서 사이드 패널을 열어 메모하고, 긴 글과 영상은 AI가 요약합니다",
+			"install_button": "Chrome에 추가",
+			"appstore_button": "App Store",
+			"playstore_button": "Google Play",
 			"explore_features": "기능 살펴보기",
 			"free_forever": "영원히 무료",
 			"quick_install": "설치 10초",
 			"no_credit_card": "신용카드 필요 없음",
 			"learn_more": "더 알아보기",
-			"mobile_apps": {
-				"ios": "iOS",
-				"android": "안드로이드"
-			}
+			"desktop_extension_hint": "PC에서는 Chrome 확장으로도 쓸 수 있어요",
+			"installs_badge": "설치"
 		},
 		"section": {
 			"key_features": "핵심 기능",
-			"key_features_desc": "웹 서핑을 더 스마트하게 만들어주는 기능들",
+			"key_features_desc": "읽는 중에 필요한 것만 남기는 다섯 가지",
 			"features_badge": "기능",
 			"demo": "직접 확인해보세요",
 			"demo_title": "직접 확인해보세요",
@@ -552,12 +549,12 @@
 			"use_cases_desc": "다양한 상황에서 웹 메모가 도움이 됩니다",
 			"stats": "숫자로 보는 웹 메모",
 			"stats_title": "숫자로 보는 웹 메모",
-			"stats_desc": "많은 사용자들이 이미 웹 메모와 함께하고 있습니다",
+			"stats_desc": "지금까지 쌓인 숫자입니다",
 			"testimonials_title": "사용자 후기",
 			"testimonials_desc": "실제 사용자들의 경험을 확인해보세요",
 			"testimonials_note": "* 대표적인 사용 사례를 바탕으로 작성되었습니다",
 			"cta_title": "지금 바로 시작하세요",
-			"cta_desc": "더 스마트한 웹 서핑을 경험해보세요. 무료로, 지금 바로.",
+			"cta_desc": "설치하고 첫 메모까지 10초면 됩니다. 전부 무료입니다.",
 			"cta_badge": "지금 시작하세요"
 		},
 		"demo": {
@@ -578,9 +575,9 @@
 			"tab_wishlist": "위시리스트",
 			"tab_wishlist_desc": "나중에 볼 콘텐츠 저장",
 			"organize": "정리하기",
-			"organize_desc": "카테고리로 체계적 관리",
+			"organize_desc": "카테고리로 묶어서 정리",
 			"tab_organize": "정리하기",
-			"tab_organize_desc": "카테고리로 체계적 관리"
+			"tab_organize_desc": "카테고리로 묶어서 정리"
 		},
 		"steps": {
 			"step1_title": "확장 프로그램 설치",
@@ -588,17 +585,17 @@
 			"step2_title": "사이드 패널 열기",
 			"step2_desc": "단축키로 빠르게 열기",
 			"step3_title": "저장하고 정리하기",
-			"step3_desc": "웹 콘텐츠를 체계적으로 관리"
+			"step3_desc": "카테고리로 묶어 두고 다시 찾기"
 		},
 		"use_case": {
 			"students_title": "학생 & 연구자",
 			"students_desc": "온라인 강의나 자료 조사할 때 핵심 내용만 골라 저장하세요. 논문 작성에 필요한 레퍼런스를 체계적으로 관리할 수 있습니다.",
 			"student_title": "학생 & 연구자",
-			"student_desc": "온라인 강의나 자료 조사할 때 핵심 내용만 골라 저장하세요. 논문 작성에 필요한 레퍼런스를 체계적으로 관리할 수 있습니다.",
+			"student_desc": "온라인 강의나 자료를 조사할 때 핵심만 골라 저장하세요. 논문에 인용할 레퍼런스를 출처와 함께 모아둘 수 있습니다.",
 			"professionals_title": "직장인",
 			"professionals_desc": "경쟁사 분석이나 트렌드 모니터링을 체계적으로 관리하세요. 업무에 필요한 정보를 빠르게 찾을 수 있습니다.",
 			"professional_title": "리서치 & 업무",
-			"professional_desc": "경쟁사 분석이나 트렌드 모니터링을 체계적으로 관리하세요. 업무에 필요한 정보를 빠르게 찾을 수 있습니다.",
+			"professional_desc": "경쟁사 분석과 트렌드 조사를 한곳에 모으세요. 필요할 때 검색으로 바로 꺼낼 수 있습니다.",
 			"efficiency_title": "효율적인 분들",
 			"efficiency_desc": "긴 글 대신 AI 요약으로 핵심만 빠르게 파악하세요. 시간을 절약하며 더 많은 콘텐츠를 소화할 수 있습니다.",
 			"creators_title": "콘텐츠 크리에이터",
@@ -606,17 +603,19 @@
 			"creator_title": "콘텐츠 크리에이터",
 			"creator_desc": "영감을 주는 콘텐츠와 아이디어를 모아두세요. 창작 활동에 필요한 레퍼런스를 한 곳에서 관리할 수 있습니다.",
 			"job_hunting_title": "취업 준비생",
-			"job_hunting_desc": "채용 공고와 기업 정보를 한눈에 정리하세요. 면접 준비에 필요한 자료를 효율적으로 관리할 수 있습니다.",
+			"job_hunting_desc": "채용 공고와 기업 정보를 한곳에 정리하세요. 면접 전에 다시 읽을 자료를 모아둘 수 있습니다.",
 			"news_reading_title": "뉴스 & 아티클",
-			"news_reading_desc": "중요한 기사와 인사이트를 저장하세요. 나중에 다시 찾아볼 핵심 정보를 체계적으로 관리할 수 있습니다.",
+			"news_reading_desc": "중요한 기사와 인사이트를 저장하세요. 다시 찾아볼 대목만 메모로 남길 수 있습니다.",
 			"youtube_notes_title": "유튜브 학습",
-			"youtube_notes_desc": "영상의 핵심 내용을 메모하세요. AI 요약과 함께 영상 학습 효율을 높일 수 있습니다."
+			"youtube_notes_desc": "영상의 핵심을 메모하세요. 자막을 읽은 AI 요약과 함께 남길 수 있습니다."
 		},
 		"stats": {
-			"active_users": "활성 사용자",
-			"active_users_desc": "Chrome 웹스토어 사용자",
+			"installs": "설치 수",
+			"installs_desc": "Chrome 웹스토어 설치 수",
 			"memos_saved": "저장된 메모",
 			"memos_saved_desc": "사용자들이 저장한 총 메모 개수",
+			"free_forever": "영원히 무료",
+			"no_tracking": "데이터 추적 없음",
 			"rating": "평균 평점",
 			"rating_desc": "Chrome 웹스토어 평점",
 			"average_rating": "평균 평점",
@@ -626,8 +625,6 @@
 			"install_time_desc": "크롬에 설치하는 데 걸리는 시간"
 		},
 		"social_proof": {
-			"active_users": "활성 사용자",
-			"rating": "평균 평점",
 			"free_forever": "영원히 무료",
 			"no_tracking": "데이터 추적 없음",
 			"safe": "안전"
@@ -740,6 +737,7 @@
 			"description": "쉽고 빠른 콘텐츠 정리",
 			"chrome_extension": "Chrome 확장 프로그램",
 			"ios_app": "iOS 앱",
+			"android_app": "Android 앱",
 			"features_link": "기능 살펴보기",
 			"contact_link": "문의하기",
 			"product": {
@@ -859,160 +857,158 @@
 			"new_users": "신규 가입"
 		}
 	},
+	"landing": {
+		"install": {
+			"button": "Chrome에 추가",
+			"mobile_hint": "모바일 앱도 있어요"
+		},
+		"related": {
+			"title": "이어서 볼 것",
+			"description": "같은 도구를 다르게 쓰는 방법들입니다"
+		}
+	},
 	"features": {
 		"youtubeSummary": {
 			"hero": {
 				"badge": "유튜브 AI 요약",
-				"title": "긴 영상도",
-				"titleHighlight": "핵심만 쏙쏙",
-				"description": "유튜브 영상을 AI로 빠르게 요약하세요. 1시간짜리 영상도 몇 분 만에 핵심 내용을 파악할 수 있습니다.",
-				"cta": "무료로 시작하기",
-				"learnMore": "더 알아보기"
+				"title": "한 시간짜리 영상의 요점을 먼저 읽습니다",
+				"description": "영상의 자막을 AI가 읽고 핵심을 정리합니다. 볼지 말지 먼저 판단하고, 필요한 구간부터 봅니다."
 			},
 			"benefits": {
-				"title": "왜 유튜브 요약이 필요한가요?",
-				"subtitle": "시간을 절약하고 더 많은 콘텐츠를 소화하세요",
+				"title": "영상을 다 보기 전에 알 수 있는 것",
+				"subtitle": "재생 시간과 실제로 필요한 시간은 다릅니다",
 				"timeSaving": {
-					"title": "시간 절약",
-					"description": "1시간짜리 영상의 핵심 내용을 5분 만에 파악하세요. 더 이상 긴 영상 때문에 시간 낭비할 필요 없습니다."
+					"title": "볼지 말지 먼저 판단",
+					"description": "한 시간짜리 영상도 요약을 먼저 읽고 한 시간을 쓸 값어치가 있는지 정합니다."
 				},
 				"aiPowered": {
-					"title": "AI 기반 요약",
-					"description": "최신 AI 기술이 영상의 핵심 포인트를 정확하게 추출합니다. 중요한 내용을 놓치지 마세요."
+					"title": "자막 전체를 읽고 요약",
+					"description": "앞부분만 보고 만드는 요약이 아니라 자막 전체를 넣고 만듭니다."
 				},
 				"transcript": {
-					"title": "자막 기반 분석",
-					"description": "유튜브 자막을 분석하여 정확한 요약을 제공합니다. 자막이 있는 모든 영상에서 사용 가능합니다."
+					"title": "자막이 있는 영상이면 동작",
+					"description": "자막이 달린 영상이면 요약할 수 있습니다. 자동 생성 자막도 읽습니다."
 				},
 				"instant": {
-					"title": "즉시 요약",
-					"description": "사이드 패널을 열면 자동으로 요약이 시작됩니다. 클릭 한 번으로 핵심 내용을 확인하세요."
+					"title": "패널을 열면 바로 시작",
+					"description": "영상 페이지에서 사이드 패널을 열면 요약이 알아서 시작됩니다."
 				}
 			},
 			"howItWorks": {
-				"title": "이렇게 사용하세요",
-				"subtitle": "3단계로 간단하게 유튜브 영상을 요약하세요",
+				"title": "요약까지 세 단계",
+				"subtitle": "설치한 다음 할 일은 이게 전부입니다",
 				"step1": {
-					"title": "유튜브 영상 재생",
-					"description": "요약하고 싶은 유튜브 영상 페이지로 이동하세요"
+					"title": "유튜브 영상 열기",
+					"description": "요약할 영상 페이지로 이동합니다"
 				},
 				"step2": {
 					"title": "사이드 패널 열기",
-					"description": "Alt+S (맥: Option+S)로 웹 메모 사이드 패널을 여세요"
+					"description": "Alt+S (맥은 Option+S)를 누릅니다"
 				},
 				"step3": {
-					"title": "AI 요약 확인",
-					"description": "AI가 자동으로 영상을 분석하고 핵심 내용을 요약해줍니다"
+					"title": "요약 확인",
+					"description": "요약을 읽고 남길 부분을 메모로 적습니다"
 				}
 			},
 			"cta": {
-				"title": "지금 바로 유튜브 요약을 시작하세요",
-				"description": "무료 크롬 확장 프로그램을 설치하고 더 효율적으로 영상을 시청하세요.",
-				"button": "크롬에 설치하기",
+				"title": "다음 영상부터 요약을 먼저 읽어보세요",
+				"description": "Chrome에 추가하면 지금 보던 영상에서 바로 쓸 수 있습니다.",
 				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
 			}
 		},
 		"memo": {
 			"hero": {
 				"badge": "브라우저 메모",
-				"title": "읽으면서",
-				"titleHighlight": "바로 메모하세요",
-				"description": "웹페이지를 읽다가 떠오르는 생각을 즉시 기록하세요. 사이드 패널에서 간편하게 메모하고 체계적으로 관리할 수 있습니다.",
-				"cta": "무료로 시작하기",
-				"learnMore": "더 알아보기"
+				"title": "읽던 페이지를 떠나지 않고 메모합니다",
+				"description": "웹페이지를 읽다가 떠오른 생각을 옆에 열리는 사이드 패널에 적습니다. 메모에는 그 페이지 주소가 함께 남습니다."
 			},
 			"benefits": {
-				"title": "왜 브라우저 메모가 필요한가요?",
-				"subtitle": "아이디어를 놓치지 않고 체계적으로 관리하세요",
+				"title": "메모장을 따로 열지 않아도 되는 이유",
+				"subtitle": "적는 순간도, 다시 찾는 순간도 짧게",
 				"shortcut": {
-					"title": "단축키로 빠르게",
-					"description": "Alt+S (맥: Option+S) 하나로 어디서든 사이드 패널을 열어 바로 메모를 시작할 수 있습니다."
+					"title": "단축키 하나로 열기",
+					"description": "Alt+S (맥은 Option+S)를 누르면 보던 페이지 옆에 패널이 열립니다. 탭을 옮기거나 다른 앱을 띄우지 않습니다."
 				},
 				"organize": {
-					"title": "카테고리로 정리",
-					"description": "메모를 카테고리별로 분류하세요. 나중에 필요한 메모를 쉽게 찾을 수 있습니다."
+					"title": "카테고리로 묶기",
+					"description": "메모에 카테고리를 달아두면 목록에서 그 묶음만 골라 볼 수 있습니다."
 				},
 				"sync": {
-					"title": "클라우드 동기화",
-					"description": "로그인하면 모든 기기에서 메모를 확인할 수 있습니다. 어디서든 내 메모에 접근하세요."
+					"title": "로그인하면 기기끼리 이어짐",
+					"description": "메모는 계정에 저장됩니다. 회사 PC에서 적은 메모를 집 노트북에서 그대로 엽니다."
 				},
 				"search": {
-					"title": "검색으로 빠르게",
-					"description": "저장한 메모를 제목이나 내용으로 검색하세요. 원하는 메모를 빠르게 찾을 수 있습니다."
+					"title": "제목과 본문으로 찾기",
+					"description": "메모가 수백 개 쌓여도 단어 하나로 찾습니다. 어느 페이지에서 적었는지 기억하지 않아도 됩니다."
 				}
 			},
 			"howItWorks": {
-				"title": "이렇게 사용하세요",
-				"subtitle": "3단계로 간단하게 메모를 시작하세요",
+				"title": "첫 메모까지 세 단계",
+				"subtitle": "설치한 다음 할 일은 이게 전부입니다",
 				"step1": {
 					"title": "사이드 패널 열기",
-					"description": "Alt+S (맥: Option+S)로 어디서든 사이드 패널을 열 수 있어요"
+					"description": "Alt+S (맥은 Option+S). 보던 페이지는 그대로 둡니다"
 				},
 				"step2": {
 					"title": "메모 작성하기",
-					"description": "떠오르는 생각을 바로 적으세요. 자동으로 저장됩니다"
+					"description": "떠오르는 대로 적으면 저장 버튼 없이 저장됩니다"
 				},
 				"step3": {
 					"title": "언제든 확인",
-					"description": "{{webDisplayHost}}에서 모든 메모를 확인하고 관리하세요"
+					"description": "{{webDisplayHost}}에서 지금까지 쓴 메모를 한 화면에 봅니다"
 				}
 			},
 			"cta": {
-				"title": "지금 바로 메모를 시작하세요",
-				"description": "무료 크롬 확장 프로그램을 설치하고 더 스마트하게 웹서핑하세요.",
-				"button": "크롬에 설치하기",
+				"title": "다음에 읽을 글부터 적어보세요",
+				"description": "Chrome에 추가하면 지금 열어둔 탭에서 바로 쓸 수 있습니다.",
 				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
 			}
 		},
 		"saveArticles": {
 			"hero": {
 				"badge": "아티클 저장",
-				"title": "나중에 읽을 아티클",
-				"titleHighlight": "한 곳에 모아두세요",
-				"description": "관심 있는 아티클을 위시리스트에 저장하세요. 언제든지 다시 찾아볼 수 있습니다.",
-				"cta": "무료로 시작하기",
-				"learnMore": "더 알아보기"
+				"title": "나중에 읽을 글을 한곳에 모아둡니다",
+				"description": "지금 읽을 시간이 없는 글은 위시리스트에 담아두고, 시간이 났을 때 목록에서 꺼내 읽습니다."
 			},
 			"benefits": {
-				"title": "왜 아티클 저장이 필요한가요?",
-				"subtitle": "읽고 싶은 콘텐츠를 놓치지 마세요",
+				"title": "탭 서른 개를 띄워두지 않아도 되는 이유",
+				"subtitle": "열어둔 탭 대신 끝까지 갈 수 있는 목록 하나",
 				"oneClick": {
-					"title": "원클릭 저장",
-					"description": "버튼 하나로 현재 페이지를 위시리스트에 저장하세요. 복잡한 과정 없이 바로 저장됩니다."
+					"title": "하트 하나로 담기",
+					"description": "사이드 패널의 하트를 누르면 지금 페이지가 목록에 들어갑니다. 제목과 주소는 알아서 채워집니다."
 				},
 				"wishlist": {
-					"title": "위시리스트 관리",
-					"description": "저장한 아티클을 한눈에 확인하고 관리하세요. 읽은 것과 읽지 않은 것을 쉽게 구분할 수 있습니다."
+					"title": "읽은 것과 안 읽은 것 구분",
+					"description": "읽은 글을 체크해 두면 다음에 목록을 열었을 때 남은 것만 보입니다."
 				},
 				"anywhere": {
-					"title": "어디서든 접근",
-					"description": "저장한 아티클은 {{webDisplayHost}}에서 언제든 확인할 수 있습니다. 모바일에서도 접근 가능합니다."
+					"title": "PC에서 담고 휴대폰에서 읽기",
+					"description": "담아둔 글은 {{webDisplayHost}}에서도, 앱에서도 같은 목록으로 열립니다."
 				},
 				"readLater": {
-					"title": "나중에 읽기",
-					"description": "바쁠 때 발견한 좋은 아티클을 저장해두고, 시간이 날 때 천천히 읽으세요."
+					"title": "출퇴근길에 꺼내 읽기",
+					"description": "바쁠 때 발견한 글을 담아두면 시간이 났을 때 다시 찾아 헤매지 않습니다."
 				}
 			},
 			"howItWorks": {
-				"title": "이렇게 사용하세요",
-				"subtitle": "3단계로 간단하게 아티클을 저장하세요",
+				"title": "담고 꺼내는 세 단계",
+				"subtitle": "설치한 다음 할 일은 이게 전부입니다",
 				"step1": {
-					"title": "위시리스트에 추가",
-					"description": "사이드 패널에서 하트 버튼을 클릭하세요"
+					"title": "위시리스트에 담기",
+					"description": "사이드 패널에서 하트 버튼을 누릅니다"
 				},
 				"step2": {
 					"title": "목록에서 확인",
-					"description": "저장한 아티클을 위시리스트에서 확인하세요"
+					"description": "담아둔 글이 최근 순으로 쌓입니다"
 				},
 				"step3": {
-					"title": "원할 때 읽기",
-					"description": "시간이 날 때 저장한 아티클을 천천히 읽으세요"
+					"title": "시간 날 때 읽기",
+					"description": "목록에서 글을 열고 읽은 것은 체크합니다"
 				}
 			},
 			"cta": {
-				"title": "지금 바로 아티클 저장을 시작하세요",
-				"description": "무료 크롬 확장 프로그램을 설치하고 좋은 콘텐츠를 놓치지 마세요.",
-				"button": "크롬에 설치하기",
+				"title": "읽으려던 글을 잃어버리지 마세요",
+				"description": "Chrome에 추가하면 지금 열어둔 탭부터 담을 수 있습니다.",
 				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
 			}
 		}
@@ -1021,252 +1017,224 @@
 		"research": {
 			"hero": {
 				"badge": "리서치 & 자료 조사",
-				"title": "자료 조사를",
-				"titleHighlight": "더 효율적으로",
-				"description": "논문, 아티클, 웹 자료를 조사할 때 중요한 내용을 바로 메모하고 체계적으로 관리하세요.",
-				"cta": "무료로 시작하기",
-				"learnMore": "더 알아보기"
+				"title": "찾은 자료를 두 번 찾지 않게 합니다",
+				"description": "논문과 아티클을 읽으면서 필요한 대목을 그 자리에서 적고, 원문 주소를 메모와 함께 남깁니다."
 			},
 			"benefits": {
-				"title": "리서치가 이렇게 편해집니다",
-				"subtitle": "자료 조사의 효율을 높이는 기능들",
+				"title": "자료 조사에서 시간을 잡아먹는 일들",
+				"subtitle": "찾기·읽기·다시 찾기 중 마지막을 없앱니다",
 				"capture": {
-					"title": "즉시 기록",
-					"description": "자료를 읽다가 중요한 내용을 발견하면 바로 메모하세요. 나중에 다시 찾을 필요 없이 핵심만 기록해두세요."
+					"title": "읽던 자리에서 적기",
+					"description": "중요한 대목을 만나면 탭을 옮기지 않고 옆 패널에 적습니다."
 				},
 				"summarize": {
-					"title": "AI 요약",
-					"description": "긴 논문이나 아티클도 AI가 핵심 내용을 요약해줍니다. 시간을 절약하며 더 많은 자료를 검토하세요."
+					"title": "긴 글은 요약 먼저",
+					"description": "본문이 긴 논문과 아티클은 AI 요약을 먼저 읽고 정독할지 정합니다."
 				},
 				"organize": {
-					"title": "체계적 정리",
-					"description": "카테고리별로 메모를 분류하세요. 프로젝트나 주제별로 자료를 정리할 수 있습니다."
+					"title": "주제별로 나눠 담기",
+					"description": "프로젝트나 주제 이름으로 카테고리를 만들어 메모를 나눠 담습니다."
 				},
 				"reference": {
-					"title": "출처 관리",
-					"description": "메모와 함께 원본 URL이 자동 저장됩니다. 나중에 출처를 확인하거나 다시 방문할 수 있습니다."
+					"title": "원문 주소가 같이 남음",
+					"description": "메모에는 그 페이지 주소가 붙습니다. 인용할 때 출처를 되짚지 않아도 됩니다."
 				}
 			},
 			"cta": {
-				"title": "더 효율적인 리서치를 시작하세요",
-				"description": "무료 크롬 확장 프로그램을 설치하고 자료 조사의 효율을 높이세요.",
-				"button": "크롬에 설치하기",
+				"title": "다음 조사부터 메모를 함께 남겨보세요",
+				"description": "Chrome에 추가하면 지금 열어둔 자료에서 바로 쓸 수 있습니다.",
 				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
 			}
 		},
 		"learning": {
 			"hero": {
 				"badge": "온라인 학습",
-				"title": "온라인 학습을",
-				"titleHighlight": "더 효과적으로",
-				"description": "유튜브 강의, 온라인 코스를 보면서 중요한 내용을 메모하고 AI로 요약하세요.",
-				"cta": "무료로 시작하기",
-				"learnMore": "더 알아보기"
+				"title": "강의를 멈추지 않고 필기합니다",
+				"description": "유튜브 강의와 온라인 코스를 보면서 옆 패널에 필기하고, 긴 강의는 요약을 먼저 읽습니다."
 			},
 			"benefits": {
-				"title": "학습 효과를 높이는 기능들",
-				"subtitle": "더 효율적으로 배우고 기억하세요",
+				"title": "강의를 듣고 나서 남는 것",
+				"subtitle": "다 본 강의를 처음부터 다시 틀지 않도록",
 				"videoSummary": {
-					"title": "영상 AI 요약",
-					"description": "유튜브 강의 영상을 AI가 자동으로 요약해줍니다. 긴 강의도 핵심만 빠르게 파악하세요."
+					"title": "강의 요약 먼저 보기",
+					"description": "긴 강의는 자막 기반 요약으로 무엇을 다루는지 먼저 훑습니다."
 				},
 				"notes": {
-					"title": "강의 노트",
-					"description": "영상을 보면서 중요한 내용을 바로 메모하세요. 나만의 학습 노트를 만들 수 있습니다."
+					"title": "멈추지 않고 필기",
+					"description": "영상을 일시정지하지 않아도 옆 패널에 바로 적을 수 있습니다."
 				},
 				"review": {
-					"title": "복습 용이",
-					"description": "저장한 메모와 요약을 언제든 다시 확인하세요. 효율적인 복습으로 학습 효과를 높이세요."
+					"title": "필기와 강의 주소가 함께",
+					"description": "메모에 강의 주소가 붙어 있어 복습할 때 그 영상으로 바로 돌아갑니다."
 				},
 				"focus": {
-					"title": "집중력 향상",
-					"description": "메모하면서 학습하면 집중력이 높아집니다. 능동적인 학습으로 더 잘 기억하세요."
+					"title": "적으면서 듣기",
+					"description": "받아 적는 동안 흘려듣기가 줄어듭니다. 남은 필기가 그 증거입니다."
 				}
 			},
 			"cta": {
-				"title": "더 효과적인 학습을 시작하세요",
-				"description": "무료 크롬 확장 프로그램을 설치하고 학습 효율을 높이세요.",
-				"button": "크롬에 설치하기",
+				"title": "다음 강의부터 필기를 남겨보세요",
+				"description": "Chrome에 추가하면 지금 보던 강의에서 바로 쓸 수 있습니다.",
 				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
 			}
 		},
 		"youtubeNotes": {
 			"hero": {
 				"badge": "유튜브 메모",
-				"title": "영상 보면서",
-				"titleHighlight": "바로 메모하세요",
-				"description": "유튜브 강의, 튜토리얼, 리뷰 영상을 보면서 중요한 내용을 바로 기록하세요. 나중에 쉽게 찾아볼 수 있습니다.",
-				"cta": "무료로 시작하기",
-				"learnMore": "더 알아보기"
+				"title": "영상을 보면서 그 자리에 적습니다",
+				"description": "튜토리얼과 리뷰 영상을 보다가 필요한 대목을 적으면, 영상 주소가 메모에 함께 남습니다."
 			},
 			"benefits": {
-				"title": "유튜브 시청이 달라집니다",
-				"subtitle": "영상을 보면서 효율적으로 메모하세요",
+				"title": "영상에서 건진 것을 남기는 법",
+				"subtitle": "다시 보기로 돌아가 구간을 뒤지지 않도록",
 				"realtime": {
-					"title": "실시간 메모",
-					"description": "영상을 일시정지하지 않고도 사이드 패널에서 바로 메모할 수 있습니다. 흐름을 끊지 않고 기록하세요."
+					"title": "일시정지 없이 적기",
+					"description": "영상을 멈추지 않고 옆 패널에 적습니다. 보던 흐름을 끊지 않습니다."
 				},
 				"capture": {
-					"title": "핵심 캡처",
-					"description": "강의의 핵심 포인트, 튜토리얼의 중요 단계를 놓치지 않고 기록하세요."
+					"title": "필요한 대목만 남기기",
+					"description": "튜토리얼의 명령어, 리뷰의 결론처럼 다시 볼 부분만 적어 둡니다."
 				},
 				"timestamp": {
-					"title": "영상 정보 저장",
-					"description": "메모와 함께 영상 URL이 자동 저장됩니다. 나중에 다시 확인하고 싶을 때 바로 이동할 수 있습니다."
+					"title": "영상 주소가 같이 저장",
+					"description": "메모를 누르면 그 영상으로 돌아갑니다. 제목으로 다시 검색하지 않아도 됩니다."
 				},
 				"organize": {
-					"title": "카테고리 정리",
-					"description": "강의별, 주제별로 메모를 분류하세요. 학습 자료를 체계적으로 관리할 수 있습니다."
+					"title": "채널·주제별로 나누기",
+					"description": "카테고리를 달아두면 강의 시리즈별로 메모를 모아 볼 수 있습니다."
 				}
 			},
 			"cta": {
-				"title": "유튜브 메모를 시작하세요",
-				"description": "무료 크롬 확장 프로그램을 설치하고 영상을 더 효율적으로 시청하세요.",
-				"button": "크롬에 설치하기",
+				"title": "다음 영상부터 메모를 남겨보세요",
+				"description": "Chrome에 추가하면 지금 보던 영상에서 바로 쓸 수 있습니다.",
 				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
 			}
 		},
 		"newsReading": {
 			"hero": {
 				"badge": "뉴스 & 아티클",
-				"title": "읽으면서",
-				"titleHighlight": "인사이트를 기록하세요",
-				"description": "뉴스, 블로그, 아티클을 읽으면서 중요한 내용을 바로 메모하세요. 인사이트를 놓치지 않고 정리할 수 있습니다.",
-				"cta": "무료로 시작하기",
-				"learnMore": "더 알아보기"
+				"title": "읽고 나서 남는 게 있게 합니다",
+				"description": "뉴스와 블로그를 읽다가 걸리는 문장을 그 자리에서 적고, 원문 주소를 함께 남깁니다."
 			},
 			"benefits": {
-				"title": "읽기가 달라집니다",
-				"subtitle": "콘텐츠를 읽으면서 효율적으로 정리하세요",
+				"title": "읽은 기사가 기억에 안 남는 이유",
+				"subtitle": "읽는 동안 한 줄을 남기면 달라집니다",
 				"highlight": {
-					"title": "즉시 기록",
-					"description": "기사를 읽다가 중요한 내용을 발견하면 바로 메모하세요. 생각이 떠오를 때 바로 기록할 수 있습니다."
+					"title": "생각났을 때 적기",
+					"description": "나중에 정리하겠다고 미루지 않고 읽던 자리에서 한 줄을 남깁니다."
 				},
 				"aiSummary": {
-					"title": "AI 요약",
-					"description": "긴 아티클도 AI가 핵심 내용을 요약해줍니다. 빠르게 내용을 파악하고 메모하세요."
+					"title": "긴 기사는 요약 먼저",
+					"description": "본문이 긴 기사는 AI 요약으로 무슨 얘기인지 먼저 확인하고 읽습니다."
 				},
 				"categorize": {
-					"title": "주제별 정리",
-					"description": "뉴스, 기술, 비즈니스 등 카테고리별로 메모를 분류하세요. 관심 분야별로 정리할 수 있습니다."
+					"title": "관심사별로 나누기",
+					"description": "뉴스·기술·비즈니스처럼 카테고리를 만들어 메모를 나눠 담습니다."
 				},
 				"source": {
-					"title": "출처 관리",
-					"description": "메모와 함께 원본 URL이 자동 저장됩니다. 나중에 원문을 다시 확인할 수 있습니다."
+					"title": "원문으로 돌아가기",
+					"description": "메모에 기사 주소가 붙어 있어 원문 확인이 클릭 한 번입니다."
 				}
 			},
 			"cta": {
-				"title": "더 스마트한 읽기를 시작하세요",
-				"description": "무료 크롬 확장 프로그램을 설치하고 콘텐츠를 효율적으로 정리하세요.",
-				"button": "크롬에 설치하기",
+				"title": "오늘 읽은 기사부터 한 줄 남겨보세요",
+				"description": "Chrome에 추가하면 지금 열어둔 기사에서 바로 쓸 수 있습니다.",
 				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
 			}
 		},
 		"jobHunting": {
 			"hero": {
 				"badge": "취업 준비",
-				"title": "채용 정보를",
-				"titleHighlight": "체계적으로 관리하세요",
-				"description": "채용공고, 회사 정보, 면접 자료를 한 곳에 정리하세요. 지원 현황을 한눈에 파악할 수 있습니다.",
-				"cta": "무료로 시작하기",
-				"learnMore": "더 알아보기"
+				"title": "지원한 회사를 한 목록에서 봅니다",
+				"description": "채용공고와 회사 정보를 회사별로 적어두고, 면접 전에 그 메모만 다시 엽니다."
 			},
 			"benefits": {
-				"title": "취업 준비가 달라집니다",
-				"subtitle": "체계적인 정보 관리로 합격에 한 발 더 가까이",
+				"title": "지원이 늘어날수록 헷갈리는 것들",
+				"subtitle": "어디에 무엇을 썼는지 기억에 맡기지 않습니다",
 				"company": {
-					"title": "회사 정보 정리",
-					"description": "관심 있는 회사의 정보를 메모하세요. 복지, 문화, 기술 스택 등을 한눈에 비교할 수 있습니다."
+					"title": "회사별로 적어두기",
+					"description": "공고를 보면서 복지·기술 스택·팀 구성을 적습니다. 공고가 내려가도 메모는 남습니다."
 				},
 				"track": {
-					"title": "지원 현황 관리",
-					"description": "지원한 회사와 포지션을 정리하세요. 서류, 면접, 결과까지 진행 상황을 추적할 수 있습니다."
+					"title": "어디까지 갔는지 적기",
+					"description": "서류·면접·결과를 같은 메모에 이어 적으면 지원 현황이 한 목록에 모입니다."
 				},
 				"compare": {
-					"title": "조건 비교",
-					"description": "여러 회사의 조건을 비교하세요. 연봉, 복지, 성장 가능성 등을 체계적으로 정리할 수 있습니다."
+					"title": "조건을 나란히 놓기",
+					"description": "여러 회사의 연봉과 근무 조건을 같은 항목으로 적어두면 비교가 쉬워집니다."
 				},
 				"find": {
-					"title": "빠른 검색",
-					"description": "저장한 정보를 빠르게 찾으세요. 면접 전 회사 정보를 바로 확인할 수 있습니다."
+					"title": "면접 직전에 꺼내 보기",
+					"description": "회사 이름으로 검색하면 그 회사에 대해 적어둔 것이 한 번에 나옵니다."
 				}
 			},
 			"cta": {
-				"title": "체계적인 취업 준비를 시작하세요",
-				"description": "무료 크롬 확장 프로그램을 설치하고 취업 정보를 효율적으로 관리하세요.",
-				"button": "크롬에 설치하기",
+				"title": "다음 공고부터 메모로 남겨보세요",
+				"description": "Chrome에 추가하면 지금 열어둔 공고에서 바로 쓸 수 있습니다.",
 				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
 			}
 		},
 		"developer": {
 			"hero": {
 				"badge": "개발자를 위한 도구",
-				"title": "개발 지식을",
-				"titleHighlight": "체계적으로 관리하세요",
-				"description": "Stack Overflow, GitHub, 기술 블로그 등 흩어진 개발 자료를 한 곳에 정리하세요.",
-				"cta": "무료로 시작하기",
-				"learnMore": "더 알아보기"
+				"title": "찾아낸 해결책을 다시 검색하지 않습니다",
+				"description": "Stack Overflow 답변, GitHub 이슈, 공식 문서에서 통했던 방법을 그 페이지에서 적어둡니다."
 			},
 			"benefits": {
-				"title": "개발 생산성이 달라집니다",
-				"subtitle": "개발 지식을 효율적으로 관리하는 기능들",
+				"title": "같은 검색을 두 번 하지 않으려면",
+				"subtitle": "찾는 데 쓴 30분을 다음에 또 쓰지 않도록",
 				"snippet": {
-					"title": "코드 스니펫 저장",
-					"description": "Stack Overflow 답변, 코드 예제를 바로 저장하세요. 필요할 때 빠르게 찾아 재활용할 수 있습니다."
+					"title": "통한 답변만 적어두기",
+					"description": "Stack Overflow 답변 중 실제로 통한 것을 이유와 함께 적습니다. 다음에 답 목록을 다시 훑지 않아도 됩니다."
 				},
 				"blog": {
-					"title": "기술 블로그 정리",
-					"description": "읽은 기술 아티클의 핵심 내용을 메모하세요. 나중에 다시 찾을 필요 없이 핵심만 기록해두세요."
+					"title": "읽은 아티클의 결론",
+					"description": "기술 아티클에서 건진 결론 한두 줄을 남깁니다. 제목만 북마크하면 내용은 기억나지 않습니다."
 				},
 				"github": {
-					"title": "GitHub 이슈 메모",
-					"description": "PR, 이슈, 코드 리뷰 내용을 기록하세요. 프로젝트 진행 상황과 결정 사항을 놓치지 마세요."
+					"title": "이슈에서 오간 결정",
+					"description": "PR과 이슈에서 왜 그렇게 정했는지를 적어둡니다. 나중에 같은 논의가 처음부터 반복되지 않습니다."
 				},
 				"docs": {
-					"title": "API 문서 정리",
-					"description": "공식 문서의 핵심 포인트를 저장하세요. 자주 참고하는 레퍼런스를 나만의 방식으로 정리할 수 있습니다."
+					"title": "문서에서 매번 찾는 부분",
+					"description": "공식 문서 중 매번 다시 찾게 되는 옵션과 시그니처를 적어 내 레퍼런스로 만듭니다."
 				}
 			},
 			"cta": {
-				"title": "더 스마트한 개발을 시작하세요",
-				"description": "무료 크롬 확장 프로그램을 설치하고 개발 지식을 효율적으로 관리하세요.",
-				"button": "크롬에 설치하기",
+				"title": "다음에 검색해서 푼 문제부터 적어보세요",
+				"description": "Chrome에 추가하면 지금 열어둔 문서에서 바로 쓸 수 있습니다.",
 				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
 			}
 		},
 		"techArticle": {
 			"hero": {
 				"badge": "기술 아티클 정리",
-				"title": "기술 아티클을",
-				"titleHighlight": "놓치지 않고 정리하세요",
-				"description": "기술 블로그, 뉴스레터, 개발 아티클의 핵심 내용을 체계적으로 관리하세요.",
-				"cta": "무료로 시작하기",
-				"learnMore": "더 알아보기"
+				"title": "북마크만 쌓이고 내용은 안 남는 문제",
+				"description": "기술 블로그와 뉴스레터에서 읽은 글의 결론을 적어두고, 원문 주소를 함께 남깁니다."
 			},
 			"benefits": {
-				"title": "기술 아티클 관리가 달라집니다",
-				"subtitle": "읽은 아티클을 효율적으로 정리하는 기능들",
+				"title": "나중에 읽겠다고 담아둔 글들",
+				"subtitle": "제목 대신 내용이 남게 합니다",
 				"aiSummary": {
-					"title": "AI 요약",
-					"description": "긴 기술 아티클의 핵심 내용을 AI가 자동 요약해줍니다. 빠르게 핵심을 파악하세요."
+					"title": "긴 글은 요약 먼저",
+					"description": "본문이 긴 아티클은 AI 요약으로 무슨 얘기인지 먼저 확인합니다."
 				},
 				"clipping": {
-					"title": "핵심 클리핑",
-					"description": "읽으면서 중요한 문단을 즉시 메모하세요. 핵심 인사이트를 놓치지 않고 기록할 수 있습니다."
+					"title": "걸리는 문단만 적기",
+					"description": "읽다가 걸리는 문단을 그 자리에서 옮겨 적습니다. 전문을 저장하지 않아도 됩니다."
 				},
 				"organize": {
-					"title": "주제별 정리",
-					"description": "프론트엔드, 백엔드, DevOps 등 카테고리별로 아티클을 분류하세요. 관심 분야별로 정리할 수 있습니다."
+					"title": "분야별로 나누기",
+					"description": "프론트엔드·백엔드·DevOps처럼 카테고리를 만들어 나눠 담습니다."
 				},
 				"source": {
-					"title": "출처 관리",
-					"description": "원본 URL이 자동 저장되어 언제든 원문을 다시 방문할 수 있습니다. 레퍼런스 관리가 쉬워집니다."
+					"title": "원문으로 돌아가기",
+					"description": "메모에 원문 주소가 붙어 있어 인용하거나 다시 읽을 때 바로 엽니다."
 				}
 			},
 			"cta": {
-				"title": "기술 아티클을 스마트하게 정리하세요",
-				"description": "무료 크롬 확장 프로그램을 설치하고 기술 아티클을 효율적으로 관리하세요.",
-				"button": "크롬에 설치하기",
+				"title": "오늘 읽은 아티클부터 한 줄 남겨보세요",
+				"description": "Chrome에 추가하면 지금 열어둔 글에서 바로 쓸 수 있습니다.",
 				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
 			}
 		}

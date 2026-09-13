@@ -4,9 +4,12 @@ import type {
 	CreateMemoResponse,
 	GetHighlightsByUrlPayload,
 	GetHighlightsByUrlResponse,
+	IFCreateHighlightPayload,
 	PageContentResponse,
+	TCreateHighlightResponse,
 } from "./types";
 
+/** 확장 UI와 background 사이의 타입 지정 메시지 계약. */
 export const bridge = createBridge({
 	GET_SIDE_PANEL_OPEN: defineMessage<void, boolean>("toExtension"),
 	OPEN_SIDE_PANEL: defineMessage<void, void>("internal"),
@@ -20,6 +23,10 @@ export const bridge = createBridge({
 		"toExtension",
 	),
 	SYNC_LOGIN_STATUS: defineMessage<void, void>("toExtension"),
+	CREATE_HIGHLIGHT: defineMessage<
+		IFCreateHighlightPayload,
+		TCreateHighlightResponse
+	>("internal"),
 	CREATE_MEMO: defineMessage<CreateMemoPayload, CreateMemoResponse>("internal"),
 	GET_HIGHLIGHTS_BY_URL: defineMessage<
 		GetHighlightsByUrlPayload,

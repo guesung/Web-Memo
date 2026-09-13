@@ -40,7 +40,7 @@ export interface IFGa4EventParams {
 export type TAnalyticsEvent =
 	| { name: "side_panel_open" }
 	| { name: "page_view"; params: { page_title: string; page_location: string } }
-	| { name: "memo_write" }
+	| { name: "memo_write"; params: { fields: string } }
 	| { name: "memo_delete"; params: { memo_count: number } }
 	| { name: "summary_run" }
 	| { name: "summary_complete"; params: { duration_msec: number } }
@@ -68,7 +68,24 @@ export type TAnalyticsEvent =
 	| { name: "extension_installed" }
 	| { name: "login_start"; params: { method: string } }
 	| { name: "side_panel_login_click" }
-	| { name: "sign_up"; params: { method: string } };
+	| { name: "sign_up"; params: { method: string } }
+	| {
+			name: "memo_status_toggle";
+			params: { status: "wish" | "star" | "reading"; enabled: boolean };
+	  }
+	| { name: "memo_category_change" }
+	| { name: "memo_undo"; params: { action: "wish" | "reading" | "delete" } }
+	| { name: "category_suggestion_show"; params: { is_new_category: boolean } }
+	| { name: "category_suggestion_apply"; params: { is_new_category: boolean } }
+	| { name: "extension_install_click" }
+	| { name: "extension_install_dismiss" }
+	| {
+			name: "open_web_from_extension";
+			params: { from: "side_panel_memo" | "context_menu" };
+	  }
+	| { name: "guide_open"; params: { from: "context_menu" } }
+	| { name: "guide_finish" }
+	| { name: "extension_setting_change"; params: { keys: string } };
 
 /** 이벤트 이름만 추린 유니온. */
 export type TAnalyticsEventName = TAnalyticsEvent["name"];
@@ -109,4 +126,15 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	login_start: "engagement",
 	side_panel_login_click: "engagement",
 	sign_up: "core_action",
+	memo_status_toggle: "core_action",
+	memo_category_change: "core_action",
+	memo_undo: "engagement",
+	category_suggestion_show: "engagement",
+	category_suggestion_apply: "core_action",
+	extension_install_click: "core_action",
+	extension_install_dismiss: "engagement",
+	open_web_from_extension: "engagement",
+	guide_open: "engagement",
+	guide_finish: "engagement",
+	extension_setting_change: "engagement",
 };

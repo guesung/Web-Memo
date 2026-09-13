@@ -1,7 +1,7 @@
-import { HeaderMargin } from "@src/components/Header";
 import type { LanguageParams } from "@src/modules/i18n";
 
-import { Benefits, CTA, Hero } from "./_components";
+import { LandingPageTemplate } from "../../_components";
+import { TECH_ARTICLE_PAGE } from "./_constants";
 import { metadataEnglish, metadataKorean } from "./_utils";
 
 export async function generateMetadata({ params }: LanguageParams) {
@@ -10,15 +10,8 @@ export async function generateMetadata({ params }: LanguageParams) {
 
 interface TechArticlePageProps extends LanguageParams {}
 
-export default async function TechArticlePage({
+export default function TechArticlePage({
 	params: { lng },
 }: TechArticlePageProps) {
-	return (
-		<div className="min-h-screen overflow-hidden">
-			<HeaderMargin />
-			<Hero lng={lng} />
-			<Benefits lng={lng} />
-			<CTA lng={lng} />
-		</div>
-	);
+	return <LandingPageTemplate lng={lng} config={TECH_ARTICLE_PAGE} />;
 }

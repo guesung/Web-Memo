@@ -3,7 +3,8 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { CONFIG } from "@web-memo/env";
-import { AnimatePresence, motion } from "framer-motion";
+import { cn } from "@web-memo/ui";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
 	BarChart3,
 	FolderOpen,
@@ -13,271 +14,189 @@ import {
 	Sparkles,
 } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import SectionHeader from "../SectionHeader";
+import SectionShell, { type TSectionBackground } from "../SectionShell";
 
-interface InteractiveDemoProps extends LanguageType {}
+/**
+ * 스크린샷 탭 데모.
+ * @description
+ * 5초마다 탭이 자동으로 넘어간다. **이 회전은 `prefers-reduced-motion`을 따른다** —
+ * 사용자가 동작 축소를 켰으면 자동 전환도 교차 페이드도 멈추고, 탭은 눌렀을 때만
+ * 바뀐다. 자동 회전은 사용자가 멈출 수 없는 움직임이라 그 설정의 정확한 대상이다.
+ */
 
-export default function InteractiveDemo({ lng }: InteractiveDemoProps) {
+/** 자동 회전 주기 */
+const AUTO_ROTATE_INTERVAL_MS = 5000;
+
+/** 탭을 직접 눌렀을 때 자동 회전을 멈춰 두는 시간 */
+const MANUAL_PAUSE_MS = 3000;
+
+const DEMO_TABS = [
+	{ id: "memo", icon: Pencil, imageIndex: 1 },
+	{ id: "overview", icon: BarChart3, imageIndex: 2 },
+	{ id: "ai", icon: Sparkles, imageIndex: 3 },
+	{ id: "wishlist", icon: Heart, imageIndex: 4 },
+	{ id: "organize", icon: FolderOpen, imageIndex: 5 },
+];
+
+interface InteractiveDemoProps extends LanguageType {
+	background?: TSectionBackground;
+}
+
+export default function InteractiveDemo({
+	lng,
+	background,
+}: InteractiveDemoProps) {
 	const { t } = useTranslation(lng);
-	const [activeTab, setActiveTab] = useState(0);
+	const [activeTabIndex, setActiveTabIndex] = useState(0);
 	const [progress, setProgress] = useState(0);
 	const [isPaused, setIsPaused] = useState(false);
-
-	const tabs = [
-		{
-			id: "memo",
-			icon: Pencil,
-			label: t("introduce.demo.tab_memo"),
-			description: t("introduce.demo.tab_memo_desc"),
-			image: `/images/pngs/introduction/${lng}/1.png`,
-			color: "blue",
-		},
-		{
-			id: "overview",
-			icon: BarChart3,
-			label: t("introduce.demo.tab_overview"),
-			description: t("introduce.demo.tab_overview_desc"),
-			image: `/images/pngs/introduction/${lng}/2.png`,
-			color: "green",
-		},
-		{
-			id: "ai",
-			icon: Sparkles,
-			label: t("introduce.demo.tab_ai"),
-			description: t("introduce.demo.tab_ai_desc"),
-			image: `/images/pngs/introduction/${lng}/3.png`,
-			color: "amber",
-		},
-		{
-			id: "wishlist",
-			icon: Heart,
-			label: t("introduce.demo.tab_wishlist"),
-			description: t("introduce.demo.tab_wishlist_desc"),
-			image: `/images/pngs/introduction/${lng}/4.png`,
-			color: "pink",
-		},
-		{
-			id: "organize",
-			icon: FolderOpen,
-			label: t("introduce.demo.tab_organize"),
-			description: t("introduce.demo.tab_organize_desc"),
-			image: `/images/pngs/introduction/${lng}/5.png`,
-			color: "purple",
-		},
-	];
-
-	const AUTO_ROTATE_INTERVAL = 5000;
-
-	const nextTab = useCallback(() => {
-		setActiveTab((prev) => (prev + 1) % tabs.length);
-		setProgress(0);
-	}, [tabs.length]);
+	const prefersReducedMotion = useReducedMotion();
 
 	const rafRef = useRef<number | null>(null);
 	const lastTimeRef = useRef<number | null>(null);
 
+	const isAutoRotating = !prefersReducedMotion && !isPaused;
+
 	useEffect(() => {
-		if (isPaused) {
+		if (!isAutoRotating) {
 			lastTimeRef.current = null;
+			setProgress(0);
 			return;
 		}
 
-		const animate = (timestamp: number) => {
+		const step = (timestamp: number) => {
 			if (lastTimeRef.current === null) {
 				lastTimeRef.current = timestamp;
 			}
 
 			const elapsed = timestamp - lastTimeRef.current;
-			const progressIncrement = (elapsed / AUTO_ROTATE_INTERVAL) * 100;
+			lastTimeRef.current = timestamp;
 
-			setProgress((prev) => {
-				const next = prev + progressIncrement;
-				if (next >= 100) {
-					nextTab();
-					return 0;
+			setProgress((previous) => {
+				const next = previous + (elapsed / AUTO_ROTATE_INTERVAL_MS) * 100;
+
+				if (next < 100) {
+					return next;
 				}
-				return next;
+
+				setActiveTabIndex(
+					(previousIndex) => (previousIndex + 1) % DEMO_TABS.length,
+				);
+				return 0;
 			});
 
-			lastTimeRef.current = timestamp;
-			rafRef.current = requestAnimationFrame(animate);
+			rafRef.current = requestAnimationFrame(step);
 		};
 
-		rafRef.current = requestAnimationFrame(animate);
+		rafRef.current = requestAnimationFrame(step);
 
 		return () => {
 			if (rafRef.current !== null) {
 				cancelAnimationFrame(rafRef.current);
 			}
 		};
-	}, [isPaused, nextTab]);
+	}, [isAutoRotating]);
 
 	const handleTabClick = (index: number) => {
-		setActiveTab(index);
+		setActiveTabIndex(index);
 		setProgress(0);
 		setIsPaused(true);
-		setTimeout(() => setIsPaused(false), 3000);
+		setTimeout(() => setIsPaused(false), MANUAL_PAUSE_MS);
 	};
 
-	const getColorClasses = (color: string, _isActive: boolean) => {
-		const colors: Record<
-			string,
-			{ bg: string; text: string; border: string; activeBg: string }
-		> = {
-			blue: {
-				bg: "bg-blue-100 dark:bg-blue-900/30",
-				text: "text-blue-600 dark:text-blue-400",
-				border: "border-blue-500",
-				activeBg: "bg-blue-500",
-			},
-			green: {
-				bg: "bg-green-100 dark:bg-green-900/30",
-				text: "text-green-600 dark:text-green-400",
-				border: "border-green-500",
-				activeBg: "bg-green-500",
-			},
-			amber: {
-				bg: "bg-amber-100 dark:bg-amber-900/30",
-				text: "text-amber-600 dark:text-amber-400",
-				border: "border-amber-500",
-				activeBg: "bg-amber-500",
-			},
-			pink: {
-				bg: "bg-pink-100 dark:bg-pink-900/30",
-				text: "text-pink-600 dark:text-pink-400",
-				border: "border-pink-500",
-				activeBg: "bg-pink-500",
-			},
-			purple: {
-				bg: "bg-purple-100 dark:bg-purple-900/30",
-				text: "text-purple-600 dark:text-purple-400",
-				border: "border-purple-500",
-				activeBg: "bg-purple-500",
-			},
-		};
-		return colors[color];
-	};
+	const activeTab = DEMO_TABS[activeTabIndex];
 
 	return (
-		<section id="demo" className="py-20 bg-background">
-			<div className="mx-auto max-w-6xl px-4">
-				{/* Section Header */}
-				<motion.div
-					initial={{ opacity: 0, y: 20 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true }}
-					transition={{ duration: 0.5 }}
-					className="text-center mb-12"
-				>
-					<h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-						{t("introduce.section.demo")}
-					</h2>
-					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-						{t("introduce.section.demo_desc")}
-					</p>
-				</motion.div>
+		<SectionShell id="demo" background={background}>
+			<SectionHeader
+				title={t("introduce.section.demo")}
+				description={t("introduce.section.demo_desc")}
+			/>
 
-				<motion.div
-					initial={{ opacity: 0, y: 30 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true }}
-					transition={{ duration: 0.6 }}
-					onMouseEnter={() => setIsPaused(true)}
-					onMouseLeave={() => setIsPaused(false)}
-				>
-					{/* Browser Mockup */}
-					<div className="relative rounded-2xl overflow-hidden shadow-2xl bg-card border border-border">
-						{/* Browser Header */}
-						<div className="flex items-center gap-2 px-4 py-3 bg-muted border-b border-border">
-							<div className="flex gap-1.5">
-								<div className="w-3 h-3 rounded-full bg-red-500" />
-								<div className="w-3 h-3 rounded-full bg-yellow-500" />
-								<div className="w-3 h-3 rounded-full bg-green-500" />
-							</div>
-							<div className="flex-1 mx-4">
-								<div className="bg-card rounded-lg px-4 py-1.5 text-sm text-muted-foreground flex items-center gap-2 max-w-md mx-auto">
-									<Globe className="h-4 w-4 flex-shrink-0" />
-									<span className="truncate">{CONFIG.webDisplayHost}</span>
-								</div>
-							</div>
-						</div>
-
-						{/* Screenshot Area */}
-						<div className="relative aspect-[16/9] bg-muted/50">
-							<AnimatePresence mode="wait">
-								<motion.div
-									key={activeTab}
-									initial={{ opacity: 0 }}
-									animate={{ opacity: 1 }}
-									exit={{ opacity: 0 }}
-									transition={{ duration: 0.3 }}
-									className="absolute inset-0"
-								>
-									<Image
-										src={tabs[activeTab].image}
-										alt={tabs[activeTab].label}
-										fill
-										className="object-contain"
-										priority
-									/>
-								</motion.div>
-							</AnimatePresence>
-						</div>
-
-						{/* Tab Navigation */}
-						<div className="bg-muted/50 border-t border-border p-4">
-							<div className="flex flex-wrap justify-center gap-2 md:gap-4">
-								{tabs.map((tab, index) => {
-									const isActive = activeTab === index;
-									const colors = getColorClasses(tab.color, isActive);
-
-									return (
-										<button
-											key={tab.id}
-											type="button"
-											onClick={() => handleTabClick(index)}
-											className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 ${
-												isActive
-													? `${colors.bg} ${colors.text} shadow-md`
-													: "text-muted-foreground hover:bg-muted"
-											}`}
-										>
-											<tab.icon className="h-5 w-5" />
-											<span className="font-medium hidden sm:inline">
-												{tab.label}
-											</span>
-
-											{/* Progress indicator for active tab */}
-											{isActive && (
-												<div className="absolute bottom-0 left-0 right-0 h-0.5 bg-muted rounded-full overflow-hidden">
-													<motion.div
-														className={`h-full ${colors.activeBg}`}
-														style={{ width: `${progress}%` }}
-													/>
-												</div>
-											)}
-										</button>
-									);
-								})}
-							</div>
-
-							{/* Active Tab Description */}
-							<AnimatePresence mode="wait">
-								<motion.p
-									key={activeTab}
-									initial={{ opacity: 0, y: 10 }}
-									animate={{ opacity: 1, y: 0 }}
-									exit={{ opacity: 0, y: -10 }}
-									transition={{ duration: 0.2 }}
-									className="text-center mt-4 text-muted-foreground"
-								>
-									{tabs[activeTab].description}
-								</motion.p>
-							</AnimatePresence>
-						</div>
+			{/* 자동 회전은 포인터가 올라와 있는 동안 멈춘다. 읽는 중에 화면이 바뀌면
+			    안 되므로 carousel 영역으로 이름을 붙여 둔다 */}
+			<section
+				aria-roledescription="carousel"
+				aria-label={t("introduce.section.demo")}
+				className="overflow-hidden rounded-3xl border border-border bg-card"
+				onMouseEnter={() => setIsPaused(true)}
+				onMouseLeave={() => setIsPaused(false)}
+			>
+				{/* 브라우저 주소 표시줄 */}
+				<div className="flex items-center gap-3 border-b border-border px-5 py-3">
+					<div className="flex gap-1.5">
+						<span className="h-2.5 w-2.5 rounded-full bg-border" />
+						<span className="h-2.5 w-2.5 rounded-full bg-border" />
+						<span className="h-2.5 w-2.5 rounded-full bg-border" />
 					</div>
-				</motion.div>
-			</div>
-		</section>
+					<div className="flex flex-1 items-center justify-center gap-2 text-sm text-muted-foreground">
+						<Globe className="h-3.5 w-3.5 flex-shrink-0" />
+						<span className="truncate">{CONFIG.webDisplayHost}</span>
+					</div>
+				</div>
+
+				<div className="relative aspect-[16/9] bg-muted">
+					<AnimatePresence mode="wait">
+						<motion.div
+							key={activeTab.id}
+							initial={{ opacity: prefersReducedMotion ? 1 : 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: prefersReducedMotion ? 1 : 0 }}
+							transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
+							className="absolute inset-0"
+						>
+							<Image
+								src={`/images/pngs/introduction/${lng}/${activeTab.imageIndex}.png`}
+								alt={t(`introduce.demo.tab_${activeTab.id}`)}
+								fill
+								className="object-contain"
+							/>
+						</motion.div>
+					</AnimatePresence>
+				</div>
+
+				<div className="border-t border-border p-4">
+					<div className="flex flex-wrap justify-center gap-1">
+						{DEMO_TABS.map((tab, index) => {
+							const isActive = activeTabIndex === index;
+
+							return (
+								<button
+									key={tab.id}
+									type="button"
+									onClick={() => handleTabClick(index)}
+									className={cn(
+										"relative flex items-center gap-2 rounded-full px-4 py-2.5 text-sm transition-colors duration-base",
+										isActive
+											? "bg-secondary text-foreground"
+											: "text-muted-foreground hover:text-foreground",
+									)}
+								>
+									<tab.icon className="h-4 w-4" />
+									<span className="hidden sm:inline">
+										{t(`introduce.demo.tab_${tab.id}`)}
+									</span>
+
+									{isActive && isAutoRotating ? (
+										<span className="absolute inset-x-3 bottom-1 h-px overflow-hidden rounded-full bg-border">
+											<span
+												className="block h-full bg-foreground"
+												style={{ width: `${progress}%` }}
+											/>
+										</span>
+									) : null}
+								</button>
+							);
+						})}
+					</div>
+
+					<p className="mt-4 text-center text-sm text-muted-foreground">
+						{t(`introduce.demo.tab_${activeTab.id}_desc`)}
+					</p>
+				</div>
+			</section>
+		</SectionShell>
 	);
 }

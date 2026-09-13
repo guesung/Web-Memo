@@ -2,7 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { PATHS } from "@web-memo/shared/constants";
+import { DEFAULT_CATEGORY_COLOR, PATHS } from "@web-memo/shared/constants";
 import {
 	useCategoryQuery,
 	useCategoryUpdateMutation,
@@ -96,7 +96,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 				<SidebarMenu className="space-y-1">
 					{categories?.map((category) => {
 						const isActive = currentCategory === category.name;
-						const categoryColor = category.color || "#9333ea";
+						const categoryColor = category.color || DEFAULT_CATEGORY_COLOR;
 						const isEditing = editingCategoryId === category.id;
 
 						return (

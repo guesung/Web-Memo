@@ -3,6 +3,7 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { useMemoPatchMutation } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
@@ -12,7 +13,6 @@ import { BookOpen, Clock, FolderIcon, HeartIcon, StarIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
 import { useState } from "react";
-
 import MemoOption from "./MemoOption";
 
 interface MemoCardFooterProps
@@ -63,6 +63,10 @@ export default function MemoCardFooter({
 				<ToastAction
 					altText={t("toastActionMessage.undo")}
 					onClick={() => {
+						analytics.trackEvent({
+							name: "memo_undo",
+							params: { action: "wish" },
+						});
 						mutateMemoPatch({
 							id: memo.id,
 							request: {
@@ -97,6 +101,10 @@ export default function MemoCardFooter({
 				<ToastAction
 					altText={t("toastActionMessage.undo")}
 					onClick={() => {
+						analytics.trackEvent({
+							name: "memo_undo",
+							params: { action: "reading" },
+						});
 						mutateMemoPatch({
 							id: memo.id,
 							request: {

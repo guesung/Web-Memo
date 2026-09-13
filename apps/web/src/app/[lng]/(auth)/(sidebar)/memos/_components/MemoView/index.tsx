@@ -31,7 +31,10 @@ export default function MemoView({ lng, filter }: IFMemoViewProps) {
 	const { memos, totalCount, hasNextPage, isFetchingNextPage, fetchNextPage } =
 		useMemosInfiniteQuery({
 			category,
-			isWish: filter === "wish" ? true : undefined,
+			isWish:
+				filter === "star" || filter === "reading"
+					? undefined
+					: filter === "wish",
 			isStar: filter === "star" ? true : undefined,
 			isReading: filter === "reading" ? true : undefined,
 			searchQuery: searchQuery || undefined,

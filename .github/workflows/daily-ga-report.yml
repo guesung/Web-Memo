@@ -14,7 +14,15 @@ on:
 
 concurrency:
   group: daily-ga-report
-  cancel-in-progress: true
+  # versions.yml 은 true 입니다. 거기는 사용자가 즉시 요청한 조회라 최신 것만 남기는 게
+  # 맞지만, 여기는 크론이 도는 중에 손으로 dispatch 하면 그날 리포트가 통째로 사라집니다.
+  # 관례에 맞춘다며 true 로 되돌리지 마세요.
+  cancel-in-progress: false
+
+# 체크아웃 외에는 아무것도 건드리지 않습니다. 재사용 워크플로가 아니어도 권한이
+# 호출자를 넘으면 로그도 annotation 도 없이 startup_failure 로 끝납니다.
+permissions:
+  contents: read
 
 jobs:
   report:
@@ -33,6 +41,8 @@ jobs:
         env:
           SLACK_REPORT_WEBHOOK_URL: ${{ secrets.SLACK_REPORT_WEBHOOK_URL }}
           GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
+          # Data API 가 요구하는 것은 속성 ID(숫자)입니다. packages/shared 의
+          # G-6HHNP7KJM5 는 gtag 용 측정 ID라 여기 넣으면 403/404 가 납니다.
           # 속성 ID는 비밀이 아닙니다. 시크릿에 넣으면 로그에서 가려져 디버깅만 어려워집니다.
           GA4_PROPERTY_ID: "471860782"
         run: node .github/scripts/report-daily-ga.mjs

@@ -23,19 +23,14 @@ export default async function page({
 		<main className="relative min-h-screen">
 			<div className="absolute inset-0 gradient-mesh dark:gradient-mesh-dark opacity-5" />
 
-			<div className="relative z-10 grid min-h-screen lg:grid-cols-2">
-				<div className="flex items-center justify-center px-4 py-12">
-					<div className="flex w-full max-w-sm flex-col gap-6">
-						{hasLoginError && <LoginErrorAlert lng={lng} />}
-						<LoginSection lng={lng} />
-					</div>
-				</div>
+			<div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-12">
+				<div className="flex w-full max-w-sm flex-col gap-8">
+					{hasLoginError && <LoginErrorAlert lng={lng} />}
+					<LoginSection lng={lng} />
 
-				<div className="flex items-center justify-center bg-muted/40 px-4 pb-12 lg:px-12 lg:py-12">
-					<div className="w-full max-w-md">
-						<Separator className="mb-8 lg:hidden" />
-						<LoginAside lng={lng} />
-					</div>
+					<Separator />
+
+					<LoginAside lng={lng} />
 				</div>
 			</div>
 		</main>

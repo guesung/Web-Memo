@@ -33,7 +33,7 @@ export class HighlightService {
 
 	/** 메모 목록의 정확한 URL들과 연결된 하이라이트를 일괄 조회한다. RLS로 소유권을 제한한다. */
 	getHighlightsByUrls = async (urls: string[]) => {
-		const uniqueUrls = [...new Set(urls.filter(Boolean))];
+		const uniqueUrls = Array.from(new Set(urls.filter(Boolean)));
 		if (uniqueUrls.length === 0) {
 			return { data: [] as HighlightTable["Row"][], error: null };
 		}

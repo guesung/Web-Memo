@@ -6,30 +6,34 @@ import { MemoService, normalizeUrl } from "../../../utils";
 
 import { useSupabaseClientQuery } from "../queries";
 
-interface MemoUpsertVariables {
+/** 메모 생성 또는 수정 요청입니다. */
+interface IFMemoUpsertVariables {
 	id?: MemoRow["id"];
 	url?: string;
 	data: MemoTable["Insert"];
 }
 
-interface MemoUpsertContext {
+/** 낙관적 수정 이전 상태입니다. */
+interface IFMemoUpsertContext {
 	previousMemo: MemoSupabaseResponse | undefined;
 	normalizedUrl: string | undefined;
 	isUpdate: boolean;
 }
 
-type MutationError = Error;
+/** 메모 저장 실패입니다. */
+type TMutationError = Error;
 
-export default function useMemoUpsertMutation() {
+/** 저장 실패를 성공으로 처리하지 않고 새 메모 입력을 보존합니다. */
+const useMemoUpsertMutation = () => {
 	const queryClient = useQueryClient();
 	const { data: supabaseClient } = useSupabaseClientQuery();
 	const memoService = new MemoService(supabaseClient);
 
 	return useMutation<
 		MemoSupabaseResponse,
-		MutationError,
-		MemoUpsertVariables,
-		MemoUpsertContext
+		TMutationError,
+		IFMemoUpsertVariables,
+		IFMemoUpsertContext
 	>({
 		mutationFn: async ({ id, url, data }) => {
 			const normalizedUrl = url ? normalizeUrl(url) : undefined;
@@ -38,17 +42,36 @@ export default function useMemoUpsertMutation() {
 
 			if (id) {
 				const result = await memoService.getMemoById(id);
+				if (result.error) {
+					throw result.error;
+				}
 				existingMemo = result.data?.[0];
 			} else if (normalizedUrl) {
 				const result = await memoService.getMemoByUrl(normalizedUrl);
+				if (result.error) {
+					throw result.error;
+				}
 				existingMemo = result.data?.[0];
 			}
 
 			if (existingMemo) {
-				return memoService.updateMemo({ id: existingMemo.id, request: data });
+				const result = await memoService.updateMemo({
+					id: existingMemo.id,
+					request: data,
+				});
+				if (result.error) {
+					throw result.error;
+				}
+
+				return result;
 			}
 
-			return memoService.insertMemo(data);
+			const result = await memoService.insertMemo(data);
+			if (result.error) {
+				throw result.error;
+			}
+
+			return result;
 		},
 		onMutate: async ({ url, data }) => {
 			const normalizedUrl = url ? normalizeUrl(url) : undefined;
@@ -66,30 +89,15 @@ export default function useMemoUpsertMutation() {
 			);
 
 			const isUpdate = !!previousMemo?.data?.[0];
+			if (!isUpdate) {
+				return { previousMemo, normalizedUrl, isUpdate };
+			}
 
-			const optimisticMemo: MemoRow = isUpdate
-				? ({
-						...previousMemo.data?.[0],
-						...data,
-						updated_at: new Date().toISOString(),
-					} as MemoRow)
-				: {
-						actionItem: data.actionItem ?? null,
-						category_id: data.category_id ?? null,
-						created_at: new Date().toISOString(),
-						deleted_at: null,
-						favIconUrl: data.favIconUrl ?? null,
-						id: -Date.now(),
-						impression: data.impression ?? null,
-						isReading: data.isReading ?? false,
-						isStar: data.isStar ?? false,
-						isWish: data.isWish ?? false,
-						memo: data.memo ?? "",
-						title: data.title ?? "",
-						updated_at: new Date().toISOString(),
-						url: data.url ?? "",
-						user_id: "",
-					};
+			const optimisticMemo = {
+				...previousMemo?.data?.[0],
+				...data,
+				updated_at: new Date().toISOString(),
+			} as MemoRow;
 
 			queryClient.setQueryData(QUERY_KEY.memo({ url: normalizedUrl }), {
 				data: [optimisticMemo],
@@ -99,6 +107,7 @@ export default function useMemoUpsertMutation() {
 			return { previousMemo, normalizedUrl, isUpdate };
 		},
 		onError: (_error, _variables, context) => {
+			void queryClient.invalidateQueries({ queryKey: ["billing"] });
 			if (context?.normalizedUrl && context?.previousMemo) {
 				queryClient.setQueryData(
 					QUERY_KEY.memo({ url: context.normalizedUrl }),
@@ -113,8 +122,13 @@ export default function useMemoUpsertMutation() {
 
 			queryClient.invalidateQueries({ queryKey: ["memos", "paginated"] });
 
+			if (!context?.isUpdate) {
+				await queryClient.invalidateQueries({ queryKey: ["billing"] });
+			}
 			const newMemo = result.data?.[0];
-			if (!newMemo || !context?.normalizedUrl) return;
+			if (!newMemo || !context?.normalizedUrl) {
+				return;
+			}
 
 			queryClient.setQueryData(QUERY_KEY.memo({ url: context.normalizedUrl }), {
 				data: [newMemo],
@@ -122,4 +136,6 @@ export default function useMemoUpsertMutation() {
 			});
 		},
 	});
-}
+};
+
+export default useMemoUpsertMutation;

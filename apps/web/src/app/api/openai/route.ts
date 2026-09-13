@@ -1,3 +1,8 @@
+import {
+	calculateAiCostMicros,
+	reserveAiUsage,
+	settleAiUsage,
+} from "@src/modules/billing";
 import { CHROME_EXTENSION_ID } from "@web-memo/shared/constants";
 import type { NextRequest } from "next/server";
 import type { ChatCompletionMessageParam } from "openai/resources.mjs";
@@ -10,9 +15,7 @@ import {
 	validateMessages,
 } from "./util";
 
-export const runtime = "edge";
-
-function getClientIp(request: NextRequest): string {
+const getClientIp = (request: NextRequest): string => {
 	const forwardedFor = request.headers.get("x-forwarded-for");
 	if (forwardedFor) {
 		return forwardedFor.split(",")[0].trim();
@@ -24,9 +27,10 @@ function getClientIp(request: NextRequest): string {
 	}
 
 	return "unknown";
-}
+};
 
-export async function POST(request: NextRequest) {
+/** 인증된 확장 사용자의 페이지 요약 요청을 스트리밍합니다. */
+export const POST = async (request: NextRequest) => {
 	try {
 		const origin = request.headers.get("origin");
 		const validOrigin = `chrome-extension://${CHROME_EXTENSION_ID}`;
@@ -61,7 +65,26 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		return createStreamingResponse(messages as ChatCompletionMessageParam[]);
+		const usageReservation = await reserveAiUsage(request, "summary");
+
+		if (!usageReservation.isAllowed) {
+			return createErrorResponse(
+				usageReservation.message,
+				usageReservation.status,
+			);
+		}
+
+		const response = createStreamingResponse(
+			messages as ChatCompletionMessageParam[],
+			async (usage) => {
+				await settleAiUsage(
+					usageReservation.reservationId,
+					calculateAiCostMicros(usage),
+				);
+			},
+		);
+
+		return response;
 	} catch (error) {
 		console.error("Route handler error:", error);
 
@@ -74,4 +97,4 @@ export async function POST(request: NextRequest) {
 			HTTP_STATUS.INTERNAL_SERVER_ERROR,
 		);
 	}
-}
+};

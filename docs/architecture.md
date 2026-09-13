@@ -48,7 +48,7 @@
 | 스키마 변경 절차 | ① `migrations/`에 SQL 추가 → ② 원격 DB에 적용 → ③ `pnpm generate-supabase-type` → ④ 관련 query/mutation 훅 갱신.<br>**통합 E2E가 실제 프로덕션 Supabase를 치므로 스키마는 머지 전이 아니라 push 전에 적용돼 있어야 합니다.** `supabase db push`는 히스토리 불일치로 막혀 있어 Management API로 단일 SQL을 실행합니다 |
 | API 규약 | 경로는 `/api/<도메인>/<행위>`, 소문자 kebab-case.<br>응답은 Route Handler에서 `NextResponse.json()`으로 반환하고, 에러는 상태 코드 + `{ message }` 형태로 통일합니다.<br>Server Action에서는 try/catch 대신 **에러를 값으로 반환**합니다. 반대로 서비스 계층(훅에서 부르는 쪽)은 TanStack Query가 잡을 수 있도록 사용자 친화적 에러를 throw합니다 |
 | 인증 | **Supabase Auth.** Google·Kakao OAuth + 이메일. 콜백은 `/auth/callback`(OAuth)과 `/auth/callback-email`.<br>세션은 `@supabase/ssr` 쿠키. 확장은 웹이 심은 `access_token`/`refresh_token` 쿠키를 `chrome.cookies`로 읽어갑니다 — **쿠키 이름이 양쪽에서 정확히 일치해야 로그인 연동이 동작합니다**(`packages/shared/src/constants/SupabaseConfig.ts`).<br>보호 라우트는 `(auth)` 그룹으로 구분합니다 |
-| 외부 연동 | OpenAI(요약·카테고리·QA) · Upstash Redis(레이트리밋) · Slack(피드백/알림) · youtube-transcript(자막) · Sentry.<br>**키가 필요한 호출은 전부 서버(Route Handler)에서만 합니다.** 클라이언트에서 직접 부르지 않습니다.<br>OpenAI 호출은 실비로 과금되므로 새 기능을 붙일 때 호출 빈도와 레이트리밋을 함께 정합니다 |
+| 외부 연동 | OpenAI(요약·카테고리·QA) · 토스페이먼츠(카드 빌링) · Upstash Redis(레이트리밋) · Slack(피드백/알림) · youtube-transcript(자막) · Sentry.<br>**키가 필요한 호출은 전부 서버(Route Handler)에서만 합니다.** 클라이언트에서 직접 부르지 않습니다. 토스 빌링키는 암호화해 비공개 billing 스키마에 저장하고, 반복 청구는 Supabase Cron이 인증된 Route Handler를 호출합니다.<br>OpenAI 호출은 실비로 과금되므로 구독 권한과 주기별 횟수·비용 예약을 서버에서 함께 검사합니다 |
 
 ## QA 실행
 

@@ -1,3 +1,8 @@
+import {
+	calculateAiCostMicros,
+	reserveAiUsage,
+	settleAiUsage,
+} from "@src/modules/billing";
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE } from "@web-memo/shared/constants";
 import { type NextRequest, NextResponse } from "next/server";
@@ -31,7 +36,8 @@ const verifyUser = async (request: NextRequest) => {
 	return user;
 };
 
-export async function POST(request: NextRequest) {
+/** 인증된 유료 사용자의 모바일 페이지 요약과 질의응답을 처리합니다. */
+export const POST = async (request: NextRequest) => {
 	if (!OPENAI_API_KEY) {
 		return createErrorResponse(
 			"OpenAI API key not configured",
@@ -47,7 +53,6 @@ export async function POST(request: NextRequest) {
 				HTTP_STATUS.FORBIDDEN,
 			);
 		}
-
 		const body = await request.json();
 		const content = typeof body.content === "string" ? body.content : "";
 		const question = typeof body.question === "string" ? body.question : "";
@@ -56,6 +61,22 @@ export async function POST(request: NextRequest) {
 			return createErrorResponse(
 				"content가 필요합니다.",
 				HTTP_STATUS.BAD_REQUEST,
+			);
+		}
+
+		if (question.length > 2_000) {
+			return createErrorResponse(
+				ERROR_MESSAGES.CONTEXT_TOO_LONG,
+				HTTP_STATUS.BAD_REQUEST,
+			);
+		}
+
+		const usageReservation = await reserveAiUsage(request, "webpage-qa");
+
+		if (!usageReservation.isAllowed) {
+			return createErrorResponse(
+				usageReservation.message,
+				usageReservation.status,
 			);
 		}
 
@@ -79,7 +100,18 @@ export async function POST(request: NextRequest) {
 				},
 			],
 			temperature: OPENAI_SETTINGS.temperature,
+			max_tokens: 1_000,
 		});
+		const usage = completion.usage;
+		await settleAiUsage(
+			usageReservation.reservationId,
+			usage
+				? calculateAiCostMicros({
+						promptTokens: usage.prompt_tokens,
+						completionTokens: usage.completion_tokens,
+					})
+				: undefined,
+		);
 
 		const responseContent = completion.choices[0]?.message?.content;
 
@@ -106,11 +138,12 @@ export async function POST(request: NextRequest) {
 			HTTP_STATUS.INTERNAL_SERVER_ERROR,
 		);
 	}
-}
+};
 
-export async function OPTIONS() {
+/** 모바일 페이지 AI API의 CORS 사전 요청을 처리합니다. */
+export const OPTIONS = async () => {
 	return new Response(null, {
 		status: 200,
 		headers: CORS_HEADERS,
 	});
-}
+};

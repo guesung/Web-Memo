@@ -1,3 +1,8 @@
+import {
+	calculateAiCostMicros,
+	reserveAiUsage,
+	settleAiUsage,
+} from "@src/modules/billing";
 import { CHROME_EXTENSION_ID } from "@web-memo/shared/constants";
 import { type NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
@@ -13,12 +18,14 @@ import {
 } from "./util";
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const MAX_CATEGORY_PROMPT_BYTES = 24_000;
 
 if (!OPENAI_API_KEY) {
 	console.warn("OPENAI_API_KEY is not configured");
 }
 
-export async function POST(request: NextRequest) {
+/** 인증된 유료 사용자의 메모 카테고리를 추천합니다. */
+export const POST = async (request: NextRequest) => {
 	if (!OPENAI_API_KEY) {
 		return createErrorResponse(
 			"OpenAI API key not configured",
@@ -46,11 +53,30 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
+		const prompt = buildCategoryPrompt(body);
+		const totalPromptBytes = new TextEncoder().encode(
+			`${SYSTEM_MESSAGE}\n${prompt}`,
+		).byteLength;
+
+		if (totalPromptBytes > MAX_CATEGORY_PROMPT_BYTES) {
+			return createErrorResponse(
+				ERROR_MESSAGES.CONTEXT_TOO_LONG,
+				HTTP_STATUS.BAD_REQUEST,
+			);
+		}
+
+		const usageReservation = await reserveAiUsage(request, "category");
+
+		if (!usageReservation.isAllowed) {
+			return createErrorResponse(
+				usageReservation.message,
+				usageReservation.status,
+			);
+		}
+
 		const openai = new OpenAI({
 			apiKey: OPENAI_API_KEY,
 		});
-
-		const prompt = buildCategoryPrompt(body);
 
 		const completion = await openai.chat.completions.create({
 			model: OPENAI_MODEL,
@@ -66,7 +92,18 @@ export async function POST(request: NextRequest) {
 			],
 			temperature: OPENAI_SETTINGS.temperature,
 			response_format: OPENAI_SETTINGS.responseFormat,
+			max_tokens: 200,
 		});
+		const usage = completion.usage;
+		await settleAiUsage(
+			usageReservation.reservationId,
+			usage
+				? calculateAiCostMicros({
+						promptTokens: usage.prompt_tokens,
+						completionTokens: usage.completion_tokens,
+					})
+				: undefined,
+		);
 
 		const responseContent = completion.choices[0]?.message?.content;
 
@@ -122,11 +159,12 @@ export async function POST(request: NextRequest) {
 			HTTP_STATUS.INTERNAL_SERVER_ERROR,
 		);
 	}
-}
+};
 
-export async function OPTIONS() {
+/** 카테고리 추천 API의 CORS 사전 요청을 처리합니다. */
+export const OPTIONS = async () => {
 	return new Response(null, {
 		status: 200,
 		headers: CORS_HEADERS,
 	});
-}
+};

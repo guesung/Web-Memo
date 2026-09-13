@@ -64,6 +64,10 @@
 		"./modules/highlight": {
 			"types": "./src/modules/highlight/index.ts",
 			"default": "./src/modules/highlight/index.ts"
+		},
+		"./hooks/billing": {
+			"types": "./src/hooks/billing/index.ts",
+			"default": "./src/hooks/billing/index.ts"
 		}
 	},
 	"typesVersions": {
@@ -112,6 +116,9 @@
 			],
 			"modules/highlight": [
 				"./src/modules/highlight/index.ts"
+			],
+			"hooks/billing": [
+				"./src/hooks/billing/index.ts"
 			]
 		}
 	},

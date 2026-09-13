@@ -545,7 +545,7 @@
 			"appstore_button": "App Store",
 			"playstore_button": "Google Play",
 			"explore_features": "Explore Features",
-			"free_forever": "Free Forever",
+			"free_forever": "Start for free",
 			"quick_install": "10s Install",
 			"no_credit_card": "No credit card required",
 			"learn_more": "Learn more",
@@ -570,7 +570,7 @@
 			"testimonials_desc": "See what real users are saying",
 			"testimonials_note": "* Based on representative use cases",
 			"cta_title": "Get started now",
-			"cta_desc": "Ten seconds from install to your first note. All of it free.",
+			"cta_desc": "Ten seconds from install to your first note. Start with free memos or choose an optional paid subscription.",
 			"cta_badge": "Get Started Today"
 		},
 		"demo": {
@@ -630,7 +630,7 @@
 			"installs_desc": "Chrome Web Store installs",
 			"memos_saved": "Memos Saved",
 			"memos_saved_desc": "Total memos saved by users",
-			"free_forever": "Free forever",
+			"free_forever": "Start for free",
 			"no_tracking": "No data tracking",
 			"rating": "Average Rating",
 			"rating_desc": "Chrome Web Store rating",
@@ -641,7 +641,7 @@
 			"install_time_desc": "Time to install on Chrome"
 		},
 		"social_proof": {
-			"free_forever": "Free Forever",
+			"free_forever": "Start for free",
 			"no_tracking": "No Data Tracking",
 			"safe": "Safe"
 		},
@@ -707,7 +707,7 @@
 				},
 				"is_free": {
 					"question": "Is it free?",
-					"answer": "Yes! All core features of Web Memo are completely free: • Unlimited memo storage • AI-powered content summarization • Category organization features • Wishlist management • YouTube caption summarization • Mobile app with data synchronization We are committed to providing a great service experience without ads or paid subscriptions."
+					"answer": "Save up to 50 cloud memos. KRW 500 / month. Share up to 30 AI uses per subscription period. A cost safety limit may restrict use earlier. AI limits or errors never block ordinary memo saving."
 				},
 				"how_to_use": {
 					"question": "How do I use the service?",
@@ -1379,7 +1379,7 @@
 				"body": ["Web Memo does not collect any of the following."],
 				"items": [
 					"Your password. Sign-in is handled entirely by Google, and we never store passwords.",
-					"Payment information such as credit card numbers. The Service is free and processes no payments.",
+					"Full card numbers. Card registration is handled by the payment provider.",
 					"The content of pages where you neither saved a note or highlight nor ran an AI feature.",
 					"Your general browsing history or search history.",
 					"Government identification numbers, health information, political opinions, or other sensitive categories of data."
@@ -1588,5 +1588,49 @@
 		"confirmDescription": "This action cannot be undone.",
 		"ok": "Delete permanently",
 		"cancel": "Cancel"
+	},
+	"billing": {
+		"retryPendingPayment": "Resend the existing payment request",
+		"pricingTitle": "Pricing",
+		"free": "Free",
+		"paid": "Paid subscription",
+		"freePrice": "KRW 0",
+		"price": "KRW 500 / month",
+		"freeLimit": "Save up to 50 cloud memos.",
+		"trashIncluded": "Memos in the trash count toward this limit.",
+		"unlimitedMemos": "No plan limit on the number of memos.",
+		"aiFeatures": "Page summaries · editable category suggestions · current-page chat",
+		"aiLimitDescription": "Share up to 30 AI uses per subscription period. A cost safety limit may restrict use earlier. AI limits or errors never block ordinary memo saving.",
+		"preservation": "Keep viewing, editing, deleting and exporting your existing memos.",
+		"localPreserved": "Your locally saved memos are preserved.",
+		"manage": "Manage subscription",
+		"openMemos": "Back to memos",
+		"beforeSubscribe": "Before you subscribe",
+		"renewalTerms": "KRW 500 is charged automatically each month. Canceling renewal keeps your access until the end of the paid period.",
+		"sourceScope": "AI chat uses the current page or YouTube source. It does not search all your memos.",
+		"loginRequired": "Sign in to check your subscription. After signing in, return using Manage subscription in the header.",
+		"login": "Sign in",
+		"paymentPending": "We are checking your payment. Do not pay again; refresh the status instead.",
+		"loadFailed": "Subscription information is unavailable. This does not mean your plan changed to free. Please check again.",
+		"registrationFailed": "Card registration did not complete or was canceled. This is not a confirmed payment.",
+		"registrationReceived": "Card authentication finished. Confirm registration below. Your subscription payment is not complete yet.",
+		"confirmCard": "Confirm card registration",
+		"cardRegistered": "Your card is registered. Use the button below to pay for your subscription.",
+		"actionFailed": "The request could not be completed. Your input is preserved. Check the status again.",
+		"billingUnavailable": "Subscription payments are being prepared and are currently unavailable.",
+		"sdkUnavailable": "The payment window could not load. Please try again shortly.",
+		"cancellationFailed": "Renewal cancellation was not confirmed. Please check your subscription status.",
+		"endsAt": "Access continues until {{date}}.",
+		"renewsAt": "Next payment: {{date}}",
+		"memoCount": "Cloud memos: {{count}}",
+		"aiUsage": "AI uses this period: {{count}} / {{limit}}",
+		"consent": "I agree to the KRW 500 monthly automatic payment, AI usage limits and renewal cancellation terms.",
+		"pay": "Subscribe for KRW 500 / month",
+		"registerCard": "Register a card",
+		"cancelRenewal": "Cancel renewal",
+		"cancelTitle": "Cancel automatic renewal?",
+		"cancelDescription": "Future payments will stop. Paid access continues until the displayed period end, and your existing memos will not be deleted.",
+		"keepSubscription": "Keep subscription",
+		"refresh": "Refresh subscription status"
 	}
 }

@@ -254,5 +254,38 @@
 	},
 	"highlight_color_purple": {
 		"message": "보라색"
+	},
+	"billing_ai_signin": {
+		"message": "로그인 상태를 확인해 주세요. 일반 메모는 계속 사용할 수 있어요."
+	},
+	"billing_ai_paid": {
+		"message": "요약·자동 분류·페이지 채팅은 유료 구독에서 사용할 수 있어요."
+	},
+	"billing_ai_limit": {
+		"message": "AI 이용 한도에 도달했어요. 일반 메모는 계속 저장할 수 있어요."
+	},
+	"billing_ai_failed": {
+		"message": "AI 요청을 완료하지 못했어요. 메모와 기존 답변은 그대로 유지돼요."
+	},
+	"billing_loading": {
+		"message": "구독 상태를 확인하고 있어요."
+	},
+	"billing_load_failed": {
+		"message": "구독 상태를 확인하지 못했어요. 무료로 변경된 것은 아니에요."
+	},
+	"billing_ai_usage": {
+		"message": "이번 주기 AI 사용량:"
+	},
+	"billing_memo_limit": {
+		"message": "클라우드 메모 50개를 모두 사용하고 있어요. 휴지통도 포함돼요. 기존 메모는 계속 편집할 수 있고, 저장되지 않은 입력은 그대로 유지돼요."
+	},
+	"billing_ai_safety": {
+		"message": "AI는 주기당 최대 30회이며 비용 안전 한도로 더 일찍 제한될 수 있어요."
+	},
+	"billing_view_pricing": {
+		"message": "웹에서 요금제 보기"
+	},
+	"billing_refresh": {
+		"message": "상태 새로고침"
 	}
 }

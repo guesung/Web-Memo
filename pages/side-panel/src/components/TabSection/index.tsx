@@ -1,17 +1,20 @@
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { ErrorBoundary, Tabs, TabsContent, TabsList } from "@web-memo/ui";
 import { useState } from "react";
+import { BillingNotice } from "../BillingNotice";
 import { ChatTabTrigger, SummaryTabTrigger } from "./components";
 import Chat from "./components/Chat";
 import { ChatProvider } from "./components/Chat/components";
 import Summary from "./components/Summary";
 import { SummaryProvider } from "./components/Summary/components";
 
-interface TabSectionProps {
+/** 화면에 전달하는 속성입니다. */
+interface IFTabSectionProps {
 	tabHeight: number;
 }
 
-export default function TabSection({ tabHeight }: TabSectionProps) {
+/** 기존 화면 구조와 접근성을 유지하는 컴포넌트입니다. */
+const TabSection = ({ tabHeight }: IFTabSectionProps) => {
 	const [activeTab, setActiveTab] = useState("summary");
 
 	const handleTabChange = (tabName: string) => {
@@ -26,6 +29,7 @@ export default function TabSection({ tabHeight }: TabSectionProps) {
 					className="flex flex-col overflow-hidden"
 					style={{ height: `${tabHeight}%` }}
 				>
+					<BillingNotice />
 					<Tabs
 						value={activeTab}
 						onValueChange={handleTabChange}
@@ -58,4 +62,6 @@ export default function TabSection({ tabHeight }: TabSectionProps) {
 			</ChatProvider>
 		</SummaryProvider>
 	);
-}
+};
+
+export default TabSection;

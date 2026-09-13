@@ -540,7 +540,7 @@
 			"appstore_button": "App Store",
 			"playstore_button": "Google Play",
 			"explore_features": "기능 살펴보기",
-			"free_forever": "영원히 무료",
+			"free_forever": "무료로 시작하기",
 			"quick_install": "설치 10초",
 			"no_credit_card": "신용카드 필요 없음",
 			"learn_more": "더 알아보기",
@@ -565,7 +565,7 @@
 			"testimonials_desc": "실제 사용자들의 경험을 확인해보세요",
 			"testimonials_note": "* 대표적인 사용 사례를 바탕으로 작성되었습니다",
 			"cta_title": "지금 바로 시작하세요",
-			"cta_desc": "설치하고 첫 메모까지 10초면 됩니다. 전부 무료입니다.",
+			"cta_desc": "설치하고 첫 메모까지 10초면 됩니다. 무료 메모와 선택형 유료 구독을 제공해요.",
 			"cta_badge": "지금 시작하세요"
 		},
 		"demo": {
@@ -625,7 +625,7 @@
 			"installs_desc": "Chrome 웹스토어 설치 수",
 			"memos_saved": "저장된 메모",
 			"memos_saved_desc": "사용자들이 저장한 총 메모 개수",
-			"free_forever": "영원히 무료",
+			"free_forever": "무료로 시작하기",
 			"no_tracking": "데이터 추적 없음",
 			"rating": "평균 평점",
 			"rating_desc": "Chrome 웹스토어 평점",
@@ -636,7 +636,7 @@
 			"install_time_desc": "크롬에 설치하는 데 걸리는 시간"
 		},
 		"social_proof": {
-			"free_forever": "영원히 무료",
+			"free_forever": "무료로 시작하기",
 			"no_tracking": "데이터 추적 없음",
 			"safe": "안전"
 		},
@@ -702,7 +702,7 @@
 				},
 				"is_free": {
 					"question": "서비스는 무료인가요?",
-					"answer": "웹 메모 서비스는 전부 무료입니다."
+					"answer": "클라우드 메모 50개까지 저장할 수 있어요. 월 500원. AI는 구독 주기마다 최대 30회 함께 사용해요. 비용 안전 한도에 따라 더 일찍 제한될 수 있어요. AI 제한이나 오류가 일반 메모 저장을 막지는 않아요."
 				},
 				"how_to_use": {
 					"question": "서비스는 어떻게 이용하나요?",
@@ -1374,7 +1374,7 @@
 				"body": ["웹 메모는 다음 데이터를 수집하지 않습니다."],
 				"items": [
 					"이용자의 비밀번호 (로그인은 Google 인증으로만 처리되며 서비스는 비밀번호를 보관하지 않습니다)",
-					"신용카드 번호 등 결제 정보 (서비스는 무료이며 결제를 처리하지 않습니다)",
+					"신용카드 번호 원문 (카드등록은 결제대행사가 처리합니다)",
 					"이용자가 메모·하이라이트를 저장하지 않았고 AI 기능도 실행하지 않은 웹페이지의 내용",
 					"이용자의 전체 브라우저 방문 기록 및 검색 기록",
 					"주민등록번호 등 법령상 고유식별정보, 건강 정보, 정치적 견해 등 민감정보"
@@ -1585,5 +1585,49 @@
 		"confirmDescription": "이 작업은 되돌릴 수 없어요.",
 		"ok": "완전히 삭제",
 		"cancel": "취소"
+	},
+	"billing": {
+		"retryPendingPayment": "기존 결제 요청 다시 보내기",
+		"pricingTitle": "요금제",
+		"free": "무료",
+		"paid": "유료 구독",
+		"freePrice": "0원",
+		"price": "월 500원",
+		"freeLimit": "클라우드 메모 50개까지 저장할 수 있어요.",
+		"trashIncluded": "휴지통의 메모도 개수에 포함돼요.",
+		"unlimitedMemos": "메모 개수에 따른 상품 제한이 없어요.",
+		"aiFeatures": "페이지 요약 · 수정 가능한 자동 분류 · 현재 페이지 채팅",
+		"aiLimitDescription": "AI는 구독 주기마다 최대 30회 함께 사용해요. 비용 안전 한도에 따라 더 일찍 제한될 수 있어요. AI 제한이나 오류가 일반 메모 저장을 막지는 않아요.",
+		"preservation": "기존 메모는 계속 조회·수정·삭제·내보내기 할 수 있어요.",
+		"localPreserved": "로컬에 저장한 메모는 그대로 보존해요.",
+		"manage": "구독 관리",
+		"openMemos": "메모로 돌아가기",
+		"beforeSubscribe": "구독 전에 확인해 주세요",
+		"renewalTerms": "매월 500원이 자동 결제돼요. 자동갱신을 해지해도 이미 결제한 기간까지 이용할 수 있어요.",
+		"sourceScope": "AI 채팅은 현재 페이지나 유튜브 원문을 바탕으로 답해요. 전체 메모를 검색하지 않아요.",
+		"loginRequired": "구독 상태를 확인하려면 로그인해 주세요. 로그인 후 상단의 구독 관리로 돌아올 수 있어요.",
+		"login": "로그인",
+		"paymentPending": "결제 결과를 확인하고 있어요. 다시 결제하지 말고 상태를 새로고침해 주세요.",
+		"loadFailed": "구독 정보를 불러오지 못했어요. 무료 상태로 변경된 것은 아니에요. 잠시 후 다시 확인해 주세요.",
+		"registrationFailed": "카드등록을 완료하지 못했거나 취소했어요. 결제된 것으로 표시하지 않아요.",
+		"registrationReceived": "카드 인증이 끝났어요. 카드등록 결과를 확인해 주세요. 아직 구독 결제는 완료되지 않았어요.",
+		"confirmCard": "카드등록 확인",
+		"cardRegistered": "카드가 등록됐어요. 아래 버튼으로 구독 결제를 진행해 주세요.",
+		"actionFailed": "요청을 완료하지 못했어요. 입력 내용은 그대로 두고 상태를 다시 확인해 주세요.",
+		"billingUnavailable": "구독 결제를 준비하고 있어요. 현재는 결제를 진행할 수 없어요.",
+		"sdkUnavailable": "결제창을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.",
+		"cancellationFailed": "자동갱신 해지를 확인하지 못했어요. 구독 상태를 다시 확인해 주세요.",
+		"endsAt": "{{date}}까지 이용할 수 있어요.",
+		"renewsAt": "다음 결제일: {{date}}",
+		"memoCount": "클라우드 메모 {{count}}개",
+		"aiUsage": "이번 구독 주기 AI 사용량: {{count}} / {{limit}}회",
+		"consent": "월 500원 자동결제, AI 이용 제한 및 자동갱신 해지 조건을 확인하고 동의해요.",
+		"pay": "월 500원 구독 결제",
+		"registerCard": "카드등록 진행",
+		"cancelRenewal": "자동갱신 해지",
+		"cancelTitle": "자동갱신을 해지할까요?",
+		"cancelDescription": "다음 결제부터 중단해요. 현재 화면에 표시된 이용 종료일까지 유료 기능을 이용할 수 있고, 기존 메모는 삭제되지 않아요.",
+		"keepSubscription": "구독 유지",
+		"refresh": "구독 상태 새로고침"
 	}
 }

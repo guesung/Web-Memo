@@ -73,7 +73,22 @@ const DYNAMIC_REFERENCE_GLOBS = [
 ];
 
 /**
- * 추적 중인 파일에서 패턴을 찾습니다. 자기 자신은 결과에서 뺍니다.
+ * 참조 검색에서 빼는 파일들 — 이 자동화 자신입니다.
+ *
+ * 아래 주석과 설명 문구에 예시로 적힌 파일명이 그대로 매치가 됩니다.
+ * 빼지 않으면 두 방향으로 틀립니다.
+ * - 주석에 이름이 적힌 파일이 "참조됨"으로 오인돼 영영 회색에 갇힙니다
+ * - 반대로 누가 그 주석의 예시 이름을 바꾸면 그 파일이 안전으로 승격돼 지워집니다
+ *
+ * 분류 결과가 분류기의 주석 한 줄에 매달리면 안 됩니다.
+ */
+const SELF_REFERENCE_PATHS = new Set([
+	".github/scripts/lib/cleanup-report.mjs",
+	".github/scripts/cleanup-unused-files.mjs",
+]);
+
+/**
+ * 추적 중인 파일에서 패턴을 찾습니다. 후보 자신과 이 자동화 자신은 결과에서 뺍니다.
  *
  * git grep을 쓰는 이유: .gitignore를 자동으로 존중하므로 node_modules·dist를
  * 따로 거르지 않아도 되고, 워크플로 러너에도 반드시 있습니다.
@@ -91,11 +106,28 @@ const findReferences = ({ pattern, candidatePath, pathspecs }) => {
 		return output
 			.split("\n")
 			.map((line) => line.trim())
-			.filter((line) => line && line !== candidatePath);
+			.filter(
+				(line) =>
+					line && line !== candidatePath && !SELF_REFERENCE_PATHS.has(line),
+			);
 	} catch {
 		// git grep은 결과가 없으면 종료 코드 1로 끝납니다. 에러가 아닙니다.
 		return [];
 	}
+};
+
+/**
+ * 회색 사유에 적을 참조처 요약.
+ *
+ * 첫 매치만 적으면 알파벳 순으로 앞선 문서가 뽑혀, 리뷰어가 그 경로를 열었을 때
+ * 진짜 이유(빌드 스크립트의 문자열 경로)가 안 보입니다. 최대 두 곳과 총 건수를 적습니다.
+ */
+const summarizeReferences = (matches, pattern) => {
+	const [first, second] = matches;
+	const shown = second ? `${first}, ${second}` : first;
+	const rest = matches.length > 2 ? ` 외 ${matches.length - 2}곳` : "";
+
+	return `${shown}${rest} 에서 "${pattern}" 문자열로 참조 (총 ${matches.length}곳)`;
 };
 
 /**
@@ -118,7 +150,7 @@ const findDynamicReference = (candidatePath) => {
 	});
 
 	if (byFileName.length > 0) {
-		return `${byFileName[0]} 에서 "${fileName}" 문자열로 참조`;
+		return summarizeReferences(byFileName, fileName);
 	}
 
 	const byStem = findReferences({
@@ -128,7 +160,7 @@ const findDynamicReference = (candidatePath) => {
 	});
 
 	if (byStem.length > 0) {
-		return `${byStem[0]} 에서 "${stem}" 문자열로 참조`;
+		return summarizeReferences(byStem, stem);
 	}
 
 	return null;

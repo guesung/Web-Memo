@@ -2,7 +2,7 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
-import type { GetMemoResponse } from "@web-memo/shared/types";
+import type { GetMemoResponse, HighlightRow } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
 import { Card, CardContent } from "@web-memo/ui";
 import { motion } from "framer-motion";
@@ -17,9 +17,12 @@ import { useFormContext } from "react-hook-form";
 import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
 import type { SearchFormValues } from "../MemoSearchFormProvider";
+import { MemoHighlights } from "./MemoHighlights";
 
-interface MemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
+/** 메모 카드 표시와 선택 속성. */
+interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	memo: GetMemoResponse;
+	highlights?: HighlightRow[];
 	isSelectingMode?: boolean;
 	selectMemoItem?: (id: number) => void;
 	isMemoSelected?: boolean;
@@ -41,9 +44,11 @@ interface MemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	footer?: ReactNode;
 }
 
-export default memo(function MemoItem({
+/** 메모 본문과 연결된 하이라이트를 표시한다. */
+const MemoItem = ({
 	lng,
 	memo,
+	highlights,
 	selectMemoItem,
 	isSelectingMode,
 	isMemoSelected,
@@ -54,7 +59,7 @@ export default memo(function MemoItem({
 	badge,
 	footer,
 	...props
-}: MemoItemProps) {
+}: IFMemoItemProps) => {
 	const { t } = useTranslation(lng);
 	const searchParams = useSearchParams();
 	// 휴지통에는 검색 폼이 없다. 그때 useFormContext는 null을 준다.
@@ -71,12 +76,15 @@ export default memo(function MemoItem({
 	const handleMemoItemClick = (event: MouseEvent<HTMLElement>) => {
 		const target = event.target as HTMLElement;
 		const isMemoItem = target.closest(".memo-item");
-		if (!isMemoItem) return;
+		if (!isMemoItem) {
+			return;
+		}
 
 		const id = event.currentTarget.id;
 
-		if (isSelectingMode) selectMemoItem?.(Number(id));
-		else {
+		if (isSelectingMode) {
+			selectMemoItem?.(Number(id));
+		} else {
 			// 메모를 다시 꺼내 보는 동작입니다. 저장(memo_write)만 재면 쌓이기만 하는지
 			// 실제로 쓰이는지 구분할 수 없어, 읽기 쪽도 같이 남깁니다.
 			analytics.trackEvent({
@@ -178,6 +186,10 @@ export default memo(function MemoItem({
 							{memo.memo}
 						</CardContent>
 					)}
+					<MemoHighlights
+						highlights={highlights}
+						label={t("sideBar.highlight")}
+					/>
 					{showImpression && memo.impression && (
 						<CardContent className="px-5 pb-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
 							<p className="mb-1 text-xs font-semibold text-muted-foreground">
@@ -206,4 +218,7 @@ export default memo(function MemoItem({
 			</motion.div>
 		</div>
 	);
-});
+};
+
+/** 메모 카드의 불필요한 재렌더링을 방지한다. */
+export default memo(MemoItem);

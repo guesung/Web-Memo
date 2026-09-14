@@ -237,3 +237,8 @@ s3_region = "env(S3_REGION)"
 s3_access_key = "env(S3_ACCESS_KEY)"
 # Configures AWS_SECRET_ACCESS_KEY for S3 bucket
 s3_secret_key = "env(S3_SECRET_KEY)"
+
+# DB 트리거(pg_net)만 부르는 함수. JWT 대신 x-cron-secret 헤더로 호출자를 확인하므로
+# 검증을 꺼 둔다. 이 줄이 없으면 플래그 없이 배포할 때 다시 켜져 트리거 호출이 전부 401이 된다.
+[functions.send-welcome-email]
+verify_jwt = false

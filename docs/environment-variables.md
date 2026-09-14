@@ -354,6 +354,20 @@ gitignore 대상이라 EAS 샌드박스에 복사되지 않아 iOS 빌드가 깨
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
+아래는 우리가 `supabase secrets set <이름>=<값>`으로 직접 등록하는 값입니다.
+레포에도 `.env`에도 두지 않습니다.
+
+| 이름 | 쓰는 함수 | 용도 |
+| --- | --- | --- |
+| `SLACK_FEEDBACK_WEBHOOK_URL` | `send-feedback` | 피드백 슬랙 알림 |
+| `RESEND_API_KEY` | `send-welcome-email` | 가입 안내 메일 발송 |
+| `CRON_SECRET` | `daily-article-reminder`, `send-welcome-email` | DB에서 부르는 함수의 호출자 확인. Vault `cron_secret`과 같은 값 |
+
+`send-welcome-email`은 JWT 검증을 끄고(`--no-verify-jwt`) 배포하며, 호출자는
+`x-cron-secret` 헤더로 확인합니다. 트리거가 이 헤더와 호출 주소를 Vault의
+`cron_secret`·`project_url`에서 읽으므로 `daily-article-reminder`와 같은 두 값을
+공유합니다. 새로 넣을 DB 설정은 없습니다.
+
 ### 빌드 플래그
 
 값이라기보다 분기 스위치입니다.

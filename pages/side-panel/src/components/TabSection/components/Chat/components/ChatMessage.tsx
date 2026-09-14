@@ -1,14 +1,16 @@
-import type { ChatMessage as ChatMessageType } from "@src/hooks";
+import type { IFChatMessage as ChatMessageType } from "@src/hooks";
 import { cn } from "@web-memo/ui";
 import { Bot, User } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-interface ChatMessageProps {
+/** 화면에 전달하는 속성입니다. */
+interface IFChatMessageProps {
 	message: ChatMessageType;
 }
 
-export default function ChatMessage({ message }: ChatMessageProps) {
+/** 기존 화면 구조와 접근성을 유지하는 컴포넌트입니다. */
+const ChatMessage = ({ message }: IFChatMessageProps) => {
 	const isUser = message.role === "user";
 
 	return (
@@ -47,4 +49,6 @@ export default function ChatMessage({ message }: ChatMessageProps) {
 			</div>
 		</div>
 	);
-}
+};
+
+export default ChatMessage;

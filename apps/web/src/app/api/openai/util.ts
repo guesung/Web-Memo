@@ -9,10 +9,16 @@ import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "./constant";
 import type { ValidationResult } from "./type";
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const MAX_MESSAGE_COUNT = 40;
+const MAX_TOTAL_MESSAGE_CHARACTERS = 24_000;
 
 export const validateMessages = (messages: unknown): ValidationResult => {
 	if (!messages || !Array.isArray(messages) || messages.length === 0) {
 		return { isValid: false, error: ERROR_MESSAGES.MISSING_MESSAGES };
+	}
+
+	if (messages.length > MAX_MESSAGE_COUNT) {
+		return { isValid: false, error: ERROR_MESSAGES.CONTEXT_TOO_LONG };
 	}
 
 	const isValidMessage = messages.every((msg: unknown) => {
@@ -25,6 +31,18 @@ export const validateMessages = (messages: unknown): ValidationResult => {
 
 	if (!isValidMessage) {
 		return { isValid: false, error: ERROR_MESSAGES.INVALID_MESSAGE_FORMAT };
+	}
+
+	const totalCharacters = messages.reduce((total, message) => {
+		return (
+			total +
+			new TextEncoder().encode((message as { content: string }).content)
+				.byteLength
+		);
+	}, 0);
+
+	if (totalCharacters > MAX_TOTAL_MESSAGE_CHARACTERS) {
+		return { isValid: false, error: ERROR_MESSAGES.CONTEXT_TOO_LONG };
 	}
 
 	return { isValid: true };
@@ -68,6 +86,10 @@ export const handleOpenAIError = (error: Error) => {
 
 export const createStreamingResponse = (
 	messages: ChatCompletionMessageParam[],
+	onUsage?: (usage: {
+		promptTokens: number;
+		completionTokens: number;
+	}) => Promise<void>,
 ) => {
 	const openai = new OpenAI({
 		apiKey: OPENAI_API_KEY,
@@ -82,10 +104,18 @@ export const createStreamingResponse = (
 					model: "gpt-4o-mini",
 					messages,
 					stream: true,
+					stream_options: { include_usage: true },
 					temperature: 0.3,
+					max_tokens: 1_000,
 				});
 
 				for await (const chunk of stream) {
+					if (chunk.usage && onUsage) {
+						await onUsage({
+							promptTokens: chunk.usage.prompt_tokens,
+							completionTokens: chunk.usage.completion_tokens,
+						});
+					}
 					const content = chunk.choices[0]?.delta?.content;
 					if (content) {
 						controller.enqueue(

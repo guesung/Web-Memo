@@ -346,6 +346,24 @@ ID)이 전부 고정값이라 상수만 읽습니다. 앱에는 스테이징 배
 gitignore 대상이라 EAS 샌드박스에 복사되지 않아 iOS 빌드가 깨지던 제약 자체가
 앱에서는 사라졌습니다.
 
+### 결제 (`apps/web` 서버 전용)
+
+결제 비밀은 모두 `apps/web/.env`와 Vercel 프로젝트 환경변수에만 둡니다. 값은
+문서·PR·클라이언트 번들에 기록하지 않습니다.
+
+| 이름 | 용도 |
+| --- | --- |
+| `NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY` | 토스 카드 등록창 초기화에 사용하는 공개 키 |
+| `TOSS_PAYMENTS_SECRET_KEY` | 빌링키 발급·승인·조회 서버 인증 |
+| `SUPABASE_SERVICE_ROLE_KEY` | 비공개 billing 스키마 원장 처리 |
+| `BILLING_KEY_ENCRYPTION_KEY` | 빌링키 AES-256-GCM 암호화용 32바이트 base64 키 |
+| `BILLING_CRON_SECRET` | Supabase Cron에서 결제 작업 Route Handler를 호출할 때 사용하는 인증 값 |
+| `BILLING_ENABLED` | 계약·정책·운영 준비가 끝난 환경에서만 `true`로 설정하는 출시 스위치 |
+| `OPENAI_USD_TO_KRW_RATE` | AI 실제 토큰 비용을 원화로 정산할 때 사용하는 운영 환율 |
+
+위 값 중 하나라도 없으면 결제 기능은 실패 폐쇄 방식으로 비활성화합니다. 테스트와
+운영은 서로 다른 토스 상점·Supabase 프로젝트·암호화 키를 사용합니다.
+
 ### Supabase Edge Functions
 
 `packages/supabase-edge-functions`는 Supabase 플랫폼이 주입하는 예약 변수를

@@ -1,4 +1,5 @@
 import type { HighlightRow } from "../../types";
+import type { HighlightAnchor } from "../highlight/types";
 import type { Category } from "./constant";
 
 export interface PageContentResponse {
@@ -41,3 +42,30 @@ export interface GetHighlightsByUrlPayload {
 export interface GetHighlightsByUrlResponse {
 	highlights: HighlightRow[];
 }
+
+/** 선택 당시의 앵커와 페이지 메타데이터. 사용자 ID와 색상은 background가 결정한다. */
+export interface IFCreateHighlightPayload {
+	anchor: HighlightAnchor;
+	url: string;
+	title: string;
+	favIconUrl: string;
+}
+
+/** 저장 성공 행 또는 사용자에게 안내할 오류 코드. */
+export type TCreateHighlightResponse =
+	| { success: true; highlight: HighlightRow }
+	| {
+			success: false;
+			error: "unauthenticated" | "invalid_request" | "save_failed";
+	  };
+
+/** 현재 페이지에서 실행하는 하이라이트 색 변경 또는 삭제. */
+export interface IFEditHighlightPayload {
+	id: number;
+	url: string;
+	action: "color" | "delete";
+	color?: import("../../constants/Highlight").HighlightColor;
+}
+
+/** 실제 변경된 행 또는 검증·인증·저장 오류. */
+export type TEditHighlightResponse = TCreateHighlightResponse;

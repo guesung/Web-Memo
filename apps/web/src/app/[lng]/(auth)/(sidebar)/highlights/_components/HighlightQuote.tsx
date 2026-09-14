@@ -10,17 +10,21 @@ import type { HighlightRow } from "@web-memo/shared/types";
 import { useEffect, useRef, useState } from "react";
 import { useHighlightNoteMutation } from "../_hooks";
 
-interface HighlightQuoteProps {
+/** 하이라이트 문장과 기존 메모를 표시하는 속성. */
+interface IFHighlightQuoteProps {
 	highlight: HighlightRow;
 	lng: Language;
 }
 
 /** URL별 그룹 카드 안에서 하이라이트 한 문장을 보여준다. 코멘트 영역을 누르면 편집할 수 있다. */
-export function HighlightQuote({ highlight, lng }: HighlightQuoteProps) {
+export const HighlightQuote = ({ highlight, lng }: IFHighlightQuoteProps) => {
 	const { t } = useTranslation(lng);
 	const [isEditing, setIsEditing] = useState(false);
 	const [note, setNote] = useState(highlight.note ?? "");
-	const { mutate: saveNote } = useHighlightNoteMutation();
+	const [savedNote, setSavedNote] = useState(highlight.note ?? "");
+	const [isNoteSaveError, setIsNoteSaveError] = useState(false);
+	const { mutate: saveNote, isPending: isNoteSaving } =
+		useHighlightNoteMutation();
 	const noteTextareaRef = useRef<HTMLTextAreaElement>(null);
 
 	const style = HIGHLIGHT_COLOR_STYLE[highlight.color as HighlightColor];
@@ -34,23 +38,33 @@ export function HighlightQuote({ highlight, lng }: HighlightQuoteProps) {
 	const handleNoteBlur = () => {
 		setIsEditing(false);
 
-		if (note === (highlight.note ?? "")) {
+		if (note === savedNote) {
 			return;
 		}
 
-		saveNote({ id: highlight.id, note });
+		setIsNoteSaveError(false);
+		saveNote(
+			{ id: highlight.id, note },
+			{
+				onSuccess: () => setSavedNote(note),
+				onError: () => {
+					setNote(savedNote);
+					setIsNoteSaveError(true);
+				},
+			},
+		);
 	};
 
 	return (
 		<li className="flex gap-3 py-2">
-			<span
-				aria-hidden
-				className="w-1 shrink-0 rounded-full"
-				style={{ backgroundColor: style.bar }}
-			/>
 			<div className="min-w-0 flex-1">
 				<p className="text-sm leading-6 text-foreground">
-					{highlight.exact_text}
+					<mark
+						className="box-decoration-clone rounded-sm px-1 text-foreground"
+						style={{ backgroundColor: style.background }}
+					>
+						{highlight.exact_text}
+					</mark>
 				</p>
 
 				{isEditing ? (
@@ -63,16 +77,22 @@ export function HighlightQuote({ highlight, lng }: HighlightQuoteProps) {
 						className="mt-1 w-full resize-none rounded-md border border-border bg-background p-2 text-xs"
 						rows={2}
 					/>
-				) : (
+				) : note.trim() ? (
 					<button
 						type="button"
+						disabled={isNoteSaving}
 						onClick={() => setIsEditing(true)}
 						className="mt-1 block text-left text-xs text-muted-foreground hover:underline"
 					>
-						{note || t("highlight.note.placeholder")}
+						{note}
 					</button>
+				) : null}
+				{isNoteSaveError && (
+					<p role="alert" className="mt-1 text-xs text-destructive">
+						{t("memos.saveStatus.error")}
+					</p>
 				)}
 			</div>
 		</li>
 	);
-}
+};

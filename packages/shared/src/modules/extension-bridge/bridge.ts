@@ -10,6 +10,7 @@ import type {
 export const bridge = createBridge({
 	GET_SIDE_PANEL_OPEN: defineMessage<void, boolean>("toExtension"),
 	OPEN_SIDE_PANEL: defineMessage<void, void>("internal"),
+	TOGGLE_FLOATING_PANEL: defineMessage<void, void>("toTab"),
 	GET_TABS: defineMessage<void, chrome.tabs.Tab>("internal"),
 	PAGE_CONTENT: defineMessage<void, PageContentResponse>("toTab"),
 	YOUTUBE_TRANSCRIPT: defineMessage<void, string>("toTab"),

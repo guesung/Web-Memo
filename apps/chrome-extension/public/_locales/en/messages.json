@@ -1,4 +1,5 @@
 {
+	"memo_title_sync": { "message": "Update to the current page title" },
 	"extensionName": {
 		"message": "Web Memo - Easily take notes on websites"
 	},
@@ -214,5 +215,44 @@
 	},
 	"actionItemPlaceholder": {
 		"message": "Write what to do after reading this page"
+	},
+	"highlight_create": {
+		"message": "Highlight"
+	},
+	"highlight_saving": {
+		"message": "Saving…"
+	},
+	"highlight_save_failed": {
+		"message": "Could not save. Please try again."
+	},
+	"highlight_login_required": {
+		"message": "Sign in to Web Memo, then try again."
+	},
+	"highlight_duplicate": {
+		"message": "This highlight is already saved."
+	},
+	"highlight_selection_too_long": {
+		"message": "Select no more than 5,000 characters."
+	},
+	"highlight_edit": {
+		"message": "Edit highlight"
+	},
+	"highlight_delete": {
+		"message": "Delete highlight"
+	},
+	"highlight_color_yellow": {
+		"message": "Yellow"
+	},
+	"highlight_color_green": {
+		"message": "Green"
+	},
+	"highlight_color_blue": {
+		"message": "Blue"
+	},
+	"highlight_color_pink": {
+		"message": "Pink"
+	},
+	"highlight_color_purple": {
+		"message": "Purple"
 	}
 }

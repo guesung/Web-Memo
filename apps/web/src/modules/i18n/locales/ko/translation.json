@@ -508,6 +508,7 @@
 		}
 	},
 	"highlight": {
+		"loadError": "하이라이트를 불러오지 못했어요. 다시 시도해 주세요.",
 		"loadMore": "더 보기",
 		"count": "{{count}}개",
 		"empty": {

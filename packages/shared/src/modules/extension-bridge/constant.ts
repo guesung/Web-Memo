@@ -11,6 +11,7 @@ export const BRIDGE_MESSAGE_TYPES = {
 	UPDATE_SIDE_PANEL: "UPDATE_SIDE_PANEL",
 	SYNC_LOGIN_STATUS: "SYNC_LOGIN_STATUS",
 	CREATE_MEMO: "CREATE_MEMO",
+	CREATE_HIGHLIGHT: "CREATE_HIGHLIGHT",
 } as const;
 
 export type Category = "youtube" | "others";

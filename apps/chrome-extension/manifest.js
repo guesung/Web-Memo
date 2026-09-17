@@ -65,6 +65,8 @@ const manifest = deepmerge(
 					"icon-34.png",
 					"icon-16.png",
 					"icon-48.png",
+					// 사이드 패널을 못 여는 브라우저(Arc)에서 content-ui가 iframe으로 띄운다.
+					"side-panel/*",
 				],
 				matches: ["*://*/*"],
 			},

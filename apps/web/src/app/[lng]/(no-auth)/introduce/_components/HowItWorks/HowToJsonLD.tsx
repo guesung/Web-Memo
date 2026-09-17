@@ -15,16 +15,16 @@ const HOW_TO_DATA = {
 		steps: [
 			{
 				name: "확장 프로그램 설치",
-				text: "Chrome 웹스토어에서 웹 메모 확장 프로그램을 설치하세요. 10초면 충분합니다.",
+				text: "Chrome 웹스토어에서 10초 만에",
 				url: EXTERNAL_LINK.chromeWebStoreListing,
 			},
 			{
-				name: "사이드 패널 열기",
-				text: "Alt+S (맥: Option+S) 단축키로 어디서든 사이드 패널을 빠르게 열 수 있습니다.",
+				name: "로그인하고 사이드 패널 열기",
+				text: "로그인 후 Alt+S(맥: Option+S) 단축키로 어디서든 빠르게 열 수 있어요",
 			},
 			{
-				name: "저장하고 정리하기",
-				text: "웹 콘텐츠를 메모하고 카테고리별로 체계적으로 관리하세요. 모든 메모는 자동으로 저장됩니다.",
+				name: "메모 자동 저장",
+				text: "메모를 입력하면 자동으로 저장되고, 웹에서 언제든 다시 확인할 수 있어요",
 			},
 		],
 		totalTime: "PT2M",
@@ -36,16 +36,16 @@ const HOW_TO_DATA = {
 		steps: [
 			{
 				name: "Install the Extension",
-				text: "Install the Web Memo extension from the Chrome Web Store. It only takes 10 seconds.",
+				text: "10 seconds from the Chrome Web Store",
 				url: EXTERNAL_LINK.chromeWebStoreListing,
 			},
 			{
-				name: "Open the Side Panel",
-				text: "Press Alt+S (Mac: Option+S) to quickly open the side panel from anywhere.",
+				name: "Sign In & Open the Side Panel",
+				text: "After signing in, press Alt+S (Mac: Option+S) to open it instantly, anywhere",
 			},
 			{
-				name: "Save and Organize",
-				text: "Take notes on web content and organize them by categories. All memos are automatically saved.",
+				name: "Memos Save Automatically",
+				text: "Enter a memo and it saves automatically — revisit it anytime on the web",
 			},
 		],
 		totalTime: "PT2M",

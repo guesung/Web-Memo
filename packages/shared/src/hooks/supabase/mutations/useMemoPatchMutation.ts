@@ -18,6 +18,11 @@ export default function useMemoPatchMutation() {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	return useMutation<MutationData, MutationError, MutationVariables>({
+		meta: {
+			feature: "memo",
+			operation: "patch",
+			stage: "save",
+		},
 		mutationFn: new MemoService(supabaseClient).updateMemo,
 		onSuccess: async () => {
 			await analytics.trackMemoWrite();

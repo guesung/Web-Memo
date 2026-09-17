@@ -131,7 +131,7 @@ export default function useChat(): UseChatReturn {
 							return updated;
 						});
 					},
-					(errorMessage) => {
+					(errorMessage, _streamFailureStage) => {
 						setError(errorMessage);
 						setMessages((prev) => prev.slice(0, -1));
 					},

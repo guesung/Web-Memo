@@ -1,5 +1,6 @@
 import "webextension-polyfill";
 
+import { captureException } from "@sentry/react";
 import { CONFIG } from "@web-memo/env";
 import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import {
@@ -13,6 +14,25 @@ import {
 	normalizeUrl,
 } from "@web-memo/shared/utils";
 import { getSupabaseClient, I18n, Tab } from "@web-memo/shared/utils/extension";
+import { initSentry } from "@web-memo/shared/utils";
+
+const FEATURE_NAME = "memo";
+const OPERATION_NAME = "create-memo";
+
+void initSentry();
+
+const reportMemoCreateError = (error: unknown, stage: string) => {
+	captureException(error instanceof Error ? error : new Error(String(error)), {
+		level: "error",
+		tags: {
+			feature: FEATURE_NAME,
+			operation: OPERATION_NAME,
+			stage,
+		},
+		fingerprint: [FEATURE_NAME, OPERATION_NAME, stage],
+		extra: { feature: FEATURE_NAME, operation: OPERATION_NAME, stage },
+	});
+};
 
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
 chrome.runtime.onInstalled.addListener(async () => {
@@ -106,6 +126,7 @@ bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
 		const existingMemo = await memoService.getMemoByUrl(normalizedUrl);
 
 		if (existingMemo.error) {
+			reportMemoCreateError(existingMemo.error, "lookup");
 			sendResponse({ success: false, error: existingMemo.error.message });
 			return;
 		}
@@ -121,6 +142,7 @@ bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
 			});
 
 			if (result.error) {
+				reportMemoCreateError(result.error, "update");
 				sendResponse({ success: false, error: result.error.message });
 			} else {
 				sendResponse({ success: true });
@@ -132,12 +154,14 @@ bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
 			});
 
 			if (result.error) {
+				reportMemoCreateError(result.error, "insert");
 				sendResponse({ success: false, error: result.error.message });
 			} else {
 				sendResponse({ success: true });
 			}
 		}
 	} catch (error) {
+		reportMemoCreateError(error, "handler");
 		sendResponse({
 			success: false,
 			error:

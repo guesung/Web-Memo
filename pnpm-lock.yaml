@@ -209,6 +209,9 @@ importers:
 
   apps/chrome-extension:
     dependencies:
+      '@sentry/react':
+        specifier: ^8.30.0
+        version: 8.55.0(react@19.1.0)
       '@web-memo/shared':
         specifier: workspace:*
         version: link:../../packages/shared

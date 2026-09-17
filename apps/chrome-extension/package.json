@@ -17,6 +17,7 @@
 	"type": "module",
 	"dependencies": {
 		"@web-memo/shared": "workspace:*",
+		"@sentry/react": "^8.30.0",
 		"webextension-polyfill": "^0.12.0"
 	},
 	"devDependencies": {

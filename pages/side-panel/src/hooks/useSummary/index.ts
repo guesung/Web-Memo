@@ -1,8 +1,18 @@
+import { captureException } from "@sentry/react";
 import { CONFIG } from "@web-memo/env";
 import { I18n } from "@web-memo/shared/utils/extension";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { usePageContentContext } from "../../components/PageContentProvider";
 import { getSummaryPrompt, processStreamingResponse } from "./util";
+
+const ERROR_REPORTING_WINDOW_MS = 8_000;
+const ERROR_FEATURE = "summary";
+const ERROR_OPERATION = "generate";
+
+const isExpectedSummaryError = (error: unknown): boolean => {
+	if (!(error instanceof Error)) return false;
+	return error.name === "AbortError";
+};
 
 interface UseSummaryReturn {
 	isSummaryLoading: boolean;
@@ -15,14 +25,58 @@ export default function useSummary(): UseSummaryReturn {
 	const [summary, setSummary] = useState("");
 	const [errorMessage, setErrorMessage] = useState("");
 	const [isGenerating, setIsGenerating] = useState(false);
+	const lastErrorRef = useRef(new Map<string, number>());
 	const {
 		content,
 		category,
 		error: pageContentError,
 	} = usePageContentContext();
 
+	const reportSummaryFailure = useCallback(
+		(
+			error: unknown,
+			stage: "reader" | "parse" | "server" | "fetch" | "general",
+		) => {
+			if (isExpectedSummaryError(error)) return;
+
+			const errorMessage =
+				error instanceof Error ? error.message : String(error);
+			const summaryErrorMessage = errorMessage || "unknown-summary-error";
+			const now = Date.now();
+			const fingerprint = `${ERROR_FEATURE}|${ERROR_OPERATION}|${stage}|${summaryErrorMessage.slice(0, 120)}`;
+			const last = lastErrorRef.current.get(fingerprint) ?? 0;
+			if (now - last < ERROR_REPORTING_WINDOW_MS) return;
+			lastErrorRef.current.set(fingerprint, now);
+
+			captureException(
+				error instanceof Error ? error : new Error(summaryErrorMessage),
+				{
+					level: "error",
+					tags: {
+						feature: ERROR_FEATURE,
+						operation: ERROR_OPERATION,
+						stage,
+					},
+					fingerprint: [ERROR_FEATURE, ERROR_OPERATION, stage],
+					extra: {
+						feature: ERROR_FEATURE,
+						operation: ERROR_OPERATION,
+						stage,
+						occurredAt: now,
+					},
+				},
+			);
+		},
+		[],
+	);
+
 	const generateSummary = useCallback(async () => {
 		if (pageContentError) {
+			setErrorMessage(I18n.get("error_get_page_content"));
+			return;
+		}
+
+		if (!content.trim()) {
 			setErrorMessage(I18n.get("error_get_page_content"));
 			return;
 		}
@@ -43,25 +97,37 @@ export default function useSummary(): UseSummaryReturn {
 				body: JSON.stringify({ messages }),
 			});
 
-			if (!response.ok)
-				throw new Error(`HTTP error! status: ${response.status}`);
+			if (!response.ok) {
+				reportSummaryFailure(
+					new Error(`요약 API 응답 실패: ${response.status}`),
+					"fetch",
+				);
+				setErrorMessage(I18n.get("error_get_summary"));
+				return;
+			}
 
 			await processStreamingResponse(
 				response,
 				(streamContent) => {
 					setSummary((prev) => prev + streamContent);
 				},
-				(error) => {
-					setErrorMessage(error);
+				(error, stage) => {
+					reportSummaryFailure(
+						new Error(error),
+						stage === "server" ? "server" : stage,
+					);
+					setErrorMessage(I18n.get("error_get_summary"));
 				},
 			);
 		} catch (error) {
-			console.error("Summary error:", error);
-			setErrorMessage(I18n.get("error_get_page_content"));
+			if (!isExpectedSummaryError(error)) {
+				reportSummaryFailure(error, "general");
+				setErrorMessage(I18n.get("error_get_summary"));
+			}
 		} finally {
 			setIsGenerating(false);
 		}
-	}, [content, category, pageContentError]);
+	}, [content, category, pageContentError, reportSummaryFailure]);
 
 	return {
 		isSummaryLoading: isGenerating,

@@ -3,6 +3,7 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { useMemoPatchMutation } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
@@ -12,7 +13,6 @@ import { BookOpen, Clock, FolderIcon, HeartIcon, StarIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
 import { useState } from "react";
-
 import MemoOption from "./MemoOption";
 
 interface MemoCardFooterProps
@@ -63,6 +63,10 @@ export default function MemoCardFooter({
 				<ToastAction
 					altText={t("toastActionMessage.undo")}
 					onClick={() => {
+						analytics.trackEvent({
+							name: "memo_undo",
+							params: { action: "wish" },
+						});
 						mutateMemoPatch({
 							id: memo.id,
 							request: {
@@ -97,6 +101,10 @@ export default function MemoCardFooter({
 				<ToastAction
 					altText={t("toastActionMessage.undo")}
 					onClick={() => {
+						analytics.trackEvent({
+							name: "memo_undo",
+							params: { action: "reading" },
+						});
 						mutateMemoPatch({
 							id: memo.id,
 							request: {
@@ -148,7 +156,7 @@ export default function MemoCardFooter({
 	return (
 		<CardFooter
 			className={cn(
-				"flex items-center justify-between px-5 py-3 border-t border-gray-100 dark:border-gray-800",
+				"flex items-center justify-between px-5 py-3 border-t border-border",
 				props.className,
 			)}
 			{...props}
@@ -180,7 +188,7 @@ export default function MemoCardFooter({
 				)}
 				<time
 					dateTime={memo.updated_at ?? ""}
-					className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5"
+					className="text-xs text-muted-foreground flex items-center gap-1.5"
 				>
 					<Clock className="w-3 h-3" />
 					{dayjs(memo.updated_at).fromNow()}
@@ -201,10 +209,10 @@ export default function MemoCardFooter({
 				>
 					<HeartIcon
 						size={16}
-						fill={memo.isWish ? "#ec4899" : "none"}
+						fill={memo.isWish ? "currentColor" : "none"}
 						className={cn(
 							"transition-all",
-							memo.isWish ? "text-pink-500 scale-110" : "text-gray-400",
+							memo.isWish ? "text-pink-500 scale-110" : "text-muted-foreground",
 							"hover:scale-125",
 						)}
 					/>
@@ -219,7 +227,9 @@ export default function MemoCardFooter({
 						size={16}
 						className={cn(
 							"transition-all",
-							memo.isReading ? "text-emerald-500 scale-110" : "text-gray-400",
+							memo.isReading
+								? "text-emerald-500 scale-110"
+								: "text-muted-foreground",
 							"hover:scale-125",
 						)}
 					/>
@@ -232,10 +242,12 @@ export default function MemoCardFooter({
 				>
 					<StarIcon
 						size={16}
-						fill={memo.isStar ? "#f59e0b" : "none"}
+						fill={memo.isStar ? "currentColor" : "none"}
 						className={cn(
 							"transition-all",
-							memo.isStar ? "text-amber-500 scale-110" : "text-gray-400",
+							memo.isStar
+								? "text-amber-500 scale-110"
+								: "text-muted-foreground",
 							"hover:scale-125",
 						)}
 					/>

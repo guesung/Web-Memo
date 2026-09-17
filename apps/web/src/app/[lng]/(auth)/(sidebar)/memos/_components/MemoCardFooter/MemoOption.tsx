@@ -7,6 +7,7 @@ import {
 	useDeleteMemosMutation,
 	useMemosUpsertMutation,
 } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import {
@@ -54,6 +55,7 @@ export default function MemoOption({
 		mutateDeleteMemo(memos.map((memo) => memo.id));
 
 		const handleToastActionClick = async () => {
+			analytics.trackEvent({ name: "memo_undo", params: { action: "delete" } });
 			mutateUpsertMemo(memos);
 
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
@@ -76,6 +78,8 @@ export default function MemoOption({
 	};
 
 	const handleCategoryChange = async (categoryId: string) => {
+		// 일괄 upsert라 뮤테이션 쪽 분기가 못 잡습니다. 여기서 직접 찍습니다.
+		analytics.trackEvent({ name: "memo_category_change" });
 		const currentCategory = categories?.find(
 			(category) => category.id === Number(categoryId),
 		);

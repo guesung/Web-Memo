@@ -273,7 +273,7 @@ Protocol로 직접 이벤트를 보내는 현재 구조상 이미 번들에 인�
 배포 파이프라인이 외부 서비스에 인증할 때만 씁니다. 애플리케이션 코드가 읽는 값은
 하나도 없습니다.
 
-현재 등록된 13개입니다 (`gh secret list -R guesung/Web-Memo`).
+현재 등록된 15개입니다 (`gh secret list -R guesung/Web-Memo`).
 
 | 이름 | 용도 | 쓰는 워크플로 |
 | --- | --- | --- |
@@ -290,8 +290,21 @@ Protocol로 직접 이벤트를 보내는 현재 구조상 이미 번들에 인�
 | `SLACK_WEBHOOK_URL` | 빌드·배포 결과 Slack 알림 | `ci.yml`, `release.yml`, `versions.yml` |
 | `WEB_ENV_FILE` | e2e에서 `apps/web/.env`를 통째로 복원 | `e2e.yml` |
 | `SENTRY_AUTH_TOKEN` | 확장 빌드의 Sentry 소스맵 업로드 인증 | `cd-extension.yml` |
+| `SLACK_REPORT_WEBHOOK_URL` | 데일리 GA 리포트 전용 채널 알림 | `daily-ga-report.yml` |
+| `GA4_SERVICE_ACCOUNT_JSON` | GA4 Data API 조회용 서비스 계정 키 (속성 뷰어 권한) | `daily-ga-report.yml` |
 
 `GITHUB_TOKEN`은 GitHub Actions가 자동으로 제공하므로 등록하지 않습니다.
+
+두 Slack 웹훅은 채널이 다릅니다. `SLACK_WEBHOOK_URL`은 빌드·배포·릴리스 결과가 가는
+기존 CI 채널이고, `SLACK_REPORT_WEBHOOK_URL`은 매일 아침 GA 리포트만 가는 전용 채널입니다.
+성격이 달라 나눴습니다 — 리포트가 매일 쌓이면 즉시 봐야 하는 배포 실패 알림을 밀어냅니다.
+**다만 `daily-ga-report.yml`의 실패 알림은 일부러 `SLACK_WEBHOOK_URL`로 보냅니다.**
+리포트 채널 웹훅 자체가 죽으면 실패 알림도 같이 침묵하기 때문에, 경로를 갈라 둔 것입니다.
+
+`GA4_PROPERTY_ID`는 시크릿이 아니라 `daily-ga-report.yml`에 값을 그대로 적습니다(`471860782`).
+비밀이 아니고, 시크릿으로 두면 값이 안 보여 디버깅만 어려워집니다.
+GA4 콘솔 → 관리 → 속성 설정 상단의 **숫자** 속성 ID이며,
+`packages/shared/src/constants/Analytics.ts`의 `G-6HHNP7KJM5`는 측정 ID라 Data API에 넣으면 403/404가 납니다.
 
 ### `SENTRY_AUTH_TOKEN`은 확장과 웹이 서로 다른 경로로 받습니다
 
@@ -340,6 +353,20 @@ gitignore 대상이라 EAS 샌드박스에 복사되지 않아 iOS 빌드가 깨
 
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
+
+아래는 우리가 `supabase secrets set <이름>=<값>`으로 직접 등록하는 값입니다.
+레포에도 `.env`에도 두지 않습니다.
+
+| 이름 | 쓰는 함수 | 용도 |
+| --- | --- | --- |
+| `SLACK_FEEDBACK_WEBHOOK_URL` | `send-feedback` | 피드백 슬랙 알림 |
+| `RESEND_API_KEY` | `send-welcome-email` | 가입 안내 메일 발송 |
+| `CRON_SECRET` | `daily-article-reminder`, `send-welcome-email` | DB에서 부르는 함수의 호출자 확인. Vault `cron_secret`과 같은 값 |
+
+`send-welcome-email`은 JWT 검증을 끄고(`--no-verify-jwt`) 배포하며, 호출자는
+`x-cron-secret` 헤더로 확인합니다. 트리거가 이 헤더와 호출 주소를 Vault의
+`cron_secret`·`project_url`에서 읽으므로 `daily-article-reminder`와 같은 두 값을
+공유합니다. 새로 넣을 DB 설정은 없습니다.
 
 ### 빌드 플래그
 

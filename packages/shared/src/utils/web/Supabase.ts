@@ -23,12 +23,20 @@ export const getSupabaseClient = () => {
 	});
 };
 
+const createFeedbackSupabaseClient = () =>
+	createBrowserClient<Database, "feedback">(SUPABASE.url, SUPABASE.anonKey, {
+		db: { schema: SUPABASE.schema.feedback },
+		isSingleton: false,
+	});
+
+let feedbackSupabaseClient: ReturnType<
+	typeof createFeedbackSupabaseClient
+> | null = null;
+
 export const getFeedbackSupabaseClient = () => {
-	return createBrowserClient<Database, "feedback">(
-		SUPABASE.url,
-		SUPABASE.anonKey,
-		{
-			db: { schema: SUPABASE.schema.feedback },
-		},
-	);
+	if (!feedbackSupabaseClient) {
+		feedbackSupabaseClient = createFeedbackSupabaseClient();
+	}
+
+	return feedbackSupabaseClient;
 };

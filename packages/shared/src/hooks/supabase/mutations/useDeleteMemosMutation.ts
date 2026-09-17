@@ -3,6 +3,7 @@ import {
 	useMutation,
 	useQueryClient,
 } from "@tanstack/react-query";
+import { analytics } from "../../../modules/analytics";
 import type { GetMemoResponse, MemoSupabaseResponse } from "../../../types";
 import { MemoService } from "../../../utils";
 
@@ -42,6 +43,12 @@ export default function useDeleteMemosMutation() {
 					};
 				},
 			);
+		},
+		onSuccess: (_, idList) => {
+			analytics.trackEvent({
+				name: "memo_delete",
+				params: { memo_count: idList.length },
+			});
 		},
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: ["memos"] });

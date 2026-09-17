@@ -71,11 +71,8 @@ const main = async () => {
 
 	const commitSubject = readCommitSubject(commitSha);
 	const authoredBy = actor ? ` · ${actor}` : "";
-	const contextLines = [];
-
-	if (commitSubject) {
-		contextLines.push(`${commitSubject}${authoredBy}`);
-	}
+	// 해시는 커밋을 되짚을 때만 쓰이므로 context로 내리고, 제목 줄에는 커밋 제목을 둡니다.
+	const contextLines = [`<${commitUrl}|\`${shortSha}\`>${authoredBy}`];
 
 	if (DETAILS[state]) {
 		contextLines.push(DETAILS[state]);
@@ -107,23 +104,21 @@ const main = async () => {
 
 	const payload = {
 		// 알림 미리보기와 접근성 대체 텍스트로 쓰입니다. 링크 문법 없이 둡니다.
-		text: `${HEADLINES[state]} — ${shortSha}`,
+		text: [HEADLINES[state], commitSubject].filter(Boolean).join(" — "),
 		blocks: [
 			{
 				type: "section",
 				text: {
 					type: "mrkdwn",
-					text: `${HEADLINES[state]} — <${commitUrl}|\`${shortSha}\`>`,
+					text: commitSubject
+						? `*${HEADLINES[state]}*\n${commitSubject}`
+						: `*${HEADLINES[state]}*`,
 				},
 			},
-			...(contextLines.length > 0
-				? [
-						{
-							type: "context",
-							elements: [{ type: "mrkdwn", text: contextLines.join("\n") }],
-						},
-					]
-				: []),
+			{
+				type: "context",
+				elements: [{ type: "mrkdwn", text: contextLines.join("\n") }],
+			},
 			{ type: "actions", elements: linkButtons },
 		],
 	};

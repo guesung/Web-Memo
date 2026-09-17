@@ -1,39 +1,69 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
-import type { GetMemoResponse } from "@web-memo/shared/types";
+import type { GetMemoResponse, HighlightRow } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
 import { Card, CardContent } from "@web-memo/ui";
 import { motion } from "framer-motion";
-import type { HTMLAttributes, MouseEvent } from "react";
+import type {
+	HTMLAttributes,
+	KeyboardEvent,
+	MouseEvent,
+	ReactNode,
+} from "react";
 import { memo, useState } from "react";
-
+import { useFormContext } from "react-hook-form";
 import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
+import type { SearchFormValues } from "../MemoSearchFormProvider";
+import { MemoHighlights } from "./MemoHighlights";
 
-interface MemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
+/** 메모 카드 표시와 선택 속성. */
+interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	memo: GetMemoResponse;
-	isSelectingMode: boolean;
-	selectMemoItem: (id: number) => void;
-	isMemoSelected: boolean;
+	highlights?: HighlightRow[];
+	isSelectingMode?: boolean;
+	selectMemoItem?: (id: number) => void;
+	isMemoSelected?: boolean;
 	/** 느낀 점 설정이 켜져 있는지. 꺼져 있으면 내용이 있어도 표시하지 않는다 */
 	showImpression: boolean;
 	/** 액션 아이템 설정이 켜져 있는지. 꺼져 있으면 내용이 있어도 표시하지 않는다 */
 	showActionItem: boolean;
+	/** 목록에서의 순서. 등장 애니메이션을 계단식으로 미루는 데 쓴다 */
+	index: number;
+	/**
+	 * 읽기 전용으로 그린다. 클릭·선택·상세 열기를 전부 끈다.
+	 * @description 휴지통이 쓴다. 같은 카드여야 한다는 것이 요구의 핵심이라 전용 카드를
+	 * 따로 만들지 않는다.
+	 */
+	isReadOnly?: boolean;
+	/** 카드 맨 위에 덧붙일 표시. 휴지통의 삭제 시점 배지가 여기로 들어온다 */
+	badge?: ReactNode;
+	/** 기본 푸터 대신 그릴 내용 */
+	footer?: ReactNode;
 }
 
-export default memo(function MemoItem({
+/** 메모 본문과 연결된 하이라이트를 표시한다. */
+const MemoItem = ({
 	lng,
 	memo,
+	highlights,
 	selectMemoItem,
 	isSelectingMode,
 	isMemoSelected,
 	showImpression,
 	showActionItem,
+	index,
+	isReadOnly = false,
+	badge,
+	footer,
 	...props
-}: MemoItemProps) {
+}: IFMemoItemProps) => {
 	const { t } = useTranslation(lng);
 	const searchParams = useSearchParams();
+	// 휴지통에는 검색 폼이 없다. 그때 useFormContext는 null을 준다.
+	const formContext = useFormContext<SearchFormValues>();
 	const [isMemoHovering, setIsMemoHovering] = useState(false);
 
 	const handleMouseEnter = () => {
@@ -46,12 +76,24 @@ export default memo(function MemoItem({
 	const handleMemoItemClick = (event: MouseEvent<HTMLElement>) => {
 		const target = event.target as HTMLElement;
 		const isMemoItem = target.closest(".memo-item");
-		if (!isMemoItem) return;
+		if (!isMemoItem) {
+			return;
+		}
 
 		const id = event.currentTarget.id;
 
-		if (isSelectingMode) selectMemoItem(Number(id));
-		else {
+		if (isSelectingMode) {
+			selectMemoItem?.(Number(id));
+		} else {
+			// 메모를 다시 꺼내 보는 동작입니다. 저장(memo_write)만 재면 쌓이기만 하는지
+			// 실제로 쓰이는지 구분할 수 없어, 읽기 쪽도 같이 남깁니다.
+			analytics.trackEvent({
+				name: "memo_open",
+				params: {
+					has_search_query: Boolean(formContext?.watch("searchQuery")),
+				},
+			});
+
 			searchParams.set("id", id);
 			history.pushState(
 				{ openedMemoId: Number(id) },
@@ -61,46 +103,62 @@ export default memo(function MemoItem({
 		}
 	};
 
+	// 읽기 전용이면 카드가 버튼이 아니다. 마우스 핸들러도 붙이지 않으므로 선택 버튼도
+	// 계속 숨은 채로 남는다.
+	const interactionProps = isReadOnly
+		? {}
+		: {
+				onMouseEnter: handleMouseEnter,
+				onMouseLeave: handleMouseLeave,
+				onClick: handleMemoItemClick,
+				onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
+					if (event.key === "Enter" || event.key === " ") {
+						event.preventDefault();
+						handleMemoItemClick(event as unknown as MouseEvent<HTMLElement>);
+					}
+				},
+				"aria-label": `메모 ${memo.id}`,
+				tabIndex: 0,
+				role: "button",
+			};
+
 	return (
 		<div
 			{...props}
 			id={String(memo.id)}
 			className={cn(
 				"memo-item select-none transition-all duration-300 [transform:translateZ(0)]",
+				// tabIndex 는 있는데 포커스 표시가 없어, 키보드로 훑으면 지금 어디인지 안 보였다
+				"focus-visible:ring-ring focus-visible:ring-offset-background rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
 				props.className,
 			)}
-			onMouseEnter={handleMouseEnter}
-			onMouseLeave={handleMouseLeave}
-			onClick={handleMemoItemClick}
-			onKeyDown={(e) => {
-				if (e.key === "Enter" || e.key === " ") {
-					e.preventDefault();
-					handleMemoItemClick(e as unknown as MouseEvent<HTMLElement>);
-				}
-			}}
-			aria-label={`메모 ${memo.id}`}
-			tabIndex={0}
-			// biome-ignore lint/a11y/useSemanticElements: Using div with role="button" for complex interaction patterns
-			role="button"
+			{...interactionProps}
 		>
 			<motion.div
 				initial={{ opacity: 0, y: 10 }}
 				animate={{ opacity: 1, y: 0 }}
 				exit={{ opacity: 0, y: -10 }}
-				transition={{ duration: 0.2 }}
+				// 20개 묶음 안에서만 계단을 만든다. 순서를 그대로 곱하면 무한 스크롤로
+				// 뒤에 붙는 카드일수록 지연이 끝없이 길어진다.
+				transition={{
+					duration: 0.24,
+					delay: (index % 20) * 0.025,
+					ease: [0.22, 1, 0.36, 1],
+				}}
 				className="group"
 			>
 				<Card
 					className={cn(
 						"relative w-[300px]",
-						"bg-white dark:bg-gray-900",
-						"border-2 border-gray-200 dark:border-gray-800",
-						"rounded-2xl shadow-md",
-						"transition-all duration-300",
-						"hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1",
+						"bg-card",
+						"border border-border",
+						"rounded-2xl shadow-sm",
+						"transition-[box-shadow,transform,border-color] duration-base",
+						// 그림자·이동·확대를 한꺼번에 주면 신호가 셋이라 산만하다. 들어올리기만 남긴다.
+						{ "hover:shadow-lg hover:-translate-y-1": !isReadOnly },
+						{ "opacity-60": isReadOnly },
 						{
-							"border-purple-500 dark:border-purple-500 ring-4 ring-purple-500/20 shadow-lg":
-								isMemoSelected,
+							"border-primary ring-4 ring-primary/20 shadow-lg": isMemoSelected,
 						},
 					)}
 					style={{
@@ -116,6 +174,7 @@ export default memo(function MemoItem({
 							}}
 						/>
 					)}
+					{badge && <div className="px-5 pt-4">{badge}</div>}
 					<MemoCardHeader
 						memo={memo}
 						isMemoHovering={isMemoHovering}
@@ -123,34 +182,43 @@ export default memo(function MemoItem({
 						selectMemoItem={selectMemoItem}
 					/>
 					{memo.memo && (
-						<CardContent className="px-5 py-3 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-break-spaces break-all">
+						<CardContent className="px-5 py-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
 							{memo.memo}
 						</CardContent>
 					)}
+					<MemoHighlights
+						highlights={highlights}
+						label={t("sideBar.highlight")}
+					/>
 					{showImpression && memo.impression && (
-						<CardContent className="px-5 pb-3 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-break-spaces break-all">
-							<p className="mb-1 text-xs font-semibold text-gray-400">
+						<CardContent className="px-5 pb-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
+							<p className="mb-1 text-xs font-semibold text-muted-foreground">
 								{t("memoSection.impression")}
 							</p>
 							{memo.impression}
 						</CardContent>
 					)}
 					{showActionItem && memo.actionItem && (
-						<CardContent className="px-5 pb-3 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-break-spaces break-all">
-							<p className="mb-1 text-xs font-semibold text-gray-400">
+						<CardContent className="px-5 pb-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
+							<p className="mb-1 text-xs font-semibold text-muted-foreground">
 								{t("memoSection.actionItem")}
 							</p>
 							{memo.actionItem}
 						</CardContent>
 					)}
-					<MemoCardFooter
-						memo={memo}
-						lng={lng}
-						isShowingOption={isMemoHovering && !isSelectingMode}
-					/>
-					<div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-2xl opacity-0 group-hover:opacity-[0.08] blur transition-opacity duration-300 -z-10" />
+					{footer ?? (
+						<MemoCardFooter
+							memo={memo}
+							lng={lng}
+							isShowingOption={isMemoHovering && !isSelectingMode}
+						/>
+					)}
+					<div className="absolute -inset-0.5 bg-gradient-to-r from-primary via-primary to-cyan-500 rounded-2xl opacity-0 group-hover:opacity-[0.08] blur transition-opacity duration-300 -z-10" />
 				</Card>
 			</motion.div>
 		</div>
 	);
-});
+};
+
+/** 메모 카드의 불필요한 재렌더링을 방지한다. */
+export default memo(MemoItem);

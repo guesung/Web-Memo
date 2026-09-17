@@ -18,7 +18,7 @@ export default function SummaryTabTrigger() {
 				// biome-ignore lint/a11y/useSemanticElements: 트리거 버튼 안의 새로고침 버튼
 				role="button"
 				tabIndex={0}
-				className="ml-1 p-0.5 rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+				className="focus-visible:ring-ring ml-1 rounded p-0.5 hover:bg-muted focus-visible:outline-none focus-visible:ring-1 disabled:cursor-not-allowed disabled:opacity-50"
 				aria-disabled={isSummaryLoading}
 				onClick={(e) => {
 					e.stopPropagation();

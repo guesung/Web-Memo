@@ -19,6 +19,7 @@ export const metadataKorean: Metadata = {
 		languages: {
 			ko: `${CONFIG.webUrl}/ko/features/save-articles`,
 			en: `${CONFIG.webUrl}/en/features/save-articles`,
+			"x-default": `${CONFIG.webUrl}/en/features/save-articles`,
 		},
 	},
 	openGraph: {
@@ -48,6 +49,7 @@ export const metadataEnglish: Metadata = {
 		languages: {
 			ko: `${CONFIG.webUrl}/ko/features/save-articles`,
 			en: `${CONFIG.webUrl}/en/features/save-articles`,
+			"x-default": `${CONFIG.webUrl}/en/features/save-articles`,
 		},
 	},
 	openGraph: {

@@ -38,7 +38,7 @@ export default function SaveStatusIndicator({
 				transition={{ duration: 0.15 }}
 				className={cn(
 					"flex items-center gap-1.5 text-xs font-medium",
-					status === "saving" && "text-gray-400",
+					status === "saving" && "text-muted-foreground",
 					status === "saved" && "text-emerald-500",
 					status === "error" && "text-red-500",
 				)}

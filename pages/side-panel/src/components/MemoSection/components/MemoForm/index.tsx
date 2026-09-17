@@ -2,7 +2,10 @@ import ResizeHandle from "@src/components/ResizeHandle";
 import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
 import { getMemoUrl, type IFMemoUrlParams } from "@src/utils";
-import type { TMemoStatusKey } from "@web-memo/shared/constants";
+import {
+	DEFAULT_CATEGORY_COLOR,
+	type TMemoStatusKey,
+} from "@web-memo/shared/constants";
 import { useSettingQuery } from "@web-memo/shared/hooks";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
@@ -22,6 +25,7 @@ import {
 import {
 	BookOpenIcon,
 	HeartIcon,
+	LinkIcon,
 	Loader2Icon,
 	StarIcon,
 	XIcon,
@@ -60,6 +64,8 @@ function MemoFormContent() {
 		memoData,
 		isSaving,
 		handleTitleChange,
+		handleTitleSyncClick,
+		isTitleSyncAvailable,
 		handleMemoChange,
 		handleImpressionChange,
 		handleActionItemChange,
@@ -126,14 +132,26 @@ function MemoFormContent() {
 	return (
 		<>
 			<form className="relative flex min-h-0 flex-1 flex-col py-1">
-				<Input
-					id="memo-title-input"
-					className="mb-1 h-8 shrink-0 border-none px-0 text-sm font-bold shadow-none focus-visible:ring-0"
-					placeholder={I18n.get("titlePlaceholder")}
-					{...register("title", {
-						onChange: (event) => handleTitleChange(event.target.value),
-					})}
-				/>
+				<div className="mb-1 flex shrink-0 items-center gap-1">
+					<Input
+						id="memo-title-input"
+						className="h-8 min-w-0 border-none px-0 text-sm font-bold shadow-none focus-visible:ring-0"
+						placeholder={I18n.get("titlePlaceholder")}
+						{...register("title", {
+							onChange: (event) => handleTitleChange(event.target.value),
+						})}
+					/>
+					<button
+						type="button"
+						className="shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-50"
+						aria-label={I18n.get("memo_title_sync")}
+						title={I18n.get("memo_title_sync")}
+						disabled={!isTitleSyncAvailable}
+						onClick={handleTitleSyncClick}
+					>
+						<LinkIcon className="size-4" aria-hidden="true" />
+					</button>
+				</div>
 				<div
 					className="flex min-h-0 flex-col"
 					style={{ flexGrow: fieldRatios.memo, flexBasis: 0 }}
@@ -183,7 +201,7 @@ function MemoFormContent() {
 						>
 							<label
 								htmlFor="impression-textarea"
-								className="shrink-0 text-xs font-semibold text-gray-500"
+								className="text-muted-foreground shrink-0 text-xs font-semibold"
 							>
 								{I18n.get("impression")}
 							</label>
@@ -216,7 +234,7 @@ function MemoFormContent() {
 						>
 							<label
 								htmlFor="action-item-textarea"
-								className="shrink-0 text-xs font-semibold text-gray-500"
+								className="text-muted-foreground shrink-0 text-xs font-semibold"
 							>
 								{I18n.get("actionItem")}
 							</label>
@@ -236,46 +254,42 @@ function MemoFormContent() {
 				)}
 				<div className="flex shrink-0 items-center justify-between gap-2 pt-2">
 					<div className="flex items-center gap-2">
-						<HeartIcon
-							size={16}
-							fill={memoData?.isWish ? "pink" : ""}
-							fillOpacity={memoData?.isWish ? 100 : 0}
+						<MemoStatusToggle
+							label={I18n.get("wish_list")}
+							isOn={!!memoData?.isWish}
 							onClick={() => handleMemoStatusClick("isWish")}
-							role="button"
-							aria-label={I18n.get("wish_list")}
-							className={cn(
-								"cursor-pointer transition-transform hover:scale-110 active:scale-95",
-								{
-									"animate-heart-pop": memoData?.isWish,
-								},
-							)}
-						/>
-						<StarIcon
-							size={16}
-							fill={memoData?.isStar ? "#f59e0b" : ""}
-							fillOpacity={memoData?.isStar ? 100 : 0}
+						>
+							<HeartIcon
+								size={16}
+								fill={memoData?.isWish ? "currentColor" : ""}
+								fillOpacity={memoData?.isWish ? 100 : 0}
+								className={cn({
+									"animate-heart-pop text-pink-500": memoData?.isWish,
+								})}
+							/>
+						</MemoStatusToggle>
+						<MemoStatusToggle
+							label={I18n.get("important_memo")}
+							isOn={!!memoData?.isStar}
 							onClick={() => handleMemoStatusClick("isStar")}
-							role="button"
-							aria-label={I18n.get("important_memo")}
-							className={cn(
-								"cursor-pointer transition-transform hover:scale-110 active:scale-95",
-								{
-									"text-amber-500": memoData?.isStar,
-								},
-							)}
-						/>
-						<BookOpenIcon
-							size={16}
+						>
+							<StarIcon
+								size={16}
+								fill={memoData?.isStar ? "currentColor" : ""}
+								fillOpacity={memoData?.isStar ? 100 : 0}
+								className={cn({ "text-amber-500": memoData?.isStar })}
+							/>
+						</MemoStatusToggle>
+						<MemoStatusToggle
+							label={I18n.get("reading_memo")}
+							isOn={!!memoData?.isReading}
 							onClick={() => handleMemoStatusClick("isReading")}
-							role="button"
-							aria-label={I18n.get("reading_memo")}
-							className={cn(
-								"cursor-pointer transition-transform hover:scale-110 active:scale-95",
-								{
-									"text-emerald-500": memoData?.isReading,
-								},
-							)}
-						/>
+						>
+							<BookOpenIcon
+								size={16}
+								className={cn({ "text-emerald-500": memoData?.isReading })}
+							/>
+						</MemoStatusToggle>
 						<SaveStatus isSaving={isSaving} memo={watch("memo")} />
 					</div>
 					<div className="flex items-center gap-2">
@@ -293,7 +307,8 @@ function MemoFormContent() {
 								<div
 									className="h-2 w-2 rounded-full"
 									style={{
-										backgroundColor: currentCategory.color || "#888888",
+										backgroundColor:
+											currentCategory.color || DEFAULT_CATEGORY_COLOR,
 									}}
 								/>
 								{currentCategory.name}
@@ -310,7 +325,7 @@ function MemoFormContent() {
 
 			{showCategoryList && (
 				<div
-					className="fixed z-50 w-64 rounded-md bg-white shadow-lg"
+					className="bg-popover fixed z-50 w-64 rounded-md border shadow-lg"
 					style={{
 						top: `${categoryInputPosition.top}px`,
 						left: `${categoryInputPosition.left}px`,
@@ -337,7 +352,10 @@ function MemoFormContent() {
 									>
 										<div
 											className="h-3 w-3 rounded-full"
-											style={{ backgroundColor: category.color || "#888888" }}
+											style={{
+												backgroundColor:
+													category.color || DEFAULT_CATEGORY_COLOR,
+											}}
 										/>
 										{category.name}
 									</CommandItem>
@@ -373,3 +391,38 @@ function MemoForm() {
 }
 
 export default withAuthentication(MemoForm);
+
+interface IFMemoStatusToggleProps {
+	/** 스크린 리더가 읽을 이름 */
+	label: string;
+	/** 켜져 있는지. aria-pressed 로 전달해 토글임을 알린다 */
+	isOn: boolean;
+	onClick: () => void;
+	children: React.ReactNode;
+}
+
+/**
+ * 메모 상태(위시·중요·읽는 중)를 켜고 끄는 토글
+ *
+ * @description
+ * 아이콘에 role="button" 만 얹혀 있어 키보드로는 닿지도 눌리지도 않았다.
+ * 진짜 button 을 쓰면 포커스·Enter/Space·포커스 링이 전부 딸려 온다.
+ */
+function MemoStatusToggle({
+	label,
+	isOn,
+	onClick,
+	children,
+}: IFMemoStatusToggleProps) {
+	return (
+		<button
+			type="button"
+			aria-label={label}
+			aria-pressed={isOn}
+			onClick={onClick}
+			className="focus-visible:ring-ring rounded-sm transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-1 active:scale-95"
+		>
+			{children}
+		</button>
+	);
+}

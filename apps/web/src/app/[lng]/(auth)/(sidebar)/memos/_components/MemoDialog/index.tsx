@@ -31,16 +31,22 @@ import {
 import { useForm } from "react-hook-form";
 import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
+import { useMemoHighlights } from "../MemoView/_hooks/useMemoHighlights";
+import { MemoHighlights } from "../MemoView/MemoHighlights";
 import type { TMemoSaveStatus } from "./SaveStatusIndicator";
 import SaveStatusIndicator from "./SaveStatusIndicator";
 
-interface MemoDialog extends LanguageType {
+/** 메모 상세 대화상자의 언어와 조회할 메모 ID. */
+interface IFMemoDialogProps extends LanguageType {
 	memoId: number;
 }
 
-export default function MemoDialog({ lng, memoId }: MemoDialog) {
+/** 메모를 편집하고 같은 원문의 하이라이트를 함께 표시한다. */
+const MemoDialog = ({ lng, memoId }: IFMemoDialogProps) => {
 	const { t } = useTranslation(lng);
 	const { memo: memoData } = useMemoQuery({ id: memoId });
+	const { highlightsByUrl, isHighlightLoadError, refetchHighlights } =
+		useMemoHighlights(memoData?.url ? [memoData.url] : []);
 	const { showImpression, showActionItem } = useSettingQuery();
 	const {
 		textareaRef: memoTextareaRef,
@@ -245,67 +251,99 @@ export default function MemoDialog({ lng, memoId }: MemoDialog) {
 					exit={{ opacity: 0 }}
 				>
 					<Card>
+						{/* 닫기 버튼(right-4)이 제목 위로 겹친다. 그만큼 오른쪽을 비운다. */}
 						<MemoCardHeader
 							memo={memoData}
 							onTitleChange={(title) =>
 								setValue("title", title, { shouldDirty: true })
 							}
+							className="pr-12"
 						/>
-						<CardContent>
+						{/* CardContent 의 기본값은 px-6 뿐이라 세로 여백이 아예 없다.
+						    헤더·푸터가 px-5 를 쓰므로 가로도 거기에 맞춘다. */}
+						<CardContent className="space-y-4 px-5 py-4">
 							<Textarea
 								{...memoRest}
-								className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
+								className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none"
 								ref={memoTextareaRef}
 								placeholder={t("memos.placeholder")}
 								data-testid="memo-textarea"
 							/>
 
 							{showImpression && (
-								<>
+								<div className="space-y-1.5">
+									{/* label 은 inline 이라 세로 마진이 무시된다. block 이어야 간격이 생긴다. */}
 									<label
 										htmlFor="impression"
-										className="mt-3 text-xs font-semibold text-gray-500"
+										className="block text-xs font-semibold text-muted-foreground"
 									>
 										{t("memoSection.impression")}
 									</label>
 									<Textarea
 										{...impressionRest}
 										id="impression"
-										className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
+										className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none"
 										ref={impressionTextareaRef}
 										placeholder={t("memoSection.impressionPlaceholder")}
 										data-testid="impression-textarea"
 									/>
-								</>
+								</div>
 							)}
 
 							{showActionItem && (
-								<>
+								<div className="space-y-1.5">
 									<label
 										htmlFor="actionItem"
-										className="mt-3 text-xs font-semibold text-gray-500"
+										className="block text-xs font-semibold text-muted-foreground"
 									>
 										{t("memoSection.actionItem")}
 									</label>
 									<Textarea
 										{...actionItemRest}
 										id="actionItem"
-										className="resize-none overflow-hidden outline-none focus:border-gray-300 focus:outline-none"
+										className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none"
 										ref={actionItemTextareaRef}
 										placeholder={t("memoSection.actionItemPlaceholder")}
 										data-testid="action-item-textarea"
 									/>
-								</>
+								</div>
 							)}
 
-							<div className="mt-3 flex h-4 items-center">
+							{isHighlightLoadError && (
+								<div
+									role="alert"
+									className="flex items-center gap-2 text-sm text-destructive"
+								>
+									<p>{t("highlight.loadError")}</p>
+									<button
+										type="button"
+										onClick={() => void refetchHighlights()}
+										className="underline"
+									>
+										{t("error.500.retry")}
+									</button>
+								</div>
+							)}
+							<MemoHighlights
+								highlights={highlightsByUrl.get(memoData.url)}
+								label={t("sideBar.highlight")}
+							/>
+
+							<div className="flex h-4 items-center">
 								<SaveStatusIndicator status={saveStatus} lng={lng} />
 							</div>
 						</CardContent>
-						<MemoCardFooter memo={memoData} lng={lng} isShowingOption={false} />
+						<MemoCardFooter
+							memo={memoData}
+							lng={lng}
+							isShowingOption={false}
+							className="py-4"
+						/>
 					</Card>
 				</motion.div>
 			</DialogContent>
 		</Dialog>
 	);
-}
+};
+
+export default MemoDialog;

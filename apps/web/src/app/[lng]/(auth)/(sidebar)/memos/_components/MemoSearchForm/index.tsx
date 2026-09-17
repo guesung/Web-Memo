@@ -2,6 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { cn } from "@web-memo/shared/utils";
 import {
 	Button,
@@ -13,9 +14,13 @@ import {
 	SelectValue,
 } from "@web-memo/ui";
 import { FileText, Search, StickyNote, X } from "lucide-react";
+import { useEffect } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
 import type { SearchFormValues } from "../MemoSearchFormProvider";
+
+/** 이 시간 동안 입력이 없으면 검색을 한 번 기록한다. */
+const SEARCH_TRACK_DEBOUNCE_MS = 800;
 
 interface MemoSearchFormProps extends LanguageType {}
 
@@ -24,8 +29,39 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 	const {
 		control,
 		reset,
+		watch,
 		formState: { isDirty },
 	} = useFormContext<SearchFormValues>();
+	const searchQuery = watch("searchQuery");
+
+	/**
+	 * 입력이 멈추면 검색을 한 번 기록한다.
+	 * @description 검색어는 매 키 입력마다 갱신되므로 그대로 찍으면 글자 수만큼 쌓인다.
+	 * 검색어 원문은 개인정보라 싣지 않고 길이만 남긴다.
+	 */
+	useEffect(() => {
+		if (!searchQuery) return;
+
+		const timer = setTimeout(() => {
+			analytics.trackEvent({
+				name: "memo_search",
+				params: { query_length: searchQuery.length },
+			});
+		}, SEARCH_TRACK_DEBOUNCE_MS);
+
+		return () => clearTimeout(timer);
+	}, [searchQuery]);
+
+	const handleSearchTargetChange = (
+		searchTarget: string,
+		onChange: (value: string) => void,
+	) => {
+		onChange(searchTarget);
+		analytics.trackEvent({
+			name: "memo_filter",
+			params: { search_target: searchTarget },
+		});
+	};
 
 	return (
 		<form
@@ -37,14 +73,19 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 					name="searchTarget"
 					control={control}
 					render={({ field }) => (
-						<Select onValueChange={field.onChange} value={field.value}>
+						<Select
+							onValueChange={(searchTarget) =>
+								handleSearchTargetChange(searchTarget, field.onChange)
+							}
+							value={field.value}
+						>
 							<SelectTrigger
 								className={cn(
 									"w-auto min-w-[130px] h-12",
 									"rounded-xl",
-									"border-2 border-gray-200 dark:border-gray-800",
-									"bg-white dark:bg-gray-900",
-									"hover:border-purple-300 dark:hover:border-purple-700",
+									"border-2 border-border",
+									"bg-card",
+									"hover:border-primary/50",
 									"transition-colors",
 								)}
 							>
@@ -79,7 +120,7 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 					control={control}
 					render={({ field }) => (
 						<div className="relative flex-1">
-							<Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+							<Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
 							<Input
 								type="text"
 								placeholder={t("memos.searchPlaceholder")}
@@ -87,11 +128,11 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 									"w-full h-12 pl-12 pr-12",
 									"text-base",
 									"rounded-xl",
-									"border-2 border-gray-200 dark:border-gray-800",
-									"bg-white dark:bg-gray-900",
+									"border-2 border-border",
+									"bg-card",
 									"shadow-sm",
-									"focus:border-purple-500 dark:focus:border-purple-500",
-									"focus:ring-4 focus:ring-purple-500/20",
+									"focus:border-primary",
+									"focus:ring-4 focus:ring-primary/20",
 									"transition-all",
 								)}
 								{...field}
@@ -101,7 +142,7 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 									type="button"
 									variant="ghost"
 									size="sm"
-									className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+									className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 p-0 rounded-full hover:bg-muted"
 									onClick={() => reset()}
 									aria-label="Clear search"
 								>

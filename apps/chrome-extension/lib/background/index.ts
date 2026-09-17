@@ -1,3 +1,5 @@
+import { handleEditHighlight } from "./editHighlight";
+import { handleCreateHighlight } from "./createHighlight";
 import "webextension-polyfill";
 
 import { CONFIG } from "@web-memo/env";
@@ -13,9 +15,15 @@ import {
 	normalizeUrl,
 } from "@web-memo/shared/utils";
 import { getSupabaseClient, I18n, Tab } from "@web-memo/shared/utils/extension";
+import { analytics } from "@web-memo/shared/modules/analytics";
 
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
 chrome.runtime.onInstalled.addListener(async () => {
+	// 퍼널의 출발점입니다. 설치 대비 사이드패널 사용, 가입 전환을 여기서부터 셉니다.
+	// await로 붙잡아야 합니다. service worker는 할 일이 없으면 곧바로 종료되어,
+	// 전송이 끝나기 전에 워커가 죽으면 이벤트가 조용히 사라집니다.
+	await analytics.trackEvent({ name: "extension_installed" });
+
 	chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 	const language = await ChromeSyncStorage.get(STORAGE_KEYS.language);
 	const uiLanguage = I18n.getUILanguage();
@@ -43,32 +51,19 @@ if (chrome.contextMenus)
 	chrome.contextMenus.onClicked.addListener(async (item) => {
 		switch (item.menuItemId) {
 			case CONTEXT_MENU_ID_CHECK_MEMO:
+				analytics.trackEvent({
+					name: "open_web_from_extension",
+					params: { from: "context_menu" },
+				});
 				await Tab.create({ url: `${CONFIG.webUrl}/memos` });
 				break;
 			case CONTEXT_MENU_ID_SHOW_GUIDE:
+				analytics.trackEvent({ name: "guide_open", params: { from: "context_menu" } });
 				if (I18n.getUILanguage() === "ko") Tab.create({ url: EXTERNAL_LINK.notionGuideKo });
 				else Tab.create({ url: EXTERNAL_LINK.notionGuideEn });
 				break;
 		}
 	});
-
-const setUninstallUrl = async () => {
-	try {
-		const supabaseClient = await getSupabaseClient();
-		const {
-			data: { user },
-		} = await supabaseClient.auth.getUser();
-		const uid = user?.id || "";
-		chrome.runtime.setUninstallURL(
-			uid
-				? `${CONFIG.webUrl}/uninstall?uid=${uid}`
-				: `${CONFIG.webUrl}/uninstall`,
-		);
-	} catch {
-		chrome.runtime.setUninstallURL(`${CONFIG.webUrl}/uninstall`);
-	}
-};
-setUninstallUrl();
 
 chrome.tabs.onActivated.addListener(async () => {
 	// 활성화된 탭이 변경되었을 때 사이드 패널을 업데이트한다.
@@ -167,4 +162,13 @@ bridge.handle.GET_HIGHLIGHTS_BY_URL(async (payload, _sender, sendResponse) => {
 	} catch {
 		sendResponse({ highlights: [] });
 	}
+});
+
+/** 선택된 텍스트는 인증된 background에서만 저장한다. */
+bridge.handle.CREATE_HIGHLIGHT(async (payload, sender, sendResponse) => {
+ sendResponse(await handleCreateHighlight({ payload, sender }));
+});
+
+bridge.handle.EDIT_HIGHLIGHT(async (payload, sender, sendResponse) => {
+	sendResponse(await handleEditHighlight({ payload, sender }));
 });

@@ -1,3 +1,4 @@
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import {
 	extractYoutubeTranscript,
@@ -23,8 +24,16 @@ bridge.handle.YOUTUBE_TRANSCRIPT(async (_, __, sendResponse) => {
 	}
 	try {
 		const result = await extractYoutubeTranscript();
+		analytics.trackEvent({
+			name: "youtube_transcript_extract",
+			params: { is_success: true },
+		});
 		sendResponse(result.transcript);
 	} catch (error) {
+		analytics.trackEvent({
+			name: "youtube_transcript_extract",
+			params: { is_success: false },
+		});
 		sendResponse(
 			error instanceof Error ? error.message : "Failed to extract transcript",
 		);

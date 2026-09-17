@@ -1,6 +1,6 @@
 import type { Language } from "@src/modules/i18n";
 import { CONFIG } from "@web-memo/env";
-import Script from "next/script";
+import JsonLdScript from "../JsonLdScript";
 
 interface FeatureJsonLDProps {
 	lng: Language;
@@ -71,22 +71,10 @@ export default function FeatureJsonLD({ lng, feature }: FeatureJsonLDProps) {
 				price: "0",
 				priceCurrency: "USD",
 			},
-			aggregateRating: {
-				"@type": "AggregateRating",
-				ratingValue: "5.0",
-				ratingCount: "33",
-				bestRating: "5",
-				worstRating: "1",
-			},
 		},
 	};
 
 	return (
-		<Script
-			id={`feature-${feature}-jsonld`}
-			type="application/ld+json"
-			// biome-ignore lint/security/noDangerouslySetInnerHtml: Required for JSON-LD structured data injection
-			dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageSchema) }}
-		/>
+		<JsonLdScript id={`feature-${feature}-jsonld`} schema={webPageSchema} />
 	);
 }

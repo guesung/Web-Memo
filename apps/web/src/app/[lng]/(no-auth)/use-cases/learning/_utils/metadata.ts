@@ -19,6 +19,7 @@ export const metadataKorean: Metadata = {
 		languages: {
 			ko: `${CONFIG.webUrl}/ko/use-cases/learning`,
 			en: `${CONFIG.webUrl}/en/use-cases/learning`,
+			"x-default": `${CONFIG.webUrl}/en/use-cases/learning`,
 		},
 	},
 	openGraph: {
@@ -48,6 +49,7 @@ export const metadataEnglish: Metadata = {
 		languages: {
 			ko: `${CONFIG.webUrl}/ko/use-cases/learning`,
 			en: `${CONFIG.webUrl}/en/use-cases/learning`,
+			"x-default": `${CONFIG.webUrl}/en/use-cases/learning`,
 		},
 	},
 	openGraph: {

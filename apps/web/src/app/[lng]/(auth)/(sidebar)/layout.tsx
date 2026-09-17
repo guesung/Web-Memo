@@ -10,7 +10,12 @@ import { Loading, SidebarProvider } from "@web-memo/ui";
 import type { PropsWithChildren } from "react";
 import { Suspense } from "react";
 
-import { InitSentryUserInfo, MemoSidebar } from "./_components";
+import {
+	InitSentryUserInfo,
+	MemoSidebar,
+	TrackLoginSuccess,
+	TrackViewChange,
+} from "./_components";
 import { initSentryUserInfo } from "./_utils";
 
 interface LayoutProps extends LanguageParams, PropsWithChildren {}
@@ -50,6 +55,14 @@ export default async function Layout({
 
 			<Suspense fallback={<Loading />}>
 				<InitSentryUserInfo lng={lng} />
+			</Suspense>
+
+			<Suspense>
+				<TrackLoginSuccess />
+			</Suspense>
+
+			<Suspense>
+				<TrackViewChange />
 			</Suspense>
 		</SidebarProvider>
 	);

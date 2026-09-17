@@ -1,5 +1,6 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { DEFAULT_CATEGORY_COLOR } from "@web-memo/shared/constants";
 import {
 	useCategoryDeleteMutation,
 	useCategoryPostMutation,
@@ -7,11 +8,26 @@ import {
 	useCategoryUpdateMutation,
 } from "@web-memo/shared/hooks";
 import { generateRandomPastelColor } from "@web-memo/shared/utils";
-import { Button, Input, Label, toast } from "@web-memo/ui";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	Button,
+	Input,
+	toast,
+} from "@web-memo/ui";
 import { PlusIcon, TrashIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
+/** 메모를 묶는 카테고리를 만들고 이름·색을 바꾸고 지우는 설정 */
+export default function SettingCategoryForm({
+	lng,
+}: IFSettingCategoryFormProps) {
 	const { t } = useTranslation(lng);
 
 	const { categories } = useCategoryQuery();
@@ -21,6 +37,9 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 
 	const [editingId, setEditingId] = useState<number | null>(null);
 	const [isAdding, setIsAdding] = useState(false);
+	const [categoryIdToDelete, setCategoryIdToDelete] = useState<number | null>(
+		null,
+	);
 	const editInputRef = useRef<HTMLInputElement>(null);
 	const addInputRef = useRef<HTMLInputElement>(null);
 	const colorInputRef = useRef<HTMLInputElement>(null);
@@ -33,7 +52,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 			if (!targetId) return;
 
 			const current = categories?.find((c) => c.id === targetId);
-			if (current && newColor !== (current.color || "#000000")) {
+			if (current && newColor !== (current.color || DEFAULT_CATEGORY_COLOR)) {
 				updateCategory({ id: targetId, request: { color: newColor } });
 			}
 		},
@@ -89,36 +108,38 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 		);
 	};
 
-	const handleCategoryDelete = (id: number) => {
-		deleteCategory(id, {
+	const handleCategoryDeleteConfirm = () => {
+		if (!categoryIdToDelete) return;
+
+		deleteCategory(categoryIdToDelete, {
 			onSuccess: () => toast({ title: t("toastTitle.successSave") }),
 		});
+		setCategoryIdToDelete(null);
 	};
 
 	const openColorPicker = (categoryId: number, currentColor: string) => {
 		colorTargetIdRef.current = categoryId;
 		if (colorInputRef.current) {
-			colorInputRef.current.value = currentColor || "#000000";
+			colorInputRef.current.value = currentColor || DEFAULT_CATEGORY_COLOR;
 			colorInputRef.current.click();
 		}
 	};
 
 	return (
 		<div className="relative">
-			<Label className="mb-3 block text-center">{t("setting.category")}</Label>
-			<div className="mx-auto max-w-xs space-y-1">
+			<div className="space-y-1">
 				{categories?.map((category) => {
 					const isEditing = editingId === category.id;
-					const categoryColor = category.color || "#9333ea";
+					const categoryColor = category.color || DEFAULT_CATEGORY_COLOR;
 
 					return (
 						<div
 							key={category.id}
-							className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
+							className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-muted dark:hover:bg-muted/50 transition-colors group"
 						>
 							<button
 								type="button"
-								className="relative w-5 h-5 rounded-full flex-shrink-0 ring-2 ring-gray-200 dark:ring-gray-700 hover:ring-gray-400 dark:hover:ring-gray-500 transition-all cursor-pointer hover:scale-110"
+								className="relative w-5 h-5 rounded-full flex-shrink-0 ring-2 ring-border hover:ring-muted-foreground transition-all cursor-pointer hover:scale-110"
 								style={{ backgroundColor: categoryColor }}
 								onClick={() => openColorPicker(category.id, categoryColor)}
 								aria-label={t("sideBar.changeColor")}
@@ -141,7 +162,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 							) : (
 								<button
 									type="button"
-									className="flex-1 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer truncate hover:text-gray-900 dark:hover:text-white transition-colors text-left"
+									className="flex-1 text-sm font-medium text-foreground cursor-pointer truncate hover:text-foreground transition-colors text-left"
 									onClick={() => {
 										setEditingId(category.id);
 										setTimeout(() => editInputRef.current?.focus(), 50);
@@ -155,7 +176,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 								size="icon"
 								className="text-destructive h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
 								type="button"
-								onClick={() => handleCategoryDelete(category.id)}
+								onClick={() => setCategoryIdToDelete(category.id)}
 							>
 								<TrashIcon size={14} />
 							</Button>
@@ -163,9 +184,15 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 					);
 				})}
 
+				{categories?.length === 0 && !isAdding && (
+					<p className="px-3 py-2 text-sm text-muted-foreground">
+						{t("setting.categoryEmpty")}
+					</p>
+				)}
+
 				{isAdding ? (
 					<div className="flex items-center gap-3 rounded-lg px-3 py-2">
-						<div className="w-5 h-5 rounded-full flex-shrink-0 bg-gray-300 dark:bg-gray-600" />
+						<div className="w-5 h-5 rounded-full flex-shrink-0 bg-muted-foreground/40" />
 						<Input
 							ref={addInputRef}
 							autoFocus
@@ -181,7 +208,7 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 				) : (
 					<Button
 						variant="ghost"
-						className="w-full justify-start gap-3 px-3 py-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+						className="w-full justify-start gap-3 px-3 py-2 text-muted-foreground hover:text-foreground"
 						onClick={() => setIsAdding(true)}
 						type="button"
 					>
@@ -196,8 +223,34 @@ export default function SettingCategoryForm({ lng }: SettingCategoryFormProps) {
 				type="color"
 				className="absolute opacity-0 pointer-events-none"
 			/>
+
+			<AlertDialog
+				open={categoryIdToDelete !== null}
+				onOpenChange={(open) => {
+					if (!open) {
+						setCategoryIdToDelete(null);
+					}
+				}}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							{t("sideBar.deleteConfirmTitle")}
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							{t("sideBar.deleteConfirmDescription")}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>{t("sideBar.cancel")}</AlertDialogCancel>
+						<AlertDialogAction onClick={handleCategoryDeleteConfirm}>
+							{t("sideBar.deleteCategory")}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }
 
-interface SettingCategoryFormProps extends LanguageType {}
+interface IFSettingCategoryFormProps extends LanguageType {}

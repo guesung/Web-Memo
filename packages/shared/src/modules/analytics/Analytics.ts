@@ -13,6 +13,8 @@ import {
 const CORE_ACTION_ENGAGEMENT_TIME_MSEC = 500;
 /** engagement 이벤트의 참여 시간. */
 const DEFAULT_ENGAGEMENT_TIME_MSEC = 100;
+/** memo_write로 기록할 본문성 필드. 생성·수정 양쪽에서 같은 기준으로 씁니다. */
+const CONTENT_KEYS = ["memo", "title", "impression", "actionItem"] as const;
 
 class Analytics {
 	private static instance: Analytics;
@@ -289,6 +291,24 @@ class Analytics {
 	}
 
 	/**
+	 * 신규 메모 생성 시 기록합니다.
+	 * @description trackMemoUpdate는 수정 경로에서만 불려 신규 생성은 GA에 전혀 안 잡혔습니다.
+	 * 상태 토글류까지 초기값으로 쏘면 잡음이라 memo_write만 냅니다.
+	 */
+	public async trackMemoCreate(
+		data: Partial<MemoTable["Insert"]>,
+	): Promise<void> {
+		const writtenContentKeys = CONTENT_KEYS.filter((contentKey) =>
+			Boolean(data[contentKey]),
+		);
+
+		await this.trackEvent({
+			name: "memo_write",
+			params: { fields: [...writtenContentKeys].sort().join(",") },
+		});
+	}
+
+	/**
 	 * 메모 변경 요청의 키를 보고 무엇을 바꿨는지 가려 기록합니다.
 	 * @description 상태 토글·카테고리·본문 수정이 전부 같은 뮤테이션을 지나므로, 호출부마다
 	 * 심는 대신 여기서 한 번 가릅니다. 예전 memo_write는 이 셋을 한 덩어리로 세서 어느
@@ -298,7 +318,6 @@ class Analytics {
 		request: Partial<MemoTable["Update"]>,
 	): Promise<void> {
 		const STATUS_KEYS = ["isWish", "isStar", "isReading"] as const;
-		const CONTENT_KEYS = ["memo", "title", "impression", "actionItem"] as const;
 
 		for (const statusKey of STATUS_KEYS) {
 			if (!(statusKey in request)) continue;

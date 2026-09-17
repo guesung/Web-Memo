@@ -393,7 +393,7 @@ export interface IFFeedbacksResponse {
 }
 
 /** 피드백 목록의 기본 페이지 크기 */
-export const FEEDBACK_PAGE_SIZE = 20;
+export const FEEDBACK_PAGE_SIZE = 25;
 
 export interface GetAdminUsersParams {
 	searchQuery?: string;

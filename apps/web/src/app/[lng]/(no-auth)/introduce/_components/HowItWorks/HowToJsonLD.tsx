@@ -1,6 +1,7 @@
+import { JsonLdScript } from "@src/app/_components";
 import type { Language } from "@src/modules/i18n";
 import { CONFIG } from "@web-memo/env";
-import Script from "next/script";
+import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 
 interface HowToJsonLDProps {
 	lng: Language;
@@ -15,7 +16,7 @@ const HOW_TO_DATA = {
 			{
 				name: "확장 프로그램 설치",
 				text: "Chrome 웹스토어에서 웹 메모 확장 프로그램을 설치하세요. 10초면 충분합니다.",
-				url: "https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
+				url: EXTERNAL_LINK.chromeWebStoreListing,
 			},
 			{
 				name: "사이드 패널 열기",
@@ -36,7 +37,7 @@ const HOW_TO_DATA = {
 			{
 				name: "Install the Extension",
 				text: "Install the Web Memo extension from the Chrome Web Store. It only takes 10 seconds.",
-				url: "https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
+				url: EXTERNAL_LINK.chromeWebStoreListing,
 			},
 			{
 				name: "Open the Side Panel",
@@ -71,12 +72,5 @@ export default function HowToJsonLD({ lng }: HowToJsonLDProps) {
 		})),
 	};
 
-	return (
-		<Script
-			id="howto-jsonld"
-			type="application/ld+json"
-			// biome-ignore lint/security/noDangerouslySetInnerHtml: Required for JSON-LD structured data injection
-			dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
-		/>
-	);
+	return <JsonLdScript id="howto-jsonld" schema={howToSchema} />;
 }

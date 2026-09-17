@@ -41,6 +41,10 @@ export * from "./skeleton";
 export * from "./slider";
 // export * from './sonner';
 export * from "./switch";
+/**
+ * 로딩 대기 중 텍스트를 쓸어내리는 shimmer
+ */
+export * from "./TextShimmer";
 export { default as ToggleTheme } from "./ToggleTheme";
 export * from "./table";
 export * from "./tabs";

@@ -24,8 +24,8 @@ export default function useMemoPatchMutation() {
 			stage: "save",
 		},
 		mutationFn: new MemoService(supabaseClient).updateMemo,
-		onSuccess: async () => {
-			await analytics.trackMemoWrite();
+		onSuccess: async (_, { request }) => {
+			await analytics.trackMemoUpdate(request);
 			queryClient.invalidateQueries({
 				queryKey: ["memo"],
 			});

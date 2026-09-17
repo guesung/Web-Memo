@@ -12,6 +12,7 @@ import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
+import { useMemoTitleSync } from "./useMemoTitleSync";
 
 interface SaveMemoOptions extends Partial<MemoInput> {
 	tabInfo?: { title: string; favIconUrl?: string; url: string };
@@ -31,10 +32,27 @@ interface UseMemoFormProps {
 export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const { setValue, getValues } = useFormContext<MemoInput>();
 	const { debounce } = useDebounce();
+	const { debounce: debounceTitle, abortDebounce: abortTitleDebounce } =
+		useDebounce();
 	const { data: tab } = useTabQuery();
 	const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
 		url: tab?.url ?? "",
 	});
+	const titleSync = useMemoTitleSync({
+		onTitleUpdate: (title) => setValue("title", title),
+		initialSavedTitle: memoData?.title,
+		memoId: memoData?.id,
+		pageUrl: tab?.url,
+		pageTitle: tab?.title,
+	});
+	const titlePageRef = useRef("");
+	useEffect(() => {
+		const pageKey = `${tab?.id}:${tab?.url}`;
+		if (titlePageRef.current !== pageKey) {
+			abortTitleDebounce();
+			titlePageRef.current = pageKey;
+		}
+	}, [tab?.id, tab?.url, abortTitleDebounce]);
 	const { mutate: upsertMemo } = useMemoUpsertMutation();
 	const { mutate: patchMemo } = useMemoPatchMutation();
 	// isSaving은 동시 upsert를 막는 내부 큐용이고, 화면에 보여줄지는 따로 판단한다.
@@ -55,8 +73,6 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 			const isNewMemo = initializedMemoIdRef.current !== currentMemoId;
 
 			if (isNewMemo) {
-				// 메모가 아직 없으면 현재 탭 제목이 그대로 저장될 값이라 그것을 채운다.
-				setValue("title", memoData?.title ?? tab?.title ?? "");
 				setValue("memo", memoData?.memo ?? "");
 				setValue("impression", memoData?.impression ?? "");
 				setValue("actionItem", memoData?.actionItem ?? "");
@@ -70,9 +86,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		},
 		[
 			memoData?.id,
-			memoData?.title,
 			memoData?.memo,
-			tab?.title,
 			memoData?.impression,
 			memoData?.actionItem,
 			memoData?.isWish,
@@ -161,13 +175,32 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		[isSaving, getValues, memoData?.id, upsertMemo, onSaveSuccess],
 	);
 
-	const handleTitleChange = useCallback(
-		(text: string) => {
-			setValue("title", text);
-			debounce(() => saveMemo({ title: text, isSilent: true }));
-		},
-		[setValue, debounce, saveMemo],
-	);
+	const handleTitleChange = (text: string) => {
+		titleSync.handleTitleInputChange(text);
+		debounceTitle(() => saveMemo({ title: text, isSilent: true }));
+	};
+
+	const handleTitleSyncClick = async () => {
+		abortTitleDebounce();
+		const currentTab = await titleSync.handleTitleSyncClick();
+		if (
+			!currentTab ||
+			currentTab.id !== tab?.id ||
+			currentTab.url !== tab?.url
+		) {
+			return;
+		}
+
+		await saveMemo({
+			title: currentTab.title,
+			tabInfo: {
+				title: currentTab.title ?? "",
+				url: currentTab.url ?? "",
+				favIconUrl: currentTab.favIconUrl,
+			},
+			isSilent: true,
+		});
+	};
 
 	const handleMemoChange = useCallback(
 		(text: string) => {
@@ -232,6 +265,8 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		isSaving: isSaveStatusVisible,
 		saveMemo,
 		handleTitleChange,
+		handleTitleSyncClick,
+		isTitleSyncAvailable: titleSync.isTitleSyncAvailable,
 		handleMemoChange,
 		handleImpressionChange,
 		handleActionItemChange,

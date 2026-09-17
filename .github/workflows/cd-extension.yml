@@ -4,11 +4,30 @@ on:
   workflow_call:
     inputs:
       deploy_target:
-        description: "배포 대상 (none = 빌드만, production = 크롬 웹스토어 업로드)"
+        description: "배포 대상 (none = production으로 빌드만, staging = staging으로 빌드만, production = 크롬 웹스토어 업로드)"
         type: string
         default: "none"
       ref:
         description: "체크아웃할 커밋/태그 (비우면 호출한 워크플로의 기본 ref)"
+        type: string
+        default: ""
+
+  # ci.yml이 부르는 경로에는 배포가 조용히 스킵되는 틈이 있습니다. CI가 실패한
+  # 커밋의 변경분은 배포되지 못한 채 지나가고, 다음 커밋의 affected 판정은 직전
+  # 커밋만 기준으로 삼아 그 변경분을 다시 잡지 않습니다. 실패가 아니라 스킵이라
+  # 알림도 뜨지 않으므로, 사람이 손으로 밀어 넣을 수 있는 문을 둡니다.
+  # production을 뺀 것은 의도입니다 — 실제 배포는 release.yml 한 경로로 유지합니다.
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: "배포 대상"
+        type: choice
+        options:
+          - none
+          - staging
+        default: "none"
+      ref:
+        description: "체크아웃할 커밋/태그 (비우면 실행한 브랜치)"
         type: string
         default: ""
 
@@ -35,7 +54,7 @@ jobs:
         if: ${{ inputs.deploy_target == 'production' }}
         env:
           GH_TOKEN: ${{ github.token }}
-          ARTIFACT_PREFIX: extension-production-
+          ARTIFACT_PREFIX: store-package-extension-production-
         run: .github/scripts/find-reusable-artifact.sh
 
       - name: Download reusable build
@@ -87,10 +106,25 @@ jobs:
           echo "name=$name" >> "$GITHUB_OUTPUT"
           echo "zip: $name.zip"
 
+      - name: Prepare Unpacked Extension
+        run: |
+          mkdir -p dist-artifact
+          unzip -q "dist-zip/${{ steps.zip.outputs.name }}.zip" -d dist-artifact
+
       - name: Upload Extension
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.zip.outputs.name }}
+          path: dist-artifact
+
+      # GitHub artifact 다운로드 파일은 플랫폼에서 ZIP으로 한 번 감쌉니다. 이미 만든
+      # 배포 ZIP을 올리면 사용자는 ZIP 안의 ZIP을 다시 풀어야 하므로, 수동 설치용
+      # artifact에는 압축 전 빌드 결과물을 올립니다. 스토어 업로드용 ZIP은 별도
+      # artifact로 보존해 재사용 경로와 Chrome Web Store 업로드 계약을 유지합니다.
+      - name: Upload Store Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: store-package-${{ steps.zip.outputs.name }}
           path: dist-zip/${{ steps.zip.outputs.name }}.zip
 
   upload-extension:
@@ -103,7 +137,7 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: ${{ needs.build-extension.outputs.zip_name }}
+          name: store-package-${{ needs.build-extension.outputs.zip_name }}
 
       - name: Upload zipped file on chrome store
         uses: mnao305/chrome-extension-upload@v5.0.0
@@ -113,4 +147,4 @@ jobs:
           client-id: ${{ secrets.CLIENT_ID }}
           client-secret: ${{ secrets.CLIENT_SECRET }}
           refresh-token: ${{ secrets.REFRESH_TOKEN }}
-          publish: false
+          publish: true

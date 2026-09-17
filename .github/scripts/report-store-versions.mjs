@@ -10,6 +10,7 @@
  *   GITHUB_SHA=$(git rev-parse HEAD) node .github/scripts/report-store-versions.mjs
  */
 
+import { readCommitSubject } from "./lib/run-context.mjs";
 import {
 	buildActionBlock,
 	buildVersionSection,
@@ -22,6 +23,8 @@ const main = async () => {
 	const repository = process.env.GITHUB_REPOSITORY ?? "guesung/Web-Memo";
 	const serverUrl = process.env.GITHUB_SERVER_URL ?? "https://github.com";
 	const requestedBy = process.env.REQUESTED_BY;
+	const commitSubject = readCommitSubject(commitSha);
+	const commitUrl = `${serverUrl}/${repository}/commit/${commitSha}`;
 	const storeVersions = await fetchStoreVersions();
 
 	// 조회 자체가 목적이라, 웹훅이 없으면 로컬 확인용으로 그냥 찍고 끝냅니다.
@@ -42,15 +45,22 @@ const main = async () => {
 				elements: [
 					{
 						type: "mrkdwn",
-						text: requestedBy
-							? `<@${requestedBy}> 님의 요청 · 기준 커밋 \`${commitSha.slice(0, 7)}\``
-							: `기준 커밋 \`${commitSha.slice(0, 7)}\``,
+						// 기준이 어느 커밋인지는 해시보다 제목이 알려줍니다.
+						// 해시는 되짚을 수 있게 링크로만 남깁니다.
+						text: [
+							requestedBy && `<@${requestedBy}> 님의 요청`,
+							`기준 커밋 <${commitUrl}|\`${commitSha.slice(0, 7)}\`>`,
+							commitSubject,
+						]
+							.filter(Boolean)
+							.join(" · "),
 					},
 				],
 			},
 			buildActionBlock({
 				targets: ["app", "web", "extension"],
 				ref: commitSha,
+				refSubject: commitSubject,
 				linkUrl: `${serverUrl}/${repository}/actions/workflows/release.yml`,
 				linkLabel: "Release 워크플로",
 			}),

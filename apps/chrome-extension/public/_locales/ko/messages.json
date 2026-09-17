@@ -1,4 +1,5 @@
 {
+	"memo_title_sync": { "message": "현재 페이지 제목으로 업데이트" },
 	"extensionName": {
 		"message": "웹 메모 - 웹사이트에서 간편하게 메모하세요"
 	},
@@ -197,6 +198,9 @@
 	"summary_empty_message": {
 		"message": "위의 새로고침 버튼을 눌러\n요약을 생성해보세요"
 	},
+	"summary_loading_message": {
+		"message": "요약을 만들고 있어요"
+	},
 	"impression": {
 		"message": "느낀 점"
 	},
@@ -211,5 +215,44 @@
 	},
 	"actionItemPlaceholder": {
 		"message": "이 페이지를 보고 할 일을 적어보세요"
+	},
+	"highlight_create": {
+		"message": "하이라이트"
+	},
+	"highlight_saving": {
+		"message": "저장 중…"
+	},
+	"highlight_save_failed": {
+		"message": "저장하지 못했습니다. 다시 시도해 주세요."
+	},
+	"highlight_login_required": {
+		"message": "Web Memo에 로그인한 뒤 다시 시도해 주세요."
+	},
+	"highlight_duplicate": {
+		"message": "이미 저장한 하이라이트입니다."
+	},
+	"highlight_selection_too_long": {
+		"message": "5,000자 이하로 선택해 주세요."
+	},
+	"highlight_edit": {
+		"message": "하이라이트 편집"
+	},
+	"highlight_delete": {
+		"message": "하이라이트 삭제"
+	},
+	"highlight_color_yellow": {
+		"message": "노란색"
+	},
+	"highlight_color_green": {
+		"message": "초록색"
+	},
+	"highlight_color_blue": {
+		"message": "파란색"
+	},
+	"highlight_color_pink": {
+		"message": "분홍색"
+	},
+	"highlight_color_purple": {
+		"message": "보라색"
 	}
 }

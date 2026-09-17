@@ -11,6 +11,7 @@
 	"postinstall": "playwright install --with-deps",
 	"devDependencies": {
 		"@playwright/test": "^1.47.0",
+		"@supabase/supabase-js": "^2.95.3",
 		"@types/chrome": "^0.0.268",
 		"@web-memo/tsconfig": "workspace:*",
 		"typescript": "5.5.3"

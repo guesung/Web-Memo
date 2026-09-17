@@ -1,4 +1,5 @@
 import { useGetExtensionManifest } from "@src/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import {
 	checkLocalStorageTrue,
@@ -11,6 +12,18 @@ import "driver.js/dist/driver.css";
 import { useEffect } from "react";
 import type { LanguageType } from "../i18n";
 import useTranslation from "../i18n/util.client";
+
+/**
+ * 가이드 단계 식별자. steps 배열과 같은 순서다.
+ * @description 로깅에만 쓰는 이름이라 화면 문구(번역 키)와 분리해 둔다. 문구가 바뀌어도 지표가 끊기지 않는다.
+ */
+const GUIDE_STEP_NAMES = [
+	"welcome",
+	"save",
+	"category",
+	"settings",
+	"check",
+] as const;
 
 interface UseGuideProps extends LanguageType {}
 
@@ -26,7 +39,20 @@ export default function useGuide({ lng }: UseGuideProps) {
 			nextBtnText: t("guide.next"),
 			doneBtnText: t("guide.done"),
 			prevBtnText: t("guide.prev"),
+			onHighlighted: (_element, _step, { state }) => {
+				const stepName = GUIDE_STEP_NAMES[state.activeIndex ?? 0];
+
+				if (!stepName) {
+					return;
+				}
+
+				analytics.trackEvent({
+					name: "guide_step",
+					params: { step_name: stepName },
+				});
+			},
 			onDestroyed: () => {
+				analytics.trackEvent({ name: "guide_finish" });
 				setLocalStorageTrue("guide");
 				toast({
 					title: t("toastTitle.guideDone"),

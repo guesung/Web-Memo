@@ -9,9 +9,7 @@ import {
 	HowItWorks,
 	InteractiveDemo,
 	QuestionAndAnswer,
-	SocialProofBar,
 	StatsSection,
-	Testimonials,
 	UseCases,
 } from "./_components";
 import { CHROME_STORE_STATS } from "./_constants";
@@ -23,29 +21,36 @@ export async function generateMetadata({ params }: LanguageParams) {
 
 interface IntroducePageProps extends LanguageParams {}
 
+/**
+ * 소개 페이지.
+ * @description
+ * `landing` 클래스가 랜딩 스코프 토큰(`globals.css`)을 거는 자리다. 이게 빠지면
+ * 모든 섹션이 도구 화면 팔레트로 돌아간다.
+ *
+ * 배경 밴드는 섹션이 아니라 여기서 정한다 — 인접한 두 섹션이 같은 밴드를 쓰지
+ * 않아야 하는데, 그 판단은 순서를 아는 쪽만 할 수 있다.
+ */
 export default async function IntroducePage({
 	params: { lng },
 }: IntroducePageProps) {
 	const memoCount = await getMemoCount();
 
 	const stats = {
-		...CHROME_STORE_STATS,
+		installCount: CHROME_STORE_STATS.installCount,
 		memoCount,
 	};
 
 	return (
-		<div className="min-h-screen overflow-hidden">
+		<div className="landing min-h-screen bg-background">
 			<HeaderMargin />
-			<Hero lng={lng} />
-			<SocialProofBar lng={lng} />
-			<InteractiveDemo lng={lng} />
-			<Features lng={lng} />
-			<StatsSection lng={lng} stats={stats} />
-			<HowItWorks lng={lng} />
-			<UseCases lng={lng} />
-			<Testimonials lng={lng} />
-			<QuestionAndAnswer lng={lng} />
-			<FinalCTA lng={lng} />
+			<Hero lng={lng} background="canvas" />
+			<InteractiveDemo lng={lng} background="fog" />
+			<Features lng={lng} background="canvas" />
+			<StatsSection lng={lng} stats={stats} background="fog" />
+			<HowItWorks lng={lng} background="canvas" />
+			<UseCases lng={lng} background="fog" />
+			<QuestionAndAnswer lng={lng} background="canvas" />
+			<FinalCTA lng={lng} background="fog" />
 			<Footer lng={lng} />
 		</div>
 	);

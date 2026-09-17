@@ -3,6 +3,7 @@ import {
 	type HighlightRenderer,
 	resolveAnchors,
 } from "@web-memo/shared/modules/highlight";
+import { normalizeUrl } from "@web-memo/shared/utils/url";
 
 /** 늦게 그려지는 본문을 기다리는 한계. 이후에는 옵저버를 해제한다 */
 export const RESTORE_TIMEOUT_MS = 10_000;
@@ -14,6 +15,8 @@ export const RETRY_DEBOUNCE_MS = 300;
 interface StartHighlightRestoreParams {
 	/** 복원할 하이라이트 목록 */
 	items: HighlightItem[];
+	/** 재시도 시 삭제·색 변경을 반영할 최신 항목 조회. */
+	getCurrentItem?: (id: number) => HighlightItem | undefined;
 	/** 밑줄을 그릴 렌더러 */
 	renderer: HighlightRenderer;
 	/** 탐색 기준 노드 */
@@ -34,6 +37,7 @@ interface StartHighlightRestoreParams {
  */
 export function startHighlightRestore({
 	items,
+	getCurrentItem,
 	renderer,
 	root = document.body,
 	timeoutMs = RESTORE_TIMEOUT_MS,
@@ -43,7 +47,7 @@ export function startHighlightRestore({
 	let observer: MutationObserver | null = null;
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 	let timeoutTimer: ReturnType<typeof setTimeout> | null = null;
-	const startUrl = location.href;
+	const startUrl = normalizeUrl(location.href);
 
 	function stop(): void {
 		observer?.disconnect();
@@ -62,11 +66,18 @@ export function startHighlightRestore({
 
 	/** 아직 못 찾은 앵커만 다시 시도하고, 찾은 것은 pending에서 뺀다 */
 	function attempt(): void {
-		if (location.href !== startUrl) {
+		if (normalizeUrl(location.href) !== startUrl) {
 			stop();
 			return;
 		}
 
+		if (getCurrentItem) {
+			pending = pending.flatMap((item) => {
+				const currentItem = getCurrentItem(item.id);
+
+				return currentItem ? [currentItem] : [];
+			});
+		}
 		const ranges = resolveAnchors(
 			pending.map((item) => item.anchor),
 			root,

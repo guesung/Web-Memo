@@ -1,119 +1,126 @@
-"use client";
-
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.client";
+import useTranslation from "@src/modules/i18n/util.server";
 import { EXTERNAL_LINK } from "@web-memo/shared/constants";
-import { motion } from "framer-motion";
-import { Chrome, Heart, Mail, MessageCircle, Youtube } from "lucide-react";
+import { Chrome, Mail, MessageCircle, Youtube } from "lucide-react";
 import Link from "next/link";
+import type { ComponentType } from "react";
+import { AppleIcon, GooglePlayIcon } from "../StoreIcon";
+
+/**
+ * 랜딩 푸터.
+ * @description
+ * 아이콘은 항목마다 `icon` 필드로 갖는다. 이전에는 `external` 불리언 하나로 아이콘을
+ * 가르는 바람에 **iOS 앱 링크에 크롬 아이콘이 붙어 있었다** — 외부 링크인지와 어느
+ * 스토어인지는 서로 다른 질문이라 한 필드로 묶을 수 없다.
+ */
+
+/** 링크 앞에 붙는 아이콘. lucide와 `StoreIcon`의 브랜드 로고를 함께 받는다 */
+type TLinkIcon = ComponentType<{ className?: string }>;
 
 interface FooterProps extends LanguageType {}
 
-export default function Footer({ lng }: FooterProps) {
-	const { t } = useTranslation(lng);
+export default async function Footer({ lng }: FooterProps) {
+	const { t } = await useTranslation(lng);
 
-	const socialLinks = [
+	const socialLinks: { icon: TLinkIcon; href: string; label: string }[] = [
 		{
 			icon: Mail,
 			href: EXTERNAL_LINK.contactEmail,
 			label: t("introduce.footer.social.email"),
-			color: "hover:text-blue-500",
 		},
 		{
 			icon: Youtube,
 			href: EXTERNAL_LINK.youtubeChannel,
 			label: t("introduce.footer.social.youtube"),
-			color: "hover:text-red-500",
 		},
 		{
 			icon: MessageCircle,
 			href: EXTERNAL_LINK.kakaoOpenChat,
 			label: t("introduce.footer.social.kakaotalk"),
-			color: "hover:text-yellow-500",
 		},
 	];
 
-	const productLinks = [
+	const productLinks: {
+		href: string;
+		label: string;
+		icon?: TLinkIcon;
+		isExternal?: boolean;
+	}[] = [
 		{
 			href: EXTERNAL_LINK.chromeWebStoreListing,
 			label: t("introduce.footer.chrome_extension"),
-			external: true,
+			icon: Chrome,
+			isExternal: true,
 		},
 		{
 			href: EXTERNAL_LINK.iosAppStoreListing,
 			label: t("introduce.footer.ios_app"),
-			external: true,
+			icon: AppleIcon,
+			isExternal: true,
+		},
+		{
+			href: EXTERNAL_LINK.playStoreListing,
+			label: t("introduce.footer.android_app"),
+			icon: GooglePlayIcon,
+			isExternal: true,
 		},
 		{
 			href: "#demo",
 			label: t("introduce.footer.features_link"),
-			external: false,
 		},
 	];
 
 	const companyLinks = [
 		{
-			href: "mailto:gueit214@naver.com",
+			href: EXTERNAL_LINK.contactEmail,
 			label: t("introduce.footer.contact_link"),
-			external: false,
 		},
 	];
 
 	return (
-		<motion.footer
-			initial={{ opacity: 0 }}
-			whileInView={{ opacity: 1 }}
-			viewport={{ once: true }}
-			transition={{ duration: 0.5 }}
-			className="relative bg-gray-900 text-gray-300"
-		>
-			{/* Gradient Top Border */}
-			<div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500" />
-
-			<div className="mx-auto max-w-6xl px-4 py-16">
-				{/* Main Footer Content */}
-				<div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-					{/* Brand Section */}
+		<footer className="border-t border-border bg-background text-muted-foreground">
+			<div className="mx-auto max-w-[1200px] px-6 py-16">
+				<div className="mb-14 grid gap-12 md:grid-cols-4">
 					<div className="md:col-span-2">
-						<h2 className="text-2xl font-bold text-white mb-4">
+						<h2 className="text-xl tracking-[-0.015em] text-foreground">
 							{t("introduce.footer.title")}
 						</h2>
-						<p className="text-gray-400 mb-6 max-w-md">
+
+						<p className="mt-3 max-w-md leading-relaxed">
 							{t("introduce.footer.description")}
 						</p>
 
-						{/* Social Links */}
-						<div className="flex gap-4">
+						<div className="mt-6 flex gap-3">
 							{socialLinks.map((link) => (
 								<Link
 									key={link.label}
 									href={link.href}
 									target="_blank"
 									rel="noopener noreferrer"
-									className={`p-3 rounded-lg bg-gray-800 text-gray-400 transition-all duration-300 hover:bg-gray-700 ${link.color}`}
+									className="flex h-11 w-11 items-center justify-center rounded-full border border-border transition-colors duration-base hover:text-foreground"
 									aria-label={link.label}
 								>
-									<link.icon className="h-5 w-5" />
+									<link.icon className="h-4 w-4" />
 								</Link>
 							))}
 						</div>
 					</div>
 
-					{/* Product Links */}
 					<div>
-						<h3 className="text-white font-semibold mb-4">
+						<h3 className="text-sm text-foreground">
 							{t("introduce.footer.product.title")}
 						</h3>
-						<ul className="space-y-3">
+
+						<ul className="mt-4 space-y-3 text-sm">
 							{productLinks.map((link) => (
 								<li key={link.label}>
 									<Link
 										href={link.href}
-										target={link.external ? "_blank" : undefined}
-										rel={link.external ? "noopener noreferrer" : undefined}
-										className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+										target={link.isExternal ? "_blank" : undefined}
+										rel={link.isExternal ? "noopener noreferrer" : undefined}
+										className="flex items-center gap-2 transition-colors duration-base hover:text-foreground"
 									>
-										{link.external && <Chrome className="h-4 w-4" />}
+										{link.icon ? <link.icon className="h-4 w-4" /> : null}
 										{link.label}
 									</Link>
 								</li>
@@ -121,17 +128,17 @@ export default function Footer({ lng }: FooterProps) {
 						</ul>
 					</div>
 
-					{/* Company Links */}
 					<div>
-						<h3 className="text-white font-semibold mb-4">
+						<h3 className="text-sm text-foreground">
 							{t("introduce.footer.company.title")}
 						</h3>
-						<ul className="space-y-3">
+
+						<ul className="mt-4 space-y-3 text-sm">
 							{companyLinks.map((link) => (
 								<li key={link.label}>
 									<Link
 										href={link.href}
-										className="text-gray-400 hover:text-white transition-colors"
+										className="transition-colors duration-base hover:text-foreground"
 									>
 										{link.label}
 									</Link>
@@ -141,31 +148,19 @@ export default function Footer({ lng }: FooterProps) {
 					</div>
 				</div>
 
-				{/* Divider */}
-				<div className="border-t border-gray-800 pt-8">
-					<div className="flex flex-col md:flex-row justify-between items-center gap-4">
-						{/* Copyright */}
-						<p className="text-gray-500 text-sm">
-							&copy; {new Date().getFullYear()}{" "}
-							{t("introduce.footer.copyright")}
-						</p>
+				<div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-sm md:flex-row">
+					<p>
+						&copy; {new Date().getFullYear()} {t("introduce.footer.copyright")}
+					</p>
 
-						{/* Legal Links */}
-						<Link
-							href={`/${lng}/privacy`}
-							className="text-gray-500 text-sm hover:text-white transition-colors"
-						>
-							{t("introduce.footer.legal.privacy_policy")}
-						</Link>
-
-						{/* Made with Love */}
-						<p className="text-gray-500 text-sm flex items-center gap-1">
-							Made with <Heart className="h-4 w-4 text-red-500 fill-red-500" />{" "}
-							in Korea
-						</p>
-					</div>
+					<Link
+						href={`/${lng}/privacy`}
+						className="transition-colors duration-base hover:text-foreground"
+					>
+						{t("introduce.footer.legal.privacy_policy")}
+					</Link>
 				</div>
 			</div>
-		</motion.footer>
+		</footer>
 	);
 }

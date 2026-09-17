@@ -49,4 +49,5 @@ export const PRIVACY_THIRD_PARTIES = [
 	"sentry",
 	"vercel",
 	"upstash",
+	"resend",
 ] as const;

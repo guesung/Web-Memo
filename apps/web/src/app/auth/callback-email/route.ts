@@ -36,5 +36,7 @@ export async function GET(request: Request) {
 		},
 	);
 
-	return NextResponse.redirect(requestUrl.origin + PATHS.memos);
+	return NextResponse.redirect(
+		`${requestUrl.origin}${PATHS.memos}?login=email`,
+	);
 }

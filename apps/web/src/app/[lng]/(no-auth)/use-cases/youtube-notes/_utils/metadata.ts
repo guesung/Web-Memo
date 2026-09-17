@@ -20,6 +20,7 @@ export const metadataKorean: Metadata = {
 		languages: {
 			ko: `${CONFIG.webUrl}/ko/use-cases/youtube-notes`,
 			en: `${CONFIG.webUrl}/en/use-cases/youtube-notes`,
+			"x-default": `${CONFIG.webUrl}/en/use-cases/youtube-notes`,
 		},
 	},
 	openGraph: {
@@ -50,6 +51,7 @@ export const metadataEnglish: Metadata = {
 		languages: {
 			ko: `${CONFIG.webUrl}/ko/use-cases/youtube-notes`,
 			en: `${CONFIG.webUrl}/en/use-cases/youtube-notes`,
+			"x-default": `${CONFIG.webUrl}/en/use-cases/youtube-notes`,
 		},
 	},
 	openGraph: {

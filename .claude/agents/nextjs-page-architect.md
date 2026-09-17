@@ -35,8 +35,7 @@ apps/web/src/app/
 │   ├── callback/              # OAuth callback
 │   └── callback-email/        # Email verification
 ├── api/                        # API routes
-│   ├── openai/                # AI summarization
-│   └── uninstall-log/         # Analytics
+│   └── openai/                # AI summarization
 ├── layout.tsx                  # Root layout
 ├── error.tsx                   # Error boundary
 └── not-found.tsx              # 404 page

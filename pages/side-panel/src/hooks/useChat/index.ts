@@ -1,5 +1,6 @@
 import { captureException } from "@sentry/react";
 import { CONFIG } from "@web-memo/env";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { STORAGE_KEYS } from "@web-memo/shared/modules/chrome-storage";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePageContentContext } from "../../components/PageContentProvider";
@@ -142,6 +143,8 @@ export default function useChat(): UseChatReturn {
 
 			setMessages((prev) => [...prev, assistantMessage]);
 
+			analytics.trackEvent({ name: "chat_message_send" });
+
 			try {
 				const chatMessages = [...messages, userMessage].map((msg) => ({
 					role: msg.role,
@@ -194,6 +197,11 @@ export default function useChat(): UseChatReturn {
 				);
 			} catch (err) {
 				if (!isExpectedChatError(err)) {
+					console.error("Chat error:", err);
+					analytics.trackEvent({
+						name: "chat_fail",
+						params: { reason: err instanceof Error ? err.message : "unknown" },
+					});
 					reportChatFailure(err, "general");
 					setError(
 						err instanceof Error ? err.message : "채팅 중 오류가 발생했습니다",

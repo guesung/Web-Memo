@@ -21,7 +21,7 @@ export default function ErrorSection({ error, reset }: ErrorSectionProps) {
 
 	return (
 		<div className="flex min-h-screen flex-col items-center justify-center gap-6 p-4 text-center">
-			<h1 className="text-4xl font-bold text-gray-800 dark:text-gray-100">
+			<h1 className="text-4xl font-bold text-foreground">
 				{t("error.500.title")}
 			</h1>
 

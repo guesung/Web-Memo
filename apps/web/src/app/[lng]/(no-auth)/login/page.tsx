@@ -5,25 +5,37 @@ import { PATHS } from "@web-memo/shared/constants";
 import { AuthService } from "@web-memo/shared/utils";
 import { redirect } from "next/navigation";
 
-import { LoginSection, PersonalInformationInfo } from "./_components";
+import { LoginErrorAlert, LoginSection } from "./_components";
 
-export default async function page({ params: { lng } }: LanguageParams) {
+/** 로그인 상태와 오류에 맞춰 로그인 화면을 표시합니다. */
+const LoginPage = async ({ params: { lng }, searchParams }: IFPageProps) => {
 	const supabaseClient = getSupabaseClient();
 	const isUserLogin = await new AuthService(supabaseClient).checkUserLogin();
 
-	if (isUserLogin) redirect(PATHS.memos);
+	if (isUserLogin) {
+		redirect(`/${lng}${PATHS.memos}`);
+	}
+
+	const hasLoginError = Boolean(searchParams.error);
+
 	return (
-		<main className="relative flex h-full min-h-screen items-center justify-center overflow-hidden">
-			<div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950" />
+		<main className="relative min-h-screen">
+			<div className="absolute inset-0 gradient-mesh dark:gradient-mesh-dark opacity-5" />
 
-			<div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-200/50 dark:bg-purple-500/10 rounded-full blur-3xl" />
-			<div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-200/50 dark:bg-blue-500/10 rounded-full blur-3xl" />
-
-			<div className="relative z-10 w-full max-w-md px-4">
-				<LoginSection lng={lng} />
+			<div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-12">
+				<div className="flex w-full max-w-sm flex-col gap-8">
+					{hasLoginError && <LoginErrorAlert lng={lng} />}
+					<LoginSection lng={lng} />
+				</div>
 			</div>
-
-			<PersonalInformationInfo lng={lng} />
 		</main>
 	);
+};
+
+export default LoginPage;
+
+/** 로그인 페이지의 props입니다. */
+interface IFPageProps extends LanguageParams {
+	/** OAuth 콜백이 실패로 돌아왔는지 알려주는 쿼리. 값 자체는 화면에 노출하지 않습니다 */
+	searchParams: { error?: string };
 }

@@ -16,7 +16,7 @@ import {
 	useSettingQuery,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
-import type { GetMemoResponse } from "@web-memo/shared/types";
+import type { GetMemoResponse, HighlightRow } from "@web-memo/shared/types";
 import { Loading, Skeleton, ToastAction, toast } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -33,6 +33,7 @@ const CONTAINER_ID = "memo-grid";
 
 interface MemoGridProps extends LanguageType {
 	memos: GetMemoResponse[];
+	highlightsByUrl: Map<string, HighlightRow[]>;
 	searchQuery: string;
 	hasNextPage: boolean;
 	isFetchingNextPage: boolean;
@@ -42,6 +43,7 @@ interface MemoGridProps extends LanguageType {
 export default function MemoGrid({
 	lng,
 	memos,
+	highlightsByUrl,
 	searchQuery,
 	hasNextPage,
 	isFetchingNextPage,
@@ -240,7 +242,9 @@ export default function MemoGrid({
 						key={memo.id}
 						lng={lng}
 						data-grid-groupkey={Math.floor(index / 20)}
+						index={index}
 						memo={memo}
+						highlights={highlightsByUrl.get(memo.url)}
 						isMemoSelected={checkMemoSelected(memo.id)}
 						selectMemoItem={handleSelectMemoItem}
 						isSelectingMode={isSelectingMode}

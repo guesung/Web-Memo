@@ -12,7 +12,7 @@ export default async function Page({ params: { lng } }: LanguageParams) {
 	const supabaseClient = getSupabaseClient();
 
 	return (
-		<div>
+		<div className="mx-auto w-full max-w-2xl px-4 md:px-6 py-4 pb-20">
 			<SettingHeader lng={lng} />
 			<HydrationBoundaryWrapper
 				queryKey={QUERY_KEY.category()}

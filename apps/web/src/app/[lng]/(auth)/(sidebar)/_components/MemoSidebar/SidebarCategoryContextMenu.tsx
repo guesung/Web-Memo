@@ -2,6 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { DEFAULT_CATEGORY_COLOR } from "@web-memo/shared/constants";
 import {
 	useCategoryDeleteMutation,
 	useCategoryUpdateMutation,
@@ -22,6 +23,7 @@ import {
 	ContextMenuTrigger,
 } from "@web-memo/ui";
 import { Palette, Pencil, Trash2 } from "lucide-react";
+
 import {
 	type ReactNode,
 	useCallback,
@@ -49,7 +51,7 @@ export default function SidebarCategoryContextMenu({
 
 	const openColorPicker = () => {
 		if (colorInputRef.current) {
-			colorInputRef.current.value = category.color || "#9333ea";
+			colorInputRef.current.value = category.color || DEFAULT_CATEGORY_COLOR;
 			colorInputRef.current.click();
 		}
 	};
@@ -57,7 +59,7 @@ export default function SidebarCategoryContextMenu({
 	const handleColorChange = useCallback(
 		(e: Event) => {
 			const newColor = (e.target as HTMLInputElement).value;
-			if (newColor !== (category.color || "#9333ea")) {
+			if (newColor !== (category.color || DEFAULT_CATEGORY_COLOR)) {
 				updateCategory({ id: category.id, request: { color: newColor } });
 			}
 		},

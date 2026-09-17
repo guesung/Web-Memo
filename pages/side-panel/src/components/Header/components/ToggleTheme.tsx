@@ -49,7 +49,7 @@ export default function ToggleTheme() {
 			size="sm"
 			aria-label={`${theme === "dark" ? "라이트" : "다크"} 모드로 전환`}
 		>
-			{theme === "dark" ? <Moon /> : <Sun color="black" />}
+			{theme === "dark" ? <Moon /> : <Sun />}
 		</Button>
 	);
 }

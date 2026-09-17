@@ -4,6 +4,7 @@ import { useGetExtensionManifest } from "@src/hooks";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { EXTERNAL_LINK } from "@web-memo/shared/constants";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import {
 	checkLocalStorageTrue,
 	setLocalStorageTrue,
@@ -35,6 +36,8 @@ export default function ExtensionInstallCheckDialog({
 	};
 
 	const handleOkClick = () => {
+		// 웹으로 가입한 사람이 확장까지 가는지. 설치 유도가 실제로 작동하는지의 근거입니다.
+		analytics.trackEvent({ name: "extension_install_click" });
 		window.open(
 			EXTERNAL_LINK.chromeWebStoreListing,
 			"_blank",
@@ -44,6 +47,7 @@ export default function ExtensionInstallCheckDialog({
 	};
 
 	const handleCancelClick = () => {
+		analytics.trackEvent({ name: "extension_install_dismiss" });
 		setLocalStorageTrue("install");
 	};
 

@@ -445,6 +445,20 @@ production을 구분하지 못합니다. `isProduction()`은 `buildEnv !== "deve
 - 버전 관리: [docs/versioning.md](docs/versioning.md) — 확장·앱·릴리스 노트가
   **각각 독립된 버전 트랙**이며, `apps/chrome-extension` 외의 `package.json`에는
   `version` 필드를 두지 않습니다
+
+### AI 에이전트가 읽는 문서 (`/gs` 파이프라인)
+
+`/gs` 스킬의 하위 에이전트가 작업 전에 읽는 세 장입니다. 사람이 읽어도 되지만,
+**규격이 정해져 있으므로 섹션 제목을 바꾸지 마세요** — 에이전트가 제목으로 섹션을 찾습니다.
+
+| 문서 | 읽는 쪽 |
+| --- | --- |
+| [docs/project-identity.md](docs/project-identity.md) — 정체·페르소나·방향성·하지 않을 것·제약 | 기획 에이전트 |
+| [docs/design-system.md](docs/design-system.md) — 토큰·컴포넌트 인벤토리·레이아웃·상태 표현 | 디자인 에이전트 |
+| [docs/architecture.md](docs/architecture.md) — 공통/프론트엔드/백엔드/QA 실행 | 구현·QA 에이전트 |
+
+스택이나 토큰을 바꾸는 커밋은 해당 문서를 **같은 PR에서** 함께 고칩니다.
+문서와 코드가 어긋나면 코드가 맞고, 문서를 고쳐야 합니다.
 PR 템플릿 파일은 레포에 없습니다. 최근 PR들이 쓰는 형식을 따릅니다 —
 `## 설명` / `## 관련 이슈` / `## 변경 유형` / `## 체크리스트`, 필요하면
 `## 이번 PR과 무관하게 발견한 것`.

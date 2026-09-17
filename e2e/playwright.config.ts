@@ -11,6 +11,8 @@ export default defineConfig({
 	// CI 러너는 코어가 적어 기본값으로도 2개라 그대로 둔다.
 	workers: process.env.CI ? undefined : 4,
 	reporter: [["html", { open: "on-failure" }]],
+	// 통합 테스트는 모킹 없이 실제 Supabase를 치므로, 실행이 끝나면 남은 메모·카테고리를 지운다.
+	globalTeardown: "./globalTeardown.ts",
 	webServer: {
 		command: "pnpm run -w dev:web:preview",
 		url: "http://localhost:3000",

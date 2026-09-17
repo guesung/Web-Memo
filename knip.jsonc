@@ -1,0 +1,70 @@
+{
+	// 주기적 정리 PR 자동화(.github/workflows/cleanup-unused.yml)가 쓰는 설정입니다.
+	// 사람이 로컬에서 `pnpm knip`으로 같은 결과를 재현할 수 있어야 PR 본문의 근거가 검증됩니다.
+	//
+	// 1차 범위는 "어디서도 import되지 않는 파일"뿐입니다. 안 쓰는 export·의존성은
+	// 일부러 빼놨습니다 — barrel index.ts가 100개 넘게 깔린 레포라 export 탐지는
+	// 오탐과 누락이 둘 다 납니다.
+	"$schema": "https://unpkg.com/knip@6/schema.json",
+
+	// 파일만 봅니다. exports/dependencies/types 등 다른 이슈 타입은 보고하지 않습니다.
+	"include": ["files"],
+
+	// 스캔 범위는 packages/* + apps/web 뿐입니다.
+	//
+	// 아래 셋은 정적 분석으로 진입점을 알 수 없어 대량 오탐의 진원지입니다:
+	// - apps/app         expo-router 파일 기반 라우팅
+	// - apps/chrome-extension  manifest.js가 background·content script 경로를 동적으로 정의
+	// - pages/*          vite 설정이 진입점을 정함
+	// 오탐 0으로 회차가 쌓이면 한 워크스페이스씩 넓힙니다.
+	"ignoreWorkspaces": [
+		"apps/app",
+		"apps/chrome-extension",
+		"pages/*",
+		"e2e"
+	],
+
+	// import 그래프에 없어도 살아있는 파일들입니다. 지우면 런타임에만 드러납니다.
+	// scripts/·.github/는 워크스페이스 밖이라 검증 게이트(turbo·biome)가
+	// 아무것도 보장하지 못하므로 애초에 후보로 올리지 않습니다.
+	"ignore": [
+		"**/public/**",
+		"**/_locales/**",
+		"**/dist/**",
+		"scripts/**",
+		".github/**",
+		"packages/supabase-edge-functions/**"
+	],
+
+	"workspaces": {
+		"apps/web": {
+			// tsconfig의 baseUrl/paths를 knip이 자동으로 집지 못해, 별칭을 못 푼 import가
+			// 전부 "미사용"으로 보고됐습니다. 여기서 다시 적어 줍니다.
+			// apps/web/tsconfig.json 의 paths와 같은 값이어야 합니다.
+			"paths": {
+				"@src/*": ["./src/*"]
+			},
+
+			// Next.js App Router의 규약 파일은 import 없이 프레임워크가 로드합니다.
+			"entry": [
+				"src/app/**/{page,layout,route,template,loading,error,not-found,default,sitemap,robots,manifest,opengraph-image,twitter-image,icon,apple-icon}.{ts,tsx}",
+				"src/middleware.ts",
+				"next.config.{js,mjs,ts}",
+				"instrumentation.ts",
+				"sentry.{client,server,edge}.config.ts"
+			],
+			"project": ["src/**/*.{ts,tsx}"]
+		},
+
+		"packages/*": {
+			// barrel(index.ts)을 진입점으로 둡니다. 배럴을 통해서만 닿는 파일을
+			// 미사용으로 보면 패키지 공개 API가 통째로 후보에 오릅니다.
+			"entry": [
+				"index.{ts,tsx,mts,mjs}",
+				"src/index.{ts,tsx}",
+				"src/**/index.{ts,tsx}"
+			],
+			"project": ["src/**/*.{ts,tsx}", "*.{ts,mts,mjs}"]
+		}
+	}
+}

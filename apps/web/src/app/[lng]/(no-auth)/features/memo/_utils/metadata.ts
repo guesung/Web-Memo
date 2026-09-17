@@ -19,6 +19,7 @@ export const metadataKorean: Metadata = {
 		languages: {
 			ko: `${CONFIG.webUrl}/ko/features/memo`,
 			en: `${CONFIG.webUrl}/en/features/memo`,
+			"x-default": `${CONFIG.webUrl}/en/features/memo`,
 		},
 	},
 	openGraph: {
@@ -48,6 +49,7 @@ export const metadataEnglish: Metadata = {
 		languages: {
 			ko: `${CONFIG.webUrl}/ko/features/memo`,
 			en: `${CONFIG.webUrl}/en/features/memo`,
+			"x-default": `${CONFIG.webUrl}/en/features/memo`,
 		},
 	},
 	openGraph: {

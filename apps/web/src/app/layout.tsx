@@ -5,6 +5,7 @@ import "./globals.css";
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 import { CONFIG } from "@web-memo/env";
 import { ANALYTICS } from "@web-memo/shared/constants";
+import { isProduction } from "@web-memo/shared/utils";
 import { Toaster } from "@web-memo/ui";
 import type { Metadata, Viewport } from "next";
 import type { PropsWithChildren } from "react";
@@ -38,8 +39,19 @@ export default function Layout({ children }: LayoutProps) {
 				{children}
 
 				<WebVitals />
-				<GoogleAnalytics gaId={ANALYTICS.gaId} />
-				<GoogleTagManager gtmId={ANALYTICS.gtmId} />
+				{/*
+				 * 개발 환경에서는 GA 스크립트를 아예 싣지 않습니다.
+				 * Analytics.ts의 전송 게이트는 우리 커스텀 이벤트만 막고, gtag가 자동으로
+				 * 보내는 page_view·scroll·session_start 등은 그대로 나갑니다. 이 레포는
+				 * 공개돼 있어 클론한 사람이 로컬에서 돌리면 그 이벤트가 운영 속성으로
+				 * 들어오고, 실제로 30일 트래픽의 99%가 localhost에서 온 것이었습니다.
+				 */}
+				{isProduction() && (
+					<>
+						<GoogleAnalytics gaId={ANALYTICS.gaId} />
+						<GoogleTagManager gtmId={ANALYTICS.gtmId} />
+					</>
+				)}
 				<Toaster />
 			</body>
 		</html>

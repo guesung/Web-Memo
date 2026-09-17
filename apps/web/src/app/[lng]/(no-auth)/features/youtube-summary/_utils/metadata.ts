@@ -19,6 +19,7 @@ export const metadataKorean: Metadata = {
 		languages: {
 			ko: `${CONFIG.webUrl}/ko/features/youtube-summary`,
 			en: `${CONFIG.webUrl}/en/features/youtube-summary`,
+			"x-default": `${CONFIG.webUrl}/en/features/youtube-summary`,
 		},
 	},
 	openGraph: {
@@ -48,6 +49,7 @@ export const metadataEnglish: Metadata = {
 		languages: {
 			ko: `${CONFIG.webUrl}/ko/features/youtube-summary`,
 			en: `${CONFIG.webUrl}/en/features/youtube-summary`,
+			"x-default": `${CONFIG.webUrl}/en/features/youtube-summary`,
 		},
 	},
 	openGraph: {

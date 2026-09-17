@@ -1,8 +1,19 @@
 import { type Language, SUPPORTED_LANGUAGES } from "@src/modules/i18n";
 import { CONFIG } from "@web-memo/env";
-import Script from "next/script";
+import { EXTERNAL_LINK } from "@web-memo/shared/constants";
+import JsonLdScript from "../JsonLdScript";
 
 const baseUrl = CONFIG.webUrl;
+
+/**
+ * SoftwareApplication 엔티티의 전역 식별자.
+ *
+ * @description
+ * 이 스키마는 전 페이지 레이아웃에서 렌더된다. 별점은 화면 어디에도 보이지 않으므로
+ * aggregateRating 을 마크업하지 않는다 — 보이지 않는 값을 구조화 데이터로 내보내면
+ * 리치 결과에서 빠지거나 수동 조치 대상이 된다.
+ */
+export const SOFTWARE_APPLICATION_ID = `${baseUrl}/#software-application`;
 
 interface JsonLDProps {
 	lng: Language;
@@ -14,9 +25,7 @@ const getOrganizationSchema = (lng: Language) => ({
 	name: lng === "ko" ? "웹 메모" : "Web Memo",
 	url: baseUrl,
 	logo: `${baseUrl}/og-image.png`,
-	sameAs: [
-		"https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
-	],
+	sameAs: [EXTERNAL_LINK.chromeWebStoreListing],
 	contactPoint: {
 		"@type": "ContactPoint",
 		email: "gueit214@naver.com",
@@ -28,6 +37,7 @@ const getOrganizationSchema = (lng: Language) => ({
 const getSoftwareApplicationSchema = (lng: Language) => ({
 	"@context": "https://schema.org",
 	"@type": "SoftwareApplication",
+	"@id": SOFTWARE_APPLICATION_ID,
 	name: lng === "ko" ? "웹 메모" : "Web Memo",
 	description:
 		lng === "ko"
@@ -42,21 +52,12 @@ const getSoftwareApplicationSchema = (lng: Language) => ({
 		price: "0",
 		priceCurrency: "USD",
 	},
-	aggregateRating: {
-		"@type": "AggregateRating",
-		ratingValue: "5.0",
-		ratingCount: "33",
-		bestRating: "5",
-		worstRating: "1",
-	},
 	author: {
 		"@type": "Organization",
 		name: "Web Memo",
 	},
-	downloadUrl:
-		"https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
-	installUrl:
-		"https://chromewebstore.google.com/detail/web-memo/eaiojpmgklfngpjddhoalgcpkepgkclh",
+	downloadUrl: EXTERNAL_LINK.chromeWebStoreListing,
+	installUrl: EXTERNAL_LINK.chromeWebStoreListing,
 	screenshot: `${baseUrl}/og-image.png`,
 	featureList:
 		lng === "ko"
@@ -82,19 +83,10 @@ export default function JsonLD({ lng }: JsonLDProps) {
 
 	return (
 		<>
-			<Script
-				id="organization-jsonld"
-				type="application/ld+json"
-				// biome-ignore lint/security/noDangerouslySetInnerHtml: Required for JSON-LD structured data injection
-				dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-			/>
-			<Script
+			<JsonLdScript id="organization-jsonld" schema={organizationSchema} />
+			<JsonLdScript
 				id="software-application-jsonld"
-				type="application/ld+json"
-				// biome-ignore lint/security/noDangerouslySetInnerHtml: Required for JSON-LD structured data injection
-				dangerouslySetInnerHTML={{
-					__html: JSON.stringify(softwareApplicationSchema),
-				}}
+				schema={softwareApplicationSchema}
 			/>
 		</>
 	);

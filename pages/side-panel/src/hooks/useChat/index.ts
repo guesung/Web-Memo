@@ -1,8 +1,18 @@
+import { captureException } from "@sentry/react";
 import { CONFIG } from "@web-memo/env";
 import { STORAGE_KEYS } from "@web-memo/shared/modules/chrome-storage";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePageContentContext } from "../../components/PageContentProvider";
 import { processStreamingResponse } from "../useSummary/util";
+
+const ERROR_REPORTING_WINDOW_MS = 8_000;
+const ERROR_FEATURE = "chat";
+const ERROR_OPERATION = "send";
+
+const isExpectedChatError = (error: unknown): boolean => {
+	if (!(error instanceof Error)) return false;
+	return error.name === "AbortError";
+};
 
 export interface ChatMessage {
 	id: string;
@@ -28,8 +38,47 @@ export default function useChat(): UseChatReturn {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 	const isInitialized = useRef(false);
+	const lastErrorRef = useRef(new Map<string, number>());
 
 	const { content: pageContent } = usePageContentContext();
+
+	const reportChatFailure = useCallback(
+		(
+			error: unknown,
+			stage: "reader" | "parse" | "server" | "fetch" | "general",
+		) => {
+			if (isExpectedChatError(error)) return;
+
+			const errorMessage =
+				error instanceof Error ? error.message : String(error);
+			const chatErrorMessage = errorMessage || "unknown-chat-error";
+			const now = Date.now();
+			const fingerprint = `${ERROR_FEATURE}|${ERROR_OPERATION}|${stage}|${chatErrorMessage.slice(0, 120)}`;
+			const last = lastErrorRef.current.get(fingerprint) ?? 0;
+			if (now - last < ERROR_REPORTING_WINDOW_MS) return;
+			lastErrorRef.current.set(fingerprint, now);
+
+			captureException(
+				error instanceof Error ? error : new Error(chatErrorMessage),
+				{
+					level: "error",
+					tags: {
+						feature: ERROR_FEATURE,
+						operation: ERROR_OPERATION,
+						stage,
+					},
+					fingerprint: [ERROR_FEATURE, ERROR_OPERATION, stage],
+					extra: {
+						feature: ERROR_FEATURE,
+						operation: ERROR_OPERATION,
+						stage,
+						occurredAt: now,
+					},
+				},
+			);
+		},
+		[],
+	);
 
 	useEffect(() => {
 		if (isInitialized.current) return;
@@ -113,7 +162,13 @@ export default function useChat(): UseChatReturn {
 				});
 
 				if (!response.ok) {
-					throw new Error(`HTTP error! status: ${response.status}`);
+					reportChatFailure(
+						new Error(`채팅 API 응답 실패: ${response.status}`),
+						"fetch",
+					);
+					setError(`HTTP error! status: ${response.status}`);
+					setMessages((prev) => prev.slice(0, -1));
+					return;
 				}
 
 				await processStreamingResponse(
@@ -131,22 +186,25 @@ export default function useChat(): UseChatReturn {
 							return updated;
 						});
 					},
-					(errorMessage, _streamFailureStage) => {
+					(errorMessage, streamFailureStage) => {
+						reportChatFailure(new Error(errorMessage), streamFailureStage);
 						setError(errorMessage);
 						setMessages((prev) => prev.slice(0, -1));
 					},
 				);
 			} catch (err) {
-				console.error("Chat error:", err);
-				setError(
-					err instanceof Error ? err.message : "채팅 중 오류가 발생했습니다",
-				);
-				setMessages((prev) => prev.slice(0, -1));
+				if (!isExpectedChatError(err)) {
+					reportChatFailure(err, "general");
+					setError(
+						err instanceof Error ? err.message : "채팅 중 오류가 발생했습니다",
+					);
+					setMessages((prev) => prev.slice(0, -1));
+				}
 			} finally {
 				setIsLoading(false);
 			}
 		},
-		[messages, isLoading, pageContent],
+		[messages, isLoading, pageContent, reportChatFailure],
 	);
 
 	const clearMessages = useCallback(async () => {

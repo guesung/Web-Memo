@@ -252,6 +252,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@channel.io/channel-web-sdk-loader':
+        specifier: ^2.0.2
+        version: 2.0.2
       '@egjs/react-infinitegrid':
         specifier: ^4.12.0
         version: 4.13.0
@@ -1551,6 +1554,9 @@ packages:
 
   '@cfcs/core@0.0.5':
     resolution: {integrity: sha512-TZ/RXKV7MUrqFpiX+16uaaptv5jgChWNsuE6w8Rn3eJbO1PFd4Wpn25zeJbii7ch46ck8/ZIIYCcW3pHiYtm4Q==}
+
+  '@channel.io/channel-web-sdk-loader@2.0.2':
+    resolution: {integrity: sha512-43xRJX+BUjb5vRw5A/LDkgE9syJYTPERf7xo49Fz5MMpA9UtzPWHWyzN2QU1/tTT2uu5tpxapT2BgMx6FfP2qg==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -9796,6 +9802,8 @@ snapshots:
   '@cfcs/core@0.0.5':
     dependencies:
       '@egjs/component': 3.0.5
+
+  '@channel.io/channel-web-sdk-loader@2.0.2': {}
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:

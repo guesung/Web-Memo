@@ -865,7 +865,9 @@
 			"back_to_list": "Back to all feedback",
 			"previous": "Previous",
 			"next": "Next",
-			"page": "Page {{current}} of {{total}}"
+			"page": "Page {{current}} of {{total}}",
+			"page_size_label": "Rows per page",
+			"page_size_option": "{{count}}"
 		},
 		"stats": {
 			"total_users": "Total Users",

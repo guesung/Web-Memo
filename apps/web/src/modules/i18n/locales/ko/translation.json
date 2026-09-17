@@ -860,7 +860,9 @@
 			"back_to_list": "전체 목록 보기",
 			"previous": "이전",
 			"next": "다음",
-			"page": "{{current}} / {{total}} 페이지"
+			"page": "{{current}} / {{total}} 페이지",
+			"page_size_label": "표시 개수",
+			"page_size_option": "{{count}}개"
 		},
 		"stats": {
 			"total_users": "전체 사용자",

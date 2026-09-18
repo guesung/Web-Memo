@@ -115,6 +115,23 @@ export const updateSlackModal = async ({
 };
 
 /**
+ * 채널에 새 메시지를 보냅니다.
+ *
+ * @description response_url과 달리 특정 메시지에 대한 답이 아니라 독립된 알림을
+ * 보낼 때 씁니다(예: Sentry 웹훅 릴레이). 대상 채널에 이 앱의 봇이 초대돼 있어야
+ * 합니다.
+ */
+export const postSlackMessage = async ({
+	channel,
+	text,
+}: {
+	channel: string;
+	text: string;
+}): Promise<void> => {
+	await callSlackApi("chat.postMessage", { channel, text });
+};
+
+/**
  * 절대 예외를 던지지 않는 Slack 알림.
  *
  * @description 에러를 사용자에게 알리려는 호출이 스스로 던지면, 원래 에러까지 함께

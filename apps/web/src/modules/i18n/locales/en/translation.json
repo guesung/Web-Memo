@@ -837,6 +837,7 @@
 			"dashboard": "Dashboard",
 			"users": "Users",
 			"feedback": "Feedback",
+			"versions": "Versions",
 			"back_to_memos": "Back to Memos"
 		},
 		"users": {
@@ -889,6 +890,18 @@
 		"growth": {
 			"title": "User Growth",
 			"new_users": "New Users"
+		},
+		"versions": {
+			"title": "Versions",
+			"description": "Current version and last change date for the extension, app, and release notes tracks.",
+			"track": "Track",
+			"version": "Version",
+			"last_changed": "Last Changed",
+			"track_extension": "Extension",
+			"track_app": "App",
+			"track_release_notes": "Release Notes",
+			"unknown": "Unknown",
+			"generated_at": "As of {{date}} (build-time snapshot)"
 		}
 	},
 	"landing": {

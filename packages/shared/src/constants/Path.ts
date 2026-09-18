@@ -20,6 +20,7 @@ export const PATHS = {
 	admin: "/admin",
 	adminUsers: "/admin/users",
 	adminFeedback: "/admin/feedback",
+	adminVersions: "/admin/versions",
 	featuresYoutubeSummary: "/features/youtube-summary",
 	featuresMemo: "/features/memo",
 	featuresSaveArticles: "/features/save-articles",

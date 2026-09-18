@@ -242,3 +242,7 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # 검증을 꺼 둔다. 이 줄이 없으면 플래그 없이 배포할 때 다시 켜져 트리거 호출이 전부 401이 된다.
 [functions.send-welcome-email]
 verify_jwt = false
+
+# 위와 같은 이유(DB 트리거 전용, x-cron-secret으로 호출자 확인)로 검증을 끈다.
+[functions.send-signup-slack-notification]
+verify_jwt = false

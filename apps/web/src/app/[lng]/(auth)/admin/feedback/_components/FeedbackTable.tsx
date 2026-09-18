@@ -21,6 +21,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown, MessageSquare } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
+import FeedbackPageSizeSelect from "./FeedbackPageSizeSelect";
 import FeedbackPagination from "./FeedbackPagination";
 import FeedbackTableSkeleton from "./FeedbackTableSkeleton";
 
@@ -42,6 +43,7 @@ export default function FeedbackTable({ lng }: FeedbackTableProps) {
 
 	const searchQuery = searchParams.get("q") ?? "";
 	const currentPage = Number(searchParams.get("page") ?? "1");
+	const pageSize = Number(searchParams.get("pageSize") ?? FEEDBACK_PAGE_SIZE);
 	const highlightedIdParam = searchParams.get("id");
 	const highlightedId = highlightedIdParam ? Number(highlightedIdParam) : null;
 
@@ -53,6 +55,7 @@ export default function FeedbackTable({ lng }: FeedbackTableProps) {
 	const { feedbacks, totalCount, isLoading } = useFeedbacksQuery({
 		searchQuery: searchQuery || undefined,
 		page: currentPage,
+		pageSize,
 	});
 
 	const isHighlightedMissing =
@@ -74,7 +77,13 @@ export default function FeedbackTable({ lng }: FeedbackTableProps) {
 		);
 	};
 
-	const handlePageChange = (page: number) => {
+	const navigateToFeedbackListParams = ({
+		page,
+		pageSize: nextPageSize,
+	}: {
+		page: number;
+		pageSize: number;
+	}) => {
 		const nextSearchParams = new URLSearchParams();
 
 		if (searchQuery) {
@@ -83,9 +92,20 @@ export default function FeedbackTable({ lng }: FeedbackTableProps) {
 		if (page > 1) {
 			nextSearchParams.set("page", String(page));
 		}
+		if (nextPageSize !== FEEDBACK_PAGE_SIZE) {
+			nextSearchParams.set("pageSize", String(nextPageSize));
+		}
 
 		const queryString = nextSearchParams.toString();
 		router.replace(queryString ? `${pathname}?${queryString}` : pathname);
+	};
+
+	const handlePageChange = (page: number) => {
+		navigateToFeedbackListParams({ page, pageSize });
+	};
+
+	const handlePageSizeChange = (nextPageSize: number) => {
+		navigateToFeedbackListParams({ page: 1, pageSize: nextPageSize });
 	};
 
 	const handleSearchClearClick = () => {
@@ -142,8 +162,15 @@ export default function FeedbackTable({ lng }: FeedbackTableProps) {
 
 	return (
 		<div className="space-y-4">
-			<div className="text-sm text-muted-foreground">
-				{t("admin.feedback.total", { count: totalCount })}
+			<div className="flex items-center justify-between">
+				<div className="text-sm text-muted-foreground">
+					{t("admin.feedback.total", { count: totalCount })}
+				</div>
+				<FeedbackPageSizeSelect
+					lng={lng}
+					pageSize={pageSize}
+					onPageSizeChange={handlePageSizeChange}
+				/>
 			</div>
 			<FeedbackRows
 				lng={lng}
@@ -157,7 +184,7 @@ export default function FeedbackTable({ lng }: FeedbackTableProps) {
 			<FeedbackPagination
 				lng={lng}
 				currentPage={currentPage}
-				totalPages={Math.ceil(totalCount / FEEDBACK_PAGE_SIZE)}
+				totalPages={Math.ceil(totalCount / pageSize)}
 				onPageChange={handlePageChange}
 			/>
 		</div>

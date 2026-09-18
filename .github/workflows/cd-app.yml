@@ -30,9 +30,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: ios
-            runner: macos-26
-            output: build.ipa
+          # Apple Developer 계정 Program License Agreement 만료로 iOS 빌드 임시 제외.
+          # 재동의 후 아래 항목을 복원하면 된다.
+          # - platform: ios
+          #   runner: macos-26
+          #   output: build.ipa
           - platform: android
             runner: ubuntu-latest
             output: build.aab

@@ -1,16 +1,21 @@
 import { getSentryWebhookSecret } from "./config";
 import { verifySentryWebhook } from "./verifyWebhook";
 
-/** Sentry Internal Integration의 `error` 리소스 웹훅 본문 (필요한 필드만). */
-export interface IFSentryErrorWebhookPayload {
+/**
+ * Sentry Internal Integration의 `issue` 리소스 웹훅 본문 (필요한 필드만).
+ *
+ * @description `error` 리소스는 Business/Enterprise 플랜 전용이라 구독할 수 없어,
+ * 무료 플랜에서도 되는 `issue` 리소스를 대신 쓴다. `action`은
+ * created·resolved·assigned·ignored·unresolved 중 하나로 온다.
+ */
+export interface IFSentryIssueWebhookPayload {
 	action: string;
 	data?: {
-		error?: {
+		issue?: {
 			title?: string;
-			message?: string;
 			culprit?: string;
-			web_url?: string;
-			issue_url?: string;
+			permalink?: string;
+			shortId?: string;
 			tags?: [string, string][];
 		};
 	};
@@ -26,7 +31,7 @@ export interface IFSentryErrorWebhookPayload {
  */
 export const readVerifiedSentryWebhook = async (
 	request: Request,
-): Promise<IFSentryErrorWebhookPayload | null> => {
+): Promise<IFSentryIssueWebhookPayload | null> => {
 	const rawBody = await request.text();
 	const { isValid, reason } = verifySentryWebhook({
 		rawBody,
@@ -40,5 +45,5 @@ export const readVerifiedSentryWebhook = async (
 		return null;
 	}
 
-	return JSON.parse(rawBody) as IFSentryErrorWebhookPayload;
+	return JSON.parse(rawBody) as IFSentryIssueWebhookPayload;
 };

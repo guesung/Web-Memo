@@ -1,3 +1,4 @@
+import ChannelTalk from "@src/components/ChannelTalk";
 import Header from "@src/components/Header";
 import type { LanguageParams } from "@src/modules/i18n";
 import { SUPPORTED_LANGUAGES } from "@src/modules/i18n";
@@ -41,6 +42,7 @@ export default function RootLayout({
 					</Suspense>
 					<Header lng={lng} />
 					{children}
+					<ChannelTalk lng={lng} />
 				</QueryProvider>
 			</ThemeProvider>
 

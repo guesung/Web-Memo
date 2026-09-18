@@ -800,6 +800,13 @@
 		"error": "Couldn't send",
 		"errorDescription": "Please try again later"
 	},
+	"support": {
+		"open": "Contact support",
+		"openLabel": "Open support chat",
+		"loading": "Connecting to support",
+		"error": "Could not connect to support. Try again or contact us by email.",
+		"email": "Contact by email"
+	},
 	"error": {
 		"404": {
 			"title": "Page not found",

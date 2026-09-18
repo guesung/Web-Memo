@@ -45,9 +45,9 @@ export default async function IntroducePage({
 			<HeaderMargin />
 			<Hero lng={lng} background="canvas" />
 			<InteractiveDemo lng={lng} background="fog" />
-			<Features lng={lng} background="canvas" />
-			<StatsSection lng={lng} stats={stats} background="fog" />
 			<HowItWorks lng={lng} background="canvas" />
+			<Features lng={lng} background="fog" />
+			<StatsSection lng={lng} stats={stats} background="canvas" />
 			<UseCases lng={lng} background="fog" />
 			<QuestionAndAnswer lng={lng} background="canvas" />
 			<FinalCTA lng={lng} background="fog" />

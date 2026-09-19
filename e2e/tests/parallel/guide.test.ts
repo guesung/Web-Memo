@@ -26,7 +26,7 @@ test.describe("가이드 기능", () => {
 			.locator("#driver-popover-description")
 			.waitFor({ state: "visible", timeout: 15000 });
 		await expect(page.locator("#driver-popover-description")).toHaveText(
-			`Ready to start? Press '${isCI ? "Alt" : "Option"} + S' to open the side panel`,
+			`Ready to start? Press '${isCI ? "Alt" : "Option"} + S' to open the side panel.`,
 		);
 	});
 
@@ -52,7 +52,7 @@ test.describe("가이드 기능", () => {
 
 		// Verify we're on step 2
 		await expect(page.locator("#driver-popover-description")).toHaveText(
-			"Great! Now you can write memos. Don't worry, they save automatically",
+			"Great! Now you can write memos. Don't worry, they save automatically.",
 		);
 	});
 
@@ -78,7 +78,7 @@ test.describe("가이드 기능", () => {
 
 		await nextButton.click();
 		await expect(page.locator("#driver-popover-description")).toHaveText(
-			"Great! Now you can write memos. Don't worry, they save automatically",
+			"Great! Now you can write memos. Don't worry, they save automatically.",
 		);
 
 		await nextButton.click();

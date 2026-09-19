@@ -1,11 +1,16 @@
+import { useSyncLoginStatus } from "@src/hooks";
 import { ErrorBoundary } from "@web-memo/ui";
-import { Suspense } from "react";
+import { Suspense, useRef } from "react";
 import LoginSection from "../LoginSection";
 import MemoForm from "./components/MemoForm";
 import { MemoFormSkeleton } from "./components/MemoForm/components";
 import MemoHeader from "./components/MemoHeader";
 
 export default function MemoSection({ memoHeight }: MemoSectionProps) {
+	const loginBoundaryRef = useRef<ErrorBoundary>(null);
+
+	useSyncLoginStatus(loginBoundaryRef);
+
 	return (
 		<section
 			// 입력창이 이 경계에 딱 붙어 포커스 링(1px)이 좌우로 잘린다.
@@ -14,7 +19,7 @@ export default function MemoSection({ memoHeight }: MemoSectionProps) {
 			style={{ height: `${memoHeight}%` }}
 		>
 			<MemoHeader />
-			<ErrorBoundary FallbackComponent={LoginSection}>
+			<ErrorBoundary ref={loginBoundaryRef} FallbackComponent={LoginSection}>
 				<Suspense fallback={<MemoFormSkeleton />}>
 					<MemoForm />
 				</Suspense>

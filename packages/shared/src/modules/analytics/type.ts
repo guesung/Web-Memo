@@ -1,4 +1,5 @@
 import type { CONFIG } from "@web-memo/env";
+import type { ExportFormat } from "../../utils/Export";
 
 declare global {
 	interface Window {
@@ -86,7 +87,10 @@ export type TAnalyticsEvent =
 	| { name: "guide_open"; params: { from: "context_menu" } }
 	| { name: "guide_finish" }
 	| { name: "extension_setting_change"; params: { keys: string } }
-	| { name: "guide_step"; params: { step_name: string } };
+	| { name: "guide_step"; params: { step_name: string } }
+	| { name: "memo_first_write" }
+	| { name: "export_run"; params: { format: ExportFormat } }
+	| { name: "search_no_result" };
 
 /** 이벤트 이름만 추린 유니온. */
 export type TAnalyticsEventName = TAnalyticsEvent["name"];
@@ -139,4 +143,7 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	guide_finish: "engagement",
 	extension_setting_change: "engagement",
 	guide_step: "engagement",
+	memo_first_write: "core_action",
+	export_run: "core_action",
+	search_no_result: "engagement",
 };

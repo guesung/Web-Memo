@@ -1,10 +1,43 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
+	fetchActiveUsersByDate,
 	formatSeoulDate,
 	resolveLatestCompleteDate,
 	shiftDate,
 } from "./activeUsers";
+
+const { requestJson } = vi.hoisted(() => ({ requestJson: vi.fn() }));
+
+vi.mock("./googleAuth", () => ({
+	exchangeServiceAccountToken: vi.fn().mockResolvedValue("access-token"),
+}));
+vi.mock("./requestJson", () => ({ requestJson }));
+
+describe("fetchActiveUsersByDate", () => {
+	/**
+	 * 확장 업데이트마다 발화하던 extension_installed만 보낸 사용자가 활성 사용자를 부풀렸습니다.
+	 * 운영 호스트 허용 목록과 함께 이 제외가 걸려 있어야 그래프가 실제 사용을 가리킵니다.
+	 */
+	it("운영 호스트 허용 목록에 더해 extension_installed 이벤트를 제외한다", async () => {
+		requestJson.mockResolvedValue({ rows: [] });
+
+		await fetchActiveUsersByDate({ serviceAccountJson: "{}", days: 30 });
+
+		const body = JSON.parse(requestJson.mock.calls[0][1].body);
+		const expressions = body.dimensionFilter.andGroup.expressions;
+
+		expect(expressions[0]).toHaveProperty("orGroup");
+		expect(expressions[1]).toEqual({
+			notExpression: {
+				filter: {
+					fieldName: "eventName",
+					stringFilter: { matchType: "EXACT", value: "extension_installed" },
+				},
+			},
+		});
+	});
+});
 
 describe("formatSeoulDate", () => {
 	it("서버가 UTC로 돌아도 서울 기준 날짜를 적는다", () => {

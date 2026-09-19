@@ -8,8 +8,9 @@ import { CategoryService } from "@web-memo/shared/utils";
 
 import { Setting, SettingHeader } from "./_components";
 
-export default async function Page({ params: { lng } }: LanguageParams) {
-	const supabaseClient = getSupabaseClient();
+export default async function Page({ params }: LanguageParams) {
+	const { lng } = await params;
+	const supabaseClient = await getSupabaseClient();
 
 	return (
 		<div className="mx-auto w-full max-w-2xl px-4 md:px-6 py-4 pb-20">

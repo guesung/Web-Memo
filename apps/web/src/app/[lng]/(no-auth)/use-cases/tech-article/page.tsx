@@ -5,13 +5,17 @@ import { TECH_ARTICLE_PAGE } from "./_constants";
 import { metadataEnglish, metadataKorean } from "./_utils";
 
 export async function generateMetadata({ params }: LanguageParams) {
-	return params.lng === "ko" ? metadataKorean : metadataEnglish;
+	const { lng } = await params;
+
+	return lng === "ko" ? metadataKorean : metadataEnglish;
 }
 
 interface TechArticlePageProps extends LanguageParams {}
 
-export default function TechArticlePage({
-	params: { lng },
+export default async function TechArticlePage({
+	params,
 }: TechArticlePageProps) {
+	const { lng } = await params;
+
 	return <LandingPageTemplate lng={lng} config={TECH_ARTICLE_PAGE} />;
 }

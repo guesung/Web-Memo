@@ -16,9 +16,6 @@ const nextConfig = {
 		// 테섭에서 로깅이 실제로 나가는지 확인하는 유일한 수단입니다.
 		removeConsole: process.env.BUILD_ENV === "production",
 	},
-	experimental: {
-		optimizePackageImports: ["@web-memo/ui"],
-	},
 };
 
 const withBundleAnalyzer = bundleAnalyzer({

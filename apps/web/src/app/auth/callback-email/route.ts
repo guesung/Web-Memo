@@ -7,12 +7,12 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
 	const requestUrl = new URL(request.url);
 
-	const supabase = getSupabaseClient();
+	const supabase = await getSupabaseClient();
 	const { data: sessionData } = await supabase.auth.getSession();
 
 	if (!sessionData.session) throw new Error("no session");
 
-	const cookieStore = cookies();
+	const cookieStore = await cookies();
 	cookieStore.set(
 		SUPABASE.authCookie.accessToken,
 		sessionData.session.access_token,

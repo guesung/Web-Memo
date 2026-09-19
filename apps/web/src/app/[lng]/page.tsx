@@ -15,8 +15,10 @@ interface LanguageRootPageProps extends LanguageParams {}
  * 정식 주소는 어디까지나 `/{lng}/introduce` 라서 canonical·sitemap은 그쪽을 가리키고,
  * 여기는 사람이 주소를 잘라 들어왔을 때를 받는 영구 리다이렉트로만 둔다.
  */
-export default function LanguageRootPage({
-	params: { lng },
+export default async function LanguageRootPage({
+	params,
 }: LanguageRootPageProps) {
+	const { lng } = await params;
+
 	permanentRedirect(`/${lng}${PATHS.introduce}`);
 }

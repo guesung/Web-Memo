@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { PATHS, SUPABASE } from "@web-memo/shared/constants";
 import type { Database, MemoSupabaseClient } from "@web-memo/shared/types";
-import { AuthService } from "@web-memo/shared/utils";
+import { AuthService } from "@web-memo/shared/utils/services";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 

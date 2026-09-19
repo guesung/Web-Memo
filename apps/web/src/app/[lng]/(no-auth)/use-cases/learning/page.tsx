@@ -5,11 +5,15 @@ import { LEARNING_PAGE } from "./_constants";
 import { metadataEnglish, metadataKorean } from "./_utils";
 
 export async function generateMetadata({ params }: LanguageParams) {
-	return params.lng === "ko" ? metadataKorean : metadataEnglish;
+	const { lng } = await params;
+
+	return lng === "ko" ? metadataKorean : metadataEnglish;
 }
 
 interface LearningPageProps extends LanguageParams {}
 
-export default function LearningPage({ params: { lng } }: LearningPageProps) {
+export default async function LearningPage({ params }: LearningPageProps) {
+	const { lng } = await params;
+
 	return <LandingPageTemplate lng={lng} config={LEARNING_PAGE} />;
 }

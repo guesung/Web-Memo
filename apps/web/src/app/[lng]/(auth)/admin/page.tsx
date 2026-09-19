@@ -19,16 +19,14 @@ import {
 } from "./_components";
 
 interface PageProps extends LanguageParams {
-	searchParams: { includeAdmin?: string };
+	searchParams: Promise<{ includeAdmin?: string }>;
 }
 
-export default async function AdminPage({
-	params: { lng },
-	searchParams,
-}: PageProps) {
-	const includeAdmin = searchParams.includeAdmin === "1";
+export default async function AdminPage({ params, searchParams }: PageProps) {
+	const { lng } = await params;
+	const includeAdmin = (await searchParams).includeAdmin === "1";
 	const { t } = await useTranslation(lng);
-	const supabaseClient = getSupabaseClient();
+	const supabaseClient = await getSupabaseClient();
 	const adminService = new AdminService(supabaseClient);
 
 	return (

@@ -13,7 +13,8 @@ import {
 interface PageProps extends LanguageParams {}
 
 /** 받은 피드백을 모아 보는 관리자 화면 */
-export default async function FeedbackPage({ params: { lng } }: PageProps) {
+export default async function FeedbackPage({ params }: PageProps) {
+	const { lng } = await params;
 	const { t } = await useTranslation(lng);
 
 	return (

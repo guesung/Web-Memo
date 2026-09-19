@@ -5,5 +5,5 @@ export type LanguageType = {
 	lng: Language;
 };
 export interface LanguageParams {
-	params: LanguageType;
+	params: Promise<LanguageType>;
 }

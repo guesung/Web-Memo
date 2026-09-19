@@ -6,12 +6,16 @@ import { MEMO_PAGE } from "./_constants";
 import { metadataEnglish, metadataKorean } from "./_utils";
 
 export async function generateMetadata({ params }: LanguageParams) {
-	return params.lng === "ko" ? metadataKorean : metadataEnglish;
+	const { lng } = await params;
+
+	return lng === "ko" ? metadataKorean : metadataEnglish;
 }
 
 interface MemoPageProps extends LanguageParams {}
 
-export default function MemoPage({ params: { lng } }: MemoPageProps) {
+export default async function MemoPage({ params }: MemoPageProps) {
+	const { lng } = await params;
+
 	return (
 		<LandingPageTemplate lng={lng} config={MEMO_PAGE}>
 			<FeatureJsonLD lng={lng} feature="memo" />

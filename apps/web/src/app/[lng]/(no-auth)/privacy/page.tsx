@@ -12,12 +12,14 @@ import { PRIVACY_SECTIONS, type TPrivacySectionKey } from "./_constants";
 import { metadataEnglish, metadataKorean } from "./_utils";
 
 export async function generateMetadata({ params }: LanguageParams) {
-	return params.lng === "ko" ? metadataKorean : metadataEnglish;
+	const { lng } = await params;
+
+	return lng === "ko" ? metadataKorean : metadataEnglish;
 }
 
-export default async function PrivacyPage({
-	params: { lng },
-}: PrivacyPageProps) {
+export default async function PrivacyPage({ params }: PrivacyPageProps) {
+	const { lng } = await params;
+
 	return (
 		<div className="min-h-screen">
 			<HeaderMargin />

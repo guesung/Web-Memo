@@ -56,7 +56,7 @@ const readCachedActiveUsers = unstable_cache(
 );
 
 export async function GET(request: NextRequest) {
-	const supabaseClient = getSupabaseClient();
+	const supabaseClient = await getSupabaseClient();
 	const {
 		data: { user },
 	} = await supabaseClient.auth.getUser();

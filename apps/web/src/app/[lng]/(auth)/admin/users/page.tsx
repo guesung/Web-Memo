@@ -11,20 +11,18 @@ import { Suspense } from "react";
 import { UserSearchForm, UserTable, UserTableSkeleton } from "./_components";
 
 interface PageProps extends LanguageParams {
-	searchParams: { q?: string };
+	searchParams: Promise<{ q?: string }>;
 }
 
 /** 가입한 사용자를 모아 보는 관리자 화면 */
-export default async function UsersPage({
-	params: { lng },
-	searchParams,
-}: PageProps) {
+export default async function UsersPage({ params, searchParams }: PageProps) {
+	const { lng } = await params;
 	const { t } = await useTranslation(lng);
-	const supabaseClient = getSupabaseClient();
+	const supabaseClient = await getSupabaseClient();
 	const adminService = new AdminService(supabaseClient);
 
 	// 빈 문자열을 그대로 넘기면 쿼리 키가 `undefined`인 클라이언트 쪽과 어긋나 같은 목록을 두 번 조회한다.
-	const searchQuery = searchParams.q || undefined;
+	const searchQuery = (await searchParams).q || undefined;
 
 	return (
 		<>

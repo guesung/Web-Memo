@@ -33,9 +33,9 @@ jobs:
     steps:
       # 이벤트 목록을 packages/shared 의 type.ts 에서 직접 읽으므로 체크아웃이
       # 필수입니다. 얕은 체크아웃으로 충분합니다.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 

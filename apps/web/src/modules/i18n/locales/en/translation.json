@@ -858,6 +858,17 @@
 		"feedback": {
 			"title": "Feedback",
 			"empty": "No feedback yet.",
+			"empty_hint": "Only what people wrote themselves in the extension shows up here.",
+			"content_empty": "No content",
+			"uninstall_no_detail": "Picked a reason and left",
+			"uninstall_reason": {
+				"not_useful": "Didn't find it useful",
+				"hard_to_use": "Hard to use",
+				"found_alternative": "Found an alternative",
+				"privacy_concerns": "Privacy concerns",
+				"performance_issues": "Slow or unstable",
+				"other": "Other"
+			},
 			"total": "{{count}} feedback total",
 			"received_at": "Received",
 			"content": "Content",

@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   ci:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -27,13 +27,13 @@ jobs:
       # --affected가 조용히 "전부 변경됨"으로 폴백합니다. 그래서 기준을 명시합니다.
       TURBO_SCM_BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.event.pull_request.base.ref) || github.event.before }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
           cache: "pnpm"
@@ -54,14 +54,14 @@ jobs:
         run: pnpm test:jest --run
 
   changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
       app: ${{ steps.detect.outputs.app }}
       extension: ${{ steps.detect.outputs.extension }}
       web: ${{ steps.detect.outputs.web }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # turbo가 base와 비교하려면 전체 히스토리가 필요합니다.
           fetch-depth: 0
@@ -80,14 +80,14 @@ jobs:
   slack-thread:
     name: Slack 스레드 루트
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
       thread_ts: ${{ steps.root.outputs.thread_ts }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -151,12 +151,12 @@ jobs:
     name: Slack 테섭 배포 알림
     needs: [slack-thread, changes, cd-web]
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/develop' && needs.changes.outputs.web == 'true' && (needs['cd-web'].result == 'success' || needs['cd-web'].result == 'failure') }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -180,12 +180,12 @@ jobs:
     name: Slack 웹 빌드 알림
     needs: [slack-thread, changes, cd-web]
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.changes.outputs.web == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -203,12 +203,12 @@ jobs:
     name: Slack 확장 빌드 알림
     needs: [slack-thread, changes, cd-extension]
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.changes.outputs.extension == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -226,12 +226,12 @@ jobs:
     name: Slack 앱 빌드 알림
     needs: [slack-thread, changes, cd-app]
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.changes.outputs.app == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -254,12 +254,12 @@ jobs:
     needs: [ci, changes, slack-thread, cd-app, cd-extension, cd-web]
     # 앞 잡이 실패해도 알려야 하므로 always()입니다. 대신 master push에서만 돕니다.
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 

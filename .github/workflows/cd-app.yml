@@ -36,11 +36,11 @@ jobs:
           #   runner: macos-26
           #   output: build.ipa
           - platform: android
-            runner: ubuntu-latest
+            runner: ubuntu-24.04
             output: build.aab
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref }}
 
@@ -68,21 +68,21 @@ jobs:
             --name "${{ steps.reuse.outputs.name }}" \
             --dir apps/app
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
           cache: "pnpm"
 
       - name: Set up JDK
         if: ${{ matrix.platform == 'android' && steps.reuse.outputs.found != 'true' }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
 
-      - uses: expo/expo-github-action@v8
+      - uses: expo/expo-github-action@v9
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
@@ -99,7 +99,7 @@ jobs:
 
       - name: Upload build artifact
         if: ${{ steps.reuse.outputs.found != 'true' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           # 프로파일이 이름에 들어갑니다. 릴리스가 ci 빌드만 골라 재사용합니다.
           name: ${{ matrix.platform }}-build-${{ env.BUILD_PROFILE }}

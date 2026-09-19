@@ -40,7 +40,7 @@ on:
 jobs:
   build-web:
     name: 웹 빌드·배포
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       staging_outcome: ${{ steps.deploy-staging.outcome }}
     env:
@@ -49,19 +49,19 @@ jobs:
       # 다른 쪽으로 떨어져, 상수는 production인데 Vercel 값은 Preview인 조합이 됩니다.
       BUILD_ENV: ${{ inputs.deploy_target == 'production' && 'production' || 'staging' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref }}
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
           cache: "pnpm"
 
       - name: Cache Next.js build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             apps/web/.next/cache

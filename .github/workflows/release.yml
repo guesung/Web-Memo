@@ -27,7 +27,7 @@ jobs:
   # 타깃을 하나도 안 고르면 아무 잡도 안 돌아 실행이 조용히 끝납니다. 명시적 실패로 바꿉니다.
   preflight:
     name: 릴리스 대상 확인
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check at least one target
         env:

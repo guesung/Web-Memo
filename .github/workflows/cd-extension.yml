@@ -34,7 +34,7 @@ on:
 jobs:
   build-extension:
     name: 확장 빌드
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       zip_name: ${{ steps.zip.outputs.name }}
     env:
@@ -42,7 +42,7 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref }}
 
@@ -66,10 +66,10 @@ jobs:
             --name "${{ steps.reuse.outputs.name }}" \
             --dir dist-zip
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         if: ${{ steps.reuse.outputs.found != 'true' }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         if: ${{ steps.reuse.outputs.found != 'true' }}
         with:
           node-version-file: ".nvmrc"
@@ -112,7 +112,7 @@ jobs:
           unzip -q "dist-zip/${{ steps.zip.outputs.name }}.zip" -d dist-artifact
 
       - name: Upload Extension
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.zip.outputs.name }}
           path: dist-artifact
@@ -122,25 +122,25 @@ jobs:
       # artifact에는 압축 전 빌드 결과물을 올립니다. 스토어 업로드용 ZIP은 별도
       # artifact로 보존해 재사용 경로와 Chrome Web Store 업로드 계약을 유지합니다.
       - name: Upload Store Package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: store-package-${{ steps.zip.outputs.name }}
           path: dist-zip/${{ steps.zip.outputs.name }}.zip
 
   upload-extension:
     needs: build-extension
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: 크롬 웹스토어 업로드
     if: ${{ inputs.deploy_target == 'production' }}
     steps:
       # 이름을 지정하면 아티팩트 내용물이 하위 디렉터리 없이 그대로 풀립니다.
       - name: Download Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: store-package-${{ needs.build-extension.outputs.zip_name }}
 
       - name: Upload zipped file on chrome store
-        uses: mnao305/chrome-extension-upload@v5.0.0
+        uses: mnao305/chrome-extension-upload@v6.0.0
         with:
           file-path: ${{ needs.build-extension.outputs.zip_name }}.zip
           extension-id: eaiojpmgklfngpjddhoalgcpkepgkclh

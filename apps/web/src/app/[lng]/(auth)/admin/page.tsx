@@ -12,6 +12,7 @@ import { Suspense } from "react";
 import {
 	ActiveUsersCard,
 	ActivityChart,
+	IncludeAdminToggle,
 	StatsCards,
 	UserGrowthChart,
 } from "./_components";
@@ -31,7 +32,10 @@ export default async function AdminPage({
 
 	return (
 		<>
-			<h1 className="text-2xl font-bold mb-8">{t("admin.title")}</h1>
+			<div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<h1 className="text-2xl font-bold">{t("admin.title")}</h1>
+				<IncludeAdminToggle lng={lng} />
+			</div>
 
 			<HydrationBoundaryWrapper
 				queryKey={QUERY_KEY.adminStats(includeAdmin)}

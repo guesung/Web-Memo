@@ -247,9 +247,11 @@ jobs:
 
   # 빌드 결과와 스토어 현황을 함께 Slack으로 알리고, 배포 버튼을 답니다.
   # 버튼을 누르면 apps/web의 /api/slack/interactivity가 release.yml을 실행합니다.
+  # 모든 타깃이 끝난 뒤 머지 스레드의 마지막 댓글로 나갑니다. slack-thread는 알림용 needs이며,
+  # 루트가 없어도(thread_ts 빈 값) 스크립트가 웹훅 최상위 메시지로 내려가 배포 버튼이 살아 있습니다.
   notify:
     name: Slack 알림
-    needs: [ci, changes, cd-app, cd-extension, cd-web]
+    needs: [ci, changes, slack-thread, cd-app, cd-extension, cd-web]
     # 앞 잡이 실패해도 알려야 하므로 always()입니다. 대신 master push에서만 돕니다.
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
@@ -265,6 +267,9 @@ jobs:
       - name: Notify Slack
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          SLACK_THREAD_TS: ${{ needs.slack-thread.outputs.thread_ts }}
           # skipped는 실패가 아니라 "변경이 없어 안 돎"입니다. 스크립트가 그렇게 해석합니다.
           BUILD_RESULTS: >-
             {"ci":"${{ needs.ci.result }}",

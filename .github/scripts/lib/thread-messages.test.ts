@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+	buildNoTargetPayload,
 	buildRootPayload,
 	buildTargetReplyPayload,
 	decideTargetReply,
+	isNoTargetChange,
 } from "./thread-messages.mjs";
 
 const REPOSITORY_URL = "https://github.com/guesung/Web-Memo";
@@ -167,5 +169,82 @@ describe("buildTargetReplyPayload", () => {
 				runUrl: RUN_URL,
 			}),
 		).toThrow();
+	});
+});
+
+describe("isNoTargetChange", () => {
+	const allSkipped = {
+		ci: "success",
+		app: "skipped",
+		web: "skipped",
+		extension: "skipped",
+	};
+
+	it("ci가 통과했고 웹·앱·확장이 전부 skipped면 변경 없음이다", () => {
+		expect(isNoTargetChange(allSkipped)).toBe(true);
+	});
+
+	it.each(["app", "web", "extension"])(
+		"%s 하나라도 success면 변경 없음이 아니다",
+		(target) => {
+			expect(isNoTargetChange({ ...allSkipped, [target]: "success" })).toBe(
+				false,
+			);
+		},
+	);
+
+	it.each(["app", "web", "extension"])(
+		"%s가 failure나 cancelled면 변경 없음이 아니다",
+		(target) => {
+			expect(isNoTargetChange({ ...allSkipped, [target]: "failure" })).toBe(
+				false,
+			);
+			expect(isNoTargetChange({ ...allSkipped, [target]: "cancelled" })).toBe(
+				false,
+			);
+		},
+	);
+
+	// ci가 안 통과했는데 "변경 없음, CI 통과"라고 말하면 거짓이 된다
+	it.each(["failure", "cancelled", "skipped"])(
+		"ci가 %s면 변경 없음이라고 말하지 않는다",
+		(ci) => {
+			expect(isNoTargetChange({ ...allSkipped, ci })).toBe(false);
+		},
+	);
+
+	it("결과가 빠져 있으면 변경 없음이라고 말하지 않는다", () => {
+		expect(isNoTargetChange({})).toBe(false);
+		expect(isNoTargetChange({ ci: "success" })).toBe(false);
+		expect(isNoTargetChange({ ci: "success", app: "skipped" })).toBe(false);
+	});
+});
+
+describe("buildNoTargetPayload", () => {
+	const RUN_URL = `${REPOSITORY_URL}/actions/runs/123`;
+
+	it("변경 없음을 알리는 section과 로그 링크 context를 만든다", () => {
+		const payload = buildNoTargetPayload({ runUrl: RUN_URL });
+
+		expect(payload.text).toBe("배포 대상 변경 없음");
+		expect(payload.blocks.map((block: { type: string }) => block.type)).toEqual([
+			"section",
+			"context",
+		]);
+		expect(payload.blocks[0]).toMatchObject({
+			text: { text: expect.stringContaining("배포 대상 변경 없음") },
+		});
+		expect(payload.blocks[1]).toEqual({
+			type: "context",
+			elements: [{ type: "mrkdwn", text: `<${RUN_URL}|Actions 로그 보기>` }],
+		});
+	});
+
+	it("배포 버튼(actions 블록)을 달지 않는다", () => {
+		const types = buildNoTargetPayload({ runUrl: RUN_URL }).blocks.map(
+			(block: { type: string }) => block.type,
+		);
+
+		expect(types).not.toContain("actions");
 	});
 });

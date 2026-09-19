@@ -20,13 +20,54 @@
 import { readCommitSubject, requireEnv } from "./lib/run-context.mjs";
 import {
 	deliverSlackMessage,
+	postSlackMessage,
 	readSlackEnv,
 	toSingleLine,
 } from "./lib/slack-api.mjs";
 import { buildActionBlock, buildVersionSection } from "./lib/slack-blocks.mjs";
 import { fetchStoreVersions } from "./lib/store-versions.mjs";
+import {
+	DEPLOY_TARGETS,
+	buildNoTargetPayload,
+	isNoTargetChange,
+} from "./lib/thread-messages.mjs";
 
-const DEPLOY_TARGETS = ["app", "web", "extension"];
+/**
+ * 배포 대상이 없는 머지에서 스레드를 한 줄로 닫습니다.
+ *
+ * 채널에 새 메시지를 만들지는 않습니다. 다만 머지 스레드의 루트는 푸시 직후 이미 만들어져
+ * 있어서, 아래에 아무것도 없으면 루트만 덩그러니 남습니다. 스레드가 있고 정말로 변경이 없을 때만
+ * "변경 없음"을 답니다. 스레드가 없으면(루트 생성 실패, 시크릿 미설정) 예전처럼 조용히 넘어가며,
+ * 웹훅 최상위로 내려보내지 않습니다. ci 실패나 취소가 섞였으면 그렇게 말할 근거가 없어 건너뜁니다.
+ */
+const closeThreadWithoutTargets = async ({ buildResults, runUrl }) => {
+	const { botToken, channelId, threadTs } = readSlackEnv();
+
+	if (!isNoTargetChange(buildResults) || !threadTs) {
+		return;
+	}
+
+	if (!botToken || !channelId) {
+		console.warn(
+			"::warning::SLACK_BOT_TOKEN 또는 SLACK_CHANNEL_ID 가 없어 변경 없음 댓글을 보내지 않습니다",
+		);
+
+		return;
+	}
+
+	const result = await postSlackMessage({
+		token: botToken,
+		channel: channelId,
+		payload: buildNoTargetPayload({ runUrl }),
+		threadTs,
+	});
+
+	if (!result.ok) {
+		console.warn(
+			`::warning::변경 없음 댓글 전송에 실패했습니다: ${toSingleLine(result.error)}`,
+		);
+	}
+};
 
 const main = async () => {
 	const repository = requireEnv("GITHUB_REPOSITORY");
@@ -34,6 +75,7 @@ const main = async () => {
 	const commitSha = requireEnv("GITHUB_SHA");
 	const serverUrl = process.env.GITHUB_SERVER_URL ?? "https://github.com";
 	const buildResults = JSON.parse(process.env.BUILD_RESULTS ?? "{}");
+	const runUrl = `${serverUrl}/${repository}/actions/runs/${runId}`;
 
 	// 안 도는 잡(skipped)은 실패가 아닙니다. 변경이 없어서 안 돈 것뿐입니다.
 	const hasFailure = Object.values(buildResults).some((result) =>
@@ -44,9 +86,11 @@ const main = async () => {
 	);
 
 	// 문서만 고친 커밋까지 알리면 채널이 금세 무의미해집니다.
-	// 올릴 것도 없고 깨진 것도 없으면 조용히 넘어갑니다. (배포 현황은 /버전으로 언제든 조회)
+	// 올릴 것도 없고 깨진 것도 없으면 새 메시지 없이 넘어갑니다. (배포 현황은 /버전으로 언제든 조회)
+	// 이미 만들어진 머지 스레드는 한 줄로만 닫습니다.
 	if (!hasFailure && succeededTargets.length === 0) {
 		console.log("빌드된 배포 대상이 없어 Slack 알림을 건너뜁니다");
+		await closeThreadWithoutTargets({ buildResults, runUrl });
 
 		return;
 	}
@@ -95,7 +139,7 @@ const main = async () => {
 			targets: succeededTargets,
 			ref: commitSha,
 			refSubject: commitSubject,
-			linkUrl: `${serverUrl}/${repository}/actions/runs/${runId}`,
+			linkUrl: runUrl,
 			linkLabel: "워크플로 보기",
 		}),
 	);

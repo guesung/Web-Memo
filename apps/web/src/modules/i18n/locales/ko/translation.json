@@ -839,6 +839,7 @@
 			"dashboard": "대시보드",
 			"users": "사용자 관리",
 			"feedback": "피드백",
+			"versions": "버전 현황",
 			"back_to_memos": "메모로 돌아가기"
 		},
 		"users": {
@@ -893,6 +894,18 @@
 		"growth": {
 			"title": "사용자 증가 추이",
 			"new_users": "신규 가입"
+		},
+		"versions": {
+			"title": "버전 현황",
+			"description": "확장·앱·릴리스 노트 세 트랙의 현재 버전과 마지막 변경일입니다.",
+			"track": "트랙",
+			"version": "버전",
+			"last_changed": "마지막 변경일",
+			"track_extension": "확장 프로그램",
+			"track_app": "앱",
+			"track_release_notes": "릴리스 노트",
+			"unknown": "알 수 없음",
+			"generated_at": "{{date}} 기준 (빌드 시점 스냅샷)"
 		}
 	},
 	"landing": {

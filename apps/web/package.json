@@ -2,9 +2,9 @@
 	"name": "@web-memo/web",
 	"private": true,
 	"scripts": {
-		"dev": "next dev",
-		"preview": "next build && next start",
-		"build": "next build",
+		"dev": "node scripts/generate-version-status.mjs && next dev",
+		"preview": "node scripts/generate-version-status.mjs && next build && next start",
+		"build": "node scripts/generate-version-status.mjs && next build",
 		"build:analyze": "ANALYZE=true next build",
 		"start": "next start",
 		"type-check": "tsc --noEmit",

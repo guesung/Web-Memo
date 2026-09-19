@@ -14,6 +14,10 @@ export const test = base.extend<ExtensionFixture>({
 	// biome-ignore lint/correctness/noEmptyPattern: Playwright fixture API requires empty destructuring
 	context: async ({}, use) => {
 		const context = await chromium.launchPersistentContext("", {
+			// 확장이 설치 때 여는 `/memos` 탭은 언어 경로가 없어 브라우저 언어(Accept-Language)로
+			// 언어가 정해지고, 웹은 그 언어를 `i18next` 쿠키에 쓴다. 개발 기기가 한국어면 이
+			// 탭이 쿠키를 ko로 써서, 이후 로그인 콜백(`/memos`)이 `/ko/memos`로 떨어진다.
+			locale: "en-US",
 			headless: false,
 			args: [
 				`--headless=new`,

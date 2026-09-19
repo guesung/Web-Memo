@@ -6,12 +6,7 @@ import { AnalyticsUserTracking } from "@web-memo/shared/modules/analytics";
 import { dir } from "i18next";
 import { type PropsWithChildren, Suspense } from "react";
 import { InitDayjs, JsonLD } from "../_components";
-import {
-	HtmlLang,
-	QueryProvider,
-	ThemeProvider,
-	TrackExtensionClientId,
-} from "./_components";
+import { HtmlLang, QueryProvider, ThemeProvider } from "./_components";
 import { metadataEnglish, metadataKorean } from "./_constants";
 
 interface RootLayoutProps extends PropsWithChildren, LanguageParams {}
@@ -36,9 +31,6 @@ export default function RootLayout({
 				<QueryProvider lng={lng}>
 					<Suspense>
 						<AnalyticsUserTracking />
-					</Suspense>
-					<Suspense>
-						<TrackExtensionClientId />
 					</Suspense>
 					<Header lng={lng} />
 					{children}

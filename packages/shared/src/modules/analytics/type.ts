@@ -27,8 +27,6 @@ export interface IFGa4EventParams {
 	debug_mode?: true;
 	user_id?: string;
 	session_id?: string;
-	/** 확장에서 넘어온 client_id. 확장→웹 퍼널을 잇습니다. */
-	ext_client_id?: string;
 	[key: string]: unknown;
 }
 

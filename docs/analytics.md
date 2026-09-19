@@ -67,6 +67,10 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `is_success` · `is_new_category` · `has_search_query` · `reason` · `search_target` ·
 `setting_keys` · `keys` · `tab_name` · `view` · `action`
 
+`ext_client_id`는 등록만 남아 있고 더는 보내지 않습니다. gtag가 이 이름을 예약 필드(`excid`)로
+바꿔 보내 커스텀 차원에 값이 한 번도 도달하지 않았기 때문입니다. 확장과 웹을 잇는 방법은
+[지표를 읽을 때 주의할 것](#지표를-읽을-때-주의할-것)을 보세요.
+
 ### 등록된 커스텀 측정항목 (3종 × 3형태)
 
 `duration_msec`(요약 소요 시간) · `memo_count`(처리한 메모 수) · `query_length`(검색어 길이).
@@ -91,6 +95,13 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 비어 `(not set)` 또는 빈 문자열로 들어옵니다. `extension_installed`·`side_panel_open`·
 `memo_write`가 전부 그 두 호스트에 몰려 있는 것이 근거입니다. **운영 도메인만 남기는 필터는
 이 서비스의 주된 사용 경로를 통째로 지웁니다.**
+
+**확장→웹 퍼널은 `client_id`를 맞춰서 잇습니다.** 확장은 Measurement Protocol로 자체
+`client_id`를, 웹은 gtag의 `_ga` 쿠키를 써서 그냥 두면 서로 다른 사용자입니다. 사이드패널이
+로그인 탭을 `?ext_cid=<확장 client_id>`로 열면, 웹 루트 레이아웃의 `beforeInteractive` 스크립트가
+gtag보다 먼저 `_ga` 쿠키에 그 값을 심어 이후 웹 이벤트가 같은 사용자로 집계됩니다. UUID 형식이
+아니면 무시합니다. 이미 웹에 방문한 적 있는 사람이 이 링크로 들어오면 `_ga`가 덮어써져 이전 웹
+방문 기록은 다른 사용자로 갈라집니다. 이 연결은 배포 이후 데이터부터 유효합니다.
 
 **`build_env` 필터는 커스텀 이벤트에만 걸립니다.** `activeUsers` 같은 지표는 gtag 자동 수집
 기반이라 그 파라미터가 아예 없습니다. 자동 수집 이벤트를 거르려면 `hostName`을 써야 합니다.

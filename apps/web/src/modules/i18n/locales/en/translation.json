@@ -848,11 +848,16 @@
 		},
 		"users": {
 			"title": "User Management",
-			"empty": "No users found.",
+			"empty": "No one has signed up yet.",
 			"total": "{{count}} users total",
 			"joined": "Joined",
 			"memos": "Memos",
-			"search_placeholder": "Search by nickname or ID...",
+			"last_activity": "Last activity",
+			"last_activity_hint": "The last time this person created or edited a memo",
+			"last_activity_empty": "None",
+			"search_placeholder": "Search by nickname, email, or ID",
+			"search_empty": "No users match '{{query}}'.",
+			"clear_search": "Clear search",
 			"previous": "Previous",
 			"next": "Next",
 			"page": "Page {{current}} of {{total}}"
@@ -860,6 +865,16 @@
 		"feedback": {
 			"title": "Feedback",
 			"empty": "No feedback yet.",
+			"empty_hint": "Only what people wrote themselves in the extension shows up here.",
+			"content_empty": "No content",
+			"uninstall_reason": {
+				"not_useful": "Didn't find it useful",
+				"hard_to_use": "Hard to use",
+				"found_alternative": "Found an alternative",
+				"privacy_concerns": "Privacy concerns",
+				"performance_issues": "Slow or unstable",
+				"other": "Other"
+			},
 			"total": "{{count}} feedback total",
 			"received_at": "Received",
 			"content": "Content",
@@ -886,11 +901,31 @@
 			"today_memos": "Today's Memos",
 			"weekly_memos": "Weekly Memos"
 		},
-		"activeUsers": {
-			"title": "Active Users",
+		"memoActivityUsers": {
+			"title": "Memo Activity Users",
+			"description": "People who created or edited a memo",
 			"daily": "Daily Active Users",
 			"weekly": "Weekly Active Users",
 			"monthly": "Monthly Active Users"
+		},
+		"ga": {
+			"title": "GA Active Users",
+			"active_users": "Active Users",
+			"delay_badge": "Through yesterday",
+			"delay_hint_label": "See why the data lags",
+			"delay_hint": "GA numbers settle one to two days later. Anyone who arrived today is not here yet.",
+			"as_of": "Collected through {{date}}.",
+			"period": {
+				"days_7": "7 days",
+				"days_30": "30 days",
+				"days_90": "90 days",
+				"days_365": "365 days"
+			},
+			"disconnected_title": "No GA connection, so there is nothing to show",
+			"disconnected_description": "The other metrics are still available.",
+			"error_title": "Could not load GA numbers",
+			"error_description": "Please try again in a moment.",
+			"retry": "Try again"
 		},
 		"activity": {
 			"title": "Memo Activity",

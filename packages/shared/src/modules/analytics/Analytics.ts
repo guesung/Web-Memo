@@ -1,6 +1,6 @@
 import { CONFIG } from "@web-memo/env";
 
-import { ANALYTICS } from "../../constants";
+import { ANALYTICS, ANALYTICS_EXCLUDED_USER_ID } from "../../constants";
 import type { MemoTable } from "../../types";
 import { isExtension } from "../../utils";
 import {
@@ -106,8 +106,15 @@ class Analytics {
 	/**
 	 * GA4로 이벤트를 전송할지 여부.
 	 * 개발 빌드는 보내지 않습니다. staging은 테섭에서 실제 도착을 확인해야 하므로 보냅니다.
+	 * @description 만든 사람 본인의 행동도 보내지 않습니다. 다만 이 게이트는 커스텀 이벤트만
+	 * 막습니다. gtag가 자동으로 보내는 page_view·session_start는 여기를 지나지 않으므로
+	 * 웹 레이아웃에서 따로 막습니다.
 	 */
 	private shouldSend(): boolean {
+		if (this.userId === ANALYTICS_EXCLUDED_USER_ID) {
+			return false;
+		}
+
 		return CONFIG.buildEnv !== "development";
 	}
 

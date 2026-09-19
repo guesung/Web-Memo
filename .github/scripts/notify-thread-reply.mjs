@@ -1,0 +1,97 @@
+#!/usr/bin/env node
+/**
+ * master 머지 스레드에 타깃 하나(웹, 확장, 앱)의 빌드 결과를 댓글로 답니다.
+ * .github/workflows/ci.yml 의 notify-web, notify-extension, notify-app 잡이 호출합니다.
+ *
+ * 타깃별 잡이 자기 cd-* 잡만 기다리므로, 웹·확장은 앱 빌드(약 30분)와 무관하게
+ * 각자 끝나는 대로 알립니다. 모든 타깃이 끝난 뒤의 요약은 notify-build-ready.mjs가 맡습니다.
+ *
+ * 댓글은 스레드가 있어야 의미가 있습니다. SLACK_THREAD_TS 가 비면(루트 생성 실패, 시크릿 미설정)
+ * 경고만 남기고 아무것도 보내지 않습니다. 웹훅으로 최상위에 내려보내면 스레드 없는 낱개
+ * 메시지가 채널을 어지럽히기 때문입니다. 요약은 그때도 웹훅으로 나가 배포 버튼이 살아 있습니다.
+ *
+ * 전송이 실패해도 ::warning::만 남기고 exit 0입니다. 알림이 빌드 잡의 결론을 바꾸면 안 됩니다.
+ *
+ * 로컬에서 그대로 돌려볼 수 있습니다. 봇 토큰·채널 없이 돌리면 페이로드를 stdout에 찍습니다.
+ *
+ *   GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=<run id> \
+ *   TARGET=web CHANGED=true RESULT=success SLACK_THREAD_TS=1.1 \
+ *   node .github/scripts/notify-thread-reply.mjs
+ */
+
+import { requireEnv } from "./lib/run-context.mjs";
+import {
+	postSlackMessage,
+	readSlackEnv,
+	toSingleLine,
+} from "./lib/slack-api.mjs";
+import {
+	buildTargetReplyPayload,
+	decideTargetReply,
+} from "./lib/thread-messages.mjs";
+
+const main = async () => {
+	const target = requireEnv("TARGET");
+	const outcome = decideTargetReply({
+		changed: process.env.CHANGED ?? "",
+		result: process.env.RESULT ?? "",
+	});
+
+	if (!outcome) {
+		console.log(
+			`${target} 댓글을 건너뜁니다 (changed=${process.env.CHANGED}, result=${process.env.RESULT})`,
+		);
+
+		return;
+	}
+
+	const { botToken, channelId, threadTs } = readSlackEnv();
+
+	if (!threadTs) {
+		console.warn(
+			`::warning::스레드 루트 ts 가 비어 있어 ${target} 댓글을 보내지 않습니다`,
+		);
+
+		return;
+	}
+
+	const repository = requireEnv("GITHUB_REPOSITORY");
+	const runId = requireEnv("GITHUB_RUN_ID");
+	const serverUrl = process.env.GITHUB_SERVER_URL ?? "https://github.com";
+
+	const payload = buildTargetReplyPayload({
+		target,
+		outcome,
+		runUrl: `${serverUrl}/${repository}/actions/runs/${runId}`,
+	});
+
+	if (!botToken || !channelId) {
+		console.warn(
+			"::warning::SLACK_BOT_TOKEN 또는 SLACK_CHANNEL_ID 가 없어 스레드 댓글을 보내지 않습니다",
+		);
+		console.log(JSON.stringify(payload, null, 2));
+
+		return;
+	}
+
+	const result = await postSlackMessage({
+		token: botToken,
+		channel: channelId,
+		payload,
+		threadTs,
+	});
+
+	if (!result.ok) {
+		console.warn(
+			`::warning::${target} 스레드 댓글 전송에 실패했습니다: ${toSingleLine(result.error)}`,
+		);
+	}
+};
+
+try {
+	await main();
+} catch (error) {
+	console.warn(
+		`::warning::스레드 댓글을 보내지 못했습니다: ${toSingleLine(error instanceof Error ? error.message : error)}`,
+	);
+}

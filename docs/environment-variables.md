@@ -282,7 +282,9 @@ Protocol로 직접 이벤트를 보내는 현재 구조상 이미 번들에 인�
 배포 파이프라인이 외부 서비스에 인증할 때만 씁니다. 애플리케이션 코드가 읽는 값은
 하나도 없습니다.
 
-현재 등록된 15개입니다 (`gh secret list -R guesung/Web-Memo`).
+현재 등록된 15개입니다 (`gh secret list -R guesung/Web-Memo`). 여기에 스레드 알림용
+`SLACK_BOT_TOKEN`, `SLACK_CHANNEL_ID` 두 개를 사람이 추가로 등록합니다. 등록 전에는
+스레드가 생기지 않고 기존 웹훅 알림으로 동작합니다.
 
 | 이름 | 용도 | 쓰는 워크플로 |
 | --- | --- | --- |
@@ -296,7 +298,9 @@ Protocol로 직접 이벤트를 보내는 현재 구조상 이미 번들에 인�
 | `EXPO_TOKEN` | EAS 로그인 | `cd-app.yml` |
 | `EXPO_ASC_API_KEY_P8` | App Store Connect API 키 (TestFlight 제출) | `cd-app.yml` |
 | `EXPO_ANDROID_SERVICE_ACCOUNT_JSON` | Google Play 서비스 계정 키 (내부 테스트 제출) | `cd-app.yml` |
-| `SLACK_WEBHOOK_URL` | 빌드·배포 결과 Slack 알림 | `ci.yml`, `release.yml`, `versions.yml` |
+| `SLACK_WEBHOOK_URL` | 빌드·배포 결과 Slack 알림 (스레드를 못 만들 때의 폴백 포함) | `ci.yml`, `cd-web.yml`, `release.yml`, `versions.yml` |
+| `SLACK_BOT_TOKEN` | 머지 스레드 생성·댓글 (`chat.postMessage`, `chat:write` 스코프). Vercel 환경변수의 같은 이름과 같은 값이지만 서로 읽지 못하므로 따로 등록 | `ci.yml` |
+| `SLACK_CHANNEL_ID` | 머지 스레드를 만들 채널 ID (웹훅 URL에서는 얻을 수 없음) | `ci.yml` |
 | `WEB_ENV_FILE` | e2e에서 `apps/web/.env`를 통째로 복원 | `e2e.yml` |
 | `SENTRY_AUTH_TOKEN` | 확장 빌드의 Sentry 소스맵 업로드 인증 | `cd-extension.yml` |
 | `SLACK_REPORT_WEBHOOK_URL` | 데일리 GA 리포트 전용 채널 알림 | `daily-ga-report.yml` |

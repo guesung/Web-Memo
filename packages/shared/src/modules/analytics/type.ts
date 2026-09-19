@@ -65,7 +65,12 @@ export type TAnalyticsEvent =
 	| { name: "feedback_submit" }
 	| { name: "view_change"; params: { view: string } }
 	| { name: "logout" }
-	| { name: "extension_installed" }
+	| {
+			name: "extension_installed";
+			params: {
+				reason: "install" | "update" | "chrome_update" | "shared_module_update";
+			};
+	  }
 	| { name: "login_start"; params: { method: string } }
 	| { name: "side_panel_login_click" }
 	| { name: "sign_up"; params: { method: string } }

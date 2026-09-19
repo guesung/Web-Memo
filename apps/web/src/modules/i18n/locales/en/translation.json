@@ -845,7 +845,9 @@
 			"total": "{{count}} users total",
 			"joined": "Joined",
 			"memos": "Memos",
-			"search_placeholder": "Search by nickname or ID...",
+			"search_placeholder": "Search by nickname, email, or ID",
+			"search_empty": "No users match '{{query}}'.",
+			"clear_search": "Clear search",
 			"previous": "Previous",
 			"next": "Next",
 			"page": "Page {{current}} of {{total}}"

@@ -2,28 +2,43 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEY } from "@web-memo/shared/constants";
 import { useDebounce } from "@web-memo/shared/hooks";
 import { Input } from "@web-memo/ui";
 import { Search } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 interface UserSearchFormProps extends LanguageType {}
 
+/**
+ * 사용자 검색 입력.
+ * @description 검색어를 URL(`?q=`)에 둔다. 표가 같은 값을 읽어 조회하므로 새로고침·뒤로가기·
+ * 링크 공유가 그대로 동작하고, 서버 프리페치도 같은 검색어로 키를 맞출 수 있다.
+ * 히스토리에 타이핑 한 글자마다 쌓이지 않도록 `replace`로 바꾼다.
+ */
 export default function UserSearchForm({ lng }: UserSearchFormProps) {
 	const { t } = useTranslation(lng);
-	const [searchQuery, setSearchQuery] = useState("");
-	const queryClient = useQueryClient();
+	const router = useRouter();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
+	const [searchQuery, setSearchQuery] = useState(searchParams.get("q") ?? "");
 	const { debounce } = useDebounce();
 
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = e.target.value;
-		setSearchQuery(value);
+	const handleSearchQueryChange = (
+		event: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		const nextSearchQuery = event.target.value;
+		setSearchQuery(nextSearchQuery);
+
 		debounce(() => {
-			queryClient.invalidateQueries({
-				queryKey: QUERY_KEY.adminUsers(value || undefined, undefined),
-			});
+			const nextSearchParams = new URLSearchParams();
+
+			if (nextSearchQuery) {
+				nextSearchParams.set("q", nextSearchQuery);
+			}
+
+			const queryString = nextSearchParams.toString();
+			router.replace(queryString ? `${pathname}?${queryString}` : pathname);
 		}, 300);
 	};
 
@@ -34,7 +49,7 @@ export default function UserSearchForm({ lng }: UserSearchFormProps) {
 				type="text"
 				placeholder={t("admin.users.search_placeholder")}
 				value={searchQuery}
-				onChange={handleChange}
+				onChange={handleSearchQueryChange}
 				className="pl-10"
 			/>
 		</div>

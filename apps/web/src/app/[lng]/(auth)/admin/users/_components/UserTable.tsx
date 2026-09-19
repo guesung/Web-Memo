@@ -4,6 +4,7 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { useAdminUsersQuery } from "@web-memo/shared/hooks";
 import {
+	Button,
 	Table,
 	TableBody,
 	TableCell,
@@ -12,6 +13,7 @@ import {
 	TableRow,
 } from "@web-memo/ui";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 type SortKey = "created_at" | "memo_count";
@@ -19,9 +21,21 @@ type SortOrder = "asc" | "desc";
 
 interface UserTableProps extends LanguageType {}
 
+/**
+ * 관리자 사용자 목록 표.
+ * @description 검색어는 URL(`?q=`)에서 읽는다. 검색 폼과 상태를 주고받지 않고 URL 하나만 보므로
+ * 서버 프리페치·새로고침·링크 공유가 같은 조회 결과를 가리킨다.
+ */
 export default function UserTable({ lng }: UserTableProps) {
 	const { t } = useTranslation(lng);
-	const { users, totalCount } = useAdminUsersQuery();
+	const router = useRouter();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
+
+	const searchQuery = searchParams.get("q") ?? "";
+	const { users, totalCount } = useAdminUsersQuery({
+		searchQuery: searchQuery || undefined,
+	});
 	const [sortKey, setSortKey] = useState<SortKey>("created_at");
 	const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
@@ -53,6 +67,26 @@ export default function UserTable({ lng }: UserTableProps) {
 			<ArrowDown className="ml-1 h-4 w-4" />
 		);
 	};
+
+	const handleSearchClearClick = () => {
+		router.replace(pathname);
+	};
+
+	if (users.length === 0 && searchQuery) {
+		return (
+			<div className="text-center py-12 text-muted-foreground">
+				<p>{t("admin.users.search_empty", { query: searchQuery })}</p>
+				<Button
+					variant="outline"
+					size="sm"
+					className="mt-4"
+					onClick={handleSearchClearClick}
+				>
+					{t("admin.users.clear_search")}
+				</Button>
+			</div>
+		);
+	}
 
 	if (users.length === 0) {
 		return (

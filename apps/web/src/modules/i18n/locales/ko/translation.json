@@ -840,7 +840,9 @@
 			"total": "총 {{count}}명의 사용자",
 			"joined": "가입일",
 			"memos": "메모 수",
-			"search_placeholder": "닉네임 또는 ID로 검색...",
+			"search_placeholder": "닉네임·이메일·ID로 검색",
+			"search_empty": "'{{query}}'와 맞는 사용자가 없어요.",
+			"clear_search": "검색어 지우기",
 			"previous": "이전",
 			"next": "다음",
 			"page": "{{current}} / {{total}} 페이지"

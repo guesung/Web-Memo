@@ -6,14 +6,18 @@ import { SAVE_ARTICLES_PAGE } from "./_constants";
 import { metadataEnglish, metadataKorean } from "./_utils";
 
 export async function generateMetadata({ params }: LanguageParams) {
-	return params.lng === "ko" ? metadataKorean : metadataEnglish;
+	const { lng } = await params;
+
+	return lng === "ko" ? metadataKorean : metadataEnglish;
 }
 
 interface SaveArticlesPageProps extends LanguageParams {}
 
-export default function SaveArticlesPage({
-	params: { lng },
+export default async function SaveArticlesPage({
+	params,
 }: SaveArticlesPageProps) {
+	const { lng } = await params;
+
 	return (
 		<LandingPageTemplate lng={lng} config={SAVE_ARTICLES_PAGE}>
 			<FeatureJsonLD lng={lng} feature="save-articles" />

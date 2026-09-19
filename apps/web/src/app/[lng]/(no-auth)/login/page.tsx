@@ -8,7 +8,8 @@ import { redirect } from "next/navigation";
 import { LoginErrorAlert, LoginSection } from "./_components";
 
 /** 로그인 상태와 오류에 맞춰 로그인 화면을 표시합니다. */
-const LoginPage = async ({ params: { lng }, searchParams }: IFPageProps) => {
+const LoginPage = async ({ params, searchParams }: IFPageProps) => {
+	const { lng } = await params;
 	const supabaseClient = await getSupabaseClient();
 	const isUserLogin = await new AuthService(supabaseClient).checkUserLogin();
 
@@ -16,7 +17,8 @@ const LoginPage = async ({ params: { lng }, searchParams }: IFPageProps) => {
 		redirect(`/${lng}${PATHS.memos}`);
 	}
 
-	const hasLoginError = Boolean(searchParams.error);
+	const resolvedSearchParams = await searchParams;
+	const hasLoginError = Boolean(resolvedSearchParams.error);
 
 	return (
 		<main className="relative min-h-screen">
@@ -37,5 +39,5 @@ export default LoginPage;
 /** 로그인 페이지의 props입니다. */
 interface IFPageProps extends LanguageParams {
 	/** OAuth 콜백이 실패로 돌아왔는지 알려주는 쿼리. 값 자체는 화면에 노출하지 않습니다 */
-	searchParams: { error?: string };
+	searchParams: Promise<{ error?: string }>;
 }

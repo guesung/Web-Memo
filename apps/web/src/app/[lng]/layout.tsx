@@ -21,13 +21,17 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: LanguageParams) {
-	return params.lng === "ko" ? metadataKorean : metadataEnglish;
+	const { lng } = await params;
+
+	return lng === "ko" ? metadataKorean : metadataEnglish;
 }
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
-	params: { lng },
+	params,
 }: RootLayoutProps) {
+	const { lng } = await params;
+
 	return (
 		<div lang={lng} dir={dir(lng)} className="min-h-screen">
 			<HtmlLang lng={lng} />

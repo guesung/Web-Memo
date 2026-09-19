@@ -27,7 +27,7 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 프레임워크 | 웹 → **Next.js 14.2.10 App Router** (`apps/web`), React 19.1.0<br>확장 → **Vite 5.3.3 + Manifest V3** (`apps/chrome-extension` + `pages/*`), HMR은 `packages/hmr`<br>앱 → React Native / Expo (`apps/app`) |
+| 프레임워크 | 웹 → **Next.js 16.3.5 App Router** (`apps/web`), React 19.1.0. Turbopack을 쓰지 않고 웹팩을 유지하므로 `dev`·`build`·`preview` 스크립트에 `--webpack`을 명시합니다<br>확장 → **Vite 5.3.3 + Manifest V3** (`apps/chrome-extension` + `pages/*`), HMR은 `packages/hmr`<br>앱 → React Native / Expo (`apps/app`) |
 | 라우팅 | `apps/web/src/app/[lng]/` 아래 `(no-auth)`(소개·기능·유스케이스·로그인·개인정보)와 `(auth)/(sidebar)`(메모·하이라이트·설정·휴지통) 두 그룹. 경로 문자열은 **`packages/shared/src/constants/Path.ts`의 `PATHS`**를 씁니다 — 하드코딩하지 않습니다 |
 | 상태 관리 | 서버 상태 → **TanStack Query v5** (모든 Supabase 작업). 쿼리 키는 `packages/shared/src/constants/QueryKey.ts`<br>폼 상태 → **React Hook Form**<br>확장 상태 → Chrome Storage API(TS 래퍼, `packages/shared`)<br>로컬 상태 → React hooks. 전역 스토어(zustand/redux)는 쓰지 않습니다 |
 | 스타일링 | TailwindCSS 3.4 + `packages/tailwind-config`. 디자인 토큰 원천은 `packages/ui/global.css`의 CSS 변수이며, **역할 이름(`bg-background`·`text-muted-foreground`)만 쓰고 색상 코드를 직접 적지 않습니다.** 다크 모드는 `next-themes` + `darkMode: ["class"]`. 상세는 [`design-system.md`](design-system.md) |
@@ -36,6 +36,7 @@
 | 작성 규칙 | 함수 선언(`function`) 사용, 화살표 상수 컴포넌트 금지. 에러·엣지 케이스 먼저(early return), happy path 마지막. `interface`/`type`은 파일 끝. 아이콘은 항상 `lucide-react`(인라인 `<svg>` 금지). 상세 설계 원칙은 [`frontend-guidelines.md`](frontend-guidelines.md) |
 | 확장 진입점 | `apps/chrome-extension/manifest.js`가 단일 진실 원천입니다. background service worker · content script(모든 URL) · side panel · options. 팝업·DevTools 패널은 없습니다. 진입점을 추가하려면 `pages/`에 패키지를 만들고 매니페스트에 등록합니다 |
 | 앱 import 규칙 | `apps/app`에서는 `@web-memo/shared`의 **배럴 export를 쓰지 않고 좁은 하위 경로**(`@web-memo/shared/utils/url`)를 씁니다. 배럴을 타면 `@web-memo/env`가 딸려와 EAS 빌드에서 iOS만 깨집니다. 앱은 환경 변수를 쓰지 않고 상수만 읽습니다 |
+| Edge import 규칙 | Edge 런타임 코드(`apps/web/src/middleware.ts`)는 `@web-memo/shared`의 **배럴 export를 쓰지 않고 좁은 하위 경로**(`@web-memo/shared/constants`)를 씁니다. `@web-memo/shared/utils` 배럴이 브라우저 전용 Sentry 코드를 Edge 번들로 끌어들여 빌드가 깨진 적이 있습니다. Next 16은 `middleware.ts`에 deprecated 경고를 내지만, `proxy.ts`는 Node.js 런타임 전용이라 Edge를 유지하려고 `middleware.ts`를 그대로 둡니다 |
 
 ## 백엔드
 
@@ -54,7 +55,7 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 서버 기동 | `pnpm dev:web` → `http://localhost:3000` (수 초).<br>E2E는 `pnpm run -w dev:web:preview`(`next build && next start`)를 띄우며 **빌드가 포함돼 최대 5분** 걸립니다.<br>**이미 `next start`가 떠 있는 상태에서 다시 빌드하면 화면 전체가 에러 바운더리로 떨어집니다.** 기존 서버를 내리고 시작하세요 |
+| 서버 기동 | `pnpm dev:web` → `http://localhost:3000` (수 초).<br>E2E는 `pnpm run -w dev:web:preview`(`next build --webpack && next start`)를 띄우며 **빌드가 포함돼 최대 5분** 걸립니다.<br>**이미 `next start`가 떠 있는 상태에서 다시 빌드하면 화면 전체가 에러 바운더리로 떨어집니다.** 기존 서버를 내리고 시작하세요 |
 | 진입 URL | `http://localhost:3000/ko` (영어는 `/en`). 메모 목록은 `/ko/memos` |
 | 확장 화면 관측 | 사이드 패널·옵션 페이지는 웹 URL로 못 엽니다. `pnpm build:extension`으로 `dist/`를 만든 뒤 Playwright `launchPersistentContext`에 `--load-extension`으로 물려야 합니다 (`e2e/tests/fixtures.ts`가 그대로 합니다). 사이드 패널 셀렉터: `#memo-textarea`, 열기 버튼: `#OPEN_SIDE_PANEL_BUTTON` |
 | 테스트 계정 | 값을 여기 적지 않습니다. `packages/shared/src/constants/SupabaseConfig.ts`의 `testEmail` / `testPassword` 키를 읽어 씁니다 |

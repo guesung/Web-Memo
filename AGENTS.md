@@ -60,7 +60,7 @@ const UNSUPPORTED_SUMMARY_PAGES = [
 
 ## 🛠 기술 스택
 
-- **프론트엔드**: TypeScript 5.5.3, React 19.1.0, Next.js 14.2.10(웹 앱), Vite 5.3.3(확장), TailwindCSS 3.4.x
+- **프론트엔드**: TypeScript 5.5.3, React 19.1.0, Next.js 16.3.5(웹 앱, 웹팩 유지), Vite 5.3.3(확장), TailwindCSS 3.4.x
 - **상태/데이터**: TanStack Query (React Query) v5.59.0, React Hook Form 7.53.2
 - **UI/스타일링**: TailwindCSS, Framer Motion 11.11.8, Lucide React 0.456.0, Next Themes, Driver.js(튜토리얼/가이드)
 - **백엔드/DB**: Supabase (인증, 데이터베이스, 타입 생성, 실시간)
@@ -88,7 +88,7 @@ Turborepo 기반 모노레포입니다.
 
 **Apps**
 - `apps/chrome-extension/` — Chrome Extension Manifest V3 코어
-- `apps/web/` — Next.js 14.2.10 웹 애플리케이션
+- `apps/web/` — Next.js 16.3.5 웹 애플리케이션
 - `apps/app/` — React Native/Expo 모바일 애플리케이션
 
 **Pages (확장 UI)**

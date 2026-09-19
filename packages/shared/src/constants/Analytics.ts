@@ -16,4 +16,5 @@ export const ANALYTICS = {
  * 공개 레포에 UUID가 드러나지만, 어차피 클라이언트 번들에 실려야 판정할 수 있는 값이고
  * UUID 자체는 RLS 아래에서 아무 권한도 주지 않는다.
  */
-export const ANALYTICS_EXCLUDED_USER_ID = "ef8c4ab1-4d92-4b0f-9d41-084f51813406";
+export const ANALYTICS_EXCLUDED_USER_ID =
+	"ef8c4ab1-4d92-4b0f-9d41-084f51813406";

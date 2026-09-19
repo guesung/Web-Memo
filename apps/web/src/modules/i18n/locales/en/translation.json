@@ -356,8 +356,8 @@
 		"errorSave": "Couldn't save",
 		"successSave": "Changes saved",
 		"memo_updated_at": "Modified at {{time}}",
-		"guideDone": "🎉 Guide completed.",
-		"guideDoneDescription": "Enjoy your memo!",
+		"guideDone": "🎉 Guide completed",
+		"guideDoneDescription": "Enjoy taking memos!",
 		"duplicateCategory": "A category with this name already exists"
 	},
 	"toastActionMessage": {
@@ -446,15 +446,15 @@
 		"done": "Done",
 		"welcome": {
 			"title": "Welcome!",
-			"description": "Ready to start? Press '{{key}} + S' to open the side panel"
+			"description": "Ready to start? Press '{{key}} + S' to open the side panel."
 		},
 		"save": {
 			"title": "Save memos",
-			"description": "Great! Now you can write memos. Don't worry, they save automatically"
+			"description": "Great! Now you can write memos. Don't worry, they save automatically."
 		},
 		"category": {
 			"title": "Explore categories",
-			"description": "Click on a category in the left sidebar to view memos in that category"
+			"description": "Click on a category in the left sidebar to view memos in that category."
 		},
 		"settings": {
 			"title": "Explore settings",
@@ -462,7 +462,7 @@
 		},
 		"check": {
 			"title": "Check memos",
-			"description": "Click refresh to see your latest memos"
+			"description": "Click refresh to see your latest memos."
 		}
 	},
 	"memoSection": {

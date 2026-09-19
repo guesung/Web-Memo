@@ -42,8 +42,14 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 	const { highlightsByUrl, isHighlightLoadError, refetchHighlights } =
 		useMemoHighlights(memos.map((memo) => memo.url));
 
-	useGuide({ lng });
-	useDidMount(() => bridge.request.SYNC_LOGIN_STATUS());
+	const { moveNextGuideStep } = useGuide({ lng });
+	useDidMount(async () => {
+		try {
+			await bridge.request.SYNC_LOGIN_STATUS();
+		} catch {
+			// 확장이 없거나 사이드 패널이 닫혀 수신자가 없으면 알릴 대상이 없으므로 무시한다.
+		}
+	});
 
 	/**
 	 * 현재 탭을 식별하는 키. MemoGrid를 탭마다 리마운트시키는 데 쓴다.
@@ -79,7 +85,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 						{t("memos.totalMemos", { total: totalCount })}
 					</p>
 					<div className="flex">
-						<MemoRefreshButton lng={lng} />
+						<MemoRefreshButton lng={lng} onGuideNext={moveNextGuideStep} />
 					</div>
 				</div>
 			</div>

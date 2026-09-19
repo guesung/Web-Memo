@@ -45,14 +45,43 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 	// await로 붙잡아야 합니다. service worker는 할 일이 없으면 곧바로 종료되어,
 	// 전송이 끝나기 전에 워커가 죽으면 이벤트가 조용히 사라집니다.
 	if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-		await analytics.trackEvent({ name: "extension_installed" });
+		try {
+			await analytics.trackEvent({
+				name: "extension_installed",
+				params: { reason: details.reason },
+			});
+		} catch (error) {
+			// 계측 실패가 패널 설정·언어 초기화·설치 탭을 막으면 안 되므로 삼킵니다.
+			console.warn("[analytics] extension_installed 전송에 실패했습니다.", error);
+		}
 	}
 
 	chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 	const language = await ChromeSyncStorage.get(STORAGE_KEYS.language);
 	const uiLanguage = I18n.getUILanguage();
 	if (!language) ChromeSyncStorage.set(STORAGE_KEYS.language, uiLanguage);
+
+	// 처음 설치했을 때만 웹을 열어 로그인으로 이어지게 합니다. 업데이트에서는 열지 않습니다.
+	if (details.reason === "install") {
+		await openMemosTabOnInstall();
+	}
 });
+
+/**
+ * 설치 직후 웹의 메모 페이지를 새 탭으로 엽니다.
+ * @description 확장의 client_id를 `ext_cid`로 실어 보내 웹 가입까지 한 사용자로 이어 집계합니다.
+ * client_id를 얻지 못하면 `ext_cid` 없이 엽니다.
+ */
+const openMemosTabOnInstall = async () => {
+	const memosUrl = new URL(`${CONFIG.webUrl}/memos`);
+	const clientId = await analytics.getExtensionClientId();
+
+	if (clientId) {
+		memosUrl.searchParams.set("ext_cid", clientId);
+	}
+
+	await Tab.create({ url: memosUrl.toString() });
+};
 
 // 확장 프로그램이 설치되었을 때 contextMenus를 설정한다.
 const CONTEXT_MENU_ID_CHECK_MEMO = "CONTEXT_MENU_ID_CHECK_MEMO";

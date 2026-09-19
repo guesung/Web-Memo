@@ -33,7 +33,7 @@ export default function HeaderRight({ lng }: LanguageType) {
 
 	const handleSignoutClick = () => {
 		mutateSignout();
-		bridge.request.SYNC_LOGIN_STATUS();
+		void syncLoginStatusToExtension();
 		router.push(`/${lng}${PATHS.login}`);
 	};
 
@@ -59,3 +59,12 @@ export default function HeaderRight({ lng }: LanguageType) {
 		</div>
 	);
 }
+
+/** 로그인 상태 변화를 확장에 알린다. 로그아웃 이동을 기다리게 하지 않도록 호출 쪽에서 await하지 않는다. */
+const syncLoginStatusToExtension = async () => {
+	try {
+		await bridge.request.SYNC_LOGIN_STATUS();
+	} catch {
+		// 확장이 없거나 사이드 패널이 닫혀 수신자가 없으면 알릴 대상이 없으므로 무시한다.
+	}
+};

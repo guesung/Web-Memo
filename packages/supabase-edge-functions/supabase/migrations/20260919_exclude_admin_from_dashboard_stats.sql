@@ -25,7 +25,7 @@
 -- DROP 하면 EXECUTE 권한도 사라지므로 원래대로(anon·authenticated·service_role) 다시 부여한다.
 --
 -- 이 파일은 이미 프로덕션에 적용된 변경의 기록이다.
--- 롤백: .omc/state/db-rollback-stats-2026-09-19.sql
+-- 롤백: 이 파일 맨 아래 주석에 변경 전 정의를 그대로 남겼다. DROP 후 그 정의로 CREATE 하면 된다.
 
 BEGIN;
 
@@ -229,3 +229,154 @@ GRANT EXECUTE ON FUNCTION memo.get_active_users_stats(boolean) TO anon, authenti
 GRANT EXECUTE ON FUNCTION memo.get_user_growth(integer, boolean) TO anon, authenticated, service_role;
 
 COMMIT;
+
+-- ============================================================================
+-- 변경 전 정의 (프로덕션에서 덤프, 2026-09-19). 롤백용이며 실행되지 않는다.
+-- ============================================================================
+--
+-- memo.get_active_users_stats
+-- CREATE OR REPLACE FUNCTION memo.get_active_users_stats()
+--  RETURNS json
+--  LANGUAGE plpgsql
+--  SECURITY DEFINER
+--  SET search_path TO 'memo', 'public'
+-- AS $function$
+-- DECLARE
+--   result JSON;
+-- BEGIN
+--   SELECT json_build_object(
+--     'dailyActiveUsers', (
+--       SELECT COUNT(DISTINCT user_id)
+--       FROM memo.memo
+--       WHERE (created_at >= NOW() - INTERVAL '1 day')
+--          OR (updated_at >= NOW() - INTERVAL '1 day')
+--     ),
+--     'weeklyActiveUsers', (
+--       SELECT COUNT(DISTINCT user_id)
+--       FROM memo.memo
+--       WHERE (created_at >= NOW() - INTERVAL '7 days')
+--          OR (updated_at >= NOW() - INTERVAL '7 days')
+--     ),
+--     'monthlyActiveUsers', (
+--       SELECT COUNT(DISTINCT user_id)
+--       FROM memo.memo
+--       WHERE (created_at >= NOW() - INTERVAL '30 days')
+--          OR (updated_at >= NOW() - INTERVAL '30 days')
+--     )
+--   ) INTO result;
+--
+--   RETURN result;
+-- END;
+-- $function$
+-- ;
+--
+-- memo.get_admin_stats
+-- CREATE OR REPLACE FUNCTION memo.get_admin_stats()
+--  RETURNS json
+--  LANGUAGE plpgsql
+--  SECURITY DEFINER
+-- AS $function$
+--   DECLARE
+--     result JSON;
+--     total_users INTEGER;
+--     total_memos INTEGER;
+--     today_memos INTEGER;
+--     weekly_memos INTEGER;
+--     monthly_memos INTEGER;
+--     quarterly_memos INTEGER;
+--   BEGIN
+--     -- Check if caller is admin
+--     IF NOT EXISTS (
+--       SELECT 1 FROM memo.profiles
+--       WHERE user_id = auth.uid() AND role = 'admin'
+--     ) THEN
+--       RAISE EXCEPTION 'Unauthorized: Admin access required';
+--     END IF;
+--
+--     -- Get total users count from auth.users
+--     SELECT COUNT(*) INTO total_users
+--     FROM auth.users;
+--
+--     -- Get total memos count
+--     SELECT COUNT(*) INTO total_memos
+--     FROM memo.memo;
+--
+--     -- Get today's memos count (x3)
+--     SELECT COUNT(*) * 3 INTO today_memos
+--     FROM memo.memo
+--     WHERE created_at >= CURRENT_DATE
+--       AND created_at < CURRENT_DATE + INTERVAL '1 day';
+--
+--     -- Get weekly memos count (last 7 days, x3)
+--     SELECT COUNT(*) * 3 INTO weekly_memos
+--     FROM memo.memo
+--     WHERE created_at >= CURRENT_DATE - INTERVAL '7 days';
+--
+--     -- Get monthly memos count (last 30 days)
+--     SELECT COUNT(*) INTO monthly_memos
+--     FROM memo.memo
+--     WHERE created_at >= CURRENT_DATE - INTERVAL '30 days';
+--
+--     -- Get quarterly memos count (last 90 days)
+--     SELECT COUNT(*) INTO quarterly_memos
+--     FROM memo.memo
+--     WHERE created_at >= CURRENT_DATE - INTERVAL '90 days';
+--
+--     -- Build result JSON
+--     result := json_build_object(
+--       'totalUsers', total_users,
+--       'totalMemos', total_memos,
+--       'todayMemos', today_memos,
+--       'weeklyMemos', weekly_memos,
+--       'monthlyMemos', monthly_memos,
+--       'quarterlyMemos', quarterly_memos
+--     );
+--
+--     RETURN result;
+--   END;
+--   $function$
+-- ;
+--
+-- memo.get_user_growth
+-- CREATE OR REPLACE FUNCTION memo.get_user_growth(days_ago integer DEFAULT 30)
+--  RETURNS json
+--  LANGUAGE plpgsql
+--  SECURITY DEFINER
+-- AS $function$
+-- DECLARE
+--   result JSON;
+-- BEGIN
+--   -- Check if caller is admin
+--   IF NOT EXISTS (
+--     SELECT 1 FROM memo.profiles
+--     WHERE user_id = auth.uid() AND role = 'admin'
+--   ) THEN
+--     RAISE EXCEPTION 'Unauthorized: Admin access required';
+--   END IF;
+--
+--   -- Get daily user growth data
+--   SELECT json_agg(
+--     json_build_object(
+--       'date', date_series::TEXT,
+--       'count', COALESCE(user_counts.count, 0)
+--     )
+--     ORDER BY date_series
+--   ) INTO result
+--   FROM generate_series(
+--     CURRENT_DATE - (days_ago || ' days')::INTERVAL,
+--     CURRENT_DATE,
+--     '1 day'::INTERVAL
+--   ) AS date_series
+--   LEFT JOIN (
+--     SELECT
+--       DATE(created_at) as signup_date,
+--       COUNT(*) as count
+--     FROM auth.users
+--     WHERE created_at >= CURRENT_DATE - (days_ago || ' days')::INTERVAL
+--     GROUP BY DATE(created_at)
+--   ) AS user_counts ON date_series = user_counts.signup_date;
+--
+--   RETURN COALESCE(result, '[]'::JSON);
+-- END;
+-- $function$
+-- ;

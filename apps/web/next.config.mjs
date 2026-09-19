@@ -1,4 +1,3 @@
-import bundleAnalyzer from "@next/bundle-analyzer";
 import { withSentryConfig } from "@sentry/nextjs";
 
 /** @type {import('next').NextConfig} */
@@ -18,11 +17,7 @@ const nextConfig = {
 	},
 };
 
-const withBundleAnalyzer = bundleAnalyzer({
-	enabled: process.env.ANALYZE === "true",
-});
-
-export default withSentryConfig(withBundleAnalyzer(nextConfig), {
+export default withSentryConfig(nextConfig, {
 	org: "guesung",
 	project: "web-memo",
 	authToken: process.env.SENTRY_AUTH_TOKEN,

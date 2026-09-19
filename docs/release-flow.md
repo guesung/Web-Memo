@@ -1,7 +1,8 @@
 # Slack에서 배포하기
 
-`master`에 머지하면 빌드가 돌고, 그 결과가 스토어 현황과 함께 Slack으로 옵니다.
-메시지의 버튼을 누르면 원하는 대상을 원하는 커밋으로 스토어에 올릴 수 있습니다.
+`master`에 머지하면 빌드가 돌고, 그 결과가 머지 하나당 Slack 스레드 하나에 모여 옵니다.
+스레드의 마지막 댓글에는 스토어 현황이 붙고, 거기 있는 버튼을 누르면 원하는 대상을
+원하는 커밋으로 스토어에 올릴 수 있습니다.
 GitHub Actions 화면을 열어 폼을 채울 필요가 없습니다.
 
 브랜치 규칙 자체는 [branch-strategy.md](branch-strategy.md), 버전 번호가 어디서
@@ -14,9 +15,14 @@ master 머지
    │
    ├─ ci.yml : 린트·타입·테스트 + 영향받은 앱 빌드 검증 (스토어 제출 없음)
    │
-   └─ ci.yml / notify
+   ├─ ci.yml / slack-thread : 푸시 직후 Slack에 스레드 루트를 만들고 ts를 냅니다
+   │
+   ├─ ci.yml / notify-web · notify-extension · notify-app
+   │     └─ 자기 타깃이 끝나는 대로 스레드에 "✅ 웹 빌드 성공" 같은 댓글
+   │
+   └─ ci.yml / notify : 모든 타깃이 끝난 뒤, 스레드의 마지막 댓글
         ├─ 스토어 4곳의 현재 버전 조회
-        └─ Slack 게시  ┌──────────────────────────────────────┐
+        └─ Slack 댓글  ┌──────────────────────────────────────┐
                        │ ✅ master 빌드 성공                    │
                        │ 메모 목록 정렬 옵션을 추가한다          │
                        │ a1b2c3d                               │
@@ -62,6 +68,58 @@ master 머지
 정적이라 알림이 가장 느린 타깃(앱 빌드 약 30분)을 기다립니다. 그러면 1분이면 끝나는
 웹 배포 결과도 30분 뒤에야 나갑니다. 타깃마다 `notify-release.yml`을 따로 불러
 각자 끝나는 대로 알립니다.
+
+## master 머지는 하나의 스레드로 모입니다
+
+푸시 직후 `slack-thread` 잡이 채널에 루트 메시지를 하나 만들고, 그 뒤의 결과는 모두
+그 스레드의 댓글로 달립니다. 채널 최상위에 새로 생기는 것은 루트 하나뿐입니다.
+
+| 메시지 | 잡 | 언제 나가는가 |
+| --- | --- | --- |
+| 루트 (🔀 master 머지, PR 제목, PR 번호·브랜치·작성자·커밋) | `slack-thread` | 푸시 직후. 다른 잡을 기다리지 않습니다 |
+| ✅/❌ 웹 빌드 | `notify-web` | `cd-web`이 끝나는 대로 |
+| ✅/❌ 확장 빌드 | `notify-extension` | `cd-extension`이 끝나는 대로 |
+| ✅/❌ 앱 빌드 | `notify-app` | `cd-app`이 끝나는 대로 (약 30분) |
+| 요약 (스토어 현황 + 배포 버튼) | `notify` | 모든 타깃이 끝난 뒤. 스레드의 마지막 댓글 |
+
+웹·확장 결과는 앱 빌드를 기다리지 않습니다. 타깃별 잡이 자기 `cd-*`만 `needs`로 걸기 때문입니다.
+
+타깃 댓글은 `changes` 출력과 잡 결과의 조합으로 정합니다(`decideTargetReply`).
+
+| `changes` | 결과 | 댓글 |
+| --- | --- | --- |
+| true | success | ✅ 성공 |
+| true | failure | ❌ 실패 |
+| true | skipped | 없음. CI 실패로 밀린 경우이며 요약 댓글이 CI 실패를 알립니다 |
+| true | cancelled | 없음 |
+| false | 무엇이든 | 없음. 변경이 없어 안 돈 것입니다 |
+
+앱은 플랫폼을 나누지 않고 "앱 빌드" 하나로 알립니다. iOS 빌드는 임시로 빠져 있어
+`cd-app`은 android만 돕니다.
+
+**웹·확장·앱이 하나도 안 바뀐 머지는 "배포 대상 변경 없음" 한 줄로 스레드를 닫습니다.**
+문서나 `.github`만 고친 머지가 여기 해당합니다. 루트는 푸시 직후 만들어지므로 이 댓글이 없으면
+아래에 아무것도 없는 루트만 남습니다. `ci`가 통과했고 세 타깃이 전부 skipped일 때만 답니다.
+`ci`가 실패하거나 취소됐으면 요약 댓글이 그 사실을 알리고, 스레드가 없으면(Secret 미등록,
+루트 생성 실패) 예전처럼 아무것도 보내지 않습니다. 웹훅으로 최상위에 내려보내지 않습니다.
+
+**`slack-thread`는 `cd-*`의 `needs`에 넣지 않습니다.** 넣으면 PR 이벤트에서 이 잡이
+skipped이거나 실패했을 때 `cd-*`가 암묵적 `success()` 조건 때문에 통째로 skipped됩니다.
+알림 잡들은 반대로 `slack-thread`를 `needs`로 걸되 `always()`로 돌립니다.
+
+**스레드를 못 만들면 요약은 그대로 나갑니다.** 봇 토큰·채널 ID 시크릿이 없거나 루트
+생성이 실패하면 `thread_ts`가 빈 값이 됩니다. 그때 요약 댓글은 기존처럼 웹훅으로 채널
+최상위에 나가 배포 버튼이 살아 있습니다. 타깃 댓글은 낱개 메시지로 흩어지지 않도록
+`::warning::`만 남기고 건너뜁니다.
+
+**알림 스크립트는 실패해도 잡을 실패시키지 않습니다.** Slack 전송이 깨져도 exit 0으로
+끝나고, `::warning::`에 Slack이 준 `error` 값(`invalid_auth`, `channel_not_found` 등)이
+남습니다. 예전에는 웹훅 실패가 예외가 되어 알림 잡이 빨갛게 됐습니다.
+
+**버튼을 누른 뒤의 메시지는 그대로 채널 최상위입니다.** "🚀 배포를 시작했습니다"와
+릴리스 결과(`notify-release.yml`)는 이번에 스레드로 옮기지 않았습니다. 스레드 댓글 안
+버튼의 확인 메시지가 스레드로 갈지 최상위로 갈지는 확인하지 못했습니다
+(`respondToSlack`이 `thread_ts`를 보내지 않습니다).
 
 ## 배포하는 방법
 
@@ -149,18 +207,22 @@ Slack에서 `/배포현황`(등록한 슬래시 커맨드)을 실행하면 `vers
 ## develop 머지는 테스트 서버로 나갑니다
 
 `develop`에 푸시하면 `cd-web.yml`이 `deploy_target: staging`으로 돌아 Vercel에
-배포하고 스테이징 별칭을 새 배포로 옮깁니다. 그 결과를 **같은 잡의 마지막 스텝**이
-같은 Slack 채널에 알립니다.
+배포하고 스테이징 별칭을 새 배포로 옮깁니다. 그 결과를 `ci.yml`의 `notify-staging` 잡이
+머지 스레드에 댓글로 알립니다. 스레드의 루트는 master와 같이 `slack-thread` 잡이 푸시
+직후에 만듭니다(`develop`에서도 돕니다).
 
 ```
 develop 푸시
    │
    ├─ ci.yml : 린트·타입·테스트 + 영향받은 앱 빌드 검증
    │
-   └─ cd-web (deploy_target: staging)
-        ├─ Vercel 배포 + 별칭 이동
-        └─ Notify staging deploy
-             └─ Slack 게시  ┌────────────────────────────────────────┐
+   ├─ ci.yml / slack-thread : 스레드 루트 (🔀 develop 머지)
+   │
+   ├─ cd-web (deploy_target: staging)
+   │    └─ Vercel 배포 + 별칭 이동. 결과는 staging_outcome output으로 내보냅니다
+   │
+   └─ ci.yml / notify-staging : cd-web만 기다렸다가 스레드에 댓글을 답니다
+             └─ Slack 댓글  ┌────────────────────────────────────────┐
                             │ 🚀 테스트 서버 배포 완료 — a1b2c3d       │
                             │ feat: 메모 정렬 추가 · guesung          │
                             │ [🌐 테스트 서버 열기][실행 로그 보기]     │
@@ -184,19 +246,31 @@ master 알림과 달리 스토어를 조회하지 않고 배포 버튼도 달지
 
 **취소된 run도 알리지 않습니다.** `develop`은 `cancel-in-progress`라 푸시가 연달아
 들어오면 앞선 run이 매번 취소되는데, 뒤이은 run이 어차피 배포하고 그 결과를 다시
-알리므로 취소 알림은 소음만 됩니다. 그래서 스텝 조건이 `always()`가 아니라
-`!cancelled()`입니다 — 실패는 통과시키고 취소만 뺍니다.
+알리므로 취소 알림은 소음만 됩니다. 그래서 `notify-staging`은 `cd-web` 결과가 `success`
+또는 `failure`일 때만 돕니다. `cancelled`와 `skipped`(CI 실패로 밀림)는 알리지 않습니다.
 
-### 왜 별도 잡이 아니라 스텝인가
+### 왜 스텝이 아니라 별도 잡인가
 
-별도 잡으로 빼면 `needs`가 정적이라 브랜치별로 다르게 줄 수 없습니다. master 알림과
-같은 모양(`needs: [ci, changes, cd-app, cd-extension, cd-web]`)을 쓰면 테스트 서버
-알림이 앱 빌드(약 30분)를 기다리게 됩니다. `apps/app`과 `apps/web`이 둘 다
-`@web-memo/shared`에 의존해 shared를 한 줄만 고쳐도 앱 빌드가 딸려 오므로, 그 대기는
+예전에는 배포한 잡의 마지막 스텝이 알렸습니다. 별도 잡으로 빼면 master 알림과 같은
+모양(`needs: [ci, changes, cd-app, cd-extension, cd-web]`)이 되어 테스트 서버 알림이
+앱 빌드(약 30분)를 기다린다는 이유였습니다. `apps/app`과 `apps/web`이 둘 다
+`@web-memo/shared`에 의존해 shared를 한 줄만 고쳐도 앱 빌드가 딸려 오므로 그 대기는
 드물지 않습니다.
 
-배포한 잡 안에서 보내면 배포 직후 곧바로 나가고, 체크아웃·node 셋업도 이미 그 잡에
-있는 것을 그대로 씁니다.
+지금은 `notify-staging`이 `cd-web`만 `needs`로 걸어서 그 대기가 없습니다. `cd-web`이
+배포 스텝의 `outcome`을 `staging_outcome` output으로 내보내므로 "배포하다 실패"와
+"빌드에서 멈춤"의 구분도 그대로입니다.
+
+스텝으로 두려면 스레드 ts(`slack-thread`의 output)를 받으려고 `cd-web`이 `slack-thread`를
+`needs`로 걸어야 하는데, 그러면 PR 이벤트에서 `cd-web`이 통째로 skipped될 수 있습니다.
+잡으로 나누면 `cd-*`의 실행 조건을 전혀 건드리지 않습니다. Slack이 깨져도 `build-web`
+잡의 결론이 바뀌지 않는 것은 덤입니다.
+
+`cd-web.yml`의 `Notify staging deploy` 스텝은 남아 있지만 `workflow_dispatch`로 직접
+실행한 경우에만 돕니다. 그 경로는 `ci.yml`을 거치지 않아 스레드도 `notify-staging`도
+없으므로 여기서 웹훅으로 최상위에 알립니다. `workflow_call`로 불렸을 때의
+`github.event_name`은 호출한 쪽의 이벤트(push)라 이 스텝은 돌지 않습니다. 직접 실행에는
+봇 토큰이 없어 "웹훅으로 보냅니다" 경고가 남지만 알림은 정상입니다.
 
 ### 배포된 커밋을 확인하지 않는 이유
 
@@ -231,14 +305,15 @@ Protection이 Preview에 걸려 있어, 자격 증명 없는 요청은 `/api/ver
 - **Slash Commands** → **Create New Command**
   - Command: `/배포현황` (원하는 이름으로)
   - Request URL: `https://www.webmemo.xyz/api/slack/commands`
-- **OAuth & Permissions** → Bot Token Scopes에 `commands` 추가 → 워크스페이스에
+- **OAuth & Permissions** → Bot Token Scopes에 `commands`와 `chat:write` 추가 → 워크스페이스에
   재설치 → `xoxb-`로 시작하는 **Bot User OAuth Token** 복사
 - **Basic Information** → **Signing Secret** 복사 (이미 있는 값 그대로)
 
-봇 토큰을 쓰는 곳은 모달을 여는 `views.open` 한 곳뿐입니다. 메시지 응답은 전부
-`response_url`로 가므로 토큰이 필요 없어, 최소 스코프는 슬래시 커맨드용
-`commands` 하나입니다. 다만 `views.open`의 스코프 요구가 바뀐 적이 있어
-`chat:write`를 같이 넣어두면 재설치를 두 번 하지 않아도 됩니다.
+봇 토큰을 쓰는 곳은 두 군데입니다. 하나는 모달을 여는 `views.open`(Vercel 런타임)이고,
+다른 하나는 머지 스레드를 만들고 댓글을 다는 `chat.postMessage`(GitHub Actions)입니다.
+버튼을 누른 뒤의 메시지 응답은 여전히 전부 `response_url`로 가므로 토큰이 필요 없습니다.
+스레드 알림에는 **`chat:write`가 필수**입니다. 봇이 채널 멤버가 아니면 `not_in_channel`로
+거절되므로 알림 채널에 봇을 초대해야 합니다(`/invite @Web Memo CI`).
 
 스코프를 추가하면 재설치가 필요합니다. 기존 Incoming Webhook URL은 재설치해도
 유지되지만, 재설치 직후 빌드 알림이 한 번 정상적으로 오는지 확인하세요.
@@ -284,6 +359,9 @@ vercel logs https://www.webmemo.xyz --scope gueit214s-projects
 | `GITHUB_DISPATCH_TOKEN` | 위에서 만든 PAT |
 | `GITHUB_DISPATCH_REPOSITORY` | (선택) 기본값 `guesung/Web-Memo` |
 
+`SLACK_BOT_TOKEN`은 GitHub 시크릿에도 같은 값으로 따로 등록합니다(아래 4번).
+Vercel과 GitHub Actions는 서로의 값을 읽지 못합니다.
+
 `--sensitive`로 등록하면 런타임에는 정상적으로 주입되지만 `vercel env pull`이 실제 값
 대신 `[SENSITIVE]` 문자열을 돌려줍니다. 그 값을 그대로 API에 보내면 `invalid_auth`가
 나므로, **토큰이 틀렸다고 오진하기 쉽습니다.** 값 검증은 `vercel env pull`이 아니라
@@ -300,10 +378,16 @@ PAT나 Slack 시크릿을 거기 두면 확장 번들에 섞여 들어갈 수 �
 
 | 이름 | 쓰이는 곳 | 이미 있는지 |
 | --- | --- | --- |
-| `SLACK_WEBHOOK_URL` | 알림 게시 | ✅ |
+| `SLACK_WEBHOOK_URL` | 알림 게시 (스레드를 못 만들 때의 폴백 포함) | ✅ |
+| `SLACK_BOT_TOKEN` | 머지 스레드 생성·댓글(`chat.postMessage`). Vercel의 같은 이름과 같은 값 | 사람이 등록 |
+| `SLACK_CHANNEL_ID` | 스레드를 만들 채널 ID. 웹훅 URL에서는 얻을 수 없습니다 | 사람이 등록 |
 | `EXPO_ASC_API_KEY_P8` | iOS 스토어 버전 조회 | ✅ |
 | `EXPO_ANDROID_SERVICE_ACCOUNT_JSON` | Android 스토어 버전 조회 | ✅ |
 | `CLIENT_ID` / `CLIENT_SECRET` / `REFRESH_TOKEN` | 확장 초안 버전 조회 | ✅ |
+
+위 두 스레드용 시크릿을 등록하기 전에는 스레드가 생기지 않고 기존처럼 웹훅 최상위
+메시지로 나갑니다. 등록했는데도 스레드가 안 생기면 Actions 실행의 `::warning::`을
+보세요. Slack이 준 `error` 값이 적혀 있습니다.
 
 웹 주소는 시크릿이 아니라 레포에 추적된 `packages/env/.env.production`의 `WEB_URL`에서
 읽습니다([environment-variables.md](environment-variables.md) 참고).
@@ -316,16 +400,23 @@ App Store Connect의 키 ID·발급자 ID·앱 ID는 시크릿이 아니라
 
 | 파일 | 역할 |
 | --- | --- |
-| `.github/workflows/ci.yml` (`notify`) | master 빌드 결과 + 스토어 현황을 Slack에 게시 |
-| `.github/workflows/cd-web.yml` (`Notify staging deploy`) | develop 테스트 서버 배포 결과를 Slack에 게시 |
+| `.github/workflows/ci.yml` (`slack-thread`) | master·develop 푸시마다 머지 스레드의 루트 메시지를 만들고 ts를 냄 |
+| `.github/workflows/ci.yml` (`notify-web` · `notify-extension` · `notify-app`) | master 타깃 하나의 빌드 결과를 스레드에 댓글로 게시 |
+| `.github/workflows/ci.yml` (`notify`) | master 스토어 현황 + 배포 버튼을 스레드의 마지막 댓글로 게시 |
+| `.github/workflows/ci.yml` (`notify-staging`) | develop 테스트 서버 배포 결과를 스레드에 댓글로 게시 |
+| `.github/workflows/cd-web.yml` (`Notify staging deploy`) | `workflow_dispatch`로 직접 실행한 경우의 테스트 서버 알림(웹훅) |
 | `.github/workflows/versions.yml` | 배포 현황만 조회해 게시 |
 | `.github/workflows/release.yml` | 실제 스토어 제출 (버튼이 이걸 실행) |
 | `.github/workflows/notify-release.yml` | 릴리스 타깃 하나의 결과를 Slack에 게시 (release.yml이 타깃별로 호출) |
 | `.github/scripts/notify-release-result.mjs` | 릴리스 성패를 타깃별로 Slack에 보고 |
 | `.github/scripts/notify-staging-deploy.mjs` | 테스트 서버 배포 성패를 Slack에 보고 |
+| `.github/scripts/notify-thread-root.mjs` | 머지 스레드의 루트 메시지를 만들고 `thread_ts`를 잡 output으로 냄 |
+| `.github/scripts/notify-thread-reply.mjs` | 타깃 하나(웹·확장·앱)의 빌드 결과를 스레드 댓글로 보고 |
+| `.github/scripts/lib/slack-api.mjs` | `chat.postMessage` 호출, 스레드 우선·웹훅 폴백 전송 |
+| `.github/scripts/lib/thread-messages.mjs` | 루트·타깃 댓글의 페이로드 조립과 댓글 여부 판정 |
 | `.github/scripts/lib/store-versions.mjs` | 스토어 4곳 버전 조회 |
 | `.github/scripts/lib/repo-versions.mjs` | 레포에 커밋된 빌드 버전 읽기 |
-| `.github/scripts/lib/run-context.mjs` | 워크플로 실행 맥락(환경변수·커밋 제목) 읽기 |
+| `.github/scripts/lib/run-context.mjs` | 워크플로 실행 맥락(환경변수·커밋 제목·머지 원본 PR) 읽기 |
 | `.github/scripts/lib/slack-blocks.mjs` | Slack 메시지·버튼 조립 |
 | `apps/web/src/modules/slack/` | 서명 검증, workflow_dispatch, 모달 |
 | `apps/web/src/app/api/slack/interactivity/` | 버튼·모달 제출 수신 |
@@ -334,8 +425,8 @@ App Store Connect의 키 ID·발급자 ID·앱 ID는 시크릿이 아니라
 
 ## 로컬에서 확인하기
 
-두 스크립트 모두 `SLACK_WEBHOOK_URL` 없이 돌리면 실제로 보내지 않고 결과만
-찍습니다.
+스크립트는 모두 웹훅(스레드 스크립트는 봇 토큰과 채널 ID)이 없으면 실제로 보내지 않고
+결과만 찍습니다.
 
 ```bash
 # 스토어 현황만 조회 (자격 증명 없는 채널은 "자격 증명 없음"으로 표시됩니다)
@@ -355,6 +446,16 @@ GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 \
 GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 GITHUB_SHA=$(git rev-parse HEAD) \
   DEPLOY_OUTCOME=success \
   node .github/scripts/notify-staging-deploy.mjs
+
+# 스레드 루트에 나갈 Slack 페이로드 확인 (PR 머지 커밋이면 PR 번호·브랜치가 붙습니다)
+GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_SHA=$(git rev-parse HEAD) \
+  GITHUB_REF_NAME=master GITHUB_ACTOR=guesung \
+  node .github/scripts/notify-thread-root.mjs
+
+# 타깃 댓글에 나갈 Slack 페이로드 확인 (TARGET: web / extension / app, CHANGED·RESULT는 needs 값)
+GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 \
+  TARGET=web CHANGED=true RESULT=success SLACK_THREAD_TS=1.1 \
+  node .github/scripts/notify-thread-reply.mjs
 ```
 
 버튼이 만드는 `workflow_dispatch`가 제대로 도는지는 `gh`로 먼저 확인할 수 있습니다.

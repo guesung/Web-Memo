@@ -11,6 +11,12 @@ on:
         description: "체크아웃할 커밋/태그 (비우면 호출한 워크플로의 기본 ref)"
         type: string
         default: ""
+    outputs:
+      # ci.yml의 notify-staging 잡이 테섭 배포 결과를 스레드에 알릴 때 씁니다.
+      # 값은 success·failure·skipped입니다. skipped는 배포 스텝 앞에서 멈췄다는 뜻입니다.
+      staging_outcome:
+        description: "스테이징 배포 스텝의 결과 (success, failure, skipped)"
+        value: ${{ jobs.build-web.outputs.staging_outcome }}
 
   # ci.yml이 부르는 경로에는 배포가 조용히 스킵되는 틈이 있습니다. CI가 실패한
   # 커밋의 변경분은 배포되지 못한 채 지나가고, 다음 커밋의 affected 판정은 직전
@@ -35,6 +41,8 @@ jobs:
   build-web:
     name: 웹 빌드·배포
     runs-on: ubuntu-24.04
+    outputs:
+      staging_outcome: ${{ steps.deploy-staging.outcome }}
     env:
       # 아래 Vercel Pull·Build와 같은 기준(== 'production')으로 판정해야 합니다.
       # deploy_target은 none·staging·production 셋인데 기준이 갈리면 none이 양쪽에서
@@ -86,9 +94,13 @@ jobs:
           VERCEL_DEPLOYED_URL="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
           vercel alias set "$VERCEL_DEPLOYED_URL" ${{ secrets.STAGING_WEB_URL_WITHOUT_PROTOCOL }} --token=${{ secrets.VERCEL_TOKEN }} --scope=gueit214s-projects
 
-      # 배포한 이 잡에서 바로 알립니다. 별도 잡으로 빼면 needs가 정적이라 앱 빌드(약 30분)를
-      # 기다리게 되고, develop 푸시에서는 apps/app과 apps/web이 @web-memo/shared를 함께 써
-      # 그 대기가 흔하게 걸립니다. 여기서는 배포 직후 곧바로 나갑니다.
+      # develop 푸시로 ci.yml이 부른 경우의 테섭 배포 결과는 ci.yml의 notify-staging 잡이
+      # 이 잡의 staging_outcome output을 받아 스레드에 알립니다. 잡을 나눠도 앱 빌드(약 30분)를
+      # 기다리지 않습니다 — notify-staging은 cd-web만 needs로 걸기 때문입니다.
+      #
+      # 이 스텝은 workflow_dispatch로 직접 실행한 경우에만 돕니다. 그 경로는 ci.yml의
+      # 잡을 거치지 않아 스레드도 notify-staging도 없으므로 여기서 웹훅으로 알립니다.
+      # (workflow_call로 불렸을 때의 github.event_name은 호출한 쪽의 이벤트라 push입니다.)
       #
       # 이 잡이 아예 안 도는 경우(웹 변경 없음)에는 알리지 않습니다. 올라간 것이 없으면
       # 알릴 것도 없습니다. 프로덕션 배포는 release.yml의 notify가 따로 보고합니다.
@@ -96,7 +108,7 @@ jobs:
         # 배포가 깨졌을 때야말로 알려야 하므로 실패해도 돌립니다(!cancelled()는 실패를 통과시킵니다).
         # 취소만 뺍니다. develop은 cancel-in-progress라 푸시가 연달으면 앞선 run이 매번 취소되는데,
         # 뒤이은 run이 어차피 배포하고 그 결과를 다시 알리므로 취소 알림은 소음만 됩니다.
-        if: ${{ !cancelled() && inputs.deploy_target == 'staging' }}
+        if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.deploy_target == 'staging' }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           # 배포 스텝의 outcome만으로는 "배포하다 실패"와 "빌드에서 멈춰 배포까지 못 감"이

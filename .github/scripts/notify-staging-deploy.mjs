@@ -1,11 +1,17 @@
 #!/usr/bin/env node
 /**
  * develop 머지로 나간 테스트 서버(스테이징) 배포 결과를 Slack으로 알립니다.
- * .github/workflows/cd-web.yml 의 배포 잡에서 마지막 스텝으로 호출합니다.
+ * 호출하는 곳은 두 군데입니다.
+ *  - .github/workflows/ci.yml 의 notify-staging 잡: cd-web 종료 직후, 머지 스레드의 댓글로 보냅니다.
+ *    SLACK_THREAD_TS 가 그 스레드 루트입니다.
+ *  - .github/workflows/cd-web.yml 의 workflow_dispatch 실행: ci.yml 잡을 거치지 않으므로
+ *    스레드 없이 웹훅 최상위 메시지로 보냅니다.
  *
- * 배포한 그 잡 안에서 보내므로 웹 변경이 없어 잡이 아예 안 돌면 알림도 없습니다.
- * 올라간 것이 없으면 알릴 것도 없다는 뜻입니다. 취소된 run도 마찬가지로 알리지
- * 않습니다 — develop은 cancel-in-progress라 뒤이은 run이 곧 배포하고 다시 알립니다.
+ * 웹 변경이 없어 cd-web이 아예 안 돌면 알림도 없습니다. 올라간 것이 없으면 알릴 것도
+ * 없다는 뜻입니다. 취소된 run도 마찬가지로 알리지 않습니다 — develop은
+ * cancel-in-progress라 뒤이은 run이 곧 배포하고 다시 알립니다.
+ *
+ * 전송이 실패해도 ::warning::만 남기고 exit 0입니다. 알림이 배포 잡의 결론을 바꾸면 안 됩니다.
  *
  * 배포된 커밋이 실제로 응답하는지는 확인하지 않습니다. 스테이징은 `--prod` 없이
  * 배포되는 Preview라 Vercel Deployment Protection이 걸려 있어, 자격 증명 없는
@@ -13,7 +19,7 @@
  * 항상 실패로 찍혀 경고가 무의미해집니다.
  *
  * 로컬에서 그대로 돌려볼 수 있습니다.
- * 웹훅 없이 돌리면 보낼 페이로드를 stdout에 찍습니다.
+ * 웹훅과 봇 토큰 없이 돌리면 보낼 페이로드를 stdout에 찍습니다.
  *
  *   GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=<run id> \
  *   GITHUB_SHA=$(git rev-parse HEAD) \
@@ -23,7 +29,7 @@
 
 import { readWebUrl } from "./lib/repo-versions.mjs";
 import { readCommitSubject, requireEnv } from "./lib/run-context.mjs";
-import { postToSlack } from "./lib/slack-blocks.mjs";
+import { deliverSlackMessage, readSlackEnv, toSingleLine } from "./lib/slack-api.mjs";
 
 const HEADLINES = {
 	deployed: "🚀 테스트 서버 배포 완료",
@@ -123,14 +129,13 @@ const main = async () => {
 		],
 	};
 
-	if (!process.env.SLACK_WEBHOOK_URL) {
-		console.warn("::warning::SLACK_WEBHOOK_URL 이 없어 Slack 전송을 건너뜁니다");
-		console.log(JSON.stringify(payload, null, 2));
-
-		return;
-	}
-
-	await postToSlack(process.env.SLACK_WEBHOOK_URL, payload);
+	await deliverSlackMessage({ payload, slack: readSlackEnv() });
 };
 
-await main();
+try {
+	await main();
+} catch (error) {
+	console.warn(
+		`::warning::테스트 서버 배포 알림을 보내지 못했습니다: ${toSingleLine(error instanceof Error ? error.message : error)}`,
+	);
+}

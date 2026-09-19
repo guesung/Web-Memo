@@ -7,23 +7,11 @@ import {
 } from "@web-memo/shared/modules/local-storage";
 import { isMac } from "@web-memo/shared/utils";
 import { useToast } from "@web-memo/ui";
-import { type Driver, driver } from "driver.js";
+import { type Driver, type DriveStep, driver } from "driver.js";
 import "driver.js/dist/driver.css";
 import { useEffect, useRef } from "react";
 import type { LanguageType } from "../i18n";
 import useTranslation from "../i18n/util.client";
-
-/**
- * 가이드 단계 식별자. steps 배열과 같은 순서다.
- * @description 로깅에만 쓰는 이름이라 화면 문구(번역 키)와 분리해 둔다. 문구가 바뀌어도 지표가 끊기지 않는다.
- */
-const GUIDE_STEP_NAMES = [
-	"welcome",
-	"save",
-	"category",
-	"settings",
-	"check",
-] as const;
 
 interface UseGuideProps extends LanguageType {}
 
@@ -57,6 +45,88 @@ export default function useGuide({ lng }: UseGuideProps) {
 			clearInterval(sidePanelPollingInterval);
 		};
 
+		const allGuideSteps: IFGuideStep[] = [
+			{
+				name: "welcome",
+				step: {
+					popover: {
+						title: t("guide.welcome.title"),
+						description: t("guide.welcome.description", {
+							key: isMac() ? "Option" : "Alt",
+						}),
+						onPopoverRender: () => {
+							stopSidePanelPolling();
+							sidePanelPollingInterval = setInterval(async () => {
+								try {
+									const isSidePanelOpen =
+										await bridge.request.GET_SIDE_PANEL_OPEN();
+
+									if (!isSidePanelOpen || driverObj.getActiveIndex() !== 0) {
+										return;
+									}
+
+									stopSidePanelPolling();
+									driverObj.moveNext();
+								} catch {
+									// 확장이 응답하지 않는 주기는 건너뛰고 다음 주기에 다시 확인한다.
+								}
+							}, 500);
+						},
+					},
+				},
+			},
+			{
+				name: "save",
+				step: {
+					popover: {
+						title: t("guide.save.title"),
+						description: t("guide.save.description", {
+							key: isMac() ? "Command" : "Ctrl",
+						}),
+					},
+				},
+			},
+			{
+				name: "category",
+				step: {
+					element: "#category",
+					popover: {
+						title: t("guide.category.title"),
+						description: t("guide.category.description"),
+					},
+				},
+			},
+			{
+				name: "settings",
+				step: {
+					element: "#settings",
+					popover: {
+						title: t("guide.settings.title"),
+						description: t("guide.settings.description"),
+					},
+					disableActiveInteraction: true,
+				},
+			},
+			{
+				name: "check",
+				step: {
+					element: "#refresh",
+					popover: {
+						title: t("guide.check.title"),
+						description: t("guide.check.description"),
+					},
+				},
+			},
+		];
+
+		// 대상 요소가 지금 DOM에 없으면 그 단계는 건너뛴다. driver.js는 요소가 없으면 건너뛰지 않고 화면 중앙에 설명만 띄우기 때문이다.
+		const guideSteps = allGuideSteps.filter(({ step }) => {
+			return (
+				typeof step.element !== "string" ||
+				document.querySelector(step.element) !== null
+			);
+		});
+
 		const driverObj = driver({
 			showProgress: true,
 			popoverClass: "driverjs-theme",
@@ -64,7 +134,7 @@ export default function useGuide({ lng }: UseGuideProps) {
 			doneBtnText: t("guide.done"),
 			prevBtnText: t("guide.prev"),
 			onHighlighted: (_element, _step, { state }) => {
-				const stepName = GUIDE_STEP_NAMES[state.activeIndex ?? 0];
+				const stepName = guideSteps[state.activeIndex ?? 0]?.name;
 
 				if (!stepName) {
 					return;
@@ -91,64 +161,7 @@ export default function useGuide({ lng }: UseGuideProps) {
 				});
 			},
 			allowClose: false,
-			steps: [
-				{
-					popover: {
-						title: t("guide.welcome.title"),
-						description: t("guide.welcome.description", {
-							key: isMac() ? "Option" : "Alt",
-						}),
-						onPopoverRender: () => {
-							stopSidePanelPolling();
-							sidePanelPollingInterval = setInterval(async () => {
-								try {
-									const isSidePanelOpen =
-										await bridge.request.GET_SIDE_PANEL_OPEN();
-
-									if (!isSidePanelOpen || driverObj.getActiveIndex() !== 0) {
-										return;
-									}
-
-									stopSidePanelPolling();
-									driverObj.moveNext();
-								} catch {
-									// 확장이 응답하지 않는 주기는 건너뛰고 다음 주기에 다시 확인한다.
-								}
-							}, 500);
-						},
-					},
-				},
-				{
-					popover: {
-						title: t("guide.save.title"),
-						description: t("guide.save.description", {
-							key: isMac() ? "Command" : "Ctrl",
-						}),
-					},
-				},
-				{
-					element: "#category",
-					popover: {
-						title: t("guide.category.title"),
-						description: t("guide.category.description"),
-					},
-				},
-				{
-					element: "#settings",
-					popover: {
-						title: t("guide.settings.title"),
-						description: t("guide.settings.description"),
-					},
-					disableActiveInteraction: true,
-				},
-				{
-					element: "#refresh",
-					popover: {
-						title: t("guide.check.title"),
-						description: t("guide.check.description"),
-					},
-				},
-			],
+			steps: guideSteps.map(({ step }) => step),
 		});
 
 		if (driverObj.isActive()) {
@@ -178,4 +191,12 @@ export default function useGuide({ lng }: UseGuideProps) {
 	};
 
 	return { moveNextGuideStep };
+}
+
+/** 가이드 한 단계. 이름은 지표 로깅에만 쓰고, 화면 문구(번역 키)와 분리해 둔다. */
+interface IFGuideStep {
+	/** 단계 식별자. 문구가 바뀌어도 지표가 끊기지 않는다. */
+	name: string;
+	/** driver.js 단계 설정 */
+	step: DriveStep;
 }

@@ -80,9 +80,7 @@ export default function useGuide({ lng }: UseGuideProps) {
 				step: {
 					popover: {
 						title: t("guide.save.title"),
-						description: t("guide.save.description", {
-							key: isMac() ? "Command" : "Ctrl",
-						}),
+						description: t("guide.save.description"),
 					},
 				},
 			},

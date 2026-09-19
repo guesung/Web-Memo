@@ -13,7 +13,8 @@ import { UserSearchForm, UserTable } from "./_components";
 
 interface PageProps extends LanguageParams {}
 
-export default async function UsersPage({ params: { lng } }: PageProps) {
+export default async function UsersPage({ params }: PageProps) {
+	const { lng } = await params;
 	const { t } = await useTranslation(lng);
 	const supabaseClient = await getSupabaseClient();
 	const adminService = new AdminService(supabaseClient);

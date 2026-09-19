@@ -18,7 +18,8 @@ import {
 
 interface PageProps extends LanguageParams {}
 
-export default async function AdminPage({ params: { lng } }: PageProps) {
+export default async function AdminPage({ params }: PageProps) {
+	const { lng } = await params;
 	const { t } = await useTranslation(lng);
 	const supabaseClient = await getSupabaseClient();
 	const adminService = new AdminService(supabaseClient);

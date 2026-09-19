@@ -9,7 +9,8 @@ import { MemoService } from "@web-memo/shared/utils";
 
 import { Trash } from "./_components";
 
-export default async function Page({ params: { lng } }: LanguageParams) {
+export default async function Page({ params }: LanguageParams) {
+	const { lng } = await params;
 	const supabaseClient = await getSupabaseClient();
 
 	return (

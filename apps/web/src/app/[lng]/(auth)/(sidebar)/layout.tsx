@@ -29,10 +29,8 @@ interface LayoutProps extends LanguageParams, PropsWithChildren {}
  * 가두지 않으므로 모든 하위 페이지는 문서 스크롤을 쓴다.
  * 사이드바는 fixed라 문서 스크롤에 영향을 주지 않는다.
  */
-export default async function Layout({
-	children,
-	params: { lng },
-}: LayoutProps) {
+export default async function Layout({ children, params }: LayoutProps) {
+	const { lng } = await params;
 	const supabaseClient = await getSupabaseClient();
 
 	initSentryUserInfo({ lng });

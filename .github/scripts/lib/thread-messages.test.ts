@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildRootPayload } from "./thread-messages.mjs";
+import {
+	buildRootPayload,
+	buildTargetReplyPayload,
+	decideTargetReply,
+} from "./thread-messages.mjs";
 
 const REPOSITORY_URL = "https://github.com/guesung/Web-Memo";
 const COMMIT_SHA = "b931ac6a1234567890abcdef1234567890abcdef";
@@ -90,5 +94,78 @@ describe("buildRootPayload", () => {
 		expect(payload.blocks[0]).toMatchObject({
 			text: { text: "*🔀 master 머지*" },
 		});
+	});
+});
+
+describe("decideTargetReply", () => {
+	// changed가 true일 때 needs 결과 네 값 전부
+	it.each([
+		["success", "success"],
+		["failure", "failure"],
+		["cancelled", null],
+		["skipped", null],
+	])("changed=true, result=%s이면 %s", (result, expected) => {
+		expect(decideTargetReply({ changed: "true", result })).toBe(expected);
+	});
+
+	// changed가 false면 결과가 무엇이든 댓글이 없다
+	it.each(["success", "failure", "cancelled", "skipped"])(
+		"changed=false, result=%s이면 댓글이 없다",
+		(result) => {
+			expect(decideTargetReply({ changed: "false", result })).toBeNull();
+		},
+	);
+
+	it("changed가 비어 있거나 알 수 없는 값이면 댓글이 없다", () => {
+		expect(decideTargetReply({ changed: "", result: "success" })).toBeNull();
+		expect(decideTargetReply({ changed: "true", result: "" })).toBeNull();
+		expect(decideTargetReply({ changed: "true", result: "timed_out" })).toBeNull();
+	});
+});
+
+describe("buildTargetReplyPayload", () => {
+	const RUN_URL = `${REPOSITORY_URL}/actions/runs/123`;
+
+	it.each([
+		["web", "success", "웹 빌드 성공"],
+		["web", "failure", "웹 빌드 실패"],
+		["extension", "success", "확장 빌드 성공"],
+		["extension", "failure", "확장 빌드 실패"],
+		["app", "success", "앱 빌드 성공"],
+		["app", "failure", "앱 빌드 실패"],
+	] as const)("%s %s 문구는 '%s'이다", (target, outcome, message) => {
+		const payload = buildTargetReplyPayload({
+			target,
+			outcome,
+			runUrl: RUN_URL,
+		});
+
+		expect(payload.text).toBe(message);
+		expect(payload.blocks[0]).toMatchObject({
+			text: { text: expect.stringContaining(message) },
+		});
+	});
+
+	it("이 실행의 Actions 로그 링크가 컨텍스트에 들어간다", () => {
+		const payload = buildTargetReplyPayload({
+			target: "web",
+			outcome: "success",
+			runUrl: RUN_URL,
+		});
+
+		expect(payload.blocks[1]).toEqual({
+			type: "context",
+			elements: [{ type: "mrkdwn", text: `<${RUN_URL}|Actions 로그 보기>` }],
+		});
+	});
+
+	it("알 수 없는 타깃이면 던진다", () => {
+		expect(() =>
+			buildTargetReplyPayload({
+				target: "ios" as never,
+				outcome: "success",
+				runUrl: RUN_URL,
+			}),
+		).toThrow();
 	});
 });

@@ -79,7 +79,7 @@ jobs:
   # 다른 잡을 기다리지 않고(needs 없음) 바로 시작합니다.
   slack-thread:
     name: Slack 스레드 루트
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -170,6 +170,80 @@ jobs:
           # 둘 다 실패로 뭉개집니다. skipped는 앞 스텝에서 멈췄다는 뜻입니다.
           DEPLOY_OUTCOME: ${{ needs['cd-web'].outputs.staging_outcome }}
         run: node .github/scripts/notify-staging-deploy.mjs
+
+  # master 머지 스레드에 타깃 하나의 빌드 결과를 댓글로 답니다(notify-web, notify-extension, notify-app).
+  # 각 잡은 자기 cd-* 잡만 기다리므로 웹·확장 결과가 앱 빌드(약 30분)에 묶이지 않고 끝나는 대로 나갑니다.
+  # slack-thread는 알림용 needs입니다. 실패·스킵돼도 always()라 이 잡들은 돌고,
+  # 그때는 thread_ts가 비어 스크립트가 경고만 남기고 댓글을 건너뜁니다.
+  # 댓글 여부(changed, result 조합)는 notify-thread-reply.mjs의 decideTargetReply가 판정합니다.
+  notify-web:
+    name: Slack 웹 빌드 알림
+    needs: [slack-thread, changes, cd-web]
+    if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.changes.outputs.web == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Notify web build
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          SLACK_THREAD_TS: ${{ needs.slack-thread.outputs.thread_ts }}
+          TARGET: web
+          CHANGED: ${{ needs.changes.outputs.web }}
+          RESULT: ${{ needs['cd-web'].result }}
+        run: node .github/scripts/notify-thread-reply.mjs
+
+  notify-extension:
+    name: Slack 확장 빌드 알림
+    needs: [slack-thread, changes, cd-extension]
+    if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.changes.outputs.extension == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Notify extension build
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          SLACK_THREAD_TS: ${{ needs.slack-thread.outputs.thread_ts }}
+          TARGET: extension
+          CHANGED: ${{ needs.changes.outputs.extension }}
+          RESULT: ${{ needs['cd-extension'].result }}
+        run: node .github/scripts/notify-thread-reply.mjs
+
+  notify-app:
+    name: Slack 앱 빌드 알림
+    needs: [slack-thread, changes, cd-app]
+    if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.changes.outputs.app == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Notify app build
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          SLACK_THREAD_TS: ${{ needs.slack-thread.outputs.thread_ts }}
+          TARGET: app
+          CHANGED: ${{ needs.changes.outputs.app }}
+          RESULT: ${{ needs['cd-app'].result }}
+        run: node .github/scripts/notify-thread-reply.mjs
 
   # 빌드 결과와 스토어 현황을 함께 Slack으로 알리고, 배포 버튼을 답니다.
   # 버튼을 누르면 apps/web의 /api/slack/interactivity가 release.yml을 실행합니다.

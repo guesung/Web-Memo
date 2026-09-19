@@ -2,7 +2,7 @@
 	"name": "@web-memo/web",
 	"private": true,
 	"scripts": {
-		"dev": "next dev --webpack",
+		"dev": "next dev",
 		"preview": "next build --webpack && next start",
 		"build": "next build --webpack",
 		"build:analyze": "ANALYZE=true next build --webpack",

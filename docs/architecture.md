@@ -27,7 +27,7 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 프레임워크 | 웹 → **Next.js 16.3.5 App Router** (`apps/web`), React 19.1.0. Turbopack을 쓰지 않고 웹팩을 유지하므로 `dev`·`build`·`preview` 스크립트에 `--webpack`을 명시합니다<br>확장 → **Vite 5.3.3 + Manifest V3** (`apps/chrome-extension` + `pages/*`), HMR은 `packages/hmr`<br>앱 → React Native / Expo (`apps/app`) |
+| 프레임워크 | 웹 → **Next.js 16.3.5 App Router** (`apps/web`), React 19.1.0. 개발 서버(`dev`)는 Next 16 기본값인 Turbopack을 쓰고, 프로덕션 번들(`build`·`preview`·`build:analyze`)은 Sentry 소스맵 업로드·번들 분석기·`removeConsole` 검증 전이라 웹팩을 유지하므로 `--webpack`을 명시합니다. 개발과 프로덕션의 번들러가 다르니 개발 서버에서만 나타나는 동작 차이는 `pnpm dev:web:preview`로 확인합니다<br>확장 → **Vite 5.3.3 + Manifest V3** (`apps/chrome-extension` + `pages/*`), HMR은 `packages/hmr`<br>앱 → React Native / Expo (`apps/app`) |
 | 라우팅 | `apps/web/src/app/[lng]/` 아래 `(no-auth)`(소개·기능·유스케이스·로그인·개인정보)와 `(auth)/(sidebar)`(메모·하이라이트·설정·휴지통) 두 그룹. 경로 문자열은 **`packages/shared/src/constants/Path.ts`의 `PATHS`**를 씁니다 — 하드코딩하지 않습니다 |
 | 상태 관리 | 서버 상태 → **TanStack Query v5** (모든 Supabase 작업). 쿼리 키는 `packages/shared/src/constants/QueryKey.ts`<br>폼 상태 → **React Hook Form**<br>확장 상태 → Chrome Storage API(TS 래퍼, `packages/shared`)<br>로컬 상태 → React hooks. 전역 스토어(zustand/redux)는 쓰지 않습니다 |
 | 스타일링 | TailwindCSS 3.4 + `packages/tailwind-config`. 디자인 토큰 원천은 `packages/ui/global.css`의 CSS 변수이며, **역할 이름(`bg-background`·`text-muted-foreground`)만 쓰고 색상 코드를 직접 적지 않습니다.** 다크 모드는 `next-themes` + `darkMode: ["class"]`. 상세는 [`design-system.md`](design-system.md) |

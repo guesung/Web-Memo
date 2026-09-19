@@ -363,6 +363,12 @@ export interface AdminUser {
 	nickname: string | null;
 	created_at: string;
 	memo_count: number;
+	/**
+	 * 마지막으로 메모를 만들거나 고친 시각. 메모가 한 건도 없으면 null이다.
+	 * @description 로그인 시각(auth.users.last_sign_in_at)이 아니다. 세션이 오래 유지되는
+	 * 서비스라 그 값은 매일 쓰는 사람도 몇 달 전으로 찍힌다.
+	 */
+	last_activity_at: string | null;
 }
 
 export interface AdminUsersResponse {

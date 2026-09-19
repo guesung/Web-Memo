@@ -123,8 +123,22 @@ pnpm dev                             # .env.development (기본값)
 됩니다. 단 `BUILD_ENV`는 셸 값이 항상 이깁니다 — `.env` 안에 적어도 파일 선택은
 이미 끝난 뒤라, 파일 내용으로 분기를 뒤집는 착각을 막기 위해 마지막에 덮어씁니다.
 
-`packages/env/turbo.json`의 `ready` 태스크가 `env: ["BUILD_ENV"]`를 선언하므로
-환경별로 캐시가 갈립니다. 이게 없으면 staging 빌드가 production 캐시를 재사용합니다.
+**셸에 `BUILD_ENV`가 없으면 Vercel이 빌드에 넣어주는 `VERCEL_ENV`로 정합니다.**
+Vercel Git 연동(master 푸시)으로 나가는 빌드는 GitHub Actions를 거치지 않아 셸에
+`BUILD_ENV`가 없고, 프로젝트 환경변수에도 등록돼 있지 않습니다. 그 상태로 두면
+`development`로 구워져 운영 사이트의 랜딩 주소창 목업·sitemap·canonical이 전부
+`localhost:3000`이 됩니다. 에러 없이 배포가 성공하므로 사용자가 먼저 발견합니다.
+
+| `BUILD_ENV` | `VERCEL_ENV` | 굽히는 값 |
+| --- | --- | --- |
+| 있음 | 무관 | `BUILD_ENV` (CI 경로 — `cd-web.yml`이 항상 넣습니다) |
+| 없음 | `production` | `production` |
+| 없음 | `preview` | `staging` (CI가 Preview를 staging으로 다루는 것과 같은 기준) |
+| 없음 | 그 외·없음 | `development` (로컬 기본값) |
+
+`packages/env/turbo.json`의 `ready` 태스크가 `env: ["BUILD_ENV", "VERCEL_ENV"]`를
+선언하므로 환경별로 캐시가 갈립니다. 이게 없으면 staging 빌드가 production 캐시를
+재사용하고, turbo 2의 strict 모드가 `VERCEL_ENV`를 걸러내 폴백도 동작하지 않습니다.
 
 > ⚠️ **분기 기준이 셸 변수라는 점이 중요합니다.**
 > 예전에는 `NODE_ENV`로 파일을 골랐는데, CI가 그 값을 `.env` 파일 *안에* 써넣었습니다.

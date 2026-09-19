@@ -1,7 +1,23 @@
 import dotenv from "dotenv";
 import { defineConfig } from "tsup";
 
-const BUILD_ENV = process.env.BUILD_ENV ?? "development";
+// Vercel Git 연동 빌드는 GitHub Actions를 거치지 않아 셸에 BUILD_ENV가 없습니다.
+// 그대로 두면 development로 구워져 운영 사이트에 localhost:3000이 실리므로,
+// Vercel이 빌드에 넣어주는 VERCEL_ENV로 CI(cd-web.yml)와 같은 기준을 적용합니다.
+// (production → production, preview → staging)
+const getBuildEnvFromVercel = () => {
+	if (process.env.VERCEL_ENV === "production") {
+		return "production";
+	}
+	if (process.env.VERCEL_ENV === "preview") {
+		return "staging";
+	}
+
+	return undefined;
+};
+
+const BUILD_ENV =
+	process.env.BUILD_ENV ?? getBuildEnvFromVercel() ?? "development";
 
 export default defineConfig({
 	entry: ["src/index.ts"],

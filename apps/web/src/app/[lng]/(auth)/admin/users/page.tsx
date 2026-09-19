@@ -6,10 +6,9 @@ import useTranslation from "@src/modules/i18n/util.server";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import { AdminService } from "@web-memo/shared/utils";
-import { Loading } from "@web-memo/ui";
 import { Suspense } from "react";
 
-import { UserSearchForm, UserTable } from "./_components";
+import { UserSearchForm, UserTable, UserTableSkeleton } from "./_components";
 
 interface PageProps extends LanguageParams {
 	searchParams: { q?: string };
@@ -42,7 +41,7 @@ export default async function UsersPage({
 						<UserSearchForm lng={lng} />
 					</Suspense>
 				</div>
-				<Suspense fallback={<Loading />}>
+				<Suspense fallback={<UserTableSkeleton />}>
 					<UserTable lng={lng} />
 				</Suspense>
 			</HydrationBoundaryWrapper>

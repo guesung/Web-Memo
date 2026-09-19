@@ -6,9 +6,17 @@ import { useActiveUsersStatsQuery } from "@web-memo/shared/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@web-memo/ui";
 import { Activity, CalendarDays, CalendarRange } from "lucide-react";
 
-export default function ActiveUsersCard({ lng }: LanguageType) {
+interface IFActiveUsersCardProps extends LanguageType {
+	/** 관리자 본인의 데이터도 셀지 여부 */
+	includeAdmin: boolean;
+}
+
+export default function ActiveUsersCard({
+	lng,
+	includeAdmin,
+}: IFActiveUsersCardProps) {
 	const { t } = useTranslation(lng);
-	const { stats } = useActiveUsersStatsQuery();
+	const { stats } = useActiveUsersStatsQuery({ includeAdmin });
 
 	const cards = [
 		{

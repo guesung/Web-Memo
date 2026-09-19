@@ -91,3 +91,29 @@ describe("QUERY_KEY.highlightCountsPrefix", () => {
 		);
 	});
 });
+
+describe("대시보드 통계 쿼리 키", () => {
+	it("includeAdmin 값이 다르면 키가 다르다", () => {
+		expect(QUERY_KEY.adminStats(true)).not.toEqual(QUERY_KEY.adminStats(false));
+		expect(QUERY_KEY.activeUsersStats(true)).not.toEqual(
+			QUERY_KEY.activeUsersStats(false),
+		);
+		expect(QUERY_KEY.userGrowth(30, true)).not.toEqual(
+			QUERY_KEY.userGrowth(30, false),
+		);
+	});
+
+	it("includeAdmin을 생략하면 false와 같은 키다", () => {
+		expect(QUERY_KEY.adminStats()).toEqual(QUERY_KEY.adminStats(false));
+		expect(QUERY_KEY.activeUsersStats()).toEqual(
+			QUERY_KEY.activeUsersStats(false),
+		);
+		expect(QUERY_KEY.userGrowth(30)).toEqual(QUERY_KEY.userGrowth(30, false));
+	});
+
+	it("userGrowth는 기간이 달라도 키가 다르다", () => {
+		expect(QUERY_KEY.userGrowth(7, true)).not.toEqual(
+			QUERY_KEY.userGrowth(30, true),
+		);
+	});
+});

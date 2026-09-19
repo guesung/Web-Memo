@@ -38,11 +38,15 @@ const reportMemoCreateError = (error: unknown, stage: string) => {
 };
 
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
-chrome.runtime.onInstalled.addListener(async () => {
+chrome.runtime.onInstalled.addListener(async (details) => {
 	// 퍼널의 출발점입니다. 설치 대비 사이드패널 사용, 가입 전환을 여기서부터 셉니다.
+	// onInstalled는 업데이트에도 발화하므로 신규 설치만 셉니다. 거르지 않으면 배포 때마다
+	// 기존 사용자 전원이 설치 이벤트를 보내 GA 활성 사용자가 부풀려집니다.
 	// await로 붙잡아야 합니다. service worker는 할 일이 없으면 곧바로 종료되어,
 	// 전송이 끝나기 전에 워커가 죽으면 이벤트가 조용히 사라집니다.
-	await analytics.trackEvent({ name: "extension_installed" });
+	if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+		await analytics.trackEvent({ name: "extension_installed" });
+	}
 
 	chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 	const language = await ChromeSyncStorage.get(STORAGE_KEYS.language);

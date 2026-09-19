@@ -26,12 +26,21 @@ import { useState } from "react";
 
 import { TIME_PERIODS } from "../_constants";
 
-interface UserGrowthChartProps extends LanguageType {}
+interface IFUserGrowthChartProps extends LanguageType {
+	/** 관리자 본인의 데이터도 셀지 여부 */
+	includeAdmin: boolean;
+}
 
-export default function UserGrowthChart({ lng }: UserGrowthChartProps) {
+export default function UserGrowthChart({
+	lng,
+	includeAdmin,
+}: IFUserGrowthChartProps) {
 	const { t } = useTranslation(lng);
 	const [period, setPeriod] = useState("30");
-	const { growthData } = useUserGrowthQuery(Number(period));
+	const { growthData } = useUserGrowthQuery({
+		days: Number(period),
+		includeAdmin,
+	});
 
 	const chartConfig = {
 		count: {

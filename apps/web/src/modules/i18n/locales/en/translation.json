@@ -891,6 +891,10 @@
 			"page_size_label": "Rows per page",
 			"page_size_option": "{{count}}"
 		},
+		"include_admin": {
+			"label": "Include my data",
+			"description": "When on, memos written by the admin are counted too"
+		},
 		"stats": {
 			"total_users": "Total Users",
 			"total_memos": "Total Memos",

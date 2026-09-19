@@ -35,9 +35,17 @@ export const QUERY_KEY = {
 	user: () => ["user"],
 	category: () => ["cateogory"],
 	setting: () => ["setting"],
-	adminStats: () => ["adminStats"],
-	activeUsersStats: () => ["activeUsersStats"],
-	userGrowth: (days: number) => ["userGrowth", days],
+	/** 대시보드 통계. `includeAdmin`이 다르면 다른 캐시여야 토글이 재조회를 일으킨다. */
+	adminStats: (includeAdmin = false) => ["adminStats", includeAdmin],
+	activeUsersStats: (includeAdmin = false) => [
+		"activeUsersStats",
+		includeAdmin,
+	],
+	userGrowth: (days: number, includeAdmin = false) => [
+		"userGrowth",
+		days,
+		includeAdmin,
+	],
 	/**
 	 * 관리자 사용자 목록. 검색어마다 별도 캐시다.
 	 * @description 페이지 인자를 받지 않는다. get_admin_users는 페이지네이션이 없어 전체를

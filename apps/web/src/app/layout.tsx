@@ -58,6 +58,20 @@ export default function Layout({ children }: LayoutProps) {
 						<Script id="ga-disable-excluded" strategy="beforeInteractive">
 							{`try{if(localStorage.getItem("${ANALYTICS_EXCLUDED_STORAGE_KEY}")==="1"){window["ga-disable-${ANALYTICS.gaId}"]=true}}catch(e){}`}
 						</Script>
+						{/*
+						 * 확장에서 넘어온 사람의 GA client_id를 확장 것으로 맞춥니다.
+						 * gtag는 `ext_client_id` 파라미터를 예약 필드(excid)로 바꿔 보내 커스텀
+						 * 차원에 닿지 않으므로, gtag가 client_id를 정하기 전에 `_ga` 쿠키를 먼저
+						 * 심어 확장과 웹이 같은 사용자로 집계되게 합니다. UUID 형식만 받아 조작된
+						 * 링크로 남의 쿠키를 바꾸지 못하게 하고, 속성은 gtag가 쓰는 것과 같아야
+						 * 쿠키가 둘로 갈리지 않습니다.
+						 */}
+						<Script
+							id="ga-adopt-extension-client-id"
+							strategy="beforeInteractive"
+						>
+							{`try{var m=location.search.match(/[?&]ext_cid=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(&|$)/i);if(m&&document.cookie.indexOf("_ga=GA1.1."+m[1])===-1){document.cookie="_ga=GA1.1."+m[1]+"; path=/; max-age=34560000; SameSite=Lax; domain=.webmemo.xyz"}}catch(e){}`}
+						</Script>
 						<GoogleAnalytics gaId={ANALYTICS.gaId} />
 						<GoogleTagManager gtmId={ANALYTICS.gtmId} />
 					</>

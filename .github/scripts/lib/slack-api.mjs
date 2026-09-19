@@ -163,3 +163,29 @@ export const sendSlackMessage = async ({ payload, slack }) => {
 
 	return await sendByWebhook({ webhookUrl, payload });
 };
+
+/**
+ * 알림 스크립트의 마지막 단계입니다. 보낼 수단이 하나도 없으면(로컬 확인, 시크릿 미설정)
+ * 보낼 페이로드만 stdout에 찍고 끝내고, 있으면 sendSlackMessage로 보냅니다.
+ *
+ * 수단이 있다는 것은 웹훅이 있거나, 봇 토큰과 채널이 함께 있다는 뜻입니다.
+ *
+ * @param {object} params
+ * @param {{ text: string, blocks: object[] }} params.payload
+ * @param {{ botToken: string, channelId: string, threadTs: string, webhookUrl: string }} params.slack readSlackEnv()의 결과
+ * @returns {Promise<{ ok: boolean, via: "thread" | "webhook" | "none", ts?: string }>}
+ */
+export const deliverSlackMessage = async ({ payload, slack }) => {
+	const canSend = slack.webhookUrl || (slack.botToken && slack.channelId);
+
+	if (!canSend) {
+		warn(
+			"SLACK_WEBHOOK_URL 또는 SLACK_BOT_TOKEN·SLACK_CHANNEL_ID 가 없어 Slack 전송을 건너뜁니다",
+		);
+		console.log(JSON.stringify(payload, null, 2));
+
+		return { ok: false, via: "none" };
+	}
+
+	return await sendSlackMessage({ payload, slack });
+};

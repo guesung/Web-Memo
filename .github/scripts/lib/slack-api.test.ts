@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+	deliverSlackMessage,
 	postSlackMessage,
 	readSlackEnv,
 	sendSlackMessage,
@@ -252,5 +253,63 @@ describe("readSlackEnv", () => {
 			threadTs: "1.1",
 			webhookUrl: "",
 		});
+	});
+});
+
+describe("deliverSlackMessage", () => {
+	const emptySlack = {
+		botToken: "",
+		channelId: "",
+		threadTs: "",
+		webhookUrl: "",
+	};
+
+	it("웹훅도 토큰도 없으면 전송 없이 페이로드만 stdout에 찍고 경고를 남긴다", async () => {
+		const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+		const result = await deliverSlackMessage({
+			payload: PAYLOAD,
+			slack: emptySlack,
+		});
+
+		expect(result).toEqual({ ok: false, via: "none" });
+		expect(fetchMock).not.toHaveBeenCalled();
+		expect(logSpy).toHaveBeenCalledWith(JSON.stringify(PAYLOAD, null, 2));
+		expect(warnings()).toHaveLength(1);
+		logSpy.mockRestore();
+	});
+
+	it("토큰만 있고 채널이 없으면 보낼 수단이 없는 것으로 본다", async () => {
+		const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+		await deliverSlackMessage({
+			payload: PAYLOAD,
+			slack: { ...emptySlack, botToken: "xoxb-t" },
+		});
+
+		expect(fetchMock).not.toHaveBeenCalled();
+		logSpy.mockRestore();
+	});
+
+	it("웹훅만 있으면 웹훅으로 보낸다", async () => {
+		fetchMock.mockResolvedValue(new Response("ok"));
+
+		const result = await deliverSlackMessage({
+			payload: PAYLOAD,
+			slack: { ...emptySlack, webhookUrl: "https://hooks.slack.com/services/x" },
+		});
+
+		expect(result).toEqual({ ok: true, via: "webhook" });
+	});
+
+	it("토큰·채널·ts가 있으면 스레드로 보낸다", async () => {
+		fetchMock.mockResolvedValue(jsonResponse({ ok: true, ts: "2.2" }));
+
+		const result = await deliverSlackMessage({
+			payload: PAYLOAD,
+			slack: { ...emptySlack, botToken: "t", channelId: "C1", threadTs: "1.1" },
+		});
+
+		expect(result).toEqual({ ok: true, via: "thread", ts: "2.2" });
 	});
 });

@@ -141,6 +141,36 @@ jobs:
     with:
       deploy_target: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/develop') && 'staging' || 'none' }}
 
+  # develop 푸시의 테섭 배포 결과를 머지 스레드에 댓글로 답니다.
+  # cd-web만 기다리므로 앱 빌드(약 30분)와 무관하게 배포 직후 나갑니다.
+  # slack-thread는 알림용 needs입니다. 실패·스킵돼도 always()라 이 잡은 돌고,
+  # 그때는 thread_ts가 비어 스크립트가 웹훅 최상위 메시지로 내려갑니다.
+  # cd-web이 success·failure일 때만 돕니다. cancelled(연속 푸시로 취소)와 skipped(ci 실패로 밀림)는
+  # 올라간 것이 없거나 뒤이은 run이 다시 알리므로 알리지 않습니다.
+  notify-staging:
+    name: Slack 테섭 배포 알림
+    needs: [slack-thread, changes, cd-web]
+    if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/develop' && needs.changes.outputs.web == 'true' && (needs['cd-web'].result == 'success' || needs['cd-web'].result == 'failure') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Notify staging deploy
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          SLACK_THREAD_TS: ${{ needs.slack-thread.outputs.thread_ts }}
+          # 배포 스텝의 outcome만으로는 "배포하다 실패"와 "빌드에서 멈춰 배포까지 못 감"이
+          # 둘 다 실패로 뭉개집니다. skipped는 앞 스텝에서 멈췄다는 뜻입니다.
+          DEPLOY_OUTCOME: ${{ needs['cd-web'].outputs.staging_outcome }}
+        run: node .github/scripts/notify-staging-deploy.mjs
+
   # 빌드 결과와 스토어 현황을 함께 Slack으로 알리고, 배포 버튼을 답니다.
   # 버튼을 누르면 apps/web의 /api/slack/interactivity가 release.yml을 실행합니다.
   notify:

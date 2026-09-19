@@ -28,6 +28,26 @@ export const runReport = async ({ accessToken, propertyId, body }) =>
 		},
 	);
 
+/**
+ * 순서 강제 퍼널 조회. 퍼널 API 는 아직 v1alpha 에만 있습니다.
+ *
+ * runReport 는 이벤트마다 사용자 수를 따로 셀 뿐이라 "설치한 사람이 그다음 단계로
+ * 넘어갔는가"를 알 수 없습니다. 이쪽은 같은 사용자가 단계를 순서대로 밟았을 때만
+ * 다음 단계로 셉니다.
+ */
+export const runFunnelReport = async ({ accessToken, propertyId, body }) =>
+	await requestJson(
+		`https://analyticsdata.googleapis.com/v1alpha/properties/${propertyId}:runFunnelReport`,
+		{
+			method: "POST",
+			headers: {
+				authorization: `Bearer ${accessToken}`,
+				"content-type": "application/json",
+			},
+			body: JSON.stringify(body),
+		},
+	);
+
 /** runReport 응답의 행을 [차원값...] + [지표값...] 으로 펴 줍니다. */
 export const readRows = (report) =>
 	(report.rows ?? []).map((row) => ({
@@ -78,6 +98,24 @@ export const HOST_NAME_FILTER = {
 	orGroup: {
 		expressions: INCLUDED_HOST_NAMES.map((hostName) => ({
 			filter: {
+				fieldName: "hostName",
+				stringFilter: { matchType: "EXACT", value: hostName },
+			},
+		})),
+	},
+};
+
+/**
+ * 퍼널 API 용 같은 호스트 허용 목록.
+ *
+ * 필터 노드의 이름만 다릅니다(`filter` 가 아니라 `funnelFieldFilter`). 목록은
+ * INCLUDED_HOST_NAMES 하나를 같이 읽어 두 필터가 서로 다른 모수를 세지 않게 합니다.
+ * 빈 문자열까지 EXACT 로 잡히는 것은 실측으로 확인했습니다(설치 413명이 그대로 나옴).
+ */
+export const HOST_NAME_FUNNEL_FILTER = {
+	orGroup: {
+		expressions: INCLUDED_HOST_NAMES.map((hostName) => ({
+			funnelFieldFilter: {
 				fieldName: "hostName",
 				stringFilter: { matchType: "EXACT", value: hostName },
 			},

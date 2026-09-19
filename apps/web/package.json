@@ -11,6 +11,7 @@
 		"tsc-watch": "tsc-watch"
 	},
 	"dependencies": {
+		"@channel.io/channel-web-sdk-loader": "^2.0.2",
 		"@egjs/react-infinitegrid": "^4.12.0",
 		"@next/third-parties": "^14.2.10",
 		"@sentry/nextjs": "^8",

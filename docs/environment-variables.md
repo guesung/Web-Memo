@@ -126,6 +126,15 @@ pnpm dev                             # .env.development (기본값)
 `packages/env/turbo.json`의 `ready` 태스크가 `env: ["BUILD_ENV"]`를 선언하므로
 환경별로 캐시가 갈립니다. 이게 없으면 staging 빌드가 production 캐시를 재사용합니다.
 
+**Vercel Git 연동 빌드(master 푸시)에는 셸 `BUILD_ENV`가 없습니다.** GitHub Actions의
+`cd-web.yml`은 배포 대상에 맞춰 `BUILD_ENV`를 넣지만, Git 연동 빌드는 그 워크플로를
+거치지 않습니다. 그래서 Vercel 프로젝트 환경변수에 `BUILD_ENV`를 직접 등록해 둡니다
+(Production = `production`, Preview = `staging`, [3절](#3-vercel-프로젝트-환경변수--배포된-웹의-런타임-값) 참고).
+빠지면 `development`로 구워져 운영 사이트의 랜딩 주소창 목업·sitemap·canonical이
+전부 `localhost:3000`이 되는데, 에러 없이 배포가 성공하므로 사용자가 먼저 발견합니다.
+`tsup.config.ts`는 `VERCEL`이 설정된 빌드에서 `BUILD_ENV`가 없으면 빌드를 실패시켜
+이 조용한 실패를 배포 전에 드러냅니다.
+
 > ⚠️ **분기 기준이 셸 변수라는 점이 중요합니다.**
 > 예전에는 `NODE_ENV`로 파일을 골랐는데, CI가 그 값을 `.env` 파일 *안에* 써넣었습니다.
 > 파일 선택은 파일을 읽기 전에 끝나므로 파일 안의 값으로는 분기를 뒤집을 수 없고,
@@ -185,8 +194,8 @@ Vercel 프로젝트 설정에서 옵니다.
 
 등록해야 하는 값은 `apps/web/.env.example`의 세 개(`OPENAI_API_KEY`,
 `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`)와, 소스맵 업로드에 쓰는
-`SENTRY_AUTH_TOKEN`, 그리고 빌드 시스템 플래그 `ENABLE_EXPERIMENTAL_COREPACK`입니다.
-변경은 Vercel 대시보드나 `vercel env` CLI로 합니다.
+`SENTRY_AUTH_TOKEN`, 빌드 대상 환경 `BUILD_ENV`, 그리고 빌드 시스템 플래그
+`ENABLE_EXPERIMENTAL_COREPACK`입니다. 변경은 Vercel 대시보드나 `vercel env` CLI로 합니다.
 
 | 키 | 환경 | 없으면 생기는 일 |
 | --- | --- | --- |
@@ -194,6 +203,7 @@ Vercel 프로젝트 설정에서 옵니다.
 | `UPSTASH_REDIS_REST_URL` | 동상 | 레이트 리밋이 **조용히 꺼짐** |
 | `UPSTASH_REDIS_REST_TOKEN` | 동상 | 동상 |
 | `SENTRY_AUTH_TOKEN` | Production·Preview | 소스맵 업로드가 **조용히 실패** |
+| `BUILD_ENV` | Production = `production`, Preview = `staging` | Git 연동 빌드가 `development`로 구워져 운영에 `localhost:3000`이 실림. 가드가 있어 빌드는 실패로 멈춤 |
 | `ENABLE_EXPERIMENTAL_COREPACK` | 전 환경 | corepack이 꺼져 `packageManager`의 pnpm 버전이 무시됨 |
 
 `ENABLE_EXPERIMENTAL_COREPACK`은 코드가 읽는 값이 아니라 Vercel 빌드 시스템이 보는

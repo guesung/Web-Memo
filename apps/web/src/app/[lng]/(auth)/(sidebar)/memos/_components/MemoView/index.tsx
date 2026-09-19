@@ -42,7 +42,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 	const { highlightsByUrl, isHighlightLoadError, refetchHighlights } =
 		useMemoHighlights(memos.map((memo) => memo.url));
 
-	useGuide({ lng });
+	const { moveNextGuideStep } = useGuide({ lng });
 	useDidMount(() => bridge.request.SYNC_LOGIN_STATUS());
 
 	/**
@@ -79,7 +79,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 						{t("memos.totalMemos", { total: totalCount })}
 					</p>
 					<div className="flex">
-						<MemoRefreshButton lng={lng} />
+						<MemoRefreshButton lng={lng} onGuideNext={moveNextGuideStep} />
 					</div>
 				</div>
 			</div>

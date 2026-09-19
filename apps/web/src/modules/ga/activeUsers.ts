@@ -67,7 +67,7 @@ export const fetchActiveUsersByDate = async ({
 				dateRanges: [{ startDate, endDate }],
 				dimensions: [{ name: "date" }],
 				metrics: [{ name: "activeUsers" }],
-				dimensionFilter: PRODUCTION_HOST_FILTER,
+				dimensionFilter: ACTIVE_USERS_FILTER,
 				orderBys: [{ dimension: { dimensionName: "date" } }],
 				limit: days,
 				returnPropertyQuota: true,
@@ -101,6 +101,34 @@ const PRODUCTION_HOST_FILTER = {
 				stringFilter: { matchType: "EXACT", value: hostName },
 			},
 		})),
+	},
+};
+
+/**
+ * 운영 트래픽 중 `extension_installed`만 보낸 사용자를 뺀 필터.
+ *
+ * @description 확장의 `onInstalled`는 신규 설치뿐 아니라 업데이트에도 발화하는데, 예전
+ * 버전은 이유를 거르지 않고 매번 `extension_installed`를 보냈습니다. 그 이벤트도
+ * `engagement_time_msec`를 달고 있어서, 배포 때마다 화면을 열지 않은 기존 사용자까지
+ * 활성 사용자로 잡혔습니다(9/11 이후 하루 10명대가 100명대로 뛴 원인).
+ *
+ * 이미 나간 이벤트는 GA4에서 지울 수 없으므로 조회에서 뺍니다. 다른 이벤트도 함께 보낸
+ * 사용자는 그 이벤트로 그대로 세어집니다. 설치 직후 사이드패널을 열지 않은 진짜 신규
+ * 설치자는 빠지지만, 이 그래프는 "실제로 쓰는 사람"을 보려는 것이라 그 편이 맞습니다.
+ */
+const ACTIVE_USERS_FILTER = {
+	andGroup: {
+		expressions: [
+			PRODUCTION_HOST_FILTER,
+			{
+				notExpression: {
+					filter: {
+						fieldName: "eventName",
+						stringFilter: { matchType: "EXACT", value: "extension_installed" },
+					},
+				},
+			},
+		],
 	},
 };
 

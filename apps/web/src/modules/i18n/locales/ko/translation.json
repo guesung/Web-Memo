@@ -886,11 +886,31 @@
 			"today_memos": "오늘 메모",
 			"weekly_memos": "이번 주 메모"
 		},
-		"activeUsers": {
-			"title": "활성 사용자",
+		"memoActivityUsers": {
+			"title": "메모 활동 사용자",
+			"description": "메모를 만들거나 고친 사람 수예요",
 			"daily": "일간 활성 사용자",
 			"weekly": "주간 활성 사용자",
 			"monthly": "월간 활성 사용자"
+		},
+		"ga": {
+			"title": "GA 활성 사용자",
+			"active_users": "활성 사용자",
+			"delay_badge": "어제까지 집계",
+			"delay_hint_label": "집계 지연 설명 보기",
+			"delay_hint": "GA 수치는 하루에서 이틀 늦게 확정돼요. 오늘 들어온 사람은 아직 여기에 없어요.",
+			"as_of": "{{date}}까지 집계했어요.",
+			"period": {
+				"days_7": "7일",
+				"days_30": "30일",
+				"days_90": "90일",
+				"days_365": "365일"
+			},
+			"disconnected_title": "GA 연결이 없어 표시할 수 없어요",
+			"disconnected_description": "나머지 지표는 그대로 볼 수 있어요.",
+			"error_title": "GA 수치를 불러오지 못했어요",
+			"error_description": "잠시 뒤에 다시 시도해 주세요.",
+			"retry": "다시 시도"
 		},
 		"activity": {
 			"title": "메모 활동",

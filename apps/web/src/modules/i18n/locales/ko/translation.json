@@ -862,7 +862,6 @@
 			"empty": "아직 받은 피드백이 없어요.",
 			"empty_hint": "확장에서 사람이 직접 남긴 말만 여기에 모여요.",
 			"content_empty": "내용 없음",
-			"uninstall_no_detail": "사유만 고르고 나갔어요",
 			"uninstall_reason": {
 				"not_useful": "쓸 일이 없었어요",
 				"hard_to_use": "쓰기 어려웠어요",

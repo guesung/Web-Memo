@@ -54,13 +54,7 @@ export default function FeedbackContent({
 					? t(`admin.feedback.uninstall_reason.${reason}`)
 					: reason}
 			</Badge>
-			{feedback ? (
-				<span className={textClassName}>{feedback}</span>
-			) : (
-				<span className="text-sm text-muted-foreground">
-					{t("admin.feedback.uninstall_no_detail")}
-				</span>
-			)}
+			{feedback ? <span className={textClassName}>{feedback}</span> : null}
 		</div>
 	);
 }

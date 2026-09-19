@@ -16,7 +16,7 @@ const CHAT_POST_MESSAGE_URL = "https://slack.com/api/chat.postMessage";
  * 워크플로 명령(::warning::)은 한 줄이어야 합니다. 외부에서 온 문자열의 개행이
  * 그대로 실리면 뒤 줄이 별개의 명령으로 해석될 수 있어 개행을 공백으로 바꿉니다.
  */
-const toSingleLine = (value) => String(value).replace(/[\r\n]+/g, " ");
+export const toSingleLine = (value) => String(value).replace(/[\r\n]+/g, " ");
 
 const warn = (message) => {
 	console.warn(`::warning::${toSingleLine(message)}`);

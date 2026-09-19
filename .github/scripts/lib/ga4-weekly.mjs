@@ -17,8 +17,10 @@ import { fileURLToPath } from "node:url";
 import {
 	GA4_SCOPE,
 	HOST_NAME_FILTER,
+	HOST_NAME_FUNNEL_FILTER,
 	REPORT_ROW_LIMIT,
 	readRows,
+	runFunnelReport,
 	runReport,
 } from "./ga4-client.mjs";
 // 서울 기준 날짜 계산은 데일리가 이미 갖고 있습니다. 같은 규칙을 두 벌로 두면
@@ -82,7 +84,16 @@ const RARE_MAX_USERS = 5;
 const NEW_EVENT_WINDOW_DAYS = 14;
 
 /**
- * 퍼널 단계. 설치에서 가입까지 사람이 실제로 걸어가는 순서입니다.
+ * 퍼널 단계. 신규 설치자가 실제로 걸어가는 순서입니다.
+ *
+ * 순서가 곧 조회 조건입니다. 순서 강제 퍼널은 같은 사용자가 앞 단계를 먼저 밟아야
+ * 다음 단계로 세므로, 가입(sign_up)은 메모 작성(memo_write)보다 앞에 있어야 합니다.
+ * 로그인 없이는 메모를 쓸 수 없어서 가입이 뒤에 오면 두 단계가 서로를 지웁니다.
+ * 메모 작성은 가입 뒤의 "활성화" 단계로 마지막에 둡니다.
+ *
+ * 3~5단계(로그인하러가기 클릭 → 로그인 버튼 클릭 → 가입)는 확장에서 웹으로 넘어가는
+ * 구간이라, 확장의 client_id 를 웹의 _ga 쿠키로 이어받는 변경이 배포된 뒤의 데이터부터
+ * 같은 사용자로 이어집니다. 그 전 기간에는 이 구간이 실제보다 낮게 나옵니다.
  *
  * 라벨은 표시 계층(weekly-report-blocks.mjs)이 갖습니다. 여기서는 순서와
  * 단계 사이의 전환율만 계산합니다.
@@ -90,8 +101,10 @@ const NEW_EVENT_WINDOW_DAYS = 14;
 const FUNNEL_EVENTS = [
 	"extension_installed",
 	"side_panel_open",
-	"memo_write",
+	"side_panel_login_click",
+	"login_start",
 	"sign_up",
+	"memo_write",
 ];
 
 /**
@@ -211,17 +224,65 @@ const classifyUnusedFeatures = ({
 	};
 };
 
+/** 퍼널 한 단계의 조건. 이벤트 이름과 호스트 허용 목록을 함께 겁니다. */
+const buildFunnelStep = (eventName) => ({
+	name: eventName,
+	filterExpression: {
+		andGroup: {
+			expressions: [
+				{
+					funnelFieldFilter: {
+						fieldName: "eventName",
+						stringFilter: { matchType: "EXACT", value: eventName },
+					},
+				},
+				HOST_NAME_FUNNEL_FILTER,
+			],
+		},
+	},
+});
+
+/**
+ * 퍼널 응답을 이벤트 이름 → 단계 통과 사용자 수로 펴 줍니다.
+ *
+ * 행이 없는 단계는 0 명입니다. 다만 행이 있는데 activeUsers 를 못 찾으면 던집니다.
+ * 그대로 두면 모든 단계가 조용히 0 명이 되어 "아무도 안 넘어갔다"로 읽히는데, 이 레포가
+ * 반복해서 당한 조용한 0건 실패입니다.
+ */
+const readFunnelUsers = (funnelReport) => {
+	const table = funnelReport.funnelTable ?? {};
+	const rows = table.rows ?? [];
+	const usersIndex = (table.metricHeaders ?? []).findIndex(
+		({ name }) => name === "activeUsers",
+	);
+
+	if (rows.length > 0 && usersIndex === -1) {
+		throw new Error("퍼널 응답에서 activeUsers 지표를 찾지 못했습니다");
+	}
+
+	return Object.fromEntries(
+		rows.map((row) => [
+			// GA 가 단계 이름 앞에 "1. " 처럼 순번을 붙여 돌려줍니다.
+			row.dimensionValues[0].value.replace(/^\d+\.\s*/, ""),
+			Number(row.metricValues[usersIndex]?.value) || 0,
+		]),
+	);
+};
+
 /**
  * 퍼널 단계별 사용자 수와 전 단계 대비 전환율.
+ *
+ * 입력이 순서 강제 조회 결과라 앞 단계를 밟은 사람만 다음 단계에 남습니다. 그래서
+ * 전환율이 100%를 넘지 않습니다.
  *
  * 전 단계가 0 명이면 전환율을 낼 분모가 없습니다. 0% 로 적으면 "아무도 넘어가지
  * 않았다"로 읽히므로 null 로 두고 표시 계층이 줄에서 뺍니다.
  */
-const buildFunnel = (userTotals) =>
+const buildFunnel = (funnelUsers) =>
 	FUNNEL_EVENTS.map((eventName, index) => {
-		const users = userTotals[eventName] ?? 0;
+		const users = funnelUsers[eventName] ?? 0;
 		const previousUsers =
-			index === 0 ? null : (userTotals[FUNNEL_EVENTS[index - 1]] ?? 0);
+			index === 0 ? null : (funnelUsers[FUNNEL_EVENTS[index - 1]] ?? 0);
 
 		return {
 			eventName,
@@ -232,13 +293,14 @@ const buildFunnel = (userTotals) =>
 	});
 
 /**
- * 지난주 사용 현황을 다섯 번의 runReport 로 모읍니다.
+ * 지난주 사용 현황을 다섯 번의 runReport 와 한 번의 runFunnelReport 로 모읍니다.
  *
  * ① 지난주 이벤트별 사용자 수  ② 전주 이벤트별 사용자 수 (증감 비교용)
  * ③ 지난주 활성 사용자        ④ 전주 활성 사용자
  * ⑤ 최근 14일 이전에 한 번이라도 관측된 이벤트 (신규 판정용)
+ * ⑥ 지난주 순서 강제 퍼널 (설치 → … → 메모 작성)
  *
- * 다섯 요청 모두 같은 호스트 허용 목록으로 거릅니다. build_env 로 거르지 않는
+ * 여섯 요청 모두 같은 호스트 허용 목록으로 거릅니다. build_env 로 거르지 않는
  * 이유는 HOST_NAME_FILTER 주석에 적어 두었습니다.
  */
 export const fetchWeeklyGa4Report = async ({
@@ -280,26 +342,38 @@ export const fetchWeeklyGa4Report = async ({
 			},
 		});
 
-	const [current, previous, currentUsers, previousUsers, priorObservation] =
-		await Promise.all([
-			readEventUsers(start, end),
-			readEventUsers(previousStart, previousEnd),
-			readActiveUsers(start, end),
-			readActiveUsers(previousStart, previousEnd),
-			runReport({
-				accessToken,
-				propertyId,
-				body: {
-					dateRanges: [
-						{ startDate: OBSERVATION_SINCE, endDate: freshCutoff },
-					],
-					dimensions: [{ name: "eventName" }],
-					metrics: [{ name: "eventCount" }],
-					dimensionFilter: HOST_NAME_FILTER,
-					limit: REPORT_ROW_LIMIT,
-				},
-			}),
-		]);
+	const [
+		current,
+		previous,
+		currentUsers,
+		previousUsers,
+		priorObservation,
+		funnelReport,
+	] = await Promise.all([
+		readEventUsers(start, end),
+		readEventUsers(previousStart, previousEnd),
+		readActiveUsers(start, end),
+		readActiveUsers(previousStart, previousEnd),
+		runReport({
+			accessToken,
+			propertyId,
+			body: {
+				dateRanges: [{ startDate: OBSERVATION_SINCE, endDate: freshCutoff }],
+				dimensions: [{ name: "eventName" }],
+				metrics: [{ name: "eventCount" }],
+				dimensionFilter: HOST_NAME_FILTER,
+				limit: REPORT_ROW_LIMIT,
+			},
+		}),
+		runFunnelReport({
+			accessToken,
+			propertyId,
+			body: {
+				dateRanges: [{ startDate: start, endDate: end }],
+				funnel: { steps: FUNNEL_EVENTS.map(buildFunnelStep) },
+			},
+		}),
+	]);
 
 	const userTotals = readUserTotals(current);
 	const previousTotals = readUserTotals(previous);
@@ -327,7 +401,7 @@ export const fetchWeeklyGa4Report = async ({
 			}))
 			.filter(({ users }) => users > 0)
 			.sort((a, b) => b.users - a.users),
-		funnel: buildFunnel(userTotals),
+		funnel: buildFunnel(readFunnelUsers(funnelReport)),
 		unused: classifyUnusedFeatures({
 			eventNames,
 			userTotals,

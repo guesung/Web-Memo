@@ -17,8 +17,10 @@ import { FUNNEL_EVENTS } from "./ga4-weekly.mjs";
 const FUNNEL_LABELS = {
 	extension_installed: "확장 설치",
 	side_panel_open: "사이드 패널 열기",
-	memo_write: "메모 작성",
+	side_panel_login_click: "로그인하러가기 클릭",
+	login_start: "로그인 버튼 클릭",
 	sign_up: "가입",
+	memo_write: "메모 작성",
 };
 
 /**
@@ -91,9 +93,10 @@ const buildActiveUsersBlock = ({ activeUsers, start, end }) => {
 /**
  * 기능별 사용자 수.
  *
- * 퍼널 4종은 여기서 뺍니다. 퍼널 섹션이 이미 같은 이벤트를 같은 단위(사람 수)로
- * 보여주고 있어, 남겨 두면 한 메시지에 같은 줄이 두 번 나옵니다. 빠진 게 아니라
+ * 퍼널 단계 이벤트는 여기서 뺍니다. 퍼널 섹션이 이미 같은 이벤트를 같은 단위(사람
+ * 수)로 보여주고 있어, 남겨 두면 한 메시지에 같은 줄이 두 번 나옵니다. 빠진 게 아니라
  * 옮겨간 것입니다 — 데일리가 CORE_EVENTS 에서 퍼널 2종을 뺀 것과 같은 이유입니다.
+ * 다만 퍼널 쪽 숫자는 순서 강제라 여기의 이벤트별 사용자 수와 같지 않습니다.
  */
 const buildFeatureBlock = (features) => {
 	const rest = features.filter(
@@ -119,7 +122,10 @@ const buildFeatureBlock = (features) => {
 		type: "section",
 		text: {
 			type: "mrkdwn",
-			text: ["*기능별 사용자 수*  (퍼널 4종 제외)", ...lines].join("\n"),
+			text: [
+				`*기능별 사용자 수*  (퍼널 ${FUNNEL_EVENTS.length}종 제외)`,
+				...lines,
+			].join("\n"),
 		},
 	};
 };
@@ -128,9 +134,9 @@ const buildFeatureBlock = (features) => {
  * 퍼널.
  *
  * 전환율은 바로 앞 단계 대비입니다. 첫 단계는 비교 대상이 없어 비율을 적지
- * 않습니다. 단계마다 모집단이 완전히 같지는 않다는 점을 context 줄에 밝힙니다 —
- * 확장에서만 나가는 이벤트와 웹·확장 양쪽에서 나가는 이벤트가 섞여 있어
- * 전환율이 100%를 넘을 수 있습니다.
+ * 않습니다. 순서 강제 퍼널이라 앞 단계를 밟은 같은 사용자만 다음 단계에 남고, 그래서
+ * 전환율이 100%를 넘지 않습니다. 첫 단계가 그 주의 신규 설치자라는 점은 context 줄에
+ * 밝힙니다.
  */
 const buildFunnelBlock = (funnel) => {
 	const lines = funnel.map(({ eventName, users, conversionRate }) => {
@@ -195,8 +201,8 @@ const buildContextBlock = ({ eventNames, previousStart, previousEnd, runUrl }) =
 	const lines = [
 		`전주 비교 기간: ${formatRange(previousStart, previousEnd)}`,
 		`이벤트 ${eventNames.length}종 (packages/shared 의 EVENT_CATEGORY 에서 읽음) · 사람 수 기준`,
-		// 퍼널 단계마다 발화 지점이 달라 전환율이 100%를 넘을 수 있습니다.
-		"모수: 운영 웹 + 확장 (hostName 허용 목록). 퍼널 단계는 발화 지점이 달라 전환율이 100%를 넘을 수 있습니다",
+		"모수: 운영 웹 + 확장 (hostName 허용 목록)",
+		"퍼널: 그 주에 설치한 사람이 같은 사용자로 단계를 순서대로 밟은 수 (순서 강제). 확장→웹 구간은 client_id 연결 배포 이후 데이터부터 이어집니다",
 	];
 
 	if (runUrl) {

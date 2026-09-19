@@ -3,8 +3,13 @@
  * master 빌드 결과를 스토어 현황과 함께 Slack으로 알리고, 배포 버튼을 답니다.
  * .github/workflows/ci.yml 의 notify 잡에서 호출합니다.
  *
+ * 모든 타깃이 끝난 뒤 나가는 요약이며, 머지 스레드의 마지막 댓글입니다(SLACK_THREAD_TS 가 그 루트).
+ * 스레드로 못 보내는 사정(루트 ts 없음, 봇 토큰·채널 없음, 전송 실패)이면 웹훅 최상위
+ * 메시지로 내려가 배포 버튼 경로가 살아 있습니다. 전송이 실패해도 ::warning::만 남기고
+ * exit 0입니다. 알림이 빌드 잡의 결론을 바꾸면 안 됩니다.
+ *
  * 로컬에서 그대로 돌려볼 수 있습니다(실제 스토어를 조회하고 실제 Slack으로 보냅니다):
- * 웹훅 없이 돌리면 스토어만 조회하고 보낼 페이로드를 stdout에 찍습니다.
+ * 웹훅과 봇 토큰 없이 돌리면 스토어만 조회하고 보낼 페이로드를 stdout에 찍습니다.
  *
  *   GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=<run id> \
  *   GITHUB_SHA=$(git rev-parse HEAD) \
@@ -14,10 +19,11 @@
 
 import { readCommitSubject, requireEnv } from "./lib/run-context.mjs";
 import {
-	buildActionBlock,
-	buildVersionSection,
-	postToSlack,
-} from "./lib/slack-blocks.mjs";
+	deliverSlackMessage,
+	readSlackEnv,
+	toSingleLine,
+} from "./lib/slack-api.mjs";
+import { buildActionBlock, buildVersionSection } from "./lib/slack-blocks.mjs";
 import { fetchStoreVersions } from "./lib/store-versions.mjs";
 
 const DEPLOY_TARGETS = ["app", "web", "extension"];
@@ -101,15 +107,14 @@ const main = async () => {
 		blocks,
 	};
 
-	// 웹훅이 없으면(로컬 확인, 시크릿 미설정) 보낼 페이로드만 찍고 끝냅니다.
-	if (!process.env.SLACK_WEBHOOK_URL) {
-		console.warn("::warning::SLACK_WEBHOOK_URL 이 없어 Slack 전송을 건너뜁니다");
-		console.log(JSON.stringify(payload, null, 2));
-
-		return;
-	}
-
-	await postToSlack(process.env.SLACK_WEBHOOK_URL, payload);
+	// 보낼 수단이 없으면(로컬 확인, 시크릿 미설정) 보낼 페이로드만 찍고 끝냅니다.
+	await deliverSlackMessage({ payload, slack: readSlackEnv() });
 };
 
-await main();
+try {
+	await main();
+} catch (error) {
+	console.warn(
+		`::warning::빌드 요약 알림을 보내지 못했습니다: ${toSingleLine(error instanceof Error ? error.message : error)}`,
+	);
+}

@@ -6,12 +6,13 @@ import useTranslation from "@src/modules/i18n/util.server";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import { AdminService } from "@web-memo/shared/utils";
-import { Loading } from "@web-memo/ui";
+import { Loading, Separator } from "@web-memo/ui";
 import { Suspense } from "react";
 
 import {
 	ActiveUsersCard,
 	ActivityChart,
+	GaActiveUsersChart,
 	StatsCards,
 	UserGrowthChart,
 } from "./_components";
@@ -46,6 +47,11 @@ export default async function AdminPage({ params: { lng } }: PageProps) {
 					</Suspense>
 				</HydrationBoundaryWrapper>
 			</div>
+
+			{/* GA는 Supabase를 센 숫자가 아니라 출처가 다르므로, 아래 2열 그리드에 끼워 넣지 않고 자기 섹션에서 전폭을 씁니다. */}
+			<Separator className="my-8" />
+
+			<GaActiveUsersChart lng={lng} />
 
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
 				<HydrationBoundaryWrapper

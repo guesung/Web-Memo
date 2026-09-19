@@ -859,10 +859,10 @@
 			"uninstall_reason": {
 				"not_useful": "쓸 일이 없었어요",
 				"hard_to_use": "쓰기 어려웠어요",
-				"found_alternative": "다른 걸 쓰기로 했어요",
-				"privacy_concerns": "개인정보가 걱정돼요",
-				"performance_issues": "느리거나 자꾸 멈췄어요",
-				"other": "그 밖의 이유예요"
+				"found_alternative": "다른 걸 쓰게 됐어요",
+				"privacy_concerns": "개인정보가 걱정됐어요",
+				"performance_issues": "느리거나 불안정했어요",
+				"other": "그 외"
 			},
 			"total": "총 {{count}}건의 피드백",
 			"received_at": "받은 날짜",

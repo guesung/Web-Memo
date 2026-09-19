@@ -6,12 +6,7 @@
  * 책임지므로 그 스크립트의 이상치·미출시 판정은 가져오지 않았습니다.
  */
 
-import {
-	EXCLUDED_HOST_NAME_SUFFIX,
-	EXCLUDED_HOST_NAMES,
-	GA4_PROPERTY_ID,
-	GA4_SCOPE,
-} from "./config";
+import { GA4_PROPERTY_ID, GA4_SCOPE, INCLUDED_HOST_NAMES } from "./config";
 import { exchangeServiceAccountToken } from "./googleAuth";
 import { requestJson } from "./requestJson";
 
@@ -89,35 +84,23 @@ export const fetchActiveUsersByDate = async ({
 };
 
 /**
- * 비운영 트래픽을 걷어내는 필터.
+ * 운영 트래픽만 남기는 필터.
  *
- * @description `activeUsers`는 gtag 자동 수집 기반이라 커스텀 이벤트에만 붙는
- * `customEvent:build_env`로는 거를 수 없습니다. 표준 차원 `hostName`만이 선택지입니다.
- * 이 필터를 빠뜨리면 로컬과 스테이징 트래픽이 섞여 GA 콘솔 값과 영영 어긋납니다.
+ * @description 이 필터를 빠뜨리면 로컬과 스테이징 트래픽이 섞여 GA 콘솔 값과 영영
+ * 어긋납니다. 로컬 트래픽만 해도 30일 기준 운영의 96배입니다.
+ *
+ * `inListFilter` 한 줄이 아니라 `orGroup` 조립인 이유는 허용 목록에 빈 문자열이 들어
+ * 있기 때문입니다. 확장이 `hostName`을 남기지 않아 생기는 값인데, 목록형 필터로는
+ * 표현되지 않습니다. 자세한 사정은 `INCLUDED_HOST_NAMES`의 주석에 적혀 있습니다.
  */
 const PRODUCTION_HOST_FILTER = {
-	andGroup: {
-		expressions: [
-			{
-				notExpression: {
-					filter: {
-						fieldName: "hostName",
-						inListFilter: { values: EXCLUDED_HOST_NAMES },
-					},
-				},
+	orGroup: {
+		expressions: INCLUDED_HOST_NAMES.map((hostName) => ({
+			filter: {
+				fieldName: "hostName",
+				stringFilter: { matchType: "EXACT", value: hostName },
 			},
-			{
-				notExpression: {
-					filter: {
-						fieldName: "hostName",
-						stringFilter: {
-							matchType: "ENDS_WITH",
-							value: EXCLUDED_HOST_NAME_SUFFIX,
-						},
-					},
-				},
-			},
-		],
+		})),
 	},
 };
 

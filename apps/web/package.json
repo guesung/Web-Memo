@@ -3,9 +3,9 @@
 	"private": true,
 	"scripts": {
 		"dev": "next dev",
-		"preview": "next build --webpack && next start",
-		"build": "next build --webpack",
-		"build:analyze": "ANALYZE=true next build --webpack",
+		"preview": "next build && next start",
+		"build": "next build",
+		"build:analyze": "next experimental-analyze",
 		"start": "next start",
 		"type-check": "tsc --noEmit",
 		"tsc-watch": "tsc-watch"
@@ -44,7 +44,6 @@
 		"sharp": "^0.33.5"
 	},
 	"devDependencies": {
-		"@next/bundle-analyzer": "^15.5.25",
 		"@tailwindcss/typography": "^0.5.14",
 		"@tanstack/react-query-devtools": "^5.59.0",
 		"@types/chrome": "^0.0.268",

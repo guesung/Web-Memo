@@ -4,6 +4,7 @@ import { test as base, chromium } from "@playwright/test";
 
 process.env.PW_CHROMIUM_ATTACH_TO_OTHER = "1";
 
+const BASE_URL = "http://localhost:3000";
 const pathToExtension = path.join(path.resolve(), "..", "dist");
 
 type ExtensionFixture = {
@@ -29,14 +30,28 @@ export const test = base.extend<ExtensionFixture>({
 		await use(context);
 		await context.close();
 	},
-	baseURL: "http://localhost:3000",
+	baseURL: BASE_URL,
 });
 export const expect = test.expect;
 
-/** 확장이 설치 직후 여는 웹 메모 페이지(`/memos`)인지 URL 경로로 판별한다. */
+/**
+ * 확장이 설치 직후 여는 웹 메모 탭인지 판별한다.
+ * @description 미로그인이면 `/memos`가 `/ko/login`으로 리다이렉트되어 경로로는 구분할 수 없다.
+ * 확장이 붙이는 `ext_cid` 쿼리는 리다이렉트 뒤에도 유지되므로 이것을 기준으로 한다.
+ * `ext_cid`를 얻지 못해 붙지 않은 경우에는 `/memos` 경로로 판별한다.
+ * 다른 테스트가 여는 페이지에는 `ext_cid`가 붙지 않는다.
+ */
 const isInstallTab = (page: Page) => {
 	try {
-		return /\/memos(\/|$)/.test(new URL(page.url()).pathname);
+		const url = new URL(page.url());
+
+		if (url.origin !== BASE_URL) {
+			return false;
+		}
+
+		return (
+			url.searchParams.has("ext_cid") || /\/memos(\/|$)/.test(url.pathname)
+		);
 	} catch {
 		// 탭이 열리는 도중에는 URL이 비어 있을 수 있다.
 		return false;
@@ -44,8 +59,8 @@ const isInstallTab = (page: Page) => {
 };
 
 /**
- * 확장 설치(onInstalled: install) 시 열리는 `/memos` 탭을 닫는다.
- * @description 탭은 확장 로드보다 늦게 비동기로 열리므로 URL 기준으로 짧게 기다린다.
+ * 확장 설치(onInstalled: install) 시 열리는 웹 메모 탭을 닫는다.
+ * @description 탭은 확장 로드보다 늦게 비동기로 열리므로 URL 기준으로 짧게 기다리고, 열렸다면 바로 닫는다.
  * 각 테스트가 대상으로 삼는 페이지가 설치 탭이 되지 않게 하려는 것이다.
  * 탭이 열리지 않는 환경에서도 제한 시간 뒤에는 그대로 진행한다.
  */

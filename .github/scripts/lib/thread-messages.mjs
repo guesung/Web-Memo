@@ -61,6 +61,49 @@ export const buildRootPayload = ({
 	};
 };
 
+/** 빌드·배포 대상 셋. notify 잡의 BUILD_RESULTS 키와 같습니다. */
+export const DEPLOY_TARGETS = ["app", "web", "extension"];
+
+/**
+ * 이번 머지가 배포 대상을 하나도 안 바꿨는지 판정합니다.
+ *
+ * ci가 통과했고 웹·앱·확장이 전부 skipped일 때만 true입니다. 취소나 ci 실패가 섞였거나
+ * 결과가 빠져 있으면 "변경 없음"이라고 말할 근거가 없으므로 false입니다.
+ *
+ * @param {Record<string, string>} buildResults notify 잡의 BUILD_RESULTS(ci, app, web, extension)
+ * @returns {boolean}
+ */
+export const isNoTargetChange = (buildResults) =>
+	buildResults.ci === "success" &&
+	DEPLOY_TARGETS.every((target) => buildResults[target] === "skipped");
+
+/**
+ * 배포 대상이 없는 머지의 스레드를 닫는 한 줄 댓글 페이로드를 만듭니다.
+ *
+ * 루트는 푸시 직후 만들어지므로, 아무것도 안 바뀐 머지에서는 아래에 아무것도 없는 루트만
+ * 남습니다. 이 댓글이 "일부러 조용한 것"임을 알려 줍니다.
+ *
+ * @param {object} params
+ * @param {string} params.runUrl 이 실행의 Actions 로그 주소
+ * @returns {{ text: string, blocks: object[] }}
+ */
+export const buildNoTargetPayload = ({ runUrl }) => ({
+	text: "배포 대상 변경 없음",
+	blocks: [
+		{
+			type: "section",
+			text: {
+				type: "mrkdwn",
+				text: "✅ *배포 대상 변경 없음*\n웹·확장·앱이 바뀌지 않아 빌드하지 않았습니다. CI는 통과했습니다.",
+			},
+		},
+		{
+			type: "context",
+			elements: [{ type: "mrkdwn", text: `<${runUrl}|Actions 로그 보기>` }],
+		},
+	],
+});
+
 /** 타깃별 댓글 문구에 쓰는 이름. 앱은 플랫폼(iOS·Android)을 나누지 않고 "앱" 하나입니다. */
 const TARGET_LABELS = {
 	web: "웹",

@@ -843,11 +843,16 @@
 		},
 		"users": {
 			"title": "사용자 관리",
-			"empty": "사용자가 없습니다.",
+			"empty": "아직 가입한 사용자가 없어요.",
 			"total": "총 {{count}}명의 사용자",
 			"joined": "가입일",
 			"memos": "메모 수",
-			"search_placeholder": "닉네임 또는 ID로 검색...",
+			"last_activity": "최근 활동",
+			"last_activity_hint": "마지막으로 메모를 만들거나 고친 시각이에요",
+			"last_activity_empty": "없음",
+			"search_placeholder": "닉네임·이메일·ID로 검색",
+			"search_empty": "'{{query}}'와 맞는 사용자가 없어요.",
+			"clear_search": "검색어 지우기",
 			"previous": "이전",
 			"next": "다음",
 			"page": "{{current}} / {{total}} 페이지"
@@ -855,6 +860,16 @@
 		"feedback": {
 			"title": "피드백",
 			"empty": "아직 받은 피드백이 없어요.",
+			"empty_hint": "확장에서 사람이 직접 남긴 말만 여기에 모여요.",
+			"content_empty": "내용 없음",
+			"uninstall_reason": {
+				"not_useful": "쓸 일이 없었어요",
+				"hard_to_use": "쓰기 어려웠어요",
+				"found_alternative": "다른 걸 쓰게 됐어요",
+				"privacy_concerns": "개인정보가 걱정됐어요",
+				"performance_issues": "느리거나 불안정했어요",
+				"other": "그 외"
+			},
 			"total": "총 {{count}}건의 피드백",
 			"received_at": "받은 날짜",
 			"content": "내용",
@@ -871,17 +886,41 @@
 			"page_size_label": "표시 개수",
 			"page_size_option": "{{count}}개"
 		},
+		"include_admin": {
+			"label": "내 데이터 포함",
+			"description": "켜면 관리자 본인이 쓴 메모도 함께 세어요"
+		},
 		"stats": {
 			"total_users": "전체 사용자",
 			"total_memos": "전체 메모",
 			"today_memos": "오늘 메모",
 			"weekly_memos": "이번 주 메모"
 		},
-		"activeUsers": {
-			"title": "활성 사용자",
+		"memoActivityUsers": {
+			"title": "메모 활동 사용자",
+			"description": "메모를 만들거나 고친 사람 수예요",
 			"daily": "일간 활성 사용자",
 			"weekly": "주간 활성 사용자",
 			"monthly": "월간 활성 사용자"
+		},
+		"ga": {
+			"title": "GA 활성 사용자",
+			"active_users": "활성 사용자",
+			"delay_badge": "어제까지 집계",
+			"delay_hint_label": "집계 지연 설명 보기",
+			"delay_hint": "GA 수치는 하루에서 이틀 늦게 확정돼요. 오늘 들어온 사람은 아직 여기에 없어요.",
+			"as_of": "{{date}}까지 집계했어요.",
+			"period": {
+				"days_7": "7일",
+				"days_30": "30일",
+				"days_90": "90일",
+				"days_365": "365일"
+			},
+			"disconnected_title": "GA 연결이 없어 표시할 수 없어요",
+			"disconnected_description": "나머지 지표는 그대로 볼 수 있어요.",
+			"error_title": "GA 수치를 불러오지 못했어요",
+			"error_description": "잠시 뒤에 다시 시도해 주세요.",
+			"retry": "다시 시도"
 		},
 		"activity": {
 			"title": "메모 활동",

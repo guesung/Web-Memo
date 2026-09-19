@@ -15,6 +15,7 @@ import {
 	useMemosUpsertMutation,
 	useSettingQuery,
 } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse, HighlightRow } from "@web-memo/shared/types";
 import { Loading, Skeleton, ToastAction, toast } from "@web-memo/ui";
@@ -199,6 +200,13 @@ export default function MemoGrid({
 	});
 	useKeyboardBind({ key: "Delete", callback: handleDeleteKeyPress });
 	useKeyboardBind({ key: "Backspace", callback: handleDeleteKeyPress });
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: searchQuery가 바뀔 때만 재판정한다. memos까지 의존성에 넣으면 같은 검색어에서 목록이 갱신될 때마다 중복 집계된다.
+	useEffect(() => {
+		if (memos.length === 0 && searchQuery) {
+			analytics.trackEvent({ name: "search_no_result" });
+		}
+	}, [searchQuery]);
 
 	// 검색 결과가 없는 것과 메모가 하나도 없는 것은 다른 상황이다. 같은 화면을 보여주면
 	// 검색 중인 사용자에게 "첫 메모를 만들어보세요"가 뜬다.

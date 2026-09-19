@@ -363,6 +363,12 @@ export interface AdminUser {
 	nickname: string | null;
 	created_at: string;
 	memo_count: number;
+	/**
+	 * 마지막으로 메모를 만들거나 고친 시각. 메모가 한 건도 없으면 null이다.
+	 * @description 로그인 시각(auth.users.last_sign_in_at)이 아니다. 세션이 오래 유지되는
+	 * 서비스라 그 값은 매일 쓰는 사람도 몇 달 전으로 찍힌다.
+	 */
+	last_activity_at: string | null;
 }
 
 export interface AdminUsersResponse {
@@ -399,6 +405,18 @@ export interface GetAdminUsersParams {
 	searchQuery?: string;
 }
 
+/** 대시보드 통계 RPC 인자 */
+export interface IFAdminStatsParams {
+	/** true면 관리자 본인의 데이터도 센다. 생략하면 뺀다. */
+	includeAdmin?: boolean;
+}
+
+/** 사용자 증가 추이 RPC 인자 */
+export interface IFUserGrowthParams extends IFAdminStatsParams {
+	/** 오늘로부터 거슬러 올라갈 일수 */
+	daysAgo?: number;
+}
+
 export class AdminService {
 	supabaseClient: MemoSupabaseClient;
 
@@ -406,25 +424,35 @@ export class AdminService {
 		this.supabaseClient = supabaseClient;
 	}
 
-	getAdminStats = async () =>
+	getAdminStats = async ({ includeAdmin = false }: IFAdminStatsParams = {}) =>
 		this.supabaseClient
 			.schema(SUPABASE.schema.memo)
 			// @ts-expect-error RPC function types not generated in schema
-			.rpc("get_admin_stats");
+			.rpc("get_admin_stats", {
+				include_admin: includeAdmin,
+			});
 
-	getUserGrowth = async (daysAgo: number = 30) =>
+	getUserGrowth = async ({
+		daysAgo = 30,
+		includeAdmin = false,
+	}: IFUserGrowthParams = {}) =>
 		this.supabaseClient
 			.schema(SUPABASE.schema.memo)
 			// @ts-expect-error RPC function types not generated in schema
 			.rpc("get_user_growth", {
 				days_ago: daysAgo,
+				include_admin: includeAdmin,
 			});
 
-	getActiveUsersStats = async () =>
+	getActiveUsersStats = async ({
+		includeAdmin = false,
+	}: IFAdminStatsParams = {}) =>
 		this.supabaseClient
 			.schema(SUPABASE.schema.memo)
 			// @ts-expect-error RPC function types not generated in schema
-			.rpc("get_active_users_stats");
+			.rpc("get_active_users_stats", {
+				include_admin: includeAdmin,
+			});
 
 	getUsers = async ({ searchQuery }: GetAdminUsersParams = {}) =>
 		this.supabaseClient

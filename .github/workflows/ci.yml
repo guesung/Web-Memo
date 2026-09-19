@@ -80,14 +80,14 @@ jobs:
   slack-thread:
     name: Slack 스레드 루트
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
       thread_ts: ${{ steps.root.outputs.thread_ts }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -151,12 +151,12 @@ jobs:
     name: Slack 테섭 배포 알림
     needs: [slack-thread, changes, cd-web]
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/develop' && needs.changes.outputs.web == 'true' && (needs['cd-web'].result == 'success' || needs['cd-web'].result == 'failure') }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -180,12 +180,12 @@ jobs:
     name: Slack 웹 빌드 알림
     needs: [slack-thread, changes, cd-web]
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.changes.outputs.web == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -203,12 +203,12 @@ jobs:
     name: Slack 확장 빌드 알림
     needs: [slack-thread, changes, cd-extension]
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.changes.outputs.extension == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -226,12 +226,12 @@ jobs:
     name: Slack 앱 빌드 알림
     needs: [slack-thread, changes, cd-app]
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.changes.outputs.app == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 

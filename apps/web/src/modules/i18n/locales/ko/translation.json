@@ -351,8 +351,8 @@
 		"errorSave": "저장하지 못했어요",
 		"successSave": "변경사항을 저장했어요",
 		"memo_updated_at": "{{time}}에 수정됨",
-		"guideDone": "🎉 가이드를 완료했어요. ",
-		"guideDoneDescription": "즐거운 메모 하세요!",
+		"guideDone": "🎉 가이드를 완료했어요",
+		"guideDoneDescription": "즐겁게 메모해 보세요!",
 		"duplicateCategory": "이미 같은 이름의 카테고리가 있어요"
 	},
 	"toastActionMessage": {
@@ -440,12 +440,12 @@
 		"prev": "이전으로",
 		"done": "완료했어요",
 		"welcome": {
-			"title": "반가워요! ",
-			"description": "메모를 시작해볼까요? '{{key}} + S'를 눌러 사이드 패널을 열어보세요"
+			"title": "반가워요!",
+			"description": "메모를 시작해볼까요? '{{key}} + S'를 눌러 사이드 패널을 열어보세요."
 		},
 		"save": {
 			"title": "메모 저장하기",
-			"description": "잘하셨어요! 사이드 패널에서는 메모를 작성할 수 있어요. 내용은 자동으로 저장되니 걱정마세요."
+			"description": "잘하셨어요! 사이드 패널에서는 메모를 작성할 수 있어요. 내용은 자동으로 저장되니 걱정 마세요."
 		},
 		"category": {
 			"title": "카테고리 알아보기",
@@ -453,11 +453,11 @@
 		},
 		"settings": {
 			"title": "설정 알아보기",
-			"description": "왼쪽 하단의 설정 버튼에서 가이드 다시보기, 카테고리 관리, 언어 설정을 할 수 있어요."
+			"description": "왼쪽 하단의 설정 버튼에서 가이드 다시 보기, 카테고리 관리, 언어 설정을 할 수 있어요."
 		},
 		"check": {
 			"title": "메모 확인하기",
-			"description": "새로고침을 눌러 최신 메모를 확인해보세요"
+			"description": "새로고침을 눌러 최신 메모를 확인해보세요."
 		}
 	},
 	"memoSection": {

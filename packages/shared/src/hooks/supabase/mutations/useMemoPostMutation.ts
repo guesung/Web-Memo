@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { NoMemosError, QUERY_KEY } from "../../../constants";
+import { analytics } from "../../../modules/analytics";
 import type { MemoSupabaseResponse, MemoTable } from "../../../types";
 import { MemoService } from "../../../utils";
 
@@ -13,7 +14,9 @@ export default function useMemoPostMutation() {
 
 	return useMutation<MemoSupabaseResponse, MutationError, MemoTable["Insert"]>({
 		mutationFn: new MemoService(supabaseClient).insertMemo,
-		onSuccess: async (result) => {
+		onSuccess: async (result, variables) => {
+			await analytics.trackMemoCreate(variables);
+
 			const { data: newData } = result;
 
 			await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });

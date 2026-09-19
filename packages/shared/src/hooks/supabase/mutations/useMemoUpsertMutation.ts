@@ -114,6 +114,8 @@ export default function useMemoUpsertMutation() {
 		onSuccess: async (result, variables, context) => {
 			if (context?.isUpdate) {
 				await analytics.trackMemoUpdate(variables.data);
+			} else {
+				await analytics.trackMemoCreate(variables.data);
 			}
 
 			queryClient.invalidateQueries({ queryKey: ["memos", "paginated"] });

@@ -16,7 +16,7 @@ export default async function AdminLayout({
 	children,
 	params: { lng },
 }: LayoutProps) {
-	const supabaseClient = getSupabaseClient();
+	const supabaseClient = await getSupabaseClient();
 	const {
 		data: { user },
 	} = await supabaseClient.auth.getUser();

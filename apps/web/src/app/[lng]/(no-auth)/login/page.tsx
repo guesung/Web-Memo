@@ -9,7 +9,7 @@ import { LoginErrorAlert, LoginSection } from "./_components";
 
 /** 로그인 상태와 오류에 맞춰 로그인 화면을 표시합니다. */
 const LoginPage = async ({ params: { lng }, searchParams }: IFPageProps) => {
-	const supabaseClient = getSupabaseClient();
+	const supabaseClient = await getSupabaseClient();
 	const isUserLogin = await new AuthService(supabaseClient).checkUserLogin();
 
 	if (isUserLogin) {

@@ -33,7 +33,7 @@ export default async function Layout({
 	children,
 	params: { lng },
 }: LayoutProps) {
-	const supabaseClient = getSupabaseClient();
+	const supabaseClient = await getSupabaseClient();
 
 	initSentryUserInfo({ lng });
 

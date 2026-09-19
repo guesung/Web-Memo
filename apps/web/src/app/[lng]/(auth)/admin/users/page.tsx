@@ -15,7 +15,7 @@ interface PageProps extends LanguageParams {}
 
 export default async function UsersPage({ params: { lng } }: PageProps) {
 	const { t } = await useTranslation(lng);
-	const supabaseClient = getSupabaseClient();
+	const supabaseClient = await getSupabaseClient();
 	const adminService = new AdminService(supabaseClient);
 
 	return (

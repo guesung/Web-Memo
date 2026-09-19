@@ -28,13 +28,13 @@ export async function GET(request: NextRequest) {
 	const code = requestUrl.searchParams.get("code");
 
 	if (code) {
-		const supabase = getSupabaseClient();
+		const supabase = await getSupabaseClient();
 		const { data: sessionData } =
 			await supabase.auth.exchangeCodeForSession(code);
 
 		if (!sessionData.session) throw new Error("no session");
 
-		const cookieStore = cookies();
+		const cookieStore = await cookies();
 		cookieStore.set(
 			SUPABASE.authCookie.accessToken,
 			sessionData.session.access_token,

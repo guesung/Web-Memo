@@ -6,7 +6,7 @@ import { AuthService } from "@web-memo/shared/utils";
 interface InitSentryProps extends LanguageType {}
 
 export async function initSentryUserInfo({ lng }: InitSentryProps) {
-	const supabase = getSupabaseClient();
+	const supabase = await getSupabaseClient();
 	const user = await new AuthService(supabase).getUser();
 
 	setUser({

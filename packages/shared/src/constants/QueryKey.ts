@@ -35,9 +35,17 @@ export const QUERY_KEY = {
 	user: () => ["user"],
 	category: () => ["cateogory"],
 	setting: () => ["setting"],
-	adminStats: () => ["adminStats"],
-	activeUsersStats: () => ["activeUsersStats"],
-	userGrowth: (days: number) => ["userGrowth", days],
+	/** 대시보드 통계. `includeAdmin`이 다르면 다른 캐시여야 토글이 재조회를 일으킨다. */
+	adminStats: (includeAdmin = false) => ["adminStats", includeAdmin],
+	activeUsersStats: (includeAdmin = false) => [
+		"activeUsersStats",
+		includeAdmin,
+	],
+	userGrowth: (days: number, includeAdmin = false) => [
+		"userGrowth",
+		days,
+		includeAdmin,
+	],
 	adminUsers: (search?: string, page?: number) => ["adminUsers", search, page],
 	/** 관리자 피드백 목록. 검색어·페이지·페이지 크기 조합마다 별도 캐시다. */
 	feedbacks: (search?: string, page?: number, pageSize?: number) => [

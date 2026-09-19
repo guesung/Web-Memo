@@ -21,6 +21,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown, MessageSquare } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
+import FeedbackContent from "./FeedbackContent";
 import FeedbackPageSizeSelect from "./FeedbackPageSizeSelect";
 import FeedbackPagination from "./FeedbackPagination";
 import FeedbackTableSkeleton from "./FeedbackTableSkeleton";
@@ -156,6 +157,8 @@ export default function FeedbackTable({ lng }: FeedbackTableProps) {
 			<div className="text-center py-12 text-muted-foreground">
 				<MessageSquare className="mx-auto mb-3 h-8 w-8" />
 				<p>{t("admin.feedback.empty")}</p>
+				{/* 검색 결과 없음에는 붙이지 않는다. 검색어가 안 맞은 것과 수집 대상이 좁아진 것은 다른 이야기다. */}
+				<p className="mt-1 text-sm">{t("admin.feedback.empty_hint")}</p>
 			</div>
 		);
 	}
@@ -271,7 +274,7 @@ function FeedbackRows({
 									{new Date(feedback.created_at).toLocaleString(locale)}
 								</TableCell>
 								<TableCell className="align-top">
-									<span className="line-clamp-2">{feedback.content}</span>
+									<FeedbackContent lng={lng} content={feedback.content} />
 								</TableCell>
 								<TableCell className="align-top">
 									{feedback.user_id ? (
@@ -293,9 +296,11 @@ function FeedbackRows({
 							<CollapsibleContent asChild>
 								<tr className="border-b bg-muted/50">
 									<td colSpan={3} className="px-4 py-3">
-										<p className="whitespace-pre-wrap text-sm">
-											{feedback.content}
-										</p>
+										<FeedbackContent
+											lng={lng}
+											content={feedback.content}
+											isExpanded
+										/>
 									</td>
 								</tr>
 							</CollapsibleContent>

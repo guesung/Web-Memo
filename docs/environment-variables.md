@@ -176,6 +176,14 @@ export const isProduction = () => CONFIG.buildEnv !== "development";
 | `OPENAI_API_KEY` | 요약·카테고리 분류·웹페이지 QA | `src/app/api/openai/**` |
 | `UPSTASH_REDIS_REST_URL` | OpenAI API 레이트 리밋 | `src/app/api/openai/ratelimit.ts` |
 | `UPSTASH_REDIS_REST_TOKEN` | 동상 | 동상 |
+| `GA4_SERVICE_ACCOUNT_JSON` | 관리자 대시보드의 GA 활성 사용자 조회 | `src/modules/ga/config.ts` |
+| `GA4_PROPERTY_ID` | 동상. 비밀이 아니라 기본값이 코드에 있어 **선택** | 동상 |
+
+`GA4_SERVICE_ACCOUNT_JSON`은 서비스 계정 키 JSON 전문을 한 줄로 넣습니다.
+같은 이름의 값이 GitHub Secrets에도 있지만(§5, `daily-ga-report.yml`이 읽습니다)
+서로 다른 곳이라 **양쪽에 각각 등록해야 합니다.** 값이 없으면 실패하지 않고
+`/api/admin/ga/active-users`가 `connected: false`를 돌려주며, 대시보드는 그래프 대신
+"연결 없음"을 그립니다. 조용히 빈 그래프가 되지 않는 것이 이 설계의 요점입니다.
 
 웹은 공유 `.env`(`packages/env`)를 읽지 않습니다. `process.env`로 직접 읽는 값이
 전부 웹 전용이고, 공유 값 `WEB_URL`은 `packages/env`가 인라인한 `CONFIG.webUrl`로
@@ -192,8 +200,8 @@ Vercel 프로젝트 설정에서 옵니다.
 배포된 서버리스 함수는 런타임에 `process.env`를 읽습니다. 그 값을 실제로 공급하는
 것은 Vercel 프로젝트 설정 하나뿐이고, 워크플로는 `vercel pull`로 그것을 받아옵니다.
 
-등록해야 하는 값은 `apps/web/.env.example`의 세 개(`OPENAI_API_KEY`,
-`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`)와, 소스맵 업로드에 쓰는
+등록해야 하는 값은 `apps/web/.env.example`의 네 개(`OPENAI_API_KEY`,
+`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `GA4_SERVICE_ACCOUNT_JSON`)와, 소스맵 업로드에 쓰는
 `SENTRY_AUTH_TOKEN`, 빌드 대상 환경 `BUILD_ENV`, 그리고 빌드 시스템 플래그
 `ENABLE_EXPERIMENTAL_COREPACK`입니다. 변경은 Vercel 대시보드나 `vercel env` CLI로 합니다.
 
@@ -202,6 +210,7 @@ Vercel 프로젝트 설정에서 옵니다.
 | `OPENAI_API_KEY` | Production·Preview·Development | AI 기능 전체가 실패 |
 | `UPSTASH_REDIS_REST_URL` | 동상 | 레이트 리밋이 **조용히 꺼짐** |
 | `UPSTASH_REDIS_REST_TOKEN` | 동상 | 동상 |
+| `GA4_SERVICE_ACCOUNT_JSON` | Production·Preview | 관리자 대시보드의 활성 사용자 그래프가 "연결 없음"으로 표시됨 |
 | `SENTRY_AUTH_TOKEN` | Production·Preview | 소스맵 업로드가 **조용히 실패** |
 | `BUILD_ENV` | Production = `production`, Preview = `staging` | Git 연동 빌드가 `development`로 구워져 운영에 `localhost:3000`이 실림. 가드가 있어 빌드는 실패로 멈춤 |
 | `ENABLE_EXPERIMENTAL_COREPACK` | 전 환경 | corepack이 꺼져 `packageManager`의 pnpm 버전이 무시됨 |

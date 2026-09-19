@@ -46,7 +46,13 @@ export const QUERY_KEY = {
 		days,
 		includeAdmin,
 	],
-	adminUsers: (search?: string, page?: number) => ["adminUsers", search, page],
+	/**
+	 * 관리자 사용자 목록. 검색어마다 별도 캐시다.
+	 * @description 페이지 인자를 받지 않는다. get_admin_users는 페이지네이션이 없어 전체를
+	 * 한 번에 돌려주는데, 받지도 않는 인자를 키에 남겨 두면 표가 구독하는 키와 검색 폼이
+	 * 무효화하는 키가 어긋나도 눈에 띄지 않는다. 실제로 그렇게 어긋나 검색이 죽어 있었다.
+	 */
+	adminUsers: (search?: string) => ["adminUsers", search],
 	/** 관리자 피드백 목록. 검색어·페이지·페이지 크기 조합마다 별도 캐시다. */
 	feedbacks: (search?: string, page?: number, pageSize?: number) => [
 		"feedbacks",

@@ -5,9 +5,11 @@ import "./globals.css";
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 import { CONFIG } from "@web-memo/env";
 import { ANALYTICS } from "@web-memo/shared/constants";
+import { ANALYTICS_EXCLUDED_STORAGE_KEY } from "@web-memo/shared/modules/analytics";
 import { isProduction } from "@web-memo/shared/utils";
 import { Toaster } from "@web-memo/ui";
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import type { PropsWithChildren } from "react";
 import { WebVitals } from "./_components";
 
@@ -48,6 +50,14 @@ export default function Layout({ children }: LayoutProps) {
 				 */}
 				{isProduction() && (
 					<>
+						{/*
+						 * 만든 사람 본인의 자동 수집을 gtag가 뜨기 전에 끕니다.
+						 * 로그인 여부는 세션을 복원한 뒤에야 알 수 있는데 그때는 page_view가
+						 * 이미 나간 뒤라, 지난 방문에서 남긴 표식을 여기서 먼저 읽습니다.
+						 */}
+						<Script id="ga-disable-excluded" strategy="beforeInteractive">
+							{`try{if(localStorage.getItem("${ANALYTICS_EXCLUDED_STORAGE_KEY}")==="1"){window["ga-disable-${ANALYTICS.gaId}"]=true}}catch(e){}`}
+						</Script>
 						<GoogleAnalytics gaId={ANALYTICS.gaId} />
 						<GoogleTagManager gtmId={ANALYTICS.gtmId} />
 					</>

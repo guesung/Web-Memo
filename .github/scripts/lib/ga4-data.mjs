@@ -15,11 +15,13 @@
  * 목록이 어긋난 것을 채널에서는 구분할 수 없습니다.
  */
 
+import {
+	GA4_SCOPE,
+	REPORT_ROW_LIMIT,
+	readRows,
+	runReport,
+} from "./ga4-client.mjs";
 import { exchangeServiceAccountToken } from "./google-auth.mjs";
-import { requestJson } from "./http.mjs";
-
-/** GA4 Data API 는 읽기 전용 scope 로 충분합니다. */
-const GA4_SCOPE = "https://www.googleapis.com/auth/analytics.readonly";
 
 /**
  * 관측 이력을 따질 시작점. 이 날 이전은 로깅 개편 전이라 의미가 없습니다.
@@ -32,9 +34,6 @@ const GA4_SCOPE = "https://www.googleapis.com/auth/analytics.readonly";
  * (readObservationStart). 조회 범위가 잘렸으면 미출시 판정을 단정하지 않습니다.
  */
 const OBSERVATION_SINCE = "2026-01-01";
-
-/** 한 번의 runReport 가 돌려줄 행 수 상한. 이벤트 종류 × 8일이라 여유가 큽니다. */
-const REPORT_ROW_LIMIT = 10000;
 
 /** 이동평균을 낼 기간(일). target-7 ~ target-1. */
 const MOVING_AVERAGE_DAYS = 7;
@@ -167,19 +166,6 @@ const NOT_STAGING_FILTER = {
 	},
 };
 
-const runReport = async ({ accessToken, propertyId, body }) =>
-	await requestJson(
-		`https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`,
-		{
-			method: "POST",
-			headers: {
-				authorization: `Bearer ${accessToken}`,
-				"content-type": "application/json",
-			},
-			body: JSON.stringify(body),
-		},
-	);
-
 /**
  * GA4 가 실제로 데이터를 갖고 있는 가장 이른 날짜.
  *
@@ -205,13 +191,6 @@ const readObservationStart = async ({ accessToken, propertyId, targetDate }) => 
 
 	return `${earliest.slice(0, 4)}-${earliest.slice(4, 6)}-${earliest.slice(6, 8)}`;
 };
-
-/** runReport 응답의 행을 [차원값...] + [지표값...] 으로 펴 줍니다. */
-const readRows = (report) =>
-	(report.rows ?? []).map((row) => ({
-		dimensions: (row.dimensionValues ?? []).map((value) => value.value),
-		metrics: (row.metricValues ?? []).map((value) => Number(value.value) || 0),
-	}));
 
 /**
  * 이벤트별 어제 값과 7일 이동평균.

@@ -388,7 +388,6 @@ Vault의 `cron_secret`·`project_url`에서 읽어 `daily-article-reminder`와 �
 | `BUILD_ENV` | `.env.{환경}` 선택 + `CONFIG.buildEnv`로 번들에 인라인 | 셸 / 워크플로 `env` |
 | `__FIREFOX__` | Firefox 전용 빌드 (manifest 분기) | 빌드 스크립트 |
 | `__DEV__` | 확장 개발 모드 (HMR·소스맵) | `packages/vite-config` |
-| `ANALYZE` | Next.js 번들 분석 활성화 | 로컬에서 수동 |
 | `CI` | Playwright의 재시도·서버 재사용 정책 분기 | GitHub Actions 자동 주입 |
 
 ---

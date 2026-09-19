@@ -24,7 +24,7 @@ on:
 jobs:
   notify:
     name: Slack 알림
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5

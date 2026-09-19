@@ -28,7 +28,7 @@ permissions:
 jobs:
   report:
     name: 주간 GA 리포트
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       # 이벤트 목록을 packages/shared 의 type.ts 에서 직접 읽으므로 체크아웃이

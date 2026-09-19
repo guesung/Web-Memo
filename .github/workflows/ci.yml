@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   ci:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -54,7 +54,7 @@ jobs:
         run: pnpm test:jest --run
 
   changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
       app: ${{ steps.detect.outputs.app }}
@@ -121,7 +121,7 @@ jobs:
     needs: [ci, changes, cd-app, cd-extension, cd-web]
     # 앞 잡이 실패해도 알려야 하므로 always()입니다. 대신 master push에서만 돕니다.
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5

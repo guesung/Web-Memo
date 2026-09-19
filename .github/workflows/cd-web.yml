@@ -34,7 +34,7 @@ on:
 jobs:
   build-web:
     name: 웹 빌드·배포
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       # 아래 Vercel Pull·Build와 같은 기준(== 'production')으로 판정해야 합니다.
       # deploy_target은 none·staging·production 셋인데 기준이 갈리면 none이 양쪽에서

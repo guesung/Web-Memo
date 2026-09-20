@@ -11,7 +11,7 @@ import { Toaster } from "@web-memo/ui";
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import type { PropsWithChildren } from "react";
-import { WebVitals } from "./_components";
+import { ReactGrab, WebVitals } from "./_components";
 
 interface LayoutProps extends PropsWithChildren {}
 
@@ -41,6 +41,7 @@ export default function Layout({ children }: LayoutProps) {
 				{children}
 
 				<WebVitals />
+				<ReactGrab />
 				{/*
 				 * 개발 환경에서는 GA 스크립트를 아예 싣지 않습니다.
 				 * Analytics.ts의 전송 게이트는 우리 커스텀 이벤트만 막고, gtag가 자동으로

@@ -97,14 +97,7 @@ export async function POST(request: NextRequest) {
 	} catch (error) {
 		console.error("Webpage QA error:", error);
 
-		if (error instanceof Error) {
-			return handleOpenAIError(error);
-		}
-
-		return createErrorResponse(
-			ERROR_MESSAGES.GENERAL_SERVER_ERROR,
-			HTTP_STATUS.INTERNAL_SERVER_ERROR,
-		);
+		return handleOpenAIError(error, "webpage-qa");
 	}
 }
 

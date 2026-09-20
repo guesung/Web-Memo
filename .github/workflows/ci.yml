@@ -143,7 +143,10 @@ jobs:
     uses: ./.github/workflows/cd-web.yml
     secrets: inherit
     with:
-      deploy_target: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/develop') && 'staging' || 'none' }}
+      # develop 푸시는 테섭에 배포하고, master 푸시는 상용 환경으로 빌드해 도메인 없이 올려 둡니다(staged).
+      # staged는 라이브를 바꾸지 않습니다. Slack의 웹 배포 버튼(release.yml)이 그 배포를 재빌드 없이
+      # 승격합니다. PR은 검증 빌드만 합니다. (docs/release-flow.md)
+      deploy_target: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' && 'staging' || 'staged') || 'none' }}
 
   # develop 푸시의 테섭 배포 결과를 머지 스레드에 댓글로 답니다.
   # cd-web만 기다리므로 앱 빌드(약 30분)와 무관하게 배포 직후 나갑니다.

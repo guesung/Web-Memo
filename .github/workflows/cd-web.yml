@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       deploy_target:
-        description: "배포 대상 (none = 빌드만, staging = 스테이징 배포, production = 프로덕션 배포)"
+        description: "배포 대상 (none = 빌드만, staging = 스테이징 배포, staged = 상용 환경으로 빌드해 도메인 없이 올려두기, production = 프로덕션 배포)"
         type: string
         default: "none"
       ref:
@@ -23,6 +23,7 @@ on:
   # 커밋만 기준으로 삼아 그 변경분을 다시 잡지 않습니다. 실패가 아니라 스킵이라
   # 알림도 뜨지 않으므로, 사람이 손으로 밀어 넣을 수 있는 문을 둡니다.
   # production을 뺀 것은 의도입니다 — 실제 배포는 release.yml 한 경로로 유지합니다.
+  # staged는 상용에 올려만 두고 도메인을 붙이지 않으므로 라이브에 영향이 없어 열어 둡니다.
   workflow_dispatch:
     inputs:
       deploy_target:
@@ -31,6 +32,7 @@ on:
         options:
           - none
           - staging
+          - staged
         default: "none"
       ref:
         description: "체크아웃할 커밋/태그 (비우면 실행한 브랜치)"
@@ -44,10 +46,12 @@ jobs:
     outputs:
       staging_outcome: ${{ steps.deploy-staging.outcome }}
     env:
-      # 아래 Vercel Pull·Build와 같은 기준(== 'production')으로 판정해야 합니다.
-      # deploy_target은 none·staging·production 셋인데 기준이 갈리면 none이 양쪽에서
-      # 다른 쪽으로 떨어져, 상수는 production인데 Vercel 값은 Preview인 조합이 됩니다.
-      BUILD_ENV: ${{ inputs.deploy_target == 'production' && 'production' || 'staging' }}
+      # 아래 Vercel Pull·Build와 같은 기준으로 판정해야 합니다. production과 staged는 상용 환경으로,
+      # none·staging은 Preview 환경으로 굽습니다. 기준이 갈리면 none이 양쪽에서 다른 쪽으로 떨어져,
+      # 상수는 production인데 Vercel 값은 Preview인 조합이 됩니다.
+      # (Vercel Pull·Build는 아래 USE_PRODUCTION_ENV 하나만 봅니다.)
+      BUILD_ENV: ${{ (inputs.deploy_target == 'production' || inputs.deploy_target == 'staged') && 'production' || 'staging' }}
+      USE_PRODUCTION_ENV: ${{ inputs.deploy_target == 'production' || inputs.deploy_target == 'staged' }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -60,7 +64,28 @@ jobs:
           node-version-file: ".nvmrc"
           cache: "pnpm"
 
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      # 아래 Vercel Build와 같은 기준으로 환경을 골라야 짝이 맞습니다.
+      # staging은 --prod 없이 빌드해 Preview로 나가므로 Preview 환경 값을 받습니다.
+      # --environment를 비우면 Development 값을 받아, Production에만 등록된 값이
+      # 빠진 채로 빌드와 배포가 그냥 성공합니다.
+      - name: Vercel Pull
+        run: vercel pull --yes --environment=${{ env.USE_PRODUCTION_ENV == 'true' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      # 릴리스(production)는 먼저 이 커밋의 미승격 배포를 찾습니다. master CI가 머지 때 상용 환경으로 굽고
+      # 도메인 없이 올려 둔 것(staged)이며, 있으면 아래 빌드를 통째로 건너뛰고 승격만 합니다.
+      # 못 찾거나 조회에 실패하면 found가 false라 지금처럼 빌드해서 배포합니다.
+      - name: Find staged deployment
+        id: staged
+        if: ${{ inputs.deploy_target == 'production' }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: SHA="$(git rev-parse HEAD)" node .github/scripts/find-staged-deployment.mjs
+
       - name: Cache Next.js build
+        if: ${{ steps.staged.outputs.found != 'true' }}
         uses: actions/cache@v5
         with:
           path: |
@@ -70,22 +95,14 @@ jobs:
             ${{ runner.os }}-nextjs-
 
       - name: Install dependencies
+        if: ${{ steps.staged.outputs.found != 'true' }}
         run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-
-      # 아래 Vercel Build와 같은 기준으로 환경을 골라야 짝이 맞습니다.
-      # staging은 --prod 없이 빌드해 Preview로 나가므로 Preview 환경 값을 받습니다.
-      # --environment를 비우면 Development 값을 받아, Production에만 등록된 값이
-      # 빠진 채로 빌드와 배포가 그냥 성공합니다.
-      - name: Vercel Pull
-        run: vercel pull --yes --environment=${{ inputs.deploy_target == 'production' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
 
       # 런타임·빌드 환경 변수는 vercel pull이 받아온 Vercel 프로젝트 설정을 씁니다.
       # 셸로 덧씌우면 등록되지 않은 시크릿이 빈 값으로 덮어쓸 수 있습니다.
       - name: Vercel Build
-        run: vercel build ${{ inputs.deploy_target == 'production' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
+        if: ${{ steps.staged.outputs.found != 'true' }}
+        run: vercel build ${{ env.USE_PRODUCTION_ENV == 'true' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy staging
         id: deploy-staging
@@ -116,6 +133,27 @@ jobs:
           DEPLOY_OUTCOME: ${{ steps.deploy-staging.outcome }}
         run: node .github/scripts/notify-staging-deploy.mjs
 
+      # master 머지분을 상용 환경으로 굽고 도메인은 붙이지 않은 채 올려 둡니다(--skip-domain).
+      # 라이브는 그대로이고, Slack의 웹 배포 버튼이 이 배포를 승격합니다. 어느 커밋의 배포인지는
+      # 메타 releaseSha로 찾습니다(.github/scripts/lib/staged-deployment.mjs).
+      - name: Deploy staged (미승격)
+        if: ${{ inputs.deploy_target == 'staged' }}
+        run: |
+          DEPLOYMENT_URL="$(vercel deploy --prebuilt --prod --skip-domain -m releaseSha="$(git rev-parse HEAD)" --token=${{ secrets.VERCEL_TOKEN }})"
+          echo "미승격 배포: $DEPLOYMENT_URL"
+          echo "미승격 배포(라이브 아님): $DEPLOYMENT_URL" >> "$GITHUB_STEP_SUMMARY"
+
+      # 미승격 배포가 있으면 재빌드 없이 승격만 합니다. 환경변수는 그 배포를 만든 시점의 값입니다.
+      - name: Promote staged deployment
+        if: ${{ steps.staged.outputs.found == 'true' }}
+        env:
+          STAGED_URL: ${{ steps.staged.outputs.url }}
+        run: |
+          vercel promote "$STAGED_URL" --yes --token=${{ secrets.VERCEL_TOKEN }}
+          echo "미승격 배포를 승격했습니다: $STAGED_URL" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Deploy production
-        if: ${{ inputs.deploy_target == 'production' }}
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        if: ${{ inputs.deploy_target == 'production' && steps.staged.outputs.found != 'true' }}
+        run: |
+          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+          echo "미승격 배포가 없어 새로 빌드해 배포했습니다" >> "$GITHUB_STEP_SUMMARY"

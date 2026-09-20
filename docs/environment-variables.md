@@ -65,7 +65,7 @@
 | `SLACK_REPORT_WEBHOOK_URL` | GA 리포트가 전용 채널로 게시되지 않는다 | `.github/workflows/daily-ga-report.yml`, `.github/workflows/weekly-ga-report.yml` |
 | `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트 실패 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/daily-ga-report.yml`, `.github/workflows/weekly-ga-report.yml`, `.github/workflows/notify-release.yml`, `.github/workflows/versions.yml`, `.github/workflows/env-registry-audit.yml` |
 | `STAGING_WEB_URL_WITHOUT_PROTOCOL` | 스테이징 배포에 alias 도메인이 붙지 않는다 | `.github/workflows/cd-web.yml` |
-| `SUPABASE_ACCESS_TOKEN` | 등록 현황 감사가 Supabase secrets를 조회하지 못해 미조회로 남는다 | `.github/workflows/env-registry-audit.yml` |
+| `SUPABASE_ACCESS_TOKEN` | 등록 현황 감사가 Supabase secrets를 조회하지 못하고, Production 스키마 문서 정합성 검사가 실패한다 | `.github/workflows/env-registry-audit.yml`, `.github/workflows/supabase-schema.yml` |
 | `TURBO_TEAM` | Turborepo 원격 캐시 팀을 못 찾아 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/cleanup-unused.yml`, `.github/workflows/e2e.yml` |
 | `TURBO_TOKEN` | Turborepo 원격 캐시를 못 써 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/cleanup-unused.yml`, `.github/workflows/e2e.yml` |
 | `VERCEL_TOKEN` | vercel pull, build, deploy, alias가 인증에 실패해 웹 배포가 멈추고, e2e가 웹 서버 환경 변수를 받지 못한다 | `.github/workflows/cd-web.yml`, `.github/workflows/e2e.yml`, `.github/workflows/env-registry-audit.yml` |

@@ -100,9 +100,10 @@ test.describe("하이라이트 페이지 (Mocked)", () => {
 
 	test("코멘트를 입력하고 포커스를 잃으면 저장된다.", async ({ page }) => {
 		const exactText = `Sample highlight ${Date.now()}`;
+		const originalNote = `Original note ${Date.now()}`;
 		const mockHighlight = createMockHighlight({
 			exact_text: exactText,
-			note: null,
+			note: originalNote,
 		});
 		store.addHighlight(mockHighlight);
 
@@ -114,7 +115,8 @@ test.describe("하이라이트 페이지 (Mocked)", () => {
 
 		await expect(page.getByText(exactText)).toBeVisible();
 
-		await page.getByRole("button", { name: "Add a note" }).click();
+		// 빈 메모에는 추가 버튼이 없으므로, 이미 있는 메모를 눌러 편집 상태로 들어간다.
+		await page.getByRole("button", { name: originalNote }).click();
 
 		const noteText = `Note ${Date.now()}`;
 		const noteTextbox = page.getByLabel("Highlight note");

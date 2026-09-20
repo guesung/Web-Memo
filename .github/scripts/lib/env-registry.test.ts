@@ -4,6 +4,7 @@ import {
 	compareRegistry,
 	fetchGithubSecretNames,
 	fetchVercelEnvNames,
+	formatFindingLine,
 	formatFindings,
 	tryFetch,
 } from "./env-registry.mjs";
@@ -120,6 +121,17 @@ describe("formatFindings", () => {
 		expect(message).toContain("*Supabase*");
 		expect(message).toContain("GitHub Secrets(GH_AUDIT_TOKEN 없음)");
 		expect(message).toContain("<https://github.com/x/actions/runs/1|실행 로그 보기>");
+	});
+});
+
+describe("formatFindingLine", () => {
+	it("Slack 목록과 PR 경고 주석이 같은 문장을 쓰도록 종류와 환경을 한 줄로 쓴다", () => {
+		expect(
+			formatFindingLine({ store: "vercel", type: "missing", name: "A", detail: "preview" }),
+		).toBe("등록 안 됨: `A` (preview)");
+		expect(formatFindingLine({ store: "github", type: "unregistered", name: "B" })).toBe(
+			"매니페스트에 없음: `B`",
+		);
 	});
 });
 

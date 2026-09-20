@@ -4,7 +4,8 @@
 #
 # 이 파일과 대조하는 두 곳:
 #   - PR CI(env-manifest.yml): 코드·워크플로가 읽는 이름, .env 파일의 키, docs 표를 대조합니다.
-#   - 스케줄 CI(env-registry-audit.yml): GitHub·Vercel·Supabase에 실제 등록된 이름을 대조해 Slack으로 알립니다.
+#   - 등록 현황 감사(env-registry-audit.yml): GitHub·Vercel·Supabase에 실제 등록된 이름을 대조합니다.
+#     매일 돌아 다르면 Slack으로 알리고, PR에서도 돌아 결과를 잡 요약과 경고 주석으로 보여 줍니다(PR은 막지 않음).
 #
 # 값을 추가·삭제·이동했다면 이 파일을 함께 고치고 아래 명령으로 문서 표를 갱신하세요.
 #   node .github/scripts/check-env-manifest.mjs --write

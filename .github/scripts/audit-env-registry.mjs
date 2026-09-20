@@ -7,6 +7,12 @@
  * 못 잡습니다. 이 스크립트가 그 틈을 메웁니다. 이름만 비교하므로 같은 이름이 두 저장소에 있을 때
  * 값이 같은지는 확인하지 못합니다.
  *
+ * 동작 모드(AUDIT_MODE)
+ *   notify(기본)  차이가 있으면 SLACK_WEBHOOK_URL로 알립니다. 매일 스케줄과 수동 실행이 씁니다.
+ *   report        Slack을 보내지 않고 로그·요약·경고 주석으로만 보여 주며 항상 성공합니다. PR이 씁니다.
+ *                 콘솔 쪽 등록은 PR과 무관하게 바뀌므로 PR을 막지 않고, 이 PR을 보는 사람이 결과를
+ *                 그 자리에서 확인하게 하려는 것입니다.
+ *
  * 저장소마다 조회 토큰이 다릅니다. 토큰이 없거나 거절되면 그 저장소만 "미조회"로 남기고 나머지를
  * 계속 대조합니다.
  *   GH_AUDIT_TOKEN        저장소 Actions 시크릿 목록을 읽을 수 있는 토큰(GitHub App의 Secrets: read)
@@ -25,7 +31,9 @@ import {
 	fetchGithubSecretNames,
 	fetchSupabaseSecretNames,
 	fetchVercelEnvNames,
+	formatFindingLine,
 	formatFindings,
+	STORE_LABELS,
 	tryFetch,
 } from "./lib/env-registry.mjs";
 import { postToSlack } from "./lib/slack-blocks.mjs";
@@ -99,6 +107,16 @@ const main = async () => {
 
 	if (process.env.GITHUB_STEP_SUMMARY) {
 		appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${message}\n`);
+	}
+
+	if (process.env.AUDIT_MODE === "report") {
+		for (const finding of findings) {
+			console.log(
+				`::warning title=환경 변수 등록 현황 (${STORE_LABELS[finding.store]})::${formatFindingLine(finding)}`,
+			);
+		}
+
+		return;
 	}
 
 	// 알림이 곧 결과이므로 Slack에 보냈다면 런은 성공으로 둡니다. 실패로 두면 워크플로의

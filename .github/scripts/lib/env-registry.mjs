@@ -220,7 +220,7 @@ export const compareRegistry = ({ entries, results }) => {
 	return { findings, skipped };
 };
 
-const STORE_LABELS = {
+export const STORE_LABELS = {
 	github: "GitHub Secrets",
 	vercel: "Vercel",
 	supabase: "Supabase",
@@ -230,6 +230,13 @@ const FINDING_LABELS = {
 	missing: "등록 안 됨",
 	unregistered: "매니페스트에 없음",
 	"extra-environment": "선언하지 않은 환경에 등록됨",
+};
+
+/** 차이 하나를 한 줄로 씁니다. Slack 목록과 PR 경고 주석이 같은 문장을 씁니다. */
+export const formatFindingLine = (finding) => {
+	const detail = finding.detail ? ` (${finding.detail})` : "";
+
+	return `${FINDING_LABELS[finding.type]}: \`${finding.name}\`${detail}`;
 };
 
 /** 차이를 Slack에 보낼 mrkdwn 텍스트로 만듭니다. 차이가 없으면 null입니다. */
@@ -252,11 +259,7 @@ export const formatFindings = ({ findings, skipped, runUrl }) => {
 		lines.push(`\n*${STORE_LABELS[store]}*`);
 
 		for (const finding of inStore) {
-			const detail = finding.detail ? ` (${finding.detail})` : "";
-
-			lines.push(
-				`• ${FINDING_LABELS[finding.type]}: \`${finding.name}\`${detail}`,
-			);
+			lines.push(`• ${formatFindingLine(finding)}`);
 		}
 	}
 

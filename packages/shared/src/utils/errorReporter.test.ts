@@ -68,6 +68,20 @@ describe("createErrorReporter", () => {
 		expect(captured.name).toBe("TypeError");
 	});
 
+	it("보고되는 오류의 스택은 원본이 던져진 위치를 가리킨다", () => {
+		const { capture, report } = createReporter();
+		const original = new Error("boom");
+
+		report({
+			error: original,
+			feature: "summary",
+			operation: "generate",
+			stage: "fetch",
+		});
+
+		expect(capture.mock.calls[0][0].stack).toBe(original.stack);
+	});
+
 	it("원본 오류의 메시지는 바꾸지 않는다", () => {
 		const { report } = createReporter();
 		const original = new Error("boom");

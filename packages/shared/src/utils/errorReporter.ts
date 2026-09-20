@@ -77,6 +77,9 @@ const labelError = ({
 	);
 
 	labeled.name = original.name;
+	// Sentry는 이슈의 위치를 보고된 오류의 스택에서 읽는다. 감싼 오류의 스택은 리포터 안을
+	// 가리키므로 원본의 스택을 물려줘 실제로 던진 위치가 culprit이 되게 한다.
+	labeled.stack = original.stack;
 
 	return labeled;
 };

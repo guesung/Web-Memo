@@ -8,11 +8,6 @@ const resultPath = process.env.SUPABASE_AUDIT_RESULT_PATH;
 const webhookUrl = process.env.SLACK_WEBHOOK_URL;
 const runUrl = process.env.RUN_URL;
 
-if (!webhookUrl) {
-	console.warn("::warning::SLACK_WEBHOOK_URL이 없어 Supabase 감사 알림을 건너뜁니다");
-	process.exit(0);
-}
-
 let message = `Supabase 운영 감사 실행 실패${runUrl ? `\n${runUrl}` : ""}`;
 
 if (resultPath) {
@@ -28,6 +23,11 @@ if (resultPath) {
 	} catch {
 		console.warn("::warning::Supabase 감사 결과를 읽지 못해 실행 실패로 알립니다");
 	}
+}
+
+if (!webhookUrl) {
+	console.error("::error::SLACK_WEBHOOK_URL이 없어 Supabase 감사 알림을 보낼 수 없습니다");
+	process.exit(1);
 }
 
 await postToSlack(webhookUrl, { text: message });

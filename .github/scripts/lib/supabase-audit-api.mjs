@@ -13,7 +13,7 @@ export const collectSupabaseState = async ({ manifest, token, now = new Date(), 
 			if (!response.ok) {
 				const body = await response.text();
 				const permissionDenied = query && response.status !== 401 && /42501|permission denied|insufficient_privilege/i.test(body);
-				failures.push({ category, severity: permissionDenied ? "warning" : "error", code: permissionDenied ? "unobservable" : "api_failure", message: `${category}: HTTP ${response.status}${permissionDenied ? " (SQL 권한 부족으로 관측 불가)" : " 조회 실패"}` });
+				failures.push({ category, severity: "error", code: permissionDenied ? "unobservable" : "api_failure", message: `${category}: HTTP ${response.status}${permissionDenied ? " (SQL 권한 부족으로 감사 불가)" : " 조회 실패"}` });
 				return undefined;
 			}
 			return await response.json();

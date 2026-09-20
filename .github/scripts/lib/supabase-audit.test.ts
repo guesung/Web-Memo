@@ -127,11 +127,11 @@ describe("Management API 조회", () => {
 			}
 		}
 	});
-	it("SQL 권한 부족은 누락과 구분하며 응답 본문을 노출하지 않는다", async () => {
+	it("SQL 권한 부족은 누락과 구분하고 감사를 실패시키며 응답 본문을 노출하지 않는다", async () => {
 		const fetcher = createFetcher((_url, query) => query.includes("vault.secrets") ? new Response("42501 permission denied DO_NOT_PRINT", { status: 500 }) : undefined);
 		const result = await auditSupabase({ manifest: MANIFEST, token: "TOKEN", fetcher });
-		expect(result.exitCode).toBe(0);
-		expect(result.findings).toContainEqual(expect.objectContaining({ category: "vault", code: "unobservable", severity: "warning" }));
+		expect(result.exitCode).toBe(1);
+		expect(result.findings).toContainEqual(expect.objectContaining({ category: "vault", code: "unobservable", severity: "error" }));
 		expect(result.findings).not.toContainEqual(expect.objectContaining({ category: "vault", code: "missing" }));
 		expect(JSON.stringify(result)).not.toContain("DO_NOT_PRINT");
 	});

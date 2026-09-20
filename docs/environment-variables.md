@@ -284,8 +284,13 @@ vercel link                          # 최초 1회, 저장소 루트에서 (프�
 pnpm env:pull                        # 저장소 루트에서 실행. apps/web/.env.local 생성 (gitignore 대상)
 ```
 
-- **웹 값은 세 환경(production·preview·development)에 같은 값으로 등록합니다.** 예외는 값이 환경마다
-  달라야 하는 `BUILD_ENV`(production은 `production`, preview는 `staging`, development는 등록하지 않음)뿐입니다.
+- **웹 값은 세 환경(production·preview·development)에 같은 값으로 등록합니다.** 예외는 둘입니다.
+  - `BUILD_ENV`: 값이 환경마다 달라야 합니다(production은 `production`, preview는 `staging`, development는 등록하지 않음).
+  - `SENTRY_WEBHOOK_SECRET`: production에만 둡니다. Sentry Internal Integration의 Client Secret은 생성할 때
+    한 번만 표시돼 다른 환경에 같은 값을 복사할 수 없습니다. 통일하려면 시크릿을 회전하고 세 환경에 새 값을
+    등록해야 하는데, 운영에 새 값을 등록하고 재배포하기 전까지 웹훅 서명 검증이 실패해 에러 알림이 끊기므로
+    지금은 운영 전용으로 둡니다.
+
   매니페스트에서는 `stores: [vercel]`이 세 환경 모두라는 뜻이고, 예외만 `vercel:<환경>`으로 적습니다.
 - **development 값은 프로젝트 접근 권한이 있는 사람이 읽을 수 있습니다.** production·preview 값은 sensitive라
   pull로 받을 수 없지만, Vercel은 development 대상을 sensitive로 만들 수 없기 때문입니다. 세 환경을 같게
@@ -428,9 +433,10 @@ GA4 콘솔 → 관리 → 속성 설정 상단의 **숫자** 속성 ID이며,
 
 ### 그 밖의 주의점
 
-- **`WEB_ENV_FILE`은 더 이상 쓰지 않습니다.** e2e가 `apps/web/.env`를 이 시크릿으로 복원하던 방식을
-  `vercel env pull`(development)로 바꿨습니다. GitHub에 남아 있는 시크릿은 e2e가 새 방식으로 통과한
-  것을 확인한 뒤 지웁니다. 지우기 전까지 감사가 "매니페스트에 없음"으로 경고합니다.
+- **`WEB_ENV_FILE`은 없앴습니다.** e2e가 `apps/web/.env`를 이 시크릿으로 복원하던 방식을
+  `vercel env pull`(development)로 바꿨고, GitHub 시크릿도 삭제했습니다(2026-09-20). 값을 읽을 수 없어
+  삭제하면 되살릴 수 없으니, 비슷한 시크릿을 지울 때는 그 시크릿을 읽는 워크플로가 `master`에서 사라진 뒤에
+  지웁니다.
 - **앱 서명 키는 시크릿에 없습니다.** EAS 서버에 등록된 것을 받아 쓰므로 러너에
   별도 시크릿이 필요 없습니다.
 - 재사용 워크플로는 `secrets: inherit`으로 호출자의 시크릿을 물려받습니다.

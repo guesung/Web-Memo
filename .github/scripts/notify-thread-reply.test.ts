@@ -1,4 +1,5 @@
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
+import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
@@ -122,6 +123,25 @@ describe("notify-thread-reply.mjs", () => {
 			},
 		);
 
+		// 이 댓글은 그 서비스의 버튼을 따로 누르는 자리라 모달에서 대상을 다시 고르게 하지 않는다
+		it.each(["web", "extension", "app"])(
+			"%s 댓글의 다른 버전 버튼은 그 대상으로 고정된 값을 싣는다",
+			(target) => {
+				const payload = readPayload({
+					TARGET: target,
+					CHANGED: "true",
+					RESULT: "success",
+					GITHUB_SHA: commitSha,
+				});
+				const custom = payload.blocks[1].elements.find(
+					(element: { action_id: string }) =>
+						element.action_id === "deploy_custom",
+				);
+
+				expect(JSON.parse(custom.value)).toEqual({ ref: commitSha, target });
+			},
+		);
+
 		it("다른 타깃의 배포 버튼은 붙지 않는다", () => {
 			const payload = readPayload({
 				TARGET: "web",
@@ -156,6 +176,136 @@ describe("notify-thread-reply.mjs", () => {
 
 			expect(payload.blocks[1].type).toBe("context");
 			expect(JSON.stringify(payload)).not.toContain("deploy_");
+		});
+	});
+
+	describe("확장 다운로드 버튼", () => {
+		const commitSha = execFileSync("git", ["rev-parse", "HEAD"], {
+			encoding: "utf8",
+		}).trim();
+
+		/** GitHub API를 흉내 내는 로컬 서버를 띄우고 스크립트를 비동기로 돌립니다(spawnSync는 서버를 막습니다). */
+		const runWithFakeGithub = async ({
+			artifacts,
+			status = 200,
+			env = {},
+		}: {
+			artifacts: Array<{ id: number; name: string; expired?: boolean }>;
+			status?: number;
+			env?: Record<string, string>;
+		}) => {
+			const server = createServer((_request, response) => {
+				response.statusCode = status;
+				response.setHeader("content-type", "application/json");
+				response.end(JSON.stringify({ artifacts }));
+			});
+			await new Promise<void>((resolve) =>
+				server.listen(0, "127.0.0.1", resolve),
+			);
+			const { port } = server.address() as { port: number };
+
+			try {
+				return await new Promise<{ status: number | null; stdout: string }>(
+					(resolve) => {
+						const child = spawn("node", [SCRIPT_PATH], {
+							env: {
+								PATH: process.env.PATH ?? "",
+								GITHUB_REPOSITORY: "guesung/Web-Memo",
+								GITHUB_RUN_ID: "123",
+								GITHUB_SHA: commitSha,
+								GITHUB_API_URL: `http://127.0.0.1:${port}`,
+								GH_TOKEN: "t0ken",
+								TARGET: "extension",
+								CHANGED: "true",
+								RESULT: "success",
+								SLACK_THREAD_TS: "1.1",
+								...env,
+							},
+						});
+						let stdout = "";
+						child.stdout.on("data", (chunk) => {
+							stdout += chunk;
+						});
+						child.on("close", (code) => resolve({ status: code, stdout }));
+					},
+				);
+			} finally {
+				server.close();
+			}
+		};
+
+		const actionIds = (stdout: string) =>
+			JSON.parse(stdout).blocks[1].elements.map(
+				(element: { action_id: string }) => element.action_id,
+			);
+
+		it("확장 성공이면 이 실행의 확장 아티팩트를 받는 링크가 붙는다", async () => {
+			const result = await runWithFakeGithub({
+				artifacts: [
+					{ id: 1, name: "store-package-extension-production-v1.10.14" },
+					{ id: 2, name: "extension-production-v1.10.14" },
+				],
+			});
+			const elements = JSON.parse(result.stdout).blocks[1].elements;
+
+			expect(result.status).toBe(0);
+			expect(actionIds(result.stdout)).toEqual([
+				"deploy_extension",
+				"deploy_custom",
+				"download_extension",
+				"open_link",
+			]);
+			expect(elements[2].url).toBe(
+				"https://github.com/guesung/Web-Memo/actions/runs/123/artifacts/2",
+			);
+		});
+
+		it("확장 아티팩트가 없으면 다운로드 버튼만 빠지고 나머지는 그대로 나간다", async () => {
+			const result = await runWithFakeGithub({ artifacts: [] });
+
+			expect(result.status).toBe(0);
+			expect(actionIds(result.stdout)).toEqual([
+				"deploy_extension",
+				"deploy_custom",
+				"open_link",
+			]);
+		});
+
+		it("목록 조회가 실패해도 알림은 나가고 다운로드 버튼만 빠진다", async () => {
+			const result = await runWithFakeGithub({ artifacts: [], status: 403 });
+
+			expect(result.status).toBe(0);
+			expect(actionIds(result.stdout)).not.toContain("download_extension");
+		});
+
+		it("GH_TOKEN이 없으면 조회하지 않고 다운로드 버튼이 빠진다", async () => {
+			const result = await runWithFakeGithub({
+				artifacts: [{ id: 2, name: "extension-production-v1.10.14" }],
+				env: { GH_TOKEN: "" },
+			});
+
+			expect(actionIds(result.stdout)).not.toContain("download_extension");
+		});
+
+		it("웹·앱 댓글에는 다운로드 버튼이 없다", async () => {
+			const result = await runWithFakeGithub({
+				artifacts: [{ id: 2, name: "extension-production-v1.10.14" }],
+				env: { TARGET: "web" },
+			});
+
+			expect(actionIds(result.stdout)).not.toContain("download_extension");
+		});
+
+		// 빌드가 실패한 커밋의 산출물을 내려받게 하지 않는다
+		it("확장 실패 댓글에는 다운로드 버튼이 없다", async () => {
+			const result = await runWithFakeGithub({
+				artifacts: [{ id: 2, name: "extension-production-v1.10.14" }],
+				env: { RESULT: "failure" },
+			});
+
+			expect(JSON.stringify(JSON.parse(result.stdout))).not.toContain(
+				"download_extension",
+			);
 		});
 	});
 

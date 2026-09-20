@@ -205,6 +205,11 @@ jobs:
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.changes.outputs.extension == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    # 이 실행의 아티팩트 목록을 조회해 확장 다운로드 버튼을 달기 위해 actions: read가 필요합니다.
+    # 잡에 permissions를 적으면 나머지가 none이 되므로 체크아웃용 contents: read도 함께 적습니다.
+    permissions:
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@v5
 
@@ -217,6 +222,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           SLACK_THREAD_TS: ${{ needs.slack-thread.outputs.thread_ts }}
+          GH_TOKEN: ${{ github.token }}
           TARGET: extension
           CHANGED: ${{ needs.changes.outputs.extension }}
           RESULT: ${{ needs['cd-extension'].result }}

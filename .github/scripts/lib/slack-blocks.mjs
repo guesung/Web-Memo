@@ -157,11 +157,17 @@ const DEPLOY_TARGETS = [
  * @param targets 버튼을 노출할 대상 목록. 빌드 알림에서는 방금 빌드가 성공한 것만
  *   넘깁니다 — 빌드도 안 된 커밋을 올리는 길을 열어두지 않기 위해서입니다.
  * @param refSubject ref의 커밋 제목. 확인 창과 배포 시작 메시지에 쓰입니다.
+ * @param customTarget 넘기면 "다른 버전…" 모달이 이 대상으로 고정됩니다. 타깃별 댓글은 그 서비스의
+ *   버튼을 따로 누르므로 모달에서 대상을 다시 고르게 할 이유가 없습니다. 여러 대상을 다루는
+ *   요약 댓글은 넘기지 않아 모달이 대상 체크박스를 그대로 보여줍니다.
+ * @param downloadUrl 넘기면 배포 버튼 뒤에 다운로드 링크 버튼을 답니다. 확장 빌드 산출물 전용입니다.
  */
 export const buildActionBlock = ({
 	targets,
 	ref,
 	refSubject,
+	customTarget,
+	downloadUrl,
 	linkUrl,
 	linkLabel,
 }) => {
@@ -175,8 +181,17 @@ export const buildActionBlock = ({
 		type: "button",
 		action_id: "deploy_custom",
 		text: { type: "plain_text", text: "다른 버전…", emoji: true },
-		value: JSON.stringify({ ref }),
+		value: JSON.stringify({ ref, ...(customTarget ? { target: customTarget } : {}) }),
 	});
+
+	if (downloadUrl) {
+		elements.push({
+			type: "button",
+			action_id: "download_extension",
+			text: { type: "plain_text", text: "⬇️ 확장 다운로드", emoji: true },
+			url: downloadUrl,
+		});
+	}
 
 	if (linkUrl) {
 		elements.push({

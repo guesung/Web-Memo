@@ -22,7 +22,7 @@
 
 1. 환경이 달라져도 값이 같은가 → `packages/shared/src/constants/`
 2. 환경마다 다르고, 확장·웹이 같이 쓰는가 → `packages/env/.env.{환경}`
-3. 웹 서버에서만 읽고 절대 노출되면 안 되는가 → Vercel 프로젝트 환경변수(로컬에서 필요하면 development에도 등록)
+3. 웹 서버에서만 읽고 절대 노출되면 안 되는가 → Vercel 프로젝트 환경변수(세 환경에 같은 값으로 등록, `BUILD_ENV`만 예외)
 4. 배포 파이프라인이 외부 서비스에 인증하는 데만 쓰는가 → GitHub Secrets
 
 ---
@@ -75,20 +75,20 @@
 | 이름 | 환경 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- | --- |
 | `BUILD_ENV` | production, preview | Git 연동 빌드가 development로 구워져 운영에 localhost:3000이 실린다. tsup.config.ts의 가드가 빌드를 실패시켜 막는다 | `packages/env/src/config.ts`, `packages/env/tsup.config.ts`, `apps/web/next.config.mjs`, `packages/zipper/index.ts` |
-| `ENABLE_EXPERIMENTAL_COREPACK` | production, preview, development | corepack이 꺼져 packageManager의 pnpm 버전이 무시된다 | 코드 밖 |
-| `GA4_PROPERTY_ID` (선택) | production | 없으면 코드에 적힌 기본 속성 ID로 동작한다 | `apps/web/src/modules/ga/config.ts` |
-| `GA4_SERVICE_ACCOUNT_JSON` | production, preview, development | GitHub는 GA 리포트가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/daily-ga-report.yml`, `.github/workflows/weekly-ga-report.yml`, `apps/web/src/modules/ga/config.ts` |
-| `GITHUB_DISPATCH_REPOSITORY` (선택) | production | 없으면 guesung/Web-Memo로 동작한다 | `apps/web/src/modules/slack/config.ts` |
-| `GITHUB_DISPATCH_TOKEN` | production, preview, development | Slack에서 release.yml과 versions.yml을 실행하지 못한다 | `apps/web/src/modules/slack/config.ts` |
-| `NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY` | production, preview, development | 채널톡 위젯이 뜨지 않는다 | `apps/web/src/components/ChannelTalk/index.tsx` |
-| `OPENAI_API_KEY` | production, preview, development | AI 기능 전체가 실패한다 | `apps/web/src/app/api/openai/util.ts`, `apps/web/src/app/api/openai/category/route.ts`, `apps/web/src/app/api/openai/webpage-qa/route.ts` |
-| `SENTRY_AUTH_TOKEN` | production, preview, development | Sentry 소스맵 업로드가 조용히 실패한다. 빌드는 통과하므로 스택 트레이스가 난독화된 채 보여야 알게 된다 | `.github/workflows/cd-extension.yml`, `apps/web/next.config.mjs`, `packages/vite-config/lib/withPageConfig.mjs` |
+| `ENABLE_EXPERIMENTAL_COREPACK` | 전체 | corepack이 꺼져 packageManager의 pnpm 버전이 무시된다 | 코드 밖 |
+| `GA4_PROPERTY_ID` (선택) | 전체 | 없으면 코드에 적힌 기본 속성 ID로 동작한다 | `apps/web/src/modules/ga/config.ts` |
+| `GA4_SERVICE_ACCOUNT_JSON` | 전체 | GitHub는 GA 리포트가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/daily-ga-report.yml`, `.github/workflows/weekly-ga-report.yml`, `apps/web/src/modules/ga/config.ts` |
+| `GITHUB_DISPATCH_REPOSITORY` (선택) | 전체 | 없으면 guesung/Web-Memo로 동작한다 | `apps/web/src/modules/slack/config.ts` |
+| `GITHUB_DISPATCH_TOKEN` | 전체 | Slack에서 release.yml과 versions.yml을 실행하지 못한다 | `apps/web/src/modules/slack/config.ts` |
+| `NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY` | 전체 | 채널톡 위젯이 뜨지 않는다 | `apps/web/src/components/ChannelTalk/index.tsx` |
+| `OPENAI_API_KEY` | 전체 | AI 기능 전체가 실패한다 | `apps/web/src/app/api/openai/util.ts`, `apps/web/src/app/api/openai/category/route.ts`, `apps/web/src/app/api/openai/webpage-qa/route.ts` |
+| `SENTRY_AUTH_TOKEN` | 전체 | Sentry 소스맵 업로드가 조용히 실패한다. 빌드는 통과하므로 스택 트레이스가 난독화된 채 보여야 알게 된다 | `.github/workflows/cd-extension.yml`, `apps/web/next.config.mjs`, `packages/vite-config/lib/withPageConfig.mjs` |
 | `SENTRY_WEBHOOK_SECRET` | production | Sentry 웹훅의 서명을 검증하지 못해 에러 알림이 Slack으로 릴레이되지 않는다 | `apps/web/src/modules/sentry/config.ts` |
-| `SLACK_BOT_TOKEN` | production, preview, development | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts` |
-| `SLACK_SENTRY_ALERT_CHANNEL` | production | Sentry 알림을 보낼 채널을 몰라 릴레이가 실패한다 | `apps/web/src/modules/sentry/config.ts` |
-| `SLACK_SIGNING_SECRET` | production, preview, development | Slack 요청 서명을 검증하지 못해 배포 버튼과 슬래시 커맨드가 실패한다 | `apps/web/src/modules/slack/config.ts` |
-| `UPSTASH_REDIS_REST_TOKEN` | production, preview, development | OpenAI API 레이트 리밋이 조용히 꺼진다 | `apps/web/src/app/api/openai/ratelimit.ts` |
-| `UPSTASH_REDIS_REST_URL` | production, preview, development | OpenAI API 레이트 리밋이 조용히 꺼진다 | `apps/web/src/app/api/openai/ratelimit.ts` |
+| `SLACK_BOT_TOKEN` | 전체 | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts` |
+| `SLACK_SENTRY_ALERT_CHANNEL` | 전체 | Sentry 알림을 보낼 채널을 몰라 릴레이가 실패한다 | `apps/web/src/modules/sentry/config.ts` |
+| `SLACK_SIGNING_SECRET` | 전체 | Slack 요청 서명을 검증하지 못해 배포 버튼과 슬래시 커맨드가 실패한다 | `apps/web/src/modules/slack/config.ts` |
+| `UPSTASH_REDIS_REST_TOKEN` | 전체 | OpenAI API 레이트 리밋이 조용히 꺼진다 | `apps/web/src/app/api/openai/ratelimit.ts` |
+| `UPSTASH_REDIS_REST_URL` | 전체 | OpenAI API 레이트 리밋이 조용히 꺼진다 | `apps/web/src/app/api/openai/ratelimit.ts` |
 
 ### Supabase Edge Function secrets (5개)
 
@@ -284,10 +284,12 @@ vercel link                          # 최초 1회, 저장소 루트에서 (프�
 pnpm env:pull                        # 저장소 루트에서 실행. apps/web/.env.local 생성 (gitignore 대상)
 ```
 
-- **로컬에 필요한 값은 development에도 등록해야 합니다.** production·preview 값은 sensitive라 받을 수
-  없고, Vercel은 development 대상을 sensitive로 만들 수 없어 **development 값은 프로젝트 접근 권한이 있는
-  사람이 읽을 수 있습니다.** 그래서 로컬에서 쓰지 않는 값(예: production 전용 `SENTRY_WEBHOOK_SECRET`)은
-  development에 넣지 않습니다.
+- **웹 값은 세 환경(production·preview·development)에 같은 값으로 등록합니다.** 예외는 값이 환경마다
+  달라야 하는 `BUILD_ENV`(production은 `production`, preview는 `staging`, development는 등록하지 않음)뿐입니다.
+  매니페스트에서는 `stores: [vercel]`이 세 환경 모두라는 뜻이고, 예외만 `vercel:<환경>`으로 적습니다.
+- **development 값은 프로젝트 접근 권한이 있는 사람이 읽을 수 있습니다.** production·preview 값은 sensitive라
+  pull로 받을 수 없지만, Vercel은 development 대상을 sensitive로 만들 수 없기 때문입니다. 세 환경을 같게
+  두면 production 값도 development 등록본으로 읽을 수 있다는 뜻이니 접근 권한 범위를 그렇게 다루세요.
 - **`GA4_SERVICE_ACCOUNT_JSON`은** 서비스 계정 키 JSON 전문을 한 줄로 넣습니다. 같은 이름의 값이
   GitHub Secrets에도 있지만(§5, `daily-ga-report.yml`이 읽습니다) 서로 다른 곳이라 **양쪽에 각각
   등록해야 합니다.** 값이 없으면 실패하지 않고 `/api/admin/ga/active-users`가 `connected: false`를

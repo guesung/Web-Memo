@@ -12,9 +12,10 @@
 #
 # 필드
 #   kind       secret(비밀) | config(공개 설정값) | platform(플랫폼이 주입, 등록 안 함) | flag(코드가 읽지 않는 플랫폼 플래그)
-#   stores     등록 위치. github | supabase | envpkg | vercel:production | vercel:preview | vercel:development
-#              envpkg는 packages/env/.env.{환경}. 웹의 서버 시크릿은 Vercel이 원천이고 로컬은 vercel:development를
-#              pnpm env:pull로 받아 씁니다(그래서 로컬에 필요한 값은 development에도 등록합니다)
+#   stores     등록 위치. github | supabase | envpkg | vercel | vercel:production | vercel:preview | vercel:development
+#              envpkg는 packages/env/.env.{환경}. vercel은 production·preview·development 세 환경 모두라는 뜻이고,
+#              vercel:<환경>은 값이 환경마다 달라야 하는 예외(BUILD_ENV)에만 씁니다. 웹의 서버 시크릿은 Vercel이
+#              원천이고 로컬은 development를 pnpm env:pull로 받아 쓰므로, 웹 값은 세 환경에 같게 등록합니다
 #   consumers  이 값을 읽는 파일. 그 파일에 이름이 실제로 들어 있어야 합니다
 #   impact     등록이 빠지면 생기는 일
 #   required   false면 값이 없어도 코드가 기본값으로 동작하는 선택 값. 기본은 true
@@ -131,21 +132,21 @@
 
 - name: SENTRY_AUTH_TOKEN
   kind: secret
-  stores: [github, vercel:production, vercel:preview, vercel:development]
+  stores: [github, vercel]
   consumers: [.github/workflows/cd-extension.yml, apps/web/next.config.mjs, packages/vite-config/lib/withPageConfig.mjs]
   impact: "Sentry 소스맵 업로드가 조용히 실패한다. 빌드는 통과하므로 스택 트레이스가 난독화된 채 보여야 알게 된다"
   note: "확장은 GitHub Secrets, 웹은 Vercel 프로젝트 환경변수로 받는다"
 
 - name: SLACK_BOT_TOKEN
   kind: secret
-  stores: [github, vercel:production, vercel:preview, vercel:development]
+  stores: [github, vercel]
   consumers: [.github/workflows/ci.yml, apps/web/src/modules/slack/config.ts]
   impact: "GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다"
   note: "같은 값이어야 하지만 서로 읽지 못해 따로 등록한다"
 
 - name: GA4_SERVICE_ACCOUNT_JSON
   kind: secret
-  stores: [github, vercel:production, vercel:preview, vercel:development]
+  stores: [github, vercel]
   consumers: [.github/workflows/daily-ga-report.yml, .github/workflows/weekly-ga-report.yml, apps/web/src/modules/ga/config.ts]
   impact: "GitHub는 GA 리포트가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시)"
 
@@ -155,31 +156,31 @@
 
 - name: OPENAI_API_KEY
   kind: secret
-  stores: [vercel:production, vercel:preview, vercel:development]
+  stores: [vercel]
   consumers: [apps/web/src/app/api/openai/util.ts, apps/web/src/app/api/openai/category/route.ts, apps/web/src/app/api/openai/webpage-qa/route.ts]
   impact: "AI 기능 전체가 실패한다"
 
 - name: UPSTASH_REDIS_REST_URL
   kind: secret
-  stores: [vercel:production, vercel:preview, vercel:development]
+  stores: [vercel]
   consumers: [apps/web/src/app/api/openai/ratelimit.ts]
   impact: "OpenAI API 레이트 리밋이 조용히 꺼진다"
 
 - name: UPSTASH_REDIS_REST_TOKEN
   kind: secret
-  stores: [vercel:production, vercel:preview, vercel:development]
+  stores: [vercel]
   consumers: [apps/web/src/app/api/openai/ratelimit.ts]
   impact: "OpenAI API 레이트 리밋이 조용히 꺼진다"
 
 - name: SLACK_SIGNING_SECRET
   kind: secret
-  stores: [vercel:production, vercel:preview, vercel:development]
+  stores: [vercel]
   consumers: [apps/web/src/modules/slack/config.ts]
   impact: "Slack 요청 서명을 검증하지 못해 배포 버튼과 슬래시 커맨드가 실패한다"
 
 - name: GITHUB_DISPATCH_TOKEN
   kind: secret
-  stores: [vercel:production, vercel:preview, vercel:development]
+  stores: [vercel]
   consumers: [apps/web/src/modules/slack/config.ts]
   impact: "Slack에서 release.yml과 versions.yml을 실행하지 못한다"
 
@@ -188,30 +189,31 @@
   stores: [vercel:production]
   consumers: [apps/web/src/modules/sentry/config.ts]
   impact: "Sentry 웹훅의 서명을 검증하지 못해 에러 알림이 Slack으로 릴레이되지 않는다"
+  note: "예외로 production에만 둔다. Sentry Internal Integration의 Client Secret은 생성 때 한 번만 표시돼 다른 환경에 같은 값을 복사할 수 없다. 통일하려면 시크릿을 회전하고 세 환경에 새 값을 등록한다"
 
 - name: SLACK_SENTRY_ALERT_CHANNEL
   kind: config
-  stores: [vercel:production]
+  stores: [vercel]
   consumers: [apps/web/src/modules/sentry/config.ts]
   impact: "Sentry 알림을 보낼 채널을 몰라 릴레이가 실패한다"
 
 - name: GITHUB_DISPATCH_REPOSITORY
   kind: config
-  stores: [vercel:production]
+  stores: [vercel]
   required: false
   consumers: [apps/web/src/modules/slack/config.ts]
   impact: "없으면 guesung/Web-Memo로 동작한다"
 
 - name: GA4_PROPERTY_ID
   kind: config
-  stores: [vercel:production]
+  stores: [vercel]
   required: false
   consumers: [apps/web/src/modules/ga/config.ts]
   impact: "없으면 코드에 적힌 기본 속성 ID로 동작한다"
 
 - name: NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY
   kind: config
-  stores: [vercel:production, vercel:preview, vercel:development]
+  stores: [vercel]
   consumers: [apps/web/src/components/ChannelTalk/index.tsx]
   impact: "채널톡 위젯이 뜨지 않는다"
 
@@ -224,7 +226,7 @@
 
 - name: ENABLE_EXPERIMENTAL_COREPACK
   kind: flag
-  stores: [vercel:production, vercel:preview, vercel:development]
+  stores: [vercel]
   impact: "corepack이 꺼져 packageManager의 pnpm 버전이 무시된다"
   note: "Vercel 빌드 시스템이 보는 플래그라 코드에서 grep해도 나오지 않는다. 지우면 빌드가 쓰는 pnpm 버전이 바뀐다"
 

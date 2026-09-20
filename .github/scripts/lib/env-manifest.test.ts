@@ -10,6 +10,7 @@ import {
 	parseManifest,
 	renderDocs,
 	validateManifest,
+	vercelEnvironments,
 } from "./env-manifest.mjs";
 
 const entry = (overrides: Record<string, unknown> = {}) => ({
@@ -263,5 +264,37 @@ describe("renderDocs", () => {
 
 	it("표식이 없으면 조용히 넘어가지 않고 던진다", () => {
 		expect(() => renderDocs("표식 없음", [entry()])).toThrow("표식이 필요합니다");
+	});
+});
+
+describe("vercel 저장소 표기", () => {
+	it("vercel은 세 환경 모두이고 vercel:<환경>은 그 환경만이다", () => {
+		expect([...vercelEnvironments(["github", "vercel"])].sort()).toEqual([
+			"development",
+			"preview",
+			"production",
+		]);
+		expect([...vercelEnvironments(["vercel:production", "vercel:preview"])].sort()).toEqual([
+			"preview",
+			"production",
+		]);
+		expect(vercelEnvironments(["github"]).size).toBe(0);
+	});
+
+	it("vercel과 vercel:<환경>을 함께 적으면 어느 쪽인지 모호하므로 알린다", () => {
+		expect(
+			validateManifest([entry({ stores: ["vercel", "vercel:production"] })]).join(),
+		).toContain("함께 적을 수 없습니다");
+	});
+
+	it("문서 표의 환경 열은 세 환경이면 전체, 아니면 환경명을 적는다", () => {
+		const doc = "<!-- env-manifest:start -->\n<!-- env-manifest:end -->\n";
+		const rendered = renderDocs(doc, [
+			entry({ name: "ALL_ENVS", stores: ["vercel"] }),
+			entry({ name: "SOME_ENVS", stores: ["vercel:production", "vercel:preview"] }),
+		]);
+
+		expect(rendered).toContain("| `ALL_ENVS` | 전체 |");
+		expect(rendered).toContain("| `SOME_ENVS` | production, preview |");
 	});
 });

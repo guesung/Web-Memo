@@ -9,9 +9,12 @@
  * "미조회"로 돌려주고 나머지를 계속 대조합니다.
  */
 
+import {
+	isVercelStore,
+	VERCEL_ENVIRONMENTS,
+	vercelEnvironments,
+} from "./env-manifest.mjs";
 import { requestJson } from "./http.mjs";
-
-const VERCEL_ENVIRONMENTS = ["production", "preview", "development"];
 
 /** Supabase가 Edge Function에 주입하는 예약 변수. 우리가 등록하는 값이 아닙니다. */
 const SUPABASE_RESERVED_PREFIX = "SUPABASE_";
@@ -129,18 +132,11 @@ const compareNameSets = ({ store, entries, actualNames }) => {
 
 const compareVercel = ({ entries, actualEnvironments }) => {
 	const findings = [];
-	const declared = declaredIn(entries, (store) => store.startsWith("vercel:"));
+	const declared = declaredIn(entries, (store) => isVercelStore(store));
 	const declaredByName = new Map(
 		declared.map((entry) => [
 			entry.name,
-			{
-				entry,
-				environments: new Set(
-					entry.stores
-						.filter((store) => store.startsWith("vercel:"))
-						.map((store) => store.replace("vercel:", "")),
-				),
-			},
+			{ entry, environments: vercelEnvironments(entry.stores) },
 		]),
 	);
 

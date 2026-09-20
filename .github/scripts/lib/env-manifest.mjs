@@ -12,9 +12,33 @@
 /** 변수의 성격. secret=비밀, config=공개 설정값, platform=플랫폼이 주입(등록 안 함), flag=코드가 읽지 않는 빌드·플랫폼 플래그 */
 export const MANIFEST_KINDS = ["secret", "config", "platform", "flag"];
 
+/** Vercel 프로젝트의 환경 세 가지 */
+export const VERCEL_ENVIRONMENTS = ["production", "preview", "development"];
+
+/**
+ * 항목의 stores에서 Vercel에 등록돼야 하는 환경 집합을 구합니다.
+ *
+ * @description `vercel`은 세 환경 모두라는 뜻이고, `vercel:<환경>`은 그 환경만이라는 예외 표기입니다.
+ * 웹의 값은 환경마다 같게 두는 것이 원칙이라 예외는 BUILD_ENV처럼 값이 환경마다 달라야 하는 것뿐입니다.
+ */
+export const vercelEnvironments = (stores) => {
+	if (stores.includes("vercel")) {
+		return new Set(VERCEL_ENVIRONMENTS);
+	}
+
+	return new Set(
+		stores
+			.filter((store) => store.startsWith("vercel:"))
+			.map((store) => store.replace("vercel:", "")),
+	);
+};
+
+export const isVercelStore = (store) =>
+	store === "vercel" || store.startsWith("vercel:");
+
 const NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
 const STORE_PATTERN =
-	/^(github|supabase|envpkg|vercel:(production|preview|development))$/;
+	/^(github|supabase|envpkg|vercel|vercel:(production|preview|development))$/;
 
 /** 워크플로의 secrets.* 참조에서 제외할 이름. Actions가 자동으로 제공합니다. */
 const BUILTIN_SECRETS = new Set(["GITHUB_TOKEN"]);
@@ -158,6 +182,15 @@ export const validateManifest = (entries) => {
 			if (!STORE_PATTERN.test(store)) {
 				errors.push(`${label}: 알 수 없는 저장 위치 ${store}`);
 			}
+		}
+
+		if (
+			entry.stores.includes("vercel") &&
+			entry.stores.some((store) => store.startsWith("vercel:"))
+		) {
+			errors.push(
+				`${label}: vercel(세 환경 모두)과 vercel:<환경>을 함께 적을 수 없습니다`,
+			);
 		}
 
 		if (entry.kind === "platform" && entry.stores.length > 0) {
@@ -374,7 +407,7 @@ const STORE_GROUPS = [
 	{ title: "GitHub Secrets", match: (store) => store === "github" },
 	{
 		title: "Vercel 프로젝트 환경변수",
-		match: (store) => store.startsWith("vercel:"),
+		match: (store) => isVercelStore(store),
 	},
 	{ title: "Supabase Edge Function secrets", match: (store) => store === "supabase" },
 	{ title: "`packages/env/.env.{환경}`", match: (store) => store === "envpkg" },
@@ -404,9 +437,11 @@ const renderStoreTable = (group, entries) => {
 			const consumers = escapeCell(formatConsumers(entry.consumers));
 
 			if (isVercel) {
-				const environments = stores
-					.map((store) => store.replace("vercel:", ""))
-					.join(", ");
+				const environmentSet = vercelEnvironments(stores);
+				const environments =
+					environmentSet.size === VERCEL_ENVIRONMENTS.length
+						? "전체"
+						: [...environmentSet].join(", ");
 
 				return `| \`${entry.name}\`${optional} | ${environments} | ${impact} | ${consumers} |`;
 			}

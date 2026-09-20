@@ -55,6 +55,8 @@ export default function useMemosInfiniteQuery({
 			return {
 				data: (result.data ?? []) as GetMemoResponse[],
 				count: result.count ?? 0,
+				// 화면은 실패를 빈 목록으로 보이지만, QueryCache가 이 값을 보고 Sentry에 보고한다.
+				error: result.error,
 			};
 		},
 		initialPageParam: undefined as string | undefined,

@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createErrorReporter, isAbortError } from "./errorReporter";
+import {
+	createErrorReporter,
+	getResultError,
+	isAbortError,
+	isLoggedOutError,
+} from "./errorReporter";
 
 const createReporter = () => {
 	const capture = vi.fn();
@@ -245,5 +250,64 @@ describe("isAbortError", () => {
 		expect(isAbortError(canceledError)).toBe(true);
 		expect(isAbortError(new Error("x"))).toBe(false);
 		expect(isAbortError("AbortError")).toBe(false);
+	});
+});
+
+describe("isLoggedOutError", () => {
+	it("로그아웃 상태의 인증 오류만 true다", () => {
+		const sessionMissingError = new Error("Auth session missing!");
+		sessionMissingError.name = "AuthSessionMissingError";
+
+		expect(isLoggedOutError(sessionMissingError)).toBe(true);
+		expect(isLoggedOutError(new Error("로그인을 먼저 해주세요"))).toBe(true);
+		expect(
+			isLoggedOutError(
+				new Error("로그인을 먼저 해주세요", { cause: new Error("x") }),
+			),
+		).toBe(true);
+		expect(isLoggedOutError(new Error("Failed to fetch"))).toBe(false);
+	});
+});
+
+describe("getResultError", () => {
+	it("message가 있는 error 값을 꺼낸다", () => {
+		const postgrestError = { message: "Failed to fetch", code: "" };
+
+		expect(getResultError({ data: null, error: postgrestError })).toBe(
+			postgrestError,
+		);
+	});
+
+	it("무한 쿼리는 페이지별 결과에서 error를 찾는다", () => {
+		const postgrestError = { message: "Failed to fetch" };
+
+		expect(
+			getResultError({
+				pages: [
+					{ data: [], error: null },
+					{ data: [], error: postgrestError },
+				],
+				pageParams: [undefined, "cursor"],
+			}),
+		).toBe(postgrestError);
+		expect(getResultError({ pages: [{ data: [], error: null }] })).toBeNull();
+	});
+
+	it("오류가 없거나 오류로 볼 수 없는 값이면 null이다", () => {
+		expect(getResultError({ data: [], error: null })).toBeNull();
+		expect(getResultError({ data: [] })).toBeNull();
+		expect(getResultError(undefined)).toBeNull();
+		expect(getResultError("error")).toBeNull();
+		expect(getResultError({ error: "문자열" })).toBeNull();
+		expect(getResultError({ error: { code: "1" } })).toBeNull();
+	});
+
+	it("로그아웃 상태의 인증 오류는 null이다", () => {
+		const sessionMissingError = new Error("Auth session missing!");
+		sessionMissingError.name = "AuthSessionMissingError";
+
+		expect(
+			getResultError({ data: { user: null }, error: sessionMissingError }),
+		).toBeNull();
 	});
 });

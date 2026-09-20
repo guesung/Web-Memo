@@ -1,18 +1,19 @@
-import { captureException } from "@sentry/react";
 import { CONFIG } from "@web-memo/env";
 import { analytics } from "@web-memo/shared/modules/analytics";
+import { isAbortError } from "@web-memo/shared/utils";
 import { I18n } from "@web-memo/shared/utils/extension";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { usePageContentContext } from "../../components/PageContentProvider";
+import { reportPageFeatureError } from "../../utils";
 import { getSummaryPrompt, processStreamingResponse } from "./util";
 
-const ERROR_REPORTING_WINDOW_MS = 8_000;
-const ERROR_FEATURE = "summary";
-const ERROR_OPERATION = "generate";
-
-const isExpectedSummaryError = (error: unknown): boolean => {
-	if (!(error instanceof Error)) return false;
-	return error.name === "AbortError";
+const reportSummaryFailure = (error: unknown, stage: string) => {
+	void reportPageFeatureError({
+		error,
+		feature: "summary",
+		operation: "generate",
+		stage,
+	});
 };
 
 interface UseSummaryReturn {
@@ -26,50 +27,11 @@ export default function useSummary(): UseSummaryReturn {
 	const [summary, setSummary] = useState("");
 	const [errorMessage, setErrorMessage] = useState("");
 	const [isGenerating, setIsGenerating] = useState(false);
-	const lastErrorRef = useRef(new Map<string, number>());
 	const {
 		content,
 		category,
 		error: pageContentError,
 	} = usePageContentContext();
-
-	const reportSummaryFailure = useCallback(
-		(
-			error: unknown,
-			stage: "reader" | "parse" | "server" | "fetch" | "general",
-		) => {
-			if (isExpectedSummaryError(error)) return;
-
-			const errorMessage =
-				error instanceof Error ? error.message : String(error);
-			const summaryErrorMessage = errorMessage || "unknown-summary-error";
-			const now = Date.now();
-			const fingerprint = `${ERROR_FEATURE}|${ERROR_OPERATION}|${stage}|${summaryErrorMessage.slice(0, 120)}`;
-			const last = lastErrorRef.current.get(fingerprint) ?? 0;
-			if (now - last < ERROR_REPORTING_WINDOW_MS) return;
-			lastErrorRef.current.set(fingerprint, now);
-
-			captureException(
-				error instanceof Error ? error : new Error(summaryErrorMessage),
-				{
-					level: "error",
-					tags: {
-						feature: ERROR_FEATURE,
-						operation: ERROR_OPERATION,
-						stage,
-					},
-					fingerprint: [ERROR_FEATURE, ERROR_OPERATION, stage],
-					extra: {
-						feature: ERROR_FEATURE,
-						operation: ERROR_OPERATION,
-						stage,
-						occurredAt: now,
-					},
-				},
-			);
-		},
-		[],
-	);
 
 	const generateSummary = useCallback(async () => {
 		if (pageContentError) {
@@ -119,10 +81,7 @@ export default function useSummary(): UseSummaryReturn {
 				},
 				(error, stage) => {
 					hasStreamError = true;
-					reportSummaryFailure(
-						new Error(error),
-						stage === "server" ? "server" : stage,
-					);
+					reportSummaryFailure(new Error(error), stage);
 					analytics.trackEvent({
 						name: "summary_fail",
 						params: { reason: error },
@@ -139,7 +98,7 @@ export default function useSummary(): UseSummaryReturn {
 				});
 			}
 		} catch (error) {
-			if (!isExpectedSummaryError(error)) {
+			if (!isAbortError(error)) {
 				console.error("Summary error:", error);
 				analytics.trackEvent({
 					name: "summary_fail",
@@ -153,7 +112,7 @@ export default function useSummary(): UseSummaryReturn {
 		} finally {
 			setIsGenerating(false);
 		}
-	}, [content, category, pageContentError, reportSummaryFailure]);
+	}, [content, category, pageContentError]);
 
 	return {
 		isSummaryLoading: isGenerating,

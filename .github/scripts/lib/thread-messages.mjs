@@ -145,15 +145,24 @@ export const decideTargetReply = ({ changed, result }) => {
 
 /**
  * 타깃별 빌드 결과 댓글 페이로드를 만듭니다.
- * 문구는 "웹 빌드 성공"처럼 타깃 + 결과이고, 이 실행의 Actions 로그 링크가 붙습니다.
+ * 문구는 "웹 빌드 성공"처럼 타깃 + 결과이고, 기본으로 이 실행의 Actions 로그 링크가 붙습니다.
+ *
+ * actionBlock을 넘기면 로그 링크 줄을 그 버튼 줄로 대신합니다. 버튼 줄이 워크플로 링크를
+ * 이미 품고 있어 둘을 함께 두면 같은 링크가 두 번 보이기 때문입니다.
  *
  * @param {object} params
  * @param {"web" | "extension" | "app"} params.target
  * @param {"success" | "failure"} params.outcome decideTargetReply의 결과
  * @param {string} params.runUrl 이 실행의 Actions 로그 주소
+ * @param {object} [params.actionBlock] 배포 버튼 줄(buildActionBlock의 결과). 성공 댓글에만 넘깁니다.
  * @returns {{ text: string, blocks: object[] }}
  */
-export const buildTargetReplyPayload = ({ target, outcome, runUrl }) => {
+export const buildTargetReplyPayload = ({
+	target,
+	outcome,
+	runUrl,
+	actionBlock,
+}) => {
 	const label = TARGET_LABELS[target];
 	const outcomeLabel = REPLY_OUTCOME_LABELS[outcome];
 
@@ -170,7 +179,7 @@ export const buildTargetReplyPayload = ({ target, outcome, runUrl }) => {
 				type: "section",
 				text: { type: "mrkdwn", text: `${outcomeLabel.icon} *${message}*` },
 			},
-			{
+			actionBlock ?? {
 				type: "context",
 				elements: [{ type: "mrkdwn", text: `<${runUrl}|Actions 로그 보기>` }],
 			},

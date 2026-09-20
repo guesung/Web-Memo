@@ -11,9 +11,13 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, labeled, unlabeled]
 
-# master는 run에 배포가 걸려 있어 중간에 끊기면 안 되므로 취소하지 않고 줄을 세웁니다.
+# master는 커밋마다 CI를 병렬로 끝까지 돌립니다. 그룹을 ref 단위로 두면 push가 연달아 들어올 때
+# GitHub이 대기 run을 하나만 남기고 앞선 대기 run을 cancel-in-progress와 상관없이 취소합니다.
+# 취소된 run은 잡이 하나도 뜨지 않아 그 커밋은 CI 검증도 Slack 알림도 없이 사라집니다(PR #517).
+# master의 이 CI는 배포하지 않고 빌드 검증·아티팩트·알림만 하므로 병렬로 돌려도 배포가 겹치지 않습니다.
+# PR과 develop은 종전처럼 같은 ref의 앞선 run을 취소합니다.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.ref == 'refs/heads/master' && github.sha || github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:

@@ -38,7 +38,9 @@ jobs:
       - uses: actions/create-github-app-token@v3
         id: app-token
         with:
-          app-id: ${{ secrets.APP_ID }}
+          # app-id는 deprecated입니다. 액션이 두 입력을 같은 변수로 읽고 GitHub도 JWT iss에 client ID와
+          # 앱 ID를 모두 받으므로, 시크릿 APP_ID 값을 그대로 client-id에 넘겨도 동작이 같습니다.
+          client-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions/checkout@v5

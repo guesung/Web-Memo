@@ -366,6 +366,11 @@ production을 구분하지 못합니다. `isProduction()`은 `buildEnv !== "deve
 자세한 내용은 [docs/environment-variables.md](docs/environment-variables.md) 참조 —
 값의 위치 판단 기준, GitHub Secrets 전수 목록, Vercel 환경 짝 맞추기, 로컬 셋업 절차.
 
+**변수를 추가·삭제·이동하면 [`.github/env-manifest.yml`](.github/env-manifest.yml)을 함께 고치고**
+`node .github/scripts/check-env-manifest.mjs --write`로 문서 표를 갱신합니다. 이 파일이 어떤 변수가 어디에
+등록돼야 하는지의 원천이며, PR CI가 코드와 대조하고 매일 스케줄 CI가 GitHub·Vercel·Supabase의 실제 등록
+목록과 대조합니다.
+
 ---
 
 ## ✅ 자주 하는 작업

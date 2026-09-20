@@ -67,6 +67,9 @@ function buildVersionInputBlock({
  *
  * @param responseUrl 제출 결과를 되돌려 보낼 원본 메시지의 response_url.
  *   모달에는 response_url이 없어 private_metadata로 실어 나릅니다.
+ * @param target 넘기면 이 대상 하나로 고정된 모달을 만듭니다. 타깃별 댓글에서 누른 "다른 버전…"이
+ *   이 경우입니다. 대상 체크박스가 사라지고, 버전 입력 칸도 그 대상의 것만 남습니다
+ *   (웹은 버전이 없어 커밋 선택만 남습니다). 고정된 대상은 private_metadata로 제출까지 이어집니다.
  * @param currentVersions 현재 배포된 앱·확장 버전. placeholder로만 쓰이므로 선택입니다 —
  *   모달을 먼저 띄우고(`isLoading: true`) 나중에 views.update로 채우는 2단 구조라
  *   첫 호출에는 아직 값이 없습니다.
@@ -75,14 +78,16 @@ export const buildDeployModal = ({
 	refOptions,
 	defaultRef,
 	responseUrl,
+	target,
 	currentVersions,
 	isLoading = false,
 }: {
 	refOptions: Array<{ label: string; value: string }>;
 	defaultRef: string;
 	responseUrl: string;
+	target?: TDeployTarget;
 	currentVersions?: { app?: string; extension?: string };
-	/** 태그·커밋 목록을 아직 못 받은 상태. 목록이 채워지면 views.update로 교체됩니다. */
+	/** 커밋 목록을 아직 못 받은 상태. 목록이 채워지면 views.update로 교체됩니다. */
 	isLoading?: boolean;
 }): Record<string, unknown> => {
 	const options = refOptions.map(({ label, value }) => ({
@@ -95,28 +100,39 @@ export const buildDeployModal = ({
 	return {
 		type: "modal",
 		callback_id: DEPLOY_MODAL_CALLBACK_ID,
-		private_metadata: JSON.stringify({ responseUrl }),
-		title: { type: "plain_text", text: "배포" },
+		private_metadata: JSON.stringify({ responseUrl, target }),
+		// 모달 제목은 24자까지입니다. "📱 앱 배포"처럼 라벨에 "배포"만 붙이므로 넘지 않습니다.
+		title: {
+			type: "plain_text",
+			text: target ? `${DEPLOY_TARGET_LABELS[target]} 배포` : "배포",
+		},
 		submit: { type: "plain_text", text: "배포" },
 		close: { type: "plain_text", text: "취소" },
 		blocks: [
-			{
-				type: "input",
-				block_id: DEPLOY_MODAL_FIELDS.targets.blockId,
-				label: { type: "plain_text", text: "배포 대상" },
-				element: {
-					type: "checkboxes",
-					action_id: DEPLOY_MODAL_FIELDS.targets.actionId,
-					options: TARGET_ORDER.map((target) => ({
-						text: { type: "plain_text", text: DEPLOY_TARGET_LABELS[target] },
-						value: target,
-					})),
-				},
-			},
+			...(target
+				? []
+				: [
+						{
+							type: "input",
+							block_id: DEPLOY_MODAL_FIELDS.targets.blockId,
+							label: { type: "plain_text", text: "배포 대상" },
+							element: {
+								type: "checkboxes",
+								action_id: DEPLOY_MODAL_FIELDS.targets.actionId,
+								options: TARGET_ORDER.map((option) => ({
+									text: {
+										type: "plain_text",
+										text: DEPLOY_TARGET_LABELS[option],
+									},
+									value: option,
+								})),
+							},
+						},
+					]),
 			{
 				type: "input",
 				block_id: DEPLOY_MODAL_FIELDS.ref.blockId,
-				label: { type: "plain_text", text: "배포할 커밋 / 태그" },
+				label: { type: "plain_text", text: "배포할 커밋" },
 				element: {
 					type: "static_select",
 					action_id: DEPLOY_MODAL_FIELDS.ref.actionId,
@@ -124,22 +140,30 @@ export const buildDeployModal = ({
 					...(initialOption ? { initial_option: initialOption } : {}),
 				},
 			},
-			buildVersionInputBlock({
-				field: DEPLOY_MODAL_FIELDS.appVersion,
-				label: "앱 버전 (비우면 그대로)",
-				currentVersion: currentVersions?.app,
-			}),
-			buildVersionInputBlock({
-				field: DEPLOY_MODAL_FIELDS.extensionVersion,
-				label: "확장 버전 (비우면 그대로)",
-				currentVersion: currentVersions?.extension,
-			}),
+			...(!target || target === "app"
+				? [
+						buildVersionInputBlock({
+							field: DEPLOY_MODAL_FIELDS.appVersion,
+							label: "앱 버전 (비우면 그대로)",
+							currentVersion: currentVersions?.app,
+						}),
+					]
+				: []),
+			...(!target || target === "extension"
+				? [
+						buildVersionInputBlock({
+							field: DEPLOY_MODAL_FIELDS.extensionVersion,
+							label: "확장 버전 (비우면 그대로)",
+							currentVersion: currentVersions?.extension,
+						}),
+					]
+				: []),
 			...(isLoading
 				? [
 						{
 							type: "context",
 							elements: [
-								{ type: "mrkdwn", text: "_태그·커밋 목록을 불러오는 중…_" },
+								{ type: "mrkdwn", text: "_커밋 목록을 불러오는 중…_" },
 							],
 						},
 					]

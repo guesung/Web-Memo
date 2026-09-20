@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { buildBumpCommitMessage } from "./github";
+import { buildBumpCommitMessage, fetchRefOptions } from "./github";
 
 describe("buildBumpCommitMessage", () => {
 	const requestedBy = "guesung";
@@ -41,5 +41,64 @@ describe("buildBumpCommitMessage", () => {
 		expect(subject.length).toBeLessThanOrEqual(72);
 		expect(blank).toBe("");
 		expect(body).toContain(requestedBy);
+	});
+});
+
+describe("fetchRefOptions", () => {
+	afterEach(() => {
+		vi.unstubAllGlobals();
+		vi.unstubAllEnvs();
+	});
+
+	const stubFetch = (response: { ok: boolean; body?: unknown }) => {
+		vi.stubEnv("GITHUB_DISPATCH_TOKEN", "t0ken");
+		const fetchMock = vi.fn().mockResolvedValue({
+			ok: response.ok,
+			json: async () => response.body ?? [],
+		});
+		vi.stubGlobal("fetch", fetchMock);
+
+		return fetchMock;
+	};
+
+	it("태그는 조회하지 않고 master 커밋만 선택지로 만든다", async () => {
+		const fetchMock = stubFetch({
+			ok: true,
+			body: [
+				{
+					sha: "8ae32c1aaaaaaaa",
+					commit: { message: "feat: 정렬 추가\n\n본문" },
+				},
+				{ sha: "b931ac6bbbbbbbb", commit: { message: "fix: 예시" } },
+			],
+		});
+
+		const options = await fetchRefOptions();
+
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+		expect(fetchMock.mock.calls[0][0]).toContain("/commits?sha=master");
+		expect(fetchMock.mock.calls[0][0]).not.toContain("/tags");
+		expect(options).toEqual([
+			{ label: "8ae32c1 feat: 정렬 추가", value: "8ae32c1aaaaaaaa" },
+			{ label: "b931ac6 fix: 예시", value: "b931ac6bbbbbbbb" },
+		]);
+		expect(options.some(({ label }) => label.includes("🏷️"))).toBe(false);
+	});
+
+	it("라벨은 Slack 제한(75자)에 맞춰 자른다", async () => {
+		stubFetch({
+			ok: true,
+			body: [{ sha: "8ae32c1aaaaaaaa", commit: { message: "가".repeat(200) } }],
+		});
+
+		const [option] = await fetchRefOptions();
+
+		expect(option.label).toHaveLength(75);
+	});
+
+	it("조회가 실패하면 빈 목록이다", async () => {
+		stubFetch({ ok: false });
+
+		await expect(fetchRefOptions()).resolves.toEqual([]);
 	});
 });

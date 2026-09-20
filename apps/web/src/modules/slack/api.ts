@@ -101,7 +101,7 @@ export const openSlackModal = async ({
  * 이미 열려 있는 모달의 내용을 교체합니다.
  *
  * @description trigger_id 3초 제한 때문에 모달은 외부 호출 없이 먼저 띄우고,
- * 느린 데이터(GitHub 태그·커밋 목록)는 이걸로 나중에 채웁니다.
+ * 느린 데이터(GitHub 커밋 목록)는 이걸로 나중에 채웁니다.
  * 실패해도 모달 자체는 이미 떠 있으므로 호출부가 삼켜도 됩니다.
  */
 export const updateSlackModal = async ({

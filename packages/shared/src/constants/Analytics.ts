@@ -18,3 +18,14 @@ export const ANALYTICS = {
  */
 export const ANALYTICS_EXCLUDED_USER_ID =
 	"ef8c4ab1-4d92-4b0f-9d41-084f51813406";
+
+/**
+ * 다음 방문 때 gtag가 뜨기 전에 읽는 표식.
+ * @description 로그인 여부는 세션을 복원한 뒤에야 알 수 있는데, 그때는 gtag가 이미
+ * page_view를 보낸 뒤다. 한 번 관리자로 확인되면 이 표식을 남겨 두고, 다음 방문부터는
+ * 레이아웃의 선행 스크립트가 gtag보다 먼저 전역 플래그를 켠다.
+ *
+ * `"use client"` 파일에 두면 서버 컴포넌트(레이아웃)에서는 값이 아닌 클라이언트 참조
+ * 함수가 되어 선행 스크립트의 문자열에 함수 본문이 박히므로, 서버에서도 안전한 이 파일에 둔다.
+ */
+export const ANALYTICS_EXCLUDED_STORAGE_KEY = "analyticsExcluded";

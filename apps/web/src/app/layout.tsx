@@ -4,8 +4,10 @@ import "./globals.css";
 
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 import { CONFIG } from "@web-memo/env";
-import { ANALYTICS } from "@web-memo/shared/constants";
-import { ANALYTICS_EXCLUDED_STORAGE_KEY } from "@web-memo/shared/modules/analytics";
+import {
+	ANALYTICS,
+	ANALYTICS_EXCLUDED_STORAGE_KEY,
+} from "@web-memo/shared/constants";
 import { isProduction } from "@web-memo/shared/utils";
 import { Toaster } from "@web-memo/ui";
 import type { Metadata, Viewport } from "next";

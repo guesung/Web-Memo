@@ -29,10 +29,18 @@ export async function POST(request: Request) {
 		return new NextResponse("invalid signature", { status: 401 });
 	}
 
-	// issue 리소스가 아니거나(예: 설치 확인용 ping), 새로 생성된 이슈가 아니면
-	// (resolved·assigned·ignored·unresolved 상태 변경) 조용히 무시합니다.
-	// 상태 변경마다 알리면 Slack이 스팸이 됩니다.
-	if (!payload.data?.issue || payload.action !== "created") {
+	// issue 리소스가 아니면(예: 설치 확인용 ping) 조용히 무시합니다.
+	if (!payload.data?.issue) {
+		return NextResponse.json({ ok: true });
+	}
+
+	// 새로 생성된 이슈와, 한 번 resolve·ignore한 뒤 재발한 이슈만 알립니다.
+	// resolved·assigned·ignored 상태 변경까지 알리면 Slack이 스팸이 되고,
+	// 이미 unresolved인 이슈에 이벤트가 더 쌓이는 것은 이 리소스로는 알 수 없습니다.
+	const isNotableAction =
+		payload.action === "created" || payload.action === "unresolved";
+
+	if (!isNotableAction) {
 		return NextResponse.json({ ok: true });
 	}
 

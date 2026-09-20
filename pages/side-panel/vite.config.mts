@@ -26,9 +26,6 @@ export default withPageConfig({
 			treeshake: "recommended",
 			output: {
 				manualChunks(id: string) {
-					if (id.includes("@sentry-internal+replay")) {
-						return "@sentry-vendor";
-					}
 					if (
 						id.includes("node_modules/react/") ||
 						id.includes("node_modules/react-dom/")

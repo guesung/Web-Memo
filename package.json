@@ -20,6 +20,7 @@
 		"dev": "turbo watch dev --filter !@web-memo/app",
 		"dev-server": "pnpm -F hmr ready && pnpm -F hmr dev",
 		"dev:web": "turbo watch dev --filter @web-memo/web",
+		"env:pull": "vercel env pull apps/web/.env.local --environment=development --yes",
 		"dev:web:preview": "turbo run preview --filter=@web-memo/web",
 		"dev:extension": "turbo watch dev --filter !@web-memo/web",
 		"dev:app": "turbo watch dev --filter @web-memo/app",

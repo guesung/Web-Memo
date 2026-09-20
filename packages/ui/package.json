@@ -67,7 +67,7 @@
 		"@web-memo/tailwindcss-config": "workspace:*",
 		"@web-memo/tsconfig": "workspace:*",
 		"@web-memo/vite-config": "workspace:*",
-		"@sentry/react": "^8.30.0",
+		"@sentry/react": "^9.47.1",
 		"@types/chrome": "^0.0.268",
 		"@types/react": "^19.1.0",
 		"@types/react-dom": "^19.1.0",

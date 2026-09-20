@@ -84,12 +84,68 @@ export const compareSupabaseState = ({ manifest, observations }) => {
 	return findings;
 };
 
-/** stdout·GitHub summary·Slack에 공통으로 사용하는 비밀 없는 요약입니다. */
+/** Slack 이상 알림에 사용하는 비밀 없는 요약입니다. */
 export const formatAuditReport = (result) => [
 	`Supabase 운영 감사: 오류 ${result.errorCount}개, 경고 ${result.warningCount}개`,
 	`프로젝트: ${result.projectRef ?? "확인 불가"} / 검사: ${result.checkedAt}`,
 	...result.findings.map((finding) => `- [${finding.severity}] ${finding.message}`),
 ].join("\n");
+
+/** 정상 리소스까지 포함한 운영 인벤토리와 감사 결과를 GitHub Summary에 표시합니다. */
+export const formatAuditSummary = (result) => {
+	const observations = result.observations ?? {};
+	const sections = [
+		"## Supabase 운영 현황",
+		`프로젝트: ${formatSummaryCell(result.projectRef)} / 검사: ${formatSummaryCell(result.checkedAt)}`,
+		`프로젝트 상태: ${formatSummaryCell(observations.project?.status)} / PostgreSQL: ${formatSummaryCell(observations.project?.postgresVersion)}`,
+		formatInventoryTable({ title: "DB 및 서비스 상태", entries: observations.services, columns: [["서비스", "name"], ["상태", "status"]] }),
+		formatInventoryTable({ title: "배포된 Edge Functions", entries: observations.functions, columns: [["함수", "name"], ["배포 버전", "version"], ["상태", "status"]] }),
+		"### 최근 24시간 Edge Function 오류",
+		"HTTP 오류는 응답 상태 코드 400 이상이며, 로그 오류는 error 수준 또는 UncaughtException 이벤트입니다. 두 집계에는 같은 요청이 포함될 수 있습니다.",
+		"| 구분 | 오류 수 | 조회 시작 (UTC) | 조회 종료 (UTC) |",
+		"| --- | --- | --- | --- |",
+	];
+	for (const [category, label] of [["functionHttpErrors", "HTTP 오류"], ["functionLogErrors", "로그 오류"]]) {
+		const observation = observations[category];
+		sections.push(`| ${label} | ${formatSummaryCell(observation?.count)} | ${formatSummaryCell(observation?.start)} | ${formatSummaryCell(observation?.end)} |`);
+	}
+	for (const [category, title] of [["migrations", "적용된 마이그레이션"], ["cron", "Cron 작업"], ["triggers", "DB 트리거"], ["webhooks", "DB Webhook"], ["vault", "Vault 키 이름"], ["secrets", "Edge Function 시크릿 이름"]]) {
+		const columns = [["이름", "name"]];
+		if (["cron", "triggers", "webhooks"].includes(category)) {
+			columns.push(["활성 여부", "active"]);
+		}
+		sections.push(formatInventoryTable({ title, entries: observations[category], columns }));
+	}
+	sections.push("### 감사 결과", `오류 ${result.errorCount}개, 경고 ${result.warningCount}개`);
+	sections.push(...result.findings.map((finding) => `- [${formatSummaryCell(finding.severity)}] ${formatSummaryCell(finding.message)}`));
+
+	return sections.join("\n\n").replaceAll("|\n\n|", "|\n|");
+};
+
+/** 표는 허용된 메타데이터 필드만 출력하며, 관측 실패를 빈 인벤토리와 구분합니다. */
+const formatInventoryTable = ({ title, entries, columns }) => {
+	if (!Array.isArray(entries)) {
+		return `### ${title}\n\n조회하지 못했습니다. 감사 결과에서 실패 원인을 확인하세요.`;
+	}
+	if (entries.length === 0) {
+		return `### ${title} (0개)\n\n조회된 리소스가 없습니다.`;
+	}
+	const rows = entries.map((entry) => `| ${columns.map(([, field]) => formatSummaryCell(entry[field])).join(" | ")} |`);
+
+	return [`### ${title} (${entries.length}개)`, "", `| ${columns.map(([label]) => label).join(" | ")} |`, `| ${columns.map(() => "---").join(" | ")} |`, ...rows].join("\n");
+};
+
+/** 리소스 이름의 Markdown·HTML·줄바꿈이 표 구조나 링크로 해석되지 않도록 처리합니다. */
+const formatSummaryCell = (value) => {
+	if (value === undefined || value === null || value === "") {
+		return "확인 불가";
+	}
+	if (typeof value === "boolean") {
+		return value ? "활성" : "비활성";
+	}
+
+	return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replace(/[\\`*_[\]{}()#!|~]/g, (character) => `&#${character.charCodeAt(0)};`).replace(/[\r\n\t]/g, " ");
+};
 
 /** Actions annotation 명령 삽입을 막기 위해 제어 문자를 이스케이프합니다. */
 export const formatAuditAnnotation = (finding) => {

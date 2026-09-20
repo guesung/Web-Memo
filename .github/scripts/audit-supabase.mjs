@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /** 읽기 전용 운영 감사. --output <파일>에 JSON을 저장하며 오류 1, 경고만 있으면 0입니다. */
 import { appendFileSync, readFileSync, writeFileSync } from "node:fs";
-import { auditSupabase, formatAuditAnnotation } from "./lib/supabase-audit.mjs";
+import { auditSupabase, formatAuditAnnotation, formatAuditSummary } from "./lib/supabase-audit.mjs";
 
 const main = async () => {
 	const args = process.argv.slice(2);
@@ -21,7 +21,7 @@ const main = async () => {
 		writeFileSync(args[1], `${json}\n`);
 	}
 	if (process.env.GITHUB_STEP_SUMMARY) {
-		appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${result.slackMessage}\n`);
+		appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${formatAuditSummary(result)}\n`);
 	}
 	if (process.env.GITHUB_ACTIONS === "true") {
 		for (const finding of result.findings) {

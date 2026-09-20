@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
-import { auditSupabase, compareSupabaseState, formatAuditAnnotation } from "./supabase-audit.mjs";
+import { auditSupabase, compareSupabaseState, formatAuditAnnotation, formatAuditSummary } from "./supabase-audit.mjs";
 
 const MANIFEST = {
 	schemaVersion: 1,
@@ -104,6 +104,42 @@ describe("운영 상태 비교", () => {
 });
 
 describe("Management API 조회", () => {
+	it("정상 리소스와 0건 오류도 Summary에 표시하고 JSON 관측을 보존한다", async () => {
+		const result = await auditSupabase({ manifest: MANIFEST, token: "TOKEN", now: new Date("2026-09-20T12:34:45Z"), fetcher: createFetcher() });
+		const summary = formatAuditSummary(result);
+		expect(summary).toContain("| db | ACTIVE&#95;HEALTHY |");
+		expect(summary).toContain("15.8.1.060");
+		expect(summary).toContain("| send-welcome-email | 2 | ACTIVE |");
+		expect(summary).toContain("| HTTP 오류 | 0 | 2026-09-19T12:34:00.000Z | 2026-09-20T12:34:00.000Z |");
+		expect(summary).toContain("| 로그 오류 | 0 |");
+		expect(summary).toContain("| 20260912 |");
+		expect(summary).toContain("| daily-article-reminder | 활성 |");
+		expect(summary).toContain("| auth.users.send&#95;welcome&#95;email&#95;trigger | 활성 |");
+		expect(summary).toContain("DB Webhook (0개)");
+		expect(summary).toContain("| cron&#95;secret |");
+		expect(summary).toContain("| CRON&#95;SECRET |");
+		expect(summary).not.toContain("DO_NOT_PRINT");
+		expect(result.observations.functions).toEqual(getObservations().functions);
+		expect(result.slackMessage).not.toContain("배포된 Edge Functions");
+	});
+	it("관측 실패는 빈 목록이나 오류 0건으로 표시하지 않는다", async () => {
+		const fetcher = createFetcher((url) => url.pathname.endsWith("/functions") || url.pathname.endsWith("/logs") ? new Response("failed", { status: 403 }) : undefined);
+		const result = await auditSupabase({ manifest: MANIFEST, token: "TOKEN", fetcher });
+		const summary = formatAuditSummary(result);
+		expect(summary).toContain("### 배포된 Edge Functions\n\n조회하지 못했습니다.");
+		expect(summary).toContain("| HTTP 오류 | 확인 불가 | 확인 불가 | 확인 불가 |");
+		expect(summary).not.toContain("배포된 Edge Functions (0개)");
+		expect(result.exitCode).toBe(1);
+	});
+	it("Summary는 비밀 필드를 출력하지 않고 이름의 Markdown 구문을 이스케이프한다", () => {
+		const result = {
+			projectRef: MANIFEST.projectRef, checkedAt: "2026-09-20T12:00:00Z", errorCount: 0, warningCount: 0, findings: [],
+			observations: { ...getObservations(), webhooks: [{ name: "hook|<img>\n[link](url)", active: false, url: "DO_NOT_PRINT", command: "DO_NOT_PRINT" }], vault: [{ name: "key", decrypted_secret: "DO_NOT_PRINT" }] },
+		};
+		const summary = formatAuditSummary(result);
+		expect(summary).toContain("hook&#124;&lt;img&gt; &#91;link&#93;&#40;url&#41; | 비활성");
+		expect(summary).not.toContain("DO_NOT_PRINT");
+	});
 	it("계약에 맞는 읽기 전용 요청과 정확한 24시간 범위를 사용하고 비밀을 버린다", async () => {
 		const fetcher = createFetcher();
 		const result = await auditSupabase({ manifest: MANIFEST, token: "TOKEN", now: new Date("2026-09-20T12:34:45Z"), fetcher });

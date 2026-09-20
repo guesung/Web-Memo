@@ -1,7 +1,8 @@
 name: Supabase Schema
 
+# base의 워크플로·생성기만 실행합니다. PR head는 Git 객체 데이터로만 읽습니다.
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
 
@@ -9,67 +10,106 @@ permissions:
   contents: read
 
 concurrency:
-  group: supabase-schema-${{ github.ref }}
+  group: supabase-schema-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   check:
     name: Supabase 스키마 문서 검사
+    if: github.event_name != 'workflow_dispatch' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
 
-      - name: 관련 변경과 fork 여부 확인
+      - name: 관련 변경 확인 및 PR 문서 데이터 읽기
         id: scope
         env:
           EVENT_NAME: ${{ github.event_name }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
           CURRENT_REPOSITORY: ${{ github.repository }}
+          GH_READ_TOKEN: ${{ github.token }}
         run: |
           node --input-type=module <<'NODE'
           import { execFileSync } from "node:child_process";
-          import { appendFileSync } from "node:fs";
+          import { appendFileSync, writeFileSync } from "node:fs";
+          import { join } from "node:path";
 
-          const isPullRequest = process.env.EVENT_NAME === "pull_request";
+          const isPullRequest = process.env.EVENT_NAME === "pull_request_target";
           const isFork = isPullRequest && process.env.HEAD_REPOSITORY !== process.env.CURRENT_REPOSITORY;
-          let relevant = !isPullRequest;
-          if (isPullRequest) {
-            const paths = execFileSync("git", ["diff", "--name-only", "-z", "--no-renames", `${process.env.BASE_SHA}...${process.env.HEAD_SHA}`], { encoding: "utf8" }).split("\0");
-            relevant = paths.some((path) => /^(packages\/supabase-edge-functions\/supabase\/(migrations\/|functions\/|config\.toml$)|packages\/shared\/src\/types\/supabase\.ts$|\.github\/scripts\/(generate-supabase-schema\.mjs$|lib\/supabase-schema\.(mjs|test\.ts)$|lib\/http\.mjs$)|\.github\/workflows\/supabase-schema\.yml$|docs\/supabase-schema\.md$|package\.json$|\.github\/env-manifest\.yml$)/.test(path));
-          }
-          const shouldCheck = relevant && !isFork;
-          appendFileSync(process.env.GITHUB_OUTPUT, `check=${shouldCheck}\n`);
-          if (!shouldCheck) {
-            const reason = isFork
-              ? "외부 fork PR이므로 Production 및 시크릿 접근 없이 Supabase 스키마 검사를 건너뜁니다."
-              : "Supabase 관련 변경이 없으므로 스키마 검사를 건너뜁니다.";
+          const skip = (reason) => {
+            appendFileSync(process.env.GITHUB_OUTPUT, "check=false\n");
             console.log(`::notice::${reason}`);
             appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### Supabase 스키마 문서 검사\n\n${reason}\n`);
+          };
+          if (isFork) {
+            skip("외부 fork PR이므로 Production 및 시크릿 접근 없이 검사를 건너뜁니다.");
+          } else if (isPullRequest && process.env.BASE_REF !== process.env.DEFAULT_BRANCH) {
+            skip("기본 브랜치를 대상으로 하지 않는 PR이므로 신뢰되지 않은 base 코드의 실행을 건너뜁니다.");
+          } else {
+            const base = process.env.BASE_SHA;
+            const head = process.env.HEAD_SHA;
+            if (![base, head].every((sha) => /^[a-f0-9]{40}$/.test(sha))) {
+              throw new Error("올바른 base/head commit SHA가 필요합니다.");
+            }
+            if (isPullRequest) {
+              const authorization = Buffer.from(`x-access-token:${process.env.GH_READ_TOKEN}`).toString("base64");
+              try {
+                execFileSync("git", ["-c", `http.extraheader=AUTHORIZATION: basic ${authorization}`, "fetch", "--no-tags", "origin", head], { stdio: "pipe" });
+              } catch {
+                throw new Error("PR head 객체를 가져오지 못했습니다.");
+              }
+            }
+            const paths = execFileSync("git", ["diff", "--name-only", "-z", "--no-renames", `${base}...${head}`], { encoding: "utf8" }).split("\0");
+            const relevant = !isPullRequest || paths.some((path) => /^(packages\/supabase-edge-functions\/supabase\/(migrations\/|functions\/|config\.toml$)|packages\/shared\/src\/types\/supabase\.ts$|\.github\/scripts\/(generate-supabase-schema\.mjs$|lib\/supabase-schema\.(mjs|test\.ts)$|lib\/http\.mjs$)|\.github\/workflows\/supabase-schema\.yml$|docs\/supabase-schema\.md$|package\.json$|\.github\/env-manifest\.yml$)/.test(path));
+            if (!relevant) {
+              skip("Supabase 관련 변경이 없으므로 검사를 건너뜁니다.");
+            } else {
+              let document;
+              try {
+                document = execFileSync("git", ["show", `${head}:docs/supabase-schema.md`], { maxBuffer: 1024 * 1024, stdio: ["ignore", "pipe", "pipe"] });
+              } catch {
+                throw new Error("PR 문서가 없거나 읽을 수 없습니다. pnpm generate-supabase-schema 를 실행하세요.");
+              }
+              writeFileSync(join(process.env.RUNNER_TEMP, "supabase-head.md"), document);
+              appendFileSync(process.env.GITHUB_OUTPUT, "check=true\n");
+            }
           }
           NODE
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         if: steps.scope.outputs.check == 'true'
         with:
-          node-version-file: ".nvmrc"
+          node-version: "24"
+          package-manager-cache: false
 
-      - uses: pnpm/action-setup@v4
-        if: steps.scope.outputs.check == 'true'
-        with:
-          run_install: false
-
-      # 생성기는 Node 내장 모듈만 사용하므로 의존성을 설치하지 않습니다.
-      - name: Production 스키마와 문서 비교
+      # 의존성 설치·package script·PR head 코드 실행을 하지 않습니다.
+      - name: 신뢰된 base 생성기로 Production 문서 생성
         if: steps.scope.outputs.check == 'true'
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: pnpm check-supabase-schema
+        run: node .github/scripts/generate-supabase-schema.mjs
+
+      - name: PR 문서와 바이트 비교
+        if: steps.scope.outputs.check == 'true'
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from "node:fs";
+          import { join } from "node:path";
+          const actual = readFileSync("docs/supabase-schema.md");
+          const proposed = readFileSync(join(process.env.RUNNER_TEMP, "supabase-head.md"));
+          if (!actual.equals(proposed)) {
+            throw new Error("Production 스키마와 PR 문서가 다릅니다. pnpm generate-supabase-schema 를 실행하세요.");
+          }
+          NODE
 
       - name: 검사 결과 요약
         if: always() && steps.scope.outputs.check == 'true'

@@ -1,6 +1,7 @@
 import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { runInNewContext } from "node:vm";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { generateSchema } from "../generate-supabase-schema.mjs";
 import { CATALOG_QUERY, fetchSchemaDocument, renderSchemaDocument } from "./supabase-schema.mjs";
@@ -98,6 +99,24 @@ describe("Production API 계약", () => {
 });
 
 describe("결정론적 Markdown", () => {
+	it.each(["eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYWRtaW4ifQ.signature", "Bearer opaque-value", "Authorization", "service_role", "api_key=opaque-value", "{\"secret\":\"opaque-value\"}", "access_token: opaque-value", "sk-proj-opaque", "sb_secret_opaque", "ghp_opaque", "-----BEGIN PRIVATE KEY-----"])("민감한 기본값은 원문을 출력하지 않고 실패한다: %#", (credential) => {
+		const table = createTable({ columns: [{ ...createTable().columns[0], default: credential }] });
+		expect(() => renderSchemaDocument({ tables: [table] }, [])).toThrow("민감한 인증 정보");
+		try { renderSchemaDocument({ tables: [table] }, []); } catch (error) { expect(String(error)).not.toContain(credential); }
+	});
+	it.each(["constraints", "indexes", "policies", "name", "functions"])("%s 출력에도 민감 정보 검사를 적용한다", (field) => {
+		const table = createTable();
+		const credential = "Bearer opaque-value";
+		if (field === "constraints") { table.constraints[0].definition = credential; }
+		if (field === "indexes") { table.indexes[0].definition = credential; }
+		if (field === "policies") { table.policies[0].using = credential; }
+		if (field === "name") { table.name = credential; }
+		expect(() => renderSchemaDocument({ tables: [table] }, field === "functions" ? [{ name: credential, status: "ACTIVE" }] : [])).toThrow("민감한 인증 정보");
+	});
+	it("push_token 같은 정상 식별자를 허용한다", () => {
+		const table = createTable({ name: "push_token", columns: [{ ...createTable().columns[0], name: "push_token", default: null }] });
+		expect(renderSchemaDocument({ tables: [table] }, [])).toContain("memo.push&#95;token");
+	});
 	it("트리거 정의와 인자에 포함된 HTTP 헤더·JWT·임의 시크릿을 출력하지 않는다", async () => {
 		const secret = "arbitrary-sensitive-value";
 		const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.signature";
@@ -160,6 +179,13 @@ describe("결정론적 Markdown", () => {
 });
 
 describe("원자적 파일 생성과 --check", () => {
+	it("민감 정보 탐지 시 기존 문서를 보존한다", async () => {
+		const outputPath = await createOutput();
+		await writeFile(outputPath, "original");
+		mockApi({ tables: [createTable({ indexes: [{ name: "index", definition: "api_key=opaque-value" }] })] }, []);
+		await expect(generateSchema({ token: "token", outputPath })).rejects.toThrow("민감한 인증 정보");
+		expect(await readFile(outputPath, "utf8")).toBe("original");
+	});
 	it("성공한 문서를 교체하고 임시 파일을 정리한다", async () => {
 		const outputPath = await createOutput();
 		await writeFile(outputPath, "original");
@@ -198,5 +224,67 @@ describe("원자적 파일 생성과 --check", () => {
 		await expect(generateSchema({ token: "token", outputPath })).rejects.toThrow();
 		expect(await readFile(outputPath, "utf8")).toBe("original bytes\r\n");
 		expect(await readdir(directories[0])).toEqual(["schema.md"]);
+	});
+});
+
+describe("워크플로 신뢰 경계", () => {
+	const runWorkflow = async (options: { path?: string; fork?: boolean; event?: string; missing?: boolean; proposed?: string; baseRef?: string } = {}) => {
+		const workflow = await readFile(new URL("../../workflows/supabase-schema.yml", import.meta.url), "utf8");
+		const scripts = [...workflow.matchAll(/<<'NODE'\n([\s\S]*?)\n          NODE/g)].map((match) => match[1].replace(/^          /gm, "").replace(/^import .*;\n/gm, ""));
+		const outputs = new Map<string, string>();
+		const commands: string[][] = [];
+		const head = "b".repeat(40);
+		const context = {
+			Buffer, join, process: { env: { EVENT_NAME: options.event ?? "pull_request_target", HEAD_REPOSITORY: options.fork ? "fork" : "repo", CURRENT_REPOSITORY: "repo", BASE_SHA: "a".repeat(40), BASE_REF: options.baseRef ?? "master", DEFAULT_BRANCH: "master", HEAD_SHA: head, GH_READ_TOKEN: "read-token", GITHUB_OUTPUT: "output", GITHUB_STEP_SUMMARY: "summary", RUNNER_TEMP: "/tmp" } },
+			console: { log: vi.fn() }, appendFileSync: (path: string, content: string) => outputs.set(path, content), writeFileSync: vi.fn(),
+			execFileSync: (_command: string, argumentsList: string[]) => {
+				commands.push(argumentsList);
+				if (argumentsList[0] === "diff") { return `${options.path ?? "package.json"}\0`; }
+				if (argumentsList[0] === "show" && options.missing) { throw new Error("missing"); }
+				return Buffer.from("document\n");
+			},
+			readFileSync: (path: string) => Buffer.from(path.startsWith("docs/") ? "document\n" : options.proposed ?? "document\n"),
+		};
+		runInNewContext(scripts[0], context);
+		if (outputs.get("output") === "check=true\n") { runInNewContext(scripts[1], context); }
+
+		return { workflow, outputs, commands, context, head };
+	};
+	it.each(["package.json", ".github/env-manifest.yml", "docs/supabase-schema.md", ".github/workflows/supabase-schema.yml", ".github/scripts/lib/supabase-schema.test.ts", "packages/shared/src/types/supabase.ts", "packages/supabase-edge-functions/supabase/config.toml", "packages/supabase-edge-functions/supabase/migrations/test.sql", "packages/supabase-edge-functions/supabase/functions/test/index.ts"])("내부 관련 PR의 %s 변경은 head 문서 데이터만 읽는다", async (path) => {
+		const result = await runWorkflow({ path });
+		expect(result.outputs.get("output")).toBe("check=true\n");
+		expect(result.commands).toContainEqual(["show", `${result.head}:docs/supabase-schema.md`]);
+		expect(result.commands.every((command) => ["-c", "diff", "show"].includes(command[0]))).toBe(true);
+	});
+	it("fork는 head fetch 없이 사유를 남기고 성공한다", async () => {
+		const result = await runWorkflow({ fork: true });
+		expect(result.commands).toEqual([]);
+		expect(result.outputs.get("output")).toBe("check=false\n");
+		expect(result.outputs.get("summary")).toContain("fork");
+	});
+	it("비관련 PR은 annotation과 요약을 남기고 문서를 읽지 않는다", async () => {
+		const result = await runWorkflow({ path: "README.md" });
+		expect(result.outputs.get("output")).toBe("check=false\n");
+		expect(result.context.console.log).toHaveBeenCalledWith(expect.stringContaining("::notice::"));
+		expect(result.outputs.has("summary")).toBe(true);
+		expect(result.context.writeFileSync).not.toHaveBeenCalled();
+	});
+	it("공격자가 제어할 수 있는 비기본 base 브랜치에서도 실행하지 않는다", async () => {
+		const result = await runWorkflow({ baseRef: "feature/untrusted" });
+		expect(result.commands).toEqual([]);
+		expect(result.outputs.get("output")).toBe("check=false\n");
+	});
+	it("문서 누락·바이트 차이는 실패하고 수동 실행은 문서를 검사한다", async () => {
+		await expect(runWorkflow({ missing: true })).rejects.toThrow("PR 문서가 없거나");
+		await expect(runWorkflow({ proposed: "document\r\n" })).rejects.toThrow("Production 스키마와");
+		expect((await runWorkflow({ event: "workflow_dispatch" })).outputs.get("output")).toBe("check=true\n");
+	});
+	it("신뢰된 base checkout과 고정 액션만 사용하고 package script를 실행하지 않는다", async () => {
+		const { workflow } = await runWorkflow();
+		expect(workflow).toContain("ref: ${{ github.event.pull_request.base.sha || github.sha }}");
+		expect(workflow).toContain("persist-credentials: false");
+		expect(workflow).toContain("contents: read");
+		for (const match of workflow.matchAll(/uses: (.+)/g)) { expect(match[1]).toMatch(/@[a-f0-9]{40} # v/); }
+		expect(workflow).not.toMatch(/run: pnpm|node-version-file:|pull_request:|\n\s+paths:/);
 	});
 });

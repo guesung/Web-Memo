@@ -131,8 +131,24 @@ export const renderSchemaDocument = (catalog, functions) => {
 
 const compare = (left, right) => (left < right ? -1 : Number(left > right));
 const named = (entries) => [...entries].sort((left, right) => compare(left.name, right.name));
-const escapeMarkdown = (value) => String(value ?? "없음").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("|", "&#124;").replaceAll("`", "&#96;").replaceAll("\\", "&#92;").replaceAll("*", "&#42;").replaceAll("_", "&#95;").replaceAll("[", "&#91;").replaceAll("]", "&#93;").replace(/\r\n|\r|\n/g, "<br>");
-const mermaid = (value) => String(value).replace(/[^a-zA-Z0-9_. -]/g, (character) => `#${character.codePointAt(0)};`);
+/** 출력할 값만 검사하여 폐기한 트리거 인자는 다시 읽지 않으며 탐지한 원문도 노출하지 않습니다. */
+const safeMetadata = (value) => {
+	const text = String(value ?? "없음");
+	const credentialPatterns = [
+		/\beyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/,
+		/\b(?:bearer|authorization|service_role)\b/i,
+		/\b(?:api[_-]?key|api[_-]?token|access[_-]?token|refresh[_-]?token|client[_-]?secret|secret|password|token)\b["'\s]*[:=]["'\s]*[^\s,;)}]+/i,
+		/\b(?:sb_secret_|sbp_|sk_live_|sk_test_|sk-proj-|gh[pousr]_|github_pat_|xox[baprs]-)[A-Za-z0-9_-]+\b/,
+		/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
+	];
+	if (credentialPatterns.some((pattern) => pattern.test(text))) {
+		throw new Error("문서 메타데이터에서 민감한 인증 정보 패턴이 탐지되어 생성을 중단했습니다.");
+	}
+
+	return text;
+};
+const escapeMarkdown = (value) => safeMetadata(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("|", "&#124;").replaceAll("`", "&#96;").replaceAll("\\", "&#92;").replaceAll("*", "&#42;").replaceAll("_", "&#95;").replaceAll("[", "&#91;").replaceAll("]", "&#93;").replace(/\r\n|\r|\n/g, "<br>");
+const mermaid = (value) => safeMetadata(value).replace(/[^a-zA-Z0-9_. -]/g, (character) => `#${character.codePointAt(0)};`);
 const foreignTarget = (constraint) => {
 	if (constraint.kind !== "f") {
 		return null;

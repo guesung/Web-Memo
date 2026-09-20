@@ -1,4 +1,5 @@
 import { captureException } from "@sentry/react";
+import { isLoggedOutError } from "@web-memo/shared/utils";
 import type { ComponentType, ErrorInfo, PropsWithChildren } from "react";
 import { Component, createElement } from "react";
 
@@ -34,7 +35,10 @@ export default class ErrorBoundary extends Component<
 	}
 
 	componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-		captureException(error);
+		// 로그아웃 상태는 장애가 아니라 로그인 화면으로 이어지는 예상된 상태라 보고하지 않는다.
+		if (!isLoggedOutError(error)) {
+			captureException(error);
+		}
 		console.error(error, errorInfo);
 	}
 

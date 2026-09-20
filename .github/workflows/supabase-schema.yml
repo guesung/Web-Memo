@@ -1,0 +1,79 @@
+name: Supabase Schema
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-schema-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Supabase 스키마 문서 검사
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: 관련 변경과 fork 여부 확인
+        id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          CURRENT_REPOSITORY: ${{ github.repository }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { execFileSync } from "node:child_process";
+          import { appendFileSync } from "node:fs";
+
+          const isPullRequest = process.env.EVENT_NAME === "pull_request";
+          const isFork = isPullRequest && process.env.HEAD_REPOSITORY !== process.env.CURRENT_REPOSITORY;
+          let relevant = !isPullRequest;
+          if (isPullRequest) {
+            const paths = execFileSync("git", ["diff", "--name-only", "-z", "--no-renames", `${process.env.BASE_SHA}...${process.env.HEAD_SHA}`], { encoding: "utf8" }).split("\0");
+            relevant = paths.some((path) => /^(packages\/supabase-edge-functions\/supabase\/(migrations\/|functions\/|config\.toml$)|packages\/shared\/src\/types\/supabase\.ts$|\.github\/scripts\/(generate-supabase-schema\.mjs$|lib\/supabase-schema\.(mjs|test\.ts)$|lib\/http\.mjs$)|\.github\/workflows\/supabase-schema\.yml$|docs\/supabase-schema\.md$|package\.json$|\.github\/env-manifest\.yml$)/.test(path));
+          }
+          const shouldCheck = relevant && !isFork;
+          appendFileSync(process.env.GITHUB_OUTPUT, `check=${shouldCheck}\n`);
+          if (!shouldCheck) {
+            const reason = isFork
+              ? "외부 fork PR이므로 Production 및 시크릿 접근 없이 Supabase 스키마 검사를 건너뜁니다."
+              : "Supabase 관련 변경이 없으므로 스키마 검사를 건너뜁니다.";
+            console.log(`::notice::${reason}`);
+            appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### Supabase 스키마 문서 검사\n\n${reason}\n`);
+          }
+          NODE
+
+      - uses: actions/setup-node@v6
+        if: steps.scope.outputs.check == 'true'
+        with:
+          node-version-file: ".nvmrc"
+
+      - uses: pnpm/action-setup@v4
+        if: steps.scope.outputs.check == 'true'
+        with:
+          run_install: false
+
+      # 생성기는 Node 내장 모듈만 사용하므로 의존성을 설치하지 않습니다.
+      - name: Production 스키마와 문서 비교
+        if: steps.scope.outputs.check == 'true'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: pnpm check-supabase-schema
+
+      - name: 검사 결과 요약
+        if: always() && steps.scope.outputs.check == 'true'
+        env:
+          CHECK_STATUS: ${{ job.status }}
+        run: |
+          printf '### Supabase 스키마 문서 검사\n\n검사 결과: %s\n' "$CHECK_STATUS" >> "$GITHUB_STEP_SUMMARY"

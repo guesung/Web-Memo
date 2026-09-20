@@ -125,6 +125,39 @@ describe("formatFindings", () => {
 	});
 });
 
+describe("compareRegistry: vercel(세 환경 모두)", () => {
+	it("vercel로 선언한 값이 한 환경에라도 빠지면 그 환경을 알린다", () => {
+		const { findings } = compareRegistry({
+			entries: [entry({ name: "SENTRY_WEBHOOK_SECRET", stores: ["vercel"] })],
+			results: [
+				{
+					store: "vercel",
+					names: new Map([["SENTRY_WEBHOOK_SECRET", new Set(["production"])]]),
+				},
+			],
+		});
+
+		expect(findings).toEqual([
+			{ store: "vercel", type: "missing", name: "SENTRY_WEBHOOK_SECRET", detail: "preview" },
+			{ store: "vercel", type: "missing", name: "SENTRY_WEBHOOK_SECRET", detail: "development" },
+		]);
+	});
+
+	it("세 환경에 모두 있으면 통과한다", () => {
+		const { findings } = compareRegistry({
+			entries: [entry({ name: "OPENAI_API_KEY", stores: ["vercel"] })],
+			results: [
+				{
+					store: "vercel",
+					names: new Map([["OPENAI_API_KEY", new Set(["production", "preview", "development"])]]),
+				},
+			],
+		});
+
+		expect(findings).toEqual([]);
+	});
+});
+
 describe("formatFindingLine", () => {
 	it("Slack 목록과 PR 경고 주석이 같은 문장을 쓰도록 종류와 환경을 한 줄로 쓴다", () => {
 		expect(

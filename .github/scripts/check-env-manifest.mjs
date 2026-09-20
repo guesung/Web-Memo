@@ -32,7 +32,6 @@ const ENVPKG_FILES = [
 	"packages/env/.env.staging",
 	"packages/env/.env.production",
 ];
-const LOCAL_EXAMPLE_PATH = "apps/web/.env.example";
 
 const readText = (path) => (existsSync(path) ? readFileSync(path, "utf8") : null);
 
@@ -107,7 +106,6 @@ const main = async () => {
 			envpkgFiles: Object.fromEntries(
 				ENVPKG_FILES.map((path) => [path, readText(path) ?? ""]),
 			),
-			localExample: readText(LOCAL_EXAMPLE_PATH) ?? "",
 		}),
 	];
 

@@ -1,18 +1,19 @@
-import { captureException } from "@sentry/react";
 import { CONFIG } from "@web-memo/env";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { STORAGE_KEYS } from "@web-memo/shared/modules/chrome-storage";
+import { isAbortError } from "@web-memo/shared/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePageContentContext } from "../../components/PageContentProvider";
+import { reportPageFeatureError } from "../../utils";
 import { processStreamingResponse } from "../useSummary/util";
 
-const ERROR_REPORTING_WINDOW_MS = 8_000;
-const ERROR_FEATURE = "chat";
-const ERROR_OPERATION = "send";
-
-const isExpectedChatError = (error: unknown): boolean => {
-	if (!(error instanceof Error)) return false;
-	return error.name === "AbortError";
+const reportChatFailure = (error: unknown, stage: string) => {
+	void reportPageFeatureError({
+		error,
+		feature: "chat",
+		operation: "send",
+		stage,
+	});
 };
 
 export interface ChatMessage {
@@ -39,47 +40,8 @@ export default function useChat(): UseChatReturn {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 	const isInitialized = useRef(false);
-	const lastErrorRef = useRef(new Map<string, number>());
 
 	const { content: pageContent } = usePageContentContext();
-
-	const reportChatFailure = useCallback(
-		(
-			error: unknown,
-			stage: "reader" | "parse" | "server" | "fetch" | "general",
-		) => {
-			if (isExpectedChatError(error)) return;
-
-			const errorMessage =
-				error instanceof Error ? error.message : String(error);
-			const chatErrorMessage = errorMessage || "unknown-chat-error";
-			const now = Date.now();
-			const fingerprint = `${ERROR_FEATURE}|${ERROR_OPERATION}|${stage}|${chatErrorMessage.slice(0, 120)}`;
-			const last = lastErrorRef.current.get(fingerprint) ?? 0;
-			if (now - last < ERROR_REPORTING_WINDOW_MS) return;
-			lastErrorRef.current.set(fingerprint, now);
-
-			captureException(
-				error instanceof Error ? error : new Error(chatErrorMessage),
-				{
-					level: "error",
-					tags: {
-						feature: ERROR_FEATURE,
-						operation: ERROR_OPERATION,
-						stage,
-					},
-					fingerprint: [ERROR_FEATURE, ERROR_OPERATION, stage],
-					extra: {
-						feature: ERROR_FEATURE,
-						operation: ERROR_OPERATION,
-						stage,
-						occurredAt: now,
-					},
-				},
-			);
-		},
-		[],
-	);
 
 	useEffect(() => {
 		if (isInitialized.current) return;
@@ -196,7 +158,7 @@ export default function useChat(): UseChatReturn {
 					},
 				);
 			} catch (err) {
-				if (!isExpectedChatError(err)) {
+				if (!isAbortError(err)) {
 					console.error("Chat error:", err);
 					analytics.trackEvent({
 						name: "chat_fail",
@@ -212,7 +174,7 @@ export default function useChat(): UseChatReturn {
 				setIsLoading(false);
 			}
 		},
-		[messages, isLoading, pageContent, reportChatFailure],
+		[messages, isLoading, pageContent],
 	);
 
 	const clearMessages = useCallback(async () => {

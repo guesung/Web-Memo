@@ -28,6 +28,10 @@ import { type NextRequest, NextResponse } from "next/server";
  * Slack App > Interactivity & Shortcuts > Request URL 에 등록합니다:
  *   https://<프로덕션 도메인>/api/slack/interactivity
  *
+ * 배포 버튼은 master 머지 스레드의 두 곳에서 옵니다. 타깃별 빌드 성공 댓글(웹·확장·앱 각각,
+ * 그 타깃 하나)과 모든 타깃이 끝난 뒤의 요약 댓글(빌드에 성공한 전체 타깃)입니다.
+ * 어느 쪽이든 같은 action_id와 value 형식이라 여기서는 출처를 구분하지 않습니다.
+ *
  * @description Slack은 3초 안에 200을 못 받으면 사용자에게 실패로 표시합니다.
  * 그래서 무거운 작업을 만들지 않고, 배포 진행 상황은 워크플로가 스스로 알리게 둡니다.
  */
@@ -35,7 +39,10 @@ import { type NextRequest, NextResponse } from "next/server";
 // node:crypto로 서명을 검증하므로 Node 런타임이 필요합니다.
 export const runtime = "nodejs";
 
-/** 버튼 value에 실려 오는 값. .github/scripts/lib/slack-blocks.mjs가 만듭니다. */
+/**
+ * 버튼 value에 실려 오는 값. .github/scripts/lib/slack-blocks.mjs가 만듭니다.
+ * 타깃별 댓글(notify-thread-reply.mjs)과 요약 댓글(notify-build-ready.mjs)이 같은 값을 실어 보냅니다.
+ */
 interface IFDeployButtonValue {
 	/** 배포 대상 (다른 버전 버튼에는 없습니다) */
 	target?: TDeployTarget;

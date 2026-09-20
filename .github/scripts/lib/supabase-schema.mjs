@@ -43,9 +43,15 @@ FROM (
    'check', pg_catalog.pg_get_expr(policy.polwithcheck, policy.polrelid)) ORDER BY policy.polname)
    FROM pg_catalog.pg_policy policy WHERE policy.polrelid = tbl.oid), '[]'::json),
   'triggers', COALESCE((SELECT pg_catalog.json_agg(pg_catalog.json_build_object(
-   'name', trigger.tgname, 'definition', pg_catalog.pg_get_triggerdef(trigger.oid, false),
-   'enabled', trigger.tgenabled, 'functionSchema', function_ns.nspname, 'functionName', proc.proname,
-   'functionArguments', pg_catalog.pg_get_function_identity_arguments(proc.oid)) ORDER BY trigger.tgname)
+   'name', trigger.tgname,
+   'timing', CASE WHEN (trigger.tgtype & 2) <> 0 THEN 'BEFORE' WHEN (trigger.tgtype & 64) <> 0 THEN 'INSTEAD OF' ELSE 'AFTER' END,
+   'orientation', CASE WHEN (trigger.tgtype & 1) <> 0 THEN 'ROW' ELSE 'STATEMENT' END,
+   'events', pg_catalog.array_remove(ARRAY[
+    CASE WHEN (trigger.tgtype & 4) <> 0 THEN 'INSERT' END,
+    CASE WHEN (trigger.tgtype & 8) <> 0 THEN 'DELETE' END,
+    CASE WHEN (trigger.tgtype & 16) <> 0 THEN 'UPDATE' END,
+    CASE WHEN (trigger.tgtype & 32) <> 0 THEN 'TRUNCATE' END], NULL),
+   'enabled', trigger.tgenabled, 'functionSchema', function_ns.nspname, 'functionName', proc.proname) ORDER BY trigger.tgname)
    FROM pg_catalog.pg_trigger trigger JOIN pg_catalog.pg_proc proc ON proc.oid = trigger.tgfoid
    JOIN pg_catalog.pg_namespace function_ns ON function_ns.oid = proc.pronamespace
    WHERE trigger.tgrelid = tbl.oid AND NOT trigger.tgisinternal), '[]'::json)
@@ -115,7 +121,7 @@ export const renderSchemaDocument = (catalog, functions) => {
 			appendTable(lines, { title: "제약", headers: ["이름", "종류", "컬럼 (순서)", "참조", "정의"], rows: named(table.constraints).map((constraint) => [constraint.name, constraint.kind, constraint.columns.join(", "), foreignTarget(constraint), constraint.definition]) });
 			appendTable(lines, { title: "인덱스", headers: ["이름", "정의"], rows: named(table.indexes).map((index) => [index.name, index.definition]) });
 			appendTable(lines, { title: "정책", headers: ["이름", "명령", "PERMISSIVE", "역할", "USING", "WITH CHECK"], rows: named(table.policies).map((policy) => [policy.name, policy.command, policy.permissive, [...policy.roles].sort(compare).join(", "), policy.using, policy.check]) });
-			appendTable(lines, { title: "트리거", headers: ["이름", "활성 상태", "호출 대상", "정의"], rows: named(table.triggers).map((trigger) => [trigger.name, trigger.enabled, `${trigger.functionSchema}.${trigger.functionName}(${trigger.functionArguments})`, trigger.definition]) });
+			appendTable(lines, { title: "트리거", headers: ["이름", "활성 상태", "시점", "이벤트", "실행 단위", "호출 대상 (인자 제외)"], rows: named(table.triggers).map((trigger) => [trigger.name, trigger.enabled, trigger.timing, [...trigger.events].sort(compare).join(", "), trigger.orientation, `${trigger.functionSchema}.${trigger.functionName}()`]) });
 		}
 	}
 	appendTable(lines, { title: "배포 Edge Functions", level: 2, headers: ["이름", "상태"], rows: named(functions).map((entry) => [entry.name, entry.status]) });
@@ -184,7 +190,11 @@ const validateResponses = (rows, functions) => {
 			fields(policy, { name: "string", command: "string", permissive: "boolean", using: "nullable", check: "nullable" });
 			strings(policy.roles);
 		});
-		array(table.triggers, (trigger) => fields(trigger, { name: "string", enabled: "string", definition: "string", functionSchema: "string", functionName: "string", functionArguments: "string" }));
+		array(table.triggers, (trigger) => {
+			fields(trigger, { name: "string", enabled: "string", timing: "string", orientation: "string", functionSchema: "string", functionName: "string" });
+			strings(trigger.events);
+			if (!["BEFORE", "AFTER", "INSTEAD OF"].includes(trigger.timing) || !["ROW", "STATEMENT"].includes(trigger.orientation) || !trigger.events.length || trigger.events.some((event) => !["INSERT", "DELETE", "UPDATE", "TRUNCATE"].includes(event))) { fail(); }
+		});
 	});
 	array(functions, (entry) => fields(entry, { name: "string", status: "string" }));
 };

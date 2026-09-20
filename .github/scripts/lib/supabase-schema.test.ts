@@ -17,7 +17,7 @@ const createTable = (overrides: Record<string, unknown> = {}) => ({
 	],
 	indexes: [{ name: "notes_index", definition: "CREATE INDEX notes_index ON memo.notes (id)" }],
 	policies: [{ name: "owner_policy", command: "r", permissive: true, roles: ["authenticated", "anon"], using: "(auth.uid() = owner)", check: null }],
-	triggers: [{ name: "notes_trigger", enabled: "O", functionSchema: "public", functionName: "notify", functionArguments: "", definition: "CREATE TRIGGER notes_trigger AFTER INSERT ON memo.notes EXECUTE FUNCTION public.notify()" }],
+	triggers: [{ name: "notes_trigger", enabled: "O", timing: "AFTER", events: ["INSERT"], orientation: "ROW", functionSchema: "public", functionName: "notify" }],
 	...overrides,
 });
 
@@ -55,6 +55,7 @@ describe("Production API 계약", () => {
 		expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ query: CATALOG_QUERY, parameters: [] });
 		expect(fetchMock.mock.calls[1][0]).toBe("https://api.supabase.com/v1/projects/czwtqukymcqoberdoltq/functions");
 		expect(CATALOG_QUERY).toContain("NOT trigger.tgisinternal");
+		expect(CATALOG_QUERY).not.toMatch(/pg_get_triggerdef|tgargs|pg_get_function_identity_arguments/);
 		expect(CATALOG_QUERY).toContain("ns.nspname IN ('feedback', 'memo')");
 		expect(CATALOG_QUERY).toContain("ORDER BY key.ordinality");
 		expect(CATALOG_QUERY).not.toMatch(/\b(?:FROM|JOIN)\s+(?:pg_|information_schema)(?!catalog\.)/i);
@@ -97,6 +98,23 @@ describe("Production API 계약", () => {
 });
 
 describe("결정론적 Markdown", () => {
+	it("트리거 정의와 인자에 포함된 HTTP 헤더·JWT·임의 시크릿을 출력하지 않는다", async () => {
+		const secret = "arbitrary-sensitive-value";
+		const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.signature";
+		const trigger = {
+			...createTable().triggers[0],
+			events: ["UPDATE", "INSERT"],
+			definition: `CREATE TRIGGER hook EXECUTE FUNCTION supabase_functions.http_request('https://example.test', 'POST', '{"Authorization":"Bearer ${jwt}","x-api-key":"${secret}"}')`,
+			functionArguments: `Authorization Bearer ${jwt} ${secret}`,
+			tgargs: secret,
+		};
+		mockApi({ tables: [createTable({ triggers: [trigger] })] }, []);
+		const document = await fetchSchemaDocument("token");
+		for (const forbidden of ["Authorization", "Bearer", jwt, secret, "http_request", "example.test", "x-api-key"]) {
+			expect(document).not.toContain(forbidden);
+		}
+		expect(document).toContain("| AFTER | INSERT, UPDATE | ROW | public.notify() |");
+	});
 	it("컬럼·제약·인덱스·RLS·정책·트리거·배포 함수를 렌더링한다", async () => {
 		mockApi();
 		const document = await fetchSchemaDocument("token");

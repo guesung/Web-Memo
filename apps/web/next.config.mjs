@@ -19,7 +19,7 @@ const nextConfig = {
 
 export default withSentryConfig(nextConfig, {
 	org: "guesung",
-	project: "web-memo",
+	project: "web-memo-web",
 	authToken: process.env.SENTRY_AUTH_TOKEN,
 	sourcemaps: {
 		deleteSourcemapsAfterUpload: true,

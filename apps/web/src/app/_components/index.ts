@@ -3,4 +3,5 @@ export { default as FeatureJsonLD } from "./FeatureJsonLD";
 export { default as InitDayjs } from "./InitDayjs";
 export { default as JsonLD } from "./JsonLD";
 export { default as JsonLdScript } from "./JsonLdScript";
+export { default as ReactGrab } from "./ReactGrab";
 export { default as WebVitals } from "./WebVitals";

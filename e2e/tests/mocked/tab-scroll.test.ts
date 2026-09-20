@@ -26,6 +26,21 @@ const isWindowMarkAlive = (page: Page) =>
 		() => (window as unknown as { __navProbe?: boolean }).__navProbe === true,
 	);
 
+/**
+ * 메모 목록이 그려져 문서가 실제로 스크롤 가능해질 때까지 기다린다.
+ * load 이벤트는 목록 데이터 fetch를 기다리지 않는다. 문서가 아직 짧을 때 scrollTo하면
+ * 0으로 잘리고 다시 적용되지 않아, 이후 scrollY를 아무리 기다려도 0에 머문다.
+ */
+const waitForScrollableDocument = (page: Page) =>
+	expect
+		.poll(() =>
+			page.evaluate(() => {
+				const scroller = document.scrollingElement;
+				return !!scroller && scroller.scrollHeight > scroller.clientHeight + 1;
+			}),
+		)
+		.toBe(true);
+
 test.describe("탭 이동과 스크롤 (Mocked)", () => {
 	let store: MockSupabaseStore;
 
@@ -131,6 +146,7 @@ test.describe("탭 이동과 스크롤 (Mocked)", () => {
 	test("스크롤을 내린 뒤 다른 탭으로 가면 맨 위에서 시작한다.", async ({
 		page,
 	}) => {
+		await waitForScrollableDocument(page);
 		await page.evaluate(() => window.scrollTo(0, 600));
 		await expect
 			.poll(() => page.evaluate(() => window.scrollY))
@@ -145,7 +161,12 @@ test.describe("탭 이동과 스크롤 (Mocked)", () => {
 	test("하이라이트로 갔다 메모로 돌아와도 스크롤이 맨 위다.", async ({
 		page,
 	}) => {
+		await waitForScrollableDocument(page);
 		await page.evaluate(() => window.scrollTo(0, 600));
+		// 스크롤이 실제로 내려간 뒤에 떠나야, 맨 위 복귀 단언이 의미를 갖는다.
+		await expect
+			.poll(() => page.evaluate(() => window.scrollY))
+			.toBeGreaterThan(0);
 
 		await page.getByRole("link", { name: "Highlights" }).click();
 		await page.waitForURL(new RegExp(PATHS.highlights));

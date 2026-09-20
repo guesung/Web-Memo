@@ -99,7 +99,10 @@ describe("Production API 계약", () => {
 });
 
 describe("결정론적 Markdown", () => {
-	it.each(["eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYWRtaW4ifQ.signature", "Bearer opaque-value", "Authorization", "service_role", "api_key=opaque-value", "{\"secret\":\"opaque-value\"}", "access_token: opaque-value", "sk-proj-opaque", "sb_secret_opaque", "ghp_opaque", "-----BEGIN PRIVATE KEY-----"])("민감한 기본값은 원문을 출력하지 않고 실패한다: %#", (credential) => {
+	it.each([
+		"eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYWRtaW4ifQ.signature", "Bearer opaque-value", "Authorization", "service_role", "api_key=opaque-value", "{\"secret\":\"opaque-value\"}", "access_token: opaque-value", "sk-proj-opaque", "sb_secret_opaque", "ghp_opaque", "-----BEGIN PRIVATE KEY-----",
+		`AKIA${"A1".repeat(8)}`, `ASIA${"B2".repeat(8)}`, `AIza${"a".repeat(35)}`, `rk_live_${"a".repeat(24)}`, `rk_test_${"b".repeat(24)}`, `whsec_${"c".repeat(32)}`, `sk_live_${"d".repeat(24)}`, `sk_test_${"e".repeat(24)}`, "postgresql://user:password@db.example.test:5432/memo", "https://user:p%40ssword@example.test/path",
+	])("민감한 기본값은 원문을 출력하지 않고 실패한다: %#", (credential) => {
 		const table = createTable({ columns: [{ ...createTable().columns[0], default: credential }] });
 		expect(() => renderSchemaDocument({ tables: [table] }, [])).toThrow("민감한 인증 정보");
 		try { renderSchemaDocument({ tables: [table] }, []); } catch (error) { expect(String(error)).not.toContain(credential); }
@@ -113,8 +116,8 @@ describe("결정론적 Markdown", () => {
 		if (field === "name") { table.name = credential; }
 		expect(() => renderSchemaDocument({ tables: [table] }, field === "functions" ? [{ name: credential, status: "ACTIVE" }] : [])).toThrow("민감한 인증 정보");
 	});
-	it("push_token 같은 정상 식별자를 허용한다", () => {
-		const table = createTable({ name: "push_token", columns: [{ ...createTable().columns[0], name: "push_token", default: null }] });
+	it.each(["push_token", "AKIA_count", "ASIA_region", "AIza_column", "sk_live_count", "sk_test_count", "rk_live_count", "rk_test_count", "whsec_column", "https://example.test/path", "https://user@example.test/path"])("정상 식별자와 비밀번호 없는 URL은 허용한다: %s", (value) => {
+		const table = createTable({ name: "push_token", columns: [{ ...createTable().columns[0], name: "push_token", default: value }] });
 		expect(renderSchemaDocument({ tables: [table] }, [])).toContain("memo.push&#95;token");
 	});
 	it("트리거 정의와 인자에 포함된 HTTP 헤더·JWT·임의 시크릿을 출력하지 않는다", async () => {

@@ -138,7 +138,11 @@ const safeMetadata = (value) => {
 		/\beyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/,
 		/\b(?:bearer|authorization|service_role)\b/i,
 		/\b(?:api[_-]?key|api[_-]?token|access[_-]?token|refresh[_-]?token|client[_-]?secret|secret|password|token)\b["'\s]*[:=]["'\s]*[^\s,;)}]+/i,
-		/\b(?:sb_secret_|sbp_|sk_live_|sk_test_|sk-proj-|gh[pousr]_|github_pat_|xox[baprs]-)[A-Za-z0-9_-]+\b/,
+		/\b(?:sb_secret_|sbp_|sk-proj-|gh[pousr]_|github_pat_|xox[baprs]-)[A-Za-z0-9_-]+\b/,
+		/\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/,
+		/\bAIza[A-Za-z0-9_-]{35}(?![A-Za-z0-9_-])/,
+		/\b(?:[sr]k_(?:live|test)_|whsec_)[A-Za-z0-9]{24,}\b/,
+		/\b[a-z][a-z0-9+.-]*:\/\/[^\s/:@]+:[^\s/@]+@[^\s/?#]+/i,
 		/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
 	];
 	if (credentialPatterns.some((pattern) => pattern.test(text))) {

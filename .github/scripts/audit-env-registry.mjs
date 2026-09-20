@@ -9,9 +9,9 @@
  *
  * 동작 모드(AUDIT_MODE)
  *   notify(기본)  차이가 있으면 SLACK_WEBHOOK_URL로 알립니다. 매일 스케줄과 수동 실행이 씁니다.
- *   report        Slack을 보내지 않고 로그·요약·경고 주석으로만 보여 주며 항상 성공합니다. PR이 씁니다.
- *                 콘솔 쪽 등록은 PR과 무관하게 바뀌므로 PR을 막지 않고, 이 PR을 보는 사람이 결과를
- *                 그 자리에서 확인하게 하려는 것입니다.
+ *   check         Slack을 보내지 않고 로그·요약·주석으로 보여 주며, 등록이 빠진 것(missing)이 있으면
+ *                 실패합니다. PR이 씁니다. 매니페스트에 없는 등록은 경고로만 남깁니다.
+ *                 조회하지 못한 저장소(미조회)는 비교할 수 없으므로 실패로 치지 않고 경고합니다.
  *
  * 저장소마다 조회 토큰이 다릅니다. 토큰이 없거나 거절되면 그 저장소만 "미조회"로 남기고 나머지를
  * 계속 대조합니다.
@@ -33,6 +33,7 @@ import {
 	fetchVercelEnvNames,
 	formatFindingLine,
 	formatFindings,
+	isBlockingFinding,
 	STORE_LABELS,
 	tryFetch,
 } from "./lib/env-registry.mjs";
@@ -97,6 +98,12 @@ const main = async () => {
 	const { findings, skipped } = compareRegistry({ entries, results });
 	const message = formatFindings({ findings, skipped, runUrl });
 
+	for (const { store, reason } of skipped) {
+		console.log(
+			`::warning title=환경 변수 등록 현황 (${STORE_LABELS[store]})::조회하지 못해 대조하지 않았습니다 (${reason})`,
+		);
+	}
+
 	if (message === null) {
 		console.log("조회한 저장소의 등록 현황이 매니페스트와 일치합니다");
 
@@ -109,11 +116,17 @@ const main = async () => {
 		appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${message}\n`);
 	}
 
-	if (process.env.AUDIT_MODE === "report") {
+	if (process.env.AUDIT_MODE === "check") {
 		for (const finding of findings) {
+			const level = isBlockingFinding(finding) ? "error" : "warning";
+
 			console.log(
-				`::warning title=환경 변수 등록 현황 (${STORE_LABELS[finding.store]})::${formatFindingLine(finding)}`,
+				`::${level} title=환경 변수 등록 현황 (${STORE_LABELS[finding.store]})::${formatFindingLine(finding)}`,
 			);
+		}
+
+		if (findings.some((finding) => isBlockingFinding(finding))) {
+			process.exitCode = 1;
 		}
 
 		return;

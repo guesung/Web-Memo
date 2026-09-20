@@ -6,6 +6,7 @@ import {
 	fetchVercelEnvNames,
 	formatFindingLine,
 	formatFindings,
+	isBlockingFinding,
 	tryFetch,
 } from "./env-registry.mjs";
 
@@ -132,6 +133,16 @@ describe("formatFindingLine", () => {
 		expect(formatFindingLine({ store: "github", type: "unregistered", name: "B" })).toBe(
 			"매니페스트에 없음: `B`",
 		);
+	});
+});
+
+describe("isBlockingFinding", () => {
+	it("등록이 빠진 것만 막고, 코드보다 먼저 한 등록과 선언 밖 환경은 막지 않는다", () => {
+		expect(isBlockingFinding({ store: "vercel", type: "missing", name: "A" })).toBe(true);
+		expect(isBlockingFinding({ store: "vercel", type: "unregistered", name: "A" })).toBe(false);
+		expect(
+			isBlockingFinding({ store: "vercel", type: "extra-environment", name: "A", detail: "development" }),
+		).toBe(false);
 	});
 });
 

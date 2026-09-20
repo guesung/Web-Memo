@@ -369,7 +369,7 @@ production을 구분하지 못합니다. `isProduction()`은 `buildEnv !== "deve
 **변수를 추가·삭제·이동하면 [`.github/env-manifest.yml`](.github/env-manifest.yml)을 함께 고치고**
 `node .github/scripts/check-env-manifest.mjs --write`로 문서 표를 갱신합니다. 이 파일이 어떤 변수가 어디에
 등록돼야 하는지의 원천이며, PR CI가 코드와 대조하고, 등록 현황 감사가 GitHub·Vercel·Supabase의 실제 등록
-목록과 대조합니다(매일은 Slack 알림, PR에서는 결과만 표시).
+목록과 대조합니다(매일은 Slack 알림, PR에서는 등록이 빠졌을 때 체크 실패).
 
 ---
 

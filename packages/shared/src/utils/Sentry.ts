@@ -2,7 +2,6 @@ import {
 	browserProfilingIntegration,
 	browserTracingIntegration,
 	init,
-	replayIntegration,
 } from "@sentry/react";
 import { SENTRY } from "../constants";
 import { isExtension, isProduction } from "./Environment";
@@ -14,15 +13,9 @@ export const initSentry = async () => {
 
 	init({
 		dsn: SENTRY_DSN,
-		integrations: [
-			browserTracingIntegration(),
-			replayIntegration(),
-			browserProfilingIntegration(),
-		],
+		integrations: [browserTracingIntegration(), browserProfilingIntegration()],
 
 		tracesSampleRate: isExtension() ? 1.0 : 0,
-		replaysSessionSampleRate: 0.1,
-		replaysOnErrorSampleRate: 1.0,
 		release: "0.3.1",
 	});
 };

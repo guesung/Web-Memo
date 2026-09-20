@@ -7,6 +7,11 @@ export default function useSignoutMutation() {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	return useMutation({
+		meta: {
+			feature: "auth",
+			operation: "signout",
+			stage: "request",
+		},
 		mutationFn: new AuthService(supabaseClient).signout,
 		onSuccess: () => {
 			analytics.trackEvent({ name: "logout" });

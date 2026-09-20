@@ -8,10 +8,13 @@ import {
 	QueryClientProvider,
 } from "@tanstack/react-query";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
+import { createErrorReporter, isAbortError } from "@web-memo/shared/utils";
 import type { PropsWithChildren } from "react";
 import { useState } from "react";
 
 interface QueryProviderProps extends PropsWithChildren, LanguageType {}
+
+const reportMutationError = createErrorReporter({ capture: captureException });
 
 export default function QueryProvider({ children }: QueryProviderProps) {
 	const [queryClient] = useState(
@@ -24,8 +27,22 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 					onSuccess: async () => {
 						await bridge.request.REFETCH_THE_MEMO_LIST_FROM_WEB();
 					},
-					onError: (error) => {
-						captureException(error, { level: "fatal" });
+					onError: (error, _variables, _context, mutation) => {
+						if (isAbortError(error)) {
+							return;
+						}
+
+						const mutationMeta = mutation?.options?.meta as
+							| { feature?: string; stage?: string; operation?: string }
+							| undefined;
+
+						reportMutationError({
+							error,
+							feature: mutationMeta?.feature ?? "web",
+							operation: mutationMeta?.operation ?? "mutation",
+							stage: mutationMeta?.stage ?? "unknown",
+							groupByMessage: true,
+						});
 					},
 				}),
 			}),

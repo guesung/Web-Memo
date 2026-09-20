@@ -7,6 +7,11 @@ export default function useFeedbackMutation() {
 	const { data: supabaseClient } = useSupabaseFeedbackClientQuery();
 
 	return useMutation({
+		meta: {
+			feature: "feedback",
+			operation: "create",
+			stage: "save",
+		},
 		mutationFn: new FeedbackService(supabaseClient).insertFeedback,
 		onSuccess: () => {
 			analytics.trackEvent({ name: "feedback_submit" });

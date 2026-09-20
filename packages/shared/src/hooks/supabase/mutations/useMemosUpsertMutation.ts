@@ -18,6 +18,11 @@ export default function useMemosUpsertMutation() {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	return useMutation<MutationData, MutationError, MutationVariables>({
+		meta: {
+			feature: "memo",
+			operation: "bulk-upsert",
+			stage: "save",
+		},
 		mutationFn: new MemoService(supabaseClient).upsertMemos,
 		onMutate: async (memoRequest) => {
 			await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });

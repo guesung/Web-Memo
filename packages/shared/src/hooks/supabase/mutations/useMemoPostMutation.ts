@@ -12,6 +12,11 @@ export default function useMemoPostMutation() {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	return useMutation<MemoSupabaseResponse, MutationError, MemoTable["Insert"]>({
+		meta: {
+			feature: "memo",
+			operation: "create",
+			stage: "save",
+		},
 		mutationFn: new MemoService(supabaseClient).insertMemo,
 		onSuccess: async (result) => {
 			const { data: newData } = result;

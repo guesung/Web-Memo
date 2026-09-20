@@ -61,17 +61,13 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		return createStreamingResponse(messages as ChatCompletionMessageParam[]);
+		return createStreamingResponse(
+			messages as ChatCompletionMessageParam[],
+			"summary",
+		);
 	} catch (error) {
 		console.error("Route handler error:", error);
 
-		if (error instanceof Error) {
-			return handleOpenAIError(error);
-		}
-
-		return createErrorResponse(
-			ERROR_MESSAGES.GENERAL_SERVER_ERROR,
-			HTTP_STATUS.INTERNAL_SERVER_ERROR,
-		);
+		return handleOpenAIError(error, "summary");
 	}
 }

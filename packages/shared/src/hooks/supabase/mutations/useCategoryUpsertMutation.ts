@@ -9,6 +9,11 @@ export default function useCategoryUpsertMutation() {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	return useMutation({
+		meta: {
+			feature: "category",
+			operation: "upsert",
+			stage: "save",
+		},
 		mutationFn: new CategoryService(supabaseClient).upsertCategories,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });

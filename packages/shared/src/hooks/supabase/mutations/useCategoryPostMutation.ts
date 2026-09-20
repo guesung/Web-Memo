@@ -9,6 +9,11 @@ export default function useCategoryPostMutation() {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	return useMutation({
+		meta: {
+			feature: "category",
+			operation: "create",
+			stage: "save",
+		},
 		mutationFn: new CategoryService(supabaseClient).insertCategory,
 		onSuccess: () => {
 			analytics.trackEvent({ name: "category_create" });

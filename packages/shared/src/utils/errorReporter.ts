@@ -98,6 +98,68 @@ export const isAbortError = (error: unknown): boolean => {
 };
 
 /**
+ * 로그아웃 상태에서 정상적으로 나오는 인증 오류인지 판별한다.
+ *
+ * @description 세션이 없는 사용자는 `getUser()`가 `AuthSessionMissingError`를 값으로 돌려주고,
+ * 확장의 `getSupabaseClient`는 "로그인을 먼저 해주세요"를 던진다. 장애가 아니라 예상된 상태라
+ * 보고하면 Sentry가 로그아웃 사용자 수만큼 쌓인다.
+ */
+export const isLoggedOutError = (error: unknown): boolean => {
+	if (error instanceof Error && error.name === "AuthSessionMissingError") {
+		return true;
+	}
+
+	const message = getMessage(error);
+
+	return (
+		message.includes("Auth session missing") ||
+		message.includes("로그인을 먼저 해주세요")
+	);
+};
+
+/**
+ * 성공으로 끝난 쿼리·mutation의 결과(무한 쿼리는 페이지별 결과)에서 값으로 담긴 오류를 꺼낸다.
+ *
+ * @description Supabase는 네트워크·HTTP 실패를 던지지 않고 `{ data: null, error }`로 돌려주므로
+ * React Query는 이를 성공으로 취급한다. `message`를 가진 `error`만 오류로 보고, 로그아웃 상태의
+ * 인증 오류는 제외한다. 오류가 없으면 `null`을 돌려준다.
+ */
+export const getResultError = (result: unknown): unknown => {
+	if (typeof result !== "object" || result === null) {
+		return null;
+	}
+
+	// 무한 쿼리의 결과는 `{ pages }` 안에 페이지별 결과가 들어 있다.
+	if ("pages" in result && Array.isArray(result.pages)) {
+		for (const page of result.pages) {
+			const pageError = getResultError(page);
+
+			if (pageError) {
+				return pageError;
+			}
+		}
+
+		return null;
+	}
+
+	if (!("error" in result)) {
+		return null;
+	}
+
+	const resultError = result.error;
+
+	if (typeof resultError !== "object" || resultError === null) {
+		return null;
+	}
+
+	if (!("message" in resultError) || isLoggedOutError(resultError)) {
+		return null;
+	}
+
+	return resultError;
+};
+
+/**
  * 오류 수집기로 보내는 규칙을 한곳에 모은 리포터를 만든다.
  *
  * @description 같은 기능·단계·메시지의 오류가 8초 안에 반복되면 한 번만 보내고,

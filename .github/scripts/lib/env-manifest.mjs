@@ -14,7 +14,7 @@ export const MANIFEST_KINDS = ["secret", "config", "platform", "flag"];
 
 const NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
 const STORE_PATTERN =
-	/^(github|supabase|envpkg|local|vercel:(production|preview|development))$/;
+	/^(github|supabase|envpkg|vercel:(production|preview|development))$/;
 
 /** 워크플로의 secrets.* 참조에서 제외할 이름. Actions가 자동으로 제공합니다. */
 const BUILTIN_SECRETS = new Set(["GITHUB_TOKEN"]);
@@ -332,19 +332,17 @@ const parseDotenvKeys = (text) =>
 	matchAll(text, /^([A-Za-z_][A-Za-z0-9_]*)=/gm);
 
 /**
- * .env 계열 파일의 키와 매니페스트의 envpkg·local 선언이 같은지 봅니다.
+ * `packages/env/.env.{환경}` 파일의 키와 매니페스트의 envpkg 선언이 같은지 봅니다.
  *
  * @param envpkgFiles `packages/env/.env.{환경}` 파일 이름과 내용
- * @param localExample `apps/web/.env.example` 내용
  */
-export const checkDotenvFiles = ({ entries, envpkgFiles, localExample }) => {
+export const checkDotenvFiles = ({ entries, envpkgFiles }) => {
 	const errors = [];
-	const declaredIn = (store) =>
-		new Set(
-			entries.filter((entry) => entry.stores.includes(store)).map((e) => e.name),
-		);
-	const envpkgDeclared = declaredIn("envpkg");
-	const localDeclared = declaredIn("local");
+	const envpkgDeclared = new Set(
+		entries
+			.filter((entry) => entry.stores.includes("envpkg"))
+			.map((entry) => entry.name),
+	);
 
 	for (const [fileName, content] of Object.entries(envpkgFiles)) {
 		const keys = new Set(parseDotenvKeys(content));
@@ -359,20 +357,6 @@ export const checkDotenvFiles = ({ entries, envpkgFiles, localExample }) => {
 			if (!keys.has(name)) {
 				errors.push(`${name}: 매니페스트는 envpkg라고 하지만 ${fileName}에 없습니다`);
 			}
-		}
-	}
-
-	const exampleKeys = new Set(parseDotenvKeys(localExample));
-
-	for (const key of exampleKeys) {
-		if (!localDeclared.has(key)) {
-			errors.push(`${key}: apps/web/.env.example에 있지만 매니페스트에 local로 적혀 있지 않습니다`);
-		}
-	}
-
-	for (const name of localDeclared) {
-		if (!exampleKeys.has(name)) {
-			errors.push(`${name}: 매니페스트는 local이라고 하지만 apps/web/.env.example에 없습니다`);
 		}
 	}
 
@@ -394,7 +378,6 @@ const STORE_GROUPS = [
 	},
 	{ title: "Supabase Edge Function secrets", match: (store) => store === "supabase" },
 	{ title: "`packages/env/.env.{환경}`", match: (store) => store === "envpkg" },
-	{ title: "`apps/web/.env` (로컬·e2e)", match: (store) => store === "local" },
 ];
 
 const renderStoreTable = (group, entries) => {

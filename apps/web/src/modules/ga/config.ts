@@ -1,7 +1,7 @@
 /**
  * GA4 Data API 조회에 필요한 설정값.
  *
- * @description 서비스 계정 키는 `apps/web/.env`(배포에서는 Vercel 환경변수)가 갖습니다.
+ * @description 서비스 계정 키는 Vercel 프로젝트 환경변수가 갖습니다(로컬은 `env:pull`로 받습니다).
  * `packages/env`에 두면 tsup이 빌드 시점에 번들로 인라인해 확장과 웹 클라이언트에
  * 그대로 실리므로 절대 그쪽으로 옮기지 않습니다.
  */

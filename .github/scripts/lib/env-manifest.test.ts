@@ -31,7 +31,7 @@ describe("parseManifest", () => {
 				"",
 				"- name: OPENAI_API_KEY",
 				"  kind: secret",
-				"  stores: [vercel:production, local]",
+				"  stores: [vercel:production, vercel:development]",
 				"  consumers: [apps/web/a.ts]",
 				'  impact: "AI 기능이 실패한다: 전부"',
 				"  required: false",
@@ -45,7 +45,7 @@ describe("parseManifest", () => {
 		expect(entries).toHaveLength(2);
 		expect(entries[0]).toMatchObject({
 			name: "OPENAI_API_KEY",
-			stores: ["vercel:production", "local"],
+			stores: ["vercel:production", "vercel:development"],
 			impact: "AI 기능이 실패한다: 전부",
 			required: false,
 		});
@@ -204,29 +204,35 @@ describe("checkConsumers", () => {
 });
 
 describe("checkDotenvFiles", () => {
-	it("envpkg·local 선언과 .env 키가 다르면 양방향으로 알린다", () => {
+	it("envpkg 선언과 .env.{환경} 키가 다르면 양방향으로 알린다", () => {
 		const errors = checkDotenvFiles({
-			entries: [
-				entry({ name: "WEB_URL", stores: ["envpkg"] }),
-				entry({ name: "OPENAI_API_KEY", stores: ["local"] }),
-			],
-			envpkgFiles: { "packages/env/.env.production": "WEB_URL=x\nEXTRA=1\n" },
-			localExample: "OPENAI_API_KEY=\nUNDECLARED=\n",
+			entries: [entry({ name: "WEB_URL", stores: ["envpkg"] })],
+			envpkgFiles: {
+				"packages/env/.env.production": "WEB_URL=x\nEXTRA=1\n",
+				"packages/env/.env.staging": "",
+			},
 		});
 
 		expect(errors.join("\n")).toContain("EXTRA: packages/env/.env.production");
-		expect(errors.join("\n")).toContain("UNDECLARED: apps/web/.env.example");
+		expect(errors.join("\n")).toContain(
+			"WEB_URL: 매니페스트는 envpkg라고 하지만 packages/env/.env.staging",
+		);
 		expect(errors).toHaveLength(2);
 	});
 
-	it("선언한 키가 파일에 없으면 알린다", () => {
-		const errors = checkDotenvFiles({
-			entries: [entry({ name: "WEB_URL", stores: ["envpkg"] })],
-			envpkgFiles: { "packages/env/.env.staging": "" },
-			localExample: "",
-		});
+	it("일치하면 통과한다", () => {
+		expect(
+			checkDotenvFiles({
+				entries: [entry({ name: "WEB_URL", stores: ["envpkg"] })],
+				envpkgFiles: { "packages/env/.env.development": "WEB_URL=http://localhost:3000\n" },
+			}),
+		).toEqual([]);
+	});
 
-		expect(errors.join()).toContain("WEB_URL: 매니페스트는 envpkg라고 하지만");
+	it("local 저장소는 더 이상 없다. 예전 선언은 알 수 없는 저장 위치로 걸린다", () => {
+		expect(validateManifest([entry({ stores: ["local"] })]).join()).toContain(
+			"알 수 없는 저장 위치 local",
+		);
 	});
 });
 

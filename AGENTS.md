@@ -165,6 +165,7 @@ pnpm i
 pnpm dev               # 전체 (앱 제외)
 pnpm dev:extension     # 확장만
 pnpm dev:web           # 웹만
+pnpm env:pull           # Vercel development 환경변수를 apps/web/.env.local로 받기 (최초 vercel link, 루트에서)
 pnpm dev:app           # 앱만 (Expo)
 
 # 빌드
@@ -331,8 +332,7 @@ function Component({ lng }: { lng: Language }) {
 | --- | --- | --- |
 | `packages/env/.env.{development,staging,production}` | 확장·웹이 공유하며 환경마다 다른 값 (`WEB_URL`) | ✅ 커밋 |
 | `packages/env/.env` | 위 값의 로컬 오버라이드 (선택) | ❌ |
-| `apps/web/.env` | 웹에서만 쓰는 서버 시크릿 (`OPENAI_API_KEY`, `UPSTASH_*`) | ❌ |
-| Vercel 프로젝트 환경변수 | 배포된 웹의 런타임 값 | — |
+| Vercel 프로젝트 환경변수 | 웹의 서버 시크릿(`OPENAI_API_KEY`, `UPSTASH_*` 등)과 런타임 값. **웹 값의 원천(SSOT)** | — |
 | GitHub Secrets | CI/CD가 외부 서비스에 인증하는 값 | — |
 | `packages/shared/src/constants/` | 환경과 무관한 고정값 (Supabase, Sentry DSN, GA/GTM, OAuth) | ✅ |
 
@@ -354,7 +354,8 @@ production을 구분하지 못합니다. `isProduction()`은 `buildEnv !== "deve
 
 - **`packages/env`에 서버 시크릿을 추가하지 마세요.** `config.ts`가 참조하는 키는
   `tsup`이 번들에 인라인하므로 확장·웹 클라이언트에 그대로 실립니다. 비밀은
-  `apps/web/.env`에 두고 서버에서만 읽습니다.
+  Vercel 프로젝트 환경변수에 두고 서버에서만 읽습니다. 로컬 실행에는 `pnpm env:pull`로
+  development 값을 받아 씁니다(`apps/web/.env`를 따로 만들지 않습니다).
 - **워크플로에서 Vercel 값을 셸 환경 변수로 덧씌우지 마세요.** GitHub Secrets에
   등록되지 않은 이름을 쓰면 빈 값이 Vercel의 실제 값을 덮어써 조용히 망가집니다.
 - **환경 분기 기준을 `.env` 파일 안의 값으로 두지 마세요.** 파일 선택은 파일을

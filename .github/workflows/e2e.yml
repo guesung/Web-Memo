@@ -40,10 +40,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: Setting environment variables
+      # 웹 서버 시크릿의 원천은 Vercel 프로젝트 환경변수입니다. development 환경 값을 받아 로컬 개발과
+      # 같은 방식(apps/web/.env.local)으로 씁니다. production·preview 값은 sensitive라 받을 수 없습니다.
+      # 토큰이 없는 실행(포크 PR 등)은 실패시키지 않고 넘어갑니다. 예전 방식도 빈 파일을 썼습니다.
+      - name: Pull Vercel environment variables
         env:
-          WEB_ENV_FILE: ${{ secrets.WEB_ENV_FILE }}
-        run: printf '%s\n' "$WEB_ENV_FILE" > apps/web/.env
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::warning::VERCEL_TOKEN 이 없어 환경 변수를 받지 않습니다"
+            exit 0
+          fi
+          npm install --global vercel@latest
+          vercel link --yes --project web-memo --scope gueit214s-projects --token "$VERCEL_TOKEN"
+          vercel env pull apps/web/.env.local --environment=development --yes --token "$VERCEL_TOKEN"
 
       - name: Build The Extension
         run: pnpm run build:extension

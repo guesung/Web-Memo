@@ -81,3 +81,6 @@ android
 
 # /gs 파이프라인 상태 파일
 .omc/
+
+# refactor-audit.yml 이 러너에서 만드는 점검 입력 파일
+.audit-changed-files.txt

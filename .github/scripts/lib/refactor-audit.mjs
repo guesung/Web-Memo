@@ -7,7 +7,13 @@
 
 import { requestJson } from "./http.mjs";
 
-/** 카드 한 장에 싣는 발견 수의 상한. 넘치면 우선순위가 낮은 것부터 잘립니다. */
+/**
+ * 카드 한 장에 싣는 발견 수의 상한. 넘치면 우선순위가 낮은 것부터 잘립니다.
+ *
+ * 노션은 페이지 생성 때 children을 100블록까지만 받습니다. 최악의 경우 발견 하나가
+ * 제목 1 + 위치 5 + 문제 1 + 제안 1 = 8블록이고 고정 블록이 8개라, 10건이면 88블록입니다.
+ * 이 상수나 파일 수 상한(normalizeFinding의 slice)을 올리면 100을 넘어 400이 납니다.
+ */
 const MAX_FINDINGS = 10;
 
 /** 노션 rich_text 한 조각의 상한은 2000자입니다. 여유를 두고 자릅니다. */
@@ -19,10 +25,19 @@ const SEVERITY_LABELS = { high: "높음", medium: "중간", low: "낮음" };
 
 const CATEGORY_LABELS = { design: "설계", structure: "구조", quality: "퀄리티" };
 
-const NOTION_API_URL = "https://api.notion.com/v1/pages";
+const NOTION_API_URL = "https://api.notion.com/v1";
+
+/** 자동 점검 카드를 사람이 만든 카드와 가르는 제목 표식. 중복 방지 조회도 이 문자열로 찾습니다. */
+const AUDIT_TITLE_MARKER = "(주간 자동)";
 
 /** database_id 부모를 받는 마지막 안정 버전입니다. 새 버전은 data_source_id를 요구합니다. */
 const NOTION_VERSION = "2022-06-28";
+
+const notionHeaders = (token) => ({
+	authorization: `Bearer ${token}`,
+	"notion-version": NOTION_VERSION,
+	"content-type": "application/json",
+});
 
 const truncate = (value, limit = MAX_TEXT_LENGTH) => {
 	const text = typeof value === "string" ? value.trim() : "";
@@ -109,7 +124,7 @@ const describeFinding = (finding, index) => [
 export const buildNotionPage = ({ databaseId, audit, dateLabel, runUrl }) => ({
 	parent: { database_id: databaseId },
 	properties: {
-		이름: { title: text(`코드 점검 ${dateLabel} (주간 자동)`) },
+		이름: { title: text(`코드 점검 ${dateLabel} ${AUDIT_TITLE_MARKER}`) },
 		프로젝트: { select: { name: "웹 메모" } },
 		"시작 단계": { select: { name: "논의" } },
 		"작업 시작 날짜": { date: { start: dateLabel } },
@@ -129,15 +144,37 @@ export const buildNotionPage = ({ databaseId, audit, dateLabel, runUrl }) => ({
 	],
 });
 
+/**
+ * 앞 회차에 만든 점검 카드가 아직 열려 있으면 그 URL을, 없으면 null을 돌려줍니다.
+ *
+ * 열림의 기준은 상태가 "완료"가 아닌 것입니다. 사람이 손대지 않은 같은 발견이 매주 새 카드로
+ * 쌓이면 진짜 카드가 묻히므로, 열린 카드가 있으면 이번 회차는 카드를 만들지 않습니다.
+ * cleanup-unused-files.mjs 가 열린 PR이 있으면 회차를 건너뛰는 것과 같은 이유입니다.
+ */
+export const findOpenAuditCard = async ({ token, databaseId }) => {
+	const result = await requestJson(`${NOTION_API_URL}/databases/${databaseId}/query`, {
+		method: "POST",
+		headers: notionHeaders(token),
+		body: JSON.stringify({
+			filter: {
+				and: [
+					{ property: "이름", title: { contains: AUDIT_TITLE_MARKER } },
+					{ property: "프로젝트", select: { equals: "웹 메모" } },
+					{ property: "상태", status: { does_not_equal: "완료" } },
+				],
+			},
+			page_size: 1,
+		}),
+	});
+
+	return result.results[0]?.url ?? null;
+};
+
 /** 노션 페이지를 만들고 그 URL을 돌려줍니다. */
 export const createNotionCard = async ({ token, page }) => {
-	const created = await requestJson(NOTION_API_URL, {
+	const created = await requestJson(`${NOTION_API_URL}/pages`, {
 		method: "POST",
-		headers: {
-			authorization: `Bearer ${token}`,
-			"notion-version": NOTION_VERSION,
-			"content-type": "application/json",
-		},
+		headers: notionHeaders(token),
 		body: JSON.stringify(page),
 	});
 
@@ -145,16 +182,33 @@ export const createNotionCard = async ({ token, page }) => {
 };
 
 /** Slack에는 요약과 카드 링크만 보냅니다. 상세는 카드가 원천입니다. */
-export const buildSlackPayload = ({ audit, cardUrl, runUrl }) => {
+export const buildSlackPayload = ({ audit, cardUrl, openCardUrl = null, runUrl }) => {
 	if (audit.findings.length === 0) {
 		return { text: "🔍 주간 코드 점검: 이번 주에는 리팩토링할 부분을 찾지 못했습니다." };
+	}
+
+	const total = audit.findings.length + audit.omittedCount;
+
+	// 앞 카드가 열려 있어 이번에는 카드를 만들지 않은 회차입니다. 발견 수만 알리고 열린 카드로 안내합니다.
+	if (openCardUrl) {
+		return {
+			text: `🔍 주간 코드 점검: 리팩토링 후보 ${total}건 (이전 카드가 열려 있어 새 카드는 만들지 않았습니다)`,
+			blocks: [
+				{
+					type: "section",
+					text: {
+						type: "mrkdwn",
+						text: `*🔍 주간 코드 점검: 리팩토링 후보 ${total}건*\n이전 점검 카드가 아직 열려 있어 새 카드는 만들지 않았습니다. <${openCardUrl}|열린 카드 보기>`,
+					},
+				},
+			],
+		};
 	}
 
 	const top = audit.findings
 		.slice(0, 3)
 		.map((finding) => `• [${SEVERITY_LABELS[finding.severity]}] ${finding.title}`)
 		.join("\n");
-	const total = audit.findings.length + audit.omittedCount;
 	const links = [
 		cardUrl ? `<${cardUrl}|노션 카드 보기>` : null,
 		runUrl ? `<${runUrl}|실행 로그>` : null,

@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
 	buildNotionPage,
 	buildSlackPayload,
+	findOpenAuditCard,
 	normalizeAudit,
 } from "./refactor-audit.mjs";
 
@@ -144,5 +145,57 @@ describe("buildSlackPayload", () => {
 		});
 
 		expect(payload.text).toContain("12건");
+	});
+});
+
+describe("buildSlackPayload: 열린 카드가 있을 때", () => {
+	it("새 카드를 만들지 않았다는 사실과 열린 카드 링크를 싣는다", () => {
+		const payload = buildSlackPayload({
+			audit: normalizeAudit({ findings: [FINDING] }),
+			cardUrl: null,
+			openCardUrl: "https://www.notion.so/open",
+			runUrl: null,
+		});
+
+		expect(payload.text).toContain("새 카드는 만들지 않았습니다");
+		expect(JSON.stringify(payload.blocks)).toContain("https://www.notion.so/open");
+	});
+});
+
+describe("findOpenAuditCard", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	const stubFetch = (results: Array<{ url: string }>) =>
+		vi.spyOn(globalThis, "fetch").mockResolvedValue(
+			new Response(JSON.stringify({ results }), { status: 200 }),
+		);
+
+	// 완료되지 않은 자동 카드만 열린 것으로 본다. 필터가 바뀌면 중복 방지가 조용히 깨진다
+	it("자동 표식·웹 메모·완료 아님 조건으로 조회한다", async () => {
+		const fetchSpy = stubFetch([]);
+
+		await findOpenAuditCard({ token: "secret", databaseId: "db-id" });
+
+		const [url, options] = fetchSpy.mock.calls[0];
+		expect(String(url)).toBe("https://api.notion.com/v1/databases/db-id/query");
+		expect(options?.headers).toMatchObject({ authorization: "Bearer secret" });
+		expect(JSON.parse(String(options?.body)).filter.and).toEqual([
+			{ property: "이름", title: { contains: "(주간 자동)" } },
+			{ property: "프로젝트", select: { equals: "웹 메모" } },
+			{ property: "상태", status: { does_not_equal: "완료" } },
+		]);
+	});
+
+	it("열린 카드가 있으면 URL을, 없으면 null을 돌려준다", async () => {
+		stubFetch([{ url: "https://www.notion.so/open" }]);
+		expect(await findOpenAuditCard({ token: "t", databaseId: "d" })).toBe(
+			"https://www.notion.so/open",
+		);
+
+		vi.restoreAllMocks();
+		stubFetch([]);
+		expect(await findOpenAuditCard({ token: "t", databaseId: "d" })).toBeNull();
 	});
 });

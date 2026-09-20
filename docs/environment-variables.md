@@ -128,7 +128,7 @@ pnpm dev                             # .env.development (기본값)
 
 **Vercel Git 연동 빌드(프리뷰, 대시보드의 수동 재배포)에는 셸 `BUILD_ENV`가 없습니다.**
 GitHub Actions의 `cd-web.yml`은 배포 대상에 맞춰 `BUILD_ENV`를 넣지만, Git 연동 빌드는 그
-워크플로를 거치지 않습니다. (master 푸시의 자동 상용 배포는 `vercel.json`의
+워크플로를 거치지 않습니다. (`master`·`develop` 푸시의 자동 배포는 `vercel.json`의
 `git.deploymentEnabled`로 꺼 두었습니다. 상용 배포는 Slack 버튼 → `release.yml` 한 경로입니다.
 [release-flow.md](release-flow.md) 참고.) 그래서 Vercel 프로젝트 환경변수에 `BUILD_ENV`를 직접 등록해 둡니다
 (Production = `production`, Preview = `staging`, [3절](#3-vercel-프로젝트-환경변수--배포된-웹의-런타임-값) 참고).

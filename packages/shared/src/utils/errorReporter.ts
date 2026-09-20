@@ -51,6 +51,37 @@ const getMessage = (error: unknown): string => {
 };
 
 /**
+ * 이슈 제목에 기능·동작·단계가 보이도록 오류를 감싼다.
+ *
+ * @description Sentry 웹훅(issue 리소스)은 태그를 싣지 않아, Slack 알림에서 어디서 깨졌는지는
+ * 제목으로만 알 수 있다. 원본을 직접 고치지 않는 이유는 호출부가 보고 직후 `error.message`를
+ * 사용자 응답에 그대로 쓰기 때문이다. 원본은 `cause`로 남겨 스택을 잃지 않는다.
+ */
+const labelError = ({
+	error,
+	messageKey,
+	feature,
+	operation,
+	stage,
+}: {
+	error: unknown;
+	messageKey: string;
+	feature: string;
+	operation: string;
+	stage: string;
+}): Error => {
+	const original = error instanceof Error ? error : new Error(messageKey);
+	const labeled = new Error(
+		`[${feature}/${operation}/${stage}] ${original.message}`,
+		{ cause: original },
+	);
+
+	labeled.name = original.name;
+
+	return labeled;
+};
+
+/**
  * 사용자가 취소해서 생긴 오류인지 판별한다.
  *
  * @description 요청 취소는 장애가 아니므로 보고하지 않고, 화면에도 실패로 표시하지 않는다.
@@ -112,7 +143,7 @@ export const createErrorReporter = ({
 			}
 		}
 
-		capture(error instanceof Error ? error : new Error(messageKey), {
+		capture(labelError({ error, messageKey, feature, operation, stage }), {
 			level,
 			tags: { feature, operation, stage, ...tags },
 			fingerprint: groupByMessage

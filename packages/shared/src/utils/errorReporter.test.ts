@@ -28,12 +28,58 @@ describe("createErrorReporter", () => {
 		});
 
 		expect(isReported).toBe(true);
-		expect(capture).toHaveBeenCalledWith(new Error("boom"), {
+		expect(capture.mock.calls[0][1]).toEqual({
 			level: "error",
 			tags: { feature: "summary", operation: "generate", stage: "fetch" },
 			fingerprint: ["summary", "generate", "fetch"],
 			extra: { occurredAt: Date.now() },
 		});
+	});
+
+	it("제목에 기능·동작·단계를 붙여 보낸다", () => {
+		const { capture, report } = createReporter();
+
+		report({
+			error: new Error("boom"),
+			feature: "memo",
+			operation: "create-memo",
+			stage: "insert",
+		});
+
+		expect(capture.mock.calls[0][0].message).toBe(
+			"[memo/create-memo/insert] boom",
+		);
+	});
+
+	it("원본 오류는 cause로 남기고 이름을 유지한다", () => {
+		const { capture, report } = createReporter();
+		const original = new TypeError("boom");
+
+		report({
+			error: original,
+			feature: "summary",
+			operation: "generate",
+			stage: "fetch",
+		});
+
+		const captured = capture.mock.calls[0][0];
+
+		expect(captured.cause).toBe(original);
+		expect(captured.name).toBe("TypeError");
+	});
+
+	it("원본 오류의 메시지는 바꾸지 않는다", () => {
+		const { report } = createReporter();
+		const original = new Error("boom");
+
+		report({
+			error: original,
+			feature: "memo",
+			operation: "create-memo",
+			stage: "update",
+		});
+
+		expect(original.message).toBe("boom");
 	});
 
 	it("추가 태그와 extra를 합치되 fingerprint에는 넣지 않는다", () => {
@@ -90,7 +136,10 @@ describe("createErrorReporter", () => {
 		});
 
 		expect(capture.mock.calls[0][0]).toBeInstanceOf(Error);
-		expect(capture.mock.calls[0][0].message).toBe("문자열 오류");
+		expect(capture.mock.calls[0][0].message).toBe(
+			"[chat/send/general] 문자열 오류",
+		);
+		expect(capture.mock.calls[0][0].cause).toBeInstanceOf(Error);
 	});
 
 	it("Error가 아니어도 message가 있는 객체는 그 메시지를 쓴다", () => {
@@ -103,7 +152,9 @@ describe("createErrorReporter", () => {
 			stage: "insert",
 		});
 
-		expect(capture.mock.calls[0][0].message).toBe("duplicate key");
+		expect(capture.mock.calls[0][0].message).toBe(
+			"[memo/create-memo/insert] duplicate key",
+		);
 	});
 
 	it("취소 오류는 보내지 않는다", () => {

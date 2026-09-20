@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "projectRef": "czwtqukymcqoberdoltq",
+  "postgresMajor": 15,
+  "services": ["db", "auth", "rest", "realtime", "storage"],
+  "migrations": ["20241208", "20260614", "20260622", "20260704", "20260727", "20260727120000", "20260815", "20260816", "20260901", "20260912", "20260918", "20260919"],
+  "functions": [
+    { "name": "kakao-auth", "version": null },
+    { "name": "send-feedback", "version": null },
+    { "name": "send-welcome-email", "version": null },
+    { "name": "send-signup-slack-notification", "version": null }
+  ],
+  "secrets": ["WEB_URL", "CRON_SECRET", "RESEND_API_KEY", "SLACK_FEEDBACK_WEBHOOK_URL", "SLACK_SIGNUP_WEBHOOK_URL"],
+  "cron": ["daily-article-reminder"],
+  "triggers": ["auth.users.send_welcome_email_trigger"],
+  "webhooks": [],
+  "vault": ["project_url", "cron_secret"],
+  "baselineNotes": [
+    "PostgreSQL major는 supabase/config.toml의 15를 기준으로 하며 운영 확인 전까지 버전 차이는 경고입니다.",
+    "배포 버전은 저장소에 없어 null입니다. 첫 운영 조회 후 functions[].version을 고정해야 버전 변화를 비교할 수 있습니다.",
+    "기존 SQL 파일에 같은 migration version 접두사가 중복되어 버전 존재만 비교하며 개별 SQL 적용 여부는 보장하지 않습니다.",
+    "Database Webhook 이름은 저장소에 없습니다. 현재 빈 기대 목록은 Webhook이 불필요하다는 선언이 아니며 운영 조회 후 보완해야 합니다."
+  ]
+}

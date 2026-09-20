@@ -19,6 +19,11 @@ export default function useDeleteMemosMutation() {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	return useMutation<MemoSupabaseResponse, Error, number[]>({
+		meta: {
+			feature: "memo",
+			operation: "delete",
+			stage: "save",
+		},
 		mutationFn: new MemoService(supabaseClient).deleteMemos,
 		onMutate: async (idList) => {
 			await queryClient.cancelQueries({ queryKey: ["memos"] });

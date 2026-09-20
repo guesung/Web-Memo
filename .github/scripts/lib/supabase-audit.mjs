@@ -39,7 +39,7 @@ export const compareSupabaseState = ({ manifest, observations }) => {
 			add({ severity: "warning", category: "project", code: "version_drift", message: `PostgreSQL major: 기대 ${manifest.postgresMajor}, 관측 ${version}` });
 		}
 	}
-	for (const category of ["services", "migrations", "functions", "secrets", "cron", "triggers", "webhooks", "vault"]) {
+	for (const category of ["services", "migrations", "schemaObjects", "functions", "secrets", "cron", "triggers", "webhooks", "vault"]) {
 		const actual = observations[category];
 		if (!actual) {
 			continue;
@@ -52,7 +52,7 @@ export const compareSupabaseState = ({ manifest, observations }) => {
 		for (const entry of expected) {
 			const found = actual.find(({ name }) => name === entry.name);
 			if (!found) {
-				add({ severity: "error", category, code: "missing", message: `${category}: 필수 ${entry.name} 누락` });
+				add({ severity: category === "migrations" ? "warning" : "error", category, code: "missing", message: category === "migrations" ? `migrations: ${entry.name} 이력 없음 (직접 SQL 적용 여부는 필수 스키마 객체로 별도 검사)` : `${category}: 필수 ${entry.name} 누락` });
 				continue;
 			}
 			if (category === "functions" && entry.version !== null && found.version !== entry.version) {
@@ -60,7 +60,7 @@ export const compareSupabaseState = ({ manifest, observations }) => {
 			}
 		}
 		for (const entry of actual) {
-			if (!expected.some(({ name }) => name === entry.name)) {
+			if (category !== "schemaObjects" && !expected.some(({ name }) => name === entry.name)) {
 				add({ severity: "warning", category, code: "extra", message: `${category}: 미선언 ${entry.name}` });
 			}
 			if ((category === "functions" && entry.status !== "ACTIVE") || (category === "services" && entry.status !== "ACTIVE_HEALTHY") || (["cron", "triggers", "webhooks"].includes(category) && entry.active !== true)) {
@@ -109,7 +109,7 @@ export const formatAuditSummary = (result) => {
 		const observation = observations[category];
 		sections.push(`| ${label} | ${formatSummaryCell(observation?.count)} | ${formatSummaryCell(observation?.start)} | ${formatSummaryCell(observation?.end)} |`);
 	}
-	for (const [category, title] of [["migrations", "적용된 마이그레이션"], ["cron", "Cron 작업"], ["triggers", "DB 트리거"], ["webhooks", "DB Webhook"], ["vault", "Vault 키 이름"], ["secrets", "Edge Function 시크릿 이름"]]) {
+	for (const [category, title] of [["migrations", "마이그레이션 이력 (직접 SQL 적용은 미기록 가능)"], ["schemaObjects", "앱 스키마 객체 (테이블·컬럼·함수 시그니처)"], ["cron", "Cron 작업"], ["triggers", "DB 트리거"], ["webhooks", "DB Webhook"], ["vault", "Vault 키 이름"], ["secrets", "Edge Function 시크릿 이름"]]) {
 		const columns = [["이름", "name"]];
 		if (["cron", "triggers", "webhooks"].includes(category)) {
 			columns.push(["활성 여부", "active"]);
@@ -159,10 +159,13 @@ const validateManifest = (manifest) => {
 	if (manifest?.schemaVersion !== 1 || !/^[a-z]{20}$/.test(manifest.projectRef) || !Number.isInteger(manifest.postgresMajor) || manifest.postgresMajor < 1) {
 		throw new Error("Invalid manifest");
 	}
-	for (const category of ["services", "migrations", "secrets", "cron", "triggers", "webhooks", "vault", "baselineNotes"]) {
+	for (const category of ["services", "migrations", "schemaObjects", "secrets", "cron", "triggers", "webhooks", "vault", "baselineNotes"]) {
 		if (!Array.isArray(manifest[category]) || manifest[category].some((item) => typeof item !== "string" || !item)) {
 			throw new Error("Invalid resource list");
 		}
+	}
+	if (manifest.schemaObjects.length === 0 || manifest.schemaObjects.some((entry) => !/^(table|column|function):(memo|feedback|public)\.[^\r\n]+$/.test(entry))) {
+		throw new Error("Invalid schema objects");
 	}
 	if (!manifest.services.includes("db") || manifest.services.some((service) => !["auth", "db", "db_postgres_user", "pooler", "realtime", "rest", "storage", "pg_bouncer"].includes(service))) {
 		throw new Error("Invalid services");

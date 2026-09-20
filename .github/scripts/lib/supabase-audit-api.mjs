@@ -64,12 +64,25 @@ join pg_catalog.pg_class c on c.oid = t.tgrelid
 join pg_catalog.pg_namespace n on n.oid = c.relnamespace
 join pg_catalog.pg_proc p on p.oid = t.tgfoid
 join pg_catalog.pg_namespace pn on pn.oid = p.pronamespace
-where not t.tgisinternal and n.nspname not in ('pg_catalog', 'information_schema')`;
+where not t.tgisinternal and n.nspname not in ('pg_catalog', 'information_schema', 'storage', 'realtime', 'vault', 'pgsodium', 'pgsodium_masks', 'supabase_functions', 'cron', 'extensions')`;
 
 /** 관리 스키마 권한은 개별 조회하여 다른 리소스의 감사와 분리합니다. */
 const RESOURCE_QUERIES = {
+	schemaObjects: `select 'table:' || n.nspname || '.' || c.relname as name
+from pg_catalog.pg_class c join pg_catalog.pg_namespace n on n.oid = c.relnamespace
+where c.relkind in ('r', 'p') and n.nspname in ('memo', 'feedback', 'public')
+union all
+select 'column:' || n.nspname || '.' || c.relname || '.' || a.attname as name
+from pg_catalog.pg_attribute a
+join pg_catalog.pg_class c on c.oid = a.attrelid
+join pg_catalog.pg_namespace n on n.oid = c.relnamespace
+where a.attnum > 0 and not a.attisdropped and c.relkind in ('r', 'p') and n.nspname in ('memo', 'feedback', 'public')
+union all
+select 'function:' || n.nspname || '.' || p.proname || '(' || pg_catalog.oidvectortypes(p.proargtypes) || ')' as name
+from pg_catalog.pg_proc p join pg_catalog.pg_namespace n on n.oid = p.pronamespace
+where p.prokind = 'f' and n.nspname in ('memo', 'feedback', 'public')`,
 	cron: "select jobname as name, active from cron.job",
-	triggers: TRIGGER_QUERY,
+	triggers: `${TRIGGER_QUERY} and not (pn.nspname = 'supabase_functions' and p.proname = 'http_request')`,
 	webhooks: `${TRIGGER_QUERY} and pn.nspname = 'supabase_functions' and p.proname = 'http_request'`,
 	vault: "select name from vault.secrets",
 };

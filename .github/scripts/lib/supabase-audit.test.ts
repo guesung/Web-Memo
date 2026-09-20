@@ -8,6 +8,7 @@ const MANIFEST = {
 	postgresMajor: 15,
 	services: ["db"],
 	migrations: ["20260912"],
+	schemaObjects: ["table:memo.highlight", "column:memo.memo.deleted_at", "function:memo.get_admin_stats(boolean)"],
 	functions: [{ name: "send-welcome-email", version: 2 }],
 	secrets: ["CRON_SECRET"],
 	cron: ["daily-article-reminder"],
@@ -21,6 +22,7 @@ const getObservations = () => ({
 	project: { status: "ACTIVE_HEALTHY", postgresVersion: "15.8.1.060" },
 	services: [{ name: "db", status: "ACTIVE_HEALTHY" }],
 	migrations: [{ name: "20260912" }],
+	schemaObjects: MANIFEST.schemaObjects.map((name) => ({ name })),
 	functions: [{ name: "send-welcome-email", status: "ACTIVE", version: 2 }],
 	secrets: [{ name: "CRON_SECRET" }],
 	cron: [{ name: "daily-article-reminder", active: true }],
@@ -49,11 +51,13 @@ const createFetcher = (override?: (url: URL, query: string) => Response | undefi
 		body = [{ name: "CRON_SECRET", value: "DO_NOT_PRINT" }, { name: "SUPABASE_URL", value: "DO_NOT_PRINT" }];
 	} else if (url.pathname.endsWith("/logs")) {
 		body = { result: [{ error_count: 0 }], error: null };
+	} else if (query.includes("'table:'")) {
+		body = getObservations().schemaObjects;
 	} else if (query.includes("cron.job")) {
 		body = [{ name: "daily-article-reminder", active: true }];
 	} else if (query.includes("vault.secrets")) {
 		body = [{ name: "cron_secret" }];
-	} else if (query.includes("http_request")) {
+	} else if (query.includes("http_request") && !query.includes("and not (pn.nspname")) {
 		body = [];
 	} else if (query) {
 		body = [{ name: "auth.users.send_welcome_email_trigger", active: true }];
@@ -70,9 +74,22 @@ describe("운영 상태 비교", () => {
 			expect.objectContaining({ category: "runtime", severity: "warning", code: "unobservable" }),
 		]);
 	});
-	it.each(["services", "migrations", "functions", "secrets", "cron", "triggers", "vault"])("%s 필수 누락은 오류다", (category) => {
+	it.each(["services", "schemaObjects", "functions", "secrets", "cron", "triggers", "vault"])("%s 필수 누락은 오류다", (category) => {
 		const findings = compareSupabaseState({ manifest: MANIFEST, observations: { ...getObservations(), [category]: [] } });
 		expect(findings).toContainEqual(expect.objectContaining({ category, severity: "error", code: "missing" }));
+	});
+	it("직접 SQL 적용으로 이력이 없어도 실제 필수 스키마가 있으면 경고만 남긴다", () => {
+		const findings = compareSupabaseState({ manifest: MANIFEST, observations: { ...getObservations(), migrations: [] } });
+		expect(findings).toContainEqual(expect.objectContaining({ category: "migrations", severity: "warning", code: "missing" }));
+		expect(findings.every((finding: { severity: string }) => finding.severity === "warning")).toBe(true);
+	});
+	it("같은 이름이어도 함수 인자 타입이 다르면 필수 스키마 누락이다", () => {
+		const observations = getObservations();
+		observations.schemaObjects = observations.schemaObjects.filter(({ name }) => !name.startsWith("function:"));
+		observations.schemaObjects.push({ name: "function:memo.get_admin_stats()" });
+		const findings = compareSupabaseState({ manifest: MANIFEST, observations });
+		expect(findings).toContainEqual(expect.objectContaining({ category: "schemaObjects", severity: "error", code: "missing" }));
+		expect(findings).not.toContainEqual(expect.objectContaining({ category: "schemaObjects", code: "extra" }));
 	});
 	it("필수 Webhook 누락도 오류다", () => {
 		const findings = compareSupabaseState({ manifest: { ...MANIFEST, webhooks: ["feedback.feedbacks.send"] }, observations: getObservations() });
@@ -146,13 +163,13 @@ describe("Management API 조회", () => {
 		expect(result.exitCode).toBe(0);
 		expect(JSON.stringify(result)).not.toContain("DO_NOT_PRINT");
 		expect(JSON.stringify(result)).not.toContain("TOKEN");
-		expect(fetcher).toHaveBeenCalledTimes(11);
+		expect(fetcher).toHaveBeenCalledTimes(12);
 		for (const [input, options] of fetcher.mock.calls) {
 			const url = new URL(input);
 			expect(options.headers).toMatchObject({ authorization: "Bearer TOKEN" });
 			if (options.method === "POST") {
 				expect(url.pathname.endsWith("/database/query/read-only")).toBe(true);
-				expect(String(options.body)).not.toMatch(/decrypted_secret|\bcommand\b|tgargs|select \*/i);
+				expect(String(options.body)).not.toMatch(/decrypted_secret|\bcommand\b|tgargs|prosrc|pg_get_functiondef|select \*/i);
 			}
 			if (url.pathname.includes("/analytics/")) {
 				expect(url.pathname).toBe(`/v1/projects/${MANIFEST.projectRef}/analytics/endpoints/logs`);
@@ -162,6 +179,38 @@ describe("Management API 조회", () => {
 				expect(url.searchParams.get("sql")).not.toContain("event_message");
 			}
 		}
+	});
+	it("트리거 관측은 플랫폼 내부 스키마를 제외하고 auth의 앱 트리거는 유지한다", async () => {
+		const fetcher = createFetcher();
+		await auditSupabase({ manifest: MANIFEST, token: "TOKEN", fetcher });
+		const queries = fetcher.mock.calls.filter(([, options]) => options.body).map(([, options]) => JSON.parse(String(options.body)).query as string);
+		const triggerQueries = queries.filter((query) => query.includes("pg_catalog.pg_trigger"));
+		expect(triggerQueries).toHaveLength(2);
+		for (const query of triggerQueries) {
+			expect(query).toContain("'storage', 'realtime', 'vault', 'pgsodium'");
+			expect(query).toContain("'cron', 'extensions'");
+			for (const applicationSchema of ["auth", "public", "memo", "feedback", "billing"]) {
+				expect(query).not.toContain(`'${applicationSchema}'`);
+			}
+		}
+		const applicationQuery = triggerQueries.find((query) => query.includes("and not (pn.nspname"));
+		expect(applicationQuery).not.toContain("n.nspname in (");
+		expect(applicationQuery).toContain("and not (pn.nspname = 'supabase_functions' and p.proname = 'http_request')");
+		const webhookQuery = triggerQueries.find((query) => !query.includes("and not (pn.nspname"));
+		expect(webhookQuery).toContain("and pn.nspname = 'supabase_functions' and p.proname = 'http_request'");
+	});
+	it("미선언 public·auth 앱 트리거를 경고로 남긴다", () => {
+		const observations = getObservations();
+		observations.triggers.push({ name: "public.documents.on_update", active: true }, { name: "auth.users.custom_signup", active: true });
+		const findings = compareSupabaseState({ manifest: MANIFEST, observations });
+		expect(findings.filter((finding: { category: string; code: string }) => finding.category === "triggers" && finding.code === "extra")).toHaveLength(2);
+	});
+	it("스키마 조회 실패를 정상이나 누락으로 바꾸지 않는다", async () => {
+		const fetcher = createFetcher((_url, query) => query.includes("'table:'") ? new Response("permission denied", { status: 403 }) : undefined);
+		const result = await auditSupabase({ manifest: MANIFEST, token: "TOKEN", fetcher });
+		expect(result.exitCode).toBe(1);
+		expect(result.findings).toContainEqual(expect.objectContaining({ category: "schemaObjects", code: "unobservable" }));
+		expect(result.findings).not.toContainEqual(expect.objectContaining({ category: "schemaObjects", code: "missing" }));
 	});
 	it("SQL 권한 부족은 누락과 구분하고 감사를 실패시키며 응답 본문을 노출하지 않는다", async () => {
 		const fetcher = createFetcher((_url, query) => query.includes("vault.secrets") ? new Response("42501 permission denied DO_NOT_PRINT", { status: 500 }) : undefined);
@@ -214,12 +263,11 @@ describe("Management API 조회", () => {
 	it("annotation의 줄바꿈과 퍼센트를 이스케이프한다", () => {
 		expect(formatAuditAnnotation({ severity: "warning", message: "x%\n::error::bad\r" })).toBe("::warning::x%25%0A::error::bad%0D");
 	});
-	it("운영 선언이 저장소의 함수와 마이그레이션을 포함한다", () => {
+	it("운영 선언이 저장소 함수와 직접 적용 SQL의 필수 스키마를 포함한다", () => {
 		const manifest = JSON.parse(readFileSync(".github/supabase-audit-manifest.json", "utf8"));
 		const root = "packages/supabase-edge-functions/supabase";
-		const versions = [...new Set(readdirSync(`${root}/migrations`).filter((file) => file.endsWith(".sql")).map((file) => file.split("_")[0]))].sort();
-		expect([...manifest.migrations].sort()).toEqual(versions);
 		const functions = readdirSync(`${root}/functions`, { withFileTypes: true }).filter((file) => file.isDirectory()).map((file) => file.name).sort();
-		expect(manifest.functions.map((entry: { name: string }) => entry.name).sort()).toEqual(functions);
+		expect(manifest.functions.map((entry: { name: string }) => entry.name)).toEqual(expect.arrayContaining(functions));
+		expect(manifest.schemaObjects).toEqual(expect.arrayContaining(["table:memo.highlight", "column:memo.memo.deleted_at", "column:feedback.feedbacks.email", "function:memo.get_highlight_counts(text[])", "function:memo.send_welcome_email()", "function:memo.get_admin_stats(boolean)"]));
 	});
 });

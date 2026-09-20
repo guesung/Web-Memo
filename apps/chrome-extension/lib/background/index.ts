@@ -1,8 +1,8 @@
 import { handleEditHighlight } from "./editHighlight";
 import { handleCreateHighlight } from "./createHighlight";
+import { reportBackgroundError } from "./reportBackgroundError";
 import "webextension-polyfill";
 
-import { captureException } from "@sentry/react";
 import { CONFIG } from "@web-memo/env";
 import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import {
@@ -19,21 +19,14 @@ import { getSupabaseClient, I18n, Tab } from "@web-memo/shared/utils/extension";
 import { initSentry } from "@web-memo/shared/utils";
 import { analytics } from "@web-memo/shared/modules/analytics";
 
-const FEATURE_NAME = "memo";
-const OPERATION_NAME = "create-memo";
-
 void initSentry();
 
 const reportMemoCreateError = (error: unknown, stage: string) => {
-	captureException(error instanceof Error ? error : new Error(String(error)), {
-		level: "error",
-		tags: {
-			feature: FEATURE_NAME,
-			operation: OPERATION_NAME,
-			stage,
-		},
-		fingerprint: [FEATURE_NAME, OPERATION_NAME, stage],
-		extra: { feature: FEATURE_NAME, operation: OPERATION_NAME, stage },
+	reportBackgroundError({
+		error,
+		feature: "memo",
+		operation: "create-memo",
+		stage,
 	});
 };
 

@@ -1,7 +1,9 @@
+import { SupabaseSessionRequiredError } from "@web-memo/shared/utils/extension";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { handleEditHighlight } from "./editHighlight";
 
-const MOCKS = vi.hoisted(() => ({ getClient: vi.fn(), getUser: vi.fn(), update: vi.fn(), remove: vi.fn() }));
+const MOCKS = vi.hoisted(() => ({ getClient: vi.fn(), getUser: vi.fn(), update: vi.fn(), remove: vi.fn(), report: vi.fn() }));
+vi.mock("./reportBackgroundError", () => ({ reportBackgroundError: MOCKS.report }));
 vi.mock("@web-memo/shared/utils", () => ({
  normalizeUrl: (url: string) => url,
  HighlightService: class { updateHighlight = MOCKS.update; deleteHighlight = MOCKS.remove; },
@@ -20,6 +22,7 @@ beforeEach(() => {
  MOCKS.getUser.mockReset().mockResolvedValue({ data: { user: { id: "owner" } }, error: null });
  MOCKS.update.mockReset().mockResolvedValue({ data: [ROW], error: null });
  MOCKS.remove.mockReset().mockResolvedValue({ data: [ROW], error: null });
+ MOCKS.report.mockReset();
 });
 
 describe("하이라이트 편집 요청", () => {
@@ -49,5 +52,27 @@ describe("하이라이트 편집 요청", () => {
   MOCKS.getUser.mockResolvedValue({ data: { user: null }, error: null });
   expect(await handleEditHighlight({ payload: PAYLOAD, sender: SENDER })).toEqual({ success: false, error: "unauthenticated" });
   expect(MOCKS.update).not.toHaveBeenCalled();
+ });
+ it.each([
+  { setup: () => MOCKS.update.mockResolvedValue({ data: [], error: { message: "secret SQL" } }), stage: "database_error" },
+  { setup: () => MOCKS.update.mockResolvedValue({ data: [], error: null }), stage: "empty_result" },
+  { setup: () => MOCKS.getUser.mockResolvedValue({ data: { user: null }, error: { status: 503 } }), stage: "auth_unavailable" },
+  { setup: () => MOCKS.getClient.mockRejectedValue(new Error("boom")), stage: "unexpected_error" },
+ ])("편집 실패 $stage는 고정 문자열 오류로 Sentry에 보고한다", async ({ setup, stage }) => {
+  setup();
+  await handleEditHighlight({ payload: PAYLOAD, sender: SENDER });
+  expect(MOCKS.report).toHaveBeenCalledTimes(1);
+  const params = MOCKS.report.mock.calls[0][0];
+  expect(params).toMatchObject({ feature: "highlight", operation: "edit", stage });
+  expect(params.error.message).not.toMatch(/secret|boom|example\.com/);
+ });
+ it.each([
+  { setup: () => MOCKS.getClient.mockRejectedValue(new SupabaseSessionRequiredError("로그인")) },
+  { setup: () => MOCKS.getUser.mockResolvedValue({ data: { user: null }, error: { status: 401 } }) },
+  { setup: () => MOCKS.getUser.mockResolvedValue({ data: { user: null }, error: null }) },
+ ])("로그인 부재처럼 정상적인 실패는 보고하지 않는다", async ({ setup }) => {
+  setup();
+  await handleEditHighlight({ payload: PAYLOAD, sender: SENDER });
+  expect(MOCKS.report).not.toHaveBeenCalled();
  });
 });

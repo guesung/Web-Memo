@@ -8,6 +8,7 @@ import {
 	getSupabaseClient,
 	SupabaseSessionRequiredError,
 } from "@web-memo/shared/utils/extension";
+import { reportBackgroundError } from "./reportBackgroundError";
 
 /** 신뢰할 수 없는 메시지 본문과 Chrome이 제공하는 발신 문서 정보. */
 interface IFCreateHighlightRequest {
@@ -145,10 +146,33 @@ type THighlightFailureCode =
 	| "empty_result"
 	| "unexpected_error";
 
-/** background 콘솔에는 코드에서 결정한 단계와 코드만 남기고 오류 객체를 전달하지 않는다. */
+/** 로그인 상태나 세션 만료처럼 정상적으로 나오는 코드는 보고하지 않는다. */
+const REPORTABLE_FAILURE_CODES: readonly THighlightFailureCode[] = [
+	"auth_unavailable",
+	"database_error",
+	"empty_result",
+	"unexpected_error",
+];
+
+/**
+ * 콘솔과 Sentry에는 코드에서 결정한 단계와 코드만 남기고 오류 객체를 전달하지 않는다.
+ *
+ * @description 서버 메시지·URL·선택한 텍스트가 섞이지 않도록 고정 문자열로 만든 오류만 보낸다.
+ */
 const logHighlightFailure = (
 	operation: THighlightSaveOperation,
 	code: THighlightFailureCode,
 ) => {
 	console.warn("[Web Memo] highlight_save_failed", { operation, code });
+
+	if (!REPORTABLE_FAILURE_CODES.includes(code)) {
+		return;
+	}
+
+	reportBackgroundError({
+		error: new Error(`highlight_save_failed: ${operation}/${code}`),
+		feature: "highlight",
+		operation: "create",
+		stage: `${operation}_${code}`,
+	});
 };

@@ -15,7 +15,11 @@
  *   TARGET=app RESULT=success node .github/scripts/notify-release-result.mjs
  */
 
-import { readAppConfig, readExtensionVersion } from "./lib/repo-versions.mjs";
+import {
+	readAppConfig,
+	readExtensionVersion,
+	readWebUrl,
+} from "./lib/repo-versions.mjs";
 import { readCommitSubject, requireEnv } from "./lib/run-context.mjs";
 import { postToSlack } from "./lib/slack-blocks.mjs";
 
@@ -155,6 +159,17 @@ const main = async () => {
 			{
 				type: "actions",
 				elements: [
+					// 상용 배포가 끝난 뒤에만 답니다. 실패했거나 취소됐으면 그 주소는 아직 이전 커밋을 서빙합니다.
+					...(target === "web" && result === "success"
+						? [
+								{
+									type: "button",
+									action_id: "open_web",
+									text: { type: "plain_text", text: "🌐 웹 열기", emoji: true },
+									url: readWebUrl("production"),
+								},
+							]
+						: []),
 					{
 						type: "button",
 						action_id: "open_run",

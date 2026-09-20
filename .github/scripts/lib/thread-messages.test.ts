@@ -161,6 +161,20 @@ describe("buildTargetReplyPayload", () => {
 		});
 	});
 
+	it("actionBlock을 넘기면 로그 링크 줄 자리에 버튼 줄이 들어간다", () => {
+		const actionBlock = { type: "actions", elements: [] };
+		const payload = buildTargetReplyPayload({
+			target: "web",
+			outcome: "success",
+			runUrl: RUN_URL,
+			actionBlock,
+		});
+
+		expect(payload.blocks).toHaveLength(2);
+		expect(payload.blocks[1]).toBe(actionBlock);
+		expect(JSON.stringify(payload.blocks)).not.toContain("Actions 로그 보기");
+	});
+
 	it("알 수 없는 타깃이면 던진다", () => {
 		expect(() =>
 			buildTargetReplyPayload({

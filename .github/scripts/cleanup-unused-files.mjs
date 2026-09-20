@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * 미사용 파일을 정리하는 PR을 엽니다.
- * .github/workflows/cleanup-unused.yml 이 월 1회(+수동) 호출합니다.
+ * .github/workflows/cleanup-unused.yml 이 주 1회(+수동) 호출합니다.
  *
  * 흐름은 하나뿐입니다.
  *   열린 정리 PR 확인 → knip → 안전/회색 분류 → 항목별 커밋으로 삭제

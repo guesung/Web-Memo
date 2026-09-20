@@ -1,6 +1,6 @@
 name: Cleanup unused files
 
-# 월 1회 master에서 knip이 찾은 미사용 파일을 지우고 PR을 엽니다.
+# 주 1회 master에서 knip이 찾은 미사용 파일을 지우고 PR을 엽니다.
 # 자동 머지는 하지 않습니다 — 머지는 사람의 승인을 항상 거칩니다.
 #
 # GITHUB_TOKEN 대신 GitHub App 토큰을 쓰는 이유: GITHUB_TOKEN으로 연 PR은
@@ -8,8 +8,8 @@ name: Cleanup unused files
 # 그러면 이 워크플로 안의 검증이 PR 위에서 다시 확인되지 않습니다.
 on:
   schedule:
-    # 매월 1일 00:00 UTC (KST 09:00)
-    - cron: "0 0 1 * *"
+    # 매주 토요일 01:00 UTC (KST 10:00)
+    - cron: "0 1 * * 6"
   workflow_dispatch:
     inputs:
       dry_run:

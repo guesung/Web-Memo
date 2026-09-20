@@ -88,17 +88,29 @@
   consumers: [.github/workflows/cd-app.yml, .github/workflows/ci.yml, .github/workflows/versions.yml]
   impact: "Google Play 내부 테스트 제출과 현황 조회가 실패한다"
 
+- name: CLAUDE_CODE_OAUTH_TOKEN
+  kind: secret
+  stores: [github]
+  consumers: [.github/workflows/refactor-audit.yml]
+  impact: "주간 리팩토링 점검이 인증에 실패해 노션 카드와 Slack 알림이 오지 않는다. 구독 토큰이라 만료·한도 소진으로도 실패한다"
+
+- name: NOTION_TOKEN
+  kind: secret
+  stores: [github]
+  consumers: [.github/workflows/refactor-audit.yml]
+  impact: "주간 리팩토링 점검 결과가 노션 작업 카드로 만들어지지 않는다"
+
 - name: SLACK_WEBHOOK_URL
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/daily-ga-report.yml, .github/workflows/weekly-ga-report.yml, .github/workflows/notify-release.yml, .github/workflows/versions.yml, .github/workflows/env-registry-audit.yml]
+  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/daily-ga-report.yml, .github/workflows/weekly-ga-report.yml, .github/workflows/refactor-audit.yml, .github/workflows/notify-release.yml, .github/workflows/versions.yml, .github/workflows/env-registry-audit.yml]
   impact: "빌드, 배포, 릴리스 결과와 리포트 실패 알림이 오지 않는다"
 
 - name: SLACK_REPORT_WEBHOOK_URL
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/daily-ga-report.yml, .github/workflows/weekly-ga-report.yml]
-  impact: "GA 리포트가 전용 채널로 게시되지 않는다"
+  consumers: [.github/workflows/daily-ga-report.yml, .github/workflows/weekly-ga-report.yml, .github/workflows/refactor-audit.yml]
+  impact: "GA 리포트와 주간 리팩토링 점검 결과가 전용 채널로 게시되지 않는다"
 
 - name: SLACK_CHANNEL_ID
   kind: secret

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ANALYTICS_EXCLUDED_USER_ID } from "../../constants";
 import type { TAnalyticsEvent } from "./type";
 
 /**
@@ -206,6 +207,81 @@ describe("Analytics 환경별 동작", () => {
 
 		const [, request] = fetchMock.mock.calls[0];
 		expect(JSON.parse(request.body).user_id).toBe("user-1");
+	});
+
+	it("storage에 운영자 user_id만 있으면 이벤트를 보내지 않는다", async () => {
+		stubChromeStorage({
+			get: vi.fn().mockResolvedValue({
+				analyticsUserId: ANALYTICS_EXCLUDED_USER_ID,
+			}),
+		});
+
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+
+		await analytics.trackEvent(EVENT);
+
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it("storage 조회 중 로그인하면 최신 user_id를 사용한다", async () => {
+		let resolveStoredUserId:
+			| ((value: { analyticsUserId: string }) => void)
+			| undefined;
+		const storedUserIdPromise = new Promise<{ analyticsUserId: string }>(
+			(resolve) => {
+				resolveStoredUserId = resolve;
+			},
+		);
+		stubChromeStorage({
+			get: vi
+				.fn()
+				.mockImplementationOnce(() => storedUserIdPromise)
+				.mockResolvedValue({ clientId: "c" }),
+		});
+
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+		const trackEventPromise = analytics.trackEvent(EVENT);
+		analytics.setUserId("latest-user");
+		resolveStoredUserId?.({ analyticsUserId: "stored-user" });
+		await trackEventPromise;
+
+		const [, request] = fetchMock.mock.calls[0];
+		expect(JSON.parse(request.body).user_id).toBe("latest-user");
+	});
+
+	it("storage 조회 중 로그아웃하면 저장된 user_id를 복구하지 않는다", async () => {
+		let resolveStoredUserId:
+			| ((value: { analyticsUserId: string }) => void)
+			| undefined;
+		const storedUserIdPromise = new Promise<{ analyticsUserId: string }>(
+			(resolve) => {
+				resolveStoredUserId = resolve;
+			},
+		);
+		stubChromeStorage({
+			get: vi
+				.fn()
+				.mockImplementationOnce(() => storedUserIdPromise)
+				.mockResolvedValue({ clientId: "c" }),
+		});
+
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+		const trackEventPromise = analytics.trackEvent(EVENT);
+		analytics.setUserId(undefined);
+		resolveStoredUserId?.({ analyticsUserId: "stored-user" });
+		await trackEventPromise;
+
+		const [, request] = fetchMock.mock.calls[0];
+		expect(JSON.parse(request.body).user_id).toBeUndefined();
 	});
 
 	it("로그아웃하면 storage에 남긴 user_id를 지운다", async () => {

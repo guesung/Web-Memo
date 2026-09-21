@@ -19,6 +19,8 @@ class Analytics {
 	private gaId: string;
 	private apiSecret: string;
 	private userId: string | undefined = undefined;
+	private hasUserIdBeenSet = false;
+	private userIdRevision = 0;
 	private readonly GA_ENDPOINT = "https://www.google-analytics.com/mp/collect";
 	private readonly SESSION_EXPIRATION_IN_MIN = 30;
 	private readonly USER_ID_STORAGE_KEY = "analyticsUserId";
@@ -36,6 +38,8 @@ class Analytics {
 	 */
 	public setUserId(userId: string | undefined): void {
 		this.userId = userId;
+		this.hasUserIdBeenSet = true;
+		this.userIdRevision += 1;
 
 		if (!isExtension()) {
 			return;
@@ -65,12 +69,17 @@ class Analytics {
 	 * 사용자 조회가 끝나기를 기다리지 않기 때문입니다.
 	 */
 	private async resolveUserId(): Promise<string | undefined> {
-		if (this.userId) {
+		if (!isExtension() || this.hasUserIdBeenSet) {
 			return this.userId;
 		}
 
+		const userIdRevisionBeforeStorageRead = this.userIdRevision;
+
 		try {
 			const result = await chrome.storage.local.get(this.USER_ID_STORAGE_KEY);
+			if (this.userIdRevision !== userIdRevisionBeforeStorageRead) {
+				return this.userId;
+			}
 
 			return result[this.USER_ID_STORAGE_KEY];
 		} catch (_error) {
@@ -102,8 +111,8 @@ class Analytics {
 	 * 막습니다. gtag가 자동으로 보내는 page_view·session_start는 여기를 지나지 않으므로
 	 * 웹 레이아웃에서 따로 막습니다.
 	 */
-	private shouldSend(): boolean {
-		if (this.userId === ANALYTICS_EXCLUDED_USER_ID) {
+	private shouldSend(userId: string | undefined): boolean {
+		if (userId === ANALYTICS_EXCLUDED_USER_ID) {
 			return false;
 		}
 
@@ -130,9 +139,12 @@ class Analytics {
 			console.info(`[analytics] ${event.name}`, parameters);
 		}
 
-		if (!this.shouldSend()) return;
+		const userId = await this.resolveUserId();
+		if (!this.shouldSend(userId)) {
+			return;
+		}
 
-		await this.sendEvent(event.name, parameters);
+		await this.sendEvent(event.name, parameters, userId);
 	}
 
 	/**
@@ -157,18 +169,20 @@ class Analytics {
 	private async sendEvent(
 		eventName: string,
 		parameters: IFGa4EventParams,
+		userId: string | undefined,
 	): Promise<void> {
 		if (isExtension()) {
-			await this.sendEventInExtension(eventName, parameters);
+			await this.sendEventInExtension(eventName, parameters, userId);
 			return;
 		}
 
-		this.sendEventInWeb(eventName, parameters);
+		this.sendEventInWeb(eventName, parameters, userId);
 	}
 
 	private sendEventInWeb(
 		eventName: string,
 		parameters: IFGa4EventParams,
+		userId: string | undefined,
 	): void {
 		if (typeof window === "undefined" || !("gtag" in window)) {
 			console.warn(
@@ -179,19 +193,18 @@ class Analytics {
 
 		window.gtag("event", eventName, {
 			...parameters,
-			user_id: this.userId,
+			user_id: userId,
 		});
 	}
 
 	private async sendEventInExtension(
 		eventName: string,
 		parameters: IFGa4EventParams,
+		userId: string | undefined,
 	): Promise<void> {
 		try {
 			const clientId = await this.getOrCreateClientId();
 			const sessionId = await this.getOrCreateSessionId();
-			const userId = await this.resolveUserId();
-
 			const payload: {
 				client_id: string;
 				user_id?: string;

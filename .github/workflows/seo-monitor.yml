@@ -1,12 +1,17 @@
 name: SEO Monitor
 
-# 운영 사이트의 robots.txt·sitemap.xml·SSR 메타데이터를 매일 검사합니다.
-# 외부 서비스 계정 없이 공개 응답만 확인하며, 상세 결과는 Actions 아티팩트로 보관합니다.
+# 운영 사이트의 공개 SEO 응답과 선택적 Search Console 지표를 매일 검사합니다.
+# 상세 결과는 이전 master 실행과 비교하고 Actions 아티팩트로 보관합니다.
 on:
   schedule:
     # UTC 00:17 = Asia/Seoul 09:17. 정각의 Actions 실행 혼잡을 피하려고 17분에 실행합니다.
     - cron: "17 0 * * *"
   workflow_dispatch:
+    inputs:
+      weekly:
+        description: "Search Console 주간 검색 성과도 함께 조회합니다."
+        type: boolean
+        default: false
 
 concurrency:
   group: seo-monitor
@@ -14,6 +19,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
+  actions: read
   contents: read
 
 jobs:
@@ -35,8 +41,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
+      - name: Find previous SEO report
+        id: previous-seo
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .github/scripts/find-previous-seo-report.mjs
+
       - name: Inspect production SEO
+        env:
+          SEO_BASELINE_STATUS: ${{ steps.previous-seo.outputs.baseline_status }}
+          SEO_PREVIOUS_REPORT: ${{ steps.previous-seo.outputs.SEO_PREVIOUS_REPORT }}
         run: pnpm seo:check
+
+      - name: Inspect Search Console
+        if: ${{ always() }}
+        env:
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+          SEO_GSC_WEEKLY: ${{ inputs.weekly && 'true' || 'false' }}
+        run: pnpm seo:gsc
 
       - name: Upload SEO report
         if: ${{ always() }}

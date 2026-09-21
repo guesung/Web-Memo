@@ -14,6 +14,13 @@ const CORE_ACTION_ENGAGEMENT_TIME_MSEC = 500;
 /** engagement 이벤트의 참여 시간. */
 const DEFAULT_ENGAGEMENT_TIME_MSEC = 100;
 
+/** 분석 이벤트 전송에 필요한 값입니다. */
+type TSendEventParams = {
+	eventName: string;
+	parameters: IFGa4EventParams;
+	userId: string | undefined;
+};
+
 class Analytics {
 	private static instance: Analytics;
 	private gaId: string;
@@ -83,6 +90,12 @@ class Analytics {
 
 			return result[this.USER_ID_STORAGE_KEY];
 		} catch (_error) {
+			if (this.userIdRevision !== userIdRevisionBeforeStorageRead) {
+				return this.userId;
+			}
+
+			console.warn("[analytics] user_id를 storage에서 읽지 못했습니다.");
+
 			return undefined;
 		}
 	}
@@ -144,7 +157,7 @@ class Analytics {
 			return;
 		}
 
-		await this.sendEvent(event.name, parameters, userId);
+		await this.sendEvent({ eventName: event.name, parameters, userId });
 	}
 
 	/**
@@ -166,24 +179,18 @@ class Analytics {
 		};
 	}
 
-	private async sendEvent(
-		eventName: string,
-		parameters: IFGa4EventParams,
-		userId: string | undefined,
-	): Promise<void> {
+	private async sendEvent(sendEventParams: TSendEventParams): Promise<void> {
 		if (isExtension()) {
-			await this.sendEventInExtension(eventName, parameters, userId);
+			await this.sendEventInExtension(sendEventParams);
 			return;
 		}
 
-		this.sendEventInWeb(eventName, parameters, userId);
+		this.sendEventInWeb(sendEventParams);
 	}
 
-	private sendEventInWeb(
-		eventName: string,
-		parameters: IFGa4EventParams,
-		userId: string | undefined,
-	): void {
+	private sendEventInWeb(sendEventParams: TSendEventParams): void {
+		const { eventName, parameters, userId } = sendEventParams;
+
 		if (typeof window === "undefined" || !("gtag" in window)) {
 			console.warn(
 				`[analytics] gtag를 찾지 못해 "${eventName}"을 전송하지 못했습니다. GoogleAnalytics 스크립트가 로드됐는지 확인하세요.`,
@@ -198,10 +205,10 @@ class Analytics {
 	}
 
 	private async sendEventInExtension(
-		eventName: string,
-		parameters: IFGa4EventParams,
-		userId: string | undefined,
+		sendEventParams: TSendEventParams,
 	): Promise<void> {
+		const { eventName, parameters, userId } = sendEventParams;
+
 		try {
 			const clientId = await this.getOrCreateClientId();
 			const sessionId = await this.getOrCreateSessionId();

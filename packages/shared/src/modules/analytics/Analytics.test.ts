@@ -284,6 +284,55 @@ describe("Analytics 환경별 동작", () => {
 		expect(JSON.parse(request.body).user_id).toBeUndefined();
 	});
 
+	it("storage 조회가 실패해도 조회 중 설정된 운영자 user_id를 우선한다", async () => {
+		let rejectStoredUserId: ((reason?: unknown) => void) | undefined;
+		const storedUserIdPromise = new Promise<never>((_resolve, reject) => {
+			rejectStoredUserId = reject;
+		});
+		stubChromeStorage({
+			get: vi.fn().mockImplementationOnce(() => storedUserIdPromise),
+		});
+
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+		const trackEventPromise = analytics.trackEvent(EVENT);
+		analytics.setUserId(ANALYTICS_EXCLUDED_USER_ID);
+		rejectStoredUserId?.(new Error("storage read failed"));
+		await trackEventPromise;
+
+		expect(fetchMock).not.toHaveBeenCalled();
+		expect(console.warn).not.toHaveBeenCalledWith(
+			expect.stringContaining("storage에서 읽지 못했습니다"),
+		);
+	});
+
+	it("storage 조회가 실패해도 조회 중 설정된 최신 user_id로 전송한다", async () => {
+		let rejectStoredUserId: ((reason?: unknown) => void) | undefined;
+		const storedUserIdPromise = new Promise<never>((_resolve, reject) => {
+			rejectStoredUserId = reject;
+		});
+		stubChromeStorage({
+			get: vi
+				.fn()
+				.mockImplementationOnce(() => storedUserIdPromise)
+				.mockResolvedValue({ clientId: "c" }),
+		});
+
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+		const trackEventPromise = analytics.trackEvent(EVENT);
+		analytics.setUserId("latest-user");
+		rejectStoredUserId?.(new Error("storage read failed"));
+		await trackEventPromise;
+
+		const [, request] = fetchMock.mock.calls[0];
+		expect(JSON.parse(request.body).user_id).toBe("latest-user");
+	});
+
 	it("로그아웃하면 storage에 남긴 user_id를 지운다", async () => {
 		const remove = vi.fn();
 		stubChromeStorage({ remove });

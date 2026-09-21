@@ -18,6 +18,7 @@ import {
 	GA4_SCOPE,
 	HOST_NAME_FILTER,
 	HOST_NAME_FUNNEL_FILTER,
+	PRODUCTION_EVENT_FILTER,
 	REPORT_ROW_LIMIT,
 	readRows,
 	runFunnelReport,
@@ -224,7 +225,7 @@ const classifyUnusedFeatures = ({
 	};
 };
 
-/** 퍼널 한 단계의 조건. 이벤트 이름과 호스트 허용 목록을 함께 겁니다. */
+/** 퍼널 각 단계에 이벤트 이름, 호스트 허용 목록, production 조건을 함께 겁니다. */
 const buildFunnelStep = (eventName) => ({
 	name: eventName,
 	filterExpression: {
@@ -237,6 +238,12 @@ const buildFunnelStep = (eventName) => ({
 					},
 				},
 				HOST_NAME_FUNNEL_FILTER,
+				{
+					funnelFieldFilter: {
+						fieldName: "customEvent:build_env",
+						stringFilter: { matchType: "EXACT", value: "production" },
+					},
+				},
 			],
 		},
 	},
@@ -300,8 +307,8 @@ const buildFunnel = (funnelUsers) =>
  * ⑤ 최근 14일 이전에 한 번이라도 관측된 이벤트 (신규 판정용)
  * ⑥ 지난주 순서 강제 퍼널 (설치 → … → 메모 작성)
  *
- * 여섯 요청 모두 같은 호스트 허용 목록으로 거릅니다. build_env 로 거르지 않는
- * 이유는 HOST_NAME_FILTER 주석에 적어 두었습니다.
+ * 커스텀 이벤트와 퍼널은 호스트 허용 목록과 production 조건으로 거릅니다.
+ * 자동 수집 이벤트에 기대는 활성 사용자는 호스트 허용 목록만 적용합니다.
  */
 export const fetchWeeklyGa4Report = async ({
 	serviceAccountJson,
@@ -326,7 +333,7 @@ export const fetchWeeklyGa4Report = async ({
 				dateRanges: [{ startDate, endDate }],
 				dimensions: [{ name: "eventName" }],
 				metrics: [{ name: "totalUsers" }],
-				dimensionFilter: HOST_NAME_FILTER,
+				dimensionFilter: PRODUCTION_EVENT_FILTER,
 				limit: REPORT_ROW_LIMIT,
 			},
 		});
@@ -361,7 +368,7 @@ export const fetchWeeklyGa4Report = async ({
 				dateRanges: [{ startDate: OBSERVATION_SINCE, endDate: freshCutoff }],
 				dimensions: [{ name: "eventName" }],
 				metrics: [{ name: "eventCount" }],
-				dimensionFilter: HOST_NAME_FILTER,
+				dimensionFilter: PRODUCTION_EVENT_FILTER,
 				limit: REPORT_ROW_LIMIT,
 			},
 		}),

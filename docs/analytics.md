@@ -20,13 +20,13 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `development` 빌드는 커스텀 이벤트를 보내지 않습니다. `staging`은 보냅니다 — 테스트 서버에서
 도착을 눈으로 확인해야 하기 때문이며, 그 트래픽은 `build_env` 차원으로 걸러 냅니다.
 
-## 이벤트 43종
+## 이벤트 46종
 
 `core_action`은 사용자가 이 서비스를 쓰는 행위, `engagement`는 그 주변의 이동·설정입니다.
 분류는 `EVENT_CATEGORY`가 `Record`로 강제하므로 이벤트를 추가하고 분류를 빠뜨리면 컴파일이
 실패합니다.
 
-### core_action (24종)
+### core_action (26종)
 
 `memo_write`(fields) · `memo_delete`(memo_count) · `memo_restore`(memo_count) ·
 `memo_delete_permanently`(memo_count) · `memo_open`(has_search_query) · `memo_source_open` ·
@@ -35,16 +35,17 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `summary_fail`(reason) · `chat_message_send` · `chat_fail`(reason) ·
 `youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category) ·
 `category_create` · `category_update` · `category_delete` · `login`(method) · `sign_up`(method) ·
-`feedback_submit` · `extension_install_click`
+`feedback_submit` · `extension_install_click` · `memo_first_write` · `export_run`(format)
 
-### engagement (19종)
+### engagement (20종)
 
 `side_panel_open` · `side_panel_open_click` · `side_panel_login_click` ·
 `page_view`(page_title, page_location) · `tab_change`(tab_name) · `view_change`(view) ·
 `memo_filter`(search_target) · `memo_undo`(action) · `setting_change`(setting_keys) ·
 `extension_setting_change`(keys) · `category_suggestion_show`(is_new_category) ·
 `login_start`(method) · `logout` · `extension_installed` · `extension_install_dismiss` ·
-`open_web_from_extension`(from) · `guide_open`(from) · `guide_step`(step_name) · `guide_finish`
+`open_web_from_extension`(from) · `guide_open`(from) · `guide_step`(step_name) · `guide_finish` ·
+`search_no_result`
 
 ### 호출부에 없는 이벤트
 
@@ -103,8 +104,10 @@ gtag보다 먼저 `_ga` 쿠키에 그 값을 심어 이후 웹 이벤트가 같�
 아니면 무시합니다. 이미 웹에 방문한 적 있는 사람이 이 링크로 들어오면 `_ga`가 덮어써져 이전 웹
 방문 기록은 다른 사용자로 갈라집니다. 이 연결은 배포 이후 데이터부터 유효합니다.
 
-**`build_env` 필터는 커스텀 이벤트에만 걸립니다.** `activeUsers` 같은 지표는 gtag 자동 수집
-기반이라 그 파라미터가 아예 없습니다. 자동 수집 이벤트를 거르려면 `hostName`을 써야 합니다.
+**운영 커스텀 이벤트는 `hostName` 허용 목록과 `build_env=production`을 함께 적용합니다.**
+확장은 staging과 production에서 같은 hostName을 사용하므로 hostName만으로 구분할 수 없습니다.
+반대로 `activeUsers` 같은 지표는 gtag 자동 수집 기반이라 `build_env` 파라미터가 없습니다.
+따라서 활성 사용자 분모에는 hostName만 적용하며, 커스텀 이벤트 집계와 모수가 완전히 같지 않습니다.
 
 **개발 빌드의 자동 수집은 전송 게이트가 막지 않습니다.** 게이트는 커스텀 이벤트만 봅니다.
 그래서 웹은 `isProduction()`이 아니면 GA 스크립트를 아예 싣지 않는 방식으로 막고 있습니다.
@@ -115,7 +118,7 @@ gtag보다 먼저 `_ga` 쿠키에 그 값을 심어 이후 웹 이벤트가 같�
 
 | 경로 | 막는 곳 |
 | --- | --- |
-| 커스텀 이벤트 43종 | `Analytics.ts`의 전송 게이트 — `user_id`가 `ANALYTICS_EXCLUDED_USER_ID`면 보내지 않습니다 |
+| 커스텀 이벤트 46종 | `Analytics.ts`의 전송 게이트 — 메모리와 확장 storage의 `user_id`를 먼저 해석하고, 값이 `ANALYTICS_EXCLUDED_USER_ID`면 보내지 않습니다 |
 | gtag 자동 수집 | 웹 루트 레이아웃 — 브라우저에 남은 표식을 읽어 gtag보다 먼저 `ga-disable-<측정ID>`를 켭니다 |
 
 판정 기준이 `profiles.role`이 아니라 UUID 상수인 이유는 **확장이 role을 모르기 때문입니다.**
@@ -128,11 +131,31 @@ role을 읽는 코드는 `checkIsAdmin` 하나이고 호출부가 웹 서버 컴
 
 **이미 쌓인 과거 데이터는 그대로입니다.** GA4 데이터 필터도, 이 방식도 소급 적용되지 않습니다.
 
+확장은 이벤트 전송 전에 storage의 user ID까지 확인합니다. storage 조회 중 로그인이나 로그아웃이
+발생하면 가장 최근에 메모리에 설정된 값을 우선하고, 로그아웃 뒤에는 이전 storage 값을 다시
+복구하지 않습니다. 전송 여부와 Measurement Protocol payload가 같은 user ID를 사용합니다.
+
+### 대상 기간의 사용자 확인
+
+표준 이벤트 보고서와 Data API는 원본 `user_id`를 차원으로 제공하지 않습니다. 개별 사용자 확인이
+필요하면 GA4의 `탐색 > 사용자 개별화 분석`에서 `Effective user ID`를 봅니다. User-ID가 수집된
+로그인 사용자는 User-ID가, 그렇지 않은 사용자는 기기 기반 식별자가 표시됩니다.
+
+1. 기간을 확인할 주간으로 설정합니다.
+2. `이벤트 이름`과 `build_env=production` 조건으로 사용자 집합을 나눕니다.
+3. 알려진 운영자 UUID와만 대조합니다.
+4. 결과에는 운영자 일치·운영자 외·기기 기반 식별자의 **집계만** 남기고 원문 ID는 기록하지 않습니다.
+
+권한, Reporting identity, 데이터 임계값, 보관기간 때문에 값이 가려지거나 `(not set)`이면 해당
+범위를 운영자 외 사용자로 단정하지 않습니다. 반복 가능한 이벤트 수준 원시 데이터가 필요하면
+BigQuery export를 별도로 연결해야 하며, 연결 전 데이터는 소급되지 않습니다.
+
 ## 조회 스크립트
 
-`.github/scripts/`에 GA를 읽는 스크립트가 셋 있습니다. 세는 기준(호스트 허용 목록, 이벤트
-목록의 원본, 사람 수)은 `lib/ga4-client.mjs`·`lib/ga4-weekly.mjs`의 같은 조각을 함께 써서 서로
-다른 숫자를 내지 않습니다.
+`.github/scripts/`에 GA를 읽는 스크립트가 셋 있습니다. 커스텀 이벤트는 호스트 허용 목록과
+`build_env=production`을 함께 적용하고, 활성 사용자는 호스트 허용 목록만 적용합니다. 이벤트
+목록의 원본과 사람 수 집계는 `lib/ga4-client.mjs`·`lib/ga4-weekly.mjs`의 같은 조각을 함께 써서
+서로 다른 숫자를 내지 않습니다.
 
 | 스크립트 | 답하는 질문 | 실행 |
 | --- | --- | --- |

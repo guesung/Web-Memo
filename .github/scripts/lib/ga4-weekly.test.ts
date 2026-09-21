@@ -11,6 +11,7 @@ vi.mock("./google-auth.mjs", () => ({
 }));
 
 import {
+	HOST_NAME_FILTER,
 	HOST_NAME_FUNNEL_FILTER,
 	runFunnelReport,
 	runReport,
@@ -94,7 +95,7 @@ describe("주간 퍼널 단계", () => {
 });
 
 describe("fetchWeeklyGa4Report 의 퍼널", () => {
-	it("단계 순서·기간·호스트 허용 목록을 담아 순서 강제 퍼널을 요청한다", async () => {
+	it("단계 순서·기간·호스트·production 조건으로 순서 강제 퍼널을 요청한다", async () => {
 		mockGa({ funnel: funnelResponse([413, 27, 6, 3, 1, 1]) });
 
 		await fetchReport();
@@ -110,13 +111,20 @@ describe("fetchWeeklyGa4Report 의 퍼널", () => {
 		expect(body.funnel.steps.map((step) => step.name)).toEqual(FUNNEL_EVENTS);
 
 		for (const [index, step] of body.funnel.steps.entries()) {
-			const [eventFilter, hostFilter] = step.filterExpression.andGroup.expressions;
+			const [eventFilter, hostFilter, environmentFilter] =
+				step.filterExpression.andGroup.expressions;
 
 			expect(eventFilter.funnelFieldFilter).toEqual({
 				fieldName: "eventName",
 				stringFilter: { matchType: "EXACT", value: FUNNEL_EVENTS[index] },
 			});
 			expect(hostFilter).toEqual(HOST_NAME_FUNNEL_FILTER);
+			expect(environmentFilter).toEqual({
+				funnelFieldFilter: {
+					fieldName: "customEvent:build_env",
+					stringFilter: { matchType: "EXACT", value: "production" },
+				},
+			});
 		}
 	});
 
@@ -186,6 +194,47 @@ describe("fetchWeeklyGa4Report 의 퍼널", () => {
 		mockGa({ funnel: funnelResponse([413, 27, 6, 3, 1, 1], ["funnelStepCompletionRate"]) });
 
 		await expect(fetchReport()).rejects.toThrow("activeUsers");
+	});
+});
+
+describe("fetchWeeklyGa4Report 의 집계 조건", () => {
+	it("현재·전주·과거 관측 이벤트는 production 으로 거르고 활성 사용자는 호스트만 거른다", async () => {
+		mockGa({ funnel: {} });
+
+		await fetchReport();
+
+		const requestBodies = runReport.mock.calls.map(([request]) => request.body);
+		const eventRequests = requestBodies.filter(
+			(body) => body.dimensions?.[0].name === "eventName",
+		);
+		const activeRequests = requestBodies.filter(
+			(body) => body.metrics[0].name === "activeUsers",
+		);
+
+		expect(eventRequests.map((body) => body.dateRanges)).toEqual([
+			[{ startDate: week.start, endDate: week.end }],
+			[{ startDate: week.previousStart, endDate: week.previousEnd }],
+			[{ startDate: "2026-01-01", endDate: "2026-09-03" }],
+		]);
+		for (const body of eventRequests) {
+			expect(body.dimensionFilter).toEqual({
+				andGroup: {
+					expressions: [
+						HOST_NAME_FILTER,
+						{
+							filter: {
+								fieldName: "customEvent:build_env",
+								stringFilter: { matchType: "EXACT", value: "production" },
+							},
+						},
+					],
+				},
+			});
+		}
+		expect(activeRequests).toHaveLength(2);
+		for (const body of activeRequests) {
+			expect(body.dimensionFilter).toEqual(HOST_NAME_FILTER);
+		}
 	});
 });
 

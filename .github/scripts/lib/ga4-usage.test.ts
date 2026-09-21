@@ -1,9 +1,20 @@
 // @ts-nocheck — .mjs 스크립트를 직접 import 하는 테스트라 타입 선언이 없습니다.
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("./ga4-client.mjs", async (importOriginal) => ({
+	...(await importOriginal()),
+	runReport: vi.fn(),
+}));
+vi.mock("./google-auth.mjs", () => ({
+	exchangeServiceAccountToken: vi.fn(async () => "token"),
+}));
+
+import { HOST_NAME_FILTER, runReport } from "./ga4-client.mjs";
 import {
 	assertValidPeriod,
 	buildUsageReport,
 	countDays,
+	fetchFeatureUsage,
 	formatUsageCsv,
 	formatUsageTable,
 	resolvePreviousPeriod,
@@ -72,6 +83,55 @@ const buildReport = (overrides = {}) =>
 
 const findRow = (report, eventName) =>
 	report.rows.find((row) => row.eventName === eventName);
+
+beforeEach(() => {
+	vi.clearAllMocks();
+});
+
+describe("fetchFeatureUsage", () => {
+	it("현재·직전 이벤트는 production 조건을 적용하고 활성 사용자에는 호스트만 적용한다", async () => {
+		runReport.mockResolvedValue({});
+
+		await fetchFeatureUsage({
+			serviceAccountJson: "{}",
+			propertyId: "471860782",
+			period,
+		});
+
+		expect(runReport).toHaveBeenCalledTimes(4);
+		const requestBodies = runReport.mock.calls.map(([request]) => request.body);
+		const eventRequests = requestBodies.filter(
+			(body) => body.dimensions?.[0].name === "eventName",
+		);
+		const activeRequests = requestBodies.filter(
+			(body) => body.metrics[0].name === "activeUsers",
+		);
+
+		expect(eventRequests.map((body) => body.dateRanges)).toEqual([
+			[{ startDate: period.start, endDate: period.end }],
+			[{ startDate: previousPeriod.start, endDate: previousPeriod.end }],
+		]);
+		for (const body of eventRequests) {
+			expect(body.dimensionFilter).toEqual({
+				andGroup: {
+					expressions: [
+						HOST_NAME_FILTER,
+						{
+							filter: {
+								fieldName: "customEvent:build_env",
+								stringFilter: { matchType: "EXACT", value: "production" },
+							},
+						},
+					],
+				},
+			});
+		}
+		expect(activeRequests).toHaveLength(2);
+		for (const body of activeRequests) {
+			expect(body.dimensionFilter).toEqual(HOST_NAME_FILTER);
+		}
+	});
+});
 
 describe("buildUsageReport", () => {
 	it("사용자 수·발생 수·사용자당 횟수·도입률·증감을 계산한다", () => {

@@ -14,11 +14,20 @@ const CORE_ACTION_ENGAGEMENT_TIME_MSEC = 500;
 /** engagement 이벤트의 참여 시간. */
 const DEFAULT_ENGAGEMENT_TIME_MSEC = 100;
 
+/** 분석 이벤트 전송에 필요한 값입니다. */
+type TSendEventParams = {
+	eventName: string;
+	parameters: IFGa4EventParams;
+	userId: string | undefined;
+};
+
 class Analytics {
 	private static instance: Analytics;
 	private gaId: string;
 	private apiSecret: string;
 	private userId: string | undefined = undefined;
+	private hasUserIdBeenSet = false;
+	private userIdRevision = 0;
 	private readonly GA_ENDPOINT = "https://www.google-analytics.com/mp/collect";
 	private readonly SESSION_EXPIRATION_IN_MIN = 30;
 	private readonly USER_ID_STORAGE_KEY = "analyticsUserId";
@@ -36,6 +45,8 @@ class Analytics {
 	 */
 	public setUserId(userId: string | undefined): void {
 		this.userId = userId;
+		this.hasUserIdBeenSet = true;
+		this.userIdRevision += 1;
 
 		if (!isExtension()) {
 			return;
@@ -65,15 +76,26 @@ class Analytics {
 	 * 사용자 조회가 끝나기를 기다리지 않기 때문입니다.
 	 */
 	private async resolveUserId(): Promise<string | undefined> {
-		if (this.userId) {
+		if (!isExtension() || this.hasUserIdBeenSet) {
 			return this.userId;
 		}
 
+		const userIdRevisionBeforeStorageRead = this.userIdRevision;
+
 		try {
 			const result = await chrome.storage.local.get(this.USER_ID_STORAGE_KEY);
+			if (this.userIdRevision !== userIdRevisionBeforeStorageRead) {
+				return this.userId;
+			}
 
 			return result[this.USER_ID_STORAGE_KEY];
 		} catch (_error) {
+			if (this.userIdRevision !== userIdRevisionBeforeStorageRead) {
+				return this.userId;
+			}
+
+			console.warn("[analytics] user_id를 storage에서 읽지 못했습니다.");
+
 			return undefined;
 		}
 	}
@@ -102,8 +124,8 @@ class Analytics {
 	 * 막습니다. gtag가 자동으로 보내는 page_view·session_start는 여기를 지나지 않으므로
 	 * 웹 레이아웃에서 따로 막습니다.
 	 */
-	private shouldSend(): boolean {
-		if (this.userId === ANALYTICS_EXCLUDED_USER_ID) {
+	private shouldSend(userId: string | undefined): boolean {
+		if (userId === ANALYTICS_EXCLUDED_USER_ID) {
 			return false;
 		}
 
@@ -130,9 +152,12 @@ class Analytics {
 			console.info(`[analytics] ${event.name}`, parameters);
 		}
 
-		if (!this.shouldSend()) return;
+		const userId = await this.resolveUserId();
+		if (!this.shouldSend(userId)) {
+			return;
+		}
 
-		await this.sendEvent(event.name, parameters);
+		await this.sendEvent({ eventName: event.name, parameters, userId });
 	}
 
 	/**
@@ -154,22 +179,18 @@ class Analytics {
 		};
 	}
 
-	private async sendEvent(
-		eventName: string,
-		parameters: IFGa4EventParams,
-	): Promise<void> {
+	private async sendEvent(sendEventParams: TSendEventParams): Promise<void> {
 		if (isExtension()) {
-			await this.sendEventInExtension(eventName, parameters);
+			await this.sendEventInExtension(sendEventParams);
 			return;
 		}
 
-		this.sendEventInWeb(eventName, parameters);
+		this.sendEventInWeb(sendEventParams);
 	}
 
-	private sendEventInWeb(
-		eventName: string,
-		parameters: IFGa4EventParams,
-	): void {
+	private sendEventInWeb(sendEventParams: TSendEventParams): void {
+		const { eventName, parameters, userId } = sendEventParams;
+
 		if (typeof window === "undefined" || !("gtag" in window)) {
 			console.warn(
 				`[analytics] gtag를 찾지 못해 "${eventName}"을 전송하지 못했습니다. GoogleAnalytics 스크립트가 로드됐는지 확인하세요.`,
@@ -179,19 +200,18 @@ class Analytics {
 
 		window.gtag("event", eventName, {
 			...parameters,
-			user_id: this.userId,
+			user_id: userId,
 		});
 	}
 
 	private async sendEventInExtension(
-		eventName: string,
-		parameters: IFGa4EventParams,
+		sendEventParams: TSendEventParams,
 	): Promise<void> {
+		const { eventName, parameters, userId } = sendEventParams;
+
 		try {
 			const clientId = await this.getOrCreateClientId();
 			const sessionId = await this.getOrCreateSessionId();
-			const userId = await this.resolveUserId();
-
 			const payload: {
 				client_id: string;
 				user_id?: string;

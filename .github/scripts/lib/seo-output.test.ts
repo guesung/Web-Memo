@@ -53,6 +53,7 @@ describe("SEO 보고서 저장", () => {
 			report,
 			markdown: "# SEO\n",
 			previousReportPath: "/tmp/previous.json",
+			stepSummaryPath: "",
 		});
 
 		expect(history.baselineStatus).toBe("compatible");
@@ -73,6 +74,7 @@ describe("SEO 보고서 저장", () => {
 			report,
 			markdown: "# SEO\n",
 			previousReportPath: "/tmp/missing.json",
+			stepSummaryPath: "",
 		});
 
 		expect(history).toEqual({
@@ -88,6 +90,7 @@ describe("SEO 보고서 저장", () => {
 			report,
 			markdown: "# SEO\n",
 			baselineStatus: "failed",
+			stepSummaryPath: "",
 		});
 
 		expect(history.baselineStatus).toBe("failed");

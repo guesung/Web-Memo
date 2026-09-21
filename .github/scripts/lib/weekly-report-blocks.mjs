@@ -193,15 +193,15 @@ const buildUnusedBlock = ({ unused, thresholds }) => {
 /**
  * 수치를 오독하지 않게 하는 단서들.
  *
- * 모수를 반드시 밝힙니다. 데일리는 build_env=production 으로 거르지만 이 리포트는
- * hostName 허용 목록으로 거릅니다. 같은 속성을 보면서 기준이 달라 두 리포트의
- * 수치는 서로 맞지 않는데, 밝히지 않으면 어느 한쪽이 틀린 것으로 읽힙니다.
+ * 모수를 반드시 밝힙니다. 커스텀 이벤트와 퍼널은 hostName 허용 목록과
+ * build_env=production 을 함께 적용하지만, 자동 수집 기반 활성 사용자는
+ * build_env 가 없어 hostName 허용 목록만 적용합니다.
  */
 const buildContextBlock = ({ eventNames, previousStart, previousEnd, runUrl }) => {
 	const lines = [
 		`전주 비교 기간: ${formatRange(previousStart, previousEnd)}`,
 		`이벤트 ${eventNames.length}종 (packages/shared 의 EVENT_CATEGORY 에서 읽음) · 사람 수 기준`,
-		"모수: 운영 웹 + 확장 (hostName 허용 목록)",
+		"모수: 커스텀 이벤트·퍼널은 hostName 허용 목록 + production, 활성 사용자는 hostName 허용 목록",
 		"퍼널: 그 주에 설치한 사람이 같은 사용자로 단계를 순서대로 밟은 수 (순서 강제). 확장→웹 구간은 client_id 연결 배포 이후 데이터부터 이어집니다",
 	];
 

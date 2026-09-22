@@ -46,7 +46,7 @@
 
 <!-- env-manifest:start -->
 
-### GitHub Secrets (23개)
+### GitHub Secrets (24개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
@@ -58,12 +58,13 @@
 | `EXPO_ANDROID_SERVICE_ACCOUNT_JSON` | Google Play 내부 테스트 제출과 현황 조회가 실패한다 | `.github/workflows/cd-app.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `EXPO_ASC_API_KEY_P8` | TestFlight 제출과 App Store 현황 조회가 실패한다 | `.github/workflows/cd-app.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `EXPO_TOKEN` | EAS 로그인이 실패해 앱 빌드가 멈춘다 | `.github/workflows/cd-app.yml` |
-| `GA_SHEET_ID` (선택) | 주간 GA와 SEO·GSC 장기 이력이 Google Sheets에 쌓이지 않는다. Slack 리포트와 SEO 원본 아티팩트는 유지된다 | `.github/workflows/weekly-ga-report.yml`, `.github/workflows/seo-monitor.yml` |
+| `GA_SHEET_ID` (선택) | 주간 GA 수치가 Google Sheets에 쌓이지 않는다(Slack 리포트는 그대로 가고 경고만 남는다) | `.github/workflows/weekly-ga-report.yml` |
 | `GA4_SERVICE_ACCOUNT_JSON` | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/daily-ga-report.yml`, `.github/workflows/weekly-ga-report.yml`, `.github/workflows/seo-monitor.yml`, `apps/web/src/modules/ga/config.ts` |
 | `GSC_SERVICE_ACCOUNT_JSON` (선택) | 없으면 공개 SEO 검사는 계속 실행되지만 Search Console 색인 상태와 주간 검색 성과 조회를 건너뛴다 | `.github/workflows/seo-monitor.yml` |
 | `NOTION_TOKEN` | 주간 리팩토링 점검 결과가 노션 작업 카드로 만들어지지 않는다 | `.github/workflows/refactor-audit.yml` |
 | `REFRESH_TOKEN` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `SENTRY_AUTH_TOKEN` | Sentry 소스맵 업로드가 조용히 실패한다. 빌드는 통과하므로 스택 트레이스가 난독화된 채 보여야 알게 된다 | `.github/workflows/cd-extension.yml`, `apps/web/next.config.mjs`, `packages/vite-config/lib/withPageConfig.mjs` |
+| `SEO_SHEET_ID` (선택) | SEO·GSC 장기 이력이 Google Sheets에 쌓이지 않는다(공개 SEO 검사와 원본 아티팩트는 유지된다) | `.github/workflows/seo-monitor.yml` |
 | `SLACK_BOT_TOKEN` | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts` |
 | `SLACK_CHANNEL_ID` | 머지 스레드가 생기지 않고 웹훅 알림으로 폴백한다 | `.github/workflows/ci.yml` |
 | `SLACK_REPORT_WEBHOOK_URL` | GA 리포트, 주간 리팩토링 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다 | `.github/workflows/daily-ga-report.yml`, `.github/workflows/weekly-ga-report.yml`, `.github/workflows/refactor-audit.yml`, `.github/workflows/seo-monitor.yml` |

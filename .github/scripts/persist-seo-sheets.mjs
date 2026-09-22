@@ -5,15 +5,18 @@ import { pathToFileURL } from "node:url";
 import { upsertGoogleSheetTables } from "./lib/google-sheets.mjs";
 import { createSeoSheetTables } from "./lib/seo-sheets.mjs";
 
-/** GA·SEO 분석을 함께 쌓을 Google Sheets 스프레드시트 ID 환경 변수입니다. */
-export const GA_SHEET_ID_ENV = "GA_SHEET_ID";
+/**
+ * SEO 분석을 쌓을 Google Sheets 스프레드시트 ID 환경 변수입니다.
+ * @description GA 주간 수치(GA_SHEET_ID)와 시트를 나눕니다. 한 ID를 두 작업이 함께 쓰면 한쪽이 값을 바꿨을 때 다른 쪽이 조용히 남의 시트에 씁니다.
+ */
+export const SEO_SHEET_ID_ENV = "SEO_SHEET_ID";
 
 /**
  * SEO·GSC 보고서를 분석용 Google Sheets 행으로 멱등 적재합니다.
  * @description 시트 설정이 없으면 공개 SEO 검사를 막지 않고 건너뜁니다. 설정이 있는데 API 적재가 실패하면 장기 이력 누락을 숨기지 않도록 예외를 전파합니다.
  */
 export const persistSeoReportsToSheets = async ({
-	spreadsheetId = process.env.GA_SHEET_ID,
+	spreadsheetId = process.env.SEO_SHEET_ID,
 	serviceAccountJson = process.env.GA4_SERVICE_ACCOUNT_JSON,
 	githubRunId = process.env.GITHUB_RUN_ID,
 	githubRunAttempt = process.env.GITHUB_RUN_ATTEMPT ?? "1",
@@ -23,7 +26,7 @@ export const persistSeoReportsToSheets = async ({
 } = {}) => {
 	if (!spreadsheetId || !serviceAccountJson) {
 		const missingNames = [
-			!spreadsheetId && GA_SHEET_ID_ENV,
+			!spreadsheetId && SEO_SHEET_ID_ENV,
 			!serviceAccountJson && "GA4_SERVICE_ACCOUNT_JSON",
 		].filter(Boolean);
 		const message = `Google Sheets 적재 건너뜀: ${missingNames.join(", ")} 없음`;

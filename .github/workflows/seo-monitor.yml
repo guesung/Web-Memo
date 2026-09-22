@@ -48,6 +48,7 @@ jobs:
         run: node .github/scripts/find-previous-seo-report.mjs
 
       - name: Inspect production SEO
+        id: seo-check
         env:
           SEO_BASELINE_STATUS: ${{ steps.previous-seo.outputs.baseline_status }}
           SEO_PREVIOUS_REPORT: ${{ steps.previous-seo.outputs.SEO_PREVIOUS_REPORT }}
@@ -59,6 +60,13 @@ jobs:
           GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
           SEO_GSC_WEEKLY: ${{ inputs.weekly && 'true' || 'false' }}
         run: pnpm seo:gsc
+
+      - name: Notify actionable SEO issues
+        if: ${{ always() }}
+        env:
+          SEO_CHECK_OUTCOME: ${{ steps.seo-check.outcome }}
+          SLACK_REPORT_WEBHOOK_URL: ${{ secrets.SLACK_REPORT_WEBHOOK_URL }}
+        run: node .github/scripts/notify-seo-slack.mjs
 
       - name: Upload SEO report
         if: ${{ always() }}

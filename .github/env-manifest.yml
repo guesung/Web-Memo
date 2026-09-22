@@ -109,8 +109,8 @@
 - name: SLACK_REPORT_WEBHOOK_URL
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/daily-ga-report.yml, .github/workflows/weekly-ga-report.yml, .github/workflows/refactor-audit.yml]
-  impact: "GA 리포트와 주간 리팩토링 점검 결과가 전용 채널로 게시되지 않는다"
+  consumers: [.github/workflows/daily-ga-report.yml, .github/workflows/weekly-ga-report.yml, .github/workflows/refactor-audit.yml, .github/workflows/seo-monitor.yml]
+  impact: "GA 리포트, 주간 리팩토링 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다"
 
 - name: SLACK_CHANNEL_ID
   kind: secret

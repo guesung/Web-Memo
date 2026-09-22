@@ -25,12 +25,14 @@ const STANDALONE_PATHS = [
 	{ path: PATHS.privacy, priority: 0.3, changeFrequency: "yearly" as const },
 ];
 
-function getIndexablePaths() {
+const getIndexablePaths = () => {
 	const prefixed = Object.values(PATHS).flatMap((path) => {
 		const matched = PRIORITY_BY_PREFIX.find(({ prefix }) =>
 			path.startsWith(prefix),
 		);
-		if (!matched) return [];
+		if (!matched) {
+			return [];
+		}
 
 		return [
 			{
@@ -42,7 +44,7 @@ function getIndexablePaths() {
 	});
 
 	return [...STANDALONE_PATHS, ...prefixed];
-}
+};
 
 /**
  * 한 경로의 hreflang 대응 집합.
@@ -53,7 +55,7 @@ function getIndexablePaths() {
  * 직접 채운다. x-default 는 Accept-Language 를 안 보내는 크롤러(Googlebot)가
  * 어디로 가야 하는지 알려주는 폴백이라 기본 로케일로 건다.
  */
-function getLanguageAlternates(path: string) {
+const getLanguageAlternates = (path: string) => {
 	const languages = Object.fromEntries(
 		SUPPORTED_LANGUAGES.map((lng) => [lng, `${CONFIG.webUrl}/${lng}${path}`]),
 	);
@@ -62,18 +64,18 @@ function getLanguageAlternates(path: string) {
 		...languages,
 		"x-default": `${CONFIG.webUrl}/${DEFAULT_LANGUAGE}${path}`,
 	};
-}
+};
 
-export default function sitemap(): MetadataRoute.Sitemap {
-	const lastModified = new Date().toISOString();
-
+/** 실제 변경일 원천이 없는 lastModified는 생략하고 공개 URL과 언어 대응을 제공합니다. */
+const sitemap = (): MetadataRoute.Sitemap => {
 	return getIndexablePaths().flatMap(({ path, priority, changeFrequency }) =>
 		SUPPORTED_LANGUAGES.map((lng) => ({
 			url: `${CONFIG.webUrl}/${lng}${path}`,
-			lastModified,
 			changeFrequency,
 			priority,
 			alternates: { languages: getLanguageAlternates(path) },
 		})),
 	);
-}
+};
+
+export default sitemap;

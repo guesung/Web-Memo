@@ -253,6 +253,20 @@ describe("mergeRows", () => {
 		]);
 	});
 
+	it("기존 행의 숫자 칸은 숫자 타입 그대로 남긴다", () => {
+		const merged = mergeRows({
+			values: [
+				["주 시작일", "활성 사용자"],
+				["2026-09-07", 57],
+			],
+			rows: [{ "주 시작일": "2026-09-14", "활성 사용자": 430 }],
+			keyColumns: SUMMARY_KEY,
+		});
+
+		expect(merged[1]).toEqual(["2026-09-07", 57]);
+		expect(typeof merged[1][1]).toBe("number");
+	});
+
 	it("한 번에 넘긴 행끼리 키가 겹치면 뒤의 행이 이긴다", () => {
 		const merged = mergeRows({
 			values: [],
@@ -313,7 +327,7 @@ describe("upsertTab", () => {
 		expect(calls.map(({ url, method }) => [method, url])).toEqual([
 			["GET", `${base}?fields=sheets.properties.title`],
 			["POST", `${base}:batchUpdate`],
-			["GET", `${base}/values/${range}`],
+			["GET", `${base}/values/${range}?valueRenderOption=UNFORMATTED_VALUE`],
 			[
 				"PUT",
 				`${base}/values/${encodeURIComponent("'이벤트'!A1")}?valueInputOption=RAW`,

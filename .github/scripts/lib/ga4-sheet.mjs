@@ -216,8 +216,10 @@ export const upsertTab = async ({
 
 	const base = `${SHEETS_API}/${encodeURIComponent(spreadsheetId)}`;
 	const range = toSheetRange(title);
+	// 기본값(FORMATTED_VALUE)은 숫자를 "57" 같은 문자열로 돌려줘, RAW 로 다시 쓰면
+	// 과거 행의 숫자가 텍스트로 굳어 차트가 추이를 못 그립니다. 숫자는 숫자로 받습니다.
 	const current = await requestJson(
-		`${base}/values/${encodeURIComponent(range)}`,
+		`${base}/values/${encodeURIComponent(range)}?valueRenderOption=UNFORMATTED_VALUE`,
 		{ headers: buildHeaders(accessToken) },
 	);
 	// 빈 탭이면 values 키 자체가 오지 않습니다.

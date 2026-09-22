@@ -16,7 +16,16 @@ import {
 	runFunnelReport,
 	runReport,
 } from "./ga4-client.mjs";
-import { FUNNEL_EVENTS, fetchWeeklyGa4Report } from "./ga4-weekly.mjs";
+import {
+	EVENT_BACKFILL_SINCE,
+	FUNNEL_EVENTS,
+	fetchWeeklyActiveUsers,
+	fetchWeeklyGa4Report,
+	listWeeks,
+	resolveRunPlan,
+	resolveTargetWeek,
+	shouldFetchEvents,
+} from "./ga4-weekly.mjs";
 import { buildWeeklyReportPayload } from "./weekly-report-blocks.mjs";
 
 const week = {
@@ -284,5 +293,203 @@ describe("주간 리포트 표시", () => {
 
 		expect(context).toContain("순서 강제");
 		expect(context).not.toContain("100%를 넘을 수");
+	});
+});
+
+describe("fetchWeeklyActiveUsers", () => {
+	it("주간 리포트와 같은 호스트 필터·activeUsers 로 그 주만 조회해 숫자를 돌려준다", async () => {
+		mockGa({ funnel: {} });
+
+		const users = await fetchWeeklyActiveUsers({
+			serviceAccountJson: "{}",
+			propertyId: "471860782",
+			week,
+		});
+
+		expect(users).toBe(430);
+		expect(runReport).toHaveBeenCalledTimes(1);
+		expect(runFunnelReport).not.toHaveBeenCalled();
+
+		const { body, propertyId } = runReport.mock.calls[0][0];
+
+		expect(propertyId).toBe("471860782");
+		expect(body).toEqual({
+			dateRanges: [{ startDate: week.start, endDate: week.end }],
+			metrics: [{ name: "activeUsers" }],
+			dimensionFilter: HOST_NAME_FILTER,
+		});
+	});
+
+	it("행이 없으면 0명이다", async () => {
+		runReport.mockResolvedValue({});
+
+		expect(
+			await fetchWeeklyActiveUsers({
+				serviceAccountJson: "{}",
+				propertyId: "471860782",
+				week,
+			}),
+		).toBe(0);
+	});
+});
+
+describe("listWeeks", () => {
+	// 서울 기준 2026-09-22(화) 오전. 지난주 월요일은 2026-09-14 다.
+	const now = new Date("2026-09-22T00:30:00Z");
+
+	it("백필 시작 주는 월요일이다", () => {
+		expect(new Date(`${EVENT_BACKFILL_SINCE}T00:00:00Z`).getUTCDay()).toBe(1);
+	});
+
+	it("from 부터 to 까지 resolveTargetWeek 와 같은 모양의 주를 오름차순으로 돌려준다", () => {
+		const weeks = listWeeks({ from: "2026-08-24", to: "2026-09-14", now });
+
+		expect(weeks.map(({ start }) => start)).toEqual([
+			"2026-08-24",
+			"2026-08-31",
+			"2026-09-07",
+			"2026-09-14",
+		]);
+		expect(weeks[3]).toEqual(resolveTargetWeek(now));
+		expect(weeks[0]).toEqual({
+			start: "2026-08-24",
+			end: "2026-08-30",
+			previousStart: "2026-08-17",
+			previousEnd: "2026-08-23",
+		});
+	});
+
+	it("연말을 넘는 범위도 7일 간격으로 이어진다", () => {
+		const weeks = listWeeks({ from: "2025-12-22", to: "2026-01-05", now });
+
+		expect(weeks.map(({ start }) => start)).toEqual([
+			"2025-12-22",
+			"2025-12-29",
+			"2026-01-05",
+		]);
+	});
+
+	it("from 과 to 가 같으면 한 주다", () => {
+		expect(listWeeks({ from: "2026-09-07", to: "2026-09-07", now })).toEqual([
+			{
+				start: "2026-09-07",
+				end: "2026-09-13",
+				previousStart: "2026-08-31",
+				previousEnd: "2026-09-06",
+			},
+		]);
+	});
+
+	it("월요일이 아니면 던진다", () => {
+		expect(() => listWeeks({ from: "2026-09-08", to: "2026-09-14", now })).toThrow(
+			"from 은(는) 월요일이어야 합니다: 2026-09-08",
+		);
+		expect(() => listWeeks({ from: "2026-09-07", to: "2026-09-13", now })).toThrow(
+			"to 은(는) 월요일이어야 합니다: 2026-09-13",
+		);
+	});
+
+	it("from 이 to 보다 늦으면 던진다", () => {
+		expect(() => listWeeks({ from: "2026-09-14", to: "2026-09-07", now })).toThrow(
+			"from(2026-09-14) 이 to(2026-09-07) 보다 늦습니다",
+		);
+	});
+
+	it("to 가 끝나지 않은 주(이번 주 이후)면 던진다", () => {
+		expect(() => listWeeks({ from: "2026-09-14", to: "2026-09-21", now })).toThrow(
+			"2026-09-14",
+		);
+	});
+
+	it("서울 기준으로 지난주를 판단한다 — UTC 로는 일요일이어도 서울이 월요일이면 한 주가 더 끝났다", () => {
+		// UTC 2026-09-20(일) 23:00 = 서울 2026-09-21(월) 08:00
+		const mondayMorning = new Date("2026-09-20T23:00:00Z");
+
+		expect(
+			listWeeks({ from: "2026-09-14", to: "2026-09-14", now: mondayMorning }),
+		).toHaveLength(1);
+	});
+
+	it("형식이 틀리거나 없는 날짜면 던진다", () => {
+		for (const from of ["2026-9-7", "20260907", "", undefined, "2026-02-30"]) {
+			expect(() => listWeeks({ from, to: "2026-09-14", now })).toThrow(
+				"YYYY-MM-DD",
+			);
+		}
+	});
+});
+
+describe("resolveRunPlan", () => {
+	const now = new Date("2026-09-22T00:30:00Z");
+
+	it("크론 실행은 지난주 한 주를 정기로 기록한다", () => {
+		expect(
+			resolveRunPlan({ eventName: "schedule", weekFrom: "", weekTo: "", now }),
+		).toEqual({
+			mode: "regular",
+			source: "정기",
+			weeks: [resolveTargetWeek(now)],
+		});
+	});
+
+	it("입력 없이 손으로 돌리면 지난주 한 주를 재실행으로 기록한다", () => {
+		expect(
+			resolveRunPlan({ eventName: "workflow_dispatch", weekFrom: "", weekTo: "", now }),
+		).toEqual({
+			mode: "regular",
+			source: "재실행",
+			weeks: [resolveTargetWeek(now)],
+		});
+		// 로컬 실행처럼 env 가 아예 없어도 같다.
+		expect(resolveRunPlan({ now }).source).toBe("재실행");
+	});
+
+	it("공백뿐인 입력은 빈 값으로 본다", () => {
+		expect(
+			resolveRunPlan({ eventName: "workflow_dispatch", weekFrom: " ", weekTo: "", now }).mode,
+		).toBe("regular");
+	});
+
+	it("from·to 가 둘 다 있으면 그 범위를 백필한다", () => {
+		expect(
+			resolveRunPlan({
+				eventName: "workflow_dispatch",
+				weekFrom: "2026-08-31",
+				weekTo: "2026-09-14",
+				now,
+			}),
+		).toEqual({
+			mode: "backfill",
+			source: "백필",
+			weeks: listWeeks({ from: "2026-08-31", to: "2026-09-14", now }),
+		});
+	});
+
+	it("from·to 중 하나만 있으면 던진다", () => {
+		expect(() =>
+			resolveRunPlan({ eventName: "workflow_dispatch", weekFrom: "2026-08-31", weekTo: "", now }),
+		).toThrow("WEEK_FROM 과 WEEK_TO");
+		expect(() =>
+			resolveRunPlan({ eventName: "workflow_dispatch", weekFrom: "", weekTo: "2026-09-14", now }),
+		).toThrow("WEEK_FROM 과 WEEK_TO");
+	});
+
+	it("백필 범위 검증은 listWeeks 를 따른다", () => {
+		expect(() =>
+			resolveRunPlan({
+				eventName: "workflow_dispatch",
+				weekFrom: "2026-09-14",
+				weekTo: "2026-09-21",
+				now,
+			}),
+		).toThrow("끝난 주");
+	});
+});
+
+describe("shouldFetchEvents", () => {
+	it("백필 시작 주부터만 이벤트·퍼널을 조회한다", () => {
+		expect(shouldFetchEvents({ start: "2026-08-31" })).toBe(false);
+		expect(shouldFetchEvents({ start: "2026-09-07" })).toBe(true);
+		expect(shouldFetchEvents({ start: "2026-09-14" })).toBe(true);
 	});
 });

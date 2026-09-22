@@ -1,3 +1,4 @@
+import { SEO_SHEET_COLUMNS } from "./seo-sheet-columns.mjs";
 import { createSeoObservationMap } from "./seo-history.mjs";
 /** SEO/GSC 보고서를 분석용 시트 행과 수동 변경 기록 탭으로 변환합니다. 비율은 0~1이며 분모가 없으면 빈 셀입니다. */
 export const createSeoSheetTables = ({
@@ -112,49 +113,18 @@ export const createSeoSheetTables = ({
 	return [
 		{
 			title: "SEO Runs",
-			headers: Object.keys(summary),
-			rows: [Object.values(summary)],
+			rows: [
+				Object.keys(SEO_SHEET_COLUMNS["SEO Runs"]).map(
+					(field) => summary[field],
+				),
+			],
 		},
 		{
 			title: "SEO Issue Events",
-			headers: [
-				"key",
-				"runKey",
-				"generatedAt",
-				"githubRunId",
-				"githubRunAttempt",
-				"state",
-				"issueKey",
-				"kind",
-				"url",
-				"agent",
-				"code",
-				"field",
-				"severity",
-				"message",
-			],
 			rows: issueRows,
 		},
 		{
 			title: "GSC Index",
-			headers: [
-				"key",
-				"runKey",
-				"generatedAt",
-				"githubRunId",
-				"githubRunAttempt",
-				"inspectedAt",
-				"siteUrl",
-				"url",
-				"verdict",
-				"coverageState",
-				"indexingState",
-				"robotsTxtState",
-				"pageFetchState",
-				"lastCrawlTime",
-				"googleCanonical",
-				"userCanonical",
-			],
 			rows: inspections.map((inspection) => [
 				JSON.stringify([runKey, inspection.url]),
 				...context,
@@ -175,23 +145,6 @@ export const createSeoSheetTables = ({
 		},
 		{
 			title: "GSC Performance",
-			headers: [
-				"key",
-				"runKey",
-				"generatedAt",
-				"githubRunId",
-				"githubRunAttempt",
-				"siteUrl",
-				"period",
-				"startDate",
-				"endDate",
-				"dimension",
-				"value",
-				"clicks",
-				"impressions",
-				"ctr",
-				"position",
-			],
 			rows: createPerformanceRows({
 				weekly,
 				context,
@@ -200,18 +153,13 @@ export const createSeoSheetTables = ({
 		},
 		{
 			title: "SEO Changes",
-			headers: [
-				"key",
-				"date",
-				"commitSha",
-				"prUrl",
-				"summary",
-				"affectedUrls",
-				"notes",
-			],
 			rows: [],
 		},
-	];
+	].map((table) => ({
+		...table,
+		headers: Object.values(SEO_SHEET_COLUMNS[table.title]),
+		legacyHeaders: Object.keys(SEO_SHEET_COLUMNS[table.title]),
+	}));
 };
 
 const createWeeklySummary = (weekly) => {

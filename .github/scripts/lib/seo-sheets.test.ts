@@ -64,10 +64,30 @@ const metadata = {
 };
 const record = (table) =>
 	Object.fromEntries(
-		table.headers.map((header, index) => [header, table.rows[0][index]]),
+		table.legacyHeaders.map((header, index) => [header, table.rows[0][index]]),
 	);
 
 describe("createSeoSheetTables", () => {
+	it("다섯 탭의 모든 표시명을 한글로 제공하고 기존 영문 컬럼 순서를 유지한다", () => {
+		const tables = createSeoSheetTables({
+			...metadata,
+			seoReport: createReport(),
+		});
+		expect(tables.map((table) => table.legacyHeaders.join(" "))).toEqual([
+			"key generatedAt githubRunId githubRunAttempt commitSha runUrl status requestCount pageCount observedPageCount errorCount warningCount errorPageCount warningPageCount healthyPageCount errorPageRatio warningPageRatio healthyPageRatio baselineStatus newCount persistentCount resolvedCount unobservableCount gscStatus gscInspectionCount gscFailureCount currentClicks currentImpressions currentCtr currentPosition previousClicks previousImpressions previousCtr previousPosition clicksChangeRatio impressionsChangeRatio ctrChangeAmount positionChangeAmount",
+			"key runKey generatedAt githubRunId githubRunAttempt state issueKey kind url agent code field severity message",
+			"key runKey generatedAt githubRunId githubRunAttempt inspectedAt siteUrl url verdict coverageState indexingState robotsTxtState pageFetchState lastCrawlTime googleCanonical userCanonical",
+			"key runKey generatedAt githubRunId githubRunAttempt siteUrl period startDate endDate dimension value clicks impressions ctr position",
+			"key date commitSha prUrl summary affectedUrls notes",
+		]);
+		for (const table of tables) {
+			expect(table.headers).toHaveLength(table.legacyHeaders.length);
+			expect(new Set(table.headers).size).toBe(table.headers.length);
+			for (const header of table.headers) {
+				expect(header).toMatch(/[가-힣]/);
+			}
+		}
+	});
 	it("고유 URL의 관측 및 오류 비율과 변화 이벤트만 생성한다", () => {
 		const tables = createSeoSheetTables({
 			...metadata,
@@ -202,6 +222,15 @@ describe("createSeoSheetTables", () => {
 		expect(tables[4]).toEqual({
 			title: "SEO Changes",
 			headers: [
+				"기록 키",
+				"변경일",
+				"커밋 SHA",
+				"PR 링크",
+				"변경 요약",
+				"영향받는 URL",
+				"비고",
+			],
+			legacyHeaders: [
 				"key",
 				"date",
 				"commitSha",

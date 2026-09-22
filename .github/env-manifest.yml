@@ -169,6 +169,14 @@
   consumers: [.github/workflows/weekly-ga-report.yml]
   impact: "주간 GA 수치가 Google Sheets에 쌓이지 않는다(Slack 리포트는 그대로 가고 경고만 남는다)"
 
+- name: GSC_SERVICE_ACCOUNT_JSON
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/seo-monitor.yml]
+  impact: "없으면 공개 SEO 검사는 계속 실행되지만 Search Console 색인 상태와 주간 검색 성과 조회를 건너뛴다"
+  note: "Web Memo Search Console 속성에 조회 권한을 부여한 전용 서비스 계정 JSON만 등록한다"
+
 # ---------------------------------------------------------------------------
 # Vercel 프로젝트 환경변수: 배포된 웹의 런타임·빌드 값
 # ---------------------------------------------------------------------------

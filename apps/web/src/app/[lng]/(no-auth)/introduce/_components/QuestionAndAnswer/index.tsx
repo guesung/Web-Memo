@@ -22,19 +22,22 @@ import FaqJsonLD from "./FaqJsonLD";
  * 구분선으로 항목을 나눈다.
  */
 
-interface QuestionAndAnswerProps extends LanguageType {
+interface IFQuestionAndAnswerProps extends LanguageType {
 	background?: TSectionBackground;
 }
 
-export default function QuestionAndAnswer({
-	lng,
-	background,
-}: QuestionAndAnswerProps) {
+/** 번역된 FAQ를 화면과 구조화 데이터에 함께 표시합니다. */
+const QuestionAndAnswer = ({ lng, background }: IFQuestionAndAnswerProps) => {
 	const { t } = useTranslation(lng);
+	const faqItems = FAQ_ITEMS.map((key) => ({
+		key,
+		question: t(`introduce.faq.questions.${key}.question`),
+		answer: t(`introduce.faq.questions.${key}.answer`),
+	}));
 
 	return (
 		<SectionShell background={background} className="max-w-3xl">
-			<FaqJsonLD lng={lng} />
+			<FaqJsonLD items={faqItems} />
 
 			<SectionHeader
 				title={t("introduce.faq.title")}
@@ -46,17 +49,17 @@ export default function QuestionAndAnswer({
 				collapsible
 				className="w-full border-t border-border"
 			>
-				{FAQ_ITEMS.map((faqItem) => (
+				{faqItems.map((faqItem) => (
 					<AccordionItem
-						key={faqItem}
-						value={faqItem}
+						key={faqItem.key}
+						value={faqItem.key}
 						className="border-border"
 					>
 						<AccordionTrigger className="py-6 text-left text-lg tracking-[-0.015em] hover:no-underline">
-							{t(`introduce.faq.questions.${faqItem}.question`)}
+							{faqItem.question}
 						</AccordionTrigger>
 						<AccordionContent className="pb-6 leading-relaxed text-muted-foreground">
-							{t(`introduce.faq.questions.${faqItem}.answer`)}
+							{faqItem.answer}
 						</AccordionContent>
 					</AccordionItem>
 				))}
@@ -73,4 +76,6 @@ export default function QuestionAndAnswer({
 			</p>
 		</SectionShell>
 	);
-}
+};
+
+export default QuestionAndAnswer;

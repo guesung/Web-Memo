@@ -84,3 +84,6 @@ android
 
 # refactor-audit.yml 이 러너에서 만드는 점검 입력 파일
 .audit-changed-files.txt
+
+# SEO 모니터가 로컬·CI에서 생성하는 일회성 리포트
+/artifacts/seo/

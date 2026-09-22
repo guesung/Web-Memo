@@ -1,0 +1,48 @@
+name: SEO Monitor
+
+# 운영 사이트의 robots.txt·sitemap.xml·SSR 메타데이터를 매일 검사합니다.
+# 외부 서비스 계정 없이 공개 응답만 확인하며, 상세 결과는 Actions 아티팩트로 보관합니다.
+on:
+  schedule:
+    # UTC 00:17 = Asia/Seoul 09:17. 정각의 Actions 실행 혼잡을 피하려고 17분에 실행합니다.
+    - cron: "17 0 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: seo-monitor
+  # 예약 실행 중 수동 실행이 들어와도 앞선 검사를 없애지 않고 순서대로 처리합니다.
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    name: 운영 사이트 SEO 검사
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      # SSR HTML을 브라우저와 같은 방식으로 파싱하기 위해 저장소의 jsdom을 사용합니다.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Inspect production SEO
+        run: pnpm seo:check
+
+      - name: Upload SEO report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: seo-report-${{ github.run_id }}
+          path: artifacts/seo/
+          if-no-files-found: warn
+          retention-days: 30

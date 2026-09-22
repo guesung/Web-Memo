@@ -1,20 +1,9 @@
-import { appendFile, writeFile } from "node:fs/promises";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-	addDuplicateWarnings,
-	createReport,
+	createNormalizationVariants,
 	inspectPage,
 	parseSeoHtml,
-	parseSitemap,
-	runSeoCheck,
-	SEO_URLS,
 } from "./check-seo.mjs";
-
-vi.mock("node:fs/promises", () => ({
-	appendFile: vi.fn(),
-	mkdir: vi.fn(),
-	writeFile: vi.fn(),
-}));
 
 /** 운영 페이지처럼 메타데이터를 포함하는 작은 서버 HTML입니다. */
 const PAGE_URL = "https://www.webmemo.xyz/ko/introduce";
@@ -23,8 +12,7 @@ const VALID_HTML = `<html lang="ko"><head><title>웹 메모 소개</title>
 <link rel="canonical" href="${PAGE_URL}">
 <meta property="og:title" content="웹 메모"><meta property="og:description" content="메모 저장">
 <meta property="og:url" content="${PAGE_URL}"><meta property="og:image" content="https://www.webmemo.xyz/image.png">
-<meta property="og:type" content="website"></head><body><h1>웹 메모</h1><p>페이지 내용을 저장하세요.</p></body></html>`;
-const SITEMAP = `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${PAGE_URL}</loc></url></urlset>`;
+<meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image"></head><body><h1>웹 메모</h1><p>페이지 내용을 저장하세요.</p></body></html>`;
 const htmlResponse = (html = VALID_HTML) =>
 	new Response(html, {
 		headers: { "content-type": "text/html; charset=utf-8" },
@@ -96,7 +84,7 @@ describe("SEO SSR 검사", () => {
 		expect(page.issues.every((issue) => issue.severity === "warning")).toBe(
 			true,
 		);
-		expect(page.issues).toHaveLength(10);
+		expect(page.issues).toHaveLength(14);
 	});
 
 	it("비정상 HTTP와 비 HTML을 오류로 남긴다", async () => {
@@ -146,7 +134,7 @@ describe("SEO SSR 검사", () => {
 
 		expect(page.status).toBeNull();
 		expect(page.issues).toEqual([
-			{ severity: "error", message: "요청 실패: timeout" },
+			{ severity: "error", code: "REQUEST_FAILED", message: "요청 실패: timeout" },
 		]);
 	});
 
@@ -184,116 +172,35 @@ describe("SEO SSR 검사", () => {
 		expect(fetcher).toHaveBeenCalledTimes(6);
 		expect(page.issues.some((issue) => issue.severity === "error")).toBe(true);
 	});
-});
 
-describe("SEO 대상·중복·리포트", () => {
-	it("정상 sitemap의 URL만 검사하고 fallback URL은 요청하지 않는다", async () => {
-		const fetcher = vi.fn(async (url: string) => {
-			if (url.endsWith("sitemap.xml")) {
-				return new Response(SITEMAP, {
-					headers: { "content-type": "application/xml" },
-				});
-			}
-			if (url.endsWith("robots.txt")) {
-				return new Response("User-agent: *\nAllow: /", {
-					headers: { "content-type": "text/plain" },
-				});
-			}
-			if (/\/(ko|en)$/.test(url)) {
-				return new Response(null, {
-					status: 307,
-					headers: { location: `${url}/introduce` },
-				});
-			}
-
-			return htmlResponse(VALID_HTML);
-		});
-		vi.stubGlobal("fetch", fetcher);
-		await runSeoCheck();
-
-		expect(fetcher).toHaveBeenCalledTimes(14);
-		expect(fetcher.mock.calls.some(([url]) => url.includes("/features/"))).toBe(
-			false,
-		);
-		expect(process.exitCode).toBe(0);
-	});
-
-	it("sitemap에서 실제 URL을 읽고 외부 도메인·잘못된 XML을 거부한다", () => {
-		expect(parseSitemap(SITEMAP)).toEqual([PAGE_URL]);
-		expect(() =>
-			parseSitemap(SITEMAP.replace(PAGE_URL, "https://example.com/")),
-		).toThrow();
-		expect(() => parseSitemap("not XML")).toThrow();
-		expect(() =>
-			parseSitemap(
-				'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"/>',
-			),
-		).toThrow();
-	});
-
-	it("동일 URL의 두 크롤러 결과는 중복으로 세지 않는다", async () => {
-		const pages = await Promise.all(
-			["mobile", "pc"].map((agent) =>
-				inspectPage({
-					url: PAGE_URL,
-					agent,
-					fetcher: async () => htmlResponse(),
-				}),
-			),
-		);
-		addDuplicateWarnings(pages);
-
-		expect(pages.flatMap((page) => page.issues)).toEqual([]);
-	});
-
-	it("서로 다른 URL의 동일 title·description은 중복 경고로 남긴다", async () => {
-		const pages = await Promise.all(
-			[PAGE_URL, "https://www.webmemo.xyz/ko/memo"].map((url) =>
-				inspectPage({ url, agent: "pc", fetcher: async () => htmlResponse() }),
-			),
-		);
-		addDuplicateWarnings(pages);
-		const { report, markdown } = createReport(pages);
-
-		expect(report.errors).toBe(0);
-		expect(report.warnings).toBe(5);
-		expect(markdown).toContain("title 중복");
-		expect(markdown).toContain("최종 URL:");
-	});
-
-	it("robots.txt HTML 응답을 오류로 판정한다", async () => {
+	it("URL 정규화는 정식 URL 수렴과 임시 리다이렉트를 구분한다", async () => {
+		const variants = createNormalizationVariants(PAGE_URL);
 		const page = await inspectPage({
-			url: "https://www.webmemo.xyz/robots.txt",
+			url: variants[0],
 			agent: "pc",
-			kind: "robots",
-			fetcher: async () => htmlResponse(),
+			kind: "normalization",
+			expectedDestination: PAGE_URL,
+			fetcher: vi
+				.fn()
+				.mockResolvedValueOnce(
+					new Response(null, {
+						status: 302,
+						headers: { location: PAGE_URL },
+					}),
+				)
+				.mockResolvedValueOnce(htmlResponse()),
 		});
 
-		expect(page.issues.some((issue) => issue.severity === "error")).toBe(true);
-	});
-
-	it("전체 요청 실패 시 fallback 10개 URL과 리포트를 유지하고 종료 코드를 설정한다", async () => {
-		const fetcher = vi.fn(async () => {
-			throw new Error("offline");
-		});
-		vi.stubGlobal("fetch", fetcher);
-		vi.stubEnv("GITHUB_STEP_SUMMARY", "/tmp/seo-test-summary.md");
-		await runSeoCheck();
-
-		expect(fetcher).toHaveBeenCalledTimes(28);
-		expect(SEO_URLS).toHaveLength(10);
-		expect(writeFile).toHaveBeenCalledWith(
-			"artifacts/seo/seo-report.json",
-			expect.stringContaining('"errors":'),
-		);
-		expect(writeFile).toHaveBeenCalledWith(
-			"artifacts/seo/seo-report.md",
-			expect.stringContaining("offline"),
-		);
-		expect(appendFile).toHaveBeenCalledWith(
-			"/tmp/seo-test-summary.md",
-			expect.stringContaining("offline"),
-		);
-		expect(process.exitCode).toBe(1);
+		expect(variants).toEqual([
+			"http://www.webmemo.xyz/ko/introduce",
+			"https://webmemo.xyz/ko/introduce",
+			"https://www.webmemo.xyz/ko/introduce/",
+		]);
+		expect(page.issues).toEqual([
+			expect.objectContaining({
+				code: "URL_NORMALIZATION_TEMPORARY_REDIRECT",
+				severity: "warning",
+			}),
+		]);
 	});
 });

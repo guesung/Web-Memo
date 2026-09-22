@@ -1,14 +1,19 @@
-import { appendFile, mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { JSDOM } from "jsdom";
 import {
-	addDuplicateWarnings,
 	createReport,
 	evaluatePage,
 	isGooglebotBlocked,
 	parseSeoHtml,
 } from "./lib/seo-report.mjs";
+import { inspectSeoImage } from "./lib/seo-assets.mjs";
+import { writeSeoReport } from "./lib/seo-output.mjs";
+import {
+	addDeviceDifferenceWarnings,
+	addDuplicateWarnings,
+	addHreflangIssues,
+} from "./lib/seo-relations.mjs";
 
 /** 검사 결과의 순수 파싱·판정 함수를 테스트와 다른 로컬 도구에 제공합니다. */
 export { addDuplicateWarnings, createReport, evaluatePage, parseSeoHtml };
@@ -137,7 +142,7 @@ export const parseSitemap = (xml) => {
 };
 
 /** 전체 공개 URL을 두 크롤러로 검사하고 실패 응답도 포함해 리포트를 저장합니다. */
-export const runSeoCheck = async () => {
+export const runSeoCheck = async ({ fetcher = fetch } = {}) => {
 	const pages = [];
 	for (const agent of Object.keys(GOOGLEBOT_AGENTS)) {
 		pages.push(
@@ -145,6 +150,7 @@ export const runSeoCheck = async () => {
 				url: "https://www.webmemo.xyz/sitemap.xml",
 				agent,
 				kind: "sitemap",
+				fetcher,
 			}),
 		);
 		pages.push(
@@ -152,6 +158,7 @@ export const runSeoCheck = async () => {
 				url: "https://www.webmemo.xyz/robots.txt",
 				agent,
 				kind: "robots",
+				fetcher,
 			}),
 		);
 	}
@@ -182,6 +189,8 @@ export const runSeoCheck = async () => {
 		for (const url of page.blockedUrls) {
 			page.issues.push({
 				severity: "error",
+				code: "ROBOTS_BLOCKED",
+				field: `robots.txt:${url}`,
 				message: `robots.txt가 Googlebot 크롤링을 차단함: ${url}`,
 			});
 		}
@@ -191,11 +200,13 @@ export const runSeoCheck = async () => {
 			...(await Promise.all(
 				requests
 					.slice(offset, offset + 4)
-					.map((request) => inspectPage(request)),
+					.map((request) => inspectPage({ ...request, fetcher })),
 			)),
 		);
 	}
 	addDuplicateWarnings(pages);
+	addDeviceDifferenceWarnings(pages);
+	addHreflangIssues(pages);
 	for (const language of ["ko", "en"]) {
 		for (const agent of Object.keys(GOOGLEBOT_AGENTS)) {
 			pages.push(
@@ -203,26 +214,62 @@ export const runSeoCheck = async () => {
 					url: `https://www.webmemo.xyz/${language}`,
 					agent,
 					expectedDestination: `https://www.webmemo.xyz/${language}/introduce`,
+					fetcher,
 				}),
 			);
 		}
 	}
-	const { report, markdown } = createReport(pages);
-	await mkdir("artifacts/seo", { recursive: true });
-	await writeFile(
-		"artifacts/seo/seo-report.json",
-		`${JSON.stringify(report, null, 2)}\n`,
-	);
-	await writeFile("artifacts/seo/seo-report.md", markdown);
-	if (process.env.GITHUB_STEP_SUMMARY) {
-		await appendFile(process.env.GITHUB_STEP_SUMMARY, markdown);
+	for (const canonicalUrl of urls.filter((url) =>
+		/^https:\/\/www\.webmemo\.xyz\/(ko|en)\/introduce$/.test(url),
+	)) {
+		for (const url of createNormalizationVariants(canonicalUrl)) {
+			pages.push(
+				await inspectPage({
+					url,
+					agent: "pc",
+					kind: "normalization",
+					expectedDestination: canonicalUrl,
+					fetcher,
+				}),
+			);
+		}
 	}
+	const imageUrls = [
+		...new Set(
+			pages
+				.filter((page) => page.kind === "page")
+				.map((page) => page.metadata?.og.image)
+				.filter(Boolean),
+		),
+	];
+	for (let offset = 0; offset < imageUrls.length; offset += 4) {
+		pages.push(
+			...(await Promise.all(
+				imageUrls
+					.slice(offset, offset + 4)
+					.map((url) => inspectSeoImage({ url, fetcher })),
+			)),
+		);
+	}
+	const { report, markdown } = createReport(pages);
+	await writeSeoReport({ report, markdown });
 	console.log(
 		`SEO 검사 완료: 오류 ${report.errors}건, 경고 ${report.warnings}건`,
 	);
 	if (report.errors > 0) {
 		process.exitCode = 1;
 	}
+};
+
+/** 정규 URL이 아닌 HTTP·apex·후행 슬래시 변형을 만듭니다. */
+export const createNormalizationVariants = (canonicalUrl) => {
+	const canonical = new URL(canonicalUrl);
+
+	return [
+		`http://${canonical.host}${canonical.pathname}`,
+		`https://webmemo.xyz${canonical.pathname}`,
+		`${canonical.href}/`,
+	];
 };
 
 if (

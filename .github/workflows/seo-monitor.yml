@@ -68,6 +68,13 @@ jobs:
           SLACK_REPORT_WEBHOOK_URL: ${{ secrets.SLACK_REPORT_WEBHOOK_URL }}
         run: node .github/scripts/notify-seo-slack.mjs
 
+      - name: Persist SEO analytics to Google Sheets
+        if: ${{ always() }}
+        env:
+          GA_SHEET_ID: ${{ secrets.GA_SHEET_ID }}
+          GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
+        run: pnpm seo:sheets
+
       - name: Upload SEO report
         if: ${{ always() }}
         uses: actions/upload-artifact@v6

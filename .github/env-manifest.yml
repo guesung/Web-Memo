@@ -159,15 +159,16 @@
 - name: GA4_SERVICE_ACCOUNT_JSON
   kind: secret
   stores: [github, vercel]
-  consumers: [.github/workflows/daily-ga-report.yml, .github/workflows/weekly-ga-report.yml, apps/web/src/modules/ga/config.ts]
-  impact: "GitHub는 GA 리포트가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시)"
+  consumers: [.github/workflows/daily-ga-report.yml, .github/workflows/weekly-ga-report.yml, .github/workflows/seo-monitor.yml, apps/web/src/modules/ga/config.ts]
+  impact: "GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시)"
 
 - name: GA_SHEET_ID
   kind: secret
   stores: [github]
   required: false
-  consumers: [.github/workflows/weekly-ga-report.yml]
-  impact: "주간 GA 수치가 Google Sheets에 쌓이지 않는다(Slack 리포트는 그대로 가고 경고만 남는다)"
+  consumers: [.github/workflows/weekly-ga-report.yml, .github/workflows/seo-monitor.yml]
+  impact: "주간 GA와 SEO·GSC 장기 이력이 Google Sheets에 쌓이지 않는다. Slack 리포트와 SEO 원본 아티팩트는 유지된다"
+  note: "GA 분석과 SEO 분석이 같은 Google Sheets를 쓴다. URL의 /d/와 /edit 사이 ID를 등록하고 서비스 계정에 편집 권한을 준다"
 
 - name: GSC_SERVICE_ACCOUNT_JSON
   kind: secret

@@ -87,23 +87,26 @@ export const INCLUDED_HOST_NAMES = [
 ];
 
 /**
- * 허용 목록에 있는 호스트만 남기는 dimensionFilter.
+ * 주어진 호스트만 남기는 dimensionFilter 를 만듭니다.
  *
  * ⚠️ inListFilter 한 줄로 줄이지 마세요. 목록에 빈 문자열이 들어 있는데
  * inListFilter 는 빈 값을 값으로 취급하지 않아 그 항목이 조용히 사라집니다.
  * 그러면 확장 트래픽의 한 축이 통째로 빠진 채 리포트가 정상으로 보입니다.
  * EXACT 필터를 orGroup 으로 묶는 지금 형태가 빈 문자열까지 정확히 셉니다.
  */
-export const HOST_NAME_FILTER = {
+export const buildHostNameFilter = (hostNames) => ({
 	orGroup: {
-		expressions: INCLUDED_HOST_NAMES.map((hostName) => ({
+		expressions: hostNames.map((hostName) => ({
 			filter: {
 				fieldName: "hostName",
 				stringFilter: { matchType: "EXACT", value: hostName },
 			},
 		})),
 	},
-};
+});
+
+/** 허용 목록에 있는 호스트만 남기는 dimensionFilter. */
+export const HOST_NAME_FILTER = buildHostNameFilter(INCLUDED_HOST_NAMES);
 
 /** 운영 호스트에서 발생한 production 커스텀 이벤트만 남깁니다. */
 export const PRODUCTION_EVENT_FILTER = {

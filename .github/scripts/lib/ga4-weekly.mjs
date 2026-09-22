@@ -15,8 +15,10 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import {
+	buildHostNameFilter,
 	GA4_SCOPE,
 	HOST_NAME_FILTER,
+	INCLUDED_HOST_NAMES,
 	HOST_NAME_FUNNEL_FILTER,
 	PRODUCTION_EVENT_FILTER,
 	REPORT_ROW_LIMIT,
@@ -94,6 +96,28 @@ const NEW_EVENT_WINDOW_DAYS = 14;
  * 이 주 이전에는 호스트 필터만 쓰는 활성 사용자만 적고 이벤트·퍼널은 비워 둡니다.
  */
 export const EVENT_BACKFILL_SINCE = "2026-09-07";
+
+/**
+ * 활성 사용자를 백필할 수 있는 첫 주(월요일).
+ *
+ * 확장 트래픽((not set)·빈 호스트)이 GA 에 처음 찍힌 것이 2025-10-11(토)이라,
+ * 온전한 한 주로 셀 수 있는 것은 그다음 월요일부터입니다. 그 전 주는 확장
+ * 사용자가 어느 호스트로 들어왔는지 확인되지 않아, 조회하면 웹 사용자만 세거나
+ * 호스트 필터에 아무것도 걸리지 않아 0명이 됩니다. 둘 다 실제와 구분되지 않는
+ * 틀린 기록이라 백필 범위에서 막습니다.
+ */
+export const ACTIVE_USERS_BACKFILL_SINCE = "2025-10-13";
+
+/**
+ * EVENT_BACKFILL_SINCE 이전 주에 운영 웹이 쓰던 호스트.
+ *
+ * 운영 웹 도메인은 2026-09-02 에 www.webmemo.site 에서 www.webmemo.xyz 로
+ * 옮겨졌습니다. 지금 허용 목록만으로 그 전 주를 세면 웹 사용자가 통째로 빠져
+ * 확장 사용자만 남고, 9월에 갑자기 뛰는 가짜 성장 곡선이 됩니다. 옛 주의 활성
+ * 사용자는 지금 목록에 이 호스트를 더해 셉니다. 2026-08-31 주는 두 도메인을
+ * 모두 썼으므로 합집합이어야 빠지지 않습니다.
+ */
+const LEGACY_WEB_HOST_NAMES = ["www.webmemo.site"];
 
 /**
  * 퍼널 단계. 신규 설치자가 실제로 걸어가는 순서입니다.
@@ -220,6 +244,12 @@ export const listWeeks = ({ from, to, now = new Date() }) => {
 		throw new Error(`from(${from}) 이 to(${to}) 보다 늦습니다`);
 	}
 
+	if (from < ACTIVE_USERS_BACKFILL_SINCE) {
+		throw new Error(
+			`from(${from}) 은 ${ACTIVE_USERS_BACKFILL_SINCE} 이후여야 합니다. 그 전 주는 확장 트래픽이 없어 활성 사용자를 제대로 셀 수 없습니다`,
+		);
+	}
+
 	const lastCompleteWeek = resolveTargetWeek(now).start;
 
 	if (to > lastCompleteWeek) {
@@ -305,20 +335,43 @@ const readSingleMetric = (report) => readRows(report)[0]?.metrics[0] ?? 0;
  * 주와 최근 주가 서로 다른 모수를 세게 되는데, 둘 다 조용히 성공하므로 추이의
  * 꺾임이 실제 변화인지 집계 차이인지 구분할 수 없습니다.
  */
-const readActiveUsers = ({ accessToken, propertyId, startDate, endDate }) =>
+const readActiveUsers = ({
+	accessToken,
+	propertyId,
+	startDate,
+	endDate,
+	dimensionFilter = HOST_NAME_FILTER,
+}) =>
 	runReport({
 		accessToken,
 		propertyId,
 		body: {
 			dateRanges: [{ startDate, endDate }],
 			metrics: [{ name: "activeUsers" }],
-			dimensionFilter: HOST_NAME_FILTER,
+			dimensionFilter,
 		},
 	});
 
 /**
+ * 그 주의 활성 사용자를 셀 호스트 필터. EVENT_BACKFILL_SINCE 이전 주는 운영 웹이
+ * 옛 도메인을 쓰던 때라 LEGACY_WEB_HOST_NAMES 를 더합니다. 이후 주는 정기
+ * 리포트와 같은 HOST_NAME_FILTER 입니다.
+ */
+export const resolveActiveUsersFilter = (week) => {
+	if (week.start >= EVENT_BACKFILL_SINCE) {
+		return HOST_NAME_FILTER;
+	}
+
+	return buildHostNameFilter([
+		...INCLUDED_HOST_NAMES,
+		...LEGACY_WEB_HOST_NAMES,
+	]);
+};
+
+/**
  * 한 주의 활성 사용자 수만 조회합니다. 이벤트·퍼널을 조회할 수 없는 옛 주의
- * 백필용입니다. 필터와 지표는 fetchWeeklyGa4Report 의 활성 사용자와 같습니다.
+ * 백필용입니다. 지표는 fetchWeeklyGa4Report 의 활성 사용자와 같고, 호스트는
+ * resolveActiveUsersFilter 가 그 주에 맞게 고릅니다.
  */
 export const fetchWeeklyActiveUsers = async ({
 	serviceAccountJson,
@@ -336,6 +389,7 @@ export const fetchWeeklyActiveUsers = async ({
 			propertyId,
 			startDate: week.start,
 			endDate: week.end,
+			dimensionFilter: resolveActiveUsersFilter(week),
 		}),
 	);
 };

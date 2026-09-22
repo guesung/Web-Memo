@@ -12,11 +12,12 @@ import HowToJsonLD from "./HowToJsonLD";
  * 선을 그리지 않는다. 세 원이 같은 간격으로 놓이면 순서는 이미 읽힌다.
  */
 
-interface HowItWorksProps extends LanguageType {
+interface IFHowItWorksProps extends LanguageType {
 	background?: TSectionBackground;
 }
 
-export default async function HowItWorks({ lng, background }: HowItWorksProps) {
+/** 번역된 사용 단계를 화면과 구조화 데이터에 함께 표시합니다. */
+const HowItWorks = async ({ lng, background }: IFHowItWorksProps) => {
 	const { t } = await useTranslation(lng);
 
 	const steps = [
@@ -42,7 +43,7 @@ export default async function HowItWorks({ lng, background }: HowItWorksProps) {
 
 	return (
 		<SectionShell background={background}>
-			<HowToJsonLD lng={lng} />
+			<HowToJsonLD lng={lng} steps={steps} />
 
 			<SectionHeader
 				title={t("introduce.section.how_it_works")}
@@ -72,4 +73,6 @@ export default async function HowItWorks({ lng, background }: HowItWorksProps) {
 			</ol>
 		</SectionShell>
 	);
-}
+};
+
+export default HowItWorks;

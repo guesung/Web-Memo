@@ -73,6 +73,20 @@ describe("Googlebot robots.txt 범위", () => {
 		"실제 sitemap URL별 차단 결과를 보고서에 남긴다: %s",
 		async (rules, errors) => {
 			vi.stubGlobal("fetch", async (url: string) => {
+				if (
+					url.startsWith("http://") ||
+					url.startsWith("https://webmemo.xyz") ||
+					url.endsWith("/introduce/")
+				) {
+					const language = url.includes("/en/") ? "en" : "ko";
+
+					return new Response(null, {
+						status: 301,
+						headers: {
+							location: `https://www.webmemo.xyz/${language}/introduce`,
+						},
+					});
+				}
 				if (url.endsWith("robots.txt")) {
 					return new Response(`User-agent: *\n${rules}`, {
 						headers: { "content-type": "text/plain" },
@@ -108,6 +122,14 @@ describe("Googlebot robots.txt 범위", () => {
 					.filter((page) => page.kind === "robots")
 					.every((page) => page.blockedUrls.length === errors / 2),
 			).toBe(true);
+			for (const page of report.pages.filter((item) => item.kind === "robots")) {
+				const blockedIssues = page.issues.filter(
+					(issue) => issue.code === "ROBOTS_BLOCKED",
+				);
+				expect(new Set(blockedIssues.map((issue) => issue.field)).size).toBe(
+					blockedIssues.length,
+				);
+			}
 		},
 	);
 });

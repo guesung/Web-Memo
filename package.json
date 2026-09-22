@@ -18,6 +18,7 @@
 		"lint:syncpack": "syncpack lint",
 	"knip": "knip",
 		"seo:check": "node .github/scripts/check-seo.mjs",
+		"seo:gsc": "node .github/scripts/check-gsc.mjs",
 		"dev": "turbo watch dev --filter !@web-memo/app",
 		"dev-server": "pnpm -F hmr ready && pnpm -F hmr dev",
 		"dev:web": "turbo watch dev --filter @web-memo/web",

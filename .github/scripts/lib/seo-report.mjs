@@ -1,5 +1,6 @@
-import { JSDOM } from "jsdom";
-
+import { getStructuredDataIssues, parseSeoHtml } from "./seo-html.mjs";
+/** HTML SEO 파서를 기존 import 경로에서도 사용할 수 있게 제공합니다. */
+export { parseSeoHtml };
 /** Googlebot 그룹에서 URL 경로에 가장 구체적으로 일치하는 규칙을 적용합니다. */
 export const isGooglebotBlocked = (robotsText, path = "/") => {
 	const groups = [];
@@ -52,7 +53,6 @@ export const isGooglebotBlocked = (robotsText, path = "/") => {
 			strongest = { name: rule.name, specificity };
 		}
 	}
-
 	return strongest.name === "disallow";
 };
 
@@ -81,60 +81,19 @@ export const hasGooglebotNoindex = (header) => {
 			return true;
 		}
 	}
-
 	return false;
-};
-
-/** 스크립트를 실행하지 않고 서버 HTML의 메타데이터와 실제 본문을 추출합니다. */
-export const parseSeoHtml = (html) => {
-	const dom = new JSDOM(html);
-	const document = dom.window.document;
-	const content = (selector) =>
-		document.querySelector(selector)?.getAttribute("content")?.trim() ?? "";
-	const metadata = {
-		title: document.title.trim(),
-		description: content('meta[name="description" i]'),
-		canonical:
-			document
-				.querySelector('link[rel="canonical" i]')
-				?.getAttribute("href")
-				?.trim() ?? "",
-		robots: Array.from(
-			document.querySelectorAll(
-				'meta[name="robots" i], meta[name="googlebot" i]',
-			),
-		)
-			.map((element) => element.getAttribute("content") ?? "")
-			.join(", "),
-		lang: document.documentElement.lang,
-		h1: Array.from(document.querySelectorAll("h1")).map((element) =>
-			element.textContent.trim(),
-		),
-		og: Object.fromEntries(
-			["title", "description", "url", "image", "type"].map((name) => [
-				name,
-				content(`meta[property="og:${name}" i]`),
-			]),
-		),
-	};
-	document
-		.querySelectorAll("script, style, template, noscript")
-		.forEach((element) => element.remove());
-	metadata.bodyText = document.body.textContent.replace(/\s+/g, " ").trim();
-	dom.window.close();
-
-	return metadata;
 };
 
 /** 응답과 SSR 메타데이터를 오류·경고로 판정합니다. 경고만 있으면 실행은 성공합니다. */
 export const evaluatePage = (page) => {
 	const issues = [];
-	const add = (severity, message) => issues.push({ severity, message });
+	const add = (severity, code, message, field) =>
+		issues.push({ severity, code, ...(field ? { field } : {}), message });
 	if (page.failure) {
-		add("error", `요청 실패: ${page.failure}`);
+		add("error", "REQUEST_FAILED", `요청 실패: ${page.failure}`);
 	}
 	if (page.status !== null && (page.status < 200 || page.status >= 300)) {
-		add("error", `HTTP ${page.status}`);
+		add("error", "HTTP_STATUS_ERROR", `HTTP ${page.status}`);
 	}
 	const contentTypePattern =
 		{
@@ -142,7 +101,12 @@ export const evaluatePage = (page) => {
 			robots: /^text\/plain(?:\s*;|$)/i,
 		}[page.kind] ?? /^(text\/html|application\/xhtml\+xml)(?:\s*;|$)/i;
 	if (page.status !== null && !contentTypePattern.test(page.contentType)) {
-		add("error", `콘텐츠 유형 불일치: ${page.contentType || "없음"}`);
+		add(
+			"error",
+			"CONTENT_TYPE_INVALID",
+			`콘텐츠 유형 불일치: ${page.contentType || "없음"}`,
+			"contentType",
+		);
 	}
 	if (
 		page.expectedDestination &&
@@ -150,11 +114,30 @@ export const evaluatePage = (page) => {
 	) {
 		add(
 			"error",
-			`언어 루트 리다이렉트 불일치: 기대 ${page.expectedDestination}`,
+			page.kind === "normalization"
+				? "URL_NORMALIZATION_FAILED"
+				: "EXPECTED_REDIRECT_MISSING",
+			`최종 URL 수렴 실패: 기대 ${page.expectedDestination}`,
+			"finalUrl",
 		);
 	}
-	if (page.redirects.length > 0 && !page.expectedDestination) {
-		add("warning", `리다이렉트 ${page.redirects.length}회: ${page.finalUrl}`);
+	if (page.kind === "normalization" && page.redirects.some((redirect) => [302, 303, 307].includes(redirect.status))) {
+		add(
+			"warning",
+			"URL_NORMALIZATION_TEMPORARY_REDIRECT",
+			`임시 리다이렉트로 정규 URL에 수렴함: ${page.finalUrl}`,
+			"redirects",
+		);
+	} else if (page.redirects.length > 0 && !page.expectedDestination) {
+		add(
+			"warning",
+			"UNEXPECTED_REDIRECT",
+			`리다이렉트 ${page.redirects.length}회: ${page.finalUrl}`,
+			"redirects",
+		);
+	}
+	if (page.kind === "normalization") {
+		return issues;
 	}
 	const metadata = page.metadata;
 	const robots = `${page.robotsHeader ?? ""}, ${metadata?.robots ?? ""}`;
@@ -162,13 +145,13 @@ export const evaluatePage = (page) => {
 		hasGooglebotNoindex(page.robotsHeader ?? "") ||
 		hasGooglebotNoindex(metadata?.robots ?? "")
 	) {
-		add("error", `검색 색인 차단: ${robots}`);
+		add("error", "NOINDEX_DETECTED", `검색 색인 차단: ${robots}`, "robots");
 	}
 	if (!metadata) {
 		return issues;
 	}
 	if (!metadata.bodyText) {
-		add("error", "서버 HTML 본문이 비어 있음");
+		add("error", "SSR_BODY_EMPTY", "서버 HTML 본문이 비어 있음", "bodyText");
 	}
 	for (const [name, maximum] of [
 		["title", 60],
@@ -176,57 +159,61 @@ export const evaluatePage = (page) => {
 	]) {
 		const length = Array.from(metadata[name]).length;
 		if (length === 0 || length > maximum) {
-			add("warning", `${name} 길이: ${length}자 (권장 1~${maximum}자)`);
+			add(
+				"warning",
+				"META_LENGTH_OUT_OF_RANGE",
+				`${name} 길이: ${length}자 (권장 1~${maximum}자)`,
+				name,
+			);
 		}
 	}
 	if (metadata.canonical !== (page.expectedDestination ?? page.url)) {
-		add("warning", `canonical 불일치: ${metadata.canonical || "없음"}`);
+		add(
+			"warning",
+			"CANONICAL_MISMATCH",
+			`canonical 불일치: ${metadata.canonical || "없음"}`,
+			"canonical",
+		);
 	}
 	if (metadata.h1.length !== 1) {
-		add("warning", `h1 개수: ${metadata.h1.length}`);
+		add("warning", "H1_COUNT_INVALID", `h1 개수: ${metadata.h1.length}`, "h1");
 	}
 	const expectedLanguage = new URL(page.url).pathname.split("/")[1];
 	if (metadata.lang.toLowerCase().split("-")[0] !== expectedLanguage) {
-		add("warning", `html lang 불일치: ${metadata.lang || "없음"}`);
+		add(
+			"warning",
+			"HTML_LANG_MISMATCH",
+			`html lang 불일치: ${metadata.lang || "없음"}`,
+			"lang",
+		);
 	}
 	for (const [name, value] of Object.entries(metadata.og)) {
 		if (!value) {
-			add("warning", `og:${name} 누락`);
+			add("warning", "OG_FIELD_MISSING", `og:${name} 누락`, `og.${name}`);
 		}
 	}
-
+	if (!metadata.twitter.card) {
+		add("warning", "TWITTER_CARD_MISSING", "twitter:card 누락", "twitter.card");
+	}
+	for (const name of ["title", "description", "image"]) {
+		if (!metadata.twitter[name] && !metadata.og[name]) {
+			add(
+				"warning",
+				"TWITTER_FIELD_MISSING",
+				`twitter:${name} 및 OG fallback 누락`,
+				`twitter.${name}`,
+			);
+		}
+	}
+	issues.push(...getStructuredDataIssues(metadata.structuredData));
 	return issues;
-};
-
-/** 동일 크롤러의 서로 다른 URL 사이에서 중복 메타데이터를 경고합니다. */
-export const addDuplicateWarnings = (pages) => {
-	for (const agent of new Set(pages.map((page) => page.agent))) {
-		for (const field of ["title", "description"]) {
-			const groups = new Map();
-			for (const page of pages.filter((item) => item.agent === agent)) {
-				const value = page.metadata?.[field].replace(/\s+/g, " ").trim();
-				if (value) {
-					groups.set(value, [...(groups.get(value) ?? []), page]);
-				}
-			}
-			for (const group of groups.values()) {
-				if (new Set(group.map((page) => page.url)).size > 1) {
-					for (const page of group) {
-						page.issues.push({
-							severity: "warning",
-							message: `${field} 중복: ${group.map((item) => item.url).join(", ")}`,
-						});
-					}
-				}
-			}
-		}
-	}
 };
 
 /** 판정 건수와 URL별 요청 결과를 JSON 및 Markdown에 공통으로 사용합니다. */
 export const createReport = (pages) => {
 	const issues = pages.flatMap((page) => page.issues);
 	const report = {
+		schemaVersion: 2,
 		generatedAt: new Date().toISOString(),
 		errors: issues.filter((issue) => issue.severity === "error").length,
 		warnings: issues.filter((issue) => issue.severity === "warning").length,
@@ -274,7 +261,7 @@ export const createReport = (pages) => {
 		}
 		for (const issue of page.issues) {
 			lines.push(
-				`- ${issue.severity === "error" ? "오류" : "경고"}: ${escapeMarkdown(issue.message)}`,
+				`- ${issue.severity === "error" ? "오류" : "경고"} [${escapeMarkdown(issue.code)}]${issue.field ? ` (${escapeMarkdown(issue.field)})` : ""}: ${escapeMarkdown(issue.message)}`,
 			);
 		}
 		if (page.issues.length === 0) {

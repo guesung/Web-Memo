@@ -237,6 +237,55 @@ export const listWeeks = ({ from, to, now = new Date() }) => {
 	return weeks;
 };
 
+/**
+ * 이 주에 이벤트·퍼널을 조회할지. EVENT_BACKFILL_SINCE 이전 주는 활성 사용자만
+ * 적습니다. 두 값 모두 월요일 YYYY-MM-DD 라 문자열 비교가 날짜 비교와 같습니다.
+ */
+export const shouldFetchEvents = (week) => week.start >= EVENT_BACKFILL_SINCE;
+
+/**
+ * 이번 실행이 무엇을 할지 정합니다. 주간 리포트 스크립트의 분기를 여기로 빼
+ * 네트워크 없이 검증합니다.
+ *
+ * - from·to 가 둘 다 비었으면 정기 모드: 지난주 한 주. 크론이면 "정기", 손으로
+ *   돌렸으면 "재실행"으로 기록합니다. 같은 주의 행이 덮어써졌을 때 시트에서 그
+ *   경위를 알아볼 수 있어야 합니다.
+ * - 둘 다 있으면 백필 모드: listWeeks 가 검증한 범위.
+ * - 하나만 있으면 던집니다. 한쪽을 지난주로 채워 주면 입력을 빠뜨린 실수가
+ *   수십 주짜리 백필로 조용히 바뀝니다.
+ *
+ * 워크플로 입력은 비워 두면 빈 문자열로 옵니다. 공백만 있는 값도 빈 값으로 봅니다.
+ */
+export const resolveRunPlan = ({
+	eventName,
+	weekFrom,
+	weekTo,
+	now = new Date(),
+}) => {
+	const from = weekFrom?.trim() ?? "";
+	const to = weekTo?.trim() ?? "";
+
+	if (!from && !to) {
+		return {
+			mode: "regular",
+			source: eventName === "schedule" ? "정기" : "재실행",
+			weeks: [resolveTargetWeek(now)],
+		};
+	}
+
+	if (!from || !to) {
+		throw new Error(
+			`WEEK_FROM 과 WEEK_TO 는 함께 주거나 함께 비워야 합니다 (WEEK_FROM="${from}", WEEK_TO="${to}")`,
+		);
+	}
+
+	return {
+		mode: "backfill",
+		source: "백필",
+		weeks: listWeeks({ from, to, now }),
+	};
+};
+
 /** 이벤트 이름 → 사용자 수. 행이 없는 이벤트는 0 명입니다. */
 const readUserTotals = (report) =>
 	Object.fromEntries(

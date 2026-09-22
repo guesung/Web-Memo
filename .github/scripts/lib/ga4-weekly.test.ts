@@ -22,7 +22,9 @@ import {
 	fetchWeeklyActiveUsers,
 	fetchWeeklyGa4Report,
 	listWeeks,
+	resolveRunPlan,
 	resolveTargetWeek,
+	shouldFetchEvents,
 } from "./ga4-weekly.mjs";
 import { buildWeeklyReportPayload } from "./weekly-report-blocks.mjs";
 
@@ -414,5 +416,80 @@ describe("listWeeks", () => {
 				"YYYY-MM-DD",
 			);
 		}
+	});
+});
+
+describe("resolveRunPlan", () => {
+	const now = new Date("2026-09-22T00:30:00Z");
+
+	it("크론 실행은 지난주 한 주를 정기로 기록한다", () => {
+		expect(
+			resolveRunPlan({ eventName: "schedule", weekFrom: "", weekTo: "", now }),
+		).toEqual({
+			mode: "regular",
+			source: "정기",
+			weeks: [resolveTargetWeek(now)],
+		});
+	});
+
+	it("입력 없이 손으로 돌리면 지난주 한 주를 재실행으로 기록한다", () => {
+		expect(
+			resolveRunPlan({ eventName: "workflow_dispatch", weekFrom: "", weekTo: "", now }),
+		).toEqual({
+			mode: "regular",
+			source: "재실행",
+			weeks: [resolveTargetWeek(now)],
+		});
+		// 로컬 실행처럼 env 가 아예 없어도 같다.
+		expect(resolveRunPlan({ now }).source).toBe("재실행");
+	});
+
+	it("공백뿐인 입력은 빈 값으로 본다", () => {
+		expect(
+			resolveRunPlan({ eventName: "workflow_dispatch", weekFrom: " ", weekTo: "", now }).mode,
+		).toBe("regular");
+	});
+
+	it("from·to 가 둘 다 있으면 그 범위를 백필한다", () => {
+		expect(
+			resolveRunPlan({
+				eventName: "workflow_dispatch",
+				weekFrom: "2026-08-31",
+				weekTo: "2026-09-14",
+				now,
+			}),
+		).toEqual({
+			mode: "backfill",
+			source: "백필",
+			weeks: listWeeks({ from: "2026-08-31", to: "2026-09-14", now }),
+		});
+	});
+
+	it("from·to 중 하나만 있으면 던진다", () => {
+		expect(() =>
+			resolveRunPlan({ eventName: "workflow_dispatch", weekFrom: "2026-08-31", weekTo: "", now }),
+		).toThrow("WEEK_FROM 과 WEEK_TO");
+		expect(() =>
+			resolveRunPlan({ eventName: "workflow_dispatch", weekFrom: "", weekTo: "2026-09-14", now }),
+		).toThrow("WEEK_FROM 과 WEEK_TO");
+	});
+
+	it("백필 범위 검증은 listWeeks 를 따른다", () => {
+		expect(() =>
+			resolveRunPlan({
+				eventName: "workflow_dispatch",
+				weekFrom: "2026-09-14",
+				weekTo: "2026-09-21",
+				now,
+			}),
+		).toThrow("끝난 주");
+	});
+});
+
+describe("shouldFetchEvents", () => {
+	it("백필 시작 주부터만 이벤트·퍼널을 조회한다", () => {
+		expect(shouldFetchEvents({ start: "2026-08-31" })).toBe(false);
+		expect(shouldFetchEvents({ start: "2026-09-07" })).toBe(true);
+		expect(shouldFetchEvents({ start: "2026-09-14" })).toBe(true);
 	});
 });

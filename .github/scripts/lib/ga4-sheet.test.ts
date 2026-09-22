@@ -102,6 +102,7 @@ describe("buildEventRows", () => {
 		expect(rows).toEqual([
 			{
 				"주 시작일": "2026-09-14",
+				"주 종료일": "2026-09-20",
 				이벤트: "memo_write",
 				"사용자 수": 4,
 				"기록 시각": recordedAt,
@@ -109,6 +110,7 @@ describe("buildEventRows", () => {
 			},
 			{
 				"주 시작일": "2026-09-14",
+				"주 종료일": "2026-09-20",
 				이벤트: "summary_run",
 				"사용자 수": 7,
 				"기록 시각": recordedAt,
@@ -116,6 +118,7 @@ describe("buildEventRows", () => {
 			},
 			{
 				"주 시작일": "2026-09-14",
+				"주 종료일": "2026-09-20",
 				이벤트: "sign_up",
 				"사용자 수": 0,
 				"기록 시각": recordedAt,

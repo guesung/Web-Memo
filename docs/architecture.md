@@ -23,6 +23,14 @@
 | 모니터링 | Sentry (웹·확장·앱) |
 | i18n | ko/en. 웹은 `apps/web/src/modules/i18n/`(`util.client` / `util.server`), 확장은 `_locales/`. **`lng === "ko"` 분기를 쓰지 않고 항상 번역 키를 씁니다** |
 
+### SEO 장기 이력
+
+`seo-monitor.yml`은 원본 보고서를 Actions 아티팩트로 30일 보관하고, 실행 요약·이슈
+변경·GSC 색인·주간 성과는 `SEO_SHEET_ID`의 Google Sheets에 멱등
+적재합니다. Google Sheets 인증은 기존 `GA4_SERVICE_ACCOUNT_JSON`을 재사용하며, 해당
+서비스 계정은 대상 스프레드시트의 편집자여야 합니다. GSC 주간 성과는
+태평양 시간대의 월요일에 수집됩니다.
+
 ## 프론트엔드
 
 | 항목 | 내용 |

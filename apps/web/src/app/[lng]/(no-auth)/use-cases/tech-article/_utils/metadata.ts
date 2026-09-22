@@ -1,7 +1,9 @@
-import { CONFIG } from "@web-memo/env";
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "../../../_utils";
 
-export const metadataKorean: Metadata = {
+/** 공개 페이지의 한국어 검색 및 공유 메타데이터입니다. */
+export const metadataKorean = createPublicPageMetadata({
+	language: "ko",
+	path: "/use-cases/tech-article",
 	title: "기술 아티클 정리 도구 - 개발 블로그 & 뉴스레터 관리 | 웹 메모",
 	description:
 		"기술 블로그, 뉴스레터, 개발 아티클의 핵심 내용을 체계적으로 정리하세요. AI 요약으로 빠르게 파악하고 주제별로 관리할 수 있습니다.",
@@ -12,24 +14,11 @@ export const metadataKorean: Metadata = {
 		"기술 뉴스 요약",
 		"개발 레퍼런스 관리",
 	],
-	alternates: {
-		canonical: `${CONFIG.webUrl}/ko/use-cases/tech-article`,
-		languages: {
-			ko: `${CONFIG.webUrl}/ko/use-cases/tech-article`,
-			en: `${CONFIG.webUrl}/en/use-cases/tech-article`,
-			"x-default": `${CONFIG.webUrl}/en/use-cases/tech-article`,
-		},
-	},
-	openGraph: {
-		title: "기술 아티클 정리 도구 - 개발 블로그 & 뉴스레터 관리 | 웹 메모",
-		description:
-			"기술 블로그, 뉴스레터, 개발 아티클의 핵심 내용을 체계적으로 정리하세요.",
-		images: ["/og-image.png"],
-		type: "website",
-	},
-};
-
-export const metadataEnglish: Metadata = {
+});
+/** 공개 페이지의 영어 검색 및 공유 메타데이터입니다. */
+export const metadataEnglish = createPublicPageMetadata({
+	language: "en",
+	path: "/use-cases/tech-article",
 	title: "Tech Article Organizer - Dev Blogs & Newsletter Manager | Web Memo",
 	description:
 		"Organize key insights from tech blogs, newsletters, and dev articles systematically. Use AI summaries to quickly grasp content and manage by topic.",
@@ -40,19 +29,4 @@ export const metadataEnglish: Metadata = {
 		"dev news summary",
 		"technical reference manager",
 	],
-	alternates: {
-		canonical: `${CONFIG.webUrl}/en/use-cases/tech-article`,
-		languages: {
-			ko: `${CONFIG.webUrl}/ko/use-cases/tech-article`,
-			en: `${CONFIG.webUrl}/en/use-cases/tech-article`,
-			"x-default": `${CONFIG.webUrl}/en/use-cases/tech-article`,
-		},
-	},
-	openGraph: {
-		title: "Tech Article Organizer - Dev Blogs & Newsletter Manager | Web Memo",
-		description:
-			"Organize key insights from tech blogs, newsletters, and dev articles systematically.",
-		images: ["/og-image.png"],
-		type: "website",
-	},
-};
+});

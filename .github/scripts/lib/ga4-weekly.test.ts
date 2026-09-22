@@ -17,6 +17,7 @@ import {
 	runReport,
 } from "./ga4-client.mjs";
 import {
+	ACTIVE_USERS_BACKFILL_SINCE,
 	EVENT_BACKFILL_SINCE,
 	FUNNEL_EVENTS,
 	fetchWeeklyActiveUsers,
@@ -320,6 +321,29 @@ describe("fetchWeeklyActiveUsers", () => {
 		});
 	});
 
+	it("이벤트 백필 시작 전 주는 지금 호스트에 옛 운영 웹 도메인을 더해 센다", async () => {
+		mockGa({ funnel: {} });
+
+		await fetchWeeklyActiveUsers({
+			serviceAccountJson: "{}",
+			propertyId: "471860782",
+			week: { start: "2026-08-31", end: "2026-09-06" },
+		});
+
+		const hostNames =
+			runReport.mock.calls[0][0].body.dimensionFilter.orGroup.expressions.map(
+				({ filter }) => filter.stringFilter.value,
+			);
+
+		expect(hostNames).toEqual([
+			"www.webmemo.xyz",
+			"web-memos.vercel.app",
+			"(not set)",
+			"",
+			"www.webmemo.site",
+		]);
+	});
+
 	it("행이 없으면 0명이다", async () => {
 		runReport.mockResolvedValue({});
 
@@ -339,6 +363,18 @@ describe("listWeeks", () => {
 
 	it("백필 시작 주는 월요일이다", () => {
 		expect(new Date(`${EVENT_BACKFILL_SINCE}T00:00:00Z`).getUTCDay()).toBe(1);
+		expect(
+			new Date(`${ACTIVE_USERS_BACKFILL_SINCE}T00:00:00Z`).getUTCDay(),
+		).toBe(1);
+	});
+
+	it("from 이 활성 사용자 백필 시작 주보다 이르면 던진다", () => {
+		expect(() =>
+			listWeeks({ from: "2025-10-06", to: "2026-09-14", now }),
+		).toThrow("2025-10-13 이후여야 합니다");
+		expect(
+			listWeeks({ from: "2025-10-13", to: "2025-10-13", now }),
+		).toHaveLength(1);
 	});
 
 	it("from 부터 to 까지 resolveTargetWeek 와 같은 모양의 주를 오름차순으로 돌려준다", () => {

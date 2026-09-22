@@ -85,6 +85,17 @@ const RARE_MAX_USERS = 5;
 const NEW_EVENT_WINDOW_DAYS = 14;
 
 /**
+ * 이벤트·퍼널을 조회할 수 있는 첫 주(월요일).
+ *
+ * 커스텀 이벤트와 퍼널은 build_env=production 으로 거르는데, 그 조건에 걸리는
+ * 운영 데이터는 이 주부터만 있습니다. 그 전 주를 같은 조건으로 조회하면
+ * 운영 트래픽이 (not set) 으로 통째로 빠져 "아무도 안 썼다"는 0명이 나옵니다 —
+ * 실제로 안 쓴 것과 구분되지 않는 틀린 기록이 시트에 남습니다. 그래서 백필은
+ * 이 주 이전에는 호스트 필터만 쓰는 활성 사용자만 적고 이벤트·퍼널은 비워 둡니다.
+ */
+export const EVENT_BACKFILL_SINCE = "2026-09-07";
+
+/**
  * 퍼널 단계. 신규 설치자가 실제로 걸어가는 순서입니다.
  *
  * 순서가 곧 조회 조건입니다. 순서 강제 퍼널은 같은 사용자가 앞 단계를 먼저 밟아야
@@ -147,6 +158,17 @@ const readWeekday = (dateString) =>
 	new Date(`${dateString}T00:00:00Z`).getUTCDay();
 
 /**
+ * 월요일 start 로 주 객체를 만듭니다. 정기 리포트와 백필이 같은 모양을 써야
+ * 시트의 한 행이 어느 쪽에서 왔든 같은 기간을 가리킵니다.
+ */
+const buildWeek = (start) => ({
+	start,
+	end: shiftDate(start, 6),
+	previousStart: shiftDate(start, -7),
+	previousEnd: shiftDate(start, -1),
+});
+
+/**
  * 리포트가 다룰 기간 = 서울 기준 지난주 월요일부터 일요일까지.
  *
  * 실행 시각에서 역산하지 않습니다. GitHub 크론은 수십 분 지연이 흔해서, 월요일
@@ -158,14 +180,61 @@ export const resolveTargetWeek = (now = new Date()) => {
 	const today = formatSeoulDate(now);
 	// getUTCDay 는 일요일이 0 이라 월요일이 0 이 되도록 옮깁니다.
 	const daysSinceMonday = (readWeekday(today) + 6) % 7;
-	const start = shiftDate(today, -daysSinceMonday - 7);
 
-	return {
-		start,
-		end: shiftDate(start, 6),
-		previousStart: shiftDate(start, -7),
-		previousEnd: shiftDate(start, -1),
-	};
+	return buildWeek(shiftDate(today, -daysSinceMonday - 7));
+};
+
+/**
+ * 실존하는 YYYY-MM-DD 인지. 형식만 보면 2026-02-30 이 통과하고, Date 는 그 값을
+ * 3월로 넘겨 버려 엉뚱한 주를 조용히 조회합니다.
+ */
+const isCalendarDate = (dateString) =>
+	/^\d{4}-\d{2}-\d{2}$/.test(dateString) &&
+	shiftDate(dateString, 0) === dateString;
+
+/**
+ * from 주부터 to 주까지 주 객체를 오름차순으로 돌려줍니다. 백필이 도는 범위입니다.
+ *
+ * 입력이 어긋나면 조회를 시작하기 전에 던집니다. 월요일이 아닌 날을 받아 조용히
+ * 월요일로 맞춰 주면 사람이 의도한 것과 다른 주가 시트에 적히고, 끝난 적 없는
+ * 이번 주를 받으면 반쪽짜리 수치가 "그 주의 값"으로 남습니다. 둘 다 시트에서는
+ * 멀쩡한 행이라 나중에 알아챌 방법이 없습니다.
+ */
+export const listWeeks = ({ from, to, now = new Date() }) => {
+	for (const [name, value] of [
+		["from", from],
+		["to", to],
+	]) {
+		if (typeof value !== "string" || !isCalendarDate(value)) {
+			throw new Error(
+				`${name} 이(가) YYYY-MM-DD 형식의 실제 날짜가 아닙니다: ${value}`,
+			);
+		}
+
+		if (readWeekday(value) !== 1) {
+			throw new Error(`${name} 은(는) 월요일이어야 합니다: ${value}`);
+		}
+	}
+
+	if (from > to) {
+		throw new Error(`from(${from}) 이 to(${to}) 보다 늦습니다`);
+	}
+
+	const lastCompleteWeek = resolveTargetWeek(now).start;
+
+	if (to > lastCompleteWeek) {
+		throw new Error(
+			`to(${to}) 는 끝난 주여야 합니다. 서울 기준 지난주 월요일(${lastCompleteWeek}) 이하로 주세요`,
+		);
+	}
+
+	const weeks = [];
+
+	for (let start = from; start <= to; start = shiftDate(start, 7)) {
+		weeks.push(buildWeek(start));
+	}
+
+	return weeks;
 };
 
 /** 이벤트 이름 → 사용자 수. 행이 없는 이벤트는 0 명입니다. */
@@ -179,6 +248,48 @@ const readUserTotals = (report) =>
 
 /** 지표가 한 칸뿐인 응답에서 그 값만 꺼냅니다. 행이 없으면 0 입니다. */
 const readSingleMetric = (report) => readRows(report)[0]?.metrics[0] ?? 0;
+
+/**
+ * 기간의 활성 사용자 조회.
+ *
+ * 주간 리포트와 백필이 함께 씁니다. 두 벌로 두면 한쪽 필터만 고쳐져 시트의 과거
+ * 주와 최근 주가 서로 다른 모수를 세게 되는데, 둘 다 조용히 성공하므로 추이의
+ * 꺾임이 실제 변화인지 집계 차이인지 구분할 수 없습니다.
+ */
+const readActiveUsers = ({ accessToken, propertyId, startDate, endDate }) =>
+	runReport({
+		accessToken,
+		propertyId,
+		body: {
+			dateRanges: [{ startDate, endDate }],
+			metrics: [{ name: "activeUsers" }],
+			dimensionFilter: HOST_NAME_FILTER,
+		},
+	});
+
+/**
+ * 한 주의 활성 사용자 수만 조회합니다. 이벤트·퍼널을 조회할 수 없는 옛 주의
+ * 백필용입니다. 필터와 지표는 fetchWeeklyGa4Report 의 활성 사용자와 같습니다.
+ */
+export const fetchWeeklyActiveUsers = async ({
+	serviceAccountJson,
+	propertyId,
+	week,
+}) => {
+	const accessToken = await exchangeServiceAccountToken({
+		serviceAccount: JSON.parse(serviceAccountJson),
+		scope: GA4_SCOPE,
+	});
+
+	return readSingleMetric(
+		await readActiveUsers({
+			accessToken,
+			propertyId,
+			startDate: week.start,
+			endDate: week.end,
+		}),
+	);
+};
 
 /**
  * 안 쓰인 기능을 세 단으로 나눕니다.
@@ -338,17 +449,6 @@ export const fetchWeeklyGa4Report = async ({
 			},
 		});
 
-	const readActiveUsers = (startDate, endDate) =>
-		runReport({
-			accessToken,
-			propertyId,
-			body: {
-				dateRanges: [{ startDate, endDate }],
-				metrics: [{ name: "activeUsers" }],
-				dimensionFilter: HOST_NAME_FILTER,
-			},
-		});
-
 	const [
 		current,
 		previous,
@@ -359,8 +459,18 @@ export const fetchWeeklyGa4Report = async ({
 	] = await Promise.all([
 		readEventUsers(start, end),
 		readEventUsers(previousStart, previousEnd),
-		readActiveUsers(start, end),
-		readActiveUsers(previousStart, previousEnd),
+		readActiveUsers({
+			accessToken,
+			propertyId,
+			startDate: start,
+			endDate: end,
+		}),
+		readActiveUsers({
+			accessToken,
+			propertyId,
+			startDate: previousStart,
+			endDate: previousEnd,
+		}),
 		runReport({
 			accessToken,
 			propertyId,

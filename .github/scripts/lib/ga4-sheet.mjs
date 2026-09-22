@@ -94,6 +94,7 @@ export const buildEventRows = ({
 
 	return eventNames.map((eventName) => ({
 		"주 시작일": week.start,
+		"주 종료일": week.end,
 		이벤트: eventName,
 		"사용자 수": usersByEvent.get(eventName) ?? 0,
 		"기록 시각": recordedAt,

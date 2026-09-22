@@ -17,29 +17,35 @@ test.describe("소개 페이지 구조화 데이터", () => {
 			expect(faqSchema.mainEntity).toHaveLength(7);
 
 			const faqSection = page.locator("section").filter({ has: faqScript });
-			const faqTriggers = faqSection.getByRole("button", { expanded: false });
+			const faqTriggers = faqSection.getByRole("button");
 			await expect(faqTriggers).toHaveCount(7);
+			const visibleQuestions = await faqTriggers.allInnerTexts();
+			expect(faqSchema.mainEntity.map((question) => question.name)).toEqual(
+				visibleQuestions,
+			);
+			const visibleAnswers: string[] = [];
 
-			for (const question of faqSchema.mainEntity) {
+			for (let index = 0; index < visibleQuestions.length; index += 1) {
+				const question = faqSchema.mainEntity[index];
 				expect(question["@type"]).toBe("Question");
 				expect(question.acceptedAnswer["@type"]).toBe("Answer");
 				expect(question.name.trim()).not.toBe("");
 				expect(question.acceptedAnswer.text.trim()).not.toBe("");
 
-				const trigger = faqSection.getByRole("button", {
-					name: question.name,
-					exact: true,
-				});
+				const trigger = faqTriggers.nth(index);
 				await trigger.click();
 				await expect(trigger).toHaveAttribute("aria-expanded", "true");
 				const answer = faqSection.getByRole("region", {
-					name: question.name,
+					name: visibleQuestions[index],
 					exact: true,
 				});
 				await expect(answer).toBeVisible();
-				expect(await answer.innerText()).toBe(question.acceptedAnswer.text);
+				visibleAnswers.push(await answer.innerText());
 				await trigger.click();
 			}
+			expect(
+				faqSchema.mainEntity.map((question) => question.acceptedAnswer.text),
+			).toEqual(visibleAnswers);
 
 			const howToScript = page.locator("script#howto-jsonld");
 			await expect(howToScript).toHaveCount(1);

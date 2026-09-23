@@ -1,5 +1,6 @@
 import type { MemoInput } from "@src/types/Input";
 import { useCategoryQuery } from "@web-memo/shared/hooks";
+import type { TCategoryChangeSource } from "@web-memo/shared/modules/analytics";
 import type { CategoryRow } from "@web-memo/shared/types";
 import { getCursorPosition } from "@web-memo/shared/utils";
 import { useCallback, useRef, useState } from "react";
@@ -9,7 +10,10 @@ const CATEGORY_LIST_WIDTH = 256;
 
 interface UseMemoCategoryProps {
 	textareaRef: React.RefObject<HTMLTextAreaElement | null>;
-	onCategoryChange: (categoryId: number | null) => void;
+	onCategoryChange: (
+		categoryId: number | null,
+		source: TCategoryChangeSource,
+	) => void;
 }
 
 export default function useMemoCategory({
@@ -93,14 +97,14 @@ export default function useMemoCategory({
 				);
 			}
 
-			onCategoryChange(category.id);
+			onCategoryChange(category.id, "hash");
 			restoreFocus();
 		},
 		[watch, setValue, onCategoryChange, restoreFocus],
 	);
 
 	const handleCategoryRemove = useCallback(() => {
-		onCategoryChange(null);
+		onCategoryChange(null, "button");
 	}, [onCategoryChange]);
 
 	const handleCategoryListClose = useCallback(() => {

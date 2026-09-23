@@ -91,7 +91,7 @@ function MemoFormContent() {
 	const { isLoading: isSuggestingCategory, triggerSuggestion } =
 		useCategorySuggestion({
 			currentCategoryId,
-			onCategorySelect: updateCategory,
+			onCategorySelect: (categoryId) => updateCategory(categoryId, "ai"),
 		});
 
 	const handleMemoStatusClick = async (statusKey: TMemoStatusKey) => {

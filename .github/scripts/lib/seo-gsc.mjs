@@ -167,7 +167,7 @@ const attachPreviousRows = ({ currentRows, previousRows }) => {
 	});
 };
 
-const readWeeklyPerformance = async ({ accessToken, week, months, fetcher, sleep }) => {
+const readWeeklyPerformance = async ({ accessToken, week, fetcher, sleep }) => {
 	const query = (body) =>
 		queryAnalytics({ accessToken, fetcher, sleep, body });
 	const total = (startDate, endDate) => query({ startDate, endDate });
@@ -181,7 +181,6 @@ const readWeeklyPerformance = async ({ accessToken, week, months, fetcher, sleep
 		previousQueries,
 		pages,
 		previousPages,
-		...monthlyTotals
 	] = await Promise.all([
 		total(week.start, week.end),
 		total(week.previousStart, week.previousEnd),
@@ -189,7 +188,6 @@ const readWeeklyPerformance = async ({ accessToken, week, months, fetcher, sleep
 		ranked({ dimension: "query", startDate: week.previousStart, endDate: week.previousEnd, rowLimit: 250 }),
 		ranked({ dimension: "page", startDate: week.start, endDate: week.end, rowLimit: 50 }),
 		ranked({ dimension: "page", startDate: week.previousStart, endDate: week.previousEnd, rowLimit: 250 }),
-		...months.map((month) => total(month.startDate, month.endDate)),
 	]);
 
 	return {
@@ -204,18 +202,32 @@ const readWeeklyPerformance = async ({ accessToken, week, months, fetcher, sleep
 			currentRows: normalizeRows(pages),
 			previousRows: normalizeRows(previousPages),
 		}),
-		monthly: months.map((month, index) => {
-			const row = normalizeRows(monthlyTotals[index])[0];
-
-			return {
-				...month,
-				clicks: row?.clicks ?? 0,
-				impressions: row?.impressions ?? 0,
-				ctr: row?.ctr ?? 0,
-				position: row?.position ?? 0,
-			};
-		}),
 	};
+};
+
+const readMonthlyPerformance = async ({ accessToken, months, fetcher, sleep }) => {
+	const totals = await Promise.all(
+		months.map((month) =>
+			queryAnalytics({
+				accessToken,
+				fetcher,
+				sleep,
+				body: { startDate: month.startDate, endDate: month.endDate },
+			}),
+		),
+	);
+
+	return months.map((month, index) => {
+		const row = normalizeRows(totals[index])[0];
+
+		return {
+			...month,
+			clicks: row?.clicks ?? 0,
+			impressions: row?.impressions ?? 0,
+			ctr: row?.ctr ?? 0,
+			position: row?.position ?? 0,
+		};
+	});
 };
 
 /** sitemap URL 색인 상태와 선택적인 주간 검색 성과를 안전한 필드만 남겨 조회합니다. */
@@ -276,12 +288,25 @@ export const collectGscReport = async ({
 			report.weekly = await readWeeklyPerformance({
 				accessToken,
 				week: resolveGscWeeks(now),
-				months: resolveGscMonths(now),
 				fetcher,
 				sleep,
 			});
 		} catch (error) {
 			report.failures.push({ scope: "weekly", ...safeFailure(error) });
+		}
+		// 월간 추이는 보조 지표라 따로 조회합니다. 여기서 실패해도 주간 성과는 남깁니다.
+		if (report.weekly) {
+			try {
+				report.weekly.monthly = await readMonthlyPerformance({
+					accessToken,
+					months: resolveGscMonths(now),
+					fetcher,
+					sleep,
+				});
+			} catch (error) {
+				report.weekly.monthly = null;
+				report.failures.push({ scope: "monthly", ...safeFailure(error) });
+			}
 		}
 	}
 	if (report.failures.length > 0) {
@@ -300,19 +325,26 @@ const createFailedReport = (now, code, message) => ({
 	failures: [{ scope: "setup", code, message }],
 });
 
+const INDEXED_VERDICTS = ["PASS", "PARTIAL"];
+const NOT_INDEXED_VERDICTS = ["FAIL", "NEUTRAL"];
+
 /**
  * 직전 실행과 색인 판정을 비교해 색인에서 빠진 URL과 돌아온 URL을 찾습니다.
- * @description 이번에 조회하지 못한 URL은 이탈로 보지 않습니다. 조회 실패를 색인 이탈로 오보하지 않기 위해서입니다.
+ * @description PARTIAL은 경고가 있어도 색인된 상태라 PASS와 같이 봅니다. 판정이 없거나 이번에 조회하지 못한 URL은 비교하지 않아 조회 결함을 색인 이탈로 오보하지 않습니다.
+ * 이번 조회 결과가 한 건도 없으면 비교 자체가 불가능하므로 unavailable로 표시합니다. 이탈 0건과 구분하기 위해서입니다.
  */
 export const compareGscInspections = ({ currentReport, previousReport }) => {
 	const changes = { baselineStatus: "compatible", dropped: [], recovered: [] };
+	if (!Array.isArray(currentReport?.inspections) || currentReport.inspections.length === 0) {
+		return { ...changes, baselineStatus: "unavailable" };
+	}
 	if (!Array.isArray(previousReport?.inspections) || previousReport.inspections.length === 0) {
 		return { ...changes, baselineStatus: "missing" };
 	}
 	const previousByUrl = new Map(
 		previousReport.inspections.map((inspection) => [inspection.url, inspection]),
 	);
-	for (const inspection of currentReport.inspections ?? []) {
+	for (const inspection of currentReport.inspections) {
 		const previous = previousByUrl.get(inspection.url);
 		if (!previous) {
 			continue;
@@ -324,9 +356,15 @@ export const compareGscInspections = ({ currentReport, previousReport }) => {
 			previousCoverageState: previous.coverageState,
 			coverageState: inspection.coverageState,
 		};
-		if (previous.verdict === "PASS" && inspection.verdict !== "PASS") {
+		if (
+			INDEXED_VERDICTS.includes(previous.verdict) &&
+			NOT_INDEXED_VERDICTS.includes(inspection.verdict)
+		) {
 			changes.dropped.push(change);
-		} else if (previous.verdict !== "PASS" && inspection.verdict === "PASS") {
+		} else if (
+			NOT_INDEXED_VERDICTS.includes(previous.verdict) &&
+			INDEXED_VERDICTS.includes(inspection.verdict)
+		) {
 			changes.recovered.push(change);
 		}
 	}

@@ -198,6 +198,39 @@ describe("GSC 리포트 수집", () => {
 		]);
 	});
 
+	it("월간 합계 조회만 실패하면 주간 성과는 남기고 실패를 기록한다", async () => {
+		const fetcher = vi.fn(async (url, options) => {
+			if (url.includes("urlInspection")) {
+				return inspectionResponse();
+			}
+			const body = JSON.parse(options.body);
+			if (body.startDate.endsWith("-01") && !body.dimensions) {
+				return new Response("server error", { status: 500 });
+			}
+
+			return new Response(
+				JSON.stringify({ rows: [{ keys: [], clicks: 1, impressions: 2, ctr: 0.5, position: 3 }] }),
+				{ status: 200 },
+			);
+		});
+
+		const report = await collectGscReport({
+			serviceAccountJson: "{}",
+			urls: [PAGE_URL],
+			weekly: true,
+			now: new Date("2026-09-22T05:00:00Z"),
+			tokenExchanger: async () => "token",
+			fetcher,
+			sleep: async () => undefined,
+		});
+
+		expect(report.weekly.current.clicks).toBe(1);
+		expect(report.weekly.monthly).toBeNull();
+		expect(report.failures).toEqual([
+			expect.objectContaining({ scope: "monthly", code: "service_unavailable" }),
+		]);
+	});
+
 	it("잘못된 인증 JSON은 원문 없이 구조화된 실패로 끝난다", async () => {
 		const report = await collectGscReport({
 			serviceAccountJson: "{private-key",
@@ -234,10 +267,33 @@ describe("GSC 색인 변화 비교", () => {
 		]);
 	});
 
+	it("PARTIAL은 색인된 상태로 보고, 판정이 없는 URL은 비교하지 않는다", () => {
+		const changes = compareGscInspections({
+			previousReport: {
+				inspections: [inspection("/a", "PASS"), inspection("/b", "PASS")],
+			},
+			currentReport: {
+				inspections: [inspection("/a", "PARTIAL"), inspection("/b", null)],
+			},
+		});
+
+		expect(changes.dropped).toEqual([]);
+		expect(changes.recovered).toEqual([]);
+	});
+
+	it("이번 조회 결과가 없으면 이탈 0건이 아니라 unavailable로 표시한다", () => {
+		expect(
+			compareGscInspections({
+				previousReport: { inspections: [inspection("/a", "PASS")] },
+				currentReport: { status: "failed", inspections: [] },
+			}).baselineStatus,
+		).toBe("unavailable");
+	});
+
 	it("이번에 조회하지 못한 URL은 이탈로 보지 않는다", () => {
 		const changes = compareGscInspections({
 			previousReport: { inspections: [inspection("/a", "PASS")] },
-			currentReport: { inspections: [] },
+			currentReport: { inspections: [inspection("/b", "NEUTRAL")] },
 		});
 
 		expect(changes.dropped).toEqual([]);

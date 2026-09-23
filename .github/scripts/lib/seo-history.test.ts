@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
 	compareSeoReports,
+	createFirstSeenLedger,
 	createSeoIssueKey,
 	parseSeoReportJson,
 } from "./seo-history.mjs";
@@ -214,60 +215,6 @@ describe("compareSeoReports", () => {
 		expect(result.delta.unobservable).toEqual([]);
 	});
 
-	it("지속 이슈는 이전 실행의 최초 발견 시각을 이어받고 신규 이슈는 이번 실행 시각을 쓴다", () => {
-		const persistentKey = createSeoIssueKey({
-			kind: "page",
-			url: "https://www.webmemo.xyz/ko/introduce",
-			agent: "mobile",
-			issue: issue("persistent", "title"),
-		});
-		const previous = {
-			...report([page({ issues: [issue("persistent", "title")] })]),
-			generatedAt: "2026-09-22T00:17:00.000Z",
-			history: {
-				delta: {
-					new: [],
-					persistent: [
-						{ key: persistentKey, firstSeenAt: "2026-09-01T00:17:00.000Z" },
-					],
-				},
-			},
-		};
-		const current = {
-			...report([
-				page({ issues: [issue("persistent", "title"), issue("new", "lang")] }),
-			]),
-			generatedAt: "2026-09-23T00:17:00.000Z",
-		};
-
-		const result = compareSeoReports({
-			currentReport: current,
-			previousReport: previous,
-		});
-
-		expect(result.delta.persistent[0].firstSeenAt).toBe(
-			"2026-09-01T00:17:00.000Z",
-		);
-		expect(result.delta.new[0].firstSeenAt).toBe("2026-09-23T00:17:00.000Z");
-	});
-
-	it("이전 실행에 최초 발견 시각이 없으면 이전 실행 시각을 최초 발견으로 본다", () => {
-		const previous = {
-			...report([page({ issues: [issue("persistent", "title")] })]),
-			generatedAt: "2026-09-22T00:17:00.000Z",
-		};
-		const current = report([page({ issues: [issue("persistent", "title")] })]);
-
-		const result = compareSeoReports({
-			currentReport: current,
-			previousReport: previous,
-		});
-
-		expect(result.delta.persistent[0].firstSeenAt).toBe(
-			"2026-09-22T00:17:00.000Z",
-		);
-	});
-
 	it("첫 실행에서는 기준선을 missing으로 표시하고 전부 new로 만들지 않는다", () => {
 		const result = compareSeoReports({
 			currentReport: report([page({ issues: [issue("new", "title")] })]),
@@ -288,6 +235,112 @@ describe("compareSeoReports", () => {
 
 		expect(result.baselineStatus).toBe("incompatible");
 		expect(result.delta.new).toEqual([]);
+	});
+});
+
+describe("createFirstSeenLedger", () => {
+	const INTRODUCE = "https://www.webmemo.xyz/ko/introduce";
+	const keyOf = (code: string, field: string, url = INTRODUCE) =>
+		createSeoIssueKey({ kind: "page", url, agent: "mobile", issue: issue(code, field) });
+	const dated = (generatedAt: string, pages: object[], firstSeen?: object) => ({
+		...report(pages),
+		generatedAt,
+		...(firstSeen ? { history: { firstSeen } } : {}),
+	});
+
+	it("직전 신규 이슈가 지속되면 원장의 최초 발견 시각을 그대로 이어받는다", () => {
+		const firstSeen = {
+			[keyOf("title", "title")]: { firstSeenAt: "2026-09-01T00:17:00Z", exact: true },
+		};
+		const ledger = createFirstSeenLedger({
+			previousReport: dated("2026-09-22T00:17:00Z", [page({ issues: [issue("title", "title")] })], firstSeen),
+			currentReport: dated("2026-09-23T00:17:00Z", [page({ issues: [issue("title", "title")] })]),
+		});
+
+		expect(ledger[keyOf("title", "title")]).toEqual({
+			firstSeenAt: "2026-09-01T00:17:00Z",
+			exact: true,
+		});
+	});
+
+	it("직전 보고서에 원장이 없으면 직전 실행 시각을 부정확 표시와 함께 쓴다", () => {
+		const ledger = createFirstSeenLedger({
+			previousReport: dated("2026-09-22T00:17:00Z", [page({ issues: [issue("title", "title")] })]),
+			currentReport: dated("2026-09-23T00:17:00Z", [page({ issues: [issue("title", "title")] })]),
+		});
+
+		expect(ledger[keyOf("title", "title")]).toEqual({
+			firstSeenAt: "2026-09-22T00:17:00Z",
+			exact: false,
+		});
+	});
+
+	it("직전 실행이 관측한 페이지에 새로 생긴 이슈만 정확한 신규로 본다", () => {
+		const otherUrl = "https://www.webmemo.xyz/en/introduce";
+		const ledger = createFirstSeenLedger({
+			previousReport: dated("2026-09-22T00:17:00Z", [
+				page(),
+				page({ url: otherUrl, failure: "timeout", status: null, metadata: null }),
+			]),
+			currentReport: dated("2026-09-23T00:17:00Z", [
+				page({ issues: [issue("lang", "lang")] }),
+				page({ url: otherUrl, issues: [issue("lang", "lang")] }),
+			]),
+		});
+
+		expect(ledger[keyOf("lang", "lang")]).toEqual({
+			firstSeenAt: "2026-09-23T00:17:00Z",
+			exact: true,
+		});
+		expect(ledger[keyOf("lang", "lang", otherUrl)].exact).toBe(false);
+	});
+
+	it("요청이 실패한 날에도 원장을 남겨 다음 실행에서 경과 기간이 초기화되지 않는다", () => {
+		const key = keyOf("title", "title");
+		const original = { firstSeenAt: "2026-09-01T00:17:00Z", exact: true };
+		const failedDay = createFirstSeenLedger({
+			previousReport: dated("2026-09-21T00:17:00Z", [page({ issues: [issue("title", "title")] })], {
+				[key]: original,
+			}),
+			currentReport: dated("2026-09-22T00:17:00Z", [
+				page({ failure: "timeout", status: null, metadata: null }),
+			]),
+		});
+		const nextDay = createFirstSeenLedger({
+			previousReport: dated(
+				"2026-09-22T00:17:00Z",
+				[page({ failure: "timeout", status: null, metadata: null })],
+				failedDay,
+			),
+			currentReport: dated("2026-09-23T00:17:00Z", [page({ issues: [issue("title", "title")] })]),
+		});
+
+		expect(failedDay[key]).toEqual(original);
+		expect(nextDay[key]).toEqual(original);
+	});
+
+	it("관측한 페이지에서 사라진 이슈는 원장에서 지운다", () => {
+		const key = keyOf("title", "title");
+		const ledger = createFirstSeenLedger({
+			previousReport: dated("2026-09-22T00:17:00Z", [page({ issues: [issue("title", "title")] })], {
+				[key]: { firstSeenAt: "2026-09-01T00:17:00Z", exact: true },
+			}),
+			currentReport: dated("2026-09-23T00:17:00Z", [page()]),
+		});
+
+		expect(ledger).toEqual({});
+	});
+
+	it("이전 보고서가 없으면 모든 이슈를 이번 실행 시각의 부정확 값으로 둔다", () => {
+		const ledger = createFirstSeenLedger({
+			previousReport: null,
+			currentReport: dated("2026-09-23T00:17:00Z", [page({ issues: [issue("title", "title")] })]),
+		});
+
+		expect(ledger[keyOf("title", "title")]).toEqual({
+			firstSeenAt: "2026-09-23T00:17:00Z",
+			exact: false,
+		});
 	});
 });
 

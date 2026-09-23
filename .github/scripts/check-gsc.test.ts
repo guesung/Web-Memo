@@ -8,22 +8,23 @@ vi.mock("node:fs/promises", () => ({
 	readFile: vi.fn(),
 	writeFile: vi.fn(),
 }));
-vi.mock("./lib/seo-gsc.mjs", () => ({
-	collectGscReport: vi.fn(async ({ serviceAccountJson, urls }) => ({
-		generatedAt: "2026-09-22T00:00:00.000Z",
-		status: serviceAccountJson ? "passed" : "skipped",
-		siteUrl: "https://www.webmemo.xyz/",
-		inspections: urls.map((url) => ({ url, verdict: "PASS" })),
-		weekly: null,
-		failures: [],
-	})),
-	compareGscInspections: vi.fn(() => ({
-		baselineStatus: "missing",
-		dropped: [],
-		recovered: [],
-	})),
-	createGscMarkdown: vi.fn(() => "# GSC\n"),
-}));
+vi.mock("./lib/seo-gsc.mjs", async (importOriginal) => {
+	const actual = await importOriginal();
+
+	return {
+		collectGscReport: vi.fn(async ({ serviceAccountJson, urls }) => ({
+			generatedAt: "2026-09-22T00:00:00.000Z",
+			status: serviceAccountJson ? "passed" : "skipped",
+			siteUrl: "https://www.webmemo.xyz/",
+			inspections: urls.map((url) => ({ url, verdict: "NEUTRAL" })),
+			weekly: null,
+			failures: [],
+		})),
+		// 비교는 실제 구현을 써서 CLI와 판정의 연결을 검증합니다.
+		compareGscInspections: vi.fn(actual.compareGscInspections),
+		createGscMarkdown: vi.fn(() => "# GSC\n"),
+	};
+});
 
 import { runGscCheck } from "./check-gsc.mjs";
 import { collectGscReport, compareGscInspections } from "./lib/seo-gsc.mjs";
@@ -106,11 +107,12 @@ describe("GSC CLI", () => {
 		);
 	});
 
-	it("이전 GSC 리포트와 비교한 색인 변화를 리포트에 담는다", async () => {
-		const previousReport = {
-			inspections: [{ url: "https://www.webmemo.xyz/ko/introduce", verdict: "PASS" }],
-		};
-		readFile.mockResolvedValue(JSON.stringify(previousReport));
+	it("이전 GSC 리포트와 비교해 색인에서 빠진 URL을 리포트에 담는다", async () => {
+		readFile.mockResolvedValue(
+			JSON.stringify({
+				inspections: [{ url: "https://www.webmemo.xyz/ko/introduce", verdict: "PASS" }],
+			}),
+		);
 
 		const report = await runGscCheck({
 			serviceAccountJson: "{}",
@@ -120,10 +122,26 @@ describe("GSC CLI", () => {
 		});
 
 		expect(readFile).toHaveBeenCalledWith("/tmp/previous/gsc-report.json", "utf8");
-		expect(compareGscInspections).toHaveBeenCalledWith({
-			currentReport: report,
-			previousReport,
+		expect(report.indexChanges.baselineStatus).toBe("compatible");
+		expect(report.indexChanges.dropped).toEqual([
+			expect.objectContaining({
+				url: "https://www.webmemo.xyz/ko/introduce",
+				previousVerdict: "PASS",
+				verdict: "NEUTRAL",
+			}),
+		]);
+	});
+
+	it("이전 GSC 리포트가 손상됐으면 missing으로 처리한다", async () => {
+		readFile.mockResolvedValue("{broken");
+
+		const report = await runGscCheck({
+			serviceAccountJson: "{}",
+			urls: ["https://www.webmemo.xyz/ko/introduce"],
+			weekly: false,
+			previousReportPath: "/tmp/previous/gsc-report.json",
 		});
+
 		expect(report.indexChanges.baselineStatus).toBe("missing");
 	});
 

@@ -95,18 +95,12 @@ export const compareSeoReports = ({ currentReport, previousReport }) => {
 		flattenSeoIssues(currentReport).map((issue) => [issue.key, issue]),
 	);
 	const observations = createSeoObservationMap(currentReport);
-	const previousFirstSeenByKey = createFirstSeenMap(previousReport);
 
 	for (const [key, issue] of currentByKey) {
 		if (previousByKey.has(key)) {
-			// 이전 실행이 최초 발견일을 모르면(첫 비교·스키마 교체 직후) 이전 실행 시각이 알 수 있는 가장 이른 날입니다.
-			delta.persistent.push({
-				...issue,
-				firstSeenAt:
-					previousFirstSeenByKey.get(key) ?? previousReport.generatedAt ?? null,
-			});
+			delta.persistent.push(issue);
 		} else {
-			delta.new.push({ ...issue, firstSeenAt: currentReport.generatedAt ?? null });
+			delta.new.push(issue);
 		}
 	}
 	for (const [key, issue] of previousByKey) {
@@ -123,13 +117,50 @@ export const compareSeoReports = ({ currentReport, previousReport }) => {
 	return { baselineStatus: "compatible", delta };
 };
 
-/** 이전 보고서의 비교 결과에서 이슈별 최초 발견 시각을 꺼냅니다. */
-const createFirstSeenMap = (report) =>
-	new Map(
-		[...(report.history?.delta?.new ?? []), ...(report.history?.delta?.persistent ?? [])]
-			.filter((issue) => issue.key && issue.firstSeenAt)
-			.map((issue) => [issue.key, issue.firstSeenAt]),
-	);
+/**
+ * 이슈별 최초 발견 시각 원장을 만듭니다. 값은 `{ firstSeenAt, exact }`입니다.
+ * @description 이전 원장을 이어받고, 이번에 관측하지 못한 페이지의 이슈도 남겨 두어 요청 실패 하루로 경과 기간이 초기화되지 않게 합니다.
+ * 이전 보고서가 없거나 원장이 없어 정확한 날을 모르면 알 수 있는 가장 이른 시각을 쓰고 `exact: false`로 표시합니다. 이 표시는 다음 실행으로 이어집니다.
+ */
+export const createFirstSeenLedger = ({ currentReport, previousReport }) => {
+	const ledger = {};
+	const generatedAt = currentReport.generatedAt ?? null;
+	const previousLedger = isSeoReport(previousReport)
+		? (previousReport.history?.firstSeen ?? {})
+		: {};
+	const previousKeys = isSeoReport(previousReport)
+		? new Set(flattenSeoIssues(previousReport).map((issue) => issue.key))
+		: null;
+	const previousObservations = isSeoReport(previousReport)
+		? createSeoObservationMap(previousReport)
+		: new Map();
+	for (const issue of flattenSeoIssues(currentReport)) {
+		const scope = [issue.kind, issue.url, issue.agent].join("\u001f");
+		if (previousLedger[issue.key]) {
+			ledger[issue.key] = previousLedger[issue.key];
+		} else if (previousKeys?.has(issue.key)) {
+			ledger[issue.key] = {
+				firstSeenAt: previousReport.generatedAt ?? generatedAt,
+				exact: false,
+			};
+		} else {
+			// 직전 실행이 그 페이지를 관측했는데 이슈가 없었을 때만 오늘 처음 생겼다고 확신할 수 있습니다.
+			ledger[issue.key] = {
+				firstSeenAt: generatedAt,
+				exact: previousObservations.get(scope) === true,
+			};
+		}
+	}
+	const currentObservations = createSeoObservationMap(currentReport);
+	for (const [key, entry] of Object.entries(previousLedger)) {
+		const scope = key.split("\u001f").slice(0, 3).join("\u001f");
+		if (!ledger[key] && currentObservations.get(scope) !== true) {
+			ledger[key] = entry;
+		}
+	}
+
+	return ledger;
+};
 
 /** 관계형 이슈는 판정에 필요한 모든 요청이 성공했을 때만 해소 가능하다고 봅니다. */
 const isSeoIssueObservable = ({ issue, observations }) => {

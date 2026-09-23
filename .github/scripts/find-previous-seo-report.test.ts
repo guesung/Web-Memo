@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+	createPreviousReportOutputs,
 	downloadSeoReport,
 	fetchSeoArtifacts,
 	findSiblingGscReport,
@@ -134,6 +135,30 @@ describe("findSiblingGscReport", () => {
 		await writeFile(join(directory, "seo-report.json"), "{}");
 
 		expect(await findSiblingGscReport(join(directory, "seo-report.json"))).toBeNull();
+	});
+});
+
+describe("createPreviousReportOutputs", () => {
+	it("GSC 보고서가 함께 있으면 두 경로를 모두 output으로 넘긴다", async () => {
+		const directory = await mkdtemp(join(tmpdir(), "seo-artifact-test-"));
+		await writeFile(join(directory, "seo-report.json"), "{}");
+		await writeFile(join(directory, "gsc-report.json"), "{}");
+
+		expect(await createPreviousReportOutputs(join(directory, "seo-report.json"))).toEqual({
+			found: "true",
+			baseline_status: "available",
+			SEO_PREVIOUS_REPORT: join(directory, "seo-report.json"),
+			SEO_PREVIOUS_GSC_REPORT: join(directory, "gsc-report.json"),
+		});
+	});
+
+	it("GSC 보고서가 없으면 GSC 경로를 넘기지 않는다", async () => {
+		const directory = await mkdtemp(join(tmpdir(), "seo-artifact-test-"));
+		await writeFile(join(directory, "seo-report.json"), "{}");
+
+		expect(
+			await createPreviousReportOutputs(join(directory, "seo-report.json")),
+		).not.toHaveProperty("SEO_PREVIOUS_GSC_REPORT");
 	});
 });
 

@@ -31,7 +31,12 @@ const createFeedbackSupabaseClient = () =>
 const createPublicMemoSupabaseClient = () =>
 	createClient<Database, "memo">(SUPABASE.url, SUPABASE.anonKey, {
 		db: { schema: SUPABASE.schema.memo },
-		auth: { persistSession: false, autoRefreshToken: false },
+		/** 로그인 클라이언트와 같은 storageKey를 쓰면 GoTrueClient 중복 경고가 나므로 키를 나눈다. */
+		auth: {
+			persistSession: false,
+			autoRefreshToken: false,
+			storageKey: "web-memo-public",
+		},
 	});
 
 let publicMemoSupabaseClient: ReturnType<

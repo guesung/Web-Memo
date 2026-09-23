@@ -261,6 +261,40 @@ jobs:
           RESULT: ${{ needs['cd-app'].result }}
         run: node .github/scripts/notify-thread-reply.mjs
 
+  # PR에서 빌드한 확장의 다운로드 링크를 PR 댓글로 답니다. 머지 전에 받아 설치해 볼 수 있게 하기 위해서입니다.
+  # 댓글은 PR마다 하나이고 푸시할 때마다 고쳐 씁니다. 판정은 notify-thread-reply와 같은 decideTargetReply라
+  # 확장 변경이 없거나(skipped) 취소되면 달지 않고, 실패하면 직전 링크를 실패로 덮어씁니다.
+  # 포크 PR은 토큰이 읽기 전용이라 댓글을 달 수 없으므로 잡을 띄우지 않습니다.
+  notify-pr-extension:
+    name: PR 확장 다운로드 댓글
+    needs: [changes, cd-extension]
+    if: ${{ always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && needs.changes.outputs.extension == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    # 아티팩트 목록 조회에 actions: read, 댓글 작성에 pull-requests: write가 필요합니다.
+    # 잡에 permissions를 적으면 나머지가 none이 되므로 체크아웃용 contents: read도 함께 적습니다.
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      # 댓글 스크립트는 의존성이 없습니다(fetch만 씁니다). pnpm install을 건너뜁니다.
+      - name: Comment extension download link
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          # PR 이벤트의 GITHUB_SHA는 base와 합친 가상 머지 커밋이라, 작성자가 푸시한 커밋을 따로 넘깁니다.
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          CHANGED: ${{ needs.changes.outputs.extension }}
+          RESULT: ${{ needs['cd-extension'].result }}
+        run: node .github/scripts/comment-pr-extension.mjs
+
   # 빌드 결과와 스토어 현황을 함께 Slack으로 알리고, 배포 버튼을 답니다.
   # 버튼을 누르면 apps/web의 /api/slack/interactivity가 release.yml을 실행합니다.
   # 모든 타깃이 끝난 뒤 머지 스레드의 마지막 댓글로 나갑니다. slack-thread는 알림용 needs이며,

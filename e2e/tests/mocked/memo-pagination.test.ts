@@ -151,14 +151,14 @@ test.describe("날짜별 메모 그리드 페이지 연결 (Mocked)", () => {
 		);
 		await expect(dateGroups.first().locator("h2 time")).toHaveCount(1);
 		const memoTitles = await memoRows
-			.locator("button > span:first-child")
+			.getByTestId("memo-title")
 			.allTextContents();
 		expect(new Set(memoTitles).size).toBe(26);
 		await expect(
-			page.getByRole("button", { name: /같은 시각 메모 01/ }),
+			page.getByTestId("memo-title").filter({ hasText: "같은 시각 메모 01" }),
 		).toHaveCount(1);
 		await expect(
-			page.getByRole("button", { name: /같은 시각 메모 21/ }),
+			page.getByTestId("memo-title").filter({ hasText: "같은 시각 메모 21" }),
 		).toHaveCount(1);
 
 		await page.setViewportSize({ width: 1440, height: 900 });
@@ -223,17 +223,62 @@ test.describe("날짜별 메모 그리드 페이지 연결 (Mocked)", () => {
 		expect(narrowSecondCard).not.toBeNull();
 		expect(narrowSecondCard?.x).toBeCloseTo(narrowFirstCard?.x ?? 0, 0);
 		expect(narrowSecondCard?.y).toBeGreaterThan(narrowFirstCard?.y ?? 0);
+		const horizontalOverflow = await page.evaluate(
+			() =>
+				document.documentElement.scrollWidth -
+				document.documentElement.clientWidth,
+		);
+		expect(horizontalOverflow).toBeLessThanOrEqual(1);
 	});
 
-	test("날짜별 카드를 누르면 해당 메모 id가 URL에 남고 상세 화면이 열린다.", async ({
+	test("원문 링크와 카드에 Enter를 누르면 각각 원문과 메모 상세가 열린다.", async ({
 		page,
 	}) => {
-		await page.getByRole("button", { name: /같은 시각 메모 21/ }).click();
+		const dateCard = page
+			.getByTestId("memo-date-grid")
+			.locator(".memo-item[id='21']");
+		await expect(dateCard).toHaveAttribute("role", "button");
+		await expect(dateCard.getByTestId("memo-title")).toHaveText(
+			"같은 시각 메모 21",
+		);
+		await expect(dateCard.getByText("Test memo content 21")).toBeVisible();
+		const sourceLink = dateCard.getByRole("link", {
+			name: /같은 시각 메모 21/,
+		});
+		const [sourcePage] = await Promise.all([
+			page.waitForEvent("popup"),
+			sourceLink.press("Enter"),
+		]);
+		await expect(sourcePage).toHaveURL("https://example.com/page-21");
+		await sourcePage.close();
+		await expect(page).toHaveURL(/\?view=list$/);
+
+		await dateCard.focus();
+		await page.keyboard.press("Enter");
 
 		await expect(page).toHaveURL(/\?view=list&id=21/);
 		await expect(page.getByTestId("memo-textarea")).toHaveValue(
 			"Test memo content 21",
 		);
+	});
+
+	test("날짜별 보기와 일반 카드에서 같은 제목과 본문을 표시한다.", async ({
+		page,
+	}) => {
+		const dateCard = page
+			.getByTestId("memo-date-grid")
+			.locator(".memo-item[id='2']");
+		await expect(dateCard.getByTestId("memo-title")).toHaveText(
+			"같은 시각 메모 02",
+		);
+		await expect(dateCard.getByText("Test memo content 2")).toBeVisible();
+
+		await page.getByRole("button", { name: "Grid view" }).click();
+		const regularCard = page.locator("#memo-grid .memo-item[id='2']");
+		await expect(regularCard.getByTestId("memo-title")).toHaveText(
+			"같은 시각 메모 02",
+		);
+		await expect(regularCard.getByText("Test memo content 2")).toBeVisible();
 	});
 
 	test("날짜별 보기에서 검색해도 기존 검색 조건으로 메모를 걸러낸다.", async ({
@@ -244,7 +289,7 @@ test.describe("날짜별 메모 그리드 페이지 연결 (Mocked)", () => {
 		await expect(page.getByTestId("memo-list-item")).toHaveCount(1);
 		await expect(page.getByText("1 memos")).toBeVisible();
 		await expect(
-			page.getByRole("button", { name: /전날 메모 1/ }),
+			page.getByTestId("memo-title").filter({ hasText: "전날 메모 1" }),
 		).toBeVisible();
 
 		await page.getByPlaceholder("Search memos").fill("존재하지 않는 메모");

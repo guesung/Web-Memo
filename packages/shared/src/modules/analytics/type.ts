@@ -88,7 +88,11 @@ export type TAnalyticsEvent =
 	| { name: "guide_step"; params: { step_name: string } }
 	| { name: "memo_first_write" }
 	| { name: "export_run"; params: { format: ExportFormat } }
-	| { name: "search_no_result" };
+	| { name: "search_no_result" }
+	| { name: "highlight_create" }
+	| { name: "highlight_bubble_disable" }
+	| { name: "notice_view"; params: { notice_id: number } }
+	| { name: "notice_dismiss"; params: { notice_id: number } };
 
 /** 이벤트 이름만 추린 유니온. */
 export type TAnalyticsEventName = TAnalyticsEvent["name"];
@@ -144,4 +148,8 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	memo_first_write: "core_action",
 	export_run: "core_action",
 	search_no_result: "engagement",
+	highlight_create: "core_action",
+	highlight_bubble_disable: "engagement",
+	notice_view: "engagement",
+	notice_dismiss: "engagement",
 };

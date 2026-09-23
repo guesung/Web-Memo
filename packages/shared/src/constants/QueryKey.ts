@@ -6,10 +6,13 @@ export interface HighlightsPaginatedKeyParams {
 	color?: string;
 }
 
+/** 조회와 캐시 갱신에서 공유하는 쿼리 키 및 부분 매칭 접두사. */
 export const QUERY_KEY = {
 	tab: () => ["tab"],
 	memos: () => ["memos"],
 	memo: (params: { url?: string; id?: number }) => ["memo", params],
+	/** 모든 페이지네이션 필터를 부분 매칭하며 휴지통 캐시는 포함하지 않는다. */
+	memosPaginatedPrefix: () => ["memos", "paginated"],
 	memosPaginated: (
 		category?: string,
 		isWish?: boolean,

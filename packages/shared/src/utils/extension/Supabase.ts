@@ -28,6 +28,16 @@ const createFeedbackSupabaseClient = () =>
 		db: { schema: SUPABASE.schema.feedback },
 	});
 
+const createPublicMemoSupabaseClient = () =>
+	createClient<Database, "memo">(SUPABASE.url, SUPABASE.anonKey, {
+		db: { schema: SUPABASE.schema.memo },
+		auth: { persistSession: false, autoRefreshToken: false },
+	});
+
+let publicMemoSupabaseClient: ReturnType<
+	typeof createPublicMemoSupabaseClient
+> | null = null;
+
 let memoSupabaseClient: ReturnType<typeof createMemoSupabaseClient> | null =
 	null;
 
@@ -84,6 +94,18 @@ export const getSupabaseClient = async () => {
 		}
 		throw new Error("로그인을 먼저 해주세요", { cause: error });
 	}
+};
+
+/**
+ * 세션 없이 공개 행만 읽는 memo 스키마 클라이언트를 재사용한다.
+ * @description 로그인 클라이언트와 저장소를 공유하지 않아 세션을 건드리지 않는다. 공지처럼 anon에게 열린 테이블 전용이다.
+ */
+export const getPublicMemoSupabaseClient = () => {
+	if (!publicMemoSupabaseClient) {
+		publicMemoSupabaseClient = createPublicMemoSupabaseClient();
+	}
+
+	return publicMemoSupabaseClient;
 };
 
 /** 피드백 스키마 전용 클라이언트를 재사용한다. */

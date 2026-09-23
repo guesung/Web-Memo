@@ -231,6 +231,7 @@ export {
 	type HighlightPageCursor,
 	HighlightService,
 } from "./supabase/highlightService";
+export { NoticeService } from "./supabase/noticeService";
 
 export class CategoryService {
 	supabaseClient: MemoSupabaseClient;

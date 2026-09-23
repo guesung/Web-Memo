@@ -1,3 +1,4 @@
+import type { HighlightColor } from "@web-memo/shared/constants";
 import type {
 	IFCreateHighlightPayload,
 	TCreateHighlightResponse,
@@ -14,6 +15,7 @@ import { normalizeUrl } from "@web-memo/shared/utils/url";
 export interface IFHighlightSelectionState {
 	x: number;
 	y: number;
+	aboveY: number;
 	isSaving: boolean;
 	message: string;
 	canSave: boolean;
@@ -30,14 +32,14 @@ interface IFHighlightControllerOptions {
 	/** false를 돌려주면 새 선택에 툴바를 띄우지 않는다. 생략하면 항상 띄운다. */
 	isSelectionEnabled?: () => boolean;
 	/** 저장이 성공해 하이라이트를 그린 뒤 한 번 불린다. */
-	onSaveSuccess?: () => void;
+	onSaveSuccess?: (color: HighlightColor) => void;
 }
 
 /** 선택 해제 전에 앵커를 보관하며 한 번에 하나만 저장하고 성공한 결과만 그린다. */
 export const createHighlightController = (
 	options: IFHighlightControllerOptions,
 ) => {
-	let selectionPayload: IFCreateHighlightPayload | null = null;
+	let selectionPayload: Omit<IFCreateHighlightPayload, "color"> | null = null;
 	let state: IFHighlightSelectionState | null = null;
 	let isSaving = false;
 	let isStopped = false;
@@ -47,7 +49,7 @@ export const createHighlightController = (
 	const savedAnchors = new Set<string>();
 	const rowsById = new Map<number, HighlightRow>();
 	const deletedIds = new Set<number>();
-	const getAnchorKey = (payload: IFCreateHighlightPayload) =>
+	const getAnchorKey = (payload: Omit<IFCreateHighlightPayload, "color">) =>
 		JSON.stringify([payload.anchor.exact, payload.anchor.textPositionStart]);
 	const emit = () => options.onSelectionChange(state);
 	const clearSelectionState = () => {
@@ -113,6 +115,7 @@ export const createHighlightController = (
 		state = {
 			x: Math.max(8, Math.min(bounds.left, window.innerWidth - 250)),
 			y: Math.max(8, Math.min(bounds.bottom + 8, window.innerHeight - 90)),
+			aboveY: Math.max(8, bounds.top - 44),
 			isSaving: false,
 			message: "",
 			canSave: false,
@@ -158,24 +161,26 @@ export const createHighlightController = (
 			emit();
 		}
 	};
-	const save = async () => {
+	const save = async (
+		color: HighlightColor = "yellow",
+	): Promise<HighlightRow | null> => {
 		checkPage();
 		const payload = selectionPayload;
 		const saveGeneration = pageGeneration;
 		if (!payload || !state || isSaving || isStopped) {
-			return;
+			return null;
 		}
 		if (savedAnchors.has(getAnchorKey(payload))) {
 			state = { ...state, message: "highlight_duplicate", canSave: false };
 			emit();
 
-			return;
+			return null;
 		}
 		isSaving = true;
 		state = { ...state, isSaving: true, message: "" };
 		emit();
 		try {
-			const response = await options.requestCreate(payload);
+			const response = await options.requestCreate({ ...payload, color });
 			if (
 				isStopped ||
 				saveGeneration !== pageGeneration ||
@@ -183,7 +188,7 @@ export const createHighlightController = (
 			) {
 				checkPage();
 
-				return;
+				return null;
 			}
 			if (!response?.success) {
 				state = {
@@ -196,19 +201,21 @@ export const createHighlightController = (
 				};
 				emit();
 
-				return;
+				return null;
 			}
 			savedAnchors.add(getAnchorKey(payload));
 			rowsById.set(response.highlight.id, response.highlight);
 			const range = resolveAnchor(payload.anchor);
 			if (range) {
-				options.renderer.add(response.highlight.id, range, "yellow");
+				options.renderer.add(response.highlight.id, range, color);
 			}
 			selectionPayload = null;
 			state = null;
 			document.getSelection()?.removeAllRanges();
 			emit();
-			options.onSaveSuccess?.();
+			options.onSaveSuccess?.(color);
+
+			return response.highlight;
 		} catch {
 			if (
 				!isStopped &&
@@ -222,6 +229,8 @@ export const createHighlightController = (
 		} finally {
 			isSaving = false;
 		}
+
+		return null;
 	};
 	document.addEventListener("selectionchange", handleSelectionChange);
 	document.addEventListener("mouseup", handleSelectionEnd);

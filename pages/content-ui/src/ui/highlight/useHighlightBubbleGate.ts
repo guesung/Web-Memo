@@ -16,6 +16,13 @@ export const useHighlightBubbleGate = () => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [isBubbleEnabled, setIsBubbleEnabled] = useState<boolean | null>(null);
 	const [isIntroSeen, setIsIntroSeen] = useState<boolean | null>(null);
+	const [disabledSites, setDisabledSites] = useState<string[] | null>(null);
+	const [bubblePosition, setBubblePosition] = useState<"above" | "below">(
+		"below",
+	);
+	const [positionSettingStatus, setPositionSettingStatus] = useState<
+		"loading" | "ready" | "error"
+	>("loading");
 	useEffect(() => {
 		let isStopped = false;
 		let loginGeneration = 0;
@@ -35,19 +42,26 @@ export const useHighlightBubbleGate = () => {
 		};
 		const readSettings = async () => {
 			try {
-				const [storedBubbleEnabled, storedIntroSeen] = await Promise.all([
-					ChromeSyncStorage.get<boolean | undefined>(
-						STORAGE_KEYS.highlightBubbleEnabled,
-					),
-					ChromeSyncStorage.get<boolean | undefined>(
-						STORAGE_KEYS.highlightIntroSeen,
-					),
-				]);
+				const [storedBubbleEnabled, storedIntroSeen, storedDisabledSites] =
+					await Promise.all([
+						ChromeSyncStorage.get<boolean | undefined>(
+							STORAGE_KEYS.highlightBubbleEnabled,
+						),
+						ChromeSyncStorage.get<boolean | undefined>(
+							STORAGE_KEYS.highlightIntroSeen,
+						),
+						ChromeSyncStorage.get<string[] | undefined>(
+							STORAGE_KEYS.highlightDisabledSites,
+						),
+					]);
 				if (isStopped) {
 					return;
 				}
 				setIsBubbleEnabled(storedBubbleEnabled ?? true);
 				setIsIntroSeen(storedIntroSeen === true);
+				setDisabledSites(
+					Array.isArray(storedDisabledSites) ? storedDisabledSites : [],
+				);
 			} catch {
 				/** 설정을 읽지 못하면 null로 남겨 버블을 막는다. */
 			}
@@ -63,6 +77,10 @@ export const useHighlightBubbleGate = () => {
 				STORAGE_KEYS.highlightIntroSeen,
 				(value) => setIsIntroSeen(value === true),
 			),
+			ChromeSyncStorage.subscribe<string[]>(
+				STORAGE_KEYS.highlightDisabledSites,
+				(value) => setDisabledSites(Array.isArray(value) ? value : []),
+			),
 			/** Supabase 세션은 STORAGE_KEYS 밖의 키로 sync에 저장된다(utils/extension/Supabase.ts와 같은 단언). */
 			ChromeSyncStorage.subscribe(SUPABASE.authToken as StorageKeyType, () => {
 				void refreshLoginStatus();
@@ -76,9 +94,48 @@ export const useHighlightBubbleGate = () => {
 			}
 		};
 	}, []);
+	useEffect(() => {
+		let isStopped = false;
+		const readBubblePosition = async () => {
+			try {
+				const value = await ChromeSyncStorage.get<
+					"above" | "below" | undefined
+				>(STORAGE_KEYS.highlightBubblePosition);
+				if (!isStopped) {
+					setBubblePosition(value === "above" ? "above" : "below");
+					setPositionSettingStatus("ready");
+				}
+			} catch (error) {
+				if (!isStopped) {
+					setPositionSettingStatus("error");
+					console.error("[DB-1017:highlightBubblePosition:readFailed]", error);
+				}
+			}
+		};
+		void readBubblePosition();
+		const unsubscribe = ChromeSyncStorage.subscribe<"above" | "below">(
+			STORAGE_KEYS.highlightBubblePosition,
+			(value) => {
+				setBubblePosition(value === "above" ? "above" : "below");
+				setPositionSettingStatus("ready");
+			},
+		);
+
+		return () => {
+			isStopped = true;
+			unsubscribe();
+		};
+	}, []);
 
 	return {
-		isBubbleAllowed: isLoggedIn && isBubbleEnabled === true,
+		isBubbleAllowed:
+			isLoggedIn &&
+			isBubbleEnabled === true &&
+			disabledSites !== null &&
+			!disabledSites.includes(location.hostname),
 		isIntroPending: isIntroSeen === false,
+		bubblePosition,
+		positionSettingStatus,
+		setBubblePosition,
 	};
 };

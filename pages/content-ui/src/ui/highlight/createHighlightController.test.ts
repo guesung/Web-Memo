@@ -79,6 +79,32 @@ describe("확장 하이라이트 생성", () => {
 		});
 		expect(renderer.add).toHaveBeenCalledWith(1, expect.any(Range), "yellow");
 	});
+	it("선택한 색상으로 생성 요청하고 해당 색으로 즉시 그린다", async () => {
+		const renderer = createRenderer();
+		const requestCreate = vi.fn(
+			async () =>
+				({
+					success: true,
+					highlight: { ...ROW, color: "green" },
+				}) as TCreateHighlightResponse,
+		);
+		const onSaveSuccess = vi.fn();
+		const controller = createHighlightController({
+			renderer,
+			requestCreate,
+			onSelectionChange: vi.fn(),
+			onSaveSuccess,
+		});
+		stop = controller.stop;
+		selectText();
+		const row = await controller.save("green");
+		expect(requestCreate).toHaveBeenCalledWith(
+			expect.objectContaining({ color: "green" }),
+		);
+		expect(renderer.add).toHaveBeenCalledWith(1, expect.any(Range), "green");
+		expect(onSaveSuccess).toHaveBeenCalledWith("green");
+		expect(row).toMatchObject({ color: "green" });
+	});
 	it("저장 중 연속 클릭은 하나의 요청만 보내고 저장 전에는 표시하지 않는다", async () => {
 		let resolveRequest: (response: TCreateHighlightResponse) => void = () => {};
 		const requestCreate = vi.fn(

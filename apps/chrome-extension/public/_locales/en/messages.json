@@ -281,5 +281,11 @@
 	},
 	"highlight_bubble_setting_save_failed": {
 		"message": "Couldn't save. Please try again."
+	},
+	"notice_dismiss_label": {
+		"message": "Dismiss notice"
+	},
+	"notice_link_default_label": {
+		"message": "Learn more"
 	}
 }

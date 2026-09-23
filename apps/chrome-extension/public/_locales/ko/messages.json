@@ -281,5 +281,11 @@
 	},
 	"highlight_bubble_setting_save_failed": {
 		"message": "저장하지 못했어요. 다시 시도해 주세요."
+	},
+	"notice_dismiss_label": {
+		"message": "공지 닫기"
+	},
+	"notice_link_default_label": {
+		"message": "자세히 보기"
 	}
 }

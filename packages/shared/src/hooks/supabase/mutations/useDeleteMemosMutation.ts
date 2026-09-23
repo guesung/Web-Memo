@@ -3,6 +3,7 @@ import {
 	useMutation,
 	useQueryClient,
 } from "@tanstack/react-query";
+import { QUERY_KEY } from "../../../constants";
 import { analytics } from "../../../modules/analytics";
 import type { GetMemoResponse, MemoSupabaseResponse } from "../../../types";
 import { MemoService } from "../../../utils";
@@ -26,10 +27,10 @@ export default function useDeleteMemosMutation() {
 		},
 		mutationFn: new MemoService(supabaseClient).deleteMemos,
 		onMutate: async (idList) => {
-			await queryClient.cancelQueries({ queryKey: ["memos"] });
+			await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
 
 			queryClient.setQueriesData<InfiniteData<MemosPageData>>(
-				{ queryKey: ["memos", "paginated"] },
+				{ queryKey: QUERY_KEY.memosPaginatedPrefix() },
 				(oldData) => {
 					if (!oldData) return oldData;
 
@@ -56,7 +57,7 @@ export default function useDeleteMemosMutation() {
 			});
 		},
 		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: ["memos"] });
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
 		},
 	});
 }

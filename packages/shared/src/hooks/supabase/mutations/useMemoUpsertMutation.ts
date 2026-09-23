@@ -123,7 +123,9 @@ export default function useMemoUpsertMutation() {
 				await analytics.trackEvent({ name: "memo_first_write" });
 			}
 
-			queryClient.invalidateQueries({ queryKey: ["memos", "paginated"] });
+			queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.memosPaginatedPrefix(),
+			});
 
 			const newMemo = result.data?.[0];
 			if (!newMemo || !context?.normalizedUrl) return;

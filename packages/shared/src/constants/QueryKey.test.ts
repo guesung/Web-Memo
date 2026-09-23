@@ -1,3 +1,4 @@
+import { QueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "./QueryKey";
 
 describe("QUERY_KEY.memosPaginated", () => {
@@ -115,5 +116,33 @@ describe("대시보드 통계 쿼리 키", () => {
 		expect(QUERY_KEY.userGrowth(7, true)).not.toEqual(
 			QUERY_KEY.userGrowth(30, true),
 		);
+	});
+});
+
+describe("QUERY_KEY.memosPaginatedPrefix", () => {
+	it("모든 목록 필터를 무효화하고 휴지통 캐시는 유지한다", async () => {
+		const queryClient = new QueryClient();
+		const unfilteredKey = QUERY_KEY.memosPaginated();
+		const filteredKey = QUERY_KEY.memosPaginated(
+			"book",
+			true,
+			"query",
+			"title",
+			true,
+			true,
+		);
+		const deletedKey = QUERY_KEY.deletedMemos();
+		for (const key of [unfilteredKey, filteredKey, deletedKey]) {
+			queryClient.setQueryData(key, []);
+		}
+
+		await queryClient.invalidateQueries({
+			queryKey: QUERY_KEY.memosPaginatedPrefix(),
+		});
+
+		expect(queryClient.getQueryState(unfilteredKey)?.isInvalidated).toBe(true);
+		expect(queryClient.getQueryState(filteredKey)?.isInvalidated).toBe(true);
+		expect(queryClient.getQueryState(deletedKey)?.isInvalidated).toBe(false);
+		queryClient.clear();
 	});
 });

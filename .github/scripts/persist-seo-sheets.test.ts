@@ -39,7 +39,8 @@ describe("SEO Google Sheets 적재 CLI", () => {
 	it("보고서를 읽고 실행 키와 함께 멱등 적재한다", async () => {
 		readFile
 			.mockResolvedValueOnce(JSON.stringify({ generatedAt: "2026-09-22T00:00:00Z" }))
-			.mockResolvedValueOnce(JSON.stringify({ status: "passed" }));
+			.mockResolvedValueOnce(JSON.stringify({ status: "passed" }))
+			.mockResolvedValueOnce(JSON.stringify({ status: "good", delivered: true }));
 		const result = await persistSeoReportsToSheets({
 			spreadsheetId: "sheet-id",
 			serviceAccountJson: JSON.stringify({
@@ -58,6 +59,7 @@ describe("SEO Google Sheets 적재 CLI", () => {
 				githubRunId: "123",
 				githubRunAttempt: "2",
 				commitSha: "abc",
+				aiReport: { status: "good", delivered: true },
 			}),
 		);
 		expect(upsertGoogleSheetTables).toHaveBeenCalledWith(

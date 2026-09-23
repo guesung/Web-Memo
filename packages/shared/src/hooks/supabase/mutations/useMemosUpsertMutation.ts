@@ -1,70 +1,36 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { NoMemosError, QUERY_KEY } from "../../../constants";
-import type {
-	GetMemoResponse,
-	MemoRow,
-	MemoSupabaseResponse,
-} from "../../../types";
+import { QUERY_KEY } from "../../../constants";
+import type { GetMemoResponse } from "../../../types";
 import { MemoService } from "../../../utils";
 
 import { useSupabaseClientQuery } from "../queries";
 
-type MutationVariables = GetMemoResponse[];
-type MutationData = Awaited<ReturnType<MemoService["upsertMemos"]>>;
-type MutationError = Error;
+/** 일괄 메모 저장의 MutationVariables 계약이다. */
+type TMutationVariables = GetMemoResponse[];
+/** 일괄 메모 저장의 MutationData 계약이다. */
+type TMutationData = Awaited<ReturnType<MemoService["upsertMemos"]>>;
+/** 일괄 메모 저장의 MutationError 계약이다. */
+type TMutationError = Error;
 
-export default function useMemosUpsertMutation() {
+/** 메모를 일괄 저장한 뒤 카테고리와 메모 목록 캐시를 갱신한다. */
+const useMemosUpsertMutation = () => {
 	const queryClient = useQueryClient();
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
-	return useMutation<MutationData, MutationError, MutationVariables>({
+	return useMutation<TMutationData, TMutationError, TMutationVariables>({
 		meta: {
 			feature: "memo",
 			operation: "bulk-upsert",
 			stage: "save",
 		},
 		mutationFn: new MemoService(supabaseClient).upsertMemos,
-		onMutate: async (memoRequest) => {
-			await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
-			const previousMemos = queryClient.getQueryData<MemoSupabaseResponse>(
-				QUERY_KEY.memos(),
-			);
-
-			if (!previousMemos) throw new NoMemosError();
-
-			const { data: previousMemosData } = previousMemos;
-
-			if (!previousMemosData) throw new NoMemosError();
-
-			const updatedMemosData = [...previousMemosData];
-
-			memoRequest.forEach((memo) => {
-				const currentMemoIndex = updatedMemosData.findIndex(
-					(previousMemo) => previousMemo.id === memo.id,
-				);
-				const currentMemoBase = updatedMemosData.find(
-					(previousMemo) => previousMemo.id === memo.id,
-				);
-
-				if (currentMemoIndex === -1 || !currentMemoBase)
-					updatedMemosData.unshift(memo as MemoRow);
-				else
-					updatedMemosData.splice(currentMemoIndex, 1, {
-						...currentMemoBase,
-						...memo,
-					});
-			});
-
-			await queryClient.setQueryData(QUERY_KEY.memos(), {
-				...previousMemos,
-				data: updatedMemosData,
-			});
-
-			return { previousMemos };
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() });
-			queryClient.invalidateQueries({ queryKey: ["memos", "paginated"] });
+		onSuccess: async () => {
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: QUERY_KEY.category() }),
+				queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() }),
+			]);
 		},
 	});
-}
+};
+
+export default useMemosUpsertMutation;

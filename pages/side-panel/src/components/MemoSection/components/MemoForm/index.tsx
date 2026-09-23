@@ -88,11 +88,19 @@ function MemoFormContent() {
 		onCategoryChange: updateCategory,
 	});
 
-	const { isLoading: isSuggestingCategory, triggerSuggestion } =
-		useCategorySuggestion({
-			currentCategoryId,
-			onCategorySelect: (categoryId) => updateCategory(categoryId, "ai"),
-		});
+	const {
+		isLoading: isSuggestingCategory,
+		triggerSuggestion,
+		dismissCurrentUrl,
+	} = useCategorySuggestion({
+		currentCategoryId,
+		onCategorySelect: updateCategory,
+	});
+
+	const handleCategoryRemoveClick = () => {
+		handleCategoryRemove();
+		dismissCurrentUrl();
+	};
 
 	const handleMemoStatusClick = async (statusKey: TMemoStatusKey) => {
 		const nextStatusValue = await toggleMemoStatus(statusKey);
@@ -320,7 +328,7 @@ function MemoFormContent() {
 								<XIcon
 									size={12}
 									className="hover:text-destructive ml-1 cursor-pointer"
-									onClick={handleCategoryRemove}
+									onClick={handleCategoryRemoveClick}
 								/>
 							</Badge>
 						)}

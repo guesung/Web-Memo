@@ -26,7 +26,18 @@ export default function useMemoPatchMutation() {
 			operation: "patch",
 			stage: "save",
 		},
-		mutationFn: new MemoService(supabaseClient).updateMemo,
+		mutationFn: async (variables) => {
+			const result = await new MemoService(supabaseClient).updateMemo(
+				variables,
+			);
+
+			// supabase-js는 실패를 throw하지 않고 error로 돌려준다. 던지지 않으면 onError·토스트·호출부 롤백이 모두 건너뛰고 성공 이벤트까지 나간다.
+			if (result.error) {
+				throw result.error;
+			}
+
+			return result;
+		},
 		onSuccess: async (_, { request, categorySource }) => {
 			await analytics.trackMemoUpdate(request, { categorySource });
 			queryClient.invalidateQueries({

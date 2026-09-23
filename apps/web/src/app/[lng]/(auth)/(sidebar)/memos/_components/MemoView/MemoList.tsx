@@ -26,6 +26,20 @@ const MemoList = (props: IFMemoListProps) => {
 	const [renderedGroupMemoIds, setRenderedGroupMemoIds] = useState<
 		Record<string, string>
 	>({});
+	const visibleDateKeys = new Set(groups.map((group) => group.dateKey));
+	const hasUnmountedDateGroup = Object.keys(renderedGroupMemoIds).some(
+		(dateKey) => !visibleDateKeys.has(dateKey),
+	);
+	/** 사라진 그룹의 완료 기록은 재마운트 전에 제거해 이전 인스턴스의 배치를 재사용하지 않는다. */
+	if (hasUnmountedDateGroup) {
+		setRenderedGroupMemoIds(
+			Object.fromEntries(
+				Object.entries(renderedGroupMemoIds).filter(([dateKey]) =>
+					visibleDateKeys.has(dateKey),
+				),
+			),
+		);
+	}
 	/** 초기 높이가 0인 Masonry와 새 페이지의 배치가 끝나기 전에는 다음 조회를 막는다. */
 	const isLayoutReady = groups.every(
 		(group) =>

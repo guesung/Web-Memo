@@ -7,6 +7,12 @@ import type {
 } from "../../types";
 import { getMemoSearchFilter } from "../memoSearchFilter";
 
+/** 날짜 정렬에서 같은 시각의 메모까지 이어 읽는 복합 커서. */
+export interface IFMemoPageCursor {
+	value: string | null;
+	id: MemoRow["id"];
+}
+
 /** 메모 조회와 저장 및 휴지통 작업을 처리한다. */
 export class MemoService {
 	supabaseClient: MemoSupabaseClient;
@@ -88,6 +94,7 @@ export class MemoService {
 		return { ...firstBatch, data };
 	};
 
+	/** 정렬 값과 id 순서로 메모 페이지를 조회한다. 문자열 커서는 기존 호출에서 사용한다. */
 	getMemosPaginated = async ({
 		cursor,
 		limit = 20,
@@ -98,7 +105,7 @@ export class MemoService {
 		searchQuery,
 		sortBy = "updated_at",
 	}: {
-		cursor?: string;
+		cursor?: string | IFMemoPageCursor;
 		limit?: number;
 		category?: string;
 		isWish?: boolean;
@@ -118,15 +125,25 @@ export class MemoService {
 			.from(SUPABASE.table.memo)
 			.select(selectQuery, { count: "exact" })
 			.is("deleted_at", null)
-			.order(sortBy, { ascending })
+			.order(
+				sortBy,
+				ascending ? { ascending } : { ascending, nullsFirst: false },
+			)
 			.order("id", { ascending })
 			.limit(limit);
 
 		if (cursor) {
-			if (sortBy === "title") {
-				query = query.gt("title", cursor);
+			if (typeof cursor === "string") {
+				query = ascending ? query.gt(sortBy, cursor) : query.lt(sortBy, cursor);
+			} else if (cursor.value === null) {
+				query = query.is(sortBy, null).lt("id", cursor.id);
 			} else {
-				query = query.lt(sortBy, cursor);
+				const operator = ascending ? "gt" : "lt";
+				const value = JSON.stringify(cursor.value);
+				const cursorFilter = `${sortBy}.${operator}.${value},and(${sortBy}.eq.${value},id.${operator}.${cursor.id})`;
+				query = query.or(
+					ascending ? cursorFilter : `${cursorFilter},${sortBy}.is.null`,
+				);
 			}
 		}
 

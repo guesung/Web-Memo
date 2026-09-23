@@ -12,7 +12,7 @@ import type { TMemoFilter } from "../../_types";
 import MemoSearchForm from "../MemoSearchForm";
 import MemoSearchFormProvider from "../MemoSearchFormProvider";
 import MemoView from "../MemoView";
-import { MemoGridSkeleton } from "../MemoView/MemoGrid";
+import { MemoViewSkeleton } from "../MemoView/MemoListSkeleton";
 
 interface IFMemoPageProps extends LanguageType {
 	/** 이 화면이 보여줄 메모의 범위. 넘기지 않으면 전체를 본다 */
@@ -53,7 +53,7 @@ export default async function MemoPage({
 						<div className="mb-6">
 							<MemoSearchForm lng={lng} />
 						</div>
-						<Suspense fallback={<MemoGridSkeleton />}>
+						<Suspense fallback={<MemoViewSkeleton />}>
 							<MemoView lng={lng} filter={filter} />
 						</Suspense>
 					</MemoSearchFormProvider>

@@ -28,7 +28,7 @@ export {
 	type HighlightPageCursor,
 	HighlightService,
 } from "./supabase/highlightService";
-export { MemoService } from "./supabase/memoService";
+export { type IFMemoPageCursor, MemoService } from "./supabase/memoService";
 /** NoticeService 도메인 서비스의 기존 공개 경로를 유지한다. */
 export { NoticeService } from "./supabase/noticeService";
 /** SettingService 도메인 서비스의 기존 공개 경로를 유지한다. */

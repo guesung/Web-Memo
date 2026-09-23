@@ -45,9 +45,9 @@ export const handleEditHighlight = async (request: IFEditHighlightRequest): Prom
   const scope = { url, userId: data.user.id };
   const result = payload.action === "delete"
    ? await service.deleteHighlight(payload.id, scope)
-   : await service.updateHighlight({ id: payload.id, request: { color: payload.color }, scope });
+   : await service.updateHighlight({ id: payload.id, request: payload.action === "note" ? { note: payload.note } : { color: payload.color }, scope });
   const row = result.data?.[0];
-  if (result.error || result.data?.length !== 1 || !row || row.id !== payload.id || row.url !== url || row.user_id !== data.user.id || (payload.action === "color" && row.color !== payload.color)) {
+  if (result.error || result.data?.length !== 1 || !row || row.id !== payload.id || row.url !== url || row.user_id !== data.user.id || (payload.action === "color" && row.color !== payload.color) || (payload.action === "note" && row.note !== payload.note)) {
    reportEditFailure(result.error ? "database_error" : "empty_result");
    return { success: false, error: "save_failed" };
   }
@@ -68,5 +68,5 @@ const isValidPayload = (payload: unknown): payload is IFEditHighlightPayload => 
  }
  const input = payload as Partial<IFEditHighlightPayload>;
 
- return Number.isSafeInteger(input.id) && Number(input.id) > 0 && typeof input.url === "string" && input.url.length <= 8192 && (input.action === "delete" || (input.action === "color" && HIGHLIGHT_COLORS.some((color) => color === input.color)));
+ return Number.isSafeInteger(input.id) && Number(input.id) > 0 && typeof input.url === "string" && input.url.length <= 8192 && (input.action === "delete" || (input.action === "note" && typeof input.note === "string" && input.note.length <= 5000) || (input.action === "color" && HIGHLIGHT_COLORS.some((color) => color === input.color)));
 };

@@ -1,4 +1,5 @@
 import type { CONFIG } from "@web-memo/env";
+import type { HighlightColor } from "../../constants/Highlight";
 import type { ExportFormat } from "../../utils/Export";
 
 declare global {
@@ -89,8 +90,11 @@ export type TAnalyticsEvent =
 	| { name: "memo_first_write" }
 	| { name: "export_run"; params: { format: ExportFormat } }
 	| { name: "search_no_result" }
-	| { name: "highlight_create" }
-	| { name: "highlight_bubble_disable" }
+	| {
+			name: "highlight_create";
+			params: { color: HighlightColor; has_note: boolean };
+	  }
+	| { name: "highlight_bubble_disable"; params: { scope: "site" | "all" } }
 	| { name: "notice_view"; params: { notice_id: number } }
 	| { name: "notice_dismiss"; params: { notice_id: number } };
 

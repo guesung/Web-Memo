@@ -473,6 +473,14 @@
 		"actionItemPlaceholder": "Write what to do after reading this page"
 	},
 	"memos": {
+		"view": {
+			"unknownDate": "No creation date",
+			"label": "Memo view",
+			"list": "List view",
+			"untitled": "Untitled memo",
+			"emptyContent": "This memo has no content",
+			"loadMore": "Load more"
+		},
 		"emptyState": {
 			"title": "Create your first memo",
 			"message": "No memos yet. Open the side panel to start writing memos.",

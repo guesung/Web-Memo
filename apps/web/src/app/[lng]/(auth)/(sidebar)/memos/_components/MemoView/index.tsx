@@ -14,6 +14,14 @@ import type { TMemoFilter } from "../../_types";
 import type { SearchFormValues } from "../MemoSearchFormProvider";
 import { useMemoHighlights } from "./_hooks/useMemoHighlights";
 import MemoGrid from "./MemoGrid";
+import { MemoListSkeleton } from "./MemoListSkeleton";
+import MemoViewToggle from "./MemoViewToggle";
+
+/** 현지 날짜는 브라우저에서 계산하여 서버 시간대의 영향을 받지 않는다. */
+const MemoList = dynamic(() => import("./MemoList"), {
+	ssr: false,
+	loading: () => <MemoListSkeleton />,
+});
 
 const MemoRefreshButton = dynamic(() => import("./MemoRefreshButton"), {
 	ssr: false,
@@ -28,11 +36,13 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 
 	// 카테고리는 사이드바 하단에서 고르는 가로지르는 조건이라 필터와 달리 쿼리로 남는다.
 	const category = searchParams.get("category") ?? "";
+	const isListView = searchParams.get("view") === "list";
 	const searchQuery = watch("searchQuery");
 
 	const { memos, totalCount, hasNextPage, isFetchingNextPage, fetchNextPage } =
 		useMemosInfiniteQuery({
 			category,
+			sortBy: isListView ? "created_at" : "updated_at",
 			isWish: getWishlistFilter(filter),
 			isStar: filter === "star" ? true : undefined,
 			isReading: filter === "reading" ? true : undefined,
@@ -40,7 +50,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 		});
 
 	const { highlightsByUrl, isHighlightLoadError, refetchHighlights } =
-		useMemoHighlights(memos.map((memo) => memo.url));
+		useMemoHighlights(isListView ? [] : memos.map((memo) => memo.url));
 
 	const { moveNextGuideStep } = useGuide({ lng });
 	useDidMount(async () => {
@@ -61,7 +71,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 	 * 검색어와 id(메모 다이얼로그)는 넣지 않는다. 넣으면 글자를 칠 때마다,
 	 * 다이얼로그를 여닫을 때마다 그리드가 통째로 다시 그려진다.
 	 */
-	const tabKey = `${category}|${filter}`;
+	const tabKey = `${category}|${filter}|${isListView}`;
 
 	/**
 	 * 탭이 바뀌면 목록을 맨 위에서 보여준다.
@@ -84,7 +94,8 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 						<span className="w-2 h-2 bg-primary rounded-full" />
 						{t("memos.totalMemos", { total: totalCount })}
 					</p>
-					<div className="flex">
+					<div className="flex items-center gap-2">
+						<MemoViewToggle lng={lng} />
 						<MemoRefreshButton lng={lng} onGuideNext={moveNextGuideStep} />
 					</div>
 				</div>
@@ -105,16 +116,28 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 					</button>
 				</div>
 			)}
-			<MemoGrid
-				key={tabKey}
-				lng={lng}
-				memos={memos}
-				highlightsByUrl={highlightsByUrl}
-				searchQuery={searchQuery}
-				hasNextPage={hasNextPage}
-				isFetchingNextPage={isFetchingNextPage}
-				fetchNextPage={fetchNextPage}
-			/>
+			{isListView ? (
+				<MemoList
+					key={tabKey}
+					lng={lng}
+					memos={memos}
+					searchQuery={searchQuery}
+					hasNextPage={hasNextPage}
+					isFetchingNextPage={isFetchingNextPage}
+					fetchNextPage={fetchNextPage}
+				/>
+			) : (
+				<MemoGrid
+					key={tabKey}
+					lng={lng}
+					memos={memos}
+					highlightsByUrl={highlightsByUrl}
+					searchQuery={searchQuery}
+					hasNextPage={hasNextPage}
+					isFetchingNextPage={isFetchingNextPage}
+					fetchNextPage={fetchNextPage}
+				/>
+			)}
 		</div>
 	);
 };

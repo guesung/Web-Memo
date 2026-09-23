@@ -468,6 +468,14 @@
 		"actionItemPlaceholder": "이 페이지를 보고 할 일을 적어보세요"
 	},
 	"memos": {
+		"view": {
+			"unknownDate": "작성일 없음",
+			"label": "메모 보기",
+			"list": "목록으로 보기",
+			"untitled": "제목 없는 메모",
+			"emptyContent": "내용이 없는 메모예요",
+			"loadMore": "더 보기"
+		},
 		"emptyState": {
 			"title": "첫 메모를 작성해보세요",
 			"message": "아직 메모가 없어요. 사이드 패널을 열어 메모를 작성해보세요.",

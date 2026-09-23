@@ -29,6 +29,7 @@ export default function useMemoCategory({
 	const commandInputRef = useRef<HTMLInputElement>(null);
 	const categoryPopupRef = useRef<HTMLDivElement>(null);
 	const categoryBadgeButtonRef = useRef<HTMLButtonElement>(null);
+	const categoryAddChipRef = useRef<HTMLButtonElement>(null);
 	const categoryPopupTriggerRef = useRef<HTMLElement | null>(null);
 	const cursorPositionRef = useRef<number | null>(null);
 
@@ -188,6 +189,11 @@ export default function useMemoCategory({
 
 	const handleCategoryRemove = () => {
 		onCategoryChange(null, "button");
+
+		// 배지가 사라지고 칩이 새로 그려지므로, 키보드 포커스가 허공에 남지 않게 칩으로 옮긴다.
+		setTimeout(() => {
+			categoryAddChipRef.current?.focus();
+		}, 0);
 	};
 
 	const handleCategoryListClose = () => {
@@ -207,6 +213,7 @@ export default function useMemoCategory({
 		commandInputRef,
 		categoryPopupRef,
 		categoryBadgeButtonRef,
+		categoryAddChipRef,
 		handleKeyDown,
 		handleCategoryButtonClick,
 		handleCategorySelect,

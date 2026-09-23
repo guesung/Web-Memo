@@ -4,6 +4,8 @@ import { PlusIcon } from "lucide-react";
 
 /** 카테고리 추가 칩 props */
 interface IFCategoryAddChipProps {
+	/** 해제 직후 포커스를 받을 칩 ref */
+	chipRef: React.RefObject<HTMLButtonElement | null>;
 	/** 칩 클릭. 칩 기준으로 카테고리 팝업을 연다 */
 	onChipClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
@@ -16,6 +18,7 @@ interface IFCategoryAddChipProps {
 const CategoryAddChip = (props: IFCategoryAddChipProps) => {
 	return (
 		<button
+			ref={props.chipRef}
 			type="button"
 			data-testid="category-add-chip"
 			title={I18n.get("category_add_hash_hint")}

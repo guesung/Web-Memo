@@ -30,6 +30,8 @@ interface IFCategoryCommandPopupProps {
 	onCategorySelect: (category: CategoryRow) => void;
 	/** 검색창에서 Esc */
 	onEscapeKeyDown: () => void;
+	/** 웹 설정 링크 선택. 웹에서 만든 카테고리를 다시 열 때 refetch로 받도록 팝업을 닫는다 */
+	onWebLinkSelect: () => void;
 }
 
 /**
@@ -46,6 +48,7 @@ const CategoryCommandPopup = (props: IFCategoryCommandPopupProps) => {
 			params: { from: "side_panel_category" },
 		});
 		Tab.create({ url: `${CONFIG.webUrl}${PATHS.memosSetting}` });
+		props.onWebLinkSelect();
 	};
 
 	return (

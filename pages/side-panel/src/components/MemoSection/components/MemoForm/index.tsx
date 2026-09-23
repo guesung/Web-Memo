@@ -69,6 +69,7 @@ function MemoFormContent() {
 		commandInputRef,
 		categoryPopupRef,
 		categoryBadgeButtonRef,
+		categoryAddChipRef,
 		handleKeyDown,
 		handleCategoryButtonClick,
 		handleCategorySelect,
@@ -311,7 +312,10 @@ function MemoFormContent() {
 								onRemoveButtonClick={handleCategoryRemoveClick}
 							/>
 						) : (
-							<CategoryAddChip onChipClick={handleCategoryButtonClick} />
+							<CategoryAddChip
+								chipRef={categoryAddChipRef}
+								onChipClick={handleCategoryButtonClick}
+							/>
 						)}
 					</div>
 				</div>
@@ -326,6 +330,7 @@ function MemoFormContent() {
 					currentCategoryId={currentCategoryId}
 					onCategorySelect={handleCategorySelect}
 					onEscapeKeyDown={handleCategoryListClose}
+					onWebLinkSelect={handleCategoryListClose}
 				/>
 			)}
 		</>

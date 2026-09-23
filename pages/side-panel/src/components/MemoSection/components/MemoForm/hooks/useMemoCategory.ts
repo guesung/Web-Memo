@@ -66,8 +66,19 @@ export default function useMemoCategory({
 					return;
 				}
 
+				// 입력 요소를 눌렀다면 그쪽으로 포커스가 가는 게 자연스럽다. 그 밖의 빈 곳이면 기본 동작이
+				// 포커스를 body로 빼앗으므로 막고 트리거로 돌린다.
+				const isOnFocusableElement =
+					event.target instanceof Element &&
+					event.target.closest(FOCUSABLE_SELECTOR) !== null;
+				if (!isOnFocusableElement) {
+					event.preventDefault();
+				}
+
 				setCategoryPopupOpenSource(null);
-				categoryPopupTriggerRef.current?.focus();
+				if (!isOnFocusableElement) {
+					categoryPopupTriggerRef.current?.focus();
+				}
 			};
 
 			document.addEventListener("pointerdown", handleDocumentPointerDown);
@@ -224,6 +235,9 @@ export default function useMemoCategory({
 
 /** 팝업 위아래 방향을 고를 때 쓰는 최대 높이. 검색창(41px) + 목록 최대 높이(300px) + 테두리 */
 const CATEGORY_POPUP_MAX_HEIGHT = 343;
+/** 바깥 클릭 때 포커스를 그대로 넘겨줄 요소 */
+const FOCUSABLE_SELECTOR =
+	"input, textarea, select, button, a[href], [contenteditable='true']";
 /** 버튼 트리거와 팝업 사이 간격 */
 const CATEGORY_POPUP_GAP = 4;
 
@@ -240,17 +254,26 @@ const getButtonPopupPosition = (
 		window.innerWidth - triggerRect.right,
 		window.innerWidth - CATEGORY_LIST_WIDTH,
 	);
-	const hasSpaceAbove =
-		triggerRect.top - CATEGORY_POPUP_GAP >= CATEGORY_POPUP_MAX_HEIGHT;
+	const spaceAbove = triggerRect.top - CATEGORY_POPUP_GAP * 2;
+	const spaceBelow =
+		window.innerHeight - triggerRect.bottom - CATEGORY_POPUP_GAP * 2;
+	// 칩은 패널 맨 아래에 있어 아래 공간이 거의 없다. 공간이 넉넉한 쪽으로 열고, 모자라면 높이를 줄여 스크롤한다.
+	const isOpenAbove =
+		spaceAbove >= CATEGORY_POPUP_MAX_HEIGHT || spaceAbove >= spaceBelow;
 
-	if (hasSpaceAbove) {
+	if (isOpenAbove) {
 		return {
 			bottom: window.innerHeight - triggerRect.top + CATEGORY_POPUP_GAP,
 			right,
+			maxHeight: Math.min(spaceAbove, CATEGORY_POPUP_MAX_HEIGHT),
 		};
 	}
 
-	return { top: triggerRect.bottom + CATEGORY_POPUP_GAP, right };
+	return {
+		top: triggerRect.bottom + CATEGORY_POPUP_GAP,
+		right,
+		maxHeight: Math.min(spaceBelow, CATEGORY_POPUP_MAX_HEIGHT),
+	};
 };
 
 /** 카테고리 팝업을 연 경로. hash는 본문 # 입력, button은 칩·배지 클릭 */
@@ -263,5 +286,5 @@ type TCategoryPopupOpenSource = "hash" | "button";
  */
 export type TCategoryPopupPosition = Pick<
 	React.CSSProperties,
-	"top" | "bottom" | "left" | "right"
+	"top" | "bottom" | "left" | "right" | "maxHeight"
 >;

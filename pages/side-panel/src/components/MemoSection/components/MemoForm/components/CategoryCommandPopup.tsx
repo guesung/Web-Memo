@@ -55,7 +55,7 @@ const CategoryCommandPopup = (props: IFCategoryCommandPopupProps) => {
 		<div
 			ref={props.popupRef}
 			data-testid="category-popup"
-			className="bg-popover fixed z-50 w-64 rounded-md border shadow-lg"
+			className="bg-popover fixed z-50 w-64 overflow-y-auto rounded-md border shadow-lg"
 			style={props.position}
 		>
 			<Command>

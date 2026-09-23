@@ -6,7 +6,7 @@ import useTranslation from "@src/modules/i18n/util.client";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import { Button } from "@web-memo/ui";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import MemoEmptyState from "./MemoEmptyState";
 import { MemoListSkeleton } from "./MemoListSkeleton";
 import MemoSearchEmptyState from "./MemoSearchEmptyState";
@@ -14,7 +14,7 @@ import MemoSearchEmptyState from "./MemoSearchEmptyState";
 /** 메모를 브라우저 현지 작성일별 카드 그리드로 묶어 상세 화면으로 연결한다. */
 const MemoList = (props: IFMemoListProps) => {
 	const { t } = useTranslation(props.lng);
-	const loadMoreRef = useMemoListPagination(props);
+
 	const dateFormatter = new Intl.DateTimeFormat(props.lng, {
 		dateStyle: "long",
 	});
@@ -23,6 +23,25 @@ const MemoList = (props: IFMemoListProps) => {
 		minute: "2-digit",
 	});
 	const groups = groupMemosByDate(props.memos);
+	const [renderedGroupMemoIds, setRenderedGroupMemoIds] = useState<
+		Record<string, string>
+	>({});
+	/** 초기 높이가 0인 Masonry와 새 페이지의 배치가 끝나기 전에는 다음 조회를 막는다. */
+	const isLayoutReady = groups.every(
+		(group) =>
+			renderedGroupMemoIds[group.dateKey] ===
+			group.memos.map((memo) => memo.id).join(","),
+	);
+	const loadMoreRef = useMemoListPagination(props, isLayoutReady);
+	const handleDateGroupRenderComplete = (dateKey: string, memoIds: string) => {
+		setRenderedGroupMemoIds((previousGroups) => {
+			if (previousGroups[dateKey] === memoIds) {
+				return previousGroups;
+			}
+
+			return { ...previousGroups, [dateKey]: memoIds };
+		});
+	};
 	const handleMemoClick = (memoId: number) => {
 		analytics.trackEvent({
 			name: "memo_open",
@@ -74,10 +93,19 @@ const MemoList = (props: IFMemoListProps) => {
 						useRecycle={false}
 						gap={16}
 						align="start"
+						onRenderComplete={(event) =>
+							handleDateGroupRenderComplete(
+								group.dateKey,
+								event.items
+									.map((item) => item.element?.dataset.memoId)
+									.join(","),
+							)
+						}
 					>
 						{group.memos.map((memo) => (
 							<li
 								data-testid="memo-list-item"
+								data-memo-id={memo.id}
 								key={memo.id}
 								data-grid-groupkey={group.dateKey}
 								className="min-w-0 w-full md:w-[calc((100%-16px)/2)] xl:w-[calc((100%-32px)/3)]"
@@ -132,15 +160,14 @@ const MemoList = (props: IFMemoListProps) => {
 export default MemoList;
 
 /** 화면 아래에 도달하면 다음 페이지를 가져오며 같은 요청을 중복하지 않는다. */
-const useMemoListPagination = ({
-	hasNextPage,
-	isFetchingNextPage,
-	fetchNextPage,
-}: IFMemoListProps) => {
+const useMemoListPagination = (
+	{ hasNextPage, isFetchingNextPage, fetchNextPage }: IFMemoListProps,
+	isLayoutReady: boolean,
+) => {
 	const loadMoreRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
 		const target = loadMoreRef.current;
-		if (!target || !hasNextPage || isFetchingNextPage) {
+		if (!target || !hasNextPage || isFetchingNextPage || !isLayoutReady) {
 			return;
 		}
 		const observer = new IntersectionObserver(
@@ -155,7 +182,7 @@ const useMemoListPagination = ({
 		observer.observe(target);
 
 		return () => observer.disconnect();
-	}, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+	}, [hasNextPage, isFetchingNextPage, fetchNextPage, isLayoutReady]);
 
 	return loadMoreRef;
 };

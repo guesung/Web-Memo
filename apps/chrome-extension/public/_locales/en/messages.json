@@ -269,5 +269,17 @@
 	},
 	"highlight_intro_confirm": {
 		"message": "Got it"
+	},
+	"highlight_setting": {
+		"message": "Highlight"
+	},
+	"highlight_bubble_setting": {
+		"message": "Show the highlight button when selecting text"
+	},
+	"highlight_bubble_setting_description": {
+		"message": "When off, no button appears as you select text. Your saved highlights stay visible."
+	},
+	"highlight_bubble_setting_save_failed": {
+		"message": "Couldn't save. Please try again."
 	}
 }

@@ -269,5 +269,17 @@
 	},
 	"highlight_intro_confirm": {
 		"message": "확인"
+	},
+	"highlight_setting": {
+		"message": "하이라이트"
+	},
+	"highlight_bubble_setting": {
+		"message": "드래그할 때 하이라이트 버튼 보기"
+	},
+	"highlight_bubble_setting_description": {
+		"message": "끄면 드래그해도 버튼이 뜨지 않아요. 저장한 하이라이트는 그대로 보여요."
+	},
+	"highlight_bubble_setting_save_failed": {
+		"message": "저장하지 못했어요. 다시 시도해 주세요."
 	}
 }

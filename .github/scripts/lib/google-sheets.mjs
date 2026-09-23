@@ -67,13 +67,15 @@ export const upsertGoogleSheetTables = async ({
 	let updatedRows = 0;
 	for (const [index, table] of tables.entries()) {
 		const header = existing.valueRanges?.[index * 2]?.values?.[0] ?? [];
-		if (
-			header.length > 0 &&
-			JSON.stringify(header) !== JSON.stringify(table.headers)
-		) {
+		const matchesCurrentHeader =
+			JSON.stringify(header) === JSON.stringify(table.headers);
+		const matchesLegacyHeader =
+			table.legacyHeaders &&
+			JSON.stringify(header) === JSON.stringify(table.legacyHeaders);
+		if (header.length > 0 && !matchesCurrentHeader && !matchesLegacyHeader) {
 			throw new Error(`Google Sheets header mismatch: ${table.title}`);
 		}
-		if (header.length === 0) {
+		if (!matchesCurrentHeader) {
 			data.push({
 				range: `${quoteTitle(table.title)}!A1`,
 				values: [table.headers],
@@ -150,6 +152,14 @@ const validateTables = (tables) => {
 			);
 		}
 		titles.add(table.title);
+		if (
+			table.legacyHeaders &&
+			table.legacyHeaders.length !== table.headers.length
+		) {
+			throw new Error(
+				`Google Sheets legacy header width mismatch: ${table.title}`,
+			);
+		}
 		const keys = new Set();
 		for (const row of table.rows) {
 			if (

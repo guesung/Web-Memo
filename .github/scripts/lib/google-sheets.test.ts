@@ -16,7 +16,8 @@ const createOptions = () => ({
 	tables: [
 		{
 			title: "SEO Runs",
-			headers: ["key", "count"],
+			headers: ["기록 키", "횟수"],
+			legacyHeaders: ["key", "count"],
 			rows: [
 				["123:1", 3],
 				["124:1", 4],
@@ -50,7 +51,7 @@ describe("upsertGoogleSheetTables", () => {
 		expect(JSON.parse(fetcher.mock.calls[3][1].body)).toEqual({
 			valueInputOption: "RAW",
 			data: [
-				{ range: "'SEO Runs'!A1", values: [["key", "count"]] },
+				{ range: "'SEO Runs'!A1", values: [["기록 키", "횟수"]] },
 				{ range: "'SEO Runs'!A2", values: [["123:1", 3]] },
 				{ range: "'SEO Runs'!A3", values: [["124:1", 4]] },
 			],
@@ -63,7 +64,7 @@ describe("upsertGoogleSheetTables", () => {
 			.mockResolvedValueOnce(
 				response({
 					valueRanges: [
-						{ values: [["key", "count"]] },
+						{ values: [["기록 키", "횟수"]] },
 						{ values: [["old"], ["123:1"]] },
 					],
 				}),
@@ -102,6 +103,69 @@ describe("upsertGoogleSheetTables", () => {
 			JSON.parse(fetcher.mock.calls[2][1].body).requests[0]
 				.updateSheetProperties.properties.gridProperties,
 		).toEqual({ rowCount: 4, columnCount: 2 });
+	});
+	it("영문 헤더만 한글로 바꾸고 기존 수동 변경 기록 행은 쓰지 않는다", async () => {
+		const options = createOptions();
+		options.tables = [
+			{
+				title: "SEO Changes",
+				headers: ["기록 키", "비고"],
+				legacyHeaders: ["key", "notes"],
+				rows: [],
+			},
+		];
+		const fetcher = vi
+			.fn()
+			.mockResolvedValueOnce(
+				response({
+					sheets: [{ properties: { ...properties, title: "SEO Changes" } }],
+				}),
+			)
+			.mockResolvedValueOnce(
+				response({
+					valueRanges: [
+						{ values: [["key", "notes"]] },
+						{ values: [["manual-change-1"], [], ["manual-change-2"]] },
+					],
+				}),
+			)
+			.mockResolvedValueOnce(response({}));
+		expect(await upsertGoogleSheetTables({ ...options, fetcher })).toEqual({
+			updatedRows: 0,
+		});
+		expect(JSON.parse(fetcher.mock.calls[2][1].body)).toEqual({
+			valueInputOption: "RAW",
+			data: [{ range: "'SEO Changes'!A1", values: [["기록 키", "비고"]] }],
+		});
+	});
+	it("레거시 헤더를 교체하면서 기존 데이터 위치를 유지하고 새 행만 추가한다", async () => {
+		const fetcher = vi
+			.fn()
+			.mockResolvedValueOnce(response({ sheets: [{ properties }] }))
+			.mockResolvedValueOnce(
+				response({
+					valueRanges: [
+						{ values: [["key", "count"]] },
+						{ values: [["old"], ["123:1"]] },
+					],
+				}),
+			)
+			.mockResolvedValueOnce(response({}));
+		await upsertGoogleSheetTables({ ...createOptions(), fetcher });
+		expect(JSON.parse(fetcher.mock.calls[2][1].body).data).toEqual([
+			{ range: "'SEO Runs'!A1", values: [["기록 키", "횟수"]] },
+			{ range: "'SEO Runs'!A3", values: [["123:1", 3]] },
+			{ range: "'SEO Runs'!A4", values: [["124:1", 4]] },
+		]);
+	});
+	it("레거시와 현재 헤더의 열 수가 다르면 요청 전에 거절한다", async () => {
+		const options = createOptions();
+		options.tables[0].legacyHeaders = ["key"];
+		const fetcher = vi.fn();
+		await expect(
+			upsertGoogleSheetTables({ ...options, fetcher }),
+		).rejects.toThrow("legacy header width mismatch");
+		expect(fetcher).not.toHaveBeenCalled();
 	});
 	it("헤더가 다르면 기존 데이터를 덮어쓰지 않는다", async () => {
 		const fetcher = vi

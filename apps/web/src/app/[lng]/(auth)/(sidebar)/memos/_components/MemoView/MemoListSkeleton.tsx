@@ -10,7 +10,7 @@ export const MemoListSkeleton = () => (
 		<Skeleton className="h-6 w-36" />
 		<div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
 			{Array.from({ length: 6 }, (_, index) => (
-				<Skeleton key={index.toString()} className="h-44 w-full rounded-2xl" />
+				<Skeleton key={index.toString()} className="h-36 w-full rounded-2xl" />
 			))}
 		</div>
 	</div>

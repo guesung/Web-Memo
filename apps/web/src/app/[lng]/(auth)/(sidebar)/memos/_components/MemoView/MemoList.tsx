@@ -1,5 +1,6 @@
 "use client";
 
+import { MasonryInfiniteGrid } from "@egjs/react-infinitegrid";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { analytics } from "@web-memo/shared/modules/analytics";
@@ -64,20 +65,27 @@ const MemoList = (props: IFMemoListProps) => {
 							</time>
 						)}
 					</h2>
-					<ul
+					<MasonryInfiniteGrid
+						tag="ul"
 						data-testid="memo-date-grid"
-						className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+						useResizeObserver
+						observeChildren
+						autoResize
+						useRecycle={false}
+						gap={16}
+						align="start"
 					>
 						{group.memos.map((memo) => (
 							<li
 								data-testid="memo-list-item"
 								key={memo.id}
-								className="min-w-0"
+								data-grid-groupkey={group.dateKey}
+								className="min-w-0 w-full md:w-[calc((100%-16px)/2)] xl:w-[calc((100%-32px)/3)]"
 							>
 								<button
 									type="button"
 									onClick={() => handleMemoClick(memo.id)}
-									className="flex h-full min-h-44 w-full min-w-0 flex-col rounded-2xl border bg-card p-5 text-left text-card-foreground shadow-sm transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+									className="flex w-full min-w-0 flex-col rounded-2xl border bg-card p-5 text-left text-card-foreground shadow-sm transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 								>
 									<span className="block w-full truncate font-semibold">
 										{memo.title || t("memos.view.untitled")}
@@ -101,7 +109,7 @@ const MemoList = (props: IFMemoListProps) => {
 								</button>
 							</li>
 						))}
-					</ul>
+					</MasonryInfiniteGrid>
 				</section>
 			))}
 			{props.hasNextPage && (

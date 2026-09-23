@@ -231,6 +231,49 @@ test.describe("날짜별 메모 그리드 페이지 연결 (Mocked)", () => {
 		expect(horizontalOverflow).toBeLessThanOrEqual(1);
 	});
 
+	test("날짜 rail은 데스크톱에서 카드와 같은 행에 놓이고 모바일에서는 카드 위에 놓인다.", async ({
+		page,
+	}) => {
+		const firstDateGroup = page.getByTestId("memo-date-group").first();
+		const dateLabel = firstDateGroup.getByTestId("memo-date-label");
+		const dateGrid = firstDateGroup.getByTestId("memo-date-grid");
+		const firstCard = firstDateGroup.getByTestId("memo-list-item").first();
+
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await expect(dateLabel).toBeVisible();
+		await expect(dateGrid).toBeVisible();
+		await expect(firstCard).toBeVisible();
+		await expect
+			.poll(async () => {
+				const labelBox = await dateLabel.boundingBox();
+				const gridBox = await dateGrid.boundingBox();
+
+				return Boolean(
+					labelBox &&
+						gridBox &&
+						labelBox.y < gridBox.y + gridBox.height &&
+						labelBox.y + labelBox.height > gridBox.y &&
+						labelBox.x < gridBox.x,
+				);
+			})
+			.toBe(true);
+
+		await page.setViewportSize({ width: 390, height: 844 });
+		await expect
+			.poll(async () => {
+				const labelBox = await dateLabel.boundingBox();
+				const gridBox = await dateGrid.boundingBox();
+
+				return Boolean(
+					labelBox &&
+						gridBox &&
+						labelBox.y + labelBox.height <= gridBox.y + 1 &&
+						Math.abs(labelBox.x - gridBox.x) < 24,
+				);
+			})
+			.toBe(true);
+	});
+
 	test("원문 링크와 카드에 Enter를 누르면 각각 원문과 메모 상세가 열린다.", async ({
 		page,
 	}) => {

@@ -2,9 +2,10 @@
 	"name": "@web-memo/web",
 	"private": true,
 	"scripts": {
-		"dev": "next dev",
+		"dev": "node scripts/generatePagePaths.mjs && next dev",
 		"preview": "next build && next start",
-		"build": "next build",
+		"build": "node scripts/generatePagePaths.mjs && next build",
+		"generate:paths": "node scripts/generatePagePaths.mjs",
 		"build:analyze": "next experimental-analyze",
 		"start": "next start",
 		"type-check": "tsc --noEmit",

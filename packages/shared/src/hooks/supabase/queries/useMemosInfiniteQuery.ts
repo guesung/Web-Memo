@@ -71,12 +71,7 @@ const useMemosInfiniteQuery = ({
 				return lastMemo.title ?? undefined;
 			}
 
-			const cursorValue = lastMemo[sortBy];
-			if (cursorValue === null) {
-				return undefined;
-			}
-
-			return { value: cursorValue, id: lastMemo.id };
+			return { value: lastMemo[sortBy], id: lastMemo.id };
 		},
 	});
 

@@ -14,7 +14,7 @@ import { getMemoSearchFilter } from "./memoSearchFilter";
 
 /** 날짜 정렬에서 같은 시각의 메모까지 이어 읽는 복합 커서. */
 export interface IFMemoPageCursor {
-	value: string;
+	value: string | null;
 	id: MemoRow["id"];
 }
 
@@ -130,18 +130,24 @@ export class MemoService {
 			.from(SUPABASE.table.memo)
 			.select(selectQuery, { count: "exact" })
 			.is("deleted_at", null)
-			.order(sortBy, { ascending })
+			.order(
+				sortBy,
+				ascending ? { ascending } : { ascending, nullsFirst: false },
+			)
 			.order("id", { ascending })
 			.limit(limit);
 
 		if (cursor) {
 			if (typeof cursor === "string") {
 				query = ascending ? query.gt(sortBy, cursor) : query.lt(sortBy, cursor);
+			} else if (cursor.value === null) {
+				query = query.is(sortBy, null).lt("id", cursor.id);
 			} else {
 				const operator = ascending ? "gt" : "lt";
 				const value = JSON.stringify(cursor.value);
+				const cursorFilter = `${sortBy}.${operator}.${value},and(${sortBy}.eq.${value},id.${operator}.${cursor.id})`;
 				query = query.or(
-					`${sortBy}.${operator}.${value},and(${sortBy}.eq.${value},id.${operator}.${cursor.id})`,
+					ascending ? cursorFilter : `${cursorFilter},${sortBy}.is.null`,
 				);
 			}
 		}

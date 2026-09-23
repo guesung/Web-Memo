@@ -188,6 +188,28 @@ describe("HighlightService.getHighlightCounts", () => {
 
 describe("MemoService.getMemosPaginated", () => {
 	it.each(["created_at", "updated_at"] as const)(
+		"%s가 없는 메모도 id로 다음 페이지를 이어 읽는다",
+		async (sortBy) => {
+			const { client, calls } = createMockClient();
+			await new MemoService(client).getMemosPaginated({
+				sortBy,
+				cursor: { value: null, id: 42 },
+			});
+
+			expect(calls.is).toEqual([
+				["deleted_at", null],
+				[sortBy, null],
+			]);
+			expect(calls.lt).toEqual([["id", 42]]);
+			expect(calls.or).toEqual([]);
+			expect(calls.order[0]).toEqual([
+				sortBy,
+				{ ascending: false, nullsFirst: false },
+			]);
+		},
+	);
+
+	it.each(["created_at", "updated_at"] as const)(
 		"%s가 같은 메모를 누락하지 않도록 id까지 비교한다",
 		async (sortBy) => {
 			const { client, calls } = createMockClient();
@@ -197,10 +219,10 @@ describe("MemoService.getMemosPaginated", () => {
 			});
 
 			expect(calls.or).toEqual([
-				`${sortBy}.lt."2026-09-23T01:02:03.123456+00:00",and(${sortBy}.eq."2026-09-23T01:02:03.123456+00:00",id.lt.42)`,
+				`${sortBy}.lt."2026-09-23T01:02:03.123456+00:00",and(${sortBy}.eq."2026-09-23T01:02:03.123456+00:00",id.lt.42),${sortBy}.is.null`,
 			]);
 			expect(calls.order).toEqual([
-				[sortBy, { ascending: false }],
+				[sortBy, { ascending: false, nullsFirst: false }],
 				["id", { ascending: false }],
 			]);
 			expect(calls.lt).toEqual([]);
@@ -237,7 +259,7 @@ describe("MemoService.getMemosPaginated", () => {
 
 		expect(calls.or).toEqual([]);
 		expect(calls.order).toEqual([
-			["updated_at", { ascending: false }],
+			["updated_at", { ascending: false, nullsFirst: false }],
 			["id", { ascending: false }],
 		]);
 		expect(calls.limit).toEqual([20]);

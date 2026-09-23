@@ -4,14 +4,16 @@ import { useGuide } from "@src/modules/guide";
 import type { LanguageType } from "@src/modules/i18n";
 import { useDidMount, useMemosInfiniteQuery } from "@web-memo/shared/hooks";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
-import { Skeleton } from "@web-memo/ui";
+import { Loading, Skeleton } from "@web-memo/ui";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import type { TMemoFilter } from "../../_types";
+import MemoDialog from "../MemoDialog";
 import type { SearchFormValues } from "../MemoSearchFormProvider";
+import { useMemoDialog } from "./_hooks";
 import { useMemoHighlights } from "./_hooks/useMemoHighlights";
 import MemoGrid from "./MemoGrid";
 import { MemoListSkeleton } from "./MemoListSkeleton";
@@ -33,6 +35,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 	const { t } = useTranslation(lng);
 	const { watch } = useFormContext<SearchFormValues>();
 	const searchParams = useSearchParams();
+	const { dialogMemoId } = useMemoDialog();
 
 	// 카테고리는 사이드바 하단에서 고르는 가로지르는 조건이라 필터와 달리 쿼리로 남는다.
 	const category = searchParams.get("category") ?? "";
@@ -137,6 +140,11 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 					isFetchingNextPage={isFetchingNextPage}
 					fetchNextPage={fetchNextPage}
 				/>
+			)}
+			{dialogMemoId && (
+				<Suspense fallback={<Loading />}>
+					<MemoDialog lng={lng} memoId={dialogMemoId} />
+				</Suspense>
 			)}
 		</div>
 	);

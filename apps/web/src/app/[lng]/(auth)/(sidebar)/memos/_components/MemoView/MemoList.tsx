@@ -4,10 +4,8 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import type { GetMemoResponse } from "@web-memo/shared/types";
-import { Button, Loading } from "@web-memo/ui";
-import { Suspense, useEffect, useRef } from "react";
-import MemoDialog from "../MemoDialog";
-import { useMemoDialog } from "./_hooks";
+import { Button } from "@web-memo/ui";
+import { useEffect, useRef } from "react";
 import MemoEmptyState from "./MemoEmptyState";
 import { MemoListSkeleton } from "./MemoListSkeleton";
 import MemoSearchEmptyState from "./MemoSearchEmptyState";
@@ -15,7 +13,6 @@ import MemoSearchEmptyState from "./MemoSearchEmptyState";
 /** 메모를 브라우저 현지 작성일로 묶어 상세 화면으로 연결한다. */
 const MemoList = (props: IFMemoListProps) => {
 	const { t } = useTranslation(props.lng);
-	const { dialogMemoId } = useMemoDialog();
 	const loadMoreRef = useMemoListPagination(props);
 	const dateFormatter = new Intl.DateTimeFormat(props.lng, {
 		dateStyle: "long",
@@ -78,9 +75,11 @@ const MemoList = (props: IFMemoListProps) => {
 									<span className="block truncate font-semibold">
 										{memo.title || t("memos.view.untitled")}
 									</span>
-									<span className="mt-1 line-clamp-2 whitespace-pre-wrap break-words text-sm text-muted-foreground">
-										{memo.memo || t("memos.view.emptyContent")}
-									</span>
+									{memo.memo && (
+										<span className="mt-1 line-clamp-2 whitespace-pre-wrap break-words text-sm text-muted-foreground">
+											{memo.memo}
+										</span>
+									)}
 									<span className="mt-2 flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
 										<time
 											dateTime={memo.created_at ?? undefined}
@@ -111,11 +110,6 @@ const MemoList = (props: IFMemoListProps) => {
 				</div>
 			)}
 			{props.isFetchingNextPage && <MemoListSkeleton />}
-			{dialogMemoId && (
-				<Suspense fallback={<Loading />}>
-					<MemoDialog lng={props.lng} memoId={dialogMemoId} />
-				</Suspense>
-			)}
 		</div>
 	);
 };

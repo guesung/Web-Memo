@@ -473,7 +473,6 @@
 			"label": "메모 보기",
 			"list": "목록으로 보기",
 			"untitled": "제목 없는 메모",
-			"emptyContent": "내용이 없는 메모예요",
 			"loadMore": "더 보기"
 		},
 		"emptyState": {

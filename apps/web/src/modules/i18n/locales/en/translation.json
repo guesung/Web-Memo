@@ -478,7 +478,6 @@
 			"label": "Memo view",
 			"list": "List view",
 			"untitled": "Untitled memo",
-			"emptyContent": "This memo has no content",
 			"loadMore": "Load more"
 		},
 		"emptyState": {

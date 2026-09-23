@@ -7,6 +7,7 @@ export { default as useFeedbackQuery } from "./useFeedbackQuery";
 export { default as useFeedbacksQuery } from "./useFeedbacksQuery";
 export { default as useMemoQuery } from "./useMemoQuery";
 export { default as useMemosInfiniteQuery } from "./useMemosInfiniteQuery";
+export { default as useNoticeQuery } from "./useNoticeQuery";
 export { default as useSettingQuery } from "./useSettingQuery";
 export { default as useSupabaseClientQuery } from "./useSupabaseClientQuery";
 export { default as useSupabaseFeedbackClientQuery } from "./useSupabaseFeedbackClientQuery";

@@ -1,5 +1,6 @@
 import { handleEditHighlight } from "./editHighlight";
 import { handleCreateHighlight } from "./createHighlight";
+import { handleGetLoginStatus } from "./getLoginStatus";
 import { reportBackgroundError } from "./reportBackgroundError";
 import "webextension-polyfill";
 
@@ -209,6 +210,12 @@ bridge.handle.GET_HIGHLIGHTS_BY_URL(async (payload, _sender, sendResponse) => {
 	} catch {
 		sendResponse({ highlights: [] });
 	}
+});
+
+// content-ui가 하이라이트 버블을 띄우기 전에 로그인 여부를 묻는다.
+// 네트워크 검증 없이 저장된 세션만 보고, 실패하면 false를 돌려준다.
+bridge.handle.GET_LOGIN_STATUS(async (_payload, _sender, sendResponse) => {
+	sendResponse(await handleGetLoginStatus());
 });
 
 /** 선택된 텍스트는 인증된 background에서만 저장한다. */

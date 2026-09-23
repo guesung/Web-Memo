@@ -186,6 +186,48 @@ export type Database = {
 					},
 				];
 			};
+			notice: {
+				Row: {
+					body_en: string;
+					body_ko: string;
+					created_at: string;
+					ends_at: string | null;
+					id: number;
+					link_label_en: string | null;
+					link_label_ko: string | null;
+					link_target: string | null;
+					starts_at: string | null;
+					title_en: string;
+					title_ko: string;
+				};
+				Insert: {
+					body_en: string;
+					body_ko: string;
+					created_at?: string;
+					ends_at?: string | null;
+					id?: never;
+					link_label_en?: string | null;
+					link_label_ko?: string | null;
+					link_target?: string | null;
+					starts_at?: string | null;
+					title_en: string;
+					title_ko: string;
+				};
+				Update: {
+					body_en?: string;
+					body_ko?: string;
+					created_at?: string;
+					ends_at?: string | null;
+					id?: never;
+					link_label_en?: string | null;
+					link_label_ko?: string | null;
+					link_target?: string | null;
+					starts_at?: string | null;
+					title_en?: string;
+					title_ko?: string;
+				};
+				Relationships: [];
+			};
 			profiles: {
 				Row: {
 					nickname: string | null;

@@ -56,7 +56,10 @@ export const handleEditHighlight = async (
 				? await service.deleteHighlight(payload.id, scope)
 				: await service.updateHighlight({
 						id: payload.id,
-						request: { color: payload.color },
+						request:
+							payload.action === "note"
+								? { note: payload.note }
+								: { color: payload.color },
 						scope,
 					});
 		const row = result.data?.[0];
@@ -67,7 +70,8 @@ export const handleEditHighlight = async (
 			row.id !== payload.id ||
 			row.url !== url ||
 			row.user_id !== data.user.id ||
-			(payload.action === "color" && row.color !== payload.color)
+			(payload.action === "color" && row.color !== payload.color) ||
+			(payload.action === "note" && row.note !== payload.note)
 		) {
 			reportEditFailure(result.error ? "database_error" : "empty_result");
 			return { success: false, error: "save_failed" };
@@ -97,6 +101,9 @@ const isValidPayload = (
 		typeof input.url === "string" &&
 		input.url.length <= 8192 &&
 		(input.action === "delete" ||
+			(input.action === "note" &&
+				typeof input.note === "string" &&
+				input.note.length <= 5000) ||
 			(input.action === "color" &&
 				HIGHLIGHT_COLORS.some((color) => color === input.color)))
 	);

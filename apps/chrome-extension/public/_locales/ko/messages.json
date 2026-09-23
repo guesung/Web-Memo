@@ -1,5 +1,7 @@
 {
-	"memo_title_sync": { "message": "현재 페이지 제목으로 업데이트" },
+	"memo_title_sync": {
+		"message": "현재 페이지 제목으로 업데이트"
+	},
 	"extensionName": {
 		"message": "웹 메모 - 웹사이트에서 간편하게 메모하세요"
 	},
@@ -223,13 +225,13 @@
 		"message": "저장 중…"
 	},
 	"highlight_save_failed": {
-		"message": "저장하지 못했습니다. 다시 시도해 주세요."
+		"message": "저장하지 못했어요. 다시 시도해 주세요."
 	},
 	"highlight_login_required": {
 		"message": "Web Memo에 로그인한 뒤 다시 시도해 주세요."
 	},
 	"highlight_duplicate": {
-		"message": "이미 저장한 하이라이트입니다."
+		"message": "이미 저장한 하이라이트예요."
 	},
 	"highlight_selection_too_long": {
 		"message": "5,000자 이하로 선택해 주세요."
@@ -254,5 +256,86 @@
 	},
 	"highlight_color_purple": {
 		"message": "보라색"
+	},
+	"highlight_bubble_disable": {
+		"message": "하이라이트 팝업 끄기"
+	},
+	"highlight_bubble_disabled_title": {
+		"message": "하이라이트 팝업을 껐어요."
+	},
+	"highlight_bubble_disabled_description": {
+		"message": "옵션에서 다시 켤 수 있어요."
+	},
+	"highlight_intro_message": {
+		"message": "웹 메모의 하이라이트예요. 색상을 누르면 문장을 저장하고, 메모도 남길 수 있어요. X 메뉴에서 위치를 바꾸거나 팝업을 끌 수 있어요."
+	},
+	"highlight_intro_confirm": {
+		"message": "확인"
+	},
+	"highlight_setting": {
+		"message": "하이라이트"
+	},
+	"highlight_bubble_setting": {
+		"message": "드래그할 때 하이라이트 팝업 보기"
+	},
+	"highlight_bubble_setting_description": {
+		"message": "끄면 드래그해도 팝업이 뜨지 않아요. 저장한 하이라이트는 그대로 보여요."
+	},
+	"highlight_bubble_setting_save_failed": {
+		"message": "저장하지 못했어요. 다시 시도해 주세요."
+	},
+	"notice_dismiss_label": {
+		"message": "공지 닫기"
+	},
+	"notice_link_default_label": {
+		"message": "자세히 보기"
+	},
+	"highlight_bubble_position_setting": {
+		"message": "하이라이트 팝업 위치"
+	},
+	"highlight_bubble_position_below": {
+		"message": "팝업을 텍스트 아래로"
+	},
+	"highlight_bubble_position_above": {
+		"message": "팝업을 텍스트 위로"
+	},
+	"highlight_disabled_sites_setting": {
+		"message": "팝업을 끈 사이트"
+	},
+	"highlight_disabled_sites_empty": {
+		"message": "팝업을 끈 사이트가 없어요."
+	},
+	"highlight_site_enable": {
+		"message": "다시 켜기"
+	},
+	"highlight_note": {
+		"message": "메모"
+	},
+	"highlight_note_placeholder": {
+		"message": "이 하이라이트에 메모 추가"
+	},
+	"highlight_note_save": {
+		"message": "저장"
+	},
+	"highlight_bubble_menu_title": {
+		"message": "웹 메모 하이라이트"
+	},
+	"highlight_bubble_disable_site": {
+		"message": "이 사이트에서 끄기"
+	},
+	"highlight_bubble_disable_all": {
+		"message": "하이라이트 팝업 끄기"
+	},
+	"highlight_bubble_disabled_site_title": {
+		"message": "이 사이트에서 껐어요"
+	},
+	"highlight_bubble_disabled_all_title": {
+		"message": "하이라이트 팝업을 껐어요"
+	},
+	"highlight_bubble_disabled_site_description": {
+		"message": "설정에서 다시 켤 수 있어요"
+	},
+	"highlight_bubble_disabled_all_description": {
+		"message": "설정에서 다시 켤 수 있어요"
 	}
 }

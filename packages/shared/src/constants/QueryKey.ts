@@ -81,4 +81,6 @@ export const QUERY_KEY = {
 	],
 	/** `highlightCounts`의 공통 접두사. URL 배열을 모르는 뮤테이션에서 prefix 매칭으로 무효화할 때 쓴다. */
 	highlightCountsPrefix: () => ["highlights", "counts"],
+	/** 사이드 패널 공지. 세션과 무관한 공개 데이터라 사용자별로 나누지 않는다. */
+	notice: () => ["notice"],
 };

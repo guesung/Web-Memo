@@ -1,4 +1,4 @@
-import { DEFAULT_HIGHLIGHT_COLOR } from "@web-memo/shared/constants";
+import { HIGHLIGHT_COLORS } from "@web-memo/shared/constants";
 import type {
 	IFCreateHighlightPayload,
 	TCreateHighlightResponse,
@@ -61,7 +61,7 @@ export const handleCreateHighlight = async (
 			prefix_text: payload.anchor.prefix,
 			suffix_text: payload.anchor.suffix,
 			text_position_start: payload.anchor.textPositionStart,
-			color: DEFAULT_HIGHLIGHT_COLOR,
+			color: payload.color,
 		});
 		if (error || !data?.[0]) {
 			logHighlightFailure(operation, error ? "database_error" : "empty_result");
@@ -92,6 +92,7 @@ const isValidPayload = (
 		input.title.length <= 2000 &&
 		typeof input.favIconUrl === "string" &&
 		input.favIconUrl.length <= 8192 &&
+		HIGHLIGHT_COLORS.some((color) => color === input.color) &&
 		!!anchor &&
 		typeof anchor.exact === "string" &&
 		anchor.exact.trim().length >= 3 &&
@@ -106,7 +107,7 @@ const isValidPayload = (
 };
 
 /** 기존 클라이언트 초기화는 쿠키가 없으면 예외를 던진다. 로그인 안내로 변환한다. */
-const getAuthenticatedClient = async () => {
+export const getAuthenticatedClient = async () => {
 	try {
 		return await getSupabaseClient();
 	} catch (error) {

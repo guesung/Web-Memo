@@ -23,5 +23,6 @@ export const SUPABASE = {
 		category: "category",
 		setting: "setting",
 		highlight: "highlight",
+		notice: "notice",
 	},
 } as const;

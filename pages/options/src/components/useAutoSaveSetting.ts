@@ -44,6 +44,9 @@ export const useAutoSaveSetting = <TValue>(
 		if (isSaving.current || (status !== "idle" && status !== "saved")) {
 			return;
 		}
+		if (Object.is(options.initialValue, savedValue.current)) {
+			return;
+		}
 		if (successTimer.current) {
 			clearTimeout(successTimer.current);
 			successTimer.current = null;

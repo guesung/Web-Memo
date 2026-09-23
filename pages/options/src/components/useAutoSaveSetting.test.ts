@@ -96,4 +96,37 @@ describe("useAutoSaveSetting external updates", () => {
 		expect(setting.state.status).toBe("idle");
 		await setting.unmount();
 	});
+
+	it("keeps the success message for two seconds when a query confirms the saved value", async () => {
+		vi.useFakeTimers();
+		const setting = await renderSetting(
+			() =>
+				new Promise<void>((resolve) => {
+					setTimeout(resolve, 800);
+				}),
+		);
+		await act(async () => {
+			setting.state.changeValue("local");
+		});
+		expect(setting.state.status).toBe("saving");
+		await act(async () => {
+			await vi.advanceTimersByTimeAsync(800);
+		});
+		expect(setting.state.status).toBe("saved");
+		await act(async () => {
+			await vi.advanceTimersByTimeAsync(120);
+		});
+		await setting.rerender("local");
+		expect(setting.state.value).toBe("local");
+		expect(setting.state.status).toBe("saved");
+		await act(async () => {
+			await vi.advanceTimersByTimeAsync(1879);
+		});
+		expect(setting.state.status).toBe("saved");
+		await act(async () => {
+			await vi.advanceTimersByTimeAsync(1);
+		});
+		expect(setting.state.status).toBe("idle");
+		await setting.unmount();
+	});
 });

@@ -65,6 +65,35 @@ describe("normalizeSeoAiReport", () => {
 		expect(report.findings[0].codeRefs).toEqual(["apps/web/src/app/page.tsx:12"]);
 	});
 
+	it("유효한 근거 id가 뒤쪽에 있어도 거른 다음 자르므로 발견을 남긴다", () => {
+		const report = normalizeSeoAiReport({
+			raw: rawReport({
+				findings: [
+					finding({
+						evidenceIds: [...Array.from({ length: 12 }, (_, index) => `fake:${index}`), "seo:H1_COUNT_INVALID:h1"],
+					}),
+				],
+			}),
+			context,
+		});
+
+		expect(report.findings[0].evidenceIds).toEqual(["seo:H1_COUNT_INVALID:h1"]);
+	});
+
+	it("자격 증명처럼 보이는 문자열이 섞인 필드는 통째로 지운다", () => {
+		const report = normalizeSeoAiReport({
+			raw: rawReport({
+				headline: "토큰은 ghs_abcdefghijklmnopqrstuvwxyz0123 입니다",
+				findings: [finding({ suggestion: "xoxb-1234567890-abcdefghij 를 쓰세요" })],
+			}),
+			context,
+		});
+
+		expect(report.headline).toBe("[민감 정보로 보여 삭제함]");
+		expect(report.findings[0].suggestion).toBe("[민감 정보로 보여 삭제함]");
+		expect(JSON.stringify(report)).not.toMatch(/ghs_|xoxb-/);
+	});
+
 	it("우선순위 순으로 정렬하고 잘못된 우선순위는 P3로 둔다", () => {
 		const report = normalizeSeoAiReport({
 			raw: rawReport({
@@ -114,6 +143,18 @@ describe("Slack 렌더링", () => {
 		expect(text).toContain("📋 P2 *1건*");
 		expect(text).toContain("오류 0건 · 경고 2건");
 		expect(text).toContain("<https://github.com/run/1|GitHub Actions 실행 결과>");
+		expect(payload.blocks.every((block) => block.text.verbatim === true)).toBe(true);
+	});
+
+	it("본문 대체 텍스트(text)의 Slack 제어 문자도 이스케이프한다", () => {
+		const payload = buildSeoAiRootPayload({
+			report: { ...report, headline: "<!channel> <https://evil.example|클릭>" },
+			context,
+			runUrl: "",
+		});
+
+		expect(payload.text).not.toMatch(/<!channel>|<https:/);
+		expect(payload.text).toContain("&lt;!channel&gt;");
 	});
 
 	it("스레드는 상황·발견·로드맵 순서이고 모델 문장의 Slack 제어 문자를 이스케이프한다", () => {
@@ -126,8 +167,35 @@ describe("Slack 렌더링", () => {
 			"발견된 문제 상세",
 			"개선 로드맵",
 		]);
-		expect(payloads[0].blocks[0].text.text).toContain("&lt;!channel&gt; 정상");
+		expect(payloads[0].blocks[1].text.text).toContain("&lt;!channel&gt; 정상");
 		expect(payloads[1].blocks[1].text.text).toContain("`apps/web/src/app/page.tsx:12`");
+	});
+
+	it("잘 되는 점이 길어도 우려되는 점은 별도 섹션이라 잘리지 않는다", () => {
+		const payloads = buildSeoAiThreadPayloads({
+			report: {
+				...report,
+				situation: { good: Array.from({ length: 6 }, () => "가".repeat(300)), concerns: ["우려"] },
+			},
+		});
+
+		expect(payloads[0].blocks.at(-1).text.text).toBe("*우려되는 점*\n✗ 우려");
+	});
+
+	it("발견 섹션이 한도를 넘으면 본문 대신 코드 위치를 줄인다", () => {
+		const long = {
+			...report.findings[0],
+			impact: "가".repeat(700),
+			evidence: "나".repeat(500),
+			suggestion: "다".repeat(700),
+			codeRefs: Array.from({ length: 5 }, (_, index) => `apps/web/${"x".repeat(180)}${index}.tsx:1`),
+		};
+		const payloads = buildSeoAiThreadPayloads({ report: { ...report, findings: [long] } });
+		const text = payloads[1].blocks[1].text.text;
+
+		expect(text.length).toBeLessThanOrEqual(2800);
+		expect(text).toContain("다".repeat(700));
+		expect(text).not.toContain("…");
 	});
 
 	it("발견이 8건을 넘으면 스레드에는 8건만 싣고 나머지를 안내한다", () => {

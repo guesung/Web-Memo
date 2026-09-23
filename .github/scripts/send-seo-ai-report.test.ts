@@ -66,7 +66,7 @@ describe("postSeoAiReport", () => {
 			post,
 		});
 
-		expect(sent).toBe(true);
+		expect(sent).toEqual({ sent: true, threadFailures: 1, error: null });
 		expect(post.mock.calls[1][0].threadTs).toBe("1.1");
 		expect(post.mock.calls[2][0].threadTs).toBe("1.1");
 	});
@@ -83,7 +83,7 @@ describe("postSeoAiReport", () => {
 			post,
 		});
 
-		expect(sent).toBe(false);
+		expect(sent).toEqual({ sent: false, threadFailures: 0, error: "channel_not_found" });
 		expect(post).toHaveBeenCalledTimes(1);
 	});
 });
@@ -102,7 +102,10 @@ describe("sendSeoAiReport", () => {
 			writeFile.mock.calls.find(([path]) => path === "artifacts/seo/ai-report.json")[1],
 		);
 		expect(stored).toMatchObject({ status: "warning", delivered: true, counts: { P2: 1 } });
-		expect(appendFile).toHaveBeenCalledWith("/tmp/output", "sent=true\n");
+		expect(appendFile).toHaveBeenCalledWith(
+			"/tmp/output",
+			"sent=true\nthread_failures=0\nfailure_reason=none\n",
+		);
 	});
 
 	it("AI 결과가 없으면 sent=false로 기존 알림에 넘긴다", async () => {
@@ -111,7 +114,10 @@ describe("sendSeoAiReport", () => {
 		const sent = await sendSeoAiReport({ env: env({ AI_REPORT_RESULT: "" }) });
 
 		expect(sent).toBe(false);
-		expect(appendFile).toHaveBeenCalledWith("/tmp/output", "sent=false\n");
+		expect(appendFile).toHaveBeenCalledWith(
+			"/tmp/output",
+			"sent=false\nthread_failures=0\nfailure_reason=missing_result\n",
+		);
 		expect(writeFile).not.toHaveBeenCalled();
 	});
 
@@ -122,7 +128,41 @@ describe("sendSeoAiReport", () => {
 		const sent = await sendSeoAiReport({ env: env({ AI_REPORT_RESULT: "{broken" }) });
 
 		expect(sent).toBe(false);
-		expect(appendFile).toHaveBeenCalledWith("/tmp/output", "sent=false\n");
+		expect(appendFile).toHaveBeenCalledWith(
+			"/tmp/output",
+			"sent=false\nthread_failures=0\nfailure_reason=invalid_result\n",
+		);
+	});
+
+	it("본문을 보낸 뒤 보관에 실패해도 sent=true를 남겨 대체 알림이 중복으로 나가지 않는다", async () => {
+		readFile.mockResolvedValue(JSON.stringify(context));
+		writeFile.mockImplementation(async (path) => {
+			if (path === "artifacts/seo/ai-report.json") {
+				throw new Error("disk full");
+			}
+		});
+		const post = vi.fn().mockResolvedValue({ ok: true, ts: "1.1" });
+
+		await expect(sendSeoAiReport({ env: env(), post })).rejects.toThrow("disk full");
+		expect(appendFile).toHaveBeenCalledWith(
+			"/tmp/output",
+			"sent=true\nthread_failures=0\nfailure_reason=none\n",
+		);
+		writeFile.mockReset();
+	});
+
+	it("Slack 오류 문구에 개행이 섞여도 output 한 줄로 남긴다", async () => {
+		readFile.mockResolvedValue(JSON.stringify(context));
+		vi.spyOn(console, "warn").mockImplementation(() => undefined);
+		const post = vi.fn().mockResolvedValue({ ok: false, error: "request_failed: boom\nsent=true" });
+
+		await sendSeoAiReport({ env: env(), post });
+
+		expect(appendFile.mock.calls[0][1].split("\n").filter(Boolean)).toEqual([
+			"sent=false",
+			"thread_failures=0",
+			"failure_reason=slack_request_failed_boom_sent_true",
+		]);
 	});
 
 	it("Slack 값이 없으면 내용만 출력하고 보관은 하되 sent=false다", async () => {

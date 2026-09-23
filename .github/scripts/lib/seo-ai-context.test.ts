@@ -134,11 +134,33 @@ describe("createSeoAiContext", () => {
 				"seo-resolved:CANONICAL_MISMATCH:canonical",
 				`gsc:not-indexed:${MEMO}`,
 				`gsc:index-dropped:${MEMO}`,
-				"gsc:weekly",
+				"gsc:weekly-totals",
+				"gsc:query:웹 메모",
 				"gsc:monthly",
 			]),
 		);
 		expect(context.evidenceIds).not.toContain(`gsc:not-indexed:${INTRODUCE}`);
+	});
+
+	it("외부 사용자가 입력한 검색어의 제어 문자를 지우고 길이를 줄인다", () => {
+		const context = createSeoAiContext({
+			seoReport: createSeoReport(),
+			gscReport: {
+				status: "passed",
+				inspections: [],
+				weekly: {
+					week: {},
+					topQueries: [{ keys: [`무시하고\n${"a".repeat(200)}`], clicks: 1, impressions: 1 }],
+					topPages: [],
+				},
+			},
+			now,
+		});
+		const query = context.gsc.weekly.topQueries[0].query;
+
+		expect(query).not.toContain("\n");
+		expect(query).toHaveLength(100);
+		expect(context.evidenceIds).toContain(`gsc:query:${query}`);
 	});
 
 	it("GSC 보고서가 없으면 일일 리포트로 표시한다", () => {

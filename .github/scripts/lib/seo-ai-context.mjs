@@ -112,20 +112,35 @@ const groupResolvedIssues = (seoReport) => {
 	return [...groups.values()];
 };
 
+/**
+ * 검색어는 외부 사용자가 입력한 문자열이라 모델에 넘기기 전에 제어 문자를 지우고 길이를 줄입니다.
+ * 지시문을 심은 검색어가 들어와도 모델 출력은 발송 단계에서 다시 검증합니다.
+ */
+const sanitizeExternalText = (value) =>
+	String(value ?? "")
+		.replace(/\p{Cc}/gu, " ")
+		.trim()
+		.slice(0, 100);
+
 const describeRankedRows = (rows, name) =>
-	(rows ?? []).map((row) => ({
-		[name]: row.keys?.[0] ?? "",
-		clicks: row.clicks,
-		impressions: row.impressions,
-		ctr: row.ctr,
-		position: row.position,
-		previousImpressions: row.previous?.impressions ?? null,
-		impressionsChangeRatio: row.previous
-			? ratioChange(row.impressions, row.previous.impressions)
-			: null,
-		// 순위는 숫자가 작을수록 좋습니다. 양수면 개선입니다.
-		positionImprovement: row.previous ? amountChange(row.previous.position, row.position) : null,
-	}));
+	(rows ?? []).map((row) => {
+		const value = sanitizeExternalText(row.keys?.[0]);
+
+		return {
+			id: `gsc:${name}:${value}`,
+			[name]: value,
+			clicks: row.clicks,
+			impressions: row.impressions,
+			ctr: row.ctr,
+			position: row.position,
+			previousImpressions: row.previous?.impressions ?? null,
+			impressionsChangeRatio: row.previous
+				? ratioChange(row.impressions, row.previous.impressions)
+				: null,
+			// 순위는 숫자가 작을수록 좋습니다. 양수면 개선입니다.
+			positionImprovement: row.previous ? amountChange(row.previous.position, row.position) : null,
+		};
+	});
 
 const describeGsc = (gscReport) => {
 	if (!gscReport) {
@@ -173,7 +188,7 @@ const describeGsc = (gscReport) => {
 		},
 		weekly: weekly
 			? {
-					id: "gsc:weekly",
+					id: "gsc:weekly-totals",
 					period: weekly.week,
 					totals: Object.fromEntries(
 						["clicks", "impressions", "ctr", "position"].map((metric) => [
@@ -204,6 +219,8 @@ const collectEvidenceIds = ({ issueGroups, resolvedGroups, gsc }) => [
 	...(gsc.indexChanges?.dropped ?? []).map((item) => item.id),
 	...(gsc.indexChanges?.recovered ?? []).map((item) => item.id),
 	...(gsc.weekly ? [gsc.weekly.id] : []),
+	...(gsc.weekly?.topQueries ?? []).map((row) => row.id),
+	...(gsc.weekly?.topPages ?? []).map((row) => row.id),
 	...(gsc.weekly?.monthly ? [gsc.weekly.monthly.id] : []),
 ];
 

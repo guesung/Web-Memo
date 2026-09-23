@@ -30,10 +30,13 @@ const readOptionalJson = async (path) => {
 /** 기간 안의 SEO 관련 커밋을 읽습니다. 얕은 체크아웃 등으로 실패하면 빈 목록으로 두고 경고만 남깁니다. */
 export const readRecentCommits = async ({ hours, runGit = execFileAsync }) => {
 	try {
+		// 머지 커밋 방식이라 며칠 전 커밋이 오늘 master에 들어올 수 있습니다. master에 들어온 시점으로 보려고
+		// 첫 부모만 따라가고, 머지 커밋의 파일 목록은 첫 부모 대비 변경으로 계산합니다.
 		const { stdout } = await runGit("git", [
 			"log",
 			`--since=${hours} hours ago`,
-			"--no-merges",
+			"--first-parent",
+			"--diff-merges=first-parent",
 			"--pretty=format:%h%x1f%cI%x1f%s",
 			"--name-only",
 			"--",

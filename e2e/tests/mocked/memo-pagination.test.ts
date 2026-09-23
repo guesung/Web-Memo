@@ -164,6 +164,7 @@ test.describe("날짜별 메모 그리드 페이지 연결 (Mocked)", () => {
 		await page.setViewportSize({ width: 1440, height: 900 });
 		await dateGroups.first().locator("h2").scrollIntoViewIfNeeded();
 		await page.setViewportSize({ width: 390, height: 844 });
+		await dateGroups.first().locator("h2").scrollIntoViewIfNeeded();
 		await expect(dateGroups.first().locator("h2")).toBeInViewport();
 		await expect
 			.poll(async () => {

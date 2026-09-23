@@ -80,6 +80,7 @@ const MemoList = (props: IFMemoListProps) => {
 					className="grid grid-cols-1 gap-4 md:grid-cols-[144px_minmax(0,1fr)] md:gap-6"
 				>
 					<h2
+						data-testid="memo-date-label"
 						id={`memo-date-${group.dateKey}`}
 						className="border-b border-border pb-3 text-sm font-semibold md:border-b-0 md:border-r md:pb-0 md:pr-4"
 					>

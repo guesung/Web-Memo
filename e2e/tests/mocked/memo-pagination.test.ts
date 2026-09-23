@@ -71,7 +71,7 @@ test.describe("메모 무한 스크롤 (Mocked)", () => {
 	});
 });
 
-test.describe("날짜별 메모 목록 페이지 연결 (Mocked)", () => {
+test.describe("날짜별 메모 그리드 페이지 연결 (Mocked)", () => {
 	test.beforeEach(async ({ page }) => {
 		resetMockIds();
 		const store = new MockSupabaseStore();
@@ -112,7 +112,7 @@ test.describe("날짜별 메모 목록 페이지 연결 (Mocked)", () => {
 		});
 	});
 
-	test("목록에서 다음 장을 이어 읽어 같은 현지 날짜를 하나로 묶고 동률 커서의 메모도 보인다.", async ({
+	test("다음 장을 이어 읽어 같은 현지 날짜를 하나로 묶고 메모를 중복 없이 보여준다.", async ({
 		page,
 	}) => {
 		const memoRows = page.getByTestId("memo-list-item");
@@ -134,7 +134,17 @@ test.describe("날짜별 메모 목록 페이지 연결 (Mocked)", () => {
 		await expect(dateGroups.last().getByTestId("memo-list-item")).toHaveCount(
 			4,
 		);
+		await expect(dateGroups.first().getByTestId("memo-date-grid")).toHaveCount(
+			1,
+		);
+		await expect(dateGroups.last().getByTestId("memo-date-grid")).toHaveCount(
+			1,
+		);
 		await expect(dateGroups.first().locator("h2 time")).toHaveCount(1);
+		const memoTitles = await memoRows
+			.locator("button > span:first-child")
+			.allTextContents();
+		expect(new Set(memoTitles).size).toBe(26);
 		await expect(
 			page.getByRole("button", { name: /같은 시각 메모 01/ }),
 		).toHaveCount(1);
@@ -143,7 +153,33 @@ test.describe("날짜별 메모 목록 페이지 연결 (Mocked)", () => {
 		).toHaveCount(1);
 	});
 
-	test("목록 행을 누르면 해당 메모 id가 URL에 남고 상세 화면이 열린다.", async ({
+	test("넓은 화면에서는 카드가 나란히, 좁은 화면에서는 세로로 배치된다.", async ({
+		page,
+	}) => {
+		const cards = page
+			.getByTestId("memo-date-grid")
+			.first()
+			.getByTestId("memo-list-item");
+		await expect(cards).toHaveCount(PAGE_SIZE);
+
+		await page.setViewportSize({ width: 1440, height: 900 });
+		const wideFirstCard = await cards.nth(0).boundingBox();
+		const wideSecondCard = await cards.nth(1).boundingBox();
+		expect(wideFirstCard).not.toBeNull();
+		expect(wideSecondCard).not.toBeNull();
+		expect(wideSecondCard?.y).toBeCloseTo(wideFirstCard?.y ?? 0, 0);
+		expect(wideSecondCard?.x).toBeGreaterThan(wideFirstCard?.x ?? 0);
+
+		await page.setViewportSize({ width: 390, height: 844 });
+		const narrowFirstCard = await cards.nth(0).boundingBox();
+		const narrowSecondCard = await cards.nth(1).boundingBox();
+		expect(narrowFirstCard).not.toBeNull();
+		expect(narrowSecondCard).not.toBeNull();
+		expect(narrowSecondCard?.x).toBeCloseTo(narrowFirstCard?.x ?? 0, 0);
+		expect(narrowSecondCard?.y).toBeGreaterThan(narrowFirstCard?.y ?? 0);
+	});
+
+	test("날짜별 카드를 누르면 해당 메모 id가 URL에 남고 상세 화면이 열린다.", async ({
 		page,
 	}) => {
 		await page.getByRole("button", { name: /같은 시각 메모 21/ }).click();
@@ -154,7 +190,7 @@ test.describe("날짜별 메모 목록 페이지 연결 (Mocked)", () => {
 		);
 	});
 
-	test("목록에서 검색해도 기존 검색 조건으로 메모를 걸러낸다.", async ({
+	test("날짜별 보기에서 검색해도 기존 검색 조건으로 메모를 걸러낸다.", async ({
 		page,
 	}) => {
 		await page.getByPlaceholder("Search memos").fill("전날 메모 1");

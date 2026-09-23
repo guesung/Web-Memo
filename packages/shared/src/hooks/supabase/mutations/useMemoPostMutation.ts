@@ -1,46 +1,31 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { NoMemosError, QUERY_KEY } from "../../../constants";
+import { QUERY_KEY } from "../../../constants";
 import type { MemoSupabaseResponse, MemoTable } from "../../../types";
 import { MemoService } from "../../../utils";
 
 import { useSupabaseClientQuery } from "../queries";
 
-type MutationError = Error;
+/** 메모 생성 요청의 오류 타입이다. */
+type TMutationError = Error;
 
-export default function useMemoPostMutation() {
+/** 메모를 생성하고 모든 메모 목록 캐시를 갱신한다. */
+const useMemoPostMutation = () => {
 	const queryClient = useQueryClient();
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
-	return useMutation<MemoSupabaseResponse, MutationError, MemoTable["Insert"]>({
-		meta: {
-			feature: "memo",
-			operation: "create",
-			stage: "save",
+	return useMutation<MemoSupabaseResponse, TMutationError, MemoTable["Insert"]>(
+		{
+			meta: {
+				feature: "memo",
+				operation: "create",
+				stage: "save",
+			},
+			mutationFn: new MemoService(supabaseClient).insertMemo,
+			onSuccess: async () => {
+				await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+			},
 		},
-		mutationFn: new MemoService(supabaseClient).insertMemo,
-		onSuccess: async (result) => {
-			const { data: newData } = result;
+	);
+};
 
-			await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
-
-			const previousMemos = queryClient.getQueryData<MemoSupabaseResponse>(
-				QUERY_KEY.memos(),
-			);
-
-			if (!previousMemos || !newData) throw new NoMemosError();
-
-			const { data: previousMemosData } = previousMemos;
-
-			if (!previousMemosData) throw new NoMemosError();
-
-			const newMemosData = newData.concat(previousMemosData);
-
-			await queryClient.setQueryData(QUERY_KEY.memos(), {
-				...previousMemos,
-				data: newMemosData,
-			});
-
-			return { previousMemos };
-		},
-	});
-}
+export default useMemoPostMutation;

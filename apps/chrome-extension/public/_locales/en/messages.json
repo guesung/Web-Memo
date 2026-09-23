@@ -1,5 +1,7 @@
 {
-	"memo_title_sync": { "message": "Update to the current page title" },
+	"memo_title_sync": {
+		"message": "Update to the current page title"
+	},
 	"extensionName": {
 		"message": "Web Memo - Easily take notes on websites"
 	},
@@ -256,16 +258,16 @@
 		"message": "Purple"
 	},
 	"highlight_bubble_disable": {
-		"message": "Turn off highlight button"
+		"message": "Turn off highlight popup"
 	},
 	"highlight_bubble_disabled_title": {
-		"message": "Highlight button turned off."
+		"message": "Highlight popup turned off."
 	},
 	"highlight_bubble_disabled_description": {
 		"message": "You can turn it back on in Options."
 	},
 	"highlight_intro_message": {
-		"message": "This is Web Memo's highlight. Save the text you select and view it all together on the web later. Don't need it? Turn it off with X."
+		"message": "This is Web Memo highlighting. Choose a color to save a passage or add a note. Open the X menu to change the popup position or turn it off."
 	},
 	"highlight_intro_confirm": {
 		"message": "Got it"
@@ -274,10 +276,10 @@
 		"message": "Highlight"
 	},
 	"highlight_bubble_setting": {
-		"message": "Show the highlight button when selecting text"
+		"message": "Show highlight popup when selecting text"
 	},
 	"highlight_bubble_setting_description": {
-		"message": "When off, no button appears as you select text. Your saved highlights stay visible."
+		"message": "When off, selecting text won’t show the popup. Your saved highlights remain visible."
 	},
 	"highlight_bubble_setting_save_failed": {
 		"message": "Couldn't save. Please try again."
@@ -287,5 +289,53 @@
 	},
 	"notice_link_default_label": {
 		"message": "Learn more"
+	},
+	"highlight_bubble_position_setting": {
+		"message": "Highlight popup position"
+	},
+	"highlight_bubble_position_below": {
+		"message": "Show popup below text"
+	},
+	"highlight_bubble_position_above": {
+		"message": "Show popup above text"
+	},
+	"highlight_disabled_sites_setting": {
+		"message": "Sites with popup disabled"
+	},
+	"highlight_disabled_sites_empty": {
+		"message": "No sites have the popup disabled."
+	},
+	"highlight_site_enable": {
+		"message": "Re-enable"
+	},
+	"highlight_note": {
+		"message": "Note"
+	},
+	"highlight_note_placeholder": {
+		"message": "Add a note to this highlight"
+	},
+	"highlight_note_save": {
+		"message": "Save"
+	},
+	"highlight_bubble_menu_title": {
+		"message": "Web Memo highlights"
+	},
+	"highlight_bubble_disable_site": {
+		"message": "Turn off on this site"
+	},
+	"highlight_bubble_disable_all": {
+		"message": "Turn off highlight popup"
+	},
+	"highlight_bubble_disabled_site_title": {
+		"message": "Turned off on this site"
+	},
+	"highlight_bubble_disabled_all_title": {
+		"message": "Highlight popup turned off"
+	},
+	"highlight_bubble_disabled_site_description": {
+		"message": "You can turn it back on in settings"
+	},
+	"highlight_bubble_disabled_all_description": {
+		"message": "You can turn it back on in settings"
 	}
 }

@@ -1,14 +1,15 @@
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import { Alert, AlertDescription, AlertTitle, Button } from "@web-memo/ui";
 import { ArrowRightIcon, InfoIcon, XIcon } from "lucide-react";
+import { createPortal } from "react-dom";
 import { getNoticeContent, type TNoticeLinkTarget } from "./getNoticeContent";
 import useNoticeBanner from "./useNoticeBanner";
 
 /**
- * 사이드 패널 상단의 운영 공지 배너.
+ * 사이드 패널 화면 중앙의 비모달 운영 공지 카드.
  * @description 로그인 여부와 무관하게 보인다. 보여줄 공지가 없으면 자리도 차지하지 않는다.
  */
-export default function NoticeBanner() {
+const NoticeBanner = () => {
 	const { notice, handleNoticeDismiss } = useNoticeBanner();
 
 	if (!notice) {
@@ -21,8 +22,8 @@ export default function NoticeBanner() {
 	});
 	const noticeLink = noticeContent.link;
 
-	return (
-		<Alert className="mb-2 shrink-0 pr-10">
+	return createPortal(
+		<Alert className="fixed left-1/2 top-1/2 z-40 max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto break-words pr-10 shadow-lg">
 			{/* Alert가 아이콘 뒤 형제에 pl-7을 주므로 닫기 버튼은 아이콘 앞에 둔다. */}
 			<Button
 				variant="ghost"
@@ -48,9 +49,12 @@ export default function NoticeBanner() {
 					</Button>
 				)}
 			</AlertDescription>
-		</Alert>
+		</Alert>,
+		document.body,
 	);
-}
+};
+
+export default NoticeBanner;
 
 const openNoticeLinkTarget = (linkTarget: TNoticeLinkTarget) => {
 	if (linkTarget.type === "options") {

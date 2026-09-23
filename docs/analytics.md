@@ -30,7 +30,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 
 `memo_write`(fields) · `memo_delete`(memo_count) · `memo_restore`(memo_count) ·
 `memo_delete_permanently`(memo_count) · `memo_open`(has_search_query) · `memo_source_open` ·
-`memo_search`(query_length) · `memo_status_toggle`(status, enabled) · `memo_category_change` ·
+`memo_search`(query_length) · `memo_status_toggle`(status, enabled) · `memo_category_change`(source) ·
 `highlight_note_update` · `summary_run` · `summary_complete`(duration_msec) ·
 `summary_fail`(reason) · `chat_message_send` · `chat_fail`(reason) ·
 `youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category) ·
@@ -53,6 +53,10 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 않습니다. 메모 변경 요청의 키를 보고 `Analytics.ts`의 `trackMemoUpdate`가 갈라 보냅니다 —
 상태 토글·카테고리 변경·본문 수정이 모두 같은 뮤테이션을 지나기 때문입니다. grep으로 찾으면
 안 나오므로 "안 쓰는 이벤트"로 오인하기 쉽습니다.
+
+`memo_category_change`의 `source`는 patch 경로(`useMemoPatchMutation`의 `categorySource`)로
+바꾼 것만 붙습니다. 사이드 패널 자동 저장(upsert)은 요청마다 `category_id`를 실어 보내 값이
+안 바뀌어도 이 이벤트가 찍히므로, 경로별 비율은 `source`가 있는 이벤트만 세야 합니다.
 
 로그인 완료(`login`·`sign_up`)는 서버에서 끝나 `gtag`가 닿지 않습니다. 도착한 클라이언트가
 대신 쏩니다.
@@ -77,14 +81,15 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `duration_msec`(요약 소요 시간) · `memo_count`(처리한 메모 수) · `query_length`(검색어 길이).
 각각 원값·`average`·`count` 세 형태로 등록돼 있습니다.
 
-### 등록되지 않은 파라미터 (2개)
+### 등록되지 않은 파라미터 (3개)
 
 | 파라미터 | 붙는 이벤트 | 없으면 못 하는 것 |
 | --- | --- | --- |
 | `step_name` | `guide_step` | 가이드의 **어느 단계에서 이탈하는지** 볼 수 없습니다 |
 | `event_category` | 전 이벤트 | `core_action`과 `engagement`를 **나눠 보는 조회**가 막힙니다 |
+| `source` | `memo_category_change` | 카테고리를 **칩·배지(button)·#(hash)·AI(ai) 중 어느 경로로** 바꿨는지 나눠 볼 수 없습니다 |
 
-둘 다 GA4 콘솔에서 커스텀 차원으로 등록하면 끝나는 일이고 코드 변경이 필요 없습니다.
+셋 다 GA4 콘솔에서 커스텀 차원으로 등록하면 끝나는 일이고 코드 변경이 필요 없습니다.
 등록해도 **소급 적용되지 않으므로** 등록 이후의 데이터부터 조회됩니다.
 
 ## 지표를 읽을 때 주의할 것

@@ -32,6 +32,13 @@ export interface IFGa4EventParams {
 }
 
 /**
+ * 메모 카테고리를 바꾼 경로.
+ * @description button은 사이드 패널의 칩·배지·해제 버튼, hash는 본문의 # 입력, ai는 AI 추천 자동
+ * 적용입니다. "사람들이 #을 모른다"는 가정을 확인하려고 경로별 비율을 봅니다.
+ */
+export type TCategoryChangeSource = "button" | "hash" | "ai";
+
+/**
  * 추적 가능한 이벤트 전체 목록.
  * @description 이름과 파라미터가 짝지어진 판별 유니온입니다. 로깅은 틀려도 화면이 깨지지 않아
  * 런타임에서 오류를 발견할 수 없으므로, 컴파일이 유일한 안전망입니다. 새 이벤트는 반드시
@@ -73,7 +80,10 @@ export type TAnalyticsEvent =
 			name: "memo_status_toggle";
 			params: { status: "wish" | "star" | "reading"; enabled: boolean };
 	  }
-	| { name: "memo_category_change" }
+	| {
+			name: "memo_category_change";
+			params?: { source: TCategoryChangeSource };
+	  }
 	| { name: "memo_undo"; params: { action: "wish" | "reading" | "delete" } }
 	| { name: "category_suggestion_show"; params: { is_new_category: boolean } }
 	| { name: "category_suggestion_apply"; params: { is_new_category: boolean } }
@@ -81,7 +91,13 @@ export type TAnalyticsEvent =
 	| { name: "extension_install_dismiss" }
 	| {
 			name: "open_web_from_extension";
-			params: { from: "side_panel_memo" | "side_panel_toast" | "context_menu" };
+			params: {
+				from:
+					| "side_panel_memo"
+					| "side_panel_toast"
+					| "side_panel_category"
+					| "context_menu";
+			};
 	  }
 	| { name: "guide_open"; params: { from: "context_menu" } }
 	| { name: "guide_finish" }

@@ -1,4 +1,8 @@
 import { analytics } from "@web-memo/shared/modules/analytics";
+import {
+	ChromeSyncStorage,
+	STORAGE_KEYS,
+} from "@web-memo/shared/modules/chrome-storage";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import {
 	type HighlightRenderer,
@@ -34,9 +38,12 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 	const controllerRef = useRef<ReturnType<
 		typeof createHighlightController
 	> | null>(null);
-	const { isBubbleAllowed } = useHighlightBubbleGate();
+	const { isBubbleAllowed, isIntroPending } = useHighlightBubbleGate();
 	/** 컨트롤러는 한 번만 만들어지므로 게이트의 최신 값을 ref로 읽게 한다. */
 	const isBubbleAllowedRef = useRef(isBubbleAllowed);
+	const isIntroPendingRef = useRef(isIntroPending);
+	const [disabledNoticePosition, setDisabledNoticePosition] =
+		useState<IFHighlightNoticePosition | null>(null);
 	useEffect(() => {
 		let generation = 0;
 		let isStopped = false;
@@ -84,6 +91,9 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			isSelectionEnabled: () => isBubbleAllowedRef.current,
 			onSaveSuccess: () => {
 				analytics.trackEvent({ name: "highlight_create" });
+				if (isIntroPendingRef.current) {
+					void markIntroSeen();
+				}
 			},
 		});
 		const editor = createHighlightEditor({
@@ -115,16 +125,72 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			controllerRef.current?.dismissSelection();
 		}
 	}, [isBubbleAllowed]);
+	useEffect(() => {
+		isIntroPendingRef.current = isIntroPending;
+	}, [isIntroPending]);
+	useEffect(() => {
+		if (!disabledNoticePosition) {
+			return;
+		}
+		const handlePageInteraction = () => setDisabledNoticePosition(null);
+		document.addEventListener("selectionchange", handlePageInteraction);
+		document.addEventListener("pointerdown", handlePageInteraction);
+		window.addEventListener("scroll", handlePageInteraction, true);
+
+		return () => {
+			document.removeEventListener("selectionchange", handlePageInteraction);
+			document.removeEventListener("pointerdown", handlePageInteraction);
+			window.removeEventListener("scroll", handlePageInteraction, true);
+		};
+	}, [disabledNoticePosition]);
 	const handleHighlightButtonClick = async () => {
 		await controllerRef.current?.save();
+	};
+	const handleBubbleCloseClick = async () => {
+		if (!selectionState) {
+			return;
+		}
+		const noticePosition = { x: selectionState.x, y: selectionState.y };
+		try {
+			await ChromeSyncStorage.set(STORAGE_KEYS.highlightBubbleEnabled, false);
+		} catch {
+			/** 끄기를 저장하지 못하면 버블을 그대로 두어 다시 누를 수 있게 한다. */
+			return;
+		}
+		analytics.trackEvent({ name: "highlight_bubble_disable" });
+		void markIntroSeen();
+		controllerRef.current?.dismissSelection();
+		setDisabledNoticePosition(noticePosition);
+	};
+	const handleIntroConfirmClick = async () => {
+		await markIntroSeen();
 	};
 
 	return {
 		selectionState,
+		isIntroVisible: isIntroPending,
+		disabledNoticePosition,
 		handleHighlightButtonClick,
+		handleBubbleCloseClick,
+		handleIntroConfirmClick,
 		editState,
 		handleHighlightEdit: (
 			action: Parameters<ReturnType<typeof createHighlightEditor>["edit"]>[0],
 		) => editorRef.current?.edit(action),
 	};
 };
+
+/** 첫 선택 말풍선을 본 것으로 기록한다. 실패하면 다음 선택에서 다시 보여준다. */
+const markIntroSeen = async () => {
+	try {
+		await ChromeSyncStorage.set(STORAGE_KEYS.highlightIntroSeen, true);
+	} catch {
+		/** 기록 실패는 말풍선이 한 번 더 뜨는 것으로 끝난다. */
+	}
+};
+
+/** 끔 안내를 띄울 화면 좌표. 사라진 버블의 자리를 그대로 쓴다. */
+interface IFHighlightNoticePosition {
+	x: number;
+	y: number;
+}

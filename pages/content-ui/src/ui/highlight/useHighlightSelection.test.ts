@@ -17,6 +17,10 @@ vi.mock("./useHighlightBubbleGate", () => ({
 		isIntroPending: false,
 	}),
 }));
+vi.mock("@web-memo/shared/modules/chrome-storage", () => ({
+	ChromeSyncStorage: { set: vi.fn() },
+	STORAGE_KEYS: {},
+}));
 vi.mock("@web-memo/shared/modules/analytics", () => ({
 	analytics: { trackEvent: vi.fn() },
 }));

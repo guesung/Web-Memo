@@ -254,5 +254,20 @@
 	},
 	"highlight_color_purple": {
 		"message": "Purple"
+	},
+	"highlight_bubble_disable": {
+		"message": "Turn off highlight button"
+	},
+	"highlight_bubble_disabled_title": {
+		"message": "Highlight button turned off."
+	},
+	"highlight_bubble_disabled_description": {
+		"message": "You can turn it back on in Options."
+	},
+	"highlight_intro_message": {
+		"message": "This is Web Memo's highlight. Save the text you select and view it all together on the web later. Don't need it? Turn it off with X."
+	},
+	"highlight_intro_confirm": {
+		"message": "Got it"
 	}
 }

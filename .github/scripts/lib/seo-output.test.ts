@@ -58,6 +58,10 @@ describe("SEO 보고서 저장", () => {
 
 		expect(history.baselineStatus).toBe("compatible");
 		expect(history.delta.new).toHaveLength(1);
+		expect(Object.values(history.firstSeen)).toEqual([
+			{ firstSeenAt: null, exact: false },
+		]);
+		expect(report).toHaveProperty("history.firstSeen");
 		expect(mkdir).toHaveBeenCalledWith("artifacts/seo", { recursive: true });
 		expect(writeFile).toHaveBeenCalledWith(
 			"artifacts/seo/seo-report.md",
@@ -80,6 +84,7 @@ describe("SEO 보고서 저장", () => {
 		expect(history).toEqual({
 			baselineStatus: "incompatible",
 			delta: { new: [], persistent: [], resolved: [], unobservable: [] },
+			firstSeen: {},
 		});
 	});
 

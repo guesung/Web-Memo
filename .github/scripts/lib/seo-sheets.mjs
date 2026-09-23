@@ -4,6 +4,7 @@ import { createSeoObservationMap } from "./seo-history.mjs";
 export const createSeoSheetTables = ({
 	seoReport,
 	gscReport,
+	aiReport = null,
 	githubRunId,
 	githubRunAttempt,
 	commitSha = "",
@@ -150,6 +151,24 @@ export const createSeoSheetTables = ({
 				context,
 				siteUrl: gscReport?.siteUrl ?? "",
 			}),
+		},
+		{
+			title: "SEO AI Reports",
+			rows: aiReport
+				? [
+						[
+							runKey,
+							...context.slice(1),
+							runUrl,
+							aiReport.mode ?? "",
+							aiReport.status ?? "",
+							aiReport.headline ?? "",
+							...["P0", "P1", "P2", "P3"].map((priority) => aiReport.counts?.[priority] ?? 0),
+							aiReport.droppedFindingCount ?? 0,
+							aiReport.delivered === true,
+						],
+					]
+				: [],
 		},
 		{
 			title: "SEO Changes",

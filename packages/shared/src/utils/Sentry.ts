@@ -39,7 +39,7 @@ export const initSentry = async () => {
 		integrations: [browserTracingIntegration(), browserProfilingIntegration()],
 
 		tracesSampleRate: isExtension() ? 1.0 : 0,
-		release: "0.3.1",
+		release: isExtension() ? chrome.runtime.getManifest().version : undefined,
 	});
 
 	if (isExtension()) {

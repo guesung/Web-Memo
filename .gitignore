@@ -11,11 +11,11 @@
 
 # env
 # 환경별 파일은 공개돼도 되는 값(웹 URL·NODE_ENV)만 담으므로 추적합니다.
-# 비밀은 apps/web/.env(추적 제외)에 둡니다.
+# 웹의 서버 시크릿은 Vercel 프로젝트 환경변수가 원천이고, 로컬은 pnpm env:pull로
+# apps/web/.env.local에 받아 씁니다(추적 제외).
 # 부정 패턴에 슬래시를 붙여 packages/env로 한정합니다. 슬래시가 없으면 경로 제한이
 # 없어져 apps/web/.env.production 같은 동명 파일까지 추적 대상이 됩니다.
 .env*
-!.env.example
 !/packages/env/.env.development
 !/packages/env/.env.staging
 !/packages/env/.env.production
@@ -81,3 +81,9 @@ android
 
 # /gs 파이프라인 상태 파일
 .omc/
+
+# refactor-audit.yml 이 러너에서 만드는 점검 입력 파일
+.audit-changed-files.txt
+
+# SEO 모니터가 로컬·CI에서 생성하는 일회성 리포트
+/artifacts/seo/

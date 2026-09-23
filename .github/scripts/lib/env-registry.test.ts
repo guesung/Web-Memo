@@ -6,6 +6,7 @@ import {
 	fetchVercelEnvNames,
 	formatFindingLine,
 	formatFindings,
+	isBlockingFinding,
 	tryFetch,
 } from "./env-registry.mjs";
 
@@ -124,6 +125,39 @@ describe("formatFindings", () => {
 	});
 });
 
+describe("compareRegistry: vercel(세 환경 모두)", () => {
+	it("vercel로 선언한 값이 한 환경에라도 빠지면 그 환경을 알린다", () => {
+		const { findings } = compareRegistry({
+			entries: [entry({ name: "SENTRY_WEBHOOK_SECRET", stores: ["vercel"] })],
+			results: [
+				{
+					store: "vercel",
+					names: new Map([["SENTRY_WEBHOOK_SECRET", new Set(["production"])]]),
+				},
+			],
+		});
+
+		expect(findings).toEqual([
+			{ store: "vercel", type: "missing", name: "SENTRY_WEBHOOK_SECRET", detail: "preview" },
+			{ store: "vercel", type: "missing", name: "SENTRY_WEBHOOK_SECRET", detail: "development" },
+		]);
+	});
+
+	it("세 환경에 모두 있으면 통과한다", () => {
+		const { findings } = compareRegistry({
+			entries: [entry({ name: "OPENAI_API_KEY", stores: ["vercel"] })],
+			results: [
+				{
+					store: "vercel",
+					names: new Map([["OPENAI_API_KEY", new Set(["production", "preview", "development"])]]),
+				},
+			],
+		});
+
+		expect(findings).toEqual([]);
+	});
+});
+
 describe("formatFindingLine", () => {
 	it("Slack 목록과 PR 경고 주석이 같은 문장을 쓰도록 종류와 환경을 한 줄로 쓴다", () => {
 		expect(
@@ -132,6 +166,16 @@ describe("formatFindingLine", () => {
 		expect(formatFindingLine({ store: "github", type: "unregistered", name: "B" })).toBe(
 			"매니페스트에 없음: `B`",
 		);
+	});
+});
+
+describe("isBlockingFinding", () => {
+	it("등록이 빠진 것만 막고, 코드보다 먼저 한 등록과 선언 밖 환경은 막지 않는다", () => {
+		expect(isBlockingFinding({ store: "vercel", type: "missing", name: "A" })).toBe(true);
+		expect(isBlockingFinding({ store: "vercel", type: "unregistered", name: "A" })).toBe(false);
+		expect(
+			isBlockingFinding({ store: "vercel", type: "extra-environment", name: "A", detail: "development" }),
+		).toBe(false);
 	});
 });
 

@@ -1,0 +1,131 @@
+name: Refactor audit
+
+# 주 1회 master의 설계·구조·퀄리티를 점검해 리팩토링 후보를 노션 작업 카드로 만들고 Slack에 알립니다.
+# cleanup-unused.yml 과 같은 주기(토요일 아침)입니다. 앞은 기계적으로 지울 수 있는 것을,
+# 이쪽은 사람이 판단해야 하는 것을 찾습니다.
+#
+# 전제: 이 레포에 Claude GitHub App(https://github.com/apps/claude)이 설치돼 있어야 합니다.
+# 액션이 OIDC 토큰을 App 토큰으로 교환하는데, 설치돼 있지 않으면 이 교환이 실패합니다.
+#
+# 점검은 Claude Code 구독(CLAUDE_CODE_OAUTH_TOKEN)으로 돌립니다. API 키가 아니라 구독 한도를
+# 쓰므로, 한도가 빠듯한 주에는 이 잡이 실패할 수 있습니다. 실패는 아래에서 Slack으로 알립니다.
+#
+# Claude에게는 Read·Grep·Glob만 줍니다. 노션·Slack 전송은 뒤 단계의 스크립트가 결정적으로 맡아
+# 모델이 외부 서비스에 쓸 수 없게 했습니다.
+#
+# 수동 실행의 dry_run 은 노션 카드와 Slack 전송을 건너뛰고 보낼 내용만 로그에 찍습니다.
+on:
+  schedule:
+    # 매주 토요일 01:17 UTC (KST 10:17). cleanup-unused.yml 이 01:00 이라 17분 어긋냅니다.
+    # 정시에는 스케줄이 몰려 지연·누락이 잦고, 같은 시각에 두 잡이 러너를 다투는 것도 피합니다.
+    - cron: "17 1 * * 6"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "노션 카드·Slack 전송 없이 점검 결과만 로그로 확인합니다"
+        type: boolean
+        default: false
+
+concurrency:
+  group: refactor-audit
+  cancel-in-progress: false
+
+# claude-code-action 이 GitHub 접근 토큰을 OIDC로 교환하므로 id-token 이 필요합니다.
+# 이 permissions 는 교환해 받는 App 토큰을 제한하지 않습니다. 읽기 전용은 아래 --allowedTools 가 보장합니다.
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  audit:
+    name: 주간 리팩토링 점검
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      # 최근 변경분을 git log 로 뽑으려면 이력이 필요합니다.
+      - uses: actions/checkout@v5
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      # Claude에게 Bash를 주지 않으므로 최근 2주 변경 파일 목록을 미리 만들어 넘깁니다.
+      # 삭제된 파일은 뺍니다(--diff-filter=d). 남겨 두면 모델이 건너뛰려고 Read를 시도하며 턴을 쓰고,
+      # --max-turns 를 넘기면 경고가 아니라 실패가 됩니다.
+      # 상한으로 자를 때는 경로 알파벳 순이 아니라 변경이 잦은 순으로 자릅니다. sort -u 뒤에 head 를 쓰면
+      # apps/ 가 상한을 채워 packages/ 가 통째로 빠집니다.
+      - name: List recently changed files
+        run: |
+          git log --since="14 days ago" --name-only --pretty=format: --diff-filter=d -- apps packages \
+            | sed '/^$/d' | sort | uniq -c | sort -rn | sed 's/^ *[0-9]* //' \
+            | while IFS= read -r file; do [ -f "$file" ] && printf '%s\n' "$file"; done \
+            | head -200 > .audit-changed-files.txt
+          wc -l .audit-changed-files.txt
+
+      - name: Audit code
+        id: audit
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            이 저장소(Web Memo)에서 사람이 판단해 리팩토링할 만한 부분을 찾아 주세요.
+
+            기준 문서는 AGENTS.md, docs/frontend-guidelines.md, docs/architecture.md 입니다.
+            먼저 세 문서를 읽고, .audit-changed-files.txt 에 적힌 최근 2주 변경 파일을 출발점으로 삼으세요.
+            변경이 잦은 파일이 앞에 있습니다. 그 파일이 의존하거나 그 파일에 의존하는 주변 코드는 필요한 만큼 따라가도 됩니다.
+
+            찾을 것은 세 분류입니다.
+            - design: 책임이 섞인 모듈, 잘못된 의존 방향, 숨은 결합, 추상화가 새는 경계
+            - structure: 파일·폴더 배치, 300줄을 넘는 파일, 재사용되지 않는 과한 분리, 중복된 로직
+            - quality: 에러 처리 누락, 테스트하기 어려운 구조, 읽기 어려운 조건 분기
+
+            제외할 것:
+            - 포매팅·린트가 잡는 것 (Biome이 맡습니다)
+            - 미사용 파일·export (knip 정리 워크플로가 맡습니다)
+            - 취향 차이로 갈릴 수 있는 스타일 지적
+
+            규칙:
+            - 코드를 직접 읽어 확인한 것만 적으세요. 추측하거나 파일 이름만 보고 판단하지 마세요.
+            - 각 발견에는 실제 파일 경로와 줄 번호(파일:라인)를 붙이세요.
+            - 파일을 수정하지 마세요. 읽기 전용입니다.
+            - 가치가 큰 것부터 최대 10개만 고르세요. 찾지 못했으면 findings 를 빈 배열로 두세요.
+            - 제안은 "무엇을 어디로 옮긴다"처럼 실행 가능한 문장으로 쓰세요.
+
+            결과는 지정된 JSON 스키마로만 냅니다. summary 에는 이번 점검이 본 범위와 전체 인상을 두세 문장으로 씁니다.
+          claude_args: |
+            --model claude-sonnet-5
+            --max-turns 40
+            --allowedTools Read,Grep,Glob
+            --json-schema '{"type":"object","properties":{"summary":{"type":"string"},"findings":{"type":"array","items":{"type":"object","properties":{"title":{"type":"string"},"severity":{"type":"string","enum":["high","medium","low"]},"category":{"type":"string","enum":["design","structure","quality"]},"files":{"type":"array","items":{"type":"string"}},"problem":{"type":"string"},"suggestion":{"type":"string"}},"required":["title","severity","category","files","problem","suggestion"]}}},"required":["summary","findings"]}'
+
+      # 노션 카드는 개인 업무 로그 DB에 만듭니다. DB ID는 비밀이 아니라 값을 그대로 적습니다
+      # (weekly-ga-report.yml 의 GA4_PROPERTY_ID 와 같은 이유입니다).
+      - name: Create Notion card and notify Slack
+        env:
+          AUDIT_RESULT: ${{ steps.audit.outputs.structured_output }}
+          NOTION_WORK_LOG_DATABASE_ID: "5f408e05-0015-4532-bcd8-bd36439bec5a"
+          NOTION_TOKEN: ${{ inputs.dry_run != true && secrets.NOTION_TOKEN || '' }}
+          SLACK_REPORT_WEBHOOK_URL: ${{ inputs.dry_run != true && secrets.SLACK_REPORT_WEBHOOK_URL || '' }}
+        run: node .github/scripts/report-refactor-audit.mjs
+
+      # 주 1회 도는 무인 잡이라 실패가 알림 부재와 구분되지 않습니다. 구독 한도 소진이나
+      # 토큰 만료로도 실패하므로, 알림이 안 온 주가 "발견 없는 주"인지 "잡이 깨진 주"인지 드러나야 합니다.
+      # 본 알림과 웹훅을 일부러 가릅니다. 리포트는 SLACK_REPORT_WEBHOOK_URL 로 가지만 실패는
+      # CI·릴리스 채널(SLACK_WEBHOOK_URL)로 보내야, 리포트 채널 웹훅이 죽어도 실패가 침묵하지 않습니다.
+      - name: Notify failure
+        if: ${{ failure() }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::warning::SLACK_WEBHOOK_URL 이 없어 실패 알림을 건너뜁니다"
+            exit 0
+          fi
+          curl --silent --show-error --fail-with-body \
+            --header "content-type: application/json" \
+            --data "{\"text\":\"❌ 주간 리팩토링 점검 실패 — <$RUN_URL|실행 로그 보기>\"}" \
+            "$SLACK_WEBHOOK_URL"

@@ -14,6 +14,7 @@ import {
 	getResultError,
 	isAbortError,
 	isLoggedOutError,
+	isNetworkError,
 } from "@web-memo/shared/utils";
 import type { PropsWithChildren } from "react";
 import { useState } from "react";
@@ -42,6 +43,7 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 							feature: "web",
 							operation: String(query.queryKey[0]),
 							stage: "query",
+							level: isNetworkError(error) ? "warning" : undefined,
 							groupByMessage: true,
 						});
 					},
@@ -57,6 +59,7 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 							feature: "web",
 							operation: String(query.queryKey[0]),
 							stage: "query-result",
+							level: isNetworkError(resultError) ? "warning" : undefined,
 							groupByMessage: true,
 						});
 					},

@@ -4,18 +4,15 @@ name: Env Registry Audit
 # .github/env-manifest.yml 과 대조합니다.
 #
 # 콘솔에서 시크릿이 지워지거나 새로 생기는 일은 PR과 무관해서 코드만 보는 PR CI(env-manifest.yml)가
-# 못 잡습니다. 그래서 매일 돌아 다르면 Slack으로 알리고(notify), PR에서도 돌아 이 PR을 보는 사람이
-# 등록 현황을 그 자리에서 확인하게 합니다(report).
+# 못 잡습니다. 그래서 매일 돌아 다르면 Slack으로 알리고(notify), PR에서도 돌아 등록이 빠진 값이 있으면
+# 체크를 실패시킵니다(check).
 # 이름만 비교하므로 같은 이름이 두 저장소에 있을 때 값이 같은지는 확인하지 못합니다.
 #
-# PR에서는 Slack을 보내지 않고 결과를 잡 요약과 경고 주석으로만 보이며 항상 성공합니다. 콘솔 쪽
-# 등록은 PR과 무관하게 바뀌므로, 이 체크로 PR을 막으면 관련 없는 PR이 매번 같은 이유로 막힙니다.
-# 막아야 한다면 report 모드에서 차이가 있을 때 exitCode를 1로 두면 됩니다.
+# PR에서는 Slack을 보내지 않습니다. 실패시키는 것은 등록이 빠진 값(missing)뿐이고, 매니페스트에 없는
+# 등록과 선언하지 않은 환경은 경고 주석으로만 남깁니다. 코드보다 시크릿을 먼저 등록하는 것은 정상적인
+# 순서라, 그것까지 막으면 아직 머지 안 된 작업 때문에 관련 없는 PR이 매번 막힙니다.
+# 조회하지 못한 저장소(토큰 없음·권한 없음)는 비교할 수 없으므로 실패가 아니라 경고입니다.
 #
-# 조회 토큰이 없거나 거절된 저장소는 실패가 아니라 "미조회"로 남깁니다.
-#   GitHub   GitHub App(APP_ID, APP_PRIVATE_KEY)에 Secrets: read 권한이 있어야 합니다
-#   Vercel   VERCEL_TOKEN
-#   Supabase SUPABASE_ACCESS_TOKEN (GitHub Secrets에 등록)
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -55,7 +52,9 @@ jobs:
         id: app-token
         continue-on-error: true
         with:
-          app-id: ${{ secrets.APP_ID }}
+          # app-id는 deprecated입니다. 액션이 두 입력을 같은 변수로 읽고 GitHub도 JWT iss에 client ID와
+          # 앱 ID를 모두 받으므로, 시크릿 APP_ID 값을 그대로 client-id에 넘겨도 동작이 같습니다.
+          client-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           permission-secrets: read
 
@@ -66,8 +65,8 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          # PR은 Slack 없이 결과만 보여 줍니다. 스케줄·수동은 차이가 있으면 Slack으로 알립니다.
-          AUDIT_MODE: ${{ github.event_name == 'pull_request' && 'report' || 'notify' }}
+          # PR은 Slack 없이 등록이 빠졌을 때 체크를 실패시킵니다. 스케줄·수동은 차이가 있으면 Slack으로 알립니다.
+          AUDIT_MODE: ${{ github.event_name == 'pull_request' && 'check' || 'notify' }}
         run: node .github/scripts/audit-env-registry.mjs
 
       # 매일 도는 무인 잡이라 실패가 알림 부재와 구분되지 않습니다. 차이 알림이 안 온 날이

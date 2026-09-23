@@ -75,7 +75,8 @@
 		"deepmerge": "^4.3.1",
 		"postcss": "^8.4.49",
 		"tailwindcss": "^3.4.10",
-		"tailwindcss-animate": "^1.0.7"
+		"tailwindcss-animate": "^1.0.7",
+		"vitest": "^2.1.5"
 	},
 	"peerDependencies": {
 		"react": "^19.0.0",

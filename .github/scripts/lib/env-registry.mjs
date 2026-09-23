@@ -9,9 +9,12 @@
  * "미조회"로 돌려주고 나머지를 계속 대조합니다.
  */
 
+import {
+	isVercelStore,
+	VERCEL_ENVIRONMENTS,
+	vercelEnvironments,
+} from "./env-manifest.mjs";
 import { requestJson } from "./http.mjs";
-
-const VERCEL_ENVIRONMENTS = ["production", "preview", "development"];
 
 /** Supabase가 Edge Function에 주입하는 예약 변수. 우리가 등록하는 값이 아닙니다. */
 const SUPABASE_RESERVED_PREFIX = "SUPABASE_";
@@ -129,18 +132,11 @@ const compareNameSets = ({ store, entries, actualNames }) => {
 
 const compareVercel = ({ entries, actualEnvironments }) => {
 	const findings = [];
-	const declared = declaredIn(entries, (store) => store.startsWith("vercel:"));
+	const declared = declaredIn(entries, (store) => isVercelStore(store));
 	const declaredByName = new Map(
 		declared.map((entry) => [
 			entry.name,
-			{
-				entry,
-				environments: new Set(
-					entry.stores
-						.filter((store) => store.startsWith("vercel:"))
-						.map((store) => store.replace("vercel:", "")),
-				),
-			},
+			{ entry, environments: vercelEnvironments(entry.stores) },
 		]),
 	);
 
@@ -231,6 +227,18 @@ const FINDING_LABELS = {
 	unregistered: "매니페스트에 없음",
 	"extra-environment": "선언하지 않은 환경에 등록됨",
 };
+
+/**
+ * PR 체크를 실패시키는 차이의 종류. 나머지는 경고 주석으로만 남깁니다.
+ *
+ * missing만 막는 이유: 등록이 빠지면 배포 뒤 기능이 조용히 죽습니다(레이트 리밋이 꺼지는 식).
+ * 반대로 코드보다 시크릿을 먼저 등록하는 것은 정상적인 순서라(코드를 머지하기 전에 값을 넣어 둡니다),
+ * 매니페스트에 없는 등록까지 막으면 아직 머지 안 된 작업 때문에 관련 없는 PR이 매번 막힙니다.
+ */
+export const BLOCKING_FINDING_TYPES = new Set(["missing"]);
+
+export const isBlockingFinding = (finding) =>
+	BLOCKING_FINDING_TYPES.has(finding.type);
 
 /** 차이 하나를 한 줄로 씁니다. Slack 목록과 PR 경고 주석이 같은 문장을 씁니다. */
 export const formatFindingLine = (finding) => {

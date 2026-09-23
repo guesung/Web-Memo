@@ -9,6 +9,7 @@ import {
 	getResultError,
 	isAbortError,
 	isLoggedOutError,
+	isNetworkError,
 } from "@web-memo/shared/utils";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { toast } from "@web-memo/ui";
@@ -33,6 +34,7 @@ export default function QueryProvider({ children }: PropsWithChildren) {
 							feature: "side-panel",
 							operation: String(query.queryKey[0]),
 							stage: "query",
+							level: isNetworkError(error) ? "warning" : undefined,
 							groupByMessage: true,
 						});
 					},
@@ -48,6 +50,7 @@ export default function QueryProvider({ children }: PropsWithChildren) {
 							feature: "side-panel",
 							operation: String(query.queryKey[0]),
 							stage: "query-result",
+							level: isNetworkError(resultError) ? "warning" : undefined,
 							groupByMessage: true,
 						});
 					},

@@ -118,6 +118,24 @@ export const isLoggedOutError = (error: unknown): boolean => {
 };
 
 /**
+ * 요청이 서버에 닿지 못한 네트워크 실패인지 판별한다.
+ *
+ * @description 오프라인·DNS 실패·연결 끊김처럼 사용자 환경에서 일시적으로 생기는 실패다.
+ * 브라우저마다 문구가 달라 Chrome은 `Failed to fetch`(최신 버전은 뒤에 ` (호스트)`가 붙는다),
+ * Firefox는 `NetworkError when attempting to fetch resource`, Safari는 `Load failed`로 시작한다.
+ * postgrest-js는 앞에 `TypeError: `를 붙인 문자열을 `{ message }`로 돌려주므로 접두사는 무시한다.
+ */
+export const isNetworkError = (error: unknown): boolean => {
+	const message = getMessage(error).replace(/^TypeError: /, "");
+
+	return (
+		message.startsWith("Failed to fetch") ||
+		message.startsWith("NetworkError when attempting to fetch resource") ||
+		message.startsWith("Load failed")
+	);
+};
+
+/**
  * 성공으로 끝난 쿼리·mutation의 결과(무한 쿼리는 페이지별 결과)에서 값으로 담긴 오류를 꺼낸다.
  *
  * @description Supabase는 네트워크·HTTP 실패를 던지지 않고 `{ data: null, error }`로 돌려주므로

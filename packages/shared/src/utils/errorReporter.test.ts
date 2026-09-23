@@ -4,6 +4,7 @@ import {
 	getResultError,
 	isAbortError,
 	isLoggedOutError,
+	isNetworkError,
 } from "./errorReporter";
 
 const createReporter = () => {
@@ -266,6 +267,47 @@ describe("isLoggedOutError", () => {
 			),
 		).toBe(true);
 		expect(isLoggedOutError(new Error("Failed to fetch"))).toBe(false);
+	});
+});
+
+describe("isNetworkError", () => {
+	it("브라우저별 네트워크 실패 문구로 시작하면 true다", () => {
+		expect(isNetworkError(new TypeError("Failed to fetch"))).toBe(true);
+		expect(
+			isNetworkError(
+				new TypeError("Failed to fetch (czwtqukymcqoberdoltq.supabase.co)"),
+			),
+		).toBe(true);
+		expect(
+			isNetworkError(
+				new TypeError("NetworkError when attempting to fetch resource."),
+			),
+		).toBe(true);
+		expect(isNetworkError(new TypeError("Load failed"))).toBe(true);
+	});
+
+	it("Supabase 오류 객체의 TypeError 접두사 문구도 true다", () => {
+		expect(
+			isNetworkError({
+				message:
+					"TypeError: Failed to fetch (czwtqukymcqoberdoltq.supabase.co)",
+				code: "",
+			}),
+		).toBe(true);
+		expect(
+			isNetworkError({ message: "TypeError: Load failed", code: "" }),
+		).toBe(true);
+	});
+
+	it("네트워크 실패가 아니거나 문구가 중간에만 있으면 false다", () => {
+		expect(isNetworkError(new Error("JWT expired"))).toBe(false);
+		expect(isNetworkError({ message: "JWT expired", code: "PGRST301" })).toBe(
+			false,
+		);
+		expect(
+			isNetworkError(new Error("Something went wrong: Failed to fetch")),
+		).toBe(false);
+		expect(isNetworkError(null)).toBe(false);
 	});
 });
 

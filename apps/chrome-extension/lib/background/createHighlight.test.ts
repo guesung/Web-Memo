@@ -25,6 +25,7 @@ const PAYLOAD = {
 	url: "https://example.com/article",
 	title: "Article",
 	favIconUrl: "",
+	color: "yellow",
 	anchor: {
 		exact: "selected text",
 		prefix: "",
@@ -61,7 +62,7 @@ afterEach(() => {
 });
 
 describe("background 하이라이트 저장", () => {
-	it("인증된 사용자와 고정 색상으로 기존 서비스를 호출한다", async () => {
+	it("인증된 사용자와 선택한 색상으로 기존 서비스를 호출한다", async () => {
 		const result = await handleCreateHighlight({
 			payload: { ...PAYLOAD, user_id: "forged", color: "purple" },
 			sender: SENDER,
@@ -70,7 +71,7 @@ describe("background 하이라이트 저장", () => {
 		expect(mocks.insert).toHaveBeenCalledWith(
 			expect.objectContaining({
 				user_id: "authenticated-user",
-				color: "yellow",
+				color: "purple",
 				url: PAYLOAD.url,
 				exact_text: PAYLOAD.anchor.exact,
 			}),
@@ -79,6 +80,8 @@ describe("background 하이라이트 저장", () => {
 	it.each([
 		null,
 		{},
+		{ ...PAYLOAD, color: "red" },
+		{ ...PAYLOAD, color: undefined },
 		{ ...PAYLOAD, anchor: { ...PAYLOAD.anchor, exact: "x" } },
 		{ ...PAYLOAD, anchor: { ...PAYLOAD.anchor, textPositionStart: -1 } },
 	])("잘못된 입력은 DB 접근 전에 거절한다: %j", async (payload) => {

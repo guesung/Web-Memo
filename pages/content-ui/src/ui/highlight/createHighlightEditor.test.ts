@@ -54,6 +54,20 @@ describe("하이라이트 편집 상태", () => {
 		);
 		editor.stop();
 	});
+	it("메모 수정 성공 시 툴팁 데이터만 갱신하고 색상은 그대로 둔다", async () => {
+		const { editor, options } = setup();
+		options.requestEdit.mockResolvedValue({
+			success: true,
+			highlight: { ...ROW, note: "updated note" },
+		});
+		await editor.edit({ action: "note", note: "updated note" });
+		expect(options.requestEdit).toHaveBeenCalledWith(
+			expect.objectContaining({ action: "note", note: "updated note" }),
+		);
+		expect(options.notesById.get(1)).toBe("updated note");
+		expect(options.renderer.setColor).not.toHaveBeenCalled();
+		editor.stop();
+	});
 	it("삭제 성공 후 렌더링·노트·중복 판정 행을 제거한다", async () => {
 		const { editor, options } = setup();
 		await editor.edit({ action: "delete" });

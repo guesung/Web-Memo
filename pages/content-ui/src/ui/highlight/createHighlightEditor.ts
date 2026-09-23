@@ -71,10 +71,13 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 			return;
 		}
 		event.preventDefault();
+		open(row, event.clientX, event.clientY + 12);
+	};
+	const open = (row: HighlightRow, x: number, y: number) => {
 		state = {
 			row,
-			x: Math.max(8, Math.min(event.clientX, window.innerWidth - 260)),
-			y: Math.max(8, Math.min(event.clientY + 12, window.innerHeight - 150)),
+			x: Math.max(8, Math.min(x, window.innerWidth - 260)),
+			y: Math.max(8, Math.min(y, window.innerHeight - 150)),
 			isSaving: false,
 			message: "",
 		};
@@ -91,11 +94,12 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 			| {
 					action: "color";
 					color: NonNullable<IFEditHighlightPayload["color"]>;
-			  },
+			  }
+			| { action: "note"; note: string },
 	) => {
 		checkPage();
 		if (!state || state.isSaving || stopped) {
-			return;
+			return false;
 		}
 		const selected = state;
 		const requestGeneration = generation;
@@ -114,7 +118,7 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 				generation !== requestGeneration ||
 				requestUrl !== currentUrl
 			) {
-				return;
+				return false;
 			}
 			if (!response?.success) {
 				state = {
@@ -126,7 +130,7 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 							: "highlight_save_failed",
 				};
 				options.onChange(state);
-				return;
+				return false;
 			}
 			if (action.action === "delete") {
 				options.renderer.remove(selected.row.id);
@@ -134,11 +138,19 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 				options.notesById.delete(selected.row.id);
 				close();
 			} else {
-				options.renderer.setColor(selected.row.id, action.color);
+				if (action.action === "color") {
+					options.renderer.setColor(selected.row.id, action.color);
+				} else if (response.highlight.note) {
+					options.notesById.set(selected.row.id, response.highlight.note);
+				} else {
+					options.notesById.delete(selected.row.id);
+				}
 				options.updateRow(response.highlight);
 				state = { ...selected, row: response.highlight, isSaving: false };
 				options.onChange(state);
 			}
+
+			return true;
 		} catch {
 			checkPage();
 			if (!stopped && generation === requestGeneration) {
@@ -149,6 +161,8 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 				};
 				options.onChange(state);
 			}
+
+			return false;
 		}
 	};
 	document.addEventListener("click", handleDocumentClick);
@@ -157,6 +171,7 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 
 	return {
 		edit,
+		open,
 		close,
 		stop: () => {
 			stopped = true;

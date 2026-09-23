@@ -2,6 +2,7 @@ import { useSyncLoginStatus } from "@src/hooks";
 import { ErrorBoundary } from "@web-memo/ui";
 import { Suspense, useRef } from "react";
 import LoginSection from "../LoginSection";
+import NoticeBanner from "../NoticeBanner";
 import MemoForm from "./components/MemoForm";
 import { MemoFormSkeleton } from "./components/MemoForm/components";
 import MemoHeader from "./components/MemoHeader";
@@ -18,6 +19,7 @@ export default function MemoSection({ memoHeight }: MemoSectionProps) {
 			className="flex flex-col overflow-hidden px-0.5"
 			style={{ height: `${memoHeight}%` }}
 		>
+			<NoticeBanner />
 			<MemoHeader />
 			<ErrorBoundary ref={loginBoundaryRef} FallbackComponent={LoginSection}>
 				<Suspense fallback={<MemoFormSkeleton />}>

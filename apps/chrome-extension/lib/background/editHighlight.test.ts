@@ -30,6 +30,20 @@ describe("하이라이트 편집 요청", () => {
   expect(await handleEditHighlight({ payload: PAYLOAD, sender: SENDER })).toEqual({ success: true, highlight: ROW });
   expect(MOCKS.update).toHaveBeenCalledWith({ id: 1, request: { color: "pink" }, scope: { url: URL, userId: "owner" } });
  });
+ it.each(["새 메모", "", "a".repeat(5000)])("메모를 저장하고 빈 문자열로 삭제한다", async (note) => {
+  const row = { ...ROW, note };
+  MOCKS.update.mockResolvedValue({ data: [row], error: null });
+  expect(await handleEditHighlight({ payload: { id: 1, url: URL, action: "note", note }, sender: SENDER })).toEqual({ success: true, highlight: row });
+  expect(MOCKS.update).toHaveBeenCalledWith({ id: 1, request: { note }, scope: { url: URL, userId: "owner" } });
+ });
+ it.each([undefined, null, 42, "a".repeat(5001)])("잘못된 메모는 DB 접근 전에 거부한다", async (note) => {
+  expect(await handleEditHighlight({ payload: { id: 1, url: URL, action: "note", note }, sender: SENDER })).toEqual({ success: false, error: "invalid_request" });
+  expect(MOCKS.getClient).not.toHaveBeenCalled();
+ });
+ it("반환된 메모가 요청과 다르면 성공으로 간주하지 않는다", async () => {
+  MOCKS.update.mockResolvedValue({ data: [{ ...ROW, note: "다른 메모" }], error: null });
+  expect(await handleEditHighlight({ payload: { id: 1, url: URL, action: "note", note: "새 메모" }, sender: SENDER })).toEqual({ success: false, error: "save_failed" });
+ });
  it("실제 삭제된 행을 확인한다", async () => {
   expect((await handleEditHighlight({ payload: { id: 1, url: URL, action: "delete" }, sender: SENDER })).success).toBe(true);
   expect(MOCKS.remove).toHaveBeenCalledWith(1, { url: URL, userId: "owner" });

@@ -6,6 +6,7 @@ import type {
 	GetHighlightsByUrlResponse,
 	IFCreateHighlightPayload,
 	IFEditHighlightPayload,
+	IFGetLoginStatusResponse,
 	IFSettingUpdatedPayload,
 	PageContentResponse,
 	TCreateHighlightResponse,
@@ -39,6 +40,7 @@ export const bridge = createBridge({
 		GetHighlightsByUrlPayload,
 		GetHighlightsByUrlResponse
 	>("internal"),
+	GET_LOGIN_STATUS: defineMessage<void, IFGetLoginStatusResponse>("internal"),
 });
 
 /** 확장 내부 메시지 API 타입. */

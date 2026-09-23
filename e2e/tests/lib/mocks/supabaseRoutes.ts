@@ -208,6 +208,36 @@ const matchesIlike = (value: string | null, query: string): boolean =>
  * 같은 응답이 되어 무한 스크롤 결함이 테스트를 그대로 통과한다.
  */
 const matchesCursor = (memo: MemoRow, url: URL): boolean => {
+	const compoundCursor = url.searchParams
+		.getAll("or")
+		.map((condition) =>
+			condition.match(
+				/^\((created_at|updated_at)\.lt\."?([^",]+)"?,and\(\1\.eq\."?([^",]+)"?,id\.lt\.(\d+)\)(,\1\.is\.null)?\)$/,
+			),
+		)
+		.find((matched): matched is RegExpMatchArray => matched !== null);
+	if (compoundCursor) {
+		const sortBy = compoundCursor[1] as "created_at" | "updated_at";
+		const cursorValue = compoundCursor[2];
+		const cursorId = Number(compoundCursor[4]);
+		const memoValue = memo[sortBy];
+		if (memoValue === null) {
+			return Boolean(compoundCursor[5]);
+		}
+		const compared = memoValue.localeCompare(cursorValue);
+
+		return compared < 0 || (compared === 0 && memo.id < cursorId);
+	}
+
+	for (const column of ["updated_at", "created_at"] as const) {
+		if (url.searchParams.get(column) === "is.null") {
+			const idCondition = url.searchParams.get("id");
+			if (idCondition?.startsWith("lt.")) {
+				return memo[column] === null && memo.id < Number(idCondition.slice(3));
+			}
+		}
+	}
+
 	for (const column of ["updated_at", "created_at", "title"] as const) {
 		const condition = url.searchParams.get(column);
 		if (!condition) {

@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+
+import { ChromeSyncStorage } from "@web-memo/shared/modules/chrome-storage";
 import type { GetHighlightsByUrlResponse } from "@web-memo/shared/modules/extension-bridge";
 import type { HighlightRow } from "@web-memo/shared/types";
 import { act, createElement } from "react";
@@ -11,6 +13,26 @@ const mocks = vi.hoisted(() => ({
 	create: vi.fn(),
 	edit: vi.fn(),
 }));
+vi.mock("./useHighlightBubbleGate", () => ({
+	useHighlightBubbleGate: () => ({
+		isBubbleAllowed: true,
+		isIntroPending: false,
+		bubblePosition: "below",
+		positionSettingStatus: "ready",
+		setBubblePosition: vi.fn(),
+	}),
+}));
+vi.mock("@web-memo/shared/modules/chrome-storage", () => ({
+	ChromeSyncStorage: {
+		set: vi.fn(),
+		get: vi.fn().mockResolvedValue(undefined),
+		subscribe: vi.fn(() => vi.fn()),
+	},
+	STORAGE_KEYS: {},
+}));
+vi.mock("@web-memo/shared/modules/analytics", () => ({
+	analytics: { trackEvent: vi.fn() },
+}));
 vi.mock("@web-memo/shared/modules/extension-bridge", () => ({
 	bridge: {
 		request: {
@@ -22,6 +44,8 @@ vi.mock("@web-memo/shared/modules/extension-bridge", () => ({
 }));
 
 afterEach(() => {
+	vi.mocked(ChromeSyncStorage.set).mockReset();
+	vi.clearAllMocks();
 	window.history.replaceState(null, "", "/");
 	vi.useRealTimers();
 	vi.unstubAllGlobals();

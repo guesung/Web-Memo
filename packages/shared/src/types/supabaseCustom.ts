@@ -29,6 +29,9 @@ export type SettingRow = SettingTable["Row"];
 export type HighlightTable = Database["memo"]["Tables"]["highlight"];
 export type HighlightRow = HighlightTable["Row"];
 
+export type NoticeTable = Database["memo"]["Tables"]["notice"];
+export type NoticeRow = NoticeTable["Row"];
+
 export type GetMemoResponse = QueryData<
 	ReturnType<MemoService["getMemos"]>
 >[number];

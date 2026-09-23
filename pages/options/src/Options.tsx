@@ -11,7 +11,13 @@ import {
 } from "@web-memo/ui";
 import { Suspense } from "react";
 
-import { Header, MemoFieldsOption, Option, QueryProvider } from "./components";
+import {
+	Header,
+	HighlightOption,
+	MemoFieldsOption,
+	Option,
+	QueryProvider,
+} from "./components";
 
 /** 옵션 화면의 조회 실패를 재시도합니다. */
 interface IFOptionsErrorProps {
@@ -80,6 +86,7 @@ const Options = () => {
 						</ErrorBoundary>
 					)}
 				</QueryErrorResetBoundary>
+				<HighlightOption />
 				<QueryErrorResetBoundary>
 					{({ reset }) => (
 						<ErrorBoundary onReset={reset} FallbackComponent={OptionsError}>

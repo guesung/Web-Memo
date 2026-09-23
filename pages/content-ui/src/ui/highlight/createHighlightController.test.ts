@@ -79,6 +79,32 @@ describe("확장 하이라이트 생성", () => {
 		});
 		expect(renderer.add).toHaveBeenCalledWith(1, expect.any(Range), "yellow");
 	});
+	it("선택한 색상으로 생성 요청하고 해당 색으로 즉시 그린다", async () => {
+		const renderer = createRenderer();
+		const requestCreate = vi.fn(
+			async () =>
+				({
+					success: true,
+					highlight: { ...ROW, color: "green" },
+				}) as TCreateHighlightResponse,
+		);
+		const onSaveSuccess = vi.fn();
+		const controller = createHighlightController({
+			renderer,
+			requestCreate,
+			onSelectionChange: vi.fn(),
+			onSaveSuccess,
+		});
+		stop = controller.stop;
+		selectText();
+		const row = await controller.save("green");
+		expect(requestCreate).toHaveBeenCalledWith(
+			expect.objectContaining({ color: "green" }),
+		);
+		expect(renderer.add).toHaveBeenCalledWith(1, expect.any(Range), "green");
+		expect(onSaveSuccess).toHaveBeenCalledWith("green");
+		expect(row).toMatchObject({ color: "green" });
+	});
 	it("저장 중 연속 클릭은 하나의 요청만 보내고 저장 전에는 표시하지 않는다", async () => {
 		let resolveRequest: (response: TCreateHighlightResponse) => void = () => {};
 		const requestCreate = vi.fn(
@@ -167,6 +193,62 @@ describe("확장 하이라이트 생성", () => {
 		await controller.save();
 		expect(renderer.add).toHaveBeenCalledWith(1, expect.any(Range), "yellow");
 		expect(requestCreate).not.toHaveBeenCalled();
+	});
+	it("선택 게이트가 닫혀 있으면 툴바 상태를 만들지 않고 저장하지 않는다", async () => {
+		let state: IFHighlightSelectionState | null = null;
+		const requestCreate = vi.fn();
+		const controller = createHighlightController({
+			renderer: createRenderer(),
+			requestCreate,
+			onSelectionChange: (next) => {
+				state = next;
+			},
+			isSelectionEnabled: () => false,
+		});
+		stop = controller.stop;
+		selectText();
+		await controller.save();
+		expect(state).toBeNull();
+		expect(requestCreate).not.toHaveBeenCalled();
+	});
+	it("게이트가 열림에서 닫힘으로 바뀌면 열린 툴바를 닫고 다음 선택도 무시한다", async () => {
+		let isSelectionEnabled = true;
+		let state: IFHighlightSelectionState | null = null;
+		const controller = createHighlightController({
+			renderer: createRenderer(),
+			requestCreate: vi.fn(),
+			onSelectionChange: (next) => {
+				state = next;
+			},
+			isSelectionEnabled: () => isSelectionEnabled,
+		});
+		stop = controller.stop;
+		selectText();
+		expect(state).toMatchObject({ canSave: true });
+		isSelectionEnabled = false;
+		controller.dismissSelection();
+		expect(state).toBeNull();
+		selectText();
+		expect(state).toBeNull();
+	});
+	it("저장에 성공하면 onSaveSuccess를 한 번 부르고 실패하면 부르지 않는다", async () => {
+		const onSaveSuccess = vi.fn();
+		const requestCreate = vi
+			.fn()
+			.mockResolvedValueOnce({ success: false, error: "save_failed" })
+			.mockResolvedValueOnce({ success: true, highlight: ROW });
+		const controller = createHighlightController({
+			renderer: createRenderer(),
+			requestCreate,
+			onSelectionChange: vi.fn(),
+			onSaveSuccess,
+		});
+		stop = controller.stop;
+		selectText();
+		await controller.save();
+		expect(onSaveSuccess).not.toHaveBeenCalled();
+		await controller.save();
+		expect(onSaveSuccess).toHaveBeenCalledOnce();
 	});
 	it("편집 가능 영역의 선택은 저장하지 않는다", async () => {
 		document.querySelector("p")?.setAttribute("contenteditable", "");

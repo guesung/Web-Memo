@@ -32,7 +32,7 @@ const outFile = readOption(
 	resolve(repoRoot, "packages/shared/src/constants/generatedPagePaths.ts"),
 );
 
-const MANUAL_HINT = "packages/shared/src/constants/Path.ts의 MANUAL_PATHS에 추가하세요.";
+const MANUAL_HINT = "Path.ts의 MANUAL_PATHS에 추가하라";
 
 const findPageFiles = (dir) =>
 	readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -67,17 +67,17 @@ const toUrlPath = (pageFile) => {
 	}
 	if (segments.some(isInterceptingRoute)) {
 		throw new Error(
-			`인터셉트 라우트는 자동 생성 대상이 아닙니다: ${displayPath}\n${MANUAL_HINT}`,
+			`인터셉트 라우트는 자동 생성 대상이 아니다. ${MANUAL_HINT}: ${displayPath}`,
 		);
 	}
 	if (segments.some(isDynamicSegment)) {
 		throw new Error(
-			`동적 경로는 자동 생성 대상이 아닙니다: ${displayPath}\n${MANUAL_HINT}`,
+			`동적 경로는 자동 생성 대상이 아니다. ${MANUAL_HINT}: ${displayPath}`,
 		);
 	}
 	if (segments.some(isParallelRoute)) {
 		throw new Error(
-			`병렬 라우트는 자동 생성 대상이 아닙니다: ${displayPath}\n${MANUAL_HINT}`,
+			`병렬 라우트는 자동 생성 대상이 아니다. ${MANUAL_HINT}: ${displayPath}`,
 		);
 	}
 
@@ -107,6 +107,10 @@ const buildPagePaths = () => {
 	const urlPaths = [
 		...new Set(findPageFiles(appDir).map(toUrlPath).filter(Boolean)),
 	].sort();
+	if (urlPaths.length === 0) {
+		throw new Error(`page.tsx를 하나도 찾지 못했다: ${appDir}`);
+	}
+
 	const pathByKey = new Map();
 
 	for (const urlPath of urlPaths) {
@@ -114,7 +118,7 @@ const buildPagePaths = () => {
 		const existingPath = pathByKey.get(key);
 		if (existingPath) {
 			throw new Error(
-				`두 경로가 같은 키 "${key}"가 됩니다: ${existingPath}, ${urlPath}\n폴더 이름을 바꾸거나 한쪽을 ${MANUAL_HINT}`,
+				`두 경로가 같은 키 "${key}"가 된다: ${existingPath}, ${urlPath}. 폴더 이름을 바꾸거나 한쪽을 ${MANUAL_HINT}`,
 			);
 		}
 		pathByKey.set(key, urlPath);
@@ -147,7 +151,7 @@ try {
 		const committed = existsSync(outFile) ? readFileSync(outFile, "utf8") : "";
 		if (committed !== content) {
 			console.error(
-				`${relative(repoRoot, outFile)}가 페이지 구조와 다릅니다.\npnpm -F @web-memo/web generate:paths 후 커밋하세요.`,
+				`${relative(repoRoot, outFile)}가 페이지 구조와 다르다. pnpm -F @web-memo/web generate:paths 후 커밋하라`,
 			);
 			process.exit(1);
 		}

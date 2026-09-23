@@ -476,7 +476,7 @@
 		"view": {
 			"unknownDate": "No creation date",
 			"label": "Memo view",
-			"list": "List view",
+			"byDate": "By date",
 			"untitled": "Untitled memo",
 			"loadMore": "Load more"
 		},

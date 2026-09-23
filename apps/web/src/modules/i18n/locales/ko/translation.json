@@ -471,7 +471,7 @@
 		"view": {
 			"unknownDate": "작성일 없음",
 			"label": "메모 보기",
-			"list": "목록으로 보기",
+			"byDate": "날짜별 보기",
 			"untitled": "제목 없는 메모",
 			"loadMore": "더 보기"
 		},

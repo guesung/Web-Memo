@@ -10,7 +10,7 @@ import MemoEmptyState from "./MemoEmptyState";
 import { MemoListSkeleton } from "./MemoListSkeleton";
 import MemoSearchEmptyState from "./MemoSearchEmptyState";
 
-/** 메모를 브라우저 현지 작성일로 묶어 상세 화면으로 연결한다. */
+/** 메모를 브라우저 현지 작성일별 카드 그리드로 묶어 상세 화면으로 연결한다. */
 const MemoList = (props: IFMemoListProps) => {
 	const { t } = useTranslation(props.lng);
 	const loadMoreRef = useMemoListPagination(props);
@@ -35,7 +35,7 @@ const MemoList = (props: IFMemoListProps) => {
 	return (
 		<div
 			data-testid="memo-list"
-			className="mx-auto w-full max-w-4xl space-y-8 pb-24"
+			className="mx-auto w-full max-w-7xl space-y-8 pb-24"
 		>
 			{props.memos.length === 0 &&
 				(props.searchQuery ? (
@@ -64,23 +64,30 @@ const MemoList = (props: IFMemoListProps) => {
 							</time>
 						)}
 					</h2>
-					<ul className="overflow-hidden rounded-xl border bg-card divide-y">
+					<ul
+						data-testid="memo-date-grid"
+						className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+					>
 						{group.memos.map((memo) => (
-							<li data-testid="memo-list-item" key={memo.id}>
+							<li
+								data-testid="memo-list-item"
+								key={memo.id}
+								className="min-w-0"
+							>
 								<button
 									type="button"
 									onClick={() => handleMemoClick(memo.id)}
-									className="w-full min-w-0 p-4 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+									className="flex h-full min-h-44 w-full min-w-0 flex-col rounded-2xl border bg-card p-5 text-left text-card-foreground shadow-sm transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 								>
-									<span className="block truncate font-semibold">
+									<span className="block w-full truncate font-semibold">
 										{memo.title || t("memos.view.untitled")}
 									</span>
 									{memo.memo && (
-										<span className="mt-1 line-clamp-2 whitespace-pre-wrap break-words text-sm text-muted-foreground">
+										<span className="mt-2 line-clamp-2 w-full whitespace-pre-wrap break-words text-sm text-muted-foreground">
 											{memo.memo}
 										</span>
 									)}
-									<span className="mt-2 flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+									<span className="mt-auto flex w-full min-w-0 items-center gap-2 pt-4 text-xs text-muted-foreground">
 										<time
 											dateTime={memo.created_at ?? undefined}
 											className="shrink-0"

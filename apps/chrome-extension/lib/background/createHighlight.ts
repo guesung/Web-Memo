@@ -3,11 +3,12 @@ import type {
 	IFCreateHighlightPayload,
 	TCreateHighlightResponse,
 } from "@web-memo/shared/modules/extension-bridge";
-import { HighlightService, normalizeUrl } from "@web-memo/shared/utils";
+import { HighlightService } from "@web-memo/shared/utils";
 import {
 	getSupabaseClient,
 	SupabaseSessionRequiredError,
 } from "@web-memo/shared/utils/extension";
+import { getValidatedHighlightUrl } from "./getValidatedHighlightUrl";
 import { reportBackgroundError } from "./reportBackgroundError";
 
 /** 신뢰할 수 없는 메시지 본문과 Chrome이 제공하는 발신 문서 정보. */
@@ -21,29 +22,15 @@ export const handleCreateHighlight = async (
 	request: IFCreateHighlightRequest,
 ): Promise<TCreateHighlightResponse> => {
 	const { payload, sender } = request;
-	if (
-		!isValidPayload(payload) ||
-		sender.id !== chrome.runtime.id ||
-		sender.tab?.id === undefined ||
-		sender.frameId !== 0 ||
-		!sender.url ||
-		!sender.tab.url
-	) {
+	if (!isValidPayload(payload)) {
 		return { success: false, error: "invalid_request" };
 	}
-	let operation: THighlightSaveOperation | null = null;
+	const url = getValidatedHighlightUrl(sender, payload.url);
+	if (!url) {
+		return { success: false, error: "invalid_request" };
+	}
+	let operation: THighlightSaveOperation = "client_initialize";
 	try {
-		const documentUrl = new URL(sender.url);
-		/** Chrome은 pushState 이후 sender.url을 최초 문서 URL로 유지하므로 현재 탭 URL을 기준으로 삼는다. */
-		const senderUrl = new URL(sender.tab.url);
-		if (
-			!["http:", "https:"].includes(senderUrl.protocol) ||
-			documentUrl.origin !== senderUrl.origin ||
-			normalizeUrl(senderUrl.href) !== normalizeUrl(new URL(payload.url).href)
-		) {
-			return { success: false, error: "invalid_request" };
-		}
-		operation = "client_initialize";
 		const supabaseClient = await getAuthenticatedClient();
 		if (!supabaseClient) {
 			logHighlightFailure(operation, "session_missing");
@@ -67,7 +54,7 @@ export const handleCreateHighlight = async (
 		const service = new HighlightService(supabaseClient);
 		const { data, error } = await service.insertHighlight({
 			user_id: authData.user.id,
-			url: normalizeUrl(senderUrl.href),
+			url,
 			title: payload.title,
 			favIconUrl: payload.favIconUrl,
 			exact_text: payload.anchor.exact,
@@ -83,9 +70,6 @@ export const handleCreateHighlight = async (
 
 		return { success: true, highlight: data[0] };
 	} catch {
-		if (!operation) {
-			return { success: false, error: "invalid_request" };
-		}
 		logHighlightFailure(operation, "unexpected_error");
 		return { success: false, error: "save_failed" };
 	}

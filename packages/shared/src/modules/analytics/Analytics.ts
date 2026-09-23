@@ -1,8 +1,9 @@
 import { CONFIG } from "@web-memo/env";
-
-import { ANALYTICS, ANALYTICS_EXCLUDED_USER_ID } from "../../constants";
+import { ANALYTICS_EXCLUDED_USER_ID } from "../../constants";
 import type { MemoTable } from "../../types";
 import { isExtension } from "../../utils";
+import { getOrCreateClientId, sendEvent } from "./analyticsTransport";
+import { buildMemoUpdateEvents } from "./memoUpdateEvents";
 import {
 	EVENT_CATEGORY,
 	type IFGa4EventParams,
@@ -14,28 +15,14 @@ const CORE_ACTION_ENGAGEMENT_TIME_MSEC = 500;
 /** engagement 이벤트의 참여 시간. */
 const DEFAULT_ENGAGEMENT_TIME_MSEC = 100;
 
-/** 분석 이벤트 전송에 필요한 값입니다. */
-type TSendEventParams = {
-	eventName: string;
-	parameters: IFGa4EventParams;
-	userId: string | undefined;
-};
-
 class Analytics {
 	private static instance: Analytics;
-	private gaId: string;
-	private apiSecret: string;
 	private userId: string | undefined = undefined;
 	private hasUserIdBeenSet = false;
 	private userIdRevision = 0;
-	private readonly GA_ENDPOINT = "https://www.google-analytics.com/mp/collect";
-	private readonly SESSION_EXPIRATION_IN_MIN = 30;
 	private readonly USER_ID_STORAGE_KEY = "analyticsUserId";
 
-	private constructor() {
-		this.gaId = ANALYTICS.gaId;
-		this.apiSecret = ANALYTICS.gaApiSecret;
-	}
+	private constructor() {}
 
 	/**
 	 * 이후 이벤트에 실을 user_id를 정합니다.
@@ -105,9 +92,11 @@ class Analytics {
 	 * @description 웹은 이 값을 `_ga` 쿠키로 이어받아(apps/web 루트 레이아웃) 확장과 같은 사용자로 집계됩니다.
 	 */
 	public async getExtensionClientId(): Promise<string | undefined> {
-		if (!isExtension()) return undefined;
+		if (!isExtension()) {
+			return undefined;
+		}
 
-		return this.getOrCreateClientId();
+		return getOrCreateClientId();
 	}
 
 	public static getInstance(): Analytics {
@@ -157,7 +146,7 @@ class Analytics {
 			return;
 		}
 
-		await this.sendEvent({ eventName: event.name, parameters, userId });
+		await sendEvent({ eventName: event.name, parameters, userId });
 	}
 
 	/**
@@ -179,127 +168,6 @@ class Analytics {
 		};
 	}
 
-	private async sendEvent(sendEventParams: TSendEventParams): Promise<void> {
-		if (isExtension()) {
-			await this.sendEventInExtension(sendEventParams);
-			return;
-		}
-
-		this.sendEventInWeb(sendEventParams);
-	}
-
-	private sendEventInWeb(sendEventParams: TSendEventParams): void {
-		const { eventName, parameters, userId } = sendEventParams;
-
-		if (typeof window === "undefined" || !("gtag" in window)) {
-			console.warn(
-				`[analytics] gtag를 찾지 못해 "${eventName}"을 전송하지 못했습니다. GoogleAnalytics 스크립트가 로드됐는지 확인하세요.`,
-			);
-			return;
-		}
-
-		window.gtag("event", eventName, {
-			...parameters,
-			user_id: userId,
-		});
-	}
-
-	private async sendEventInExtension(
-		sendEventParams: TSendEventParams,
-	): Promise<void> {
-		const { eventName, parameters, userId } = sendEventParams;
-
-		try {
-			const clientId = await this.getOrCreateClientId();
-			const sessionId = await this.getOrCreateSessionId();
-			const payload: {
-				client_id: string;
-				user_id?: string;
-				events: Array<{
-					name: string;
-					params: IFGa4EventParams;
-				}>;
-			} = {
-				client_id: clientId,
-				events: [
-					{
-						name: eventName,
-						params: {
-							session_id: sessionId,
-							...parameters,
-						},
-					},
-				],
-			};
-
-			if (userId) {
-				payload.user_id = userId;
-			}
-
-			const url = `${this.GA_ENDPOINT}?measurement_id=${this.gaId}&api_secret=${this.apiSecret}`;
-
-			const response = await fetch(url, {
-				method: "POST",
-				body: JSON.stringify(payload),
-			});
-
-			if (!response.ok) {
-				console.warn(
-					`[analytics] "${eventName}" 전송이 ${response.status}로 실패했습니다.`,
-				);
-			}
-		} catch (error) {
-			console.warn(`[analytics] "${eventName}" 전송에 실패했습니다.`, error);
-		}
-	}
-
-	private async getOrCreateClientId(): Promise<string> {
-		if (!isExtension()) return "web-client";
-
-		try {
-			const result = await chrome.storage.local.get("clientId");
-			let clientId = result.clientId;
-
-			if (!clientId) {
-				clientId = self.crypto.randomUUID();
-				await chrome.storage.local.set({ clientId });
-			}
-
-			return clientId;
-		} catch (_error) {
-			return `session-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
-		}
-	}
-
-	private async getOrCreateSessionId(): Promise<string> {
-		try {
-			let { sessionData } = await chrome.storage.session.get("sessionData");
-
-			const currentTimeInMs = Date.now();
-			if (sessionData?.timestamp) {
-				const durationInMin = (currentTimeInMs - sessionData.timestamp) / 60000;
-				if (durationInMin > this.SESSION_EXPIRATION_IN_MIN) {
-					sessionData = null;
-				} else {
-					sessionData.timestamp = currentTimeInMs;
-					await chrome.storage.session.set({ sessionData });
-				}
-			}
-
-			if (!sessionData) {
-				sessionData = {
-					session_id: currentTimeInMs.toString(),
-					timestamp: currentTimeInMs,
-				};
-				await chrome.storage.session.set({ sessionData });
-			}
-
-			return sessionData.session_id;
-		} catch (_error) {
-			return Date.now().toString();
-		}
-	}
-
 	public async trackSidePanelOpen(): Promise<void> {
 		await this.trackEvent({ name: "side_panel_open" });
 	}
@@ -313,37 +181,8 @@ class Analytics {
 	public async trackMemoUpdate(
 		request: Partial<MemoTable["Update"]>,
 	): Promise<void> {
-		const STATUS_KEYS = ["isWish", "isStar", "isReading"] as const;
-		const CONTENT_KEYS = ["memo", "title", "impression", "actionItem"] as const;
-
-		for (const statusKey of STATUS_KEYS) {
-			if (!(statusKey in request)) continue;
-
-			await this.trackEvent({
-				name: "memo_status_toggle",
-				params: {
-					status: statusKey.replace(/^is/, "").toLowerCase() as
-						| "wish"
-						| "star"
-						| "reading",
-					enabled: Boolean(request[statusKey]),
-				},
-			});
-		}
-
-		if ("category_id" in request) {
-			await this.trackEvent({ name: "memo_category_change" });
-		}
-
-		const changedContentKeys = CONTENT_KEYS.filter(
-			(contentKey) => contentKey in request,
-		);
-
-		if (changedContentKeys.length > 0) {
-			await this.trackEvent({
-				name: "memo_write",
-				params: { fields: [...changedContentKeys].sort().join(",") },
-			});
+		for (const event of buildMemoUpdateEvents(request)) {
+			await this.trackEvent(event);
 		}
 	}
 

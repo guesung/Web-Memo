@@ -48,6 +48,9 @@ jobs:
       - name: Package boundaries
         run: pnpm exec turbo boundaries --filter="./packages/*"
 
+      - name: Page paths up to date
+        run: node apps/web/scripts/generatePagePaths.mjs --check
+
       - name: Check (format + lint)
         run: pnpm check
 

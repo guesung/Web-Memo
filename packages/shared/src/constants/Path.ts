@@ -1,33 +1,27 @@
-export const PATHS = {
-	root: "/",
+import { GENERATED_PAGE_PATHS } from "./generatedPagePaths";
+
+/**
+ * page.tsx가 없어 자동 생성되지 않는 경로.
+ *
+ * @description
+ * 웹 페이지 경로는 generatedPagePaths.ts가 page.tsx에서 생성한다. 여기에는 외부 도메인·
+ * route handler·페이지 없는 redirect 대상처럼 생성기가 찾을 수 없는 것만 둔다.
+ * 생성분과 키가 겹치면 Path.test.ts가 실패한다.
+ */
+export const MANUAL_PATHS = {
 	error: "/error",
-	login: "/login",
 	kakaoLogin: "/accounts.kakao.com",
 	googleLogin: "/accounts.google.com",
-	memos: "/memos",
-	highlights: "/highlights",
 	auth: "/auth",
-	introduce: "/introduce",
-	privacy: "/privacy",
 	uninstall: "/uninstall",
-	memosWish: "/memos/wish",
-	memosStar: "/memos/star",
-	memosReading: "/memos/reading",
-	memosSetting: "/memos/setting",
-	memosTrash: "/memos/trash",
 	callbackOAuth: "/auth/callback",
 	callbackEmail: "/auth/callback-email",
-	admin: "/admin",
-	adminUsers: "/admin/users",
-	adminFeedback: "/admin/feedback",
-	featuresYoutubeSummary: "/features/youtube-summary",
-	featuresMemo: "/features/memo",
-	featuresSaveArticles: "/features/save-articles",
-	useCasesResearch: "/use-cases/research",
-	useCasesLearning: "/use-cases/learning",
-	useCasesJobHunting: "/use-cases/job-hunting",
-	useCasesNewsReading: "/use-cases/news-reading",
-	useCasesYoutubeNotes: "/use-cases/youtube-notes",
-	useCasesDeveloper: "/use-cases/developer",
-	useCasesTechArticle: "/use-cases/tech-article",
+};
+
+/**
+ * 웹 경로 전체. 자동 생성된 페이지 경로와 MANUAL_PATHS를 합친다.
+ */
+export const PATHS = {
+	...GENERATED_PAGE_PATHS,
+	...MANUAL_PATHS,
 };

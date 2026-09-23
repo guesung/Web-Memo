@@ -91,8 +91,8 @@
 - name: CLAUDE_CODE_OAUTH_TOKEN
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/refactor-audit.yml]
-  impact: "주간 리팩토링 점검이 인증에 실패해 노션 카드와 Slack 알림이 오지 않는다. 구독 토큰이라 만료·한도 소진으로도 실패한다"
+  consumers: [.github/workflows/refactor-audit.yml, .github/workflows/seo-monitor.yml]
+  impact: "주간 리팩토링 점검과 SEO AI 리포트가 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신한다. 구독 토큰이라 만료·한도 소진으로도 실패한다"
 
 - name: NOTION_TOKEN
   kind: secret
@@ -103,14 +103,20 @@
 - name: SLACK_WEBHOOK_URL
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/daily-ga-report.yml, .github/workflows/weekly-ga-report.yml, .github/workflows/refactor-audit.yml, .github/workflows/notify-release.yml, .github/workflows/versions.yml, .github/workflows/env-registry-audit.yml]
-  impact: "빌드, 배포, 릴리스 결과와 리포트 실패 알림이 오지 않는다"
+  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/daily-ga-report.yml, .github/workflows/weekly-ga-report.yml, .github/workflows/refactor-audit.yml, .github/workflows/notify-release.yml, .github/workflows/versions.yml, .github/workflows/env-registry-audit.yml, .github/workflows/seo-monitor.yml, .github/workflows/supabase-audit.yml]
+  impact: "빌드, 배포, 릴리스 결과와 리포트·Supabase 감사 실패 알림이 오지 않는다"
 
 - name: SLACK_REPORT_WEBHOOK_URL
   kind: secret
   stores: [github]
   consumers: [.github/workflows/daily-ga-report.yml, .github/workflows/weekly-ga-report.yml, .github/workflows/refactor-audit.yml, .github/workflows/seo-monitor.yml]
   impact: "GA 리포트, 주간 리팩토링 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다"
+
+- name: SLACK_REPORT_CHANNEL_ID
+  kind: secret
+  stores: [github]
+  consumers: [.github/workflows/seo-monitor.yml]
+  impact: "SEO AI 리포트를 스레드로 보내지 못하고 기존 기계 판정 알림으로 대신한다. 봇(SLACK_BOT_TOKEN)이 이 채널에 초대돼 있어야 한다"
 
 - name: SLACK_CHANNEL_ID
   kind: secret
@@ -121,8 +127,8 @@
 - name: SUPABASE_ACCESS_TOKEN
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/env-registry-audit.yml]
-  impact: "등록 현황 감사가 Supabase secrets를 조회하지 못해 미조회로 남는다"
+  consumers: [.github/workflows/env-registry-audit.yml, .github/workflows/supabase-audit.yml]
+  impact: "등록 현황 감사가 Supabase secrets를 조회하지 못하고 운영 감사가 실패한다"
   note: "Supabase 대시보드의 Account > Access Tokens에서 발급한다. 조회 전용으로 쓴다"
 
 - name: APP_ID
@@ -152,7 +158,7 @@
 - name: SLACK_BOT_TOKEN
   kind: secret
   stores: [github, vercel]
-  consumers: [.github/workflows/ci.yml, apps/web/src/modules/slack/config.ts]
+  consumers: [.github/workflows/ci.yml, apps/web/src/modules/slack/config.ts, .github/workflows/seo-monitor.yml]
   impact: "GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다"
   note: "같은 값이어야 하지만 서로 읽지 못해 따로 등록한다"
 

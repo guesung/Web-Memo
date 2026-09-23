@@ -2,6 +2,15 @@ name: SEO Monitor
 
 # 운영 사이트의 공개 SEO 응답과 선택적 Search Console 지표를 매일 검사합니다.
 # 상세 결과는 이전 master 실행과 비교하고 Actions 아티팩트로 보관합니다.
+#
+# 판정은 스크립트가 하고, 해석은 Claude가 합니다. Claude는 스크립트가 만든 ai-context.json과
+# 저장소 코드를 읽기만 하며(Read·Grep·Glob), 결과 JSON을 send-seo-ai-report.mjs가 검증해 Slack
+# 스레드로 보냅니다. 입력에 없는 근거를 인용한 발견은 버립니다. AI 리포트를 보내지 못한 날에는
+# 기존 기계 판정 알림(오류·신규 경고가 있을 때만)이 대신 나가고, CI 채널에 실패가 따로 알려집니다.
+# AI 단계는 always() 대신 !cancelled() 로 조건을 걸어, 취소한 실행이 구독 한도를 쓰지 않게 합니다.
+#
+# 전제: refactor-audit.yml 과 같이 Claude GitHub App이 설치돼 있어야 합니다. Claude는 구독 토큰
+# (CLAUDE_CODE_OAUTH_TOKEN)으로 돌아 한도가 빠듯한 날에는 실패할 수 있습니다.
 on:
   schedule:
     # UTC 00:17 = Asia/Seoul 09:17. 정각의 Actions 실행 혼잡을 피하려고 17분에 실행합니다.
@@ -12,23 +21,32 @@ on:
         description: "Search Console 주간 검색 성과도 함께 조회합니다."
         type: boolean
         default: false
+      dry_run:
+        description: "Slack·Sheets 전송 없이 AI 리포트 내용만 로그로 확인합니다"
+        type: boolean
+        default: false
 
 concurrency:
   group: seo-monitor
   # 예약 실행 중 수동 실행이 들어와도 앞선 검사를 없애지 않고 순서대로 처리합니다.
   cancel-in-progress: false
 
+# claude-code-action 이 GitHub 접근 토큰을 OIDC로 교환하므로 id-token 이 필요합니다.
 permissions:
   actions: read
   contents: read
+  id-token: write
 
 jobs:
   inspect:
     name: 운영 사이트 SEO 검사
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
+      # AI 입력에 최근 7일 커밋을 넣으려면 이력이 필요합니다.
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v5
 
@@ -62,15 +80,72 @@ jobs:
           SEO_PREVIOUS_GSC_REPORT: ${{ steps.previous-seo.outputs.SEO_PREVIOUS_GSC_REPORT }}
         run: pnpm seo:gsc
 
+      - name: Build AI report context
+        id: ai-context
+        if: ${{ !cancelled() && hashFiles('artifacts/seo/seo-report.json') != '' }}
+        run: node .github/scripts/build-seo-ai-context.mjs
+
+      - name: Write AI report
+        id: ai-report
+        if: ${{ !cancelled() && steps.ai-context.outcome == 'success' }}
+        continue-on-error: true
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Web Memo(https://www.webmemo.xyz) 웹사이트의 오늘 SEO 상태를 해석하는 리포트를 써 주세요.
+            읽는 사람은 기획자와 개발자가 섞인 팀입니다.
+
+            입력은 artifacts/seo/ai-context.json 하나입니다. 먼저 이 파일을 읽으세요.
+            - mode 가 weekly 면 주간 리포트입니다. gsc.weekly 의 검색 성과 해석을 중심에 두세요.
+              기간은 gsc.weekly.period 의 날짜를 그대로 쓰세요. "지난주"처럼 뭉뚱그리지 마세요.
+            - seo.issueGroups 는 스크립트가 판정한 이슈를 원인별로 묶은 것입니다.
+              statusCounts 로 신규·지속을, ageDays 와 firstSeenExact 로 경과 기간을 알 수 있습니다.
+              firstSeenExact 가 false 면 "최소 N일 이상"이라고 쓰세요.
+            - 증감률·경과 일수는 이미 계산돼 있습니다. 직접 다시 계산하지 말고 그 값을 쓰세요.
+            - commits 는 같은 기간에 SEO 관련 경로를 바꾼 커밋입니다.
+
+            규칙:
+            - 입력에 있는 사실만 해석하세요. 새 문제를 찾거나 URL을 추정해 점검하지 마세요.
+            - 모든 발견에는 evidenceIds 에 입력의 evidenceIds 목록에 있는 id를 하나 이상 넣으세요.
+              목록에 없는 id만 인용한 발견은 버려집니다.
+            - 원인을 찾으려고 apps/web, packages/ui, packages/shared 코드를 읽어도 됩니다.
+              codeRefs 에는 직접 Read로 확인한 위치만 "경로:줄" 형식으로 넣으세요.
+            - 파일을 수정하지 마세요. 읽기 전용입니다.
+            - 우선순위: P0 색인·크롤링이 막힘(오류, noindex, robots 차단, 색인 이탈),
+              P1 검색 노출·클릭에 직접 영향(canonical 오류, 중복 메타, 큰 성과 하락),
+              P2 이번 주 안에 고치면 좋은 것(메타 길이, OG 누락), P3 사소한 것.
+            - 같은 원인의 이슈 묶음은 발견 하나로 합치세요. 발견이 없으면 findings 를 빈 배열로 두세요.
+            - 문장은 비개발자도 읽을 수 있게 쓰세요. 기술 용어는 처음 나올 때 풀어 쓰고,
+              "무엇이 문제인가"보다 "검색 노출에 어떤 영향이 있는가"를 먼저 쓰세요.
+            - status 는 good(조치할 것 없음), warning(이번 주 안에 조치), critical(즉시 조치) 중 하나입니다.
+
+            결과는 지정된 JSON 스키마로만 냅니다. headline 은 오늘 상황을 두세 문장으로 요약합니다.
+          claude_args: |
+            --model claude-sonnet-5
+            --max-turns 30
+            --allowedTools Read,Grep,Glob
+            --json-schema '{"type":"object","properties":{"status":{"type":"string","enum":["good","warning","critical"]},"headline":{"type":"string"},"situation":{"type":"object","properties":{"good":{"type":"array","items":{"type":"string"}},"concerns":{"type":"array","items":{"type":"string"}}},"required":["good","concerns"]},"findings":{"type":"array","items":{"type":"object","properties":{"priority":{"type":"string","enum":["P0","P1","P2","P3"]},"title":{"type":"string"},"impact":{"type":"string"},"evidence":{"type":"string"},"suggestion":{"type":"string"},"codeRefs":{"type":"array","items":{"type":"string"}},"evidenceIds":{"type":"array","items":{"type":"string"}}},"required":["priority","title","impact","evidence","suggestion","codeRefs","evidenceIds"]}},"roadmap":{"type":"array","items":{"type":"object","properties":{"when":{"type":"string"},"action":{"type":"string"}},"required":["when","action"]}}},"required":["status","headline","situation","findings","roadmap"]}'
+
+      # 발송 여부를 sent output으로 남깁니다. 보내지 못했으면 다음 단계의 기존 알림이 대신 나갑니다.
+      - name: Send AI report
+        id: ai-send
+        if: ${{ !cancelled() && steps.ai-context.outcome == 'success' }}
+        env:
+          AI_REPORT_RESULT: ${{ steps.ai-report.outputs.structured_output }}
+          SLACK_BOT_TOKEN: ${{ inputs.dry_run != true && secrets.SLACK_BOT_TOKEN || '' }}
+          SLACK_CHANNEL_ID: ${{ inputs.dry_run != true && secrets.SLACK_REPORT_CHANNEL_ID || '' }}
+        run: node .github/scripts/send-seo-ai-report.mjs
+
       - name: Notify actionable SEO issues
-        if: ${{ always() }}
+        if: ${{ always() && steps.ai-send.outputs.sent != 'true' }}
         env:
           SEO_CHECK_OUTCOME: ${{ steps.seo-check.outcome }}
-          SLACK_REPORT_WEBHOOK_URL: ${{ secrets.SLACK_REPORT_WEBHOOK_URL }}
+          SLACK_REPORT_WEBHOOK_URL: ${{ inputs.dry_run != true && secrets.SLACK_REPORT_WEBHOOK_URL || '' }}
         run: node .github/scripts/notify-seo-slack.mjs
 
       - name: Persist SEO analytics to Google Sheets
-        if: ${{ always() }}
+        if: ${{ always() && inputs.dry_run != true }}
         env:
           SEO_SHEET_ID: ${{ secrets.SEO_SHEET_ID }}
           GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
@@ -84,3 +159,30 @@ jobs:
           path: artifacts/seo/
           if-no-files-found: warn
           retention-days: 30
+
+      # AI 리포트를 못 보낸 날은 잡을 실패시키지 않고 기존 알림으로 대신합니다. 다만 구독 한도 소진·토큰
+      # 만료·봇 미초대 등으로 매일 조용히 대체되면 알아채기 어려우므로, 리포트 채널이 아닌 CI 채널에
+      # 따로 알립니다. 본문은 나갔지만 스레드 댓글이 실패한 경우도 포함합니다.
+      - name: Notify AI report failure
+        if: >-
+          ${{ !cancelled() && inputs.dry_run != true && steps.ai-context.outcome == 'success'
+          && (steps.ai-send.outputs.sent != 'true' || steps.ai-send.outputs.thread_failures != '0') }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          AI_REPORT_OUTCOME: ${{ steps.ai-report.outcome }}
+          FAILURE_REASON: ${{ steps.ai-send.outputs.failure_reason || 'send_step_failed' }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::warning::SLACK_WEBHOOK_URL 이 없어 실패 알림을 건너뜁니다"
+            exit 0
+          fi
+          node -e '
+            const { AI_REPORT_OUTCOME, FAILURE_REASON, RUN_URL } = process.env;
+            const text = `⚠️ SEO AI 리포트를 온전히 보내지 못했습니다 (Claude 단계: ${AI_REPORT_OUTCOME}, 사유: ${FAILURE_REASON}). 오류·신규 경고가 있었다면 기존 알림이 대신 나갔습니다. <${RUN_URL}|실행 로그 보기>`;
+            process.stdout.write(JSON.stringify({ text }));
+          ' > slack-payload.json
+          curl --silent --show-error --fail-with-body \
+            --header "content-type: application/json" \
+            --data @slack-payload.json \
+            "$SLACK_WEBHOOK_URL"

@@ -12,6 +12,13 @@ import type {
 } from "../types";
 import { getMemoSearchFilter } from "./memoSearchFilter";
 
+/** 날짜 정렬에서 같은 시각의 메모까지 이어 읽는 복합 커서. */
+export interface IFMemoPageCursor {
+	value: string;
+	id: MemoRow["id"];
+}
+
+/** 메모 조회와 변경을 담당하는 Supabase 서비스. */
 export class MemoService {
 	supabaseClient: MemoSupabaseClient;
 
@@ -92,6 +99,7 @@ export class MemoService {
 		return { ...firstBatch, data };
 	};
 
+	/** 정렬 값과 id 순서로 메모 페이지를 조회한다. 문자열 커서는 기존 호출에서 사용한다. */
 	getMemosPaginated = async ({
 		cursor,
 		limit = 20,
@@ -102,7 +110,7 @@ export class MemoService {
 		searchQuery,
 		sortBy = "updated_at",
 	}: {
-		cursor?: string;
+		cursor?: string | IFMemoPageCursor;
 		limit?: number;
 		category?: string;
 		isWish?: boolean;
@@ -127,10 +135,14 @@ export class MemoService {
 			.limit(limit);
 
 		if (cursor) {
-			if (sortBy === "title") {
-				query = query.gt("title", cursor);
+			if (typeof cursor === "string") {
+				query = ascending ? query.gt(sortBy, cursor) : query.lt(sortBy, cursor);
 			} else {
-				query = query.lt(sortBy, cursor);
+				const operator = ascending ? "gt" : "lt";
+				const value = JSON.stringify(cursor.value);
+				query = query.or(
+					`${sortBy}.${operator}.${value},and(${sortBy}.eq.${value},id.${operator}.${cursor.id})`,
+				);
 			}
 		}
 

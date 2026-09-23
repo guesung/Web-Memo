@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest";
 import type { MemoSupabaseClient } from "../types";
-import { HighlightService } from "./Supabase";
+import { HighlightService, MemoService } from "./Supabase";
 
 /** 가짜 빌더가 기록한 호출 인자 */
-interface RecordedCalls {
+interface IFRecordedCalls {
 	schema: string[];
 	from: string[];
 	select: string[];
 	eq: [string, unknown][];
+	is: [string, unknown][];
+	lt: [string, unknown][];
+	gt: [string, unknown][];
 	or: string[];
 	order: [string, unknown][];
 	limit: number[];
@@ -17,17 +20,20 @@ interface RecordedCalls {
 /**
  * Supabase 쿼리 빌더를 흉내 내는 최소 목.
  * @description 체이닝 메서드는 자기 자신을 돌려주고, await 되는 시점에 빈 결과를 반환한다.
- * HighlightService가 실제로 쓰는 메서드만 구현한다.
+ * 서비스가 실제로 쓰는 메서드만 구현한다.
  */
-function createMockClient(): {
+const createMockClient = (): {
 	client: MemoSupabaseClient;
-	calls: RecordedCalls;
-} {
-	const calls: RecordedCalls = {
+	calls: IFRecordedCalls;
+} => {
+	const calls: IFRecordedCalls = {
 		schema: [],
 		from: [],
 		select: [],
 		eq: [],
+		is: [],
+		lt: [],
+		gt: [],
 		or: [],
 		order: [],
 		limit: [],
@@ -41,6 +47,21 @@ function createMockClient(): {
 		},
 		eq: (column: string, value: unknown) => {
 			calls.eq.push([column, value]);
+			return builder;
+		},
+		is: (column: string, value: unknown) => {
+			calls.is.push([column, value]);
+
+			return builder;
+		},
+		lt: (column: string, value: unknown) => {
+			calls.lt.push([column, value]);
+
+			return builder;
+		},
+		gt: (column: string, value: unknown) => {
+			calls.gt.push([column, value]);
+
 			return builder;
 		},
 		or: (filter: string) => {
@@ -81,7 +102,7 @@ function createMockClient(): {
 	} as unknown as MemoSupabaseClient;
 
 	return { client, calls };
-}
+};
 
 describe("HighlightService.getHighlightsPaginated", () => {
 	it("검색어가 있으면 exact_text와 note를 대상으로 필터를 건다", async () => {
@@ -162,5 +183,84 @@ describe("HighlightService.getHighlightCounts", () => {
 		await new HighlightService(client).getHighlightCounts(["https://a.com"]);
 
 		expect(calls.schema).toContain("memo");
+	});
+});
+
+describe("MemoService.getMemosPaginated", () => {
+	it.each(["created_at", "updated_at"] as const)(
+		"%s가 같은 메모를 누락하지 않도록 id까지 비교한다",
+		async (sortBy) => {
+			const { client, calls } = createMockClient();
+			await new MemoService(client).getMemosPaginated({
+				sortBy,
+				cursor: { value: "2026-09-23T01:02:03.123456+00:00", id: 42 },
+			});
+
+			expect(calls.or).toEqual([
+				`${sortBy}.lt."2026-09-23T01:02:03.123456+00:00",and(${sortBy}.eq."2026-09-23T01:02:03.123456+00:00",id.lt.42)`,
+			]);
+			expect(calls.order).toEqual([
+				[sortBy, { ascending: false }],
+				["id", { ascending: false }],
+			]);
+			expect(calls.lt).toEqual([]);
+		},
+	);
+
+	it("검색과 필터를 커서 조건에 함께 적용하고 휴지통 메모를 제외한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemosPaginated({
+			sortBy: "created_at",
+			cursor: { value: "2026-09-23T00:00:00Z", id: 42 },
+			searchQuery: "리액트",
+			category: "개발",
+			isWish: true,
+			isStar: false,
+			isReading: true,
+		});
+
+		expect(calls.or).toHaveLength(2);
+		expect(calls.or[1]).toContain("title.ilike.%리액트%");
+		expect(calls.select).toEqual(["*, category!inner(id, name, color)"]);
+		expect(calls.eq).toEqual([
+			["isWish", true],
+			["isStar", false],
+			["isReading", true],
+			["category.name", "개발"],
+		]);
+		expect(calls.is).toEqual([["deleted_at", null]]);
+	});
+
+	it("첫 페이지는 커서 필터 없이 최신 수정순 20건을 조회한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemosPaginated({});
+
+		expect(calls.or).toEqual([]);
+		expect(calls.order).toEqual([
+			["updated_at", { ascending: false }],
+			["id", { ascending: false }],
+		]);
+		expect(calls.limit).toEqual([20]);
+	});
+
+	it("기존 모바일 문자열 날짜 커서를 계속 지원한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemosPaginated({ cursor: "2026-09-23" });
+
+		expect(calls.lt).toEqual([["updated_at", "2026-09-23"]]);
+	});
+
+	it("제목 정렬의 문자열 커서는 오름차순으로 조회한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemosPaginated({
+			sortBy: "title",
+			cursor: "메모 제목",
+		});
+
+		expect(calls.gt).toEqual([["title", "메모 제목"]]);
+		expect(calls.order).toEqual([
+			["title", { ascending: true }],
+			["id", { ascending: true }],
+		]);
 	});
 });

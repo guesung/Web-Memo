@@ -1,14 +1,15 @@
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
 import { type MemoSortBy, QUERY_KEY } from "../../../constants";
 import type { GetMemoResponse } from "../../../types";
-import { MemoService } from "../../../utils";
+import { type IFMemoPageCursor, MemoService } from "../../../utils";
 
 import useSupabaseClientQuery from "./useSupabaseClientQuery";
 
+/** 한 번에 읽을 메모 수. */
 const PAGE_SIZE = 20;
 
-interface UseMemosInfiniteQueryProps {
+/** 무한 메모 목록의 필터와 정렬 조건. */
+interface IFUseMemosInfiniteQueryProps {
 	category?: string;
 	isWish?: boolean;
 	isStar?: boolean;
@@ -17,19 +18,17 @@ interface UseMemosInfiniteQueryProps {
 	sortBy?: MemoSortBy;
 }
 
-export default function useMemosInfiniteQuery({
+/** 필터별 메모를 조회하고 날짜와 id로 다음 페이지를 이어 읽는다. */
+const useMemosInfiniteQuery = ({
 	category,
 	isWish,
 	isStar,
 	isReading,
 	searchQuery,
 	sortBy = "updated_at",
-}: UseMemosInfiniteQueryProps = {}) {
+}: IFUseMemosInfiniteQueryProps = {}) => {
 	const { data: supabaseClient } = useSupabaseClientQuery();
-	const memoService = useMemo(
-		() => new MemoService(supabaseClient),
-		[supabaseClient],
-	);
+	const memoService = new MemoService(supabaseClient);
 
 	const query = useSuspenseInfiniteQuery({
 		queryKey: QUERY_KEY.memosPaginated(
@@ -55,23 +54,29 @@ export default function useMemosInfiniteQuery({
 			return {
 				data: (result.data ?? []) as GetMemoResponse[],
 				count: result.count ?? 0,
-				// 화면은 실패를 빈 목록으로 보이지만, QueryCache가 이 값을 보고 Sentry에 보고한다.
+				/** 화면은 실패를 빈 목록으로 보이지만, QueryCache가 이 값을 보고 Sentry에 보고한다. */
 				error: result.error,
 			};
 		},
-		initialPageParam: undefined as string | undefined,
+		initialPageParam: undefined as string | IFMemoPageCursor | undefined,
 		getNextPageParam: (lastPage) => {
 			if (lastPage.data.length < PAGE_SIZE) {
 				return undefined;
 			}
 			const lastMemo = lastPage.data.at(-1);
+			if (!lastMemo) {
+				return undefined;
+			}
 			if (sortBy === "title") {
-				return lastMemo?.title ?? undefined;
+				return lastMemo.title ?? undefined;
 			}
-			if (sortBy === "created_at") {
-				return lastMemo?.created_at ?? undefined;
+
+			const cursorValue = lastMemo[sortBy];
+			if (cursorValue === null) {
+				return undefined;
 			}
-			return lastMemo?.updated_at ?? undefined;
+
+			return { value: cursorValue, id: lastMemo.id };
 		},
 	});
 
@@ -83,4 +88,6 @@ export default function useMemosInfiniteQuery({
 		memos,
 		totalCount,
 	};
-}
+};
+
+export default useMemosInfiniteQuery;

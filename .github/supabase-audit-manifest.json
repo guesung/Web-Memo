@@ -27,7 +27,6 @@
     "function:memo.get_user_growth(integer, boolean)"
   ],
   "functions": [
-    { "name": "get-categories-with-count", "version": 11 },
     { "name": "daily-article-reminder", "version": 6 },
     { "name": "kakao-auth", "version": 7 },
     { "name": "send-feedback", "version": 5 },

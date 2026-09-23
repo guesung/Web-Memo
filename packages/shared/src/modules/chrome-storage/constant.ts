@@ -9,4 +9,7 @@ export const STORAGE_KEYS = {
 	chatMessages: "chatMessages",
 	impressionSectionEnabled: "impressionSectionEnabled",
 	actionItemSectionEnabled: "actionItemSectionEnabled",
+	highlightBubbleEnabled: "highlightBubbleEnabled",
+	highlightIntroSeen: "highlightIntroSeen",
+	dismissedNoticeIds: "dismissedNoticeIds",
 } as const;

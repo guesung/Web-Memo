@@ -11,6 +11,15 @@ const mocks = vi.hoisted(() => ({
 	create: vi.fn(),
 	edit: vi.fn(),
 }));
+vi.mock("./useHighlightBubbleGate", () => ({
+	useHighlightBubbleGate: () => ({
+		isBubbleAllowed: true,
+		isIntroPending: false,
+	}),
+}));
+vi.mock("@web-memo/shared/modules/analytics", () => ({
+	analytics: { trackEvent: vi.fn() },
+}));
 vi.mock("@web-memo/shared/modules/extension-bridge", () => ({
 	bridge: {
 		request: {

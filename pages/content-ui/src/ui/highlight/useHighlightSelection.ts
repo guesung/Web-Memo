@@ -1,3 +1,4 @@
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import {
 	type HighlightRenderer,
@@ -14,6 +15,7 @@ import {
 	type IFHighlightEditState,
 } from "./createHighlightEditor";
 import { startHighlightRestore } from "./restoreHighlights";
+import { useHighlightBubbleGate } from "./useHighlightBubbleGate";
 
 /** 생성과 복원이 공유하는 렌더러 및 중복 판정에 필요한 기존 행. */
 export interface IFHighlightSelectionOptions {
@@ -32,6 +34,9 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 	const controllerRef = useRef<ReturnType<
 		typeof createHighlightController
 	> | null>(null);
+	const { isBubbleAllowed } = useHighlightBubbleGate();
+	/** 컨트롤러는 한 번만 만들어지므로 게이트의 최신 값을 ref로 읽게 한다. */
+	const isBubbleAllowedRef = useRef(isBubbleAllowed);
 	useEffect(() => {
 		let generation = 0;
 		let isStopped = false;
@@ -76,6 +81,10 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			onPageChange: () => {
 				void restorePage();
 			},
+			isSelectionEnabled: () => isBubbleAllowedRef.current,
+			onSaveSuccess: () => {
+				analytics.trackEvent({ name: "highlight_create" });
+			},
 		});
 		const editor = createHighlightEditor({
 			renderer: options.renderer,
@@ -100,6 +109,12 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			controllerRef.current = null;
 		};
 	}, [options.renderer, options.notesById]);
+	useEffect(() => {
+		isBubbleAllowedRef.current = isBubbleAllowed;
+		if (!isBubbleAllowed) {
+			controllerRef.current?.dismissSelection();
+		}
+	}, [isBubbleAllowed]);
 	const handleHighlightButtonClick = async () => {
 		await controllerRef.current?.save();
 	};

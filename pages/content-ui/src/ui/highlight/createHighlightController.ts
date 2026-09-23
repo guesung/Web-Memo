@@ -27,6 +27,10 @@ interface IFHighlightControllerOptions {
 	) => Promise<TCreateHighlightResponse>;
 	onSelectionChange: (state: IFHighlightSelectionState | null) => void;
 	onPageChange?: () => void;
+	/** false를 돌려주면 새 선택에 툴바를 띄우지 않는다. 생략하면 항상 띄운다. */
+	isSelectionEnabled?: () => boolean;
+	/** 저장이 성공해 하이라이트를 그린 뒤 한 번 불린다. */
+	onSaveSuccess?: () => void;
 }
 
 /** 선택 해제 전에 앵커를 보관하며 한 번에 하나만 저장하고 성공한 결과만 그린다. */
@@ -46,6 +50,11 @@ export const createHighlightController = (
 	const getAnchorKey = (payload: IFCreateHighlightPayload) =>
 		JSON.stringify([payload.anchor.exact, payload.anchor.textPositionStart]);
 	const emit = () => options.onSelectionChange(state);
+	const clearSelectionState = () => {
+		selectionPayload = null;
+		state = null;
+		emit();
+	};
 	const checkPage = () => {
 		if (currentUrl === normalizeUrl(location.href)) {
 			return;
@@ -64,6 +73,11 @@ export const createHighlightController = (
 	const captureSelection = () => {
 		checkPage();
 		if (isSaving || isStopped) {
+			return;
+		}
+		if (options.isSelectionEnabled?.() === false) {
+			clearSelectionState();
+
 			return;
 		}
 		const selection = document.getSelection();
@@ -194,6 +208,7 @@ export const createHighlightController = (
 			state = null;
 			document.getSelection()?.removeAllRanges();
 			emit();
+			options.onSaveSuccess?.();
 		} catch {
 			if (
 				!isStopped &&
@@ -217,6 +232,12 @@ export const createHighlightController = (
 
 	return {
 		save,
+		/** 열린 선택 툴바를 닫는다. 저장 중에는 결과 안내를 지키려고 닫지 않는다. */
+		dismissSelection: () => {
+			if (!isSaving) {
+				clearSelectionState();
+			}
+		},
 		getRow: (id: number) => rowsById.get(id),
 		updateRow: (row: HighlightRow) => rowsById.set(row.id, row),
 		removeRow: (id: number) => {

@@ -78,9 +78,18 @@ test.describe("날짜별 메모 그리드 페이지 연결 (Mocked)", () => {
 		const sharedCreatedAt = new Date(2026, 0, 11, 23, 30).toISOString();
 
 		for (let order = 1; order <= 21; order++) {
+			let memoContent = `Test memo content ${order}`;
+			if (order === 20) {
+				memoContent = "";
+			}
+			if (order === 19) {
+				memoContent = "긴 본문 ".repeat(30);
+			}
+
 			store.addMemo(
 				createMockMemo({
 					title: `같은 시각 메모 ${String(order).padStart(2, "0")}`,
+					memo: memoContent,
 					created_at: sharedCreatedAt,
 				}),
 			);
@@ -151,18 +160,47 @@ test.describe("날짜별 메모 그리드 페이지 연결 (Mocked)", () => {
 		await expect(
 			page.getByRole("button", { name: /같은 시각 메모 21/ }),
 		).toHaveCount(1);
+
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await dateGroups.first().locator("h2").scrollIntoViewIfNeeded();
+		await page.setViewportSize({ width: 390, height: 844 });
+		await expect(dateGroups.first().locator("h2")).toBeInViewport();
+		await expect
+			.poll(async () => {
+				const firstGroup = await dateGroups.first().boundingBox();
+				const secondGroup = await dateGroups.last().boundingBox();
+
+				return Boolean(
+					firstGroup &&
+						secondGroup &&
+						secondGroup.y >= firstGroup.y + firstGroup.height - 1,
+				);
+			})
+			.toBe(true);
 	});
 
-	test("넓은 화면에서는 카드가 나란히, 좁은 화면에서는 세로로 배치된다.", async ({
+	test("넓은 화면에서는 짧은 카드 아래로 이어지고 좁은 화면에서는 한 열로 배치된다.", async ({
 		page,
 	}) => {
 		const cards = page
 			.getByTestId("memo-date-grid")
 			.first()
 			.getByTestId("memo-list-item");
-		await expect(cards).toHaveCount(PAGE_SIZE);
+		await expect(cards.nth(3)).toBeVisible();
 
 		await page.setViewportSize({ width: 1440, height: 900 });
+		await expect
+			.poll(async () => {
+				const thirdCard = await cards.nth(2).boundingBox();
+				const fourthCard = await cards.nth(3).boundingBox();
+
+				return Boolean(
+					thirdCard &&
+						fourthCard &&
+						fourthCard.y < thirdCard.y + thirdCard.height,
+				);
+			})
+			.toBe(true);
 		const wideFirstCard = await cards.nth(0).boundingBox();
 		const wideSecondCard = await cards.nth(1).boundingBox();
 		expect(wideFirstCard).not.toBeNull();
@@ -171,6 +209,14 @@ test.describe("날짜별 메모 그리드 페이지 연결 (Mocked)", () => {
 		expect(wideSecondCard?.x).toBeGreaterThan(wideFirstCard?.x ?? 0);
 
 		await page.setViewportSize({ width: 390, height: 844 });
+		await expect
+			.poll(async () => {
+				const firstCard = await cards.nth(0).boundingBox();
+				const secondCard = await cards.nth(1).boundingBox();
+
+				return Boolean(firstCard && secondCard && secondCard.y > firstCard.y);
+			})
+			.toBe(true);
 		const narrowFirstCard = await cards.nth(0).boundingBox();
 		const narrowSecondCard = await cards.nth(1).boundingBox();
 		expect(narrowFirstCard).not.toBeNull();
@@ -200,5 +246,10 @@ test.describe("날짜별 메모 그리드 페이지 연결 (Mocked)", () => {
 		await expect(
 			page.getByRole("button", { name: /전날 메모 1/ }),
 		).toBeVisible();
+
+		await page.getByPlaceholder("Search memos").fill("존재하지 않는 메모");
+		await expect(page.getByTestId("memo-list-item")).toHaveCount(0);
+		await page.getByPlaceholder("Search memos").fill("");
+		await expect(page.getByTestId("memo-list-item")).toHaveCount(PAGE_SIZE);
 	});
 });

@@ -53,7 +53,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 		});
 
 	const { highlightsByUrl, isHighlightLoadError, refetchHighlights } =
-		useMemoHighlights(isListView ? [] : memos.map((memo) => memo.url));
+		useMemoHighlights(memos.map((memo) => memo.url));
 
 	const { moveNextGuideStep } = useGuide({ lng });
 	useDidMount(async () => {
@@ -124,6 +124,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 					key={tabKey}
 					lng={lng}
 					memos={memos}
+					highlightsByUrl={highlightsByUrl}
 					searchQuery={searchQuery}
 					hasNextPage={hasNextPage}
 					isFetchingNextPage={isFetchingNextPage}

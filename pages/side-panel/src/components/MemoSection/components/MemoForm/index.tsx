@@ -7,6 +7,7 @@ import {
 	type TMemoStatusKey,
 } from "@web-memo/shared/constants";
 import { useSettingQuery } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
 	Badge,
@@ -112,6 +113,10 @@ function MemoFormContent() {
 			const memoUrlParams: IFMemoUrlParams = { id: memoData?.id };
 			memoUrlParams[statusKey] = nextStatusValue;
 
+			analytics.trackEvent({
+				name: "open_web_from_extension",
+				params: { from: "side_panel_toast" },
+			});
 			Tab.create({ url: getMemoUrl(memoUrlParams) });
 		};
 

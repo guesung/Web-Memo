@@ -42,7 +42,11 @@ export class Runtime {
 			sendResponse: (response: TResponse) => void,
 		) => undefined | boolean | Promise<unknown>,
 	) {
-		chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+		const listener = (
+			request: BridgeRequest<TPayload>,
+			sender: chrome.runtime.MessageSender,
+			sendResponse: (response: TResponse) => void,
+		) => {
 			if (request.type === type) {
 				const result = callback(request, sender, sendResponse);
 				// 비동기 콜백의 경우 true를 반환하여 sendResponse를 유지
@@ -52,7 +56,11 @@ export class Runtime {
 				return result;
 			}
 			return false;
-		});
+		};
+
+		chrome.runtime.onMessage.addListener(listener);
+
+		return () => chrome.runtime.onMessage.removeListener(listener);
 	}
 
 	static onMessageExternal<TPayload, TResponse>(
@@ -63,13 +71,19 @@ export class Runtime {
 			sendResponse: (response: TResponse) => void,
 		) => void,
 	) {
-		chrome.runtime.onMessageExternal.addListener(
-			(request, sender, sendResponse) => {
-				if (request.type === type) {
-					callback(request, sender, sendResponse);
-				}
-			},
-		);
+		const listener = (
+			request: BridgeRequest<TPayload>,
+			sender: chrome.runtime.MessageSender,
+			sendResponse: (response: TResponse) => void,
+		) => {
+			if (request.type === type) {
+				callback(request, sender, sendResponse);
+			}
+		};
+
+		chrome.runtime.onMessageExternal.addListener(listener);
+
+		return () => chrome.runtime.onMessageExternal.removeListener(listener);
 	}
 
 	static async connect<TPayload>(

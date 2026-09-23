@@ -4,6 +4,7 @@ import { SettingService } from "../../../utils";
 
 import useSupabaseClientQuery from "./useSupabaseClientQuery";
 
+/** 로그인한 사용자의 메모 입력 설정을 조회한다. */
 export default function useSettingQuery() {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 

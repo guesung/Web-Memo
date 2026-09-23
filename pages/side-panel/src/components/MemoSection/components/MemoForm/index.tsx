@@ -2,12 +2,15 @@ import ResizeHandle from "@src/components/ResizeHandle";
 import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
 import { getMemoUrl, type IFMemoUrlParams } from "@src/utils";
+import { useQueryClient } from "@tanstack/react-query";
 import {
 	DEFAULT_CATEGORY_COLOR,
+	QUERY_KEY,
 	type TMemoStatusKey,
 } from "@web-memo/shared/constants";
-import { useSettingQuery } from "@web-memo/shared/hooks";
+import { useSettingQuery, useSupabaseUserQuery } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
+import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
 	Badge,
@@ -31,7 +34,7 @@ import {
 	StarIcon,
 	XIcon,
 } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { SaveStatus } from "./components";
 import {
@@ -44,11 +47,25 @@ import {
 
 function MemoFormContent() {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+	const queryClient = useQueryClient();
 	const { register, watch } = useFormContext<MemoInput>();
 	const { ref, ...rest } = register("memo");
 
 	const currentCategoryId = watch("categoryId");
-	const { showImpression, showActionItem } = useSettingQuery();
+	const { user } = useSupabaseUserQuery();
+	const setting = useSettingQuery();
+	const { showImpression, showActionItem } = setting;
+	const userId = user.data.user?.id;
+
+	useEffect(() => {
+		return bridge.handle.SETTING_UPDATED((payload) => {
+			if (payload.userId !== userId) {
+				return;
+			}
+
+			void queryClient.invalidateQueries({ queryKey: QUERY_KEY.setting() });
+		});
+	}, [queryClient, userId]);
 
 	const visibleFieldKeys: TMemoFieldKey[] = ["memo"];
 	if (showImpression) {
@@ -138,6 +155,15 @@ function MemoFormContent() {
 		<>
 			<form className="relative flex min-h-0 flex-1 flex-col py-1">
 				<div className="mb-1 flex shrink-0 items-center gap-1">
+					{setting.isRefetchError && (
+						<button
+							type="button"
+							className="text-xs text-destructive underline"
+							onClick={() => void setting.refetch()}
+						>
+							{I18n.get("retry")}
+						</button>
+					)}
 					<Input
 						id="memo-title-input"
 						className="h-8 min-w-0 border-none px-0 text-sm font-bold shadow-none focus-visible:ring-0"
@@ -376,6 +402,7 @@ function MemoFormContent() {
 
 function MemoForm() {
 	const form = useForm<MemoInput>({
+		shouldUnregister: false,
 		defaultValues: {
 			title: "",
 			memo: "",

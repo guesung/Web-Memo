@@ -68,7 +68,7 @@ const record = (table) =>
 	);
 
 describe("createSeoSheetTables", () => {
-	it("다섯 탭의 모든 표시명을 한글로 제공하고 기존 영문 컬럼 순서를 유지한다", () => {
+	it("여섯 탭의 모든 표시명을 한글로 제공하고 기존 영문 컬럼 순서를 유지한다", () => {
 		const tables = createSeoSheetTables({
 			...metadata,
 			seoReport: createReport(),
@@ -78,6 +78,7 @@ describe("createSeoSheetTables", () => {
 			"key runKey generatedAt githubRunId githubRunAttempt state issueKey kind url agent code field severity message",
 			"key runKey generatedAt githubRunId githubRunAttempt inspectedAt siteUrl url verdict coverageState indexingState robotsTxtState pageFetchState lastCrawlTime googleCanonical userCanonical",
 			"key runKey generatedAt githubRunId githubRunAttempt siteUrl period startDate endDate dimension value clicks impressions ctr position",
+			"key generatedAt githubRunId githubRunAttempt runUrl mode status headline p0Count p1Count p2Count p3Count droppedFindingCount delivered",
 			"key date commitSha prUrl summary affectedUrls notes",
 		]);
 		for (const table of tables) {
@@ -87,6 +88,37 @@ describe("createSeoSheetTables", () => {
 				expect(header).toMatch(/[가-힣]/);
 			}
 		}
+	});
+	it("AI 리포트가 있으면 실행당 한 행을 남기고 없으면 행을 만들지 않는다", () => {
+		const aiReport = {
+			mode: "weekly",
+			status: "warning",
+			headline: "요약",
+			counts: { P0: 0, P1: 1, P2: 2, P3: 0 },
+			droppedFindingCount: 1,
+			delivered: true,
+		};
+		const withAi = createSeoSheetTables({ ...metadata, seoReport: createReport(), aiReport });
+		const withoutAi = createSeoSheetTables({ ...metadata, seoReport: createReport() });
+		const aiTable = withAi.find((table) => table.title === "SEO AI Reports");
+
+		expect(record(aiTable)).toEqual({
+			key: "123:1",
+			generatedAt: "2026-09-22T00:17:00Z",
+			githubRunId: "123",
+			githubRunAttempt: "1",
+			runUrl: "https://github.com/run/123",
+			mode: "weekly",
+			status: "warning",
+			headline: "요약",
+			p0Count: 0,
+			p1Count: 1,
+			p2Count: 2,
+			p3Count: 0,
+			droppedFindingCount: 1,
+			delivered: true,
+		});
+		expect(withoutAi.find((table) => table.title === "SEO AI Reports").rows).toEqual([]);
 	});
 	it("고유 URL의 관측 및 오류 비율과 변화 이벤트만 생성한다", () => {
 		const tables = createSeoSheetTables({
@@ -219,7 +251,7 @@ describe("createSeoSheetTables", () => {
 			...metadata,
 			seoReport: createReport(),
 		});
-		expect(tables[4]).toEqual({
+		expect(tables.find((table) => table.title === "SEO Changes")).toEqual({
 			title: "SEO Changes",
 			headers: [
 				"기록 키",

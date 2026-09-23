@@ -39,14 +39,16 @@ export const persistSeoReportsToSheets = async ({
 		throw new Error("GITHUB_RUN_ID가 없어 Sheets 행의 멱등 키를 만들 수 없습니다.");
 	}
 
-	const [seoReport, gscReport] = await Promise.all([
+	const [seoReport, gscReport, aiReport] = await Promise.all([
 		readJson("artifacts/seo/seo-report.json"),
 		readOptionalJson("artifacts/seo/gsc-report.json"),
+		readOptionalJson("artifacts/seo/ai-report.json"),
 	]);
 	const serviceAccount = parseServiceAccount(serviceAccountJson);
 	const tables = createSeoSheetTables({
 		seoReport,
 		gscReport,
+		aiReport,
 		githubRunId,
 		githubRunAttempt,
 		commitSha,

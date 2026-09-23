@@ -7,6 +7,11 @@ export type Json =
 	| Json[];
 
 export type Database = {
+	// Allows to automatically instantiate createClient with right options
+	// instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+	__InternalSupabase: {
+		PostgrestVersion: "12.2.3 (519615d)";
+	};
 	feedback: {
 		Tables: {
 			feedbacks: {
@@ -97,7 +102,7 @@ export type Database = {
 					created_at?: string;
 					exact_text: string;
 					favIconUrl?: string | null;
-					id?: number;
+					id?: never;
 					note?: string | null;
 					prefix_text?: string | null;
 					suffix_text?: string | null;
@@ -112,7 +117,7 @@ export type Database = {
 					created_at?: string;
 					exact_text?: string;
 					favIconUrl?: string | null;
-					id?: number;
+					id?: never;
 					note?: string | null;
 					prefix_text?: string | null;
 					suffix_text?: string | null;
@@ -127,16 +132,21 @@ export type Database = {
 			memo: {
 				Row: {
 					actionItem: string | null;
+					bookmark_count: number | null;
 					category_id: number | null;
+					comment_count: number | null;
 					created_at: string | null;
 					deleted_at: string | null;
 					favIconUrl: string | null;
 					id: number;
 					impression: string | null;
+					is_public: boolean | null;
 					isReading: boolean | null;
 					isStar: boolean | null;
 					isWish: boolean | null;
+					like_count: number | null;
 					memo: string;
+					shared_at: string | null;
 					title: string;
 					updated_at: string | null;
 					url: string;
@@ -144,16 +154,21 @@ export type Database = {
 				};
 				Insert: {
 					actionItem?: string | null;
+					bookmark_count?: number | null;
 					category_id?: number | null;
+					comment_count?: number | null;
 					created_at?: string | null;
 					deleted_at?: string | null;
 					favIconUrl?: string | null;
 					id?: number;
 					impression?: string | null;
+					is_public?: boolean | null;
 					isReading?: boolean | null;
 					isStar?: boolean | null;
 					isWish?: boolean | null;
+					like_count?: number | null;
 					memo: string;
+					shared_at?: string | null;
 					title: string;
 					updated_at?: string | null;
 					url: string;
@@ -161,16 +176,21 @@ export type Database = {
 				};
 				Update: {
 					actionItem?: string | null;
+					bookmark_count?: number | null;
 					category_id?: number | null;
+					comment_count?: number | null;
 					created_at?: string | null;
 					deleted_at?: string | null;
 					favIconUrl?: string | null;
 					id?: number;
 					impression?: string | null;
+					is_public?: boolean | null;
 					isReading?: boolean | null;
 					isStar?: boolean | null;
 					isWish?: boolean | null;
+					like_count?: number | null;
 					memo?: string;
+					shared_at?: string | null;
 					title?: string;
 					updated_at?: string | null;
 					url?: string;
@@ -184,22 +204,172 @@ export type Database = {
 						referencedRelation: "category";
 						referencedColumns: ["id"];
 					},
+					{
+						foreignKeyName: "memo_category_id_fkey";
+						columns: ["category_id"];
+						isOneToOne: false;
+						referencedRelation: "category_with_count";
+						referencedColumns: ["id"];
+					},
 				];
 			};
-			profiles: {
+			notice: {
 				Row: {
-					nickname: string | null;
-					share_mode: string | null;
+					body_en: string;
+					body_ko: string;
+					created_at: string;
+					ends_at: string | null;
+					id: number;
+					link_label_en: string | null;
+					link_label_ko: string | null;
+					link_target: string | null;
+					starts_at: string | null;
+					title_en: string;
+					title_ko: string;
+				};
+				Insert: {
+					body_en: string;
+					body_ko: string;
+					created_at?: string;
+					ends_at?: string | null;
+					id?: never;
+					link_label_en?: string | null;
+					link_label_ko?: string | null;
+					link_target?: string | null;
+					starts_at?: string | null;
+					title_en: string;
+					title_ko: string;
+				};
+				Update: {
+					body_en?: string;
+					body_ko?: string;
+					created_at?: string;
+					ends_at?: string | null;
+					id?: never;
+					link_label_en?: string | null;
+					link_label_ko?: string | null;
+					link_target?: string | null;
+					starts_at?: string | null;
+					title_en?: string;
+					title_ko?: string;
+				};
+				Relationships: [];
+			};
+			notification_log: {
+				Row: {
+					id: number;
+					memo_id: number;
+					sent_at: string;
 					user_id: string;
 				};
 				Insert: {
-					nickname?: string | null;
-					share_mode?: string | null;
+					id?: number;
+					memo_id: number;
+					sent_at?: string;
 					user_id: string;
 				};
 				Update: {
+					id?: number;
+					memo_id?: number;
+					sent_at?: string;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "notification_log_memo_id_fkey";
+						columns: ["memo_id"];
+						isOneToOne: false;
+						referencedRelation: "memo";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			notification_setting: {
+				Row: {
+					isEnabled: boolean;
+					notifyTime: string;
+					timezone: string;
+					updated_at: string;
+					user_id: string;
+				};
+				Insert: {
+					isEnabled?: boolean;
+					notifyTime?: string;
+					timezone?: string;
+					updated_at?: string;
+					user_id: string;
+				};
+				Update: {
+					isEnabled?: boolean;
+					notifyTime?: string;
+					timezone?: string;
+					updated_at?: string;
+					user_id?: string;
+				};
+				Relationships: [];
+			};
+			profiles: {
+				Row: {
+					avatar_url: string | null;
+					bio: string | null;
+					created_at: string | null;
+					follower_count: number | null;
+					following_count: number | null;
+					nickname: string | null;
+					role: string;
+					share_mode: string | null;
+					updated_at: string | null;
+					user_id: string;
+					website: string | null;
+				};
+				Insert: {
+					avatar_url?: string | null;
+					bio?: string | null;
+					created_at?: string | null;
+					follower_count?: number | null;
+					following_count?: number | null;
 					nickname?: string | null;
+					role?: string;
 					share_mode?: string | null;
+					updated_at?: string | null;
+					user_id: string;
+					website?: string | null;
+				};
+				Update: {
+					avatar_url?: string | null;
+					bio?: string | null;
+					created_at?: string | null;
+					follower_count?: number | null;
+					following_count?: number | null;
+					nickname?: string | null;
+					role?: string;
+					share_mode?: string | null;
+					updated_at?: string | null;
+					user_id?: string;
+					website?: string | null;
+				};
+				Relationships: [];
+			};
+			push_token: {
+				Row: {
+					id: number;
+					platform: string;
+					token: string;
+					updated_at: string;
+					user_id: string;
+				};
+				Insert: {
+					id?: number;
+					platform: string;
+					token: string;
+					updated_at?: string;
+					user_id: string;
+				};
+				Update: {
+					id?: number;
+					platform?: string;
+					token?: string;
+					updated_at?: string;
 					user_id?: string;
 				};
 				Relationships: [];
@@ -227,10 +397,47 @@ export type Database = {
 			};
 		};
 		Views: {
-			[_ in never]: never;
+			category_with_count: {
+				Row: {
+					color: string | null;
+					created_at: string | null;
+					id: number | null;
+					memo_count: number | null;
+					name: string | null;
+					user_id: string | null;
+				};
+				Relationships: [];
+			};
 		};
 		Functions: {
-			[_ in never]: never;
+			get_active_users_stats: {
+				Args: { include_admin?: boolean };
+				Returns: Json;
+			};
+			get_admin_feedback: { Args: { feedback_id: number }; Returns: Json };
+			get_admin_feedbacks: {
+				Args: {
+					page_limit?: number;
+					page_offset?: number;
+					search_query?: string;
+				};
+				Returns: Json;
+			};
+			get_admin_stats: { Args: { include_admin?: boolean }; Returns: Json };
+			get_admin_users: { Args: { search_query?: string }; Returns: Json };
+			get_highlight_counts: {
+				Args: { target_urls: string[] };
+				Returns: {
+					count: number;
+					url: string;
+				}[];
+			};
+			get_memo_count: { Args: never; Returns: number };
+			get_public_stats: { Args: never; Returns: Json };
+			get_user_growth: {
+				Args: { days_ago?: number; include_admin?: boolean };
+				Returns: Json;
+			};
 		};
 		Enums: {
 			[_ in never]: never;
@@ -241,21 +448,28 @@ export type Database = {
 	};
 };
 
-type DefaultSchema = Database[Extract<keyof Database, "public">];
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<
+	keyof Database,
+	"public"
+>];
 
 export type Tables<
 	DefaultSchemaTableNameOrOptions extends
 		| keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-		| { schema: keyof Database },
+		| { schema: keyof DatabaseWithoutInternals },
 	TableName extends DefaultSchemaTableNameOrOptions extends {
-		schema: keyof Database;
+		schema: keyof DatabaseWithoutInternals;
 	}
-		? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-				Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+		? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+				DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
 		: never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-	? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-			Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+	schema: keyof DatabaseWithoutInternals;
+}
+	? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+			DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
 			Row: infer R;
 		}
 		? R
@@ -273,14 +487,16 @@ export type Tables<
 export type TablesInsert<
 	DefaultSchemaTableNameOrOptions extends
 		| keyof DefaultSchema["Tables"]
-		| { schema: keyof Database },
+		| { schema: keyof DatabaseWithoutInternals },
 	TableName extends DefaultSchemaTableNameOrOptions extends {
-		schema: keyof Database;
+		schema: keyof DatabaseWithoutInternals;
 	}
-		? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+		? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
 		: never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-	? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+	schema: keyof DatabaseWithoutInternals;
+}
+	? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
 			Insert: infer I;
 		}
 		? I
@@ -296,14 +512,16 @@ export type TablesInsert<
 export type TablesUpdate<
 	DefaultSchemaTableNameOrOptions extends
 		| keyof DefaultSchema["Tables"]
-		| { schema: keyof Database },
+		| { schema: keyof DatabaseWithoutInternals },
 	TableName extends DefaultSchemaTableNameOrOptions extends {
-		schema: keyof Database;
+		schema: keyof DatabaseWithoutInternals;
 	}
-		? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+		? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
 		: never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-	? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+	schema: keyof DatabaseWithoutInternals;
+}
+	? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
 			Update: infer U;
 		}
 		? U
@@ -319,14 +537,16 @@ export type TablesUpdate<
 export type Enums<
 	DefaultSchemaEnumNameOrOptions extends
 		| keyof DefaultSchema["Enums"]
-		| { schema: keyof Database },
+		| { schema: keyof DatabaseWithoutInternals },
 	EnumName extends DefaultSchemaEnumNameOrOptions extends {
-		schema: keyof Database;
+		schema: keyof DatabaseWithoutInternals;
 	}
-		? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+		? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
 		: never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-	? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends {
+	schema: keyof DatabaseWithoutInternals;
+}
+	? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
 	: DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
 		? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
 		: never;
@@ -334,14 +554,16 @@ export type Enums<
 export type CompositeTypes<
 	PublicCompositeTypeNameOrOptions extends
 		| keyof DefaultSchema["CompositeTypes"]
-		| { schema: keyof Database },
+		| { schema: keyof DatabaseWithoutInternals },
 	CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-		schema: keyof Database;
+		schema: keyof DatabaseWithoutInternals;
 	}
-		? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+		? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
 		: never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-	? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends {
+	schema: keyof DatabaseWithoutInternals;
+}
+	? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
 	: PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
 		? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
 		: never;

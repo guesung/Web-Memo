@@ -15,20 +15,14 @@ erDiagram
     table_1["memo.category"]
     table_2["memo.highlight"]
     table_3["memo.memo"]
-    table_4["memo.memo_bookmarks"]
-    table_5["memo.memo_comments"]
-    table_6["memo.memo_likes"]
-    table_7["memo.notification_log"]
-    table_8["memo.notification_setting"]
-    table_9["memo.profiles"]
-    table_10["memo.push_token"]
-    table_11["memo.setting"]
-    table_12["memo.user_follows"]
+    table_4["memo.notice"]
+    table_5["memo.notification_log"]
+    table_6["memo.notification_setting"]
+    table_7["memo.profiles"]
+    table_8["memo.push_token"]
+    table_9["memo.setting"]
     table_1 }o..o{ table_3 : "memo_category_id_fkey"
-    table_3 }o..o{ table_4 : "memo_bookmarks_memo_id_fkey"
-    table_3 }o..o{ table_5 : "memo_comments_memo_id_fkey"
-    table_3 }o..o{ table_6 : "memo_likes_memo_id_fkey"
-    table_3 }o..o{ table_7 : "notification_log_memo_id_fkey"
+    table_3 }o..o{ table_5 : "notification_log_memo_id_fkey"
 ```
 
 관계선은 FK 연결만 나타내며 카디널리티를 보장하지 않습니다.
@@ -235,7 +229,7 @@ RLS: true / FORCE RLS: false
 | trigger&#95;update&#95;shared&#95;at | O | BEFORE | UPDATE | ROW | memo.update&#95;shared&#95;at() |
 | update&#95;category&#95;memo&#95;count&#95;trigger | O | AFTER | DELETE, INSERT, UPDATE | ROW | public.update&#95;category&#95;memo&#95;count() |
 
-### memo.memo&#95;bookmarks
+### memo.notice
 
 RLS: true / FORCE RLS: false
 
@@ -243,132 +237,39 @@ RLS: true / FORCE RLS: false
 
 | 순서 | 이름 | 타입 | NOT NULL | 기본값 |
 | --- | --- | --- | --- | --- |
-| 1 | id | integer | true | nextval('memo.memo&#95;bookmarks&#95;id&#95;seq'::regclass) |
-| 2 | memo&#95;id | integer | true | 없음 |
-| 3 | user&#95;id | uuid | true | 없음 |
-| 4 | created&#95;at | timestamp with time zone | false | now() |
+| 1 | id | bigint | true | 없음 |
+| 2 | title&#95;ko | text | true | 없음 |
+| 3 | title&#95;en | text | true | 없음 |
+| 4 | body&#95;ko | text | true | 없음 |
+| 5 | body&#95;en | text | true | 없음 |
+| 6 | link&#95;label&#95;ko | text | false | 없음 |
+| 7 | link&#95;label&#95;en | text | false | 없음 |
+| 8 | link&#95;target | text | false | 없음 |
+| 9 | starts&#95;at | timestamp with time zone | false | 없음 |
+| 10 | ends&#95;at | timestamp with time zone | false | 없음 |
+| 11 | created&#95;at | timestamp with time zone | true | now() |
 
 #### 제약
 
 | 이름 | 종류 | 컬럼 (순서) | 참조 | 정의 |
 | --- | --- | --- | --- | --- |
-| memo&#95;bookmarks&#95;memo&#95;id&#95;fkey | f | memo&#95;id | memo.memo (id) | FOREIGN KEY (memo&#95;id) REFERENCES memo.memo(id) ON DELETE CASCADE |
-| memo&#95;bookmarks&#95;memo&#95;id&#95;user&#95;id&#95;key | u | memo&#95;id, user&#95;id | 없음 | UNIQUE (memo&#95;id, user&#95;id) |
-| memo&#95;bookmarks&#95;pkey | p | id | 없음 | PRIMARY KEY (id) |
+| notice&#95;pkey | p | id | 없음 | PRIMARY KEY (id) |
 
 #### 인덱스
 
 | 이름 | 정의 |
 | --- | --- |
-| idx&#95;memo&#95;bookmarks&#95;memo&#95;id | CREATE INDEX idx&#95;memo&#95;bookmarks&#95;memo&#95;id ON memo.memo&#95;bookmarks USING btree (memo&#95;id) |
-| idx&#95;memo&#95;bookmarks&#95;user&#95;id | CREATE INDEX idx&#95;memo&#95;bookmarks&#95;user&#95;id ON memo.memo&#95;bookmarks USING btree (user&#95;id) |
-| memo&#95;bookmarks&#95;memo&#95;id&#95;user&#95;id&#95;key | CREATE UNIQUE INDEX memo&#95;bookmarks&#95;memo&#95;id&#95;user&#95;id&#95;key ON memo.memo&#95;bookmarks USING btree (memo&#95;id, user&#95;id) |
-| memo&#95;bookmarks&#95;pkey | CREATE UNIQUE INDEX memo&#95;bookmarks&#95;pkey ON memo.memo&#95;bookmarks USING btree (id) |
+| notice&#95;pkey | CREATE UNIQUE INDEX notice&#95;pkey ON memo.notice USING btree (id) |
 
 #### 정책
 
 | 이름 | 명령 | PERMISSIVE | 역할 | USING | WITH CHECK |
 | --- | --- | --- | --- | --- | --- |
-| Users can create bookmarks | a | true | public | 없음 | ((auth.uid() = user&#95;id) AND (EXISTS ( SELECT 1<br>   FROM memo.memo m<br>  WHERE ((m.id = memo&#95;bookmarks.memo&#95;id) AND (m.is&#95;public = true))))) |
-| Users can delete own bookmarks | d | true | public | (auth.uid() = user&#95;id) | 없음 |
-| Users can view own bookmarks | r | true | public | (auth.uid() = user&#95;id) | 없음 |
+| notice&#95;select&#95;all | r | true | anon, authenticated | true | 없음 |
 
 #### 트리거
 
-| 이름 | 활성 상태 | 시점 | 이벤트 | 실행 단위 | 호출 대상 (인자 제외) |
-| --- | --- | --- | --- | --- | --- |
-| trigger&#95;update&#95;memo&#95;bookmark&#95;count | O | AFTER | DELETE, INSERT | ROW | memo.update&#95;memo&#95;bookmark&#95;count() |
-
-### memo.memo&#95;comments
-
-RLS: true / FORCE RLS: false
-
-#### 컬럼
-
-| 순서 | 이름 | 타입 | NOT NULL | 기본값 |
-| --- | --- | --- | --- | --- |
-| 1 | id | integer | true | nextval('memo.memo&#95;comments&#95;id&#95;seq'::regclass) |
-| 2 | memo&#95;id | integer | true | 없음 |
-| 3 | user&#95;id | uuid | true | 없음 |
-| 4 | content | text | true | 없음 |
-| 5 | created&#95;at | timestamp with time zone | false | now() |
-| 6 | updated&#95;at | timestamp with time zone | false | now() |
-
-#### 제약
-
-| 이름 | 종류 | 컬럼 (순서) | 참조 | 정의 |
-| --- | --- | --- | --- | --- |
-| memo&#95;comments&#95;memo&#95;id&#95;fkey | f | memo&#95;id | memo.memo (id) | FOREIGN KEY (memo&#95;id) REFERENCES memo.memo(id) ON DELETE CASCADE |
-| memo&#95;comments&#95;pkey | p | id | 없음 | PRIMARY KEY (id) |
-
-#### 인덱스
-
-| 이름 | 정의 |
-| --- | --- |
-| idx&#95;memo&#95;comments&#95;created&#95;at | CREATE INDEX idx&#95;memo&#95;comments&#95;created&#95;at ON memo.memo&#95;comments USING btree (created&#95;at DESC) |
-| idx&#95;memo&#95;comments&#95;memo&#95;id | CREATE INDEX idx&#95;memo&#95;comments&#95;memo&#95;id ON memo.memo&#95;comments USING btree (memo&#95;id) |
-| idx&#95;memo&#95;comments&#95;user&#95;id | CREATE INDEX idx&#95;memo&#95;comments&#95;user&#95;id ON memo.memo&#95;comments USING btree (user&#95;id) |
-| memo&#95;comments&#95;pkey | CREATE UNIQUE INDEX memo&#95;comments&#95;pkey ON memo.memo&#95;comments USING btree (id) |
-
-#### 정책
-
-| 이름 | 명령 | PERMISSIVE | 역할 | USING | WITH CHECK |
-| --- | --- | --- | --- | --- | --- |
-| Anyone can view comments on public memos | r | true | public | (EXISTS ( SELECT 1<br>   FROM memo.memo m<br>  WHERE ((m.id = memo&#95;comments.memo&#95;id) AND (m.is&#95;public = true)))) | 없음 |
-| Users can create comments | a | true | public | 없음 | ((auth.uid() = user&#95;id) AND (EXISTS ( SELECT 1<br>   FROM memo.memo m<br>  WHERE ((m.id = memo&#95;comments.memo&#95;id) AND (m.is&#95;public = true))))) |
-| Users can delete own comments | d | true | public | (auth.uid() = user&#95;id) | 없음 |
-| Users can update own comments | w | true | public | (auth.uid() = user&#95;id) | 없음 |
-
-#### 트리거
-
-| 이름 | 활성 상태 | 시점 | 이벤트 | 실행 단위 | 호출 대상 (인자 제외) |
-| --- | --- | --- | --- | --- | --- |
-| trigger&#95;update&#95;comment&#95;updated&#95;at | O | BEFORE | UPDATE | ROW | memo.update&#95;comment&#95;updated&#95;at() |
-| trigger&#95;update&#95;memo&#95;comment&#95;count | O | AFTER | DELETE, INSERT | ROW | memo.update&#95;memo&#95;comment&#95;count() |
-
-### memo.memo&#95;likes
-
-RLS: true / FORCE RLS: false
-
-#### 컬럼
-
-| 순서 | 이름 | 타입 | NOT NULL | 기본값 |
-| --- | --- | --- | --- | --- |
-| 1 | id | integer | true | nextval('memo.memo&#95;likes&#95;id&#95;seq'::regclass) |
-| 2 | memo&#95;id | integer | true | 없음 |
-| 3 | user&#95;id | uuid | true | 없음 |
-| 4 | created&#95;at | timestamp with time zone | false | now() |
-
-#### 제약
-
-| 이름 | 종류 | 컬럼 (순서) | 참조 | 정의 |
-| --- | --- | --- | --- | --- |
-| memo&#95;likes&#95;memo&#95;id&#95;fkey | f | memo&#95;id | memo.memo (id) | FOREIGN KEY (memo&#95;id) REFERENCES memo.memo(id) ON DELETE CASCADE |
-| memo&#95;likes&#95;memo&#95;id&#95;user&#95;id&#95;key | u | memo&#95;id, user&#95;id | 없음 | UNIQUE (memo&#95;id, user&#95;id) |
-| memo&#95;likes&#95;pkey | p | id | 없음 | PRIMARY KEY (id) |
-
-#### 인덱스
-
-| 이름 | 정의 |
-| --- | --- |
-| idx&#95;memo&#95;likes&#95;memo&#95;id | CREATE INDEX idx&#95;memo&#95;likes&#95;memo&#95;id ON memo.memo&#95;likes USING btree (memo&#95;id) |
-| idx&#95;memo&#95;likes&#95;user&#95;id | CREATE INDEX idx&#95;memo&#95;likes&#95;user&#95;id ON memo.memo&#95;likes USING btree (user&#95;id) |
-| memo&#95;likes&#95;memo&#95;id&#95;user&#95;id&#95;key | CREATE UNIQUE INDEX memo&#95;likes&#95;memo&#95;id&#95;user&#95;id&#95;key ON memo.memo&#95;likes USING btree (memo&#95;id, user&#95;id) |
-| memo&#95;likes&#95;pkey | CREATE UNIQUE INDEX memo&#95;likes&#95;pkey ON memo.memo&#95;likes USING btree (id) |
-
-#### 정책
-
-| 이름 | 명령 | PERMISSIVE | 역할 | USING | WITH CHECK |
-| --- | --- | --- | --- | --- | --- |
-| Anyone can view likes on public memos | r | true | public | (EXISTS ( SELECT 1<br>   FROM memo.memo m<br>  WHERE ((m.id = memo&#95;likes.memo&#95;id) AND (m.is&#95;public = true)))) | 없음 |
-| Users can like public memos | a | true | public | 없음 | ((auth.uid() = user&#95;id) AND (EXISTS ( SELECT 1<br>   FROM memo.memo m<br>  WHERE ((m.id = memo&#95;likes.memo&#95;id) AND (m.is&#95;public = true))))) |
-| Users can unlike their own likes | d | true | public | (auth.uid() = user&#95;id) | 없음 |
-
-#### 트리거
-
-| 이름 | 활성 상태 | 시점 | 이벤트 | 실행 단위 | 호출 대상 (인자 제외) |
-| --- | --- | --- | --- | --- | --- |
-| trigger&#95;update&#95;memo&#95;like&#95;count | O | AFTER | DELETE, INSERT | ROW | memo.update&#95;memo&#95;like&#95;count() |
+없음
 
 ### memo.notification&#95;log
 
@@ -576,50 +477,6 @@ RLS: true / FORCE RLS: false
 #### 트리거
 
 없음
-
-### memo.user&#95;follows
-
-RLS: true / FORCE RLS: false
-
-#### 컬럼
-
-| 순서 | 이름 | 타입 | NOT NULL | 기본값 |
-| --- | --- | --- | --- | --- |
-| 1 | id | integer | true | nextval('memo.user&#95;follows&#95;id&#95;seq'::regclass) |
-| 2 | follower&#95;id | uuid | true | 없음 |
-| 3 | following&#95;id | uuid | true | 없음 |
-| 4 | created&#95;at | timestamp with time zone | false | now() |
-
-#### 제약
-
-| 이름 | 종류 | 컬럼 (순서) | 참조 | 정의 |
-| --- | --- | --- | --- | --- |
-| user&#95;follows&#95;check | c | follower&#95;id, following&#95;id | 없음 | CHECK ((follower&#95;id &lt;&gt; following&#95;id)) |
-| user&#95;follows&#95;follower&#95;id&#95;following&#95;id&#95;key | u | follower&#95;id, following&#95;id | 없음 | UNIQUE (follower&#95;id, following&#95;id) |
-| user&#95;follows&#95;pkey | p | id | 없음 | PRIMARY KEY (id) |
-
-#### 인덱스
-
-| 이름 | 정의 |
-| --- | --- |
-| idx&#95;user&#95;follows&#95;follower&#95;id | CREATE INDEX idx&#95;user&#95;follows&#95;follower&#95;id ON memo.user&#95;follows USING btree (follower&#95;id) |
-| idx&#95;user&#95;follows&#95;following&#95;id | CREATE INDEX idx&#95;user&#95;follows&#95;following&#95;id ON memo.user&#95;follows USING btree (following&#95;id) |
-| user&#95;follows&#95;follower&#95;id&#95;following&#95;id&#95;key | CREATE UNIQUE INDEX user&#95;follows&#95;follower&#95;id&#95;following&#95;id&#95;key ON memo.user&#95;follows USING btree (follower&#95;id, following&#95;id) |
-| user&#95;follows&#95;pkey | CREATE UNIQUE INDEX user&#95;follows&#95;pkey ON memo.user&#95;follows USING btree (id) |
-
-#### 정책
-
-| 이름 | 명령 | PERMISSIVE | 역할 | USING | WITH CHECK |
-| --- | --- | --- | --- | --- | --- |
-| Anyone can view follows | r | true | public | true | 없음 |
-| Users can follow others | a | true | public | 없음 | (auth.uid() = follower&#95;id) |
-| Users can unfollow | d | true | public | (auth.uid() = follower&#95;id) | 없음 |
-
-#### 트리거
-
-| 이름 | 활성 상태 | 시점 | 이벤트 | 실행 단위 | 호출 대상 (인자 제외) |
-| --- | --- | --- | --- | --- | --- |
-| trigger&#95;update&#95;follow&#95;counts | O | AFTER | DELETE, INSERT | ROW | memo.update&#95;follow&#95;counts() |
 
 ## 배포 Edge Functions
 

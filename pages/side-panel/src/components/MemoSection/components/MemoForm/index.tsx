@@ -2,38 +2,26 @@ import ResizeHandle from "@src/components/ResizeHandle";
 import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
 import { getMemoUrl, type IFMemoUrlParams } from "@src/utils";
-import {
-	DEFAULT_CATEGORY_COLOR,
-	type TMemoStatusKey,
-} from "@web-memo/shared/constants";
+import type { TMemoStatusKey } from "@web-memo/shared/constants";
 import { useSettingQuery } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
-import {
-	Badge,
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-	CommandList,
-	cn,
-	Input,
-	Textarea,
-	ToastAction,
-	toast,
-} from "@web-memo/ui";
+import { cn, Input, Textarea, ToastAction, toast } from "@web-memo/ui";
 import {
 	BookOpenIcon,
 	HeartIcon,
 	LinkIcon,
 	Loader2Icon,
 	StarIcon,
-	XIcon,
 } from "lucide-react";
 import { useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
-import { SaveStatus } from "./components";
+import {
+	CategoryAddChip,
+	CategoryBadge,
+	CategoryCommandPopup,
+	SaveStatus,
+} from "./components";
 import {
 	type TMemoFieldKey,
 	useCategorySuggestion,
@@ -79,7 +67,10 @@ function MemoFormContent() {
 		showCategoryList,
 		categoryInputPosition,
 		commandInputRef,
+		categoryPopupRef,
+		categoryBadgeButtonRef,
 		handleKeyDown,
+		handleCategoryButtonClick,
 		handleCategorySelect,
 		handleCategoryRemove,
 		handleCategoryListClose,
@@ -312,71 +303,30 @@ function MemoFormContent() {
 								{I18n.get("category_suggesting")}
 							</div>
 						)}
-						{currentCategory && (
-							<Badge
-								variant="outline"
-								className="flex items-center gap-1 px-2 py-0.5"
-							>
-								<div
-									className="h-2 w-2 rounded-full"
-									style={{
-										backgroundColor:
-											currentCategory.color || DEFAULT_CATEGORY_COLOR,
-									}}
-								/>
-								{currentCategory.name}
-								<XIcon
-									size={12}
-									className="hover:text-destructive ml-1 cursor-pointer"
-									onClick={handleCategoryRemoveClick}
-								/>
-							</Badge>
+						{currentCategory ? (
+							<CategoryBadge
+								category={currentCategory}
+								badgeButtonRef={categoryBadgeButtonRef}
+								onBadgeButtonClick={handleCategoryButtonClick}
+								onRemoveButtonClick={handleCategoryRemoveClick}
+							/>
+						) : (
+							<CategoryAddChip onChipClick={handleCategoryButtonClick} />
 						)}
 					</div>
 				</div>
 			</form>
 
 			{showCategoryList && (
-				<div
-					className="bg-popover fixed z-50 w-64 rounded-md border shadow-lg"
-					style={{
-						top: `${categoryInputPosition.top}px`,
-						left: `${categoryInputPosition.left}px`,
-					}}
-				>
-					<Command>
-						<CommandInput
-							ref={commandInputRef}
-							placeholder={I18n.get("search_category")}
-							onKeyDown={(event) => {
-								if (event.key === "Escape") {
-									handleCategoryListClose();
-								}
-							}}
-						/>
-						<CommandList>
-							<CommandEmpty>{I18n.get("no_categories_found")}</CommandEmpty>
-							<CommandGroup>
-								{categories?.map((category) => (
-									<CommandItem
-										key={category.id}
-										onSelect={() => handleCategorySelect(category)}
-										className="flex items-center gap-2"
-									>
-										<div
-											className="h-3 w-3 rounded-full"
-											style={{
-												backgroundColor:
-													category.color || DEFAULT_CATEGORY_COLOR,
-											}}
-										/>
-										{category.name}
-									</CommandItem>
-								))}
-							</CommandGroup>
-						</CommandList>
-					</Command>
-				</div>
+				<CategoryCommandPopup
+					popupRef={categoryPopupRef}
+					commandInputRef={commandInputRef}
+					position={categoryInputPosition}
+					categories={categories}
+					currentCategoryId={currentCategoryId}
+					onCategorySelect={handleCategorySelect}
+					onEscapeKeyDown={handleCategoryListClose}
+				/>
 			)}
 		</>
 	);

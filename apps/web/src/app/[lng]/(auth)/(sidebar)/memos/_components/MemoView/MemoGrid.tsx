@@ -18,12 +18,11 @@ import {
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse, HighlightRow } from "@web-memo/shared/types";
-import { Loading, Skeleton, ToastAction, toast } from "@web-memo/ui";
+import { Skeleton, ToastAction, toast } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import MemoDialog from "../MemoDialog";
-import { useDragSelection, useMemoDialog, useMemoSelection } from "./_hooks";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useDragSelection, useMemoSelection } from "./_hooks";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import MemoEmptyState from "./MemoEmptyState";
 import MemoItem from "./MemoItem";
@@ -69,8 +68,6 @@ export default function MemoGrid({
 		setSelectedMemoIds,
 		clearSelection,
 	} = useMemoSelection();
-
-	const { dialogMemoId } = useMemoDialog();
 
 	const { rafRef } = useDragSelection({
 		containerId: CONTAINER_ID,
@@ -261,11 +258,7 @@ export default function MemoGrid({
 					/>
 				))}
 			</MasonryInfiniteGrid>
-			{dialogMemoId && (
-				<Suspense fallback={<Loading />}>
-					<MemoDialog lng={lng} memoId={dialogMemoId} />
-				</Suspense>
-			)}
+
 			<DeleteConfirmDialog
 				lng={lng}
 				open={isDeleteDialogOpen}

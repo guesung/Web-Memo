@@ -27,7 +27,6 @@
     "function:memo.get_user_growth(integer, boolean)"
   ],
   "functions": [
-    { "name": "get-categories-with-count", "version": 11 },
     { "name": "daily-article-reminder", "version": 6 },
     { "name": "kakao-auth", "version": 7 },
     { "name": "send-feedback", "version": 5 },
@@ -46,11 +45,6 @@
     "auth.users.send_welcome_email_trigger",
     "memo.memo.trigger_update_shared_at",
     "memo.profiles.trigger_update_profile_updated_at",
-    "memo.memo_likes.trigger_update_memo_like_count",
-    "memo.memo_bookmarks.trigger_update_memo_bookmark_count",
-    "memo.memo_comments.trigger_update_memo_comment_count",
-    "memo.user_follows.trigger_update_follow_counts",
-    "memo.memo_comments.trigger_update_comment_updated_at",
     "billing.charges.enforce_charge_start"
   ],
   "webhooks": ["feedback.feedbacks.feedback"],

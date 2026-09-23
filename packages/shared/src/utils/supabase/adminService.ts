@@ -96,42 +96,32 @@ export class AdminService {
 	}
 
 	getAdminStats = async ({ includeAdmin = false }: IFAdminStatsParams = {}) =>
-		this.supabaseClient
-			.schema(SUPABASE.schema.memo)
-			// @ts-expect-error RPC function types not generated in schema
-			.rpc("get_admin_stats", {
-				include_admin: includeAdmin,
-			});
+		this.supabaseClient.schema(SUPABASE.schema.memo).rpc("get_admin_stats", {
+			include_admin: includeAdmin,
+		});
 
 	getUserGrowth = async ({
 		daysAgo = 30,
 		includeAdmin = false,
 	}: IFUserGrowthParams = {}) =>
-		this.supabaseClient
-			.schema(SUPABASE.schema.memo)
-			// @ts-expect-error RPC function types not generated in schema
-			.rpc("get_user_growth", {
-				days_ago: daysAgo,
-				include_admin: includeAdmin,
-			});
+		this.supabaseClient.schema(SUPABASE.schema.memo).rpc("get_user_growth", {
+			days_ago: daysAgo,
+			include_admin: includeAdmin,
+		});
 
 	getActiveUsersStats = async ({
 		includeAdmin = false,
 	}: IFAdminStatsParams = {}) =>
 		this.supabaseClient
 			.schema(SUPABASE.schema.memo)
-			// @ts-expect-error RPC function types not generated in schema
 			.rpc("get_active_users_stats", {
 				include_admin: includeAdmin,
 			});
 
 	getUsers = async ({ searchQuery }: IFGetAdminUsersParams = {}) =>
-		this.supabaseClient
-			.schema(SUPABASE.schema.memo)
-			// @ts-expect-error RPC function types not generated in schema
-			.rpc("get_admin_users", {
-				search_query: searchQuery || null,
-			});
+		this.supabaseClient.schema(SUPABASE.schema.memo).rpc("get_admin_users", {
+			search_query: searchQuery || undefined,
+		});
 
 	/**
 	 * 피드백 목록을 최신순으로 읽는다.
@@ -145,9 +135,8 @@ export class AdminService {
 	}: IFGetFeedbacksParams = {}): Promise<IFFeedbacksResponse> => {
 		const { data, error } = await this.supabaseClient
 			.schema(SUPABASE.schema.memo)
-			// @ts-expect-error RPC function types not generated in schema
 			.rpc("get_admin_feedbacks", {
-				search_query: searchQuery || null,
+				search_query: searchQuery || undefined,
 				page_offset: (page - 1) * pageSize,
 				page_limit: pageSize,
 			});
@@ -168,7 +157,6 @@ export class AdminService {
 	getFeedback = async (id: number): Promise<IFFeedback | null> => {
 		const { data, error } = await this.supabaseClient
 			.schema(SUPABASE.schema.memo)
-			// @ts-expect-error RPC function types not generated in schema
 			.rpc("get_admin_feedback", {
 				feedback_id: id,
 			});

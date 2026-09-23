@@ -157,6 +157,5 @@ export class HighlightService {
 	getHighlightCounts = async (urls: string[]) =>
 		this.supabaseClient
 			.schema(SUPABASE.schema.memo)
-			// @ts-expect-error RPC function types not generated in schema
 			.rpc("get_highlight_counts", { target_urls: urls });
 }

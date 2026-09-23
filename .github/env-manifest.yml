@@ -127,9 +127,9 @@
 - name: SUPABASE_ACCESS_TOKEN
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/env-registry-audit.yml, .github/workflows/supabase-audit.yml]
-  impact: "등록 현황 감사가 Supabase secrets를 조회하지 못하고 운영 감사가 실패한다"
-  note: "Supabase 대시보드의 Account > Access Tokens에서 발급한다. 조회 전용으로 쓴다"
+  consumers: [.github/workflows/env-registry-audit.yml, .github/workflows/supabase-audit.yml, .github/workflows/supabase-schema.yml]
+  impact: "등록 현황 감사가 Supabase secrets를 조회하지 못하고, 운영 감사와 Production 스키마 문서 정합성 검사가 실패한다"
+  note: "Supabase 대시보드의 Account > Access Tokens에서 발급한다. database_read와 edge_functions_read 조회 권한으로 쓴다"
 
 - name: APP_ID
   kind: secret

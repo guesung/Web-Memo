@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEY } from "../../../constants";
+import { NoMemosError, QUERY_KEY } from "../../../constants";
 import type { MemoSupabaseResponse, MemoTable } from "../../../types";
 import { MemoService } from "../../../utils";
 
@@ -12,6 +12,7 @@ type TMutationError = Error;
 const useMemoPostMutation = () => {
 	const queryClient = useQueryClient();
 	const { data: supabaseClient } = useSupabaseClientQuery();
+	const memoService = new MemoService(supabaseClient);
 
 	return useMutation<MemoSupabaseResponse, TMutationError, MemoTable["Insert"]>(
 		{
@@ -20,7 +21,14 @@ const useMemoPostMutation = () => {
 				operation: "create",
 				stage: "save",
 			},
-			mutationFn: new MemoService(supabaseClient).insertMemo,
+			mutationFn: async (request) => {
+				const result = await memoService.insertMemo(request);
+				if (result.error || !result.data) {
+					throw result.error ?? new NoMemosError();
+				}
+
+				return result;
+			},
 			onSuccess: async () => {
 				await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
 			},

@@ -96,4 +96,27 @@ describe("메모 저장 뒤 실제 목록 캐시 갱신", () => {
 
 		expect(queryClient.getQueryData(queryKey)).toEqual(cachedPage);
 	});
+
+	it("메모 생성이 Supabase 오류를 반환하면 성공으로 처리하지 않는다", async () => {
+		const queryKey = QUERY_KEY.memosPaginated();
+		const cachedPage = {
+			pages: [{ data: [{ id: 1, title: "기존" }], count: 1 }],
+			pageParams: [undefined],
+		};
+		queryClient.setQueryData(queryKey, cachedPage);
+		insertMemo.mockResolvedValueOnce({
+			data: null,
+			error: new Error("저장 실패"),
+		});
+		const options = useMemoPostMutation() as unknown as ConstructorParameters<
+			typeof MutationObserver
+		>[1];
+		const mutation = new MutationObserver(queryClient, options);
+
+		await expect(mutation.mutate({})).rejects.toThrow("저장 실패");
+
+		expect(mutation.getCurrentResult().status).toBe("error");
+		expect(queryClient.getQueryState(queryKey)?.isInvalidated).toBe(false);
+		expect(queryClient.getQueryData(queryKey)).toEqual(cachedPage);
+	});
 });

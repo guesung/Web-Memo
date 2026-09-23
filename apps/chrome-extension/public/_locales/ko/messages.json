@@ -199,7 +199,7 @@
 		"message": "저장했어요"
 	},
 	"setting_save_failed": {
-		"message": "저장하지 못했어요"
+		"message": "저장하지 못해 이전 설정으로 되돌렸어요."
 	},
 	"retry": {
 		"message": "다시 시도"

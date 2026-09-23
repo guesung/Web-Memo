@@ -34,8 +34,14 @@ const MemoFieldsOption = () => {
 		if (userId) {
 			try {
 				await bridge.request.SETTING_UPDATED({ userId });
-			} catch {
-				// 열린 패널이 없어도 저장 결과는 성공입니다.
+			} catch (error) {
+				if (
+					error instanceof Error &&
+					error.message.includes("Receiving end does not exist")
+				) {
+					return;
+				}
+				console.error("Setting update notification failed", error);
 			}
 		}
 	};

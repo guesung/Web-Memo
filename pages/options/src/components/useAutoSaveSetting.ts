@@ -17,6 +17,7 @@ export const useAutoSaveSetting = <TValue>(
 	const [status, setStatus] = useState<TSaveStatus>("idle");
 	const savedValue = useRef(options.initialValue);
 	const desiredValue = useRef(options.initialValue);
+	const observedInitialValue = useRef(options.initialValue);
 	const failedValue = useRef<TValue | null>(null);
 	const isSaving = useRef(false);
 	const successTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -34,6 +35,25 @@ export const useAutoSaveSetting = <TValue>(
 			}
 		};
 	}, []);
+
+	useEffect(() => {
+		if (Object.is(observedInitialValue.current, options.initialValue)) {
+			return;
+		}
+		observedInitialValue.current = options.initialValue;
+		if (isSaving.current || (status !== "idle" && status !== "saved")) {
+			return;
+		}
+		if (successTimer.current) {
+			clearTimeout(successTimer.current);
+			successTimer.current = null;
+		}
+		savedValue.current = options.initialValue;
+		desiredValue.current = options.initialValue;
+		failedValue.current = null;
+		setValue(options.initialValue);
+		setStatus("idle");
+	}, [options.initialValue, status]);
 
 	const drainChanges = async () => {
 		if (isSaving.current) {

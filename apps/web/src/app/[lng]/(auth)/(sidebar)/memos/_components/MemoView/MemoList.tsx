@@ -19,6 +19,9 @@ const MemoList = (props: IFMemoListProps) => {
 	const dateFormatter = new Intl.DateTimeFormat(props.lng, {
 		dateStyle: "long",
 	});
+	const weekdayFormatter = new Intl.DateTimeFormat(props.lng, {
+		weekday: "long",
+	});
 	const { showImpression, showActionItem } = useSettingQuery();
 	const groups = groupMemosByDate(props.memos);
 	const [renderedGroupMemoIds, setRenderedGroupMemoIds] = useState<
@@ -58,7 +61,7 @@ const MemoList = (props: IFMemoListProps) => {
 	return (
 		<div
 			data-testid="memo-list"
-			className="mx-auto w-full max-w-[932px] space-y-8 pb-24"
+			className="mx-auto w-full max-w-[1124px] space-y-8 pb-24"
 		>
 			{props.memos.length === 0 &&
 				(props.searchQuery ? (
@@ -74,22 +77,34 @@ const MemoList = (props: IFMemoListProps) => {
 					data-testid="memo-date-group"
 					key={group.dateKey}
 					aria-labelledby={`memo-date-${group.dateKey}`}
+					className="grid grid-cols-1 gap-4 md:grid-cols-[144px_minmax(0,1fr)] md:gap-6"
 				>
 					<h2
 						id={`memo-date-${group.dateKey}`}
-						className="mb-3 text-sm font-semibold text-muted-foreground"
+						className="border-b border-border pb-3 text-sm font-semibold md:border-b-0 md:border-r md:pb-0 md:pr-4"
 					>
 						{group.dateKey === "unknown" ? (
 							t("memos.view.unknownDate")
 						) : (
-							<time dateTime={group.dateKey}>
-								{dateFormatter.format(new Date(`${group.dateKey}T00:00:00`))}
+							<time
+								dateTime={group.dateKey}
+								className="flex flex-wrap items-baseline gap-x-2 gap-y-1 md:flex-col"
+							>
+								<span>
+									{dateFormatter.format(new Date(`${group.dateKey}T00:00:00`))}
+								</span>
+								<span className="text-xs font-normal text-muted-foreground">
+									{weekdayFormatter.format(
+										new Date(`${group.dateKey}T00:00:00`),
+									)}
+								</span>
 							</time>
 						)}
 					</h2>
 					<MasonryInfiniteGrid
 						tag="ul"
 						data-testid="memo-date-grid"
+						className="min-w-0 max-w-[300px] md:max-w-none"
 						useResizeObserver
 						observeChildren
 						autoResize
@@ -111,7 +126,7 @@ const MemoList = (props: IFMemoListProps) => {
 								data-memo-id={memo.id}
 								key={memo.id}
 								data-grid-groupkey={group.dateKey}
-								className="w-[300px]"
+								className="w-[300px] max-w-full"
 							>
 								<MemoItem
 									lng={props.lng}
@@ -120,6 +135,7 @@ const MemoList = (props: IFMemoListProps) => {
 									showImpression={showImpression}
 									showActionItem={showActionItem}
 									index={index}
+									className="[&>div>div]:max-w-full"
 								/>
 							</li>
 						))}

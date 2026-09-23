@@ -214,6 +214,60 @@ describe("compareSeoReports", () => {
 		expect(result.delta.unobservable).toEqual([]);
 	});
 
+	it("지속 이슈는 이전 실행의 최초 발견 시각을 이어받고 신규 이슈는 이번 실행 시각을 쓴다", () => {
+		const persistentKey = createSeoIssueKey({
+			kind: "page",
+			url: "https://www.webmemo.xyz/ko/introduce",
+			agent: "mobile",
+			issue: issue("persistent", "title"),
+		});
+		const previous = {
+			...report([page({ issues: [issue("persistent", "title")] })]),
+			generatedAt: "2026-09-22T00:17:00.000Z",
+			history: {
+				delta: {
+					new: [],
+					persistent: [
+						{ key: persistentKey, firstSeenAt: "2026-09-01T00:17:00.000Z" },
+					],
+				},
+			},
+		};
+		const current = {
+			...report([
+				page({ issues: [issue("persistent", "title"), issue("new", "lang")] }),
+			]),
+			generatedAt: "2026-09-23T00:17:00.000Z",
+		};
+
+		const result = compareSeoReports({
+			currentReport: current,
+			previousReport: previous,
+		});
+
+		expect(result.delta.persistent[0].firstSeenAt).toBe(
+			"2026-09-01T00:17:00.000Z",
+		);
+		expect(result.delta.new[0].firstSeenAt).toBe("2026-09-23T00:17:00.000Z");
+	});
+
+	it("이전 실행에 최초 발견 시각이 없으면 이전 실행 시각을 최초 발견으로 본다", () => {
+		const previous = {
+			...report([page({ issues: [issue("persistent", "title")] })]),
+			generatedAt: "2026-09-22T00:17:00.000Z",
+		};
+		const current = report([page({ issues: [issue("persistent", "title")] })]);
+
+		const result = compareSeoReports({
+			currentReport: current,
+			previousReport: previous,
+		});
+
+		expect(result.delta.persistent[0].firstSeenAt).toBe(
+			"2026-09-22T00:17:00.000Z",
+		);
+	});
+
 	it("첫 실행에서는 기준선을 missing으로 표시하고 전부 new로 만들지 않는다", () => {
 		const result = compareSeoReports({
 			currentReport: report([page({ issues: [issue("new", "title")] })]),

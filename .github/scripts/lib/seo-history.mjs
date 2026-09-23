@@ -95,12 +95,18 @@ export const compareSeoReports = ({ currentReport, previousReport }) => {
 		flattenSeoIssues(currentReport).map((issue) => [issue.key, issue]),
 	);
 	const observations = createSeoObservationMap(currentReport);
+	const previousFirstSeenByKey = createFirstSeenMap(previousReport);
 
 	for (const [key, issue] of currentByKey) {
 		if (previousByKey.has(key)) {
-			delta.persistent.push(issue);
+			// 이전 실행이 최초 발견일을 모르면(첫 비교·스키마 교체 직후) 이전 실행 시각이 알 수 있는 가장 이른 날입니다.
+			delta.persistent.push({
+				...issue,
+				firstSeenAt:
+					previousFirstSeenByKey.get(key) ?? previousReport.generatedAt ?? null,
+			});
 		} else {
-			delta.new.push(issue);
+			delta.new.push({ ...issue, firstSeenAt: currentReport.generatedAt ?? null });
 		}
 	}
 	for (const [key, issue] of previousByKey) {
@@ -116,6 +122,14 @@ export const compareSeoReports = ({ currentReport, previousReport }) => {
 
 	return { baselineStatus: "compatible", delta };
 };
+
+/** 이전 보고서의 비교 결과에서 이슈별 최초 발견 시각을 꺼냅니다. */
+const createFirstSeenMap = (report) =>
+	new Map(
+		[...(report.history?.delta?.new ?? []), ...(report.history?.delta?.persistent ?? [])]
+			.filter((issue) => issue.key && issue.firstSeenAt)
+			.map((issue) => [issue.key, issue.firstSeenAt]),
+	);
 
 /** 관계형 이슈는 판정에 필요한 모든 요청이 성공했을 때만 해소 가능하다고 봅니다. */
 const isSeoIssueObservable = ({ issue, observations }) => {

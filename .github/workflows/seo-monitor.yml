@@ -59,6 +59,7 @@ jobs:
         env:
           GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
           SEO_GSC_WEEKLY: ${{ inputs.weekly && 'true' || 'false' }}
+          SEO_PREVIOUS_GSC_REPORT: ${{ steps.previous-seo.outputs.SEO_PREVIOUS_GSC_REPORT }}
         run: pnpm seo:gsc
 
       - name: Notify actionable SEO issues

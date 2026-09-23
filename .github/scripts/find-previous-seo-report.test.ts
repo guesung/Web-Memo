@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
 	downloadSeoReport,
 	fetchSeoArtifacts,
+	findSiblingGscReport,
 	main,
 	selectPreviousSeoArtifact,
 	writeOutputs,
@@ -114,6 +115,25 @@ describe("downloadSeoReport", () => {
 		});
 
 		expect(reportPath).toBe(join(directory, "extracted", "seo", "seo-report.json"));
+	});
+});
+
+describe("findSiblingGscReport", () => {
+	it("SEO 보고서 옆에 GSC 보고서가 있으면 그 경로를 돌려준다", async () => {
+		const directory = await mkdtemp(join(tmpdir(), "seo-artifact-test-"));
+		await writeFile(join(directory, "seo-report.json"), "{}");
+		await writeFile(join(directory, "gsc-report.json"), "{}");
+
+		expect(await findSiblingGscReport(join(directory, "seo-report.json"))).toBe(
+			join(directory, "gsc-report.json"),
+		);
+	});
+
+	it("GSC 보고서가 없으면 null을 돌려준다", async () => {
+		const directory = await mkdtemp(join(tmpdir(), "seo-artifact-test-"));
+		await writeFile(join(directory, "seo-report.json"), "{}");
+
+		expect(await findSiblingGscReport(join(directory, "seo-report.json"))).toBeNull();
 	});
 });
 

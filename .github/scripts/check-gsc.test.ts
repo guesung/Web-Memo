@@ -17,11 +17,16 @@ vi.mock("./lib/seo-gsc.mjs", () => ({
 		weekly: null,
 		failures: [],
 	})),
+	compareGscInspections: vi.fn(() => ({
+		baselineStatus: "missing",
+		dropped: [],
+		recovered: [],
+	})),
 	createGscMarkdown: vi.fn(() => "# GSC\n"),
 }));
 
 import { runGscCheck } from "./check-gsc.mjs";
-import { collectGscReport } from "./lib/seo-gsc.mjs";
+import { collectGscReport, compareGscInspections } from "./lib/seo-gsc.mjs";
 
 afterEach(() => {
 	vi.clearAllMocks();
@@ -77,15 +82,55 @@ describe("GSC CLI", () => {
 		expect(appendFile).toHaveBeenCalledWith("/tmp/summary.md", "# GSC\n");
 	});
 
-	it("태평양 시간의 월요일에는 주간 성과 모드를 활성화한다", async () => {
+	it("한국 시간 월요일 예약 실행에서 주간 성과 모드를 활성화한다", async () => {
 		await runGscCheck({
 			serviceAccountJson: "",
 			urls: [],
-			now: new Date("2026-09-22T05:00:00Z"),
+			now: new Date("2026-09-21T00:17:00Z"),
 		});
 
 		expect(collectGscReport).toHaveBeenCalledWith(
 			expect.objectContaining({ weekly: true }),
 		);
+	});
+
+	it("태평양 시간으로만 월요일인 한국 시간 화요일에는 주간 성과를 조회하지 않는다", async () => {
+		await runGscCheck({
+			serviceAccountJson: "",
+			urls: [],
+			now: new Date("2026-09-22T00:17:00Z"),
+		});
+
+		expect(collectGscReport).toHaveBeenCalledWith(
+			expect.objectContaining({ weekly: false }),
+		);
+	});
+
+	it("이전 GSC 리포트와 비교한 색인 변화를 리포트에 담는다", async () => {
+		const previousReport = {
+			inspections: [{ url: "https://www.webmemo.xyz/ko/introduce", verdict: "PASS" }],
+		};
+		readFile.mockResolvedValue(JSON.stringify(previousReport));
+
+		const report = await runGscCheck({
+			serviceAccountJson: "{}",
+			urls: ["https://www.webmemo.xyz/ko/introduce"],
+			weekly: false,
+			previousReportPath: "/tmp/previous/gsc-report.json",
+		});
+
+		expect(readFile).toHaveBeenCalledWith("/tmp/previous/gsc-report.json", "utf8");
+		expect(compareGscInspections).toHaveBeenCalledWith({
+			currentReport: report,
+			previousReport,
+		});
+		expect(report.indexChanges.baselineStatus).toBe("missing");
+	});
+
+	it("건너뛴 실행에는 색인 변화를 계산하지 않는다", async () => {
+		const report = await runGscCheck({ serviceAccountJson: "", urls: [], weekly: false });
+
+		expect(compareGscInspections).not.toHaveBeenCalled();
+		expect(report.indexChanges).toBeUndefined();
 	});
 });

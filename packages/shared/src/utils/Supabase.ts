@@ -306,8 +306,7 @@ export class SettingService {
 	};
 
 	upsertSetting = async (request: Omit<SettingTable["Insert"], "user_id">) => {
-		const { data, error: authError } =
-			await this.supabaseClient.auth.getUser();
+		const { data, error: authError } = await this.supabaseClient.auth.getUser();
 
 		if (authError) {
 			throw authError;

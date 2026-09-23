@@ -122,7 +122,7 @@ const isValidPayload = (
 };
 
 /** 기존 클라이언트 초기화는 쿠키가 없으면 예외를 던진다. 로그인 안내로 변환한다. */
-const getAuthenticatedClient = async () => {
+export const getAuthenticatedClient = async () => {
 	try {
 		return await getSupabaseClient();
 	} catch (error) {

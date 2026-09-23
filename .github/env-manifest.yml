@@ -103,8 +103,8 @@
 - name: SLACK_WEBHOOK_URL
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/daily-ga-report.yml, .github/workflows/weekly-ga-report.yml, .github/workflows/refactor-audit.yml, .github/workflows/notify-release.yml, .github/workflows/versions.yml, .github/workflows/env-registry-audit.yml]
-  impact: "빌드, 배포, 릴리스 결과와 리포트 실패 알림이 오지 않는다"
+  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/daily-ga-report.yml, .github/workflows/weekly-ga-report.yml, .github/workflows/refactor-audit.yml, .github/workflows/notify-release.yml, .github/workflows/versions.yml, .github/workflows/env-registry-audit.yml, .github/workflows/supabase-audit.yml]
+  impact: "빌드, 배포, 릴리스 결과와 리포트·Supabase 감사 실패 알림이 오지 않는다"
 
 - name: SLACK_REPORT_WEBHOOK_URL
   kind: secret
@@ -121,8 +121,8 @@
 - name: SUPABASE_ACCESS_TOKEN
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/env-registry-audit.yml]
-  impact: "등록 현황 감사가 Supabase secrets를 조회하지 못해 미조회로 남는다"
+  consumers: [.github/workflows/env-registry-audit.yml, .github/workflows/supabase-audit.yml]
+  impact: "등록 현황 감사가 Supabase secrets를 조회하지 못하고 운영 감사가 실패한다"
   note: "Supabase 대시보드의 Account > Access Tokens에서 발급한다. 조회 전용으로 쓴다"
 
 - name: APP_ID

@@ -60,9 +60,9 @@ export const readRows = (report) =>
  *
  * 운영 트래픽을 가려내는 기준으로 build_env 를 쓸 수 없는 지표가 있습니다.
  * 그 파라미터는 우리가 직접 쏘는 커스텀 이벤트에만 붙어서, activeUsers 처럼
- * gtag 자동 수집에 기대는 지표에는 필터가 아예 걸리지 않습니다. 한 메시지 안에서
- * 기준이 다른 수치를 나란히 두면 서로 맞지 않는 숫자가 됩니다. 그래서 주간
- * 리포트는 모든 섹션을 이 호스트 허용 목록 하나로 통일합니다.
+ * gtag 자동 수집에 기대는 지표를 build_env 로 거르면 누락됩니다. 활성 사용자는
+ * 이 호스트 목록만 쓰고, 커스텀 이벤트는 production 조건을 추가합니다.
+ * 확장은 staging 과 production 이 같은 hostName 을 쓰므로 호스트만으로 구분되지 않습니다.
  *
  * 허용 목록 자체를 없애도 안 됩니다. 이 속성에는 로컬 개발 트래픽이 그대로
  * 들어오는데, 실측해 보면 2026-09-07~09-13 한 주에 localhost 가 588명으로
@@ -87,21 +87,39 @@ export const INCLUDED_HOST_NAMES = [
 ];
 
 /**
- * 허용 목록에 있는 호스트만 남기는 dimensionFilter.
+ * 주어진 호스트만 남기는 dimensionFilter 를 만듭니다.
  *
  * ⚠️ inListFilter 한 줄로 줄이지 마세요. 목록에 빈 문자열이 들어 있는데
  * inListFilter 는 빈 값을 값으로 취급하지 않아 그 항목이 조용히 사라집니다.
  * 그러면 확장 트래픽의 한 축이 통째로 빠진 채 리포트가 정상으로 보입니다.
  * EXACT 필터를 orGroup 으로 묶는 지금 형태가 빈 문자열까지 정확히 셉니다.
  */
-export const HOST_NAME_FILTER = {
+export const buildHostNameFilter = (hostNames) => ({
 	orGroup: {
-		expressions: INCLUDED_HOST_NAMES.map((hostName) => ({
+		expressions: hostNames.map((hostName) => ({
 			filter: {
 				fieldName: "hostName",
 				stringFilter: { matchType: "EXACT", value: hostName },
 			},
 		})),
+	},
+});
+
+/** 허용 목록에 있는 호스트만 남기는 dimensionFilter. */
+export const HOST_NAME_FILTER = buildHostNameFilter(INCLUDED_HOST_NAMES);
+
+/** 운영 호스트에서 발생한 production 커스텀 이벤트만 남깁니다. */
+export const PRODUCTION_EVENT_FILTER = {
+	andGroup: {
+		expressions: [
+			HOST_NAME_FILTER,
+			{
+				filter: {
+					fieldName: "customEvent:build_env",
+					stringFilter: { matchType: "EXACT", value: "production" },
+				},
+			},
+		],
 	},
 };
 

@@ -6,6 +6,9 @@ name: Weekly GA Report
 # 두 질문을 한 메시지에 섞지 않으려고 잡을 따로 두었습니다.
 #
 # 조회 자격 증명(GA4 서비스 계정)을 Vercel에 복제하지 않기 위해 여기서 돌립니다.
+#
+# 같은 수치를 구글 시트(GA_SHEET_ID)에도 주 단위로 쌓습니다. 손으로 돌릴 때 from·to 를
+# 주면 그 범위의 지난 주들을 시트에만 채워 넣는 백필이 됩니다(Slack 에는 게시하지 않음).
 on:
   schedule:
     # UTC 일요일 23:00 = Asia/Seoul 월요일 08:00. 크론은 수십 분 지연이 흔하지만,
@@ -13,6 +16,15 @@ on:
     # 화요일로 밀려 실행되더라도 같은 주를 가리킵니다.
     - cron: "0 23 * * 0"
   workflow_dispatch:
+    inputs:
+      from:
+        description: "백필 시작 주 — 월요일 YYYY-MM-DD, 비우면 지난주 정기 리포트"
+        required: false
+        type: string
+      to:
+        description: "백필 마지막 주 — 월요일 YYYY-MM-DD(지난주 월요일 이하), 비우면 지난주 정기 리포트"
+        required: false
+        type: string
 
 concurrency:
   group: weekly-ga-report
@@ -29,7 +41,10 @@ jobs:
   report:
     name: 주간 GA 리포트
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    # 정기 실행은 1분 안에 끝나지만, 백필은 약 90주를 한 주씩 차례로 조회합니다
+    # (주마다 토큰 교환 + GA 조회 최대 6건). 5분이면 중간에 잘려 시트에 아무것도
+    # 쓰지 못한 채 끝납니다 — 행은 모든 주를 조회한 뒤 한 번에 씁니다.
+    timeout-minutes: 15
     steps:
       # 이벤트 목록을 packages/shared 의 type.ts 에서 직접 읽으므로 체크아웃이
       # 필수입니다. 얕은 체크아웃으로 충분합니다.
@@ -48,6 +63,16 @@ jobs:
           # G-6HHNP7KJM5 는 gtag 용 측정 ID라 여기 넣으면 403/404 가 납니다.
           # 속성 ID는 비밀이 아닙니다. 시크릿에 넣으면 로그에서 가려져 디버깅만 어려워집니다.
           GA4_PROPERTY_ID: "471860782"
+          # 비어 있으면 시트 기록만 경고 후 건너뜁니다(백필은 실패). 서비스 계정 이메일을
+          # 시트에 편집자로 공유해야 씁니다.
+          GA_SHEET_ID: ${{ secrets.GA_SHEET_ID }}
+          # 입력은 run 스크립트에 직접 넣지 않고 env 로만 넘깁니다. ${{ }} 는 셸이 보기
+          # 전에 치환되므로, run 에 넣으면 입력값이 그대로 명령으로 실행될 수 있습니다.
+          WEEK_FROM: ${{ inputs.from }}
+          WEEK_TO: ${{ inputs.to }}
+          # 스크립트는 GITHUB_EVENT_NAME 으로 크론(정기)과 손 실행(재실행)을 가려 시트에
+          # 적습니다. 러너가 기본으로 넣어 주는 값이고 GITHUB_* 는 덮어쓸 수 없어 여기
+          # 적지 않습니다.
         run: node .github/scripts/report-weekly-ga.mjs
 
       # 주 1회 도는 무인 잡이라 실패가 알림 부재와 구분되지 않습니다. 리포트가 안 온

@@ -3,7 +3,7 @@
  *
  * 주간 리포트(ga4-weekly.mjs)는 "지난주를 한 번, Slack 으로" 답합니다. 이쪽은 "이
  * 기간에 이 기능을 몇 명이 몇 번 썼나"를 터미널에서 바로 묻는 용도입니다. 세는 기준은
- * 주간과 같은 조각을 그대로 씁니다 — 호스트 허용 목록(HOST_NAME_FILTER), 이벤트 목록의
+ * 주간과 같은 조각을 그대로 씁니다 — 호스트 허용 목록과 production 조건, 이벤트 목록의
  * 원본(type.ts), 사람 수(totalUsers). 기준이 갈라지면 같은 기간인데 두 도구가 다른
  * 숫자를 내고, 둘 다 조용히 성공해서 어느 쪽이 틀렸는지 알 수 없습니다.
  *
@@ -14,6 +14,7 @@
 import {
 	GA4_SCOPE,
 	HOST_NAME_FILTER,
+	PRODUCTION_EVENT_FILTER,
 	REPORT_ROW_LIMIT,
 	readRows,
 	runReport,
@@ -139,8 +140,8 @@ export const buildUsageReport = ({
  * 기간의 기능별 사용량을 조회합니다.
  *
  * 네 번의 runReport 로 모읍니다: 이벤트별 사용자·발생 수(이번 기간, 직전 기간)와
- * 활성 사용자(이번 기간, 직전 기간). 모두 주간 리포트와 같은 호스트 허용 목록으로
- * 거릅니다.
+ * 활성 사용자(이번 기간, 직전 기간). 이벤트에는 호스트와 production 조건을,
+ * 자동 수집에 기대는 활성 사용자에는 호스트 조건만 적용합니다.
  */
 export const fetchFeatureUsage = async ({
 	serviceAccountJson,
@@ -164,7 +165,7 @@ export const fetchFeatureUsage = async ({
 				dateRanges: [{ startDate: start, endDate: end }],
 				dimensions: [{ name: "eventName" }],
 				metrics: [{ name: "totalUsers" }, { name: "eventCount" }],
-				dimensionFilter: HOST_NAME_FILTER,
+				dimensionFilter: PRODUCTION_EVENT_FILTER,
 				limit: REPORT_ROW_LIMIT,
 			},
 		});

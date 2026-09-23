@@ -80,7 +80,7 @@ export type TAnalyticsEvent =
 	| { name: "extension_install_dismiss" }
 	| {
 			name: "open_web_from_extension";
-			params: { from: "side_panel_memo" | "context_menu" };
+			params: { from: "side_panel_memo" | "side_panel_toast" | "context_menu" };
 	  }
 	| { name: "guide_open"; params: { from: "context_menu" } }
 	| { name: "guide_finish" }

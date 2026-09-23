@@ -1,6 +1,7 @@
 import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import {
 	compareSeoReports,
+	createFirstSeenLedger,
 	createSeoHistoryMarkdown,
 	parseSeoReportJson,
 } from "./seo-history.mjs";
@@ -13,11 +14,15 @@ export const writeSeoReport = async ({
 	baselineStatus = process.env.SEO_BASELINE_STATUS,
 	stepSummaryPath = process.env.GITHUB_STEP_SUMMARY,
 }) => {
-	const history = await compareWithPreviousReport({
+	const { previousReport, ...comparison } = await compareWithPreviousReport({
 		currentReport: report,
 		previousReportPath,
 		baselineStatus,
 	});
+	const history = {
+		...comparison,
+		firstSeen: createFirstSeenLedger({ currentReport: report, previousReport }),
+	};
 	report.history = history;
 	const markdownWithHistory = `${markdown}\n${createSeoHistoryMarkdown(history)}`;
 	await mkdir("artifacts/seo", { recursive: true });
@@ -33,7 +38,7 @@ export const writeSeoReport = async ({
 	return history;
 };
 
-/** Actions에서 전달한 이전 보고서와 현재 보고서의 이슈 변화를 비교합니다. */
+/** Actions에서 전달한 이전 보고서와 현재 보고서의 이슈 변화를 비교합니다. 호환되는 이전 보고서만 previousReport로 돌려줍니다. */
 const compareWithPreviousReport = async ({
 	currentReport,
 	previousReportPath,
@@ -59,10 +64,13 @@ const compareWithPreviousReport = async ({
 			};
 		}
 
-		return compareSeoReports({
-			currentReport,
+		return {
+			...compareSeoReports({
+				currentReport,
+				previousReport: parsed.report,
+			}),
 			previousReport: parsed.report,
-		});
+		};
 	} catch {
 		return {
 			baselineStatus: "incompatible",

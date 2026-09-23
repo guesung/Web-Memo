@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 import { execFile } from "node:child_process";
-import { appendFile, mkdtemp, readdir, writeFile } from "node:fs/promises";
+import { access, appendFile, mkdtemp, readdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 
@@ -153,6 +153,30 @@ export const findPreviousSeoReport = async ({
 	});
 };
 
+/** SEO 보고서와 같은 아티팩트에 담긴 GSC 보고서 경로를 찾습니다. 없으면 null입니다. */
+export const findSiblingGscReport = async (seoReportPath) => {
+	const gscReportPath = join(dirname(seoReportPath), "gsc-report.json");
+	try {
+		await access(gscReportPath);
+
+		return gscReportPath;
+	} catch {
+		return null;
+	}
+};
+
+/** 찾은 이전 보고서로 step output을 만듭니다. 같은 아티팩트에 GSC 보고서가 있으면 그 경로도 넘깁니다. */
+export const createPreviousReportOutputs = async (reportPath) => {
+	const gscReportPath = await findSiblingGscReport(reportPath);
+
+	return {
+		found: "true",
+		baseline_status: "available",
+		SEO_PREVIOUS_REPORT: reportPath,
+		...(gscReportPath ? { SEO_PREVIOUS_GSC_REPORT: gscReportPath } : {}),
+	};
+};
+
 /** 검색 결과를 GitHub Actions step output에 기록합니다. */
 export const writeOutputs = async (outputs, outputPath = process.env.GITHUB_OUTPUT) => {
 	const lines = Object.entries(outputs).map(([key, value]) => `${key}=${value}`);
@@ -188,11 +212,7 @@ export const main = async () => {
 
 			return;
 		}
-		await writeOutputs({
-			found: "true",
-			baseline_status: "available",
-			SEO_PREVIOUS_REPORT: reportPath,
-		});
+		await writeOutputs(await createPreviousReportOutputs(reportPath));
 	} catch (error) {
 		const message = error instanceof Error ? error.message : "알 수 없는 오류";
 		console.warn(`::warning::이전 SEO 보고서를 사용하지 못합니다: ${message.replace(/[\r\n]+/g, " ")}`);

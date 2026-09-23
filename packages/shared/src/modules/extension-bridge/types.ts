@@ -69,3 +69,8 @@ export interface IFEditHighlightPayload {
 
 /** 실제 변경된 행 또는 검증·인증·저장 오류. */
 export type TEditHighlightResponse = TCreateHighlightResponse;
+
+/** content script가 버블을 띄워도 되는지 판단하는 로그인 여부. 세션이 없거나 확인에 실패하면 false다. */
+export interface IFGetLoginStatusResponse {
+	isLoggedIn: boolean;
+}

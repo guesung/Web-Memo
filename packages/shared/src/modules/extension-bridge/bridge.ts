@@ -5,6 +5,7 @@ import type {
 	GetHighlightsByUrlPayload,
 	GetHighlightsByUrlResponse,
 	IFCreateHighlightPayload,
+	IFGetLoginStatusResponse,
 	IFEditHighlightPayload,
 	PageContentResponse,
 	TCreateHighlightResponse,
@@ -37,6 +38,7 @@ export const bridge = createBridge({
 		GetHighlightsByUrlPayload,
 		GetHighlightsByUrlResponse
 	>("internal"),
+	GET_LOGIN_STATUS: defineMessage<void, IFGetLoginStatusResponse>("internal"),
 });
 
 export type Bridge = typeof bridge;

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * SEO·GSC 보고서와 최근 커밋으로 AI 리포트 입력(artifacts/seo/ai-context.json)을 만듭니다.
- * .github/workflows/seo-monitor.yml 이 claude-code-action 앞 단계로 호출합니다.
+ * .github/workflows/report-seo.yml 이 claude-code-action 앞 단계로 호출합니다.
  *
  * 모델에게 Bash를 주지 않으므로 커밋 목록은 여기서 미리 뽑아 넘깁니다.
  * 주간 리포트면 7일, 일일 리포트면 24시간 범위를 봅니다.

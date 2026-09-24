@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * AI가 쓴 SEO 리포트를 검증해 Slack 본문 + 스레드로 보내고 아티팩트에 보관합니다.
- * .github/workflows/seo-monitor.yml 이 claude-code-action 다음 단계로 호출합니다.
+ * .github/workflows/report-seo.yml 이 claude-code-action 다음 단계로 호출합니다.
  *
  * 모델 출력(AI_REPORT_RESULT)은 여기서 검증한 뒤에만 나갑니다. 모델에게는 쓰기 권한이 없습니다.
  * 이 단계가 리포트를 보내지 못하면 step output sent=false 와 failure_reason 을 남깁니다. 워크플로는

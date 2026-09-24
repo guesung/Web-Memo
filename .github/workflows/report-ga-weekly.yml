@@ -1,7 +1,7 @@
 name: Weekly GA Report
 
 # 지난주 한 주의 GA4 사용 현황을 집계해 Slack에 게시합니다.
-# daily-ga-report.yml 과 목적이 다릅니다 — 그쪽은 로깅 감시이고, 이쪽은
+# report-ga-daily.yml 과 목적이 다릅니다 — 그쪽은 로깅 감시이고, 이쪽은
 # "사람들이 무엇을 쓰고 있고 다음에 무엇을 만들어야 하는가"에 답합니다.
 # 두 질문을 한 메시지에 섞지 않으려고 잡을 따로 두었습니다.
 #
@@ -29,7 +29,7 @@ on:
 concurrency:
   group: weekly-ga-report
   # 크론이 도는 중에 손으로 dispatch 하면 그 주 리포트가 통째로 사라집니다.
-  # daily-ga-report.yml 과 같은 이유이니 관례에 맞춘다며 true 로 되돌리지 마세요.
+  # report-ga-daily.yml 과 같은 이유이니 관례에 맞춘다며 true 로 되돌리지 마세요.
   cancel-in-progress: false
 
 # 체크아웃 외에는 아무것도 건드리지 않습니다. 재사용 워크플로가 아니어도 권한이

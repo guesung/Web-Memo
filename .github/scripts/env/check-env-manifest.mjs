@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * 환경 변수 매니페스트(.github/env-manifest.yml)를 코드·워크플로·.env 파일과 대조합니다.
- * .github/workflows/env-manifest.yml 이 모든 PR에서 호출합니다.
+ * .github/workflows/audit-env-manifest.yml 이 모든 PR에서 호출합니다.
  *
  * 토큰이 필요 없는 검사만 합니다. GitHub·Vercel·Supabase에 실제로 등록된 목록과의 대조는
  * 콘솔에서 바뀌는 일이라 PR과 무관하므로 audit-env-registry.mjs 가 스케줄로 맡습니다.

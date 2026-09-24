@@ -9,7 +9,7 @@ name: SEO Monitor
 # 기존 기계 판정 알림(오류·신규 경고가 있을 때만)이 대신 나가고, CI 채널에 실패가 따로 알려집니다.
 # AI 단계는 always() 대신 !cancelled() 로 조건을 걸어, 취소한 실행이 구독 한도를 쓰지 않게 합니다.
 #
-# 전제: refactor-audit.yml 과 같이 Claude GitHub App이 설치돼 있어야 합니다. Claude는 구독 토큰
+# 전제: audit-refactor.yml 과 같이 Claude GitHub App이 설치돼 있어야 합니다. Claude는 구독 토큰
 # (CLAUDE_CODE_OAUTH_TOKEN)으로 돌아 한도가 빠듯한 날에는 실패할 수 있습니다.
 on:
   schedule:

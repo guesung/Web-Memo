@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * 릴리스(스토어 제출) 결과를 타깃 하나 단위로 Slack에 알립니다.
- * .github/workflows/notify-release.yml 이 타깃별로 한 번씩 호출합니다.
+ * .github/workflows/release-notify.yml 이 타깃별로 한 번씩 호출합니다.
  *
  * 이 알림은 Slack 버튼을 누른 사람이 "정말 올라갔는지"를 확인하는 유일한 신호입니다.
  * 그래서 성공·실패를 가리지 않고 항상(always) 보냅니다.

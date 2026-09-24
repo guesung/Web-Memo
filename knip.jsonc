@@ -1,5 +1,5 @@
 {
-	// 주기적 정리 PR 자동화(.github/workflows/cleanup-unused.yml)가 쓰는 설정입니다.
+	// 주기적 정리 PR 자동화(.github/workflows/chore-cleanup-unused.yml)가 쓰는 설정입니다.
 	// 사람이 로컬에서 `pnpm knip`으로 같은 결과를 재현할 수 있어야 PR 본문의 근거가 검증됩니다.
 	//
 	// 1차 범위는 "어디서도 import되지 않는 파일"뿐입니다. 안 쓰는 export·의존성은

@@ -27,12 +27,16 @@ const isWindowMarkAlive = (page: Page) =>
 	);
 
 /**
- * 메모 목록이 그려져 문서가 실제로 스크롤 가능해질 때까지 기다린다.
+ * 실제 메모 목록이 그려져 문서가 스크롤 가능해질 때까지 기다린다.
  * load 이벤트는 목록 데이터 fetch를 기다리지 않는다. 문서가 아직 짧을 때 scrollTo하면
  * 0으로 잘리고 다시 적용되지 않아, 이후 scrollY를 아무리 기다려도 0에 머문다.
+ * 스크롤 가능 여부만 보면 안 된다. 목록을 읽는 동안 뜨는 Suspense 스켈레톤도 문서를
+ * 스크롤 가능하게 만들고, 그 뒤 목록이 마운트되면 MemoView가 탭 전환 처리로
+ * window.scrollTo(0, 0)을 부른다. 그래서 실제 카드가 뜬 뒤에 스크롤한다.
  */
-const waitForScrollableDocument = (page: Page) =>
-	expect
+const waitForScrollableDocument = async (page: Page) => {
+	await expect(page.locator("#memo-grid .memo-item").first()).toBeVisible();
+	await expect
 		.poll(() =>
 			page.evaluate(() => {
 				const scroller = document.scrollingElement;
@@ -40,6 +44,7 @@ const waitForScrollableDocument = (page: Page) =>
 			}),
 		)
 		.toBe(true);
+};
 
 test.describe("탭 이동과 스크롤 (Mocked)", () => {
 	let store: MockSupabaseStore;

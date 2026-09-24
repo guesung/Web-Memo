@@ -63,6 +63,29 @@ describe("메모 목록 미리보기", () => {
 		expect(html).toContain('class="line-clamp-2">느낀 점 내용');
 		expect(html).toContain('class="line-clamp-2">액션 내용');
 	});
+	it.each([true, false])(
+		"말줄임 설정 %s에 따라 전체 내용과 하이라이트를 표시한다",
+		(truncateMemoContent) => {
+			const html = renderMemo({
+				truncateMemoContent,
+				highlights: [
+					{ id: 1, exact_text: "첫 번째 인용문", color: "yellow" },
+					{ id: 2, exact_text: "두 번째 인용문", color: "yellow" },
+				] as Parameters<typeof MemoItem>[0]["highlights"],
+			});
+
+			expect(html).toContain("작성한 본문");
+			expect(html).toContain("느낀 점 내용");
+			expect(html).toContain("액션 내용");
+			expect(html).toContain("첫 번째 인용문");
+			expect(html.includes("line-clamp")).toBe(truncateMemoContent);
+			expect(html.includes("두 번째 인용문")).toBe(!truncateMemoContent);
+			expect(html.includes("memoSection.highlightCount")).toBe(
+				truncateMemoContent,
+			);
+			expect(html).toContain('<section class="px-4 py-2"');
+		},
+	);
 	it("휴지통에서는 본문과 보조 내용을 제한하지 않고 하이라이트를 숨긴다", () => {
 		const html = renderMemo({
 			isReadOnly: true,

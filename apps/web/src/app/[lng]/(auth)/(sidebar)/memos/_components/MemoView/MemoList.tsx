@@ -22,7 +22,8 @@ const MemoList = (props: IFMemoListProps) => {
 	const weekdayFormatter = new Intl.DateTimeFormat(props.lng, {
 		weekday: "long",
 	});
-	const { showImpression, showActionItem } = useSettingQuery();
+	const { showImpression, showActionItem, truncateMemoContent } =
+		useSettingQuery();
 	const groups = groupMemosByDate(props.memos);
 	const [renderedGroupMemoIds, setRenderedGroupMemoIds] = useState<
 		Record<string, string>
@@ -135,6 +136,7 @@ const MemoList = (props: IFMemoListProps) => {
 									highlights={props.highlightsByUrl.get(memo.url)}
 									showImpression={showImpression}
 									showActionItem={showActionItem}
+									truncateMemoContent={truncateMemoContent}
 									index={index}
 									className="[&>div>div]:max-w-full"
 								/>

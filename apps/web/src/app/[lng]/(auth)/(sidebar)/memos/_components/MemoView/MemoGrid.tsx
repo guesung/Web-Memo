@@ -59,7 +59,8 @@ export default function MemoGrid({
 	const queryClient = useQueryClient();
 	const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
 	const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
-	const { showImpression, showActionItem } = useSettingQuery();
+	const { showImpression, showActionItem, truncateMemoContent } =
+		useSettingQuery();
 
 	const {
 		selectedMemoIds,
@@ -256,6 +257,7 @@ export default function MemoGrid({
 						isSelectingMode={isSelectingMode}
 						showImpression={showImpression}
 						showActionItem={showActionItem}
+						truncateMemoContent={truncateMemoContent}
 					/>
 				))}
 			</MasonryInfiniteGrid>

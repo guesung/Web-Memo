@@ -30,6 +30,8 @@ interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	showImpression: boolean;
 	/** 액션 아이템 설정이 켜져 있는지. 꺼져 있으면 내용이 있어도 표시하지 않는다 */
 	showActionItem: boolean;
+	/** 목록 내용을 정해진 줄 수로 제한한다. 휴지통에는 적용하지 않는다. */
+	truncateMemoContent?: boolean;
 	/** 목록에서의 순서. 등장 애니메이션을 계단식으로 미루는 데 쓴다 */
 	index: number;
 	/**
@@ -54,6 +56,7 @@ const MemoItem = ({
 	isMemoSelected,
 	showImpression,
 	showActionItem,
+	truncateMemoContent = true,
 	index,
 	isReadOnly = false,
 	badge,
@@ -188,14 +191,21 @@ const MemoItem = ({
 					/>
 					{memo.memo?.trim() && (
 						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces break-all">
-							<p className={cn({ "line-clamp-3": !isReadOnly })}>{memo.memo}</p>
+							<p
+								className={cn({
+									"line-clamp-3": truncateMemoContent && !isReadOnly,
+								})}
+							>
+								{memo.memo}
+							</p>
 						</CardContent>
 					)}
 					{!isReadOnly && (
 						<MemoHighlights
 							highlights={highlights}
 							label={t("sideBar.highlight")}
-							isPreview
+							isPreview={truncateMemoContent}
+							className="px-4 py-2"
 							countLabel={t("memoSection.highlightCount", {
 								count: highlights?.length ?? 0,
 							})}
@@ -206,7 +216,11 @@ const MemoItem = ({
 							<p className="mb-1 text-xs font-semibold text-muted-foreground">
 								{t("memoSection.impression")}
 							</p>
-							<p className={cn({ "line-clamp-2": !isReadOnly })}>
+							<p
+								className={cn({
+									"line-clamp-2": truncateMemoContent && !isReadOnly,
+								})}
+							>
 								{memo.impression}
 							</p>
 						</CardContent>
@@ -216,7 +230,11 @@ const MemoItem = ({
 							<p className="mb-1 text-xs font-semibold text-muted-foreground">
 								{t("memoSection.actionItem")}
 							</p>
-							<p className={cn({ "line-clamp-2": !isReadOnly })}>
+							<p
+								className={cn({
+									"line-clamp-2": truncateMemoContent && !isReadOnly,
+								})}
+							>
 								{memo.actionItem}
 							</p>
 						</CardContent>

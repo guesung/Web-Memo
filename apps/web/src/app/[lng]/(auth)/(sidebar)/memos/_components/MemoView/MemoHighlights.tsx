@@ -10,6 +10,7 @@ export const MemoHighlights = ({
 	label,
 	isPreview = false,
 	countLabel,
+	className,
 }: IFMemoHighlightsProps) => {
 	if (highlights.length === 0) {
 		return null;
@@ -19,7 +20,7 @@ export const MemoHighlights = ({
 
 	return (
 		<section
-			className={isPreview ? "px-4 py-2" : "px-5 pb-3"}
+			className={className ?? (isPreview ? "px-4 py-2" : "px-5 pb-3")}
 			aria-label={label}
 		>
 			<p className="mb-1 text-xs font-semibold text-muted-foreground">
@@ -52,6 +53,8 @@ export const MemoHighlights = ({
 interface IFMemoHighlightsProps {
 	highlights?: HighlightRow[];
 	label: string;
+	/** 표시 제한과 별개로 목록과 상세 화면의 여백을 지정한다. */
+	className?: string;
 	/** 목록에서는 첫 인용문을 두 줄로 제한한다. */
 	isPreview?: boolean;
 	/** 목록에 표시할 전체 하이라이트 개수 문구. */

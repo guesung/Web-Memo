@@ -3,6 +3,7 @@
 import { Skeleton } from "@web-memo/ui";
 import { useSearchParams } from "next/navigation";
 import { MemoGridSkeleton } from "./MemoGrid";
+import { MemoItemSkeleton } from "./MemoItemSkeleton";
 
 /** 작성일별 메모를 읽는 동안 카드 그리드와 같은 배치로 표시하는 자리표시자. */
 export const MemoListSkeleton = () => (
@@ -16,10 +17,7 @@ export const MemoListSkeleton = () => (
 		</div>
 		<div className="flex min-w-0 max-w-[300px] flex-wrap gap-4 md:max-w-none">
 			{Array.from({ length: 6 }, (_, index) => (
-				<Skeleton
-					key={index.toString()}
-					className="h-[300px] w-[300px] max-w-full rounded-2xl"
-				/>
+				<MemoItemSkeleton key={index.toString()} />
 			))}
 		</div>
 	</div>

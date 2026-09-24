@@ -138,7 +138,7 @@
 		"message": "카테고리 검색"
 	},
 	"no_categories_found": {
-		"message": "카테고리가 없습니다"
+		"message": "맞는 카테고리가 없어요"
 	},
 	"category_suggesting": {
 		"message": "카테고리 추천 중..."
@@ -157,6 +157,24 @@
 	},
 	"recommend_category": {
 		"message": "AI 카테고리 추천"
+	},
+	"category_add": {
+		"message": "카테고리 추가"
+	},
+	"category_add_hash_hint": {
+		"message": "#을 눌러도 돼요"
+	},
+	"category_empty": {
+		"message": "아직 카테고리가 없어요"
+	},
+	"category_create_on_web": {
+		"message": "웹에서 카테고리 만들기"
+	},
+	"category_change": {
+		"message": "카테고리 바꾸기"
+	},
+	"category_remove": {
+		"message": "카테고리 해제"
 	},
 	"memo_section_setting": {
 		"message": "메모 섹션 표시"
@@ -367,5 +385,15 @@
 	},
 	"highlight_bubble_disabled_all_description": {
 		"message": "설정에서 다시 켤 수 있어요"
+	},
+	"category_create_named": {
+		"message": "'$NAME$' 만들기",
+		"description": "팝업에서 검색어로 새 카테고리 만들기",
+		"placeholders": {
+			"name": {
+				"content": "$1",
+				"example": "독서"
+			}
+		}
 	}
 }

@@ -65,7 +65,11 @@ export default async function LandingPageTemplate({
 }: LandingPageTemplateProps) {
 	const { t } = await useTranslation(lng);
 
-	const { icon: PageIcon, translationPrefix } = LANDING_PAGE[config.pageKey];
+	const {
+		icon: PageIcon,
+		translationPrefix,
+		path: pagePath,
+	} = LANDING_PAGE[config.pageKey];
 
 	const stepsSectionIndex = 2;
 	const relatedSectionIndex = config.steps ? 3 : 2;
@@ -92,7 +96,12 @@ export default async function LandingPageTemplate({
 							{t(`${translationPrefix}.hero.description`)}
 						</p>
 
-						<ExtensionInstallCTA lng={lng} className="mt-10" />
+						<ExtensionInstallCTA
+							lng={lng}
+							from={pagePath}
+							position="hero"
+							className="mt-10"
+						/>
 					</div>
 
 					{/* LCP 요소. priority를 떼지 않는다 */}
@@ -233,7 +242,13 @@ export default async function LandingPageTemplate({
 						{t(`${translationPrefix}.cta.description`)}
 					</p>
 
-					<ExtensionInstallCTA lng={lng} isCentered className="mt-10" />
+					<ExtensionInstallCTA
+						lng={lng}
+						from={pagePath}
+						position="final"
+						isCentered
+						className="mt-10"
+					/>
 
 					<p className="mt-8 text-sm text-muted-foreground">
 						{t(`${translationPrefix}.cta.subtext`)}

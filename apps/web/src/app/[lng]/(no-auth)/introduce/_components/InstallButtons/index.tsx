@@ -1,9 +1,11 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
-import { EXTERNAL_LINK } from "@web-memo/shared/constants";
+import { EXTERNAL_LINK, PATHS } from "@web-memo/shared/constants";
+import type { TInstallClickPosition } from "@web-memo/shared/modules/analytics";
 import { cn } from "@web-memo/shared/utils";
 import { ArrowRight, Chrome } from "lucide-react";
 import Link from "next/link";
+import TrackInstallClick from "../../../_components/TrackInstallClick";
 import { AppleIcon, GooglePlayIcon } from "../StoreIcon";
 
 /**
@@ -19,12 +21,17 @@ import { AppleIcon, GooglePlayIcon } from "../StoreIcon";
  * 분기는 **CSS로만** 한다. User-Agent로 가르면 SSR 캐시와 어긋나 hydration이
  * 깨지고, 잘못 감지했을 때의 손실이 한 번의 탭보다 크다.
  * 같은 이유로 App Store·Google Play 순서도 기기와 무관하게 고정한다.
+ *
+ * Chrome 웹스토어로 가는 두 링크(버튼·모바일 텍스트 링크)만 `extension_install_click`으로
+ * 남긴다. 앱 스토어 버튼은 확장 설치가 아니라서 세지 않는다.
  */
 
 interface InstallButtonsProps extends LanguageType {
 	/** 정렬. Hero는 좌측(데스크톱), FinalCTA는 가운데 */
 	isCentered?: boolean;
 	className?: string;
+	/** 한 페이지 안에서 이 버튼 묶음이 놓인 자리 */
+	position: TInstallClickPosition;
 }
 
 const PILL_BASE =
@@ -39,11 +46,12 @@ export default async function InstallButtons({
 	lng,
 	isCentered = false,
 	className,
+	position,
 }: InstallButtonsProps) {
 	const { t } = await useTranslation(lng);
 
 	return (
-		<div className={className}>
+		<TrackInstallClick className={className}>
 			<div
 				className={cn(
 					"flex flex-wrap gap-3",
@@ -54,6 +62,8 @@ export default async function InstallButtons({
 					href={EXTERNAL_LINK.chromeWebStoreListing}
 					target="_blank"
 					rel="noopener noreferrer"
+					data-install-from={PATHS.introduce}
+					data-install-position={position}
 					className={cn(PILL_BASE, PILL_FILLED, "hidden sm:inline-flex")}
 				>
 					<Chrome className="h-4 w-4" />
@@ -92,12 +102,14 @@ export default async function InstallButtons({
 					href={EXTERNAL_LINK.chromeWebStoreListing}
 					target="_blank"
 					rel="noopener noreferrer"
+					data-install-from={PATHS.introduce}
+					data-install-position={position}
 					className="inline-flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 hover:underline"
 				>
 					{t("introduce.hero.desktop_extension_hint")}
 					<ArrowRight className="h-3.5 w-3.5" />
 				</Link>
 			</div>
-		</div>
+		</TrackInstallClick>
 	);
 }

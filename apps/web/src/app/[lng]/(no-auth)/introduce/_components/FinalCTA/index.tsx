@@ -30,7 +30,12 @@ export default async function FinalCTA({ lng, background }: FinalCTAProps) {
 					{t("introduce.section.cta_desc")}
 				</p>
 
-				<InstallButtons lng={lng} isCentered className="mt-10" />
+				<InstallButtons
+					lng={lng}
+					position="final"
+					isCentered
+					className="mt-10"
+				/>
 
 				<Link
 					href="#demo"

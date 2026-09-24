@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
 	memo: { id: 1, title: "A" } as { id: number; title: string } | undefined,
 	values: {} as Record<string, unknown>,
 	upsert: vi.fn(),
+	patch: vi.fn(),
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
 	useDebounce: () => useDebounce(),
@@ -17,7 +18,7 @@ vi.mock("@web-memo/shared/hooks", () => ({
 	useTabQuery: () => ({ data: mocks.tab }),
 	useMemoQuery: () => ({ memo: mocks.memo, refetch: vi.fn() }),
 	useMemoUpsertMutation: () => ({ mutate: mocks.upsert }),
-	useMemoPatchMutation: () => ({ mutate: vi.fn() }),
+	useMemoPatchMutation: () => ({ mutate: mocks.patch }),
 }));
 vi.mock("@web-memo/shared/modules/extension-bridge", () => ({ bridge: {} }));
 vi.mock("@web-memo/shared/utils/extension", () => ({
@@ -27,7 +28,7 @@ vi.mock("@web-memo/shared/utils/extension", () => ({
 vi.mock("react-hook-form", () => ({
 	useFormContext: () => ({
 		setValue: setFormValue,
-		getValues: () => mocks.values,
+		getValues: (key?: string) => (key ? mocks.values[key] : mocks.values),
 	}),
 }));
 const setFormValue = (key: string, value: unknown) => {
@@ -61,6 +62,7 @@ beforeEach(() => {
 	mocks.tab = { id: 1, url: "https://example.com/a", title: "A" };
 	mocks.memo = { id: 1, title: "A" };
 	mocks.values = {};
+	mocks.patch.mockReset();
 	mocks.upsert
 		.mockReset()
 		.mockImplementation((_request, callbacks) => callbacks.onSuccess());
@@ -113,4 +115,45 @@ it("제목 미수정 상태에서 최초 저장 후 새 페이지로 이동해�
 	await render();
 	await act(async () => refreshTitle());
 	expect(mocks.values.title).toBe("B");
+});
+
+it("저장된 메모의 카테고리를 바꾸면 변경 경로와 함께 patch한다", async () => {
+	await render();
+	await act(async () => form.updateCategory(3, "button"));
+	expect(mocks.values.categoryId).toBe(3);
+	expect(mocks.patch).toHaveBeenCalledTimes(1);
+	expect(mocks.patch.mock.calls[0][0]).toEqual({
+		id: 1,
+		request: { category_id: 3 },
+		categorySource: "button",
+	});
+});
+
+it("카테고리 patch가 실패하면 이전 카테고리로 되돌린다", async () => {
+	await render();
+	mocks.values.categoryId = 2;
+	mocks.patch.mockImplementation((_request, callbacks) => callbacks.onError());
+	await act(async () => form.updateCategory(3, "button"));
+	expect(mocks.values.categoryId).toBe(2);
+});
+
+it("patch 실패 전에 다른 카테고리를 골랐다면 그 선택을 되돌리지 않는다", async () => {
+	await render();
+	mocks.values.categoryId = 2;
+	let failFirstPatch = () => {};
+	mocks.patch.mockImplementationOnce((_request, callbacks) => {
+		failFirstPatch = callbacks.onError;
+	});
+	await act(async () => form.updateCategory(3, "button"));
+	await act(async () => form.updateCategory(4, "hash"));
+	await act(async () => failFirstPatch());
+	expect(mocks.values.categoryId).toBe(4);
+});
+
+it("저장 전 메모는 폼 값만 바꾸고 patch하지 않는다", async () => {
+	mocks.memo = undefined;
+	await render();
+	await act(async () => form.updateCategory(3, "button"));
+	expect(mocks.values.categoryId).toBe(3);
+	expect(mocks.patch).not.toHaveBeenCalled();
 });

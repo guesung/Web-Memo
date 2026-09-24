@@ -1,7 +1,7 @@
 /**
  * GA4 Data API로 일자별 활성 사용자를 조회합니다.
  *
- * @description `.github/scripts/lib/ga4-data.mjs`의 `runReport` 래퍼와 응답 정규화,
+ * @description `.github/scripts/ga/ga4-data.mjs`의 `runReport` 래퍼와 응답 정규화,
  * 서울 기준 날짜 계산을 옮겨 온 것입니다. 관리자 대시보드의 추이 그래프 하나만
  * 책임지므로 그 스크립트의 이상치·미출시 판정은 가져오지 않았습니다.
  */

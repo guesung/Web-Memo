@@ -40,4 +40,4 @@ jobs:
           CWS_CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CWS_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           CWS_REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
-        run: node .github/scripts/report-store-versions.mjs
+        run: node .github/scripts/deploy/report-store-versions.mjs

@@ -24,7 +24,7 @@
 
 Frontend Observability 앱 `web-memo-web`을 만들었습니다. Faro 허용 출처는 `https://www.webmemo.xyz`, `https://staging.webmemo.xyz`, `https://web-memo-git-grafana-gueit214s-projects.vercel.app`입니다. 마지막 주소는 이 PR 브랜치의 안정 Vercel alias입니다.
 
-Faro 세션 샘플링은 10%로 설정했습니다. Grafana 설정 화면의 Sampling Rate 입력은 초기화 코드 예시를 생성하므로 앱 코드의 `sessionTracking.samplingRate: 0.1`에도 반영했습니다. 스택은 Free 플랜이며 사용량 한도에 맞게 수집량을 제한합니다.
+Faro 세션 샘플링은 10%로 설정했습니다. Grafana 설정 화면의 Sampling Rate 입력은 초기화 코드 예시를 생성하므로 앱 코드의 `sessionTracking.samplingRate: 0.1`에도 반영했습니다. Faro는 자체 세션 ID로 표본 결정을 세션 단위로 유지하므로, 무작위 비식별 세션 ID만 측정 메타데이터에 남깁니다. 로그인 사용자 ID와 연결하지 않습니다. 스택은 Free 플랜이며 사용량 한도에 맞게 수집량을 제한합니다.
 
 1. Grafana Cloud 스택에서 **Frontend Observability** 앱을 만들고 Faro collector URL을 확인합니다. 해당 URL을 Vercel 프로젝트의 `NEXT_PUBLIC_FARO_URL`에 등록합니다. 이 주소는 공개 값이며 Next 빌드 때 번들에 들어가므로 변경 후 재배포합니다.
 2. Grafana Cloud의 OTLP HTTP traces endpoint와 Access Policy의 쓰기 권한 토큰을 준비합니다. Vercel 프로젝트에 `GRAFANA_OTLP_ENDPOINT`와 `GRAFANA_OTLP_AUTHORIZATION`을 등록합니다. 인증 값에는 `Basic <base64(instance_id:token)>` 전체를 넣습니다. **인증 값은 서버에서만 읽고 로그에 출력하지 않습니다.**
@@ -35,8 +35,8 @@ Faro 세션 샘플링은 10%로 설정했습니다. Grafana 설정 화면의 Sam
 
 ## 수집 제한과 점검
 
-Grafana에 보낼 값은 정규화된 메모 경로, 탐색 종류, 고정된 단계와 결과, 지연시간, 연결용 비식별 ID로 제한합니다. 메모 본문·ID·제목, 검색어, 원문 URL과 쿼리 문자열, 사용자 식별자, 쿠키, 인증 헤더와 요청 본문을 보내지 않습니다. 연결용 ID를 Loki 라벨로 사용하지 않습니다. Faro 자동 로그·오류·리플레이·리소스·트레이싱은 사용하지 않습니다. 서버는 `app.memo.server_request` span만 정제해 OTLP로 전송합니다.
+Grafana에 보낼 값은 정규화된 메모 경로, 탐색 종류, 고정된 단계와 결과, 지연시간, Faro가 만든 비식별 세션 ID로 제한합니다. 세션 ID는 무작위 값이며 로그인 사용자 ID와 연결하지 않습니다. 메모 본문·ID·제목, 검색어, 원문 URL과 쿼리 문자열, 사용자 식별자, 쿠키, 인증 헤더와 요청 본문을 보내지 않습니다. 세션 ID를 Loki 라벨로 사용하지 않습니다. Faro는 세션 샘플링을 위해서만 `SessionInstrumentation`을 사용하며, `beforeSend`에서 session lifecycle 이벤트를 차단합니다. 자동 로그·오류·리플레이·리소스·웹 트레이싱은 사용하지 않습니다. 서버는 `app.memo.server_request` span만 정제해 OTLP로 전송합니다.
 
 검증할 때는 DevTools의 Faro 수집 요청과 Grafana에 저장된 measurement를 함께 확인합니다. 검색어와 임의의 민감한 문자열을 입력한 뒤 전송 payload에 그 문자열이 없는지 확인합니다. 목록·정상 빈 상태·오류·캐시 적중·뒤로/앞으로 이동·빠른 연속 이동을 각각 확인하고, 성공 지연 백분위에는 오류·취소·타임아웃을 포함하지 않습니다. 서버리스 환경에서는 배포 직후 첫 요청의 span도 도착하는지 확인합니다.
 
-관련 공식 문서: [Grafana Frontend Observability](https://grafana.com/docs/grafana-cloud/observe-and-act/monitor-applications/frontend-observability/get-started/instrument-nextjs/), [Grafana OTLP 수집](https://grafana.com/docs/opentelemetry/grafana-cloud/), [Sentry OpenTelemetry 확장](https://docs.sentry.io/platforms/javascript/guides/nextjs/opentelemetry/using-opentelemetry-apis__v10.x/), [Vercel `waitUntil`](https://vercel.com/docs/functions/functions-api-reference/vercel-functions-package#waituntil).
+관련 공식 문서: [Grafana Frontend Observability](https://grafana.com/docs/grafana-cloud/observe-and-act/monitor-applications/frontend-observability/get-started/instrument-nextjs/), [Grafana Faro 세션 추적과 샘플링](https://grafana.com/docs/grafana-cloud/observe-and-act/monitor-applications/frontend-observability/instrument/session-tracking/), [Grafana OTLP 수집](https://grafana.com/docs/opentelemetry/grafana-cloud/), [Sentry OpenTelemetry 확장](https://docs.sentry.io/platforms/javascript/guides/nextjs/opentelemetry/using-opentelemetry-apis__v10.x/), [Vercel `waitUntil`](https://vercel.com/docs/functions/functions-api-reference/vercel-functions-package#waituntil).

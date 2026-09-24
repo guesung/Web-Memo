@@ -9,6 +9,7 @@ const { initializeFaroMock } = vi.hoisted(() => ({
 vi.mock("@grafana/faro-web-sdk", () => ({
 	faro: { api: null },
 	initializeFaro: initializeFaroMock,
+	SessionInstrumentation: class {},
 	TransportItemType: { MEASUREMENT: "measurement" },
 }));
 
@@ -35,7 +36,7 @@ describe("Faro 측정값 필터", () => {
 			}) => unknown;
 		};
 
-		expect(configuration.instrumentations).toEqual([]);
+		expect(configuration.instrumentations).toHaveLength(1);
 		expect(configuration.sessionTracking).toEqual({ samplingRate: 0.1 });
 		const result = configuration.beforeSend({
 			type: "measurement",
@@ -54,6 +55,10 @@ describe("Faro 측정값 필터", () => {
 			meta: {
 				page: { url: "https://webmemo.xyz/ko/memos/star?q=private" },
 				user: { email: "private@example.com" },
+				session: {
+					id: "anonymous-session-id",
+					attributes: { isSampled: "true", private_value: "private" },
+				},
 			},
 		});
 
@@ -73,6 +78,10 @@ describe("Faro 측정값 필터", () => {
 			meta: {
 				app: { name: "web-memo-web" },
 				page: { url: "/memos/wish" },
+				session: {
+					id: "anonymous-session-id",
+					attributes: { isSampled: "true" },
+				},
 			},
 		});
 	});

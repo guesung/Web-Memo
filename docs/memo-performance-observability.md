@@ -22,7 +22,7 @@
 `https://otlp-gateway-prod-ap-northeast-0.grafana.net/otlp/v1/traces`입니다.
 이 주소와 인스턴스 ID는 공개 설정 정보이며, API 토큰은 저장소에 기록하지 않습니다.
 
-Frontend Observability 앱 `web-memo-web`을 만들었습니다. Faro 허용 출처는 `https://www.webmemo.xyz`와 `https://staging.webmemo.xyz`입니다. Vercel Preview 배포는 아직 허용 목록에 포함하지 않았습니다.
+Frontend Observability 앱 `web-memo-web`을 만들었습니다. Faro 허용 출처는 `https://www.webmemo.xyz`, `https://staging.webmemo.xyz`, `https://web-memo-git-grafana-gueit214s-projects.vercel.app`입니다. 마지막 주소는 이 PR 브랜치의 안정 Vercel alias입니다.
 
 1. Grafana Cloud 스택에서 **Frontend Observability** 앱을 만들고 Faro collector URL을 확인합니다. 해당 URL을 Vercel 프로젝트의 `NEXT_PUBLIC_FARO_URL`에 등록합니다. 이 주소는 공개 값이며 Next 빌드 때 번들에 들어가므로 변경 후 재배포합니다.
 2. Grafana Cloud의 OTLP HTTP traces endpoint와 Access Policy의 쓰기 권한 토큰을 준비합니다. Vercel 프로젝트에 `GRAFANA_OTLP_ENDPOINT`와 `GRAFANA_OTLP_AUTHORIZATION`을 등록합니다. 인증 값에는 `Basic <base64(instance_id:token)>` 전체를 넣습니다. **인증 값은 서버에서만 읽고 로그에 출력하지 않습니다.**

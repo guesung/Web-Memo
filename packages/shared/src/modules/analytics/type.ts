@@ -96,7 +96,19 @@ export type TAnalyticsEvent =
 	  }
 	| { name: "highlight_bubble_disable"; params: { scope: "site" | "all" } }
 	| { name: "notice_view"; params: { notice_id: number } }
-	| { name: "notice_dismiss"; params: { notice_id: number } };
+	| { name: "notice_dismiss"; params: { notice_id: number } }
+	| {
+			name: "past_memo_show";
+			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
+	  }
+	| {
+			name: "past_memo_open";
+			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
+	  }
+	| {
+			name: "past_memo_dismiss";
+			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
+	  };
 
 /** 이벤트 이름만 추린 유니온. */
 export type TAnalyticsEventName = TAnalyticsEvent["name"];
@@ -156,4 +168,7 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	highlight_bubble_disable: "engagement",
 	notice_view: "engagement",
 	notice_dismiss: "engagement",
+	past_memo_show: "engagement",
+	past_memo_open: "core_action",
+	past_memo_dismiss: "engagement",
 };

@@ -1,0 +1,56 @@
+name: Supabase inventory
+
+# 운영 Supabase를 읽기 전용으로 조회해 docs/supabase-inventory.md를 최신으로 유지합니다.
+# 문서가 달라지면 chore/supabase-inventory 브랜치의 PR 하나를 만들거나 갱신하고,
+# 운영 상태가 다시 문서와 같아지면 그 PR을 닫습니다. 자동 머지는 하지 않습니다.
+#
+# 조회가 실패하면 생성 단계에서 멈춥니다. 문서도 열린 PR도 건드리지 않습니다.
+#
+# GITHUB_TOKEN 대신 GitHub App 토큰을 쓰는 이유: GITHUB_TOKEN으로 연 PR은
+# 다른 워크플로를 트리거하지 않아 ci.yml·e2e.yml이 돌지 않습니다 (chore-cleanup-unused.yml과 같습니다).
+on:
+  schedule:
+    # UTC 23:00 = Asia/Seoul 08:00
+    - cron: "0 23 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 두 회차가 겹치면 같은 브랜치에 push가 부딪힙니다. 앞선 회차를 끊지 않고 줄을 세웁니다.
+concurrency:
+  group: supabase-inventory
+  cancel-in-progress: false
+
+jobs:
+  inventory:
+    name: Supabase 인벤토리 갱신
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v5
+        with:
+          ref: master
+          token: ${{ steps.app-token.outputs.token }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Generate inventory
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node .github/scripts/supabase/generate-supabase-inventory.mjs
+
+      - name: Sync inventory PR
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GIT_USER_NAME: ${{ steps.app-token.outputs.app-slug }}[bot]
+          GIT_USER_EMAIL: ${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com
+        run: node .github/scripts/supabase/sync-supabase-inventory-pr.mjs

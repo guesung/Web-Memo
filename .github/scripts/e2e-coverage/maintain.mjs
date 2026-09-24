@@ -1,7 +1,7 @@
 import { appendFileSync, constants, copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { copyArtifactTest, exportArtifact, readArtifact, testHash, validateTestHash } from "./artifact.mjs";
-import { isoWeek, run, validateCandidate, validateChanges, validateReport } from "./validation.mjs";
+import { isoWeek, run, validateCandidate, validateChanges, validateFocusFlowId, validateReport } from "./validation.mjs";
 
 const directory = path.resolve(process.env.E2E_COVERAGE_DIR ?? path.join(process.env.RUNNER_TEMP ?? "/tmp", "e2e-coverage"));
 const repositoryRoot = path.resolve(run("git", ["rev-parse", "--show-toplevel"]));
@@ -42,6 +42,8 @@ const commands = {
 		if (!Array.isArray(flows) || !flows.length || flows.some((flow) => !flow.action?.trim() || !flow.expectedResult?.trim())) {
 			throw Object.assign(new Error("핵심 흐름의 사용자 행동과 기대 결과가 필요합니다"), { isSafe: true });
 		}
+		const focusFlowId = validateFocusFlowId(process.env.E2E_FOCUS_FLOW_ID ?? "", flows);
+		const trackedFiles = run("git", ["ls-files"]).split("\n").filter(Boolean);
 		const config = readFileSync("e2e/playwright.config.ts", "utf8");
 		const configuredProjects = [...config.matchAll(/name:\s*["']([a-zA-Z0-9_-]+)["']/g)].map((match) => match[1]);
 		const projects = configuredProjects.filter((project) => ["web", "extension", "hybrid"].includes(project));
@@ -52,23 +54,12 @@ const commands = {
 		const recentFiles = [...new Set(run("git", ["log", "--since=14 days ago", "--format=", "--name-only", baseSha, "--", "apps/", "pages/", "packages/", "e2e/"]).split("\n").filter(Boolean))].slice(0, 200);
 		const tests = run("git", ["ls-files", "e2e/tests"]).split("\n").filter((file) => file.endsWith(".test.ts"));
 		const recentFlows = flows.filter((flow) => recentFiles.some((file) => flow.sources.some((source) => file.startsWith(source))));
-		write("context", { baseSha, week: week.label, projects, flows, recentFiles, recentFlows, rotationFlow: flows[(week.week - 1) % flows.length], tests });
+		write("context", { baseSha, week: week.label, projects, flows, focusFlowId, trackedFiles, recentFiles, recentFlows, rotationFlow: flows[(week.week - 1) % flows.length], tests });
 		output("context_file", path.join(directory, "context.json"));
 		output("week", week.label);
 	},
 	candidate: () => {
-		let value;
-		try {
-			value = validateCandidate(JSON.parse(process.env.E2E_CANDIDATE_JSON ?? ""), read("context"));
-			const trackedFiles = new Set(run("git", ["ls-files"]).split("\n"));
-			if (![...value.productRefs, ...value.existingTestRefs].every((file) => trackedFiles.has(file)) || value.existingTestRefs.some((file) => !file.startsWith("e2e/tests/"))) {
-				throw Object.assign(new Error("후보 근거가 실제 추적 파일과 일치하지 않습니다"), { isSafe: true });
-			}
-		} catch {
-			write("result", { status: "insufficient", reason: "AI 결과의 형식 또는 근거 파일을 확인할 수 없습니다" });
-			output("status", "insufficient");
-			return;
-		}
+		const value = validateCandidate(JSON.parse(process.env.E2E_CANDIDATE_JSON ?? ""), read("context"));
 		write("candidate", value);
 		write("result", { status: value.status, scenarioId: value.scenarioId });
 		output("status", value.status);

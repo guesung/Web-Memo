@@ -32,6 +32,13 @@ export interface IFGa4EventParams {
 }
 
 /**
+ * 메모 카테고리를 바꾼 경로.
+ * @description button은 사이드 패널의 칩·배지·해제 버튼, hash는 본문의 # 입력, ai는 AI 추천 자동
+ * 적용입니다. "사람들이 #을 모른다"는 가정을 확인하려고 경로별 비율을 봅니다.
+ */
+export type TCategoryChangeSource = "button" | "hash" | "ai";
+
+/**
  * 설치 버튼이 한 페이지 안에서 놓인 자리.
  *
  * @description 같은 페이지에 설치 버튼이 둘 이상이라 출발 경로만으로는 어느 버튼이 눌렸는지
@@ -85,7 +92,10 @@ export type TAnalyticsEvent =
 			name: "memo_status_toggle";
 			params: { status: "wish" | "star" | "reading"; enabled: boolean };
 	  }
-	| { name: "memo_category_change" }
+	| {
+			name: "memo_category_change";
+			params?: { source: TCategoryChangeSource };
+	  }
 	| { name: "memo_undo"; params: { action: "wish" | "reading" | "delete" } }
 	| { name: "category_suggestion_show"; params: { is_new_category: boolean } }
 	| { name: "category_suggestion_apply"; params: { is_new_category: boolean } }
@@ -101,7 +111,13 @@ export type TAnalyticsEvent =
 	| { name: "extension_install_dismiss" }
 	| {
 			name: "open_web_from_extension";
-			params: { from: "side_panel_memo" | "side_panel_toast" | "context_menu" };
+			params: {
+				from:
+					| "side_panel_memo"
+					| "side_panel_toast"
+					| "side_panel_category"
+					| "context_menu";
+			};
 	  }
 	| { name: "guide_open"; params: { from: "context_menu" } }
 	| { name: "guide_finish" }

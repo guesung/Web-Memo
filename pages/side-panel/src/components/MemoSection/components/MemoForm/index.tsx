@@ -29,6 +29,7 @@ import {
 	CategoryAddChip,
 	CategoryBadge,
 	CategoryCommandPopup,
+	PastMemoNotice,
 	SaveStatus,
 } from "./components";
 import {
@@ -161,6 +162,7 @@ function MemoFormContent() {
 
 	return (
 		<>
+			<PastMemoNotice hasMemoData={!!memoData?.created_at} />
 			<form className="relative flex min-h-0 flex-1 flex-col py-1">
 				<div className="mb-1 flex shrink-0 items-center gap-1">
 					{setting.isRefetchError && (

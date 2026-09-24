@@ -14,3 +14,4 @@ export {
 	type TMemoFieldKey,
 } from "./useMemoFieldResize";
 export { default as useMemoForm } from "./useMemoForm";
+export { usePastMemoMatch } from "./usePastMemoMatch";

@@ -389,6 +389,27 @@
 	"highlight_bubble_disabled_all_description": {
 		"message": "You can turn it back on in settings"
 	},
+	"past_memo_duplicate_rule": {
+		"message": "You have a memo on this page"
+	},
+	"past_memo_duplicate_jev": {
+		"message": "You may already have a memo on this page"
+	},
+	"past_memo_related": {
+		"message": "Related memos ($count$)",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "3"
+			}
+		}
+	},
+	"past_memo_open": {
+		"message": "Open"
+	},
+	"past_memo_dismiss": {
+		"message": "Dismiss"
+	},
 	"category_create_named": {
 		"message": "Create \"$NAME$\"",
 		"description": "Create a new category from the search text in the popup",

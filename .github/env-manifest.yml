@@ -202,17 +202,23 @@
   consumers: [apps/web/src/app/api/openai/util.ts, apps/web/src/app/api/openai/category/route.ts, apps/web/src/app/api/openai/webpage-qa/route.ts]
   impact: "AI 기능 전체가 실패한다"
 
+- name: TYPESAFE_API_KEY
+  kind: secret
+  stores: [vercel]
+  consumers: [apps/web/src/modules/pastMemo/findPastMemo.ts]
+  impact: "과거 메모 판정(POST /api/past-memo)의 jev 판정이 조용히 꺼진다. 느슨한 URL 일치로 찾는 중복만 동작한다"
+
 - name: UPSTASH_REDIS_REST_URL
   kind: secret
   stores: [vercel]
-  consumers: [apps/web/src/app/api/openai/ratelimit.ts]
-  impact: "OpenAI API 레이트 리밋이 조용히 꺼진다"
+  consumers: [apps/web/src/app/api/openai/ratelimit.ts, apps/web/src/modules/pastMemo/ratelimit.ts]
+  impact: "OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다"
 
 - name: UPSTASH_REDIS_REST_TOKEN
   kind: secret
   stores: [vercel]
-  consumers: [apps/web/src/app/api/openai/ratelimit.ts]
-  impact: "OpenAI API 레이트 리밋이 조용히 꺼진다"
+  consumers: [apps/web/src/app/api/openai/ratelimit.ts, apps/web/src/modules/pastMemo/ratelimit.ts]
+  impact: "OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다"
 
 - name: SLACK_SIGNING_SECRET
   kind: secret

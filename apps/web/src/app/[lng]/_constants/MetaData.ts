@@ -26,11 +26,12 @@ export const metadataCommon: Metadata = {
 	},
 };
 
+/** 한국어 페이지의 기본 검색 및 공유 메타데이터입니다. */
 export const metadataKorean: Metadata = {
 	...metadataCommon,
 	title: "웹 메모",
 	description:
-		"웹 메모는 웹페이지를 읽으며 생각을 즉시 기록할 수 있는 서비스입니다. 아티클을 읽다가 떠오른 아이디어나 중요한 내용을 사이드 패널에서 바로 메모하고 체계적으로 관리하세요.",
+		"읽던 페이지에서 바로 메모하고, 웹과 앱에서 다시 꺼내 보세요. 웹 메모의 사이드 패널에서 아티클을 읽다가 떠오른 생각과 중요한 내용을 기록하고 관리하세요.",
 	keywords: ["웹 메모", "온라인 메모", "메모장", "노트"],
 	authors: [{ url: "https://github.com/guesung" }],
 	applicationName: "웹 메모",
@@ -38,7 +39,7 @@ export const metadataKorean: Metadata = {
 	openGraph: {
 		title: "웹 메모",
 		description:
-			"웹 메모는 웹페이지를 읽으며 생각을 즉시 기록할 수 있는 서비스입니다. 아티클을 읽다가 떠오른 아이디어나 중요한 내용을 사이드 패널에서 바로 메모하고 체계적으로 관리하세요.",
+			"읽던 페이지에서 바로 메모하고, 웹과 앱에서 다시 꺼내 보세요. 웹 메모의 사이드 패널에서 아티클을 읽다가 떠오른 생각과 중요한 내용을 기록하고 관리하세요.",
 		images: ["/og-image.png"],
 		siteName: "웹 메모",
 		type: "website",
@@ -49,16 +50,17 @@ export const metadataKorean: Metadata = {
 		card: "summary_large_image",
 		title: "웹 메모",
 		description:
-			"웹 메모는 웹페이지를 읽으며 생각을 즉시 기록할 수 있는 서비스입니다. 아티클을 읽다가 떠오른 아이디어나 중요한 내용을 사이드 패널에서 바로 메모하고 체계적으로 관리하세요.",
+			"읽던 페이지에서 바로 메모하고, 웹과 앱에서 다시 꺼내 보세요. 웹 메모의 사이드 패널에서 아티클을 읽다가 떠오른 생각과 중요한 내용을 기록하고 관리하세요.",
 		images: ["/og-image.png"],
 	},
 };
 
+/** 영어 페이지의 기본 검색 및 공유 메타데이터입니다. */
 export const metadataEnglish: Metadata = {
 	...metadataCommon,
 	title: "Web Memo",
 	description:
-		"Web Memo is a service that lets you instantly record your thoughts while reading web pages. Save ideas and important content that come to mind while reading articles through the side panel and manage them systematically.",
+		"Take notes on the page you’re reading, then revisit them on the web or in the app. Capture ideas and important content in the Web Memo side panel and organize your saved notes.",
 	keywords: ["web memo", "online memo", "notepad", "notes"],
 	authors: [{ url: "https://github.com/guesung" }],
 	applicationName: "Web Memo",
@@ -66,7 +68,7 @@ export const metadataEnglish: Metadata = {
 	openGraph: {
 		title: "Web Memo",
 		description:
-			"Web Memo is a service that lets you instantly record your thoughts while reading web pages. Save ideas and important content that come to mind while reading articles through the side panel and manage them systematically.",
+			"Take notes on the page you’re reading, then revisit them on the web or in the app. Capture ideas and important content in the Web Memo side panel and organize your saved notes.",
 		images: ["/og-image.png"],
 		siteName: "Web Memo",
 		type: "website",
@@ -77,7 +79,7 @@ export const metadataEnglish: Metadata = {
 		card: "summary_large_image",
 		title: "Web Memo",
 		description:
-			"Web Memo is a service that lets you instantly record your thoughts while reading web pages. Save ideas and important content that come to mind while reading articles through the side panel and manage them systematically.",
+			"Take notes on the page you’re reading, then revisit them on the web or in the app. Capture ideas and important content in the Web Memo side panel and organize your saved notes.",
 		images: ["/og-image.png"],
 	},
 };

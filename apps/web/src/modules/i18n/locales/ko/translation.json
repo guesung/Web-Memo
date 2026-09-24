@@ -365,7 +365,7 @@
 		"changeCategory": "카테고리 변경하기"
 	},
 	"login": {
-		"welcomeTitle": "웹사이트 보며 간편하게 메모하세요.",
+		"welcomeTitle": "읽는 순간, 바로 기록해요.",
 		"kakaoLogin": "카카오 로그인",
 		"googleLogin": "Google 계정으로 로그인",
 		"appleLogin": "Apple로 로그인",
@@ -547,8 +547,8 @@
 			"get_started": "시작하기"
 		},
 		"hero": {
-			"title": "웹서핑을 더 쉽게",
-			"subtitle": "읽던 페이지에서 사이드 패널을 열어 메모하고, 긴 글과 영상은 AI가 요약합니다",
+			"title": "읽는 순간, 바로 기록해요.",
+			"subtitle": "읽던 페이지에서 바로 메모하고, 웹과 앱에서 다시 꺼내 보세요.",
 			"install_button": "Chrome에 추가",
 			"appstore_button": "App Store",
 			"playstore_button": "Google Play",
@@ -758,7 +758,7 @@
 		},
 		"footer": {
 			"title": "웹 메모",
-			"description": "쉽고 빠른 콘텐츠 정리",
+			"description": "읽는 순간, 바로 기록해요.",
 			"chrome_extension": "Chrome 확장 프로그램",
 			"ios_app": "iOS 앱",
 			"android_app": "Android 앱",

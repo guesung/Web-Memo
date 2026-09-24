@@ -8,6 +8,7 @@ import {
 	login,
 	openSidePanel,
 	skipGuide,
+	waitForSidePanelMemoQuery,
 } from "../lib";
 
 test.describe("SidePanel - Integration", () => {
@@ -36,18 +37,16 @@ test.describe("SidePanel - Integration", () => {
 
 		// 사이드 패널은 활성 탭의 URL을 따라가 그 URL의 메모를 읽는다. 탭을 이 테스트 전용 URL로 옮기고,
 		// 그 URL의 메모 조회가 끝난 뒤에 입력해야 조회 결과가 입력을 덮지 않는다.
-		const memoQueryResponse = sidePanelPage.waitForResponse(
-			(response) =>
-				new URL(response.url()).searchParams.get("url") === `eq.${memoUrl}` &&
-				response.ok(),
-		);
+		const memoQueryResponse = waitForSidePanelMemoQuery({
+			sidePanelPage,
+			url: memoUrl,
+		});
 		await page.goto(memoUrl);
 		await memoQueryResponse;
 
 		const text = String(new Date());
+		// fillMemo가 저장 응답과 성공 처리까지 기다리므로 바로 새로고침해도 된다.
 		await fillMemo(sidePanelPage, text);
-
-		await sidePanelPage.waitForTimeout(1000);
 
 		await sidePanelPage.reload();
 		await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(text);

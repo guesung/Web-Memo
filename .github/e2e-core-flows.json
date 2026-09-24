@@ -51,6 +51,17 @@
     "expectedResult": "조건에 맞는 메모만 표시되고 초기화하면 목록이 복원된다"
   },
   {
+    "id": "past-memo-discovery",
+    "name": "같은 글과 관련 메모 재발견",
+    "sources": [
+      "pages/side-panel/src/components/MemoSection/components/MemoForm/",
+      "apps/web/src/app/api/past-memo/",
+      "apps/web/src/modules/pastMemo/"
+    ],
+    "action": "이미 메모한 글과 관련된 새 페이지에서 사이드 패널을 열고 과거 메모 알림을 확인한다",
+    "expectedResult": "같은 글 또는 관련 메모를 열 수 있고 알림을 닫으면 현재 페이지에서 다시 표시되지 않는다"
+  },
+  {
     "id": "summary",
     "name": "페이지 요약과 미지원 페이지 처리",
     "sources": [

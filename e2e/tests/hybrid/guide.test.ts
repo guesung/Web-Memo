@@ -3,7 +3,8 @@ import { expect, test } from "../fixtures/extension";
 import { LANGUAGE } from "../lib";
 import { MockSupabaseStore, setupSupabaseMocks } from "../lib/mocks";
 
-const isCI = process.env.CI === "true";
+// 가이드 문구의 단축키는 웹이 브라우저 OS(isMac)로 고른다. 테스트 브라우저는 이 프로세스와 같은 OS에서 돈다.
+const isMacOS = process.platform === "darwin";
 
 async function clearGuideLocalStorage(page: import("@playwright/test").Page) {
 	await page.evaluate(() => {
@@ -25,14 +26,14 @@ test.describe("가이드 기능", () => {
 
 		// Now login - this will redirect to memos page
 		await page.getByTestId("test-login-button").click();
-		await page.waitForURL(new RegExp(PATHS.memos));
+		await page.waitForURL(new RegExp(`/${LANGUAGE}${PATHS.memos}`));
 
 		// Wait for guide to initialize (depends on extension manifest loading)
 		await page
 			.locator("#driver-popover-description")
 			.waitFor({ state: "visible", timeout: 15000 });
 		await expect(page.locator("#driver-popover-description")).toHaveText(
-			`Ready to start? Press '${isCI ? "Alt" : "Option"} + S' to open the side panel.`,
+			`Ready to start? Press '${isMacOS ? "Option" : "Alt"} + S' to open the side panel.`,
 		);
 	});
 
@@ -45,7 +46,7 @@ test.describe("가이드 기능", () => {
 
 		// Login to get to memos page
 		await page.getByTestId("test-login-button").click();
-		await page.waitForURL(new RegExp(PATHS.memos));
+		await page.waitForURL(new RegExp(`/${LANGUAGE}${PATHS.memos}`));
 
 		// Wait for guide to initialize on step 1
 		await page
@@ -54,9 +55,8 @@ test.describe("가이드 기능", () => {
 
 		// Click next button to advance to step 2
 		await page.locator(".driver-popover-next-btn").click();
-		await page.waitForTimeout(300);
 
-		// Verify we're on step 2
+		// Verify we're on step 2 (toHaveText가 단계 전환을 기다린다)
 		await expect(page.locator("#driver-popover-description")).toHaveText(
 			"Great! Now you can write memos. Don't worry, they save automatically.",
 		);
@@ -71,7 +71,7 @@ test.describe("가이드 기능", () => {
 
 		// Login to get to memos page
 		await page.getByTestId("test-login-button").click();
-		await page.waitForURL(new RegExp(PATHS.memos));
+		await page.waitForURL(new RegExp(`/${LANGUAGE}${PATHS.memos}`));
 
 		// Wait for guide to initialize
 		await page

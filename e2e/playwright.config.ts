@@ -11,7 +11,12 @@ export default defineConfig({
 	// 개발 머신에서 워커가 서로 자원을 뺏어 로그인조차 타임아웃을 낸다.
 	// CI 러너는 코어가 적어 기본값으로도 2개라 그대로 둔다.
 	workers: process.env.CI ? undefined : 4,
-	reporter: [["html", { open: "on-failure" }]],
+	// json은 CI가 flaky 건수를 요약에 쓰려고 읽는다(.github/workflows/e2e.yml). html 리포터는 자기 폴더를
+	// 비우므로 같은 폴더에 두지 않는다.
+	reporter: [
+		["html", { open: "on-failure" }],
+		["json", { outputFile: "playwright-results.json" }],
+	],
 	// 실행 ID(E2E_RUN_ID)를 정해 워커와 teardown이 같은 네임스페이스를 보게 한다.
 	globalSetup: "./globalSetup.ts",
 	// `*.real.test.ts`는 모킹 없이 실제 Supabase를 치므로, 실행이 끝나면 이번 실행이 남긴 메모·카테고리를 지운다.

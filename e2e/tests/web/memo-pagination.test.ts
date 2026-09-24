@@ -50,14 +50,16 @@ test.describe("메모 무한 스크롤 (Mocked)", () => {
 	}) => {
 		await expect(page.locator(".memo-item")).toHaveCount(PAGE_SIZE);
 
+		// 다음 장은 목록 끝이 화면에 들어와야 불린다. 한 번 굴려서 끝에 닿지 않을 수 있으므로
+		// 굴릴 때마다 개수를 다시 보고, 다음 장이 붙을 때까지 반복한다.
 		await page.mouse.move(640, 400);
-		for (let scroll = 0; scroll < 10; scroll++) {
-			await page.mouse.wheel(0, 2000);
-			const memoCount = await page.locator(".memo-item").count();
-			if (memoCount > PAGE_SIZE) {
-				break;
-			}
-		}
+		await expect
+			.poll(async () => {
+				await page.mouse.wheel(0, 2000);
+
+				return page.locator(".memo-item").count();
+			})
+			.toBeGreaterThan(PAGE_SIZE);
 
 		await expect(page.locator(".memo-item")).toHaveCount(SEEDED_COUNT);
 		await expect(

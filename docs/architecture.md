@@ -62,7 +62,7 @@ SEO 탭 5개의 컬럼명은 한글로 표시합니다. 기존 영문 헤더가 
 | 운영 인벤토리 | 운영 DB의 실제 구성은 자동 생성 문서 [`supabase-inventory.md`](supabase-inventory.md)가 원천입니다. 모든 스키마(동적 탐색, `auth`·`storage` 등 Supabase 관리 스키마는 별도 구역)의 테이블·컬럼·타입과 DB 함수 시그니처, Edge Function의 이름·배포 버전을 싣습니다. 생성기는 `.github/scripts/supabase/generate-supabase-inventory.mjs`이고, 조회가 하나라도 실패하면 문서와 열린 PR을 건드리지 않습니다.<br>배포 버전은 Edge Runtime/Deno 버전이 아니며, 정확한 Runtime 버전은 Management API에서 얻을 수 없습니다. 행 데이터·secret 값·함수 본문·Webhook URL, 조회 시각·건강 상태는 싣지 않습니다. 필수 객체 누락 검사와 운영 오류 감시는 하지 않습니다 |
 | API 규약 | 경로는 `/api/<도메인>/<행위>`, 소문자 kebab-case.<br>응답은 Route Handler에서 `NextResponse.json()`으로 반환하고, 에러는 상태 코드 + `{ message }` 형태로 통일합니다.<br>Server Action에서는 try/catch 대신 **에러를 값으로 반환**합니다. 반대로 서비스 계층(훅에서 부르는 쪽)은 TanStack Query가 잡을 수 있도록 사용자 친화적 에러를 throw합니다 |
 | 인증 | **Supabase Auth.** Google·Kakao OAuth + 이메일. 콜백은 `/auth/callback`(OAuth)과 `/auth/callback-email`.<br>세션은 `@supabase/ssr` 쿠키. 확장은 웹이 심은 `access_token`/`refresh_token` 쿠키를 `chrome.cookies`로 읽어갑니다 — **쿠키 이름이 양쪽에서 정확히 일치해야 로그인 연동이 동작합니다**(`packages/shared/src/constants/SupabaseConfig.ts`).<br>보호 라우트는 `(auth)` 그룹으로 구분합니다 |
-| 외부 연동 | OpenAI(요약·카테고리·QA) · Upstash Redis(레이트리밋) · Slack(피드백/알림) · youtube-transcript(자막) · Sentry.<br>**키가 필요한 호출은 전부 서버(Route Handler)에서만 합니다.** 클라이언트에서 직접 부르지 않습니다.<br>OpenAI 호출은 실비로 과금되므로 새 기능을 붙일 때 호출 빈도와 레이트리밋을 함께 정합니다 |
+| 외부 연동 | OpenAI `gpt-6-luna`(요약·채팅·카테고리 추천·페이지 질의응답, Chat Completions에서 `reasoning_effort: "none"`) · Upstash Redis(레이트리밋) · Slack(피드백/알림) · youtube-transcript(자막) · Sentry.<br>**키가 필요한 호출은 전부 서버(Route Handler)에서만 합니다.** 클라이언트에서 직접 부르지 않습니다.<br>OpenAI 호출은 실비로 과금되므로 새 기능을 붙일 때 호출 빈도와 레이트리밋을 함께 정합니다 |
 
 ## QA 실행
 

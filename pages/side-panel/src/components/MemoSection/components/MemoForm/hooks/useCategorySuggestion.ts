@@ -1,8 +1,9 @@
+import * as Sentry from "@sentry/react";
 import type { MemoInput } from "@src/types/Input";
-import { CONFIG } from "@web-memo/env";
 import {
 	useCategoryPostMutation,
 	useCategoryQuery,
+	useTabQuery,
 } from "@web-memo/shared/hooks";
 import {
 	analytics,
@@ -12,262 +13,288 @@ import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
-import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { generateRandomPastelColor } from "@web-memo/shared/utils";
-import { getTabInfo } from "@web-memo/shared/utils/extension";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { getTabInfo, I18n } from "@web-memo/shared/utils/extension";
+import { toast } from "@web-memo/ui";
+import { useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
+import { createCategoryUndo } from "./createCategoryUndo";
+import {
+	type IFCategorySuggestion,
+	requestCategorySuggestion,
+} from "./requestCategorySuggestion";
+import { useSuggestionDismissTimer } from "./useSuggestionDismissTimer";
 
 const CONFIDENCE_THRESHOLD = 0.7;
-const AUTO_DISMISS_DELAY = 15000;
-const API_TIMEOUT = 10000;
-const PAGE_CONTENT_SAMPLE_LENGTH = 500;
-const KOREAN_RATIO_THRESHOLD = 0.1;
-
-function detectPageLanguage(
-	pageTitle: string,
-	pageContent: string,
-): "ko" | "en" {
-	const combined = `${pageTitle} ${pageContent.slice(0, PAGE_CONTENT_SAMPLE_LENGTH)}`;
-	const koreanPattern = /[\uAC00-\uD7AF]/g;
-	const koreanMatches = combined.match(koreanPattern);
-	const koreanRatio = (koreanMatches?.length || 0) / combined.length;
-
-	return koreanRatio > KOREAN_RATIO_THRESHOLD ? "ko" : "en";
-}
-
-export function useCategorySuggestion({
+/** 저장된 메모에 대한 카테고리 추천과 수락·거절 상태를 관리합니다. */
+export const useCategorySuggestion = ({
 	currentCategoryId,
+	currentMemoId,
 	onCategorySelect,
-}: UseCategorySuggestionProps) {
+	onCategoryAutoApply,
+}: IFUseCategorySuggestionProps) => {
 	const [isLoading, setIsLoading] = useState(false);
-
+	const [suggestion, setSuggestion] = useState<IFCategorySuggestion | null>(
+		null,
+	);
+	const [isAccepting, setIsAccepting] = useState(false);
+	const isAcceptingRef = useRef(false);
 	const { getValues } = useFormContext<MemoInput>();
 	const { categories } = useCategoryQuery();
+	const { data: tab } = useTabQuery();
 	const { mutateAsync: createCategory } = useCategoryPostMutation();
-
 	const abortControllerRef = useRef<AbortController | null>(null);
-	const dismissedUrlsRef = useRef<Set<string>>(new Set());
+	const requestSequenceRef = useRef(0);
+	const dismissedUrlsRef = useRef(new Set<string>());
 	const currentUrlRef = useRef<string | null>(null);
-	const autoDismissTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-	const applyCategorySuggestionDirect = useCallback(
-		async (suggestionToApply: CategorySuggestion) => {
-			// 추천을 기다리는 사이 사용자가 직접 골랐거나 이 페이지에서 해제했으면 결과를 버린다.
-			// 요청 시점의 값이 아니라 결과가 도착한 지금의 폼 값을 봐야 한다.
-			const isSuggestionOutdated = () => {
-				const hasUserChosenCategory = !!getValues("categoryId");
-				const isDismissedUrl =
-					currentUrlRef.current !== null &&
-					dismissedUrlsRef.current.has(currentUrlRef.current);
-
-				return hasUserChosenCategory || isDismissedUrl;
-			};
-
-			try {
-				if (isSuggestionOutdated()) {
-					return;
-				}
-
-				let categoryId = suggestionToApply.existingCategoryId;
-
-				if (!suggestionToApply.isExisting || !categoryId) {
-					try {
-						const result = await createCategory({
-							name: suggestionToApply.categoryName,
-							color: generateRandomPastelColor(),
-						});
-						categoryId = result.data?.[0]?.id ?? null;
-					} catch {
-						const existing = categories?.find(
-							(c) =>
-								c.name.toLowerCase() ===
-								suggestionToApply.categoryName.toLowerCase(),
-						);
-						if (existing) categoryId = existing.id;
-					}
-				}
-
-				// 카테고리를 만드는 동안에도 사용자가 고를 수 있으므로 적용 직전에 한 번 더 본다.
-				if (categoryId && !isSuggestionOutdated()) {
-					onCategorySelect(categoryId, "ai");
-					// OpenAI를 호출하는 기능입니다. 제안이 실제로 받아들여지는지 모르면 비용 대비
-					// 가치를 판단할 수 없습니다.
-					analytics.trackEvent({
-						name: "category_suggestion_apply",
-						params: { is_new_category: !suggestionToApply.isExisting },
-					});
-				}
-			} catch (error) {
-				console.error("Failed to auto-apply category:", error);
-			}
-		},
-		[createCategory, onCategorySelect, categories, getValues],
-	);
-
-	const clearAutoDismissTimer = useCallback(() => {
-		if (autoDismissTimerRef.current) {
-			clearTimeout(autoDismissTimerRef.current);
-			autoDismissTimerRef.current = null;
-		}
-	}, []);
-
-	const reset = useCallback(() => {
-		setIsLoading(false);
-		clearAutoDismissTimer();
-	}, [clearAutoDismissTimer]);
-
-	const triggerSuggestion = useCallback(
-		async (memoText: string) => {
-			if (currentCategoryId) return;
-
-			try {
-				const tabInfo = await getTabInfo();
-				if (!tabInfo.url) return;
-
-				if (dismissedUrlsRef.current.has(tabInfo.url)) return;
-
-				currentUrlRef.current = tabInfo.url;
-
-				abortControllerRef.current?.abort();
-				abortControllerRef.current = new AbortController();
-
-				setIsLoading(true);
-
-				let pageContent = "";
-				try {
-					const { content } = await bridge.request.PAGE_CONTENT();
-					pageContent = content || "";
-				} catch {}
-
-				const pageLanguage = detectPageLanguage(
-					tabInfo.title || "",
-					pageContent,
-				);
-
-				const existingCategories = (categories || []).map((c) => ({
-					id: c.id,
-					name: c.name,
-				}));
-
-				const timeoutPromise = new Promise<never>((_, reject) => {
-					setTimeout(() => reject(new Error("Request timeout")), API_TIMEOUT);
-				});
-
-				const fetchPromise = fetch(`${CONFIG.webUrl}/api/openai/category`, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						pageTitle: tabInfo.title || "",
-						pageUrl: tabInfo.url,
-						pageContent,
-						memoText,
-						existingCategories,
-						pageLanguage,
-					}),
-					signal: abortControllerRef.current.signal,
-				});
-
-				const response = await Promise.race([fetchPromise, timeoutPromise]);
-
-				if (!response.ok) {
-					throw new Error(`HTTP error: ${response.status}`);
-				}
-
-				const data: CategorySuggestionResponse = await response.json();
-
-				if (
-					data.suggestion &&
-					data.suggestion.confidence >= CONFIDENCE_THRESHOLD
-				) {
-					const suggestionData: CategorySuggestion = {
-						...data.suggestion,
-						existingCategoryId: data.suggestion.existingCategoryId ?? null,
-					};
-
-					analytics.trackEvent({
-						name: "category_suggestion_show",
-						params: { is_new_category: !suggestionData.isExisting },
-					});
-
-					const shouldAutoApply =
-						(await ChromeSyncStorage.get<boolean>(
-							STORAGE_KEYS.autoApplyCategory,
-						)) ?? true;
-
-					if (shouldAutoApply) {
-						await applyCategorySuggestionDirect(suggestionData);
-					} else {
-						clearAutoDismissTimer();
-						autoDismissTimerRef.current = setTimeout(() => {
-							reset();
-						}, AUTO_DISMISS_DELAY);
-					}
-				}
-			} catch (error) {
-				if (error instanceof Error && error.name !== "AbortError") {
-					console.error("Category suggestion error:", error);
-				}
-			} finally {
-				setIsLoading(false);
-			}
-		},
-		[
-			categories,
-			currentCategoryId,
-			clearAutoDismissTimer,
-			reset,
-			applyCategorySuggestionDirect,
-		],
-	);
-
-	useEffect(() => {
-		return () => {
-			abortControllerRef.current?.abort();
-			clearAutoDismissTimer();
-		};
-	}, [clearAutoDismissTimer]);
-
-	useEffect(() => {
-		if (currentCategoryId) {
-			reset();
-		}
-	}, [currentCategoryId, reset]);
-
-	/**
-	 * 현재 탭 URL에서 AI 추천 자동 적용을 멈춘다.
-	 * @description 사용자가 카테고리를 직접 해제한 페이지에 추천이 다시 덮어쓰지 않게 한다.
-	 * 기록은 패널이 열려 있는 동안만 유지된다.
-	 */
+	const suggestionMemoIdRef = useRef<number | null>(null);
+	const currentMemoIdRef = useRef(currentMemoId);
+	currentMemoIdRef.current = currentMemoId;
+	const suggestionRef = useRef<IFCategorySuggestion | null>(null);
 	const dismissCurrentUrl = async () => {
+		if (currentUrlRef.current) {
+			dismissedUrlsRef.current.add(currentUrlRef.current);
+		}
 		const tabInfo = await getTabInfo();
-
 		if (tabInfo.url) {
 			dismissedUrlsRef.current.add(tabInfo.url);
 		}
 	};
-
+	const dismissSuggestion = () => {
+		const activeSuggestion = suggestionRef.current;
+		if (!activeSuggestion) {
+			return;
+		}
+		if (currentUrlRef.current) {
+			dismissedUrlsRef.current.add(currentUrlRef.current);
+		}
+		analytics.trackEvent({
+			name: "category_suggestion_dismiss",
+			params: {
+				source: activeSuggestion.source ?? "llm",
+				is_new_category: !activeSuggestion.isExisting,
+			},
+		});
+		dismissTimer.stop();
+		suggestionRef.current = null;
+		setSuggestion(null);
+	};
+	const dismissTimer = useSuggestionDismissTimer(dismissSuggestion);
+	const stopDismissTimerRef = useRef(dismissTimer.stop);
+	stopDismissTimerRef.current = dismissTimer.stop;
+	const previousTabUrlRef = useRef(tab?.url);
+	const resumeAutoDismiss = () => {
+		if (!isAccepting) {
+			dismissTimer.resume();
+		}
+	};
+	const acceptSuggestion = async () => {
+		const activeSuggestion = suggestionRef.current;
+		const isAlreadyAssigned = Boolean(getValues("categoryId"));
+		if (!activeSuggestion || isAcceptingRef.current || isAlreadyAssigned) {
+			return;
+		}
+		const activeUrl = currentUrlRef.current;
+		const activeMemoId = suggestionMemoIdRef.current;
+		const currentTab = await getTabInfo();
+		if (
+			currentTab.url !== activeUrl ||
+			currentMemoIdRef.current !== activeMemoId ||
+			suggestionRef.current !== activeSuggestion
+		) {
+			dismissTimer.stop();
+			suggestionRef.current = null;
+			setSuggestion(null);
+			return;
+		}
+		dismissTimer.pause();
+		isAcceptingRef.current = true;
+		setIsAccepting(true);
+		try {
+			let categoryId = activeSuggestion.existingCategoryId;
+			if (!activeSuggestion.isExisting || !categoryId) {
+				const result = await createCategory({
+					name: activeSuggestion.categoryName,
+					color: generateRandomPastelColor(),
+				});
+				categoryId = result.data?.[0]?.id ?? null;
+			}
+			if (!categoryId) {
+				throw new Error("Category creation returned no category");
+			}
+			const latestTab = await getTabInfo();
+			if (
+				latestTab.url !== activeUrl ||
+				currentMemoIdRef.current !== activeMemoId ||
+				getValues("categoryId") ||
+				suggestionRef.current !== activeSuggestion
+			) {
+				return;
+			}
+			onCategorySelect(categoryId, "ai");
+			analytics.trackEvent({
+				name: "category_suggestion_apply",
+				params: {
+					source: activeSuggestion.source ?? "llm",
+					is_new_category: !activeSuggestion.isExisting,
+				},
+			});
+			dismissTimer.stop();
+			suggestionRef.current = null;
+			setSuggestion(null);
+		} catch (error) {
+			Sentry.captureException(error);
+			toast({ title: I18n.get("category_create_failed") });
+		} finally {
+			isAcceptingRef.current = false;
+			setIsAccepting(false);
+		}
+	};
+	const triggerSuggestion = async (memoText: string) => {
+		if (currentCategoryId || suggestionRef.current || isLoading) {
+			return;
+		}
+		const requestSequence = ++requestSequenceRef.current;
+		try {
+			const tabInfo = await getTabInfo();
+			if (!tabInfo.url || dismissedUrlsRef.current.has(tabInfo.url)) {
+				return;
+			}
+			const requestedMemoId = currentMemoIdRef.current;
+			const isRequestOutdated = async () => {
+				const latestTab = await getTabInfo();
+				return (
+					requestSequence !== requestSequenceRef.current ||
+					latestTab.url !== tabInfo.url ||
+					tab?.url !== tabInfo.url ||
+					currentMemoIdRef.current !== requestedMemoId ||
+					Boolean(getValues("categoryId")) ||
+					dismissedUrlsRef.current.has(tabInfo.url)
+				);
+			};
+			currentUrlRef.current = tabInfo.url;
+			abortControllerRef.current?.abort();
+			const abortController = new AbortController();
+			abortControllerRef.current = abortController;
+			setIsLoading(true);
+			const result = await requestCategorySuggestion({
+				pageTitle: tabInfo.title || "",
+				pageUrl: tabInfo.url,
+				memoText,
+				existingCategories: categories,
+				abortController,
+			});
+			if (await isRequestOutdated()) {
+				return;
+			}
+			if (!result || result.confidence < CONFIDENCE_THRESHOLD) {
+				return;
+			}
+			const normalizedSuggestion = {
+				...result,
+				existingCategoryId: result.existingCategoryId ?? null,
+			};
+			analytics.trackEvent({
+				name: "category_suggestion_show",
+				params: {
+					source: result.source ?? "llm",
+					is_new_category: !result.isExisting,
+				},
+			});
+			const shouldAutoApply =
+				(await ChromeSyncStorage.get<boolean>(
+					STORAGE_KEYS.autoApplyCategory,
+				)) ?? true;
+			if (await isRequestOutdated()) {
+				return;
+			}
+			if (
+				result.source === "jev" &&
+				result.isExisting &&
+				result.existingCategoryId &&
+				shouldAutoApply
+			) {
+				onCategorySelect(result.existingCategoryId, "ai");
+				analytics.trackEvent({
+					name: "category_suggestion_apply",
+					params: { source: "jev", is_new_category: false },
+				});
+				onCategoryAutoApply(
+					result.categoryName,
+					createCategoryUndo({
+						appliedUrl: tabInfo.url,
+						appliedMemoId: currentMemoIdRef.current,
+						appliedCategoryId: result.existingCategoryId,
+						getCurrentMemoId: () => currentMemoIdRef.current,
+						getCurrentCategoryId: () => getValues("categoryId"),
+						dismissUrl: () => dismissedUrlsRef.current.add(tabInfo.url),
+						onUndo: () => onCategorySelect(null, "ai"),
+					}),
+				);
+				return;
+			}
+			suggestionRef.current = normalizedSuggestion;
+			suggestionMemoIdRef.current = currentMemoIdRef.current;
+			setSuggestion(normalizedSuggestion);
+			dismissTimer.start();
+		} catch (error) {
+			if (!(error instanceof Error && error.name === "AbortError")) {
+				Sentry.captureException(error);
+			}
+		} finally {
+			if (requestSequence === requestSequenceRef.current) {
+				setIsLoading(false);
+			}
+		}
+	};
+	useEffect(() => {
+		return () => {
+			requestSequenceRef.current += 1;
+			abortControllerRef.current?.abort();
+		};
+	}, []);
+	useEffect(() => {
+		if (previousTabUrlRef.current === tab?.url) {
+			return;
+		}
+		previousTabUrlRef.current = tab?.url;
+		requestSequenceRef.current += 1;
+		abortControllerRef.current?.abort();
+		stopDismissTimerRef.current();
+		suggestionRef.current = null;
+		currentUrlRef.current = null;
+		setSuggestion(null);
+		setIsLoading(false);
+	}, [tab?.url]);
+	useEffect(() => {
+		if (currentCategoryId) {
+			stopDismissTimerRef.current();
+			suggestionRef.current = null;
+			setSuggestion(null);
+		}
+	}, [currentCategoryId]);
 	return {
 		isLoading,
+		suggestion,
+		isAccepting,
 		triggerSuggestion,
+		acceptSuggestion,
+		dismissSuggestion,
+		pauseAutoDismiss: dismissTimer.pause,
+		resumeAutoDismiss,
 		dismissCurrentUrl,
 	};
-}
-
-interface CategorySuggestion {
-	categoryName: string;
-	isExisting: boolean;
-	existingCategoryId: number | null;
-	confidence: number;
-}
-
-interface CategorySuggestionResponse {
-	suggestion: CategorySuggestion | null;
-}
-
-interface UseCategorySuggestionProps {
+};
+/** 카테고리 추천 훅의 입력입니다. */
+interface IFUseCategorySuggestionProps {
 	currentCategoryId: number | null;
-	onCategorySelect: (categoryId: number, source: TCategoryChangeSource) => void;
+	currentMemoId: number | null;
+	onCategorySelect: (
+		categoryId: number | null,
+		source: TCategoryChangeSource,
+	) => void;
+	onCategoryAutoApply: (
+		categoryName: string,
+		onUndo: () => Promise<void>,
+	) => void;
 }

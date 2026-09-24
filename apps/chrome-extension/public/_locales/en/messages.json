@@ -155,6 +155,19 @@
 	"category_suggestion_dismiss": {
 		"message": "Dismiss"
 	},
+	"category_suggestion_create": {
+		"message": "Create"
+	},
+	"category_auto_applied": {
+		"message": "Added to '$1' category",
+		"placeholders": { "category": { "content": "$1" } }
+	},
+	"category_auto_applied_undo": {
+		"message": "Undo"
+	},
+	"category_create_failed": {
+		"message": "Could not create the category. Please try again"
+	},
 	"recommend_category": {
 		"message": "AI category recommendation"
 	},

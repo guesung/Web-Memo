@@ -97,8 +97,19 @@ export type TAnalyticsEvent =
 			params?: { source: TCategoryChangeSource };
 	  }
 	| { name: "memo_undo"; params: { action: "wish" | "reading" | "delete" } }
-	| { name: "category_suggestion_show"; params: { is_new_category: boolean } }
-	| { name: "category_suggestion_apply"; params: { is_new_category: boolean } }
+	| {
+			name: "category_suggestion_show";
+			params: { is_new_category: boolean; source: "jev" | "llm" };
+	  }
+	| {
+			name: "category_suggestion_apply";
+			params: { is_new_category: boolean; source: "jev" | "llm" };
+	  }
+	| {
+			name: "category_suggestion_dismiss";
+			params: { is_new_category: boolean; source: "jev" | "llm" };
+	  }
+	| { name: "category_suggestion_undo"; params: { source: "jev" | "llm" } }
 	| {
 			name: "extension_install_click";
 			params: {
@@ -178,6 +189,8 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	memo_undo: "engagement",
 	category_suggestion_show: "engagement",
 	category_suggestion_apply: "core_action",
+	category_suggestion_dismiss: "engagement",
+	category_suggestion_undo: "core_action",
 	extension_install_click: "core_action",
 	extension_install_dismiss: "engagement",
 	open_web_from_extension: "engagement",

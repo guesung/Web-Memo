@@ -29,6 +29,7 @@ import {
 	CategoryAddChip,
 	CategoryBadge,
 	CategoryCommandPopup,
+	CategorySuggestion,
 	SaveStatus,
 } from "./components";
 import {
@@ -107,16 +108,36 @@ function MemoFormContent() {
 
 	const {
 		isLoading: isSuggestingCategory,
+		suggestion,
+		isAccepting,
 		triggerSuggestion,
+		acceptSuggestion,
+		dismissSuggestion,
+		pauseAutoDismiss,
+		resumeAutoDismiss,
 		dismissCurrentUrl,
 	} = useCategorySuggestion({
 		currentCategoryId,
+		currentMemoId: memoData?.id ?? null,
 		onCategorySelect: updateCategory,
+		onCategoryAutoApply: (categoryName, onUndo) => {
+			toast({
+				title: I18n.get("category_auto_applied", categoryName),
+				action: (
+					<ToastAction
+						altText={I18n.get("category_auto_applied_undo")}
+						onClick={() => void onUndo()}
+					>
+						{I18n.get("category_auto_applied_undo")}
+					</ToastAction>
+				),
+			});
+		},
 	});
 
 	const handleCategoryRemoveClick = () => {
 		handleCategoryRemove();
-		dismissCurrentUrl();
+		void dismissCurrentUrl();
 	};
 
 	const handleMemoStatusClick = async (statusKey: TMemoStatusKey) => {
@@ -290,6 +311,18 @@ function MemoFormContent() {
 							/>
 						</div>
 					</>
+				)}
+				{suggestion && !currentCategoryId && (
+					<div className="flex shrink-0 justify-end pt-2">
+						<CategorySuggestion
+							suggestion={suggestion}
+							isAccepting={isAccepting}
+							onAccept={() => void acceptSuggestion()}
+							onDismiss={dismissSuggestion}
+							onPauseDismiss={pauseAutoDismiss}
+							onResumeDismiss={resumeAutoDismiss}
+						/>
+					</div>
 				)}
 				<div className="flex shrink-0 items-center justify-between gap-2 pt-2">
 					<div className="flex items-center gap-2">

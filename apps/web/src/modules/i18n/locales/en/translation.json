@@ -44,7 +44,8 @@
 	"header": {
 		"login": "Sign in",
 		"logout": "Sign out",
-		"introduce": "About"
+		"introduce": "About",
+		"myMemos": "My memos"
 	},
 	"updateNotification": {
 		"title": "🎉 What's New",

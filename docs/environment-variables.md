@@ -80,7 +80,7 @@
 | `TURBO_TOKEN` | Turborepo 원격 캐시를 못 써 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml` |
 | `VERCEL_TOKEN` | vercel pull, build, deploy, alias가 인증에 실패해 웹 배포가 멈추고, e2e가 웹 서버 환경 변수를 받지 못한다 | `.github/workflows/cd-web.yml`, `.github/workflows/e2e.yml`, `.github/workflows/audit-env-registry.yml` |
 
-### Vercel 프로젝트 환경변수 (15개)
+### Vercel 프로젝트 환경변수 (16개)
 
 | 이름 | 환경 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- | --- |
@@ -97,6 +97,7 @@
 | `SLACK_BOT_TOKEN` | 전체 | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts`, `.github/workflows/report-seo.yml` |
 | `SLACK_SENTRY_ALERT_CHANNEL` | 전체 | Sentry 알림을 보낼 채널을 몰라 릴레이가 실패한다 | `apps/web/src/modules/sentry/config.ts` |
 | `SLACK_SIGNING_SECRET` | 전체 | Slack 요청 서명을 검증하지 못해 배포 버튼과 슬래시 커맨드가 실패한다 | `apps/web/src/modules/slack/config.ts` |
+| `TYPESAFE_API_KEY` | 전체 | Jev 카테고리 판정을 건너뛰고 기존 OpenAI 추천으로 대체한다 | `apps/web/src/app/api/openai/category/route.ts` |
 | `UPSTASH_REDIS_REST_TOKEN` | 전체 | OpenAI API 레이트 리밋이 조용히 꺼진다 | `apps/web/src/app/api/openai/ratelimit.ts` |
 | `UPSTASH_REDIS_REST_URL` | 전체 | OpenAI API 레이트 리밋이 조용히 꺼진다 | `apps/web/src/app/api/openai/ratelimit.ts` |
 
@@ -282,7 +283,7 @@ Vercel 프로젝트 환경변수에 두고 서버에서만 읽습니다.
 
 ## 2. 웹 전용 서버 시크릿 — Vercel이 원천, 로컬은 pull
 
-웹의 서버 시크릿(`OPENAI_API_KEY`, `UPSTASH_*`, `GA4_SERVICE_ACCOUNT_JSON`, Slack·GitHub 토큰 등)은
+웹의 서버 시크릿(`OPENAI_API_KEY`, `TYPESAFE_API_KEY`, `UPSTASH_*`, `GA4_SERVICE_ACCOUNT_JSON`, Slack·GitHub 토큰 등)은
 **Vercel 프로젝트 환경변수가 유일한 원천**입니다. 로컬 파일을 따로 관리하지 않습니다. 키 목록과 용도는 위
 [전체 목록](#전체-목록)의 Vercel 표가 원천입니다. `GA4_PROPERTY_ID`는 비밀이 아니고 기본값이 코드에 있어
 **선택**입니다.

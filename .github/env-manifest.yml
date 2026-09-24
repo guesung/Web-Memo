@@ -202,6 +202,12 @@
   consumers: [apps/web/src/app/api/openai/util.ts, apps/web/src/app/api/openai/category/route.ts, apps/web/src/app/api/openai/webpage-qa/route.ts]
   impact: "AI 기능 전체가 실패한다"
 
+- name: TYPESAFE_API_KEY
+  kind: secret
+  stores: [vercel]
+  consumers: [apps/web/src/app/api/openai/category/route.ts]
+  impact: "Jev 카테고리 판정을 건너뛰고 기존 OpenAI 추천으로 대체한다"
+
 - name: UPSTASH_REDIS_REST_URL
   kind: secret
   stores: [vercel]

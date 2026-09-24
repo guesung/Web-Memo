@@ -451,7 +451,6 @@
 			"loading": "Loading settings.",
 			"loadFailed": "Could not load settings. Please try again.",
 			"retry": "Try again",
-			"saving": "Saving…",
 			"saveFailed": "Could not confirm the change was saved. Please try again."
 		},
 		"extension": {

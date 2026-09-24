@@ -209,7 +209,7 @@
   stores: [vercel]
   required: false
   consumers: [apps/web/src/modules/observability/serverTracing.ts]
-  impact: "메모 SSR 프리패치 span이 Grafana Tempo에 전송되지 않는다"
+  impact: "메모 경로의 Next.js 서버 요청 span이 Grafana Tempo에 전송되지 않는다"
   note: "Grafana Cloud OTLP HTTP traces 엔드포인트"
 
 - name: GRAFANA_OTLP_AUTHORIZATION
@@ -217,7 +217,7 @@
   stores: [vercel]
   required: false
   consumers: [apps/web/src/modules/observability/serverTracing.ts]
-  impact: "메모 SSR 프리패치 span 인증이 되지 않아 Grafana Tempo에 전송되지 않는다"
+  impact: "메모 경로의 Next.js 서버 요청 span 인증이 되지 않아 Grafana Tempo에 전송되지 않는다"
   note: "Grafana Cloud Access Policy 토큰을 포함한 Basic 인증 헤더 값. 서버에서만 읽는다"
 
 - name: OPENAI_API_KEY

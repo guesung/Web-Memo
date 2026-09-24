@@ -5,16 +5,7 @@ import type {
 	SpanProcessor,
 } from "@opentelemetry/sdk-trace-base";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
-import { startSpan } from "@sentry/nextjs";
-import { after } from "next/server";
-
-/** 메모 화면에서 서버 지연을 추적할 때 허용하는 경로입니다. */
-type TMemoRoute = "/memos" | "/memos/wish" | "/memos/star" | "/memos/reading";
-
-/** Supabase가 오류를 반환값에 담는 조회 결과입니다. */
-interface IFMemoQueryResult {
-	error?: unknown;
-}
+import { waitUntil } from "@vercel/functions";
 
 const MEMO_ROUTES: ReadonlySet<string> = new Set([
 	"/memos",
@@ -23,12 +14,6 @@ const MEMO_ROUTES: ReadonlySet<string> = new Set([
 	"/memos/reading",
 ]);
 
-/** 분리된 Next.js 서버 번들 사이에서 exporter를 공유하는 서버 전역 상태입니다. */
-type TTracingGlobal = typeof globalThis & {
-	__webMemoGrafanaSpanProcessor?: SpanProcessor;
-};
-
-const tracingGlobal = globalThis as TTracingGlobal;
 const warnedFailures = new Set<string>();
 
 const warnOnce = (code: string): void => {
@@ -82,72 +67,49 @@ export const createGrafanaSpanProcessors = (): SpanProcessor[] => {
 	const grafanaSpanProcessor: SpanProcessor = {
 		onStart: () => {},
 		onEnd: (span) => {
-			if (span.name !== "app.memo.prefetch") {
+			if (
+				span.attributes["next.span_type"] !== "BaseServer.handleRequest" ||
+				span.attributes["http.method"] !== "GET"
+			) {
 				return;
 			}
 
-			const route = span.attributes["app.route"];
-			if (typeof route !== "string" || !MEMO_ROUTES.has(route)) {
+			const routeTemplate =
+				span.attributes["http.route"] ?? span.attributes["next.route"];
+			if (typeof routeTemplate !== "string") {
+				return;
+			}
+
+			const route = routeTemplate.replace(/^\/\[lng\]/, "");
+			if (!MEMO_ROUTES.has(route)) {
 				return;
 			}
 
 			batchProcessor.onEnd(sanitizeMemoSpan(span, route));
+			/** 요청 span 종료 시점에는 Next after 컨텍스트가 없으므로 Vercel의 요청 수명을 연장합니다. */
+			waitUntil(flushMemoSpans(batchProcessor));
 		},
 		forceFlush: () => batchProcessor.forceFlush(),
 		shutdown: () => batchProcessor.shutdown(),
 	};
-	tracingGlobal.__webMemoGrafanaSpanProcessor = grafanaSpanProcessor;
 
 	return [grafanaSpanProcessor];
 };
 
-/** 서버의 메모 프리패치 시간을 기록하고 응답 후 OTLP 전송을 예약합니다. */
-export const traceMemoPrefetch = async <TResult extends IFMemoQueryResult>({
-	route,
-	queryFn,
-}: {
-	route: TMemoRoute;
-	queryFn: () => PromiseLike<TResult>;
-}): Promise<TResult> => {
+const flushMemoSpans = async (processor: SpanProcessor): Promise<void> => {
 	try {
-		return await startSpan(
-			{
-				name: "app.memo.prefetch",
-				op: "db.query",
-				attributes: { "app.route": route },
-			},
-			async (span) => {
-				try {
-					const result = await queryFn();
-					span.setAttribute("app.outcome", result.error ? "error" : "success");
-
-					return result;
-				} catch (error) {
-					span.setAttribute("app.outcome", "error");
-					throw error;
-				}
-			},
-		);
-	} finally {
-		if (tracingGlobal.__webMemoGrafanaSpanProcessor) {
-			after(async () => {
-				try {
-					await tracingGlobal.__webMemoGrafanaSpanProcessor?.forceFlush();
-				} catch {
-					warnOnce("grafana_otlp_export_failed");
-				}
-			});
-		}
+		await processor.forceFlush();
+	} catch {
+		warnOnce("grafana_otlp_export_failed");
 	}
 };
 
 const sanitizeMemoSpan = (span: ReadableSpan, route: string): ReadableSpan => {
 	const context = span.spanContext();
-	const outcome =
-		span.attributes["app.outcome"] === "error" ? "error" : "success";
+	const outcome = span.status.code === 2 ? "error" : "success";
 
 	return {
-		name: "app.memo.prefetch",
+		name: "app.memo.server_request",
 		kind: span.kind,
 		spanContext: () => ({
 			traceId: context.traceId,

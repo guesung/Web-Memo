@@ -86,8 +86,8 @@
 | `GA4_SERVICE_ACCOUNT_JSON` | 전체 | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/report-seo.yml`, `apps/web/src/modules/ga/config.ts` |
 | `GITHUB_DISPATCH_REPOSITORY` (선택) | 전체 | 없으면 guesung/Web-Memo로 동작한다 | `apps/web/src/modules/slack/config.ts` |
 | `GITHUB_DISPATCH_TOKEN` | 전체 | Slack에서 release.yml과 versions.yml을 실행하지 못한다 | `apps/web/src/modules/slack/config.ts` |
-| `GRAFANA_OTLP_AUTHORIZATION` (선택) | 전체 | 메모 SSR 프리패치 span 인증이 되지 않아 Grafana Tempo에 전송되지 않는다 | `apps/web/src/modules/observability/serverTracing.ts` |
-| `GRAFANA_OTLP_ENDPOINT` (선택) | 전체 | 메모 SSR 프리패치 span이 Grafana Tempo에 전송되지 않는다 | `apps/web/src/modules/observability/serverTracing.ts` |
+| `GRAFANA_OTLP_AUTHORIZATION` (선택) | 전체 | 메모 경로의 Next.js 서버 요청 span 인증이 되지 않아 Grafana Tempo에 전송되지 않는다 | `apps/web/src/modules/observability/serverTracing.ts` |
+| `GRAFANA_OTLP_ENDPOINT` (선택) | 전체 | 메모 경로의 Next.js 서버 요청 span이 Grafana Tempo에 전송되지 않는다 | `apps/web/src/modules/observability/serverTracing.ts` |
 | `NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY` | 전체 | 채널톡 위젯이 뜨지 않는다 | `apps/web/src/components/ChannelTalk/index.tsx` |
 | `NEXT_PUBLIC_FARO_URL` (선택) | 전체 | 메모 화면의 브라우저 지연 측정값이 Grafana Faro에 전송되지 않는다 | `apps/web/src/modules/observability/client.ts` |
 | `OPENAI_API_KEY` | 전체 | AI 기능 전체가 실패한다 | `apps/web/src/app/api/openai/util.ts`, `apps/web/src/app/api/openai/category/route.ts`, `apps/web/src/app/api/openai/webpage-qa/route.ts` |

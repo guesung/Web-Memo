@@ -8,6 +8,7 @@ import {
 } from "@web-memo/shared/hooks";
 import { Button } from "@web-memo/ui";
 import { ChevronsDownUp, ChevronsUpDown } from "lucide-react";
+import { holdScrollPosition } from "./scrollPositionHold";
 
 /** 목록 카드의 긴 내용을 말줄임으로 볼지 계정 설정에 저장하며 전환한다. */
 const MemoTruncateToggle = ({ lng }: LanguageType) => {
@@ -16,6 +17,7 @@ const MemoTruncateToggle = ({ lng }: LanguageType) => {
 	const { mutate: upsertSetting, isPending } = useSettingUpsertMutation();
 
 	const handleTruncateClick = () => {
+		holdScrollPosition();
 		upsertSetting({ truncate_memo_content: !truncateMemoContent });
 	};
 

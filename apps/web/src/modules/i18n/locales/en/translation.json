@@ -466,6 +466,8 @@
 		}
 	},
 	"memoSection": {
+		"expand": "Show more",
+		"collapse": "Show less",
 		"highlightCount": "Highlights ({{count}})",
 		"memo": "Memo",
 		"impression": "Impression",

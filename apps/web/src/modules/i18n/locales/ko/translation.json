@@ -461,6 +461,8 @@
 		}
 	},
 	"memoSection": {
+		"expand": "펼치기",
+		"collapse": "접기",
 		"highlightCount": "하이라이트 {{count}}개",
 		"memo": "메모",
 		"impression": "느낀 점",

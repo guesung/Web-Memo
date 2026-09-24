@@ -30,6 +30,7 @@ export const MemoHighlights = ({
 				{visibleHighlights.map((highlight) => (
 					<li
 						key={highlight.id}
+						data-clamp={isPreview || undefined}
 						className={`text-sm leading-6 whitespace-pre-wrap break-words${isPreview ? " line-clamp-2" : ""}`}
 					>
 						<mark

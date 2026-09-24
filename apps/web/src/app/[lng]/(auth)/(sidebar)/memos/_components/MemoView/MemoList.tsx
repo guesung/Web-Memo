@@ -11,6 +11,7 @@ import MemoEmptyState from "./MemoEmptyState";
 import MemoItem from "./MemoItem";
 import { MemoListSkeleton } from "./MemoListSkeleton";
 import MemoSearchEmptyState from "./MemoSearchEmptyState";
+import { restoreHeldScrollPosition } from "./scrollPositionHold";
 
 /** 메모를 브라우저 현지 작성일별 카드 그리드로 묶어 상세 화면으로 연결한다. */
 const MemoList = (props: IFMemoListProps) => {
@@ -113,14 +114,15 @@ const MemoList = (props: IFMemoListProps) => {
 						useRecycle={false}
 						gap={16}
 						align="start"
-						onRenderComplete={(event) =>
+						onRenderComplete={(event) => {
+							restoreHeldScrollPosition();
 							handleDateGroupRenderComplete(
 								group.dateKey,
 								event.items
 									.map((item) => item.element?.dataset.memoId)
 									.join(","),
-							)
-						}
+							);
+						}}
 					>
 						{group.memos.map((memo, index) => (
 							<li

@@ -29,6 +29,7 @@ import MemoItem from "./MemoItem";
 import { MemoItemSkeleton } from "./MemoItemSkeleton";
 import MemoOptionHeader from "./MemoOptionHeader";
 import MemoSearchEmptyState from "./MemoSearchEmptyState";
+import { restoreHeldScrollPosition } from "./scrollPositionHold";
 
 const CONTAINER_ID = "memo-grid";
 
@@ -243,6 +244,7 @@ export default function MemoGrid({
 				align="center"
 				placeholder={<MemoItemSkeleton />}
 				onRequestAppend={handleRequestAppend}
+				onRenderComplete={restoreHeldScrollPosition}
 			>
 				{memos.map((memo, index) => (
 					<MemoItem

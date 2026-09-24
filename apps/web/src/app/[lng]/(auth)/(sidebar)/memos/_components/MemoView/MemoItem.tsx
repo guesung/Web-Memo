@@ -6,6 +6,7 @@ import type { GetMemoResponse, HighlightRow } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
 import { Card, CardContent } from "@web-memo/ui";
 import { motion } from "framer-motion";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import type {
 	HTMLAttributes,
 	KeyboardEvent,
@@ -17,7 +18,9 @@ import { useFormContext } from "react-hook-form";
 import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
 import type { SearchFormValues } from "../MemoSearchFormProvider";
+import useIsContentClamped from "./_hooks/useIsContentClamped";
 import { MemoHighlights } from "./MemoHighlights";
+import { holdScrollPosition } from "./scrollPositionHold";
 
 /** 메모 카드 표시와 선택 속성. */
 interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
@@ -68,12 +71,28 @@ const MemoItem = ({
 	// 휴지통에는 검색 폼이 없다. 그때 useFormContext는 null을 준다.
 	const formContext = useFormContext<SearchFormValues>();
 	const [isMemoHovering, setIsMemoHovering] = useState(false);
+	const [isMemoExpanded, setIsMemoExpanded] = useState(false);
+	const canTruncate = truncateMemoContent && !isReadOnly;
+	const isContentTruncated = canTruncate && !isMemoExpanded;
+	const { containerRef, isContentClamped } =
+		useIsContentClamped(isContentTruncated);
+	const hasHiddenHighlights =
+		isContentTruncated && (highlights?.length ?? 0) > 1;
+	const isExpandButtonVisible =
+		canTruncate && (isMemoExpanded || isContentClamped || hasHiddenHighlights);
 
 	const handleMouseEnter = () => {
 		setIsMemoHovering(true);
 	};
 	const handleMouseLeave = () => {
 		setIsMemoHovering(false);
+	};
+
+	const handleExpandClick = (event: MouseEvent<HTMLButtonElement>) => {
+		// 카드 클릭은 상세를 열거나 선택을 바꾼다. 펼치기는 그 자리에서만 끝나야 한다.
+		event.stopPropagation();
+		holdScrollPosition();
+		setIsMemoExpanded((previousIsMemoExpanded) => !previousIsMemoExpanded);
 	};
 
 	const handleMemoItemClick = (event: MouseEvent<HTMLElement>) => {
@@ -132,6 +151,7 @@ const MemoItem = ({
 	return (
 		<div
 			{...props}
+			ref={containerRef}
 			id={String(memo.id)}
 			className={cn(
 				"memo-item select-none transition-all duration-300 [transform:translateZ(0)]",
@@ -192,9 +212,8 @@ const MemoItem = ({
 					{memo.memo?.trim() && (
 						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces break-all">
 							<p
-								className={cn({
-									"line-clamp-3": truncateMemoContent && !isReadOnly,
-								})}
+								data-clamp
+								className={cn({ "line-clamp-3": isContentTruncated })}
 							>
 								{memo.memo}
 							</p>
@@ -204,7 +223,7 @@ const MemoItem = ({
 						<MemoHighlights
 							highlights={highlights}
 							label={t("sideBar.highlight")}
-							isPreview={truncateMemoContent}
+							isPreview={isContentTruncated}
 							className="px-4 py-2"
 							countLabel={t("memoSection.highlightCount", {
 								count: highlights?.length ?? 0,
@@ -217,9 +236,8 @@ const MemoItem = ({
 								{t("memoSection.impression")}
 							</p>
 							<p
-								className={cn({
-									"line-clamp-2": truncateMemoContent && !isReadOnly,
-								})}
+								data-clamp
+								className={cn({ "line-clamp-2": isContentTruncated })}
 							>
 								{memo.impression}
 							</p>
@@ -231,13 +249,29 @@ const MemoItem = ({
 								{t("memoSection.actionItem")}
 							</p>
 							<p
-								className={cn({
-									"line-clamp-2": truncateMemoContent && !isReadOnly,
-								})}
+								data-clamp
+								className={cn({ "line-clamp-2": isContentTruncated })}
 							>
 								{memo.actionItem}
 							</p>
 						</CardContent>
+					)}
+					{isExpandButtonVisible && (
+						<button
+							type="button"
+							aria-expanded={isMemoExpanded}
+							onClick={handleExpandClick}
+							className="mx-4 mt-1 flex items-center gap-1 rounded text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+						>
+							{isMemoExpanded ? (
+								<ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />
+							) : (
+								<ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+							)}
+							{t(
+								isMemoExpanded ? "memoSection.collapse" : "memoSection.expand",
+							)}
+						</button>
 					)}
 					{footer ?? (
 						<MemoCardFooter

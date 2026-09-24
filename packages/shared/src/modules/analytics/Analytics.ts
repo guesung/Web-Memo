@@ -3,7 +3,10 @@ import { ANALYTICS_EXCLUDED_USER_ID } from "../../constants";
 import type { MemoTable } from "../../types";
 import { isExtension } from "../../utils";
 import { getOrCreateClientId, sendEvent } from "./analyticsTransport";
-import { buildMemoUpdateEvents } from "./memoUpdateEvents";
+import {
+	buildMemoUpdateEvents,
+	type IFMemoUpdateContext,
+} from "./memoUpdateEvents";
 import {
 	EVENT_CATEGORY,
 	type IFGa4EventParams,
@@ -180,8 +183,9 @@ class Analytics {
 	 */
 	public async trackMemoUpdate(
 		request: Partial<MemoTable["Update"]>,
+		context?: IFMemoUpdateContext,
 	): Promise<void> {
-		for (const event of buildMemoUpdateEvents(request)) {
+		for (const event of buildMemoUpdateEvents(request, context)) {
 			await this.trackEvent(event);
 		}
 	}

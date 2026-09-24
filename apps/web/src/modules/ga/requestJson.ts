@@ -1,7 +1,7 @@
 /**
  * 구글 API 호출 공통.
  *
- * @description `.github/scripts/lib/http.mjs`와 같은 역할을 웹 앱 안에서 합니다.
+ * @description `.github/scripts/shared/http.mjs`와 같은 역할을 웹 앱 안에서 합니다.
  * 실패했을 때 무엇이 왜 거절됐는지가 남지 않으면 원인을 찾을 길이 없어, 응답 본문을
  * 에러 메시지에 담습니다.
  */

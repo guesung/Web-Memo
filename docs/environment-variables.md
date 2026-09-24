@@ -31,22 +31,18 @@
 
 어떤 변수가 어디에 등록돼 있어야 하는지의 원천은 [`.github/env-manifest.yml`](../.github/env-manifest.yml)
 입니다. 아래 목록은 그 파일에서 생성한 것이라 **손으로 고치지 않습니다.** 값을 추가·삭제·이동하면
-매니페스트를 고치고 `node .github/scripts/check-env-manifest.mjs --write`로 갱신합니다.
+매니페스트를 고치고 `node .github/scripts/env/check-env-manifest.mjs --write`로 갱신합니다.
 
 두 가지가 자동으로 대조합니다.
 
-- **PR CI** (`env-manifest.yml`): 코드·워크플로가 읽는 이름, `.env` 파일의 키, 이 목록이 매니페스트와
+- **PR CI** (`audit-env-manifest.yml`): 코드·워크플로가 읽는 이름, `.env` 파일의 키, 이 목록이 매니페스트와
   같은지 봅니다. 어긋나면 PR이 실패합니다. 토큰이 필요 없습니다.
-- **등록 현황 감사** (`env-registry-audit.yml`): GitHub·Vercel·Supabase에 **실제로 등록된 이름**을
+- **등록 현황 감사** (`audit-env-registry.yml`): GitHub·Vercel·Supabase에 **실제로 등록된 이름**을
   매니페스트와 대조합니다. 매일 돌아 다르면 Slack으로 알리고, **PR에서도 돌아** 등록이 빠진 값이
   있으면 체크를 실패시킵니다. 코드보다 시크릿을 먼저 등록하는 것은 정상적인 순서라, 매니페스트에 없는
   등록과 선언하지 않은 환경은 경고 주석으로만 남깁니다. 조회 토큰이 없는 저장소는 비교할 수 없으므로
   실패가 아니라 "미조회" 경고입니다. 이름만 비교하므로 **같은 이름이 두 곳에 있을 때 값이
   같은지는 확인하지 못합니다.**
-- **Supabase 운영 감사** (`supabase-audit.yml`): 프로젝트와 서비스의 건강 상태, migration,
-  Edge Function 배포·최근 오류, secret 이름, Cron·trigger·Database Webhook·Vault key 이름을
-  `.github/supabase-audit-manifest.json`과 대조합니다. 정확한 Edge Runtime/Deno 버전은 공식 API에서
-  제공하지 않아 관측 불가 경고로 남깁니다. 값·URL·명령·원문 로그는 조회하거나 출력하지 않습니다.
 
 <!-- env-manifest:start -->
 
@@ -54,31 +50,31 @@
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
-| `APP_ID` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/cleanup-unused.yml`, `.github/workflows/env-registry-audit.yml` |
-| `APP_PRIVATE_KEY` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/cleanup-unused.yml`, `.github/workflows/env-registry-audit.yml` |
-| `CLAUDE_CODE_OAUTH_TOKEN` | 주간 리팩토링 점검과 SEO AI 리포트가 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신한다. 구독 토큰이라 만료·한도 소진으로도 실패한다 | `.github/workflows/refactor-audit.yml`, `.github/workflows/seo-monitor.yml` |
+| `APP_ID` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml` |
+| `APP_PRIVATE_KEY` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml` |
+| `CLAUDE_CODE_OAUTH_TOKEN` | 주간 리팩토링 점검과 SEO AI 리포트가 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신한다. 구독 토큰이라 만료·한도 소진으로도 실패한다 | `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml` |
 | `CLIENT_ID` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `CLIENT_SECRET` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `EXPO_ANDROID_SERVICE_ACCOUNT_JSON` | Google Play 내부 테스트 제출과 현황 조회가 실패한다 | `.github/workflows/cd-app.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `EXPO_ASC_API_KEY_P8` | TestFlight 제출과 App Store 현황 조회가 실패한다 | `.github/workflows/cd-app.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `EXPO_TOKEN` | EAS 로그인이 실패해 앱 빌드가 멈춘다 | `.github/workflows/cd-app.yml` |
-| `GA_SHEET_ID` (선택) | 주간 GA 수치가 Google Sheets에 쌓이지 않는다(Slack 리포트는 그대로 가고 경고만 남는다) | `.github/workflows/weekly-ga-report.yml` |
-| `GA4_SERVICE_ACCOUNT_JSON` | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/daily-ga-report.yml`, `.github/workflows/weekly-ga-report.yml`, `.github/workflows/seo-monitor.yml`, `apps/web/src/modules/ga/config.ts` |
-| `GSC_SERVICE_ACCOUNT_JSON` (선택) | 없으면 공개 SEO 검사는 계속 실행되지만 Search Console 색인 상태와 주간 검색 성과 조회를 건너뛴다 | `.github/workflows/seo-monitor.yml` |
-| `NOTION_TOKEN` | 주간 리팩토링 점검 결과가 노션 작업 카드로 만들어지지 않는다 | `.github/workflows/refactor-audit.yml` |
+| `GA_SHEET_ID` (선택) | 주간 GA 수치가 Google Sheets에 쌓이지 않는다(Slack 리포트는 그대로 가고 경고만 남는다) | `.github/workflows/report-ga-weekly.yml` |
+| `GA4_SERVICE_ACCOUNT_JSON` | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/report-seo.yml`, `apps/web/src/modules/ga/config.ts` |
+| `GSC_SERVICE_ACCOUNT_JSON` (선택) | 없으면 공개 SEO 검사는 계속 실행되지만 Search Console 색인 상태와 주간 검색 성과 조회를 건너뛴다 | `.github/workflows/report-seo.yml` |
+| `NOTION_TOKEN` | 주간 리팩토링 점검 결과가 노션 작업 카드로 만들어지지 않는다 | `.github/workflows/audit-refactor.yml` |
 | `REFRESH_TOKEN` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `SENTRY_AUTH_TOKEN` | Sentry 소스맵 업로드가 조용히 실패한다. 빌드는 통과하므로 스택 트레이스가 난독화된 채 보여야 알게 된다 | `.github/workflows/cd-extension.yml`, `apps/web/next.config.mjs`, `packages/vite-config/lib/withPageConfig.mjs` |
-| `SEO_SHEET_ID` (선택) | SEO·GSC 장기 이력이 Google Sheets에 쌓이지 않는다(공개 SEO 검사와 원본 아티팩트는 유지된다) | `.github/workflows/seo-monitor.yml` |
-| `SLACK_BOT_TOKEN` | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts`, `.github/workflows/seo-monitor.yml` |
+| `SEO_SHEET_ID` (선택) | SEO·GSC 장기 이력이 Google Sheets에 쌓이지 않는다(공개 SEO 검사와 원본 아티팩트는 유지된다) | `.github/workflows/report-seo.yml` |
+| `SLACK_BOT_TOKEN` | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts`, `.github/workflows/report-seo.yml` |
 | `SLACK_CHANNEL_ID` | 머지 스레드가 생기지 않고 웹훅 알림으로 폴백한다 | `.github/workflows/ci.yml` |
-| `SLACK_REPORT_CHANNEL_ID` | SEO AI 리포트를 스레드로 보내지 못하고 기존 기계 판정 알림으로 대신한다. 봇(SLACK_BOT_TOKEN)이 이 채널에 초대돼 있어야 한다 | `.github/workflows/seo-monitor.yml` |
-| `SLACK_REPORT_WEBHOOK_URL` | GA 리포트, 주간 리팩토링 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다 | `.github/workflows/daily-ga-report.yml`, `.github/workflows/weekly-ga-report.yml`, `.github/workflows/refactor-audit.yml`, `.github/workflows/seo-monitor.yml` |
-| `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트·Supabase 감사 실패 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/daily-ga-report.yml`, `.github/workflows/weekly-ga-report.yml`, `.github/workflows/refactor-audit.yml`, `.github/workflows/notify-release.yml`, `.github/workflows/versions.yml`, `.github/workflows/env-registry-audit.yml`, `.github/workflows/seo-monitor.yml`, `.github/workflows/supabase-audit.yml` |
+| `SLACK_REPORT_CHANNEL_ID` | SEO AI 리포트를 스레드로 보내지 못하고 기존 기계 판정 알림으로 대신한다. 봇(SLACK_BOT_TOKEN)이 이 채널에 초대돼 있어야 한다 | `.github/workflows/report-seo.yml` |
+| `SLACK_REPORT_WEBHOOK_URL` | GA 리포트, 주간 리팩토링 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다 | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml` |
+| `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/versions.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/report-seo.yml` |
 | `STAGING_WEB_URL_WITHOUT_PROTOCOL` | 스테이징 배포에 alias 도메인이 붙지 않는다 | `.github/workflows/cd-web.yml` |
-| `SUPABASE_ACCESS_TOKEN` | 등록 현황 감사가 Supabase secrets를 조회하지 못하고 운영 감사가 실패한다 | `.github/workflows/env-registry-audit.yml`, `.github/workflows/supabase-audit.yml` |
-| `TURBO_TEAM` | Turborepo 원격 캐시 팀을 못 찾아 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/cleanup-unused.yml`, `.github/workflows/e2e.yml` |
-| `TURBO_TOKEN` | Turborepo 원격 캐시를 못 써 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/cleanup-unused.yml`, `.github/workflows/e2e.yml` |
-| `VERCEL_TOKEN` | vercel pull, build, deploy, alias가 인증에 실패해 웹 배포가 멈추고, e2e가 웹 서버 환경 변수를 받지 못한다 | `.github/workflows/cd-web.yml`, `.github/workflows/e2e.yml`, `.github/workflows/env-registry-audit.yml` |
+| `SUPABASE_ACCESS_TOKEN` | 등록 현황 감사가 Supabase secrets를 조회하지 못하고 Supabase 인벤토리 문서가 갱신되지 않는다 | `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml` |
+| `TURBO_TEAM` | Turborepo 원격 캐시 팀을 못 찾아 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml` |
+| `TURBO_TOKEN` | Turborepo 원격 캐시를 못 써 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml` |
+| `VERCEL_TOKEN` | vercel pull, build, deploy, alias가 인증에 실패해 웹 배포가 멈추고, e2e가 웹 서버 환경 변수를 받지 못한다 | `.github/workflows/cd-web.yml`, `.github/workflows/e2e.yml`, `.github/workflows/audit-env-registry.yml` |
 
 ### Vercel 프로젝트 환경변수 (15개)
 
@@ -87,14 +83,14 @@
 | `BUILD_ENV` | production, preview | Git 연동 빌드가 development로 구워져 운영에 localhost:3000이 실린다. tsup.config.ts의 가드가 빌드를 실패시켜 막는다 | `packages/env/src/config.ts`, `packages/env/tsup.config.ts`, `apps/web/next.config.mjs`, `packages/zipper/index.ts` |
 | `ENABLE_EXPERIMENTAL_COREPACK` | 전체 | corepack이 꺼져 packageManager의 pnpm 버전이 무시된다 | 코드 밖 |
 | `GA4_PROPERTY_ID` (선택) | 전체 | 없으면 코드에 적힌 기본 속성 ID로 동작한다 | `apps/web/src/modules/ga/config.ts` |
-| `GA4_SERVICE_ACCOUNT_JSON` | 전체 | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/daily-ga-report.yml`, `.github/workflows/weekly-ga-report.yml`, `.github/workflows/seo-monitor.yml`, `apps/web/src/modules/ga/config.ts` |
+| `GA4_SERVICE_ACCOUNT_JSON` | 전체 | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/report-seo.yml`, `apps/web/src/modules/ga/config.ts` |
 | `GITHUB_DISPATCH_REPOSITORY` (선택) | 전체 | 없으면 guesung/Web-Memo로 동작한다 | `apps/web/src/modules/slack/config.ts` |
 | `GITHUB_DISPATCH_TOKEN` | 전체 | Slack에서 release.yml과 versions.yml을 실행하지 못한다 | `apps/web/src/modules/slack/config.ts` |
 | `NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY` | 전체 | 채널톡 위젯이 뜨지 않는다 | `apps/web/src/components/ChannelTalk/index.tsx` |
 | `OPENAI_API_KEY` | 전체 | AI 기능 전체가 실패한다 | `apps/web/src/app/api/openai/util.ts`, `apps/web/src/app/api/openai/category/route.ts`, `apps/web/src/app/api/openai/webpage-qa/route.ts` |
 | `SENTRY_AUTH_TOKEN` | 전체 | Sentry 소스맵 업로드가 조용히 실패한다. 빌드는 통과하므로 스택 트레이스가 난독화된 채 보여야 알게 된다 | `.github/workflows/cd-extension.yml`, `apps/web/next.config.mjs`, `packages/vite-config/lib/withPageConfig.mjs` |
 | `SENTRY_WEBHOOK_SECRET` | production | Sentry 웹훅의 서명을 검증하지 못해 에러 알림이 Slack으로 릴레이되지 않는다 | `apps/web/src/modules/sentry/config.ts` |
-| `SLACK_BOT_TOKEN` | 전체 | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts`, `.github/workflows/seo-monitor.yml` |
+| `SLACK_BOT_TOKEN` | 전체 | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts`, `.github/workflows/report-seo.yml` |
 | `SLACK_SENTRY_ALERT_CHANNEL` | 전체 | Sentry 알림을 보낼 채널을 몰라 릴레이가 실패한다 | `apps/web/src/modules/sentry/config.ts` |
 | `SLACK_SIGNING_SECRET` | 전체 | Slack 요청 서명을 검증하지 못해 배포 버튼과 슬래시 커맨드가 실패한다 | `apps/web/src/modules/slack/config.ts` |
 | `UPSTASH_REDIS_REST_TOKEN` | 전체 | OpenAI API 레이트 리밋이 조용히 꺼진다 | `apps/web/src/app/api/openai/ratelimit.ts` |
@@ -306,7 +302,7 @@ pnpm env:pull                        # 저장소 루트에서 실행. apps/web/.
   pull로 받을 수 없지만, Vercel은 development 대상을 sensitive로 만들 수 없기 때문입니다. 세 환경을 같게
   두면 production 값도 development 등록본으로 읽을 수 있다는 뜻이니 접근 권한 범위를 그렇게 다루세요.
 - **`GA4_SERVICE_ACCOUNT_JSON`은** 서비스 계정 키 JSON 전문을 한 줄로 넣습니다. 같은 이름의 값이
-  GitHub Secrets에도 있지만(§5, `daily-ga-report.yml`이 읽습니다) 서로 다른 곳이라 **양쪽에 각각
+  GitHub Secrets에도 있지만(§5, `report-ga-daily.yml`이 읽습니다) 서로 다른 곳이라 **양쪽에 각각
   등록해야 합니다.** 값이 없으면 실패하지 않고 `/api/admin/ga/active-users`가 `connected: false`를
   돌려주며, 대시보드는 그래프 대신 "연결 없음"을 그립니다.
 - **e2e도 같은 방식입니다.** `e2e.yml`이 `VERCEL_TOKEN`으로 development 값을 받아
@@ -403,19 +399,19 @@ Protocol로 직접 이벤트를 보내는 현재 구조상 이미 번들에 인�
 하나도 없습니다.
 
 등록된 목록과 용도는 위 [전체 목록](#전체-목록)의 GitHub Secrets 표가 원천이고,
-실제 등록 상태는 `gh secret list -R guesung/Web-Memo`나 스케줄 감사(`env-registry-audit.yml`)로
+실제 등록 상태는 `gh secret list -R guesung/Web-Memo`나 스케줄 감사(`audit-env-registry.yml`)로
 확인합니다.
 
 같은 이름이 Vercel에도 있는 `SLACK_BOT_TOKEN`은 Vercel 환경변수와 같은 값(`chat:write` 스코프)이지만
 서로 읽지 못하므로 따로 등록합니다. `SLACK_CHANNEL_ID`는 웹훅 URL에서 얻을 수 없어 채널 ID를 직접 넣습니다.
 
-감사 워크플로가 GitHub Secrets 목록을 읽으려면 `GITHUB_TOKEN`으로는 부족합니다. 이미 `cleanup-unused.yml`이
+감사 워크플로가 GitHub Secrets 목록을 읽으려면 `GITHUB_TOKEN`으로는 부족합니다. 이미 `chore-cleanup-unused.yml`이
 쓰는 GitHub App(`APP_ID`, `APP_PRIVATE_KEY`)에 **Secrets: read** 권한을 주고, Supabase는 대시보드에서 발급한
 토큰을 `SUPABASE_ACCESS_TOKEN`으로 등록해야 합니다. 없으면 해당 저장소만 "미조회"로 남습니다.
 
 `GITHUB_TOKEN`은 GitHub Actions가 자동으로 제공하므로 등록하지 않습니다.
 
-`refactor-audit.yml`(주간 리팩토링 점검)은 시크릿을 둘 더 읽습니다.
+`audit-refactor.yml`(주간 리팩토링 점검)은 시크릿을 둘 더 읽습니다.
 - `CLAUDE_CODE_OAUTH_TOKEN`은 API 키가 아니라 **Claude Code 구독 토큰**입니다. 로컬에서 `claude setup-token`으로
   발급합니다. 구독 한도를 다른 작업과 나눠 쓰고 토큰에 만료가 있어서, 한도 소진이나 만료로 점검이 실패할 수
   있습니다. 실패는 `SLACK_WEBHOOK_URL` 채널로 옵니다.
@@ -428,10 +424,10 @@ Protocol로 직접 이벤트를 보내는 현재 구조상 이미 번들에 인�
 두 Slack 웹훅은 채널이 다릅니다. `SLACK_WEBHOOK_URL`은 빌드·배포·릴리스 결과가 가는
 기존 CI 채널이고, `SLACK_REPORT_WEBHOOK_URL`은 GA 리포트와 주간 리팩토링 점검 결과만 가는 전용 채널입니다.
 성격이 달라 나눴습니다 — 리포트가 매일 쌓이면 즉시 봐야 하는 배포 실패 알림을 밀어냅니다.
-**다만 `daily-ga-report.yml`의 실패 알림은 일부러 `SLACK_WEBHOOK_URL`로 보냅니다.**
+**다만 `report-ga-daily.yml`의 실패 알림은 일부러 `SLACK_WEBHOOK_URL`로 보냅니다.**
 리포트 채널 웹훅 자체가 죽으면 실패 알림도 같이 침묵하기 때문에, 경로를 갈라 둔 것입니다.
 
-`GA4_PROPERTY_ID`는 시크릿이 아니라 `daily-ga-report.yml`에 값을 그대로 적습니다(`471860782`).
+`GA4_PROPERTY_ID`는 시크릿이 아니라 `report-ga-daily.yml`에 값을 그대로 적습니다(`471860782`).
 비밀이 아니고, 시크릿으로 두면 값이 안 보여 디버깅만 어려워집니다.
 GA4 콘솔 → 관리 → 속성 설정 상단의 **숫자** 속성 ID이며,
 `packages/shared/src/constants/Analytics.ts`의 `G-6HHNP7KJM5`는 측정 ID라 Data API에 넣으면 403/404가 납니다.

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../fixtures/web";
 
 /** 생성 코드와 독립적으로 명시한 색인 대상 경로입니다. */
 const PUBLIC_PATHS = [
@@ -18,6 +18,9 @@ const PUBLIC_PATHS = [
 
 /** 로그인 여부와 무관하게 첫 응답부터 색인을 막아야 하는 HTML 경로입니다. */
 const NOINDEX_PATHS = ["login", "memos", "highlights", "admin", "uninstall"];
+
+// 비로그인 상태의 화면을 검증하므로 setup이 저장한 로그인 세션을 쓰지 않는다.
+test.use({ storageState: { cookies: [], origins: [] } });
 
 test.describe("공개 검색 계약", () => {
 	test("sitemap은 정확한 공개 URL과 왕복 언어 대응만 제공한다.", async ({

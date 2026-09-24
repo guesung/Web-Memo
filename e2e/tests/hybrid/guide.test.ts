@@ -1,5 +1,5 @@
 import { PATHS } from "@web-memo/shared/constants";
-import { expect, test } from "../fixtures";
+import { expect, test } from "../fixtures/extension";
 import { LANGUAGE } from "../lib";
 
 const isCI = process.env.CI === "true";

@@ -1,6 +1,6 @@
 import { PATHS } from "@web-memo/shared/constants";
-import { expect, test } from "../fixtures";
-import { gotoSafely, LANGUAGE, login, skipGuide } from "../lib";
+import { expect, test } from "../fixtures/web";
+import { gotoSafely, LANGUAGE } from "../lib";
 import {
 	createMockHighlight,
 	MockSupabaseStore,
@@ -16,9 +16,6 @@ test.describe("하이라이트 페이지 (Mocked)", () => {
 		store = new MockSupabaseStore();
 
 		await setupSupabaseMocks(page, store);
-
-		await login(page);
-		await skipGuide(page);
 	});
 
 	test("사이드바에서 하이라이트 페이지로 이동한다.", async ({ page }) => {

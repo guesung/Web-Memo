@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../fixtures/web";
 
 /** 구현의 경로 상수와 독립적으로 관리하는 공개 검색 페이지 목록입니다. */
 const PUBLIC_PATHS = [
@@ -15,6 +15,9 @@ const PUBLIC_PATHS = [
 	"use-cases/tech-article",
 	"use-cases/youtube-notes",
 ] as const;
+
+// 비로그인 상태의 화면을 검증하므로 setup이 저장한 로그인 세션을 쓰지 않는다.
+test.use({ storageState: { cookies: [], origins: [] } });
 
 test.describe("공개 페이지 공유 메타데이터", () => {
 	for (const language of ["ko", "en"]) {

@@ -1,4 +1,4 @@
-import { expect, test } from "../fixtures";
+import { expect, test } from "../fixtures/extension";
 import {
 	cleanupTestData,
 	E2E_SIDE_PANEL_HOST_URL,

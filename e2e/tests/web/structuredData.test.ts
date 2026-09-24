@@ -1,4 +1,7 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../fixtures/web";
+
+// 비로그인 상태의 화면을 검증하므로 setup이 저장한 로그인 세션을 쓰지 않는다.
+test.use({ storageState: { cookies: [], origins: [] } });
 
 test.describe("소개 페이지 구조화 데이터", () => {
 	for (const language of ["ko", "en"]) {

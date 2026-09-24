@@ -1,6 +1,6 @@
 import { PATHS } from "@web-memo/shared/constants";
-import { expect, test } from "../fixtures";
-import { gotoSafely, LANGUAGE, login, skipGuide } from "../lib";
+import { expect, test } from "../fixtures/web";
+import { gotoSafely, LANGUAGE } from "../lib";
 import {
 	createMockMemo,
 	MockSupabaseStore,
@@ -28,8 +28,6 @@ test.describe("메모 무한 스크롤 (Mocked)", () => {
 
 		await setupSupabaseMocks(page, store);
 
-		await login(page);
-		await skipGuide(page);
 		await gotoSafely({
 			page,
 			url: `${LANGUAGE}${PATHS.memos}`,
@@ -112,8 +110,6 @@ test.describe("날짜별 메모 그리드 페이지 연결 (Mocked)", () => {
 		}
 
 		await setupSupabaseMocks(page, store);
-		await login(page);
-		await skipGuide(page);
 		await gotoSafely({
 			page,
 			url: `${LANGUAGE}${PATHS.memos}?view=list`,

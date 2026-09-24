@@ -8,7 +8,7 @@
 #     매일 돌아 다르면 Slack으로 알리고, PR에서도 돌아 등록이 빠진 값이 있으면 체크를 실패시킵니다.
 #
 # 값을 추가·삭제·이동했다면 이 파일을 함께 고치고 아래 명령으로 문서 표를 갱신하세요.
-#   node .github/scripts/check-env-manifest.mjs --write
+#   node .github/scripts/env/check-env-manifest.mjs --write
 #
 # 필드
 #   kind       secret(비밀) | config(공개 설정값) | platform(플랫폼이 주입, 등록 안 함) | flag(코드가 읽지 않는 플랫폼 플래그)

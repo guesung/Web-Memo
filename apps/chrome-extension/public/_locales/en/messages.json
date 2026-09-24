@@ -385,5 +385,15 @@
 	},
 	"highlight_bubble_disabled_all_description": {
 		"message": "You can turn it back on in settings"
+	},
+	"category_create_named": {
+		"message": "Create \"$NAME$\"",
+		"description": "Create a new category from the search text in the popup",
+		"placeholders": {
+			"name": {
+				"content": "$1",
+				"example": "Reading"
+			}
+		}
 	}
 }

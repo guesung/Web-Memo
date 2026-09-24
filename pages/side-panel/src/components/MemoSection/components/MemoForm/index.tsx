@@ -8,7 +8,14 @@ import { useSettingQuery, useSupabaseUserQuery } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
-import { cn, Input, Textarea, ToastAction, toast } from "@web-memo/ui";
+import {
+	badgeVariants,
+	cn,
+	Input,
+	Textarea,
+	ToastAction,
+	toast,
+} from "@web-memo/ui";
 import {
 	BookOpenIcon,
 	HeartIcon,
@@ -91,6 +98,8 @@ function MemoFormContent() {
 		handleCategorySelect,
 		handleCategoryRemove,
 		handleCategoryListClose,
+		handleCategoryCreate,
+		isCategoryCreating,
 	} = useMemoCategory({
 		textareaRef,
 		onCategoryChange: updateCategory,
@@ -323,12 +332,6 @@ function MemoFormContent() {
 						<SaveStatus isSaving={isSaving} memo={watch("memo")} />
 					</div>
 					<div className="flex items-center gap-2">
-						{isSuggestingCategory && (
-							<div className="flex items-center gap-1 text-xs text-muted-foreground">
-								<Loader2Icon size={12} className="animate-spin" />
-								{I18n.get("category_suggesting")}
-							</div>
-						)}
 						{currentCategory ? (
 							<CategoryBadge
 								category={currentCategory}
@@ -336,6 +339,18 @@ function MemoFormContent() {
 								onBadgeButtonClick={handleCategoryButtonClick}
 								onRemoveButtonClick={handleCategoryRemoveClick}
 							/>
+						) : isSuggestingCategory ? (
+							// 추천 중에는 칩 자리를 대신해, 곧 카테고리가 붙는다는 걸 같은 자리에서 보여 준다.
+							<div
+								data-testid="category-suggesting"
+								className={cn(
+									badgeVariants({ variant: "outline" }),
+									"text-muted-foreground gap-1 border-dashed px-2 py-0.5",
+								)}
+							>
+								<Loader2Icon size={12} className="animate-spin" />
+								{I18n.get("category_suggesting")}
+							</div>
 						) : (
 							<CategoryAddChip
 								chipRef={categoryAddChipRef}
@@ -356,6 +371,8 @@ function MemoFormContent() {
 					onCategorySelect={handleCategorySelect}
 					onEscapeKeyDown={handleCategoryListClose}
 					onWebLinkSelect={handleCategoryListClose}
+					onCategoryCreate={handleCategoryCreate}
+					isCategoryCreating={isCategoryCreating}
 				/>
 			)}
 		</>

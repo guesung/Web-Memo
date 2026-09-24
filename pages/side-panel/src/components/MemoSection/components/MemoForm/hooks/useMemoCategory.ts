@@ -1,8 +1,14 @@
 import type { MemoInput } from "@src/types/Input";
-import { useCategoryQuery } from "@web-memo/shared/hooks";
+import {
+	useCategoryPostMutation,
+	useCategoryQuery,
+} from "@web-memo/shared/hooks";
 import type { TCategoryChangeSource } from "@web-memo/shared/modules/analytics";
 import type { CategoryRow } from "@web-memo/shared/types";
-import { getCursorPosition } from "@web-memo/shared/utils";
+import {
+	generateRandomPastelColor,
+	getCursorPosition,
+} from "@web-memo/shared/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
@@ -22,6 +28,8 @@ export default function useMemoCategory({
 }: UseMemoCategoryProps) {
 	const { watch, setValue, getValues } = useFormContext<MemoInput>();
 	const { categories, refetch: refetchCategories } = useCategoryQuery();
+	const { mutateAsync: createCategory, isPending: isCategoryCreating } =
+		useCategoryPostMutation();
 	const [categoryPopupOpenSource, setCategoryPopupOpenSource] =
 		useState<TCategoryPopupOpenSource | null>(null);
 	const [categoryInputPosition, setCategoryInputPosition] =
@@ -198,6 +206,30 @@ export default function useMemoCategory({
 		}, 0);
 	};
 
+	/**
+	 * 팝업 검색어로 카테고리를 만들고 곧바로 메모에 지정한다. 색은 AI 추천 경로와 같은 규칙(랜덤 파스텔)이고, 웹 설정에서 바꾼다.
+	 */
+	const handleCategoryCreate = async (categoryName: string) => {
+		if (isCategoryCreating) {
+			return;
+		}
+
+		try {
+			const result = await createCategory({
+				name: categoryName,
+				color: generateRandomPastelColor(),
+			});
+			const createdCategory = result.data?.[0];
+			if (!createdCategory) {
+				return;
+			}
+
+			handleCategorySelect(createdCategory);
+		} catch {
+			// 실패는 MutationCache가 토스트로 알린다. 팝업은 열어 둬 다시 시도할 수 있게 한다.
+		}
+	};
+
 	const handleCategoryRemove = () => {
 		onCategoryChange(null, "button");
 
@@ -228,6 +260,8 @@ export default function useMemoCategory({
 		handleKeyDown,
 		handleCategoryButtonClick,
 		handleCategorySelect,
+		handleCategoryCreate,
+		isCategoryCreating,
 		handleCategoryRemove,
 		handleCategoryListClose,
 	};

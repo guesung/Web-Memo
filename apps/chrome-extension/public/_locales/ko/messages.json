@@ -385,5 +385,15 @@
 	},
 	"highlight_bubble_disabled_all_description": {
 		"message": "설정에서 다시 켤 수 있어요"
+	},
+	"category_create_named": {
+		"message": "'$NAME$' 만들기",
+		"description": "팝업에서 검색어로 새 카테고리 만들기",
+		"placeholders": {
+			"name": {
+				"content": "$1",
+				"example": "독서"
+			}
+		}
 	}
 }

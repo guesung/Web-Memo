@@ -11,7 +11,8 @@ import {
 	CommandItem,
 	CommandList,
 } from "@web-memo/ui";
-import { CheckIcon, ExternalLinkIcon } from "lucide-react";
+import { CheckIcon, ExternalLinkIcon, PlusIcon } from "lucide-react";
+import { useState } from "react";
 import type { TCategoryPopupPosition } from "../hooks";
 
 /** 카테고리 선택 팝업 props */
@@ -32,6 +33,10 @@ interface IFCategoryCommandPopupProps {
 	onEscapeKeyDown: () => void;
 	/** 웹 설정 링크 선택. 웹에서 만든 카테고리를 다시 열 때 refetch로 받도록 팝업을 닫는다 */
 	onWebLinkSelect: () => void;
+	/** 검색어로 새 카테고리 만들기 */
+	onCategoryCreate: (categoryName: string) => void;
+	/** 카테고리를 만드는 중. 두 번 눌러 중복으로 생기지 않게 만들기 항목을 막는다 */
+	isCategoryCreating: boolean;
 }
 
 /**
@@ -40,7 +45,17 @@ interface IFCategoryCommandPopupProps {
  * 빈 상태 문구와 웹 설정 페이지 링크를 보여준다. 사용처: MemoForm/index.tsx
  */
 const CategoryCommandPopup = (props: IFCategoryCommandPopupProps) => {
+	const [searchText, setSearchText] = useState("");
 	const hasNoCategories = !props.categories?.length;
+	const trimmedSearchText = searchText.trim();
+	const hasSameNameCategory = Boolean(
+		props.categories?.some(
+			(category) =>
+				category.name.toLowerCase() === trimmedSearchText.toLowerCase(),
+		),
+	);
+	const isCreateItemVisible =
+		trimmedSearchText.length > 0 && !hasSameNameCategory;
 
 	const handleCreateOnWebSelect = () => {
 		analytics.trackEvent({
@@ -62,6 +77,8 @@ const CategoryCommandPopup = (props: IFCategoryCommandPopupProps) => {
 				<CommandInput
 					ref={props.commandInputRef}
 					placeholder={I18n.get("search_category")}
+					value={searchText}
+					onValueChange={setSearchText}
 					onKeyDown={(event) => {
 						if (event.key === "Escape") {
 							props.onEscapeKeyDown();
@@ -109,6 +126,21 @@ const CategoryCommandPopup = (props: IFCategoryCommandPopupProps) => {
 								))}
 							</CommandGroup>
 						</>
+					)}
+					{isCreateItemVisible && (
+						<CommandItem
+							forceMount
+							value="create-category-from-search"
+							disabled={props.isCategoryCreating}
+							onSelect={() => props.onCategoryCreate(trimmedSearchText)}
+							data-testid="category-create-item"
+							className="m-1"
+						>
+							<PlusIcon aria-hidden="true" />
+							<span className="truncate">
+								{I18n.get("category_create_named", trimmedSearchText)}
+							</span>
+						</CommandItem>
 					)}
 				</CommandList>
 			</Command>

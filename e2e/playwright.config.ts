@@ -12,7 +12,9 @@ export default defineConfig({
 	// CI 러너는 코어가 적어 기본값으로도 2개라 그대로 둔다.
 	workers: process.env.CI ? undefined : 4,
 	reporter: [["html", { open: "on-failure" }]],
-	// `*.real.test.ts`는 모킹 없이 실제 Supabase를 치므로, 실행이 끝나면 남은 메모·카테고리를 지운다.
+	// 실행 ID(E2E_RUN_ID)를 정해 워커와 teardown이 같은 네임스페이스를 보게 한다.
+	globalSetup: "./globalSetup.ts",
+	// `*.real.test.ts`는 모킹 없이 실제 Supabase를 치므로, 실행이 끝나면 이번 실행이 남긴 메모·카테고리를 지운다.
 	globalTeardown: "./globalTeardown.ts",
 	webServer: {
 		command: "pnpm run -w dev:web:preview",

@@ -266,7 +266,7 @@ Slack에서 `/배포현황`(등록한 슬래시 커맨드)을 실행하면 `vers
 
 **대신 그 빌드 산출물은 릴리스에서 그대로 재사용합니다.** 버튼을 눌렀을 때
 `release.yml`은 배포할 커밋에서 CI가 올려둔 아티팩트를 먼저 찾고
-(`.github/scripts/find-reusable-artifact.sh`), 있으면 내려받아 제출만 합니다.
+(`.github/scripts/deploy/find-reusable-artifact.sh`), 있으면 내려받아 제출만 합니다.
 앱은 플랫폼당 약 30분, 확장은 약 3분을 아낍니다.
 
 - **앱 아티팩트에는 프로파일이 이름에 붙습니다** (`ios-build-ci` /
@@ -306,7 +306,7 @@ Slack [🌐 웹 배포] 클릭
 ```
 
 - **미승격 배포는 메타 `releaseSha`로 찾습니다.** READY이고 상용 대상이며 그 커밋의 것 중 가장
-  나중에 만든 하나입니다(`.github/scripts/lib/staged-deployment.mjs`). 자동으로 붙는
+  나중에 만든 하나입니다(`.github/scripts/deploy/staged-deployment.mjs`). 자동으로 붙는
   `githubCommitSha`·`githubCommitRef`는 체크아웃 방식에 따라 값이 달라져(`HEAD`로 찍히는
   배포가 있습니다) 쓰지 않습니다.
 - **못 찾는 경우는 기존처럼 빌드합니다.** 웹 변경이 없어 CI가 웹을 안 돌린 커밋, 최근 100건 밖의
@@ -531,19 +531,19 @@ App Store Connect의 키 ID·발급자 ID·앱 ID는 시크릿이 아니라
 | `.github/workflows/versions.yml` | 배포 현황만 조회해 게시 |
 | `.github/workflows/release.yml` | 실제 스토어 제출 (버튼이 이걸 실행) |
 | `.github/workflows/notify-release.yml` | 릴리스 타깃 하나의 결과를 Slack에 게시 (release.yml이 타깃별로 호출) |
-| `.github/scripts/notify-release-result.mjs` | 릴리스 성패를 타깃별로 Slack에 보고 |
-| `.github/scripts/notify-staging-deploy.mjs` | 테스트 서버 배포 성패를 Slack에 보고 |
-| `.github/scripts/notify-thread-root.mjs` | 머지 스레드의 루트 메시지를 만들고 `thread_ts`를 잡 output으로 냄 |
-| `.github/scripts/notify-thread-reply.mjs` | 타깃 하나(웹·확장·앱)의 빌드 결과를 스레드 댓글로 보고 |
-| `.github/scripts/lib/slack-api.mjs` | `chat.postMessage` 호출, 스레드 우선·웹훅 폴백 전송 |
-| `.github/scripts/lib/thread-messages.mjs` | 루트·타깃 댓글의 페이로드 조립과 댓글 여부 판정 |
-| `.github/scripts/lib/store-versions.mjs` | 스토어 4곳 버전 조회 |
-| `.github/scripts/lib/repo-versions.mjs` | 레포에 커밋된 빌드 버전 읽기 |
-| `.github/scripts/lib/run-context.mjs` | 워크플로 실행 맥락(환경변수·커밋 제목·머지 원본 PR) 읽기 |
-| `.github/scripts/lib/slack-blocks.mjs` | Slack 메시지·버튼 조립 |
-| `.github/scripts/lib/run-artifacts.mjs` | 실행의 아티팩트 조회, 확장 다운로드 링크 판정 |
-| `.github/scripts/comment-pr-extension.mjs` | PR에서 빌드한 확장의 다운로드 링크를 PR 댓글로 게시 |
-| `.github/scripts/lib/pr-comments.mjs` | PR 확장 빌드 댓글의 본문 조립과 upsert |
+| `.github/scripts/deploy/notify-release-result.mjs` | 릴리스 성패를 타깃별로 Slack에 보고 |
+| `.github/scripts/deploy/notify-staging-deploy.mjs` | 테스트 서버 배포 성패를 Slack에 보고 |
+| `.github/scripts/deploy/notify-thread-root.mjs` | 머지 스레드의 루트 메시지를 만들고 `thread_ts`를 잡 output으로 냄 |
+| `.github/scripts/deploy/notify-thread-reply.mjs` | 타깃 하나(웹·확장·앱)의 빌드 결과를 스레드 댓글로 보고 |
+| `.github/scripts/shared/slack-api.mjs` | `chat.postMessage` 호출, 스레드 우선·웹훅 폴백 전송 |
+| `.github/scripts/deploy/thread-messages.mjs` | 루트·타깃 댓글의 페이로드 조립과 댓글 여부 판정 |
+| `.github/scripts/deploy/store-versions.mjs` | 스토어 4곳 버전 조회 |
+| `.github/scripts/shared/repo-versions.mjs` | 레포에 커밋된 빌드 버전 읽기 |
+| `.github/scripts/shared/run-context.mjs` | 워크플로 실행 맥락(환경변수·커밋 제목·머지 원본 PR) 읽기 |
+| `.github/scripts/shared/slack-blocks.mjs` | Slack 메시지·버튼 조립 |
+| `.github/scripts/deploy/run-artifacts.mjs` | 실행의 아티팩트 조회, 확장 다운로드 링크 판정 |
+| `.github/scripts/deploy/comment-pr-extension.mjs` | PR에서 빌드한 확장의 다운로드 링크를 PR 댓글로 게시 |
+| `.github/scripts/deploy/pr-comments.mjs` | PR 확장 빌드 댓글의 본문 조립과 upsert |
 | `apps/web/src/modules/slack/` | 서명 검증, workflow_dispatch, 모달 |
 | `apps/web/src/app/api/slack/interactivity/` | 버튼·모달 제출 수신 |
 | `apps/web/src/app/api/slack/commands/` | 슬래시 커맨드 수신 |
@@ -556,32 +556,32 @@ App Store Connect의 키 ID·발급자 ID·앱 ID는 시크릿이 아니라
 
 ```bash
 # 스토어 현황만 조회 (자격 증명 없는 채널은 "자격 증명 없음"으로 표시됩니다)
-GITHUB_SHA=$(git rev-parse HEAD) node .github/scripts/report-store-versions.mjs
+GITHUB_SHA=$(git rev-parse HEAD) node .github/scripts/deploy/report-store-versions.mjs
 
 # 빌드 알림에 실제로 나갈 Slack 페이로드 확인
 GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 GITHUB_SHA=$(git rev-parse HEAD) \
   BUILD_RESULTS='{"ci":"success","app":"success","web":"skipped","extension":"success"}' \
-  node .github/scripts/notify-build-ready.mjs
+  node .github/scripts/deploy/notify-build-ready.mjs
 
 # 릴리스 결과 알림에 나갈 Slack 페이로드 확인 (TARGET: app / extension / web)
 GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 \
   TARGET=extension RESULT=success \
-  node .github/scripts/notify-release-result.mjs
+  node .github/scripts/deploy/notify-release-result.mjs
 
 # 테스트 서버 배포 알림에 나갈 Slack 페이로드 확인
 GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 GITHUB_SHA=$(git rev-parse HEAD) \
   DEPLOY_OUTCOME=success \
-  node .github/scripts/notify-staging-deploy.mjs
+  node .github/scripts/deploy/notify-staging-deploy.mjs
 
 # 스레드 루트에 나갈 Slack 페이로드 확인 (PR 머지 커밋이면 PR 번호·브랜치가 붙습니다)
 GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_SHA=$(git rev-parse HEAD) \
   GITHUB_REF_NAME=master GITHUB_ACTOR=guesung \
-  node .github/scripts/notify-thread-root.mjs
+  node .github/scripts/deploy/notify-thread-root.mjs
 
 # 타깃 댓글에 나갈 Slack 페이로드 확인 (TARGET: web / extension / app, CHANGED·RESULT는 needs 값)
 GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=1 \
   TARGET=web CHANGED=true RESULT=success SLACK_THREAD_TS=1.1 \
-  node .github/scripts/notify-thread-reply.mjs
+  node .github/scripts/deploy/notify-thread-reply.mjs
 ```
 
 버튼이 만드는 `workflow_dispatch`가 제대로 도는지는 `gh`로 먼저 확인할 수 있습니다.

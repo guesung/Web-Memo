@@ -67,7 +67,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           # PR은 Slack 없이 등록이 빠졌을 때 체크를 실패시킵니다. 스케줄·수동은 차이가 있으면 Slack으로 알립니다.
           AUDIT_MODE: ${{ github.event_name == 'pull_request' && 'check' || 'notify' }}
-        run: node .github/scripts/audit-env-registry.mjs
+        run: node .github/scripts/env/audit-env-registry.mjs
 
       # 매일 도는 무인 잡이라 실패가 알림 부재와 구분되지 않습니다. 차이 알림이 안 온 날이
       # "일치한 날"인지 "감사가 깨진 날"인지 채널에서 바로 드러나야 합니다.

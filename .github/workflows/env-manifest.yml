@@ -36,4 +36,4 @@ jobs:
 
       # 검사 스크립트는 의존성이 없습니다(node 내장 모듈만 씁니다). pnpm install을 건너뜁니다.
       - name: Check env manifest
-        run: node .github/scripts/check-env-manifest.mjs
+        run: node .github/scripts/env/check-env-manifest.mjs

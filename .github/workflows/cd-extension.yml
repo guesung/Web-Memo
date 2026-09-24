@@ -55,7 +55,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           ARTIFACT_PREFIX: store-package-extension-production-
-        run: .github/scripts/find-reusable-artifact.sh
+        run: .github/scripts/deploy/find-reusable-artifact.sh
 
       - name: Download reusable build
         if: ${{ steps.reuse.outputs.found == 'true' }}

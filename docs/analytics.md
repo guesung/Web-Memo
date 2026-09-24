@@ -153,9 +153,9 @@ BigQuery export를 별도로 연결해야 하며, 연결 전 데이터는 소급
 
 ## 조회 스크립트
 
-`.github/scripts/`에 GA를 읽는 스크립트가 셋 있습니다. 커스텀 이벤트는 호스트 허용 목록과
+`.github/scripts/ga/`에 GA를 읽는 스크립트가 셋 있습니다. 커스텀 이벤트는 호스트 허용 목록과
 `build_env=production`을 함께 적용하고, 활성 사용자는 호스트 허용 목록만 적용합니다. 이벤트
-목록의 원본과 사람 수 집계는 `lib/ga4-client.mjs`·`lib/ga4-weekly.mjs`의 같은 조각을 함께 써서
+목록의 원본과 사람 수 집계는 `ga/ga4-client.mjs`·`ga/ga4-weekly.mjs`의 같은 조각을 함께 써서
 서로 다른 숫자를 내지 않습니다.
 
 | 스크립트 | 답하는 질문 | 실행 |
@@ -175,7 +175,7 @@ BigQuery export를 별도로 연결해야 하며, 연결 전 데이터는 소급
 ```bash
 GA4_PROPERTY_ID=471860782 \
 GA4_SERVICE_ACCOUNT_JSON="$(cat ~/ga4-service-account.json)" \
-node .github/scripts/measure-feature-usage.mjs --from 2026-09-11 --to 2026-09-17
+node .github/scripts/ga/measure-feature-usage.mjs --from 2026-09-11 --to 2026-09-17
 ```
 
 ## 주간 수치 누적 (Google Sheets)

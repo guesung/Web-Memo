@@ -31,7 +31,7 @@
 
 어떤 변수가 어디에 등록돼 있어야 하는지의 원천은 [`.github/env-manifest.yml`](../.github/env-manifest.yml)
 입니다. 아래 목록은 그 파일에서 생성한 것이라 **손으로 고치지 않습니다.** 값을 추가·삭제·이동하면
-매니페스트를 고치고 `node .github/scripts/check-env-manifest.mjs --write`로 갱신합니다.
+매니페스트를 고치고 `node .github/scripts/env/check-env-manifest.mjs --write`로 갱신합니다.
 
 두 가지가 자동으로 대조합니다.
 

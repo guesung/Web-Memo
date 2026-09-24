@@ -45,7 +45,7 @@ jobs:
           # G-6HHNP7KJM5 는 gtag 용 측정 ID라 여기 넣으면 403/404 가 납니다.
           # 속성 ID는 비밀이 아닙니다. 시크릿에 넣으면 로그에서 가려져 디버깅만 어려워집니다.
           GA4_PROPERTY_ID: "471860782"
-        run: node .github/scripts/report-daily-ga.mjs
+        run: node .github/scripts/ga/report-daily-ga.mjs
 
       # 매일 도는 무인 잡이라 실패가 알림 부재와 구분되지 않습니다. 리포트가 안 온 날이
       # "조용한 날"인지 "잡이 깨진 날"인지 채널에서 바로 드러나야 합니다.

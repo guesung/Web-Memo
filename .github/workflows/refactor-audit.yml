@@ -109,7 +109,7 @@ jobs:
           NOTION_WORK_LOG_DATABASE_ID: "5f408e05-0015-4532-bcd8-bd36439bec5a"
           NOTION_TOKEN: ${{ inputs.dry_run != true && secrets.NOTION_TOKEN || '' }}
           SLACK_REPORT_WEBHOOK_URL: ${{ inputs.dry_run != true && secrets.SLACK_REPORT_WEBHOOK_URL || '' }}
-        run: node .github/scripts/report-refactor-audit.mjs
+        run: node .github/scripts/refactor/report-refactor-audit.mjs
 
       # 주 1회 도는 무인 잡이라 실패가 알림 부재와 구분되지 않습니다. 구독 한도 소진이나
       # 토큰 만료로도 실패하므로, 알림이 안 온 주가 "발견 없는 주"인지 "잡이 깨진 주"인지 드러나야 합니다.

@@ -73,7 +73,7 @@ jobs:
           # 스크립트는 GITHUB_EVENT_NAME 으로 크론(정기)과 손 실행(재실행)을 가려 시트에
           # 적습니다. 러너가 기본으로 넣어 주는 값이고 GITHUB_* 는 덮어쓸 수 없어 여기
           # 적지 않습니다.
-        run: node .github/scripts/report-weekly-ga.mjs
+        run: node .github/scripts/ga/report-weekly-ga.mjs
 
       # 주 1회 도는 무인 잡이라 실패가 알림 부재와 구분되지 않습니다. 리포트가 안 온
       # 주가 "조용한 주"인지 "잡이 깨진 주"인지 채널에서 바로 드러나야 합니다.

@@ -63,7 +63,7 @@ jobs:
         id: previous-seo
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: node .github/scripts/find-previous-seo-report.mjs
+        run: node .github/scripts/seo/find-previous-seo-report.mjs
 
       - name: Inspect production SEO
         id: seo-check
@@ -83,7 +83,7 @@ jobs:
       - name: Build AI report context
         id: ai-context
         if: ${{ !cancelled() && hashFiles('artifacts/seo/seo-report.json') != '' }}
-        run: node .github/scripts/build-seo-ai-context.mjs
+        run: node .github/scripts/seo/build-seo-ai-context.mjs
 
       - name: Write AI report
         id: ai-report
@@ -135,14 +135,14 @@ jobs:
           AI_REPORT_RESULT: ${{ steps.ai-report.outputs.structured_output }}
           SLACK_BOT_TOKEN: ${{ inputs.dry_run != true && secrets.SLACK_BOT_TOKEN || '' }}
           SLACK_CHANNEL_ID: ${{ inputs.dry_run != true && secrets.SLACK_REPORT_CHANNEL_ID || '' }}
-        run: node .github/scripts/send-seo-ai-report.mjs
+        run: node .github/scripts/seo/send-seo-ai-report.mjs
 
       - name: Notify actionable SEO issues
         if: ${{ always() && steps.ai-send.outputs.sent != 'true' }}
         env:
           SEO_CHECK_OUTCOME: ${{ steps.seo-check.outcome }}
           SLACK_REPORT_WEBHOOK_URL: ${{ inputs.dry_run != true && secrets.SLACK_REPORT_WEBHOOK_URL || '' }}
-        run: node .github/scripts/notify-seo-slack.mjs
+        run: node .github/scripts/seo/notify-seo-slack.mjs
 
       - name: Persist SEO analytics to Google Sheets
         if: ${{ always() && inputs.dry_run != true }}

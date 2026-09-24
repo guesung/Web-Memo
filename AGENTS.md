@@ -111,7 +111,7 @@ Turborepo 기반 모노레포입니다.
 **Testing & Infra**
 - `e2e/` — Playwright E2E 테스트 스위트
 - `scripts/ai-reviewer/` — PR AI 리뷰 스크립트 (워크스페이스 밖, `pnpm type-check:scripts`로 검사)
-- `.github/scripts/` — 워크플로가 호출하는 셸 스크립트 (변경 앱 판정, 릴리스 알림)
+- `.github/scripts/` — 워크플로가 호출하는 Node(`.mjs`)·셸 스크립트. 도메인 폴더(`deploy`·`seo`·`ga`·`env`·`supabase`·`refactor`·`cleanup`)로 나뉘고, 두 도메인 이상이 쓰는 모듈은 `shared/`에 둡니다
 
 ### ⚠️ `apps/app`(React Native)에서 `@web-memo/shared` import 규칙
 
@@ -368,7 +368,7 @@ production을 구분하지 못합니다. `isProduction()`은 `buildEnv !== "deve
 값의 위치 판단 기준, GitHub Secrets 전수 목록, Vercel 환경 짝 맞추기, 로컬 셋업 절차.
 
 **변수를 추가·삭제·이동하면 [`.github/env-manifest.yml`](.github/env-manifest.yml)을 함께 고치고**
-`node .github/scripts/check-env-manifest.mjs --write`로 문서 표를 갱신합니다. 이 파일이 어떤 변수가 어디에
+`node .github/scripts/env/check-env-manifest.mjs --write`로 문서 표를 갱신합니다. 이 파일이 어떤 변수가 어디에
 등록돼야 하는지의 원천이며, PR CI가 코드와 대조하고, 등록 현황 감사가 GitHub·Vercel·Supabase의 실제 등록
 목록과 대조합니다(매일은 Slack 알림, PR에서는 등록이 빠졌을 때 체크 실패).
 

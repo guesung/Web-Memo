@@ -43,4 +43,4 @@ jobs:
           RELEASE_REF: ${{ inputs.ref || github.ref_name }}
           TARGET: ${{ inputs.target }}
           RESULT: ${{ inputs.result }}
-        run: node .github/scripts/notify-release-result.mjs
+        run: node .github/scripts/deploy/notify-release-result.mjs

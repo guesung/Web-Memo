@@ -334,7 +334,7 @@
 - name: CI
   kind: platform
   consumers: [e2e/playwright.config.ts]
-  note: "GitHub Actions가 자동으로 넣는다. Playwright의 재시도와 서버 재사용 정책을 가른다"
+  note: "GitHub Actions가 자동으로 넣는다. Playwright의 test.only 금지·워커 수·서버 재사용 정책을 가른다"
 
 - name: VERCEL
   kind: platform

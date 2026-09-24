@@ -122,7 +122,7 @@
 | --- | --- | --- |
 | `__DEV__` | 확장 개발 모드 스위치. packages/vite-config가 넣는다 | `packages/vite-config/lib/env.mjs` |
 | `__FIREFOX__` | Firefox 빌드 스크립트가 넣는 분기 스위치 | `apps/chrome-extension/utils/plugins/make-manifest-plugin.ts` |
-| `CI` | GitHub Actions가 자동으로 넣는다. Playwright의 재시도와 서버 재사용 정책을 가른다 | `e2e/playwright.config.ts` |
+| `CI` | GitHub Actions가 자동으로 넣는다. Playwright의 test.only 금지·워커 수·서버 재사용 정책을 가른다 | `e2e/playwright.config.ts` |
 | `E2E_RUN_ID` | E2E 실행 ID. globalSetup이 한 번 정해 워커·teardown이 같은 값으로 자기 실행 데이터를 찾는다. 등록할 곳 없음 | `e2e/globalSetup.ts`, `e2e/tests/lib/namespace.ts` |
 | `GITHUB_REF_NAME` | GitHub Actions가 넣는다. Vercel 값이 없을 때의 폴백으로 읽는다 | `apps/web/src/app/api/version/route.ts` |
 | `GITHUB_RUN_ATTEMPT` | GitHub Actions가 넣는다. E2E 실행 ID를 재시도마다 다르게 만든다 | `e2e/globalSetup.ts` |

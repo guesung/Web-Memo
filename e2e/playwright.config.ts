@@ -5,7 +5,8 @@ export default defineConfig({
 	testDir: "./tests",
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
-	retries: process.env.CI ? 2 : 0,
+	// 재시도로 통과시키면 flaky가 초록불에 가려진다. 흔들리는 테스트는 원인 위치에서 고친다.
+	retries: 0,
 	maxFailures: 0,
 	// 테스트마다 확장을 올린 크로미움을 새로 띄운다. 코어 수를 따라가는 기본값은
 	// 개발 머신에서 워커가 서로 자원을 뺏어 로그인조차 타임아웃을 낸다.

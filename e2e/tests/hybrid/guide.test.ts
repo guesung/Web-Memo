@@ -97,6 +97,9 @@ test.describe("가이드 기능", () => {
 			/driver-active-element/,
 		);
 
+		// 새로고침 버튼은 ssr:false 동적 import라 청크가 늦으면 스켈레톤만 있다. 가이드는 다음을
+		// 누르는 순간 대상이 DOM에 없으면 그 단계를 건너뛰고 끝나므로, 버튼이 붙은 뒤에 넘긴다.
+		await expect(page.locator("#refresh")).toBeAttached();
 		await nextButton.click();
 		await expect(page.locator("#refresh")).toHaveClass(/driver-active-element/);
 

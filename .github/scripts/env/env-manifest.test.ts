@@ -134,7 +134,7 @@ describe("extractReferences", () => {
 describe("collectReferences", () => {
 	it("테스트 파일과 .github/scripts는 대조 대상에서 뺀다", () => {
 		expect(isScannedFile("apps/web/a.test.ts")).toBe(false);
-		expect(isScannedFile(".github/scripts/ga/report.mjs")).toBe(false);
+		expect(isScannedFile(".github/scripts/ga/report-daily-ga.mjs")).toBe(false);
 		expect(isScannedFile("apps/web/a.ts")).toBe(true);
 		expect(isScannedFile(".github/workflows/ci.yml")).toBe(true);
 

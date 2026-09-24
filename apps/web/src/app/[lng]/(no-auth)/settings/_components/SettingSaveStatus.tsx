@@ -9,14 +9,17 @@ interface IFSettingSaveStatusProps extends LanguageType {
 	onRetryClick: () => void;
 }
 
-/** 항목 옆에서 저장 여부를 알리고 실패를 직접 재시도하게 합니다. */
+/** 항목 옆에서 저장 중·실패 상태를 알리고 실패를 직접 재시도하게 합니다. */
 export const SettingSaveStatus = (props: IFSettingSaveStatusProps) => {
 	const { t } = useTranslation(props.lng);
 
 	return (
-		<output aria-live="polite" className="block text-xs text-muted-foreground">
+		<output
+			aria-live="polite"
+			data-status={props.status}
+			className="block text-xs text-muted-foreground"
+		>
 			{props.status === "saving" && t("setting.unified.saving")}
-			{props.status === "saved" && t("setting.unified.saved")}
 			{props.status === "failed" && (
 				<div className="flex flex-wrap items-center gap-2">
 					<span className="text-destructive">

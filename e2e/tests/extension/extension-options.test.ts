@@ -40,8 +40,8 @@ test.describe("확장 옵션 페이지", () => {
 			"unchecked",
 		);
 		await expect(
-			optionsPage.getByText(/^(Saved\.|저장했어요\.)$/).last(),
-		).toBeVisible();
+			optionsPage.locator('output[data-status="saved"]'),
+		).toBeAttached();
 
 		await optionsPage.reload();
 		await expect(optionsPage.locator("#auto-category")).toHaveAttribute(
@@ -69,8 +69,8 @@ test.describe("확장 옵션 페이지", () => {
 			"unchecked",
 		);
 		await expect(
-			optionsPage.getByText(/^(Saved\.|저장했어요\.)$/).last(),
-		).toBeVisible();
+			optionsPage.locator('output[data-status="saved"]'),
+		).toBeAttached();
 
 		await optionsPage.reload();
 		await expect(optionsPage.locator("#auto-category")).toHaveAttribute(

@@ -35,15 +35,15 @@
 
 두 가지가 자동으로 대조합니다.
 
-- **PR CI** (`env-manifest.yml`): 코드·워크플로가 읽는 이름, `.env` 파일의 키, 이 목록이 매니페스트와
+- **PR CI** (`audit-env-manifest.yml`): 코드·워크플로가 읽는 이름, `.env` 파일의 키, 이 목록이 매니페스트와
   같은지 봅니다. 어긋나면 PR이 실패합니다. 토큰이 필요 없습니다.
-- **등록 현황 감사** (`env-registry-audit.yml`): GitHub·Vercel·Supabase에 **실제로 등록된 이름**을
+- **등록 현황 감사** (`audit-env-registry.yml`): GitHub·Vercel·Supabase에 **실제로 등록된 이름**을
   매니페스트와 대조합니다. 매일 돌아 다르면 Slack으로 알리고, **PR에서도 돌아** 등록이 빠진 값이
   있으면 체크를 실패시킵니다. 코드보다 시크릿을 먼저 등록하는 것은 정상적인 순서라, 매니페스트에 없는
   등록과 선언하지 않은 환경은 경고 주석으로만 남깁니다. 조회 토큰이 없는 저장소는 비교할 수 없으므로
   실패가 아니라 "미조회" 경고입니다. 이름만 비교하므로 **같은 이름이 두 곳에 있을 때 값이
   같은지는 확인하지 못합니다.**
-- **Supabase 운영 감사** (`supabase-audit.yml`): 프로젝트와 서비스의 건강 상태, migration,
+- **Supabase 운영 감사** (`audit-supabase.yml`): 프로젝트와 서비스의 건강 상태, migration,
   Edge Function 배포·최근 오류, secret 이름, Cron·trigger·Database Webhook·Vault key 이름을
   `.github/supabase-audit-manifest.json`과 대조합니다. 정확한 Edge Runtime/Deno 버전은 공식 API에서
   제공하지 않아 관측 불가 경고로 남깁니다. 값·URL·명령·원문 로그는 조회하거나 출력하지 않습니다.
@@ -306,7 +306,7 @@ pnpm env:pull                        # 저장소 루트에서 실행. apps/web/.
   pull로 받을 수 없지만, Vercel은 development 대상을 sensitive로 만들 수 없기 때문입니다. 세 환경을 같게
   두면 production 값도 development 등록본으로 읽을 수 있다는 뜻이니 접근 권한 범위를 그렇게 다루세요.
 - **`GA4_SERVICE_ACCOUNT_JSON`은** 서비스 계정 키 JSON 전문을 한 줄로 넣습니다. 같은 이름의 값이
-  GitHub Secrets에도 있지만(§5, `daily-ga-report.yml`이 읽습니다) 서로 다른 곳이라 **양쪽에 각각
+  GitHub Secrets에도 있지만(§5, `report-ga-daily.yml`이 읽습니다) 서로 다른 곳이라 **양쪽에 각각
   등록해야 합니다.** 값이 없으면 실패하지 않고 `/api/admin/ga/active-users`가 `connected: false`를
   돌려주며, 대시보드는 그래프 대신 "연결 없음"을 그립니다.
 - **e2e도 같은 방식입니다.** `e2e.yml`이 `VERCEL_TOKEN`으로 development 값을 받아
@@ -403,19 +403,19 @@ Protocol로 직접 이벤트를 보내는 현재 구조상 이미 번들에 인�
 하나도 없습니다.
 
 등록된 목록과 용도는 위 [전체 목록](#전체-목록)의 GitHub Secrets 표가 원천이고,
-실제 등록 상태는 `gh secret list -R guesung/Web-Memo`나 스케줄 감사(`env-registry-audit.yml`)로
+실제 등록 상태는 `gh secret list -R guesung/Web-Memo`나 스케줄 감사(`audit-env-registry.yml`)로
 확인합니다.
 
 같은 이름이 Vercel에도 있는 `SLACK_BOT_TOKEN`은 Vercel 환경변수와 같은 값(`chat:write` 스코프)이지만
 서로 읽지 못하므로 따로 등록합니다. `SLACK_CHANNEL_ID`는 웹훅 URL에서 얻을 수 없어 채널 ID를 직접 넣습니다.
 
-감사 워크플로가 GitHub Secrets 목록을 읽으려면 `GITHUB_TOKEN`으로는 부족합니다. 이미 `cleanup-unused.yml`이
+감사 워크플로가 GitHub Secrets 목록을 읽으려면 `GITHUB_TOKEN`으로는 부족합니다. 이미 `chore-cleanup-unused.yml`이
 쓰는 GitHub App(`APP_ID`, `APP_PRIVATE_KEY`)에 **Secrets: read** 권한을 주고, Supabase는 대시보드에서 발급한
 토큰을 `SUPABASE_ACCESS_TOKEN`으로 등록해야 합니다. 없으면 해당 저장소만 "미조회"로 남습니다.
 
 `GITHUB_TOKEN`은 GitHub Actions가 자동으로 제공하므로 등록하지 않습니다.
 
-`refactor-audit.yml`(주간 리팩토링 점검)은 시크릿을 둘 더 읽습니다.
+`audit-refactor.yml`(주간 리팩토링 점검)은 시크릿을 둘 더 읽습니다.
 - `CLAUDE_CODE_OAUTH_TOKEN`은 API 키가 아니라 **Claude Code 구독 토큰**입니다. 로컬에서 `claude setup-token`으로
   발급합니다. 구독 한도를 다른 작업과 나눠 쓰고 토큰에 만료가 있어서, 한도 소진이나 만료로 점검이 실패할 수
   있습니다. 실패는 `SLACK_WEBHOOK_URL` 채널로 옵니다.
@@ -428,10 +428,10 @@ Protocol로 직접 이벤트를 보내는 현재 구조상 이미 번들에 인�
 두 Slack 웹훅은 채널이 다릅니다. `SLACK_WEBHOOK_URL`은 빌드·배포·릴리스 결과가 가는
 기존 CI 채널이고, `SLACK_REPORT_WEBHOOK_URL`은 GA 리포트와 주간 리팩토링 점검 결과만 가는 전용 채널입니다.
 성격이 달라 나눴습니다 — 리포트가 매일 쌓이면 즉시 봐야 하는 배포 실패 알림을 밀어냅니다.
-**다만 `daily-ga-report.yml`의 실패 알림은 일부러 `SLACK_WEBHOOK_URL`로 보냅니다.**
+**다만 `report-ga-daily.yml`의 실패 알림은 일부러 `SLACK_WEBHOOK_URL`로 보냅니다.**
 리포트 채널 웹훅 자체가 죽으면 실패 알림도 같이 침묵하기 때문에, 경로를 갈라 둔 것입니다.
 
-`GA4_PROPERTY_ID`는 시크릿이 아니라 `daily-ga-report.yml`에 값을 그대로 적습니다(`471860782`).
+`GA4_PROPERTY_ID`는 시크릿이 아니라 `report-ga-daily.yml`에 값을 그대로 적습니다(`471860782`).
 비밀이 아니고, 시크릿으로 두면 값이 안 보여 디버깅만 어려워집니다.
 GA4 콘솔 → 관리 → 속성 설정 상단의 **숫자** 속성 ID이며,
 `packages/shared/src/constants/Analytics.ts`의 `G-6HHNP7KJM5`는 측정 ID라 Data API에 넣으면 403/404가 납니다.

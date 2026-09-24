@@ -111,7 +111,7 @@ Turborepo 기반 모노레포입니다.
 **Testing & Infra**
 - `e2e/` — Playwright E2E 테스트 스위트
 - `scripts/ai-reviewer/` — PR AI 리뷰 스크립트 (워크스페이스 밖, `pnpm type-check:scripts`로 검사)
-- `.github/scripts/` — 워크플로가 호출하는 Node(`.mjs`)·셸 스크립트. 도메인 폴더(`deploy`·`seo`·`ga`·`env`·`supabase`·`refactor`·`cleanup`)로 나뉘고, 두 도메인 이상이 쓰는 모듈은 `shared/`에 둡니다
+- `.github/scripts/` — 워크플로가 호출하는 Node(`.mjs`)·셸 스크립트. 도메인 폴더(`deploy`·`seo`·`ga`·`env`·`supabase`·`refactor`·`cleanup`)로 나뉘고, 두 도메인 이상이 쓰는 모듈은 `shared/`에 둡니다. 워크플로↔스크립트 대응표는 [`.github/README.md`](.github/README.md)
 
 ### ⚠️ `apps/app`(React Native)에서 `@web-memo/shared` import 규칙
 

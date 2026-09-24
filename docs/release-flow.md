@@ -46,7 +46,7 @@ master 머지
                                     ▼
         release.yml → cd-app / cd-web / cd-extension → 스토어 제출
                                     │
-                                    └─ notify-release.yml (타깃마다 한 번씩)
+                                    └─ release-notify.yml (타깃마다 한 번씩)
                                          └─ Slack ┌──────────────────────────────┐
                                                   │ ✅ 앱 릴리스 완료              │
                                                   │ 앱 v1.0.8 · 정렬 옵션 추가     │
@@ -76,7 +76,7 @@ master 머지
 
 **결과 알림은 웹·앱·확장이 각자 따로 옵니다.** 셋을 한 메시지로 묶으면 `needs`가
 정적이라 알림이 가장 느린 타깃(앱 빌드 약 30분)을 기다립니다. 그러면 1분이면 끝나는
-웹 배포 결과도 30분 뒤에야 나갑니다. 타깃마다 `notify-release.yml`을 따로 불러
+웹 배포 결과도 30분 뒤에야 나갑니다. 타깃마다 `release-notify.yml`을 따로 불러
 각자 끝나는 대로 알립니다.
 
 ## master 머지는 하나의 스레드로 모입니다
@@ -127,7 +127,7 @@ skipped이거나 실패했을 때 `cd-*`가 암묵적 `success()` 조건 때문�
 남습니다. 예전에는 웹훅 실패가 예외가 되어 알림 잡이 빨갛게 됐습니다.
 
 **버튼을 누른 뒤의 메시지는 그대로 채널 최상위입니다.** "🚀 배포를 시작했습니다"와
-릴리스 결과(`notify-release.yml`)는 이번에 스레드로 옮기지 않았습니다. 스레드 댓글 안
+릴리스 결과(`release-notify.yml`)는 이번에 스레드로 옮기지 않았습니다. 스레드 댓글 안
 버튼의 확인 메시지가 스레드로 갈지 최상위로 갈지는 확인하지 못했습니다
 (`respondToSlack`이 `thread_ts`를 보내지 않습니다).
 
@@ -530,7 +530,7 @@ App Store Connect의 키 ID·발급자 ID·앱 ID는 시크릿이 아니라
 | `.github/workflows/cd-web.yml` (`Notify staging deploy`) | `workflow_dispatch`로 직접 실행한 경우의 테스트 서버 알림(웹훅) |
 | `.github/workflows/versions.yml` | 배포 현황만 조회해 게시 |
 | `.github/workflows/release.yml` | 실제 스토어 제출 (버튼이 이걸 실행) |
-| `.github/workflows/notify-release.yml` | 릴리스 타깃 하나의 결과를 Slack에 게시 (release.yml이 타깃별로 호출) |
+| `.github/workflows/release-notify.yml` | 릴리스 타깃 하나의 결과를 Slack에 게시 (release.yml이 타깃별로 호출) |
 | `.github/scripts/deploy/notify-release-result.mjs` | 릴리스 성패를 타깃별로 Slack에 보고 |
 | `.github/scripts/deploy/notify-staging-deploy.mjs` | 테스트 서버 배포 성패를 Slack에 보고 |
 | `.github/scripts/deploy/notify-thread-root.mjs` | 머지 스레드의 루트 메시지를 만들고 `thread_ts`를 잡 output으로 냄 |

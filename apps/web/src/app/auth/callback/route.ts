@@ -1,4 +1,5 @@
 import { DEFAULT_LANGUAGE, getLanguage } from "@src/modules/i18n";
+import { getSafeSettingsNext } from "@src/modules/supabase/getSafeSettingsNext";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { PATHS, SUPABASE } from "@web-memo/shared/constants";
 import { cookies } from "next/headers";
@@ -14,6 +15,7 @@ export async function GET(request: NextRequest) {
 	// 로케일 없는 경로로 보내면 미들웨어가 /{lng}로 한 번 더 리다이렉트합니다.
 	// 로그인 직후 화면이 뜨기까지 왕복이 하나 더 늘어나므로 여기서 붙여 보냅니다.
 	const language = getLanguage(request) ?? DEFAULT_LANGUAGE;
+	const next = getSafeSettingsNext(requestUrl.searchParams.get("next"));
 
 	// OAuth 제공자가 취소·실패를 error 쿼리로 돌려줍니다. 그대로 /memos로 보내면
 	// 미들웨어가 다시 로그인 화면으로 튕겨 사용자는 아무 안내 없이 제자리로 옵니다.
@@ -21,6 +23,9 @@ export async function GET(request: NextRequest) {
 	if (requestUrl.searchParams.has("error")) {
 		const loginUrl = new URL(`${requestUrl.origin}/${language}${PATHS.login}`);
 		loginUrl.searchParams.set("error", "1");
+		if (next) {
+			loginUrl.searchParams.set("next", next);
+		}
 
 		return NextResponse.redirect(loginUrl);
 	}
@@ -60,7 +65,8 @@ export async function GET(request: NextRequest) {
 		const isSignUp = Date.now() - createdAt < SIGN_UP_THRESHOLD_MSEC;
 
 		const redirectUrl = new URL(
-			`${requestUrl.origin}/${language}${PATHS.memos}`,
+			next ?? `/${language}${PATHS.memos}`,
+			requestUrl.origin,
 		);
 		redirectUrl.searchParams.set("login", loginMethod ?? "unknown");
 		if (isSignUp) redirectUrl.searchParams.set("signup", "true");
@@ -69,6 +75,6 @@ export async function GET(request: NextRequest) {
 	}
 
 	return NextResponse.redirect(
-		`${requestUrl.origin}/${language}${PATHS.memos}`,
+		new URL(next ?? `/${language}${PATHS.memos}`, requestUrl.origin),
 	);
 }

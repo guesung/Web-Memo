@@ -1,5 +1,6 @@
 "use server";
 import type { LanguageParams } from "@src/modules/i18n";
+import { getSafeSettingsNext } from "@src/modules/supabase/getSafeSettingsNext";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { PATHS } from "@web-memo/shared/constants";
 import { AuthService } from "@web-memo/shared/utils";
@@ -12,12 +13,13 @@ const LoginPage = async ({ params, searchParams }: IFPageProps) => {
 	const { lng } = await params;
 	const supabaseClient = await getSupabaseClient();
 	const isUserLogin = await new AuthService(supabaseClient).checkUserLogin();
+	const resolvedSearchParams = await searchParams;
+	const next = getSafeSettingsNext(resolvedSearchParams.next);
 
 	if (isUserLogin) {
-		redirect(`/${lng}${PATHS.memos}`);
+		redirect(next ?? `/${lng}${PATHS.memos}`);
 	}
 
-	const resolvedSearchParams = await searchParams;
 	const hasLoginError = Boolean(resolvedSearchParams.error);
 
 	return (
@@ -27,7 +29,7 @@ const LoginPage = async ({ params, searchParams }: IFPageProps) => {
 			<div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-12">
 				<div className="flex w-full max-w-sm flex-col gap-8">
 					{hasLoginError && <LoginErrorAlert lng={lng} />}
-					<LoginSection lng={lng} />
+					<LoginSection lng={lng} next={next} />
 				</div>
 			</div>
 		</main>
@@ -39,5 +41,5 @@ export default LoginPage;
 /** 로그인 페이지의 props입니다. */
 interface IFPageProps extends LanguageParams {
 	/** OAuth 콜백이 실패로 돌아왔는지 알려주는 쿼리. 값 자체는 화면에 노출하지 않습니다 */
-	searchParams: Promise<{ error?: string }>;
+	searchParams: Promise<{ error?: string; next?: string }>;
 }

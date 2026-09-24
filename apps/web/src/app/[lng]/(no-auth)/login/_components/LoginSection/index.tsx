@@ -18,7 +18,7 @@ import PersonalInformationInfo from "../PersonalInformationInfo";
 import TrackLoginStartForm from "../TrackLoginStartForm";
 
 /** 웹 메모 소개와 로그인 제공자 버튼을 표시합니다. */
-const LoginSection = async ({ lng }: IFLoginSectionProps) => {
+const LoginSection = async ({ lng, next }: IFLoginSectionProps) => {
 	const { t } = await useTranslation(lng);
 
 	const providers: TLoginProvider[] = [
@@ -28,7 +28,7 @@ const LoginSection = async ({ lng }: IFLoginSectionProps) => {
 			pendingLabel: t("login.providerPending", {
 				provider: t("login.providerName.kakao"),
 			}),
-			signIn: signInWithOAuth.bind(null, "kakao"),
+			signIn: signInWithOAuth.bind(null, "kakao", next),
 		},
 		{
 			id: "google",
@@ -36,7 +36,7 @@ const LoginSection = async ({ lng }: IFLoginSectionProps) => {
 			pendingLabel: t("login.providerPending", {
 				provider: t("login.providerName.google"),
 			}),
-			signIn: signInWithOAuth.bind(null, "google"),
+			signIn: signInWithOAuth.bind(null, "google", next),
 		},
 		{
 			id: "apple",
@@ -44,7 +44,7 @@ const LoginSection = async ({ lng }: IFLoginSectionProps) => {
 			pendingLabel: t("login.providerPending", {
 				provider: t("login.providerName.apple"),
 			}),
-			signIn: signInWithOAuth.bind(null, "apple"),
+			signIn: signInWithOAuth.bind(null, "apple", next),
 		},
 	];
 
@@ -73,6 +73,7 @@ const LoginSection = async ({ lng }: IFLoginSectionProps) => {
 							null,
 							SUPABASE.testEmail,
 							SUPABASE.testPassword,
+							next,
 						)}
 						data-login-method="email"
 						data-testid="test-login-button"
@@ -92,4 +93,6 @@ const LoginSection = async ({ lng }: IFLoginSectionProps) => {
 export default LoginSection;
 
 /** LoginSection의 props입니다. */
-interface IFLoginSectionProps extends LanguageType {}
+interface IFLoginSectionProps extends LanguageType {
+	next?: string | null;
+}

@@ -1,3 +1,4 @@
+import { getSafeSettingsNext } from "@src/modules/supabase/getSafeSettingsNext";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { PATHS, SUPABASE } from "@web-memo/shared/constants";
 import { isProduction } from "@web-memo/shared/utils";
@@ -36,7 +37,9 @@ export async function GET(request: Request) {
 		},
 	);
 
-	return NextResponse.redirect(
-		`${requestUrl.origin}${PATHS.memos}?login=email`,
-	);
+	const next = getSafeSettingsNext(requestUrl.searchParams.get("next"));
+	const redirectUrl = new URL(next ?? PATHS.memos, requestUrl.origin);
+	redirectUrl.searchParams.set("login", "email");
+
+	return NextResponse.redirect(redirectUrl);
 }

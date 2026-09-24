@@ -62,7 +62,7 @@ const CategoryCommandPopup = (props: IFCategoryCommandPopupProps) => {
 			name: "open_web_from_extension",
 			params: { from: "side_panel_category" },
 		});
-		Tab.create({ url: `${CONFIG.webUrl}${PATHS.memosSetting}` });
+		Tab.create({ url: `${CONFIG.webUrl}${PATHS.settings}` });
 		props.onWebLinkSelect();
 	};
 

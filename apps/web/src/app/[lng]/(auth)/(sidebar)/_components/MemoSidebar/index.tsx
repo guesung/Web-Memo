@@ -115,7 +115,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 				<TooltipProvider>
 					<Tooltip>
 						<TooltipTrigger asChild>
-							<Link href={withLanguage(PATHS.memosSetting)}>
+							<Link href={withLanguage(PATHS.settings)}>
 								<SidebarMenuButton
 									id="settings"
 									className="group w-full justify-center hover:bg-accent hover:shadow-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"

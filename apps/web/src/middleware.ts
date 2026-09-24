@@ -35,6 +35,7 @@ const PUBLIC_SEO_PATHS = ["/sitemap.xml", "/robots.txt"];
  */
 const NOINDEX_PATHS = [
 	PATHS.login,
+	PATHS.settings,
 	PATHS.memos,
 	PATHS.highlights,
 	PATHS.admin,
@@ -50,6 +51,7 @@ const NOINDEX_PATHS = [
  */
 const LEGACY_REDIRECTS: Record<string, string> = {
 	"/update": PATHS.introduce,
+	"/memos/setting": "/settings",
 };
 
 function removeLanguagePrefix(pathname: string) {

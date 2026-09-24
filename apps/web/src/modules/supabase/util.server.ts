@@ -6,6 +6,7 @@ import type { Database, MemoSupabaseClient } from "@web-memo/shared/types";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getSafeSettingsNext } from "./getSafeSettingsNext";
 
 export const getSupabaseClient = async () => {
 	const cookieStore = await cookies();
@@ -31,14 +32,23 @@ export const getSupabaseClient = async () => {
 	}) as unknown as MemoSupabaseClient;
 };
 
-export const signInWithOAuth = async (provider: Provider) => {
+/** OAuth 인증을 시작하고 유효한 설정 복귀 경로를 콜백에 전달합니다. */
+export const signInWithOAuth = async (
+	provider: Provider,
+	next?: string | null,
+) => {
 	"use server";
 	const supabaseClient = await getSupabaseClient();
+	const callbackUrl = new URL(PATHS.callbackOAuth, CONFIG.webUrl);
+	const safeNext = getSafeSettingsNext(next);
+	if (safeNext) {
+		callbackUrl.searchParams.set("next", safeNext);
+	}
 
 	const { error, data } = await supabaseClient.auth.signInWithOAuth({
 		provider,
 		options: {
-			redirectTo: `${CONFIG.webUrl}${PATHS.callbackOAuth}`,
+			redirectTo: callbackUrl.toString(),
 		},
 	});
 
@@ -47,7 +57,12 @@ export const signInWithOAuth = async (provider: Provider) => {
 	redirect(data.url);
 };
 
-export const signInWithEmail = async (email: string, password: string) => {
+/** 이메일 인증을 완료하고 유효한 설정 복귀 경로를 콜백에 전달합니다. */
+export const signInWithEmail = async (
+	email: string,
+	password: string,
+	next?: string | null,
+) => {
 	"use server";
 	const supabaseClient = await getSupabaseClient();
 	const { error } = await supabaseClient.auth.signInWithPassword({
@@ -57,5 +72,10 @@ export const signInWithEmail = async (email: string, password: string) => {
 
 	if (error) redirect(PATHS.error);
 	revalidatePath(PATHS.root, "layout");
-	redirect(`${CONFIG.webUrl}${PATHS.callbackEmail}`);
+	const callbackUrl = new URL(PATHS.callbackEmail, CONFIG.webUrl);
+	const safeNext = getSafeSettingsNext(next);
+	if (safeNext) {
+		callbackUrl.searchParams.set("next", safeNext);
+	}
+	redirect(callbackUrl.toString());
 };

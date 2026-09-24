@@ -2,6 +2,7 @@
 
 import { HydrationBoundaryWrapper } from "@src/components";
 import type { LanguageType } from "@src/modules/i18n";
+import { traceMemoPrefetch } from "@src/modules/observability/serverTracing";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import { MemoService } from "@web-memo/shared/utils";
@@ -13,6 +14,7 @@ import MemoSearchForm from "../MemoSearchForm";
 import MemoSearchFormProvider from "../MemoSearchFormProvider";
 import MemoView from "../MemoView";
 import { MemoViewSkeleton } from "../MemoView/MemoListSkeleton";
+import MemoShellProbe from "./MemoShellProbe";
 
 interface IFMemoPageProps extends LanguageType {
 	/** 이 화면이 보여줄 메모의 범위. 넘기지 않으면 전체를 본다 */
@@ -35,6 +37,10 @@ export default async function MemoPage({
 	// 그만큼 문서가 길어져 내용이 짧아도 스크롤이 생긴다.
 	return (
 		<div className="min-h-[calc(100vh-4rem)]">
+			<MemoShellProbe
+				key={filter}
+				route={filter === "all" ? "/memos" : `/memos/${filter}`}
+			/>
 			<div className="md:hidden fixed top-20 left-4 z-40">
 				<SidebarTrigger className="shadow-lg shadow-primary/10 hover:shadow-primary/20 bg-card border border-border hover:border-primary/50 transition-all duration-200 hover:scale-110 active:scale-95" />
 			</div>
@@ -43,9 +49,13 @@ export default async function MemoPage({
 				<HydrationBoundaryWrapper
 					queryKey={QUERY_KEY.memos()}
 					queryFn={() =>
-						new MemoService(supabaseClient).getMemosPaginated({
-							limit: 20,
-							sortBy: "updated_at",
+						traceMemoPrefetch({
+							route: filter === "all" ? "/memos" : `/memos/${filter}`,
+							queryFn: () =>
+								new MemoService(supabaseClient).getMemosPaginated({
+									limit: 20,
+									sortBy: "updated_at",
+								}),
 						})
 					}
 				>

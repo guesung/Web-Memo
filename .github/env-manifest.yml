@@ -196,6 +196,30 @@
 # Vercel 프로젝트 환경변수: 배포된 웹의 런타임·빌드 값
 # ---------------------------------------------------------------------------
 
+- name: NEXT_PUBLIC_FARO_URL
+  kind: config
+  stores: [vercel]
+  required: false
+  consumers: [apps/web/src/modules/observability/client.ts]
+  impact: "메모 화면의 브라우저 지연 측정값이 Grafana Faro에 전송되지 않는다"
+  note: "Grafana Frontend Observability의 공개 수집 URL. Next 빌드 시 클라이언트 번들에 포함된다"
+
+- name: GRAFANA_OTLP_ENDPOINT
+  kind: config
+  stores: [vercel]
+  required: false
+  consumers: [apps/web/src/modules/observability/serverTracing.ts]
+  impact: "메모 SSR 프리패치 span이 Grafana Tempo에 전송되지 않는다"
+  note: "Grafana Cloud OTLP HTTP traces 엔드포인트"
+
+- name: GRAFANA_OTLP_AUTHORIZATION
+  kind: secret
+  stores: [vercel]
+  required: false
+  consumers: [apps/web/src/modules/observability/serverTracing.ts]
+  impact: "메모 SSR 프리패치 span 인증이 되지 않아 Grafana Tempo에 전송되지 않는다"
+  note: "Grafana Cloud Access Policy 토큰을 포함한 Basic 인증 헤더 값. 서버에서만 읽는다"
+
 - name: OPENAI_API_KEY
   kind: secret
   stores: [vercel]

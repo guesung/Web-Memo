@@ -79,6 +79,15 @@ export default function SettingsScreen() {
 				contentContainerStyle={{ paddingBottom: 32 }}
 				showsVerticalScrollIndicator={false}
 			>
+				<TouchableOpacity
+					accessibilityRole="button"
+					className="p-4 mb-5 rounded-xl border border-muted dark:border-neutral-800"
+					onPress={() => router.push("/pending-memos")}
+				>
+					<Text className="font-semibold text-foreground dark:text-white">
+						보류된 메모와 공유 요청
+					</Text>
+				</TouchableOpacity>
 				{/* Account Section */}
 				<View className="mb-7">
 					<Text className="text-sm font-semibold text-muted-foreground dark:text-neutral-500 uppercase tracking-wide mb-2.5">

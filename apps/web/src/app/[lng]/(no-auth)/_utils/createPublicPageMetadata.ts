@@ -10,6 +10,13 @@ export const createPublicPageMetadata = (
 	const canonical =
 		options.language === "ko" ? canonicalKorean : canonicalEnglish;
 	const content = { title: options.title, description: options.description };
+	const languages = options.isKoreanOnly
+		? { ko: canonicalKorean, "x-default": canonicalKorean }
+		: {
+				ko: canonicalKorean,
+				en: canonicalEnglish,
+				"x-default": canonicalEnglish,
+			};
 
 	return {
 		...content,
@@ -17,11 +24,7 @@ export const createPublicPageMetadata = (
 		...(options.robots === undefined ? {} : { robots: options.robots }),
 		alternates: {
 			canonical,
-			languages: {
-				ko: canonicalKorean,
-				en: canonicalEnglish,
-				"x-default": canonicalEnglish,
-			},
+			languages,
 		},
 		openGraph: {
 			...content,
@@ -47,4 +50,6 @@ interface IFPublicPageMetadata {
 	description: string;
 	keywords?: Metadata["keywords"];
 	robots?: Metadata["robots"];
+	/** 한국어 본문만 있는 페이지. hreflang에서 en을 빼고 x-default도 ko로 건다 */
+	isKoreanOnly?: boolean;
 }

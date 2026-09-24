@@ -37,7 +37,10 @@ export default function ExtensionInstallCheckDialog({
 
 	const handleOkClick = () => {
 		// 웹으로 가입한 사람이 확장까지 가는지. 설치 유도가 실제로 작동하는지의 근거입니다.
-		analytics.trackEvent({ name: "extension_install_click" });
+		analytics.trackEvent({
+			name: "extension_install_click",
+			params: { from: "/memos", position: "install_check_dialog" },
+		});
 		window.open(
 			EXTERNAL_LINK.chromeWebStoreListing,
 			"_blank",

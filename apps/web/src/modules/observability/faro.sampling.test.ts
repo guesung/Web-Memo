@@ -33,6 +33,10 @@ describe("Faro 세션 샘플링", () => {
 		expect(sampledTransport.items[0]?.meta.session).toEqual({
 			id: expect.any(String),
 		});
+		// collector는 SDK 버전이 없는 요청을 400 "No SDK version"으로 거부한다.
+		expect(sampledTransport.items[0]?.meta.sdk?.version).toEqual(
+			expect.any(String),
+		);
 		expect(unsampledTransport.items).toHaveLength(0);
 	});
 });

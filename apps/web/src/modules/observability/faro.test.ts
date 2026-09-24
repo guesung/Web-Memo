@@ -83,6 +83,11 @@ describe("Faro 측정값 필터", () => {
 				},
 			},
 			meta: {
+				sdk: {
+					name: "@grafana/faro-core",
+					version: "2.12.1",
+					integrations: [{ name: "private-integration", version: "1.0.0" }],
+				},
 				page: { url: "https://webmemo.xyz/ko/memos/star?q=private" },
 				user: { email: "private@example.com" },
 				session: {
@@ -106,6 +111,7 @@ describe("Faro 측정값 필터", () => {
 				},
 			},
 			meta: {
+				sdk: { name: "@grafana/faro-core", version: "2.12.1" },
 				app: { name: "web-memo-web" },
 				page: { url: "/memos/wish" },
 				session: {
@@ -114,5 +120,38 @@ describe("Faro 측정값 필터", () => {
 				},
 			},
 		});
+	});
+
+	it("collector가 거부하는 SDK 버전 없는 항목은 보내지 않는다", () => {
+		initializeMemoFaro({
+			collectorUrl: "https://collector.example/collect",
+			normalizeRoute: getMemoRoute,
+		});
+		const configuration = initializeFaroMock.mock.calls[0]?.[0] as {
+			beforeSend: (item: unknown) => unknown;
+		};
+
+		const result = configuration.beforeSend({
+			type: "measurement",
+			payload: {
+				type: "memo_page_latency",
+				values: { duration_ms: 42 },
+				timestamp: "2026-09-24T00:00:00.000Z",
+				context: {
+					stage: "content_ready",
+					route: "/memos",
+					navigation: "hard_load",
+					outcome: "success",
+				},
+			},
+			meta: {
+				session: {
+					id: "anonymous-session-id",
+					attributes: { isSampled: "true" },
+				},
+			},
+		});
+
+		expect(result).toBeNull();
 	});
 });

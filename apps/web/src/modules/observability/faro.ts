@@ -62,6 +62,8 @@ export const createMemoFaroBeforeSend =
 		const outcome = measurement.context?.outcome;
 		const sessionId = item.meta.session?.id;
 		const isSampled = item.meta.session?.attributes?.isSampled;
+		const sdkName = item.meta.sdk?.name;
+		const sdkVersion = item.meta.sdk?.version;
 		if (
 			!route ||
 			measurement.type !== "memo_page_latency" ||
@@ -75,12 +77,15 @@ export const createMemoFaroBeforeSend =
 				outcome !== "cancelled" &&
 				outcome !== "timeout") ||
 			!sessionId ||
-			(isSampled !== "true" && isSampled !== "false")
+			(isSampled !== "true" && isSampled !== "false") ||
+			!sdkName ||
+			!sdkVersion
 		) {
 			return null;
 		}
 
 		// Faro의 기본 page.url에는 전체 URL과 검색어가 들어가므로 메타를 허용값으로 다시 만든다.
+		// collector는 sdk.version이 없으면 400으로 거부하므로 SDK 이름·버전은 남긴다.
 		return {
 			type: item.type,
 			payload: {
@@ -90,6 +95,7 @@ export const createMemoFaroBeforeSend =
 				context: { route, stage, navigation, outcome },
 			},
 			meta: {
+				sdk: { name: sdkName, version: sdkVersion },
 				app: { name: "web-memo-web" },
 				page: { url: route },
 				session: { id: sessionId, attributes: { isSampled } },

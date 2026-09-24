@@ -87,6 +87,20 @@ export type TAnalyticsEvent =
 	| { name: "extension_installed" }
 	| { name: "login_start"; params: { method: string } }
 	| { name: "side_panel_login_click" }
+	| {
+			name: "header_login_click";
+			params: {
+				/** 언어 접두사를 뺀 출발 경로. 예: "/introduce", "/features/memo" */
+				from: string;
+			};
+	  }
+	| {
+			name: "header_memos_click";
+			params: {
+				/** 언어 접두사를 뺀 출발 경로. 예: "/introduce", "/memos/setting" */
+				from: string;
+			};
+	  }
 	| { name: "sign_up"; params: { method: string } }
 	| {
 			name: "memo_status_toggle";
@@ -184,6 +198,8 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	extension_installed: "engagement",
 	login_start: "engagement",
 	side_panel_login_click: "engagement",
+	header_login_click: "engagement",
+	header_memos_click: "engagement",
 	sign_up: "core_action",
 	memo_status_toggle: "core_action",
 	memo_category_change: "core_action",

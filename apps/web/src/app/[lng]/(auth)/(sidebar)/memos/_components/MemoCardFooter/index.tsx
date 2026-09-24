@@ -205,6 +205,8 @@ export default function MemoCardFooter({
 					variant="ghost"
 					size="sm"
 					className="w-8 h-8 p-0 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-full"
+					aria-label={t("memos.toggle.wish")}
+					aria-pressed={Boolean(memo.isWish)}
 					onClick={handleIsWishClick}
 				>
 					<HeartIcon
@@ -221,6 +223,8 @@ export default function MemoCardFooter({
 					variant="ghost"
 					size="sm"
 					className="w-8 h-8 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-full"
+					aria-label={t("memos.toggle.reading")}
+					aria-pressed={Boolean(memo.isReading)}
 					onClick={handleIsReadingClick}
 				>
 					<BookOpen
@@ -238,6 +242,8 @@ export default function MemoCardFooter({
 					variant="ghost"
 					size="sm"
 					className="w-8 h-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-full"
+					aria-label={t("memos.toggle.star")}
+					aria-pressed={Boolean(memo.isStar)}
 					onClick={handleIsStarClick}
 				>
 					<StarIcon

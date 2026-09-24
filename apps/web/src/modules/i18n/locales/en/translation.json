@@ -517,6 +517,11 @@
 			"saving": "Saving...",
 			"saved": "All changes saved",
 			"error": "Failed to save"
+		},
+		"toggle": {
+			"wish": "Wishlist",
+			"reading": "Reading",
+			"star": "Important"
 		}
 	},
 	"highlight": {

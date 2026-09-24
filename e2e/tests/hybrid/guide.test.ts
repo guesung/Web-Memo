@@ -1,6 +1,7 @@
 import { PATHS } from "@web-memo/shared/constants";
 import { expect, test } from "../fixtures/extension";
 import { LANGUAGE } from "../lib";
+import { MockSupabaseStore, setupSupabaseMocks } from "../lib/mocks";
 
 const isCI = process.env.CI === "true";
 
@@ -12,6 +13,11 @@ async function clearGuideLocalStorage(page: import("@playwright/test").Page) {
 
 test.describe.configure({ mode: "parallel" });
 test.describe("가이드 기능", () => {
+	test.beforeEach(async ({ page }) => {
+		// 가이드는 메모가 없어도 뜬다. 로그인 뒤 메모 화면이 실서버를 읽지 않도록 빈 목 저장소를 씌운다.
+		await setupSupabaseMocks(page, new MockSupabaseStore());
+	});
+
 	test("메모 페이지 최초 접속시, 가이드를 볼 수 있다.", async ({ page }) => {
 		// Navigate to login page first and clear localStorage
 		await page.goto(`/${LANGUAGE}${PATHS.login}`);

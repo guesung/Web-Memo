@@ -1,6 +1,7 @@
 import path from "node:path";
 import type { BrowserContext, Page } from "@playwright/test";
 import { test as base, chromium } from "@playwright/test";
+import { supabaseGuardFixture } from "../lib/mocks/supabaseGuard";
 
 process.env.PW_CHROMIUM_ATTACH_TO_OTHER = "1";
 
@@ -12,6 +13,8 @@ const pathToExtension = path.join(path.resolve(), "..", "dist");
 
 type ExtensionFixture = {
 	context: BrowserContext;
+	/** `*.real.test.ts`가 아니면 목이 처리하지 않은 Supabase 요청을 막고 테스트를 실패시킨다(supabaseGuard.ts). */
+	supabaseGuard: undefined;
 };
 
 export const test = base.extend<ExtensionFixture>({
@@ -38,6 +41,7 @@ export const test = base.extend<ExtensionFixture>({
 		await context.close();
 	},
 	baseURL: BASE_URL,
+	supabaseGuard: [supabaseGuardFixture, { auto: true }],
 });
 export const expect = test.expect;
 

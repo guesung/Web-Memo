@@ -36,10 +36,12 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | `report-ga-weekly.yml` | schedule, workflow_dispatch | `ga/report-weekly-ga.mjs` |
 | `report-seo.yml` | schedule, workflow_dispatch | `pnpm seo:check`·`seo:gsc`·`seo:sheets` · `seo/find-previous-seo-report.mjs` · `seo/build-seo-ai-context.mjs` · `seo/send-seo-ai-report.mjs` · `seo/notify-seo-slack.mjs` |
 | `chore-cleanup-unused.yml` | schedule, workflow_dispatch | `cleanup/cleanup-unused-files.mjs` |
+| `chore-e2e-coverage.yml` | schedule, workflow_dispatch | `e2e-coverage/maintain.mjs` |
 | `chore-supabase-inventory.yml` | schedule, workflow_dispatch | `supabase/generate-supabase-inventory.mjs` · `supabase/sync-supabase-inventory-pr.mjs` |
 
 `chore-cleanup-unused.yml`·`chore-supabase-inventory.yml`·`audit-refactor.yml`은 `ref: master`로 체크아웃합니다. 작업 브랜치에서
 dispatch해도 스크립트는 master의 것이 돕니다.
+`chore-e2e-coverage.yml`은 주간 실행에서 master를, 수동 실행에서 선택한 ref를 체크아웃합니다. `master` 외 ref의 수동 실행은 검증 결과만 남기고 PR을 게시하지 않습니다.
 
 릴리스·배포 흐름 전체는 [`docs/release-flow.md`](../docs/release-flow.md)를 봅니다.
 
@@ -58,6 +60,7 @@ dispatch해도 스크립트는 master의 것이 돕니다.
 | `supabase/` | 운영 Supabase 인벤토리 문서(`docs/supabase-inventory.md`) 생성과 갱신 PR |
 | `refactor/` | 주간 리팩토링 점검 |
 | `cleanup/` | 미사용 파일 정리 |
+| `e2e-coverage/` | 핵심 사용자 흐름의 E2E 누락 점검, 새 테스트 검증, 자동 보완 PR 게시 |
 
 **`shared/` 규칙**: 두 도메인 이상이 쓰는 모듈만 `shared/`에 둡니다. 한 도메인만 쓰면 이름이
 범용이어도 그 도메인 폴더에 둡니다(예: `seo/google-sheets.mjs`). `shared/`는 다른 도메인 폴더를

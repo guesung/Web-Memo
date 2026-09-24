@@ -1,0 +1,95 @@
+[
+  {
+    "id": "memo-create",
+    "name": "메모 작성과 저장",
+    "sources": [
+      "pages/side-panel/",
+      "apps/web/src/app/",
+      "packages/shared/src/hooks/supabase/"
+    ],
+    "action": "페이지에서 메모를 입력하고 저장한다",
+    "expectedResult": "작성한 메모가 저장되고 다시 열어도 유지된다"
+  },
+  {
+    "id": "memo-read",
+    "name": "메모 조회",
+    "sources": [
+      "apps/web/src/app/",
+      "packages/shared/src/hooks/"
+    ],
+    "action": "저장한 메모 목록을 연다",
+    "expectedResult": "저장한 내용과 연결된 URL이 표시된다"
+  },
+  {
+    "id": "memo-update",
+    "name": "메모 수정",
+    "sources": [
+      "apps/web/src/app/",
+      "packages/shared/src/hooks/"
+    ],
+    "action": "저장한 메모 내용을 수정하고 다시 연다",
+    "expectedResult": "수정한 내용이 유지된다"
+  },
+  {
+    "id": "memo-delete",
+    "name": "메모 삭제",
+    "sources": [
+      "apps/web/src/app/",
+      "packages/shared/src/hooks/"
+    ],
+    "action": "목록에서 메모를 삭제하고 다시 조회한다",
+    "expectedResult": "삭제한 메모가 목록에서 사라진다"
+  },
+  {
+    "id": "memo-rediscover",
+    "name": "메모 재탐색",
+    "sources": [
+      "apps/web/src/app/",
+      "packages/shared/src/hooks/"
+    ],
+    "action": "검색어와 필터로 저장한 메모를 찾는다",
+    "expectedResult": "조건에 맞는 메모만 표시되고 초기화하면 목록이 복원된다"
+  },
+  {
+    "id": "summary",
+    "name": "페이지 요약과 미지원 페이지 처리",
+    "sources": [
+      "pages/side-panel/",
+      "apps/chrome-extension/",
+      "apps/web/src/app/api/"
+    ],
+    "action": "지원 페이지 및 미지원 페이지에서 요약을 요청한다",
+    "expectedResult": "지원 페이지는 요약을 표시하고 미지원 페이지에서도 메모 작성은 가능하다"
+  },
+  {
+    "id": "extension-settings",
+    "name": "확장 설정과 단축키",
+    "sources": [
+      "pages/options/",
+      "apps/chrome-extension/"
+    ],
+    "action": "확장 설정을 변경하고 단축키로 패널을 연다",
+    "expectedResult": "설정이 유지되고 패널에 즉시 접근할 수 있다"
+  },
+  {
+    "id": "memo-export",
+    "name": "메모 내보내기와 데이터 유지",
+    "sources": [
+      "apps/web/src/app/",
+      "packages/shared/src/"
+    ],
+    "action": "저장한 메모를 파일로 내보낸다",
+    "expectedResult": "내보낸 파일에 메모 내용이 보존된다"
+  },
+  {
+    "id": "authentication",
+    "name": "로그인과 웹·확장 연결",
+    "sources": [
+      "apps/web/src/app/",
+      "pages/side-panel/",
+      "packages/shared/src/"
+    ],
+    "action": "로그인 후 웹과 확장 사이에서 메모에 접근한다",
+    "expectedResult": "같은 계정의 메모를 조회하고 로그아웃하면 접근이 해제된다"
+  }
+]

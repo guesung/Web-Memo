@@ -61,8 +61,7 @@ interface IFCleanupTestDataParams {
  * 한 테스트가 만든 메모·카테고리를 영구 삭제한다. 되돌릴 수 없다.
  * @description 휴지통(`deleted_at`)으로 보내면 행이 남아 다음 실행에도 계속 쌓이므로
  * hard delete로 간다. 메모를 먼저 지우는 이유는 `memo.category_id`가 `category.id`를
- * 참조하는 FK이기 때문이다. 정리 실패가 테스트 결과를 뒤집지 않도록 에러는 삼키고
- * 콘솔에만 남긴다.
+ * 참조하는 FK이기 때문이다. 정리에 실패하면 테스트도 실패로 처리한다.
  */
 export const cleanupTestData = async ({
 	memoUrls,
@@ -75,32 +74,28 @@ export const cleanupTestData = async ({
 		return;
 	}
 
-	try {
-		const client = await createCleanupClient();
+	const client = await createCleanupClient();
 
-		if (targetMemoUrls.length > 0) {
-			const { error } = await client
-				.from("memo")
-				.delete()
-				.in("url", targetMemoUrls);
+	if (targetMemoUrls.length > 0) {
+		const { error } = await client
+			.from("memo")
+			.delete()
+			.in("url", targetMemoUrls);
 
-			if (error) {
-				throw new Error(`메모 삭제 실패: ${error.message}`);
-			}
+		if (error) {
+			throw new Error(`메모 삭제 실패: ${error.message}`);
 		}
+	}
 
-		if (targetCategoryNames.length > 0) {
-			const { error } = await client
-				.from("category")
-				.delete()
-				.in("name", targetCategoryNames);
+	if (targetCategoryNames.length > 0) {
+		const { error } = await client
+			.from("category")
+			.delete()
+			.in("name", targetCategoryNames);
 
-			if (error) {
-				throw new Error(`카테고리 삭제 실패: ${error.message}`);
-			}
+		if (error) {
+			throw new Error(`카테고리 삭제 실패: ${error.message}`);
 		}
-	} catch (error) {
-		console.warn("[e2e cleanup] 테스트 데이터 정리 실패", error);
 	}
 };
 
@@ -110,38 +105,34 @@ export const cleanupTestData = async ({
  * 모든 worker가 끝난 뒤 `globalTeardown`에서 한 번 더 쓸어담는 자리다.
  */
 export const cleanupE2EResidue = async () => {
-	try {
-		const client = await createCleanupClient();
+	const client = await createCleanupClient();
 
-		const { error: prefixError } = await client
-			.from("memo")
+	const { error: prefixError } = await client
+		.from("memo")
+		.delete()
+		.like("url", `${E2E_MEMO_URL_PREFIX}%`);
+
+	if (prefixError) {
+		throw new Error(`잔여 메모 삭제 실패: ${prefixError.message}`);
+	}
+
+	const { error: hostError } = await client
+		.from("memo")
+		.delete()
+		.eq("url", E2E_SIDE_PANEL_HOST_URL);
+
+	if (hostError) {
+		throw new Error(`잔여 메모 삭제 실패: ${hostError.message}`);
+	}
+
+	for (const prefix of E2E_CATEGORY_NAME_PREFIXES) {
+		const { error: categoryError } = await client
+			.from("category")
 			.delete()
-			.like("url", `${E2E_MEMO_URL_PREFIX}%`);
+			.like("name", `${prefix} %`);
 
-		if (prefixError) {
-			throw new Error(`잔여 메모 삭제 실패: ${prefixError.message}`);
+		if (categoryError) {
+			throw new Error(`잔여 카테고리 삭제 실패: ${categoryError.message}`);
 		}
-
-		const { error: hostError } = await client
-			.from("memo")
-			.delete()
-			.eq("url", E2E_SIDE_PANEL_HOST_URL);
-
-		if (hostError) {
-			throw new Error(`잔여 메모 삭제 실패: ${hostError.message}`);
-		}
-
-		for (const prefix of E2E_CATEGORY_NAME_PREFIXES) {
-			const { error: categoryError } = await client
-				.from("category")
-				.delete()
-				.like("name", `${prefix} %`);
-
-			if (categoryError) {
-				throw new Error(`잔여 카테고리 삭제 실패: ${categoryError.message}`);
-			}
-		}
-	} catch (error) {
-		console.warn("[e2e cleanup] 잔여물 정리 실패", error);
 	}
 };

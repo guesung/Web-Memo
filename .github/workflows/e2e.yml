@@ -8,10 +8,11 @@ on:
       - master
   pull_request:
 
-# master는 배포 판단의 근거가 되는 결과라 취소하지 않고 끝까지 돌립니다.
+# 정기 E2E 보강 작업과 테스트 계정을 공유하므로 모든 실행을 같은 줄에 세웁니다.
 concurrency:
-  group: e2e-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  group: e2e-shared-test-account
+  queue: max
+  cancel-in-progress: false
 
 jobs:
   tests_e2e:

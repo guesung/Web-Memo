@@ -197,16 +197,32 @@ const buildUnusedBlock = ({ unused, thresholds }) => {
  * build_env=production 을 함께 적용하지만, 자동 수집 기반 활성 사용자는
  * build_env 가 없어 hostName 허용 목록만 적용합니다.
  */
-const buildContextBlock = ({ eventNames, previousStart, previousEnd, runUrl }) => {
+const buildContextBlock = ({
+	eventNames,
+	previousStart,
+	previousEnd,
+	runUrl,
+	sheetUrl,
+}) => {
 	const lines = [
 		`전주 비교 기간: ${formatRange(previousStart, previousEnd)}`,
 		`이벤트 ${eventNames.length}종 (packages/shared 의 EVENT_CATEGORY 에서 읽음) · 사람 수 기준`,
 		"모수: 커스텀 이벤트·퍼널은 hostName 허용 목록 + production, 활성 사용자는 hostName 허용 목록",
 		"퍼널: 그 주에 설치한 사람이 같은 사용자로 단계를 순서대로 밟은 수 (순서 강제). 확장→웹 구간은 client_id 연결 배포 이후 데이터부터 이어집니다",
 	];
+	const links = [];
 
 	if (runUrl) {
-		lines.push(`<${runUrl}|워크플로 런>`);
+		links.push(`<${runUrl}|워크플로 런>`);
+	}
+
+	// 몇 주에 걸친 추이는 이 메시지가 아니라 누적 시트에서 봅니다.
+	if (sheetUrl) {
+		links.push(`<${sheetUrl}|누적 시트>`);
+	}
+
+	if (links.length > 0) {
+		lines.push(links.join(" · "));
 	}
 
 	return {
@@ -216,7 +232,7 @@ const buildContextBlock = ({ eventNames, previousStart, previousEnd, runUrl }) =
 };
 
 /** 한 주치 집계 결과를 그대로 받아 보낼 페이로드로 만듭니다. */
-export const buildWeeklyReportPayload = ({ report, runUrl }) => {
+export const buildWeeklyReportPayload = ({ report, runUrl, sheetUrl }) => {
 	const {
 		start,
 		end,
@@ -248,7 +264,13 @@ export const buildWeeklyReportPayload = ({ report, runUrl }) => {
 			buildFunnelBlock(funnel),
 			{ type: "divider" },
 			buildUnusedBlock({ unused, thresholds }),
-			buildContextBlock({ eventNames, previousStart, previousEnd, runUrl }),
+			buildContextBlock({
+				eventNames,
+				previousStart,
+				previousEnd,
+				runUrl,
+				sheetUrl,
+			}),
 		],
 	};
 };

@@ -174,8 +174,9 @@ export default function SettingCategoryForm({
 							<Button
 								variant="ghost"
 								size="icon"
-								className="text-destructive h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+								className="text-destructive h-7 w-7"
 								type="button"
+								aria-label={`${category.name}: ${t("setting.deleteCategory")}`}
 								onClick={() => setCategoryIdToDelete(category.id)}
 							>
 								<TrashIcon size={14} />

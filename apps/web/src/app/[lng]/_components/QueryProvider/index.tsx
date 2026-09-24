@@ -65,7 +65,7 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 					},
 				}),
 				mutationCache: new MutationCache({
-					onSuccess: async (data, _variables, _context, mutation) => {
+					onSuccess: (data, _variables, _context, mutation) => {
 						const resultError = getResultError(data);
 
 						if (resultError) {
@@ -82,7 +82,10 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 							});
 						}
 
-						await bridge.request.REFETCH_THE_MEMO_LIST_FROM_WEB();
+						// 확장이 없어도 서버 저장 성공을 실패로 바꾸지 않습니다.
+						void bridge.request
+							.REFETCH_THE_MEMO_LIST_FROM_WEB()
+							.catch(() => {});
 					},
 					onError: (error, _variables, _context, mutation) => {
 						if (isAbortError(error)) {

@@ -73,6 +73,7 @@ test.describe("메모 삭제 기능 (Mocked)", () => {
 
 		await memoItem.hover();
 		await memoItem.getByTestId("memo-option").click();
+		await holdToastOpen(page);
 		await page.getByTestId("memo-delete-button").click();
 
 		await expect(memoItem).toBeHidden();

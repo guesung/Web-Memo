@@ -4,7 +4,7 @@ name: Env Manifest
 # 생성한 것과 같은지 대조합니다. 어긋나면 PR이 실패합니다.
 #
 # 토큰이 필요 없는 검사만 합니다. GitHub·Vercel·Supabase에 실제 등록된 이름과의 대조는
-# 콘솔에서 바뀌는 일이라 PR과 무관하므로 env-registry-audit.yml 이 스케줄로 맡습니다.
+# 콘솔에서 바뀌는 일이라 PR과 무관하므로 audit-env-registry.yml 이 스케줄로 맡습니다.
 #
 # required status check로 등록하려면 모든 PR에서 실행돼야 합니다. paths로 걸러 잡이 뜨지 않으면
 # 체크가 "대기중"에 머물러 머지가 영영 막힙니다. 의존성 설치가 없어 몇 초면 끝나므로 걸러내지 않습니다.

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * 어제 하루의 GA4 지표를 집계해 Slack에 게시합니다.
- * .github/workflows/daily-ga-report.yml 이 매일 아침(서울 07:00) 호출합니다.
+ * .github/workflows/report-ga-daily.yml 이 매일 아침(서울 07:00) 호출합니다.
  *
  * 이 리포트의 목적은 사용량 보고가 아니라 로깅 감시입니다. 로깅은 틀려도 화면이
  * 깨지지 않아 아무도 모르게 죽습니다. 7일 평균과 매일 대조하는 것이 유일한 알람입니다.

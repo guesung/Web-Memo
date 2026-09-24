@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * 지난주 한 주의 GA4 사용 현황을 집계해 Slack에 게시하고 구글 시트에 쌓습니다.
- * .github/workflows/weekly-ga-report.yml 이 매주 월요일 아침(서울 08:00) 호출합니다.
+ * .github/workflows/report-ga-weekly.yml 이 매주 월요일 아침(서울 08:00) 호출합니다.
  *
  * 데일리 리포트와 목적이 다릅니다. 그쪽은 "로깅이 살아 있는가"를 감시하고,
  * 이쪽은 "사람들이 무엇을 쓰고 있고 다음에 무엇을 만들어야 하는가"에 답합니다.

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * GitHub·Vercel·Supabase에 실제로 등록된 환경 변수 이름을 매니페스트(.github/env-manifest.yml)와
- * 대조하고, 다르면 Slack으로 알립니다. .github/workflows/env-registry-audit.yml 이 매일 호출합니다.
+ * 대조하고, 다르면 Slack으로 알립니다. .github/workflows/audit-env-registry.yml 이 매일 호출합니다.
  *
  * 콘솔에서 시크릿을 지우거나 새로 만드는 일은 PR과 무관하게 일어나므로 PR CI(check-env-manifest.mjs)가
  * 못 잡습니다. 이 스크립트가 그 틈을 메웁니다. 이름만 비교하므로 같은 이름이 두 저장소에 있을 때

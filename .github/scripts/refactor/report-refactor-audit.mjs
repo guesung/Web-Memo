@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * 주간 리팩토링 점검 결과로 노션 작업 카드를 만들고 Slack에 알립니다.
- * .github/workflows/refactor-audit.yml 이 claude-code-action 다음 단계로 호출합니다.
+ * .github/workflows/audit-refactor.yml 이 claude-code-action 다음 단계로 호출합니다.
  *
  * 점검 자체는 앞 단계가 읽기 전용으로 끝냈고, 여기서는 그 JSON(AUDIT_RESULT)만 받습니다.
  * LLM 토큰을 쓰지 않는 결정적인 전달 단계입니다.

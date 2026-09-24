@@ -54,31 +54,31 @@
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
-| `APP_ID` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/cleanup-unused.yml`, `.github/workflows/env-registry-audit.yml` |
-| `APP_PRIVATE_KEY` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/cleanup-unused.yml`, `.github/workflows/env-registry-audit.yml` |
-| `CLAUDE_CODE_OAUTH_TOKEN` | 주간 리팩토링 점검과 SEO AI 리포트가 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신한다. 구독 토큰이라 만료·한도 소진으로도 실패한다 | `.github/workflows/refactor-audit.yml`, `.github/workflows/seo-monitor.yml` |
+| `APP_ID` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml` |
+| `APP_PRIVATE_KEY` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml` |
+| `CLAUDE_CODE_OAUTH_TOKEN` | 주간 리팩토링 점검과 SEO AI 리포트가 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신한다. 구독 토큰이라 만료·한도 소진으로도 실패한다 | `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml` |
 | `CLIENT_ID` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `CLIENT_SECRET` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `EXPO_ANDROID_SERVICE_ACCOUNT_JSON` | Google Play 내부 테스트 제출과 현황 조회가 실패한다 | `.github/workflows/cd-app.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `EXPO_ASC_API_KEY_P8` | TestFlight 제출과 App Store 현황 조회가 실패한다 | `.github/workflows/cd-app.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `EXPO_TOKEN` | EAS 로그인이 실패해 앱 빌드가 멈춘다 | `.github/workflows/cd-app.yml` |
-| `GA_SHEET_ID` (선택) | 주간 GA 수치가 Google Sheets에 쌓이지 않는다(Slack 리포트는 그대로 가고 경고만 남는다) | `.github/workflows/weekly-ga-report.yml` |
-| `GA4_SERVICE_ACCOUNT_JSON` | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/daily-ga-report.yml`, `.github/workflows/weekly-ga-report.yml`, `.github/workflows/seo-monitor.yml`, `apps/web/src/modules/ga/config.ts` |
-| `GSC_SERVICE_ACCOUNT_JSON` (선택) | 없으면 공개 SEO 검사는 계속 실행되지만 Search Console 색인 상태와 주간 검색 성과 조회를 건너뛴다 | `.github/workflows/seo-monitor.yml` |
-| `NOTION_TOKEN` | 주간 리팩토링 점검 결과가 노션 작업 카드로 만들어지지 않는다 | `.github/workflows/refactor-audit.yml` |
+| `GA_SHEET_ID` (선택) | 주간 GA 수치가 Google Sheets에 쌓이지 않는다(Slack 리포트는 그대로 가고 경고만 남는다) | `.github/workflows/report-ga-weekly.yml` |
+| `GA4_SERVICE_ACCOUNT_JSON` | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/report-seo.yml`, `apps/web/src/modules/ga/config.ts` |
+| `GSC_SERVICE_ACCOUNT_JSON` (선택) | 없으면 공개 SEO 검사는 계속 실행되지만 Search Console 색인 상태와 주간 검색 성과 조회를 건너뛴다 | `.github/workflows/report-seo.yml` |
+| `NOTION_TOKEN` | 주간 리팩토링 점검 결과가 노션 작업 카드로 만들어지지 않는다 | `.github/workflows/audit-refactor.yml` |
 | `REFRESH_TOKEN` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `SENTRY_AUTH_TOKEN` | Sentry 소스맵 업로드가 조용히 실패한다. 빌드는 통과하므로 스택 트레이스가 난독화된 채 보여야 알게 된다 | `.github/workflows/cd-extension.yml`, `apps/web/next.config.mjs`, `packages/vite-config/lib/withPageConfig.mjs` |
-| `SEO_SHEET_ID` (선택) | SEO·GSC 장기 이력이 Google Sheets에 쌓이지 않는다(공개 SEO 검사와 원본 아티팩트는 유지된다) | `.github/workflows/seo-monitor.yml` |
-| `SLACK_BOT_TOKEN` | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts`, `.github/workflows/seo-monitor.yml` |
+| `SEO_SHEET_ID` (선택) | SEO·GSC 장기 이력이 Google Sheets에 쌓이지 않는다(공개 SEO 검사와 원본 아티팩트는 유지된다) | `.github/workflows/report-seo.yml` |
+| `SLACK_BOT_TOKEN` | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts`, `.github/workflows/report-seo.yml` |
 | `SLACK_CHANNEL_ID` | 머지 스레드가 생기지 않고 웹훅 알림으로 폴백한다 | `.github/workflows/ci.yml` |
-| `SLACK_REPORT_CHANNEL_ID` | SEO AI 리포트를 스레드로 보내지 못하고 기존 기계 판정 알림으로 대신한다. 봇(SLACK_BOT_TOKEN)이 이 채널에 초대돼 있어야 한다 | `.github/workflows/seo-monitor.yml` |
-| `SLACK_REPORT_WEBHOOK_URL` | GA 리포트, 주간 리팩토링 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다 | `.github/workflows/daily-ga-report.yml`, `.github/workflows/weekly-ga-report.yml`, `.github/workflows/refactor-audit.yml`, `.github/workflows/seo-monitor.yml` |
-| `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트·Supabase 감사 실패 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/daily-ga-report.yml`, `.github/workflows/weekly-ga-report.yml`, `.github/workflows/refactor-audit.yml`, `.github/workflows/notify-release.yml`, `.github/workflows/versions.yml`, `.github/workflows/env-registry-audit.yml`, `.github/workflows/seo-monitor.yml`, `.github/workflows/supabase-audit.yml` |
+| `SLACK_REPORT_CHANNEL_ID` | SEO AI 리포트를 스레드로 보내지 못하고 기존 기계 판정 알림으로 대신한다. 봇(SLACK_BOT_TOKEN)이 이 채널에 초대돼 있어야 한다 | `.github/workflows/report-seo.yml` |
+| `SLACK_REPORT_WEBHOOK_URL` | GA 리포트, 주간 리팩토링 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다 | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml` |
+| `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트·Supabase 감사 실패 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/versions.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/audit-supabase.yml` |
 | `STAGING_WEB_URL_WITHOUT_PROTOCOL` | 스테이징 배포에 alias 도메인이 붙지 않는다 | `.github/workflows/cd-web.yml` |
-| `SUPABASE_ACCESS_TOKEN` | 등록 현황 감사가 Supabase secrets를 조회하지 못하고 운영 감사가 실패한다 | `.github/workflows/env-registry-audit.yml`, `.github/workflows/supabase-audit.yml` |
-| `TURBO_TEAM` | Turborepo 원격 캐시 팀을 못 찾아 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/cleanup-unused.yml`, `.github/workflows/e2e.yml` |
-| `TURBO_TOKEN` | Turborepo 원격 캐시를 못 써 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/cleanup-unused.yml`, `.github/workflows/e2e.yml` |
-| `VERCEL_TOKEN` | vercel pull, build, deploy, alias가 인증에 실패해 웹 배포가 멈추고, e2e가 웹 서버 환경 변수를 받지 못한다 | `.github/workflows/cd-web.yml`, `.github/workflows/e2e.yml`, `.github/workflows/env-registry-audit.yml` |
+| `SUPABASE_ACCESS_TOKEN` | 등록 현황 감사가 Supabase secrets를 조회하지 못하고 운영 감사가 실패한다 | `.github/workflows/audit-env-registry.yml`, `.github/workflows/audit-supabase.yml` |
+| `TURBO_TEAM` | Turborepo 원격 캐시 팀을 못 찾아 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml` |
+| `TURBO_TOKEN` | Turborepo 원격 캐시를 못 써 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml` |
+| `VERCEL_TOKEN` | vercel pull, build, deploy, alias가 인증에 실패해 웹 배포가 멈추고, e2e가 웹 서버 환경 변수를 받지 못한다 | `.github/workflows/cd-web.yml`, `.github/workflows/e2e.yml`, `.github/workflows/audit-env-registry.yml` |
 
 ### Vercel 프로젝트 환경변수 (15개)
 
@@ -87,14 +87,14 @@
 | `BUILD_ENV` | production, preview | Git 연동 빌드가 development로 구워져 운영에 localhost:3000이 실린다. tsup.config.ts의 가드가 빌드를 실패시켜 막는다 | `packages/env/src/config.ts`, `packages/env/tsup.config.ts`, `apps/web/next.config.mjs`, `packages/zipper/index.ts` |
 | `ENABLE_EXPERIMENTAL_COREPACK` | 전체 | corepack이 꺼져 packageManager의 pnpm 버전이 무시된다 | 코드 밖 |
 | `GA4_PROPERTY_ID` (선택) | 전체 | 없으면 코드에 적힌 기본 속성 ID로 동작한다 | `apps/web/src/modules/ga/config.ts` |
-| `GA4_SERVICE_ACCOUNT_JSON` | 전체 | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/daily-ga-report.yml`, `.github/workflows/weekly-ga-report.yml`, `.github/workflows/seo-monitor.yml`, `apps/web/src/modules/ga/config.ts` |
+| `GA4_SERVICE_ACCOUNT_JSON` | 전체 | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/report-seo.yml`, `apps/web/src/modules/ga/config.ts` |
 | `GITHUB_DISPATCH_REPOSITORY` (선택) | 전체 | 없으면 guesung/Web-Memo로 동작한다 | `apps/web/src/modules/slack/config.ts` |
 | `GITHUB_DISPATCH_TOKEN` | 전체 | Slack에서 release.yml과 versions.yml을 실행하지 못한다 | `apps/web/src/modules/slack/config.ts` |
 | `NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY` | 전체 | 채널톡 위젯이 뜨지 않는다 | `apps/web/src/components/ChannelTalk/index.tsx` |
 | `OPENAI_API_KEY` | 전체 | AI 기능 전체가 실패한다 | `apps/web/src/app/api/openai/util.ts`, `apps/web/src/app/api/openai/category/route.ts`, `apps/web/src/app/api/openai/webpage-qa/route.ts` |
 | `SENTRY_AUTH_TOKEN` | 전체 | Sentry 소스맵 업로드가 조용히 실패한다. 빌드는 통과하므로 스택 트레이스가 난독화된 채 보여야 알게 된다 | `.github/workflows/cd-extension.yml`, `apps/web/next.config.mjs`, `packages/vite-config/lib/withPageConfig.mjs` |
 | `SENTRY_WEBHOOK_SECRET` | production | Sentry 웹훅의 서명을 검증하지 못해 에러 알림이 Slack으로 릴레이되지 않는다 | `apps/web/src/modules/sentry/config.ts` |
-| `SLACK_BOT_TOKEN` | 전체 | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts`, `.github/workflows/seo-monitor.yml` |
+| `SLACK_BOT_TOKEN` | 전체 | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts`, `.github/workflows/report-seo.yml` |
 | `SLACK_SENTRY_ALERT_CHANNEL` | 전체 | Sentry 알림을 보낼 채널을 몰라 릴레이가 실패한다 | `apps/web/src/modules/sentry/config.ts` |
 | `SLACK_SIGNING_SECRET` | 전체 | Slack 요청 서명을 검증하지 못해 배포 버튼과 슬래시 커맨드가 실패한다 | `apps/web/src/modules/slack/config.ts` |
 | `UPSTASH_REDIS_REST_TOKEN` | 전체 | OpenAI API 레이트 리밋이 조용히 꺼진다 | `apps/web/src/app/api/openai/ratelimit.ts` |

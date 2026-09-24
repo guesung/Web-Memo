@@ -3,7 +3,7 @@ name: Env Registry Audit
 # GitHub Secrets·Vercel 프로젝트 환경변수·Supabase secrets에 실제로 등록된 이름을
 # .github/env-manifest.yml 과 대조합니다.
 #
-# 콘솔에서 시크릿이 지워지거나 새로 생기는 일은 PR과 무관해서 코드만 보는 PR CI(env-manifest.yml)가
+# 콘솔에서 시크릿이 지워지거나 새로 생기는 일은 PR과 무관해서 코드만 보는 PR CI(audit-env-manifest.yml)가
 # 못 잡습니다. 그래서 매일 돌아 다르면 Slack으로 알리고(notify), PR에서도 돌아 등록이 빠진 값이 있으면
 # 체크를 실패시킵니다(check).
 # 이름만 비교하므로 같은 이름이 두 저장소에 있을 때 값이 같은지는 확인하지 못합니다.

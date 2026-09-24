@@ -1,7 +1,7 @@
 name: Refactor audit
 
 # 주 1회 master의 설계·구조·퀄리티를 점검해 리팩토링 후보를 노션 작업 카드로 만들고 Slack에 알립니다.
-# cleanup-unused.yml 과 같은 주기(토요일 아침)입니다. 앞은 기계적으로 지울 수 있는 것을,
+# chore-cleanup-unused.yml 과 같은 주기(토요일 아침)입니다. 앞은 기계적으로 지울 수 있는 것을,
 # 이쪽은 사람이 판단해야 하는 것을 찾습니다.
 #
 # 전제: 이 레포에 Claude GitHub App(https://github.com/apps/claude)이 설치돼 있어야 합니다.
@@ -16,7 +16,7 @@ name: Refactor audit
 # 수동 실행의 dry_run 은 노션 카드와 Slack 전송을 건너뛰고 보낼 내용만 로그에 찍습니다.
 on:
   schedule:
-    # 매주 토요일 01:17 UTC (KST 10:17). cleanup-unused.yml 이 01:00 이라 17분 어긋냅니다.
+    # 매주 토요일 01:17 UTC (KST 10:17). chore-cleanup-unused.yml 이 01:00 이라 17분 어긋냅니다.
     # 정시에는 스케줄이 몰려 지연·누락이 잦고, 같은 시각에 두 잡이 러너를 다투는 것도 피합니다.
     - cron: "17 1 * * 6"
   workflow_dispatch:
@@ -102,7 +102,7 @@ jobs:
             --json-schema '{"type":"object","properties":{"summary":{"type":"string"},"findings":{"type":"array","items":{"type":"object","properties":{"title":{"type":"string"},"severity":{"type":"string","enum":["high","medium","low"]},"category":{"type":"string","enum":["design","structure","quality"]},"files":{"type":"array","items":{"type":"string"}},"problem":{"type":"string"},"suggestion":{"type":"string"}},"required":["title","severity","category","files","problem","suggestion"]}}},"required":["summary","findings"]}'
 
       # 노션 카드는 개인 업무 로그 DB에 만듭니다. DB ID는 비밀이 아니라 값을 그대로 적습니다
-      # (weekly-ga-report.yml 의 GA4_PROPERTY_ID 와 같은 이유입니다).
+      # (report-ga-weekly.yml 의 GA4_PROPERTY_ID 와 같은 이유입니다).
       - name: Create Notion card and notify Slack
         env:
           AUDIT_RESULT: ${{ steps.audit.outputs.structured_output }}

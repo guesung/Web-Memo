@@ -4,4 +4,5 @@ export { default as CategoryBadge } from "./CategoryBadge";
 export { default as CategoryCommandPopup } from "./CategoryCommandPopup";
 export { CategorySuggestion } from "./CategorySuggestion";
 export { default as MemoFormSkeleton } from "./MemoFormSkeleton";
+export { default as PastMemoNotice } from "./PastMemoNotice";
 export { default as SaveStatus } from "./SaveStatus";

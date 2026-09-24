@@ -1,0 +1,513 @@
+name: E2E coverage maintenance
+
+on:
+  schedule:
+    # 기존 정기 점검과 겹치지 않도록 일요일 아침에 실행합니다.
+    - cron: "23 1 * * 0"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "테스트와 검증까지만 실행하고 PR은 만들지 않습니다"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pull-requests: read
+
+# 기존 E2E와 실제 Supabase 테스트 계정을 공유합니다.
+concurrency:
+  group: e2e-shared-test-account
+  queue: max
+  cancel-in-progress: false
+
+jobs:
+  maintain:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      artifact_ready: ${{ steps.export_artifact.outputs.ready }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event_name == 'schedule' && 'master' || github.ref_name }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Prepare run directory
+        run: |
+          mkdir -p "$RUNNER_TEMP/e2e-coverage"
+          echo "E2E_COVERAGE_DIR=$RUNNER_TEMP/e2e-coverage" >> "$GITHUB_ENV"
+          echo "E2E_BASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "NODE_VERSION=$(cat .nvmrc)" >> "$GITHUB_ENV"
+
+      - name: Skip when a maintenance PR is already open
+        id: precheck
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node .github/scripts/e2e-coverage/maintain.mjs precheck
+
+      - name: Prepare coverage context
+        id: context
+        if: steps.precheck.outputs.proceed == 'true'
+        run: node .github/scripts/e2e-coverage/maintain.mjs context
+
+      - name: Analyze one missing user flow
+        id: analyze
+        if: steps.precheck.outputs.proceed == 'true'
+        uses: anthropics/claude-code-action/base-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Read AGENTS.md, docs/architecture.md, e2e/playwright.config.ts and ${{ steps.context.outputs.context_file }}.
+            Inspect source and existing E2E tests across every configured project before deciding whether a core user flow is missing.
+            Use the rotating flow suggested by context.json as a starting point. A test in any project can already cover the flow.
+            Choose at most one missing observable user action and expected result. Prefer a small, reliable test that follows current fixtures.
+            Do not modify files. Return only the required JSON object. Use status=none if the flow is covered and status=insufficient if evidence is inadequate.
+            scenarioId must be an id from context.json. Every string field except testFile and project must be nonempty even for none/insufficient.
+            productRefs and existingTestRefs must contain repository-relative paths to real tracked files without line numbers.
+            Choose a flow with at least one existing browser-route-mocked test as evidence, regardless of its project name.
+            For none/insufficient, set testFile and project to empty strings.
+            For gap, choose an existing project and a new e2e/tests/<project>/<camelCase>.test.ts path.
+            Only generate mocked tests in web, extension, or hybrid. Reuse e2e/tests/lib/mocks/ and do not read or write real Supabase data beyond authentication.
+            If the flow requires a *.real.test.ts test, return status=insufficient and explain why real data is required.
+          claude_args: >-
+            --model claude-sonnet-4-6
+            --max-turns 20
+            --allowedTools "Read,Grep,Glob"
+            --json-schema '{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string","enum":["gap","none","insufficient"]},"scenarioId":{"type":"string"},"reason":{"type":"string"},"productRefs":{"type":"array","items":{"type":"string"}},"existingTestRefs":{"type":"array","items":{"type":"string"}},"missingAction":{"type":"string"},"expectedResult":{"type":"string"},"testFile":{"type":"string"},"project":{"type":"string"}},"required":["status","scenarioId","reason","productRefs","existingTestRefs","missingAction","expectedResult","testFile","project"]}'
+
+      - name: Validate analysis result
+        id: candidate
+        if: steps.precheck.outputs.proceed == 'true'
+        env:
+          E2E_CANDIDATE_JSON: ${{ steps.analyze.outputs.structured_output }}
+        run: node .github/scripts/e2e-coverage/maintain.mjs candidate
+
+      - name: Write one E2E test
+        id: write_test
+        if: steps.candidate.outputs.status == 'gap'
+        uses: anthropics/claude-code-action/base-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Read AGENTS.md, docs/architecture.md, e2e/playwright.config.ts and ${{ runner.temp }}/e2e-coverage/candidate.json.
+            Add exactly one E2E test for the approved candidate. The only file you may change is the candidate's testFile.
+            Follow the current project directory, fixtures, authentication, cleanup, and assertion patterns. Avoid fixed sleeps.
+            Create only a mocked *.test.ts test using e2e/tests/lib/mocks/. Do not create a *.real.test.ts test or read or write real Supabase data beyond authentication.
+            Do not edit product code, configuration, workflows, or existing tests. Do not commit or publish anything.
+          claude_args: >-
+            --model claude-sonnet-4-6
+            --max-turns 20
+            --allowedTools "Read,Grep,Glob,Edit,Write"
+
+      - name: Check generated changes
+        id: changes
+        if: steps.candidate.outputs.status == 'gap'
+        run: node .github/scripts/e2e-coverage/maintain.mjs changes
+
+      - name: Install dependencies
+        if: steps.candidate.outputs.status == 'gap'
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Pull Vercel development environment
+        if: steps.candidate.outputs.status == 'gap'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::VERCEL_TOKEN is required for authenticated E2E tests"
+            exit 1
+          fi
+          npm install --global vercel@latest
+          vercel link --yes --project web-memo --scope gueit214s-projects --token "$VERCEL_TOKEN"
+          vercel env pull apps/web/.env.local --environment=development --yes --token "$VERCEL_TOKEN"
+
+      - name: Install Chromium
+        if: steps.candidate.outputs.status == 'gap'
+        run: pnpm -F e2e exec playwright install chromium
+
+      - name: Verify generated test
+        id: verify_initial
+        if: steps.candidate.outputs.status == 'gap'
+        continue-on-error: true
+        env:
+          TEST_FILE: ${{ steps.changes.outputs.test_file }}
+          TEST_PROJECT: ${{ steps.changes.outputs.project }}
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+        run: |
+          set -euo pipefail
+          exec > >(tee "$E2E_COVERAGE_DIR/verification-initial.log") 2>&1
+          pnpm check
+          pnpm type-check
+          pnpm build:extension
+          test_args=()
+          if [ "$TEST_PROJECT" = "web" ]; then
+            pnpm -F e2e exec playwright test --project=setup --retries=0 --workers=1 --reporter=line
+            test_args+=(--no-deps)
+          fi
+          pnpm -F e2e exec playwright test "${TEST_FILE#e2e/}" --project="$TEST_PROJECT" --retries=0 --workers=1 --reporter=json "${test_args[@]}" > "$E2E_COVERAGE_DIR/playwright.json"
+          node .github/scripts/e2e-coverage/maintain.mjs report
+
+      # 수정용 AI 단계가 로컬에 내려받은 서버 환경 변수를 읽지 못하게 합니다.
+      - name: Remove local server environment before AI correction
+        if: steps.candidate.outputs.status == 'gap' && steps.verify_initial.outcome == 'failure'
+        run: rm -f apps/web/.env.local
+
+      - name: Fix verification failure once
+        id: fix_test
+        if: steps.candidate.outputs.status == 'gap' && steps.verify_initial.outcome == 'failure'
+        uses: anthropics/claude-code-action/base-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Read ${{ runner.temp }}/e2e-coverage/candidate.json and ${{ runner.temp }}/e2e-coverage/verification-initial.log.
+            Fix the generated test once. The only file you may change is the candidate's testFile.
+            Keep exactly one test for the same flow and project. Do not modify product code, other tests, or configuration.
+            Keep the test mocked using e2e/tests/lib/mocks/. Do not rename it to *.real.test.ts or read or write real Supabase data beyond authentication.
+          claude_args: >-
+            --model claude-sonnet-4-6
+            --max-turns 20
+            --allowedTools "Read,Grep,Glob,Edit,Write"
+
+      - name: Check corrected changes
+        id: corrected_changes
+        if: steps.fix_test.outcome == 'success'
+        run: node .github/scripts/e2e-coverage/maintain.mjs changes
+
+      - name: Restore Vercel development environment
+        if: steps.corrected_changes.outcome == 'success'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel env pull apps/web/.env.local --environment=development --yes --token "$VERCEL_TOKEN"
+
+      - name: Verify corrected test
+        id: verify_retry
+        if: steps.corrected_changes.outcome == 'success'
+        env:
+          TEST_FILE: ${{ steps.corrected_changes.outputs.test_file }}
+          TEST_PROJECT: ${{ steps.corrected_changes.outputs.project }}
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+        run: |
+          set -euo pipefail
+          exec > >(tee "$E2E_COVERAGE_DIR/verification-retry.log") 2>&1
+          pnpm check
+          pnpm type-check
+          pnpm build:extension
+          test_args=()
+          if [ "$TEST_PROJECT" = "web" ]; then
+            pnpm -F e2e exec playwright test --project=setup --retries=0 --workers=1 --reporter=line
+            test_args+=(--no-deps)
+          fi
+          pnpm -F e2e exec playwright test "${TEST_FILE#e2e/}" --project="$TEST_PROJECT" --retries=0 --workers=1 --reporter=json "${test_args[@]}" > "$E2E_COVERAGE_DIR/playwright.json"
+          node .github/scripts/e2e-coverage/maintain.mjs report
+
+      - name: Reject unverified test
+        if: steps.candidate.outputs.status == 'gap' && steps.verify_initial.outcome != 'success' && steps.verify_retry.outcome != 'success'
+        run: exit 1
+
+      - name: Export only the new test and validated candidate
+        id: export_artifact
+        if: steps.candidate.outputs.status == 'gap' && (steps.verify_initial.outcome == 'success' || steps.verify_retry.outcome == 'success')
+        run: node .github/scripts/e2e-coverage/maintain.mjs export-artifact
+
+      - name: Transfer candidate to isolated verification
+        if: steps.export_artifact.outputs.ready == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: e2e-coverage-candidate
+          path: ${{ runner.temp }}/e2e-coverage/publish-artifact/
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Summarize result
+        if: always()
+        env:
+          E2E_RUN_STATUS: ${{ job.status }}
+          E2E_DRY_RUN: ${{ inputs.dry_run }}
+          E2E_PUBLISH_SKIP_REASON: ${{ github.ref_name != 'master' && '선택 ref가 master가 아니므로 게시 생략' || '' }}
+        run: node .github/scripts/e2e-coverage/maintain.mjs summary
+
+      - name: Upload coverage evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: e2e-coverage-evidence
+          path: ${{ runner.temp }}/e2e-coverage/
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Notify failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::warning::SLACK_WEBHOOK_URL is unavailable"
+            exit 0
+          fi
+          payload=$(node -e 'process.stdout.write(JSON.stringify({text: `❌ 주간 E2E 보강 실패: <${process.env.RUN_URL}|실행 로그 보기>`}))')
+          curl --silent --show-error --fail-with-body --header 'content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
+
+  verify:
+    needs: maintain
+    if: needs.maintain.outputs.artifact_ready == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      verified: ${{ steps.export_verified.outputs.ready }}
+      test_sha256: ${{ steps.imported.outputs.test_sha256 }}
+      candidate_sha256: ${{ steps.imported.outputs.candidate_sha256 }}
+      report_sha256: ${{ steps.export_verified.outputs.report_sha256 }}
+    steps:
+      # 새 러너는 작성용 AI가 바꾼 스크립트·Git 설정을 가져오지 않습니다.
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event_name == 'schedule' && 'master' || github.ref_name }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Prepare trusted checkout
+        id: baseline
+        run: |
+          mkdir -p "$RUNNER_TEMP/e2e-coverage"
+          echo "E2E_COVERAGE_DIR=$RUNNER_TEMP/e2e-coverage" >> "$GITHUB_ENV"
+          base_sha=$(git rev-parse HEAD)
+          echo "E2E_BASE_SHA=$base_sha" >> "$GITHUB_ENV"
+          echo "sha=$base_sha" >> "$GITHUB_OUTPUT"
+          echo "git_path=$(command -v git)" >> "$GITHUB_OUTPUT"
+          echo "node_path=$(command -v node)" >> "$GITHUB_OUTPUT"
+
+      - name: Rebuild coverage context from checked out source
+        run: node .github/scripts/e2e-coverage/maintain.mjs context
+
+      - uses: actions/download-artifact@v6
+        with:
+          name: e2e-coverage-candidate
+          path: ${{ runner.temp }}/e2e-candidate-staging
+
+      - name: Import and inspect the single test file
+        id: imported
+        env:
+          E2E_ARTIFACT_DIR: ${{ runner.temp }}/e2e-candidate-staging
+        run: node .github/scripts/e2e-coverage/maintain.mjs import-artifact
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Pull Vercel development environment
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::VERCEL_TOKEN is required for authenticated E2E tests"
+            exit 1
+          fi
+          npm install --global vercel@latest
+          vercel link --yes --project web-memo --scope gueit214s-projects --token "$VERCEL_TOKEN"
+          vercel env pull apps/web/.env.local --environment=development --yes --token "$VERCEL_TOKEN"
+
+      - name: Install Chromium
+        run: pnpm -F e2e exec playwright install chromium
+
+      - name: Verify in isolated checkout
+        id: verify_test
+        env:
+          E2E_BASE_SHA: ${{ steps.baseline.outputs.sha }}
+          E2E_COVERAGE_DIR: ${{ runner.temp }}/e2e-coverage
+          TEST_FILE: ${{ steps.imported.outputs.test_file }}
+          TEST_PROJECT: ${{ steps.imported.outputs.project }}
+          E2E_TEST_SHA256: ${{ steps.imported.outputs.test_sha256 }}
+          TRUSTED_GIT: ${{ steps.baseline.outputs.git_path }}
+          TRUSTED_NODE: ${{ steps.baseline.outputs.node_path }}
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+        run: |
+          set -euo pipefail
+          exec > >(tee "$E2E_COVERAGE_DIR/verification-isolated.log") 2>&1
+          pnpm check
+          pnpm type-check
+          pnpm build:extension
+          test_args=()
+          if [ "$TEST_PROJECT" = "web" ]; then
+            pnpm -F e2e exec playwright test --project=setup --retries=0 --workers=1 --reporter=line
+            test_args+=(--no-deps)
+          fi
+          pnpm -F e2e exec playwright test "${TEST_FILE#e2e/}" --project="$TEST_PROJECT" --retries=0 --workers=1 --reporter=json "${test_args[@]}" > "$E2E_COVERAGE_DIR/playwright.json"
+          mkdir -p "$RUNNER_TEMP/e2e-trusted-scripts"
+          for script in artifact maintain validation; do
+            GIT_NO_REPLACE_OBJECTS=1 GIT_CONFIG_GLOBAL=/dev/null "$TRUSTED_GIT" --no-pager show "$E2E_BASE_SHA:.github/scripts/e2e-coverage/$script.mjs" > "$RUNNER_TEMP/e2e-trusted-scripts/$script.mjs"
+          done
+          "$TRUSTED_NODE" "$RUNNER_TEMP/e2e-trusted-scripts/maintain.mjs" report
+
+      - name: Export isolated verification result
+        id: export_verified
+        env:
+          E2E_BASE_SHA: ${{ steps.baseline.outputs.sha }}
+          E2E_COVERAGE_DIR: ${{ runner.temp }}/e2e-coverage
+          E2E_TEST_SHA256: ${{ steps.imported.outputs.test_sha256 }}
+          TRUSTED_GIT: ${{ steps.baseline.outputs.git_path }}
+          TRUSTED_NODE: ${{ steps.baseline.outputs.node_path }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/e2e-trusted-scripts"
+          for script in artifact maintain validation; do
+            GIT_NO_REPLACE_OBJECTS=1 GIT_CONFIG_GLOBAL=/dev/null "$TRUSTED_GIT" --no-pager show "$E2E_BASE_SHA:.github/scripts/e2e-coverage/$script.mjs" > "$RUNNER_TEMP/e2e-trusted-scripts/$script.mjs"
+          done
+          "$TRUSTED_NODE" "$RUNNER_TEMP/e2e-trusted-scripts/maintain.mjs" export-verified-artifact
+
+      - name: Transfer verified result to isolated publisher
+        if: steps.export_verified.outputs.ready == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: e2e-coverage-verified
+          path: ${{ runner.temp }}/e2e-coverage/publish-artifact/
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Summarize isolated verification
+        if: always()
+        env:
+          E2E_BASE_SHA: ${{ steps.baseline.outputs.sha }}
+          E2E_COVERAGE_DIR: ${{ runner.temp }}/e2e-coverage
+          E2E_RUN_STATUS: ${{ job.status }}
+          E2E_DRY_RUN: ${{ inputs.dry_run }}
+          E2E_PUBLISH_SKIP_REASON: ${{ github.ref_name != 'master' && '선택 ref가 master가 아니므로 게시 생략' || '' }}
+          TRUSTED_GIT: ${{ steps.baseline.outputs.git_path }}
+          TRUSTED_NODE: ${{ steps.baseline.outputs.node_path }}
+        run: |
+          if [ -z "${E2E_BASE_SHA:-}" ]; then
+            echo "## 주간 E2E 누락 점검" >> "$GITHUB_STEP_SUMMARY"
+            echo "검증 작업이 준비 단계에서 실패했습니다." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          mkdir -p "$RUNNER_TEMP/e2e-trusted-scripts"
+          for script in artifact maintain validation; do
+            GIT_NO_REPLACE_OBJECTS=1 GIT_CONFIG_GLOBAL=/dev/null "$TRUSTED_GIT" --no-pager show "$E2E_BASE_SHA:.github/scripts/e2e-coverage/$script.mjs" > "$RUNNER_TEMP/e2e-trusted-scripts/$script.mjs"
+          done
+          "$TRUSTED_NODE" "$RUNNER_TEMP/e2e-trusted-scripts/maintain.mjs" summary
+
+      - name: Upload isolated verification evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: e2e-coverage-verification-evidence
+          path: ${{ runner.temp }}/e2e-coverage/
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Notify failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::warning::SLACK_WEBHOOK_URL is unavailable"
+            exit 0
+          fi
+          payload=$(node -e 'process.stdout.write(JSON.stringify({text: `❌ E2E 독립 검증 실패: <${process.env.RUN_URL}|실행 로그 보기>`}))')
+          curl --silent --show-error --fail-with-body --header 'content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
+
+  publish:
+    needs: verify
+    if: needs.verify.outputs.verified == 'true' && inputs.dry_run != true && github.ref_name == 'master'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      # 테스트 코드를 실행했던 러너와 Git 설정도 다시 분리합니다.
+      - uses: actions/checkout@v5
+        with:
+          ref: master
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Prepare trusted publisher
+        run: |
+          mkdir -p "$RUNNER_TEMP/e2e-coverage"
+          echo "E2E_COVERAGE_DIR=$RUNNER_TEMP/e2e-coverage" >> "$GITHUB_ENV"
+          echo "E2E_BASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Rebuild coverage context from master
+        run: node .github/scripts/e2e-coverage/maintain.mjs context
+
+      - uses: actions/download-artifact@v6
+        with:
+          name: e2e-coverage-verified
+          path: ${{ runner.temp }}/e2e-verified-staging
+
+      - name: Safely import verified test and report
+        id: imported
+        env:
+          E2E_ARTIFACT_DIR: ${{ runner.temp }}/e2e-verified-staging
+          E2E_REQUIRE_REPORT: "true"
+          E2E_EXPECTED_TEST_SHA256: ${{ needs.verify.outputs.test_sha256 }}
+          E2E_EXPECTED_CANDIDATE_SHA256: ${{ needs.verify.outputs.candidate_sha256 }}
+          E2E_EXPECTED_REPORT_SHA256: ${{ needs.verify.outputs.report_sha256 }}
+        run: node .github/scripts/e2e-coverage/maintain.mjs import-artifact
+
+      - name: Revalidate candidate, changes and Playwright report
+        env:
+          E2E_TEST_SHA256: ${{ steps.imported.outputs.test_sha256 }}
+        run: node .github/scripts/e2e-coverage/maintain.mjs report
+
+      - name: Create GitHub App token after independent validation
+        id: app_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Publish one PR
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          E2E_TEST_SHA256: ${{ steps.imported.outputs.test_sha256 }}
+        run: node .github/scripts/e2e-coverage/maintain.mjs publish
+
+      - name: Summarize publication
+        if: always()
+        env:
+          E2E_RUN_STATUS: ${{ job.status }}
+        run: node .github/scripts/e2e-coverage/maintain.mjs summary
+
+      - name: Upload publication evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: e2e-coverage-publication-evidence
+          path: ${{ runner.temp }}/e2e-coverage/
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Notify failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::warning::SLACK_WEBHOOK_URL is unavailable"
+            exit 0
+          fi
+          payload=$(node -e 'process.stdout.write(JSON.stringify({text: `❌ E2E PR 게시 실패: <${process.env.RUN_URL}|실행 로그 보기>`}))')
+          curl --silent --show-error --fail-with-body --header 'content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"

@@ -20,13 +20,13 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `development` 빌드는 커스텀 이벤트를 보내지 않습니다. `staging`은 보냅니다 — 테스트 서버에서
 도착을 눈으로 확인해야 하기 때문이며, 그 트래픽은 `build_env` 차원으로 걸러 냅니다.
 
-## 이벤트 46종
+## 이벤트 48종
 
 `core_action`은 사용자가 이 서비스를 쓰는 행위, `engagement`는 그 주변의 이동·설정입니다.
 분류는 `EVENT_CATEGORY`가 `Record`로 강제하므로 이벤트를 추가하고 분류를 빠뜨리면 컴파일이
 실패합니다.
 
-### core_action (26종)
+### core_action (27종)
 
 `memo_write`(fields) · `memo_delete`(memo_count) · `memo_restore`(memo_count) ·
 `memo_delete_permanently`(memo_count) · `memo_open`(has_search_query) · `memo_source_open` ·
@@ -35,17 +35,19 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `summary_fail`(reason) · `chat_message_send` · `chat_fail`(reason) ·
 `youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category) ·
 `category_create` · `category_update` · `category_delete` · `login`(method) · `sign_up`(method) ·
-`feedback_submit` · `extension_install_click`(from, position) · `memo_first_write` · `export_run`(format)
+`feedback_submit` · `extension_install_click`(from, position) · `memo_first_write` · `export_run`(format) ·
+`past_memo_open`(kind, source)
 
-### engagement (20종)
+### engagement (24종)
 
 `side_panel_open` · `side_panel_open_click` · `side_panel_login_click` ·
+`header_login_click`(from) · `header_memos_click`(from) ·
 `page_view`(page_title, page_location) · `tab_change`(tab_name) · `view_change`(view) ·
 `memo_filter`(search_target) · `memo_undo`(action) · `setting_change`(setting_keys) ·
 `extension_setting_change`(keys) · `category_suggestion_show`(is_new_category) ·
 `login_start`(method) · `logout` · `extension_installed` · `extension_install_dismiss` ·
 `open_web_from_extension`(from) · `guide_open`(from) · `guide_step`(step_name) · `guide_finish` ·
-`search_no_result`
+`search_no_result` · `past_memo_show`(kind, source) · `past_memo_dismiss`(kind, source)
 
 ### 호출부에 없는 이벤트
 
@@ -120,7 +122,7 @@ gtag보다 먼저 `_ga` 쿠키에 그 값을 심어 이후 웹 이벤트가 같�
 
 | 경로 | 막는 곳 |
 | --- | --- |
-| 커스텀 이벤트 46종 | `Analytics.ts`의 전송 게이트 — 메모리와 확장 storage의 `user_id`를 먼저 해석하고, 값이 `ANALYTICS_EXCLUDED_USER_ID`면 보내지 않습니다 |
+| 커스텀 이벤트 48종 | `Analytics.ts`의 전송 게이트 — 메모리와 확장 storage의 `user_id`를 먼저 해석하고, 값이 `ANALYTICS_EXCLUDED_USER_ID`면 보내지 않습니다 |
 | gtag 자동 수집 | 웹 루트 레이아웃 — 브라우저에 남은 표식을 읽어 gtag보다 먼저 `ga-disable-<측정ID>`를 켭니다 |
 
 판정 기준이 `profiles.role`이 아니라 UUID 상수인 이유는 **확장이 role을 모르기 때문입니다.**

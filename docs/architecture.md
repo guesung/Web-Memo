@@ -66,6 +66,8 @@ SEO 탭 5개의 컬럼명은 한글로 표시합니다. 기존 영문 헤더가 
 
 ## QA 실행
 
+주간 `chore-e2e-coverage.yml`은 `.github/e2e-core-flows.json`의 핵심 메모 흐름과 제품 코드·전체 E2E 테스트를 대조합니다. 근거 있는 누락이 발견되면 새 테스트 파일 한 개를 작성하고, 별도 작업 공간에서 코드 검사·타입 검사·확장 빌드·대상 Playwright 테스트 및 데이터 정리를 통과한 경우에만 `master` 대상 PR을 만듭니다. AI 작성, 테스트 검증, PR 게시는 각각 별도 Actions 작업에서 실행합니다. 누락 없음과 조사 불충분, 검증 실패는 Actions 요약과 결과 아티팩트에서 구분합니다. 기존 `e2e.yml`과는 공유 테스트 계정에 대한 실행 잠금을 사용합니다. 워크플로가 `master`에 등록되면 `workflow_dispatch`로 선택한 ref를 수동 점검할 수 있으며, `master` 외 ref에서는 게시를 생략합니다.
+
 | 항목 | 내용 |
 | --- | --- |
 | 서버 기동 | `pnpm dev:web` → `http://localhost:3000` (수 초).<br>E2E는 `pnpm run -w dev:web:preview`(`next build && next start`)를 띄우며 **빌드가 포함돼 최대 5분** 걸립니다.<br>**이미 `next start`가 떠 있는 상태에서 다시 빌드하면 화면 전체가 에러 바운더리로 떨어집니다.** 기존 서버를 내리고 시작하세요 |

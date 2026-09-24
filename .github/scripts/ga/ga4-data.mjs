@@ -105,6 +105,8 @@ export const ANALYTICS_EVENTS = [
 	"extension_installed",
 	"login_start",
 	"side_panel_login_click",
+	"header_login_click",
+	"header_memos_click",
 	"sign_up",
 	"memo_status_toggle",
 	"memo_category_change",

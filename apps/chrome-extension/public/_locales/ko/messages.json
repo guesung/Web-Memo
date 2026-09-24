@@ -407,6 +407,27 @@
 	"highlight_bubble_disabled_all_description": {
 		"message": "설정에서 다시 켤 수 있어요"
 	},
+	"past_memo_duplicate_rule": {
+		"message": "전에 남긴 메모가 있어요"
+	},
+	"past_memo_duplicate_jev": {
+		"message": "전에 남긴 메모가 있는 것 같아요"
+	},
+	"past_memo_related": {
+		"message": "관련 메모 $count$개",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "3"
+			}
+		}
+	},
+	"past_memo_open": {
+		"message": "열기"
+	},
+	"past_memo_dismiss": {
+		"message": "무시"
+	},
 	"category_create_named": {
 		"message": "'$NAME$' 만들기",
 		"description": "팝업에서 검색어로 새 카테고리 만들기",

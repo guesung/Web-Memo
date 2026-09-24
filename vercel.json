@@ -3,5 +3,5 @@
   "rewrites": [
     { "source": "/api/transcript", "destination": "/api/transcript.py" }
   ],
-  "git": { "deploymentEnabled": { "master": false, "develop": false } }
+  "git": { "deploymentEnabled": false }
 }

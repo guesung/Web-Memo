@@ -87,6 +87,20 @@ export type TAnalyticsEvent =
 	| { name: "extension_installed" }
 	| { name: "login_start"; params: { method: string } }
 	| { name: "side_panel_login_click" }
+	| {
+			name: "header_login_click";
+			params: {
+				/** 언어 접두사를 뺀 출발 경로. 예: "/introduce", "/features/memo" */
+				from: string;
+			};
+	  }
+	| {
+			name: "header_memos_click";
+			params: {
+				/** 언어 접두사를 뺀 출발 경로. 예: "/introduce", "/memos/setting" */
+				from: string;
+			};
+	  }
 	| { name: "sign_up"; params: { method: string } }
 	| {
 			name: "memo_status_toggle";
@@ -132,7 +146,19 @@ export type TAnalyticsEvent =
 	  }
 	| { name: "highlight_bubble_disable"; params: { scope: "site" | "all" } }
 	| { name: "notice_view"; params: { notice_id: number } }
-	| { name: "notice_dismiss"; params: { notice_id: number } };
+	| { name: "notice_dismiss"; params: { notice_id: number } }
+	| {
+			name: "past_memo_show";
+			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
+	  }
+	| {
+			name: "past_memo_open";
+			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
+	  }
+	| {
+			name: "past_memo_dismiss";
+			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
+	  };
 
 /** 이벤트 이름만 추린 유니온. */
 export type TAnalyticsEventName = TAnalyticsEvent["name"];
@@ -172,6 +198,8 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	extension_installed: "engagement",
 	login_start: "engagement",
 	side_panel_login_click: "engagement",
+	header_login_click: "engagement",
+	header_memos_click: "engagement",
 	sign_up: "core_action",
 	memo_status_toggle: "core_action",
 	memo_category_change: "core_action",
@@ -192,4 +220,7 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	highlight_bubble_disable: "engagement",
 	notice_view: "engagement",
 	notice_dismiss: "engagement",
+	past_memo_show: "engagement",
+	past_memo_open: "core_action",
+	past_memo_dismiss: "engagement",
 };

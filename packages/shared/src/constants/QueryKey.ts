@@ -83,4 +83,6 @@ export const QUERY_KEY = {
 	highlightCountsPrefix: () => ["highlights", "counts"],
 	/** 사이드 패널 공지. 세션과 무관한 공개 데이터라 사용자별로 나누지 않는다. */
 	notice: () => ["notice"],
+	/** 사이드 패널 과거 메모 판정. 정규화한 페이지 URL마다 별도 캐시다. */
+	pastMemo: (normalizedUrl: string) => ["pastMemo", normalizedUrl],
 };

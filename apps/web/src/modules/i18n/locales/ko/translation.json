@@ -44,7 +44,8 @@
 	"header": {
 		"login": "로그인하기",
 		"logout": "로그아웃하기",
-		"introduce": "서비스 소개"
+		"introduce": "서비스 소개",
+		"myMemos": "내 메모"
 	},
 	"updateNotification": {
 		"title": "🎉 업데이트 소식",

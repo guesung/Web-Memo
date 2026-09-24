@@ -80,7 +80,7 @@
 
 | 이름 | 환경 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- | --- |
-| `BUILD_ENV` | production, preview | Git 연동 빌드가 development로 구워져 운영에 localhost:3000이 실린다. tsup.config.ts의 가드가 빌드를 실패시켜 막는다 | `packages/env/src/config.ts`, `packages/env/tsup.config.ts`, `apps/web/next.config.mjs`, `packages/zipper/index.ts` |
+| `BUILD_ENV` | production, preview | 대시보드에서 수동 재배포할 때 development로 구워져 운영에 localhost:3000이 실린다. tsup.config.ts의 가드가 빌드를 실패시켜 막는다 | `packages/env/src/config.ts`, `packages/env/tsup.config.ts`, `apps/web/next.config.mjs`, `packages/zipper/index.ts` |
 | `ENABLE_EXPERIMENTAL_COREPACK` | 전체 | corepack이 꺼져 packageManager의 pnpm 버전이 무시된다 | 코드 밖 |
 | `GA4_PROPERTY_ID` (선택) | 전체 | 없으면 코드에 적힌 기본 속성 ID로 동작한다 | `apps/web/src/modules/ga/config.ts` |
 | `GA4_SERVICE_ACCOUNT_JSON` | 전체 | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/report-seo.yml`, `apps/web/src/modules/ga/config.ts` |
@@ -240,11 +240,12 @@ pnpm dev                             # .env.development (기본값)
 `packages/env/turbo.json`의 `ready` 태스크가 `env: ["BUILD_ENV"]`를 선언하므로
 환경별로 캐시가 갈립니다. 이게 없으면 staging 빌드가 production 캐시를 재사용합니다.
 
-**Vercel Git 연동 빌드(프리뷰, 대시보드의 수동 재배포)에는 셸 `BUILD_ENV`가 없습니다.**
-GitHub Actions의 `cd-web.yml`은 배포 대상에 맞춰 `BUILD_ENV`를 넣지만, Git 연동 빌드는 그
-워크플로를 거치지 않습니다. (`master`·`develop` 푸시의 자동 배포는 `vercel.json`의
-`git.deploymentEnabled`로 꺼 두었습니다. 상용 배포는 Slack 버튼 → `release.yml` 한 경로입니다.
-[release-flow.md](release-flow.md) 참고.) 그래서 Vercel 프로젝트 환경변수에 `BUILD_ENV`를 직접 등록해 둡니다
+**Vercel 대시보드의 수동 재배포에는 GitHub Actions가 지정하는 셸 `BUILD_ENV`가 없습니다.**
+GitHub Actions의 `cd-web.yml`은 배포 대상에 맞춰 `BUILD_ENV`를 넣지만, 대시보드의 수동 재배포 등은 그
+워크플로를 거치지 않습니다. `vercel.json`의 `git.deploymentEnabled: false`가 모든 브랜치의
+Git 연동 자동 배포를 막으므로 작업 브랜치의 PR Preview도 자동 생성되지 않습니다.
+상용 배포는 Slack 버튼 → `release.yml` 경로를 사용합니다([release-flow.md](release-flow.md) 참고).
+그래서 Vercel 프로젝트 환경변수에 `BUILD_ENV`를 직접 등록해 둡니다
 (Production = `production`, Preview = `staging`, [3절](#3-vercel-프로젝트-환경변수--배포된-웹의-런타임-값) 참고).
 빠지면 `development`로 구워져 운영 사이트의 랜딩 주소창 목업·sitemap·canonical이
 전부 `localhost:3000`이 되는데, 에러 없이 배포가 성공하므로 사용자가 먼저 발견합니다.

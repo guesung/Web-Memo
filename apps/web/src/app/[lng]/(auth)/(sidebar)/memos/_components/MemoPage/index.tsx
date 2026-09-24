@@ -1,18 +1,13 @@
 "use server";
 
-import { HydrationBoundaryWrapper } from "@src/components";
 import type { LanguageType } from "@src/modules/i18n";
-import { traceMemoPrefetch } from "@src/modules/observability/serverTracing";
-import { getSupabaseClient } from "@src/modules/supabase/util.server";
-import { QUERY_KEY } from "@web-memo/shared/constants";
-import { MemoService } from "@web-memo/shared/utils";
 import { SidebarTrigger } from "@web-memo/ui";
 import { Suspense } from "react";
 
 import type { TMemoFilter } from "../../_types";
 import MemoSearchForm from "../MemoSearchForm";
 import MemoSearchFormProvider from "../MemoSearchFormProvider";
-import MemoView from "../MemoView";
+import ClientMemoView from "../MemoView/ClientMemoView";
 import { MemoViewSkeleton } from "../MemoView/MemoListSkeleton";
 import MemoShellProbe from "./MemoShellProbe";
 
@@ -31,8 +26,6 @@ export default async function MemoPage({
 	lng,
 	filter = "all",
 }: IFMemoPageProps) {
-	const supabaseClient = await getSupabaseClient();
-
 	// 헤더 여백(HeaderMargin, 4rem)은 layout이 이미 넣는다. 100vh를 그대로 쓰면
 	// 그만큼 문서가 길어져 내용이 짧아도 스크롤이 생긴다.
 	return (
@@ -46,28 +39,14 @@ export default async function MemoPage({
 			</div>
 
 			<div className="flex flex-col px-4 md:px-6 py-4">
-				<HydrationBoundaryWrapper
-					queryKey={QUERY_KEY.memos()}
-					queryFn={() =>
-						traceMemoPrefetch({
-							route: filter === "all" ? "/memos" : `/memos/${filter}`,
-							queryFn: () =>
-								new MemoService(supabaseClient).getMemosPaginated({
-									limit: 20,
-									sortBy: "updated_at",
-								}),
-						})
-					}
-				>
-					<MemoSearchFormProvider>
-						<div className="mb-6">
-							<MemoSearchForm lng={lng} />
-						</div>
-						<Suspense fallback={<MemoViewSkeleton />}>
-							<MemoView lng={lng} filter={filter} />
-						</Suspense>
-					</MemoSearchFormProvider>
-				</HydrationBoundaryWrapper>
+				<MemoSearchFormProvider>
+					<div className="mb-6">
+						<MemoSearchForm lng={lng} />
+					</div>
+					<Suspense fallback={<MemoViewSkeleton />}>
+						<ClientMemoView lng={lng} filter={filter} />
+					</Suspense>
+				</MemoSearchFormProvider>
 			</div>
 		</div>
 	);

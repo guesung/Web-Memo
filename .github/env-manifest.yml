@@ -383,5 +383,5 @@
 
 - name: PW_CHROMIUM_ATTACH_TO_OTHER
   kind: platform
-  consumers: [e2e/tests/fixtures.ts]
+  consumers: [e2e/tests/fixtures/extension.ts]
   note: "Playwright가 넣는 내부 플래그"

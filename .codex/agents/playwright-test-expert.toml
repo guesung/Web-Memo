@@ -20,24 +20,17 @@ Think in terms of user journeys and critical paths. Tests should be independent,
 ### Directory Structure
 ```
 e2e/
-├── playwright.config.ts        # Main configuration
+├── playwright.config.ts        # projects: setup · web · extension · hybrid
+├── globalTeardown.ts           # removes data left by *.real tests
 ├── tests/
-│   ├── parallel/              # Fully parallel tests
-│   │   ├── login.spec.ts
-│   │   ├── guide.spec.ts
-│   │   └── introduce.spec.ts
-│   ├── integration/           # API integration tests
-│   │   ├── create-memo.spec.ts
-│   │   └── delete-memo.spec.ts
-│   └── mocked/               # Tests with mocked responses
-│       └── dashboard.spec.ts
-├── fixtures/                  # Test fixtures
-│   └── index.ts
-├── mocks/                     # Mock data and routes
-│   ├── data/
-│   └── routes/
-├── utils/                     # Test utilities
-│   └── index.ts
+│   ├── auth.setup.ts          # logs in once, saves e2e/.auth/user.json (storageState)
+│   ├── fixtures/
+│   │   ├── web.ts             # plain browser, no extension
+│   │   └── extension.ts       # persistent context with the built extension (dist/)
+│   ├── web/                   # web app only (e.g. memo-filter.test.ts, trash.real.test.ts)
+│   ├── extension/             # extension pages only (side panel, options)
+│   ├── hybrid/                # web page + extension together (e.g. create-memo.real.test.ts)
+│   └── lib/                   # helpers, mocks/ (Supabase route mocks), extension helpers
 └── package.json
 ```
 
@@ -56,7 +49,7 @@ pnpm test-report:e2e   # View HTML report
 ```
 
 ## Focus Areas
-- **Test Organization**: parallel/, integration/, mocked/ structure
+- **Test Organization**: web/, extension/, hybrid/ by test target; `*.real.test.ts` for tests that read or write real Supabase data (everything else uses mocks)
 - **Fixtures**: Reusable test setup and teardown
 - **Mocking**: Supabase route mocking for isolated tests
 - **Page Objects**: Encapsulated page interactions
@@ -64,8 +57,8 @@ pnpm test-report:e2e   # View HTML report
 - **Parallelization**: Maximum parallel execution where possible
 
 ## Key Actions
-1. **Determine Test Category**: parallel, integration, or mocked
-2. **Create Test File**: Follow naming convention *.spec.ts
+1. **Determine Test Target**: web, extension, or hybrid — and whether it needs real data (`.real`)
+2. **Create Test File**: Follow naming convention *.test.ts (*.real.test.ts for real data)
 3. **Set Up Fixtures**: Use existing or create new fixtures
 4. **Implement Mocks**: Mock external dependencies as needed
 5. **Write Tests**: Clear, independent, fast tests
@@ -76,7 +69,7 @@ pnpm test-report:e2e   # View HTML report
 
 ### Basic Test Structure
 ```typescript
-// e2e/tests/parallel/login.spec.ts
+// e2e/tests/web/login.test.ts
 import { test, expect } from "@playwright/test";
 
 test.describe("Login Page", () => {
@@ -140,7 +133,7 @@ export { expect } from "@playwright/test";
 
 ### Using Fixtures in Tests
 ```typescript
-// e2e/tests/integration/create-memo.spec.ts
+// e2e/tests/hybrid/create-memo.real.test.ts
 import { test, expect } from "../../fixtures";
 
 test.describe("Create Memo", () => {
@@ -194,7 +187,7 @@ export async function mockCreateMemo(route: Route) {
 
 ### Using Mocks in Tests
 ```typescript
-// e2e/tests/mocked/dashboard.spec.ts
+// e2e/tests/web/dashboard.test.ts
 import { test, expect } from "@playwright/test";
 import { mockGetMemos } from "../../mocks/routes/memos";
 
@@ -242,7 +235,7 @@ export class LoginPage {
 
 ### Serial Test Configuration
 ```typescript
-// e2e/tests/integration/data-dependent.spec.ts
+// e2e/tests/web/data-dependent.real.test.ts
 import { test, expect } from "@playwright/test";
 
 test.describe.configure({ mode: "serial" });
@@ -284,21 +277,15 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   projects: [
+    { name: "setup", testMatch: /auth\.setup\.ts/ },
     {
-      name: "parallel",
-      testDir: "./tests/parallel",
-      fullyParallel: true,
+      name: "web",
+      testDir: "./tests/web",
+      dependencies: ["setup"],
+      use: { storageState: ".auth/user.json" },
     },
-    {
-      name: "integration",
-      testDir: "./tests/integration",
-      dependencies: ["parallel"],
-    },
-    {
-      name: "mocked",
-      testDir: "./tests/mocked",
-      fullyParallel: true,
-    },
+    { name: "extension", testDir: "./tests/extension" },
+    { name: "hybrid", testDir: "./tests/hybrid" },
   ],
   webServer: {
     command: "pnpm dev:web",
@@ -309,7 +296,7 @@ export default defineConfig({
 ```
 
 ## Validation Checklist
-- [ ] Test file in correct directory (parallel/integration/mocked)
+- [ ] Test file in correct directory (web/extension/hybrid) and `.real` suffix only if it touches real data
 - [ ] Test is independent and can run in isolation
 - [ ] No hardcoded waits (use proper assertions)
 - [ ] Mocks are set up for external dependencies

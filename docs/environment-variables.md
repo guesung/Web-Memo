@@ -127,7 +127,7 @@
 | `GITHUB_SHA` | GitHub Actions가 넣는다. Vercel 값이 없을 때의 폴백으로 읽는다 | `apps/web/src/app/api/version/route.ts` |
 | `NEXT_RUNTIME` | Next.js가 실행 런타임(nodejs, edge)을 넣는다 | `apps/web/src/instrumentation.ts` |
 | `NODE_ENV` | Next와 Vite 같은 툴체인이 자기 값으로 채운다. 환경 구분에는 쓰지 않고 BUILD_ENV를 쓴다 | `apps/chrome-extension/vite.config.mts` |
-| `PW_CHROMIUM_ATTACH_TO_OTHER` | Playwright가 넣는 내부 플래그 | `e2e/tests/fixtures.ts` |
+| `PW_CHROMIUM_ATTACH_TO_OTHER` | Playwright가 넣는 내부 플래그 | `e2e/tests/fixtures/extension.ts` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase가 Edge Function에 주입한다. Vercel에는 등록하지 않는다 | `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts` |
 | `SUPABASE_URL` | Supabase가 Edge Function에 주입한다 | `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts` |
 | `VERCEL` | Vercel 빌드와 런타임이 넣는다 | `apps/web/src/modules/slack/afterResponse.ts`, `packages/env/tsup.config.ts` |

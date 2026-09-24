@@ -48,6 +48,7 @@ vi.mock("@web-memo/ui", () => ({
 	CardContent: ({ children }: { children: ReactNode }) => children,
 	Dialog: ({ children }: { children: ReactNode }) => children,
 	DialogContent: ({ children }: { children: ReactNode }) => children,
+	DialogTitle: ({ children }: { children: ReactNode }) => children,
 	Textarea: (props: object) => createElement("textarea", props),
 }));
 

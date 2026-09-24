@@ -233,6 +233,9 @@
 	"summary_loading_message": {
 		"message": "Generating summary…"
 	},
+	"summary_generate_label": {
+		"message": "Generate summary"
+	},
 	"impression": {
 		"message": "Impression"
 	},

@@ -36,7 +36,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
-import { SaveStatus } from "./components";
+import { PastMemoNotice, SaveStatus } from "./components";
 import {
 	type TMemoFieldKey,
 	useCategorySuggestion,
@@ -153,6 +153,7 @@ function MemoFormContent() {
 
 	return (
 		<>
+			<PastMemoNotice hasMemoData={!!memoData?.created_at} />
 			<form className="relative flex min-h-0 flex-1 flex-col py-1">
 				<div className="mb-1 flex shrink-0 items-center gap-1">
 					{setting.isRefetchError && (

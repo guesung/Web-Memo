@@ -124,7 +124,8 @@ export const addDismissedUrl = (dismissedUrls: string[], url: string) => {
 const EMPTY_PAST_MEMO: IFPastMemoResponse = { duplicate: null, related: [] };
 
 const getNormalizedUrl = (url?: string) => {
-	if (!url) {
+	// about:blank·chrome:// 같은 웹 페이지가 아닌 탭에서는 유료 판정을 부르지 않는다.
+	if (!url || !/^https?:\/\//.test(url)) {
 		return null;
 	}
 

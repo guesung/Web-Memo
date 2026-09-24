@@ -68,8 +68,9 @@ test("메모 입력 항목 저장에 실패하면 이전 값으로 돌아가고 
 
 	const optionsPage = await page.context().newPage();
 	await optionsPage.goto(getExtensionUrl("options/index.html"));
+	await expect(optionsPage).toHaveURL(/\/(ko|en)\/settings#extension$/);
 
-	const impressionSwitch = optionsPage.locator("#show-impression");
+	const impressionSwitch = optionsPage.locator("#show_impression");
 	await expect(impressionSwitch).toHaveAttribute("data-state", "unchecked");
 	await impressionSwitch.click();
 	await expect(impressionSwitch).toHaveAttribute("data-state", "unchecked");
@@ -85,7 +86,7 @@ test("메모 입력 항목 저장에 실패하면 이전 값으로 돌아가고 
 	await expect.poll(() => saveAttempts).toBe(2);
 
 	await optionsPage.reload();
-	await expect(optionsPage.locator("#show-impression")).toHaveAttribute(
+	await expect(optionsPage.locator("#show_impression")).toHaveAttribute(
 		"data-state",
 		"checked",
 	);

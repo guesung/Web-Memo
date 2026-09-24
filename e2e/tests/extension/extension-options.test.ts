@@ -27,7 +27,8 @@ test.describe("확장 옵션 페이지", () => {
 		const optionsPage = await page.context().newPage();
 		await optionsPage.goto(getExtensionUrl("options/index.html"));
 
-		const autoApplyCategorySwitch = optionsPage.locator("#auto-apply-category");
+		await expect(optionsPage).toHaveURL(/\/(ko|en)\/settings#extension$/);
+		const autoApplyCategorySwitch = optionsPage.locator("#auto-category");
 		await expect(autoApplyCategorySwitch).toHaveAttribute(
 			"data-state",
 			"checked",
@@ -39,11 +40,11 @@ test.describe("확장 옵션 페이지", () => {
 			"unchecked",
 		);
 		await expect(
-			optionsPage.getByText(/^(Saved|저장했어요)$/).last(),
+			optionsPage.getByText(/^(Saved\.|저장했어요\.)$/).last(),
 		).toBeVisible();
 
 		await optionsPage.reload();
-		await expect(optionsPage.locator("#auto-apply-category")).toHaveAttribute(
+		await expect(optionsPage.locator("#auto-category")).toHaveAttribute(
 			"data-state",
 			"unchecked",
 		);
@@ -53,7 +54,8 @@ test.describe("확장 옵션 페이지", () => {
 		const optionsPage = await page.context().newPage();
 		await optionsPage.goto(getExtensionUrl("options/index.html"));
 
-		const autoApplyCategorySwitch = optionsPage.locator("#auto-apply-category");
+		await expect(optionsPage).toHaveURL(/\/(ko|en)\/settings#extension$/);
+		const autoApplyCategorySwitch = optionsPage.locator("#auto-category");
 		await expect(autoApplyCategorySwitch).toHaveAttribute(
 			"data-state",
 			"checked",
@@ -67,11 +69,11 @@ test.describe("확장 옵션 페이지", () => {
 			"unchecked",
 		);
 		await expect(
-			optionsPage.getByText(/^(Saved|저장했어요)$/).last(),
+			optionsPage.getByText(/^(Saved\.|저장했어요\.)$/).last(),
 		).toBeVisible();
 
 		await optionsPage.reload();
-		await expect(optionsPage.locator("#auto-apply-category")).toHaveAttribute(
+		await expect(optionsPage.locator("#auto-category")).toHaveAttribute(
 			"data-state",
 			"unchecked",
 		);

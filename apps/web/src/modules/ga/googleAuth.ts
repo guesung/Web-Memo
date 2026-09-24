@@ -1,7 +1,7 @@
 /**
  * Google 서비스 계정으로 OAuth 액세스 토큰을 얻습니다.
  *
- * @description `.github/scripts/lib/google-auth.mjs`를 TypeScript로 옮긴 것입니다.
+ * @description `.github/scripts/shared/google-auth.mjs`를 TypeScript로 옮긴 것입니다.
  * `google-auth-library` 같은 패키지를 들이지 않고 `node:crypto`와 `fetch`만 씁니다.
  * RS256 서명에 `node:crypto`가 필요하므로 이 코드를 부르는 라우트는 Node 런타임이어야 합니다.
  */

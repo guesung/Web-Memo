@@ -3,23 +3,13 @@ import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
 import { getMemoUrl, type IFMemoUrlParams } from "@src/utils";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-	DEFAULT_CATEGORY_COLOR,
-	QUERY_KEY,
-	type TMemoStatusKey,
-} from "@web-memo/shared/constants";
+import { QUERY_KEY, type TMemoStatusKey } from "@web-memo/shared/constants";
 import { useSettingQuery, useSupabaseUserQuery } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
-	Badge,
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-	CommandList,
+	badgeVariants,
 	cn,
 	Input,
 	Textarea,
@@ -32,11 +22,16 @@ import {
 	LinkIcon,
 	Loader2Icon,
 	StarIcon,
-	XIcon,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
-import { PastMemoNotice, SaveStatus } from "./components";
+import {
+	CategoryAddChip,
+	CategoryBadge,
+	CategoryCommandPopup,
+	PastMemoNotice,
+	SaveStatus,
+} from "./components";
 import {
 	type TMemoFieldKey,
 	useCategorySuggestion,
@@ -96,20 +91,34 @@ function MemoFormContent() {
 		showCategoryList,
 		categoryInputPosition,
 		commandInputRef,
+		categoryPopupRef,
+		categoryBadgeButtonRef,
+		categoryAddChipRef,
 		handleKeyDown,
+		handleCategoryButtonClick,
 		handleCategorySelect,
 		handleCategoryRemove,
 		handleCategoryListClose,
+		handleCategoryCreate,
+		isCategoryCreating,
 	} = useMemoCategory({
 		textareaRef,
 		onCategoryChange: updateCategory,
 	});
 
-	const { isLoading: isSuggestingCategory, triggerSuggestion } =
-		useCategorySuggestion({
-			currentCategoryId,
-			onCategorySelect: updateCategory,
-		});
+	const {
+		isLoading: isSuggestingCategory,
+		triggerSuggestion,
+		dismissCurrentUrl,
+	} = useCategorySuggestion({
+		currentCategoryId,
+		onCategorySelect: updateCategory,
+	});
+
+	const handleCategoryRemoveClick = () => {
+		handleCategoryRemove();
+		dismissCurrentUrl();
+	};
 
 	const handleMemoStatusClick = async (statusKey: TMemoStatusKey) => {
 		const nextStatusValue = await toggleMemoStatus(statusKey);
@@ -325,77 +334,48 @@ function MemoFormContent() {
 						<SaveStatus isSaving={isSaving} memo={watch("memo")} />
 					</div>
 					<div className="flex items-center gap-2">
-						{isSuggestingCategory && (
-							<div className="flex items-center gap-1 text-xs text-muted-foreground">
+						{currentCategory ? (
+							<CategoryBadge
+								category={currentCategory}
+								badgeButtonRef={categoryBadgeButtonRef}
+								onBadgeButtonClick={handleCategoryButtonClick}
+								onRemoveButtonClick={handleCategoryRemoveClick}
+							/>
+						) : isSuggestingCategory ? (
+							// 추천 중에는 칩 자리를 대신해, 곧 카테고리가 붙는다는 걸 같은 자리에서 보여 준다.
+							<div
+								data-testid="category-suggesting"
+								className={cn(
+									badgeVariants({ variant: "outline" }),
+									"text-muted-foreground gap-1 border-dashed px-2 py-0.5",
+								)}
+							>
 								<Loader2Icon size={12} className="animate-spin" />
 								{I18n.get("category_suggesting")}
 							</div>
-						)}
-						{currentCategory && (
-							<Badge
-								variant="outline"
-								className="flex items-center gap-1 px-2 py-0.5"
-							>
-								<div
-									className="h-2 w-2 rounded-full"
-									style={{
-										backgroundColor:
-											currentCategory.color || DEFAULT_CATEGORY_COLOR,
-									}}
-								/>
-								{currentCategory.name}
-								<XIcon
-									size={12}
-									className="hover:text-destructive ml-1 cursor-pointer"
-									onClick={handleCategoryRemove}
-								/>
-							</Badge>
+						) : (
+							<CategoryAddChip
+								chipRef={categoryAddChipRef}
+								onChipClick={handleCategoryButtonClick}
+							/>
 						)}
 					</div>
 				</div>
 			</form>
 
 			{showCategoryList && (
-				<div
-					className="bg-popover fixed z-50 w-64 rounded-md border shadow-lg"
-					style={{
-						top: `${categoryInputPosition.top}px`,
-						left: `${categoryInputPosition.left}px`,
-					}}
-				>
-					<Command>
-						<CommandInput
-							ref={commandInputRef}
-							placeholder={I18n.get("search_category")}
-							onKeyDown={(event) => {
-								if (event.key === "Escape") {
-									handleCategoryListClose();
-								}
-							}}
-						/>
-						<CommandList>
-							<CommandEmpty>{I18n.get("no_categories_found")}</CommandEmpty>
-							<CommandGroup>
-								{categories?.map((category) => (
-									<CommandItem
-										key={category.id}
-										onSelect={() => handleCategorySelect(category)}
-										className="flex items-center gap-2"
-									>
-										<div
-											className="h-3 w-3 rounded-full"
-											style={{
-												backgroundColor:
-													category.color || DEFAULT_CATEGORY_COLOR,
-											}}
-										/>
-										{category.name}
-									</CommandItem>
-								))}
-							</CommandGroup>
-						</CommandList>
-					</Command>
-				</div>
+				<CategoryCommandPopup
+					popupRef={categoryPopupRef}
+					commandInputRef={commandInputRef}
+					position={categoryInputPosition}
+					categories={categories}
+					currentCategoryId={currentCategoryId}
+					onCategorySelect={handleCategorySelect}
+					onEscapeKeyDown={handleCategoryListClose}
+					onWebLinkSelect={handleCategoryListClose}
+					onCategoryCreate={handleCategoryCreate}
+					isCategoryCreating={isCategoryCreating}
+				/>
 			)}
 		</>
 	);

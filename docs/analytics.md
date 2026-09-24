@@ -35,7 +35,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `summary_fail`(reason) · `chat_message_send` · `chat_fail`(reason) ·
 `youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category) ·
 `category_create` · `category_update` · `category_delete` · `login`(method) · `sign_up`(method) ·
-`feedback_submit` · `extension_install_click` · `memo_first_write` · `export_run`(format)
+`feedback_submit` · `extension_install_click`(from, position) · `memo_first_write` · `export_run`(format)
 
 ### engagement (20종)
 
@@ -77,14 +77,15 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `duration_msec`(요약 소요 시간) · `memo_count`(처리한 메모 수) · `query_length`(검색어 길이).
 각각 원값·`average`·`count` 세 형태로 등록돼 있습니다.
 
-### 등록되지 않은 파라미터 (2개)
+### 등록되지 않은 파라미터 (3개)
 
 | 파라미터 | 붙는 이벤트 | 없으면 못 하는 것 |
 | --- | --- | --- |
+| `position` | `extension_install_click` | 한 페이지에 설치 버튼이 둘 이상일 때 **어느 버튼이 눌렸는지** 나눠 볼 수 없습니다 |
 | `step_name` | `guide_step` | 가이드의 **어느 단계에서 이탈하는지** 볼 수 없습니다 |
 | `event_category` | 전 이벤트 | `core_action`과 `engagement`를 **나눠 보는 조회**가 막힙니다 |
 
-둘 다 GA4 콘솔에서 커스텀 차원으로 등록하면 끝나는 일이고 코드 변경이 필요 없습니다.
+셋 다 GA4 콘솔에서 커스텀 차원으로 등록하면 끝나는 일이고 코드 변경이 필요 없습니다.
 등록해도 **소급 적용되지 않으므로** 등록 이후의 데이터부터 조회됩니다.
 
 ## 지표를 읽을 때 주의할 것

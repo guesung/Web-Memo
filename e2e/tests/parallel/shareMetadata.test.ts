@@ -16,9 +16,18 @@ const PUBLIC_PATHS = [
 	"use-cases/youtube-notes",
 ] as const;
 
+/** 한국어로만 존재하는 공개 검색 페이지 목록입니다. */
+const KOREAN_ONLY_PATHS = ["compare/chrome-memo-extensions"] as const;
+
+/** 언어별로 검사할 공개 페이지 목록입니다. */
+const PUBLIC_PATHS_BY_LANGUAGE = {
+	ko: [...PUBLIC_PATHS, ...KOREAN_ONLY_PATHS],
+	en: [...PUBLIC_PATHS],
+} as const;
+
 test.describe("공개 페이지 공유 메타데이터", () => {
-	for (const language of ["ko", "en"]) {
-		for (const publicPath of PUBLIC_PATHS) {
+	for (const language of ["ko", "en"] as const) {
+		for (const publicPath of PUBLIC_PATHS_BY_LANGUAGE[language]) {
 			test(`${language}/${publicPath}의 검색 정보와 공유 정보가 일치한다.`, async ({
 				page,
 			}) => {

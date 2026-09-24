@@ -32,6 +32,18 @@ export interface IFGa4EventParams {
 }
 
 /**
+ * 설치 버튼이 한 페이지 안에서 놓인 자리.
+ *
+ * @description 같은 페이지에 설치 버튼이 둘 이상이라 출발 경로만으로는 어느 버튼이 눌렸는지
+ * 구분되지 않습니다. `extension_install_click`의 `position` 값입니다.
+ */
+export type TInstallClickPosition =
+	| "hero"
+	| "recommendation"
+	| "final"
+	| "install_check_dialog";
+
+/**
  * 추적 가능한 이벤트 전체 목록.
  * @description 이름과 파라미터가 짝지어진 판별 유니온입니다. 로깅은 틀려도 화면이 깨지지 않아
  * 런타임에서 오류를 발견할 수 없으므로, 컴파일이 유일한 안전망입니다. 새 이벤트는 반드시
@@ -77,7 +89,15 @@ export type TAnalyticsEvent =
 	| { name: "memo_undo"; params: { action: "wish" | "reading" | "delete" } }
 	| { name: "category_suggestion_show"; params: { is_new_category: boolean } }
 	| { name: "category_suggestion_apply"; params: { is_new_category: boolean } }
-	| { name: "extension_install_click" }
+	| {
+			name: "extension_install_click";
+			params: {
+				/** 언어 접두사를 뺀 출발 경로. 예: "/features/memo", "/memos" */
+				from: string;
+				/** 한 페이지 안에서 누른 버튼의 자리 */
+				position: TInstallClickPosition;
+			};
+	  }
 	| { name: "extension_install_dismiss" }
 	| {
 			name: "open_web_from_extension";

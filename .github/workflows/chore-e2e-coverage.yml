@@ -6,10 +6,17 @@ on:
     - cron: "23 1 * * 0"
   workflow_dispatch:
     inputs:
+      flow_id:
+        description: "우선 보강할 핵심 흐름 ID (전체 흐름도 함께 점검합니다)"
+        type: string
+        default: ""
       dry_run:
         description: "테스트와 검증까지만 실행하고 PR은 만들지 않습니다"
         type: boolean
         default: false
+
+env:
+  E2E_FOCUS_FLOW_ID: ${{ inputs.flow_id || '' }}
 
 permissions:
   contents: read
@@ -58,7 +65,7 @@ jobs:
         if: steps.precheck.outputs.proceed == 'true'
         run: node .github/scripts/e2e-coverage/maintain.mjs context
 
-      - name: Analyze one missing user flow
+      - name: Audit all core user flows
         id: analyze
         if: steps.precheck.outputs.proceed == 'true'
         uses: anthropics/claude-code-action/base-action@v1
@@ -67,21 +74,25 @@ jobs:
           prompt: |
             Read AGENTS.md, docs/architecture.md, e2e/playwright.config.ts and ${{ steps.context.outputs.context_file }}.
             Inspect source and existing E2E tests across every configured project before deciding whether a core user flow is missing.
-            Use the rotating flow suggested by context.json as a starting point. A test in any project can already cover the flow.
+            Assess EVERY flow in context.json exactly once in assessments, using flowId, status (covered/gap/insufficient), reason, productRefs, existingTestRefs.
+            A test in any project can already cover a flow. Inspect each flow independently; one covered flow never ends the audit.
+            Prefer context.focusFlowId if it has a gap, then recentFlows and rotationFlow when choosing one gap to implement.
             Choose at most one missing observable user action and expected result. Prefer a small, reliable test that follows current fixtures.
-            Do not modify files. Return only the required JSON object. Use status=none if the flow is covered and status=insufficient if evidence is inadequate.
+            Do not modify files. Return only the required JSON object. Set top-level status=gap if ANY assessment has a gap, and select that gap in scenarioId.
+            Use status=none ONLY when ALL assessments are covered. Use status=insufficient ONLY when there are no gaps and at least one insufficient assessment; select an insufficient flow.
             scenarioId must be an id from context.json. Every string field except testFile and project must be nonempty even for none/insufficient.
-            productRefs and existingTestRefs must contain repository-relative paths to real tracked files without line numbers.
+            Every assessment and candidate productRefs/existingTestRefs must contain repository-relative paths to real tracked files without line numbers.
+            Covered and gap assessments require nonempty productRefs and existingTestRefs. Candidate refs must be included in its selected assessment.
             Choose a flow with at least one existing browser-route-mocked test as evidence, regardless of its project name.
             For none/insufficient, set testFile and project to empty strings.
             For gap, choose an existing project and a new e2e/tests/<project>/<camelCase>.test.ts path.
             Only generate mocked tests in web, extension, or hybrid. Reuse e2e/tests/lib/mocks/ and do not read or write real Supabase data beyond authentication.
-            If the flow requires a *.real.test.ts test, return status=insufficient and explain why real data is required.
+            If a flow requires a *.real.test.ts test, mark that assessment insufficient and explain why. Continue assessing all other flows.
           claude_args: >-
             --model claude-sonnet-4-6
             --max-turns 20
             --allowedTools "Read,Grep,Glob"
-            --json-schema '{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string","enum":["gap","none","insufficient"]},"scenarioId":{"type":"string"},"reason":{"type":"string"},"productRefs":{"type":"array","items":{"type":"string"}},"existingTestRefs":{"type":"array","items":{"type":"string"}},"missingAction":{"type":"string"},"expectedResult":{"type":"string"},"testFile":{"type":"string"},"project":{"type":"string"}},"required":["status","scenarioId","reason","productRefs","existingTestRefs","missingAction","expectedResult","testFile","project"]}'
+            --json-schema '{"type":"object","additionalProperties":false,"properties":{"assessments":{"type":"array","items":{"type":"object","additionalProperties":false,"properties":{"flowId":{"type":"string"},"status":{"type":"string","enum":["covered","gap","insufficient"]},"reason":{"type":"string"},"productRefs":{"type":"array","items":{"type":"string"}},"existingTestRefs":{"type":"array","items":{"type":"string"}}},"required":["flowId","status","reason","productRefs","existingTestRefs"]}},"status":{"type":"string","enum":["gap","none","insufficient"]},"scenarioId":{"type":"string"},"reason":{"type":"string"},"productRefs":{"type":"array","items":{"type":"string"}},"existingTestRefs":{"type":"array","items":{"type":"string"}},"missingAction":{"type":"string"},"expectedResult":{"type":"string"},"testFile":{"type":"string"},"project":{"type":"string"}},"required":["assessments","status","scenarioId","reason","productRefs","existingTestRefs","missingAction","expectedResult","testFile","project"]}'
 
       - name: Validate analysis result
         id: candidate

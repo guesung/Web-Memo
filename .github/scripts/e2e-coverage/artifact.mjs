@@ -1,6 +1,7 @@
 import { constants, copyFileSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
+import { MAX_CANDIDATE_BYTES } from "./validation.mjs";
 
 /** 실행 전후 테스트의 바이트 동일성을 확인하기 위한 SHA-256입니다. */
 export const testHash = (file) => createHash("sha256").update(readFileSync(file)).digest("hex");
@@ -47,7 +48,13 @@ export const readArtifact = ({ artifactDirectory, repositoryRoot, baseSha, requi
 		throw Object.assign(new Error("게시 아티팩트는 지정된 파일만 포함해야 합니다"), { isSafe: true });
 	}
 	for (const name of names) {
-		assertRegular(path.join(artifactDirectory, name), name === "playwright.json" ? 2 * 1024 * 1024 : 64000);
+		let maxBytes = 64000;
+		if (name === "playwright.json") {
+			maxBytes = 2 * 1024 * 1024;
+		} else if (name === "candidate.json") {
+			maxBytes = MAX_CANDIDATE_BYTES;
+		}
+		assertRegular(path.join(artifactDirectory, name), maxBytes);
 	}
 	if (requireReport) {
 		validateTestHash(path.join(artifactDirectory, "test.ts"), expectedTestHash);

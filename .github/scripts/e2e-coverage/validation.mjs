@@ -2,6 +2,9 @@ import { execFileSync } from "node:child_process";
 import { lstatSync, readFileSync } from "node:fs";
 import path from "node:path";
 
+/** 전체 흐름 점검 근거를 포함한 후보 JSON의 UTF-8 바이트 상한입니다. */
+export const MAX_CANDIDATE_BYTES = 256 * 1024;
+
 /** 자식 프로세스의 출력에 자격증명이 섞여도 실패 로그에 노출하지 않습니다. */
 export const run = (command, args) => {
 	try {
@@ -23,9 +26,62 @@ export const isoWeek = (date = new Date()) => {
 
 const validPath = (value) => typeof value === "string" && /^[a-zA-Z0-9_./-]+$/.test(value) && !value.startsWith("/") && !value.split("/").includes("..");
 
+/** 수동 실행의 우선 점검 흐름이 카탈로그에 있는지 검사합니다. */
+export const validateFocusFlowId = (focusFlowId, flows) => {
+	if (typeof focusFlowId !== "string" || (focusFlowId !== "" && !flows.some((flow) => flow.id === focusFlowId))) {
+		throw Object.assign(new Error("우선 점검할 핵심 흐름 ID가 올바르지 않습니다"), { isSafe: true });
+	}
+
+	return focusFlowId;
+};
+
+const validateEvidence = (value, trackedFiles) => {
+	for (const key of ["productRefs", "existingTestRefs"]) {
+		if (!Array.isArray(value[key]) || value[key].length > 30 || new Set(value[key]).size !== value[key].length || !value[key].every((file) => validPath(file) && trackedFiles.has(file))) {
+			throw Object.assign(new Error("근거는 실제 추적 파일을 중복 없이 참조해야 합니다"), { isSafe: true });
+		}
+	}
+	if (value.existingTestRefs.some((file) => !/^e2e\/tests\/.+\.test\.ts$/.test(file))) {
+		throw Object.assign(new Error("기존 테스트 근거 경로가 올바르지 않습니다"), { isSafe: true });
+	}
+};
+
+const validateAssessments = (candidate, context) => {
+	const flowIds = new Set(context.flows.map((flow) => flow.id));
+	const trackedFiles = new Set(context.trackedFiles);
+	const assessments = candidate.assessments;
+	if (!Array.isArray(assessments) || assessments.length !== flowIds.size || new Set(assessments.map((item) => item?.flowId)).size !== flowIds.size) {
+		throw Object.assign(new Error("모든 핵심 흐름을 정확히 한 번씩 점검해야 합니다"), { isSafe: true });
+	}
+	for (const assessment of assessments) {
+		if (!assessment || Object.keys(assessment).sort().join() !== ["flowId", "status", "reason", "productRefs", "existingTestRefs"].sort().join() || !flowIds.has(assessment.flowId) || !["covered", "gap", "insufficient"].includes(assessment.status) || typeof assessment.reason !== "string" || !assessment.reason.trim() || assessment.reason.length > 3000) {
+			throw Object.assign(new Error("흐름별 점검 스키마가 올바르지 않습니다"), { isSafe: true });
+		}
+		validateEvidence(assessment, trackedFiles);
+		if (assessment.status !== "insufficient" && (!assessment.productRefs.length || !assessment.existingTestRefs.length)) {
+			throw Object.assign(new Error("점검 판정에는 제품과 기존 테스트 근거가 필요합니다"), { isSafe: true });
+		}
+	}
+	validateEvidence(candidate, trackedFiles);
+	const gaps = assessments.filter((assessment) => assessment.status === "gap");
+	let expectedStatus = "none";
+	if (gaps.length) {
+		expectedStatus = "gap";
+	} else if (assessments.some((assessment) => assessment.status === "insufficient")) {
+		expectedStatus = "insufficient";
+	}
+	const selected = assessments.find((assessment) => assessment.flowId === candidate.scenarioId);
+	if (candidate.status !== expectedStatus || selected?.status !== (candidate.status === "none" ? "covered" : candidate.status) || (candidate.status === "gap" && gaps.some((assessment) => assessment.flowId === context.focusFlowId) && candidate.scenarioId !== context.focusFlowId)) {
+		throw Object.assign(new Error("전체 점검 결과와 선택한 후보가 일치하지 않습니다"), { isSafe: true });
+	}
+	if (["productRefs", "existingTestRefs"].some((key) => candidate[key].some((file) => !selected[key].includes(file)))) {
+		throw Object.assign(new Error("후보 근거는 선택한 흐름의 점검 근거에 포함되어야 합니다"), { isSafe: true });
+	}
+};
+
 /** 모델이 반환한 후보를 제한된 상태·근거·테스트 경로 스키마로 검사합니다. */
 export const validateCandidate = (candidate, context) => {
-	const keys = ["status", "scenarioId", "reason", "productRefs", "existingTestRefs", "testFile", "project", "missingAction", "expectedResult"];
+	const keys = ["status", "scenarioId", "reason", "productRefs", "existingTestRefs", "testFile", "project", "missingAction", "expectedResult", "assessments"];
 	if (!candidate || Object.keys(candidate).sort().join() !== keys.sort().join() || !["gap", "none", "insufficient"].includes(candidate.status)) {
 		throw Object.assign(new Error("후보 스키마가 올바르지 않습니다"), { isSafe: true });
 	}
@@ -48,6 +104,11 @@ export const validateCandidate = (candidate, context) => {
 		}
 	} else if (candidate.testFile !== "" || candidate.project !== "") {
 		throw Object.assign(new Error("테스트가 없는 결과에는 경로와 프로젝트를 지정할 수 없습니다"), { isSafe: true });
+	}
+
+	validateAssessments(candidate, context);
+	if (Buffer.byteLength(`${JSON.stringify(candidate, null, 2)}\n`, "utf8") > MAX_CANDIDATE_BYTES) {
+		throw Object.assign(new Error("전체 점검 후보 JSON은 256 KiB 이하여야 합니다"), { isSafe: true });
 	}
 
 	return candidate;

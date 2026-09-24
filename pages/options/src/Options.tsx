@@ -1,4 +1,5 @@
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
+import { CONFIG } from "@web-memo/env";
 import { I18n } from "@web-memo/shared/utils/extension";
 import {
 	Button,
@@ -9,7 +10,7 @@ import {
 	Skeleton,
 	Toaster,
 } from "@web-memo/ui";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 import {
 	Header,
@@ -70,6 +71,10 @@ const OptionsSkeleton = (props: IFOptionsSkeletonProps) => {
 
 /** 확장 프로그램의 옵션 페이지입니다. */
 const Options = () => {
+	if (window.location.protocol === "chrome-extension:") {
+		return <ChromeOptionsEntry />;
+	}
+
 	return (
 		<QueryProvider>
 			<Header />
@@ -99,6 +104,71 @@ const Options = () => {
 			</main>
 			<Toaster />
 		</QueryProvider>
+	);
+};
+
+/** Chrome 옵션 진입점에서 웹 설정 페이지로 이동하고 연결 실패 시 재시도를 제공합니다. */
+const ChromeOptionsEntry = () => {
+	const [isLoading, setIsLoading] = useState(true);
+	const [isOffline, setIsOffline] = useState(false);
+	const [attempt, setAttempt] = useState(0);
+	const language = I18n.getUILanguage() === "ko" ? "ko" : "en";
+	const settingsUrl = `${CONFIG.webUrl}/${language}/settings#extension`;
+
+	useEffect(() => {
+		let isCurrentAttempt = true;
+		const openWebSettings = async () => {
+			setIsLoading(true);
+			setIsOffline(false);
+			try {
+				const response = await fetch(settingsUrl, {
+					method: "HEAD",
+					cache: attempt > 0 ? "reload" : "no-store",
+					signal: AbortSignal.timeout(5000),
+				});
+				if (!response.ok) {
+					throw new Error("Web settings are unavailable");
+				}
+				if (isCurrentAttempt) {
+					window.location.assign(settingsUrl);
+				}
+			} catch {
+				if (isCurrentAttempt) {
+					setIsOffline(true);
+					setIsLoading(false);
+				}
+			}
+		};
+		void openWebSettings();
+
+		return () => {
+			isCurrentAttempt = false;
+		};
+	}, [attempt, settingsUrl]);
+
+	const handleRetryClick = () => {
+		setAttempt((previous) => previous + 1);
+	};
+
+	return (
+		<main className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-4 px-6 text-center">
+			<h1 className="text-xl font-semibold">
+				{I18n.get("settings_web_title")}
+			</h1>
+			<p className="text-sm text-muted-foreground">
+				{isOffline
+					? I18n.get("settings_web_offline")
+					: I18n.get("settings_web_opening")}
+			</p>
+			{isOffline && (
+				<Button type="button" onClick={handleRetryClick}>
+					{I18n.get("retry")}
+				</Button>
+			)}
+			{isLoading && (
+				<span className="sr-only">{I18n.get("setting_loading")}</span>
+			)}
+		</main>
 	);
 };
 

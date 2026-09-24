@@ -419,5 +419,14 @@
 				"example": "Reading"
 			}
 		}
+	},
+	"settings_web_title": {
+		"message": "Web Memo settings"
+	},
+	"settings_web_opening": {
+		"message": "Opening the web settings page."
+	},
+	"settings_web_offline": {
+		"message": "The web settings page is unavailable. Check your connection and try again."
 	}
 }

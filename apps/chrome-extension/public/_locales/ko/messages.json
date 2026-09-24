@@ -419,5 +419,14 @@
 				"example": "독서"
 			}
 		}
+	},
+	"settings_web_title": {
+		"message": "웹 메모 설정"
+	},
+	"settings_web_opening": {
+		"message": "웹 설정 페이지를 열고 있습니다."
+	},
+	"settings_web_offline": {
+		"message": "웹 설정 페이지에 연결할 수 없습니다. 인터넷 연결을 확인한 뒤 다시 시도해 주세요."
 	}
 }

@@ -284,13 +284,15 @@ Slack에서 `/배포현황`(등록한 슬래시 커맨드)을 실행하면 `vers
 
 ## master 푸시는 웹을 상용에 올리지 않습니다 (미승격 배포를 승격합니다)
 
-**Vercel의 Git 자동 배포는 `master`와 `develop`에서 꺼 두었습니다.** `vercel.json`의
-`git.deploymentEnabled`가 `master: false`, `develop: false`입니다. 예전에는 Vercel Git 연동이 `master` 푸시마다
+**Vercel의 Git 자동 배포는 모든 브랜치에서 꺼 두었습니다.** `vercel.json`의
+`git.deploymentEnabled`가 `false`이므로 `master`·`develop` 푸시와 작업 브랜치의 PR Preview가
+Vercel Git 연동 배포를 만들지 않습니다. 예전에는 Vercel Git 연동이 `master` 푸시마다
 웹을 상용(`www.webmemo.xyz`)에 바로 배포했고(배포 출처 `git`, 생성자 `vercel[bot]`), 그래서
 Slack의 웹 배포 버튼과 무관하게 머지만 하면 라이브가 바뀌었습니다. 버튼이 만든 배포는 같은
 커밋을 한 번 더 빌드한 것이었습니다. `develop`도 같은 이유입니다. 테스트 서버는 GitHub Actions가
 직접 배포하고 별칭을 옮기므로(아래 "develop 머지는 테스트 서버로 나갑니다") Vercel Git 연동이
-같은 푸시를 한 번 더 빌드할 이유가 없습니다. 기능 브랜치의 프리뷰 배포는 그대로 남습니다.
+같은 푸시를 한 번 더 빌드할 이유가 없습니다. GitHub Actions의 `cd-web.yml`에서 Vercel CLI로
+실행하는 미승격·스테이징·상용 배포는 계속 동작합니다.
 
 이제 상용 웹이 바뀌는 길은 **Slack 웹 배포 버튼 → `release.yml` 하나**입니다.
 

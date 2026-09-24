@@ -263,7 +263,7 @@
   kind: config
   stores: [vercel:production, vercel:preview]
   consumers: [packages/env/src/config.ts, packages/env/tsup.config.ts, apps/web/next.config.mjs, packages/zipper/index.ts]
-  impact: "Git 연동 빌드가 development로 구워져 운영에 localhost:3000이 실린다. tsup.config.ts의 가드가 빌드를 실패시켜 막는다"
+  impact: "대시보드에서 수동 재배포할 때 development로 구워져 운영에 localhost:3000이 실린다. tsup.config.ts의 가드가 빌드를 실패시켜 막는다"
   note: "production은 production, preview는 staging"
 
 - name: ENABLE_EXPERIMENTAL_COREPACK

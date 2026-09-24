@@ -45,6 +45,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/e2e-coverage"
           echo "E2E_COVERAGE_DIR=$RUNNER_TEMP/e2e-coverage" >> "$GITHUB_ENV"
           echo "E2E_BASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "NODE_VERSION=$(cat .nvmrc)" >> "$GITHUB_ENV"
 
       - name: Skip when a maintenance PR is already open
         id: precheck
@@ -60,7 +61,7 @@ jobs:
       - name: Analyze one missing user flow
         id: analyze
         if: steps.precheck.outputs.proceed == 'true'
-        uses: anthropics/claude-code-base-action@beta
+        uses: anthropics/claude-code-action/base-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
@@ -77,6 +78,7 @@ jobs:
             Only generate mocked tests in web, extension, or hybrid. Reuse e2e/tests/lib/mocks/ and do not read or write real Supabase data beyond authentication.
             If the flow requires a *.real.test.ts test, return status=insufficient and explain why real data is required.
           claude_args: >-
+            --model claude-sonnet-4-6
             --max-turns 20
             --allowedTools "Read,Grep,Glob"
             --json-schema '{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string","enum":["gap","none","insufficient"]},"scenarioId":{"type":"string"},"reason":{"type":"string"},"productRefs":{"type":"array","items":{"type":"string"}},"existingTestRefs":{"type":"array","items":{"type":"string"}},"missingAction":{"type":"string"},"expectedResult":{"type":"string"},"testFile":{"type":"string"},"project":{"type":"string"}},"required":["status","scenarioId","reason","productRefs","existingTestRefs","missingAction","expectedResult","testFile","project"]}'
@@ -91,7 +93,7 @@ jobs:
       - name: Write one E2E test
         id: write_test
         if: steps.candidate.outputs.status == 'gap'
-        uses: anthropics/claude-code-base-action@beta
+        uses: anthropics/claude-code-action/base-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
@@ -101,6 +103,7 @@ jobs:
             Create only a mocked *.test.ts test using e2e/tests/lib/mocks/. Do not create a *.real.test.ts test or read or write real Supabase data beyond authentication.
             Do not edit product code, configuration, workflows, or existing tests. Do not commit or publish anything.
           claude_args: >-
+            --model claude-sonnet-4-6
             --max-turns 20
             --allowedTools "Read,Grep,Glob,Edit,Write"
 
@@ -161,7 +164,7 @@ jobs:
       - name: Fix verification failure once
         id: fix_test
         if: steps.candidate.outputs.status == 'gap' && steps.verify_initial.outcome == 'failure'
-        uses: anthropics/claude-code-base-action@beta
+        uses: anthropics/claude-code-action/base-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
@@ -170,6 +173,7 @@ jobs:
             Keep exactly one test for the same flow and project. Do not modify product code, other tests, or configuration.
             Keep the test mocked using e2e/tests/lib/mocks/. Do not rename it to *.real.test.ts or read or write real Supabase data beyond authentication.
           claude_args: >-
+            --model claude-sonnet-4-6
             --max-turns 20
             --allowedTools "Read,Grep,Glob,Edit,Write"
 

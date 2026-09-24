@@ -2,6 +2,12 @@
 
 import { useGuide } from "@src/modules/guide";
 import type { LanguageType } from "@src/modules/i18n";
+import {
+	getMemoNavigationId,
+	reportMemoLoadStage,
+	type TMemoLoadOutcome,
+	type TMemoRoute,
+} from "@src/modules/observability/client";
 import { useDidMount, useMemosInfiniteQuery } from "@web-memo/shared/hooks";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { Loading, Skeleton } from "@web-memo/ui";
@@ -42,15 +48,36 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 	const isListView = searchParams.get("view") === "list";
 	const searchQuery = watch("searchQuery");
 
-	const { memos, totalCount, hasNextPage, isFetchingNextPage, fetchNextPage } =
-		useMemosInfiniteQuery({
-			category,
-			sortBy: isListView ? "created_at" : "updated_at",
-			isWish: getWishlistFilter(filter),
-			isStar: filter === "star" ? true : undefined,
-			isReading: filter === "reading" ? true : undefined,
-			searchQuery: searchQuery || undefined,
+	const {
+		data,
+		memos,
+		totalCount,
+		hasNextPage,
+		isFetchingNextPage,
+		fetchNextPage,
+	} = useMemosInfiniteQuery({
+		category,
+		sortBy: isListView ? "created_at" : "updated_at",
+		isWish: getWishlistFilter(filter),
+		isStar: filter === "star" ? true : undefined,
+		isReading: filter === "reading" ? true : undefined,
+		searchQuery: searchQuery || undefined,
+	});
+	const loadOutcome: TMemoLoadOutcome = data.pages[0]?.error
+		? "error"
+		: memos.length === 0
+			? "empty"
+			: "success";
+	const route: TMemoRoute = filter === "all" ? "/memos" : `/memos/${filter}`;
+	const navigationId = getMemoNavigationId(route);
+	useEffect(() => {
+		reportMemoLoadStage({
+			route,
+			navigationId,
+			stage: "data_ready",
+			outcome: loadOutcome,
 		});
+	}, [route, navigationId, loadOutcome]);
 
 	const { highlightsByUrl, isHighlightLoadError, refetchHighlights } =
 		useMemoHighlights(memos.map((memo) => memo.url));
@@ -129,6 +156,9 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 					hasNextPage={hasNextPage}
 					isFetchingNextPage={isFetchingNextPage}
 					fetchNextPage={fetchNextPage}
+					loadOutcome={loadOutcome}
+					route={route}
+					navigationId={navigationId}
 				/>
 			) : (
 				<MemoGrid
@@ -140,6 +170,9 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 					hasNextPage={hasNextPage}
 					isFetchingNextPage={isFetchingNextPage}
 					fetchNextPage={fetchNextPage}
+					loadOutcome={loadOutcome}
+					route={route}
+					navigationId={navigationId}
 				/>
 			)}
 			{dialogMemoId && (

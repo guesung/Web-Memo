@@ -1,6 +1,9 @@
 import { init } from "@sentry/nextjs";
 import { CONFIG } from "@web-memo/env";
 import { SENTRY } from "@web-memo/shared/constants";
+import { createGrafanaSpanProcessors } from "./modules/observability/serverTracing";
+
+const grafanaSpanProcessors = createGrafanaSpanProcessors();
 
 init({
 	dsn: SENTRY.dsnWeb,
@@ -8,4 +11,7 @@ init({
 	// 빌드 대상 환경이 development면 보고하지 않는다.
 	enabled: CONFIG.buildEnv !== "development",
 	tracesSampleRate: 0.1,
+	...(grafanaSpanProcessors.length > 0 && {
+		openTelemetrySpanProcessors: grafanaSpanProcessors,
+	}),
 });

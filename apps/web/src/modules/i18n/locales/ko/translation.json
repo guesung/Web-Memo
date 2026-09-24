@@ -461,6 +461,7 @@
 		}
 	},
 	"memoSection": {
+		"highlightCount": "하이라이트 {{count}}개",
 		"memo": "메모",
 		"impression": "느낀 점",
 		"impressionPlaceholder": "이 페이지에서 느낀 점을 적어보세요",

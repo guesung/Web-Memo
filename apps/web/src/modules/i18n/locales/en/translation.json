@@ -466,6 +466,7 @@
 		}
 	},
 	"memoSection": {
+		"highlightCount": "Highlights ({{count}})",
 		"memo": "Memo",
 		"impression": "Impression",
 		"impressionPlaceholder": "Write what you felt about this page",

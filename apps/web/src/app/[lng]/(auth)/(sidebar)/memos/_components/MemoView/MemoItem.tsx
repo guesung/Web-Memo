@@ -185,29 +185,39 @@ const MemoItem = ({
 						isMemoSelected={isMemoSelected}
 						selectMemoItem={selectMemoItem}
 					/>
-					{memo.memo && (
+					{memo.memo?.trim() && (
 						<CardContent className="px-5 py-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
-							{memo.memo}
+							<p className={cn({ "line-clamp-3": !isReadOnly })}>{memo.memo}</p>
 						</CardContent>
 					)}
-					<MemoHighlights
-						highlights={highlights}
-						label={t("sideBar.highlight")}
-					/>
-					{showImpression && memo.impression && (
+					{!isReadOnly && (
+						<MemoHighlights
+							highlights={highlights}
+							label={t("sideBar.highlight")}
+							isPreview
+							countLabel={t("memoSection.highlightCount", {
+								count: highlights?.length ?? 0,
+							})}
+						/>
+					)}
+					{showImpression && memo.impression?.trim() && (
 						<CardContent className="px-5 pb-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
 							<p className="mb-1 text-xs font-semibold text-muted-foreground">
 								{t("memoSection.impression")}
 							</p>
-							{memo.impression}
+							<p className={cn({ "line-clamp-2": !isReadOnly })}>
+								{memo.impression}
+							</p>
 						</CardContent>
 					)}
-					{showActionItem && memo.actionItem && (
+					{showActionItem && memo.actionItem?.trim() && (
 						<CardContent className="px-5 pb-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
 							<p className="mb-1 text-xs font-semibold text-muted-foreground">
 								{t("memoSection.actionItem")}
 							</p>
-							{memo.actionItem}
+							<p className={cn({ "line-clamp-2": !isReadOnly })}>
+								{memo.actionItem}
+							</p>
 						</CardContent>
 					)}
 					{footer ?? (

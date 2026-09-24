@@ -8,6 +8,7 @@ import {
 	useMemoUpsertMutation,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
+import type { TCategoryChangeSource } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -226,15 +227,42 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		[setValue, debounce, saveMemo],
 	);
 
-	const updateCategory = useCallback(
-		(categoryId: number | null) => {
-			setValue("categoryId", categoryId);
-			if (memoData?.id) {
-				patchMemo({ id: memoData.id, request: { category_id: categoryId } });
-			}
-		},
-		[setValue, memoData?.id, patchMemo],
-	);
+	/**
+	 * 메모 카테고리를 바꾼다.
+	 * @description 저장된 메모는 바로 patch하고, 실패하면 폼 값을 이전 카테고리로 되돌린다.
+	 * 실패 알림은 QueryProvider의 MutationCache가 맡는다. 저장 전 메모는 폼 값만 바꾸고
+	 * 첫 저장 때 함께 저장되므로 변경 이벤트도 따로 보내지 않는다.
+	 */
+	const updateCategory = (
+		categoryId: number | null,
+		source: TCategoryChangeSource,
+	) => {
+		const previousCategoryId = getValues("categoryId");
+		setValue("categoryId", categoryId);
+
+		if (!memoData?.id) {
+			return;
+		}
+
+		patchMemo(
+			{
+				id: memoData.id,
+				request: { category_id: categoryId },
+				categorySource: source,
+			},
+			{
+				onError: () => {
+					// 응답을 기다리는 사이 다른 카테고리를 골랐다면 그 선택을 덮지 않는다.
+					const isStillRequestedCategory =
+						getValues("categoryId") === categoryId;
+
+					if (isStillRequestedCategory) {
+						setValue("categoryId", previousCategoryId);
+					}
+				},
+			},
+		);
+	};
 
 	/**
 	 * 메모 상태 하나를 반전시켜 저장한다.

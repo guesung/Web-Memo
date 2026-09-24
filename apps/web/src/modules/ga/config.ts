@@ -17,7 +17,7 @@ export const GA4_SERVICE_ACCOUNT_JSON = process.env.GA4_SERVICE_ACCOUNT_JSON;
 /**
  * 조회 대상 GA4 속성 ID.
  *
- * @description 비밀이 아니라서 기본값을 코드에 둡니다. `daily-ga-report.yml`도 같은
+ * @description 비밀이 아니라서 기본값을 코드에 둡니다. `report-ga-daily.yml`도 같은
  * 판단으로 이 값을 GitHub Secrets가 아니라 워크플로 파일에 그대로 적고 있습니다.
  */
 export const GA4_PROPERTY_ID = process.env.GA4_PROPERTY_ID ?? "471860782";

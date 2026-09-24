@@ -1,9 +1,13 @@
+import type { MemoInput } from "@src/types/Input";
 import { CONFIG } from "@web-memo/env";
 import {
 	useCategoryPostMutation,
 	useCategoryQuery,
 } from "@web-memo/shared/hooks";
-import { analytics } from "@web-memo/shared/modules/analytics";
+import {
+	analytics,
+	type TCategoryChangeSource,
+} from "@web-memo/shared/modules/analytics";
 import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
@@ -12,6 +16,7 @@ import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { generateRandomPastelColor } from "@web-memo/shared/utils";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useFormContext } from "react-hook-form";
 
 const CONFIDENCE_THRESHOLD = 0.7;
 const AUTO_DISMISS_DELAY = 15000;
@@ -37,6 +42,7 @@ export function useCategorySuggestion({
 }: UseCategorySuggestionProps) {
 	const [isLoading, setIsLoading] = useState(false);
 
+	const { getValues } = useFormContext<MemoInput>();
 	const { categories } = useCategoryQuery();
 	const { mutateAsync: createCategory } = useCategoryPostMutation();
 
@@ -47,7 +53,22 @@ export function useCategorySuggestion({
 
 	const applyCategorySuggestionDirect = useCallback(
 		async (suggestionToApply: CategorySuggestion) => {
+			// 추천을 기다리는 사이 사용자가 직접 골랐거나 이 페이지에서 해제했으면 결과를 버린다.
+			// 요청 시점의 값이 아니라 결과가 도착한 지금의 폼 값을 봐야 한다.
+			const isSuggestionOutdated = () => {
+				const hasUserChosenCategory = !!getValues("categoryId");
+				const isDismissedUrl =
+					currentUrlRef.current !== null &&
+					dismissedUrlsRef.current.has(currentUrlRef.current);
+
+				return hasUserChosenCategory || isDismissedUrl;
+			};
+
 			try {
+				if (isSuggestionOutdated()) {
+					return;
+				}
+
 				let categoryId = suggestionToApply.existingCategoryId;
 
 				if (!suggestionToApply.isExisting || !categoryId) {
@@ -67,8 +88,9 @@ export function useCategorySuggestion({
 					}
 				}
 
-				if (categoryId) {
-					onCategorySelect(categoryId);
+				// 카테고리를 만드는 동안에도 사용자가 고를 수 있으므로 적용 직전에 한 번 더 본다.
+				if (categoryId && !isSuggestionOutdated()) {
+					onCategorySelect(categoryId, "ai");
 					// OpenAI를 호출하는 기능입니다. 제안이 실제로 받아들여지는지 모르면 비용 대비
 					// 가치를 판단할 수 없습니다.
 					analytics.trackEvent({
@@ -80,7 +102,7 @@ export function useCategorySuggestion({
 				console.error("Failed to auto-apply category:", error);
 			}
 		},
-		[createCategory, onCategorySelect, categories],
+		[createCategory, onCategorySelect, categories, getValues],
 	);
 
 	const clearAutoDismissTimer = useCallback(() => {
@@ -214,9 +236,23 @@ export function useCategorySuggestion({
 		}
 	}, [currentCategoryId, reset]);
 
+	/**
+	 * 현재 탭 URL에서 AI 추천 자동 적용을 멈춘다.
+	 * @description 사용자가 카테고리를 직접 해제한 페이지에 추천이 다시 덮어쓰지 않게 한다.
+	 * 기록은 패널이 열려 있는 동안만 유지된다.
+	 */
+	const dismissCurrentUrl = async () => {
+		const tabInfo = await getTabInfo();
+
+		if (tabInfo.url) {
+			dismissedUrlsRef.current.add(tabInfo.url);
+		}
+	};
+
 	return {
 		isLoading,
 		triggerSuggestion,
+		dismissCurrentUrl,
 	};
 }
 
@@ -233,5 +269,5 @@ interface CategorySuggestionResponse {
 
 interface UseCategorySuggestionProps {
 	currentCategoryId: number | null;
-	onCategorySelect: (categoryId: number) => void;
+	onCategorySelect: (categoryId: number, source: TCategoryChangeSource) => void;
 }

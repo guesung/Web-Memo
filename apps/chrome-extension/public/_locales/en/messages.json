@@ -194,6 +194,36 @@
 	"memo_fields_setting": {
 		"message": "Memo fields"
 	},
+	"highlight_setting": {
+		"message": "Highlights"
+	},
+	"highlight_setting_description": {
+		"message": "Select text on a webpage, then click the highlight button to save it."
+	},
+	"ai_setting": {
+		"message": "AI features"
+	},
+	"settings_auto_save_description": {
+		"message": "Changes to settings are saved automatically."
+	},
+	"setting_saving": {
+		"message": "Saving..."
+	},
+	"setting_loading": {
+		"message": "Loading settings"
+	},
+	"setting_load_failed": {
+		"message": "Couldn't load settings."
+	},
+	"setting_saved": {
+		"message": "Saved"
+	},
+	"setting_save_failed": {
+		"message": "Couldn't save. Restored the previous setting."
+	},
+	"retry": {
+		"message": "Retry"
+	},
 	"show_impression_setting": {
 		"message": "Show impression field"
 	},

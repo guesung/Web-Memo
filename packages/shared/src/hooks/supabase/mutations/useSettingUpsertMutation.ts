@@ -5,6 +5,7 @@ import { SettingService } from "../../../utils";
 
 import { useSupabaseClientQuery } from "../queries";
 
+/** 변경된 설정 필드만 저장하고 설정 캐시를 무효화한다. */
 export default function useSettingUpsertMutation() {
 	const queryClient = useQueryClient();
 	const { data: supabaseClient } = useSupabaseClientQuery();

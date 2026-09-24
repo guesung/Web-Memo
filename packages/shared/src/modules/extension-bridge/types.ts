@@ -69,6 +69,11 @@ export interface IFEditHighlightPayload {
 	color?: import("../../constants/Highlight").HighlightColor;
 }
 
+/** 설정이 저장된 계정. 수신자는 자신의 계정과 비교한 뒤 재조회한다. */
+export interface IFSettingUpdatedPayload {
+	userId: string;
+}
+
 /** 실제 변경된 행 또는 검증·인증·저장 오류. */
 export type TEditHighlightResponse = TCreateHighlightResponse;
 

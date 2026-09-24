@@ -7,6 +7,7 @@ import type {
 	IFCreateHighlightPayload,
 	IFEditHighlightPayload,
 	IFGetLoginStatusResponse,
+	IFSettingUpdatedPayload,
 	PageContentResponse,
 	TCreateHighlightResponse,
 	TEditHighlightResponse,
@@ -22,6 +23,7 @@ export const bridge = createBridge({
 	REFETCH_THE_MEMO_LIST_FROM_EXTENSION: defineMessage<void, void>("internal"),
 	REFETCH_THE_MEMO_LIST_FROM_WEB: defineMessage<void, void>("toExtension"),
 	UPDATE_SIDE_PANEL: defineMessage<void, void>("internal"),
+	SETTING_UPDATED: defineMessage<IFSettingUpdatedPayload, void>("internal"),
 	GET_EXTENSION_MANIFEST: defineMessage<void, chrome.runtime.Manifest>(
 		"toExtension",
 	),
@@ -41,4 +43,5 @@ export const bridge = createBridge({
 	GET_LOGIN_STATUS: defineMessage<void, IFGetLoginStatusResponse>("internal"),
 });
 
+/** 확장 내부 메시지 API 타입. */
 export type Bridge = typeof bridge;

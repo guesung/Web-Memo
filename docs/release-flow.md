@@ -187,6 +187,22 @@ master에 머지가 몇 분 안에 연달아 들어오면 커밋마다 CI가 병
 - 아티팩트 목록 조회가 실패해도 알림은 그대로 나가고 이 버튼만 빠집니다.
   `notify-extension` 잡이 이를 위해 `actions: read` 권한을 가집니다.
 
+### PR에서 빌드된 확장을 머지 전에 받을 때
+
+PR에서도 확장이 바뀌면 `cd-extension`이 production으로 빌드합니다. 그 빌드가 끝나면
+`notify-pr-extension` 잡이 PR에 **🧩 확장 빌드 완료** 댓글을 달고, 댓글의
+**⬇️ 다운로드** 링크로 같은 `extension-production-vX.Y.Z` 아티팩트를 받습니다. 설치 방법은
+위와 같습니다.
+
+- 댓글은 PR마다 하나입니다. 새 커밋을 푸시하면 본문 맨 앞의 숨은 마커
+  (`<!-- extension-build-download -->`)로 그 댓글을 찾아 최신 빌드로 고쳐 씁니다.
+- 빌드가 실패하면 같은 댓글을 **❌ 확장 빌드 실패**로 덮어씁니다. 직전 커밋의 링크가
+  최신 빌드처럼 남지 않게 하기 위해서입니다. 확장 변경이 없어 빌드가 돌지 않았으면 댓글을
+  건드리지 않습니다.
+- 포크 PR에서는 토큰이 읽기 전용이라 잡이 뜨지 않습니다.
+- 댓글을 달지 못해도 경고만 남기고 CI는 통과합니다. 잡은 `actions: read`와
+  `pull-requests: write` 권한을 가집니다.
+
 ### 과거 버전을 올릴 때
 
 **다른 버전…** 버튼을 누르면 모달이 열립니다. 배포할 리비전은 `master`의 최근 커밋
@@ -526,6 +542,8 @@ App Store Connect의 키 ID·발급자 ID·앱 ID는 시크릿이 아니라
 | `.github/scripts/lib/run-context.mjs` | 워크플로 실행 맥락(환경변수·커밋 제목·머지 원본 PR) 읽기 |
 | `.github/scripts/lib/slack-blocks.mjs` | Slack 메시지·버튼 조립 |
 | `.github/scripts/lib/run-artifacts.mjs` | 실행의 아티팩트 조회, 확장 다운로드 링크 판정 |
+| `.github/scripts/comment-pr-extension.mjs` | PR에서 빌드한 확장의 다운로드 링크를 PR 댓글로 게시 |
+| `.github/scripts/lib/pr-comments.mjs` | PR 확장 빌드 댓글의 본문 조립과 upsert |
 | `apps/web/src/modules/slack/` | 서명 검증, workflow_dispatch, 모달 |
 | `apps/web/src/app/api/slack/interactivity/` | 버튼·모달 제출 수신 |
 | `apps/web/src/app/api/slack/commands/` | 슬래시 커맨드 수신 |

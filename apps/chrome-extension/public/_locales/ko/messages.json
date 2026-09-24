@@ -194,6 +194,36 @@
 	"memo_fields_setting": {
 		"message": "메모 입력 항목"
 	},
+	"highlight_setting": {
+		"message": "하이라이트"
+	},
+	"highlight_setting_description": {
+		"message": "웹페이지에서 텍스트를 선택한 뒤 하이라이트 버튼을 눌러 저장해요."
+	},
+	"ai_setting": {
+		"message": "AI 기능"
+	},
+	"settings_auto_save_description": {
+		"message": "설정은 변경하면 자동으로 저장돼요."
+	},
+	"setting_saving": {
+		"message": "저장 중..."
+	},
+	"setting_loading": {
+		"message": "설정을 불러오는 중"
+	},
+	"setting_load_failed": {
+		"message": "설정을 불러오지 못했어요."
+	},
+	"setting_saved": {
+		"message": "저장했어요"
+	},
+	"setting_save_failed": {
+		"message": "저장하지 못해 이전 설정으로 되돌렸어요."
+	},
+	"retry": {
+		"message": "다시 시도"
+	},
 	"show_impression_setting": {
 		"message": "느낀 점 입력란 표시"
 	},

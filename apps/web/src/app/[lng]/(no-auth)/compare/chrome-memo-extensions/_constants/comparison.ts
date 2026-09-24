@@ -52,6 +52,10 @@ export const COMPARE_PRODUCTS: IFCompareProduct[] = [
 			{ label: "홈페이지", url: "https://liner.com" },
 			{ label: "요금제", url: "https://liner.com/pricing" },
 			{
+				label: "AI 답변 내보내기 안내(2024)",
+				url: "https://support.liner.com/hc/en-us/articles/29882619907737-What-s-new-March-2024",
+			},
+			{
 				label: "하이라이터 소개",
 				url: "https://liner.com/learn/liner-highlighter",
 			},
@@ -67,6 +71,9 @@ export const COMPARE_PRODUCTS: IFCompareProduct[] = [
 		identity: "웹·PDF·유튜브 하이라이터",
 		sources: [
 			{ label: "홈페이지", url: "https://glasp.co" },
+			{ label: "FAQ", url: "https://blog.glasp.co/faqs/" },
+			{ label: "하이라이터", url: "https://glasp.co/web-highlighter" },
+			{ label: "동기화 도움말", url: "https://glasp.co/support" },
 			{ label: "요금제", url: "https://glasp.co/pricing" },
 			{ label: "유튜브 요약", url: "https://glasp.co/youtube-summary" },
 			{
@@ -87,6 +94,10 @@ export const COMPARE_PRODUCTS: IFCompareProduct[] = [
 			{
 				label: "도움말",
 				url: "https://support.google.com/keep/answer/3003125",
+			},
+			{
+				label: "데이터 내보내기 도움말",
+				url: "https://support.google.com/keep/answer/10017039",
 			},
 		],
 	},
@@ -124,7 +135,7 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 			glasp: { status: "partial", description: "하이라이트에 메모 첨부" },
 			googleKeep: {
 				status: "partial",
-				description: "팝업에서 작성, 자동 저장 안 됨",
+				description: "팝업에서 메모 작성",
 			},
 		},
 	},
@@ -133,7 +144,10 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 		label: "본문 하이라이트",
 		cells: {
 			webMemo: { status: "supported", description: "5색 하이라이트와 메모" },
-			notionWebClipper: { status: "unsupported", description: "불가" },
+			notionWebClipper: {
+				status: "unknown",
+				description: "공식 안내에서 확인 못 함",
+			},
 			liner: { status: "supported", description: "웹·PDF·유튜브" },
 			glasp: { status: "supported", description: "여러 색, 웹·PDF" },
 			googleKeep: {
@@ -157,9 +171,12 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 			liner: { status: "supported", description: "웹·유튜브·PDF 요약" },
 			glasp: {
 				status: "supported",
-				description: "유튜브·PDF 요약(무료 하루 3회)",
+				description: "무료: 유튜브 하루 3회, PDF 30파일 요약",
 			},
-			googleKeep: { status: "unsupported", description: "불가" },
+			googleKeep: {
+				status: "unknown",
+				description: "확장 AI 요약은 확인 못 함",
+			},
 		},
 	},
 	{
@@ -170,7 +187,10 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 				status: "partial",
 				description: "자막 요약, 타임스탬프 메모 없음",
 			},
-			notionWebClipper: { status: "unsupported", description: "불가" },
+			notionWebClipper: {
+				status: "partial",
+				description: "영상 URL 저장, 영상 전용 기능은 미확인",
+			},
 			liner: {
 				status: "supported",
 				description: "영상 요약, 주요 순간 저장",
@@ -179,7 +199,10 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 				status: "supported",
 				description: "자막 하이라이트, 타임스탬프",
 			},
-			googleKeep: { status: "unsupported", description: "불가" },
+			googleKeep: {
+				status: "partial",
+				description: "영상 URL 저장, 영상 전용 기능은 미확인",
+			},
 		},
 	},
 	{
@@ -191,14 +214,18 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 				status: "supported",
 				description: "PDF·HTML·Markdown·CSV",
 			},
-			liner: { status: "unsupported", description: "불가" },
+			liner: {
+				status: "partial",
+				description:
+					"AI 답변 내보내기 안내 있음(2024), 하이라이트·현재 무료 범위 미확인",
+			},
 			glasp: {
 				status: "supported",
 				description: "Markdown·CSV·JSON, Notion·Obsidian",
 			},
 			googleKeep: {
 				status: "partial",
-				description: "데이터 다운로드, 형식 미기재",
+				description: "Google Takeout으로 노트·첨부파일 다운로드",
 			},
 		},
 	},
@@ -209,7 +236,7 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 			webMemo: { status: "supported", description: "기본 언어 한국어" },
 			notionWebClipper: { status: "supported", description: "한국어 지원" },
 			liner: { status: "supported", description: "한국어 지원" },
-			glasp: { status: "unsupported", description: "영어만" },
+			glasp: { status: "supported", description: "한국어 지원" },
 			googleKeep: { status: "supported", description: "한국어 지원" },
 		},
 	},
@@ -225,7 +252,7 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 			liner: { status: "partial", description: "계정 로그인 필요" },
 			glasp: {
 				status: "partial",
-				description: "요약은 없이, 하이라이트는 계정 필요",
+				description: "로그인 없이 하이라이트, 동기화는 로그인 필요",
 			},
 			googleKeep: { status: "partial", description: "구글 계정 필요" },
 		},

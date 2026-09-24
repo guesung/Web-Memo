@@ -1,5 +1,5 @@
 import { cn } from "@web-memo/shared/utils";
-import { Check, CircleHelp, type LucideIcon, Minus, X } from "lucide-react";
+import { Check, type LucideIcon, Minus, X } from "lucide-react";
 import type { TSupportStatus } from "../_types";
 
 /**
@@ -44,11 +44,6 @@ const SUPPORT_MARK: Record<
 	unsupported: {
 		icon: X,
 		label: "없음",
-		iconClassName: "text-muted-foreground",
-	},
-	unknown: {
-		icon: CircleHelp,
-		label: "확인 못 함",
 		iconClassName: "text-muted-foreground",
 	},
 };

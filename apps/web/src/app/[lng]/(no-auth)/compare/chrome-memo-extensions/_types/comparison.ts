@@ -1,9 +1,5 @@
 /** 표 셀 하나의 지원 정도. 로그인 행에서는 "로그인 없이 쓸 수 있는 범위"를 뜻한다 */
-export type TSupportStatus =
-	| "supported"
-	| "partial"
-	| "unsupported"
-	| "unknown";
+export type TSupportStatus = "supported" | "partial" | "unsupported";
 
 /** 비교 대상 제품 식별자 */
 export type TCompareProductKey =

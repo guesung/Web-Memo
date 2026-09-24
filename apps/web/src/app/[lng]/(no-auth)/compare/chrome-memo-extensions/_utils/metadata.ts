@@ -6,14 +6,14 @@ export const metadataKorean = createPublicPageMetadata({
 	language: "ko",
 	path: COMPARE_PAGE_PATH,
 	title:
-		"크롬 메모 확장 프로그램 추천 비교 — 웹 메모·노션 웹 클리퍼·리너·Glasp·Keep",
-	description: `웹 메모·노션 웹 클리퍼·리너·Glasp·Google Keep 확장을 기록 방식, 하이라이트, AI 요약, 유튜브, 내보내기, 한국어 화면, 로그인 등 8가지 기준으로 각 공식 페이지를 확인해 비교했습니다(${COMPARE_LAST_CHECKED_DATE} 확인).`,
+		"크롬 메모 확장 프로그램 추천 비교 — 웹 메모·노션 웹 클리퍼·라이너·Glasp·Keep",
+	description: `웹 메모·노션 웹 클리퍼·라이너·Glasp·Google Keep 확장을 기록 방식, 하이라이트, AI 요약, 유튜브, 내보내기, 한국어 화면, 로그인 등 8가지 기준으로 각 공식 페이지를 확인해 비교했습니다(${COMPARE_LAST_CHECKED_DATE} 확인).`,
 	keywords: [
 		"크롬 메모 확장 프로그램",
 		"크롬 메모 확장 추천",
 		"크롬 확장 프로그램 메모",
 		"노션 웹 클리퍼",
-		"리너",
+		"라이너",
 		"Glasp",
 		"Google Keep 확장",
 	],

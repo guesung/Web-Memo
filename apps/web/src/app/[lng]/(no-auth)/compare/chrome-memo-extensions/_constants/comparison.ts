@@ -46,7 +46,7 @@ export const COMPARE_PRODUCTS: IFCompareProduct[] = [
 	},
 	{
 		key: "liner",
-		name: "리너(Liner)",
+		name: "라이너(Liner)",
 		identity: "AI 리서치 도구와 하이라이터",
 		sources: [
 			{ label: "홈페이지", url: "https://liner.com" },
@@ -133,7 +133,7 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 		label: "본문 하이라이트",
 		cells: {
 			webMemo: { status: "supported", description: "5색 하이라이트와 메모" },
-			notionWebClipper: { status: "unknown", description: "확인 못 함" },
+			notionWebClipper: { status: "unsupported", description: "불가" },
 			liner: { status: "supported", description: "웹·PDF·유튜브" },
 			glasp: { status: "supported", description: "여러 색, 웹·PDF" },
 			googleKeep: {
@@ -159,7 +159,7 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 				status: "supported",
 				description: "유튜브·PDF 요약(무료 하루 3회)",
 			},
-			googleKeep: { status: "unknown", description: "확인 못 함" },
+			googleKeep: { status: "unsupported", description: "불가" },
 		},
 	},
 	{
@@ -170,7 +170,7 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 				status: "partial",
 				description: "자막 요약, 타임스탬프 메모 없음",
 			},
-			notionWebClipper: { status: "unknown", description: "확인 못 함" },
+			notionWebClipper: { status: "unsupported", description: "불가" },
 			liner: {
 				status: "supported",
 				description: "영상 요약, 주요 순간 저장",
@@ -179,7 +179,7 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 				status: "supported",
 				description: "자막 하이라이트, 타임스탬프",
 			},
-			googleKeep: { status: "unknown", description: "확인 못 함" },
+			googleKeep: { status: "unsupported", description: "불가" },
 		},
 	},
 	{
@@ -191,7 +191,7 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 				status: "supported",
 				description: "PDF·HTML·Markdown·CSV",
 			},
-			liner: { status: "unknown", description: "확인 못 함" },
+			liner: { status: "unsupported", description: "불가" },
 			glasp: {
 				status: "supported",
 				description: "Markdown·CSV·JSON, Notion·Obsidian",
@@ -254,7 +254,7 @@ export const COMPARE_RECOMMENDATIONS: IFCompareRecommendation[] = [
 	{
 		situation:
 			"논문·PDF를 AI에게 물어 가며 읽고 하이라이트까지 한곳에 두고 싶다면",
-		productName: "리너",
+		productName: "라이너",
 		note: "무료 플랜은 광고가 있고 파일 업로드가 하루 1개예요.",
 	},
 	{

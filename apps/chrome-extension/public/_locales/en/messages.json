@@ -11,6 +11,24 @@
 	"memo": {
 		"message": "Note"
 	},
+	"memo_candidates_title": {
+		"message": "Choose a note for this page"
+	},
+	"memo_candidates_preserved_draft": {
+		"message": "Unsaved draft"
+	},
+	"memo_candidates_selection_lost": {
+		"message": "The selected note is no longer available. Keep your draft and choose again."
+	},
+	"memo_candidates_description": {
+		"message": "This page has multiple notes. Choose one to review its content before editing."
+	},
+	"memo_candidates_empty_preview": {
+		"message": "No content"
+	},
+	"memo_choose_other": {
+		"message": "Choose another note"
+	},
 	"save": {
 		"message": "Save"
 	},

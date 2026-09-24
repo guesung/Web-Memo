@@ -3,7 +3,7 @@ import type {
 	IFEditHighlightPayload,
 	TEditHighlightResponse,
 } from "@web-memo/shared/modules/extension-bridge";
-import { HighlightService } from "@web-memo/shared/utils";
+import { getPageKey, HighlightService } from "@web-memo/shared/utils";
 import {
 	getSupabaseClient,
 	SupabaseSessionRequiredError,
@@ -50,7 +50,16 @@ export const handleEditHighlight = async (
 			return { success: false, error: "unauthenticated" };
 		}
 		const service = new HighlightService(client);
-		const scope = { url, userId: data.user.id };
+		const { data: storedHighlight, error: lookupError } =
+			await service.getHighlightById({ id: payload.id, userId: data.user.id });
+		if (lookupError || !storedHighlight) {
+			reportEditFailure(lookupError ? "database_error" : "empty_result");
+			return { success: false, error: "save_failed" };
+		}
+		if ((storedHighlight.page_key || getPageKey(storedHighlight.url)) !== getPageKey(url)) {
+			return { success: false, error: "invalid_request" };
+		}
+		const scope = { url: storedHighlight.url, userId: data.user.id };
 		const result =
 			payload.action === "delete"
 				? await service.deleteHighlight(payload.id, scope)
@@ -68,7 +77,8 @@ export const handleEditHighlight = async (
 			result.data?.length !== 1 ||
 			!row ||
 			row.id !== payload.id ||
-			row.url !== url ||
+			row.url !== storedHighlight.url ||
+			(row.page_key || getPageKey(row.url)) !== (storedHighlight.page_key || getPageKey(storedHighlight.url)) ||
 			row.user_id !== data.user.id ||
 			(payload.action === "color" && row.color !== payload.color) ||
 			(payload.action === "note" && row.note !== payload.note)

@@ -411,8 +411,6 @@
 		"goSetting": "설정으로 이동"
 	},
 	"setting": {
-		"truncateMemoContent": "메모 내용 줄여 보기",
-		"truncateMemoContentDescription": "목록의 긴 내용을 말줄임표로 표시해요. 끄면 메모 내용과 모든 하이라이트를 펼쳐 보여줘요.",
 		"header": "설정",
 		"headerDescription": "메모를 쓰는 방식을 바꿔요",
 		"sectionGeneral": "일반",
@@ -472,6 +470,7 @@
 	},
 	"memos": {
 		"view": {
+			"truncateContent": "메모 내용 줄여 보기",
 			"unknownDate": "작성일 없음",
 			"label": "메모 보기",
 			"byDate": "날짜별 보기",

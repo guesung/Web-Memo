@@ -416,8 +416,6 @@
 		"goSetting": "Go to settings"
 	},
 	"setting": {
-		"truncateMemoContent": "Shorten memo content",
-		"truncateMemoContentDescription": "Truncate long content in the list. Turn off to show full memo content and all highlights.",
 		"header": "Settings",
 		"headerDescription": "Change how you write memos",
 		"sectionGeneral": "General",
@@ -477,6 +475,7 @@
 	},
 	"memos": {
 		"view": {
+			"truncateContent": "Shorten memo content",
 			"unknownDate": "No creation date",
 			"label": "Memo view",
 			"byDate": "By date",

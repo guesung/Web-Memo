@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
  * Vercel API로 배포를 역추적하는 대신 이 엔드포인트를 두는 이유는, 별칭이 바뀌거나
  * 롤백이 있어도 "지금 응답하는 인스턴스"의 진실이 하나로 유지되기 때문입니다.
  *
- * .github/scripts/lib/store-versions.mjs 의 fetchWebVersion이 이 응답을 읽습니다.
+ * .github/scripts/deploy/store-versions.mjs 의 fetchWebVersion이 이 응답을 읽습니다.
  *
  * 밖에서 읽히는 것은 프로덕션뿐입니다. 스테이징은 `--prod` 없이 배포되는 Preview라
  * Vercel Deployment Protection에 막혀, 자격 증명 없는 요청은 JSON 대신 vercel.com

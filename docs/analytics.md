@@ -30,12 +30,12 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 
 `memo_write`(fields) · `memo_delete`(memo_count) · `memo_restore`(memo_count) ·
 `memo_delete_permanently`(memo_count) · `memo_open`(has_search_query) · `memo_source_open` ·
-`memo_search`(query_length) · `memo_status_toggle`(status, enabled) · `memo_category_change` ·
+`memo_search`(query_length) · `memo_status_toggle`(status, enabled) · `memo_category_change`(source) ·
 `highlight_note_update` · `summary_run` · `summary_complete`(duration_msec) ·
 `summary_fail`(reason) · `chat_message_send` · `chat_fail`(reason) ·
 `youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category) ·
 `category_create` · `category_update` · `category_delete` · `login`(method) · `sign_up`(method) ·
-`feedback_submit` · `extension_install_click` · `memo_first_write` · `export_run`(format)
+`feedback_submit` · `extension_install_click`(from, position) · `memo_first_write` · `export_run`(format)
 
 ### engagement (20종)
 
@@ -53,6 +53,10 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 않습니다. 메모 변경 요청의 키를 보고 `Analytics.ts`의 `trackMemoUpdate`가 갈라 보냅니다 —
 상태 토글·카테고리 변경·본문 수정이 모두 같은 뮤테이션을 지나기 때문입니다. grep으로 찾으면
 안 나오므로 "안 쓰는 이벤트"로 오인하기 쉽습니다.
+
+`memo_category_change`의 `source`는 patch 경로(`useMemoPatchMutation`의 `categorySource`)로
+바꾼 것만 붙습니다. 사이드 패널 자동 저장(upsert)은 요청마다 `category_id`를 실어 보내 값이
+안 바뀌어도 이 이벤트가 찍히므로, 경로별 비율은 `source`가 있는 이벤트만 세야 합니다.
 
 로그인 완료(`login`·`sign_up`)는 서버에서 끝나 `gtag`가 닿지 않습니다. 도착한 클라이언트가
 대신 쏩니다.
@@ -77,14 +81,16 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `duration_msec`(요약 소요 시간) · `memo_count`(처리한 메모 수) · `query_length`(검색어 길이).
 각각 원값·`average`·`count` 세 형태로 등록돼 있습니다.
 
-### 등록되지 않은 파라미터 (2개)
+### 등록되지 않은 파라미터 (4개)
 
 | 파라미터 | 붙는 이벤트 | 없으면 못 하는 것 |
 | --- | --- | --- |
+| `position` | `extension_install_click` | 한 페이지에 설치 버튼이 둘 이상일 때 **어느 버튼이 눌렸는지** 나눠 볼 수 없습니다 |
 | `step_name` | `guide_step` | 가이드의 **어느 단계에서 이탈하는지** 볼 수 없습니다 |
 | `event_category` | 전 이벤트 | `core_action`과 `engagement`를 **나눠 보는 조회**가 막힙니다 |
+| `source` | `memo_category_change` | 카테고리를 **칩·배지(button)·#(hash)·AI(ai) 중 어느 경로로** 바꿨는지 나눠 볼 수 없습니다 |
 
-둘 다 GA4 콘솔에서 커스텀 차원으로 등록하면 끝나는 일이고 코드 변경이 필요 없습니다.
+넷 다 GA4 콘솔에서 커스텀 차원으로 등록하면 끝나는 일이고 코드 변경이 필요 없습니다.
 등록해도 **소급 적용되지 않으므로** 등록 이후의 데이터부터 조회됩니다.
 
 ## 지표를 읽을 때 주의할 것
@@ -152,9 +158,9 @@ BigQuery export를 별도로 연결해야 하며, 연결 전 데이터는 소급
 
 ## 조회 스크립트
 
-`.github/scripts/`에 GA를 읽는 스크립트가 셋 있습니다. 커스텀 이벤트는 호스트 허용 목록과
+`.github/scripts/ga/`에 GA를 읽는 스크립트가 셋 있습니다. 커스텀 이벤트는 호스트 허용 목록과
 `build_env=production`을 함께 적용하고, 활성 사용자는 호스트 허용 목록만 적용합니다. 이벤트
-목록의 원본과 사람 수 집계는 `lib/ga4-client.mjs`·`lib/ga4-weekly.mjs`의 같은 조각을 함께 써서
+목록의 원본과 사람 수 집계는 `ga/ga4-client.mjs`·`ga/ga4-weekly.mjs`의 같은 조각을 함께 써서
 서로 다른 숫자를 내지 않습니다.
 
 | 스크립트 | 답하는 질문 | 실행 |
@@ -174,7 +180,7 @@ BigQuery export를 별도로 연결해야 하며, 연결 전 데이터는 소급
 ```bash
 GA4_PROPERTY_ID=471860782 \
 GA4_SERVICE_ACCOUNT_JSON="$(cat ~/ga4-service-account.json)" \
-node .github/scripts/measure-feature-usage.mjs --from 2026-09-11 --to 2026-09-17
+node .github/scripts/ga/measure-feature-usage.mjs --from 2026-09-11 --to 2026-09-17
 ```
 
 ## 주간 수치 누적 (Google Sheets)

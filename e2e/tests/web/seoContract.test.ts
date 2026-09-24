@@ -16,6 +16,9 @@ const PUBLIC_PATHS = [
 	"use-cases/youtube-notes",
 ] as const;
 
+/** 한국어로만 존재하는 색인 대상 경로입니다. 다른 언어 경로는 404이고 sitemap·hreflang에서 빠집니다. */
+const KOREAN_ONLY_PATHS = ["compare/chrome-memo-extensions"] as const;
+
 /** 로그인 여부와 무관하게 첫 응답부터 색인을 막아야 하는 HTML 경로입니다. */
 const NOINDEX_PATHS = ["login", "memos", "highlights", "admin", "uninstall"];
 
@@ -64,16 +67,33 @@ test.describe("공개 검색 계약", () => {
 		);
 		expect(sitemap.parseErrors).toBe(0);
 		expect(sitemap.lastModifiedCount).toBe(0);
-		const expectedUrls = PUBLIC_PATHS.flatMap((path) =>
-			["ko", "en"].map((language) => `${baseURL}/${language}/${path}`),
-		);
+		const expectedUrls = [
+			...PUBLIC_PATHS.flatMap((path) =>
+				["ko", "en"].map((language) => `${baseURL}/${language}/${path}`),
+			),
+			...KOREAN_ONLY_PATHS.map((path) => `${baseURL}/ko/${path}`),
+		];
 		expect(sitemap.entries.map((entry) => entry.url).sort()).toEqual(
 			expectedUrls.sort(),
 		);
-		expect(new Set(sitemap.entries.map((entry) => entry.url)).size).toBe(24);
+		expect(new Set(sitemap.entries.map((entry) => entry.url)).size).toBe(25);
 
 		for (const entry of sitemap.entries) {
 			const path = new URL(entry.url ?? "").pathname.slice(4);
+			if (KOREAN_ONLY_PATHS.some((koreanOnlyPath) => koreanOnlyPath === path)) {
+				expect(entry.alternates).toHaveLength(2);
+				expect(entry.alternates).toEqual(
+					expect.arrayContaining([
+						{ language: "ko", url: `${baseURL}/ko/${path}`, rel: "alternate" },
+						{
+							language: "x-default",
+							url: `${baseURL}/ko/${path}`,
+							rel: "alternate",
+						},
+					]),
+				);
+				continue;
+			}
 			expect(entry.alternates).toHaveLength(3);
 			expect(entry.alternates).toEqual(
 				expect.arrayContaining([
@@ -169,6 +189,46 @@ test.describe("공개 검색 계약", () => {
 				);
 			});
 		}
+	}
+
+	for (const path of KOREAN_ONLY_PATHS) {
+		test(`ko/${path}의 canonical·hreflang·JSON-LD 계약이 유효하다.`, async ({
+			page,
+			baseURL,
+		}) => {
+			const canonical = `${baseURL}/ko/${path}`;
+			const response = await page.goto(`/ko/${path}`);
+			expect(response?.ok()).toBe(true);
+			expect(response?.headers()["x-robots-tag"] ?? "").not.toMatch(
+				/noindex|none/i,
+			);
+			await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+				"href",
+				canonical,
+			);
+			await expect(page.locator('link[rel="alternate"][hreflang]')).toHaveCount(
+				2,
+			);
+			for (const alternateLanguage of ["ko", "x-default"]) {
+				await expect(
+					page.locator(
+						`link[rel="alternate"][hreflang="${alternateLanguage}"]`,
+					),
+				).toHaveAttribute("href", canonical);
+			}
+			const scripts = await page
+				.locator('script[type="application/ld+json"]')
+				.allTextContents();
+			const schemas: IFSchema[] = scripts.map((script) => JSON.parse(script));
+			expect(
+				schemas.filter((schema) => schema["@type"] === "Article"),
+			).toHaveLength(1);
+		});
+
+		test(`en/${path}는 404다.`, async ({ request }) => {
+			const response = await request.get(`/en/${path}`);
+			expect(response.status()).toBe(404);
+		});
 	}
 
 	test("robots는 sitemap을 안내하고 noindex HTML의 크롤링을 허용한다.", async ({

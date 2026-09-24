@@ -42,7 +42,7 @@ export default async function Hero({ lng, background }: HeroProps) {
 						{t("introduce.hero.subtitle")}
 					</p>
 
-					<InstallButtons lng={lng} className="mt-10" />
+					<InstallButtons lng={lng} position="hero" className="mt-10" />
 
 					<div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-muted-foreground lg:justify-start">
 						<span className="inline-flex items-center gap-1.5">

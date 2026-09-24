@@ -138,7 +138,7 @@
 		"message": "Search category"
 	},
 	"no_categories_found": {
-		"message": "No categories found"
+		"message": "No matching categories"
 	},
 	"category_suggesting": {
 		"message": "Suggesting category..."
@@ -157,6 +157,24 @@
 	},
 	"recommend_category": {
 		"message": "AI category recommendation"
+	},
+	"category_add": {
+		"message": "Add category"
+	},
+	"category_add_hash_hint": {
+		"message": "You can also type #"
+	},
+	"category_empty": {
+		"message": "No categories yet"
+	},
+	"category_create_on_web": {
+		"message": "Create categories on the web"
+	},
+	"category_change": {
+		"message": "Change category"
+	},
+	"category_remove": {
+		"message": "Remove category"
 	},
 	"memo_section_setting": {
 		"message": "Memo sections"
@@ -370,5 +388,15 @@
 	},
 	"highlight_bubble_disabled_all_description": {
 		"message": "You can turn it back on in settings"
+	},
+	"category_create_named": {
+		"message": "Create \"$NAME$\"",
+		"description": "Create a new category from the search text in the popup",
+		"placeholders": {
+			"name": {
+				"content": "$1",
+				"example": "Reading"
+			}
+		}
 	}
 }

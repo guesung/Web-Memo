@@ -57,6 +57,7 @@ const isPublicIndexPath = (pathname: string, lng: LanguageType["lng"]) => {
 
 	return (
 		pathname.startsWith(`${localizedPathPrefix}/features/`) ||
-		pathname.startsWith(`${localizedPathPrefix}/use-cases/`)
+		pathname.startsWith(`${localizedPathPrefix}/use-cases/`) ||
+		pathname.startsWith(`${localizedPathPrefix}/compare/`)
 	);
 };

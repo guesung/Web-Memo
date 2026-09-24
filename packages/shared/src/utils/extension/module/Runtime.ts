@@ -15,23 +15,12 @@ export class Runtime {
 		});
 	}
 
-	static sendMessageToExtension<TResponse>(
+	/** 웹 페이지에서 허용된 확장 메시지를 payload와 함께 전송합니다. */
+	static sendMessageToExtension<TPayload, TResponse>(
 		type: BRIDGE_MESSAGE_TYPE,
-	): Promise<TResponse>;
-	static sendMessageToExtension<TResponse>(
-		type: BRIDGE_MESSAGE_TYPE,
-		callback: (response: TResponse) => void,
-	): void;
-	static sendMessageToExtension<TResponse>(
-		type: BRIDGE_MESSAGE_TYPE,
-		callback?: (response: TResponse) => void,
-	): Promise<TResponse> | undefined {
-		if (callback) {
-			chrome.runtime.sendMessage(CHROME_EXTENSION_ID, { type }, callback);
-			return undefined;
-		} else {
-			return chrome.runtime.sendMessage(CHROME_EXTENSION_ID, { type });
-		}
+		payload?: TPayload,
+	): Promise<TResponse> {
+		return chrome.runtime.sendMessage(CHROME_EXTENSION_ID, { type, payload });
 	}
 
 	static onMessage<TPayload, TResponse>(
@@ -69,7 +58,7 @@ export class Runtime {
 			request: BridgeRequest<TPayload>,
 			sender: chrome.runtime.MessageSender,
 			sendResponse: (response: TResponse) => void,
-		) => void,
+		) => undefined | boolean | Promise<unknown>,
 	) {
 		const listener = (
 			request: BridgeRequest<TPayload>,
@@ -77,8 +66,13 @@ export class Runtime {
 			sendResponse: (response: TResponse) => void,
 		) => {
 			if (request.type === type) {
-				callback(request, sender, sendResponse);
+				const result = callback(request, sender, sendResponse);
+				if (result instanceof Promise) {
+					return true;
+				}
+				return result;
 			}
+			return false;
 		};
 
 		chrome.runtime.onMessageExternal.addListener(listener);

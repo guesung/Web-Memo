@@ -74,6 +74,45 @@ export interface IFSettingUpdatedPayload {
 	userId: string;
 }
 
+/** 웹 설정 화면에서 조회하고 저장할 수 있는 Chrome sync 설정 키입니다. */
+export type TExtensionSettingKey =
+	| "language"
+	| "autoApplyCategory"
+	| "highlightBubbleEnabled"
+	| "highlightBubblePosition"
+	| "highlightDisabledSites";
+
+/** 허용된 Chrome sync 설정의 현재 유효 값입니다. */
+export interface IFExtensionSettings {
+	language: string;
+	autoApplyCategory: boolean;
+	highlightBubbleEnabled: boolean;
+	highlightBubblePosition: "above" | "below";
+	highlightDisabledSites: string[];
+}
+
+/** 설정 조회 결과와 확장 메시지 프로토콜 버전입니다. */
+export type TGetExtensionSettingsResponse =
+	| { success: true; protocolVersion: 1; settings: IFExtensionSettings }
+	| { success: false; error: string };
+
+/** 웹에서 확장으로 전달하는 단일 설정 변경 요청입니다. */
+export type IFSetExtensionSettingPayload = {
+	[TKey in TExtensionSettingKey]: {
+		key: TKey;
+		value: IFExtensionSettings[TKey];
+	};
+}[TExtensionSettingKey];
+
+/** 저장 완료 여부와 실제로 저장된 설정 값입니다. */
+export type TSetExtensionSettingResponse =
+	| {
+			success: true;
+			key: TExtensionSettingKey;
+			value: IFExtensionSettings[TExtensionSettingKey];
+	  }
+	| { success: false; error: string };
+
 /** 실제 변경된 행 또는 검증·인증·저장 오류. */
 export type TEditHighlightResponse = TCreateHighlightResponse;
 

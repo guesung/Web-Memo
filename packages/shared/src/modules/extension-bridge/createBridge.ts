@@ -16,7 +16,7 @@ type ExtractResponse<T> = T extends MessageDefinition<unknown, infer R>
 	? R
 	: never;
 
-type RequestFn<TPayload, TResponse> = TPayload extends void
+type RequestFn<TPayload, TResponse> = [TPayload] extends [void]
 	? () => Promise<TResponse>
 	: (payload: TPayload) => Promise<TResponse>;
 
@@ -72,7 +72,7 @@ export function createBridge<
 				case "internal":
 					return Runtime.sendMessage(messageType, payload);
 				case "toExtension":
-					return Runtime.sendMessageToExtension(messageType);
+					return Runtime.sendMessageToExtension(messageType, payload);
 				case "toTab":
 					return Tab.sendMessage(messageType, payload);
 			}

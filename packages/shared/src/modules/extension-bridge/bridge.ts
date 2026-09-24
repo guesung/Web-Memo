@@ -7,10 +7,13 @@ import type {
 	IFCreateHighlightPayload,
 	IFEditHighlightPayload,
 	IFGetLoginStatusResponse,
+	IFSetExtensionSettingPayload,
 	IFSettingUpdatedPayload,
 	PageContentResponse,
 	TCreateHighlightResponse,
 	TEditHighlightResponse,
+	TGetExtensionSettingsResponse,
+	TSetExtensionSettingResponse,
 } from "./types";
 
 /** 확장 UI와 background 사이의 타입 지정 메시지 계약. */
@@ -24,6 +27,17 @@ export const bridge = createBridge({
 	REFETCH_THE_MEMO_LIST_FROM_WEB: defineMessage<void, void>("toExtension"),
 	UPDATE_SIDE_PANEL: defineMessage<void, void>("internal"),
 	SETTING_UPDATED: defineMessage<IFSettingUpdatedPayload, void>("internal"),
+	NOTIFY_SETTING_UPDATED: defineMessage<
+		IFSettingUpdatedPayload,
+		{ success: boolean }
+	>("toExtension"),
+	GET_EXTENSION_SETTINGS: defineMessage<void, TGetExtensionSettingsResponse>(
+		"toExtension",
+	),
+	SET_EXTENSION_SETTING: defineMessage<
+		IFSetExtensionSettingPayload,
+		TSetExtensionSettingResponse
+	>("toExtension"),
 	GET_EXTENSION_MANIFEST: defineMessage<void, chrome.runtime.Manifest>(
 		"toExtension",
 	),

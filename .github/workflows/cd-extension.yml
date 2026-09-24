@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       deploy_target:
-        description: "배포 대상 (none = production으로 빌드만, staging = staging으로 빌드만, production = 크롬 웹스토어 업로드)"
+        description: "배포 대상 (build-only = production으로 빌드만, staging = staging으로 빌드만, production = 크롬 웹스토어 업로드)"
         type: string
-        default: "none"
+        default: "build-only"
       ref:
         description: "체크아웃할 커밋/태그 (비우면 호출한 워크플로의 기본 ref)"
         type: string
@@ -23,9 +23,9 @@ on:
         description: "배포 대상"
         type: choice
         options:
-          - none
+          - build-only
           - staging
-        default: "none"
+        default: "build-only"
       ref:
         description: "체크아웃할 커밋/태그 (비우면 실행한 브랜치)"
         type: string

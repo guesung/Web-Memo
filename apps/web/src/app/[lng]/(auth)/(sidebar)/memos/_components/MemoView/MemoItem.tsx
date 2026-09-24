@@ -178,15 +178,16 @@ const MemoItem = ({
 							}}
 						/>
 					)}
-					{badge && <div className="px-5 pt-4">{badge}</div>}
+					{badge && <div className="px-4 pt-3">{badge}</div>}
 					<MemoCardHeader
+						className="px-4 py-3"
 						memo={memo}
 						isMemoHovering={isMemoHovering}
 						isMemoSelected={isMemoSelected}
 						selectMemoItem={selectMemoItem}
 					/>
 					{memo.memo?.trim() && (
-						<CardContent className="px-5 py-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
+						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces break-all">
 							<p className={cn({ "line-clamp-3": !isReadOnly })}>{memo.memo}</p>
 						</CardContent>
 					)}
@@ -201,7 +202,7 @@ const MemoItem = ({
 						/>
 					)}
 					{showImpression && memo.impression?.trim() && (
-						<CardContent className="px-5 pb-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
+						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces break-all">
 							<p className="mb-1 text-xs font-semibold text-muted-foreground">
 								{t("memoSection.impression")}
 							</p>
@@ -211,7 +212,7 @@ const MemoItem = ({
 						</CardContent>
 					)}
 					{showActionItem && memo.actionItem?.trim() && (
-						<CardContent className="px-5 pb-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
+						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces break-all">
 							<p className="mb-1 text-xs font-semibold text-muted-foreground">
 								{t("memoSection.actionItem")}
 							</p>
@@ -222,6 +223,7 @@ const MemoItem = ({
 					)}
 					{footer ?? (
 						<MemoCardFooter
+							className="px-4 py-2"
 							memo={memo}
 							lng={lng}
 							isShowingOption={isMemoHovering && !isSelectingMode}

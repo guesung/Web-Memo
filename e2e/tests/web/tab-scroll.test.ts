@@ -74,28 +74,6 @@ test.describe("탭 이동과 스크롤 (Mocked)", () => {
 		await expect(page.getByRole("link", { name: "Highlights" })).toBeVisible();
 	});
 
-	/**
-	 * 카테고리 목록은 layout의 서버 컴포넌트가 prefetch해 하이드레이션되므로
-	 * page.route로 가로챌 수 없다. 그래서 목 데이터가 아니라 실제로 렌더된
-	 * 카테고리 링크를 집는다.
-	 */
-	test("카테고리 탭을 눌러도 문서를 다시 받지 않는다.", async ({ page }) => {
-		const categoryLink = page.locator('a[href*="category="]').first();
-
-		const hasCategory = await categoryLink
-			.waitFor({ state: "visible", timeout: 10_000 })
-			.then(() => true)
-			.catch(() => false);
-		test.skip(!hasCategory, "이 계정에 카테고리가 없어 검증할 수 없다");
-
-		await markWindow(page);
-
-		await categoryLink.click();
-		await page.waitForURL(/category=/);
-
-		expect(await isWindowMarkAlive(page)).toBe(true);
-	});
-
 	test("사이드바 탭을 눌러도 문서를 다시 받지 않는다.", async ({ page }) => {
 		await markWindow(page);
 

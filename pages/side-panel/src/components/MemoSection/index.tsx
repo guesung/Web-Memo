@@ -1,14 +1,18 @@
 import { useSyncLoginStatus } from "@src/hooks";
 import type { MemoInput } from "@src/types/Input";
+import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEY } from "@web-memo/shared/constants";
 import {
+	useDeleteMemosMutation,
 	useMemoQuery,
+	useRestoreMemosMutation,
 	useSupabaseUserQuery,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
 import type { Database } from "@web-memo/shared/types";
 import { getPageKey } from "@web-memo/shared/utils";
 import { I18n } from "@web-memo/shared/utils/extension";
-import { ErrorBoundary } from "@web-memo/ui";
+import { ErrorBoundary, ToastAction, toast } from "@web-memo/ui";
 import { Suspense, useEffect, useRef, useState } from "react";
 import LoginSection from "../LoginSection";
 import NoticeBanner from "../NoticeBanner";
@@ -53,6 +57,9 @@ const MemoSectionContent = () => {
 const AuthenticatedMemoSectionContent = () => {
 	const { data: tab } = useTabQuery();
 	const { memos } = useMemoQuery({ url: tab?.url ?? "" });
+	const queryClient = useQueryClient();
+	const { mutate: deleteMemos } = useDeleteMemosMutation();
+	const { mutate: restoreMemos } = useRestoreMemosMutation();
 	const pageKey = tab?.url ? getPageKey(tab.url) : "";
 	const editorScope = `${tab?.id}:${pageKey}`;
 	const [selection, setSelection] = useState<{
@@ -115,6 +122,29 @@ const AuthenticatedMemoSectionContent = () => {
 		});
 	};
 
+	// 사이드 패널의 메모 조회 키(["memo", { url }])는 memos() 무효화에 걸리지 않아 따로 무효화한다.
+	const invalidateCurrentPageMemos = () =>
+		queryClient.invalidateQueries({
+			queryKey: QUERY_KEY.memo({ url: pageKey }),
+		});
+
+	const handleMemoDelete = (memoId: number) => {
+		deleteMemos([memoId], { onSettled: invalidateCurrentPageMemos });
+
+		const handleUndoClick = () => {
+			restoreMemos([memoId], { onSettled: invalidateCurrentPageMemos });
+		};
+
+		toast({
+			title: I18n.get("memo_candidates_deleted"),
+			action: (
+				<ToastAction altText={I18n.get("undo")} onClick={handleUndoClick}>
+					{I18n.get("undo")}
+				</ToastAction>
+			),
+		});
+	};
+
 	const handleOtherMemoClick = (draft?: MemoInput) => {
 		if (draft) {
 			setPreservedDraft({ scope: editorScope, value: draft });
@@ -127,7 +157,11 @@ const AuthenticatedMemoSectionContent = () => {
 			<MemoHeader memoData={activeMemo} />
 			{currentDraft && <PreservedDraft draft={currentDraft} />}
 			{(hasMultipleMemos || currentDraft) && !currentSelection ? (
-				<MemoCandidateList memos={memos} onMemoSelect={handleMemoSelect} />
+				<MemoCandidateList
+					memos={memos}
+					onMemoSelect={handleMemoSelect}
+					onMemoDelete={handleMemoDelete}
+				/>
 			) : (
 				<MemoForm
 					key={editorScope}

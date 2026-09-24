@@ -23,6 +23,12 @@
 	"memo_candidates_description": {
 		"message": "This page has multiple notes. Choose one to review its content before editing."
 	},
+	"memo_candidates_delete": {
+		"message": "Delete memo"
+	},
+	"memo_candidates_deleted": {
+		"message": "Moved the memo to trash"
+	},
 	"memo_candidates_empty_preview": {
 		"message": "No content"
 	},
@@ -115,6 +121,9 @@
 	},
 	"reading_memo": {
 		"message": "Reading"
+	},
+	"undo": {
+		"message": "Undo"
 	},
 	"go_to": {
 		"message": "Go"

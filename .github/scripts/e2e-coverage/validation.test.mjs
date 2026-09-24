@@ -4,10 +4,11 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSyn
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { isoWeek, validateCandidate, validateChanges, validateReport } from "./validation.mjs";
+import { isoWeek, validateCandidate, validateChanges, validateFocusFlowId, validateReport } from "./validation.mjs";
 
-const CONTEXT = { flows: [{ id: "memo-create" }], projects: ["mocked"] };
+const CONTEXT = { flows: [{ id: "memo-create" }], projects: ["mocked"], trackedFiles: ["pages/side-panel/index.ts", "e2e/tests/mocked/existing.test.ts"] };
 const CANDIDATE = { status: "gap", scenarioId: "memo-create", reason: "저장 이후 동작이 빠졌습니다", productRefs: ["pages/side-panel/index.ts"], existingTestRefs: ["e2e/tests/mocked/existing.test.ts"], missingAction: "메모 저장", expectedResult: "새 메모 표시", testFile: "e2e/tests/mocked/memoSave.test.ts", project: "mocked" };
+CANDIDATE.assessments = [{ flowId: "memo-create", status: "gap", reason: "저장 후 표시 검증 누락", productRefs: CANDIDATE.productRefs, existingTestRefs: CANDIDATE.existingTestRefs }];
 const report = () => ({
 	config: { rootDir: path.resolve("e2e/tests") },
 	errors: [],
@@ -32,7 +33,7 @@ test("후보는 실제 구성 프로젝트와 누락 행동·기대 결과 근�
 	for (const patch of [{ project: "web" }, { testFile: "../escape.test.ts" }, { missingAction: "" }, { expectedResult: null }, { productRefs: [] }, { existingTestRefs: [] }, { existingTestRefs: ["e2e/tests/fixtures.ts"] }, { unexpected: true }, { status: "none" }]) {
 		assert.throws(() => validateCandidate({ ...CANDIDATE, ...patch }, CONTEXT));
 	}
-	assert.equal(validateCandidate({ ...CANDIDATE, status: "none", testFile: "", project: "" }, CONTEXT).status, "none");
+	assert.equal(validateCandidate({ ...CANDIDATE, status: "none", testFile: "", project: "", assessments: [{ ...CANDIDATE.assessments[0], status: "covered" }] }, CONTEXT).status, "none");
 });
 
 test("리포트는 실제 선택 파일의 단일 통과만 인정한다", () => {
@@ -110,6 +111,80 @@ test("요약은 정상 무변경 결과를 유지하고 실패·dry run의 이�
 		assert.equal(result.error, "기존 진단");
 		assert.equal(result.dryRun, true);
 		assert.match(result.publicationSkipped, /master/);
+	} finally {
+		rmSync(directory, { recursive: true, force: true });
+	}
+});
+
+
+test("전체 흐름 판정은 누락·중복·잘못된 근거를 거부하고 다른 흐름의 gap을 선택한다", () => {
+	const context = { ...CONTEXT, flows: [{ id: "memo-create" }, { id: "memo-read" }] };
+	const covered = { ...CANDIDATE.assessments[0], flowId: "memo-read", status: "covered" };
+	const value = { ...CANDIDATE, assessments: [...CANDIDATE.assessments, covered] };
+	assert.equal(validateCandidate(value, context), value);
+	for (const assessments of [
+		[CANDIDATE.assessments[0]],
+		[covered, covered],
+		[...value.assessments, covered],
+		[value.assessments[0], { ...covered, flowId: "unknown" }],
+		[value.assessments[0], { ...covered, status: "unknown" }],
+		[value.assessments[0], { ...covered, reason: "" }],
+		[value.assessments[0], { ...covered, productRefs: ["untracked.ts"] }],
+		[value.assessments[0], { ...covered, existingTestRefs: ["pages/side-panel/index.ts"] }],
+		[value.assessments[0], { ...covered, existingTestRefs: [] }],
+		[value.assessments[0], { ...covered, extra: true }],
+	]) {
+		assert.throws(() => validateCandidate({ ...value, assessments }, context));
+	}
+	assert.throws(() => validateCandidate({ ...value, status: "none", scenarioId: "memo-read", testFile: "", project: "" }, context));
+	assert.throws(() => validateCandidate({ ...value, status: "insufficient", testFile: "", project: "" }, context));
+	const allCovered = { ...value, status: "none", testFile: "", project: "", assessments: value.assessments.map((assessment) => ({ ...assessment, status: "covered" })) };
+	assert.equal(validateCandidate(allCovered, context).status, "none");
+	const insufficient = { ...allCovered, status: "insufficient", assessments: [{ ...value.assessments[0], status: "insufficient" }, covered] };
+	assert.equal(validateCandidate(insufficient, context).status, "insufficient");
+	assert.throws(() => validateCandidate({ ...insufficient, status: "none" }, context));
+	const focused = { ...context, focusFlowId: "memo-read" };
+	const twoGaps = { ...value, assessments: [value.assessments[0], { ...covered, status: "gap" }] };
+	assert.throws(() => validateCandidate(twoGaps, focused));
+	assert.equal(validateCandidate({ ...twoGaps, scenarioId: "memo-read" }, focused).scenarioId, "memo-read");
+	assert.equal(validateFocusFlowId("memo-read", context.flows), "memo-read");
+	assert.equal(validateFocusFlowId("", context.flows), "");
+	assert.throws(() => validateFocusFlowId("unknown", context.flows));
+});
+
+test("잘못된 AI JSON과 전체 점검 누락은 성공한 insufficient로 처리하지 않는다", () => {
+	const directory = mkdtempSync(path.join(os.tmpdir(), "e2e-coverage-invalid-"));
+	try {
+		writeFileSync(path.join(directory, "context.json"), JSON.stringify(CONTEXT));
+		for (const input of ["not json", JSON.stringify({ ...CANDIDATE, assessments: [] }), JSON.stringify({ ...CANDIDATE, productRefs: ["untracked.ts"] })]) {
+			assert.throws(() => execFileSync(process.execPath, [".github/scripts/e2e-coverage/maintain.mjs", "candidate"], {
+				env: { ...process.env, E2E_COVERAGE_DIR: directory, E2E_CANDIDATE_JSON: input, GITHUB_OUTPUT: "" }, stdio: "pipe",
+			}));
+			const result = JSON.parse(readFileSync(path.join(directory, "result.json"), "utf8"));
+			assert.equal(result.status, "failed");
+			assert.equal(result.stage, "candidate");
+		}
+	} finally {
+		rmSync(directory, { recursive: true, force: true });
+	}
+});
+
+
+test("실행 컨텍스트는 전체 목록을 유지하면서 유효한 우선 흐름만 받는다", () => {
+	const directory = mkdtempSync(path.join(os.tmpdir(), "e2e-coverage-context-"));
+	const baseSha = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+	const flows = JSON.parse(readFileSync(".github/e2e-core-flows.json", "utf8"));
+	const invoke = (focusFlowId) => execFileSync(process.execPath, [".github/scripts/e2e-coverage/maintain.mjs", "context"], {
+		env: { ...process.env, E2E_COVERAGE_DIR: directory, E2E_BASE_SHA: baseSha, E2E_FOCUS_FLOW_ID: focusFlowId, GITHUB_OUTPUT: "" }, stdio: "pipe",
+	});
+	try {
+		invoke(flows[0].id);
+		const context = JSON.parse(readFileSync(path.join(directory, "context.json"), "utf8"));
+		assert.equal(context.focusFlowId, flows[0].id);
+		assert.deepEqual(context.flows, flows);
+		assert.ok(context.trackedFiles.includes(".github/e2e-core-flows.json"));
+		assert.throws(() => invoke("unknown-flow"));
+		assert.equal(JSON.parse(readFileSync(path.join(directory, "result.json"), "utf8")).status, "failed");
 	} finally {
 		rmSync(directory, { recursive: true, force: true });
 	}

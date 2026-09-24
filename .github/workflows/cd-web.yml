@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       deploy_target:
-        description: "배포 대상 (none = 빌드만, staging = 스테이징 배포, staged = 상용 환경으로 빌드해 도메인 없이 올려두기, production = 프로덕션 배포)"
+        description: "배포 대상 (build-only = staging으로 빌드만, staging = 스테이징 배포, staged = 상용 환경으로 빌드해 도메인 없이 올려두기, production = 프로덕션 배포)"
         type: string
-        default: "none"
+        default: "build-only"
       ref:
         description: "체크아웃할 커밋/태그 (비우면 호출한 워크플로의 기본 ref)"
         type: string
@@ -30,10 +30,10 @@ on:
         description: "배포 대상"
         type: choice
         options:
-          - none
+          - build-only
           - staging
           - staged
-        default: "none"
+        default: "build-only"
       ref:
         description: "체크아웃할 커밋/태그 (비우면 실행한 브랜치)"
         type: string
@@ -47,7 +47,7 @@ jobs:
       staging_outcome: ${{ steps.deploy-staging.outcome }}
     env:
       # 아래 Vercel Pull·Build와 같은 기준으로 판정해야 합니다. production과 staged는 상용 환경으로,
-      # none·staging은 Preview 환경으로 굽습니다. 기준이 갈리면 none이 양쪽에서 다른 쪽으로 떨어져,
+      # build-only·staging은 Preview 환경으로 굽습니다. 기준이 갈리면 build-only가 양쪽에서 다른 쪽으로 떨어져,
       # 상수는 production인데 Vercel 값은 Preview인 조합이 됩니다.
       # (Vercel Pull·Build는 아래 USE_PRODUCTION_ENV 하나만 봅니다.)
       BUILD_ENV: ${{ (inputs.deploy_target == 'production' || inputs.deploy_target == 'staged') && 'production' || 'staging' }}

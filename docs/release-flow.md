@@ -259,10 +259,11 @@ Slack에서 `/배포현황`(등록한 슬래시 커맨드)을 실행하면 `vers
 
 ## master 푸시는 스토어에 올리지 않습니다 (빌드는 재사용합니다)
 
-`ci.yml`의 `cd-app`·`cd-extension`은 `deploy_target: "none"`으로 고정되어
-있습니다. 빌드만 하고 스토어에는 아무것도 올리지 않습니다. 제출은 Slack 버튼
-→ `release.yml` 한 경로뿐이라, "언제 무엇이 올라갔는가"의 답이 Release 워크플로
-실행 기록 하나로 모입니다.
+`ci.yml`의 `cd-app`은 항상 `deploy_target: "build-only"`로 실행됩니다.
+`cd-extension`은 master 푸시에서 `build-only`로, PR·develop 푸시에서
+`staging`으로 실행됩니다. 둘 다 빌드만 하고 스토어에는 아무것도 올리지 않습니다.
+제출은 Slack 버튼 → `release.yml` 한 경로뿐이라, "언제 무엇이 올라갔는가"의 답이
+Release 워크플로 실행 기록 하나로 모입니다.
 
 **대신 그 빌드 산출물은 릴리스에서 그대로 재사용합니다.** 버튼을 눌렀을 때
 `release.yml`은 배포할 커밋에서 CI가 올려둔 아티팩트를 먼저 찾고

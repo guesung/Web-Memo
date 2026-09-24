@@ -6,6 +6,7 @@ import type {
 	MemoTable,
 } from "../../types";
 import { getMemoSearchFilter } from "../memoSearchFilter";
+import { getPageKey } from "../Url";
 
 /** 날짜 정렬에서 같은 시각의 메모까지 이어 읽는 복합 커서. */
 export interface IFMemoPageCursor {
@@ -25,16 +26,49 @@ export class MemoService {
 		this.supabaseClient
 			.schema(SUPABASE.table.memo)
 			.from(SUPABASE.table.memo)
-			.insert(request)
+			.insert({ ...request, page_key: getPageKey(request.url) })
 			.select();
 
-	getMemoByUrl = async (url: string) =>
-		this.supabaseClient
-			.schema(SUPABASE.table.memo)
-			.from(SUPABASE.table.memo)
-			.select("*, category(id, name, color)")
-			.is("deleted_at", null)
-			.eq("url", url);
+	/** 같은 페이지의 메모 후보를 최근 수정 순으로 모두 조회한다. */
+	getMemoByUrl = async (url: string) => {
+		const pageKey = getPageKey(url);
+		const memos: GetMemoResponse[] = [];
+		let lastId = 0;
+		while (true) {
+			const { data, error } = await this.supabaseClient
+				.schema(SUPABASE.table.memo)
+				.from(SUPABASE.table.memo)
+				.select("*, category(id, name, color)")
+				.is("deleted_at", null)
+				.in("page_key", [pageKey, ""])
+				.gt("id", lastId)
+				.order("id", { ascending: true })
+				.limit(500);
+			if (error) {
+				return { data: null, error };
+			}
+			memos.push(
+				...(data ?? []).filter((memo) => {
+					try {
+						return (memo.page_key || getPageKey(memo.url)) === pageKey;
+					} catch {
+						return false;
+					}
+				}),
+			);
+			if (!data || data.length < 500) {
+				break;
+			}
+			lastId = data[data.length - 1].id;
+		}
+		memos.sort((first, second) => {
+			const dateDifference = (second.updated_at ?? "").localeCompare(
+				first.updated_at ?? "",
+			);
+			return dateDifference || second.id - first.id;
+		});
+		return { data: memos, error: null };
+	};
 
 	getMemoById = async (id: number) =>
 		this.supabaseClient

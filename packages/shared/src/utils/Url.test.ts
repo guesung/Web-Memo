@@ -31,6 +31,30 @@ describe("getPageKey", () => {
 			"https://www.youtube.com/watch?v=abc&utm_source=newsletter&t=30",
 			"https://www.youtube.com/watch?v=abc",
 		],
+		["https://example.com", "https://example.com/"],
+		["https://EXAMPLE.com:443/a", "https://example.com/a"],
+		["https://user:pass@EXAMPLE.com/a", "https://example.com/a"],
+		["ftp://EXAMPLE.com:21/a", "ftp://example.com/a"],
+		["https://example.com/a/../b", "https://example.com/b"],
+		["https://example.com/a/%2E%2E/b", "https://example.com/b"],
+		["https://example.com/a/..", "https://example.com/"],
+		["https://example.com/한글", "https://example.com/%ED%95%9C%EA%B8%80"],
+		["https://사용자.한국/a", "https://xn--vf4bo3i2ta.xn--3e0b707e/a"],
+		["https://example.com/?q=it's", "https://example.com/?q=it%27s"],
+		[
+			"https://www.youtube.com/watch?v=a%62c&t=10",
+			"https://www.youtube.com/watch?v=abc",
+		],
+		[
+			"https://www.youtube.com/shorts/abc",
+			"https://www.youtube.com/shorts/abc?v=null",
+		],
+		["https://www.youtube.com/watch?v", "https://www.youtube.com/watch?v="],
+		["memo://local/123", "null/123"],
+		["chrome://settings", "null"],
+		["chrome://settings/privacy", "null/privacy"],
+		["file:///Users/home/a.pdf", "null/Users/home/a.pdf"],
+		["about:blank", "nullblank"],
 	])("uses the same page key for %s", (url, expectedPageKey) => {
 		expect(getPageKey(url)).toBe(expectedPageKey);
 	});

@@ -8,6 +8,7 @@ interface IFRecordedCalls {
 	from: string[];
 	select: string[];
 	eq: [string, unknown][];
+	in: [string, unknown][];
 	is: [string, unknown][];
 	lt: [string, unknown][];
 	gt: [string, unknown][];
@@ -31,6 +32,7 @@ const createMockClient = (): {
 		from: [],
 		select: [],
 		eq: [],
+		in: [],
 		is: [],
 		lt: [],
 		gt: [],
@@ -47,6 +49,10 @@ const createMockClient = (): {
 		},
 		eq: (column: string, value: unknown) => {
 			calls.eq.push([column, value]);
+			return builder;
+		},
+		in: (column: string, value: unknown) => {
+			calls.in.push([column, value]);
 			return builder;
 		},
 		is: (column: string, value: unknown) => {
@@ -155,12 +161,26 @@ describe("HighlightService.getHighlightsPaginated", () => {
 });
 
 describe("HighlightService.getHighlightsByUrl", () => {
-	it("url로 조회하고 id 오름차순으로 정렬한다", async () => {
+	it("추적 파라미터를 제외한 page_key로 조회하고 id 오름차순으로 정렬한다", async () => {
 		const { client, calls } = createMockClient();
-		await new HighlightService(client).getHighlightsByUrl("https://a.com");
+		await new HighlightService(client).getHighlightsByUrl(
+			"https://a.com/?utm_source=mail&id=1",
+		);
 
-		expect(calls.eq).toContainEqual(["url", "https://a.com"]);
+		expect(calls.in).toContainEqual(["page_key", ["https://a.com/?id=1", ""]]);
 		expect(calls.order).toContainEqual(["id", { ascending: true }]);
+	});
+});
+
+describe("MemoService.getMemoByUrl", () => {
+	it("같은 page_key의 후보를 최신 수정 순으로 조회한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemoByUrl(
+			"https://a.com/?utm_source=mail&id=1",
+		);
+
+		expect(calls.in).toContainEqual(["page_key", ["https://a.com/?id=1", ""]]);
+		expect(calls.order).toEqual([["id", { ascending: true }]]);
 	});
 });
 
@@ -183,6 +203,29 @@ describe("HighlightService.getHighlightCounts", () => {
 		await new HighlightService(client).getHighlightCounts(["https://a.com"]);
 
 		expect(calls.schema).toContain("memo");
+	});
+});
+
+describe("HighlightService.getHighlightCountsByPageKeys", () => {
+	it("키와 기존 빈 키를 한 조회에서 집계한다", async () => {
+		const { client, calls } = createMockClient();
+		await new HighlightService(client).getHighlightCountsByPageKeys([
+			"https://a.com",
+		]);
+
+		expect(calls.in).toContainEqual(["page_key", ["https://a.com", ""]]);
+		expect(calls.rpc).toEqual([]);
+	});
+	it("여러 페이지의 개수 조회를 20개씩 나눈다", async () => {
+		const { client, calls } = createMockClient();
+		const pageKeys = Array.from(
+			{ length: 41 },
+			(_, index) => `https://a.com/${index}`,
+		);
+		await new HighlightService(client).getHighlightCountsByPageKeys(pageKeys);
+		expect(calls.in.map(([, values]) => (values as string[]).length)).toEqual([
+			21, 21, 2,
+		]);
 	});
 });
 

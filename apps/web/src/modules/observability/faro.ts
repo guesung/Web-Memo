@@ -25,7 +25,8 @@ export const initializeMemoFaro = ({
 	collectorUrl: string;
 	normalizeRoute: (path: string) => TMemoRoute | null;
 }): void => {
-	if (faro.api) {
+	// faro-core는 초기화 전에도 no-op api를 채워 두므로, 등록 여부는 config로 판단한다.
+	if (faro.config) {
 		return;
 	}
 

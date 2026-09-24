@@ -2,18 +2,48 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { getMemoRoute } from "./client";
 import { initializeMemoFaro } from "./faro";
 
-const { initializeFaroMock } = vi.hoisted(() => ({
+const { initializeFaroMock, faroMock } = vi.hoisted(() => ({
 	initializeFaroMock: vi.fn(),
+	// 실제 faro-core처럼 초기화 전에도 no-op api가 채워져 있고 config는 없다.
+	faroMock: { api: { pushMeasurement: () => {} } } as {
+		api: { pushMeasurement: () => void };
+		config?: object;
+	},
 }));
 
 vi.mock("@grafana/faro-web-sdk", () => ({
-	faro: { api: null },
+	faro: faroMock,
 	initializeFaro: initializeFaroMock,
 	SessionInstrumentation: class {},
 	TransportItemType: { MEASUREMENT: "measurement" },
 }));
 
-afterEach(() => initializeFaroMock.mockClear());
+afterEach(() => {
+	initializeFaroMock.mockClear();
+	faroMock.config = undefined;
+});
+
+describe("Faro 초기화", () => {
+	it("SDK 기본 no-op api만 있는 초기 상태에서 Faro를 초기화한다", () => {
+		initializeMemoFaro({
+			collectorUrl: "https://collector.example/collect",
+			normalizeRoute: getMemoRoute,
+		});
+
+		expect(initializeFaroMock).toHaveBeenCalledTimes(1);
+	});
+
+	it("이미 등록된 Faro가 있으면 다시 초기화하지 않는다", () => {
+		faroMock.config = {};
+
+		initializeMemoFaro({
+			collectorUrl: "https://collector.example/collect",
+			normalizeRoute: getMemoRoute,
+		});
+
+		expect(initializeFaroMock).not.toHaveBeenCalled();
+	});
+});
 
 describe("Faro 측정값 필터", () => {
 	it("배치 전송 시 URL이 바뀌어도 payload 경로만 남기고 개인정보를 제거한다", () => {

@@ -65,4 +65,4 @@ jobs:
           CLEANUP_DRY_RUN: ${{ inputs.dry_run }}
           GIT_USER_NAME: ${{ steps.app-token.outputs.app-slug }}[bot]
           GIT_USER_EMAIL: ${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com
-        run: node .github/scripts/cleanup-unused-files.mjs
+        run: node .github/scripts/cleanup/cleanup-unused-files.mjs

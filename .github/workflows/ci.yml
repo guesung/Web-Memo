@@ -77,7 +77,7 @@ jobs:
       - id: detect
         env:
           BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.event.pull_request.base.ref) || github.event.before }}
-        run: .github/scripts/detect-affected-apps.sh
+        run: .github/scripts/deploy/detect-affected-apps.sh
 
   # 푸시 직후 Slack 스레드의 루트 메시지를 만들고 그 ts를 냅니다. 뒤이은 알림 잡들이 댓글을 답니다.
   #
@@ -104,7 +104,7 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
-        run: node .github/scripts/notify-thread-root.mjs
+        run: node .github/scripts/deploy/notify-thread-root.mjs
 
   # 앱 빌드는 약 30분입니다. packages/shared를 웹·확장이 함께 써서
   # 앱과 무관한 PR까지 빌드를 끌고 오므로, PR에서는 build-app 라벨이 있을 때만 돌립니다.
@@ -179,7 +179,7 @@ jobs:
           # 배포 스텝의 outcome만으로는 "배포하다 실패"와 "빌드에서 멈춰 배포까지 못 감"이
           # 둘 다 실패로 뭉개집니다. skipped는 앞 스텝에서 멈췄다는 뜻입니다.
           DEPLOY_OUTCOME: ${{ needs['cd-web'].outputs.staging_outcome }}
-        run: node .github/scripts/notify-staging-deploy.mjs
+        run: node .github/scripts/deploy/notify-staging-deploy.mjs
 
   # master 머지 스레드에 타깃 하나의 빌드 결과를 댓글로 답니다(notify-web, notify-extension, notify-app).
   # 각 잡은 자기 cd-* 잡만 기다리므로 웹·확장 결과가 앱 빌드(약 30분)에 묶이지 않고 끝나는 대로 나갑니다.
@@ -207,7 +207,7 @@ jobs:
           TARGET: web
           CHANGED: ${{ needs.changes.outputs.web }}
           RESULT: ${{ needs['cd-web'].result }}
-        run: node .github/scripts/notify-thread-reply.mjs
+        run: node .github/scripts/deploy/notify-thread-reply.mjs
 
   notify-extension:
     name: Slack 확장 빌드 알림
@@ -236,7 +236,7 @@ jobs:
           TARGET: extension
           CHANGED: ${{ needs.changes.outputs.extension }}
           RESULT: ${{ needs['cd-extension'].result }}
-        run: node .github/scripts/notify-thread-reply.mjs
+        run: node .github/scripts/deploy/notify-thread-reply.mjs
 
   notify-app:
     name: Slack 앱 빌드 알림
@@ -259,7 +259,7 @@ jobs:
           TARGET: app
           CHANGED: ${{ needs.changes.outputs.app }}
           RESULT: ${{ needs['cd-app'].result }}
-        run: node .github/scripts/notify-thread-reply.mjs
+        run: node .github/scripts/deploy/notify-thread-reply.mjs
 
   # PR에서 빌드한 확장의 다운로드 링크를 PR 댓글로 답니다. 머지 전에 받아 설치해 볼 수 있게 하기 위해서입니다.
   # 댓글은 PR마다 하나이고 푸시할 때마다 고쳐 씁니다. 판정은 notify-thread-reply와 같은 decideTargetReply라
@@ -293,7 +293,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           CHANGED: ${{ needs.changes.outputs.extension }}
           RESULT: ${{ needs['cd-extension'].result }}
-        run: node .github/scripts/comment-pr-extension.mjs
+        run: node .github/scripts/deploy/comment-pr-extension.mjs
 
   # 빌드 결과와 스토어 현황을 함께 Slack으로 알리고, 배포 버튼을 답니다.
   # 버튼을 누르면 apps/web의 /api/slack/interactivity가 release.yml을 실행합니다.
@@ -331,4 +331,4 @@ jobs:
           CWS_CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CWS_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           CWS_REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
-        run: node .github/scripts/notify-build-ready.mjs
+        run: node .github/scripts/deploy/notify-build-ready.mjs

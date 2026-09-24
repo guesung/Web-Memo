@@ -35,7 +35,7 @@ jobs:
         continue-on-error: true
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: node .github/scripts/audit-supabase.mjs --output "$RUNNER_TEMP/supabase-audit.json"
+        run: node .github/scripts/supabase/audit-supabase.mjs --output "$RUNNER_TEMP/supabase-audit.json"
 
       - name: Notify findings
         if: ${{ always() && github.event_name != 'pull_request' }}
@@ -43,7 +43,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SUPABASE_AUDIT_RESULT_PATH: ${{ runner.temp }}/supabase-audit.json
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: node .github/scripts/notify-supabase-audit.mjs
+        run: node .github/scripts/supabase/notify-supabase-audit.mjs
 
       - name: Fail on audit errors
         if: ${{ steps.audit.outcome == 'failure' }}

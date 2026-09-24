@@ -19,6 +19,7 @@
 		"@supabase/ssr": "^0.8.0",
 		"@supabase/supabase-js": "^2.95.3",
 		"@tanstack/react-query": "^5.59.0",
+		"@typesafe-ai/sdk": "^0.6.0",
 		"@upstash/ratelimit": "^2.0.8",
 		"@upstash/redis": "^1.36.1",
 		"@vercel/functions": "^3.9.5",

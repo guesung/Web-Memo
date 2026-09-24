@@ -26,7 +26,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 분류는 `EVENT_CATEGORY`가 `Record`로 강제하므로 이벤트를 추가하고 분류를 빠뜨리면 컴파일이
 실패합니다.
 
-### core_action (26종)
+### core_action (27종)
 
 `memo_write`(fields) · `memo_delete`(memo_count) · `memo_restore`(memo_count) ·
 `memo_delete_permanently`(memo_count) · `memo_open`(has_search_query) · `memo_source_open` ·
@@ -35,9 +35,10 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `summary_fail`(reason) · `chat_message_send` · `chat_fail`(reason) ·
 `youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category) ·
 `category_create` · `category_update` · `category_delete` · `login`(method) · `sign_up`(method) ·
-`feedback_submit` · `extension_install_click`(from, position) · `memo_first_write` · `export_run`(format)
+`feedback_submit` · `extension_install_click`(from, position) · `memo_first_write` · `export_run`(format) ·
+`past_memo_open`(kind, source)
 
-### engagement (20종)
+### engagement (22종)
 
 `side_panel_open` · `side_panel_open_click` · `side_panel_login_click` ·
 `page_view`(page_title, page_location) · `tab_change`(tab_name) · `view_change`(view) ·
@@ -45,7 +46,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `extension_setting_change`(keys) · `category_suggestion_show`(is_new_category) ·
 `login_start`(method) · `logout` · `extension_installed` · `extension_install_dismiss` ·
 `open_web_from_extension`(from) · `guide_open`(from) · `guide_step`(step_name) · `guide_finish` ·
-`search_no_result`
+`search_no_result` · `past_memo_show`(kind, source) · `past_memo_dismiss`(kind, source)
 
 ### 호출부에 없는 이벤트
 

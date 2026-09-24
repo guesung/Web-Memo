@@ -75,12 +75,12 @@ test("메모 입력 항목 저장에 실패하면 이전 값으로 돌아가고 
 	await impressionSwitch.click();
 	await expect(impressionSwitch).toHaveAttribute("data-state", "unchecked");
 	await expect(
-		optionsPage.getByRole("button", { name: /^(Retry|다시 시도)$/ }),
+		optionsPage.getByRole("button", { name: /^(Try again|다시 시도)$/ }),
 	).toBeVisible();
 	await expect.poll(() => saveAttempts).toBe(1);
 
 	await optionsPage
-		.getByRole("button", { name: /^(Retry|다시 시도)$/ })
+		.getByRole("button", { name: /^(Try again|다시 시도)$/ })
 		.click();
 	await expect(impressionSwitch).toHaveAttribute("data-state", "checked");
 	await expect.poll(() => saveAttempts).toBe(2);

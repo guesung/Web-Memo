@@ -76,8 +76,8 @@ test.describe("메모 내보내기 (Mocked)", () => {
 
 			await gotoSafely({
 				page,
-				url: `${LANGUAGE}${PATHS.memosSetting}`,
-				regexp: new RegExp(PATHS.memosSetting),
+				url: `${LANGUAGE}${PATHS.settings}`,
+				regexp: new RegExp(PATHS.settings),
 			});
 		});
 
@@ -129,8 +129,8 @@ test.describe("메모 내보내기 (Mocked)", () => {
 	test("메모가 없으면 내려받지 않는다.", async ({ page }) => {
 		await gotoSafely({
 			page,
-			url: `${LANGUAGE}${PATHS.memosSetting}`,
-			regexp: new RegExp(PATHS.memosSetting),
+			url: `${LANGUAGE}${PATHS.settings}`,
+			regexp: new RegExp(PATHS.settings),
 		});
 
 		let downloadCount = 0;

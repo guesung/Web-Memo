@@ -84,7 +84,7 @@ test.describe("탭 이동과 스크롤 (Mocked)", () => {
 		await page.waitForURL(new RegExp(PATHS.highlights));
 		expect(await isWindowMarkAlive(page)).toBe(true);
 
-		await page.getByRole("link", { name: "My memos" }).click();
+		await page.getByRole("link", { name: "My memos" }).last().click();
 		await page.waitForURL(new RegExp(`${PATHS.memos}$`));
 		expect(await isWindowMarkAlive(page)).toBe(true);
 	});
@@ -152,7 +152,7 @@ test.describe("탭 이동과 스크롤 (Mocked)", () => {
 		await page.getByRole("link", { name: "Highlights" }).click();
 		await page.waitForURL(new RegExp(PATHS.highlights));
 
-		await page.getByRole("link", { name: "My memos" }).click();
+		await page.getByRole("link", { name: "My memos" }).last().click();
 		await page.waitForURL(new RegExp(`${PATHS.memos}$`));
 
 		await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);

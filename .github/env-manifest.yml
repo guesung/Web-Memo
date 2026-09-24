@@ -356,6 +356,21 @@
   consumers: [apps/web/src/app/api/version/route.ts]
   note: "Vercel이 넣는다"
 
+- name: E2E_RUN_ID
+  kind: platform
+  consumers: [e2e/globalSetup.ts, e2e/tests/lib/namespace.ts]
+  note: "E2E 실행 ID. globalSetup이 한 번 정해 워커·teardown이 같은 값으로 자기 실행 데이터를 찾는다. 등록할 곳 없음"
+
+- name: GITHUB_RUN_ATTEMPT
+  kind: platform
+  consumers: [e2e/globalSetup.ts]
+  note: "GitHub Actions가 넣는다. E2E 실행 ID를 재시도마다 다르게 만든다"
+
+- name: GITHUB_RUN_ID
+  kind: platform
+  consumers: [e2e/globalSetup.ts]
+  note: "GitHub Actions가 넣는다. E2E 실행 ID의 앞부분으로 실DB 테스트 데이터를 실행별로 가른다"
+
 - name: GITHUB_SHA
   kind: platform
   consumers: [apps/web/src/app/api/version/route.ts]

@@ -57,7 +57,7 @@ jobs:
           # 커밋을 갖게 되는데, develop CI는 verify(빌드 번호 고정)로 빌드하므로 그
           # 산출물을 제출하면 스토어가 중복 빌드 번호로 거절합니다.
           ARTIFACT_PREFIX: ${{ matrix.platform }}-build-ci
-        run: .github/scripts/find-reusable-artifact.sh
+        run: .github/scripts/deploy/find-reusable-artifact.sh
 
       - name: Download reusable build
         if: ${{ steps.reuse.outputs.found == 'true' }}

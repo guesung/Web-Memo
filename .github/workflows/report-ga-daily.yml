@@ -1,0 +1,70 @@
+name: Daily GA Report
+
+# 어제 하루의 GA4 지표를 집계해 Slack에 게시합니다.
+# 사용량 보고가 아니라 로깅 감시가 목적입니다 — 로깅은 틀려도 화면이 깨지지 않아
+# 아무도 모르게 죽으므로, 7일 평균과 매일 대조하는 것이 유일한 알람입니다.
+#
+# 조회 자격 증명(GA4 서비스 계정)을 Vercel에 복제하지 않기 위해 여기서 돌립니다.
+on:
+  schedule:
+    # UTC 22:00 = Asia/Seoul 07:00. 크론은 수십 분 지연이 흔하지만, 스크립트가
+    # 실행 시각이 아니라 서울 기준 "어제"를 직접 계산하므로 하루를 건너뛰지 않습니다.
+    - cron: "0 22 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: daily-ga-report
+  # versions.yml 은 true 입니다. 거기는 사용자가 즉시 요청한 조회라 최신 것만 남기는 게
+  # 맞지만, 여기는 크론이 도는 중에 손으로 dispatch 하면 그날 리포트가 통째로 사라집니다.
+  # 관례에 맞춘다며 true 로 되돌리지 마세요.
+  cancel-in-progress: false
+
+# 체크아웃 외에는 아무것도 건드리지 않습니다. 재사용 워크플로가 아니어도 권한이
+# 호출자를 넘으면 로그도 annotation 도 없이 startup_failure 로 끝납니다.
+permissions:
+  contents: read
+
+jobs:
+  report:
+    name: 데일리 GA 리포트
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      # 리포트 스크립트는 의존성이 없습니다(node:crypto + fetch). pnpm install을 건너뜁니다.
+      - name: Report daily GA metrics
+        env:
+          SLACK_REPORT_WEBHOOK_URL: ${{ secrets.SLACK_REPORT_WEBHOOK_URL }}
+          GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
+          # Data API 가 요구하는 것은 속성 ID(숫자)입니다. packages/shared 의
+          # G-6HHNP7KJM5 는 gtag 용 측정 ID라 여기 넣으면 403/404 가 납니다.
+          # 속성 ID는 비밀이 아닙니다. 시크릿에 넣으면 로그에서 가려져 디버깅만 어려워집니다.
+          GA4_PROPERTY_ID: "471860782"
+        run: node .github/scripts/ga/report-daily-ga.mjs
+
+      # 매일 도는 무인 잡이라 실패가 알림 부재와 구분되지 않습니다. 리포트가 안 온 날이
+      # "조용한 날"인지 "잡이 깨진 날"인지 채널에서 바로 드러나야 합니다.
+      # 실패 알림에 별도 스크립트를 두지 않습니다 — 그 스크립트가 깨지면 같은 문제가 반복됩니다.
+      #
+      # 본 알림과 웹훅을 일부러 가릅니다. 리포트는 SLACK_REPORT_WEBHOOK_URL 로 가지만
+      # 실패는 CI·릴리스 채널(SLACK_WEBHOOK_URL)로 보냅니다. 리포트 채널 웹훅이 폐기되거나
+      # 만료되면 본 알림과 그 실패 알림이 같이 죽어 아무 일도 없는 것처럼 보입니다.
+      - name: Notify failure
+        if: ${{ failure() }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::warning::SLACK_WEBHOOK_URL 이 없어 실패 알림을 건너뜁니다"
+            exit 0
+          fi
+          curl --silent --show-error --fail-with-body \
+            --header "content-type: application/json" \
+            --data "{\"text\":\"❌ 데일리 GA 리포트 실패 — <$RUN_URL|실행 로그 보기>\"}" \
+            "$SLACK_WEBHOOK_URL"

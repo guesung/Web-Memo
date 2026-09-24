@@ -40,7 +40,7 @@ import { type NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 /**
- * 버튼 value에 실려 오는 값. .github/scripts/lib/slack-blocks.mjs가 만듭니다.
+ * 버튼 value에 실려 오는 값. .github/scripts/shared/slack-blocks.mjs가 만듭니다.
  * 타깃별 댓글(notify-thread-reply.mjs)과 요약 댓글(notify-build-ready.mjs)이 같은 값을 실어 보냅니다.
  */
 interface IFDeployButtonValue {

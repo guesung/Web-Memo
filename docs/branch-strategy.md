@@ -88,7 +88,7 @@ git checkout feat/memo-search   # 작업 브랜치로 복귀
    `package.json`의 버전을 올린 뒤, 커밋하고 `v*` 태그를 푸시합니다. 이어서
    `master`로 PR을 열어 머지합니다.
    - `v*` 태그 푸시는 GitHub Release를 생성합니다
-     (`.github/workflows/github-release.yml`).
+     (`.github/workflows/release-github.yml`).
 2. **Slack에서 배포합니다.** `master` 빌드가 끝나면 스토어 현황과 배포 버튼이
    담긴 메시지가 Slack에 옵니다. 원하는 대상 버튼을 누르면 그 커밋이 배포되고,
    **다른 버전…**을 누르면 대상과 리비전을 골라 배포합니다. 전체 흐름과 설정은

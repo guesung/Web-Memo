@@ -74,6 +74,8 @@ jobs:
             Choose a flow with at least one existing browser-route-mocked test as evidence, regardless of its project name.
             For none/insufficient, set testFile and project to empty strings.
             For gap, choose an existing project and a new e2e/tests/<project>/<camelCase>.test.ts path.
+            Only generate mocked tests in web, extension, or hybrid. Reuse e2e/tests/lib/mocks/ and do not read or write real Supabase data beyond authentication.
+            If the flow requires a *.real.test.ts test, return status=insufficient and explain why real data is required.
           claude_args: >-
             --max-turns 20
             --allowedTools "Read,Grep,Glob"
@@ -96,6 +98,7 @@ jobs:
             Read AGENTS.md, docs/architecture.md, e2e/playwright.config.ts and ${{ runner.temp }}/e2e-coverage/candidate.json.
             Add exactly one E2E test for the approved candidate. The only file you may change is the candidate's testFile.
             Follow the current project directory, fixtures, authentication, cleanup, and assertion patterns. Avoid fixed sleeps.
+            Create only a mocked *.test.ts test using e2e/tests/lib/mocks/. Do not create a *.real.test.ts test or read or write real Supabase data beyond authentication.
             Do not edit product code, configuration, workflows, or existing tests. Do not commit or publish anything.
           claude_args: >-
             --max-turns 20
@@ -165,6 +168,7 @@ jobs:
             Read ${{ runner.temp }}/e2e-coverage/candidate.json and ${{ runner.temp }}/e2e-coverage/verification-initial.log.
             Fix the generated test once. The only file you may change is the candidate's testFile.
             Keep exactly one test for the same flow and project. Do not modify product code, other tests, or configuration.
+            Keep the test mocked using e2e/tests/lib/mocks/. Do not rename it to *.real.test.ts or read or write real Supabase data beyond authentication.
           claude_args: >-
             --max-turns 20
             --allowedTools "Read,Grep,Glob,Edit,Write"

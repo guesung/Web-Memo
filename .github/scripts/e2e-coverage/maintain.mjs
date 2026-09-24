@@ -44,7 +44,7 @@ const commands = {
 		}
 		const config = readFileSync("e2e/playwright.config.ts", "utf8");
 		const configuredProjects = [...config.matchAll(/name:\s*["']([a-zA-Z0-9_-]+)["']/g)].map((match) => match[1]);
-		const projects = configuredProjects.includes("mocked") ? ["mocked"] : configuredProjects.filter((project) => ["web", "extension", "hybrid"].includes(project));
+		const projects = configuredProjects.filter((project) => ["web", "extension", "hybrid"].includes(project));
 		if (!projects.length) {
 			throw Object.assign(new Error("Playwright 프로젝트를 찾지 못했습니다"), { isSafe: true });
 		}

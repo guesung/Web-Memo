@@ -22,16 +22,20 @@ if (!OPENAI_API_KEY) {
 const verifyUser = async (request: NextRequest) => {
 	const authHeader = request.headers.get("authorization");
 	const token = authHeader?.replace("Bearer ", "");
-	if (!token) return null;
+	if (!token) {
+		return null;
+	}
 
 	const supabase = createClient(SUPABASE.url, SUPABASE.anonKey);
 	const {
 		data: { user },
 	} = await supabase.auth.getUser(token);
+
 	return user;
 };
 
-export async function POST(request: NextRequest) {
+/** 로그인한 사용자의 페이지 요약과 질의응답을 제공한다. */
+export const POST = async (request: NextRequest) => {
 	if (!OPENAI_API_KEY) {
 		return createErrorResponse(
 			"OpenAI API key not configured",
@@ -66,6 +70,7 @@ export async function POST(request: NextRequest) {
 
 		const completion = await openai.chat.completions.create({
 			model: OPENAI_MODEL,
+			reasoning_effort: "none",
 			messages: [
 				{
 					role: "system",
@@ -99,11 +104,12 @@ export async function POST(request: NextRequest) {
 
 		return handleOpenAIError(error, "webpage-qa");
 	}
-}
+};
 
-export async function OPTIONS() {
+/** 사전 CORS 요청에 공통 허용 헤더로 응답한다. */
+export const OPTIONS = async () => {
 	return new Response(null, {
 		status: 200,
 		headers: CORS_HEADERS,
 	});
-}
+};

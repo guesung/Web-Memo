@@ -123,7 +123,14 @@ describe("createStreamingResponse", () => {
 		);
 		const body = await response.text();
 
-		expect(body).toContain("안녕");
+		expect(mocks.create).toHaveBeenCalledWith({
+			model: "gpt-6-luna",
+			reasoning_effort: "none",
+			messages: [{ role: "user", content: "요약해줘" }],
+			stream: true,
+			temperature: 0.3,
+		});
+		expect(body).toBe('data: {"content":"안녕"}\n\ndata: [DONE]\n\n');
 		expect(mocks.captureException).not.toHaveBeenCalled();
 	});
 });

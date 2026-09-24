@@ -10,23 +10,27 @@ import type { Category } from "@web-memo/shared/modules/extension-bridge";
 import { DEFAULT_LANGUAGE, LANGUAGE_NAME } from "./constant";
 import { DEFAULT_PROMPTS, PROMPT } from "./prompt";
 
-interface GetSystemPromptProps {
+/** 요약 언어와 콘텐츠 유형. */
+interface IFGetSystemPromptProps {
 	language: "ko" | "en";
 	category: Category;
 }
 
-type StreamFailureStage = "reader" | "parse" | "server";
+/** 요약 스트림 처리 중 실패한 단계. */
+type TStreamFailureStage = "reader" | "parse" | "server";
 
-type StreamErrorHandler = (
+/** 요약 스트림 오류와 실패 단계를 전달하는 콜백. */
+type TStreamErrorHandler = (
 	error: string,
-	streamFailureStage: StreamFailureStage,
+	streamFailureStage: TStreamFailureStage,
 ) => void;
 
+/** 저장된 언어와 콘텐츠 유형에 맞춰 요약 요청 메시지를 구성한다. */
 export const getSummaryPrompt = async (content: string, category: Category) => {
 	const language = await ChromeSyncStorage.get<string>(STORAGE_KEYS.language);
 	const validLanguage: "ko" | "en" =
 		language === "ko" || language === "en" ? language : DEFAULT_LANGUAGE;
-	const systemPrompt = await getSystemPrompt({
+	const systemPrompt = getSystemPrompt({
 		language: validLanguage,
 		category,
 	});
@@ -37,23 +41,22 @@ export const getSummaryPrompt = async (content: string, category: Category) => {
 	];
 };
 
-const getSystemPrompt = async ({
-	language,
-	category,
-}: GetSystemPromptProps) => {
-	const languagePrompt = `${PROMPT.language} ${LANGUAGE_NAME[language]}`.repeat(
-		3,
-	);
+const getSystemPrompt = (props: IFGetSystemPromptProps) => {
+	const languagePrompt = `${PROMPT.language} ${LANGUAGE_NAME[props.language]}.`;
+	let summaryPrompt = DEFAULT_PROMPTS.web[props.language];
 
-	if (category === "youtube")
-		return `${DEFAULT_PROMPTS.youtube[language]} ${languagePrompt} ${PROMPT.default}`;
-	return `${DEFAULT_PROMPTS.web[language]} ${languagePrompt} ${PROMPT.default}`;
+	if (props.category === "youtube") {
+		summaryPrompt = DEFAULT_PROMPTS.youtube[props.language];
+	}
+
+	return [summaryPrompt, languagePrompt, PROMPT.default].join("\n\n");
 };
 
+/** 요약 응답 스트림을 읽어 텍스트 조각과 오류를 콜백으로 전달한다. */
 export const processStreamingResponse = async (
 	response: Response,
 	onContentParsed: (content: string) => void,
-	onError: StreamErrorHandler,
+	onError: TStreamErrorHandler,
 ) => {
 	const reader = response.body?.getReader();
 	if (!reader) {

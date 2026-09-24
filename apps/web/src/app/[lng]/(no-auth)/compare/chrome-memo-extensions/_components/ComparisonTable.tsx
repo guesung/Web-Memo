@@ -35,7 +35,7 @@ const ComparisonTable = () => {
 				{scrollHint}
 			</p>
 
-			<div className="mt-4 overflow-x-auto rounded-lg border border-border">
+			<div className="relative mt-4 overflow-x-auto rounded-lg border border-border">
 				<table className="w-full min-w-[56rem] border-collapse text-left text-sm">
 					<caption className="sr-only">{caption}</caption>
 					<thead className="bg-muted">

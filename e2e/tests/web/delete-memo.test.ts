@@ -1,6 +1,6 @@
 import { PATHS } from "@web-memo/shared/constants";
-import { expect, test } from "../fixtures";
-import { gotoSafely, LANGUAGE, login, skipGuide } from "../lib";
+import { expect, test } from "../fixtures/web";
+import { gotoSafely, LANGUAGE } from "../lib";
 import {
 	createMockMemo,
 	MockSupabaseStore,
@@ -22,8 +22,6 @@ test.describe("메모 삭제 기능 (Mocked)", () => {
 
 		await setupSupabaseMocks(page, store);
 
-		await login(page);
-		await skipGuide(page);
 		await gotoSafely({
 			page,
 			url: `${LANGUAGE}${PATHS.memos}`,

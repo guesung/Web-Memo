@@ -1,6 +1,9 @@
 import { PATHS } from "@web-memo/shared/constants";
-import { expect, test } from "../fixtures";
+import { expect, test } from "../fixtures/web";
 import { gotoSafely, LANGUAGE } from "../lib";
+
+// 비로그인 상태의 화면을 검증하므로 setup이 저장한 로그인 세션을 쓰지 않는다.
+test.use({ storageState: { cookies: [], origins: [] } });
 
 test.describe.configure({ mode: "parallel" });
 test.describe("로그인 기능", () => {

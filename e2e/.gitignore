@@ -1,0 +1,2 @@
+# auth.setup.ts가 저장하는 로그인 세션(storageState)
+.auth/

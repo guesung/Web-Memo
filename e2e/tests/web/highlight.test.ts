@@ -1,6 +1,6 @@
 import { PATHS } from "@web-memo/shared/constants";
-import { expect, test } from "../fixtures";
-import { gotoSafely, LANGUAGE, login, skipGuide } from "../lib";
+import { expect, test } from "../fixtures/web";
+import { gotoSafely, LANGUAGE } from "../lib";
 import {
 	createMockHighlight,
 	MockSupabaseStore,
@@ -16,9 +16,6 @@ test.describe("하이라이트 페이지 (Mocked)", () => {
 		store = new MockSupabaseStore();
 
 		await setupSupabaseMocks(page, store);
-
-		await login(page);
-		await skipGuide(page);
 	});
 
 	test("사이드바에서 하이라이트 페이지로 이동한다.", async ({ page }) => {
@@ -142,6 +139,9 @@ test.describe("하이라이트 페이지 (Mocked)", () => {
 });
 
 test.describe("하이라이트 페이지 접근 제어 (Mocked)", () => {
+	// web 프로젝트는 로그인 세션(storageState)을 물려받으므로, 비로그인 동작은 세션을 비워서 본다.
+	test.use({ storageState: { cookies: [], origins: [] } });
+
 	test("비로그인 상태로 접근하면 로그인 페이지로 보낸다.", async ({ page }) => {
 		await gotoSafely({
 			page,

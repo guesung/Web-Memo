@@ -1,5 +1,5 @@
 import { getExtensionUrl, SUPABASE } from "@web-memo/shared/constants";
-import { expect, test } from "../fixtures";
+import { expect, test } from "../fixtures/extension";
 import { login, skipGuide } from "../lib";
 
 /** 설정 저장 실패와 재시도는 실제 계정의 설정을 수정하지 않고 검증한다. */

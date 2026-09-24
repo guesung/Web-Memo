@@ -32,6 +32,7 @@ export default function Summary() {
 				<button
 					type="button"
 					onClick={generateSummary}
+					aria-label={I18n.get("summary_generate_label")}
 					className="hover:text-foreground transition-colors"
 				>
 					<RefreshCwIcon className="h-8 w-8" />

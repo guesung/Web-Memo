@@ -4,5 +4,5 @@
 		"noEmit": true,
 		"types": ["node", "chrome"]
 	},
-	"include": ["tests", "playwright.config.ts"]
+	"include": ["tests", "playwright.config.ts", "globalSetup.ts", "globalTeardown.ts"]
 }

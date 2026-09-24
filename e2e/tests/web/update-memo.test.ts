@@ -1,6 +1,6 @@
 import { PATHS, SUPABASE } from "@web-memo/shared/constants";
-import { expect, test } from "../fixtures";
-import { gotoSafely, LANGUAGE, login, skipGuide } from "../lib";
+import { expect, test } from "../fixtures/web";
+import { gotoSafely, LANGUAGE } from "../lib";
 import {
 	createMockMemo,
 	MockSupabaseStore,
@@ -29,8 +29,6 @@ test.describe("메모 수정 기능 (Mocked)", () => {
 
 		await setupSupabaseMocks(page, store);
 
-		await login(page);
-		await skipGuide(page);
 		await gotoSafely({
 			page,
 			url: `${LANGUAGE}${PATHS.memos}`,
@@ -52,10 +50,25 @@ test.describe("메모 수정 기능 (Mocked)", () => {
 		const textarea = page.getByTestId("memo-textarea");
 		await expect(textarea).toHaveValue(memoText);
 
-		const patchResponsePromise = page.waitForResponse(
-			(resp) =>
+		// 저장이 성공하면 onSuccess가 곧바로 memo 쿼리를 무효화해 재조회 GET이 PATCH 응답 직후 나간다.
+		// PATCH를 기다린 뒤에 GET 대기를 걸면 이미 지나간 응답을 놓치므로, 입력 전에 둘 다 걸어 둔다.
+		// PATCH 응답을 본 뒤의 GET만 재조회로 친다.
+		let hasPatchResponded = false;
+		const patchResponsePromise = page.waitForResponse((resp) => {
+			const isPatchResponse =
 				resp.url().includes("/rest/v1/memo") &&
-				resp.request().method() === "PATCH",
+				resp.request().method() === "PATCH";
+			if (isPatchResponse) {
+				hasPatchResponded = true;
+			}
+
+			return isPatchResponse;
+		});
+		const refetchResponsePromise = page.waitForResponse(
+			(resp) =>
+				hasPatchResponded &&
+				resp.url().includes("/rest/v1/memo") &&
+				resp.request().method() === "GET",
 		);
 
 		await textarea.evaluate((el, text) => {
@@ -68,12 +81,7 @@ test.describe("메모 수정 기능 (Mocked)", () => {
 		}, newMemoText);
 
 		await patchResponsePromise;
-
-		await page.waitForResponse(
-			(resp) =>
-				resp.url().includes("/rest/v1/memo") &&
-				resp.request().method() === "GET",
-		);
+		await refetchResponsePromise;
 
 		await page.getByTestId("memo-close-button").click();
 
@@ -121,6 +129,8 @@ test.describe("메모 수정 기능 (Mocked)", () => {
 		// 글자가 서버 값으로 덮이면 안 된다. 재조회가 입력보다 먼저 끝나 버리면
 		// 고치기 전 코드에서도 통과하므로, 재조회를 늦춰 창을 확실히 연다.
 		await textarea.fill("먼저 친 글 그리고 이어서 친 글");
+		// 조건 대기로 바꾸지 않는다. 기다릴 조건이 "덮어쓰기가 일어나지 않음"이라 관측할 이벤트가 없다.
+		// 늦춘 재조회가 끝날 만큼 시간을 흘려보내 회귀가 드러날 창을 연 채로 둔다.
 		await page.waitForTimeout(REFETCH_DELAY_MS + 400);
 
 		await expect(textarea).toHaveValue("먼저 친 글 그리고 이어서 친 글");

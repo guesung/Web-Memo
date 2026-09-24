@@ -1,0 +1,18 @@
+import { test as base } from "@playwright/test";
+import { supabaseGuardFixture } from "../lib/mocks/supabaseGuard";
+
+/**
+ * 확장 없이 일반 브라우저로 도는 web 프로젝트용 test.
+ * @description 로그인 상태는 setup 프로젝트(`auth.setup.ts`)가 저장한 storageState로 받는다.
+ * 확장이 없으므로 설치 탭 감시와 언어 쿠키 복구가 필요 없다. locale은 확장 fixture와 같게
+ * en-US로 고정해, 언어 경로 없는 이동이 브라우저 언어(ko)로 떨어지지 않게 한다.
+ * `*.real.test.ts`가 아니면 목이 처리하지 않은 Supabase 요청을 막고 테스트를 실패시킨다(supabaseGuard.ts).
+ */
+export const test = base.extend<{ supabaseGuard: undefined }>({
+	baseURL: "http://localhost:3000",
+	locale: "en-US",
+	supabaseGuard: [supabaseGuardFixture, { auto: true }],
+});
+
+/** web 프로젝트용 expect. */
+export const expect = test.expect;

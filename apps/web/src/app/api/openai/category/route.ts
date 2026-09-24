@@ -18,7 +18,8 @@ if (!OPENAI_API_KEY) {
 	console.warn("OPENAI_API_KEY is not configured");
 }
 
-export async function POST(request: NextRequest) {
+/** 페이지와 메모를 분석해 카테고리를 추천한다. */
+export const POST = async (request: NextRequest) => {
 	if (!OPENAI_API_KEY) {
 		return createErrorResponse(
 			"OpenAI API key not configured",
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
 
 		const completion = await openai.chat.completions.create({
 			model: OPENAI_MODEL,
+			reasoning_effort: "none",
 			messages: [
 				{
 					role: "system",
@@ -115,11 +117,12 @@ export async function POST(request: NextRequest) {
 
 		return handleOpenAIError(error, "category");
 	}
-}
+};
 
-export async function OPTIONS() {
+/** 사전 CORS 요청에 공통 허용 헤더로 응답한다. */
+export const OPTIONS = async () => {
 	return new Response(null, {
 		status: 200,
 		headers: CORS_HEADERS,
 	});
-}
+};

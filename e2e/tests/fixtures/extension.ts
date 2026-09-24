@@ -1,6 +1,7 @@
 import path from "node:path";
 import type { BrowserContext, Page } from "@playwright/test";
 import { test as base, chromium } from "@playwright/test";
+import { supabaseGuardFixture } from "../lib/mocks/supabaseGuard";
 
 process.env.PW_CHROMIUM_ATTACH_TO_OTHER = "1";
 
@@ -12,6 +13,8 @@ const pathToExtension = path.join(path.resolve(), "..", "dist");
 
 type ExtensionFixture = {
 	context: BrowserContext;
+	/** `*.real.test.ts`가 아니면 목이 처리하지 않은 Supabase 요청을 막고 테스트를 실패시킨다(supabaseGuard.ts). */
+	supabaseGuard: undefined;
 };
 
 export const test = base.extend<ExtensionFixture>({
@@ -25,6 +28,9 @@ export const test = base.extend<ExtensionFixture>({
 			headless: false,
 			args: [
 				`--headless=new`,
+				// locale 에뮬레이션은 Playwright가 붙은 페이지에만 걸려, 확장이 여는 설치 탭의 첫 요청은
+				// OS 언어로 나간다. 브라우저 기본 Accept-Language를 en으로 고정해 설치 탭도 `/en`으로 가게 한다.
+				"--accept-lang=en-US",
 				`--disable-extensions-except=${pathToExtension}`,
 				`--load-extension=${pathToExtension}`,
 			],
@@ -38,6 +44,7 @@ export const test = base.extend<ExtensionFixture>({
 		await context.close();
 	},
 	baseURL: BASE_URL,
+	supabaseGuard: [supabaseGuardFixture, { auto: true }],
 });
 export const expect = test.expect;
 
@@ -60,8 +67,8 @@ const isInstallTab = (page: Page) => {
 
 /**
  * 웹이 언어를 기억하는 `i18next` 쿠키를 en으로 다시 쓴다.
- * @description 설치 탭은 언어 경로 없이 열려 브라우저 언어(첫 요청은 locale 설정과 무관하게 ko일 수 있다)로
- * 이동하고, 웹이 그 언어를 이 쿠키에 쓴다. 탭을 닫아도 이미 쓴 쿠키는 남고, 로그인 콜백이 언어 없는
+ * @description 설치 탭은 언어 경로 없이 열려 브라우저 언어로 이동하고, 웹이 그 언어를 이 쿠키에 쓴다.
+ * `--accept-lang=en-US`로 그 언어를 en으로 고정했으므로 이 복구는 그 고정이 듣지 않을 때를 위한 방어선이다. 탭을 닫아도 이미 쓴 쿠키는 남고, 로그인 콜백이 언어 없는
  * `/memos`로 보내므로 남은 ko 쿠키가 `/ko/memos`를 고르게 한다. 이름과 속성은
  * `apps/web/src/modules/i18n`의 `cookieName`과 `util.client.ts`의 `setCookie`를 따른다.
  */

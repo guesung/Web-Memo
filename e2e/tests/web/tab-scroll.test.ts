@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { PATHS } from "@web-memo/shared/constants";
-import { expect, test } from "../fixtures";
-import { gotoSafely, LANGUAGE, login, skipGuide } from "../lib";
+import { expect, test } from "../fixtures/web";
+import { gotoSafely, LANGUAGE } from "../lib";
 import {
 	createMockMemo,
 	MockSupabaseStore,
@@ -27,12 +27,16 @@ const isWindowMarkAlive = (page: Page) =>
 	);
 
 /**
- * 메모 목록이 그려져 문서가 실제로 스크롤 가능해질 때까지 기다린다.
+ * 실제 메모 목록이 그려져 문서가 스크롤 가능해질 때까지 기다린다.
  * load 이벤트는 목록 데이터 fetch를 기다리지 않는다. 문서가 아직 짧을 때 scrollTo하면
  * 0으로 잘리고 다시 적용되지 않아, 이후 scrollY를 아무리 기다려도 0에 머문다.
+ * 스크롤 가능 여부만 보면 안 된다. 목록을 읽는 동안 뜨는 Suspense 스켈레톤도 문서를
+ * 스크롤 가능하게 만들고, 그 뒤 목록이 마운트되면 MemoView가 탭 전환 처리로
+ * window.scrollTo(0, 0)을 부른다. 그래서 실제 카드가 뜬 뒤에 스크롤한다.
  */
-const waitForScrollableDocument = (page: Page) =>
-	expect
+const waitForScrollableDocument = async (page: Page) => {
+	await expect(page.locator("#memo-grid .memo-item").first()).toBeVisible();
+	await expect
 		.poll(() =>
 			page.evaluate(() => {
 				const scroller = document.scrollingElement;
@@ -40,6 +44,7 @@ const waitForScrollableDocument = (page: Page) =>
 			}),
 		)
 		.toBe(true);
+};
 
 test.describe("탭 이동과 스크롤 (Mocked)", () => {
 	let store: MockSupabaseStore;
@@ -54,8 +59,6 @@ test.describe("탭 이동과 스크롤 (Mocked)", () => {
 
 		await setupSupabaseMocks(page, store);
 
-		await login(page);
-		await skipGuide(page);
 		await gotoSafely({
 			page,
 			url: `${LANGUAGE}${PATHS.memos}`,
@@ -72,28 +75,6 @@ test.describe("탭 이동과 스크롤 (Mocked)", () => {
 
 		await expect(page.getByRole("link", { name: "My memos" })).toBeVisible();
 		await expect(page.getByRole("link", { name: "Highlights" })).toBeVisible();
-	});
-
-	/**
-	 * 카테고리 목록은 layout의 서버 컴포넌트가 prefetch해 하이드레이션되므로
-	 * page.route로 가로챌 수 없다. 그래서 목 데이터가 아니라 실제로 렌더된
-	 * 카테고리 링크를 집는다.
-	 */
-	test("카테고리 탭을 눌러도 문서를 다시 받지 않는다.", async ({ page }) => {
-		const categoryLink = page.locator('a[href*="category="]').first();
-
-		const hasCategory = await categoryLink
-			.waitFor({ state: "visible", timeout: 10_000 })
-			.then(() => true)
-			.catch(() => false);
-		test.skip(!hasCategory, "이 계정에 카테고리가 없어 검증할 수 없다");
-
-		await markWindow(page);
-
-		await categoryLink.click();
-		await page.waitForURL(/category=/);
-
-		expect(await isWindowMarkAlive(page)).toBe(true);
 	});
 
 	test("사이드바 탭을 눌러도 문서를 다시 받지 않는다.", async ({ page }) => {

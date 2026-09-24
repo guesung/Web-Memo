@@ -251,6 +251,9 @@
 	"summary_loading_message": {
 		"message": "요약을 만들고 있어요"
 	},
+	"summary_generate_label": {
+		"message": "요약 생성"
+	},
 	"impression": {
 		"message": "느낀 점"
 	},

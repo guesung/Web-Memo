@@ -1,6 +1,7 @@
 import type { Page } from "@playwright/test";
 import { PATHS } from "@web-memo/shared/constants";
-import { expect, test } from "../fixtures";
+import { expect, test } from "../fixtures/web";
+import { MockSupabaseStore, setupSupabaseMocks } from "../lib/mocks";
 
 /** 공개 탐색 경로를 검증하는 지원 언어입니다. */
 const LANGUAGES = ["ko", "en"] as const;
@@ -37,8 +38,16 @@ const TWO_STEP_PUBLIC_PATHS = [
 	PATHS.useCasesTechArticle,
 ] as const;
 
+// 비로그인 상태의 화면을 검증하므로 setup이 저장한 로그인 세션을 쓰지 않는다.
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test.describe.configure({ mode: "parallel" });
 test.describe("공개 페이지 탐색 경로", () => {
+	test.beforeEach(async ({ page }) => {
+		// 테스트 계정 로그인 뒤 메모 화면이 목록·설정을 읽는다. 실서버로 가지 않도록 빈 목 저장소를 씌운다.
+		await setupSupabaseMocks(page, new MockSupabaseStore());
+	});
+
 	for (const language of LANGUAGES) {
 		test(`${language} 공개 페이지는 명시된 링크 경로로 도달한다.`, async ({
 			page,

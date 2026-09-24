@@ -66,11 +66,17 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 파라미터를 **보내는 것**과 GA4가 그것을 **보고서 차원으로 제공하는 것**은 별개입니다. 등록돼
 있지 않으면 Data API 요청에서 차원 이름으로 쓸 수 없습니다.
 
-### 등록된 이벤트 범위 커스텀 차원 (17개)
+### 등록된 이벤트 범위 커스텀 차원 (21개)
 
 `build_env` · `ext_client_id` · `method` · `fields` · `from` · `status` · `enabled` ·
 `is_success` · `is_new_category` · `has_search_query` · `reason` · `search_target` ·
-`setting_keys` · `keys` · `tab_name` · `view` · `action`
+`setting_keys` · `keys` · `tab_name` · `view` · `action` · `position` · `step_name` ·
+`event_category` · `source`
+
+`position`은 2026-09-24에 `설치 버튼 위치`로 등록했습니다. `extension_install_click`의
+`hero`·`recommendation`·`final`·`install_check_dialog` 값을 구분합니다.
+같은 날 `step_name`(`가이드 단계`), `event_category`(`이벤트 분류`),
+`source`(`메모 카테고리 변경 경로`)도 이벤트 범위로 등록했습니다.
 
 `ext_client_id`는 등록만 남아 있고 더는 보내지 않습니다. gtag가 이 이름을 예약 필드(`excid`)로
 바꿔 보내 커스텀 차원에 값이 한 번도 도달하지 않았기 때문입니다. 확장과 웹을 잇는 방법은
@@ -81,17 +87,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `duration_msec`(요약 소요 시간) · `memo_count`(처리한 메모 수) · `query_length`(검색어 길이).
 각각 원값·`average`·`count` 세 형태로 등록돼 있습니다.
 
-### 등록되지 않은 파라미터 (4개)
-
-| 파라미터 | 붙는 이벤트 | 없으면 못 하는 것 |
-| --- | --- | --- |
-| `position` | `extension_install_click` | 한 페이지에 설치 버튼이 둘 이상일 때 **어느 버튼이 눌렸는지** 나눠 볼 수 없습니다 |
-| `step_name` | `guide_step` | 가이드의 **어느 단계에서 이탈하는지** 볼 수 없습니다 |
-| `event_category` | 전 이벤트 | `core_action`과 `engagement`를 **나눠 보는 조회**가 막힙니다 |
-| `source` | `memo_category_change` | 카테고리를 **칩·배지(button)·#(hash)·AI(ai) 중 어느 경로로** 바꿨는지 나눠 볼 수 없습니다 |
-
-넷 다 GA4 콘솔에서 커스텀 차원으로 등록하면 끝나는 일이고 코드 변경이 필요 없습니다.
-등록해도 **소급 적용되지 않으므로** 등록 이후의 데이터부터 조회됩니다.
+등록된 맞춤 측정기준은 **소급 적용되지 않으므로** 등록 이후의 데이터부터 조회됩니다.
 
 ## 지표를 읽을 때 주의할 것
 

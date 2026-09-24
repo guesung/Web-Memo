@@ -396,9 +396,11 @@ production을 구분하지 못합니다. `isProduction()`은 `buildEnv !== "deve
 ## 🧪 테스트 전략
 
 - **단위 테스트(Vitest)**: 유틸 함수와 훅
-- **E2E(Playwright)**: 핵심 사용자 플로우
-  - 독립적 기능은 병렬 테스트
-  - 데이터 의존 작업은 직렬 테스트
+- **E2E(Playwright)**: 핵심 사용자 플로우. `e2e/tests/`를 **테스트 대상**으로 나눕니다
+  - `web/` — 확장 없는 일반 브라우저. 로그인은 setup 프로젝트가 한 번 하고 storageState를 재사용합니다
+  - `extension/` — 사이드 패널·옵션처럼 확장 화면만 보는 테스트
+  - `hybrid/` — 웹 페이지와 확장을 함께 조작하는 테스트
+  - 로그인 외에 실제 Supabase 데이터를 읽거나 쓰는 테스트는 `*.real.test.ts`로 이름 짓고, 나머지는 목(`e2e/tests/lib/mocks/`)을 씁니다
 - **테스트 환경**: 로컬 개발 서버 대상으로 실행
 
 ---

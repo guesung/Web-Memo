@@ -1,11 +1,14 @@
 import { getExtensionUrl, SUPABASE } from "@web-memo/shared/constants";
-import { expect, test } from "../fixtures";
+import { expect, test } from "../fixtures/extension";
 import { login, skipGuide } from "../lib";
+import { MockSupabaseStore, setupSupabaseMocks } from "../lib/mocks";
 
 /** 설정 저장 실패와 재시도는 실제 계정의 설정을 수정하지 않고 검증한다. */
 test("메모 입력 항목 저장에 실패하면 이전 값으로 돌아가고 재시도로 저장된다.", async ({
 	page,
 }) => {
+	// 로그인 뒤 메모 화면이 읽는 목록은 빈 목 저장소로 받는다. 아래 setting 라우트가 나중에 걸려 먼저 적용된다.
+	await setupSupabaseMocks(page, new MockSupabaseStore());
 	await login(page);
 	await skipGuide(page);
 

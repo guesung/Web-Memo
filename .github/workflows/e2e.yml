@@ -66,6 +66,38 @@ jobs:
       - name: Run tests
         run: pnpm run test:e2e
 
+      # 재시도로 통과한 테스트(flaky)는 초록불에 가려지므로 건수를 요약에 남긴다.
+      - name: Summarize flaky tests
+        if: always()
+        working-directory: e2e
+        run: |
+          if [ ! -f playwright-results.json ]; then
+            echo "E2E 결과 파일이 없어 flaky 요약을 건너뜁니다." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          node -e '
+            const { stats, suites } = require("./playwright-results.json");
+            const flakyTitles = [];
+            const walk = (suite) => {
+              for (const spec of suite.specs ?? []) {
+                for (const test of spec.tests) {
+                  if (test.status === "flaky") flakyTitles.push(`${spec.file} › ${spec.title}`);
+                }
+              }
+              for (const child of suite.suites ?? []) walk(child);
+            };
+            for (const suite of suites) walk(suite);
+            const lines = [
+              "### E2E 결과",
+              "",
+              `| 통과 | 실패 | flaky | 건너뜀 |`,
+              `| --- | --- | --- | --- |`,
+              `| ${stats.expected} | ${stats.unexpected} | ${stats.flaky} | ${stats.skipped} |`,
+              ...(flakyTitles.length ? ["", "flaky 테스트:", ...flakyTitles.map((title) => `- ${title}`)] : []),
+            ];
+            console.log(lines.join("\n"));
+          ' >> "$GITHUB_STEP_SUMMARY"
+
       # 리포트는 playwright.config가 있는 e2e/ 기준이라, 루트 경로로 올리면 조용히 빕니다.
       - uses: actions/upload-artifact@v6
         if: always()

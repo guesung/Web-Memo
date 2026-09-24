@@ -31,14 +31,14 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | `versions.yml` | workflow_dispatch | `deploy/report-store-versions.mjs` |
 | `audit-env-manifest.yml` | pull_request, workflow_dispatch | `env/check-env-manifest.mjs` |
 | `audit-env-registry.yml` | pull_request, schedule, workflow_dispatch | `env/audit-env-registry.mjs` |
-| `audit-supabase.yml` | pull_request, schedule, workflow_dispatch | `supabase/audit-supabase.mjs` · `supabase/notify-supabase-audit.mjs` |
 | `audit-refactor.yml` | schedule, workflow_dispatch | `refactor/report-refactor-audit.mjs` |
 | `report-ga-daily.yml` | schedule, workflow_dispatch | `ga/report-daily-ga.mjs` |
 | `report-ga-weekly.yml` | schedule, workflow_dispatch | `ga/report-weekly-ga.mjs` |
 | `report-seo.yml` | schedule, workflow_dispatch | `pnpm seo:check`·`seo:gsc`·`seo:sheets` · `seo/find-previous-seo-report.mjs` · `seo/build-seo-ai-context.mjs` · `seo/send-seo-ai-report.mjs` · `seo/notify-seo-slack.mjs` |
 | `chore-cleanup-unused.yml` | schedule, workflow_dispatch | `cleanup/cleanup-unused-files.mjs` |
+| `chore-supabase-inventory.yml` | schedule, workflow_dispatch | `supabase/generate-supabase-inventory.mjs` · `supabase/sync-supabase-inventory-pr.mjs` |
 
-`chore-cleanup-unused.yml`과 `audit-refactor.yml`은 `ref: master`로 체크아웃합니다. 작업 브랜치에서
+`chore-cleanup-unused.yml`·`chore-supabase-inventory.yml`·`audit-refactor.yml`은 `ref: master`로 체크아웃합니다. 작업 브랜치에서
 dispatch해도 스크립트는 master의 것이 돕니다.
 
 릴리스·배포 흐름 전체는 [`docs/release-flow.md`](../docs/release-flow.md)를 봅니다.
@@ -55,7 +55,7 @@ dispatch해도 스크립트는 master의 것이 돕니다.
 | `seo/` | SEO 점검·GSC·Sheets 적재·AI 리포트 |
 | `ga/` | GA4 일간·주간 리포트, 기능 사용량 측정 |
 | `env/` | 환경 변수 매니페스트 검사와 등록 현황 감사 |
-| `supabase/` | Supabase 운영 상태 감사 |
+| `supabase/` | 운영 Supabase 인벤토리 문서(`docs/supabase-inventory.md`) 생성과 갱신 PR |
 | `refactor/` | 주간 리팩토링 점검 |
 | `cleanup/` | 미사용 파일 정리 |
 

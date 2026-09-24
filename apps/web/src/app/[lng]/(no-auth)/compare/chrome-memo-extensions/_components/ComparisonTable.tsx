@@ -98,4 +98,5 @@ const LEGEND_STATUSES: TSupportStatus[] = [
 	"supported",
 	"partial",
 	"unsupported",
+	"unknown",
 ];

@@ -22,6 +22,7 @@ describe("Faro 측정값 필터", () => {
 		});
 		const configuration = initializeFaroMock.mock.calls[0]?.[0] as {
 			instrumentations: unknown[];
+			sessionTracking: { samplingRate: number };
 			beforeSend: (item: {
 				type: string;
 				payload: {
@@ -35,6 +36,7 @@ describe("Faro 측정값 필터", () => {
 		};
 
 		expect(configuration.instrumentations).toEqual([]);
+		expect(configuration.sessionTracking).toEqual({ samplingRate: 0.1 });
 		const result = configuration.beforeSend({
 			type: "measurement",
 			payload: {

@@ -31,6 +31,7 @@ export const initializeMemoFaro = ({
 		initializeFaro({
 			url: collectorUrl,
 			app: { name: "web-memo-web" },
+			sessionTracking: { samplingRate: 0.1 },
 			instrumentations: [],
 			beforeSend: (item) => {
 				if (item.type !== TransportItemType.MEASUREMENT) {

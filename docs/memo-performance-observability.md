@@ -24,6 +24,8 @@
 
 Frontend Observability 앱 `web-memo-web`을 만들었습니다. Faro 허용 출처는 `https://www.webmemo.xyz`, `https://staging.webmemo.xyz`, `https://web-memo-git-grafana-gueit214s-projects.vercel.app`입니다. 마지막 주소는 이 PR 브랜치의 안정 Vercel alias입니다.
 
+Faro 세션 샘플링은 10%로 설정했습니다. Grafana 설정 화면의 Sampling Rate 입력은 초기화 코드 예시를 생성하므로 앱 코드의 `sessionTracking.samplingRate: 0.1`에도 반영했습니다. 스택은 Free 플랜이며 사용량 한도에 맞게 수집량을 제한합니다.
+
 1. Grafana Cloud 스택에서 **Frontend Observability** 앱을 만들고 Faro collector URL을 확인합니다. 해당 URL을 Vercel 프로젝트의 `NEXT_PUBLIC_FARO_URL`에 등록합니다. 이 주소는 공개 값이며 Next 빌드 때 번들에 들어가므로 변경 후 재배포합니다.
 2. Grafana Cloud의 OTLP HTTP traces endpoint와 Access Policy의 쓰기 권한 토큰을 준비합니다. Vercel 프로젝트에 `GRAFANA_OTLP_ENDPOINT`와 `GRAFANA_OTLP_AUTHORIZATION`을 등록합니다. 인증 값에는 `Basic <base64(instance_id:token)>` 전체를 넣습니다. **인증 값은 서버에서만 읽고 로그에 출력하지 않습니다.**
 3. Grafana 설정 값은 Vercel의 production·preview에 등록하고 재배포합니다. Grafana 정책 토큰은 90일 만료로 발급했으므로 2026-12-23 전에 교체합니다. Vercel은 Development 환경에서 Sensitive 변수를 지원하지 않아 `GRAFANA_OTLP_AUTHORIZATION`은 production·preview에만 등록했습니다. 로컬 개발에서는 토큰을 저장소나 `.env` 파일에 두지 않고, 필요할 때 셸 환경 변수로만 전달합니다. endpoint와 Faro collector URL은 비밀이 아니므로 세 환경에 등록했습니다. 각 변수가 빠지면 해당 Grafana 전송만 비활성화됩니다.

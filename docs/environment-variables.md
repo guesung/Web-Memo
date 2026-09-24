@@ -43,10 +43,6 @@
   등록과 선언하지 않은 환경은 경고 주석으로만 남깁니다. 조회 토큰이 없는 저장소는 비교할 수 없으므로
   실패가 아니라 "미조회" 경고입니다. 이름만 비교하므로 **같은 이름이 두 곳에 있을 때 값이
   같은지는 확인하지 못합니다.**
-- **Supabase 운영 감사** (`audit-supabase.yml`): 프로젝트와 서비스의 건강 상태, migration,
-  Edge Function 배포·최근 오류, secret 이름, Cron·trigger·Database Webhook·Vault key 이름을
-  `.github/supabase-audit-manifest.json`과 대조합니다. 정확한 Edge Runtime/Deno 버전은 공식 API에서
-  제공하지 않아 관측 불가 경고로 남깁니다. 값·URL·명령·원문 로그는 조회하거나 출력하지 않습니다.
 
 <!-- env-manifest:start -->
 
@@ -54,8 +50,8 @@
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
-| `APP_ID` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml` |
-| `APP_PRIVATE_KEY` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml` |
+| `APP_ID` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml` |
+| `APP_PRIVATE_KEY` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml` |
 | `CLAUDE_CODE_OAUTH_TOKEN` | 주간 리팩토링 점검과 SEO AI 리포트가 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신한다. 구독 토큰이라 만료·한도 소진으로도 실패한다 | `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml` |
 | `CLIENT_ID` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `CLIENT_SECRET` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
@@ -73,9 +69,9 @@
 | `SLACK_CHANNEL_ID` | 머지 스레드가 생기지 않고 웹훅 알림으로 폴백한다 | `.github/workflows/ci.yml` |
 | `SLACK_REPORT_CHANNEL_ID` | SEO AI 리포트를 스레드로 보내지 못하고 기존 기계 판정 알림으로 대신한다. 봇(SLACK_BOT_TOKEN)이 이 채널에 초대돼 있어야 한다 | `.github/workflows/report-seo.yml` |
 | `SLACK_REPORT_WEBHOOK_URL` | GA 리포트, 주간 리팩토링 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다 | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml` |
-| `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트·Supabase 감사 실패 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/versions.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/audit-supabase.yml` |
+| `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/versions.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/report-seo.yml` |
 | `STAGING_WEB_URL_WITHOUT_PROTOCOL` | 스테이징 배포에 alias 도메인이 붙지 않는다 | `.github/workflows/cd-web.yml` |
-| `SUPABASE_ACCESS_TOKEN` | 등록 현황 감사가 Supabase secrets를 조회하지 못하고 운영 감사가 실패한다 | `.github/workflows/audit-env-registry.yml`, `.github/workflows/audit-supabase.yml` |
+| `SUPABASE_ACCESS_TOKEN` | 등록 현황 감사가 Supabase secrets를 조회하지 못하고 Supabase 인벤토리 문서가 갱신되지 않는다 | `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml` |
 | `TURBO_TEAM` | Turborepo 원격 캐시 팀을 못 찾아 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml` |
 | `TURBO_TOKEN` | Turborepo 원격 캐시를 못 써 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml` |
 | `VERCEL_TOKEN` | vercel pull, build, deploy, alias가 인증에 실패해 웹 배포가 멈추고, e2e가 웹 서버 환경 변수를 받지 못한다 | `.github/workflows/cd-web.yml`, `.github/workflows/e2e.yml`, `.github/workflows/audit-env-registry.yml` |

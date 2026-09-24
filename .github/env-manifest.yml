@@ -103,8 +103,8 @@
 - name: SLACK_WEBHOOK_URL
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/audit-refactor.yml, .github/workflows/release-notify.yml, .github/workflows/versions.yml, .github/workflows/audit-env-registry.yml, .github/workflows/report-seo.yml, .github/workflows/audit-supabase.yml]
-  impact: "빌드, 배포, 릴리스 결과와 리포트·Supabase 감사 실패 알림이 오지 않는다"
+  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/audit-refactor.yml, .github/workflows/release-notify.yml, .github/workflows/versions.yml, .github/workflows/audit-env-registry.yml, .github/workflows/report-seo.yml]
+  impact: "빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다"
 
 - name: SLACK_REPORT_WEBHOOK_URL
   kind: secret
@@ -127,21 +127,21 @@
 - name: SUPABASE_ACCESS_TOKEN
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/audit-env-registry.yml, .github/workflows/audit-supabase.yml]
-  impact: "등록 현황 감사가 Supabase secrets를 조회하지 못하고 운영 감사가 실패한다"
+  consumers: [.github/workflows/audit-env-registry.yml, .github/workflows/chore-supabase-inventory.yml]
+  impact: "등록 현황 감사가 Supabase secrets를 조회하지 못하고 Supabase 인벤토리 문서가 갱신되지 않는다"
   note: "Supabase 대시보드의 Account > Access Tokens에서 발급한다. 조회 전용으로 쓴다"
 
 - name: APP_ID
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/chore-cleanup-unused.yml, .github/workflows/audit-env-registry.yml]
-  impact: "GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다"
+  consumers: [.github/workflows/chore-cleanup-unused.yml, .github/workflows/audit-env-registry.yml, .github/workflows/chore-supabase-inventory.yml]
+  impact: "GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다"
 
 - name: APP_PRIVATE_KEY
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/chore-cleanup-unused.yml, .github/workflows/audit-env-registry.yml]
-  impact: "GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다"
+  consumers: [.github/workflows/chore-cleanup-unused.yml, .github/workflows/audit-env-registry.yml, .github/workflows/chore-supabase-inventory.yml]
+  impact: "GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다"
   note: "등록 현황 감사가 쓰려면 GitHub App에 Secrets: read 권한이 있어야 한다"
 
 # ---------------------------------------------------------------------------

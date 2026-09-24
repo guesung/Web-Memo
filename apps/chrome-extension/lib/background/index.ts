@@ -2,6 +2,7 @@ import { handleEditHighlight } from "./editHighlight";
 import { handleCreateHighlight } from "./createHighlight";
 import { handleGetLoginStatus } from "./getLoginStatus";
 import { reportBackgroundError } from "./reportBackgroundError";
+import { registerExtensionSettingsHandlers } from "./extensionSettings";
 import "webextension-polyfill";
 
 import { CONFIG } from "@web-memo/env";
@@ -21,6 +22,7 @@ import { initSentry } from "@web-memo/shared/utils";
 import { analytics } from "@web-memo/shared/modules/analytics";
 
 void initSentry();
+registerExtensionSettingsHandlers();
 
 const reportMemoCreateError = (error: unknown, stage: string) => {
 	reportBackgroundError({

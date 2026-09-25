@@ -171,7 +171,7 @@
 - name: GA_SHEET_ID
   kind: secret
   stores: [github]
-  required: false
+  required: true
   consumers: [.github/workflows/report-ga-weekly.yml]
   impact: "주간 GA 수치가 Google Sheets에 쌓이지 않는다(Slack 리포트는 그대로 가고 경고만 남는다)"
   note: "GA 전용 스프레드시트다. SEO 분석은 SEO_SHEET_ID 로 시트를 나눈다. URL의 /d/와 /edit 사이 ID를 등록하고 서비스 계정에 편집 권한을 준다"

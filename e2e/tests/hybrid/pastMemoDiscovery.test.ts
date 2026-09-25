@@ -6,6 +6,7 @@ import { MockSupabaseStore, setupSupabaseMocks } from "../lib/mocks";
 const DUPLICATE_TITLE = "Previously saved article";
 const DUPLICATE_URL = "https://example.com/articles/previously-saved";
 const RELATED_TITLE = "Related saved article";
+const RELATED_URL = "https://example.com/articles/related";
 
 test("현재 글의 과거 메모를 알려 주고 기존 글을 연다", async ({
 	page,
@@ -29,6 +30,12 @@ test("현재 글의 과거 메모를 알려 주고 기존 글을 연다", async 
 	await notice.getByRole("button", { name: messages.open }).click();
 	const openedPage = await openedPagePromise;
 	await expect(openedPage).toHaveURL(DUPLICATE_URL);
+
+	// 관련 메모도 웹 메모의 상세가 아니라 메모를 남긴 원래 사이트를 연다.
+	const relatedPagePromise = context.waitForEvent("page");
+	await notice.getByRole("button", { name: RELATED_TITLE }).click();
+	const relatedPage = await relatedPagePromise;
+	await expect(relatedPage).toHaveURL(RELATED_URL);
 });
 
 test("과거 메모 알림을 닫으면 같은 글에서 다시 표시하지 않는다", async ({
@@ -99,7 +106,7 @@ const setupPastMemoPage = async ({ page, context }: IFPastMemoPageParams) => {
 					{
 						id: 102,
 						title: RELATED_TITLE,
-						url: "https://example.com/articles/related",
+						url: RELATED_URL,
 						favIconUrl: null,
 						updatedAt: null,
 					},

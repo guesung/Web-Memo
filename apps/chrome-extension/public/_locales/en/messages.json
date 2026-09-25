@@ -29,6 +29,12 @@
 	"memo_candidates_deleted": {
 		"message": "Moved the memo to trash"
 	},
+	"memo_candidates_new": {
+		"message": "Write a new memo"
+	},
+	"memo_candidates_other_url": {
+		"message": "Memos from other addresses"
+	},
 	"memo_candidates_empty_preview": {
 		"message": "No content"
 	},

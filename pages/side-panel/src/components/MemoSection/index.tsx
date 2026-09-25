@@ -6,6 +6,7 @@ import {
 	useDeleteMemosMutation,
 	useMemoQuery,
 	useRestoreMemosMutation,
+	useSamePathMemoQuery,
 	useSupabaseUserQuery,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
@@ -60,6 +61,14 @@ const AuthenticatedMemoSectionContent = () => {
 	const queryClient = useQueryClient();
 	const { mutate: deleteMemos } = useDeleteMemosMutation();
 	const { mutate: restoreMemos } = useRestoreMemosMutation();
+	const { memos: samePathMemos } = useSamePathMemoQuery({
+		url: tab?.url ?? "",
+	});
+	// 쿼리만 다른 주소에 남긴 메모. 현재 주소에 메모가 없을 때도 고를 수 있게 후보로 보여 준다.
+	const otherUrlMemos = samePathMemos.filter(
+		(samePathMemo) => !memos.some((memo) => memo.id === samePathMemo.id),
+	);
+	const hasOnlyOtherUrlMemos = memos.length === 0 && otherUrlMemos.length > 0;
 	const pageKey = tab?.url ? getPageKey(tab.url) : "";
 	const editorScope = `${tab?.id}:${pageKey}`;
 	const [selection, setSelection] = useState<{
@@ -81,7 +90,13 @@ const AuthenticatedMemoSectionContent = () => {
 			setPreservedDraft(null);
 			return;
 		}
-		if (!selection && !currentDraft && memos.length <= 1) {
+		// 현재 주소에 메모가 없고 다른 주소의 메모만 있으면 자동으로 고르지 않고 후보 화면을 띄운다.
+		if (
+			!selection &&
+			!currentDraft &&
+			memos.length <= 1 &&
+			!hasOnlyOtherUrlMemos
+		) {
 			setSelection({
 				scope: editorScope,
 				memoId: memos[0]?.id ?? null,
@@ -96,9 +111,17 @@ const AuthenticatedMemoSectionContent = () => {
 				memo: memos[0],
 			});
 		}
-	}, [selection, currentSelection, currentDraft, editorScope, memos]);
+	}, [
+		selection,
+		currentSelection,
+		currentDraft,
+		editorScope,
+		memos,
+		hasOnlyOtherUrlMemos,
+	]);
 
-	const selectedMemo = memos.find(
+	const candidateMemos = [...memos, ...otherUrlMemos];
+	const selectedMemo = candidateMemos.find(
 		(candidate) => candidate.id === currentSelection?.memoId,
 	);
 	const activeMemo = currentSelection
@@ -118,15 +141,20 @@ const AuthenticatedMemoSectionContent = () => {
 		setSelection({
 			scope: editorScope,
 			memoId,
-			memo: memos.find((candidate) => candidate.id === memoId) ?? null,
+			memo: candidateMemos.find((candidate) => candidate.id === memoId) ?? null,
 		});
 	};
 
-	// 사이드 패널의 메모 조회 키(["memo", { url }])는 memos() 무효화에 걸리지 않아 따로 무효화한다.
-	const invalidateCurrentPageMemos = () =>
-		queryClient.invalidateQueries({
+	// 사이드 패널의 메모 조회 키(["memo", ...])는 memos() 무효화에 걸리지 않아 따로 무효화한다.
+	// 다른 주소의 메모도 지울 수 있으므로 같은 경로의 후보 목록도 함께 무효화한다.
+	const invalidateCurrentPageMemos = async () => {
+		await queryClient.invalidateQueries({
 			queryKey: QUERY_KEY.memo({ url: pageKey }),
 		});
+		await queryClient.invalidateQueries({
+			queryKey: QUERY_KEY.samePathMemosPrefix(),
+		});
+	};
 
 	const handleMemoDelete = (memoId: number) => {
 		deleteMemos([memoId], { onSettled: invalidateCurrentPageMemos });
@@ -145,6 +173,10 @@ const AuthenticatedMemoSectionContent = () => {
 		});
 	};
 
+	const handleNewMemoClick = () => {
+		setSelection({ scope: editorScope, memoId: null, memo: null });
+	};
+
 	const handleOtherMemoClick = (draft?: MemoInput) => {
 		if (draft) {
 			setPreservedDraft({ scope: editorScope, value: draft });
@@ -156,10 +188,13 @@ const AuthenticatedMemoSectionContent = () => {
 		<>
 			<MemoHeader memoData={activeMemo} />
 			{currentDraft && <PreservedDraft draft={currentDraft} />}
-			{(hasMultipleMemos || currentDraft) && !currentSelection ? (
+			{(hasMultipleMemos || hasOnlyOtherUrlMemos || currentDraft) &&
+			!currentSelection ? (
 				<MemoCandidateList
 					memos={memos}
+					otherUrlMemos={otherUrlMemos}
 					onMemoSelect={handleMemoSelect}
+					onNewMemoClick={memos.length === 0 ? handleNewMemoClick : undefined}
 					onMemoDelete={handleMemoDelete}
 				/>
 			) : (
@@ -170,7 +205,9 @@ const AuthenticatedMemoSectionContent = () => {
 						isSelectedMemoMissing || hasUnselectedCollision
 					}
 					onOtherMemoClick={
-						hasMultipleMemos || isSelectedMemoMissing
+						hasMultipleMemos ||
+						otherUrlMemos.length > 0 ||
+						isSelectedMemoMissing
 							? handleOtherMemoClick
 							: undefined
 					}

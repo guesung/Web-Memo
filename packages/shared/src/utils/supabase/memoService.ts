@@ -6,7 +6,7 @@ import type {
 	MemoTable,
 } from "../../types";
 import { getMemoSearchFilter } from "../memoSearchFilter";
-import { getPageKey } from "../Url";
+import { getPageKey, getPathKey } from "../Url";
 
 /** 날짜 정렬에서 같은 시각의 메모까지 이어 읽는 복합 커서. */
 export interface IFMemoPageCursor {
@@ -68,6 +68,63 @@ export class MemoService {
 			return dateDifference || second.id - first.id;
 		});
 		return { data: memos, error: null };
+	};
+
+	/**
+	 * 쿼리만 다른 주소까지 포함해 같은 경로의 메모 후보를 최근 수정 순으로 모두 조회한다.
+	 * @description `page_key`가 경로로 시작하는 행과 아직 키가 없는 옛 행을 읽고, JS에서 경로 키를 다시 비교해
+	 * `/a`가 `/ab`를 잡거나 LIKE 와일드카드가 섞여 넓게 잡힌 행을 걸러 낸다.
+	 */
+	getMemosBySamePath = async (url: string) => {
+		const pathKey = getPathKey(url);
+		const pathPattern = `${pathKey.replace(/[\\%_]/g, "\\$&")}%`;
+		const memos: GetMemoResponse[] = [];
+
+		for (const pageKeyFilter of ["like", "empty"] as const) {
+			let lastId = 0;
+			while (true) {
+				const baseQuery = this.supabaseClient
+					.schema(SUPABASE.table.memo)
+					.from(SUPABASE.table.memo)
+					.select("*, category(id, name, color)")
+					.is("deleted_at", null);
+				const filteredQuery =
+					pageKeyFilter === "like"
+						? baseQuery.like("page_key", pathPattern)
+						: baseQuery.eq("page_key", "");
+				const { data, error } = await filteredQuery
+					.gt("id", lastId)
+					.order("id", { ascending: true })
+					.limit(500);
+				if (error) {
+					return { data: null, error };
+				}
+				memos.push(
+					...(data ?? []).filter((memo) => {
+						try {
+							return getPathKey(memo.page_key || memo.url) === pathKey;
+						} catch {
+							return false;
+						}
+					}),
+				);
+				if (!data || data.length < 500) {
+					break;
+				}
+				lastId = data[data.length - 1].id;
+			}
+		}
+		// 두 조회는 실제 DB에서 겹치지 않지만, 필터를 무시하는 목에서도 한 메모가 두 번 나오지 않게 한다.
+		const uniqueMemos = Array.from(
+			new Map(memos.map((memo) => [memo.id, memo])).values(),
+		);
+		uniqueMemos.sort((first, second) => {
+			const dateDifference = (second.updated_at ?? "").localeCompare(
+				first.updated_at ?? "",
+			);
+			return dateDifference || second.id - first.id;
+		});
+		return { data: uniqueMemos, error: null };
 	};
 
 	getMemoById = async (id: number) =>

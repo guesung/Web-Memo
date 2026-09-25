@@ -29,6 +29,12 @@
 	"memo_candidates_deleted": {
 		"message": "메모를 휴지통으로 옮겼어요"
 	},
+	"memo_candidates_new": {
+		"message": "새 메모 작성"
+	},
+	"memo_candidates_other_url": {
+		"message": "다른 주소의 메모"
+	},
 	"memo_candidates_empty_preview": {
 		"message": "내용 없음"
 	},

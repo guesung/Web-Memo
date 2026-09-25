@@ -51,6 +51,31 @@ export const getPageKey = (url: string): string => {
 };
 
 /**
+ * 쿼리만 다른 메모를 같은 후보 묶음으로 찾기 위한 경로 키를 만든다.
+ * @description 페이지 키에서 쿼리를 뺀다. 쿼리가 곧 페이지를 가르는 도메인(URL_NORMALIZERS, 예: YouTube의 `?v=`)은
+ * 페이지 키를 그대로 쓴다. 저장 키가 아니라 후보 조회 전용이다.
+ */
+export const getPathKey = (url: string): string => {
+	const pageKey = getPageKey(url);
+	const domain = new URL(pageKey).hostname.replace(/^www\./, "");
+	const hasCustomNormalizer = Object.keys(URL_NORMALIZERS).some(
+		(key) => domain === key || domain.endsWith(`.${key}`),
+	);
+
+	if (hasCustomNormalizer) {
+		return pageKey;
+	}
+
+	const queryStartIndex = pageKey.indexOf("?");
+
+	if (queryStartIndex === -1) {
+		return pageKey;
+	}
+
+	return pageKey.slice(0, queryStartIndex);
+};
+
+/**
  * 같은 글인지 비교하기 위한 느슨한 URL 키를 만든다.
  * @description 저장 키인 normalizeUrl과 달리 추적 파라미터·m./www. 서브도메인·youtu.be 단축 주소·끝 슬래시·hash 차이를 무시한다.
  * 비교 전용이므로 저장·조회 키로 쓰지 않는다. 파싱할 수 없는 URL이면 null을 돌려준다.

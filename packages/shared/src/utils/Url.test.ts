@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getPageKey, normalizeUrl, toLooseUrlKey } from "./Url";
+import { getPageKey, getPathKey, normalizeUrl, toLooseUrlKey } from "./Url";
 
 describe("getPageKey", () => {
 	it.each([
@@ -73,6 +73,34 @@ describe("getPageKey", () => {
 
 	it("rejects invalid URLs", () => {
 		expect(() => getPageKey("not a URL")).toThrow("Invalid URL");
+	});
+});
+
+describe("getPathKey", () => {
+	it("쿼리만 다른 URL은 같은 경로 키를 가진다", () => {
+		expect(
+			getPathKey("https://toss.tech/article/harness-for-team-productivity?da"),
+		).toBe(
+			getPathKey("https://toss.tech/article/harness-for-team-productivity?d"),
+		);
+		expect(getPathKey("https://example.com/article?id=1&utm_source=x")).toBe(
+			"https://example.com/article",
+		);
+	});
+
+	it("경로가 다르면 다른 경로 키를 가진다", () => {
+		expect(getPathKey("https://example.com/a?x=1")).not.toBe(
+			getPathKey("https://example.com/ab?x=1"),
+		);
+	});
+
+	it("YouTube는 영상 ID(v)를 경로 키에 남긴다", () => {
+		expect(getPathKey("https://www.youtube.com/watch?v=abc&t=10")).toBe(
+			"https://www.youtube.com/watch?v=abc",
+		);
+		expect(getPathKey("https://www.youtube.com/watch?v=abc")).not.toBe(
+			getPathKey("https://www.youtube.com/watch?v=def"),
+		);
 	});
 });
 

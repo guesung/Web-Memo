@@ -5,5 +5,5 @@ import { SENTRY } from "@web-memo/shared/constants";
 init({
 	dsn: SENTRY.dsnWeb,
 	enabled: CONFIG.buildEnv !== "development",
-	tracesSampleRate: 0.1,
+	tracesSampleRate: 1.0,
 });

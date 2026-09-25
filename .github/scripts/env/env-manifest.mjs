@@ -12,6 +12,12 @@
 /** 변수의 성격. secret=비밀, config=공개 설정값, platform=플랫폼이 주입(등록 안 함), flag=코드가 읽지 않는 빌드·플랫폼 플래그 */
 export const MANIFEST_KINDS = ["secret", "config", "platform", "flag"];
 
+/**
+ * 변수를 읽는 시점. build는 turbo 태스크(build·ready·zip) 안에서 빌드 설정 파일이 셸에서 받아 읽는다는 뜻입니다.
+ * turbo 2의 envMode는 기본 strict라, 이런 값은 turbo 설정에 선언하지 않으면 빌드가 조용히 못 봅니다.
+ */
+export const MANIFEST_PHASES = ["build"];
+
 /** Vercel 프로젝트의 환경 세 가지 */
 export const VERCEL_ENVIRONMENTS = ["production", "preview", "development"];
 
@@ -129,6 +135,7 @@ export const parseManifest = (text) => {
 				consumers: [],
 				impact: "",
 				note: "",
+				phase: "",
 				required: true,
 			};
 			entries.push(current);
@@ -215,6 +222,10 @@ export const validateManifest = (entries) => {
 			errors.push(
 				`${label}: 코드가 읽지 않는 값이라 왜 필요한지 note가 필요합니다`,
 			);
+		}
+
+		if (entry.phase !== "" && !MANIFEST_PHASES.includes(entry.phase)) {
+			errors.push(`${label}: phase는 ${MANIFEST_PHASES.join(" | ")} 중 하나여야 합니다`);
 		}
 
 		if (entry.kind !== "flag" && entry.consumers.length === 0) {
@@ -354,6 +365,175 @@ export const checkConsumers = ({ entries, readFile }) => {
 		if (entry.stores.includes("github") && !readByWorkflow) {
 			errors.push(
 				`${entry.name}: github에 등록한다고 적혔지만 이를 읽는 워크플로가 consumers에 없습니다`,
+			);
+		}
+	}
+
+	return errors;
+};
+
+/**
+ * turbo가 선언 없이도 태스크에 넘겨 주는 이름(내장 passthrough). turbo 2.8.9 바이너리에서 뽑았습니다.
+ * NEXT_PUBLIC_* 같은 프레임워크 접두사는 프레임워크 추론으로 따로 들어가지만 NEXT_*가 이미 덮습니다.
+ */
+const TURBO_BUILTIN_PASS_THROUGH_ENV = [
+	"HOME", "USER", "TZ", "LANG", "SHELL", "PWD", "XDG_RUNTIME_DIR", "XAUTHORITY",
+	"DBUS_SESSION_BUS_ADDRESS", "CI", "NODE_OPTIONS", "COREPACK_HOME", "LD_LIBRARY_PATH",
+	"DYLD_FALLBACK_LIBRARY_PATH", "LIBPATH", "LD_PRELOAD", "DYLD_INSERT_LIBRARIES", "COLORTERM",
+	"TERM", "TERM_PROGRAM", "DISPLAY", "TMP", "TEMP", "WINDIR", "ProgramFiles", "ProgramFiles(x86)",
+	"VSCODE_*", "ELECTRON_RUN_AS_NODE", "DOCKER_*", "BUILDKIT_*", "COMPOSE_*", "JB_IDE_*",
+	"JB_INTERPRETER", "_JETBRAINS_TEST_RUNNER_RUN_SCOPE_TYPE", "VERCEL", "VERCEL_*", "NEXT_*",
+	"USE_OUTPUT_FOR_EDGE_FUNCTIONS", "NOW_BUILDER", "GITHUB_*", "RUNNER_*", "APPDATA", "PROGRAMDATA",
+	"SYSTEMROOT", "SYSTEMDRIVE", "USERPROFILE", "HOMEDRIVE", "HOMEPATH", "PNPM_HOME",
+	"NPM_CONFIG_STORE_DIR",
+];
+
+/** turbo의 env 패턴(`*` 와일드카드)이 이름과 맞는지 봅니다. */
+const matchesTurboPattern = (pattern, name) => {
+	if (!pattern.includes("*")) {
+		return pattern === name;
+	}
+
+	const escaped = pattern
+		.split("*")
+		.map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+		.join(".*");
+
+	return new RegExp(`^${escaped}$`).test(name);
+};
+
+export const isTurboBuiltinEnv = (name) =>
+	TURBO_BUILTIN_PASS_THROUGH_ENV.some((pattern) => matchesTurboPattern(pattern, name));
+
+/**
+ * JSONC(주석·끝 쉼표 허용)를 해석합니다. turbo.jsonc가 이 형식입니다.
+ *
+ * @description 문자열 안의 `//`·`/*`는 건드리지 않도록 문자열 경계를 따라가며 주석만 지웁니다.
+ */
+export const parseJsonc = (text) => {
+	let output = "";
+	let index = 0;
+
+	while (index < text.length) {
+		const char = text[index];
+		const next = text[index + 1];
+
+		if (char === '"') {
+			let end = index + 1;
+
+			while (end < text.length && text[end] !== '"') {
+				end += text[end] === "\\" ? 2 : 1;
+			}
+
+			output += text.slice(index, end + 1);
+			index = end + 1;
+
+			continue;
+		}
+
+		if (char === "/" && next === "/") {
+			while (index < text.length && text[index] !== "\n") {
+				index += 1;
+			}
+
+			continue;
+		}
+
+		if (char === "/" && next === "*") {
+			const end = text.indexOf("*/", index + 2);
+
+			index = end === -1 ? text.length : end + 2;
+
+			continue;
+		}
+
+		output += char;
+		index += 1;
+	}
+
+	return JSON.parse(output.replace(/,(\s*[}\]])/g, "$1"));
+};
+
+/**
+ * turbo 설정 파일들에서 선언된 환경 변수 이름과 선언 위치를 모읍니다.
+ * globalEnv·globalPassThroughEnv와 각 태스크의 env·passThroughEnv를 봅니다. `!`로 시작하는 제외 패턴은 뺍니다.
+ *
+ * @param configs `{ path, config }[]` — config는 해석을 마친 객체
+ * @returns {Map<string, string[]>} 이름(또는 와일드카드 패턴) → 선언한 위치(`파일#필드`)
+ */
+export const collectTurboEnvDeclarations = (configs) => {
+	const declarations = new Map();
+
+	const add = (names, location) => {
+		for (const name of names ?? []) {
+			if (name.startsWith("!")) {
+				continue;
+			}
+
+			const locations = declarations.get(name) ?? [];
+
+			locations.push(location);
+			declarations.set(name, locations);
+		}
+	};
+
+	for (const { path, config } of configs) {
+		add(config.globalEnv, `${path}#globalEnv`);
+		add(config.globalPassThroughEnv, `${path}#globalPassThroughEnv`);
+
+		for (const [taskName, task] of Object.entries(config.tasks ?? {})) {
+			add(task.env, `${path}#tasks.${taskName}.env`);
+			add(task.passThroughEnv, `${path}#tasks.${taskName}.passThroughEnv`);
+		}
+	}
+
+	return declarations;
+};
+
+/**
+ * 매니페스트의 phase: build 표시와 turbo 설정의 env 선언이 같은지 봅니다.
+ *
+ * @description 정방향: 빌드 중 읽는 값이 turbo에 선언되지 않으면 strict 모드가 조용히 걸러 빌드가 값을 못 봅니다.
+ * 역방향: turbo에 선언된 이름은 매니페스트에 phase: build로 있어야 합니다. turbo 내장 passthrough에 걸리는 이름은
+ * 선언과 무관하게 넘어가므로 양쪽 모두 검사하지 않고, 와일드카드 선언은 이름 하나로 대조할 수 없어 역방향에서 뺍니다.
+ */
+export const checkTurboEnv = ({ entries, declarations }) => {
+	const errors = [];
+	const entryByName = new Map(entries.map((entry) => [entry.name, entry]));
+	const declaredPatterns = [...declarations.keys()];
+
+	for (const entry of entries) {
+		if (entry.phase !== "build" || isTurboBuiltinEnv(entry.name)) {
+			continue;
+		}
+
+		const isDeclared = declaredPatterns.some((pattern) =>
+			matchesTurboPattern(pattern, entry.name),
+		);
+
+		if (!isDeclared) {
+			errors.push(
+				`${entry.name}: phase: build인데 turbo 설정의 env·passThroughEnv 어디에도 없습니다. strict 모드라 빌드가 이 값을 못 봅니다`,
+			);
+		}
+	}
+
+	for (const [name, locations] of declarations) {
+		if (name.includes("*") || isTurboBuiltinEnv(name)) {
+			continue;
+		}
+
+		const entry = entryByName.get(name);
+
+		if (!entry) {
+			errors.push(`${name}: ${locations[0]}에 선언됐지만 .github/env-manifest.yml에 없습니다`);
+
+			continue;
+		}
+
+		if (entry.phase !== "build") {
+			errors.push(
+				`${name}: ${locations[0]}에 선언됐지만 매니페스트에 phase: build가 없습니다`,
 			);
 		}
 	}

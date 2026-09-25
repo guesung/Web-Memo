@@ -94,8 +94,8 @@
 | `SLACK_SENTRY_ALERT_CHANNEL` | 전체 | Sentry 알림을 보낼 채널을 몰라 릴레이가 실패한다 | `apps/web/src/modules/sentry/config.ts` |
 | `SLACK_SIGNING_SECRET` | 전체 | Slack 요청 서명을 검증하지 못해 배포 버튼과 슬래시 커맨드가 실패한다 | `apps/web/src/modules/slack/config.ts` |
 | `TYPESAFE_API_KEY` | 전체 | 과거 메모 판정(POST /api/past-memo)의 jev 판정이 조용히 꺼진다. 느슨한 URL 일치로 찾는 중복만 동작한다 | `apps/web/src/modules/pastMemo/findPastMemo.ts` |
-| `UPSTASH_REDIS_REST_TOKEN` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/app/api/openai/ratelimit.ts`, `apps/web/src/modules/pastMemo/ratelimit.ts` |
-| `UPSTASH_REDIS_REST_URL` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/app/api/openai/ratelimit.ts`, `apps/web/src/modules/pastMemo/ratelimit.ts` |
+| `UPSTASH_REDIS_REST_TOKEN` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/modules/ratelimit/rateLimit.ts` |
+| `UPSTASH_REDIS_REST_URL` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/modules/ratelimit/rateLimit.ts` |
 
 ### Supabase Edge Function secrets (5개)
 

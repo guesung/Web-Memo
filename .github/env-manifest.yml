@@ -211,13 +211,13 @@
 - name: UPSTASH_REDIS_REST_URL
   kind: secret
   stores: [vercel]
-  consumers: [apps/web/src/app/api/openai/ratelimit.ts, apps/web/src/modules/pastMemo/ratelimit.ts]
+  consumers: [apps/web/src/modules/ratelimit/rateLimit.ts]
   impact: "OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다"
 
 - name: UPSTASH_REDIS_REST_TOKEN
   kind: secret
   stores: [vercel]
-  consumers: [apps/web/src/app/api/openai/ratelimit.ts, apps/web/src/modules/pastMemo/ratelimit.ts]
+  consumers: [apps/web/src/modules/ratelimit/rateLimit.ts]
   impact: "OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다"
 
 - name: SLACK_SIGNING_SECRET

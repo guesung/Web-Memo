@@ -127,6 +127,7 @@
 | `GITHUB_SHA` | GitHub Actions가 넣는다. Vercel 값이 없을 때의 폴백으로 읽는다 | `apps/web/src/app/api/version/route.ts` |
 | `NEXT_RUNTIME` | Next.js가 실행 런타임(nodejs, edge)을 넣는다 | `apps/web/src/instrumentation.ts` |
 | `NODE_ENV` | Next와 Vite 같은 툴체인이 자기 값으로 채운다. 환경 구분에는 쓰지 않고 BUILD_ENV를 쓴다 | `apps/chrome-extension/vite.config.mts` |
+| `PROBE_BASE_URL` | 운영 프로브의 대상 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 운영 도메인을 본다. 등록하지 않는다 | `e2e/playwright.probe.config.ts` |
 | `PW_CHROMIUM_ATTACH_TO_OTHER` | Playwright가 넣는 내부 플래그 | `e2e/tests/fixtures/extension.ts` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase가 Edge Function에 주입한다. Vercel에는 등록하지 않는다 | `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts` |
 | `SUPABASE_URL` | Supabase가 Edge Function에 주입한다 | `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts` |
@@ -463,6 +464,11 @@ GA4 콘솔 → 관리 → 속성 설정 상단의 **숫자** 속성 ID이며,
 turbo 2는 선언하지 않은 환경 변수를 태스크에 넘기지 않습니다(strict envMode). 선언이 빠져
 있던 동안에는 양쪽에 등록해 놓고도 빌드 로그에 `No auth token provided. Will not upload source maps`만
 남기고 업로드를 건너뛰었습니다.
+
+이런 누락은 이제 PR CI(`check-env-manifest.mjs`)가 막습니다. 빌드 설정 파일이 셸에서 받아 읽는 값은
+매니페스트에 `phase: build`로 표시하고, 검사는 그 표시와 turbo 설정(`turbo.jsonc`, 패키지별 `turbo.json`)의
+`env`·`passThroughEnv` 선언을 양방향으로 대조합니다. turbo 내장 passthrough(`VERCEL*`, `NEXT_*`, `GITHUB_*`,
+`CI` 등)에 걸리는 이름은 선언 없이도 넘어가므로 대조하지 않습니다.
 
 ### 그 밖의 주의점
 

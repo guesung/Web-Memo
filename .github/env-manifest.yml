@@ -20,6 +20,11 @@
 #   impact     등록이 빠지면 생기는 일
 #   required   false면 값이 없어도 코드가 기본값으로 동작하는 선택 값. 기본은 true
 #   note       flag·platform의 사유
+#   phase      build면 turbo 태스크(build·ready·zip) 안에서 빌드 설정 파일이 셸에서 받아 읽는 값입니다.
+#              turbo 2의 envMode는 기본 strict라 turbo.jsonc(또는 패키지 turbo.json)의 env·passThroughEnv에
+#              선언해야 빌드가 값을 봅니다. 검사는 양방향입니다: phase: build인데 turbo에 선언이 없거나,
+#              turbo에 선언됐는데 여기 phase: build가 없으면 실패합니다. turbo 내장 passthrough(VERCEL,
+#              VERCEL_*, NEXT_*, GITHUB_*, CI, COREPACK_HOME 등)에 걸리는 이름은 선언 없이도 넘어가므로 검사하지 않습니다
 #
 # 형식은 YAML의 부분집합입니다(- name: 으로 항목을 열고 두 칸 들여쓴 key: value). 값에 ": "나
 # " #"가 들어가면 큰따옴표로 감싸세요. 줄 끝 주석은 지원하지 않습니다.
@@ -154,6 +159,7 @@
   consumers: [.github/workflows/cd-extension.yml, apps/web/next.config.mjs, packages/vite-config/lib/withPageConfig.mjs]
   impact: "Sentry 소스맵 업로드가 조용히 실패한다. 빌드는 통과하므로 스택 트레이스가 난독화된 채 보여야 알게 된다"
   note: "확장은 GitHub Secrets, 웹은 Vercel 프로젝트 환경변수로 받는다"
+  phase: build
 
 - name: SLACK_BOT_TOKEN
   kind: secret
@@ -271,6 +277,7 @@
   consumers: [packages/env/src/config.ts, packages/env/tsup.config.ts, apps/web/next.config.mjs, packages/zipper/index.ts]
   impact: "대시보드에서 수동 재배포할 때 development로 구워져 운영에 localhost:3000이 실린다. tsup.config.ts의 가드가 빌드를 실패시켜 막는다"
   note: "production은 production, preview는 staging"
+  phase: build
 
 - name: ENABLE_EXPERIMENTAL_COREPACK
   kind: flag
@@ -346,6 +353,7 @@
   kind: platform
   consumers: [apps/web/src/modules/slack/afterResponse.ts, packages/env/tsup.config.ts]
   note: "Vercel 빌드와 런타임이 넣는다"
+  phase: build
 
 - name: VERCEL_ENV
   kind: platform
@@ -401,6 +409,12 @@
   kind: platform
   consumers: [packages/vite-config/lib/env.mjs]
   note: "확장 개발 모드 스위치. packages/vite-config가 넣는다"
+
+- name: PROBE_BASE_URL
+  kind: platform
+  consumers: [e2e/playwright.probe.config.ts]
+  note: "운영 프로브의 대상 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 운영 도메인을 본다. 등록하지 않는다"
+  required: false
 
 - name: PW_CHROMIUM_ATTACH_TO_OTHER
   kind: platform

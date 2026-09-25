@@ -127,6 +127,7 @@
 | `note` | `text` |
 | `created_at` | `timestamp with time zone` |
 | `updated_at` | `timestamp with time zone` |
+| `page_key` | `text` |
 
 #### 테이블 `memo.memo`
 
@@ -152,6 +153,7 @@
 | `actionItem` | `text` |
 | `isReading` | `boolean` |
 | `deleted_at` | `timestamp with time zone` |
+| `page_key` | `text` |
 
 #### 테이블 `memo.notice`
 
@@ -222,8 +224,9 @@
 | `user_id` | `uuid` |
 | `show_impression` | `boolean` |
 | `show_action_item` | `boolean` |
+| `truncate_memo_content` | `boolean` |
 
-#### DB 함수 (15개)
+#### DB 함수 (17개)
 
 | 함수 | 반환 타입 |
 | --- | --- |
@@ -236,9 +239,11 @@
 | `get_admin_stats(include_admin boolean)` | `json` |
 | `get_admin_users(search_query text)` | `json` |
 | `get_highlight_counts(target_urls text[])` | `TABLE(url text, count integer)` |
+| `get_highlight_counts_by_page_keys(target_page_keys text[])` | `TABLE(page_key text, count integer)` |
 | `get_memo_count()` | `integer` |
 | `get_public_stats()` | `json` |
 | `get_user_growth(days_ago integer, include_admin boolean)` | `json` |
+| `invalidate_page_key_after_url_change()` | `trigger` |
 | `send_welcome_email()` | `trigger` |
 | `update_profile_updated_at()` | `trigger` |
 | `update_shared_at()` | `trigger` |

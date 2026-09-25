@@ -199,7 +199,7 @@
 - name: OPENAI_API_KEY
   kind: secret
   stores: [vercel]
-  consumers: [apps/web/src/app/api/openai/util.ts, apps/web/src/app/api/openai/category/route.ts, apps/web/src/app/api/openai/webpage-qa/route.ts]
+  consumers: [apps/web/src/app/api/openai/config.ts]
   impact: "AI 기능 전체가 실패한다"
 
 - name: TYPESAFE_API_KEY

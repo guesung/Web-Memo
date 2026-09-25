@@ -2,6 +2,7 @@ import { useSyncLoginStatus } from "@src/hooks";
 import type { MemoInput } from "@src/types/Input";
 import {
 	useMemoQuery,
+	useSamePathMemoQuery,
 	useSupabaseUserQuery,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
@@ -53,6 +54,14 @@ const MemoSectionContent = () => {
 const AuthenticatedMemoSectionContent = () => {
 	const { data: tab } = useTabQuery();
 	const { memos } = useMemoQuery({ url: tab?.url ?? "" });
+	const { memos: samePathMemos } = useSamePathMemoQuery({
+		url: tab?.url ?? "",
+	});
+	// 쿼리만 다른 주소에 남긴 메모. 현재 주소에 메모가 없을 때도 고를 수 있게 후보로 보여 준다.
+	const otherUrlMemos = samePathMemos.filter(
+		(samePathMemo) => !memos.some((memo) => memo.id === samePathMemo.id),
+	);
+	const hasOnlyOtherUrlMemos = memos.length === 0 && otherUrlMemos.length > 0;
 	const pageKey = tab?.url ? getPageKey(tab.url) : "";
 	const editorScope = `${tab?.id}:${pageKey}`;
 	const [selection, setSelection] = useState<{
@@ -74,7 +83,13 @@ const AuthenticatedMemoSectionContent = () => {
 			setPreservedDraft(null);
 			return;
 		}
-		if (!selection && !currentDraft && memos.length <= 1) {
+		// 현재 주소에 메모가 없고 다른 주소의 메모만 있으면 자동으로 고르지 않고 후보 화면을 띄운다.
+		if (
+			!selection &&
+			!currentDraft &&
+			memos.length <= 1 &&
+			!hasOnlyOtherUrlMemos
+		) {
 			setSelection({
 				scope: editorScope,
 				memoId: memos[0]?.id ?? null,
@@ -89,9 +104,17 @@ const AuthenticatedMemoSectionContent = () => {
 				memo: memos[0],
 			});
 		}
-	}, [selection, currentSelection, currentDraft, editorScope, memos]);
+	}, [
+		selection,
+		currentSelection,
+		currentDraft,
+		editorScope,
+		memos,
+		hasOnlyOtherUrlMemos,
+	]);
 
-	const selectedMemo = memos.find(
+	const candidateMemos = [...memos, ...otherUrlMemos];
+	const selectedMemo = candidateMemos.find(
 		(candidate) => candidate.id === currentSelection?.memoId,
 	);
 	const activeMemo = currentSelection
@@ -111,8 +134,12 @@ const AuthenticatedMemoSectionContent = () => {
 		setSelection({
 			scope: editorScope,
 			memoId,
-			memo: memos.find((candidate) => candidate.id === memoId) ?? null,
+			memo: candidateMemos.find((candidate) => candidate.id === memoId) ?? null,
 		});
+	};
+
+	const handleNewMemoClick = () => {
+		setSelection({ scope: editorScope, memoId: null, memo: null });
 	};
 
 	const handleOtherMemoClick = (draft?: MemoInput) => {
@@ -126,8 +153,14 @@ const AuthenticatedMemoSectionContent = () => {
 		<>
 			<MemoHeader memoData={activeMemo} />
 			{currentDraft && <PreservedDraft draft={currentDraft} />}
-			{(hasMultipleMemos || currentDraft) && !currentSelection ? (
-				<MemoCandidateList memos={memos} onMemoSelect={handleMemoSelect} />
+			{(hasMultipleMemos || hasOnlyOtherUrlMemos || currentDraft) &&
+			!currentSelection ? (
+				<MemoCandidateList
+					memos={memos}
+					otherUrlMemos={otherUrlMemos}
+					onMemoSelect={handleMemoSelect}
+					onNewMemoClick={memos.length === 0 ? handleNewMemoClick : undefined}
+				/>
 			) : (
 				<MemoForm
 					key={editorScope}
@@ -136,7 +169,9 @@ const AuthenticatedMemoSectionContent = () => {
 						isSelectedMemoMissing || hasUnselectedCollision
 					}
 					onOtherMemoClick={
-						hasMultipleMemos || isSelectedMemoMissing
+						hasMultipleMemos ||
+						otherUrlMemos.length > 0 ||
+						isSelectedMemoMissing
 							? handleOtherMemoClick
 							: undefined
 					}

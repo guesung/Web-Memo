@@ -23,6 +23,12 @@
 	"memo_candidates_description": {
 		"message": "여러 메모가 있습니다. 편집할 메모를 고르면 기존 내용을 확인할 수 있습니다."
 	},
+	"memo_candidates_new": {
+		"message": "새 메모 작성"
+	},
+	"memo_candidates_other_url": {
+		"message": "다른 주소의 메모"
+	},
 	"memo_candidates_empty_preview": {
 		"message": "내용 없음"
 	},

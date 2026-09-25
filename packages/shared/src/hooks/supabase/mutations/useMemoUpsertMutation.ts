@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "../../../constants";
 import { analytics } from "../../../modules/analytics";
 import type { MemoRow, MemoSupabaseResponse, MemoTable } from "../../../types";
-import { getPageKey, MemoService } from "../../../utils";
+import { getPageKey, getPathKey, MemoService } from "../../../utils";
 
 import { useSupabaseClientQuery } from "../queries";
 
@@ -49,10 +49,11 @@ export default function useMemoUpsertMutation() {
 				if (!existingMemo) {
 					throw new Error("선택한 메모를 찾을 수 없습니다.");
 				}
+				// 쿼리만 다른 주소의 메모도 후보로 고를 수 있으므로 경로 키로 비교한다. 저장해도 메모의 원래 URL은 그대로다.
 				if (
 					url &&
-					(existingMemo.page_key || getPageKey(existingMemo.url)) !==
-						getPageKey(url)
+					getPathKey(existingMemo.page_key || existingMemo.url) !==
+						getPathKey(url)
 				) {
 					throw new Error("선택한 메모가 현재 페이지에 속하지 않습니다.");
 				}
@@ -113,6 +114,9 @@ export default function useMemoUpsertMutation() {
 					queryKey: QUERY_KEY.memo({ id: variables.id }),
 				});
 			}
+			await queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.samePathMemosPrefix(),
+			});
 		},
 	});
 }

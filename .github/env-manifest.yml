@@ -103,7 +103,7 @@
 - name: SLACK_WEBHOOK_URL
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/audit-refactor.yml, .github/workflows/release-notify.yml, .github/workflows/versions.yml, .github/workflows/audit-env-registry.yml, .github/workflows/report-seo.yml]
+  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/audit-refactor.yml, .github/workflows/release-notify.yml, .github/workflows/versions.yml, .github/workflows/audit-env-registry.yml, .github/workflows/report-seo.yml, .github/workflows/audit-ga-cid-adoption.yml]
   impact: "빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다"
 
 - name: SLACK_REPORT_WEBHOOK_URL

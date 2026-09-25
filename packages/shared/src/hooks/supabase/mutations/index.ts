@@ -1,3 +1,4 @@
+export type * from "./mutationMeta";
 export { default as useCategoryDeleteMutation } from "./useCategoryDeleteMutation";
 export { default as useCategoryPostMutation } from "./useCategoryPostMutation";
 export { default as useCategoryUpdateMutation } from "./useCategoryUpdateMutation";

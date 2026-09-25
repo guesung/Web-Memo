@@ -11,6 +11,7 @@ import {
 } from "@web-memo/shared/modules/highlight";
 import { normalizeUrl } from "@web-memo/shared/utils/url";
 import { useEffect, useRef, useState } from "react";
+import { reportContentUiError } from "../../utils/reportError";
 import {
 	createHighlightController,
 	type IFHighlightSelectionState,
@@ -88,8 +89,14 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 					},
 					renderer: options.renderer,
 				});
-			} catch {
+			} catch (error) {
 				/** 조회 실패에도 첫 생성 툴바를 유지한다. */
+				reportContentUiError({
+					error,
+					feature: "highlight",
+					operation: "restore",
+					stage: "load",
+				});
 			}
 		};
 		const controller = createHighlightController({
@@ -205,7 +212,13 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 				name: "extension_setting_change",
 				params: { keys: "highlightBubblePosition" },
 			});
-		} catch {
+		} catch (error) {
+			reportContentUiError({
+				error,
+				feature: "highlight",
+				operation: "update-bubble-position",
+				stage: "storage",
+			});
 			setMenuError("highlight_save_failed");
 		}
 	};
@@ -228,7 +241,14 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			} else {
 				await ChromeSyncStorage.set(STORAGE_KEYS.highlightBubbleEnabled, false);
 			}
-		} catch {
+		} catch (error) {
+			reportContentUiError({
+				error,
+				feature: "highlight",
+				operation: "disable-bubble",
+				stage: "storage",
+				tags: { scope },
+			});
 			setMenuError("highlight_save_failed");
 			return;
 		}

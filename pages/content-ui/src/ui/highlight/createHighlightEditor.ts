@@ -5,6 +5,8 @@ import type {
 import type { HighlightRenderer } from "@web-memo/shared/modules/highlight";
 import type { HighlightRow } from "@web-memo/shared/types";
 import { normalizeUrl } from "@web-memo/shared/utils/url";
+import { reportContentUiError } from "../../utils/reportError";
+import { reportHighlightResponseFailure } from "./reportHighlightFailure";
 
 /** 클릭된 하이라이트와 편집 메뉴 상태. */
 export interface IFHighlightEditState {
@@ -121,6 +123,11 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 				return false;
 			}
 			if (!response?.success) {
+				reportHighlightResponseFailure({
+					operation: "edit",
+					response,
+					tags: { action: action.action },
+				});
 				state = {
 					...selected,
 					isSaving: false,
@@ -151,7 +158,15 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 			}
 
 			return true;
-		} catch {
+		} catch (error) {
+			// background에 닿지 못한 실패라 background의 보고에 남지 않는다.
+			reportContentUiError({
+				error,
+				feature: "highlight",
+				operation: "edit",
+				stage: "request",
+				tags: { action: action.action },
+			});
 			checkPage();
 			if (!stopped && generation === requestGeneration) {
 				state = {

@@ -10,6 +10,8 @@ import {
 } from "@web-memo/shared/modules/highlight";
 import type { HighlightRow } from "@web-memo/shared/types";
 import { normalizeUrl } from "@web-memo/shared/utils/url";
+import { reportContentUiError } from "../../utils/reportError";
+import { reportHighlightResponseFailure } from "./reportHighlightFailure";
 
 /** 선택 툴바가 표시할 위치와 저장 상태. */
 export interface IFHighlightSelectionState {
@@ -191,6 +193,7 @@ export const createHighlightController = (
 				return null;
 			}
 			if (!response?.success) {
+				reportHighlightResponseFailure({ operation: "create", response });
 				state = {
 					...state,
 					isSaving: false,
@@ -216,7 +219,14 @@ export const createHighlightController = (
 			options.onSaveSuccess?.(color);
 
 			return response.highlight;
-		} catch {
+		} catch (error) {
+			// background에 닿지 못한 실패라 background의 보고에 남지 않는다.
+			reportContentUiError({
+				error,
+				feature: "highlight",
+				operation: "create",
+				stage: "request",
+			});
 			if (
 				!isStopped &&
 				saveGeneration === pageGeneration &&

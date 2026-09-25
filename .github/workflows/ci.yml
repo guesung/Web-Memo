@@ -54,6 +54,10 @@ jobs:
       - name: Check (format + lint)
         run: pnpm check
 
+      # @sentry/react 사본이 둘로 갈라지면 수동 captureException이 오류 없이 버려진다(PR #528).
+      - name: Dependency versions in sync
+        run: pnpm lint:syncpack
+
       - name: Type check (affected only)
         run: pnpm exec turbo type-check --affected
 

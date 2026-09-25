@@ -777,6 +777,9 @@ importers:
 
   pages/content-ui:
     dependencies:
+      '@sentry/react':
+        specifier: ^9.47.1
+        version: 9.47.1(react@19.1.0)
       '@tanstack/react-query':
         specifier: ^5.59.0
         version: 5.90.21(react@19.1.0)

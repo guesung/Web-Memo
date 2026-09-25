@@ -1,3 +1,5 @@
+import { requireServerEnv } from "@src/utils/serverEnv";
+
 /**
  * Sentry 웹훅 릴레이에 필요한 서버 전용 설정.
  *
@@ -6,17 +8,6 @@
  * 쓰이므로 GitHub PAT·Slack 시크릿과 같은 이유로 `@web-memo/env`의 CONFIG가 아니라
  * Vercel 환경변수를 서버에서만 직접 읽습니다.
  */
-
-/** 값이 없으면 조용히 빈 문자열로 넘기지 않고 즉시 실패시킵니다. */
-const requireServerEnv = (name: string): string => {
-	const value = process.env[name];
-
-	if (!value) {
-		throw new Error(`${name} 환경변수가 설정되지 않았습니다`);
-	}
-
-	return value;
-};
 
 /** Sentry Internal Integration의 Client Secret. 웹훅 서명 검증에 씁니다. */
 export const getSentryWebhookSecret = (): string =>

@@ -1,3 +1,5 @@
+import { requireServerEnv } from "@src/utils/serverEnv";
+
 /**
  * Slack ↔ GitHub 연동에 필요한 서버 전용 설정.
  *
@@ -7,17 +9,6 @@
  * 시크릿을 거기 두면 그대로 커밋되거나 확장 번들에 섞여 들어갑니다.
  * 여기서는 Vercel 환경변수를 서버에서만 직접 읽습니다.
  */
-
-/** 값이 없으면 조용히 빈 문자열로 넘기지 않고 즉시 실패시킵니다. */
-const requireServerEnv = (name: string): string => {
-	const value = process.env[name];
-
-	if (!value) {
-		throw new Error(`${name} 환경변수가 설정되지 않았습니다`);
-	}
-
-	return value;
-};
 
 /** Slack 요청 서명 검증 키. Slack App > Basic Information > Signing Secret. */
 export const getSlackSigningSecret = (): string =>

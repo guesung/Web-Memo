@@ -2,7 +2,11 @@ import { CONFIG } from "@web-memo/env";
 import { ANALYTICS_EXCLUDED_USER_ID } from "../../constants";
 import type { MemoTable } from "../../types";
 import { isExtension } from "../../utils";
-import { getOrCreateClientId, sendEvent } from "./analyticsTransport";
+import {
+	applyUserIdInWeb,
+	getOrCreateClientId,
+	sendEvent,
+} from "./analyticsTransport";
 import {
 	buildMemoUpdateEvents,
 	type IFMemoUpdateContext,
@@ -39,6 +43,7 @@ class Analytics {
 		this.userIdRevision += 1;
 
 		if (!isExtension()) {
+			applyUserIdInWeb(userId);
 			return;
 		}
 

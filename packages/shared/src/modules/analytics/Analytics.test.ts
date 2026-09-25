@@ -188,6 +188,40 @@ describe("Analytics 환경별 동작", () => {
 		analytics.setUserId("user-1");
 
 		expect(set).toHaveBeenCalledWith({ analyticsUserId: "user-1" });
+		expect(gtag).not.toHaveBeenCalled();
+	});
+
+	it("웹에서 setUserId를 부르면 gtag 자동 이벤트에도 실리도록 set으로 user_id를 정한다", async () => {
+		window.gtag = gtag;
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: false,
+		});
+
+		analytics.setUserId("user-1");
+
+		expect(gtag).toHaveBeenCalledWith("set", { user_id: "user-1" });
+	});
+
+	it("웹에서 로그아웃하면 빈 문자열이 아닌 null로 user_id를 지운다", async () => {
+		window.gtag = gtag;
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: false,
+		});
+
+		analytics.setUserId(undefined);
+
+		expect(gtag).toHaveBeenCalledWith("set", { user_id: null });
+	});
+
+	it("웹에서 gtag가 아직 없으면 setUserId가 던지지 않는다", async () => {
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: false,
+		});
+
+		expect(() => analytics.setUserId("user-1")).not.toThrow();
 	});
 
 	it("setUserId가 불린 적 없어도 storage에 남은 user_id를 실어 보낸다", async () => {

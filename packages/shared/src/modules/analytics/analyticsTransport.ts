@@ -21,6 +21,21 @@ export const sendEvent = async (
 	sendEventInWeb(sendEventParams);
 };
 
+/**
+ * 웹 gtag가 이후 보내는 모든 요청에 user_id를 싣게 합니다.
+ * @description 이벤트마다 싣는 user_id는 우리가 보내는 커스텀 이벤트에만 붙고,
+ * gtag가 스스로 보내는 page_view·user_engagement 등에는 붙지 않습니다.
+ * 로그인을 페이지 로드 뒤에 알게 되는 경우 Google은 config가 아니라 set을 권장합니다.
+ * 로그아웃은 빈 문자열이 아닌 null로 지워야 합니다.
+ */
+export const applyUserIdInWeb = (userId: string | undefined): void => {
+	if (typeof window === "undefined" || !("gtag" in window)) {
+		return;
+	}
+
+	window.gtag("set", { user_id: userId ?? null });
+};
+
 const sendEventInWeb = (sendEventParams: TSendEventParams): void => {
 	const { eventName, parameters, userId } = sendEventParams;
 

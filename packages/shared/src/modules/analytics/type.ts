@@ -4,11 +4,11 @@ import type { ExportFormat } from "../../utils/Export";
 
 declare global {
 	interface Window {
-		gtag: (
-			command: "event",
-			action: string,
-			parameters: IFGa4EventParams,
-		) => void;
+		gtag: {
+			(command: "event", action: string, parameters: IFGa4EventParams): void;
+			/** 이후 모든 요청에 실을 값. 로그아웃은 null로 지웁니다. */
+			(command: "set", parameters: { user_id: string | null }): void;
+		};
 	}
 }
 

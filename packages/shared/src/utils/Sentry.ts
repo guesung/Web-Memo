@@ -38,7 +38,7 @@ export const initSentry = async () => {
 		dsn: SENTRY_DSN,
 		integrations: [browserTracingIntegration(), browserProfilingIntegration()],
 
-		tracesSampleRate: isExtension() ? 1.0 : 0,
+		tracesSampleRate: 1.0,
 		release: isExtension() ? chrome.runtime.getManifest().version : undefined,
 	});
 

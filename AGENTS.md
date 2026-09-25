@@ -60,14 +60,14 @@ const UNSUPPORTED_SUMMARY_PAGES = [
 
 ## 🛠 기술 스택
 
-- **프론트엔드**: TypeScript 5.5.3, React 19.1.0, Next.js 16.3.5(웹 앱, 웹팩 유지), Vite 5.3.3(확장), TailwindCSS 3.4.x
+- **프론트엔드**: TypeScript 5.5.3, React 19.1.0, Next.js 16.3.5(웹 앱, dev·build 모두 Turbopack), Vite 5.3.3(확장), TailwindCSS 3.4.x
 - **상태/데이터**: TanStack Query (React Query) v5.59.0, React Hook Form 7.53.2
 - **UI/스타일링**: TailwindCSS, Framer Motion 11.11.8, Lucide React 0.456.0, Next Themes, Driver.js(튜토리얼/가이드)
 - **백엔드/DB**: Supabase (인증, 데이터베이스, 타입 생성, 실시간)
 - **빌드**: Turbo 2.1.1, Vite 5.3.3, Cross-env, Rimraf
 - **테스트**: Vitest, Playwright 1.47.0
 - **코드 품질**: Biome 2.0.0
-- **모니터링**: Sentry
+- **모니터링**: Sentry ([docs/sentry.md](docs/sentry.md))
 - **유틸리티**: dayjs(날짜), es-hangul(한글 처리), youtube-transcript(자막), OpenAI API
 - **패키지 매니저/런타임**: pnpm 10.23.0, Node.js 24 (`.nvmrc`, 루트 `engines`)
 
@@ -450,6 +450,8 @@ production을 구분하지 못합니다. `isProduction()`은 `buildEnv !== "deve
 - 커밋 컨벤션: [docs/commit-convention.md](docs/commit-convention.md)
 - 브랜치 전략: [docs/branch-strategy.md](docs/branch-strategy.md)
 - 환경 변수: [docs/environment-variables.md](docs/environment-variables.md)
+- Sentry: [docs/sentry.md](docs/sentry.md) — 두 프로젝트(확장·웹) 구분, 인바운드 필터,
+  알림 웹훅처럼 대시보드에만 있는 설정
 - 버전 관리: [docs/versioning.md](docs/versioning.md) — 확장·앱·릴리스 노트가
   **각각 독립된 버전 트랙**이며, `apps/chrome-extension` 외의 `package.json`에는
   `version` 필드를 두지 않습니다

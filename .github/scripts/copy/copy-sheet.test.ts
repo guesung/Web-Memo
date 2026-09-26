@@ -46,6 +46,49 @@ describe("loadCopySheetConfig", () => {
 		expect(spreadsheetId).toBe("sheet-id");
 		expect(serviceAccount.client_email).toBe("a@b.com");
 	});
+	it("vercel env pull이 쓴 큰따옴표·이스케이프 값을 풀어 읽는다", () => {
+		const serviceAccountJson = JSON.stringify(
+			{
+				client_email: "a@b.com",
+				private_key: "-----BEGIN-----\nabc\n-----END-----\n",
+			},
+			null,
+			2,
+		);
+		// dotenv 직렬화: \ → \\, " → \", 줄바꿈 → \n
+		const escaped = serviceAccountJson
+			.replace(/\\/g, "\\\\")
+			.replace(/"/g, '\\"')
+			.replace(/\n/g, "\\n");
+		const { serviceAccount } = loadCopySheetConfig({
+			env: {},
+			repoRoot: "/repo",
+			readFile: () =>
+				[
+					`GA4_SERVICE_ACCOUNT_JSON="${escaped}"`,
+					"COPY_SHEET_ID=sheet-id",
+				].join("\n"),
+		});
+		expect(serviceAccount.private_key).toBe(
+			"-----BEGIN-----\nabc\n-----END-----\n",
+		);
+	});
+	it("백슬래시를 이스케이프하지 않은 vercel 값(구조·키 줄바꿈이 모두 \\n)도 읽는다", () => {
+		const raw =
+			'{\\n  "client_email": "a@b.com",\\n  "private_key": "-----BEGIN-----\\nabc\\n-----END-----\\n"\\n}\\n';
+		const { serviceAccount } = loadCopySheetConfig({
+			env: {},
+			repoRoot: "/repo",
+			readFile: () =>
+				[`GA4_SERVICE_ACCOUNT_JSON="${raw}"`, "COPY_SHEET_ID=sheet-id"].join(
+					"\n",
+				),
+		});
+		expect(serviceAccount.client_email).toBe("a@b.com");
+		expect(serviceAccount.private_key).toBe(
+			"-----BEGIN-----\nabc\n-----END-----\n",
+		);
+	});
 	it("둘 다 없으면 env:pull 안내를 담아 던진다", () => {
 		expect(() =>
 			loadCopySheetConfig({

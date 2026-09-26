@@ -196,7 +196,7 @@ function MemoFormContent({
 			{onOtherMemoClick && (
 				<button
 					type="button"
-					className="self-start rounded px-1 py-0.5 text-xs text-muted-foreground underline hover:text-foreground disabled:opacity-50"
+					className="min-h-8 self-start rounded px-2 py-1 text-xs text-muted-foreground underline hover:text-foreground disabled:opacity-50"
 					disabled={isWritePending || isSwitching}
 					onClick={handleOtherMemoClick}
 				>

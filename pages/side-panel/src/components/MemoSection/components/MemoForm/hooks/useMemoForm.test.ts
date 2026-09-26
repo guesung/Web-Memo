@@ -181,12 +181,41 @@ it("다른 메모를 고르기 전에 입력을 선택한 ID로 저장하고 지
 it("전환 전 저장이 실패하면 선택 화면으로 나가지 않는다", async () => {
 	mocks.upsert.mockImplementation((_request, callbacks) => callbacks.onError());
 	await render();
+	await act(async () => form.handleMemoChange("저장할 내용"));
 	let isSaved = true;
 	await act(async () => {
 		isSaved = await form.saveBeforeSwitch();
 	});
 
 	expect(isSaved).toBe(false);
+});
+
+it("바뀐 내용이 없으면 저장하지 않고 바로 전환한다", async () => {
+	await render();
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.upsert).not.toHaveBeenCalled();
+});
+
+it("입력이 이미 저장됐으면 전환할 때 다시 저장하지 않는다", async () => {
+	await render();
+	await act(async () => form.handleMemoChange("저장된 내용"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(1500);
+	});
+	const saveCount = mocks.upsert.mock.calls.length;
+	expect(saveCount).toBeGreaterThan(0);
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.upsert).toHaveBeenCalledTimes(saveCount);
 });
 
 it("첫 저장으로 ID가 생겨도 저장 중 입력한 초안을 유지한다", async () => {

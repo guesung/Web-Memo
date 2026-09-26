@@ -80,6 +80,11 @@ const AuthenticatedMemoSectionContent = () => {
 		scope: string;
 		value: MemoInput;
 	} | null>(null);
+	// 사용자가 "다른 메모 선택"으로 목록을 직접 요청한 페이지. 이 페이지에서는 메모를 자동으로 고르지 않는다.
+	const [candidateListScope, setCandidateListScope] = useState<string | null>(
+		null,
+	);
+	const isCandidateListRequested = candidateListScope === editorScope;
 	const currentSelection = selection?.scope === editorScope ? selection : null;
 	const currentDraft =
 		preservedDraft?.scope === editorScope ? preservedDraft.value : null;
@@ -94,6 +99,7 @@ const AuthenticatedMemoSectionContent = () => {
 		if (
 			!selection &&
 			!currentDraft &&
+			!isCandidateListRequested &&
 			memos.length <= 1 &&
 			!hasOnlyOtherUrlMemos
 		) {
@@ -104,7 +110,11 @@ const AuthenticatedMemoSectionContent = () => {
 			});
 			return;
 		}
-		if (currentSelection?.memoId === null && memos.length === 1) {
+		if (
+			currentSelection?.memoId === null &&
+			memos.length === 1 &&
+			!isCandidateListRequested
+		) {
 			setSelection({
 				...currentSelection,
 				memoId: memos[0].id,
@@ -118,6 +128,7 @@ const AuthenticatedMemoSectionContent = () => {
 		editorScope,
 		memos,
 		hasOnlyOtherUrlMemos,
+		isCandidateListRequested,
 	]);
 
 	const candidateMemos = [...memos, ...otherUrlMemos];
@@ -138,6 +149,7 @@ const AuthenticatedMemoSectionContent = () => {
 		currentSelection?.memoId === null && memos.length > 1;
 
 	const handleMemoSelect = (memoId: number) => {
+		setCandidateListScope(null);
 		setSelection({
 			scope: editorScope,
 			memoId,
@@ -174,6 +186,7 @@ const AuthenticatedMemoSectionContent = () => {
 	};
 
 	const handleNewMemoClick = () => {
+		setCandidateListScope(null);
 		setSelection({ scope: editorScope, memoId: null, memo: null });
 	};
 
@@ -181,6 +194,7 @@ const AuthenticatedMemoSectionContent = () => {
 		if (draft) {
 			setPreservedDraft({ scope: editorScope, value: draft });
 		}
+		setCandidateListScope(editorScope);
 		setSelection(null);
 	};
 
@@ -188,7 +202,10 @@ const AuthenticatedMemoSectionContent = () => {
 		<>
 			<MemoHeader memoData={activeMemo} />
 			{currentDraft && <PreservedDraft draft={currentDraft} />}
-			{(hasMultipleMemos || hasOnlyOtherUrlMemos || currentDraft) &&
+			{(hasMultipleMemos ||
+				hasOnlyOtherUrlMemos ||
+				isCandidateListRequested ||
+				currentDraft) &&
 			!currentSelection ? (
 				<MemoCandidateList
 					memos={memos}

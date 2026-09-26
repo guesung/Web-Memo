@@ -70,6 +70,8 @@ export default function useMemoForm({
 	const initializedMemoIdRef = useRef<number | null>(null);
 	const hasInitializedMemoRef = useRef(false);
 	const hasEditedMemoRef = useRef(false);
+	/** 입력했지만 아직 저장 요청이 나가지 않은 변경이 있는지. 전환 전 저장을 건너뛸지 판단한다. */
+	const hasUnsavedChangeRef = useRef(false);
 	const pendingDataRef = useRef<SaveMemoOptions | null>(null);
 
 	useDidMount(() => {
@@ -142,6 +144,7 @@ export default function useMemoForm({
 			}
 
 			pendingDataRef.current = null;
+			hasUnsavedChangeRef.current = false;
 
 			const tabInfo = overrides?.tabInfo ?? (await getTabInfo());
 			const memoId = overrides?.memoId ?? memoData?.id;
@@ -184,6 +187,7 @@ export default function useMemoForm({
 							setIsSaving(false);
 							setIsSaveStatusVisible(false);
 							pendingDataRef.current = null;
+							hasUnsavedChangeRef.current = true;
 							resolveIsSaved(false);
 						},
 					},
@@ -195,6 +199,7 @@ export default function useMemoForm({
 
 	const handleTitleChange = (text: string) => {
 		hasEditedMemoRef.current = true;
+		hasUnsavedChangeRef.current = true;
 		titleSync.handleTitleInputChange(text);
 		debounceTitle(() => saveMemo({ title: text, isSilent: true }));
 	};
@@ -224,6 +229,7 @@ export default function useMemoForm({
 	const handleMemoChange = useCallback(
 		(text: string) => {
 			hasEditedMemoRef.current = true;
+			hasUnsavedChangeRef.current = true;
 			setValue("memo", text);
 			debounce(() => saveMemo({ memo: text }));
 		},
@@ -233,6 +239,7 @@ export default function useMemoForm({
 	const handleImpressionChange = useCallback(
 		(text: string) => {
 			hasEditedMemoRef.current = true;
+			hasUnsavedChangeRef.current = true;
 			setValue("impression", text);
 			debounce(() => saveMemo({ impression: text }));
 		},
@@ -242,6 +249,7 @@ export default function useMemoForm({
 	const handleActionItemChange = useCallback(
 		(text: string) => {
 			hasEditedMemoRef.current = true;
+			hasUnsavedChangeRef.current = true;
 			setValue("actionItem", text);
 			debounce(() => saveMemo({ actionItem: text }));
 		},
@@ -313,6 +321,10 @@ export default function useMemoForm({
 	const saveBeforeSwitch = async () => {
 		if (isSaving) {
 			return false;
+		}
+		// 바뀐 내용이 없으면 저장 왕복 없이 바로 넘어간다. 아무것도 쓰지 않은 새 메모가 빈 행으로 저장되는 것도 막는다.
+		if (!hasUnsavedChangeRef.current) {
+			return true;
 		}
 
 		abortDebounce();

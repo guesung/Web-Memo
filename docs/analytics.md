@@ -20,7 +20,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `development` 빌드는 커스텀 이벤트를 보내지 않습니다. `staging`은 보냅니다 — 테스트 서버에서
 도착을 눈으로 확인해야 하기 때문이며, 그 트래픽은 `build_env` 차원으로 걸러 냅니다.
 
-## 이벤트 48종
+## 이벤트 50종
 
 `core_action`은 사용자가 이 서비스를 쓰는 행위, `engagement`는 그 주변의 이동·설정입니다.
 분류는 `EVENT_CATEGORY`가 `Record`로 강제하므로 이벤트를 추가하고 분류를 빠뜨리면 컴파일이
@@ -38,7 +38,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `feedback_submit` · `extension_install_click`(from, position) · `memo_first_write` · `export_run`(format) ·
 `past_memo_open`(kind, source)
 
-### engagement (24종)
+### engagement (26종)
 
 `side_panel_open` · `side_panel_open_click` · `side_panel_login_click` ·
 `header_login_click`(from) · `header_memos_click`(from) ·
@@ -47,7 +47,8 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `extension_setting_change`(keys) · `category_suggestion_show`(is_new_category) ·
 `login_start`(method) · `logout` · `extension_installed` · `extension_install_dismiss` ·
 `open_web_from_extension`(from) · `guide_open`(from) · `guide_step`(step_name) · `guide_finish` ·
-`search_no_result` · `past_memo_show`(kind, source) · `past_memo_dismiss`(kind, source)
+`search_no_result` · `past_memo_show`(kind, source) · `past_memo_dismiss`(kind, source) ·
+`memo_offline_queued`(trigger) · `memo_offline_sync_result`(trigger, synced_count, conflict_count, has_other_error)
 
 ### 호출부에 없는 이벤트
 
@@ -59,6 +60,11 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `memo_category_change`의 `source`는 patch 경로(`useMemoPatchMutation`의 `categorySource`)로
 바꾼 것만 붙습니다. 사이드 패널 자동 저장(upsert)은 요청마다 `category_id`를 실어 보내 값이
 안 바뀌어도 이 이벤트가 찍히므로, 경로별 비율은 `source`가 있는 이벤트만 세야 합니다.
+
+사이드 패널 오프라인 저장은 `useMemoUpsertMutation`을 거치지 않고 대기열에서 `MemoService`를 직접
+부르므로 `memo_write` 계열에 잡히지 않습니다. 대기열로 빠진 저장은 `memo_offline_queued`(trigger:
+offline·network_error·already_queued), 올린 결과는 `memo_offline_sync_result`로 셉니다. 후자는
+실제로 처리한 항목이 있을 때만 찍혀 빈 대기열 flush로 부풀지 않습니다.
 
 로그인 완료(`login`·`sign_up`)는 서버에서 끝나 `gtag`가 닿지 않습니다. 도착한 클라이언트가
 대신 쏩니다.

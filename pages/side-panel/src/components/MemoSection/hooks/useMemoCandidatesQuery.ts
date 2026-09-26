@@ -4,6 +4,7 @@ import {
 	samePathMemoQueryOptions,
 	useSupabaseClientQuery,
 } from "@web-memo/shared/hooks";
+import useOnlineStatus from "../../../hooks/useOnlineStatus";
 
 /** 현재 탭 URL의 메모 후보와 같은 경로 후보를 조회하는 입력. */
 interface IFUseMemoCandidatesQueryProps {
@@ -16,11 +17,14 @@ interface IFUseMemoCandidatesQueryProps {
  * @description Suspense로 읽으면 탭 전환마다 폼 전체가 스켈레톤으로 바뀐다. 두 조회 중 하나라도
  * 데이터가 없으면(대기 또는 데이터 없이 실패) 잠근다. 캐시 데이터가 있는데 백그라운드 갱신만
  * 실패한 경우는 잠그지 않는다. 다시 시도로 재조회하는 동안은 실패가 아니라 대기로 본다.
+ * 오프라인이면 조회가 일시정지돼 캐시 없는 새 페이지는 데이터를 영영 받지 못한다. 이때는 잠그지 않고
+ * 빈 메모로 열어, 입력한 내용이 새 메모로 오프라인 대기열에 쌓이게 한다. 연결되면 일시정지된 조회가 이어서 돈다.
  */
 export default function useMemoCandidatesQuery({
 	url,
 }: IFUseMemoCandidatesQueryProps) {
 	const { data: supabaseClient } = useSupabaseClientQuery();
+	const isOnline = useOnlineStatus();
 	const memoQuery = useQuery({
 		...memoQueryOptions({ supabaseClient, url }),
 		// MemoSection이 같은 키를 이미 prefetch했으므로 마운트 때 한 번 더 조회하지 않는다.
@@ -36,7 +40,9 @@ export default function useMemoCandidatesQuery({
 		Boolean(memoQuery.data?.error) || Boolean(samePathMemoQuery.data?.error);
 	const isDataMissing =
 		memoQuery.data === undefined || samePathMemoQuery.data === undefined;
-	const isMemoLocked = isDataMissing || hasResponseError;
+	const isOfflineWithoutCache = !isOnline && isDataMissing;
+	const isMemoLocked =
+		!isOfflineWithoutCache && (isDataMissing || hasResponseError);
 	const isFetching = memoQuery.isFetching || samePathMemoQuery.isFetching;
 	const isMemoLoadFailed =
 		isMemoLocked &&

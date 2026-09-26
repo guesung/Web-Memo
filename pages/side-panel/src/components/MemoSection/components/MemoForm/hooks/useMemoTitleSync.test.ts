@@ -65,21 +65,13 @@ describe("사이드패널 제목 연동", () => {
 		expect(onTitleUpdate).toHaveBeenLastCalledWith("B");
 	});
 
-	it("직접 입력한 제목을 보존하고 연동 클릭 이후 자동 갱신한다", async () => {
+	it("직접 입력한 제목을 보존한다", async () => {
 		mocks.get.mockResolvedValue({ title: "A" });
 		await mountHook();
 		await act(async () => hook.handleTitleInputChange("내 제목"));
 		mocks.get.mockResolvedValue({ title: "B" });
 		await act(async () => refreshTitle());
 		expect(onTitleUpdate).toHaveBeenLastCalledWith("내 제목");
-		await act(async () => hook.handleTitleSyncClick());
-		expect(onTitleUpdate).toHaveBeenLastCalledWith("B");
-		mocks.get.mockResolvedValue({ title: "C" });
-		await act(async () => refreshTitle());
-		expect(onTitleUpdate).toHaveBeenLastCalledWith("C");
-		await act(async () => hook.handleTitleInputChange("다시 수정"));
-		await act(async () => refreshTitle());
-		expect(onTitleUpdate).toHaveBeenLastCalledWith("다시 수정");
 	});
 
 	it("저장된 사용자 지정 제목은 최초 진입에서도 보존한다", async () => {
@@ -102,27 +94,5 @@ describe("사이드패널 제목 연동", () => {
 		await act(async () => resolvePrevious({ title: "이전 페이지" }));
 		expect(onTitleUpdate).toHaveBeenCalledTimes(1);
 		expect(onTitleUpdate).toHaveBeenLastCalledWith("최신 SPA 페이지");
-	});
-
-	it("연동 조회 중 사용자가 입력한 제목은 늦은 응답보다 우선한다", async () => {
-		mocks.get.mockResolvedValue({ title: "A" });
-		await mountHook();
-		let resolveSync: (tab: { title: string }) => void = () => {};
-		mocks.get.mockImplementationOnce(
-			() =>
-				new Promise((resolve) => {
-					resolveSync = resolve;
-				}),
-		);
-		let pendingSync: ReturnType<typeof hook.handleTitleSyncClick>;
-		await act(async () => {
-			pendingSync = hook.handleTitleSyncClick();
-		});
-		await act(async () => hook.handleTitleInputChange("수동 제목"));
-		await act(async () => {
-			resolveSync({ title: "A" });
-			await pendingSync;
-		});
-		expect(onTitleUpdate).toHaveBeenLastCalledWith("수동 제목");
 	});
 });

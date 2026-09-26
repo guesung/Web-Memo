@@ -204,28 +204,6 @@ export default function useMemoForm({
 		debounceTitle(() => saveMemo({ title: text, isSilent: true }));
 	};
 
-	const handleTitleSyncClick = async () => {
-		abortTitleDebounce();
-		const currentTab = await titleSync.handleTitleSyncClick();
-		if (
-			!currentTab ||
-			currentTab.id !== tab?.id ||
-			currentTab.url !== tab?.url
-		) {
-			return;
-		}
-
-		await saveMemo({
-			title: currentTab.title,
-			tabInfo: {
-				title: currentTab.title ?? "",
-				url: currentTab.url ?? "",
-				favIconUrl: currentTab.favIconUrl,
-			},
-			isSilent: true,
-		});
-	};
-
 	const handleMemoChange = useCallback(
 		(text: string) => {
 			hasEditedMemoRef.current = true;
@@ -342,8 +320,6 @@ export default function useMemoForm({
 		isSaving: isSaveStatusVisible,
 		saveMemo,
 		handleTitleChange,
-		handleTitleSyncClick,
-		isTitleSyncAvailable: titleSync.isTitleSyncAvailable,
 		handleMemoChange,
 		handleImpressionChange,
 		handleActionItemChange,

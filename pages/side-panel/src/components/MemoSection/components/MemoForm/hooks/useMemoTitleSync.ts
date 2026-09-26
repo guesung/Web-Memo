@@ -1,5 +1,5 @@
 import { Tab } from "@web-memo/shared/utils/extension";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 /** 제목 입력과 현재 페이지 제목의 연동에 필요한 콜백입니다. */
 interface IFMemoTitleSyncOptions {
@@ -20,7 +20,6 @@ export const useMemoTitleSync = (options: IFMemoTitleSyncOptions) => {
 	const initializedPageUrlRef = useRef(options.pageUrl);
 	const hasLoadedInitialTitleRef = useRef(false);
 	const requestVersionRef = useRef(0);
-	const [isTitleSyncAvailable, setIsTitleSyncAvailable] = useState(false);
 
 	useEffect(() => {
 		if (initializedMemoIdRef.current === options.memoId) {
@@ -72,14 +71,11 @@ export const useMemoTitleSync = (options: IFMemoTitleSyncOptions) => {
 					}
 				}
 
-				setIsTitleSyncAvailable(Boolean(currentTab?.title));
 				if (!isManualTitleRef.current && currentTab?.title !== undefined) {
 					onTitleUpdateRef.current(currentTab.title);
 				}
 			} catch {
-				if (requestVersion === requestVersionRef.current) {
-					setIsTitleSyncAvailable(false);
-				}
+				// 탭 조회 실패는 자동 반영을 건너뛸 뿐, 사용자에게 따로 알릴 오류는 아니다.
 			}
 		};
 
@@ -100,30 +96,5 @@ export const useMemoTitleSync = (options: IFMemoTitleSyncOptions) => {
 		onTitleUpdateRef.current(title);
 	};
 
-	const handleTitleSyncClick = async () => {
-		const requestVersion = ++requestVersionRef.current;
-
-		try {
-			const currentTab = await Tab.get();
-			if (
-				requestVersion !== requestVersionRef.current ||
-				currentTab?.title === undefined
-			) {
-				return undefined;
-			}
-
-			isManualTitleRef.current = false;
-			onTitleUpdateRef.current(currentTab.title);
-
-			return currentTab;
-		} catch {
-			if (requestVersion === requestVersionRef.current) {
-				setIsTitleSyncAvailable(false);
-			}
-		}
-
-		return undefined;
-	};
-
-	return { isTitleSyncAvailable, handleTitleInputChange, handleTitleSyncClick };
+	return { handleTitleInputChange };
 };

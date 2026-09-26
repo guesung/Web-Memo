@@ -506,7 +506,7 @@ PR 템플릿 파일은 레포에 없습니다. 최근 PR들이 쓰는 형식을 
 
 ### 작업 파이프라인 (gs 플러그인)
 
-기획→설계→구현→QA→PR 파이프라인(`/gs:*` 스킬과 `gs:*` 에이전트)은 `.claude/skills/gs/`에서 관리합니다. 에이전트·스킬 규칙을 고칠 때는 이 폴더를 수정하세요. 구성과 의존 관계는 `.claude/skills/gs/dependencies.md`에 있습니다.
+기획→설계→구현→QA→PR 파이프라인(`/gs:*` 스킬과 `gs:*` 에이전트)의 원본은 `.agents/skills/gs/`입니다. `.claude/skills/gs`는 Claude Code가 읽도록 원본을 가리키는 심링크이니, 에이전트·스킬 규칙은 `.agents/skills/gs/`에서 고치세요. 구성과 의존 관계는 `.agents/skills/gs/dependencies.md`에 있습니다.
 
 ---
 

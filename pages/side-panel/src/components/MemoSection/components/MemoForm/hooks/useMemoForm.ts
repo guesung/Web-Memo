@@ -9,7 +9,10 @@ import {
 	useSupabaseUserQuery,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
-import type { TCategoryChangeSource } from "@web-memo/shared/modules/analytics";
+import {
+	analytics,
+	type TCategoryChangeSource,
+} from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import type { Database } from "@web-memo/shared/types";
 import { isNetworkError } from "@web-memo/shared/utils";
@@ -181,6 +184,7 @@ export default function useMemoForm({
 
 			const queueOffline = async (
 				resolveIsSaved: (isSaved: boolean) => void,
+				trigger: "offline" | "network_error" | "already_queued",
 			) => {
 				if (!userId) {
 					setIsSaving(false);
@@ -204,17 +208,24 @@ export default function useMemoForm({
 					},
 					queuedAt: Date.now(),
 				});
+				void analytics.trackEvent({
+					name: "memo_offline_queued",
+					params: { trigger },
+				});
 
 				completeSaveAsSaved(resolveIsSaved);
 			};
 
-			const shouldQueueOffline =
-				!isOnline ||
-				(await hasPendingOfflineMemo({ memoId, url: tabInfo.url }));
+			const isAlreadyQueued = await hasPendingOfflineMemo({
+				memoId,
+				url: tabInfo.url,
+			});
+			const shouldQueueOffline = !isOnline || isAlreadyQueued;
 
 			if (shouldQueueOffline) {
+				const trigger = !isOnline ? "offline" : "already_queued";
 				return new Promise<boolean>((resolveIsSaved) => {
-					void queueOffline(resolveIsSaved);
+					void queueOffline(resolveIsSaved, trigger);
 				});
 			}
 
@@ -241,7 +252,7 @@ export default function useMemoForm({
 						onError: (error) => {
 							// 네트워크 실패는 오프라인 대기열로 돌린다. 실패 토스트를 띄우지 않는다(QueryProvider).
 							if (isNetworkError(error)) {
-								void queueOffline(resolveIsSaved);
+								void queueOffline(resolveIsSaved, "network_error");
 								return;
 							}
 

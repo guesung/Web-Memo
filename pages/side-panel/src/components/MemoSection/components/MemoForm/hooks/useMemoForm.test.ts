@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
 	isNetworkError: vi.fn((_error: unknown) => false),
 	enqueueOfflineMemo: vi.fn(async (_item: unknown) => {}),
 	hasPendingOfflineMemo: vi.fn(async (_target: unknown) => false),
+	trackEvent: vi.fn(async (_event: unknown) => {}),
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
 	useDebounce: () => useDebounce(),
@@ -31,6 +32,9 @@ vi.mock("@web-memo/shared/utils", () => ({
 	isNetworkError: (error: unknown) => mocks.isNetworkError(error),
 }));
 vi.mock("@web-memo/shared/modules/extension-bridge", () => ({ bridge: {} }));
+vi.mock("@web-memo/shared/modules/analytics", () => ({
+	analytics: { trackEvent: (event: unknown) => mocks.trackEvent(event) },
+}));
 vi.mock("@web-memo/shared/utils/extension", () => ({
 	Tab: { get: async () => mocks.tab },
 	getTabInfo: async () => mocks.tab,
@@ -88,6 +92,7 @@ beforeEach(() => {
 	mocks.isNetworkError.mockReset().mockReturnValue(false);
 	mocks.enqueueOfflineMemo.mockReset().mockResolvedValue(undefined);
 	mocks.hasPendingOfflineMemo.mockReset().mockResolvedValue(false);
+	mocks.trackEvent.mockReset().mockResolvedValue(undefined);
 	document.body.innerHTML = "<div id='root'></div>";
 	root = createRoot(document.getElementById("root") as HTMLElement);
 });
@@ -282,6 +287,10 @@ it("오프라인이면 upsert 대신 대기열에 넣는다", async () => {
 		url: "https://example.com/a",
 		data: { memo: "오프라인 입력" },
 	});
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "memo_offline_queued",
+		params: { trigger: "offline" },
+	});
 });
 
 it("현재 메모에 대기 항목이 있으면 온라인이어도 대기열에 넣는다", async () => {
@@ -293,6 +302,10 @@ it("현재 메모에 대기 항목이 있으면 온라인이어도 대기열에 
 
 	expect(mocks.upsert).not.toHaveBeenCalled();
 	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(1);
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "memo_offline_queued",
+		params: { trigger: "already_queued" },
+	});
 });
 
 it("네트워크 오류로 실패하면 대기열에 넣고 저장 성공으로 처리한다", async () => {
@@ -308,6 +321,10 @@ it("네트워크 오류로 실패하면 대기열에 넣고 저장 성공으로 
 
 	expect(isSaved).toBe(true);
 	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(1);
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "memo_offline_queued",
+		params: { trigger: "network_error" },
+	});
 });
 
 it("오프라인이면 카테고리를 바꾸지 않는다", async () => {

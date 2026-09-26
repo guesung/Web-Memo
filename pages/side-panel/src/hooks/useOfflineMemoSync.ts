@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import { useSupabaseClientQuery } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { MemoService } from "@web-memo/shared/utils";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -40,7 +41,7 @@ export default function useOfflineMemoSync({
 	const latestPropsRef = useRef({ userId, onConflict });
 	latestPropsRef.current = { userId, onConflict };
 
-	const flush = async () => {
+	const flush = async (trigger: "mount" | "online" | "retry_click") => {
 		const { userId: currentUserId, onConflict: currentOnConflict } =
 			latestPropsRef.current;
 
@@ -72,6 +73,22 @@ export default function useOfflineMemoSync({
 				currentOnConflict?.(conflict);
 			}
 
+			const hasProcessedAnyItem =
+				result.syncedCount > 0 ||
+				result.conflicts.length > 0 ||
+				result.hasOtherError;
+			if (hasProcessedAnyItem) {
+				void analytics.trackEvent({
+					name: "memo_offline_sync_result",
+					params: {
+						trigger,
+						synced_count: result.syncedCount,
+						conflict_count: result.conflicts.length,
+						has_other_error: result.hasOtherError,
+					},
+				});
+			}
+
 			setSyncStatus(result.hasOtherError ? "syncFailed" : "idle");
 		} finally {
 			isFlushingRef.current = false;
@@ -80,7 +97,7 @@ export default function useOfflineMemoSync({
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: 마운트 시 한 번만 flush한다
 	useEffect(() => {
-		void flush();
+		void flush("mount");
 	}, []);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: 온라인으로 바뀔 때만 flush한다
@@ -89,12 +106,12 @@ export default function useOfflineMemoSync({
 			return;
 		}
 
-		void flush();
+		void flush("online");
 	}, [isOnline]);
 
 	return {
 		syncStatus,
 		/** syncFailed 상태에서 사용자가 다시 시도할 때 부른다 */
-		retrySync: flush,
+		retrySync: () => flush("retry_click"),
 	};
 }

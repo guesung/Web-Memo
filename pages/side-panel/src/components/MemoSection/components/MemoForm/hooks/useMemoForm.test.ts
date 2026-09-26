@@ -16,10 +16,15 @@ const mocks = vi.hoisted(() => ({
 	patch: vi.fn(),
 	// 기본은 현재 mocks.memo를 즉시 돌려준다. 대기 상태를 흉내 내려면
 	// 개별 테스트에서 이 값을 절대 resolve되지 않는 Promise로 덮어쓴다.
-	memoQueryImpl: vi.fn(async () => ({
-		data: mocks.memo ? [mocks.memo] : [],
-		error: null,
-	})),
+	memoQueryImpl: vi.fn(
+		async (): Promise<{
+			data: unknown[] | null;
+			error: { message: string } | null;
+		}> => ({
+			data: mocks.memo ? [mocks.memo] : [],
+			error: null,
+		}),
+	),
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
 	useDebounce: () => useDebounce(),
@@ -220,4 +225,43 @@ it("메모가 없는 URL끼리 옮겨도(id가 둘 다 없어도) 남은 입력�
 	await render();
 
 	expect(mocks.values.memo).toBe("");
+});
+
+it("조회 응답에 error가 담겨 오면 실패로 보고 잠근 채 저장 요청을 보내지 않는다", async () => {
+	mocks.memoQueryImpl.mockImplementation(async () => ({
+		data: null,
+		error: { message: "Internal Server Error" },
+	}));
+	await render();
+
+	expect(form.isMemoError).toBe(true);
+	expect(form.isMemoLocked).toBe(true);
+
+	await act(async () => {
+		await form.saveMemo({ memo: "실패 뒤 입력" });
+	});
+	expect(mocks.upsert).not.toHaveBeenCalled();
+});
+
+it("조회가 늦게 도착해도 저장된 제목으로 바꾼다", async () => {
+	let resolveMemo: (value: { data: unknown[] | null; error: null }) => void =
+		() => {};
+	mocks.memo = { id: 1, title: "저장된 제목" };
+	mocks.memoQueryImpl.mockImplementation(
+		() =>
+			new Promise((resolve) => {
+				resolveMemo = resolve;
+			}),
+	);
+	await render();
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(0);
+	});
+	expect(mocks.values.title).toBe("A");
+
+	await act(async () => {
+		resolveMemo({ data: [mocks.memo], error: null });
+		await vi.advanceTimersByTimeAsync(0);
+	});
+	expect(mocks.values.title).toBe("저장된 제목");
 });

@@ -46,27 +46,22 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		isPending: isMemoPending,
 		isError: isMemoQueryError,
 		refetch: refetchMemo,
-	} = useQuery(memoQueryOptions({ supabaseClient, url: tab?.url }));
+	} = useQuery({
+		...memoQueryOptions({ supabaseClient, url: tab?.url }),
+		// MemoSection이 같은 키를 이미 prefetch했으므로 마운트 때 한 번 더 조회하지 않는다.
+		refetchOnMount: false,
+	});
 	const memoData = memoQueryData?.data?.at(-1);
-	// 캐시 데이터가 있는데 백그라운드 갱신만 실패한 경우는 잠그지 않는다.
-	const isMemoError = isMemoQueryError && !memoQueryData;
+	// supabase-js는 5xx·네트워크 오류에도 throw하지 않고 `{ data: null, error }`를 돌려준다.
+	// 쿼리는 성공으로 끝나므로 응답의 error도 실패로 본다. throw된 오류는 캐시 데이터가 있으면 잠그지 않는다.
+	const isMemoError =
+		Boolean(memoQueryData?.error) || (isMemoQueryError && !memoQueryData);
 	const isMemoLocked = isMemoPending || isMemoError;
-	// URL이 바뀌어 새 조회가 대기 중인 사이에는 memoId가 잠깐 undefined로 비친다.
-	// useMemoTitleSync는 이 값을 "메모 없는 페이지"로 오해해 직접 입력한 제목을 지운다.
-	// 조회가 끝날 때까지는 마지막으로 확정된 값을 그대로 들려준다.
-	const lastResolvedTitleMemoRef = useRef<{ id?: number; title?: string }>({});
-	if (!isMemoPending) {
-		lastResolvedTitleMemoRef.current = {
-			id: memoData?.id,
-			title: memoData?.title,
-		};
-	}
 	const titleSync = useMemoTitleSync({
 		onTitleUpdate: (title) => setValue("title", title),
-		initialSavedTitle: isMemoPending
-			? lastResolvedTitleMemoRef.current.title
-			: memoData?.title,
-		memoId: isMemoPending ? lastResolvedTitleMemoRef.current.id : memoData?.id,
+		initialSavedTitle: memoData?.title,
+		memoId: memoData?.id,
+		isMemoResolved: !isMemoLocked,
 		pageUrl: tab?.url,
 		pageTitle: tab?.title,
 	});

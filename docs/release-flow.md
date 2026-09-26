@@ -259,10 +259,11 @@ Slack에서 `/배포현황`(등록한 슬래시 커맨드)을 실행하면 `vers
 
 ## master 푸시는 스토어에 올리지 않습니다 (빌드는 재사용합니다)
 
-`ci.yml`의 `cd-app`·`cd-extension`은 `deploy_target: "none"`으로 고정되어
-있습니다. 빌드만 하고 스토어에는 아무것도 올리지 않습니다. 제출은 Slack 버튼
-→ `release.yml` 한 경로뿐이라, "언제 무엇이 올라갔는가"의 답이 Release 워크플로
-실행 기록 하나로 모입니다.
+`ci.yml`의 `cd-app`은 항상 `deploy_target: "build-only"`로 실행됩니다.
+`cd-extension`은 master 푸시에서 `build-only`로, PR·develop 푸시에서
+`staging`으로 실행됩니다. 둘 다 빌드만 하고 스토어에는 아무것도 올리지 않습니다.
+제출은 Slack 버튼 → `release.yml` 한 경로뿐이라, "언제 무엇이 올라갔는가"의 답이
+Release 워크플로 실행 기록 하나로 모입니다.
 
 **대신 그 빌드 산출물은 릴리스에서 그대로 재사용합니다.** 버튼을 눌렀을 때
 `release.yml`은 배포할 커밋에서 CI가 올려둔 아티팩트를 먼저 찾고
@@ -284,13 +285,15 @@ Slack에서 `/배포현황`(등록한 슬래시 커맨드)을 실행하면 `vers
 
 ## master 푸시는 웹을 상용에 올리지 않습니다 (미승격 배포를 승격합니다)
 
-**Vercel의 Git 자동 배포는 `master`와 `develop`에서 꺼 두었습니다.** `vercel.json`의
-`git.deploymentEnabled`가 `master: false`, `develop: false`입니다. 예전에는 Vercel Git 연동이 `master` 푸시마다
+**Vercel의 Git 자동 배포는 모든 브랜치에서 꺼 두었습니다.** `vercel.json`의
+`git.deploymentEnabled`가 `false`이므로 `master`·`develop` 푸시와 작업 브랜치의 PR Preview가
+Vercel Git 연동 배포를 만들지 않습니다. 예전에는 Vercel Git 연동이 `master` 푸시마다
 웹을 상용(`www.webmemo.xyz`)에 바로 배포했고(배포 출처 `git`, 생성자 `vercel[bot]`), 그래서
 Slack의 웹 배포 버튼과 무관하게 머지만 하면 라이브가 바뀌었습니다. 버튼이 만든 배포는 같은
 커밋을 한 번 더 빌드한 것이었습니다. `develop`도 같은 이유입니다. 테스트 서버는 GitHub Actions가
 직접 배포하고 별칭을 옮기므로(아래 "develop 머지는 테스트 서버로 나갑니다") Vercel Git 연동이
-같은 푸시를 한 번 더 빌드할 이유가 없습니다. 기능 브랜치의 프리뷰 배포는 그대로 남습니다.
+같은 푸시를 한 번 더 빌드할 이유가 없습니다. GitHub Actions의 `cd-web.yml`에서 Vercel CLI로
+실행하는 미승격·스테이징·상용 배포는 계속 동작합니다.
 
 이제 상용 웹이 바뀌는 길은 **Slack 웹 배포 버튼 → `release.yml` 하나**입니다.
 
@@ -480,7 +483,6 @@ vercel logs https://www.webmemo.xyz --scope gueit214s-projects
 | `SLACK_SIGNING_SECRET` | Slack App의 Signing Secret |
 | `SLACK_BOT_TOKEN` | `xoxb-`로 시작하는 봇 토큰 |
 | `GITHUB_DISPATCH_TOKEN` | 위에서 만든 PAT |
-| `GITHUB_DISPATCH_REPOSITORY` | (선택) 기본값 `guesung/Web-Memo` |
 
 `SLACK_BOT_TOKEN`은 GitHub 시크릿에도 같은 값으로 따로 등록합니다(아래 4번).
 Vercel과 GitHub Actions는 서로의 값을 읽지 못합니다.

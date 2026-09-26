@@ -1,15 +1,42 @@
 {
-	"memo_title_sync": {
-		"message": "Update to the current page title"
-	},
 	"extensionName": {
-		"message": "Web Memo - Easily take notes on websites"
+		"message": "Web Memo - Capture thoughts as you read."
 	},
 	"extensionDescription": {
-		"message": "Summarize any webpage or YouTube video with AI in one click. Save notes instantly. Free to use!"
+		"message": "Take notes as you read, then revisit them on the web or in the app. Free AI summaries for web pages and YouTube."
 	},
 	"memo": {
 		"message": "Note"
+	},
+	"memo_candidates_title": {
+		"message": "Choose a note for this page"
+	},
+	"memo_candidates_preserved_draft": {
+		"message": "Unsaved draft"
+	},
+	"memo_candidates_selection_lost": {
+		"message": "The selected note is no longer available. Keep your draft and choose again."
+	},
+	"memo_candidates_description": {
+		"message": "This page has multiple notes. Choose one to review its content before editing."
+	},
+	"memo_candidates_delete": {
+		"message": "Delete memo"
+	},
+	"memo_candidates_deleted": {
+		"message": "Moved the memo to trash"
+	},
+	"memo_candidates_new": {
+		"message": "Write a new memo"
+	},
+	"memo_candidates_other_url": {
+		"message": "Memos from other addresses"
+	},
+	"memo_candidates_empty_preview": {
+		"message": "No content"
+	},
+	"memo_choose_other": {
+		"message": "Choose another note"
 	},
 	"save": {
 		"message": "Save"
@@ -98,11 +125,23 @@
 	"reading_memo": {
 		"message": "Reading"
 	},
+	"undo": {
+		"message": "Undo"
+	},
 	"go_to": {
 		"message": "Go"
 	},
 	"toast_error_save": {
 		"message": "Couldn't save. Please try again"
+	},
+	"memo_save_status_saved": {
+		"message": "Saved"
+	},
+	"memo_save_status_failed": {
+		"message": "Couldn't save"
+	},
+	"memo_save_status_saving": {
+		"message": "Saving"
 	},
 	"prompt_language_setting": {
 		"message": "Response language"
@@ -259,10 +298,13 @@
 		"message": "Ask AI about the page content"
 	},
 	"summary_empty_message": {
-		"message": "Click the refresh button above\nto generate a summary"
+		"message": "Get a short summary of the page you're reading"
 	},
 	"summary_loading_message": {
 		"message": "Generating summary…"
+	},
+	"summary_generate_label": {
+		"message": "Summarize this page"
 	},
 	"impression": {
 		"message": "Impression"
@@ -398,6 +440,27 @@
 	},
 	"highlight_bubble_disabled_all_description": {
 		"message": "You can turn it back on in settings"
+	},
+	"past_memo_duplicate_rule": {
+		"message": "You have a memo on this page"
+	},
+	"past_memo_duplicate_jev": {
+		"message": "You may already have a memo on this page"
+	},
+	"past_memo_related": {
+		"message": "Related memos ($count$)",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "3"
+			}
+		}
+	},
+	"past_memo_open": {
+		"message": "Open"
+	},
+	"past_memo_dismiss": {
+		"message": "Dismiss"
 	},
 	"category_create_named": {
 		"message": "Create \"$NAME$\"",

@@ -18,28 +18,33 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | `report-` | 정기 리포트 |
 | `chore-` | 레포 유지보수 자동화 |
 
-| 워크플로 | 트리거 | 부르는 스크립트 (`.github/scripts/` 기준) |
-| --- | --- | --- |
-| `ci.yml` | push(develop·master), pull_request | `deploy/detect-affected-apps.sh` · `deploy/notify-thread-root.mjs` · `deploy/notify-thread-reply.mjs` · `deploy/notify-build-ready.mjs` · `deploy/notify-staging-deploy.mjs` · `deploy/comment-pr-extension.mjs`, 그리고 `cd-app`·`cd-extension`·`cd-web` 호출 |
-| `e2e.yml` | push(develop·master), pull_request | 없음 (Playwright) |
-| `cd-app.yml` | workflow_call | `deploy/find-reusable-artifact.sh` |
-| `cd-extension.yml` | workflow_call, workflow_dispatch | `deploy/find-reusable-artifact.sh` |
-| `cd-web.yml` | workflow_call, workflow_dispatch | `deploy/find-staged-deployment.mjs` · `deploy/staged-deployment.mjs` · `deploy/notify-staging-deploy.mjs` |
-| `release.yml` | workflow_dispatch | 없음. `cd-app`·`cd-extension`·`cd-web`·`release-notify` 호출 |
-| `release-notify.yml` | workflow_call | `deploy/notify-release-result.mjs` |
-| `release-github.yml` | push(tag `v*`) | 없음 |
-| `versions.yml` | workflow_dispatch | `deploy/report-store-versions.mjs` |
-| `audit-env-manifest.yml` | pull_request, workflow_dispatch | `env/check-env-manifest.mjs` |
-| `audit-env-registry.yml` | pull_request, schedule, workflow_dispatch | `env/audit-env-registry.mjs` |
-| `audit-supabase.yml` | pull_request, schedule, workflow_dispatch | `supabase/audit-supabase.mjs` · `supabase/notify-supabase-audit.mjs` |
-| `audit-refactor.yml` | schedule, workflow_dispatch | `refactor/report-refactor-audit.mjs` |
-| `report-ga-daily.yml` | schedule, workflow_dispatch | `ga/report-daily-ga.mjs` |
-| `report-ga-weekly.yml` | schedule, workflow_dispatch | `ga/report-weekly-ga.mjs` |
-| `report-seo.yml` | schedule, workflow_dispatch | `pnpm seo:check`·`seo:gsc`·`seo:sheets` · `seo/find-previous-seo-report.mjs` · `seo/build-seo-ai-context.mjs` · `seo/send-seo-ai-report.mjs` · `seo/notify-seo-slack.mjs` |
-| `chore-cleanup-unused.yml` | schedule, workflow_dispatch | `cleanup/cleanup-unused-files.mjs` |
+| 워크플로 | 트리거 | 실행 주기·시각 | 부르는 스크립트 (`.github/scripts/` 기준) |
+| --- | --- | --- | --- |
+| `ci.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | `deploy/detect-affected-apps.sh` · `deploy/notify-thread-root.mjs` · `deploy/notify-thread-reply.mjs` · `deploy/notify-build-ready.mjs` · `deploy/notify-staging-deploy.mjs` · `deploy/comment-pr-extension.mjs`, 그리고 `cd-app`·`cd-extension`·`cd-web` 호출 |
+| `e2e.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | 없음 (Playwright) |
+| `cd-app.yml` | workflow_call | 다른 워크플로에서 호출할 때마다 | `deploy/find-reusable-artifact.sh` |
+| `cd-extension.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-reusable-artifact.sh` |
+| `cd-web.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-staged-deployment.mjs` · `deploy/staged-deployment.mjs` · `deploy/notify-staging-deploy.mjs` |
+| `release.yml` | workflow_dispatch | 수동 실행할 때마다 | 없음. `cd-app`·`cd-extension`·`cd-web`·`release-notify` 호출 |
+| `release-notify.yml` | workflow_call | `release.yml`에서 호출할 때마다 | `deploy/notify-release-result.mjs` |
+| `release-github.yml` | push(tag `v*`) | `v*` 태그 push마다 | 없음 |
+| `versions.yml` | workflow_dispatch | 수동 실행할 때마다 | `deploy/report-store-versions.mjs` |
+| `audit-env-manifest.yml` | pull_request, workflow_dispatch | PR 이벤트 또는 수동 실행마다 | `env/check-env-manifest.mjs` |
+| `audit-env-registry.yml` | pull_request, schedule, workflow_dispatch | 매일 07:30 KST, PR 이벤트 또는 수동 실행마다 | `env/audit-env-registry.mjs` |
+| `audit-ga-cid-adoption.yml` | schedule, workflow_dispatch | 매주 월요일 09:13 KST 또는 수동 실행마다 | 없음 (Playwright, `e2e/probes/`) |
+| `audit-refactor.yml` | schedule, workflow_dispatch | 매주 토요일 10:17 KST 또는 수동 실행마다 | `refactor/report-refactor-audit.mjs` |
+| `report-ga-daily.yml` | schedule, workflow_dispatch | 매일 07:00 KST 또는 수동 실행마다 | `ga/report-daily-ga.mjs` |
+| `report-ga-weekly.yml` | schedule, workflow_dispatch | 매주 월요일 08:00 KST 또는 수동 실행마다 | `ga/report-weekly-ga.mjs` |
+| `report-seo.yml` | schedule, workflow_dispatch | 매일 09:17 KST 또는 수동 실행마다 | `pnpm seo:check`·`seo:gsc`·`seo:sheets` · `seo/find-previous-seo-report.mjs` · `seo/build-seo-ai-context.mjs` · `seo/send-seo-ai-report.mjs` · `seo/notify-seo-slack.mjs` |
+| `chore-cleanup-unused.yml` | schedule, workflow_dispatch | 매주 토요일 10:00 KST 또는 수동 실행마다 | `cleanup/cleanup-unused-files.mjs` |
+| `chore-e2e-coverage.yml` | schedule, workflow_dispatch | 매주 일요일 10:23 KST 또는 수동 실행마다 | `e2e-coverage/maintain.mjs` |
+| `chore-supabase-inventory.yml` | schedule, workflow_dispatch | 매일 08:00 KST 또는 수동 실행마다 | `supabase/generate-supabase-inventory.mjs` · `supabase/sync-supabase-inventory-pr.mjs` |
 
-`chore-cleanup-unused.yml`과 `audit-refactor.yml`은 `ref: master`로 체크아웃합니다. 작업 브랜치에서
+정기 실행 시각은 워크플로의 UTC cron을 한국 시간(KST)으로 환산한 예정 시각입니다. GitHub Actions 사정에 따라 실제 시작은 늦어질 수 있습니다.
+
+`chore-cleanup-unused.yml`·`chore-supabase-inventory.yml`·`audit-refactor.yml`은 `ref: master`로 체크아웃합니다. 작업 브랜치에서
 dispatch해도 스크립트는 master의 것이 돕니다.
+`chore-e2e-coverage.yml`은 주간 실행에서 master를, 수동 실행에서 선택한 ref를 체크아웃합니다. `master` 외 ref의 수동 실행은 검증 결과만 남기고 PR을 게시하지 않습니다.
 
 릴리스·배포 흐름 전체는 [`docs/release-flow.md`](../docs/release-flow.md)를 봅니다.
 
@@ -55,9 +60,10 @@ dispatch해도 스크립트는 master의 것이 돕니다.
 | `seo/` | SEO 점검·GSC·Sheets 적재·AI 리포트 |
 | `ga/` | GA4 일간·주간 리포트, 기능 사용량 측정 |
 | `env/` | 환경 변수 매니페스트 검사와 등록 현황 감사 |
-| `supabase/` | Supabase 운영 상태 감사 |
+| `supabase/` | 운영 Supabase 인벤토리 문서(`docs/supabase-inventory.md`) 생성과 갱신 PR |
 | `refactor/` | 주간 리팩토링 점검 |
 | `cleanup/` | 미사용 파일 정리 |
+| `e2e-coverage/` | 핵심 사용자 흐름의 E2E 누락 점검, 새 테스트 검증, 자동 보완 PR 게시 |
 
 **`shared/` 규칙**: 두 도메인 이상이 쓰는 모듈만 `shared/`에 둡니다. 한 도메인만 쓰면 이름이
 범용이어도 그 도메인 폴더에 둡니다(예: `seo/google-sheets.mjs`). `shared/`는 다른 도메인 폴더를

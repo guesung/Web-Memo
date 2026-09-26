@@ -8,18 +8,20 @@ import { createErrorReporter } from "@web-memo/shared/utils";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources.mjs";
+import { getOpenAIApiKey } from "./config";
 import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "./constant";
 import type { ValidationResult } from "./type";
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
+/** OpenAI 요청 메시지의 필수 필드를 검증한다. */
 export const validateMessages = (messages: unknown): ValidationResult => {
 	if (!messages || !Array.isArray(messages) || messages.length === 0) {
 		return { isValid: false, error: ERROR_MESSAGES.MISSING_MESSAGES };
 	}
 
 	const isValidMessage = messages.every((msg: unknown) => {
-		if (!msg || typeof msg !== "object") return false;
+		if (!msg || typeof msg !== "object") {
+			return false;
+		}
 		const message = msg as Record<string, unknown>;
 		return (
 			typeof message.role === "string" && typeof message.content === "string"
@@ -33,6 +35,7 @@ export const validateMessages = (messages: unknown): ValidationResult => {
 	return { isValid: true };
 };
 
+/** 공통 CORS 헤더를 포함한 오류 응답을 생성한다. */
 export const createErrorResponse = (error: string, status: number) => {
 	return NextResponse.json({ error }, { status, headers: CORS_HEADERS });
 };
@@ -91,6 +94,7 @@ export const reportOpenAIFailure = (error: unknown, feature: string): void => {
 	});
 };
 
+/** OpenAI 오류를 보고하고 오류 종류에 맞는 HTTP 응답을 반환한다. */
 export const handleOpenAIError = (error: unknown, feature: string) => {
 	reportOpenAIFailure(error, feature);
 
@@ -123,12 +127,13 @@ export const handleOpenAIError = (error: unknown, feature: string) => {
 	);
 };
 
+/** 요약과 채팅 결과를 공통 SSE 형식으로 전달한다. */
 export const createStreamingResponse = (
 	messages: ChatCompletionMessageParam[],
 	feature: string,
 ) => {
 	const openai = new OpenAI({
-		apiKey: OPENAI_API_KEY,
+		apiKey: getOpenAIApiKey(),
 	});
 
 	const encoder = new TextEncoder();
@@ -137,7 +142,8 @@ export const createStreamingResponse = (
 		async start(controller) {
 			try {
 				const stream = await openai.chat.completions.create({
-					model: "gpt-4o-mini",
+					model: "gpt-6-luna",
+					reasoning_effort: "none",
 					messages,
 					stream: true,
 					temperature: 0.3,

@@ -20,32 +20,34 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `development` 빌드는 커스텀 이벤트를 보내지 않습니다. `staging`은 보냅니다 — 테스트 서버에서
 도착을 눈으로 확인해야 하기 때문이며, 그 트래픽은 `build_env` 차원으로 걸러 냅니다.
 
-## 이벤트 46종
+## 이벤트 48종
 
 `core_action`은 사용자가 이 서비스를 쓰는 행위, `engagement`는 그 주변의 이동·설정입니다.
 분류는 `EVENT_CATEGORY`가 `Record`로 강제하므로 이벤트를 추가하고 분류를 빠뜨리면 컴파일이
 실패합니다.
 
-### core_action (26종)
+### core_action (27종)
 
 `memo_write`(fields) · `memo_delete`(memo_count) · `memo_restore`(memo_count) ·
 `memo_delete_permanently`(memo_count) · `memo_open`(has_search_query) · `memo_source_open` ·
 `memo_search`(query_length) · `memo_status_toggle`(status, enabled) · `memo_category_change`(source) ·
-`highlight_note_update` · `summary_run` · `summary_complete`(duration_msec) ·
+`highlight_note_update` · `summary_run`(source) · `summary_complete`(duration_msec) ·
 `summary_fail`(reason) · `chat_message_send` · `chat_fail`(reason) ·
 `youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category) ·
 `category_create` · `category_update` · `category_delete` · `login`(method) · `sign_up`(method) ·
-`feedback_submit` · `extension_install_click`(from, position) · `memo_first_write` · `export_run`(format)
+`feedback_submit` · `extension_install_click`(from, position) · `memo_first_write` · `export_run`(format) ·
+`past_memo_open`(kind, source)
 
-### engagement (20종)
+### engagement (24종)
 
 `side_panel_open` · `side_panel_open_click` · `side_panel_login_click` ·
+`header_login_click`(from) · `header_memos_click`(from) ·
 `page_view`(page_title, page_location) · `tab_change`(tab_name) · `view_change`(view) ·
 `memo_filter`(search_target) · `memo_undo`(action) · `setting_change`(setting_keys) ·
 `extension_setting_change`(keys) · `category_suggestion_show`(is_new_category) ·
 `login_start`(method) · `logout` · `extension_installed` · `extension_install_dismiss` ·
 `open_web_from_extension`(from) · `guide_open`(from) · `guide_step`(step_name) · `guide_finish` ·
-`search_no_result`
+`search_no_result` · `past_memo_show`(kind, source) · `past_memo_dismiss`(kind, source)
 
 ### 호출부에 없는 이벤트
 
@@ -58,6 +60,11 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 바꾼 것만 붙습니다. 사이드 패널 자동 저장(upsert)은 요청마다 `category_id`를 실어 보내 값이
 안 바뀌어도 이 이벤트가 찍히므로, 경로별 비율은 `source`가 있는 이벤트만 세야 합니다.
 
+`summary_run`의 `source`는 요약을 실행한 자리입니다. 요약 탭 빈 화면의 버튼이면 `empty_state`,
+탭 옆 새로고침 아이콘이면 `tab_trigger`입니다. 같은 `source` 차원을 `memo_category_change`도
+쓰므로 이벤트 이름으로 걸러서 봅니다. `summary_fail`의 `reason`은 요약 API가 오류 상태로
+응답하면 `http_<상태 코드>`(예: `http_500`)이고, 스트림 오류·네트워크 실패면 오류 메시지입니다.
+
 로그인 완료(`login`·`sign_up`)는 서버에서 끝나 `gtag`가 닿지 않습니다. 도착한 클라이언트가
 대신 쏩니다.
 
@@ -66,11 +73,22 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 파라미터를 **보내는 것**과 GA4가 그것을 **보고서 차원으로 제공하는 것**은 별개입니다. 등록돼
 있지 않으면 Data API 요청에서 차원 이름으로 쓸 수 없습니다.
 
-### 등록된 이벤트 범위 커스텀 차원 (17개)
+### 등록된 이벤트 범위 커스텀 차원 (22개)
 
 `build_env` · `ext_client_id` · `method` · `fields` · `from` · `status` · `enabled` ·
 `is_success` · `is_new_category` · `has_search_query` · `reason` · `search_target` ·
-`setting_keys` · `keys` · `tab_name` · `view` · `action`
+`setting_keys` · `keys` · `tab_name` · `view` · `action` · `position` · `step_name` ·
+`event_category` · `source` · `extension_version`
+
+`position`은 2026-09-24에 `설치 버튼 위치`로 등록했습니다. `extension_install_click`의
+`hero`·`recommendation`·`final`·`install_check_dialog` 값을 구분합니다.
+같은 날 `step_name`(`가이드 단계`), `event_category`(`이벤트 분류`),
+`source`(`메모 카테고리 변경 경로`)도 이벤트 범위로 등록했습니다.
+
+`extension_version`은 2026-09-26에 `확장 버전`으로 등록했습니다. 확장이 보내는 모든 커스텀
+이벤트에 매니페스트 버전(`chrome.runtime.getManifest().version`)을 공통 파라미터로 싣고, 웹
+이벤트에는 붙이지 않습니다. 배포 전후를 버전으로 가르는 기준이며, 등록 이전 버전의 이벤트는
+`(not set)`입니다.
 
 `ext_client_id`는 등록만 남아 있고 더는 보내지 않습니다. gtag가 이 이름을 예약 필드(`excid`)로
 바꿔 보내 커스텀 차원에 값이 한 번도 도달하지 않았기 때문입니다. 확장과 웹을 잇는 방법은
@@ -81,17 +99,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `duration_msec`(요약 소요 시간) · `memo_count`(처리한 메모 수) · `query_length`(검색어 길이).
 각각 원값·`average`·`count` 세 형태로 등록돼 있습니다.
 
-### 등록되지 않은 파라미터 (4개)
-
-| 파라미터 | 붙는 이벤트 | 없으면 못 하는 것 |
-| --- | --- | --- |
-| `position` | `extension_install_click` | 한 페이지에 설치 버튼이 둘 이상일 때 **어느 버튼이 눌렸는지** 나눠 볼 수 없습니다 |
-| `step_name` | `guide_step` | 가이드의 **어느 단계에서 이탈하는지** 볼 수 없습니다 |
-| `event_category` | 전 이벤트 | `core_action`과 `engagement`를 **나눠 보는 조회**가 막힙니다 |
-| `source` | `memo_category_change` | 카테고리를 **칩·배지(button)·#(hash)·AI(ai) 중 어느 경로로** 바꿨는지 나눠 볼 수 없습니다 |
-
-넷 다 GA4 콘솔에서 커스텀 차원으로 등록하면 끝나는 일이고 코드 변경이 필요 없습니다.
-등록해도 **소급 적용되지 않으므로** 등록 이후의 데이터부터 조회됩니다.
+등록된 맞춤 측정기준은 **소급 적용되지 않으므로** 등록 이후의 데이터부터 조회됩니다.
 
 ## 지표를 읽을 때 주의할 것
 
@@ -110,6 +118,15 @@ gtag보다 먼저 `_ga` 쿠키에 그 값을 심어 이후 웹 이벤트가 같�
 아니면 무시합니다. 이미 웹에 방문한 적 있는 사람이 이 링크로 들어오면 `_ga`가 덮어써져 이전 웹
 방문 기록은 다른 사용자로 갈라집니다. 이 연결은 배포 이후 데이터부터 유효합니다.
 
+gtag가 `_ga`에 심은 UUID를 cid로 받아 주는 것은 문서에 없는 동작이라, Google이 쿠키 해석을
+바꾸면 에러 없이 새 cid가 발급되고 이 연결이 조용히 끊깁니다. GA Data API에는 `client_id`
+차원이 없어 수집된 데이터로는 알 수 없으므로, `audit-ga-cid-adoption.yml`이 매주 월요일
+09:13(KST)에 운영 로그인 페이지를 프로브 전용 `ext_cid`로 열어 확인합니다
+(`e2e/probes/gaClientIdAdoption.probe.ts`). GA로 가는 요청은 모두 abort해 운영 데이터에 흔적을
+남기지 않습니다. 실패 메시지의 ①은 `_ga` 쿠키가 심기지 않은 경우(우리 코드 회귀), ②는 쿠키는
+심겼지만 gtag가 그 값을 cid로 쓰지 않은 경우(gtag 변화)입니다. 로컬에서는
+`pnpm -F e2e exec playwright test --config playwright.probe.config.ts`로 돌립니다.
+
 **운영 커스텀 이벤트는 `hostName` 허용 목록과 `build_env=production`을 함께 적용합니다.**
 확장은 staging과 production에서 같은 hostName을 사용하므로 hostName만으로 구분할 수 없습니다.
 반대로 `activeUsers` 같은 지표는 gtag 자동 수집 기반이라 `build_env` 파라미터가 없습니다.
@@ -124,7 +141,7 @@ gtag보다 먼저 `_ga` 쿠키에 그 값을 심어 이후 웹 이벤트가 같�
 
 | 경로 | 막는 곳 |
 | --- | --- |
-| 커스텀 이벤트 46종 | `Analytics.ts`의 전송 게이트 — 메모리와 확장 storage의 `user_id`를 먼저 해석하고, 값이 `ANALYTICS_EXCLUDED_USER_ID`면 보내지 않습니다 |
+| 커스텀 이벤트 48종 | `Analytics.ts`의 전송 게이트 — 메모리와 확장 storage의 `user_id`를 먼저 해석하고, 값이 `ANALYTICS_EXCLUDED_USER_ID`면 보내지 않습니다 |
 | gtag 자동 수집 | 웹 루트 레이아웃 — 브라우저에 남은 표식을 읽어 gtag보다 먼저 `ga-disable-<측정ID>`를 켭니다 |
 
 판정 기준이 `profiles.role`이 아니라 UUID 상수인 이유는 **확장이 role을 모르기 때문입니다.**
@@ -238,6 +255,9 @@ Slack 주간 리포트는 그 주와 전주만 보여 줍니다. 몇 달에 걸�
 
 `GA_SHEET_ID`가 없으면 시트 쓰기만 경고를 남기고 건너뜁니다. 시트 쓰기가 실패하면 Slack 게시는
 그대로 하고, 잡은 실패로 끝나 실패 알림이 갑니다.
+
+주간 Slack 리포트 맨 아래 줄에 이 시트로 가는 `누적 시트` 링크가 붙습니다. 몇 주에 걸친 추이는
+메시지가 아니라 시트에서 봅니다. `GA_SHEET_ID`가 없는 실행에는 링크를 싣지 않습니다.
 
 ## Data API 쿼터
 

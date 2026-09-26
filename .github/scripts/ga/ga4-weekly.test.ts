@@ -249,12 +249,12 @@ describe("fetchWeeklyGa4Report 의 집계 조건", () => {
 });
 
 describe("주간 리포트 표시", () => {
-	const buildBlocks = async () => {
+	const buildBlocks = async ({ runUrl = null, sheetUrl = null } = {}) => {
 		mockGa({ funnel: funnelResponse([413, 27, 6, 3, 1, 1]) });
 
 		const report = await fetchReport();
 
-		return buildWeeklyReportPayload({ report, runUrl: null }).blocks;
+		return buildWeeklyReportPayload({ report, runUrl, sheetUrl }).blocks;
 	};
 
 	const textOf = (blocks, title) =>
@@ -294,6 +294,28 @@ describe("주간 리포트 표시", () => {
 
 		expect(context).toContain("순서 강제");
 		expect(context).not.toContain("100%를 넘을 수");
+	});
+
+	it("시트 주소가 있으면 context 끝에 런 링크와 나란히 누적 시트 링크를 싣는다", async () => {
+		const context = textOf(
+			await buildBlocks({
+				runUrl: "https://github.com/o/r/actions/runs/1",
+				sheetUrl: "https://docs.google.com/spreadsheets/d/sheet-id/edit",
+			}),
+			"전주 비교 기간",
+		);
+
+		expect(context.split("\n").at(-1)).toBe(
+			"<https://github.com/o/r/actions/runs/1|워크플로 런> · <https://docs.google.com/spreadsheets/d/sheet-id/edit|누적 시트>",
+		);
+	});
+
+	it("런도 시트도 없으면 링크 줄 없이 설명만 싣는다", async () => {
+		const context = textOf(await buildBlocks(), "전주 비교 기간");
+
+		expect(context).not.toContain("누적 시트");
+		expect(context).not.toContain("워크플로 런");
+		expect(context.split("\n").at(-1)).toContain("순서 강제");
 	});
 });
 

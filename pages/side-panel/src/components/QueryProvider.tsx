@@ -65,9 +65,7 @@ export default function QueryProvider({ children }: PropsWithChildren) {
 							return;
 						}
 
-						const mutationMeta = mutation?.options?.meta as
-							| { feature?: string; stage?: string; operation?: string }
-							| undefined;
+						const mutationMeta = mutation?.options?.meta;
 
 						reportSidePanelError({
 							error: resultError,
@@ -84,9 +82,7 @@ export default function QueryProvider({ children }: PropsWithChildren) {
 
 						toast({ title: I18n.get("toast_error_save") });
 
-						const mutationMeta = mutation?.options?.meta as
-							| { feature?: string; stage?: string; operation?: string }
-							| undefined;
+						const mutationMeta = mutation?.options?.meta;
 
 						reportSidePanelError({
 							error,

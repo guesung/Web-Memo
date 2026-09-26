@@ -18,14 +18,14 @@ const HeaderLeft = ({ lng }: LanguageType) => {
 		: `/${lng}${PATHS.memos}`;
 
 	return (
-		<div className="flex flex-1 items-center gap-4">
+		<div className="flex flex-1 items-center gap-2 whitespace-nowrap sm:gap-4">
 			<Link href={brandHref}>
-				<div className="flex h-full items-center gap-2 px-4">
+				<div className="flex h-full items-center gap-2 px-2 sm:px-4">
 					<Image
 						src="/images/pngs/icon.png"
 						width={16}
 						height={16}
-						alt="logo"
+						alt=""
 						className="flex-1"
 					/>
 					<span className="text-md font-semibold">{t("common.webMemo")}</span>

@@ -2,11 +2,12 @@ import { SupabaseSessionRequiredError } from "@web-memo/shared/utils/extension";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { handleEditHighlight } from "./editHighlight";
 
-const MOCKS = vi.hoisted(() => ({ getClient: vi.fn(), getUser: vi.fn(), update: vi.fn(), remove: vi.fn(), report: vi.fn() }));
+const MOCKS = vi.hoisted(() => ({ getClient: vi.fn(), getUser: vi.fn(), lookup: vi.fn(), update: vi.fn(), remove: vi.fn(), report: vi.fn() }));
 vi.mock("./reportBackgroundError", () => ({ reportBackgroundError: MOCKS.report }));
 vi.mock("@web-memo/shared/utils", () => ({
  normalizeUrl: (url: string) => url,
- HighlightService: class { updateHighlight = MOCKS.update; deleteHighlight = MOCKS.remove; },
+ getPageKey: (url: string) => url.replace(/([?&])utm_source=[^&]+&?/, "$1").replace(/[?&]$/, ""),
+ HighlightService: class { getHighlightById = MOCKS.lookup; updateHighlight = MOCKS.update; deleteHighlight = MOCKS.remove; },
 }));
 vi.mock("@web-memo/shared/utils/extension", () => ({
  getSupabaseClient: MOCKS.getClient, SupabaseSessionRequiredError: class extends Error {},
@@ -14,12 +15,13 @@ vi.mock("@web-memo/shared/utils/extension", () => ({
 const URL = "https://example.com/article";
 const SENDER = { id: "extension-id", frameId: 0, url: URL, tab: { id: 1, url: URL } } as chrome.runtime.MessageSender;
 const PAYLOAD = { id: 1, url: URL, action: "color", color: "pink" };
-const ROW = { id: 1, url: URL, user_id: "owner", color: "pink" };
+const ROW = { id: 1, url: URL, page_key: URL, user_id: "owner", color: "pink" };
 
 beforeEach(() => {
  vi.stubGlobal("chrome", { runtime: { id: "extension-id" } });
  MOCKS.getClient.mockReset().mockResolvedValue({ auth: { getUser: MOCKS.getUser } });
  MOCKS.getUser.mockReset().mockResolvedValue({ data: { user: { id: "owner" } }, error: null });
+ MOCKS.lookup.mockReset().mockResolvedValue({ data: ROW, error: null });
  MOCKS.update.mockReset().mockResolvedValue({ data: [ROW], error: null });
  MOCKS.remove.mockReset().mockResolvedValue({ data: [ROW], error: null });
  MOCKS.report.mockReset();
@@ -28,7 +30,19 @@ beforeEach(() => {
 describe("하이라이트 편집 요청", () => {
  it("색 변경에 페이지와 인증 사용자 조건을 전달한다", async () => {
   expect(await handleEditHighlight({ payload: PAYLOAD, sender: SENDER })).toEqual({ success: true, highlight: ROW });
+ expect(MOCKS.update).toHaveBeenCalledWith({ id: 1, request: { color: "pink" }, scope: { url: URL, userId: "owner" } });
+  expect(MOCKS.lookup).toHaveBeenCalledWith({ id: 1, userId: "owner" });
+ });
+ it("추적 파라미터만 다른 페이지에서 저장된 원본 URL로 수정한다", async () => {
+  const sender = { ...SENDER, url: `${URL}?utm_source=new`, tab: { id: 1, url: `${URL}?utm_source=new` } } as chrome.runtime.MessageSender;
+  const payload = { ...PAYLOAD, url: `${URL}?utm_source=new` };
+  expect((await handleEditHighlight({ payload, sender })).success).toBe(true);
   expect(MOCKS.update).toHaveBeenCalledWith({ id: 1, request: { color: "pink" }, scope: { url: URL, userId: "owner" } });
+ });
+ it("저장된 하이라이트가 다른 페이지에 속하면 수정하지 않는다", async () => {
+  MOCKS.lookup.mockResolvedValue({ data: { ...ROW, page_key: "https://other.com" }, error: null });
+  expect(await handleEditHighlight({ payload: PAYLOAD, sender: SENDER })).toEqual({ success: false, error: "invalid_request" });
+  expect(MOCKS.update).not.toHaveBeenCalled();
  });
  it.each(["새 메모", "", "a".repeat(5000)])("메모를 저장하고 빈 문자열로 삭제한다", async (note) => {
   const row = { ...ROW, note };

@@ -11,7 +11,7 @@ export const JEV_TIMEOUT = 3000;
 export const JEV_MAX_CHOICES = 255;
 
 /** 기존 카테고리 판정의 LLM 폴백 모델입니다. */
-export const OPENAI_MODEL = "gpt-4o-mini" as const;
+export const OPENAI_MODEL = "gpt-6-luna" as const;
 
 /** 기존 카테고리 판정의 LLM 설정입니다. */
 export const OPENAI_SETTINGS = {

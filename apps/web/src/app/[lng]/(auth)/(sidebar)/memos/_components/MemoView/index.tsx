@@ -25,6 +25,12 @@ const MemoList = dynamic(() => import("./MemoList"), {
 	loading: () => <MemoListSkeleton />,
 });
 
+/** 계정 설정을 읽는 Suspense 쿼리라 새로고침 버튼처럼 클라이언트에서만 그린다. */
+const MemoTruncateToggle = dynamic(() => import("./MemoTruncateToggle"), {
+	ssr: false,
+	loading: () => <Skeleton className="h-10 w-10" />,
+});
+
 const MemoRefreshButton = dynamic(() => import("./MemoRefreshButton"), {
 	ssr: false,
 	loading: () => <Skeleton className="h-10 w-10" />,
@@ -99,6 +105,9 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 					</p>
 					<div className="flex items-center gap-2">
 						<MemoViewToggle lng={lng} />
+						<Suspense fallback={<Skeleton className="h-10 w-10" />}>
+							<MemoTruncateToggle lng={lng} />
+						</Suspense>
 						<MemoRefreshButton lng={lng} onGuideNext={moveNextGuideStep} />
 					</div>
 				</div>

@@ -4,11 +4,11 @@ import type { ExportFormat } from "../../utils/Export";
 
 declare global {
 	interface Window {
-		gtag: (
-			command: "event",
-			action: string,
-			parameters: IFGa4EventParams,
-		) => void;
+		gtag: {
+			(command: "event", action: string, parameters: IFGa4EventParams): void;
+			/** 이후 모든 요청에 실을 값. 로그아웃은 null로 지웁니다. */
+			(command: "set", parameters: { user_id: string | null }): void;
+		};
 	}
 }
 
@@ -28,8 +28,17 @@ export interface IFGa4EventParams {
 	debug_mode?: true;
 	user_id?: string;
 	session_id?: string;
+	/** 확장에서만 실립니다. 배포 전후를 가르는 기준이라 웹 이벤트에는 키 자체가 없습니다. */
+	extension_version?: string;
 	[key: string]: unknown;
 }
+
+/**
+ * 요약 실행을 시작한 자리.
+ * @description empty_state는 요약 탭이 빈 화면일 때의 안내 버튼, tab_trigger는 탭
+ * 아이콘의 새로고침 버튼입니다. 배포 전후로 자리별 실행 비율이 어떻게 갈리는지 봅니다.
+ */
+export type TSummaryRunSource = "empty_state" | "tab_trigger";
 
 /**
  * 메모 카테고리를 바꾼 경로.
@@ -61,7 +70,7 @@ export type TAnalyticsEvent =
 	| { name: "page_view"; params: { page_title: string; page_location: string } }
 	| { name: "memo_write"; params: { fields: string } }
 	| { name: "memo_delete"; params: { memo_count: number } }
-	| { name: "summary_run" }
+	| { name: "summary_run"; params: { source: TSummaryRunSource } }
 	| { name: "summary_complete"; params: { duration_msec: number } }
 	| { name: "chat_message_send" }
 	| { name: "tab_change"; params: { tab_name: string } }
@@ -87,6 +96,20 @@ export type TAnalyticsEvent =
 	| { name: "extension_installed" }
 	| { name: "login_start"; params: { method: string } }
 	| { name: "side_panel_login_click" }
+	| {
+			name: "header_login_click";
+			params: {
+				/** 언어 접두사를 뺀 출발 경로. 예: "/introduce", "/features/memo" */
+				from: string;
+			};
+	  }
+	| {
+			name: "header_memos_click";
+			params: {
+				/** 언어 접두사를 뺀 출발 경로. 예: "/introduce", "/memos/setting" */
+				from: string;
+			};
+	  }
 	| { name: "sign_up"; params: { method: string } }
 	| {
 			name: "memo_status_toggle";
@@ -143,7 +166,19 @@ export type TAnalyticsEvent =
 	  }
 	| { name: "highlight_bubble_disable"; params: { scope: "site" | "all" } }
 	| { name: "notice_view"; params: { notice_id: number } }
-	| { name: "notice_dismiss"; params: { notice_id: number } };
+	| { name: "notice_dismiss"; params: { notice_id: number } }
+	| {
+			name: "past_memo_show";
+			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
+	  }
+	| {
+			name: "past_memo_open";
+			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
+	  }
+	| {
+			name: "past_memo_dismiss";
+			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
+	  };
 
 /** 이벤트 이름만 추린 유니온. */
 export type TAnalyticsEventName = TAnalyticsEvent["name"];
@@ -183,6 +218,8 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	extension_installed: "engagement",
 	login_start: "engagement",
 	side_panel_login_click: "engagement",
+	header_login_click: "engagement",
+	header_memos_click: "engagement",
 	sign_up: "core_action",
 	memo_status_toggle: "core_action",
 	memo_category_change: "core_action",
@@ -205,4 +242,7 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	highlight_bubble_disable: "engagement",
 	notice_view: "engagement",
 	notice_dismiss: "engagement",
+	past_memo_show: "engagement",
+	past_memo_open: "core_action",
+	past_memo_dismiss: "engagement",
 };

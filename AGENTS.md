@@ -60,14 +60,14 @@ const UNSUPPORTED_SUMMARY_PAGES = [
 
 ## 🛠 기술 스택
 
-- **프론트엔드**: TypeScript 5.5.3, React 19.1.0, Next.js 16.3.5(웹 앱, 웹팩 유지), Vite 5.3.3(확장), TailwindCSS 3.4.x
+- **프론트엔드**: TypeScript 5.5.3, React 19.1.0, Next.js 16.3.5(웹 앱, dev·build 모두 Turbopack), Vite 5.3.3(확장), TailwindCSS 3.4.x
 - **상태/데이터**: TanStack Query (React Query) v5.59.0, React Hook Form 7.53.2
 - **UI/스타일링**: TailwindCSS, Framer Motion 11.11.8, Lucide React 0.456.0, Next Themes, Driver.js(튜토리얼/가이드)
 - **백엔드/DB**: Supabase (인증, 데이터베이스, 타입 생성, 실시간)
 - **빌드**: Turbo 2.1.1, Vite 5.3.3, Cross-env, Rimraf
 - **테스트**: Vitest, Playwright 1.47.0
 - **코드 품질**: Biome 2.0.0
-- **모니터링**: Sentry
+- **모니터링**: Sentry ([docs/sentry.md](docs/sentry.md))
 - **유틸리티**: dayjs(날짜), es-hangul(한글 처리), youtube-transcript(자막), OpenAI API
 - **패키지 매니저/런타임**: pnpm 10.23.0, Node.js 24 (`.nvmrc`, 루트 `engines`)
 
@@ -396,9 +396,11 @@ production을 구분하지 못합니다. `isProduction()`은 `buildEnv !== "deve
 ## 🧪 테스트 전략
 
 - **단위 테스트(Vitest)**: 유틸 함수와 훅
-- **E2E(Playwright)**: 핵심 사용자 플로우
-  - 독립적 기능은 병렬 테스트
-  - 데이터 의존 작업은 직렬 테스트
+- **E2E(Playwright)**: 핵심 사용자 플로우. `e2e/tests/`를 **테스트 대상**으로 나눕니다
+  - `web/` — 확장 없는 일반 브라우저. 로그인은 setup 프로젝트가 한 번 하고 storageState를 재사용합니다
+  - `extension/` — 사이드 패널·옵션처럼 확장 화면만 보는 테스트
+  - `hybrid/` — 웹 페이지와 확장을 함께 조작하는 테스트
+  - 로그인 외에 실제 Supabase 데이터를 읽거나 쓰는 테스트는 `*.real.test.ts`로 이름 짓고, 나머지는 목(`e2e/tests/lib/mocks/`)을 씁니다
 - **테스트 환경**: 로컬 개발 서버 대상으로 실행
 
 ---
@@ -448,6 +450,8 @@ production을 구분하지 못합니다. `isProduction()`은 `buildEnv !== "deve
 - 커밋 컨벤션: [docs/commit-convention.md](docs/commit-convention.md)
 - 브랜치 전략: [docs/branch-strategy.md](docs/branch-strategy.md)
 - 환경 변수: [docs/environment-variables.md](docs/environment-variables.md)
+- Sentry: [docs/sentry.md](docs/sentry.md) — 두 프로젝트(확장·웹) 구분, 인바운드 필터,
+  알림 웹훅처럼 대시보드에만 있는 설정
 - 버전 관리: [docs/versioning.md](docs/versioning.md) — 확장·앱·릴리스 노트가
   **각각 독립된 버전 트랙**이며, `apps/chrome-extension` 외의 `package.json`에는
   `version` 필드를 두지 않습니다
@@ -499,6 +503,10 @@ PR 템플릿 파일은 레포에 없습니다. 최근 PR들이 쓰는 형식을 
 - 복잡한 코드에만 간결한 주석
 - "무엇"보다 "왜"에 초점
 - API 문서: 목적, 파라미터, 반환값, 사용 예시, 에러 처리 포함
+
+### 작업 파이프라인 (gs 플러그인)
+
+기획→설계→구현→QA→PR 파이프라인(`/gs:*` 스킬과 `gs:*` 에이전트)의 원본은 `.agents/skills/gs/`입니다. `.claude/skills/gs`는 Claude Code가 읽도록 원본을 가리키는 심링크이니, 에이전트·스킬 규칙은 `.agents/skills/gs/`에서 고치세요. 구성과 의존 관계는 `.agents/skills/gs/dependencies.md`에 있습니다.
 
 ---
 

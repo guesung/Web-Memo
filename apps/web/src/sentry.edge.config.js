@@ -1,9 +1,4 @@
 import { init } from "@sentry/nextjs";
-import { CONFIG } from "@web-memo/env";
-import { SENTRY } from "@web-memo/shared/constants";
+import { SENTRY_COMMON_OPTIONS } from "./sentry.common.config";
 
-init({
-	dsn: SENTRY.dsnWeb,
-	enabled: CONFIG.buildEnv !== "development",
-	tracesSampleRate: 0.1,
-});
+init(SENTRY_COMMON_OPTIONS);

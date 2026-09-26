@@ -1,7 +1,11 @@
 import type { Page, Route } from "@playwright/test";
 import { SUPABASE } from "@web-memo/shared/constants";
 import type { Database } from "@web-memo/shared/types";
-import { createMockMemo } from "./mockData";
+import {
+	createMockCategory,
+	createMockHighlight,
+	createMockMemo,
+} from "./mockData";
 
 type MemoRow = Database["memo"]["Tables"]["memo"]["Row"];
 type CategoryRow = Database["memo"]["Tables"]["category"]["Row"];
@@ -86,6 +90,29 @@ export class MockSupabaseStore {
 		return Array.from(this.categories.values());
 	}
 
+	/** id로 카테고리를 찾는다. */
+	getCategory(id: number) {
+		return this.categories.get(id);
+	}
+
+	/** 카테고리를 부분 갱신한다. 없으면 null. */
+	updateCategory(id: number, updates: Partial<CategoryRow>) {
+		const category = this.categories.get(id);
+		if (!category) return null;
+
+		const updated = { ...category, ...updates };
+		this.categories.set(id, updated);
+
+		return updated;
+	}
+
+	/** 카테고리를 지우고 지운 카테고리를 돌려준다. */
+	deleteCategory(id: number) {
+		const category = this.categories.get(id);
+		this.categories.delete(id);
+		return category;
+	}
+
 	/** 메모 필드 노출 설정을 넣는다. null이면 설정 행이 아직 없는 신규 사용자를 뜻한다. */
 	setSetting(setting: SettingRow | null) {
 		this.setting = setting;
@@ -121,6 +148,13 @@ export class MockSupabaseStore {
 		this.highlights.set(id, updated);
 
 		return updated;
+	}
+
+	/** 하이라이트를 지우고 지운 하이라이트를 돌려준다. */
+	deleteHighlight(id: number) {
+		const highlight = this.highlights.get(id);
+		this.highlights.delete(id);
+		return highlight;
 	}
 
 	/** 메모에 category_id로 연결된 카테고리를 붙여 앱이 받는 모양으로 만든다. */
@@ -171,6 +205,88 @@ const parseIdFromUrl = (url: URL): number | null => {
 
 	return Number.parseInt(id, 10);
 };
+
+/**
+ * PostgREST의 `in.(1,2)`, `in.("https://a.com/x,y","b")` 같은 목록 값을 원소 배열로 푼다.
+ * @description postgrest-js는 `,`·`(`·`)` 같은 예약 문자가 든 값을 큰따옴표로 감싸 보내므로,
+ * 따옴표 안의 쉼표에서는 자르지 않는다.
+ */
+const parseInList = (value: string): string[] => {
+	const listBody = value.slice("in.(".length, -1);
+	const items: string[] = [];
+	let currentItem = "";
+	let isInsideQuotes = false;
+
+	for (const character of listBody) {
+		if (character === '"') {
+			isInsideQuotes = !isInsideQuotes;
+			continue;
+		}
+		if (character === "," && !isInsideQuotes) {
+			items.push(currentItem);
+			currentItem = "";
+			continue;
+		}
+		currentItem += character;
+	}
+	items.push(currentItem);
+
+	return items;
+};
+
+/**
+ * `<column>=eq.X` 또는 `<column>=in.(X,Y)` 필터를 값 목록으로 읽는다.
+ * @description 휴지통 이동·복원·영구 삭제는 `id=in.(...)`로, 한 건 수정은 `id=eq.N`으로 온다.
+ * 둘 다 아니면(필터 없음, `lt.` 커서 등) undefined다.
+ */
+const parseValueListFilter = (
+	url: URL,
+	column: string,
+): string[] | undefined => {
+	const value = url.searchParams.get(column);
+	if (value?.startsWith("eq.")) {
+		return [value.slice(3)];
+	}
+	if (value?.startsWith("in.(") && value.endsWith(")")) {
+		return parseInList(value);
+	}
+
+	return undefined;
+};
+
+/** `id=eq.N` 또는 `id=in.(...)` 필터를 숫자 id 목록으로 읽는다. 없으면 undefined. */
+const parseIdListFilter = (url: URL): number[] | undefined =>
+	parseValueListFilter(url, "id")?.map((id) => Number.parseInt(id, 10));
+
+/**
+ * `deleted_at` 필터를 적용한다.
+ * @description 일반 조회는 `deleted_at=is.null`, 휴지통 조회와 영구 삭제는 `deleted_at=not.is.null`로 온다.
+ * 이걸 무시하면 휴지통으로 보낸 메모가 목록에 그대로 남아 삭제 결함을 테스트가 통과시킨다.
+ */
+const matchesDeletedAtFilter = (memo: MemoRow, url: URL): boolean => {
+	const condition = url.searchParams.get("deleted_at");
+	if (condition === "is.null") {
+		return memo.deleted_at === null;
+	}
+	if (condition === "not.is.null") {
+		return memo.deleted_at !== null;
+	}
+
+	return true;
+};
+
+/** insert·upsert 본문을 행 배열로 읽는다. 한 건이면 객체, 여러 건이면 배열로 온다. */
+const parseRequestRows = <TRow>(route: Route): Partial<TRow>[] => {
+	const body = route.request().postDataJSON();
+
+	return Array.isArray(body) ? body : [body];
+};
+
+/** `upsert()`가 보낸 요청인지 본다. postgrest-js는 `Prefer: resolution=merge-duplicates`를 붙인다. */
+const isUpsertRequest = (route: Route) =>
+	(route.request().headers().prefer ?? "").includes(
+		"resolution=merge-duplicates",
+	);
 
 /** PostgREST의 `isWish=eq.true` 같은 불리언 필터를 읽는다. 파라미터가 없으면 undefined. */
 const parseBooleanFilter = (url: URL, column: string): boolean | undefined => {
@@ -273,7 +389,9 @@ const parseOrder = (url: URL) => {
 
 	return {
 		column:
-			column === "created_at" || column === "title" ? column : "updated_at",
+			column === "created_at" || column === "title" || column === "deleted_at"
+				? column
+				: "updated_at",
 		ascending,
 		secondColumn: secondOrderClause
 			? secondOrderClause.split(".")[0]
@@ -294,17 +412,20 @@ const handleMemoGet = async ({ route, url, store }: HandlerParams) => {
 	const searchQuery = extractIlikeQuery(url, "title");
 	// 한 건 조회(getMemoById·getMemoByUrl)도 같은 GET으로 온다. 여기서 안 걸러주면
 	// 저장소의 모든 메모가 돌아가고, 호출부의 at(-1)이 엉뚱한 메모를 집는다.
-	const targetId = parseEqualsFilter(url, "id");
+	const targetIds = parseIdListFilter(url);
 	const targetUrl = parseEqualsFilter(url, "url");
 
 	const filtered = store
 		.getAllMemos()
 		.map((memo) => store.toMemoWithCategory(memo))
 		.filter((memo) => {
-			if (targetId !== undefined && String(memo.id) !== targetId) {
+			if (targetIds !== undefined && !targetIds.includes(memo.id)) {
 				return false;
 			}
 			if (targetUrl !== undefined && memo.url !== targetUrl) {
+				return false;
+			}
+			if (!matchesDeletedAtFilter(memo, url)) {
 				return false;
 			}
 			if (isWish !== undefined && (memo.isWish ?? false) !== isWish) {
@@ -351,61 +472,103 @@ const handleMemoGet = async ({ route, url, store }: HandlerParams) => {
 		return ascending ? a.id - b.id : b.id - a.id;
 	});
 
+	// 내보내기(getMemos)는 range()로 offset을 옮겨 가며 여러 번 읽는다.
+	const offset = Number(url.searchParams.get("offset") ?? 0);
 	const limit = Number(url.searchParams.get("limit") ?? sorted.length);
-	const pagedMemos = sorted.slice(0, limit);
+	const pagedMemos = sorted.slice(offset, offset + limit);
 
 	await route.fulfill({
 		status: 200,
 		contentType: "application/json",
 		headers: {
-			"content-range": `0-${Math.max(pagedMemos.length - 1, 0)}/${sorted.length}`,
+			"content-range": `${offset}-${offset + Math.max(pagedMemos.length - 1, 0)}/${sorted.length}`,
 			"access-control-expose-headers": "content-range",
 		},
 		body: JSON.stringify(pagedMemos),
 	});
 };
 
-/** 메모 생성. */
+/**
+ * 메모 생성과 upsert.
+ * @description 삭제 되돌리기(upsertMemos)는 지운 메모를 id째로 upsert한다. 그 id가 저장소에 있으면
+ * 새 행을 만들지 않고 그 행을 갱신해야 한다. 새 id로 만들면 원래 메모는 휴지통에 남은 채
+ * 같은 내용의 다른 메모가 보여 되돌리기 결함을 테스트가 통과시킨다.
+ */
 const handleMemoPost = async ({ route, store }: HandlerParams) => {
-	const newMemo = createMockMemo(route.request().postDataJSON());
-	store.addMemo(newMemo);
+	const isUpsert = isUpsertRequest(route);
+	const savedMemos = parseRequestRows<MemoRow>(route).map((row) => {
+		const existingMemo =
+			row.id === undefined ? undefined : store.getMemo(row.id);
+		if (isUpsert && existingMemo) {
+			return store.addMemo({ ...existingMemo, ...row });
+		}
+
+		return store.addMemo(createMockMemo(row));
+	});
 
 	await route.fulfill({
 		status: 201,
 		contentType: "application/json",
-		body: JSON.stringify([newMemo]),
+		body: JSON.stringify(savedMemos),
 	});
 };
 
-/** 메모 수정. */
+/**
+ * `id`·`deleted_at` 필터에 걸리는 메모를 찾는다. 수정·삭제가 대상을 고르는 방식이다.
+ * @description id 필터가 없는 수정·삭제는 앱에 없는 쿼리라 undefined를 돌려 가드로 넘긴다.
+ */
+const findTargetMemos = (url: URL, store: MockSupabaseStore) => {
+	const targetIds = parseIdListFilter(url);
+	if (targetIds === undefined) {
+		return undefined;
+	}
+
+	return store
+		.getAllMemos()
+		.filter(
+			(memo) =>
+				targetIds.includes(memo.id) && matchesDeletedAtFilter(memo, url),
+		);
+};
+
+/** 메모 수정. 한 건 수정(`id=eq.N`)과 휴지통 이동·복원(`id=in.(...)`, `deleted_at`)이 여기로 온다. */
 const handleMemoPatch = async ({ route, url, store }: HandlerParams) => {
-	const id = parseIdFromUrl(url);
-	if (!id) {
-		await route.continue();
+	const targetMemos = findTargetMemos(url, store);
+	if (!targetMemos) {
+		await route.fallback();
 		return;
 	}
 
-	const updated = store.updateMemo(id, route.request().postDataJSON());
+	const updates = route.request().postDataJSON();
+	const updatedMemos = targetMemos.flatMap((memo) => {
+		const updated = store.updateMemo(memo.id, updates);
+
+		return updated ? [store.toMemoWithCategory(updated)] : [];
+	});
+
 	await route.fulfill({
 		status: 200,
 		contentType: "application/json",
-		body: JSON.stringify(updated ? [store.toMemoWithCategory(updated)] : []),
+		body: JSON.stringify(updatedMemos),
 	});
 };
 
-/** 메모 삭제. */
+/** 메모 영구 삭제. 휴지통 안의 메모만 지우도록 `deleted_at=not.is.null`이 함께 온다. */
 const handleMemoDelete = async ({ route, url, store }: HandlerParams) => {
-	const id = parseIdFromUrl(url);
-	if (!id) {
-		await route.continue();
+	const targetMemos = findTargetMemos(url, store);
+	if (!targetMemos) {
+		await route.fallback();
 		return;
 	}
 
-	const deleted = store.deleteMemo(id);
+	for (const memo of targetMemos) {
+		store.deleteMemo(memo.id);
+	}
+
 	await route.fulfill({
 		status: 200,
 		contentType: "application/json",
-		body: JSON.stringify(deleted ? [deleted] : []),
+		body: JSON.stringify(targetMemos),
 	});
 };
 
@@ -418,12 +581,78 @@ const handleCategoryGet = async ({ route, store }: HandlerParams) => {
 	});
 };
 
-/** 하이라이트 목록 조회. 색상과 검색어 필터를 적용한다. */
+/** 카테고리 생성과 upsert. 카테고리 추천이 새 카테고리를 만들 때 여기로 온다. */
+const handleCategoryPost = async ({ route, store }: HandlerParams) => {
+	const isUpsert = isUpsertRequest(route);
+	const savedCategories = parseRequestRows<CategoryRow>(route).map((row) => {
+		const existingCategory =
+			row.id === undefined ? undefined : store.getCategory(row.id);
+		if (isUpsert && existingCategory) {
+			return store.addCategory({ ...existingCategory, ...row });
+		}
+
+		return store.addCategory(createMockCategory(row));
+	});
+
+	await route.fulfill({
+		status: 201,
+		contentType: "application/json",
+		body: JSON.stringify(savedCategories),
+	});
+};
+
+/** 카테고리 수정. `id=eq.N`으로 대상을 고른다. */
+const handleCategoryPatch = async ({ route, url, store }: HandlerParams) => {
+	const targetIds = parseIdListFilter(url);
+	if (!targetIds) {
+		await route.fallback();
+		return;
+	}
+
+	const updates = route.request().postDataJSON();
+	const updatedCategories = targetIds
+		.map((id) => store.updateCategory(id, updates))
+		.filter((category): category is CategoryRow => category !== null);
+
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(updatedCategories),
+	});
+};
+
+/** 카테고리 삭제. `id=eq.N`으로 대상을 고른다. */
+const handleCategoryDelete = async ({ route, url, store }: HandlerParams) => {
+	const targetIds = parseIdListFilter(url);
+	if (!targetIds) {
+		await route.fallback();
+		return;
+	}
+
+	const deletedCategories = targetIds
+		.map((id) => store.deleteCategory(id))
+		.filter((category): category is CategoryRow => category !== undefined);
+
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(deletedCategories),
+	});
+};
+
+/**
+ * 하이라이트 목록 조회. URL·색상·검색어 필터를 적용한다.
+ * @description 페이지별 조회는 `url=eq.X`, 여러 페이지 묶음 조회는 `url=in.(...)`로 온다.
+ */
 const handleHighlightGet = async ({ route, url, store }: HandlerParams) => {
+	const targetUrls = parseValueListFilter(url, "url");
 	const color = parseEqualsFilter(url, "color");
 	const searchQuery = extractIlikeQuery(url, "exact_text");
 
 	const highlights = store.getAllHighlights().filter((highlight) => {
+		if (targetUrls !== undefined && !targetUrls.includes(highlight.url)) {
+			return false;
+		}
 		if (color && highlight.color !== color) {
 			return false;
 		}
@@ -445,11 +674,24 @@ const handleHighlightGet = async ({ route, url, store }: HandlerParams) => {
 	});
 };
 
+/** 하이라이트 생성. */
+const handleHighlightPost = async ({ route, store }: HandlerParams) => {
+	const savedHighlights = parseRequestRows<HighlightRow>(route).map((row) =>
+		store.addHighlight(createMockHighlight(row)),
+	);
+
+	await route.fulfill({
+		status: 201,
+		contentType: "application/json",
+		body: JSON.stringify(savedHighlights),
+	});
+};
+
 /** 하이라이트 수정. 코멘트 저장이 여기로 온다. */
 const handleHighlightPatch = async ({ route, url, store }: HandlerParams) => {
 	const id = parseIdFromUrl(url);
 	if (!id) {
-		await route.continue();
+		await route.fallback();
 		return;
 	}
 
@@ -458,6 +700,45 @@ const handleHighlightPatch = async ({ route, url, store }: HandlerParams) => {
 		status: 200,
 		contentType: "application/json",
 		body: JSON.stringify(updated ? [updated] : []),
+	});
+};
+
+/** 하이라이트 삭제. `id=eq.N`으로 대상을 고른다. */
+const handleHighlightDelete = async ({ route, url, store }: HandlerParams) => {
+	const id = parseIdFromUrl(url);
+	if (!id) {
+		await route.fallback();
+		return;
+	}
+
+	const deleted = store.deleteHighlight(id);
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(deleted ? [deleted] : []),
+	});
+};
+
+/**
+ * URL별 하이라이트 개수(`rpc/get_highlight_counts`).
+ * @description 실제 함수처럼 개수가 0인 URL은 결과에 넣지 않는다.
+ */
+const handleHighlightCountsRpc = async ({ route, store }: HandlerParams) => {
+	const targetUrls: string[] =
+		route.request().postDataJSON()?.target_urls ?? [];
+	const highlightCounts = targetUrls
+		.map((targetUrl) => ({
+			url: targetUrl,
+			count: store
+				.getAllHighlights()
+				.filter((highlight) => highlight.url === targetUrl).length,
+		}))
+		.filter((highlightCount) => highlightCount.count > 0);
+
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(highlightCounts),
 	});
 };
 
@@ -496,84 +777,110 @@ const handleSettingUpsert = async ({ route, store }: HandlerParams) => {
 	});
 };
 
+/** 공지 조회. 목 저장소에는 공지가 없으므로 늘 빈 목록이다(maybeSingle이 null로 읽는다). */
+const handleNoticeGet = async ({ route }: HandlerParams) => {
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: "[]",
+	});
+};
+
+/**
+ * 메서드별 핸들러로 나눠 보낸다. 표에 없는 메서드는 가드로 넘긴다.
+ * @description `fallback`은 컨텍스트에 먼저 걸린 목 가드로 이어진다. 가드는 그 요청을 막고
+ * 테스트를 실패시키므로, 목이 모르는 쿼리가 실서버로 새지 않는다(`*.real.test.ts`는 가드가 없어 실서버로 간다).
+ */
+const dispatchByMethod = async ({
+	route,
+	store,
+	handlers,
+}: {
+	route: Route;
+	store: MockSupabaseStore;
+	handlers: Partial<Record<string, (params: HandlerParams) => Promise<void>>>;
+}) => {
+	const handler = handlers[route.request().method()];
+	if (!handler) {
+		await route.fallback();
+		return;
+	}
+
+	await handler({ route, url: new URL(route.request().url()), store });
+};
+
 /**
  * Supabase REST 호출을 저장소로 가로챈다.
- * @description 브라우저가 보내는 요청만 가로챈다. 서버 컴포넌트의 프리페치는 여기 걸리지 않는다.
+ * @description 라우트는 페이지가 아니라 그 페이지의 컨텍스트에 건다. 사이드 패널·옵션처럼 같은
+ * 컨텍스트의 다른 페이지가 보내는 요청도 같은 저장소로 받기 위해서다. 브라우저가 보내는 요청만
+ * 가로챈다. 서버 컴포넌트의 프리페치는 여기 걸리지 않는다.
+ * 목이 처리하지 못하는 요청은 `fallback`해 목 가드(supabaseGuard.ts)가 막고 기록하게 한다.
  */
 export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
-	await page.route(`${SUPABASE.url}/rest/v1/memo**`, async (route: Route) => {
-		const url = new URL(route.request().url());
-		const params = { route, url, store };
+	const context = page.context();
 
-		switch (route.request().method()) {
-			case "GET":
-				await handleMemoGet(params);
-				break;
-			case "POST":
-				await handleMemoPost(params);
-				break;
-			case "PATCH":
-				await handleMemoPatch(params);
-				break;
-			case "DELETE":
-				await handleMemoDelete(params);
-				break;
-			default:
-				await route.continue();
-		}
-	});
+	await context.route(`${SUPABASE.url}/rest/v1/memo**`, (route) =>
+		dispatchByMethod({
+			route,
+			store,
+			handlers: {
+				GET: handleMemoGet,
+				POST: handleMemoPost,
+				PATCH: handleMemoPatch,
+				DELETE: handleMemoDelete,
+			},
+		}),
+	);
 
-	await page.route(
-		`${SUPABASE.url}/rest/v1/category**`,
-		async (route: Route) => {
-			if (route.request().method() !== "GET") {
-				await route.continue();
-				return;
-			}
+	await context.route(`${SUPABASE.url}/rest/v1/category**`, (route) =>
+		dispatchByMethod({
+			route,
+			store,
+			handlers: {
+				GET: handleCategoryGet,
+				POST: handleCategoryPost,
+				PATCH: handleCategoryPatch,
+				DELETE: handleCategoryDelete,
+			},
+		}),
+	);
 
-			await handleCategoryGet({
+	await context.route(`${SUPABASE.url}/rest/v1/setting**`, (route) =>
+		dispatchByMethod({
+			route,
+			store,
+			handlers: {
+				GET: handleSettingGet,
+				POST: handleSettingUpsert,
+				PATCH: handleSettingUpsert,
+			},
+		}),
+	);
+
+	await context.route(`${SUPABASE.url}/rest/v1/highlight**`, (route) =>
+		dispatchByMethod({
+			route,
+			store,
+			handlers: {
+				GET: handleHighlightGet,
+				POST: handleHighlightPost,
+				PATCH: handleHighlightPatch,
+				DELETE: handleHighlightDelete,
+			},
+		}),
+	);
+
+	await context.route(
+		`${SUPABASE.url}/rest/v1/rpc/get_highlight_counts`,
+		(route) =>
+			dispatchByMethod({
 				route,
-				url: new URL(route.request().url()),
 				store,
-			});
-		},
+				handlers: { POST: handleHighlightCountsRpc },
+			}),
 	);
 
-	await page.route(
-		`${SUPABASE.url}/rest/v1/setting**`,
-		async (route: Route) => {
-			const params = { route, url: new URL(route.request().url()), store };
-
-			switch (route.request().method()) {
-				case "GET":
-					await handleSettingGet(params);
-					break;
-				case "POST":
-				case "PATCH":
-					await handleSettingUpsert(params);
-					break;
-				default:
-					await route.continue();
-			}
-		},
-	);
-
-	await page.route(
-		`${SUPABASE.url}/rest/v1/highlight**`,
-		async (route: Route) => {
-			const url = new URL(route.request().url());
-			const params = { route, url, store };
-
-			switch (route.request().method()) {
-				case "GET":
-					await handleHighlightGet(params);
-					break;
-				case "PATCH":
-					await handleHighlightPatch(params);
-					break;
-				default:
-					await route.continue();
-			}
-		},
+	await context.route(`${SUPABASE.url}/rest/v1/notice**`, (route) =>
+		dispatchByMethod({ route, store, handlers: { GET: handleNoticeGet } }),
 	);
 }

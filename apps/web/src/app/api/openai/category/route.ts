@@ -1,7 +1,9 @@
 import { captureException } from "@sentry/nextjs";
+import { readServerEnv } from "@src/utils/serverEnv";
 import { CHROME_EXTENSION_ID } from "@web-memo/shared/constants";
 import { type NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import { getOpenAIApiKey } from "../config";
 import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "../constant";
 import { createErrorResponse, handleOpenAIError } from "../util";
 import {
@@ -19,15 +21,11 @@ import {
 	validateRequest,
 } from "./util";
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const TYPESAFE_API_KEY = process.env.TYPESAFE_API_KEY;
-
-if (!OPENAI_API_KEY) {
-	console.warn("OPENAI_API_KEY is not configured");
-}
-
 /** 기존 카테고리는 Jev로 우선 판정하고 나머지는 LLM으로 추천합니다. */
 export const POST = async (request: NextRequest) => {
+	const openAIApiKey = getOpenAIApiKey();
+	const typeSafeApiKey = readServerEnv("TYPESAFE_API_KEY");
+
 	try {
 		const origin = request.headers.get("origin");
 		const validOrigin = `chrome-extension://${CHROME_EXTENSION_ID}`;
@@ -52,11 +50,11 @@ export const POST = async (request: NextRequest) => {
 			body.existingCategories.length > 0 &&
 			body.existingCategories.length < JEV_MAX_CHOICES
 		) {
-			if (TYPESAFE_API_KEY) {
+			if (typeSafeApiKey) {
 				try {
 					const jevSuggestion = await getJevCategorySuggestion(
 						body,
-						TYPESAFE_API_KEY,
+						typeSafeApiKey,
 					);
 
 					if (jevSuggestion) {
@@ -77,7 +75,7 @@ export const POST = async (request: NextRequest) => {
 			}
 		}
 
-		if (!OPENAI_API_KEY) {
+		if (!openAIApiKey) {
 			return createErrorResponse(
 				"OpenAI API key not configured",
 				HTTP_STATUS.INTERNAL_SERVER_ERROR,
@@ -85,13 +83,14 @@ export const POST = async (request: NextRequest) => {
 		}
 
 		const openai = new OpenAI({
-			apiKey: OPENAI_API_KEY,
+			apiKey: openAIApiKey,
 		});
 
 		const prompt = buildCategoryPrompt(body);
 
 		const completion = await openai.chat.completions.create({
 			model: OPENAI_MODEL,
+			reasoning_effort: "none",
 			messages: [
 				{
 					role: "system",

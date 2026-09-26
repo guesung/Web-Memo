@@ -15,20 +15,22 @@ import type { MouseEvent } from "react";
 import { useState } from "react";
 import MemoOption from "./MemoOption";
 
-interface MemoCardFooterProps
+/** 메모 카드 푸터의 상태와 표시 속성. */
+interface IFMemoCardFooterProps
 	extends LanguageType,
 		React.HTMLAttributes<HTMLDivElement> {
 	memo: GetMemoResponse;
 	isShowingOption?: boolean;
 }
 
-export default function MemoCardFooter({
+/** 메모 카테고리, 수정 시각과 상태 변경 버튼을 표시한다. */
+const MemoCardFooter = ({
 	memo,
 	lng,
 	children,
 	isShowingOption = true,
 	...props
-}: MemoCardFooterProps) {
+}: IFMemoCardFooterProps) => {
 	const { t } = useTranslation(lng);
 	const searchParams = useSearchParams();
 	const router = useRouter();
@@ -155,11 +157,11 @@ export default function MemoCardFooter({
 
 	return (
 		<CardFooter
+			{...props}
 			className={cn(
 				"flex items-center justify-between px-5 py-3 border-t border-border",
 				props.className,
 			)}
-			{...props}
 		>
 			<div className="flex flex-col gap-2 flex-1 min-w-0">
 				{memo.category?.name && (
@@ -205,6 +207,8 @@ export default function MemoCardFooter({
 					variant="ghost"
 					size="sm"
 					className="w-8 h-8 p-0 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-full"
+					aria-label={t("memos.toggle.wish")}
+					aria-pressed={Boolean(memo.isWish)}
 					onClick={handleIsWishClick}
 				>
 					<HeartIcon
@@ -221,6 +225,8 @@ export default function MemoCardFooter({
 					variant="ghost"
 					size="sm"
 					className="w-8 h-8 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-full"
+					aria-label={t("memos.toggle.reading")}
+					aria-pressed={Boolean(memo.isReading)}
 					onClick={handleIsReadingClick}
 				>
 					<BookOpen
@@ -238,6 +244,8 @@ export default function MemoCardFooter({
 					variant="ghost"
 					size="sm"
 					className="w-8 h-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-full"
+					aria-label={t("memos.toggle.star")}
+					aria-pressed={Boolean(memo.isStar)}
 					onClick={handleIsStarClick}
 				>
 					<StarIcon
@@ -257,4 +265,6 @@ export default function MemoCardFooter({
 			</div>
 		</CardFooter>
 	);
-}
+};
+
+export default MemoCardFooter;

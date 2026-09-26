@@ -18,7 +18,7 @@ import {
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse, HighlightRow } from "@web-memo/shared/types";
-import { Skeleton, ToastAction, toast } from "@web-memo/ui";
+import { ToastAction, toast } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -26,8 +26,10 @@ import { useDragSelection, useMemoSelection } from "./_hooks";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import MemoEmptyState from "./MemoEmptyState";
 import MemoItem from "./MemoItem";
+import { MemoItemSkeleton } from "./MemoItemSkeleton";
 import MemoOptionHeader from "./MemoOptionHeader";
 import MemoSearchEmptyState from "./MemoSearchEmptyState";
+import { restoreHeldScrollPosition } from "./scrollPositionHold";
 
 const CONTAINER_ID = "memo-grid";
 
@@ -58,7 +60,8 @@ export default function MemoGrid({
 	const queryClient = useQueryClient();
 	const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
 	const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
-	const { showImpression, showActionItem } = useSettingQuery();
+	const { showImpression, showActionItem, truncateMemoContent } =
+		useSettingQuery();
 
 	const {
 		selectedMemoIds,
@@ -241,6 +244,7 @@ export default function MemoGrid({
 				align="center"
 				placeholder={<MemoItemSkeleton />}
 				onRequestAppend={handleRequestAppend}
+				onRenderComplete={restoreHeldScrollPosition}
 			>
 				{memos.map((memo, index) => (
 					<MemoItem
@@ -255,6 +259,7 @@ export default function MemoGrid({
 						isSelectingMode={isSelectingMode}
 						showImpression={showImpression}
 						showActionItem={showActionItem}
+						truncateMemoContent={truncateMemoContent}
 					/>
 				))}
 			</MasonryInfiniteGrid>
@@ -270,21 +275,15 @@ export default function MemoGrid({
 	);
 }
 
-function MemoItemSkeleton() {
-	return <Skeleton className="h-[300px] w-[300px]" />;
-}
-
-export function MemoGridSkeleton() {
+/** 그리드 최초 로딩에서 짧은 메모 카드들을 표시한다. */
+export const MemoGridSkeleton = () => {
 	return (
 		<div className="container max-w-full pt-4">
 			<div className="flex flex-wrap justify-center gap-4">
 				{Array.from({ length: 12 }).map((_, index) => (
-					<Skeleton
-						key={index.toString()}
-						className="h-[300px] w-[300px] rounded-lg"
-					/>
+					<MemoItemSkeleton key={index.toString()} />
 				))}
 			</div>
 		</div>
 	);
-}
+};

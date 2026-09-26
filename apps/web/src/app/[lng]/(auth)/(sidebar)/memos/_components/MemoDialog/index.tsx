@@ -18,6 +18,7 @@ import {
 	CardContent,
 	Dialog,
 	DialogContent,
+	DialogTitle,
 	Textarea,
 } from "@web-memo/ui";
 import { motion } from "framer-motion";
@@ -244,7 +245,10 @@ const MemoDialog = ({ lng, memoId }: IFMemoDialogProps) => {
 			<DialogContent
 				className="max-h-[90dvh] max-w-[600px] overflow-y-auto p-0"
 				onClose={handleDialogClose}
+				aria-describedby={undefined}
 			>
+				{/* 화면의 제목은 MemoCardHeader 가 그린다. 스크린 리더용 이름만 따로 둔다. */}
+				<DialogTitle className="sr-only">{memoData.title}</DialogTitle>
 				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
@@ -337,7 +341,7 @@ const MemoDialog = ({ lng, memoId }: IFMemoDialogProps) => {
 							memo={memoData}
 							lng={lng}
 							isShowingOption={false}
-							className="py-4"
+							className="px-6 py-4 border-t-0"
 						/>
 					</Card>
 				</motion.div>

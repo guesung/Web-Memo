@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       deploy_target:
-        description: "배포 대상 (none = 빌드 검증만, production = iOS TestFlight + Android Play 내부 테스트 제출)"
+        description: "배포 대상 (build-only = 빌드 검증만, production = iOS TestFlight + Android Play 내부 테스트 제출)"
         type: string
-        default: "none"
+        default: "build-only"
       ref:
         description: "체크아웃할 커밋/태그 (비우면 호출한 워크플로의 기본 ref)"
         type: string

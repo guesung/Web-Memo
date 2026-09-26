@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import { useSupabaseClientQuery } from "@web-memo/shared/hooks";
 import type { HighlightRow } from "@web-memo/shared/types";
-import { HighlightService } from "@web-memo/shared/utils";
+import { getPageKey, HighlightService } from "@web-memo/shared/utils";
 
-/** 현재 메모 목록의 하이라이트를 일괄 조회하고 정확한 URL별로 묶는다. */
+/** 현재 메모 목록의 하이라이트를 페이지 식별값별로 조회하고 각 메모 URL에 연결한다. */
 export const useMemoHighlights = (urls: string[]) => {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 	const uniqueUrls = [...new Set(urls.filter(Boolean))].sort();
@@ -22,11 +22,20 @@ export const useMemoHighlights = (urls: string[]) => {
 		},
 		enabled: uniqueUrls.length > 0,
 	});
-	const highlightsByUrl = new Map<string, HighlightRow[]>();
+	const highlightsByPageKey = new Map<string, HighlightRow[]>();
 	for (const highlight of data ?? []) {
-		const highlights = highlightsByUrl.get(highlight.url) ?? [];
+		const pageKey = highlight.page_key || getPageKey(highlight.url);
+		const highlights = highlightsByPageKey.get(pageKey) ?? [];
 		highlights.push(highlight);
-		highlightsByUrl.set(highlight.url, highlights);
+		highlightsByPageKey.set(pageKey, highlights);
+	}
+	const highlightsByUrl = new Map<string, HighlightRow[]>();
+	for (const url of uniqueUrls) {
+		try {
+			highlightsByUrl.set(url, highlightsByPageKey.get(getPageKey(url)) ?? []);
+		} catch {
+			highlightsByUrl.set(url, []);
+		}
 	}
 
 	return {

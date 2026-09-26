@@ -1,9 +1,9 @@
 import {
-	checkPastMemoRateLimit,
 	findPastMemo,
 	parsePastMemoRequest,
 	reportPastMemoFailure,
 } from "@src/modules/pastMemo";
+import { checkPastMemoRateLimit } from "@src/modules/ratelimit";
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE } from "@web-memo/shared/constants";
 import type { IFPastMemoResponse } from "@web-memo/shared/types";

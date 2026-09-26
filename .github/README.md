@@ -31,6 +31,7 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | `versions.yml` | workflow_dispatch | 수동 실행할 때마다 | `deploy/report-store-versions.mjs` |
 | `audit-env-manifest.yml` | pull_request, workflow_dispatch | PR 이벤트 또는 수동 실행마다 | `env/check-env-manifest.mjs` |
 | `audit-env-registry.yml` | pull_request, schedule, workflow_dispatch | 매일 07:30 KST, PR 이벤트 또는 수동 실행마다 | `env/audit-env-registry.mjs` |
+| `audit-ga-cid-adoption.yml` | schedule, workflow_dispatch | 매주 월요일 09:13 KST 또는 수동 실행마다 | 없음 (Playwright, `e2e/probes/`) |
 | `audit-refactor.yml` | schedule, workflow_dispatch | 매주 토요일 10:17 KST 또는 수동 실행마다 | `refactor/report-refactor-audit.mjs` |
 | `report-ga-daily.yml` | schedule, workflow_dispatch | 매일 07:00 KST 또는 수동 실행마다 | `ga/report-daily-ga.mjs` |
 | `report-ga-weekly.yml` | schedule, workflow_dispatch | 매주 월요일 08:00 KST 또는 수동 실행마다 | `ga/report-weekly-ga.mjs` |

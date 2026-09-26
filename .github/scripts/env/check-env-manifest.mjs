@@ -3,6 +3,8 @@
  * 환경 변수 매니페스트(.github/env-manifest.yml)를 코드·워크플로·.env 파일과 대조합니다.
  * .github/workflows/audit-env-manifest.yml 이 모든 PR에서 호출합니다.
  *
+ * turbo 설정(turbo.jsonc와 패키지별 turbo.json)의 env 선언도 매니페스트의 phase: build 표시와 대조합니다.
+ *
  * 토큰이 필요 없는 검사만 합니다. GitHub·Vercel·Supabase에 실제로 등록된 목록과의 대조는
  * 콘솔에서 바뀌는 일이라 PR과 무관하므로 audit-env-registry.mjs 가 스케줄로 맡습니다.
  *
@@ -18,8 +20,11 @@ import {
 	checkConsumers,
 	checkDotenvFiles,
 	checkReferences,
+	checkTurboEnv,
 	collectReferences,
+	collectTurboEnvDeclarations,
 	isScannedFile,
+	parseJsonc,
 	parseManifest,
 	renderDocs,
 	validateManifest,
@@ -90,7 +95,24 @@ const main = async () => {
 		return;
 	}
 
-	const scannedFiles = listTrackedFiles()
+	const trackedFiles = listTrackedFiles();
+	const turboConfigPaths = trackedFiles.filter(
+		(path) => path === "turbo.jsonc" || path === "turbo.json" || path.endsWith("/turbo.json"),
+	);
+	let turboConfigs;
+
+	try {
+		turboConfigs = turboConfigPaths.map((path) => ({
+			path,
+			config: parseJsonc(readText(path) ?? "{}"),
+		}));
+	} catch (error) {
+		reportErrors([`turbo 설정을 해석할 수 없습니다: ${error.message}`]);
+
+		return;
+	}
+
+	const scannedFiles = trackedFiles
 		.filter((path) => isScannedFile(path))
 		.map((path) => ({ path, content: readText(path) ?? "" }));
 
@@ -101,6 +123,10 @@ const main = async () => {
 			references: collectReferences(scannedFiles),
 		}),
 		...checkConsumers({ entries, readFile: readText }),
+		...checkTurboEnv({
+			entries,
+			declarations: collectTurboEnvDeclarations(turboConfigs),
+		}),
 		...checkDotenvFiles({
 			entries,
 			envpkgFiles: Object.fromEntries(

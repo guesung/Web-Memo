@@ -1,0 +1,67 @@
+name: GA Client ID Adoption Audit
+
+# 확장에서 웹으로 넘어온 사람이 GA에서 한 사용자로 이어지는지 운영 사이트에서 확인합니다.
+#
+# 확장은 `?ext_cid=`로 자기 client_id를 넘기고, 웹은 gtag보다 먼저 `_ga` 쿠키에 그 값을
+# 심어 gtag가 같은 cid를 쓰게 합니다(apps/web/src/app/layout.tsx). UUID를 cid로 받아 주는
+# 것은 문서에 없는 gtag 동작이라, Google이 쿠키 해석을 바꾸면 에러 없이 새 cid가 발급되고
+# 확장→웹 퍼널이 조용히 끊깁니다. GA Data API에는 client_id 차원이 없어 수집된 데이터로는
+# 알 수 없으므로, 실제 브라우저로 gtag가 내보내는 요청을 봅니다.
+#
+# 프로브는 GA로 가는 요청을 모두 abort하므로 운영 데이터에 흔적을 남기지 않습니다.
+on:
+  schedule:
+    # UTC 월요일 00:13 = Asia/Seoul 월요일 09:13. 주간 GA 리포트(08:00) 뒤에 돌아,
+    # 리포트의 퍼널이 이상하게 끊긴 주에는 같은 날 원인을 가를 수 있습니다.
+    - cron: "13 0 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: audit-ga-cid-adoption
+  cancel-in-progress: false
+
+# 체크아웃 외에는 아무것도 건드리지 않습니다.
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: GA client_id 연결 확인
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      # 프로브는 e2e 패키지의 Playwright만 씁니다. 웹·확장 빌드가 필요 없어 e2e와 그 의존성만 받습니다.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline --filter e2e...
+
+      - name: Install playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+        working-directory: e2e
+
+      - name: Probe client_id adoption
+        run: pnpm exec playwright test --config playwright.probe.config.ts
+        working-directory: e2e
+
+      # 주 1회 도는 무인 잡이라 실패가 알림 부재와 구분되지 않습니다. 실패 메시지의 ①·② 번호가
+      # 우리 코드의 회귀인지 gtag의 변화인지를 가르므로 로그를 함께 봅니다.
+      - name: Notify failure
+        if: ${{ failure() }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::warning::SLACK_WEBHOOK_URL 이 없어 실패 알림을 건너뜁니다"
+            exit 0
+          fi
+          curl --silent --show-error --fail-with-body \
+            --header "content-type: application/json" \
+            --data "{\"text\":\"❌ GA client_id 연결 확인 실패 — 확장→웹 퍼널이 끊겼을 수 있습니다. <$RUN_URL|실행 로그 보기>\"}" \
+            "$SLACK_WEBHOOK_URL"

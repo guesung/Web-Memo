@@ -3,11 +3,15 @@ import type { TCreateHighlightResponse } from "@web-memo/shared/modules/extensio
 import { toHighlightItem } from "@web-memo/shared/modules/highlight";
 import type { HighlightRow } from "@web-memo/shared/types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { reportContentUiError } from "../../utils/reportError";
 import {
 	createHighlightController,
 	type IFHighlightSelectionState,
 } from "./createHighlightController";
 import { startHighlightRestore } from "./restoreHighlights";
+
+// 리포터는 @web-memo/env를 끌어와 테스트에서 불러올 수 없다. 호출 여부만 본다.
+vi.mock("../../utils/reportError", () => ({ reportContentUiError: vi.fn() }));
 
 const ROW: HighlightRow = {
 	id: 1,
@@ -319,4 +323,50 @@ it("삭제된 행의 중복 키를 해제해 같은 문장을 다시 저장할 �
 	selectText();
 	await controller.save();
 	expect(requestCreate).toHaveBeenCalledOnce();
+});
+
+describe("하이라이트 생성 실패 보고", () => {
+	const saveWith = async (
+		requestCreate: () => Promise<TCreateHighlightResponse>,
+	) => {
+		const controller = createHighlightController({
+			renderer: createRenderer(),
+			requestCreate,
+			onSelectionChange: vi.fn(),
+		});
+		stop = controller.stop;
+		selectText();
+		await controller.save();
+	};
+
+	it("background에 닿지 못한 요청 실패를 보고한다", async () => {
+		const error = new Error("Could not establish connection");
+		await saveWith(async () => {
+			throw error;
+		});
+		expect(reportContentUiError).toHaveBeenCalledWith(
+			expect.objectContaining({
+				error,
+				feature: "highlight",
+				operation: "create",
+				stage: "request",
+			}),
+		);
+	});
+	it("background가 요청을 거부하면 보고한다", async () => {
+		await saveWith(async () => ({ success: false, error: "invalid_request" }));
+		expect(reportContentUiError).toHaveBeenCalledWith(
+			expect.objectContaining({
+				operation: "create",
+				stage: "invalid_request",
+			}),
+		);
+	});
+	it.each(["save_failed", "unauthenticated"] as const)(
+		"%s는 background가 보고했거나 정상 상태라 보고하지 않는다",
+		async (error) => {
+			await saveWith(async () => ({ success: false, error }));
+			expect(reportContentUiError).not.toHaveBeenCalled();
+		},
+	);
 });

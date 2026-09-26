@@ -108,6 +108,15 @@ gtag보다 먼저 `_ga` 쿠키에 그 값을 심어 이후 웹 이벤트가 같�
 아니면 무시합니다. 이미 웹에 방문한 적 있는 사람이 이 링크로 들어오면 `_ga`가 덮어써져 이전 웹
 방문 기록은 다른 사용자로 갈라집니다. 이 연결은 배포 이후 데이터부터 유효합니다.
 
+gtag가 `_ga`에 심은 UUID를 cid로 받아 주는 것은 문서에 없는 동작이라, Google이 쿠키 해석을
+바꾸면 에러 없이 새 cid가 발급되고 이 연결이 조용히 끊깁니다. GA Data API에는 `client_id`
+차원이 없어 수집된 데이터로는 알 수 없으므로, `audit-ga-cid-adoption.yml`이 매주 월요일
+09:13(KST)에 운영 로그인 페이지를 프로브 전용 `ext_cid`로 열어 확인합니다
+(`e2e/probes/gaClientIdAdoption.probe.ts`). GA로 가는 요청은 모두 abort해 운영 데이터에 흔적을
+남기지 않습니다. 실패 메시지의 ①은 `_ga` 쿠키가 심기지 않은 경우(우리 코드 회귀), ②는 쿠키는
+심겼지만 gtag가 그 값을 cid로 쓰지 않은 경우(gtag 변화)입니다. 로컬에서는
+`pnpm -F e2e exec playwright test --config playwright.probe.config.ts`로 돌립니다.
+
 **운영 커스텀 이벤트는 `hostName` 허용 목록과 `build_env=production`을 함께 적용합니다.**
 확장은 staging과 production에서 같은 hostName을 사용하므로 hostName만으로 구분할 수 없습니다.
 반대로 `activeUsers` 같은 지표는 gtag 자동 수집 기반이라 `build_env` 파라미터가 없습니다.
@@ -236,6 +245,9 @@ Slack 주간 리포트는 그 주와 전주만 보여 줍니다. 몇 달에 걸�
 
 `GA_SHEET_ID`가 없으면 시트 쓰기만 경고를 남기고 건너뜁니다. 시트 쓰기가 실패하면 Slack 게시는
 그대로 하고, 잡은 실패로 끝나 실패 알림이 갑니다.
+
+주간 Slack 리포트 맨 아래 줄에 이 시트로 가는 `누적 시트` 링크가 붙습니다. 몇 주에 걸친 추이는
+메시지가 아니라 시트에서 봅니다. `GA_SHEET_ID`가 없는 실행에는 링크를 싣지 않습니다.
 
 ## Data API 쿼터
 

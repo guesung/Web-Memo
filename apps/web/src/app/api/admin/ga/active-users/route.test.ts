@@ -91,18 +91,14 @@ describe("GET /api/admin/ga/active-users", () => {
 		getUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
 		checkIsAdmin.mockResolvedValue(true);
 
-		// 환경 변수는 모듈 최상단에서 한 번만 읽으므로 모듈을 새로 평가해야 반영됩니다.
-		vi.resetModules();
 		vi.stubEnv("GA4_SERVICE_ACCOUNT_JSON", "{ 깨진 값");
 
-		const { GET: getWithBrokenCredential } = await import("./route");
-		const response = await getWithBrokenCredential(requestWith());
+		const response = await GET(requestWith());
 
 		expect(response.status).toBe(500);
 		expect(await response.json()).not.toHaveProperty("connected");
 
 		vi.unstubAllEnvs();
-		vi.resetModules();
 	});
 
 	it("관리자 전용 응답이 공유 캐시에 실리지 않는다", async () => {

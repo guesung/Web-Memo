@@ -1,7 +1,7 @@
 import {
 	GITHUB_DEFAULT_BRANCH,
+	GITHUB_REPOSITORY,
 	getGithubDispatchToken,
-	getGithubRepository,
 } from "./config";
 
 /** GitHub REST API 주소입니다. */
@@ -20,7 +20,7 @@ export const requestGithub = async <T>(
 	init?: { method?: string; body?: unknown },
 ): Promise<T> => {
 	const response = await fetch(
-		`${GITHUB_API_ORIGIN}/repos/${getGithubRepository()}${path}`,
+		`${GITHUB_API_ORIGIN}/repos/${GITHUB_REPOSITORY}${path}`,
 		{
 			method: init?.method ?? "GET",
 			headers: buildHeaders(),

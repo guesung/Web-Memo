@@ -44,6 +44,9 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		pageTitle: tab?.title,
 	});
 	const titlePageRef = useRef("");
+	// initMemoData가 '다른 메모로 넘어갔는지'를 판단하는 기준. memoData?.id만 보면 저장 중
+	// 낙관적 캐시 삽입·실패 롤백도 "새 메모"로 오인해 진행 중인 저장 표시와 입력값을 지워버린다.
+	const memoPageKeyRef = useRef("");
 	useEffect(() => {
 		const pageKey = `${tab?.id}:${tab?.url}`;
 		if (titlePageRef.current !== pageKey) {
@@ -77,10 +80,25 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 	useEffect(
 		function initMemoData() {
+			const currentPageKey = `${tab?.id}:${tab?.url}`;
+			const isNewPage = memoPageKeyRef.current !== currentPageKey;
 			const currentMemoId = memoData?.id ?? null;
+
+			// 저장이 진행 중이거나 실패해서 재시도를 기다리는 동안에는 낙관적 캐시 삽입·롤백만으로
+			// 폼 값과 저장 상태를 덮지 않는다. 같은 페이지에 머무는 한 그런 캐시 변화는 지금 저장
+			// 중인 이 메모의 중간 상태일 뿐, 다른 메모를 새로 불러온 게 아니다.
+			const isSavingOrRecovering =
+				isSavingRef.current ||
+				saveStatus === "failed" ||
+				saveStatus === "retrying";
+
+			if (!isNewPage && isSavingOrRecovering) {
+				return;
+			}
+
 			const isNewMemo = initializedMemoIdRef.current !== currentMemoId;
 
-			if (isNewMemo) {
+			if (isNewPage || isNewMemo) {
 				setValue("memo", memoData?.memo ?? "");
 				setValue("impression", memoData?.impression ?? "");
 				setValue("actionItem", memoData?.actionItem ?? "");
@@ -94,12 +112,20 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 				setSaveStatus(currentMemoId === null ? "empty" : "saved");
 			}
 
+			if (isNewPage) {
+				memoPageKeyRef.current = currentPageKey;
+				isSavingRef.current = false;
+				pendingDataRef.current = null;
+			}
+
 			setValue("isWish", memoData?.isWish ?? false);
 			setValue("isStar", memoData?.isStar ?? false);
 			setValue("isReading", memoData?.isReading ?? false);
 			setValue("categoryId", memoData?.category_id ?? null);
 		},
 		[
+			tab?.id,
+			tab?.url,
 			memoData?.id,
 			memoData?.memo,
 			memoData?.impression,
@@ -108,6 +134,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 			memoData?.isStar,
 			memoData?.isReading,
 			memoData?.category_id,
+			saveStatus,
 			setValue,
 		],
 	);
@@ -137,9 +164,12 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 			pendingDataRef.current = null;
 
 			// 저장이 1초를 넘기면 진행 중 표시로 넘어간다. 그 전에 끝나면 성공은 조용히 지나간다.
+			// 이미 실패해서 다시 시도하는 중(failed·retrying)이라면 slow로 덮지 않고 그대로 둔다.
 			slowSaveTimerRef.current = setTimeout(() => {
 				setSaveStatus((currentSaveStatus) =>
-					currentSaveStatus === "failed" ? "retrying" : "slow",
+					currentSaveStatus === "failed" || currentSaveStatus === "retrying"
+						? "retrying"
+						: "slow",
 				);
 			}, 1000);
 

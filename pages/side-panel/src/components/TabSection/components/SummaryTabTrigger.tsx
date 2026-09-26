@@ -22,12 +22,12 @@ export default function SummaryTabTrigger() {
 				aria-disabled={isSummaryLoading}
 				onClick={(e) => {
 					e.stopPropagation();
-					if (!isSummaryLoading) generateSummary();
+					if (!isSummaryLoading) generateSummary("tab_trigger");
 				}}
 				onKeyDown={(e) => {
 					if (e.key === "Enter" || e.key === " ") {
 						e.stopPropagation();
-						if (!isSummaryLoading) generateSummary();
+						if (!isSummaryLoading) generateSummary("tab_trigger");
 					}
 				}}
 			>

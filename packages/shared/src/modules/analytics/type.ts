@@ -28,8 +28,17 @@ export interface IFGa4EventParams {
 	debug_mode?: true;
 	user_id?: string;
 	session_id?: string;
+	/** 확장에서만 실립니다. 배포 전후를 가르는 기준이라 웹 이벤트에는 키 자체가 없습니다. */
+	extension_version?: string;
 	[key: string]: unknown;
 }
+
+/**
+ * 요약 실행을 시작한 자리.
+ * @description empty_state는 요약 탭이 빈 화면일 때의 안내 버튼, tab_trigger는 탭
+ * 아이콘의 새로고침 버튼입니다. 배포 전후로 자리별 실행 비율이 어떻게 갈리는지 봅니다.
+ */
+export type TSummaryRunSource = "empty_state" | "tab_trigger";
 
 /**
  * 메모 카테고리를 바꾼 경로.
@@ -61,7 +70,7 @@ export type TAnalyticsEvent =
 	| { name: "page_view"; params: { page_title: string; page_location: string } }
 	| { name: "memo_write"; params: { fields: string } }
 	| { name: "memo_delete"; params: { memo_count: number } }
-	| { name: "summary_run" }
+	| { name: "summary_run"; params: { source: TSummaryRunSource } }
 	| { name: "summary_complete"; params: { duration_msec: number } }
 	| { name: "chat_message_send" }
 	| { name: "tab_change"; params: { tab_name: string } }

@@ -149,6 +149,10 @@ bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
 			sendResponse({ success: false, error: existingMemo.error.message });
 			return;
 		}
+		if ((existingMemo.data?.length ?? 0) > 1) {
+			sendResponse({ success: false, error: "multiple_memos" });
+			return;
+		}
 
 		// Supabase는 결과가 없을 때 빈 배열을 돌려주므로 첫 번째 요소로 존재 여부를 판단한다.
 		const currentMemo = existingMemo.data?.[0];

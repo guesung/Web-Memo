@@ -31,7 +31,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `memo_write`(fields) · `memo_delete`(memo_count) · `memo_restore`(memo_count) ·
 `memo_delete_permanently`(memo_count) · `memo_open`(has_search_query) · `memo_source_open` ·
 `memo_search`(query_length) · `memo_status_toggle`(status, enabled) · `memo_category_change`(source) ·
-`highlight_note_update` · `summary_run` · `summary_complete`(duration_msec) ·
+`highlight_note_update` · `summary_run`(source) · `summary_complete`(duration_msec) ·
 `summary_fail`(reason) · `chat_message_send` · `chat_fail`(reason) ·
 `youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category) ·
 `category_create` · `category_update` · `category_delete` · `login`(method) · `sign_up`(method) ·
@@ -60,6 +60,11 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 바꾼 것만 붙습니다. 사이드 패널 자동 저장(upsert)은 요청마다 `category_id`를 실어 보내 값이
 안 바뀌어도 이 이벤트가 찍히므로, 경로별 비율은 `source`가 있는 이벤트만 세야 합니다.
 
+`summary_run`의 `source`는 요약을 실행한 자리입니다. 요약 탭 빈 화면의 버튼이면 `empty_state`,
+탭 옆 새로고침 아이콘이면 `tab_trigger`입니다. 같은 `source` 차원을 `memo_category_change`도
+쓰므로 이벤트 이름으로 걸러서 봅니다. `summary_fail`의 `reason`은 요약 API가 오류 상태로
+응답하면 `http_<상태 코드>`(예: `http_500`)이고, 스트림 오류·네트워크 실패면 오류 메시지입니다.
+
 로그인 완료(`login`·`sign_up`)는 서버에서 끝나 `gtag`가 닿지 않습니다. 도착한 클라이언트가
 대신 쏩니다.
 
@@ -68,17 +73,22 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 파라미터를 **보내는 것**과 GA4가 그것을 **보고서 차원으로 제공하는 것**은 별개입니다. 등록돼
 있지 않으면 Data API 요청에서 차원 이름으로 쓸 수 없습니다.
 
-### 등록된 이벤트 범위 커스텀 차원 (21개)
+### 등록된 이벤트 범위 커스텀 차원 (22개)
 
 `build_env` · `ext_client_id` · `method` · `fields` · `from` · `status` · `enabled` ·
 `is_success` · `is_new_category` · `has_search_query` · `reason` · `search_target` ·
 `setting_keys` · `keys` · `tab_name` · `view` · `action` · `position` · `step_name` ·
-`event_category` · `source`
+`event_category` · `source` · `extension_version`
 
 `position`은 2026-09-24에 `설치 버튼 위치`로 등록했습니다. `extension_install_click`의
 `hero`·`recommendation`·`final`·`install_check_dialog` 값을 구분합니다.
 같은 날 `step_name`(`가이드 단계`), `event_category`(`이벤트 분류`),
 `source`(`메모 카테고리 변경 경로`)도 이벤트 범위로 등록했습니다.
+
+`extension_version`은 2026-09-26에 `확장 버전`으로 등록했습니다. 확장이 보내는 모든 커스텀
+이벤트에 매니페스트 버전(`chrome.runtime.getManifest().version`)을 공통 파라미터로 싣고, 웹
+이벤트에는 붙이지 않습니다. 배포 전후를 버전으로 가르는 기준이며, 등록 이전 버전의 이벤트는
+`(not set)`입니다.
 
 `ext_client_id`는 등록만 남아 있고 더는 보내지 않습니다. gtag가 이 이름을 예약 필드(`excid`)로
 바꿔 보내 커스텀 차원에 값이 한 번도 도달하지 않았기 때문입니다. 확장과 웹을 잇는 방법은

@@ -84,6 +84,7 @@ export type Database = {
 					favIconUrl: string | null;
 					id: number;
 					note: string | null;
+					page_key: string;
 					prefix_text: string | null;
 					suffix_text: string | null;
 					text_position_start: number | null;
@@ -99,6 +100,7 @@ export type Database = {
 					favIconUrl?: string | null;
 					id?: number;
 					note?: string | null;
+					page_key?: string;
 					prefix_text?: string | null;
 					suffix_text?: string | null;
 					text_position_start?: number | null;
@@ -114,6 +116,7 @@ export type Database = {
 					favIconUrl?: string | null;
 					id?: number;
 					note?: string | null;
+					page_key?: string;
 					prefix_text?: string | null;
 					suffix_text?: string | null;
 					text_position_start?: number | null;
@@ -137,6 +140,7 @@ export type Database = {
 					isStar: boolean | null;
 					isWish: boolean | null;
 					memo: string;
+					page_key: string;
 					title: string;
 					updated_at: string | null;
 					url: string;
@@ -154,6 +158,7 @@ export type Database = {
 					isStar?: boolean | null;
 					isWish?: boolean | null;
 					memo: string;
+					page_key?: string;
 					title: string;
 					updated_at?: string | null;
 					url: string;
@@ -171,6 +176,7 @@ export type Database = {
 					isStar?: boolean | null;
 					isWish?: boolean | null;
 					memo?: string;
+					page_key?: string;
 					title?: string;
 					updated_at?: string | null;
 					url?: string;

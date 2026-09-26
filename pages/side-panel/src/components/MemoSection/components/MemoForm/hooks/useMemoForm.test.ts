@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
 	values: {} as Record<string, unknown>,
 	upsert: vi.fn(),
 	patch: vi.fn(),
+	isMemoCacheSynced: true,
 	// 기본은 현재 mocks.memo를 즉시 돌려준다. 대기 상태를 흉내 내려면
 	// 개별 테스트에서 이 값을 절대 resolve되지 않는 Promise로 덮어쓴다.
 	memoQueryImpl: vi.fn(
@@ -61,6 +62,14 @@ const TestHook = () => {
 	return null;
 };
 const render = async () => {
+	// 테스트가 mocks.memo를 바꾸면 낙관적 캐시 갱신처럼 조회 캐시에도 바로 반영한다.
+	// 대기·실패를 흉내 내는 테스트는 isMemoCacheSynced를 꺼서 queryFn 결과만 쓰게 한다.
+	if (mocks.isMemoCacheSynced) {
+		queryClient.setQueryData(["test-memo", mocks.tab.url], {
+			data: mocks.memo ? [mocks.memo] : [],
+			error: null,
+		});
+	}
 	await act(async () =>
 		root.render(
 			createElement(
@@ -89,6 +98,7 @@ beforeEach(() => {
 	mocks.tab = { id: 1, url: "https://example.com/a", title: "A" };
 	mocks.memo = { id: 1, title: "A" };
 	mocks.values = {};
+	mocks.isMemoCacheSynced = true;
 	mocks.patch.mockReset();
 	mocks.upsert
 		.mockReset()
@@ -128,18 +138,6 @@ it("다른 저장 메모는 해당 저장 제목을 표시하며 같은 메모�
 	mocks.memo = { id: 2, title: "B 서버 응답" };
 	await render();
 	expect(mocks.values.title).toBe("B 직접 수정");
-});
-
-it("입력 debounce 전에 Link를 누르면 이전 제목은 저장하지 않고 현재 페이지 제목을 저장한다", async () => {
-	await render();
-	await act(async () => form.handleTitleChange("오래된 입력"));
-	await act(async () => form.handleTitleSyncClick());
-	await act(async () => {
-		await vi.advanceTimersByTimeAsync(600);
-	});
-	expect(mocks.values.title).toBe("A");
-	expect(mocks.upsert).toHaveBeenCalledTimes(1);
-	expect(mocks.upsert.mock.calls[0][0].data.title).toBe("A");
 });
 
 it("제목 미수정 상태에서 최초 저장 후 새 페이지로 이동해도 자동 연동한다", async () => {
@@ -197,6 +195,7 @@ it("저장 전 메모는 폼 값만 바꾸고 patch하지 않는다", async () =
 });
 
 it("메모 조회가 끝나지 않으면 저장·토글·카테고리 변경 요청을 보내지 않는다", async () => {
+	mocks.isMemoCacheSynced = false;
 	mocks.memoQueryImpl.mockImplementation(() => new Promise(() => {}));
 	await render();
 
@@ -216,23 +215,17 @@ it("메모 조회가 끝나지 않으면 저장·토글·카테고리 변경 요
 	expect(mocks.patch).not.toHaveBeenCalled();
 });
 
-it("메모가 없는 URL끼리 옮겨도(id가 둘 다 없어도) 남은 입력을 비운다", async () => {
-	mocks.memo = undefined;
-	await render();
-	setFormValue("memo", "저장 전 임시 입력");
-
-	mocks.tab = { id: 2, url: "https://example.com/b", title: "B" };
-	await render();
-
-	expect(mocks.values.memo).toBe("");
-});
-
 it("조회 응답에 error가 담겨 오면 실패로 보고 잠근 채 저장 요청을 보내지 않는다", async () => {
+	mocks.isMemoCacheSynced = false;
 	mocks.memoQueryImpl.mockImplementation(async () => ({
 		data: null,
 		error: { message: "Internal Server Error" },
 	}));
 	await render();
+	// React Query는 조회 결과를 setTimeout(0)으로 모아 알린다. 가짜 타이머를 흘려 결과를 반영한다.
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(0);
+	});
 
 	expect(form.isMemoError).toBe(true);
 	expect(form.isMemoLocked).toBe(true);
@@ -247,6 +240,7 @@ it("조회가 늦게 도착해도 저장된 제목으로 바꾼다", async () =>
 	let resolveMemo: (value: { data: unknown[] | null; error: null }) => void =
 		() => {};
 	mocks.memo = { id: 1, title: "저장된 제목" };
+	mocks.isMemoCacheSynced = false;
 	mocks.memoQueryImpl.mockImplementation(
 		() =>
 			new Promise((resolve) => {
@@ -267,11 +261,16 @@ it("조회가 늦게 도착해도 저장된 제목으로 바꾼다", async () =>
 });
 
 it("실패 뒤 다시 시도하는 동안에는 실패가 아니라 대기로 보고 잠금을 유지한다", async () => {
+	mocks.isMemoCacheSynced = false;
 	mocks.memoQueryImpl.mockImplementation(async () => ({
 		data: null,
 		error: { message: "Internal Server Error" },
 	}));
 	await render();
+	// React Query는 조회 결과를 setTimeout(0)으로 모아 알린다. 가짜 타이머를 흘려 결과를 반영한다.
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(0);
+	});
 	expect(form.isMemoError).toBe(true);
 
 	mocks.memoQueryImpl.mockImplementation(() => new Promise(() => {}));
@@ -282,4 +281,245 @@ it("실패 뒤 다시 시도하는 동안에는 실패가 아니라 대기로 �
 
 	expect(form.isMemoError).toBe(false);
 	expect(form.isMemoLocked).toBe(true);
+});
+
+it("저장된 메모가 없으면 empty이고, 저장이 성공하면 조용히 saved로 바뀐다", async () => {
+	mocks.memo = undefined;
+	await render();
+	expect(form.saveStatus).toBe("empty");
+
+	await act(async () => form.saveMemo({ memo: "내용" }));
+
+	expect(form.saveStatus).toBe("saved");
+});
+
+it("저장이 1초를 넘기면 slow로 바뀐다", async () => {
+	let resolveUpsert = () => {};
+	mocks.upsert.mockImplementation((_request, callbacks) => {
+		resolveUpsert = () => callbacks.onSuccess();
+	});
+	await render();
+
+	act(() => {
+		void form.saveMemo({ memo: "느린 저장" });
+	});
+	expect(form.saveStatus).toBe("saved");
+
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(1000);
+	});
+	expect(form.saveStatus).toBe("slow");
+
+	await act(async () => resolveUpsert());
+	expect(form.saveStatus).toBe("saved");
+});
+
+it("저장에 실패하면 다음 성공까지 failed를 유지한다", async () => {
+	mocks.upsert.mockImplementation((_request, callbacks) => callbacks.onError());
+	await render();
+
+	await act(async () => form.saveMemo({ memo: "실패" }));
+	expect(form.saveStatus).toBe("failed");
+
+	mocks.upsert.mockImplementation((_request, callbacks) =>
+		callbacks.onSuccess(),
+	);
+	await act(async () => form.saveMemo({ memo: "재시도" }));
+	expect(form.saveStatus).toBe("saved");
+});
+
+it("다시 시도를 누르면 즉시 retrying으로 바뀌고 현재 폼 값으로 저장한다", async () => {
+	mocks.upsert.mockImplementation((_request, callbacks) => callbacks.onError());
+	await render();
+	mocks.values.memo = "실패";
+	await act(async () => form.saveMemo());
+	expect(form.saveStatus).toBe("failed");
+
+	let resolveRetry = () => {};
+	mocks.upsert.mockImplementation((_request, callbacks) => {
+		resolveRetry = () => callbacks.onSuccess();
+	});
+	act(() => {
+		form.handleSaveRetryClick();
+	});
+	expect(form.saveStatus).toBe("retrying");
+
+	// handleSaveRetryClick은 getTabInfo()를 기다린 뒤에야 upsertMemo를 부른다.
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(0);
+	});
+	expect(mocks.upsert.mock.calls.at(-1)?.[0].data.memo).toBe("실패");
+
+	await act(async () => resolveRetry());
+	expect(form.saveStatus).toBe("saved");
+});
+
+it("새 메모 첫 저장 중 낙관적 캐시가 삽입돼도 1초를 넘기면 slow로 바뀐다", async () => {
+	mocks.memo = undefined;
+	await render();
+	expect(form.saveStatus).toBe("empty");
+
+	let resolveUpsert = () => {};
+	mocks.upsert.mockImplementation((_request, callbacks) => {
+		resolveUpsert = () => callbacks.onSuccess();
+	});
+	mocks.values.memo = "새 메모 내용";
+	act(() => {
+		void form.saveMemo({ memo: "새 메모 내용" });
+	});
+
+	// onMutate가 음수 id로 낙관적 캐시를 넣은 순간을 흉내낸다. 저장 중에는 이 변화로
+	// saveStatus가 "saved"로 앞당겨지면 안 된다(Q-07).
+	mocks.memo = { id: -1, title: "A" };
+	await render();
+	expect(form.saveStatus).toBe("empty");
+	expect(mocks.values.memo).toBe("새 메모 내용");
+
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(1000);
+	});
+	expect(form.saveStatus).toBe("slow");
+
+	await act(async () => resolveUpsert());
+	expect(form.saveStatus).toBe("saved");
+});
+
+it("새 메모 insert가 실패하면 failed를 유지하고 입력한 본문을 지우지 않는다", async () => {
+	mocks.memo = undefined;
+	await render();
+
+	let rejectUpsert = () => {};
+	mocks.upsert.mockImplementation((_request, callbacks) => {
+		rejectUpsert = () => callbacks.onError();
+	});
+	mocks.values.memo = "잃으면 안 되는 내용";
+	act(() => {
+		void form.saveMemo({ memo: "잃으면 안 되는 내용" });
+	});
+
+	// onMutate의 낙관적 삽입 → 실패 후 onError의 롤백을 흉내낸다.
+	mocks.memo = { id: -1, title: "A" };
+	await render();
+	// saveMemo는 getTabInfo()를 기다린 뒤에야 upsertMemo를 부르므로 대기 중인 마이크로태스크를 흘려보낸다.
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(0);
+	});
+	await act(async () => rejectUpsert());
+	expect(form.saveStatus).toBe("failed");
+
+	mocks.memo = undefined;
+	await render();
+
+	expect(form.saveStatus).toBe("failed");
+	expect(mocks.values.memo).toBe("잃으면 안 되는 내용");
+});
+
+it("다시 시도 저장이 1초를 넘어도 slow가 아니라 retrying을 유지한다", async () => {
+	mocks.upsert.mockImplementation((_request, callbacks) => callbacks.onError());
+	await render();
+	mocks.values.memo = "실패";
+	await act(async () => form.saveMemo());
+	expect(form.saveStatus).toBe("failed");
+
+	let resolveRetry = () => {};
+	mocks.upsert.mockImplementation((_request, callbacks) => {
+		resolveRetry = () => callbacks.onSuccess();
+	});
+	act(() => {
+		form.handleSaveRetryClick();
+	});
+	expect(form.saveStatus).toBe("retrying");
+
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(1000);
+	});
+	expect(form.saveStatus).toBe("retrying");
+
+	await act(async () => resolveRetry());
+	expect(form.saveStatus).toBe("saved");
+});
+
+it("다른 메모를 고르기 전에 입력을 선택한 ID로 저장하고 지연 저장을 취소한다", async () => {
+	await render();
+	await act(async () => form.handleMemoChange("변경한 내용"));
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.upsert).toHaveBeenCalledTimes(1);
+	expect(mocks.upsert.mock.calls[0][0]).toMatchObject({
+		id: 1,
+		data: { memo: "변경한 내용" },
+	});
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(600);
+	});
+	expect(mocks.upsert).toHaveBeenCalledTimes(1);
+});
+
+it("전환 전 저장이 실패하면 선택 화면으로 나가지 않는다", async () => {
+	mocks.upsert.mockImplementation((_request, callbacks) => callbacks.onError());
+	await render();
+	await act(async () => form.handleMemoChange("저장할 내용"));
+	let isSaved = true;
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+
+	expect(isSaved).toBe(false);
+});
+
+it("바뀐 내용이 없으면 저장하지 않고 바로 전환한다", async () => {
+	await render();
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.upsert).not.toHaveBeenCalled();
+});
+
+it("입력이 이미 저장됐으면 전환할 때 다시 저장하지 않는다", async () => {
+	await render();
+	await act(async () => form.handleMemoChange("저장된 내용"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(1500);
+	});
+	const saveCount = mocks.upsert.mock.calls.length;
+	expect(saveCount).toBeGreaterThan(0);
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.upsert).toHaveBeenCalledTimes(saveCount);
+});
+
+it("첫 저장으로 ID가 생겨도 저장 중 입력한 초안을 유지한다", async () => {
+	mocks.memo = undefined;
+	let completeFirstSave = () => {};
+	mocks.upsert.mockImplementationOnce((_request, callbacks) => {
+		completeFirstSave = callbacks.onSuccess;
+	});
+	await render();
+	await act(async () => form.handleMemoChange("첫 입력"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(350);
+	});
+	await act(async () => form.handleMemoChange("저장 중 추가 입력"));
+	mocks.memo = { id: 1, title: "A" };
+	await render();
+	expect(mocks.values.memo).toBe("저장 중 추가 입력");
+	await act(async () => {
+		completeFirstSave();
+		await vi.advanceTimersByTimeAsync(600);
+	});
+	expect(mocks.values.memo).toBe("저장 중 추가 입력");
+	expect(mocks.upsert.mock.calls.at(-1)?.[0].data.memo).toBe(
+		"저장 중 추가 입력",
+	);
 });

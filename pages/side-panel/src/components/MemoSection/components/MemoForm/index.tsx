@@ -1,5 +1,4 @@
 import ResizeHandle from "@src/components/ResizeHandle";
-import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
 import { getMemoUrl, type IFMemoUrlParams } from "@src/utils";
 import { useQueryClient } from "@tanstack/react-query";
@@ -7,6 +6,7 @@ import { QUERY_KEY, type TMemoStatusKey } from "@web-memo/shared/constants";
 import { useSettingQuery, useSupabaseUserQuery } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
+import type { Database } from "@web-memo/shared/types";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
 	badgeVariants,
@@ -16,19 +16,14 @@ import {
 	ToastAction,
 	toast,
 } from "@web-memo/ui";
-import {
-	BookOpenIcon,
-	HeartIcon,
-	LinkIcon,
-	Loader2Icon,
-	StarIcon,
-} from "lucide-react";
+import { BookOpenIcon, HeartIcon, Loader2Icon, StarIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import {
 	CategoryAddChip,
 	CategoryBadge,
 	CategoryCommandPopup,
+	CategorySuggestion,
 	PastMemoNotice,
 	SaveStatus,
 } from "./components";
@@ -40,10 +35,15 @@ import {
 	useMemoForm,
 } from "./hooks";
 
-function MemoFormContent() {
+function MemoFormContent({
+	selectedMemo,
+	onOtherMemoClick,
+	isSelectedMemoMissing,
+}: IFMemoFormProps) {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+	const [isSwitching, setIsSwitching] = useState(false);
 	const queryClient = useQueryClient();
-	const { register, watch } = useFormContext<MemoInput>();
+	const { register, watch, getValues } = useFormContext<MemoInput>();
 	const { ref, ...rest } = register("memo");
 
 	const currentCategoryId = watch("categoryId");
@@ -78,22 +78,42 @@ function MemoFormContent() {
 		isMemoLocked,
 		isMemoError,
 		refetchMemo,
-		isSaving,
+		saveStatus,
+		handleSaveRetryClick,
+		isWritePending,
+		saveBeforeSwitch,
 		handleTitleChange,
-		handleTitleSyncClick,
-		isTitleSyncAvailable,
 		handleMemoChange,
 		handleImpressionChange,
 		handleActionItemChange,
 		updateCategory,
 		toggleMemoStatus,
-	} = useMemoForm();
+	} = useMemoForm({ selectedMemo });
 	// 겉모습(로딩 문구·버튼 흐림)만 200ms 지연시킨다. 편집·저장 차단은 isMemoLocked로 즉시 적용된다.
 	const isMemoLoadingVisible = useDelayedFlag(
 		isMemoLocked && !isMemoError,
 		200,
 	);
 	const isMemoUiDimmed = isMemoError || isMemoLoadingVisible;
+
+	const handleOtherMemoClick = async () => {
+		if (!onOtherMemoClick || isMemoLocked || isWritePending || isSwitching) {
+			return;
+		}
+		if (isSelectedMemoMissing) {
+			onOtherMemoClick(getValues());
+			return;
+		}
+
+		setIsSwitching(true);
+		const isSaved = await saveBeforeSwitch();
+		if (isSaved) {
+			onOtherMemoClick();
+			return;
+		}
+
+		setIsSwitching(false);
+	};
 
 	const {
 		categories,
@@ -118,16 +138,36 @@ function MemoFormContent() {
 
 	const {
 		isLoading: isSuggestingCategory,
+		suggestion,
+		isAccepting,
 		triggerSuggestion,
+		acceptSuggestion,
+		dismissSuggestion,
+		pauseAutoDismiss,
+		resumeAutoDismiss,
 		dismissCurrentUrl,
 	} = useCategorySuggestion({
 		currentCategoryId,
+		currentMemoId: memoData?.id ?? null,
 		onCategorySelect: updateCategory,
+		onCategoryAutoApply: (categoryName, onUndo) => {
+			toast({
+				title: I18n.get("category_auto_applied", categoryName),
+				action: (
+					<ToastAction
+						altText={I18n.get("category_auto_applied_undo")}
+						onClick={() => void onUndo()}
+					>
+						{I18n.get("category_auto_applied_undo")}
+					</ToastAction>
+				),
+			});
+		},
 	});
 
 	const handleCategoryRemoveClick = () => {
 		handleCategoryRemove();
-		dismissCurrentUrl();
+		void dismissCurrentUrl();
 	};
 
 	const handleMemoStatusClick = async (statusKey: TMemoStatusKey) => {
@@ -172,6 +212,25 @@ function MemoFormContent() {
 
 	return (
 		<>
+			{isSelectedMemoMissing && (
+				<p role="alert" className="text-xs text-destructive">
+					{I18n.get("memo_candidates_selection_lost")}
+				</p>
+			)}
+			{onOtherMemoClick && (
+				<button
+					type="button"
+					className={cn(
+						"min-h-8 self-start rounded px-2 py-1 text-xs text-muted-foreground underline hover:text-foreground",
+						// 잠금으로 막힌 경우는 200ms 뒤에만 흐리게 한다. 저장 중 차단은 기존처럼 바로 흐리게 한다.
+						(isWritePending || isSwitching || isMemoUiDimmed) && "opacity-50",
+					)}
+					disabled={isMemoLocked || isWritePending || isSwitching}
+					onClick={handleOtherMemoClick}
+				>
+					{I18n.get("memo_choose_other")}
+				</button>
+			)}
 			{!isMemoLocked && <PastMemoNotice hasMemoData={!!memoData?.created_at} />}
 			<form className="relative flex min-h-0 flex-1 flex-col py-1">
 				<div className="mb-1 flex shrink-0 items-center gap-1">
@@ -193,19 +252,6 @@ function MemoFormContent() {
 							onChange: (event) => handleTitleChange(event.target.value),
 						})}
 					/>
-					<button
-						type="button"
-						className={cn(
-							"shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground",
-							isMemoUiDimmed && "opacity-50",
-						)}
-						aria-label={I18n.get("memo_title_sync")}
-						title={I18n.get("memo_title_sync")}
-						disabled={!isTitleSyncAvailable || isMemoLocked}
-						onClick={handleTitleSyncClick}
-					>
-						<LinkIcon className="size-4" aria-hidden="true" />
-					</button>
 				</div>
 				<div
 					className="relative flex min-h-0 flex-col"
@@ -341,8 +387,20 @@ function MemoFormContent() {
 						</div>
 					</>
 				)}
+				{suggestion && !currentCategoryId && (
+					<div className="flex shrink-0 justify-end pt-2">
+						<CategorySuggestion
+							suggestion={suggestion}
+							isAccepting={isAccepting}
+							onAccept={() => void acceptSuggestion()}
+							onDismiss={dismissSuggestion}
+							onPauseDismiss={pauseAutoDismiss}
+							onResumeDismiss={resumeAutoDismiss}
+						/>
+					</div>
+				)}
 				<div className="flex shrink-0 items-center justify-between gap-2 pt-2">
-					<div className="flex items-center gap-2">
+					<div className="flex min-w-0 items-center gap-2">
 						<MemoStatusToggle
 							label={I18n.get("wish_list")}
 							isOn={!!memoData?.isWish}
@@ -386,7 +444,10 @@ function MemoFormContent() {
 							/>
 						</MemoStatusToggle>
 						{!isMemoLocked && (
-							<SaveStatus isSaving={isSaving} memo={watch("memo")} />
+							<SaveStatus
+								saveStatus={saveStatus}
+								onRetryClick={handleSaveRetryClick}
+							/>
 						)}
 					</div>
 					<div className="flex items-center gap-2">
@@ -441,7 +502,11 @@ function MemoFormContent() {
 	);
 }
 
-function MemoForm() {
+function MemoForm({
+	selectedMemo,
+	onOtherMemoClick,
+	isSelectedMemoMissing,
+}: IFMemoFormProps) {
 	const form = useForm<MemoInput>({
 		shouldUnregister: false,
 		defaultValues: {
@@ -458,12 +523,23 @@ function MemoForm() {
 
 	return (
 		<FormProvider {...form}>
-			<MemoFormContent />
+			<MemoFormContent
+				selectedMemo={selectedMemo}
+				onOtherMemoClick={onOtherMemoClick}
+				isSelectedMemoMissing={isSelectedMemoMissing}
+			/>
 		</FormProvider>
 	);
 }
 
-export default withAuthentication(MemoForm);
+export default MemoForm;
+
+/** 선택된 메모를 편집기와 연결한다. */
+interface IFMemoFormProps {
+	selectedMemo?: Database["memo"]["Tables"]["memo"]["Row"];
+	isSelectedMemoMissing?: boolean;
+	onOtherMemoClick?: (draft?: MemoInput) => void;
+}
 
 interface IFMemoStatusToggleProps {
 	/** 스크린 리더가 읽을 이름 */

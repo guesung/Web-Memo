@@ -12,6 +12,10 @@ export { default as useMemoQuery, memoQueryOptions } from "./useMemoQuery";
 export { default as useMemosInfiniteQuery } from "./useMemosInfiniteQuery";
 export { default as useNoticeQuery } from "./useNoticeQuery";
 export {
+	default as useSamePathMemoQuery,
+	samePathMemoQueryOptions,
+} from "./useSamePathMemoQuery";
+export {
 	default as useSettingQuery,
 	settingQueryOptions,
 } from "./useSettingQuery";

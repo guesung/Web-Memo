@@ -6,7 +6,7 @@ import {
 } from "@web-memo/shared/constants";
 import type { HighlightAnchor } from "@web-memo/shared/modules/highlight";
 import type { HighlightRow } from "@web-memo/shared/types";
-import { normalizeUrl } from "@web-memo/shared/utils/url";
+import { getPageKey, normalizeUrl } from "@web-memo/shared/utils/url";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { highlightService } from "@/lib/supabase/client";
 
@@ -56,7 +56,7 @@ export function useHighlightCreateMutation() {
 		},
 		onSuccess: (highlight) => {
 			queryClient.invalidateQueries({
-				queryKey: QUERY_KEY.highlightsByUrl(highlight.url),
+				queryKey: QUERY_KEY.highlightsByUrl(getPageKey(highlight.url)),
 			});
 			queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.highlightCountsPrefix(),
@@ -72,15 +72,33 @@ export function useHighlightCreateMutation() {
  */
 export function useHighlightUpdateMutation() {
 	const queryClient = useQueryClient();
+	const { session } = useAuth();
 
 	return useMutation<
 		HighlightRow,
 		Error,
 		{ id: number; url: string; color?: HighlightColor; note?: string }
 	>({
-		mutationFn: async ({ id, color, note }) => {
+		mutationFn: async ({ id, url, color, note }) => {
+			const userId = session?.user.id;
+			if (!userId) {
+				throw new Error("로그인이 필요합니다.");
+			}
+			const { data: highlight, error: lookupError } =
+				await highlightService.getHighlightById({ id, userId });
+			if (lookupError || !highlight) {
+				throw new Error(
+					lookupError?.message ?? "하이라이트를 찾지 못했습니다.",
+				);
+			}
+			if (
+				(highlight.page_key || getPageKey(highlight.url)) !== getPageKey(url)
+			) {
+				throw new Error("다른 페이지의 하이라이트는 수정할 수 없습니다.");
+			}
 			const { data, error } = await highlightService.updateHighlight({
 				id,
+				scope: { url: highlight.url, userId },
 				request: {
 					...(color ? { color } : {}),
 					...(note !== undefined ? { note } : {}),
@@ -95,7 +113,7 @@ export function useHighlightUpdateMutation() {
 		},
 		onSuccess: (_result, variables) => {
 			queryClient.invalidateQueries({
-				queryKey: QUERY_KEY.highlightsByUrl(variables.url),
+				queryKey: QUERY_KEY.highlightsByUrl(getPageKey(variables.url)),
 			});
 		},
 	});
@@ -104,18 +122,38 @@ export function useHighlightUpdateMutation() {
 /** 하이라이트를 삭제한다. */
 export function useHighlightDeleteMutation() {
 	const queryClient = useQueryClient();
+	const { session } = useAuth();
 
 	return useMutation<void, Error, { id: number; url: string }>({
-		mutationFn: async ({ id }) => {
-			const { error } = await highlightService.deleteHighlight(id);
+		mutationFn: async ({ id, url }) => {
+			const userId = session?.user.id;
+			if (!userId) {
+				throw new Error("로그인이 필요합니다.");
+			}
+			const { data: highlight, error: lookupError } =
+				await highlightService.getHighlightById({ id, userId });
+			if (lookupError || !highlight) {
+				throw new Error(
+					lookupError?.message ?? "하이라이트를 찾지 못했습니다.",
+				);
+			}
+			if (
+				(highlight.page_key || getPageKey(highlight.url)) !== getPageKey(url)
+			) {
+				throw new Error("다른 페이지의 하이라이트는 삭제할 수 없습니다.");
+			}
+			const { data, error } = await highlightService.deleteHighlight(id, {
+				url: highlight.url,
+				userId,
+			});
 
-			if (error) {
-				throw new Error(error.message);
+			if (error || !data?.[0]) {
+				throw new Error(error?.message ?? "하이라이트를 삭제하지 못했습니다.");
 			}
 		},
 		onSuccess: (_result, variables) => {
 			queryClient.invalidateQueries({
-				queryKey: QUERY_KEY.highlightsByUrl(variables.url),
+				queryKey: QUERY_KEY.highlightsByUrl(getPageKey(variables.url)),
 			});
 			queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.highlightCountsPrefix(),

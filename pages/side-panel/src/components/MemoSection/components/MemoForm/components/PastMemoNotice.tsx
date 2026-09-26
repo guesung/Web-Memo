@@ -1,4 +1,3 @@
-import { getMemoUrl } from "@src/utils";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import type {
 	IFPastMemoDuplicate,
@@ -81,7 +80,7 @@ const PastMemoNotice = (props: IFPastMemoNoticeProps) => {
 			name: "past_memo_open",
 			params: { kind: "related", source: "jev" },
 		});
-		void Tab.create({ url: getMemoUrl({ id: relatedMemo.id }) });
+		void Tab.create({ url: relatedMemo.url });
 	};
 
 	const dismissButton = (

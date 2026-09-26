@@ -1,5 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
+import { getPageKey } from "@web-memo/shared/utils/url";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -93,6 +94,9 @@ export function useBrowserState({
 	);
 	const [urlInput, setUrlInput] = useState("");
 	const [isMemoOpen, setIsMemoOpen] = useState(false);
+	const [selectedMemoId, setSelectedMemoId] = useState<number | string | null>(
+		null,
+	);
 	const [isBlogSheetOpen, setIsBlogSheetOpen] = useState(false);
 	const [contentHeight, setContentHeight] = useState(0);
 	const [wishToast, setWishToast] = useState<string | null>(null);
@@ -121,8 +125,51 @@ export function useBrowserState({
 		maxY: number;
 	} | null>(null);
 
-	const { data: supabaseMemo } = useSupabaseMemoByUrl(currentUrl, isLoggedIn);
-	const { data: localMemo } = useLocalMemoByUrl(currentUrl);
+	const { data: supabaseCandidates } = useSupabaseMemoByUrl(
+		currentUrl,
+		isLoggedIn,
+	);
+	const { data: localCandidates } = useLocalMemoByUrl(currentUrl);
+	const pendingLocalCandidates = isLoggedIn
+		? (localCandidates ?? []).filter((candidate) => !candidate.synced)
+		: [];
+	const loggedInCandidateCount =
+		(supabaseCandidates?.length ?? 0) + pendingLocalCandidates.length;
+	const eligibleLocalCandidates = isLoggedIn
+		? pendingLocalCandidates
+		: (localCandidates ?? []);
+	const supabaseMemo =
+		selectedMemoId === null
+			? loggedInCandidateCount === 1
+				? supabaseCandidates?.[0]
+				: undefined
+			: supabaseCandidates?.find((memo) => memo.id === selectedMemoId);
+	const localMemo =
+		selectedMemoId === null
+			? (isLoggedIn
+					? loggedInCandidateCount
+					: eligibleLocalCandidates.length) === 1
+				? eligibleLocalCandidates[0]
+				: undefined
+			: eligibleLocalCandidates.find((memo) => memo.id === selectedMemoId);
+	const useLocalMemoActions =
+		!isLoggedIn || Boolean(localMemo && !supabaseMemo);
+	const hasUnselectedCandidates = isLoggedIn
+		? !supabaseCandidates ||
+			!localCandidates ||
+			(selectedMemoId !== null && !supabaseMemo && !localMemo) ||
+			(loggedInCandidateCount > 0 && !supabaseMemo && !localMemo)
+		: !localCandidates ||
+			(selectedMemoId !== null && !localMemo) ||
+			(localCandidates.length > 1 && !localMemo);
+	const pageKey = currentUrl ? getPageKey(currentUrl) : "";
+	const previousPageKeyRef = useRef(pageKey);
+	useEffect(() => {
+		if (previousPageKeyRef.current !== pageKey) {
+			previousPageKeyRef.current = pageKey;
+			setSelectedMemoId(null);
+		}
+	}, [pageKey]);
 	const wishToggleSupabase = useMemoWishToggleMutation();
 	const wishToggleLocal = useLocalMemoWishToggle();
 	const readingToggleSupabase = useMemoReadingToggleMutation();
@@ -132,15 +179,15 @@ export function useBrowserState({
 	const deleteSupabaseMemo = useDeleteMemoMutation();
 	const deleteLocalMemo = useLocalMemoDelete();
 
-	const isCurrentPageWish = isLoggedIn
+	const isCurrentPageWish = !useLocalMemoActions
 		? (supabaseMemo?.isWish ?? false)
 		: (localMemo?.isWish ?? false);
 
-	const isCurrentPageReading = isLoggedIn
+	const isCurrentPageReading = !useLocalMemoActions
 		? (supabaseMemo?.isReading ?? false)
 		: (localMemo?.isReading ?? false);
 
-	const isCurrentPageStar = isLoggedIn
+	const isCurrentPageStar = !useLocalMemoActions
 		? (supabaseMemo?.isStar ?? false)
 		: (localMemo?.isStar ?? false);
 
@@ -193,6 +240,7 @@ export function useBrowserState({
 		setCurrentUrl(decoded);
 		setPageTitle("");
 		setIsMemoOpen(false);
+		setSelectedMemoId(null);
 		panelHeight.value = withSpring(0, SPRING_CONFIG);
 	}, [paramUrl, navTs, panelHeight]);
 
@@ -324,63 +372,94 @@ export function useBrowserState({
 	]);
 
 	const handleReadingToggle = useCallback(() => {
+		if (hasUnselectedCandidates) {
+			setIsMemoOpen(true);
+			panelHeight.value = withSpring(contentHeight * savedRatio, SPRING_CONFIG);
+			return;
+		}
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-		if (isLoggedIn) {
+		if (!useLocalMemoActions) {
 			readingToggleSupabase.mutate({
 				url: currentUrl,
 				title: pageTitle,
 				favIconUrl: pageFavIconUrl,
 				currentIsReading: isCurrentPageReading,
+				selectedId: supabaseMemo?.id,
 			});
 		} else {
 			readingToggleLocal.mutate({
 				url: currentUrl,
 				title: pageTitle,
 				favIconUrl: pageFavIconUrl,
+				selectedId: localMemo?.id,
 			});
 		}
 	}, [
 		currentUrl,
 		pageTitle,
 		pageFavIconUrl,
-		isLoggedIn,
+		useLocalMemoActions,
 		isCurrentPageReading,
 		readingToggleSupabase,
 		readingToggleLocal,
+		supabaseMemo,
+		localMemo,
+		hasUnselectedCandidates,
+		panelHeight,
+		contentHeight,
+		savedRatio,
 	]);
 
 	const handleStarToggle = useCallback(() => {
+		if (hasUnselectedCandidates) {
+			setIsMemoOpen(true);
+			panelHeight.value = withSpring(contentHeight * savedRatio, SPRING_CONFIG);
+			return;
+		}
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-		if (isLoggedIn) {
+		if (!useLocalMemoActions) {
 			starToggleSupabase.mutate({
 				url: currentUrl,
 				title: pageTitle,
 				favIconUrl: pageFavIconUrl,
 				currentIsStar: isCurrentPageStar,
+				selectedId: supabaseMemo?.id,
 			});
 		} else {
 			starToggleLocal.mutate({
 				url: currentUrl,
 				title: pageTitle,
 				favIconUrl: pageFavIconUrl,
+				selectedId: localMemo?.id,
 			});
 		}
 	}, [
 		currentUrl,
 		pageTitle,
 		pageFavIconUrl,
-		isLoggedIn,
+		useLocalMemoActions,
 		isCurrentPageStar,
 		starToggleSupabase,
 		starToggleLocal,
+		supabaseMemo,
+		localMemo,
+		hasUnselectedCandidates,
+		panelHeight,
+		contentHeight,
+		savedRatio,
 	]);
 
 	const handleWishToggle = useCallback(() => {
+		if (hasUnselectedCandidates) {
+			setIsMemoOpen(true);
+			panelHeight.value = withSpring(contentHeight * savedRatio, SPRING_CONFIG);
+			return;
+		}
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
 		// 위시리스트를 취소할 때, 작성된 메모가 없고 별표(중요)도 아니면 메모 레코드를 삭제한다.
 		// 별표만 켜진 빈 메모는 삭제하면 중요 표시가 유실되므로 위시 플래그만 해제한다.
-		const currentMemo = isLoggedIn ? supabaseMemo : localMemo;
+		const currentMemo = useLocalMemoActions ? localMemo : supabaseMemo;
 		const shouldDeleteEmptyMemo =
 			isCurrentPageWish &&
 			!currentMemo?.memo?.trim() &&
@@ -403,7 +482,7 @@ export function useBrowserState({
 			onError: () => showWishToast("처리에 실패했어요"),
 		};
 
-		if (isLoggedIn) {
+		if (!useLocalMemoActions) {
 			if (shouldDeleteEmptyMemo && supabaseMemo) {
 				deleteSupabaseMemo.mutate(supabaseMemo.id, wishMutationCallbacks);
 			} else {
@@ -413,6 +492,7 @@ export function useBrowserState({
 						title: pageTitle,
 						favIconUrl: pageFavIconUrl,
 						currentIsWish: isCurrentPageWish,
+						selectedId: supabaseMemo?.id,
 					},
 					wishMutationCallbacks,
 				);
@@ -426,6 +506,7 @@ export function useBrowserState({
 						url: currentUrl,
 						title: pageTitle,
 						favIconUrl: pageFavIconUrl,
+						selectedId: localMemo?.id,
 					},
 					wishMutationCallbacks,
 				);
@@ -435,7 +516,7 @@ export function useBrowserState({
 		currentUrl,
 		pageTitle,
 		pageFavIconUrl,
-		isLoggedIn,
+		useLocalMemoActions,
 		isCurrentPageWish,
 		supabaseMemo,
 		localMemo,
@@ -443,6 +524,10 @@ export function useBrowserState({
 		wishToggleLocal,
 		deleteSupabaseMemo,
 		deleteLocalMemo,
+		hasUnselectedCandidates,
+		panelHeight,
+		contentHeight,
+		savedRatio,
 	]);
 
 	const openPanel = useCallback(() => {
@@ -670,6 +755,8 @@ export function useBrowserState({
 		insets,
 		webViewRef,
 		currentUrl,
+		selectedMemoId,
+		setSelectedMemoId,
 		urlInput,
 		setUrlInput,
 		isMemoOpen,

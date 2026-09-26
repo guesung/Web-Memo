@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useShareIntent } from "expo-share-intent";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -36,7 +36,13 @@ function SyncOnAuth() {
 				.then((result) => {
 					queryClient.invalidateQueries({ queryKey: ["memos"] });
 					queryClient.invalidateQueries({ queryKey: ["localMemos"] });
-					if (result.synced > 0) {
+					queryClient.invalidateQueries({ queryKey: ["localMemo"] });
+					if (result.failed > 0) {
+						setSyncToast(
+							`${result.failed}개의 메모가 선택을 기다리고 있습니다`,
+						);
+						setTimeout(() => setSyncToast(null), 3000);
+					} else if (result.synced > 0) {
 						setSyncToast(`${result.synced}개의 메모가 동기화되었습니다`);
 						setTimeout(() => setSyncToast(null), 3000);
 					}
@@ -59,6 +65,7 @@ function SyncOnAuth() {
 }
 
 function ShareIntentHandler() {
+	const router = useRouter();
 	const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent();
 	const insets = useSafeAreaInsets();
 	const [shareToast, setShareToast] = useState<string | null>(null);
@@ -77,10 +84,20 @@ function ShareIntentHandler() {
 		processingUrlRef.current = url;
 
 		handleSharedUrl(url, shareIntent.meta?.title ?? undefined)
-			.then(() => {
+			.then((result) => {
 				queryClient.invalidateQueries({ queryKey: ["memos"] });
 				queryClient.invalidateQueries({ queryKey: ["localMemos"] });
-				setShareToast("위시리스트에 추가되었습니다");
+				setShareToast(
+					result.saved
+						? "위시리스트에 추가되었습니다"
+						: "메모를 선택해 주세요. 공유 요청은 보관했습니다",
+				);
+				if (!result.saved) {
+					router.push({
+						pathname: "/(main)/browser",
+						params: { url, t: String(Date.now()) },
+					});
+				}
 				setTimeout(() => setShareToast(null), 3000);
 			})
 			.catch(() => {
@@ -91,7 +108,7 @@ function ShareIntentHandler() {
 				processingUrlRef.current = null;
 				resetShareIntent();
 			});
-	}, [hasShareIntent, shareIntent, resetShareIntent]);
+	}, [hasShareIntent, shareIntent, resetShareIntent, router]);
 
 	if (!shareToast) return null;
 
@@ -122,6 +139,7 @@ function ThemedStack() {
 			<Stack.Screen name="(main)" />
 			{/* 탭 밖의 상세 화면이라 탭바 없이 뜬다 */}
 			<Stack.Screen name="trash" />
+			<Stack.Screen name="pending-memos" />
 			<Stack.Screen name="+not-found" />
 		</Stack>
 	);

@@ -1,5 +1,4 @@
 import ResizeHandle from "@src/components/ResizeHandle";
-import withAuthentication from "@src/hoc/withAuthentication";
 import type { MemoInput } from "@src/types/Input";
 import { getMemoUrl, type IFMemoUrlParams } from "@src/utils";
 import { useQueryClient } from "@tanstack/react-query";
@@ -7,6 +6,7 @@ import { QUERY_KEY, type TMemoStatusKey } from "@web-memo/shared/constants";
 import { useSettingQuery, useSupabaseUserQuery } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
+import type { Database } from "@web-memo/shared/types";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
 	badgeVariants,
@@ -17,7 +17,7 @@ import {
 	toast,
 } from "@web-memo/ui";
 import { BookOpenIcon, HeartIcon, Loader2Icon, StarIcon } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import {
 	CategoryAddChip,
@@ -34,10 +34,15 @@ import {
 	useMemoForm,
 } from "./hooks";
 
-function MemoFormContent() {
+function MemoFormContent({
+	selectedMemo,
+	onOtherMemoClick,
+	isSelectedMemoMissing,
+}: IFMemoFormProps) {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+	const [isSwitching, setIsSwitching] = useState(false);
 	const queryClient = useQueryClient();
-	const { register, watch } = useFormContext<MemoInput>();
+	const { register, watch, getValues } = useFormContext<MemoInput>();
 	const { ref, ...rest } = register("memo");
 
 	const currentCategoryId = watch("categoryId");
@@ -69,14 +74,36 @@ function MemoFormContent() {
 
 	const {
 		memoData,
-		isSaving,
+		saveStatus,
+		handleSaveRetryClick,
+		isWritePending,
+		saveBeforeSwitch,
 		handleTitleChange,
 		handleMemoChange,
 		handleImpressionChange,
 		handleActionItemChange,
 		updateCategory,
 		toggleMemoStatus,
-	} = useMemoForm();
+	} = useMemoForm({ selectedMemo });
+
+	const handleOtherMemoClick = async () => {
+		if (!onOtherMemoClick || isWritePending || isSwitching) {
+			return;
+		}
+		if (isSelectedMemoMissing) {
+			onOtherMemoClick(getValues());
+			return;
+		}
+
+		setIsSwitching(true);
+		const isSaved = await saveBeforeSwitch();
+		if (isSaved) {
+			onOtherMemoClick();
+			return;
+		}
+
+		setIsSwitching(false);
+	};
 
 	const {
 		categories,
@@ -154,6 +181,21 @@ function MemoFormContent() {
 
 	return (
 		<>
+			{isSelectedMemoMissing && (
+				<p role="alert" className="text-xs text-destructive">
+					{I18n.get("memo_candidates_selection_lost")}
+				</p>
+			)}
+			{onOtherMemoClick && (
+				<button
+					type="button"
+					className="min-h-8 self-start rounded px-2 py-1 text-xs text-muted-foreground underline hover:text-foreground disabled:opacity-50"
+					disabled={isWritePending || isSwitching}
+					onClick={handleOtherMemoClick}
+				>
+					{I18n.get("memo_choose_other")}
+				</button>
+			)}
 			<PastMemoNotice hasMemoData={!!memoData?.created_at} />
 			<form className="relative flex min-h-0 flex-1 flex-col py-1">
 				<div className="mb-1 flex shrink-0 items-center gap-1">
@@ -276,7 +318,7 @@ function MemoFormContent() {
 					</>
 				)}
 				<div className="flex shrink-0 items-center justify-between gap-2 pt-2">
-					<div className="flex items-center gap-2">
+					<div className="flex min-w-0 items-center gap-2">
 						<MemoStatusToggle
 							label={I18n.get("wish_list")}
 							isOn={!!memoData?.isWish}
@@ -313,7 +355,10 @@ function MemoFormContent() {
 								className={cn({ "text-emerald-500": memoData?.isReading })}
 							/>
 						</MemoStatusToggle>
-						<SaveStatus isSaving={isSaving} memo={watch("memo")} />
+						<SaveStatus
+							saveStatus={saveStatus}
+							onRetryClick={handleSaveRetryClick}
+						/>
 					</div>
 					<div className="flex items-center gap-2">
 						{currentCategory ? (
@@ -363,7 +408,11 @@ function MemoFormContent() {
 	);
 }
 
-function MemoForm() {
+function MemoForm({
+	selectedMemo,
+	onOtherMemoClick,
+	isSelectedMemoMissing,
+}: IFMemoFormProps) {
 	const form = useForm<MemoInput>({
 		shouldUnregister: false,
 		defaultValues: {
@@ -380,12 +429,23 @@ function MemoForm() {
 
 	return (
 		<FormProvider {...form}>
-			<MemoFormContent />
+			<MemoFormContent
+				selectedMemo={selectedMemo}
+				onOtherMemoClick={onOtherMemoClick}
+				isSelectedMemoMissing={isSelectedMemoMissing}
+			/>
 		</FormProvider>
 	);
 }
 
-export default withAuthentication(MemoForm);
+export default MemoForm;
+
+/** 선택된 메모를 편집기와 연결한다. */
+interface IFMemoFormProps {
+	selectedMemo?: Database["memo"]["Tables"]["memo"]["Row"];
+	isSelectedMemoMissing?: boolean;
+	onOtherMemoClick?: (draft?: MemoInput) => void;
+}
 
 interface IFMemoStatusToggleProps {
 	/** 스크린 리더가 읽을 이름 */

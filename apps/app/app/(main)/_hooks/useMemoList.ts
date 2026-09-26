@@ -77,12 +77,13 @@ export function useMemoList() {
 				"favIconUrl" in memo ? (memo.favIconUrl ?? undefined) : undefined;
 			wishToggleSupabase.mutate({
 				url: memo.url,
+				selectedId: typeof memo.id === "number" ? memo.id : undefined,
 				title: memo.title,
 				favIconUrl,
 				currentIsWish: true,
 			});
 		} else {
-			wishToggleLocal.mutate({ url: memo.url });
+			wishToggleLocal.mutate({ url: memo.url, selectedId: String(memo.id) });
 		}
 	};
 
@@ -93,12 +94,13 @@ export function useMemoList() {
 				"favIconUrl" in memo ? (memo.favIconUrl ?? undefined) : undefined;
 			starToggleSupabase.mutate({
 				url: memo.url,
+				selectedId: typeof memo.id === "number" ? memo.id : undefined,
 				title: memo.title,
 				favIconUrl,
 				currentIsStar,
 			});
 		} else {
-			starToggleLocal.mutate({ url: memo.url });
+			starToggleLocal.mutate({ url: memo.url, selectedId: String(memo.id) });
 		}
 	};
 
@@ -116,6 +118,7 @@ export function useMemoList() {
 		if (isLoggedIn) {
 			upsertSupabase.mutate({
 				url: memo.url,
+				selectedId: typeof memo.id === "number" ? memo.id : undefined,
 				title: next.title,
 				memo: next.memo,
 				impression: next.impression,
@@ -125,6 +128,7 @@ export function useMemoList() {
 		} else {
 			upsertLocal.mutate({
 				url: memo.url,
+				selectedId: String(memo.id),
 				title: next.title,
 				memo: next.memo,
 				impression: next.impression,

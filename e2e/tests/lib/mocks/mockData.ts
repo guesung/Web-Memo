@@ -1,4 +1,5 @@
 import type { Database } from "@web-memo/shared/types";
+import { getPageKey } from "@web-memo/shared/utils/url";
 
 type MockMemo = Database["memo"]["Tables"]["memo"]["Row"];
 type MockCategory = Database["memo"]["Tables"]["category"]["Row"];
@@ -17,11 +18,12 @@ let highlightIdCounter = 1;
 export function createMockMemo(overrides: Partial<MockMemo> = {}): MockMemo {
 	const id = memoIdCounter++;
 	const now = new Date(Date.now() - id * 1000).toISOString();
+	const url = overrides.url ?? `https://example.com/page-${id}`;
 
 	return {
 		id,
 		user_id: "test-user-id",
-		url: `https://example.com/page-${id}`,
+		url,
 		title: `Test Memo ${id}`,
 		memo: `Test memo content ${id}`,
 		impression: null,
@@ -35,6 +37,7 @@ export function createMockMemo(overrides: Partial<MockMemo> = {}): MockMemo {
 		created_at: now,
 		updated_at: now,
 		...overrides,
+		page_key: overrides.page_key ?? getPageKey(url),
 	};
 }
 
@@ -79,10 +82,11 @@ export function createMockHighlight(
 ): MockHighlight {
 	const id = highlightIdCounter++;
 	const now = new Date().toISOString();
+	const url = overrides.url ?? `https://example.com/page-${id}`;
 	return {
 		id,
 		user_id: "test-user-id",
-		url: `https://example.com/page-${id}`,
+		url,
 		title: `Test Page ${id}`,
 		favIconUrl: null,
 		exact_text: `Test highlight ${id}`,
@@ -94,6 +98,7 @@ export function createMockHighlight(
 		created_at: now,
 		updated_at: now,
 		...overrides,
+		page_key: overrides.page_key ?? getPageKey(url),
 	};
 }
 

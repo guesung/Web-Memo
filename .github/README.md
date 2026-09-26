@@ -20,7 +20,7 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 
 | 워크플로 | 트리거 | 실행 주기·시각 | 부르는 스크립트 (`.github/scripts/` 기준) |
 | --- | --- | --- | --- |
-| `ci.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | `deploy/detect-affected-apps.sh` · `deploy/notify-thread-root.mjs` · `deploy/notify-thread-reply.mjs` · `deploy/notify-build-ready.mjs` · `deploy/notify-staging-deploy.mjs` · `deploy/comment-pr-extension.mjs`, 그리고 `cd-app`·`cd-extension`·`cd-web` 호출 |
+| `ci.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | `deploy/resolve-affected-base.sh` · `deploy/detect-affected-apps.sh` · `deploy/notify-thread-root.mjs` · `deploy/notify-thread-reply.mjs` · `deploy/notify-build-ready.mjs` · `deploy/notify-staging-deploy.mjs` · `deploy/comment-pr-extension.mjs`, 그리고 `cd-app`·`cd-extension`·`cd-web` 호출 |
 | `e2e.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | 없음 (Playwright) |
 | `cd-app.yml` | workflow_call | 다른 워크플로에서 호출할 때마다 | `deploy/find-reusable-artifact.sh` |
 | `cd-extension.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-reusable-artifact.sh` |

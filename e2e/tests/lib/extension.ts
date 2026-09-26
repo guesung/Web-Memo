@@ -7,7 +7,7 @@ const SIDE_PANEL_URL = getExtensionUrl("side-panel/index.html");
 /**
  * 사이드 패널 메모 칸에 입력하고 디바운스 저장이 끝날 때까지 기다린다.
  * @description 저장은 조회(GET) 뒤 생성(POST)이나 수정(PATCH)으로 나가므로 GET이 아닌 응답을 기다린다.
- * 응답 뒤에도 성공 처리(쿼리 데이터 갱신)가 이어지므로 "저장 중..." 표시가 사라질 때까지 기다린다.
+ * 응답 뒤에도 성공 처리(쿼리 데이터 갱신)가 이어지므로 SaveStatus가 "saved"로 바뀔 때까지 기다린다.
  * @throws 저장 응답이 오지 않거나 실패하면 던진다.
  */
 export async function fillMemo(page: Page, text: string) {
@@ -25,7 +25,7 @@ export async function fillMemo(page: Page, text: string) {
 		throw new Error(`메모 저장 실패: ${response.status()} ${response.url()}`);
 	}
 
-	await expect(page.getByText("저장 중...")).toBeHidden();
+	await expect(page.locator('[data-save-status="saved"]')).toBeVisible();
 }
 
 export async function openSidePanel(page: Page) {

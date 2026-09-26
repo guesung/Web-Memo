@@ -1,3 +1,6 @@
 # auth.setup.ts가 저장하는 로그인 세션(storageState)
 .auth/
 playwright-results.json
+# 스토어 스크린샷 결과물과 확장 사본(playwright.store.config.ts)
+store-screenshots/output/
+store-screenshots/.tmp/

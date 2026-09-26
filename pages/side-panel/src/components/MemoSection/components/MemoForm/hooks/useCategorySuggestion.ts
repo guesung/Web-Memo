@@ -223,9 +223,10 @@ export function useCategorySuggestion({
 		],
 	);
 
+	// MemoForm은 페이지가 바뀌면 다시 마운트된다. 진행 중인 추천은 끊지 않고 끝까지 받아
+	// 요청 시점의 메모(원래 페이지)에 적용한다.
 	useEffect(() => {
 		return () => {
-			abortControllerRef.current?.abort();
 			clearAutoDismissTimer();
 		};
 	}, [clearAutoDismissTimer]);

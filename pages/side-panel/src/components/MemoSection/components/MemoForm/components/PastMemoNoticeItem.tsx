@@ -95,6 +95,6 @@ const getHostname = (url: string) => {
 interface IFPastMemoNoticeItemProps {
 	/** 보여 줄 관련 메모 */
 	relatedMemo: IFPastMemoRelated;
-	/** 행을 눌렀을 때. 웹의 메모 상세를 연다 */
+	/** 행을 눌렀을 때. 메모를 남긴 원래 사이트를 새 탭으로 연다 */
 	onItemClick: () => void;
 }

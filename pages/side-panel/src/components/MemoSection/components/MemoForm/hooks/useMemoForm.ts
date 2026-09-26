@@ -10,6 +10,7 @@ import {
 } from "@web-memo/shared/hooks";
 import type { TCategoryChangeSource } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
+import type { Database } from "@web-memo/shared/types";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -28,17 +29,23 @@ interface SaveMemoOptions extends Partial<MemoInput> {
 
 interface UseMemoFormProps {
 	onSaveSuccess?: (memoInput: MemoInput) => void;
+	selectedMemo?: Database["memo"]["Tables"]["memo"]["Row"];
 }
 
-export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
+/** 선택한 메모의 폼 값과 저장 순서를 관리한다. */
+export default function useMemoForm({
+	onSaveSuccess,
+	selectedMemo,
+}: UseMemoFormProps = {}) {
 	const { setValue, getValues } = useFormContext<MemoInput>();
-	const { debounce } = useDebounce();
+	const { debounce, abortDebounce } = useDebounce();
 	const { debounce: debounceTitle, abortDebounce: abortTitleDebounce } =
 		useDebounce();
 	const { data: tab } = useTabQuery();
-	const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
+	const { memo: onlyMemo, refetch: refetchMemo } = useMemoQuery({
 		url: tab?.url ?? "",
 	});
+	const memoData = selectedMemo ?? onlyMemo;
 	const titleSync = useMemoTitleSync({
 		onTitleUpdate: (title) => setValue("title", title),
 		initialSavedTitle: memoData?.title,
@@ -61,6 +68,10 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const [isSaving, setIsSaving] = useState(false);
 	const [isSaveStatusVisible, setIsSaveStatusVisible] = useState(false);
 	const initializedMemoIdRef = useRef<number | null>(null);
+	const hasInitializedMemoRef = useRef(false);
+	const hasEditedMemoRef = useRef(false);
+	/** 입력했지만 아직 저장 요청이 나가지 않은 변경이 있는지. 전환 전 저장을 건너뛸지 판단한다. */
+	const hasUnsavedChangeRef = useRef(false);
 	const pendingDataRef = useRef<SaveMemoOptions | null>(null);
 
 	useDidMount(() => {
@@ -72,18 +83,26 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		function initMemoData() {
 			const currentMemoId = memoData?.id ?? null;
 			const isNewMemo = initializedMemoIdRef.current !== currentMemoId;
+			const isFirstSaveOfEditedDraft =
+				hasInitializedMemoRef.current &&
+				hasEditedMemoRef.current &&
+				initializedMemoIdRef.current === null &&
+				currentMemoId !== null;
 
-			if (isNewMemo) {
+			if (isNewMemo && !isFirstSaveOfEditedDraft) {
 				setValue("memo", memoData?.memo ?? "");
 				setValue("impression", memoData?.impression ?? "");
 				setValue("actionItem", memoData?.actionItem ?? "");
-				initializedMemoIdRef.current = currentMemoId;
 			}
+			initializedMemoIdRef.current = currentMemoId;
+			hasInitializedMemoRef.current = true;
 
-			setValue("isWish", memoData?.isWish ?? false);
-			setValue("isStar", memoData?.isStar ?? false);
-			setValue("isReading", memoData?.isReading ?? false);
-			setValue("categoryId", memoData?.category_id ?? null);
+			if (!isFirstSaveOfEditedDraft) {
+				setValue("isWish", memoData?.isWish ?? false);
+				setValue("isStar", memoData?.isStar ?? false);
+				setValue("isReading", memoData?.isReading ?? false);
+				setValue("categoryId", memoData?.category_id ?? null);
+			}
 		},
 		[
 			memoData?.id,
@@ -125,6 +144,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 			}
 
 			pendingDataRef.current = null;
+			hasUnsavedChangeRef.current = false;
 
 			const tabInfo = overrides?.tabInfo ?? (await getTabInfo());
 			const memoId = overrides?.memoId ?? memoData?.id;
@@ -167,6 +187,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 							setIsSaving(false);
 							setIsSaveStatusVisible(false);
 							pendingDataRef.current = null;
+							hasUnsavedChangeRef.current = true;
 							resolveIsSaved(false);
 						},
 					},
@@ -177,6 +198,8 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	);
 
 	const handleTitleChange = (text: string) => {
+		hasEditedMemoRef.current = true;
+		hasUnsavedChangeRef.current = true;
 		titleSync.handleTitleInputChange(text);
 		debounceTitle(() => saveMemo({ title: text, isSilent: true }));
 	};
@@ -205,6 +228,8 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 	const handleMemoChange = useCallback(
 		(text: string) => {
+			hasEditedMemoRef.current = true;
+			hasUnsavedChangeRef.current = true;
 			setValue("memo", text);
 			debounce(() => saveMemo({ memo: text }));
 		},
@@ -213,6 +238,8 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 	const handleImpressionChange = useCallback(
 		(text: string) => {
+			hasEditedMemoRef.current = true;
+			hasUnsavedChangeRef.current = true;
 			setValue("impression", text);
 			debounce(() => saveMemo({ impression: text }));
 		},
@@ -221,6 +248,8 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 	const handleActionItemChange = useCallback(
 		(text: string) => {
+			hasEditedMemoRef.current = true;
+			hasUnsavedChangeRef.current = true;
 			setValue("actionItem", text);
 			debounce(() => saveMemo({ actionItem: text }));
 		},
@@ -237,6 +266,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		categoryId: number | null,
 		source: TCategoryChangeSource,
 	) => {
+		hasEditedMemoRef.current = true;
 		const previousCategoryId = getValues("categoryId");
 		setValue("categoryId", categoryId);
 
@@ -270,6 +300,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	 * 호출부는 이 `null`로 성공 토스트를 건너뛴다. 실패 알림 자체는 QueryProvider의 MutationCache가 맡는다.
 	 */
 	const toggleMemoStatus = async (statusKey: TMemoStatusKey) => {
+		hasEditedMemoRef.current = true;
 		const previousStatusValue = getValues(statusKey);
 		const nextStatusValue = !previousStatusValue;
 		const statusOverride: Partial<MemoInput> = {};
@@ -287,8 +318,26 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		return nextStatusValue;
 	};
 
+	const saveBeforeSwitch = async () => {
+		if (isSaving) {
+			return false;
+		}
+		// 바뀐 내용이 없으면 저장 왕복 없이 바로 넘어간다. 아무것도 쓰지 않은 새 메모가 빈 행으로 저장되는 것도 막는다.
+		if (!hasUnsavedChangeRef.current) {
+			return true;
+		}
+
+		abortDebounce();
+		abortTitleDebounce();
+
+		return saveMemo({ isSilent: true });
+	};
+
 	return {
 		memoData,
+		/** 저장 중인 편집 대상을 바꾸지 않기 위한 내부 상태. */
+		isWritePending: isSaving,
+		saveBeforeSwitch,
 		/** 저장 표시용. 제목처럼 조용히 저장하는 변경(isSilent)에는 켜지지 않는다. */
 		isSaving: isSaveStatusVisible,
 		saveMemo,

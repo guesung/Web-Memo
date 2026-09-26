@@ -1,5 +1,6 @@
 import { SUPABASE } from "../../constants";
 import type { HighlightTable, MemoSupabaseClient } from "../../types";
+import { getPageKey } from "../Url";
 
 /** 하이라이트 목록 페이지네이션 커서. (정렬값, id) 복합 커서로 중복·누락을 막는다. */
 export interface HighlightPageCursor {
@@ -10,6 +11,12 @@ export interface HighlightPageCursor {
 /** URL별 하이라이트 개수. `get_highlight_counts` RPC의 반환 행 */
 export interface HighlightCountRow {
 	url: string;
+	count: number;
+}
+
+/** 페이지 식별값별 하이라이트 개수. */
+export interface IFHighlightCountByPageKeyRow {
+	page_key: string;
 	count: number;
 }
 
@@ -28,51 +35,80 @@ export class HighlightService {
 	}
 
 	/** 모바일 WebView 복원용. 페이지 하나의 하이라이트를 모두 가져온다. */
-	getHighlightsByUrl = async (url: string) =>
-		this.table.select("*").eq("url", url).order("id", { ascending: true });
+	getHighlightsByUrl = async (url: string) => {
+		const pageKey = getPageKey(url);
+		const highlights: HighlightTable["Row"][] = [];
+		let lastId = 0;
+		while (true) {
+			const { data, error } = await this.table
+				.select("*")
+				.in("page_key", [pageKey, ""])
+				.gt("id", lastId)
+				.order("id", { ascending: true })
+				.limit(500);
+			if (error) {
+				return { data: null, error };
+			}
+			highlights.push(
+				...(data ?? []).filter((highlight) => {
+					try {
+						return (
+							(highlight.page_key || getPageKey(highlight.url)) === pageKey
+						);
+					} catch {
+						return false;
+					}
+				}),
+			);
+			if (!data || data.length < 500) {
+				break;
+			}
+			lastId = data[data.length - 1].id;
+		}
+		return { data: highlights, error: null };
+	};
 
-	/** 메모 목록의 정확한 URL들과 연결된 하이라이트를 일괄 조회한다. RLS로 소유권을 제한한다. */
+	/** 소유자의 하이라이트 한 건과 저장된 원본 URL을 확인한다. */
+	getHighlightById = async ({ id, userId }: { id: number; userId: string }) =>
+		this.table.select("*").eq("id", id).eq("user_id", userId).maybeSingle();
+
+	/** 메모 목록의 페이지 키와 연결된 하이라이트를 일괄 조회한다. RLS로 소유권을 제한한다. */
 	getHighlightsByUrls = async (urls: string[]) => {
-		const uniqueUrls = Array.from(new Set(urls.filter(Boolean)));
+		const uniqueUrls = Array.from(
+			new Set(urls.filter(Boolean).map(getPageKey)),
+		);
 		if (uniqueUrls.length === 0) {
 			return { data: [] as HighlightTable["Row"][], error: null };
 		}
 
-		const urlBatches: string[][] = [];
-		let currentUrls: string[] = [];
-		let encodedLength = 0;
-		for (const url of uniqueUrls) {
-			const urlLength = encodeURIComponent(url).length + 6;
-			if (
-				currentUrls.length > 0 &&
-				(currentUrls.length >= 20 || encodedLength + urlLength > 6000)
-			) {
-				urlBatches.push(currentUrls);
-				currentUrls = [];
-				encodedLength = 0;
-			}
-			currentUrls.push(url);
-			encodedLength += urlLength;
-		}
-		urlBatches.push(currentUrls);
-
 		const highlights: HighlightTable["Row"][] = [];
-		for (const urlBatch of urlBatches) {
-			let offset = 0;
+		for (const urlBatch of getPageKeyBatches(uniqueUrls)) {
+			let lastId = 0;
 			while (true) {
 				const { data, error } = await this.table
 					.select("*")
-					.in("url", urlBatch)
+					.in("page_key", [...urlBatch, ""])
+					.gt("id", lastId)
 					.order("id", { ascending: true })
-					.range(offset, offset + 499);
+					.limit(500);
 				if (error) {
 					return { data: null, error };
 				}
-				highlights.push(...(data ?? []));
+				highlights.push(
+					...(data ?? []).filter((highlight) => {
+						try {
+							return urlBatch.includes(
+								highlight.page_key || getPageKey(highlight.url),
+							);
+						} catch {
+							return false;
+						}
+					}),
+				);
 				if (!data || data.length < 500) {
 					break;
 				}
-				offset += 500;
+				lastId = data[data.length - 1].id;
 			}
 		}
 
@@ -115,7 +151,9 @@ export class HighlightService {
 	};
 
 	insertHighlight = async (request: HighlightTable["Insert"]) =>
-		this.table.insert(request).select();
+		this.table
+			.insert({ ...request, page_key: getPageKey(request.url) })
+			.select();
 
 	updateHighlight = async ({
 		id,
@@ -159,4 +197,72 @@ export class HighlightService {
 			.schema(SUPABASE.schema.memo)
 			// @ts-expect-error RPC function types not generated in schema
 			.rpc("get_highlight_counts", { target_urls: urls });
+
+	/** 키가 채워진 행과 기존 빈 키 행을 같은 조회에서 집계한다. */
+	getHighlightCountsByPageKeys = async (pageKeys: string[]) => {
+		if (pageKeys.length === 0) {
+			return { data: [] as IFHighlightCountByPageKeyRow[], error: null };
+		}
+		const targetPageKeys = new Set(pageKeys);
+		const counts = new Map<string, number>();
+		for (const pageKeyBatch of getPageKeyBatches(Array.from(targetPageKeys))) {
+			let lastId = 0;
+			while (true) {
+				const result = await this.table
+					.select("id, url, page_key")
+					.in("page_key", [...pageKeyBatch, ""])
+					.gt("id", lastId)
+					.order("id", { ascending: true })
+					.limit(500);
+				if (result.error) {
+					return { data: null, error: result.error };
+				}
+				for (const highlight of result.data ?? []) {
+					try {
+						const pageKey = highlight.page_key || getPageKey(highlight.url);
+						if (pageKeyBatch.includes(pageKey)) {
+							counts.set(pageKey, (counts.get(pageKey) ?? 0) + 1);
+						}
+					} catch {
+						// 백필할 수 없는 기존 URL은 다른 페이지의 집계를 막지 않는다.
+					}
+				}
+				if (!result.data || result.data.length < 500) {
+					break;
+				}
+				lastId = result.data[result.data.length - 1].id;
+			}
+		}
+		return {
+			data: Array.from(counts).map(([page_key, count]) => ({
+				page_key,
+				count,
+			})),
+			error: null,
+		};
+	};
 }
+
+const getPageKeyBatches = (pageKeys: string[]): string[][] => {
+	const batches: string[][] = [];
+	let batch: string[] = [];
+	let encodedLength = 0;
+	for (const pageKey of pageKeys) {
+		const nextLength = encodeURIComponent(pageKey).length + 6;
+		if (
+			batch.length > 0 &&
+			(batch.length >= 20 || encodedLength + nextLength > 6000)
+		) {
+			batches.push(batch);
+			batch = [];
+			encodedLength = 0;
+		}
+		batch.push(pageKey);
+		encodedLength += nextLength;
+	}
+	if (batch.length > 0) {
+		batches.push(batch);
+	}
+
+	return batches;
+};

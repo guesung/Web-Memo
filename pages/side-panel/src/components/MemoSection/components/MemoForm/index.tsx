@@ -74,7 +74,8 @@ function MemoFormContent({
 
 	const {
 		memoData,
-		isSaving,
+		saveStatus,
+		handleSaveRetryClick,
 		isWritePending,
 		saveBeforeSwitch,
 		handleTitleChange,
@@ -317,7 +318,7 @@ function MemoFormContent({
 					</>
 				)}
 				<div className="flex shrink-0 items-center justify-between gap-2 pt-2">
-					<div className="flex items-center gap-2">
+					<div className="flex min-w-0 items-center gap-2">
 						<MemoStatusToggle
 							label={I18n.get("wish_list")}
 							isOn={!!memoData?.isWish}
@@ -354,7 +355,10 @@ function MemoFormContent({
 								className={cn({ "text-emerald-500": memoData?.isReading })}
 							/>
 						</MemoStatusToggle>
-						<SaveStatus isSaving={isSaving} memo={watch("memo")} />
+						<SaveStatus
+							saveStatus={saveStatus}
+							onRetryClick={handleSaveRetryClick}
+						/>
 					</div>
 					<div className="flex items-center gap-2">
 						{currentCategory ? (

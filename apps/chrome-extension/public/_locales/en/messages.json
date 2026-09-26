@@ -134,6 +134,15 @@
 	"toast_error_save": {
 		"message": "Couldn't save. Please try again"
 	},
+	"memo_save_status_saved": {
+		"message": "Saved"
+	},
+	"memo_save_status_failed": {
+		"message": "Couldn't save"
+	},
+	"memo_save_status_saving": {
+		"message": "Saving"
+	},
 	"prompt_language_setting": {
 		"message": "Response language"
 	},

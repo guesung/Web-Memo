@@ -16,15 +16,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useMemoTitleSync } from "./useMemoTitleSync";
 
+/** 사이드 패널 하단 SaveStatus가 그리는 저장 상태. */
+export type TSaveStatus = "empty" | "saved" | "slow" | "failed" | "retrying";
+
 interface SaveMemoOptions extends Partial<MemoInput> {
 	tabInfo?: { title: string; favIconUrl?: string; url: string };
 	memoId?: number;
-	/**
-	 * 저장 표시("저장 중...")를 띄우지 않고 조용히 저장한다.
-	 * @description 제목처럼 계속 타이핑하는 필드가 아닌 변경에 쓴다. 동시 저장을 막는
-	 * 내부 큐(isSaving)는 그대로 타므로 저장 순서는 달라지지 않는다.
-	 */
-	isSilent?: boolean;
 }
 
 interface UseMemoFormProps {
@@ -63,10 +60,14 @@ export default function useMemoForm({
 	}, [tab?.id, tab?.url, abortTitleDebounce]);
 	const { mutate: upsertMemo } = useMemoUpsertMutation();
 	const { mutate: patchMemo } = useMemoPatchMutation();
-	// isSaving은 동시 upsert를 막는 내부 큐용이고, 화면에 보여줄지는 따로 판단한다.
-	// 둘을 하나로 합치면 조용한 저장이 큐를 건너뛰어 저장이 서로 덮어쓴다.
-	const [isSaving, setIsSaving] = useState(false);
-	const [isSaveStatusVisible, setIsSaveStatusVisible] = useState(false);
+	// 동시 upsert를 막는 내부 큐 게이트. ref로 두는 이유는 onSuccess 안에서 대기 저장을
+	// 곧바로 재실행할 때 state의 배치 지연 없이 최신 값을 즉시 읽어야 하기 때문이다.
+	const isSavingRef = useRef(false);
+	// "다른 메모 선택" 버튼을 막는 반응형 상태. 동시 저장을 막는 게이트 자체는 isSavingRef가 맡는다.
+	const [isWritePending, setIsWritePending] = useState(false);
+	const [saveStatus, setSaveStatus] = useState<TSaveStatus>("empty");
+	// 저장이 1초를 넘기면 진행 중(slow) 또는 다시 시도 중(retrying) 표시로 넘어간다.
+	const slowSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const initializedMemoIdRef = useRef<number | null>(null);
 	const hasInitializedMemoRef = useRef(false);
 	const hasEditedMemoRef = useRef(false);
@@ -79,6 +80,14 @@ export default function useMemoForm({
 		bridge.handle.REFETCH_THE_MEMO_LIST_FROM_EXTENSION(refetchMemo);
 	});
 
+	useEffect(() => {
+		return () => {
+			if (slowSaveTimerRef.current) {
+				clearTimeout(slowSaveTimerRef.current);
+			}
+		};
+	}, []);
+
 	useEffect(
 		function initMemoData() {
 			const currentMemoId = memoData?.id ?? null;
@@ -89,10 +98,27 @@ export default function useMemoForm({
 				initializedMemoIdRef.current === null &&
 				currentMemoId !== null;
 
+			// 저장이 진행 중이거나 실패해서 재시도를 기다리는 동안에는 이 화면의 memoData 변화만으로
+			// 폼 값과 저장 상태를 덮지 않는다. 지금 붙들고 있는 저장의 중간 상태일 뿐이다.
+			const isSavingOrRecovering =
+				isSavingRef.current ||
+				saveStatus === "failed" ||
+				saveStatus === "retrying";
+
+			if (isSavingOrRecovering) {
+				return;
+			}
+
 			if (isNewMemo && !isFirstSaveOfEditedDraft) {
 				setValue("memo", memoData?.memo ?? "");
 				setValue("impression", memoData?.impression ?? "");
 				setValue("actionItem", memoData?.actionItem ?? "");
+
+				if (slowSaveTimerRef.current) {
+					clearTimeout(slowSaveTimerRef.current);
+					slowSaveTimerRef.current = null;
+				}
+				setSaveStatus(currentMemoId === null ? "empty" : "saved");
 			}
 			initializedMemoIdRef.current = currentMemoId;
 			hasInitializedMemoRef.current = true;
@@ -113,6 +139,7 @@ export default function useMemoForm({
 			memoData?.isStar,
 			memoData?.isReading,
 			memoData?.category_id,
+			saveStatus,
 			setValue,
 		],
 	);
@@ -121,7 +148,7 @@ export default function useMemoForm({
 		async (overrides?: SaveMemoOptions) => {
 			// 이미 저장 중이면 이 변경은 큐에 실려 다음 저장에 함께 나간다. 그 저장의 성패는
 			// 이 호출이 아니라 그때의 onError가 들고 있으므로 여기서는 실패로 보지 않는다.
-			if (isSaving) {
+			if (isSavingRef.current) {
 				pendingDataRef.current = overrides ?? null;
 				return true;
 			}
@@ -138,13 +165,20 @@ export default function useMemoForm({
 				categoryId: overrides?.categoryId ?? currentValues.categoryId,
 			};
 
-			setIsSaving(true);
-			if (!overrides?.isSilent) {
-				setIsSaveStatusVisible(true);
-			}
-
+			isSavingRef.current = true;
+			setIsWritePending(true);
 			pendingDataRef.current = null;
 			hasUnsavedChangeRef.current = false;
+
+			// 저장이 1초를 넘기면 진행 중 표시로 넘어간다. 그 전에 끝나면 성공은 조용히 지나간다.
+			// 이미 실패해서 다시 시도하는 중(failed·retrying)이라면 slow로 덮지 않고 그대로 둔다.
+			slowSaveTimerRef.current = setTimeout(() => {
+				setSaveStatus((currentSaveStatus) =>
+					currentSaveStatus === "failed" || currentSaveStatus === "retrying"
+						? "retrying"
+						: "slow",
+				);
+			}, 1000);
 
 			const tabInfo = overrides?.tabInfo ?? (await getTabInfo());
 			const memoId = overrides?.memoId ?? memoData?.id;
@@ -169,23 +203,31 @@ export default function useMemoForm({
 					},
 					{
 						onSuccess: () => {
-							setTimeout(() => {
-								setIsSaving(false);
-								setIsSaveStatusVisible(false);
-								if (pendingDataRef.current !== null) {
-									const pendingData = pendingDataRef.current;
-									pendingDataRef.current = null;
-									saveMemo(pendingData);
-								}
-							}, 500);
+							if (slowSaveTimerRef.current) {
+								clearTimeout(slowSaveTimerRef.current);
+								slowSaveTimerRef.current = null;
+							}
+							isSavingRef.current = false;
+							setIsWritePending(false);
+							setSaveStatus("saved");
+							if (pendingDataRef.current !== null) {
+								const pendingData = pendingDataRef.current;
+								pendingDataRef.current = null;
+								void saveMemo(pendingData);
+							}
 							onSaveSuccess?.(memoInput);
 							resolveIsSaved(true);
 						},
 						onError: () => {
 							// 실패 토스트와 Sentry 보고는 QueryProvider의 MutationCache가 이미 맡는다.
 							// 여기서는 저장 상태만 되돌리고, 성패는 호출부가 UI 분기에 쓰도록 넘긴다.
-							setIsSaving(false);
-							setIsSaveStatusVisible(false);
+							if (slowSaveTimerRef.current) {
+								clearTimeout(slowSaveTimerRef.current);
+								slowSaveTimerRef.current = null;
+							}
+							isSavingRef.current = false;
+							setIsWritePending(false);
+							setSaveStatus("failed");
 							pendingDataRef.current = null;
 							hasUnsavedChangeRef.current = true;
 							resolveIsSaved(false);
@@ -194,14 +236,24 @@ export default function useMemoForm({
 				);
 			});
 		},
-		[isSaving, getValues, memoData?.id, upsertMemo, onSaveSuccess],
+		[getValues, memoData?.id, upsertMemo, onSaveSuccess],
 	);
+
+	/**
+	 * 실패한 저장을 다시 시도한다.
+	 * @description 자동 저장이 1초를 넘겨 실패로 이어지는 것과 달리, 사용자가 직접 누른 시도는
+	 * 기다리지 않고 곧바로 다시 시도 중 표시로 넘어간다.
+	 */
+	const handleSaveRetryClick = () => {
+		setSaveStatus("retrying");
+		void saveMemo();
+	};
 
 	const handleTitleChange = (text: string) => {
 		hasEditedMemoRef.current = true;
 		hasUnsavedChangeRef.current = true;
 		titleSync.handleTitleInputChange(text);
-		debounceTitle(() => saveMemo({ title: text, isSilent: true }));
+		debounceTitle(() => saveMemo({ title: text }));
 	};
 
 	const handleMemoChange = useCallback(
@@ -297,7 +349,7 @@ export default function useMemoForm({
 	};
 
 	const saveBeforeSwitch = async () => {
-		if (isSaving) {
+		if (isSavingRef.current) {
 			return false;
 		}
 		// 바뀐 내용이 없으면 저장 왕복 없이 바로 넘어간다. 아무것도 쓰지 않은 새 메모가 빈 행으로 저장되는 것도 막는다.
@@ -308,16 +360,17 @@ export default function useMemoForm({
 		abortDebounce();
 		abortTitleDebounce();
 
-		return saveMemo({ isSilent: true });
+		return saveMemo();
 	};
 
 	return {
 		memoData,
 		/** 저장 중인 편집 대상을 바꾸지 않기 위한 내부 상태. */
-		isWritePending: isSaving,
+		isWritePending,
 		saveBeforeSwitch,
-		/** 저장 표시용. 제목처럼 조용히 저장하는 변경(isSilent)에는 켜지지 않는다. */
-		isSaving: isSaveStatusVisible,
+		/** 하단 바 SaveStatus가 그릴 저장 상태 */
+		saveStatus,
+		handleSaveRetryClick,
 		saveMemo,
 		handleTitleChange,
 		handleMemoChange,

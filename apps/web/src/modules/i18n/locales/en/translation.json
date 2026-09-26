@@ -467,6 +467,9 @@
 		}
 	},
 	"memoSection": {
+		"expand": "Show more",
+		"collapse": "Show less",
+		"highlightCount": "Highlights ({{count}})",
 		"memo": "Memo",
 		"impression": "Impression",
 		"impressionPlaceholder": "Write what you felt about this page",
@@ -475,6 +478,7 @@
 	},
 	"memos": {
 		"view": {
+			"truncateContent": "Shorten memo content",
 			"unknownDate": "No creation date",
 			"label": "Memo view",
 			"byDate": "By date",

@@ -36,7 +36,10 @@ vi.mock("../MemoView/_hooks/useMemoHighlights", () => ({
 	useMemoHighlights: MOCKS.highlights,
 }));
 vi.mock("../MemoCardHeader", () => ({ default: () => null }));
-vi.mock("../MemoCardFooter", () => ({ default: () => null }));
+vi.mock("../MemoCardFooter", () => ({
+	default: ({ className }: { className: string }) =>
+		createElement("footer", { className, "data-testid": "memo-detail-footer" }),
+}));
 vi.mock("./SaveStatusIndicator", () => ({
 	default: () => createElement("span", { "data-testid": "save-status" }),
 }));
@@ -76,6 +79,18 @@ afterEach(async () => {
 });
 
 describe("메모 상세 하이라이트", () => {
+	it("상세 푸터는 기존 좌우 여백과 테두리 없는 표시를 명시한다", async () => {
+		await act(async () =>
+			root.render(createElement(MemoDialog, { lng: "ko", memoId: 1 })),
+		);
+		const footer = CONTAINER.querySelector(
+			'[data-testid="memo-detail-footer"]',
+		);
+		expect(footer?.classList.contains("px-6")).toBe(true);
+		expect(footer?.classList.contains("py-4")).toBe(true);
+		expect(footer?.classList.contains("border-t-0")).toBe(true);
+	});
+
 	it("목록 없이 상세 메모 URL로 조회하고 입력 영역 뒤, 저장 상태 앞에 표시한다", async () => {
 		MOCKS.highlights.mockReturnValue({
 			highlightsByUrl: new Map([

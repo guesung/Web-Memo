@@ -251,18 +251,21 @@ export type Database = {
 					id: number;
 					show_action_item: boolean;
 					show_impression: boolean;
+					truncate_memo_content: boolean;
 					user_id: string | null;
 				};
 				Insert: {
 					id?: number;
 					show_action_item?: boolean;
 					show_impression?: boolean;
+					truncate_memo_content?: boolean;
 					user_id?: string | null;
 				};
 				Update: {
 					id?: number;
 					show_action_item?: boolean;
 					show_impression?: boolean;
+					truncate_memo_content?: boolean;
 					user_id?: string | null;
 				};
 				Relationships: [];

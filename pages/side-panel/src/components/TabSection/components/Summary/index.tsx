@@ -32,7 +32,7 @@ const Summary = () => {
 			<div className="flex flex-1 flex-col items-center justify-center gap-2 text-muted-foreground h-full">
 				<button
 					type="button"
-					onClick={generateSummary}
+					onClick={() => generateSummary("empty_state")}
 					aria-label={I18n.get("summary_generate_label")}
 					className="hover:text-foreground transition-colors"
 				>

@@ -34,6 +34,13 @@ export interface IFGa4EventParams {
 }
 
 /**
+ * 요약 실행을 시작한 자리.
+ * @description empty_state는 요약 탭이 빈 화면일 때의 안내 버튼, tab_trigger는 탭
+ * 아이콘의 새로고침 버튼입니다. 배포 전후로 자리별 실행 비율이 어떻게 갈리는지 봅니다.
+ */
+export type TSummaryRunSource = "empty_state" | "tab_trigger";
+
+/**
  * 메모 카테고리를 바꾼 경로.
  * @description button은 사이드 패널의 칩·배지·해제 버튼, hash는 본문의 # 입력, ai는 AI 추천 자동
  * 적용입니다. "사람들이 #을 모른다"는 가정을 확인하려고 경로별 비율을 봅니다.
@@ -63,7 +70,7 @@ export type TAnalyticsEvent =
 	| { name: "page_view"; params: { page_title: string; page_location: string } }
 	| { name: "memo_write"; params: { fields: string } }
 	| { name: "memo_delete"; params: { memo_count: number } }
-	| { name: "summary_run" }
+	| { name: "summary_run"; params: { source: TSummaryRunSource } }
 	| { name: "summary_complete"; params: { duration_msec: number } }
 	| { name: "chat_message_send" }
 	| { name: "tab_change"; params: { tab_name: string } }

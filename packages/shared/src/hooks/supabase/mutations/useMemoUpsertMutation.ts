@@ -41,19 +41,38 @@ export default function useMemoUpsertMutation() {
 
 			let existingMemo: MemoRow | undefined;
 
+			// supabase-js는 실패를 throw하지 않고 error로 돌려준다. 던지지 않으면 조회 오류가
+			// "기존 메모 없음"으로 오독되어 insert로 떨어지고, 성공 이벤트까지 나가며 중복이 생긴다.
 			if (id) {
 				const result = await memoService.getMemoById(id);
+				if (result.error) {
+					throw result.error;
+				}
 				existingMemo = result.data?.[0];
 			} else if (normalizedUrl) {
 				const result = await memoService.getMemoByUrl(normalizedUrl);
+				if (result.error) {
+					throw result.error;
+				}
 				existingMemo = result.data?.[0];
 			}
 
 			if (existingMemo) {
-				return memoService.updateMemo({ id: existingMemo.id, request: data });
+				const result = await memoService.updateMemo({
+					id: existingMemo.id,
+					request: data,
+				});
+				if (result.error) {
+					throw result.error;
+				}
+				return result;
 			}
 
-			return memoService.insertMemo(data);
+			const result = await memoService.insertMemo(data);
+			if (result.error) {
+				throw result.error;
+			}
+			return result;
 		},
 		onMutate: async ({ url, data }) => {
 			const normalizedUrl = url ? normalizeUrl(url) : undefined;

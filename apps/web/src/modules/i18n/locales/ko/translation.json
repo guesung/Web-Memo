@@ -462,6 +462,9 @@
 		}
 	},
 	"memoSection": {
+		"expand": "펼치기",
+		"collapse": "접기",
+		"highlightCount": "하이라이트 {{count}}개",
 		"memo": "메모",
 		"impression": "느낀 점",
 		"impressionPlaceholder": "이 페이지에서 느낀 점을 적어보세요",
@@ -470,6 +473,7 @@
 	},
 	"memos": {
 		"view": {
+			"truncateContent": "메모 내용 줄여 보기",
 			"unknownDate": "작성일 없음",
 			"label": "메모 보기",
 			"byDate": "날짜별 보기",

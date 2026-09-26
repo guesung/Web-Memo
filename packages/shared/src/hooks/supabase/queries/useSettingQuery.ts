@@ -5,7 +5,7 @@ import { SettingService } from "../../../utils";
 import useSupabaseClientQuery from "./useSupabaseClientQuery";
 
 /** 로그인한 사용자의 메모 입력 설정을 조회한다. */
-export default function useSettingQuery() {
+const useSettingQuery = () => {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	const query = useSuspenseQuery({
@@ -16,7 +16,10 @@ export default function useSettingQuery() {
 
 	return {
 		...query,
+		truncateMemoContent: query.data?.data?.truncate_memo_content ?? true,
 		showImpression: query.data?.data?.show_impression ?? false,
 		showActionItem: query.data?.data?.show_action_item ?? false,
 	};
-}
+};
+
+export default useSettingQuery;

@@ -52,6 +52,7 @@ export function createMockSetting(
 		user_id: "test-user-id",
 		show_impression: false,
 		show_action_item: false,
+		truncate_memo_content: true,
 		...overrides,
 	};
 }

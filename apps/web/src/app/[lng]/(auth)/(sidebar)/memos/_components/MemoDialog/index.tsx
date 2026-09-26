@@ -341,7 +341,7 @@ const MemoDialog = ({ lng, memoId }: IFMemoDialogProps) => {
 							memo={memoData}
 							lng={lng}
 							isShowingOption={false}
-							className="py-4"
+							className="px-6 py-4 border-t-0"
 						/>
 					</Card>
 				</motion.div>

@@ -1,3 +1,5 @@
+import { readServerEnv } from "@src/utils/serverEnv";
+
 /**
  * GA4 Data API 조회에 필요한 설정값.
  *
@@ -9,18 +11,20 @@
 /**
  * 서비스 계정 키 JSON 전문.
  *
- * @description 모듈 최상단에서 한 번만 읽습니다. 값이 없으면 GA 연결이 아직
- * 준비되지 않은 상태이며, 라우트는 그것을 실패가 아니라 `connected: false`로 알립니다.
+ * @description 호출 시점에 읽습니다. 값이 없으면 GA 연결이 아직 준비되지 않은 상태이며,
+ * 라우트는 그것을 실패가 아니라 `connected: false`로 알립니다.
  */
-export const GA4_SERVICE_ACCOUNT_JSON = process.env.GA4_SERVICE_ACCOUNT_JSON;
+export const getGa4ServiceAccountJson = (): string | undefined =>
+	readServerEnv("GA4_SERVICE_ACCOUNT_JSON");
 
 /**
  * 조회 대상 GA4 속성 ID.
  *
- * @description 비밀이 아니라서 기본값을 코드에 둡니다. `report-ga-daily.yml`도 같은
- * 판단으로 이 값을 GitHub Secrets가 아니라 워크플로 파일에 그대로 적고 있습니다.
+ * @description 비밀이 아니고 환경마다 다르지도 않아 환경변수 없이 코드 상수로 둡니다.
+ * `report-ga-daily.yml`도 같은 판단으로 이 값을 GitHub Secrets가 아니라 워크플로 파일에
+ * 그대로 적고 있습니다.
  */
-export const GA4_PROPERTY_ID = process.env.GA4_PROPERTY_ID ?? "471860782";
+export const GA4_PROPERTY_ID = "471860782";
 
 /** GA4 Data API는 읽기 전용 scope로 충분합니다. */
 export const GA4_SCOPE = "https://www.googleapis.com/auth/analytics.readonly";

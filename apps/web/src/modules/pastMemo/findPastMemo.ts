@@ -1,3 +1,4 @@
+import { readServerEnv } from "@src/utils/serverEnv";
 import { APITimeoutError } from "@typesafe-ai/sdk";
 import type {
 	IFPastMemoRequest,
@@ -54,7 +55,7 @@ export const findPastMemo = async ({
 		};
 	}
 
-	const apiKey = process.env.TYPESAFE_API_KEY;
+	const apiKey = readServerEnv("TYPESAFE_API_KEY");
 
 	if (!apiKey) {
 		console.warn("TYPESAFE_API_KEY가 없어 과거 메모 jev 판정을 건너뜁니다");

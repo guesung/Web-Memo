@@ -205,7 +205,7 @@
 - name: OPENAI_API_KEY
   kind: secret
   stores: [vercel]
-  consumers: [apps/web/src/app/api/openai/util.ts, apps/web/src/app/api/openai/category/route.ts, apps/web/src/app/api/openai/webpage-qa/route.ts]
+  consumers: [apps/web/src/app/api/openai/config.ts]
   impact: "AI 기능 전체가 실패한다"
 
 - name: TYPESAFE_API_KEY
@@ -217,13 +217,13 @@
 - name: UPSTASH_REDIS_REST_URL
   kind: secret
   stores: [vercel]
-  consumers: [apps/web/src/app/api/openai/ratelimit.ts, apps/web/src/modules/pastMemo/ratelimit.ts]
+  consumers: [apps/web/src/modules/ratelimit/rateLimit.ts]
   impact: "OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다"
 
 - name: UPSTASH_REDIS_REST_TOKEN
   kind: secret
   stores: [vercel]
-  consumers: [apps/web/src/app/api/openai/ratelimit.ts, apps/web/src/modules/pastMemo/ratelimit.ts]
+  consumers: [apps/web/src/modules/ratelimit/rateLimit.ts]
   impact: "OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다"
 
 - name: SLACK_SIGNING_SECRET
@@ -250,20 +250,6 @@
   stores: [vercel]
   consumers: [apps/web/src/modules/sentry/config.ts]
   impact: "Sentry 알림을 보낼 채널을 몰라 릴레이가 실패한다"
-
-- name: GITHUB_DISPATCH_REPOSITORY
-  kind: config
-  stores: [vercel]
-  required: false
-  consumers: [apps/web/src/modules/slack/config.ts]
-  impact: "없으면 guesung/Web-Memo로 동작한다"
-
-- name: GA4_PROPERTY_ID
-  kind: config
-  stores: [vercel]
-  required: false
-  consumers: [apps/web/src/modules/ga/config.ts]
-  impact: "없으면 코드에 적힌 기본 속성 ID로 동작한다"
 
 - name: NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY
   kind: config

@@ -1,4 +1,4 @@
-import { GITHUB_DEFAULT_BRANCH, getGithubRepository } from "./config";
+import { GITHUB_DEFAULT_BRANCH, GITHUB_REPOSITORY } from "./config";
 import {
 	buildHeaders,
 	fetchDefaultBranchSha,
@@ -40,7 +40,7 @@ const fetchVersion = async ({
 }): Promise<string> => {
 	const file = VERSION_FILES[track];
 	const response = await fetch(
-		`${GITHUB_API_ORIGIN}/repos/${getGithubRepository()}/contents/${file.path}?ref=${GITHUB_DEFAULT_BRANCH}`,
+		`${GITHUB_API_ORIGIN}/repos/${GITHUB_REPOSITORY}/contents/${file.path}?ref=${GITHUB_DEFAULT_BRANCH}`,
 		{
 			headers: { ...buildHeaders(), accept: "application/vnd.github.raw+json" },
 			signal: AbortSignal.timeout(timeoutMs),
@@ -107,7 +107,7 @@ export const fetchVersionForBump = (track: TVersionTrack): Promise<string> =>
  */
 const fetchFileSource = async (path: string, ref: string): Promise<string> => {
 	const response = await fetch(
-		`${GITHUB_API_ORIGIN}/repos/${getGithubRepository()}/contents/${path}?ref=${ref}`,
+		`${GITHUB_API_ORIGIN}/repos/${GITHUB_REPOSITORY}/contents/${path}?ref=${ref}`,
 		{
 			headers: { ...buildHeaders(), accept: "application/vnd.github.raw+json" },
 		},

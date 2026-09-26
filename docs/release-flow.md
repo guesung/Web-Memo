@@ -483,7 +483,6 @@ vercel logs https://www.webmemo.xyz --scope gueit214s-projects
 | `SLACK_SIGNING_SECRET` | Slack App의 Signing Secret |
 | `SLACK_BOT_TOKEN` | `xoxb-`로 시작하는 봇 토큰 |
 | `GITHUB_DISPATCH_TOKEN` | 위에서 만든 PAT |
-| `GITHUB_DISPATCH_REPOSITORY` | (선택) 기본값 `guesung/Web-Memo` |
 
 `SLACK_BOT_TOKEN`은 GitHub 시크릿에도 같은 값으로 따로 등록합니다(아래 4번).
 Vercel과 GitHub Actions는 서로의 값을 읽지 못합니다.

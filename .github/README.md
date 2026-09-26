@@ -55,7 +55,7 @@ dispatch해도 스크립트는 master의 것이 돕니다.
 
 | 폴더 | 담당 |
 | --- | --- |
-| `shared/` | 두 도메인 이상이 쓰는 모듈 (`run-context`·`slack-api`·`slack-blocks`·`http`·`jwt`·`google-auth`·`repo-versions`) |
+| `shared/` | 두 도메인 이상이 쓰는 모듈 (`run-context`·`slack-api`·`slack-blocks`·`http`·`jwt`·`google-auth`·`google-sheets`·`repo-versions`) |
 | `deploy/` | CI 빌드 판정, Slack 빌드·배포·릴리스 알림, PR 확장 다운로드 댓글, 스토어 버전 |
 | `seo/` | SEO 점검·GSC·Sheets 적재·AI 리포트 |
 | `ga/` | GA4 일간·주간 리포트, 기능 사용량 측정 |
@@ -64,9 +64,10 @@ dispatch해도 스크립트는 master의 것이 돕니다.
 | `refactor/` | 주간 리팩토링 점검 |
 | `cleanup/` | 미사용 파일 정리 |
 | `e2e-coverage/` | 핵심 사용자 흐름의 E2E 누락 점검, 새 테스트 검증, 자동 보완 PR 게시 |
+| `copy/` | 번역 문구 구글 시트 동기화(push·pull)와 문구 키 검사 |
 
 **`shared/` 규칙**: 두 도메인 이상이 쓰는 모듈만 `shared/`에 둡니다. 한 도메인만 쓰면 이름이
-범용이어도 그 도메인 폴더에 둡니다(예: `seo/google-sheets.mjs`). `shared/`는 다른 도메인 폴더를
+범용이어도 그 도메인 폴더에 둡니다(예: `ga/ga4-sheet.mjs`). `shared/`는 다른 도메인 폴더를
 import하지 않습니다.
 
 ### 워크플로 밖에서 부르는 것
@@ -76,6 +77,9 @@ import하지 않습니다.
 | `pnpm seo:check` | `seo/check-seo.mjs` | SEO 점검 (`report-seo.yml`도 사용) |
 | `pnpm seo:gsc` | `seo/check-gsc.mjs` | Search Console 색인·성과 조회 |
 | `pnpm seo:sheets` | `seo/persist-seo-sheets.mjs` | SEO 결과를 Google Sheets에 적재 |
+| `pnpm copy:push` | `copy/push-copy.mjs` | 새 번역 키를 문구 시트에 추가하고 사용 위치 열 갱신 |
+| `pnpm copy:pull` | `copy/pull-copy.mjs` | 문구 시트의 ko·en 값을 번역 JSON에 반영 (`--check`는 쓰지 않고 차이만 검사) |
+| `pnpm copy:check` | `copy/check-copy-keys.mjs` | ko/en 키 일치·코드의 번역 키 존재 검사 (`ci.yml`도 사용) |
 | 수동 CLI | `ga/measure-feature-usage.mjs` | 기간별 기능 사용량 측정 ([`docs/analytics.md`](../docs/analytics.md)) |
 
 테스트는 `pnpm exec vitest run .github/scripts`로 돌립니다.

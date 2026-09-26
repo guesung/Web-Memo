@@ -2,7 +2,7 @@ import { appendFile, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { upsertGoogleSheetTables } from "./google-sheets.mjs";
+import { upsertGoogleSheetTables } from "../shared/google-sheets.mjs";
 import { createSeoSheetTables } from "./seo-sheets.mjs";
 
 /**

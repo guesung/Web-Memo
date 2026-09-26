@@ -1,4 +1,4 @@
-import { access, readdir } from "node:fs/promises";
+import { access, readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { test } from "@playwright/test";
@@ -18,14 +18,14 @@ const HEADLINES: Record<TStoreLanguage, string[]> = {
 		"Alt+S 한 번이면 열려요",
 		"어디서 본 글인지 알아서 남아요",
 		"적은 메모는 웹과 앱에서 모아 봐요",
-		"긴 글은 요약으로 먼저 훑어봐요",
+		"긴 영상도 요약으로 먼저 훑어봐요",
 	],
 	en: [
 		"Write right beside the page you're reading",
 		"Open it with a single Alt+S",
 		"It remembers where you read it",
 		"Find your notes on the web and in the app",
-		"Skim long content with a summary first",
+		"Skim long videos with a summary first",
 	],
 };
 
@@ -42,6 +42,7 @@ for (const language of ["ko", "en"] as const) {
 			"video-page.png",
 			"video-side-panel.png",
 			"dashboard.png",
+			"article-memo-source.json",
 		]) {
 			await access(path.join(rawDirectory, fileName)).catch(() => {
 				throw new Error(
@@ -56,6 +57,13 @@ for (const language of ["ko", "en"] as const) {
 			);
 		}
 
+		// 3번 장이 확대할 메모 출처의 세로 위치. capture가 사이드 패널에서 잰 값이다(sceneCapture.ts의 saveMemoSourceBox).
+		const memoSourceBox: { top: number; height: number } = JSON.parse(
+			await readFile(
+				path.join(rawDirectory, "article-memo-source.json"),
+				"utf8",
+			),
+		);
 		const articleUrl = new URL(DEMO_ARTICLE_URL);
 		const videoUrl = new URL(DEMO_VIDEO_URL);
 		const articleScene = {
@@ -91,6 +99,8 @@ for (const language of ["ko", "en"] as const) {
 			language,
 			headline: HEADLINES[language][index],
 			mobileImage,
+			memoSourceTop: memoSourceBox.top,
+			memoSourceHeight: memoSourceBox.height,
 			mobilePlaceholderText: "assets/ 에 모바일 앱 스크린샷을 넣어 주세요",
 		}));
 
@@ -156,6 +166,10 @@ interface IFSceneInput {
 	dashboardImage?: string;
 	/** 4번 장의 모바일 앱 스크린샷. 없으면 자리표시 상자를 그린다 */
 	mobileImage: string | null;
+	/** 3번 장이 확대할 메모 출처의 사이드 패널 안 위쪽 위치(CSS px) */
+	memoSourceTop: number;
+	/** 3번 장이 확대할 메모 출처의 높이(CSS px) */
+	memoSourceHeight: number;
 	/** 모바일 스크린샷이 없을 때 자리표시 상자 문구 */
 	mobilePlaceholderText: string;
 }

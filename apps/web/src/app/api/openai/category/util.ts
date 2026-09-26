@@ -1,7 +1,10 @@
 import { PAGE_CONTENT_MAX_LENGTH } from "./constant";
-import type { CategorySuggestionRequest, ParsedAIResponse } from "./type";
+import type { IFCategorySuggestionRequest, IFParsedAIResponse } from "./type";
 
-export function buildCategoryPrompt(data: CategorySuggestionRequest): string {
+/** 기존 LLM 분류 프롬프트를 생성합니다. */
+export const buildCategoryPrompt = (
+	data: IFCategorySuggestionRequest,
+): string => {
 	const categoryList =
 		data.existingCategories.length > 0
 			? data.existingCategories.map((c) => c.name).join(", ")
@@ -33,12 +36,15 @@ Response format (JSON only, no markdown):
   "isExisting": boolean,
   "confidence": number
 }`;
-}
+};
 
-export function validateRequest(
+/** 카테고리 추천 요청의 필수 필드를 검사합니다. */
+export const validateRequest = (
 	body: unknown,
-): body is CategorySuggestionRequest {
-	if (!body || typeof body !== "object") return false;
+): body is IFCategorySuggestionRequest => {
+	if (!body || typeof body !== "object") {
+		return false;
+	}
 	const data = body as Record<string, unknown>;
 
 	return (
@@ -49,11 +55,12 @@ export function validateRequest(
 		Array.isArray(data.existingCategories) &&
 		typeof data.pageLanguage === "string"
 	);
-}
+};
 
-export function parseAIResponse(
+/** LLM JSON 응답에서 제안에 필요한 필드만 읽습니다. */
+export const parseAIResponse = (
 	responseContent: string,
-): ParsedAIResponse | null {
+): IFParsedAIResponse | null => {
 	try {
 		const parsed = JSON.parse(responseContent);
 
@@ -73,14 +80,15 @@ export function parseAIResponse(
 	} catch {
 		return null;
 	}
-}
+};
 
-export function findMatchingCategoryId(
+/** 이름이 일치하는 기존 카테고리 ID를 찾습니다. */
+export const findMatchingCategoryId = (
 	categories: { id: number; name: string }[],
 	categoryName: string,
-): number | undefined {
+): number | undefined => {
 	const matchedCategory = categories.find(
 		(c) => c.name.toLowerCase() === categoryName.toLowerCase(),
 	);
 	return matchedCategory?.id;
-}
+};

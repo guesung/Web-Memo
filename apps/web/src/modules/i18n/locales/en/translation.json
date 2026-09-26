@@ -1344,12 +1344,12 @@
 		"effective_label": "Effective date",
 		"effective_date": "August 19, 2026",
 		"updated_label": "Last updated",
-		"updated_date": "August 19, 2026",
+		"updated_date": "September 24, 2026",
 		"summary": {
 			"title": "Summary",
 			"items": [
 				"We store only the notes and highlights you explicitly save, along with the address and title of the page they came from.",
-				"The content of a web page is sent to OpenAI only when you actively run an AI feature.",
+				"Only the information needed for an AI feature or note category suggestion is sent to OpenAI or TypeSafe AI.",
 				"The extension does not collect or store your general browsing history.",
 				"We never sell your data and never use it for advertising."
 			]
@@ -1391,8 +1391,8 @@
 						]
 					},
 					"page_content": {
-						"title": "c. Web page content (only when you use an AI feature)",
-						"description": "Only when you actively run AI summarization, AI question answering, or automatic category suggestion, the text of the page you are viewing is sent through our server to OpenAI. This data is processed solely to generate a response and is not separately stored in our database.",
+						"title": "c. Web page and note content (only when you use an AI feature)",
+						"description": "When you run AI summarization or question answering, page text is sent through our server to OpenAI. When you write or edit a note in the side panel, its title, URL, content, and existing category list may be sent to TypeSafe AI to suggest a category. If further classification is needed, this information and up to the first 2,000 characters of page text are sent to OpenAI. The transmitted content is processed for the suggestion and is not separately stored in our database.",
 						"items": [
 							"The body text and title of the page you are currently viewing",
 							"The questions you type and the conversation history in the AI chat feature",
@@ -1509,6 +1509,7 @@
 					"Notes, highlights, and categories you saved: retained until you delete them yourself or request account deletion.",
 					"Account information: retained while your account exists, and deleted together with related data when you request account deletion.",
 					"Page content and conversations sent to AI features: not stored in our database after the response is generated. Retention on OpenAI's side is governed by OpenAI's own policy.",
+					"Content sent to TypeSafe AI for category suggestions: not separately stored in our database. TypeSafe AI's data processing addendum states that it retains data for as long as necessary for the processing purpose and applicable law; it does not specify a fixed number of days.",
 					"Usage data (Google Analytics): automatically deleted no later than 14 months after collection.",
 					"Diagnostic data and session replays (Sentry): automatically deleted no later than 90 days after collection.",
 					"Support and feedback data: deleted once the inquiry is resolved and the service improvement purpose is fulfilled.",
@@ -1606,6 +1607,12 @@
 				"purpose": "AI summarization, AI question answering, and automatic category suggestion",
 				"data": "Body text and title of the page where you ran an AI feature, AI conversation content, and note content sent for classification",
 				"url": "https://openai.com/policies/privacy-policy"
+			},
+			"typesafe": {
+				"name": "TypeSafe AI, Inc.",
+				"purpose": "Determining whether an existing category fits a note",
+				"data": "Title, URL, and content of the note being classified, and existing category names",
+				"url": "https://typesafe.ai/legal/data-processing"
 			},
 			"google_auth": {
 				"name": "Google LLC (Google Sign-In)",

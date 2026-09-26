@@ -194,6 +194,19 @@
 	"category_suggestion_dismiss": {
 		"message": "무시"
 	},
+	"category_suggestion_create": {
+		"message": "만들기"
+	},
+	"category_auto_applied": {
+		"message": "'$1' 카테고리에 넣었어요",
+		"placeholders": { "category": { "content": "$1" } }
+	},
+	"category_auto_applied_undo": {
+		"message": "되돌리기"
+	},
+	"category_create_failed": {
+		"message": "카테고리를 만들지 못했어요. 다시 눌러 주세요"
+	},
 	"recommend_category": {
 		"message": "AI 카테고리 추천"
 	},

@@ -245,20 +245,6 @@
   consumers: [apps/web/src/modules/sentry/config.ts]
   impact: "Sentry 알림을 보낼 채널을 몰라 릴레이가 실패한다"
 
-- name: GITHUB_DISPATCH_REPOSITORY
-  kind: config
-  stores: [vercel]
-  required: false
-  consumers: [apps/web/src/modules/slack/config.ts]
-  impact: "없으면 guesung/Web-Memo로 동작한다"
-
-- name: GA4_PROPERTY_ID
-  kind: config
-  stores: [vercel]
-  required: false
-  consumers: [apps/web/src/modules/ga/config.ts]
-  impact: "없으면 코드에 적힌 기본 속성 ID로 동작한다"
-
 - name: NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY
   kind: config
   stores: [vercel]

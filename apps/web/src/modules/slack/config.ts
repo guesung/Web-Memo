@@ -22,9 +22,8 @@ export const getSlackBotToken = (): string =>
 export const getGithubDispatchToken = (): string =>
 	requireServerEnv("GITHUB_DISPATCH_TOKEN");
 
-/** 배포를 트리거할 대상 레포지토리. */
-export const getGithubRepository = (): string =>
-	process.env.GITHUB_DISPATCH_REPOSITORY ?? "guesung/Web-Memo";
+/** 배포를 트리거할 대상 레포지토리. 환경마다 다르지 않아 환경변수 없이 상수로 둡니다. */
+export const GITHUB_REPOSITORY = "guesung/Web-Memo";
 
 /** 워크플로를 실행할 기본 브랜치. release.yml은 여기서 dispatch됩니다. */
 export const GITHUB_DEFAULT_BRANCH = "master";

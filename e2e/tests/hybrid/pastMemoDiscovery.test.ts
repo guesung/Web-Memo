@@ -30,8 +30,22 @@ test("현재 글의 과거 메모를 알려 주고 기존 글을 연다", async 
 	await notice.getByRole("button", { name: messages.open }).click();
 	const openedPage = await openedPagePromise;
 	await expect(openedPage).toHaveURL(DUPLICATE_URL);
+});
 
-	// 관련 메모도 웹 메모의 상세가 아니라 메모를 남긴 원래 사이트를 연다.
+// 새 탭이 열리면 사이드 패널이 그 탭을 따라가 배너가 사라지므로, 같은 글 열기와 따로 확인한다.
+test("관련 메모를 누르면 웹 메모 상세가 아니라 원래 사이트를 새 탭으로 연다", async ({
+	page,
+	context,
+}) => {
+	const { sidePanelPage } = await setupPastMemoPage({ page, context });
+	const messages = await getPastMemoMessages(sidePanelPage);
+	const notice = sidePanelPage.getByRole("status").filter({
+		hasText: DUPLICATE_TITLE,
+	});
+
+	await expect(notice).toBeVisible();
+	await notice.getByText(messages.related).click();
+
 	const relatedPagePromise = context.waitForEvent("page");
 	await notice.getByRole("button", { name: RELATED_TITLE }).click();
 	const relatedPage = await relatedPagePromise;

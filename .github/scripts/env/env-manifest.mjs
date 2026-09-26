@@ -243,7 +243,7 @@ const matchAll = (text, pattern) =>
 
 /**
  * 한 파일이 읽는 환경 변수 이름을 뽑습니다.
- * 워크플로는 `secrets.X`만, 코드는 process.env·import.meta.env·Deno.env·requireServerEnv를 봅니다.
+ * 워크플로는 `secrets.X`만, 코드는 process.env·import.meta.env·Deno.env·requireServerEnv·readServerEnv를 봅니다.
  *
  * @returns {{ name: string, source: "secrets" | "code" }[]}
  */
@@ -267,10 +267,10 @@ export const extractReferences = (path, content) => {
 			content,
 			/\bDeno\.env\.get\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']\s*\)/g,
 		),
-		// 이름을 인자로 받아 process.env[name]으로 읽는 래퍼(apps/web의 slack/config.ts)
+		// 이름을 인자로 받아 process.env[name]으로 읽는 래퍼(apps/web의 utils/serverEnv.ts)
 		...matchAll(
 			content,
-			/\brequireServerEnv\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']\s*\)/g,
+			/\b(?:require|read)ServerEnv\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']\s*\)/g,
 		),
 	];
 

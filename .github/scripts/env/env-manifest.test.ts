@@ -113,12 +113,13 @@ describe("extractReferences", () => {
 				'const b = process.env["BETA"];',
 				'const c = Deno.env.get("GAMMA");',
 				'const d = requireServerEnv("DELTA");',
+				'const g = readServerEnv("ZETA");',
 				"const e = import.meta.env.VITE_EPSILON;",
 				"const f = import.meta.env.MODE;",
 			].join("\n"),
 		).map((reference) => reference.name);
 
-		expect(names).toEqual(["ALPHA", "BETA", "VITE_EPSILON", "GAMMA", "DELTA"]);
+		expect(names).toEqual(["ALPHA", "BETA", "VITE_EPSILON", "GAMMA", "DELTA", "ZETA"]);
 	});
 
 	it("워크플로는 secrets.* 만 보고 GITHUB_TOKEN은 뺀다", () => {

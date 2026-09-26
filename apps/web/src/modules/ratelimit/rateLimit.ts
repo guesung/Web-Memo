@@ -1,3 +1,4 @@
+import { readServerEnv } from "@src/utils/serverEnv";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
@@ -18,8 +19,8 @@ const getRedis = (): Redis | null => {
 		return cachedRedis;
 	}
 
-	const upstashRedisRestUrl = process.env.UPSTASH_REDIS_REST_URL;
-	const upstashRedisRestToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+	const upstashRedisRestUrl = readServerEnv("UPSTASH_REDIS_REST_URL");
+	const upstashRedisRestToken = readServerEnv("UPSTASH_REDIS_REST_TOKEN");
 
 	if (!upstashRedisRestUrl || !upstashRedisRestToken) {
 		cachedRedis = null;

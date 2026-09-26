@@ -322,6 +322,14 @@ function Component({ lng }: { lng: Language }) {
 
 **검증**: i18n 관련 코드를 수정한 작업 후에는 항상 `/i18n-check`로 번역 완전성을 검증합니다.
 
+**문구 관리 (구글 시트)**: 웹 `translation.json`과 확장 `messages.json`의 문구 원천은 구글 시트입니다.
+키마다 ko·en·사용 위치·맥락이 한 행에 있습니다. 릴리스 노트(`updates`)와 `privacy`는 시트에 없고 JSON에서 직접 고칩니다.
+
+- **문구 수정은 시트에서** 하고 `pnpm copy:pull`로 JSON에 반영해 커밋합니다. JSON의 기존 문구를 직접 고치면 다음 pull에 덮입니다.
+- **새 키는 코드·JSON에 먼저** 추가하고 `pnpm copy:push`로 시트에 올립니다. push는 새 행 추가와 사용 위치 열 갱신만 하고 기존 문구·맥락은 건드리지 않습니다.
+- PR CI의 `pnpm copy:check`가 ko/en 키 불일치와 코드에서 부르는 키의 누락을 막습니다.
+- 설정: `pnpm env:pull` 후 `apps/web/.env.local`에 `COPY_SHEET_ID`를 둡니다 ([docs/environment-variables.md](docs/environment-variables.md)).
+
 ---
 
 ## 🔧 환경 설정

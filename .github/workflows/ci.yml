@@ -51,6 +51,9 @@ jobs:
       - name: Page paths up to date
         run: node apps/web/scripts/generatePagePaths.mjs --check
 
+      - name: Copy keys consistent
+        run: node .github/scripts/copy/check-copy-keys.mjs
+
       - name: Check (format + lint)
         run: pnpm check
 

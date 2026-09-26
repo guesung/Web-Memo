@@ -1,4 +1,4 @@
-import { exchangeServiceAccountToken } from "../shared/google-auth.mjs";
+import { exchangeServiceAccountToken } from "./google-auth.mjs";
 
 /** 첫 컬럼을 고유 키로 사용하여 탭과 헤더를 보장하고 행을 멱등 저장합니다. 호출자는 동시 쓰기를 직렬화해야 합니다. */
 export const upsertGoogleSheetTables = async ({
@@ -139,6 +139,115 @@ export const upsertGoogleSheetTables = async ({
 	}
 
 	return { updatedRows };
+};
+
+/** 스프레드시트의 특정 탭 값을 전부 읽습니다. 탭이 없으면 던집니다. */
+export const readGoogleSheetValues = async ({
+	spreadsheetId,
+	serviceAccount,
+	title,
+	fetcher = fetch,
+	tokenExchanger = exchangeServiceAccountToken,
+	sleep = (milliseconds) =>
+		new Promise((resolve) => setTimeout(resolve, milliseconds)),
+}) => {
+	const accessToken = await tokenExchanger({
+		serviceAccount,
+		scope: "https://www.googleapis.com/auth/spreadsheets",
+	});
+	const endpoint = `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}`;
+	const response = await requestSheets({
+		url: `${endpoint}/values/${quoteTitle(title)}`,
+		accessToken,
+		fetcher,
+		sleep,
+	});
+
+	return response.values ?? [];
+};
+
+/**
+ * 여러 범위를 한 번의 `values:batchUpdate`(RAW)로 씁니다.
+ * @description ranges: [{ range: "'web'!A2", values: [[...]] }, ...]
+ */
+export const writeGoogleSheetRanges = async ({
+	spreadsheetId,
+	serviceAccount,
+	ranges,
+	fetcher = fetch,
+	tokenExchanger = exchangeServiceAccountToken,
+	sleep = (milliseconds) =>
+		new Promise((resolve) => setTimeout(resolve, milliseconds)),
+}) => {
+	if (ranges.length === 0) {
+		return;
+	}
+	const accessToken = await tokenExchanger({
+		serviceAccount,
+		scope: "https://www.googleapis.com/auth/spreadsheets",
+	});
+	const endpoint = `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}`;
+	await requestSheets({
+		url: `${endpoint}/values:batchUpdate`,
+		body: { valueInputOption: "RAW", data: ranges },
+		accessToken,
+		fetcher,
+		sleep,
+	});
+};
+
+/** 탭이 없으면 만들고 헤더 행을 씁니다. 이미 있으면 아무 요청도 보내지 않습니다. */
+export const ensureGoogleSheetTab = async ({
+	spreadsheetId,
+	serviceAccount,
+	title,
+	headers,
+	fetcher = fetch,
+	tokenExchanger = exchangeServiceAccountToken,
+	sleep = (milliseconds) =>
+		new Promise((resolve) => setTimeout(resolve, milliseconds)),
+}) => {
+	const accessToken = await tokenExchanger({
+		serviceAccount,
+		scope: "https://www.googleapis.com/auth/spreadsheets",
+	});
+	const endpoint = `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}`;
+	const request = async (path, body) =>
+		await requestSheets({
+			url: `${endpoint}${path}`,
+			body,
+			accessToken,
+			fetcher,
+			sleep,
+		});
+	const spreadsheet = await request("?fields=sheets.properties");
+	const exists = (spreadsheet.sheets ?? []).some(
+		(sheet) => sheet.properties.title === title,
+	);
+	if (exists) {
+		return { created: false };
+	}
+	await request(":batchUpdate", {
+		requests: [
+			{
+				addSheet: {
+					properties: {
+						title,
+						gridProperties: {
+							rowCount: 1000,
+							columnCount: Math.max(26, headers.length),
+						},
+					},
+				},
+			},
+		],
+	});
+	await request("/values:batchUpdate", {
+		valueInputOption: "RAW",
+		data: [{ range: `${quoteTitle(title)}!A1`, values: [headers] }],
+	});
+
+	return { created: true };
 };
 
 const quoteTitle = (title) => `'${title.replaceAll("'", "''")}'`;

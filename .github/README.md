@@ -23,7 +23,7 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | `ci.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | `deploy/resolve-affected-base.sh` · `deploy/detect-affected-apps.sh` · `deploy/notify-thread-root.mjs` · `deploy/notify-thread-reply.mjs` · `deploy/notify-build-ready.mjs` · `deploy/notify-staging-deploy.mjs` · `deploy/comment-pr-extension.mjs`, 그리고 `cd-app`·`cd-extension`·`cd-web` 호출 |
 | `e2e.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | 없음 (Playwright) |
 | `cd-app.yml` | workflow_call | 다른 워크플로에서 호출할 때마다 | `deploy/find-reusable-artifact.sh` |
-| `cd-extension.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-reusable-artifact.sh` |
+| `cd-extension.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-reusable-artifact.sh` · `deploy/upload-extension-to-store.mjs` |
 | `cd-web.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-staged-deployment.mjs` · `deploy/staged-deployment.mjs` · `deploy/notify-staging-deploy.mjs` |
 | `release.yml` | workflow_dispatch | 수동 실행할 때마다 | 없음. `cd-app`·`cd-extension`·`cd-web`·`release-notify` 호출 |
 | `release-notify.yml` | workflow_call | `release.yml`에서 호출할 때마다 | `deploy/notify-release-result.mjs` |
@@ -56,7 +56,7 @@ dispatch해도 스크립트는 master의 것이 돕니다.
 | 폴더 | 담당 |
 | --- | --- |
 | `shared/` | 두 도메인 이상이 쓰는 모듈 (`run-context`·`slack-api`·`slack-blocks`·`http`·`jwt`·`google-auth`·`repo-versions`) |
-| `deploy/` | CI 빌드 판정, Slack 빌드·배포·릴리스 알림, PR 확장 다운로드 댓글, 스토어 버전 |
+| `deploy/` | CI 빌드 판정, Slack 빌드·배포·릴리스 알림, PR 확장 다운로드 댓글, 확장 웹스토어 업로드, 스토어 버전 |
 | `seo/` | SEO 점검·GSC·Sheets 적재·AI 리포트 |
 | `ga/` | GA4 일간·주간 리포트, 기능 사용량 측정 |
 | `env/` | 환경 변수 매니페스트 검사와 등록 현황 감사 |

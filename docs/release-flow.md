@@ -251,11 +251,13 @@ Slack에서 `/배포현황`(등록한 슬래시 커맨드)을 실행하면 `vers
 | 📱 iOS | `TestFlight 1.0.8 (49)` | 마케팅 버전 1.0.8, EAS가 매긴 빌드 번호 49 |
 | 📱 iOS | `App Store 1.0.7` | 실제로 판매 중인(심사를 통과한) 버전 |
 | 🤖 Android | `internal 1.0.7 (49)` | 트랙명 + 릴리스명 + versionCode |
-| 🧩 확장 | `게시 1.10.13 · 초안 1.10.14` | 업로드는 됐지만 **게시 버튼을 아직 안 누른** 상태 |
+| 🧩 확장 | `게시 1.10.13 · 초안 1.10.14` | 업로드는 됐지만 **아직 게시되지 않은**(심사 중이거나 게시 대기) 상태 |
 | 🌐 웹 | `배포 b9f0e21` | 지금 응답하는 인스턴스의 커밋 |
 
-확장은 `cd-extension.yml`이 `publish: false`로 올리므로 게시본과 초안이 거의
-항상 다릅니다. 게시는 크롬 웹 스토어 대시보드에서 직접 눌러야 합니다.
+확장은 `cd-extension.yml`이 `upload-extension-to-store.mjs`로 웹스토어 API v2에 올리고
+`DEFAULT_PUBLISH`로 제출하므로, 심사를 통과하면 바로 게시됩니다. 릴리스 직후에는
+심사가 끝나기 전이라 게시본과 초안이 다르고, 통과하면 초안이 사라집니다. 게시가
+안 되고 초안이 오래 남아 있으면 심사 결과를 크롬 웹 스토어 대시보드에서 확인하세요.
 
 ## master 푸시는 스토어에 올리지 않습니다 (빌드는 재사용합니다)
 
@@ -508,7 +510,7 @@ PAT나 Slack 시크릿을 거기 두면 확장 번들에 섞여 들어갈 수 �
 | `SLACK_CHANNEL_ID` | 스레드를 만들 채널 ID. 웹훅 URL에서는 얻을 수 없습니다 | 사람이 등록 |
 | `EXPO_ASC_API_KEY_P8` | iOS 스토어 버전 조회 | ✅ |
 | `EXPO_ANDROID_SERVICE_ACCOUNT_JSON` | Android 스토어 버전 조회 | ✅ |
-| `CLIENT_ID` / `CLIENT_SECRET` / `REFRESH_TOKEN` | 확장 초안 버전 조회 | ✅ |
+| `CLIENT_ID` / `CLIENT_SECRET` / `REFRESH_TOKEN` | 확장 업로드·게시 제출, 초안 버전 조회(웹스토어 API v2) | ✅ |
 
 위 두 스레드용 시크릿을 등록하기 전에는 스레드가 생기지 않고 기존처럼 웹훅 최상위
 메시지로 나갑니다. 등록했는데도 스레드가 안 생기면 Actions 실행의 `::warning::`을

@@ -60,6 +60,23 @@ export const readExtensionId = () => {
 	return matched[1];
 };
 
+/** packages/shared/src/constants/ChromeExtension.ts의 웹스토어 게시자 ID. 확장 ID와 같은 이유로 그 파일에서 직접 읽습니다. */
+export const readChromeWebStorePublisherId = () => {
+	const source = readFileSync(
+		join(REPO_ROOT, "packages/shared/src/constants/ChromeExtension.ts"),
+		"utf8",
+	);
+	const matched = source.match(
+		/CHROME_WEB_STORE_PUBLISHER_ID\s*=\s*"([0-9a-f-]{36})"/,
+	);
+
+	if (!matched) {
+		throw new Error("ChromeExtension.ts에서 웹스토어 게시자 ID를 찾지 못했습니다");
+	}
+
+	return matched[1];
+};
+
 /**
  * 배포 환경별 웹 주소.
  *

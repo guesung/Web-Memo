@@ -370,7 +370,7 @@
 		"changeCategory": "Change category"
 	},
 	"login": {
-		"welcomeTitle": "Capture thoughts as you read.",
+		"welcomeTitle": "Easily take notes while browsing websites.",
 		"kakaoLogin": "Login with Kakao",
 		"googleLogin": "Sign in with Google",
 		"appleLogin": "Sign in with Apple",
@@ -556,8 +556,8 @@
 			"get_started": "Get started"
 		},
 		"hero": {
-			"title": "Capture thoughts as you read.",
-			"subtitle": "Take notes on the page you’re reading, then revisit them on the web or in the app.",
+			"title": "Easier web browsing",
+			"subtitle": "Open the side panel on the page you're reading — AI summarizes long articles and videos",
 			"install_button": "Add to Chrome",
 			"appstore_button": "App Store",
 			"playstore_button": "Google Play",
@@ -767,7 +767,7 @@
 		},
 		"footer": {
 			"title": "Web Memo",
-			"description": "Capture thoughts as you read.",
+			"description": "Easy and fast content organization",
 			"chrome_extension": "Chrome Extension",
 			"ios_app": "iOS App",
 			"android_app": "Android App",

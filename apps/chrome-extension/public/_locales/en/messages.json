@@ -258,6 +258,9 @@
 	"control_disabled_offline_open": {
 		"message": "You can't open this offline"
 	},
+	"login_network_unavailable": {
+		"message": "You're offline. We'll reload automatically once you're back online."
+	},
 	"control_disabled_syncing": {
 		"message": "Available once syncing finishes"
 	},

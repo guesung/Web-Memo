@@ -258,6 +258,9 @@
 	"control_disabled_offline_open": {
 		"message": "오프라인에서는 열 수 없어요"
 	},
+	"login_network_unavailable": {
+		"message": "인터넷에 연결되어 있지 않아요. 연결되면 자동으로 다시 불러와요."
+	},
 	"control_disabled_syncing": {
 		"message": "동기화가 끝나면 쓸 수 있어요"
 	},

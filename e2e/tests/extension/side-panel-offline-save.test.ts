@@ -55,7 +55,9 @@ test("오프라인에서 입력한 메모는 대기열에 남고, 온라인이 �
 	// 디바운스가 끝날 시간을 기다려도 오프라인이면 저장 요청 자체가 나가지 않는다.
 	await sidePanelPage.waitForTimeout(500);
 	expect(memoRequestCount).toBe(0);
-	await expect(sidePanelPage.getByText(/offline/i).first()).toBeVisible();
+	await expect(
+		sidePanelPage.getByText(/offline|오프라인/i).first(),
+	).toBeVisible();
 
 	const syncResponsePromise = sidePanelPage.waitForResponse(
 		(response) =>
@@ -112,19 +114,20 @@ test("오프라인 중 서버 메모가 바뀌면 충돌로 새 메모에 저장
 	// updateMemo는 항상 updated_at을 새로 찍으므로 대기열의 baseUpdatedAt과 어긋난다.
 	store.updateMemo(memo.id, { memo: "다른 곳에서 바뀐 내용" });
 
-	const insertResponsePromise = sidePanelPage.waitForResponse(
-		(response) =>
-			response.url().includes("/rest/v1/memo") &&
-			response.request().method() === "POST" &&
-			response.ok(),
-	);
 	await context.setOffline(false);
-	await insertResponsePromise;
 
-	const conflictToast = sidePanelPage.getByRole("status").filter({
-		hasText: /new memo|새 메모/i,
-	});
-	await expect(conflictToast).toBeVisible();
+	// 토스트 액션은 role="status"가 아니라(그건 스크린리더용 숨김 공지 영역일 뿐이고 버튼이 없다)
+	// Radix ToastViewport의 role="region" 안에 있다. 메모 폼에도 같은 문구("다른 메모 선택")의
+	// 상시 링크가 있어 페이지 전체에서 role="button"으로 찾으면 둘 다 걸린다.
+	// 토스트는 2초 뒤 자동으로 닫히므로(packages/ui/src/components/toaster.tsx), 응답을 먼저
+	// 기다리지 않고 액션 버튼을 바로 찾아 누른다.
+	await sidePanelPage
+		.getByRole("region", { name: /notifications/i })
+		.getByRole("button", { name: /choose another|다른 메모 선택/i })
+		.click();
+	await expect(
+		sidePanelPage.getByText(/choose a note|메모를 선택하세요/i),
+	).toBeVisible();
 
 	// 원래 메모는 다른 곳에서 바꾼 내용 그대로고, 오프라인 입력은 새 메모로 따로 저장됐다.
 	expect(store.getMemo(memo.id)?.memo).toBe("다른 곳에서 바뀐 내용");
@@ -136,11 +139,4 @@ test("오프라인 중 서버 메모가 바뀌면 충돌로 새 메모에 저장
 				candidate.memo === offlineText,
 		),
 	).toBe(true);
-
-	await conflictToast
-		.getByRole("button", { name: /choose another|다른 메모 선택/i })
-		.click();
-	await expect(
-		sidePanelPage.getByText(/choose a note|메모를 선택하세요/i),
-	).toBeVisible();
 });

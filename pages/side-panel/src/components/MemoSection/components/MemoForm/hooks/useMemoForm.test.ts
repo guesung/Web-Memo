@@ -11,6 +11,10 @@ const mocks = vi.hoisted(() => ({
 	values: {} as Record<string, unknown>,
 	upsert: vi.fn(),
 	patch: vi.fn(),
+	isOnline: true,
+	isNetworkError: vi.fn((_error: unknown) => false),
+	enqueueOfflineMemo: vi.fn(async (_item: unknown) => {}),
+	hasPendingOfflineMemo: vi.fn(async (_target: unknown) => false),
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
 	useDebounce: () => useDebounce(),
@@ -19,11 +23,25 @@ vi.mock("@web-memo/shared/hooks", () => ({
 	useMemoQuery: () => ({ memo: mocks.memo, refetch: vi.fn() }),
 	useMemoUpsertMutation: () => ({ mutate: mocks.upsert }),
 	useMemoPatchMutation: () => ({ mutate: mocks.patch }),
+	useSupabaseUserQuery: () => ({
+		user: { data: { user: { id: "user-1" } } },
+	}),
+}));
+vi.mock("@web-memo/shared/utils", () => ({
+	isNetworkError: (error: unknown) => mocks.isNetworkError(error),
 }));
 vi.mock("@web-memo/shared/modules/extension-bridge", () => ({ bridge: {} }));
 vi.mock("@web-memo/shared/utils/extension", () => ({
 	Tab: { get: async () => mocks.tab },
 	getTabInfo: async () => mocks.tab,
+}));
+vi.mock("../../../../../hooks/useOnlineStatus", () => ({
+	default: () => mocks.isOnline,
+}));
+vi.mock("../../../../../utils/offlineMemoQueue", () => ({
+	enqueueOfflineMemo: (item: unknown) => mocks.enqueueOfflineMemo(item),
+	hasPendingOfflineMemo: (target: unknown) =>
+		mocks.hasPendingOfflineMemo(target),
 }));
 vi.mock("react-hook-form", () => ({
 	useFormContext: () => ({
@@ -66,6 +84,10 @@ beforeEach(() => {
 	mocks.upsert
 		.mockReset()
 		.mockImplementation((_request, callbacks) => callbacks.onSuccess());
+	mocks.isOnline = true;
+	mocks.isNetworkError.mockReset().mockReturnValue(false);
+	mocks.enqueueOfflineMemo.mockReset().mockResolvedValue(undefined);
+	mocks.hasPendingOfflineMemo.mockReset().mockResolvedValue(false);
 	document.body.innerHTML = "<div id='root'></div>";
 	root = createRoot(document.getElementById("root") as HTMLElement);
 });
@@ -241,4 +263,70 @@ it("첫 저장으로 ID가 생겨도 저장 중 입력한 초안을 유지한다
 	expect(mocks.upsert.mock.calls.at(-1)?.[0].data.memo).toBe(
 		"저장 중 추가 입력",
 	);
+});
+
+it("오프라인이면 upsert 대신 대기열에 넣는다", async () => {
+	mocks.isOnline = false;
+	await render();
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveMemo({ memo: "오프라인 입력" });
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.upsert).not.toHaveBeenCalled();
+	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(1);
+	expect(mocks.enqueueOfflineMemo.mock.calls[0][0]).toMatchObject({
+		userId: "user-1",
+		memoId: 1,
+		url: "https://example.com/a",
+		data: { memo: "오프라인 입력" },
+	});
+});
+
+it("현재 메모에 대기 항목이 있으면 온라인이어도 대기열에 넣는다", async () => {
+	mocks.hasPendingOfflineMemo.mockResolvedValue(true);
+	await render();
+	await act(async () => {
+		await form.saveMemo({ memo: "이미 대기 중" });
+	});
+
+	expect(mocks.upsert).not.toHaveBeenCalled();
+	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(1);
+});
+
+it("네트워크 오류로 실패하면 대기열에 넣고 저장 성공으로 처리한다", async () => {
+	mocks.isNetworkError.mockReturnValue(true);
+	mocks.upsert.mockImplementation((_request, callbacks) =>
+		callbacks.onError(new Error("네트워크 오류")),
+	);
+	await render();
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveMemo({ memo: "네트워크 실패 입력" });
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(1);
+});
+
+it("오프라인이면 카테고리를 바꾸지 않는다", async () => {
+	mocks.isOnline = false;
+	await render();
+	await act(async () => form.updateCategory(3, "button"));
+
+	expect(mocks.values.categoryId).not.toBe(3);
+	expect(mocks.patch).not.toHaveBeenCalled();
+});
+
+it("오프라인이면 상태 토글을 저장하지 않는다", async () => {
+	mocks.isOnline = false;
+	await render();
+	let result: boolean | null = true;
+	await act(async () => {
+		result = await form.toggleMemoStatus("isWish");
+	});
+
+	expect(result).toBeNull();
+	expect(mocks.upsert).not.toHaveBeenCalled();
 });

@@ -41,6 +41,9 @@
 	"memo_choose_other": {
 		"message": "다른 메모 선택"
 	},
+	"memo_offline_conflict": {
+		"message": "다른 곳에서 바뀐 메모라 새 메모로 따로 저장했어요"
+	},
 	"save": {
 		"message": "저장"
 	},

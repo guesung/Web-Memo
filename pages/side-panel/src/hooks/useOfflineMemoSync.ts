@@ -35,9 +35,16 @@ export default function useOfflineMemoSync({
 	const { data: supabaseClient } = useSupabaseClientQuery();
 	const [syncStatus, setSyncStatus] = useState<TOfflineMemoSyncStatus>("idle");
 	const isFlushingRef = useRef(false);
+	// mount·online 이펙트는 한 번만 걸리므로, 그 뒤에 바뀌는 userId·onConflict를
+	// 놓치지 않도록 최신 값을 ref로 들고 flush 안에서 읽는다.
+	const latestPropsRef = useRef({ userId, onConflict });
+	latestPropsRef.current = { userId, onConflict };
 
 	const flush = async () => {
-		if (!userId || isFlushingRef.current) {
+		const { userId: currentUserId, onConflict: currentOnConflict } =
+			latestPropsRef.current;
+
+		if (!currentUserId || isFlushingRef.current) {
 			return;
 		}
 
@@ -46,11 +53,10 @@ export default function useOfflineMemoSync({
 
 		try {
 			const memoService = new MemoService(supabaseClient);
-			const result = await flushOfflineMemoQueue({ userId, memoService });
-
-			for (const conflict of result.conflicts) {
-				onConflict?.(conflict);
-			}
+			const result = await flushOfflineMemoQueue({
+				userId: currentUserId,
+				memoService,
+			});
 
 			if (result.syncedCount > 0) {
 				await queryClient.invalidateQueries({
@@ -60,6 +66,10 @@ export default function useOfflineMemoSync({
 					queryKey: QUERY_KEY.samePathMemosPrefix(),
 				});
 				await queryClient.invalidateQueries({ queryKey: ["memo"] });
+			}
+
+			for (const conflict of result.conflicts) {
+				currentOnConflict?.(conflict);
 			}
 
 			setSyncStatus(result.hasOtherError ? "syncFailed" : "idle");

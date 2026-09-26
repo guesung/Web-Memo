@@ -6,14 +6,21 @@ import {
 	useMemoPatchMutation,
 	useMemoQuery,
 	useMemoUpsertMutation,
+	useSupabaseUserQuery,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
 import type { TCategoryChangeSource } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import type { Database } from "@web-memo/shared/types";
+import { isNetworkError } from "@web-memo/shared/utils";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
+import useOnlineStatus from "../../../../../hooks/useOnlineStatus";
+import {
+	enqueueOfflineMemo,
+	hasPendingOfflineMemo,
+} from "../../../../../utils/offlineMemoQueue";
 import { useMemoTitleSync } from "./useMemoTitleSync";
 
 interface SaveMemoOptions extends Partial<MemoInput> {
@@ -30,12 +37,15 @@ interface SaveMemoOptions extends Partial<MemoInput> {
 interface UseMemoFormProps {
 	onSaveSuccess?: (memoInput: MemoInput) => void;
 	selectedMemo?: Database["memo"]["Tables"]["memo"]["Row"];
+	/** 오프라인 대기열을 서버로 올리는 중인지. 저장 중이면 카테고리·상태 토글도 막는다 */
+	isSyncing?: boolean;
 }
 
 /** 선택한 메모의 폼 값과 저장 순서를 관리한다. */
 export default function useMemoForm({
 	onSaveSuccess,
 	selectedMemo,
+	isSyncing = false,
 }: UseMemoFormProps = {}) {
 	const { setValue, getValues } = useFormContext<MemoInput>();
 	const { debounce, abortDebounce } = useDebounce();
@@ -46,6 +56,9 @@ export default function useMemoForm({
 		url: tab?.url ?? "",
 	});
 	const memoData = selectedMemo ?? onlyMemo;
+	const isOnline = useOnlineStatus();
+	const { user } = useSupabaseUserQuery();
+	const userId = user.data.user?.id;
 	const titleSync = useMemoTitleSync({
 		onTitleUpdate: (title) => setValue("title", title),
 		initialSavedTitle: memoData?.title,
@@ -149,6 +162,62 @@ export default function useMemoForm({
 			const tabInfo = overrides?.tabInfo ?? (await getTabInfo());
 			const memoId = overrides?.memoId ?? memoData?.id;
 
+			// 데이터는 안전하게 남았으니(로컬 대기열 또는 서버) 저장 큐를 마저 비우고 성공으로 알린다.
+			const completeSaveAsSaved = (
+				resolveIsSaved: (isSaved: boolean) => void,
+			) => {
+				setTimeout(() => {
+					setIsSaving(false);
+					setIsSaveStatusVisible(false);
+					if (pendingDataRef.current !== null) {
+						const pendingData = pendingDataRef.current;
+						pendingDataRef.current = null;
+						saveMemo(pendingData);
+					}
+				}, 500);
+				onSaveSuccess?.(memoInput);
+				resolveIsSaved(true);
+			};
+
+			const queueOffline = async (
+				resolveIsSaved: (isSaved: boolean) => void,
+			) => {
+				if (!userId) {
+					setIsSaving(false);
+					setIsSaveStatusVisible(false);
+					resolveIsSaved(false);
+					return;
+				}
+
+				await enqueueOfflineMemo({
+					userId,
+					memoId,
+					url: tabInfo.url,
+					baseUpdatedAt:
+						memoId !== undefined ? memoData?.updated_at : undefined,
+					data: {
+						title: memoInput.title,
+						memo: memoInput.memo,
+						impression: memoInput.impression,
+						actionItem: memoInput.actionItem,
+						tabInfo,
+					},
+					queuedAt: Date.now(),
+				});
+
+				completeSaveAsSaved(resolveIsSaved);
+			};
+
+			const shouldQueueOffline =
+				!isOnline ||
+				(await hasPendingOfflineMemo({ memoId, url: tabInfo.url }));
+
+			if (shouldQueueOffline) {
+				return new Promise<boolean>((resolveIsSaved) => {
+					void queueOffline(resolveIsSaved);
+				});
+			}
+
 			return new Promise<boolean>((resolveIsSaved) => {
 				upsertMemo(
 					{
@@ -168,20 +237,14 @@ export default function useMemoForm({
 						},
 					},
 					{
-						onSuccess: () => {
-							setTimeout(() => {
-								setIsSaving(false);
-								setIsSaveStatusVisible(false);
-								if (pendingDataRef.current !== null) {
-									const pendingData = pendingDataRef.current;
-									pendingDataRef.current = null;
-									saveMemo(pendingData);
-								}
-							}, 500);
-							onSaveSuccess?.(memoInput);
-							resolveIsSaved(true);
-						},
-						onError: () => {
+						onSuccess: () => completeSaveAsSaved(resolveIsSaved),
+						onError: (error) => {
+							// 네트워크 실패는 오프라인 대기열로 돌린다. 실패 토스트를 띄우지 않는다(QueryProvider).
+							if (isNetworkError(error)) {
+								void queueOffline(resolveIsSaved);
+								return;
+							}
+
 							// 실패 토스트와 Sentry 보고는 QueryProvider의 MutationCache가 이미 맡는다.
 							// 여기서는 저장 상태만 되돌리고, 성패는 호출부가 UI 분기에 쓰도록 넘긴다.
 							setIsSaving(false);
@@ -194,7 +257,16 @@ export default function useMemoForm({
 				);
 			});
 		},
-		[isSaving, getValues, memoData?.id, upsertMemo, onSaveSuccess],
+		[
+			isSaving,
+			getValues,
+			memoData?.id,
+			memoData?.updated_at,
+			upsertMemo,
+			onSaveSuccess,
+			isOnline,
+			userId,
+		],
 	);
 
 	const handleTitleChange = (text: string) => {
@@ -266,6 +338,11 @@ export default function useMemoForm({
 		categoryId: number | null,
 		source: TCategoryChangeSource,
 	) => {
+		// UI가 이미 오프라인·동기화 중에는 막지만, 그 사이 상태가 바뀌었을 수 있어 한 번 더 막는다.
+		if (!isOnline || isSyncing) {
+			return;
+		}
+
 		hasEditedMemoRef.current = true;
 		const previousCategoryId = getValues("categoryId");
 		setValue("categoryId", categoryId);
@@ -300,6 +377,10 @@ export default function useMemoForm({
 	 * 호출부는 이 `null`로 성공 토스트를 건너뛴다. 실패 알림 자체는 QueryProvider의 MutationCache가 맡는다.
 	 */
 	const toggleMemoStatus = async (statusKey: TMemoStatusKey) => {
+		if (!isOnline || isSyncing) {
+			return null;
+		}
+
 		hasEditedMemoRef.current = true;
 		const previousStatusValue = getValues(statusKey);
 		const nextStatusValue = !previousStatusValue;

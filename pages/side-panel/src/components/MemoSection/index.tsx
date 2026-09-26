@@ -1,5 +1,10 @@
-import { useSyncLoginStatus } from "@src/hooks";
+import {
+	useOfflineMemoSync,
+	useOnlineStatus,
+	useSyncLoginStatus,
+} from "@src/hooks";
 import type { MemoInput } from "@src/types/Input";
+import type { IFOfflineMemoConflict } from "@src/utils/offlineMemoQueue";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import {
@@ -57,6 +62,8 @@ const MemoSectionContent = () => {
 
 const AuthenticatedMemoSectionContent = () => {
 	const { data: tab } = useTabQuery();
+	const { user } = useSupabaseUserQuery();
+	const userId = user.data.user?.id;
 	const { memos } = useMemoQuery({ url: tab?.url ?? "" });
 	const queryClient = useQueryClient();
 	const { mutate: deleteMemos } = useDeleteMemosMutation();
@@ -64,6 +71,11 @@ const AuthenticatedMemoSectionContent = () => {
 	const { memos: samePathMemos } = useSamePathMemoQuery({
 		url: tab?.url ?? "",
 	});
+	const isOnline = useOnlineStatus();
+	// handleUndoClick은 삭제 시점에 한 번 만들어져 토스트에 붙는다. 그 사이 오프라인으로
+	// 바뀌어도 최신 상태를 보도록 값이 아니라 ref로 읽는다.
+	const isOnlineRef = useRef(isOnline);
+	isOnlineRef.current = isOnline;
 	// 쿼리만 다른 주소에 남긴 메모. 현재 주소에 메모가 없을 때도 고를 수 있게 후보로 보여 준다.
 	const otherUrlMemos = samePathMemos.filter(
 		(samePathMemo) => !memos.some((memo) => memo.id === samePathMemo.id),
@@ -148,6 +160,50 @@ const AuthenticatedMemoSectionContent = () => {
 	const hasUnselectedCollision =
 		currentSelection?.memoId === null && memos.length > 1;
 
+	const openCandidateList = () => {
+		setCandidateListScope(editorScope);
+		setSelection(null);
+	};
+
+	/**
+	 * 대기열 flush 도중 다른 메모로 새로 저장된(충돌) 항목을 처리한다.
+	 * @description 지금 편집 중인 메모가 충돌한 경우에만 편집기를 새 메모로 전환하고 토스트를 띄운다.
+	 * 편집 중이 아닌 메모의 충돌은 화면에 알리지 않고 캐시 무효화로만 반영한다.
+	 */
+	const handleOfflineMemoConflict = (conflict: IFOfflineMemoConflict) => {
+		const isEditingConflictedMemo =
+			currentSelection !== null &&
+			currentSelection.memoId === (conflict.oldMemoId ?? null);
+
+		if (!isEditingConflictedMemo) {
+			return;
+		}
+
+		setSelection({
+			scope: editorScope,
+			memoId: conflict.newMemoId,
+			memo: null,
+		});
+
+		toast({
+			title: I18n.get("memo_offline_conflict"),
+			action: (
+				<ToastAction
+					altText={I18n.get("memo_choose_other")}
+					onClick={openCandidateList}
+				>
+					{I18n.get("memo_choose_other")}
+				</ToastAction>
+			),
+		});
+	};
+
+	const { syncStatus } = useOfflineMemoSync({
+		userId,
+		onConflict: handleOfflineMemoConflict,
+	});
+	const isSyncing = syncStatus === "syncing";
+
 	const handleMemoSelect = (memoId: number) => {
 		setCandidateListScope(null);
 		setSelection({
@@ -169,9 +225,18 @@ const AuthenticatedMemoSectionContent = () => {
 	};
 
 	const handleMemoDelete = (memoId: number) => {
+		if (!isOnline || isSyncing) {
+			return;
+		}
+
 		deleteMemos([memoId], { onSettled: invalidateCurrentPageMemos });
 
 		const handleUndoClick = () => {
+			// 토스트가 떠 있는 사이 오프라인으로 바뀌었을 수 있어 클릭 시점의 값을 ref로 읽는다.
+			if (!isOnlineRef.current) {
+				return;
+			}
+
 			restoreMemos([memoId], { onSettled: invalidateCurrentPageMemos });
 		};
 
@@ -194,8 +259,7 @@ const AuthenticatedMemoSectionContent = () => {
 		if (draft) {
 			setPreservedDraft({ scope: editorScope, value: draft });
 		}
-		setCandidateListScope(editorScope);
-		setSelection(null);
+		openCandidateList();
 	};
 
 	return (
@@ -228,6 +292,7 @@ const AuthenticatedMemoSectionContent = () => {
 							? handleOtherMemoClick
 							: undefined
 					}
+					isSyncing={isSyncing}
 				/>
 			)}
 		</>

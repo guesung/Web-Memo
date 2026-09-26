@@ -41,6 +41,9 @@
 	"memo_choose_other": {
 		"message": "Choose another note"
 	},
+	"memo_offline_conflict": {
+		"message": "This memo changed elsewhere, so it was saved as a new memo"
+	},
 	"save": {
 		"message": "Save"
 	},

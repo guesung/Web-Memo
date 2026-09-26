@@ -44,6 +44,7 @@ function MemoFormContent({
 	selectedMemo,
 	onOtherMemoClick,
 	isSelectedMemoMissing,
+	isSyncing = false,
 }: IFMemoFormProps) {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const [isSwitching, setIsSwitching] = useState(false);
@@ -91,7 +92,7 @@ function MemoFormContent({
 		handleActionItemChange,
 		updateCategory,
 		toggleMemoStatus,
-	} = useMemoForm({ selectedMemo });
+	} = useMemoForm({ selectedMemo, isSyncing });
 
 	const handleOtherMemoClick = async () => {
 		if (!onOtherMemoClick || isWritePending || isSwitching) {
@@ -426,6 +427,7 @@ function MemoForm({
 	selectedMemo,
 	onOtherMemoClick,
 	isSelectedMemoMissing,
+	isSyncing,
 }: IFMemoFormProps) {
 	const form = useForm<MemoInput>({
 		shouldUnregister: false,
@@ -447,6 +449,7 @@ function MemoForm({
 				selectedMemo={selectedMemo}
 				onOtherMemoClick={onOtherMemoClick}
 				isSelectedMemoMissing={isSelectedMemoMissing}
+				isSyncing={isSyncing}
 			/>
 		</FormProvider>
 	);
@@ -459,6 +462,8 @@ interface IFMemoFormProps {
 	selectedMemo?: Database["memo"]["Tables"]["memo"]["Row"];
 	isSelectedMemoMissing?: boolean;
 	onOtherMemoClick?: (draft?: MemoInput) => void;
+	/** 오프라인 대기열을 서버로 올리는 중인지. 카테고리·상태 토글을 막는다 */
+	isSyncing?: boolean;
 }
 
 interface IFMemoStatusToggleProps {

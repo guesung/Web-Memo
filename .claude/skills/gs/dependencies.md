@@ -8,8 +8,9 @@
 | ----------------- | ---------------------- | ---------------------------------------- |
 | `gs:planner`      | `/gs:idea` ①           | 아이디어 → 기획서 초안 + 결정 필요       |
 | `gs:designer`     | `/gs:design` ①-D       | 기획 → 디자인 명세 초안 (UI 있는 작업만) |
-| `gs:backend-dev`  | `/gs:implement-loop` ① | TDL `[BE]` 구현. API 계약을 먼저 고정    |
-| `gs:frontend-dev` | `/gs:implement-loop` ① | TDL `[FE]` 구현. BE의 계약 위에 쌓는다   |
+| `gs:backend-dev`  | `/gs:implement` ①    | TDL `[BE]` 구현. API 계약을 먼저 고정    |
+| `gs:frontend-dev` | `/gs:implement` ①    | TDL `[FE]` 구현. BE의 계약 위에 쌓는다   |
+| `gs:event-analyst` | `/gs:implement` ①-b   | diff → 이벤트 로깅 명세. 심지 않는다      |
 | `gs:qa-checklist` | `/gs:self-qa` ①        | 설계서 → QA 체크리스트 초안. 코드를 안 본다 |
 | `gs:qa-verifier`  | `/gs:self-qa` ②        | 자동 항목 브라우저 판정 + 수동 재현 방법. 고치지 않는다 |
 

@@ -12,8 +12,8 @@ import { type RefObject, useEffect } from "react";
  * 대신 그려지므로, 연결이 돌아오면 다시 확인해야 메모 화면으로 돌아갑니다.
  * 로그아웃 상태에서는 MemoForm이 던진 오류로 로그인 화면이 대신 그려지므로,
  * MemoForm 안쪽이 아니라 로그인 여부와 무관하게 항상 마운트되는 곳에서 호출해야 합니다.
- * 수신하면 Supabase 클라이언트와 사용자 쿼리를 다시 가져온 뒤 로그인 화면을 띄운 ErrorBoundary를
- * 리셋합니다. 오류 상태가 아닌 ErrorBoundary의 리셋은 아무 일도 하지 않으므로, 이미 로그인된
+ * 수신하면 Supabase 클라이언트와 사용자 쿼리, 오류로 끝난 쿼리를 다시 가져온 뒤 로그인 화면을 띄운
+ * ErrorBoundary를 리셋합니다. 오류 상태가 아닌 ErrorBoundary의 리셋은 아무 일도 하지 않으므로, 이미 로그인된
  * 패널의 메모 입력 상태는 유지됩니다. 현재 사용처: MemoSection.tsx
  * @param loginBoundaryRef 로그인 화면을 폴백으로 쓰는 ErrorBoundary의 ref
  */
@@ -27,6 +27,11 @@ export default function useSyncLoginStatus(
 			queryKey: QUERY_KEY.supabaseClient(),
 		});
 		await queryClient.refetchQueries({ queryKey: QUERY_KEY.user() });
+		// 오프라인에서 실패한 설정·메모 조회가 오류로 남아 있으면, 경계를 리셋해도 Suspense 조회가 같은
+		// 오류를 곧바로 다시 던져 로그인 화면(경계 폴백)으로 돌아간다. 리셋 전에 먼저 다시 가져온다.
+		await queryClient.refetchQueries({
+			predicate: (query) => query.state.status === "error",
+		});
 
 		loginBoundaryRef.current?.resetErrorBoundary();
 	};

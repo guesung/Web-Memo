@@ -1,3 +1,4 @@
+import type { BrowserContext } from "@playwright/test";
 import { SUPABASE } from "@web-memo/shared/constants";
 import { expect, test } from "../fixtures/extension";
 import { findSidePanelPage, login, openSidePanel, skipGuide } from "../lib";
@@ -139,4 +140,109 @@ test("오프라인 중 서버 메모가 바뀌면 충돌로 새 메모에 저장
 				candidate.memo === offlineText,
 		),
 	).toBe(true);
+});
+
+const OFFLINE_NAV_FROM_URL = "https://example.com/offline-nav-from";
+const OFFLINE_NAV_TO_URL = "https://example.com/offline-nav-to";
+const OFFLINE_RELOAD_URL = "https://example.com/offline-reload";
+
+/**
+ * 모든 http 요청을 끊는 스위치를 건다.
+ * @description context.setOffline만으로는 목(route) 응답이 계속 돌아와, 오프라인에서 사용자 확인·조회가
+ * 실패하는 상황을 재현하지 못한다. 목보다 나중에 등록한 route가 먼저 불리므로 여기서 끊는다.
+ */
+const setupNetworkSwitch = async (context: BrowserContext) => {
+	let isNetworkCut = false;
+	await context.route("**/*", (route) => {
+		if (isNetworkCut && route.request().url().startsWith("http")) {
+			return route.abort("internetdisconnected");
+		}
+
+		return route.fallback();
+	});
+
+	return {
+		goOffline: async () => {
+			isNetworkCut = true;
+			await context.setOffline(true);
+		},
+		goOnline: async () => {
+			isNetworkCut = false;
+			await context.setOffline(false);
+		},
+	};
+};
+
+/**
+ * 오프라인에서 다른 페이지로 옮기면, 탭 조회가 일시정지되지 않고 새 URL을 따라가 빈 메모로 전환한다.
+ */
+test("오프라인에서 새 페이지로 이동하면 새 페이지의 빈 메모로 전환된다", async ({
+	page,
+	context,
+}) => {
+	const store = new MockSupabaseStore();
+	store.addMemo(
+		createMockMemo({ url: OFFLINE_NAV_FROM_URL, memo: "이전 페이지 메모" }),
+	);
+	await setupSupabaseMocks(page, store);
+	const network = await setupNetworkSwitch(context);
+
+	await login(page);
+	await skipGuide(page);
+	await openSidePanel(page);
+	const sidePanelPage = await findSidePanelPage(page);
+
+	await page.goto(OFFLINE_NAV_FROM_URL);
+	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
+		"이전 페이지 메모",
+	);
+
+	await network.goOffline();
+	// 오프라인이라 이동은 오류 페이지로 끝나지만 탭 URL은 새 주소로 바뀐다.
+	await page.goto(OFFLINE_NAV_TO_URL).catch(() => {});
+
+	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue("");
+	await expect(sidePanelPage.locator("#memo-textarea")).toBeEditable();
+});
+
+/**
+ * 오프라인에서 패널을 다시 열면 사용자 확인이 실패해 연결 안내가 보이고, 연결이 돌아오면
+ * 로그인 안내를 거치지 않고 메모 화면으로 돌아온다.
+ */
+test("오프라인에서 패널을 다시 연 뒤 온라인이 되면 메모 화면으로 돌아온다", async ({
+	page,
+	context,
+}) => {
+	const store = new MockSupabaseStore();
+	store.addMemo(createMockMemo({ url: OFFLINE_RELOAD_URL, memo: "복귀 메모" }));
+	await setupSupabaseMocks(page, store);
+	const network = await setupNetworkSwitch(context);
+
+	await login(page);
+	await skipGuide(page);
+	await openSidePanel(page);
+	const sidePanelPage = await findSidePanelPage(page);
+
+	await page.goto(OFFLINE_RELOAD_URL);
+	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
+		"복귀 메모",
+	);
+
+	await network.goOffline();
+	await sidePanelPage.reload();
+	await expect(
+		sidePanelPage.getByText(/offline|인터넷에 연결되어 있지 않아요/i).first(),
+	).toBeVisible();
+	await expect(
+		sidePanelPage.getByRole("button", { name: /로그인하러가기|log ?in/i }),
+	).toHaveCount(0);
+
+	await network.goOnline();
+
+	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
+		"복귀 메모",
+	);
+	await expect(
+		sidePanelPage.getByRole("button", { name: /로그인하러가기|log ?in/i }),
+	).toHaveCount(0);
 });

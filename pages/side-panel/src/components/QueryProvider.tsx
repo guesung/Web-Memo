@@ -21,6 +21,12 @@ export default function QueryProvider({ children }: PropsWithChildren) {
 	const [queryClient] = useState(
 		() =>
 			new QueryClient({
+				// networkMode 'always'가 없으면 오프라인일 때 mutation이 일시정지돼 saveMemo가
+				// 실패를 못 받고 '저장 중...'에서 멈춘다. 항상 시도해 실패를 오프라인 대기열로
+				// 돌릴 기회를 준다.
+				defaultOptions: {
+					mutations: { networkMode: "always" },
+				},
 				// Supabase는 실패를 던지지 않고 `{ error }` 값으로 돌려줘 React Query가 성공으로 본다.
 				// 화면 동작은 그대로 두고, 값으로 담긴 오류만 Sentry에 보고한다.
 				queryCache: new QueryCache({
@@ -80,7 +86,11 @@ export default function QueryProvider({ children }: PropsWithChildren) {
 							return;
 						}
 
-						toast({ title: I18n.get("toast_error_save") });
+						// 네트워크 오류는 saveMemo가 오프라인 대기열로 돌려 조용히 처리한다.
+						// 여기서 또 실패 토스트를 띄우면 같은 실패를 두 번 알리게 된다.
+						if (!isNetworkError(error)) {
+							toast({ title: I18n.get("toast_error_save") });
+						}
 
 						const mutationMeta = mutation?.options?.meta;
 
@@ -89,6 +99,7 @@ export default function QueryProvider({ children }: PropsWithChildren) {
 							feature: mutationMeta?.feature ?? "side-panel",
 							operation: mutationMeta?.operation ?? "mutation",
 							stage: mutationMeta?.stage ?? "unknown",
+							level: isNetworkError(error) ? "warning" : undefined,
 							groupByMessage: true,
 						});
 					},

@@ -43,6 +43,8 @@ export interface IFOfflineMemoConflict {
 /** flush 전체 결과 */
 export interface IFOfflineMemoFlushResult {
 	conflicts: IFOfflineMemoConflict[];
+	/** 이번 flush로 서버에 반영해 대기열에서 지운 항목 수(충돌 포함) */
+	syncedCount: number;
 	/** 네트워크 오류를 만나 중단했는지. 대기열은 그대로 남는다 */
 	hasNetworkError: boolean;
 	/** 네트워크 오류가 아닌 실패 항목이 있었는지. 그 항목은 대기열에 남는다 */
@@ -55,9 +57,10 @@ export interface IFOfflineMemoFlushResult {
  * 문제되지 않는다. 테스트에서는 이 모양의 값만 돌려주는 목으로 대체한다.
  */
 export interface TOfflineMemoQueueService {
-	getMemoById: (
-		id: number,
-	) => Promise<{ data: Pick<MemoRow, "id" | "updated_at">[] | null; error: unknown }>;
+	getMemoById: (id: number) => Promise<{
+		data: Pick<MemoRow, "id" | "updated_at">[] | null;
+		error: unknown;
+	}>;
 	insertMemo: (
 		request: MemoTable["Insert"],
 	) => Promise<{ data: Pick<MemoRow, "id">[] | null; error: unknown }>;
@@ -115,7 +118,9 @@ export const removeOfflineMemo = async (
 ) => {
 	const items = await getPendingOfflineMemos();
 	const key = getQueueItemKey(item);
-	const nextItems = items.filter((existing) => getQueueItemKey(existing) !== key);
+	const nextItems = items.filter(
+		(existing) => getQueueItemKey(existing) !== key,
+	);
 
 	await chrome.storage.local.set({
 		[OFFLINE_MEMO_QUEUE_STORAGE_KEY]: nextItems,
@@ -235,6 +240,7 @@ export const flushOfflineMemoQueue = async ({
 	const ownItems = items.filter((item) => item.userId === userId);
 	const result: IFOfflineMemoFlushResult = {
 		conflicts: [],
+		syncedCount: 0,
 		hasNetworkError: false,
 		hasOtherError: false,
 	};
@@ -261,6 +267,7 @@ export const flushOfflineMemoQueue = async ({
 		}
 
 		await removeOfflineMemo(item);
+		result.syncedCount += 1;
 	}
 
 	return result;

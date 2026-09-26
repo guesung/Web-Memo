@@ -58,8 +58,18 @@ describe("enqueueOfflineMemo · getPendingOfflineMemos · removeOfflineMemo", ()
 	});
 
 	it("같은 memoId의 이전 스냅샷은 지우고 최신 것만 남긴다", async () => {
-		await enqueueOfflineMemo(createItem({ memoId: 1, data: { ...createItem().data, memo: "옛 내용" } }));
-		await enqueueOfflineMemo(createItem({ memoId: 1, data: { ...createItem().data, memo: "새 내용" } }));
+		await enqueueOfflineMemo(
+			createItem({
+				memoId: 1,
+				data: { ...createItem().data, memo: "옛 내용" },
+			}),
+		);
+		await enqueueOfflineMemo(
+			createItem({
+				memoId: 1,
+				data: { ...createItem().data, memo: "새 내용" },
+			}),
+		);
 
 		const pending = await getPendingOfflineMemos();
 		expect(pending).toHaveLength(1);
@@ -84,9 +94,9 @@ describe("enqueueOfflineMemo · getPendingOfflineMemos · removeOfflineMemo", ()
 	it("대기 여부를 memoId 또는 url로 확인한다", async () => {
 		await enqueueOfflineMemo(createItem({ url: "https://example.com/a" }));
 
-		expect(
-			await hasPendingOfflineMemo({ url: "https://example.com/a" }),
-		).toBe(true);
+		expect(await hasPendingOfflineMemo({ url: "https://example.com/a" })).toBe(
+			true,
+		);
 		expect(
 			await hasPendingOfflineMemo({ url: "https://example.com/other" }),
 		).toBe(false);

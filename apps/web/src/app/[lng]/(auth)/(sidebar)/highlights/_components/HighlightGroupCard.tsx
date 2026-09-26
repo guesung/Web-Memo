@@ -4,6 +4,7 @@ import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import type { HighlightGroup } from "@web-memo/shared/modules/highlight";
 import { ExternalLink } from "lucide-react";
+import { useState } from "react";
 import { HighlightQuote } from "./HighlightQuote";
 
 interface HighlightGroupCardProps {
@@ -20,6 +21,13 @@ export function HighlightGroupCard({
 	count,
 }: HighlightGroupCardProps) {
 	const { t } = useTranslation(lng);
+	const [failedFavIconUrl, setFailedFavIconUrl] = useState<string | null>(null);
+	const favIconUrl = group.favIconUrl;
+	const isFavIconVisible = !!favIconUrl && failedFavIconUrl !== favIconUrl;
+
+	const handleFavIconError = () => {
+		setFailedFavIconUrl(favIconUrl);
+	};
 
 	return (
 		<article className="rounded-xl border border-border bg-card p-4">
@@ -29,8 +37,13 @@ export function HighlightGroupCard({
 				rel="noreferrer"
 				className="mb-3 flex items-center gap-2 text-sm font-medium hover:underline"
 			>
-				{group.favIconUrl ? (
-					<img src={group.favIconUrl} alt="" className="size-4 rounded" />
+				{isFavIconVisible ? (
+					<img
+						src={favIconUrl}
+						alt=""
+						className="size-4 rounded"
+						onError={handleFavIconError}
+					/>
 				) : null}
 				<span className="truncate">{group.title ?? group.url}</span>
 				<ExternalLink className="size-3.5 shrink-0 text-muted-foreground" />

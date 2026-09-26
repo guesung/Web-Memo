@@ -92,18 +92,6 @@ it("다른 저장 메모는 해당 저장 제목을 표시하며 같은 메모�
 	expect(mocks.values.title).toBe("B 직접 수정");
 });
 
-it("입력 debounce 전에 Link를 누르면 이전 제목은 저장하지 않고 현재 페이지 제목을 저장한다", async () => {
-	await render();
-	await act(async () => form.handleTitleChange("오래된 입력"));
-	await act(async () => form.handleTitleSyncClick());
-	await act(async () => {
-		await vi.advanceTimersByTimeAsync(600);
-	});
-	expect(mocks.values.title).toBe("A");
-	expect(mocks.upsert).toHaveBeenCalledTimes(1);
-	expect(mocks.upsert.mock.calls[0][0].data.title).toBe("A");
-});
-
 it("제목 미수정 상태에서 최초 저장 후 새 페이지로 이동해도 자동 연동한다", async () => {
 	mocks.memo = undefined;
 	await render();

@@ -1,9 +1,9 @@
 {
 	"extensionName": {
-		"message": "Web Memo - Easily take notes on websites"
+		"message": "Web Memo - Notes right beside the page you're reading"
 	},
 	"extensionDescription": {
-		"message": "Summarize any webpage or YouTube video with AI in one click. Save notes instantly. Free to use!"
+		"message": "No need to open a notes app. Write right beside the page you're reading. Title and URL are added for you."
 	},
 	"memo": {
 		"message": "Note"

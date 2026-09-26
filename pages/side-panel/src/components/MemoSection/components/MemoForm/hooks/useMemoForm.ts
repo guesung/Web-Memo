@@ -1,16 +1,19 @@
 import type { MemoInput } from "@src/types/Input";
+import { useQuery } from "@tanstack/react-query";
 import type { TMemoStatusKey } from "@web-memo/shared/constants";
 import {
+	memoQueryOptions,
 	useDebounce,
 	useDidMount,
 	useMemoPatchMutation,
-	useMemoQuery,
 	useMemoUpsertMutation,
+	useSupabaseClientQuery,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
 import type { TCategoryChangeSource } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { getTabInfo } from "@web-memo/shared/utils/extension";
+import { normalizeUrl } from "@web-memo/shared/utils/url";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useMemoTitleSync } from "./useMemoTitleSync";
@@ -36,13 +39,34 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const { debounce: debounceTitle, abortDebounce: abortTitleDebounce } =
 		useDebounce();
 	const { data: tab } = useTabQuery();
-	const { memo: memoData, refetch: refetchMemo } = useMemoQuery({
-		url: tab?.url ?? "",
-	});
+	const { data: supabaseClient } = useSupabaseClientQuery();
+	const normalizedUrl = tab?.url ? normalizeUrl(tab.url) : null;
+	const {
+		data: memoQueryData,
+		isPending: isMemoPending,
+		isError: isMemoQueryError,
+		refetch: refetchMemo,
+	} = useQuery(memoQueryOptions({ supabaseClient, url: tab?.url }));
+	const memoData = memoQueryData?.data?.at(-1);
+	// 캐시 데이터가 있는데 백그라운드 갱신만 실패한 경우는 잠그지 않는다.
+	const isMemoError = isMemoQueryError && !memoQueryData;
+	const isMemoLocked = isMemoPending || isMemoError;
+	// URL이 바뀌어 새 조회가 대기 중인 사이에는 memoId가 잠깐 undefined로 비친다.
+	// useMemoTitleSync는 이 값을 "메모 없는 페이지"로 오해해 직접 입력한 제목을 지운다.
+	// 조회가 끝날 때까지는 마지막으로 확정된 값을 그대로 들려준다.
+	const lastResolvedTitleMemoRef = useRef<{ id?: number; title?: string }>({});
+	if (!isMemoPending) {
+		lastResolvedTitleMemoRef.current = {
+			id: memoData?.id,
+			title: memoData?.title,
+		};
+	}
 	const titleSync = useMemoTitleSync({
 		onTitleUpdate: (title) => setValue("title", title),
-		initialSavedTitle: memoData?.title,
-		memoId: memoData?.id,
+		initialSavedTitle: isMemoPending
+			? lastResolvedTitleMemoRef.current.title
+			: memoData?.title,
+		memoId: isMemoPending ? lastResolvedTitleMemoRef.current.id : memoData?.id,
 		pageUrl: tab?.url,
 		pageTitle: tab?.title,
 	});
@@ -60,7 +84,9 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	// 둘을 하나로 합치면 조용한 저장이 큐를 건너뛰어 저장이 서로 덮어쓴다.
 	const [isSaving, setIsSaving] = useState(false);
 	const [isSaveStatusVisible, setIsSaveStatusVisible] = useState(false);
-	const initializedMemoIdRef = useRef<number | null>(null);
+	// URL과 메모 id를 함께 키로 삼는다. id만 보면 메모가 없는 URL끼리 옮겨도(둘 다 null)
+	// "같은 메모"로 오판해 리셋을 건너뛴다.
+	const initializedMemoKeyRef = useRef<string | null>(null);
 	const pendingDataRef = useRef<SaveMemoOptions | null>(null);
 
 	useDidMount(() => {
@@ -70,14 +96,14 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 	useEffect(
 		function initMemoData() {
-			const currentMemoId = memoData?.id ?? null;
-			const isNewMemo = initializedMemoIdRef.current !== currentMemoId;
+			const currentMemoKey = `${normalizedUrl ?? ""}:${memoData?.id ?? "none"}`;
+			const isNewMemo = initializedMemoKeyRef.current !== currentMemoKey;
 
 			if (isNewMemo) {
 				setValue("memo", memoData?.memo ?? "");
 				setValue("impression", memoData?.impression ?? "");
 				setValue("actionItem", memoData?.actionItem ?? "");
-				initializedMemoIdRef.current = currentMemoId;
+				initializedMemoKeyRef.current = currentMemoKey;
 			}
 
 			setValue("isWish", memoData?.isWish ?? false);
@@ -86,6 +112,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 			setValue("categoryId", memoData?.category_id ?? null);
 		},
 		[
+			normalizedUrl,
 			memoData?.id,
 			memoData?.memo,
 			memoData?.impression,
@@ -100,6 +127,11 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 	const saveMemo = useCallback(
 		async (overrides?: SaveMemoOptions) => {
+			// 메모 조회가 끝나지 않았으면 무엇을 덮어쓸지 알 수 없다. 저장 요청 자체를 보내지 않는다.
+			if (isMemoLocked) {
+				return false;
+			}
+
 			// 이미 저장 중이면 이 변경은 큐에 실려 다음 저장에 함께 나간다. 그 저장의 성패는
 			// 이 호출이 아니라 그때의 onError가 들고 있으므로 여기서는 실패로 보지 않는다.
 			if (isSaving) {
@@ -173,7 +205,14 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 				);
 			});
 		},
-		[isSaving, getValues, memoData?.id, upsertMemo, onSaveSuccess],
+		[
+			isMemoLocked,
+			isSaving,
+			getValues,
+			memoData?.id,
+			upsertMemo,
+			onSaveSuccess,
+		],
 	);
 
 	const handleTitleChange = (text: string) => {
@@ -182,6 +221,10 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	};
 
 	const handleTitleSyncClick = async () => {
+		if (isMemoLocked) {
+			return;
+		}
+
 		abortTitleDebounce();
 		const currentTab = await titleSync.handleTitleSyncClick();
 		if (
@@ -237,6 +280,10 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		categoryId: number | null,
 		source: TCategoryChangeSource,
 	) => {
+		if (isMemoLocked) {
+			return;
+		}
+
 		const previousCategoryId = getValues("categoryId");
 		setValue("categoryId", categoryId);
 
@@ -270,6 +317,10 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	 * 호출부는 이 `null`로 성공 토스트를 건너뛴다. 실패 알림 자체는 QueryProvider의 MutationCache가 맡는다.
 	 */
 	const toggleMemoStatus = async (statusKey: TMemoStatusKey) => {
+		if (isMemoLocked) {
+			return null;
+		}
+
 		const previousStatusValue = getValues(statusKey);
 		const nextStatusValue = !previousStatusValue;
 		const statusOverride: Partial<MemoInput> = {};
@@ -289,6 +340,11 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 
 	return {
 		memoData,
+		/** 메모 조회가 아직 없거나(대기) 캐시 없이 실패한 상태. 켜져 있으면 편집·저장을 막는다. */
+		isMemoLocked,
+		/** 캐시 없이 조회가 실패했는지. 다시 시도 UI를 보여줄 때 쓴다. */
+		isMemoError,
+		refetchMemo,
 		/** 저장 표시용. 제목처럼 조용히 저장하는 변경(isSilent)에는 켜지지 않는다. */
 		isSaving: isSaveStatusVisible,
 		saveMemo,

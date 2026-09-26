@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -7,16 +8,28 @@ import useMemoForm from "./useMemoForm";
 
 const mocks = vi.hoisted(() => ({
 	tab: { id: 1, url: "https://example.com/a", title: "A" },
-	memo: { id: 1, title: "A" } as { id: number; title: string } | undefined,
+	memo: { id: 1, title: "A" } as
+		| { id: number; title: string; memo?: string }
+		| undefined,
 	values: {} as Record<string, unknown>,
 	upsert: vi.fn(),
 	patch: vi.fn(),
+	// 기본은 현재 mocks.memo를 즉시 돌려준다. 대기 상태를 흉내 내려면
+	// 개별 테스트에서 이 값을 절대 resolve되지 않는 Promise로 덮어쓴다.
+	memoQueryImpl: vi.fn(async () => ({
+		data: mocks.memo ? [mocks.memo] : [],
+		error: null,
+	})),
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
 	useDebounce: () => useDebounce(),
 	useDidMount: vi.fn(),
 	useTabQuery: () => ({ data: mocks.tab }),
-	useMemoQuery: () => ({ memo: mocks.memo, refetch: vi.fn() }),
+	useSupabaseClientQuery: () => ({ data: {} }),
+	memoQueryOptions: ({ url }: { url?: string }) => ({
+		queryKey: ["test-memo", url],
+		queryFn: mocks.memoQueryImpl,
+	}),
 	useMemoUpsertMutation: () => ({ mutate: mocks.upsert }),
 	useMemoPatchMutation: () => ({ mutate: mocks.patch }),
 }));
@@ -35,6 +48,7 @@ const setFormValue = (key: string, value: unknown) => {
 	mocks.values[key] = value;
 };
 let root: Root;
+let queryClient: QueryClient;
 let form: ReturnType<typeof useMemoForm>;
 let refreshTitle: () => Promise<void>;
 const TestHook = () => {
@@ -42,7 +56,15 @@ const TestHook = () => {
 	return null;
 };
 const render = async () => {
-	await act(async () => root.render(createElement(TestHook)));
+	await act(async () =>
+		root.render(
+			createElement(
+				QueryClientProvider,
+				{ client: queryClient },
+				createElement(TestHook),
+			),
+		),
+	);
 };
 
 beforeEach(() => {
@@ -66,6 +88,13 @@ beforeEach(() => {
 	mocks.upsert
 		.mockReset()
 		.mockImplementation((_request, callbacks) => callbacks.onSuccess());
+	mocks.memoQueryImpl.mockReset().mockImplementation(async () => ({
+		data: mocks.memo ? [mocks.memo] : [],
+		error: null,
+	}));
+	queryClient = new QueryClient({
+		defaultOptions: { queries: { retry: false } },
+	});
 	document.body.innerHTML = "<div id='root'></div>";
 	root = createRoot(document.getElementById("root") as HTMLElement);
 });
@@ -80,6 +109,10 @@ it("다른 저장 메모는 해당 저장 제목을 표시하며 같은 메모�
 	await act(async () => form.handleTitleChange("A 직접 수정"));
 	mocks.tab = { id: 2, url: "https://example.com/b", title: "B 페이지" };
 	mocks.memo = { id: 2, title: "B 저장 제목" };
+	await render();
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(0);
+	});
 	await render();
 	expect(mocks.values.title).toBe("B 저장 제목");
 	await act(async () => {
@@ -156,4 +189,35 @@ it("저장 전 메모는 폼 값만 바꾸고 patch하지 않는다", async () =
 	await act(async () => form.updateCategory(3, "button"));
 	expect(mocks.values.categoryId).toBe(3);
 	expect(mocks.patch).not.toHaveBeenCalled();
+});
+
+it("메모 조회가 끝나지 않으면 저장·토글·카테고리 변경 요청을 보내지 않는다", async () => {
+	mocks.memoQueryImpl.mockImplementation(() => new Promise(() => {}));
+	await render();
+
+	expect(form.isMemoLocked).toBe(true);
+
+	await act(async () => {
+		await form.saveMemo({ memo: "잠긴 동안 입력" });
+	});
+	expect(mocks.upsert).not.toHaveBeenCalled();
+
+	await act(async () => {
+		await form.toggleMemoStatus("isWish");
+	});
+	expect(mocks.upsert).not.toHaveBeenCalled();
+
+	await act(async () => form.updateCategory(3, "button"));
+	expect(mocks.patch).not.toHaveBeenCalled();
+});
+
+it("메모가 없는 URL끼리 옮겨도(id가 둘 다 없어도) 남은 입력을 비운다", async () => {
+	mocks.memo = undefined;
+	await render();
+	setFormValue("memo", "저장 전 임시 입력");
+
+	mocks.tab = { id: 2, url: "https://example.com/b", title: "B" };
+	await render();
+
+	expect(mocks.values.memo).toBe("");
 });

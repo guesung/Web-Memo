@@ -133,18 +133,22 @@ jobs:
     name: 크롬 웹스토어 업로드
     if: ${{ inputs.deploy_target == 'production' }}
     steps:
+      # 업로드 스크립트와 게시자 ID 상수(packages/shared)를 읽으려면 코드가 필요합니다.
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+
       # 이름을 지정하면 아티팩트 내용물이 하위 디렉터리 없이 그대로 풀립니다.
       - name: Download Artifacts
         uses: actions/download-artifact@v7
         with:
           name: store-package-${{ needs.build-extension.outputs.zip_name }}
 
+      # 심사를 통과하면 바로 게시됩니다. 스크립트가 웹스토어 API v2를 직접 호출합니다.
       - name: Upload zipped file on chrome store
-        uses: mnao305/chrome-extension-upload@v6.0.0
-        with:
-          file-path: ${{ needs.build-extension.outputs.zip_name }}.zip
-          extension-id: eaiojpmgklfngpjddhoalgcpkepgkclh
-          client-id: ${{ secrets.CLIENT_ID }}
-          client-secret: ${{ secrets.CLIENT_SECRET }}
-          refresh-token: ${{ secrets.REFRESH_TOKEN }}
-          publish: true
+        env:
+          CWS_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+          ZIP_PATH: ${{ needs.build-extension.outputs.zip_name }}.zip
+        run: node .github/scripts/deploy/upload-extension-to-store.mjs

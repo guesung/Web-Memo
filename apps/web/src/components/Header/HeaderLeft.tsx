@@ -25,7 +25,7 @@ const HeaderLeft = ({ lng }: LanguageType) => {
 						src="/images/pngs/icon.png"
 						width={16}
 						height={16}
-						alt=""
+						alt="logo"
 						className="flex-1"
 					/>
 					<span className="text-md font-semibold">{t("common.webMemo")}</span>

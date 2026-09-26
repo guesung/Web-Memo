@@ -441,7 +441,7 @@ function MemoFormContent({
 							label={I18n.get("wish_list")}
 							isOn={!!memoData?.isWish}
 							isDisabled={isMemoLocked || isControlsDisabled}
-							isDimmed={isMemoUiDimmed}
+							isDimmed={isMemoUiDimmed || isControlsDisabled}
 							title={changeDisabledReason}
 							onClick={() => handleMemoStatusClick("isWish")}
 						>
@@ -458,7 +458,7 @@ function MemoFormContent({
 							label={I18n.get("important_memo")}
 							isOn={!!memoData?.isStar}
 							isDisabled={isMemoLocked || isControlsDisabled}
-							isDimmed={isMemoUiDimmed}
+							isDimmed={isMemoUiDimmed || isControlsDisabled}
 							title={changeDisabledReason}
 							onClick={() => handleMemoStatusClick("isStar")}
 						>
@@ -473,7 +473,7 @@ function MemoFormContent({
 							label={I18n.get("reading_memo")}
 							isOn={!!memoData?.isReading}
 							isDisabled={isMemoLocked || isControlsDisabled}
-							isDimmed={isMemoUiDimmed}
+							isDimmed={isMemoUiDimmed || isControlsDisabled}
 							title={changeDisabledReason}
 							onClick={() => handleMemoStatusClick("isReading")}
 						>
@@ -497,7 +497,7 @@ function MemoFormContent({
 								badgeButtonRef={categoryBadgeButtonRef}
 								onBadgeButtonClick={handleCategoryButtonClick}
 								onRemoveButtonClick={handleCategoryRemoveClick}
-								isDisabled={isMemoLocked || isControlsDisabled}
+								isDisabled={isMemoLocked}
 								isDimmed={isMemoUiDimmed}
 								disabledReason={changeDisabledReason}
 							/>
@@ -517,7 +517,7 @@ function MemoFormContent({
 							<CategoryAddChip
 								chipRef={categoryAddChipRef}
 								onChipClick={handleCategoryButtonClick}
-								isDisabled={isMemoLocked || isControlsDisabled}
+								isDisabled={isMemoLocked}
 								isDimmed={isMemoUiDimmed}
 								disabledReason={changeDisabledReason}
 							/>
@@ -652,7 +652,9 @@ function MemoStatusToggle({
 			onClick={onClick}
 			className={cn(
 				"focus-visible:ring-ring rounded-sm transition-transform focus-visible:outline-none focus-visible:ring-1",
-				isDisabled ? "cursor-default" : "hover:scale-110 active:scale-95",
+				// 사유(title)가 있는 비활성은 오프라인·동기화 중이라 누를 수 없음을 커서로도 알린다
+				isDisabled && (title ? "cursor-not-allowed" : "cursor-default"),
+				!isDisabled && "hover:scale-110 active:scale-95",
 				isDimmed && "opacity-50",
 			)}
 		>

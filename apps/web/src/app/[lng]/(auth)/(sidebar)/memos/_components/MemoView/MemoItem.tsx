@@ -210,7 +210,7 @@ const MemoItem = ({
 						selectMemoItem={selectMemoItem}
 					/>
 					{memo.memo?.trim() && (
-						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces break-all">
+						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces [overflow-wrap:anywhere]">
 							<p
 								data-clamp
 								className={cn({ "line-clamp-3": isContentTruncated })}
@@ -231,7 +231,7 @@ const MemoItem = ({
 						/>
 					)}
 					{showImpression && memo.impression?.trim() && (
-						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces break-all">
+						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces [overflow-wrap:anywhere]">
 							<p className="mb-1 text-xs font-semibold text-muted-foreground">
 								{t("memoSection.impression")}
 							</p>
@@ -244,7 +244,7 @@ const MemoItem = ({
 						</CardContent>
 					)}
 					{showActionItem && memo.actionItem?.trim() && (
-						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces break-all">
+						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces [overflow-wrap:anywhere]">
 							<p className="mb-1 text-xs font-semibold text-muted-foreground">
 								{t("memoSection.actionItem")}
 							</p>

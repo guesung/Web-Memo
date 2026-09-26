@@ -34,7 +34,7 @@ export default function MemoSearchEmptyState({
 				{t("memos.searchEmptyState.title")}
 			</h3>
 
-			<p className="text-muted-foreground text-center max-w-md break-all">
+			<p className="text-muted-foreground text-center max-w-md [overflow-wrap:anywhere]">
 				{t("memos.searchEmptyState.message", { query: searchQuery })}
 			</p>
 

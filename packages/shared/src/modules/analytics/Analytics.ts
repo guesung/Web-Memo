@@ -173,6 +173,9 @@ class Analytics {
 					: DEFAULT_ENGAGEMENT_TIME_MSEC,
 			build_env: CONFIG.buildEnv,
 			...(this.isDebugMode() ? { debug_mode: true as const } : {}),
+			...(isExtension()
+				? { extension_version: chrome.runtime.getManifest().version }
+				: {}),
 		};
 	}
 

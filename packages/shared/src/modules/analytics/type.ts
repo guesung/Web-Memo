@@ -28,6 +28,8 @@ export interface IFGa4EventParams {
 	debug_mode?: true;
 	user_id?: string;
 	session_id?: string;
+	/** 확장에서만 실립니다. 배포 전후를 가르는 기준이라 웹 이벤트에는 키 자체가 없습니다. */
+	extension_version?: string;
 	[key: string]: unknown;
 }
 

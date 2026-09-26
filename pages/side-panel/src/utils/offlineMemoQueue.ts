@@ -1,8 +1,12 @@
 import type { MemoRow, MemoTable } from "@web-memo/shared/types";
 import { isNetworkError } from "@web-memo/shared/utils";
 
-/** chrome.storage.local에 대기열을 저장하는 키 */
-const OFFLINE_MEMO_QUEUE_STORAGE_KEY = "offlineMemoQueue";
+/**
+ * chrome.storage.local에 대기열을 저장하는 키.
+ * @description 대기 항목이 생기고 없어지는 것을 storage.onChanged로 지켜보려는 화면(저장 표시줄,
+ * 온라인 전환 시 flush 트리거)이 이 키를 걸러 듣는다.
+ */
+export const OFFLINE_MEMO_QUEUE_STORAGE_KEY = "offlineMemoQueue";
 
 /** 대기 항목이 들고 있는 탭 정보 */
 export interface IFOfflineMemoQueueTabInfo {
@@ -58,7 +62,12 @@ export interface IFOfflineMemoFlushResult {
  */
 export interface TOfflineMemoQueueService {
 	getMemoById: (id: number) => Promise<{
-		data: Pick<MemoRow, "id" | "updated_at">[] | null;
+		data:
+			| Pick<
+					MemoRow,
+					"id" | "updated_at" | "title" | "memo" | "impression" | "actionItem"
+			  >[]
+			| null;
 		error: unknown;
 	}>;
 	insertMemo: (
@@ -154,10 +163,26 @@ type TFlushItemOutcome =
 	| { type: "otherError" };
 
 /**
+ * 서버 행의 텍스트 필드가 대기 항목이 쓰려던 내용과 완전히 같은지 본다.
+ * @description flush 도중 재마운트되면 같은 항목이 다시 flush될 수 있다. 첫 시도가 이미 서버에
+ * 반영된 뒤(대기열에서 지우기 전) 두 번째 시도가 돌면, updated_at은 달라졌어도 내용은 이미
+ * 우리가 쓰려던 것과 같다 — 이때는 충돌이 아니라 중복 실행이므로 다시 쓰지 않는다.
+ */
+const matchesQueuedContent = (
+	existingMemo: Pick<MemoRow, "title" | "memo" | "impression" | "actionItem">,
+	queuedRequest: ReturnType<typeof buildMemoRequest>,
+) =>
+	existingMemo.title === queuedRequest.title &&
+	existingMemo.memo === queuedRequest.memo &&
+	existingMemo.impression === queuedRequest.impression &&
+	existingMemo.actionItem === queuedRequest.actionItem;
+
+/**
  * 대기 항목 하나를 서버에 반영한다.
  * @description memoId가 없으면 항상 insert한다. memoId가 있으면 서버 updated_at을 다시 읽어
- * baseUpdatedAt과 같을 때만 update하고, 다르거나 메모가 삭제됐으면(조회 결과 없음) 같은 url로
- * insert해 새 메모를 만들고 충돌로 알린다.
+ * baseUpdatedAt과 같을 때만 update한다. 다르더라도 서버 내용이 이미 우리가 쓰려던 것과 같으면
+ * (중복 flush로 먼저 반영된 경우) 다시 쓰지 않고 성공으로 처리한다. 그 외(진짜 다른 곳에서
+ * 바뀌었거나 메모가 삭제됨)에는 같은 url로 insert해 새 메모를 만들고 충돌로 알린다.
  */
 const flushOfflineMemoItem = async ({
 	item,
@@ -167,9 +192,11 @@ const flushOfflineMemoItem = async ({
 	memoService: TOfflineMemoQueueService;
 }): Promise<TFlushItemOutcome> => {
 	try {
+		const queuedRequest = buildMemoRequest(item.data);
+
 		if (item.memoId === undefined) {
 			const insertResult = await memoService.insertMemo({
-				...buildMemoRequest(item.data),
+				...queuedRequest,
 				url: item.url,
 			});
 			if (insertResult.error) {
@@ -191,7 +218,7 @@ const flushOfflineMemoItem = async ({
 		if (isUnchanged) {
 			const updateResult = await memoService.updateMemo({
 				id: item.memoId,
-				request: buildMemoRequest(item.data),
+				request: queuedRequest,
 			});
 			if (updateResult.error) {
 				throw updateResult.error;
@@ -200,8 +227,12 @@ const flushOfflineMemoItem = async ({
 			return { type: "success" };
 		}
 
+		if (existingMemo && matchesQueuedContent(existingMemo, queuedRequest)) {
+			return { type: "success" };
+		}
+
 		const insertResult = await memoService.insertMemo({
-			...buildMemoRequest(item.data),
+			...queuedRequest,
 			url: item.url,
 		});
 		if (insertResult.error) {

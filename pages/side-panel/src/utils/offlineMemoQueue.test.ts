@@ -133,7 +133,16 @@ describe("flushOfflineMemoQueue", () => {
 		);
 		const memoService = buildMemoService({
 			getMemoById: vi.fn(async () => ({
-				data: [{ id: 1, updated_at: "2026-01-01T00:00:00.000Z" }],
+				data: [
+					{
+						id: 1,
+						updated_at: "2026-01-01T00:00:00.000Z",
+						title: "옛 제목",
+						memo: "옛 본문",
+						impression: "",
+						actionItem: "",
+					},
+				],
 				error: null,
 			})),
 		});
@@ -155,7 +164,16 @@ describe("flushOfflineMemoQueue", () => {
 		);
 		const memoService = buildMemoService({
 			getMemoById: vi.fn(async () => ({
-				data: [{ id: 1, updated_at: "2026-02-02T00:00:00.000Z" }],
+				data: [
+					{
+						id: 1,
+						updated_at: "2026-02-02T00:00:00.000Z",
+						title: "다른 곳에서 바뀐 제목",
+						memo: "다른 곳에서 바뀐 본문",
+						impression: "",
+						actionItem: "",
+					},
+				],
 				error: null,
 			})),
 			insertMemo: vi.fn(async () => ({ data: [{ id: 2 }], error: null })),
@@ -170,6 +188,38 @@ describe("flushOfflineMemoQueue", () => {
 		expect(result.conflicts).toEqual([
 			{ oldMemoId: 1, newMemoId: 2, url: "https://example.com/a" },
 		]);
+		expect(await getPendingOfflineMemos()).toEqual([]);
+	});
+
+	it("updated_at은 다르지만 서버 내용이 이미 대기 항목과 같으면 다시 쓰지 않고 성공 처리한다", async () => {
+		await enqueueOfflineMemo(
+			createItem({ memoId: 1, baseUpdatedAt: "2026-01-01T00:00:00.000Z" }),
+		);
+		const memoService = buildMemoService({
+			getMemoById: vi.fn(async () => ({
+				data: [
+					{
+						id: 1,
+						updated_at: "2026-02-02T00:00:00.000Z",
+						title: "제목",
+						memo: "본문",
+						impression: "",
+						actionItem: "",
+					},
+				],
+				error: null,
+			})),
+		});
+
+		const result = await flushOfflineMemoQueue({
+			userId: "user-1",
+			memoService,
+		});
+
+		expect(memoService.updateMemo).not.toHaveBeenCalled();
+		expect(memoService.insertMemo).not.toHaveBeenCalled();
+		expect(result.conflicts).toEqual([]);
+		expect(result.syncedCount).toBe(1);
 		expect(await getPendingOfflineMemos()).toEqual([]);
 	});
 

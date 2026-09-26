@@ -11,6 +11,13 @@ export const QUERY_KEY = {
 	tab: () => ["tab"],
 	memos: () => ["memos"],
 	memo: (params: { url?: string; id?: number }) => ["memo", params],
+	/**
+	 * 쿼리만 다른 주소까지 포함한 같은 경로의 메모 후보.
+	 * @description `["memo"]` 접두사를 공유해 메모 수정 뒤의 `["memo"]` 무효화에 함께 걸린다.
+	 */
+	samePathMemos: (pathKey: string) => ["memo", "samePath", pathKey],
+	/** 모든 경로의 {@link QUERY_KEY.samePathMemos}를 부분 매칭한다. */
+	samePathMemosPrefix: () => ["memo", "samePath"],
 	/** 모든 페이지네이션 필터를 부분 매칭하며 휴지통 캐시는 포함하지 않는다. */
 	memosPaginatedPrefix: () => ["memos", "paginated"],
 	memosPaginated: (

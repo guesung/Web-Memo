@@ -10,6 +10,7 @@ vi.mock("@web-memo/shared/hooks", () => ({
 	useSupabaseClientQuery: () => ({ data: {} }),
 }));
 vi.mock("@web-memo/shared/utils", () => ({
+	getPageKey: (url: string) => new URL(url).href,
 	HighlightService: class {
 		getHighlightsByUrls = mocks.getHighlights;
 	},
@@ -36,7 +37,7 @@ describe("메모 하이라이트 조회 훅", () => {
 		expect(results[0].refetchHighlights).toBe(refetch);
 		await act(async () => root.unmount());
 	});
-	it("URL을 중복 제거하고 정확한 URL별로 분리하며 오류를 전달한다", async () => {
+	it("URL을 중복 제거하고 같은 페이지의 하이라이트를 연결하며 오류를 전달한다", async () => {
 		vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
 		const rows = [
 			{ id: 1, url: "https://a.com" },
@@ -53,11 +54,8 @@ describe("메모 하이라이트 조회 훅", () => {
 		};
 		const root = createRoot(document.createElement("div"));
 		await act(async () => root.render(createElement(TestHook)));
-		expect(results[0].highlightsByUrl.get("https://a.com")).toEqual([
-			rows[0],
-			rows[2],
-		]);
-		expect(results[0].highlightsByUrl.get("https://a.com/")).toEqual([rows[1]]);
+		expect(results[0].highlightsByUrl.get("https://a.com")).toEqual(rows);
+		expect(results[0].highlightsByUrl.get("https://a.com/")).toEqual(rows);
 		const options = mocks.query.mock.calls[0][0];
 		expect(options.queryKey).toEqual([
 			"highlights",

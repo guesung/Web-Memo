@@ -20,6 +20,7 @@ const ROW: HighlightRow = {
 	suffix_text: " 뒤",
 	text_position_start: 2,
 	url: "http://localhost:3000/",
+	page_key: "http://localhost:3000/",
 	title: "",
 	favIconUrl: "",
 	color: "yellow",

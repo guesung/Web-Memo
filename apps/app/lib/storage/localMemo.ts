@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getPageKey } from "@web-memo/shared/utils/url";
 
 const MEMOS_KEY = "webmemo:memos";
 
@@ -47,12 +48,36 @@ export async function getAllMemos(): Promise<LocalMemo[]> {
 	);
 }
 
-export async function getMemoByUrl(url: string): Promise<LocalMemo | null> {
+/** 현재 페이지의 살아 있는 로컬 메모 후보를 최근 수정 순으로 조회한다. */
+export async function getMemoByUrl(url: string): Promise<LocalMemo[]> {
 	const memos = await getAlive();
-	return memos.find((m) => m.url === url) ?? null;
+	const pageKey = getPageKey(url);
+	return memos
+		.filter((memo) => getPageKey(memo.url) === pageKey)
+		.sort((first, second) => second.updatedAt.localeCompare(first.updatedAt));
 }
 
+const resolveLocalCandidate = async (
+	url: string,
+	selectedId: string | undefined,
+	memos: LocalMemo[],
+): Promise<LocalMemo | undefined> => {
+	const candidates = await getMemoByUrl(url);
+	if (!selectedId && candidates.length > 1) {
+		throw new Error("수정할 메모를 선택해 주세요.");
+	}
+	const selected = selectedId
+		? candidates.find((candidate) => candidate.id === selectedId)
+		: candidates[0];
+	if (selectedId && !selected) {
+		throw new Error("선택한 메모가 현재 페이지에 속하지 않습니다.");
+	}
+
+	return memos.find((memo) => memo.id === selected?.id);
+};
+
 export async function upsertMemo(params: {
+	selectedId?: string;
 	url: string;
 	title: string;
 	memo: string;
@@ -68,7 +93,17 @@ export async function upsertMemo(params: {
 	// 휴지통에 있는 같은 URL의 메모는 없는 것으로 친다. 그걸 덮어쓰면 사용자가
 	// 새로 쓴 메모가 휴지통 안에서 보이지 않게 된다. Supabase 경로도 조회가
 	// deleted_at is null로 걸려 같은 결과가 된다.
-	const existing = memos.find((m) => m.url === params.url && !m.deletedAt);
+	const candidates = await getMemoByUrl(params.url);
+	if (!params.selectedId && candidates.length > 1) {
+		throw new Error("수정할 메모를 선택해 주세요.");
+	}
+	const selected = params.selectedId
+		? candidates.find((candidate) => candidate.id === params.selectedId)
+		: candidates[0];
+	if (params.selectedId && !selected) {
+		throw new Error("선택한 메모가 현재 페이지에 속하지 않습니다.");
+	}
+	const existing = memos.find((memo) => memo.id === selected?.id);
 
 	if (existing) {
 		existing.title = params.title;
@@ -111,11 +146,12 @@ export async function toggleWishByUrl(
 	url: string,
 	title?: string,
 	favIconUrl?: string,
+	selectedId?: string,
 ): Promise<LocalMemo> {
 	const memos = await getAll();
 	// 목록 전체를 다시 저장하므로 읽기는 getAll이어야 한다. 살아있는 것만 읽어
 	// save하면 휴지통에 있던 메모가 통째로 사라진다.
-	const existing = memos.find((m) => m.url === url && !m.deletedAt);
+	const existing = await resolveLocalCandidate(url, selectedId, memos);
 	const now = new Date().toISOString();
 
 	if (existing) {
@@ -146,11 +182,12 @@ export async function toggleStarByUrl(
 	url: string,
 	title?: string,
 	favIconUrl?: string,
+	selectedId?: string,
 ): Promise<LocalMemo> {
 	const memos = await getAll();
 	// 목록 전체를 다시 저장하므로 읽기는 getAll이어야 한다. 살아있는 것만 읽어
 	// save하면 휴지통에 있던 메모가 통째로 사라진다.
-	const existing = memos.find((m) => m.url === url && !m.deletedAt);
+	const existing = await resolveLocalCandidate(url, selectedId, memos);
 	const now = new Date().toISOString();
 
 	if (existing) {
@@ -181,11 +218,12 @@ export async function toggleReadingByUrl(
 	url: string,
 	title?: string,
 	favIconUrl?: string,
+	selectedId?: string,
 ): Promise<LocalMemo> {
 	const memos = await getAll();
 	// 목록 전체를 다시 저장하므로 읽기는 getAll이어야 한다. 살아있는 것만 읽어
 	// save하면 휴지통에 있던 메모가 통째로 사라진다.
-	const existing = memos.find((m) => m.url === url && !m.deletedAt);
+	const existing = await resolveLocalCandidate(url, selectedId, memos);
 	const now = new Date().toISOString();
 
 	if (existing) {

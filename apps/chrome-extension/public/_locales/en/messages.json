@@ -8,6 +8,36 @@
 	"memo": {
 		"message": "Note"
 	},
+	"memo_candidates_title": {
+		"message": "Choose a note for this page"
+	},
+	"memo_candidates_preserved_draft": {
+		"message": "Unsaved draft"
+	},
+	"memo_candidates_selection_lost": {
+		"message": "The selected note is no longer available. Keep your draft and choose again."
+	},
+	"memo_candidates_description": {
+		"message": "This page has multiple notes. Choose one to review its content before editing."
+	},
+	"memo_candidates_delete": {
+		"message": "Delete memo"
+	},
+	"memo_candidates_deleted": {
+		"message": "Moved the memo to trash"
+	},
+	"memo_candidates_new": {
+		"message": "Write a new memo"
+	},
+	"memo_candidates_other_url": {
+		"message": "Memos from other addresses"
+	},
+	"memo_candidates_empty_preview": {
+		"message": "No content"
+	},
+	"memo_choose_other": {
+		"message": "Choose another note"
+	},
 	"save": {
 		"message": "Save"
 	},
@@ -94,6 +124,9 @@
 	},
 	"reading_memo": {
 		"message": "Reading"
+	},
+	"undo": {
+		"message": "Undo"
 	},
 	"go_to": {
 		"message": "Go"

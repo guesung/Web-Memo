@@ -1,9 +1,9 @@
 {
 	"extensionName": {
-		"message": "웹 메모 - 웹사이트에서 간편하게 메모하세요"
+		"message": "웹 메모 - 읽던 페이지 옆에서 바로 적는 메모"
 	},
 	"extensionDescription": {
-		"message": "클릭 한 번으로 웹페이지와 유튜브를 AI로 요약하고, 메모로 저장하세요. 100% 무료로 사용 가능!"
+		"message": "메모하려고 앱을 열 필요 없어요. 읽던 페이지 옆에서 바로 적고, 제목과 URL은 알아서 붙어요."
 	},
 	"memo": {
 		"message": "메모"

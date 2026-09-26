@@ -1,5 +1,9 @@
 import type { MemoInput } from "@src/types/Input";
-import { useQuery } from "@tanstack/react-query";
+import {
+	type QueryClient,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import type { TMemoStatusKey } from "@web-memo/shared/constants";
 import {
 	memoQueryOptions,
@@ -20,6 +24,8 @@ import { useMemoTitleSync } from "./useMemoTitleSync";
 
 /** 사이드 패널 하단 SaveStatus가 그리는 저장 상태. */
 export type TSaveStatus = "empty" | "saved" | "slow" | "failed" | "retrying";
+
+type MemoRow = Database["memo"]["Tables"]["memo"]["Row"];
 
 interface SaveMemoOptions extends Partial<MemoInput> {
 	tabInfo?: { title: string; favIconUrl?: string; url: string };
@@ -43,6 +49,7 @@ export default function useMemoForm({
 	const { debounce, abortDebounce } = useDebounce();
 	const { debounce: debounceTitle, abortDebounce: abortTitleDebounce } =
 		useDebounce();
+	const queryClient = useQueryClient();
 	const { data: tab } = useTabQuery();
 	const { data: supabaseClient } = useSupabaseClientQuery();
 	// Suspense로 읽으면 조회를 기다리는 동안 폼 전체가 스켈레톤으로 바뀐다. 잠금 판단은 MemoSection이 맡는다.
@@ -348,7 +355,8 @@ export default function useMemoForm({
 
 	/**
 	 * 메모 상태 하나를 반전시켜 저장한다.
-	 * @description 저장에 실패하면 낙관적으로 바꿔둔 폼 값을 되돌리고 `null`을 준다.
+	 * @description 저장 요청 전에 폼 값과 메모 조회 캐시를 먼저 바꿔 아이콘이 바로 반영되게 한다.
+	 * 저장에 실패하면 폼 값과 캐시의 해당 필드를 되돌리고 `null`을 준다.
 	 * 호출부는 이 `null`로 성공 토스트를 건너뛴다. 실패 알림 자체는 QueryProvider의 MutationCache가 맡는다.
 	 */
 	const toggleMemoStatus = async (statusKey: TMemoStatusKey) => {
@@ -363,11 +371,31 @@ export default function useMemoForm({
 		statusOverride[statusKey] = nextStatusValue;
 
 		setValue(statusKey, nextStatusValue);
+		// id가 없는 신규 메모는 패치할 캐시 항목이 없으므로 기존 동작대로 저장 결과를 기다린다.
+		const statusMemoId = memoData?.id;
+
+		if (statusMemoId !== undefined) {
+			patchMemoStatusCache({
+				queryClient,
+				memoId: statusMemoId,
+				statusKey,
+				statusValue: nextStatusValue,
+			});
+		}
 
 		const isSaved = await saveMemo(statusOverride);
 
 		if (!isSaved) {
 			setValue(statusKey, previousStatusValue);
+
+			if (statusMemoId !== undefined) {
+				patchMemoStatusCache({
+					queryClient,
+					memoId: statusMemoId,
+					statusKey,
+					statusValue: previousStatusValue,
+				});
+			}
 			return null;
 		}
 
@@ -405,4 +433,39 @@ export default function useMemoForm({
 		updateCategory,
 		toggleMemoStatus,
 	};
+}
+
+/**
+ * `["memo"]` 접두사 캐시(현재 주소·같은 경로 후보)에서 해당 메모의 상태 필드 하나를 바꾼다.
+ * @description 저장 응답과 재조회를 기다리지 않고 아이콘에 반영하기 위한 낙관적 갱신이다.
+ * 웹 목록 캐시는 건드리지 않고 저장 뒤 invalidate에 맡긴다.
+ */
+export function patchMemoStatusCache({
+	queryClient,
+	memoId,
+	statusKey,
+	statusValue,
+}: {
+	queryClient: QueryClient;
+	memoId: number;
+	statusKey: TMemoStatusKey;
+	statusValue: boolean;
+}) {
+	queryClient.setQueriesData<{ data: MemoRow[] | null }>(
+		{ queryKey: ["memo"] },
+		(cachedResponse) => {
+			if (!Array.isArray(cachedResponse?.data)) {
+				return cachedResponse;
+			}
+
+			return {
+				...cachedResponse,
+				data: cachedResponse.data.map((cachedMemo) =>
+					cachedMemo.id === memoId
+						? { ...cachedMemo, [statusKey]: statusValue }
+						: cachedMemo,
+				),
+			};
+		},
+	);
 }

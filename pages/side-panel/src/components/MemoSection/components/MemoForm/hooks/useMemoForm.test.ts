@@ -31,7 +31,7 @@ vi.mock("@web-memo/shared/hooks", () => ({
 	useTabQuery: () => ({ data: mocks.tab }),
 	useSupabaseClientQuery: () => ({ data: {} }),
 	memoQueryOptions: ({ url }: { url?: string }) => ({
-		queryKey: ["test-memo", url],
+		queryKey: ["memo", url],
 		queryFn: mocks.memoQueryImpl,
 	}),
 	useMemoUpsertMutation: () => ({ mutate: mocks.upsert }),
@@ -61,7 +61,7 @@ const TestHook = () => {
 };
 const render = async () => {
 	// 테스트가 mocks.memo를 바꾸면 낙관적 캐시 갱신처럼 조회 캐시에도 바로 반영한다.
-	queryClient.setQueryData(["test-memo", mocks.tab.url], {
+	queryClient.setQueryData(["memo", mocks.tab.url], {
 		data: mocks.memo ? [mocks.memo] : [],
 		error: null,
 	});
@@ -483,4 +483,24 @@ it("첫 저장으로 ID가 생겨도 저장 중 입력한 초안을 유지한다
 	expect(mocks.upsert.mock.calls.at(-1)?.[0].data.memo).toBe(
 		"저장 중 추가 입력",
 	);
+});
+
+it("상태 토글은 저장 응답을 기다리지 않고 조회 캐시를 바꾸고 실패하면 되돌린다", async () => {
+	mocks.values = { isWish: false };
+	await render();
+	mocks.upsert.mockReset().mockImplementation(() => undefined);
+
+	let togglePromise: Promise<boolean | null> = Promise.resolve(null);
+	await act(async () => {
+		togglePromise = form.toggleMemoStatus("isWish");
+	});
+	expect(form.memoData?.isWish).toBe(true);
+
+	const [, callbacks] = mocks.upsert.mock.calls[0];
+	await act(async () => {
+		callbacks.onError();
+		await togglePromise;
+	});
+	expect(form.memoData?.isWish).toBe(false);
+	expect(mocks.values.isWish).toBe(false);
 });

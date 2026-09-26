@@ -5,12 +5,28 @@ import { getExtensionUrl } from "@web-memo/shared/constants";
 const SIDE_PANEL_URL = getExtensionUrl("side-panel/index.html");
 
 /**
+ * 메모 조회가 끝나 #memo-textarea가 편집 가능해질 때까지 기다린다.
+ * @description 메모 칸이 화면에 보이는 것과 편집 가능한 것은 다르다. 조회가 대기·실패
+ * 중일 때는 readOnly라 값을 채워도 반영되지 않는다.
+ * @throws 제한 시간 안에 readonly 속성이 사라지지 않으면 던진다.
+ */
+export async function waitForMemoTextareaEditable(page: Page, timeout = 10000) {
+	await expect(page.locator("#memo-textarea")).not.toHaveAttribute(
+		"readonly",
+		"",
+		{ timeout },
+	);
+}
+
+/**
  * 사이드 패널 메모 칸에 입력하고 디바운스 저장이 끝날 때까지 기다린다.
  * @description 저장은 조회(GET) 뒤 생성(POST)이나 수정(PATCH)으로 나가므로 GET이 아닌 응답을 기다린다.
  * 응답 뒤에도 성공 처리(쿼리 데이터 갱신)가 이어지므로 "저장 중..." 표시가 사라질 때까지 기다린다.
  * @throws 저장 응답이 오지 않거나 실패하면 던진다.
  */
 export async function fillMemo(page: Page, text: string) {
+	await waitForMemoTextareaEditable(page);
+
 	const memoSaveResponse = page.waitForResponse(
 		(response) =>
 			response.url().includes("/rest/v1/memo") &&
@@ -33,8 +49,10 @@ export async function openSidePanel(page: Page) {
 }
 
 /**
- * 확장이 연 사이드 패널 페이지를 찾아 메모 칸이 보일 때까지 기다린다.
- * @throws 제한 시간 안에 사이드 패널이 열리지 않거나 메모 칸이 보이지 않으면 던진다.
+ * 확장이 연 사이드 패널 페이지를 찾아 메모 칸이 편집 가능해질 때까지 기다린다.
+ * @description 메모 칸이 보이는 것만으로는 로딩이 끝났다고 볼 수 없다. 메모 조회가
+ * 대기·실패 중인 동안은 readOnly라 곧바로 값을 채워도 반영되지 않는다.
+ * @throws 제한 시간 안에 사이드 패널이 열리지 않거나 메모 칸이 편집 가능해지지 않으면 던진다.
  */
 export async function findSidePanelPage(page: Page, timeout = 10000) {
 	const context = page.context();
@@ -49,6 +67,7 @@ export async function findSidePanelPage(page: Page, timeout = 10000) {
 				state: "visible",
 				timeout: 5000,
 			});
+			await waitForMemoTextareaEditable(sidePanelPage, 5000);
 			return sidePanelPage;
 		}
 		// 고정 대기가 아니라 폴링 간격이다. 사이드 패널은 확장이 여는 페이지라 기다릴 이벤트가 마땅치 않아

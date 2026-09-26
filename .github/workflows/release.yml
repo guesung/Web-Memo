@@ -10,7 +10,7 @@ on:
         type: boolean
         default: false
       extension:
-        description: "확장 배포 (빌드 + 크롬 웹스토어 업로드, 게시는 수동)"
+        description: "확장 배포 (빌드 + 크롬 웹스토어 업로드, 심사를 통과하면 바로 게시)"
         type: boolean
         default: false
       web:

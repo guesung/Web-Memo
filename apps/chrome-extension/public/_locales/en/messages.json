@@ -227,9 +227,6 @@
 	"memo_fields_setting": {
 		"message": "Memo fields"
 	},
-	"highlight_setting": {
-		"message": "Highlights"
-	},
 	"highlight_setting_description": {
 		"message": "Select text on a webpage, then click the highlight button to save it."
 	},

@@ -279,13 +279,13 @@
 		"message": "페이지 내용에 대해 AI에게 질문해보세요"
 	},
 	"summary_empty_message": {
-		"message": "위의 새로고침 버튼을 눌러\n요약을 생성해보세요"
+		"message": "읽고 있는 페이지를 짧게 요약해 볼 수 있어요"
 	},
 	"summary_loading_message": {
 		"message": "요약을 만들고 있어요"
 	},
 	"summary_generate_label": {
-		"message": "요약 생성"
+		"message": "이 페이지 요약하기"
 	},
 	"impression": {
 		"message": "느낀 점"

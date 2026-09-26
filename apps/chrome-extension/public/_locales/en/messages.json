@@ -279,13 +279,13 @@
 		"message": "Ask AI about the page content"
 	},
 	"summary_empty_message": {
-		"message": "Click the refresh button above\nto generate a summary"
+		"message": "Get a short summary of the page you're reading"
 	},
 	"summary_loading_message": {
 		"message": "Generating summary…"
 	},
 	"summary_generate_label": {
-		"message": "Generate summary"
+		"message": "Summarize this page"
 	},
 	"impression": {
 		"message": "Impression"

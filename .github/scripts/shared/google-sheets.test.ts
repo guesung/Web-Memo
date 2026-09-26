@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { upsertGoogleSheetTables } from "./google-sheets.mjs";
+import {
+	ensureGoogleSheetTab,
+	readGoogleSheetValues,
+	upsertGoogleSheetTables,
+	writeGoogleSheetRanges,
+} from "./google-sheets.mjs";
 
 const response = (body, status = 200) =>
 	new Response(JSON.stringify(body), { status });
@@ -208,5 +213,111 @@ describe("upsertGoogleSheetTables", () => {
 			upsertGoogleSheetTables({ ...options, fetcher }),
 		).rejects.toThrow("duplicate key");
 		expect(fetcher).not.toHaveBeenCalled();
+	});
+});
+
+describe("readGoogleSheetValues", () => {
+	it("탭의 전체 값을 읽는다", async () => {
+		const fetcher = vi
+			.fn()
+			.mockResolvedValueOnce(response({ values: [["a", "b"], ["1", "2"]] }));
+		const values = await readGoogleSheetValues({
+			spreadsheetId: "spreadsheet",
+			serviceAccount: {},
+			title: "web",
+			fetcher,
+			tokenExchanger: vi.fn(async () => "token"),
+		});
+		expect(values).toEqual([["a", "b"], ["1", "2"]]);
+		expect(fetcher.mock.calls[0][0]).toContain("/values/'web'");
+	});
+	it("값이 없으면 빈 배열을 반환한다", async () => {
+		const fetcher = vi.fn().mockResolvedValueOnce(response({}));
+		const values = await readGoogleSheetValues({
+			spreadsheetId: "spreadsheet",
+			serviceAccount: {},
+			title: "web",
+			fetcher,
+			tokenExchanger: vi.fn(async () => "token"),
+		});
+		expect(values).toEqual([]);
+	});
+});
+
+describe("writeGoogleSheetRanges", () => {
+	it("여러 범위를 한 번의 batchUpdate로 쓴다", async () => {
+		const fetcher = vi.fn().mockResolvedValueOnce(response({}));
+		await writeGoogleSheetRanges({
+			spreadsheetId: "spreadsheet",
+			serviceAccount: {},
+			ranges: [{ range: "'web'!D2", values: [["사용 위치"]] }],
+			fetcher,
+			tokenExchanger: vi.fn(async () => "token"),
+		});
+		expect(fetcher).toHaveBeenCalledTimes(1);
+		expect(fetcher.mock.calls[0][0]).toContain("/values:batchUpdate");
+		expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({
+			valueInputOption: "RAW",
+			data: [{ range: "'web'!D2", values: [["사용 위치"]] }],
+		});
+	});
+	it("범위가 없으면 요청을 보내지 않는다", async () => {
+		const fetcher = vi.fn();
+		await writeGoogleSheetRanges({
+			spreadsheetId: "spreadsheet",
+			serviceAccount: {},
+			ranges: [],
+			fetcher,
+			tokenExchanger: vi.fn(async () => "token"),
+		});
+		expect(fetcher).not.toHaveBeenCalled();
+	});
+});
+
+describe("ensureGoogleSheetTab", () => {
+	it("탭이 없으면 만들고 헤더 행을 쓴다", async () => {
+		const fetcher = vi
+			.fn()
+			.mockResolvedValueOnce(response({ sheets: [] }))
+			.mockResolvedValueOnce(response({}))
+			.mockResolvedValueOnce(response({}));
+		const result = await ensureGoogleSheetTab({
+			spreadsheetId: "spreadsheet",
+			serviceAccount: {},
+			title: "web",
+			headers: ["키", "ko", "en", "사용 위치", "맥락"],
+			fetcher,
+			tokenExchanger: vi.fn(async () => "token"),
+		});
+		expect(result).toEqual({ created: true });
+		expect(fetcher).toHaveBeenCalledTimes(3);
+		expect(
+			JSON.parse(fetcher.mock.calls[1][1].body).requests[0].addSheet.properties
+				.title,
+		).toBe("web");
+		expect(JSON.parse(fetcher.mock.calls[2][1].body)).toEqual({
+			valueInputOption: "RAW",
+			data: [
+				{
+					range: "'web'!A1",
+					values: [["키", "ko", "en", "사용 위치", "맥락"]],
+				},
+			],
+		});
+	});
+	it("탭이 있으면 아무 요청도 보내지 않는다", async () => {
+		const fetcher = vi
+			.fn()
+			.mockResolvedValueOnce(response({ sheets: [{ properties: { title: "web" } }] }));
+		const result = await ensureGoogleSheetTab({
+			spreadsheetId: "spreadsheet",
+			serviceAccount: {},
+			title: "web",
+			headers: ["키", "ko", "en", "사용 위치", "맥락"],
+			fetcher,
+			tokenExchanger: vi.fn(async () => "token"),
+		});
+		expect(result).toEqual({ created: false });
+		expect(fetcher).toHaveBeenCalledTimes(1);
 	});
 });

@@ -11,12 +11,12 @@ vi.mock("./seo-sheets.mjs", () => ({
 		{ title: "SEO Runs", headers: ["key"], rows: [["1:1"]] },
 	]),
 }));
-vi.mock("./google-sheets.mjs", () => ({
+vi.mock("../shared/google-sheets.mjs", () => ({
 	upsertGoogleSheetTables: vi.fn(async () => ({ updatedRows: 1 })),
 }));
 
 import { persistSeoReportsToSheets } from "./persist-seo-sheets.mjs";
-import { upsertGoogleSheetTables } from "./google-sheets.mjs";
+import { upsertGoogleSheetTables } from "../shared/google-sheets.mjs";
 import { createSeoSheetTables } from "./seo-sheets.mjs";
 
 afterEach(() => {

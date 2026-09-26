@@ -1,0 +1,393 @@
+<!doctype html>
+<!--
+	크롬 웹스토어 스크린샷(1280×800) 한 장의 틀. compose.spec.ts가 이 파일을 열고 window.renderScene(장면)을 불러 채운 뒤 찍는다.
+	장면 번호(data-scene)에 따라 원 강조·키캡·확대 카드·모바일 화면을 켜고 끈다.
+	색과 글꼴은 docs/design-system.md의 토큰을 따른다: 강조 파랑 hsl(221 83% 53%), 본문 글꼴 Pretendard.
+-->
+<html lang="ko">
+	<head>
+		<meta charset="utf-8" />
+		<style>
+			@font-face {
+				font-family: "Pretendard Variable";
+				src: url("../../apps/web/src/fonts/PretendardVariable.woff2") format("woff2");
+				font-weight: 45 920;
+			}
+			:root {
+				--primary: hsl(221 83% 53%);
+				--foreground: hsl(222 47% 11%);
+				--muted-foreground: hsl(215 16% 47%);
+				--border: hsl(214 32% 91%);
+			}
+			* {
+				box-sizing: border-box;
+			}
+			html,
+			body {
+				margin: 0;
+				width: 1280px;
+				height: 800px;
+				overflow: hidden;
+			}
+			body {
+				position: relative;
+				font-family: "Pretendard Variable", sans-serif;
+				color: var(--foreground);
+				background: linear-gradient(180deg, hsl(220 60% 97%) 0%, hsl(221 60% 92%) 100%);
+				-webkit-font-smoothing: antialiased;
+			}
+			.headline {
+				position: absolute;
+				top: 40px;
+				left: 0;
+				right: 0;
+				margin: 0;
+				text-align: center;
+				font-size: 46px;
+				font-weight: 800;
+				line-height: 1.2;
+				letter-spacing: -0.025em;
+				white-space: nowrap;
+			}
+
+			/* 브라우저 창 틀. 아래쪽은 캔버스 밖으로 흘려 실제 화면이 최대한 크게 보이게 한다. */
+			.frame {
+				position: absolute;
+				top: 132px;
+				left: 60px;
+				width: 1160px;
+				height: 700px;
+				border-radius: 14px 14px 0 0;
+				background: #fff;
+				border: 1px solid var(--border);
+				box-shadow: 0 24px 64px hsl(222 47% 11% / 0.16);
+				overflow: hidden;
+			}
+			.tab-strip {
+				display: flex;
+				align-items: flex-end;
+				gap: 16px;
+				height: 38px;
+				padding: 0 14px;
+				background: hsl(220 20% 93%);
+			}
+			.traffic-lights {
+				display: flex;
+				gap: 8px;
+				align-self: center;
+			}
+			.traffic-lights span {
+				width: 12px;
+				height: 12px;
+				border-radius: 50%;
+			}
+			.tab {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				width: 260px;
+				height: 30px;
+				padding: 0 12px;
+				border-radius: 10px 10px 0 0;
+				background: #fff;
+				font-size: 13px;
+			}
+			.tab-title {
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			.tab-icon {
+				flex-shrink: 0;
+				width: 16px;
+				height: 16px;
+				border-radius: 4px;
+				background: var(--foreground);
+				color: #fff;
+				font-size: 10px;
+				font-weight: 700;
+				line-height: 16px;
+				text-align: center;
+			}
+			.toolbar {
+				display: flex;
+				align-items: center;
+				gap: 14px;
+				height: 44px;
+				padding: 0 14px;
+				border-bottom: 1px solid var(--border);
+			}
+			.address-bar {
+				flex: 1;
+				height: 30px;
+				padding: 0 16px;
+				border-radius: 15px;
+				background: hsl(220 20% 95%);
+				color: var(--muted-foreground);
+				font-size: 14px;
+				line-height: 30px;
+			}
+			.address-bar strong {
+				color: var(--foreground);
+				font-weight: 500;
+			}
+			.extension-button {
+				position: relative;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 30px;
+				height: 30px;
+			}
+			.extension-button img {
+				width: 20px;
+				height: 20px;
+			}
+			.profile {
+				width: 24px;
+				height: 24px;
+				border-radius: 50%;
+				background: hsl(220 14% 82%);
+			}
+			.frame-content {
+				display: flex;
+				height: 586px;
+			}
+			.frame-content > img {
+				display: block;
+				height: 586px;
+			}
+			.page-image {
+				width: 760px;
+			}
+			.side-panel-image {
+				width: 400px;
+				border-left: 1px solid var(--border);
+			}
+
+			/* 2번 장: 확장 아이콘 원 강조와 단축키 키캡 */
+			.focus-ring {
+				position: absolute;
+				top: -13px;
+				left: -13px;
+				width: 56px;
+				height: 56px;
+				border: 4px solid var(--primary);
+				border-radius: 50%;
+				box-shadow: 0 0 0 8px hsl(221 83% 53% / 0.18);
+			}
+			.shortcut {
+				position: absolute;
+				top: 232px;
+				right: 120px;
+				display: flex;
+				align-items: center;
+				gap: 14px;
+				padding: 22px 28px;
+				border-radius: 20px;
+				background: #fff;
+				box-shadow: 0 16px 48px hsl(222 47% 11% / 0.18);
+				font-size: 30px;
+				font-weight: 700;
+				color: var(--muted-foreground);
+			}
+			.keycap {
+				min-width: 76px;
+				padding: 12px 20px;
+				border: 2px solid hsl(214 32% 82%);
+				border-bottom-width: 6px;
+				border-radius: 14px;
+				background: #fff;
+				color: var(--foreground);
+				font-size: 34px;
+				font-weight: 800;
+				text-align: center;
+			}
+
+			/*
+				3번 장: 메모에 붙는 출처("메모 ↗" 줄과 글 제목 줄) 확대.
+				세로 위치·높이는 capture가 잰 값으로 renderScene이 정한다. 확대 카드는 기사 제목을 가리지 않도록
+				테두리 아래, 패널을 덮지 않는 폭(오른쪽 끝 804px < 패널 시작 820px)으로 놓는다.
+			*/
+			.memo-source-ring {
+				position: absolute;
+				left: 820px;
+				width: 400px;
+				border: 4px solid var(--primary);
+				border-radius: 14px;
+				box-shadow: 0 0 0 8px hsl(221 83% 53% / 0.18);
+			}
+			.zoom-card {
+				position: absolute;
+				left: 76px;
+				width: 728px;
+				border: 4px solid var(--primary);
+				border-radius: 20px;
+				background: #fff;
+				box-shadow: 0 24px 64px hsl(222 47% 11% / 0.24);
+				overflow: hidden;
+			}
+			.zoom-card img {
+				display: block;
+				width: 720px;
+				height: 1054.8px;
+			}
+
+			/* 4번 장: 웹 대시보드와 모바일 화면 */
+			[data-scene="4"] .frame {
+				left: 48px;
+				width: 900px;
+			}
+			[data-scene="4"] .frame-content {
+				height: auto;
+			}
+			.dashboard-image {
+				width: 900px;
+				height: auto;
+			}
+			.phone {
+				position: absolute;
+				top: 150px;
+				left: 900px;
+				width: 304px;
+				padding: 12px;
+				border-radius: 48px;
+				background: hsl(222 47% 11%);
+				box-shadow: 0 24px 64px hsl(222 47% 11% / 0.28);
+			}
+			.phone img,
+			.phone-placeholder {
+				display: block;
+				width: 280px;
+				height: 606px;
+				border-radius: 36px;
+			}
+			.phone-placeholder {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 24px;
+				border: 3px dashed hsl(214 32% 70%);
+				background: hsl(220 20% 96%);
+				color: var(--muted-foreground);
+				font-size: 18px;
+				text-align: center;
+			}
+
+			[data-scene] .scene-only {
+				display: none;
+			}
+			[data-scene="2"] .scene-2,
+			[data-scene="3"] .scene-3,
+			[data-scene="4"] .scene-4 {
+				display: block;
+			}
+			[data-scene="2"] .shortcut.scene-2 {
+				display: flex;
+			}
+			[data-scene="4"] .page-image,
+			[data-scene="4"] .side-panel-image {
+				display: none;
+			}
+		</style>
+	</head>
+	<body data-scene="1">
+		<h1 class="headline"></h1>
+
+		<div class="frame">
+			<div class="tab-strip">
+				<div class="traffic-lights">
+					<span style="background: #ff5f57"></span>
+					<span style="background: #febc2e"></span>
+					<span style="background: #28c840"></span>
+				</div>
+				<div class="tab">
+					<span class="tab-icon"></span>
+					<span class="tab-title"></span>
+				</div>
+			</div>
+			<div class="toolbar">
+				<div class="address-bar"></div>
+				<div class="extension-button">
+					<img src="../../dist/icon-34.png" alt="" />
+					<span class="focus-ring scene-only scene-2"></span>
+				</div>
+				<span class="profile"></span>
+			</div>
+			<div class="frame-content">
+				<img class="page-image" alt="" />
+				<img class="side-panel-image" alt="" />
+				<img class="dashboard-image scene-only scene-4" alt="" />
+			</div>
+		</div>
+
+		<div class="shortcut scene-only scene-2">
+			<span class="keycap">Alt</span>
+			<span>+</span>
+			<span class="keycap">S</span>
+		</div>
+
+		<div class="memo-source-ring scene-only scene-3"></div>
+		<div class="zoom-card scene-only scene-3">
+			<img class="zoom-image" alt="" />
+		</div>
+
+		<div class="phone scene-only scene-4"></div>
+
+		<script>
+			/**
+			 * 장면 하나를 채우고 이미지·글꼴이 모두 준비될 때까지 기다린다.
+			 * @param scene compose.spec.ts의 IFSceneInput과 같은 모양
+			 */
+			window.renderScene = async (scene) => {
+				document.body.dataset.scene = String(scene.sceneNumber);
+				document.documentElement.lang = scene.language;
+				document.querySelector(".headline").textContent = scene.headline;
+				document.querySelector(".tab-title").textContent = scene.tabTitle;
+				document.querySelector(".tab-icon").textContent = scene.tabIconLetter;
+				document.querySelector(".address-bar").innerHTML =
+					`<strong>${scene.addressHost}</strong>${scene.addressPath}`;
+
+				const setImageSource = (selector, source) => {
+					if (source) {
+						document.querySelector(selector).src = source;
+					}
+				};
+
+				setImageSource(".page-image", scene.pageImage);
+				setImageSource(".side-panel-image", scene.sidePanelImage);
+				setImageSource(".zoom-image", scene.sidePanelImage);
+				setImageSource(".dashboard-image", scene.dashboardImage);
+
+				// 사이드 패널은 창 틀 콘텐츠 영역 맨 위(캔버스 y 215px)에서 시작한다. 확대 배율은 1.8배다.
+				const sidePanelTop = 215;
+				const zoomScale = 1.8;
+				const ringTop = sidePanelTop + scene.memoSourceTop;
+				const memoSourceRing = document.querySelector(".memo-source-ring");
+				const zoomCard = document.querySelector(".zoom-card");
+
+				memoSourceRing.style.top = `${ringTop}px`;
+				memoSourceRing.style.height = `${scene.memoSourceHeight}px`;
+				zoomCard.style.top = `${ringTop + scene.memoSourceHeight + 24}px`;
+				zoomCard.style.height = `${scene.memoSourceHeight * zoomScale + 8}px`;
+				document.querySelector(".zoom-image").style.marginTop =
+					`${-scene.memoSourceTop * zoomScale}px`;
+
+				const phone = document.querySelector(".phone");
+
+				if (scene.mobileImage) {
+					phone.innerHTML = `<img src="${scene.mobileImage}" alt="" />`;
+				} else {
+					phone.innerHTML = `<div class="phone-placeholder">${scene.mobilePlaceholderText}</div>`;
+				}
+
+				const visibleImages = [...document.querySelectorAll("img")].filter(
+					(image) => image.getAttribute("src") && image.offsetParent !== null,
+				);
+
+				await Promise.all(visibleImages.map((image) => image.decode()));
+				await document.fonts.ready;
+			};
+		</script>
+	</body>
+</html>

@@ -443,6 +443,13 @@ GA4 콘솔 → 관리 → 속성 설정 상단의 **숫자** 속성 ID이며,
 기존 행을 갱신하고, GitHub Actions에서 재실행하여 시도 번호가 바뀌면 새 행을 남깁니다.
 값이 없으면 원본 Actions 아티팩트는 남기고 Sheets 적재만 건너뜁니다.
 
+`COPY_SHEET_ID`는 번역 문구를 관리하는 Google Sheets의 ID입니다(`pnpm copy:push`·`copy:pull`이 읽음).
+로컬 전용이라 GitHub Secrets·Vercel에 등록하지 않고, `.github/scripts`는 매니페스트 검사 대상이 아니라
+`env-manifest.yml`에도 없습니다. 스크립트는 `COPY_SHEET_ID`와 `GA4_SERVICE_ACCOUNT_JSON`을 셸 환경변수에서
+먼저 찾고, 없으면 `apps/web/.env.local`에서 읽습니다. 그래서 `pnpm env:pull`로 서비스 계정 값을 받은 뒤
+`.env.local`에 `COPY_SHEET_ID=<ID>` 한 줄만 더하면 됩니다. 문구 시트도 `GA4_SERVICE_ACCOUNT_JSON`의
+`client_email`에 편집자로 공유해야 하며, 공유하지 않으면 스크립트가 403과 함께 이 안내를 출력합니다.
+
 ### `SENTRY_AUTH_TOKEN`은 확장과 웹이 서로 다른 경로로 받습니다
 
 같은 이름이지만 공급처가 둘로 갈립니다.

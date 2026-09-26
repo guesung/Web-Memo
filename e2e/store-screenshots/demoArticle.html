@@ -1,0 +1,171 @@
+<!doctype html>
+<!--
+	스토어 스크린샷 시연용 가상 기사. 실존 매체·필자와 무관한, 이 레포에서 직접 쓴 글이다.
+	capture.spec.ts가 html 태그의 lang 자리표시를 ko 또는 en으로 바꿔 응답한다. 언어가 다른 article은 스크립트가 지운다.
+	사이드 패널은 탭 제목(document.title)을 머리글에, 본문(innerText)을 요약 재료로 쓴다.
+-->
+<html lang="__LANG__">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Focus Notes</title>
+		<link
+			rel="icon"
+			href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23111827'/%3E%3Ctext x='16' y='22' font-size='18' font-family='Arial' font-weight='700' fill='white' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E"
+		/>
+		<style>
+			@font-face {
+				font-family: "Pretendard Variable";
+				src: url("/__fonts/PretendardVariable.woff2") format("woff2");
+				font-weight: 45 920;
+			}
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				margin: 0;
+				background: #ffffff;
+				color: #1f2937;
+				font-family: "Pretendard Variable", -apple-system, sans-serif;
+				-webkit-font-smoothing: antialiased;
+			}
+			.site-header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 18px 40px;
+				border-bottom: 1px solid #eef0f3;
+			}
+			.site-name {
+				font-weight: 800;
+				font-size: 18px;
+				letter-spacing: -0.02em;
+			}
+			.site-menu {
+				display: flex;
+				gap: 20px;
+				color: #6b7280;
+				font-size: 14px;
+			}
+			article {
+				max-width: 640px;
+				margin: 0 auto;
+				padding: 36px 24px 64px;
+			}
+			.kicker {
+				color: #2563eb;
+				font-weight: 700;
+				font-size: 13px;
+				letter-spacing: 0.04em;
+				text-transform: uppercase;
+			}
+			h1 {
+				margin: 10px 0 12px;
+				font-size: 32px;
+				line-height: 1.3;
+				letter-spacing: -0.02em;
+			}
+			.byline {
+				color: #9ca3af;
+				font-size: 14px;
+				margin-bottom: 28px;
+			}
+			p {
+				font-size: 17px;
+				line-height: 1.8;
+				margin: 0 0 20px;
+				color: #374151;
+			}
+			mark {
+				background: #fef3c7;
+				color: inherit;
+				padding: 0 2px;
+			}
+			h2 {
+				font-size: 21px;
+				margin: 32px 0 12px;
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<span class="site-name">Focus Notes</span>
+			<nav class="site-menu">
+				<span data-lang="ko">에세이</span>
+				<span data-lang="ko">리서치</span>
+				<span data-lang="ko">구독</span>
+				<span data-lang="en">Essays</span>
+				<span data-lang="en">Research</span>
+				<span data-lang="en">Subscribe</span>
+			</nav>
+		</header>
+
+		<article data-lang="ko">
+			<div class="kicker">일하는 방식</div>
+			<h1>알림은 하루 세 번만 확인하세요</h1>
+			<div class="byline">Focus Notes 편집부 · 8분 분량</div>
+			<p>
+				업무 메신저의 빨간 점은 작지만 힘이 셉니다. 확인하는 데는 몇 초면
+				충분하지만, 원래 하던 일로 돌아와 다시 몰입하기까지는 훨씬 긴 시간이
+				듭니다. 그래서 하루에 알림을 몇 번 확인하느냐가 곧 하루에 몇 번
+				집중을 새로 시작하느냐와 같습니다.
+			</p>
+			<p>
+				이 글은 한 팀이 4주 동안 <mark>알림 확인을 하루 세 번으로 묶은 실험</mark>을
+				정리한 기록입니다. 오전 10시, 오후 1시, 오후 4시에만 메신저를 열고, 급한
+				일은 전화로 받기로 했습니다.
+			</p>
+			<h2>첫 주: 불안이 먼저 찾아온다</h2>
+			<p>
+				처음 며칠은 놓친 메시지가 있을까 봐 오히려 더 자주 메신저를 떠올렸습니다.
+				하지만 실제로 전화가 걸려 온 급한 일은 일주일에 두 건뿐이었습니다.
+			</p>
+			<h2>넷째 주: 긴 작업이 끝나기 시작한다</h2>
+			<p>
+				실험이 끝날 무렵에는 두 시간 이상 끊기지 않는 작업 구간이 하루 평균
+				한 번에서 세 번으로 늘었습니다.
+			</p>
+		</article>
+
+		<article data-lang="en">
+			<div class="kicker">Ways of working</div>
+			<h1>Check chat just 3 times a day</h1>
+			<div class="byline">Focus Notes Editorial · 8 min read</div>
+			<p>
+				The red dot on a work chat app is small but powerful. Checking it takes a
+				few seconds, yet getting back into deep work afterwards takes far longer.
+				How often you check notifications is really how often you restart your
+				focus.
+			</p>
+			<p>
+				This piece documents a team's four-week experiment of
+				<mark>batching notifications into three checks a day</mark>. They opened
+				chat only at 10 a.m., 1 p.m. and 4 p.m., and took urgent requests by
+				phone.
+			</p>
+			<h2>Week one: anxiety comes first</h2>
+			<p>
+				For the first few days, people thought about chat even more often, worried
+				they had missed something. In reality, only two urgent calls came in that
+				week.
+			</p>
+			<h2>Week four: long tasks start to finish</h2>
+			<p>
+				By the end, uninterrupted work blocks of two hours or more grew from one to
+				three a day on average.
+			</p>
+		</article>
+
+		<script>
+			const pageLanguage = document.documentElement.lang;
+
+			for (const element of document.querySelectorAll("[data-lang]")) {
+				if (element.dataset.lang !== pageLanguage) {
+					element.remove();
+				}
+			}
+
+			document.title = document.querySelector("h1").textContent;
+		</script>
+	</body>
+</html>

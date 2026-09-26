@@ -230,6 +230,18 @@
 	"category_remove": {
 		"message": "카테고리 해제"
 	},
+	"control_disabled_offline_change": {
+		"message": "오프라인에서는 바꿀 수 없어요"
+	},
+	"control_disabled_offline_delete": {
+		"message": "오프라인에서는 지울 수 없어요"
+	},
+	"control_disabled_offline_open": {
+		"message": "오프라인에서는 열 수 없어요"
+	},
+	"control_disabled_syncing": {
+		"message": "동기화가 끝나면 쓸 수 있어요"
+	},
 	"memo_section_setting": {
 		"message": "메모 섹션 표시"
 	},

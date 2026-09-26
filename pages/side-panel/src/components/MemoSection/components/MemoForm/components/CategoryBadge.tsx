@@ -14,6 +14,8 @@ interface IFCategoryBadgeProps {
 	onBadgeButtonClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
 	/** X 클릭. 카테고리를 해제한다 */
 	onRemoveButtonClick: () => void;
+	/** 있으면 두 버튼을 모두 막고 이 문구를 title로 보여준다(오프라인·동기화 중) */
+	disabledReason?: string;
 }
 
 /**
@@ -39,9 +41,10 @@ const CategoryBadge = (props: IFCategoryBadgeProps) => {
 				ref={props.badgeButtonRef}
 				type="button"
 				aria-label={I18n.get("category_change")}
-				title={props.category.name}
+				title={props.disabledReason ?? props.category.name}
+				disabled={!!props.disabledReason}
 				onClick={props.onBadgeButtonClick}
-				className="focus-visible:ring-ring flex min-w-0 items-center gap-1 rounded-sm focus-visible:outline-none focus-visible:ring-1"
+				className="focus-visible:ring-ring flex min-w-0 items-center gap-1 rounded-sm focus-visible:outline-none focus-visible:ring-1 disabled:cursor-not-allowed disabled:opacity-50"
 			>
 				<div
 					className="h-2 w-2 shrink-0 rounded-full"
@@ -54,8 +57,10 @@ const CategoryBadge = (props: IFCategoryBadgeProps) => {
 			<button
 				type="button"
 				aria-label={I18n.get("category_remove")}
+				title={props.disabledReason}
+				disabled={!!props.disabledReason}
 				onClick={handleRemoveButtonClick}
-				className="hover:text-destructive focus-visible:ring-ring ml-1 rounded-sm focus-visible:outline-none focus-visible:ring-1"
+				className="hover:text-destructive focus-visible:ring-ring ml-1 rounded-sm focus-visible:outline-none focus-visible:ring-1 disabled:cursor-not-allowed disabled:opacity-50"
 			>
 				<XIcon size={12} aria-hidden="true" />
 			</button>

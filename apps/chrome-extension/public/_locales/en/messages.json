@@ -230,6 +230,18 @@
 	"category_remove": {
 		"message": "Remove category"
 	},
+	"control_disabled_offline_change": {
+		"message": "You can't change this offline"
+	},
+	"control_disabled_offline_delete": {
+		"message": "You can't delete this offline"
+	},
+	"control_disabled_offline_open": {
+		"message": "You can't open this offline"
+	},
+	"control_disabled_syncing": {
+		"message": "Available once syncing finishes"
+	},
 	"memo_section_setting": {
 		"message": "Memo sections"
 	},

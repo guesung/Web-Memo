@@ -8,6 +8,8 @@ interface IFCategoryAddChipProps {
 	chipRef: React.RefObject<HTMLButtonElement | null>;
 	/** 칩 클릭. 칩 기준으로 카테고리 팝업을 연다 */
 	onChipClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+	/** 있으면 칩을 막고 이 문구를 title로 보여준다(오프라인·동기화 중) */
+	disabledReason?: string;
 }
 
 /**
@@ -21,11 +23,12 @@ const CategoryAddChip = (props: IFCategoryAddChipProps) => {
 			ref={props.chipRef}
 			type="button"
 			data-testid="category-add-chip"
-			title={I18n.get("category_add_hash_hint")}
+			title={props.disabledReason ?? I18n.get("category_add_hash_hint")}
+			disabled={!!props.disabledReason}
 			onClick={props.onChipClick}
 			className={cn(
 				badgeVariants({ variant: "outline" }),
-				"text-muted-foreground hover:text-foreground gap-1 border-dashed px-2 py-0.5",
+				"text-muted-foreground hover:text-foreground gap-1 border-dashed px-2 py-0.5 disabled:cursor-not-allowed disabled:opacity-50",
 			)}
 		>
 			<PlusIcon size={12} aria-hidden="true" />

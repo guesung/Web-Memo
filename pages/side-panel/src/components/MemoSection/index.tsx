@@ -265,7 +265,11 @@ const AuthenticatedMemoSectionContent = () => {
 
 	return (
 		<>
-			<MemoHeader memoData={activeMemo} />
+			<MemoHeader
+				memoData={activeMemo}
+				isOffline={!isOnline}
+				isSyncing={isSyncing}
+			/>
 			{currentDraft && <PreservedDraft draft={currentDraft} />}
 			{(hasMultipleMemos ||
 				hasOnlyOtherUrlMemos ||
@@ -278,6 +282,8 @@ const AuthenticatedMemoSectionContent = () => {
 					onMemoSelect={handleMemoSelect}
 					onNewMemoClick={memos.length === 0 ? handleNewMemoClick : undefined}
 					onMemoDelete={handleMemoDelete}
+					isOffline={!isOnline}
+					isSyncing={isSyncing}
 				/>
 			) : (
 				<MemoForm

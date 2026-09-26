@@ -1,7 +1,11 @@
 import ResizeHandle from "@src/components/ResizeHandle";
 import { useOnlineStatus } from "@src/hooks";
 import type { MemoInput } from "@src/types/Input";
-import { getMemoUrl, type IFMemoUrlParams } from "@src/utils";
+import {
+	getMemoUrl,
+	getOfflineControlDisabledReason,
+	type IFMemoUrlParams,
+} from "@src/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY, type TMemoStatusKey } from "@web-memo/shared/constants";
 import { useSettingQuery, useSupabaseUserQuery } from "@web-memo/shared/hooks";
@@ -105,6 +109,12 @@ function MemoFormContent({
 		isSyncing,
 		isSyncFailed,
 		hasMemoText: !!watch("memo"),
+	});
+	const isControlsDisabled = isOffline || isSyncing;
+	const changeDisabledReason = getOfflineControlDisabledReason({
+		isOffline,
+		isSyncing,
+		kind: "change",
 	});
 
 	const handleOtherMemoClick = async () => {
@@ -256,7 +266,13 @@ function MemoFormContent({
 						id="memo-textarea"
 						// 드래그 중에는 framer-motion 레이아웃 애니메이션이 매 프레임 다시 시작돼 핸들을 따라오지 못한다.
 						layout={resizingFieldKey === null}
-						onKeyDown={handleKeyDown}
+						onKeyDown={(event) => {
+							// 오프라인·동기화 중에는 #을 눌러도 팝업 없이 문자만 입력되게 둔다.
+							if (isControlsDisabled) {
+								return;
+							}
+							handleKeyDown(event);
+						}}
 						className="min-h-0 flex-1 resize-none text-sm outline-none"
 						placeholder={I18n.get("memo")}
 						{...register("memo", {
@@ -271,7 +287,8 @@ function MemoFormContent({
 									hasMemoData &&
 									hasMemoText &&
 									!hasCategory &&
-									!isSuggestingCategory
+									!isSuggestingCategory &&
+									!isControlsDisabled
 								) {
 									triggerSuggestion(event.target.value);
 								}
@@ -354,6 +371,7 @@ function MemoFormContent({
 							label={I18n.get("wish_list")}
 							isOn={!!memoData?.isWish}
 							onClick={() => handleMemoStatusClick("isWish")}
+							disabledReason={changeDisabledReason}
 						>
 							<HeartIcon
 								size={16}
@@ -368,6 +386,7 @@ function MemoFormContent({
 							label={I18n.get("important_memo")}
 							isOn={!!memoData?.isStar}
 							onClick={() => handleMemoStatusClick("isStar")}
+							disabledReason={changeDisabledReason}
 						>
 							<StarIcon
 								size={16}
@@ -380,6 +399,7 @@ function MemoFormContent({
 							label={I18n.get("reading_memo")}
 							isOn={!!memoData?.isReading}
 							onClick={() => handleMemoStatusClick("isReading")}
+							disabledReason={changeDisabledReason}
 						>
 							<BookOpenIcon
 								size={16}
@@ -395,6 +415,7 @@ function MemoFormContent({
 								badgeButtonRef={categoryBadgeButtonRef}
 								onBadgeButtonClick={handleCategoryButtonClick}
 								onRemoveButtonClick={handleCategoryRemoveClick}
+								disabledReason={changeDisabledReason}
 							/>
 						) : isSuggestingCategory ? (
 							// 추천 중에는 칩 자리를 대신해, 곧 카테고리가 붙는다는 걸 같은 자리에서 보여 준다.
@@ -412,6 +433,7 @@ function MemoFormContent({
 							<CategoryAddChip
 								chipRef={categoryAddChipRef}
 								onChipClick={handleCategoryButtonClick}
+								disabledReason={changeDisabledReason}
 							/>
 						)}
 					</div>
@@ -531,6 +553,8 @@ interface IFMemoStatusToggleProps {
 	isOn: boolean;
 	onClick: () => void;
 	children: React.ReactNode;
+	/** 있으면 토글을 막고 이 문구를 title로 보여준다(오프라인·동기화 중) */
+	disabledReason?: string;
 }
 
 /**
@@ -545,14 +569,17 @@ function MemoStatusToggle({
 	isOn,
 	onClick,
 	children,
+	disabledReason,
 }: IFMemoStatusToggleProps) {
 	return (
 		<button
 			type="button"
 			aria-label={label}
 			aria-pressed={isOn}
+			title={disabledReason}
+			disabled={!!disabledReason}
 			onClick={onClick}
-			className="focus-visible:ring-ring rounded-sm transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-1 active:scale-95"
+			className="focus-visible:ring-ring rounded-sm transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-1 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
 		>
 			{children}
 		</button>

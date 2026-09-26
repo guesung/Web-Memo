@@ -1,3 +1,4 @@
+import { getOfflineControlDisabledReason } from "@src/utils";
 import type { Database } from "@web-memo/shared/types";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { PlusIcon, Trash2Icon } from "lucide-react";
@@ -16,6 +17,8 @@ interface IFMemoCandidateListProps {
 	onMemoDelete: (memoId: number) => void;
 	/** 현재 주소에 새 메모를 쓸 때. 현재 주소에 메모가 없을 때만 넘긴다 */
 	onNewMemoClick?: () => void;
+	isOffline?: boolean;
+	isSyncing?: boolean;
 }
 
 /** 같은 페이지에 저장된 메모와 쿼리만 다른 주소의 메모를 모두 표시한다. */
@@ -25,7 +28,15 @@ export default function MemoCandidateList({
 	onMemoSelect,
 	onMemoDelete,
 	onNewMemoClick,
+	isOffline = false,
+	isSyncing = false,
 }: IFMemoCandidateListProps) {
+	const deleteDisabledReason = getOfflineControlDisabledReason({
+		isOffline,
+		isSyncing,
+		kind: "delete",
+	});
+
 	return (
 		<div className="flex min-h-0 flex-1 flex-col gap-2 py-2">
 			<p className="text-sm font-semibold">
@@ -51,6 +62,7 @@ export default function MemoCandidateList({
 						memo={memo}
 						onMemoSelect={onMemoSelect}
 						onMemoDelete={onMemoDelete}
+						deleteDisabledReason={deleteDisabledReason}
 					/>
 				))}
 				{otherUrlMemos.length > 0 && (
@@ -65,6 +77,7 @@ export default function MemoCandidateList({
 						urlLabel={getUrlLabel(memo.url)}
 						onMemoSelect={onMemoSelect}
 						onMemoDelete={onMemoDelete}
+						deleteDisabledReason={deleteDisabledReason}
 					/>
 				))}
 			</div>
@@ -81,6 +94,7 @@ const MemoCandidateItem = ({
 	urlLabel,
 	onMemoSelect,
 	onMemoDelete,
+	deleteDisabledReason,
 }: IFMemoCandidateItemProps) => (
 	<div className="relative rounded-md border hover:bg-accent">
 		<button
@@ -112,8 +126,9 @@ const MemoCandidateItem = ({
 		<button
 			type="button"
 			aria-label={I18n.get("memo_candidates_delete")}
-			title={I18n.get("memo_candidates_delete")}
-			className="absolute right-2 top-2 rounded-sm p-1 text-muted-foreground hover:bg-background hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			title={deleteDisabledReason ?? I18n.get("memo_candidates_delete")}
+			disabled={!!deleteDisabledReason}
+			className="absolute right-2 top-2 rounded-sm p-1 text-muted-foreground hover:bg-background hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
 			onClick={() => onMemoDelete(memo.id)}
 		>
 			<Trash2Icon className="size-4" aria-hidden="true" />
@@ -139,4 +154,5 @@ interface IFMemoCandidateItemProps {
 	urlLabel?: string;
 	onMemoSelect: (memoId: number) => void;
 	onMemoDelete: (memoId: number) => void;
+	deleteDisabledReason?: string;
 }

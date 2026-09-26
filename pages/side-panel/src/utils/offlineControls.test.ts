@@ -30,7 +30,6 @@ describe("getOfflineControlDisabledReason", () => {
 	it.each([
 		["change", "control_disabled_offline_change"],
 		["delete", "control_disabled_offline_delete"],
-		["open", "control_disabled_offline_open"],
 	] as const)("오프라인 · %s는 %s를 쓴다", (kind, expectedKey) => {
 		expect(
 			getOfflineControlDisabledReason({
@@ -46,7 +45,7 @@ describe("getOfflineControlDisabledReason", () => {
 			getOfflineControlDisabledReason({
 				isOffline: true,
 				isSyncing: true,
-				kind: "open",
+				kind: "change",
 			}),
 		).toBe("control_disabled_syncing");
 	});

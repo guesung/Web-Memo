@@ -350,11 +350,7 @@ const AuthenticatedMemoSectionContent = () => {
 
 	return (
 		<>
-			<MemoHeader
-				memoData={activeMemo}
-				isOffline={!isOnline}
-				isSyncing={isSyncing}
-			/>
+			<MemoHeader memoData={activeMemo} />
 			{currentDraft && <PreservedDraft draft={currentDraft} />}
 			{(hasMultipleMemos ||
 				hasOnlyOtherUrlMemos ||

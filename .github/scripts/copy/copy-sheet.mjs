@@ -37,7 +37,7 @@ export const loadCopySheetConfig = ({
 
 	let serviceAccount;
 	try {
-		serviceAccount = JSON.parse(serviceAccountJson);
+		serviceAccount = parseServiceAccountJson(serviceAccountJson);
 		if (!serviceAccount.client_email || !serviceAccount.private_key) {
 			throw new Error("required fields missing");
 		}
@@ -62,10 +62,44 @@ const readEnvLocal = ({ repoRoot, readFile }) => {
 			continue;
 		}
 		const [, key, rawValue] = match;
-		values[key] = rawValue.replace(/^['"]|['"]$/g, "");
+		values[key] = parseEnvValue(rawValue);
 	}
 
 	return values;
+};
+
+// vercel env pull은 백슬래시를 이스케이프하지 않아 private_key의 \n과 JSON 구조의 줄바꿈이
+// 둘 다 \n으로 적힌다. 풀고 나면 문자열 안에 실제 줄바꿈이 남으므로, 실패하면 그것만 되돌려 다시 파싱한다.
+const parseServiceAccountJson = (text) => {
+	try {
+		return JSON.parse(text);
+	} catch {
+		let isInString = false;
+		let sanitized = "";
+		for (let index = 0; index < text.length; index += 1) {
+			const char = text[index];
+			if (char === '"' && text[index - 1] !== "\\") {
+				isInString = !isInString;
+			}
+			sanitized += isInString && char === "\n" ? "\\n" : char;
+		}
+
+		return JSON.parse(sanitized);
+	}
+};
+
+// 큰따옴표 값은 dotenv 규칙(\n·\"·\\)으로 한 번에 푼다.
+const parseEnvValue = (rawValue) => {
+	if (rawValue.length >= 2 && rawValue.startsWith('"') && rawValue.endsWith('"')) {
+		return rawValue
+			.slice(1, -1)
+			.replace(/\\(.)/g, (_, char) => (char === "n" ? "\n" : char));
+	}
+	if (rawValue.length >= 2 && rawValue.startsWith("'") && rawValue.endsWith("'")) {
+		return rawValue.slice(1, -1);
+	}
+
+	return rawValue;
 };
 
 /**

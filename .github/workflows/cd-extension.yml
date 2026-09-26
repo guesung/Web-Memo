@@ -34,7 +34,7 @@ on:
 jobs:
   build-extension:
     name: 확장 빌드
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       zip_name: ${{ steps.zip.outputs.name }}
     env:
@@ -129,7 +129,7 @@ jobs:
 
   upload-extension:
     needs: build-extension
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     name: 크롬 웹스토어 업로드
     if: ${{ inputs.deploy_target == 'production' }}
     steps:

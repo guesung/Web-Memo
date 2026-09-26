@@ -36,7 +36,7 @@ permissions:
 jobs:
   audit:
     name: 환경 변수 등록 현황 감사
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5

@@ -40,7 +40,7 @@ permissions:
 jobs:
   inspect:
     name: 운영 사이트 SEO 검사
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 30
     steps:
       # AI 입력에 최근 7일 커밋을 넣으려면 이력이 필요합니다.

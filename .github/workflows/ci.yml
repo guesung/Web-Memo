@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   ci:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     env:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -65,7 +65,7 @@ jobs:
         run: pnpm test:jest --run
 
   changes:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     outputs:
       app: ${{ steps.detect.outputs.app }}
@@ -91,7 +91,7 @@ jobs:
   slack-thread:
     name: Slack 스레드 루트
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     outputs:
       thread_ts: ${{ steps.root.outputs.thread_ts }}
@@ -165,7 +165,7 @@ jobs:
     name: Slack 테섭 배포 알림
     needs: [slack-thread, changes, cd-web]
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/develop' && needs.changes.outputs.web == 'true' && (needs['cd-web'].result == 'success' || needs['cd-web'].result == 'failure') }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
@@ -194,7 +194,7 @@ jobs:
     name: Slack 웹 빌드 알림
     needs: [slack-thread, changes, cd-web]
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.changes.outputs.web == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
@@ -217,7 +217,7 @@ jobs:
     name: Slack 확장 빌드 알림
     needs: [slack-thread, changes, cd-extension]
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.changes.outputs.extension == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     # 이 실행의 아티팩트 목록을 조회해 확장 다운로드 버튼을 달기 위해 actions: read가 필요합니다.
     # 잡에 permissions를 적으면 나머지가 none이 되므로 체크아웃용 contents: read도 함께 적습니다.
@@ -246,7 +246,7 @@ jobs:
     name: Slack 앱 빌드 알림
     needs: [slack-thread, changes, cd-app]
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.changes.outputs.app == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
@@ -273,7 +273,7 @@ jobs:
     name: PR 확장 다운로드 댓글
     needs: [changes, cd-extension]
     if: ${{ always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && needs.changes.outputs.extension == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     # 아티팩트 목록 조회에 actions: read, 댓글 작성에 pull-requests: write가 필요합니다.
     # 잡에 permissions를 적으면 나머지가 none이 되므로 체크아웃용 contents: read도 함께 적습니다.
@@ -308,7 +308,7 @@ jobs:
     needs: [ci, changes, slack-thread, cd-app, cd-extension, cd-web]
     # 앞 잡이 실패해도 알려야 하므로 always()입니다. 대신 master push에서만 돕니다.
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5

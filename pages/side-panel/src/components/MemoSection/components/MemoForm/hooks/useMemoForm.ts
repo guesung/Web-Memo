@@ -1,11 +1,13 @@
 import type { MemoInput } from "@src/types/Input";
+import { useQuery } from "@tanstack/react-query";
 import type { TMemoStatusKey } from "@web-memo/shared/constants";
 import {
+	memoQueryOptions,
 	useDebounce,
 	useDidMount,
 	useMemoPatchMutation,
-	useMemoQuery,
 	useMemoUpsertMutation,
+	useSupabaseClientQuery,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
 import type { TCategoryChangeSource } from "@web-memo/shared/modules/analytics";
@@ -27,26 +29,37 @@ interface SaveMemoOptions extends Partial<MemoInput> {
 interface UseMemoFormProps {
 	onSaveSuccess?: (memoInput: MemoInput) => void;
 	selectedMemo?: Database["memo"]["Tables"]["memo"]["Row"];
+	/** 메모 후보 조회가 끝나지 않았거나 데이터 없이 실패했는지. 켜져 있으면 저장·토글·카테고리 변경을 보내지 않는다 */
+	isMemoLocked?: boolean;
 }
 
 /** 선택한 메모의 폼 값과 저장 순서를 관리한다. */
 export default function useMemoForm({
 	onSaveSuccess,
 	selectedMemo,
+	isMemoLocked = false,
 }: UseMemoFormProps = {}) {
 	const { setValue, getValues } = useFormContext<MemoInput>();
 	const { debounce, abortDebounce } = useDebounce();
 	const { debounce: debounceTitle, abortDebounce: abortTitleDebounce } =
 		useDebounce();
 	const { data: tab } = useTabQuery();
-	const { memo: onlyMemo, refetch: refetchMemo } = useMemoQuery({
-		url: tab?.url ?? "",
+	const { data: supabaseClient } = useSupabaseClientQuery();
+	// Suspense로 읽으면 조회를 기다리는 동안 폼 전체가 스켈레톤으로 바뀐다. 잠금 판단은 MemoSection이 맡는다.
+	const { data: memoQueryData, refetch: refetchMemo } = useQuery({
+		...memoQueryOptions({ supabaseClient, url: tab?.url ?? "" }),
+		// MemoSection이 같은 키를 이미 prefetch했으므로 마운트 때 한 번 더 조회하지 않는다.
+		refetchOnMount: false,
 	});
-	const memoData = selectedMemo ?? onlyMemo;
+	const onlyMemo =
+		memoQueryData?.data?.length === 1 ? memoQueryData.data[0] : undefined;
+	// 잠긴 동안에는 캐시에 남은 메모도 편집 대상으로 삼지 않는다.
+	const memoData = isMemoLocked ? undefined : (selectedMemo ?? onlyMemo);
 	const titleSync = useMemoTitleSync({
 		onTitleUpdate: (title) => setValue("title", title),
 		initialSavedTitle: memoData?.title,
 		memoId: memoData?.id,
+		isMemoResolved: !isMemoLocked,
 		pageUrl: tab?.url,
 		pageTitle: tab?.title,
 	});
@@ -146,6 +159,11 @@ export default function useMemoForm({
 
 	const saveMemo = useCallback(
 		async (overrides?: SaveMemoOptions) => {
+			// 메모 조회가 끝나지 않았으면 무엇을 덮어쓸지 알 수 없다. 저장 요청 자체를 보내지 않는다.
+			if (isMemoLocked) {
+				return false;
+			}
+
 			// 이미 저장 중이면 이 변경은 큐에 실려 다음 저장에 함께 나간다. 그 저장의 성패는
 			// 이 호출이 아니라 그때의 onError가 들고 있으므로 여기서는 실패로 보지 않는다.
 			if (isSavingRef.current) {
@@ -236,7 +254,7 @@ export default function useMemoForm({
 				);
 			});
 		},
-		[getValues, memoData?.id, upsertMemo, onSaveSuccess],
+		[isMemoLocked, getValues, memoData?.id, upsertMemo, onSaveSuccess],
 	);
 
 	/**
@@ -296,6 +314,10 @@ export default function useMemoForm({
 		categoryId: number | null,
 		source: TCategoryChangeSource,
 	) => {
+		if (isMemoLocked) {
+			return;
+		}
+
 		hasEditedMemoRef.current = true;
 		const previousCategoryId = getValues("categoryId");
 		setValue("categoryId", categoryId);
@@ -330,6 +352,10 @@ export default function useMemoForm({
 	 * 호출부는 이 `null`로 성공 토스트를 건너뛴다. 실패 알림 자체는 QueryProvider의 MutationCache가 맡는다.
 	 */
 	const toggleMemoStatus = async (statusKey: TMemoStatusKey) => {
+		if (isMemoLocked) {
+			return null;
+		}
+
 		hasEditedMemoRef.current = true;
 		const previousStatusValue = getValues(statusKey);
 		const nextStatusValue = !previousStatusValue;
@@ -349,7 +375,7 @@ export default function useMemoForm({
 	};
 
 	const saveBeforeSwitch = async () => {
-		if (isSavingRef.current) {
+		if (isMemoLocked || isSavingRef.current) {
 			return false;
 		}
 		// 바뀐 내용이 없으면 저장 왕복 없이 바로 넘어간다. 아무것도 쓰지 않은 새 메모가 빈 행으로 저장되는 것도 막는다.

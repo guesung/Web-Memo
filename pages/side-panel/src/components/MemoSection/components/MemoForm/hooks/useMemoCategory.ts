@@ -20,11 +20,14 @@ interface UseMemoCategoryProps {
 		categoryId: number | null,
 		source: TCategoryChangeSource,
 	) => void;
+	/** 메모 조회가 끝나지 않아 편집이 잠겨 있는지. 켜져 있으면 # 팝업을 열지 않는다 */
+	isMemoLocked?: boolean;
 }
 
 export default function useMemoCategory({
 	textareaRef,
 	onCategoryChange,
+	isMemoLocked = false,
 }: UseMemoCategoryProps) {
 	const { watch, setValue, getValues } = useFormContext<MemoInput>();
 	const { categories, refetch: refetchCategories } = useCategoryQuery();
@@ -118,7 +121,7 @@ export default function useMemoCategory({
 	};
 
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		if (event.key !== "#") return;
+		if (event.key !== "#" || isMemoLocked) return;
 
 		event.preventDefault();
 

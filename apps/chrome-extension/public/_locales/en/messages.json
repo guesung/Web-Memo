@@ -276,6 +276,12 @@
 	"retry": {
 		"message": "Retry"
 	},
+	"memo_loading": {
+		"message": "Loading memo..."
+	},
+	"memo_load_error": {
+		"message": "Couldn't load the memo."
+	},
 	"show_impression_setting": {
 		"message": "Show impression field"
 	},

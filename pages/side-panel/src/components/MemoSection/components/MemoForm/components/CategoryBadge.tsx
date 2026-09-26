@@ -1,7 +1,7 @@
 import { DEFAULT_CATEGORY_COLOR } from "@web-memo/shared/constants";
 import type { CategoryRow } from "@web-memo/shared/types";
 import { I18n } from "@web-memo/shared/utils/extension";
-import { Badge } from "@web-memo/ui";
+import { Badge, cn } from "@web-memo/ui";
 import { XIcon } from "lucide-react";
 
 /** 현재 카테고리 배지 props */
@@ -14,6 +14,10 @@ interface IFCategoryBadgeProps {
 	onBadgeButtonClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
 	/** X 클릭. 카테고리를 해제한다 */
 	onRemoveButtonClick: () => void;
+	/** 메모 조회가 끝나지 않아 눌러도 반응하지 않아야 하는지 */
+	isDisabled?: boolean;
+	/** 잠금이 눈에 띄게 오래 지속돼 흐리게 보여줄지 */
+	isDimmed?: boolean;
 }
 
 /**
@@ -33,7 +37,10 @@ const CategoryBadge = (props: IFCategoryBadgeProps) => {
 		<Badge
 			variant="outline"
 			data-testid="category-badge"
-			className="flex items-center gap-1 px-2 py-0.5"
+			className={cn(
+				"flex items-center gap-1 px-2 py-0.5",
+				props.isDimmed && "opacity-50",
+			)}
 		>
 			<button
 				ref={props.badgeButtonRef}
@@ -41,6 +48,7 @@ const CategoryBadge = (props: IFCategoryBadgeProps) => {
 				aria-label={I18n.get("category_change")}
 				title={props.category.name}
 				onClick={props.onBadgeButtonClick}
+				disabled={props.isDisabled}
 				className="focus-visible:ring-ring flex min-w-0 items-center gap-1 rounded-sm focus-visible:outline-none focus-visible:ring-1"
 			>
 				<div
@@ -55,6 +63,7 @@ const CategoryBadge = (props: IFCategoryBadgeProps) => {
 				type="button"
 				aria-label={I18n.get("category_remove")}
 				onClick={handleRemoveButtonClick}
+				disabled={props.isDisabled}
 				className="hover:text-destructive focus-visible:ring-ring ml-1 rounded-sm focus-visible:outline-none focus-visible:ring-1"
 			>
 				<XIcon size={12} aria-hidden="true" />

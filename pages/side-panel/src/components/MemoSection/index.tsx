@@ -3,10 +3,14 @@ import type { MemoInput } from "@src/types/Input";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import {
+	categoryQueryOptions,
+	memoQueryOptions,
+	samePathMemoQueryOptions,
+	settingQueryOptions,
+	supabaseClientQueryOptions,
 	useDeleteMemosMutation,
-	useMemoQuery,
 	useRestoreMemosMutation,
-	useSamePathMemoQuery,
+	userQueryOptions,
 	useSupabaseUserQuery,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
@@ -21,12 +25,68 @@ import MemoCandidateList from "./components/MemoCandidateList";
 import MemoForm from "./components/MemoForm";
 import { MemoFormSkeleton } from "./components/MemoForm/components";
 import MemoHeader from "./components/MemoHeader";
+import useMemoCandidatesQuery from "./hooks/useMemoCandidatesQuery";
 
 /** 사이드 패널의 현재 페이지 메모와 후보 선택을 표시한다. */
 export default function MemoSection({ memoHeight }: MemoSectionProps) {
 	const loginBoundaryRef = useRef<ErrorBoundary>(null);
+	const queryClient = useQueryClient();
+	const { data: tab } = useTabQuery();
 
 	useSyncLoginStatus(loginBoundaryRef);
+
+	// user·setting·category는 로그인 상태에서만 한 번 준비하면 되므로 tab.url과 무관하게 둔다.
+	useEffect(
+		function prefetchUserSettingCategory() {
+			const prefetch = async () => {
+				try {
+					const supabaseClient = await queryClient.ensureQueryData(
+						supabaseClientQueryOptions(),
+					);
+
+					await Promise.all([
+						queryClient.prefetchQuery(userQueryOptions(supabaseClient)),
+						queryClient.prefetchQuery(settingQueryOptions(supabaseClient)),
+						queryClient.prefetchQuery(categoryQueryOptions(supabaseClient)),
+					]);
+				} catch {
+					// 세션이 없어 클라이언트를 준비하지 못하면 폼 안 Suspense 경로(LoginSection)가 처리한다.
+				}
+			};
+
+			void prefetch();
+		},
+		[queryClient],
+	);
+
+	// 탭 url이 바뀌면 메모 후보와 같은 경로 후보만 다시 prefetch한다. user·setting·category는 그대로 재사용한다.
+	useEffect(
+		function prefetchMemo() {
+			const prefetch = async () => {
+				try {
+					const supabaseClient = await queryClient.ensureQueryData(
+						supabaseClientQueryOptions(),
+					);
+
+					const url = tab?.url ?? "";
+
+					await Promise.all([
+						queryClient.prefetchQuery(
+							memoQueryOptions({ supabaseClient, url }),
+						),
+						queryClient.prefetchQuery(
+							samePathMemoQueryOptions({ supabaseClient, url }),
+						),
+					]);
+				} catch {
+					// 세션이 없어 클라이언트를 준비하지 못하면 폼 안 Suspense 경로(LoginSection)가 처리한다.
+				}
+			};
+
+			void prefetch();
+		},
+		[queryClient, tab?.url],
+	);
 
 	return (
 		<section
@@ -57,13 +117,17 @@ const MemoSectionContent = () => {
 
 const AuthenticatedMemoSectionContent = () => {
 	const { data: tab } = useTabQuery();
-	const { memos } = useMemoQuery({ url: tab?.url ?? "" });
+	// 후보 조회를 기다리는 동안 폼 전체를 스켈레톤으로 바꾸지 않도록 Suspense 없이 읽는다.
+	const {
+		memos,
+		samePathMemos,
+		isMemoLocked,
+		isMemoLoadFailed,
+		refetchMemoCandidates,
+	} = useMemoCandidatesQuery({ url: tab?.url ?? "" });
 	const queryClient = useQueryClient();
 	const { mutate: deleteMemos } = useDeleteMemosMutation();
 	const { mutate: restoreMemos } = useRestoreMemosMutation();
-	const { memos: samePathMemos } = useSamePathMemoQuery({
-		url: tab?.url ?? "",
-	});
 	// 쿼리만 다른 주소에 남긴 메모. 현재 주소에 메모가 없을 때도 고를 수 있게 후보로 보여 준다.
 	const otherUrlMemos = samePathMemos.filter(
 		(samePathMemo) => !memos.some((memo) => memo.id === samePathMemo.id),
@@ -93,6 +157,10 @@ const AuthenticatedMemoSectionContent = () => {
 		if (selection && selection.scope !== editorScope) {
 			setSelection(null);
 			setPreservedDraft(null);
+			return;
+		}
+		// 후보가 아직 없으면(대기·실패) 빈 목록을 "메모 없음"으로 오판해 새 메모를 고르지 않도록 기다린다.
+		if (isMemoLocked) {
 			return;
 		}
 		// 현재 주소에 메모가 없고 다른 주소의 메모만 있으면 자동으로 고르지 않고 후보 화면을 띄운다.
@@ -129,6 +197,7 @@ const AuthenticatedMemoSectionContent = () => {
 		memos,
 		hasOnlyOtherUrlMemos,
 		isCandidateListRequested,
+		isMemoLocked,
 	]);
 
 	const candidateMemos = [...memos, ...otherUrlMemos];
@@ -197,6 +266,21 @@ const AuthenticatedMemoSectionContent = () => {
 		setCandidateListScope(editorScope);
 		setSelection(null);
 	};
+
+	// 후보를 받기 전에는 목록·선택 로직을 돌리지 않고 잠긴 폼을 그린다. key가 같아 도착 뒤에도 같은 폼을 이어 쓴다.
+	if (isMemoLocked) {
+		return (
+			<>
+				<MemoHeader />
+				<MemoForm
+					key={editorScope}
+					isMemoLocked
+					isMemoLoadFailed={isMemoLoadFailed}
+					onMemoRetryClick={refetchMemoCandidates}
+				/>
+			</>
+		);
+	}
 
 	return (
 		<>

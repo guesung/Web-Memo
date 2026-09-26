@@ -14,12 +14,19 @@ let hook: ReturnType<typeof useMemoTitleSync>;
 let refreshTitle: () => Promise<void>;
 const onTitleUpdate = vi.fn();
 
-const mountHook = async (initialSavedTitle?: string) => {
-	const TestHook = () => {
-		hook = useMemoTitleSync({ onTitleUpdate, initialSavedTitle });
+let hookOptions: Omit<Parameters<typeof useMemoTitleSync>[0], "onTitleUpdate">;
+// 컴포넌트를 하나로 두어야 옵션만 바꾼 호출이 새 마운트가 아니라 리렌더가 된다.
+const TestHook = () => {
+	hook = useMemoTitleSync({ onTitleUpdate, ...hookOptions });
 
-		return null;
-	};
+	return null;
+};
+
+const mountHook = async (
+	initialSavedTitle?: string,
+	extraOptions: Partial<Parameters<typeof useMemoTitleSync>[0]> = {},
+) => {
+	hookOptions = { initialSavedTitle, ...extraOptions };
 	await act(async () => root.render(createElement(TestHook)));
 };
 
@@ -124,5 +131,49 @@ describe("사이드패널 제목 연동", () => {
 			await pendingSync;
 		});
 		expect(onTitleUpdate).toHaveBeenLastCalledWith("수동 제목");
+	});
+});
+
+describe("메모 조회 대기와 제목", () => {
+	it("대기 뒤 도착한 저장 제목을 첫 저장으로 오판하지 않고 적용한다", async () => {
+		mocks.get.mockResolvedValue({ title: "페이지 제목" });
+		const pageOptions = {
+			pageUrl: "https://example.com/a",
+			pageTitle: "페이지 제목",
+		};
+		await mountHook(undefined, { ...pageOptions, isMemoResolved: false });
+		expect(onTitleUpdate).toHaveBeenLastCalledWith("페이지 제목");
+
+		await mountHook("저장된 제목", {
+			...pageOptions,
+			memoId: 1,
+			isMemoResolved: true,
+		});
+		expect(onTitleUpdate).toHaveBeenLastCalledWith("저장된 제목");
+	});
+
+	it("대기 중 다른 페이지로 옮기면 이전 페이지의 저장 제목 대신 탭 제목을 보여 준다", async () => {
+		mocks.get.mockResolvedValue({ title: "A 페이지" });
+		await mountHook("A 저장 제목", {
+			pageUrl: "https://example.com/a",
+			pageTitle: "A 페이지",
+			memoId: 1,
+			isMemoResolved: true,
+		});
+		expect(onTitleUpdate).toHaveBeenLastCalledWith("A 저장 제목");
+
+		await mountHook(undefined, {
+			pageUrl: "https://example.com/b",
+			pageTitle: "B 페이지",
+			isMemoResolved: false,
+		});
+		expect(onTitleUpdate).toHaveBeenLastCalledWith("B 페이지");
+
+		await mountHook(undefined, {
+			pageUrl: "https://example.com/b",
+			pageTitle: "B 페이지",
+			isMemoResolved: true,
+		});
+		expect(onTitleUpdate).toHaveBeenLastCalledWith("B 페이지");
 	});
 });

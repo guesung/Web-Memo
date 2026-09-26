@@ -6,6 +6,8 @@ interface IFMemoTitleSyncOptions {
 	onTitleUpdate: (title: string) => void;
 	initialSavedTitle?: string;
 	memoId?: number;
+	/** 메모 조회가 끝났는지. false인 동안의 memoId는 "메모 없음"이 아니라 "아직 모름"이다. 생략하면 끝난 것으로 본다. */
+	isMemoResolved?: boolean;
 	pageUrl?: string;
 	pageTitle?: string;
 }
@@ -19,10 +21,47 @@ export const useMemoTitleSync = (options: IFMemoTitleSyncOptions) => {
 	const initializedMemoIdRef = useRef(options.memoId);
 	const initializedPageUrlRef = useRef(options.pageUrl);
 	const hasLoadedInitialTitleRef = useRef(false);
+	const isAwaitingMemoRef = useRef(false);
 	const requestVersionRef = useRef(0);
 	const [isTitleSyncAvailable, setIsTitleSyncAvailable] = useState(false);
 
 	useEffect(() => {
+		// 조회 대기 중에는 memoId가 비어 있어도 "메모 없음"이 아니다. 도착했을 때 저장 제목을
+		// 적용하도록 표시만 해 둔다. 새 페이지로 옮겼으면 이전 페이지의 저장 제목이 남지 않게
+		// 수동 표시를 풀고 탭 제목을 보여 준다.
+		if (options.isMemoResolved === false) {
+			isAwaitingMemoRef.current = true;
+			if (initializedPageUrlRef.current === options.pageUrl) {
+				return;
+			}
+
+			initializedPageUrlRef.current = options.pageUrl;
+			initializedMemoIdRef.current = undefined;
+			isManualTitleRef.current = false;
+			++requestVersionRef.current;
+			if (options.pageTitle !== undefined) {
+				onTitleUpdateRef.current(options.pageTitle);
+			}
+			return;
+		}
+
+		if (isAwaitingMemoRef.current) {
+			isAwaitingMemoRef.current = false;
+			initializedMemoIdRef.current = options.memoId;
+			initializedPageUrlRef.current = options.pageUrl;
+			hasLoadedInitialTitleRef.current = true;
+			if (options.memoId === undefined) {
+				return;
+			}
+
+			++requestVersionRef.current;
+			initialSavedTitleRef.current = options.initialSavedTitle;
+			isManualTitleRef.current =
+				options.initialSavedTitle !== options.pageTitle;
+			onTitleUpdateRef.current(options.initialSavedTitle ?? "");
+			return;
+		}
+
 		if (initializedMemoIdRef.current === options.memoId) {
 			return;
 		}
@@ -45,6 +84,7 @@ export const useMemoTitleSync = (options: IFMemoTitleSyncOptions) => {
 		}
 	}, [
 		options.memoId,
+		options.isMemoResolved,
 		options.initialSavedTitle,
 		options.pageUrl,
 		options.pageTitle,

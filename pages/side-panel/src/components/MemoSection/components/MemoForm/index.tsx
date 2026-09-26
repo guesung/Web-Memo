@@ -23,7 +23,7 @@ import {
 	Loader2Icon,
 	StarIcon,
 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import {
 	CategoryAddChip,
@@ -75,6 +75,9 @@ function MemoFormContent() {
 
 	const {
 		memoData,
+		isMemoLocked,
+		isMemoError,
+		refetchMemo,
 		isSaving,
 		handleTitleChange,
 		handleTitleSyncClick,
@@ -85,6 +88,12 @@ function MemoFormContent() {
 		updateCategory,
 		toggleMemoStatus,
 	} = useMemoForm();
+	// 겉모습(로딩 문구·버튼 흐림)만 200ms 지연시킨다. 편집·저장 차단은 isMemoLocked로 즉시 적용된다.
+	const isMemoLoadingVisible = useDelayedFlag(
+		isMemoLocked && !isMemoError,
+		200,
+	);
+	const isMemoUiDimmed = isMemoError || isMemoLoadingVisible;
 
 	const {
 		categories,
@@ -104,6 +113,7 @@ function MemoFormContent() {
 	} = useMemoCategory({
 		textareaRef,
 		onCategoryChange: updateCategory,
+		isMemoLocked,
 	});
 
 	const {
@@ -162,7 +172,7 @@ function MemoFormContent() {
 
 	return (
 		<>
-			<PastMemoNotice hasMemoData={!!memoData?.created_at} />
+			{!isMemoLocked && <PastMemoNotice hasMemoData={!!memoData?.created_at} />}
 			<form className="relative flex min-h-0 flex-1 flex-col py-1">
 				<div className="mb-1 flex shrink-0 items-center gap-1">
 					{setting.isRefetchError && (
@@ -178,23 +188,27 @@ function MemoFormContent() {
 						id="memo-title-input"
 						className="h-8 min-w-0 border-none px-0 text-sm font-bold shadow-none focus-visible:ring-0"
 						placeholder={I18n.get("titlePlaceholder")}
+						readOnly={isMemoLocked}
 						{...register("title", {
 							onChange: (event) => handleTitleChange(event.target.value),
 						})}
 					/>
 					<button
 						type="button"
-						className="shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-50"
+						className={cn(
+							"shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground",
+							isMemoUiDimmed && "opacity-50",
+						)}
 						aria-label={I18n.get("memo_title_sync")}
 						title={I18n.get("memo_title_sync")}
-						disabled={!isTitleSyncAvailable}
+						disabled={!isTitleSyncAvailable || isMemoLocked}
 						onClick={handleTitleSyncClick}
 					>
 						<LinkIcon className="size-4" aria-hidden="true" />
 					</button>
 				</div>
 				<div
-					className="flex min-h-0 flex-col"
+					className="relative flex min-h-0 flex-col"
 					style={{ flexGrow: fieldRatios.memo, flexBasis: 0 }}
 				>
 					<Textarea
@@ -203,7 +217,9 @@ function MemoFormContent() {
 						layout={resizingFieldKey === null}
 						onKeyDown={handleKeyDown}
 						className="min-h-0 flex-1 resize-none text-sm outline-none"
-						placeholder={I18n.get("memo")}
+						placeholder={isMemoLocked ? "" : I18n.get("memo")}
+						readOnly={isMemoLocked}
+						aria-busy={isMemoLocked || undefined}
 						{...register("memo", {
 							onChange: (event) => {
 								handleMemoChange(event.target.value);
@@ -213,6 +229,7 @@ function MemoFormContent() {
 								const hasCategory = !!currentCategoryId;
 
 								if (
+									!isMemoLocked &&
 									hasMemoData &&
 									hasMemoText &&
 									!hasCategory &&
@@ -228,6 +245,29 @@ function MemoFormContent() {
 							textareaRef.current = e;
 						}}
 					/>
+					{isMemoError ? (
+						<div
+							// biome-ignore lint/a11y/useSemanticElements: output은 phrasing content만 담을 수 있어 버튼을 담지 못한다
+							role="status"
+							className="pointer-events-none absolute left-3 top-2 flex items-center gap-2 text-xs text-destructive"
+						>
+							{I18n.get("memo_load_error")}
+							<button
+								type="button"
+								className="pointer-events-auto underline"
+								onClick={() => void refetchMemo()}
+							>
+								{I18n.get("retry")}
+							</button>
+						</div>
+					) : (
+						isMemoLoadingVisible && (
+							<output className="pointer-events-none absolute left-3 top-2 flex items-center gap-1 text-xs text-muted-foreground">
+								<Loader2Icon size={12} className="animate-spin" />
+								{I18n.get("memo_loading")}
+							</output>
+						)
+					)}
 				</div>
 				{showImpression && (
 					<>
@@ -251,7 +291,11 @@ function MemoFormContent() {
 								// 드래그 중에는 framer-motion 레이아웃 애니메이션이 매 프레임 다시 시작돼 핸들을 따라오지 못한다.
 								layout={resizingFieldKey === null}
 								className="min-h-0 flex-1 resize-none text-sm outline-none"
-								placeholder={I18n.get("impressionPlaceholder")}
+								placeholder={
+									isMemoLocked ? "" : I18n.get("impressionPlaceholder")
+								}
+								readOnly={isMemoLocked}
+								aria-busy={isMemoLocked || undefined}
 								{...register("impression", {
 									onChange: (event) =>
 										handleImpressionChange(event.target.value),
@@ -284,7 +328,11 @@ function MemoFormContent() {
 								// 드래그 중에는 framer-motion 레이아웃 애니메이션이 매 프레임 다시 시작돼 핸들을 따라오지 못한다.
 								layout={resizingFieldKey === null}
 								className="min-h-0 flex-1 resize-none text-sm outline-none"
-								placeholder={I18n.get("actionItemPlaceholder")}
+								placeholder={
+									isMemoLocked ? "" : I18n.get("actionItemPlaceholder")
+								}
+								readOnly={isMemoLocked}
+								aria-busy={isMemoLocked || undefined}
 								{...register("actionItem", {
 									onChange: (event) =>
 										handleActionItemChange(event.target.value),
@@ -298,6 +346,8 @@ function MemoFormContent() {
 						<MemoStatusToggle
 							label={I18n.get("wish_list")}
 							isOn={!!memoData?.isWish}
+							isDisabled={isMemoLocked}
+							isDimmed={isMemoUiDimmed}
 							onClick={() => handleMemoStatusClick("isWish")}
 						>
 							<HeartIcon
@@ -312,6 +362,8 @@ function MemoFormContent() {
 						<MemoStatusToggle
 							label={I18n.get("important_memo")}
 							isOn={!!memoData?.isStar}
+							isDisabled={isMemoLocked}
+							isDimmed={isMemoUiDimmed}
 							onClick={() => handleMemoStatusClick("isStar")}
 						>
 							<StarIcon
@@ -324,6 +376,8 @@ function MemoFormContent() {
 						<MemoStatusToggle
 							label={I18n.get("reading_memo")}
 							isOn={!!memoData?.isReading}
+							isDisabled={isMemoLocked}
+							isDimmed={isMemoUiDimmed}
 							onClick={() => handleMemoStatusClick("isReading")}
 						>
 							<BookOpenIcon
@@ -331,7 +385,9 @@ function MemoFormContent() {
 								className={cn({ "text-emerald-500": memoData?.isReading })}
 							/>
 						</MemoStatusToggle>
-						<SaveStatus isSaving={isSaving} memo={watch("memo")} />
+						{!isMemoLocked && (
+							<SaveStatus isSaving={isSaving} memo={watch("memo")} />
+						)}
 					</div>
 					<div className="flex items-center gap-2">
 						{currentCategory ? (
@@ -340,6 +396,8 @@ function MemoFormContent() {
 								badgeButtonRef={categoryBadgeButtonRef}
 								onBadgeButtonClick={handleCategoryButtonClick}
 								onRemoveButtonClick={handleCategoryRemoveClick}
+								isDisabled={isMemoLocked}
+								isDimmed={isMemoUiDimmed}
 							/>
 						) : isSuggestingCategory ? (
 							// 추천 중에는 칩 자리를 대신해, 곧 카테고리가 붙는다는 걸 같은 자리에서 보여 준다.
@@ -357,6 +415,8 @@ function MemoFormContent() {
 							<CategoryAddChip
 								chipRef={categoryAddChipRef}
 								onChipClick={handleCategoryButtonClick}
+								isDisabled={isMemoLocked}
+								isDimmed={isMemoUiDimmed}
 							/>
 						)}
 					</div>
@@ -410,6 +470,10 @@ interface IFMemoStatusToggleProps {
 	label: string;
 	/** 켜져 있는지. aria-pressed 로 전달해 토글임을 알린다 */
 	isOn: boolean;
+	/** 메모 조회가 끝나지 않아 눌러도 반응하지 않아야 하는지 */
+	isDisabled?: boolean;
+	/** 잠금이 눈에 띄게 오래 지속돼 흐리게 보여줄지 */
+	isDimmed?: boolean;
 	onClick: () => void;
 	children: React.ReactNode;
 }
@@ -424,6 +488,8 @@ interface IFMemoStatusToggleProps {
 function MemoStatusToggle({
 	label,
 	isOn,
+	isDisabled,
+	isDimmed,
 	onClick,
 	children,
 }: IFMemoStatusToggleProps) {
@@ -432,10 +498,37 @@ function MemoStatusToggle({
 			type="button"
 			aria-label={label}
 			aria-pressed={isOn}
+			disabled={isDisabled}
 			onClick={onClick}
-			className="focus-visible:ring-ring rounded-sm transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-1 active:scale-95"
+			className={cn(
+				"focus-visible:ring-ring rounded-sm transition-transform focus-visible:outline-none focus-visible:ring-1",
+				isDisabled ? "cursor-default" : "hover:scale-110 active:scale-95",
+				isDimmed && "opacity-50",
+			)}
 		>
 			{children}
 		</button>
 	);
+}
+
+/**
+ * 값이 켜진 채 일정 시간 이상 지속될 때만 true로 바뀌는 지연 플래그.
+ * @description 로딩·잠금 표시가 아주 짧게 스쳐 지나가며 깜빡이는 것을 막는다.
+ * 값이 꺼지면 지연 없이 즉시 false로 돌아간다.
+ */
+function useDelayedFlag(flag: boolean, delayMs: number) {
+	const [isDelayedFlagOn, setIsDelayedFlagOn] = useState(false);
+
+	useEffect(() => {
+		if (!flag) {
+			setIsDelayedFlagOn(false);
+			return;
+		}
+
+		const timerId = setTimeout(() => setIsDelayedFlagOn(true), delayMs);
+
+		return () => clearTimeout(timerId);
+	}, [flag, delayMs]);
+
+	return isDelayedFlagOn;
 }

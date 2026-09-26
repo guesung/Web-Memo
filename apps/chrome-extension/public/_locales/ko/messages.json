@@ -224,6 +224,12 @@
 	"retry": {
 		"message": "다시 시도"
 	},
+	"memo_loading": {
+		"message": "메모 불러오는 중..."
+	},
+	"memo_load_error": {
+		"message": "메모를 불러오지 못했어요."
+	},
 	"show_impression_setting": {
 		"message": "느낀 점 입력란 표시"
 	},

@@ -4,7 +4,7 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { CONFIG } from "@web-memo/env";
 import { cn } from "@web-memo/ui";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useReducedMotion } from "framer-motion";
 import {
 	BarChart3,
 	FolderOpen,
@@ -138,23 +138,34 @@ export default function InteractiveDemo({
 				</div>
 
 				<div className="relative aspect-[16/9] bg-muted">
-					<AnimatePresence mode="wait">
-						<motion.div
-							key={activeTab.id}
-							initial={{ opacity: prefersReducedMotion ? 1 : 0 }}
-							animate={{ opacity: 1 }}
-							exit={{ opacity: prefersReducedMotion ? 1 : 0 }}
-							transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
-							className="absolute inset-0"
-						>
-							<Image
-								src={`/images/pngs/introduction/${lng}/${activeTab.imageIndex}.png`}
-								alt={t(`introduce.demo.tab_${activeTab.id}`)}
-								fill
-								className="object-contain"
-							/>
-						</motion.div>
-					</AnimatePresence>
+					{DEMO_TABS.map((tab, index) => {
+						const isActive = activeTabIndex === index;
+
+						// 비활성 슬라이드는 페이드 시간만큼 늦게 사라져, 새 슬라이드가 덮이는 동안 배경이 비치지 않는다
+						return (
+							<div
+								key={tab.id}
+								aria-hidden={!isActive}
+								className={cn(
+									"absolute inset-0",
+									isActive ? "z-10 opacity-100" : "opacity-0",
+									!prefersReducedMotion &&
+										(isActive
+											? "transition-opacity duration-300"
+											: "transition-opacity duration-0 delay-300"),
+								)}
+							>
+								<Image
+									src={`/images/pngs/introduction/${lng}/${tab.imageIndex}.png`}
+									alt={t(`introduce.demo.tab_${tab.id}`)}
+									fill
+									priority={index === 0}
+									loading="eager"
+									className="object-contain"
+								/>
+							</div>
+						);
+					})}
 				</div>
 
 				<div className="border-t border-border p-4">

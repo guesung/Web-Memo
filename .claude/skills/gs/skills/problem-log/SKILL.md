@@ -26,7 +26,7 @@ argument-hint: "[문제 요약] [--work-card <업무 로그 페이지 URL>]"
 - 점검 범위는 **그 스킬이 도는 동안 일어난 일 전부**다. 하위 에이전트(`gs:backend-dev`·`gs:frontend-dev`·`gs:qa-verifier`)가 반환한 막힌 지점·재시도·빌드 실패도 포함한다.
 - 후보가 있으면 `--work-card <페이지 URL>`(작업카드가 있을 때)을 붙여 ②로 간다. 승인 규칙은 그대로다 — 한 건씩, 전문으로.
 - 후보가 없으면 `문제 해결 기록: 없음` 한 줄을 출력한다. 대화 중 스스로 호출할 때와 달리 여기서는 점검했다는 흔적을 남긴다 — 점검을 빠뜨렸는지 사람이 볼 수 있어야 한다.
-- cashwalk 레포 작업(`/gs:local-setup` 등)은 `/nudge:problem-log`의 같은 규칙을 따른다.
+- cashwalk 레포 작업(`/common:local-setup` 등)은 `/nudge:problem-log`의 같은 규칙을 따른다.
 
 ## 저장소 — 노션 "개발 위키 DB" (guesung, `notion-home` MCP)
 

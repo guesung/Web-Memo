@@ -29,12 +29,15 @@ interface SaveMemoOptions extends Partial<MemoInput> {
 interface UseMemoFormProps {
 	onSaveSuccess?: (memoInput: MemoInput) => void;
 	selectedMemo?: Database["memo"]["Tables"]["memo"]["Row"];
+	/** 메모 후보 조회가 끝나지 않았거나 데이터 없이 실패했는지. 켜져 있으면 저장·토글·카테고리 변경을 보내지 않는다 */
+	isMemoLocked?: boolean;
 }
 
 /** 선택한 메모의 폼 값과 저장 순서를 관리한다. */
 export default function useMemoForm({
 	onSaveSuccess,
 	selectedMemo,
+	isMemoLocked = false,
 }: UseMemoFormProps = {}) {
 	const { setValue, getValues } = useFormContext<MemoInput>();
 	const { debounce, abortDebounce } = useDebounce();
@@ -42,28 +45,16 @@ export default function useMemoForm({
 		useDebounce();
 	const { data: tab } = useTabQuery();
 	const { data: supabaseClient } = useSupabaseClientQuery();
-	// Suspense로 읽으면 조회를 기다리는 동안 폼 전체가 스켈레톤으로 바뀐다. 잠긴 폼을 보여 주려고 useQuery로 읽는다.
-	const {
-		data: memoQueryData,
-		isPending: isMemoPending,
-		isError: isMemoQueryError,
-		isFetching: isMemoFetching,
-		refetch: refetchMemo,
-	} = useQuery({
+	// Suspense로 읽으면 조회를 기다리는 동안 폼 전체가 스켈레톤으로 바뀐다. 잠금 판단은 MemoSection이 맡는다.
+	const { data: memoQueryData, refetch: refetchMemo } = useQuery({
 		...memoQueryOptions({ supabaseClient, url: tab?.url ?? "" }),
 		// MemoSection이 같은 키를 이미 prefetch했으므로 마운트 때 한 번 더 조회하지 않는다.
 		refetchOnMount: false,
 	});
 	const onlyMemo =
 		memoQueryData?.data?.length === 1 ? memoQueryData.data[0] : undefined;
-	const memoData = selectedMemo ?? onlyMemo;
-	// 응답의 error도 실패로 본다. throw된 오류는 캐시 데이터가 있으면 잠그지 않는다.
-	const hasMemoResponseError = Boolean(memoQueryData?.error);
-	// 다시 시도로 재조회 중이면 실패가 아니라 대기다. 잠금은 유지하고 실패 문구 대신 로딩을 보여 준다.
-	const isMemoError =
-		!isMemoFetching &&
-		(hasMemoResponseError || (isMemoQueryError && !memoQueryData));
-	const isMemoLocked = isMemoPending || hasMemoResponseError || isMemoError;
+	// 잠긴 동안에는 캐시에 남은 메모도 편집 대상으로 삼지 않는다.
+	const memoData = isMemoLocked ? undefined : (selectedMemo ?? onlyMemo);
 	const titleSync = useMemoTitleSync({
 		onTitleUpdate: (title) => setValue("title", title),
 		initialSavedTitle: memoData?.title,
@@ -400,11 +391,6 @@ export default function useMemoForm({
 
 	return {
 		memoData,
-		/** 메모 조회가 아직 없거나(대기) 캐시 없이 실패한 상태. 켜져 있으면 편집·저장을 막는다. */
-		isMemoLocked,
-		/** 캐시 없이 조회가 실패했는지. 다시 시도 UI를 보여줄 때 쓴다. */
-		isMemoError,
-		refetchMemo,
 		/** 저장 중인 편집 대상을 바꾸지 않기 위한 내부 상태. */
 		isWritePending,
 		saveBeforeSwitch,

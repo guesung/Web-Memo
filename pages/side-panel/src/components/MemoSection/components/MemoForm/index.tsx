@@ -39,6 +39,9 @@ function MemoFormContent({
 	selectedMemo,
 	onOtherMemoClick,
 	isSelectedMemoMissing,
+	isMemoLocked = false,
+	isMemoLoadFailed = false,
+	onMemoRetryClick,
 }: IFMemoFormProps) {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const [isSwitching, setIsSwitching] = useState(false);
@@ -75,9 +78,6 @@ function MemoFormContent({
 
 	const {
 		memoData,
-		isMemoLocked,
-		isMemoError,
-		refetchMemo,
 		saveStatus,
 		handleSaveRetryClick,
 		isWritePending,
@@ -88,13 +88,13 @@ function MemoFormContent({
 		handleActionItemChange,
 		updateCategory,
 		toggleMemoStatus,
-	} = useMemoForm({ selectedMemo });
+	} = useMemoForm({ selectedMemo, isMemoLocked });
 	// 겉모습(로딩 문구·버튼 흐림)만 200ms 지연시킨다. 편집·저장 차단은 isMemoLocked로 즉시 적용된다.
 	const isMemoLoadingVisible = useDelayedFlag(
-		isMemoLocked && !isMemoError,
+		isMemoLocked && !isMemoLoadFailed,
 		200,
 	);
-	const isMemoUiDimmed = isMemoError || isMemoLoadingVisible;
+	const isMemoUiDimmed = isMemoLoadFailed || isMemoLoadingVisible;
 
 	const handleOtherMemoClick = async () => {
 		if (!onOtherMemoClick || isMemoLocked || isWritePending || isSwitching) {
@@ -291,7 +291,7 @@ function MemoFormContent({
 							textareaRef.current = e;
 						}}
 					/>
-					{isMemoError ? (
+					{isMemoLoadFailed ? (
 						<div
 							// biome-ignore lint/a11y/useSemanticElements: output은 phrasing content만 담을 수 있어 버튼을 담지 못한다
 							role="status"
@@ -301,7 +301,7 @@ function MemoFormContent({
 							<button
 								type="button"
 								className="pointer-events-auto underline"
-								onClick={() => void refetchMemo()}
+								onClick={() => void onMemoRetryClick?.()}
 							>
 								{I18n.get("retry")}
 							</button>
@@ -506,6 +506,9 @@ function MemoForm({
 	selectedMemo,
 	onOtherMemoClick,
 	isSelectedMemoMissing,
+	isMemoLocked,
+	isMemoLoadFailed,
+	onMemoRetryClick,
 }: IFMemoFormProps) {
 	const form = useForm<MemoInput>({
 		shouldUnregister: false,
@@ -527,6 +530,9 @@ function MemoForm({
 				selectedMemo={selectedMemo}
 				onOtherMemoClick={onOtherMemoClick}
 				isSelectedMemoMissing={isSelectedMemoMissing}
+				isMemoLocked={isMemoLocked}
+				isMemoLoadFailed={isMemoLoadFailed}
+				onMemoRetryClick={onMemoRetryClick}
 			/>
 		</FormProvider>
 	);
@@ -539,6 +545,12 @@ interface IFMemoFormProps {
 	selectedMemo?: Database["memo"]["Tables"]["memo"]["Row"];
 	isSelectedMemoMissing?: boolean;
 	onOtherMemoClick?: (draft?: MemoInput) => void;
+	/** 메모 후보 조회가 대기 중이거나 데이터 없이 실패해 편집·저장을 막아야 하는지 */
+	isMemoLocked?: boolean;
+	/** 재조회 중이 아니면서 메모 후보 조회가 데이터 없이 실패했는지. 실패 문구와 다시 시도 버튼을 보여 준다 */
+	isMemoLoadFailed?: boolean;
+	/** 실패 문구 옆 다시 시도 버튼을 눌렀을 때 메모 후보를 다시 조회한다 */
+	onMemoRetryClick?: () => void | Promise<void>;
 }
 
 interface IFMemoStatusToggleProps {

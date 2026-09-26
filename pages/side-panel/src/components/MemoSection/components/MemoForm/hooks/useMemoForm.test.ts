@@ -14,9 +14,7 @@ const mocks = vi.hoisted(() => ({
 	values: {} as Record<string, unknown>,
 	upsert: vi.fn(),
 	patch: vi.fn(),
-	isMemoCacheSynced: true,
-	// 기본은 현재 mocks.memo를 즉시 돌려준다. 대기 상태를 흉내 내려면
-	// 개별 테스트에서 이 값을 절대 resolve되지 않는 Promise로 덮어쓴다.
+	isMemoLocked: false,
 	memoQueryImpl: vi.fn(
 		async (): Promise<{
 			data: unknown[] | null;
@@ -58,18 +56,15 @@ let queryClient: QueryClient;
 let form: ReturnType<typeof useMemoForm>;
 let refreshTitle: () => Promise<void>;
 const TestHook = () => {
-	form = useMemoForm();
+	form = useMemoForm({ isMemoLocked: mocks.isMemoLocked });
 	return null;
 };
 const render = async () => {
 	// 테스트가 mocks.memo를 바꾸면 낙관적 캐시 갱신처럼 조회 캐시에도 바로 반영한다.
-	// 대기·실패를 흉내 내는 테스트는 isMemoCacheSynced를 꺼서 queryFn 결과만 쓰게 한다.
-	if (mocks.isMemoCacheSynced) {
-		queryClient.setQueryData(["test-memo", mocks.tab.url], {
-			data: mocks.memo ? [mocks.memo] : [],
-			error: null,
-		});
-	}
+	queryClient.setQueryData(["test-memo", mocks.tab.url], {
+		data: mocks.memo ? [mocks.memo] : [],
+		error: null,
+	});
 	await act(async () =>
 		root.render(
 			createElement(
@@ -98,7 +93,7 @@ beforeEach(() => {
 	mocks.tab = { id: 1, url: "https://example.com/a", title: "A" };
 	mocks.memo = { id: 1, title: "A" };
 	mocks.values = {};
-	mocks.isMemoCacheSynced = true;
+	mocks.isMemoLocked = false;
 	mocks.patch.mockReset();
 	mocks.upsert
 		.mockReset()
@@ -194,93 +189,59 @@ it("저장 전 메모는 폼 값만 바꾸고 patch하지 않는다", async () =
 	expect(mocks.patch).not.toHaveBeenCalled();
 });
 
-it("메모 조회가 끝나지 않으면 저장·토글·카테고리 변경 요청을 보내지 않는다", async () => {
-	mocks.isMemoCacheSynced = false;
-	mocks.memoQueryImpl.mockImplementation(() => new Promise(() => {}));
+it("메모 후보가 잠겨 있으면 저장·토글·카테고리 변경·전환 전 저장 요청을 보내지 않는다", async () => {
+	mocks.isMemoLocked = true;
 	await render();
 
-	expect(form.isMemoLocked).toBe(true);
-
+	let isSaved = true;
 	await act(async () => {
-		await form.saveMemo({ memo: "잠긴 동안 입력" });
+		isSaved = await form.saveMemo({ memo: "잠긴 동안 입력" });
 	});
+	expect(isSaved).toBe(false);
 	expect(mocks.upsert).not.toHaveBeenCalled();
 
+	let toggledValue: boolean | null = true;
 	await act(async () => {
-		await form.toggleMemoStatus("isWish");
+		toggledValue = await form.toggleMemoStatus("isWish");
 	});
+	expect(toggledValue).toBeNull();
 	expect(mocks.upsert).not.toHaveBeenCalled();
 
 	await act(async () => form.updateCategory(3, "button"));
 	expect(mocks.patch).not.toHaveBeenCalled();
-});
-
-it("조회 응답에 error가 담겨 오면 실패로 보고 잠근 채 저장 요청을 보내지 않는다", async () => {
-	mocks.isMemoCacheSynced = false;
-	mocks.memoQueryImpl.mockImplementation(async () => ({
-		data: null,
-		error: { message: "Internal Server Error" },
-	}));
-	await render();
-	// React Query는 조회 결과를 setTimeout(0)으로 모아 알린다. 가짜 타이머를 흘려 결과를 반영한다.
-	await act(async () => {
-		await vi.advanceTimersByTimeAsync(0);
-	});
-
-	expect(form.isMemoError).toBe(true);
-	expect(form.isMemoLocked).toBe(true);
+	expect(mocks.values.categoryId).toBeNull();
 
 	await act(async () => {
-		await form.saveMemo({ memo: "실패 뒤 입력" });
+		isSaved = await form.saveBeforeSwitch();
 	});
+	expect(isSaved).toBe(false);
 	expect(mocks.upsert).not.toHaveBeenCalled();
 });
 
+it("잠긴 동안에는 캐시에 남은 메모를 편집 대상으로 삼지 않는다", async () => {
+	mocks.isMemoLocked = true;
+	mocks.memo = { id: 1, title: "A", memo: "캐시에 남은 본문" };
+	await render();
+
+	expect(form.memoData).toBeUndefined();
+	expect(mocks.values.memo).not.toBe("캐시에 남은 본문");
+});
+
 it("조회가 늦게 도착해도 저장된 제목으로 바꾼다", async () => {
-	let resolveMemo: (value: { data: unknown[] | null; error: null }) => void =
-		() => {};
+	mocks.isMemoLocked = true;
 	mocks.memo = { id: 1, title: "저장된 제목" };
-	mocks.isMemoCacheSynced = false;
-	mocks.memoQueryImpl.mockImplementation(
-		() =>
-			new Promise((resolve) => {
-				resolveMemo = resolve;
-			}),
-	);
 	await render();
 	await act(async () => {
 		await vi.advanceTimersByTimeAsync(0);
 	});
 	expect(mocks.values.title).toBe("A");
 
+	mocks.isMemoLocked = false;
+	await render();
 	await act(async () => {
-		resolveMemo({ data: [mocks.memo], error: null });
 		await vi.advanceTimersByTimeAsync(0);
 	});
 	expect(mocks.values.title).toBe("저장된 제목");
-});
-
-it("실패 뒤 다시 시도하는 동안에는 실패가 아니라 대기로 보고 잠금을 유지한다", async () => {
-	mocks.isMemoCacheSynced = false;
-	mocks.memoQueryImpl.mockImplementation(async () => ({
-		data: null,
-		error: { message: "Internal Server Error" },
-	}));
-	await render();
-	// React Query는 조회 결과를 setTimeout(0)으로 모아 알린다. 가짜 타이머를 흘려 결과를 반영한다.
-	await act(async () => {
-		await vi.advanceTimersByTimeAsync(0);
-	});
-	expect(form.isMemoError).toBe(true);
-
-	mocks.memoQueryImpl.mockImplementation(() => new Promise(() => {}));
-	await act(async () => {
-		void form.refetchMemo();
-		await vi.advanceTimersByTimeAsync(0);
-	});
-
-	expect(form.isMemoError).toBe(false);
-	expect(form.isMemoLocked).toBe(true);
 });
 
 it("저장된 메모가 없으면 empty이고, 저장이 성공하면 조용히 saved로 바뀐다", async () => {

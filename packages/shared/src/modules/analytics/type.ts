@@ -169,8 +169,11 @@ export type TAnalyticsEvent =
 	| {
 			name: "memo_offline_sync_result";
 			params: {
-				/** flush를 부른 계기. mount는 패널 열기, online은 연결 복구, retry_click은 '다시 시도' 클릭 */
-				trigger: "mount" | "online" | "retry_click";
+				/**
+				 * flush를 부른 계기. mount는 패널 열기, online은 연결 복구, retry_click은 '다시 시도' 클릭,
+				 * enqueue는 온라인 상태에서 대기 항목이 막 생겨(이미 대기 중이거나 네트워크 오류 직후) 바로 도는 경우
+				 */
+				trigger: "mount" | "online" | "retry_click" | "enqueue";
 				synced_count: number;
 				conflict_count: number;
 				has_other_error: boolean;

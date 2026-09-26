@@ -20,12 +20,21 @@ vi.mock("@web-memo/shared/utils", () => ({
 }));
 vi.mock("../utils/offlineMemoQueue", () => ({
 	flushOfflineMemoQueue: (...args: unknown[]) => mocks.flush(...args),
+	OFFLINE_MEMO_QUEUE_STORAGE_KEY: "offlineMemoQueue",
 }));
 
 let root: Root;
 let queryClient: QueryClient;
 let hookResult: ReturnType<typeof useOfflineMemoSync>;
 const onConflict = vi.fn();
+let storageChangeListeners: Array<
+	(changes: Record<string, unknown>, areaName: string) => void
+> = [];
+const fireStorageChange = (areaName = "local") => {
+	for (const listener of storageChangeListeners) {
+		listener({ offlineMemoQueue: {} }, areaName);
+	}
+};
 
 const TestHook = ({ userId }: { userId?: string }) => {
 	hookResult = useOfflineMemoSync({ userId, onConflict });
@@ -54,6 +63,31 @@ beforeEach(() => {
 	onConflict.mockReset();
 	mocks.trackEvent.mockReset().mockResolvedValue(undefined);
 	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+	storageChangeListeners = [];
+	vi.stubGlobal("chrome", {
+		storage: {
+			onChanged: {
+				addListener: (
+					listener: (
+						changes: Record<string, unknown>,
+						areaName: string,
+					) => void,
+				) => {
+					storageChangeListeners.push(listener);
+				},
+				removeListener: (
+					listener: (
+						changes: Record<string, unknown>,
+						areaName: string,
+					) => void,
+				) => {
+					storageChangeListeners = storageChangeListeners.filter(
+						(existing) => existing !== listener,
+					);
+				},
+			},
+		},
+	});
 	queryClient = new QueryClient();
 	document.body.innerHTML = "<div id='root'></div>";
 	root = createRoot(document.getElementById("root") as HTMLElement);
@@ -163,4 +197,55 @@ it("retrySync를 부르면 다시 flush하고 결과를 retry_click으로 기록
 			has_other_error: false,
 		},
 	});
+});
+
+it("온라인 상태에서 대기열이 바뀌면 곧바로 flush한다", async () => {
+	mocks.flush.mockResolvedValue({
+		conflicts: [],
+		syncedCount: 1,
+		hasNetworkError: false,
+		hasOtherError: false,
+	});
+	vi.stubGlobal("navigator", { onLine: true });
+	await render("user-1");
+	expect(mocks.flush).toHaveBeenCalledTimes(1);
+
+	await act(async () => {
+		fireStorageChange();
+	});
+
+	expect(mocks.flush).toHaveBeenCalledTimes(2);
+	expect(mocks.trackEvent).toHaveBeenLastCalledWith({
+		name: "memo_offline_sync_result",
+		params: {
+			trigger: "enqueue",
+			synced_count: 1,
+			conflict_count: 0,
+			has_other_error: false,
+		},
+	});
+});
+
+it("오프라인 상태에서는 대기열이 바뀌어도 flush하지 않는다", async () => {
+	vi.stubGlobal("navigator", { onLine: false });
+	await render("user-1");
+	mocks.flush.mockClear();
+
+	await act(async () => {
+		fireStorageChange();
+	});
+
+	expect(mocks.flush).not.toHaveBeenCalled();
+});
+
+it("local이 아닌 영역의 변경은 무시한다", async () => {
+	vi.stubGlobal("navigator", { onLine: true });
+	await render("user-1");
+	mocks.flush.mockClear();
+
+	await act(async () => {
+		fireStorageChange("sync");
+	});
+
+	expect(mocks.flush).not.toHaveBeenCalled();
 });

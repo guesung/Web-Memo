@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import {
 	flushOfflineMemoQueue,
 	type IFOfflineMemoConflict,
+	OFFLINE_MEMO_QUEUE_STORAGE_KEY,
 } from "../utils/offlineMemoQueue";
 import useOnlineStatus from "./useOnlineStatus";
 
@@ -41,7 +42,9 @@ export default function useOfflineMemoSync({
 	const latestPropsRef = useRef({ userId, onConflict });
 	latestPropsRef.current = { userId, onConflict };
 
-	const flush = async (trigger: "mount" | "online" | "retry_click") => {
+	const flush = async (
+		trigger: "mount" | "online" | "retry_click" | "enqueue",
+	) => {
 		const { userId: currentUserId, onConflict: currentOnConflict } =
 			latestPropsRef.current;
 
@@ -108,6 +111,34 @@ export default function useOfflineMemoSync({
 
 		void flush("online");
 	}, [isOnline]);
+
+	/**
+	 * 온라인 상태에서 현재 메모에 대기 항목이 생기면(이미 대기 중이거나 네트워크 오류로 방금
+	 * 넣은 경우) 온라인 전환 이벤트 없이도 곧바로 flush를 예약한다. flush 자신이 대기열을
+	 * 지우거나 넣는 것도 같은 이벤트를 울리지만 `isFlushingRef`가 겹쳐 돌지 않게 막는다.
+	 */
+	// biome-ignore lint/correctness/useExhaustiveDependencies: 큐가 바뀔 때만 반응한다
+	useEffect(() => {
+		const handleStorageChange = (
+			changes: Record<string, chrome.storage.StorageChange>,
+			areaName: string,
+		) => {
+			if (
+				areaName !== "local" ||
+				!(OFFLINE_MEMO_QUEUE_STORAGE_KEY in changes)
+			) {
+				return;
+			}
+			if (!navigator.onLine) {
+				return;
+			}
+
+			void flush("enqueue");
+		};
+
+		chrome.storage.onChanged.addListener(handleStorageChange);
+		return () => chrome.storage.onChanged.removeListener(handleStorageChange);
+	}, []);
 
 	return {
 		syncStatus,

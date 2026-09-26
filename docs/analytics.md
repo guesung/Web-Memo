@@ -63,8 +63,10 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 
 사이드 패널 오프라인 저장은 `useMemoUpsertMutation`을 거치지 않고 대기열에서 `MemoService`를 직접
 부르므로 `memo_write` 계열에 잡히지 않습니다. 대기열로 빠진 저장은 `memo_offline_queued`(trigger:
-offline·network_error·already_queued), 올린 결과는 `memo_offline_sync_result`로 셉니다. 후자는
-실제로 처리한 항목이 있을 때만 찍혀 빈 대기열 flush로 부풀지 않습니다.
+offline·network_error·already_queued), 올린 결과는 `memo_offline_sync_result`(trigger: mount·
+online·retry_click·enqueue)로 셉니다. enqueue는 온라인 상태에서 대기 항목이 막 생겨(이미 대기
+중이거나 네트워크 오류 직후) online 전환 없이 곧바로 도는 flush입니다. 후자는 실제로 처리한
+항목이 있을 때만 찍혀 빈 대기열 flush로 부풀지 않습니다.
 
 로그인 완료(`login`·`sign_up`)는 서버에서 끝나 `gtag`가 닿지 않습니다. 도착한 클라이언트가
 대신 쏩니다.

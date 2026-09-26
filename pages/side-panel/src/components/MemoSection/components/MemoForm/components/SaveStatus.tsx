@@ -21,13 +21,19 @@ export default function SaveStatus({
 	saveStatus,
 	onRetryClick,
 }: SaveStatusProps) {
-	const retryButtonRef = useRef<HTMLButtonElement | null>(null);
 	const previousSaveStatusRef = useRef(saveStatus);
+	// 다시 시도 버튼이 포커스를 갖고 있었는지. 복구 시점엔 실패 분기가 이미 언마운트돼
+	// document.activeElement로는 알 수 없어 포커스·블러에서 직접 기록해 둔다.
+	const wasRetryButtonFocusedRef = useRef(false);
 	const [recoveredAnnouncement, setRecoveredAnnouncement] = useState("");
 
 	useEffect(() => {
 		const previousSaveStatus = previousSaveStatusRef.current;
 		previousSaveStatusRef.current = saveStatus;
+
+		// 상태가 바뀔 때마다 먼저 비워 둔다. 같은 문구를 다시 넣어도 빈 문자열을 거쳐야
+		// 다음 실패→복구 주기에서도 스크린 리더가 새 변경으로 인식해 다시 읽는다.
+		setRecoveredAnnouncement("");
 
 		const isRecoveredFromFailure =
 			saveStatus === "saved" &&
@@ -39,13 +45,22 @@ export default function SaveStatus({
 
 		setRecoveredAnnouncement(I18n.get("toast_saved"));
 
-		if (document.activeElement === retryButtonRef.current) {
+		if (wasRetryButtonFocusedRef.current) {
+			wasRetryButtonFocusedRef.current = false;
 			document.getElementById("memo-textarea")?.focus();
 		}
 	}, [saveStatus]);
 
+	const recoveredAnnouncementRegion = (
+		<span className="sr-only" aria-live="polite">
+			{recoveredAnnouncement}
+		</span>
+	);
+
 	if (saveStatus === "empty") {
-		return <div data-save-status={saveStatus} />;
+		return (
+			<div data-save-status={saveStatus}>{recoveredAnnouncementRegion}</div>
+		);
 	}
 
 	if (saveStatus === "failed" || saveStatus === "retrying") {
@@ -74,15 +89,21 @@ export default function SaveStatus({
 					{I18n.get("memo_save_status_failed")}
 				</span>
 				<button
-					ref={retryButtonRef}
 					type="button"
 					className="shrink-0 rounded-sm text-xs text-destructive underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
 					disabled={isRetrying}
 					aria-busy={isRetrying}
 					onClick={onRetryClick}
+					onFocus={() => {
+						wasRetryButtonFocusedRef.current = true;
+					}}
+					onBlur={() => {
+						wasRetryButtonFocusedRef.current = false;
+					}}
 				>
 					{I18n.get("retry")}
 				</button>
+				{recoveredAnnouncementRegion}
 			</div>
 		);
 	}
@@ -112,11 +133,7 @@ export default function SaveStatus({
 					<span className="sr-only">{I18n.get("memo_save_status_saved")}</span>
 				</>
 			)}
-			{recoveredAnnouncement && (
-				<span className="sr-only" aria-live="polite">
-					{recoveredAnnouncement}
-				</span>
-			)}
+			{recoveredAnnouncementRegion}
 		</div>
 	);
 }

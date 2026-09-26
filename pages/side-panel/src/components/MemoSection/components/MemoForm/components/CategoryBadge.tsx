@@ -74,7 +74,7 @@ const CategoryBadge = (props: IFCategoryBadgeProps) => {
 				title={removeTitle}
 				disabled={isDisabled}
 				onClick={handleRemoveButtonClick}
-				className="hover:text-destructive focus-visible:ring-ring ml-1 rounded-sm focus-visible:outline-none focus-visible:ring-1 disabled:cursor-not-allowed disabled:opacity-50"
+				className="enabled:hover:text-destructive focus-visible:ring-ring ml-1 rounded-sm focus-visible:outline-none focus-visible:ring-1 disabled:cursor-not-allowed disabled:opacity-50"
 			>
 				<XIcon size={12} aria-hidden="true" />
 			</button>

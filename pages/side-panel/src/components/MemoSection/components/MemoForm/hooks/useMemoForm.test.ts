@@ -265,3 +265,21 @@ it("조회가 늦게 도착해도 저장된 제목으로 바꾼다", async () =>
 	});
 	expect(mocks.values.title).toBe("저장된 제목");
 });
+
+it("실패 뒤 다시 시도하는 동안에는 실패가 아니라 대기로 보고 잠금을 유지한다", async () => {
+	mocks.memoQueryImpl.mockImplementation(async () => ({
+		data: null,
+		error: { message: "Internal Server Error" },
+	}));
+	await render();
+	expect(form.isMemoError).toBe(true);
+
+	mocks.memoQueryImpl.mockImplementation(() => new Promise(() => {}));
+	await act(async () => {
+		void form.refetchMemo();
+		await vi.advanceTimersByTimeAsync(0);
+	});
+
+	expect(form.isMemoError).toBe(false);
+	expect(form.isMemoLocked).toBe(true);
+});

@@ -45,6 +45,7 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 		data: memoQueryData,
 		isPending: isMemoPending,
 		isError: isMemoQueryError,
+		isFetching: isMemoFetching,
 		refetch: refetchMemo,
 	} = useQuery({
 		...memoQueryOptions({ supabaseClient, url: tab?.url }),
@@ -54,9 +55,12 @@ export default function useMemoForm({ onSaveSuccess }: UseMemoFormProps = {}) {
 	const memoData = memoQueryData?.data?.at(-1);
 	// supabase-js는 5xx·네트워크 오류에도 throw하지 않고 `{ data: null, error }`를 돌려준다.
 	// 쿼리는 성공으로 끝나므로 응답의 error도 실패로 본다. throw된 오류는 캐시 데이터가 있으면 잠그지 않는다.
+	const hasMemoResponseError = Boolean(memoQueryData?.error);
+	// 다시 시도로 재조회 중이면 실패가 아니라 대기다. 잠금은 유지하고 실패 문구 대신 로딩을 보여 준다.
 	const isMemoError =
-		Boolean(memoQueryData?.error) || (isMemoQueryError && !memoQueryData);
-	const isMemoLocked = isMemoPending || isMemoError;
+		!isMemoFetching &&
+		(hasMemoResponseError || (isMemoQueryError && !memoQueryData));
+	const isMemoLocked = isMemoPending || hasMemoResponseError || isMemoError;
 	const titleSync = useMemoTitleSync({
 		onTitleUpdate: (title) => setValue("title", title),
 		initialSavedTitle: memoData?.title,

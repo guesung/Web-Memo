@@ -228,6 +228,6 @@ const assertNoindexBrandHref = async ({
 	);
 };
 
-/** 헤더의 서비스 이름을 가진 브랜드 링크를 반환합니다. 로고는 장식 이미지라 이름으로 찾습니다. */
+/** 헤더의 로고를 포함한 브랜드 링크를 반환합니다. */
 const getBrandLink = (page: Page) =>
-	page.locator("header").getByRole("link", { name: /^(웹 메모|Web Memo)$/ });
+	page.locator('header a:has(img[alt="logo"])');

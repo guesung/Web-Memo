@@ -39,7 +39,7 @@ permissions:
 jobs:
   audit:
     name: 주간 리팩토링 점검
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 30
     steps:
       # 최근 변경분을 git log 로 뽑으려면 이력이 필요합니다.

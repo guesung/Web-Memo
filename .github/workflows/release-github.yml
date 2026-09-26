@@ -11,7 +11,7 @@ permissions:
 jobs:
   release-new-version:
     name: Release new version when push with `v*` tag
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-26.04
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       tag: ${{ github.ref_name }}

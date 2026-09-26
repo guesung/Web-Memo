@@ -44,6 +44,7 @@ export const PRIVACY_PERMISSIONS = [
 export const PRIVACY_THIRD_PARTIES = [
 	"supabase",
 	"openai",
+	"typesafe",
 	"google_auth",
 	"google_analytics",
 	"sentry",

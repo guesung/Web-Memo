@@ -12,7 +12,7 @@
 		"splash": {
 			"image": "./assets/splash-icon.png",
 			"resizeMode": "contain",
-			"backgroundColor": "#2563EB"
+			"backgroundColor": "#5b93f0"
 		},
 		"ios": {
 			"supportsTablet": true,
@@ -31,7 +31,7 @@
 		"android": {
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/adaptive-icon.png",
-				"backgroundColor": "#2563EB"
+				"backgroundColor": "#5b93f0"
 			},
 			"softwareKeyboardLayoutMode": "resize",
 			"package": "com.webmemo.app",
@@ -59,7 +59,7 @@
 			[
 				"expo-splash-screen",
 				{
-					"backgroundColor": "#2563EB",
+					"backgroundColor": "#5b93f0",
 					"image": "./assets/splash-icon.png",
 					"imageWidth": 200
 				}

@@ -5,8 +5,7 @@ import { useOAuth } from "@/lib/auth/useOAuth";
 import { SocialLoginButton } from "./_components/SocialLoginButton";
 import type { Provider } from "./_types/provider";
 
-/** 소셜 로그인으로 웹 메모를 시작하는 화면입니다. */
-const LoginScreen = () => {
+export default function LoginScreen() {
 	const {
 		signInWithGoogle,
 		signInWithKakao,
@@ -49,7 +48,7 @@ const LoginScreen = () => {
 						웹 메모
 					</Text>
 					<Text className="text-sm text-gray-500 dark:text-neutral-400 text-center">
-						읽는 순간, 바로 기록해요.
+						아티클 읽으며 간편하게 메모하세요.
 					</Text>
 				</View>
 
@@ -76,6 +75,4 @@ const LoginScreen = () => {
 			</View>
 		</SafeAreaView>
 	);
-};
-
-export default LoginScreen;
+}

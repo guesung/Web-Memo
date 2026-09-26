@@ -94,7 +94,7 @@ git checkout feat/memo-search   # 작업 브랜치로 복귀
    **다른 버전…**을 누르면 대상과 리비전을 골라 배포합니다. 전체 흐름과 설정은
    [release-flow.md](release-flow.md)를 참고하세요.
    - `app` — iOS 빌드 + TestFlight 제출
-   - `extension` — 빌드 + Chrome 웹 스토어 업로드(게시는 수동)
+   - `extension` — 빌드 + Chrome 웹 스토어 업로드(심사를 통과하면 바로 게시)
    - `web` — Vercel 프로덕션 배포
 
    Slack이 막혔다면 Actions → **Release** → *Run workflow*로 같은 일을 할 수

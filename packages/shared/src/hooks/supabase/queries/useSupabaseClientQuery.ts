@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { QUERY_KEY } from "../../../constants";
 import type { MemoSupabaseClient } from "../../../types";
 import { isExtension } from "../../../utils/Environment";
@@ -28,14 +28,18 @@ export const shouldRetrySupabaseClient = (
 	return failureCount < MAX_RETRY_COUNT;
 };
 
-export default function useSupabaseClientQuery() {
-	const query = useSuspenseQuery({
+/** Supabase 클라이언트 준비의 queryKey·queryFn을 만든다. Suspense 밖에서 ensureQueryData로 확보할 때 쓴다. */
+export const supabaseClientQueryOptions = () =>
+	queryOptions({
 		queryFn: isExtension() ? getSupabaseClientExtension : getSupabaseClientWeb,
 		queryKey: QUERY_KEY.supabaseClient(),
 		staleTime: Number.POSITIVE_INFINITY,
 		gcTime: Number.POSITIVE_INFINITY,
 		retry: shouldRetrySupabaseClient,
 	});
+
+export default function useSupabaseClientQuery() {
+	const query = useSuspenseQuery(supabaseClientQueryOptions());
 
 	return {
 		...query,

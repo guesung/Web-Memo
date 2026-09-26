@@ -6,4 +6,4 @@ export { CategorySuggestion } from "./CategorySuggestion";
 export { getSaveStatus } from "./getSaveStatus";
 export { default as MemoFormSkeleton } from "./MemoFormSkeleton";
 export { default as PastMemoNotice } from "./PastMemoNotice";
-export { default as SaveStatus, type TSaveStatus } from "./SaveStatus";
+export { default as SaveStatus } from "./SaveStatus";

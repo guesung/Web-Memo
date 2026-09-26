@@ -1,124 +1,119 @@
 import { I18n } from "@web-memo/shared/utils/extension";
-import { cn } from "@web-memo/ui";
 import { CheckIcon, LightbulbIcon, Loader2Icon, XIcon } from "lucide-react";
-import { useEffect, useRef } from "react";
+import {
+	type FocusEvent,
+	type KeyboardEvent,
+	type MouseEvent,
+	useRef,
+} from "react";
+import type { IFCategorySuggestion } from "../hooks/requestCategorySuggestion";
 
-export function CategorySuggestion({
-	isLoading,
-	suggestion,
-	onAccept,
-	onDismiss,
-}: CategorySuggestionProps) {
-	const containerRef = useRef<HTMLDivElement>(null);
-
-	// Handle keyboard events
-	useEffect(() => {
-		function handleKeyDown(event: KeyboardEvent) {
-			if (!suggestion) return;
-
-			if (event.key === "Escape") {
-				onDismiss();
-			} else if (
-				event.key === "Enter" &&
-				event.target === containerRef.current
-			) {
-				onAccept();
-			}
-		}
-
-		document.addEventListener("keydown", handleKeyDown);
-		return () => document.removeEventListener("keydown", handleKeyDown);
-	}, [suggestion, onAccept, onDismiss]);
-
-	// Loading state - subtle indicator
-	if (isLoading) {
-		return (
-			<output className="flex items-center gap-1 text-muted-foreground">
-				<Loader2Icon className="h-3 w-3 animate-spin" aria-hidden="true" />
-				<span className="text-xs">{I18n.get("category_suggesting")}</span>
-			</output>
-		);
-	}
-
-	// No suggestion
-	if (!suggestion) {
-		return null;
-	}
-
-	const isNewCategory = !suggestion.isExisting;
+/** 메모 하단에 기존 카테고리 또는 새 카테고리 이름을 제안합니다. */
+export const CategorySuggestion = (props: IFCategorySuggestionProps) => {
+	const isHoveredRef = useRef(false);
+	const hasFocusRef = useRef(false);
+	const isNewCategory = !props.suggestion.isExisting;
 	const labelText = isNewCategory
 		? I18n.get("category_suggestion_new")
 		: I18n.get("category_suggestion_existing");
 
+	const handleSuggestionKeyDown = (event: KeyboardEvent<HTMLOutputElement>) => {
+		if (event.key === "Escape" && !props.isAccepting) {
+			event.stopPropagation();
+			props.onDismiss();
+		}
+	};
+
+	const handleSuggestionFocus = () => {
+		hasFocusRef.current = true;
+		props.onPauseDismiss();
+	};
+
+	const handleSuggestionBlur = (event: FocusEvent<HTMLOutputElement>) => {
+		if (!event.currentTarget.contains(event.relatedTarget)) {
+			hasFocusRef.current = false;
+			if (!isHoveredRef.current) {
+				props.onResumeDismiss();
+			}
+		}
+	};
+
+	const handleSuggestionMouseEnter = () => {
+		isHoveredRef.current = true;
+		props.onPauseDismiss();
+	};
+
+	const handleSuggestionMouseLeave = (event: MouseEvent<HTMLOutputElement>) => {
+		isHoveredRef.current = false;
+		if (
+			!hasFocusRef.current &&
+			!event.currentTarget.contains(document.activeElement)
+		) {
+			props.onResumeDismiss();
+		}
+	};
+
 	return (
-		<div
-			ref={containerRef}
-			role="alert"
-			aria-live="polite"
-			aria-label={`${labelText}: ${suggestion.categoryName}`}
-			className={cn(
-				"flex items-center gap-2 rounded-md border bg-background/95 px-2 py-1 shadow-sm",
-				"animate-in fade-in slide-in-from-bottom-1 duration-200",
-			)}
+		<output
+			aria-label={`${labelText} ${props.suggestion.categoryName}`}
+			data-testid="category-suggestion"
+			className="flex min-w-0 items-center gap-1 rounded-md border bg-background p-1 text-xs"
+			onKeyDown={handleSuggestionKeyDown}
+			onFocus={handleSuggestionFocus}
+			onBlur={handleSuggestionBlur}
+			onMouseEnter={handleSuggestionMouseEnter}
+			onMouseLeave={handleSuggestionMouseLeave}
 		>
-			<LightbulbIcon className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
-
-			<div className="flex items-center gap-1 text-xs min-w-0">
-				<span className="text-muted-foreground flex-shrink-0">
-					{isNewCategory
-						? I18n.get("category_suggestion_new")
-						: I18n.get("category_suggestion_existing")}
-				</span>
-				<span
-					className="font-medium truncate max-w-[120px]"
-					title={suggestion.categoryName}
-				>
-					{suggestion.categoryName}
-				</span>
-			</div>
-
-			<div className="flex items-center gap-0.5 flex-shrink-0">
-				<button
-					type="button"
-					onClick={onAccept}
-					className={cn(
-						"rounded p-0.5 transition-colors",
-						"hover:bg-green-500/15 hover:text-green-700 dark:hover:text-green-400",
-						"focus:ring-1 focus:ring-green-500 focus:outline-none",
-					)}
-					aria-label={I18n.get("category_suggestion_accept")}
-					title={I18n.get("category_suggestion_accept")}
-				>
-					<CheckIcon className="h-3.5 w-3.5" />
-				</button>
-				<button
-					type="button"
-					onClick={onDismiss}
-					className={cn(
-						"rounded p-0.5 transition-colors",
-						"hover:bg-destructive/15 hover:text-destructive",
-						"focus:ring-destructive focus:ring-1 focus:outline-none",
-					)}
-					aria-label={I18n.get("category_suggestion_dismiss")}
-					title={I18n.get("category_suggestion_dismiss")}
-				>
-					<XIcon className="h-3.5 w-3.5" />
-				</button>
-			</div>
-		</div>
+			<LightbulbIcon
+				className="size-3.5 shrink-0 text-muted-foreground"
+				aria-hidden="true"
+			/>
+			<span className="shrink-0 text-muted-foreground">{labelText}</span>
+			<span
+				className="max-w-32 truncate font-medium"
+				title={props.suggestion.categoryName}
+			>
+				{props.suggestion.categoryName}
+			</span>
+			<button
+				type="button"
+				data-testid="category-suggestion-accept"
+				disabled={props.isAccepting}
+				onClick={props.onAccept}
+				aria-label={
+					isNewCategory
+						? I18n.get("category_suggestion_create")
+						: I18n.get("category_suggestion_accept")
+				}
+				className="flex shrink-0 items-center gap-1 rounded p-1 hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
+			>
+				{props.isAccepting ? (
+					<Loader2Icon className="size-3.5 animate-spin" aria-hidden="true" />
+				) : isNewCategory ? (
+					I18n.get("category_suggestion_create")
+				) : (
+					<CheckIcon className="size-3.5" aria-hidden="true" />
+				)}
+			</button>
+			<button
+				type="button"
+				disabled={props.isAccepting}
+				onClick={props.onDismiss}
+				aria-label={I18n.get("category_suggestion_dismiss")}
+				className="shrink-0 rounded p-1 hover:bg-accent hover:text-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
+			>
+				<XIcon className="size-3.5" aria-hidden="true" />
+			</button>
+		</output>
 	);
-}
+};
 
-interface CategorySuggestionData {
-	categoryName: string;
-	isExisting: boolean;
-	existingCategoryId: number | null;
-	confidence: number;
-}
-
-interface CategorySuggestionProps {
-	isLoading: boolean;
-	suggestion: CategorySuggestionData | null;
+/** 카테고리 제안 칩의 입력입니다. */
+interface IFCategorySuggestionProps {
+	suggestion: IFCategorySuggestion;
+	isAccepting: boolean;
 	onAccept: () => void;
 	onDismiss: () => void;
+	onPauseDismiss: () => void;
+	onResumeDismiss: () => void;
 }

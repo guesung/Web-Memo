@@ -13,15 +13,20 @@
 
 import { sign as signBuffer } from "node:crypto";
 
-import { exchangeServiceAccountToken } from "../shared/google-auth.mjs";
+import {
+	exchangeRefreshToken,
+	exchangeServiceAccountToken,
+} from "../shared/google-auth.mjs";
 import { requestJson } from "../shared/http.mjs";
 import { nowInSeconds, toBase64Url } from "../shared/jwt.mjs";
 import {
 	readAppConfig,
 	readAscIdentifiers,
+	readChromeWebStorePublisherId,
 	readExtensionId,
 	readWebUrl,
 } from "../shared/repo-versions.mjs";
+import { fetchItemStatus, toItemName } from "./chrome-web-store.mjs";
 
 /**
  * App Store Connect가 요구하는 ES256 JWT.
@@ -142,9 +147,10 @@ export const fetchAndroidVersions = async ({ serviceAccountJson }) => {
 /**
  * 확장: 게시된 버전과 업로드된 초안 버전.
  *
- * cd-extension.yml은 publish: false로 올리므로 둘이 거의 항상 다릅니다.
- * "업로드는 됐는데 게시 버튼을 안 눌렀다"를 구분하는 게 이 조회의 핵심입니다.
- * 게시된 버전은 CWS API가 알려주지 않아, 크롬이 실제로 쓰는 업데이트 매니페스트에서 읽습니다.
+ * cd-extension.yml은 심사를 통과하면 바로 게시되도록 올리므로, 릴리스 직후 심사가 끝나기까지
+ * 둘이 다릅니다. "업로드는 됐는데 아직 게시 전이다"를 구분하는 게 이 조회의 핵심입니다.
+ * 초안은 v2 fetchStatus의 심사 중·게시 대기 버전이고, 게시된 버전은 인증 없이 읽을 수 있도록
+ * 크롬이 실제로 쓰는 업데이트 매니페스트에서 읽습니다.
  */
 export const fetchExtensionVersions = async ({
 	clientId,
@@ -169,33 +175,29 @@ export const fetchExtensionVersions = async ({
 		return { published, draft: { skipped: true } };
 	}
 
-	const { access_token } = await requestJson(
-		"https://oauth2.googleapis.com/token",
-		{
-			method: "POST",
-			headers: { "content-type": "application/x-www-form-urlencoded" },
-			body: new URLSearchParams({
-				client_id: clientId,
-				client_secret: clientSecret,
-				refresh_token: refreshToken,
-				grant_type: "refresh_token",
-			}),
-		},
-	);
+	const accessToken = await exchangeRefreshToken({
+		clientId,
+		clientSecret,
+		refreshToken,
+	});
+	const status = await fetchItemStatus({
+		accessToken,
+		itemName: toItemName({
+			publisherId: readChromeWebStorePublisherId(),
+			extensionId,
+		}),
+	});
 
-	const item = await requestJson(
-		`https://www.googleapis.com/chromewebstore/v1.1/items/${extensionId}?projection=DRAFT`,
-		{
-			headers: {
-				authorization: `Bearer ${access_token}`,
-				"x-goog-api-version": "2",
-			},
-		},
-	);
-
+	// 초안은 업로드했지만 아직 게시되지 않은 버전입니다. v2에서는 심사 중이거나 게시 대기인
+	// submittedItemRevisionStatus가 이에 해당하며, 대기 중인 버전이 없으면 비어 있습니다.
 	return {
 		published,
-		draft: { version: item.crxVersion ?? null, uploadState: item.uploadState },
+		draft: {
+			version:
+				status.submittedItemRevisionStatus?.distributionChannels?.[0]
+					?.crxVersion ?? null,
+			uploadState: status.lastAsyncUploadState,
+		},
 	};
 };
 

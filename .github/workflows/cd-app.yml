@@ -36,7 +36,7 @@ jobs:
           #   runner: macos-26
           #   output: build.ipa
           - platform: android
-            runner: ubuntu-24.04
+            runner: ubuntu-26.04
             output: build.aab
 
     steps:

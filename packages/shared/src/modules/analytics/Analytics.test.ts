@@ -47,6 +47,9 @@ function stubChromeStorage({
 				set: vi.fn(),
 			},
 		},
+		runtime: {
+			getManifest: vi.fn().mockReturnValue({ version: "1.2.3" }),
+		},
 	});
 }
 
@@ -163,6 +166,9 @@ describe("Analytics 환경별 동작", () => {
 					get: vi.fn().mockResolvedValue({ sessionData: null }),
 					set: vi.fn(),
 				},
+			},
+			runtime: {
+				getManifest: vi.fn().mockReturnValue({ version: "1.2.3" }),
 			},
 		});
 
@@ -378,6 +384,35 @@ describe("Analytics 환경별 동작", () => {
 		analytics.setUserId(undefined);
 
 		expect(remove).toHaveBeenCalledWith("analyticsUserId");
+	});
+
+	it("확장에서는 이벤트에 매니페스트 버전을 extension_version으로 싣는다", async () => {
+		stubChromeStorage();
+
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+
+		await analytics.trackEvent(EVENT);
+
+		const [, request] = fetchMock.mock.calls[0];
+		expect(JSON.parse(request.body).events[0].params.extension_version).toBe(
+			"1.2.3",
+		);
+	});
+
+	it("웹에서는 이벤트에 extension_version 키 자체가 없다", async () => {
+		window.gtag = gtag;
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: false,
+		});
+
+		await analytics.trackEvent(EVENT);
+
+		const [, , parameters] = gtag.mock.calls[0];
+		expect(parameters).not.toHaveProperty("extension_version");
 	});
 
 	it("웹에서는 user_id를 storage에 남기지 않는다", async () => {

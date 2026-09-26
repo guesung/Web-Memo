@@ -1,0 +1,11 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "gs",
+  "version": "0.7.0",
+  "description": "개인 프로젝트 구현 OS — 기획·디자인·프론트·백엔드 에이전트와 아이디어→기획→설계→구현→QA→PR 파이프라인",
+  "author": {
+    "name": "guesung",
+    "email": "gueit214@naver.com"
+  },
+  "skills": "./skills"
+}

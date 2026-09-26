@@ -28,7 +28,7 @@ concurrency:
 
 jobs:
   cleanup:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     # 전체 type-check + 단위 테스트를 삭제 항목 수만큼 되풀이할 수 있어 ci(15분)보다 깁니다.
     timeout-minutes: 30
     env:

@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
 	isNetworkError: vi.fn((_error: unknown) => false),
 	enqueueOfflineMemo: vi.fn(async (_item: unknown) => {}),
 	hasPendingOfflineMemo: vi.fn(async (_target: unknown) => false),
+	hasPendingOfflineItem: false,
 	trackEvent: vi.fn(async (_event: unknown) => {}),
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
@@ -41,6 +42,9 @@ vi.mock("@web-memo/shared/utils/extension", () => ({
 }));
 vi.mock("../../../../../hooks/useOnlineStatus", () => ({
 	default: () => mocks.isOnline,
+}));
+vi.mock("../../../../../hooks/usePendingOfflineMemo", () => ({
+	default: () => mocks.hasPendingOfflineItem,
 }));
 vi.mock("../../../../../utils/offlineMemoQueue", () => ({
 	enqueueOfflineMemo: (item: unknown) => mocks.enqueueOfflineMemo(item),
@@ -92,6 +96,7 @@ beforeEach(() => {
 	mocks.isNetworkError.mockReset().mockReturnValue(false);
 	mocks.enqueueOfflineMemo.mockReset().mockResolvedValue(undefined);
 	mocks.hasPendingOfflineMemo.mockReset().mockResolvedValue(false);
+	mocks.hasPendingOfflineItem = false;
 	mocks.trackEvent.mockReset().mockResolvedValue(undefined);
 	document.body.innerHTML = "<div id='root'></div>";
 	root = createRoot(document.getElementById("root") as HTMLElement);

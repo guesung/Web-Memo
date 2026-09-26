@@ -34,9 +34,9 @@ import {
 	CategoryAddChip,
 	CategoryBadge,
 	CategoryCommandPopup,
+	getSaveStatus,
 	PastMemoNotice,
 	SaveStatus,
-	type TSaveStatus,
 } from "./components";
 import {
 	type TMemoFieldKey,
@@ -52,6 +52,7 @@ function MemoFormContent({
 	isSelectedMemoMissing,
 	isSyncing = false,
 	isSyncFailed = false,
+	hasSyncNetworkError = false,
 	onRetrySync,
 }: IFMemoFormProps) {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -92,6 +93,7 @@ function MemoFormContent({
 		memoData,
 		isSaving,
 		isWritePending,
+		hasPendingOfflineItem,
 		saveBeforeSwitch,
 		handleTitleChange,
 		handleTitleSyncClick,
@@ -106,7 +108,8 @@ function MemoFormContent({
 	const saveStatus = getSaveStatus({
 		isSaving,
 		isOffline,
-		isSyncing,
+		hasPendingOfflineItem,
+		hasSyncNetworkError,
 		isSyncFailed,
 		hasMemoText: !!watch("memo"),
 	});
@@ -464,6 +467,7 @@ function MemoForm({
 	isSelectedMemoMissing,
 	isSyncing,
 	isSyncFailed,
+	hasSyncNetworkError,
 	onRetrySync,
 }: IFMemoFormProps) {
 	const form = useForm<MemoInput>({
@@ -488,6 +492,7 @@ function MemoForm({
 				isSelectedMemoMissing={isSelectedMemoMissing}
 				isSyncing={isSyncing}
 				isSyncFailed={isSyncFailed}
+				hasSyncNetworkError={hasSyncNetworkError}
 				onRetrySync={onRetrySync}
 			/>
 		</FormProvider>
@@ -495,43 +500,6 @@ function MemoForm({
 }
 
 export default MemoForm;
-
-/** 저장 표시줄 상태를 계산한다. 저장 중 > 오프라인 > 동기화 중 > 동기화 실패 > 저장됨 순으로 앞선 상태를 보여준다 */
-const getSaveStatus = ({
-	isSaving,
-	isOffline,
-	isSyncing,
-	isSyncFailed,
-	hasMemoText,
-}: {
-	isSaving: boolean;
-	isOffline: boolean;
-	isSyncing: boolean;
-	isSyncFailed: boolean;
-	hasMemoText: boolean;
-}): TSaveStatus => {
-	if (isSaving) {
-		return "saving";
-	}
-
-	if (isOffline) {
-		return hasMemoText ? "offlineSaved" : "offline";
-	}
-
-	if (isSyncing) {
-		return "syncing";
-	}
-
-	if (isSyncFailed) {
-		return "syncFailed";
-	}
-
-	if (hasMemoText) {
-		return "saved";
-	}
-
-	return null;
-};
 
 /** 선택된 메모를 편집기와 연결한다. */
 interface IFMemoFormProps {
@@ -542,6 +510,8 @@ interface IFMemoFormProps {
 	isSyncing?: boolean;
 	/** 마지막 flush가 네트워크 오류가 아닌 이유로 실패했는지. 다시 시도 버튼을 보여준다 */
 	isSyncFailed?: boolean;
+	/** 마지막 flush 시도가 네트워크 오류로 중단됐는지. 저장 표시줄이 오프라인 표시와 함께 쓴다 */
+	hasSyncNetworkError?: boolean;
 	/** 다시 시도 버튼 클릭 핸들러 */
 	onRetrySync?: () => void;
 }

@@ -36,6 +36,10 @@ export default function useOfflineMemoSync({
 	const queryClient = useQueryClient();
 	const { data: supabaseClient } = useSupabaseClientQuery();
 	const [syncStatus, setSyncStatus] = useState<TOfflineMemoSyncStatus>("idle");
+	// 마지막 flush 시도가 네트워크 오류로 중단됐는지. navigator.onLine이 아직 true인데도
+	// 요청이 네트워크 오류로 실패하는 경우(예: 캡티브 포털)를 오프라인과 구분해 표시줄에 쓴다.
+	const [lastFlushHadNetworkError, setLastFlushHadNetworkError] =
+		useState(false);
 	const isFlushingRef = useRef(false);
 	// mount·online 이펙트는 한 번만 걸리므로, 그 뒤에 바뀌는 userId·onConflict를
 	// 놓치지 않도록 최신 값을 ref로 들고 flush 안에서 읽는다.
@@ -92,6 +96,7 @@ export default function useOfflineMemoSync({
 				});
 			}
 
+			setLastFlushHadNetworkError(result.hasNetworkError);
 			setSyncStatus(result.hasOtherError ? "syncFailed" : "idle");
 		} finally {
 			isFlushingRef.current = false;
@@ -142,6 +147,8 @@ export default function useOfflineMemoSync({
 
 	return {
 		syncStatus,
+		/** 마지막 flush 시도가 네트워크 오류로 중단됐는지. 저장 표시줄이 오프라인 표시와 함께 쓴다 */
+		lastFlushHadNetworkError,
 		/** syncFailed 상태에서 사용자가 다시 시도할 때 부른다 */
 		retrySync: () => flush("retry_click"),
 	};

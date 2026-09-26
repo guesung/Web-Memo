@@ -20,6 +20,7 @@ import { getTabInfo } from "@web-memo/shared/utils/extension";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import useOnlineStatus from "../../../../../hooks/useOnlineStatus";
+import usePendingOfflineMemo from "../../../../../hooks/usePendingOfflineMemo";
 import {
 	enqueueOfflineMemo,
 	hasPendingOfflineMemo,
@@ -62,6 +63,10 @@ export default function useMemoForm({
 	const isOnline = useOnlineStatus();
 	const { user } = useSupabaseUserQuery();
 	const userId = user.data.user?.id;
+	const hasPendingOfflineItem = usePendingOfflineMemo({
+		memoId: memoData?.id,
+		url: tab?.url ?? "",
+	});
 	const titleSync = useMemoTitleSync({
 		onTitleUpdate: (title) => setValue("title", title),
 		initialSavedTitle: memoData?.title,
@@ -432,6 +437,8 @@ export default function useMemoForm({
 		saveBeforeSwitch,
 		/** 저장 표시용. 제목처럼 조용히 저장하는 변경(isSilent)에는 켜지지 않는다. */
 		isSaving: isSaveStatusVisible,
+		/** 지금 편집 중인 메모가 오프라인 대기열에 올라 있는지. 저장 표시줄이 이 값으로 상태를 고른다 */
+		hasPendingOfflineItem,
 		saveMemo,
 		handleTitleChange,
 		handleTitleSyncClick,

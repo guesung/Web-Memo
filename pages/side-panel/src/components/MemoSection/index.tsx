@@ -198,10 +198,11 @@ const AuthenticatedMemoSectionContent = () => {
 		});
 	};
 
-	const { syncStatus, retrySync } = useOfflineMemoSync({
-		userId,
-		onConflict: handleOfflineMemoConflict,
-	});
+	const { syncStatus, lastFlushHadNetworkError, retrySync } =
+		useOfflineMemoSync({
+			userId,
+			onConflict: handleOfflineMemoConflict,
+		});
 	const isSyncing = syncStatus === "syncing";
 	const isSyncFailed = syncStatus === "syncFailed";
 
@@ -301,6 +302,7 @@ const AuthenticatedMemoSectionContent = () => {
 					}
 					isSyncing={isSyncing}
 					isSyncFailed={isSyncFailed}
+					hasSyncNetworkError={lastFlushHadNetworkError}
 					onRetrySync={retrySync}
 				/>
 			)}

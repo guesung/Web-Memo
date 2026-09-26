@@ -33,7 +33,8 @@ vi.mock("../../../utils", () => ({
 		updateMemo = updateMemo;
 		insertMemo = insertMemo;
 	},
-	normalizeUrl: (url: string) => url,
+	getPageKey: (url: string) => url,
+	getPathKey: (url: string) => url,
 }));
 
 describe("메모 upsert 저장 중 Supabase 오류", () => {
@@ -84,7 +85,10 @@ describe("메모 upsert 저장 중 Supabase 오류", () => {
 	});
 
 	it("기존 메모가 있을 때 update 오류를 throw한다", async () => {
-		getMemoById.mockResolvedValueOnce({ data: [{ id: 1 }], error: null });
+		getMemoById.mockResolvedValueOnce({
+			data: [{ id: 1, url: "https://example.com" }],
+			error: null,
+		});
 		updateMemo.mockResolvedValueOnce({
 			data: null,
 			error: new Error("수정 실패"),

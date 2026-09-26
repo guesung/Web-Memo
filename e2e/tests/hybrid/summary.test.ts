@@ -1,6 +1,13 @@
 import type { Page } from "@playwright/test";
+import { getPageKey } from "@web-memo/shared/utils/url";
 import { expect, test } from "../fixtures/extension";
-import { findSidePanelPage, login, openSidePanel, skipGuide } from "../lib";
+import {
+	findSidePanelPage,
+	getMemoQueryPageKeys,
+	login,
+	openSidePanel,
+	skipGuide,
+} from "../lib";
 import {
 	MockSupabaseStore,
 	mockSummaryApi,
@@ -61,16 +68,15 @@ test.describe("사이드 패널 - 페이지 요약", () => {
 
 		// about:blank에는 content script가 붙지 않는다(매니페스트의 매치 패턴이 about: 스킴을 덮지 않는다).
 		// 사이드 패널은 탭이 바뀌면 탭 정보와 페이지 본문을 함께 다시 읽는다. 새 탭 URL로 메모를 조회할 때까지
-		// 기다려야 이전 페이지 본문이 남은 채로 요약 버튼을 누르지 않는다. 메모 조회는 URL을 정규화해 보내므로
-		// (about:blank는 정규화 결과가 URL 꼴이 아니다) 새 URL을 맞추지 않고 "이전 페이지가 아닌 조회"를 기다린다.
-		const previousPageMemoFilter = `eq.${page.url()}`;
+		// 기다려야 이전 페이지 본문이 남은 채로 요약 버튼을 누르지 않는다. 메모 조회는 페이지 키로 보내므로
+		// (about:blank는 페이지 키가 URL 꼴이 아니다) 새 키를 맞추지 않고 "이전 페이지가 아닌 조회"를 기다린다.
+		const previousPageKey = getPageKey(page.url());
 		const nextPageMemoQuery = sidePanelPage.waitForResponse((response) => {
-			const memoUrlFilter = new URL(response.url()).searchParams.get("url");
+			const memoQueryPageKeys = getMemoQueryPageKeys(response.url());
 
 			return (
-				response.url().includes("/rest/v1/memo") &&
-				memoUrlFilter !== null &&
-				memoUrlFilter !== previousPageMemoFilter &&
+				memoQueryPageKeys !== null &&
+				!memoQueryPageKeys.includes(previousPageKey) &&
 				response.ok()
 			);
 		});

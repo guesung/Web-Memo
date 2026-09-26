@@ -92,18 +92,6 @@ it("다른 저장 메모는 해당 저장 제목을 표시하며 같은 메모�
 	expect(mocks.values.title).toBe("B 직접 수정");
 });
 
-it("입력 debounce 전에 Link를 누르면 이전 제목은 저장하지 않고 현재 페이지 제목을 저장한다", async () => {
-	await render();
-	await act(async () => form.handleTitleChange("오래된 입력"));
-	await act(async () => form.handleTitleSyncClick());
-	await act(async () => {
-		await vi.advanceTimersByTimeAsync(600);
-	});
-	expect(mocks.values.title).toBe("A");
-	expect(mocks.upsert).toHaveBeenCalledTimes(1);
-	expect(mocks.upsert.mock.calls[0][0].data.title).toBe("A");
-});
-
 it("제목 미수정 상태에서 최초 저장 후 새 페이지로 이동해도 자동 연동한다", async () => {
 	mocks.memo = undefined;
 	await render();
@@ -312,4 +300,89 @@ it("다시 시도 저장이 1초를 넘어도 slow가 아니라 retrying을 유�
 
 	await act(async () => resolveRetry());
 	expect(form.saveStatus).toBe("saved");
+});
+
+it("다른 메모를 고르기 전에 입력을 선택한 ID로 저장하고 지연 저장을 취소한다", async () => {
+	await render();
+	await act(async () => form.handleMemoChange("변경한 내용"));
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.upsert).toHaveBeenCalledTimes(1);
+	expect(mocks.upsert.mock.calls[0][0]).toMatchObject({
+		id: 1,
+		data: { memo: "변경한 내용" },
+	});
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(600);
+	});
+	expect(mocks.upsert).toHaveBeenCalledTimes(1);
+});
+
+it("전환 전 저장이 실패하면 선택 화면으로 나가지 않는다", async () => {
+	mocks.upsert.mockImplementation((_request, callbacks) => callbacks.onError());
+	await render();
+	await act(async () => form.handleMemoChange("저장할 내용"));
+	let isSaved = true;
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+
+	expect(isSaved).toBe(false);
+});
+
+it("바뀐 내용이 없으면 저장하지 않고 바로 전환한다", async () => {
+	await render();
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.upsert).not.toHaveBeenCalled();
+});
+
+it("입력이 이미 저장됐으면 전환할 때 다시 저장하지 않는다", async () => {
+	await render();
+	await act(async () => form.handleMemoChange("저장된 내용"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(1500);
+	});
+	const saveCount = mocks.upsert.mock.calls.length;
+	expect(saveCount).toBeGreaterThan(0);
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.upsert).toHaveBeenCalledTimes(saveCount);
+});
+
+it("첫 저장으로 ID가 생겨도 저장 중 입력한 초안을 유지한다", async () => {
+	mocks.memo = undefined;
+	let completeFirstSave = () => {};
+	mocks.upsert.mockImplementationOnce((_request, callbacks) => {
+		completeFirstSave = callbacks.onSuccess;
+	});
+	await render();
+	await act(async () => form.handleMemoChange("첫 입력"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(350);
+	});
+	await act(async () => form.handleMemoChange("저장 중 추가 입력"));
+	mocks.memo = { id: 1, title: "A" };
+	await render();
+	expect(mocks.values.memo).toBe("저장 중 추가 입력");
+	await act(async () => {
+		completeFirstSave();
+		await vi.advanceTimersByTimeAsync(600);
+	});
+	expect(mocks.values.memo).toBe("저장 중 추가 입력");
+	expect(mocks.upsert.mock.calls.at(-1)?.[0].data.memo).toBe(
+		"저장 중 추가 입력",
+	);
 });

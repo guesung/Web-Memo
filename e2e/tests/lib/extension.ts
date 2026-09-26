@@ -1,6 +1,7 @@
 import type { Page } from "@playwright/test";
 import { errors, expect } from "@playwright/test";
 import { getExtensionUrl } from "@web-memo/shared/constants";
+import { getPageKey } from "@web-memo/shared/utils/url";
 
 const SIDE_PANEL_URL = getExtensionUrl("side-panel/index.html");
 
@@ -66,12 +67,39 @@ export async function findSidePanelPage(page: Page, timeout = 10000) {
 export const waitForSidePanelMemoQuery = ({
 	sidePanelPage,
 	url,
-}: IFWaitForSidePanelMemoQueryParams) =>
-	sidePanelPage.waitForResponse(
+}: IFWaitForSidePanelMemoQueryParams) => {
+	const pageKey = getPageKey(url);
+
+	return sidePanelPage.waitForResponse(
 		(response) =>
-			new URL(response.url()).searchParams.get("url") === `eq.${url}` &&
+			!!getMemoQueryPageKeys(response.url())?.includes(pageKey) &&
 			response.ok(),
 	);
+};
+
+/**
+ * 메모 조회 요청 URL에서 `page_key=in.(...)` 필터의 페이지 키 목록을 꺼낸다.
+ * @description 메모 조회는 `.in("page_key", [pageKey, ""])`로 나간다. supabase-js는 `,()`가 든 값만 따옴표로 감싸므로
+ * 따옴표를 벗긴다. 메모 조회가 아니거나 page_key 필터가 없으면 null이다.
+ */
+export const getMemoQueryPageKeys = (requestUrl: string) => {
+	const url = new URL(requestUrl);
+	const pageKeyFilter = url.searchParams.get("page_key");
+
+	if (!url.pathname.endsWith("/rest/v1/memo") || !pageKeyFilter) {
+		return null;
+	}
+
+	const inFilterMatch = pageKeyFilter.match(/^in\.\((.*)\)$/);
+
+	if (!inFilterMatch) {
+		return null;
+	}
+
+	return inFilterMatch[1]
+		.split(",")
+		.map((pageKey) => pageKey.replace(/^"(.*)"$/, "$1"));
+};
 
 /**
  * 확장이 있을 때만 뜨는 첫 방문 가이드를 끈다.

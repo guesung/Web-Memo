@@ -40,6 +40,8 @@ export default function BrowserScreen() {
 		insets,
 		webViewRef,
 		currentUrl,
+		selectedMemoId,
+		setSelectedMemoId,
 		urlInput,
 		setUrlInput,
 		isMemoOpen,
@@ -72,7 +74,6 @@ export default function BrowserScreen() {
 		handleShare,
 		isSelectionUnlocked,
 		handleSelectionUnlockToggle,
-		SCROLL_DETECT_JS,
 		isActionsSheetOpen,
 		setIsActionsSheetOpen,
 		isAISheetOpen,
@@ -177,6 +178,8 @@ export default function BrowserScreen() {
 					</GestureDetector>
 					<MemoPanel
 						url={currentUrl}
+						selectedMemoId={selectedMemoId}
+						onSelectedMemoIdChange={setSelectedMemoId}
 						pageTitle={pageTitle}
 						favIconUrl={pageFavIconUrl}
 						onClose={closePanel}

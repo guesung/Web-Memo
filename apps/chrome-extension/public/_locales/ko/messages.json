@@ -47,6 +47,24 @@
 	"save": {
 		"message": "저장"
 	},
+	"save_status_saving": {
+		"message": "저장 중..."
+	},
+	"save_status_saved": {
+		"message": "저장됨"
+	},
+	"save_status_offline_saved": {
+		"message": "오프라인 · 이 기기에 저장됨"
+	},
+	"save_status_offline": {
+		"message": "오프라인"
+	},
+	"save_status_syncing": {
+		"message": "동기화 중..."
+	},
+	"save_status_sync_failed": {
+		"message": "이 기기에 저장됨"
+	},
 	"number": {
 		"message": "번호"
 	},

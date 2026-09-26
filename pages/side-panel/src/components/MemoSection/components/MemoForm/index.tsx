@@ -1,4 +1,5 @@
 import ResizeHandle from "@src/components/ResizeHandle";
+import { useOnlineStatus } from "@src/hooks";
 import type { MemoInput } from "@src/types/Input";
 import { getMemoUrl, type IFMemoUrlParams } from "@src/utils";
 import { useQueryClient } from "@tanstack/react-query";
@@ -31,6 +32,7 @@ import {
 	CategoryCommandPopup,
 	PastMemoNotice,
 	SaveStatus,
+	type TSaveStatus,
 } from "./components";
 import {
 	type TMemoFieldKey,
@@ -45,9 +47,12 @@ function MemoFormContent({
 	onOtherMemoClick,
 	isSelectedMemoMissing,
 	isSyncing = false,
+	isSyncFailed = false,
+	onRetrySync,
 }: IFMemoFormProps) {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const [isSwitching, setIsSwitching] = useState(false);
+	const isOffline = !useOnlineStatus();
 	const queryClient = useQueryClient();
 	const { register, watch, getValues } = useFormContext<MemoInput>();
 	const { ref, ...rest } = register("memo");
@@ -93,6 +98,14 @@ function MemoFormContent({
 		updateCategory,
 		toggleMemoStatus,
 	} = useMemoForm({ selectedMemo, isSyncing });
+
+	const saveStatus = getSaveStatus({
+		isSaving,
+		isOffline,
+		isSyncing,
+		isSyncFailed,
+		hasMemoText: !!watch("memo"),
+	});
 
 	const handleOtherMemoClick = async () => {
 		if (!onOtherMemoClick || isWritePending || isSwitching) {
@@ -373,7 +386,7 @@ function MemoFormContent({
 								className={cn({ "text-emerald-500": memoData?.isReading })}
 							/>
 						</MemoStatusToggle>
-						<SaveStatus isSaving={isSaving} memo={watch("memo")} />
+						<SaveStatus status={saveStatus} onRetryClick={onRetrySync} />
 					</div>
 					<div className="flex items-center gap-2">
 						{currentCategory ? (
@@ -428,6 +441,8 @@ function MemoForm({
 	onOtherMemoClick,
 	isSelectedMemoMissing,
 	isSyncing,
+	isSyncFailed,
+	onRetrySync,
 }: IFMemoFormProps) {
 	const form = useForm<MemoInput>({
 		shouldUnregister: false,
@@ -450,12 +465,51 @@ function MemoForm({
 				onOtherMemoClick={onOtherMemoClick}
 				isSelectedMemoMissing={isSelectedMemoMissing}
 				isSyncing={isSyncing}
+				isSyncFailed={isSyncFailed}
+				onRetrySync={onRetrySync}
 			/>
 		</FormProvider>
 	);
 }
 
 export default MemoForm;
+
+/** 저장 표시줄 상태를 계산한다. 저장 중 > 오프라인 > 동기화 중 > 동기화 실패 > 저장됨 순으로 앞선 상태를 보여준다 */
+const getSaveStatus = ({
+	isSaving,
+	isOffline,
+	isSyncing,
+	isSyncFailed,
+	hasMemoText,
+}: {
+	isSaving: boolean;
+	isOffline: boolean;
+	isSyncing: boolean;
+	isSyncFailed: boolean;
+	hasMemoText: boolean;
+}): TSaveStatus => {
+	if (isSaving) {
+		return "saving";
+	}
+
+	if (isOffline) {
+		return hasMemoText ? "offlineSaved" : "offline";
+	}
+
+	if (isSyncing) {
+		return "syncing";
+	}
+
+	if (isSyncFailed) {
+		return "syncFailed";
+	}
+
+	if (hasMemoText) {
+		return "saved";
+	}
+
+	return null;
+};
 
 /** 선택된 메모를 편집기와 연결한다. */
 interface IFMemoFormProps {
@@ -464,6 +518,10 @@ interface IFMemoFormProps {
 	onOtherMemoClick?: (draft?: MemoInput) => void;
 	/** 오프라인 대기열을 서버로 올리는 중인지. 카테고리·상태 토글을 막는다 */
 	isSyncing?: boolean;
+	/** 마지막 flush가 네트워크 오류가 아닌 이유로 실패했는지. 다시 시도 버튼을 보여준다 */
+	isSyncFailed?: boolean;
+	/** 다시 시도 버튼 클릭 핸들러 */
+	onRetrySync?: () => void;
 }
 
 interface IFMemoStatusToggleProps {

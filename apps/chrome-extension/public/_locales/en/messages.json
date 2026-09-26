@@ -47,6 +47,24 @@
 	"save": {
 		"message": "Save"
 	},
+	"save_status_saving": {
+		"message": "Saving..."
+	},
+	"save_status_saved": {
+		"message": "Saved"
+	},
+	"save_status_offline_saved": {
+		"message": "Offline · Saved on this device"
+	},
+	"save_status_offline": {
+		"message": "Offline"
+	},
+	"save_status_syncing": {
+		"message": "Syncing..."
+	},
+	"save_status_sync_failed": {
+		"message": "Saved on this device"
+	},
 	"number": {
 		"message": "Number"
 	},

@@ -198,11 +198,12 @@ const AuthenticatedMemoSectionContent = () => {
 		});
 	};
 
-	const { syncStatus } = useOfflineMemoSync({
+	const { syncStatus, retrySync } = useOfflineMemoSync({
 		userId,
 		onConflict: handleOfflineMemoConflict,
 	});
 	const isSyncing = syncStatus === "syncing";
+	const isSyncFailed = syncStatus === "syncFailed";
 
 	const handleMemoSelect = (memoId: number) => {
 		setCandidateListScope(null);
@@ -293,6 +294,8 @@ const AuthenticatedMemoSectionContent = () => {
 							: undefined
 					}
 					isSyncing={isSyncing}
+					isSyncFailed={isSyncFailed}
+					onRetrySync={retrySync}
 				/>
 			)}
 		</>

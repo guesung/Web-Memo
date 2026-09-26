@@ -16,7 +16,8 @@ concurrency:
 
 jobs:
   tests_e2e:
-    runs-on: ubuntu-26.04
+    # Playwright가 ubuntu26.04를 지원하지 않아 브라우저 설치가 실패합니다. 지원하는 버전으로 올린 뒤 26.04로 옮깁니다.
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}

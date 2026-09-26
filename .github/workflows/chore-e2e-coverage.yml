@@ -30,7 +30,8 @@ concurrency:
 
 jobs:
   maintain:
-    runs-on: ubuntu-26.04
+    # Playwright가 ubuntu26.04를 지원하지 않아 브라우저 설치가 실패합니다. 지원하는 버전으로 올린 뒤 26.04로 옮깁니다.
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     outputs:
       artifact_ready: ${{ steps.export_artifact.outputs.ready }}
@@ -272,7 +273,8 @@ jobs:
   verify:
     needs: maintain
     if: needs.maintain.outputs.artifact_ready == 'true'
-    runs-on: ubuntu-26.04
+    # Playwright가 ubuntu26.04를 지원하지 않아 브라우저 설치가 실패합니다. 지원하는 버전으로 올린 뒤 26.04로 옮깁니다.
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     outputs:
       verified: ${{ steps.export_verified.outputs.ready }}
@@ -437,7 +439,8 @@ jobs:
   publish:
     needs: verify
     if: needs.verify.outputs.verified == 'true' && inputs.dry_run != true && github.ref_name == 'master'
-    runs-on: ubuntu-26.04
+    # Playwright가 ubuntu26.04를 지원하지 않아 브라우저 설치가 실패합니다. 지원하는 버전으로 올린 뒤 26.04로 옮깁니다.
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       # 테스트 코드를 실행했던 러너와 Git 설정도 다시 분리합니다.

@@ -12,17 +12,6 @@ export type TStoreLanguage = "ko" | "en";
 export const DEMO_ARTICLE_URL =
 	"https://journal.example.com/essays/three-checks-a-day";
 
-/**
- * 요약 장면에 쓰는 유튜브 영상 주소.
- * @description Blender 재단의 공개 영화 "Big Buck Bunny"(CC BY 3.0)다. 영상 페이지는 capture.spec.ts가
- * 직접 그린 HTML로 응답하고, 썸네일만 유튜브 이미지 서버(i.ytimg.com)에서 받는다.
- */
-export const DEMO_VIDEO_URL = "https://www.youtube.com/watch?v=aqz-KE-bpKQ";
-
-/** 영상 썸네일. 유튜브가 영상마다 공개하는 고해상도 정지 화면이다. */
-export const DEMO_VIDEO_THUMBNAIL_URL =
-	"https://i.ytimg.com/vi/aqz-KE-bpKQ/maxresdefault.jpg";
-
 /** 시연용 카테고리 한 건. id는 메모의 categoryId가 가리킨다. */
 interface IFDemoCategory {
 	/** 목 저장소에 넣을 카테고리 id */
@@ -57,14 +46,10 @@ interface IFDemoContent {
 	categories: IFDemoCategory[];
 	/** 시연 기사에 남긴 메모. 1~3번 장의 사이드 패널에 보인다 */
 	articleMemo: IFDemoMemo;
-	/** 시연 영상에 남긴 메모. 5번 장의 사이드 패널에 보인다 */
-	videoMemo: IFDemoMemo;
+	/** 시연용 아이디어 메모. 4번 장의 웹 목록에 보인다 */
+	ideaMemo: IFDemoMemo;
 	/** 웹 대시보드(4번 장)에 함께 보일 다른 메모 */
 	otherMemos: IFDemoMemo[];
-	/** 영상 페이지 본문(설명란). 사이드 패널이 요약 재료로 읽는다 */
-	videoDescription: string;
-	/** 목 요약 응답. 사이드 패널은 조각을 순서대로 이어 붙여 보여준다 */
-	summaryChunks: string[];
 }
 
 /**
@@ -77,8 +62,8 @@ export const DEMO_CONTENT: Record<TStoreLanguage, IFDemoContent> = {
 		categories: [
 			{ id: 1, name: "업무 리서치", color: "#3B82F6" },
 			{ id: 2, name: "독서", color: "#10B981" },
-			{ id: 3, name: "영상 공부", color: "#F59E0B" },
-			{ id: 4, name: "아이디어", color: "#8B5CF6" },
+			{ id: 3, name: "아이디어", color: "#F59E0B" },
+			{ id: 4, name: "글쓰기", color: "#8B5CF6" },
 		],
 		articleMemo: {
 			url: DEMO_ARTICLE_URL,
@@ -96,10 +81,10 @@ export const DEMO_CONTENT: Record<TStoreLanguage, IFDemoContent> = {
 			minutesAgo: 2,
 			isStar: true,
 		},
-		videoMemo: {
-			url: DEMO_VIDEO_URL,
-			title: "Big Buck Bunny 60fps 4K - Official Blender Foundation Short Film",
-			memo: "오프닝 숲 장면의 빛 표현 참고하기",
+		ideaMemo: {
+			url: "https://notes.example.com/team-ideas",
+			title: "팀 회의에서 나온 아이디어를 모으는 방법",
+			memo: "회의가 끝나기 전에 담당자와 다음 확인 날짜를 함께 적기",
 			categoryId: 3,
 			minutesAgo: 30,
 		},
@@ -149,26 +134,13 @@ export const DEMO_CONTENT: Record<TStoreLanguage, IFDemoContent> = {
 				minutesAgo: 60 * 100,
 			},
 		],
-		videoDescription:
-			"Big Buck Bunny는 Blender 재단이 만든 공개 단편 애니메이션입니다. 숲에 사는 커다란 토끼가 자신을 괴롭히는 세 마리 설치류에게 재치 있게 복수하는 이야기를 담았습니다. 이 영상은 크리에이티브 커먼즈 저작자 표시(CC BY 3.0) 라이선스로 공개되었습니다.",
-		summaryChunks: [
-			"**한 줄 요약**\n",
-			"숲속의 순한 큰 토끼가 자신과 작은 동물들을 괴롭히던 세 설치류에게 재치 있는 함정으로 되갚아 주는 10분짜리 단편 애니메이션입니다.\n\n",
-			"**주요 장면**\n",
-			"- 아침 숲에서 나비와 꽃을 즐기는 토끼의 평화로운 일상\n",
-			"- 설치류 삼총사가 나비를 해치자 토끼가 복수를 결심\n",
-			"- 나무와 덩굴로 만든 함정으로 셋을 차례로 골탕 먹이는 후반부\n\n",
-			"**볼 만한 점**\n",
-			"- Blender 재단이 오픈소스 도구만으로 제작한 공개 영화\n",
-			"- 털과 숲 조명 표현이 돋보이는 3D 애니메이션",
-		],
 	},
 	en: {
 		categories: [
 			{ id: 1, name: "Work research", color: "#3B82F6" },
 			{ id: 2, name: "Reading", color: "#10B981" },
-			{ id: 3, name: "Video notes", color: "#F59E0B" },
-			{ id: 4, name: "Ideas", color: "#8B5CF6" },
+			{ id: 3, name: "Ideas", color: "#F59E0B" },
+			{ id: 4, name: "Writing", color: "#8B5CF6" },
 		],
 		articleMemo: {
 			url: DEMO_ARTICLE_URL,
@@ -186,10 +158,10 @@ export const DEMO_CONTENT: Record<TStoreLanguage, IFDemoContent> = {
 			minutesAgo: 2,
 			isStar: true,
 		},
-		videoMemo: {
-			url: DEMO_VIDEO_URL,
-			title: "Big Buck Bunny 60fps 4K - Official Blender Foundation Short Film",
-			memo: "Study the lighting in the opening forest scene",
+		ideaMemo: {
+			url: "https://notes.example.com/team-ideas",
+			title: "How to collect ideas from team meetings",
+			memo: "Add an owner and a follow-up date before the meeting ends",
 			categoryId: 3,
 			minutesAgo: 30,
 		},
@@ -238,19 +210,6 @@ export const DEMO_CONTENT: Record<TStoreLanguage, IFDemoContent> = {
 				categoryId: 1,
 				minutesAgo: 60 * 100,
 			},
-		],
-		videoDescription:
-			"Big Buck Bunny is an open short film by the Blender Foundation. A large, gentle rabbit takes clever revenge on three rodents who bully him and the small creatures of the forest. The film is released under the Creative Commons Attribution (CC BY 3.0) license.",
-		summaryChunks: [
-			"**In one line**\n",
-			"A 10-minute animated short where a gentle giant rabbit turns the tables on three rodents who bully him and the forest's small animals.\n\n",
-			"**Key scenes**\n",
-			"- A peaceful morning of butterflies and flowers in the forest\n",
-			"- The rabbit vows revenge after the trio harms a butterfly\n",
-			"- Traps made of trees and vines catch the bullies one by one\n\n",
-			"**Why watch**\n",
-			"- An open movie made by the Blender Foundation with open-source tools\n",
-			"- Striking fur and forest lighting in 3D animation",
 		],
 	},
 };

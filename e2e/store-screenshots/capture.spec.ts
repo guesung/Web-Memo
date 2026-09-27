@@ -8,7 +8,7 @@ import {
 	skipGuide,
 } from "../tests/lib";
 import { guardUnhandledSupabaseRequests } from "../tests/lib/mocks";
-import { DEMO_ARTICLE_URL, DEMO_CONTENT, DEMO_VIDEO_URL } from "./demoData";
+import { DEMO_ARTICLE_URL, DEMO_CONTENT } from "./demoData";
 import { setupDemoRoutes } from "./demoRoutes";
 import { closeInstallTab, launchExtensionContext } from "./extensionContext";
 import {
@@ -23,7 +23,7 @@ import {
 test.describe.configure({ mode: "serial" });
 
 for (const language of ["ko", "en"] as const) {
-	test(`${language} 스토어 스크린샷 원본을 캡처한다`, async () => {
+	test(`${language} 스토어 스크린샷 원본을 캡처한다`, async ({ browser }) => {
 		const outputDirectory = path.join(__dirname, "output", language, "raw");
 		const content = DEMO_CONTENT[language];
 		const context = await launchExtensionContext(language);
@@ -76,29 +76,6 @@ for (const language of ["ko", "en"] as const) {
 				outputPath: path.join(outputDirectory, "article-memo-source.json"),
 			});
 
-			// 5번 장: 요약이 주인공이므로 경계를 확장 기본 비율(60%)로 되돌린다.
-			await page.goto(DEMO_VIDEO_URL);
-			await expect(page.locator("img")).toHaveJSProperty("complete", true);
-			await waitForSidePanelMemo({
-				sidePanelPage,
-				pageTitle: await page.title(),
-				memo: content.videoMemo.memo,
-			});
-			await dragSidePanelDivider({ sidePanelPage, tabRatio: 60 });
-			const summaryLabel = await sidePanelPage.evaluate(() =>
-				chrome.i18n.getMessage("summary_generate_label"),
-			);
-			await sidePanelPage.getByRole("button", { name: summaryLabel }).click();
-			await expect(sidePanelPage.getByRole("tabpanel")).toContainText(
-				content.summaryChunks.at(-1)?.replace(/^- /, "") ?? "",
-			);
-			await captureSidePanelScene({
-				page,
-				sidePanelPage,
-				outputDirectory,
-				name: "video",
-			});
-
 			await captureDashboard({
 				page,
 				language,
@@ -109,5 +86,41 @@ for (const language of ["ko", "en"] as const) {
 		}
 
 		expect(unhandledSupabaseRequests, "목 없는 Supabase 요청").toEqual([]);
+
+		// 5번 장면은 최종 이미지와 같은 픽셀 밀도로 찍어 축소 보간을 피한다.
+		const categoryContext = await browser.newContext({
+			locale: language === "ko" ? "ko-KR" : "en-US",
+			deviceScaleFactor: 1,
+		});
+		const unhandledCategoryRequests =
+			await guardUnhandledSupabaseRequests(categoryContext);
+		try {
+			const categoryPage = await categoryContext.newPage();
+			await setupDemoRoutes({
+				page: categoryPage,
+				context: categoryContext,
+				language,
+			});
+			await login(categoryPage);
+			await categoryContext.addCookies([
+				{
+					name: "i18next",
+					value: language,
+					url: "http://localhost:3000",
+					sameSite: "Strict",
+				},
+			]);
+			await skipGuide(categoryPage);
+			await captureDashboard({
+				page: categoryPage,
+				language,
+				categoryName: content.categories[0].name,
+				outputPath: path.join(outputDirectory, "category-dashboard.png"),
+			});
+		} finally {
+			await categoryContext.close();
+		}
+
+		expect(unhandledCategoryRequests, "목 없는 Supabase 요청").toEqual([]);
 	});
 }

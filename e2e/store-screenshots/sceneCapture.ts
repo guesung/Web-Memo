@@ -3,7 +3,6 @@ import path from "node:path";
 import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 import { PATHS } from "@web-memo/shared/constants";
-import { PNG } from "pngjs";
 import { DEMO_CONTENT, type TStoreLanguage } from "./demoData";
 import { DASHBOARD_CLOCK_OFFSET_MS } from "./demoRoutes";
 
@@ -149,14 +148,21 @@ export const captureDashboard = async ({
 	page,
 	language,
 	outputPath,
+	categoryName,
 }: IFCaptureDashboardParams) => {
 	const content = DEMO_CONTENT[language];
+	const category = content.categories.find(
+		(item) => item.name === categoryName,
+	);
 	// 전체 목록은 위시리스트 메모를 빼고 보여준다.
 	const listedMemoCount = [
 		content.articleMemo,
-		content.videoMemo,
+		content.ideaMemo,
 		...content.otherMemos,
-	].filter((demoMemo) => !demoMemo.isWish).length;
+	].filter(
+		(demoMemo) =>
+			!demoMemo.isWish && (!category || demoMemo.categoryId === category.id),
+	).length;
 
 	await page.addInitScript((offsetMilliseconds) => {
 		const RealDate = Date;
@@ -179,17 +185,26 @@ export const captureDashboard = async ({
 		globalThis.Date = ShiftedDate as DateConstructor;
 	}, DASHBOARD_CLOCK_OFFSET_MS);
 	// 데스크톱 레이아웃이 나오는 폭으로 찍고 템플릿이 줄여 넣는다.
-	await page.setViewportSize({ width: 1280, height: 815 });
+	await page.setViewportSize({ width: category ? 1160 : 1280, height: 815 });
 	await page.goto(`/${language}${PATHS.memos}`);
+	if (category) {
+		await page.getByRole("link", { name: category.name }).click();
+	}
 	await expect(page.locator(".memo-item")).toHaveCount(listedMemoCount);
 	await expect(
-		page.getByRole("link", { name: content.categories.at(-1)?.name }),
+		page
+			.locator('a[href*="category="]')
+			.filter({ hasText: content.categories.at(-1)?.name }),
 	).toBeVisible();
 	await page.addStyleTag({
 		content: `nextjs-portal, #react-grab-root, [data-react-grab], [aria-label="채널톡 문의 열기"], [aria-label="Open support chat"], [role="region"]:has(> ol) { display: none !important; }`,
 	});
 	await page.mouse.move(0, 0);
-	await screenshotWhenStable({ page, path: outputPath });
+	await screenshotWhenStable({
+		page,
+		path: outputPath,
+		clip: category ? { x: 0, y: 0, width: 1160, height: 586 } : undefined,
+	});
 };
 
 /**
@@ -201,21 +216,21 @@ export const captureDashboard = async ({
 const screenshotWhenStable = async ({
 	page,
 	path: outputPath,
+	clip,
 }: IFScreenshotWhenStableParams) => {
-	let previousScreenshot = await page.screenshot({ animations: "disabled" });
+	let previousScreenshot = await page.screenshot({
+		animations: "disabled",
+		clip,
+	});
 
 	for (let attempt = 0; attempt < 5; attempt += 1) {
 		await page.waitForTimeout(300);
-		const currentScreenshot = await page.screenshot({ animations: "disabled" });
+		const currentScreenshot = await page.screenshot({
+			animations: "disabled",
+			clip,
+		});
 
-		if (
-			currentScreenshot.equals(previousScreenshot) ||
-			(outputPath.endsWith("video-page.png") &&
-				hasOnlyImageRoundingDifferences({
-					previousScreenshot,
-					currentScreenshot,
-				}))
-		) {
+		if (currentScreenshot.equals(previousScreenshot)) {
 			await writeFile(outputPath, currentScreenshot);
 			return;
 		}
@@ -224,29 +239,6 @@ const screenshotWhenStable = async ({
 	}
 
 	throw new Error(`화면이 멈추지 않아 캡처하지 못했습니다: ${outputPath}`);
-};
-
-/** 영상 썸네일의 RGB 합성에서 생기는 채널 값 1 차이만 안정된 화면으로 인정한다. */
-const hasOnlyImageRoundingDifferences = ({
-	previousScreenshot,
-	currentScreenshot,
-}: {
-	previousScreenshot: Buffer;
-	currentScreenshot: Buffer;
-}) => {
-	const previous = PNG.sync.read(previousScreenshot);
-	const current = PNG.sync.read(currentScreenshot);
-	if (previous.width !== current.width || previous.height !== current.height) {
-		return false;
-	}
-
-	for (let index = 0; index < previous.data.length; index += 1) {
-		if (Math.abs(previous.data[index] - current.data[index]) > 1) {
-			return false;
-		}
-	}
-
-	return true;
 };
 
 /** {@link waitForSidePanelMemo}의 인자. */
@@ -295,6 +287,8 @@ interface IFCaptureDashboardParams {
 	language: TStoreLanguage;
 	/** 저장할 PNG 경로 */
 	outputPath: string;
+	/** 지정하면 해당 카테고리를 선택한 5번 장면을 1160×586으로 찍는다 */
+	categoryName?: string;
 }
 
 /** {@link screenshotWhenStable}의 인자. */
@@ -303,4 +297,6 @@ interface IFScreenshotWhenStableParams {
 	page: Page;
 	/** 저장할 PNG 경로 */
 	path: string;
+	/** 캡처할 화면 영역(CSS px). 없으면 전체 화면을 찍는다 */
+	clip?: { x: number; y: number; width: number; height: number };
 }

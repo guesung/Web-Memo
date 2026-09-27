@@ -419,15 +419,12 @@ importers:
       '@types/chrome':
         specifier: ^0.0.268
         version: 0.0.268
-      '@types/pngjs':
-        specifier: 6.0.5
-        version: 6.0.5
       '@web-memo/tsconfig':
         specifier: workspace:*
         version: link:../packages/tsconfig
-      pngjs:
-        specifier: 3.4.0
-        version: 3.4.0
+      sharp:
+        specifier: ^0.33.5
+        version: 0.33.5
       typescript:
         specifier: 5.5.3
         version: 5.5.3

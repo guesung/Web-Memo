@@ -49,20 +49,6 @@
 				letter-spacing: -0.025em;
 				white-space: nowrap;
 			}
-			.attribution {
-				position: absolute;
-				right: 26px;
-				bottom: 12px;
-				z-index: 2;
-				padding: 5px 9px;
-				border-radius: 6px;
-				background: #fff;
-				color: var(--foreground);
-				font-size: 12px;
-			}
-			[data-scene]:not([data-scene="5"]) .attribution {
-				display: none;
-			}
 			[data-output="web"] {
 				background: linear-gradient(180deg, hsl(220 45% 98%), hsl(221 40% 94%));
 			}
@@ -81,9 +67,6 @@
 			}
 			[data-output="web"] .shortcut {
 				top: 125px;
-			}
-			[data-output="web"] .attribution {
-				bottom: 20px;
 			}
 			[data-output="og"] {
 				width: 1200px;
@@ -313,6 +296,9 @@
 				width: 900px;
 				height: auto;
 			}
+			[data-scene="5"] .dashboard-image {
+				width: 1160px;
+			}
 			.phone {
 				position: absolute;
 				top: 150px;
@@ -335,22 +321,27 @@
 			}
 			[data-scene="2"] .scene-2,
 			[data-scene="3"] .scene-3,
-			[data-scene="4"] .scene-4 {
+			[data-scene="4"] .scene-4,
+			[data-scene="5"] .dashboard-image {
 				display: block;
 			}
 			[data-scene="2"] .shortcut.scene-2 {
 				display: flex;
 			}
 			[data-scene="4"] .page-image,
-			[data-scene="4"] .side-panel-image {
+			[data-scene="4"] .side-panel-image,
+			[data-scene="5"] .page-image,
+			[data-scene="5"] .side-panel-image {
 				display: none;
+			}
+			[data-scene="5"] .frame-content {
+				height: auto;
 			}
 		</style>
 	</head>
 	<body data-scene="1">
 		<div class="og-brand">웹 메모</div>
 		<h1 class="headline"></h1>
-		<div class="attribution">© Blender Foundation · Big Buck Bunny · CC BY 3.0 · peach.blender.org/about/</div>
 
 		<div class="frame">
 			<div class="tab-strip">

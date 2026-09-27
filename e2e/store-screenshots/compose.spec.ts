@@ -2,30 +2,30 @@ import { access, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { test } from "@playwright/test";
+import sharp from "sharp";
 import {
 	DEMO_ARTICLE_URL,
 	DEMO_CONTENT,
-	DEMO_VIDEO_URL,
 	type TStoreLanguage,
 } from "./demoData";
 
 test.use({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
 
-/** 장별 헤드라인. 스토어 등록 문구로 확정된 값이라 바꾸지 않는다. */
+/** 장별 헤드라인. 실제 제공되는 기능만 설명한다. */
 const HEADLINES: Record<TStoreLanguage, string[]> = {
 	ko: [
 		"읽던 페이지 옆에서 바로 적어요",
 		"Alt+S 한 번이면 열려요",
 		"어디서 본 글인지 알아서 남아요",
 		"적은 메모는 웹과 앱에서 모아 봐요",
-		"긴 영상도 요약으로 먼저 훑어봐요",
+		"카테고리별로 메모를 찾아봐요",
 	],
 	en: [
 		"Write right beside the page you're reading",
 		"Open it with a single Alt+S",
 		"It remembers where you read it",
 		"Find your notes on the web and in the app",
-		"Skim long videos with a summary first",
+		"Find notes by category",
 	],
 };
 
@@ -34,7 +34,7 @@ for (const language of ["ko", "en"] as const) {
 		const rawDirectory = path.join(__dirname, "output", language, "raw");
 		const webDirectory = path.join(
 			__dirname,
-			"../../apps/web/public/images/pngs/introduction",
+			"../../apps/web/public/images/webps/introduction",
 			language,
 		);
 		const rawImage = (fileName: string) =>
@@ -48,8 +48,7 @@ for (const language of ["ko", "en"] as const) {
 		for (const fileName of [
 			"article-page.png",
 			"article-side-panel.png",
-			"video-page.png",
-			"video-side-panel.png",
+			"category-dashboard.png",
 			"dashboard.png",
 			"article-memo-source.json",
 		]) {
@@ -68,7 +67,6 @@ for (const language of ["ko", "en"] as const) {
 			),
 		);
 		const articleUrl = new URL(DEMO_ARTICLE_URL);
-		const videoUrl = new URL(DEMO_VIDEO_URL);
 		const articleScene = {
 			tabTitle: DEMO_CONTENT[language].articleMemo.title,
 			tabIconLetter: "F",
@@ -89,12 +87,11 @@ for (const language of ["ko", "en"] as const) {
 				dashboardImage: rawImage("dashboard.png"),
 			},
 			{
-				tabTitle: DEMO_CONTENT[language].videoMemo.title,
-				tabIconLetter: "▶",
-				addressHost: videoUrl.host,
-				addressPath: `${videoUrl.pathname}${videoUrl.search}`,
-				pageImage: rawImage("video-page.png"),
-				sidePanelImage: rawImage("video-side-panel.png"),
+				tabTitle: language === "ko" ? "웹 메모" : "Web Memo",
+				tabIconLetter: "W",
+				addressHost: "webmemo.xyz",
+				addressPath: `/${language}/memos?category=${encodeURIComponent(DEMO_CONTENT[language].categories[0].name)}`,
+				dashboardImage: rawImage("category-dashboard.png"),
 			},
 		].map((scene, index) => ({
 			...scene,
@@ -126,9 +123,10 @@ for (const language of ["ko", "en"] as const) {
 				...scene,
 				output: "web" as const,
 			});
-			await page.screenshot({
-				path: path.join(webDirectory, `${scene.sceneNumber}.png`),
-			});
+			const webPng = await page.screenshot();
+			await sharp(webPng)
+				.webp({ lossless: true, effort: 6 })
+				.toFile(path.join(webDirectory, `${scene.sceneNumber}.webp`));
 			if (language === "ko" && scene.sceneNumber === 1) {
 				await page.setViewportSize({ width: 1200, height: 630 });
 				await page.evaluate((sceneInput) => window.renderScene(sceneInput), {

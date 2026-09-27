@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { IFRecentMemo } from "./getRecentMemos";
+import type { IFMemoCandidate } from "./getMemoPage";
 import { matchByLooseUrl } from "./matchByLooseUrl";
 
-const createMemo = (id: number, url: string): IFRecentMemo => ({
+const createMemo = (id: number, url: string): IFMemoCandidate => ({
 	id,
 	title: `메모 ${id}`,
 	url,

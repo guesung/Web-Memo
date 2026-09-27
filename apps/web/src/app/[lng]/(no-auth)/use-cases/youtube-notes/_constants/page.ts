@@ -9,7 +9,7 @@ import type { TLandingPageConfig } from "../../../_components";
  */
 export const YOUTUBE_NOTES_PAGE: TLandingPageConfig = {
 	pageKey: "useCasesYoutubeNotes",
-	screenshotNumber: 5,
+	screenshotNumber: 2,
 	benefits: [
 		{ key: "realtime", icon: Play },
 		{ key: "capture", icon: Pencil },

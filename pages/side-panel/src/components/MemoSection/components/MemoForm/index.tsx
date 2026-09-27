@@ -41,7 +41,8 @@ import {
 	useMemoForm,
 } from "./hooks";
 
-function MemoFormContent({
+const MemoFormContent = ({
+	fieldResizeState,
 	selectedMemo,
 	onOtherMemoClick,
 	isSelectedMemoMissing,
@@ -52,7 +53,7 @@ function MemoFormContent({
 	isSyncFailed = false,
 	hasSyncNetworkError = false,
 	onRetrySync,
-}: IFMemoFormProps) {
+}: IFMemoFormProps) => {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const [isSwitching, setIsSwitching] = useState(false);
 	const isOffline = !useOnlineStatus();
@@ -85,7 +86,7 @@ function MemoFormContent({
 	}
 
 	const { fieldRatios, resizingFieldKey, handleResizeStart } =
-		useMemoFieldResize({ visibleFieldKeys });
+		useMemoFieldResize({ visibleFieldKeys, fieldResizeState });
 
 	const {
 		memoData,
@@ -542,9 +543,11 @@ function MemoFormContent({
 			)}
 		</>
 	);
-}
+};
 
-function MemoForm({
+/** 페이지별 폼 상태를 만들고 지속되는 입력 영역 비율을 편집기에 전달한다. */
+const MemoForm = ({
+	fieldResizeState,
 	selectedMemo,
 	onOtherMemoClick,
 	isSelectedMemoMissing,
@@ -555,7 +558,7 @@ function MemoForm({
 	isSyncFailed,
 	hasSyncNetworkError,
 	onRetrySync,
-}: IFMemoFormProps) {
+}: IFMemoFormProps) => {
 	const form = useForm<MemoInput>({
 		shouldUnregister: false,
 		defaultValues: {
@@ -573,6 +576,7 @@ function MemoForm({
 	return (
 		<FormProvider {...form}>
 			<MemoFormContent
+				fieldResizeState={fieldResizeState}
 				selectedMemo={selectedMemo}
 				onOtherMemoClick={onOtherMemoClick}
 				isSelectedMemoMissing={isSelectedMemoMissing}
@@ -586,12 +590,16 @@ function MemoForm({
 			/>
 		</FormProvider>
 	);
-}
+};
 
 export default MemoForm;
 
 /** 선택된 메모를 편집기와 연결한다. */
 interface IFMemoFormProps {
+	/** 페이지 이동에도 유지되는 상위 컴포넌트의 입력 영역 비율. */
+	fieldResizeState: Parameters<
+		typeof useMemoFieldResize
+	>[0]["fieldResizeState"];
 	selectedMemo?: Database["memo"]["Tables"]["memo"]["Row"];
 	isSelectedMemoMissing?: boolean;
 	onOtherMemoClick?: (draft?: MemoInput) => void;

@@ -29,6 +29,7 @@ import NoticeBanner from "../NoticeBanner";
 import MemoCandidateList from "./components/MemoCandidateList";
 import MemoForm from "./components/MemoForm";
 import { MemoFormSkeleton } from "./components/MemoForm/components";
+import { useMemoFieldRatios } from "./components/MemoForm/hooks/useMemoFieldResize";
 import MemoHeader from "./components/MemoHeader";
 import useMemoCandidatesQuery from "./hooks/useMemoCandidatesQuery";
 
@@ -121,6 +122,7 @@ const MemoSectionContent = () => {
 };
 
 const AuthenticatedMemoSectionContent = () => {
+	const fieldResizeState = useMemoFieldRatios();
 	const { data: tab } = useTabQuery();
 	const { user } = useSupabaseUserQuery();
 	const userId = user.data.user?.id;
@@ -340,6 +342,7 @@ const AuthenticatedMemoSectionContent = () => {
 				<MemoHeader />
 				<MemoForm
 					key={editorScope}
+					fieldResizeState={fieldResizeState}
 					isMemoLocked
 					isMemoLoadFailed={isMemoLoadFailed}
 					onMemoRetryClick={refetchMemoCandidates}
@@ -369,6 +372,7 @@ const AuthenticatedMemoSectionContent = () => {
 			) : (
 				<MemoForm
 					key={editorScope}
+					fieldResizeState={fieldResizeState}
 					selectedMemo={activeMemo}
 					isSelectedMemoMissing={
 						isSelectedMemoMissing || hasUnselectedCollision

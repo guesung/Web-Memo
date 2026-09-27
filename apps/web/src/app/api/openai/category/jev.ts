@@ -11,16 +11,23 @@ import type {
 	IFCategorySuggestionResponse,
 } from "./type";
 
-/** Jev가 높은 확신으로 선택한 기존 카테고리만 반환합니다. */
+/** Jev 판정 결과와 민감정보를 제외한 관측값입니다. */
+export interface IFJevCategoryResult {
+	suggestion: IFCategorySuggestionResponse["suggestion"];
+	choiceType: "none" | "existing" | "unknown" | null;
+	confidence: number | null;
+}
+
+/** Jev의 선택 유형과 확신도를 보존하고, 높은 확신의 기존 카테고리만 추천합니다. */
 export const getJevCategorySuggestion = async (
 	request: IFCategorySuggestionRequest,
 	apiKey: string,
-): Promise<IFCategorySuggestionResponse["suggestion"]> => {
+): Promise<IFJevCategoryResult> => {
 	if (
 		request.existingCategories.length === 0 ||
 		request.existingCategories.length >= JEV_MAX_CHOICES
 	) {
-		return null;
+		return { suggestion: null, choiceType: null, confidence: null };
 	}
 
 	const criteria: Record<string, string> = {};
@@ -52,14 +59,12 @@ export const getJevCategorySuggestion = async (
 	);
 
 	const answer = result.answers.category;
+	const confidence = Number.isFinite(answer.confidence)
+		? answer.confidence
+		: null;
 
-	if (
-		answer.choice === "NONE" ||
-		!Number.isFinite(answer.confidence) ||
-		answer.confidence < JEV_CONFIDENCE_THRESHOLD ||
-		answer.confidence > 1
-	) {
-		return null;
+	if (answer.choice === "NONE") {
+		return { suggestion: null, choiceType: "none", confidence };
 	}
 
 	const selectedCategory = request.existingCategories.find(
@@ -67,14 +72,26 @@ export const getJevCategorySuggestion = async (
 	);
 
 	if (!selectedCategory) {
-		return null;
+		return { suggestion: null, choiceType: "unknown", confidence };
+	}
+
+	if (
+		confidence === null ||
+		confidence < JEV_CONFIDENCE_THRESHOLD ||
+		confidence > 1
+	) {
+		return { suggestion: null, choiceType: "existing", confidence };
 	}
 
 	return {
-		categoryName: selectedCategory.name,
-		isExisting: true,
-		existingCategoryId: selectedCategory.id,
-		confidence: answer.confidence,
-		source: "jev",
+		suggestion: {
+			categoryName: selectedCategory.name,
+			isExisting: true,
+			existingCategoryId: selectedCategory.id,
+			confidence,
+			source: "jev",
+		},
+		choiceType: "existing",
+		confidence,
 	};
 };

@@ -8,11 +8,13 @@ import { getOpenAIApiKey } from "../config";
 import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "../constant";
 import { createErrorResponse, handleOpenAIError } from "../util";
 import {
+	JEV_CONFIDENCE_THRESHOLD,
 	JEV_MAX_CHOICES,
 	OPENAI_MODEL,
 	OPENAI_SETTINGS,
 	SYSTEM_MESSAGE,
 } from "./constant";
+import type { IFJevCategoryResult } from "./jev";
 import { getJevCategorySuggestion } from "./jev";
 import type { IFCategorySuggestionResponse } from "./type";
 import {
@@ -29,6 +31,8 @@ export const POST = async (request: NextRequest) => {
 	let openAiDurationMs: number | null = null;
 	let fallbackReason: string | null = null;
 	let resultSource: "jev" | "llm" | "none" = "none";
+	let jevChoiceType: IFJevCategoryResult["choiceType"] = null;
+	let jevConfidence: number | null = null;
 	const openAIApiKey = getOpenAIApiKey();
 	const typeSafeApiKey = readServerEnv("TYPESAFE_API_KEY");
 
@@ -61,23 +65,38 @@ export const POST = async (request: NextRequest) => {
 				const jevStartedAt = performance.now();
 
 				try {
-					const jevSuggestion = await getJevCategorySuggestion(
+					const jevResult = await getJevCategorySuggestion(
 						body,
 						typeSafeApiKey,
 					);
+					jevChoiceType = jevResult.choiceType;
+					jevConfidence = jevResult.confidence;
 
-					if (jevSuggestion) {
+					if (jevResult.suggestion) {
 						resultSource = "jev";
 
 						return NextResponse.json(
 							{
-								suggestion: jevSuggestion,
+								suggestion: jevResult.suggestion,
 							} satisfies IFCategorySuggestionResponse,
 							{ headers: CORS_HEADERS },
 						);
 					}
 
-					fallbackReason = "no_confident_jev_match";
+					if (jevResult.choiceType === "none") {
+						fallbackReason = "jev_none";
+					} else if (jevResult.choiceType === "unknown") {
+						fallbackReason = "jev_unknown_choice";
+					} else if (
+						jevResult.confidence === null ||
+						jevResult.confidence > 1
+					) {
+						fallbackReason = "jev_invalid_confidence";
+					} else if (jevResult.confidence < JEV_CONFIDENCE_THRESHOLD) {
+						fallbackReason = "jev_low_confidence";
+					} else {
+						fallbackReason = "jev_no_match";
+					}
 				} catch (error) {
 					fallbackReason =
 						error instanceof APITimeoutError ? "jev_timeout" : "jev_error";
@@ -180,6 +199,8 @@ export const POST = async (request: NextRequest) => {
 		console.info("Category suggestion result", {
 			resultSource,
 			fallbackReason,
+			jevChoiceType,
+			jevConfidence,
 			jevDurationMs,
 			openAiDurationMs,
 			totalDurationMs: Math.round(performance.now() - requestStartedAt),

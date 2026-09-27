@@ -50,11 +50,15 @@ describe("getJevCategorySuggestion", () => {
 		const suggestion = await getJevCategorySuggestion(REQUEST, "test-key");
 
 		expect(suggestion).toEqual({
-			categoryName: "개발",
-			isExisting: true,
-			existingCategoryId: 10,
+			suggestion: {
+				categoryName: "개발",
+				isExisting: true,
+				existingCategoryId: 10,
+				confidence: JEV_CONFIDENCE_THRESHOLD,
+				source: "jev",
+			},
+			choiceType: "existing",
 			confidence: JEV_CONFIDENCE_THRESHOLD,
-			source: "jev",
 		});
 		expect(mocks.systemOne).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -83,15 +87,28 @@ describe("getJevCategorySuggestion", () => {
 	});
 
 	it.each([
-		{ choice: "NONE", confidence: 0.99 },
-		{ choice: "c10", confidence: JEV_CONFIDENCE_THRESHOLD - 0.01 },
-		{ choice: "c999", confidence: 0.99 },
-		{ choice: "c10", confidence: Number.NaN },
-	])("$choice 또는 신뢰도 부족일 때 LLM 경로로 넘깁니다", async (answer) => {
-		mocks.systemOne.mockResolvedValue({ answers: { category: answer } });
+		{ choice: "NONE", confidence: 0.99, choiceType: "none" },
+		{
+			choice: "c10",
+			confidence: JEV_CONFIDENCE_THRESHOLD - 0.01,
+			choiceType: "existing",
+		},
+		{ choice: "c999", confidence: 0.99, choiceType: "unknown" },
+		{ choice: "c10", confidence: Number.NaN, choiceType: "existing" },
+	])(
+		"$choice 또는 신뢰도 부족일 때 관측값과 함께 LLM 경로로 넘깁니다",
+		async (answer) => {
+			mocks.systemOne.mockResolvedValue({ answers: { category: answer } });
 
-		expect(await getJevCategorySuggestion(REQUEST, "test-key")).toBeNull();
-	});
+			expect(await getJevCategorySuggestion(REQUEST, "test-key")).toEqual({
+				suggestion: null,
+				choiceType: answer.choiceType,
+				confidence: Number.isFinite(answer.confidence)
+					? answer.confidence
+					: null,
+			});
+		},
+	);
 
 	it("카테고리 0개 또는 선택지 상한 초과 시 Jev를 호출하지 않습니다", async () => {
 		const noCategoriesRequest = { ...REQUEST, existingCategories: [] };
@@ -108,10 +125,10 @@ describe("getJevCategorySuggestion", () => {
 
 		expect(
 			await getJevCategorySuggestion(noCategoriesRequest, "test-key"),
-		).toBeNull();
+		).toEqual({ suggestion: null, choiceType: null, confidence: null });
 		expect(
 			await getJevCategorySuggestion(tooManyCategoriesRequest, "test-key"),
-		).toBeNull();
+		).toEqual({ suggestion: null, choiceType: null, confidence: null });
 		expect(mocks.systemOne).not.toHaveBeenCalled();
 	});
 });

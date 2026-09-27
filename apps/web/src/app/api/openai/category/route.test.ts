@@ -104,6 +104,8 @@ describe("POST /api/openai/category", () => {
 			expect.objectContaining({
 				resultSource: "jev",
 				fallbackReason: null,
+				jevChoiceType: "existing",
+				jevConfidence: 0.85,
 				jevDurationMs: expect.any(Number),
 				openAiDurationMs: null,
 				totalDurationMs: expect.any(Number),
@@ -112,8 +114,24 @@ describe("POST /api/openai/category", () => {
 	});
 
 	it.each([
-		{ choice: "NONE", confidence: 0.99 },
-		{ choice: "c10", confidence: 0.84 },
+		{
+			choice: "NONE",
+			confidence: 0.99,
+			choiceType: "none",
+			fallbackReason: "jev_none",
+		},
+		{
+			choice: "c10",
+			confidence: 0.84,
+			choiceType: "existing",
+			fallbackReason: "jev_low_confidence",
+		},
+		{
+			choice: "c999",
+			confidence: 0.99,
+			choiceType: "unknown",
+			fallbackReason: "jev_unknown_choice",
+		},
 	])("$choice 또는 저신뢰 결과는 LLM으로 폴백합니다", async (answer) => {
 		mocks.systemOne.mockResolvedValue({ answers: { category: answer } });
 		const { POST } = await import("./route");
@@ -129,7 +147,9 @@ describe("POST /api/openai/category", () => {
 			"Category suggestion result",
 			expect.objectContaining({
 				resultSource: "llm",
-				fallbackReason: "no_confident_jev_match",
+				fallbackReason: answer.fallbackReason,
+				jevChoiceType: answer.choiceType,
+				jevConfidence: answer.confidence,
 				jevDurationMs: expect.any(Number),
 				openAiDurationMs: expect.any(Number),
 			}),
@@ -146,7 +166,11 @@ describe("POST /api/openai/category", () => {
 		expect(mocks.captureException).toHaveBeenCalledOnce();
 		expect(mocks.consoleInfo).toHaveBeenCalledWith(
 			"Category suggestion result",
-			expect.objectContaining({ fallbackReason: "jev_error" }),
+			expect.objectContaining({
+				fallbackReason: "jev_error",
+				jevChoiceType: null,
+				jevConfidence: null,
+			}),
 		);
 	});
 
@@ -160,7 +184,30 @@ describe("POST /api/openai/category", () => {
 		expect((await response.json()).suggestion.source).toBe("llm");
 		expect(mocks.consoleInfo).toHaveBeenCalledWith(
 			"Category suggestion result",
-			expect.objectContaining({ fallbackReason: "jev_timeout" }),
+			expect.objectContaining({
+				fallbackReason: "jev_timeout",
+				jevChoiceType: null,
+				jevConfidence: null,
+			}),
+		);
+	});
+
+	it("유효하지 않은 Jev 확신도는 로그에 null로 기록합니다", async () => {
+		mocks.systemOne.mockResolvedValue({
+			answers: { category: { choice: "c10", confidence: Number.NaN } },
+		});
+		const { POST } = await import("./route");
+
+		const response = await POST(createRequest());
+
+		expect((await response.json()).suggestion.source).toBe("llm");
+		expect(mocks.consoleInfo).toHaveBeenCalledWith(
+			"Category suggestion result",
+			expect.objectContaining({
+				fallbackReason: "jev_invalid_confidence",
+				jevChoiceType: "existing",
+				jevConfidence: null,
+			}),
 		);
 	});
 
@@ -175,6 +222,11 @@ describe("POST /api/openai/category", () => {
 		const serializedLog = JSON.stringify(mocks.consoleInfo.mock.calls);
 		expect(serializedLog).not.toContain("Article excerpt");
 		expect(serializedLog).not.toContain("Useful article");
+		expect(serializedLog).not.toContain("개발");
+		expect(serializedLog).not.toContain("c10");
+		expect(mocks.consoleInfo.mock.calls[0][1]).not.toHaveProperty(
+			"existingCategoryId",
+		);
 	});
 
 	it("키가 없거나 기존 카테고리가 없으면 Jev를 건너뜁니다", async () => {

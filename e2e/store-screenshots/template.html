@@ -160,6 +160,12 @@
 				line-height: 16px;
 				text-align: center;
 			}
+			.tab-icon img {
+				display: block;
+				width: 16px;
+				height: 16px;
+				background: #fff;
+			}
 			.toolbar {
 				display: flex;
 				align-items: center;
@@ -309,11 +315,23 @@
 				background: hsl(222 47% 11%);
 				box-shadow: 0 24px 64px hsl(222 47% 11% / 0.28);
 			}
-			.phone img {
+			.phone img,
+			.phone-placeholder {
 				display: block;
 				width: 280px;
 				height: 606px;
 				border-radius: 36px;
+			}
+			.phone-placeholder {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 24px;
+				border: 3px dashed hsl(214 32% 70%);
+				background: hsl(220 20% 96%);
+				color: var(--muted-foreground);
+				font-size: 18px;
+				text-align: center;
 			}
 
 			[data-scene] .scene-only {
@@ -394,7 +412,13 @@
 				document.documentElement.lang = scene.language;
 				document.querySelector(".headline").textContent = scene.headline;
 				document.querySelector(".tab-title").textContent = scene.tabTitle;
-				document.querySelector(".tab-icon").textContent = scene.tabIconLetter;
+				const tabIcon = document.querySelector(".tab-icon");
+
+				if (scene.tabIconUrl) {
+					tabIcon.innerHTML = `<img src="${scene.tabIconUrl}" alt="" />`;
+				} else {
+					tabIcon.textContent = scene.tabIconLetter;
+				}
 				document.querySelector(".address-bar").innerHTML =
 					`<strong>${scene.addressHost}</strong>${scene.addressPath}`;
 
@@ -425,7 +449,11 @@
 
 				const phone = document.querySelector(".phone");
 
-				phone.innerHTML = `<img src="${scene.mobileImage}" alt="" />`;
+				if (scene.mobileImage) {
+					phone.innerHTML = `<img src="${scene.mobileImage}" alt="" />`;
+				} else {
+					phone.innerHTML = `<div class="phone-placeholder">${scene.mobilePlaceholderText}</div>`;
+				}
 
 				const visibleImages = [...document.querySelectorAll("img")].filter(
 					(image) => image.getAttribute("src") && image.offsetParent !== null,

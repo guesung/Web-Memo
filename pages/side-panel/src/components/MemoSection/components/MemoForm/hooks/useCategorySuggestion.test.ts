@@ -6,12 +6,18 @@ import { useCategorySuggestion } from "./useCategorySuggestion";
 
 const mocks = vi.hoisted(() => ({
 	request: vi.fn(),
-	createCategory: vi.fn(),
 	trackEvent: vi.fn(),
-	getStorage: vi.fn(),
+	toast: vi.fn(),
+	getTabInfo: vi.fn(),
 	onSelect: vi.fn(),
-	onAutoApply: vi.fn(),
-	values: { categoryId: null as number | null },
+	getValues: vi.fn(),
+	values: { categoryId: null as number | null, memo: "첫 메모" },
+	categories: [{ id: 7, name: "개발" }] as
+		| { id: number; name: string }[]
+		| undefined,
+	currentMemoId: 1 as number | null,
+	firstSavedMemoId: null as number | null,
+	isFirstSavedMemoReady: false,
 	tab: { url: "https://example.com/a", title: "Article" },
 }));
 
@@ -19,29 +25,21 @@ vi.mock("./requestCategorySuggestion", () => ({
 	requestCategorySuggestion: mocks.request,
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
-	useCategoryQuery: () => ({ categories: [{ id: 7, name: "개발" }] }),
+	useCategoryQuery: () => ({ categories: mocks.categories }),
 	useTabQuery: () => ({ data: mocks.tab }),
-	useCategoryPostMutation: () => ({ mutateAsync: mocks.createCategory }),
 }));
 vi.mock("@web-memo/shared/modules/analytics", () => ({
 	analytics: { trackEvent: mocks.trackEvent },
 }));
-vi.mock("@web-memo/shared/modules/chrome-storage", () => ({
-	ChromeSyncStorage: { get: mocks.getStorage },
-	STORAGE_KEYS: { autoApplyCategory: "autoApplyCategory" },
-}));
+vi.mock("@web-memo/ui", () => ({ toast: mocks.toast }));
 vi.mock("@web-memo/shared/utils/extension", () => ({
-	getTabInfo: async () => mocks.tab,
+	getTabInfo: mocks.getTabInfo,
 	I18n: { get: (key: string) => key },
 }));
-vi.mock("@web-memo/shared/utils", () => ({
-	generateRandomPastelColor: () => "#abcdef",
-}));
-vi.mock("@web-memo/ui", () => ({ toast: vi.fn() }));
 vi.mock("@sentry/react", () => ({ captureException: vi.fn() }));
 vi.mock("react-hook-form", () => ({
 	useFormContext: () => ({
-		getValues: (key: "categoryId") => mocks.values[key],
+		getValues: mocks.getValues,
 	}),
 }));
 
@@ -50,29 +48,44 @@ let suggestion: ReturnType<typeof useCategorySuggestion>;
 const TestHook = () => {
 	suggestion = useCategorySuggestion({
 		currentCategoryId: mocks.values.categoryId,
-		currentMemoId: 1,
+		currentMemoId: mocks.currentMemoId,
+		firstSavedMemoId: mocks.firstSavedMemoId,
+		isFirstSavedMemoReady: mocks.isFirstSavedMemoReady,
 		onCategorySelect: mocks.onSelect,
-		onCategoryAutoApply: mocks.onAutoApply,
 	});
 	return null;
 };
 const render = async () => {
 	await act(async () => root.render(createElement(TestHook)));
 };
+const jevSuggestion = {
+	categoryName: "개발",
+	isExisting: true,
+	existingCategoryId: 7,
+	confidence: 0.2,
+	source: "jev",
+} as const;
 
 beforeEach(() => {
 	vi.useFakeTimers();
 	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
 	mocks.values.categoryId = null;
+	mocks.values.memo = "첫 메모";
+	mocks.categories = [{ id: 7, name: "개발" }];
+	mocks.currentMemoId = 1;
+	mocks.firstSavedMemoId = null;
+	mocks.isFirstSavedMemoReady = false;
 	mocks.tab = { url: "https://example.com/a", title: "Article" };
 	mocks.request.mockReset();
-	mocks.createCategory.mockReset();
 	mocks.trackEvent.mockReset();
-	mocks.getStorage.mockReset().mockResolvedValue(true);
+	mocks.toast.mockReset();
+	mocks.getTabInfo.mockReset().mockImplementation(async () => mocks.tab);
+	mocks.getValues
+		.mockReset()
+		.mockImplementation((key: "categoryId" | "memo") => mocks.values[key]);
 	mocks.onSelect.mockReset().mockImplementation((categoryId: number | null) => {
 		mocks.values.categoryId = categoryId;
 	});
-	mocks.onAutoApply.mockReset();
 	document.body.innerHTML = "<div id='root'></div>";
 	root = createRoot(document.getElementById("root") as HTMLElement);
 });
@@ -83,132 +96,149 @@ afterEach(async () => {
 	vi.unstubAllGlobals();
 });
 
-it("Jev가 고른 기존 카테고리만 자동 적용하고 되돌리면 같은 URL에서 다시 제안하지 않는다", async () => {
-	mocks.request.mockResolvedValue({
-		categoryName: "개발",
-		isExisting: true,
-		existingCategoryId: 7,
-		confidence: 0.9,
-		source: "jev",
-	});
+it("낮은 확신도의 Jev 선택도 자동 적용 없이 제안하고 수락 시 적용한다", async () => {
+	mocks.request.mockResolvedValue(jevSuggestion);
 	await render();
 	await act(async () => suggestion.triggerSuggestion("memo"));
+	expect(suggestion.suggestion?.categoryName).toBe("개발");
+	expect(mocks.onSelect).not.toHaveBeenCalled();
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "category_suggestion_show",
+		params: { source: "jev", is_new_category: false },
+	});
+	await act(async () => suggestion.acceptSuggestion());
 	expect(mocks.onSelect).toHaveBeenCalledWith(7, "ai");
-	expect(mocks.onAutoApply).toHaveBeenCalledTimes(1);
-	await act(async () => mocks.onAutoApply.mock.calls[0][1]());
-	expect(mocks.onSelect).toHaveBeenCalledWith(null, "ai");
-	await act(async () => suggestion.triggerSuggestion("memo updated"));
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "category_suggestion_apply",
+		params: { source: "jev", is_new_category: false },
+	});
+});
+
+it("첫 저장이 반영되면 현재 메모로 한 번 추천한다", async () => {
+	mocks.request.mockResolvedValue(null);
+	mocks.currentMemoId = null;
+	await render();
+	expect(mocks.request).not.toHaveBeenCalled();
+	mocks.currentMemoId = 42;
+	mocks.firstSavedMemoId = 42;
+	mocks.isFirstSavedMemoReady = true;
+	await render();
+	expect(mocks.request).toHaveBeenCalledTimes(1);
+	expect(mocks.request.mock.calls[0][0].memoText).toBe("첫 메모");
+	await render();
 	expect(mocks.request).toHaveBeenCalledTimes(1);
 });
 
-it("LLM의 새 이름은 자동 생성하지 않고 수락할 때만 만든다", async () => {
-	mocks.request.mockResolvedValue({
-		categoryName: "프론트엔드 성능",
-		isExisting: false,
-		existingCategoryId: null,
-		confidence: 0.9,
-		source: "llm",
-	});
-	mocks.createCategory.mockResolvedValue({ data: [{ id: 12 }] });
+it("첫 저장 후 카테고리 조회가 완료되면 추천을 시작한다", async () => {
+	mocks.request.mockResolvedValue(jevSuggestion);
+	mocks.categories = undefined;
+	mocks.currentMemoId = 42;
+	mocks.firstSavedMemoId = 42;
+	mocks.isFirstSavedMemoReady = true;
 	await render();
-	await act(async () => suggestion.triggerSuggestion("memo"));
-	expect(suggestion.suggestion?.categoryName).toBe("프론트엔드 성능");
-	expect(mocks.createCategory).not.toHaveBeenCalled();
-	expect(mocks.onSelect).not.toHaveBeenCalled();
-	await act(async () => suggestion.acceptSuggestion());
-	expect(mocks.createCategory).toHaveBeenCalledTimes(1);
-	expect(mocks.onSelect).toHaveBeenCalledWith(12, "ai");
+	expect(mocks.request).not.toHaveBeenCalled();
+
+	mocks.categories = [{ id: 7, name: "개발" }];
+	await render();
+	expect(mocks.request).toHaveBeenCalledTimes(1);
+	expect(suggestion.suggestion?.existingCategoryId).toBe(7);
 });
 
-it("제안 후 다른 URL로 이동하면 오래된 칩을 수락해도 카테고리를 만들지 않는다", async () => {
-	mocks.request.mockResolvedValue({
-		categoryName: "프론트엔드 성능",
-		isExisting: false,
-		existingCategoryId: null,
-		confidence: 0.9,
-		source: "llm",
-	});
+it("첫 저장 전에 기존 입력 경로가 추천했으면 중복 요청하지 않는다", async () => {
+	mocks.request.mockResolvedValue(null);
+	mocks.currentMemoId = 42;
+	await render();
+	await act(async () => suggestion.triggerSuggestion("추가 입력"));
+	mocks.firstSavedMemoId = 42;
+	mocks.isFirstSavedMemoReady = true;
+	await render();
+	expect(mocks.request).toHaveBeenCalledTimes(1);
+});
+
+it("카테고리 없음·빈 응답·목록 밖 선택은 제안하지 않는다", async () => {
+	mocks.categories = [];
 	await render();
 	await act(async () => suggestion.triggerSuggestion("memo"));
-	expect(suggestion.suggestion).not.toBeNull();
+	expect(mocks.request).not.toHaveBeenCalled();
+	mocks.categories = [{ id: 7, name: "개발" }];
+	await render();
+	for (const response of [
+		null,
+		{ ...jevSuggestion, existingCategoryId: 8 },
+		{ ...jevSuggestion, isExisting: false },
+	]) {
+		mocks.request.mockResolvedValueOnce(response);
+		await act(async () => suggestion.triggerSuggestion("memo"));
+		expect(suggestion.suggestion).toBeNull();
+	}
+});
+
+it("다른 페이지로 이동한 뒤 이전 제안을 수락하지 않는다", async () => {
+	mocks.request.mockResolvedValue(jevSuggestion);
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
 	mocks.tab = { url: "https://example.com/b", title: "Another article" };
 	await act(async () => suggestion.acceptSuggestion());
 	expect(suggestion.suggestion).toBeNull();
-	expect(mocks.createCategory).not.toHaveBeenCalled();
 	expect(mocks.onSelect).not.toHaveBeenCalled();
-	await render();
-	expect(suggestion.suggestion).toBeNull();
 });
 
-it("다른 URL의 메모 화면에서는 이전 페이지 자동 적용을 되돌리지 않는다", async () => {
-	mocks.request.mockResolvedValue({
-		categoryName: "개발",
-		isExisting: true,
-		existingCategoryId: 7,
-		confidence: 0.9,
-		source: "jev",
-	});
+it("수락 중 페이지 정보 조회가 실패하면 제안을 유지하고 오류를 알린다", async () => {
+	mocks.request.mockResolvedValue(jevSuggestion);
 	await render();
 	await act(async () => suggestion.triggerSuggestion("memo"));
-	mocks.tab = { url: "https://example.com/b", title: "Another article" };
-	await act(async () => mocks.onAutoApply.mock.calls[0][1]());
-	expect(mocks.onSelect).toHaveBeenCalledTimes(1);
-	expect(mocks.values.categoryId).toBe(7);
-	expect(mocks.trackEvent).not.toHaveBeenCalledWith({
-		name: "category_suggestion_undo",
-		params: { source: "jev" },
-	});
-});
-
-it("자동 적용 설정을 기다리는 동안 URL이 바뀌면 이전 결과를 적용하지 않는다", async () => {
-	mocks.request.mockResolvedValue({
-		categoryName: "개발",
-		isExisting: true,
-		existingCategoryId: 7,
-		confidence: 0.9,
-		source: "jev",
-	});
-	let resolveSetting: (value: boolean) => void = () => {};
-	mocks.getStorage.mockImplementation(
-		() =>
-			new Promise<boolean>((resolve) => {
-				resolveSetting = resolve;
-			}),
-	);
-	await render();
-	await act(async () => {
-		const pendingSuggestion = suggestion.triggerSuggestion("memo");
-		for (let attempt = 0; attempt < 6; attempt += 1) {
-			await Promise.resolve();
-		}
-		expect(mocks.getStorage).toHaveBeenCalledTimes(1);
-		mocks.tab = { url: "https://example.com/b", title: "Another article" };
-		resolveSetting(true);
-		await pendingSuggestion;
-	});
+	mocks.getTabInfo.mockRejectedValueOnce(new Error("tab unavailable"));
+	await act(async () => suggestion.acceptSuggestion());
+	expect(suggestion.suggestion?.existingCategoryId).toBe(7);
 	expect(mocks.onSelect).not.toHaveBeenCalled();
-	expect(mocks.onAutoApply).not.toHaveBeenCalled();
-	expect(suggestion.suggestion).toBeNull();
+	expect(mocks.toast).toHaveBeenCalledWith({
+		title: "category_suggestion_apply_failed",
+	});
 });
 
-it("제안에 포커스가 있는 동안 15초 타이머가 멈추고, 다시 시작한 뒤 거절한다", async () => {
-	mocks.request.mockResolvedValue({
-		categoryName: "개발",
-		isExisting: true,
-		existingCategoryId: 7,
-		confidence: 0.9,
-		source: "jev",
-	});
-	mocks.getStorage.mockResolvedValue(false);
+it("거절한 URL은 다시 추천하지 않고 Jev 거절 이벤트를 남긴다", async () => {
+	mocks.request.mockResolvedValue(jevSuggestion);
 	await render();
 	await act(async () => suggestion.triggerSuggestion("memo"));
-	await act(async () => suggestion.pauseAutoDismiss());
-	await act(async () => vi.advanceTimersByTimeAsync(20000));
-	expect(suggestion.suggestion).not.toBeNull();
-	await act(async () => suggestion.resumeAutoDismiss());
-	await act(async () => vi.advanceTimersByTimeAsync(15000));
-	expect(suggestion.suggestion).toBeNull();
+	await act(async () => suggestion.dismissSuggestion());
+	await act(async () => suggestion.triggerSuggestion("memo updated"));
+	expect(mocks.request).toHaveBeenCalledTimes(1);
 	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "category_suggestion_dismiss",
+		params: { source: "jev", is_new_category: false },
+	});
+});
+
+it("제안을 받은 뒤 메모가 바뀌면 이전 메모의 제안을 지운다", async () => {
+	mocks.request.mockResolvedValue(jevSuggestion);
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	expect(suggestion.suggestion?.existingCategoryId).toBe(7);
+	mocks.currentMemoId = 2;
+	await render();
+	expect(suggestion.suggestion).toBeNull();
+});
+
+it("카테고리를 적용했다가 제거하면 추가 입력에 다시 추천한다", async () => {
+	mocks.request.mockResolvedValue(jevSuggestion);
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	await act(async () => suggestion.acceptSuggestion());
+	await render();
+	mocks.values.categoryId = null;
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo updated"));
+	expect(mocks.request).toHaveBeenCalledTimes(2);
+	expect(suggestion.suggestion?.existingCategoryId).toBe(7);
+});
+
+it("사용자가 결정하기 전에는 제안이 15초 뒤에도 유지된다", async () => {
+	mocks.request.mockResolvedValue(jevSuggestion);
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	await act(async () => vi.advanceTimersByTimeAsync(30000));
+	expect(suggestion.suggestion?.existingCategoryId).toBe(7);
+	expect(mocks.trackEvent).not.toHaveBeenCalledWith({
 		name: "category_suggestion_dismiss",
 		params: { source: "jev", is_new_category: false },
 	});

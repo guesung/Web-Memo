@@ -16,9 +16,5 @@ export const TECH_ARTICLE_PAGE: TLandingPageConfig = {
 		{ key: "organize", icon: FolderOpen },
 		{ key: "source", icon: LinkIcon },
 	],
-	relatedKeys: [
-		"useCasesDeveloper",
-		"useCasesNewsReading",
-		"featuresYoutubeSummary",
-	],
+	relatedKeys: ["useCasesDeveloper", "useCasesNewsReading"],
 };

@@ -1,13 +1,9 @@
-import { access, mkdir, readFile } from "node:fs/promises";
+import { access, mkdir, readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { test } from "@playwright/test";
 import sharp from "sharp";
-import {
-	DEMO_ARTICLE_URL,
-	DEMO_CONTENT,
-	type TStoreLanguage,
-} from "./demoData";
+import { DEMO_CONTENT, type IFDemoPage, type TStoreLanguage } from "./demoData";
 
 test.use({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
 
@@ -39,10 +35,7 @@ for (const language of ["ko", "en"] as const) {
 		);
 		const rawImage = (fileName: string) =>
 			pathToFileURL(path.join(rawDirectory, fileName)).href;
-		const mobileImage = pathToFileURL(
-			path.join(__dirname, "assets", "mobileMemoList.png"),
-		).href;
-		await access(path.join(__dirname, "assets", "mobileMemoList.png"));
+		const mobileImage = await findMobileImage();
 		await mkdir(webDirectory, { recursive: true });
 
 		for (const fileName of [
@@ -51,6 +44,7 @@ for (const language of ["ko", "en"] as const) {
 			"category-dashboard.png",
 			"dashboard.png",
 			"article-memo-source.json",
+			"page-titles.json",
 		]) {
 			await access(path.join(rawDirectory, fileName)).catch(() => {
 				throw new Error(
@@ -66,12 +60,15 @@ for (const language of ["ko", "en"] as const) {
 				"utf8",
 			),
 		);
-		const articleUrl = new URL(DEMO_ARTICLE_URL);
+		const pageTitles: { article: string } = JSON.parse(
+			await readFile(path.join(rawDirectory, "page-titles.json"), "utf8"),
+		);
+		const content = DEMO_CONTENT[language];
 		const articleScene = {
-			tabTitle: DEMO_CONTENT[language].articleMemo.title,
-			tabIconLetter: "F",
-			addressHost: articleUrl.host,
-			addressPath: articleUrl.pathname,
+			...toBrowserChrome({
+				demoPage: content.articlePage,
+				tabTitle: pageTitles.article,
+			}),
 			pageImage: rawImage("article-page.png"),
 			sidePanelImage: rawImage("article-side-panel.png"),
 		};
@@ -81,6 +78,7 @@ for (const language of ["ko", "en"] as const) {
 			articleScene,
 			{
 				tabTitle: language === "ko" ? "웹 메모" : "Web Memo",
+				tabIconUrl: null,
 				tabIconLetter: "W",
 				addressHost: "webmemo.xyz",
 				addressPath: `/${language}/memos`,
@@ -88,9 +86,10 @@ for (const language of ["ko", "en"] as const) {
 			},
 			{
 				tabTitle: language === "ko" ? "웹 메모" : "Web Memo",
+				tabIconUrl: null,
 				tabIconLetter: "W",
 				addressHost: "webmemo.xyz",
-				addressPath: `/${language}/memos?category=${encodeURIComponent(DEMO_CONTENT[language].categories[0].name)}`,
+				addressPath: `/${language}/memos?category=${encodeURIComponent(content.categories[0].name)}`,
 				dashboardImage: rawImage("category-dashboard.png"),
 			},
 		].map((scene, index) => ({
@@ -99,6 +98,7 @@ for (const language of ["ko", "en"] as const) {
 			language,
 			headline: HEADLINES[language][index],
 			mobileImage,
+			mobilePlaceholderText: "assets/ 에 모바일 앱 스크린샷을 넣어 주세요",
 			memoSourceTop: memoSourceBox.top,
 			memoSourceHeight: memoSourceBox.height,
 		}));
@@ -142,6 +142,34 @@ for (const language of ["ko", "en"] as const) {
 	});
 }
 
+/** 캡처한 페이지의 탭 제목·아이콘과 주소창 표시를 만듭니다. */
+const toBrowserChrome = ({ demoPage, tabTitle }: IFToBrowserChromeParams) => {
+	const url = new URL(demoPage.url);
+
+	return {
+		tabTitle,
+		tabIconUrl: demoPage.tabIconUrl,
+		tabIconLetter: demoPage.tabIconLetter,
+		addressHost: url.host,
+		addressPath: `${url.pathname}${url.search}`,
+	};
+};
+
+/** assets/에서 모바일 앱 스크린샷을 찾습니다. */
+const findMobileImage = async () => {
+	const assetsDirectory = path.join(__dirname, "assets");
+	const fileNames = await readdir(assetsDirectory).catch(() => []);
+	const imageFileName = fileNames
+		.filter((fileName) => /\.(png|jpe?g|webp)$/i.test(fileName))
+		.sort()[0];
+
+	if (!imageFileName) {
+		return null;
+	}
+
+	return pathToFileURL(path.join(assetsDirectory, imageFileName)).href;
+};
+
 /** template.html의 window.renderScene에 넘기는 장면 하나. */
 interface IFSceneInput {
 	/** 장 번호(1~5). 원 강조·키캡·확대·모바일 화면을 켤지 정한다 */
@@ -154,6 +182,8 @@ interface IFSceneInput {
 	output: "store" | "web" | "og";
 	/** 창 틀 탭에 보일 제목 */
 	tabTitle: string;
+	/** 탭 아이콘 이미지. 없으면 tabIconLetter를 사용합니다. */
+	tabIconUrl: string | null;
 	/** 탭 아이콘 자리에 넣을 글자 */
 	tabIconLetter: string;
 	/** 주소창의 호스트(굵게 표시) */
@@ -167,11 +197,19 @@ interface IFSceneInput {
 	/** 4번 장의 웹 대시보드 캡처 */
 	dashboardImage?: string;
 	/** 4번 장의 실제 한국어 모바일 앱 스크린샷 */
-	mobileImage: string;
+	mobileImage: string | null;
+	/** 모바일 이미지가 없을 때 보여 줄 안내 문구입니다. */
+	mobilePlaceholderText: string;
 	/** 3번 장이 확대할 메모 출처의 사이드 패널 안 위쪽 위치(CSS px) */
 	memoSourceTop: number;
 	/** 3번 장이 확대할 메모 출처의 높이(CSS px) */
 	memoSourceHeight: number;
+}
+
+/** 브라우저 프레임에 표시할 실제 페이지 정보입니다. */
+interface IFToBrowserChromeParams {
+	demoPage: IFDemoPage;
+	tabTitle: string;
 }
 
 declare global {

@@ -276,7 +276,7 @@ Release 워크플로 실행 기록 하나로 모입니다.
   `ios-build-verify`). PR 검증 빌드는 버려지는 산출물이라 `verify`(빌드 번호
   고정)로 굽고, master 머지분만 `ci`(빌드 번호 자동 증가)로 구워 제출 가능한
   상태로 남깁니다. 릴리스는 `-ci`로 끝나는 것만 찾습니다.
-  `/reset-develop`으로 develop을 master로 리셋하면 두 브랜치가 같은 커밋을
+  `/gs:reset-develop`으로 develop을 master로 리셋하면 두 브랜치가 같은 커밋을
   갖게 되는데, 그때 develop CI가 만드는 `verify` 산출물을 제출하면 스토어가
   중복 빌드 번호로 거절합니다. 이름을 가르는 이유가 이것입니다.
 - **확장은 CI에서도 `BUILD_ENV=production`으로 굽습니다.** `staging`이 아니면

@@ -6,7 +6,7 @@ export const metadataKorean = createPublicPageMetadata({
 	path: "/use-cases/learning",
 	title: "온라인 학습을 위한 웹 메모 | 웹 메모",
 	description:
-		"온라인 강의, 유튜브 교육 영상을 보면서 효율적으로 학습하세요. AI로 영상을 요약하고, 중요 내용을 메모하고, 체계적으로 복습할 수 있습니다.",
+		"온라인 강의, 유튜브 교육 영상을 보면서 효율적으로 학습하세요. 중요한 내용을 메모에 적고 강의 주소와 함께 저장해 복습할 수 있습니다.",
 	keywords: [
 		"온라인 학습",
 		"인강 메모",
@@ -23,7 +23,7 @@ export const metadataEnglish = createPublicPageMetadata({
 	path: "/use-cases/learning",
 	title: "Web Memo for Online Learning | Web Memo",
 	description:
-		"Learn efficiently while watching online courses and YouTube tutorials. Summarize videos with AI, take notes on key content, and review systematically.",
+		"Learn efficiently while watching online courses and YouTube tutorials. Write notes on key content, save the lecture URL, and review later.",
 	keywords: [
 		"online learning",
 		"course notes",

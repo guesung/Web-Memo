@@ -15,7 +15,8 @@ export default defineConfig({
 	// 두 언어가 같은 테스트 계정으로 로그인하고 같은 dist를 복사하므로 한 번에 하나씩 돈다.
 	workers: 1,
 	reporter: [["list"]],
-	timeout: 3 * 60 * 1000,
+	// 한국어판은 실제 페이지(brunch·유튜브)를 읽어 로드가 느리다.
+	timeout: 5 * 60 * 1000,
 	webServer: {
 		command: "pnpm run -w dev:web:preview",
 		url: "http://localhost:3000",

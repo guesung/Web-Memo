@@ -21,59 +21,29 @@ test.describe("확장 옵션 페이지", () => {
 		await skipGuide(page);
 	});
 
-	test("카테고리 자동 적용을 끄면 자동 저장되어 새로 열어도 꺼진 채로 남는다.", async ({
+	test("응답 언어를 변경하면 자동 저장되어 새로 열어도 유지된다.", async ({
 		page,
 	}) => {
 		const optionsPage = await page.context().newPage();
 		await optionsPage.goto(getExtensionUrl("options/index.html"));
 
-		const autoApplyCategorySwitch = optionsPage.locator("#auto-apply-category");
-		await expect(autoApplyCategorySwitch).toHaveAttribute(
-			"data-state",
-			"checked",
-		);
-
-		await autoApplyCategorySwitch.click();
-		await expect(autoApplyCategorySwitch).toHaveAttribute(
-			"data-state",
-			"unchecked",
-		);
+		await optionsPage.locator("#response-language").click();
+		await optionsPage.getByRole("option", { name: "English" }).click();
 		await expect(
 			optionsPage.getByText(/^(Saved|저장했어요)$/).last(),
 		).toBeVisible();
 
 		await optionsPage.reload();
-		await expect(optionsPage.locator("#auto-apply-category")).toHaveAttribute(
-			"data-state",
-			"unchecked",
+		await expect(optionsPage.locator("#response-language")).toContainText(
+			"English",
 		);
 	});
 
-	test("연속 변경 후 마지막 선택이 저장된다.", async ({ page }) => {
+	test("카테고리 자동 적용 설정은 표시하지 않는다.", async ({ page }) => {
 		const optionsPage = await page.context().newPage();
 		await optionsPage.goto(getExtensionUrl("options/index.html"));
 
-		const autoApplyCategorySwitch = optionsPage.locator("#auto-apply-category");
-		await expect(autoApplyCategorySwitch).toHaveAttribute(
-			"data-state",
-			"checked",
-		);
-
-		await autoApplyCategorySwitch.click();
-		await autoApplyCategorySwitch.click();
-		await autoApplyCategorySwitch.click();
-		await expect(autoApplyCategorySwitch).toHaveAttribute(
-			"data-state",
-			"unchecked",
-		);
-		await expect(
-			optionsPage.getByText(/^(Saved|저장했어요)$/).last(),
-		).toBeVisible();
-
-		await optionsPage.reload();
-		await expect(optionsPage.locator("#auto-apply-category")).toHaveAttribute(
-			"data-state",
-			"unchecked",
-		);
+		await expect(optionsPage.locator("#response-language")).toBeVisible();
+		await expect(optionsPage.locator("#auto-apply-category")).toHaveCount(0);
 	});
 });

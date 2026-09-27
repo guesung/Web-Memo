@@ -162,7 +162,7 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 		cells: {
 			webMemo: {
 				status: "partial",
-				description: "웹·유튜브 요약, 일부 페이지 불가",
+				description: "일부 웹페이지 요약, 미지원 페이지 있음",
 			},
 			notionWebClipper: {
 				status: "partial",
@@ -185,7 +185,7 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 		cells: {
 			webMemo: {
 				status: "partial",
-				description: "자막 요약, 타임스탬프 메모 없음",
+				description: "영상 옆 메모, 타임스탬프 메모 없음",
 			},
 			notionWebClipper: {
 				status: "partial",

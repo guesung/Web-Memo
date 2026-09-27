@@ -696,13 +696,14 @@
 				"title": "Save articles for later",
 				"description": "Bookmark interesting articles and access them anytime"
 			},
-			"category": {
-				"title": "Find notes by category",
-				"description": "Add categories to your notes so you can find and revisit them by topic."
-			},
+			"ai_summary": {},
 			"wishlist": {
 				"title": "Save for later",
 				"description": "Keep interesting content in your wishlist"
+			},
+			"category": {
+				"title": "Find notes by category",
+				"description": "Add categories to your notes so you can find and revisit them by topic."
 			},
 			"shortcut": {
 				"title": "Open it with Alt+S",
@@ -989,55 +990,6 @@
 		}
 	},
 	"features": {
-		"youtubeSummary": {
-			"hero": {
-				"badge": "YouTube AI Summary",
-				"title": "Read the point before you watch the hour",
-				"description": "AI reads the video's captions and lays out the key points, so you can decide whether to watch and where to start.",
-				"imageAlt": "Notes grouped by category on the web dashboard"
-			},
-			"benefits": {
-				"title": "What you can know before watching",
-				"subtitle": "Runtime and the time you actually need are not the same",
-				"timeSaving": {
-					"title": "Decide before you commit",
-					"description": "Read the summary of an hour-long video first and decide whether it's worth the hour."
-				},
-				"aiPowered": {
-					"title": "Built from the whole transcript",
-					"description": "The summary comes from the full transcript, not just the opening minutes."
-				},
-				"transcript": {
-					"title": "Works wherever captions exist",
-					"description": "Any video with captions can be summarized, auto-generated ones included."
-				},
-				"instant": {
-					"title": "Starts when the panel opens",
-					"description": "Open the side panel on a video page and the summary begins on its own."
-				}
-			},
-			"howItWorks": {
-				"title": "Three moves to a summary",
-				"subtitle": "After installing, this is all there is",
-				"step1": {
-					"title": "Open a YouTube video",
-					"description": "Go to the video you want summarized"
-				},
-				"step2": {
-					"title": "Open the side panel",
-					"description": "Press Alt+S (Mac: Option+S)"
-				},
-				"step3": {
-					"title": "Read the summary",
-					"description": "Read it, then note the parts worth keeping"
-				}
-			},
-			"cta": {
-				"title": "Read the summary before your next video",
-				"description": "Add it to Chrome and use it on the video you're watching now.",
-				"subtext": "Free · 10-second install · No credit card required"
-			}
-		},
 		"memo": {
 			"hero": {
 				"badge": "Browser Notes",
@@ -1084,7 +1036,7 @@
 			"cta": {
 				"title": "Start with the next thing you read",
 				"description": "Add it to Chrome and use it on the tab you already have open.",
-				"subtext": "Free · 10-second install · No credit card required"
+				"subtext": "Free to use"
 			}
 		},
 		"saveArticles": {
@@ -1133,7 +1085,12 @@
 			"cta": {
 				"title": "Stop losing the articles you meant to read",
 				"description": "Add it to Chrome and start with the tab you already have open.",
-				"subtext": "Free · 10-second install · No credit card required"
+				"subtext": "Free to use"
+			}
+		},
+		"youtubeSummary": {
+			"hero": {
+				"imageAlt": "Notes grouped by category on the web dashboard"
 			}
 		}
 	},
@@ -1154,7 +1111,7 @@
 				},
 				"summarize": {
 					"title": "Summarize the long ones first",
-					"description": "Read an AI summary of a long paper or article before deciding to read it closely."
+					"description": "When a page supports summaries, scan one first and read the passages you need yourself."
 				},
 				"organize": {
 					"title": "Split them by topic",
@@ -1168,22 +1125,22 @@
 			"cta": {
 				"title": "Take notes on your next search",
 				"description": "Add it to Chrome and use it on the source you already have open.",
-				"subtext": "Free · 10-second install · No credit card required"
+				"subtext": "Free to use"
 			}
 		},
 		"learning": {
 			"hero": {
 				"badge": "Online Learning",
 				"title": "Take lecture notes without pausing",
-				"description": "Write in the side panel while a lecture plays, and read a summary first when it runs long.",
+				"description": "Write in the side panel while a lecture plays. The lecture URL stays with your note.",
 				"imageAlt": "A written note in the side panel beside an article"
 			},
 			"benefits": {
 				"title": "What's left after the lecture ends",
 				"subtitle": "So you never replay an hour to find one minute",
-				"videoSummary": {
-					"title": "See the outline first",
-					"description": "A caption-based summary shows what a long lecture covers before you start it."
+				"organize": {
+					"title": "Group notes by course",
+					"description": "Add categories to see notes by course or topic."
 				},
 				"notes": {
 					"title": "Write while it plays",
@@ -1201,7 +1158,7 @@
 			"cta": {
 				"title": "Take notes in your next lecture",
 				"description": "Add it to Chrome and use it on the lecture you're watching now.",
-				"subtext": "Free · 10-second install · No credit card required"
+				"subtext": "Free to use"
 			}
 		},
 		"youtubeNotes": {
@@ -1234,7 +1191,7 @@
 			"cta": {
 				"title": "Take notes on your next video",
 				"description": "Add it to Chrome and use it on the video you're watching now.",
-				"subtext": "Free · 10-second install · No credit card required"
+				"subtext": "Free to use"
 			}
 		},
 		"newsReading": {
@@ -1253,7 +1210,7 @@
 				},
 				"aiSummary": {
 					"title": "Summary first on long pieces",
-					"description": "For a long article, read the AI summary to see the argument, then read on."
+					"description": "When an article supports summaries, scan one first, then read the passages that matter."
 				},
 				"categorize": {
 					"title": "Split them by interest",
@@ -1267,7 +1224,7 @@
 			"cta": {
 				"title": "Leave one line on what you read today",
 				"description": "Add it to Chrome and use it on the article you already have open.",
-				"subtext": "Free · 10-second install · No credit card required"
+				"subtext": "Free to use"
 			}
 		},
 		"jobHunting": {
@@ -1300,7 +1257,7 @@
 			"cta": {
 				"title": "Note your next posting",
 				"description": "Add it to Chrome and use it on the posting you already have open.",
-				"subtext": "Free · 10-second install · No credit card required"
+				"subtext": "Free to use"
 			}
 		},
 		"developer": {
@@ -1333,7 +1290,7 @@
 			"cta": {
 				"title": "Note the next problem you search your way out of",
 				"description": "Add it to Chrome and use it on the doc page you already have open.",
-				"subtext": "Free · 10-second install · No credit card required"
+				"subtext": "Free to use"
 			}
 		},
 		"techArticle": {
@@ -1348,7 +1305,7 @@
 				"subtitle": "Keep the content, not just the title",
 				"aiSummary": {
 					"title": "Summary first on long pieces",
-					"description": "For a long article, an AI summary tells you what it's about before you commit."
+					"description": "When an article supports summaries, scan one before reading in detail."
 				},
 				"clipping": {
 					"title": "Copy only the paragraph that matters",
@@ -1366,7 +1323,7 @@
 			"cta": {
 				"title": "Leave a line on what you read today",
 				"description": "Add it to Chrome and use it on the article you already have open.",
-				"subtext": "Free · 10-second install · No credit card required"
+				"subtext": "Free to use"
 			}
 		}
 	},

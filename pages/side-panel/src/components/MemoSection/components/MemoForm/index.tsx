@@ -90,6 +90,7 @@ const MemoFormContent = ({
 
 	const {
 		memoData,
+		firstSavedMemoId,
 		saveStatus,
 		hasPendingOfflineItem,
 		handleSaveRetryClick,
@@ -173,32 +174,17 @@ const MemoFormContent = ({
 		triggerSuggestion,
 		acceptSuggestion,
 		dismissSuggestion,
-		pauseAutoDismiss,
-		resumeAutoDismiss,
-		dismissCurrentUrl,
 	} = useCategorySuggestion({
 		currentCategoryId,
 		currentMemoId: memoData?.id ?? null,
+		firstSavedMemoId,
+		isFirstSavedMemoReady:
+			!isMemoLocked &&
+			!isControlsDisabled &&
+			!isWritePending &&
+			saveStatus === "saved",
 		onCategorySelect: updateCategory,
-		onCategoryAutoApply: (categoryName, onUndo) => {
-			toast({
-				title: I18n.get("category_auto_applied", categoryName),
-				action: (
-					<ToastAction
-						altText={I18n.get("category_auto_applied_undo")}
-						onClick={() => void onUndo()}
-					>
-						{I18n.get("category_auto_applied_undo")}
-					</ToastAction>
-				),
-			});
-		},
 	});
-
-	const handleCategoryRemoveClick = () => {
-		handleCategoryRemove();
-		void dismissCurrentUrl();
-	};
 
 	const handleMemoStatusClick = async (statusKey: TMemoStatusKey) => {
 		const nextStatusValue = await toggleMemoStatus(statusKey);
@@ -431,8 +417,6 @@ const MemoFormContent = ({
 							isAccepting={isAccepting}
 							onAccept={() => void acceptSuggestion()}
 							onDismiss={dismissSuggestion}
-							onPauseDismiss={pauseAutoDismiss}
-							onResumeDismiss={resumeAutoDismiss}
 						/>
 					</div>
 				)}
@@ -497,7 +481,7 @@ const MemoFormContent = ({
 								category={currentCategory}
 								badgeButtonRef={categoryBadgeButtonRef}
 								onBadgeButtonClick={handleCategoryButtonClick}
-								onRemoveButtonClick={handleCategoryRemoveClick}
+								onRemoveButtonClick={handleCategoryRemove}
 								isDisabled={isMemoLocked}
 								isDimmed={isMemoUiDimmed}
 								disabledReason={changeDisabledReason}

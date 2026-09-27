@@ -36,6 +36,19 @@ test("후보는 실제 구성 프로젝트와 누락 행동·기대 결과 근�
 	assert.equal(validateCandidate({ ...CANDIDATE, status: "none", testFile: "", project: "", assessments: [{ ...CANDIDATE.assessments[0], status: "covered" }] }, CONTEXT).status, "none");
 });
 
+test("근거 경로는 라우트 세그먼트 문자를 허용하고 경로 탈출과 셸 문자는 거부한다", () => {
+	const routeFiles = ["apps/web/src/app/[lng]/(no-auth)/login/page.tsx", "apps/app/app/+not-found.tsx"];
+	const context = { ...CONTEXT, trackedFiles: [...CONTEXT.trackedFiles, ...routeFiles] };
+	const productRefs = [...CANDIDATE.productRefs, ...routeFiles];
+	const value = { ...CANDIDATE, productRefs, assessments: [{ ...CANDIDATE.assessments[0], productRefs }] };
+	assert.equal(validateCandidate(value, context), value);
+	for (const file of ["apps/web/src/app/[lng]/../../../etc/passwd", "/apps/web/page.tsx", "apps/web/$(id).tsx", "apps/web/page tsx"]) {
+		const refs = [...CANDIDATE.productRefs, file];
+		const invalid = { ...CANDIDATE, productRefs: refs, assessments: [{ ...CANDIDATE.assessments[0], productRefs: refs }] };
+		assert.throws(() => validateCandidate(invalid, { ...CONTEXT, trackedFiles: [...CONTEXT.trackedFiles, file] }));
+	}
+});
+
 test("리포트는 실제 선택 파일의 단일 통과만 인정한다", () => {
 	assert.equal(validateReport(report(), CANDIDATE).expected, 1);
 	for (const patch of [{ skipped: 1 }, { expected: 0 }, { flaky: 1 }, { unexpected: 1 }]) {

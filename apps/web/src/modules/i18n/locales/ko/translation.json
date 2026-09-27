@@ -551,7 +551,7 @@
 			"get_started": "시작하기"
 		},
 		"hero": {
-			"title": "페이지 읽으며 메모하세요",
+			"title": "페이지 읽으며 메모하기",
 			"subtitle": "글을 읽다가 떠오른 생각을 사이드 패널에 적어요.\n페이지 제목과 주소는 자동으로 기록됩니다.",
 			"install_button": "Chrome에 추가",
 			"appstore_button": "App Store",
@@ -680,7 +680,7 @@
 		},
 		"features": {
 			"memo": {
-				"title": "페이지 읽으며 메모하세요",
+				"title": "페이지 읽으며 메모하기",
 				"description": "읽다가 남기고 싶은 문장이나 생각을 페이지 옆 사이드 패널에 적어요."
 			},
 			"overview": {

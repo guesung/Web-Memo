@@ -64,6 +64,11 @@ for (const language of ["ko", "en"] as const) {
 			await readFile(path.join(rawDirectory, "page-titles.json"), "utf8"),
 		);
 		const content = DEMO_CONTENT[language];
+		// 홍보 이미지의 주소창은 장식용이므로 한국어 장면에는 읽기 쉬운 예시 슬러그를 표시한다.
+		const categoryAddressValue =
+			language === "ko"
+				? "업무-리서치"
+				: encodeURIComponent(content.categories[0].name);
 		const articleScene = {
 			...toBrowserChrome({
 				demoPage: content.articlePage,
@@ -89,7 +94,7 @@ for (const language of ["ko", "en"] as const) {
 				tabIconUrl: null,
 				tabIconLetter: "W",
 				addressHost: "webmemo.xyz",
-				addressPath: `/${language}/memos?category=${encodeURIComponent(content.categories[0].name)}`,
+				addressPath: `/${language}/memos?category=${categoryAddressValue}`,
 				dashboardImage: rawImage("category-dashboard.png"),
 			},
 		].map((scene, index) => ({

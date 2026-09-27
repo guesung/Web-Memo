@@ -31,6 +31,33 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 	});
 
 	for (const { language, categoryTabName, categoryImageAlt } of LANGUAGES) {
+		test(`${language} 소개 문구와 설치 링크가 현재 제공 상태에 맞다.`, async ({
+			page,
+		}) => {
+			await page.goto(`/${language}${PATHS.introduce}`);
+
+			const isKorean = language === "ko";
+			const heroTitle = isKorean
+				? "페이지 읽으며 메모하세요"
+				: "Take notes while reading";
+			const heroSubtitle = isKorean
+				? "글을 읽다가 떠오른 생각을 사이드 패널에 적어요.\n페이지 제목과 주소는 자동으로 기록됩니다."
+				: "Write down thoughts in the side panel as you read.\nThe page title and URL are saved automatically.";
+			const demoTitle = isKorean ? "웹 메모 미리 보기" : "Preview Web Memo";
+			const sidePanelTab = isKorean ? "사이드 패널" : "Side panel";
+
+			await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+				heroTitle,
+			);
+			await expect(page.locator("h1 + p")).toHaveText(heroSubtitle);
+			await expect(page.locator("h1 + p")).toHaveCSS("white-space", "pre-line");
+			await expect(page.locator("#demo h2")).toHaveText(demoTitle);
+			await expect(
+				page.locator("#demo").getByRole("button", { name: sidePanelTab }),
+			).toBeVisible();
+			await expect(page.locator('a[href*="apps.apple.com"]')).toHaveCount(0);
+		});
+
 		test(`${language} 탭을 눌러도 슬라이드 이미지가 이미 로드되어 있다.`, async ({
 			page,
 		}) => {

@@ -120,10 +120,7 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 
 	return (
 		<SectionShell id="demo" background={background}>
-			<SectionHeader
-				title={t("introduce.section.demo")}
-				description={t("introduce.section.demo_desc")}
-			/>
+			<SectionHeader title={t("introduce.section.demo")} />
 
 			{/* 자동 회전은 포인터가 올라와 있는 동안 멈춘다. 읽는 중에 화면이 바뀌면
 			    안 되므로 carousel 영역으로 이름을 붙여 둔다 */}

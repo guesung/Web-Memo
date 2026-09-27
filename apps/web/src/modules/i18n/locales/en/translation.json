@@ -556,8 +556,8 @@
 			"get_started": "Get started"
 		},
 		"hero": {
-			"title": "Write beside the page you are reading",
-			"subtitle": "Write down a thought in the side panel as you read. The page title and URL stay with your note.",
+			"title": "Take notes while reading",
+			"subtitle": "Write down thoughts in the side panel as you read.\nThe page title and URL are saved automatically.",
 			"install_button": "Add to Chrome",
 			"appstore_button": "App Store",
 			"playstore_button": "Google Play",
@@ -574,8 +574,8 @@
 			"key_features": "Key Features",
 			"key_features_desc": "Five ways to keep a thought while you read.",
 			"features_badge": "Features",
-			"demo": "See Web Memo in action",
-			"demo_title": "See it in action",
+			"demo": "Preview Web Memo",
+			"demo_title": "Preview Web Memo",
 			"demo_desc": "Explore the real screens, from writing a note to organizing it by category.",
 			"how_it_works": "How to get started",
 			"how_it_works_desc": "Install the extension and write your first note beside the page you are reading.",
@@ -594,7 +594,7 @@
 		"demo": {
 			"write_memo": "Write Memo",
 			"write_memo_desc": "Take notes while reading articles",
-			"tab_memo": "Write beside the page",
+			"tab_memo": "Side panel",
 			"tab_memo_desc": "Write your own note in the side panel while you read.",
 			"overview": "Overview",
 			"overview_desc": "See all memos at a glance",
@@ -685,7 +685,7 @@
 		},
 		"features": {
 			"memo": {
-				"title": "Write beside the page you are reading",
+				"title": "Take notes while reading",
 				"description": "Write a thought or a passage in the side panel beside the page."
 			},
 			"overview": {

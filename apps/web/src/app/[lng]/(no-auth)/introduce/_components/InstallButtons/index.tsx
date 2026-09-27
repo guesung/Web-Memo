@@ -6,7 +6,7 @@ import { cn } from "@web-memo/shared/utils";
 import { ArrowRight, Chrome } from "lucide-react";
 import Link from "next/link";
 import TrackInstallClick from "../../../_components/TrackInstallClick";
-import { AppleIcon, GooglePlayIcon } from "../StoreIcon";
+import { GooglePlayIcon } from "../StoreIcon";
 
 /**
  * 설치 CTA 묶음.
@@ -16,14 +16,14 @@ import { AppleIcon, GooglePlayIcon } from "../StoreIcon";
  * - 640px 미만: 모바일 Chrome은 확장을 지원하지 않는다. Chrome 버튼을 첫 화면에
  *   두면 **실행 불가능한 CTA**가 가장 좋은 자리를 차지하므로, 버튼에서 빼고
  *   "PC에서는 확장으로도 쓸 수 있어요" 텍스트 링크로 격하한다.
- * - 640px 이상: Chrome이 1순위(filled), 두 스토어가 2순위(ghost).
+ * - 640px 이상: Chrome이 1순위(filled), Google Play가 2순위(ghost).
  *
  * 분기는 **CSS로만** 한다. User-Agent로 가르면 SSR 캐시와 어긋나 hydration이
  * 깨지고, 잘못 감지했을 때의 손실이 한 번의 탭보다 크다.
- * 같은 이유로 App Store·Google Play 순서도 기기와 무관하게 고정한다.
+ * 비활성화된 App Store 링크는 노출하지 않는다.
  *
  * Chrome 웹스토어로 가는 두 링크(버튼·모바일 텍스트 링크)만 `extension_install_click`으로
- * 남긴다. 앱 스토어 버튼은 확장 설치가 아니라서 세지 않는다.
+ * 남긴다. Google Play 버튼은 확장 설치가 아니라서 세지 않는다.
  */
 
 interface InstallButtonsProps extends LanguageType {
@@ -68,16 +68,6 @@ export default async function InstallButtons({
 				>
 					<Chrome className="h-4 w-4" />
 					{t("introduce.hero.install_button")}
-				</Link>
-
-				<Link
-					href={EXTERNAL_LINK.iosAppStoreListing}
-					target="_blank"
-					rel="noopener noreferrer"
-					className={cn(PILL_BASE, PILL_GHOST)}
-				>
-					<AppleIcon className="h-4 w-4" />
-					{t("introduce.hero.appstore_button")}
 				</Link>
 
 				<Link

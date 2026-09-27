@@ -32,7 +32,7 @@ const Hero = async ({ lng, background }: IFHeroProps) => {
 						{t("introduce.hero.title")}
 					</h1>
 
-					<p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground sm:text-xl lg:mx-0">
+					<p className="mx-auto mt-6 max-w-xl whitespace-pre-line text-lg leading-relaxed text-muted-foreground sm:text-xl lg:mx-0">
 						{t("introduce.hero.subtitle")}
 					</p>
 

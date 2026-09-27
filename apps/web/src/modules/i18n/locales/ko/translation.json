@@ -551,8 +551,8 @@
 			"get_started": "시작하기"
 		},
 		"hero": {
-			"title": "읽던 페이지 옆에서 바로 적어요",
-			"subtitle": "글을 읽다가 떠오른 생각을 사이드 패널에 적어요. 페이지 제목과 주소도 메모에 함께 남아요.",
+			"title": "페이지 읽으며 메모하세요",
+			"subtitle": "글을 읽다가 떠오른 생각을 사이드 패널에 적어요.\n페이지 제목과 주소는 자동으로 기록됩니다.",
 			"install_button": "Chrome에 추가",
 			"appstore_button": "App Store",
 			"playstore_button": "Google Play",
@@ -569,8 +569,8 @@
 			"key_features": "핵심 기능",
 			"key_features_desc": "읽던 흐름에서 기록까지 이어지는 다섯 가지 장면이에요.",
 			"features_badge": "기능",
-			"demo": "웹 메모가 이렇게 보여요",
-			"demo_title": "웹 메모가 이렇게 보여요",
+			"demo": "웹 메모 미리 보기",
+			"demo_title": "웹 메모 미리 보기",
 			"demo_desc": "메모 작성부터 카테고리별 정리까지 실제 화면으로 살펴봐요.",
 			"how_it_works": "시작하는 방법",
 			"how_it_works_desc": "확장을 설치하고 읽던 페이지에서 첫 메모를 적어요.",
@@ -589,7 +589,7 @@
 		"demo": {
 			"write_memo": "메모 작성",
 			"write_memo_desc": "아티클을 읽으며 바로 메모",
-			"tab_memo": "옆에서 적기",
+			"tab_memo": "사이드 패널",
 			"tab_memo_desc": "읽던 페이지 옆의 사이드 패널에 생각을 직접 적어요.",
 			"overview": "한눈에 보기",
 			"overview_desc": "모든 메모를 한눈에",
@@ -680,7 +680,7 @@
 		},
 		"features": {
 			"memo": {
-				"title": "읽던 페이지 옆에서 바로 적어요",
+				"title": "페이지 읽으며 메모하세요",
 				"description": "읽다가 남기고 싶은 문장이나 생각을 페이지 옆 사이드 패널에 적어요."
 			},
 			"overview": {
@@ -1159,8 +1159,8 @@
 		"youtubeNotes": {
 			"hero": {
 				"badge": "유튜브 메모",
-				"title": "영상을 보면서 그 자리에 적어요",
-				"description": "튜토리얼과 리뷰 영상을 보다가 필요한 대목을 적으면, 영상 주소가 메모에 함께 남아요.",
+				"title": "영상을 보면서 그 자리에 적습니다",
+				"description": "튜토리얼과 리뷰 영상을 보다가 필요한 대목을 적으면, 영상 주소가 메모에 함께 남습니다.",
 				"imageAlt": "기사 옆 사이드 패널에 직접 작성한 메모가 표시된 화면"
 			},
 			"benefits": {

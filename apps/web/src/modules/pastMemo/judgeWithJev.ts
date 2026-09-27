@@ -4,7 +4,7 @@ import type {
 	IFPastMemoRequest,
 	IFPastMemoResponse,
 } from "@web-memo/shared/types";
-import type { IFRecentMemo } from "./getRecentMemos";
+import type { IFMemoCandidate } from "./getMemoPage";
 
 /**
  * jev로 현재 페이지와 같은 글·관련 있는 글을 고른다.
@@ -19,7 +19,7 @@ export const judgeWithJev = async ({
 }: {
 	apiKey: string;
 	page: IFPastMemoRequest;
-	memos: IFRecentMemo[];
+	memos: IFMemoCandidate[];
 }): Promise<IFPastMemoResponse> => {
 	if (memos.length === 0) {
 		return { duplicate: null, related: [] };
@@ -37,7 +37,7 @@ export const judgeWithJev = async ({
 			excerpt: page.pageExcerpt,
 		},
 	};
-	const memoByLabel = new Map<string, IFRecentMemo>(
+	const memoByLabel = new Map<string, IFMemoCandidate>(
 		memos.map((memo, index) => [`P${index}`, memo]),
 	);
 

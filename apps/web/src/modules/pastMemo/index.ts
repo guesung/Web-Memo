@@ -1,5 +1,5 @@
 export * from "./findPastMemo";
-export * from "./getRecentMemos";
+export * from "./getMemoPage";
 export * from "./judgeWithJev";
 export * from "./matchByLooseUrl";
 export * from "./parsePastMemoRequest";

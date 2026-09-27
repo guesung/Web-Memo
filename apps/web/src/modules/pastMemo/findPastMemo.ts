@@ -4,7 +4,7 @@ import type {
 	IFPastMemoRequest,
 	IFPastMemoResponse,
 } from "@web-memo/shared/types";
-import { getRecentMemos } from "./getRecentMemos";
+import { getMemoPage } from "./getMemoPage";
 import { judgeWithJev } from "./judgeWithJev";
 import { matchByLooseUrl } from "./matchByLooseUrl";
 import { reportPastMemoFailure } from "./reportPastMemoFailure";
@@ -12,7 +12,7 @@ import { reportPastMemoFailure } from "./reportPastMemoFailure";
 /**
  * 현재 페이지와 같은 글·관련 있는 글을 사용자의 과거 메모에서 찾는다.
  * @description 정확히 같은 URL의 메모는 후보에서 뺀다. 느슨한 URL 키가 같은 메모가 있으면 jev 없이 그 메모를
- * 중복(rule)으로 돌려주고, 없으면 jev로 판정한다. 어떤 단계가 실패해도 빈 결과로 끝나고(fail-open) Sentry에 보고한다.
+ * 중복(rule)으로 돌려준다. 전체 메모에 일치가 없으면 최근 200개만 jev로 판정한다. 어떤 단계가 실패해도 빈 결과로 끝나고(fail-open) Sentry에 보고한다.
  * TYPESAFE_API_KEY가 없으면 jev를 부르지 않고 빈 결과를 돌려준다.
  */
 export const findPastMemo = async ({
@@ -26,33 +26,50 @@ export const findPastMemo = async ({
 }): Promise<IFPastMemoResponse> => {
 	const emptyResponse: IFPastMemoResponse = { duplicate: null, related: [] };
 
-	let candidates: Awaited<ReturnType<typeof getRecentMemos>>;
+	const PAGE_SIZE = 200;
+	let candidates: Awaited<ReturnType<typeof getMemoPage>> = [];
 
 	try {
-		const recentMemos = await getRecentMemos({ accessToken, userId });
+		for (let offset = 0; ; offset += PAGE_SIZE) {
+			const memoPage = await getMemoPage({
+				accessToken,
+				userId,
+				offset,
+				pageSize: PAGE_SIZE,
+			});
+			const pageCandidates = memoPage.filter(
+				(memo) => memo.url !== page.pageUrl,
+			);
 
-		candidates = recentMemos.filter((memo) => memo.url !== page.pageUrl);
+			if (offset === 0) {
+				candidates = pageCandidates;
+			}
+
+			const ruleMatchedMemo = matchByLooseUrl({
+				pageUrl: page.pageUrl,
+				memos: pageCandidates,
+			});
+
+			if (ruleMatchedMemo) {
+				return {
+					duplicate: {
+						id: ruleMatchedMemo.id,
+						title: ruleMatchedMemo.title,
+						url: ruleMatchedMemo.url,
+						source: "rule",
+					},
+					related: [],
+				};
+			}
+
+			if (memoPage.length < PAGE_SIZE) {
+				break;
+			}
+		}
 	} catch (error) {
 		reportPastMemoFailure({ error, stage: "fetch-memos" });
 
 		return emptyResponse;
-	}
-
-	const ruleMatchedMemo = matchByLooseUrl({
-		pageUrl: page.pageUrl,
-		memos: candidates,
-	});
-
-	if (ruleMatchedMemo) {
-		return {
-			duplicate: {
-				id: ruleMatchedMemo.id,
-				title: ruleMatchedMemo.title,
-				url: ruleMatchedMemo.url,
-				source: "rule",
-			},
-			related: [],
-		};
 	}
 
 	const apiKey = readServerEnv("TYPESAFE_API_KEY");

@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	JEV_CONFIDENCE_THRESHOLD,
 	JEV_MAX_CHOICES,
 	JEV_MODEL,
 	PAGE_CONTENT_MAX_LENGTH,
@@ -40,25 +39,23 @@ describe("getJevCategorySuggestion", () => {
 		mocks.systemOne.mockReset();
 	});
 
-	it("높은 confidence의 기존 카테고리를 ID로 매핑하고 본문을 제한해 전송합니다", async () => {
+	it("기존 카테고리를 ID로 매핑하고 웹페이지·메모를 전송하며 NONE을 제외합니다", async () => {
 		mocks.systemOne.mockResolvedValue({
-			answers: {
-				category: { choice: "c10", confidence: JEV_CONFIDENCE_THRESHOLD },
-			},
+			answers: { category: { choice: "c10", confidence: 0.42 } },
 		});
 
-		const suggestion = await getJevCategorySuggestion(REQUEST, "test-key");
+		const result = await getJevCategorySuggestion(REQUEST, "test-key");
 
-		expect(suggestion).toEqual({
+		expect(result).toEqual({
 			suggestion: {
 				categoryName: "개발",
 				isExisting: true,
 				existingCategoryId: 10,
-				confidence: JEV_CONFIDENCE_THRESHOLD,
+				confidence: 0.42,
 				source: "jev",
 			},
 			choiceType: "existing",
-			confidence: JEV_CONFIDENCE_THRESHOLD,
+			confidence: 0.42,
 		});
 		expect(mocks.systemOne).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -71,11 +68,7 @@ describe("getJevCategorySuggestion", () => {
 				},
 				questions: {
 					category: expect.objectContaining({
-						criteria: {
-							c10: "개발",
-							c20: "디자인",
-							NONE: expect.any(String),
-						},
+						criteria: { c10: "개발", c20: "디자인" },
 					}),
 				},
 			}),
@@ -87,16 +80,13 @@ describe("getJevCategorySuggestion", () => {
 	});
 
 	it.each([
-		{ choice: "NONE", confidence: 0.99, choiceType: "none" },
-		{
-			choice: "c10",
-			confidence: JEV_CONFIDENCE_THRESHOLD - 0.01,
-			choiceType: "existing",
-		},
+		{ choice: "NONE", confidence: 0.99, choiceType: "unknown" },
 		{ choice: "c999", confidence: 0.99, choiceType: "unknown" },
 		{ choice: "c10", confidence: Number.NaN, choiceType: "existing" },
+		{ choice: "c10", confidence: -0.1, choiceType: "existing" },
+		{ choice: "c10", confidence: 1.1, choiceType: "existing" },
 	])(
-		"$choice 또는 신뢰도 부족일 때 관측값과 함께 LLM 경로로 넘깁니다",
+		"알 수 없는 선택 또는 유효하지 않은 confidence는 추천하지 않습니다",
 		async (answer) => {
 			mocks.systemOne.mockResolvedValue({ answers: { category: answer } });
 
@@ -115,20 +105,45 @@ describe("getJevCategorySuggestion", () => {
 		const tooManyCategoriesRequest = {
 			...REQUEST,
 			existingCategories: Array.from(
-				{ length: JEV_MAX_CHOICES },
-				(_, index) => ({
-					id: index + 1,
-					name: `Category ${index + 1}`,
-				}),
+				{ length: JEV_MAX_CHOICES + 1 },
+				(_, index) => ({ id: index + 1, name: `Category ${index + 1}` }),
 			),
 		};
 
 		expect(
 			await getJevCategorySuggestion(noCategoriesRequest, "test-key"),
-		).toEqual({ suggestion: null, choiceType: null, confidence: null });
+		).toEqual({
+			suggestion: null,
+			choiceType: null,
+			confidence: null,
+		});
 		expect(
 			await getJevCategorySuggestion(tooManyCategoriesRequest, "test-key"),
-		).toEqual({ suggestion: null, choiceType: null, confidence: null });
+		).toEqual({
+			suggestion: null,
+			choiceType: null,
+			confidence: null,
+		});
 		expect(mocks.systemOne).not.toHaveBeenCalled();
+	});
+
+	it("카테고리 255개는 모두 Jev 선택지로 전달합니다", async () => {
+		mocks.systemOne.mockResolvedValue({
+			answers: { category: { choice: "c255", confidence: 0.7 } },
+		});
+		const categories = Array.from({ length: JEV_MAX_CHOICES }, (_, index) => ({
+			id: index + 1,
+			name: `Category ${index + 1}`,
+		}));
+
+		const result = await getJevCategorySuggestion(
+			{ ...REQUEST, existingCategories: categories },
+			"test-key",
+		);
+
+		expect(result.suggestion?.existingCategoryId).toBe(255);
+		expect(
+			Object.keys(mocks.systemOne.mock.calls[0][0].questions.category.criteria),
+		).toHaveLength(255);
 	});
 });

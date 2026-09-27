@@ -967,54 +967,6 @@
 		}
 	},
 	"features": {
-		"youtubeSummary": {
-			"hero": {
-				"badge": "YouTube AI Summary",
-				"title": "Read the point before you watch the hour",
-				"description": "For supported YouTube videos, scan a caption-based summary first, then write your own note."
-			},
-			"benefits": {
-				"title": "What you can know before watching",
-				"subtitle": "Runtime and the time you actually need are not the same",
-				"timeSaving": {
-					"title": "Decide before you commit",
-					"description": "Read the summary of an hour-long video first and decide whether it's worth the hour."
-				},
-				"aiPowered": {
-					"title": "Built from the whole transcript",
-					"description": "The summary comes from the full transcript, not just the opening minutes."
-				},
-				"transcript": {
-					"title": "For supported captioned videos",
-					"description": "You can scan a caption-based summary when a video is supported."
-				},
-				"instant": {
-					"title": "Starts when the panel opens",
-					"description": "Open the side panel on a video page and the summary begins on its own."
-				}
-			},
-			"howItWorks": {
-				"title": "Three moves to a summary",
-				"subtitle": "After installing, this is all there is",
-				"step1": {
-					"title": "Open a YouTube video",
-					"description": "Go to the video you want summarized"
-				},
-				"step2": {
-					"title": "Open the side panel",
-					"description": "Press Alt+S (Mac: Option+S)"
-				},
-				"step3": {
-					"title": "Read the summary",
-					"description": "Read it, then note the parts worth keeping"
-				}
-			},
-			"cta": {
-				"title": "Read the summary before your next video",
-				"description": "Add it to Chrome and use it on the video you're watching now.",
-				"subtext": "Free to use"
-			}
-		},
 		"memo": {
 			"hero": {
 				"badge": "Browser Notes",
@@ -1149,14 +1101,14 @@
 			"hero": {
 				"badge": "Online Learning",
 				"title": "Take lecture notes without pausing",
-				"description": "Write in the side panel while a lecture plays, and read a summary first when it runs long."
+				"description": "Write in the side panel while a lecture plays. The lecture URL stays with your note."
 			},
 			"benefits": {
 				"title": "What's left after the lecture ends",
 				"subtitle": "So you never replay an hour to find one minute",
-				"videoSummary": {
-					"title": "See the outline first",
-					"description": "For supported lecture videos, scan a caption-based summary first."
+				"organize": {
+					"title": "Group notes by course",
+					"description": "Add categories to see notes by course or topic."
 				},
 				"notes": {
 					"title": "Write while it plays",
@@ -1181,7 +1133,8 @@
 			"hero": {
 				"badge": "YouTube Notes",
 				"title": "Write it down while the video plays",
-				"description": "Note what you need from tutorials and reviews, and the video URL is saved alongside it."
+				"description": "Note what you need from tutorials and reviews, and the video URL is saved alongside it.",
+				"imageAlt": "A written note in the side panel beside an article"
 			},
 			"benefits": {
 				"title": "Keeping what a video gave you",

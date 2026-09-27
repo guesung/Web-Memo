@@ -10,7 +10,6 @@ const LANGUAGES = ["ko", "en"] as const;
 const DIRECT_PUBLIC_PATHS = [
 	PATHS.featuresMemo,
 	PATHS.featuresSaveArticles,
-	PATHS.featuresYoutubeSummary,
 	PATHS.useCasesJobHunting,
 	PATHS.useCasesLearning,
 	PATHS.useCasesNewsReading,
@@ -43,6 +42,15 @@ test.use({ storageState: { cookies: [], origins: [] } });
 
 test.describe.configure({ mode: "parallel" });
 test.describe("공개 페이지 탐색 경로", () => {
+	for (const language of LANGUAGES) {
+		test(`${language} 유튜브 요약의 이전 주소는 유튜브 메모로 이동한다.`, async ({
+			page,
+		}) => {
+			await page.goto(`/${language}${PATHS.featuresYoutubeSummary}`);
+			await expect(page).toHaveURL(`/${language}${PATHS.useCasesYoutubeNotes}`);
+		});
+	}
+
 	test.beforeEach(async ({ page }) => {
 		// 테스트 계정 로그인 뒤 메모 화면이 목록·설정을 읽는다. 실서버로 가지 않도록 빈 목 저장소를 씌운다.
 		await setupSupabaseMocks(page, new MockSupabaseStore());

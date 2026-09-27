@@ -27,15 +27,24 @@ test.describe("확장 옵션 페이지", () => {
 		const optionsPage = await page.context().newPage();
 		await optionsPage.goto(getExtensionUrl("options/index.html"));
 
-		await optionsPage.locator("#response-language").click();
-		await optionsPage.getByRole("option", { name: "English" }).click();
+		// background가 설치 때 브라우저 UI 언어로 기본값을 채우므로(CI는 English), 이미 고른 값을
+		// 다시 고르면 저장이 일어나지 않는다. 지금 값과 다른 언어를 골라야 저장을 확인할 수 있다.
+		const languageTrigger = optionsPage.locator("#response-language");
+		await expect(languageTrigger).toHaveText(/English|한국어/);
+		const currentLanguage = (await languageTrigger.textContent()) ?? "";
+		const nextLanguage = currentLanguage.includes("English")
+			? "한국어"
+			: "English";
+
+		await languageTrigger.click();
+		await optionsPage.getByRole("option", { name: nextLanguage }).click();
 		await expect(
 			optionsPage.getByText(/^(Saved|저장했어요)$/).last(),
 		).toBeVisible();
 
 		await optionsPage.reload();
 		await expect(optionsPage.locator("#response-language")).toContainText(
-			"English",
+			nextLanguage,
 		);
 	});
 

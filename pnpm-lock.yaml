@@ -422,6 +422,9 @@ importers:
       '@web-memo/tsconfig':
         specifier: workspace:*
         version: link:../packages/tsconfig
+      sharp:
+        specifier: ^0.33.5
+        version: 0.33.5
       typescript:
         specifier: 5.5.3
         version: 5.5.3
@@ -4841,6 +4844,9 @@ packages:
 
   '@types/phoenix@1.6.7':
     resolution: {integrity: sha512-oN9ive//QSBkf19rfDv45M7eZPi0eEXylht2OLEXicu5b4KoQ1OzXIw+xDSGWxSxe1JmepRR/ZH283vsu518/Q==}
+
+  '@types/pngjs@6.0.5':
+    resolution: {integrity: sha512-0k5eKfrA83JOZPppLtS2C7OUtyNAl2wKNxfyYl9Q5g9lPkgBl/9hNyAu6HuEH2J4XmIv2znEpkDd0SaZVxW6iQ==}
 
   '@types/prop-types@15.7.15':
     resolution: {integrity: sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==}
@@ -13269,6 +13275,10 @@ snapshots:
       undici-types: 7.16.0
 
   '@types/phoenix@1.6.7': {}
+
+  '@types/pngjs@6.0.5':
+    dependencies:
+      '@types/node': 24.10.13
 
   '@types/prop-types@15.7.15': {}
 

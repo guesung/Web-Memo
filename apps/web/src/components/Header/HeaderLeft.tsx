@@ -5,21 +5,16 @@ import useTranslation from "@src/modules/i18n/util.client";
 import { PATHS } from "@web-memo/shared/constants";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 import { FeedbackSection } from "./FeedbackSection";
 
-/** 현재 화면의 성격에 맞는 헤더 브랜드 링크를 표시합니다. */
+/** 메모 목록으로 이동하는 헤더 브랜드 링크를 표시합니다. */
 const HeaderLeft = ({ lng }: LanguageType) => {
 	const { t } = useTranslation(lng);
-	const pathname = usePathname();
-	const brandHref = isPublicIndexPath(pathname, lng)
-		? `/${lng}${PATHS.introduce}`
-		: `/${lng}${PATHS.memos}`;
 
 	return (
 		<div className="flex flex-1 items-center gap-2 whitespace-nowrap sm:gap-4">
-			<Link href={brandHref}>
+			<Link href={`/${lng}${PATHS.memos}`}>
 				<div className="flex h-full items-center gap-2 px-2 sm:px-4">
 					<Image
 						src="/images/pngs/icon.png"
@@ -43,21 +38,3 @@ const HeaderLeft = ({ lng }: LanguageType) => {
 };
 
 export default HeaderLeft;
-
-/** 검색 엔진에 공개되는 현재 경로인지 판별합니다. */
-const isPublicIndexPath = (pathname: string, lng: LanguageType["lng"]) => {
-	const localizedPathPrefix = `/${lng}`;
-
-	if (
-		pathname === `${localizedPathPrefix}${PATHS.introduce}` ||
-		pathname === `${localizedPathPrefix}${PATHS.privacy}`
-	) {
-		return true;
-	}
-
-	return (
-		pathname.startsWith(`${localizedPathPrefix}/features/`) ||
-		pathname.startsWith(`${localizedPathPrefix}/use-cases/`) ||
-		pathname.startsWith(`${localizedPathPrefix}/compare/`)
-	);
-};

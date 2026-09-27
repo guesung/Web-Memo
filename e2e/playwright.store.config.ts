@@ -1,11 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * 크롬 웹스토어 스크린샷(1280×800, ko·en 각 5장)을 만드는 설정.
+ * 스토어 스크린샷(1280×800), 웹 소개 WebP(ko·en 각 5장), OG 이미지(1200×630)를 만드는 설정.
  * @description 테스트가 아니라 이미지 생성 파이프라인이다. capture가 확장·웹을 띄워 원본 화면을 찍고,
  * compose가 그 원본을 template.html에 넣어 최종 PNG를 만든다. compose는 capture에 의존하므로
  * `pnpm -F e2e exec playwright test -c playwright.store.config.ts` 한 번으로 순서대로 돈다.
- * 로그인만 실제 Supabase를 쓰고 메모·카테고리·요약은 모두 목이다. 결과는 `store-screenshots/output/`에 쌓인다.
+ * 로그인만 실제 Supabase를 쓰고 메모·카테고리는 모두 목이다. 스토어 이미지는
+ * `store-screenshots/output/`, 웹·OG 이미지는 `apps/web/public/`에 쌓인다.
  */
 export default defineConfig({
 	testDir: "./store-screenshots",

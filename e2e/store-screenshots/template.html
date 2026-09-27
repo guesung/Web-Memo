@@ -49,6 +49,57 @@
 				letter-spacing: -0.025em;
 				white-space: nowrap;
 			}
+			[data-output="web"] {
+				background: linear-gradient(180deg, hsl(220 45% 98%), hsl(221 40% 94%));
+			}
+			[data-output="web"] .headline {
+				display: none;
+			}
+			[data-output="web"] .frame {
+				top: 42px;
+				left: 60px;
+			}
+			[data-output="web"][data-scene="4"] .frame {
+				left: 48px;
+			}
+			[data-output="web"] .phone {
+				top: 65px;
+			}
+			[data-output="web"] .shortcut {
+				top: 125px;
+			}
+			[data-output="og"] {
+				width: 1200px;
+				height: 630px;
+				background: linear-gradient(135deg, hsl(220 60% 97%), hsl(221 60% 90%));
+			}
+			[data-output="og"] .headline {
+				top: 210px;
+				left: 64px;
+				right: auto;
+				width: 460px;
+				text-align: left;
+				white-space: normal;
+				font-size: 48px;
+			}
+			[data-output="og"] .frame {
+				top: 135px;
+				left: 552px;
+				transform: scale(0.54);
+				transform-origin: top left;
+			}
+			[data-output="og"] .og-brand {
+				display: block;
+			}
+			.og-brand {
+				display: none;
+				position: absolute;
+				top: 92px;
+				left: 64px;
+				font-size: 28px;
+				font-weight: 800;
+				color: var(--primary);
+			}
 
 			/* 브라우저 창 틀. 아래쪽은 캔버스 밖으로 흘려 실제 화면이 최대한 크게 보이게 한다. */
 			.frame {
@@ -251,6 +302,9 @@
 				width: 900px;
 				height: auto;
 			}
+			[data-scene="5"] .dashboard-image {
+				width: 1160px;
+			}
 			.phone {
 				position: absolute;
 				top: 150px;
@@ -285,19 +339,26 @@
 			}
 			[data-scene="2"] .scene-2,
 			[data-scene="3"] .scene-3,
-			[data-scene="4"] .scene-4 {
+			[data-scene="4"] .scene-4,
+			[data-scene="5"] .dashboard-image {
 				display: block;
 			}
 			[data-scene="2"] .shortcut.scene-2 {
 				display: flex;
 			}
 			[data-scene="4"] .page-image,
-			[data-scene="4"] .side-panel-image {
+			[data-scene="4"] .side-panel-image,
+			[data-scene="5"] .page-image,
+			[data-scene="5"] .side-panel-image {
 				display: none;
+			}
+			[data-scene="5"] .frame-content {
+				height: auto;
 			}
 		</style>
 	</head>
 	<body data-scene="1">
+		<div class="og-brand">웹 메모</div>
 		<h1 class="headline"></h1>
 
 		<div class="frame">
@@ -347,6 +408,7 @@
 			 */
 			window.renderScene = async (scene) => {
 				document.body.dataset.scene = String(scene.sceneNumber);
+				document.body.dataset.output = scene.output;
 				document.documentElement.lang = scene.language;
 				document.querySelector(".headline").textContent = scene.headline;
 				document.querySelector(".tab-title").textContent = scene.tabTitle;
@@ -371,8 +433,8 @@
 				setImageSource(".zoom-image", scene.sidePanelImage);
 				setImageSource(".dashboard-image", scene.dashboardImage);
 
-				// 사이드 패널은 창 틀 콘텐츠 영역 맨 위(캔버스 y 215px)에서 시작한다. 확대 배율은 1.8배다.
-				const sidePanelTop = 215;
+				// 콘텐츠는 창 상단의 탭(38px)과 도구 막대(44px) 아래에서 시작한다.
+				const sidePanelTop = document.querySelector(".frame").offsetTop + 83;
 				const zoomScale = 1.8;
 				const ringTop = sidePanelTop + scene.memoSourceTop;
 				const memoSourceRing = document.querySelector(".memo-source-ring");

@@ -4,11 +4,11 @@ import { PATHS } from "@web-memo/shared/constants";
 import { cn } from "@web-memo/shared/utils";
 import {
 	ArrowRight,
-	BarChart3,
 	FolderOpen,
-	Heart,
+	Keyboard,
+	Link2,
+	PanelsTopLeft,
 	Pencil,
-	Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import SectionHeader from "../SectionHeader";
@@ -24,11 +24,12 @@ import SectionShell, { type TSectionBackground } from "../SectionShell";
  * 앵커 `#demo`는 `InteractiveDemo`가 목적지다. 이 섹션은 id를 갖지 않는다.
  */
 
-interface FeaturesProps extends LanguageType {
+/** 기능 섹션에 필요한 언어와 배경 설정입니다. */
+interface IFFeaturesProps extends LanguageType {
 	background?: TSectionBackground;
 }
 
-export default async function Features({ lng, background }: FeaturesProps) {
+const Features = async ({ lng, background }: IFFeaturesProps) => {
 	const { t } = await useTranslation(lng);
 
 	const features = [
@@ -39,27 +40,27 @@ export default async function Features({ lng, background }: FeaturesProps) {
 			href: `/${lng}${PATHS.featuresMemo}`,
 		},
 		{
-			icon: BarChart3,
-			title: t("introduce.features.overview.title"),
-			description: t("introduce.features.overview.description"),
+			icon: Keyboard,
+			title: t("introduce.features.shortcut.title"),
+			description: t("introduce.features.shortcut.description"),
+			href: null,
+		},
+		{
+			icon: Link2,
+			title: t("introduce.features.source.title"),
+			description: t("introduce.features.source.description"),
+			href: null,
+		},
+		{
+			icon: PanelsTopLeft,
+			title: t("introduce.features.cross_device.title"),
+			description: t("introduce.features.cross_device.description"),
 			href: null,
 		},
 		{
 			icon: FolderOpen,
-			title: t("introduce.features.organize.title"),
-			description: t("introduce.features.organize.description"),
-			href: `/${lng}${PATHS.featuresSaveArticles}`,
-		},
-		{
-			icon: Sparkles,
-			title: t("introduce.features.ai_summary.title"),
-			description: t("introduce.features.ai_summary.description"),
-			href: `/${lng}${PATHS.featuresYoutubeSummary}`,
-		},
-		{
-			icon: Heart,
-			title: t("introduce.features.wishlist.title"),
-			description: t("introduce.features.wishlist.description"),
+			title: t("introduce.features.category.title"),
+			description: t("introduce.features.category.description"),
 			href: null,
 		},
 	];
@@ -114,4 +115,6 @@ export default async function Features({ lng, background }: FeaturesProps) {
 			</ul>
 		</SectionShell>
 	);
-}
+};
+
+export default Features;

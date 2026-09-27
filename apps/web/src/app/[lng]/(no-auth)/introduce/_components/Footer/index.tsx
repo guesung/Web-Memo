@@ -4,14 +4,13 @@ import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import { Chrome, Mail, MessageCircle, Youtube } from "lucide-react";
 import Link from "next/link";
 import type { ComponentType } from "react";
-import { AppleIcon, GooglePlayIcon } from "../StoreIcon";
+import { GooglePlayIcon } from "../StoreIcon";
 
 /**
  * 랜딩 푸터.
  * @description
- * 아이콘은 항목마다 `icon` 필드로 갖는다. 이전에는 `external` 불리언 하나로 아이콘을
- * 가르는 바람에 **iOS 앱 링크에 크롬 아이콘이 붙어 있었다** — 외부 링크인지와 어느
- * 스토어인지는 서로 다른 질문이라 한 필드로 묶을 수 없다.
+ * 아이콘은 항목마다 `icon` 필드로 갖는다. 외부 링크인지와 어느 제품으로 이동하는지는
+ * 서로 다른 정보이므로 한 필드로 묶지 않는다.
  */
 
 /** 링크 앞에 붙는 아이콘. lucide와 `StoreIcon`의 브랜드 로고를 함께 받는다 */
@@ -50,12 +49,6 @@ export default async function Footer({ lng }: FooterProps) {
 			href: EXTERNAL_LINK.chromeWebStoreListing,
 			label: t("introduce.footer.chrome_extension"),
 			icon: Chrome,
-			isExternal: true,
-		},
-		{
-			href: EXTERNAL_LINK.iosAppStoreListing,
-			label: t("introduce.footer.ios_app"),
-			icon: AppleIcon,
 			isExternal: true,
 		},
 		{

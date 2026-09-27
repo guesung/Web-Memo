@@ -7,10 +7,7 @@ import {
 	openSidePanel,
 	skipGuide,
 } from "../tests/lib";
-import {
-	createMockSetting,
-	guardUnhandledSupabaseRequests,
-} from "../tests/lib/mocks";
+import { guardUnhandledSupabaseRequests } from "../tests/lib/mocks";
 import { DEMO_CONTENT } from "./demoData";
 import { gotoDemoPage, setupDemoRoutes } from "./demoRoutes";
 import { closeInstallTab, launchExtensionContext } from "./extensionContext";
@@ -29,7 +26,7 @@ import {
 test.describe.configure({ mode: "serial" });
 
 for (const language of ["ko", "en"] as const) {
-	test(`${language} 스토어 스크린샷 원본을 캡처한다`, async () => {
+	test(`${language} 스토어 스크린샷 원본을 캡처한다`, async ({ browser }) => {
 		const outputDirectory = path.join(__dirname, "output", language, "raw");
 		const content = DEMO_CONTENT[language];
 		const context = await launchExtensionContext(language);
@@ -40,7 +37,7 @@ for (const language of ["ko", "en"] as const) {
 			await mkdir(outputDirectory, { recursive: true });
 
 			const page = await context.newPage();
-			const { store } = await setupDemoRoutes({ page, context, language });
+			await setupDemoRoutes({ page, context, language });
 			await closeInstallTab(context);
 			await login(page);
 			await context.addCookies([
@@ -86,39 +83,10 @@ for (const language of ["ko", "en"] as const) {
 				outputPath: path.join(outputDirectory, "article-memo-source.json"),
 			});
 
-			// 5번 장: 요약이 주인공이다. 비어 있는 느낀 점 칸이 메모 칸 자리를 나눠 가지지 않도록 이 장에서만 끈다.
-			// 설정은 사이드 패널이 열릴 때 읽으므로 목 설정을 바꾼 뒤 패널을 다시 불러온다. 실제 데이터는 그대로다.
-			store.setSetting(createMockSetting({ show_impression: false }));
-			await gotoDemoPage({ page, demoPage: content.videoPage });
-			await sidePanelPage.reload();
-			const videoTitle = await page.title();
-			await waitForSidePanelMemo({
-				sidePanelPage,
-				pageTitle: videoTitle,
-				memo: content.videoMemo.memo,
-			});
-			await dragSidePanelDivider({
-				sidePanelPage,
-				tabRatio: content.videoSummaryRatio,
-			});
-			const summaryLabel = await sidePanelPage.evaluate(() =>
-				chrome.i18n.getMessage("summary_generate_label"),
-			);
-			await sidePanelPage.getByRole("button", { name: summaryLabel }).click();
-			await expect(sidePanelPage.getByRole("tabpanel")).toContainText(
-				content.summaryChunks.at(-1)?.replace(/^- /, "") ?? "",
-			);
-			await captureSidePanelScene({
-				page,
-				sidePanelPage,
-				outputDirectory,
-				name: "video",
-			});
-
-			// 실제 페이지의 탭 제목은 메모에 저장된 제목과 다를 수 있어(예: brunch의 "06화 ") 합성 단계에 넘긴다.
+			// 실제 페이지의 탭 제목은 저장된 메모 제목과 다를 수 있으므로 합성 단계에 넘긴다.
 			await writeFile(
 				path.join(outputDirectory, "page-titles.json"),
-				JSON.stringify({ article: articleTitle, video: videoTitle }),
+				JSON.stringify({ article: articleTitle }),
 			);
 			await captureDashboard({
 				page,
@@ -130,5 +98,40 @@ for (const language of ["ko", "en"] as const) {
 		}
 
 		expect(unhandledSupabaseRequests, "목 없는 Supabase 요청").toEqual([]);
+
+		const categoryContext = await browser.newContext({
+			locale: language === "ko" ? "ko-KR" : "en-US",
+			deviceScaleFactor: 1,
+		});
+		const unhandledCategoryRequests =
+			await guardUnhandledSupabaseRequests(categoryContext);
+		try {
+			const categoryPage = await categoryContext.newPage();
+			await setupDemoRoutes({
+				page: categoryPage,
+				context: categoryContext,
+				language,
+			});
+			await login(categoryPage);
+			await categoryContext.addCookies([
+				{
+					name: "i18next",
+					value: language,
+					url: "http://localhost:3000",
+					sameSite: "Strict",
+				},
+			]);
+			await skipGuide(categoryPage);
+			await captureDashboard({
+				page: categoryPage,
+				language,
+				categoryName: content.categories[0].name,
+				outputPath: path.join(outputDirectory, "category-dashboard.png"),
+			});
+		} finally {
+			await categoryContext.close();
+		}
+
+		expect(unhandledCategoryRequests, "목 없는 Supabase 요청").toEqual([]);
 	});
 }

@@ -2,19 +2,17 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { CONFIG } from "@web-memo/env";
 import { cn } from "@web-memo/ui";
 import { useReducedMotion } from "framer-motion";
 import {
-	BarChart3,
 	FolderOpen,
-	Globe,
-	Heart,
+	Keyboard,
+	Link2,
+	PanelsTopLeft,
 	Pencil,
-	Sparkles,
 } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { type FocusEvent, useEffect, useRef, useState } from "react";
 import SectionHeader from "../SectionHeader";
 import SectionShell, { type TSectionBackground } from "../SectionShell";
 
@@ -32,32 +30,32 @@ const AUTO_ROTATE_INTERVAL_MS = 5000;
 /** 탭을 직접 눌렀을 때 자동 회전을 멈춰 두는 시간 */
 const MANUAL_PAUSE_MS = 3000;
 
+/** 스토어 이미지의 메시지와 같은 순서로 표시하는 데모 장면입니다. */
 const DEMO_TABS = [
 	{ id: "memo", icon: Pencil, imageIndex: 1 },
-	{ id: "overview", icon: BarChart3, imageIndex: 2 },
-	{ id: "ai", icon: Sparkles, imageIndex: 3 },
-	{ id: "wishlist", icon: Heart, imageIndex: 4 },
-	{ id: "organize", icon: FolderOpen, imageIndex: 5 },
+	{ id: "shortcut", icon: Keyboard, imageIndex: 2 },
+	{ id: "source", icon: Link2, imageIndex: 3 },
+	{ id: "cross_device", icon: PanelsTopLeft, imageIndex: 4 },
+	{ id: "category", icon: FolderOpen, imageIndex: 5 },
 ];
 
-interface InteractiveDemoProps extends LanguageType {
+/** 데모에 필요한 언어와 배경 설정입니다. */
+interface IFInteractiveDemoProps extends LanguageType {
 	background?: TSectionBackground;
 }
 
-export default function InteractiveDemo({
-	lng,
-	background,
-}: InteractiveDemoProps) {
+const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 	const { t } = useTranslation(lng);
 	const [activeTabIndex, setActiveTabIndex] = useState(0);
 	const [progress, setProgress] = useState(0);
 	const [isPaused, setIsPaused] = useState(false);
+	const [isFocusWithin, setIsFocusWithin] = useState(false);
 	const prefersReducedMotion = useReducedMotion();
 
 	const rafRef = useRef<number | null>(null);
 	const lastTimeRef = useRef<number | null>(null);
 
-	const isAutoRotating = !prefersReducedMotion && !isPaused;
+	const isAutoRotating = !prefersReducedMotion && !isPaused && !isFocusWithin;
 
 	useEffect(() => {
 		if (!isAutoRotating) {
@@ -99,21 +97,30 @@ export default function InteractiveDemo({
 		};
 	}, [isAutoRotating]);
 
-	const handleTabClick = (index: number) => {
+	const handleDemoTabClick = (index: number) => {
 		setActiveTabIndex(index);
 		setProgress(0);
 		setIsPaused(true);
 		setTimeout(() => setIsPaused(false), MANUAL_PAUSE_MS);
 	};
 
+	const handleCarouselFocus = () => {
+		setIsFocusWithin(true);
+	};
+
+	const handleCarouselBlur = (event: FocusEvent<HTMLElement>) => {
+		if (event.currentTarget.contains(event.relatedTarget)) {
+			return;
+		}
+
+		setIsFocusWithin(false);
+	};
+
 	const activeTab = DEMO_TABS[activeTabIndex];
 
 	return (
 		<SectionShell id="demo" background={background}>
-			<SectionHeader
-				title={t("introduce.section.demo")}
-				description={t("introduce.section.demo_desc")}
-			/>
+			<SectionHeader title={t("introduce.section.demo")} />
 
 			{/* 자동 회전은 포인터가 올라와 있는 동안 멈춘다. 읽는 중에 화면이 바뀌면
 			    안 되므로 carousel 영역으로 이름을 붙여 둔다 */}
@@ -123,20 +130,9 @@ export default function InteractiveDemo({
 				className="overflow-hidden rounded-3xl border border-border bg-card"
 				onMouseEnter={() => setIsPaused(true)}
 				onMouseLeave={() => setIsPaused(false)}
+				onFocusCapture={handleCarouselFocus}
+				onBlurCapture={handleCarouselBlur}
 			>
-				{/* 브라우저 주소 표시줄 */}
-				<div className="flex items-center gap-3 border-b border-border px-5 py-3">
-					<div className="flex gap-1.5">
-						<span className="h-2.5 w-2.5 rounded-full bg-border" />
-						<span className="h-2.5 w-2.5 rounded-full bg-border" />
-						<span className="h-2.5 w-2.5 rounded-full bg-border" />
-					</div>
-					<div className="flex flex-1 items-center justify-center gap-2 text-sm text-muted-foreground">
-						<Globe className="h-3.5 w-3.5 flex-shrink-0" />
-						<span className="truncate">{CONFIG.webDisplayHost}</span>
-					</div>
-				</div>
-
 				<div className="relative aspect-[16/9] bg-muted">
 					{DEMO_TABS.map((tab, index) => {
 						const isActive = activeTabIndex === index;
@@ -156,12 +152,13 @@ export default function InteractiveDemo({
 								)}
 							>
 								<Image
-									src={`/images/pngs/introduction/${lng}/${tab.imageIndex}.png`}
-									alt={t(`introduce.demo.tab_${tab.id}`)}
+									src={`/images/webps/introduction/${lng}/${tab.imageIndex}.webp`}
+									alt={t(`introduce.demo.tab_${tab.id}_image_alt`)}
 									fill
 									priority={index === 0}
 									loading="eager"
 									className="object-contain"
+									unoptimized
 								/>
 							</div>
 						);
@@ -177,7 +174,9 @@ export default function InteractiveDemo({
 								<button
 									key={tab.id}
 									type="button"
-									onClick={() => handleTabClick(index)}
+									aria-label={t(`introduce.demo.tab_${tab.id}`)}
+									aria-pressed={isActive}
+									onClick={() => handleDemoTabClick(index)}
 									className={cn(
 										"relative flex items-center gap-2 rounded-full px-4 py-2.5 text-sm transition-colors duration-base",
 										isActive
@@ -210,4 +209,6 @@ export default function InteractiveDemo({
 			</section>
 		</SectionShell>
 	);
-}
+};
+
+export default InteractiveDemo;

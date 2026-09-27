@@ -1,36 +1,31 @@
 import { captureException } from "@sentry/nextjs";
 import { readServerEnv } from "@src/utils/serverEnv";
+import { APITimeoutError } from "@typesafe-ai/sdk";
 import { CHROME_EXTENSION_ID } from "@web-memo/shared/constants";
 import { type NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
-import { getOpenAIApiKey } from "../config";
 import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "../constant";
-import { createErrorResponse, handleOpenAIError } from "../util";
-import {
-	JEV_MAX_CHOICES,
-	OPENAI_MODEL,
-	OPENAI_SETTINGS,
-	SYSTEM_MESSAGE,
-} from "./constant";
+import { createErrorResponse } from "../util";
+import { JEV_MAX_CHOICES } from "./constant";
+import type { IFJevCategoryResult } from "./jev";
 import { getJevCategorySuggestion } from "./jev";
 import type { IFCategorySuggestionResponse } from "./type";
-import {
-	buildCategoryPrompt,
-	findMatchingCategoryId,
-	parseAIResponse,
-	validateRequest,
-} from "./util";
+import { validateRequest } from "./util";
 
-/** 기존 카테고리는 Jev로 우선 판정하고 나머지는 LLM으로 추천합니다. */
+/** Jev가 고른 기존 카테고리를 추천하고, 추천할 수 없으면 null을 반환합니다. */
 export const POST = async (request: NextRequest) => {
-	const openAIApiKey = getOpenAIApiKey();
-	const typeSafeApiKey = readServerEnv("TYPESAFE_API_KEY");
+	const requestStartedAt = performance.now();
+	let jevDurationMs: number | null = null;
+	let noSuggestionReason: string | null = null;
+	let resultSource: "jev" | "none" = "none";
+	let jevChoiceType: IFJevCategoryResult["choiceType"] = null;
+	let jevConfidence: number | null = null;
 
 	try {
-		const origin = request.headers.get("origin");
 		const validOrigin = `chrome-extension://${CHROME_EXTENSION_ID}`;
 
-		if (origin !== validOrigin) {
+		if (request.headers.get("origin") !== validOrigin) {
+			noSuggestionReason = "invalid_origin";
+
 			return createErrorResponse(
 				ERROR_MESSAGES.UNAUTHORIZED,
 				HTTP_STATUS.FORBIDDEN,
@@ -40,118 +35,94 @@ export const POST = async (request: NextRequest) => {
 		const body = await request.json();
 
 		if (!validateRequest(body)) {
+			noSuggestionReason = "invalid_request";
+
 			return createErrorResponse(
 				"Invalid request format",
 				HTTP_STATUS.BAD_REQUEST,
 			);
 		}
 
-		if (
-			body.existingCategories.length > 0 &&
-			body.existingCategories.length < JEV_MAX_CHOICES
-		) {
-			if (typeSafeApiKey) {
+		if (body.existingCategories.length === 0) {
+			noSuggestionReason = "no_existing_categories";
+		} else if (body.existingCategories.length > JEV_MAX_CHOICES) {
+			noSuggestionReason = "choice_limit";
+		} else {
+			const typeSafeApiKey = readServerEnv("TYPESAFE_API_KEY");
+
+			if (!typeSafeApiKey) {
+				noSuggestionReason = "missing_jev_key";
+				captureException(new Error("TYPESAFE_API_KEY is not configured"));
+			} else {
+				const jevStartedAt = performance.now();
+
 				try {
-					const jevSuggestion = await getJevCategorySuggestion(
+					const jevResult = await getJevCategorySuggestion(
 						body,
 						typeSafeApiKey,
 					);
+					jevChoiceType = jevResult.choiceType;
+					jevConfidence = jevResult.confidence;
 
-					if (jevSuggestion) {
+					if (jevResult.suggestion) {
+						resultSource = "jev";
+
 						return NextResponse.json(
 							{
-								suggestion: jevSuggestion,
+								suggestion: jevResult.suggestion,
 							} satisfies IFCategorySuggestionResponse,
 							{ headers: CORS_HEADERS },
 						);
 					}
+
+					noSuggestionReason =
+						jevResult.choiceType === "unknown"
+							? "jev_unknown_choice"
+							: "jev_invalid_confidence";
 				} catch (error) {
+					noSuggestionReason =
+						error instanceof APITimeoutError ? "jev_timeout" : "jev_error";
 					captureException(new Error("Jev category classification failed"), {
 						tags: { cause: error instanceof Error ? error.name : "unknown" },
 					});
+				} finally {
+					jevDurationMs = Math.round(performance.now() - jevStartedAt);
 				}
-			} else {
-				captureException(new Error("TYPESAFE_API_KEY is not configured"));
 			}
 		}
 
-		if (!openAIApiKey) {
-			return createErrorResponse(
-				"OpenAI API key not configured",
-				HTTP_STATUS.INTERNAL_SERVER_ERROR,
-			);
-		}
-
-		const openai = new OpenAI({
-			apiKey: openAIApiKey,
-		});
-
-		const prompt = buildCategoryPrompt(body);
-
-		const completion = await openai.chat.completions.create({
-			model: OPENAI_MODEL,
-			reasoning_effort: "none",
-			messages: [
-				{
-					role: "system",
-					content: SYSTEM_MESSAGE,
-				},
-				{
-					role: "user",
-					content: prompt,
-				},
-			],
-			temperature: OPENAI_SETTINGS.temperature,
-			response_format: OPENAI_SETTINGS.responseFormat,
-		});
-
-		const responseContent = completion.choices[0]?.message?.content;
-
-		if (!responseContent) {
-			return NextResponse.json(
-				{ suggestion: null } satisfies IFCategorySuggestionResponse,
-				{ headers: CORS_HEADERS },
-			);
-		}
-
-		const parsed = parseAIResponse(responseContent);
-
-		if (!parsed) {
-			return NextResponse.json(
-				{ suggestion: null } satisfies IFCategorySuggestionResponse,
-				{ headers: CORS_HEADERS },
-			);
-		}
-
-		let existingCategoryId: number | undefined;
-		let isExisting = parsed.isExisting;
-
-		if (parsed.isExisting) {
-			existingCategoryId = findMatchingCategoryId(
-				body.existingCategories,
-				parsed.categoryName,
-			);
-
-			if (!existingCategoryId) {
-				isExisting = false;
-			}
-		}
-
-		const response: IFCategorySuggestionResponse = {
-			suggestion: {
-				categoryName: parsed.categoryName,
-				isExisting,
-				existingCategoryId,
-				confidence: parsed.confidence,
-				source: "llm",
-			},
-		};
-
-		return NextResponse.json(response, { headers: CORS_HEADERS });
+		return NextResponse.json(
+			{ suggestion: null } satisfies IFCategorySuggestionResponse,
+			{ headers: CORS_HEADERS },
+		);
 	} catch (error) {
-		console.error("Category suggestion error:", error);
+		if (error instanceof SyntaxError) {
+			noSuggestionReason = "invalid_json";
 
-		return handleOpenAIError(error, "category");
+			return createErrorResponse(
+				"Invalid request format",
+				HTTP_STATUS.BAD_REQUEST,
+			);
+		}
+
+		noSuggestionReason = "request_error";
+		captureException(new Error("Category suggestion request failed"), {
+			tags: { cause: error instanceof Error ? error.name : "unknown" },
+		});
+
+		return createErrorResponse(
+			ERROR_MESSAGES.GENERAL_SERVER_ERROR,
+			HTTP_STATUS.INTERNAL_SERVER_ERROR,
+		);
+	} finally {
+		console.info("Category suggestion result", {
+			resultSource,
+			noSuggestionReason,
+			jevChoiceType,
+			jevConfidence,
+			jevDurationMs,
+			totalDurationMs: Math.round(performance.now() - requestStartedAt),
+		});
 	}
 };
 

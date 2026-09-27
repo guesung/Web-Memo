@@ -18,10 +18,3 @@ export interface IFCategorySuggestionResponse {
 		source: "jev" | "llm";
 	} | null;
 }
-
-/** LLM의 JSON 응답을 파싱한 결과입니다. */
-export interface IFParsedAIResponse {
-	categoryName: string;
-	isExisting: boolean;
-	confidence: number;
-}

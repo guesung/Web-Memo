@@ -16,25 +16,22 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-	Switch,
 } from "@web-memo/ui";
 
 import SaveStatus from "./SaveStatus";
 import { useAutoSaveSetting } from "./useAutoSaveSetting";
 
-/** AI 응답 언어와 카테고리 자동 적용 설정을 보여줍니다. */
+/** AI 응답 언어 설정을 보여줍니다. */
 const Option = () => {
 	const storedSettings = useSuspenseQuery({
 		queryKey: ["options", "ai-settings"],
 		queryFn: async () => {
-			const [language, autoApplyCategory] = await Promise.all([
-				ChromeSyncStorage.get<string>(STORAGE_KEYS.language),
-				ChromeSyncStorage.get<boolean>(STORAGE_KEYS.autoApplyCategory),
-			]);
+			const language = await ChromeSyncStorage.get<string>(
+				STORAGE_KEYS.language,
+			);
 
 			return {
 				language: language ?? "ko",
-				autoApplyCategory: autoApplyCategory ?? true,
 			};
 		},
 		staleTime: Number.POSITIVE_INFINITY,
@@ -47,16 +44,6 @@ const Option = () => {
 			analytics.trackEvent({
 				name: "extension_setting_change",
 				params: { keys: "language" },
-			});
-		},
-	});
-	const autoApplyCategory = useAutoSaveSetting({
-		initialValue: storedSettings.data.autoApplyCategory,
-		onSave: async (value: boolean) => {
-			await ChromeSyncStorage.set(STORAGE_KEYS.autoApplyCategory, value);
-			analytics.trackEvent({
-				name: "extension_setting_change",
-				params: { keys: "autoApplyCategory" },
 			});
 		},
 	});
@@ -104,23 +91,6 @@ const Option = () => {
 								onRetryClick={language.retrySave}
 							/>
 						</div>
-					</div>
-					<div className="flex flex-wrap items-center gap-3">
-						<Switch
-							id="auto-apply-category"
-							checked={autoApplyCategory.value}
-							onCheckedChange={autoApplyCategory.changeValue}
-						/>
-						<Label
-							htmlFor="auto-apply-category"
-							className="text-sm font-normal"
-						>
-							{I18n.get("auto_apply_category_description")}
-						</Label>
-						<SaveStatus
-							status={autoApplyCategory.status}
-							onRetryClick={autoApplyCategory.retrySave}
-						/>
 					</div>
 				</CardContent>
 			</Card>

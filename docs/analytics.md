@@ -20,13 +20,13 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `development` 빌드는 커스텀 이벤트를 보내지 않습니다. `staging`은 보냅니다 — 테스트 서버에서
 도착을 눈으로 확인해야 하기 때문이며, 그 트래픽은 `build_env` 차원으로 걸러 냅니다.
 
-## 이벤트 59종
+## 이벤트 58종
 
 `core_action`은 사용자가 이 서비스를 쓰는 행위, `engagement`는 그 주변의 이동·설정입니다.
 분류는 `EVENT_CATEGORY`가 `Record`로 강제하므로 이벤트를 추가하고 분류를 빠뜨리면 컴파일이
 실패합니다.
 
-### core_action (29종)
+### core_action (28종)
 
 `memo_write`(fields) · `memo_delete`(memo_count) · `memo_restore`(memo_count) ·
 `memo_delete_permanently`(memo_count) · `memo_open`(has_search_query) · `memo_source_open` ·
@@ -34,7 +34,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `highlight_note_update` · `summary_run`(source) · `summary_complete`(duration_msec) ·
 `summary_fail`(reason) · `chat_message_send` · `chat_fail`(reason) ·
 `youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category, source) ·
-`category_suggestion_undo`(source) · `category_create` · `category_update` · `category_delete` ·
+`category_create` · `category_update` · `category_delete` ·
 `login`(method) · `sign_up`(method) · `feedback_submit` · `extension_install_click`(from, position) ·
 `memo_first_write` · `export_run`(format) · `highlight_create`(color, has_note) ·
 `past_memo_open`(kind, source)
@@ -52,6 +52,14 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `search_no_result` · `highlight_bubble_disable`(scope) · `notice_view`(notice_id) ·
 `notice_dismiss`(notice_id) · `past_memo_show`(kind, source) · `past_memo_dismiss`(kind, source) ·
 `memo_offline_queued`(trigger) · `memo_offline_sync_result`(trigger, synced_count, conflict_count, has_other_error)
+
+2026-09-27부터 카테고리 추천의 `show`는 Jev가 고른 기존 카테고리를 사용자에게 표시한 경우,
+`apply`는 사용자가 그 제안을 수락한 경우, `dismiss`는 X 버튼이나 Escape로 명시적으로
+거절한 경우에만 발생합니다. 제안은 시간 경과만으로 사라지지 않으며, 탭·메모 전환은
+`dismiss`로 기록하지 않습니다.
+새 이벤트의 `source`는 `jev`, `is_new_category`는 `false`입니다. 이전에는 자동 적용도
+`apply`로 기록되었고 OpenAI 및 새 카테고리 제안도 포함되었으므로, 변경 전후의 `apply` 건수를
+같은 의미의 지표로 직접 비교하면 안 됩니다.
 
 ### 호출부에 없는 이벤트
 

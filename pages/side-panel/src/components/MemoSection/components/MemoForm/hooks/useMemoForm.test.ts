@@ -517,6 +517,42 @@ it("첫 저장으로 ID가 생겨도 저장 중 입력한 초안을 유지한다
 	);
 });
 
+it("첫 입력의 온라인 저장이 성공했을 때만 추천 대상 ID를 기록한다", async () => {
+	mocks.memo = undefined;
+	mocks.upsert.mockReset().mockImplementation(() => undefined);
+	await render();
+	expect(form.firstSavedMemoId).toBeNull();
+	await act(async () => form.handleMemoChange("첫 입력"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(350);
+	});
+	expect(form.firstSavedMemoId).toBeNull();
+	const [, callbacks] = mocks.upsert.mock.calls[0];
+	await act(async () => {
+		callbacks.onSuccess({ data: [{ id: 42 }] });
+	});
+	expect(form.firstSavedMemoId).toBe(42);
+});
+
+it("기존 메모가 조회로 나타나거나 첫 저장이 실패하면 추천 대상 ID를 기록하지 않는다", async () => {
+	mocks.memo = undefined;
+	await render();
+	mocks.memo = { id: 42, title: "A", memo: "기존 메모" };
+	await render();
+	expect(form.firstSavedMemoId).toBeNull();
+
+	mocks.memo = undefined;
+	await render();
+	mocks.upsert.mockReset().mockImplementation((_request, callbacks) => {
+		callbacks.onError(new Error("save failed"));
+	});
+	await act(async () => form.handleMemoChange("새 메모"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(350);
+	});
+	expect(form.firstSavedMemoId).toBeNull();
+});
+
 it("상태 토글은 저장 응답을 기다리지 않고 조회 캐시를 바꾸고 실패하면 되돌린다", async () => {
 	mocks.values = { isWish: false };
 	await render();

@@ -1,25 +1,32 @@
 import { choice, TypeSafeClient } from "@typesafe-ai/sdk";
 import {
-	JEV_CONFIDENCE_THRESHOLD,
 	JEV_MAX_CHOICES,
 	JEV_MODEL,
 	JEV_TIMEOUT,
+	PAGE_CONTENT_MAX_LENGTH,
 } from "./constant";
 import type {
 	IFCategorySuggestionRequest,
 	IFCategorySuggestionResponse,
 } from "./type";
 
-/** Jev가 높은 확신으로 선택한 기존 카테고리만 반환합니다. */
+/** Jev 판정 결과와 민감정보를 제외한 관측값입니다. */
+export interface IFJevCategoryResult {
+	suggestion: IFCategorySuggestionResponse["suggestion"];
+	choiceType: "existing" | "unknown" | null;
+	confidence: number | null;
+}
+
+/** Jev가 고른 기존 카테고리와 관측용 선택 유형·확신도를 반환합니다. */
 export const getJevCategorySuggestion = async (
 	request: IFCategorySuggestionRequest,
 	apiKey: string,
-): Promise<IFCategorySuggestionResponse["suggestion"]> => {
+): Promise<IFJevCategoryResult> => {
 	if (
 		request.existingCategories.length === 0 ||
-		request.existingCategories.length >= JEV_MAX_CHOICES
+		request.existingCategories.length > JEV_MAX_CHOICES
 	) {
-		return null;
+		return { suggestion: null, choiceType: null, confidence: null };
 	}
 
 	const criteria: Record<string, string> = {};
@@ -28,8 +35,6 @@ export const getJevCategorySuggestion = async (
 		criteria[`c${category.id}`] = category.name;
 	}
 
-	criteria.NONE = "None of the listed categories fits this memo well";
-
 	const client = new TypeSafeClient({ apiKey, logLevel: "off" });
 	const result = await client.systemOne(
 		{
@@ -37,11 +42,12 @@ export const getJevCategorySuggestion = async (
 			state: {
 				page_title: request.pageTitle,
 				page_url: request.pageUrl,
+				page_content: request.pageContent.slice(0, PAGE_CONTENT_MAX_LENGTH),
 				memo: request.memoText,
 			},
 			questions: {
 				category: choice(
-					"The user saved `memo` while reading the web page `page_title` (`page_url`). Which of the user's existing categories should this memo be filed under? Choose NONE if no category fits well.",
+					"The user saved `memo` while reading the web page `page_title` (`page_url`). Consider the `page_content` excerpt as context. Choose the closest category from the user's existing categories for this memo.",
 					criteria,
 				),
 			},
@@ -50,29 +56,31 @@ export const getJevCategorySuggestion = async (
 	);
 
 	const answer = result.answers.category;
-
-	if (
-		answer.choice === "NONE" ||
-		!Number.isFinite(answer.confidence) ||
-		answer.confidence < JEV_CONFIDENCE_THRESHOLD ||
-		answer.confidence > 1
-	) {
-		return null;
-	}
+	const confidence = Number.isFinite(answer.confidence)
+		? answer.confidence
+		: null;
 
 	const selectedCategory = request.existingCategories.find(
 		(category) => `c${category.id}` === answer.choice,
 	);
 
 	if (!selectedCategory) {
-		return null;
+		return { suggestion: null, choiceType: "unknown", confidence };
+	}
+
+	if (confidence === null || confidence < 0 || confidence > 1) {
+		return { suggestion: null, choiceType: "existing", confidence };
 	}
 
 	return {
-		categoryName: selectedCategory.name,
-		isExisting: true,
-		existingCategoryId: selectedCategory.id,
-		confidence: answer.confidence,
-		source: "jev",
+		suggestion: {
+			categoryName: selectedCategory.name,
+			isExisting: true,
+			existingCategoryId: selectedCategory.id,
+			confidence,
+			source: "jev",
+		},
+		choiceType: "existing",
+		confidence,
 	};
 };

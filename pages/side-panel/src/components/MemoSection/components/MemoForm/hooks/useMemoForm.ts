@@ -93,10 +93,11 @@ export default function useMemoForm({
 		memoQueryData?.data?.length === 1 ? memoQueryData.data[0] : undefined;
 	// 잠긴 동안에는 캐시에 남은 메모도 편집 대상으로 삼지 않는다.
 	const memoData = isMemoLocked ? undefined : (selectedMemo ?? onlyMemo);
-	const hasPendingOfflineItem = usePendingOfflineMemo({
+	const pendingOfflineItem = usePendingOfflineMemo({
 		memoId: memoData?.id,
 		url: tab?.url ?? "",
 	});
+	const hasPendingOfflineItem = pendingOfflineItem !== undefined;
 	const titleSync = useMemoTitleSync({
 		onTitleUpdate: (title) => setValue("title", title),
 		initialSavedTitle: memoData?.title,
@@ -196,6 +197,56 @@ export default function useMemoForm({
 			memoData?.category_id,
 			saveStatus,
 			setValue,
+		],
+	);
+
+	// 대기열 항목은 비동기로 읽히므로, 어느 대상에 대해 이미 채웠는지 기억해 한 번만 덮는다.
+	const restoredPendingTargetKeyRef = useRef<string | null>(null);
+
+	useEffect(
+		function restorePendingOfflineDraft() {
+			// 오프라인에서 쓴 본문은 서버 캐시에 없으므로, 페이지를 오갔다 돌아오면 initMemoData가
+			// 이전 서버 본문으로 채운다. 이 대상의 대기 항목이 있으면 그 본문으로 덮는다.
+			if (!pendingOfflineItem || hasEditedMemoRef.current) {
+				return;
+			}
+
+			const isPendingItemForCurrentTarget =
+				memoData?.id !== undefined
+					? pendingOfflineItem.memoId === memoData.id
+					: pendingOfflineItem.memoId === undefined &&
+						pendingOfflineItem.url === tab?.url;
+
+			if (!isPendingItemForCurrentTarget) {
+				return;
+			}
+
+			const targetKey = `${memoData?.id ?? ""}|${tab?.url ?? ""}`;
+
+			if (restoredPendingTargetKeyRef.current === targetKey) {
+				return;
+			}
+
+			restoredPendingTargetKeyRef.current = targetKey;
+			setValue("memo", pendingOfflineItem.data.memo);
+			setValue("impression", pendingOfflineItem.data.impression);
+			setValue("actionItem", pendingOfflineItem.data.actionItem);
+
+			// 제목은 탭 제목 연동이 뒤이어 덮지 않도록 직접 입력한 제목과 같은 경로로 넣는다.
+			if (
+				pendingOfflineItem.data.title &&
+				pendingOfflineItem.data.title !== tab?.title
+			) {
+				titleSync.handleTitleInputChange(pendingOfflineItem.data.title);
+			}
+		},
+		[
+			pendingOfflineItem,
+			memoData?.id,
+			tab?.url,
+			tab?.title,
+			setValue,
+			titleSync,
 		],
 	);
 

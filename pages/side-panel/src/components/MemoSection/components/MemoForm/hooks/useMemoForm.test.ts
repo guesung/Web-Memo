@@ -28,7 +28,7 @@ const mocks = vi.hoisted(() => ({
 	isNetworkError: vi.fn((_error: unknown) => false),
 	enqueueOfflineMemo: vi.fn(async (_item: unknown) => {}),
 	hasPendingOfflineMemo: vi.fn(async (_target: unknown) => false),
-	hasPendingOfflineItem: false,
+	pendingOfflineItem: undefined as unknown,
 	trackEvent: vi.fn(async (_event: unknown) => {}),
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
@@ -61,7 +61,7 @@ vi.mock("../../../../../hooks/useOnlineStatus", () => ({
 	default: () => mocks.isOnline,
 }));
 vi.mock("../../../../../hooks/usePendingOfflineMemo", () => ({
-	default: () => mocks.hasPendingOfflineItem,
+	default: () => mocks.pendingOfflineItem,
 }));
 vi.mock("../../../../../utils/offlineMemoQueue", () => ({
 	enqueueOfflineMemo: (item: unknown) => mocks.enqueueOfflineMemo(item),
@@ -132,7 +132,7 @@ beforeEach(() => {
 	mocks.isNetworkError.mockReset().mockReturnValue(false);
 	mocks.enqueueOfflineMemo.mockReset().mockResolvedValue(undefined);
 	mocks.hasPendingOfflineMemo.mockReset().mockResolvedValue(false);
-	mocks.hasPendingOfflineItem = false;
+	mocks.pendingOfflineItem = undefined;
 	mocks.trackEvent.mockReset().mockResolvedValue(undefined);
 	queryClient = new QueryClient({
 		defaultOptions: { queries: { retry: false } },
@@ -617,8 +617,61 @@ it("오프라인이면 상태 토글을 저장하지 않는다", async () => {
 });
 
 it("지금 편집 중인 메모에 대기 항목이 있으면 hasPendingOfflineItem을 그대로 내보낸다", async () => {
-	mocks.hasPendingOfflineItem = true;
+	mocks.pendingOfflineItem = {
+		memoId: 1,
+		url: "https://example.com/a",
+		data: { title: "A", memo: "대기", impression: "", actionItem: "" },
+	};
 	await render();
 
 	expect(form.hasPendingOfflineItem).toBe(true);
+});
+
+it("현재 메모의 대기 항목이 있으면 캐시된 서버 본문 대신 대기 본문으로 폼을 채운다", async () => {
+	mocks.memo = { id: 1, title: "A", memo: "서버 본문" };
+	mocks.pendingOfflineItem = {
+		memoId: 1,
+		url: "https://example.com/a",
+		data: {
+			title: "오프라인 제목",
+			memo: "오프라인 본문",
+			impression: "오프라인 느낀 점",
+			actionItem: "오프라인 할 일",
+		},
+	};
+	await render();
+
+	expect(mocks.values.memo).toBe("오프라인 본문");
+	expect(mocks.values.impression).toBe("오프라인 느낀 점");
+	expect(mocks.values.actionItem).toBe("오프라인 할 일");
+	expect(mocks.values.title).toBe("오프라인 제목");
+});
+
+it("다른 메모의 대기 항목이면 폼을 덮지 않는다", async () => {
+	mocks.memo = { id: 1, title: "A", memo: "서버 본문" };
+	mocks.pendingOfflineItem = {
+		memoId: 2,
+		url: "https://example.com/a",
+		data: { title: "B", memo: "다른 메모", impression: "", actionItem: "" },
+	};
+	await render();
+
+	expect(mocks.values.memo).toBe("서버 본문");
+});
+
+it("입력한 뒤에는 대기 항목이 갱신돼도 폼을 다시 덮지 않는다", async () => {
+	mocks.memo = { id: 1, title: "A", memo: "서버 본문" };
+	await render();
+	act(() => {
+		form.handleMemoChange("지금 입력 중");
+	});
+
+	mocks.pendingOfflineItem = {
+		memoId: 1,
+		url: "https://example.com/a",
+		data: { title: "A", memo: "지금 입력", impression: "", actionItem: "" },
+	};
+	await render();
+
+	expect(mocks.values.memo).toBe("지금 입력 중");
 });

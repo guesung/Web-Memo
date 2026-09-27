@@ -136,15 +136,20 @@ export const removeOfflineMemo = async (
 	});
 };
 
-/** 대기열에 이 메모(memoId 또는 url)에 대한 항목이 있는지 확인한다 */
-export const hasPendingOfflineMemo = async (
+/** 대기열에서 이 메모(memoId 또는 url)의 항목을 찾는다. 없으면 undefined */
+export const getPendingOfflineMemo = async (
 	target: Pick<IFOfflineMemoQueueItem, "memoId" | "url">,
 ) => {
 	const items = await getPendingOfflineMemos();
 	const key = getQueueItemKey(target);
 
-	return items.some((item) => getQueueItemKey(item) === key);
+	return items.find((item) => getQueueItemKey(item) === key);
 };
+
+/** 대기열에 이 메모(memoId 또는 url)에 대한 항목이 있는지 확인한다 */
+export const hasPendingOfflineMemo = async (
+	target: Pick<IFOfflineMemoQueueItem, "memoId" | "url">,
+) => (await getPendingOfflineMemo(target)) !== undefined;
 
 /** 대기 항목의 본문을 upsert 요청 모양으로 바꾼다. 제목이 비어 있으면 탭 제목으로 되돌린다 */
 const buildMemoRequest = (data: IFOfflineMemoQueueData) => ({

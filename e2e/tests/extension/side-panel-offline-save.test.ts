@@ -246,3 +246,45 @@ test("오프라인에서 패널을 다시 연 뒤 온라인이 되면 메모 화
 		sidePanelPage.getByRole("button", { name: /로그인하러가기|log ?in/i }),
 	).toHaveCount(0);
 });
+
+const OFFLINE_RETURN_A_URL = "https://example.com/offline-return-a";
+const OFFLINE_RETURN_B_URL = "https://example.com/offline-return-b";
+
+/**
+ * 오프라인에서 쓴 내용은 다른 페이지에 갔다가 돌아와도 폼에 다시 보여야 한다.
+ * @description 폼은 캐시된 서버 메모로 채워지므로, 대기열 항목을 읽어 덮지 않으면 이전 서버 본문이 보인다.
+ */
+test("오프라인에서 쓴 메모는 다른 페이지에 갔다 돌아와도 보인다", async ({
+	page,
+	context,
+}) => {
+	const store = new MockSupabaseStore();
+	store.addMemo(
+		createMockMemo({ url: OFFLINE_RETURN_A_URL, memo: "서버 본문" }),
+	);
+	await setupSupabaseMocks(page, store);
+	const network = await setupNetworkSwitch(context);
+
+	await login(page);
+	await skipGuide(page);
+	await openSidePanel(page);
+	const sidePanelPage = await findSidePanelPage(page);
+	const memoTextarea = sidePanelPage.locator("#memo-textarea");
+
+	await page.goto(OFFLINE_RETURN_B_URL);
+	await expect(memoTextarea).toHaveValue("");
+	await page.goto(OFFLINE_RETURN_A_URL);
+	await expect(memoTextarea).toHaveValue("서버 본문");
+
+	await network.goOffline();
+	await memoTextarea.fill("오프라인 수정 본문");
+	await expect(
+		sidePanelPage.getByText(/saved on this device|이 기기에 저장됨/i).first(),
+	).toBeVisible();
+
+	await page.goto(OFFLINE_RETURN_B_URL).catch(() => {});
+	await expect(memoTextarea).toHaveValue("");
+	await page.goto(OFFLINE_RETURN_A_URL).catch(() => {});
+
+	await expect(memoTextarea).toHaveValue("오프라인 수정 본문");
+});

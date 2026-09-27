@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
-	hasPendingOfflineMemo,
+	getPendingOfflineMemo,
+	type IFOfflineMemoQueueItem,
 	OFFLINE_MEMO_QUEUE_STORAGE_KEY,
 } from "../utils/offlineMemoQueue";
 
@@ -11,24 +12,27 @@ interface UsePendingOfflineMemoProps {
 }
 
 /**
- * 지금 편집 중인 메모(memoId 또는 url)에 대기열 항목이 있는지 반응형으로 알려준다.
+ * 지금 편집 중인 메모(memoId 또는 url)의 대기열 항목을 반응형으로 돌려준다. 없으면 undefined.
  * @description 마운트·대상이 바뀔 때 한 번 읽고, 이후로는 chrome.storage.onChanged로 대기열
- * 변경을 들어 다시 읽는다. 저장 표시줄이 '지금 대기 중인가'를 그대로 반영하도록 하기 위해서다.
+ * 변경을 들어 다시 읽는다. 저장 표시줄이 '지금 대기 중인가'를 그대로 반영하고, 오프라인에서
+ * 페이지를 오갈 때 폼이 대기 중인 본문을 다시 채울 수 있게 하기 위해서다.
  * 사용처: useMemoForm.ts
  */
 export default function usePendingOfflineMemo({
 	memoId,
 	url,
 }: UsePendingOfflineMemoProps) {
-	const [isPending, setIsPending] = useState(false);
+	const [pendingItem, setPendingItem] = useState<
+		IFOfflineMemoQueueItem | undefined
+	>(undefined);
 
 	useEffect(() => {
 		let isCancelled = false;
 
 		const refresh = async () => {
-			const pending = await hasPendingOfflineMemo({ memoId, url });
+			const nextPendingItem = await getPendingOfflineMemo({ memoId, url });
 			if (!isCancelled) {
-				setIsPending(pending);
+				setPendingItem(nextPendingItem);
 			}
 		};
 
@@ -55,5 +59,5 @@ export default function usePendingOfflineMemo({
 		};
 	}, [memoId, url]);
 
-	return isPending;
+	return pendingItem;
 }

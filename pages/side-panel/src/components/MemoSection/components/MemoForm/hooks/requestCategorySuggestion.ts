@@ -87,11 +87,11 @@ interface IFCategorySuggestionResponse {
 	suggestion: IFCategorySuggestion | null;
 }
 
-/** 카테고리 추천 API의 제안 데이터입니다. */
+/** Jev가 기존 카테고리에서 선택한 제안 데이터입니다. */
 export interface IFCategorySuggestion {
 	categoryName: string;
-	isExisting: boolean;
-	existingCategoryId: number | null;
+	isExisting: true;
+	existingCategoryId: number;
 	confidence: number;
-	source?: "jev" | "llm";
+	source: "jev";
 }

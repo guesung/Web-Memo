@@ -26,7 +26,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 분류는 `EVENT_CATEGORY`가 `Record`로 강제하므로 이벤트를 추가하고 분류를 빠뜨리면 컴파일이
 실패합니다.
 
-### core_action (29종)
+### core_action (28종)
 
 `memo_write`(fields) · `memo_delete`(memo_count) · `memo_restore`(memo_count) ·
 `memo_delete_permanently`(memo_count) · `memo_open`(has_search_query) · `memo_source_open` ·
@@ -34,7 +34,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `highlight_note_update` · `summary_run`(source) · `summary_complete`(duration_msec) ·
 `summary_fail`(reason) · `chat_message_send` · `chat_fail`(reason) ·
 `youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category, source) ·
-`category_suggestion_undo`(source) · `category_create` · `category_update` · `category_delete` ·
+`category_create` · `category_update` · `category_delete` ·
 `login`(method) · `sign_up`(method) · `feedback_submit` · `extension_install_click`(from, position) ·
 `memo_first_write` · `export_run`(format) · `highlight_create`(color, has_note) ·
 `past_memo_open`(kind, source)

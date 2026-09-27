@@ -1,6 +1,7 @@
 import { expect, test } from "../fixtures/extension";
 import {
 	cleanupTestData,
+	createCleanupClient,
 	createTestNamespace,
 	fillMemo,
 	findSidePanelPage,
@@ -11,12 +12,13 @@ import {
 	waitForSidePanelMemoQuery,
 } from "../lib";
 
-test.describe("카테고리 추천 - 새 이름 수락과 페이지 전환", () => {
+test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () => {
 	// 실제 Supabase에 쓰므로 afterEach에서 지울 대상을 여기 모아 둔다.
 	let memoUrls: string[] = [];
 	let categoryNames: string[] = [];
 	// 메모 URL·카테고리 이름에 실행·테스트 ID를 새겨, 정리가 다른 실행의 행을 건드리지 않게 한다.
 	let namespace: ReturnType<typeof createTestNamespace>;
+	let categoryId: number;
 
 	test.beforeEach(async ({ page }) => {
 		memoUrls = [];
@@ -28,6 +30,18 @@ test.describe("카테고리 추천 - 새 이름 수락과 페이지 전환", () 
 
 		await login(page);
 		await skipGuide(page);
+		const categoryName = namespace.categoryName("jev-suggestion");
+		categoryNames.push(categoryName);
+		const client = await createCleanupClient();
+		const { data, error } = await client
+			.from("category")
+			.insert({ name: categoryName })
+			.select("id")
+			.single();
+		if (error || !data) {
+			throw new Error(`테스트 카테고리 생성 실패: ${error?.message}`);
+		}
+		categoryId = data.id;
 		await openSidePanel(page);
 	});
 
@@ -51,8 +65,7 @@ test.describe("카테고리 추천 - 새 이름 수락과 페이지 전환", () 
 		await pageAMemoQuery;
 
 		// 1. 첫 메모 입력에서 시작하는 카테고리 API를 지연 응답하도록 모킹
-		const categoryName = namespace.categoryName(`Category ${timestamp}`);
-		categoryNames.push(categoryName);
+		const categoryName = namespace.categoryName("jev-suggestion");
 		let resolveCategoryApi!: () => void;
 		const categoryApiGate = new Promise<void>((resolve) => {
 			resolveCategoryApi = resolve;
@@ -66,10 +79,10 @@ test.describe("카테고리 추천 - 새 이름 수락과 페이지 전환", () 
 				body: JSON.stringify({
 					suggestion: {
 						categoryName,
-						isExisting: false,
-						existingCategoryId: null,
-						confidence: 0.9,
-						source: "llm",
+						isExisting: true,
+						existingCategoryId: categoryId,
+						confidence: 0.2,
+						source: "jev",
 					},
 				}),
 			});
@@ -113,9 +126,7 @@ test.describe("카테고리 추천 - 새 이름 수락과 페이지 전환", () 
 		await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(memoText);
 	});
 
-	test("새 카테고리 이름은 자동 생성하지 않고 수락할 때만 적용한다", async ({
-		page,
-	}) => {
+	test("Jev가 고른 기존 카테고리는 수락할 때만 적용한다", async ({ page }) => {
 		const sidePanelPage = await findSidePanelPage(page);
 
 		const timestamp = Date.now();
@@ -129,8 +140,7 @@ test.describe("카테고리 추천 - 새 이름 수락과 페이지 전환", () 
 		await pageAMemoQuery;
 
 		// 1. 카테고리 API 즉시 응답 모킹 (페이지 전환 없이)
-		const categoryName = namespace.categoryName(`Badge ${timestamp}`);
-		categoryNames.push(categoryName);
+		const categoryName = namespace.categoryName("jev-suggestion");
 		await sidePanelPage.route("**/api/openai/category", async (route) => {
 			await route.fulfill({
 				status: 200,
@@ -138,10 +148,10 @@ test.describe("카테고리 추천 - 새 이름 수락과 페이지 전환", () 
 				body: JSON.stringify({
 					suggestion: {
 						categoryName,
-						isExisting: false,
-						existingCategoryId: null,
-						confidence: 0.9,
-						source: "llm",
+						isExisting: true,
+						existingCategoryId: categoryId,
+						confidence: 0.2,
+						source: "jev",
 					},
 				}),
 			});
@@ -151,7 +161,7 @@ test.describe("카테고리 추천 - 새 이름 수락과 페이지 전환", () 
 		const memoText = `Category badge test ${timestamp}`;
 		await fillMemo(sidePanelPage, memoText);
 
-		// 3. 추천만 표시되고 카테고리는 아직 생성되지 않는다.
+		// 3. 추천만 표시되고 카테고리는 자동 적용되지 않는다.
 		await expect(
 			sidePanelPage.getByTestId("category-suggestion"),
 		).toContainText(categoryName, {
@@ -159,7 +169,7 @@ test.describe("카테고리 추천 - 새 이름 수락과 페이지 전환", () 
 		});
 		await expect(sidePanelPage.getByTestId("category-badge")).toHaveCount(0);
 
-		// 4. 수락한 뒤에만 카테고리를 만들고 배지에 적용한다.
+		// 4. 수락한 뒤에만 배지에 적용한다.
 		await sidePanelPage.getByTestId("category-suggestion-accept").click();
 		await expect(sidePanelPage.getByTestId("category-badge")).toContainText(
 			categoryName,

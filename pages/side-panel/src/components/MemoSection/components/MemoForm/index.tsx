@@ -186,19 +186,6 @@ function MemoFormContent({
 			!isWritePending &&
 			saveStatus === "saved",
 		onCategorySelect: updateCategory,
-		onCategoryAutoApply: (categoryName, onUndo) => {
-			toast({
-				title: I18n.get("category_auto_applied", categoryName),
-				action: (
-					<ToastAction
-						altText={I18n.get("category_auto_applied_undo")}
-						onClick={() => void onUndo()}
-					>
-						{I18n.get("category_auto_applied_undo")}
-					</ToastAction>
-				),
-			});
-		},
 	});
 
 	const handleCategoryRemoveClick = () => {

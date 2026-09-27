@@ -7,7 +7,6 @@ export const STORAGE_KEYS = {
 	webPrompts: "webPrompts",
 	language: "language",
 	theme: "theme",
-	autoApplyCategory: "autoApplyCategory",
 	tabHeight: "tabHeight",
 	memoFieldRatios: "memoFieldRatios",
 	chatMessages: "chatMessages",

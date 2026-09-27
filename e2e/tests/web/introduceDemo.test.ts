@@ -38,7 +38,7 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 
 			const isKorean = language === "ko";
 			const heroTitle = isKorean
-				? "페이지 읽으며 메모하기"
+				? "글 읽으며 메모하세요"
 				: "Take notes while reading";
 			const heroSubtitle = isKorean
 				? "글을 읽다가 떠오른 생각을 사이드 패널에 적어요.\n페이지 제목과 주소는 자동으로 기록됩니다."

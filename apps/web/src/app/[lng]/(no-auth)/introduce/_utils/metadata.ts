@@ -4,7 +4,7 @@ import { createPublicPageMetadata } from "../../_utils";
 export const metadataKorean = createPublicPageMetadata({
 	language: "ko",
 	path: "/introduce",
-	title: "웹 메모 - 페이지 읽으며 메모하기",
+	title: "웹 메모 - 글 읽으며 메모하세요",
 	description:
 		"글을 읽다가 떠오른 생각을 사이드 패널에 적어요. 페이지 제목과 주소는 자동으로 기록됩니다. 같은 계정으로 웹과 앱에서 메모를 확인할 수 있어요.",
 });

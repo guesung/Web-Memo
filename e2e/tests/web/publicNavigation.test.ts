@@ -186,7 +186,7 @@ const assertRenderedPublicPage = async ({
 	await expect(page.locator("h1").first()).toBeVisible();
 	await expect(getBrandLink(page)).toHaveAttribute(
 		"href",
-		`/${language}${PATHS.introduce}`,
+		`/${language}${PATHS.memos}`,
 	);
 };
 

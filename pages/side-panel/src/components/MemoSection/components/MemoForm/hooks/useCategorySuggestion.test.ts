@@ -209,14 +209,37 @@ it("거절한 URL은 다시 추천하지 않고 Jev 거절 이벤트를 남긴�
 	});
 });
 
-it("포커스가 있는 동안 자동 거절 타이머가 멈춘다", async () => {
+it("제안을 받은 뒤 메모가 바뀌면 이전 메모의 제안을 지운다", async () => {
 	mocks.request.mockResolvedValue(jevSuggestion);
 	await render();
 	await act(async () => suggestion.triggerSuggestion("memo"));
-	await act(async () => suggestion.pauseAutoDismiss());
-	await act(async () => vi.advanceTimersByTimeAsync(20000));
-	expect(suggestion.suggestion).not.toBeNull();
-	await act(async () => suggestion.resumeAutoDismiss());
-	await act(async () => vi.advanceTimersByTimeAsync(15000));
+	expect(suggestion.suggestion?.existingCategoryId).toBe(7);
+	mocks.currentMemoId = 2;
+	await render();
 	expect(suggestion.suggestion).toBeNull();
+});
+
+it("카테고리를 적용했다가 제거하면 추가 입력에 다시 추천한다", async () => {
+	mocks.request.mockResolvedValue(jevSuggestion);
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	await act(async () => suggestion.acceptSuggestion());
+	await render();
+	mocks.values.categoryId = null;
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo updated"));
+	expect(mocks.request).toHaveBeenCalledTimes(2);
+	expect(suggestion.suggestion?.existingCategoryId).toBe(7);
+});
+
+it("사용자가 결정하기 전에는 제안이 15초 뒤에도 유지된다", async () => {
+	mocks.request.mockResolvedValue(jevSuggestion);
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	await act(async () => vi.advanceTimersByTimeAsync(30000));
+	expect(suggestion.suggestion?.existingCategoryId).toBe(7);
+	expect(mocks.trackEvent).not.toHaveBeenCalledWith({
+		name: "category_suggestion_dismiss",
+		params: { source: "jev", is_new_category: false },
+	});
 });

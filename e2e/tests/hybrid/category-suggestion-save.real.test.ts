@@ -141,7 +141,9 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 
 		// 1. 카테고리 API 즉시 응답 모킹 (페이지 전환 없이)
 		const categoryName = namespace.categoryName("jev-suggestion");
+		let categoryRequestCount = 0;
 		await sidePanelPage.route("**/api/openai/category", async (route) => {
+			categoryRequestCount += 1;
 			await route.fulfill({
 				status: 200,
 				contentType: "application/json",
@@ -177,5 +179,18 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 				timeout: 5000,
 			},
 		);
+
+		// 5. 카테고리를 제거하고 메모를 더 입력하면 다시 추천한다.
+		await sidePanelPage
+			.getByTestId("category-badge")
+			.locator("button")
+			.last()
+			.click();
+		await expect(sidePanelPage.getByTestId("category-badge")).toHaveCount(0);
+		await fillMemo(sidePanelPage, `${memoText} updated`);
+		await expect(
+			sidePanelPage.getByTestId("category-suggestion"),
+		).toContainText(categoryName);
+		expect(categoryRequestCount).toBe(2);
 	});
 });

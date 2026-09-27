@@ -173,9 +173,6 @@ function MemoFormContent({
 		triggerSuggestion,
 		acceptSuggestion,
 		dismissSuggestion,
-		pauseAutoDismiss,
-		resumeAutoDismiss,
-		dismissCurrentUrl,
 	} = useCategorySuggestion({
 		currentCategoryId,
 		currentMemoId: memoData?.id ?? null,
@@ -187,11 +184,6 @@ function MemoFormContent({
 			saveStatus === "saved",
 		onCategorySelect: updateCategory,
 	});
-
-	const handleCategoryRemoveClick = () => {
-		handleCategoryRemove();
-		void dismissCurrentUrl();
-	};
 
 	const handleMemoStatusClick = async (statusKey: TMemoStatusKey) => {
 		const nextStatusValue = await toggleMemoStatus(statusKey);
@@ -424,8 +416,6 @@ function MemoFormContent({
 							isAccepting={isAccepting}
 							onAccept={() => void acceptSuggestion()}
 							onDismiss={dismissSuggestion}
-							onPauseDismiss={pauseAutoDismiss}
-							onResumeDismiss={resumeAutoDismiss}
 						/>
 					</div>
 				)}
@@ -490,7 +480,7 @@ function MemoFormContent({
 								category={currentCategory}
 								badgeButtonRef={categoryBadgeButtonRef}
 								onBadgeButtonClick={handleCategoryButtonClick}
-								onRemoveButtonClick={handleCategoryRemoveClick}
+								onRemoveButtonClick={handleCategoryRemove}
 								isDisabled={isMemoLocked}
 								isDimmed={isMemoUiDimmed}
 								disabledReason={changeDisabledReason}

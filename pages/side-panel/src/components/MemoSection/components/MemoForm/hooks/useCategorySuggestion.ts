@@ -13,7 +13,6 @@ import {
 	type IFCategorySuggestion,
 	requestCategorySuggestion,
 } from "./requestCategorySuggestion";
-import { useSuggestionDismissTimer } from "./useSuggestionDismissTimer";
 
 /** 저장된 메모에 대한 카테고리 추천과 수락·거절 상태를 관리합니다. */
 export const useCategorySuggestion = ({
@@ -41,15 +40,6 @@ export const useCategorySuggestion = ({
 	const currentMemoIdRef = useRef(currentMemoId);
 	currentMemoIdRef.current = currentMemoId;
 	const suggestionRef = useRef<IFCategorySuggestion | null>(null);
-	const dismissCurrentUrl = async () => {
-		if (currentUrlRef.current) {
-			dismissedUrlsRef.current.add(currentUrlRef.current);
-		}
-		const tabInfo = await getTabInfo();
-		if (tabInfo.url) {
-			dismissedUrlsRef.current.add(tabInfo.url);
-		}
-	};
 	const dismissSuggestion = () => {
 		const activeSuggestion = suggestionRef.current;
 		if (!activeSuggestion) {
@@ -62,19 +52,11 @@ export const useCategorySuggestion = ({
 			name: "category_suggestion_dismiss",
 			params: { source: "jev", is_new_category: false },
 		});
-		dismissTimer.stop();
 		suggestionRef.current = null;
 		setSuggestion(null);
 	};
-	const dismissTimer = useSuggestionDismissTimer(dismissSuggestion);
-	const stopDismissTimerRef = useRef(dismissTimer.stop);
-	stopDismissTimerRef.current = dismissTimer.stop;
 	const previousTabUrlRef = useRef(tab?.url);
-	const resumeAutoDismiss = () => {
-		if (!isAccepting) {
-			dismissTimer.resume();
-		}
-	};
+	const previousMemoIdRef = useRef(currentMemoId);
 	const acceptSuggestion = async () => {
 		const activeSuggestion = suggestionRef.current;
 		const isAlreadyAssigned = Boolean(getValues("categoryId"));
@@ -83,7 +65,6 @@ export const useCategorySuggestion = ({
 		}
 		const activeUrl = currentUrlRef.current;
 		const activeMemoId = suggestionMemoIdRef.current;
-		dismissTimer.pause();
 		isAcceptingRef.current = true;
 		setIsAccepting(true);
 		try {
@@ -94,7 +75,6 @@ export const useCategorySuggestion = ({
 				getValues("categoryId") ||
 				suggestionRef.current !== activeSuggestion
 			) {
-				dismissTimer.stop();
 				suggestionRef.current = null;
 				setSuggestion(null);
 				return;
@@ -104,13 +84,11 @@ export const useCategorySuggestion = ({
 				name: "category_suggestion_apply",
 				params: { source: "jev", is_new_category: false },
 			});
-			dismissTimer.stop();
 			suggestionRef.current = null;
 			setSuggestion(null);
 		} catch (error) {
 			Sentry.captureException(error);
 			toast({ title: I18n.get("category_suggestion_apply_failed") });
-			dismissTimer.resume();
 		} finally {
 			isAcceptingRef.current = false;
 			setIsAccepting(false);
@@ -177,7 +155,6 @@ export const useCategorySuggestion = ({
 			suggestionRef.current = result;
 			suggestionMemoIdRef.current = currentMemoIdRef.current;
 			setSuggestion(result);
-			dismissTimer.start();
 		} catch (error) {
 			if (!(error instanceof Error && error.name === "AbortError")) {
 				Sentry.captureException(error);
@@ -190,6 +167,30 @@ export const useCategorySuggestion = ({
 	};
 	const triggerSuggestionRef = useRef(triggerSuggestion);
 	triggerSuggestionRef.current = triggerSuggestion;
+	useEffect(() => {
+		if (previousTabUrlRef.current === tab?.url) {
+			return;
+		}
+		previousTabUrlRef.current = tab?.url;
+		requestSequenceRef.current += 1;
+		abortControllerRef.current?.abort();
+		suggestionRef.current = null;
+		currentUrlRef.current = null;
+		setSuggestion(null);
+		setIsLoading(false);
+	}, [tab?.url]);
+	useEffect(() => {
+		if (previousMemoIdRef.current === currentMemoId) {
+			return;
+		}
+		previousMemoIdRef.current = currentMemoId;
+		requestSequenceRef.current += 1;
+		abortControllerRef.current?.abort();
+		suggestionRef.current = null;
+		suggestionMemoIdRef.current = null;
+		setSuggestion(null);
+		setIsLoading(false);
+	}, [currentMemoId]);
 	useEffect(() => {
 		if (
 			firstSavedMemoId === null ||
@@ -225,21 +226,7 @@ export const useCategorySuggestion = ({
 		};
 	}, []);
 	useEffect(() => {
-		if (previousTabUrlRef.current === tab?.url) {
-			return;
-		}
-		previousTabUrlRef.current = tab?.url;
-		requestSequenceRef.current += 1;
-		abortControllerRef.current?.abort();
-		stopDismissTimerRef.current();
-		suggestionRef.current = null;
-		currentUrlRef.current = null;
-		setSuggestion(null);
-		setIsLoading(false);
-	}, [tab?.url]);
-	useEffect(() => {
 		if (currentCategoryId) {
-			stopDismissTimerRef.current();
 			suggestionRef.current = null;
 			setSuggestion(null);
 		}
@@ -251,9 +238,6 @@ export const useCategorySuggestion = ({
 		triggerSuggestion,
 		acceptSuggestion,
 		dismissSuggestion,
-		pauseAutoDismiss: dismissTimer.pause,
-		resumeAutoDismiss,
-		dismissCurrentUrl,
 	};
 };
 /** 카테고리 추천 훅의 입력입니다. */

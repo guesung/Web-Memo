@@ -1,17 +1,10 @@
 import { I18n } from "@web-memo/shared/utils/extension";
 import { CheckIcon, LightbulbIcon, Loader2Icon, XIcon } from "lucide-react";
-import {
-	type FocusEvent,
-	type KeyboardEvent,
-	type MouseEvent,
-	useRef,
-} from "react";
+import type { KeyboardEvent } from "react";
 import type { IFCategorySuggestion } from "../hooks/requestCategorySuggestion";
 
 /** 메모 하단에 Jev가 선택한 기존 카테고리를 제안합니다. */
 export const CategorySuggestion = (props: IFCategorySuggestionProps) => {
-	const isHoveredRef = useRef(false);
-	const hasFocusRef = useRef(false);
 	const labelText = I18n.get("category_suggestion_existing");
 
 	const handleSuggestionKeyDown = (event: KeyboardEvent<HTMLOutputElement>) => {
@@ -21,45 +14,12 @@ export const CategorySuggestion = (props: IFCategorySuggestionProps) => {
 		}
 	};
 
-	const handleSuggestionFocus = () => {
-		hasFocusRef.current = true;
-		props.onPauseDismiss();
-	};
-
-	const handleSuggestionBlur = (event: FocusEvent<HTMLOutputElement>) => {
-		if (!event.currentTarget.contains(event.relatedTarget)) {
-			hasFocusRef.current = false;
-			if (!isHoveredRef.current) {
-				props.onResumeDismiss();
-			}
-		}
-	};
-
-	const handleSuggestionMouseEnter = () => {
-		isHoveredRef.current = true;
-		props.onPauseDismiss();
-	};
-
-	const handleSuggestionMouseLeave = (event: MouseEvent<HTMLOutputElement>) => {
-		isHoveredRef.current = false;
-		if (
-			!hasFocusRef.current &&
-			!event.currentTarget.contains(document.activeElement)
-		) {
-			props.onResumeDismiss();
-		}
-	};
-
 	return (
 		<output
 			aria-label={`${labelText} ${props.suggestion.categoryName}`}
 			data-testid="category-suggestion"
 			className="flex min-w-0 items-center gap-1 rounded-md border bg-background p-1 text-xs"
 			onKeyDown={handleSuggestionKeyDown}
-			onFocus={handleSuggestionFocus}
-			onBlur={handleSuggestionBlur}
-			onMouseEnter={handleSuggestionMouseEnter}
-			onMouseLeave={handleSuggestionMouseLeave}
 		>
 			<LightbulbIcon
 				className="size-3.5 shrink-0 text-muted-foreground"
@@ -105,6 +65,4 @@ interface IFCategorySuggestionProps {
 	isAccepting: boolean;
 	onAccept: () => void;
 	onDismiss: () => void;
-	onPauseDismiss: () => void;
-	onResumeDismiss: () => void;
 }

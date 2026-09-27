@@ -111,6 +111,7 @@ export default function useMemoForm({
 		const pageKey = `${tab?.id}:${tab?.url}`;
 		if (titlePageRef.current !== pageKey) {
 			abortTitleDebounce();
+			setFirstSavedMemoId(null);
 			titlePageRef.current = pageKey;
 		}
 	}, [tab?.id, tab?.url, abortTitleDebounce]);
@@ -122,6 +123,7 @@ export default function useMemoForm({
 	// "다른 메모 선택" 버튼을 막는 반응형 상태. 동시 저장을 막는 게이트 자체는 isSavingRef가 맡는다.
 	const [isWritePending, setIsWritePending] = useState(false);
 	const [saveStatus, setSaveStatus] = useState<TSaveStatus>("empty");
+	const [firstSavedMemoId, setFirstSavedMemoId] = useState<number | null>(null);
 	// 저장이 1초를 넘기면 진행 중(slow) 또는 다시 시도 중(retrying) 표시로 넘어간다.
 	const slowSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const initializedMemoIdRef = useRef<number | null>(null);
@@ -388,7 +390,12 @@ export default function useMemoForm({
 						},
 					},
 					{
-						onSuccess: () => completeSaveAsSaved(resolveIsSaved),
+						onSuccess: (result) => {
+							if (memoId === undefined && result?.data?.[0]?.id) {
+								setFirstSavedMemoId(result.data[0].id);
+							}
+							completeSaveAsSaved(resolveIsSaved);
+						},
 						onError: (error) => {
 							// 네트워크 실패는 오프라인 대기열로 돌린다. 실패 토스트를 띄우지 않는다(QueryProvider).
 							if (isNetworkError(error)) {
@@ -581,6 +588,8 @@ export default function useMemoForm({
 
 	return {
 		memoData,
+		/** 첫 온라인 저장으로 생성된 메모의 ID. 조회 캐시에 반영된 뒤 최초 추천을 시작하는 데 사용한다. */
+		firstSavedMemoId,
 		/** 저장 중인 편집 대상을 바꾸지 않기 위한 내부 상태. */
 		isWritePending,
 		saveBeforeSwitch,

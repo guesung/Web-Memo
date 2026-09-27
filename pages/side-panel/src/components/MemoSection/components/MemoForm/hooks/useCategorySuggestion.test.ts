@@ -11,7 +11,10 @@ const mocks = vi.hoisted(() => ({
 	getStorage: vi.fn(),
 	onSelect: vi.fn(),
 	onAutoApply: vi.fn(),
-	values: { categoryId: null as number | null },
+	values: { categoryId: null as number | null, memo: "첫 메모" },
+	currentMemoId: 1 as number | null,
+	firstSavedMemoId: null as number | null,
+	isFirstSavedMemoReady: false,
 	tab: { url: "https://example.com/a", title: "Article" },
 }));
 
@@ -41,7 +44,7 @@ vi.mock("@web-memo/ui", () => ({ toast: vi.fn() }));
 vi.mock("@sentry/react", () => ({ captureException: vi.fn() }));
 vi.mock("react-hook-form", () => ({
 	useFormContext: () => ({
-		getValues: (key: "categoryId") => mocks.values[key],
+		getValues: (key: "categoryId" | "memo") => mocks.values[key],
 	}),
 }));
 
@@ -50,7 +53,9 @@ let suggestion: ReturnType<typeof useCategorySuggestion>;
 const TestHook = () => {
 	suggestion = useCategorySuggestion({
 		currentCategoryId: mocks.values.categoryId,
-		currentMemoId: 1,
+		currentMemoId: mocks.currentMemoId,
+		firstSavedMemoId: mocks.firstSavedMemoId,
+		isFirstSavedMemoReady: mocks.isFirstSavedMemoReady,
 		onCategorySelect: mocks.onSelect,
 		onCategoryAutoApply: mocks.onAutoApply,
 	});
@@ -64,6 +69,10 @@ beforeEach(() => {
 	vi.useFakeTimers();
 	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
 	mocks.values.categoryId = null;
+	mocks.values.memo = "첫 메모";
+	mocks.currentMemoId = 1;
+	mocks.firstSavedMemoId = null;
+	mocks.isFirstSavedMemoReady = false;
 	mocks.tab = { url: "https://example.com/a", title: "Article" };
 	mocks.request.mockReset();
 	mocks.createCategory.mockReset();
@@ -98,6 +107,35 @@ it("Jev가 고른 기존 카테고리만 자동 적용하고 되돌리면 같은
 	await act(async () => mocks.onAutoApply.mock.calls[0][1]());
 	expect(mocks.onSelect).toHaveBeenCalledWith(null, "ai");
 	await act(async () => suggestion.triggerSuggestion("memo updated"));
+	expect(mocks.request).toHaveBeenCalledTimes(1);
+});
+
+it("첫 저장이 반영되면 현재 메모로 한 번 추천하고 기존 입력 추천과 중복하지 않는다", async () => {
+	mocks.request.mockResolvedValue(null);
+	mocks.currentMemoId = null;
+	await render();
+	expect(mocks.request).not.toHaveBeenCalled();
+
+	mocks.currentMemoId = 42;
+	mocks.firstSavedMemoId = 42;
+	mocks.isFirstSavedMemoReady = true;
+	await render();
+	expect(mocks.request).toHaveBeenCalledTimes(1);
+	expect(mocks.request.mock.calls[0][0].memoText).toBe("첫 메모");
+	await render();
+	expect(mocks.request).toHaveBeenCalledTimes(1);
+});
+
+it("첫 저장 콜백 전에 기존 입력 경로가 추천했으면 다시 요청하지 않는다", async () => {
+	mocks.request.mockResolvedValue(null);
+	mocks.currentMemoId = 42;
+	await render();
+	await act(async () => suggestion.triggerSuggestion("추가 입력"));
+	expect(mocks.request).toHaveBeenCalledTimes(1);
+
+	mocks.firstSavedMemoId = 42;
+	mocks.isFirstSavedMemoReady = true;
+	await render();
 	expect(mocks.request).toHaveBeenCalledTimes(1);
 });
 

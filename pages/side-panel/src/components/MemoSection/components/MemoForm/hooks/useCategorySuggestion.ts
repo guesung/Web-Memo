@@ -30,6 +30,8 @@ const CONFIDENCE_THRESHOLD = 0.7;
 export const useCategorySuggestion = ({
 	currentCategoryId,
 	currentMemoId,
+	firstSavedMemoId,
+	isFirstSavedMemoReady,
 	onCategorySelect,
 	onCategoryAutoApply,
 }: IFUseCategorySuggestionProps) => {
@@ -48,6 +50,7 @@ export const useCategorySuggestion = ({
 	const dismissedUrlsRef = useRef(new Set<string>());
 	const currentUrlRef = useRef<string | null>(null);
 	const suggestionMemoIdRef = useRef<number | null>(null);
+	const firstSuggestedMemoIdRef = useRef<number | null>(null);
 	const currentMemoIdRef = useRef(currentMemoId);
 	currentMemoIdRef.current = currentMemoId;
 	const suggestionRef = useRef<IFCategorySuggestion | null>(null);
@@ -154,6 +157,7 @@ export const useCategorySuggestion = ({
 		if (currentCategoryId || suggestionRef.current || isLoading) {
 			return;
 		}
+		firstSuggestedMemoIdRef.current = currentMemoIdRef.current;
 		const requestSequence = ++requestSequenceRef.current;
 		try {
 			const tabInfo = await getTabInfo();
@@ -247,6 +251,34 @@ export const useCategorySuggestion = ({
 			}
 		}
 	};
+	const triggerSuggestionRef = useRef(triggerSuggestion);
+	triggerSuggestionRef.current = triggerSuggestion;
+	useEffect(() => {
+		if (
+			firstSavedMemoId === null ||
+			currentMemoId !== firstSavedMemoId ||
+			firstSuggestedMemoIdRef.current === firstSavedMemoId ||
+			!isFirstSavedMemoReady ||
+			currentCategoryId ||
+			isLoading ||
+			suggestion
+		) {
+			return;
+		}
+
+		const memoText = getValues("memo");
+		if (memoText?.trim()) {
+			void triggerSuggestionRef.current(memoText);
+		}
+	}, [
+		firstSavedMemoId,
+		currentMemoId,
+		isFirstSavedMemoReady,
+		currentCategoryId,
+		isLoading,
+		suggestion,
+		getValues,
+	]);
 	useEffect(() => {
 		return () => {
 			requestSequenceRef.current += 1;
@@ -289,6 +321,8 @@ export const useCategorySuggestion = ({
 interface IFUseCategorySuggestionProps {
 	currentCategoryId: number | null;
 	currentMemoId: number | null;
+	firstSavedMemoId: number | null;
+	isFirstSavedMemoReady: boolean;
 	onCategorySelect: (
 		categoryId: number | null,
 		source: TCategoryChangeSource,

@@ -89,6 +89,7 @@ function MemoFormContent({
 
 	const {
 		memoData,
+		firstSavedMemoId,
 		saveStatus,
 		hasPendingOfflineItem,
 		handleSaveRetryClick,
@@ -178,6 +179,12 @@ function MemoFormContent({
 	} = useCategorySuggestion({
 		currentCategoryId,
 		currentMemoId: memoData?.id ?? null,
+		firstSavedMemoId,
+		isFirstSavedMemoReady:
+			!isMemoLocked &&
+			!isControlsDisabled &&
+			!isWritePending &&
+			saveStatus === "saved",
 		onCategorySelect: updateCategory,
 		onCategoryAutoApply: (categoryName, onUndo) => {
 			toast({

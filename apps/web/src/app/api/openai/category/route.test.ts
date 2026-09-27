@@ -196,4 +196,63 @@ describe("POST /api/openai/category", () => {
 		expect(mocks.systemOne).not.toHaveBeenCalled();
 		expect(mocks.captureException).toHaveBeenCalledOnce();
 	});
+
+	it("허용되지 않은 Origin과 잘못된 요청 형식을 구분해 기록합니다", async () => {
+		const { POST } = await import("./route");
+		const forbiddenRequest = createRequest();
+		forbiddenRequest.headers.set("origin", "https://example.com");
+		const invalidRequest = createRequest();
+		vi.spyOn(invalidRequest, "json").mockResolvedValue({
+			memoText: "Private memo",
+		});
+
+		const forbiddenResponse = await POST(forbiddenRequest);
+		const invalidResponse = await POST(invalidRequest);
+
+		expect(forbiddenResponse.status).toBe(403);
+		expect(invalidResponse.status).toBe(400);
+		expect(mocks.consoleInfo.mock.calls[0][1].noSuggestionReason).toBe(
+			"invalid_origin",
+		);
+		expect(mocks.consoleInfo.mock.calls[1][1].noSuggestionReason).toBe(
+			"invalid_request",
+		);
+		expect(JSON.stringify(mocks.consoleInfo.mock.calls)).not.toContain(
+			"Private memo",
+		);
+	});
+
+	it("잘못된 JSON과 예기치 않은 오류에서도 원문을 Sentry에 전송하지 않습니다", async () => {
+		const { POST } = await import("./route");
+		const invalidJsonRequest = createRequest();
+		vi.spyOn(invalidJsonRequest, "json").mockRejectedValue(
+			new SyntaxError("Private memo in malformed JSON"),
+		);
+		const unexpectedErrorRequest = createRequest();
+		vi.spyOn(unexpectedErrorRequest, "json").mockRejectedValue(
+			new Error("Private memo in unexpected error"),
+		);
+
+		const invalidJsonResponse = await POST(invalidJsonRequest);
+		const unexpectedErrorResponse = await POST(unexpectedErrorRequest);
+
+		expect(invalidJsonResponse.status).toBe(400);
+		expect(unexpectedErrorResponse.status).toBe(500);
+		expect(mocks.consoleInfo.mock.calls[0][1].noSuggestionReason).toBe(
+			"invalid_json",
+		);
+		expect(mocks.consoleInfo.mock.calls[1][1].noSuggestionReason).toBe(
+			"request_error",
+		);
+		expect(mocks.captureException).toHaveBeenCalledOnce();
+		expect((mocks.captureException.mock.calls[0][0] as Error).message).toBe(
+			"Category suggestion request failed",
+		);
+		expect(mocks.captureException.mock.calls[0][1]).toEqual({
+			tags: { cause: "Error" },
+		});
+		expect(JSON.stringify(mocks.consoleInfo.mock.calls)).not.toContain(
+			"Private memo",
+		);
+	});
 });

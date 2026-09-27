@@ -24,6 +24,8 @@ export const POST = async (request: NextRequest) => {
 		const validOrigin = `chrome-extension://${CHROME_EXTENSION_ID}`;
 
 		if (request.headers.get("origin") !== validOrigin) {
+			noSuggestionReason = "invalid_origin";
+
 			return createErrorResponse(
 				ERROR_MESSAGES.UNAUTHORIZED,
 				HTTP_STATUS.FORBIDDEN,
@@ -33,6 +35,8 @@ export const POST = async (request: NextRequest) => {
 		const body = await request.json();
 
 		if (!validateRequest(body)) {
+			noSuggestionReason = "invalid_request";
+
 			return createErrorResponse(
 				"Invalid request format",
 				HTTP_STATUS.BAD_REQUEST,
@@ -92,8 +96,19 @@ export const POST = async (request: NextRequest) => {
 			{ headers: CORS_HEADERS },
 		);
 	} catch (error) {
+		if (error instanceof SyntaxError) {
+			noSuggestionReason = "invalid_json";
+
+			return createErrorResponse(
+				"Invalid request format",
+				HTTP_STATUS.BAD_REQUEST,
+			);
+		}
+
 		noSuggestionReason = "request_error";
-		captureException(error);
+		captureException(new Error("Category suggestion request failed"), {
+			tags: { cause: error instanceof Error ? error.name : "unknown" },
+		});
 
 		return createErrorResponse(
 			ERROR_MESSAGES.GENERAL_SERVER_ERROR,

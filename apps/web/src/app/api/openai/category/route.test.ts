@@ -1,10 +1,11 @@
 import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
 	systemOne: vi.fn(),
 	completionCreate: vi.fn(),
 	captureException: vi.fn(),
+	consoleInfo: vi.fn(),
 }));
 
 vi.mock("@typesafe-ai/sdk", () => ({
@@ -16,6 +17,7 @@ vi.mock("@typesafe-ai/sdk", () => ({
 	TypeSafeClient: class {
 		systemOne = mocks.systemOne;
 	},
+	APITimeoutError: class extends Error {},
 }));
 
 vi.mock("openai", () => ({
@@ -61,6 +63,8 @@ describe("POST /api/openai/category", () => {
 		mocks.systemOne.mockReset();
 		mocks.completionCreate.mockReset();
 		mocks.captureException.mockReset();
+		mocks.consoleInfo.mockReset();
+		vi.spyOn(console, "info").mockImplementation(mocks.consoleInfo);
 		mocks.completionCreate.mockResolvedValue({
 			choices: [
 				{
@@ -74,6 +78,11 @@ describe("POST /api/openai/category", () => {
 				},
 			],
 		});
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
+		vi.unstubAllEnvs();
 	});
 
 	it("Jev의 높은 확신으로 기존 카테고리를 바로 반환합니다", async () => {
@@ -90,6 +99,16 @@ describe("POST /api/openai/category", () => {
 			source: "jev",
 		});
 		expect(mocks.completionCreate).not.toHaveBeenCalled();
+		expect(mocks.consoleInfo).toHaveBeenCalledWith(
+			"Category suggestion result",
+			expect.objectContaining({
+				resultSource: "jev",
+				fallbackReason: null,
+				jevDurationMs: expect.any(Number),
+				openAiDurationMs: null,
+				totalDurationMs: expect.any(Number),
+			}),
+		);
 	});
 
 	it.each([
@@ -106,6 +125,15 @@ describe("POST /api/openai/category", () => {
 			source: "llm",
 		});
 		expect(mocks.completionCreate).toHaveBeenCalledOnce();
+		expect(mocks.consoleInfo).toHaveBeenCalledWith(
+			"Category suggestion result",
+			expect.objectContaining({
+				resultSource: "llm",
+				fallbackReason: "no_confident_jev_match",
+				jevDurationMs: expect.any(Number),
+				openAiDurationMs: expect.any(Number),
+			}),
+		);
 	});
 
 	it("Jev 오류를 Sentry에 보고하고 LLM으로 폴백합니다", async () => {
@@ -116,6 +144,37 @@ describe("POST /api/openai/category", () => {
 
 		expect((await response.json()).suggestion.source).toBe("llm");
 		expect(mocks.captureException).toHaveBeenCalledOnce();
+		expect(mocks.consoleInfo).toHaveBeenCalledWith(
+			"Category suggestion result",
+			expect.objectContaining({ fallbackReason: "jev_error" }),
+		);
+	});
+
+	it("Jev 타임아웃은 오류와 구분해 기록하고 LLM으로 폴백합니다", async () => {
+		const { APITimeoutError } = await import("@typesafe-ai/sdk");
+		mocks.systemOne.mockRejectedValue(new APITimeoutError(3000));
+		const { POST } = await import("./route");
+
+		const response = await POST(createRequest());
+
+		expect((await response.json()).suggestion.source).toBe("llm");
+		expect(mocks.consoleInfo).toHaveBeenCalledWith(
+			"Category suggestion result",
+			expect.objectContaining({ fallbackReason: "jev_timeout" }),
+		);
+	});
+
+	it("로그에는 페이지 본문과 메모 원문을 남기지 않습니다", async () => {
+		mocks.systemOne.mockResolvedValue({
+			answers: { category: { choice: "NONE", confidence: 0.99 } },
+		});
+		const { POST } = await import("./route");
+
+		await POST(createRequest());
+
+		const serializedLog = JSON.stringify(mocks.consoleInfo.mock.calls);
+		expect(serializedLog).not.toContain("Article excerpt");
+		expect(serializedLog).not.toContain("Useful article");
 	});
 
 	it("키가 없거나 기존 카테고리가 없으면 Jev를 건너뜁니다", async () => {

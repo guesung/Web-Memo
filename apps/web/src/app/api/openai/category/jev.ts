@@ -4,6 +4,7 @@ import {
 	JEV_MAX_CHOICES,
 	JEV_MODEL,
 	JEV_TIMEOUT,
+	PAGE_CONTENT_MAX_LENGTH,
 } from "./constant";
 import type {
 	IFCategorySuggestionRequest,
@@ -37,11 +38,12 @@ export const getJevCategorySuggestion = async (
 			state: {
 				page_title: request.pageTitle,
 				page_url: request.pageUrl,
+				page_content: request.pageContent.slice(0, PAGE_CONTENT_MAX_LENGTH),
 				memo: request.memoText,
 			},
 			questions: {
 				category: choice(
-					"The user saved `memo` while reading the web page `page_title` (`page_url`). Which of the user's existing categories should this memo be filed under? Choose NONE if no category fits well.",
+					"The user saved `memo` while reading the web page `page_title` (`page_url`). Consider the `page_content` excerpt as context. Which of the user's existing categories should this memo be filed under? Choose NONE if no category fits well.",
 					criteria,
 				),
 			},

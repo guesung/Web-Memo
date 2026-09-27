@@ -3,6 +3,7 @@ import {
 	JEV_CONFIDENCE_THRESHOLD,
 	JEV_MAX_CHOICES,
 	JEV_MODEL,
+	PAGE_CONTENT_MAX_LENGTH,
 } from "./constant";
 import { getJevCategorySuggestion } from "./jev";
 import type { IFCategorySuggestionRequest } from "./type";
@@ -25,7 +26,7 @@ vi.mock("@typesafe-ai/sdk", () => ({
 const REQUEST: IFCategorySuggestionRequest = {
 	pageTitle: "TypeScript article",
 	pageUrl: "https://example.com/typescript",
-	pageContent: "Sensitive page content must not be sent to Jev",
+	pageContent: "Article excerpt ".repeat(200),
 	memoText: "Useful TypeScript tips",
 	existingCategories: [
 		{ id: 10, name: "개발" },
@@ -39,7 +40,7 @@ describe("getJevCategorySuggestion", () => {
 		mocks.systemOne.mockReset();
 	});
 
-	it("높은 confidence의 기존 카테고리를 ID로 매핑하고 본문은 전송하지 않습니다", async () => {
+	it("높은 confidence의 기존 카테고리를 ID로 매핑하고 본문을 제한해 전송합니다", async () => {
 		mocks.systemOne.mockResolvedValue({
 			answers: {
 				category: { choice: "c10", confidence: JEV_CONFIDENCE_THRESHOLD },
@@ -61,6 +62,7 @@ describe("getJevCategorySuggestion", () => {
 				state: {
 					page_title: REQUEST.pageTitle,
 					page_url: REQUEST.pageUrl,
+					page_content: REQUEST.pageContent.slice(0, PAGE_CONTENT_MAX_LENGTH),
 					memo: REQUEST.memoText,
 				},
 				questions: {
@@ -75,6 +77,9 @@ describe("getJevCategorySuggestion", () => {
 			}),
 			expect.objectContaining({ retry: { maxRetries: 0 } }),
 		);
+		expect(
+			mocks.systemOne.mock.calls[0][0].questions.category.instructions,
+		).toContain("page_content");
 	});
 
 	it.each([

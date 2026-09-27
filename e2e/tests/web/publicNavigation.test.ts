@@ -9,7 +9,6 @@ const LANGUAGES = ["ko", "en"] as const;
 /** 소개 화면에서 한 번에 이동할 수 있어야 하는 기능과 사용 사례 화면입니다. */
 const DIRECT_PUBLIC_PATHS = [
 	PATHS.featuresMemo,
-	PATHS.featuresSaveArticles,
 	PATHS.useCasesJobHunting,
 	PATHS.useCasesLearning,
 	PATHS.useCasesNewsReading,
@@ -25,6 +24,7 @@ const DEVELOPER_NAVIGATION_PATH = [
 
 /** 소개 화면에서 아티클 저장을 거쳐 기술 아티클 화면으로 이동하는 고정 경로입니다. */
 const TECH_ARTICLE_NAVIGATION_PATH = [
+	PATHS.featuresMemo,
 	PATHS.featuresSaveArticles,
 	PATHS.useCasesTechArticle,
 ] as const;

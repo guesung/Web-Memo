@@ -50,6 +50,9 @@ test.describe("메모 카드 펼치기 (Mocked)", () => {
 	test("맨 위에서 카드를 펼치면 전문이 보이고 스크롤은 그대로다.", async ({
 		page,
 	}) => {
+		// 첫 배치가 끝나기 전에 egjs가 스크롤을 옮길 수 있어, 맨 위로 되돌리고 배치가 끝난 값을 시작점으로 잡는다.
+		await page.evaluate(() => window.scrollTo(0, 0));
+		const startScrollY = await readScrollYAfterLayout(page);
 		const firstMemo = page.locator(".memo-item").first();
 		const expandButton = firstMemo.getByRole("button", { name: "Show more" });
 
@@ -60,7 +63,7 @@ test.describe("메모 카드 펼치기 (Mocked)", () => {
 		).toHaveAttribute("aria-expanded", "true");
 		await expect(firstMemo).toContainText("긴 본문 12번째 줄");
 		await expect(firstMemo.locator(".line-clamp-3")).toHaveCount(0);
-		expect(await readScrollYAfterLayout(page)).toBe(0);
+		expect(await readScrollYAfterLayout(page)).toBe(startScrollY);
 		await expect(page).not.toHaveURL(/[?&]id=/);
 	});
 

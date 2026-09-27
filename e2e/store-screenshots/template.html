@@ -109,6 +109,12 @@
 				line-height: 16px;
 				text-align: center;
 			}
+			.tab-icon img {
+				display: block;
+				width: 16px;
+				height: 16px;
+				background: #fff;
+			}
 			.toolbar {
 				display: flex;
 				align-items: center;
@@ -344,7 +350,13 @@
 				document.documentElement.lang = scene.language;
 				document.querySelector(".headline").textContent = scene.headline;
 				document.querySelector(".tab-title").textContent = scene.tabTitle;
-				document.querySelector(".tab-icon").textContent = scene.tabIconLetter;
+				const tabIcon = document.querySelector(".tab-icon");
+
+				if (scene.tabIconUrl) {
+					tabIcon.innerHTML = `<img src="${scene.tabIconUrl}" alt="" />`;
+				} else {
+					tabIcon.textContent = scene.tabIconLetter;
+				}
 				document.querySelector(".address-bar").innerHTML =
 					`<strong>${scene.addressHost}</strong>${scene.addressPath}`;
 

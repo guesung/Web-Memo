@@ -16,72 +16,16 @@ export const waitForSidePanelMemo = async ({
 	memo,
 }: IFWaitForSidePanelMemoParams) => {
 	await expect(sidePanelPage.locator("header")).toContainText(pageTitle);
+	// favicon은 페이지보다 늦게 도착하고, 도착하면 사이드 패널이 탭 정보를 다시 읽어 머리글 아이콘을 바꾼다.
+	// favicon이 없는 페이지도 있으므로 5초만 기다리고 넘어간다(그때는 지구본 아이콘이 보인다).
+	await sidePanelPage
+		.locator("header img")
+		.waitFor({ timeout: 5000 })
+		.catch(() => {});
 	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(memo);
 	await expect(
 		sidePanelPage.locator('[data-save-status="saving"]'),
 	).toHaveCount(0);
-};
-
-/**
- * 사이드 패널의 요약·메모 경계(ResizeHandle)를 마우스로 끌어 요약 영역 비율을 바꾼다.
- * @description 확장 코드는 건드리지 않고 사용자가 하는 조작 그대로 핸들을 끈다. 이동량은 패널 높이 대비 비율로
- * 계산하고, 끝난 뒤 핸들의 aria-valuenow가 목표 비율(±1)에 닿았는지 확인한다.
- * @throws 핸들을 찾지 못하거나 비율이 목표에 닿지 않으면 던진다.
- */
-export const dragSidePanelDivider = async ({
-	sidePanelPage,
-	tabRatio,
-}: IFDragSidePanelDividerParams) => {
-	const divider = sidePanelPage.getByRole("slider", { name: "Resize panels" });
-	const dividerBox = await divider.boundingBox();
-
-	if (!dividerBox) {
-		throw new Error("사이드 패널의 요약·메모 경계를 찾지 못했습니다.");
-	}
-
-	const currentRatio = Number(await divider.getAttribute("aria-valuenow"));
-	const panelHeight = await sidePanelPage.evaluate(
-		() => document.querySelector("main")?.getBoundingClientRect().height ?? 0,
-	);
-	const centerX = dividerBox.x + dividerBox.width / 2;
-	const centerY = dividerBox.y + dividerBox.height / 2;
-
-	await sidePanelPage.mouse.move(centerX, centerY);
-	await sidePanelPage.mouse.down();
-	await sidePanelPage.mouse.move(
-		centerX,
-		centerY + ((tabRatio - currentRatio) / 100) * panelHeight,
-		{ steps: 10 },
-	);
-	await sidePanelPage.mouse.up();
-	// 마우스를 그대로 두면 근처 버튼이 hover 색으로 찍힌다.
-	await sidePanelPage.mouse.move(0, 0);
-	await expect
-		.poll(async () =>
-			Math.abs(Number(await divider.getAttribute("aria-valuenow")) - tabRatio),
-		)
-		.toBeLessThanOrEqual(1);
-};
-
-/**
- * 메모 칸이 패널 높이의 절반 이상이고 내용이 잘리지 않았는지 확인한다.
- * @throws 메모 칸이 작거나 스크롤이 생기면 던진다.
- */
-export const expectMemoTextareaFullyVisible = async (sidePanelPage: Page) => {
-	const textareaSize = await sidePanelPage
-		.locator("#memo-textarea")
-		.evaluate((textarea) => ({
-			clientHeight: textarea.clientHeight,
-			scrollHeight: textarea.scrollHeight,
-			panelHeight: window.innerHeight,
-		}));
-
-	expect(textareaSize.clientHeight).toBeGreaterThanOrEqual(
-		textareaSize.panelHeight / 2,
-	);
-	expect(textareaSize.scrollHeight).toBeLessThanOrEqual(
-		textareaSize.clientHeight,
-	);
 };
 
 /**
@@ -195,7 +139,8 @@ export const captureDashboard = async ({
  * 연달아 찍은 두 장이 같아질 때까지 다시 찍고 마지막 장을 저장한다.
  * @description 창 크기를 바꾼 직후나 백그라운드 탭은 이전 크기의 화면이 타일처럼 반복돼 찍히기도 하고,
  * 폰트·이미지·전환 효과가 늦게 끝나기도 한다. 그려진 결과가 멈춘 것을 직접 확인한다.
- * @throws 다섯 번 안에 화면이 멈추지 않으면 던진다.
+ * 실제 페이지(brunch·유튜브)는 표지·썸네일 이미지가 CDN에서 늦게 도착하므로 최대 6초(300ms × 20번)까지 기다린다.
+ * @throws 스무 번 안에 화면이 멈추지 않으면 던진다.
  */
 const screenshotWhenStable = async ({
 	page,
@@ -203,7 +148,7 @@ const screenshotWhenStable = async ({
 }: IFScreenshotWhenStableParams) => {
 	let previousScreenshot = await page.screenshot({ animations: "disabled" });
 
-	for (let attempt = 0; attempt < 5; attempt += 1) {
+	for (let attempt = 0; attempt < 20; attempt += 1) {
 		await page.waitForTimeout(300);
 		const currentScreenshot = await page.screenshot({ animations: "disabled" });
 
@@ -226,14 +171,6 @@ interface IFWaitForSidePanelMemoParams {
 	pageTitle: string;
 	/** 메모 칸에 채워져 있어야 할 메모 본문 */
 	memo: string;
-}
-
-/** {@link dragSidePanelDivider}의 인자. */
-interface IFDragSidePanelDividerParams {
-	/** 확장의 사이드 패널 페이지 */
-	sidePanelPage: Page;
-	/** 요약 영역이 차지할 목표 비율(%). 확장 기본값은 60이다 */
-	tabRatio: number;
 }
 
 /** {@link saveMemoSourceBox}의 인자. */

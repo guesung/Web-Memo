@@ -29,6 +29,7 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | `release-notify.yml` | workflow_call | `release.yml`에서 호출할 때마다 | `deploy/notify-release-result.mjs` |
 | `release-github.yml` | push(tag `v*`) | `v*` 태그 push마다 | 없음 |
 | `versions.yml` | workflow_dispatch | 수동 실행할 때마다 | `deploy/report-store-versions.mjs` |
+| `notify-extension-published.yml` | schedule, workflow_dispatch | 매시 07·37분 또는 수동 실행마다 | `deploy/notify-extension-published.mjs` |
 | `audit-env-manifest.yml` | pull_request, workflow_dispatch | PR 이벤트 또는 수동 실행마다 | `env/check-env-manifest.mjs` |
 | `audit-env-registry.yml` | pull_request, schedule, workflow_dispatch | 매일 07:30 KST, PR 이벤트 또는 수동 실행마다 | `env/audit-env-registry.mjs` |
 | `audit-ga-cid-adoption.yml` | schedule, workflow_dispatch | 매주 월요일 09:13 KST 또는 수동 실행마다 | 없음 (Playwright, `e2e/probes/`) |

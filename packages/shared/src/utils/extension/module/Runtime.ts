@@ -1,10 +1,44 @@
+import { captureException } from "@sentry/react";
 import { CHROME_EXTENSION_ID } from "../../../constants";
 import type {
 	BRIDGE_MESSAGE_TYPE,
 	BridgeRequest,
 } from "../../../modules/extension-bridge";
+import { createErrorReporter } from "../../errorReporter";
 
+const REPORT_HANDLER_ERROR = createErrorReporter({ capture: captureException });
+
+/** Chrome runtime 메시지 전송과 수신 등록. */
 export class Runtime {
+	private static messageErrorReporter = (error: unknown): void => {
+		REPORT_HANDLER_ERROR({
+			error,
+			feature: "extension-bridge",
+			operation: "handle",
+			stage: "listener",
+		});
+	};
+
+	static setMessageErrorReporter = (
+		reporter: (error: unknown) => void,
+	): void => {
+		Runtime.messageErrorReporter = reporter;
+	};
+
+	static observeMessageResult = async (
+		result: Promise<unknown>,
+	): Promise<void> => {
+		try {
+			await result;
+		} catch (error) {
+			try {
+				Runtime.messageErrorReporter(error);
+			} catch {
+				// 오류 수집기의 실패를 새로운 unhandled rejection으로 전파하지 않습니다.
+			}
+		}
+	};
+
 	static sendMessage<TPayload, TResponse>(
 		type: BRIDGE_MESSAGE_TYPE,
 		payload?: TPayload,
@@ -17,21 +51,9 @@ export class Runtime {
 
 	static sendMessageToExtension<TResponse>(
 		type: BRIDGE_MESSAGE_TYPE,
-	): Promise<TResponse>;
-	static sendMessageToExtension<TResponse>(
-		type: BRIDGE_MESSAGE_TYPE,
-		callback: (response: TResponse) => void,
-	): void;
-	static sendMessageToExtension<TResponse>(
-		type: BRIDGE_MESSAGE_TYPE,
-		callback?: (response: TResponse) => void,
-	): Promise<TResponse> | undefined {
-		if (callback) {
-			chrome.runtime.sendMessage(CHROME_EXTENSION_ID, { type }, callback);
-			return undefined;
-		} else {
-			return chrome.runtime.sendMessage(CHROME_EXTENSION_ID, { type });
-		}
+		payload?: unknown,
+	): Promise<TResponse> {
+		return chrome.runtime.sendMessage(CHROME_EXTENSION_ID, { type, payload });
 	}
 
 	static onMessage<TPayload, TResponse>(
@@ -51,6 +73,8 @@ export class Runtime {
 				const result = callback(request, sender, sendResponse);
 				// 비동기 콜백의 경우 true를 반환하여 sendResponse를 유지
 				if (result instanceof Promise) {
+					void Runtime.observeMessageResult(result);
+
 					return true;
 				}
 				return result;
@@ -69,7 +93,7 @@ export class Runtime {
 			request: BridgeRequest<TPayload>,
 			sender: chrome.runtime.MessageSender,
 			sendResponse: (response: TResponse) => void,
-		) => void,
+		) => undefined | boolean | Promise<unknown>,
 	) {
 		const listener = (
 			request: BridgeRequest<TPayload>,
@@ -77,8 +101,17 @@ export class Runtime {
 			sendResponse: (response: TResponse) => void,
 		) => {
 			if (request.type === type) {
-				callback(request, sender, sendResponse);
+				const result = callback(request, sender, sendResponse);
+				if (result instanceof Promise) {
+					void Runtime.observeMessageResult(result);
+
+					return true;
+				}
+
+				return result;
 			}
+
+			return false;
 		};
 
 		chrome.runtime.onMessageExternal.addListener(listener);

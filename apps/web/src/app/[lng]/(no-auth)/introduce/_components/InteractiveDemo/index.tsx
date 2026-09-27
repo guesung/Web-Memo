@@ -4,7 +4,13 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { cn } from "@web-memo/ui";
 import { useReducedMotion } from "framer-motion";
-import { Keyboard, Link2, PanelsTopLeft, Pencil, Sparkles } from "lucide-react";
+import {
+	FolderOpen,
+	Keyboard,
+	Link2,
+	PanelsTopLeft,
+	Pencil,
+} from "lucide-react";
 import Image from "next/image";
 import { type FocusEvent, useEffect, useRef, useState } from "react";
 import SectionHeader from "../SectionHeader";
@@ -30,7 +36,7 @@ const DEMO_TABS = [
 	{ id: "shortcut", icon: Keyboard, imageIndex: 2 },
 	{ id: "source", icon: Link2, imageIndex: 3 },
 	{ id: "cross_device", icon: PanelsTopLeft, imageIndex: 4 },
-	{ id: "summary", icon: Sparkles, imageIndex: 5 },
+	{ id: "category", icon: FolderOpen, imageIndex: 5 },
 ];
 
 /** 데모에 필요한 언어와 배경 설정입니다. */
@@ -149,7 +155,7 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 								)}
 							>
 								<Image
-									src={`/images/pngs/introduction/${lng}/${tab.imageIndex}.png`}
+									src={`/images/webps/introduction/${lng}/${tab.imageIndex}.webp`}
 									alt={t(`introduce.demo.tab_${tab.id}_image_alt`)}
 									fill
 									priority={index === 0}
@@ -201,28 +207,6 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 					<p className="mt-4 text-center text-sm text-muted-foreground">
 						{t(`introduce.demo.tab_${activeTab.id}_desc`)}
 					</p>
-					{activeTab.id === "summary" ? (
-						<p className="mt-2 text-center text-xs text-muted-foreground">
-							{t("introduce.demo.video_credit")}{" "}
-							<a
-								href="https://peach.blender.org/about/"
-								className="underline"
-								target="_blank"
-								rel="noreferrer"
-							>
-								Blender Foundation
-							</a>{" "}
-							·{" "}
-							<a
-								href="https://creativecommons.org/licenses/by/3.0/"
-								className="underline"
-								target="_blank"
-								rel="noreferrer"
-							>
-								CC BY 3.0
-							</a>
-						</p>
-					) : null}
 				</div>
 			</section>
 		</SectionShell>

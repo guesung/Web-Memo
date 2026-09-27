@@ -37,7 +37,7 @@ export type TLandingPageItem = {
 export type TLandingPageConfig = {
 	/** 이 페이지가 명부에서 차지하는 자리. 문구 키·아이콘·경로가 여기서 나온다 */
 	pageKey: TLandingPageKey;
-	/** `/images/pngs/introduction/{lng}/{n}.png`의 번호 */
+	/** `/images/webps/introduction/{lng}/{n}.webp`의 번호 */
 	screenshotNumber: number;
 	/** `{prefix}.benefits.{key}` 아래 문구를 읽는다 */
 	benefits: TLandingPageItem[];
@@ -110,35 +110,13 @@ const LandingPageTemplate = async ({
 					<div className="overflow-hidden rounded-3xl border border-border bg-card">
 						<div className="relative aspect-[4/3]">
 							<Image
-								src={`/images/pngs/introduction/${lng}/${config.screenshotNumber}.png`}
+								src={`/images/webps/introduction/${lng}/${config.screenshotNumber}.webp`}
 								alt={t(`${translationPrefix}.hero.imageAlt`)}
 								fill
 								className="object-contain"
 								priority
 							/>
 						</div>
-						{config.screenshotNumber === 5 ? (
-							<p className="border-t border-border px-4 py-2 text-xs text-muted-foreground">
-								{t("introduce.demo.video_credit")}{" "}
-								<a
-									href="https://peach.blender.org/about/"
-									className="underline underline-offset-2"
-									target="_blank"
-									rel="noreferrer"
-								>
-									Blender Foundation
-								</a>{" "}
-								·{" "}
-								<a
-									href="https://creativecommons.org/licenses/by/3.0/"
-									className="underline underline-offset-2"
-									target="_blank"
-									rel="noreferrer"
-								>
-									CC BY 3.0
-								</a>
-							</p>
-						) : null}
 					</div>
 				</div>
 			</SectionShell>

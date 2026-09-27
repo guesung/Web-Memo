@@ -571,7 +571,7 @@
 			"features_badge": "기능",
 			"demo": "웹 메모가 이렇게 보여요",
 			"demo_title": "웹 메모가 이렇게 보여요",
-			"demo_desc": "메모 작성부터 영상 요약까지 실제 화면으로 살펴봐요.",
+			"demo_desc": "메모 작성부터 카테고리별 정리까지 실제 화면으로 살펴봐요.",
 			"how_it_works": "시작하는 방법",
 			"how_it_works_desc": "확장을 설치하고 읽던 페이지에서 첫 메모를 적어요.",
 			"use_cases": "이런 분들에게 추천해요",
@@ -595,10 +595,6 @@
 			"overview_desc": "모든 메모를 한눈에",
 			"tab_overview": "한눈에 보기",
 			"tab_overview_desc": "모든 메모를 한눈에",
-			"ai_summary": "AI 요약",
-			"ai_summary_desc": "유튜브 영상을 AI로 요약",
-			"tab_ai": "AI 요약",
-			"tab_ai_desc": "유튜브 영상을 AI로 요약",
 			"wishlist": "위시리스트",
 			"wishlist_desc": "나중에 볼 콘텐츠 저장",
 			"tab_wishlist": "위시리스트",
@@ -617,10 +613,9 @@
 			"tab_cross_device": "웹과 앱에서 보기",
 			"tab_cross_device_desc": "같은 계정으로 웹과 앱의 메모를 확인해요. 앱 화면은 현재 한국어 UI예요.",
 			"tab_cross_device_image_alt": "웹과 한국어 앱에 같은 가상 메모가 표시된 화면",
-			"tab_summary": "영상 요약 훑기",
-			"tab_summary_desc": "지원되는 유튜브 영상의 요약을 읽고 생각을 직접 적어요.",
-			"tab_summary_image_alt": "영상 옆 패널에 요약과 직접 쓴 메모가 표시된 화면",
-			"video_credit": "영상 출처: "
+			"tab_category": "카테고리로 정리",
+			"tab_category_desc": "메모를 주제별로 묶어 다시 찾기 쉽게 해요.",
+			"tab_category_image_alt": "웹 대시보드에서 카테고리를 선택해 해당 메모를 모아 보는 화면"
 		},
 		"steps": {
 			"step1_title": "Chrome 확장 설치하기",
@@ -650,7 +645,7 @@
 			"news_reading_title": "뉴스 & 아티클",
 			"news_reading_desc": "기사에서 기억할 대목을 읽던 자리에서 적어요. 메모에 남은 원문 주소로 다시 돌아갈 수 있어요.",
 			"youtube_notes_title": "유튜브 학습",
-			"youtube_notes_desc": "영상을 보다가 떠오른 생각을 직접 적어요. 지원되는 영상에서는 요약도 먼저 훑어볼 수 있어요."
+			"youtube_notes_desc": "영상을 보다가 떠오른 생각을 직접 적어요. 메모에는 영상 주소가 함께 남아요."
 		},
 		"stats": {
 			"installs": "설치 수",
@@ -689,16 +684,16 @@
 				"description": "읽다가 남기고 싶은 문장이나 생각을 페이지 옆 사이드 패널에 적어요."
 			},
 			"overview": {
-				"title": "유튜브 영상 간편 요약",
-				"description": "지원되는 영상에서는 요약으로 내용을 먼저 훑어봐요."
+				"title": "카테고리별 메모 찾기",
+				"description": "메모를 주제별로 묶어 찾아봐요."
 			},
 			"organize": {
 				"title": "나중에 볼 아티클 저장",
 				"description": "관심 있는 아티클을 목록에 담아두고 다시 찾아봐요."
 			},
-			"ai_summary": {
-				"title": "긴 영상도 요약으로 먼저 훑어봐요",
-				"description": "지원되는 유튜브 영상은 요약으로 내용을 먼저 살펴보고, 남기고 싶은 생각을 직접 적어요."
+			"category": {
+				"title": "카테고리별로 모아 봐요",
+				"description": "메모에 카테고리를 붙여 주제별로 찾고 다시 읽어요."
 			},
 			"wishlist": {
 				"title": "나중에 보기",
@@ -758,7 +753,7 @@
 				},
 				"ai_summary": {
 					"question": "AI 요약 기능은 어떻게 작동하나요?",
-					"answer": "지원되는 유튜브 영상과 일부 웹페이지에서 요약을 볼 수 있어요. Chrome 웹스토어, 설정, 새 탭, PDF에서는 요약이 지원되지 않아요. 요약을 볼 수 없는 페이지에서도 메모는 직접 적을 수 있어요."
+					"answer": "일부 지원되는 웹페이지에서 요약을 볼 수 있어요. Chrome 웹스토어, 설정, 새 탭, PDF에서는 요약이 지원되지 않아요. 요약을 볼 수 없는 페이지에서도 메모는 직접 적을 수 있어요."
 				},
 				"data_sync": {
 					"question": "여러 기기에서 메모를 동기화할 수 있나요?",
@@ -994,7 +989,7 @@
 				"badge": "유튜브 AI 요약",
 				"title": "한 시간짜리 영상의 요점을 먼저 읽습니다",
 				"description": "영상의 자막을 AI가 읽고 핵심을 정리합니다. 볼지 말지 먼저 판단하고, 필요한 구간부터 봅니다.",
-				"imageAlt": "영상 옆 패널에 요약과 직접 쓴 메모가 표시된 화면"
+				"imageAlt": "웹 대시보드에서 카테고리별 메모를 모아 보는 화면"
 			},
 			"benefits": {
 				"title": "영상을 다 보기 전에 알 수 있는 것",
@@ -1209,7 +1204,7 @@
 				"badge": "유튜브 메모",
 				"title": "영상을 보면서 그 자리에 적습니다",
 				"description": "튜토리얼과 리뷰 영상을 보다가 필요한 대목을 적으면, 영상 주소가 메모에 함께 남습니다.",
-				"imageAlt": "영상 옆 패널에 요약과 직접 쓴 메모가 표시된 화면"
+				"imageAlt": "웹 대시보드에서 카테고리별 메모를 모아 보는 화면"
 			},
 			"benefits": {
 				"title": "영상에서 건진 것을 남기는 법",

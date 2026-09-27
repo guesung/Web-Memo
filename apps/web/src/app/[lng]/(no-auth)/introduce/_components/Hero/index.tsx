@@ -57,7 +57,7 @@ const Hero = async ({ lng, background }: IFHeroProps) => {
 				<div className="overflow-hidden rounded-3xl border border-border bg-card">
 					<div className="relative aspect-[4/3]">
 						<Image
-							src={`/images/pngs/introduction/${lng}/1.png`}
+							src={`/images/webps/introduction/${lng}/1.webp`}
 							alt={t("introduce.hero.image_alt")}
 							fill
 							className="object-contain"

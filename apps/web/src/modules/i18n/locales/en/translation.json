@@ -576,7 +576,7 @@
 			"features_badge": "Features",
 			"demo": "See Web Memo in action",
 			"demo_title": "See it in action",
-			"demo_desc": "Explore the real screens, from taking a note to reviewing a video summary.",
+			"demo_desc": "Explore the real screens, from writing a note to organizing it by category.",
 			"how_it_works": "How to get started",
 			"how_it_works_desc": "Install the extension and write your first note beside the page you are reading.",
 			"use_cases": "Recommended for",
@@ -600,10 +600,6 @@
 			"overview_desc": "See all memos at a glance",
 			"tab_overview": "Overview",
 			"tab_overview_desc": "See all memos at a glance",
-			"ai_summary": "AI Summary",
-			"ai_summary_desc": "Summarize YouTube videos with AI",
-			"tab_ai": "AI Summary",
-			"tab_ai_desc": "Summarize YouTube videos with AI",
 			"wishlist": "Wishlist",
 			"wishlist_desc": "Save content for later",
 			"tab_wishlist": "Wishlist",
@@ -622,10 +618,9 @@
 			"tab_cross_device": "View on web and app",
 			"tab_cross_device_desc": "See notes with the same account on web and app. The app currently has a Korean interface.",
 			"tab_cross_device_image_alt": "The same sample note on web and in the current Korean app",
-			"tab_summary": "Scan a video summary",
-			"tab_summary_desc": "Read a supported YouTube video summary and write your own note.",
-			"tab_summary_image_alt": "A video with a summary and a written note in the side panel",
-			"video_credit": "Video: "
+			"tab_category": "Organize by category",
+			"tab_category_desc": "Group notes by topic so they are easier to find later.",
+			"tab_category_image_alt": "The web dashboard showing notes filtered by a selected category"
 		},
 		"steps": {
 			"step1_title": "Install the Chrome extension",
@@ -655,7 +650,7 @@
 			"news_reading_title": "News & Articles",
 			"news_reading_desc": "Save the articles and insights that matter. Leave a note on the parts you'll come back to.",
 			"youtube_notes_title": "YouTube Learning",
-			"youtube_notes_desc": "Note the key moments of a video, alongside a caption-based AI summary."
+			"youtube_notes_desc": "Write down thoughts while watching a video. Its URL stays with your note."
 		},
 		"stats": {
 			"installs": "Installs",
@@ -694,16 +689,16 @@
 				"description": "Write a thought or a passage in the side panel beside the page."
 			},
 			"overview": {
-				"title": "YouTube video summaries",
-				"description": "Get AI-powered summaries of YouTube videos in seconds"
+				"title": "Find notes by category",
+				"description": "Group notes by topic so they are easier to find."
 			},
 			"organize": {
 				"title": "Save articles for later",
 				"description": "Bookmark interesting articles and access them anytime"
 			},
-			"ai_summary": {
-				"title": "Scan a long video summary first",
-				"description": "For supported YouTube videos, scan the summary, then write down your own thoughts."
+			"category": {
+				"title": "Find notes by category",
+				"description": "Add categories to your notes so you can find and revisit them by topic."
 			},
 			"wishlist": {
 				"title": "Save for later",
@@ -763,7 +758,7 @@
 				},
 				"ai_summary": {
 					"question": "How does the AI summary feature work?",
-					"answer": "Summaries are available for supported YouTube videos and some web pages. They are unavailable on the Chrome Web Store, settings pages, new tabs, and PDFs. You can still write your own notes when a summary is unavailable."
+					"answer": "Summaries are available for some supported web pages. They are unavailable on the Chrome Web Store, settings pages, new tabs, and PDFs. You can still write your own notes when a summary is unavailable."
 				},
 				"data_sync": {
 					"question": "Can I sync my memos across multiple devices?",
@@ -999,7 +994,7 @@
 				"badge": "YouTube AI Summary",
 				"title": "Read the point before you watch the hour",
 				"description": "AI reads the video's captions and lays out the key points, so you can decide whether to watch and where to start.",
-				"imageAlt": "A video with a summary and a written note in the side panel"
+				"imageAlt": "Notes grouped by category on the web dashboard"
 			},
 			"benefits": {
 				"title": "What you can know before watching",
@@ -1214,7 +1209,7 @@
 				"badge": "YouTube Notes",
 				"title": "Write it down while the video plays",
 				"description": "Note what you need from tutorials and reviews, and the video URL is saved alongside it.",
-				"imageAlt": "A video with a summary and a written note in the side panel"
+				"imageAlt": "Notes grouped by category on the web dashboard"
 			},
 			"benefits": {
 				"title": "Keeping what a video gave you",

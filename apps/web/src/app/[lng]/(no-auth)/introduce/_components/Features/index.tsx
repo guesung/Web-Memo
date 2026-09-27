@@ -4,11 +4,11 @@ import { PATHS } from "@web-memo/shared/constants";
 import { cn } from "@web-memo/shared/utils";
 import {
 	ArrowRight,
+	FolderOpen,
 	Keyboard,
 	Link2,
 	PanelsTopLeft,
 	Pencil,
-	Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import SectionHeader from "../SectionHeader";
@@ -58,10 +58,10 @@ const Features = async ({ lng, background }: IFFeaturesProps) => {
 			href: null,
 		},
 		{
-			icon: Sparkles,
-			title: t("introduce.features.ai_summary.title"),
-			description: t("introduce.features.ai_summary.description"),
-			href: `/${lng}${PATHS.featuresYoutubeSummary}`,
+			icon: FolderOpen,
+			title: t("introduce.features.category.title"),
+			description: t("introduce.features.category.description"),
+			href: null,
 		},
 	];
 

@@ -93,8 +93,13 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline
 
       # 서명 키는 EAS 서버에 등록된 것을 받아 쓰므로 러너에 별도 시크릿이 필요 없습니다.
+      # ubuntu-26.04는 /tmp가 용량이 작은 tmpfs라, 로컬 빌드가 기본 작업 폴더(/tmp)를 쓰면
+      # Gradle·CMake가 "Disk quota exceeded"로 죽습니다. 작업 폴더와 임시 파일을 디스크로 옮깁니다.
       - name: Build ${{ matrix.platform }}
         if: ${{ steps.reuse.outputs.found != 'true' }}
+        env:
+          EAS_LOCAL_BUILD_WORKINGDIR: ${{ runner.temp }}/eas-build
+          TMPDIR: ${{ runner.temp }}
         run: cd apps/app && eas build --platform ${{ matrix.platform }} --profile "$BUILD_PROFILE" --local --non-interactive --output ./${{ matrix.output }}
 
       - name: Upload build artifact

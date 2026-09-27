@@ -259,6 +259,11 @@ Slack에서 `/배포현황`(등록한 슬래시 커맨드)을 실행하면 `vers
 심사가 끝나기 전이라 게시본과 초안이 다르고, 통과하면 초안이 사라집니다. 게시가
 안 되고 초안이 오래 남아 있으면 심사 결과를 크롬 웹 스토어 대시보드에서 확인하세요.
 
+심사가 끝나는 시점은 따로 물어보지 않아도 됩니다. `notify-extension-published.yml`이
+30분마다 게시본을 조회해, `apps/chrome-extension/package.json`의 버전이 게시되면
+**🧩 확장 vX.Y.Z 웹스토어 게시 완료**를 한 번 보냅니다. 같은 버전은 캐시에 표시를 남겨
+다시 알리지 않습니다.
+
 ## master 푸시는 스토어에 올리지 않습니다 (빌드는 재사용합니다)
 
 `ci.yml`의 `cd-app`은 항상 `deploy_target: "build-only"`로 실행됩니다.
@@ -533,6 +538,7 @@ App Store Connect의 키 ID·발급자 ID·앱 ID는 시크릿이 아니라
 | `.github/workflows/ci.yml` (`notify-staging`) | develop 테스트 서버 배포 결과를 스레드에 댓글로 게시 |
 | `.github/workflows/cd-web.yml` (`Notify staging deploy`) | `workflow_dispatch`로 직접 실행한 경우의 테스트 서버 알림(웹훅) |
 | `.github/workflows/versions.yml` | 배포 현황만 조회해 게시 |
+| `.github/workflows/notify-extension-published.yml` | 30분마다 웹스토어 게시본을 조회해, 레포의 확장 버전이 게시되면 한 번 알림 |
 | `.github/workflows/release.yml` | 실제 스토어 제출 (버튼이 이걸 실행) |
 | `.github/workflows/release-notify.yml` | 릴리스 타깃 하나의 결과를 Slack에 게시 (release.yml이 타깃별로 호출) |
 | `.github/scripts/deploy/notify-release-result.mjs` | 릴리스 성패를 타깃별로 Slack에 보고 |

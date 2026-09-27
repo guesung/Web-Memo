@@ -24,7 +24,8 @@ export const isoWeek = (date = new Date()) => {
 	return { year, week, label: `${year}-W${String(week).padStart(2, "0")}` };
 };
 
-const validPath = (value) => typeof value === "string" && /^[a-zA-Z0-9_./-]+$/.test(value) && !value.startsWith("/") && !value.split("/").includes("..");
+// Next.js App Router([lng]·(auth))와 Expo Router(+not-found)의 라우트 세그먼트 문자를 허용합니다
+const validPath = (value) => typeof value === "string" && /^[a-zA-Z0-9_./()[\]+-]+$/.test(value) &&!value.startsWith("/") && !value.split("/").includes("..");
 
 /** 수동 실행의 우선 점검 흐름이 카탈로그에 있는지 검사합니다. */
 export const validateFocusFlowId = (focusFlowId, flows) => {

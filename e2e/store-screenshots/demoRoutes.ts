@@ -30,6 +30,7 @@ export const DASHBOARD_CLOCK_OFFSET_MS = 10 * 60 * 1000;
  * 기사·영상 중 realPage가 없는 쪽은 실제 사이트로 나가지 않고 로컬에서 만든 HTML로 응답한다.
  * 실제 유튜브를 쓸 때는 재생을 자동 재생 차단과 같은 방식(NotAllowedError)으로 막는다. 재생이 시작되면
  * 화면이 계속 바뀌어 캡처가 멈추지 않고, 차단되면 유튜브가 썸네일과 재생 버튼을 그대로 보여 준다.
+ * @returns 목 저장소. 장면마다 설정을 바꿀 때 쓴다(예: 5번 장에서 느낀 점 칸 끄기).
  */
 export const setupDemoRoutes = async ({
 	page,
@@ -96,7 +97,8 @@ export const setupDemoRoutes = async ({
 			HTMLMediaElement.prototype.play = () =>
 				Promise.reject(new DOMException("autoplay blocked", "NotAllowedError"));
 		});
-		return;
+
+		return { store };
 	}
 
 	const substituteVideo = content.substituteVideo;
@@ -119,6 +121,8 @@ export const setupDemoRoutes = async ({
 				}),
 			}),
 	);
+
+	return { store };
 };
 
 /**

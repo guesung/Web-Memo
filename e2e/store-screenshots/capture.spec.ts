@@ -7,7 +7,10 @@ import {
 	openSidePanel,
 	skipGuide,
 } from "../tests/lib";
-import { guardUnhandledSupabaseRequests } from "../tests/lib/mocks";
+import {
+	createMockSetting,
+	guardUnhandledSupabaseRequests,
+} from "../tests/lib/mocks";
 import { DEMO_CONTENT } from "./demoData";
 import { gotoDemoPage, setupDemoRoutes } from "./demoRoutes";
 import { closeInstallTab, launchExtensionContext } from "./extensionContext";
@@ -37,7 +40,7 @@ for (const language of ["ko", "en"] as const) {
 			await mkdir(outputDirectory, { recursive: true });
 
 			const page = await context.newPage();
-			await setupDemoRoutes({ page, context, language });
+			const { store } = await setupDemoRoutes({ page, context, language });
 			await closeInstallTab(context);
 			await login(page);
 			await context.addCookies([
@@ -83,17 +86,21 @@ for (const language of ["ko", "en"] as const) {
 				outputPath: path.join(outputDirectory, "article-memo-source.json"),
 			});
 
-			// 5번 장: 요약이 주인공이므로 경계를 확장 기본 비율(60%)로 되돌린다.
+			// 5번 장: 요약이 주인공이다. 비어 있는 느낀 점 칸이 메모 칸 자리를 나눠 가지지 않도록 이 장에서만 끈다.
+			// 설정은 사이드 패널이 열릴 때 읽으므로 목 설정을 바꾼 뒤 패널을 다시 불러온다. 실제 데이터는 그대로다.
+			store.setSetting(createMockSetting({ show_impression: false }));
 			await gotoDemoPage({ page, demoPage: content.videoPage });
+			await sidePanelPage.reload();
 			const videoTitle = await page.title();
 			await waitForSidePanelMemo({
 				sidePanelPage,
 				pageTitle: videoTitle,
 				memo: content.videoMemo.memo,
 			});
-			await dragSidePanelDivider({ sidePanelPage, tabRatio: 60 });
-			// 요약이 60%를 차지해 메모를 다 보일 수는 없다. 비어 있는 느낀 점 칸 대신 메모 칸이 남은 높이를 최대한 쓰게 한다.
-			await fitMemoFieldToContent(sidePanelPage);
+			await dragSidePanelDivider({
+				sidePanelPage,
+				tabRatio: content.videoSummaryRatio,
+			});
 			const summaryLabel = await sidePanelPage.evaluate(() =>
 				chrome.i18n.getMessage("summary_generate_label"),
 			);

@@ -76,6 +76,11 @@ export interface IFSubstituteVideo {
 export interface IFDemoContent {
 	/** 느낀 점 칸을 사이드 패널에 보일지(목 setting의 show_impression) */
 	showImpression: boolean;
+	/**
+	 * 5번 장에서 요약 영역이 차지할 비율(%). 요약 마지막 줄까지 보이는 범위에서 메모 칸에 남는 높이를 정한다.
+	 * 확장 기본값은 60이다.
+	 */
+	videoSummaryRatio: number;
 	/** 사이드바에 보일 카테고리 */
 	categories: IFDemoCategory[];
 	/** 1~3번 장의 기사 페이지 */
@@ -104,6 +109,7 @@ const EN_VIDEO_URL = "https://www.youtube.com/watch?v=aqz-KE-bpKQ";
  */
 const EN_DEMO_CONTENT: IFDemoContent = {
 	showImpression: false,
+	videoSummaryRatio: 60,
 	categories: [
 		{ id: 1, name: "Work research", color: "#3B82F6" },
 		{ id: 2, name: "Reading", color: "#10B981" },

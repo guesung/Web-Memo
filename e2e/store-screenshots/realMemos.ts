@@ -215,6 +215,8 @@ const findRealMemo = (id: number) => {
  */
 export const KO_REAL_CONTENT: IFDemoContent = {
 	showImpression: true,
+	// 55%면 요약 마지막 줄이 잘린다. 59%에서 요약이 다 보이고 메모는 네 줄 넘게 보인다.
+	videoSummaryRatio: 59,
 	categories: REAL_CATEGORIES,
 	articlePage: {
 		url: findRealMemo(ARTICLE_MEMO_ID).url,

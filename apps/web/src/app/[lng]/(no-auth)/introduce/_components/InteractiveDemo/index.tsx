@@ -161,6 +161,7 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 									priority={index === 0}
 									loading="eager"
 									className="object-contain"
+									unoptimized
 								/>
 							</div>
 						);

@@ -114,6 +114,7 @@ const LandingPageTemplate = async ({
 								alt={t(`${translationPrefix}.hero.imageAlt`)}
 								fill
 								className="object-contain"
+								unoptimized
 								priority
 							/>
 						</div>

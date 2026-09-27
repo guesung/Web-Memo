@@ -61,6 +61,7 @@ const Hero = async ({ lng, background }: IFHeroProps) => {
 							alt={t("introduce.hero.image_alt")}
 							fill
 							className="object-contain"
+							unoptimized
 							priority
 						/>
 					</div>

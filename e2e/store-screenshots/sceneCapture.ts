@@ -3,6 +3,7 @@ import path from "node:path";
 import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 import { PATHS } from "@web-memo/shared/constants";
+import { PNG } from "pngjs";
 import { DEMO_CONTENT, type TStoreLanguage } from "./demoData";
 import { DASHBOARD_CLOCK_OFFSET_MS } from "./demoRoutes";
 
@@ -207,7 +208,14 @@ const screenshotWhenStable = async ({
 		await page.waitForTimeout(300);
 		const currentScreenshot = await page.screenshot({ animations: "disabled" });
 
-		if (currentScreenshot.equals(previousScreenshot)) {
+		if (
+			currentScreenshot.equals(previousScreenshot) ||
+			(outputPath.endsWith("video-page.png") &&
+				hasOnlyImageRoundingDifferences({
+					previousScreenshot,
+					currentScreenshot,
+				}))
+		) {
 			await writeFile(outputPath, currentScreenshot);
 			return;
 		}
@@ -216,6 +224,29 @@ const screenshotWhenStable = async ({
 	}
 
 	throw new Error(`화면이 멈추지 않아 캡처하지 못했습니다: ${outputPath}`);
+};
+
+/** 영상 썸네일의 RGB 합성에서 생기는 채널 값 1 차이만 안정된 화면으로 인정한다. */
+const hasOnlyImageRoundingDifferences = ({
+	previousScreenshot,
+	currentScreenshot,
+}: {
+	previousScreenshot: Buffer;
+	currentScreenshot: Buffer;
+}) => {
+	const previous = PNG.sync.read(previousScreenshot);
+	const current = PNG.sync.read(currentScreenshot);
+	if (previous.width !== current.width || previous.height !== current.height) {
+		return false;
+	}
+
+	for (let index = 0; index < previous.data.length; index += 1) {
+		if (Math.abs(previous.data[index] - current.data[index]) > 1) {
+			return false;
+		}
+	}
+
+	return true;
 };
 
 /** {@link waitForSidePanelMemo}의 인자. */

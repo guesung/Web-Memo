@@ -1,4 +1,4 @@
-import { access, readdir, readFile } from "node:fs/promises";
+import { access, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { test } from "@playwright/test";
@@ -32,9 +32,18 @@ const HEADLINES: Record<TStoreLanguage, string[]> = {
 for (const language of ["ko", "en"] as const) {
 	test(`${language} 스토어 스크린샷 5장을 합성한다`, async ({ page }) => {
 		const rawDirectory = path.join(__dirname, "output", language, "raw");
+		const webDirectory = path.join(
+			__dirname,
+			"../../apps/web/public/images/pngs/introduction",
+			language,
+		);
 		const rawImage = (fileName: string) =>
 			pathToFileURL(path.join(rawDirectory, fileName)).href;
-		const mobileImage = await findMobileImage();
+		const mobileImage = pathToFileURL(
+			path.join(__dirname, "assets", "mobileMemoList.png"),
+		).href;
+		await access(path.join(__dirname, "assets", "mobileMemoList.png"));
+		await mkdir(webDirectory, { recursive: true });
 
 		for (const fileName of [
 			"article-page.png",
@@ -49,12 +58,6 @@ for (const language of ["ko", "en"] as const) {
 					`원본 캡처가 없습니다: ${path.join(rawDirectory, fileName)}. capture 프로젝트를 먼저 돌리세요.`,
 				);
 			});
-		}
-
-		if (!mobileImage) {
-			console.warn(
-				`[store-screenshots] assets/에 모바일 앱 스크린샷이 없어 4번 장에 자리표시 상자를 넣습니다: ${path.join(__dirname, "assets")}`,
-			);
 		}
 
 		// 3번 장이 확대할 메모 출처의 세로 위치. capture가 사이드 패널에서 잰 값이다(sceneCapture.ts의 saveMemoSourceBox).
@@ -74,7 +77,7 @@ for (const language of ["ko", "en"] as const) {
 			pageImage: rawImage("article-page.png"),
 			sidePanelImage: rawImage("article-side-panel.png"),
 		};
-		const scenes: IFSceneInput[] = [
+		const scenes: Omit<IFSceneInput, "output">[] = [
 			articleScene,
 			articleScene,
 			articleScene,
@@ -101,17 +104,16 @@ for (const language of ["ko", "en"] as const) {
 			mobileImage,
 			memoSourceTop: memoSourceBox.top,
 			memoSourceHeight: memoSourceBox.height,
-			mobilePlaceholderText: "assets/ 에 모바일 앱 스크린샷을 넣어 주세요",
 		}));
 
 		for (const scene of scenes) {
 			await page.goto(
 				pathToFileURL(path.join(__dirname, "template.html")).href,
 			);
-			await page.evaluate(
-				(sceneInput) => window.renderScene(sceneInput),
-				scene,
-			);
+			await page.evaluate((sceneInput) => window.renderScene(sceneInput), {
+				...scene,
+				output: "store" as const,
+			});
 			await page.screenshot({
 				path: path.join(
 					__dirname,
@@ -120,27 +122,27 @@ for (const language of ["ko", "en"] as const) {
 					`screenshot-${scene.sceneNumber}.png`,
 				),
 			});
+			await page.evaluate((sceneInput) => window.renderScene(sceneInput), {
+				...scene,
+				output: "web" as const,
+			});
+			await page.screenshot({
+				path: path.join(webDirectory, `${scene.sceneNumber}.png`),
+			});
+			if (language === "ko" && scene.sceneNumber === 1) {
+				await page.setViewportSize({ width: 1200, height: 630 });
+				await page.evaluate((sceneInput) => window.renderScene(sceneInput), {
+					...scene,
+					output: "og" as const,
+				});
+				await page.screenshot({
+					path: path.join(__dirname, "../../apps/web/public/og-image.png"),
+				});
+				await page.setViewportSize({ width: 1280, height: 800 });
+			}
 		}
 	});
 }
-
-/**
- * assets/에서 모바일 앱 스크린샷을 찾는다. 이름순으로 첫 이미지 파일을 쓴다.
- * @returns 파일 URL. 이미지가 없으면 null
- */
-const findMobileImage = async () => {
-	const assetsDirectory = path.join(__dirname, "assets");
-	const fileNames = await readdir(assetsDirectory).catch(() => []);
-	const imageFileName = fileNames
-		.filter((fileName) => /\.(png|jpe?g|webp)$/i.test(fileName))
-		.sort()[0];
-
-	if (!imageFileName) {
-		return null;
-	}
-
-	return pathToFileURL(path.join(assetsDirectory, imageFileName)).href;
-};
 
 /** template.html의 window.renderScene에 넘기는 장면 하나. */
 interface IFSceneInput {
@@ -150,6 +152,8 @@ interface IFSceneInput {
 	language: TStoreLanguage;
 	/** 상단 헤드라인 */
 	headline: string;
+	/** 스토어·웹·OG 출력 모드 */
+	output: "store" | "web" | "og";
 	/** 창 틀 탭에 보일 제목 */
 	tabTitle: string;
 	/** 탭 아이콘 자리에 넣을 글자 */
@@ -164,14 +168,12 @@ interface IFSceneInput {
 	sidePanelImage?: string;
 	/** 4번 장의 웹 대시보드 캡처 */
 	dashboardImage?: string;
-	/** 4번 장의 모바일 앱 스크린샷. 없으면 자리표시 상자를 그린다 */
-	mobileImage: string | null;
+	/** 4번 장의 실제 한국어 모바일 앱 스크린샷 */
+	mobileImage: string;
 	/** 3번 장이 확대할 메모 출처의 사이드 패널 안 위쪽 위치(CSS px) */
 	memoSourceTop: number;
 	/** 3번 장이 확대할 메모 출처의 높이(CSS px) */
 	memoSourceHeight: number;
-	/** 모바일 스크린샷이 없을 때 자리표시 상자 문구 */
-	mobilePlaceholderText: string;
 }
 
 declare global {

@@ -556,28 +556,29 @@
 			"get_started": "Get started"
 		},
 		"hero": {
-			"title": "Easier web browsing",
-			"subtitle": "Open the side panel on the page you're reading — AI summarizes long articles and videos",
+			"title": "Write beside the page you are reading",
+			"subtitle": "Write down a thought in the side panel as you read. The page title and URL stay with your note.",
 			"install_button": "Add to Chrome",
 			"appstore_button": "App Store",
 			"playstore_button": "Google Play",
 			"explore_features": "Explore Features",
-			"free_forever": "Free Forever",
-			"quick_install": "10s Install",
+			"free_forever": "Free to use",
+			"quick_install": "Add it from Chrome",
 			"no_credit_card": "No credit card required",
 			"learn_more": "Learn more",
 			"desktop_extension_hint": "Also available as a Chrome extension on desktop",
-			"installs_badge": "installs"
+			"installs_badge": "installs",
+			"image_alt": "A note written in the Web Memo side panel beside an article"
 		},
 		"section": {
 			"key_features": "Key Features",
-			"key_features_desc": "Five things that keep only what you need while you read",
+			"key_features_desc": "Five ways to keep a thought while you read.",
 			"features_badge": "Features",
-			"demo": "See it in action",
+			"demo": "See Web Memo in action",
 			"demo_title": "See it in action",
-			"demo_desc": "Explore the key features of Web Memo",
+			"demo_desc": "Explore the real screens, from taking a note to reviewing a video summary.",
 			"how_it_works": "How to get started",
-			"how_it_works_desc": "Get started in 3 simple steps",
+			"how_it_works_desc": "Install the extension and write your first note beside the page you are reading.",
 			"use_cases": "Recommended for",
 			"use_cases_desc": "Web Memo helps in various situations",
 			"stats": "Web Memo by the numbers",
@@ -586,15 +587,15 @@
 			"testimonials_title": "User Reviews",
 			"testimonials_desc": "See what real users are saying",
 			"testimonials_note": "* Based on representative use cases",
-			"cta_title": "Get started now",
-			"cta_desc": "Ten seconds from install to your first note. All of it free.",
+			"cta_title": "Write beside the next page you read",
+			"cta_desc": "Add Web Memo to Chrome, open the side panel, and write on the page you are reading.",
 			"cta_badge": "Get Started Today"
 		},
 		"demo": {
 			"write_memo": "Write Memo",
 			"write_memo_desc": "Take notes while reading articles",
-			"tab_memo": "Write Memo",
-			"tab_memo_desc": "Take notes while reading articles",
+			"tab_memo": "Write beside the page",
+			"tab_memo_desc": "Write your own note in the side panel while you read.",
 			"overview": "Overview",
 			"overview_desc": "See all memos at a glance",
 			"tab_overview": "Overview",
@@ -610,15 +611,29 @@
 			"organize": "Organize",
 			"organize_desc": "Group notes into categories",
 			"tab_organize": "Organize",
-			"tab_organize_desc": "Group notes into categories"
+			"tab_organize_desc": "Group notes into categories",
+			"tab_memo_image_alt": "A written note in the side panel beside an article",
+			"tab_shortcut": "Open with a shortcut",
+			"tab_shortcut_desc": "Press Alt+S to open the panel. On Mac, press Option+S.",
+			"tab_shortcut_image_alt": "An article and side panel with the Alt+S shortcut shown",
+			"tab_source": "Keep the source",
+			"tab_source_desc": "The page title and URL stay with the note.",
+			"tab_source_image_alt": "A note showing the original page title and URL",
+			"tab_cross_device": "View on web and app",
+			"tab_cross_device_desc": "See notes with the same account on web and app. The app currently has a Korean interface.",
+			"tab_cross_device_image_alt": "The same sample note on web and in the current Korean app",
+			"tab_summary": "Scan a video summary",
+			"tab_summary_desc": "Read a supported YouTube video summary and write your own note.",
+			"tab_summary_image_alt": "A video with a summary and a written note in the side panel",
+			"video_credit": "Video: "
 		},
 		"steps": {
-			"step1_title": "Install Extension",
-			"step1_desc": "10 seconds from Chrome Web Store",
-			"step2_title": "Open Side Panel",
-			"step2_desc": "Quick access with shortcuts",
-			"step3_title": "Save and Organize",
-			"step3_desc": "Group them into categories and find them later"
+			"step1_title": "Install the Chrome extension",
+			"step1_desc": "Add Web Memo from the Chrome Web Store.",
+			"step2_title": "Open the side panel",
+			"step2_desc": "Press Alt+S beside the page. On Mac, press Option+S.",
+			"step3_title": "Write your note",
+			"step3_desc": "Write your thought; the page title and URL stay with it."
 		},
 		"use_case": {
 			"students_title": "Students & Researchers",
@@ -647,7 +662,7 @@
 			"installs_desc": "Chrome Web Store installs",
 			"memos_saved": "Memos Saved",
 			"memos_saved_desc": "Total memos saved by users",
-			"free_forever": "Free forever",
+			"free_forever": "Free to use",
 			"no_tracking": "No data tracking",
 			"rating": "Average Rating",
 			"rating_desc": "Chrome Web Store rating",
@@ -675,8 +690,8 @@
 		},
 		"features": {
 			"memo": {
-				"title": "Quick notes while reading",
-				"description": "Save memorable moments instantly while reading articles"
+				"title": "Write beside the page you are reading",
+				"description": "Write a thought or a passage in the side panel beside the page."
 			},
 			"overview": {
 				"title": "YouTube video summaries",
@@ -687,12 +702,24 @@
 				"description": "Bookmark interesting articles and access them anytime"
 			},
 			"ai_summary": {
-				"title": "AI summaries",
-				"description": "Get the key points instantly"
+				"title": "Scan a long video summary first",
+				"description": "For supported YouTube videos, scan the summary, then write down your own thoughts."
 			},
 			"wishlist": {
 				"title": "Save for later",
 				"description": "Keep interesting content in your wishlist"
+			},
+			"shortcut": {
+				"title": "Open it with Alt+S",
+				"description": "Open the side panel with a shortcut and start writing. On Mac, press Option+S."
+			},
+			"source": {
+				"title": "Keep the source with your note",
+				"description": "The page title and URL stay with your note so you can return to the original."
+			},
+			"cross_device": {
+				"title": "See your notes on web and app",
+				"description": "Sign in with the same account to see your notes on web and in the app."
 			}
 		},
 		"how_it_works": {
@@ -720,31 +747,31 @@
 			"questions": {
 				"what_is": {
 					"question": "What is Web Memo?",
-					"answer": "Web Memo is an intelligent note-taking service that revolutionizes internet browsing. • Instantly memo important parts while reading articles • AI-powered automatic summarization of YouTube videos • Save interesting content to your wishlist Unlike regular bookmarks, it's a completely new approach to knowledge management where you can record your own thoughts and insights systematically."
+					"answer": "Web Memo is a Chrome extension for writing your own notes in a side panel beside the page you are reading. The page title and URL stay with each note."
 				},
 				"is_free": {
 					"question": "Is it free?",
-					"answer": "Yes! All core features of Web Memo are completely free: • Unlimited memo storage • AI-powered content summarization • Category organization features • Wishlist management • YouTube caption summarization • Mobile app with data synchronization We are committed to providing a great service experience without ads or paid subscriptions."
+					"answer": "Web Memo is currently free to use."
 				},
 				"how_to_use": {
 					"question": "How do I use the service?",
-					"answer": "You can use Web Memo by installing the Chrome extension. Once installed, you can open the side panel on any website to start taking notes."
+					"answer": "Install the Chrome extension, then press Alt+S to open the side panel beside a page. On Mac, press Option+S."
 				},
 				"where_to_save": {
 					"question": "Where can I save memos?",
-					"answer": "Web Memo works everywhere on the internet! Install the Chrome extension and you can: • Take notes on blogs and news sites • Organize content from online courses and educational materials • Record insights from YouTube videos • Save information from shopping or product review sites • Summarize key points from research papers Simply press Alt+S (Windows) / Option+S (Mac) to open the side panel and start taking notes immediately."
+					"answer": "After installing the Chrome extension, you can open the side panel to write your own notes on any website. Summaries alone are unavailable on the Chrome Web Store, settings pages, new tabs, and PDFs."
 				},
 				"ai_summary": {
 					"question": "How does the AI summary feature work?",
-					"answer": "The AI summary feature automatically analyzes the content of the webpage or YouTube video you're viewing and summarizes the key points. For YouTube, it summarizes based on video captions, and for webpages, it analyzes the main text content. When you open the side panel, the summary starts automatically, helping you quickly grasp the essentials of long content."
+					"answer": "Summaries are available for supported YouTube videos and some web pages. They are unavailable on the Chrome Web Store, settings pages, new tabs, and PDFs. You can still write your own notes when a summary is unavailable."
 				},
 				"data_sync": {
 					"question": "Can I sync my memos across multiple devices?",
-					"answer": "Yes! When you log in to Web Memo, all your memos are automatically saved to the cloud. You can access and edit all your memos from any device—PC, laptop, tablet—by logging in with the same account. You can also view your saved memos anytime at {{webDisplayHost}}."
+					"answer": "Sign in with the same account to view saved notes on web and in the app."
 				},
 				"supported_browsers": {
 					"question": "Which browsers are supported?",
-					"answer": "Currently, Web Memo is available on Chrome and Chrome-based browsers (Edge, Brave, Arc, etc.). Simply install the extension from the Chrome Web Store to get started. Support for Firefox and Safari is coming soon—stay tuned!"
+					"answer": "You can install the Chrome extension from the Chrome Web Store."
 				}
 			}
 		},
@@ -971,7 +998,8 @@
 			"hero": {
 				"badge": "YouTube AI Summary",
 				"title": "Read the point before you watch the hour",
-				"description": "AI reads the video's captions and lays out the key points, so you can decide whether to watch and where to start."
+				"description": "AI reads the video's captions and lays out the key points, so you can decide whether to watch and where to start.",
+				"imageAlt": "A video with a summary and a written note in the side panel"
 			},
 			"benefits": {
 				"title": "What you can know before watching",
@@ -1019,7 +1047,8 @@
 			"hero": {
 				"badge": "Browser Notes",
 				"title": "Take notes without leaving the page",
-				"description": "Write what comes to mind in a side panel next to what you're reading. The page URL is saved with every note."
+				"description": "Write what comes to mind in a side panel next to what you're reading. The page URL is saved with every note.",
+				"imageAlt": "A written note in the side panel beside an article"
 			},
 			"benefits": {
 				"title": "Why the notes belong in the browser",
@@ -1067,7 +1096,8 @@
 			"hero": {
 				"badge": "Save Articles",
 				"title": "Keep what you'll read later in one list",
-				"description": "Save the articles you have no time for now, and pull them from the list when you do."
+				"description": "Save the articles you have no time for now, and pull them from the list when you do.",
+				"imageAlt": "The same sample note on web and in the current Korean app"
 			},
 			"benefits": {
 				"title": "Instead of thirty tabs left open",
@@ -1117,7 +1147,8 @@
 			"hero": {
 				"badge": "Research & Study",
 				"title": "Find it once, not twice",
-				"description": "Note the passage that matters while you read the paper, and the source URL stays attached to it."
+				"description": "Note the passage that matters while you read the paper, and the source URL stays attached to it.",
+				"imageAlt": "A note showing the original page title and URL"
 			},
 			"benefits": {
 				"title": "Where research time actually goes",
@@ -1149,7 +1180,8 @@
 			"hero": {
 				"badge": "Online Learning",
 				"title": "Take lecture notes without pausing",
-				"description": "Write in the side panel while a lecture plays, and read a summary first when it runs long."
+				"description": "Write in the side panel while a lecture plays, and read a summary first when it runs long.",
+				"imageAlt": "A written note in the side panel beside an article"
 			},
 			"benefits": {
 				"title": "What's left after the lecture ends",
@@ -1181,7 +1213,8 @@
 			"hero": {
 				"badge": "YouTube Notes",
 				"title": "Write it down while the video plays",
-				"description": "Note what you need from tutorials and reviews, and the video URL is saved alongside it."
+				"description": "Note what you need from tutorials and reviews, and the video URL is saved alongside it.",
+				"imageAlt": "A video with a summary and a written note in the side panel"
 			},
 			"benefits": {
 				"title": "Keeping what a video gave you",
@@ -1213,7 +1246,8 @@
 			"hero": {
 				"badge": "News & Articles",
 				"title": "Read so that something stays",
-				"description": "Note the line that catches you while reading news and blogs, and keep the source URL with it."
+				"description": "Note the line that catches you while reading news and blogs, and keep the source URL with it.",
+				"imageAlt": "A written note in the side panel beside an article"
 			},
 			"benefits": {
 				"title": "Why articles don't stick",
@@ -1245,7 +1279,8 @@
 			"hero": {
 				"badge": "Job Hunting",
 				"title": "See every application in one list",
-				"description": "Write down postings and company details company by company, and reopen just those notes before an interview."
+				"description": "Write down postings and company details company by company, and reopen just those notes before an interview.",
+				"imageAlt": "The same sample note on web and in the current Korean app"
 			},
 			"benefits": {
 				"title": "What gets confusing as applications pile up",
@@ -1277,7 +1312,8 @@
 			"hero": {
 				"badge": "For Developers",
 				"title": "Never search for the same fix twice",
-				"description": "Note what actually worked, right on the Stack Overflow answer, GitHub issue, or doc page where you found it."
+				"description": "Note what actually worked, right on the Stack Overflow answer, GitHub issue, or doc page where you found it.",
+				"imageAlt": "A written note in the side panel beside an article"
 			},
 			"benefits": {
 				"title": "So the same search doesn't happen twice",
@@ -1309,7 +1345,8 @@
 			"hero": {
 				"badge": "Tech Article Organizer",
 				"title": "Bookmarks pile up, the content doesn't",
-				"description": "Note what a tech blog or newsletter actually concluded, with the original URL attached."
+				"description": "Note what a tech blog or newsletter actually concluded, with the original URL attached.",
+				"imageAlt": "A written note in the side panel beside an article"
 			},
 			"benefits": {
 				"title": "About those articles saved for later",

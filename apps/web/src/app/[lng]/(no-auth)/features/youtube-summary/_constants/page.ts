@@ -17,7 +17,7 @@ import type { TLandingPageConfig } from "../../../_components";
  */
 export const YOUTUBE_SUMMARY_PAGE: TLandingPageConfig = {
 	pageKey: "featuresYoutubeSummary",
-	screenshotNumber: 3,
+	screenshotNumber: 5,
 	benefits: [
 		{ key: "timeSaving", icon: Clock },
 		{ key: "aiPowered", icon: Brain },

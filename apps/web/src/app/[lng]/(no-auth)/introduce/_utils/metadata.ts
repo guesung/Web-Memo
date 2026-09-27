@@ -4,15 +4,15 @@ import { createPublicPageMetadata } from "../../_utils";
 export const metadataKorean = createPublicPageMetadata({
 	language: "ko",
 	path: "/introduce",
-	title: "웹 메모 - 웹페이지 읽으며 바로 메모하는 크롬 확장",
+	title: "웹 메모 - 읽던 페이지 옆에서 바로 적는 메모",
 	description:
-		"웹 메모는 웹페이지를 읽으며 생각을 즉시 기록하는 크롬 확장 프로그램입니다. 사이드 패널에서 아티클을 바로 메모하고, 유튜브 영상을 AI로 요약하며, 저장한 메모를 체계적으로 관리하세요. 무료로 시작하세요.",
+		"읽던 페이지 옆에서 바로 적어요. 웹 메모의 사이드 패널에 생각을 적으면 페이지 제목과 주소가 함께 남아요. 같은 계정으로 웹과 앱에서 메모를 확인할 수 있어요.",
 });
 /** 공개 페이지의 영어 검색 및 공유 메타데이터입니다. */
 export const metadataEnglish = createPublicPageMetadata({
 	language: "en",
 	path: "/introduce",
-	title: "Web Memo - Take Notes While Browsing | Chrome Extension",
+	title: "Web Memo - Write Beside the Page You Are Reading",
 	description:
-		"Web Memo is a Chrome extension that lets you instantly capture thoughts while reading web pages. Take notes on articles from the side panel, summarize YouTube videos with AI, and organize your saved memos systematically. Free to start.",
+		"Write beside the page you are reading. Web Memo keeps the page title and URL with your note. View your notes on web and app with the same account.",
 });

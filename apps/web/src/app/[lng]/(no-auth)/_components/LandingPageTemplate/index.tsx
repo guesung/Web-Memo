@@ -47,7 +47,8 @@ export type TLandingPageConfig = {
 	relatedKeys: TLandingPageKey[];
 };
 
-interface LandingPageTemplateProps extends LanguageType {
+/** 하위 홍보 페이지를 렌더링하는 데 필요한 설정입니다. */
+interface IFLandingPageTemplateProps extends LanguageType {
 	config: TLandingPageConfig;
 	/** 페이지 고유의 구조화 데이터 등, 본문 맨 앞에 끼워 넣을 것 */
 	children?: ReactNode;
@@ -58,11 +59,12 @@ function getBackground(sectionIndex: number): TSectionBackground {
 	return sectionIndex % 2 === 0 ? "canvas" : "fog";
 }
 
-export default async function LandingPageTemplate({
+/** 기능과 활용 사례의 공통 소개 화면을 렌더링합니다. */
+const LandingPageTemplate = async ({
 	lng,
 	config,
 	children,
-}: LandingPageTemplateProps) {
+}: IFLandingPageTemplateProps) => {
 	const { t } = await useTranslation(lng);
 
 	const {
@@ -109,12 +111,34 @@ export default async function LandingPageTemplate({
 						<div className="relative aspect-[4/3]">
 							<Image
 								src={`/images/pngs/introduction/${lng}/${config.screenshotNumber}.png`}
-								alt={t(`${translationPrefix}.hero.badge`)}
+								alt={t(`${translationPrefix}.hero.imageAlt`)}
 								fill
-								className="object-cover object-top"
+								className="object-contain"
 								priority
 							/>
 						</div>
+						{config.screenshotNumber === 5 ? (
+							<p className="border-t border-border px-4 py-2 text-xs text-muted-foreground">
+								{t("introduce.demo.video_credit")}{" "}
+								<a
+									href="https://peach.blender.org/about/"
+									className="underline underline-offset-2"
+									target="_blank"
+									rel="noreferrer"
+								>
+									Blender Foundation
+								</a>{" "}
+								·{" "}
+								<a
+									href="https://creativecommons.org/licenses/by/3.0/"
+									className="underline underline-offset-2"
+									target="_blank"
+									rel="noreferrer"
+								>
+									CC BY 3.0
+								</a>
+							</p>
+						) : null}
 					</div>
 				</div>
 			</SectionShell>
@@ -257,4 +281,6 @@ export default async function LandingPageTemplate({
 			</SectionShell>
 		</div>
 	);
-}
+};
+
+export default LandingPageTemplate;

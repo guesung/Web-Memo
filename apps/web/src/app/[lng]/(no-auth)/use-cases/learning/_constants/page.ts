@@ -9,7 +9,7 @@ import type { TLandingPageConfig } from "../../../_components";
  */
 export const LEARNING_PAGE: TLandingPageConfig = {
 	pageKey: "useCasesLearning",
-	screenshotNumber: 3,
+	screenshotNumber: 1,
 	benefits: [
 		{ key: "videoSummary", icon: Youtube },
 		{ key: "notes", icon: Pencil },

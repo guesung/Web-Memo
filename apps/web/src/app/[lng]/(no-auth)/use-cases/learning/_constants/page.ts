@@ -1,4 +1,4 @@
-import { Pencil, RefreshCw, Target, Youtube } from "lucide-react";
+import { FolderOpen, Pencil, RefreshCw, Target } from "lucide-react";
 import type { TLandingPageConfig } from "../../../_components";
 
 /**
@@ -11,14 +11,10 @@ export const LEARNING_PAGE: TLandingPageConfig = {
 	pageKey: "useCasesLearning",
 	screenshotNumber: 3,
 	benefits: [
-		{ key: "videoSummary", icon: Youtube },
+		{ key: "organize", icon: FolderOpen },
 		{ key: "notes", icon: Pencil },
 		{ key: "review", icon: RefreshCw },
 		{ key: "focus", icon: Target },
 	],
-	relatedKeys: [
-		"useCasesYoutubeNotes",
-		"useCasesResearch",
-		"featuresYoutubeSummary",
-	],
+	relatedKeys: ["useCasesYoutubeNotes", "useCasesResearch"],
 };

@@ -6,7 +6,6 @@ const PUBLIC_PATHS = [
 	"privacy",
 	"features/memo",
 	"features/save-articles",
-	"features/youtube-summary",
 	"use-cases/developer",
 	"use-cases/job-hunting",
 	"use-cases/learning",
@@ -76,7 +75,7 @@ test.describe("공개 검색 계약", () => {
 		expect(sitemap.entries.map((entry) => entry.url).sort()).toEqual(
 			expectedUrls.sort(),
 		);
-		expect(new Set(sitemap.entries.map((entry) => entry.url)).size).toBe(25);
+		expect(new Set(sitemap.entries.map((entry) => entry.url)).size).toBe(23);
 
 		for (const entry of sitemap.entries) {
 			const path = new URL(entry.url ?? "").pathname.slice(4);

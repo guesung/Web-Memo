@@ -178,6 +178,26 @@ export type TAnalyticsEvent =
 	| {
 			name: "past_memo_dismiss";
 			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
+	  }
+	| {
+			name: "memo_offline_queued";
+			params: {
+				/** 대기열에 넣은 이유. offline은 사전 판단, network_error는 시도 후 실패, already_queued는 같은 메모에 대기 항목이 이미 있던 경우 */
+				trigger: "offline" | "network_error" | "already_queued";
+			};
+	  }
+	| {
+			name: "memo_offline_sync_result";
+			params: {
+				/**
+				 * flush를 부른 계기. mount는 패널 열기, online은 연결 복구, retry_click은 '다시 시도' 클릭,
+				 * enqueue는 온라인 상태에서 대기 항목이 막 생겨(이미 대기 중이거나 네트워크 오류 직후) 바로 도는 경우
+				 */
+				trigger: "mount" | "online" | "retry_click" | "enqueue";
+				synced_count: number;
+				conflict_count: number;
+				has_other_error: boolean;
+			};
 	  };
 
 /** 이벤트 이름만 추린 유니온. */
@@ -245,4 +265,6 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	past_memo_show: "engagement",
 	past_memo_open: "core_action",
 	past_memo_dismiss: "engagement",
+	memo_offline_queued: "engagement",
+	memo_offline_sync_result: "engagement",
 };

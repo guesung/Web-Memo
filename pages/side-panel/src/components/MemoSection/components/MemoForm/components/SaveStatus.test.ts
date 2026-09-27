@@ -113,3 +113,65 @@ describe("SaveStatus 복구 처리", () => {
 		expect(document.querySelectorAll('[role="status"]')).toHaveLength(0);
 	});
 });
+
+describe("오프라인·동기화 상태 표시", () => {
+	it.each([
+		["offline", "save_status_offline_saved"],
+		["offlineIdle", "save_status_offline"],
+		["syncing", "save_status_syncing"],
+		["syncFailed", "save_status_sync_failed"],
+	] as const)(
+		"%s 상태면 %s 문구를 보여준다",
+		async (saveStatus, expectedKey) => {
+			await render(saveStatus);
+
+			expect(document.getElementById("root")?.textContent).toContain(
+				expectedKey,
+			);
+		},
+	);
+
+	it("syncFailed 상태에서만 다시 시도 버튼을 보여주고 onSyncRetryClick을 호출한다", async () => {
+		const onSyncRetryClick = vi.fn();
+		await act(async () =>
+			root.render(
+				createElement(SaveStatus, {
+					saveStatus: "syncFailed",
+					onRetryClick: noop,
+					onSyncRetryClick,
+				}),
+			),
+		);
+
+		const retryButton = document.querySelector("button");
+		expect(retryButton).not.toBeNull();
+		await act(async () =>
+			retryButton?.dispatchEvent(new MouseEvent("click", { bubbles: true })),
+		);
+		expect(onSyncRetryClick).toHaveBeenCalledTimes(1);
+	});
+
+	it("offline·syncing 상태에서는 다시 시도 버튼이 없다", async () => {
+		await render("offline");
+		expect(document.querySelector("button")).toBeNull();
+
+		await render("syncing");
+		expect(document.querySelector("button")).toBeNull();
+	});
+
+	it("대기열이 풀려(offline) 저장됨으로 돌아오면 복구 안내를 읽는다", async () => {
+		await render("offline");
+		expect(getLiveRegion().textContent).toBe("");
+
+		await render("saved");
+		expect(getLiveRegion().textContent).toBe("toast_saved");
+	});
+
+	it("동기화 실패(syncFailed)에서 저장됨으로 돌아오면 복구 안내를 읽는다", async () => {
+		await render("syncFailed");
+		expect(getLiveRegion().textContent).toBe("");
+
+		await render("saved");
+		expect(getLiveRegion().textContent).toBe("toast_saved");
+	});
+});

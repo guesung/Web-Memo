@@ -1,5 +1,9 @@
 // @vitest-environment jsdom
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+	onlineManager,
+	QueryClient,
+	QueryClientProvider,
+} from "@tanstack/react-query";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -68,6 +72,7 @@ beforeEach(() => {
 });
 afterEach(async () => {
 	await act(async () => root.unmount());
+	onlineManager.setOnline(true);
 	vi.useRealTimers();
 	vi.unstubAllGlobals();
 });
@@ -169,4 +174,33 @@ it("캐시 데이터가 있으면 백그라운드 갱신이 실패해도 잠그�
 	expect(candidates.isMemoLocked).toBe(false);
 	expect(candidates.isMemoLoadFailed).toBe(false);
 	expect(candidates.memos).toEqual([{ id: 1 }]);
+});
+
+const goOffline = () => {
+	vi.stubGlobal("navigator", { ...navigator, onLine: false });
+	onlineManager.setOnline(false);
+};
+
+it("오프라인에서 캐시 없는 새 페이지면 잠그지 않고 빈 후보로 연다", async () => {
+	goOffline();
+	await render();
+
+	expect(mocks.memoQueryImpl).not.toHaveBeenCalled();
+	expect(candidates.isMemoLocked).toBe(false);
+	expect(candidates.isMemoLoadFailed).toBe(false);
+	expect(candidates.memos).toEqual([]);
+});
+
+it("오프라인이어도 캐시가 있으면 캐시된 메모를 보여준다", async () => {
+	const cachedMemo = { id: 1 };
+	queryClient.setQueryData(["test-memo", PAGE_URL], {
+		data: [cachedMemo],
+		error: null,
+	});
+	queryClient.setQueryData(["test-same-path", PAGE_URL], EMPTY_RESULT);
+	goOffline();
+	await render();
+
+	expect(candidates.isMemoLocked).toBe(false);
+	expect(candidates.memos).toEqual([cachedMemo]);
 });

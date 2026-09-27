@@ -1,6 +1,11 @@
 import ResizeHandle from "@src/components/ResizeHandle";
+import { useOnlineStatus } from "@src/hooks";
 import type { MemoInput } from "@src/types/Input";
-import { getMemoUrl, type IFMemoUrlParams } from "@src/utils";
+import {
+	getMemoUrl,
+	getOfflineControlDisabledReason,
+	type IFMemoUrlParams,
+} from "@src/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY, type TMemoStatusKey } from "@web-memo/shared/constants";
 import { useSettingQuery, useSupabaseUserQuery } from "@web-memo/shared/hooks";
@@ -24,6 +29,7 @@ import {
 	CategoryBadge,
 	CategoryCommandPopup,
 	CategorySuggestion,
+	getSaveStatus,
 	PastMemoNotice,
 	SaveStatus,
 } from "./components";
@@ -42,9 +48,14 @@ function MemoFormContent({
 	isMemoLocked = false,
 	isMemoLoadFailed = false,
 	onMemoRetryClick,
+	isSyncing = false,
+	isSyncFailed = false,
+	hasSyncNetworkError = false,
+	onRetrySync,
 }: IFMemoFormProps) {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const [isSwitching, setIsSwitching] = useState(false);
+	const isOffline = !useOnlineStatus();
 	const queryClient = useQueryClient();
 	const { register, watch, getValues } = useFormContext<MemoInput>();
 	const { ref, ...rest } = register("memo");
@@ -79,6 +90,7 @@ function MemoFormContent({
 	const {
 		memoData,
 		saveStatus,
+		hasPendingOfflineItem,
 		handleSaveRetryClick,
 		isWritePending,
 		saveBeforeSwitch,
@@ -88,13 +100,30 @@ function MemoFormContent({
 		handleActionItemChange,
 		updateCategory,
 		toggleMemoStatus,
-	} = useMemoForm({ selectedMemo, isMemoLocked });
+	} = useMemoForm({ selectedMemo, isMemoLocked, isSyncing });
 	// 겉모습(로딩 문구·버튼 흐림)만 200ms 지연시킨다. 편집·저장 차단은 isMemoLocked로 즉시 적용된다.
 	const isMemoLoadingVisible = useDelayedFlag(
 		isMemoLocked && !isMemoLoadFailed,
 		200,
 	);
 	const isMemoUiDimmed = isMemoLoadFailed || isMemoLoadingVisible;
+	// 오프라인·동기화 중에는 잠금과 같은 자리에서 카테고리·토글·# 팝업·AI 추천을 막는다.
+	// 잠금(isMemoLocked)과 겹치면 잠금이 우선이라 사유 문구는 잠금이 아닐 때만 보여준다.
+	const isControlsDisabled = isOffline || isSyncing;
+	const changeDisabledReason = isMemoLocked
+		? undefined
+		: getOfflineControlDisabledReason({
+				isOffline,
+				isSyncing,
+				kind: "change",
+			});
+	const displaySaveStatus = getSaveStatus({
+		saveStatus,
+		isOffline,
+		hasPendingOfflineItem,
+		hasSyncNetworkError,
+		isSyncFailed,
+	});
 
 	const handleOtherMemoClick = async () => {
 		if (!onOtherMemoClick || isMemoLocked || isWritePending || isSwitching) {
@@ -261,7 +290,13 @@ function MemoFormContent({
 						id="memo-textarea"
 						// 드래그 중에는 framer-motion 레이아웃 애니메이션이 매 프레임 다시 시작돼 핸들을 따라오지 못한다.
 						layout={resizingFieldKey === null}
-						onKeyDown={handleKeyDown}
+						onKeyDown={(event) => {
+							// 오프라인·동기화 중에는 #을 눌러도 팝업 없이 문자만 입력되게 둔다.
+							if (isControlsDisabled) {
+								return;
+							}
+							handleKeyDown(event);
+						}}
 						className="min-h-0 flex-1 resize-none text-sm outline-none"
 						placeholder={isMemoLocked ? "" : I18n.get("memo")}
 						readOnly={isMemoLocked}
@@ -276,6 +311,7 @@ function MemoFormContent({
 
 								if (
 									!isMemoLocked &&
+									!isControlsDisabled &&
 									hasMemoData &&
 									hasMemoText &&
 									!hasCategory &&
@@ -404,8 +440,9 @@ function MemoFormContent({
 						<MemoStatusToggle
 							label={I18n.get("wish_list")}
 							isOn={!!memoData?.isWish}
-							isDisabled={isMemoLocked}
-							isDimmed={isMemoUiDimmed}
+							isDisabled={isMemoLocked || isControlsDisabled}
+							isDimmed={isMemoUiDimmed || isControlsDisabled}
+							title={changeDisabledReason}
 							onClick={() => handleMemoStatusClick("isWish")}
 						>
 							<HeartIcon
@@ -420,8 +457,9 @@ function MemoFormContent({
 						<MemoStatusToggle
 							label={I18n.get("important_memo")}
 							isOn={!!memoData?.isStar}
-							isDisabled={isMemoLocked}
-							isDimmed={isMemoUiDimmed}
+							isDisabled={isMemoLocked || isControlsDisabled}
+							isDimmed={isMemoUiDimmed || isControlsDisabled}
+							title={changeDisabledReason}
 							onClick={() => handleMemoStatusClick("isStar")}
 						>
 							<StarIcon
@@ -434,8 +472,9 @@ function MemoFormContent({
 						<MemoStatusToggle
 							label={I18n.get("reading_memo")}
 							isOn={!!memoData?.isReading}
-							isDisabled={isMemoLocked}
-							isDimmed={isMemoUiDimmed}
+							isDisabled={isMemoLocked || isControlsDisabled}
+							isDimmed={isMemoUiDimmed || isControlsDisabled}
+							title={changeDisabledReason}
 							onClick={() => handleMemoStatusClick("isReading")}
 						>
 							<BookOpenIcon
@@ -445,8 +484,9 @@ function MemoFormContent({
 						</MemoStatusToggle>
 						{!isMemoLocked && (
 							<SaveStatus
-								saveStatus={saveStatus}
+								saveStatus={displaySaveStatus}
 								onRetryClick={handleSaveRetryClick}
+								onSyncRetryClick={onRetrySync}
 							/>
 						)}
 					</div>
@@ -459,6 +499,7 @@ function MemoFormContent({
 								onRemoveButtonClick={handleCategoryRemoveClick}
 								isDisabled={isMemoLocked}
 								isDimmed={isMemoUiDimmed}
+								disabledReason={changeDisabledReason}
 							/>
 						) : isSuggestingCategory ? (
 							// 추천 중에는 칩 자리를 대신해, 곧 카테고리가 붙는다는 걸 같은 자리에서 보여 준다.
@@ -478,6 +519,7 @@ function MemoFormContent({
 								onChipClick={handleCategoryButtonClick}
 								isDisabled={isMemoLocked}
 								isDimmed={isMemoUiDimmed}
+								disabledReason={changeDisabledReason}
 							/>
 						)}
 					</div>
@@ -509,6 +551,10 @@ function MemoForm({
 	isMemoLocked,
 	isMemoLoadFailed,
 	onMemoRetryClick,
+	isSyncing,
+	isSyncFailed,
+	hasSyncNetworkError,
+	onRetrySync,
 }: IFMemoFormProps) {
 	const form = useForm<MemoInput>({
 		shouldUnregister: false,
@@ -533,6 +579,10 @@ function MemoForm({
 				isMemoLocked={isMemoLocked}
 				isMemoLoadFailed={isMemoLoadFailed}
 				onMemoRetryClick={onMemoRetryClick}
+				isSyncing={isSyncing}
+				isSyncFailed={isSyncFailed}
+				hasSyncNetworkError={hasSyncNetworkError}
+				onRetrySync={onRetrySync}
 			/>
 		</FormProvider>
 	);
@@ -551,6 +601,14 @@ interface IFMemoFormProps {
 	isMemoLoadFailed?: boolean;
 	/** 실패 문구 옆 다시 시도 버튼을 눌렀을 때 메모 후보를 다시 조회한다 */
 	onMemoRetryClick?: () => void | Promise<void>;
+	/** 오프라인 대기열을 서버로 올리는 중인지. 카테고리·상태 토글을 막는다 */
+	isSyncing?: boolean;
+	/** 마지막 flush가 네트워크 오류가 아닌 이유로 실패했는지. 다시 시도 버튼을 보여준다 */
+	isSyncFailed?: boolean;
+	/** 마지막 flush 시도가 네트워크 오류로 중단됐는지. 저장 표시줄이 오프라인 표시와 함께 쓴다 */
+	hasSyncNetworkError?: boolean;
+	/** 대기열 동기화 실패(syncFailed) 다시 시도 버튼 클릭 핸들러 */
+	onRetrySync?: () => void;
 }
 
 interface IFMemoStatusToggleProps {
@@ -562,6 +620,8 @@ interface IFMemoStatusToggleProps {
 	isDisabled?: boolean;
 	/** 잠금이 눈에 띄게 오래 지속돼 흐리게 보여줄지 */
 	isDimmed?: boolean;
+	/** 막힌 사유(오프라인·동기화 중). 잠금(isDisabled)이 함께 걸리면 비워 둔다 */
+	title?: string;
 	onClick: () => void;
 	children: React.ReactNode;
 }
@@ -578,6 +638,7 @@ function MemoStatusToggle({
 	isOn,
 	isDisabled,
 	isDimmed,
+	title,
 	onClick,
 	children,
 }: IFMemoStatusToggleProps) {
@@ -587,10 +648,13 @@ function MemoStatusToggle({
 			aria-label={label}
 			aria-pressed={isOn}
 			disabled={isDisabled}
+			title={title}
 			onClick={onClick}
 			className={cn(
 				"focus-visible:ring-ring rounded-sm transition-transform focus-visible:outline-none focus-visible:ring-1",
-				isDisabled ? "cursor-default" : "hover:scale-110 active:scale-95",
+				// 사유(title)가 있는 비활성은 오프라인·동기화 중이라 누를 수 없음을 커서로도 알린다
+				isDisabled && (title ? "cursor-not-allowed" : "cursor-default"),
+				!isDisabled && "hover:scale-110 active:scale-95",
 				isDimmed && "opacity-50",
 			)}
 		>

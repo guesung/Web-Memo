@@ -9,7 +9,7 @@ import useMemoForm from "./useMemoForm";
 const mocks = vi.hoisted(() => ({
 	tab: { id: 1, url: "https://example.com/a", title: "A" },
 	memo: { id: 1, title: "A" } as
-		| { id: number; title: string; memo?: string }
+		| { id: number; title: string; memo?: string; updated_at?: string }
 		| undefined,
 	values: {} as Record<string, unknown>,
 	upsert: vi.fn(),
@@ -24,12 +24,21 @@ const mocks = vi.hoisted(() => ({
 			error: null,
 		}),
 	),
+	isOnline: true,
+	isNetworkError: vi.fn((_error: unknown) => false),
+	enqueueOfflineMemo: vi.fn(async (_item: unknown) => {}),
+	hasPendingOfflineMemo: vi.fn(async (_target: unknown) => false),
+	pendingOfflineItem: undefined as unknown,
+	trackEvent: vi.fn(async (_event: unknown) => {}),
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
 	useDebounce: () => useDebounce(),
 	useDidMount: vi.fn(),
 	useTabQuery: () => ({ data: mocks.tab }),
 	useSupabaseClientQuery: () => ({ data: {} }),
+	useSupabaseUserQuery: () => ({
+		user: { data: { user: { id: "user-1" } } },
+	}),
 	memoQueryOptions: ({ url }: { url?: string }) => ({
 		queryKey: ["memo", url],
 		queryFn: mocks.memoQueryImpl,
@@ -37,10 +46,27 @@ vi.mock("@web-memo/shared/hooks", () => ({
 	useMemoUpsertMutation: () => ({ mutate: mocks.upsert }),
 	useMemoPatchMutation: () => ({ mutate: mocks.patch }),
 }));
+vi.mock("@web-memo/shared/utils", () => ({
+	isNetworkError: (error: unknown) => mocks.isNetworkError(error),
+}));
 vi.mock("@web-memo/shared/modules/extension-bridge", () => ({ bridge: {} }));
+vi.mock("@web-memo/shared/modules/analytics", () => ({
+	analytics: { trackEvent: (event: unknown) => mocks.trackEvent(event) },
+}));
 vi.mock("@web-memo/shared/utils/extension", () => ({
 	Tab: { get: async () => mocks.tab },
 	getTabInfo: async () => mocks.tab,
+}));
+vi.mock("../../../../../hooks/useOnlineStatus", () => ({
+	default: () => mocks.isOnline,
+}));
+vi.mock("../../../../../hooks/usePendingOfflineMemo", () => ({
+	default: () => mocks.pendingOfflineItem,
+}));
+vi.mock("../../../../../utils/offlineMemoQueue", () => ({
+	enqueueOfflineMemo: (item: unknown) => mocks.enqueueOfflineMemo(item),
+	hasPendingOfflineMemo: (target: unknown) =>
+		mocks.hasPendingOfflineMemo(target),
 }));
 vi.mock("react-hook-form", () => ({
 	useFormContext: () => ({
@@ -102,6 +128,12 @@ beforeEach(() => {
 		data: mocks.memo ? [mocks.memo] : [],
 		error: null,
 	}));
+	mocks.isOnline = true;
+	mocks.isNetworkError.mockReset().mockReturnValue(false);
+	mocks.enqueueOfflineMemo.mockReset().mockResolvedValue(undefined);
+	mocks.hasPendingOfflineMemo.mockReset().mockResolvedValue(false);
+	mocks.pendingOfflineItem = undefined;
+	mocks.trackEvent.mockReset().mockResolvedValue(undefined);
 	queryClient = new QueryClient({
 		defaultOptions: { queries: { retry: false } },
 	});
@@ -503,4 +535,143 @@ it("상태 토글은 저장 응답을 기다리지 않고 조회 캐시를 바�
 	});
 	expect(form.memoData?.isWish).toBe(false);
 	expect(mocks.values.isWish).toBe(false);
+});
+
+it("오프라인이면 upsert 대신 대기열에 넣는다", async () => {
+	mocks.isOnline = false;
+	await render();
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveMemo({ memo: "오프라인 입력" });
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.upsert).not.toHaveBeenCalled();
+	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(1);
+	expect(mocks.enqueueOfflineMemo.mock.calls[0][0]).toMatchObject({
+		userId: "user-1",
+		memoId: 1,
+		url: "https://example.com/a",
+		data: { memo: "오프라인 입력" },
+	});
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "memo_offline_queued",
+		params: { trigger: "offline" },
+	});
+	expect(form.saveStatus).toBe("saved");
+});
+
+it("현재 메모에 대기 항목이 있으면 온라인이어도 대기열에 넣는다", async () => {
+	mocks.hasPendingOfflineMemo.mockResolvedValue(true);
+	await render();
+	await act(async () => {
+		await form.saveMemo({ memo: "이미 대기 중" });
+	});
+
+	expect(mocks.upsert).not.toHaveBeenCalled();
+	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(1);
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "memo_offline_queued",
+		params: { trigger: "already_queued" },
+	});
+});
+
+it("네트워크 오류로 실패하면 대기열에 넣고 저장 성공으로 처리한다", async () => {
+	mocks.isNetworkError.mockReturnValue(true);
+	mocks.upsert.mockImplementation((_request, callbacks) =>
+		callbacks.onError(new Error("네트워크 오류")),
+	);
+	await render();
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveMemo({ memo: "네트워크 실패 입력" });
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(1);
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "memo_offline_queued",
+		params: { trigger: "network_error" },
+	});
+});
+
+it("오프라인이면 카테고리를 바꾸지 않는다", async () => {
+	mocks.isOnline = false;
+	await render();
+	await act(async () => form.updateCategory(3, "button"));
+
+	expect(mocks.values.categoryId).not.toBe(3);
+	expect(mocks.patch).not.toHaveBeenCalled();
+});
+
+it("오프라인이면 상태 토글을 저장하지 않는다", async () => {
+	mocks.isOnline = false;
+	await render();
+	let result: boolean | null = true;
+	await act(async () => {
+		result = await form.toggleMemoStatus("isWish");
+	});
+
+	expect(result).toBeNull();
+	expect(mocks.upsert).not.toHaveBeenCalled();
+});
+
+it("지금 편집 중인 메모에 대기 항목이 있으면 hasPendingOfflineItem을 그대로 내보낸다", async () => {
+	mocks.pendingOfflineItem = {
+		memoId: 1,
+		url: "https://example.com/a",
+		data: { title: "A", memo: "대기", impression: "", actionItem: "" },
+	};
+	await render();
+
+	expect(form.hasPendingOfflineItem).toBe(true);
+});
+
+it("현재 메모의 대기 항목이 있으면 캐시된 서버 본문 대신 대기 본문으로 폼을 채운다", async () => {
+	mocks.memo = { id: 1, title: "A", memo: "서버 본문" };
+	mocks.pendingOfflineItem = {
+		memoId: 1,
+		url: "https://example.com/a",
+		data: {
+			title: "오프라인 제목",
+			memo: "오프라인 본문",
+			impression: "오프라인 느낀 점",
+			actionItem: "오프라인 할 일",
+		},
+	};
+	await render();
+
+	expect(mocks.values.memo).toBe("오프라인 본문");
+	expect(mocks.values.impression).toBe("오프라인 느낀 점");
+	expect(mocks.values.actionItem).toBe("오프라인 할 일");
+	expect(mocks.values.title).toBe("오프라인 제목");
+});
+
+it("다른 메모의 대기 항목이면 폼을 덮지 않는다", async () => {
+	mocks.memo = { id: 1, title: "A", memo: "서버 본문" };
+	mocks.pendingOfflineItem = {
+		memoId: 2,
+		url: "https://example.com/a",
+		data: { title: "B", memo: "다른 메모", impression: "", actionItem: "" },
+	};
+	await render();
+
+	expect(mocks.values.memo).toBe("서버 본문");
+});
+
+it("입력한 뒤에는 대기 항목이 갱신돼도 폼을 다시 덮지 않는다", async () => {
+	mocks.memo = { id: 1, title: "A", memo: "서버 본문" };
+	await render();
+	act(() => {
+		form.handleMemoChange("지금 입력 중");
+	});
+
+	mocks.pendingOfflineItem = {
+		memoId: 1,
+		url: "https://example.com/a",
+		data: { title: "A", memo: "지금 입력", impression: "", actionItem: "" },
+	};
+	await render();
+
+	expect(mocks.values.memo).toBe("지금 입력 중");
 });

@@ -18,6 +18,8 @@ interface IFCategoryBadgeProps {
 	isDisabled?: boolean;
 	/** 잠금이 눈에 띄게 오래 지속돼 흐리게 보여줄지 */
 	isDimmed?: boolean;
+	/** 있으면 두 버튼을 모두 막고 이 문구를 title로 보여준다(오프라인·동기화 중). 잠금(isDisabled)이 함께 걸리면 잠금이 우선한다 */
+	disabledReason?: string;
 }
 
 /**
@@ -26,6 +28,13 @@ interface IFCategoryBadgeProps {
  * 사용처: MemoForm/index.tsx
  */
 const CategoryBadge = (props: IFCategoryBadgeProps) => {
+	const isDisabled = props.isDisabled || !!props.disabledReason;
+	const badgeTitle =
+		!props.isDisabled && props.disabledReason
+			? props.disabledReason
+			: props.category.name;
+	const removeTitle = !props.isDisabled ? props.disabledReason : undefined;
+
 	const handleRemoveButtonClick = (
 		event: React.MouseEvent<HTMLButtonElement>,
 	) => {
@@ -46,10 +55,10 @@ const CategoryBadge = (props: IFCategoryBadgeProps) => {
 				ref={props.badgeButtonRef}
 				type="button"
 				aria-label={I18n.get("category_change")}
-				title={props.category.name}
+				title={badgeTitle}
+				disabled={isDisabled}
 				onClick={props.onBadgeButtonClick}
-				disabled={props.isDisabled}
-				className="focus-visible:ring-ring flex min-w-0 items-center gap-1 rounded-sm focus-visible:outline-none focus-visible:ring-1"
+				className="focus-visible:ring-ring flex min-w-0 items-center gap-1 rounded-sm focus-visible:outline-none focus-visible:ring-1 disabled:cursor-not-allowed disabled:opacity-50"
 			>
 				<div
 					className="h-2 w-2 shrink-0 rounded-full"
@@ -62,9 +71,10 @@ const CategoryBadge = (props: IFCategoryBadgeProps) => {
 			<button
 				type="button"
 				aria-label={I18n.get("category_remove")}
+				title={removeTitle}
+				disabled={isDisabled}
 				onClick={handleRemoveButtonClick}
-				disabled={props.isDisabled}
-				className="hover:text-destructive focus-visible:ring-ring ml-1 rounded-sm focus-visible:outline-none focus-visible:ring-1"
+				className="enabled:hover:text-destructive focus-visible:ring-ring ml-1 rounded-sm focus-visible:outline-none focus-visible:ring-1 disabled:cursor-not-allowed disabled:opacity-50"
 			>
 				<XIcon size={12} aria-hidden="true" />
 			</button>

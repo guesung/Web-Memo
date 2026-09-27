@@ -1,5 +1,10 @@
 import { I18n } from "@web-memo/shared/utils/extension";
-import { CheckIcon, CircleAlertIcon, Loader2Icon } from "lucide-react";
+import {
+	CheckIcon,
+	CircleAlertIcon,
+	CloudOffIcon,
+	Loader2Icon,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { TSaveStatus } from "../hooks/useMemoForm";
 
@@ -7,19 +12,23 @@ import type { TSaveStatus } from "../hooks/useMemoForm";
 interface SaveStatusProps {
 	/** 지금 그려야 할 저장 상태 */
 	saveStatus: TSaveStatus;
-	/** 다시 시도 버튼 클릭 시 호출된다 */
+	/** 저장 실패(failed·retrying) 다시 시도 버튼 클릭 시 호출된다 */
 	onRetryClick: () => void;
+	/** 대기열 동기화 실패(syncFailed) 다시 시도 버튼 클릭 시 호출된다 */
+	onSyncRetryClick?: () => void;
 }
 
 /**
  * 사이드 패널 메모 폼 하단 바의 저장 상태 표시.
  * @description 성공은 조용히(회색 체크 고정) 지나가고, 1초를 넘긴 저장과 실패만 눈에 띄게 그린다.
- * 실패에서 회복되는 순간에는 스크린 리더 전용 안내를 한 번 읽어 주고, 다시 시도 버튼이 포커스를
- * 갖고 있었다면 메모 입력창으로 포커스를 옮긴다.
+ * 오프라인·대기열 동기화 상태(offline·offlineIdle·syncing·syncFailed)도 같은 자리에서 보여준다.
+ * 실패나 오프라인에서 회복되는 순간에는 스크린 리더 전용 안내를 한 번 읽어 주고, 다시 시도
+ * 버튼이 포커스를 갖고 있었다면 메모 입력창으로 포커스를 옮긴다.
  */
 export default function SaveStatus({
 	saveStatus,
 	onRetryClick,
+	onSyncRetryClick,
 }: SaveStatusProps) {
 	const previousSaveStatusRef = useRef(saveStatus);
 	// 다시 시도 버튼이 포커스를 갖고 있었는지. 복구 시점엔 실패 분기가 이미 언마운트돼
@@ -37,7 +46,10 @@ export default function SaveStatus({
 
 		const isRecoveredFromFailure =
 			saveStatus === "saved" &&
-			(previousSaveStatus === "failed" || previousSaveStatus === "retrying");
+			(previousSaveStatus === "failed" ||
+				previousSaveStatus === "retrying" ||
+				previousSaveStatus === "offline" ||
+				previousSaveStatus === "syncFailed");
 
 		if (!isRecoveredFromFailure) {
 			return;
@@ -56,6 +68,13 @@ export default function SaveStatus({
 			{recoveredAnnouncement}
 		</span>
 	);
+
+	const handleRetryButtonFocus = () => {
+		wasRetryButtonFocusedRef.current = true;
+	};
+	const handleRetryButtonBlur = () => {
+		wasRetryButtonFocusedRef.current = false;
+	};
 
 	if (saveStatus === "empty") {
 		return (
@@ -94,15 +113,49 @@ export default function SaveStatus({
 					disabled={isRetrying}
 					aria-busy={isRetrying}
 					onClick={onRetryClick}
-					onFocus={() => {
-						wasRetryButtonFocusedRef.current = true;
-					}}
-					onBlur={() => {
-						wasRetryButtonFocusedRef.current = false;
-					}}
+					onFocus={handleRetryButtonFocus}
+					onBlur={handleRetryButtonBlur}
 				>
 					{I18n.get("retry")}
 				</button>
+				{recoveredAnnouncementRegion}
+			</div>
+		);
+	}
+
+	// 대기열에 남은 메모(오프라인 저장, 온라인이지만 아직 서버에 못 올림)의 표시.
+	if (
+		saveStatus === "offline" ||
+		saveStatus === "offlineIdle" ||
+		saveStatus === "syncing" ||
+		saveStatus === "syncFailed"
+	) {
+		const content = getOfflineSaveStatusContent(saveStatus);
+
+		return (
+			<div
+				data-save-status={saveStatus}
+				className="flex min-w-0 items-center gap-1"
+				title={content.text}
+			>
+				<content.Icon
+					aria-hidden="true"
+					className={`h-3 w-3 shrink-0 ${content.iconClassName}`}
+				/>
+				<span className={`min-w-0 truncate text-xs ${content.textClassName}`}>
+					{content.text}
+				</span>
+				{saveStatus === "syncFailed" && (
+					<button
+						type="button"
+						className="shrink-0 whitespace-nowrap text-xs text-muted-foreground underline hover:text-foreground"
+						onClick={onSyncRetryClick}
+						onFocus={handleRetryButtonFocus}
+						onBlur={handleRetryButtonBlur}
+					>
+						{I18n.get("retry")}
+					</button>
+				)}
 				{recoveredAnnouncementRegion}
 			</div>
 		);
@@ -137,3 +190,39 @@ export default function SaveStatus({
 		</div>
 	);
 }
+
+/** 오프라인·동기화 관련 상태별 아이콘·문구·색을 계산한다 */
+const getOfflineSaveStatusContent = (
+	saveStatus: "offline" | "offlineIdle" | "syncing" | "syncFailed",
+) => {
+	switch (saveStatus) {
+		case "offline":
+			return {
+				Icon: CloudOffIcon,
+				iconClassName: "text-muted-foreground",
+				textClassName: "text-muted-foreground",
+				text: I18n.get("save_status_offline_saved"),
+			};
+		case "offlineIdle":
+			return {
+				Icon: CloudOffIcon,
+				iconClassName: "text-muted-foreground",
+				textClassName: "text-muted-foreground",
+				text: I18n.get("save_status_offline"),
+			};
+		case "syncing":
+			return {
+				Icon: Loader2Icon,
+				iconClassName: "animate-spin text-muted-foreground",
+				textClassName: "text-muted-foreground",
+				text: I18n.get("save_status_syncing"),
+			};
+		case "syncFailed":
+			return {
+				Icon: CloudOffIcon,
+				iconClassName: "text-muted-foreground",
+				textClassName: "text-muted-foreground",
+				text: I18n.get("save_status_sync_failed"),
+			};
+	}
+};

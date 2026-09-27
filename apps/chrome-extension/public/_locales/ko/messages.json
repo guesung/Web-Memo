@@ -38,8 +38,29 @@
 	"memo_choose_other": {
 		"message": "다른 메모 선택"
 	},
+	"memo_offline_conflict": {
+		"message": "다른 곳에서 바뀐 메모라 새 메모로 따로 저장했어요"
+	},
 	"save": {
 		"message": "저장"
+	},
+	"save_status_saving": {
+		"message": "저장 중..."
+	},
+	"save_status_saved": {
+		"message": "저장됨"
+	},
+	"save_status_offline_saved": {
+		"message": "오프라인 · 이 기기에 저장됨"
+	},
+	"save_status_offline": {
+		"message": "오프라인"
+	},
+	"save_status_syncing": {
+		"message": "동기화 중..."
+	},
+	"save_status_sync_failed": {
+		"message": "이 기기에 저장됨"
 	},
 	"number": {
 		"message": "번호"
@@ -227,6 +248,18 @@
 	},
 	"category_remove": {
 		"message": "카테고리 해제"
+	},
+	"control_disabled_offline_change": {
+		"message": "오프라인에서는 바꿀 수 없어요"
+	},
+	"control_disabled_offline_delete": {
+		"message": "오프라인에서는 지울 수 없어요"
+	},
+	"login_network_unavailable": {
+		"message": "인터넷에 연결되어 있지 않아요. 연결되면 자동으로 다시 불러와요."
+	},
+	"control_disabled_syncing": {
+		"message": "동기화가 끝나면 쓸 수 있어요"
 	},
 	"memo_section_setting": {
 		"message": "메모 섹션 표시"

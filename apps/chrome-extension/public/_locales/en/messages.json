@@ -38,8 +38,29 @@
 	"memo_choose_other": {
 		"message": "Choose another note"
 	},
+	"memo_offline_conflict": {
+		"message": "This memo changed elsewhere, so it was saved as a new memo"
+	},
 	"save": {
 		"message": "Save"
+	},
+	"save_status_saving": {
+		"message": "Saving..."
+	},
+	"save_status_saved": {
+		"message": "Saved"
+	},
+	"save_status_offline_saved": {
+		"message": "Offline · Saved on this device"
+	},
+	"save_status_offline": {
+		"message": "Offline"
+	},
+	"save_status_syncing": {
+		"message": "Syncing..."
+	},
+	"save_status_sync_failed": {
+		"message": "Saved on this device"
 	},
 	"number": {
 		"message": "Number"
@@ -227,6 +248,18 @@
 	},
 	"category_remove": {
 		"message": "Remove category"
+	},
+	"control_disabled_offline_change": {
+		"message": "You can't change this offline"
+	},
+	"control_disabled_offline_delete": {
+		"message": "You can't delete this offline"
+	},
+	"login_network_unavailable": {
+		"message": "You're offline. We'll reload automatically once you're back online."
+	},
+	"control_disabled_syncing": {
+		"message": "Available once syncing finishes"
 	},
 	"memo_section_setting": {
 		"message": "Memo sections"

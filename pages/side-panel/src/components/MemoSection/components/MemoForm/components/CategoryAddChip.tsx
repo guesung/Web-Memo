@@ -12,6 +12,8 @@ interface IFCategoryAddChipProps {
 	isDisabled?: boolean;
 	/** 잠금이 눈에 띄게 오래 지속돼 흐리게 보여줄지 */
 	isDimmed?: boolean;
+	/** 있으면 칩을 막고 이 문구를 title로 보여준다(오프라인·동기화 중). 잠금(isDisabled)이 함께 걸리면 잠금이 우선한다 */
+	disabledReason?: string;
 }
 
 /**
@@ -20,17 +22,23 @@ interface IFCategoryAddChipProps {
  * 사용처: MemoForm/index.tsx
  */
 const CategoryAddChip = (props: IFCategoryAddChipProps) => {
+	const isDisabled = props.isDisabled || !!props.disabledReason;
+	const title =
+		!props.isDisabled && props.disabledReason
+			? props.disabledReason
+			: I18n.get("category_add_hash_hint");
+
 	return (
 		<button
 			ref={props.chipRef}
 			type="button"
 			data-testid="category-add-chip"
-			title={I18n.get("category_add_hash_hint")}
+			title={title}
+			disabled={isDisabled}
 			onClick={props.onChipClick}
-			disabled={props.isDisabled}
 			className={cn(
 				badgeVariants({ variant: "outline" }),
-				"text-muted-foreground hover:text-foreground gap-1 border-dashed px-2 py-0.5",
+				"text-muted-foreground hover:text-foreground gap-1 border-dashed px-2 py-0.5 disabled:cursor-not-allowed disabled:opacity-50",
 				props.isDimmed && "opacity-50",
 			)}
 		>

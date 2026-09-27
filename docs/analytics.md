@@ -20,34 +20,38 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `development` 빌드는 커스텀 이벤트를 보내지 않습니다. `staging`은 보냅니다 — 테스트 서버에서
 도착을 눈으로 확인해야 하기 때문이며, 그 트래픽은 `build_env` 차원으로 걸러 냅니다.
 
-## 이벤트 48종
+## 이벤트 59종
 
 `core_action`은 사용자가 이 서비스를 쓰는 행위, `engagement`는 그 주변의 이동·설정입니다.
 분류는 `EVENT_CATEGORY`가 `Record`로 강제하므로 이벤트를 추가하고 분류를 빠뜨리면 컴파일이
 실패합니다.
 
-### core_action (27종)
+### core_action (29종)
 
 `memo_write`(fields) · `memo_delete`(memo_count) · `memo_restore`(memo_count) ·
 `memo_delete_permanently`(memo_count) · `memo_open`(has_search_query) · `memo_source_open` ·
 `memo_search`(query_length) · `memo_status_toggle`(status, enabled) · `memo_category_change`(source) ·
 `highlight_note_update` · `summary_run`(source) · `summary_complete`(duration_msec) ·
 `summary_fail`(reason) · `chat_message_send` · `chat_fail`(reason) ·
-`youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category) ·
-`category_create` · `category_update` · `category_delete` · `login`(method) · `sign_up`(method) ·
-`feedback_submit` · `extension_install_click`(from, position) · `memo_first_write` · `export_run`(format) ·
+`youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category, source) ·
+`category_suggestion_undo`(source) · `category_create` · `category_update` · `category_delete` ·
+`login`(method) · `sign_up`(method) · `feedback_submit` · `extension_install_click`(from, position) ·
+`memo_first_write` · `export_run`(format) · `highlight_create`(color, has_note) ·
 `past_memo_open`(kind, source)
 
-### engagement (24종)
+### engagement (30종)
 
 `side_panel_open` · `side_panel_open_click` · `side_panel_login_click` ·
 `header_login_click`(from) · `header_memos_click`(from) ·
 `page_view`(page_title, page_location) · `tab_change`(tab_name) · `view_change`(view) ·
 `memo_filter`(search_target) · `memo_undo`(action) · `setting_change`(setting_keys) ·
-`extension_setting_change`(keys) · `category_suggestion_show`(is_new_category) ·
+`extension_setting_change`(keys) · `category_suggestion_show`(is_new_category, source) ·
+`category_suggestion_dismiss`(is_new_category, source) ·
 `login_start`(method) · `logout` · `extension_installed` · `extension_install_dismiss` ·
 `open_web_from_extension`(from) · `guide_open`(from) · `guide_step`(step_name) · `guide_finish` ·
-`search_no_result` · `past_memo_show`(kind, source) · `past_memo_dismiss`(kind, source)
+`search_no_result` · `highlight_bubble_disable`(scope) · `notice_view`(notice_id) ·
+`notice_dismiss`(notice_id) · `past_memo_show`(kind, source) · `past_memo_dismiss`(kind, source) ·
+`memo_offline_queued`(trigger) · `memo_offline_sync_result`(trigger, synced_count, conflict_count, has_other_error)
 
 ### 호출부에 없는 이벤트
 
@@ -59,6 +63,13 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `memo_category_change`의 `source`는 patch 경로(`useMemoPatchMutation`의 `categorySource`)로
 바꾼 것만 붙습니다. 사이드 패널 자동 저장(upsert)은 요청마다 `category_id`를 실어 보내 값이
 안 바뀌어도 이 이벤트가 찍히므로, 경로별 비율은 `source`가 있는 이벤트만 세야 합니다.
+
+사이드 패널 오프라인 저장은 `useMemoUpsertMutation`을 거치지 않고 대기열에서 `MemoService`를 직접
+부르므로 `memo_write` 계열에 잡히지 않습니다. 대기열로 빠진 저장은 `memo_offline_queued`(trigger:
+offline·network_error·already_queued), 올린 결과는 `memo_offline_sync_result`(trigger: mount·
+online·retry_click·enqueue)로 셉니다. enqueue는 온라인 상태에서 대기 항목이 막 생겨(이미 대기
+중이거나 네트워크 오류 직후) online 전환 없이 곧바로 도는 flush입니다. 후자는 실제로 처리한
+항목이 있을 때만 찍혀 빈 대기열 flush로 부풀지 않습니다.
 
 `summary_run`의 `source`는 요약을 실행한 자리입니다. 요약 탭 빈 화면의 버튼이면 `empty_state`,
 탭 옆 새로고침 아이콘이면 `tab_trigger`입니다. 같은 `source` 차원을 `memo_category_change`도

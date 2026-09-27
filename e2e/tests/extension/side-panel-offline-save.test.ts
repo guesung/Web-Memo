@@ -1,0 +1,290 @@
+import type { BrowserContext } from "@playwright/test";
+import { SUPABASE } from "@web-memo/shared/constants";
+import { expect, test } from "../fixtures/extension";
+import { findSidePanelPage, login, openSidePanel, skipGuide } from "../lib";
+import {
+	createMockMemo,
+	MockSupabaseStore,
+	setupSupabaseMocks,
+} from "../lib/mocks";
+
+const OFFLINE_SAVE_URL = "https://example.com/offline-save";
+const OFFLINE_CONFLICT_URL = "https://example.com/offline-conflict";
+
+/**
+ * 사이드 패널이 오프라인에서도 입력을 잃지 않고 온라인 복귀 시 서버에 반영하는지 확인한다.
+ * @description context.setOffline은 navigator.onLine과 online/offline 이벤트를 실제로
+ * 뒤집는다(라우트 가로채기 자체를 막지는 않는다). useOnlineStatus·saveMemo가 이 신호로
+ * 오프라인 대기열 분기를 타므로, 오프라인 구간에서는 /rest/v1/memo 요청이 전혀 나가지 않아야 한다.
+ */
+test("오프라인에서 입력한 메모는 대기열에 남고, 온라인이 되면 서버에 저장된다", async ({
+	page,
+	context,
+}) => {
+	const store = new MockSupabaseStore();
+	const memo = store.addMemo(
+		createMockMemo({ url: OFFLINE_SAVE_URL, memo: "기존 내용" }),
+	);
+	await setupSupabaseMocks(page, store);
+
+	await login(page);
+	await skipGuide(page);
+	await openSidePanel(page);
+	const sidePanelPage = await findSidePanelPage(page);
+
+	await page.goto(OFFLINE_SAVE_URL);
+	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
+		"기존 내용",
+	);
+
+	let memoRequestCount = 0;
+	await context.route(`${SUPABASE.url}/rest/v1/memo**`, async (route) => {
+		if (route.request().method() !== "GET") {
+			memoRequestCount += 1;
+		}
+		await route.fallback();
+	});
+
+	await context.setOffline(true);
+
+	const offlineText = "오프라인에서 쓴 내용";
+	await sidePanelPage.locator("#memo-textarea").fill(offlineText);
+	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
+		offlineText,
+	);
+
+	// 디바운스가 끝날 시간을 기다려도 오프라인이면 저장 요청 자체가 나가지 않는다.
+	await sidePanelPage.waitForTimeout(500);
+	expect(memoRequestCount).toBe(0);
+	await expect(
+		sidePanelPage.getByText(/offline|오프라인/i).first(),
+	).toBeVisible();
+
+	const syncResponsePromise = sidePanelPage.waitForResponse(
+		(response) =>
+			response.url().includes("/rest/v1/memo") &&
+			response.request().method() !== "GET" &&
+			response.ok(),
+	);
+	await context.setOffline(false);
+	await syncResponsePromise;
+
+	await expect(sidePanelPage.getByText(/^(Saved|저장됨)$/)).toBeVisible();
+	expect(store.getMemo(memo.id)?.memo).toBe(offlineText);
+
+	await sidePanelPage.reload();
+	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
+		offlineText,
+	);
+});
+
+/**
+ * 오프라인 구간에 서버의 메모가 다른 곳에서 바뀌면(다른 updated_at), flush는 같은 주소에
+ * 새 메모를 insert하고 편집기를 그 메모로 전환한다.
+ */
+test("오프라인 중 서버 메모가 바뀌면 충돌로 새 메모에 저장하고 편집기를 전환한다", async ({
+	page,
+	context,
+}) => {
+	const store = new MockSupabaseStore();
+	const memo = store.addMemo(
+		createMockMemo({ url: OFFLINE_CONFLICT_URL, memo: "원래 내용" }),
+	);
+	await setupSupabaseMocks(page, store);
+
+	await login(page);
+	await skipGuide(page);
+	await openSidePanel(page);
+	const sidePanelPage = await findSidePanelPage(page);
+
+	await page.goto(OFFLINE_CONFLICT_URL);
+	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
+		"원래 내용",
+	);
+
+	await context.setOffline(true);
+
+	const offlineText = "충돌 나기 전 오프라인 입력";
+	await sidePanelPage.locator("#memo-textarea").fill(offlineText);
+	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
+		offlineText,
+	);
+	await sidePanelPage.waitForTimeout(500);
+
+	// 오프라인인 사이 다른 곳(다른 기기·다른 탭)에서 같은 메모를 바꿨다고 가정한다.
+	// updateMemo는 항상 updated_at을 새로 찍으므로 대기열의 baseUpdatedAt과 어긋난다.
+	store.updateMemo(memo.id, { memo: "다른 곳에서 바뀐 내용" });
+
+	await context.setOffline(false);
+
+	// 토스트 액션은 role="status"가 아니라(그건 스크린리더용 숨김 공지 영역일 뿐이고 버튼이 없다)
+	// Radix ToastViewport의 role="region" 안에 있다. 메모 폼에도 같은 문구("다른 메모 선택")의
+	// 상시 링크가 있어 페이지 전체에서 role="button"으로 찾으면 둘 다 걸린다.
+	// 토스트는 2초 뒤 자동으로 닫히므로(packages/ui/src/components/toaster.tsx), 응답을 먼저
+	// 기다리지 않고 액션 버튼을 바로 찾아 누른다.
+	await sidePanelPage
+		.getByRole("region", { name: /notifications/i })
+		.getByRole("button", { name: /choose another|다른 메모 선택/i })
+		.click();
+	await expect(
+		sidePanelPage.getByText(/choose a note|메모를 선택하세요/i),
+	).toBeVisible();
+
+	// 원래 메모는 다른 곳에서 바꾼 내용 그대로고, 오프라인 입력은 새 메모로 따로 저장됐다.
+	expect(store.getMemo(memo.id)?.memo).toBe("다른 곳에서 바뀐 내용");
+	const allMemos = store.getAllMemos();
+	expect(
+		allMemos.some(
+			(candidate) =>
+				candidate.url === OFFLINE_CONFLICT_URL &&
+				candidate.memo === offlineText,
+		),
+	).toBe(true);
+});
+
+const OFFLINE_NAV_FROM_URL = "https://example.com/offline-nav-from";
+const OFFLINE_NAV_TO_URL = "https://example.com/offline-nav-to";
+const OFFLINE_RELOAD_URL = "https://example.com/offline-reload";
+
+/**
+ * 모든 http 요청을 끊는 스위치를 건다.
+ * @description context.setOffline만으로는 목(route) 응답이 계속 돌아와, 오프라인에서 사용자 확인·조회가
+ * 실패하는 상황을 재현하지 못한다. 목보다 나중에 등록한 route가 먼저 불리므로 여기서 끊는다.
+ */
+const setupNetworkSwitch = async (context: BrowserContext) => {
+	let isNetworkCut = false;
+	await context.route("**/*", (route) => {
+		if (isNetworkCut && route.request().url().startsWith("http")) {
+			return route.abort("internetdisconnected");
+		}
+
+		return route.fallback();
+	});
+
+	return {
+		goOffline: async () => {
+			isNetworkCut = true;
+			await context.setOffline(true);
+		},
+		goOnline: async () => {
+			isNetworkCut = false;
+			await context.setOffline(false);
+		},
+	};
+};
+
+/**
+ * 오프라인에서 다른 페이지로 옮기면, 탭 조회가 일시정지되지 않고 새 URL을 따라가 빈 메모로 전환한다.
+ */
+test("오프라인에서 새 페이지로 이동하면 새 페이지의 빈 메모로 전환된다", async ({
+	page,
+	context,
+}) => {
+	const store = new MockSupabaseStore();
+	store.addMemo(
+		createMockMemo({ url: OFFLINE_NAV_FROM_URL, memo: "이전 페이지 메모" }),
+	);
+	await setupSupabaseMocks(page, store);
+	const network = await setupNetworkSwitch(context);
+
+	await login(page);
+	await skipGuide(page);
+	await openSidePanel(page);
+	const sidePanelPage = await findSidePanelPage(page);
+
+	await page.goto(OFFLINE_NAV_FROM_URL);
+	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
+		"이전 페이지 메모",
+	);
+
+	await network.goOffline();
+	// 오프라인이라 이동은 오류 페이지로 끝나지만 탭 URL은 새 주소로 바뀐다.
+	await page.goto(OFFLINE_NAV_TO_URL).catch(() => {});
+
+	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue("");
+	await expect(sidePanelPage.locator("#memo-textarea")).toBeEditable();
+});
+
+/**
+ * 오프라인에서 패널을 다시 열면 사용자 확인이 실패해 연결 안내가 보이고, 연결이 돌아오면
+ * 로그인 안내를 거치지 않고 메모 화면으로 돌아온다.
+ */
+test("오프라인에서 패널을 다시 연 뒤 온라인이 되면 메모 화면으로 돌아온다", async ({
+	page,
+	context,
+}) => {
+	const store = new MockSupabaseStore();
+	store.addMemo(createMockMemo({ url: OFFLINE_RELOAD_URL, memo: "복귀 메모" }));
+	await setupSupabaseMocks(page, store);
+	const network = await setupNetworkSwitch(context);
+
+	await login(page);
+	await skipGuide(page);
+	await openSidePanel(page);
+	const sidePanelPage = await findSidePanelPage(page);
+
+	await page.goto(OFFLINE_RELOAD_URL);
+	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
+		"복귀 메모",
+	);
+
+	await network.goOffline();
+	await sidePanelPage.reload();
+	await expect(
+		sidePanelPage.getByText(/offline|인터넷에 연결되어 있지 않아요/i).first(),
+	).toBeVisible();
+	await expect(
+		sidePanelPage.getByRole("button", { name: /로그인하러가기|log ?in/i }),
+	).toHaveCount(0);
+
+	await network.goOnline();
+
+	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
+		"복귀 메모",
+	);
+	await expect(
+		sidePanelPage.getByRole("button", { name: /로그인하러가기|log ?in/i }),
+	).toHaveCount(0);
+});
+
+const OFFLINE_RETURN_A_URL = "https://example.com/offline-return-a";
+const OFFLINE_RETURN_B_URL = "https://example.com/offline-return-b";
+
+/**
+ * 오프라인에서 쓴 내용은 다른 페이지에 갔다가 돌아와도 폼에 다시 보여야 한다.
+ * @description 폼은 캐시된 서버 메모로 채워지므로, 대기열 항목을 읽어 덮지 않으면 이전 서버 본문이 보인다.
+ */
+test("오프라인에서 쓴 메모는 다른 페이지에 갔다 돌아와도 보인다", async ({
+	page,
+	context,
+}) => {
+	const store = new MockSupabaseStore();
+	store.addMemo(
+		createMockMemo({ url: OFFLINE_RETURN_A_URL, memo: "서버 본문" }),
+	);
+	await setupSupabaseMocks(page, store);
+	const network = await setupNetworkSwitch(context);
+
+	await login(page);
+	await skipGuide(page);
+	await openSidePanel(page);
+	const sidePanelPage = await findSidePanelPage(page);
+	const memoTextarea = sidePanelPage.locator("#memo-textarea");
+
+	await page.goto(OFFLINE_RETURN_B_URL);
+	await expect(memoTextarea).toHaveValue("");
+	await page.goto(OFFLINE_RETURN_A_URL);
+	await expect(memoTextarea).toHaveValue("서버 본문");
+
+	await network.goOffline();
+	await memoTextarea.fill("오프라인 수정 본문");
+	await expect(
+		sidePanelPage.getByText(/saved on this device|이 기기에 저장됨/i).first(),
+	).toBeVisible();
+
+	await page.goto(OFFLINE_RETURN_B_URL).catch(() => {});
+	await expect(memoTextarea).toHaveValue("");
+	await page.goto(OFFLINE_RETURN_A_URL).catch(() => {});
+
+	await expect(memoTextarea).toHaveValue("오프라인 수정 본문");
+});

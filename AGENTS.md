@@ -412,6 +412,8 @@ production을 구분하지 못합니다. `isProduction()`은 `buildEnv !== "deve
   - `hybrid/` — 웹 페이지와 확장을 함께 조작하는 테스트
   - 로그인 외에 실제 Supabase 데이터를 읽거나 쓰는 테스트는 `*.real.test.ts`로 이름 짓고, 나머지는 목(`e2e/tests/lib/mocks/`)을 씁니다
 - **테스트 환경**: 로컬 개발 서버 대상으로 실행
+- **완료 기준**: UI·확장 수정은 타입체크·단위 테스트 통과만으로 끝난 게 아닙니다. 가능하면 Playwright E2E나 실제 브라우저·확장에서 확인하고, 못 한 부분은 수동 확인 항목으로 따로 적습니다
+- **알려진 flaky**: `e2e/tests/web/tab-scroll.test.ts`는 master에서도 실패합니다. 실패하면 기록만 하고 회귀로 보지 않습니다
 
 ---
 
@@ -445,6 +447,16 @@ production을 구분하지 못합니다. `isProduction()`은 `buildEnv !== "deve
 4. (선택) `develop`에 머지 후 push → 테스트 서버에서 검증
 5. 의미 있는 단위로 커밋 → 원격 푸시 → master를 대상(base)으로 PR 생성
 6. 머지는 **Squash & Merge가 아니라 머지 커밋 생성** 방식으로 진행
+
+- master·develop 상태를 읽기 전에 항상 `git fetch`로 원격을 먼저 받습니다. 로컬 master는 낡아 있을 수 있습니다.
+- 직접 머지하기 전에 PR에 auto-merge가 켜져 있는지 확인합니다.
+
+### `develop` 머지 충돌 시
+
+- 작업 브랜치를 `develop`에 머지하다 충돌이 나면 테스트 서버 배포를 조용히 건너뛰지 않습니다. 충돌 파일을 보고합니다.
+- 충돌이 작업과 무관한 파일(예: `.github/README.md`)이면 해결안을 제시하고, 해결하기 전에 먼저 묻습니다.
+- 끝내 배포하지 못했으면 작업 마지막 보고에 **"테스트 서버 배포 보류"**를 분명히 적습니다.
+- `develop`이 master에서 크게 벌어졌으면 `/gs:reset-develop`으로 리셋하자고 제안합니다(절차: [docs/branch-strategy.md](docs/branch-strategy.md)).
 
 ### 언어 규칙 (MANDATORY)
 
@@ -517,6 +529,8 @@ PR 템플릿 파일은 레포에 없습니다. 최근 PR들이 쓰는 형식을 
 ### 작업 파이프라인 (gs 플러그인)
 
 기획→설계→구현→QA→PR 파이프라인(`/gs:*` 스킬과 `gs:*` 에이전트)의 원본은 `.agents/skills/gs/`입니다. `.claude/skills/gs`는 Claude Code가 읽도록 원본을 가리키는 심링크이니, 에이전트·스킬 규칙은 `.agents/skills/gs/`에서 고치세요. 구성과 의존 관계는 `.agents/skills/gs/dependencies.md`에 있습니다.
+
+작은 단일 목적 작업은 `/gs:implement`로 하고, `/gs:implement-loop`는 여러 단계짜리 기능에만 씁니다.
 
 ---
 

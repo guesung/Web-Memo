@@ -6,6 +6,20 @@ import {
 	renderOpenSidePanelButton,
 	setupHighlightRestore,
 } from "./ui";
+import {
+	reportContentUiBridgeFailure,
+	reportContentUiError,
+} from "./utils/reportError";
+
+bridge.setFailureReporter(reportContentUiBridgeFailure);
+bridge.setHandlerErrorReporter((error) => {
+	reportContentUiError({
+		error,
+		feature: "extension-bridge",
+		operation: "handle",
+		stage: "listener",
+	});
+});
 
 bridge.handle.PAGE_CONTENT(async (_, __, sendResponse) => {
 	const title = document.title;

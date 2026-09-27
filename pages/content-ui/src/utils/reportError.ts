@@ -6,6 +6,7 @@ import {
 	Scope,
 } from "@sentry/react";
 import { SENTRY } from "@web-memo/shared/constants";
+import type { IFBridgeFailure } from "@web-memo/shared/modules/extension-bridge";
 import {
 	createErrorReporter,
 	type IFErrorReportContext,
@@ -61,3 +62,20 @@ const captureContentUiError = (error: Error, context: IFErrorReportContext) => {
 export const reportContentUiError = createErrorReporter({
 	capture: captureContentUiError,
 });
+
+/** 브리지 실패를 호스트 페이지와 분리된 content script 스코프에 기록한다. */
+export const reportContentUiBridgeFailure = (failure: IFBridgeFailure) => {
+	if (!isProduction() || !chrome.runtime?.id) {
+		return;
+	}
+
+	getContentUiScope().addBreadcrumb({
+		category: "extension.bridge",
+		level: "warning",
+		data: {
+			messageType: failure.messageType,
+			direction: failure.direction,
+			classification: failure.classification,
+		},
+	});
+};

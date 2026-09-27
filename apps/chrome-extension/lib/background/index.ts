@@ -109,13 +109,20 @@ if (chrome.contextMenus)
 		}
 	});
 
-chrome.tabs.onActivated.addListener(async () => {
-	// 활성화된 탭이 변경되었을 때 사이드 패널을 업데이트한다.
-	bridge.request.UPDATE_SIDE_PANEL();
+/** 닫힌 사이드 패널의 갱신 실패는 브리지 기록만 남기고 종료한다. */
+const updateSidePanel = async () => {
+	try {
+		await bridge.request.UPDATE_SIDE_PANEL();
+	} catch {
+		/** 탭 이벤트에는 응답을 받을 호출자가 없으므로 rejection을 종료한다. */
+	}
+};
+
+chrome.tabs.onActivated.addListener(() => {
+	void updateSidePanel();
 });
-chrome.tabs.onUpdated.addListener(async () => {
-	// 페이지를 이동했을 때 사이드 패널을 업데이트한다.
-	bridge.request.UPDATE_SIDE_PANEL();
+chrome.tabs.onUpdated.addListener(() => {
+	void updateSidePanel();
 });
 
 // content-ui에서 메시지를 전달받아 사이드 패널을 연다.

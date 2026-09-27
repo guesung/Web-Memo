@@ -25,7 +25,10 @@ vi.mock("@sentry/react", async (importOriginal) => {
 	};
 });
 
-import { reportContentUiError } from "./reportError";
+import {
+	reportContentUiBridgeFailure,
+	reportContentUiError,
+} from "./reportError";
 
 /** 봉투(envelope)의 줄 가운데 이벤트 본문을 꺼낸다. */
 const getSentEvent = (envelope: string) =>
@@ -101,6 +104,58 @@ describe("reportContentUiError", () => {
 		});
 
 		await new Promise((resolve) => setTimeout(resolve, 50));
+		expect(mocks.sentEnvelopes).toHaveLength(0);
+	});
+});
+
+describe("reportContentUiBridgeFailure", () => {
+	it("breadcrumb만으로 이벤트를 전송하지 않고 이후 같은 스코프의 오류에 메타데이터만 싣는다", async () => {
+		reportContentUiBridgeFailure({
+			messageType: "OPEN_SIDE_PANEL",
+			direction: "internal",
+			classification: "Timeout",
+		});
+		expect(mocks.sentEnvelopes).toHaveLength(0);
+
+		reportContentUiError({
+			error: new Error("following error"),
+			feature: "highlight",
+			operation: "create",
+			stage: "request",
+		});
+		await vi.waitFor(() => expect(mocks.sentEnvelopes).toHaveLength(1));
+		const event = getSentEvent(mocks.sentEnvelopes[0]);
+
+		expect(event.breadcrumbs.at(-1)).toMatchObject({
+			category: "extension.bridge",
+			level: "warning",
+			data: {
+				messageType: "OPEN_SIDE_PANEL",
+				direction: "internal",
+				classification: "Timeout",
+			},
+		});
+		expect(Object.keys(event.breadcrumbs.at(-1).data).sort()).toEqual([
+			"classification",
+			"direction",
+			"messageType",
+		]);
+	});
+
+	it("무효화된 content script에서 매니페스트를 읽지 않는다", () => {
+		const getManifest = vi.fn(() => {
+			throw new Error("invalidated");
+		});
+		vi.stubGlobal("chrome", { runtime: { getManifest } });
+
+		expect(() =>
+			reportContentUiBridgeFailure({
+				messageType: "OPEN_SIDE_PANEL",
+				direction: "internal",
+				classification: "ExtensionUnavailable",
+			}),
+		).not.toThrow();
+		expect(getManifest).not.toHaveBeenCalled();
 		expect(mocks.sentEnvelopes).toHaveLength(0);
 	});
 });

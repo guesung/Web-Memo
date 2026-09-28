@@ -1411,9 +1411,10 @@
 					},
 					"feedback": {
 						"title": "f. Support and feedback data",
-						"description": "Collected only when you submit feedback yourself.",
+						"description": "Collected only when you submit feedback or answer the uninstall survey yourself.",
 						"items": [
 							"The feedback text you write",
+							"The removal reason and comment you choose to submit after uninstalling",
 							"An email address you optionally provide so we can reply"
 						]
 					},

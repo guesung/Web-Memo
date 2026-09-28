@@ -1,50 +1,75 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import type { MemoRow } from "@web-memo/shared/types";
+import type { MemoService } from "@web-memo/shared/utils/services";
 import { getPageKey } from "@web-memo/shared/utils/url";
 import { extractPageMetadata } from "@/lib/sharing/pageMetadata";
+import {
+	type IFPendingSharedUrl,
+	preserveSharedUrl,
+	resolvePendingSharedUrl,
+} from "@/lib/sharing/pendingSharedUrls";
 import {
 	getMemoByUrl,
 	getUnsyncedMemos,
 	toggleWishByUrl,
 } from "@/lib/storage/localMemo";
-import { supabase } from "@/lib/supabase/client";
+import { memoService, supabase } from "@/lib/supabase/client";
 
-const PENDING_SHARED_URLS_KEY = "webmemo:pendingSharedUrls";
+/** 로그인 세션 위시 저장 결과. 후보가 둘 이상이면 저장하지 않고 선택을 요구한다. */
+export type TSaveWishForSessionResult =
+	| { status: "saved"; memo: MemoRow }
+	| { status: "multiple-candidates" };
 
-/** 대상 메모 선택 전까지 유지할 공유 요청. */
-export interface IFPendingSharedUrl {
+/**
+ * 로그인 세션에서 원격 메모 후보를 기준으로 위시 저장을 시도한다.
+ * @description 본 앱과 iOS 공유 확장이 함께 쓴다. 확장은 본 앱 로컬(AsyncStorage) 메모에
+ * 접근할 수 없어 `localCandidateCount`를 넘기지 않고(기본값 0) 원격 후보만으로 판단한다.
+ * 원격 후보가 둘 이상이거나 로컬 미동기화 후보가 있으면 저장하지 않고 후보 선택을 요구한다.
+ */
+export async function saveWishForSession({
+	memoService: service,
+	url,
+	title,
+	favIconUrl,
+	localCandidateCount = 0,
+}: {
+	memoService: MemoService;
 	url: string;
 	title: string;
 	favIconUrl: string | null;
-	createdAt: string;
+	localCandidateCount?: number;
+}): Promise<TSaveWishForSessionResult> {
+	const remote = await service.getMemoByUrl(url);
+	if (remote.error) {
+		throw remote.error;
+	}
+	const remoteCount = remote.data?.length ?? 0;
+	if (localCandidateCount > 0 || remoteCount > 1) {
+		return { status: "multiple-candidates" };
+	}
+
+	const existing = remote.data?.[0];
+	const result = existing
+		? await service.updateMemo({
+				id: existing.id,
+				request: { isWish: true },
+			})
+		: await service.insertMemo({
+				url,
+				title,
+				memo: "",
+				favIconUrl,
+				isWish: true,
+			});
+	if (result.error) {
+		throw result.error;
+	}
+	const saved = result.data?.[0];
+	if (!saved || (existing && saved.id !== existing.id)) {
+		throw new Error("공유 메모 저장 결과를 확인하지 못했습니다.");
+	}
+
+	return { status: "saved", memo: saved };
 }
-
-/** 보류한 공유 요청을 읽는다. */
-export const getPendingSharedUrls = async (): Promise<IFPendingSharedUrl[]> => {
-	const stored = await AsyncStorage.getItem(PENDING_SHARED_URLS_KEY);
-	return stored ? (JSON.parse(stored) as IFPendingSharedUrl[]) : [];
-};
-
-const preserveSharedUrl = async (pending: IFPendingSharedUrl) => {
-	const stored = await getPendingSharedUrls();
-	await AsyncStorage.setItem(
-		PENDING_SHARED_URLS_KEY,
-		JSON.stringify([
-			...stored.filter((item) => item.url !== pending.url),
-			pending,
-		]),
-	);
-};
-
-/** 사용자가 위시 대상 메모를 지정한 공유 요청을 보류 목록에서 제거한다. */
-export const resolvePendingSharedUrl = async (url: string) => {
-	const stored = await getPendingSharedUrls();
-	await AsyncStorage.setItem(
-		PENDING_SHARED_URLS_KEY,
-		JSON.stringify(
-			stored.filter((item) => getPageKey(item.url) !== getPageKey(url)),
-		),
-	);
-};
 
 /** 공유한 URL을 위시리스트에 추가하거나, 후보 충돌이면 요청을 보존한다. */
 export async function handleSharedUrl(
@@ -64,47 +89,20 @@ export async function handleSharedUrl(
 		} = await supabase.auth.getSession();
 
 		if (session) {
-			const { MemoService } = await import("@web-memo/shared/utils/services");
-			const memoService = new MemoService(supabase);
-			const [remote, localUnsynced] = await Promise.all([
-				memoService.getMemoByUrl(url),
-				getUnsyncedMemos(),
-			]);
-			if (remote.error) {
-				throw remote.error;
-			}
+			const localUnsynced = await getUnsyncedMemos();
 			const localCandidates = localUnsynced.filter(
 				(memo) => getPageKey(memo.url) === getPageKey(url),
 			);
-			if ((remote.data?.length ?? 0) + localCandidates.length > 1) {
+			const result = await saveWishForSession({
+				memoService,
+				url,
+				title,
+				favIconUrl,
+				localCandidateCount: localCandidates.length,
+			});
+			if (result.status === "multiple-candidates") {
 				await preserveSharedUrl(pending);
 				return { saved: false, title };
-			}
-			if (localCandidates.length > 0) {
-				await preserveSharedUrl(pending);
-				return { saved: false, title };
-			}
-			const existing = remote.data?.[0];
-			const result = existing
-				? await memoService.updateMemo({
-						id: existing.id,
-						request: { isWish: true },
-					})
-				: await memoService.insertMemo({
-						url,
-						title,
-						memo: "",
-						favIconUrl,
-						isWish: true,
-					});
-			if (result.error) {
-				throw result.error;
-			}
-			if (
-				!result.data?.[0] ||
-				(existing && result.data[0].id !== existing.id)
-			) {
-				throw new Error("공유 메모 저장 결과를 확인하지 못했습니다.");
 			}
 		} else {
 			const localCandidates = await getMemoByUrl(url);

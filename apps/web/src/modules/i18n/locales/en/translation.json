@@ -849,8 +849,8 @@
 	},
 	"error": {
 		"404": {
-			"title": "Page not found",
-			"description": "This page doesn't exist or was moved",
+			"title": "We couldn't find this page",
+			"description": "Check that the address is correct",
 			"backToHome": "Go to home"
 		},
 		"500": {

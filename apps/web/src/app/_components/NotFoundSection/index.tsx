@@ -2,7 +2,7 @@
 
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { motion } from "framer-motion";
+import { FileSearch } from "lucide-react";
 import Link from "next/link";
 
 interface IFNotFoundSectionProps {
@@ -14,62 +14,33 @@ interface IFNotFoundSectionProps {
 	lng?: Language;
 }
 
+/**
+ * 404 안내 화면. 고정 헤더(h-12) 아래 남은 영역의 세로 가운데에 놓인다.
+ */
 export default function NotFoundSection({ lng }: IFNotFoundSectionProps) {
 	const { t } = useTranslation(lng);
 
 	return (
-		<section className="flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 px-4">
-			<div className="w-full max-w-lg text-center">
-				<motion.div
-					initial={{ scale: 0 }}
-					animate={{ scale: 1 }}
-					transition={{ duration: 0.5 }}
-					className="mb-8 text-9xl font-bold text-gray-300"
+		<section className="mt-12 flex min-h-[calc(100vh-3rem)] items-center justify-center bg-background px-4">
+			<div className="flex w-full max-w-lg flex-col items-center text-center">
+				<div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+					<FileSearch className="h-[30px] w-[30px] text-muted-foreground" />
+				</div>
+
+				<h1 className="text-xl font-bold text-foreground">
+					{t("error.404.title")}
+				</h1>
+
+				<p className="mt-2 text-sm text-muted-foreground">
+					{t("error.404.description")}
+				</p>
+
+				<Link
+					href="/"
+					className="mt-6 inline-block rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
 				>
-					404
-				</motion.div>
-
-				<motion.div
-					initial={{ y: 20, opacity: 0 }}
-					animate={{ y: 0, opacity: 1 }}
-					transition={{ delay: 0.2 }}
-					className="space-y-6"
-				>
-					<h1 className="text-4xl font-bold text-foreground">
-						{t("error.404.title")}
-					</h1>
-
-					<p className="text-lg text-muted-foreground">
-						{t("error.404.description")}
-					</p>
-
-					<div className="relative">
-						<motion.div
-							animate={{
-								x: [-20, 20, -20],
-								y: [-10, 10, -10],
-							}}
-							transition={{
-								repeat: Infinity,
-								duration: 5,
-							}}
-							className="mx-auto h-32 w-32"
-						>
-							<img
-								src="/images/error/lost-astronaut.svg"
-								alt="Lost in Space"
-								className="h-full w-full"
-							/>
-						</motion.div>
-					</div>
-
-					<Link
-						href="/"
-						className="inline-block rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700"
-					>
-						{t("error.404.backToHome")}
-					</Link>
-				</motion.div>
+					{t("error.404.backToHome")}
+				</Link>
 			</div>
 		</section>
 	);

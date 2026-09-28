@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getPageKey } from "@web-memo/shared/utils/url";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
-import { IOS_APP_GROUP } from "@/lib/sharing/appGroup";
+import { IOS_APP_GROUP } from "./appGroup";
 
 const PENDING_SHARED_URLS_KEY = "webmemo:pendingSharedUrls";
 const SHARED_EXTENSION_PENDING_URLS_KEY = "webmemo:sharedExtensionPendingUrls";

@@ -4,13 +4,15 @@ import { useShareIntent } from "expo-share-intent";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { Check } from "lucide-react-native";
-import { useEffect, useRef, useState } from "react";
-import { Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { AppState, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ShareToast } from "@/components/ShareToast";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthProvider";
 import { ThemeProvider, useTheme } from "@/lib/context/ThemeContext";
-import { handleSharedUrl } from "@/lib/sharing/shareHandler";
+import { migrateSharedExtensionPendingUrls } from "@/lib/sharing/pendingSharedUrls";
+import { useSharedUrlToast } from "@/lib/sharing/useSharedUrlToast";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
 import "../global.css";
 
@@ -64,13 +66,17 @@ function SyncOnAuth() {
 	);
 }
 
+/**
+ * Android(expo-share-intent)로 받은 공유를 처리한다.
+ * @description iOS 공유 확장이 여는 webmemo://share 딥링크는 app/share.tsx가 같은
+ * useSharedUrlToast 훅으로 같은 흐름을 실행한다.
+ */
 function ShareIntentHandler() {
 	const router = useRouter();
 	const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent();
-	const insets = useSafeAreaInsets();
-	const [shareToast, setShareToast] = useState<string | null>(null);
-	const processingUrlRef = useRef<string | null>(null);
+	const { toast, processSharedUrl } = useSharedUrlToast();
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: processSharedUrl은 useSharedUrlToast가 매 렌더 새로 만드는 함수라, 의존성에 넣으면 매 렌더 재실행된다. 내부 processingUrlRef가 중복 호출을 막는다.
 	useEffect(() => {
 		if (!hasShareIntent || !shareIntent) return;
 
@@ -80,47 +86,41 @@ function ShareIntentHandler() {
 			return;
 		}
 
-		if (processingUrlRef.current === url) return;
-		processingUrlRef.current = url;
-
-		handleSharedUrl(url, shareIntent.meta?.title ?? undefined)
+		processSharedUrl(url, shareIntent.meta?.title ?? undefined)
 			.then((result) => {
-				queryClient.invalidateQueries({ queryKey: ["memos"] });
-				queryClient.invalidateQueries({ queryKey: ["localMemos"] });
-				setShareToast(
-					result.saved
-						? "위시리스트에 추가되었습니다"
-						: "메모를 선택해 주세요. 공유 요청은 보관했습니다",
-				);
-				if (!result.saved) {
+				if (result && !result.saved) {
 					router.push({
 						pathname: "/(main)/browser",
 						params: { url, t: String(Date.now()) },
 					});
 				}
-				setTimeout(() => setShareToast(null), 3000);
-			})
-			.catch(() => {
-				setShareToast("저장에 실패했습니다");
-				setTimeout(() => setShareToast(null), 3000);
 			})
 			.finally(() => {
-				processingUrlRef.current = null;
 				resetShareIntent();
 			});
 	}, [hasShareIntent, shareIntent, resetShareIntent, router]);
 
-	if (!shareToast) return null;
+	if (!toast) return null;
 
-	return (
-		<View
-			className="absolute self-center flex-row items-center gap-2 bg-black/80 px-4 py-2.5 rounded-[20px]"
-			style={{ top: insets.top + 60 }}
-		>
-			<Check size={14} color="#22c55e" />
-			<Text className="text-white text-sm font-semibold">{shareToast}</Text>
-		</View>
-	);
+	return <ShareToast message={toast} />;
+}
+
+/**
+ * 본 앱 실행·포그라운드 복귀 시 iOS 공유 확장이 App Group에 보관한 공유 요청을
+ * 본 앱의 보류 목록으로 옮긴다.
+ */
+function useMigrateSharedExtensionPending() {
+	useEffect(() => {
+		migrateSharedExtensionPendingUrls();
+
+		const subscription = AppState.addEventListener("change", (state) => {
+			if (state === "active") {
+				migrateSharedExtensionPendingUrls();
+			}
+		});
+
+		return () => subscription.remove();
+	}, []);
 }
 
 /** 화면 전환 중 테마와 어긋나는 배경이 비치지 않도록 스택 배경색을 테마에 맞춘다 */
@@ -140,6 +140,8 @@ function ThemedStack() {
 			{/* 탭 밖의 상세 화면이라 탭바 없이 뜬다 */}
 			<Stack.Screen name="trash" />
 			<Stack.Screen name="pending-memos" />
+			{/* iOS 공유 확장이 openHostApp으로 여는 webmemo://share 딥링크 */}
+			<Stack.Screen name="share" />
 			<Stack.Screen name="+not-found" />
 		</Stack>
 	);
@@ -149,6 +151,7 @@ export default function RootLayout() {
 	useEffect(() => {
 		SplashScreen.hideAsync();
 	}, []);
+	useMigrateSharedExtensionPending();
 
 	return (
 		<QueryClientProvider client={queryClient}>

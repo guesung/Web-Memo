@@ -1,6 +1,6 @@
 ---
 name: pr
-description: 현재 커밋 작업사항을 바탕으로 PR을 생성한다. draft가 아닌 일반 PR로, base는 레포의 기본 브랜치(main). 만든 PR이 base와 충돌하면 묻지 않고 base를 merge해 해결·검증·push한다. 커밋 안 된 변경이 있으면 /gs:commit을 먼저 제안한다. "PR 올려줘", "PR 만들어줘" 같은 표현이 나오면 이 스킬을 사용한다. /gs:implement ③과 /gs:implement-loop ③(b)에서 호출된다.
+description: 현재 커밋 작업사항을 바탕으로 PR을 생성한다. draft가 아닌 일반 PR로, base는 레포의 기본 브랜치(main). 만든 PR이 base와 충돌하면 묻지 않고 base를 merge해 해결·검증·push한다. 커밋 안 된 변경이 있으면 /gs:commit을 먼저 제안한다. apps/web·apps/app·packages 변경이 있으면 PR 전에 develop 머지(md)를 반드시 한다. "PR 올려줘", "PR 만들어줘" 같은 표현이 나오면 이 스킬을 사용한다. /gs:implement ③과 /gs:implement-loop ③(b)에서 호출된다.
 argument-hint: '[PR 제목·본문 추가 지시 (선택)]'
 ---
 
@@ -15,6 +15,7 @@ argument-hint: '[PR 제목·본문 추가 지시 (선택)]'
 4. base 분기점 이후의 작업을 확인한다 (병렬 실행):
    - `git status` · `git log <base>..HEAD` · `git diff <base>...HEAD`
    - 원격 추적이 없으면 `git push -u origin <branch>`로, 있는데 로컬이 앞서 있으면 `git push`로 올린다. PR과 충돌 판정은 원격 브랜치를 기준으로 하므로 여기서 로컬과 원격을 맞춰 둔다.
+   - 올린 뒤 아래 **"develop 머지 — 앱/웹 변경이 있으면 반드시"**를 수행한다. 묻지 않는다.
 5. **모든 커밋**을 훑어서 PR 제목·본문을 작성한다 (최신 커밋만 보지 말 것).
    - 제목: 70자 이내의 짧고 명확한 문장. 상세는 본문에. master 대상이면 `[DB-<ID>]` 접두사를 붙인다.
    - 본문은 HEREDOC으로 전달한다:
@@ -28,8 +29,20 @@ argument-hint: '[PR 제목·본문 추가 지시 (선택)]'
 6. `gh pr create --base <base> --title "..." --body "$(cat <<'EOF' ... EOF)"` 로 PR을 생성한다. **`--draft`를 붙이지 않는다.** 이 브랜치로 이미 열린 PR이 있으면(`gh pr view --json url,state`로 `OPEN` 확인) 새로 만들지 않고 그 URL을 쓴 채 7단계로 간다 — 새 커밋은 4단계 push로 이미 그 PR에 붙었다.
 7. 생성 성공 직후 **[orca-worktree.md](../../orca-worktree.md)의 PR 기록 절차**를 읽고 수행해 현재 Orca 워크스페이스 메모에 PR 제목과 URL을 중복 없이 추가한다. 기존 메모를 보존하고 재조회로 검증한다. 메모 기록에 실패해도 PR 생성 결과는 유지하고 실패 사유를 별도로 알린다.
 8. **충돌 확인 — 있으면 바로 해결한다.** 아래 "base 충돌 해결"을 수행한다. 묻지 않는다.
-9. 생성된 PR URL을 사용자에게 반환한다. 충돌을 해결했으면 한 줄 덧붙인다: `충돌 해결: <파일 n개> — merge <커밋 해시>`.
+9. 생성된 PR URL을 사용자에게 반환한다. develop 머지 결과를 한 줄 덧붙인다: `develop 머지: 완료 <머지 커밋 해시>` / `이미 반영됨` / `건너뜀 (앱/웹 변경 없음)` / `실패 — <사유>`. 충돌을 해결했으면 한 줄 더 덧붙인다: `충돌 해결: <파일 n개> — merge <커밋 해시>`.
 10. 생성된 PR을 사용자 PC의 기본 브라우저로 띄운다: `gh pr view <PR URL> --web`. 실패해도 PR 생성 결과는 유지하고 실패 사유만 별도로 알린다.
+
+## develop 머지 — 앱/웹 변경이 있으면 반드시
+
+이 레포에서는 develop push가 곧 테섭 배포다(웹은 Vercel 스테이징, 앱은 Play 내부 테스트 제출). 앱/웹에 닿는 변경을 PR로만 올리고 develop에 넣지 않으면 테섭에서 확인할 길이 없고, 사람이 머지를 따로 챙겨야 한다. 그래서 작업을 마무리하는 모든 경로(`/gs:implement`·`/gs:implement-loop`·`/gs:issue-solve`·단독 `/gs:pr`)가 이 절을 거치게 하고, 대상이면 건너뛰지 않는다.
+
+1. **대상인지 판정한다.** `git fetch origin <base>` 뒤 `git diff --name-only origin/<base>...HEAD`에서 아래 경로로 시작하는 파일이 하나라도 있으면 대상이다.
+   - `apps/web/` · `apps/app/` · `packages/` — 공용 패키지만 바꿔도 웹·앱 동작이 달라지므로 포함한다.
+   - 하나도 없으면(문서·스킬·CI·확장만 바꾼 경우) 건너뛰고 `건너뜀 (앱/웹 변경 없음)`으로 기록한다.
+2. **이미 들어갔는지 확인한다.** `git fetch origin develop` 뒤 `git merge-base --is-ancestor HEAD origin/develop`이 성공하면 호출자(`/gs:implement` ②·`/gs:implement-loop` ③(a))가 이미 머지한 것이다. 다시 머지하지 않고 `이미 반영됨`으로 기록한다.
+3. **머지한다.** [`/common:md`](../../../common/skills/md/SKILL.md)를 실행한다(현재 브랜치를 develop에 `--no-ff` 머지 → push → 원래 브랜치 복귀). 스크립트가 로컬과 `origin` 양쪽에서 develop(없으면 dev)을 찾으므로 `git branch --list`로 따로 확인하지 않는다 — 로컬 브랜치만 보면 원격에만 있는 develop을 놓친다.
+4. **실패하면 우회하지 않는다.** 충돌·push 거절·`develop/dev 브랜치가 없습니다`·`이미 develop 브랜치입니다`로 끝나면 스크립트 출력을 그대로 전달하고 멈춘다([autonomy.md](../../autonomy.md)의 develop 머지 충돌 항목). develop은 다른 작업의 커밋이 섞이는 곳이라 임의로 해결하거나 브랜치를 만들지 않는다. **PR 생성은 그대로 이어가고**, 9단계 출력과 PR 본문 `## Test plan`에 `develop 머지 실패 — <사유>`를 적어 사람이 놓치지 않게 한다.
+5. 호출자에게 상태 파일이 있으면(`/gs:implement`의 `.omc/state/gs-implement.json`) `merge`에 결과를 적는다.
 
 ## base 충돌 해결
 
@@ -86,7 +99,8 @@ base가 `master`인 PR은 **항상 작업 카드를 제목 접두사 `[DB-<ID>]`
 ## 하지 않는 것
 
 - **draft PR을 만들지 않는다.** 이 플러그인의 PR은 곧 사람 최종 검토 대상이고, draft 상태 전환은 손만 늘린다.
-- base 브랜치는 사용자가 달리 지정하지 않는 한 **기본 브랜치(main) 고정.** 개인 프로젝트에는 develop·테섭이 없다.
+- base 브랜치는 사용자가 달리 지정하지 않는 한 **기본 브랜치(main) 고정.** develop은 PR base가 아니라 테섭 배포용 머지 대상이다.
+- **앱/웹 변경이 있는데 develop 머지를 빼먹지 않는다.** 머지했거나, 이미 반영됐거나, 실패 사유를 보고했거나 셋 중 하나로 끝난다.
 - **master 대상 PR을 작업 카드 없이 만들지 않는다.** 카드를 모르면 만들지 말고 묻는다.
 - co-author, 생성 표식, `🤖` 같은 메타 표기 추가 금지.
 - `--force` 푸시 금지 (사용자가 명시 요청하지 않은 이상). 충돌 해결도 rebase가 아니라 merge로 한다.

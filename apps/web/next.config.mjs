@@ -9,6 +9,12 @@ const nextConfig = {
 			},
 		],
 	},
+	experimental: {
+		// 루트 레이아웃이 `[lng]`라는 최상위 동적 세그먼트라 Next가 `not-found.js`
+		// 트리를 SSR로 못 그리고 빈 셸(`__next_error__`, lang 없음)을 낸다. 이 플래그로
+		// `app/global-not-found.tsx`가 라우팅 단계에서 직접 완전한 HTML을 반환하게 한다.
+		globalNotFound: true,
+	},
 	compiler: {
 		// Next는 빌드할 때 NODE_ENV를 항상 production으로 두므로 staging을 구분하지
 		// 못합니다. 앱 환경 축인 BUILD_ENV로 판정해 staging에서는 콘솔을 남깁니다.

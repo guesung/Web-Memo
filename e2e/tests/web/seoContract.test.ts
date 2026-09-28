@@ -245,6 +245,28 @@ test.describe("공개 검색 계약", () => {
 		}
 	}
 
+	for (const language of ["en", "ko"] as const) {
+		test(`${language}/존재하지-않는-경로는 404이고 원본 HTML의 lang이 ${language}다.`, async ({
+			request,
+		}) => {
+			const response = await request.get(`/${language}/존재하지-않는-경로`);
+			expect(response.status()).toBe(404);
+			const html = await response.text();
+			expect(html).toMatch(new RegExp(`<html[^>]*\\blang="${language}"`));
+			expect(html).not.toContain("__next_error__");
+		});
+	}
+
+	test("en/a/b/c처럼 깊이가 안 맞는 경로도 404이고 원본 HTML의 lang이 en이다.", async ({
+		request,
+	}) => {
+		const response = await request.get("/en/a/b/c");
+		expect(response.status()).toBe(404);
+		const html = await response.text();
+		expect(html).toMatch(/<html[^>]*\blang="en"/);
+		expect(html).not.toContain("__next_error__");
+	});
+
 	const ENGLISH_LENGTH_LIMITED_PATHS = [
 		"use-cases/developer",
 		"use-cases/job-hunting",

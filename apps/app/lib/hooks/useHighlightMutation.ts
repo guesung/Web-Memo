@@ -7,6 +7,7 @@ import {
 import type { HighlightAnchor } from "@web-memo/shared/modules/highlight";
 import type { HighlightRow } from "@web-memo/shared/types";
 import { getPageKey, normalizeUrl } from "@web-memo/shared/utils/url";
+import { trackAppEvent } from "@/lib/analytics/appAnalytics";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { highlightService } from "@/lib/supabase/client";
 
@@ -60,6 +61,13 @@ export function useHighlightCreateMutation() {
 			});
 			queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.highlightCountsPrefix(),
+			});
+			void trackAppEvent({
+				name: "highlight_create",
+				params: {
+					color: DEFAULT_HIGHLIGHT_COLOR,
+					has_note: Boolean(highlight.note),
+				},
 			});
 		},
 	});

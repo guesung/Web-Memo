@@ -1653,5 +1653,31 @@
 		"confirmDescription": "이 작업은 되돌릴 수 없어요.",
 		"ok": "완전히 삭제",
 		"cancel": "취소"
+	},
+	"uninstall": {
+		"metaTitle": "웹 메모를 지우셨군요 | 웹 메모",
+		"title": "웹 메모를 지우셨군요",
+		"description": "어떤 점이 아쉬웠는지 알려주시면 앞으로 고치는 데 참고할게요",
+		"reasons": {
+			"not_useful": "쓸 일이 없었어요",
+			"hard_to_use": "쓰기 어려웠어요",
+			"found_alternative": "다른 걸 쓰게 됐어요",
+			"privacy_concerns": "개인정보가 걱정됐어요",
+			"performance_issues": "느리거나 불안정했어요",
+			"other": "그 외"
+		},
+		"form": {
+			"feedbackLabel": "더 남기고 싶은 말이 있어요?",
+			"optional": "(선택)",
+			"feedbackPlaceholder": "자유롭게 적어주세요",
+			"submit": "보내기",
+			"submitting": "보내는 중이에요",
+			"notice": "이름이나 연락처는 받지 않아요"
+		},
+		"success": {
+			"title": "의견 보내주셔서 고마워요",
+			"description": "그동안 웹 메모를 써주셔서 감사해요"
+		},
+		"error": "지금은 보내지 못했어요. 잠시 뒤에 다시 눌러주세요"
 	}
 }

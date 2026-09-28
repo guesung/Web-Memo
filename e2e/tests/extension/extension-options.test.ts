@@ -66,9 +66,19 @@ test.describe("확장 옵션 페이지", () => {
 			.getByRole("heading", { name: /^(단축키|Shortcut)$/ })
 			.locator("..")
 			.locator("..");
-		await expect(
-			shortcutCard.getByText(/^(Alt\+S|지정된 단축키 없음)$/),
-		).toBeVisible();
+
+		// 실제 등록된 키는 OS·언어에 따라 표기가 달라진다(Alt+S, ⌥S 등). 값 자체는 검증하지 않고,
+		// "사이드 패널 열기" 행의 오른쪽 요소가 빈 값도 읽기 실패 문구도 아닌 채 채워졌는지만 본다.
+		const shortcutRow = shortcutCard
+			.getByText(/^(사이드 패널 열기|Open side panel)$/)
+			.locator("..");
+		const shortcutStatus = shortcutRow.locator(":scope > *").nth(1);
+		await expect
+			.poll(async () => (await shortcutStatus.textContent())?.trim())
+			.not.toBe("");
+		await expect(shortcutStatus).not.toHaveText(
+			/단축키를 확인하지 못했어요|Couldn't check the shortcut/,
+		);
 
 		const changeButton = shortcutCard.getByRole("button", {
 			name: /단축키 바꾸기|Change shortcut/,

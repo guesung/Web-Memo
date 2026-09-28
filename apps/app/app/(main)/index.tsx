@@ -22,8 +22,10 @@ import { useSettingQuery } from "@/lib/hooks/useSetting";
 import { MemoCard, type MemoItem } from "./_components/MemoCard";
 import { MemoDetailModal } from "./_components/MemoDetailModal";
 import { TodayArticles } from "./_components/TodayArticles";
+import { WebNoticeBanner } from "./_components/WebNoticeBanner";
 import { useDeleteWithUndo } from "./_hooks/useDeleteWithUndo";
 import { useMemoList } from "./_hooks/useMemoList";
+import { useWebNoticeDismissed } from "./_hooks/useWebNoticeDismissed";
 
 const READ_DONE_PROGRESS = 0.98;
 
@@ -69,6 +71,10 @@ export default function MemoScreen() {
 
 	const { deletedMemo, handleDelete, handleUndo } = useDeleteWithUndo();
 	const { data: scrollPositions } = useScrollPositions();
+	const {
+		isDismissed: isWebNoticeDismissed,
+		handleDismiss: handleWebNoticeDismiss,
+	} = useWebNoticeDismissed();
 
 	const getReadingProgress = (url: string): number | undefined => {
 		const position = scrollPositions?.[url];
@@ -135,6 +141,10 @@ export default function MemoScreen() {
 						</Text>
 						<Text className="text-xs text-accent font-semibold">로그인</Text>
 					</TouchableOpacity>
+				) : null}
+
+				{isLoggedIn && !isWebNoticeDismissed ? (
+					<WebNoticeBanner onDismiss={handleWebNoticeDismiss} />
 				) : null}
 
 				<View className="flex-row px-5 mb-4 gap-2">

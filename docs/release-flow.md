@@ -358,6 +358,10 @@ develop 푸시
    ├─ cd-web (deploy_target: staging)
    │    └─ Vercel 배포 + 별칭 이동. 결과는 staging_outcome output으로 내보냅니다
    │
+   ├─ cd-app (deploy_target: staging)
+   │    └─ 새 앱 빌드 + Play 내부 테스트 제출
+   │         └─ notify-staging-app : 같은 스레드에 앱 제출 성공·실패 댓글 + Actions 로그
+   │
    └─ ci.yml / notify-staging : cd-web만 기다렸다가 스레드에 댓글을 답니다
              └─ Slack 댓글  ┌────────────────────────────────────────┐
                             │ 🚀 테스트 서버 배포 완료 — a1b2c3d       │
@@ -367,7 +371,13 @@ develop 푸시
 ```
 
 앱 변경이 있으면 `cd-app`이 새 `ci` 빌드를 만든 뒤 Play 내부 테스트에 제출합니다.
-앱 제출 결과는 Actions 실행 로그와 Play Console에서 확인합니다. 아래 Slack 알림은 웹만 다룹니다.
+앱 결과는 `notify-staging-app`이 `cd-app` 종료 후 같은 develop 머지 스레드에 댓글로 알립니다.
+성공은 **앱 내부 테스트 제출 완료**, 실패는 **앱 빌드·내부 테스트 제출 실패**로 표시하며
+Actions 로그 링크만 붙입니다. 실패 문구는 빌드와 제출 중 어느 단계에서 실패했는지 단정하지 않습니다.
+변경 없음·skipped·cancelled에는 댓글을 달지 않습니다. 스레드나 봇 설정이 없거나 전송에 실패하면
+경고만 남기고 채널 최상위 메시지로 대체하지 않습니다. 알림 실패는 CI 결과에 영향을 주지 않습니다.
+웹의 `notify-staging`은 기존처럼 `cd-web`만 기다리므로 앱 빌드 때문에 지연되지 않습니다.
+아래 상태 표는 웹 알림을 다룹니다.
 
 **연속 develop 푸시는 진행 중인 앱 빌드·제출을 취소할 수 있습니다.** 앱 잡의
 `cancel-in-progress: false`는 공유 앱 그룹끼리의 실행만 직렬화합니다. 상위 `ci.yml`의
@@ -549,6 +559,7 @@ App Store Connect의 키 ID·발급자 ID·앱 ID는 시크릿이 아니라
 | `.github/workflows/ci.yml` (`slack-thread`) | master·develop 푸시마다 머지 스레드의 루트 메시지를 만들고 ts를 냄 |
 | `.github/workflows/ci.yml` (`notify-web` · `notify-extension` · `notify-app`) | master 타깃 하나의 빌드 결과를 스레드에 댓글로 게시 |
 | `.github/workflows/ci.yml` (`notify`) | master 스토어 현황 + 배포 버튼을 스레드의 마지막 댓글로 게시 |
+| `.github/workflows/ci.yml` (`notify-staging-app`) | develop 앱 빌드·내부 테스트 제출 결과를 같은 머지 스레드에 댓글로 게시 |
 | `.github/workflows/ci.yml` (`notify-staging`) | develop 테스트 서버 배포 결과를 스레드에 댓글로 게시 |
 | `.github/workflows/cd-web.yml` (`Notify staging deploy`) | `workflow_dispatch`로 직접 실행한 경우의 테스트 서버 알림(웹훅) |
 | `.github/workflows/versions.yml` | 배포 현황만 조회해 게시 |

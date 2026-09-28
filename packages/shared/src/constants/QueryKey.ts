@@ -92,4 +92,6 @@ export const QUERY_KEY = {
 	notice: () => ["notice"],
 	/** 사이드 패널 과거 메모 판정. 정규화한 페이지 URL마다 별도 캐시다. */
 	pastMemo: (normalizedUrl: string) => ["pastMemo", normalizedUrl],
+	/** 옵션 페이지의 `_execute_action` 단축키. */
+	shortcut: () => ["shortcut"],
 };

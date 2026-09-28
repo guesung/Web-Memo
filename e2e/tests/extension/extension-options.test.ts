@@ -55,4 +55,39 @@ test.describe("확장 옵션 페이지", () => {
 		await expect(optionsPage.locator("#response-language")).toBeVisible();
 		await expect(optionsPage.locator("#auto-apply-category")).toHaveCount(0);
 	});
+
+	test("단축키 카드는 현재 키(또는 미지정 안내)와 바꾸기 버튼을 보여주고, 바꾸기를 누르면 크롬 단축키 설정 탭을 연다.", async ({
+		page,
+	}) => {
+		const optionsPage = await page.context().newPage();
+		await optionsPage.goto(getExtensionUrl("options/index.html"));
+
+		const shortcutCard = optionsPage
+			.getByRole("heading", { name: /^(단축키|Shortcut)$/ })
+			.locator("..")
+			.locator("..");
+
+		// 실제 등록된 키는 OS·언어에 따라 표기가 달라진다(Alt+S, ⌥S 등). 값 자체는 검증하지 않고,
+		// "사이드 패널 열기" 행의 오른쪽 요소가 빈 값도 읽기 실패 문구도 아닌 채 채워졌는지만 본다.
+		const shortcutRow = shortcutCard
+			.getByText(/^(사이드 패널 열기|Open side panel)$/)
+			.locator("..");
+		const shortcutStatus = shortcutRow.locator(":scope > *").nth(1);
+		await expect
+			.poll(async () => (await shortcutStatus.textContent())?.trim())
+			.not.toBe("");
+		await expect(shortcutStatus).not.toHaveText(
+			/단축키를 확인하지 못했어요|Couldn't check the shortcut/,
+		);
+
+		const changeButton = shortcutCard.getByRole("button", {
+			name: /단축키 바꾸기|Change shortcut/,
+		});
+		await expect(changeButton).toBeVisible();
+
+		const openedPagePromise = page.context().waitForEvent("page");
+		await changeButton.click();
+		const openedPage = await openedPagePromise;
+		await expect(openedPage).toHaveURL("chrome://extensions/shortcuts");
+	});
 });

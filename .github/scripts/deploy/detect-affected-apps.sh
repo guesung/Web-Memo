@@ -33,19 +33,19 @@ export TURBO_SCM_BASE="$BASE_REF"
 # turbo 버전은 루트 package.json 하나만 보고 따라갑니다.
 TURBO="turbo@$(node -p "require('./package.json').devDependencies.turbo")"
 
-# 넘긴 필터에 걸리는 affected 패키지가 하나라도 있는지만 봅니다.
-# turbo가 실패하면 set -e로 잡이 실패합니다. 빈 결과로 넘기면 배포가 조용히 스킵됩니다.
-affected() {
-  local label="$1" count
-  shift
-  count=$(npx --yes "$TURBO" ls --affected --output=json --skip-infer "$@" | jq '.packages.count')
-  echo "  $label: ${count}개" >&2
-  [ "$count" -gt 0 ] && echo true || echo false
-}
+# --affected와 --filter는 함께 쓸 수 없습니다. 전체 영향 목록을 한 번 받아 나눕니다.
+# turbo 또는 jq 실패는 출력 전에 잡을 실패시켜, 빈 결과로 배포를 조용히 건너뛰지 않습니다.
+affected_packages="$(npx --yes "$TURBO" ls --affected --output=json --skip-infer)"
+app_affected="$(printf '%s' "$affected_packages" | jq -r 'any(.packages.items[]; .name == "@web-memo/app")')"
+web_affected="$(printf '%s' "$affected_packages" | jq -r 'any(.packages.items[]; .name == "@web-memo/web")')"
 
-# 확장은 pages/*·packages/*로 나뉘어 있어 이름 하나로 못 짚습니다. build:extension이
-# web·app을 뺀 전부를 빌드하므로 같은 기준을 씁니다(e2e는 build가 없는 no-op이라 제외).
-emit \
-  "$(affected app       -F @web-memo/app)" \
-  "$(affected extension -F '!@web-memo/web' -F '!@web-memo/app' -F '!e2e')" \
-  "$(affected web       -F @web-memo/web)"
+# 확장은 build:extension과 같이 web·app·e2e를 뺀 패키지가 하나라도 바뀌면 빌드합니다.
+extension_affected="$(printf '%s' "$affected_packages" | jq -r 'any(.packages.items[]; .name != "@web-memo/app" and .name != "@web-memo/web" and .name != "e2e")')"
+
+# 앱 배포 워크플로는 패키지 밖에 있어 turbo가 감지하지 못합니다.
+# 이 파일만 바뀌어도 새 빌드·제출 경로를 검증하도록 앱을 영향 대상으로 봅니다.
+if ! git diff --quiet "$BASE_REF...HEAD" -- .github/workflows/cd-app.yml; then
+  app_affected=true
+fi
+
+emit "$app_affected" "$extension_affected" "$web_affected"

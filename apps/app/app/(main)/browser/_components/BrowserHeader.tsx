@@ -14,12 +14,14 @@ import {
 } from "react-native";
 import Animated from "react-native-reanimated";
 import type WebView from "react-native-webview";
+import { TabCountButton } from "./TabCountButton";
 
 type AnimatedViewStyle = React.ComponentProps<typeof Animated.View>["style"];
 
 interface BrowserHeaderProps {
 	urlInput: string;
 	currentUrl: string;
+	tabCount: number;
 	hasActiveStatus: boolean;
 	headerWrapperStyle: AnimatedViewStyle;
 	webViewRef: React.RefObject<WebView | null>;
@@ -28,11 +30,13 @@ interface BrowserHeaderProps {
 	onGoHome: () => void;
 	onOpenBlogSheet: () => void;
 	onOpenActions: () => void;
+	onOpenTabSheet: () => void;
 }
 
 export function BrowserHeader({
 	urlInput,
 	currentUrl,
+	tabCount,
 	hasActiveStatus,
 	headerWrapperStyle,
 	webViewRef,
@@ -41,6 +45,7 @@ export function BrowserHeader({
 	onGoHome,
 	onOpenBlogSheet,
 	onOpenActions,
+	onOpenTabSheet,
 }: BrowserHeaderProps) {
 	const isDark = useColorScheme() === "dark";
 
@@ -81,6 +86,7 @@ export function BrowserHeader({
 				<TouchableOpacity onPress={onOpenBlogSheet} className="p-1.5">
 					<LayoutGrid size={16} color={isDark ? "#eee" : "#111"} />
 				</TouchableOpacity>
+				<TabCountButton count={tabCount} onPress={onOpenTabSheet} />
 				<TouchableOpacity onPress={onOpenActions} className="p-1.5">
 					<View>
 						<MoreHorizontal size={16} color={isDark ? "#eee" : "#111"} />

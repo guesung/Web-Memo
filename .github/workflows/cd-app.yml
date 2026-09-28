@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       deploy_target:
-        description: "배포 대상 (build-only = 빌드 검증만, staging = 새 빌드 후 테스트 제출, production = 새 빌드 후 테스트 제출)"
+        description: "배포 대상 (build-only = 빌드 검증만, staging = 새 빌드 후 Android는 Firebase App Distribution·iOS는 TestFlight로 배포, production = 새 빌드 후 Play 내부 테스트·TestFlight로 제출)"
         type: string
         default: "build-only"
       ref:
@@ -24,8 +24,10 @@ jobs:
     runs-on: ${{ matrix.runner }}
     env:
       # PR 검증 빌드는 버려지는 산출물이라 빌드 번호를 올리면 안 됩니다(verify = autoIncrement off).
-      # staging·production 제출은 번호를 올리고, master 빌드는 호출부가 ci를 넘깁니다.
-      BUILD_PROFILE: ${{ (inputs.deploy_target == 'staging' || inputs.deploy_target == 'production') && 'ci' || inputs.build_profile }}
+      # staging·production 배포는 번호를 올리고, master 빌드는 호출부가 ci를 넘깁니다.
+      # staging의 Android는 Firebase App Distribution용 APK(staging 프로필)로 빌드하고,
+      # 나머지(iOS TestFlight·production Play 제출)는 스토어 제출 가능한 ci 프로필로 빌드합니다.
+      BUILD_PROFILE: ${{ inputs.deploy_target == 'staging' && (matrix.platform == 'android' && 'staging' || 'ci') || inputs.deploy_target == 'production' && 'ci' || inputs.build_profile }}
     strategy:
       fail-fast: false
       matrix:
@@ -34,10 +36,8 @@ jobs:
           # 재동의 후 아래 항목을 복원하면 된다.
           # - platform: ios
           #   runner: macos-26
-          #   output: build.ipa
           - platform: android
             runner: ubuntu-26.04
-            output: build.aab
 
     steps:
       - uses: actions/checkout@v5
@@ -68,6 +68,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
+      # 산출물 파일명: iOS는 ipa, Android는 staging 프로필(APK)만 apk이고 나머지는 aab입니다.
+      # 빌드 출력·아티팩트 업로드·스토어 제출·Firebase 배포가 이 값을 함께 씁니다.
+      - name: Resolve build output
+        run: |
+          if [ "${{ matrix.platform }}" = "ios" ]; then
+            echo "BUILD_OUTPUT=build.ipa" >> "$GITHUB_ENV"
+          elif [ "$BUILD_PROFILE" = "staging" ]; then
+            echo "BUILD_OUTPUT=build.apk" >> "$GITHUB_ENV"
+          else
+            echo "BUILD_OUTPUT=build.aab" >> "$GITHUB_ENV"
+          fi
+
       # 서명 키는 EAS 서버에 등록된 것을 받아 쓰므로 러너에 별도 시크릿이 필요 없습니다.
       # ubuntu-26.04는 /tmp가 용량이 작은 tmpfs라, 로컬 빌드가 기본 작업 폴더(/tmp)를 쓰면
       # Gradle·CMake가 "Disk quota exceeded"로 죽습니다. 작업 폴더와 임시 파일을 디스크로 옮깁니다.
@@ -75,14 +87,14 @@ jobs:
         env:
           EAS_LOCAL_BUILD_WORKINGDIR: ${{ runner.temp }}/eas-build
           TMPDIR: ${{ runner.temp }}
-        run: cd apps/app && eas build --platform ${{ matrix.platform }} --profile "$BUILD_PROFILE" --local --non-interactive --output ./${{ matrix.output }}
+        run: cd apps/app && eas build --platform ${{ matrix.platform }} --profile "$BUILD_PROFILE" --local --non-interactive --output "./$BUILD_OUTPUT"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v6
         with:
-          # develop 제출용 산출물을 master·PR 검증 산출물과 구분합니다.
-          name: ${{ matrix.platform }}-build-${{ inputs.deploy_target == 'staging' && 'staging-' || '' }}${{ env.BUILD_PROFILE }}
-          path: apps/app/${{ matrix.output }}
+          # develop 배포용 산출물을 master·PR 검증 산출물과 구분합니다(프로필이 staging이면 이미 이름에 들어갑니다).
+          name: ${{ matrix.platform }}-build-${{ inputs.deploy_target == 'staging' && env.BUILD_PROFILE != 'staging' && 'staging-' || '' }}${{ env.BUILD_PROFILE }}
+          path: apps/app/${{ env.BUILD_OUTPUT }}
           retention-days: 7
 
       - name: Write App Store Connect API key
@@ -91,12 +103,29 @@ jobs:
           ASC_API_KEY_P8: ${{ secrets.EXPO_ASC_API_KEY_P8 }}
         run: echo "$ASC_API_KEY_P8" > apps/app/asc-api-key.p8
 
+      # Android는 production만 Play에 제출합니다. staging은 Firebase App Distribution으로 갑니다.
       - name: Write Google Play service account key
-        if: ${{ (inputs.deploy_target == 'staging' || inputs.deploy_target == 'production') && matrix.platform == 'android' }}
+        if: ${{ inputs.deploy_target == 'production' && matrix.platform == 'android' }}
         env:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.EXPO_ANDROID_SERVICE_ACCOUNT_JSON }}
         run: echo "$PLAY_SERVICE_ACCOUNT_JSON" > apps/app/play-service-account.json
 
       - name: Submit to store
-        if: ${{ inputs.deploy_target == 'staging' || inputs.deploy_target == 'production' }}
-        run: cd apps/app && eas submit --platform ${{ matrix.platform }} --profile production --path ./${{ matrix.output }} --non-interactive
+        if: ${{ (matrix.platform == 'ios' && (inputs.deploy_target == 'staging' || inputs.deploy_target == 'production')) || (matrix.platform == 'android' && inputs.deploy_target == 'production') }}
+        run: cd apps/app && eas submit --platform ${{ matrix.platform }} --profile production --path "./$BUILD_OUTPUT" --non-interactive
+
+      # 실패해도 넘어가지 않습니다(continue-on-error 없음): 배포가 안 됐는데 잡이 초록이면 안 됩니다.
+      - name: Distribute to Firebase App Distribution
+        if: ${{ inputs.deploy_target == 'staging' && matrix.platform == 'android' }}
+        env:
+          FIREBASE_ANDROID_APP_ID: "1:541718063018:android:ea2c32cbb48148403fedd3"
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+        run: |
+          umask 077
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$GOOGLE_APPLICATION_CREDENTIALS"
+          RELEASE_NOTES="$(git rev-parse --short HEAD) $(git log -1 --format=%s)"
+          npx --yes firebase-tools@15.32.0 appdistribution:distribute "apps/app/$BUILD_OUTPUT" \
+            --app "$FIREBASE_ANDROID_APP_ID" \
+            --groups testers \
+            --release-notes "$RELEASE_NOTES"

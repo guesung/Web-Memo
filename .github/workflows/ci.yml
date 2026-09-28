@@ -145,7 +145,7 @@ jobs:
     uses: ./.github/workflows/cd-app.yml
     secrets: inherit
     with:
-      # develop은 Play 내부 테스트에 자동 제출하고, master와 PR은 빌드만 합니다.
+      # develop은 Android를 Firebase App Distribution(App Tester)으로, iOS를 TestFlight로 배포하고, master와 PR은 빌드만 합니다.
       # master 커밋의 제출은 Slack 버튼 → release.yml에서 수행합니다.
       deploy_target: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/develop') && 'staging' || 'build-only' }}
       # develop 제출과 master 빌드는 번호를 올리고, PR 검증은 고정합니다.

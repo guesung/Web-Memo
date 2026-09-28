@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       deploy_target:
-        description: "배포 대상 (build-only = 빌드 검증만, production = iOS TestFlight + Android Play 내부 테스트 제출)"
+        description: "배포 대상 (build-only = 빌드 검증만, staging = 새 빌드 후 테스트 제출, production = 새 빌드 후 테스트 제출)"
         type: string
         default: "build-only"
       ref:
@@ -24,8 +24,8 @@ jobs:
     runs-on: ${{ matrix.runner }}
     env:
       # PR 검증 빌드는 버려지는 산출물이라 빌드 번호를 올리면 안 됩니다(verify = autoIncrement off).
-      # master 머지분은 릴리스에서 그대로 재사용하므로 호출부가 ci를 넘깁니다.
-      BUILD_PROFILE: ${{ inputs.deploy_target == 'production' && 'ci' || inputs.build_profile }}
+      # staging·production 제출은 번호를 올리고, master 빌드는 호출부가 ci를 넘깁니다.
+      BUILD_PROFILE: ${{ (inputs.deploy_target == 'staging' || inputs.deploy_target == 'production') && 'ci' || inputs.build_profile }}
     strategy:
       fail-fast: false
       matrix:
@@ -44,30 +44,8 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
-      # 스토어에 올릴 커밋은 master CI에서 ci 프로파일로 이미 빌드돼 아티팩트로
-      # 올라가 있습니다. 있으면 그것을 내려받아 제출만 합니다. EAS 빌드가 플랫폼당
-      # 약 30분이라 같은 커밋을 다시 빌드하는 비용이 릴리스 시간의 거의 전부입니다.
-      # 없으면(만료·앱 변경 없음·다른 ref) 아래에서 기존대로 새로 빌드합니다.
-      - name: Find reusable build
-        id: reuse
-        if: ${{ inputs.deploy_target == 'production' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-          # 프로파일을 이름에 넣어 찾습니다. develop을 master로 리셋하면 두 브랜치가 같은
-          # 커밋을 갖게 되는데, develop CI는 verify(빌드 번호 고정)로 빌드하므로 그
-          # 산출물을 제출하면 스토어가 중복 빌드 번호로 거절합니다.
-          ARTIFACT_PREFIX: ${{ matrix.platform }}-build-ci
-        run: .github/scripts/deploy/find-reusable-artifact.sh
-
-      - name: Download reusable build
-        if: ${{ steps.reuse.outputs.found == 'true' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh run download "${{ steps.reuse.outputs.run_id }}" \
-            --name "${{ steps.reuse.outputs.name }}" \
-            --dir apps/app
-
+      # develop 제출보다 높은 빌드 번호가 필요하므로 production도 항상 새로 빌드합니다.
+      # master CI 산출물을 재사용하면 더 낮은 versionCode로 제출할 수 있습니다.
       - uses: pnpm/action-setup@v5
 
       - uses: actions/setup-node@v6
@@ -76,7 +54,7 @@ jobs:
           cache: "pnpm"
 
       - name: Set up JDK
-        if: ${{ matrix.platform == 'android' && steps.reuse.outputs.found != 'true' }}
+        if: ${{ matrix.platform == 'android' }}
         uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -87,8 +65,6 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      # 빌드를 건너뛸 때도 설치는 합니다. eas submit이 프로젝트를 해석하는 데 필요하고,
-      # 20~30초라 30분짜리 빌드를 아끼려다 제출이 깨지는 위험을 감수할 이유가 없습니다.
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
@@ -96,33 +72,31 @@ jobs:
       # ubuntu-26.04는 /tmp가 용량이 작은 tmpfs라, 로컬 빌드가 기본 작업 폴더(/tmp)를 쓰면
       # Gradle·CMake가 "Disk quota exceeded"로 죽습니다. 작업 폴더와 임시 파일을 디스크로 옮깁니다.
       - name: Build ${{ matrix.platform }}
-        if: ${{ steps.reuse.outputs.found != 'true' }}
         env:
           EAS_LOCAL_BUILD_WORKINGDIR: ${{ runner.temp }}/eas-build
           TMPDIR: ${{ runner.temp }}
         run: cd apps/app && eas build --platform ${{ matrix.platform }} --profile "$BUILD_PROFILE" --local --non-interactive --output ./${{ matrix.output }}
 
       - name: Upload build artifact
-        if: ${{ steps.reuse.outputs.found != 'true' }}
         uses: actions/upload-artifact@v6
         with:
-          # 프로파일이 이름에 들어갑니다. 릴리스가 ci 빌드만 골라 재사용합니다.
-          name: ${{ matrix.platform }}-build-${{ env.BUILD_PROFILE }}
+          # develop 제출용 산출물을 master·PR 검증 산출물과 구분합니다.
+          name: ${{ matrix.platform }}-build-${{ inputs.deploy_target == 'staging' && 'staging-' || '' }}${{ env.BUILD_PROFILE }}
           path: apps/app/${{ matrix.output }}
           retention-days: 7
 
       - name: Write App Store Connect API key
-        if: ${{ inputs.deploy_target == 'production' && matrix.platform == 'ios' }}
+        if: ${{ (inputs.deploy_target == 'staging' || inputs.deploy_target == 'production') && matrix.platform == 'ios' }}
         env:
           ASC_API_KEY_P8: ${{ secrets.EXPO_ASC_API_KEY_P8 }}
         run: echo "$ASC_API_KEY_P8" > apps/app/asc-api-key.p8
 
       - name: Write Google Play service account key
-        if: ${{ inputs.deploy_target == 'production' && matrix.platform == 'android' }}
+        if: ${{ (inputs.deploy_target == 'staging' || inputs.deploy_target == 'production') && matrix.platform == 'android' }}
         env:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.EXPO_ANDROID_SERVICE_ACCOUNT_JSON }}
         run: echo "$PLAY_SERVICE_ACCOUNT_JSON" > apps/app/play-service-account.json
 
       - name: Submit to store
-        if: ${{ inputs.deploy_target == 'production' }}
+        if: ${{ inputs.deploy_target == 'staging' || inputs.deploy_target == 'production' }}
         run: cd apps/app && eas submit --platform ${{ matrix.platform }} --profile production --path ./${{ matrix.output }} --non-interactive

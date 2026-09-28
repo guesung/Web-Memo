@@ -22,7 +22,7 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | --- | --- | --- | --- |
 | `ci.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | `deploy/resolve-affected-base.sh` · `deploy/detect-affected-apps.sh` · `deploy/notify-thread-root.mjs` · `deploy/notify-thread-reply.mjs` · `deploy/notify-build-ready.mjs` · `deploy/notify-staging-deploy.mjs` · `deploy/comment-pr-extension.mjs`, 그리고 `cd-app`·`cd-extension`·`cd-web` 호출 |
 | `e2e.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | 없음 (Playwright) |
-| `cd-app.yml` | workflow_call | 다른 워크플로에서 호출할 때마다 | `deploy/find-reusable-artifact.sh` |
+| `cd-app.yml` | workflow_call | develop 앱 변경 시 빌드·Play 내부 테스트 제출, master·PR은 빌드만, release는 새 빌드·제출 | 없음 (EAS CLI) |
 | `cd-extension.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-reusable-artifact.sh` · `deploy/upload-extension-to-store.mjs` |
 | `cd-web.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-staged-deployment.mjs` · `deploy/staged-deployment.mjs` · `deploy/notify-staging-deploy.mjs` |
 | `release.yml` | workflow_dispatch | 수동 실행할 때마다 | 없음. `cd-app`·`cd-extension`·`cd-web`·`release-notify` 호출 |
@@ -46,6 +46,8 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 `chore-cleanup-unused.yml`·`chore-supabase-inventory.yml`·`audit-refactor.yml`은 `ref: master`로 체크아웃합니다. 작업 브랜치에서
 dispatch해도 스크립트는 master의 것이 돕니다.
 `chore-e2e-coverage.yml`은 주간 실행에서 master를, 수동 실행에서 선택한 ref를 체크아웃합니다. `master` 외 ref의 수동 실행은 검증 결과만 남기고 PR을 게시하지 않습니다.
+
+`detect-affected-apps.sh`는 Turbo 패키지 영향 판정에 더해 `cd-app.yml` 변경을 앱 변경으로 처리합니다. push 앱 잡과 수동 앱 릴리스는 `release-app` 그룹을 공유하며, 앱 산출물은 재사용하지 않습니다.
 
 릴리스·배포 흐름 전체는 [`docs/release-flow.md`](../docs/release-flow.md)를 봅니다.
 

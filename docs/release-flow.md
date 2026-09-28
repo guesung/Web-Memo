@@ -284,10 +284,14 @@ versionCode가 올라가야 하기 때문입니다. Play 제출은 production에
 프로파일(`track: internal`, `releaseStatus: completed`)을 사용합니다. 그래서 Play 내부 테스트 트랙에는
 release.yml이 제출한 빌드만 쌓입니다. iOS matrix는 현재 비활성 상태이며, 복원하면 staging·production 모두 TestFlight에 제출합니다.
 
-**앱 릴리스는 CI 아티팩트를 재사용하지 않습니다.** master CI에서 번호 101을 빌드한 뒤
-develop이 102를 제출하면, 릴리스가 101을 재사용할 때 테스터가 master 버전으로 업데이트할 수
-없습니다. production도 새 `ci` 빌드로 더 높은 번호를 할당받도록 했으며, 릴리스마다 플랫폼당
-약 30분의 빌드 시간이 필요합니다. 같은 커밋을 재제출할 때도 새로 빌드합니다.
+**Android 릴리스는 master CI 아티팩트를 재사용합니다.** release.yml은 `find-reusable-artifact.sh`로
+해당 커밋의 `android-build-ci` 산출물을 찾으면 빌드 없이 그 AAB를 Play 내부 테스트에 제출하고,
+없거나 7일 보관 기간이 지나면 새로 빌드합니다. develop Android는 Play가 아니라 App Tester로 가므로
+master 빌드를 재사용해도 Play에 더 낮은 versionCode로 제출될 일이 없습니다. 오래된 커밋을 새 커밋보다
+나중에 릴리스하면 Play가 낮은 versionCode를 거절하므로, 릴리스는 최신 master 커밋부터 합니다.
+
+**iOS 릴리스는 항상 새로 빌드합니다.** develop iOS는 여전히 TestFlight에 제출하므로, master CI에서
+번호 101을 빌드한 뒤 develop이 102를 제출하면 101을 재사용한 릴리스가 거절됩니다.
 
 아티팩트는 추적용으로 7일 보관합니다. Android 기준 develop은 `android-build-staging`(APK),
 master와 production은 `android-build-ci`, PR은 `android-build-verify`입니다.

@@ -44,8 +44,30 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
-      # develop 배포보다 높은 빌드 번호가 필요하므로 production도 항상 새로 빌드합니다.
-      # master CI 산출물을 재사용하면 더 낮은 versionCode로 제출할 수 있습니다.
+      # Android 릴리스는 master CI가 ci 프로파일로 이미 빌드해 올린 AAB가 있으면 그것을 제출만 합니다.
+      # EAS 빌드가 약 30분이라 같은 커밋을 다시 빌드하는 비용이 릴리스 시간의 거의 전부입니다.
+      # develop Android는 Play가 아니라 Firebase App Distribution으로 가므로, master 빌드를 재사용해도
+      # Play에 더 낮은 versionCode로 제출될 일이 없습니다. 없으면(만료·앱 변경 없음·다른 ref) 새로 빌드합니다.
+      # iOS는 develop도 TestFlight에 제출하므로 번호 역전을 막으려고 릴리스 때 항상 새로 빌드합니다.
+      - name: Find reusable build
+        id: reuse
+        if: ${{ inputs.deploy_target == 'production' && matrix.platform == 'android' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # 프로파일을 이름에 넣어 찾습니다. develop 산출물(android-build-staging)과
+          # PR 검증 산출물(android-build-verify)은 이 접두사에 걸리지 않습니다.
+          ARTIFACT_PREFIX: ${{ matrix.platform }}-build-ci
+        run: .github/scripts/deploy/find-reusable-artifact.sh
+
+      - name: Download reusable build
+        if: ${{ steps.reuse.outputs.found == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download "${{ steps.reuse.outputs.run_id }}" \
+            --name "${{ steps.reuse.outputs.name }}" \
+            --dir apps/app
+
       - uses: pnpm/action-setup@v5
 
       - uses: actions/setup-node@v6
@@ -54,7 +76,7 @@ jobs:
           cache: "pnpm"
 
       - name: Set up JDK
-        if: ${{ matrix.platform == 'android' }}
+        if: ${{ matrix.platform == 'android' && steps.reuse.outputs.found != 'true' }}
         uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -65,6 +87,7 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
+      # 빌드를 건너뛸 때도 설치는 합니다. eas submit이 프로젝트를 해석하는 데 필요합니다.
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
@@ -84,12 +107,14 @@ jobs:
       # ubuntu-26.04는 /tmp가 용량이 작은 tmpfs라, 로컬 빌드가 기본 작업 폴더(/tmp)를 쓰면
       # Gradle·CMake가 "Disk quota exceeded"로 죽습니다. 작업 폴더와 임시 파일을 디스크로 옮깁니다.
       - name: Build ${{ matrix.platform }}
+        if: ${{ steps.reuse.outputs.found != 'true' }}
         env:
           EAS_LOCAL_BUILD_WORKINGDIR: ${{ runner.temp }}/eas-build
           TMPDIR: ${{ runner.temp }}
         run: cd apps/app && eas build --platform ${{ matrix.platform }} --profile "$BUILD_PROFILE" --local --non-interactive --output "./$BUILD_OUTPUT"
 
       - name: Upload build artifact
+        if: ${{ steps.reuse.outputs.found != 'true' }}
         uses: actions/upload-artifact@v6
         with:
           # develop 배포용 산출물을 master·PR 검증 산출물과 구분합니다(프로필이 staging이면 이미 이름에 들어갑니다).

@@ -62,6 +62,7 @@ import {
 	UNLOCK_SELECTION_JS,
 } from "../_utils/webViewScripts";
 import { useAndroidWebViewBack } from "./useAndroidWebViewBack";
+import { useBrowserTabs } from "./useBrowserTabs";
 
 const SPRING_CONFIG = { damping: 20, stiffness: 150 };
 const MIN_PANEL_RATIO = 0.15;
@@ -87,8 +88,18 @@ export function useBrowserState({
 		t?: string;
 	}>();
 
-	const [currentUrl, setCurrentUrl] = useState("");
-	const [pageTitle, setPageTitle] = useState("");
+	const {
+		tabs,
+		activeTabId,
+		activeTab,
+		isTabsLoaded,
+		updateActiveTabInfo,
+		activateTab,
+		openNewTab,
+		removeTab,
+	} = useBrowserTabs();
+	const currentUrl = activeTab.url;
+	const pageTitle = activeTab.title;
 	const [pageFavIconUrl, setPageFavIconUrl] = useState<string | undefined>(
 		undefined,
 	);
@@ -102,6 +113,7 @@ export function useBrowserState({
 	const [wishToast, setWishToast] = useState<string | null>(null);
 	const [savedRatio, setSavedRatio] = useState(DEFAULT_PANEL_RATIO);
 	const [isActionsSheetOpen, setIsActionsSheetOpen] = useState(false);
+	const [isTabSheetOpen, setIsTabSheetOpen] = useState(false);
 	const [isAISheetOpen, setIsAISheetOpen] = useState(false);
 	const [aiPageText, setAiPageText] = useState("");
 	const [aiSummary, setAiSummary] = useState<string | null>(null);
@@ -235,26 +247,20 @@ export function useBrowserState({
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: navTs는 동일 url 재진입 시에도 effect를 재실행시키기 위한 네비게이션 nonce
 	useEffect(() => {
-		if (!paramUrl) return;
+		// 탭 저장본 로드가 끝나기 전에 열면, 로드된 저장본이 paramUrl로 연 탭을 덮어쓴다.
+		if (!paramUrl || !isTabsLoaded) return;
 		const decoded = decodeURIComponent(paramUrl);
-		setCurrentUrl(decoded);
-		setPageTitle("");
+		updateActiveTabInfo({ url: decoded, title: "" });
 		setIsMemoOpen(false);
 		setSelectedMemoId(null);
 		panelHeight.value = withSpring(0, SPRING_CONFIG);
-	}, [paramUrl, navTs, panelHeight]);
+	}, [paramUrl, navTs, panelHeight, isTabsLoaded]);
 
 	const handleNavigationStateChange = (navState: WebViewNavigation) => {
 		syncCanGoBack(navState.canGoBack);
-		setCurrentUrl(navState.url);
-		setPageTitle(navState.title ?? "");
+		updateActiveTabInfo({ url: navState.url, title: navState.title ?? "" });
 		setPageFavIconUrl(undefined);
-		try {
-			const parsed = new URL(navState.url);
-			setUrlInput(parsed.hostname.replace("www.", ""));
-		} catch {
-			setUrlInput(navState.url);
-		}
+		setUrlInput(toUrlInputText(navState.url));
 
 		if (navState.loading === false) {
 			webViewRef.current?.injectJavaScript(INJECTED_JS_ON_NAVIGATION);
@@ -328,27 +334,25 @@ export function useBrowserState({
 	}, []);
 
 	// 웹 링크는 앱 내 웹뷰에서 그대로 로드하고, 앱을 여는 스킴(intent://, market://, tel: 등)만 외부로 넘긴다.
-	const handleShouldStartLoadWithRequest = useCallback(
-		(request: ShouldStartLoadRequest) => {
-			if (isInAppLoadableUrl(request.url)) return true;
+	const handleShouldStartLoadWithRequest = (
+		request: ShouldStartLoadRequest,
+	) => {
+		if (isInAppLoadableUrl(request.url)) return true;
 
-			const openExternalWithFallback = async () => {
-				const fallbackUrl = await openExternalUrl(request.url);
-				if (fallbackUrl) setCurrentUrl(fallbackUrl);
-			};
-			openExternalWithFallback();
+		const openExternalWithFallback = async () => {
+			const fallbackUrl = await openExternalUrl(request.url);
+			if (fallbackUrl) updateActiveTabInfo({ url: fallbackUrl });
+		};
+		openExternalWithFallback();
 
-			return false;
-		},
-		[],
-	);
+		return false;
+	};
 
 	const handleUrlSubmit = () => {
 		const url = formatUrl(urlInput);
 		if (!url) return;
 		Keyboard.dismiss();
-		setCurrentUrl(url);
-		setPageTitle("");
+		updateActiveTabInfo({ url, title: "" });
 		if (isMemoOpen) {
 			setIsMemoOpen(false);
 			panelHeight.value = withSpring(0, SPRING_CONFIG);
@@ -704,10 +708,45 @@ export function useBrowserState({
 		height: Math.max(0, HEADER_HEIGHT + headerTranslateY.value),
 	}));
 
-	const handleBlogSelect = useCallback((url: string) => {
-		setCurrentUrl(url);
-		setPageTitle("");
-	}, []);
+	const handleBlogSelect = (url: string) => {
+		updateActiveTabInfo({ url, title: "" });
+	};
+
+	/** 탭이 바뀔 때 이전 탭의 화면 상태(메모 패널·선택 메모·주소창)를 비운다 */
+	const resetForTabChange = (nextUrl: string): void => {
+		setIsMemoOpen(false);
+		setSelectedMemoId(null);
+		panelHeight.value = withSpring(0, SPRING_CONFIG);
+		setPageFavIconUrl(undefined);
+		setUrlInput(nextUrl ? toUrlInputText(nextUrl) : "");
+		// 다른 탭을 봤다가 돌아올 때도 읽기 위치를 복원한다
+		restoredUrlRef.current = null;
+	};
+
+	const handleTabSelect = (tabId: string): void => {
+		const next = activateTab(tabId);
+		const nextTab = next.tabs.find((tab) => tab.id === next.activeTabId);
+		if (next.activeTabId !== activeTabId) {
+			resetForTabChange(nextTab?.url ?? "");
+		}
+		setIsTabSheetOpen(false);
+	};
+
+	const handleTabClose = (tabId: string): void => {
+		const next = removeTab(tabId);
+		if (next.activeTabId === activeTabId) {
+			return;
+		}
+
+		const nextTab = next.tabs.find((tab) => tab.id === next.activeTabId);
+		resetForTabChange(nextTab?.url ?? "");
+	};
+
+	const handleNewTabOpen = (): void => {
+		openNewTab();
+		resetForTabChange("");
+		setIsTabSheetOpen(false);
+	};
 
 	const handleShare = useCallback(() => {
 		shareUrl(currentUrl, pageTitle);
@@ -794,6 +833,13 @@ export function useBrowserState({
 		SCROLL_DETECT_JS,
 		isActionsSheetOpen,
 		setIsActionsSheetOpen,
+		tabs,
+		activeTabId,
+		isTabSheetOpen,
+		setIsTabSheetOpen,
+		handleTabSelect,
+		handleTabClose,
+		handleNewTabOpen,
 		isAISheetOpen,
 		openAISheet,
 		closeAISheet,
@@ -805,6 +851,13 @@ export function useBrowserState({
 		aiError,
 		askAIQuestion,
 	};
+}
+
+/** 주소창에 보여줄 텍스트. 파싱 가능한 URL이면 www를 뗀 도메인, 아니면 원문 */
+function toUrlInputText(url: string): string {
+	const hostname = getHostname(url);
+
+	return hostname ? hostname.replace("www.", "") : url;
 }
 
 /** URL에서 hostname을 뽑는다. 파싱할 수 없는 값이면 null */

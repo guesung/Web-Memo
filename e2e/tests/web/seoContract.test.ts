@@ -230,6 +230,21 @@ test.describe("공개 검색 계약", () => {
 		});
 	}
 
+	for (const language of ["ko", "en"] as const) {
+		for (const path of ["", "privacy"]) {
+			test(`${language}/${path || "(root)"}의 원본 HTML은 JS 실행 전부터 lang="${language}"다.`, async ({
+				request,
+			}) => {
+				const response = await request.get(
+					path ? `/${language}/${path}` : `/${language}`,
+				);
+				expect(response.ok()).toBe(true);
+				const html = await response.text();
+				expect(html).toMatch(new RegExp(`<html[^>]*\\blang="${language}"`));
+			});
+		}
+	}
+
 	test("robots는 sitemap을 안내하고 noindex HTML의 크롤링을 허용한다.", async ({
 		request,
 		baseURL,

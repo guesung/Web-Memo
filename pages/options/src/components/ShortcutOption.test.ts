@@ -9,9 +9,13 @@ const mocks = vi.hoisted(() => ({
 	getActionShortcut: vi.fn(),
 	tabCreate: vi.fn(),
 	toast: vi.fn(),
+	trackEvent: vi.fn(),
 }));
 vi.mock("@web-memo/shared/constants", () => ({
 	QUERY_KEY: { shortcut: () => ["shortcut"] },
+}));
+vi.mock("@web-memo/shared/modules/analytics", () => ({
+	analytics: { trackEvent: mocks.trackEvent },
 }));
 vi.mock("@web-memo/shared/utils/extension", () => ({
 	Commands: { getActionShortcut: mocks.getActionShortcut },
@@ -121,8 +125,12 @@ describe("단축키 옵션", () => {
 		expect(mocks.tabCreate).toHaveBeenCalledWith({
 			url: "chrome://extensions/shortcuts",
 		});
+		expect(mocks.trackEvent).toHaveBeenCalledWith({
+			name: "shortcut_change_click",
+			params: { is_success: true },
+		});
 	});
-	it("탭을 열지 못하면 오류를 알린다", async () => {
+	it("탭을 열지 못하면 오류를 알리고 실패 이벤트를 기록한다", async () => {
 		mocks.getActionShortcut.mockResolvedValue("Alt+S");
 		mocks.tabCreate.mockRejectedValue(new Error("failed"));
 		await mount();
@@ -131,6 +139,10 @@ describe("단축키 옵션", () => {
 		);
 		expect(mocks.toast).toHaveBeenCalledWith({
 			title: "shortcut_open_settings_failed",
+		});
+		expect(mocks.trackEvent).toHaveBeenCalledWith({
+			name: "shortcut_change_click",
+			params: { is_success: false },
 		});
 	});
 });

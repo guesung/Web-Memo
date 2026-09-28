@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { Commands, I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
 	Badge,
@@ -91,7 +92,15 @@ const useActionShortcut = () => {
 	const handleChangeShortcutClick = async () => {
 		try {
 			await Tab.create({ url: "chrome://extensions/shortcuts" });
+			analytics.trackEvent({
+				name: "shortcut_change_click",
+				params: { is_success: true },
+			});
 		} catch {
+			analytics.trackEvent({
+				name: "shortcut_change_click",
+				params: { is_success: false },
+			});
 			toast({ title: I18n.get("shortcut_open_settings_failed") });
 		}
 	};

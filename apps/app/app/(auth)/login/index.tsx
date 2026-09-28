@@ -37,8 +37,10 @@ export default function LoginScreen() {
 			const {
 				data: { session },
 			} = await supabase.auth.getSession();
-			setAnalyticsUserId(session?.user.id);
-			void trackAppEvent({ name: "login", params: { method: provider } });
+			if (session) {
+				setAnalyticsUserId(session.user.id);
+				void trackAppEvent({ name: "login", params: { method: provider } });
+			}
 		} catch (error) {
 			console.error("로그인 에러:", error);
 		} finally {

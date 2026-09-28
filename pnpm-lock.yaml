@@ -130,6 +130,9 @@ importers:
       expo-secure-store:
         specifier: ~15.0.8
         version: 15.0.8(expo@54.0.36)
+      expo-share-extension:
+        specifier: 5.0.6
+        version: 5.0.6(expo@54.0.36)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
       expo-share-intent:
         specifier: ^5.1.1
         version: 5.1.1(expo-constants@18.0.13)(expo-linking@8.0.12)(expo@54.0.36)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -4845,9 +4848,6 @@ packages:
   '@types/phoenix@1.6.7':
     resolution: {integrity: sha512-oN9ive//QSBkf19rfDv45M7eZPi0eEXylht2OLEXicu5b4KoQ1OzXIw+xDSGWxSxe1JmepRR/ZH283vsu518/Q==}
 
-  '@types/pngjs@6.0.5':
-    resolution: {integrity: sha512-0k5eKfrA83JOZPppLtS2C7OUtyNAl2wKNxfyYl9Q5g9lPkgBl/9hNyAu6HuEH2J4XmIv2znEpkDd0SaZVxW6iQ==}
-
   '@types/prop-types@15.7.15':
     resolution: {integrity: sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==}
 
@@ -6158,6 +6158,13 @@ packages:
   expo-server@1.0.7:
     resolution: {integrity: sha512-mcmyML3oXcqFUXUxtdtCL1O00ztNI2v76d+MdniXRUgHNxIcHZ05zo+DqBaOOT6LQnPk4vA4YHqQl7iGUfRb3g==}
     engines: {node: '>=20.16.0'}
+
+  expo-share-extension@5.0.6:
+    resolution: {integrity: sha512-CEwAwxFppnEdV5oWWImnO+V3KHH+Nb6BkiA7Seg43P7vMYo9rmu9bo81ZlmYJIfZ3Iw2Cj8VBi0mEZd7gklwWw==}
+    peerDependencies:
+      expo: '*'
+      react: '*'
+      react-native: '*'
 
   expo-share-intent@5.1.1:
     resolution: {integrity: sha512-0sEf34+4w/ySQd7xZmnog/oOm1q+PUBHFoGU97mxTXIGijY4LNmSX806efrDkYMwCxgRA1iHxG/zBib4zBPmYw==}
@@ -9049,6 +9056,14 @@ packages:
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
 
+  valibot@1.5.0:
+    resolution: {integrity: sha512-nil6AkP2TChWL43Z5uJ6GTxX01CUA+g8LWUM+N/rB9NBbkUMaUsi9PUNzlUPgoKASgmx9f7eGOYpJ04/fSa6FQ==}
+    peerDependencies:
+      typescript: '>=5'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   validate-npm-package-name@5.0.1:
     resolution: {integrity: sha512-OljLrQ9SQdOUqTaQxqL5dEfZWrXExyyWsozYlAWFawPVNuD83igl7uJD2RTkNMbniIYgt8l81eCJGIdQF7avLQ==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
@@ -10438,7 +10453,7 @@ snapshots:
       resolve: 1.22.11
       resolve-from: 5.0.0
       resolve.exports: 2.0.3
-      semver: 7.7.4
+      semver: 7.8.5
       send: 0.19.2
       slugify: 1.6.6
       source-map-support: 0.5.21
@@ -10473,7 +10488,7 @@ snapshots:
       getenv: 2.0.0
       glob: 10.5.0
       resolve-from: 5.0.0
-      semver: 7.7.4
+      semver: 7.8.5
       slash: 3.0.0
       slugify: 1.6.6
       xcode: 3.0.1
@@ -10511,7 +10526,7 @@ snapshots:
       getenv: 2.0.0
       glob: 13.0.3
       resolve-from: 5.0.0
-      semver: 7.7.4
+      semver: 7.8.5
       slash: 3.0.0
       slugify: 1.6.6
       xcode: 3.0.1
@@ -10535,7 +10550,7 @@ snapshots:
       require-from-string: 2.0.2
       resolve-from: 5.0.0
       resolve-workspace-root: 2.0.1
-      semver: 7.7.4
+      semver: 7.8.5
       slugify: 1.6.6
       sucrase: 3.35.1
     transitivePeerDependencies:
@@ -10553,7 +10568,7 @@ snapshots:
       require-from-string: 2.0.2
       resolve-from: 5.0.0
       resolve-workspace-root: 2.0.1
-      semver: 7.7.4
+      semver: 7.8.5
       slugify: 1.6.6
       sucrase: 3.35.1
     transitivePeerDependencies:
@@ -10605,7 +10620,7 @@ snapshots:
       minimatch: 10.2.6
       p-limit: 3.1.0
       resolve-from: 5.0.0
-      semver: 7.7.4
+      semver: 7.8.5
     transitivePeerDependencies:
       - supports-color
 
@@ -10618,7 +10633,7 @@ snapshots:
       parse-png: 2.1.0
       resolve-from: 5.0.0
       resolve-global: 1.0.0
-      semver: 7.7.4
+      semver: 7.8.5
       temp-dir: 2.0.0
       unique-string: 2.0.0
 
@@ -10748,7 +10763,7 @@ snapshots:
       debug: 4.4.3
       expo: 54.0.36(@babel/core@7.29.0)(@expo/metro-runtime@6.1.2)(expo-router@6.0.24)(react-native-webview@13.15.0(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       resolve-from: 5.0.0
-      semver: 7.7.4
+      semver: 7.8.5
       xml2js: 0.6.0
     transitivePeerDependencies:
       - supports-color
@@ -12329,7 +12344,7 @@ snapshots:
       metro: 0.83.3
       metro-config: 0.83.3
       metro-core: 0.83.3
-      semver: 7.7.4
+      semver: 7.8.5
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -13275,10 +13290,6 @@ snapshots:
       undici-types: 7.16.0
 
   '@types/phoenix@1.6.7': {}
-
-  '@types/pngjs@6.0.5':
-    dependencies:
-      '@types/node': 24.10.13
 
   '@types/prop-types@15.7.15': {}
 
@@ -14726,6 +14737,16 @@ snapshots:
       expo: 54.0.36(@babel/core@7.29.0)(@expo/metro-runtime@6.1.2)(expo-router@6.0.24)(react-native-webview@13.15.0(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
 
   expo-server@1.0.7: {}
+
+  expo-share-extension@5.0.6(expo@54.0.36)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3):
+    dependencies:
+      expo: 54.0.36(@babel/core@7.29.0)(@expo/metro-runtime@6.1.2)(expo-router@6.0.24)(react-native-webview@13.15.0(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      react: 19.1.0
+      react-native: 0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
+      semver: 7.8.5
+      valibot: 1.5.0(typescript@5.9.3)
+    transitivePeerDependencies:
+      - typescript
 
   expo-share-intent@5.1.1(expo-constants@18.0.13)(expo-linking@8.0.12)(expo@54.0.36)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:
@@ -18164,6 +18185,10 @@ snapshots:
   uuid@7.0.3: {}
 
   v8-compile-cache-lib@3.0.1: {}
+
+  valibot@1.5.0(typescript@5.9.3):
+    optionalDependencies:
+      typescript: 5.9.3
 
   validate-npm-package-name@5.0.1: {}
 

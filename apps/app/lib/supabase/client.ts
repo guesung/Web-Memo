@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { SUPABASE } from "@web-memo/shared/constants";
 import type { Database } from "@web-memo/shared/types";
 import {
+	FavoriteService,
 	HighlightService,
 	MemoService,
 	SettingService,
@@ -72,4 +73,5 @@ export const supabase = createClient<Database, "memo">(
 
 export const memoService = new MemoService(supabase);
 export const settingService = new SettingService(supabase);
+export const favoriteService = new FavoriteService(supabase);
 export const highlightService = new HighlightService(supabase);

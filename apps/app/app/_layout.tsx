@@ -14,6 +14,7 @@ import {
 import { AuthProvider, useAuth } from "@/lib/auth/AuthProvider";
 import { ThemeProvider, useTheme } from "@/lib/context/ThemeContext";
 import { migrateSharedExtensionPendingUrls } from "@/lib/sharing/pendingSharedUrls";
+import { syncFavoritesToSupabase } from "@/lib/storage/favoriteSync";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
 import "../global.css";
 
@@ -51,6 +52,13 @@ function SyncOnAuth() {
 					}
 				})
 				.catch(() => {});
+			const syncFavorites = async () => {
+				try {
+					await syncFavoritesToSupabase();
+					queryClient.invalidateQueries({ queryKey: ["favorites"] });
+				} catch {}
+			};
+			syncFavorites();
 		}
 	}, [session]);
 

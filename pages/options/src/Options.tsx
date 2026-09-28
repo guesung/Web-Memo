@@ -17,6 +17,7 @@ import {
 	MemoFieldsOption,
 	Option,
 	QueryProvider,
+	ShortcutOption,
 } from "./components";
 
 /** 옵션 화면의 조회 실패를 재시도합니다. */
@@ -77,6 +78,7 @@ const Options = () => {
 				<p className="text-sm text-muted-foreground">
 					{I18n.get("settings_auto_save_description")}
 				</p>
+				<ShortcutOption />
 				<QueryErrorResetBoundary>
 					{({ reset }) => (
 						<ErrorBoundary onReset={reset} FallbackComponent={OptionsError}>

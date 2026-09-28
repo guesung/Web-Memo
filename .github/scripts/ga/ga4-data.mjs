@@ -119,6 +119,7 @@ export const ANALYTICS_EVENTS = [
 	"guide_open",
 	"guide_finish",
 	"extension_setting_change",
+	"shortcut_change_click",
 ];
 
 /**

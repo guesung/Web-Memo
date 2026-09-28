@@ -482,7 +482,7 @@ importers:
         version: 4.57.1
       ts-node:
         specifier: ^10.9.2
-        version: 10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.5.3)
+        version: 10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.9.3)
       vite:
         specifier: 5.3.3
         version: 5.3.3(@types/node@24.10.13)(lightningcss@1.31.1)(terser@5.46.0)
@@ -549,14 +549,14 @@ importers:
     dependencies:
       tailwindcss:
         specifier: ^3.4.10
-        version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.5.3))
+        version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.9.3))
     devDependencies:
       '@tailwindcss/typography':
         specifier: ^0.5.14
-        version: 0.5.19(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.5.3)))
+        version: 0.5.19(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.9.3)))
       tailwindcss-animate:
         specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.5.3)))
+        version: 1.0.7(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.9.3)))
 
   packages/tsconfig: {}
 
@@ -730,10 +730,10 @@ importers:
         version: 8.5.6
       tailwindcss:
         specifier: ^3.4.10
-        version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.5.3))
+        version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.9.3))
       tailwindcss-animate:
         specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.5.3)))
+        version: 1.0.7(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.9.3)))
       vitest:
         specifier: ^2.1.5
         version: 2.1.9(@types/node@24.10.13)(jsdom@30.0.1)(lightningcss@1.31.1)(terser@5.46.0)
@@ -862,6 +862,9 @@ importers:
       '@web-memo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      lucide-react:
+        specifier: ^0.456.0
+        version: 0.456.0(react@19.1.0)
       react:
         specifier: 19.1.0
         version: 19.1.0
@@ -904,7 +907,7 @@ importers:
         version: 7.0.3
       tailwindcss:
         specifier: ^3.4.10
-        version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.5.3))
+        version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.9.3))
       vite:
         specifier: 5.3.3
         version: 5.3.3(@types/node@24.10.13)(lightningcss@1.31.1)(terser@5.46.0)
@@ -977,7 +980,7 @@ importers:
         version: 6.0.5(rollup@4.63.3)
       tailwindcss:
         specifier: ^3.4.10
-        version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.5.3))
+        version: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.9.3))
       vite:
         specifier: 5.3.3
         version: 5.3.3(@types/node@24.10.13)(lightningcss@1.31.1)(terser@5.46.0)
@@ -4844,9 +4847,6 @@ packages:
 
   '@types/phoenix@1.6.7':
     resolution: {integrity: sha512-oN9ive//QSBkf19rfDv45M7eZPi0eEXylht2OLEXicu5b4KoQ1OzXIw+xDSGWxSxe1JmepRR/ZH283vsu518/Q==}
-
-  '@types/pngjs@6.0.5':
-    resolution: {integrity: sha512-0k5eKfrA83JOZPppLtS2C7OUtyNAl2wKNxfyYl9Q5g9lPkgBl/9hNyAu6HuEH2J4XmIv2znEpkDd0SaZVxW6iQ==}
 
   '@types/prop-types@15.7.15':
     resolution: {integrity: sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==}
@@ -13276,10 +13276,6 @@ snapshots:
 
   '@types/phoenix@1.6.7': {}
 
-  '@types/pngjs@6.0.5':
-    dependencies:
-      '@types/node': 24.10.13
-
   '@types/prop-types@15.7.15': {}
 
   '@types/react-big-calendar@1.16.3':
@@ -17716,6 +17712,10 @@ snapshots:
     dependencies:
       tailwindcss: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.5.3))
 
+  tailwindcss-animate@1.0.7(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.9.3))):
+    dependencies:
+      tailwindcss: 3.4.10(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.9.3))
+
   tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.9.3)):
     dependencies:
       '@alloc/quick-lru': 5.2.0
@@ -17937,6 +17937,7 @@ snapshots:
       yn: 3.1.1
     optionalDependencies:
       '@swc/core': 1.15.11(@swc/helpers@0.5.23)
+    optional: true
 
   ts-node@10.9.2(@swc/core@1.15.11(@swc/helpers@0.5.23))(@types/node@24.10.13)(typescript@5.9.3):
     dependencies:
@@ -17957,7 +17958,6 @@ snapshots:
       yn: 3.1.1
     optionalDependencies:
       '@swc/core': 1.15.11(@swc/helpers@0.5.23)
-    optional: true
 
   tsc-watch@6.3.1(typescript@5.5.3):
     dependencies:

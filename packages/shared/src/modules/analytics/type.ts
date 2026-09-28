@@ -197,7 +197,8 @@ export type TAnalyticsEvent =
 				conflict_count: number;
 				has_other_error: boolean;
 			};
-	  };
+	  }
+	| { name: "shortcut_change_click"; params: { is_success: boolean } };
 
 /** 이벤트 이름만 추린 유니온. */
 export type TAnalyticsEventName = TAnalyticsEvent["name"];
@@ -265,4 +266,5 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	past_memo_dismiss: "engagement",
 	memo_offline_queued: "engagement",
 	memo_offline_sync_result: "engagement",
+	shortcut_change_click: "engagement",
 };

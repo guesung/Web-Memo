@@ -266,6 +266,27 @@
 	"highlight_setting_description": {
 		"message": "웹페이지에서 텍스트를 선택한 뒤 하이라이트 버튼을 눌러 저장해요."
 	},
+	"shortcut_setting": {
+		"message": "단축키"
+	},
+	"shortcut_open_side_panel": {
+		"message": "사이드 패널 열기"
+	},
+	"shortcut_setting_description": {
+		"message": "바꾼 키는 Chrome이 기억해요."
+	},
+	"shortcut_change": {
+		"message": "단축키 바꾸기"
+	},
+	"shortcut_not_set": {
+		"message": "지정된 단축키 없음"
+	},
+	"shortcut_load_failed": {
+		"message": "단축키를 확인하지 못했어요"
+	},
+	"shortcut_open_settings_failed": {
+		"message": "단축키 설정 페이지를 열지 못했어요. 주소창에 chrome://extensions/shortcuts 를 입력해요."
+	},
 	"ai_setting": {
 		"message": "AI 기능"
 	},

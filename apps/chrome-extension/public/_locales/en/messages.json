@@ -266,6 +266,27 @@
 	"highlight_setting_description": {
 		"message": "Select text on a webpage, then click the highlight button to save it."
 	},
+	"shortcut_setting": {
+		"message": "Shortcut"
+	},
+	"shortcut_open_side_panel": {
+		"message": "Open side panel"
+	},
+	"shortcut_setting_description": {
+		"message": "Chrome remembers the key you set."
+	},
+	"shortcut_change": {
+		"message": "Change shortcut"
+	},
+	"shortcut_not_set": {
+		"message": "No shortcut set"
+	},
+	"shortcut_load_failed": {
+		"message": "Couldn't check the shortcut"
+	},
+	"shortcut_open_settings_failed": {
+		"message": "Couldn't open the shortcut settings page. Type chrome://extensions/shortcuts in the address bar."
+	},
 	"ai_setting": {
 		"message": "AI features"
 	},

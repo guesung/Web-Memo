@@ -1,7 +1,7 @@
 import { handleEditHighlight } from "./editHighlight";
 import { handleCreateHighlight } from "./createHighlight";
+import { handleCreateMemo } from "./createMemo";
 import { handleGetLoginStatus } from "./getLoginStatus";
-import { reportBackgroundError } from "./reportBackgroundError";
 import "webextension-polyfill";
 
 import { CONFIG } from "@web-memo/env";
@@ -11,25 +11,12 @@ import {
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
-import {
-	HighlightService,
-	MemoService,
-	normalizeUrl,
-} from "@web-memo/shared/utils";
+import { HighlightService, normalizeUrl } from "@web-memo/shared/utils";
 import { getSupabaseClient, I18n, Tab } from "@web-memo/shared/utils/extension";
 import { initSentry } from "@web-memo/shared/utils";
 import { analytics } from "@web-memo/shared/modules/analytics";
 
 void initSentry();
-
-const reportMemoCreateError = (error: unknown, stage: string) => {
-	reportBackgroundError({
-		error,
-		feature: "memo",
-		operation: "create-memo",
-		stage,
-	});
-};
 
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -136,61 +123,7 @@ bridge.handle.GET_TABS(async (_, __, sendResponse) => {
 // content-ui에서 메모 생성 요청을 받아 처리한다.
 // 기존 메모가 있으면 내용을 추가하고, 없으면 새로 생성한다.
 bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
-	try {
-		const supabaseClient = await getSupabaseClient();
-		const memoService = new MemoService(supabaseClient);
-
-		// 사이드 패널·웹과 같은 기준으로 메모를 찾도록 URL을 정규화한다.
-		const normalizedUrl = normalizeUrl(payload.url);
-		const existingMemo = await memoService.getMemoByUrl(normalizedUrl);
-
-		if (existingMemo.error) {
-			reportMemoCreateError(existingMemo.error, "lookup");
-			sendResponse({ success: false, error: existingMemo.error.message });
-			return;
-		}
-		if ((existingMemo.data?.length ?? 0) > 1) {
-			sendResponse({ success: false, error: "multiple_memos" });
-			return;
-		}
-
-		// Supabase는 결과가 없을 때 빈 배열을 돌려주므로 첫 번째 요소로 존재 여부를 판단한다.
-		const currentMemo = existingMemo.data?.[0];
-
-		if (currentMemo) {
-			const updatedMemo = `${currentMemo.memo}${currentMemo.memo ? "\n\n" : ""}${payload.memo}`;
-			const result = await memoService.updateMemo({
-				id: currentMemo.id,
-				request: { memo: updatedMemo },
-			});
-
-			if (result.error) {
-				reportMemoCreateError(result.error, "update");
-				sendResponse({ success: false, error: result.error.message });
-			} else {
-				sendResponse({ success: true });
-			}
-		} else {
-			const result = await memoService.insertMemo({
-				...payload,
-				url: normalizedUrl,
-			});
-
-			if (result.error) {
-				reportMemoCreateError(result.error, "insert");
-				sendResponse({ success: false, error: result.error.message });
-			} else {
-				sendResponse({ success: true });
-			}
-		}
-	} catch (error) {
-		reportMemoCreateError(error, "handler");
-		sendResponse({
-			success: false,
-			error:
-				error instanceof Error ? error.message : I18n.get("toast_error_save"),
-		});
-	}
+	sendResponse(await handleCreateMemo(payload));
 });
 
 // content-ui가 현재 페이지의 하이라이트를 조회한다.

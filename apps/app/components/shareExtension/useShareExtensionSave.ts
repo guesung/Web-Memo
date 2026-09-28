@@ -1,8 +1,15 @@
-import type { MemoRow } from "@web-memo/shared/types";
 import { useEffect, useState } from "react";
+import { Platform } from "react-native";
 import { extractPageMetadata } from "@/lib/sharing/pageMetadata";
-import { addSharedExtensionPendingUrl } from "@/lib/sharing/pendingSharedUrls";
-import { saveWishForSession } from "@/lib/sharing/shareHandler";
+import {
+	addSharedExtensionPendingUrl,
+	preserveSharedUrl,
+} from "@/lib/sharing/pendingSharedUrls";
+import {
+	saveWishForAndroidShareScreen,
+	saveWishForSession,
+	type TSharedWishTarget,
+} from "@/lib/sharing/shareHandler";
 import { memoService, supabase } from "@/lib/supabase/client";
 
 /** 공유 시트가 보여줄 수 있는 상태. */
@@ -18,15 +25,17 @@ export interface IFShareExtensionSaveState {
 	status: TShareExtensionStatus;
 	title: string;
 	favIconUrl: string | null;
-	memo: MemoRow | null;
+	target: TSharedWishTarget | null;
 	onRetryButtonClick: () => void;
 }
 
 /**
- * 공유 시트가 열리자마자 로그인 세션 기준으로 위시 저장을 시도한다.
- * @description 원격 후보가 둘 이상이거나 오류가 나면 App Group 키체인에 공유 요청을
- * 보존해 본 앱이 나중에 이어받게 한다. 로그인 세션이 없으면 아예 시도하지 않는다 —
- * 로컬(AsyncStorage) 메모는 본 앱 전용이라 확장에서 접근할 수 없기 때문이다.
+ * 공유 시트가 열리자마자 위시 저장을 시도한다.
+ * @description iOS는 로그인 세션 기준으로만 저장한다 — 로컬(AsyncStorage) 메모는 별도
+ * 프로세스인 공유 확장에서 접근할 수 없어, 세션이 없으면 아예 시도하지 않고
+ * "not-logged-in"으로 안내한다. Android는 본 앱과 같은 프로세스라 로그인 여부와
+ * 무관하게 바로 저장한다(`saveWishForAndroidShareScreen`). 두 경우 모두 후보가
+ * 둘 이상이거나 오류가 나면 요청을 보존해 본 앱이 나중에 이어받게 한다.
  */
 export function useShareExtensionSave(
 	sharedUrl: string,
@@ -35,7 +44,7 @@ export function useShareExtensionSave(
 	const [status, setStatus] = useState<TShareExtensionStatus>("loading");
 	const [title, setTitle] = useState(sharedTitle ?? sharedUrl);
 	const [favIconUrl, setFavIconUrl] = useState<string | null>(null);
-	const [memo, setMemo] = useState<MemoRow | null>(null);
+	const [target, setTarget] = useState<TSharedWishTarget | null>(null);
 	const [attempt, setAttempt] = useState(0);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: attempt는 재시도 트리거로만 쓰는 nonce다.
@@ -55,6 +64,43 @@ export function useShareExtensionSave(
 			}
 			setTitle(meta.title);
 			setFavIconUrl(meta.favIconUrl);
+
+			if (Platform.OS === "android") {
+				try {
+					const result = await saveWishForAndroidShareScreen({
+						url: sharedUrl,
+						title: meta.title,
+						favIconUrl: meta.favIconUrl,
+					});
+					if (isCancelled) {
+						return;
+					}
+					if (result.status === "multiple-candidates") {
+						await preserveSharedUrl({
+							url: sharedUrl,
+							title: meta.title,
+							favIconUrl: meta.favIconUrl,
+							createdAt: new Date().toISOString(),
+						});
+						setStatus("multiple-candidates");
+						return;
+					}
+					setTarget(result.target);
+					setStatus("saved");
+				} catch {
+					if (isCancelled) {
+						return;
+					}
+					await preserveSharedUrl({
+						url: sharedUrl,
+						title: meta.title,
+						favIconUrl: meta.favIconUrl,
+						createdAt: new Date().toISOString(),
+					});
+					setStatus("error");
+				}
+				return;
+			}
 
 			const {
 				data: { session },
@@ -87,7 +133,7 @@ export function useShareExtensionSave(
 					setStatus("multiple-candidates");
 					return;
 				}
-				setMemo(result.memo);
+				setTarget({ kind: "remote", memo: result.memo });
 				setStatus("saved");
 			} catch {
 				if (isCancelled) {
@@ -118,7 +164,7 @@ export function useShareExtensionSave(
 		status,
 		title,
 		favIconUrl,
-		memo,
+		target,
 		onRetryButtonClick: handleRetryButtonClick,
 	};
 }

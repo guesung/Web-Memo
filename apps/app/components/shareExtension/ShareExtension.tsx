@@ -1,5 +1,3 @@
-import type { InitialProps } from "expo-share-extension";
-import { close, openHostApp } from "expo-share-extension";
 import { AlertTriangle, Check } from "lucide-react-native";
 import { useState } from "react";
 import {
@@ -10,53 +8,52 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { appendMemoText } from "@/lib/sharing/memoAppend";
 import { getFallbackTitle } from "@/lib/sharing/pageMetadata";
-import { memoService } from "@/lib/supabase/client";
+import { appendSharedMemoText } from "@/lib/sharing/shareHandler";
+import {
+	closeShareScreen,
+	getSharedUrl,
+	openHostAppWithPath,
+} from "./shareBridge";
+import type { IFShareExtensionProps } from "./shareBridge.types";
 import { useShareExtensionSave } from "./useShareExtensionSave";
 
 /**
- * iOS 공유 시트에서 뜨는 위시 저장 화면의 루트 컴포넌트.
+ * 공유 시트(iOS 공유 확장 · Android ShareActivity)에서 뜨는 위시 저장 화면의 루트 컴포넌트.
  * @description 열리자마자 위시 저장을 시도한다. 성공하면 메모를 남길 수 있고, 후보가
- * 여럿이거나 오류·비로그인이면 안내와 함께 본 앱으로 넘길 수 있는 버튼을 보여준다.
+ * 여럿이거나 오류·비로그인(iOS 한정)이면 안내와 함께 본 앱으로 넘길 수 있는 버튼을 보여준다.
  */
-export default function ShareExtension({ url, text }: InitialProps) {
-	const sharedUrl = url ?? text ?? "";
-	const { status, title, favIconUrl, memo, onRetryButtonClick } =
+export default function ShareExtension(props: IFShareExtensionProps) {
+	const sharedUrl = getSharedUrl(props);
+	const { status, title, favIconUrl, target, onRetryButtonClick } =
 		useShareExtensionSave(sharedUrl);
 	const [memoText, setMemoText] = useState("");
 	const [isSavingMemo, setIsSavingMemo] = useState(false);
 	const [didSaveMemo, setDidSaveMemo] = useState(false);
 
 	const handleCompleteButtonClick = () => {
-		close();
+		closeShareScreen();
 	};
 
 	const handleCancelButtonClick = () => {
-		close();
+		closeShareScreen();
 	};
 
 	const handleOpenHostAppButtonClick = () => {
-		openHostApp(
+		openHostAppWithPath(
 			`share?url=${encodeURIComponent(sharedUrl)}&title=${encodeURIComponent(title)}`,
 		);
 	};
 
 	const handleMemoSaveButtonClick = async () => {
-		if (!memo) {
+		if (!target) {
 			return;
 		}
 		setIsSavingMemo(true);
 		try {
-			const result = await memoService.updateMemo({
-				id: memo.id,
-				request: { memo: appendMemoText(memo.memo, memoText.trim()) },
-			});
-			if (result.error) {
-				throw result.error;
-			}
+			await appendSharedMemoText(target, memoText.trim());
 			setDidSaveMemo(true);
-			setTimeout(() => close(), 900);
+			setTimeout(() => closeShareScreen(), 900);
 		} catch {
 			setIsSavingMemo(false);
 		}

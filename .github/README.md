@@ -22,7 +22,7 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | --- | --- | --- | --- |
 | `ci.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | `deploy/resolve-affected-base.sh` · `deploy/detect-affected-apps.sh` · `deploy/notify-thread-root.mjs` · `deploy/notify-thread-reply.mjs` · `deploy/notify-build-ready.mjs` · `deploy/notify-staging-deploy.mjs` · `deploy/comment-pr-extension.mjs`, 그리고 `cd-app`·`cd-extension`·`cd-web` 호출 |
 | `e2e.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | 없음 (Playwright) |
-| `cd-app.yml` | workflow_call | develop 앱 변경 시 빌드·Play 내부 테스트 제출, master·PR은 빌드만, release는 새 빌드·제출 | 없음 (EAS CLI) |
+| `cd-app.yml` | workflow_call | develop 앱 변경 시 Android APK 빌드·Firebase App Distribution 배포, master·PR은 빌드만, release는 새 빌드·Play 내부 테스트 제출 | 없음 (EAS CLI·firebase-tools) |
 | `cd-extension.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-reusable-artifact.sh` · `deploy/upload-extension-to-store.mjs` |
 | `cd-web.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-staged-deployment.mjs` · `deploy/staged-deployment.mjs` · `deploy/notify-staging-deploy.mjs` |
 | `release.yml` | workflow_dispatch | 수동 실행할 때마다 | 없음. `cd-app`·`cd-extension`·`cd-web`·`release-notify` 호출 |

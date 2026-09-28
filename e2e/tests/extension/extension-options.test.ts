@@ -55,4 +55,29 @@ test.describe("확장 옵션 페이지", () => {
 		await expect(optionsPage.locator("#response-language")).toBeVisible();
 		await expect(optionsPage.locator("#auto-apply-category")).toHaveCount(0);
 	});
+
+	test("단축키 카드는 현재 키(또는 미지정 안내)와 바꾸기 버튼을 보여주고, 바꾸기를 누르면 크롬 단축키 설정 탭을 연다.", async ({
+		page,
+	}) => {
+		const optionsPage = await page.context().newPage();
+		await optionsPage.goto(getExtensionUrl("options/index.html"));
+
+		const shortcutCard = optionsPage
+			.getByRole("heading", { name: /^(단축키|Shortcut)$/ })
+			.locator("..")
+			.locator("..");
+		await expect(
+			shortcutCard.getByText(/^(Alt\+S|지정된 단축키 없음)$/),
+		).toBeVisible();
+
+		const changeButton = shortcutCard.getByRole("button", {
+			name: /단축키 바꾸기|Change shortcut/,
+		});
+		await expect(changeButton).toBeVisible();
+
+		const openedPagePromise = page.context().waitForEvent("page");
+		await changeButton.click();
+		const openedPage = await openedPagePromise;
+		await expect(openedPage).toHaveURL("chrome://extensions/shortcuts");
+	});
 });

@@ -549,6 +549,8 @@ export function useBrowserState({
 			if (isMemoOpen) return;
 			// 최하단 여유 구간: 바운스로 인한 헤더/탭바 토글 버벅임 방지를 위해 상태 유지
 			if (direction === "bottom") return;
+			// 뷰포트 리사이즈로 생긴 스크롤: 탭바가 접히며 만든 스크롤이 다시 탭바를 열지 않도록 무시
+			if (direction === "resize") return;
 			if (direction === "down") {
 				headerTranslateY.value = withTiming(-HEADER_HEIGHT, {
 					duration: HIDE_DURATION,

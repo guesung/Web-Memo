@@ -27,6 +27,8 @@ test.describe("404 화면", () => {
 			await page.goto(`/${language}/not-exist-page`);
 
 			await expect(page.locator("header")).toBeVisible();
+			// 본문 여백이 body 밖으로 겹쳐 빠지면 top 없는 고정 헤더가 같이 밀려 내려간다.
+			expect((await page.locator("header").boundingBox())?.y).toBe(0);
 			await expect(
 				page.getByRole("heading", { name: texts.title }),
 			).toBeVisible();

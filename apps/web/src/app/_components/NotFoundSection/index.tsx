@@ -21,7 +21,7 @@ export default function NotFoundSection({ lng }: IFNotFoundSectionProps) {
 	const { t } = useTranslation(lng);
 
 	return (
-		<section className="mt-12 flex min-h-[calc(100vh-3rem)] items-center justify-center bg-background px-4">
+		<section className="flex min-h-screen items-center justify-center bg-background px-4 pt-12">
 			<div className="flex w-full max-w-lg flex-col items-center text-center">
 				<div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
 					<FileSearch className="h-[30px] w-[30px] text-muted-foreground" />

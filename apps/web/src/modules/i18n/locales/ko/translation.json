@@ -605,7 +605,7 @@
 			"tab_organize_desc": "카테고리로 묶어서 정리",
 			"tab_memo_image_alt": "기사 옆 사이드 패널에 직접 작성한 메모",
 			"tab_shortcut": "단축키로 열기",
-			"tab_shortcut_desc": "Alt+S를 누르면 패널이 열려요. Mac에서는 Option+S를 눌러요. 다른 키로 바꾸려면 chrome://extensions/shortcuts에서 바꿀 수 있어요.",
+			"tab_shortcut_desc": "Alt+S를 누르면 패널이 열려요. Mac에서는 Option+S를 눌러요.",
 			"tab_shortcut_image_alt": "기사와 사이드 패널 위에 Alt+S 단축키가 표시된 화면",
 			"tab_source": "출처 남기기",
 			"tab_source_desc": "메모에 페이지 제목과 주소가 함께 남아요.",
@@ -621,7 +621,7 @@
 			"step1_title": "Chrome 확장 설치하기",
 			"step1_desc": "Chrome 웹스토어에서 웹 메모를 추가해요.",
 			"step2_title": "사이드 패널 열기",
-			"step2_desc": "읽던 페이지에서 Alt+S를 눌러요. Mac에서는 Option+S를 눌러요. 다른 키로 바꾸려면 chrome://extensions/shortcuts에서 바꿀 수 있어요.",
+			"step2_desc": "읽던 페이지에서 Alt+S를 눌러요. Mac에서는 Option+S를 눌러요.",
 			"step3_title": "직접 메모 적기",
 			"step3_desc": "떠오른 생각을 적으면 페이지 제목과 주소도 함께 남아요."
 		},
@@ -844,8 +844,8 @@
 	},
 	"error": {
 		"404": {
-			"title": "페이지를 찾을 수 없어요",
-			"description": "주소가 잘못됐거나 더는 없는 페이지예요",
+			"title": "페이지를 찾지 못했어요",
+			"description": "주소가 정확한지 확인해 주세요",
 			"backToHome": "홈으로 가기"
 		},
 		"500": {

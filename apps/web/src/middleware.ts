@@ -2,11 +2,7 @@ import { PATHS } from "@web-memo/shared/constants";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import {
-	getLanguage,
-	LANGUAGE_HEADER_NAME,
-	SUPPORTED_LANGUAGES,
-} from "./modules/i18n";
+import { getLanguage, SUPPORTED_LANGUAGES } from "./modules/i18n";
 import { updateAuthorization } from "./modules/supabase";
 
 /**
@@ -148,18 +144,6 @@ export async function middleware(request: NextRequest) {
 				request.url,
 			),
 		);
-
-	/**
-	 * 루트 레이아웃이 `<html lang>`을 서버에서 맞출 수 있도록, URL이 이미 확정한
-	 * 로케일을 요청 헤더로 넘긴다. `params.lng`는 `[lng]` 세그먼트 안에서만 잡히므로,
-	 * 그 밖에 있는 루트 레이아웃은 이 헤더가 아니면 로케일을 알 방법이 없다.
-	 */
-	const urlLanguage = SUPPORTED_LANGUAGES.find((lng) =>
-		pathname.startsWith(`/${lng}`),
-	);
-	if (urlLanguage) {
-		request.headers.set(LANGUAGE_HEADER_NAME, urlLanguage);
-	}
 
 	const legacyMemoFilterRedirect = getLegacyMemoFilterRedirect(request);
 	if (legacyMemoFilterRedirect) {

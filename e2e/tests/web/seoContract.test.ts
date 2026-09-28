@@ -231,28 +231,6 @@ test.describe("공개 검색 계약", () => {
 	}
 
 	for (const language of ["ko", "en"] as const) {
-		test(`${language}/존재하지-않는-경로는 404이고 원본 HTML부터 lang="${language}"다.`, async ({
-			request,
-		}) => {
-			const response = await request.get(`/${language}/존재하지-않는-경로`);
-			expect(response.status()).toBe(404);
-			const html = await response.text();
-			expect(html).toMatch(new RegExp(`<html[^>]*\\blang="${language}"`));
-			expect(html).not.toContain('id="__next_error__"');
-		});
-	}
-
-	test("en/a/b/c처럼 여러 세그먼트가 매칭되지 않아도 404이고 원본 HTML부터 lang이 맞다.", async ({
-		request,
-	}) => {
-		const response = await request.get("/en/a/b/c");
-		expect(response.status()).toBe(404);
-		const html = await response.text();
-		expect(html).toMatch(/<html[^>]*\blang="en"/);
-		expect(html).not.toContain('id="__next_error__"');
-	});
-
-	for (const language of ["ko", "en"] as const) {
 		for (const path of ["", "privacy"]) {
 			test(`${language}/${path || "(root)"}의 원본 HTML은 JS 실행 전부터 lang="${language}"다.`, async ({
 				request,

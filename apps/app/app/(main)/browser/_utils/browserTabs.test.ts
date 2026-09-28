@@ -5,6 +5,7 @@ import {
 	closeTab,
 	createEmptyTab,
 	createInitialTabsState,
+	openUrlInTab,
 	selectTab,
 	updateActiveTab,
 } from "./browserTabs";
@@ -113,5 +114,61 @@ describe("updateActiveTab", () => {
 			url: "https://a.com",
 			title: "바뀐 제목",
 		});
+	});
+});
+
+describe("openUrlInTab", () => {
+	const getKey = (url: string) => url.replace(/#.*$/, "");
+
+	it("같은 페이지의 탭이 있으면 그 탭으로 전환한다", () => {
+		const next = openUrlInTab(stateOf("a"), "https://c.com#x", { getKey });
+
+		expect(next.tabs).toHaveLength(3);
+		expect(next.activeTabId).toBe("c");
+	});
+
+	it("같은 페이지 탭이 없고 활성 탭이 비어 있으면 그 탭에 연다", () => {
+		const state: IFBrowserTabsState = {
+			tabs: [
+				{ id: "a", url: "https://a.com", title: "A" },
+				{ id: "e", url: "", title: "" },
+			],
+			activeTabId: "e",
+		};
+		const next = openUrlInTab(state, "https://new.com", { getKey });
+
+		expect(next.tabs).toEqual([
+			{ id: "a", url: "https://a.com", title: "A" },
+			{ id: "e", url: "https://new.com", title: "" },
+		]);
+		expect(next.activeTabId).toBe("e");
+	});
+
+	it("그 외에는 새 탭을 끝에 추가하고 활성화한다", () => {
+		const next = openUrlInTab(stateOf("a"), "https://new.com", {
+			getKey,
+			newTabId: "d",
+		});
+
+		expect(next.tabs.map((tab) => tab.id)).toEqual(["a", "b", "c", "d"]);
+		expect(next.tabs[3].url).toBe("https://new.com");
+		expect(next.activeTabId).toBe("d");
+	});
+
+	it("빈 url 탭은 같은 페이지 비교에서 제외한다", () => {
+		const state: IFBrowserTabsState = {
+			tabs: [
+				{ id: "e", url: "", title: "" },
+				{ id: "a", url: "https://a.com", title: "A" },
+			],
+			activeTabId: "a",
+		};
+		const next = openUrlInTab(state, "", {
+			getKey: (url) => url,
+			newTabId: "n",
+		});
+
+		expect(next.tabs.map((tab) => tab.id)).toEqual(["e", "a", "n"]);
+		expect(next.activeTabId).toBe("n");
 	});
 });

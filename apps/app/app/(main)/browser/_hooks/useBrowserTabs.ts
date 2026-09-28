@@ -1,3 +1,4 @@
+import { getPageKey } from "@web-memo/shared/utils/url";
 import { useEffect, useState } from "react";
 import {
 	getBrowserTabs,
@@ -10,6 +11,7 @@ import {
 	closeTab,
 	createEmptyTab,
 	createInitialTabsState,
+	openUrlInTab,
 	selectTab,
 	updateActiveTab,
 } from "../_utils/browserTabs";
@@ -81,6 +83,14 @@ export function useBrowserTabs() {
 		return next;
 	};
 
+	/** 링크를 새 탭 우선으로 열고(같은 페이지 탭이 있으면 전환) 갱신된 상태를 반환한다 */
+	const openUrlInNewTab = (url: string): IFBrowserTabsState => {
+		const next = openUrlInTab(tabsState, url, { getKey: getPageKey });
+		setTabsState(next);
+
+		return next;
+	};
+
 	/** 탭을 닫고 갱신된 상태를 반환한다 */
 	const removeTab = (tabId: string): IFBrowserTabsState => {
 		const next = closeTab(tabsState, tabId);
@@ -97,6 +107,7 @@ export function useBrowserTabs() {
 		updateActiveTabInfo,
 		activateTab,
 		openNewTab,
+		openUrlInNewTab,
 		removeTab,
 	};
 }

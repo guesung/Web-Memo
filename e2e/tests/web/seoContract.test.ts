@@ -245,6 +245,28 @@ test.describe("공개 검색 계약", () => {
 		}
 	}
 
+	const ENGLISH_LENGTH_LIMITED_PATHS = [
+		"use-cases/developer",
+		"use-cases/job-hunting",
+		"use-cases/tech-article",
+		"privacy",
+		"features/memo",
+	] as const;
+
+	for (const path of ENGLISH_LENGTH_LIMITED_PATHS) {
+		test(`en/${path}의 title·description이 검색 결과 권장 길이 안이다.`, async ({
+			page,
+		}) => {
+			await page.goto(`/en/${path}`);
+			const title = await page.title();
+			expect(title.length).toBeLessThanOrEqual(60);
+			const description = await page
+				.locator('meta[name="description"]')
+				.getAttribute("content");
+			expect(description?.length ?? 0).toBeLessThanOrEqual(160);
+		});
+	}
+
 	test("robots는 sitemap을 안내하고 noindex HTML의 크롤링을 허용한다.", async ({
 		request,
 		baseURL,

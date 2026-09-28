@@ -18,7 +18,7 @@ export const metadataEnglish = createPublicPageMetadata({
 	path: "/privacy",
 	title: "Privacy Policy | Web Memo",
 	description:
-		"How Web Memo collects, uses, retains, and shares user data, why each extension permission is required, and the full list of third parties that process your data.",
+		"How Web Memo collects, uses, retains, and shares your data, why each extension permission is required, and which third parties process it.",
 	robots: {
 		index: true,
 		follow: true,

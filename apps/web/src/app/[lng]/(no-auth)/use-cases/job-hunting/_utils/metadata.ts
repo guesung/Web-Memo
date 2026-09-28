@@ -22,7 +22,7 @@ export const metadataKorean = createPublicPageMetadata({
 export const metadataEnglish = createPublicPageMetadata({
 	language: "en",
 	path: "/use-cases/job-hunting",
-	title: "Job Hunting - Organize Job Postings & Company Info | Web Memo",
+	title: "Job Postings & Company Info for Job Hunting | Web Memo",
 	description:
 		"Organize job postings, company information, and interview prep materials systematically. Manage applications and positions at a glance.",
 	keywords: [

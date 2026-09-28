@@ -55,6 +55,7 @@ const UninstallFeedbackForm = ({ lng }: IFUninstallFeedbackFormProps) => {
 					timestamp: new Date().toISOString(),
 				}),
 				email: null,
+				feedbackType: "uninstall",
 			});
 
 			if (error) {

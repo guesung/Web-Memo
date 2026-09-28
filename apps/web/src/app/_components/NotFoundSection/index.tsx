@@ -1,11 +1,21 @@
 "use client";
 
+import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
-export default function NotFoundSection() {
-	const { t } = useTranslation();
+interface IFNotFoundSectionProps {
+	/**
+	 * 서버에서 이미 알고 있는 언어. 경로 기반 클라이언트 감지가 통하지 않는 자리
+	 * (예: `global-not-found.tsx`)에서 넘긴다. 생략하면 기존처럼 클라이언트가
+	 * 경로를 보고 감지한다.
+	 */
+	lng?: Language;
+}
+
+export default function NotFoundSection({ lng }: IFNotFoundSectionProps) {
+	const { t } = useTranslation(lng);
 
 	return (
 		<section className="flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 px-4">

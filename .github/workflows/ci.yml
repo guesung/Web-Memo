@@ -203,6 +203,31 @@ jobs:
           DEPLOY_OUTCOME: ${{ needs['cd-web'].outputs.staging_outcome }}
         run: node .github/scripts/deploy/notify-staging-deploy.mjs
 
+  # 앱 결과는 웹 배포와 별도로 끝나는 즉시 같은 develop 머지 스레드에 답니다.
+  notify-staging-app:
+    name: Slack 앱 App Tester 배포 알림
+    needs: [slack-thread, changes, cd-app]
+    if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/develop' && needs.changes.outputs.app == 'true' && (needs['cd-app'].result == 'success' || needs['cd-app'].result == 'failure') }}
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Notify app internal test submission
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          SLACK_THREAD_TS: ${{ needs.slack-thread.outputs.thread_ts }}
+          TARGET: app
+          REPLY_PHASE: store-submit
+          CHANGED: ${{ needs.changes.outputs.app }}
+          RESULT: ${{ needs['cd-app'].result }}
+        run: node .github/scripts/deploy/notify-thread-reply.mjs
+
   # master 머지 스레드에 타깃 하나의 빌드 결과를 댓글로 답니다(notify-web, notify-extension, notify-app).
   # 각 잡은 자기 cd-* 잡만 기다리므로 웹·확장 결과가 앱 빌드(약 30분)에 묶이지 않고 끝나는 대로 나갑니다.
   # slack-thread는 알림용 needs입니다. 실패·스킵돼도 always()라 이 잡들은 돌고,

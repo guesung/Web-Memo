@@ -49,6 +49,8 @@ dispatch해도 스크립트는 master의 것이 돕니다.
 
 `detect-affected-apps.sh`는 Turbo 패키지 영향 판정에 더해 `cd-app.yml` 변경을 앱 변경으로 처리합니다. push 앱 잡과 수동 앱 릴리스는 `release-app` 그룹을 공유하며, 앱 산출물은 재사용하지 않습니다.
 
+`ci.yml`의 `notify-staging-app`은 `deploy/notify-thread-reply.mjs`를 `REPLY_PHASE=store-submit`으로 호출해 develop 앱 App Tester 배포 결과를 머지 스레드에 알립니다. 웹 결과 알림과 독립적으로 실행하며, 앱 댓글에는 배포 버튼 없이 Actions 로그 링크만 붙입니다.
+
 릴리스·배포 흐름 전체는 [`docs/release-flow.md`](../docs/release-flow.md)를 봅니다.
 
 ## 스크립트

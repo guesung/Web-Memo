@@ -6,7 +6,7 @@ import type { TMemoCandidate } from "@/lib/memoCandidates";
 import {
 	getPendingSharedUrls,
 	resolvePendingSharedUrl,
-} from "@/lib/sharing/shareHandler";
+} from "@/lib/sharing/pendingSharedUrls";
 
 /** 현재 페이지의 보류 공유 요청을 선택된 메모에 적용한다. */
 export const usePendingMemoShare = ({

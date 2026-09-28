@@ -610,7 +610,7 @@
 			"tab_organize_desc": "Group notes into categories",
 			"tab_memo_image_alt": "A written note in the side panel beside an article",
 			"tab_shortcut": "Open with a shortcut",
-			"tab_shortcut_desc": "Press Alt+S to open the panel. On Mac, press Option+S. You can change it at chrome://extensions/shortcuts.",
+			"tab_shortcut_desc": "Press Alt+S to open the panel. On Mac, press Option+S.",
 			"tab_shortcut_image_alt": "An article and side panel with the Alt+S shortcut shown",
 			"tab_source": "Keep the source",
 			"tab_source_desc": "The page title and URL stay with the note.",
@@ -626,7 +626,7 @@
 			"step1_title": "Install the Chrome extension",
 			"step1_desc": "Add Web Memo from the Chrome Web Store.",
 			"step2_title": "Open the side panel",
-			"step2_desc": "Press Alt+S beside the page. On Mac, press Option+S. You can change it at chrome://extensions/shortcuts.",
+			"step2_desc": "Press Alt+S beside the page. On Mac, press Option+S.",
 			"step3_title": "Write your note",
 			"step3_desc": "Write your thought; the page title and URL stay with it."
 		},

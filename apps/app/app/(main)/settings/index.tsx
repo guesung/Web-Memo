@@ -2,9 +2,11 @@ import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import {
 	ChevronRight,
+	ExternalLink,
 	LogIn,
 	LogOut,
 	MessageCircle,
+	Monitor,
 	Moon,
 	Smartphone,
 	Sun,
@@ -21,6 +23,7 @@ import {
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { WEB_API_ORIGIN } from "@/app/(main)/browser/_constants/webApi";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useTheme } from "@/lib/context/ThemeContext";
 import {
@@ -57,6 +60,10 @@ export default function SettingsScreen() {
 
 	const handleLogin = () => {
 		router.navigate("/(auth)/login");
+	};
+
+	const handleOpenWebPress = () => {
+		Linking.openURL(`${WEB_API_ORIGIN}/memos`);
 	};
 
 	const appVersion = Constants.expoConfig?.version;
@@ -252,7 +259,27 @@ export default function SettingsScreen() {
 					<Text className="text-sm font-semibold text-muted-foreground dark:text-neutral-500 uppercase tracking-wide mb-2.5">
 						메모
 					</Text>
-					<View className="bg-card dark:bg-neutral-900 rounded-[14px] p-4 border border-muted dark:border-neutral-800">
+					<View className="bg-card dark:bg-neutral-900 rounded-[14px] p-4 border border-muted dark:border-neutral-800 gap-3">
+						{isLoggedIn ? (
+							<TouchableOpacity
+								className="flex-row justify-between items-center py-2"
+								onPress={handleOpenWebPress}
+								activeOpacity={0.6}
+							>
+								<View className="flex-row items-center gap-2">
+									<Monitor size={16} color={isDark ? "#a3a3a3" : "#555"} />
+									<View>
+										<Text className="text-[15px] text-secondary-foreground dark:text-neutral-300">
+											웹에서 메모 보기
+										</Text>
+										<Text className="text-[13px] text-muted-foreground dark:text-neutral-500">
+											webmemo.xyz
+										</Text>
+									</View>
+								</View>
+								<ExternalLink size={14} color={isDark ? "#737373" : "#999"} />
+							</TouchableOpacity>
+						) : null}
 						<TouchableOpacity
 							className="flex-row justify-between items-center py-2"
 							onPress={() => router.push("/trash")}

@@ -44,7 +44,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
-      # develop 제출보다 높은 빌드 번호가 필요하므로 production도 항상 새로 빌드합니다.
+      # develop 배포보다 높은 빌드 번호가 필요하므로 production도 항상 새로 빌드합니다.
       # master CI 산출물을 재사용하면 더 낮은 versionCode로 제출할 수 있습니다.
       - uses: pnpm/action-setup@v5
 

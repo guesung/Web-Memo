@@ -5,6 +5,7 @@
 		"jsxImportSource": "nativewind",
 		"module": "esnext",
 		"moduleResolution": "bundler",
+		"moduleSuffixes": [".ios", ".android", ""],
 		"paths": {
 			"@/*": ["./*"]
 		}

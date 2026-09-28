@@ -1,6 +1,7 @@
 import { SUPABASE } from "../../constants";
 import type { HighlightTable, MemoSupabaseClient } from "../../types";
 import { getPageKey } from "../Url";
+import { fetchAllByPageKeyBatched } from "./fetchAllByPageKeyBatched";
 
 /** 하이라이트 목록 페이지네이션 커서. (정렬값, id) 복합 커서로 중복·누락을 막는다. */
 export interface HighlightPageCursor {
@@ -37,35 +38,22 @@ export class HighlightService {
 	/** 모바일 WebView 복원용. 페이지 하나의 하이라이트를 모두 가져온다. */
 	getHighlightsByUrl = async (url: string) => {
 		const pageKey = getPageKey(url);
-		const highlights: HighlightTable["Row"][] = [];
-		let lastId = 0;
-		while (true) {
-			const { data, error } = await this.table
-				.select("*")
-				.in("page_key", [pageKey, ""])
-				.gt("id", lastId)
-				.order("id", { ascending: true })
-				.limit(500);
-			if (error) {
-				return { data: null, error };
-			}
-			highlights.push(
-				...(data ?? []).filter((highlight) => {
-					try {
-						return (
-							(highlight.page_key || getPageKey(highlight.url)) === pageKey
-						);
-					} catch {
-						return false;
-					}
-				}),
-			);
-			if (!data || data.length < 500) {
-				break;
-			}
-			lastId = data[data.length - 1].id;
-		}
-		return { data: highlights, error: null };
+		return fetchAllByPageKeyBatched<HighlightTable["Row"]>({
+			fetchBatch: (lastId, batchSize) =>
+				this.table
+					.select("*")
+					.in("page_key", [pageKey, ""])
+					.gt("id", lastId)
+					.order("id", { ascending: true })
+					.limit(batchSize),
+			matches: (highlight) => {
+				try {
+					return (highlight.page_key || getPageKey(highlight.url)) === pageKey;
+				} catch {
+					return false;
+				}
+			},
+		});
 	};
 
 	/** 소유자의 하이라이트 한 건과 저장된 원본 URL을 확인한다. */
@@ -83,33 +71,30 @@ export class HighlightService {
 
 		const highlights: HighlightTable["Row"][] = [];
 		for (const urlBatch of getPageKeyBatches(uniqueUrls)) {
-			let lastId = 0;
-			while (true) {
-				const { data, error } = await this.table
-					.select("*")
-					.in("page_key", [...urlBatch, ""])
-					.gt("id", lastId)
-					.order("id", { ascending: true })
-					.limit(500);
-				if (error) {
-					return { data: null, error };
-				}
-				highlights.push(
-					...(data ?? []).filter((highlight) => {
-						try {
-							return urlBatch.includes(
-								highlight.page_key || getPageKey(highlight.url),
-							);
-						} catch {
-							return false;
-						}
-					}),
-				);
-				if (!data || data.length < 500) {
-					break;
-				}
-				lastId = data[data.length - 1].id;
+			const { data, error } = await fetchAllByPageKeyBatched<
+				HighlightTable["Row"]
+			>({
+				fetchBatch: (lastId, batchSize) =>
+					this.table
+						.select("*")
+						.in("page_key", [...urlBatch, ""])
+						.gt("id", lastId)
+						.order("id", { ascending: true })
+						.limit(batchSize),
+				matches: (highlight) => {
+					try {
+						return urlBatch.includes(
+							highlight.page_key || getPageKey(highlight.url),
+						);
+					} catch {
+						return false;
+					}
+				},
+			});
+			if (error) {
+				return { data: null, error };
 			}
+			highlights.push(...(data ?? []));
 		}
 
 		return { data: highlights, error: null };
@@ -206,31 +191,33 @@ export class HighlightService {
 		const targetPageKeys = new Set(pageKeys);
 		const counts = new Map<string, number>();
 		for (const pageKeyBatch of getPageKeyBatches(Array.from(targetPageKeys))) {
-			let lastId = 0;
-			while (true) {
-				const result = await this.table
-					.select("id, url, page_key")
-					.in("page_key", [...pageKeyBatch, ""])
-					.gt("id", lastId)
-					.order("id", { ascending: true })
-					.limit(500);
-				if (result.error) {
-					return { data: null, error: result.error };
-				}
-				for (const highlight of result.data ?? []) {
+			const { data, error } = await fetchAllByPageKeyBatched<
+				Pick<HighlightTable["Row"], "id" | "url" | "page_key">
+			>({
+				fetchBatch: (lastId, batchSize) =>
+					this.table
+						.select("id, url, page_key")
+						.in("page_key", [...pageKeyBatch, ""])
+						.gt("id", lastId)
+						.order("id", { ascending: true })
+						.limit(batchSize),
+				matches: (highlight) => {
 					try {
-						const pageKey = highlight.page_key || getPageKey(highlight.url);
-						if (pageKeyBatch.includes(pageKey)) {
-							counts.set(pageKey, (counts.get(pageKey) ?? 0) + 1);
-						}
+						return pageKeyBatch.includes(
+							highlight.page_key || getPageKey(highlight.url),
+						);
 					} catch {
 						// 백필할 수 없는 기존 URL은 다른 페이지의 집계를 막지 않는다.
+						return false;
 					}
-				}
-				if (!result.data || result.data.length < 500) {
-					break;
-				}
-				lastId = result.data[result.data.length - 1].id;
+				},
+			});
+			if (error) {
+				return { data: null, error };
+			}
+			for (const highlight of data ?? []) {
+				const pageKey = highlight.page_key || getPageKey(highlight.url);
+				counts.set(pageKey, (counts.get(pageKey) ?? 0) + 1);
 			}
 		}
 		return {

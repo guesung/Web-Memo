@@ -27,6 +27,7 @@ import {
 	useSettingQuery,
 	useSettingUpsertMutation,
 } from "@/lib/hooks/useSetting";
+import { useTabBarHideOnScroll } from "@/lib/hooks/useTabBarHideOnScroll";
 import type { TThemePreference } from "@/lib/storage/themePreference";
 
 /** 설정 화면에 노출할 테마 선택 항목 */
@@ -46,6 +47,7 @@ export default function SettingsScreen() {
 	const { session, signOut, isLoggedIn } = useAuth();
 	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
 	const { mutate: upsertSetting } = useSettingUpsertMutation();
+	const { scrollProps } = useTabBarHideOnScroll();
 	const { themePreference, isDark, setThemePreference } = useTheme();
 
 	const handleSignOut = () => {
@@ -75,6 +77,7 @@ export default function SettingsScreen() {
 			{/* 섹션이 화면 높이를 넘어가므로 스크롤 주체가 필요하다. 일반 View로 두면
 			    넘치는 섹션(로그인 시 메모 필드부터)이 잘린 채 닿을 방법이 없다. */}
 			<ScrollView
+				{...scrollProps}
 				className="flex-1 px-5"
 				contentContainerStyle={{ paddingBottom: 32 }}
 				showsVerticalScrollIndicator={false}

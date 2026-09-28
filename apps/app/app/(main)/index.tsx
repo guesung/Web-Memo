@@ -19,6 +19,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useScrollPositions } from "@/lib/hooks/useScrollPositions";
 import { useSettingQuery } from "@/lib/hooks/useSetting";
+import { useTabBarHideOnScroll } from "@/lib/hooks/useTabBarHideOnScroll";
 import { MemoCard, type MemoItem } from "./_components/MemoCard";
 import { MemoDetailModal } from "./_components/MemoDetailModal";
 import { TodayArticles } from "./_components/TodayArticles";
@@ -58,6 +59,16 @@ export default function MemoScreen() {
 		highlightCounts,
 	} = useMemoList();
 	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
+	const { scrollProps, showTabBar } = useTabBarHideOnScroll();
+	const isMemoListShown = memos.length > 0;
+
+	// 필터·삭제로 목록이 비면 FlatList가 빈 화면으로 바뀌어 스크롤로는 탭바를 되돌릴 수 없다.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: showTabBar는 매 렌더 새로 만들어지지만 공유 값만 바꾼다
+	useEffect(() => {
+		if (!isMemoListShown) {
+			showTabBar();
+		}
+	}, [isMemoListShown]);
 
 	useEffect(() => {
 		if (filterParam === "wish") {
@@ -208,6 +219,7 @@ export default function MemoScreen() {
 										: "최근 메모"}
 						</Text>
 						<FlatList
+							{...scrollProps}
 							data={memos}
 							keyExtractor={(item) => String(item.id)}
 							renderItem={({ item }) => (

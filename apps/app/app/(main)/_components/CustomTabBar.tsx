@@ -41,18 +41,16 @@ export function CustomTabBar({
 	navigation,
 }: CustomTabBarProps) {
 	const insets = useSafeAreaInsets();
-	const { tabBarTranslateY, isBrowserActive } = useBrowserScroll();
+	const { tabBarTranslateY } = useBrowserScroll();
 	const barHeight = useSharedValue(0);
 	const { isKeyboardVisible } = useKeyboardHeight();
 	const isDark = useColorScheme() === "dark";
 
 	// 안쪽 바가 absolute라 래퍼는 높이를 스스로 갖지 못한다. 측정 전(0)에도 항상 높이를 지정해야 한다.
+	// 스크롤 숨김 오프셋은 각 화면이 떠날 때 0으로 되돌리므로 여기서 탭별로 가르지 않는다.
 	const wrapperStyle = useAnimatedStyle(() => {
-		const hiddenOffset =
-			isBrowserActive.value === 1 ? tabBarTranslateY.value : 0;
-
 		return {
-			height: Math.max(0, barHeight.value - hiddenOffset),
+			height: Math.max(0, barHeight.value - tabBarTranslateY.value),
 			overflow: "hidden" as const,
 		};
 	});

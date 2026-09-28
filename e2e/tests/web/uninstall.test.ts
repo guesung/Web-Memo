@@ -59,7 +59,7 @@ test.describe("확장 삭제 사유 설문", () => {
 		await expect(page.getByRole("radio")).toHaveCount(6);
 		await expect(page.getByRole("radio", { checked: true })).toHaveCount(0);
 		await expect(
-			page.getByRole("button", { name: SUBMIT_BUTTON_NAME }),
+			page.getByRole("button", { name: SUBMIT_BUTTON_NAME, exact: true }),
 		).toBeDisabled();
 	});
 
@@ -69,7 +69,7 @@ test.describe("확장 삭제 사유 설문", () => {
 		await page.getByRole("radio", { name: "쓸 일이 없었어요" }).click();
 
 		await expect(
-			page.getByRole("button", { name: SUBMIT_BUTTON_NAME }),
+			page.getByRole("button", { name: SUBMIT_BUTTON_NAME, exact: true }),
 		).toBeEnabled();
 	});
 
@@ -80,12 +80,14 @@ test.describe("확장 삭제 사유 설문", () => {
 		await page.goto(`/ko${PATHS.uninstall}`);
 
 		await page.getByRole("radio", { name: "쓰기 어려웠어요" }).click();
-		await page.getByRole("button", { name: SUBMIT_BUTTON_NAME }).click();
+		await page
+			.getByRole("button", { name: SUBMIT_BUTTON_NAME, exact: true })
+			.click();
 
 		await expect(page.getByText(THANKS_TITLE)).toBeVisible();
 		await expect(page.locator("form")).toHaveCount(0);
-		await expect(page.getByRole("button")).toHaveCount(0);
-		await expect(page.getByRole("link")).toHaveCount(0);
+		await expect(page.locator("main").getByRole("button")).toHaveCount(0);
+		await expect(page.locator("main").getByRole("link")).toHaveCount(0);
 
 		expect(requests).toHaveLength(1);
 		const payload = requests[0].postDataJSON();
@@ -106,7 +108,9 @@ test.describe("확장 삭제 사유 설문", () => {
 		await page
 			.getByLabel("더 남기고 싶은 말이 있어요?")
 			.fill("  단축키가 아쉬웠어요 ");
-		await page.getByRole("button", { name: SUBMIT_BUTTON_NAME }).click();
+		await page
+			.getByRole("button", { name: SUBMIT_BUTTON_NAME, exact: true })
+			.click();
 
 		await expect(page.getByText(THANKS_TITLE)).toBeVisible();
 		const content = JSON.parse(requests[0].postDataJSON().content);
@@ -122,9 +126,13 @@ test.describe("확장 삭제 사유 설문", () => {
 
 		await page.getByRole("radio", { name: "다른 걸 쓰게 됐어요" }).click();
 		await page.getByLabel("더 남기고 싶은 말이 있어요?").fill("다른 앱");
-		await page.getByRole("button", { name: SUBMIT_BUTTON_NAME }).click();
+		await page
+			.getByRole("button", { name: SUBMIT_BUTTON_NAME, exact: true })
+			.click();
 
-		await expect(page.getByRole("alert")).toContainText(ERROR_MESSAGE);
+		await expect(page.locator("main").getByRole("alert")).toContainText(
+			ERROR_MESSAGE,
+		);
 		await expect(page.getByText("boom")).toHaveCount(0);
 		await expect(
 			page.getByRole("radio", { name: "다른 걸 쓰게 됐어요" }),
@@ -133,7 +141,7 @@ test.describe("확장 삭제 사유 설문", () => {
 			"다른 앱",
 		);
 		await expect(
-			page.getByRole("button", { name: SUBMIT_BUTTON_NAME }),
+			page.getByRole("button", { name: SUBMIT_BUTTON_NAME, exact: true }),
 		).toBeEnabled();
 	});
 
@@ -142,7 +150,10 @@ test.describe("확장 삭제 사유 설문", () => {
 		await page.goto(`/ko${PATHS.uninstall}`);
 
 		await page.getByRole("radio", { name: "쓸 일이 없었어요" }).click();
-		const submitButton = page.getByRole("button", { name: SUBMIT_BUTTON_NAME });
+		const submitButton = page.getByRole("button", {
+			name: SUBMIT_BUTTON_NAME,
+			exact: true,
+		});
 		await submitButton.click();
 
 		await expect(page.getByText("보내는 중이에요")).toBeVisible();
@@ -161,6 +172,8 @@ test.describe("확장 삭제 사유 설문", () => {
 		await expect(
 			page.getByRole("heading", { name: "You removed Web Memo" }),
 		).toBeVisible();
-		await expect(page.getByRole("button", { name: "Send" })).toBeDisabled();
+		await expect(
+			page.getByRole("button", { name: "Send", exact: true }),
+		).toBeDisabled();
 	});
 });

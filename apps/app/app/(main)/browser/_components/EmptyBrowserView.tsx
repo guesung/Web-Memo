@@ -2,22 +2,27 @@ import { Search } from "lucide-react-native";
 import { ScrollView, TextInput, useColorScheme, View } from "react-native";
 import type { EdgeInsets } from "react-native-safe-area-context";
 import { FavoriteLinks } from "./FavoriteLinks";
+import { TabCountButton } from "./TabCountButton";
 import { TechBlogLinks } from "./TechBlogLinks";
 
 interface EmptyBrowserViewProps {
 	insets: EdgeInsets;
 	urlInput: string;
+	tabCount: number;
 	onUrlInputChange: (text: string) => void;
 	onUrlSubmit: () => void;
 	onSelectBlog: (url: string) => void;
+	onOpenTabSheet: () => void;
 }
 
 export function EmptyBrowserView({
 	insets,
 	urlInput,
+	tabCount,
 	onUrlInputChange,
 	onUrlSubmit,
 	onSelectBlog,
+	onOpenTabSheet,
 }: EmptyBrowserViewProps) {
 	const isDark = useColorScheme() === "dark";
 
@@ -27,8 +32,8 @@ export function EmptyBrowserView({
 			style={{ paddingTop: insets.top }}
 		>
 			<ScrollView className="flex-1 pt-4" keyboardShouldPersistTaps="handled">
-				<View className="px-5">
-					<View className="flex-row items-center bg-input dark:bg-neutral-800 rounded-[14px] px-3.5 py-3 gap-2.5">
+				<View className="flex-row items-center gap-2 px-5">
+					<View className="flex-1 flex-row items-center bg-input dark:bg-neutral-800 rounded-[14px] px-3.5 py-3 gap-2.5">
 						<Search size={18} color={isDark ? "#737373" : "#999"} />
 						<TextInput
 							className="flex-1 text-base text-[#333] dark:text-white p-0"
@@ -43,6 +48,7 @@ export function EmptyBrowserView({
 							returnKeyType="go"
 						/>
 					</View>
+					<TabCountButton count={tabCount} onPress={onOpenTabSheet} />
 				</View>
 				<FavoriteLinks onSelectUrl={onSelectBlog} />
 				<TechBlogLinks onSelectBlog={onSelectBlog} />

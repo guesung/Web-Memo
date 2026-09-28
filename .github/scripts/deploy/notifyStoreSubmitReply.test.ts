@@ -40,7 +40,7 @@ const runScript = (env: Record<string, string>, mockSlack = false) => {
 	};
 };
 
-describe("develop 앱 내부 테스트 제출 댓글", () => {
+describe("develop 앱 App Tester 배포 댓글", () => {
 	const submitEnv = {
 		TARGET: "app",
 		REPLY_PHASE: "store-submit",
@@ -54,8 +54,8 @@ describe("develop 앱 내부 테스트 제출 댓글", () => {
 	};
 
 	it.each([
-		["success", "앱 내부 테스트 제출 완료"],
-		["failure", "앱 빌드·내부 테스트 제출 실패"],
+		["success", "앱 App Tester 배포 완료"],
+		["failure", "앱 빌드·App Tester 배포 실패"],
 	])(
 		"%s 결과를 같은 스레드에 로그 링크만 붙여 전송한다",
 		(outcome, message) => {

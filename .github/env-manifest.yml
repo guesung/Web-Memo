@@ -91,7 +91,13 @@
   kind: secret
   stores: [github]
   consumers: [.github/workflows/cd-app.yml, .github/workflows/ci.yml, .github/workflows/versions.yml]
-  impact: "Google Play 내부 테스트 제출과 현황 조회가 실패한다"
+  impact: "master 릴리스(release.yml)의 Google Play 내부 테스트 제출과 현황 조회가 실패한다"
+
+- name: FIREBASE_SERVICE_ACCOUNT_JSON
+  kind: secret
+  stores: [github]
+  consumers: [.github/workflows/cd-app.yml]
+  impact: "develop 앱 빌드의 Firebase App Distribution(App Tester) 배포가 실패한다"
 
 - name: CLAUDE_CODE_OAUTH_TOKEN
   kind: secret

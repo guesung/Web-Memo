@@ -23,7 +23,7 @@ export const metadataEnglish = createPublicPageMetadata({
 	path: "/features/memo",
 	title: "Browser Notes - Take Notes While Reading | Web Memo",
 	description:
-		"Take notes while reading web pages. Capture your thoughts instantly in the side panel and organize them systematically. Get started with our free Chrome extension.",
+		"Take notes while reading web pages. Capture thoughts instantly in the side panel and organize them systematically with our free Chrome extension.",
 	keywords: [
 		"browser notes",
 		"article notes",

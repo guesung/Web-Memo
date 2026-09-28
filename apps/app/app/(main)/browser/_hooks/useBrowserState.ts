@@ -83,9 +83,14 @@ export function useBrowserState({
 } = {}) {
 	const insets = useSafeAreaInsets();
 	const webViewRef = useRef<WebView>(null);
-	const { url: paramUrl, t: navTs } = useLocalSearchParams<{
+	const {
+		url: paramUrl,
+		t: navTs,
+		newTab: newTabParam,
+	} = useLocalSearchParams<{
 		url?: string;
 		t?: string;
+		newTab?: string;
 	}>();
 
 	const {
@@ -96,6 +101,7 @@ export function useBrowserState({
 		updateActiveTabInfo,
 		activateTab,
 		openNewTab,
+		openUrlInNewTab,
 		removeTab,
 	} = useBrowserTabs();
 	const currentUrl = activeTab.url;
@@ -250,11 +256,27 @@ export function useBrowserState({
 		// 탭 저장본 로드가 끝나기 전에 열면, 로드된 저장본이 paramUrl로 연 탭을 덮어쓴다.
 		if (!paramUrl || !isTabsLoaded) return;
 		const decoded = decodeURIComponent(paramUrl);
-		updateActiveTabInfo({ url: decoded, title: "" });
+		if (newTabParam !== "1") {
+			updateActiveTabInfo({ url: decoded, title: "" });
+			setIsMemoOpen(false);
+			setSelectedMemoId(null);
+			panelHeight.value = withSpring(0, SPRING_CONFIG);
+			return;
+		}
+
+		// 렌더 시점 tabsState를 읽지만, 이 effect는 isTabsLoaded가 true가 된 렌더 이후에만 실행되고
+		// 저장본 반영(setTabsState)과 같은 배치로 렌더되므로 최신 값이다.
+		const next = openUrlInNewTab(decoded);
+		if (next.activeTabId !== activeTabId) {
+			const nextTab = next.tabs.find((tab) => tab.id === next.activeTabId);
+			resetForTabChange(nextTab?.url ?? "");
+			return;
+		}
+
 		setIsMemoOpen(false);
 		setSelectedMemoId(null);
 		panelHeight.value = withSpring(0, SPRING_CONFIG);
-	}, [paramUrl, navTs, panelHeight, isTabsLoaded]);
+	}, [paramUrl, navTs, newTabParam, panelHeight, isTabsLoaded]);
 
 	const handleNavigationStateChange = (navState: WebViewNavigation) => {
 		syncCanGoBack(navState.canGoBack);

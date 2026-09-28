@@ -82,3 +82,30 @@ export function updateActiveTab(
 		),
 	};
 }
+
+/**
+ * 링크를 새 탭 우선으로 연다.
+ * @description 같은 페이지(getPageKey 일치)의 탭이 있으면 그 탭으로 전환하고, 없으면 활성 탭이
+ * 빈 새 탭일 때 그 탭에 url을 연다. 그 외에는 url을 담은 새 탭을 끝에 추가·활성화한다.
+ * 빈 url 탭은 같은 페이지 비교에서 제외한다.
+ */
+export function openUrlInTab(
+	state: IFBrowserTabsState,
+	url: string,
+	{ getKey, newTabId }: { getKey: (url: string) => string; newTabId?: string },
+): IFBrowserTabsState {
+	const targetKey = getKey(url);
+	const samePageTab = state.tabs.find(
+		(tab) => tab.url !== "" && getKey(tab.url) === targetKey,
+	);
+	if (samePageTab) {
+		return selectTab(state, samePageTab.id);
+	}
+
+	const activeTab = state.tabs.find((tab) => tab.id === state.activeTabId);
+	if (activeTab?.url === "") {
+		return updateActiveTab(state, { url, title: "" });
+	}
+
+	return addTab(state, { ...createEmptyTab(newTabId), url });
+}

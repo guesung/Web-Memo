@@ -79,13 +79,6 @@
 				}
 			],
 			"expo-apple-authentication",
-			[
-				"expo-share-intent",
-				{
-					"androidIntentFilters": ["text/*"],
-					"disableIOS": true
-				}
-			],
 			"./plugins/withIosKeychainAccessGroup",
 			[
 				"expo-share-extension",
@@ -95,7 +88,6 @@
 						"expo-dev-client",
 						"expo-splash-screen",
 						"expo-sqlite",
-						"expo-share-intent",
 						"expo-apple-authentication",
 						"@react-native-google-signin/google-signin",
 						"@react-native-seoul/kakao-login"
@@ -118,7 +110,8 @@
 			],
 			"./plugins/withKakaoMavenRepo",
 			"./plugins/withAndroidGradleMemory",
-			"./plugins/withAndroidConfigChanges"
+			"./plugins/withAndroidConfigChanges",
+			"./plugins/withAndroidShareActivity"
 		],
 		"experiments": {
 			"typedRoutes": true

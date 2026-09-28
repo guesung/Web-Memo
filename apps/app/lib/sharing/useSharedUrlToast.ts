@@ -4,9 +4,9 @@ import { handleSharedUrl } from "@/lib/sharing/shareHandler";
 
 /**
  * 공유받은 URL을 처리하고 결과를 토스트 문구로 보여준다.
- * @description Android의 expo-share-intent(ShareIntentHandler)와 iOS 공유 확장이 여는
- * `webmemo://share` 딥링크(app/share.tsx)가 이 훅을 함께 쓴다. 후보 선택이 필요해
- * 저장하지 못했는지는 호출한 쪽이 반환값으로 판단해 브라우저로 이동시킨다.
+ * @description iOS 공유 확장·Android ShareActivity가 여는 `webmemo://share` 딥링크
+ * (app/share.tsx)가 이 훅을 쓴다. 후보 선택이 필요해 저장하지 못했는지는 호출한 쪽이
+ * 반환값으로 판단해 브라우저로 이동시킨다.
  */
 export function useSharedUrlToast() {
 	const queryClient = useQueryClient();

@@ -34,7 +34,7 @@ export class MemoService {
 	getMemoByUrl = async (url: string) => {
 		const pageKey = getPageKey(url);
 		const { data, error } = await fetchAllByPageKeyBatched<GetMemoResponse>({
-			fetchBatch: (lastId) =>
+			fetchBatch: (lastId, batchSize) =>
 				this.supabaseClient
 					.schema(SUPABASE.table.memo)
 					.from(SUPABASE.table.memo)
@@ -43,7 +43,7 @@ export class MemoService {
 					.in("page_key", [pageKey, ""])
 					.gt("id", lastId)
 					.order("id", { ascending: true })
-					.limit(500),
+					.limit(batchSize),
 			matches: (memo) => {
 				try {
 					return (memo.page_key || getPageKey(memo.url)) === pageKey;
@@ -77,7 +77,7 @@ export class MemoService {
 
 		for (const pageKeyFilter of ["like", "empty"] as const) {
 			const { data, error } = await fetchAllByPageKeyBatched<GetMemoResponse>({
-				fetchBatch: (lastId) => {
+				fetchBatch: (lastId, batchSize) => {
 					const baseQuery = this.supabaseClient
 						.schema(SUPABASE.table.memo)
 						.from(SUPABASE.table.memo)
@@ -90,7 +90,7 @@ export class MemoService {
 					return filteredQuery
 						.gt("id", lastId)
 						.order("id", { ascending: true })
-						.limit(500);
+						.limit(batchSize);
 				},
 				matches: (memo) => {
 					try {

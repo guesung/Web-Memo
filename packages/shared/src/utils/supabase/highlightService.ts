@@ -39,13 +39,13 @@ export class HighlightService {
 	getHighlightsByUrl = async (url: string) => {
 		const pageKey = getPageKey(url);
 		return fetchAllByPageKeyBatched<HighlightTable["Row"]>({
-			fetchBatch: (lastId) =>
+			fetchBatch: (lastId, batchSize) =>
 				this.table
 					.select("*")
 					.in("page_key", [pageKey, ""])
 					.gt("id", lastId)
 					.order("id", { ascending: true })
-					.limit(500),
+					.limit(batchSize),
 			matches: (highlight) => {
 				try {
 					return (highlight.page_key || getPageKey(highlight.url)) === pageKey;
@@ -74,13 +74,13 @@ export class HighlightService {
 			const { data, error } = await fetchAllByPageKeyBatched<
 				HighlightTable["Row"]
 			>({
-				fetchBatch: (lastId) =>
+				fetchBatch: (lastId, batchSize) =>
 					this.table
 						.select("*")
 						.in("page_key", [...urlBatch, ""])
 						.gt("id", lastId)
 						.order("id", { ascending: true })
-						.limit(500),
+						.limit(batchSize),
 				matches: (highlight) => {
 					try {
 						return urlBatch.includes(
@@ -194,13 +194,13 @@ export class HighlightService {
 			const { data, error } = await fetchAllByPageKeyBatched<
 				Pick<HighlightTable["Row"], "id" | "url" | "page_key">
 			>({
-				fetchBatch: (lastId) =>
+				fetchBatch: (lastId, batchSize) =>
 					this.table
 						.select("id, url, page_key")
 						.in("page_key", [...pageKeyBatch, ""])
 						.gt("id", lastId)
 						.order("id", { ascending: true })
-						.limit(500),
+						.limit(batchSize),
 				matches: (highlight) => {
 					try {
 						return pageKeyBatch.includes(

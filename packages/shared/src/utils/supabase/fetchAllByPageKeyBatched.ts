@@ -8,8 +8,11 @@ export interface IFPageKeyBatchResult<TRow> {
 
 /** {@link fetchAllByPageKeyBatched} 인자. */
 export interface IFFetchAllByPageKeyBatchedParams<TRow extends { id: number }> {
-	/** `lastId`를 받아 `gt("id", lastId)`·정렬·`limit`까지 마친 배치 쿼리를 실행한다. */
-	fetchBatch: (lastId: number) => PromiseLike<IFPageKeyBatchResult<TRow>>;
+	/** `lastId`·`batchSize`를 받아 `gt("id", lastId)`·정렬·`limit(batchSize)`까지 마친 배치 쿼리를 실행한다. */
+	fetchBatch: (
+		lastId: number,
+		batchSize: number,
+	) => PromiseLike<IFPageKeyBatchResult<TRow>>;
 	/** 서버측 필터를 통과한 행을 클라이언트에서 다시 확인하는 매칭 조건. 파싱 실패는 호출부에서 false로 처리해야 한다. */
 	matches: (row: TRow) => boolean;
 	/** 한 번에 읽어오는 배치 크기. 기본 500. */
@@ -33,7 +36,7 @@ export const fetchAllByPageKeyBatched = async <TRow extends { id: number }>({
 	let lastId = 0;
 
 	while (true) {
-		const { data, error } = await fetchBatch(lastId);
+		const { data, error } = await fetchBatch(lastId, batchSize);
 		if (error) {
 			return { data: null, error };
 		}

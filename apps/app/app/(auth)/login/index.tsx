@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { ActivityIndicator, Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import {
+	setAnalyticsUserId,
+	trackAppEvent,
+} from "@/lib/analytics/appAnalytics";
 import { useOAuth } from "@/lib/auth/useOAuth";
+import { supabase } from "@/lib/supabase/client";
 import { SocialLoginButton } from "./_components/SocialLoginButton";
 import type { Provider } from "./_types/provider";
 
@@ -28,6 +33,12 @@ export default function LoginScreen() {
 					await signInWithApple();
 					break;
 			}
+			// AnalyticsUserSync effect보다 먼저 user_id를 넣어야 본인 제외 게이트가 걸린다.
+			const {
+				data: { session },
+			} = await supabase.auth.getSession();
+			setAnalyticsUserId(session?.user.id);
+			void trackAppEvent({ name: "login", params: { method: provider } });
 		} catch (error) {
 			console.error("로그인 에러:", error);
 		} finally {

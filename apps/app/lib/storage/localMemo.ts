@@ -76,7 +76,11 @@ const resolveLocalCandidate = async (
 	return memos.find((memo) => memo.id === selected?.id);
 };
 
-export async function upsertMemo(params: {
+/**
+ * 메모를 저장하고, 기존 메모를 고친 것인지 함께 알려 준다.
+ * @description 새로 만든 메모와 수정을 GA 이벤트에서 가르려고 존재 여부를 돌려준다.
+ */
+export async function upsertMemoWithExisting(params: {
 	selectedId?: string;
 	url: string;
 	title: string;
@@ -87,7 +91,7 @@ export async function upsertMemo(params: {
 	isWish?: boolean;
 	isStar?: boolean;
 	isReading?: boolean;
-}): Promise<LocalMemo> {
+}): Promise<{ memo: LocalMemo; isExisting: boolean }> {
 	const memos = await getAll();
 	const now = new Date().toISOString();
 	// 휴지통에 있는 같은 URL의 메모는 없는 것으로 친다. 그걸 덮어쓰면 사용자가
@@ -119,7 +123,7 @@ export async function upsertMemo(params: {
 		existing.updatedAt = now;
 		existing.synced = false;
 		await save(memos);
-		return existing;
+		return { memo: existing, isExisting: true };
 	}
 
 	const newMemo: LocalMemo = {
@@ -139,7 +143,15 @@ export async function upsertMemo(params: {
 	};
 	memos.push(newMemo);
 	await save(memos);
-	return newMemo;
+	return { memo: newMemo, isExisting: false };
+}
+
+export async function upsertMemo(
+	params: Parameters<typeof upsertMemoWithExisting>[0],
+): Promise<LocalMemo> {
+	const { memo } = await upsertMemoWithExisting(params);
+
+	return memo;
 }
 
 export async function toggleWishByUrl(

@@ -1,7 +1,9 @@
 import { ANALYTICS_EXCLUDED_USER_ID } from "@web-memo/shared/constants";
 import { describe, expect, it } from "vitest";
 import {
+	APP_EVENT_CATEGORY,
 	buildEventParams,
+	buildMemoWriteFields,
 	buildPayload,
 	isSessionExpired,
 	isTrackableUser,
@@ -82,5 +84,25 @@ describe("buildPayload", () => {
 		expect(buildPayload({ ...base, userId: undefined })).not.toHaveProperty(
 			"user_id",
 		);
+	});
+});
+
+describe("APP_EVENT_CATEGORY", () => {
+	it("핵심 행동 이벤트는 core_action이다", () => {
+		expect(APP_EVENT_CATEGORY.memo_first_write).toBe("core_action");
+		expect(APP_EVENT_CATEGORY.login).toBe("core_action");
+		expect(APP_EVENT_CATEGORY.page_view).toBe("engagement");
+	});
+});
+
+describe("buildMemoWriteFields", () => {
+	it("채운 본문 필드만 이름순으로 잇는다", () => {
+		expect(
+			buildMemoWriteFields({ title: "t", memo: "m", actionItem: "a" }),
+		).toBe("actionItem,memo,title");
+	});
+
+	it("undefined인 필드는 뺀다", () => {
+		expect(buildMemoWriteFields({ title: "t", memo: "m" })).toBe("memo,title");
 	});
 });

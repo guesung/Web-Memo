@@ -45,6 +45,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 	}
 });
 
+// 확장을 삭제하면 브라우저가 이 주소를 새 탭으로 엽니다. 삭제 사유 설문 페이지입니다.
+// 언어 접두사는 웹 미들웨어가 붙여 줍니다. 서비스 워커가 뜰 때마다 다시 등록해 누락을 막습니다.
+chrome.runtime.setUninstallURL(`${CONFIG.webUrl}/uninstall`);
+
 /**
  * 설치 직후 웹의 메모 페이지를 새 탭으로 엽니다.
  * @description 확장의 client_id를 `ext_cid`로 실어 보내 웹 가입까지 한 사용자로 이어 집계합니다.

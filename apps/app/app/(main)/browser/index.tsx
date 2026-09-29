@@ -11,6 +11,7 @@ import { EmptyBrowserView } from "./_components/EmptyBrowserView";
 import { HighlightEditSheet } from "./_components/HighlightEditSheet";
 import { MemoPanel } from "./_components/MemoPanel";
 import { PageActionsSheet } from "./_components/PageActionsSheet";
+import { TabSwitcherSheet } from "./_components/TabSwitcherSheet";
 import { TechBlogBottomSheet } from "./_components/TechBlogBottomSheet";
 import { useBrowserState } from "./_hooks/useBrowserState";
 import {
@@ -76,6 +77,13 @@ export default function BrowserScreen() {
 		handleSelectionUnlockToggle,
 		isActionsSheetOpen,
 		setIsActionsSheetOpen,
+		tabs,
+		activeTabId,
+		isTabSheetOpen,
+		setIsTabSheetOpen,
+		handleTabSelect,
+		handleTabClose,
+		handleNewTabOpen,
 		isAISheetOpen,
 		openAISheet,
 		closeAISheet,
@@ -101,15 +109,32 @@ export default function BrowserScreen() {
 					(row) => row.id === highlights.tappedHighlightId,
 				) ?? null);
 
+	const tabSwitcherSheet = (
+		<TabSwitcherSheet
+			visible={isTabSheetOpen}
+			onClose={() => setIsTabSheetOpen(false)}
+			tabs={tabs}
+			activeTabId={activeTabId}
+			onSelectTab={handleTabSelect}
+			onCloseTab={handleTabClose}
+			onNewTab={handleNewTabOpen}
+		/>
+	);
+
 	if (!currentUrl) {
 		return (
-			<EmptyBrowserView
-				insets={insets}
-				urlInput={urlInput}
-				onUrlInputChange={setUrlInput}
-				onUrlSubmit={handleUrlSubmit}
-				onSelectBlog={handleBlogSelect}
-			/>
+			<>
+				<EmptyBrowserView
+					insets={insets}
+					urlInput={urlInput}
+					tabCount={tabs.length}
+					onUrlInputChange={setUrlInput}
+					onUrlSubmit={handleUrlSubmit}
+					onSelectBlog={handleBlogSelect}
+					onOpenTabSheet={() => setIsTabSheetOpen(true)}
+				/>
+				{tabSwitcherSheet}
+			</>
 		);
 	}
 
@@ -130,6 +155,7 @@ export default function BrowserScreen() {
 			<BrowserHeader
 				urlInput={urlInput}
 				currentUrl={currentUrl}
+				tabCount={tabs.length}
 				hasActiveStatus={hasActiveStatus}
 				headerWrapperStyle={headerWrapperStyle}
 				webViewRef={webViewRef}
@@ -141,6 +167,7 @@ export default function BrowserScreen() {
 				}}
 				onOpenBlogSheet={() => setIsBlogSheetOpen(true)}
 				onOpenActions={() => setIsActionsSheetOpen(true)}
+				onOpenTabSheet={() => setIsTabSheetOpen(true)}
 			/>
 
 			<View
@@ -241,6 +268,8 @@ export default function BrowserScreen() {
 				isSelectionUnlocked={isSelectionUnlocked}
 				onSelectionUnlockToggle={handleSelectionUnlockToggle}
 			/>
+
+			{tabSwitcherSheet}
 
 			<AISheet
 				visible={isAISheetOpen}

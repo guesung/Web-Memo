@@ -15,6 +15,10 @@ on:
         description: "EAS 빌드 프로파일 (ci = 빌드 번호 자동 증가·스토어 제출 가능, verify = 버려지는 검증 빌드)"
         type: string
         default: "verify"
+    outputs:
+      attempted:
+        description: "실제 앱 처리 또는 판정 실패 여부(생략된 후보는 false)"
+        value: ${{ jobs.build-app.outputs.attempted }}
 
 jobs:
   build-app:
@@ -22,7 +26,16 @@ jobs:
     # 바꾸면 스크립트의 매칭 문자열("ios 빌드" / "android 빌드")도 같이 고쳐야 합니다.
     name: ${{ matrix.platform }} 빌드
     runs-on: ${{ matrix.runner }}
+    # 번호 증가부터 제출까지 같은 실행권을 유지합니다. 대기 요청은 최대 100개 보존합니다.
+    concurrency:
+      group: ${{ (inputs.deploy_target != 'build-only' || inputs.build_profile != 'verify') && 'release-app' || format('verify-app-{0}-{1}', github.ref, matrix.platform) }}
+      cancel-in-progress: false
+      queue: max
+    outputs:
+      attempted: ${{ inputs.deploy_target != 'staging' || steps.prepare.outputs.attempted == 'true' }}
     env:
+      APP_PLATFORM: ${{ matrix.platform }}
+
       # PR 검증 빌드는 버려지는 산출물이라 빌드 번호를 올리면 안 됩니다(verify = autoIncrement off).
       # staging·production 배포는 번호를 올리고, master 빌드는 호출부가 ci를 넘깁니다.
       # staging의 Android는 Firebase App Distribution용 APK(staging 프로필)로 빌드하고,
@@ -43,6 +56,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref }}
+          fetch-depth: 0
 
       # Android 릴리스는 master CI가 ci 프로파일로 이미 빌드해 올린 AAB가 있으면 그것을 제출만 합니다.
       # EAS 빌드가 약 30분이라 같은 커밋을 다시 빌드하는 비용이 릴리스 시간의 거의 전부입니다.
@@ -75,20 +89,30 @@ jobs:
           node-version-file: ".nvmrc"
           cache: "pnpm"
 
+      # 공유 실행권을 얻은 뒤 검사합니다. 이후 푸시는 진행 중 빌드를 취소하지 않습니다.
+      - name: Prepare staging app
+        id: prepare
+        if: ${{ inputs.deploy_target == 'staging' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node .github/scripts/deploy/prepareStagingApp.mjs
+
       - name: Set up JDK
-        if: ${{ matrix.platform == 'android' && steps.reuse.outputs.found != 'true' }}
+        if: ${{ (inputs.deploy_target != 'staging' || steps.prepare.outputs.should_build == 'true') && matrix.platform == 'android' && steps.reuse.outputs.found != 'true' }}
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
 
       - uses: expo/expo-github-action@v9
+        if: ${{ (inputs.deploy_target != 'staging' || steps.prepare.outputs.should_build == 'true') }}
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
       # 빌드를 건너뛸 때도 설치는 합니다. eas submit이 프로젝트를 해석하는 데 필요합니다.
       - name: Install dependencies
+        if: ${{ (inputs.deploy_target != 'staging' || steps.prepare.outputs.should_build == 'true') }}
         run: pnpm install --frozen-lockfile --prefer-offline
 
       # 산출물 파일명: iOS는 ipa, Android는 staging 프로필(APK)만 apk이고 나머지는 aab입니다.
@@ -107,14 +131,14 @@ jobs:
       # ubuntu-26.04는 /tmp가 용량이 작은 tmpfs라, 로컬 빌드가 기본 작업 폴더(/tmp)를 쓰면
       # Gradle·CMake가 "Disk quota exceeded"로 죽습니다. 작업 폴더와 임시 파일을 디스크로 옮깁니다.
       - name: Build ${{ matrix.platform }}
-        if: ${{ steps.reuse.outputs.found != 'true' }}
+        if: ${{ (inputs.deploy_target != 'staging' || steps.prepare.outputs.should_build == 'true') && steps.reuse.outputs.found != 'true' }}
         env:
           EAS_LOCAL_BUILD_WORKINGDIR: ${{ runner.temp }}/eas-build
           TMPDIR: ${{ runner.temp }}
         run: cd apps/app && eas build --platform ${{ matrix.platform }} --profile "$BUILD_PROFILE" --local --non-interactive --output "./$BUILD_OUTPUT"
 
       - name: Upload build artifact
-        if: ${{ steps.reuse.outputs.found != 'true' }}
+        if: ${{ (inputs.deploy_target != 'staging' || steps.prepare.outputs.should_build == 'true') && steps.reuse.outputs.found != 'true' }}
         uses: actions/upload-artifact@v6
         with:
           # develop 배포용 산출물을 master·PR 검증 산출물과 구분합니다(프로필이 staging이면 이미 이름에 들어갑니다).
@@ -123,7 +147,7 @@ jobs:
           retention-days: 7
 
       - name: Write App Store Connect API key
-        if: ${{ (inputs.deploy_target == 'staging' || inputs.deploy_target == 'production') && matrix.platform == 'ios' }}
+        if: ${{ (inputs.deploy_target != 'staging' || steps.prepare.outputs.should_build == 'true') && (inputs.deploy_target == 'staging' || inputs.deploy_target == 'production') && matrix.platform == 'ios' }}
         env:
           ASC_API_KEY_P8: ${{ secrets.EXPO_ASC_API_KEY_P8 }}
         run: echo "$ASC_API_KEY_P8" > apps/app/asc-api-key.p8
@@ -136,12 +160,12 @@ jobs:
         run: echo "$PLAY_SERVICE_ACCOUNT_JSON" > apps/app/play-service-account.json
 
       - name: Submit to store
-        if: ${{ (matrix.platform == 'ios' && (inputs.deploy_target == 'staging' || inputs.deploy_target == 'production')) || (matrix.platform == 'android' && inputs.deploy_target == 'production') }}
+        if: ${{ (inputs.deploy_target != 'staging' || steps.prepare.outputs.should_build == 'true') && ((matrix.platform == 'ios' && (inputs.deploy_target == 'staging' || inputs.deploy_target == 'production')) || (matrix.platform == 'android' && inputs.deploy_target == 'production')) }}
         run: cd apps/app && eas submit --platform ${{ matrix.platform }} --profile production --path "./$BUILD_OUTPUT" --non-interactive
 
       # 실패해도 넘어가지 않습니다(continue-on-error 없음): 배포가 안 됐는데 잡이 초록이면 안 됩니다.
       - name: Distribute to Firebase App Distribution
-        if: ${{ inputs.deploy_target == 'staging' && matrix.platform == 'android' }}
+        if: ${{ inputs.deploy_target == 'staging' && steps.prepare.outputs.should_build == 'true' && matrix.platform == 'android' }}
         env:
           FIREBASE_ANDROID_APP_ID: "1:541718063018:android:ea2c32cbb48148403fedd3"
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
@@ -154,3 +178,20 @@ jobs:
             --app "$FIREBASE_ANDROID_APP_ID" \
             --groups testers \
             --release-notes "$RELEASE_NOTES"
+
+      # 전체 CI가 실패·취소돼도 실제 앱 배포 성공 기준은 독립적으로 남습니다.
+      - name: Record staging app deployment
+        id: marker
+        if: ${{ inputs.deploy_target == 'staging' && steps.prepare.outputs.should_build == 'true' }}
+        env:
+          APP_DEPLOYMENT_DIRECTORY: ${{ runner.temp }}/staging-app-${{ matrix.platform }}
+        run: node .github/scripts/deploy/prepareStagingApp.mjs --record
+
+      - name: Upload staging app success marker
+        if: ${{ inputs.deploy_target == 'staging' && steps.prepare.outputs.should_build == 'true' }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ steps.marker.outputs.marker_name }}
+          path: ${{ runner.temp }}/staging-app-${{ matrix.platform }}/deployment.json
+          if-no-files-found: error
+          retention-days: 90

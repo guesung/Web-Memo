@@ -110,6 +110,18 @@
 | `color` | `text` |
 | `memo_count` | `integer` |
 
+#### 테이블 `memo.favorite`
+
+| 컬럼 | 타입 |
+| --- | --- |
+| `id` | `bigint` |
+| `user_id` | `uuid` |
+| `url` | `text` |
+| `page_key` | `text` |
+| `title` | `text` |
+| `favIconUrl` | `text` |
+| `created_at` | `timestamp with time zone` |
+
 #### 테이블 `memo.highlight`
 
 | 컬럼 | 타입 |

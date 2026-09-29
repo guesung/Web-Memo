@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthProvider";
 import { ThemeProvider, useTheme } from "@/lib/context/ThemeContext";
 import { handleSharedUrl } from "@/lib/sharing/shareHandler";
+import { syncFavoritesToSupabase } from "@/lib/storage/favoriteSync";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
 import "../global.css";
 
@@ -48,6 +49,13 @@ function SyncOnAuth() {
 					}
 				})
 				.catch(() => {});
+			const syncFavorites = async () => {
+				try {
+					await syncFavoritesToSupabase();
+					queryClient.invalidateQueries({ queryKey: ["favorites"] });
+				} catch {}
+			};
+			syncFavorites();
 		}
 	}, [session]);
 

@@ -76,6 +76,36 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			favorite: {
+				Row: {
+					created_at: string;
+					favIconUrl: string | null;
+					id: number;
+					page_key: string;
+					title: string;
+					url: string;
+					user_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					favIconUrl?: string | null;
+					id?: number;
+					page_key: string;
+					title?: string;
+					url: string;
+					user_id: string;
+				};
+				Update: {
+					created_at?: string;
+					favIconUrl?: string | null;
+					id?: number;
+					page_key?: string;
+					title?: string;
+					url?: string;
+					user_id?: string;
+				};
+				Relationships: [];
+			};
 			highlight: {
 				Row: {
 					color: string;

@@ -20,6 +20,12 @@ export {
 export { AuthService } from "./supabase/authService";
 /** CategoryService 도메인 서비스의 기존 공개 경로를 유지한다. */
 export { CategoryService } from "./supabase/categoryService";
+/** 즐겨찾기 서비스와 입력 계약을 제공한다. */
+export {
+	FavoriteService,
+	type IFFavoriteInput,
+	type TFavoriteRow,
+} from "./supabase/favoriteService";
 /** FeedbackService 도메인 서비스의 기존 공개 경로를 유지한다. */
 export { FeedbackService } from "./supabase/feedbackService";
 /** 하이라이트 서비스와 조회 데이터 계약을 제공한다. */

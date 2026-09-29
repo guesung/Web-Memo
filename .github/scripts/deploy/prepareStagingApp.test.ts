@@ -58,7 +58,7 @@ function marker(sha: string, expired = false) {
 }
 
 function run(extraEnv: Record<string, string> = {}, args: string[] = []) {
-	return spawnSync(process.execPath, [SCRIPT, ...args], {
+	const result = spawnSync(process.execPath, [SCRIPT, ...args], {
 		cwd: work,
 		encoding: "utf8",
 		env: {
@@ -74,6 +74,9 @@ function run(extraEnv: Record<string, string> = {}, args: string[] = []) {
 			...extraEnv,
 		},
 	});
+	if (result.status !== 0 && extraEnv.FAIL_API !== "true")
+		console.error(result.stderr);
+	return result;
 }
 
 function output() {

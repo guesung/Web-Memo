@@ -1,5 +1,13 @@
 import { execFileSync, spawnSync } from "node:child_process";
-import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import {
+	appendFileSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { requireEnv } from "../shared/run-context.mjs";
@@ -89,18 +97,25 @@ function finishSkip(reason) {
 }
 
 function hasAppChanges({ baseSha }) {
-	const output = execFileSync(
-		"bash",
-		[fileURLToPath(new URL("./detect-affected-apps.sh", import.meta.url))],
-		{
-			encoding: "utf8",
-			env: { ...process.env, BASE_REF: baseSha, GITHUB_OUTPUT: "/dev/stdout" },
-		},
-	);
-	const match = /^app=(true|false)$/m.exec(output);
-	if (!match) throw new Error("앱 영향 판정 결과가 없습니다");
-	console.log(output.trim());
-	return match[1] === "true";
+	// Linux의 pipe stdout은 /dev/stdout 재열기를 지원하지 않으므로 파일로 받습니다.
+	const directory = mkdtempSync(join(tmpdir(), "app-affected-"));
+	const outputFile = join(directory, "output");
+	try {
+		const log = execFileSync(
+			"bash",
+			[fileURLToPath(new URL("./detect-affected-apps.sh", import.meta.url))],
+			{
+				encoding: "utf8",
+				env: { ...process.env, BASE_REF: baseSha, GITHUB_OUTPUT: outputFile },
+			},
+		);
+		const match = /^app=(true|false)$/m.exec(readFileSync(outputFile, "utf8"));
+		if (!match) throw new Error("앱 영향 판정 결과가 없습니다");
+		console.log(log.trim());
+		return match[1] === "true";
+	} finally {
+		rmSync(directory, { recursive: true, force: true });
+	}
 }
 
 function githubList({ endpoint, key }) {

@@ -1411,9 +1411,10 @@
 					},
 					"feedback": {
 						"title": "f. Support and feedback data",
-						"description": "Collected only when you submit feedback yourself.",
+						"description": "Collected only when you submit feedback or answer the uninstall survey yourself.",
 						"items": [
 							"The feedback text you write",
+							"The removal reason and comment you choose to submit after uninstalling",
 							"An email address you optionally provide so we can reply"
 						]
 					},
@@ -1656,5 +1657,31 @@
 		"confirmDescription": "This action cannot be undone.",
 		"ok": "Delete permanently",
 		"cancel": "Cancel"
+	},
+	"uninstall": {
+		"metaTitle": "You removed Web Memo | Web Memo",
+		"title": "You removed Web Memo",
+		"description": "Tell us what fell short and we'll use it to improve things",
+		"reasons": {
+			"not_useful": "I didn't need it",
+			"hard_to_use": "It was hard to use",
+			"found_alternative": "I switched to something else",
+			"privacy_concerns": "I had privacy concerns",
+			"performance_issues": "It was slow or unstable",
+			"other": "Something else"
+		},
+		"form": {
+			"feedbackLabel": "Anything else you'd like to share?",
+			"optional": "(optional)",
+			"feedbackPlaceholder": "Write freely",
+			"submit": "Send",
+			"submitting": "Sending...",
+			"notice": "We don't collect your name or contact info"
+		},
+		"success": {
+			"title": "Thanks for your feedback",
+			"description": "Thank you for using Web Memo"
+		},
+		"error": "We couldn't send it just now. Please try again in a moment"
 	}
 }

@@ -90,7 +90,10 @@ export type TAnalyticsEvent =
 	| { name: "category_create" }
 	| { name: "category_update" }
 	| { name: "category_delete" }
-	| { name: "feedback_submit" }
+	| {
+			name: "feedback_submit";
+			params: { feedback_type: "general" | "uninstall" };
+	  }
 	| { name: "view_change"; params: { view: string } }
 	| { name: "logout" }
 	| { name: "extension_installed" }

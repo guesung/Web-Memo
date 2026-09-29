@@ -79,14 +79,19 @@
 				}
 			],
 			"expo-apple-authentication",
+			"./plugins/withIosKeychainAccessGroup",
 			[
-				"expo-share-intent",
+				"expo-share-extension",
 				{
-					"androidIntentFilters": ["text/*"],
-					"iosActivationRules": {
-						"NSExtensionActivationSupportsWebURLWithMaxCount": 1,
-						"NSExtensionActivationSupportsText": true
-					}
+					"activationRules": [{ "type": "url", "max": 1 }, { "type": "text" }],
+					"excludedPackages": [
+						"expo-dev-client",
+						"expo-splash-screen",
+						"expo-sqlite",
+						"expo-apple-authentication",
+						"@react-native-google-signin/google-signin",
+						"@react-native-seoul/kakao-login"
+					]
 				}
 			],
 			[
@@ -105,7 +110,8 @@
 			],
 			"./plugins/withKakaoMavenRepo",
 			"./plugins/withAndroidGradleMemory",
-			"./plugins/withAndroidConfigChanges"
+			"./plugins/withAndroidConfigChanges",
+			"./plugins/withAndroidShareActivity"
 		],
 		"experiments": {
 			"typedRoutes": true

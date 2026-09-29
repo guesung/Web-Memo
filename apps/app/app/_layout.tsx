@@ -1,16 +1,15 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack, useRouter } from "expo-router";
-import { useShareIntent } from "expo-share-intent";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { Check } from "lucide-react-native";
-import { useEffect, useRef, useState } from "react";
-import { Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { AppState, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthProvider";
 import { ThemeProvider, useTheme } from "@/lib/context/ThemeContext";
-import { handleSharedUrl } from "@/lib/sharing/shareHandler";
+import { migrateSharedExtensionPendingUrls } from "@/lib/sharing/pendingSharedUrls";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
 import "../global.css";
 
@@ -64,63 +63,28 @@ function SyncOnAuth() {
 	);
 }
 
-function ShareIntentHandler() {
-	const router = useRouter();
-	const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent();
-	const insets = useSafeAreaInsets();
-	const [shareToast, setShareToast] = useState<string | null>(null);
-	const processingUrlRef = useRef<string | null>(null);
-
+/**
+ * 본 앱 실행·포그라운드 복귀 시 처리한다.
+ * @description iOS 공유 확장이 App Group에 보관한 공유 요청을 본 앱의 보류 목록으로
+ * 옮긴다. Android는 ShareActivity가 같은 프로세스에서 AsyncStorage에 바로 쓰므로
+ * 옮길 것은 없지만, 그 사이 앱이 백그라운드에 떠 있었다면 목록 쿼리가 새 로컬 메모를
+ * 못 보고 있을 수 있어 함께 무효화한다.
+ */
+function useRefreshOnForeground() {
 	useEffect(() => {
-		if (!hasShareIntent || !shareIntent) return;
+		migrateSharedExtensionPendingUrls();
 
-		const url = shareIntent.webUrl || shareIntent.text;
-		if (!url?.startsWith("http")) {
-			resetShareIntent();
-			return;
-		}
-
-		if (processingUrlRef.current === url) return;
-		processingUrlRef.current = url;
-
-		handleSharedUrl(url, shareIntent.meta?.title ?? undefined)
-			.then((result) => {
+		const subscription = AppState.addEventListener("change", (state) => {
+			if (state === "active") {
+				migrateSharedExtensionPendingUrls();
 				queryClient.invalidateQueries({ queryKey: ["memos"] });
 				queryClient.invalidateQueries({ queryKey: ["localMemos"] });
-				setShareToast(
-					result.saved
-						? "위시리스트에 추가되었습니다"
-						: "메모를 선택해 주세요. 공유 요청은 보관했습니다",
-				);
-				if (!result.saved) {
-					router.push({
-						pathname: "/(main)/browser",
-						params: { url, t: String(Date.now()) },
-					});
-				}
-				setTimeout(() => setShareToast(null), 3000);
-			})
-			.catch(() => {
-				setShareToast("저장에 실패했습니다");
-				setTimeout(() => setShareToast(null), 3000);
-			})
-			.finally(() => {
-				processingUrlRef.current = null;
-				resetShareIntent();
-			});
-	}, [hasShareIntent, shareIntent, resetShareIntent, router]);
+				queryClient.invalidateQueries({ queryKey: ["localMemo"] });
+			}
+		});
 
-	if (!shareToast) return null;
-
-	return (
-		<View
-			className="absolute self-center flex-row items-center gap-2 bg-black/80 px-4 py-2.5 rounded-[20px]"
-			style={{ top: insets.top + 60 }}
-		>
-			<Check size={14} color="#22c55e" />
-			<Text className="text-white text-sm font-semibold">{shareToast}</Text>
-		</View>
-	);
+		return () => subscription.remove();
+	}, []);
 }
 
 /** 화면 전환 중 테마와 어긋나는 배경이 비치지 않도록 스택 배경색을 테마에 맞춘다 */
@@ -140,6 +104,8 @@ function ThemedStack() {
 			{/* 탭 밖의 상세 화면이라 탭바 없이 뜬다 */}
 			<Stack.Screen name="trash" />
 			<Stack.Screen name="pending-memos" />
+			{/* iOS 공유 확장이 openHostApp으로 여는 webmemo://share 딥링크 */}
+			<Stack.Screen name="share" />
 			<Stack.Screen name="+not-found" />
 		</Stack>
 	);
@@ -149,6 +115,7 @@ export default function RootLayout() {
 	useEffect(() => {
 		SplashScreen.hideAsync();
 	}, []);
+	useRefreshOnForeground();
 
 	return (
 		<QueryClientProvider client={queryClient}>
@@ -158,7 +125,6 @@ export default function RootLayout() {
 						<ThemedStack />
 					</GestureHandlerRootView>
 					<SyncOnAuth />
-					<ShareIntentHandler />
 					<StatusBar style="auto" />
 				</AuthProvider>
 			</ThemeProvider>

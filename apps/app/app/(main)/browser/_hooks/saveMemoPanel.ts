@@ -47,6 +47,7 @@ export async function saveMemoPanel({
 		createSeparate,
 		expectedNew: targetId === null && !createSeparate,
 		expectedOwnerId: owner,
+		user_id: owner,
 		isWish: source?.isWish,
 		isStar: source?.isStar,
 		isReading: source?.isReading,

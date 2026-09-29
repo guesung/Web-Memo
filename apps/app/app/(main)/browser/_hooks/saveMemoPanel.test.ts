@@ -37,7 +37,11 @@ it("신규 원격 저장은 화면 콜백과 독립적으로 반환된 ID를 원
 		cleanup: undefined,
 	});
 	expect(saveRemote).toHaveBeenCalledWith(
-		expect.objectContaining({ expectedNew: true, expectedOwnerId: "user" }),
+		expect.objectContaining({
+			expectedNew: true,
+			expectedOwnerId: "user",
+			user_id: "user",
+		}),
 	);
 });
 
@@ -82,7 +86,11 @@ it("원격 ID를 확정한 다음 별도로 원본을 정리하고 정리 재시
 	expect(saveRemote).toHaveBeenCalledTimes(1);
 	expect(cleanupLocal).toHaveBeenCalledTimes(2);
 	expect(saveRemote).toHaveBeenCalledWith(
-		expect.objectContaining({ createSeparate: true, isStar: true }),
+		expect.objectContaining({
+			createSeparate: true,
+			isStar: true,
+			user_id: "user",
+		}),
 	);
 });
 
@@ -92,6 +100,11 @@ it("기존 메모 내용을 비운 snapshot도 명시 ID update로 전달한다"
 	input.snapshot.draft.memo = "";
 	await saveMemoPanel(input);
 	expect(saveRemote).toHaveBeenCalledWith(
-		expect.objectContaining({ selectedId: 12, memo: "", expectedNew: false }),
+		expect.objectContaining({
+			selectedId: 12,
+			memo: "",
+			expectedNew: false,
+			user_id: "user",
+		}),
 	);
 });

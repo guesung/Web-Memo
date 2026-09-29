@@ -74,7 +74,9 @@ const HIDE_DURATION = 250;
 
 export function useBrowserState({
 	onHighlightMessage,
+	onBeforeMemoLeave,
 }: {
+	onBeforeMemoLeave?: () => void;
 	/** 하이라이트 메시지(`highlight:` 접두사)를 상위(useWebViewHighlights)로 위임한다 */
 	onHighlightMessage?: (message: {
 		type: string;
@@ -129,7 +131,8 @@ export function useBrowserState({
 	const [aiError, setAiError] = useState<string | null>(null);
 	const [unlockedDomains, setUnlockedDomains] = useState<string[]>([]);
 
-	const { isLoggedIn } = useAuth();
+	const { isLoggedIn, session: authSession } = useAuth();
+	const authOwner = authSession?.user.id ?? "guest";
 	const queryClient = useQueryClient();
 
 	// 읽기 위치 저장/복원용 ref (스크롤 메시지는 stale closure를 피하려 ref로 현재 URL 참조)
@@ -181,13 +184,14 @@ export function useBrowserState({
 			(selectedMemoId !== null && !localMemo) ||
 			(localCandidates.length > 1 && !localMemo);
 	const pageKey = currentUrl ? getPageKey(currentUrl) : "";
-	const previousPageKeyRef = useRef(pageKey);
+	const previousPageKeyRef = useRef(`${activeTabId}:${pageKey}:${authOwner}`);
 	useEffect(() => {
-		if (previousPageKeyRef.current !== pageKey) {
-			previousPageKeyRef.current = pageKey;
+		const scopeKey = `${activeTabId}:${pageKey}:${authOwner}`;
+		if (previousPageKeyRef.current !== scopeKey) {
+			previousPageKeyRef.current = scopeKey;
 			setSelectedMemoId(null);
 		}
-	}, [pageKey]);
+	}, [pageKey, activeTabId, authOwner]);
 	const wishToggleSupabase = useMemoWishToggleMutation();
 	const wishToggleLocal = useLocalMemoWishToggle();
 	const readingToggleSupabase = useMemoReadingToggleMutation();
@@ -252,6 +256,7 @@ export function useBrowserState({
 	useEffect(() => {
 		// 탭 저장본 로드가 끝나기 전에 열면, 로드된 저장본이 paramUrl로 연 탭을 덮어쓴다.
 		if (!paramUrl || !isTabsLoaded) return;
+		onBeforeMemoLeave?.();
 		const decoded = decodeURIComponent(paramUrl);
 		if (newTabParam !== "1") {
 			updateActiveTabInfo({ url: decoded, title: "" });
@@ -276,6 +281,7 @@ export function useBrowserState({
 	}, [paramUrl, navTs, newTabParam, panelHeight, isTabsLoaded]);
 
 	const handleNavigationStateChange = (navState: WebViewNavigation) => {
+		if (getPageKey(navState.url) !== pageKey) onBeforeMemoLeave?.();
 		syncCanGoBack(navState.canGoBack);
 		updateActiveTabInfo({ url: navState.url, title: navState.title ?? "" });
 		setPageFavIconUrl(undefined);
@@ -360,7 +366,10 @@ export function useBrowserState({
 
 		const openExternalWithFallback = async () => {
 			const fallbackUrl = await openExternalUrl(request.url);
-			if (fallbackUrl) updateActiveTabInfo({ url: fallbackUrl });
+			if (fallbackUrl) {
+				onBeforeMemoLeave?.();
+				updateActiveTabInfo({ url: fallbackUrl });
+			}
 		};
 		openExternalWithFallback();
 
@@ -370,6 +379,7 @@ export function useBrowserState({
 	const handleUrlSubmit = () => {
 		const url = formatUrl(urlInput);
 		if (!url) return;
+		onBeforeMemoLeave?.();
 		Keyboard.dismiss();
 		updateActiveTabInfo({ url, title: "" });
 		if (isMemoOpen) {
@@ -562,10 +572,11 @@ export function useBrowserState({
 
 	const closePanel = useCallback(() => {
 		if (!isMemoOpen) return;
+		onBeforeMemoLeave?.();
 		setIsMemoOpen(false);
 		panelHeight.value = withSpring(0, SPRING_CONFIG);
 		Keyboard.dismiss();
-	}, [isMemoOpen, panelHeight]);
+	}, [isMemoOpen, panelHeight, onBeforeMemoLeave]);
 
 	const handleScrollMessage = useCallback(
 		(direction: string, scrollY: number) => {
@@ -730,6 +741,7 @@ export function useBrowserState({
 	}));
 
 	const handleBlogSelect = (url: string) => {
+		onBeforeMemoLeave?.();
 		updateActiveTabInfo({ url, title: "" });
 	};
 
@@ -745,6 +757,7 @@ export function useBrowserState({
 	};
 
 	const handleTabSelect = (tabId: string): void => {
+		if (tabId !== activeTabId) onBeforeMemoLeave?.();
 		const next = activateTab(tabId);
 		const nextTab = next.tabs.find((tab) => tab.id === next.activeTabId);
 		if (next.activeTabId !== activeTabId) {
@@ -754,6 +767,7 @@ export function useBrowserState({
 	};
 
 	const handleTabClose = (tabId: string): void => {
+		if (tabId === activeTabId) onBeforeMemoLeave?.();
 		const next = removeTab(tabId);
 		if (next.activeTabId === activeTabId) {
 			return;
@@ -764,6 +778,7 @@ export function useBrowserState({
 	};
 
 	const handleNewTabOpen = (): void => {
+		onBeforeMemoLeave?.();
 		openNewTab();
 		resetForTabChange("");
 		setIsTabSheetOpen(false);

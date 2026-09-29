@@ -4,6 +4,7 @@ import {
 	toHighlightItem,
 } from "@web-memo/shared/modules/highlight";
 import { normalizeUrl } from "@web-memo/shared/utils/url";
+import * as Clipboard from "expo-clipboard";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useState } from "react";
 import type WebView from "react-native-webview";
@@ -31,6 +32,7 @@ interface DeleteHighlightInput {
 }
 
 const HIGHLIGHT_MENU_KEY = "webmemo-highlight";
+const COPY_MENU_KEY = "webmemo-copy";
 
 /** WebView가 postMessage로 올려보내는 하이라이트 메시지 (JSON.parse 결과이므로 느슨한 형태) */
 export type WebViewHighlightMessage = { type: string; [key: string]: unknown };
@@ -86,21 +88,38 @@ export function useWebViewHighlights({
 	 * 회귀가 재발한다.
 	 */
 	const menuItems: WebViewCustomMenuItems[] | undefined = isLoggedIn
-		? [{ label: "하이라이트", key: HIGHLIGHT_MENU_KEY }]
+		? [
+				{ label: "하이라이트", key: HIGHLIGHT_MENU_KEY },
+				{ label: "복사", key: COPY_MENU_KEY },
+			]
 		: undefined;
 
-	const handleCustomMenuSelection = useCallback(
-		(event: { nativeEvent: { key: string } }) => {
-			if (event.nativeEvent.key !== HIGHLIGHT_MENU_KEY) {
-				return;
-			}
+	async function handleCustomMenuSelection(event: {
+		nativeEvent: { key: string; selectedText: string };
+	}) {
+		const { key, selectedText } = event.nativeEvent;
 
+		if (key === HIGHLIGHT_MENU_KEY) {
 			webViewRef.current?.injectJavaScript(
 				"window.__webmemoCommitHighlight(); true;",
 			);
-		},
-		[webViewRef],
-	);
+			return;
+		}
+
+		if (
+			key !== COPY_MENU_KEY ||
+			typeof selectedText !== "string" ||
+			!selectedText.trim()
+		) {
+			return;
+		}
+
+		try {
+			await Clipboard.setStringAsync(selectedText);
+		} catch {
+			return;
+		}
+	}
 
 	const handleHighlightMessage = useCallback(
 		(message: WebViewHighlightMessage) => {

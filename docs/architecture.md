@@ -48,6 +48,7 @@ SEO 탭 5개의 컬럼명은 한글로 표시합니다. 기존 영문 헤더가 
 | 작성 규칙 | 함수 선언(`function`) 사용, 화살표 상수 컴포넌트 금지. 에러·엣지 케이스 먼저(early return), happy path 마지막. `interface`/`type`은 파일 끝. 아이콘은 항상 `lucide-react`(인라인 `<svg>` 금지). 상세 설계 원칙은 [`frontend-guidelines.md`](frontend-guidelines.md) |
 | 확장 진입점 | `apps/chrome-extension/manifest.js`가 단일 진실 원천입니다. background service worker · content script(모든 URL) · side panel · options. 팝업·DevTools 패널은 없습니다. 진입점을 추가하려면 `pages/`에 패키지를 만들고 매니페스트에 등록합니다 |
 | 앱 import 규칙 | `apps/app`에서는 `@web-memo/shared`의 **배럴 export를 쓰지 않고 좁은 하위 경로**(`@web-memo/shared/utils/url`)를 씁니다. 배럴을 타면 `@web-memo/env`가 딸려와 EAS 빌드에서 iOS만 깨집니다. 앱은 환경 변수를 쓰지 않고 상수만 읽습니다 |
+| 앱 텍스트 선택 메뉴 | 로그인한 앱 브라우저는 `하이라이트`·`복사` 두 메뉴를 표시합니다. `onCustomMenuSelection`의 `nativeEvent.selectedText`를 `expo-clipboard`로 전달하며, 복사는 메뉴를 누른 경우에만 실행합니다. 비로그인 상태의 `menuItems`는 `undefined`로 두어 OS 기본 선택 메뉴를 유지합니다 |
 | Edge import 규칙 | Edge 런타임 코드(`apps/web/src/middleware.ts`)는 `@web-memo/shared`의 **배럴 export를 쓰지 않고 좁은 하위 경로**(`@web-memo/shared/constants`)를 씁니다. `@web-memo/shared/utils` 배럴이 브라우저 전용 Sentry 코드를 Edge 번들로 끌어들여 빌드가 깨진 적이 있습니다. Next 16은 `middleware.ts`에 deprecated 경고를 내지만, `proxy.ts`는 Node.js 런타임 전용이라 Edge를 유지하려고 `middleware.ts`를 그대로 둡니다 |
 
 ## 백엔드

@@ -225,8 +225,7 @@ export function useBrowserState({
 			? keyboardHeight + insets.bottom
 			: 0;
 
-	const { tabBarTranslateY, headerTranslateY, isBrowserActive } =
-		useBrowserScroll();
+	const { tabBarTranslateY, headerTranslateY } = useBrowserScroll();
 
 	const { syncCanGoBack } = useAndroidWebViewBack({ webViewRef });
 
@@ -242,13 +241,11 @@ export function useBrowserState({
 
 	useFocusEffect(
 		useCallback(() => {
-			isBrowserActive.value = 1;
 			return () => {
-				isBrowserActive.value = 0;
 				tabBarTranslateY.value = withTiming(0, { duration: HIDE_DURATION });
 				headerTranslateY.value = withTiming(0, { duration: HIDE_DURATION });
 			};
-		}, [isBrowserActive, tabBarTranslateY, headerTranslateY]),
+		}, [tabBarTranslateY, headerTranslateY]),
 	);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: navTs는 동일 url 재진입 시에도 effect를 재실행시키기 위한 네비게이션 nonce

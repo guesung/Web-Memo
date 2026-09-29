@@ -432,6 +432,8 @@
 		"selectLanguage": "Select language",
 		"guide": "Guide",
 		"restartGuide": "Restart guide",
+		"guideExtensionNotDetected": "Web Memo extension wasn't detected, so the guide can't start. Install and enable it, then refresh the page and try again.",
+		"installExtension": "Install extension",
 		"category": "Category",
 		"addCategory": "Add category",
 		"deleteCategory": "Delete category",

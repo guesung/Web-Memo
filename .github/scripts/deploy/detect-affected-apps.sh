@@ -43,8 +43,11 @@ web_affected="$(printf '%s' "$affected_packages" | jq -r 'any(.packages.items[];
 extension_affected="$(printf '%s' "$affected_packages" | jq -r 'any(.packages.items[]; .name != "@web-memo/app" and .name != "@web-memo/web" and .name != "e2e")')"
 
 # 앱 배포 워크플로는 패키지 밖에 있어 turbo가 감지하지 못합니다.
-# 이 파일만 바뀌어도 새 빌드·제출 경로를 검증하도록 앱을 영향 대상으로 봅니다.
-if ! git diff --quiet "$BASE_REF...HEAD" -- .github/workflows/cd-app.yml; then
+# 앱 큐·성공 이력·영향 판정이 바뀌어도 새 빌드·배포 경로를 검증합니다.
+if ! git diff --quiet "$BASE_REF...HEAD" -- \
+  .github/workflows/ci.yml .github/workflows/cd-app.yml .github/workflows/release.yml \
+  .github/scripts/deploy/appDeploymentState.mjs .github/scripts/deploy/prepareStagingApp.mjs \
+  .github/scripts/deploy/detect-affected-apps.sh; then
   app_affected=true
 fi
 

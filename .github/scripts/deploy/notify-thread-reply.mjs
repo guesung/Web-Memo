@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * master 빌드 결과와 develop 앱 내부 테스트 제출 결과를 머지 스레드에 댓글로 답니다.
- * REPLY_PHASE는 기본 build이며, store-submit은 앱 제출 결과를 로그 링크만 붙여 알립니다.
+ * master 빌드 결과와 develop 앱 App Tester 배포 결과를 머지 스레드에 댓글로 답니다.
+ * REPLY_PHASE는 기본 build이며, store-submit은 develop 앱 App Tester 배포 결과를 로그 링크만 붙여 알립니다.
  * .github/workflows/ci.yml 의 notify-web, notify-extension, notify-app, notify-staging-app 잡이 호출합니다.
  *
  * 타깃별 잡이 자기 cd-* 잡만 기다리므로, 웹·확장은 앱 빌드(약 30분)와 무관하게

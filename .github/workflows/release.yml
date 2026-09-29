@@ -47,9 +47,10 @@ jobs:
     name: 앱 릴리스
     needs: preflight
     # 재사용 워크플로의 잡은 호출자 권한을 넘어설 수 없습니다.
-    # 앱 릴리스는 최신 빌드 번호를 할당받아 새로 빌드하므로 아티팩트 조회 권한이 필요 없습니다.
+    # actions:read는 master CI가 올려둔 Android 빌드 아티팩트를 찾아 내려받는 데 필요합니다.
     permissions:
       contents: read
+      actions: read
     if: ${{ inputs.app }}
     # 타깃별로 줄을 세웁니다. 워크플로 전체를 한 그룹으로 묶으면 앱 빌드(약 30분)가
     # 도는 동안 1분이면 끝나는 웹 배포까지 통째로 대기합니다.

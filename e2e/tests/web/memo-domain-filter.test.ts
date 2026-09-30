@@ -245,14 +245,14 @@ test.describe("메모 도메인 필터 (Mocked)", () => {
 		await gotoMemos(page);
 
 		await expect(page.locator(".memo-item")).toHaveCount(4);
-		await expect(page.locator(".animate-pulse.h-10.w-28")).toBeVisible();
+		await expect(page.locator(".skeleton-shimmer.h-10.w-28")).toBeVisible();
 		await expect(
 			page.getByRole("button", { name: "Domain", exact: true }),
 		).toHaveCount(0);
 
 		releaseDomains();
 
-		await expect(page.locator(".animate-pulse.h-10.w-28")).toHaveCount(0);
+		await expect(page.locator(".skeleton-shimmer.h-10.w-28")).toHaveCount(0);
 		await expect(
 			page.getByRole("button", { name: "Domain", exact: true }),
 		).toBeVisible();

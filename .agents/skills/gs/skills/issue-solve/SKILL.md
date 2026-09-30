@@ -23,9 +23,9 @@ notion-orca (시작 단계=이슈 해결) → 카드 생성, `# 인간 작성`�
 
 ## 노션 접근
 
-시작 전에 [notion-databases.md](../../notion-databases.md#개인-업무-로그)를 읽는다. `notion-home` MCP로만 접근한다.
+시작 전에 [notion-databases.md](~/.agents/docs/notion-databases.md#개인-업무-로그)를 읽는다. `notion-home` MCP로만 접근한다.
 
-**본문은 `# AI 작성` 아래만 고친다.** `# 인간 작성` 아래는 읽기만 한다 — [AI 작성 경계](../../notion-databases.md#ai-작성-경계).
+**본문은 `# AI 작성` 아래만 고친다.** `# 인간 작성` 아래는 읽기만 한다 — [AI 작성 경계](~/.agents/docs/notion-databases.md#ai-작성-경계).
 
 ## §0. 시작 전 확인
 
@@ -33,7 +33,7 @@ notion-orca (시작 단계=이슈 해결) → 카드 생성, `# 인간 작성`�
 
    페이지 URL을 확보했으므로 [orca-worktree.md](../../orca-worktree.md)의 절차대로 현재 워크스페이스 메모에 기록한다. 실패해도 멈추지 않는다.
 
-2. **범위 확인 — cashwalk 안이면 시작하지 않는다.** 카드 속성 `프로젝트`로 [레포 경로 ↔ 프로젝트](../../notion-databases.md#레포-경로--프로젝트)를 역인용한다. `레포지토리/cashwalk/` 아래로 판정되면 한 줄 남기고 멈춘다: `회사 작업은 /nudge:issue-solve 로 진단하세요. 이 플러그인은 개인 프로젝트 전용입니다.`
+2. **범위 확인 — cashwalk 안이면 시작하지 않는다.** 카드 속성 `프로젝트`로 [레포 경로 ↔ 프로젝트](~/.agents/docs/notion-databases.md#레포-경로--프로젝트)를 역인용한다. `레포지토리/cashwalk/` 아래로 판정되면 한 줄 남기고 멈춘다: `회사 작업은 /nudge:issue-solve 로 진단하세요. 이 플러그인은 개인 프로젝트 전용입니다.`
 
 3. **중복 확인.** `## 설계서`에 이미 내용이 있으면(재실행) 진단을 다시 하지 않고 그대로 ③으로 건너뛴다.
 

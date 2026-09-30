@@ -50,9 +50,9 @@
 
 | MCP           | 쓰이는 곳                                                                        | 용도                                                      |
 | ------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `notion-home` | `/gs:idea`, `/gs:design`, `/gs:implement-loop`, `/gs:self-qa`, `/gs:problem-log`, `/gs:blog-material` | 개인 업무 로그·QA 항목·개발 위키 DB(문제 해결 기록) 읽기·쓰기 (guesung) |
+| `notion-home` | `/gs:idea`, `/gs:design`, `/gs:implement-loop`, `/gs:self-qa`, `/common:problem-log`, `/gs:blog-material` | 개인 업무 로그·QA 항목·개발 위키 DB(문제 해결 기록) 읽기·쓰기 (guesung) |
 | `playwright`  | `/gs:self-qa` ② — `gs:qa-verifier`가 사용                                        | 브라우저 구동·DOM/스크린샷/콘솔/네트워크 관측             |
 
 회사판이 쓰던 `claude.ai Notion`(팀 DB)·`slack` 플러그인은 쓰지 않는다.
 
-DB 식별자·속성·접근 규칙은 [notion-databases.md](./notion-databases.md)가 SSOT다. 스킬 본문에는 ID를 두지 않는다.
+DB 식별자·속성·접근 규칙은 [notion-databases.md](~/.agents/docs/notion-databases.md)가 SSOT다. 스킬 본문에는 ID를 두지 않는다.

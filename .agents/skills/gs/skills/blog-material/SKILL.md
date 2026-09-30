@@ -12,7 +12,7 @@ argument-hint: "[--work-card <업무 로그 페이지 URL>] [--dry-run]"
 
 ## 저장소 — 노션 개인 업무 로그 (guesung, `notion-home` MCP)
 
-**시작 전에 [notion-databases.md](../../notion-databases.md#개인-업무-로그)를 읽는다.** data source ID · `블로그 소재`(rich_text) 규칙 · 본문 골격과 **[AI 작성 경계](../../notion-databases.md#ai-작성-경계)**가 거기 있다.
+**시작 전에 [notion-databases.md](~/.agents/docs/notion-databases.md#개인-업무-로그)를 읽는다.** data source ID · `블로그 소재`(rich_text) 규칙 · 본문 골격과 **[AI 작성 경계](~/.agents/docs/notion-databases.md#ai-작성-경계)**가 거기 있다.
 
 이 스킬이 그 위에 얹는 규칙은 하나다 — **`# AI 작성` 아래만 읽고, `블로그 소재` 속성 하나만 쓴다.** 본문 블록은 건드리지 않는다.
 
@@ -57,7 +57,7 @@ URL을 확보했으면 [orca-worktree.md](../../orca-worktree.md)의 절차대�
 
 `API-patch-page`로 `블로그 소재`(rich_text) 속성에 쓴다.
 
-- **승인을 묻지 않는다.** 소재는 제안일 뿐 기록이 아니고, 마음에 안 들면 사람이 노션에서 고치는 게 더 빠르다. (`/gs:problem-log`가 일지 행마다 승인을 받는 것과 다르다. 그건 일지에 남는 사실이고, 이건 나중에 볼 후보 목록이다.)
+- **승인을 묻지 않는다.** 소재는 제안일 뿐 기록이 아니고, 마음에 안 들면 사람이 노션에서 고치는 게 더 빠르다. (`/common:problem-log`가 일지 행마다 승인을 받는 것과 다르다. 그건 일지에 남는 사실이고, 이건 나중에 볼 후보 목록이다.)
 - **기존 값은 덮지 않고 아래에 줄바꿈으로 잇는다.** 한 작업이 여러 루프를 돌면 소재도 쌓인다.
 - 이미 같은 줄이 있으면 잇지 않는다. 같은 카드에서 두 번 호출해도 목록이 두 배가 되지 않는다.
 - 뽑은 게 `없음`이고 **기존 값이 있으면 아무것도 쓰지 않는다.** `없음`을 이어 붙여 쌓인 소재를 가리지 않는다.

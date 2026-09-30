@@ -14,11 +14,11 @@ argument-hint: "<학습 키워드>"
 
 학습 키워드 하나(`/gs:study GA`). 없으면 묻는다.
 
-탐색 대상은 **개인 업무 로그**(작업 카드)와 **개발 위키 DB** 두 곳 고정이다. ID는 [notion-databases.md](../../notion-databases.md)에서 읽는다 — 스킬 본문에 두지 않는다.
+탐색 대상은 **개인 업무 로그**(작업 카드)와 **개발 위키 DB** 두 곳 고정이다. ID는 [notion-databases.md](~/.agents/docs/notion-databases.md)에서 읽는다 — 스킬 본문에 두지 않는다.
 
 ## ① 후보 찾기
 
-**시작 전에 [notion-databases.md](../../notion-databases.md)를 읽는다.** 개인 워크스페이스라 `notion-home` MCP로만 연다(`claude.ai Notion`으로 열면 404).
+**시작 전에 [notion-databases.md](~/.agents/docs/notion-databases.md)를 읽는다.** 개인 워크스페이스라 `notion-home` MCP로만 연다(`claude.ai Notion`으로 열면 404).
 
 **키워드 변형**을 먼저 정한다. 약어·영문·한글 표기가 갈릴 만한 것은 함께 찾는다(예: `GA` → `GA` · `Google Analytics` · `구글 애널리틱스` · `gtag`). 변형은 3~4개까지.
 
@@ -58,7 +58,7 @@ argument-hint: "<학습 키워드>"
 
 1. **작업 카드** — `API-retrieve-a-page`로 속성(`이름`·`프로젝트`·`PR`·`TODO`), `API-retrieve-page-markdown`으로 본문 전체. `# 인간 작성`·`# AI 작성` 양쪽 다 읽는다.
 2. **위키 문서** — `API-retrieve-page-markdown`으로 본문, `유형` 속성도 함께 본다.
-3. **레포 코드** — 고른 카드의 `프로젝트`를 [레포 경로 ↔ 프로젝트](../../notion-databases.md#레포-경로--프로젝트) 표로 역매핑해 레포가 정해지면, 키워드와 자료에 나온 식별자(환경변수명, 패키지명, 함수명 등)로 grep해 실제 세팅 코드를 찾는다. 카드에 PR이 연결돼 있으면 그 PR의 diff를 우선 근거로 본다(`gh pr view --json files` 등). 위키 문서만 골랐으면 `프로젝트` 속성으로 같은 매핑을 시도한다. 레포가 안 정해지면 건너뛰고 설명에서 "코드 근거 없음"이라고 밝힌다.
+3. **레포 코드** — 고른 카드의 `프로젝트`를 [레포 경로 ↔ 프로젝트](~/.agents/docs/notion-databases.md#레포-경로--프로젝트) 표로 역매핑해 레포가 정해지면, 키워드와 자료에 나온 식별자(환경변수명, 패키지명, 함수명 등)로 grep해 실제 세팅 코드를 찾는다. 카드에 PR이 연결돼 있으면 그 PR의 diff를 우선 근거로 본다(`gh pr view --json files` 등). 위키 문서만 골랐으면 `프로젝트` 속성으로 같은 매핑을 시도한다. 레포가 안 정해지면 건너뛰고 설명에서 "코드 근거 없음"이라고 밝힌다.
 
 여러 개를 골랐으면 따로 설명하지 않고 **하나로 합쳐** ④를 쓴다.
 

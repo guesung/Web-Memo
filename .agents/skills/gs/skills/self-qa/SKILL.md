@@ -13,9 +13,9 @@ argument-hint: '<개인 업무 로그 페이지 URL | 설계서 파일 경로> [
 
 ## 저장소 — 노션 "QA 항목" DB (guesung, `notion-home` MCP)
 
-**시작 전에 [notion-databases.md](../../notion-databases.md#qa-항목)를 읽는다.** 식별자와 12개 속성의 채우는 규칙이 거기 있다. **에이전트는 노션에 접근하지 않는다** — DB 읽기·쓰기는 전부 이 스킬이 한다.
+**시작 전에 [notion-databases.md](~/.agents/docs/notion-databases.md#qa-항목)를 읽는다.** 식별자와 12개 속성의 채우는 규칙이 거기 있다. **에이전트는 노션에 접근하지 않는다** — DB 읽기·쓰기는 전부 이 스킬이 한다.
 
-**본문은 `# AI 작성` 아래만 고친다.** `# 인간 작성` 아래는 읽기만 하고, 섹션도 그 H1 아래에서 찾는다 — [AI 작성 경계](../../notion-databases.md#ai-작성-경계).
+**본문은 `# AI 작성` 아래만 고친다.** `# 인간 작성` 아래는 읽기만 하고, 섹션도 그 H1 아래에서 찾는다 — [AI 작성 경계](~/.agents/docs/notion-databases.md#ai-작성-경계).
 
 행 하나 = QA 항목 하나. 모든 작업의 항목이 이 DB 한 곳에 쌓이고 `작업` relation으로 구분된다. 작업별 페이지를 따로 만들지 않는다 — "수동 비율"·"FAIL 잦은 유형"을 세려면 한 곳에 있어야 한다.
 
@@ -76,7 +76,7 @@ argument-hint: '<개인 업무 로그 페이지 URL | 설계서 파일 경로> [
 
 마지막 한 줄: `자동 n건 중 PASS n · FAIL n, 수동 n건 재현 방법 기록.` 총평 없음.
 
-모드 인자 없이 사람이 직접 불렀으면, 출력 **뒤에** [`/gs:problem-log`의 작업 스킬 끝 점검](../problem-log/SKILL.md#작업-스킬-끝의-점검)을 **반드시** 한다(예: 브라우저 구동·셀렉터가 원인 모르게 실패하다 뚫은 것). `--checklist-only`·`--run`이면 implement-loop가 부른 것이므로 하지 않는다.
+모드 인자 없이 사람이 직접 불렀으면, 출력 **뒤에** [`/common:problem-log`의 작업 스킬 끝 점검](~/.agents/skills/common/skills/problem-log/SKILL.md#작업-스킬-끝의-점검)을 **반드시** 한다(예: 브라우저 구동·셀렉터가 원인 모르게 실패하다 뚫은 것). `--checklist-only`·`--run`이면 implement-loop가 부른 것이므로 하지 않는다.
 
 ## 하지 않는 것
 

@@ -24,7 +24,7 @@ argument-hint: '[제목과 작업 내용] [--project 웹 메모|Mini Projects|�
 - **`notion-orca` 코드가 동작 기준이다.** 작업 전에 `~/Desktop/레포지토리/guesung/mini-projects/apps/cli/notion-orca/notion.ts`의 `TARGET_PROJECTS`와 같은 디렉터리 `runner.ts`의 `PROJECT_SKILLS`·`buildPrompt`·`readRepositoryName`을 읽는다. `README.md`는 보조 자료이며 코드와 다르면 코드를 따른다. 현재 `웹 메모`는 러너의 `ORCA_REPO`, `Mini Projects`는 고정 저장소 `mini-projects`, `넛지헬스케어`는 고정 저장소 `cashwalk-all`을 사용한다.
 - 생성 직전에 데이터 소스 `8412989c-11e3-4685-8af9-35299fc6c097`을 조회해 `이름`(title), 정한 `프로젝트`(select), `실행 에이전트`(select: 정한 에이전트), `시작 단계`(select), `실행 상태`(select: `요청됨`)가 실제로 존재하는지 확인한다. DB ID는 `5f408e05-0015-4532-bcd8-bd36439bec5a`이다. 스키마가 맞지 않으면 쓰지 않는다.
 - 현재 요청과 같은 제목·범위의 **미완료 카드가 있는지** 검색한다. 넛지헬스케어는 제목보다 슬랙 스레드 URL을 우선해 대조한다. 있으면 중복 생성하지 말고 사용자에게 기존 카드를 실행할지 묻는다. `시작됨`인 카드에 `요청됨`을 다시 설정하지 않는다.
-- 생성 전에 [gs 개인 업무 로그 규약](../../notion-databases.md#개인-업무-로그)을 읽는다. 넛지헬스케어라면 `~/.agents/skills/nudge/notion-databases.md`의 개인 업무 로그 규약도 읽는다.
+- 생성 전에 [gs 개인 업무 로그 규약](~/.agents/docs/notion-databases.md#개인-업무-로그)을 읽는다. 넛지헬스케어라면 `~/.agents/skills/nudge/notion-databases.md`의 개인 업무 로그 규약도 읽는다.
 
 ## 생성과 요청
 

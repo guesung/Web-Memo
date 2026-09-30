@@ -10,7 +10,7 @@
 | 시점 | 스킬 |
 |---|---|
 | 작업 페이지를 **새로 만든 직후** | `/gs:idea` ④ |
-| 페이지 URL을 **인자로 받아 시작할 때** | `/gs:design`, `/gs:discuss`, `/gs:implement`, `/gs:implement-loop`, `/gs:self-qa`, `/gs:problem-log`·`/gs:blog-material`(`--work-card`) |
+| 페이지 URL을 **인자로 받아 시작할 때** | `/gs:design`, `/gs:discuss`, `/gs:implement`, `/gs:implement-loop`, `/gs:self-qa`, `/common:problem-log`·`/gs:blog-material`(`--work-card`) |
 
 `/gs:interview`는 하지 않는다 — 항상 `/gs:idea`·`/gs:design` 안에서 호출되고, 그 둘이 이미 기록한 뒤다.
 
@@ -77,7 +77,7 @@ PR 기록에는 아래 별도 형식에 따라 제목과 URL을 함께 남긴다
 3. **`카드 없이 진행`** 을 고르면 그대로 진행한다. 이번 실행에서는 다시 묻지 않는다.
 4. **`만든다`** 를 고르면 빈 카드만 만든다 — 기획·설계 단계는 돌리지 않는다.
    - [/gs:idea ④](skills/idea/SKILL.md)의 2·3·5와 같다: `API-post-page`로 생성 → 본문 골격 → 위 **절차**로 메모 기록. 중복 확인(①)은 건너뛴다.
-   - 속성 `이름`은 지시문·설계서 제목을 줄인 짧은 명사구, `프로젝트`는 [레포 경로 ↔ 프로젝트](notion-databases.md#레포-경로--프로젝트) 판정, `작업 시작 날짜`는 오늘이다. `상태`는 쓰지 않는다.
+   - 속성 `이름`은 지시문·설계서 제목을 줄인 짧은 명사구, `프로젝트`는 [레포 경로 ↔ 프로젝트](~/.agents/docs/notion-databases.md#레포-경로--프로젝트) 판정, `작업 시작 날짜`는 오늘이다. `상태`는 쓰지 않는다.
    - `## 설계서`에는 한 줄 목표(지시문 요약)만 쓴다. 나머지 섹션은 비워 둔다.
    - 만든 URL은 이후 이 실행의 **노션 URL**로 취급해 `ID`를 읽고 PR 제목 접두사에 쓴다.
 5. 생성에 실패하면 멈추지 않고 카드 없이 진행하며, 마지막 출력에 `작업카드: 생성 실패 (<사유>)` 한 줄을 남긴다.

@@ -6,8 +6,19 @@ import type {
 	MemoTable,
 } from "../../types";
 import { getMemoSearchFilter } from "../memoSearchFilter";
-import { getPageKey, getPathKey } from "../Url";
+import {
+	getDomainFromUrl,
+	getDomainUrlPattern,
+	getPageKey,
+	getPathKey,
+} from "../Url";
 import { fetchAllByPageKeyBatched } from "./fetchAllByPageKeyBatched";
+
+/** 도메인 목록을 만들 때 한 번에 읽는 메모 수. */
+const MEMO_DOMAIN_BATCH_SIZE = 1000;
+
+/** 도메인 목록을 만들 때 읽는 최대 횟수. 이를 넘는 오래된 메모의 도메인은 목록에서 빠진다. */
+const MEMO_DOMAIN_MAX_BATCHES = 5;
 
 /** 날짜 정렬에서 같은 시각의 메모까지 이어 읽는 복합 커서. */
 export interface IFMemoPageCursor {
@@ -185,6 +196,7 @@ export class MemoService {
 		isStar,
 		isReading,
 		searchQuery,
+		domain,
 		sortBy = "updated_at",
 	}: {
 		cursor?: string | IFMemoPageCursor;
@@ -194,6 +206,8 @@ export class MemoService {
 		isStar?: boolean;
 		isReading?: boolean;
 		searchQuery?: string;
+		/** 도메인 하나로 거른다. `parseDomainFilter`를 거친 값이어야 한다. */
+		domain?: string;
 		sortBy?: "updated_at" | "created_at" | "title";
 	}) => {
 		const selectQuery = category
@@ -249,7 +263,59 @@ export class MemoService {
 			query = query.or(getMemoSearchFilter(searchQuery));
 		}
 
+		if (domain) {
+			query = query.filter("url", "imatch", getDomainUrlPattern(domain));
+		}
+
 		return query;
+	};
+
+	/**
+	 * 삭제되지 않은 메모의 url에서 중복 없는 도메인 목록을 이름순으로 만든다.
+	 * @description 최근 수정 순으로 1000건씩 최대 5회(5000건) 읽는다. 그보다 오래된 메모의 도메인은 빠진다.
+	 */
+	getMemoDomains = async () => {
+		const domains = new Set<string>();
+
+		for (
+			let batchIndex = 0;
+			batchIndex < MEMO_DOMAIN_MAX_BATCHES;
+			batchIndex += 1
+		) {
+			const from = batchIndex * MEMO_DOMAIN_BATCH_SIZE;
+			const { data, error } = await this.supabaseClient
+				.schema(SUPABASE.table.memo)
+				.from(SUPABASE.table.memo)
+				.select("url")
+				.is("deleted_at", null)
+				.order("updated_at", { ascending: false, nullsFirst: false })
+				.order("id", { ascending: false })
+				.range(from, from + MEMO_DOMAIN_BATCH_SIZE - 1);
+
+			if (error) {
+				return { data: null, error };
+			}
+
+			const memos = data ?? [];
+
+			for (const memo of memos) {
+				const domain = getDomainFromUrl(memo.url);
+
+				if (domain) {
+					domains.add(domain);
+				}
+			}
+
+			if (memos.length < MEMO_DOMAIN_BATCH_SIZE) {
+				break;
+			}
+		}
+
+		const sortedDomains = Array.from(domains).sort((first, second) =>
+			first.localeCompare(second),
+		);
+
+		return { data: sortedDomains, error: null };
 	};
 
 	updateMemo = async ({

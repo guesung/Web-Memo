@@ -2,6 +2,45 @@ import { QueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "./QueryKey";
 
 describe("QUERY_KEY.memosPaginated", () => {
+	test("도메인이 없으면 키에 domain 항목이 없다.", () => {
+		expect(QUERY_KEY.memosPaginated()).toStrictEqual([
+			"memos",
+			"paginated",
+			{
+				category: undefined,
+				isWish: undefined,
+				searchQuery: undefined,
+				sortBy: undefined,
+				isStar: undefined,
+				isReading: undefined,
+			},
+		]);
+	});
+
+	test("도메인이 다르면 다른 캐시 키를 만든다.", () => {
+		const first = QUERY_KEY.memosPaginated(
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			"youtube.com",
+		);
+		const second = QUERY_KEY.memosPaginated(
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			"velog.io",
+		);
+
+		expect(first).not.toEqual(second);
+		expect(first).not.toEqual(QUERY_KEY.memosPaginated());
+	});
+
 	test("isStar를 키 객체에 포함한다.", () => {
 		expect(
 			QUERY_KEY.memosPaginated("book", false, "q", "updated_at", true),
@@ -116,6 +155,22 @@ describe("대시보드 통계 쿼리 키", () => {
 		expect(QUERY_KEY.userGrowth(7, true)).not.toEqual(
 			QUERY_KEY.userGrowth(30, true),
 		);
+	});
+});
+
+describe("QUERY_KEY.memoDomains", () => {
+	it("메모 목록 무효화에 함께 걸리고 페이지네이션 접두사에는 걸리지 않는다", async () => {
+		const queryClient = new QueryClient();
+		const domainsKey = QUERY_KEY.memoDomains();
+		queryClient.setQueryData(domainsKey, []);
+
+		await queryClient.invalidateQueries({
+			queryKey: QUERY_KEY.memosPaginatedPrefix(),
+		});
+		expect(queryClient.getQueryState(domainsKey)?.isInvalidated).toBe(false);
+
+		await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
+		expect(queryClient.getQueryState(domainsKey)?.isInvalidated).toBe(true);
 	});
 });
 

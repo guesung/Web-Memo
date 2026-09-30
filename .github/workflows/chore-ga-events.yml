@@ -71,7 +71,7 @@ jobs:
             An action is a gap only if ALL hold: a real user-visible action exists in tracked source, no existing event in context.existingEvents already answers the same question, and you can state the product question the event answers.
             Never invent a near-duplicate of an existing event. Variants of the same action are separated by properties of the existing event, so do not propose those.
             Propose at most 2 events. Fewer is better: a wrong event leaves data that cannot be deleted. If nothing qualifies, return status=none.
-            Event names are snake_case in object_verb form. Properties are at most 5 snake_case keys with length, count, boolean or enum values only.
+            Event names are snake_case in object_verb form. properties lists at most 5 bare snake_case keys only, for example ["candidate_count"]. Never put types, descriptions or punctuation in a key; explain the meaning in trigger or question instead. Values are length, count, boolean or enum only.
             Never use properties that carry email, name, phone, token, password, or text the user typed (memo body, search query, feedback text, urls).
             category is core_action for using the service, engagement for navigation or settings around it.
             Each event lists files: the tracked product source files (not tests, not type.ts) where the call will be added, at most 5.
@@ -80,7 +80,7 @@ jobs:
             --model claude-sonnet-4-6
             --max-turns 20
             --allowedTools "Read,Grep,Glob"
-            --json-schema '{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string","enum":["gap","none"]},"reason":{"type":"string"},"events":{"type":"array","items":{"type":"object","additionalProperties":false,"properties":{"name":{"type":"string"},"category":{"type":"string","enum":["engagement","core_action"]},"trigger":{"type":"string"},"question":{"type":"string"},"properties":{"type":"array","items":{"type":"string"}},"files":{"type":"array","items":{"type":"string"}}},"required":["name","category","trigger","question","properties","files"]}}},"required":["status","reason","events"]}'
+            --json-schema '{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string","enum":["gap","none"]},"reason":{"type":"string"},"events":{"type":"array","items":{"type":"object","additionalProperties":false,"properties":{"name":{"type":"string"},"category":{"type":"string","enum":["engagement","core_action"]},"trigger":{"type":"string"},"question":{"type":"string"},"properties":{"type":"array","items":{"type":"string","pattern":"^[a-z][a-z0-9_]*$"}},"files":{"type":"array","items":{"type":"string"}}},"required":["name","category","trigger","question","properties","files"]}}},"required":["status","reason","events"]}'
 
       - name: Validate analysis result
         id: candidate

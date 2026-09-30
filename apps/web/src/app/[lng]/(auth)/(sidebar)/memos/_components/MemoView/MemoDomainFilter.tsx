@@ -16,6 +16,7 @@ import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
+	Skeleton,
 } from "@web-memo/ui";
 import { Check, ChevronDown, Globe, X } from "lucide-react";
 import { useState } from "react";
@@ -28,7 +29,11 @@ import { useState } from "react";
  */
 const MemoDomainFilter = ({ lng, domain }: IFMemoDomainFilterProps) => {
 	const { t } = useTranslation(lng);
-	const { data: domains = [], isError: isDomainsError } = useMemoDomainsQuery();
+	const {
+		data: domains = [],
+		isError: isDomainsError,
+		isPending: isDomainsPending,
+	} = useMemoDomainsQuery();
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
 	const handleDomainSelect = (
@@ -57,6 +62,10 @@ const MemoDomainFilter = ({ lng, domain }: IFMemoDomainFilterProps) => {
 			},
 		});
 	};
+
+	if (isDomainsPending) {
+		return <Skeleton className="h-10 w-28 max-sm:w-full" />;
+	}
 
 	if (!isDomainsError && domains.length === 0 && !domain) {
 		return null;

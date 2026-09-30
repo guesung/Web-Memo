@@ -228,6 +228,36 @@ test.describe("메모 도메인 필터 (Mocked)", () => {
 		await expect(page.getByTitle("Couldn't load domains")).toBeVisible();
 	});
 
+	test("도메인 목록을 불러오는 동안, 컨트롤 자리에 Skeleton이 보이고 메모 목록은 먼저 보인다.", async ({
+		page,
+	}) => {
+		let releaseDomains = () => {};
+		const domainsGate = new Promise<void>((resolve) => {
+			releaseDomains = resolve;
+		});
+		await page
+			.context()
+			.route(/\/rest\/v1\/memo\?.*select=url(&|$)/, async (route) => {
+				await domainsGate;
+				await route.fallback();
+			});
+
+		await gotoMemos(page);
+
+		await expect(page.locator(".memo-item")).toHaveCount(4);
+		await expect(page.locator(".animate-pulse.h-10.w-28")).toBeVisible();
+		await expect(
+			page.getByRole("button", { name: "Domain", exact: true }),
+		).toHaveCount(0);
+
+		releaseDomains();
+
+		await expect(page.locator(".animate-pulse.h-10.w-28")).toHaveCount(0);
+		await expect(
+			page.getByRole("button", { name: "Domain", exact: true }),
+		).toBeVisible();
+	});
+
 	test("영문 화면에서는, 도메인 컨트롤 문구가 영어로 나온다.", async ({
 		page,
 	}) => {

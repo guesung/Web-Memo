@@ -113,6 +113,14 @@ jobs:
         if: steps.candidate.outputs.status == 'gap'
         run: node .github/scripts/ga-events/maintain.mjs changes
 
+      # claude-code-action/base-action이 내부에서 Node 18을 설정해 이후 단계가 Node 18로 돕니다(jsdom 30이 ERR_REQUIRE_ESM으로 깨짐). AI 단계가 끝난 뒤 .nvmrc 버전으로 되돌립니다.
+      - name: Restore Node for verification
+        if: steps.candidate.outputs.status == 'gap'
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
       - name: Install dependencies
         if: steps.candidate.outputs.status == 'gap'
         run: pnpm install --frozen-lockfile --prefer-offline

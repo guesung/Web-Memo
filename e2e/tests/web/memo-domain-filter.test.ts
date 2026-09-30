@@ -240,4 +240,59 @@ test.describe("메모 도메인 필터 (Mocked)", () => {
 
 		await expect(page.getByText("No results found")).toBeVisible();
 	});
+
+	for (const view of ["grid", "list"] as const) {
+		test.describe(`${view} 보기의 도메인 결과 없음`, () => {
+			const viewQuery = view === "list" ? "&view=list" : "";
+
+			test("내 목록에 없는 도메인이면, 아이콘·제목·설명·버튼이 있는 도메인 빈 상태를 보여준다.", async ({
+				page,
+			}) => {
+				await gotoMemos(page, `?domain=nothing.com${viewQuery}`);
+
+				await expect(page.locator(".memo-item")).toHaveCount(0);
+				await expect(page.locator("svg.lucide-search-x")).toBeVisible();
+				await expect(page.getByText("No memos from this domain")).toBeVisible();
+				await expect(
+					page.getByText(
+						"Memos from nothing.com don't show up with the current filters",
+					),
+				).toBeVisible();
+				await expect(
+					page.getByRole("button", {
+						name: "Clear the domain filter",
+						exact: true,
+					}),
+				).toBeVisible();
+				await expect(page.getByText("Create your first memo")).toHaveCount(0);
+				await expect(page.getByText("0 memos from nothing.com")).toBeVisible();
+			});
+
+			test("빈 상태의 해제 버튼을 누르면, 도메인이 풀리고 전체 목록이 돌아온다.", async ({
+				page,
+			}) => {
+				await gotoMemos(page, `?domain=nothing.com${viewQuery}`);
+
+				await page
+					.getByRole("button", { name: "Clear the domain filter", exact: true })
+					.click();
+
+				await expect(page).not.toHaveURL(/domain=/);
+				await expect(page.locator(".memo-item")).toHaveCount(4);
+			});
+
+			test("도메인과 검색어가 겹쳐 0건이면, 검색 빈 상태가 아니라 도메인 빈 상태를 보여준다.", async ({
+				page,
+			}) => {
+				await gotoMemos(page, `?domain=youtube.com${viewQuery}`);
+				await expect(page.locator(".memo-item")).toHaveCount(2);
+
+				await page.getByPlaceholder("Search memos").fill("벨로그");
+
+				await expect(page.locator(".memo-item")).toHaveCount(0);
+				await expect(page.getByText("No memos from this domain")).toBeVisible();
+				await expect(page.getByText("No results")).toHaveCount(0);
+			});
+		});
+	}
 });

@@ -151,6 +151,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 					memos={memos}
 					highlightsByUrl={highlightsByUrl}
 					searchQuery={searchQuery}
+					domain={domain}
 					hasNextPage={hasNextPage}
 					isFetchingNextPage={isFetchingNextPage}
 					fetchNextPage={fetchNextPage}
@@ -162,6 +163,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 					memos={memos}
 					highlightsByUrl={highlightsByUrl}
 					searchQuery={searchQuery}
+					domain={domain}
 					hasNextPage={hasNextPage}
 					isFetchingNextPage={isFetchingNextPage}
 					fetchNextPage={fetchNextPage}

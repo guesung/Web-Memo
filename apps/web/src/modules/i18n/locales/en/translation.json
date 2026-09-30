@@ -510,7 +510,12 @@
 			"clear": "Clear domain filter",
 			"totalMemos": "{{total}} memos from {{domain}}",
 			"loadError": "Couldn't load domains",
-			"noResults": "No results found"
+			"noResults": "No results found",
+			"emptyState": {
+				"title": "No memos from this domain",
+				"message": "Memos from {{domain}} don't show up with the current filters",
+				"clear": "Clear the domain filter"
+			}
 		},
 		"searchPlaceholder": "Search memos",
 		"searchTarget": {

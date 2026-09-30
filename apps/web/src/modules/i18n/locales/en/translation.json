@@ -503,6 +503,15 @@
 			"hint": "Try a different keyword."
 		},
 		"totalMemos": "{{total}} memos",
+		"domainFilter": {
+			"label": "Domain",
+			"all": "All domains",
+			"searchPlaceholder": "Search domains",
+			"clear": "Clear domain filter",
+			"totalMemos": "{{total}} memos from {{domain}}",
+			"loadError": "Couldn't load domains",
+			"noResults": "No results found"
+		},
 		"searchPlaceholder": "Search memos",
 		"searchTarget": {
 			"label": "Search in",

@@ -125,7 +125,7 @@ ID가 바뀌거나 속성이 늘면 **여기만 고친다.**
 
 막혔다가 뚫은 문제를 한 행으로. **사람 승인 없이 쓰지 않는다**(`/gs:problem-log` ②).
 
-블로그 `/wiki`가 렌더하는 **공개 위키와 같은 DB**다(2026-09-14에 옛 "문제 해결 일지DB" 91건을 여기로 옮겼다). 옛 DB(`35189de0-…`)는 비어 있고 더 쓰지 않는다. `/wiki:draft`가 쓰는 규칙은 `~/.claude/skills/wiki/references/wiki-db.md`에 있다.
+블로그 `/wiki`가 렌더하는 **공개 위키와 같은 DB**다(2026-09-14에 옛 "문제 해결 일지DB" 91건을 여기로 옮겼다). 옛 DB(`35189de0-…`)는 비어 있고 더 쓰지 않는다. `/wiki:draft`가 쓰는 규칙은 [wiki/references/wiki-db.md](../wiki/references/wiki-db.md)에 있다.
 
 **속성표는 2026-09-20에 `API-retrieve-a-data-source`로 실제 DB와 대조해 맞췄다.** 이 DB는 노션에서 사람이 구조를 바꿀 수 있어 문서가 쉽게 낡는다. 그래서 `/gs:problem-log`는 쓰거나 조회하기 전에 실제 속성명을 한 번 대조한다.
 

@@ -2,7 +2,14 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
 import { PATHS } from "@web-memo/shared/constants";
 import { SidebarGroup, SidebarMenu } from "@web-memo/ui";
-import { BookOpen, Heart, Highlighter, Home, Star } from "lucide-react";
+import {
+	BookOpen,
+	Heart,
+	Highlighter,
+	Home,
+	LibraryBig,
+	Star,
+} from "lucide-react";
 
 import SidebarNavItem from "./SidebarNavItem";
 
@@ -46,6 +53,17 @@ const SidebarMainSection = async ({ lng }: LanguageType) => {
 						/>
 					}
 					iconChipClassName="bg-emerald-100 dark:bg-emerald-900/30 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800/40"
+				/>
+				<SidebarNavItem
+					href={withLanguage(PATHS.memosBlogs)}
+					label={t("sideBar.blogReading")}
+					icon={
+						<LibraryBig
+							size={16}
+							className="text-violet-600 dark:text-violet-400"
+						/>
+					}
+					iconChipClassName="bg-violet-100 dark:bg-violet-900/30 group-hover:bg-violet-200 dark:group-hover:bg-violet-800/40"
 				/>
 				<SidebarNavItem
 					href={withLanguage(PATHS.highlights)}

@@ -46,12 +46,13 @@
 
 <!-- env-manifest:start -->
 
-### GitHub Secrets (26개)
+### GitHub Secrets (27개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
 | `APP_ID` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml`, `.github/workflows/chore-ga-events.yml` |
 | `APP_PRIVATE_KEY` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml`, `.github/workflows/chore-ga-events.yml` |
+| `BLOG_CATALOG_INGEST_SECRET` | 블로그 정주행 카탈로그 수집이 멈춘다. GitHub에 없으면 수집기가 시작하지 못하고, Supabase에 없으면 수집 엔드포인트가 500으로 모든 요청을 거절해 토스·당근의 새 글과 재개 요청이 반영되지 않는다(이미 수집된 글 조회는 그대로다) | `.github/workflows/chore-blog-catalog.yml`, `.github/scripts/blog-reading/collect.mjs`, `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts` |
 | `CLAUDE_CODE_OAUTH_TOKEN` | 주간 리팩토링 점검과 SEO AI 리포트, GA 이벤트 점검이 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신한다. 구독 토큰이라 만료·한도 소진으로도 실패한다 | `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/chore-ga-events.yml` |
 | `CLIENT_ID` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `CLIENT_SECRET` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
@@ -96,10 +97,11 @@
 | `UPSTASH_REDIS_REST_TOKEN` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/modules/ratelimit/rateLimit.ts` |
 | `UPSTASH_REDIS_REST_URL` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/modules/ratelimit/rateLimit.ts` |
 
-### Supabase Edge Function secrets (5개)
+### Supabase Edge Function secrets (6개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
+| `BLOG_CATALOG_INGEST_SECRET` | 블로그 정주행 카탈로그 수집이 멈춘다. GitHub에 없으면 수집기가 시작하지 못하고, Supabase에 없으면 수집 엔드포인트가 500으로 모든 요청을 거절해 토스·당근의 새 글과 재개 요청이 반영되지 않는다(이미 수집된 글 조회는 그대로다) | `.github/workflows/chore-blog-catalog.yml`, `.github/scripts/blog-reading/collect.mjs`, `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts` |
 | `CRON_SECRET` | DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·가입 알림·아티클 리마인더가 401로 끝난다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts` |
 | `RESEND_API_KEY` | 가입 안내 메일이 발송되지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts` |
 | `SLACK_FEEDBACK_WEBHOOK_URL` | 피드백 Slack 알림이 오지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts` |
@@ -512,6 +514,15 @@ Supabase 표가 원천입니다. 레포에도 `.env`에도 두지 않습니다. 
 모두 같은 `memo.send_welcome_email()` 트리거가 부르므로 이 헤더와 호출 주소를
 Vault의 `cron_secret`·`project_url`에서 읽어 `daily-article-reminder`와 같은 두
 값을 공유합니다. 새로 넣을 DB 설정은 없습니다.
+
+`blog-catalog-ingest`도 JWT 검증을 끄고 배포합니다(`config.toml`의 `verify_jwt = false`).
+호출자는 GitHub Actions의 블로그 카탈로그 수집기(`chore-blog-catalog.yml`) 하나이고, `x-blog-catalog-ingest-secret`
+헤더를 `BLOG_CATALOG_INGEST_SECRET`과 상수 시간으로 비교해 확인합니다. 이 값은 **카탈로그 쓰기 전용**이라
+GitHub Secrets(수집기가 읽음)와 Supabase Edge Function secret(엔드포인트가 읽음)에 같은 값을 따로 등록합니다.
+조회 전용 `SUPABASE_ACCESS_TOKEN`과 `CRON_SECRET`을 쓰기 인증에 재사용하지 않으며, 번들과 Vercel에는 두지 않습니다.
+엔드포인트는 Supabase가 주입하는 service role로 `memo` 스키마의 검증 RPC만 부릅니다.
+등록은 코드 배포와 별개의 콘솔 작업입니다: 32자 이상 무작위 값을 만들어 `supabase secrets set BLOG_CATALOG_INGEST_SECRET=...`과
+GitHub Secrets 양쪽에 넣습니다(값은 어디에도 커밋하지 않습니다).
 
 ### 빌드 플래그
 

@@ -12,6 +12,7 @@
 | 호출 방식 | `packages/shared/src/modules/analytics`의 `analytics.trackEvent(이름, 파라미터)`. 이벤트는 `type.ts`의 `TAnalyticsEvent` 판별 유니온에 멤버로 추가하고, 같은 파일의 `EVENT_CATEGORY`에 분류(`engagement` / `core_action`)를 넣어야 컴파일이 통과합니다 |
 | 이름 규칙 | `snake_case`. `목적어_동사` 형태가 기본이지만 `login`·`logout`처럼 짧은 이름도 섞여 있습니다. 같은 행동의 변형은 새 이벤트 대신 속성(`source`·`method`·`position`·`from`·`kind`)으로 가릅니다 |
 | 공통 파라미터 | 전송 계층이 `event_category`·`engagement_time_msec`·`build_env`(staging 필터 기준)·`user_id`·`session_id`를 얹고, 확장에서는 `extension_version`도 얹습니다 |
+| 앱 | 앱(`apps/app`)은 analytics 전송 계층이 없어 이벤트를 심지 않습니다(미지원) |
 | 금지 속성 | 이메일·이름·연락처·사용자가 입력한 문장 원문(메모 본문, 피드백 서술, 검색어 원문). 길이·개수·열거값만 넣습니다 |
 
 ## 이벤트
@@ -61,6 +62,11 @@
 | open_web_from_extension | 확장에서 웹 열기 | `from` | 웹으로 넘어가는 자리는 어디인가 | — |
 | guide_open / guide_step / guide_finish | 가이드 열기·단계·완료 | `from`, `step_name` | 가이드 어느 단계에서 그만두는가 (추정) | — |
 | notice_view / notice_dismiss | 공지 노출·닫음 | `notice_id` | 공지가 읽히는가 (추정) | — |
+| blog_subscription_change | 블로그 구독 변경 뮤테이션의 `onSuccess`(실패 제외) | `blog_id`, `active`: boolean | 어떤 블로그가 구독·해제되는가 | DB-1134 |
+| blog_article_open | 정주행 목록 행의 '원문' 링크 클릭 | `blog_id`, `sort`: `oldest` \| `newest` | 체크리스트에서 원문으로 실제 넘어가는가, 정렬에 따라 다른가 | DB-1134 |
+| blog_article_memo_click | 정주행 행에서 메모 열기 성공 뒤(기존 메모는 다이얼로그 열기 직전, 새 메모는 생성 뮤테이션 `onSuccess`) | `blog_id`, `action`: `create` \| `view` | 정주행이 메모 작성으로 이어지는가 | DB-1134 |
+| blog_sync_resume_request | 수집 재개 요청 뮤테이션의 `onSuccess`(오류 제외) | `blog_id`, `result`: `queued` \| `running` \| `throttled` | 수집 재개가 얼마나 쓰이고 제한에 얼마나 걸리는가 | DB-1134 |
+| blog_reading_page_move | 정주행 목록 쪽 이동 성공 뒤(다음 쪽은 `fetchNextPage` 성공 시) | `direction`: `prev` \| `next`, `page_number`(이동 후, 1부터), `sort` | 목록을 몇 쪽까지 읽어 나가는가 | DB-1134 |
 
 ## 갱신 규칙
 

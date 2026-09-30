@@ -104,6 +104,10 @@ export default function useMemoUpsertMutation() {
 			await queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.memosPaginatedPrefix(),
 			});
+			// 블로그 정주행 완료 표시·완료 수는 메모 내용에서 계산되므로 함께 다시 읽는다.
+			await queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.blogCompletionPrefix(),
+			});
 			if (context.pageKey) {
 				await queryClient.invalidateQueries({
 					queryKey: QUERY_KEY.memo({ url: context.pageKey }),

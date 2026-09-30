@@ -1,5 +1,6 @@
 import type { CONFIG } from "@web-memo/env";
 import type { HighlightColor } from "../../constants/Highlight";
+import type { TBlogId, TBlogReadingSort } from "../../types/blogReading";
 import type { ExportFormat } from "../../utils/Export";
 
 declare global {
@@ -210,7 +211,32 @@ export type TAnalyticsEvent =
 				has_other_error: boolean;
 			};
 	  }
-	| { name: "shortcut_change_click"; params: { is_success: boolean } };
+	| { name: "shortcut_change_click"; params: { is_success: boolean } }
+	| {
+			name: "blog_subscription_change";
+			params: { blog_id: TBlogId; active: boolean };
+	  }
+	| {
+			name: "blog_article_open";
+			params: { blog_id: TBlogId; sort: TBlogReadingSort };
+	  }
+	| {
+			name: "blog_article_memo_click";
+			params: { blog_id: TBlogId; action: "create" | "view" };
+	  }
+	| {
+			name: "blog_sync_resume_request";
+			params: { blog_id: TBlogId; result: "queued" | "running" | "throttled" };
+	  }
+	| {
+			name: "blog_reading_page_move";
+			params: {
+				direction: "prev" | "next";
+				/** 이동 후 쪽 번호. 1부터 */
+				page_number: number;
+				sort: TBlogReadingSort;
+			};
+	  };
 
 /** 이벤트 이름만 추린 유니온. */
 export type TAnalyticsEventName = TAnalyticsEvent["name"];
@@ -280,4 +306,9 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	memo_offline_queued: "engagement",
 	memo_offline_sync_result: "engagement",
 	shortcut_change_click: "engagement",
+	blog_subscription_change: "core_action",
+	blog_article_open: "core_action",
+	blog_article_memo_click: "core_action",
+	blog_sync_resume_request: "core_action",
+	blog_reading_page_move: "engagement",
 };

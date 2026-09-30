@@ -39,7 +39,8 @@
 		"deleteConfirmTitle": "카테고리를 삭제하시겠어요?",
 		"deleteConfirmDescription": "이 카테고리에 속한 메모의 카테고리가 해제됩니다.",
 		"cancel": "취소",
-		"trash": "휴지통"
+		"trash": "휴지통",
+		"blogReading": "블로그 정주행"
 	},
 	"header": {
 		"login": "로그인하기",
@@ -1696,5 +1697,108 @@
 			"description": "그동안 웹 메모를 써주셔서 감사해요"
 		},
 		"error": "지금은 보내지 못했어요. 잠시 뒤에 다시 눌러주세요"
+	},
+	"blogs": {
+		"title": "블로그 정주행",
+		"description": "공개된 글을 처음부터 읽고 메모를 남겨요.",
+		"selectBlogs": "블로그 선택",
+		"filterLabel": "블로그 선택",
+		"filterAll": "전체",
+		"sortLabel": "정렬",
+		"sortAriaLabel": "글 정렬",
+		"sortOldest": "과거부터",
+		"sortNewest": "최신순",
+		"summaryComplete": "전체 글 {{total}}개 · 메모할 글 {{todo}}개 · 메모 완료 {{done}}개",
+		"summaryCollecting": "현재 수집한 글 {{total}}개 · 메모 완료 {{done}}개",
+		"allMemoed": "현재 수집한 글에는 모두 메모를 남겼어요",
+		"lastUpdated": "마지막 갱신: {{time}}",
+		"refresh": "새로고침",
+		"status": {
+			"label": "블로그별 수집 상태",
+			"completeTitle": "{{name}} · 전체 글 수집 완료",
+			"completeCopy": "공개된 글 총 {{total}}개를 모았어요.",
+			"waitingTitle": "{{name}} · 수집을 준비하고 있어요",
+			"collectingTitle": "{{name}} · 이전 글을 모으고 있어요",
+			"partialTitle": "{{name}} · 일부 글을 가져오지 못했어요",
+			"queuedTitle": "{{name}} · 수집 재개를 요청했어요",
+			"refreshingTitle": "{{name}} · 새 글을 확인하고 있어요",
+			"refreshFailedTitle": "{{name}} · 새 글을 확인하지 못했어요",
+			"foundCopy": "현재 {{count}}개를 찾았어요. 전체 글 수는 확인 중이에요.",
+			"readNow": "먼저 가져온 글부터 읽고 메모할 수 있어요.",
+			"queuedCopy": "다음 예약 작업에서 이어서 수집해요. 예약 작업은 15분마다 요청을 확인해요. 실행 상황에 따라 더 걸릴 수 있어요.",
+			"refreshFailedCopy": "이전에 수집한 전체 글은 계속 볼 수 있어요.",
+			"resume": "수집 재개",
+			"retry": "재시도"
+		},
+		"sync": {
+			"queued": "수집 재개를 요청했어요",
+			"running": "이미 수집하고 있어요",
+			"throttled": "잠시 후 다시 요청할 수 있어요",
+			"throttledAt": "{{time}} 이후에 다시 요청할 수 있어요",
+			"failed": "수집 재개를 요청하지 못했어요"
+		},
+		"list": {
+			"label": "블로그 글 목록",
+			"completed": "메모 완료",
+			"notYet": "메모 전",
+			"openArticle": "원문",
+			"openArticleLabel": "원문 열기: {{title}}",
+			"writeMemo": "메모하기",
+			"writeMemoLabel": "{{title}} 메모하기",
+			"viewMemo": "메모 보기",
+			"viewMemoLabel": "{{title}} 메모 보기",
+			"memoCreateFailed": "메모를 열지 못했어요. 잠시 후 다시 시도해 주세요.",
+			"hint": "메모 · 느낀 점 · 실행할 일 중 하나를 저장하면 체크돼요."
+		},
+		"pagination": {
+			"label": "글 목록 페이지",
+			"range": "{{from}}–{{to}}번째 글",
+			"rangeWithTotal": "{{from}}–{{to}} / {{total}}개",
+			"prev": "이전",
+			"next": "다음",
+			"page": "{{page}}쪽",
+			"pageWithTotal": "{{page}} / {{pages}}쪽",
+			"partialEnd": "이전 글을 더 모으고 있어요. 확보한 마지막 페이지예요."
+		},
+		"newArticles": {
+			"message": "새로 가져온 글 {{count}}개",
+			"refresh": "목록 갱신"
+		},
+		"empty": {
+			"title": "아직 구독한 블로그가 없어요",
+			"description": "읽고 싶은 블로그를 골라보세요."
+		},
+		"login": {
+			"title": "로그인하고 이어서 읽어요",
+			"description": "앱과 웹에서 같은 체크리스트를 볼 수 있어요.",
+			"action": "로그인하기"
+		},
+		"loading": {
+			"title": "글을 불러오고 있어요"
+		},
+		"noArticles": {
+			"title": "아직 가져온 글이 없어요",
+			"description": "수집이 시작되면 글이 여기에 나타나요. 구독은 그대로 유지돼요."
+		},
+		"firstError": {
+			"title": "글 목록을 가져오지 못했어요",
+			"description": "구독은 저장되어 있어요. 잠시 후 다시 시도해 주세요.",
+			"retry": "다시 시도"
+		},
+		"refreshError": {
+			"message": "새 글을 확인하지 못했어요.",
+			"description": "이전에 수집한 글은 계속 볼 수 있어요.",
+			"retry": "재시도"
+		},
+		"offline": "오프라인이에요. 이전에 불러온 글을 보여드려요.",
+		"dialog": {
+			"title": "블로그 선택",
+			"description": "토스와 당근의 공개된 글을 모아 정주행할 수 있어요.",
+			"subscribe": "구독하기",
+			"unsubscribe": "구독 해제",
+			"keepMemos": "구독을 해제해도 작성한 메모는 남아요.",
+			"close": "닫기",
+			"failed": "구독을 변경하지 못했어요"
+		}
 	}
 }

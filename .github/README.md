@@ -41,6 +41,7 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | `chore-e2e-coverage.yml` | schedule, workflow_dispatch | 매주 일요일 10:23 KST 또는 수동 실행마다 | `e2e-coverage/maintain.mjs` |
 | `chore-ga-events.yml` | schedule, workflow_dispatch | 매주 수요일 09:41 KST 또는 수동 실행마다 | `ga-events/maintain.mjs` |
 | `chore-supabase-inventory.yml` | schedule, workflow_dispatch | 매일 08:00 KST 또는 수동 실행마다 | `supabase/generate-supabase-inventory.mjs` · `supabase/sync-supabase-inventory-pr.mjs` |
+| `chore-blog-catalog.yml` | schedule, workflow_dispatch | 매일 03:17 KST 전체 재순회, 15분마다 재개 요청 확인 또는 수동 실행(소스 선택·당근 smoke·dry-run)마다 | `blog-reading/collect.mjs` |
 
 정기 실행 시각은 워크플로의 UTC cron을 한국 시간(KST)으로 환산한 예정 시각입니다. GitHub Actions 사정에 따라 실제 시작은 늦어질 수 있습니다.
 
@@ -70,6 +71,7 @@ dispatch해도 스크립트는 master의 것이 돕니다.
 | `refactor/` | 주간 리팩토링 점검 |
 | `cleanup/` | 미사용 파일 정리 |
 | `e2e-coverage/` | 핵심 사용자 흐름의 E2E 누락 점검, 새 테스트 검증, 자동 보완 PR 게시 |
+| `blog-reading/` | 블로그 정주행(토스·당근) 공개 글 카탈로그 수집기. 원본 순회(`tossSource`·`daangnSource`)와 수집 엔드포인트 클라이언트(`ingestClient`), 실행 진입점(`collect`) |
 | `ga-events/` | GA 이벤트 누락 점검, 이벤트 추가 패치 검증, 자동 보완 PR 게시 |
 
 **`shared/` 규칙**: 두 도메인 이상이 쓰는 모듈만 `shared/`에 둡니다. 한 도메인만 쓰면 이름이
@@ -84,5 +86,6 @@ import하지 않습니다.
 | `pnpm seo:gsc` | `seo/check-gsc.mjs` | Search Console 색인·성과 조회 |
 | `pnpm seo:sheets` | `seo/persist-seo-sheets.mjs` | SEO 결과를 Google Sheets에 적재 |
 | 수동 CLI | `ga/measure-feature-usage.mjs` | 기간별 기능 사용량 측정 ([`docs/analytics.md`](../docs/analytics.md)) |
+| 수동 CLI | `blog-reading/collect.mjs` | `--dry-run`으로 서버 저장 없이 원본 순회만 확인, `--smoke`로 당근 접근 확인 (종료 코드 3은 원본 사이트의 접근 차단) |
 
 테스트는 `pnpm exec vitest run .github/scripts`로 돌립니다.

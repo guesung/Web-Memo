@@ -87,10 +87,12 @@ export function useBrowserState({
 		url: paramUrl,
 		t: navTs,
 		newTab: newTabParam,
+		source: sourceParam,
 	} = useLocalSearchParams<{
 		url?: string;
 		t?: string;
 		newTab?: string;
+		source?: string;
 	}>();
 
 	const {
@@ -110,6 +112,10 @@ export function useBrowserState({
 		undefined,
 	);
 	const [urlInput, setUrlInput] = useState("");
+	/** 블로그 정주행에서 연 원문 주소. 일반 브라우징으로 열었으면 null */
+	const [blogReadingOriginUrl, setBlogReadingOriginUrl] = useState<
+		string | null
+	>(null);
 	const [isMemoOpen, setIsMemoOpen] = useState(false);
 	const [selectedMemoId, setSelectedMemoId] = useState<number | string | null>(
 		null,
@@ -182,6 +188,11 @@ export function useBrowserState({
 			(selectedMemoId !== null && !localMemo) ||
 			(localCandidates.length > 1 && !localMemo);
 	const pageKey = currentUrl ? getPageKey(currentUrl) : "";
+	// 같은 탭에서 다른 페이지로 옮기면 정주행 원문이 아니므로 복귀 동작을 숨긴다.
+	const isFromBlogReading =
+		blogReadingOriginUrl !== null &&
+		pageKey !== "" &&
+		pageKey === getPageKey(blogReadingOriginUrl);
 	const previousPageKeyRef = useRef(`${activeTabId}:${pageKey}:${authOwner}`);
 	useEffect(() => {
 		const scopeKey = `${activeTabId}:${pageKey}:${authOwner}`;
@@ -256,6 +267,7 @@ export function useBrowserState({
 		if (!paramUrl || !isTabsLoaded) return;
 		onBeforeMemoLeave?.();
 		const decoded = decodeURIComponent(paramUrl);
+		setBlogReadingOriginUrl(sourceParam === "blog-reading" ? decoded : null);
 		if (newTabParam !== "1") {
 			updateActiveTabInfo({ url: decoded, title: "" });
 			setIsMemoOpen(false);
@@ -276,7 +288,7 @@ export function useBrowserState({
 		setIsMemoOpen(false);
 		setSelectedMemoId(null);
 		panelHeight.value = 0;
-	}, [paramUrl, navTs, newTabParam, panelHeight, isTabsLoaded]);
+	}, [paramUrl, navTs, newTabParam, sourceParam, panelHeight, isTabsLoaded]);
 
 	const handleNavigationStateChange = (navState: WebViewNavigation) => {
 		if (getPageKey(navState.url) !== pageKey) onBeforeMemoLeave?.();
@@ -828,6 +840,7 @@ export function useBrowserState({
 		insets,
 		webViewRef,
 		currentUrl,
+		isFromBlogReading,
 		selectedMemoId,
 		setSelectedMemoId,
 		urlInput,

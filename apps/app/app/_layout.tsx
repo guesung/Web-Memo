@@ -1,4 +1,8 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+	focusManager,
+	QueryClient,
+	QueryClientProvider,
+} from "@tanstack/react-query";
 import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -28,6 +32,9 @@ const queryClient = new QueryClient({
 		queries: {
 			retry: 1,
 			staleTime: 1000 * 60 * 5,
+			// 앱은 아래에서 AppState를 focusManager에 연결한다. 기존 쿼리가 foreground마다 다시 받아 오지 않도록
+			// 기본값은 끄고, 블로그 정주행 쿼리만 훅에서 refetchOnWindowFocus를 켠다.
+			refetchOnWindowFocus: false,
 		},
 	},
 });
@@ -157,6 +164,7 @@ function ThemedStack() {
 			<Stack.Screen name="pending-memos" />
 			{/* iOS 공유 확장이 openHostApp으로 여는 webmemo://share 딥링크 */}
 			<Stack.Screen name="share" />
+			<Stack.Screen name="blog-reading" />
 			<Stack.Screen name="+not-found" />
 		</Stack>
 	);
@@ -167,6 +175,15 @@ export default function RootLayout() {
 		SplashScreen.hideAsync();
 	}, []);
 	useRefreshOnForeground();
+
+	// React Native에는 브라우저 focus 이벤트가 없으므로 앱이 foreground로 돌아올 때를 focus로 알린다.
+	useEffect(() => {
+		const subscription = AppState.addEventListener("change", (status) => {
+			focusManager.setFocused(status === "active");
+		});
+
+		return () => subscription.remove();
+	}, []);
 
 	return (
 		<QueryClientProvider client={queryClient}>

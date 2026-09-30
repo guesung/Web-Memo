@@ -174,6 +174,13 @@
   impact: "GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다"
   note: "같은 값이어야 하지만 서로 읽지 못해 따로 등록한다"
 
+- name: BLOG_CATALOG_INGEST_SECRET
+  kind: secret
+  stores: [github, supabase]
+  consumers: [.github/workflows/chore-blog-catalog.yml, .github/scripts/blog-reading/collect.mjs, packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts]
+  impact: "블로그 정주행 카탈로그 수집이 멈춘다. GitHub에 없으면 수집기가 시작하지 못하고, Supabase에 없으면 수집 엔드포인트가 500으로 모든 요청을 거절해 토스·당근의 새 글과 재개 요청이 반영되지 않는다(이미 수집된 글 조회는 그대로다)"
+  note: "카탈로그 쓰기 전용 secret이다. 32자 이상 무작위 값으로 만들어 GitHub Secrets와 Supabase Edge Function secret에 같은 값을 등록한다. 조회 전용 SUPABASE_ACCESS_TOKEN과 가입 트리거용 CRON_SECRET을 재사용하지 않는다. 번들·Vercel에 넣지 않는다"
+
 - name: GA4_SERVICE_ACCOUNT_JSON
   kind: secret
   stores: [github, vercel]

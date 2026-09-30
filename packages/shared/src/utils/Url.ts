@@ -118,3 +118,60 @@ export const toLooseUrlKey = (url: string): string | null => {
 		return null;
 	}
 };
+
+/**
+ * URL에서 도메인 필터에 쓰는 도메인을 구한다.
+ * @description 소문자 hostname에서 앞의 `www.`만 지운다. `m.`·서브도메인은 다른 도메인으로 본다.
+ * http(s) 주소가 아니거나 파싱할 수 없으면 null을 돌려준다.
+ */
+export const getDomainFromUrl = (url: string): string | null => {
+	try {
+		const urlObj = new URL(url);
+
+		if (urlObj.protocol !== "http:" && urlObj.protocol !== "https:") {
+			return null;
+		}
+
+		const domain = urlObj.hostname.toLowerCase().replace(/^www\./, "");
+
+		if (!domain) {
+			return null;
+		}
+
+		return domain;
+	} catch {
+		return null;
+	}
+};
+
+/**
+ * 검색 주소의 도메인 값을 도메인 필터에 쓸 수 있는 형태로 바꾼다.
+ * @description 소문자로 바꾸고 앞의 `www.`를 지운다. 영문·숫자·`.`·`-` 외의 문자가 있으면
+ * 정규식 조건에 들어가지 않도록 없는 값(undefined)으로 본다.
+ */
+export const parseDomainFilter = (
+	value: string | null | undefined,
+): string | undefined => {
+	if (!value) {
+		return undefined;
+	}
+
+	const domain = value
+		.trim()
+		.toLowerCase()
+		.replace(/^www\./, "");
+
+	if (!/^[a-z0-9.-]+$/.test(domain)) {
+		return undefined;
+	}
+
+	return domain;
+};
+
+/**
+ * 도메인의 메모 url을 고르는 정규식(PostgREST `imatch`)을 만든다.
+ * @description `www.`는 같은 도메인으로 잡고 `m.`·서브도메인은 잡지 않는다. 도메인 뒤에는
+ * 경로·포트·쿼리·해시가 오거나 문자열이 끝나야 한다. 인자는 {@link parseDomainFilter}를 거친 값이어야 한다.
+ */
+export const getDomainUrlPattern = (domain: string): string =>
+	`^https?://(www\\.)?${domain.replace(/\./g, "\\.")}([/:?#]|$)`;

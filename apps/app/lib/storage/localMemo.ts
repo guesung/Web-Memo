@@ -1,7 +1,212 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getPageKey } from "@web-memo/shared/utils/url";
+import { changeLocalMemos, readLocalMemos } from "./localMemoStore";
 
-const MEMOS_KEY = "webmemo:memos";
+export async function getAllMemos(): Promise<LocalMemo[]> {
+	return (await readLocalMemos())
+		.filter((memo) => !memo.deletedAt)
+		.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+export async function getMemoByUrl(url: string): Promise<LocalMemo[]> {
+	return pageCandidates(await readLocalMemos(), url);
+}
+
+export function upsertMemoWithExisting(
+	params: LocalMemoUpsert,
+): Promise<{ memo: LocalMemo; isExisting: boolean }> {
+	return changeLocalMemos<{ memo: LocalMemo; isExisting: boolean }>((memos) => {
+		const existing = resolveCandidate(
+			memos,
+			params.url,
+			params.selectedId,
+			params.expectedNew,
+		);
+		const now = new Date().toISOString();
+		if (existing) {
+			existing.title = params.title;
+			existing.memo = params.memo;
+			if (params.impression !== undefined)
+				existing.impression = params.impression;
+			if (params.actionItem !== undefined)
+				existing.actionItem = params.actionItem;
+			if (params.favIconUrl) existing.favIconUrl = params.favIconUrl;
+			if (params.isWish !== undefined) existing.isWish = params.isWish;
+			if (params.isStar !== undefined) existing.isStar = params.isStar;
+			if (params.isReading !== undefined) existing.isReading = params.isReading;
+			existing.updatedAt = now;
+			existing.synced = false;
+			return { memos, result: { memo: existing, isExisting: true } };
+		}
+		const created = createMemo(
+			{
+				url: params.url,
+				title: params.title,
+				memo: params.memo,
+				impression: params.impression,
+				actionItem: params.actionItem,
+				favIconUrl: params.favIconUrl,
+				isWish: params.isWish,
+				isStar: params.isStar,
+				isReading: params.isReading,
+			},
+			now,
+		);
+		return {
+			memos: [...memos, created],
+			result: { memo: created, isExisting: false },
+		};
+	});
+}
+
+export async function upsertMemo(params: LocalMemoUpsert): Promise<LocalMemo> {
+	const { memo } = await upsertMemoWithExisting(params);
+	return memo;
+}
+
+export function toggleWishByUrl(
+	url: string,
+	title?: string,
+	favIconUrl?: string,
+	selectedId?: string,
+) {
+	return toggleFlag("isWish", { url, title, favIconUrl, selectedId });
+}
+export function toggleStarByUrl(
+	url: string,
+	title?: string,
+	favIconUrl?: string,
+	selectedId?: string,
+) {
+	return toggleFlag("isStar", { url, title, favIconUrl, selectedId });
+}
+export function toggleReadingByUrl(
+	url: string,
+	title?: string,
+	favIconUrl?: string,
+	selectedId?: string,
+) {
+	return toggleFlag("isReading", { url, title, favIconUrl, selectedId });
+}
+
+/** 휴지통 메모까지 보존하는 전체 배열 transaction. */
+export function deleteMemo(id: string): Promise<void> {
+	return changeLocalMemos((memos) => ({
+		memos: memos.map((memo) =>
+			memo.id === id
+				? { ...memo, deletedAt: new Date().toISOString(), synced: false }
+				: memo,
+		),
+		result: undefined,
+	}));
+}
+export async function getDeletedMemos(): Promise<LocalMemo[]> {
+	return (await readLocalMemos())
+		.filter((memo) => memo.deletedAt)
+		.sort((a, b) => (b.deletedAt ?? "").localeCompare(a.deletedAt ?? ""));
+}
+export function restoreMemo(id: string): Promise<void> {
+	return changeLocalMemos((memos) => ({
+		memos: memos.map((memo) => {
+			if (memo.id !== id) return memo;
+			const { deletedAt: _deletedAt, ...restored } = memo;
+			return { ...restored, synced: false };
+		}),
+		result: undefined,
+	}));
+}
+export function deleteMemoPermanently(id: string): Promise<void> {
+	return changeLocalMemos((memos) => ({
+		memos: memos.filter((memo) => memo.id !== id),
+		result: undefined,
+	}));
+}
+export async function getUnsyncedMemos(): Promise<LocalMemo[]> {
+	return (await readLocalMemos()).filter(
+		(memo) => !memo.deletedAt && !memo.synced,
+	);
+}
+export function markAsSynced(ids: string[]): Promise<void> {
+	return changeLocalMemos((memos) => ({
+		memos: memos.map((memo) =>
+			ids.includes(memo.id) ? { ...memo, synced: true } : memo,
+		),
+		result: undefined,
+	}));
+}
+export function clearSyncedMemos(): Promise<number> {
+	return changeLocalMemos((memos) => {
+		const remaining = memos.filter((memo) => !memo.synced);
+		return { memos: remaining, result: memos.length - remaining.length };
+	});
+}
+
+function pageCandidates(memos: LocalMemo[], url: string) {
+	const pageKey = getPageKey(url);
+	return memos
+		.filter((memo) => !memo.deletedAt && getPageKey(memo.url) === pageKey)
+		.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+function resolveCandidate(
+	memos: LocalMemo[],
+	url: string,
+	selectedId?: string,
+	expectedNew?: boolean,
+) {
+	const candidates = pageCandidates(memos, url);
+	if (expectedNew && candidates.length)
+		throw new Error("메모가 새로 생겼어요. 저장할 메모를 선택해 주세요.");
+	if (!selectedId && candidates.length > 1)
+		throw new Error("수정할 메모를 선택해 주세요.");
+	const selected = selectedId
+		? candidates.find((memo) => memo.id === selectedId)
+		: candidates[0];
+	if (selectedId && !selected)
+		throw new Error("선택한 메모가 현재 페이지에 속하지 않습니다.");
+	return selected;
+}
+function toggleFlag(
+	flag: "isWish" | "isStar" | "isReading",
+	params: {
+		url: string;
+		title?: string;
+		favIconUrl?: string;
+		selectedId?: string;
+	},
+): Promise<LocalMemo> {
+	return changeLocalMemos((memos) => {
+		const existing = resolveCandidate(memos, params.url, params.selectedId);
+		const now = new Date().toISOString();
+		if (existing) {
+			existing[flag] = !existing[flag];
+			existing.updatedAt = now;
+			existing.synced = false;
+			return { memos, result: existing };
+		}
+		const created = createMemo(
+			{
+				url: params.url,
+				title: params.title || "",
+				memo: "",
+				favIconUrl: params.favIconUrl,
+				[flag]: true,
+			},
+			now,
+		);
+		return { memos: [...memos, created], result: created };
+	});
+}
+function createMemo(
+	params: Omit<LocalMemo, "id" | "createdAt" | "updatedAt" | "synced">,
+	now: string,
+): LocalMemo {
+	return {
+		...params,
+		id: `local_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+		createdAt: now,
+		updatedAt: now,
+		synced: false,
+	};
+}
 
 export interface LocalMemo {
 	id: string;
@@ -17,71 +222,11 @@ export interface LocalMemo {
 	isWish?: boolean;
 	isStar?: boolean;
 	isReading?: boolean;
-	/** 휴지통으로 보낸 시각. 값이 있으면 일반 조회에서 빠진다 */
 	deletedAt?: string;
 }
-
-async function getAll(): Promise<LocalMemo[]> {
-	const raw = await AsyncStorage.getItem(MEMOS_KEY);
-	if (!raw) return [];
-	return JSON.parse(raw) as LocalMemo[];
-}
-
-async function save(memos: LocalMemo[]) {
-	await AsyncStorage.setItem(MEMOS_KEY, JSON.stringify(memos));
-}
-
-/**
- * 휴지통에 있지 않은 메모만 추린다.
- * @description 저장소를 읽는 경로가 여럿이라 각자 filter를 부르게 두면 하나가
- * 빠졌을 때 지운 메모가 그 화면에만 계속 보인다. 한 곳으로 모은다.
- */
-async function getAlive(): Promise<LocalMemo[]> {
-	const memos = await getAll();
-	return memos.filter((memo) => !memo.deletedAt);
-}
-
-export async function getAllMemos(): Promise<LocalMemo[]> {
-	const memos = await getAlive();
-	return memos.sort(
-		(a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-	);
-}
-
-/** 현재 페이지의 살아 있는 로컬 메모 후보를 최근 수정 순으로 조회한다. */
-export async function getMemoByUrl(url: string): Promise<LocalMemo[]> {
-	const memos = await getAlive();
-	const pageKey = getPageKey(url);
-	return memos
-		.filter((memo) => getPageKey(memo.url) === pageKey)
-		.sort((first, second) => second.updatedAt.localeCompare(first.updatedAt));
-}
-
-const resolveLocalCandidate = async (
-	url: string,
-	selectedId: string | undefined,
-	memos: LocalMemo[],
-): Promise<LocalMemo | undefined> => {
-	const candidates = await getMemoByUrl(url);
-	if (!selectedId && candidates.length > 1) {
-		throw new Error("수정할 메모를 선택해 주세요.");
-	}
-	const selected = selectedId
-		? candidates.find((candidate) => candidate.id === selectedId)
-		: candidates[0];
-	if (selectedId && !selected) {
-		throw new Error("선택한 메모가 현재 페이지에 속하지 않습니다.");
-	}
-
-	return memos.find((memo) => memo.id === selected?.id);
-};
-
-/**
- * 메모를 저장하고, 기존 메모를 고친 것인지 함께 알려 준다.
- * @description 새로 만든 메모와 수정을 GA 이벤트에서 가르려고 존재 여부를 돌려준다.
- */
-export async function upsertMemoWithExisting(params: {
+interface LocalMemoUpsert {
 	selectedId?: string;
+	expectedNew?: boolean;
 	url: string;
 	title: string;
 	memo: string;
@@ -91,244 +236,4 @@ export async function upsertMemoWithExisting(params: {
 	isWish?: boolean;
 	isStar?: boolean;
 	isReading?: boolean;
-}): Promise<{ memo: LocalMemo; isExisting: boolean }> {
-	const memos = await getAll();
-	const now = new Date().toISOString();
-	// 휴지통에 있는 같은 URL의 메모는 없는 것으로 친다. 그걸 덮어쓰면 사용자가
-	// 새로 쓴 메모가 휴지통 안에서 보이지 않게 된다. Supabase 경로도 조회가
-	// deleted_at is null로 걸려 같은 결과가 된다.
-	const candidates = await getMemoByUrl(params.url);
-	if (!params.selectedId && candidates.length > 1) {
-		throw new Error("수정할 메모를 선택해 주세요.");
-	}
-	const selected = params.selectedId
-		? candidates.find((candidate) => candidate.id === params.selectedId)
-		: candidates[0];
-	if (params.selectedId && !selected) {
-		throw new Error("선택한 메모가 현재 페이지에 속하지 않습니다.");
-	}
-	const existing = memos.find((memo) => memo.id === selected?.id);
-
-	if (existing) {
-		existing.title = params.title;
-		existing.memo = params.memo;
-		if (params.impression !== undefined)
-			existing.impression = params.impression;
-		if (params.actionItem !== undefined)
-			existing.actionItem = params.actionItem;
-		if (params.favIconUrl) existing.favIconUrl = params.favIconUrl;
-		if (params.isWish !== undefined) existing.isWish = params.isWish;
-		if (params.isStar !== undefined) existing.isStar = params.isStar;
-		if (params.isReading !== undefined) existing.isReading = params.isReading;
-		existing.updatedAt = now;
-		existing.synced = false;
-		await save(memos);
-		return { memo: existing, isExisting: true };
-	}
-
-	const newMemo: LocalMemo = {
-		id: `local_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-		url: params.url,
-		title: params.title,
-		memo: params.memo,
-		impression: params.impression,
-		actionItem: params.actionItem,
-		favIconUrl: params.favIconUrl,
-		isWish: params.isWish,
-		isStar: params.isStar,
-		isReading: params.isReading,
-		createdAt: now,
-		updatedAt: now,
-		synced: false,
-	};
-	memos.push(newMemo);
-	await save(memos);
-	return { memo: newMemo, isExisting: false };
-}
-
-export async function upsertMemo(
-	params: Parameters<typeof upsertMemoWithExisting>[0],
-): Promise<LocalMemo> {
-	const { memo } = await upsertMemoWithExisting(params);
-
-	return memo;
-}
-
-export async function toggleWishByUrl(
-	url: string,
-	title?: string,
-	favIconUrl?: string,
-	selectedId?: string,
-): Promise<LocalMemo> {
-	const memos = await getAll();
-	// 목록 전체를 다시 저장하므로 읽기는 getAll이어야 한다. 살아있는 것만 읽어
-	// save하면 휴지통에 있던 메모가 통째로 사라진다.
-	const existing = await resolveLocalCandidate(url, selectedId, memos);
-	const now = new Date().toISOString();
-
-	if (existing) {
-		existing.isWish = !existing.isWish;
-		existing.updatedAt = now;
-		existing.synced = false;
-		await save(memos);
-		return existing;
-	}
-
-	const newMemo: LocalMemo = {
-		id: `local_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-		url,
-		title: title || "",
-		memo: "",
-		favIconUrl,
-		isWish: true,
-		createdAt: now,
-		updatedAt: now,
-		synced: false,
-	};
-	memos.push(newMemo);
-	await save(memos);
-	return newMemo;
-}
-
-export async function toggleStarByUrl(
-	url: string,
-	title?: string,
-	favIconUrl?: string,
-	selectedId?: string,
-): Promise<LocalMemo> {
-	const memos = await getAll();
-	// 목록 전체를 다시 저장하므로 읽기는 getAll이어야 한다. 살아있는 것만 읽어
-	// save하면 휴지통에 있던 메모가 통째로 사라진다.
-	const existing = await resolveLocalCandidate(url, selectedId, memos);
-	const now = new Date().toISOString();
-
-	if (existing) {
-		existing.isStar = !existing.isStar;
-		existing.updatedAt = now;
-		existing.synced = false;
-		await save(memos);
-		return existing;
-	}
-
-	const newMemo: LocalMemo = {
-		id: `local_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-		url,
-		title: title || "",
-		memo: "",
-		favIconUrl,
-		isStar: true,
-		createdAt: now,
-		updatedAt: now,
-		synced: false,
-	};
-	memos.push(newMemo);
-	await save(memos);
-	return newMemo;
-}
-
-export async function toggleReadingByUrl(
-	url: string,
-	title?: string,
-	favIconUrl?: string,
-	selectedId?: string,
-): Promise<LocalMemo> {
-	const memos = await getAll();
-	// 목록 전체를 다시 저장하므로 읽기는 getAll이어야 한다. 살아있는 것만 읽어
-	// save하면 휴지통에 있던 메모가 통째로 사라진다.
-	const existing = await resolveLocalCandidate(url, selectedId, memos);
-	const now = new Date().toISOString();
-
-	if (existing) {
-		existing.isReading = !existing.isReading;
-		existing.updatedAt = now;
-		existing.synced = false;
-		await save(memos);
-		return existing;
-	}
-
-	const newMemo: LocalMemo = {
-		id: `local_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-		url,
-		title: title || "",
-		memo: "",
-		favIconUrl,
-		isReading: true,
-		createdAt: now,
-		updatedAt: now,
-		synced: false,
-	};
-	memos.push(newMemo);
-	await save(memos);
-	return newMemo;
-}
-
-/**
- * 메모를 휴지통으로 보낸다.
- * @description 행을 지우지 않고 `deletedAt`만 찍는다. 로그인 사용자의 Supabase
- * 경로와 같은 규칙이라, 로그인 여부에 따라 삭제가 다르게 동작하지 않는다.
- */
-export async function deleteMemo(id: string): Promise<void> {
-	const memos = await getAll();
-	const now = new Date().toISOString();
-	await save(
-		memos.map((m) =>
-			m.id === id ? { ...m, deletedAt: now, synced: false } : m,
-		),
-	);
-}
-
-/** 휴지통에 있는 메모를 최근에 버린 순으로 가져온다 */
-export async function getDeletedMemos(): Promise<LocalMemo[]> {
-	const memos = await getAll();
-	return memos
-		.filter((m) => m.deletedAt)
-		.sort(
-			(a, b) =>
-				new Date(b.deletedAt as string).getTime() -
-				new Date(a.deletedAt as string).getTime(),
-		);
-}
-
-/** 휴지통의 메모를 되살린다 */
-export async function restoreMemo(id: string): Promise<void> {
-	const memos = await getAll();
-	await save(
-		memos.map((m) => {
-			if (m.id !== id) {
-				return m;
-			}
-
-			const { deletedAt: _deletedAt, ...restored } = m;
-			return { ...restored, synced: false };
-		}),
-	);
-}
-
-/** 메모를 완전히 지운다. 되돌릴 수 없다 */
-export async function deleteMemoPermanently(id: string): Promise<void> {
-	const memos = await getAll();
-	await save(memos.filter((m) => m.id !== id));
-}
-
-export async function getUnsyncedMemos(): Promise<LocalMemo[]> {
-	const memos = await getAlive();
-	return memos.filter((m) => !m.synced);
-}
-
-export async function markAsSynced(ids: string[]): Promise<void> {
-	const memos = await getAll();
-	for (const memo of memos) {
-		if (ids.includes(memo.id)) {
-			memo.synced = true;
-		}
-	}
-	await save(memos);
-}
-
-export async function clearSyncedMemos(): Promise<number> {
-	const memos = await getAll();
-	const unsyncedMemos = memos.filter((m) => !m.synced);
-	const clearedCount = memos.length - unsyncedMemos.length;
-	await save(unsyncedMemos);
-	return clearedCount;
 }

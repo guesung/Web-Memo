@@ -6,6 +6,7 @@ export default defineConfig({
 	plugins: [react()],
 	resolve: {
 		alias: {
+			"@/": fileURLToPath(new URL("./apps/app/", import.meta.url)),
 			"@src/modules/i18n/util.client": fileURLToPath(
 				new URL("./apps/web/src/modules/i18n/util.client.ts", import.meta.url),
 			),

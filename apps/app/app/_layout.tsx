@@ -148,6 +148,7 @@ function ThemedStack() {
 			{/* 탭 밖의 상세 화면이라 탭바 없이 뜬다 */}
 			<Stack.Screen name="trash" />
 			<Stack.Screen name="pending-memos" />
+			<Stack.Screen name="blog-reading" />
 			<Stack.Screen name="+not-found" />
 		</Stack>
 	);

@@ -22,6 +22,7 @@ import {
 	Heart,
 	Highlighter,
 	Home,
+	LibraryBig,
 	SettingsIcon,
 	Star,
 	Trash2,
@@ -80,6 +81,17 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 								/>
 							}
 							iconChipClassName="bg-emerald-100 dark:bg-emerald-900/30 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800/40"
+						/>
+						<SidebarNavItem
+							href={withLanguage(PATHS.memosBlogs)}
+							label={t("sideBar.blogReading")}
+							icon={
+								<LibraryBig
+									size={16}
+									className="text-violet-600 dark:text-violet-400"
+								/>
+							}
+							iconChipClassName="bg-violet-100 dark:bg-violet-900/30 group-hover:bg-violet-200 dark:group-hover:bg-violet-800/40"
 						/>
 						<SidebarNavItem
 							href={withLanguage(PATHS.highlights)}

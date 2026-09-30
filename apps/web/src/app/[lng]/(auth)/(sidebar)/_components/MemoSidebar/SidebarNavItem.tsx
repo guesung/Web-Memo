@@ -1,11 +1,12 @@
 "use client";
 
 import { cn } from "@web-memo/shared/utils";
-import { SidebarMenuButton } from "@web-memo/ui";
+import { SidebarMenuButton, SidebarMenuItem } from "@web-memo/ui";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+/** 사이드바 이동 행의 경로와 표시 정보. */
 interface IFSidebarNavItemProps {
 	/** 로케일 접두사까지 포함한 전체 경로 */
 	href: string;
@@ -23,45 +24,51 @@ interface IFSidebarNavItemProps {
  * 활성 표시 자체가 없었다. 라우트가 된 지금은 pathname만 보면 되므로, 이 항목만 클라이언트로
  * 내리고 나머지 사이드바는 서버 컴포넌트로 둔다.
  */
-export default function SidebarNavItem({
+const SidebarNavItem = ({
 	href,
 	label,
 	icon,
 	iconChipClassName,
-}: IFSidebarNavItemProps) {
+}: IFSidebarNavItemProps) => {
 	const pathname = usePathname();
 	const isActive = pathname === href;
 
 	return (
-		<Link href={href} aria-current={isActive ? "page" : undefined}>
+		<SidebarMenuItem>
 			<SidebarMenuButton
+				asChild
+				size="lg"
 				className={cn(
-					"group relative overflow-hidden transition-all duration-200",
-					"hover:bg-accent hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]",
+					"group relative h-12 w-full overflow-hidden rounded-none px-3 transition-colors duration-200",
+					"hover:bg-accent hover:shadow-sm",
 					{ "bg-primary/10 hover:bg-primary/10": isActive },
 				)}
 			>
-				{isActive && (
-					<span className="absolute left-0 top-0 h-full w-0.5 bg-primary" />
-				)}
-				<div className="flex items-center gap-3 w-full">
-					<div
-						className={cn(
-							"flex items-center justify-center w-8 h-8 rounded-lg transition-colors",
-							iconChipClassName,
-						)}
-					>
-						{icon}
+				<Link href={href} aria-current={isActive ? "page" : undefined}>
+					{isActive && (
+						<span className="absolute left-0 top-0 h-full w-0.5 bg-primary" />
+					)}
+					<div className="flex items-center gap-3 w-full">
+						<div
+							className={cn(
+								"flex items-center justify-center w-8 h-8 rounded-lg transition-colors",
+								iconChipClassName,
+							)}
+						>
+							{icon}
+						</div>
+						<span
+							className={cn("font-medium text-foreground", {
+								"text-primary font-semibold": isActive,
+							})}
+						>
+							{label}
+						</span>
 					</div>
-					<span
-						className={cn("font-medium text-foreground", {
-							"text-primary font-semibold": isActive,
-						})}
-					>
-						{label}
-					</span>
-				</div>
+				</Link>
 			</SidebarMenuButton>
-		</Link>
+		</SidebarMenuItem>
 	);
-}
+};
+
+export default SidebarNavItem;

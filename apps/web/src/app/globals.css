@@ -3,6 +3,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Only the memo sidebar uses a compact scrollbar. */
+.memo-sidebar-content::-webkit-scrollbar {
+	width: 4px;
+}
+
+.memo-sidebar-content::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.memo-sidebar-content::-webkit-scrollbar-thumb {
+	background: hsl(var(--muted-foreground) / 0.45);
+	border-radius: 9999px;
+}
+
+@supports (-moz-appearance: none) {
+	.memo-sidebar-content {
+		scrollbar-width: thin;
+	}
+}
+
 /* ===== Introduce Page Styles ===== */
 
 /* Animated Gradient Mesh Background */
@@ -296,6 +316,10 @@
 /* ===== End Introduce Page Styles ===== */
 
 @layer base {
+	:root {
+		--header-height: 3rem;
+	}
+
 	* {
 		@apply border-border;
 	}

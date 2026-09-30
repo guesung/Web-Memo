@@ -21,12 +21,13 @@ import {
 } from "@web-memo/ui";
 import { SettingsIcon } from "lucide-react";
 import Link from "next/link";
-import { memo, useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import SidebarCategoryContextMenu from "./SidebarCategoryContextMenu";
 import SidebarMenuItemAddCategory from "./SidebarMenuItemAddCategory";
 
-export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
+/** 카테고리 탐색과 이름 변경 기능을 제공하는 섹션. */
+const SidebarCategorySection = ({ lng }: LanguageType) => {
 	const { t } = useTranslation(lng);
 	const { categories } = useCategoryQuery();
 	const { mutate: updateCategory } = useCategoryUpdateMutation();
@@ -38,62 +39,57 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 	);
 	const editInputRef = useRef<HTMLInputElement>(null);
 
-	const handleRenameSubmit = useCallback(
-		(categoryId: number, newName: string) => {
-			const trimmedName = newName.trim();
-			if (!trimmedName) {
-				setEditingCategoryId(null);
-				return;
-			}
+	const handleRenameSubmit = (categoryId: number, newName: string) => {
+		const trimmedName = newName.trim();
+		if (!trimmedName) {
+			setEditingCategoryId(null);
+			return;
+		}
 
-			const isDuplicate = categories?.some(
-				(c) =>
-					c.id !== categoryId &&
-					c.name.toLowerCase() === trimmedName.toLowerCase(),
-			);
+		const isDuplicate = categories?.some(
+			(c) =>
+				c.id !== categoryId &&
+				c.name.toLowerCase() === trimmedName.toLowerCase(),
+		);
 
-			if (isDuplicate) {
-				toast({ title: t("toastTitle.duplicateCategory") });
-				setEditingCategoryId(null);
-				return;
-			}
+		if (isDuplicate) {
+			toast({ title: t("toastTitle.duplicateCategory") });
+			setEditingCategoryId(null);
+			return;
+		}
 
-			const current = categories?.find((c) => c.id === categoryId);
-			if (current?.name === trimmedName) {
-				setEditingCategoryId(null);
-				return;
-			}
+		const current = categories?.find((c) => c.id === categoryId);
+		if (current?.name === trimmedName) {
+			setEditingCategoryId(null);
+			return;
+		}
 
-			updateCategory(
-				{ id: categoryId, request: { name: trimmedName } },
-				{ onSuccess: () => setEditingCategoryId(null) },
-			);
-		},
-		[categories, updateCategory, t],
-	);
+		updateCategory(
+			{ id: categoryId, request: { name: trimmedName } },
+			{ onSuccess: () => setEditingCategoryId(null) },
+		);
+	};
 
 	return (
-		<SidebarGroup id="category" className="px-2">
-			<div className="flex items-center justify-between mb-3 px-2">
+		<SidebarGroup id="category" className="p-0">
+			<div className="flex items-center justify-between px-2">
 				<SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 					{t("sideBar.allCategory")}
 				</SidebarGroupLabel>
-				<Link href={`/${lng}${PATHS.memosSetting}`}>
-					<button
-						type="button"
-						className="p-1.5 rounded-md hover:bg-accent transition-all duration-200 hover:scale-110 active:scale-95"
-						aria-label="Category settings"
-					>
-						<SettingsIcon
-							size={14}
-							className="text-muted-foreground hover:text-foreground transition-colors"
-						/>
-					</button>
+				<Link
+					href={`/${lng}${PATHS.memosSetting}`}
+					className="rounded-md p-1.5 transition-colors hover:bg-accent"
+					aria-label={t("sideBar.settings")}
+				>
+					<SettingsIcon
+						size={14}
+						className="text-muted-foreground transition-colors hover:text-foreground"
+					/>
 				</Link>
 			</div>
 			<SidebarGroupContent>
 				<SidebarMenuItemAddCategory lng={lng} />
-				<SidebarMenu className="space-y-1">
+				<SidebarMenu className="gap-0">
 					{categories?.map((category) => {
 						const isActive = currentCategory === category.name;
 						const categoryColor = category.color || DEFAULT_CATEGORY_COLOR;
@@ -111,7 +107,7 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 								>
 									{isEditing ? (
 										<div
-											className="flex w-full items-center rounded-lg px-3 py-1.5"
+											className="flex h-12 w-full items-center px-3"
 											style={{ borderLeft: `3px solid ${categoryColor}` }}
 										>
 											<Input
@@ -138,28 +134,30 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 									) : (
 										// href에 lng를 붙이지 않으면 i18n 미들웨어가 307로 리다이렉트하고,
 										// 그 RSC 요청은 하드 네비게이션으로 폴백돼 스크롤이 초기화된다.
-										<Link
-											href={{
-												pathname: `/${lng}${PATHS.memos}`,
-												query: { category: category.name },
+										<SidebarMenuButton
+											asChild
+											size="lg"
+											className={cn(
+												"group relative flex h-12 w-full items-center justify-between rounded-none px-3 transition-colors duration-200",
+												"hover:shadow-sm",
+												isActive
+													? "bg-gradient-to-r shadow-sm"
+													: "hover:bg-muted dark:hover:bg-muted/50",
+											)}
+											style={{
+												borderLeft: `3px solid ${categoryColor}`,
+												...(isActive && {
+													backgroundImage: `linear-gradient(to right, ${categoryColor}15, ${categoryColor}08)`,
+												}),
 											}}
-											className="w-full"
-											replace
 										>
-											<SidebarMenuButton
-												className={cn(
-													"group relative flex w-full items-center justify-between rounded-lg px-3 py-2.5 transition-all duration-200",
-													"hover:shadow-sm hover:scale-[1.02] active:scale-[0.98]",
-													isActive
-														? "bg-gradient-to-r shadow-sm scale-[1.02]"
-														: "hover:bg-muted dark:hover:bg-muted/50",
-												)}
-												style={{
-													borderLeft: `3px solid ${categoryColor}`,
-													...(isActive && {
-														backgroundImage: `linear-gradient(to right, ${categoryColor}15, ${categoryColor}08)`,
-													}),
+											<Link
+												href={{
+													pathname: `/${lng}${PATHS.memos}`,
+													query: { category: category.name },
 												}}
+												className="w-full"
+												replace
 											>
 												<div className="flex items-center gap-3 flex-1 min-w-0">
 													<div
@@ -190,8 +188,8 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 												>
 													{category.memo_count ?? 0}
 												</span>
-											</SidebarMenuButton>
-										</Link>
+											</Link>
+										</SidebarMenuButton>
 									)}
 								</SidebarCategoryContextMenu>
 							</SidebarMenuItem>
@@ -201,4 +199,6 @@ export default memo(function SidebarGroupCategory({ lng }: LanguageType) {
 			</SidebarGroupContent>
 		</SidebarGroup>
 	);
-});
+};
+
+export default SidebarCategorySection;

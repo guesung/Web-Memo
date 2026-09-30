@@ -161,7 +161,16 @@ export type TAnalyticsEvent =
 	| { name: "guide_step"; params: { step_name: string } }
 	| { name: "memo_first_write" }
 	| { name: "export_run"; params: { format: ExportFormat } }
-	| { name: "search_no_result" }
+	| { name: "search_no_result"; params: { has_domain_filter: boolean } }
+	| {
+			name: "memo_domain_filter_change";
+			params: {
+				action: "select" | "clear";
+				source: "popover" | "clear_button" | "empty_state";
+				/** 드롭다운에 뜬 도메인 수. 빈 상태에서는 알 수 없어 생략합니다. */
+				domain_option_count?: number;
+			};
+	  }
 	| {
 			name: "highlight_create";
 			params: { color: HighlightColor; has_note: boolean };
@@ -260,6 +269,7 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	memo_first_write: "core_action",
 	export_run: "core_action",
 	search_no_result: "engagement",
+	memo_domain_filter_change: "engagement",
 	highlight_create: "core_action",
 	highlight_bubble_disable: "engagement",
 	notice_view: "engagement",

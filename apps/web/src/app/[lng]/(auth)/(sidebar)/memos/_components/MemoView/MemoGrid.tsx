@@ -185,7 +185,10 @@ export default function MemoGrid({
 	// biome-ignore lint/correctness/useExhaustiveDependencies: searchQuery가 바뀔 때만 재판정한다. memos까지 의존성에 넣으면 같은 검색어에서 목록이 갱신될 때마다 중복 집계된다.
 	useEffect(() => {
 		if (memos.length === 0 && searchQuery) {
-			analytics.trackEvent({ name: "search_no_result" });
+			analytics.trackEvent({
+				name: "search_no_result",
+				params: { has_domain_filter: domain !== undefined },
+			});
 		}
 	}, [searchQuery]);
 

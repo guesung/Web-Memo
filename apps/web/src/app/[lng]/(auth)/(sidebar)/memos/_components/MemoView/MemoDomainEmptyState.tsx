@@ -1,6 +1,7 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { Button } from "@web-memo/ui";
 import { motion } from "framer-motion";
 import { SearchX } from "lucide-react";
@@ -22,6 +23,11 @@ export default function MemoDomainEmptyState({
 		const nextUrl = new URL(window.location.href);
 		nextUrl.searchParams.delete("domain");
 		window.history.pushState(null, "", nextUrl);
+
+		analytics.trackEvent({
+			name: "memo_domain_filter_change",
+			params: { action: "clear", source: "empty_state" },
+		});
 	};
 
 	return (

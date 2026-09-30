@@ -3,6 +3,7 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { useMemoDomainsQuery } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import {
 	Button,
 	Command,
@@ -30,7 +31,10 @@ const MemoDomainFilter = ({ lng, domain }: IFMemoDomainFilterProps) => {
 	const { data: domains = [], isError: isDomainsError } = useMemoDomainsQuery();
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
-	const handleDomainSelect = (nextDomain: string | undefined) => {
+	const handleDomainSelect = (
+		nextDomain: string | undefined,
+		source: "popover" | "clear_button",
+	) => {
 		const nextUrl = new URL(window.location.href);
 		if (nextDomain) {
 			nextUrl.searchParams.set("domain", nextDomain);
@@ -39,6 +43,19 @@ const MemoDomainFilter = ({ lng, domain }: IFMemoDomainFilterProps) => {
 		}
 		window.history.pushState(null, "", nextUrl);
 		setIsPopoverOpen(false);
+
+		if (nextDomain === domain) {
+			return;
+		}
+
+		analytics.trackEvent({
+			name: "memo_domain_filter_change",
+			params: {
+				action: nextDomain ? "select" : "clear",
+				source,
+				domain_option_count: domains.length,
+			},
+		});
 	};
 
 	if (!isDomainsError && domains.length === 0 && !domain) {
@@ -90,7 +107,7 @@ const MemoDomainFilter = ({ lng, domain }: IFMemoDomainFilterProps) => {
 								<CommandItem
 									value="all-domains"
 									keywords={[t("memos.domainFilter.all")]}
-									onSelect={() => handleDomainSelect(undefined)}
+									onSelect={() => handleDomainSelect(undefined, "popover")}
 								>
 									<Check
 										className={cn("h-4 w-4", domain && "opacity-0")}
@@ -102,7 +119,7 @@ const MemoDomainFilter = ({ lng, domain }: IFMemoDomainFilterProps) => {
 									<CommandItem
 										key={memoDomain}
 										value={memoDomain}
-										onSelect={() => handleDomainSelect(memoDomain)}
+										onSelect={() => handleDomainSelect(memoDomain, "popover")}
 									>
 										<Check
 											className={cn(
@@ -126,7 +143,7 @@ const MemoDomainFilter = ({ lng, domain }: IFMemoDomainFilterProps) => {
 					size="icon"
 					className="mr-1 h-6 w-6 shrink-0"
 					aria-label={t("memos.domainFilter.clear")}
-					onClick={() => handleDomainSelect(undefined)}
+					onClick={() => handleDomainSelect(undefined, "clear_button")}
 				>
 					<X className="h-4 w-4" aria-hidden="true" />
 				</Button>

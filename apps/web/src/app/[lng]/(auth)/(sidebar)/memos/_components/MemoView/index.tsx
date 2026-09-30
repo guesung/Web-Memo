@@ -4,6 +4,7 @@ import { useGuide } from "@src/modules/guide";
 import type { LanguageType } from "@src/modules/i18n";
 import { useDidMount, useMemosInfiniteQuery } from "@web-memo/shared/hooks";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
+import { parseDomainFilter } from "@web-memo/shared/utils";
 import { Loading, Skeleton } from "@web-memo/ui";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
@@ -31,6 +32,12 @@ const MemoTruncateToggle = dynamic(() => import("./MemoTruncateToggle"), {
 	loading: () => <Skeleton className="h-10 w-10" />,
 });
 
+/** 도메인 목록을 읽는 Suspense 쿼리라 클라이언트에서만 그리고, 메모 목록은 막지 않는다. */
+const MemoDomainFilter = dynamic(() => import("./MemoDomainFilter"), {
+	ssr: false,
+	loading: () => <Skeleton className="h-10 w-28" />,
+});
+
 const MemoRefreshButton = dynamic(() => import("./MemoRefreshButton"), {
 	ssr: false,
 	loading: () => <Skeleton className="h-10 w-10" />,
@@ -46,6 +53,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 	// 카테고리는 사이드바 하단에서 고르는 가로지르는 조건이라 필터와 달리 쿼리로 남는다.
 	const category = searchParams.get("category") ?? "";
 	const isListView = searchParams.get("view") === "list";
+	const domain = parseDomainFilter(searchParams.get("domain"));
 	const searchQuery = watch("searchQuery");
 
 	const { memos, totalCount, hasNextPage, isFetchingNextPage, fetchNextPage } =
@@ -56,6 +64,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 			isStar: filter === "star" ? true : undefined,
 			isReading: filter === "reading" ? true : undefined,
 			searchQuery: searchQuery || undefined,
+			domain,
 		});
 
 	const { highlightsByUrl, isHighlightLoadError, refetchHighlights } =
@@ -80,7 +89,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 	 * 검색어와 id(메모 다이얼로그)는 넣지 않는다. 넣으면 글자를 칠 때마다,
 	 * 다이얼로그를 여닫을 때마다 그리드가 통째로 다시 그려진다.
 	 */
-	const tabKey = `${category}|${filter}|${isListView}`;
+	const tabKey = `${category}|${filter}|${isListView}|${domain ?? ""}`;
 
 	/**
 	 * 탭이 바뀌면 목록을 맨 위에서 보여준다.
@@ -95,15 +104,22 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 		window.scrollTo(0, 0);
 	}, [tabKey]);
 
+	const totalMemosText = domain
+		? t("memos.domainFilter.totalMemos", { domain, total: totalCount })
+		: t("memos.totalMemos", { total: totalCount });
+
 	return (
 		<div className="flex w-full flex-col gap-4">
 			<div className="flex items-center">
-				<div className="flex w-full items-center justify-between">
+				<div className="flex w-full flex-wrap items-center justify-between gap-2">
 					<p className="text-muted-foreground select-none text-sm flex items-center gap-2">
 						<span className="w-2 h-2 bg-primary rounded-full" />
-						{t("memos.totalMemos", { total: totalCount })}
+						{totalMemosText}
 					</p>
-					<div className="flex items-center gap-2">
+					<div className="flex flex-wrap items-center gap-2 max-sm:w-full">
+						<Suspense fallback={<Skeleton className="h-10 w-28" />}>
+							<MemoDomainFilter lng={lng} domain={domain} />
+						</Suspense>
 						<MemoViewToggle lng={lng} />
 						<Suspense fallback={<Skeleton className="h-10 w-10" />}>
 							<MemoTruncateToggle lng={lng} />
@@ -135,6 +151,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 					memos={memos}
 					highlightsByUrl={highlightsByUrl}
 					searchQuery={searchQuery}
+					domain={domain}
 					hasNextPage={hasNextPage}
 					isFetchingNextPage={isFetchingNextPage}
 					fetchNextPage={fetchNextPage}
@@ -146,6 +163,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 					memos={memos}
 					highlightsByUrl={highlightsByUrl}
 					searchQuery={searchQuery}
+					domain={domain}
 					hasNextPage={hasNextPage}
 					isFetchingNextPage={isFetchingNextPage}
 					fetchNextPage={fetchNextPage}

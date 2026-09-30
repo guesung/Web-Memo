@@ -105,7 +105,7 @@ jobs:
             Do not edit tests, config, workflows or any other file. Do not create files. Do not commit or publish anything.
           claude_args: >-
             --model claude-sonnet-4-6
-            --max-turns 25
+            --max-turns 40
             --allowedTools "Read,Grep,Glob,Edit"
 
       - name: Check generated changes
@@ -151,7 +151,7 @@ jobs:
             Do not create files. Do not commit or publish anything.
           claude_args: >-
             --model claude-sonnet-4-6
-            --max-turns 20
+            --max-turns 30
             --allowedTools "Read,Grep,Glob,Edit"
 
       - name: Restore Node after correction

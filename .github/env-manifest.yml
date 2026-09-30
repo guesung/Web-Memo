@@ -295,8 +295,8 @@
 - name: CRON_SECRET
   kind: secret
   stores: [supabase]
-  consumers: [packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts, packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts]
-  impact: "DB 트리거가 부르는 함수의 호출자 확인이 실패해 가입 메일과 가입 알림이 401로 끝난다"
+  consumers: [packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts, packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts, packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts]
+  impact: "DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·가입 알림·아티클 리마인더가 401로 끝난다"
   note: "Vault의 cron_secret과 같은 값이어야 한다"
 
 - name: RESEND_API_KEY

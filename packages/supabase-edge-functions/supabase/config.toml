@@ -246,3 +246,8 @@ verify_jwt = false
 # 위와 같은 이유(DB 트리거 전용, x-cron-secret으로 호출자 확인)로 검증을 끈다.
 [functions.send-signup-slack-notification]
 verify_jwt = false
+
+# pg_cron(pg_net)만 부르는 함수. Authorization 헤더를 보내지 않으므로 JWT 검증을 끄고
+# x-cron-secret 헤더로 호출자를 확인한다.
+[functions.daily-article-reminder]
+verify_jwt = false

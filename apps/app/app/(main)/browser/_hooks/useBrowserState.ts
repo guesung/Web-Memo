@@ -10,7 +10,6 @@ import {
 	runOnJS,
 	useAnimatedStyle,
 	useSharedValue,
-	withSpring,
 	withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -64,7 +63,6 @@ import {
 import { useAndroidWebViewBack } from "./useAndroidWebViewBack";
 import { useBrowserTabs } from "./useBrowserTabs";
 
-const SPRING_CONFIG = { damping: 20, stiffness: 150 };
 const MIN_PANEL_RATIO = 0.15;
 const MAX_PANEL_RATIO = 0.8;
 const DEFAULT_PANEL_RATIO = 0.4;
@@ -269,7 +267,7 @@ export function useBrowserState({
 			updateActiveTabInfo({ url: decoded, title: "" });
 			setIsMemoOpen(false);
 			setSelectedMemoId(null);
-			panelHeight.value = withSpring(0, SPRING_CONFIG);
+			panelHeight.value = 0;
 			return;
 		}
 
@@ -284,7 +282,7 @@ export function useBrowserState({
 
 		setIsMemoOpen(false);
 		setSelectedMemoId(null);
-		panelHeight.value = withSpring(0, SPRING_CONFIG);
+		panelHeight.value = 0;
 	}, [paramUrl, navTs, newTabParam, sourceParam, panelHeight, isTabsLoaded]);
 
 	const handleNavigationStateChange = (navState: WebViewNavigation) => {
@@ -386,7 +384,7 @@ export function useBrowserState({
 		updateActiveTabInfo({ url, title: "" });
 		if (isMemoOpen) {
 			setIsMemoOpen(false);
-			panelHeight.value = withSpring(0, SPRING_CONFIG);
+			panelHeight.value = 0;
 		}
 	};
 
@@ -409,7 +407,7 @@ export function useBrowserState({
 	const handleReadingToggle = useCallback(() => {
 		if (hasUnselectedCandidates) {
 			setIsMemoOpen(true);
-			panelHeight.value = withSpring(contentHeight * savedRatio, SPRING_CONFIG);
+			panelHeight.value = contentHeight * savedRatio;
 			return;
 		}
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -448,7 +446,7 @@ export function useBrowserState({
 	const handleStarToggle = useCallback(() => {
 		if (hasUnselectedCandidates) {
 			setIsMemoOpen(true);
-			panelHeight.value = withSpring(contentHeight * savedRatio, SPRING_CONFIG);
+			panelHeight.value = contentHeight * savedRatio;
 			return;
 		}
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -487,7 +485,7 @@ export function useBrowserState({
 	const handleWishToggle = useCallback(() => {
 		if (hasUnselectedCandidates) {
 			setIsMemoOpen(true);
-			panelHeight.value = withSpring(contentHeight * savedRatio, SPRING_CONFIG);
+			panelHeight.value = contentHeight * savedRatio;
 			return;
 		}
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -569,13 +567,13 @@ export function useBrowserState({
 		if (isMemoOpen || contentHeight <= 0) return;
 		setIsMemoOpen(true);
 		const defaultH = contentHeight * savedRatio;
-		panelHeight.value = withSpring(defaultH, SPRING_CONFIG);
+		panelHeight.value = defaultH;
 	}, [isMemoOpen, contentHeight, panelHeight, savedRatio]);
 
 	const closePanel = useCallback(() => {
 		if (!isMemoOpen) return;
 		setIsMemoOpen(false);
-		panelHeight.value = withSpring(0, SPRING_CONFIG);
+		panelHeight.value = 0;
 		Keyboard.dismiss();
 	}, [isMemoOpen, panelHeight]);
 
@@ -749,7 +747,7 @@ export function useBrowserState({
 	const resetForTabChange = (nextUrl: string): void => {
 		setIsMemoOpen(false);
 		setSelectedMemoId(null);
-		panelHeight.value = withSpring(0, SPRING_CONFIG);
+		panelHeight.value = 0;
 		setPageFavIconUrl(undefined);
 		setUrlInput(nextUrl ? toUrlInputText(nextUrl) : "");
 		// 다른 탭을 봤다가 돌아올 때도 읽기 위치를 복원한다

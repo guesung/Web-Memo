@@ -52,12 +52,7 @@ jobs:
       contents: read
       actions: read
     if: ${{ inputs.app }}
-    # 타깃별로 줄을 세웁니다. 워크플로 전체를 한 그룹으로 묶으면 앱 빌드(약 30분)가
-    # 도는 동안 1분이면 끝나는 웹 배포까지 통째로 대기합니다.
-    # 같은 타깃의 중복 배포(스토어 이중 제출)는 그대로 막습니다.
-    concurrency:
-      group: release-app
-      cancel-in-progress: false
+    # 공통 앱 큐는 cd-app의 실제 빌드 잡에 있습니다. 호출자가 같은 잠금을 잡지 않습니다.
     uses: ./.github/workflows/cd-app.yml
     secrets: inherit
     with:

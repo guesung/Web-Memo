@@ -33,7 +33,6 @@ export function MemoPanel(props: IFMemoPanelProps) {
 		setPendingSaveMode,
 		handlePendingShareApply,
 		isPendingShareApply,
-		hasDraftRef,
 		titleText,
 		markDraftChanged,
 		setTitleText,
@@ -140,11 +139,6 @@ export function MemoPanel(props: IFMemoPanelProps) {
 				>
 					<Text className="text-blue-500 mb-2">다른 메모 선택</Text>
 				</TouchableOpacity>
-			)}
-			{hasDraftRef.current && selectedMemo && (
-				<Text className="text-amber-600 mb-2">
-					작성 중인 내용을 유지했습니다. 저장하면 선택한 메모에 반영됩니다.
-				</Text>
 			)}
 			<View className="flex-row justify-between items-center mb-2">
 				<View className="flex-row items-center gap-1.5 flex-1 mr-2">

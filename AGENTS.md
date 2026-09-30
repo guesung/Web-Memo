@@ -419,6 +419,13 @@ production을 구분하지 못합니다. `isProduction()`은 `buildEnv !== "deve
 
 작업 완료 후 PR을 통해 변경을 추적/리뷰합니다.
 
+### GitHub 계정 (MANDATORY)
+
+GitHub 작업을 시작하기 전에 `gh auth status --active --hostname github.com`으로
+활성 계정을 확인합니다. 활성 계정이 `guesung`이 아니면
+`gh auth switch --hostname github.com --user guesung`으로 전환하고, 다시 상태를
+확인해 `guesung`이 활성 계정인 경우에만 작업을 진행합니다.
+
 ### 브랜치 전략 (MANDATORY)
 
 **`master`가 유일한 베이스 브랜치입니다.** `develop`은 테스트 서버 배포 전용

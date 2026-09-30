@@ -77,7 +77,7 @@ export default memo(function SidebarMenuItemAddCategory({ lng }: LanguageType) {
 			<button
 				type="button"
 				onClick={handlePlusClick}
-				className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:bg-muted dark:hover:bg-muted/50 hover:text-foreground transition-all duration-200"
+				className="flex h-12 w-full items-center gap-3 px-3 text-muted-foreground hover:bg-muted dark:hover:bg-muted/50 hover:text-foreground transition-all duration-200"
 				aria-label={t("setting.addCategory")}
 			>
 				<PlusIcon size={14} />
@@ -88,7 +88,7 @@ export default memo(function SidebarMenuItemAddCategory({ lng }: LanguageType) {
 
 	return (
 		<div
-			className="flex w-full items-center gap-3 rounded-lg px-3 py-1.5"
+			className="flex h-12 w-full items-center gap-3 px-3"
 			style={{ borderLeft: `3px solid ${color}` }}
 		>
 			<div

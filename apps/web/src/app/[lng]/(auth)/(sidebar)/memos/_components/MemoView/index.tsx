@@ -180,18 +180,8 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 
 export default MemoView;
 
-/** 기본 목록에서는 위시 메모를 제외하고 별표·읽는 중에서는 위시 여부를 제한하지 않는다. */
-const getWishlistFilter = (filter: TMemoFilter): boolean | undefined => {
-	if (filter === "all") {
-		return false;
-	}
-
-	if (filter === "wish") {
-		return true;
-	}
-
-	return undefined;
-};
+/** 위시 탭만 위시 메모를 보여주고, 그 외 탭(별표·읽는 중 포함)은 위시 메모를 제외해 검색도 현재 탭 안에서만 한다. */
+const getWishlistFilter = (filter: TMemoFilter): boolean => filter === "wish";
 
 /** 메모 목록의 언어와 라우트 필터. */
 interface IFMemoViewProps extends LanguageType {

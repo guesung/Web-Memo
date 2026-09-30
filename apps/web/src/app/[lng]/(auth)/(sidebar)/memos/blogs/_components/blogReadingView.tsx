@@ -210,6 +210,7 @@ export default function BlogReadingView({ lng }: LanguageType) {
 													)?.displayName[lng] ?? article.blogId
 												}
 												isMemoPending={reading.pendingMemoUrl === article.url}
+												onOpenClick={reading.handleArticleOpenClick}
 												onMemoClick={reading.handleMemoClick}
 											/>
 										))}

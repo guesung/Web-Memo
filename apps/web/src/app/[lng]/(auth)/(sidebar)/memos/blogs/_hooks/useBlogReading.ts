@@ -10,6 +10,7 @@ import {
 	useSupabaseClientQuery,
 	useSupabaseUserQuery,
 } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type {
 	IFBlogArticleItem,
@@ -117,12 +118,28 @@ export const useBlogReading = (lng: Language) => {
 	};
 
 	const handlePrevClick = () => {
-		setPageIndex(Math.max(safePageIndex - 1, 0));
+		if (safePageIndex === 0) {
+			return;
+		}
+
+		setPageIndex(safePageIndex - 1);
+		analytics.trackEvent({
+			name: "blog_reading_page_move",
+			params: { direction: "prev", page_number: safePageIndex, sort },
+		});
+	};
+
+	const trackNextPageMove = () => {
+		analytics.trackEvent({
+			name: "blog_reading_page_move",
+			params: { direction: "next", page_number: safePageIndex + 2, sort },
+		});
 	};
 
 	const handleNextClick = async () => {
 		if (safePageIndex < loadedPages.length - 1) {
 			setPageIndex(safePageIndex + 1);
+			trackNextPageMove();
 
 			return;
 		}
@@ -131,6 +148,7 @@ export const useBlogReading = (lng: Language) => {
 
 		if (!result.isError) {
 			setPageIndex(safePageIndex + 1);
+			trackNextPageMove();
 		}
 	};
 
@@ -148,7 +166,13 @@ export const useBlogReading = (lng: Language) => {
 		syncRequestMutation.mutate(
 			{ blogId },
 			{
-				onSuccess: (result) => toast({ title: getSyncToastTitle(result) }),
+				onSuccess: (result) => {
+					analytics.trackEvent({
+						name: "blog_sync_resume_request",
+						params: { blog_id: blogId, result: result.status },
+					});
+					toast({ title: getSyncToastTitle(result) });
+				},
 				onError: () => toast({ title: t("blogs.sync.failed") }),
 			},
 		);
@@ -159,12 +183,28 @@ export const useBlogReading = (lng: Language) => {
 		active: boolean;
 	}) => {
 		subscriptionMutation.mutate(params, {
+			onSuccess: () =>
+				analytics.trackEvent({
+					name: "blog_subscription_change",
+					params: { blog_id: params.blogId, active: params.active },
+				}),
 			onError: () => toast({ title: t("blogs.dialog.failed") }),
+		});
+	};
+
+	const handleArticleOpenClick = (article: IFBlogArticleItem) => {
+		analytics.trackEvent({
+			name: "blog_article_open",
+			params: { blog_id: article.blogId, sort },
 		});
 	};
 
 	const handleMemoClick = (article: IFBlogArticleItem) => {
 		if (article.memoId !== null) {
+			analytics.trackEvent({
+				name: "blog_article_memo_click",
+				params: { blog_id: article.blogId, action: "view" },
+			});
 			openMemoDialog(article.memoId);
 
 			return;
@@ -179,6 +219,10 @@ export const useBlogReading = (lng: Language) => {
 					const createdMemoId = result.data?.[0]?.id;
 
 					if (createdMemoId !== undefined) {
+						analytics.trackEvent({
+							name: "blog_article_memo_click",
+							params: { blog_id: article.blogId, action: "create" },
+						});
 						openMemoDialog(createdMemoId);
 					}
 				},
@@ -224,5 +268,6 @@ export const useBlogReading = (lng: Language) => {
 		handleResumeClick,
 		handleSubscriptionClick,
 		handleMemoClick,
+		handleArticleOpenClick,
 	};
 };

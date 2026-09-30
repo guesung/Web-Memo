@@ -91,6 +91,9 @@ test.describe("블로그 정주행 (Mocked)", () => {
 			titlePrefix: "토스 글",
 		});
 		blogStore.subscribe("toss");
+		// 쪽 이동 이벤트 로깅이 예외를 던지면 화면 동작이 깨지므로 페이지 오류를 모은다.
+		const pageErrors: Error[] = [];
+		page.on("pageerror", (error) => pageErrors.push(error));
 		await openBlogReading({ page, memoStore, blogStore });
 
 		await expect(articleRows(page)).toHaveCount(PAGE_SIZE);
@@ -116,6 +119,7 @@ test.describe("블로그 정주행 (Mocked)", () => {
 
 		await page.getByRole("button", { name: "Previous" }).click();
 		await expect(page.getByText("31–60 of 65")).toBeVisible();
+		expect(pageErrors).toEqual([]);
 	});
 
 	test("최신순으로 바꾸면 첫 쪽부터 최신 글이 먼저 나온다.", async ({
@@ -352,6 +356,8 @@ test.describe("블로그 정주행 (Mocked)", () => {
 	}) => {
 		blogStore.addArticles({ blogId: "toss", count: 1, titlePrefix: "토스 글" });
 		blogStore.subscribe("toss");
+		const pageErrors: Error[] = [];
+		page.on("pageerror", (error) => pageErrors.push(error));
 		await openBlogReading({ page, memoStore, blogStore });
 
 		const link = articleRows(page)
@@ -363,6 +369,12 @@ test.describe("블로그 정주행 (Mocked)", () => {
 		);
 		await expect(link).toHaveAttribute("target", "_blank");
 		await expect(link).toHaveAttribute("rel", /noopener/);
+		// 외부 사이트로 나가지 않도록 이동만 막고 클릭 핸들러(원문 열기 이벤트 로깅)를 통과시킨다.
+		await link.evaluate((element) =>
+			element.addEventListener("click", (event) => event.preventDefault()),
+		);
+		await link.click();
+		expect(pageErrors).toEqual([]);
 		await expect(
 			articleRows(page).first().getByRole("img", { name: "No memo yet" }),
 		).toBeVisible();

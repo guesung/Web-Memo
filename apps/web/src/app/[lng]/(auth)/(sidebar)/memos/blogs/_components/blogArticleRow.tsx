@@ -17,6 +17,7 @@ export default function BlogArticleRow({
 	article,
 	blogName,
 	isMemoPending,
+	onOpenClick,
 	onMemoClick,
 }: IFBlogArticleRowProps) {
 	const { t } = useTranslation(lng);
@@ -56,6 +57,7 @@ export default function BlogArticleRow({
 								href={article.url}
 								target="_blank"
 								rel="noopener noreferrer"
+								onClick={() => onOpenClick(article)}
 								aria-label={t("blogs.list.openArticleLabel", {
 									title: article.title,
 								})}
@@ -92,6 +94,8 @@ interface IFBlogArticleRowProps extends LanguageType {
 	blogName: string;
 	/** 이 행의 메모를 만드는 중이면 버튼을 잠근다 */
 	isMemoPending: boolean;
+	/** 원문 링크를 눌렀을 때. 링크 이동 자체는 막지 않는다 */
+	onOpenClick: (article: IFBlogArticleItem) => void;
 	/** 메모 있으면 상세, 없으면 작성으로 이어진다 */
 	onMemoClick: (article: IFBlogArticleItem) => void;
 }

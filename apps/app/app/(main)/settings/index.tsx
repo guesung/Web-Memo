@@ -31,7 +31,9 @@ import {
 	useSettingUpsertMutation,
 } from "@/lib/hooks/useSetting";
 import { useTabBarHideOnScroll } from "@/lib/hooks/useTabBarHideOnScroll";
+import { removePushToken } from "@/lib/notifications/registerPushToken";
 import type { TThemePreference } from "@/lib/storage/themePreference";
+import { NotificationSection } from "./_components/NotificationSection";
 
 /** 설정 화면에 노출할 테마 선택 항목 */
 const THEME_OPTIONS: {
@@ -53,10 +55,19 @@ export default function SettingsScreen() {
 	const { scrollProps } = useTabBarHideOnScroll();
 	const { themePreference, isDark, setThemePreference } = useTheme();
 
+	const handleSignOutConfirm = async () => {
+		await removePushToken();
+		await signOut();
+	};
+
 	const handleSignOut = () => {
 		Alert.alert("로그아웃", "로그아웃 하시겠습니까?", [
 			{ text: "취소", style: "cancel" },
-			{ text: "로그아웃", style: "destructive", onPress: signOut },
+			{
+				text: "로그아웃",
+				style: "destructive",
+				onPress: handleSignOutConfirm,
+			},
 		]);
 	};
 
@@ -142,6 +153,8 @@ export default function SettingsScreen() {
 						)}
 					</View>
 				</View>
+
+				{isLoggedIn && <NotificationSection />}
 
 				{/* Theme Section */}
 				<View className="mb-7">

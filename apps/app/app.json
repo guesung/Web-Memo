@@ -78,6 +78,13 @@
 					"kotlinVersion": "2.0.21"
 				}
 			],
+			[
+				"expo-notifications",
+				{
+					"icon": "./assets/icon.png",
+					"color": "#5b93f0"
+				}
+			],
 			"expo-apple-authentication",
 			"./plugins/withIosKeychainAccessGroup",
 			[

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import type { GetMemoResponse } from "@web-memo/shared/types";
+import { trackAppEvent } from "@/lib/analytics/appAnalytics";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import {
 	deleteMemoPermanently,
@@ -41,10 +42,18 @@ export function useRestoreMemo() {
 	return useMutation({
 		mutationFn: async (id: TTrashMemoId) => {
 			if (!isLoggedIn) {
-				return restoreMemo(id as string);
+				await restoreMemo(id as string);
+
+				return undefined;
 			}
 
 			return memoService.restoreMemos([id as number]);
+		},
+		onSuccess: (result) => {
+			if (result?.error) {
+				return;
+			}
+			void trackAppEvent({ name: "memo_restore", params: { memo_count: 1 } });
 		},
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });

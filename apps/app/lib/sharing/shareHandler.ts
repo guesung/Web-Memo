@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getPageKey } from "@web-memo/shared/utils/url";
+import { trackAppEvent } from "@/lib/analytics/appAnalytics";
 import { extractPageMetadata } from "@/lib/sharing/pageMetadata";
 import {
 	getMemoByUrl,
@@ -122,6 +123,10 @@ export async function handleSharedUrl(
 	}
 
 	await resolvePendingSharedUrl(url);
+	void trackAppEvent({
+		name: "memo_status_toggle",
+		params: { status: "wish", enabled: true, source: "share_intent" },
+	});
 
 	return { saved: true, title };
 }

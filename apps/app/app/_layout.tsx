@@ -8,6 +8,10 @@ import { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+	AnalyticsUserSync,
+	ScreenViewTracker,
+} from "@/lib/analytics/AnalyticsTrackers";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthProvider";
 import { ThemeProvider, useTheme } from "@/lib/context/ThemeContext";
 import { handleSharedUrl } from "@/lib/sharing/shareHandler";
@@ -166,6 +170,8 @@ export default function RootLayout() {
 						<ThemedStack />
 					</GestureHandlerRootView>
 					<SyncOnAuth />
+					<AnalyticsUserSync />
+					<ScreenViewTracker />
 					<ShareIntentHandler />
 					<StatusBar style="auto" />
 				</AuthProvider>

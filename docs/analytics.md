@@ -15,7 +15,8 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 | GTM | `GTM-WSDF6FQ2` |
 | 웹 전송 | `window.gtag("event", ...)` |
 | 확장 전송 | Measurement Protocol `POST /mp/collect` |
-| 전송 게이트 | `buildEnv !== "development"` **그리고** 만든 사람 본인이 아닐 것 |
+| 앱 전송 | Measurement Protocol `POST /mp/collect` — 앱 전용 모듈 `apps/app/lib/analytics/` |
+| 전송 게이트 | `buildEnv !== "development"` **그리고** 만든 사람 본인이 아닐 것 (앱은 `__DEV__`가 아닐 것) |
 
 `development` 빌드는 커스텀 이벤트를 보내지 않습니다. `staging`은 보냅니다 — 테스트 서버에서
 도착을 눈으로 확인해야 하기 때문이며, 그 트래픽은 `build_env` 차원으로 걸러 냅니다.
@@ -87,6 +88,30 @@ online·retry_click·enqueue)로 셉니다. enqueue는 온라인 상태에서 �
 
 로그인 완료(`login`·`sign_up`)는 서버에서 끝나 `gtag`가 닿지 않습니다. 도착한 클라이언트가
 대신 쏩니다.
+
+## 앱(apps/app)
+
+앱은 공용 `Analytics.ts`를 쓰지 않습니다. 그 모듈이 `@web-memo/env`를 import해 EAS iOS 빌드가
+깨지기 때문입니다. 대신 `apps/app/lib/analytics/`가 확장과 같은 형태의 Measurement Protocol
+payload를 직접 보냅니다. 이벤트 정의의 원천은 `analyticsCore.ts`의 `TAppAnalyticsEvent`와
+`APP_EVENT_CATEGORY`이고, 이름과 파라미터는 웹·확장의 같은 이벤트와 맞춰 합쳐 볼 수 있게 했습니다.
+
+| 항목 | 앱의 동작 |
+| --- | --- |
+| `client_id` | AsyncStorage `webmemo:analyticsClientId`에 한 번 만든 UUID. 웹·확장과 이어지지 않습니다 |
+| `session_id` | 메모리. 마지막 이벤트로부터 30분이 지나면 새로 발급합니다 |
+| `user_id` | `AuthProvider` 세션과 동기화합니다. 로그인 직후 `login`은 결과의 user id를 먼저 설정한 뒤 보냅니다 |
+| 게이트 | `__DEV__`면 콘솔에만 찍고 보내지 않습니다. 앱은 환경 변수를 쓰지 않아 staging을 구분하지 못합니다 |
+| 공통 파라미터 | `event_category` · `engagement_time_msec` · `build_env` · `app_version` · `app_platform`(`ios`·`android`) |
+| 화면 조회 | expo-router pathname이 바뀔 때마다 `page_view`(`page_location`은 `webmemo://app<pathname>`). 세션 복원이 끝난 뒤부터 보냅니다 |
+
+보내는 이벤트는 `page_view` · `memo_first_write` · `memo_write` · `memo_status_toggle` ·
+`memo_delete` · `memo_restore` · `login` · `highlight_create`입니다. 공유 인텐트로 위시리스트에
+저장하면 `memo_status_toggle`에 `source: share_intent`가 붙습니다.
+
+**앱 트래픽을 가르려면 `app_platform`을 봐야 합니다.** 그런데 `app_version`·`app_platform`은
+아직 커스텀 차원으로 등록되지 않아 보고서에서 조회할 수 없습니다. `build_env=production`에는
+develop push로 Play 내부 테스트에 올라간 빌드도 섞입니다.
 
 ## 커스텀 차원·측정항목
 

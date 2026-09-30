@@ -113,17 +113,16 @@ jobs:
         if: steps.candidate.outputs.status == 'gap'
         run: node .github/scripts/ga-events/maintain.mjs changes
 
-      # Claude Code 액션이 PATH 앞에 자기 경로를 얹어 jsdom 테스트가 다른 node로 돌 수 있어, 검증 전에 Node를 다시 고정합니다.
-      - name: Restore Node for verification
-        if: steps.candidate.outputs.status == 'gap'
-        uses: actions/setup-node@v6
-        with:
-          node-version-file: ".nvmrc"
-          cache: "pnpm"
-
       - name: Install dependencies
         if: steps.candidate.outputs.status == 'gap'
         run: pnpm install --frozen-lockfile --prefer-offline
+
+      # 모델이 쓴 import의 정렬·포맷이 Biome 규칙과 어긋나 검증이 매번 깨지므로, 고친 파일에만 자동 수정을 적용하고 변경 범위를 다시 검사합니다.
+      - name: Format generated changes
+        if: steps.candidate.outputs.status == 'gap'
+        run: |
+          git diff -z --name-only --diff-filter=M -- '*.ts' '*.tsx' | xargs -0 -r pnpm exec biome check --write
+          node .github/scripts/ga-events/maintain.mjs changes
 
       - name: Verify changes
         id: verify
@@ -134,8 +133,6 @@ jobs:
         run: |
           set -euo pipefail
           exec > >(tee "$GA_EVENTS_DIR/verification.log") 2>&1
-          which -a node
-          node -v
           pnpm check
           pnpm type-check
           pnpm exec vitest run packages/shared/src/modules/analytics

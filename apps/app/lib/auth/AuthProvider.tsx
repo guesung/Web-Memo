@@ -9,6 +9,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { setMemoAutoSaveOwner } from "@/lib/memoAutoSaveSession";
 import { supabase } from "@/lib/supabase/client";
 
 interface AuthContextType {
@@ -26,13 +27,19 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: PropsWithChildren) {
-	const [session, setSession] = useState<Session | null>(null);
+	const [session, setSession] = useState<Session | null>(() => {
+		setMemoAutoSaveOwner("guest");
+		return null;
+	});
 	const [isLoading, setIsLoading] = useState(true);
 	const queryClient = useQueryClient();
 	const previousUserIdRef = useRef<string | null>(null);
 
 	useEffect(() => {
+		let hasAuthEvent = false;
 		supabase.auth.getSession().then(({ data: { session } }) => {
+			if (hasAuthEvent) return;
+			setMemoAutoSaveOwner(session?.user.id ?? "guest");
 			previousUserIdRef.current = session?.user.id ?? null;
 			setSession(session);
 			setIsLoading(false);
@@ -41,6 +48,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
 		const {
 			data: { subscription },
 		} = supabase.auth.onAuthStateChange((event, session) => {
+			hasAuthEvent = true;
+			setIsLoading(false);
+			setMemoAutoSaveOwner(session?.user.id ?? "guest");
 			const nextUserId = session?.user.id ?? null;
 			const previousUserId = previousUserIdRef.current;
 			const isAccountSwitched =
@@ -63,6 +73,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
 	const signOut = async () => {
 		await supabase.auth.signOut();
+		setMemoAutoSaveOwner("guest");
 		setSession(null);
 	};
 

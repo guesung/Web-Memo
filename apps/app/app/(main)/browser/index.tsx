@@ -1,3 +1,4 @@
+import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { Heart } from "lucide-react-native";
 import { useCallback, useEffect, useRef } from "react";
@@ -5,6 +6,7 @@ import { KeyboardAvoidingView, Platform, Text, View } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
 import { WebView } from "react-native-webview";
+import { flushMemoAutoSaveSessions } from "@/lib/memoAutoSaveSession";
 import { AISheet } from "./_components/AISheet";
 import { BrowserHeader } from "./_components/BrowserHeader";
 import { DraggableFab } from "./_components/DraggableFab";
@@ -97,7 +99,15 @@ export default function BrowserScreen() {
 		isAILoading,
 		aiError,
 		askAIQuestion,
-	} = useBrowserState({ onHighlightMessage: forwardHighlightMessage });
+	} = useBrowserState({
+		onHighlightMessage: forwardHighlightMessage,
+		onBeforeMemoLeave: flushMemoAutoSaveSessions,
+	});
+	const isFocused = useIsFocused();
+	useEffect(() => {
+		if (!isFocused) flushMemoAutoSaveSessions();
+		return () => flushMemoAutoSaveSessions();
+	}, [isFocused]);
 
 	const highlights = useWebViewHighlights({ webViewRef });
 
@@ -210,6 +220,7 @@ export default function BrowserScreen() {
 						</Animated.View>
 					</GestureDetector>
 					<MemoPanel
+						activeTabId={activeTabId}
 						url={currentUrl}
 						selectedMemoId={selectedMemoId}
 						onSelectedMemoIdChange={setSelectedMemoId}

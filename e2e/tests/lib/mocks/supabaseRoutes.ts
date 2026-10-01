@@ -495,7 +495,9 @@ const handleMemoGet = async ({ route, url, store }: HandlerParams) => {
 	const limit = Number(url.searchParams.get("limit") ?? sorted.length);
 	const pagedMemos = sorted.slice(offset, offset + limit);
 	// 도메인 목록(getMemoDomains)은 `select=url`로 url 컬럼만 읽는다.
-	const isUrlOnlySelect = url.searchParams.get("select") === "url";
+	const isUrlOnlySelect =
+		url.searchParams.get("select")?.startsWith("url") === true &&
+		!url.searchParams.get("select")?.includes("*");
 	const responseRows = isUrlOnlySelect
 		? pagedMemos.map((memo) => ({ url: memo.url }))
 		: pagedMemos;

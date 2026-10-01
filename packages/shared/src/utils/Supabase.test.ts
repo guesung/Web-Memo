@@ -255,6 +255,22 @@ describe("MemoService.getMemoDomains", () => {
 		expect(calls.range).toEqual([[0, 999]]);
 		expect(result).toEqual({ data: [], error: null });
 	});
+
+	it("탭·카테고리 조건을 목록 조회와 같은 방식으로 건다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemoDomains({
+			category: "Work",
+			isWish: false,
+			isStar: true,
+		});
+
+		expect(calls.select).toEqual(["url,category!inner(name)"]);
+		expect(calls.eq).toEqual([
+			["isWish", false],
+			["isStar", true],
+			["category.name", "Work"],
+		]);
+	});
 });
 
 describe("MemoService.getMemosPaginated", () => {

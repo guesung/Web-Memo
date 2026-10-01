@@ -27,13 +27,20 @@ import { useState } from "react";
  * 계정 설정처럼 Suspense 쿼리를 읽으므로 MemoView에서 클라이언트 전용으로 불러온다.
  * 도메인 목록 조회가 실패해도 메모 목록은 막지 않고 이 컨트롤만 비활성화한다.
  */
-const MemoDomainFilter = ({ lng, domain }: IFMemoDomainFilterProps) => {
+const MemoDomainFilter = ({
+	lng,
+	domain,
+	category,
+	isWish,
+	isStar,
+	isReading,
+}: IFMemoDomainFilterProps) => {
 	const { t } = useTranslation(lng);
 	const {
 		data: domains = [],
 		isError: isDomainsError,
 		isPending: isDomainsPending,
-	} = useMemoDomainsQuery();
+	} = useMemoDomainsQuery({ category, isWish, isStar, isReading });
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
 	const handleDomainSelect = (
@@ -167,4 +174,9 @@ export default MemoDomainFilter;
 interface IFMemoDomainFilterProps extends LanguageType {
 	/** 정규화된 선택 도메인. 필터가 없으면 undefined */
 	domain: string | undefined;
+	/** 목록 조회와 같은 카테고리·탭 조건. 도메인 목록도 이 범위로 좁힌다 */
+	category?: string;
+	isWish?: boolean;
+	isStar?: boolean;
+	isReading?: boolean;
 }

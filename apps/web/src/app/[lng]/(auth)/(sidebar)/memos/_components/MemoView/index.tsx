@@ -56,13 +56,17 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 	const domain = parseDomainFilter(searchParams.get("domain"));
 	const searchQuery = watch("searchQuery");
 
+	const isWish = getWishlistFilter(filter);
+	const isStar = filter === "star" ? true : undefined;
+	const isReading = filter === "reading" ? true : undefined;
+
 	const { memos, totalCount, hasNextPage, isFetchingNextPage, fetchNextPage } =
 		useMemosInfiniteQuery({
 			category,
 			sortBy: isListView ? "created_at" : "updated_at",
-			isWish: getWishlistFilter(filter),
-			isStar: filter === "star" ? true : undefined,
-			isReading: filter === "reading" ? true : undefined,
+			isWish,
+			isStar,
+			isReading,
 			searchQuery: searchQuery || undefined,
 			domain,
 		});
@@ -118,7 +122,14 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 					</p>
 					<div className="flex flex-wrap items-center gap-2 max-sm:w-full">
 						<Suspense fallback={<Skeleton className="h-10 w-28" />}>
-							<MemoDomainFilter lng={lng} domain={domain} />
+							<MemoDomainFilter
+								lng={lng}
+								domain={domain}
+								category={category}
+								isWish={isWish}
+								isStar={isStar}
+								isReading={isReading}
+							/>
 						</Suspense>
 						<MemoViewToggle lng={lng} />
 						<Suspense fallback={<Skeleton className="h-10 w-10" />}>

@@ -7,18 +7,36 @@ import useSupabaseClientQuery from "./useSupabaseClientQuery";
 /** 도메인 목록을 다시 읽기 전까지 유지하는 시간. */
 const STALE_TIME = 5 * 60 * 1000;
 
+/** 도메인 목록을 좁히는 탭·카테고리 조건. 메모 목록 조회와 같은 값을 넘긴다. */
+interface IFUseMemoDomainsQueryProps {
+	category?: string;
+	isWish?: boolean;
+	isStar?: boolean;
+	isReading?: boolean;
+}
+
 /**
- * 내 메모 url에서 뽑은 도메인 목록을 이름순으로 조회한다.
+ * 현재 탭·카테고리의 메모 url에서 뽑은 도메인 목록을 이름순으로 조회한다.
  * @description 메모 목록을 막지 않도록 Suspense를 쓰지 않는다. 실패하면 `isError`로 알린다.
  */
-const useMemoDomainsQuery = () => {
+const useMemoDomainsQuery = ({
+	category,
+	isWish,
+	isStar,
+	isReading,
+}: IFUseMemoDomainsQueryProps = {}) => {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 	const memoService = new MemoService(supabaseClient);
 
 	return useQuery({
-		queryKey: QUERY_KEY.memoDomains(),
+		queryKey: QUERY_KEY.memoDomains(category, isWish, isStar, isReading),
 		queryFn: async () => {
-			const { data, error } = await memoService.getMemoDomains();
+			const { data, error } = await memoService.getMemoDomains({
+				category,
+				isWish,
+				isStar,
+				isReading,
+			});
 
 			if (error) {
 				throw error;

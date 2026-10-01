@@ -273,8 +273,19 @@ export class MemoService {
 	/**
 	 * 삭제되지 않은 메모의 url에서 중복 없는 도메인 목록을 이름순으로 만든다.
 	 * @description 최근 수정 순으로 1000건씩 최대 5회(5000건) 읽는다. 그보다 오래된 메모의 도메인은 빠진다.
+	 * 목록 조회와 같은 탭·카테고리 조건으로 좁혀, 목록에서 고른 도메인이 빈 결과가 되지 않게 한다.
 	 */
-	getMemoDomains = async () => {
+	getMemoDomains = async ({
+		category,
+		isWish,
+		isStar,
+		isReading,
+	}: {
+		category?: string;
+		isWish?: boolean;
+		isStar?: boolean;
+		isReading?: boolean;
+	} = {}) => {
 		const domains = new Set<string>();
 
 		for (
@@ -283,14 +294,33 @@ export class MemoService {
 			batchIndex += 1
 		) {
 			const from = batchIndex * MEMO_DOMAIN_BATCH_SIZE;
-			const { data, error } = await this.supabaseClient
+			let query = this.supabaseClient
 				.schema(SUPABASE.table.memo)
 				.from(SUPABASE.table.memo)
-				.select("url")
+				// 카테고리로 거를 때만 inner join이 필요하다. 반환 타입은 url 하나로 고정한다.
+				.select((category ? "url,category!inner(name)" : "url") as "url")
 				.is("deleted_at", null)
 				.order("updated_at", { ascending: false, nullsFirst: false })
 				.order("id", { ascending: false })
 				.range(from, from + MEMO_DOMAIN_BATCH_SIZE - 1);
+
+			if (isWish !== undefined) {
+				query = query.eq("isWish", isWish);
+			}
+
+			if (isStar !== undefined) {
+				query = query.eq("isStar", isStar);
+			}
+
+			if (isReading !== undefined) {
+				query = query.eq("isReading", isReading);
+			}
+
+			if (category) {
+				query = query.eq("category.name", category);
+			}
+
+			const { data, error } = await query;
 
 			if (error) {
 				return { data: null, error };

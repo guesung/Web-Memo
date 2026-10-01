@@ -61,6 +61,36 @@ test.describe("메모 도메인 필터 (Mocked)", () => {
 		await page.getByRole("button", { name: "Domain", exact: true }).click();
 	};
 
+	test("위시리스트에만 있는 도메인은 전체 탭의 도메인 목록에 나오지 않고, 위시 탭에서는 나온다.", async ({
+		page,
+	}) => {
+		store.addMemo(
+			createMockMemo({
+				title: "티스토리 위시 글",
+				url: "https://dev-tomato.tistory.com/1",
+				isWish: true,
+			}),
+		);
+
+		await gotoMemos(page);
+		await expect(page.locator(".memo-item")).toHaveCount(4);
+		await openDomainList(page);
+		await expect(
+			page.getByRole("option", { name: "dev-tomato.tistory.com" }),
+		).toHaveCount(0);
+
+		await page.keyboard.press("Escape");
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.memosWish}`,
+			regexp: new RegExp(`${PATHS.memosWish}$`),
+		});
+		await openDomainList(page);
+		await expect(
+			page.getByRole("option", { name: "dev-tomato.tistory.com" }),
+		).toBeVisible();
+	});
+
 	test("도메인 컨트롤을 열면, www.를 합친 도메인이 이름순으로 중복 없이 나온다.", async ({
 		page,
 	}) => {

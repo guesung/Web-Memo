@@ -43,10 +43,15 @@ export const QUERY_KEY = {
 		},
 	],
 	/**
-	 * 메모 url에서 뽑은 도메인 목록.
+	 * 메모 url에서 뽑은 도메인 목록. 탭·카테고리 조건마다 별도 캐시다.
 	 * @description `memos()` 접두사를 공유해 메모를 만들거나 버릴 때의 무효화에 함께 걸린다.
 	 */
-	memoDomains: () => ["memos", "domains"],
+	memoDomains: (
+		category?: string,
+		isWish?: boolean,
+		isStar?: boolean,
+		isReading?: boolean,
+	) => ["memos", "domains", { category, isWish, isStar, isReading }],
 	/**
 	 * 휴지통 목록.
 	 * @description `memos()` 접두사를 일부러 공유한다. 메모를 버리거나 되살리면

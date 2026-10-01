@@ -39,7 +39,7 @@
 
 ## 레이아웃
 
-웹 고정 헤더와 `HeaderMargin`은 `apps/web/src/app/globals.css`의 `--header-height: 3rem`을 공유합니다. 메모 목록의 최소 높이도 같은 변수를 제외합니다. 메모 사이드바의 탐색 행과 설정 푸터는 높이 48px이며, 행 사이 간격과 섹션 바깥 패딩 없이 전체 너비에 hover 배경을 표시합니다. 사이드바 내용의 스크롤바만 Chromium에서 4px, Firefox에서 `thin`으로 표시합니다.
+웹 고정 헤더와 `HeaderMargin`은 `apps/web/src/components/Header/index.tsx`의 높이 클래스(`h-12`)를 공유합니다. 메모 목록의 최소 높이는 별도로 헤더 높이 `3rem`을 제외하므로, 헤더 높이를 변경할 때 함께 확인해야 합니다. 메모 사이드바의 탐색 행과 설정 푸터는 높이 48px이며, 행 사이 간격과 섹션 바깥 패딩 없이 전체 너비에 hover 배경을 표시합니다. 사이드바 내용의 스크롤바만 해당 컴포넌트의 CSS Module에서 Chromium은 4px, Firefox는 `thin`으로 표시합니다.
 
 | 항목 | 내용 |
 | --- | --- |

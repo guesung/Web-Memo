@@ -1,6 +1,6 @@
 import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import { Chrome, Mail, MessageCircle, Youtube } from "lucide-react";
 import Link from "next/link";
@@ -20,7 +20,7 @@ type TLinkIcon = ComponentType<{ className?: string }>;
 interface FooterProps extends LanguageType {}
 
 export default async function Footer({ lng }: FooterProps) {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	const socialLinks: { icon: TLinkIcon; href: string; label: string }[] = [
 		{

@@ -1,5 +1,5 @@
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { PATHS } from "@web-memo/shared/constants";
 import { SidebarGroup, SidebarMenu } from "@web-memo/ui";
 import { BookOpen, Heart, Highlighter, Home, Star } from "lucide-react";
@@ -8,7 +8,7 @@ import SidebarNavItem from "./SidebarNavItem";
 
 /** 메모 종류별 탐색 항목을 표시하는 섹션. */
 const SidebarMainSection = async ({ lng }: LanguageType) => {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	return (
 		<SidebarGroup className="p-0">

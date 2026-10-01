@@ -1,6 +1,6 @@
 import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { EXTERNAL_LINK, PATHS } from "@web-memo/shared/constants";
 import type { TInstallClickPosition } from "@web-memo/shared/modules/analytics";
 import { cn } from "@web-memo/shared/utils";
@@ -37,7 +37,7 @@ export default async function ExtensionInstallCTA({
 	from,
 	position,
 }: ExtensionInstallCTAProps) {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	return (
 		<TrackInstallClick

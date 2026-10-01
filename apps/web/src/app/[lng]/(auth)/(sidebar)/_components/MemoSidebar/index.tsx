@@ -2,7 +2,7 @@
 
 import { HeaderMargin } from "@src/components/Header";
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { Sidebar, SidebarContent, SidebarSeparator } from "@web-memo/ui";
 import styles from "./memoSidebar.module.css";
 import SidebarCategorySection from "./SidebarCategorySection";
@@ -12,7 +12,7 @@ import SidebarTrashSection from "./SidebarTrashSection";
 
 /** 메모 도구의 주요 탐색 섹션을 조합하는 사이드바. */
 export default async function MemoSidebar({ lng }: LanguageType) {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	return (
 		<Sidebar className="border-r border-border">

@@ -1,7 +1,7 @@
 import { HeaderMargin } from "@src/components/Header";
 import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { cn } from "@web-memo/shared/utils";
 import { ArrowRight, type LucideIcon } from "lucide-react";
 import Image from "next/image";
@@ -65,7 +65,7 @@ const LandingPageTemplate = async ({
 	config,
 	children,
 }: IFLandingPageTemplateProps) => {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	const {
 		icon: PageIcon,

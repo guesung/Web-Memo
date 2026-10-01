@@ -316,10 +316,6 @@
 /* ===== End Introduce Page Styles ===== */
 
 @layer base {
-	:root {
-		--header-height: 3rem;
-	}
-
 	* {
 		@apply border-border;
 	}

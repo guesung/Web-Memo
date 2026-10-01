@@ -4,7 +4,7 @@ import { HeaderMargin } from "@src/components/Header";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
 import { Sidebar, SidebarContent, SidebarSeparator } from "@web-memo/ui";
-
+import styles from "./memoSidebar.module.css";
 import SidebarCategorySection from "./SidebarCategorySection";
 import SidebarFooterSection from "./SidebarFooterSection";
 import SidebarMainSection from "./SidebarMainSection";
@@ -17,7 +17,7 @@ export default async function MemoSidebar({ lng }: LanguageType) {
 	return (
 		<Sidebar className="border-r border-border">
 			<HeaderMargin />
-			<SidebarContent className="memo-sidebar-content gap-0 bg-sidebar">
+			<SidebarContent className={`${styles.content} gap-0 bg-sidebar`}>
 				<SidebarMainSection lng={lng} />
 
 				<SidebarSeparator className="mx-0 bg-gradient-to-r from-transparent via-border to-transparent" />

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import fixtures from "../../../../supabase-edge-functions/tests/blogReading/fixtures.json";
 import {
 	getBlogArticlePageKey,
 	getMediumPostId,
 	isSameBlogArticle,
 } from "./articleIdentity";
+import fixtures from "./blogReadingFixtures.json";
 
 describe("블로그 글 page_key (SQL memo.blog_page_key와 같은 fixture)", () => {
 	it.each(fixtures.pageKey)("$url", ({ url, expected }) => {

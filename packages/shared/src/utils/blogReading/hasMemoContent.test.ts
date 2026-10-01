@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import fixtures from "../../../../supabase-edge-functions/tests/blogReading/fixtures.json";
+import fixtures from "./blogReadingFixtures.json";
 import { hasMemoContent, hasMemoText } from "./hasMemoContent";
 
 describe("메모 칸 내용 판정 (SQL memo.has_blog_memo_text와 같은 fixture)", () => {

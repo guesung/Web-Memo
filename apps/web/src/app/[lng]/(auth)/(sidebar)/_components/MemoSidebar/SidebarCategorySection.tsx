@@ -3,71 +3,94 @@
 import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { DEFAULT_CATEGORY_COLOR, PATHS } from "@web-memo/shared/constants";
+import { PATHS } from "@web-memo/shared/constants";
 import {
 	useCategoryQuery,
 	useCategoryUpdateMutation,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
-import { cn } from "@web-memo/shared/utils";
 import {
-	Input,
 	SidebarGroup,
 	SidebarGroupContent,
 	SidebarGroupLabel,
 	SidebarMenu,
-	SidebarMenuButton,
-	SidebarMenuItem,
 	toast,
 } from "@web-memo/ui";
 import { SettingsIcon } from "lucide-react";
 import { useRef, useState } from "react";
 
-import SidebarCategoryContextMenu from "./SidebarCategoryContextMenu";
+import SidebarCategoryItem from "./SidebarCategoryItem";
 import SidebarMenuItemAddCategory from "./SidebarMenuItemAddCategory";
 
-/** 카테고리 탐색과 이름 변경 기능을 제공하는 섹션. */
-const SidebarCategorySection = ({ lng }: LanguageType) => {
+/** 카테고리 목록과 한 번에 하나인 편집 세션을 관리하는 섹션. */
+export default function SidebarCategorySection({ lng }: LanguageType) {
 	const { t } = useTranslation(lng);
 	const { categories } = useCategoryQuery();
-	const { mutate: updateCategory } = useCategoryUpdateMutation();
+	const { mutateAsync: updateCategory } = useCategoryUpdateMutation();
 	const searchParams = useSearchParams();
 	const currentCategory = searchParams.get("category");
 
 	const [editingCategoryId, setEditingCategoryId] = useState<number | null>(
 		null,
 	);
-	const editInputRef = useRef<HTMLInputElement>(null);
+	const editSessionRef = useRef(0);
 
-	const handleRenameSubmit = (categoryId: number, newName: string) => {
+	const handleStartEditing = (categoryId: number) => {
+		editSessionRef.current += 1;
+		setEditingCategoryId(categoryId);
+	};
+
+	const handleCancelEditing = () => {
+		editSessionRef.current += 1;
+		setEditingCategoryId(null);
+	};
+
+	const handleRenameSubmit = async (categoryId: number, newName: string) => {
+		const editSession = editSessionRef.current;
+		const finishEditing = () => {
+			if (editSessionRef.current === editSession) {
+				setEditingCategoryId(null);
+			}
+		};
 		const trimmedName = newName.trim();
 		if (!trimmedName) {
-			setEditingCategoryId(null);
-			return;
+			finishEditing();
+			return true;
 		}
 
 		const isDuplicate = categories?.some(
-			(c) =>
-				c.id !== categoryId &&
-				c.name.toLowerCase() === trimmedName.toLowerCase(),
+			(category) =>
+				category.id !== categoryId &&
+				category.name.toLowerCase() === trimmedName.toLowerCase(),
 		);
-
 		if (isDuplicate) {
 			toast({ title: t("toastTitle.duplicateCategory") });
-			setEditingCategoryId(null);
-			return;
+			finishEditing();
+			return true;
 		}
 
-		const current = categories?.find((c) => c.id === categoryId);
+		const current = categories?.find((category) => category.id === categoryId);
 		if (current?.name === trimmedName) {
-			setEditingCategoryId(null);
-			return;
+			finishEditing();
+			return true;
 		}
 
-		updateCategory(
-			{ id: categoryId, request: { name: trimmedName } },
-			{ onSuccess: () => setEditingCategoryId(null) },
-		);
+		try {
+			const result = await updateCategory({
+				id: categoryId,
+				request: { name: trimmedName },
+			});
+			if (result.error) {
+				toast({ title: t("toastTitle.errorSave") });
+				return false;
+			}
+		} catch {
+			toast({ title: t("toastTitle.errorSave") });
+			return false;
+		}
+
+		finishEditing();
+		return true;
 	};
 
 	return (
@@ -91,116 +114,20 @@ const SidebarCategorySection = ({ lng }: LanguageType) => {
 			<SidebarGroupContent>
 				<SidebarMenuItemAddCategory lng={lng} />
 				<SidebarMenu className="gap-0">
-					{categories?.map((category) => {
-						const isActive = currentCategory === category.name;
-						const categoryColor = category.color || DEFAULT_CATEGORY_COLOR;
-						const isEditing = editingCategoryId === category.id;
-
-						return (
-							<SidebarMenuItem key={category.id}>
-								<SidebarCategoryContextMenu
-									category={category}
-									lng={lng}
-									onStartEditing={() => {
-										setEditingCategoryId(category.id);
-										setTimeout(() => editInputRef.current?.focus(), 50);
-									}}
-								>
-									{isEditing ? (
-										<div
-											className="flex h-12 w-full items-center px-3"
-											style={{ borderLeft: `3px solid ${categoryColor}` }}
-										>
-											<Input
-												ref={editInputRef}
-												defaultValue={category.name}
-												autoFocus
-												className="h-7 text-sm"
-												onBlur={(e) =>
-													handleRenameSubmit(category.id, e.target.value)
-												}
-												onKeyDown={(e) => {
-													if (e.key === "Enter") {
-														handleRenameSubmit(
-															category.id,
-															e.currentTarget.value,
-														);
-													}
-													if (e.key === "Escape") {
-														setEditingCategoryId(null);
-													}
-												}}
-											/>
-										</div>
-									) : (
-										// href에 lng를 붙이지 않으면 i18n 미들웨어가 307로 리다이렉트하고,
-										// 그 RSC 요청은 하드 네비게이션으로 폴백돼 스크롤이 초기화된다.
-										<SidebarMenuButton
-											asChild
-											size="lg"
-											className={cn(
-												"group relative flex h-12 w-full items-center justify-between rounded-none px-3 transition-colors duration-200",
-												"hover:shadow-sm",
-												isActive
-													? "bg-gradient-to-r shadow-sm"
-													: "hover:bg-muted dark:hover:bg-muted/50",
-											)}
-											style={{
-												borderLeft: `3px solid ${categoryColor}`,
-												...(isActive && {
-													backgroundImage: `linear-gradient(to right, ${categoryColor}15, ${categoryColor}08)`,
-												}),
-											}}
-										>
-											<LocalizedLink
-												lng={lng}
-												href={{
-													pathname: PATHS.memos,
-													query: { category: category.name },
-												}}
-												className="w-full"
-												replace
-											>
-												<div className="flex items-center gap-3 flex-1 min-w-0">
-													<div
-														className="w-2 h-2 rounded-full flex-shrink-0 ring-2 ring-sidebar shadow-sm"
-														style={{ backgroundColor: categoryColor }}
-													/>
-													<span
-														className={cn(
-															"font-medium truncate transition-colors",
-															isActive
-																? "text-foreground"
-																: "text-muted-foreground",
-														)}
-													>
-														{category.name}
-													</span>
-												</div>
-												<span
-													className={cn(
-														"flex items-center justify-center min-w-6 h-6 px-2 rounded-full text-xs font-semibold transition-all",
-														isActive
-															? "text-white shadow-sm"
-															: "bg-muted text-muted-foreground",
-													)}
-													style={
-														isActive ? { backgroundColor: categoryColor } : {}
-													}
-												>
-													{category.memo_count ?? 0}
-												</span>
-											</LocalizedLink>
-										</SidebarMenuButton>
-									)}
-								</SidebarCategoryContextMenu>
-							</SidebarMenuItem>
-						);
-					})}
+					{categories?.map((category) => (
+						<SidebarCategoryItem
+							key={category.id}
+							category={category}
+							lng={lng}
+							isActive={currentCategory === category.name}
+							isEditing={editingCategoryId === category.id}
+							onStartEditing={() => handleStartEditing(category.id)}
+							onSubmit={(newName) => handleRenameSubmit(category.id, newName)}
+							onCancel={handleCancelEditing}
+						/>
+					))}
 				</SidebarMenu>
 			</SidebarGroupContent>
 		</SidebarGroup>
 	);
-};
-
-export default SidebarCategorySection;
+}

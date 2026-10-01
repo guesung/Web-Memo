@@ -1,7 +1,7 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
-import { EXTERNAL_LINK } from "@web-memo/shared/constants";
-import { Chrome, Mail, MessageCircle, Youtube } from "lucide-react";
+import { EXTERNAL_LINK, PATHS } from "@web-memo/shared/constants";
+import { Chrome, Mail, MessageCircle, Scale, Youtube } from "lucide-react";
 import Link from "next/link";
 import type { ComponentType } from "react";
 import { GooglePlayIcon } from "../StoreIcon";
@@ -61,6 +61,15 @@ export default async function Footer({ lng }: FooterProps) {
 			href: "#demo",
 			label: t("introduce.footer.features_link"),
 		},
+		...(lng === "ko"
+			? [
+					{
+						href: `/${lng}${PATHS.compareChromeMemoExtensions}`,
+						label: "크롬 메모 확장 비교",
+						icon: Scale,
+					},
+				]
+			: []),
 	];
 
 	const companyLinks = [

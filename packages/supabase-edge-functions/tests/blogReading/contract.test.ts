@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import { getPageKey } from "../../../shared/src/utils/Url";
@@ -15,5 +16,18 @@ describe("블로그 정주행 정규화 계약 (SQL과 같은 fixture)", () => {
 
 	it.each(fixtures.memoText)("trim 후 내용 있음: $text", ({ text, hasContent }) => {
 		expect((text ?? "").trim().length > 0).toBe(hasContent);
+	});
+
+	// turbo boundaries가 패키지 밖 파일 import를 막아 shared 테스트는 사본을 쓴다. 두 사본이 갈라지면 여기서 잡는다.
+	it("shared의 fixtures 사본이 원본과 같다", () => {
+		const copy = readFileSync(
+			new URL(
+				"../../../shared/src/utils/blogReading/blogReadingFixtures.json",
+				import.meta.url,
+			),
+			"utf-8",
+		);
+
+		expect(JSON.parse(copy)).toEqual(fixtures);
 	});
 });

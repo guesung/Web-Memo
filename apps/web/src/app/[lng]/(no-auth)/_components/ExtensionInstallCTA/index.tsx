@@ -1,3 +1,4 @@
+import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
 import { EXTERNAL_LINK, PATHS } from "@web-memo/shared/constants";
@@ -58,13 +59,14 @@ export default async function ExtensionInstallCTA({
 				{t("landing.install.button")}
 			</Link>
 
-			<Link
-				href={`/${lng}${PATHS.introduce}`}
+			<LocalizedLink
+				lng={lng}
+				href={PATHS.introduce}
 				className="inline-flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 hover:underline"
 			>
 				{t("landing.install.mobile_hint")}
 				<ArrowRight className="h-3.5 w-3.5" />
-			</Link>
+			</LocalizedLink>
 		</TrackInstallClick>
 	);
 }

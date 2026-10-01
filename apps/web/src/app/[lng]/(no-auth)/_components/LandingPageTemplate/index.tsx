@@ -1,10 +1,10 @@
 import { HeaderMargin } from "@src/components/Header";
+import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
 import { cn } from "@web-memo/shared/utils";
 import { ArrowRight, type LucideIcon } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { LANDING_PAGE, type TLandingPageKey } from "../../_constants";
 import SectionHeader from "../../introduce/_components/SectionHeader";
@@ -207,8 +207,9 @@ const LandingPageTemplate = async ({
 
 						return (
 							<li key={relatedKey} className="border-b border-border">
-								<Link
-									href={`/${lng}${related.path}`}
+								<LocalizedLink
+									lng={lng}
+									href={related.path}
 									className="group flex items-start gap-6 py-8"
 								>
 									<span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-border">
@@ -225,7 +226,7 @@ const LandingPageTemplate = async ({
 									</div>
 
 									<ArrowRight className="mt-1 h-5 w-5 flex-shrink-0 text-muted-foreground transition-transform duration-base group-hover:translate-x-1" />
-								</Link>
+								</LocalizedLink>
 							</li>
 						);
 					})}

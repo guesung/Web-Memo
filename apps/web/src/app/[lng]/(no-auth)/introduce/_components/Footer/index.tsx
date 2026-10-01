@@ -1,3 +1,4 @@
+import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
 import { EXTERNAL_LINK } from "@web-memo/shared/constants";
@@ -146,12 +147,13 @@ export default async function Footer({ lng }: FooterProps) {
 						&copy; {new Date().getFullYear()} {t("introduce.footer.copyright")}
 					</p>
 
-					<Link
-						href={`/${lng}/privacy`}
+					<LocalizedLink
+						lng={lng}
+						href="/privacy"
 						className="transition-colors duration-base hover:text-foreground"
 					>
 						{t("introduce.footer.legal.privacy_policy")}
-					</Link>
+					</LocalizedLink>
 				</div>
 			</div>
 		</footer>

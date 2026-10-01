@@ -16,7 +16,8 @@ const SidebarTrashSection = ({ lng, label }: IFSidebarTrashSectionProps) => (
 	<SidebarGroup className="p-0">
 		<SidebarMenu className="gap-0">
 			<SidebarNavItem
-				href={`/${lng}${PATHS.memosTrash}`}
+				lng={lng}
+				href={PATHS.memosTrash}
 				label={label}
 				icon={<Trash2 size={16} className="text-muted-foreground" />}
 				iconChipClassName="bg-foreground/5 group-hover:bg-foreground/10"

@@ -1,5 +1,6 @@
 "use client";
 
+import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { DEFAULT_CATEGORY_COLOR, PATHS } from "@web-memo/shared/constants";
@@ -20,7 +21,6 @@ import {
 	toast,
 } from "@web-memo/ui";
 import { SettingsIcon } from "lucide-react";
-import Link from "next/link";
 import { useRef, useState } from "react";
 
 import SidebarCategoryContextMenu from "./SidebarCategoryContextMenu";
@@ -76,8 +76,9 @@ const SidebarCategorySection = ({ lng }: LanguageType) => {
 				<SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 					{t("sideBar.allCategory")}
 				</SidebarGroupLabel>
-				<Link
-					href={`/${lng}${PATHS.memosSetting}`}
+				<LocalizedLink
+					lng={lng}
+					href={PATHS.memosSetting}
 					className="rounded-md p-1.5 transition-colors hover:bg-accent"
 					aria-label={t("sideBar.settings")}
 				>
@@ -85,7 +86,7 @@ const SidebarCategorySection = ({ lng }: LanguageType) => {
 						size={14}
 						className="text-muted-foreground transition-colors hover:text-foreground"
 					/>
-				</Link>
+				</LocalizedLink>
 			</div>
 			<SidebarGroupContent>
 				<SidebarMenuItemAddCategory lng={lng} />
@@ -151,9 +152,10 @@ const SidebarCategorySection = ({ lng }: LanguageType) => {
 												}),
 											}}
 										>
-											<Link
+											<LocalizedLink
+												lng={lng}
 												href={{
-													pathname: `/${lng}${PATHS.memos}`,
+													pathname: PATHS.memos,
 													query: { category: category.name },
 												}}
 												className="w-full"
@@ -188,7 +190,7 @@ const SidebarCategorySection = ({ lng }: LanguageType) => {
 												>
 													{category.memo_count ?? 0}
 												</span>
-											</Link>
+											</LocalizedLink>
 										</SidebarMenuButton>
 									)}
 								</SidebarCategoryContextMenu>

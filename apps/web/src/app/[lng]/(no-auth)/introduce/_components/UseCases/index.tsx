@@ -1,3 +1,4 @@
+import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
 import { PATHS } from "@web-memo/shared/constants";
@@ -9,7 +10,6 @@ import {
 	Search,
 	Youtube,
 } from "lucide-react";
-import Link from "next/link";
 import SectionHeader from "../SectionHeader";
 import SectionShell, { type TSectionBackground } from "../SectionShell";
 
@@ -32,31 +32,31 @@ export default async function UseCases({ lng, background }: UseCasesProps) {
 			icon: GraduationCap,
 			title: t("introduce.use_case.student_title"),
 			description: t("introduce.use_case.student_desc"),
-			href: `/${lng}${PATHS.useCasesLearning}`,
+			href: PATHS.useCasesLearning,
 		},
 		{
 			icon: Search,
 			title: t("introduce.use_case.professional_title"),
 			description: t("introduce.use_case.professional_desc"),
-			href: `/${lng}${PATHS.useCasesResearch}`,
+			href: PATHS.useCasesResearch,
 		},
 		{
 			icon: Briefcase,
 			title: t("introduce.use_case.job_hunting_title"),
 			description: t("introduce.use_case.job_hunting_desc"),
-			href: `/${lng}${PATHS.useCasesJobHunting}`,
+			href: PATHS.useCasesJobHunting,
 		},
 		{
 			icon: Newspaper,
 			title: t("introduce.use_case.news_reading_title"),
 			description: t("introduce.use_case.news_reading_desc"),
-			href: `/${lng}${PATHS.useCasesNewsReading}`,
+			href: PATHS.useCasesNewsReading,
 		},
 		{
 			icon: Youtube,
 			title: t("introduce.use_case.youtube_notes_title"),
 			description: t("introduce.use_case.youtube_notes_desc"),
-			href: `/${lng}${PATHS.useCasesYoutubeNotes}`,
+			href: PATHS.useCasesYoutubeNotes,
 		},
 	];
 
@@ -70,7 +70,8 @@ export default async function UseCases({ lng, background }: UseCasesProps) {
 			<ul className="border-t border-border">
 				{useCases.map((useCase) => (
 					<li key={useCase.title} className="border-b border-border">
-						<Link
+						<LocalizedLink
+							lng={lng}
 							href={useCase.href}
 							className="group flex items-start gap-6 py-8"
 						>
@@ -86,7 +87,7 @@ export default async function UseCases({ lng, background }: UseCasesProps) {
 							</div>
 
 							<ArrowRight className="mt-1 h-5 w-5 flex-shrink-0 text-muted-foreground transition-transform duration-base group-hover:translate-x-1" />
-						</Link>
+						</LocalizedLink>
 					</li>
 				))}
 			</ul>

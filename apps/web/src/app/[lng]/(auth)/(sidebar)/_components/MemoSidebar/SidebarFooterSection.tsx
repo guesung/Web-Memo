@@ -1,5 +1,6 @@
 "use client";
 
+import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
 import { PATHS } from "@web-memo/shared/constants";
 import {
@@ -11,7 +12,6 @@ import {
 	TooltipTrigger,
 } from "@web-memo/ui";
 import { SettingsIcon } from "lucide-react";
-import Link from "next/link";
 
 /** 설정 섹션의 입력값. */
 interface IFSidebarFooterSectionProps extends LanguageType {
@@ -31,14 +31,18 @@ const SidebarFooterSection = ({ lng, label }: IFSidebarFooterSectionProps) => (
 						id="settings"
 						className="group h-12 w-full justify-center rounded-none p-0 transition-colors hover:bg-accent hover:shadow-sm"
 					>
-						<Link href={`/${lng}${PATHS.memosSetting}`} aria-label={label}>
+						<LocalizedLink
+							lng={lng}
+							href={PATHS.memosSetting}
+							aria-label={label}
+						>
 							<span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 transition-colors group-hover:bg-blue-200 dark:bg-blue-900/30 dark:group-hover:bg-blue-800/40">
 								<SettingsIcon
 									size={16}
 									className="text-blue-600 dark:text-blue-400"
 								/>
 							</span>
-						</Link>
+						</LocalizedLink>
 					</SidebarMenuButton>
 				</TooltipTrigger>
 				<TooltipContent

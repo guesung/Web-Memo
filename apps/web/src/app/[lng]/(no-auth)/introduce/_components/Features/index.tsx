@@ -1,3 +1,4 @@
+import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.server";
 import { PATHS } from "@web-memo/shared/constants";
@@ -10,7 +11,6 @@ import {
 	PanelsTopLeft,
 	Pencil,
 } from "lucide-react";
-import Link from "next/link";
 import SectionHeader from "../SectionHeader";
 import SectionShell, { type TSectionBackground } from "../SectionShell";
 
@@ -37,7 +37,7 @@ const Features = async ({ lng, background }: IFFeaturesProps) => {
 			icon: Pencil,
 			title: t("introduce.features.memo.title"),
 			description: t("introduce.features.memo.description"),
-			href: `/${lng}${PATHS.featuresMemo}`,
+			href: PATHS.featuresMemo,
 		},
 		{
 			icon: Keyboard,
@@ -99,13 +99,14 @@ const Features = async ({ lng, background }: IFFeaturesProps) => {
 									</p>
 
 									{feature.href ? (
-										<Link
+										<LocalizedLink
+											lng={lng}
 											href={feature.href}
 											className="mt-4 inline-flex items-center gap-1.5 text-sm underline-offset-4 hover:underline"
 										>
 											{t("common.learn_more")}
 											<ArrowRight className="h-3.5 w-3.5" />
-										</Link>
+										</LocalizedLink>
 									) : null}
 								</div>
 							</div>

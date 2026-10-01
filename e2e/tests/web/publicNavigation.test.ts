@@ -57,6 +57,30 @@ test.describe("공개 페이지 탐색 경로", () => {
 	});
 
 	for (const language of LANGUAGES) {
+		test(`${language} 내부 링크는 언어 리다이렉트 없이 클라이언트에서 이동한다.`, async ({
+			page,
+		}) => {
+			await page.goto(`/${language}${PATHS.introduce}`);
+			await page.evaluate(() => {
+				(
+					window as typeof window & { __navigationProbe?: boolean }
+				).__navigationProbe = true;
+			});
+
+			const featureLink = page
+				.locator(`a[href="/${language}${PATHS.featuresMemo}"]`)
+				.first();
+			await featureLink.click();
+			await page.waitForURL(`**/${language}${PATHS.featuresMemo}`);
+			expect(
+				await page.evaluate(
+					() =>
+						(window as typeof window & { __navigationProbe?: boolean })
+							.__navigationProbe,
+				),
+			).toBe(true);
+		});
+
 		test(`${language} 공개 페이지는 명시된 링크 경로로 도달한다.`, async ({
 			page,
 		}) => {

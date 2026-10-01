@@ -51,6 +51,8 @@ SEO 탭 5개의 컬럼명은 한글로 표시합니다. 기존 영문 헤더가 
 | 앱 텍스트 선택 메뉴 | 로그인한 앱 브라우저는 `하이라이트`·`복사` 두 메뉴를 표시합니다. `onCustomMenuSelection`의 `nativeEvent.selectedText`를 `expo-clipboard`로 전달하며, 복사는 메뉴를 누른 경우에만 실행합니다. 비로그인 상태의 `menuItems`는 `undefined`로 두어 OS 기본 선택 메뉴를 유지합니다 |
 | Edge import 규칙 | Edge 런타임 코드(`apps/web/src/middleware.ts`)는 `@web-memo/shared`의 **배럴 export를 쓰지 않고 좁은 하위 경로**(`@web-memo/shared/constants`)를 씁니다. `@web-memo/shared/utils` 배럴이 브라우저 전용 Sentry 코드를 Edge 번들로 끌어들여 빌드가 깨진 적이 있습니다. Next 16은 `middleware.ts`에 deprecated 경고를 내지만, `proxy.ts`는 Node.js 런타임 전용이라 Edge를 유지하려고 `middleware.ts`를 그대로 둡니다 |
 
+웹의 언어별 **내부 페이지 링크**는 `apps/web/src/components/LocalizedLink`에 `lng`와 언어 접두사가 없는 `href`를 전달합니다. 이 컴포넌트는 서버와 클라이언트에서 사용할 수 있고 Next.js `Link`의 나머지 속성을 전달합니다. 쿼리·해시가 있는 `href` 객체도 지원합니다. 외부 URL, 메일 링크, 같은 페이지의 앵커, API 및 인증 콜백 경로에는 사용하지 않습니다. 언어를 아직 모르는 404 화면의 링크도 예외입니다. `router.push`와 서버 리다이렉트는 링크 컴포넌트의 대상이 아니며, 필요할 때 같은 위치의 `getLocalizedHref`를 사용합니다.
+
 ## 백엔드
 
 이 프로젝트에 전용 백엔드 서버는 없습니다. 서버 로직은 **Next.js Route Handler + Supabase(+ Edge Functions)** 두 곳에 있습니다.

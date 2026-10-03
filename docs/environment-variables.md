@@ -100,7 +100,7 @@
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
-| `CRON_SECRET` | DB 트리거가 부르는 함수의 호출자 확인이 실패해 가입 메일과 가입 알림이 401로 끝난다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts` |
+| `CRON_SECRET` | DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·가입 알림·아티클 리마인더가 401로 끝난다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts` |
 | `RESEND_API_KEY` | 가입 안내 메일이 발송되지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts` |
 | `SLACK_FEEDBACK_WEBHOOK_URL` | 피드백 Slack 알림이 오지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts` |
 | `SLACK_SIGNUP_WEBHOOK_URL` | 신규 가입 Slack 알림이 오지 않는다. 함수가 예외를 던지고 로그에만 남는다 | `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts` |

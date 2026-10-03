@@ -97,6 +97,17 @@ export const validateCandidate = (candidate, { existingEvents, trackedFiles }) =
 const addedLines = (diff) => diff.split("\n").filter((line) => line.startsWith("+") && !line.startsWith("+++"));
 const removedLines = (diff) => diff.split("\n").filter((line) => line.startsWith("-") && !line.startsWith("---"));
 const sameSet = (left, right) => left.size === right.size && [...left].every((item) => right.has(item));
+// 유니온 끝에 멤버를 붙이면 기존 마지막 줄의 `;`·`,`만 바뀌므로, 끝 구두점을 뗀 내용이 같으면 변경으로 보지 않습니다.
+const normalizeLine = (line) => line.slice(1).trim().replace(/[;,]$/, "");
+/** 줄 끝 구두점만 달라진 줄을 빼고 실제로 추가·삭제된 줄만 남깁니다. */
+export const effectiveChanges = (diff) => {
+	const added = addedLines(diff);
+	const removed = removedLines(diff);
+	const addedKeys = new Set(added.map(normalizeLine));
+	const removedKeys = new Set(removed.map(normalizeLine));
+
+	return { added: added.filter((line) => !removedKeys.has(normalizeLine(line))), removed: removed.filter((line) => !addedKeys.has(normalizeLine(line))) };
+};
 
 /** 기존 파일 수정만으로 후보의 이벤트를 정확히 심었는지 검사합니다. */
 export const validateChanges = ({ baseSha, candidate }) => {
@@ -128,11 +139,12 @@ export const validateChanges = ({ baseSha, candidate }) => {
 
 	const expected = new Set(candidate.events.map((event) => event.name));
 	const typeDiff = run("git", ["diff", "-U0", baseSha, "--", TYPE_FILE]);
-	if (removedLines(typeDiff).some((line) => /\bname:\s*"/.test(line) || /^-\s*[a-z0-9_]+:\s*"(?:engagement|core_action)"/.test(line))) {
+	const typeChanges = effectiveChanges(typeDiff);
+	if (typeChanges.removed.some((line) => /\bname:\s*"/.test(line) || /^-\s*[a-z0-9_]+:\s*"(?:engagement|core_action)"/.test(line))) {
 		fail("기존 이벤트 정의를 지우거나 바꿀 수 없습니다");
 	}
-	const unionNames = new Set(addedLines(typeDiff).flatMap((line) => extractEventNames(line)));
-	const categories = new Map(addedLines(typeDiff).flatMap((line) => [...line.matchAll(/^\+\s*([a-z0-9_]+):\s*"(engagement|core_action)"/g)].map((match) => [match[1], match[2]])));
+	const unionNames = new Set(typeChanges.added.flatMap((line) => extractEventNames(line)));
+	const categories = new Map(typeChanges.added.flatMap((line) => [...line.matchAll(/^\+\s*([a-z0-9_]+):\s*"(engagement|core_action)"/g)].map((match) => [match[1], match[2]])));
 	if (!sameSet(unionNames, expected) || !sameSet(new Set(categories.keys()), expected) || candidate.events.some((event) => categories.get(event.name) !== event.category)) {
 		fail("type.ts에 추가된 이벤트와 분류가 후보와 다릅니다");
 	}

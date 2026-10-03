@@ -4,6 +4,7 @@
  * .github/workflows/report-seo.yml 의 세 잡이 하위 명령으로 나눠 호출합니다.
  *
  *   select  (inspect 잡)  수정 대상을 고르고, 이미 열린 자동 수정 PR이 있으면 건너뜁니다.
+ *   summarize (fix 잡)    Claude의 최종 답변을 Step Summary에 남깁니다.
  *   changes (fix 잡)      Claude가 바꾼 파일을 검사하고 패치로 내보냅니다.
  *   publish (publish 잡)  검증된 패치를 새 브랜치에 커밋해 master 대상 PR을 열고 Slack 스레드에 알립니다.
  *
@@ -37,11 +38,11 @@ const isAllowedPath = (filePath) =>
 
 /**
  * AI 리포트에서 자동 수정 대상을 고릅니다.
- * @description P0·P1이면서 코드 위치가 수정 허용 경로 안에 있는 발견만 남깁니다. 위치가 허용 경로 밖이면 코드 위치에서 빼고, 남는 위치가 없으면 대상이 아닙니다.
+ * @description P0·P1이면서 해결 방법이 코드 수정(fixability=code)이고 코드 위치가 수정 허용 경로 안에 있는 발견만 남깁니다. 위치가 허용 경로 밖이면 코드 위치에서 빼고, 남는 위치가 없으면 대상이 아닙니다.
  */
 export const selectSeoFixTargets = ({ report }) =>
 	(Array.isArray(report?.findings) ? report.findings : [])
-		.filter((finding) => FIX_PRIORITIES.includes(finding?.priority))
+		.filter((finding) => FIX_PRIORITIES.includes(finding?.priority) && finding?.fixability === "code")
 		.map((finding) => ({
 			priority: finding.priority,
 			title: finding.title,
@@ -55,6 +56,17 @@ export const selectSeoFixTargets = ({ report }) =>
 		}))
 		.filter((target) => target.codeRefs.length > 0)
 		.slice(0, MAX_TARGETS);
+
+/**
+ * claude-code-action이 남긴 실행 기록에서 Claude의 마지막 답변을 꺼냅니다.
+ * @description 파일을 바꾸지 않은 이유를 사람이 볼 수 있게 하려는 것입니다. 답변이 없으면 빈 문자열입니다.
+ */
+export const extractFinalResult = ({ execution }) => {
+	const entries = Array.isArray(execution) ? execution : [];
+	const last = [...entries].reverse().find((entry) => entry?.type === "result");
+
+	return typeof last?.result === "string" ? last.result.trim() : "";
+};
 
 /** 수정 허용 경로 밖이거나 의존성·환경 파일인 경로를 돌려줍니다. */
 export const findDisallowedPaths = ({ paths }) => paths.filter((filePath) => !isAllowedPath(filePath));
@@ -148,6 +160,23 @@ const listOpenFixBranches = () =>
 		.filter((branch) => branch.startsWith(BRANCH_PREFIX));
 
 const commands = {
+	summarize: () => {
+		const executionFile = process.env.EXECUTION_FILE;
+		let result = "";
+		try {
+			result = executionFile ? extractFinalResult({ execution: JSON.parse(readFileSync(executionFile, "utf8")) }) : "";
+		} catch (error) {
+			console.warn(`::warning::Claude 실행 기록을 읽지 못했습니다: ${toSingleLine(error.message)}`);
+		}
+		// 코드 펜스를 닫아 버리는 문자열이 섞여도 Step Summary 마크다운이 깨지지 않게 합니다.
+		const text = result ? result.slice(0, 4000).replaceAll("```", "'") : "(최종 답변 없음)";
+		const summary = ["### SEO 자동 수정 — Claude 최종 답변", "", "```text", text, "```", ""].join("\n");
+		if (process.env.GITHUB_STEP_SUMMARY) {
+			appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
+		}
+		console.log(summary);
+	},
+
 	select: () => {
 		const reportPath = "artifacts/seo/ai-report.json";
 		if (!existsSync(reportPath)) {
@@ -156,9 +185,12 @@ const commands = {
 
 			return;
 		}
-		const targets = selectSeoFixTargets({ report: JSON.parse(readFileSync(reportPath, "utf8")).report });
+		const report = JSON.parse(readFileSync(reportPath, "utf8")).report;
+		const targets = selectSeoFixTargets({ report });
+		const candidateCount = (report?.findings ?? []).filter((finding) => FIX_PRIORITIES.includes(finding?.priority)).length;
+		console.log(`P0·P1 발견 ${candidateCount}건 중 코드 수정 대상 ${targets.length}건`);
 		if (targets.length === 0) {
-			console.log("수정 대상 발견(P0·P1, 허용 경로 안의 코드 위치)이 없습니다");
+			console.log("수정 대상 발견(P0·P1, 해결 방법이 코드 수정, 허용 경로 안의 코드 위치)이 없습니다");
 			output("has_targets", "false");
 
 			return;
@@ -250,7 +282,7 @@ const commands = {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
 	const command = commands[process.argv[2]];
 	if (!command) {
-		console.error(`알 수 없는 명령: ${process.argv[2]} (select | changes | publish)`);
+		console.error(`알 수 없는 명령: ${process.argv[2]} (select | summarize | changes | publish)`);
 		process.exit(1);
 	}
 	try {

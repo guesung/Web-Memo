@@ -62,8 +62,8 @@ const UNSUPPORTED_SUMMARY_PAGES = [
 
 - 적용 대상은 이 저장소의 웹·확장·앱 화면 변경입니다. 화면 변화가 없는 API·스크립트·리팩토링 작업에는 적용하지 않습니다.
 - 시각 목업에 대한 사용자 승인 전에는 해당 UI를 구현하지 않습니다. 목업을 수정하면 바뀐 시안을 다시 보여주고 승인받습니다.
-- `/gs:design`의 디자인 명세와 설계 승인 절차를 사용할 때도 시각 목업을 함께 보여줍니다. 그 승인에 시각 목업이 포함되어 있다면 별도의 승인을 다시 받지 않아도 됩니다.
-- `/gs:implement`처럼 구현 중 질문을 생략하는 절차를 사용하더라도, 승인된 시각 목업이 없거나 시안이 바뀌었다면 해당 UI 구현을 멈추고 사용자 승인을 받습니다.
+- `/web-memo:design`의 디자인 명세와 설계 승인 절차를 사용할 때도 시각 목업을 함께 보여줍니다. 그 승인에 시각 목업이 포함되어 있다면 별도의 승인을 다시 받지 않아도 됩니다.
+- `/web-memo:implement`처럼 구현 중 질문을 생략하는 절차를 사용하더라도, 승인된 시각 목업이 없거나 시안이 바뀌었다면 해당 UI 구현을 멈추고 사용자 승인을 받습니다.
 - `docs/design-system.md`는 기존 디자인 기준으로 참고합니다. 사용자에게 이번 변경의 시각적 결과를 보여주는 절차를 대체하지 않습니다.
 
 ---
@@ -283,7 +283,7 @@ function Component({ lng }: { lng: Language }) {
 
 **서버/클라이언트 컴포넌트** (apps/web):
 - 클라이언트: `import useTranslation from "@src/modules/i18n/util.client"`
-- 서버: `import useTranslation from "@src/modules/i18n/util.server"` (async)
+- 서버: `import getTranslation from "@src/modules/i18n/util.server"` (`await getTranslation(lng)` 비동기 함수)
 
 **검증**: i18n 관련 코드를 수정한 작업 후에는 항상 `/i18n-check`로 번역 완전성을 검증합니다.
 
@@ -429,9 +429,9 @@ GitHub 작업을 시작하기 전에 `gh auth status --active --hostname github.
   **각각 독립된 버전 트랙**이며, `apps/chrome-extension` 외의 `package.json`에는
   `version` 필드를 두지 않습니다
 
-### AI 에이전트가 읽는 문서 (`/gs` 파이프라인)
+### AI 에이전트가 읽는 문서 (`/web-memo` 파이프라인)
 
-`/gs` 스킬의 하위 에이전트가 작업 전에 읽는 세 장입니다. 사람이 읽어도 되지만,
+`/web-memo` 스킬의 하위 에이전트가 작업 전에 읽는 세 장입니다. 사람이 읽어도 되지만,
 **규격이 정해져 있으므로 섹션 제목을 바꾸지 마세요** — 에이전트가 제목으로 섹션을 찾습니다.
 
 | 문서 | 읽는 쪽 |
@@ -477,9 +477,9 @@ PR 템플릿 파일은 레포에 없습니다. 최근 PR들이 쓰는 형식을 
 - "무엇"보다 "왜"에 초점
 - API 문서: 목적, 파라미터, 반환값, 사용 예시, 에러 처리 포함
 
-### 작업 파이프라인 (gs 플러그인)
+### 작업 파이프라인 (web-memo 플러그인)
 
-기획→설계→구현→QA→PR 파이프라인(`/gs:*` 스킬과 `gs:*` 에이전트)의 원본은 `.agents/skills/gs/`입니다. `.claude/skills/gs`는 Claude Code가 읽도록 원본을 가리키는 심링크이니, 에이전트·스킬 규칙은 `.agents/skills/gs/`에서 고치세요. 구성과 의존 관계는 `.agents/skills/gs/dependencies.md`에 있습니다.
+기획→설계→구현→QA→PR 파이프라인(`/web-memo:*` 스킬과 `web-memo:*` 에이전트)의 원본은 `.agents/skills/web-memo/`입니다. `.claude/skills/web-memo`는 Claude Code가 읽도록 원본을 가리키는 심링크이니, 에이전트·스킬 규칙은 `.agents/skills/web-memo/`에서 고치세요. 구성과 의존 관계는 `.agents/skills/web-memo/dependencies.md`에 있습니다.
 
 ---
 

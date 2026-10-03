@@ -36,7 +36,8 @@ interface TranslationOptions {
 	keyPrefix?: string;
 }
 
-export default async function useTranslation(
+/** 서버에서 지정한 언어의 번역 함수와 i18next 인스턴스를 가져옵니다. */
+export default async function getTranslation(
 	language: Language,
 	namespace?: Namespace,
 	options?: TranslationOptions,

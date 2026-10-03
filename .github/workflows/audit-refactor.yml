@@ -55,14 +55,14 @@ jobs:
       # Claude에게 Bash를 주지 않으므로 최근 2주 변경 파일 목록을 미리 만들어 넘깁니다.
       # 삭제된 파일은 뺍니다(--diff-filter=d). 남겨 두면 모델이 건너뛰려고 Read를 시도하며 턴을 쓰고,
       # --max-turns 를 넘기면 경고가 아니라 실패가 됩니다.
-      # 상한으로 자를 때는 경로 알파벳 순이 아니라 변경이 잦은 순으로 자릅니다. sort -u 뒤에 head 를 쓰면
-      # apps/ 가 상한을 채워 packages/ 가 통째로 빠집니다.
+      # 상한으로 자를 때는 경로 알파벳 순이 아니라 변경이 잦은 순으로 자릅니다.
+      # 후보가 너무 많으면 읽기 전용 점검도 턴 상한을 넘으므로 상위 50개만 전달합니다.
       - name: List recently changed files
         run: |
           git log --since="14 days ago" --name-only --pretty=format: --diff-filter=d -- apps packages \
             | sed '/^$/d' | sort | uniq -c | sort -rn | sed 's/^ *[0-9]* //' \
             | while IFS= read -r file; do [ -f "$file" ] && printf '%s\n' "$file"; done \
-            | head -200 > .audit-changed-files.txt
+            | sed -n '1,50p' > .audit-changed-files.txt
           wc -l .audit-changed-files.txt
 
       - name: Audit code
@@ -75,7 +75,8 @@ jobs:
 
             기준 문서는 AGENTS.md, docs/frontend-guidelines.md, docs/architecture.md 입니다.
             먼저 세 문서를 읽고, .audit-changed-files.txt 에 적힌 최근 2주 변경 파일을 출발점으로 삼으세요.
-            변경이 잦은 파일이 앞에 있습니다. 그 파일이 의존하거나 그 파일에 의존하는 주변 코드는 필요한 만큼 따라가도 됩니다.
+            변경이 잦은 파일이 앞에 있습니다. 상위 파일부터 조사하고, 발견을 확인하는 데 필요한 주변 코드만 따라가세요.
+            목록 전체를 읽으려고 하지 말고, 확인된 고가치 발견이 10개면 조사를 마치세요.
 
             찾을 것은 세 분류입니다.
             - design: 책임이 섞인 모듈, 잘못된 의존 방향, 숨은 결합, 추상화가 새는 경계
@@ -97,7 +98,7 @@ jobs:
             결과는 지정된 JSON 스키마로만 냅니다. summary 에는 이번 점검이 본 범위와 전체 인상을 두세 문장으로 씁니다.
           claude_args: |
             --model claude-sonnet-5
-            --max-turns 40
+            --max-turns 60
             --allowedTools Read,Grep,Glob
             --json-schema '{"type":"object","properties":{"summary":{"type":"string"},"findings":{"type":"array","items":{"type":"object","properties":{"title":{"type":"string"},"severity":{"type":"string","enum":["high","medium","low"]},"category":{"type":"string","enum":["design","structure","quality"]},"files":{"type":"array","items":{"type":"string"}},"problem":{"type":"string"},"suggestion":{"type":"string"}},"required":["title","severity","category","files","problem","suggestion"]}}},"required":["summary","findings"]}'
 

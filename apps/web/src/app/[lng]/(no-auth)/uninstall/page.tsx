@@ -1,12 +1,12 @@
 import type { LanguageParams } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 
 import { UninstallFeedbackForm } from "./_components";
 
 /** 삭제 사유 설문 페이지의 메타데이터입니다. 색인 제외는 middleware가 처리합니다. */
 export const generateMetadata = async ({ params }: LanguageParams) => {
 	const { lng } = await params;
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	return { title: t("uninstall.metaTitle") };
 };

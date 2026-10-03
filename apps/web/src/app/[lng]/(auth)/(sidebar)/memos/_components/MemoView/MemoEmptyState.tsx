@@ -1,5 +1,6 @@
 "use client";
 
+import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
 import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import { isMac } from "@web-memo/shared/utils";
@@ -87,10 +88,10 @@ export default function MemoEmptyState({ lng }: MemoEmptyStateProps) {
 					className="h-14 px-8 border-2 rounded-xl hover:bg-muted transition-all"
 					asChild
 				>
-					<Link href={`/${lng}/introduce`}>
+					<LocalizedLink lng={lng} href="/introduce">
 						<BookOpen className="h-5 w-5 mr-2" />
 						{t("memos.emptyState.learnHow")}
-					</Link>
+					</LocalizedLink>
 				</Button>
 			</div>
 

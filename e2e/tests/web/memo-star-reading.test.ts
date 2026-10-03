@@ -127,3 +127,51 @@ test.describe("메모 카드의 중요·읽는 중 토글 (Mocked)", () => {
 		});
 	});
 });
+
+test.describe("중요·읽는 중 탭은 위시리스트 메모를 제외한다 (Mocked)", () => {
+	test.beforeEach(async ({ page }) => {
+		resetMockIds();
+		const store = new MockSupabaseStore();
+
+		store.addMemo(
+			createMockMemo({
+				title: "중요 일반 메모",
+				isStar: true,
+				isReading: true,
+			}),
+		);
+		store.addMemo(
+			createMockMemo({
+				title: "중요 위시 메모",
+				isStar: true,
+				isReading: true,
+				isWish: true,
+			}),
+		);
+
+		await setupSupabaseMocks(page, store);
+	});
+
+	for (const [tabName, tabPath] of [
+		["중요", PATHS.memosStar],
+		["읽는 중", PATHS.memosReading],
+	] as const) {
+		test(`${tabName} 탭은 목록과 검색 결과 모두 위시리스트 메모를 보이지 않는다.`, async ({
+			page,
+		}) => {
+			await gotoSafely({
+				page,
+				url: `${LANGUAGE}${tabPath}`,
+				regexp: new RegExp(`${tabPath}$`),
+			});
+
+			await expect(page.locator(".memo-item")).toHaveCount(1);
+			await expect(getMemoCard(page, "중요 일반 메모")).toBeVisible();
+
+			await page.getByPlaceholder("Search memos").fill("중요");
+
+			await expect(page.locator(".memo-item")).toHaveCount(1);
+			await expect(getMemoCard(page, "중요 위시 메모")).toHaveCount(0);
+		});
+	}
+});

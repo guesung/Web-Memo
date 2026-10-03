@@ -498,6 +498,20 @@
 			"hint": "다른 말로 찾아보세요."
 		},
 		"totalMemos": "메모 {{total}}개",
+		"domainFilter": {
+			"label": "도메인",
+			"all": "전체 도메인",
+			"searchPlaceholder": "도메인 검색",
+			"clear": "도메인 필터 해제",
+			"totalMemos": "{{domain}} 메모 {{total}}개",
+			"loadError": "도메인을 불러오지 못했어요",
+			"noResults": "검색 결과가 없어요",
+			"emptyState": {
+				"title": "이 도메인의 메모가 없어요",
+				"message": "{{domain}}에서 남긴 메모가 지금 조건에서는 보이지 않아요",
+				"clear": "도메인 필터 해제하기"
+			}
+		},
 		"searchPlaceholder": "메모 찾기",
 		"searchTarget": {
 			"label": "검색 대상",

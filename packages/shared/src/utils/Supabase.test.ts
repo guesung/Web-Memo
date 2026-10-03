@@ -13,6 +13,8 @@ interface IFRecordedCalls {
 	lt: [string, unknown][];
 	gt: [string, unknown][];
 	or: string[];
+	filter: [string, string, unknown][];
+	range: [number, number][];
 	order: [string, unknown][];
 	limit: number[];
 	rpc: [string, unknown][];
@@ -37,6 +39,8 @@ const createMockClient = (): {
 		lt: [],
 		gt: [],
 		or: [],
+		filter: [],
+		range: [],
 		order: [],
 		limit: [],
 		rpc: [],
@@ -72,6 +76,14 @@ const createMockClient = (): {
 		},
 		or: (filter: string) => {
 			calls.or.push(filter);
+			return builder;
+		},
+		filter: (column: string, operator: string, value: unknown) => {
+			calls.filter.push([column, operator, value]);
+			return builder;
+		},
+		range: (from: number, to: number) => {
+			calls.range.push([from, to]);
 			return builder;
 		},
 		order: (column: string, options: unknown) => {
@@ -229,6 +241,38 @@ describe("HighlightService.getHighlightCountsByPageKeys", () => {
 	});
 });
 
+describe("MemoService.getMemoDomains", () => {
+	it("삭제되지 않은 메모의 url만 최근 수정 순으로 1000건씩 읽는다", async () => {
+		const { client, calls } = createMockClient();
+		const result = await new MemoService(client).getMemoDomains();
+
+		expect(calls.select).toEqual(["url"]);
+		expect(calls.is).toEqual([["deleted_at", null]]);
+		expect(calls.order).toEqual([
+			["updated_at", { ascending: false, nullsFirst: false }],
+			["id", { ascending: false }],
+		]);
+		expect(calls.range).toEqual([[0, 999]]);
+		expect(result).toEqual({ data: [], error: null });
+	});
+
+	it("탭·카테고리 조건을 목록 조회와 같은 방식으로 건다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemoDomains({
+			category: "Work",
+			isWish: false,
+			isStar: true,
+		});
+
+		expect(calls.select).toEqual(["url,category!inner(name)"]);
+		expect(calls.eq).toEqual([
+			["isWish", false],
+			["isStar", true],
+			["category.name", "Work"],
+		]);
+	});
+});
+
 describe("MemoService.getMemosPaginated", () => {
 	it.each(["created_at", "updated_at"] as const)(
 		"%s가 없는 메모도 id로 다음 페이지를 이어 읽는다",
@@ -294,6 +338,28 @@ describe("MemoService.getMemosPaginated", () => {
 			["category.name", "개발"],
 		]);
 		expect(calls.is).toEqual([["deleted_at", null]]);
+	});
+
+	it("도메인은 url 정규식 조건 하나로 다른 필터와 함께 적용한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemosPaginated({
+			domain: "youtube.com",
+			isStar: true,
+			searchQuery: "리액트",
+		});
+
+		expect(calls.filter).toEqual([
+			["url", "imatch", "^https?://(www\\.)?youtube\\.com([/:?#]|$)"],
+		]);
+		expect(calls.eq).toEqual([["isStar", true]]);
+		expect(calls.or).toHaveLength(1);
+	});
+
+	it("도메인이 없으면 url 조건을 걸지 않는다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemosPaginated({});
+
+		expect(calls.filter).toEqual([]);
 	});
 
 	it("첫 페이지는 커서 필터 없이 최신 수정순 20건을 조회한다", async () => {

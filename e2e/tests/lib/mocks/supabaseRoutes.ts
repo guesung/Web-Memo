@@ -313,6 +313,20 @@ const extractIlikeQuery = (url: URL, column: string): string | undefined => {
 	return matchedIlike?.[1];
 };
 
+/**
+ * `url=imatch.<정규식>`(도메인 필터)에서 정규식을 꺼낸다.
+ * @description PostgREST의 `imatch`는 대소문자를 무시하는 POSIX 정규식이다. 앱이 보내는 패턴은
+ * JS 정규식으로도 같은 뜻이라 그대로 `RegExp`에 넣는다. 조건이 없으면 undefined다.
+ */
+const parseUrlMatchPattern = (url: URL): RegExp | undefined => {
+	const condition = url.searchParams.get("url");
+	if (!condition?.startsWith("imatch.")) {
+		return undefined;
+	}
+
+	return new RegExp(condition.slice("imatch.".length), "i");
+};
+
 /** 대소문자를 무시하고 부분 일치를 본다. PostgREST의 ilike에 대응한다. */
 const matchesIlike = (value: string | null, query: string): boolean =>
 	(value ?? "").toLowerCase().includes(query.toLowerCase());
@@ -414,6 +428,7 @@ const handleMemoGet = async ({ route, url, store }: HandlerParams) => {
 	// 저장소의 모든 메모가 돌아가고, 호출부의 at(-1)이 엉뚱한 메모를 집는다.
 	const targetIds = parseIdListFilter(url);
 	const targetUrl = parseEqualsFilter(url, "url");
+	const urlMatchPattern = parseUrlMatchPattern(url);
 
 	const filtered = store
 		.getAllMemos()
@@ -423,6 +438,9 @@ const handleMemoGet = async ({ route, url, store }: HandlerParams) => {
 				return false;
 			}
 			if (targetUrl !== undefined && memo.url !== targetUrl) {
+				return false;
+			}
+			if (urlMatchPattern && !urlMatchPattern.test(memo.url)) {
 				return false;
 			}
 			if (!matchesDeletedAtFilter(memo, url)) {
@@ -476,6 +494,13 @@ const handleMemoGet = async ({ route, url, store }: HandlerParams) => {
 	const offset = Number(url.searchParams.get("offset") ?? 0);
 	const limit = Number(url.searchParams.get("limit") ?? sorted.length);
 	const pagedMemos = sorted.slice(offset, offset + limit);
+	// 도메인 목록(getMemoDomains)은 `select=url`로 url 컬럼만 읽는다.
+	const isUrlOnlySelect =
+		url.searchParams.get("select")?.startsWith("url") === true &&
+		!url.searchParams.get("select")?.includes("*");
+	const responseRows = isUrlOnlySelect
+		? pagedMemos.map((memo) => ({ url: memo.url }))
+		: pagedMemos;
 
 	await route.fulfill({
 		status: 200,
@@ -484,7 +509,7 @@ const handleMemoGet = async ({ route, url, store }: HandlerParams) => {
 			"content-range": `${offset}-${offset + Math.max(pagedMemos.length - 1, 0)}/${sorted.length}`,
 			"access-control-expose-headers": "content-range",
 		},
-		body: JSON.stringify(pagedMemos),
+		body: JSON.stringify(responseRows),
 	});
 };
 

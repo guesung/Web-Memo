@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { getPageKey, getPathKey, normalizeUrl, toLooseUrlKey } from "./Url";
+import {
+	getDomainFromUrl,
+	getDomainUrlPattern,
+	getPageKey,
+	getPathKey,
+	normalizeUrl,
+	parseDomainFilter,
+	toLooseUrlKey,
+} from "./Url";
 
 describe("getPageKey", () => {
 	it.each([
@@ -150,5 +158,76 @@ describe("toLooseUrlKey", () => {
 
 	it("파싱할 수 없는 URL이면 null을 돌려준다", () => {
 		expect(toLooseUrlKey("not a url")).toBeNull();
+	});
+});
+
+describe("getDomainFromUrl", () => {
+	it.each([
+		["https://www.example.com/a?b=1", "example.com"],
+		["http://Example.COM:8080/a", "example.com"],
+		["https://m.youtube.com/watch?v=1", "m.youtube.com"],
+		["https://blog.naver.com/user", "blog.naver.com"],
+	])("%s는 %s로 바꾼다", (url, domain) => {
+		expect(getDomainFromUrl(url)).toBe(domain);
+	});
+
+	it.each(["chrome://extensions", "file:///a/b.html", "not a url", ""])(
+		"%s는 도메인이 없다",
+		(url) => {
+			expect(getDomainFromUrl(url)).toBeNull();
+		},
+	);
+});
+
+describe("parseDomainFilter", () => {
+	it.each([
+		["YouTube.com", "youtube.com"],
+		["www.example.com", "example.com"],
+		[" velog.io ", "velog.io"],
+		["xn--e1afmkfd.xn--p1ai", "xn--e1afmkfd.xn--p1ai"],
+	])("%s는 %s로 바꾼다", (value, domain) => {
+		expect(parseDomainFilter(value)).toBe(domain);
+	});
+
+	it.each(["you tube!", "(x)", "a/b", "a.*|b", "", null, undefined])(
+		"%s는 없는 값으로 본다",
+		(value) => {
+			expect(parseDomainFilter(value)).toBeUndefined();
+		},
+	);
+});
+
+describe("getDomainUrlPattern", () => {
+	const isMatched = (domain: string, url: string) =>
+		new RegExp(getDomainUrlPattern(domain), "i").test(url);
+
+	it("www.와 경로·포트·쿼리·해시가 있는 주소를 같은 도메인으로 잡는다", () => {
+		for (const url of [
+			"https://youtube.com",
+			"https://youtube.com/watch?v=1",
+			"http://www.youtube.com/",
+			"https://YouTube.com:8080/a",
+			"https://youtube.com?x=1",
+			"https://youtube.com#top",
+		]) {
+			expect(isMatched("youtube.com", url)).toBe(true);
+		}
+	});
+
+	it("m.·서브도메인과 도메인을 이어 붙인 다른 주소는 잡지 않는다", () => {
+		for (const url of [
+			"https://m.youtube.com/watch?v=1",
+			"https://notyoutube.com/",
+			"https://youtube.com.evil.com/",
+			"https://evil.com/?u=https://youtube.com/",
+			"https://youtubexcom/",
+		]) {
+			expect(isMatched("youtube.com", url)).toBe(false);
+		}
+	});
+
+	it("도메인의 점은 임의 문자가 아니라 점 그대로 비교한다", () => {
+		expect(isMatched("a.b", "https://axb/")).toBe(false);
+		expect(isMatched("a.b", "https://a.b/")).toBe(true);
 	});
 });

@@ -27,11 +27,31 @@ export const QUERY_KEY = {
 		sortBy?: MemoSortBy,
 		isStar?: boolean,
 		isReading?: boolean,
+		domain?: string,
 	) => [
 		"memos",
 		"paginated",
-		{ category, isWish, searchQuery, sortBy, isStar, isReading },
+		// 도메인이 없을 때는 키 모양을 그대로 두어 기존 호출과 캐시가 같다.
+		{
+			category,
+			isWish,
+			searchQuery,
+			sortBy,
+			isStar,
+			isReading,
+			...(domain ? { domain } : {}),
+		},
 	],
+	/**
+	 * 메모 url에서 뽑은 도메인 목록. 탭·카테고리 조건마다 별도 캐시다.
+	 * @description `memos()` 접두사를 공유해 메모를 만들거나 버릴 때의 무효화에 함께 걸린다.
+	 */
+	memoDomains: (
+		category?: string,
+		isWish?: boolean,
+		isStar?: boolean,
+		isReading?: boolean,
+	) => ["memos", "domains", { category, isWish, isStar, isReading }],
 	/**
 	 * 휴지통 목록.
 	 * @description `memos()` 접두사를 일부러 공유한다. 메모를 버리거나 되살리면

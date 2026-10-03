@@ -146,6 +146,34 @@ it("늦게 끝난 A 저장은 새로 편집 중인 B를 닫지 않는다", async
 	expect(getCategory(2).getAttribute("data-editing")).toBe("true");
 });
 
+it("같은 카테고리를 다시 편집하면 이전 세션의 저장 완료가 새 편집을 닫지 않는다", async () => {
+	let complete!: (value: { error: null }) => void;
+	mocks.update.mockReturnValueOnce(
+		new Promise((resolve) => {
+			complete = resolve;
+		}),
+	);
+	await clickAction(1, "edit");
+	await clickAction(1, "submit");
+	await clickAction(1, "cancel");
+	await clickAction(1, "edit");
+	await act(async () => complete({ error: null }));
+	expect(getCategory(1).getAttribute("data-editing")).toBe("true");
+});
+
+it("저장 요청이 예외를 던지면 편집을 유지하고 다시 시도할 수 있다", async () => {
+	mocks.update
+		.mockRejectedValueOnce(new Error("네트워크 오류"))
+		.mockResolvedValueOnce({ error: null });
+	await clickAction(1, "edit");
+	await clickAction(1, "submit");
+	expect(getCategory(1).getAttribute("data-editing")).toBe("true");
+	expect(mocks.toast).toHaveBeenCalledWith({ title: "toastTitle.errorSave" });
+	await clickAction(1, "submit");
+	expect(mocks.update).toHaveBeenCalledTimes(2);
+	expect(getCategory(1).getAttribute("data-editing")).toBe("false");
+});
+
 it("중복 이름은 저장하지 않고 기존 정책대로 편집을 종료한다", async () => {
 	mocks.newName = "둘째 카테고리";
 	await clickAction(1, "edit");

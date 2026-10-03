@@ -1,7 +1,7 @@
 # 아키텍처
 
-> `/gs` 파이프라인의 `gs:frontend-dev`·`gs:backend-dev`가 첫 코드를 쓰기 전에 읽는 문서입니다.
-> 각 에이전트는 **`## 공통` + 자기 섹션만** 읽습니다. `## QA 실행`은 `gs:qa-verifier`만 읽습니다.
+> `/web-memo` 파이프라인의 `web-memo:frontend-dev`·`web-memo:backend-dev`가 첫 코드를 쓰기 전에 읽는 문서입니다.
+> 각 에이전트는 **`## 공통` + 자기 섹션만** 읽습니다. `## QA 실행`은 `web-memo:qa-verifier`만 읽습니다.
 > 사람이 읽는 전체 규칙은 [`AGENTS.md`](../AGENTS.md)에 있습니다 — 이 문서는 그중 구현 결정에 필요한 것만 추린 판입니다.
 > **여기에 비밀번호·토큰 값을 적지 않습니다.** 이 파일은 커밋됩니다.
 

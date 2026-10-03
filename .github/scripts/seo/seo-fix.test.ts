@@ -4,6 +4,7 @@ import {
 	buildSeoFixBranchName,
 	buildSeoFixPrBody,
 	buildSeoFixPrTitle,
+	extractFinalResult,
 	findDisallowedPaths,
 	findUnsafeModeChanges,
 	selectSeoFixTargets,
@@ -16,6 +17,7 @@ const finding = (overrides = {}) => ({
 	evidence: "근거",
 	suggestion: "제안",
 	codeRefs: ["apps/web/src/app/layout.tsx:12"],
+	fixability: "code",
 	evidenceIds: ["seo:CANONICAL:home"],
 	...overrides,
 });
@@ -34,6 +36,19 @@ describe("selectSeoFixTargets", () => {
 		const targets = selectSeoFixTargets({ report });
 
 		expect(targets.map((target) => target.title)).toEqual(["canonical 오류"]);
+	});
+
+	it("해결 방법이 코드 수정이 아닌 발견은 코드 위치가 있어도 고르지 않는다", () => {
+		const report = {
+			findings: [
+				finding({ title: "콘텐츠 작업", fixability: "content" }),
+				finding({ title: "색인 요청", fixability: "external" }),
+				finding({ title: "값 없음", fixability: undefined }),
+				finding({ title: "코드 수정" }),
+			],
+		};
+
+		expect(selectSeoFixTargets({ report }).map((target) => target.title)).toEqual(["코드 수정"]);
 	});
 
 	it("허용 경로 밖의 위치는 빼고 안의 위치만 남긴다", () => {
@@ -118,5 +133,22 @@ describe("PR 메타데이터", () => {
 		expect(body).not.toContain("@octocat");
 		expect(body.match(/^## 가짜 섹션/m)).toBeNull();
 		expect(body).toContain("actions/runs/1");
+	});
+});
+
+describe("extractFinalResult", () => {
+	it("실행 기록의 마지막 result 항목의 답변을 돌려준다", () => {
+		const execution = [
+			{ type: "assistant", message: "작업 중" },
+			{ type: "result", result: "  원인이 코드에 없어 수정하지 않았습니다.  " },
+		];
+
+		expect(extractFinalResult({ execution })).toBe("원인이 코드에 없어 수정하지 않았습니다.");
+	});
+
+	it("답변이 없거나 형식이 다르면 빈 문자열이다", () => {
+		expect(extractFinalResult({ execution: [{ type: "assistant" }] })).toBe("");
+		expect(extractFinalResult({ execution: { type: "result", result: "x" } })).toBe("");
+		expect(extractFinalResult({ execution: undefined })).toBe("");
 	});
 });

@@ -153,7 +153,12 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 			)}
 			{dialogMemoId && (
 				<Suspense fallback={<Loading />}>
-					<MemoDialog lng={lng} memoId={dialogMemoId} />
+					<MemoDialog
+						key={dialogMemoId}
+						lng={lng}
+						memoId={dialogMemoId}
+						initialMemo={memos.find((memo) => memo.id === dialogMemoId)}
+					/>
 				</Suspense>
 			)}
 		</div>

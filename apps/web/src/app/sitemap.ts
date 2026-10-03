@@ -34,6 +34,7 @@ const PRIORITY_BY_PREFIX: TIndexablePrefix[] = [
 ];
 
 const STANDALONE_PATHS: TIndexablePath[] = [
+	{ path: PATHS.root, priority: 1.0, changeFrequency: "weekly" },
 	{ path: PATHS.introduce, priority: 1.0, changeFrequency: "weekly" },
 	{ path: PATHS.privacy, priority: 0.3, changeFrequency: "yearly" },
 ];

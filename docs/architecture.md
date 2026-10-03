@@ -21,7 +21,7 @@
 | 브랜치 | **`master`가 유일한 베이스입니다.** `develop`은 테스트 서버 배포 전용 일회성 브랜치이고 작업 브랜치의 베이스가 아닙니다. 머지는 **머지 커밋 생성**(Squash/Rebase 금지). 자세한 내용은 [`branch-strategy.md`](branch-strategy.md) |
 | 환경 변수 | 이름과 용도만 적습니다 — 웹 서버 시크릿의 값은 Vercel 프로젝트 환경변수가 갖습니다(로컬은 `pnpm env:pull`).<br>· `packages/env/.env.{development,staging,production}` → `WEB_URL`(커밋됨, 확장·웹 공유)<br>· Vercel 프로젝트 환경변수 → `OPENAI_API_KEY`, `UPSTASH_*` 등 **서버 시크릿**(커밋 안 함)<br>· `packages/shared/src/constants/` → 환경 무관 고정값(Supabase URL·anon key, Sentry DSN, GA/GTM, OAuth)<br>· 빌드 대상은 셸 `BUILD_ENV`로 고릅니다. 코드에서 환경 분기는 **`CONFIG.buildEnv`**를 쓰고 `NODE_ENV`로 판단하지 않습니다(staging을 표현할 수 없음).<br>· **`packages/env`에 서버 시크릿을 넣지 않습니다** — `tsup`이 번들에 인라인해 클라이언트로 실립니다. 전체 규칙은 [`environment-variables.md`](environment-variables.md) |
 | 모니터링 | Sentry (웹·확장, 앱은 없음). 프로젝트 구분과 대시보드 전용 설정은 [`sentry.md`](sentry.md) |
-| i18n | ko/en. 웹은 `apps/web/src/modules/i18n/`(`util.client` / `util.server`), 확장은 `_locales/`. **`lng === "ko"` 분기를 쓰지 않고 항상 번역 키를 씁니다** |
+| i18n | ko/en. 웹은 `apps/web/src/modules/i18n/`에서 클라이언트 React 훅 `useTranslation`(`util.client`)과 서버 비동기 함수 `getTranslation`(`util.server`, `await` 필요)를 구분하고, 확장은 `_locales/`를 씁니다. **`lng === "ko"` 분기를 쓰지 않고 항상 번역 키를 씁니다** |
 
 ### SEO 장기 이력
 
@@ -50,6 +50,8 @@ SEO 탭 5개의 컬럼명은 한글로 표시합니다. 기존 영문 헤더가 
 | 앱 import 규칙 | `apps/app`에서는 `@web-memo/shared`의 **배럴 export를 쓰지 않고 좁은 하위 경로**(`@web-memo/shared/utils/url`)를 씁니다. 배럴을 타면 `@web-memo/env`가 딸려와 EAS 빌드에서 iOS만 깨집니다. 앱은 환경 변수를 쓰지 않고 상수만 읽습니다 |
 | 앱 텍스트 선택 메뉴 | 로그인한 앱 브라우저는 `하이라이트`·`복사` 두 메뉴를 표시합니다. `onCustomMenuSelection`의 `nativeEvent.selectedText`를 `expo-clipboard`로 전달하며, 복사는 메뉴를 누른 경우에만 실행합니다. 비로그인 상태의 `menuItems`는 `undefined`로 두어 OS 기본 선택 메뉴를 유지합니다 |
 | Edge import 규칙 | Edge 런타임 코드(`apps/web/src/middleware.ts`)는 `@web-memo/shared`의 **배럴 export를 쓰지 않고 좁은 하위 경로**(`@web-memo/shared/constants`)를 씁니다. `@web-memo/shared/utils` 배럴이 브라우저 전용 Sentry 코드를 Edge 번들로 끌어들여 빌드가 깨진 적이 있습니다. Next 16은 `middleware.ts`에 deprecated 경고를 내지만, `proxy.ts`는 Node.js 런타임 전용이라 Edge를 유지하려고 `middleware.ts`를 그대로 둡니다 |
+
+웹의 언어별 **내부 페이지 링크**는 `apps/web/src/components/LocalizedLink`에 `lng`와 언어 접두사가 없는 `href`를 전달합니다. 이 컴포넌트는 서버와 클라이언트에서 사용할 수 있고 Next.js `Link`의 나머지 속성을 전달합니다. 쿼리·해시가 있는 `href` 객체도 지원합니다. 외부 URL, 메일 링크, 같은 페이지의 앵커, API 및 인증 콜백 경로에는 사용하지 않습니다. 언어를 아직 모르는 404 화면의 링크도 예외입니다. `router.push`와 서버 리다이렉트는 링크 컴포넌트의 대상이 아니며, 필요할 때 같은 위치의 `getLocalizedHref`를 사용합니다.
 
 ## 백엔드
 

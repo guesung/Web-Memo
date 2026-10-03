@@ -35,7 +35,7 @@ test.describe("404 화면", () => {
 			await expect(page.getByText(texts.description)).toBeVisible();
 			await expect(
 				page.getByRole("link", { name: texts.backToHome }),
-			).toHaveAttribute("href", "/");
+			).toHaveAttribute("href", `/${language}`);
 		});
 	}
 });

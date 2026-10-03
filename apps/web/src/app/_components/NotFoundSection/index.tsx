@@ -1,5 +1,6 @@
 "use client";
 
+import LocalizedLink from "@src/components/LocalizedLink";
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { FileSearch } from "lucide-react";
@@ -35,12 +36,22 @@ export default function NotFoundSection({ lng }: IFNotFoundSectionProps) {
 					{t("error.404.description")}
 				</p>
 
-				<Link
-					href="/"
-					className="mt-6 inline-block rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-				>
-					{t("error.404.backToHome")}
-				</Link>
+				{lng ? (
+					<LocalizedLink
+						lng={lng}
+						href="/"
+						className="mt-6 inline-block rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+					>
+						{t("error.404.backToHome")}
+					</LocalizedLink>
+				) : (
+					<Link
+						href="/"
+						className="mt-6 inline-block rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+					>
+						{t("error.404.backToHome")}
+					</Link>
+				)}
 			</div>
 		</section>
 	);

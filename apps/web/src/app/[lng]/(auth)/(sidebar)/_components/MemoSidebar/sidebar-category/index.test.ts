@@ -3,7 +3,7 @@
 import { act, createElement, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import SidebarCategorySection from "./SidebarCategorySection";
+import SidebarCategorySection from "./index";
 
 const mocks = vi.hoisted(() => ({
 	categories: [
@@ -40,8 +40,8 @@ vi.mock("@web-memo/ui", () => ({
 		createElement("div", null, children),
 	toast: mocks.toast,
 }));
-vi.mock("./SidebarMenuItemAddCategory", () => ({ default: () => null }));
-vi.mock("./SidebarCategoryItem", () => ({
+vi.mock("./addCategory", () => ({ default: () => null }));
+vi.mock("./categoryItem", () => ({
 	default: ({
 		category,
 		isEditing,

@@ -7,8 +7,8 @@ import type { CategoryRow } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
 import { SidebarMenuButton, SidebarMenuItem } from "@web-memo/ui";
 
-import SidebarCategoryContextMenu from "./SidebarCategoryContextMenu";
-import SidebarCategoryNameInput from "./SidebarCategoryNameInput";
+import SidebarCategoryContextMenu from "./categoryContextMenu";
+import SidebarCategoryNameInput from "./categoryNameInput";
 
 /** 카테고리 한 행의 표시·메뉴·편집 상태를 담당한다. */
 export default function SidebarCategoryItem({

@@ -3,7 +3,7 @@
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import SidebarCategoryNameInput from "./SidebarCategoryNameInput";
+import SidebarCategoryNameInput from "./categoryNameInput";
 
 vi.mock("@web-memo/ui", () => ({
 	Input: (props: object) => createElement("input", props),

@@ -18,9 +18,8 @@ import {
 } from "@web-memo/ui";
 import { SettingsIcon } from "lucide-react";
 import { useRef, useState } from "react";
-
-import SidebarCategoryItem from "./SidebarCategoryItem";
-import SidebarMenuItemAddCategory from "./SidebarMenuItemAddCategory";
+import SidebarMenuItemAddCategory from "./addCategory";
+import SidebarCategoryItem from "./categoryItem";
 
 /** 카테고리 목록과 한 번에 하나인 편집 세션을 관리하는 섹션. */
 export default function SidebarCategorySection({ lng }: LanguageType) {

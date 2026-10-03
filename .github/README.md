@@ -20,7 +20,7 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 
 | 워크플로 | 트리거 | 실행 주기·시각 | 부르는 스크립트 (`.github/scripts/` 기준) |
 | --- | --- | --- | --- |
-| `ci.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | `deploy/resolve-affected-base.sh` · `deploy/detect-affected-apps.sh` · `deploy/notify-thread-root.mjs` · `deploy/notify-thread-reply.mjs` · `deploy/notify-build-ready.mjs` · `deploy/notify-staging-deploy.mjs` · `deploy/comment-pr-extension.mjs`, 그리고 `cd-app`·`cd-extension`·`cd-web` 호출 |
+| `ci.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | `deploy/resolve-affected-base.sh` · `deploy/detect-affected-apps.sh` · `deploy/notify-thread-root.mjs` · `deploy/notify-thread-reply.mjs` · `deploy/notify-build-ready.mjs` · `deploy/notify-staging-deploy.mjs` · `deploy/comment-pr-extension.mjs` · `conventions/check-code-conventions.mjs`, 그리고 `cd-app`·`cd-extension`·`cd-web` 호출 |
 | `e2e.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | 없음 (Playwright) |
 | `cd-app.yml` | workflow_call | 검증된 develop 후보를 큐에서 재판정해 Android APK 빌드·Firebase App Distribution 배포, master·PR은 빌드만, release는 새 빌드·Play 내부 테스트 제출 | `deploy/prepareStagingApp.mjs` · `deploy/appDeploymentState.mjs` · `deploy/detect-affected-apps.sh` (EAS CLI·firebase-tools) |
 | `cd-extension.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-reusable-artifact.sh` · `deploy/upload-extension-to-store.mjs` |
@@ -66,6 +66,7 @@ dispatch해도 스크립트는 master의 것이 돕니다.
 | `seo/` | SEO 점검·GSC·Sheets 적재·AI 리포트·P0·P1 자동 수정 PR |
 | `ga/` | GA4 일간·주간 리포트, 기능 사용량 측정 |
 | `env/` | 환경 변수 매니페스트 검사와 등록 현황 감사 |
+| `conventions/` | 코드 컨벤션 원장(`docs/code-conventions.yaml`) 형식 검사 |
 | `supabase/` | 운영 Supabase 인벤토리 문서(`docs/supabase-inventory.md`) 생성과 갱신 PR |
 | `refactor/` | 주간 리팩토링 점검 |
 | `cleanup/` | 미사용 파일 정리 |

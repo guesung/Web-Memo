@@ -41,12 +41,21 @@ export default function SidebarCategoryContextMenu({
 	const { t } = useTranslation(lng);
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 	const colorInputRef = useRef<HTMLInputElement>(null);
+	const isStartingEditRef = useRef(false);
 
 	const { mutate: updateCategory } = useCategoryUpdateMutation();
 	const { mutate: deleteCategory } = useCategoryDeleteMutation();
 
 	const handleRename = () => {
-		onStartEditing();
+		isStartingEditRef.current = true;
+	};
+
+	const handleCloseAutoFocus = (event: Event) => {
+		if (isStartingEditRef.current) {
+			event.preventDefault();
+			isStartingEditRef.current = false;
+			onStartEditing();
+		}
 	};
 
 	const openColorPicker = () => {
@@ -85,8 +94,8 @@ export default function SidebarCategoryContextMenu({
 		<>
 			<ContextMenu>
 				<ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
-				<ContextMenuContent>
-					<ContextMenuItem onClick={handleRename}>
+				<ContextMenuContent onCloseAutoFocus={handleCloseAutoFocus}>
+					<ContextMenuItem onSelect={handleRename}>
 						<Pencil size={14} className="mr-2" />
 						{t("sideBar.rename")}
 					</ContextMenuItem>

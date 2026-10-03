@@ -1,5 +1,5 @@
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { Check } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,7 +22,7 @@ interface IFHeroProps extends LanguageType {
 }
 
 const Hero = async ({ lng, background }: IFHeroProps) => {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	return (
 		<SectionShell background={background}>

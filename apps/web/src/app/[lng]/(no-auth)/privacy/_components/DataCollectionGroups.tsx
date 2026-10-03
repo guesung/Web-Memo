@@ -1,5 +1,5 @@
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { PRIVACY_COLLECT_GROUPS } from "../_constants";
 import { toStringArray } from "../_utils";
 
@@ -7,7 +7,7 @@ import { toStringArray } from "../_utils";
 export default async function DataCollectionGroups({
 	lng,
 }: DataCollectionGroupsProps) {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	return (
 		<div className="mt-6 space-y-6">

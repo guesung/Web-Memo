@@ -21,7 +21,7 @@
 | 브랜치 | **`master`가 유일한 베이스입니다.** `develop`은 테스트 서버 배포 전용 일회성 브랜치이고 작업 브랜치의 베이스가 아닙니다. 머지는 **머지 커밋 생성**(Squash/Rebase 금지). 자세한 내용은 [`branch-strategy.md`](branch-strategy.md) |
 | 환경 변수 | 이름과 용도만 적습니다 — 웹 서버 시크릿의 값은 Vercel 프로젝트 환경변수가 갖습니다(로컬은 `pnpm env:pull`).<br>· `packages/env/.env.{development,staging,production}` → `WEB_URL`(커밋됨, 확장·웹 공유)<br>· Vercel 프로젝트 환경변수 → `OPENAI_API_KEY`, `UPSTASH_*` 등 **서버 시크릿**(커밋 안 함)<br>· `packages/shared/src/constants/` → 환경 무관 고정값(Supabase URL·anon key, Sentry DSN, GA/GTM, OAuth)<br>· 빌드 대상은 셸 `BUILD_ENV`로 고릅니다. 코드에서 환경 분기는 **`CONFIG.buildEnv`**를 쓰고 `NODE_ENV`로 판단하지 않습니다(staging을 표현할 수 없음).<br>· **`packages/env`에 서버 시크릿을 넣지 않습니다** — `tsup`이 번들에 인라인해 클라이언트로 실립니다. 전체 규칙은 [`environment-variables.md`](environment-variables.md) |
 | 모니터링 | Sentry (웹·확장, 앱은 없음). 프로젝트 구분과 대시보드 전용 설정은 [`sentry.md`](sentry.md) |
-| i18n | ko/en. 웹은 `apps/web/src/modules/i18n/`(`util.client` / `util.server`), 확장은 `_locales/`. **`lng === "ko"` 분기를 쓰지 않고 항상 번역 키를 씁니다** |
+| i18n | ko/en. 웹은 `apps/web/src/modules/i18n/`에서 클라이언트 React 훅 `useTranslation`(`util.client`)과 서버 비동기 함수 `getTranslation`(`util.server`, `await` 필요)를 구분하고, 확장은 `_locales/`를 씁니다. **`lng === "ko"` 분기를 쓰지 않고 항상 번역 키를 씁니다** |
 
 ### SEO 장기 이력
 

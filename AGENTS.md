@@ -328,7 +328,7 @@ function Component({ lng }: { lng: Language }) {
 
 **서버/클라이언트 컴포넌트** (apps/web):
 - 클라이언트: `import useTranslation from "@src/modules/i18n/util.client"`
-- 서버: `import useTranslation from "@src/modules/i18n/util.server"` (async)
+- 서버: `import getTranslation from "@src/modules/i18n/util.server"` (`await getTranslation(lng)` 비동기 함수)
 
 **검증**: i18n 관련 코드를 수정한 작업 후에는 항상 `/i18n-check`로 번역 완전성을 검증합니다.
 

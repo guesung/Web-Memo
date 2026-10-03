@@ -1,12 +1,12 @@
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { PRIVACY_THIRD_PARTIES } from "../_constants";
 
 /** 데이터 처리를 위탁하는 제3자를 실명·목적·제공 항목·방침 링크와 함께 나열한 표 */
 export default async function ThirdPartyTable({ lng }: ThirdPartyTableProps) {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	return (
 		<div className="mt-6 overflow-x-auto rounded-lg border border-border">

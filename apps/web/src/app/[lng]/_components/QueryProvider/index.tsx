@@ -1,6 +1,6 @@
 "use client";
 
-import { captureException } from "@sentry/nextjs";
+import { addBreadcrumb, captureException } from "@sentry/nextjs";
 import type { LanguageType } from "@src/modules/i18n";
 import {
 	MutationCache,
@@ -19,11 +19,21 @@ import {
 import type { PropsWithChildren } from "react";
 import { useState } from "react";
 
-interface QueryProviderProps extends PropsWithChildren, LanguageType {}
+/** 서버 상태와 웹 오류 처리를 제공하는 공급자의 속성. */
+interface IFQueryProviderProps extends PropsWithChildren, LanguageType {}
 
 const reportWebError = createErrorReporter({ capture: captureException });
 
-export default function QueryProvider({ children }: QueryProviderProps) {
+bridge.setFailureReporter((failure) => {
+	addBreadcrumb({
+		category: "extension.bridge",
+		level: "warning",
+		data: failure,
+	});
+});
+
+/** 웹의 서버 상태와 오류 보고를 제공한다. */
+const QueryProvider = ({ children }: IFQueryProviderProps) => {
 	const [queryClient] = useState(
 		() =>
 			new QueryClient({
@@ -65,7 +75,7 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 					},
 				}),
 				mutationCache: new MutationCache({
-					onSuccess: async (data, _variables, _context, mutation) => {
+					onSuccess: (data, _variables, _context, mutation) => {
 						const resultError = getResultError(data);
 
 						if (resultError) {
@@ -80,7 +90,7 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 							});
 						}
 
-						await bridge.request.REFETCH_THE_MEMO_LIST_FROM_WEB();
+						void notifyExtensionOfMemoChange();
 					},
 					onError: (error, _variables, _context, mutation) => {
 						if (isAbortError(error)) {
@@ -108,4 +118,15 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 			{/* <ReactQueryDevtools initialIsOpen={false} /> */}
 		</QueryClientProvider>
 	);
-}
+};
+
+export default QueryProvider;
+
+/** 선택적 확장 알림은 저장 결과나 완료 시점을 바꾸지 않는다. */
+const notifyExtensionOfMemoChange = async () => {
+	try {
+		await bridge.request.REFETCH_THE_MEMO_LIST_FROM_WEB();
+	} catch {
+		/** 최종 실패 breadcrumb는 브리지에서 기록한다. */
+	}
+};

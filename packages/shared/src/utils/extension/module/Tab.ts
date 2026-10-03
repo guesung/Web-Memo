@@ -2,7 +2,9 @@ import type {
 	BRIDGE_MESSAGE_TYPE,
 	BridgeRequest,
 } from "../../../modules/extension-bridge";
+import { BridgeError } from "../../../modules/extension-bridge/bridgeError";
 
+/** 활성 탭 조회와 탭 메시지 전송. */
 export class Tab {
 	static async get() {
 		// 사이드 패널은 창마다 별도 인스턴스로 동작한다. lastFocusedWindow를 쓰면
@@ -20,18 +22,29 @@ export class Tab {
 		payload?: TPayload,
 	) {
 		const tab = await Tab.get();
-		if (!tab.id) throw new Error("Tab not found");
+		if (tab?.id === undefined) {
+			throw new BridgeError("NoReceiver");
+		}
 
-		const message = await chrome.tabs.sendMessage<
-			BridgeRequest<TPayload>,
-			TResponse
-		>(tab.id, {
+		return Tab.sendMessageToTab<TPayload, TResponse>({
+			tabId: tab.id,
 			type,
 			payload,
 		});
+	}
 
-		if (!message) throw new Error("Message not found");
-		return message;
+	static sendMessageToTab<TPayload, TResponse>(options: {
+		tabId: number;
+		type: BRIDGE_MESSAGE_TYPE;
+		payload?: TPayload;
+	}): Promise<TResponse> {
+		return chrome.tabs.sendMessage<BridgeRequest<TPayload>, TResponse>(
+			options.tabId,
+			{
+				type: options.type,
+				payload: options.payload,
+			},
+		);
 	}
 
 	static async create(props: chrome.tabs.CreateProperties) {

@@ -1,5 +1,6 @@
 import { MutationObserver, QueryClient } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { QUERY_KEY } from "../../../constants";
 import useMemoUpsertMutation from "./useMemoUpsertMutation";
 
 const { getQueryClient, getMemoById, getMemoByUrl, updateMemo, insertMemo } =
@@ -109,5 +110,22 @@ describe("메모 upsert 저장 중 Supabase 오류", () => {
 		await expect(
 			mutate({ url: "https://example.com", data: {} }),
 		).rejects.toThrow("생성 실패");
+	});
+
+	it("저장에 성공하면 블로그 정주행 완료 캐시도 무효화한다", async () => {
+		const blogPageKey = QUERY_KEY.blogReadingPage("user-1", {
+			blogId: null,
+			sort: "oldest",
+		});
+		const blogSummaryKey = QUERY_KEY.blogReadingSummary("user-1");
+		queryClient.setQueryData(blogPageKey, { pages: [], pageParams: [] });
+		queryClient.setQueryData(blogSummaryKey, { sources: [] });
+		getMemoByUrl.mockResolvedValueOnce({ data: [], error: null });
+		insertMemo.mockResolvedValueOnce({ data: [{ id: 1 }], error: null });
+
+		await mutate({ url: "https://toss.tech/article/x", data: {} });
+
+		expect(queryClient.getQueryState(blogPageKey)?.isInvalidated).toBe(true);
+		expect(queryClient.getQueryState(blogSummaryKey)?.isInvalidated).toBe(true);
 	});
 });

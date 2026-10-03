@@ -1,0 +1,37 @@
+{
+	"description": "블로그 정주행 정규화 계약. SQL(memo.blog_page_key, memo.blog_medium_post_id, memo.has_blog_memo_text)과 JS(getPageKey, String.prototype.trim)가 같은 입력에서 같은 답을 내야 한다. SQL은 blogReading.test.sql이, JS는 .github/scripts/blog-reading/blogReadingContract.test.ts가 이 파일을 읽는다.",
+	"pageKey": [
+		{ "url": "https://toss.tech/article/toss-frontend-chapter", "expected": "https://toss.tech/article/toss-frontend-chapter" },
+		{ "url": "https://toss.tech/article/toss-frontend-chapter#comments", "expected": "https://toss.tech/article/toss-frontend-chapter" },
+		{ "url": "https://TOSS.tech:443/article/x?utm_source=a&ref=1&fbclid=z", "expected": "https://toss.tech/article/x?ref=1" },
+		{ "url": "https://toss.tech", "expected": "https://toss.tech/" },
+		{ "url": "http://toss.tech:80/a", "expected": "http://toss.tech/a" },
+		{ "url": "https://toss.tech:8443/a", "expected": "https://toss.tech:8443/a" },
+		{ "url": "https://toss.tech/article/x?", "expected": "https://toss.tech/article/x" },
+		{ "url": "https://toss.tech/article/x?a=1&&b", "expected": "https://toss.tech/article/x?a=1&&b" },
+		{ "url": "https://toss.tech/article/x?UTM_MEDIUM=x&a=b&GCLID=1&msclkid=2", "expected": "https://toss.tech/article/x?a=b" },
+		{ "url": "https://toss.tech/article/x?utm_source=a", "expected": "https://toss.tech/article/x" },
+		{ "url": "https://medium.com/daangn/%EA%B3%B5-aea44d0b7b7?source=rss-4505f82a2dbd------2", "expected": "https://medium.com/daangn/%EA%B3%B5-aea44d0b7b7?source=rss-4505f82a2dbd------2" },
+		{ "url": "https://medium.com/daangn/%EA%B3%B5-aea44d0b7b7?utm_campaign=x#top", "expected": "https://medium.com/daangn/%EA%B3%B5-aea44d0b7b7" }
+	],
+	"mediumPostId": [
+		{ "url": "https://medium.com/daangn/%EA%B3%B5-aea44d0b7b7", "expected": "aea44d0b7b7" },
+		{ "url": "https://medium.com/daangn/slug-3fa344b4391b?source=rss-4505f82a2dbd------2", "expected": "3fa344b4391b" },
+		{ "url": "https://medium.com/p/3fa344b4391b", "expected": "3fa344b4391b" },
+		{ "url": "https://medium.com/daangn/3fa344b4391b", "expected": "3fa344b4391b" },
+		{ "url": "https://daangn.medium.com/slug-3fa344b4391b", "expected": "3fa344b4391b" },
+		{ "url": "https://toss.tech/article/slug-3fa344b4391b", "expected": null },
+		{ "url": "https://medium.com/daangn/no-id-here", "expected": null },
+		{ "url": "https://medium.com/daangn/slug-3fa344b4391b/comments", "expected": null }
+	],
+	"memoText": [
+		{ "text": "", "hasContent": false },
+		{ "text": null, "hasContent": false },
+		{ "text": "   \n\t  ", "hasContent": false },
+		{ "text": " 　﻿   ", "hasContent": false },
+		{ "text": "a", "hasContent": true },
+		{ "text": "  메모  ", "hasContent": true },
+		{ "text": "​", "hasContent": true },
+		{ "text": "\u0085", "hasContent": true }
+	]
+}

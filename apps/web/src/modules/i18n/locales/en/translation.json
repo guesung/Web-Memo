@@ -39,7 +39,8 @@
 		"deleteConfirmTitle": "Delete category?",
 		"deleteConfirmDescription": "Memos in this category will become uncategorized.",
 		"cancel": "Cancel",
-		"trash": "Trash"
+		"trash": "Trash",
+		"blogReading": "Blog Reading"
 	},
 	"header": {
 		"login": "Sign in",
@@ -1685,5 +1686,108 @@
 			"description": "Thank you for using Web Memo"
 		},
 		"error": "We couldn't send it just now. Please try again in a moment"
+	},
+	"blogs": {
+		"title": "Blog Reading",
+		"description": "Read public posts from the beginning and leave memos.",
+		"selectBlogs": "Choose blogs",
+		"filterLabel": "Choose blog",
+		"filterAll": "All",
+		"sortLabel": "Sort",
+		"sortAriaLabel": "Sort posts",
+		"sortOldest": "Oldest first",
+		"sortNewest": "Newest first",
+		"summaryComplete": "{{total}} posts · {{todo}} to memo · {{done}} memoed",
+		"summaryCollecting": "{{total}} posts collected so far · {{done}} memoed",
+		"allMemoed": "You have left memos on every post collected so far",
+		"lastUpdated": "Last updated: {{time}}",
+		"refresh": "Refresh",
+		"status": {
+			"label": "Collection status by blog",
+			"completeTitle": "{{name}} · All posts collected",
+			"completeCopy": "Collected {{total}} public posts in total.",
+			"waitingTitle": "{{name}} · Getting ready to collect",
+			"collectingTitle": "{{name}} · Collecting earlier posts",
+			"partialTitle": "{{name}} · Some posts could not be fetched",
+			"queuedTitle": "{{name}} · Resume requested",
+			"refreshingTitle": "{{name}} · Checking for new posts",
+			"refreshFailedTitle": "{{name}} · Could not check for new posts",
+			"foundCopy": "Found {{count}} so far. The total is still being confirmed.",
+			"readNow": "You can read and memo the posts collected first.",
+			"queuedCopy": "Collection continues in the next scheduled run. Requests are checked every 15 minutes, and it may take longer depending on the run.",
+			"refreshFailedCopy": "You can keep reading the posts collected earlier.",
+			"resume": "Resume collecting",
+			"retry": "Retry"
+		},
+		"sync": {
+			"queued": "Requested to resume collecting",
+			"running": "Already collecting",
+			"throttled": "You can request again shortly",
+			"throttledAt": "You can request again after {{time}}",
+			"failed": "Could not request collecting"
+		},
+		"list": {
+			"label": "Blog posts",
+			"completed": "Memoed",
+			"notYet": "No memo yet",
+			"openArticle": "Original",
+			"openArticleLabel": "Open original: {{title}}",
+			"writeMemo": "Write memo",
+			"writeMemoLabel": "Write memo for {{title}}",
+			"viewMemo": "View memo",
+			"viewMemoLabel": "View memo for {{title}}",
+			"memoCreateFailed": "Could not open the memo. Please try again shortly.",
+			"hint": "Saving a memo, impression, or action item checks the post."
+		},
+		"pagination": {
+			"label": "Post list pages",
+			"range": "Posts {{from}}–{{to}}",
+			"rangeWithTotal": "{{from}}–{{to}} of {{total}}",
+			"prev": "Previous",
+			"next": "Next",
+			"page": "Page {{page}}",
+			"pageWithTotal": "Page {{page}} of {{pages}}",
+			"partialEnd": "More earlier posts are being collected. This is the last page so far."
+		},
+		"newArticles": {
+			"message": "{{count}} new posts fetched",
+			"refresh": "Update list"
+		},
+		"empty": {
+			"title": "You have not subscribed to any blog yet",
+			"description": "Pick a blog you want to read."
+		},
+		"login": {
+			"title": "Log in to keep reading",
+			"description": "See the same checklist in the app and on the web.",
+			"action": "Log in"
+		},
+		"loading": {
+			"title": "Loading posts"
+		},
+		"noArticles": {
+			"title": "No posts collected yet",
+			"description": "Posts will appear here once collecting starts. Your subscription stays."
+		},
+		"firstError": {
+			"title": "Could not load the post list",
+			"description": "Your subscription is saved. Please try again shortly.",
+			"retry": "Try again"
+		},
+		"refreshError": {
+			"message": "Could not check for new posts.",
+			"description": "You can keep reading the posts collected earlier.",
+			"retry": "Retry"
+		},
+		"offline": "You are offline. Showing posts loaded earlier.",
+		"dialog": {
+			"title": "Choose blogs",
+			"description": "Collect the public posts of Toss and Daangn to read through.",
+			"subscribe": "Subscribe",
+			"unsubscribe": "Unsubscribe",
+			"keepMemos": "Your memos stay even if you unsubscribe.",
+			"close": "Close",
+			"failed": "Could not change your subscription"
+		}
 	}
 }

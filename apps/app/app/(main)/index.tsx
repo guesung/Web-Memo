@@ -20,6 +20,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useScrollPositions } from "@/lib/hooks/useScrollPositions";
 import { useSettingQuery } from "@/lib/hooks/useSetting";
 import { useTabBarHideOnScroll } from "@/lib/hooks/useTabBarHideOnScroll";
+import { BlogReadingEntryCard } from "./_components/BlogReadingEntryCard";
 import { MemoCard, type MemoItem } from "./_components/MemoCard";
 import { MemoDetailModal } from "./_components/MemoDetailModal";
 import { TodayArticles } from "./_components/TodayArticles";
@@ -161,6 +162,8 @@ export default function MemoScreen() {
 				{isLoggedIn && !isWebNoticeDismissed ? (
 					<WebNoticeBanner onDismiss={handleWebNoticeDismiss} />
 				) : null}
+
+				<BlogReadingEntryCard />
 
 				<View className="flex-row px-5 mb-4 gap-2">
 					<TouchableOpacity

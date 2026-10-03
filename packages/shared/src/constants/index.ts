@@ -1,4 +1,6 @@
 export * from "./Analytics";
+/** 블로그 정주행 지원 블로그 목록과 페이지 크기 */
+export * from "./blogCatalog";
 export * from "./Category";
 export * from "./ChromeExtension";
 export * from "./ExternalLink";

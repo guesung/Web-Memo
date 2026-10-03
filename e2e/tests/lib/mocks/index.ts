@@ -1,3 +1,4 @@
+export * from "./blogReadingRoutes";
 export * from "./mockData";
 export * from "./openai";
 export * from "./supabaseGuard";

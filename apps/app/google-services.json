@@ -1,0 +1,129 @@
+{
+  "project_info": {
+    "project_number": "541718063018",
+    "project_id": "page-memos",
+    "storage_bucket": "page-memos.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:541718063018:android:ad141e171fbbb6933fedd3",
+        "android_client_info": {
+          "package_name": "com.guesung.soom"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "541718063018-8c8vcgrfvm949cnq1br2mh7i95fvtc1f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9SszmDhowJ-I_qgpkkdsZh5SAQb-JkTQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "541718063018-8c8vcgrfvm949cnq1br2mh7i95fvtc1f.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "541718063018-h672i93efg8mmnknsril75ajc1dlu1to.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.webmemo.app",
+                "app_store_id": "6759237784"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:541718063018:android:3d57e438b904f0a13fedd3",
+        "android_client_info": {
+          "package_name": "com.guesung.voicememo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "541718063018-8c8vcgrfvm949cnq1br2mh7i95fvtc1f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9SszmDhowJ-I_qgpkkdsZh5SAQb-JkTQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "541718063018-8c8vcgrfvm949cnq1br2mh7i95fvtc1f.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "541718063018-h672i93efg8mmnknsril75ajc1dlu1to.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.webmemo.app",
+                "app_store_id": "6759237784"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:541718063018:android:ea2c32cbb48148403fedd3",
+        "android_client_info": {
+          "package_name": "com.webmemo.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "541718063018-bbjpc89dndopujkmr26cjifajr5jp20u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.webmemo.app",
+            "certificate_hash": "049c3415712647fc11293369933d3b33b01327cd"
+          }
+        },
+        {
+          "client_id": "541718063018-8c8vcgrfvm949cnq1br2mh7i95fvtc1f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9SszmDhowJ-I_qgpkkdsZh5SAQb-JkTQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "541718063018-8c8vcgrfvm949cnq1br2mh7i95fvtc1f.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "541718063018-h672i93efg8mmnknsril75ajc1dlu1to.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.webmemo.app",
+                "app_store_id": "6759237784"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

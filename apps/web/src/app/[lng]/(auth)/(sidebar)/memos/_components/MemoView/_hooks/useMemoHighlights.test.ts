@@ -68,11 +68,16 @@ describe("메모 하이라이트 조회 훅", () => {
 			"https://a.com",
 			"https://a.com/",
 		]);
+		const queryError = {
+			message: "조회 실패",
+			code: "PGRST301",
+			hint: "",
+		};
 		mocks.getHighlights.mockResolvedValue({
 			data: null,
-			error: { message: "조회 실패" },
+			error: queryError,
 		});
-		await expect(options.queryFn()).rejects.toThrow("조회 실패");
+		await expect(options.queryFn()).rejects.toBe(queryError);
 		await act(async () => root.unmount());
 	});
 	it("빈 URL 목록은 조회하지 않는다", async () => {

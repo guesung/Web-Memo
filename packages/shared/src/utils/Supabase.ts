@@ -18,6 +18,17 @@ export {
 } from "./supabase/adminService";
 /** AuthService 도메인 서비스의 기존 공개 경로를 유지한다. */
 export { AuthService } from "./supabase/authService";
+/** 블로그 정주행 RPC 서비스 함수와 오류 계약을 제공한다. */
+export {
+	BlogReadingError,
+	getBlogReadingPage,
+	getBlogReadingSummary,
+	type IFGetBlogReadingPageParams,
+	requestBlogSync,
+	setBlogSubscription,
+	type TBlogReadingErrorCode,
+	toBlogReadingError,
+} from "./supabase/blogReadingService";
 /** CategoryService 도메인 서비스의 기존 공개 경로를 유지한다. */
 export { CategoryService } from "./supabase/categoryService";
 /** 즐겨찾기 서비스와 입력 계약을 제공한다. */

@@ -6,6 +6,7 @@ export interface IFMemoPanelDraft {
 	actionItem: string;
 	pendingLocalId: string | null;
 	pendingSaveMode: "existing" | "separate" | null;
+	pendingTargetId?: number | null;
 }
 
 /** 메모 저장 성공 후 현재 방문과 새 입력을 처리하는 값. */

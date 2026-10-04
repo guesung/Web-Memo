@@ -15,7 +15,7 @@ export const useMemoHighlights = (urls: string[]) => {
 				supabaseClient,
 			).getHighlightsByUrls(uniqueUrls);
 			if (error) {
-				throw new Error(error.message);
+				throw error;
 			}
 
 			return highlights ?? [];

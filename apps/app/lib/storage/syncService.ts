@@ -3,6 +3,7 @@ import { MemoService } from "@web-memo/shared/utils/services";
 import { getPageKey } from "@web-memo/shared/utils/url";
 import { supabase } from "@/lib/supabase/client";
 import { clearSyncedMemos, getUnsyncedMemos, markAsSynced } from "./localMemo";
+import { resolvePendingMemoSource } from "./resolvePendingMemoSource";
 
 const PENDING_MEMO_SYNCS_KEY = "webmemo:pendingMemoSyncs";
 const memoService = new MemoService(supabase);
@@ -26,14 +27,7 @@ const savePendingMemoSyncs = async (pending: IFPendingMemoSync[]) => {
 };
 
 /** 명시적으로 저장한 로컬 초안을 동기화 대기 목록에서 제거한다. */
-export const resolvePendingMemoSync = async (localId: string) => {
-	await markAsSynced([localId]);
-	await clearSyncedMemos();
-	const pending = await getPendingMemoSyncs();
-	await savePendingMemoSyncs(
-		pending.filter((item) => item.localId !== localId),
-	);
-};
+export const resolvePendingMemoSync = resolvePendingMemoSource;
 
 /** 충돌한 초안을 삭제하지 않고 사용자 선택 전까지 동기화 대상에서 보존한다. */
 export async function syncMemosToSupabase(): Promise<{

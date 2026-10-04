@@ -191,6 +191,17 @@
 | `user_id` | `uuid` |
 | `memo_id` | `bigint` |
 | `sent_at` | `timestamp with time zone` |
+| `notifyTime` | `time without time zone` |
+
+#### 테이블 `memo.notification_schedule`
+
+| 컬럼 | 타입 |
+| --- | --- |
+| `id` | `bigint` |
+| `user_id` | `uuid` |
+| `notifyTime` | `time without time zone` |
+| `isEnabled` | `boolean` |
+| `created_at` | `timestamp with time zone` |
 
 #### 테이블 `memo.notification_setting`
 
@@ -238,13 +249,14 @@
 | `show_action_item` | `boolean` |
 | `truncate_memo_content` | `boolean` |
 
-#### DB 함수 (17개)
+#### DB 함수 (18개)
 
 | 함수 | 반환 타입 |
 | --- | --- |
 | `create_default_categories()` | `trigger` |
 | `create_default_memos()` | `trigger` |
 | `create_default_user_data()` | `trigger` |
+| `enforce_notification_schedule_limit()` | `trigger` |
 | `get_active_users_stats(include_admin boolean)` | `json` |
 | `get_admin_feedback(feedback_id bigint)` | `json` |
 | `get_admin_feedbacks(search_query text, page_offset integer, page_limit integer)` | `json` |
@@ -1099,7 +1111,7 @@ Supabase가 만들고 관리하는 스키마입니다. 플랫폼 업데이트로
 
 | 함수 | 배포 버전 |
 | --- | --- |
-| `daily-article-reminder` | 6 |
+| `daily-article-reminder` | 7 |
 | `get-categories-with-count` | 11 |
 | `kakao-auth` | 7 |
 | `send-feedback` | 5 |

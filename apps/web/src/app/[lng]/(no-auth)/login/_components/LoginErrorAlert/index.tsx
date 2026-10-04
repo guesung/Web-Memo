@@ -1,5 +1,5 @@
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { Alert, AlertDescription } from "@web-memo/ui";
 import { CircleAlert } from "lucide-react";
 
@@ -10,7 +10,7 @@ import { CircleAlert } from "lucide-react";
  * 노출하지 않고 다시 시도하라는 한 줄만 남깁니다.
  */
 export default async function LoginErrorAlert({ lng }: IFLoginErrorAlertProps) {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	return (
 		<Alert variant="destructive">

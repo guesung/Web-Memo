@@ -1,9 +1,12 @@
+import { useIsFocused } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { Heart } from "lucide-react-native";
 import { useCallback, useEffect, useRef } from "react";
 import { KeyboardAvoidingView, Platform, Text, View } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
 import { WebView } from "react-native-webview";
+import { flushMemoAutoSaveSessions } from "@/lib/memoAutoSaveSession";
 import { AISheet } from "./_components/AISheet";
 import { BrowserHeader } from "./_components/BrowserHeader";
 import { DraggableFab } from "./_components/DraggableFab";
@@ -21,6 +24,7 @@ import {
 import { INJECTED_JS_ON_LOAD } from "./_utils/webViewScripts";
 
 export default function BrowserScreen() {
+	const router = useRouter();
 	/**
 	 * useBrowserState()가 반환하는 webViewRef가 있어야 useWebViewHighlights를 호출할 수
 	 * 있는데, useBrowserState() 호출에는 highlights.handleHighlightMessage가 필요해
@@ -41,6 +45,7 @@ export default function BrowserScreen() {
 		insets,
 		webViewRef,
 		currentUrl,
+		isFromBlogReading,
 		selectedMemoId,
 		setSelectedMemoId,
 		urlInput,
@@ -94,7 +99,15 @@ export default function BrowserScreen() {
 		isAILoading,
 		aiError,
 		askAIQuestion,
-	} = useBrowserState({ onHighlightMessage: forwardHighlightMessage });
+	} = useBrowserState({
+		onHighlightMessage: forwardHighlightMessage,
+		onBeforeMemoLeave: flushMemoAutoSaveSessions,
+	});
+	const isFocused = useIsFocused();
+	useEffect(() => {
+		if (!isFocused) flushMemoAutoSaveSessions();
+		return () => flushMemoAutoSaveSessions();
+	}, [isFocused]);
 
 	const highlights = useWebViewHighlights({ webViewRef });
 
@@ -168,6 +181,9 @@ export default function BrowserScreen() {
 				onOpenBlogSheet={() => setIsBlogSheetOpen(true)}
 				onOpenActions={() => setIsActionsSheetOpen(true)}
 				onOpenTabSheet={() => setIsTabSheetOpen(true)}
+				onReturnToBlogReading={
+					isFromBlogReading ? () => router.navigate("/blog-reading") : undefined
+				}
 			/>
 
 			<View
@@ -204,6 +220,7 @@ export default function BrowserScreen() {
 						</Animated.View>
 					</GestureDetector>
 					<MemoPanel
+						activeTabId={activeTabId}
 						url={currentUrl}
 						selectedMemoId={selectedMemoId}
 						onSelectedMemoIdChange={setSelectedMemoId}

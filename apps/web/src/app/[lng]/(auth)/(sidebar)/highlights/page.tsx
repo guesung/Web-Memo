@@ -2,7 +2,12 @@
 
 import type { LanguageParams } from "@src/modules/i18n";
 import { Suspense } from "react";
+import { getSidebarPageMetadata } from "../_utils";
 import { HighlightListSkeleton, HighlightView } from "./_components";
+
+export async function generateMetadata({ params }: LanguageParams) {
+	return getSidebarPageMetadata({ params, labelKey: "sideBar.highlight" });
+}
 
 export default async function HighlightsPage({ params }: LanguageParams) {
 	const { lng } = await params;

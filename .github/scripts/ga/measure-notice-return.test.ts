@@ -72,6 +72,7 @@ describe("measureNoticeReturn", () => {
 		const report = await measureNoticeReturn({ ...auth, mode: "historical", from: "2026-09-30", to: "2026-10-01" }, now);
 		expect(report.label).toContain("D0 포함");
 		expect(report.label).toContain("재방문율·인과 효과 아님");
+		expect(report.observationWindowComplete).toBe(true);
 		expect(report.panel.followupUsers).toBe(4);
 		expect(report.memo.followupUsers).toBe(2);
 		for (const [call] of runFunnelReport.mock.calls) {
@@ -83,6 +84,14 @@ describe("measureNoticeReturn", () => {
 				} },
 			});
 		}
+	});
+
+	it("과거 퍼널 관찰 창이 끝나지 않았으면 잠정값으로 표시한다", async () => {
+		runFunnelReport.mockResolvedValueOnce(funnelReport(7, 4, "side_panel_open", "notice_view"))
+			.mockResolvedValueOnce(funnelReport(7, 2, "memo_action", "notice_view"));
+		const report = await measureNoticeReturn({ ...auth, mode: "historical", from: "2026-09-30", to: "2026-10-01" }, new Date("2026-10-04T06:52:00Z"));
+		expect(report.observationWindowComplete).toBe(false);
+		expect(report.limitations).toContain("168시간 관찰과 GA 처리 48시간이 끝나지 않아 잠정값입니다");
 	});
 
 	it("GA 임곗값, 분모 0, 다른 ID는 효과 미확인으로 둔다", async () => {

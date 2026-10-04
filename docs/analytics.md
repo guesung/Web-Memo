@@ -130,8 +130,10 @@ online·retry_click·enqueue)로 셉니다. enqueue는 온라인 상태에서 �
 `totalUsers`로 고유 사용자를 셉니다. 이 이벤트는 패널 안에서 생기므로 공지가 패널 밖의
 사용자를 다시 불렀다는 증거가 아닙니다.
 
-공지별 조회에는 이벤트 범위 커스텀 차원 `notice_id`가 필요합니다. **2026-10-04 기준
-등록된 22개 목록에는 없습니다.** 등록 날짜와 GA4 처리 24~48시간을 확인하고,
+공지별 조회에는 이벤트 범위 커스텀 차원 `notice_id`가 필요합니다. **2026-10-04
+15:51 KST에 GA4 속성 471860782에 등록하고 재조회로 확인했습니다**
+(`properties/471860782/customDimensions/16038714798`, [실행 기록](https://github.com/guesung/Web-Memo/actions/runs/37184037854)).
+GA4 처리 24~48시간을 확인하고,
 그 뒤 계측이 배포된 상태에서 처음 시작한 공지만 완결된 관찰 대상으로 삼습니다.
 기존 하이라이트 공지는 마이그레이션상 2026-11-01까지 활성이고, 더 최근 공지가 끝나면
 다시 보일 수 있습니다. 운영 실험에서는 활성 공지 기간을 겹치지 않게 관리합니다.
@@ -148,6 +150,11 @@ GA 임곗값·샘플링이 있으면 결과를 `효과 미확인`으로 읽습�
 
 과거 `notice_view → side_panel_open` 168시간 퍼널에는 D0가 포함됩니다. 공지별 첫 노출
 코호트를 소급 복원할 수 없으므로 `재방문율`이나 `공지 효과`로 표기하지 않습니다.
+2026-10-04 15:52 KST의 [실제 조회](https://github.com/guesung/Web-Memo/actions/runs/37184062182)는
+9/30~10/1 노출자 17명 중 168시간 이내 후속 `side_panel_open` 12명,
+메모 행동 2명을 반환했습니다. **168시간 창과 GA 처리 시간이 끝나지 않은 잠정값**이고
+하이라이트 출시가 겹쳤으므로 효과는 미확인입니다. 같은 기간의 최종 탐색값은
+2026-10-11 00:00 KST 이후 다시 조회합니다.
 
 ## 지표를 읽을 때 주의할 것
 
@@ -252,6 +259,9 @@ node .github/scripts/ga/measure-feature-usage.mjs --from 2026-09-11 --to 2026-09
 공지 조회는 같은 `GA4_PROPERTY_ID`·`GA4_SERVICE_ACCOUNT_JSON`을 읽습니다. 날짜는
 GA4 속성의 Asia/Seoul 기준입니다. 과거 모드의 `--from`·`--to`는 **첫 노출 코호트가
 아니라** 탐색할 이벤트 시작 구간입니다.
+로컬 인증이 없으면 `report-ga-daily.yml`의 수동 실행에서 `notice_task=historical`로
+9/30~10/1 과거 퍼널을 다시 조회하거나 `notice_task=register-dimension`으로 차원
+등록 여부를 확인할 수 있습니다. 수동 작업은 일일 Slack 리포트를 보내지 않습니다.
 
 ```bash
 node .github/scripts/ga/measure-notice-return.mjs \

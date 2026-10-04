@@ -149,11 +149,19 @@ export async function measureNoticeReturn({ mode, from, to, noticeId, dimensionR
 	const accessToken = await exchangeServiceAccountToken({ serviceAccount: JSON.parse(serviceAccountJson), scope: GA4_SCOPE });
 	const firstPeriod = { start: from, end: to };
 	if (mode === "historical") {
+		const readyAt = new Date(`${shiftDate(to, 8)}T00:00:00+09:00`).getTime() + 2 * DAY_MS;
 		const [panel, memo] = await Promise.all([
 			fetchFunnel({ accessToken, propertyId, firstPeriod, firstName: "notice_view", firstEvents: ["notice_view"], secondName: "side_panel_open", secondEvents: ["side_panel_open"], seconds: 604800 }),
 			fetchFunnel({ accessToken, propertyId, firstPeriod, firstName: "notice_view", firstEvents: ["notice_view"], secondName: "memo_action", secondEvents: MEMO_EVENTS, seconds: 604800 }),
 		]);
-		return { mode, status: "효과 미확인", label: "공지 노출 후 168시간 이내 후속 행동 (D0 포함, 재방문율·인과 효과 아님)", period: firstPeriod, panel, memo };
+		return {
+			mode, status: "효과 미확인",
+			label: "공지 노출 후 168시간 이내 후속 행동 (D0 포함, 재방문율·인과 효과 아님)",
+			period: firstPeriod,
+			observationWindowComplete: now.getTime() >= readyAt,
+			limitations: now.getTime() < readyAt ? ["168시간 관찰과 GA 처리 48시간이 끝나지 않아 잠정값입니다"] : [],
+			panel, memo,
+		};
 	}
 	const returnPeriod = { start: shiftDate(from, 1), end: shiftDate(to, 7) };
 	const [views, returns, memo] = await Promise.all([

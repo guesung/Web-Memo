@@ -550,7 +550,10 @@
 		"note": {
 			"label": "Highlight note",
 			"placeholder": "Add a note"
-		}
+		},
+		"noResultHint": "Try another search term or color.",
+		"clearFilters": "Clear filters",
+		"loadingMore": "Loading..."
 	},
 	"introduce": {
 		"navigation": {

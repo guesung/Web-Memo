@@ -545,7 +545,10 @@
 		"note": {
 			"label": "하이라이트 메모",
 			"placeholder": "메모 추가"
-		}
+		},
+		"noResultHint": "검색어나 색상 필터를 바꿔보세요.",
+		"clearFilters": "필터 초기화",
+		"loadingMore": "불러오는 중..."
 	},
 	"introduce": {
 		"navigation": {

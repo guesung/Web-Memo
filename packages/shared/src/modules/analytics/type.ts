@@ -171,6 +171,10 @@ export type TAnalyticsEvent =
 	  }
 	| { name: "highlight_bubble_disable"; params: { scope: "site" | "all" } }
 	| { name: "notice_view"; params: { notice_id: number } }
+	| {
+			name: "notice_return";
+			params: { notice_id: number; days_since_view: number };
+	  }
 	| { name: "notice_dismiss"; params: { notice_id: number } }
 	| {
 			name: "past_memo_show";
@@ -179,6 +183,10 @@ export type TAnalyticsEvent =
 	| {
 			name: "past_memo_open";
 			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
+	  }
+	| {
+			name: "past_memo_expand";
+			params: { kind: "related"; source: "jev" };
 	  }
 	| {
 			name: "past_memo_dismiss";
@@ -293,9 +301,11 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	highlight_create: "core_action",
 	highlight_bubble_disable: "engagement",
 	notice_view: "engagement",
+	notice_return: "engagement",
 	notice_dismiss: "engagement",
 	past_memo_show: "engagement",
 	past_memo_open: "core_action",
+	past_memo_expand: "engagement",
 	past_memo_dismiss: "engagement",
 	memo_offline_queued: "engagement",
 	memo_offline_sync_result: "engagement",

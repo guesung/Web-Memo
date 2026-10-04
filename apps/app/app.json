@@ -35,6 +35,7 @@
 			},
 			"softwareKeyboardLayoutMode": "resize",
 			"package": "com.webmemo.app",
+			"googleServicesFile": "./google-services.json",
 			"intentFilters": [
 				{
 					"action": "VIEW",
@@ -76,6 +77,13 @@
 				{
 					"kakaoAppKey": "e70ae71f1cdc768383ad96ab45dc1dd7",
 					"kotlinVersion": "2.0.21"
+				}
+			],
+			[
+				"expo-notifications",
+				{
+					"icon": "./assets/icon.png",
+					"color": "#5b93f0"
 				}
 			],
 			"expo-apple-authentication",

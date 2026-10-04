@@ -264,6 +264,86 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			notification_log: {
+				Row: {
+					id: number;
+					memo_id: number;
+					notifyTime: string | null;
+					sent_at: string;
+					user_id: string;
+				};
+				Insert: {
+					id?: number;
+					memo_id: number;
+					notifyTime?: string | null;
+					sent_at?: string;
+					user_id: string;
+				};
+				Update: {
+					id?: number;
+					memo_id?: number;
+					notifyTime?: string | null;
+					sent_at?: string;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "notification_log_memo_id_fkey";
+						columns: ["memo_id"];
+						isOneToOne: false;
+						referencedRelation: "memo";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			notification_schedule: {
+				Row: {
+					created_at: string;
+					id: number;
+					isEnabled: boolean;
+					notifyTime: string;
+					user_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					id?: number;
+					isEnabled?: boolean;
+					notifyTime: string;
+					user_id: string;
+				};
+				Update: {
+					created_at?: string;
+					id?: number;
+					isEnabled?: boolean;
+					notifyTime?: string;
+					user_id?: string;
+				};
+				Relationships: [];
+			};
+			notification_setting: {
+				Row: {
+					isEnabled: boolean;
+					notifyTime: string;
+					timezone: string;
+					updated_at: string;
+					user_id: string;
+				};
+				Insert: {
+					isEnabled?: boolean;
+					notifyTime?: string;
+					timezone?: string;
+					updated_at?: string;
+					user_id: string;
+				};
+				Update: {
+					isEnabled?: boolean;
+					notifyTime?: string;
+					timezone?: string;
+					updated_at?: string;
+					user_id?: string;
+				};
+				Relationships: [];
+			};
 			profiles: {
 				Row: {
 					nickname: string | null;
@@ -278,6 +358,30 @@ export type Database = {
 				Update: {
 					nickname?: string | null;
 					share_mode?: string | null;
+					user_id?: string;
+				};
+				Relationships: [];
+			};
+			push_token: {
+				Row: {
+					id: number;
+					platform: string;
+					token: string;
+					updated_at: string;
+					user_id: string;
+				};
+				Insert: {
+					id?: number;
+					platform: string;
+					token: string;
+					updated_at?: string;
+					user_id: string;
+				};
+				Update: {
+					id?: number;
+					platform?: string;
+					token?: string;
+					updated_at?: string;
 					user_id?: string;
 				};
 				Relationships: [];

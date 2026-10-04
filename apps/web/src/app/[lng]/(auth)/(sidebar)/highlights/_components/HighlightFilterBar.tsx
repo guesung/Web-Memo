@@ -7,34 +7,27 @@ import {
 	HIGHLIGHT_COLORS,
 	type HighlightColor,
 } from "@web-memo/shared/constants";
-import { useDebounce } from "@web-memo/shared/hooks";
 import { cn } from "@web-memo/shared/utils";
 import { Input } from "@web-memo/ui";
 import { Search } from "lucide-react";
-import { useState } from "react";
 
 interface HighlightFilterBarProps {
 	lng: Language;
+	searchInput: string;
 	selectedColor?: HighlightColor;
-	onSearchQueryChange: (searchQuery: string) => void;
+	onSearchInputChange: (value: string) => void;
 	onColorChange: (color?: HighlightColor) => void;
 }
 
-/** 하이라이트 목록 상단의 검색창과 색상 칩. 검색어는 디바운스해서 올린다 */
+/** 하이라이트 목록 상단의 검색창과 색상 칩. */
 export function HighlightFilterBar({
 	lng,
+	searchInput,
 	selectedColor,
-	onSearchQueryChange,
+	onSearchInputChange,
 	onColorChange,
 }: HighlightFilterBarProps) {
 	const { t } = useTranslation(lng);
-	const [searchInput, setSearchInput] = useState("");
-	const { debounce } = useDebounce();
-
-	const handleSearchInputChange = (value: string) => {
-		setSearchInput(value);
-		debounce(() => onSearchQueryChange(value.trim()));
-	};
 
 	return (
 		<div className="flex flex-col gap-3">
@@ -42,7 +35,7 @@ export function HighlightFilterBar({
 				<Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 				<Input
 					value={searchInput}
-					onChange={(event) => handleSearchInputChange(event.target.value)}
+					onChange={(event) => onSearchInputChange(event.target.value)}
 					placeholder={t("highlight.search.placeholder")}
 					aria-label={t("highlight.search.placeholder")}
 					className="h-11 rounded-xl pl-9"

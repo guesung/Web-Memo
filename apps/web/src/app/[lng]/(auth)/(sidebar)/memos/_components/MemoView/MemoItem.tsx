@@ -19,7 +19,6 @@ import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
 import type { SearchFormValues } from "../MemoSearchFormProvider";
 import useIsContentClamped from "./_hooks/useIsContentClamped";
-import { MemoHighlights } from "./MemoHighlights";
 import { holdScrollPosition } from "./scrollPositionHold";
 
 /** 메모 카드 표시와 선택 속성. */
@@ -49,8 +48,8 @@ interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	footer?: ReactNode;
 }
 
-/** 메모 본문과 연결된 하이라이트를 표시한다. */
-const MemoItem = ({
+/** 메모 카드에는 기록 내용을 우선 표시하고 인용문은 상세에서만 보여준다. */
+function MemoItem({
 	lng,
 	memo,
 	highlights,
@@ -65,7 +64,7 @@ const MemoItem = ({
 	badge,
 	footer,
 	...props
-}: IFMemoItemProps) => {
+}: IFMemoItemProps) {
 	const { t } = useTranslation(lng);
 	const searchParams = useSearchParams();
 	// 휴지통에는 검색 폼이 없다. 그때 useFormContext는 null을 준다.
@@ -76,10 +75,8 @@ const MemoItem = ({
 	const isContentTruncated = canTruncate && !isMemoExpanded;
 	const { containerRef, isContentClamped } =
 		useIsContentClamped(isContentTruncated);
-	const hasHiddenHighlights =
-		isContentTruncated && (highlights?.length ?? 0) > 1;
 	const isExpandButtonVisible =
-		canTruncate && (isMemoExpanded || isContentClamped || hasHiddenHighlights);
+		canTruncate && (isMemoExpanded || isContentClamped);
 
 	const handleMouseEnter = () => {
 		setIsMemoHovering(true);
@@ -219,17 +216,6 @@ const MemoItem = ({
 							</p>
 						</CardContent>
 					)}
-					{!isReadOnly && (
-						<MemoHighlights
-							highlights={highlights}
-							label={t("sideBar.highlight")}
-							isPreview={isContentTruncated}
-							className="px-4 py-2"
-							countLabel={t("memoSection.highlightCount", {
-								count: highlights?.length ?? 0,
-							})}
-						/>
-					)}
 					{showImpression && memo.impression?.trim() && (
 						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces [overflow-wrap:anywhere]">
 							<p className="mb-1 text-xs font-semibold text-muted-foreground">
@@ -278,6 +264,11 @@ const MemoItem = ({
 							className="px-4 py-2"
 							memo={memo}
 							lng={lng}
+							highlightCount={
+								!isReadOnly && (highlights?.length ?? 0) > 0
+									? highlights?.length
+									: undefined
+							}
 							isShowingOption={isMemoHovering && !isSelectingMode}
 						/>
 					)}
@@ -286,7 +277,7 @@ const MemoItem = ({
 			</motion.div>
 		</div>
 	);
-};
+}
 
 /** 메모 카드의 불필요한 재렌더링을 방지한다. */
 export default memo(MemoItem);

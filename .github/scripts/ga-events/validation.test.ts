@@ -118,6 +118,19 @@ describe("validateChanges", () => {
 		expect(() => validateChanges({ baseSha: BASE_SHA, candidate: gap })).toThrow("기존 이벤트 정의");
 	});
 
+	it("유니온 끝에 붙여 기존 마지막 줄의 세미콜론만 바뀌어도 통과시킨다", () => {
+		const last = '\t| { name: "shortcut_change_click"; params: { is_success: boolean } }';
+		setOutputs({ [`diff ${TYPE_FILE}`]: `-${last};\n+${last}\n+\t| { name: "memo_share_click"; params: { source: string } };\n+\tmemo_share_click: "engagement",` });
+
+		expect(() => validateChanges({ baseSha: BASE_SHA, candidate: gap })).not.toThrow();
+	});
+
+	it("기존 이벤트 줄의 내용이 바뀌면 끝 구두점이 같아도 거절한다", () => {
+		setOutputs({ [`diff ${TYPE_FILE}`]: `${typeDiff}\n-\t| { name: "memo_open"; params: { a: string } };\n+\t| { name: "memo_open"; params: { b: string } };` });
+
+		expect(() => validateChanges({ baseSha: BASE_SHA, candidate: gap })).toThrow();
+	});
+
 	it("호출 위치가 없으면 거절한다", () => {
 		setOutputs({ [`diff ${SOURCE_FILE}`]: "+\t\tconst isShared = true;" });
 

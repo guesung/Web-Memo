@@ -26,7 +26,7 @@ const MemoList = dynamic(() => import("./MemoList"), {
 	loading: () => <MemoListSkeleton />,
 });
 
-/** 계정 설정을 읽는 Suspense 쿼리라 새로고침 버튼처럼 클라이언트에서만 그린다. */
+/** 브라우저에서 설정을 읽는 토글을 지연 로딩한다. 인증 준비를 위한 Suspense는 유지한다. */
 const MemoTruncateToggle = dynamic(() => import("./MemoTruncateToggle"), {
 	ssr: false,
 	loading: () => <Skeleton className="h-10 w-10" />,
@@ -107,7 +107,6 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 	const totalMemosText = domain
 		? t("memos.domainFilter.totalMemos", { domain, total: totalCount })
 		: t("memos.totalMemos", { total: totalCount });
-
 	return (
 		<div className="flex w-full flex-col gap-4">
 			<div className="flex items-center">
@@ -171,7 +170,12 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 			)}
 			{dialogMemoId && (
 				<Suspense fallback={<Loading />}>
-					<MemoDialog lng={lng} memoId={dialogMemoId} />
+					<MemoDialog
+						key={dialogMemoId}
+						lng={lng}
+						memoId={dialogMemoId}
+						initialMemo={memos.find((memo) => memo.id === dialogMemoId)}
+					/>
 				</Suspense>
 			)}
 		</div>

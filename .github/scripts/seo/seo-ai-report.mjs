@@ -19,6 +19,11 @@ const MAX_CODE_REFS = 5;
 const MAX_SECTION_LENGTH = 2800;
 
 const PRIORITIES = ["P0", "P1", "P2", "P3"];
+/**
+ * 발견의 해결 방법입니다. code 만 SEO 자동 수정(seo-fix.mjs)의 대상이 됩니다.
+ * content 는 문구·콘텐츠 작성, external 은 Search Console 요청 같은 코드 밖 작업입니다.
+ */
+const FIXABILITIES = ["code", "content", "external"];
 const PRIORITY_LABELS = { P0: "🚨 P0", P1: "⚠️ P1", P2: "📋 P2", P3: "💡 P3" };
 const STATUS_ORDER = ["good", "warning", "critical"];
 const STATUS_EMOJI = { good: "🟢", warning: "🟡", critical: "🔴" };
@@ -75,6 +80,8 @@ const normalizeFinding = ({ raw, evidenceIds, fileExists }) => {
 		evidence: cleanModelText(raw?.evidence, 500),
 		suggestion: cleanModelText(raw?.suggestion, 700),
 		codeRefs,
+		// 모르면 코드 수정 대상에서 빠지는 쪽(external)으로 둡니다. 자동 수정은 보수적으로 고릅니다.
+		fixability: FIXABILITIES.includes(raw?.fixability) ? raw.fixability : "external",
 		evidenceIds: citedIds,
 	};
 };

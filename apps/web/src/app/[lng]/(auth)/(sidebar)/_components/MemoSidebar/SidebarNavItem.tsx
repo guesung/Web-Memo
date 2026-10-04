@@ -1,14 +1,17 @@
 "use client";
 
+import LocalizedLink from "@src/components/LocalizedLink";
+import { getLocalizedHref } from "@src/components/LocalizedLink/getLocalizedHref";
+import type { Language } from "@src/modules/i18n";
 import { cn } from "@web-memo/shared/utils";
 import { SidebarMenuButton, SidebarMenuItem } from "@web-memo/ui";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 /** 사이드바 이동 행의 경로와 표시 정보. */
 interface IFSidebarNavItemProps {
-	/** 로케일 접두사까지 포함한 전체 경로 */
+	lng: Language;
+	/** 로케일 접두사가 없는 내부 페이지 경로 */
 	href: string;
 	label: string;
 	/** 서버에서 그려 넘긴 lucide 아이콘 */
@@ -25,13 +28,14 @@ interface IFSidebarNavItemProps {
  * 내리고 나머지 사이드바는 서버 컴포넌트로 둔다.
  */
 const SidebarNavItem = ({
+	lng,
 	href,
 	label,
 	icon,
 	iconChipClassName,
 }: IFSidebarNavItemProps) => {
 	const pathname = usePathname();
-	const isActive = pathname === href;
+	const isActive = pathname === getLocalizedHref(lng, href);
 
 	return (
 		<SidebarMenuItem>
@@ -44,7 +48,11 @@ const SidebarNavItem = ({
 					{ "bg-primary/10 hover:bg-primary/10": isActive },
 				)}
 			>
-				<Link href={href} aria-current={isActive ? "page" : undefined}>
+				<LocalizedLink
+					lng={lng}
+					href={href}
+					aria-current={isActive ? "page" : undefined}
+				>
 					{isActive && (
 						<span className="absolute left-0 top-0 h-full w-0.5 bg-primary" />
 					)}
@@ -65,7 +73,7 @@ const SidebarNavItem = ({
 							{label}
 						</span>
 					</div>
-				</Link>
+				</LocalizedLink>
 			</SidebarMenuButton>
 		</SidebarMenuItem>
 	);

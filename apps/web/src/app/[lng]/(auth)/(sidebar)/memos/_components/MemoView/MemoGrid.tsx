@@ -13,7 +13,6 @@ import {
 	useDeleteMemosMutation,
 	useKeyboardBind,
 	useMemosUpsertMutation,
-	useSettingQuery,
 } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
@@ -27,6 +26,7 @@ import {
 	useMemoSelection,
 	useSuppressEscapeWhenMenuOpen,
 } from "./_hooks";
+import { useMemoSettings } from "./_hooks/useMemoSettings";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import MemoDomainEmptyState from "./MemoDomainEmptyState";
 import MemoEmptyState from "./MemoEmptyState";
@@ -68,7 +68,7 @@ export default function MemoGrid({
 	const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
 	const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
 	const { showImpression, showActionItem, truncateMemoContent } =
-		useSettingQuery();
+		useMemoSettings();
 
 	const {
 		selectedMemoIds,

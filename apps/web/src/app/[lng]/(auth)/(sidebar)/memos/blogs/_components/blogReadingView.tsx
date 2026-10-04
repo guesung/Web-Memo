@@ -1,5 +1,6 @@
 "use client";
 
+import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import {
@@ -9,7 +10,6 @@ import {
 } from "@web-memo/shared/constants";
 import { Button } from "@web-memo/ui";
 import { LogIn, Plus, RotateCw } from "lucide-react";
-import Link from "next/link";
 import { Suspense } from "react";
 import MemoDialog from "../../_components/MemoDialog";
 import { useMemoDialog } from "../../_components/MemoView/_hooks";
@@ -43,7 +43,9 @@ export default function BlogReadingView({ lng }: LanguageType) {
 				description={t("blogs.login.description")}
 			>
 				<Button asChild>
-					<Link href={`/${lng}${PATHS.login}`}>{t("blogs.login.action")}</Link>
+					<LocalizedLink lng={lng} href={PATHS.login}>
+						{t("blogs.login.action")}
+					</LocalizedLink>
 				</Button>
 			</BlogReadingStateMessage>
 		);

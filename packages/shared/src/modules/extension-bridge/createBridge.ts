@@ -57,6 +57,7 @@ export function createBridge<
 >(schema: T): BridgeAPI<T> {
 	const request = {} as BridgeAPI<T>["request"];
 	const handle = {} as BridgeAPI<T>["handle"];
+	let nextRequestId = 0;
 
 	for (const [key, def] of Object.entries(schema)) {
 		const messageType = key as BRIDGE_MESSAGE_TYPE;
@@ -64,18 +65,43 @@ export function createBridge<
 
 		// Request 함수 생성
 		(request as Record<string, unknown>)[key] = ((payload?: unknown) => {
+			const id = ++nextRequestId;
+			function log(stage: "request" | "skipped" | "response" | "failure") {
+				console.info("[extension-bridge]", { id, key, direction, stage });
+			}
+			log("request");
 			if (!isChromeExtensionEnvironment()) {
+				log("skipped");
 				return Promise.resolve(undefined);
 			}
 
-			switch (direction) {
-				case "internal":
-					return Runtime.sendMessage(messageType, payload);
-				case "toExtension":
-					return Runtime.sendMessageToExtension(messageType);
-				case "toTab":
-					return Tab.sendMessage(messageType, payload);
+			let result: Promise<unknown>;
+			try {
+				switch (direction) {
+					case "internal":
+						result = Runtime.sendMessage(messageType, payload);
+						break;
+					case "toExtension":
+						result = Runtime.sendMessageToExtension(messageType);
+						break;
+					case "toTab":
+						result = Tab.sendMessage(messageType, payload);
+						break;
+				}
+			} catch (error) {
+				log("failure");
+				throw error;
 			}
+			return result.then(
+				(response) => {
+					log("response");
+					return response;
+				},
+				(error) => {
+					log("failure");
+					throw error;
+				},
+			);
 		}) as RequestFn<unknown, unknown>;
 
 		// Handle 함수 생성

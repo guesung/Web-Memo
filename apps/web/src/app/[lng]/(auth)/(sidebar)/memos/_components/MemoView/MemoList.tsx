@@ -3,10 +3,10 @@
 import { MasonryInfiniteGrid } from "@egjs/react-infinitegrid";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { useSettingQuery } from "@web-memo/shared/hooks";
 import type { GetMemoResponse, HighlightRow } from "@web-memo/shared/types";
 import { Button } from "@web-memo/ui";
 import { useEffect, useRef, useState } from "react";
+import { useMemoSettings } from "./_hooks/useMemoSettings";
 import MemoDomainEmptyState from "./MemoDomainEmptyState";
 import MemoEmptyState from "./MemoEmptyState";
 import MemoItem from "./MemoItem";
@@ -25,7 +25,7 @@ const MemoList = (props: IFMemoListProps) => {
 		weekday: "long",
 	});
 	const { showImpression, showActionItem, truncateMemoContent } =
-		useSettingQuery();
+		useMemoSettings();
 	const groups = groupMemosByDate(props.memos);
 	const [renderedGroupMemoIds, setRenderedGroupMemoIds] = useState<
 		Record<string, string>

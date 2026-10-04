@@ -31,12 +31,14 @@ const warn = (message) => console.warn(`::warning::${toSingleLine(message)}`);
  * 워크플로가 대체 알림과 CI 실패 알림을 가르는 데 쓰는 값입니다.
  * @description 실패 이유에는 네트워크 오류 문구가 섞일 수 있어, 개행으로 output 형식이 깨지지 않게 안전한 문자만 남깁니다.
  */
-const writeOutputs = async ({ sent, threadFailures, failureReason }, outputPath) => {
+const writeOutputs = async ({ sent, threadFailures, failureReason, rootTs }, outputPath) => {
 	if (outputPath) {
 		const safeReason = String(failureReason).replace(/[^a-z0-9_]+/gi, "_").slice(0, 60);
+		// 스레드 ts는 SEO 수정 PR 링크를 같은 스레드에 다는 데 쓰므로, 본문이 나갔을 때만 남깁니다.
+		const rootTsLine = rootTs ? `root_ts=${String(rootTs).replace(/[^0-9.]/g, "")}\n` : "";
 		await appendFile(
 			outputPath,
-			`sent=${sent}\nthread_failures=${threadFailures}\nfailure_reason=${safeReason}\n`,
+			`sent=${sent}\nthread_failures=${threadFailures}\nfailure_reason=${safeReason}\n${rootTsLine}`,
 		);
 	}
 };
@@ -66,7 +68,7 @@ export const postSeoAiReport = async ({ rootPayload, threadPayloads, token, chan
 		}
 	}
 
-	return { sent: true, threadFailures, error: null };
+	return { sent: true, threadFailures, error: null, rootTs: root.ts };
 };
 
 /**
@@ -74,7 +76,7 @@ export const postSeoAiReport = async ({ rootPayload, threadPayloads, token, chan
  * @description 어떤 경로로 끝나든 finally에서 output을 남깁니다. 본문을 보낸 뒤 예외가 나 sent가 비면 대체 알림이 한 번 더 나가기 때문입니다.
  */
 export const sendSeoAiReport = async ({ env = process.env, post, fileExists = existsSync } = {}) => {
-	const result = { sent: false, threadFailures: 0, failureReason: "none" };
+	const result = { sent: false, threadFailures: 0, failureReason: "none", rootTs: "" };
 	try {
 		if (!env.AI_REPORT_RESULT) {
 			warn("AI 리포트 결과가 없어 기존 SEO 알림으로 대신합니다");
@@ -111,6 +113,7 @@ export const sendSeoAiReport = async ({ env = process.env, post, fileExists = ex
 			});
 			result.sent = delivery.sent;
 			result.threadFailures = delivery.threadFailures;
+			result.rootTs = delivery.rootTs;
 			if (!delivery.sent) {
 				result.failureReason = `slack_${delivery.error}`;
 			} else if (delivery.threadFailures > 0) {

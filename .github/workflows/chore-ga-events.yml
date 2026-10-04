@@ -71,7 +71,7 @@ jobs:
             An action is a gap only if ALL hold: a real user-visible action exists in tracked source, no existing event in context.existingEvents already answers the same question, and you can state the product question the event answers.
             Never invent a near-duplicate of an existing event. Variants of the same action are separated by properties of the existing event, so do not propose those.
             Propose at most 2 events. Fewer is better: a wrong event leaves data that cannot be deleted. If nothing qualifies, return status=none.
-            Event names are snake_case in object_verb form. Properties are at most 5 snake_case keys with length, count, boolean or enum values only.
+            Event names are snake_case in object_verb form. properties lists at most 5 bare snake_case keys only, for example ["candidate_count"]. Never put types, descriptions or punctuation in a key; explain the meaning in trigger or question instead. Values are length, count, boolean or enum only.
             Never use properties that carry email, name, phone, token, password, or text the user typed (memo body, search query, feedback text, urls).
             category is core_action for using the service, engagement for navigation or settings around it.
             Each event lists files: the tracked product source files (not tests, not type.ts) where the call will be added, at most 5.
@@ -80,7 +80,7 @@ jobs:
             --model claude-sonnet-4-6
             --max-turns 20
             --allowedTools "Read,Grep,Glob"
-            --json-schema '{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string","enum":["gap","none"]},"reason":{"type":"string"},"events":{"type":"array","items":{"type":"object","additionalProperties":false,"properties":{"name":{"type":"string"},"category":{"type":"string","enum":["engagement","core_action"]},"trigger":{"type":"string"},"question":{"type":"string"},"properties":{"type":"array","items":{"type":"string"}},"files":{"type":"array","items":{"type":"string"}}},"required":["name","category","trigger","question","properties","files"]}}},"required":["status","reason","events"]}'
+            --json-schema '{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string","enum":["gap","none"]},"reason":{"type":"string"},"events":{"type":"array","items":{"type":"object","additionalProperties":false,"properties":{"name":{"type":"string"},"category":{"type":"string","enum":["engagement","core_action"]},"trigger":{"type":"string"},"question":{"type":"string"},"properties":{"type":"array","items":{"type":"string","pattern":"^[a-z][a-z0-9_]*$"}},"files":{"type":"array","items":{"type":"string"}}},"required":["name","category","trigger","question","properties","files"]}}},"required":["status","reason","events"]}'
 
       - name: Validate analysis result
         id: candidate
@@ -99,13 +99,13 @@ jobs:
             Read AGENTS.md, docs/events.md, docs/analytics.md and ${{ runner.temp }}/ga-events/candidate.json.
             Add exactly the approved events and nothing else:
             1. packages/shared/src/modules/analytics/type.ts: add each event to the TAnalyticsEvent union and to EVENT_CATEGORY with the approved category. Do not edit or remove existing entries.
-            2. Add one analytics.trackEvent call per event, only in the files listed in that event's files. Follow the surrounding call sites and conventions in AGENTS.md. Do not use useCallback or useMemo.
+            2. Add one analytics.trackEvent call per event, only in the files listed in that event's files. Follow the surrounding call sites and conventions in AGENTS.md. Do not use useCallback or useMemo. Biome rules are errors in CI: include every value used inside a hook in its dependency array, avoid non-null assertions and array-index keys. Prefer firing the event from the user's event handler.
             3. docs/events.md: add one row per event (발생 시점, 속성, 답하려는 질문; 추가된 작업 is —). Keep the table format.
             4. docs/analytics.md: list each event under its category with its properties and update the event count in the heading and in any sentence that states it.
             Do not edit tests, config, workflows or any other file. Do not create files. Do not commit or publish anything.
           claude_args: >-
             --model claude-sonnet-4-6
-            --max-turns 25
+            --max-turns 40
             --allowedTools "Read,Grep,Glob,Edit"
 
       - name: Check generated changes
@@ -113,26 +113,72 @@ jobs:
         if: steps.candidate.outputs.status == 'gap'
         run: node .github/scripts/ga-events/maintain.mjs changes
 
+      # claude-code-action/base-action이 내부에서 Node 18을 설정해 이후 단계가 Node 18로 돕니다(jsdom 30이 ERR_REQUIRE_ESM으로 깨짐). AI 단계가 끝난 뒤 .nvmrc 버전으로 되돌립니다.
+      - name: Restore Node for verification
+        if: steps.candidate.outputs.status == 'gap'
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
       - name: Install dependencies
         if: steps.candidate.outputs.status == 'gap'
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Verify changes
-        id: verify
+        id: verify_initial
         if: steps.candidate.outputs.status == 'gap'
+        continue-on-error: true
         env:
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
         run: |
           set -euo pipefail
-          exec > >(tee "$GA_EVENTS_DIR/verification.log") 2>&1
-          pnpm check
-          pnpm type-check
-          pnpm exec vitest run packages/shared/src/modules/analytics
+          exec > >(tee "$GA_EVENTS_DIR/verification-initial.log") 2>&1
+          .github/scripts/ga-events/verify.sh
+
+      - name: Fix verification failure once
+        id: fix_events
+        if: steps.candidate.outputs.status == 'gap' && steps.verify_initial.outcome == 'failure'
+        uses: anthropics/claude-code-action/base-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Read ${{ runner.temp }}/ga-events/candidate.json and ${{ runner.temp }}/ga-events/verification-initial.log.
+            Fix the failure once. You may only edit files that are already modified (git diff --name-only) and only to make the log's errors pass.
+            Keep exactly the approved events. Do not add, rename or remove events, and do not touch tests, config, workflows or other files.
+            Biome rules are errors here: include every value used inside a hook in its dependency array, avoid non-null assertions and array-index keys. Do not use useCallback or useMemo.
+            Do not create files. Do not commit or publish anything.
+          claude_args: >-
+            --model claude-sonnet-4-6
+            --max-turns 30
+            --allowedTools "Read,Grep,Glob,Edit"
+
+      - name: Restore Node after correction
+        if: steps.fix_events.outcome == 'success'
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Verify corrected changes
+        id: verify_retry
+        if: steps.fix_events.outcome == 'success'
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+        run: |
+          set -euo pipefail
+          exec > >(tee "$GA_EVENTS_DIR/verification-retry.log") 2>&1
+          .github/scripts/ga-events/verify.sh
+
+      - name: Reject unverified changes
+        if: steps.candidate.outputs.status == 'gap' && steps.verify_initial.outcome != 'success' && steps.verify_retry.outcome != 'success'
+        run: exit 1
 
       - name: Export the verified patch
         id: export_patch
-        if: steps.verify.outcome == 'success'
+        if: steps.candidate.outputs.status == 'gap' && (steps.verify_initial.outcome == 'success' || steps.verify_retry.outcome == 'success')
         run: node .github/scripts/ga-events/maintain.mjs export-patch
 
       - name: Transfer patch to isolated publisher

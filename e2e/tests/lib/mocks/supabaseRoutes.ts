@@ -671,29 +671,53 @@ const handleHighlightGet = async ({ route, url, store }: HandlerParams) => {
 	const targetUrls = parseValueListFilter(url, "url");
 	const color = parseEqualsFilter(url, "color");
 	const searchQuery = extractIlikeQuery(url, "exact_text");
+	const cursor = url.searchParams
+		.getAll("or")
+		.map((condition) =>
+			condition.match(
+				/^\(created_at\.lt\."?([^",]+)"?,and\(created_at\.eq\."?([^",]+)"?,id\.lt\.(\d+)\)\)$/,
+			),
+		)
+		.find((matched): matched is RegExpMatchArray => matched !== null);
 
-	const highlights = store.getAllHighlights().filter((highlight) => {
-		if (targetUrls !== undefined && !targetUrls.includes(highlight.url)) {
-			return false;
-		}
-		if (color && highlight.color !== color) {
-			return false;
-		}
-		if (
-			searchQuery &&
-			!matchesIlike(highlight.exact_text, searchQuery) &&
-			!matchesIlike(highlight.note, searchQuery)
-		) {
-			return false;
-		}
+	const highlights = store
+		.getAllHighlights()
+		.filter((highlight) => {
+			if (targetUrls !== undefined && !targetUrls.includes(highlight.url)) {
+				return false;
+			}
+			if (color && highlight.color !== color) {
+				return false;
+			}
+			if (
+				searchQuery &&
+				!matchesIlike(highlight.exact_text, searchQuery) &&
+				!matchesIlike(highlight.note, searchQuery)
+			) {
+				return false;
+			}
+			if (cursor) {
+				const compared = highlight.created_at.localeCompare(cursor[1]);
+				if (
+					compared > 0 ||
+					(compared === 0 && highlight.id >= Number(cursor[3]))
+				) {
+					return false;
+				}
+			}
 
-		return true;
-	});
+			return true;
+		})
+		.sort(
+			(left, right) =>
+				right.created_at.localeCompare(left.created_at) || right.id - left.id,
+		);
+	const limit = Number(url.searchParams.get("limit") ?? highlights.length);
 
 	await route.fulfill({
 		status: 200,
 		contentType: "application/json",
-		body: JSON.stringify(highlights),
+		body: JSON.stringify(highlights.slice(0, limit)),
 	});
 };
 

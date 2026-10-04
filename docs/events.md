@@ -40,7 +40,7 @@
 | memo_offline_sync_result | 대기열 동기화 결과 | `trigger`, `synced_count`, `conflict_count`, `has_other_error` | 동기화가 충돌 없이 끝나는가 | — |
 | category_create / category_update / category_delete | 카테고리 생성·수정·삭제 (추정) | — | 카테고리 기능이 쓰이는가 (추정) | — |
 | category_suggestion_show / _apply / _dismiss | 카테고리 추천 노출·적용·닫음 | `is_new_category`, `source`: `jev` \| `llm` | 추천이 받아들여지는가 | — |
-| past_memo_show / _open / _dismiss | 과거 메모 판정 노출·열기·닫음 | `kind`: `duplicate` \| `related`, `source`: `rule` \| `jev` | 과거 메모 알림이 도움이 되는가 | — |
+| past_memo_show / _open / _dismiss / _expand | 과거 메모 종류별 노출·원문 열기·닫음·관련 목록 펼침. 노출과 첫 열기는 URL·종류당 한 번 집계하며, 중복·관련이 함께 있으면 종류별로 각각 노출·닫음을 기록 | `kind`: `duplicate` \| `related`, `source`: `rule` \| `jev` (`_expand`는 related/jev) | 과거 메모 안내를 보고 원문을 여는가 | — |
 | highlight_create | 하이라이트 생성 | `color`, `has_note` | 어떤 색·메모 여부로 쓰이는가 | — |
 | highlight_note_update | 하이라이트 메모 수정 (추정) | — | 하이라이트에 메모를 다는가 (추정) | — |
 | highlight_bubble_disable | 하이라이트 말풍선 끄기 | `scope`: `site` \| `all` | 말풍선이 거슬리는가 (추정) | — |

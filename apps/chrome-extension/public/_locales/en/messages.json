@@ -503,6 +503,18 @@
 			}
 		}
 	},
+	"past_memo_related_intro": {
+		"message": "You have related memos"
+	},
+	"past_memo_related_more": {
+		"message": "View $count$ more",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "2"
+			}
+		}
+	},
 	"past_memo_open": {
 		"message": "Open"
 	},

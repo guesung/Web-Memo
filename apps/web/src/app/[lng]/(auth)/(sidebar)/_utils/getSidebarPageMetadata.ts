@@ -10,12 +10,18 @@ export async function getSidebarPageMetadata({
 	const { lng } = await params;
 	const { t } = await getTranslation(lng);
 
-	return createSidebarPageMetadata(t(labelKey));
+	return createSidebarPageMetadata({
+		brand: t("common.webMemo"),
+		label: t(labelKey),
+	});
 }
 
 /** 브랜드와 라우트 이름을 결합한다. */
-export function createSidebarPageMetadata(label: string): Metadata {
-	return { title: `Web Memo | ${label}` };
+export function createSidebarPageMetadata({
+	brand,
+	label,
+}: SidebarTitle): Metadata {
+	return { title: `${brand} | ${label}` };
 }
 
 type SidebarPageLabelKey =
@@ -28,4 +34,9 @@ type SidebarPageLabelKey =
 interface SidebarPageMetadataArgs {
 	params: LanguageParams["params"];
 	labelKey: SidebarPageLabelKey;
+}
+
+interface SidebarTitle {
+	brand: string;
+	label: string;
 }

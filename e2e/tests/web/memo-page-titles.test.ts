@@ -13,6 +13,7 @@ const ROUTES = [
 	{ path: PATHS.memosReading, ko: "읽는 중", en: "Reading" },
 	{ path: PATHS.highlights, ko: "하이라이트", en: "Highlights" },
 ] as const;
+const BRAND = { ko: "웹 메모", en: "Web Memo" } as const;
 
 test.describe("메모 페이지 브라우저 제목 (Mocked)", () => {
 	test.beforeEach(async ({ page }) => {
@@ -28,7 +29,7 @@ test.describe("메모 페이지 브라우저 제목 (Mocked)", () => {
 			}) => {
 				await page.goto(`/${lng}${route.path}`);
 				await expect(page).toHaveURL(new RegExp(`/${lng}${route.path}$`));
-				await expect(page).toHaveTitle(`Web Memo | ${route[lng]}`);
+				await expect(page).toHaveTitle(`${BRAND[lng]} | ${route[lng]}`);
 				await expect(page.locator("head title")).toHaveCount(1);
 			});
 		}
@@ -37,7 +38,7 @@ test.describe("메모 페이지 브라우저 제목 (Mocked)", () => {
 			page,
 		}) => {
 			await page.goto(`/${lng}${PATHS.memos}`);
-			await expect(page).toHaveTitle(`Web Memo | ${ROUTES[0][lng]}`);
+			await expect(page).toHaveTitle(`${BRAND[lng]} | ${ROUTES[0][lng]}`);
 			await page.evaluate(() => {
 				(window as unknown as { __titleNavProbe?: boolean }).__titleNavProbe =
 					true;
@@ -54,7 +55,7 @@ test.describe("메모 페이지 브라우저 제목 (Mocked)", () => {
 					.getByRole("link", { name: route[lng], exact: true })
 					.click();
 				await expect(page).toHaveURL(new RegExp(`/${lng}${route.path}$`));
-				await expect(page).toHaveTitle(`Web Memo | ${route[lng]}`);
+				await expect(page).toHaveTitle(`${BRAND[lng]} | ${route[lng]}`);
 				expect(
 					await page.evaluate(
 						() =>
@@ -69,21 +70,21 @@ test.describe("메모 페이지 브라우저 제목 (Mocked)", () => {
 			page,
 		}) => {
 			await page.goto(`/${lng}${PATHS.memos}`);
-			await expect(page).toHaveTitle(`Web Memo | ${ROUTES[0][lng]}`);
+			await expect(page).toHaveTitle(`${BRAND[lng]} | ${ROUTES[0][lng]}`);
 			await page
 				.getByRole("button", {
 					name: lng === "ko" ? "날짜별 보기" : "By date",
 				})
 				.click();
 			await expect(page).toHaveURL(/view=list/);
-			await expect(page).toHaveTitle(`Web Memo | ${ROUTES[0][lng]}`);
+			await expect(page).toHaveTitle(`${BRAND[lng]} | ${ROUTES[0][lng]}`);
 			await page
 				.getByRole("button", {
 					name: lng === "ko" ? "격자로 보기" : "Grid view",
 				})
 				.click();
 			await expect(page).toHaveURL(/view=grid/);
-			await expect(page).toHaveTitle(`Web Memo | ${ROUTES[0][lng]}`);
+			await expect(page).toHaveTitle(`${BRAND[lng]} | ${ROUTES[0][lng]}`);
 		});
 	}
 });

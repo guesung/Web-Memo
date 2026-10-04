@@ -13,10 +13,9 @@ interface IFMemoUpsertVariables {
 	data: MemoTable["Insert"];
 }
 
-/** URL 후보 캐시의 변경 전 상태. */
+/** 저장 후 무효화할 페이지 키. */
 interface IFMemoUpsertContext {
 	pageKey?: string;
-	isUpdate: boolean;
 }
 
 /** 명시적인 ID 또는 중복이 없는 페이지 후보에만 메모를 저장한다. */
@@ -77,30 +76,28 @@ export default function useMemoUpsertMutation() {
 			if (result.error) {
 				throw result.error;
 			}
-
-			return result;
-		},
-		onMutate: ({ id, url, data }) => {
-			const targetUrl = url ?? data.url;
-			const pageKey = targetUrl ? getPageKey(targetUrl) : undefined;
-			const candidates = pageKey
-				? queryClient.getQueryData<MemoSupabaseResponse>(
-						QUERY_KEY.memo({ url: pageKey }),
-					)?.data
-				: undefined;
-
-			return {
-				pageKey,
-				isUpdate: id !== undefined || candidates?.length === 1,
-			};
-		},
-		onSuccess: async (_result, variables, context) => {
-			if (context.isUpdate) {
-				await analytics.trackMemoUpdate(variables.data);
+			if (existingMemo) {
+				const changedData = Object.fromEntries(
+					Object.entries(data).filter(
+						([key, value]) => value !== existingMemo[key as keyof MemoRow],
+					),
+				) as MemoTable["Update"];
+				if (Object.keys(changedData).length > 0) {
+					await analytics.trackMemoUpdate(changedData);
+				}
 			} else {
 				await analytics.trackEvent({ name: "memo_first_write" });
 			}
 
+			return result;
+		},
+		onMutate: ({ url, data }) => {
+			const targetUrl = url ?? data.url;
+			const pageKey = targetUrl ? getPageKey(targetUrl) : undefined;
+
+			return { pageKey };
+		},
+		onSuccess: async (_result, variables, context) => {
 			await queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.memosPaginatedPrefix(),
 			});

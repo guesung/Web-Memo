@@ -1,6 +1,7 @@
 import { MutationObserver, QueryClient } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { QUERY_KEY } from "../../../constants";
+import { analytics } from "../../../modules/analytics";
 import useMemoUpsertMutation from "./useMemoUpsertMutation";
 
 const { getQueryClient, getMemoById, getMemoByUrl, updateMemo, insertMemo } =
@@ -98,6 +99,64 @@ describe("메모 upsert 저장 중 Supabase 오류", () => {
 		await expect(
 			mutate({ id: 1, url: "https://example.com", data: {} }),
 		).rejects.toThrow("수정 실패");
+		expect(analytics.trackMemoUpdate).not.toHaveBeenCalled();
+		expect(analytics.trackEvent).not.toHaveBeenCalled();
+	});
+
+	it("같은 값을 다시 저장하면 메모 변경 이벤트를 보내지 않는다", async () => {
+		const data = {
+			url: "https://example.com",
+			title: "제목",
+			memo: "내용",
+			isWish: false,
+			isStar: true,
+			isReading: false,
+			category_id: 3,
+		};
+		getMemoById.mockResolvedValueOnce({
+			data: [{ id: 1, ...data }],
+			error: null,
+		});
+		updateMemo.mockResolvedValueOnce({ data: [{ id: 1 }], error: null });
+
+		await mutate({ id: 1, url: data.url, data });
+
+		expect(analytics.trackMemoUpdate).not.toHaveBeenCalled();
+		expect(analytics.trackEvent).not.toHaveBeenCalled();
+	});
+
+	it("캐시가 비어 있어도 기존 메모의 실제 변경 필드만 기록한다", async () => {
+		const url = "https://example.com";
+		getMemoByUrl.mockResolvedValueOnce({
+			data: [
+				{
+					id: 1,
+					url,
+					title: "이전 제목",
+					memo: "같은 내용",
+					isWish: false,
+					category_id: 3,
+				},
+			],
+			error: null,
+		});
+		updateMemo.mockResolvedValueOnce({ data: [{ id: 1 }], error: null });
+
+		await mutate({
+			url,
+			data: {
+				url,
+				title: "새 제목",
+				memo: "같은 내용",
+				isWish: false,
+				category_id: 3,
+			},
+		});
+
+		expect(analytics.trackMemoUpdate).toHaveBeenCalledWith({
+			title: "새 제목",
+		});
+		expect(analytics.trackEvent).not.toHaveBeenCalled();
 	});
 
 	it("기존 메모가 없을 때 insert 오류를 throw한다", async () => {
@@ -110,6 +169,29 @@ describe("메모 upsert 저장 중 Supabase 오류", () => {
 		await expect(
 			mutate({ url: "https://example.com", data: {} }),
 		).rejects.toThrow("생성 실패");
+		expect(analytics.trackMemoUpdate).not.toHaveBeenCalled();
+		expect(analytics.trackEvent).not.toHaveBeenCalled();
+	});
+
+	it("캐시에 기존 후보가 있어도 조회 결과가 없으면 첫 작성만 기록한다", async () => {
+		const url = "https://example.com";
+		queryClient.setQueryData(QUERY_KEY.memo({ url }), {
+			data: [{ id: 1, url }],
+			error: null,
+		});
+		getMemoByUrl.mockResolvedValueOnce({ data: [], error: null });
+		insertMemo.mockResolvedValueOnce({ data: [{ id: 2 }], error: null });
+
+		const result = await mutate({
+			url,
+			data: { url, title: "제목", memo: "내용" },
+		});
+
+		expect(result).toEqual({ data: [{ id: 2 }], error: null });
+		expect(analytics.trackEvent).toHaveBeenCalledWith({
+			name: "memo_first_write",
+		});
+		expect(analytics.trackMemoUpdate).not.toHaveBeenCalled();
 	});
 
 	it("저장에 성공하면 블로그 정주행 완료 캐시도 무효화한다", async () => {

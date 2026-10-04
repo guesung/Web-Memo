@@ -23,7 +23,7 @@
 | side_panel_open | 사이드 패널이 열림 (추정) | — | 확장이 실제로 쓰이는 빈도는? (추정) | — |
 | side_panel_open_click | 사이드 패널을 여는 버튼 클릭 (추정) | — | 버튼으로 여는 사람이 얼마나 되는가 (추정) | — |
 | page_view | 페이지 조회 | `page_title`, `page_location` | 어느 페이지가 얼마나 보이는가 (추정) | — |
-| memo_write | 메모 작성 (추정) | `fields` | 어떤 필드를 채워 메모를 만드는가 (추정) | — |
+| memo_write | 저장된 메모의 제목·본문·인상·할 일 수정. 확장 upsert는 이전 값과 다른 필드에만 발생 | `fields`: 변경된 필드 이름 | 어떤 내용을 수정하는가 (추정) | DB-1158 |
 | memo_first_write | 첫 메모 작성 (추정) | — | 설치 후 첫 메모까지 가는 사람이 얼마나 되는가 (추정) | — |
 | memo_delete | 메모 삭제 (추정) | `memo_count` | 지우는 메모가 얼마나 되는가 (추정) | — |
 | memo_restore | 휴지통에서 복원 (추정) | `memo_count` | 삭제 후 되살리는 비율 (추정) | — |
@@ -33,8 +33,8 @@
 | memo_search | 메모 검색 (추정) | `query_length` | 검색이 쓰이는가(원문은 넣지 않음) (추정) | — |
 | memo_filter | 메모 필터 (추정) | `search_target` | 어떤 대상으로 거르는가 (추정) | — |
 | search_no_result | 검색 결과 없음 (추정) | — | 검색이 실패하는 비율 (추정) | — |
-| memo_status_toggle | 메모 상태(wish/star/reading) 토글 (추정) | `status`, `enabled` | 어떤 상태가 쓰이는가 (추정) | — |
-| memo_category_change | 메모 카테고리 변경 (추정) | `source`: `button` \| `hash` \| `ai` | 사람들이 `#` 입력을 아는가 | — |
+| memo_status_toggle | 메모 상태(wish/star/reading) 변경. 확장 upsert는 이전 값과 다를 때만 발생 | `status`, `enabled` | 어떤 상태가 쓰이는가 (추정) | DB-1158 |
+| memo_category_change | 메모 카테고리 변경. 확장 upsert는 이전 값과 다를 때만 발생 | `source`: `button` \| `hash` \| `ai` (선택, 확장 upsert에서는 없음) | 사람들이 `#` 입력을 아는가 | DB-1158 |
 | memo_undo | 실행 취소 (추정) | `action` | 어떤 조작이 되돌려지는가 (추정) | — |
 | memo_offline_queued | 오프라인 대기열에 넣음 | `trigger` | 오프라인 저장이 얼마나 일어나는가 | — |
 | memo_offline_sync_result | 대기열 동기화 결과 | `trigger`, `synced_count`, `conflict_count`, `has_other_error` | 동기화가 충돌 없이 끝나는가 | — |

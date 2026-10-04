@@ -55,7 +55,7 @@
 | setting_change / extension_setting_change | 설정 변경 (추정) | `setting_keys` / `keys` | 어떤 설정을 바꾸는가 (추정) | — |
 | shortcut_change_click | 단축키 변경 버튼 클릭 (추정) | `is_success` | 단축키 변경이 성공하는가 (추정) | — |
 | export_run | 내보내기 실행 | `format` | 어떤 형식으로 내보내는가 | — |
-| login_start / login / sign_up / logout | 로그인 시작·완료·가입·로그아웃 (추정) | `method` (logout 없음) | 로그인 퍼널의 어디서 떨어지는가 (추정) | — |
+| login_start / login / sign_up / logout | `login_start`: 웹 로그인 제공자 버튼 클릭. `login`: OAuth 성공 후 메모 레이아웃에 도착한 클라이언트. `sign_up`: 같은 도착 시 신규 계정으로 판정된 경우. `logout`: 로그아웃 | `method` (logout 없음) | 제공자별 시작·도착 규모는? 두 이벤트에는 시도 식별자가 없으므로 사용자 수 비율을 실제 로그인 완료율로 단정하지 않는다 | DB-1160 |
 | side_panel_login_click / header_login_click / header_memos_click | 로그인·메모 진입 클릭 | `from`(header 계열, 언어 접두사를 뺀 경로) | 어느 자리에서 로그인·진입이 눌리는가 | — |
 | extension_install_click / extension_install_dismiss / extension_installed | 설치 버튼 클릭·닫음·설치 완료 | `from`, `position` | 어느 페이지·어느 버튼이 설치로 이어지는가 | — |
 | open_web_from_extension | 확장에서 웹 열기 | `from` | 웹으로 넘어가는 자리는 어디인가 | — |

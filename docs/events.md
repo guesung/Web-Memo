@@ -24,7 +24,7 @@
 | side_panel_open_click | 사이드 패널을 여는 버튼 클릭 (추정) | — | 버튼으로 여는 사람이 얼마나 되는가 (추정) | — |
 | page_view | 페이지 조회 | `page_title`, `page_location` | 어느 페이지가 얼마나 보이는가 (추정) | — |
 | memo_write | 저장된 메모의 제목·본문·인상·할 일 수정. 확장 upsert는 이전 값과 다른 필드에만 발생 | `fields`: 변경된 필드 이름 | 어떤 내용을 수정하는가 (추정) | DB-1158 |
-| memo_first_write | 첫 메모 작성 (추정) | — | 설치 후 첫 메모까지 가는 사람이 얼마나 되는가 (추정) | — |
+| memo_first_write | 새 메모 insert 성공 시마다 발생 (사용자 생애 첫 작성만 뜻하지 않음) | — | 새 메모를 만든 사용자가 얼마나 되는가 | — |
 | memo_delete | 메모 삭제 (추정) | `memo_count` | 지우는 메모가 얼마나 되는가 (추정) | — |
 | memo_restore | 휴지통에서 복원 (추정) | `memo_count` | 삭제 후 되살리는 비율 (추정) | — |
 | memo_delete_permanently | 영구 삭제 (추정) | `memo_count` | 휴지통을 비우는 빈도 (추정) | — |
@@ -61,6 +61,7 @@
 | open_web_from_extension | 확장에서 웹 열기 | `from` | 웹으로 넘어가는 자리는 어디인가 | — |
 | guide_open / guide_step / guide_finish | 가이드 열기·단계·완료 | `from`, `step_name` | 가이드 어느 단계에서 그만두는가 (추정) | — |
 | notice_view / notice_dismiss | 공지 노출·닫음 | `notice_id` | 공지가 읽히는가 (추정) | — |
+| notice_return | 공지를 처음 본 다음 날부터 7일 안에 사이드 패널을 다시 연 최초 시도 | `notice_id`, `days_since_view`(1~7) | 공지 노출자가 이후 다시 패널을 여는가 (인과 효과는 알 수 없음) | DB-1163 |
 | blog_subscription_change | 블로그 구독 변경 뮤테이션의 `onSuccess`(실패 제외) | `blog_id`, `active`: boolean | 어떤 블로그가 구독·해제되는가 | DB-1134 |
 | blog_article_open | 정주행 목록 행의 '원문' 링크 클릭 | `blog_id`, `sort`: `oldest` \| `newest` | 체크리스트에서 원문으로 실제 넘어가는가, 정렬에 따라 다른가 | DB-1134 |
 | blog_article_memo_click | 정주행 행에서 메모 열기 성공 뒤(기존 메모는 다이얼로그 열기 직전, 새 메모는 생성 뮤테이션 `onSuccess`) | `blog_id`, `action`: `create` \| `view` | 정주행이 메모 작성으로 이어지는가 | DB-1134 |

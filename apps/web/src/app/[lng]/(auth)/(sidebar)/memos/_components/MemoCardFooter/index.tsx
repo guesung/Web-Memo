@@ -21,16 +21,18 @@ interface IFMemoCardFooterProps
 		React.HTMLAttributes<HTMLDivElement> {
 	memo: GetMemoResponse;
 	isShowingOption?: boolean;
+	highlightCount?: number;
 }
 
 /** 메모 카테고리, 수정 시각과 상태 변경 버튼을 표시한다. */
-const MemoCardFooter = ({
+function MemoCardFooter({
 	memo,
 	lng,
 	children,
 	isShowingOption = true,
+	highlightCount,
 	...props
-}: IFMemoCardFooterProps) => {
+}: IFMemoCardFooterProps) {
 	const { t } = useTranslation(lng);
 	const searchParams = useSearchParams();
 	const router = useRouter();
@@ -195,6 +197,11 @@ const MemoCardFooter = ({
 					<Clock className="w-3 h-3" />
 					{dayjs(memo.updated_at).fromNow()}
 				</time>
+				{highlightCount !== undefined && highlightCount > 0 ? (
+					<span className="text-xs font-medium text-primary">
+						{t("memoSection.highlightCount", { count: highlightCount })}
+					</span>
+				) : null}
 			</div>
 
 			<div
@@ -265,6 +272,6 @@ const MemoCardFooter = ({
 			</div>
 		</CardFooter>
 	);
-};
+}
 
 export default MemoCardFooter;

@@ -20,7 +20,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `development` 빌드는 커스텀 이벤트를 보내지 않습니다. `staging`은 보냅니다 — 테스트 서버에서
 도착을 눈으로 확인해야 하기 때문이며, 그 트래픽은 `build_env` 차원으로 걸러 냅니다.
 
-## 이벤트 59종
+## 이벤트 60종
 
 `core_action`은 사용자가 이 서비스를 쓰는 행위, `engagement`는 그 주변의 이동·설정입니다.
 분류는 `EVENT_CATEGORY`가 `Record`로 강제하므로 이벤트를 추가하고 분류를 빠뜨리면 컴파일이
@@ -39,7 +39,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `memo_first_write` · `export_run`(format) · `highlight_create`(color, has_note) ·
 `past_memo_open`(kind, source)
 
-### engagement (31종)
+### engagement (32종)
 
 `side_panel_open` · `side_panel_open_click` · `side_panel_login_click` ·
 `header_login_click`(from) · `header_memos_click`(from) ·
@@ -51,6 +51,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `open_web_from_extension`(from) · `guide_open`(from) · `guide_step`(step_name) · `guide_finish` ·
 `search_no_result` · `highlight_bubble_disable`(scope) · `notice_view`(notice_id) ·
 `notice_dismiss`(notice_id) · `past_memo_show`(kind, source) · `past_memo_dismiss`(kind, source) ·
+`past_memo_expand`(kind=related, source=jev) ·
 `memo_offline_queued`(trigger) · `memo_offline_sync_result`(trigger, synced_count, conflict_count, has_other_error) ·
 `shortcut_change_click`(is_success)
 
@@ -113,6 +114,10 @@ online·retry_click·enqueue)로 셉니다. enqueue는 온라인 상태에서 �
 `ext_client_id`는 등록만 남아 있고 더는 보내지 않습니다. gtag가 이 이름을 예약 필드(`excid`)로
 바꿔 보내 커스텀 차원에 값이 한 번도 도달하지 않았기 때문입니다. 확장과 웹을 잇는 방법은
 [지표를 읽을 때 주의할 것](#지표를-읽을-때-주의할-것)을 보세요.
+
+`past_memo_*` 이벤트는 `kind`를 전송하지만, `kind`는 아직 이벤트 범위 맞춤 측정기준으로
+등록되지 않았습니다. 등록 전에는 Data API에서 중복·관련 종류별 열기 비율을 조회할 수 없으며,
+등록 이전 값도 소급해 조회할 수 없습니다. 등록 확인 전에는 종류별 개선을 판정하지 않습니다.
 
 ### 등록된 커스텀 측정항목 (3종 × 3형태)
 

@@ -370,6 +370,45 @@
 		"deleteMemo": "Delete memo",
 		"changeCategory": "Change category"
 	},
+	"installGuide": {
+		"metadata": {
+			"title": "Getting started with Web Memo | Web Memo",
+			"description": "Learn how to open the side panel and write your first memo after installing the extension."
+		},
+		"eyebrow": "Getting started",
+		"title": {
+			"first": "Take notes beside",
+			"second": "the page you're reading"
+		},
+		"lead": "After installing the extension, capture your thoughts without leaving the page.",
+		"previewLabel": "Preview of a browser page and the Web Memo side panel",
+		"previewCaption": "Preview only · Sign in to open the real editor",
+		"preview": {
+			"page": "The page you're reading",
+			"url": "Page title and address",
+			"memo": "Write down anything you'd like to revisit later.",
+			"save": "Save memo"
+		},
+		"steps": {
+			"open": {
+				"title": "Open the side panel",
+				"description": "Click the Web Memo icon in your browser or press Alt+S."
+			},
+			"write": {
+				"title": "Take notes as you read",
+				"description": "The page title and address are attached, so you can focus on your thoughts."
+			},
+			"save": {
+				"title": "Sign in to keep your notes",
+				"description": "You need to sign in to save your notes and revisit them later."
+			}
+		},
+		"loginNotice": {
+			"title": "Sign in to save your notes",
+			"description": "After signing in, you can write your first memo in the side panel.",
+			"cta": "Sign in and get started"
+		}
+	},
 	"login": {
 		"welcomeTitle": "Easily take notes while browsing websites.",
 		"kakaoLogin": "Login with Kakao",

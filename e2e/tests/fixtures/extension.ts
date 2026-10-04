@@ -21,7 +21,7 @@ export const test = base.extend<ExtensionFixture>({
 	// biome-ignore lint/correctness/noEmptyPattern: Playwright fixture API requires empty destructuring
 	context: async ({}, use) => {
 		const context = await chromium.launchPersistentContext("", {
-			// 확장이 설치 때 여는 `/memos` 탭은 언어 경로가 없어 브라우저 언어(Accept-Language)로
+			// 확장이 설치 때 여는 `/install` 탭은 언어 경로가 없어 브라우저 언어(Accept-Language)로
 			// 언어가 정해지고, 웹은 그 언어를 `i18next` 쿠키에 쓴다. 개발 기기가 한국어면 이
 			// 탭이 쿠키를 ko로 써서, 이후 로그인 콜백(`/memos`)이 `/ko/memos`로 떨어진다.
 			locale: "en-US",
@@ -50,15 +50,14 @@ export const expect = test.expect;
 
 /**
  * 확장이 설치 직후 여는 웹 메모 탭인지 판별한다.
- * @description 미로그인이면 `/memos`가 `/ko/login`으로 리다이렉트되어 경로로는 구분할 수 없다.
- * 확장이 붙이는 `ext_cid` 쿼리는 리다이렉트 뒤에도 유지되므로 이것을 기준으로 한다.
- * 테스트가 여는 페이지에는 `ext_cid`가 붙지 않는다. 경로(`/memos`)로는 판별하지 않는다. 테스트 페이지도 그 경로로 가기 때문이다.
+ * @description 설치 탭은 공개 `/install`로 열린다. `ext_cid`를 얻지 못해도
+ * 닫아야 하므로 경로로 판별한다. hybrid 테스트는 직접 이 경로를 열지 않는다.
  */
 const isInstallTab = (page: Page) => {
 	try {
 		const url = new URL(page.url());
 
-		return url.origin === BASE_URL && url.searchParams.has("ext_cid");
+		return url.origin === BASE_URL && url.pathname.endsWith("/install");
 	} catch {
 		// 탭이 열리는 도중에는 URL이 비어 있을 수 있다.
 		return false;

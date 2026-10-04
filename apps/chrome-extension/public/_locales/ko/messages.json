@@ -497,6 +497,18 @@
 			}
 		}
 	},
+	"past_memo_related_intro": {
+		"message": "관련 메모가 있어요"
+	},
+	"past_memo_related_more": {
+		"message": "나머지 $count$개 보기",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "2"
+			}
+		}
+	},
 	"past_memo_open": {
 		"message": "열기"
 	},

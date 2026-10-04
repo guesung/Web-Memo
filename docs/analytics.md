@@ -21,7 +21,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `development` 빌드는 커스텀 이벤트를 보내지 않습니다. `staging`은 보냅니다 — 테스트 서버에서
 도착을 눈으로 확인해야 하기 때문이며, 그 트래픽은 `build_env` 차원으로 걸러 냅니다.
 
-## 이벤트 60종
+## 이벤트 62종
 
 `core_action`은 사용자가 이 서비스를 쓰는 행위, `engagement`는 그 주변의 이동·설정입니다.
 분류는 `EVENT_CATEGORY`가 `Record`로 강제하므로 이벤트를 추가하고 분류를 빠뜨리면 컴파일이
@@ -40,7 +40,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `memo_first_write` · `export_run`(format) · `highlight_create`(color, has_note) ·
 `past_memo_open`(kind, source)
 
-### engagement (32종)
+### engagement (34종)
 
 `side_panel_open` · `side_panel_open_click` · `side_panel_login_click` ·
 `header_login_click`(from) · `header_memos_click`(from) ·
@@ -50,6 +50,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `category_suggestion_dismiss`(is_new_category, source) ·
 `login_start`(method) · `logout` · `extension_installed` · `extension_install_dismiss` ·
 `open_web_from_extension`(from) · `guide_open`(from) · `guide_step`(step_name) · `guide_finish` ·
+`install_guide_view` · `install_guide_login_click` ·
 `search_no_result` · `highlight_bubble_disable`(scope) · `notice_view`(notice_id) ·
 `notice_dismiss`(notice_id) · `notice_return`(notice_id, days_since_view) · `past_memo_show`(kind, source) · `past_memo_dismiss`(kind, source) ·
 `memo_offline_queued`(trigger) · `memo_offline_sync_result`(trigger, synced_count, conflict_count, has_other_error) ·

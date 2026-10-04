@@ -61,6 +61,8 @@
 | extension_install_click / extension_install_dismiss / extension_installed | 설치 버튼 클릭·닫음·설치 완료 | `from`, `position` | 어느 페이지·어느 버튼이 설치로 이어지는가 | — |
 | open_web_from_extension | 확장에서 웹 열기 | `from` | 웹으로 넘어가는 자리는 어디인가 | — |
 | guide_open / guide_step / guide_finish | 가이드 열기·단계·완료 | `from`, `step_name` | 가이드 어느 단계에서 그만두는가 (추정) | — |
+| install_guide_view | 로그인 전 설치 가이드 화면 조회 | — | 신규 설치자가 로그인 전에 가이드에 도달하는가 | DB-1159 |
+| install_guide_login_click | 설치 가이드에서 로그인 버튼 클릭 | — | 가이드 조회가 로그인 시도로 이어지는가 | DB-1159 |
 | notice_view / notice_dismiss | 공지 노출·닫음 | `notice_id` | 공지가 읽히는가 (추정) | — |
 | notice_return | 공지를 처음 본 다음 날부터 7일 안에 사이드 패널을 다시 연 최초 시도 | `notice_id`, `days_since_view`(1~7) | 공지 노출자가 이후 다시 패널을 여는가 (인과 효과는 알 수 없음) | DB-1163 |
 | blog_subscription_change | 블로그 구독 변경 뮤테이션의 `onSuccess`(실패 제외) | `blog_id`, `active`: boolean | 어떤 블로그가 구독·해제되는가 | DB-1134 |

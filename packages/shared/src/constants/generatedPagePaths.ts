@@ -12,6 +12,7 @@ export const GENERATED_PAGE_PATHS = {
 	featuresSaveArticles: "/features/save-articles",
 	featuresYoutubeSummary: "/features/youtube-summary",
 	highlights: "/highlights",
+	install: "/install",
 	introduce: "/introduce",
 	login: "/login",
 	memos: "/memos",

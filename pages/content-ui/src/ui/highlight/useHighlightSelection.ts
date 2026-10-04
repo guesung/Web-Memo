@@ -188,9 +188,14 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			editorRef.current?.open(row, position.x, position.y);
 		}
 	};
-	const handleBubbleCloseClick = () => {
+	const handleBubbleMenuClick = () => {
 		setMenuError("");
 		setIsMenuOpen(!isMenuOpen);
+	};
+	const handleBubbleCloseClick = () => {
+		controllerRef.current?.dismissSelection();
+		setIsMenuOpen(false);
+		setMenuError("");
 	};
 	const handleMenuDismiss = () => {
 		setIsMenuOpen(false);
@@ -277,6 +282,7 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 		disabledNoticePosition,
 		handleHighlightColorClick,
 		handleHighlightNoteClick,
+		handleBubbleMenuClick,
 		handleBubbleCloseClick,
 		handleMenuDismiss,
 		handleBubblePositionClick,

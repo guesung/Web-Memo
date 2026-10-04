@@ -1,17 +1,15 @@
 "use client";
 
-import type { MemoInput } from "@src/app/[lng]/(auth)/(sidebar)/memos/_types/Input";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { useQuery } from "@tanstack/react-query";
 import {
-	useDebounce,
-	useKeyboardBind,
-	useMemoPatchMutation,
-	useMemoQuery,
+	memoQueryOptions,
 	useSettingQuery,
-	useTextareaAutoResize,
+	useSupabaseClientQuery,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
+import type { GetMemoResponse } from "@web-memo/shared/types";
 import { adjustTextareaHeight } from "@web-memo/shared/utils";
 import {
 	Card,
@@ -19,264 +17,150 @@ import {
 	Dialog,
 	DialogContent,
 	DialogTitle,
+	Loading,
 	Textarea,
 } from "@web-memo/ui";
 import { motion } from "framer-motion";
-import {
-	useCallback,
-	useEffect,
-	useImperativeHandle,
-	useRef,
-	useState,
-} from "react";
-import { useForm } from "react-hook-form";
+import { useLayoutEffect, useRef } from "react";
+import { useWatch } from "react-hook-form";
 import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
-import { useMemoHighlights } from "../MemoView/_hooks/useMemoHighlights";
-import { MemoHighlights } from "../MemoView/MemoHighlights";
-import type { TMemoSaveStatus } from "./SaveStatusIndicator";
+import { MemoDialogHighlights } from "./MemoDialogHighlights";
 import SaveStatusIndicator from "./SaveStatusIndicator";
+import { useMemoDialogEditor } from "./useMemoDialogEditor";
 
-/** 메모 상세 대화상자의 언어와 조회할 메모 ID. */
-interface IFMemoDialogProps extends LanguageType {
-	memoId: number;
-}
-
-/** 메모를 편집하고 같은 원문의 하이라이트를 함께 표시한다. */
-const MemoDialog = ({ lng, memoId }: IFMemoDialogProps) => {
+/** 카드 값으로 즉시 열고 상세 쿼리는 백그라운드에서 동기화한다. */
+export default function MemoDialog({
+	lng,
+	memoId,
+	initialMemo,
+}: MemoDialogProps) {
 	const { t } = useTranslation(lng);
-	const { memo: memoData } = useMemoQuery({ id: memoId });
-	const { highlightsByUrl, isHighlightLoadError, refetchHighlights } =
-		useMemoHighlights(memoData?.url ? [memoData.url] : []);
-	const { showImpression, showActionItem } = useSettingQuery();
-	const {
-		textareaRef: memoTextareaRef,
-		handleTextareaChange: handleMemoChange,
-	} = useTextareaAutoResize();
-	const {
-		textareaRef: impressionTextareaRef,
-		handleTextareaChange: handleImpressionChange,
-	} = useTextareaAutoResize();
-	const {
-		textareaRef: actionItemTextareaRef,
-		handleTextareaChange: handleActionItemChange,
-	} = useTextareaAutoResize();
-	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
-	const [saveStatus, setSaveStatus] = useState<TMemoSaveStatus>("idle");
+	const { data: supabaseClient } = useSupabaseClientQuery();
+	const query = useQuery(memoQueryOptions({ supabaseClient, id: memoId }));
+	const latestMemo = query.data?.data?.find((memo) => memo.id === memoId);
+	const memo = initialMemo?.id === memoId ? initialMemo : latestMemo;
 	const searchParams = useSearchParams();
-	const { debounce, flushDebounce } = useDebounce();
 
-	const { register, watch, setValue } = useForm<MemoInput>({
-		defaultValues: {
-			title: "",
-			memo: "",
-			impression: "",
-			actionItem: "",
-		},
-	});
-
-	const { ref: memoRef, ...memoRest } = register("memo", {
-		onChange: (event) => {
-			handleMemoChange(event);
-		},
-	});
-	useImperativeHandle(memoRef, () => memoTextareaRef.current);
-
-	const { ref: impressionRef, ...impressionRest } = register("impression", {
-		onChange: (event) => {
-			handleImpressionChange(event);
-		},
-	});
-	useImperativeHandle(impressionRef, () => impressionTextareaRef.current);
-
-	const { ref: actionItemRef, ...actionItemRest } = register("actionItem", {
-		onChange: (event) => {
-			handleActionItemChange(event);
-		},
-	});
-	useImperativeHandle(actionItemRef, () => actionItemTextareaRef.current);
-
-	// 제목은 헤더에서 곧바로 반영되고, 본문처럼 계속 타이핑하는 필드가 아니다.
-	// 제목만 바꿔도 하단에 "저장 중"이 떴다 사라지는 것이 산만해서 저장 표시에서 뺀다.
-	// 저장 자체는 같은 경로로 나가고, 표시 여부만 이 값으로 가른다.
-	const hasPendingMemoFieldEditRef = useRef(false);
-
-	const saveMemo = useCallback(() => {
-		const shouldIndicateSaveStatus = hasPendingMemoFieldEditRef.current;
-		const currentTitle = watch("title");
-		const currentMemo = watch("memo");
-		const currentImpression = watch("impression");
-		const currentActionItem = watch("actionItem");
-
-		const isEdited =
-			currentTitle !== memoData?.title ||
-			currentMemo !== memoData?.memo ||
-			currentImpression !== (memoData?.impression ?? "") ||
-			currentActionItem !== (memoData?.actionItem ?? "");
-
-		if (!isEdited) {
-			if (shouldIndicateSaveStatus) {
-				setSaveStatus("idle");
-			}
-
-			return;
-		}
-
-		if (shouldIndicateSaveStatus) {
-			setSaveStatus("saving");
-		}
-
-		mutateMemoPatch(
-			{
-				id: memoId,
-				request: {
-					title: currentTitle,
-					memo: currentMemo,
-					impression: currentImpression,
-					actionItem: currentActionItem,
-				},
-			},
-			{
-				onSuccess: () => {
-					hasPendingMemoFieldEditRef.current = false;
-
-					if (shouldIndicateSaveStatus) {
-						setSaveStatus("saved");
-					}
-				},
-				onError: () => {
-					if (shouldIndicateSaveStatus) {
-						setSaveStatus("error");
-					}
-				},
-			},
-		);
-	}, [
-		watch,
-		memoData?.title,
-		memoData?.memo,
-		memoData?.impression,
-		memoData?.actionItem,
-		mutateMemoPatch,
-		memoId,
-	]);
-
-	useKeyboardBind({ key: "s", callback: saveMemo, isMetaKey: true });
-
-	const closeDialog = () => {
-		const isHasPreviousPage = history.state?.openedMemoId === memoId;
-		if (isHasPreviousPage) history.back();
+	function closeDialog() {
+		if (history.state?.openedMemoId === memoId) history.back();
 		else {
 			searchParams.removeAll("id");
 			history.pushState({}, "", searchParams.getUrl());
 		}
-	};
+	}
 
-	const handleDialogClose = () => {
-		flushDebounce();
-		closeDialog();
-	};
+	if (!memo) {
+		return (
+			<Dialog open>
+				<DialogContent
+					className="max-w-[600px]"
+					onClose={closeDialog}
+					aria-describedby={undefined}
+				>
+					<DialogTitle className="sr-only">{t("sideBar.memo")}</DialogTitle>
+					{query.isError || query.isSuccess ? (
+						<div role="alert" className="flex items-center gap-2">
+							<p>{t(query.isError ? "error.500.title" : "error.404.title")}</p>
+							{query.isError && (
+								<button
+									type="button"
+									onClick={() => void query.refetch()}
+									className="underline"
+								>
+									{t("error.500.retry")}
+								</button>
+							)}
+						</div>
+					) : (
+						<Loading aria-label={t("sideBar.memo")} />
+					)}
+				</DialogContent>
+			</Dialog>
+		);
+	}
 
-	// 저장이 끝나면 useMemoPatchMutation이 memo 쿼리를 무효화해 memoData가 새로 온다.
-	// 그때 폼을 다시 채우면 그 사이에 사용자가 친 글자가 서버 값으로 덮여 사라진다.
-	// 그래서 폼 초기화는 다루는 메모가 바뀔 때 한 번만 한다.
-	const initializedMemoIdRef = useRef<number | null>(null);
-
-	useEffect(
-		function initMemoData() {
-			if (!memoData) return;
-			if (initializedMemoIdRef.current === memoData.id) return;
-
-			initializedMemoIdRef.current = memoData.id;
-			setValue("title", memoData.title);
-			setValue("memo", memoData.memo);
-			setValue("impression", memoData.impression ?? "");
-			setValue("actionItem", memoData.actionItem ?? "");
-		},
-		[memoData, setValue],
+	return (
+		<MemoDialogContent
+			key={memo.id}
+			lng={lng}
+			memo={memo}
+			latestMemo={latestMemo}
+			onClose={closeDialog}
+		/>
 	);
+}
 
-	// 값 주입과 높이 보정을 한 이펙트에 두고 ref.current를 의존성에 넣으면, textarea ref가
-	// 뒤늦게 붙는 렌더에서 이펙트가 다시 돌아 사용자가 방금 친 글자를 서버 값으로 덮어쓴다.
-	// 그러면 디바운스 저장도 "바뀐 게 없다"고 판단해 조용히 넘어간다.
-	useEffect(function adjustTextareaHeights() {
-		for (const textareaRef of [
-			memoTextareaRef,
-			impressionTextareaRef,
-			actionItemTextareaRef,
+function MemoDialogContent({ lng, memo, latestMemo, onClose }: ContentProps) {
+	const { t } = useTranslation(lng);
+	const { showImpression, showActionItem } = useSettingQuery();
+	const { form, saveStatus, markEdited, changeTitle, flushDebounce } =
+		useMemoDialogEditor({ memo, latestMemo });
+	const { register, watch } = form;
+	useWatch({
+		control: form.control,
+		name: ["memo", "impression", "actionItem"],
+	});
+	const memoRef = useRef<HTMLTextAreaElement | null>(null);
+	const impressionRef = useRef<HTMLTextAreaElement | null>(null);
+	const actionItemRef = useRef<HTMLTextAreaElement | null>(null);
+	const title = watch("title");
+	const memoField = register("memo", { onChange: () => markEdited("memo") });
+	const impressionField = register("impression", {
+		onChange: () => markEdited("impression"),
+	});
+	const actionItemField = register("actionItem", {
+		onChange: () => markEdited("actionItem"),
+	});
+
+	useLayoutEffect(() => {
+		for (const textarea of [
+			memoRef.current,
+			impressionRef.current,
+			actionItemRef.current,
 		]) {
-			if (textareaRef.current) {
-				adjustTextareaHeight(textareaRef.current);
-			}
+			if (textarea) adjustTextareaHeight(textarea);
 		}
 	});
 
-	useEffect(
-		function saveMemoOnChange() {
-			const subscription = watch((value, { name }) => {
-				if (
-					!value.title &&
-					!value.memo &&
-					!value.impression &&
-					!value.actionItem
-				) {
-					return;
-				}
-
-				if (name !== "title") {
-					hasPendingMemoFieldEditRef.current = true;
-					setSaveStatus("saving");
-				}
-
-				debounce(() => {
-					saveMemo();
-				}, 1_000);
-			});
-
-			return () => subscription.unsubscribe();
-		},
-		[watch, debounce, saveMemo],
-	);
-
-	if (!memoData) return null;
+	function closeAndSave() {
+		flushDebounce();
+		onClose();
+	}
 
 	return (
 		<Dialog open>
 			<DialogContent
 				className="max-h-[90dvh] max-w-[600px] overflow-y-auto p-0"
-				onClose={handleDialogClose}
+				onClose={closeAndSave}
 				aria-describedby={undefined}
 			>
-				{/* 화면의 제목은 MemoCardHeader 가 그린다. 스크린 리더용 이름만 따로 둔다. */}
-				<DialogTitle className="sr-only">{memoData.title}</DialogTitle>
+				<DialogTitle className="sr-only">{title}</DialogTitle>
 				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					exit={{ opacity: 0 }}
 				>
 					<Card>
-						{/* 닫기 버튼(right-4)이 제목 위로 겹친다. 그만큼 오른쪽을 비운다. */}
 						<MemoCardHeader
-							memo={memoData}
-							onTitleChange={(title) =>
-								setValue("title", title, { shouldDirty: true })
-							}
+							memo={{ ...memo, title }}
+							onTitleChange={changeTitle}
 							className="pr-12"
 						/>
-						{/* CardContent 의 기본값은 px-6 뿐이라 세로 여백이 아예 없다.
-						    헤더·푸터가 px-5 를 쓰므로 가로도 거기에 맞춘다. */}
 						<CardContent className="space-y-4 px-5 py-4">
 							<Textarea
-								{...memoRest}
-								className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none"
-								ref={memoTextareaRef}
+								{...memoField}
+								ref={(element) => {
+									memoField.ref(element);
+									memoRef.current = element;
+								}}
+								layout={false}
+								className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none !transition-[border-color,box-shadow]"
 								placeholder={t("memos.placeholder")}
 								data-testid="memo-textarea"
 							/>
-
 							{showImpression && (
 								<div className="space-y-1.5">
-									{/* label 은 inline 이라 세로 마진이 무시된다. block 이어야 간격이 생긴다. */}
 									<label
 										htmlFor="impression"
 										className="block text-xs font-semibold text-muted-foreground"
@@ -284,16 +168,19 @@ const MemoDialog = ({ lng, memoId }: IFMemoDialogProps) => {
 										{t("memoSection.impression")}
 									</label>
 									<Textarea
-										{...impressionRest}
+										{...impressionField}
 										id="impression"
-										className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none"
-										ref={impressionTextareaRef}
+										ref={(element) => {
+											impressionField.ref(element);
+											impressionRef.current = element;
+										}}
+										layout={false}
+										className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none !transition-[border-color,box-shadow]"
 										placeholder={t("memoSection.impressionPlaceholder")}
 										data-testid="impression-textarea"
 									/>
 								</div>
 							)}
-
 							{showActionItem && (
 								<div className="space-y-1.5">
 									<label
@@ -303,42 +190,26 @@ const MemoDialog = ({ lng, memoId }: IFMemoDialogProps) => {
 										{t("memoSection.actionItem")}
 									</label>
 									<Textarea
-										{...actionItemRest}
+										{...actionItemField}
 										id="actionItem"
-										className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none"
-										ref={actionItemTextareaRef}
+										ref={(element) => {
+											actionItemField.ref(element);
+											actionItemRef.current = element;
+										}}
+										layout={false}
+										className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none !transition-[border-color,box-shadow]"
 										placeholder={t("memoSection.actionItemPlaceholder")}
 										data-testid="action-item-textarea"
 									/>
 								</div>
 							)}
-
-							{isHighlightLoadError && (
-								<div
-									role="alert"
-									className="flex items-center gap-2 text-sm text-destructive"
-								>
-									<p>{t("highlight.loadError")}</p>
-									<button
-										type="button"
-										onClick={() => void refetchHighlights()}
-										className="underline"
-									>
-										{t("error.500.retry")}
-									</button>
-								</div>
-							)}
-							<MemoHighlights
-								highlights={highlightsByUrl.get(memoData.url)}
-								label={t("sideBar.highlight")}
-							/>
-
+							<MemoDialogHighlights lng={lng} url={memo.url} />
 							<div className="flex h-4 items-center">
 								<SaveStatusIndicator status={saveStatus} lng={lng} />
 							</div>
 						</CardContent>
 						<MemoCardFooter
-							memo={memoData}
+							memo={memo}
 							lng={lng}
 							isShowingOption={false}
 							className="px-6 py-4 border-t-0"
@@ -348,6 +219,14 @@ const MemoDialog = ({ lng, memoId }: IFMemoDialogProps) => {
 			</DialogContent>
 		</Dialog>
 	);
-};
+}
 
-export default MemoDialog;
+interface MemoDialogProps extends LanguageType {
+	memoId: number;
+	initialMemo?: GetMemoResponse;
+}
+interface ContentProps extends LanguageType {
+	memo: GetMemoResponse;
+	latestMemo?: GetMemoResponse;
+	onClose: () => void;
+}

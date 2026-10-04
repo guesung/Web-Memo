@@ -7,7 +7,7 @@ import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { Loading, Skeleton } from "@web-memo/ui";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect } from "react";
+import { Suspense } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import type { TMemoFilter } from "../../_types";
@@ -81,19 +81,6 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 	 * 다이얼로그를 여닫을 때마다 그리드가 통째로 다시 그려진다.
 	 */
 	const tabKey = `${category}|${filter}|${isListView}`;
-
-	/**
-	 * 탭이 바뀌면 목록을 맨 위에서 보여준다.
-	 *
-	 * @description 카테고리 전환은 searchParams만 바꾸는 같은 라우트 전환이라 Next가
-	 * 스크롤을 맨 위로 올려주지 않는다. 위의 리마운트만으로는 이미 내려가 있던 문서
-	 * 스크롤이 그대로 남으므로 여기서 직접 올린다. 둘 다 필요하다 - 이것만 있으면
-	 * egjs 보정이 곧바로 덮어쓰고, 리마운트만 있으면 이전 스크롤이 남는다.
-	 */
-	// biome-ignore lint/correctness/useExhaustiveDependencies: 탭이 바뀔 때만 올려야 한다
-	useEffect(() => {
-		window.scrollTo(0, 0);
-	}, [tabKey]);
 
 	return (
 		<div className="flex w-full flex-col gap-4">

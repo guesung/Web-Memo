@@ -59,6 +59,11 @@ describe("measureNoticeReturn", () => {
 		const funnel = runFunnelReport.mock.calls[0][0].body;
 		expect(funnel.funnel.steps[1].withinDurationFromPriorStep).toBe("86400s");
 		expect(funnel.dateRanges).toEqual([{ startDate: "2026-10-11", endDate: "2026-10-20" }]);
+		expect(funnel.funnel.steps[0].filterExpression.andGroup.expressions.at(-1)).toEqual({
+			funnelFieldFilter: { fieldName: "date", betweenFilter: {
+				fromValue: { int64Value: "20261011" }, toValue: { int64Value: "20261019" },
+			} },
+		});
 	});
 
 	it("과거 지표는 D0을 포함한 168시간 후속 행동으로만 명명한다", async () => {
@@ -72,7 +77,11 @@ describe("measureNoticeReturn", () => {
 		for (const [call] of runFunnelReport.mock.calls) {
 			expect(call.body.dateRanges).toEqual([{ startDate: "2026-09-30", endDate: "2026-10-08" }]);
 			expect(call.body.funnel.steps[1].withinDurationFromPriorStep).toBe("604800s");
-			expect(JSON.stringify(call.body.funnel.steps[0])).toContain("date");
+			expect(call.body.funnel.steps[0].filterExpression.andGroup.expressions.at(-1)).toEqual({
+				funnelFieldFilter: { fieldName: "date", betweenFilter: {
+					fromValue: { int64Value: "20260930" }, toValue: { int64Value: "20261001" },
+				} },
+			});
 		}
 	});
 
@@ -95,6 +104,12 @@ describe("measureNoticeReturn", () => {
 		runFunnelReport.mockResolvedValueOnce(funnelReport(3, 1));
 		const wrongTimeZone = await measureNoticeReturn(prospective, now);
 		expect(wrongTimeZone.incompleteReasons).toContain("GA4 속성 시간대가 KST가 아닙니다: America/Los_Angeles");
+		runReport.mockResolvedValueOnce({ ...usersReport(10), metadata: { samplingMetadatas: [{ samplesReadCount: "10", samplingSpaceSize: "20" }] } })
+			.mockResolvedValueOnce(usersReport(3));
+		runFunnelReport.mockResolvedValueOnce(funnelReport(3, 1));
+		const sampled = await measureNoticeReturn(prospective, now);
+		expect(sampled).toMatchObject({ status: "효과 미확인", rate: null });
+		expect(sampled.incompleteReasons).toContain("GA4 보고서에 표본 추출이 적용됐습니다");
 	});
 });
 

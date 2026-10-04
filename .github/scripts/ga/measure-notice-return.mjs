@@ -48,8 +48,8 @@ function eventFilter(eventNames, { noticeId, firstPeriod } = {}) {
 			funnelFieldFilter: {
 				fieldName: "date",
 				betweenFilter: {
-					fromValue: firstPeriod.start.replaceAll("-", ""),
-					toValue: firstPeriod.end.replaceAll("-", ""),
+					fromValue: { int64Value: firstPeriod.start.replaceAll("-", "") },
+					toValue: { int64Value: firstPeriod.end.replaceAll("-", "") },
 				},
 			},
 		});
@@ -98,6 +98,9 @@ function readEventUsers(report, noticeId) {
 	}
 	if (report.metadata?.subjectToThresholding || report.metadata?.dataLossFromOtherRow) {
 		return { status: "incomplete", reason: "GA4 임곗값 또는 (other) 행으로 일부 데이터가 숨겨졌습니다" };
+	}
+	if (report.metadata?.samplingMetadatas?.length) {
+		return { status: "incomplete", reason: "GA4 보고서에 표본 추출이 적용됐습니다" };
 	}
 	if (Number(report.rowCount ?? 0) > (report.rows?.length ?? 0)) {
 		return { status: "incomplete", reason: "GA4 응답 행이 잘렸습니다" };

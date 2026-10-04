@@ -4,14 +4,18 @@ import {
 	recordFirstNoticeExposure,
 } from "./noticeExposure";
 
-const storageKey = "noticeFirstExposures";
+const storageKey = (id: number) => `noticeFirstExposure:${id}`;
 let stored: Record<string, unknown>;
 let get: ReturnType<typeof vi.fn>;
 let set: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
 	stored = {};
-	get = vi.fn(async (key: string) => ({ [key]: structuredClone(stored[key]) }));
+	get = vi.fn(async (key: string | null) =>
+		key === null
+			? structuredClone(stored)
+			: { [key]: structuredClone(stored[key]) },
+	);
 	set = vi.fn(async (values: Record<string, unknown>) => {
 		stored = { ...stored, ...structuredClone(values) };
 	});
@@ -35,10 +39,22 @@ describe("notice exposure tracking", () => {
 			now: new Date("2026-10-03T00:00:00Z"),
 		});
 
-		expect(stored[storageKey]).toEqual({
-			1: { firstViewedDate: "2026-10-01", returnAttempted: false },
-			2: { firstViewedDate: "2026-10-03", returnAttempted: false },
+		expect(stored[storageKey(1)]).toEqual({
+			firstViewedDate: "2026-10-01",
+			returnAttempted: false,
 		});
+		expect(stored[storageKey(2)]).toEqual({
+			firstViewedDate: "2026-10-03",
+			returnAttempted: false,
+		});
+	});
+
+	it("preserves separate notices when first views race", async () => {
+		await Promise.all([
+			recordFirstNoticeExposure({ noticeId: 1 }),
+			recordFirstNoticeExposure({ noticeId: 2 }),
+		]);
+		expect(Object.keys(stored).sort()).toEqual([storageKey(1), storageKey(2)]);
 	});
 
 	it("counts KST D1 and D7, but excludes D0 and D8", async () => {
@@ -89,5 +105,21 @@ describe("notice exposure tracking", () => {
 		await expect(
 			claimNoticeReturns({ now: new Date("2026-10-02T00:00:00Z") }),
 		).rejects.toThrow("storage unavailable");
+	});
+
+	it("does not erase a malformed first exposure record", async () => {
+		stored[storageKey(7)] = {
+			firstViewedDate: "bad-date",
+			returnAttempted: false,
+		};
+		await expect(recordFirstNoticeExposure({ noticeId: 7 })).rejects.toThrow(
+			"형식",
+		);
+		await expect(claimNoticeReturns()).rejects.toThrow("형식");
+		expect(set).not.toHaveBeenCalled();
+		expect(stored[storageKey(7)]).toEqual({
+			firstViewedDate: "bad-date",
+			returnAttempted: false,
+		});
 	});
 });

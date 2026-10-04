@@ -1,4 +1,4 @@
-const STORAGE_KEY = "noticeFirstExposures";
+const STORAGE_PREFIX = "noticeFirstExposure:";
 const KST_FORMATTER = new Intl.DateTimeFormat("en-US", {
 	timeZone: "Asia/Seoul",
 	year: "numeric",
@@ -13,12 +13,15 @@ export async function recordFirstNoticeExposure({
 	noticeId: number;
 	now?: Date;
 }): Promise<void> {
-	const exposures = await readExposures();
-	const key = String(noticeId);
-	if (exposures[key]) return;
-
-	exposures[key] = { firstViewedDate: getKstDate(now), returnAttempted: false };
-	await chrome.storage.local.set({ [STORAGE_KEY]: exposures });
+	const key = `${STORAGE_PREFIX}${noticeId}`;
+	const stored = (await chrome.storage.local.get(key))[key];
+	if (stored !== undefined) {
+		readExposure(stored);
+		return;
+	}
+	await chrome.storage.local.set({
+		[key]: { firstViewedDate: getKstDate(now), returnAttempted: false },
+	});
 }
 
 export async function claimNoticeReturns({
@@ -26,23 +29,29 @@ export async function claimNoticeReturns({
 }: {
 	now?: Date;
 } = {}): Promise<NoticeReturn[]> {
-	const exposures = await readExposures();
+	const stored = await chrome.storage.local.get(null);
 	const today = getKstDate(now);
 	const returns: NoticeReturn[] = [];
+	const updates: Record<string, NoticeExposure> = {};
 
-	for (const [id, exposure] of Object.entries(exposures)) {
+	for (const [key, value] of Object.entries(stored)) {
+		if (!key.startsWith(STORAGE_PREFIX)) continue;
+		const id = key.slice(STORAGE_PREFIX.length);
+		if (!/^[1-9]\d*$/.test(id))
+			throw new Error("공지 첫 노출 기록 형식이 올바르지 않습니다");
+		const exposure = readExposure(value);
 		if (exposure.returnAttempted) continue;
 
 		const daysSinceView = differenceInDays(today, exposure.firstViewedDate);
 		if (daysSinceView < 1 || daysSinceView > 7) continue;
 
-		exposure.returnAttempted = true;
+		updates[key] = { ...exposure, returnAttempted: true };
 		returns.push({ noticeId: Number(id), daysSinceView });
 	}
 
 	if (returns.length > 0) {
 		// The marker records an attempt, because analytics delivery is not acknowledged.
-		await chrome.storage.local.set({ [STORAGE_KEY]: exposures });
+		await chrome.storage.local.set(updates);
 	}
 
 	return returns;
@@ -61,23 +70,19 @@ function differenceInDays(today: string, firstViewedDate: string): number {
 	return (todayTime - firstTime) / 86_400_000;
 }
 
-async function readExposures(): Promise<Record<string, NoticeExposure>> {
-	const result = await chrome.storage.local.get(STORAGE_KEY);
-	const stored = result[STORAGE_KEY];
-	if (!stored || typeof stored !== "object" || Array.isArray(stored)) return {};
-
-	return Object.fromEntries(
-		Object.entries(stored).filter(([id, value]) => {
-			if (!/^\d+$/.test(id) || !value || typeof value !== "object")
-				return false;
-			const exposure = value as Partial<NoticeExposure>;
-			return (
-				typeof exposure.firstViewedDate === "string" &&
-				/^\d{4}-\d{2}-\d{2}$/.test(exposure.firstViewedDate) &&
-				typeof exposure.returnAttempted === "boolean"
-			);
-		}),
-	) as Record<string, NoticeExposure>;
+function readExposure(value: unknown): NoticeExposure {
+	if (!value || typeof value !== "object" || Array.isArray(value)) {
+		throw new Error("공지 첫 노출 기록 형식이 올바르지 않습니다");
+	}
+	const exposure = value as Partial<NoticeExposure>;
+	if (
+		typeof exposure.firstViewedDate !== "string" ||
+		!/^\d{4}-\d{2}-\d{2}$/.test(exposure.firstViewedDate) ||
+		typeof exposure.returnAttempted !== "boolean"
+	) {
+		throw new Error("공지 첫 노출 기록 형식이 올바르지 않습니다");
+	}
+	return exposure as NoticeExposure;
 }
 
 interface NoticeExposure {

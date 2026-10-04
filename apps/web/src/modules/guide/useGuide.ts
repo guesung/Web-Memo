@@ -45,7 +45,7 @@ export default function useGuide({ lng }: UseGuideProps) {
 			clearInterval(sidePanelPollingInterval);
 		};
 
-		const guideSteps: IFGuideStep[] = [
+		const allGuideSteps: IFGuideStep[] = [
 			{
 				name: "welcome",
 				step: {
@@ -116,6 +116,10 @@ export default function useGuide({ lng }: UseGuideProps) {
 				},
 			},
 		];
+		const guideSteps =
+			localStorage.getItem("installGuideVisited") !== null
+				? allGuideSteps.slice(0, 2)
+				: allGuideSteps;
 
 		/**
 		 * 대상 요소가 DOM에 있는 다음 단계로 넘어가고, 없으면 가이드를 끝낸다.

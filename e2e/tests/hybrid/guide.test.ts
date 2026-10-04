@@ -9,6 +9,7 @@ const isMacOS = process.platform === "darwin";
 async function clearGuideLocalStorage(page: import("@playwright/test").Page) {
 	await page.evaluate(() => {
 		localStorage.removeItem("guide");
+		localStorage.removeItem("installGuideVisited");
 	});
 }
 
@@ -60,6 +61,29 @@ test.describe("가이드 기능", () => {
 		await expect(page.locator("#driver-popover-description")).toHaveText(
 			"Great! Now you can write memos. Don't worry, they save automatically.",
 		);
+	});
+
+	test("설치 가이드 경유 후에는 저장 단계까지만 안내한다.", async ({
+		page,
+	}) => {
+		await page.goto(`/${LANGUAGE}${PATHS.login}`);
+		await clearGuideLocalStorage(page);
+		await page.evaluate(() => {
+			localStorage.setItem("installGuideVisited", "1");
+		});
+
+		await page.getByTestId("test-login-button").click();
+		await page.waitForURL(new RegExp(`/${LANGUAGE}${PATHS.memos}`));
+		await expect(page.locator("#driver-popover-description")).toContainText(
+			"Ready to start?",
+		);
+
+		await page.locator(".driver-popover-next-btn").click();
+		await expect(page.locator("#driver-popover-description")).toHaveText(
+			"Great! Now you can write memos. Don't worry, they save automatically.",
+		);
+		await page.locator(".driver-popover-next-btn").click();
+		await expect(page.locator("#driver-popover")).toBeHidden();
 	});
 
 	test("5단계에서 메모 새로고침 버튼을 누르면, 가이드가 종료된다.", async ({

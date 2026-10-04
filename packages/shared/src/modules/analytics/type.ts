@@ -169,6 +169,10 @@ export type TAnalyticsEvent =
 	  }
 	| { name: "highlight_bubble_disable"; params: { scope: "site" | "all" } }
 	| { name: "notice_view"; params: { notice_id: number } }
+	| {
+			name: "notice_return";
+			params: { notice_id: number; days_since_view: number };
+	  }
 	| { name: "notice_dismiss"; params: { notice_id: number } }
 	| {
 			name: "past_memo_show";
@@ -293,6 +297,7 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	highlight_create: "core_action",
 	highlight_bubble_disable: "engagement",
 	notice_view: "engagement",
+	notice_return: "engagement",
 	notice_dismiss: "engagement",
 	past_memo_show: "engagement",
 	past_memo_open: "core_action",

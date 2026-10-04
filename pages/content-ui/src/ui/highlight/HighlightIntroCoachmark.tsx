@@ -17,7 +17,7 @@ export const HighlightIntroCoachmark = (
 	return (
 		<div
 			role="note"
-			className={`absolute left-0 flex w-64 flex-col gap-2 rounded-lg border bg-popover p-3 text-sm text-popover-foreground shadow-lg animate-fade-in ${placementClassName}`}
+			className={`absolute left-0 flex w-64 flex-col gap-2 rounded-lg border bg-popover p-3 text-sm text-popover-foreground shadow-lg animate-fade-in motion-reduce:animate-none ${placementClassName}`}
 		>
 			<p>{I18n.get("highlight_intro_message")}</p>
 			<Button

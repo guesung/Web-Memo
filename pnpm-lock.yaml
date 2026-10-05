@@ -209,6 +209,9 @@ importers:
       '@babel/core':
         specifier: ^7.25.2
         version: 7.29.0
+      '@babel/plugin-transform-react-jsx':
+        specifier: 7.28.6
+        version: 7.28.6(@babel/core@7.29.0)
       '@types/chrome':
         specifier: ^0.0.268
         version: 0.0.268

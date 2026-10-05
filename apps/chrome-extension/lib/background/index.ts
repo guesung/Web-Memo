@@ -39,9 +39,9 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 	const uiLanguage = I18n.getUILanguage();
 	if (!language) ChromeSyncStorage.set(STORAGE_KEYS.language, uiLanguage);
 
-	// 처음 설치했을 때만 웹을 열어 로그인으로 이어지게 합니다. 업데이트에서는 열지 않습니다.
+	// 처음 설치했을 때만 로그인 전 가이드를 엽니다. 업데이트에서는 열지 않습니다.
 	if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-		await openMemosTabOnInstall();
+		await openInstallGuideTab();
 	}
 });
 
@@ -50,19 +50,19 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 chrome.runtime.setUninstallURL(`${CONFIG.webUrl}/uninstall`);
 
 /**
- * 설치 직후 웹의 메모 페이지를 새 탭으로 엽니다.
+ * 설치 직후 웹의 공개 가이드를 새 탭으로 엽니다.
  * @description 확장의 client_id를 `ext_cid`로 실어 보내 웹 가입까지 한 사용자로 이어 집계합니다.
  * client_id를 얻지 못하면 `ext_cid` 없이 엽니다.
  */
-const openMemosTabOnInstall = async () => {
-	const memosUrl = new URL(`${CONFIG.webUrl}/memos`);
+const openInstallGuideTab = async () => {
+	const guideUrl = new URL(`${CONFIG.webUrl}/install`);
 	const clientId = await analytics.getExtensionClientId();
 
 	if (clientId) {
-		memosUrl.searchParams.set("ext_cid", clientId);
+		guideUrl.searchParams.set("ext_cid", clientId);
 	}
 
-	await Tab.create({ url: memosUrl.toString() });
+	await Tab.create({ url: guideUrl.toString() });
 };
 
 // 확장 프로그램이 설치되었을 때 contextMenus를 설정한다.

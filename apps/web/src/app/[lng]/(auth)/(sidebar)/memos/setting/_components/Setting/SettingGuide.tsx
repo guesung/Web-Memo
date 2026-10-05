@@ -29,6 +29,7 @@ export default function SettingGuide({ lng }: IFSettingGuideProps) {
 		}
 
 		LocalStorage.remove("guide");
+		localStorage.removeItem("installGuideVisited");
 		router.push(`/${lng}${PATHS.memos}`);
 	};
 

@@ -1,8 +1,10 @@
+import * as Sentry from "@sentry/react-native";
 import {
 	focusManager,
 	QueryClient,
 	QueryClientProvider,
 } from "@tanstack/react-query";
+import * as Linking from "expo-linking";
 import * as Notifications from "expo-notifications";
 import { Stack, useRouter } from "expo-router";
 import { useShareIntent } from "expo-share-intent";
@@ -15,6 +17,10 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthProvider";
 import { ThemeProvider, useTheme } from "@/lib/context/ThemeContext";
+import {
+	recordEntryTrace,
+	reportEntryError,
+} from "@/lib/monitoring/entryTrace";
 import { syncNotificationTimezone } from "@/lib/notifications/registerPushToken";
 import { useNotificationObserver } from "@/lib/notifications/useNotificationObserver";
 import { handleSharedUrl } from "@/lib/sharing/shareHandler";
@@ -93,6 +99,11 @@ function ShareIntentHandler() {
 		if (!hasShareIntent || !shareIntent) return;
 
 		const url = shareIntent.webUrl || shareIntent.text;
+		recordEntryTrace({
+			source: "share",
+			stage: "received",
+			url: url ?? undefined,
+		});
 		if (!url?.startsWith("http")) {
 			resetShareIntent();
 			return;
@@ -118,7 +129,8 @@ function ShareIntentHandler() {
 				}
 				setTimeout(() => setShareToast(null), 3000);
 			})
-			.catch(() => {
+			.catch((error) => {
+				reportEntryError(error, { source: "share", stage: "save", url });
 				setShareToast("저장에 실패했습니다");
 				setTimeout(() => setShareToast(null), 3000);
 			})
@@ -200,14 +212,35 @@ function ThemedStack() {
 	);
 }
 
-export default function RootLayout() {
+function RootLayout() {
 	useEffect(() => {
+		recordEntryTrace({ source: "app", stage: "root.mounted" });
 		SplashScreen.hideAsync();
+		void Linking.getInitialURL()
+			.then((url) => {
+				if (url) recordEntryTrace({ source: "link", stage: "initial", url });
+			})
+			.catch((error) =>
+				reportEntryError(error, { source: "link", stage: "initial.read" }),
+			);
+		const subscription = Linking.addEventListener("url", ({ url }) => {
+			recordEntryTrace({
+				source: "link",
+				stage: "received",
+				url: url ?? undefined,
+			});
+		});
+		return () => subscription.remove();
 	}, []);
 
 	// React Native에는 브라우저 focus 이벤트가 없으므로 앱이 foreground로 돌아올 때를 focus로 알린다.
 	useEffect(() => {
 		const subscription = AppState.addEventListener("change", (status) => {
+			recordEntryTrace({
+				source: "app",
+				stage: "state.changed",
+				data: { state: status },
+			});
 			focusManager.setFocused(status === "active");
 		});
 
@@ -230,3 +263,5 @@ export default function RootLayout() {
 		</QueryClientProvider>
 	);
 }
+
+export default Sentry.wrap(RootLayout);

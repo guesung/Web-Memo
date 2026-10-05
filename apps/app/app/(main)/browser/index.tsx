@@ -7,6 +7,10 @@ import { GestureDetector } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
 import { WebView } from "react-native-webview";
 import { flushMemoAutoSaveSessions } from "@/lib/memoAutoSaveSession";
+import {
+	recordEntryTrace,
+	reportEntryError,
+} from "../../../lib/monitoring/entryTrace";
 import { AISheet } from "./_components/AISheet";
 import { BrowserHeader } from "./_components/BrowserHeader";
 import { DraggableFab } from "./_components/DraggableFab";
@@ -194,6 +198,54 @@ export default function BrowserScreen() {
 					<WebView
 						ref={webViewRef}
 						source={{ uri: currentUrl }}
+						onLoadStart={(event) =>
+							recordEntryTrace({
+								source: "webview",
+								stage: "load_start",
+								url: event.nativeEvent.url,
+							})
+						}
+						onLoadEnd={(event) =>
+							recordEntryTrace({
+								source: "webview",
+								stage: "load_end",
+								url: event.nativeEvent.url,
+							})
+						}
+						onError={(event) =>
+							recordEntryTrace({
+								source: "webview",
+								stage: "load_error",
+								url: event.nativeEvent.url,
+								data: { code: event.nativeEvent.code },
+							})
+						}
+						onHttpError={(event) =>
+							recordEntryTrace({
+								source: "webview",
+								stage: "http_error",
+								url: event.nativeEvent.url,
+								data: { statusCode: event.nativeEvent.statusCode },
+							})
+						}
+						onContentProcessDidTerminate={(event) =>
+							reportEntryError(
+								new Error("WebView content process terminated"),
+								{
+									source: "webview",
+									stage: "ios_content_process_terminated",
+									url: event.nativeEvent.url,
+								},
+							)
+						}
+						onRenderProcessGone={(event) =>
+							reportEntryError(new Error("WebView render process gone"), {
+								source: "webview",
+								stage: "android_render_process_gone",
+								url: currentUrl,
+								data: { didCrash: event.nativeEvent.didCrash },
+							})
+						}
 						onNavigationStateChange={handleNavigationStateChange}
 						onMessage={handleWebViewMessage}
 						onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}

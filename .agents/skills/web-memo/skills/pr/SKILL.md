@@ -39,10 +39,15 @@ argument-hint: '[PR 제목·본문 추가 지시 (선택)]'
 1. **대상인지 판정한다.** `git fetch origin <base>` 뒤 `git diff --name-only origin/<base>...HEAD`에서 아래 경로로 시작하는 파일이 하나라도 있으면 대상이다.
    - `apps/web/` · `apps/app/` · `packages/` — 공용 패키지만 바꿔도 웹·앱 동작이 달라지므로 포함한다.
    - 하나도 없으면(문서·스킬·CI·확장만 바꾼 경우) 건너뛰고 `건너뜀 (앱/웹 변경 없음)`으로 기록한다.
-2. **이미 들어갔는지 확인한다.** `git fetch origin develop` 뒤 `git merge-base --is-ancestor HEAD origin/develop`이 성공하면 호출자(`/web-memo:implement` ②·`/web-memo:implement-loop` ③(a))가 이미 머지한 것이다. 다시 머지하지 않고 `이미 반영됨`으로 기록한다.
-3. **머지한다.** [`/common:md`](../../../common/skills/md/SKILL.md)를 실행한다(현재 브랜치를 develop에 `--no-ff` 머지 → push → 원래 브랜치 복귀). 스크립트가 로컬과 `origin` 양쪽에서 develop(없으면 dev)을 찾으므로 `git branch --list`로 따로 확인하지 않는다 — 로컬 브랜치만 보면 원격에만 있는 develop을 놓친다.
-4. **실패하면 우회하지 않는다.** 충돌·push 거절·`develop/dev 브랜치가 없습니다`·`이미 develop 브랜치입니다`로 끝나면 스크립트 출력을 그대로 전달하고 멈춘다([autonomy.md](../../autonomy.md)의 develop 머지 충돌 항목). develop은 다른 작업의 커밋이 섞이는 곳이라 임의로 해결하거나 브랜치를 만들지 않는다. **PR 생성은 그대로 이어가고**, 9단계 출력과 PR 본문 `## Test plan`에 `develop 머지 실패 — <사유>`를 적어 사람이 놓치지 않게 한다.
-5. 호출자에게 상태 파일이 있으면(`/web-memo:implement`의 `.omc/state/web-memo-implement.json`) `merge`에 결과를 적는다.
+2. **이미 들어갔는지 확인한다.** 로컬·원격 ref를 확인해 `develop`(없으면 `dev`)을 대상으로 정한다. 원격 대상이 있으면 `git fetch origin <대상>` 뒤 `git merge-base --is-ancestor HEAD origin/<대상>`을 확인한다. 성공하면 호출자(`/web-memo:implement` ②·`/web-memo:implement-loop` ③(a))가 이미 머지한 것이므로 `이미 반영됨`으로 기록한다. 원격 대상이 없으면 로컬 대상만 확인하고 3단계로 간다.
+3. **머지한다.** 깨끗한 워킹트리에서 작업 브랜치명과 HEAD를 기록한 뒤 `/common:md`의 `merge-to-develop`을 실행한다(대상 브랜치에 `--no-ff` 머지 → push → 원래 브랜치 복귀). 스크립트가 로컬과 `origin` 양쪽에서 develop(없으면 dev)을 찾으므로 `git branch --list`만으로 대상 유무를 판단하지 않는다.
+4. **충돌이면 진행 중인 merge를 직접 마무리한다.** 스크립트는 충돌 시 대상 브랜치에 `MERGE_HEAD`를 남긴 채 종료한다. 현재 브랜치가 실제 대상(`develop`, 없으면 `dev`)이고 `git rev-parse -q --verify MERGE_HEAD`가 기록한 작업 HEAD와 같으며 `git diff --name-only --diff-filter=U`에 파일이 있을 때만 충돌 복구로 들어간다. 이 조건이 아니면 충돌로 추측하지 않고 5단계로 간다. 스크립트를 다시 실행하지 않는다.
+   - 충돌 파일마다 양쪽 변경과 호출부를 읽고 **대상 브랜치의 기존 동작과 이번 작업의 변경을 함께 살린다.** 삭제/수정·이름 변경·바이너리처럼 한쪽을 선택해야 하면 이유를 `[AI 자동 결정]`으로 기록한다. 필요하면 관련 테스트도 고친다.
+   - lockfile은 충돌 마커를 손으로 합치지 않는다. manifest 충돌을 먼저 해결하고 대상 브랜치 버전(`--ours`)에서 패키지 매니저의 일반 install로 다시 생성한다. 해결·검증 과정에서 수정한 파일을 모두 `git add`한 뒤 미해결 파일과 해결 파일의 충돌 마커가 없음을 확인한다.
+   - **커밋·push 전에 검증한다.** 충돌과 직접 관련된 테스트를 먼저 실행하고, 변경된 앱·패키지에 적용되는 타입체크·lint·build를 실행한다(`package.json`에 있는 명령만). 실패하면 고쳐 다시 검증한다. 검증을 통과한 경우에만 `git diff --cached --check`를 확인하고 `git commit --no-edit`로 merge 커밋을 만든다. 훅을 우회하지 않는다.
+   - push 직전에 원격 대상이 있으면 `git fetch origin <대상>`으로 갱신하고 이번 merge의 첫 번째 부모와 같은지 확인한다. 원격 대상이 없었다면 여전히 없는지 확인한다. 상태가 달라졌으면 push하지 않고 5단계로 간다. 같으면 `git push origin <대상>`(force 없음) 후 원격 대상 SHA가 로컬 merge 커밋 SHA와 같은지 확인하고 **원래 작업 브랜치로 복귀한다.** 해결 파일·검증 결과·merge SHA를 기록한다.
+5. **그 밖의 실패는 정확히 분류하고 정리한다.** `develop/dev` 부재, 이미 대상 브랜치에 있음, 인증·네트워크 오류, 로컬/원격 대상 이력 분기, push 거절, 검증 실패를 충돌로 취급하지 않는다. 원인과 현재 브랜치·merge 상태를 확인해 기록한다. 복구 중 검증이 실패하거나 안전한 해결 근거가 없으면 push하지 않는다. 아직 `MERGE_HEAD`가 있으면 `git merge --abort`로 이번 merge를 끝내고, 이미 이번 merge 커밋을 만들었으나 push하지 못했으면 기록한 첫 번째 부모로 로컬 대상만 되돌린다. **이번 호출이 만든 상태임을 확인한 경우에만** 정리하고 원래 작업 브랜치로 복귀한다. 상태를 증명할 수 없으면 추가 수정 없이 중단해 현재 상태를 보고한다. 정리 후 **PR 생성은 계속하고**, 9단계 출력과 PR 본문 `## Test plan`에 `develop 머지 실패 — <사유>`를 남긴다. 성공으로 기록할 때는 원격 SHA 확인과 원래 브랜치 복귀까지 끝나 있어야 한다.
+6. 호출자에게 상태 파일이 있으면(`/web-memo:implement`의 `.omc/state/web-memo-implement.json`) `merge`에 검증된 결과를 적는다.
 
 ## base 충돌 해결
 

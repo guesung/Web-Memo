@@ -52,6 +52,13 @@ import {
 } from "../_utils/browserPreferences";
 import { formatUrl } from "../_utils/formatUrl";
 import {
+	beginNavigation,
+	cancelNavigation,
+	createBrowserNavigationState,
+	markNavigationLoadStart,
+	reconcileNavigation,
+} from "../_utils/navigationTransition";
+import {
 	isInAppLoadableUrl,
 	openExternalUrl,
 } from "../_utils/webViewNavigation";
@@ -108,6 +115,11 @@ export function useBrowserState({
 		removeTab,
 	} = useBrowserTabs();
 	const currentUrl = activeTab.url;
+	// WebView가 보고한 URL을 source로 되돌리면 리다이렉트 때 native loadUrl이 다시 실행된다.
+	// source는 앱이 직접 연 URL에서만 바꾼다.
+	const [webViewSource, setWebViewSource] = useState(() =>
+		createBrowserNavigationState(currentUrl),
+	);
 	const pageTitle = activeTab.title;
 	const [pageFavIconUrl, setPageFavIconUrl] = useState<string | undefined>(
 		undefined,
@@ -143,6 +155,16 @@ export function useBrowserState({
 	// 읽기 위치 저장/복원용 ref (스크롤 메시지는 stale closure를 피하려 ref로 현재 URL 참조)
 	const currentUrlRef = useRef("");
 	currentUrlRef.current = currentUrl;
+	const navigationStateRef = useRef(createBrowserNavigationState(currentUrl));
+	const requestWebViewNavigation = (url: string): void => {
+		const next = beginNavigation(
+			navigationStateRef.current,
+			currentUrlRef.current,
+			url,
+		);
+		navigationStateRef.current = next;
+		setWebViewSource(next);
+	};
 	const restoredUrlRef = useRef<string | null>(null);
 	const scrollSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const pendingScrollRef = useRef<{
@@ -253,6 +275,15 @@ export function useBrowserState({
 		getUnlockedDomains().then(setUnlockedDomains);
 	}, []);
 
+	// 저장된 탭을 처음 읽었을 때 WebView의 요청 URL도 복원한다.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: 최초 로드만 동기화하며 이후 탭 전환은 resetForTabChange에서 처리한다.
+	useEffect(() => {
+		if (!isTabsLoaded) return;
+		const restored = createBrowserNavigationState(activeTab.url);
+		navigationStateRef.current = restored;
+		setWebViewSource(restored);
+	}, [isTabsLoaded]);
+
 	useFocusEffect(
 		useCallback(() => {
 			return () => {
@@ -285,6 +316,7 @@ export function useBrowserState({
 		// Expo Router가 쿼리와 useLocalSearchParams에서 각각 디코딩하므로 여기서는 원문을 쓴다.
 		setBlogReadingOriginUrl(sourceParam === "blog-reading" ? paramUrl : null);
 		if (newTabParam !== "1") {
+			requestWebViewNavigation(paramUrl);
 			updateActiveTabInfo({ url: paramUrl, title: "" });
 			setIsMemoOpen(false);
 			setSelectedMemoId(null);
@@ -311,6 +343,7 @@ export function useBrowserState({
 			return;
 		}
 
+		requestWebViewNavigation(paramUrl);
 		setIsMemoOpen(false);
 		setSelectedMemoId(null);
 		panelHeight.value = 0;
@@ -322,6 +355,13 @@ export function useBrowserState({
 	}, [paramUrl, navTs, newTabParam, sourceParam, panelHeight, isTabsLoaded]);
 
 	const handleNavigationStateChange = (navState: WebViewNavigation) => {
+		const transition = reconcileNavigation(
+			navigationStateRef.current,
+			navState.url,
+			navState.loading,
+		);
+		navigationStateRef.current = transition.state;
+		if (!transition.accept) return;
 		if (getPageKey(navState.url) !== pageKey) onBeforeMemoLeave?.();
 		syncCanGoBack(navState.canGoBack);
 		updateActiveTabInfo({ url: navState.url, title: navState.title ?? "" });
@@ -341,6 +381,17 @@ export function useBrowserState({
 				restoreScrollPosition(navState.url);
 			}
 		}
+	};
+
+	const handleWebViewLoadError = (): void => {
+		navigationStateRef.current = cancelNavigation(navigationStateRef.current);
+	};
+
+	const handleWebViewLoadStart = (url: string): void => {
+		navigationStateRef.current = markNavigationLoadStart(
+			navigationStateRef.current,
+			url,
+		);
 	};
 
 	/** 저장된 읽기 위치가 있으면 해당 위치로 스크롤을 복원한다 */
@@ -409,6 +460,7 @@ export function useBrowserState({
 			const fallbackUrl = await openExternalUrl(request.url);
 			if (fallbackUrl) {
 				onBeforeMemoLeave?.();
+				requestWebViewNavigation(fallbackUrl);
 				updateActiveTabInfo({ url: fallbackUrl });
 			}
 		};
@@ -422,6 +474,7 @@ export function useBrowserState({
 		if (!url) return;
 		onBeforeMemoLeave?.();
 		Keyboard.dismiss();
+		requestWebViewNavigation(url);
 		updateActiveTabInfo({ url, title: "" });
 		if (isMemoOpen) {
 			setIsMemoOpen(false);
@@ -783,11 +836,13 @@ export function useBrowserState({
 
 	const handleBlogSelect = (url: string) => {
 		onBeforeMemoLeave?.();
+		requestWebViewNavigation(url);
 		updateActiveTabInfo({ url, title: "" });
 	};
 
 	/** 탭이 바뀔 때 이전 탭의 화면 상태(메모 패널·선택 메모·주소창)를 비운다 */
 	const resetForTabChange = (nextUrl: string): void => {
+		requestWebViewNavigation(nextUrl);
 		setIsMemoOpen(false);
 		setSelectedMemoId(null);
 		panelHeight.value = 0;
@@ -871,6 +926,8 @@ export function useBrowserState({
 		insets,
 		webViewRef,
 		currentUrl,
+		webViewSourceUrl: webViewSource.sourceUrl,
+		webViewRevision: webViewSource.revision,
 		isFromBlogReading,
 		selectedMemoId,
 		setSelectedMemoId,
@@ -898,6 +955,8 @@ export function useBrowserState({
 		resizeGesture,
 		handleUrlSubmit,
 		handleNavigationStateChange,
+		handleWebViewLoadStart,
+		handleWebViewLoadError,
 		handleShouldStartLoadWithRequest,
 		handleWebViewMessage,
 		handleWishToggle,

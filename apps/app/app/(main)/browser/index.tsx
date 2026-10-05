@@ -49,6 +49,8 @@ export default function BrowserScreen() {
 		insets,
 		webViewRef,
 		currentUrl,
+		webViewSourceUrl,
+		webViewRevision,
 		isFromBlogReading,
 		selectedMemoId,
 		setSelectedMemoId,
@@ -75,6 +77,8 @@ export default function BrowserScreen() {
 		resizeGesture,
 		handleUrlSubmit,
 		handleNavigationStateChange,
+		handleWebViewLoadStart,
+		handleWebViewLoadError,
 		handleShouldStartLoadWithRequest,
 		handleWebViewMessage,
 		handleWishToggle,
@@ -196,15 +200,17 @@ export default function BrowserScreen() {
 			>
 				<View className="flex-1">
 					<WebView
+						key={webViewRevision}
 						ref={webViewRef}
-						source={{ uri: currentUrl }}
-						onLoadStart={(event) =>
+						source={{ uri: webViewSourceUrl }}
+						onLoadStart={(event) => {
+							handleWebViewLoadStart(event.nativeEvent.url);
 							recordEntryTrace({
 								source: "webview",
 								stage: "load_start",
 								url: event.nativeEvent.url,
-							})
-						}
+							});
+						}}
 						onLoadEnd={(event) =>
 							recordEntryTrace({
 								source: "webview",
@@ -212,14 +218,15 @@ export default function BrowserScreen() {
 								url: event.nativeEvent.url,
 							})
 						}
-						onError={(event) =>
+						onError={(event) => {
+							handleWebViewLoadError();
 							recordEntryTrace({
 								source: "webview",
 								stage: "load_error",
 								url: event.nativeEvent.url,
 								data: { code: event.nativeEvent.code },
-							})
-						}
+							});
+						}}
 						onHttpError={(event) =>
 							recordEntryTrace({
 								source: "webview",

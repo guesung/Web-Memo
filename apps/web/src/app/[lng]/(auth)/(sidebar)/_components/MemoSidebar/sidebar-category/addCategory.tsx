@@ -120,7 +120,7 @@ export default memo(function SidebarMenuItemAddCategory({ lng }: LanguageType) {
 				onKeyDown={(e) => {
 					if (e.key === "Enter") {
 						e.preventDefault();
-						handleSubmit();
+						e.currentTarget.blur();
 					}
 					if (e.key === "Escape") {
 						handleCancel();

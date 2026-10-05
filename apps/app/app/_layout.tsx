@@ -1,8 +1,10 @@
+import * as Sentry from "@sentry/react-native";
 import {
 	focusManager,
 	QueryClient,
 	QueryClientProvider,
 } from "@tanstack/react-query";
+import * as Linking from "expo-linking";
 import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -18,6 +20,10 @@ import {
 } from "@/lib/analytics/AnalyticsTrackers";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthProvider";
 import { ThemeProvider, useTheme } from "@/lib/context/ThemeContext";
+import {
+	recordEntryTrace,
+	reportEntryError,
+} from "@/lib/monitoring/entryTrace";
 import { syncNotificationTimezone } from "@/lib/notifications/registerPushToken";
 import { useNotificationObserver } from "@/lib/notifications/useNotificationObserver";
 import { migrateSharedExtensionPendingUrls } from "@/lib/sharing/pendingSharedUrls";
@@ -170,15 +176,36 @@ function ThemedStack() {
 	);
 }
 
-export default function RootLayout() {
+function RootLayout() {
 	useEffect(() => {
+		recordEntryTrace({ source: "app", stage: "root.mounted" });
 		SplashScreen.hideAsync();
+		void Linking.getInitialURL()
+			.then((url) => {
+				if (url) recordEntryTrace({ source: "link", stage: "initial", url });
+			})
+			.catch((error) =>
+				reportEntryError(error, { source: "link", stage: "initial.read" }),
+			);
+		const subscription = Linking.addEventListener("url", ({ url }) => {
+			recordEntryTrace({
+				source: "link",
+				stage: "received",
+				url: url ?? undefined,
+			});
+		});
+		return () => subscription.remove();
 	}, []);
 	useRefreshOnForeground();
 
 	// React Native에는 브라우저 focus 이벤트가 없으므로 앱이 foreground로 돌아올 때를 focus로 알린다.
 	useEffect(() => {
 		const subscription = AppState.addEventListener("change", (status) => {
+			recordEntryTrace({
+				source: "app",
+				stage: "state.changed",
+				data: { state: status },
+			});
 			focusManager.setFocused(status === "active");
 		});
 
@@ -202,3 +229,5 @@ export default function RootLayout() {
 		</QueryClientProvider>
 	);
 }
+
+export default Sentry.wrap(RootLayout);

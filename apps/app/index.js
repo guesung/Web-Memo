@@ -1,3 +1,5 @@
+// Router와 공유 화면 모듈을 읽기 전에 오류 핸들러를 등록한다.
+import "./lib/monitoring/initSentry";
 // 본 앱의 진입점. expo-share-extension이 요구하는 index.js/index.share.js
 // 분리 구조로 옮기면서, 기존 "main": "expo-router/entry"를 대체한다.
 import "expo-router/entry";

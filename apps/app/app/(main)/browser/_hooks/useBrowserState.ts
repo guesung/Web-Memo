@@ -41,6 +41,7 @@ import {
 	saveScrollPosition,
 } from "@/lib/storage/scrollPositions";
 import { supabase } from "@/lib/supabase/client";
+import { recordEntryTrace } from "../../../../lib/monitoring/entryTrace";
 import { WEB_API_ORIGIN } from "../_constants/webApi";
 import {
 	addUnlockedDomain,
@@ -263,8 +264,23 @@ export function useBrowserState({
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: navTs는 동일 url 재진입 시에도 effect를 재실행시키기 위한 네비게이션 nonce
 	useEffect(() => {
+		recordEntryTrace({
+			source: "browser",
+			stage: "route_effect",
+			url: paramUrl,
+			data: {
+				hasUrl: Boolean(paramUrl),
+				isTabsLoaded,
+				isNewTab: newTabParam === "1",
+			},
+		});
 		// 탭 저장본 로드가 끝나기 전에 열면, 로드된 저장본이 paramUrl로 연 탭을 덮어쓴다.
 		if (!paramUrl || !isTabsLoaded) return;
+		recordEntryTrace({
+			source: "browser",
+			stage: "route_apply_before",
+			url: paramUrl,
+		});
 		onBeforeMemoLeave?.();
 		// Expo Router가 쿼리와 useLocalSearchParams에서 각각 디코딩하므로 여기서는 원문을 쓴다.
 		setBlogReadingOriginUrl(sourceParam === "blog-reading" ? paramUrl : null);
@@ -273,6 +289,11 @@ export function useBrowserState({
 			setIsMemoOpen(false);
 			setSelectedMemoId(null);
 			panelHeight.value = 0;
+			recordEntryTrace({
+				source: "browser",
+				stage: "route_apply_after",
+				url: paramUrl,
+			});
 			return;
 		}
 
@@ -282,12 +303,22 @@ export function useBrowserState({
 		if (next.activeTabId !== activeTabId) {
 			const nextTab = next.tabs.find((tab) => tab.id === next.activeTabId);
 			resetForTabChange(nextTab?.url ?? "");
+			recordEntryTrace({
+				source: "browser",
+				stage: "new_tab_after",
+				url: paramUrl,
+			});
 			return;
 		}
 
 		setIsMemoOpen(false);
 		setSelectedMemoId(null);
 		panelHeight.value = 0;
+		recordEntryTrace({
+			source: "browser",
+			stage: "route_apply_after",
+			url: paramUrl,
+		});
 	}, [paramUrl, navTs, newTabParam, sourceParam, panelHeight, isTabsLoaded]);
 
 	const handleNavigationStateChange = (navState: WebViewNavigation) => {

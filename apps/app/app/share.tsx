@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
 import { View } from "react-native";
 import { ShareToast } from "@/components/ShareToast";
+import { recordEntryTrace } from "@/lib/monitoring/entryTrace";
 import { useSharedUrlToast } from "@/lib/sharing/useSharedUrlToast";
 
 /**
@@ -28,9 +29,11 @@ export default function ShareDeepLinkScreen() {
 			return;
 		}
 		hasProcessedRef.current = true;
+		recordEntryTrace({ source: "share", stage: "received", url });
 
 		processSharedUrl(url, title).then((result) => {
 			if (result && !result.saved) {
+				recordEntryTrace({ source: "share", stage: "navigation_before", url });
 				router.replace({
 					pathname: "/(main)/browser",
 					params: { url: encodeURIComponent(url), t: String(Date.now()) },

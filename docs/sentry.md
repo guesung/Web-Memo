@@ -6,7 +6,7 @@
 
 ## 프로젝트 두 개
 
-조직은 `guesung`이고, 확장과 웹이 **서로 다른 프로젝트**로 보냅니다. DSN은
+조직은 `guesung`이고, 확장과 웹이 **서로 다른 프로젝트**로 보냅니다. 모바일 앱은 현재 웹 프로젝트를 함께 사용하고 `runtime:mobile-app` 태그로 구분합니다. DSN은
 `packages/shared/src/constants/SentryDsn.ts`의 `SENTRY` 상수가 갖습니다.
 
 | 프로젝트 | ID | DSN 상수 | 보내는 곳 | 소스맵 업로드 |
@@ -22,6 +22,19 @@
   하이라이트 기능의 실패만 보고합니다.
 - 소스맵 업로드 토큰(`SENTRY_AUTH_TOKEN`)의 공급 경로는
   [environment-variables.md](environment-variables.md#sentry_auth_token은-확장과-웹이-서로-다른-경로로-받습니다)를 봅니다.
+
+## 모바일 앱 종료 추적
+
+- SDK: `@sentry/react-native ~7.2.0` (Expo SDK54). `apps/app/index.js`에서 Router를 읽기 전에 초기화하고 루트 화면을 `Sentry.wrap`으로 감쌉니다. 개발 번들은 전송하지 않고 새로 빌드한 설치본에서 전송합니다.
+- 프로젝트: [web-memo-web 이슈](https://guesung.sentry.io/issues/?project=4508674167406592&query=runtime%3Amobile-app). 기존 공개 `SENTRY.dsnWeb`을 사용합니다. 새 프로젝트 생성·알림 규칙 변경은 하지 않았습니다.
+- JS 예외와 SDK 초기화 이후 Android Java/NDK·iOS 네이티브 크래시를 수집합니다. 네이티브 크래시 보고는 다음 실행에서 전송될 수 있으므로 재현 후 앱을 다시 엽니다. SDK 초기화 이전 종료와 OS 강제 종료가 모두 수집된다고 보장하지 않습니다.
+- `app.entry` breadcrumb는 앱 시작·상태, 초기/실시간 딥링크·알림, 브라우저 URL 반영, WebView 로드·오류·렌더 프로세스 종료를 기록합니다. URL 원문·호스트·쿼리 값·알림 ID/본문은 수동 진단에 넣지 않습니다.
+- `sendDefaultPii: false`, 화면 캡처·뷰 계층 미첨부. JS HTTP/console breadcrumb는 버리고 JS 이벤트의 request/user/extra와 스택 변수·메시지 URL을 제거합니다. JS `beforeSend`는 네이티브 이벤트에 적용되지 않으므로 네이티브 SDK 기본 시스템 정보까지 이 필터로 제거된다고 보장하지 않습니다.
+- Expo plugin + Sentry Metro가 Debug ID/소스맵을 연결합니다. `.github/workflows/cd-app.yml`의 EAS **local** 빌드에 GitHub `SENTRY_AUTH_TOKEN`을 전달합니다. 직접 EAS cloud 빌드를 쓸 때는 별도로 EAS 빌드 환경에 토큰이 필요합니다. 토큰을 app.json·번들에 넣지 않습니다.
+- 새 설치본으로 위시리스트·알림 진입을 재현하고 플랫폼/앱 빌드 번호·재현 시각을 이슈의 release/dist와 비교합니다. 보고가 없으면 SDK 초기화 전 종료 여부를 Android `adb logcat -b crash`로 확인합니다.
+- 기존 조직 issue 웹훅은 새 이슈·재발을 Slack으로 릴레이하는 경로입니다. 이번 작업에서 Sentry 로그인 세션이 없어 실제 알림 조건과 수신은 검증하지 못했습니다. 같은 미해결 이슈의 매 발생마다 알림이 오는 구조는 아닙니다.
+
+공식 참고: [Expo 설정](https://docs.sentry.io/platforms/react-native/guides/expo/), [필터의 JS/native 범위](https://docs.sentry.io/platforms/react-native/configuration/filtering/), [초기화 이전 종료 한계](https://docs.sentry.io/platforms/react-native/manual-setup/native-init/).
 
 ## 인바운드 필터
 

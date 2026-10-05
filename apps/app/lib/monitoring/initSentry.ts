@@ -24,6 +24,7 @@ Sentry.init({
 	beforeBreadcrumb: filterAppBreadcrumb,
 	beforeSend: sanitizeAppEvent,
 	onReady: ({ didCallNativeInit }) => {
+		Sentry.setTag("runtime", "mobile-app");
 		recordEntryTrace({
 			source: "app",
 			stage: "sentry.ready",

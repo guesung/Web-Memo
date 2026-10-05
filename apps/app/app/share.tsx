@@ -33,7 +33,7 @@ export default function ShareDeepLinkScreen() {
 			if (result && !result.saved) {
 				router.replace({
 					pathname: "/(main)/browser",
-					params: { url, t: String(Date.now()) },
+					params: { url: encodeURIComponent(url), t: String(Date.now()) },
 				});
 				return;
 			}

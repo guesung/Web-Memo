@@ -1,6 +1,6 @@
 import * as Notifications from "expo-notifications";
-import { useRouter } from "expo-router";
-import { useEffect } from "react";
+import { useRootNavigationState, useRouter } from "expo-router";
+import { useEffect, useRef } from "react";
 
 /**
  * 알림 탭(포그라운드·백그라운드·콜드스타트)을 구독해 payload의 url을 앱 내 브라우저로 연다.
@@ -8,34 +8,73 @@ import { useEffect } from "react";
  */
 export function useNotificationObserver() {
 	const router = useRouter();
+	const navigationKey = useRootNavigationState()?.key;
+	const lastProcessedResponseRef = useRef<string | null>(null);
 
 	useEffect(() => {
+		if (!navigationKey) return;
+
+		let isCancelled = false;
+		let hasOpenedLiveResponse = false;
+
 		const openArticle = (response: Notifications.NotificationResponse) => {
+			if (isCancelled) return false;
+			if (
+				response.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER
+			) {
+				return false;
+			}
+
 			const url = response.notification.request.content.data?.url;
 
 			if (typeof url !== "string" || !url) {
-				return;
+				return false;
 			}
+
+			const responseId = `${response.notification.request.identifier}:${response.actionIdentifier}`;
+			if (lastProcessedResponseRef.current === responseId) return false;
+			lastProcessedResponseRef.current = responseId;
 
 			router.push({
 				pathname: "/(main)/browser",
-				params: { url, t: String(Date.now()) },
+				params: { url: encodeURIComponent(url), t: String(Date.now()) },
 			});
+
+			try {
+				const latest = Notifications.getLastNotificationResponse();
+				if (
+					latest?.notification.request.identifier ===
+						response.notification.request.identifier &&
+					latest.actionIdentifier === response.actionIdentifier
+				) {
+					Notifications.clearLastNotificationResponse();
+				}
+			} catch {
+				// 마지막 응답 정리가 실패해도 현재 탭 이동은 유지한다.
+			}
+			return true;
 		};
 
 		const openInitialResponse = async () => {
-			const response = await Notifications.getLastNotificationResponseAsync();
-
-			if (response) {
-				openArticle(response);
+			try {
+				const response = await Notifications.getLastNotificationResponseAsync();
+				if (!hasOpenedLiveResponse && response) openArticle(response);
+			} catch {
+				// 알림 응답을 읽지 못해도 리스너는 계속 처리한다.
 			}
 		};
 
-		openInitialResponse();
+		void openInitialResponse();
 
-		const subscription =
-			Notifications.addNotificationResponseReceivedListener(openArticle);
+		const subscription = Notifications.addNotificationResponseReceivedListener(
+			(response) => {
+				if (openArticle(response)) hasOpenedLiveResponse = true;
+			},
+		);
 
-		return () => subscription.remove();
-	}, [router]);
+		return () => {
+			isCancelled = true;
+			subscription.remove();
+		};
+	}, [router, navigationKey]);
 }

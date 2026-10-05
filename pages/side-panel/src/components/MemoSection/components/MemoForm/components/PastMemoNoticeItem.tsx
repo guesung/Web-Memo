@@ -37,11 +37,15 @@ const PastMemoNoticeItem = (props: IFPastMemoNoticeItemProps) => {
 				<span className="min-w-0 flex-1 truncate">
 					{props.relatedMemo.title}
 				</span>
-				{props.relatedMemo.updatedAt && (
+				{props.showOpenLabel ? (
+					<span className="shrink-0 font-medium text-primary">
+						{I18n.get("past_memo_open")}
+					</span>
+				) : props.relatedMemo.updatedAt ? (
 					<span className="shrink-0 text-muted-foreground">
 						{formatRelativeDate(props.relatedMemo.updatedAt)}
 					</span>
-				)}
+				) : null}
 			</button>
 		</li>
 	);
@@ -97,4 +101,6 @@ interface IFPastMemoNoticeItemProps {
 	relatedMemo: IFPastMemoRelated;
 	/** 행을 눌렀을 때. 메모를 남긴 원래 사이트를 새 탭으로 연다 */
 	onItemClick: () => void;
+	/** 첫 추천에는 바로 열 수 있음을 드러낸다 */
+	showOpenLabel?: boolean;
 }

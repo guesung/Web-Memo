@@ -194,6 +194,10 @@ export type TAnalyticsEvent =
 			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
 	  }
 	| {
+			name: "past_memo_expand";
+			params: { kind: "related"; source: "jev" };
+	  }
+	| {
 			name: "past_memo_dismiss";
 			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
 	  }
@@ -311,6 +315,7 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	notice_dismiss: "engagement",
 	past_memo_show: "engagement",
 	past_memo_open: "core_action",
+	past_memo_expand: "engagement",
 	past_memo_dismiss: "engagement",
 	memo_offline_queued: "engagement",
 	memo_offline_sync_result: "engagement",

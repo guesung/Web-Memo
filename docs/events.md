@@ -41,7 +41,7 @@
 | memo_offline_sync_result | 대기열 동기화 결과 | `trigger`, `synced_count`, `conflict_count`, `has_other_error` | 동기화가 충돌 없이 끝나는가 | — |
 | category_create / category_update / category_delete | 카테고리 생성·수정·삭제 (추정) | — | 카테고리 기능이 쓰이는가 (추정) | — |
 | category_suggestion_show / _apply / _dismiss | 카테고리 추천 노출·적용·닫음 | `is_new_category`, `source`: `jev` \| `llm` | 추천이 받아들여지는가 | — |
-| past_memo_show / _open / _dismiss | 과거 메모 판정 노출·열기·닫음 | `kind`: `duplicate` \| `related`, `source`: `rule` \| `jev` | 과거 메모 알림이 도움이 되는가 | — |
+| past_memo_show / _open / _dismiss / _expand | 과거 메모 종류별 노출·원문 열기·닫음·관련 목록 펼침. 노출과 첫 열기는 URL·종류당 한 번 집계하며, 중복·관련이 함께 있으면 종류별로 각각 노출·닫음을 기록 | `kind`: `duplicate` \| `related`, `source`: `rule` \| `jev` (`_expand`는 related/jev) | 과거 메모 안내를 보고 원문을 여는가 | — |
 | highlight_create | 하이라이트 생성 | `color`, `has_note` | 어떤 색·메모 여부로 쓰이는가 | — |
 | highlight_note_update | 하이라이트 메모 수정 (추정) | — | 하이라이트에 메모를 다는가 (추정) | — |
 | highlight_bubble_disable | 하이라이트 말풍선 끄기 | `scope`: `site` \| `all` | 말풍선이 거슬리는가 (추정) | — |
@@ -56,7 +56,7 @@
 | setting_change / extension_setting_change | 설정 변경 (추정) | `setting_keys` / `keys` | 어떤 설정을 바꾸는가 (추정) | — |
 | shortcut_change_click | 단축키 변경 버튼 클릭 (추정) | `is_success` | 단축키 변경이 성공하는가 (추정) | — |
 | export_run | 내보내기 실행 | `format` | 어떤 형식으로 내보내는가 | — |
-| login_start / login / sign_up / logout | 로그인 시작·완료·가입·로그아웃 (추정) | `method` (logout 없음) | 로그인 퍼널의 어디서 떨어지는가 (추정) | — |
+| login_start / login / sign_up / logout | `login_start`: 웹 로그인 제공자 버튼 클릭. `login`: OAuth 성공 후 메모 레이아웃에 도착한 클라이언트. `sign_up`: 같은 도착 시 신규 계정으로 판정된 경우. `logout`: 로그아웃 | `method` (logout 없음) | 제공자별 시작·도착 규모는? 두 이벤트에는 시도 식별자가 없으므로 사용자 수 비율을 실제 로그인 완료율로 단정하지 않는다 | DB-1160 |
 | side_panel_login_click / header_login_click / header_memos_click | 로그인·메모 진입 클릭 | `from`(header 계열, 언어 접두사를 뺀 경로) | 어느 자리에서 로그인·진입이 눌리는가 | — |
 | extension_install_click / extension_install_dismiss / extension_installed | 설치 버튼 클릭·닫음·설치 완료 | `from`, `position` | 어느 페이지·어느 버튼이 설치로 이어지는가 | — |
 | open_web_from_extension | 확장에서 웹 열기 | `from` | 웹으로 넘어가는 자리는 어디인가 | — |

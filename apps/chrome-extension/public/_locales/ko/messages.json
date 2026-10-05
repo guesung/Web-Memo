@@ -404,6 +404,12 @@
 	"highlight_bubble_disable": {
 		"message": "하이라이트 팝업 끄기"
 	},
+	"highlight_bubble_settings": {
+		"message": "하이라이트 팝업 설정"
+	},
+	"highlight_bubble_dismiss": {
+		"message": "이번 선택에서 팝업 닫기"
+	},
 	"highlight_bubble_disabled_title": {
 		"message": "하이라이트 팝업을 껐어요."
 	},
@@ -411,7 +417,7 @@
 		"message": "옵션에서 다시 켤 수 있어요."
 	},
 	"highlight_intro_message": {
-		"message": "웹 메모의 하이라이트예요. 색상을 누르면 문장을 저장하고, 메모도 남길 수 있어요. X 메뉴에서 위치를 바꾸거나 팝업을 끌 수 있어요."
+		"message": "웹 메모의 하이라이트예요. 색상을 누르면 문장을 저장하고, 메모도 남길 수 있어요. X는 이번 선택만 닫고, 설정에서 위치를 바꾸거나 팝업을 끌 수 있어요."
 	},
 	"highlight_intro_confirm": {
 		"message": "확인"
@@ -494,6 +500,18 @@
 			"count": {
 				"content": "$1",
 				"example": "3"
+			}
+		}
+	},
+	"past_memo_related_intro": {
+		"message": "관련 메모가 있어요"
+	},
+	"past_memo_related_more": {
+		"message": "나머지 $count$개 보기",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "2"
 			}
 		}
 	},

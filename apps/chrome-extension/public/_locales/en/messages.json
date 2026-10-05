@@ -404,6 +404,12 @@
 	"highlight_bubble_disable": {
 		"message": "Turn off highlight popup"
 	},
+	"highlight_bubble_settings": {
+		"message": "Highlight popup settings"
+	},
+	"highlight_bubble_dismiss": {
+		"message": "Dismiss popup for this selection"
+	},
 	"highlight_bubble_disabled_title": {
 		"message": "Highlight popup turned off."
 	},
@@ -411,7 +417,7 @@
 		"message": "You can turn it back on in Options."
 	},
 	"highlight_intro_message": {
-		"message": "This is Web Memo highlighting. Choose a color to save a passage or add a note. Open the X menu to change the popup position or turn it off."
+		"message": "This is Web Memo highlighting. Choose a color to save a passage or add a note. X dismisses this selection only. Use settings to change the popup position or turn it off."
 	},
 	"highlight_intro_confirm": {
 		"message": "Got it"
@@ -494,6 +500,18 @@
 			"count": {
 				"content": "$1",
 				"example": "3"
+			}
+		}
+	},
+	"past_memo_related_intro": {
+		"message": "You have related memos"
+	},
+	"past_memo_related_more": {
+		"message": "View $count$ more",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "2"
 			}
 		}
 	},

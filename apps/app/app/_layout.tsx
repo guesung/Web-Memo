@@ -113,7 +113,7 @@ function ShareIntentHandler() {
 				if (!result.saved) {
 					router.push({
 						pathname: "/(main)/browser",
-						params: { url, t: String(Date.now()) },
+						params: { url: encodeURIComponent(url), t: String(Date.now()) },
 					});
 				}
 				setTimeout(() => setShareToast(null), 3000);

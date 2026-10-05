@@ -18,9 +18,11 @@ export default memo(function SidebarMenuItemAddCategory({ lng }: LanguageType) {
 	const [color, setColor] = useState(() => generateRandomPastelColor());
 
 	const { categories } = useCategoryQuery();
-	const { mutate: mutateCategoryPost } = useCategoryPostMutation();
+	const { mutate: mutateCategoryPost, isPending } = useCategoryPostMutation();
 
 	const textInputRef = useRef<HTMLInputElement>(null);
+	/** Escape로 닫을 때 언마운트 blur가 제출로 이어지지 않게 막는다. */
+	const isCancelledRef = useRef(false);
 
 	const colorInputCallbackRef = useCallback((el: HTMLInputElement | null) => {
 		if (!el) return;
@@ -31,6 +33,8 @@ export default memo(function SidebarMenuItemAddCategory({ lng }: LanguageType) {
 	}, []);
 
 	const handleSubmit = useCallback(() => {
+		if (isPending || isCancelledRef.current) return;
+
 		const trimmedName = name.trim();
 		if (!trimmedName) {
 			setIsEditMode(false);
@@ -59,15 +63,17 @@ export default memo(function SidebarMenuItemAddCategory({ lng }: LanguageType) {
 				},
 			},
 		);
-	}, [name, color, categories, mutateCategoryPost, t]);
+	}, [isPending, name, color, categories, mutateCategoryPost, t]);
 
 	const handleCancel = useCallback(() => {
+		isCancelledRef.current = true;
 		setIsEditMode(false);
 		setName("");
 		setColor(generateRandomPastelColor());
 	}, []);
 
 	const handlePlusClick = useCallback(() => {
+		isCancelledRef.current = false;
 		setIsEditMode(true);
 		setTimeout(() => textInputRef.current?.focus(), 50);
 	}, []);

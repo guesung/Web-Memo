@@ -21,13 +21,14 @@ test.describe("가이드 다시 보기 (Mocked)", () => {
 	test("확장이 감지되지 않으면 이동하지 않고 사유를 안내한다.", async ({
 		page,
 	}) => {
-		await expect(page.getByRole("status")).toHaveCount(0);
+		const guideNotice = page.getByRole("status").filter({
+			hasText: "extension wasn't detected",
+		});
+		await expect(guideNotice).toHaveCount(0);
 
 		await page.getByRole("button", { name: "Restart guide" }).click();
 
-		await expect(page.getByRole("status")).toContainText(
-			"extension wasn't detected",
-		);
+		await expect(guideNotice).toBeVisible();
 		await expect(page).toHaveURL(new RegExp(PATHS.memosSetting));
 	});
 });

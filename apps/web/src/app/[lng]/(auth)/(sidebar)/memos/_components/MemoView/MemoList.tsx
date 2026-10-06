@@ -3,6 +3,11 @@
 import { MasonryInfiniteGrid } from "@egjs/react-infinitegrid";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import {
+	reportMemoLoadStage,
+	type TMemoLoadOutcome,
+	type TMemoRoute,
+} from "@src/modules/observability/client";
 import type { GetMemoResponse, HighlightRow } from "@web-memo/shared/types";
 import { Button } from "@web-memo/ui";
 import { useEffect, useRef, useState } from "react";
@@ -49,6 +54,16 @@ const MemoList = (props: IFMemoListProps) => {
 			renderedGroupMemoIds[group.dateKey] ===
 			group.memos.map((memo) => memo.id).join(","),
 	);
+	useEffect(() => {
+		if (isLayoutReady) {
+			reportMemoLoadStage({
+				route: props.route,
+				navigationId: props.navigationId,
+				stage: "content_ready",
+				outcome: props.loadOutcome,
+			});
+		}
+	}, [isLayoutReady, props.loadOutcome, props.route, props.navigationId]);
 	const loadMoreRef = useMemoListPagination(props, isLayoutReady);
 	const handleDateGroupRenderComplete = (dateKey: string, memoIds: string) => {
 		setRenderedGroupMemoIds((previousGroups) => {
@@ -221,4 +236,7 @@ interface IFMemoListProps extends LanguageType {
 	hasNextPage: boolean;
 	isFetchingNextPage: boolean;
 	fetchNextPage: () => unknown;
+	loadOutcome: TMemoLoadOutcome;
+	route: TMemoRoute;
+	navigationId: number | null;
 }

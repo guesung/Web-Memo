@@ -1,5 +1,4 @@
 import { useSettingQuery } from "@web-memo/shared/hooks";
-import { analytics } from "@web-memo/shared/modules/analytics";
 import { I18n } from "@web-memo/shared/utils/extension";
 import {
 	Card,
@@ -24,20 +23,12 @@ const AiFeaturesOption = () => {
 		initialValue: setting.showSummary,
 		onSave: async (value: boolean) => {
 			await saveSetting({ show_summary: value });
-			analytics.trackEvent({
-				name: "extension_setting_change",
-				params: { keys: "show_summary", enabled: value },
-			});
 		},
 	});
 	const chat = useAutoSaveSetting({
 		initialValue: setting.showAiChat,
 		onSave: async (value: boolean) => {
 			await saveSetting({ show_ai_chat: value });
-			analytics.trackEvent({
-				name: "extension_setting_change",
-				params: { keys: "show_ai_chat", enabled: value },
-			});
 		},
 	});
 	if (setting.data.error) {

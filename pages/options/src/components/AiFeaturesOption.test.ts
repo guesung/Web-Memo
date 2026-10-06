@@ -6,7 +6,6 @@ import AiFeaturesOption from "./AiFeaturesOption";
 
 const mocks = vi.hoisted(() => ({
 	save: vi.fn(),
-	track: vi.fn(),
 	setting: {
 		showSummary: false,
 		showAiChat: false,
@@ -17,9 +16,6 @@ vi.mock("@web-memo/shared/hooks", () => ({
 	useSettingQuery: () => mocks.setting,
 }));
 vi.mock("./useSaveSetting", () => ({ useSaveSetting: () => mocks.save }));
-vi.mock("@web-memo/shared/modules/analytics", () => ({
-	analytics: { trackEvent: mocks.track },
-}));
 vi.mock("@web-memo/shared/utils/extension", () => ({
 	I18n: { get: (key: string) => key },
 }));
@@ -93,16 +89,12 @@ describe("AI 기능 옵션", () => {
 		);
 	});
 
-	it("요약 스위치를 켜면 show_summary만 저장하고 이벤트를 남긴다", async () => {
+	it("요약 스위치를 켜면 show_summary만 저장한다", async () => {
 		await mount();
 		await act(async () => getSwitch("summary-enabled").click());
 
 		expect(mocks.save).toHaveBeenCalledTimes(1);
 		expect(mocks.save).toHaveBeenCalledWith({ show_summary: true });
-		expect(mocks.track).toHaveBeenCalledWith({
-			name: "extension_setting_change",
-			params: { keys: "show_summary", enabled: true },
-		});
 		expect(getSwitch("summary-enabled").getAttribute("aria-checked")).toBe(
 			"true",
 		);
@@ -116,13 +108,9 @@ describe("AI 기능 옵션", () => {
 		await act(async () => getSwitch("ai-chat-enabled").click());
 
 		expect(mocks.save).toHaveBeenCalledWith({ show_ai_chat: true });
-		expect(mocks.track).toHaveBeenCalledWith({
-			name: "extension_setting_change",
-			params: { keys: "show_ai_chat", enabled: true },
-		});
 	});
 
-	it("저장에 실패하면 스위치를 이전 값으로 되돌리고 이벤트를 남기지 않는다", async () => {
+	it("저장에 실패하면 스위치를 이전 값으로 되돌린다", async () => {
 		mocks.save.mockRejectedValue(new Error("failed"));
 		await mount();
 		await act(async () => getSwitch("summary-enabled").click());
@@ -130,7 +118,6 @@ describe("AI 기능 옵션", () => {
 		expect(getSwitch("summary-enabled").getAttribute("aria-checked")).toBe(
 			"false",
 		);
-		expect(mocks.track).not.toHaveBeenCalled();
 	});
 
 	it("서버에 저장된 켜짐 값을 스위치에 반영한다", async () => {

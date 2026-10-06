@@ -63,6 +63,9 @@ const MemoFormContent = ({
 	const { ref, ...rest } = register("memo");
 
 	const currentCategoryId = watch("categoryId");
+	// 상태 아이콘은 조회 캐시(memoData)가 아니라 폼 값을 읽는다. 저장 전 새 메모도 누르는 즉시 바뀌고,
+	// 저장 실패 시 toggleMemoStatus가 폼 값을 되돌려 아이콘도 함께 돌아온다.
+	const [isWish, isStar, isReading] = watch(["isWish", "isStar", "isReading"]);
 	const { user } = useSupabaseUserQuery();
 	const setting = useSettingQuery();
 	const { showImpression, showActionItem } = setting;
@@ -425,58 +428,56 @@ const MemoFormContent = ({
 					<div className="flex min-w-0 items-center gap-2">
 						<MemoStatusToggle
 							label={I18n.get("wish_list")}
-							isOn={!!memoData?.isWish}
+							isOn={!!isWish}
 							isDisabled={isMemoLocked || isControlsDisabled}
 							isDimmed={isMemoUiDimmed || isControlsDisabled}
 							disabledReason={changeDisabledReason}
 							actionLabel={I18n.get(
-								memoData?.isWish ? "tooltip_wish_remove" : "tooltip_wish_add",
+								isWish ? "tooltip_wish_remove" : "tooltip_wish_add",
 							)}
 							onClick={() => handleMemoStatusClick("isWish")}
 						>
 							<HeartIcon
 								size={16}
-								fill={memoData?.isWish ? "currentColor" : ""}
-								fillOpacity={memoData?.isWish ? 100 : 0}
+								fill={isWish ? "currentColor" : ""}
+								fillOpacity={isWish ? 100 : 0}
 								className={cn({
-									"animate-heart-pop text-pink-500": memoData?.isWish,
+									"animate-heart-pop text-pink-500": isWish,
 								})}
 							/>
 						</MemoStatusToggle>
 						<MemoStatusToggle
 							label={I18n.get("important_memo")}
-							isOn={!!memoData?.isStar}
+							isOn={!!isStar}
 							isDisabled={isMemoLocked || isControlsDisabled}
 							isDimmed={isMemoUiDimmed || isControlsDisabled}
 							disabledReason={changeDisabledReason}
 							actionLabel={I18n.get(
-								memoData?.isStar ? "tooltip_star_remove" : "tooltip_star_add",
+								isStar ? "tooltip_star_remove" : "tooltip_star_add",
 							)}
 							onClick={() => handleMemoStatusClick("isStar")}
 						>
 							<StarIcon
 								size={16}
-								fill={memoData?.isStar ? "currentColor" : ""}
-								fillOpacity={memoData?.isStar ? 100 : 0}
-								className={cn({ "text-amber-500": memoData?.isStar })}
+								fill={isStar ? "currentColor" : ""}
+								fillOpacity={isStar ? 100 : 0}
+								className={cn({ "text-amber-500": isStar })}
 							/>
 						</MemoStatusToggle>
 						<MemoStatusToggle
 							label={I18n.get("reading_memo")}
-							isOn={!!memoData?.isReading}
+							isOn={!!isReading}
 							isDisabled={isMemoLocked || isControlsDisabled}
 							isDimmed={isMemoUiDimmed || isControlsDisabled}
 							disabledReason={changeDisabledReason}
 							actionLabel={I18n.get(
-								memoData?.isReading
-									? "tooltip_reading_remove"
-									: "tooltip_reading_add",
+								isReading ? "tooltip_reading_remove" : "tooltip_reading_add",
 							)}
 							onClick={() => handleMemoStatusClick("isReading")}
 						>
 							<BookOpenIcon
 								size={16}
-								className={cn({ "text-emerald-500": memoData?.isReading })}
+								className={cn({ "text-emerald-500": isReading })}
 							/>
 						</MemoStatusToggle>
 						{!isMemoLocked && (

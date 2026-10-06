@@ -7,12 +7,14 @@ const readEnabled = (storedValue: boolean | undefined) => storedValue ?? true;
 /**
  * 페이지 요약·AI 채팅 사용 여부를 sync 저장소에서 읽고 구독한다.
  * @description 옵션 페이지에서 바꾸면 열려 있는 사이드 패널에도 바로 들어온다.
- * 아직 읽기 전이면 `isLoaded`가 false이고, 읽지 못하면 기본값(켜짐)으로 두지 않고 계속 false로 둔다.
+ * 읽기 전이나 읽지 못했을 때 값은 켜짐이다. 읽기를 마쳤는지는 `isLoaded`, 읽기에 실패했는지는 `hasLoadFailed`로 구분한다.
+ * 옵션 페이지는 `isLoaded` 전까지 입력을 잠가 읽지 못한 값을 덮어쓰지 않고, 사이드 패널은 실패하면 기존 동작(켜짐)으로 간다.
  */
 export default function useAiFeatureSettings() {
 	const [isSummaryEnabled, setIsSummaryEnabled] = useState(true);
 	const [isChatEnabled, setIsChatEnabled] = useState(true);
 	const [isLoaded, setIsLoaded] = useState(false);
+	const [hasLoadFailed, setHasLoadFailed] = useState(false);
 
 	useEffect(() => {
 		let isStopped = false;
@@ -33,7 +35,9 @@ export default function useAiFeatureSettings() {
 				setIsChatEnabled(readEnabled(chatValue));
 				setIsLoaded(true);
 			} catch {
-				/** 읽지 못한 설정을 켜짐으로 단정하지 않도록 로딩 상태로 둔다. */
+				if (!isStopped) {
+					setHasLoadFailed(true);
+				}
 			}
 		};
 		void readSettings();
@@ -56,5 +60,5 @@ export default function useAiFeatureSettings() {
 		};
 	}, []);
 
-	return { isLoaded, isSummaryEnabled, isChatEnabled };
+	return { isLoaded, hasLoadFailed, isSummaryEnabled, isChatEnabled };
 }

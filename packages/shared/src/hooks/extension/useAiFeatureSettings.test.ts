@@ -48,6 +48,7 @@ describe("AI 기능 설정 읽기", () => {
 
 		expect(current).toEqual({
 			isLoaded: true,
+			hasLoadFailed: false,
 			isSummaryEnabled: true,
 			isChatEnabled: true,
 		});
@@ -63,11 +64,16 @@ describe("AI 기능 설정 읽기", () => {
 		expect(current.isChatEnabled).toBe(true);
 	});
 
-	it("읽는 동안과 읽기에 실패했을 때는 isLoaded가 false다", async () => {
+	it("읽기에 실패하면 isLoaded는 false, hasLoadFailed는 true이고 값은 켜짐이다", async () => {
 		mocks.get.mockRejectedValue(new Error("failed"));
 		await mount();
 
-		expect(current.isLoaded).toBe(false);
+		expect(current).toEqual({
+			isLoaded: false,
+			hasLoadFailed: true,
+			isSummaryEnabled: true,
+			isChatEnabled: true,
+		});
 	});
 
 	it("열려 있는 동안 저장소가 바뀌면 즉시 반영하고 키가 지워지면 켜짐으로 돌아간다", async () => {

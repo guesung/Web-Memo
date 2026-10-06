@@ -12,6 +12,7 @@ import {
 import { Suspense } from "react";
 
 import {
+	AiFeaturesOption,
 	Header,
 	HighlightOption,
 	MemoFieldsOption,
@@ -88,6 +89,7 @@ const Options = () => {
 						</ErrorBoundary>
 					)}
 				</QueryErrorResetBoundary>
+				<AiFeaturesOption />
 				<HighlightOption />
 				<QueryErrorResetBoundary>
 					{({ reset }) => (

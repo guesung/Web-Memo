@@ -530,5 +530,50 @@
 				"example": "독서"
 			}
 		}
+	},
+	"tooltip_wish_add": {
+		"message": "위시리스트에 추가"
+	},
+	"tooltip_wish_remove": {
+		"message": "위시리스트에서 빼기"
+	},
+	"tooltip_star_add": {
+		"message": "중요 메모로 표시"
+	},
+	"tooltip_star_remove": {
+		"message": "중요 메모에서 빼기"
+	},
+	"tooltip_reading_add": {
+		"message": "읽는 중으로 표시"
+	},
+	"tooltip_reading_remove": {
+		"message": "읽는 중에서 빼기"
+	},
+	"tooltip_theme_to_dark": {
+		"message": "다크 모드로 전환"
+	},
+	"tooltip_theme_to_light": {
+		"message": "라이트 모드로 전환"
+	},
+	"open_settings": {
+		"message": "설정 열기"
+	},
+	"open_in_new_tab": {
+		"message": "새 탭에서 열기"
+	},
+	"summary_regenerate": {
+		"message": "요약 다시 생성"
+	},
+	"ai_features_setting": {
+		"message": "AI 기능"
+	},
+	"ai_features_description": {
+		"message": "메모만 쓰고 싶다면 꺼 두세요. 사이드 패널에서 해당 탭이 사라집니다."
+	},
+	"summary_enabled_setting": {
+		"message": "페이지 요약 사용"
+	},
+	"ai_chat_enabled_setting": {
+		"message": "AI 채팅 사용"
 	}
 }

@@ -10,6 +10,8 @@ export const STORAGE_KEYS = {
 	tabHeight: "tabHeight",
 	memoFieldRatios: "memoFieldRatios",
 	chatMessages: "chatMessages",
+	summaryEnabled: "summaryEnabled",
+	aiChatEnabled: "aiChatEnabled",
 	impressionSectionEnabled: "impressionSectionEnabled",
 	actionItemSectionEnabled: "actionItemSectionEnabled",
 	highlightBubbleEnabled: "highlightBubbleEnabled",

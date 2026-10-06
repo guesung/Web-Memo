@@ -1,3 +1,4 @@
+import IconTooltip from "@src/components/IconTooltip";
 import { getMemoUrl } from "@src/utils";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import type { Database } from "@web-memo/shared/types";
@@ -32,17 +33,19 @@ function MemoLink({ memoData }: IFMemoHeaderProps) {
 	};
 
 	return (
-		<Button
-			variant="ghost"
-			size="icon"
-			className="size-8"
-			onClick={handleMemoClick}
-			tabIndex={0}
-			aria-label="새 탭 열기"
-			onKeyDown={(e) => e.key === "Enter" && handleMemoClick()}
-		>
-			<ExternalLinkIcon className="size-4" />
-		</Button>
+		<IconTooltip label={I18n.get("open_in_new_tab")}>
+			<Button
+				variant="ghost"
+				size="icon"
+				className="size-8"
+				onClick={handleMemoClick}
+				tabIndex={0}
+				aria-label={I18n.get("open_in_new_tab")}
+				onKeyDown={(e) => e.key === "Enter" && handleMemoClick()}
+			>
+				<ExternalLinkIcon className="size-4" />
+			</Button>
+		</IconTooltip>
 	);
 }
 

@@ -573,6 +573,28 @@ it("상태 토글은 저장 응답을 기다리지 않고 조회 캐시를 바�
 	expect(mocks.values.isWish).toBe(false);
 });
 
+it("저장 전 새 메모의 상태 토글은 저장 응답 전에 폼 값을 바꾸고 실패하면 되돌린다", async () => {
+	mocks.memo = undefined;
+	mocks.values = { isWish: false };
+	await render();
+	mocks.upsert.mockReset().mockImplementation(() => undefined);
+
+	let togglePromise: Promise<boolean | null> = Promise.resolve(null);
+	await act(async () => {
+		togglePromise = form.toggleMemoStatus("isWish");
+	});
+	// 새 메모는 조회 캐시에 항목이 없어 memoData로는 아이콘을 바꿀 수 없다. 폼 값이 즉시 켜져야 한다.
+	expect(form.memoData).toBeUndefined();
+	expect(mocks.values.isWish).toBe(true);
+
+	const [, callbacks] = mocks.upsert.mock.calls[0];
+	await act(async () => {
+		callbacks.onError();
+		await togglePromise;
+	});
+	expect(mocks.values.isWish).toBe(false);
+});
+
 it("오프라인이면 upsert 대신 대기열에 넣는다", async () => {
 	mocks.isOnline = false;
 	await render();

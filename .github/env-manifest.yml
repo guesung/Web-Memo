@@ -162,9 +162,9 @@
 - name: SENTRY_AUTH_TOKEN
   kind: secret
   stores: [github, vercel]
-  consumers: [.github/workflows/cd-extension.yml, apps/web/next.config.mjs, packages/vite-config/lib/withPageConfig.mjs]
+  consumers: [.github/workflows/cd-extension.yml, .github/workflows/cd-app.yml, apps/web/next.config.mjs, packages/vite-config/lib/withPageConfig.mjs]
   impact: "Sentry 소스맵 업로드가 조용히 실패한다. 빌드는 통과하므로 스택 트레이스가 난독화된 채 보여야 알게 된다"
-  note: "확장은 GitHub Secrets, 웹은 Vercel 프로젝트 환경변수로 받는다"
+  note: "확장·앱 네이티브 로컬 빌드는 GitHub Secrets, 웹은 Vercel 프로젝트 환경변수로 받는다"
   phase: build
 
 - name: SLACK_BOT_TOKEN

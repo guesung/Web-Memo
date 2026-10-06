@@ -133,6 +133,7 @@ jobs:
       - name: Build ${{ matrix.platform }}
         if: ${{ (inputs.deploy_target != 'staging' || steps.prepare.outputs.should_build == 'true') && steps.reuse.outputs.found != 'true' }}
         env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           EAS_LOCAL_BUILD_WORKINGDIR: ${{ runner.temp }}/eas-build
           TMPDIR: ${{ runner.temp }}
         run: cd apps/app && eas build --platform ${{ matrix.platform }} --profile "$BUILD_PROFILE" --local --non-interactive --output "./$BUILD_OUTPUT"

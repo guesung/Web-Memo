@@ -99,7 +99,7 @@ export function openUrlInTab(
 		(tab) => tab.url !== "" && getKey(tab.url) === targetKey,
 	);
 	if (samePageTab) {
-		return selectTab(state, samePageTab.id);
+		return updateActiveTab(selectTab(state, samePageTab.id), { url });
 	}
 
 	const activeTab = state.tabs.find((tab) => tab.id === state.activeTabId);

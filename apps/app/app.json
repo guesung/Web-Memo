@@ -105,15 +105,29 @@
 					},
 					"ios": {
 						"extraPods": [
-							{ "name": "GoogleUtilities", "modular_headers": true },
-							{ "name": "RecaptchaInterop", "modular_headers": true }
+							{
+								"name": "GoogleUtilities",
+								"modular_headers": true
+							},
+							{
+								"name": "RecaptchaInterop",
+								"modular_headers": true
+							}
 						]
 					}
 				}
 			],
 			"./plugins/withKakaoMavenRepo",
 			"./plugins/withAndroidGradleMemory",
-			"./plugins/withAndroidConfigChanges"
+			"./plugins/withAndroidConfigChanges",
+			[
+				"@sentry/react-native/expo",
+				{
+					"url": "https://sentry.io/",
+					"organization": "guesung",
+					"project": "web-memo-web"
+				}
+			]
 		],
 		"experiments": {
 			"typedRoutes": true

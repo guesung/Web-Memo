@@ -563,5 +563,17 @@
 	},
 	"summary_regenerate": {
 		"message": "Regenerate summary"
+	},
+	"ai_features_setting": {
+		"message": "AI features"
+	},
+	"ai_features_description": {
+		"message": "Turn these off if you only want to write memos. The matching tab disappears from the side panel."
+	},
+	"summary_enabled_setting": {
+		"message": "Use page summary"
+	},
+	"ai_chat_enabled_setting": {
+		"message": "Use AI chat"
 	}
 }

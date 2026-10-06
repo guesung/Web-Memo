@@ -48,6 +48,35 @@ test.describe("확장 옵션 페이지", () => {
 		);
 	});
 
+	test("AI 기능 카드는 요약·AI 채팅을 기본으로 켜 두고, 끄면 자동 저장되어 새로 열어도 유지된다.", async ({
+		page,
+	}) => {
+		const optionsPage = await page.context().newPage();
+		await optionsPage.goto(getExtensionUrl("options/index.html"));
+
+		const summarySwitch = optionsPage.locator("#summary-enabled");
+		const chatSwitch = optionsPage.locator("#ai-chat-enabled");
+		await expect(summarySwitch).toBeEnabled();
+		await expect(summarySwitch).toHaveAttribute("data-state", "checked");
+		await expect(chatSwitch).toHaveAttribute("data-state", "checked");
+
+		await summarySwitch.click();
+		await expect(summarySwitch).toHaveAttribute("data-state", "unchecked");
+		await expect(
+			optionsPage.getByText(/^(Saved|저장했어요)$/).last(),
+		).toBeVisible();
+		await expect(chatSwitch).toHaveAttribute("data-state", "checked");
+
+		await optionsPage.reload();
+		await expect(summarySwitch).toBeEnabled();
+		await expect(summarySwitch).toHaveAttribute("data-state", "unchecked");
+		await expect(chatSwitch).toHaveAttribute("data-state", "checked");
+		const stored = await optionsPage.evaluate(() =>
+			chrome.storage.sync.get(["summaryEnabled", "aiChatEnabled"]),
+		);
+		expect(stored).toEqual({ summaryEnabled: false });
+	});
+
 	test("카테고리 자동 적용 설정은 표시하지 않는다.", async ({ page }) => {
 		const optionsPage = await page.context().newPage();
 		await optionsPage.goto(getExtensionUrl("options/index.html"));

@@ -7,6 +7,11 @@ import {
 import { DragBox } from "@src/components";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import {
+	reportMemoLoadStage,
+	type TMemoLoadOutcome,
+	type TMemoRoute,
+} from "@src/modules/observability/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import {
@@ -46,6 +51,9 @@ interface MemoGridProps extends LanguageType {
 	hasNextPage: boolean;
 	isFetchingNextPage: boolean;
 	fetchNextPage: () => void;
+	loadOutcome: TMemoLoadOutcome;
+	route: TMemoRoute;
+	navigationId: number | null;
 }
 
 export default function MemoGrid({
@@ -57,6 +65,9 @@ export default function MemoGrid({
 	hasNextPage,
 	isFetchingNextPage,
 	fetchNextPage,
+	loadOutcome,
+	route,
+	navigationId,
 }: MemoGridProps) {
 	const { t } = useTranslation(lng);
 	const router = useRouter();
@@ -191,6 +202,16 @@ export default function MemoGrid({
 			});
 		}
 	}, [searchQuery]);
+	useEffect(() => {
+		if (memos.length === 0) {
+			reportMemoLoadStage({
+				route,
+				navigationId,
+				stage: "content_ready",
+				outcome: loadOutcome,
+			});
+		}
+	}, [memos.length, loadOutcome, route, navigationId]);
 
 	// 필터·검색 결과가 없는 것과 메모가 하나도 없는 것은 다른 상황이다. 같은 화면을 보여주면
 	// 필터 중인 사용자에게 "첫 메모를 만들어보세요"가 뜬다. 도메인이 더 좁은 조건이라 먼저 본다.
@@ -232,7 +253,15 @@ export default function MemoGrid({
 				align="center"
 				placeholder={<MemoItemSkeleton />}
 				onRequestAppend={handleRequestAppend}
-				onRenderComplete={restoreHeldScrollPosition}
+				onRenderComplete={() => {
+					restoreHeldScrollPosition();
+					reportMemoLoadStage({
+						route,
+						navigationId,
+						stage: "content_ready",
+						outcome: loadOutcome,
+					});
+				}}
 			>
 				{memos.map((memo, index) => (
 					<MemoItem

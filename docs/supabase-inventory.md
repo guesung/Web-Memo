@@ -99,6 +99,68 @@
 
 ### `memo`
 
+#### 테이블 `memo.blog_article`
+
+| 컬럼 | 타입 |
+| --- | --- |
+| `blog_id` | `text` |
+| `provider_id` | `text` |
+| `title` | `text` |
+| `url` | `text` |
+| `page_key` | `text` |
+| `published_at` | `timestamp with time zone` |
+| `first_seen_at` | `timestamp with time zone` |
+| `updated_at` | `timestamp with time zone` |
+| `available` | `boolean` |
+| `last_seen_generation` | `bigint` |
+
+#### 테이블 `memo.blog_article_alias`
+
+| 컬럼 | 타입 |
+| --- | --- |
+| `blog_id` | `text` |
+| `provider_id` | `text` |
+| `page_key` | `text` |
+
+#### 테이블 `memo.blog_subscription`
+
+| 컬럼 | 타입 |
+| --- | --- |
+| `user_id` | `uuid` |
+| `blog_id` | `text` |
+| `active` | `boolean` |
+| `subscribed_at` | `timestamp with time zone` |
+| `unsubscribed_at` | `timestamp with time zone` |
+
+#### 테이블 `memo.blog_sync_request`
+
+| 컬럼 | 타입 |
+| --- | --- |
+| `id` | `bigint` |
+| `blog_id` | `text` |
+| `requested_by` | `uuid` |
+| `requested_at` | `timestamp with time zone` |
+| `status` | `text` |
+| `handled_at` | `timestamp with time zone` |
+
+#### 테이블 `memo.blog_sync_state`
+
+| 컬럼 | 타입 |
+| --- | --- |
+| `blog_id` | `text` |
+| `status` | `text` |
+| `generation` | `bigint` |
+| `checkpoint` | `jsonb` |
+| `collected_count` | `integer` |
+| `reported_total` | `integer` |
+| `initial_completed_at` | `timestamp with time zone` |
+| `last_success_at` | `timestamp with time zone` |
+| `last_error` | `text` |
+| `last_started_at` | `timestamp with time zone` |
+| `lease_token` | `uuid` |
+| `lease_expires_at` | `timestamp with time zone` |
+| `lease_seconds` | `integer` |
+
 #### 테이블 `memo.category`
 
 | 컬럼 | 타입 |
@@ -249,26 +311,46 @@
 | `show_action_item` | `boolean` |
 | `truncate_memo_content` | `boolean` |
 
-#### DB 함수 (18개)
+#### DB 함수 (38개)
 
 | 함수 | 반환 타입 |
 | --- | --- |
+| `blog_assert_lease(p_blog_id text, p_generation bigint, p_lease_token uuid)` | `memo.blog_sync_state` |
+| `blog_completed_articles(p_blog_ids text[])` | `TABLE(blog_id text, provider_id text, memo_id bigint)` |
+| `blog_medium_post_id(p_url text)` | `text` |
+| `blog_next_check_at()` | `timestamp with time zone` |
+| `blog_page_key(p_url text)` | `text` |
+| `blog_sources_json(p_blog_ids text[])` | `jsonb` |
+| `blog_sync_public_status(p_blog_ids text[])` | `TABLE(blog_id text, status text, phase text, collected_count integer, total integer, initial_completed_at timestamp with time zone, last_success_at timestamp with time zone, last_error text, resume_queued boolean)` |
+| `blog_url_allowed(p_blog_id text, p_url text, p_is_alias boolean)` | `boolean` |
+| `blog_valid_memo_keys()` | `TABLE(memo_id bigint, match_key text, medium_id text)` |
+| `claim_blog_sync(p_blog_id text, p_trigger text, p_force boolean, p_lease_seconds integer)` | `jsonb` |
 | `create_default_categories()` | `trigger` |
 | `create_default_memos()` | `trigger` |
 | `create_default_user_data()` | `trigger` |
 | `enforce_notification_schedule_limit()` | `trigger` |
+| `fail_blog_sync(p_blog_id text, p_generation bigint, p_lease_token uuid, p_error_code text, p_checkpoint jsonb, p_keep_checkpoint boolean)` | `jsonb` |
+| `finish_blog_sync(p_blog_id text, p_generation bigint, p_lease_token uuid, p_evidence jsonb)` | `jsonb` |
 | `get_active_users_stats(include_admin boolean)` | `json` |
 | `get_admin_feedback(feedback_id bigint)` | `json` |
 | `get_admin_feedbacks(search_query text, page_offset integer, page_limit integer)` | `json` |
 | `get_admin_stats(include_admin boolean)` | `json` |
 | `get_admin_users(search_query text)` | `json` |
+| `get_blog_reading_page(p_blog_id text, p_sort text, p_page_size integer, p_cursor jsonb, p_catalog_version timestamp with time zone)` | `jsonb` |
+| `get_blog_reading_summary()` | `jsonb` |
 | `get_highlight_counts(target_urls text[])` | `TABLE(url text, count integer)` |
 | `get_highlight_counts_by_page_keys(target_page_keys text[])` | `TABLE(page_key text, count integer)` |
 | `get_memo_count()` | `integer` |
 | `get_public_stats()` | `json` |
 | `get_user_growth(days_ago integer, include_admin boolean)` | `json` |
+| `has_blog_memo_text(p_text text)` | `boolean` |
+| `ingest_blog_batch(p_blog_id text, p_generation bigint, p_lease_token uuid, p_items jsonb)` | `jsonb` |
 | `invalidate_page_key_after_url_change()` | `trigger` |
+| `is_supported_blog(p_blog_id text)` | `boolean` |
+| `request_blog_sync(p_blog_id text)` | `jsonb` |
+| `save_blog_checkpoint(p_blog_id text, p_generation bigint, p_lease_token uuid, p_checkpoint jsonb)` | `jsonb` |
 | `send_welcome_email()` | `trigger` |
+| `set_blog_subscription(p_blog_id text, p_active boolean)` | `jsonb` |
 | `update_profile_updated_at()` | `trigger` |
 | `update_shared_at()` | `trigger` |
 
@@ -1111,9 +1193,10 @@ Supabase가 만들고 관리하는 스키마입니다. 플랫폼 업데이트로
 
 | 함수 | 배포 버전 |
 | --- | --- |
-| `daily-article-reminder` | 7 |
-| `get-categories-with-count` | 11 |
-| `kakao-auth` | 7 |
-| `send-feedback` | 5 |
-| `send-signup-slack-notification` | 1 |
-| `send-welcome-email` | 4 |
+| `blog-catalog-ingest` | 3 |
+| `daily-article-reminder` | 9 |
+| `get-categories-with-count` | 13 |
+| `kakao-auth` | 9 |
+| `send-feedback` | 7 |
+| `send-signup-slack-notification` | 3 |
+| `send-welcome-email` | 6 |

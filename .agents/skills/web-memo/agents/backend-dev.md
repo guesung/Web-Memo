@@ -9,7 +9,7 @@ model: sonnet
 
 ## 시작 전에 읽을 것
 
-**1. `${CLAUDE_PLUGIN_ROOT}/references/backend-fundamentals.md`.** 판단 기준(경계 명확성·실패 다루기·데이터 정합성·변경 안전성)과 항목별 체크가 여기 있다. 찾지 못하면 이 파일 기준 `../references/backend-fundamentals.md`를 읽는다. 둘 다 실패하면 그 사실을 보고에 적고 전역 TypeScript 컨벤션만으로 진행한다.
+**1. `${CLAUDE_PLUGIN_ROOT}/references/backend-fundamentals.md`.** 판단 기준(경계 명확성·실패 다루기·데이터 정합성·변경 안전성)과 항목별 체크가 여기 있다. 찾지 못하면 이 파일 기준 `../references/backend-fundamentals.md`를 읽는다. 둘 다 실패하면 그 사실을 보고에 적고 레포가 정한 컨벤션만으로 진행한다.
 
 **2. `<레포>/docs/architecture.md`의 `## 공통`과 `## 백엔드` 섹션.** 서버 형태·DB/ORM·API 규약·인증·외부 연동·환경 변수 이름이 거기 있다(규격: [project-docs.md](../project-docs.md#docsarchitecturemd--구현의-바닥)). `## 프론트엔드` 섹션은 읽지 않는다 — 내 경계 밖이다.
 

@@ -121,7 +121,7 @@ Turborepo 기반 모노레포입니다.
 **Testing & Infra**
 - `e2e/` — Playwright E2E 테스트 스위트
 - `scripts/ai-reviewer/` — PR AI 리뷰 스크립트 (워크스페이스 밖, `pnpm type-check:scripts`로 검사)
-- `.github/scripts/` — 워크플로가 호출하는 Node(`.mjs`)·셸 스크립트. 도메인 폴더(`deploy`·`seo`·`ga`·`env`·`supabase`·`refactor`·`cleanup`)로 나뉘고, 두 도메인 이상이 쓰는 모듈은 `shared/`에 둡니다. 워크플로↔스크립트 대응표는 [`.github/README.md`](.github/README.md)
+- `.github/scripts/` — 워크플로가 호출하는 Node(`.mjs`)·셸 스크립트. 도메인 폴더(`deploy`·`seo`·`ga`·`env`·`conventions`·`supabase`·`refactor`·`cleanup`)로 나뉘고, 두 도메인 이상이 쓰는 모듈은 `shared/`에 둡니다. 워크플로↔스크립트 대응표는 [`.github/README.md`](.github/README.md)
 
 ### ⚠️ `apps/app`(React Native)에서 `@web-memo/shared` import 규칙
 
@@ -218,61 +218,16 @@ pnpm test:jest -- path/to/test.ts        # 단일 테스트 파일
 
 ## ✍️ 코딩 컨벤션
 
-> 상세 프론트엔드 설계 원칙(가독성/예측가능성/응집도/결합도와 권장 패턴)은
-> [docs/frontend-guidelines.md](docs/frontend-guidelines.md) 참고.
+세부 코딩 규칙은 **[`docs/code-conventions.yaml`](docs/code-conventions.yaml) 원장에 있는 것만** 적용합니다. 규칙 본문을 이 파일에 옮겨 적지 않습니다.
 
-### 핵심 원칙
+적용 우선순위는 다음과 같습니다.
 
-- **단순성(Simplicity)**: 복잡함보다 항상 가장 단순한 해법 우선
-- **DRY**: 중복을 피하고 기능 재사용
-- **파일 길이**: 300줄 이하 유지, 넘으면 리팩토링
-- **함수형/선언형 프로그래밍**: class 지양, 상속보다 합성
+1. [`docs/code-conventions.yaml`](docs/code-conventions.yaml) — 세부 규칙 원장. 대원칙과 부딪히면 원장이 우선합니다
+2. [`docs/frontend-guidelines.md`](docs/frontend-guidelines.md) — 대원칙(가독성·예측 가능성·응집도·결합도)과 권장 패턴
+3. [`docs/code-conventions-legacy.md`](docs/code-conventions-legacy.md) — 아직 검토하지 않은 옛 규칙. **참고용이며 강제하지 않습니다**
 
-### 코드 구조
-
-- 파일 구조: exports → subcomponents → helpers → types
-- 네이밍:
-  - 보조 동사를 포함한 서술형 이름 (`isLoading`, `handleClick`)
-  - 디렉토리는 lowercase-with-dashes (`components/auth-wizard`)
-  - **파일명은 camelCase** (예: `getMemoCount.ts`, `chromeStoreStats.ts`)
-  - 컴포넌트는 named export 선호
-- RORO 패턴(Receive Object, Return Object) 적용
-
-### JavaScript / TypeScript
-
-- 순수 함수는 `function` 키워드 사용
-- `interface`/`type`로 먼저 타입을 설계한 뒤 구현
-- 조건문 단순화: 불필요한 중괄호 지양(단, 가드 절은 명확하게)
-
-### React 컴포넌트
-
-- 화살표 함수 상수가 아닌 함수 선언으로 작성
-- 선언형 JSX 사용
-- 정적 콘텐츠는 render 함수 밖 변수로 추출
-- interface/type은 파일 끝에 배치
-- 가능하면 Server Component 우선, `'use client'` 최소화(Web API 접근 시에만)
-- 클라이언트 컴포넌트는 Suspense + fallback으로 래핑
-
-### 에러 처리
-
-- 에러/엣지 케이스를 먼저 처리(early returns), happy path는 마지막
-- 중첩 if와 불필요한 else 지양, 전제 조건은 guard clause로
-- Server Actions에서는 try/catch 대신 에러를 값으로 반환
-- `error.tsx` / `global-error.tsx`로 에러 바운더리 구성
-- 서비스 계층은 TanStack Query를 위해 사용자 친화적 에러를 throw
-
-### 아이콘
-
-- 인라인 `<svg>` 금지 — **항상 `lucide-react` 사용**
-- `import { IconName } from "lucide-react"`
-- 자주 쓰는 아이콘: `Check`, `X`, `ChevronDown`, `Globe`, `Star`, `Users`, `Sparkles` 등
-- 아이콘 검색: https://lucide.dev/icons
-
-### 파일 조직
-
-- 파일 300줄 이하 유지
-- 구조: exports → subcomponents → helpers → types
-- 디렉토리는 lowercase-with-dashes, 파일명은 camelCase
+전역 지침(`~/.agents/AGENTS.md` 등)에 코딩 규칙이 있어도 이 레포에서는 위 순서를 따릅니다.
+규칙을 추가·폐기하는 절차와 필드 설명은 원장 머리 주석에 있습니다. 원장 형식은 PR CI가 검사합니다.
 
 ---
 
@@ -464,6 +419,7 @@ GitHub 작업을 시작하기 전에 `gh auth status --active --hostname github.
 
 ### 세부 컨벤션 문서
 
+- 코드 컨벤션 원장: [docs/code-conventions.yaml](docs/code-conventions.yaml) — 세부 코딩 규칙은 여기 있는 것만 적용
 - 커밋 컨벤션: [docs/commit-convention.md](docs/commit-convention.md)
 - 브랜치 전략: [docs/branch-strategy.md](docs/branch-strategy.md)
 - 환경 변수: [docs/environment-variables.md](docs/environment-variables.md)

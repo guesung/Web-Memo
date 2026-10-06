@@ -425,13 +425,6 @@
 		"askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
 		"personalInformationInfo": "Signing in is used to sync your memos."
 	},
-	"dialogInstall": {
-		"title": "Extension required",
-		"description": "You'll need to install the extension to use memos",
-		"cancel": "Maybe later",
-		"ok": "Install now",
-		"close": "Close"
-	},
 	"dialogVersion": {
 		"title": "New version available",
 		"description": "Update from {{currentVersion}} to {{lastVersion}}",

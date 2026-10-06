@@ -68,3 +68,60 @@ test("사이드바 카테고리 메뉴에서 이름 편집을 열고 취소·저
 	).toBeVisible();
 	expect(store.getAllCategories()[0]?.name).toBe("수정한 카테고리");
 });
+
+/** Enter 제출 뒤 입력칸이 언마운트되며 blur가 한 번 더 제출하던 회귀를 막는다. */
+test("사이드바에서 Enter로 카테고리를 만들면 생성 요청이 한 번만 나간다", async ({
+	page,
+}) => {
+	const store = new MockSupabaseStore();
+	await setupSupabaseMocks(page, store);
+	let postCount = 0;
+	page.on("request", (request) => {
+		if (
+			request.method() === "POST" &&
+			new URL(request.url()).pathname.endsWith("/rest/v1/category")
+		)
+			postCount += 1;
+	});
+	await gotoSafely({
+		page,
+		url: `/ko${PATHS.memos}`,
+		regexp: new RegExp(PATHS.memos),
+	});
+
+	const sidebar = page.locator('[data-sidebar="sidebar"]');
+	await sidebar.getByRole("button", { name: "카테고리 추가하기" }).click();
+	const addInput = sidebar.getByPlaceholder("카테고리 추가하기");
+	await addInput.fill("중복 제출 확인");
+	await addInput.press("Enter");
+
+	await expect(
+		sidebar.getByRole("link", { name: /중복 제출 확인/ }),
+	).toBeVisible();
+	await expect(addInput).toBeHidden();
+	await page.waitForTimeout(500);
+	expect(postCount).toBe(1);
+	expect(store.getAllCategories()).toHaveLength(1);
+});
+
+test("사이드바에서 Escape로 닫으면 카테고리를 만들지 않는다", async ({
+	page,
+}) => {
+	const store = new MockSupabaseStore();
+	await setupSupabaseMocks(page, store);
+	await gotoSafely({
+		page,
+		url: `/ko${PATHS.memos}`,
+		regexp: new RegExp(PATHS.memos),
+	});
+
+	const sidebar = page.locator('[data-sidebar="sidebar"]');
+	await sidebar.getByRole("button", { name: "카테고리 추가하기" }).click();
+	const addInput = sidebar.getByPlaceholder("카테고리 추가하기");
+	await addInput.fill("취소할 카테고리");
+	await addInput.press("Escape");
+
+	await expect(addInput).toBeHidden();
+	await page.waitForTimeout(500);
+	expect(store.getAllCategories()).toHaveLength(0);
+});

@@ -32,7 +32,8 @@ export default function SettingCategoryForm({
 
 	const { categories } = useCategoryQuery();
 	const { mutate: deleteCategory } = useCategoryDeleteMutation();
-	const { mutate: insertCategory } = useCategoryPostMutation();
+	const { mutate: insertCategory, isPending: isInserting } =
+		useCategoryPostMutation();
 	const { mutate: updateCategory } = useCategoryUpdateMutation();
 
 	const [editingId, setEditingId] = useState<number | null>(null);
@@ -44,6 +45,8 @@ export default function SettingCategoryForm({
 	const addInputRef = useRef<HTMLInputElement>(null);
 	const colorInputRef = useRef<HTMLInputElement>(null);
 	const colorTargetIdRef = useRef<number | null>(null);
+	/** 제출·취소로 입력칸을 닫은 뒤 언마운트 blur가 다시 제출하지 않게 막는다. 입력칸을 열 때 푼다. */
+	const isInputClosedRef = useRef(false);
 
 	const handleColorChange = useCallback(
 		(e: Event) => {
@@ -67,6 +70,9 @@ export default function SettingCategoryForm({
 	}, [handleColorChange]);
 
 	const handleRenameSubmit = (categoryId: number, newName: string) => {
+		if (isInputClosedRef.current) return;
+		isInputClosedRef.current = true;
+
 		const trimmedName = newName.trim();
 		setEditingId(null);
 
@@ -89,6 +95,9 @@ export default function SettingCategoryForm({
 	};
 
 	const handleAddSubmit = (name: string) => {
+		if (isInserting || isInputClosedRef.current) return;
+		isInputClosedRef.current = true;
+
 		const trimmedName = name.trim();
 		setIsAdding(false);
 
@@ -106,6 +115,27 @@ export default function SettingCategoryForm({
 			{ name: trimmedName, color: generateRandomPastelColor() },
 			{ onSuccess: () => toast({ title: t("toastTitle.successSave") }) },
 		);
+	};
+
+	const handleRenameCancel = () => {
+		isInputClosedRef.current = true;
+		setEditingId(null);
+	};
+
+	const handleAddCancel = () => {
+		isInputClosedRef.current = true;
+		setIsAdding(false);
+	};
+
+	const handleRenameOpen = (categoryId: number) => {
+		isInputClosedRef.current = false;
+		setEditingId(categoryId);
+		setTimeout(() => editInputRef.current?.focus(), 50);
+	};
+
+	const handleAddOpen = () => {
+		isInputClosedRef.current = false;
+		setIsAdding(true);
 	};
 
 	const handleCategoryDeleteConfirm = () => {
@@ -154,19 +184,15 @@ export default function SettingCategoryForm({
 										handleRenameSubmit(category.id, e.target.value)
 									}
 									onKeyDown={(e) => {
-										if (e.key === "Enter")
-											handleRenameSubmit(category.id, e.currentTarget.value);
-										if (e.key === "Escape") setEditingId(null);
+										if (e.key === "Enter") e.currentTarget.blur();
+										if (e.key === "Escape") handleRenameCancel();
 									}}
 								/>
 							) : (
 								<button
 									type="button"
 									className="flex-1 text-sm font-medium text-foreground cursor-pointer truncate hover:text-foreground transition-colors text-left"
-									onClick={() => {
-										setEditingId(category.id);
-										setTimeout(() => editInputRef.current?.focus(), 50);
-									}}
+									onClick={() => handleRenameOpen(category.id)}
 								>
 									{category.name}
 								</button>
@@ -200,8 +226,8 @@ export default function SettingCategoryForm({
 							className="h-7 flex-1 text-sm"
 							onBlur={(e) => handleAddSubmit(e.target.value)}
 							onKeyDown={(e) => {
-								if (e.key === "Enter") handleAddSubmit(e.currentTarget.value);
-								if (e.key === "Escape") setIsAdding(false);
+								if (e.key === "Enter") e.currentTarget.blur();
+								if (e.key === "Escape") handleAddCancel();
 							}}
 						/>
 					</div>
@@ -209,7 +235,7 @@ export default function SettingCategoryForm({
 					<Button
 						variant="ghost"
 						className="w-full justify-start gap-3 px-3 py-2 text-muted-foreground hover:text-foreground"
-						onClick={() => setIsAdding(true)}
+						onClick={handleAddOpen}
 						type="button"
 					>
 						<PlusIcon size={16} />

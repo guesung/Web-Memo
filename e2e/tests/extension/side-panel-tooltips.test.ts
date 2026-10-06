@@ -34,7 +34,9 @@ test("사이드 패널 아이콘에 마우스를 올리면 의미를 알리는 �
 	const expectTooltipOn = async (buttonName: RegExp, text: RegExp) => {
 		await sidePanelPage.getByRole("button", { name: buttonName }).hover();
 		await expect(tooltip).toHaveText(text);
-		await sidePanelPage.mouse.move(0, 0);
+		// 말풍선은 위쪽에 뜨므로 반대 방향(화면 아래)으로 연속 이동해 실제 마우스 이탈을 흉내 낸다
+		const { height } = sidePanelPage.viewportSize() ?? { height: 600 };
+		await sidePanelPage.mouse.move(5, height - 5, { steps: 20 });
 		await expect(tooltip).toHaveCount(0);
 	};
 

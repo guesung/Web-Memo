@@ -530,5 +530,38 @@
 				"example": "Reading"
 			}
 		}
+	},
+	"tooltip_wish_add": {
+		"message": "Add to wishlist"
+	},
+	"tooltip_wish_remove": {
+		"message": "Remove from wishlist"
+	},
+	"tooltip_star_add": {
+		"message": "Mark as important"
+	},
+	"tooltip_star_remove": {
+		"message": "Remove from important"
+	},
+	"tooltip_reading_add": {
+		"message": "Mark as reading"
+	},
+	"tooltip_reading_remove": {
+		"message": "Remove from reading"
+	},
+	"tooltip_theme_to_dark": {
+		"message": "Switch to dark mode"
+	},
+	"tooltip_theme_to_light": {
+		"message": "Switch to light mode"
+	},
+	"open_settings": {
+		"message": "Open settings"
+	},
+	"open_in_new_tab": {
+		"message": "Open in new tab"
+	},
+	"summary_regenerate": {
+		"message": "Regenerate summary"
 	}
 }

@@ -1,3 +1,4 @@
+import IconTooltip from "@src/components/IconTooltip";
 import ResizeHandle from "@src/components/ResizeHandle";
 import { useOnlineStatus } from "@src/hooks";
 import type { MemoInput } from "@src/types/Input";
@@ -427,7 +428,10 @@ const MemoFormContent = ({
 							isOn={!!memoData?.isWish}
 							isDisabled={isMemoLocked || isControlsDisabled}
 							isDimmed={isMemoUiDimmed || isControlsDisabled}
-							title={changeDisabledReason}
+							disabledReason={changeDisabledReason}
+							actionLabel={I18n.get(
+								memoData?.isWish ? "tooltip_wish_remove" : "tooltip_wish_add",
+							)}
 							onClick={() => handleMemoStatusClick("isWish")}
 						>
 							<HeartIcon
@@ -444,7 +448,10 @@ const MemoFormContent = ({
 							isOn={!!memoData?.isStar}
 							isDisabled={isMemoLocked || isControlsDisabled}
 							isDimmed={isMemoUiDimmed || isControlsDisabled}
-							title={changeDisabledReason}
+							disabledReason={changeDisabledReason}
+							actionLabel={I18n.get(
+								memoData?.isStar ? "tooltip_star_remove" : "tooltip_star_add",
+							)}
 							onClick={() => handleMemoStatusClick("isStar")}
 						>
 							<StarIcon
@@ -459,7 +466,12 @@ const MemoFormContent = ({
 							isOn={!!memoData?.isReading}
 							isDisabled={isMemoLocked || isControlsDisabled}
 							isDimmed={isMemoUiDimmed || isControlsDisabled}
-							title={changeDisabledReason}
+							disabledReason={changeDisabledReason}
+							actionLabel={I18n.get(
+								memoData?.isReading
+									? "tooltip_reading_remove"
+									: "tooltip_reading_add",
+							)}
 							onClick={() => handleMemoStatusClick("isReading")}
 						>
 							<BookOpenIcon
@@ -612,8 +624,10 @@ interface IFMemoStatusToggleProps {
 	isDisabled?: boolean;
 	/** 잠금이 눈에 띄게 오래 지속돼 흐리게 보여줄지 */
 	isDimmed?: boolean;
-	/** 막힌 사유(오프라인·동기화 중). 잠금(isDisabled)이 함께 걸리면 비워 둔다 */
-	title?: string;
+	/** 막힌 사유(오프라인·동기화 중). 있으면 말풍선에 동작 문구 대신 보여 준다. 잠금(isDisabled)이 함께 걸리면 비워 둔다 */
+	disabledReason?: string;
+	/** 누르면 일어날 일. 켜져 있으면 "빼기", 꺼져 있으면 "추가"를 말풍선으로 알린다 */
+	actionLabel: string;
 	onClick: () => void;
 	children: React.ReactNode;
 }
@@ -630,28 +644,31 @@ function MemoStatusToggle({
 	isOn,
 	isDisabled,
 	isDimmed,
-	title,
+	disabledReason,
+	actionLabel,
 	onClick,
 	children,
 }: IFMemoStatusToggleProps) {
 	return (
-		<button
-			type="button"
-			aria-label={label}
-			aria-pressed={isOn}
-			disabled={isDisabled}
-			title={title}
-			onClick={onClick}
-			className={cn(
-				"focus-visible:ring-ring rounded-sm transition-transform focus-visible:outline-none focus-visible:ring-1",
-				// 사유(title)가 있는 비활성은 오프라인·동기화 중이라 누를 수 없음을 커서로도 알린다
-				isDisabled && (title ? "cursor-not-allowed" : "cursor-default"),
-				!isDisabled && "hover:scale-110 active:scale-95",
-				isDimmed && "opacity-50",
-			)}
-		>
-			{children}
-		</button>
+		<IconTooltip label={disabledReason ?? actionLabel}>
+			<button
+				type="button"
+				aria-label={label}
+				aria-pressed={isOn}
+				disabled={isDisabled}
+				onClick={onClick}
+				className={cn(
+					"focus-visible:ring-ring rounded-sm transition-transform focus-visible:outline-none focus-visible:ring-1",
+					// 사유가 있는 비활성은 오프라인·동기화 중이라 누를 수 없음을 커서로도 알린다
+					isDisabled &&
+						(disabledReason ? "cursor-not-allowed" : "cursor-default"),
+					!isDisabled && "hover:scale-110 active:scale-95",
+					isDimmed && "opacity-50",
+				)}
+			>
+				{children}
+			</button>
+		</IconTooltip>
 	);
 }
 

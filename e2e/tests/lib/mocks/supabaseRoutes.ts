@@ -789,6 +789,9 @@ const handleSettingUpsert = async ({ route, store }: HandlerParams) => {
 		user_id: "test-user-id",
 		show_impression: false,
 		show_action_item: false,
+		show_summary: false,
+		show_ai_chat: false,
+		truncate_memo_content: true,
 		...store.getSetting(),
 		...patch,
 	};

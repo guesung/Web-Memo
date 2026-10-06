@@ -9,6 +9,7 @@ import {
 	skipGuide,
 } from "../lib";
 import {
+	createMockSetting,
 	MockSupabaseStore,
 	mockSummaryApi,
 	setupSupabaseMocks,
@@ -21,7 +22,10 @@ test.describe("사이드 패널 - 페이지 요약", () => {
 
 	test.beforeEach(async ({ page, context }) => {
 		// 요약은 메모가 없어도 된다. 사이드 패널의 메모 조회가 실서버를 읽지 않도록 빈 목 저장소를 씌운다.
-		await setupSupabaseMocks(page, new MockSupabaseStore());
+		// 요약 탭은 기본이 꺼짐이라 설정 행에서 켜 둔다.
+		const store = new MockSupabaseStore();
+		store.setSetting(createMockSetting({ show_summary: true }));
+		await setupSupabaseMocks(page, store);
 		summaryApi = await mockSummaryApi({
 			context,
 			summaryChunks: SUMMARY_CHUNKS,

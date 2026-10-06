@@ -5,19 +5,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import AiFeaturesOption from "./AiFeaturesOption";
 
 const mocks = vi.hoisted(() => ({
-	set: vi.fn(),
+	save: vi.fn(),
 	track: vi.fn(),
-	settings: { isLoaded: true, isSummaryEnabled: true, isChatEnabled: true },
+	setting: {
+		showSummary: false,
+		showAiChat: false,
+		data: { error: null as Error | null },
+	},
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
-	useAiFeatureSettings: () => mocks.settings,
+	useSettingQuery: () => mocks.setting,
 }));
+vi.mock("./useSaveSetting", () => ({ useSaveSetting: () => mocks.save }));
 vi.mock("@web-memo/shared/modules/analytics", () => ({
 	analytics: { trackEvent: mocks.track },
-}));
-vi.mock("@web-memo/shared/modules/chrome-storage", () => ({
-	ChromeSyncStorage: { set: mocks.set },
-	STORAGE_KEYS: { summaryEnabled: "summary", aiChatEnabled: "chat" },
 }));
 vi.mock("@web-memo/shared/utils/extension", () => ({
 	I18n: { get: (key: string) => key },
@@ -61,12 +62,12 @@ let root: Root;
 beforeEach(() => {
 	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
 	vi.clearAllMocks();
-	mocks.settings = {
-		isLoaded: true,
-		isSummaryEnabled: true,
-		isChatEnabled: true,
+	mocks.setting = {
+		showSummary: false,
+		showAiChat: false,
+		data: { error: null },
 	};
-	mocks.set.mockResolvedValue(undefined);
+	mocks.save.mockResolvedValue(undefined);
 	document.body.innerHTML = '<div id="root"></div>';
 	root = createRoot(document.getElementById("root") as HTMLElement);
 });
@@ -81,60 +82,63 @@ const getSwitch = (id: string) =>
 	document.getElementById(id) as HTMLButtonElement;
 
 describe("AI 기능 옵션", () => {
-	it("요약 스위치를 끄면 summaryEnabled를 false로 저장하고 채팅은 건드리지 않는다", async () => {
+	it("기본은 두 스위치 모두 꺼져 있다", async () => {
 		await mount();
-		await act(async () => getSwitch("summary-enabled").click());
 
-		expect(mocks.set).toHaveBeenCalledTimes(1);
-		expect(mocks.set).toHaveBeenCalledWith("summary", false);
-		expect(mocks.track).toHaveBeenCalledWith({
-			name: "extension_setting_change",
-			params: { keys: "summary", enabled: false },
-		});
 		expect(getSwitch("summary-enabled").getAttribute("aria-checked")).toBe(
 			"false",
 		);
 		expect(getSwitch("ai-chat-enabled").getAttribute("aria-checked")).toBe(
-			"true",
+			"false",
 		);
 	});
 
-	it("채팅 스위치를 끄면 aiChatEnabled를 false로 저장한다", async () => {
+	it("요약 스위치를 켜면 show_summary만 저장하고 이벤트를 남긴다", async () => {
+		await mount();
+		await act(async () => getSwitch("summary-enabled").click());
+
+		expect(mocks.save).toHaveBeenCalledTimes(1);
+		expect(mocks.save).toHaveBeenCalledWith({ show_summary: true });
+		expect(mocks.track).toHaveBeenCalledWith({
+			name: "extension_setting_change",
+			params: { keys: "show_summary", enabled: true },
+		});
+		expect(getSwitch("summary-enabled").getAttribute("aria-checked")).toBe(
+			"true",
+		);
+		expect(getSwitch("ai-chat-enabled").getAttribute("aria-checked")).toBe(
+			"false",
+		);
+	});
+
+	it("채팅 스위치를 켜면 show_ai_chat을 저장한다", async () => {
 		await mount();
 		await act(async () => getSwitch("ai-chat-enabled").click());
 
-		expect(mocks.set).toHaveBeenCalledWith("chat", false);
+		expect(mocks.save).toHaveBeenCalledWith({ show_ai_chat: true });
 		expect(mocks.track).toHaveBeenCalledWith({
 			name: "extension_setting_change",
-			params: { keys: "chat", enabled: false },
+			params: { keys: "show_ai_chat", enabled: true },
 		});
 	});
 
-	it("저장에 실패하면 스위치를 이전 값으로 되돌린다", async () => {
-		mocks.set.mockRejectedValue(new Error("failed"));
+	it("저장에 실패하면 스위치를 이전 값으로 되돌리고 이벤트를 남기지 않는다", async () => {
+		mocks.save.mockRejectedValue(new Error("failed"));
 		await mount();
 		await act(async () => getSwitch("summary-enabled").click());
 
 		expect(getSwitch("summary-enabled").getAttribute("aria-checked")).toBe(
-			"true",
+			"false",
 		);
 		expect(mocks.track).not.toHaveBeenCalled();
 	});
 
-	it("저장소 값을 읽기 전에는 스위치를 잠근다", async () => {
-		mocks.settings.isLoaded = false;
-		await mount();
-
-		expect(getSwitch("summary-enabled").disabled).toBe(true);
-		expect(getSwitch("ai-chat-enabled").disabled).toBe(true);
-	});
-
-	it("저장된 꺼짐 값을 스위치에 반영한다", async () => {
-		mocks.settings.isChatEnabled = false;
+	it("서버에 저장된 켜짐 값을 스위치에 반영한다", async () => {
+		mocks.setting.showAiChat = true;
 		await mount();
 
 		expect(getSwitch("ai-chat-enabled").getAttribute("aria-checked")).toBe(
-			"false",
+			"true",
 		);
 	});
 });

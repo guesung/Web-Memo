@@ -1,0 +1,102 @@
+name: Blog catalog
+
+# 블로그 정주행(토스·당근) 공개 글 카탈로그를 수집해 Supabase Edge의 수집 엔드포인트로 저장합니다.
+#
+#   - 매일 03:17 KST     전체 재순회(새 글·수정된 제목/URL 반영, 중단된 수집 이어가기)
+#   - 15분마다           사용자의 "수집 재개" 요청과 시간 제한으로 멈춘 작업을 확인해 이어서 수집(요청이 없으면 곧바로 끝남)
+#   - workflow_dispatch  소스 선택 수동 실행, 당근 CI smoke(저장 없이 접근 가능 여부만 확인), dry-run(저장 없이 순회만)
+#
+# 당근(Medium)은 일반 Playwright Chromium으로 공개 페이지를 열어 읽습니다. 쿠키·로그인·stealth·CAPTCHA/Cloudflare 우회는
+# 하지 않으며, 접근이 차단되면(HTTP 403 등) 우회하지 않고 blocked로 기록한 채 기존 글을 유지합니다. 이 경우 종료 코드는 3이고
+# 작업 요약에 사유가 남습니다. 로컬에서 성공했다고 CI에서 성공하는 것은 아니므로 smoke로 먼저 확인하세요.
+#
+# 쓰기 인증은 이 수집 전용 BLOG_CATALOG_INGEST_SECRET 하나입니다. SUPABASE_ACCESS_TOKEN(조회 전용)·CRON_SECRET은 쓰지 않습니다.
+# 같은 값을 Supabase Edge Function secret에도 등록해야 합니다(docs/environment-variables.md).
+on:
+  schedule:
+    # UTC 18:17 = Asia/Seoul 03:17. 정각의 Actions 실행 혼잡을 피하려고 17분에 실행합니다.
+    - cron: "17 18 * * *"
+    # 재개 요청 확인. 위 일일 실행과 시각이 겹치지 않고, 아래 trigger 판별이 이 문자열을 기준으로 합니다.
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "수집할 소스"
+        type: choice
+        options: [all, toss, daangn]
+        default: all
+      trigger:
+        description: "실행 방식. manual은 조건 없이 시작, daily는 최근 20시간 안에 성공했으면 건너뜀, request는 재개 요청이 있을 때만"
+        type: choice
+        options: [manual, daily, request]
+        default: manual
+      force:
+        description: "daily 방식에서도 최근 성공 여부를 무시합니다"
+        type: boolean
+        default: false
+      smoke:
+        description: "당근 CI smoke: 저장 없이 일반 Chromium에서 당근 목록을 읽을 수 있는지만 확인합니다(source는 무시하고 daangn)"
+        type: boolean
+        default: false
+      dry_run:
+        description: "서버에 저장하지 않고 원본 사이트만 순회해 개수를 확인합니다"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# 수집 대상 Supabase 프로젝트는 하나뿐이라 그룹도 하나입니다. 실행 중인 수집을 끊으면 lease만 남고 이어받기가 늦어지므로
+# 끊지 않고 줄을 세웁니다(대기는 최신 한 건만 남습니다).
+concurrency:
+  group: blog-catalog-ingest
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    name: 블로그 카탈로그 수집
+    runs-on: ubuntu-26.04
+    # 수집기 시간 제한(40분) 뒤 finish/fail 기록까지 마칠 여유를 둡니다.
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      # Playwright 패키지(e2e 워크스페이스)만 필요합니다. e2e의 postinstall은 모든 브라우저를 받으므로 건너뛰고 chromium만 설치합니다.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline --filter e2e --ignore-scripts
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Chromium
+        run: pnpm -F e2e exec playwright install chromium
+
+      - name: Smoke Daangn access
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.smoke }}
+        run: node .github/scripts/blog-reading/collect.mjs --source daangn --smoke
+
+      - name: Collect blog catalog
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.smoke) }}
+        env:
+          BLOG_CATALOG_INGEST_SECRET: ${{ secrets.BLOG_CATALOG_INGEST_SECRET }}
+          COLLECT_SOURCE: ${{ github.event_name == 'workflow_dispatch' && inputs.source || 'all' }}
+          # schedule 이벤트는 실행을 일으킨 cron 문자열이 github.event.schedule에 담깁니다.
+          COLLECT_TRIGGER: ${{ github.event_name == 'workflow_dispatch' && inputs.trigger || (github.event.schedule == '17 18 * * *' && 'daily' || 'request') }}
+          COLLECT_FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force && 'true' || 'false' }}
+          COLLECT_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && 'true' || 'false' }}
+        run: |
+          set -euo pipefail
+          args=(--source "$COLLECT_SOURCE" --trigger "$COLLECT_TRIGGER" --time-limit-minutes 40)
+          if [ "$COLLECT_FORCE" = "true" ]; then args+=(--force); fi
+          if [ "$COLLECT_DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          node .github/scripts/blog-reading/collect.mjs "${args[@]}"

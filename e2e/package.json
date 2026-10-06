@@ -14,6 +14,7 @@
 		"@supabase/supabase-js": "^2.95.3",
 		"@types/chrome": "^0.0.268",
 		"@web-memo/tsconfig": "workspace:*",
+		"sharp": "^0.33.5",
 		"typescript": "5.5.3"
 	},
 	"dependencies": {

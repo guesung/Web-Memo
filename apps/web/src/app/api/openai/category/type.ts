@@ -1,4 +1,5 @@
-export interface CategorySuggestionRequest {
+/** 카테고리 추천 요청에 필요한 페이지와 메모 데이터입니다. */
+export interface IFCategorySuggestionRequest {
 	pageTitle: string;
 	pageUrl: string;
 	pageContent: string;
@@ -7,17 +8,13 @@ export interface CategorySuggestionRequest {
 	pageLanguage: string;
 }
 
-export interface CategorySuggestionResponse {
+/** 기존 확장과 호환되는 카테고리 추천 응답입니다. */
+export interface IFCategorySuggestionResponse {
 	suggestion: {
 		categoryName: string;
 		isExisting: boolean;
 		existingCategoryId?: number;
 		confidence: number;
+		source: "jev" | "llm";
 	} | null;
-}
-
-export interface ParsedAIResponse {
-	categoryName: string;
-	isExisting: boolean;
-	confidence: number;
 }

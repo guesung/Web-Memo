@@ -30,6 +30,8 @@ vi.mock("@web-memo/shared/modules/chrome-storage", () => ({
 	},
 	STORAGE_KEYS: {},
 }));
+// 리포터는 @web-memo/env를 끌어와 테스트에서 불러올 수 없다.
+vi.mock("../../utils/reportError", () => ({ reportContentUiError: vi.fn() }));
 vi.mock("@web-memo/shared/modules/analytics", () => ({
 	analytics: { trackEvent: vi.fn() },
 }));
@@ -97,14 +99,25 @@ it("팝업 위치와 사이트 끄기 저장 실패를 메뉴 오류로 표시�
 		document.dispatchEvent(new MouseEvent("mouseup"));
 	});
 	await act(async () => {
-		hook?.handleBubbleCloseClick();
+		hook?.handleBubbleMenuClick();
 	});
 	expect(hook?.menuError).toBe("");
+	expect(hook?.isMenuOpen).toBe(true);
 	await act(async () => {
 		await hook?.handleBubbleDisableClick("site");
 	});
 	expect(hook?.menuError).toBe("highlight_save_failed");
 	expect(hook?.selectionState).not.toBeNull();
+	vi.mocked(ChromeSyncStorage.set).mockClear();
+	vi.mocked(analytics.trackEvent).mockClear();
+	await act(async () => {
+		hook?.handleBubbleCloseClick();
+	});
+	expect(hook?.selectionState).toBeNull();
+	expect(hook?.isMenuOpen).toBe(false);
+	expect(document.getSelection()?.toString()).toBe("site selection");
+	expect(ChromeSyncStorage.set).not.toHaveBeenCalled();
+	expect(analytics.trackEvent).not.toHaveBeenCalled();
 	await act(async () => {
 		root.unmount();
 	});

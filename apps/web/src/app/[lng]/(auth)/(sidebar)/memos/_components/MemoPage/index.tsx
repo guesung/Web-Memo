@@ -26,10 +26,10 @@ export default async function MemoPage({
 	lng,
 	filter = "all",
 }: IFMemoPageProps) {
-	// 헤더 여백(HeaderMargin, 4rem)은 layout이 이미 넣는다. 100vh를 그대로 쓰면
+	// 헤더 여백(HeaderMargin, 3rem)은 layout이 이미 넣는다. 100vh를 그대로 쓰면
 	// 그만큼 문서가 길어져 내용이 짧아도 스크롤이 생긴다.
 	return (
-		<div className="min-h-[calc(100vh-4rem)]">
+		<div className="min-h-[calc(100vh-3rem)]">
 			<MemoShellProbe
 				key={filter}
 				route={filter === "all" ? "/memos" : `/memos/${filter}`}

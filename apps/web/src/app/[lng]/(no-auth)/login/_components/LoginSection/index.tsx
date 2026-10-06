@@ -1,7 +1,7 @@
 "use server";
 
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import {
 	signInWithEmail,
 	signInWithOAuth,
@@ -19,7 +19,7 @@ import TrackLoginStartForm from "../TrackLoginStartForm";
 
 /** 웹 메모 소개와 로그인 제공자 버튼을 표시합니다. */
 const LoginSection = async ({ lng }: IFLoginSectionProps) => {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	const providers: TLoginProvider[] = [
 		{

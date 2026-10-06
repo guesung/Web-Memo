@@ -43,7 +43,7 @@ const getIndexablePaths = () => {
 		const matched = PRIORITY_BY_PREFIX.find(({ prefix }) =>
 			path.startsWith(prefix),
 		);
-		if (!matched) {
+		if (!matched || path === PATHS.featuresYoutubeSummary) {
 			return [];
 		}
 

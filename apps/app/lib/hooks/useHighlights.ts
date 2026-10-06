@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import type { HighlightRow } from "@web-memo/shared/types";
+import { getPageKey } from "@web-memo/shared/utils/url";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { highlightService } from "@/lib/supabase/client";
 
@@ -13,7 +14,7 @@ export function useHighlightsByUrl(url: string) {
 	const { isLoggedIn } = useAuth();
 
 	return useQuery<HighlightRow[]>({
-		queryKey: QUERY_KEY.highlightsByUrl(url),
+		queryKey: QUERY_KEY.highlightsByUrl(url ? getPageKey(url) : ""),
 		queryFn: async () => {
 			const { data, error } = await highlightService.getHighlightsByUrl(url);
 

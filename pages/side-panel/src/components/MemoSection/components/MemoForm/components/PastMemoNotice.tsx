@@ -1,4 +1,3 @@
-import { getMemoUrl } from "@src/utils";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import type {
 	IFPastMemoDuplicate,
@@ -12,12 +11,7 @@ import {
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "@web-memo/ui";
-import {
-	ChevronDownIcon,
-	ChevronRightIcon,
-	HistoryIcon,
-	XIcon,
-} from "lucide-react";
+import { ChevronDownIcon, HistoryIcon, XIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { usePastMemoMatch } from "../hooks";
@@ -31,57 +25,88 @@ import PastMemoNoticeItem from "./PastMemoNoticeItem";
  */
 const PastMemoNotice = (props: IFPastMemoNoticeProps) => {
 	const pastMemoMatch = usePastMemoMatch({ hasMemoData: props.hasMemoData });
-	const shownUrlsRef = useRef(new Set<string>());
+	const shownNoticesRef = useRef(new Set<string>());
+	const openedNoticesRef = useRef(new Set<string>());
 
 	const duplicate = pastMemoMatch.duplicate;
 	const relatedMemos = pastMemoMatch.relatedMemos;
 	const isNoticeVisible = !!duplicate || relatedMemos.length > 0;
 
-	// 배너가 실제로 그려진 URL마다 한 번만 보낸다.
+	// 실제로 표시된 종류마다 URL당 한 번씩 기록한다.
 	useEffect(() => {
 		const normalizedUrl = pastMemoMatch.normalizedUrl;
 
-		if (
-			!isNoticeVisible ||
-			!normalizedUrl ||
-			shownUrlsRef.current.has(normalizedUrl)
-		) {
+		if (!normalizedUrl) {
 			return;
 		}
 
-		shownUrlsRef.current.add(normalizedUrl);
-		analytics.trackEvent({
-			name: "past_memo_show",
-			params: getEventParams(duplicate),
-		});
-	}, [isNoticeVisible, pastMemoMatch.normalizedUrl, duplicate]);
+		const visibleNotices: IFPastMemoEventParams[] = [];
+		if (duplicate) {
+			visibleNotices.push({ kind: "duplicate", source: duplicate.source });
+		}
+		if (relatedMemos.length > 0) {
+			visibleNotices.push({ kind: "related", source: "jev" });
+		}
+
+		for (const params of visibleNotices) {
+			const noticeKey = `${normalizedUrl}:${params.kind}`;
+			if (shownNoticesRef.current.has(noticeKey)) {
+				continue;
+			}
+			shownNoticesRef.current.add(noticeKey);
+			analytics.trackEvent({ name: "past_memo_show", params });
+		}
+	}, [pastMemoMatch.normalizedUrl, duplicate, relatedMemos]);
 
 	if (!isNoticeVisible) {
 		return null;
 	}
 
 	const handleDismissButtonClick = () => {
-		analytics.trackEvent({
-			name: "past_memo_dismiss",
-			params: getEventParams(duplicate),
-		});
+		if (duplicate) {
+			analytics.trackEvent({
+				name: "past_memo_dismiss",
+				params: { kind: "duplicate", source: duplicate.source },
+			});
+		}
+		if (relatedMemos.length > 0) {
+			analytics.trackEvent({
+				name: "past_memo_dismiss",
+				params: { kind: "related", source: "jev" },
+			});
+		}
 		void pastMemoMatch.dismissCurrentUrl();
 	};
 
 	const handleDuplicateOpenClick = (pastMemoDuplicate: IFPastMemoDuplicate) => {
-		analytics.trackEvent({
-			name: "past_memo_open",
-			params: { kind: "duplicate", source: pastMemoDuplicate.source },
-		});
+		const noticeKey = `${pastMemoMatch.normalizedUrl}:duplicate`;
+		if (!openedNoticesRef.current.has(noticeKey)) {
+			openedNoticesRef.current.add(noticeKey);
+			analytics.trackEvent({
+				name: "past_memo_open",
+				params: { kind: "duplicate", source: pastMemoDuplicate.source },
+			});
+		}
 		void Tab.create({ url: pastMemoDuplicate.url });
 	};
 
 	const handleRelatedItemClick = (relatedMemo: IFPastMemoRelated) => {
+		const noticeKey = `${pastMemoMatch.normalizedUrl}:related`;
+		if (!openedNoticesRef.current.has(noticeKey)) {
+			openedNoticesRef.current.add(noticeKey);
+			analytics.trackEvent({
+				name: "past_memo_open",
+				params: { kind: "related", source: "jev" },
+			});
+		}
+		void Tab.create({ url: relatedMemo.url });
+	};
+
+	const handleRelatedExpand = () => {
 		analytics.trackEvent({
-			name: "past_memo_open",
+			name: "past_memo_expand",
 			params: { kind: "related", source: "jev" },
 		});
-		void Tab.create({ url: getMemoUrl({ id: relatedMemo.id }) });
 	};
 
 	const dismissButton = (
@@ -119,6 +144,7 @@ const PastMemoNotice = (props: IFPastMemoNoticeProps) => {
 					relatedMemos={relatedMemos}
 					dismissButton={duplicate ? null : dismissButton}
 					onItemClick={handleRelatedItemClick}
+					onExpand={handleRelatedExpand}
 				/>
 			)}
 		</div>
@@ -164,47 +190,64 @@ const PastMemoDuplicate = (props: IFPastMemoDuplicateProps) => {
 	);
 };
 
-/** 관련 메모 목록. 기본은 접혀 있고 머리줄을 누르면 펼친다. */
+/** 첫 관련 메모는 바로 보여 주고, 나머지만 펼쳐서 보여 준다. */
 const PastMemoRelatedList = (props: IFPastMemoRelatedListProps) => {
 	const [isRelatedListOpen, setIsRelatedListOpen] = useState(false);
-
-	const ChevronIcon = isRelatedListOpen ? ChevronDownIcon : ChevronRightIcon;
-
-	return (
-		<Collapsible open={isRelatedListOpen} onOpenChange={setIsRelatedListOpen}>
-			<div className="flex min-h-8 min-w-0 items-center gap-2">
-				<CollapsibleTrigger className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-1 rounded-sm text-left text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1">
-					<ChevronIcon className="size-4 shrink-0" aria-hidden="true" />
-					<span className="truncate">
-						{I18n.get("past_memo_related", String(props.relatedMemos.length))}
-					</span>
-				</CollapsibleTrigger>
-				{props.dismissButton}
-			</div>
-			<CollapsibleContent>
-				<ul className="min-w-0">
-					{props.relatedMemos.map((relatedMemo) => (
-						<PastMemoNoticeItem
-							key={relatedMemo.id}
-							relatedMemo={relatedMemo}
-							onItemClick={() => props.onItemClick(relatedMemo)}
-						/>
-					))}
-				</ul>
-			</CollapsibleContent>
-		</Collapsible>
-	);
-};
-
-/** 표시·닫기 이벤트의 kind/source. 같은 글이 있으면 그쪽을 기준으로 한다. */
-const getEventParams = (
-	duplicate: IFPastMemoDuplicate | null,
-): IFPastMemoEventParams => {
-	if (duplicate) {
-		return { kind: "duplicate", source: duplicate.source };
+	const [firstMemo, ...remainingMemos] = props.relatedMemos;
+	if (!firstMemo) {
+		return null;
 	}
 
-	return { kind: "related", source: "jev" };
+	const handleOpenChange = (isOpen: boolean) => {
+		setIsRelatedListOpen(isOpen);
+		if (isOpen) {
+			props.onExpand();
+		}
+	};
+
+	return (
+		<Collapsible open={isRelatedListOpen} onOpenChange={handleOpenChange}>
+			<div className="flex min-h-8 min-w-0 items-center gap-2">
+				<p className="flex min-w-0 flex-1 items-center gap-1 text-muted-foreground">
+					<HistoryIcon className="size-4 shrink-0" aria-hidden="true" />
+					<span className="truncate">
+						{I18n.get("past_memo_related_intro")}
+					</span>
+				</p>
+				{props.dismissButton}
+			</div>
+			<ul className="min-w-0">
+				<PastMemoNoticeItem
+					key={firstMemo.id}
+					relatedMemo={firstMemo}
+					showOpenLabel
+					onItemClick={() => props.onItemClick(firstMemo)}
+				/>
+			</ul>
+			{remainingMemos.length > 0 && (
+				<>
+					<CollapsibleTrigger className="focus-visible:ring-ring flex items-center gap-1 rounded-sm py-1 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1">
+						{I18n.get("past_memo_related_more", String(remainingMemos.length))}
+						<ChevronDownIcon
+							className={`size-4 transition-transform ${isRelatedListOpen ? "rotate-180" : ""}`}
+							aria-hidden="true"
+						/>
+					</CollapsibleTrigger>
+					<CollapsibleContent>
+						<ul className="min-w-0">
+							{remainingMemos.map((relatedMemo) => (
+								<PastMemoNoticeItem
+									key={relatedMemo.id}
+									relatedMemo={relatedMemo}
+									onItemClick={() => props.onItemClick(relatedMemo)}
+								/>
+							))}
+						</ul>
+					</CollapsibleContent>
+				</>
+			)}
+		</Collapsible>
+	);
 };
 
 /** past_memo_* GA 이벤트 파라미터 */
@@ -237,4 +280,6 @@ interface IFPastMemoRelatedListProps {
 	dismissButton: ReactNode;
 	/** 관련 메모 행을 눌렀을 때 */
 	onItemClick: (relatedMemo: IFPastMemoRelated) => void;
+	/** 남은 관련 메모를 처음 펼쳤을 때 */
+	onExpand: () => void;
 }

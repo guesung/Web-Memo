@@ -57,13 +57,19 @@ master 머지
                                          (웹은 성공하면 [🌐 웹 열기]가 함께 붙습니다)
 ```
 
-**릴리스는 타깃별로 줄을 섭니다.** `release.yml`의 `concurrency` 그룹이
-`release-app` / `release-web` / `release-extension`으로 갈려 있어, 앱 배포(약 30분)가
-웹 배포(승격이면 약 30초, 새로 빌드하면 약 1.5분)를 막지 않습니다. 대기하는 것은 같은 타깃의 중복 제출뿐입니다.
-워크플로 하나를 한 그룹으로 묶으면 서로 다른 타깃끼리도 무한정 줄을 서게 됩니다.
-`cancel-in-progress: false`라 진행 중인 배포를 끊지는 않습니다. 다만 대기하는 제출은
-하나만 유지되어, 같은 타깃에 대기 제출이 있을 때 세 번째 제출이 들어오면 앞선 대기
-제출이 취소됩니다.
+**릴리스는 타깃별로 줄을 섭니다.** 웹·확장은 `release.yml`의 타깃별 그룹,
+앱은 `cd-app.yml`의 실제 빌드 잡이 소유하는 `release-app` 그룹을 씁니다.
+앱 배포가 웹·확장 배포를 막지 않고 앱 번호 증가부터 제출까지는 직렬로 실행합니다.
+앱 그룹은 `cancel-in-progress: false`와 `queue: max`로 실행 중 작업을 보호하고
+최대 100개의 대기 요청을 유지합니다. master CI와 수동 운영 릴리스도 이 큐에 참여하며,
+develop 후보만 실행권을 얻은 뒤 오래된 요청인지 재판정해 생략합니다.
+웹·확장의 기존 그룹은 대기 요청 하나만 유지합니다.
+
+**정책 전환 중에는 기존 실행을 먼저 확인합니다.** 이전 커밋으로 이미 접수된 CI·수동 릴리스는
+호출자의 기본 single 큐를 계속 사용합니다. 이 요청이 같은 그룹의 신규 max 대기를 취소할 수
+있으므로 실행 중인 앱은 완료하도록 두고, 취소된 신규 앱 잡만 재실행합니다. 운영 요청까지
+일관된 정책을 사용하려면 PR을 master에 반영하고 이전 정책의 요청이 종료되어야 합니다.
+공유 그룹 이름을 바꾸면 실행 중 빌드와 병렬로 번호를 올릴 수 있으므로 이름은 유지합니다.
 
 **Actions 그래프에서 앱 릴리스에 웹 알림이 물려 보이는 것은 렌더링 아티팩트입니다.**
 `needs`상 세 알림은 각자 자기 타깃만 봅니다(`notify-web`은 `[preflight, release-web]`).
@@ -108,7 +114,7 @@ master 머지
 `cd-app`은 android만 돕니다.
 
 **웹·확장·앱이 하나도 안 바뀐 머지는 "배포 대상 변경 없음" 한 줄로 스레드를 닫습니다.**
-문서나 `.github`만 고친 머지가 여기 해당합니다. 루트는 푸시 직후 만들어지므로 이 댓글이 없으면
+문서나 배포 대상과 무관한 `.github` 파일만 고친 머지가 여기 해당합니다. `cd-app.yml` 변경은 앱을 빌드합니다. 루트는 푸시 직후 만들어지므로 이 댓글이 없으면
 아래에 아무것도 없는 루트만 남습니다. `ci`가 통과했고 세 타깃이 전부 skipped일 때만 답니다.
 `ci`가 실패하거나 취소됐으면 요약 댓글이 그 사실을 알리고, 스레드가 없으면(Secret 미등록,
 루트 생성 실패) 예전처럼 아무것도 보내지 않습니다. 웹훅으로 최상위에 내려보내지 않습니다.
@@ -134,18 +140,18 @@ skipped이거나 실패했을 때 `cd-*`가 암묵적 `success()` 조건 때문�
 ### 머지가 연달아 들어오면 커밋마다 따로 돕니다
 
 master에 머지가 몇 분 안에 연달아 들어오면 커밋마다 CI가 병렬로 끝까지 돌고, 스레드도
-커밋마다 하나씩 생깁니다. `ci.yml`의 동시성 그룹이 master에서는 커밋 sha 단위라 서로
-기다리지도 취소하지도 않습니다. PR과 develop은 같은 ref의 앞선 run을 취소합니다
+커밋마다 하나씩 생깁니다. `ci.yml`의 push 동시성 그룹은 run ID 단위라 서로
+기다리지도 취소하지도 않습니다. PR은 앞선 run 전체를 취소하고 develop은 검증·웹·확장 잡만 각각 취소합니다
 (develop의 취소는 [테스트 서버 알림](#develop-머지는-테스트-서버로-나갑니다)에서 다룹니다).
 
 - **스레드 도착 순서가 커밋 순서와 다를 수 있습니다.** 루트 메시지는 푸시 직후에 만들어지지만
   빌드 댓글은 그 커밋의 빌드가 끝나는 대로 달립니다. 앞 커밋의 앱 빌드(약 30분)가 뒤 커밋의
   웹 빌드보다 늦게 끝나면 댓글이 섞여 도착합니다.
-- **앱 변경이 있는 머지가 겹치면 앱 빌드도 병렬로 돕니다.** 플랫폼당 약 30분의 러너 시간이
-  겹친 만큼 늘어납니다.
-- **각 run이 자기 커밋의 변경만 판정합니다.** `changes` 잡이 push 직전 커밋
-  (`github.event.before`)과 비교하므로, 앞선 run이 취소되지 않으면 어느 커밋의 변경도
-  판정에서 빠지지 않습니다.
+- **앱 빌드와 제출은 직렬로 실행합니다.** develop·master push의 앱 잡과 수동 앱 릴리스가
+  `release-app` 그룹을 공유합니다. PR 검증은 별도 그룹을 씁니다.
+- **변경은 마지막 성공한 CI 커밋을 기준으로 판정합니다.** 조회할 수 없으면 push 직전 커밋으로
+  폴백합니다. develop 앱은 전체 CI 성공과 별개인 마지막 앱 배포 성공 SHA를 기준으로 판정합니다. CI·앱·릴리스 워크플로와 앱 판정 스크립트 변경은 패키지 밖에 있어도 앱 변경으로 처리하므로
+  워크플로만 고친 develop 푸시에서도 빌드·제출을 검증합니다.
 
 예전에는 그룹이 ref 단위(`ci-refs/heads/master`)라 GitHub이 대기 run을 하나만 남기고 앞선
 대기 run을 취소했습니다. 취소된 run은 잡이 하나도 뜨지 않아 그 커밋에는 CI 검증도, 스레드도,
@@ -231,8 +237,8 @@ PR에서도 확장이 바뀌면 `cd-extension`이 production으로 빌드합니�
 - 그 커밋은 `ci`·`tests_e2e`를 거치지 않습니다 — `master` 보호가
   `enforce_admins: false`라 관리자 토큰이 우회합니다. 버전 한 줄만 바뀌므로
   감수한 선택입니다.
-- **버전을 바꾸면 재사용할 CI 아티팩트가 없어 새로 빌드합니다.** 앱은 플랫폼당
-  약 30분, 확장은 약 3분. 버전이 산출물에 들어가므로 피할 수 없습니다.
+- **버전을 바꾸면 확장도 재사용할 CI 아티팩트가 없어 새로 빌드합니다.** 앱은 항상 새로 빌드하며 플랫폼당
+  약 30분, 확장은 약 3분이 걸립니다. 버전이 산출물에 들어가므로 피할 수 없습니다.
 
 릴리스 노트(`Update.ts`·`translation.json`)는 여기서 받지 않습니다. 사람이 쓰는
 문장이라 `/version-update`나 손으로 따로 넣습니다.
@@ -251,37 +257,55 @@ Slack에서 `/배포현황`(등록한 슬래시 커맨드)을 실행하면 `vers
 | 📱 iOS | `TestFlight 1.0.8 (49)` | 마케팅 버전 1.0.8, EAS가 매긴 빌드 번호 49 |
 | 📱 iOS | `App Store 1.0.7` | 실제로 판매 중인(심사를 통과한) 버전 |
 | 🤖 Android | `internal 1.0.7 (49)` | 트랙명 + 릴리스명 + versionCode |
-| 🧩 확장 | `게시 1.10.13 · 초안 1.10.14` | 업로드는 됐지만 **게시 버튼을 아직 안 누른** 상태 |
+| 🧩 확장 | `게시 1.10.13 · 초안 1.10.14` | 업로드는 됐지만 **아직 게시되지 않은**(심사 중이거나 게시 대기) 상태 |
 | 🌐 웹 | `배포 b9f0e21` | 지금 응답하는 인스턴스의 커밋 |
 
-확장은 `cd-extension.yml`이 `publish: false`로 올리므로 게시본과 초안이 거의
-항상 다릅니다. 게시는 크롬 웹 스토어 대시보드에서 직접 눌러야 합니다.
+확장은 `cd-extension.yml`이 `upload-extension-to-store.mjs`로 웹스토어 API v2에 올리고
+`DEFAULT_PUBLISH`로 제출하므로, 심사를 통과하면 바로 게시됩니다. 릴리스 직후에는
+심사가 끝나기 전이라 게시본과 초안이 다르고, 통과하면 초안이 사라집니다. 게시가
+안 되고 초안이 오래 남아 있으면 심사 결과를 크롬 웹 스토어 대시보드에서 확인하세요.
 
-## master 푸시는 스토어에 올리지 않습니다 (빌드는 재사용합니다)
+심사가 끝나는 시점은 따로 물어보지 않아도 됩니다. `notify-extension-published.yml`이
+30분마다 게시본을 조회해, `apps/chrome-extension/package.json`의 버전이 게시되면
+**🧩 확장 vX.Y.Z 웹스토어 게시 완료**를 한 번 보냅니다. 같은 버전은 캐시에 표시를 남겨
+다시 알리지 않습니다.
 
-`ci.yml`의 `cd-app`은 항상 `deploy_target: "build-only"`로 실행됩니다.
-`cd-extension`은 master 푸시에서 `build-only`로, PR·develop 푸시에서
-`staging`으로 실행됩니다. 둘 다 빌드만 하고 스토어에는 아무것도 올리지 않습니다.
-제출은 Slack 버튼 → `release.yml` 한 경로뿐이라, "언제 무엇이 올라갔는가"의 답이
-Release 워크플로 실행 기록 하나로 모입니다.
+## master 푸시는 스토어에 올리지 않습니다
 
-**대신 그 빌드 산출물은 릴리스에서 그대로 재사용합니다.** 버튼을 눌렀을 때
-`release.yml`은 배포할 커밋에서 CI가 올려둔 아티팩트를 먼저 찾고
-(`.github/scripts/deploy/find-reusable-artifact.sh`), 있으면 내려받아 제출만 합니다.
-앱은 플랫폼당 약 30분, 확장은 약 3분을 아낍니다.
+앱은 이벤트에 따라 빌드와 배포처를 구분합니다. `staging`은 배포 시점을 구분하는 이름이며,
+앱의 URL·Supabase·OAuth 등 환경값은 운영과 같습니다. develop Android 빌드만 APK를 만드는
+`staging` EAS 프로파일을 씁니다.
 
-- **앱 아티팩트에는 프로파일이 이름에 붙습니다** (`ios-build-ci` /
-  `ios-build-verify`). PR 검증 빌드는 버려지는 산출물이라 `verify`(빌드 번호
-  고정)로 굽고, master 머지분만 `ci`(빌드 번호 자동 증가)로 구워 제출 가능한
-  상태로 남깁니다. 릴리스는 `-ci`로 끝나는 것만 찾습니다.
-  `/reset-develop`으로 develop을 master로 리셋하면 두 브랜치가 같은 커밋을
-  갖게 되는데, 그때 develop CI가 만드는 `verify` 산출물을 제출하면 스토어가
-  중복 빌드 번호로 거절합니다. 이름을 가르는 이유가 이것입니다.
-- **확장은 CI에서도 `BUILD_ENV=production`으로 굽습니다.** `staging`이 아니면
-  production이라 릴리스가 구울 것과 같은 산출물입니다.
-- **못 찾으면 기존대로 새로 빌드합니다.** 아티팩트는 7일 뒤 만료되고, 변경이
-  없어 CI가 그 앱을 아예 안 빌드했을 수도 있습니다. 태그·과거 커밋을 `ref`로
-  넘겨 배포할 때도 마찬가지입니다.
+| 호출 | deploy_target | 빌드 프로파일 | 결과 |
+| --- | --- | --- | --- |
+| develop push + 앱 변경 | staging | staging (Android) · ci (iOS) | Android는 APK를 Firebase App Distribution(`testers`)에 배포, iOS는 TestFlight 제출 |
+| master push + 앱 변경 | build-only | ci | 새 빌드만 수행 |
+| PR + 앱 변경 + build-app 라벨 | build-only | verify | 빌드 번호를 올리지 않고 검증만 수행 |
+| Slack 버튼 → release.yml | production | ci | 새 빌드 후 Play 내부 테스트에 제출 |
+
+`ci`는 EAS 원격 빌드 번호를 자동 증가시킵니다. `verify`만 번호를 고정합니다.
+`staging` 프로파일도 같은 원격 번호를 올립니다. App Tester에서 앞 APK 위에 다음 APK를 덮어 설치하려면
+versionCode가 올라가야 하기 때문입니다. Play 제출은 production에서만 하며 기존 `submit.production`
+프로파일(`track: internal`, `releaseStatus: completed`)을 사용합니다. 그래서 Play 내부 테스트 트랙에는
+release.yml이 제출한 빌드만 쌓입니다. iOS matrix는 현재 비활성 상태이며, 복원하면 staging·production 모두 TestFlight에 제출합니다.
+
+**Android 릴리스는 master CI 아티팩트를 재사용합니다.** release.yml은 `find-reusable-artifact.sh`로
+해당 커밋의 `android-build-ci` 산출물을 찾으면 빌드 없이 그 AAB를 Play 내부 테스트에 제출하고,
+없거나 7일 보관 기간이 지나면 새로 빌드합니다. develop Android는 Play가 아니라 App Tester로 가므로
+master 빌드를 재사용해도 Play에 더 낮은 versionCode로 제출될 일이 없습니다. 오래된 커밋을 새 커밋보다
+나중에 릴리스하면 Play가 낮은 versionCode를 거절하므로, 릴리스는 최신 master 커밋부터 합니다.
+
+**iOS 릴리스는 항상 새로 빌드합니다.** develop iOS는 여전히 TestFlight에 제출하므로, master CI에서
+번호 101을 빌드한 뒤 develop이 102를 제출하면 101을 재사용한 릴리스가 거절됩니다.
+
+아티팩트는 추적용으로 7일 보관합니다. Android 기준 develop은 `android-build-staging`(APK),
+master와 production은 `android-build-ci`, PR은 `android-build-verify`입니다.
+iOS를 복원하면 같은 규칙의 `ios-build-*` 이름을 씁니다.
+
+**확장은 기존 CI 아티팩트 재사용을 유지합니다.** master 푸시는 `build-only`, PR·develop은
+`staging`으로 빌드만 하며, 제출은 Slack 버튼 → `release.yml`에서 합니다.
+production 릴리스는 `.github/scripts/deploy/find-reusable-artifact.sh`로 해당 커밋의 production
+산출물을 찾으면 그대로 제출하고, 없거나 7일 보관 기간이 지나면 새로 빌드합니다.
 
 ## master 푸시는 웹을 상용에 올리지 않습니다 (미승격 배포를 승격합니다)
 
@@ -339,12 +363,16 @@ Slack [🌐 웹 배포] 클릭
 ```
 develop 푸시
    │
-   ├─ ci.yml : 린트·타입·테스트 + 영향받은 앱 빌드 검증
+   ├─ ci.yml : 린트·타입·테스트 + 영향받은 앱 빌드·Firebase App Distribution 배포
    │
    ├─ ci.yml / slack-thread : 스레드 루트 (🔀 develop 머지)
    │
    ├─ cd-web (deploy_target: staging)
    │    └─ Vercel 배포 + 별칭 이동. 결과는 staging_outcome output으로 내보냅니다
+   │
+   ├─ cd-app (deploy_target: staging)
+   │    └─ Android APK 빌드 + Firebase App Distribution 배포
+   │         └─ notify-staging-app : 같은 스레드에 앱 배포 성공·실패 댓글 + Actions 로그
    │
    └─ ci.yml / notify-staging : cd-web만 기다렸다가 스레드에 댓글을 답니다
              └─ Slack 댓글  ┌────────────────────────────────────────┐
@@ -353,6 +381,45 @@ develop 푸시
                             │ [🌐 테스트 서버 열기][실행 로그 보기]     │
                             └────────────────────────────────────────┘
 ```
+
+`ci`·`changes` 검증에 성공한 모든 develop 후보가 앱 큐에 들어갑니다. 실행권을 얻은 뒤
+앱 변경이 있다고 판정되면 `cd-app`이 `staging` 프로파일로 APK를 빌드해 Firebase App Distribution
+(`page-memos` 프로젝트, `testers` 그룹)에 올립니다. 릴리스 노트는 `<짧은 SHA> <커밋 제목>`입니다.
+앱 결과는 `notify-staging-app`이 `cd-app` 종료 후 같은 develop 머지 스레드에 댓글로 알립니다.
+성공은 **앱 App Tester 배포 완료**, 실패는 **앱 빌드·App Tester 배포 실패**로 표시하며
+Actions 로그 링크만 붙입니다. 실패 문구는 빌드와 배포 중 어느 단계에서 실패했는지 단정하지 않습니다.
+변경 없음·skipped·cancelled에는 댓글을 달지 않습니다. 스레드나 봇 설정이 없거나 전송에 실패하면
+경고만 남기고 채널 최상위 메시지로 대체하지 않습니다. 알림 실패는 CI 결과에 영향을 주지 않습니다.
+웹의 `notify-staging`은 기존처럼 `cd-web`만 기다리므로 앱 빌드 때문에 지연되지 않습니다.
+아래 상태 표는 웹 알림을 다룹니다.
+
+### 테섭 앱은 App Tester로 받습니다
+
+1. `testers` 그룹 초대 메일을 수락하고, 안내대로 Android 기기에 **App Tester**를 설치합니다.
+2. App Tester에서 최신 릴리스를 골라 설치합니다. 푸시 알림으로도 새 릴리스를 알려 줍니다.
+3. **Play에서 받은 앱과 오갈 때는 삭제 후 재설치합니다.** 패키지명(`com.webmemo.app`)은 같지만
+   Play 빌드는 Play 앱 서명 키, App Tester 빌드는 EAS 업로드 키로 서명돼 서로 덮어 설치되지 않습니다.
+   삭제하면 기기의 로컬 데이터도 지워집니다.
+
+테스터를 늘리려면 Firebase 콘솔 → App Distribution → 테스터 및 그룹에서 `testers`에 추가합니다.
+업로드 키로 서명되므로 Google 로그인은 Firebase Android 앱에 등록한 업로드 키 SHA-1로,
+카카오 로그인은 카카오 콘솔에 등록한 업로드 키 해시로 동작합니다.
+
+**연속 develop 푸시도 이미 시작한 앱 빌드·배포를 취소하지 않습니다.** push 실행 전체는
+보호하고 검증·웹·확장 잡의 이전 작업만 취소합니다. 공유 앱 큐에는 모든 요청을 유지하므로
+늦게 검증을 마친 오래된 후보가 최신 후보를 대기열에서 밀어내지 않습니다.
+
+`prepareStagingApp.mjs`는 공유 실행권을 얻은 뒤 현재 develop 커밋 계보와 다른 후보의
+`ci`·`changes` 성공을 확인합니다. 같은 계보에 더 최신의 검증 성공 후보가 있거나 이미
+같거나 더 최신 앱이 배포됐으면 EAS를 실행하지 않습니다. 최신 후보의 검증 실패는
+이전 검증 성공 후보를 막지 않습니다. 큐 입장 순서는 커밋 순서와 다를 수 있습니다.
+
+실제 Firebase 배포 성공 뒤 플랫폼·SHA·run·attempt를 포함한 성공 아티팩트를 90일간
+남깁니다. 전체 CI 결과가 실패여도 앱의 성공 이력은 유효합니다. 생략·빌드 실패·배포 실패는
+성공 이력을 갱신하지 않습니다. 다른 계보·플랫폼·만료된 이력은 제외하고, 유효한 기준이
+없으면 전체 앱 빌드합니다. 기준 이후 앱 변경이 없으면 비용이 큰 설치·EAS·배포를 생략합니다.
+GitHub 후보·이력 조회 실패는 EAS 전에 잡을 실패시켜 오래된 후보를 배포하지 않습니다.
+생략 후보는 앱 결과 알림을 보내지 않습니다. 번호 증가·운영 산출물 재사용 정책은 유지합니다.
 
 master 알림과 달리 스토어를 조회하지 않고 배포 버튼도 달지 않습니다. 여기서
 나가는 것은 웹 하나뿐이고 그 배포는 이미 끝난 뒤라 누를 것이 없습니다.
@@ -369,11 +436,10 @@ master 알림과 달리 스토어를 조회하지 않고 배포 버튼도 달지
 **웹 변경이 없어 `cd-web`이 아예 안 돌면 알림도 없습니다.** 올라간 것이 없으면 알릴
 것도 없습니다.
 
-**취소된 run도 알리지 않습니다.** `develop`만 `cancel-in-progress`라 푸시가 연달아
-들어오면 앞선 run이 매번 취소되는데, 뒤이은 run이 어차피 배포하고 그 결과를 다시
-알리므로 취소 알림은 소음만 됩니다. master는 커밋마다 병렬로 돌아 취소되지 않습니다
-([머지가 연달아 들어오면 커밋마다 따로 돕니다](#머지가-연달아-들어오면-커밋마다-따로-돕니다)). 그래서 `notify-staging`은 `cd-web` 결과가 `success`
-또는 `failure`일 때만 돕니다. `cancelled`와 `skipped`(CI 실패로 밀림)는 알리지 않습니다.
+**취소된 웹 잡도 알리지 않습니다.** 연속 develop 푸시는 앞선 웹 잡을 취소할 수 있습니다.
+뒤이은 웹 배포 결과가 따로 올라오므로 `notify-staging`은 `cd-web` 결과가 `success`
+또는 `failure`일 때만 실행합니다. `cancelled`와 `skipped`에는 알리지 않습니다.
+앱은 이 웹 알림과 독립적으로 완료하며, master push 실행은 커밋마다 보호됩니다.
 
 ### 왜 스텝이 아니라 별도 잡인가
 
@@ -483,7 +549,6 @@ vercel logs https://www.webmemo.xyz --scope gueit214s-projects
 | `SLACK_SIGNING_SECRET` | Slack App의 Signing Secret |
 | `SLACK_BOT_TOKEN` | `xoxb-`로 시작하는 봇 토큰 |
 | `GITHUB_DISPATCH_TOKEN` | 위에서 만든 PAT |
-| `GITHUB_DISPATCH_REPOSITORY` | (선택) 기본값 `guesung/Web-Memo` |
 
 `SLACK_BOT_TOKEN`은 GitHub 시크릿에도 같은 값으로 따로 등록합니다(아래 4번).
 Vercel과 GitHub Actions는 서로의 값을 읽지 못합니다.
@@ -509,7 +574,7 @@ PAT나 Slack 시크릿을 거기 두면 확장 번들에 섞여 들어갈 수 �
 | `SLACK_CHANNEL_ID` | 스레드를 만들 채널 ID. 웹훅 URL에서는 얻을 수 없습니다 | 사람이 등록 |
 | `EXPO_ASC_API_KEY_P8` | iOS 스토어 버전 조회 | ✅ |
 | `EXPO_ANDROID_SERVICE_ACCOUNT_JSON` | Android 스토어 버전 조회 | ✅ |
-| `CLIENT_ID` / `CLIENT_SECRET` / `REFRESH_TOKEN` | 확장 초안 버전 조회 | ✅ |
+| `CLIENT_ID` / `CLIENT_SECRET` / `REFRESH_TOKEN` | 확장 업로드·게시 제출, 초안 버전 조회(웹스토어 API v2) | ✅ |
 
 위 두 스레드용 시크릿을 등록하기 전에는 스레드가 생기지 않고 기존처럼 웹훅 최상위
 메시지로 나갑니다. 등록했는데도 스레드가 안 생기면 Actions 실행의 `::warning::`을
@@ -529,9 +594,11 @@ App Store Connect의 키 ID·발급자 ID·앱 ID는 시크릿이 아니라
 | `.github/workflows/ci.yml` (`slack-thread`) | master·develop 푸시마다 머지 스레드의 루트 메시지를 만들고 ts를 냄 |
 | `.github/workflows/ci.yml` (`notify-web` · `notify-extension` · `notify-app`) | master 타깃 하나의 빌드 결과를 스레드에 댓글로 게시 |
 | `.github/workflows/ci.yml` (`notify`) | master 스토어 현황 + 배포 버튼을 스레드의 마지막 댓글로 게시 |
+| `.github/workflows/ci.yml` (`notify-staging-app`) | develop 앱 빌드·App Tester 배포 결과를 같은 머지 스레드에 댓글로 게시 |
 | `.github/workflows/ci.yml` (`notify-staging`) | develop 테스트 서버 배포 결과를 스레드에 댓글로 게시 |
 | `.github/workflows/cd-web.yml` (`Notify staging deploy`) | `workflow_dispatch`로 직접 실행한 경우의 테스트 서버 알림(웹훅) |
 | `.github/workflows/versions.yml` | 배포 현황만 조회해 게시 |
+| `.github/workflows/notify-extension-published.yml` | 30분마다 웹스토어 게시본을 조회해, 레포의 확장 버전이 게시되면 한 번 알림 |
 | `.github/workflows/release.yml` | 실제 스토어 제출 (버튼이 이걸 실행) |
 | `.github/workflows/release-notify.yml` | 릴리스 타깃 하나의 결과를 Slack에 게시 (release.yml이 타깃별로 호출) |
 | `.github/scripts/deploy/notify-release-result.mjs` | 릴리스 성패를 타깃별로 Slack에 보고 |

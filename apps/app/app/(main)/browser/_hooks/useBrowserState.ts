@@ -1,5 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
+import { getPageKey } from "@web-memo/shared/utils/url";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -9,7 +10,6 @@ import {
 	runOnJS,
 	useAnimatedStyle,
 	useSharedValue,
-	withSpring,
 	withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -41,6 +41,7 @@ import {
 	saveScrollPosition,
 } from "@/lib/storage/scrollPositions";
 import { supabase } from "@/lib/supabase/client";
+import { recordEntryTrace } from "../../../../lib/monitoring/entryTrace";
 import { WEB_API_ORIGIN } from "../_constants/webApi";
 import {
 	addUnlockedDomain,
@@ -50,6 +51,13 @@ import {
 	savePanelRatio,
 } from "../_utils/browserPreferences";
 import { formatUrl } from "../_utils/formatUrl";
+import {
+	beginNavigation,
+	cancelNavigation,
+	createBrowserNavigationState,
+	markNavigationLoadStart,
+	reconcileNavigation,
+} from "../_utils/navigationTransition";
 import {
 	isInAppLoadableUrl,
 	openExternalUrl,
@@ -61,8 +69,8 @@ import {
 	UNLOCK_SELECTION_JS,
 } from "../_utils/webViewScripts";
 import { useAndroidWebViewBack } from "./useAndroidWebViewBack";
+import { useBrowserTabs } from "./useBrowserTabs";
 
-const SPRING_CONFIG = { damping: 20, stiffness: 150 };
 const MIN_PANEL_RATIO = 0.15;
 const MAX_PANEL_RATIO = 0.8;
 const DEFAULT_PANEL_RATIO = 0.4;
@@ -72,7 +80,9 @@ const HIDE_DURATION = 250;
 
 export function useBrowserState({
 	onHighlightMessage,
+	onBeforeMemoLeave,
 }: {
+	onBeforeMemoLeave?: () => void;
 	/** 하이라이트 메시지(`highlight:` 접두사)를 상위(useWebViewHighlights)로 위임한다 */
 	onHighlightMessage?: (message: {
 		type: string;
@@ -81,23 +91,54 @@ export function useBrowserState({
 } = {}) {
 	const insets = useSafeAreaInsets();
 	const webViewRef = useRef<WebView>(null);
-	const { url: paramUrl, t: navTs } = useLocalSearchParams<{
+	const {
+		url: paramUrl,
+		t: navTs,
+		newTab: newTabParam,
+		source: sourceParam,
+	} = useLocalSearchParams<{
 		url?: string;
 		t?: string;
+		newTab?: string;
+		source?: string;
 	}>();
 
-	const [currentUrl, setCurrentUrl] = useState("");
-	const [pageTitle, setPageTitle] = useState("");
+	const {
+		tabs,
+		activeTabId,
+		activeTab,
+		isTabsLoaded,
+		updateActiveTabInfo,
+		activateTab,
+		openNewTab,
+		openUrlInNewTab,
+		removeTab,
+	} = useBrowserTabs();
+	const currentUrl = activeTab.url;
+	// WebView가 보고한 URL을 source로 되돌리면 리다이렉트 때 native loadUrl이 다시 실행된다.
+	// source는 앱이 직접 연 URL에서만 바꾼다.
+	const [webViewSource, setWebViewSource] = useState(() =>
+		createBrowserNavigationState(currentUrl),
+	);
+	const pageTitle = activeTab.title;
 	const [pageFavIconUrl, setPageFavIconUrl] = useState<string | undefined>(
 		undefined,
 	);
 	const [urlInput, setUrlInput] = useState("");
+	/** 블로그 정주행에서 연 원문 주소. 일반 브라우징으로 열었으면 null */
+	const [blogReadingOriginUrl, setBlogReadingOriginUrl] = useState<
+		string | null
+	>(null);
 	const [isMemoOpen, setIsMemoOpen] = useState(false);
+	const [selectedMemoId, setSelectedMemoId] = useState<number | string | null>(
+		null,
+	);
 	const [isBlogSheetOpen, setIsBlogSheetOpen] = useState(false);
 	const [contentHeight, setContentHeight] = useState(0);
 	const [wishToast, setWishToast] = useState<string | null>(null);
 	const [savedRatio, setSavedRatio] = useState(DEFAULT_PANEL_RATIO);
 	const [isActionsSheetOpen, setIsActionsSheetOpen] = useState(false);
+	const [isTabSheetOpen, setIsTabSheetOpen] = useState(false);
 	const [isAISheetOpen, setIsAISheetOpen] = useState(false);
 	const [aiPageText, setAiPageText] = useState("");
 	const [aiSummary, setAiSummary] = useState<string | null>(null);
@@ -107,12 +148,23 @@ export function useBrowserState({
 	const [aiError, setAiError] = useState<string | null>(null);
 	const [unlockedDomains, setUnlockedDomains] = useState<string[]>([]);
 
-	const { isLoggedIn } = useAuth();
+	const { isLoggedIn, session: authSession } = useAuth();
+	const authOwner = authSession?.user.id ?? "guest";
 	const queryClient = useQueryClient();
 
 	// 읽기 위치 저장/복원용 ref (스크롤 메시지는 stale closure를 피하려 ref로 현재 URL 참조)
 	const currentUrlRef = useRef("");
 	currentUrlRef.current = currentUrl;
+	const navigationStateRef = useRef(createBrowserNavigationState(currentUrl));
+	const requestWebViewNavigation = (url: string): void => {
+		const next = beginNavigation(
+			navigationStateRef.current,
+			currentUrlRef.current,
+			url,
+		);
+		navigationStateRef.current = next;
+		setWebViewSource(next);
+	};
 	const restoredUrlRef = useRef<string | null>(null);
 	const scrollSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const pendingScrollRef = useRef<{
@@ -121,8 +173,57 @@ export function useBrowserState({
 		maxY: number;
 	} | null>(null);
 
-	const { data: supabaseMemo } = useSupabaseMemoByUrl(currentUrl, isLoggedIn);
-	const { data: localMemo } = useLocalMemoByUrl(currentUrl);
+	const { data: supabaseCandidates } = useSupabaseMemoByUrl(
+		currentUrl,
+		isLoggedIn,
+	);
+	const { data: localCandidates } = useLocalMemoByUrl(currentUrl);
+	const pendingLocalCandidates = isLoggedIn
+		? (localCandidates ?? []).filter((candidate) => !candidate.synced)
+		: [];
+	const loggedInCandidateCount =
+		(supabaseCandidates?.length ?? 0) + pendingLocalCandidates.length;
+	const eligibleLocalCandidates = isLoggedIn
+		? pendingLocalCandidates
+		: (localCandidates ?? []);
+	const supabaseMemo =
+		selectedMemoId === null
+			? loggedInCandidateCount === 1
+				? supabaseCandidates?.[0]
+				: undefined
+			: supabaseCandidates?.find((memo) => memo.id === selectedMemoId);
+	const localMemo =
+		selectedMemoId === null
+			? (isLoggedIn
+					? loggedInCandidateCount
+					: eligibleLocalCandidates.length) === 1
+				? eligibleLocalCandidates[0]
+				: undefined
+			: eligibleLocalCandidates.find((memo) => memo.id === selectedMemoId);
+	const useLocalMemoActions =
+		!isLoggedIn || Boolean(localMemo && !supabaseMemo);
+	const hasUnselectedCandidates = isLoggedIn
+		? !supabaseCandidates ||
+			!localCandidates ||
+			(selectedMemoId !== null && !supabaseMemo && !localMemo) ||
+			(loggedInCandidateCount > 0 && !supabaseMemo && !localMemo)
+		: !localCandidates ||
+			(selectedMemoId !== null && !localMemo) ||
+			(localCandidates.length > 1 && !localMemo);
+	const pageKey = currentUrl ? getPageKey(currentUrl) : "";
+	// 같은 탭에서 다른 페이지로 옮기면 정주행 원문이 아니므로 복귀 동작을 숨긴다.
+	const isFromBlogReading =
+		blogReadingOriginUrl !== null &&
+		pageKey !== "" &&
+		pageKey === getPageKey(blogReadingOriginUrl);
+	const previousPageKeyRef = useRef(`${activeTabId}:${pageKey}:${authOwner}`);
+	useEffect(() => {
+		const scopeKey = `${activeTabId}:${pageKey}:${authOwner}`;
+		if (previousPageKeyRef.current !== scopeKey) {
+			previousPageKeyRef.current = scopeKey;
+			setSelectedMemoId(null);
+		}
+	}, [pageKey, activeTabId, authOwner]);
 	const wishToggleSupabase = useMemoWishToggleMutation();
 	const wishToggleLocal = useLocalMemoWishToggle();
 	const readingToggleSupabase = useMemoReadingToggleMutation();
@@ -132,15 +233,15 @@ export function useBrowserState({
 	const deleteSupabaseMemo = useDeleteMemoMutation();
 	const deleteLocalMemo = useLocalMemoDelete();
 
-	const isCurrentPageWish = isLoggedIn
+	const isCurrentPageWish = !useLocalMemoActions
 		? (supabaseMemo?.isWish ?? false)
 		: (localMemo?.isWish ?? false);
 
-	const isCurrentPageReading = isLoggedIn
+	const isCurrentPageReading = !useLocalMemoActions
 		? (supabaseMemo?.isReading ?? false)
 		: (localMemo?.isReading ?? false);
 
-	const isCurrentPageStar = isLoggedIn
+	const isCurrentPageStar = !useLocalMemoActions
 		? (supabaseMemo?.isStar ?? false)
 		: (localMemo?.isStar ?? false);
 
@@ -160,8 +261,7 @@ export function useBrowserState({
 			? keyboardHeight + insets.bottom
 			: 0;
 
-	const { tabBarTranslateY, headerTranslateY, isBrowserActive } =
-		useBrowserScroll();
+	const { tabBarTranslateY, headerTranslateY } = useBrowserScroll();
 
 	const { syncCanGoBack } = useAndroidWebViewBack({ webViewRef });
 
@@ -175,38 +275,98 @@ export function useBrowserState({
 		getUnlockedDomains().then(setUnlockedDomains);
 	}, []);
 
+	// 저장된 탭을 처음 읽었을 때 WebView의 요청 URL도 복원한다.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: 최초 로드만 동기화하며 이후 탭 전환은 resetForTabChange에서 처리한다.
+	useEffect(() => {
+		if (!isTabsLoaded) return;
+		const restored = createBrowserNavigationState(activeTab.url);
+		navigationStateRef.current = restored;
+		setWebViewSource(restored);
+	}, [isTabsLoaded]);
+
 	useFocusEffect(
 		useCallback(() => {
-			isBrowserActive.value = 1;
 			return () => {
-				isBrowserActive.value = 0;
 				tabBarTranslateY.value = withTiming(0, { duration: HIDE_DURATION });
 				headerTranslateY.value = withTiming(0, { duration: HIDE_DURATION });
 			};
-		}, [isBrowserActive, tabBarTranslateY, headerTranslateY]),
+		}, [tabBarTranslateY, headerTranslateY]),
 	);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: navTs는 동일 url 재진입 시에도 effect를 재실행시키기 위한 네비게이션 nonce
 	useEffect(() => {
-		if (!paramUrl) return;
-		const decoded = decodeURIComponent(paramUrl);
-		setCurrentUrl(decoded);
-		setPageTitle("");
+		recordEntryTrace({
+			source: "browser",
+			stage: "route_effect",
+			url: paramUrl,
+			data: {
+				hasUrl: Boolean(paramUrl),
+				isTabsLoaded,
+				isNewTab: newTabParam === "1",
+			},
+		});
+		// 탭 저장본 로드가 끝나기 전에 열면, 로드된 저장본이 paramUrl로 연 탭을 덮어쓴다.
+		if (!paramUrl || !isTabsLoaded) return;
+		recordEntryTrace({
+			source: "browser",
+			stage: "route_apply_before",
+			url: paramUrl,
+		});
+		onBeforeMemoLeave?.();
+		// Expo Router가 쿼리와 useLocalSearchParams에서 각각 디코딩하므로 여기서는 원문을 쓴다.
+		setBlogReadingOriginUrl(sourceParam === "blog-reading" ? paramUrl : null);
+		if (newTabParam !== "1") {
+			requestWebViewNavigation(paramUrl);
+			updateActiveTabInfo({ url: paramUrl, title: "" });
+			setIsMemoOpen(false);
+			setSelectedMemoId(null);
+			panelHeight.value = 0;
+			recordEntryTrace({
+				source: "browser",
+				stage: "route_apply_after",
+				url: paramUrl,
+			});
+			return;
+		}
+
+		// 렌더 시점 tabsState를 읽지만, 이 effect는 isTabsLoaded가 true가 된 렌더 이후에만 실행되고
+		// 저장본 반영(setTabsState)과 같은 배치로 렌더되므로 최신 값이다.
+		const next = openUrlInNewTab(paramUrl);
+		if (next.activeTabId !== activeTabId) {
+			const nextTab = next.tabs.find((tab) => tab.id === next.activeTabId);
+			resetForTabChange(nextTab?.url ?? "");
+			recordEntryTrace({
+				source: "browser",
+				stage: "new_tab_after",
+				url: paramUrl,
+			});
+			return;
+		}
+
+		requestWebViewNavigation(paramUrl);
 		setIsMemoOpen(false);
-		panelHeight.value = withSpring(0, SPRING_CONFIG);
-	}, [paramUrl, navTs, panelHeight]);
+		setSelectedMemoId(null);
+		panelHeight.value = 0;
+		recordEntryTrace({
+			source: "browser",
+			stage: "route_apply_after",
+			url: paramUrl,
+		});
+	}, [paramUrl, navTs, newTabParam, sourceParam, panelHeight, isTabsLoaded]);
 
 	const handleNavigationStateChange = (navState: WebViewNavigation) => {
+		const transition = reconcileNavigation(
+			navigationStateRef.current,
+			navState.url,
+			navState.loading,
+		);
+		navigationStateRef.current = transition.state;
+		if (!transition.accept) return;
+		if (getPageKey(navState.url) !== pageKey) onBeforeMemoLeave?.();
 		syncCanGoBack(navState.canGoBack);
-		setCurrentUrl(navState.url);
-		setPageTitle(navState.title ?? "");
+		updateActiveTabInfo({ url: navState.url, title: navState.title ?? "" });
 		setPageFavIconUrl(undefined);
-		try {
-			const parsed = new URL(navState.url);
-			setUrlInput(parsed.hostname.replace("www.", ""));
-		} catch {
-			setUrlInput(navState.url);
-		}
+		setUrlInput(toUrlInputText(navState.url));
 
 		if (navState.loading === false) {
 			webViewRef.current?.injectJavaScript(INJECTED_JS_ON_NAVIGATION);
@@ -221,6 +381,17 @@ export function useBrowserState({
 				restoreScrollPosition(navState.url);
 			}
 		}
+	};
+
+	const handleWebViewLoadError = (): void => {
+		navigationStateRef.current = cancelNavigation(navigationStateRef.current);
+	};
+
+	const handleWebViewLoadStart = (url: string): void => {
+		navigationStateRef.current = markNavigationLoadStart(
+			navigationStateRef.current,
+			url,
+		);
 	};
 
 	/** 저장된 읽기 위치가 있으면 해당 위치로 스크롤을 복원한다 */
@@ -280,30 +451,34 @@ export function useBrowserState({
 	}, []);
 
 	// 웹 링크는 앱 내 웹뷰에서 그대로 로드하고, 앱을 여는 스킴(intent://, market://, tel: 등)만 외부로 넘긴다.
-	const handleShouldStartLoadWithRequest = useCallback(
-		(request: ShouldStartLoadRequest) => {
-			if (isInAppLoadableUrl(request.url)) return true;
+	const handleShouldStartLoadWithRequest = (
+		request: ShouldStartLoadRequest,
+	) => {
+		if (isInAppLoadableUrl(request.url)) return true;
 
-			const openExternalWithFallback = async () => {
-				const fallbackUrl = await openExternalUrl(request.url);
-				if (fallbackUrl) setCurrentUrl(fallbackUrl);
-			};
-			openExternalWithFallback();
+		const openExternalWithFallback = async () => {
+			const fallbackUrl = await openExternalUrl(request.url);
+			if (fallbackUrl) {
+				onBeforeMemoLeave?.();
+				requestWebViewNavigation(fallbackUrl);
+				updateActiveTabInfo({ url: fallbackUrl });
+			}
+		};
+		openExternalWithFallback();
 
-			return false;
-		},
-		[],
-	);
+		return false;
+	};
 
 	const handleUrlSubmit = () => {
 		const url = formatUrl(urlInput);
 		if (!url) return;
+		onBeforeMemoLeave?.();
 		Keyboard.dismiss();
-		setCurrentUrl(url);
-		setPageTitle("");
+		requestWebViewNavigation(url);
+		updateActiveTabInfo({ url, title: "" });
 		if (isMemoOpen) {
 			setIsMemoOpen(false);
-			panelHeight.value = withSpring(0, SPRING_CONFIG);
+			panelHeight.value = 0;
 		}
 	};
 
@@ -324,63 +499,94 @@ export function useBrowserState({
 	]);
 
 	const handleReadingToggle = useCallback(() => {
+		if (hasUnselectedCandidates) {
+			setIsMemoOpen(true);
+			panelHeight.value = contentHeight * savedRatio;
+			return;
+		}
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-		if (isLoggedIn) {
+		if (!useLocalMemoActions) {
 			readingToggleSupabase.mutate({
 				url: currentUrl,
 				title: pageTitle,
 				favIconUrl: pageFavIconUrl,
 				currentIsReading: isCurrentPageReading,
+				selectedId: supabaseMemo?.id,
 			});
 		} else {
 			readingToggleLocal.mutate({
 				url: currentUrl,
 				title: pageTitle,
 				favIconUrl: pageFavIconUrl,
+				selectedId: localMemo?.id,
 			});
 		}
 	}, [
 		currentUrl,
 		pageTitle,
 		pageFavIconUrl,
-		isLoggedIn,
+		useLocalMemoActions,
 		isCurrentPageReading,
 		readingToggleSupabase,
 		readingToggleLocal,
+		supabaseMemo,
+		localMemo,
+		hasUnselectedCandidates,
+		panelHeight,
+		contentHeight,
+		savedRatio,
 	]);
 
 	const handleStarToggle = useCallback(() => {
+		if (hasUnselectedCandidates) {
+			setIsMemoOpen(true);
+			panelHeight.value = contentHeight * savedRatio;
+			return;
+		}
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-		if (isLoggedIn) {
+		if (!useLocalMemoActions) {
 			starToggleSupabase.mutate({
 				url: currentUrl,
 				title: pageTitle,
 				favIconUrl: pageFavIconUrl,
 				currentIsStar: isCurrentPageStar,
+				selectedId: supabaseMemo?.id,
 			});
 		} else {
 			starToggleLocal.mutate({
 				url: currentUrl,
 				title: pageTitle,
 				favIconUrl: pageFavIconUrl,
+				selectedId: localMemo?.id,
 			});
 		}
 	}, [
 		currentUrl,
 		pageTitle,
 		pageFavIconUrl,
-		isLoggedIn,
+		useLocalMemoActions,
 		isCurrentPageStar,
 		starToggleSupabase,
 		starToggleLocal,
+		supabaseMemo,
+		localMemo,
+		hasUnselectedCandidates,
+		panelHeight,
+		contentHeight,
+		savedRatio,
 	]);
 
 	const handleWishToggle = useCallback(() => {
+		if (hasUnselectedCandidates) {
+			setIsMemoOpen(true);
+			panelHeight.value = contentHeight * savedRatio;
+			return;
+		}
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
 		// 위시리스트를 취소할 때, 작성된 메모가 없고 별표(중요)도 아니면 메모 레코드를 삭제한다.
 		// 별표만 켜진 빈 메모는 삭제하면 중요 표시가 유실되므로 위시 플래그만 해제한다.
-		const currentMemo = isLoggedIn ? supabaseMemo : localMemo;
+		const currentMemo = useLocalMemoActions ? localMemo : supabaseMemo;
 		const shouldDeleteEmptyMemo =
 			isCurrentPageWish &&
 			!currentMemo?.memo?.trim() &&
@@ -403,7 +609,7 @@ export function useBrowserState({
 			onError: () => showWishToast("처리에 실패했어요"),
 		};
 
-		if (isLoggedIn) {
+		if (!useLocalMemoActions) {
 			if (shouldDeleteEmptyMemo && supabaseMemo) {
 				deleteSupabaseMemo.mutate(supabaseMemo.id, wishMutationCallbacks);
 			} else {
@@ -413,6 +619,7 @@ export function useBrowserState({
 						title: pageTitle,
 						favIconUrl: pageFavIconUrl,
 						currentIsWish: isCurrentPageWish,
+						selectedId: supabaseMemo?.id,
 					},
 					wishMutationCallbacks,
 				);
@@ -426,6 +633,7 @@ export function useBrowserState({
 						url: currentUrl,
 						title: pageTitle,
 						favIconUrl: pageFavIconUrl,
+						selectedId: localMemo?.id,
 					},
 					wishMutationCallbacks,
 				);
@@ -435,7 +643,7 @@ export function useBrowserState({
 		currentUrl,
 		pageTitle,
 		pageFavIconUrl,
-		isLoggedIn,
+		useLocalMemoActions,
 		isCurrentPageWish,
 		supabaseMemo,
 		localMemo,
@@ -443,27 +651,34 @@ export function useBrowserState({
 		wishToggleLocal,
 		deleteSupabaseMemo,
 		deleteLocalMemo,
+		hasUnselectedCandidates,
+		panelHeight,
+		contentHeight,
+		savedRatio,
 	]);
 
 	const openPanel = useCallback(() => {
 		if (isMemoOpen || contentHeight <= 0) return;
 		setIsMemoOpen(true);
 		const defaultH = contentHeight * savedRatio;
-		panelHeight.value = withSpring(defaultH, SPRING_CONFIG);
+		panelHeight.value = defaultH;
 	}, [isMemoOpen, contentHeight, panelHeight, savedRatio]);
 
 	const closePanel = useCallback(() => {
 		if (!isMemoOpen) return;
+		onBeforeMemoLeave?.();
 		setIsMemoOpen(false);
-		panelHeight.value = withSpring(0, SPRING_CONFIG);
+		panelHeight.value = 0;
 		Keyboard.dismiss();
-	}, [isMemoOpen, panelHeight]);
+	}, [isMemoOpen, panelHeight, onBeforeMemoLeave]);
 
 	const handleScrollMessage = useCallback(
 		(direction: string, scrollY: number) => {
 			if (isMemoOpen) return;
 			// 최하단 여유 구간: 바운스로 인한 헤더/탭바 토글 버벅임 방지를 위해 상태 유지
 			if (direction === "bottom") return;
+			// 뷰포트 리사이즈로 생긴 스크롤: 탭바가 접히며 만든 스크롤이 다시 탭바를 열지 않도록 무시
+			if (direction === "resize") return;
 			if (direction === "down") {
 				headerTranslateY.value = withTiming(-HEADER_HEIGHT, {
 					duration: HIDE_DURATION,
@@ -619,10 +834,51 @@ export function useBrowserState({
 		height: Math.max(0, HEADER_HEIGHT + headerTranslateY.value),
 	}));
 
-	const handleBlogSelect = useCallback((url: string) => {
-		setCurrentUrl(url);
-		setPageTitle("");
-	}, []);
+	const handleBlogSelect = (url: string) => {
+		onBeforeMemoLeave?.();
+		requestWebViewNavigation(url);
+		updateActiveTabInfo({ url, title: "" });
+	};
+
+	/** 탭이 바뀔 때 이전 탭의 화면 상태(메모 패널·선택 메모·주소창)를 비운다 */
+	const resetForTabChange = (nextUrl: string): void => {
+		requestWebViewNavigation(nextUrl);
+		setIsMemoOpen(false);
+		setSelectedMemoId(null);
+		panelHeight.value = 0;
+		setPageFavIconUrl(undefined);
+		setUrlInput(nextUrl ? toUrlInputText(nextUrl) : "");
+		// 다른 탭을 봤다가 돌아올 때도 읽기 위치를 복원한다
+		restoredUrlRef.current = null;
+	};
+
+	const handleTabSelect = (tabId: string): void => {
+		if (tabId !== activeTabId) onBeforeMemoLeave?.();
+		const next = activateTab(tabId);
+		const nextTab = next.tabs.find((tab) => tab.id === next.activeTabId);
+		if (next.activeTabId !== activeTabId) {
+			resetForTabChange(nextTab?.url ?? "");
+		}
+		setIsTabSheetOpen(false);
+	};
+
+	const handleTabClose = (tabId: string): void => {
+		if (tabId === activeTabId) onBeforeMemoLeave?.();
+		const next = removeTab(tabId);
+		if (next.activeTabId === activeTabId) {
+			return;
+		}
+
+		const nextTab = next.tabs.find((tab) => tab.id === next.activeTabId);
+		resetForTabChange(nextTab?.url ?? "");
+	};
+
+	const handleNewTabOpen = (): void => {
+		onBeforeMemoLeave?.();
+		openNewTab();
+		resetForTabChange("");
+		setIsTabSheetOpen(false);
+	};
 
 	const handleShare = useCallback(() => {
 		shareUrl(currentUrl, pageTitle);
@@ -670,6 +926,11 @@ export function useBrowserState({
 		insets,
 		webViewRef,
 		currentUrl,
+		webViewSourceUrl: webViewSource.sourceUrl,
+		webViewRevision: webViewSource.revision,
+		isFromBlogReading,
+		selectedMemoId,
+		setSelectedMemoId,
 		urlInput,
 		setUrlInput,
 		isMemoOpen,
@@ -694,6 +955,8 @@ export function useBrowserState({
 		resizeGesture,
 		handleUrlSubmit,
 		handleNavigationStateChange,
+		handleWebViewLoadStart,
+		handleWebViewLoadError,
 		handleShouldStartLoadWithRequest,
 		handleWebViewMessage,
 		handleWishToggle,
@@ -707,6 +970,13 @@ export function useBrowserState({
 		SCROLL_DETECT_JS,
 		isActionsSheetOpen,
 		setIsActionsSheetOpen,
+		tabs,
+		activeTabId,
+		isTabSheetOpen,
+		setIsTabSheetOpen,
+		handleTabSelect,
+		handleTabClose,
+		handleNewTabOpen,
 		isAISheetOpen,
 		openAISheet,
 		closeAISheet,
@@ -718,6 +988,13 @@ export function useBrowserState({
 		aiError,
 		askAIQuestion,
 	};
+}
+
+/** 주소창에 보여줄 텍스트. 파싱 가능한 URL이면 www를 뗀 도메인, 아니면 원문 */
+function toUrlInputText(url: string): string {
+	const hostname = getHostname(url);
+
+	return hostname ? hostname.replace("www.", "") : url;
 }
 
 /** URL에서 hostname을 뽑는다. 파싱할 수 없는 값이면 null */

@@ -8,14 +8,15 @@ import {
 	type TMemoLoadOutcome,
 	type TMemoRoute,
 } from "@src/modules/observability/client";
-import { useSettingQuery } from "@web-memo/shared/hooks";
 import type { GetMemoResponse, HighlightRow } from "@web-memo/shared/types";
 import { Button } from "@web-memo/ui";
 import { useEffect, useRef, useState } from "react";
+import { useMemoSettings } from "./_hooks/useMemoSettings";
 import MemoEmptyState from "./MemoEmptyState";
 import MemoItem from "./MemoItem";
 import { MemoListSkeleton } from "./MemoListSkeleton";
 import MemoSearchEmptyState from "./MemoSearchEmptyState";
+import { restoreHeldScrollPosition } from "./scrollPositionHold";
 
 /** 메모를 브라우저 현지 작성일별 카드 그리드로 묶어 상세 화면으로 연결한다. */
 const MemoList = (props: IFMemoListProps) => {
@@ -27,7 +28,8 @@ const MemoList = (props: IFMemoListProps) => {
 	const weekdayFormatter = new Intl.DateTimeFormat(props.lng, {
 		weekday: "long",
 	});
-	const { showImpression, showActionItem } = useSettingQuery();
+	const { showImpression, showActionItem, truncateMemoContent } =
+		useMemoSettings();
 	const groups = groupMemosByDate(props.memos);
 	const [renderedGroupMemoIds, setRenderedGroupMemoIds] = useState<
 		Record<string, string>
@@ -127,14 +129,15 @@ const MemoList = (props: IFMemoListProps) => {
 						useRecycle={false}
 						gap={16}
 						align="start"
-						onRenderComplete={(event) =>
+						onRenderComplete={(event) => {
+							restoreHeldScrollPosition();
 							handleDateGroupRenderComplete(
 								group.dateKey,
 								event.items
 									.map((item) => item.element?.dataset.memoId)
 									.join(","),
-							)
-						}
+							);
+						}}
 					>
 						{group.memos.map((memo, index) => (
 							<li
@@ -150,6 +153,7 @@ const MemoList = (props: IFMemoListProps) => {
 									highlights={props.highlightsByUrl.get(memo.url)}
 									showImpression={showImpression}
 									showActionItem={showActionItem}
+									truncateMemoContent={truncateMemoContent}
 									index={index}
 									className="[&>div>div]:max-w-full"
 								/>

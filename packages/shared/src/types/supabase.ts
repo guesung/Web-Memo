@@ -76,6 +76,36 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			favorite: {
+				Row: {
+					created_at: string;
+					favIconUrl: string | null;
+					id: number;
+					page_key: string;
+					title: string;
+					url: string;
+					user_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					favIconUrl?: string | null;
+					id?: number;
+					page_key: string;
+					title?: string;
+					url: string;
+					user_id: string;
+				};
+				Update: {
+					created_at?: string;
+					favIconUrl?: string | null;
+					id?: number;
+					page_key?: string;
+					title?: string;
+					url?: string;
+					user_id?: string;
+				};
+				Relationships: [];
+			};
 			highlight: {
 				Row: {
 					color: string;
@@ -84,6 +114,7 @@ export type Database = {
 					favIconUrl: string | null;
 					id: number;
 					note: string | null;
+					page_key: string;
 					prefix_text: string | null;
 					suffix_text: string | null;
 					text_position_start: number | null;
@@ -99,6 +130,7 @@ export type Database = {
 					favIconUrl?: string | null;
 					id?: number;
 					note?: string | null;
+					page_key?: string;
 					prefix_text?: string | null;
 					suffix_text?: string | null;
 					text_position_start?: number | null;
@@ -114,6 +146,7 @@ export type Database = {
 					favIconUrl?: string | null;
 					id?: number;
 					note?: string | null;
+					page_key?: string;
 					prefix_text?: string | null;
 					suffix_text?: string | null;
 					text_position_start?: number | null;
@@ -137,6 +170,7 @@ export type Database = {
 					isStar: boolean | null;
 					isWish: boolean | null;
 					memo: string;
+					page_key: string;
 					title: string;
 					updated_at: string | null;
 					url: string;
@@ -154,6 +188,7 @@ export type Database = {
 					isStar?: boolean | null;
 					isWish?: boolean | null;
 					memo: string;
+					page_key?: string;
 					title: string;
 					updated_at?: string | null;
 					url: string;
@@ -171,6 +206,7 @@ export type Database = {
 					isStar?: boolean | null;
 					isWish?: boolean | null;
 					memo?: string;
+					page_key?: string;
 					title?: string;
 					updated_at?: string | null;
 					url?: string;
@@ -228,6 +264,86 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			notification_log: {
+				Row: {
+					id: number;
+					memo_id: number;
+					notifyTime: string | null;
+					sent_at: string;
+					user_id: string;
+				};
+				Insert: {
+					id?: number;
+					memo_id: number;
+					notifyTime?: string | null;
+					sent_at?: string;
+					user_id: string;
+				};
+				Update: {
+					id?: number;
+					memo_id?: number;
+					notifyTime?: string | null;
+					sent_at?: string;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "notification_log_memo_id_fkey";
+						columns: ["memo_id"];
+						isOneToOne: false;
+						referencedRelation: "memo";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			notification_schedule: {
+				Row: {
+					created_at: string;
+					id: number;
+					isEnabled: boolean;
+					notifyTime: string;
+					user_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					id?: number;
+					isEnabled?: boolean;
+					notifyTime: string;
+					user_id: string;
+				};
+				Update: {
+					created_at?: string;
+					id?: number;
+					isEnabled?: boolean;
+					notifyTime?: string;
+					user_id?: string;
+				};
+				Relationships: [];
+			};
+			notification_setting: {
+				Row: {
+					isEnabled: boolean;
+					notifyTime: string;
+					timezone: string;
+					updated_at: string;
+					user_id: string;
+				};
+				Insert: {
+					isEnabled?: boolean;
+					notifyTime?: string;
+					timezone?: string;
+					updated_at?: string;
+					user_id: string;
+				};
+				Update: {
+					isEnabled?: boolean;
+					notifyTime?: string;
+					timezone?: string;
+					updated_at?: string;
+					user_id?: string;
+				};
+				Relationships: [];
+			};
 			profiles: {
 				Row: {
 					nickname: string | null;
@@ -246,23 +362,50 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			push_token: {
+				Row: {
+					id: number;
+					platform: string;
+					token: string;
+					updated_at: string;
+					user_id: string;
+				};
+				Insert: {
+					id?: number;
+					platform: string;
+					token: string;
+					updated_at?: string;
+					user_id: string;
+				};
+				Update: {
+					id?: number;
+					platform?: string;
+					token?: string;
+					updated_at?: string;
+					user_id?: string;
+				};
+				Relationships: [];
+			};
 			setting: {
 				Row: {
 					id: number;
 					show_action_item: boolean;
 					show_impression: boolean;
+					truncate_memo_content: boolean;
 					user_id: string | null;
 				};
 				Insert: {
 					id?: number;
 					show_action_item?: boolean;
 					show_impression?: boolean;
+					truncate_memo_content?: boolean;
 					user_id?: string | null;
 				};
 				Update: {
 					id?: number;
 					show_action_item?: boolean;
 					show_impression?: boolean;
+					truncate_memo_content?: boolean;
 					user_id?: string | null;
 				};
 				Relationships: [];

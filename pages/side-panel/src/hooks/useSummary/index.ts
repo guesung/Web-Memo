@@ -1,5 +1,8 @@
 import { CONFIG } from "@web-memo/env";
-import { analytics } from "@web-memo/shared/modules/analytics";
+import {
+	analytics,
+	type TSummaryRunSource,
+} from "@web-memo/shared/modules/analytics";
 import { isAbortError } from "@web-memo/shared/utils";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { useCallback, useState } from "react";
@@ -20,7 +23,7 @@ interface UseSummaryReturn {
 	isSummaryLoading: boolean;
 	summary: string;
 	errorMessage: string;
-	generateSummary: () => Promise<void>;
+	generateSummary: (source: TSummaryRunSource) => Promise<void>;
 }
 
 export default function useSummary(): UseSummaryReturn {
@@ -33,86 +36,93 @@ export default function useSummary(): UseSummaryReturn {
 		error: pageContentError,
 	} = usePageContentContext();
 
-	const generateSummary = useCallback(async () => {
-		if (pageContentError) {
-			setErrorMessage(I18n.get("error_get_page_content"));
-			return;
-		}
-
-		if (!content.trim()) {
-			setErrorMessage(I18n.get("error_get_page_content"));
-			return;
-		}
-
-		setSummary("");
-		setErrorMessage("");
-
-		setIsGenerating(true);
-
-		analytics.trackEvent({ name: "summary_run" });
-		const startedAt = Date.now();
-
-		try {
-			const messages = await getSummaryPrompt(content, category);
-
-			const response = await fetch(`${CONFIG.webUrl}/api/openai`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ messages }),
-			});
-
-			if (!response.ok) {
-				reportSummaryFailure(
-					new Error(`요약 API 응답 실패: ${response.status}`),
-					"fetch",
-				);
-				setErrorMessage(I18n.get("error_get_summary"));
+	const generateSummary = useCallback(
+		async (source: TSummaryRunSource) => {
+			if (pageContentError) {
+				setErrorMessage(I18n.get("error_get_page_content"));
 				return;
 			}
 
-			let hasStreamError = false;
+			if (!content.trim()) {
+				setErrorMessage(I18n.get("error_get_page_content"));
+				return;
+			}
 
-			await processStreamingResponse(
-				response,
-				(streamContent) => {
-					setSummary((prev) => prev + streamContent);
-				},
-				(error, stage) => {
-					hasStreamError = true;
-					reportSummaryFailure(new Error(error), stage);
+			setSummary("");
+			setErrorMessage("");
+
+			setIsGenerating(true);
+
+			analytics.trackEvent({ name: "summary_run", params: { source } });
+			const startedAt = Date.now();
+
+			try {
+				const messages = await getSummaryPrompt(content, category);
+
+				const response = await fetch(`${CONFIG.webUrl}/api/openai`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ messages }),
+				});
+
+				if (!response.ok) {
+					reportSummaryFailure(
+						new Error(`요약 API 응답 실패: ${response.status}`),
+						"fetch",
+					);
 					analytics.trackEvent({
 						name: "summary_fail",
-						params: { reason: error },
+						params: { reason: `http_${response.status}` },
 					});
 					setErrorMessage(I18n.get("error_get_summary"));
-				},
-			);
+					return;
+				}
 
-			// 스트리밍 도중 끊긴 요약은 완료로 세지 않습니다. 실행 대비 완료 비율이 곧 성공률입니다.
-			if (!hasStreamError) {
-				analytics.trackEvent({
-					name: "summary_complete",
-					params: { duration_msec: Date.now() - startedAt },
-				});
-			}
-		} catch (error) {
-			if (!isAbortError(error)) {
-				console.error("Summary error:", error);
-				analytics.trackEvent({
-					name: "summary_fail",
-					params: {
-						reason: error instanceof Error ? error.message : "unknown",
+				let hasStreamError = false;
+
+				await processStreamingResponse(
+					response,
+					(streamContent) => {
+						setSummary((prev) => prev + streamContent);
 					},
-				});
-				reportSummaryFailure(error, "general");
-				setErrorMessage(I18n.get("error_get_summary"));
+					(error, stage) => {
+						hasStreamError = true;
+						reportSummaryFailure(new Error(error), stage);
+						analytics.trackEvent({
+							name: "summary_fail",
+							params: { reason: error },
+						});
+						setErrorMessage(I18n.get("error_get_summary"));
+					},
+				);
+
+				// 스트리밍 도중 끊긴 요약은 완료로 세지 않습니다. 실행 대비 완료 비율이 곧 성공률입니다.
+				if (!hasStreamError) {
+					analytics.trackEvent({
+						name: "summary_complete",
+						params: { duration_msec: Date.now() - startedAt },
+					});
+				}
+			} catch (error) {
+				if (!isAbortError(error)) {
+					console.error("Summary error:", error);
+					analytics.trackEvent({
+						name: "summary_fail",
+						params: {
+							reason: error instanceof Error ? error.message : "unknown",
+						},
+					});
+					reportSummaryFailure(error, "general");
+					setErrorMessage(I18n.get("error_get_summary"));
+				}
+			} finally {
+				setIsGenerating(false);
 			}
-		} finally {
-			setIsGenerating(false);
-		}
-	}, [content, category, pageContentError]);
+		},
+		[content, category, pageContentError],
+	);
 
 	return {
 		isSummaryLoading: isGenerating,

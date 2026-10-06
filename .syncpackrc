@@ -5,10 +5,21 @@
 	"indent": "\t",
 	"versionGroups": [
 		{
-			"label": "Expo app uses different TypeScript and @types/react versions",
+			"label": "Expo app uses different TypeScript, @types/react and tailwindcss versions",
 			"packages": ["@web-memo/app"],
-			"dependencies": ["typescript", "@types/react"],
+			"dependencies": ["typescript", "@types/react", "tailwindcss"],
 			"isIgnored": true
+		},
+		{
+			"label": "Peer dependency ranges of shared packages are intentionally wide",
+			"dependencies": ["next"],
+			"dependencyTypes": ["peer"],
+			"isIgnored": true
+		},
+		{
+			"label": "Sentry browser SDK must resolve to one version: captureException from a different copy than init is dropped silently (PR #528)",
+			"dependencies": ["@sentry/react"],
+			"preferVersion": "highestSemver"
 		},
 		{
 			"label": "Use pinned versions for React core",

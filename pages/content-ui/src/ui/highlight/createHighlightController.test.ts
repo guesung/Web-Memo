@@ -3,11 +3,15 @@ import type { TCreateHighlightResponse } from "@web-memo/shared/modules/extensio
 import { toHighlightItem } from "@web-memo/shared/modules/highlight";
 import type { HighlightRow } from "@web-memo/shared/types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { reportContentUiError } from "../../utils/reportError";
 import {
 	createHighlightController,
 	type IFHighlightSelectionState,
 } from "./createHighlightController";
 import { startHighlightRestore } from "./restoreHighlights";
+
+// 리포터는 @web-memo/env를 끌어와 테스트에서 불러올 수 없다. 호출 여부만 본다.
+vi.mock("../../utils/reportError", () => ({ reportContentUiError: vi.fn() }));
 
 const ROW: HighlightRow = {
 	id: 1,
@@ -16,6 +20,7 @@ const ROW: HighlightRow = {
 	suffix_text: " 뒤",
 	text_position_start: 2,
 	url: "http://localhost:3000/",
+	page_key: "http://localhost:3000/",
 	title: "",
 	favIconUrl: "",
 	color: "yellow",
@@ -32,13 +37,16 @@ const createRenderer = () => ({
 	clear: vi.fn(),
 });
 let stop: (() => void) | undefined;
-const selectText = () => {
+const setSelection = (start = 2, end = 8) => {
 	const range = document.createRange();
 	const text = document.querySelector("p")?.firstChild as Text;
-	range.setStart(text, 2);
-	range.setEnd(text, 8);
+	range.setStart(text, start);
+	range.setEnd(text, end);
 	document.getSelection()?.removeAllRanges();
 	document.getSelection()?.addRange(range);
+};
+const selectText = () => {
+	setSelection();
 	document.dispatchEvent(new MouseEvent("mouseup"));
 };
 
@@ -58,6 +66,172 @@ afterEach(() => {
 });
 
 describe("확장 하이라이트 생성", () => {
+	it("포인터 드래그가 잠시 멈춰도 버블을 숨기고 놓은 뒤 표시한다", async () => {
+		let state: IFHighlightSelectionState | null = null;
+		const controller = createHighlightController({
+			renderer: createRenderer(),
+			requestCreate: vi.fn(),
+			onSelectionChange: (next) => {
+				state = next;
+			},
+		});
+		stop = controller.stop;
+		document.dispatchEvent(new Event("pointerdown"));
+		setSelection();
+		document.dispatchEvent(new Event("selectionchange"));
+		await vi.advanceTimersByTimeAsync(200);
+		expect(state).toBeNull();
+		document.dispatchEvent(new Event("pointerup"));
+		expect(state).toMatchObject({ canSave: true });
+	});
+	it("페이지 요소가 포인터 이벤트 전파를 막아도 드래그 중 버블을 숨긴다", async () => {
+		let state: IFHighlightSelectionState | null = null;
+		const controller = createHighlightController({
+			renderer: createRenderer(),
+			requestCreate: vi.fn(),
+			onSelectionChange: (next) => {
+				state = next;
+			},
+		});
+		stop = controller.stop;
+		const paragraph = document.querySelector("p") as HTMLParagraphElement;
+		paragraph.addEventListener("pointerdown", (event) =>
+			event.stopPropagation(),
+		);
+		paragraph.addEventListener("pointerup", (event) => event.stopPropagation());
+		paragraph.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+		setSelection();
+		document.dispatchEvent(new Event("selectionchange"));
+		await vi.advanceTimersByTimeAsync(200);
+		expect(state).toBeNull();
+		paragraph.dispatchEvent(new Event("pointerup", { bubbles: true }));
+		expect(state).toMatchObject({ canSave: true });
+	});
+	it("문서 밖에서 포인터를 놓거나 창 포커스를 잃어도 선택 추적이 잠기지 않는다", async () => {
+		let state: IFHighlightSelectionState | null = null;
+		const controller = createHighlightController({
+			renderer: createRenderer(),
+			requestCreate: vi.fn(),
+			onSelectionChange: (next) => {
+				state = next;
+			},
+		});
+		stop = controller.stop;
+		document.dispatchEvent(new Event("pointerdown"));
+		setSelection();
+		window.dispatchEvent(new MouseEvent("pointermove", { buttons: 0 }));
+		expect(state).toMatchObject({ canSave: true });
+		document.dispatchEvent(new Event("pointerdown"));
+		expect(state).toBeNull();
+		window.dispatchEvent(new Event("pointerup"));
+		expect(state).toMatchObject({ canSave: true });
+		document.dispatchEvent(new Event("pointerdown"));
+		expect(state).toBeNull();
+		window.dispatchEvent(new Event("blur"));
+		document.dispatchEvent(new Event("selectionchange"));
+		await vi.advanceTimersByTimeAsync(200);
+		expect(state).toMatchObject({ canSave: true });
+	});
+	it("ShadowRoot 안 버블의 포인터 입력은 선택 추적을 시작하지 않는다", () => {
+		let state: IFHighlightSelectionState | null = null;
+		const controller = createHighlightController({
+			renderer: createRenderer(),
+			requestCreate: vi.fn(),
+			onSelectionChange: (next) => {
+				state = next;
+			},
+		});
+		stop = controller.stop;
+		selectText();
+		const host = document.createElement("div");
+		host.id = "WEB_MEMO_HIGHLIGHT_TOOLTIP";
+		const button = document.createElement("button");
+		host.attachShadow({ mode: "open" }).append(button);
+		document.body.append(host);
+		button.dispatchEvent(
+			new Event("pointerdown", { bubbles: true, composed: true }),
+		);
+		expect(state).toMatchObject({ canSave: true });
+	});
+	it("Shift 키로 선택을 조정하는 동안 숨기고 키를 놓으면 표시한다", async () => {
+		let state: IFHighlightSelectionState | null = null;
+		const controller = createHighlightController({
+			renderer: createRenderer(),
+			requestCreate: vi.fn(),
+			onSelectionChange: (next) => {
+				state = next;
+			},
+		});
+		stop = controller.stop;
+		document.dispatchEvent(
+			new KeyboardEvent("keydown", { key: "ArrowRight", shiftKey: true }),
+		);
+		setSelection();
+		document.dispatchEvent(new Event("selectionchange"));
+		await vi.advanceTimersByTimeAsync(200);
+		expect(state).toBeNull();
+		document.dispatchEvent(
+			new KeyboardEvent("keyup", { key: "ArrowRight", shiftKey: true }),
+		);
+		expect(state).toBeNull();
+		document.dispatchEvent(new KeyboardEvent("keyup", { key: "Shift" }));
+		expect(state).toMatchObject({ canSave: true });
+	});
+	it("페이지 요소가 키 이벤트 전파를 막아도 Shift 선택 완료를 감지한다", async () => {
+		let state: IFHighlightSelectionState | null = null;
+		const controller = createHighlightController({
+			renderer: createRenderer(),
+			requestCreate: vi.fn(),
+			onSelectionChange: (next) => {
+				state = next;
+			},
+		});
+		stop = controller.stop;
+		const paragraph = document.querySelector("p") as HTMLParagraphElement;
+		paragraph.addEventListener("keydown", (event) => event.stopPropagation());
+		paragraph.addEventListener("keyup", (event) => event.stopPropagation());
+		paragraph.dispatchEvent(
+			new KeyboardEvent("keydown", {
+				key: "ArrowRight",
+				shiftKey: true,
+				bubbles: true,
+			}),
+		);
+		setSelection();
+		document.dispatchEvent(new Event("selectionchange"));
+		await vi.advanceTimersByTimeAsync(200);
+		expect(state).toBeNull();
+		paragraph.dispatchEvent(
+			new KeyboardEvent("keyup", { key: "Shift", bubbles: true }),
+		);
+		expect(state).toMatchObject({ canSave: true });
+	});
+	it("닫은 선택은 유지하되 늦은 이벤트에 다시 표시하지 않고 새 선택에는 표시한다", async () => {
+		let state: IFHighlightSelectionState | null = null;
+		const controller = createHighlightController({
+			renderer: createRenderer(),
+			requestCreate: vi.fn(),
+			onSelectionChange: (next) => {
+				state = next;
+			},
+		});
+		stop = controller.stop;
+		selectText();
+		expect(state).toMatchObject({ canSave: true });
+		const selectedText = document.getSelection()?.toString();
+		document.dispatchEvent(new Event("selectionchange"));
+		controller.dismissSelection();
+		expect(document.getSelection()?.toString()).toBe(selectedText);
+		expect(state).toBeNull();
+		document.dispatchEvent(new Event("selectionchange"));
+		document.dispatchEvent(new KeyboardEvent("keyup", { key: "Shift" }));
+		await vi.advanceTimersByTimeAsync(200);
+		expect(state).toBeNull();
+		setSelection(3, 9);
+		document.dispatchEvent(new Event("selectionchange"));
+		await vi.advanceTimersByTimeAsync(200);
+		expect(state).toMatchObject({ canSave: true });
+	});
 	it("기존 행이 없어도 첫 선택을 저장하고 선택이 해제되어도 보존한 앵커로 그린다", async () => {
 		const renderer = createRenderer();
 		const requestCreate = vi.fn(
@@ -318,4 +492,50 @@ it("삭제된 행의 중복 키를 해제해 같은 문장을 다시 저장할 �
 	selectText();
 	await controller.save();
 	expect(requestCreate).toHaveBeenCalledOnce();
+});
+
+describe("하이라이트 생성 실패 보고", () => {
+	const saveWith = async (
+		requestCreate: () => Promise<TCreateHighlightResponse>,
+	) => {
+		const controller = createHighlightController({
+			renderer: createRenderer(),
+			requestCreate,
+			onSelectionChange: vi.fn(),
+		});
+		stop = controller.stop;
+		selectText();
+		await controller.save();
+	};
+
+	it("background에 닿지 못한 요청 실패를 보고한다", async () => {
+		const error = new Error("Could not establish connection");
+		await saveWith(async () => {
+			throw error;
+		});
+		expect(reportContentUiError).toHaveBeenCalledWith(
+			expect.objectContaining({
+				error,
+				feature: "highlight",
+				operation: "create",
+				stage: "request",
+			}),
+		);
+	});
+	it("background가 요청을 거부하면 보고한다", async () => {
+		await saveWith(async () => ({ success: false, error: "invalid_request" }));
+		expect(reportContentUiError).toHaveBeenCalledWith(
+			expect.objectContaining({
+				operation: "create",
+				stage: "invalid_request",
+			}),
+		);
+	});
+	it.each(["save_failed", "unauthenticated"] as const)(
+		"%s는 background가 보고했거나 정상 상태라 보고하지 않는다",
+		async (error) => {
+			await saveWith(async () => ({ success: false, error }));
+			expect(reportContentUiError).not.toHaveBeenCalled();
+		},
+	);
 });

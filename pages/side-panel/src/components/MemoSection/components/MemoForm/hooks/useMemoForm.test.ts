@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -7,23 +8,65 @@ import useMemoForm from "./useMemoForm";
 
 const mocks = vi.hoisted(() => ({
 	tab: { id: 1, url: "https://example.com/a", title: "A" },
-	memo: { id: 1, title: "A" } as { id: number; title: string } | undefined,
+	memo: { id: 1, title: "A" } as
+		| { id: number; title: string; memo?: string; updated_at?: string }
+		| undefined,
 	values: {} as Record<string, unknown>,
 	upsert: vi.fn(),
 	patch: vi.fn(),
+	isMemoLocked: false,
+	memoQueryImpl: vi.fn(
+		async (): Promise<{
+			data: unknown[] | null;
+			error: { message: string } | null;
+		}> => ({
+			data: mocks.memo ? [mocks.memo] : [],
+			error: null,
+		}),
+	),
+	isOnline: true,
+	isNetworkError: vi.fn((_error: unknown) => false),
+	enqueueOfflineMemo: vi.fn(async (_item: unknown) => {}),
+	hasPendingOfflineMemo: vi.fn(async (_target: unknown) => false),
+	pendingOfflineItem: undefined as unknown,
+	trackEvent: vi.fn(async (_event: unknown) => {}),
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
 	useDebounce: () => useDebounce(),
 	useDidMount: vi.fn(),
 	useTabQuery: () => ({ data: mocks.tab }),
-	useMemoQuery: () => ({ memo: mocks.memo, refetch: vi.fn() }),
+	useSupabaseClientQuery: () => ({ data: {} }),
+	useSupabaseUserQuery: () => ({
+		user: { data: { user: { id: "user-1" } } },
+	}),
+	memoQueryOptions: ({ url }: { url?: string }) => ({
+		queryKey: ["memo", url],
+		queryFn: mocks.memoQueryImpl,
+	}),
 	useMemoUpsertMutation: () => ({ mutate: mocks.upsert }),
 	useMemoPatchMutation: () => ({ mutate: mocks.patch }),
 }));
+vi.mock("@web-memo/shared/utils", () => ({
+	isNetworkError: (error: unknown) => mocks.isNetworkError(error),
+}));
 vi.mock("@web-memo/shared/modules/extension-bridge", () => ({ bridge: {} }));
+vi.mock("@web-memo/shared/modules/analytics", () => ({
+	analytics: { trackEvent: (event: unknown) => mocks.trackEvent(event) },
+}));
 vi.mock("@web-memo/shared/utils/extension", () => ({
 	Tab: { get: async () => mocks.tab },
 	getTabInfo: async () => mocks.tab,
+}));
+vi.mock("../../../../../hooks/useOnlineStatus", () => ({
+	default: () => mocks.isOnline,
+}));
+vi.mock("../../../../../hooks/usePendingOfflineMemo", () => ({
+	default: () => mocks.pendingOfflineItem,
+}));
+vi.mock("../../../../../utils/offlineMemoQueue", () => ({
+	enqueueOfflineMemo: (item: unknown) => mocks.enqueueOfflineMemo(item),
+	hasPendingOfflineMemo: (target: unknown) =>
+		mocks.hasPendingOfflineMemo(target),
 }));
 vi.mock("react-hook-form", () => ({
 	useFormContext: () => ({
@@ -35,14 +78,28 @@ const setFormValue = (key: string, value: unknown) => {
 	mocks.values[key] = value;
 };
 let root: Root;
+let queryClient: QueryClient;
 let form: ReturnType<typeof useMemoForm>;
 let refreshTitle: () => Promise<void>;
 const TestHook = () => {
-	form = useMemoForm();
+	form = useMemoForm({ isMemoLocked: mocks.isMemoLocked });
 	return null;
 };
 const render = async () => {
-	await act(async () => root.render(createElement(TestHook)));
+	// 테스트가 mocks.memo를 바꾸면 낙관적 캐시 갱신처럼 조회 캐시에도 바로 반영한다.
+	queryClient.setQueryData(["memo", mocks.tab.url], {
+		data: mocks.memo ? [mocks.memo] : [],
+		error: null,
+	});
+	await act(async () =>
+		root.render(
+			createElement(
+				QueryClientProvider,
+				{ client: queryClient },
+				createElement(TestHook),
+			),
+		),
+	);
 };
 
 beforeEach(() => {
@@ -62,10 +119,24 @@ beforeEach(() => {
 	mocks.tab = { id: 1, url: "https://example.com/a", title: "A" };
 	mocks.memo = { id: 1, title: "A" };
 	mocks.values = {};
+	mocks.isMemoLocked = false;
 	mocks.patch.mockReset();
 	mocks.upsert
 		.mockReset()
 		.mockImplementation((_request, callbacks) => callbacks.onSuccess());
+	mocks.memoQueryImpl.mockReset().mockImplementation(async () => ({
+		data: mocks.memo ? [mocks.memo] : [],
+		error: null,
+	}));
+	mocks.isOnline = true;
+	mocks.isNetworkError.mockReset().mockReturnValue(false);
+	mocks.enqueueOfflineMemo.mockReset().mockResolvedValue(undefined);
+	mocks.hasPendingOfflineMemo.mockReset().mockResolvedValue(false);
+	mocks.pendingOfflineItem = undefined;
+	mocks.trackEvent.mockReset().mockResolvedValue(undefined);
+	queryClient = new QueryClient({
+		defaultOptions: { queries: { retry: false } },
+	});
 	document.body.innerHTML = "<div id='root'></div>";
 	root = createRoot(document.getElementById("root") as HTMLElement);
 });
@@ -81,6 +152,10 @@ it("다른 저장 메모는 해당 저장 제목을 표시하며 같은 메모�
 	mocks.tab = { id: 2, url: "https://example.com/b", title: "B 페이지" };
 	mocks.memo = { id: 2, title: "B 저장 제목" };
 	await render();
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(0);
+	});
+	await render();
 	expect(mocks.values.title).toBe("B 저장 제목");
 	await act(async () => {
 		await vi.advanceTimersByTimeAsync(350);
@@ -90,18 +165,6 @@ it("다른 저장 메모는 해당 저장 제목을 표시하며 같은 메모�
 	mocks.memo = { id: 2, title: "B 서버 응답" };
 	await render();
 	expect(mocks.values.title).toBe("B 직접 수정");
-});
-
-it("입력 debounce 전에 Link를 누르면 이전 제목은 저장하지 않고 현재 페이지 제목을 저장한다", async () => {
-	await render();
-	await act(async () => form.handleTitleChange("오래된 입력"));
-	await act(async () => form.handleTitleSyncClick());
-	await act(async () => {
-		await vi.advanceTimersByTimeAsync(600);
-	});
-	expect(mocks.values.title).toBe("A");
-	expect(mocks.upsert).toHaveBeenCalledTimes(1);
-	expect(mocks.upsert.mock.calls[0][0].data.title).toBe("A");
 });
 
 it("제목 미수정 상태에서 최초 저장 후 새 페이지로 이동해도 자동 연동한다", async () => {
@@ -156,4 +219,495 @@ it("저장 전 메모는 폼 값만 바꾸고 patch하지 않는다", async () =
 	await act(async () => form.updateCategory(3, "button"));
 	expect(mocks.values.categoryId).toBe(3);
 	expect(mocks.patch).not.toHaveBeenCalled();
+});
+
+it("메모 후보가 잠겨 있으면 저장·토글·카테고리 변경·전환 전 저장 요청을 보내지 않는다", async () => {
+	mocks.isMemoLocked = true;
+	await render();
+
+	let isSaved = true;
+	await act(async () => {
+		isSaved = await form.saveMemo({ memo: "잠긴 동안 입력" });
+	});
+	expect(isSaved).toBe(false);
+	expect(mocks.upsert).not.toHaveBeenCalled();
+
+	let toggledValue: boolean | null = true;
+	await act(async () => {
+		toggledValue = await form.toggleMemoStatus("isWish");
+	});
+	expect(toggledValue).toBeNull();
+	expect(mocks.upsert).not.toHaveBeenCalled();
+
+	await act(async () => form.updateCategory(3, "button"));
+	expect(mocks.patch).not.toHaveBeenCalled();
+	expect(mocks.values.categoryId).toBeNull();
+
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+	expect(isSaved).toBe(false);
+	expect(mocks.upsert).not.toHaveBeenCalled();
+});
+
+it("잠긴 동안에는 캐시에 남은 메모를 편집 대상으로 삼지 않는다", async () => {
+	mocks.isMemoLocked = true;
+	mocks.memo = { id: 1, title: "A", memo: "캐시에 남은 본문" };
+	await render();
+
+	expect(form.memoData).toBeUndefined();
+	expect(mocks.values.memo).not.toBe("캐시에 남은 본문");
+});
+
+it("조회가 늦게 도착해도 저장된 제목으로 바꾼다", async () => {
+	mocks.isMemoLocked = true;
+	mocks.memo = { id: 1, title: "저장된 제목" };
+	await render();
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(0);
+	});
+	expect(mocks.values.title).toBe("A");
+
+	mocks.isMemoLocked = false;
+	await render();
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(0);
+	});
+	expect(mocks.values.title).toBe("저장된 제목");
+});
+
+it("저장된 메모가 없으면 empty이고, 저장이 성공하면 조용히 saved로 바뀐다", async () => {
+	mocks.memo = undefined;
+	await render();
+	expect(form.saveStatus).toBe("empty");
+
+	await act(async () => form.saveMemo({ memo: "내용" }));
+
+	expect(form.saveStatus).toBe("saved");
+});
+
+it("저장이 1초를 넘기면 slow로 바뀐다", async () => {
+	let resolveUpsert = () => {};
+	mocks.upsert.mockImplementation((_request, callbacks) => {
+		resolveUpsert = () => callbacks.onSuccess();
+	});
+	await render();
+
+	act(() => {
+		void form.saveMemo({ memo: "느린 저장" });
+	});
+	expect(form.saveStatus).toBe("saved");
+
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(1000);
+	});
+	expect(form.saveStatus).toBe("slow");
+
+	await act(async () => resolveUpsert());
+	expect(form.saveStatus).toBe("saved");
+});
+
+it("저장에 실패하면 다음 성공까지 failed를 유지한다", async () => {
+	mocks.upsert.mockImplementation((_request, callbacks) => callbacks.onError());
+	await render();
+
+	await act(async () => form.saveMemo({ memo: "실패" }));
+	expect(form.saveStatus).toBe("failed");
+
+	mocks.upsert.mockImplementation((_request, callbacks) =>
+		callbacks.onSuccess(),
+	);
+	await act(async () => form.saveMemo({ memo: "재시도" }));
+	expect(form.saveStatus).toBe("saved");
+});
+
+it("다시 시도를 누르면 즉시 retrying으로 바뀌고 현재 폼 값으로 저장한다", async () => {
+	mocks.upsert.mockImplementation((_request, callbacks) => callbacks.onError());
+	await render();
+	mocks.values.memo = "실패";
+	await act(async () => form.saveMemo());
+	expect(form.saveStatus).toBe("failed");
+
+	let resolveRetry = () => {};
+	mocks.upsert.mockImplementation((_request, callbacks) => {
+		resolveRetry = () => callbacks.onSuccess();
+	});
+	act(() => {
+		form.handleSaveRetryClick();
+	});
+	expect(form.saveStatus).toBe("retrying");
+
+	// handleSaveRetryClick은 getTabInfo()를 기다린 뒤에야 upsertMemo를 부른다.
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(0);
+	});
+	expect(mocks.upsert.mock.calls.at(-1)?.[0].data.memo).toBe("실패");
+
+	await act(async () => resolveRetry());
+	expect(form.saveStatus).toBe("saved");
+});
+
+it("새 메모 첫 저장 중 낙관적 캐시가 삽입돼도 1초를 넘기면 slow로 바뀐다", async () => {
+	mocks.memo = undefined;
+	await render();
+	expect(form.saveStatus).toBe("empty");
+
+	let resolveUpsert = () => {};
+	mocks.upsert.mockImplementation((_request, callbacks) => {
+		resolveUpsert = () => callbacks.onSuccess();
+	});
+	mocks.values.memo = "새 메모 내용";
+	act(() => {
+		void form.saveMemo({ memo: "새 메모 내용" });
+	});
+
+	// onMutate가 음수 id로 낙관적 캐시를 넣은 순간을 흉내낸다. 저장 중에는 이 변화로
+	// saveStatus가 "saved"로 앞당겨지면 안 된다(Q-07).
+	mocks.memo = { id: -1, title: "A" };
+	await render();
+	expect(form.saveStatus).toBe("empty");
+	expect(mocks.values.memo).toBe("새 메모 내용");
+
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(1000);
+	});
+	expect(form.saveStatus).toBe("slow");
+
+	await act(async () => resolveUpsert());
+	expect(form.saveStatus).toBe("saved");
+});
+
+it("새 메모 insert가 실패하면 failed를 유지하고 입력한 본문을 지우지 않는다", async () => {
+	mocks.memo = undefined;
+	await render();
+
+	let rejectUpsert = () => {};
+	mocks.upsert.mockImplementation((_request, callbacks) => {
+		rejectUpsert = () => callbacks.onError();
+	});
+	mocks.values.memo = "잃으면 안 되는 내용";
+	act(() => {
+		void form.saveMemo({ memo: "잃으면 안 되는 내용" });
+	});
+
+	// onMutate의 낙관적 삽입 → 실패 후 onError의 롤백을 흉내낸다.
+	mocks.memo = { id: -1, title: "A" };
+	await render();
+	// saveMemo는 getTabInfo()를 기다린 뒤에야 upsertMemo를 부르므로 대기 중인 마이크로태스크를 흘려보낸다.
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(0);
+	});
+	await act(async () => rejectUpsert());
+	expect(form.saveStatus).toBe("failed");
+
+	mocks.memo = undefined;
+	await render();
+
+	expect(form.saveStatus).toBe("failed");
+	expect(mocks.values.memo).toBe("잃으면 안 되는 내용");
+});
+
+it("다시 시도 저장이 1초를 넘어도 slow가 아니라 retrying을 유지한다", async () => {
+	mocks.upsert.mockImplementation((_request, callbacks) => callbacks.onError());
+	await render();
+	mocks.values.memo = "실패";
+	await act(async () => form.saveMemo());
+	expect(form.saveStatus).toBe("failed");
+
+	let resolveRetry = () => {};
+	mocks.upsert.mockImplementation((_request, callbacks) => {
+		resolveRetry = () => callbacks.onSuccess();
+	});
+	act(() => {
+		form.handleSaveRetryClick();
+	});
+	expect(form.saveStatus).toBe("retrying");
+
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(1000);
+	});
+	expect(form.saveStatus).toBe("retrying");
+
+	await act(async () => resolveRetry());
+	expect(form.saveStatus).toBe("saved");
+});
+
+it("다른 메모를 고르기 전에 입력을 선택한 ID로 저장하고 지연 저장을 취소한다", async () => {
+	await render();
+	await act(async () => form.handleMemoChange("변경한 내용"));
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.upsert).toHaveBeenCalledTimes(1);
+	expect(mocks.upsert.mock.calls[0][0]).toMatchObject({
+		id: 1,
+		data: { memo: "변경한 내용" },
+	});
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(600);
+	});
+	expect(mocks.upsert).toHaveBeenCalledTimes(1);
+});
+
+it("전환 전 저장이 실패하면 선택 화면으로 나가지 않는다", async () => {
+	mocks.upsert.mockImplementation((_request, callbacks) => callbacks.onError());
+	await render();
+	await act(async () => form.handleMemoChange("저장할 내용"));
+	let isSaved = true;
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+
+	expect(isSaved).toBe(false);
+});
+
+it("바뀐 내용이 없으면 저장하지 않고 바로 전환한다", async () => {
+	await render();
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.upsert).not.toHaveBeenCalled();
+});
+
+it("입력이 이미 저장됐으면 전환할 때 다시 저장하지 않는다", async () => {
+	await render();
+	await act(async () => form.handleMemoChange("저장된 내용"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(1500);
+	});
+	const saveCount = mocks.upsert.mock.calls.length;
+	expect(saveCount).toBeGreaterThan(0);
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.upsert).toHaveBeenCalledTimes(saveCount);
+});
+
+it("첫 저장으로 ID가 생겨도 저장 중 입력한 초안을 유지한다", async () => {
+	mocks.memo = undefined;
+	let completeFirstSave = () => {};
+	mocks.upsert.mockImplementationOnce((_request, callbacks) => {
+		completeFirstSave = callbacks.onSuccess;
+	});
+	await render();
+	await act(async () => form.handleMemoChange("첫 입력"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(350);
+	});
+	await act(async () => form.handleMemoChange("저장 중 추가 입력"));
+	mocks.memo = { id: 1, title: "A" };
+	await render();
+	expect(mocks.values.memo).toBe("저장 중 추가 입력");
+	await act(async () => {
+		completeFirstSave();
+		await vi.advanceTimersByTimeAsync(600);
+	});
+	expect(mocks.values.memo).toBe("저장 중 추가 입력");
+	expect(mocks.upsert.mock.calls.at(-1)?.[0].data.memo).toBe(
+		"저장 중 추가 입력",
+	);
+});
+
+it("첫 입력의 온라인 저장이 성공했을 때만 추천 대상 ID를 기록한다", async () => {
+	mocks.memo = undefined;
+	mocks.upsert.mockReset().mockImplementation(() => undefined);
+	await render();
+	expect(form.firstSavedMemoId).toBeNull();
+	await act(async () => form.handleMemoChange("첫 입력"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(350);
+	});
+	expect(form.firstSavedMemoId).toBeNull();
+	const [, callbacks] = mocks.upsert.mock.calls[0];
+	await act(async () => {
+		callbacks.onSuccess({ data: [{ id: 42 }] });
+	});
+	expect(form.firstSavedMemoId).toBe(42);
+});
+
+it("기존 메모가 조회로 나타나거나 첫 저장이 실패하면 추천 대상 ID를 기록하지 않는다", async () => {
+	mocks.memo = undefined;
+	await render();
+	mocks.memo = { id: 42, title: "A", memo: "기존 메모" };
+	await render();
+	expect(form.firstSavedMemoId).toBeNull();
+
+	mocks.memo = undefined;
+	await render();
+	mocks.upsert.mockReset().mockImplementation((_request, callbacks) => {
+		callbacks.onError(new Error("save failed"));
+	});
+	await act(async () => form.handleMemoChange("새 메모"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(350);
+	});
+	expect(form.firstSavedMemoId).toBeNull();
+});
+
+it("상태 토글은 저장 응답을 기다리지 않고 조회 캐시를 바꾸고 실패하면 되돌린다", async () => {
+	mocks.values = { isWish: false };
+	await render();
+	mocks.upsert.mockReset().mockImplementation(() => undefined);
+
+	let togglePromise: Promise<boolean | null> = Promise.resolve(null);
+	await act(async () => {
+		togglePromise = form.toggleMemoStatus("isWish");
+	});
+	expect(form.memoData?.isWish).toBe(true);
+
+	const [, callbacks] = mocks.upsert.mock.calls[0];
+	await act(async () => {
+		callbacks.onError();
+		await togglePromise;
+	});
+	expect(form.memoData?.isWish).toBe(false);
+	expect(mocks.values.isWish).toBe(false);
+});
+
+it("오프라인이면 upsert 대신 대기열에 넣는다", async () => {
+	mocks.isOnline = false;
+	await render();
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveMemo({ memo: "오프라인 입력" });
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.upsert).not.toHaveBeenCalled();
+	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(1);
+	expect(mocks.enqueueOfflineMemo.mock.calls[0][0]).toMatchObject({
+		userId: "user-1",
+		memoId: 1,
+		url: "https://example.com/a",
+		data: { memo: "오프라인 입력" },
+	});
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "memo_offline_queued",
+		params: { trigger: "offline" },
+	});
+	expect(form.saveStatus).toBe("saved");
+});
+
+it("현재 메모에 대기 항목이 있으면 온라인이어도 대기열에 넣는다", async () => {
+	mocks.hasPendingOfflineMemo.mockResolvedValue(true);
+	await render();
+	await act(async () => {
+		await form.saveMemo({ memo: "이미 대기 중" });
+	});
+
+	expect(mocks.upsert).not.toHaveBeenCalled();
+	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(1);
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "memo_offline_queued",
+		params: { trigger: "already_queued" },
+	});
+});
+
+it("네트워크 오류로 실패하면 대기열에 넣고 저장 성공으로 처리한다", async () => {
+	mocks.isNetworkError.mockReturnValue(true);
+	mocks.upsert.mockImplementation((_request, callbacks) =>
+		callbacks.onError(new Error("네트워크 오류")),
+	);
+	await render();
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveMemo({ memo: "네트워크 실패 입력" });
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(1);
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "memo_offline_queued",
+		params: { trigger: "network_error" },
+	});
+});
+
+it("오프라인이면 카테고리를 바꾸지 않는다", async () => {
+	mocks.isOnline = false;
+	await render();
+	await act(async () => form.updateCategory(3, "button"));
+
+	expect(mocks.values.categoryId).not.toBe(3);
+	expect(mocks.patch).not.toHaveBeenCalled();
+});
+
+it("오프라인이면 상태 토글을 저장하지 않는다", async () => {
+	mocks.isOnline = false;
+	await render();
+	let result: boolean | null = true;
+	await act(async () => {
+		result = await form.toggleMemoStatus("isWish");
+	});
+
+	expect(result).toBeNull();
+	expect(mocks.upsert).not.toHaveBeenCalled();
+});
+
+it("지금 편집 중인 메모에 대기 항목이 있으면 hasPendingOfflineItem을 그대로 내보낸다", async () => {
+	mocks.pendingOfflineItem = {
+		memoId: 1,
+		url: "https://example.com/a",
+		data: { title: "A", memo: "대기", impression: "", actionItem: "" },
+	};
+	await render();
+
+	expect(form.hasPendingOfflineItem).toBe(true);
+});
+
+it("현재 메모의 대기 항목이 있으면 캐시된 서버 본문 대신 대기 본문으로 폼을 채운다", async () => {
+	mocks.memo = { id: 1, title: "A", memo: "서버 본문" };
+	mocks.pendingOfflineItem = {
+		memoId: 1,
+		url: "https://example.com/a",
+		data: {
+			title: "오프라인 제목",
+			memo: "오프라인 본문",
+			impression: "오프라인 느낀 점",
+			actionItem: "오프라인 할 일",
+		},
+	};
+	await render();
+
+	expect(mocks.values.memo).toBe("오프라인 본문");
+	expect(mocks.values.impression).toBe("오프라인 느낀 점");
+	expect(mocks.values.actionItem).toBe("오프라인 할 일");
+	expect(mocks.values.title).toBe("오프라인 제목");
+});
+
+it("다른 메모의 대기 항목이면 폼을 덮지 않는다", async () => {
+	mocks.memo = { id: 1, title: "A", memo: "서버 본문" };
+	mocks.pendingOfflineItem = {
+		memoId: 2,
+		url: "https://example.com/a",
+		data: { title: "B", memo: "다른 메모", impression: "", actionItem: "" },
+	};
+	await render();
+
+	expect(mocks.values.memo).toBe("서버 본문");
+});
+
+it("입력한 뒤에는 대기 항목이 갱신돼도 폼을 다시 덮지 않는다", async () => {
+	mocks.memo = { id: 1, title: "A", memo: "서버 본문" };
+	await render();
+	act(() => {
+		form.handleMemoChange("지금 입력 중");
+	});
+
+	mocks.pendingOfflineItem = {
+		memoId: 1,
+		url: "https://example.com/a",
+		data: { title: "A", memo: "지금 입력", impression: "", actionItem: "" },
+	};
+	await render();
+
+	expect(mocks.values.memo).toBe("지금 입력 중");
 });

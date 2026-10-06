@@ -57,3 +57,8 @@ export async function isFavorite(url: string): Promise<boolean> {
 	const favorites = await getAll();
 	return favorites.some((f) => f.url === url);
 }
+
+/** 서버로 옮긴 뒤 기기에 남은 즐겨찾기를 비운다. */
+export const clearLocalFavorites = async () => {
+	await AsyncStorage.removeItem(FAVORITES_KEY);
+};

@@ -1,7 +1,7 @@
 import { handleEditHighlight } from "./editHighlight";
 import { handleCreateHighlight } from "./createHighlight";
+import { handleCreateMemo } from "./createMemo";
 import { handleGetLoginStatus } from "./getLoginStatus";
-import { reportBackgroundError } from "./reportBackgroundError";
 import "webextension-polyfill";
 
 import { CONFIG } from "@web-memo/env";
@@ -11,25 +11,12 @@ import {
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
-import {
-	HighlightService,
-	MemoService,
-	normalizeUrl,
-} from "@web-memo/shared/utils";
+import { HighlightService, normalizeUrl } from "@web-memo/shared/utils";
 import { getSupabaseClient, I18n, Tab } from "@web-memo/shared/utils/extension";
 import { initSentry } from "@web-memo/shared/utils";
 import { analytics } from "@web-memo/shared/modules/analytics";
 
 void initSentry();
-
-const reportMemoCreateError = (error: unknown, stage: string) => {
-	reportBackgroundError({
-		error,
-		feature: "memo",
-		operation: "create-memo",
-		stage,
-	});
-};
 
 // 확장 프로그램이 설치되었을 때 옵션을 초기화한다.
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -52,26 +39,30 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 	const uiLanguage = I18n.getUILanguage();
 	if (!language) ChromeSyncStorage.set(STORAGE_KEYS.language, uiLanguage);
 
-	// 처음 설치했을 때만 웹을 열어 로그인으로 이어지게 합니다. 업데이트에서는 열지 않습니다.
+	// 처음 설치했을 때만 로그인 전 가이드를 엽니다. 업데이트에서는 열지 않습니다.
 	if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-		await openMemosTabOnInstall();
+		await openInstallGuideTab();
 	}
 });
 
+// 확장을 삭제하면 브라우저가 이 주소를 새 탭으로 엽니다. 삭제 사유 설문 페이지입니다.
+// 언어 접두사는 웹 미들웨어가 붙여 줍니다. 서비스 워커가 뜰 때마다 다시 등록해 누락을 막습니다.
+chrome.runtime.setUninstallURL(`${CONFIG.webUrl}/uninstall`);
+
 /**
- * 설치 직후 웹의 메모 페이지를 새 탭으로 엽니다.
+ * 설치 직후 웹의 공개 가이드를 새 탭으로 엽니다.
  * @description 확장의 client_id를 `ext_cid`로 실어 보내 웹 가입까지 한 사용자로 이어 집계합니다.
  * client_id를 얻지 못하면 `ext_cid` 없이 엽니다.
  */
-const openMemosTabOnInstall = async () => {
-	const memosUrl = new URL(`${CONFIG.webUrl}/memos`);
+const openInstallGuideTab = async () => {
+	const guideUrl = new URL(`${CONFIG.webUrl}/install`);
 	const clientId = await analytics.getExtensionClientId();
 
 	if (clientId) {
-		memosUrl.searchParams.set("ext_cid", clientId);
+		guideUrl.searchParams.set("ext_cid", clientId);
 	}
 
-	await Tab.create({ url: memosUrl.toString() });
+	await Tab.create({ url: guideUrl.toString() });
 };
 
 // 확장 프로그램이 설치되었을 때 contextMenus를 설정한다.
@@ -136,57 +127,7 @@ bridge.handle.GET_TABS(async (_, __, sendResponse) => {
 // content-ui에서 메모 생성 요청을 받아 처리한다.
 // 기존 메모가 있으면 내용을 추가하고, 없으면 새로 생성한다.
 bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
-	try {
-		const supabaseClient = await getSupabaseClient();
-		const memoService = new MemoService(supabaseClient);
-
-		// 사이드 패널·웹과 같은 기준으로 메모를 찾도록 URL을 정규화한다.
-		const normalizedUrl = normalizeUrl(payload.url);
-		const existingMemo = await memoService.getMemoByUrl(normalizedUrl);
-
-		if (existingMemo.error) {
-			reportMemoCreateError(existingMemo.error, "lookup");
-			sendResponse({ success: false, error: existingMemo.error.message });
-			return;
-		}
-
-		// Supabase는 결과가 없을 때 빈 배열을 돌려주므로 첫 번째 요소로 존재 여부를 판단한다.
-		const currentMemo = existingMemo.data?.[0];
-
-		if (currentMemo) {
-			const updatedMemo = `${currentMemo.memo}${currentMemo.memo ? "\n\n" : ""}${payload.memo}`;
-			const result = await memoService.updateMemo({
-				id: currentMemo.id,
-				request: { memo: updatedMemo },
-			});
-
-			if (result.error) {
-				reportMemoCreateError(result.error, "update");
-				sendResponse({ success: false, error: result.error.message });
-			} else {
-				sendResponse({ success: true });
-			}
-		} else {
-			const result = await memoService.insertMemo({
-				...payload,
-				url: normalizedUrl,
-			});
-
-			if (result.error) {
-				reportMemoCreateError(result.error, "insert");
-				sendResponse({ success: false, error: result.error.message });
-			} else {
-				sendResponse({ success: true });
-			}
-		}
-	} catch (error) {
-		reportMemoCreateError(error, "handler");
-		sendResponse({
-			success: false,
-			error:
-				error instanceof Error ? error.message : I18n.get("toast_error_save"),
-		});
-	}
+	sendResponse(await handleCreateMemo(payload));
 });
 
 // content-ui가 현재 페이지의 하이라이트를 조회한다.

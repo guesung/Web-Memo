@@ -1,7 +1,9 @@
 /**
  * 확장 삭제 설문이 보내는 이탈 사유. 여기에 없는 값이 들어오면 원문을 그대로 보여준다.
- * @description 설문 페이지가 이 레포에 없어 목록의 원천은 프로덕션에 쌓인 응답뿐이다.
+ * @description 설문 페이지는 `(no-auth)/uninstall`에 있고, 응답은 `{type, reason, feedback, timestamp}`
+ * 형식의 JSON 문자열로 저장된다. 그 페이지의 `_constants` 사유 목록과 같은 값·순서를 유지해야 하고,
  * 새 사유가 추가되면 이 배열과 `admin.feedback.uninstall_reason.*` 번역 키를 같이 늘려야 한다.
+ * 예전 확장 설문이 남긴 응답은 `phoneNumber` 같은 필드가 더 있을 수 있다.
  */
 export const UNINSTALL_REASONS = [
 	"not_useful",

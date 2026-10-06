@@ -1,10 +1,10 @@
 import { HeaderMargin } from "@src/components/Header";
+import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { cn } from "@web-memo/shared/utils";
 import { ArrowRight, type LucideIcon } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { LANDING_PAGE, type TLandingPageKey } from "../../_constants";
 import SectionHeader from "../../introduce/_components/SectionHeader";
@@ -37,7 +37,7 @@ export type TLandingPageItem = {
 export type TLandingPageConfig = {
 	/** 이 페이지가 명부에서 차지하는 자리. 문구 키·아이콘·경로가 여기서 나온다 */
 	pageKey: TLandingPageKey;
-	/** `/images/pngs/introduction/{lng}/{n}.png`의 번호 */
+	/** `/images/webps/introduction/{lng}/{n}.webp`의 번호 */
 	screenshotNumber: number;
 	/** `{prefix}.benefits.{key}` 아래 문구를 읽는다 */
 	benefits: TLandingPageItem[];
@@ -47,7 +47,8 @@ export type TLandingPageConfig = {
 	relatedKeys: TLandingPageKey[];
 };
 
-interface LandingPageTemplateProps extends LanguageType {
+/** 하위 홍보 페이지를 렌더링하는 데 필요한 설정입니다. */
+interface IFLandingPageTemplateProps extends LanguageType {
 	config: TLandingPageConfig;
 	/** 페이지 고유의 구조화 데이터 등, 본문 맨 앞에 끼워 넣을 것 */
 	children?: ReactNode;
@@ -58,12 +59,13 @@ function getBackground(sectionIndex: number): TSectionBackground {
 	return sectionIndex % 2 === 0 ? "canvas" : "fog";
 }
 
-export default async function LandingPageTemplate({
+/** 기능과 활용 사례의 공통 소개 화면을 렌더링합니다. */
+const LandingPageTemplate = async ({
 	lng,
 	config,
 	children,
-}: LandingPageTemplateProps) {
-	const { t } = await useTranslation(lng);
+}: IFLandingPageTemplateProps) => {
+	const { t } = await getTranslation(lng);
 
 	const {
 		icon: PageIcon,
@@ -108,10 +110,11 @@ export default async function LandingPageTemplate({
 					<div className="overflow-hidden rounded-3xl border border-border bg-card">
 						<div className="relative aspect-[4/3]">
 							<Image
-								src={`/images/pngs/introduction/${lng}/${config.screenshotNumber}.png`}
-								alt={t(`${translationPrefix}.hero.badge`)}
+								src={`/images/webps/introduction/${lng}/${config.screenshotNumber}.webp`}
+								alt={t(`${translationPrefix}.hero.imageAlt`)}
 								fill
-								className="object-cover object-top"
+								className="object-contain"
+								unoptimized
 								priority
 							/>
 						</div>
@@ -204,8 +207,9 @@ export default async function LandingPageTemplate({
 
 						return (
 							<li key={relatedKey} className="border-b border-border">
-								<Link
-									href={`/${lng}${related.path}`}
+								<LocalizedLink
+									lng={lng}
+									href={related.path}
 									className="group flex items-start gap-6 py-8"
 								>
 									<span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-border">
@@ -222,7 +226,7 @@ export default async function LandingPageTemplate({
 									</div>
 
 									<ArrowRight className="mt-1 h-5 w-5 flex-shrink-0 text-muted-foreground transition-transform duration-base group-hover:translate-x-1" />
-								</Link>
+								</LocalizedLink>
 							</li>
 						);
 					})}
@@ -257,4 +261,6 @@ export default async function LandingPageTemplate({
 			</SectionShell>
 		</div>
 	);
-}
+};
+
+export default LandingPageTemplate;

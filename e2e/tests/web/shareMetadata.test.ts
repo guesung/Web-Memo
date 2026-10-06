@@ -6,7 +6,6 @@ const PUBLIC_PATHS = [
 	"privacy",
 	"features/memo",
 	"features/save-articles",
-	"features/youtube-summary",
 	"use-cases/developer",
 	"use-cases/job-hunting",
 	"use-cases/learning",

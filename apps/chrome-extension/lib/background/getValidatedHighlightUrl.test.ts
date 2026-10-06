@@ -2,11 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getValidatedHighlightUrl } from "./getValidatedHighlightUrl";
 
 vi.mock("@web-memo/shared/utils", async () => {
-	const { normalizeUrl } = await import(
+	const { getPageKey, normalizeUrl } = await import(
 		"../../../../packages/shared/src/utils/Url"
 	);
 
-	return { normalizeUrl };
+	return { getPageKey, normalizeUrl };
 });
 
 const PAGE_URL = "https://example.com/article";
@@ -36,6 +36,20 @@ describe("하이라이트 발신자와 URL 검증", () => {
 		const sender = { ...SENDER, url: "https://example.com/previous" };
 
 		expect(getValidatedHighlightUrl(sender, PAGE_URL)).toBe(PAGE_URL);
+	});
+
+	it("추적 파라미터만 다른 요청 URL을 같은 페이지로 검증한다", () => {
+		const sender = {
+			...SENDER,
+			tab: {
+				...SENDER.tab,
+				url: `${PAGE_URL}?utm_source=newsletter`,
+			},
+		} as chrome.runtime.MessageSender;
+
+		expect(getValidatedHighlightUrl(sender, PAGE_URL)).toBe(
+			`${PAGE_URL}?utm_source=newsletter`,
+		);
 	});
 
 	it.each([

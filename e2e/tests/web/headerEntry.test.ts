@@ -16,12 +16,20 @@ test.describe("헤더 진입점 (로그인)", () => {
 
 		await expect(getBrandLink(page)).toHaveAttribute(
 			"href",
-			`/ko${PATHS.introduce}`,
+			`/ko${PATHS.memos}`,
 		);
 
 		const memosLink = getHeader(page).getByRole("link", { name: "내 메모" });
 		await expect(memosLink).toHaveAttribute("href", `/ko${PATHS.memos}`);
 		await memosLink.click();
+		await page.waitForURL(`**/ko${PATHS.memos}`);
+
+		expect(new URL(page.url()).pathname).toBe(`/ko${PATHS.memos}`);
+	});
+
+	test("소개 화면에서 로고를 누르면 메모 화면으로 간다.", async ({ page }) => {
+		await page.goto(`/ko${PATHS.introduce}`);
+		await getBrandLink(page).click();
 		await page.waitForURL(`**/ko${PATHS.memos}`);
 
 		expect(new URL(page.url()).pathname).toBe(`/ko${PATHS.memos}`);
@@ -43,7 +51,7 @@ test.describe("헤더 진입점 (로그아웃)", () => {
 
 		await expect(getBrandLink(page)).toHaveAttribute(
 			"href",
-			`/ko${PATHS.introduce}`,
+			`/ko${PATHS.memos}`,
 		);
 
 		const loginLink = getHeader(page).getByRole("link", {

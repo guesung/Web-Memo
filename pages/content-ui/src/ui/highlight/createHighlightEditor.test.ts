@@ -3,6 +3,9 @@ import type { HighlightRow } from "@web-memo/shared/types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createHighlightEditor } from "./createHighlightEditor";
 
+// 리포터는 @web-memo/env를 끌어와 테스트에서 불러올 수 없다. 호출 여부만 본다.
+vi.mock("../../utils/reportError", () => ({ reportContentUiError: vi.fn() }));
+
 const ROW = {
 	id: 1,
 	url: "http://localhost:3000/",

@@ -1,18 +1,66 @@
 {
-	"memo_title_sync": {
-		"message": "Update to the current page title"
-	},
 	"extensionName": {
-		"message": "Web Memo - Easily take notes on websites"
+		"message": "Web Memo - Notes right beside the page you're reading"
 	},
 	"extensionDescription": {
-		"message": "Summarize any webpage or YouTube video with AI in one click. Save notes instantly. Free to use!"
+		"message": "No need to open a notes app. Write right beside the page you're reading. Title and URL are added for you."
 	},
 	"memo": {
 		"message": "Note"
 	},
+	"memo_candidates_title": {
+		"message": "Choose a note for this page"
+	},
+	"memo_candidates_preserved_draft": {
+		"message": "Unsaved draft"
+	},
+	"memo_candidates_selection_lost": {
+		"message": "The selected note is no longer available. Keep your draft and choose again."
+	},
+	"memo_candidates_description": {
+		"message": "This page has multiple notes. Choose one to review its content before editing."
+	},
+	"memo_candidates_delete": {
+		"message": "Delete memo"
+	},
+	"memo_candidates_deleted": {
+		"message": "Moved the memo to trash"
+	},
+	"memo_candidates_new": {
+		"message": "Write a new memo"
+	},
+	"memo_candidates_other_url": {
+		"message": "Memos from other addresses"
+	},
+	"memo_candidates_empty_preview": {
+		"message": "No content"
+	},
+	"memo_choose_other": {
+		"message": "Choose another note"
+	},
+	"memo_offline_conflict": {
+		"message": "This memo changed elsewhere, so it was saved as a new memo"
+	},
 	"save": {
 		"message": "Save"
+	},
+	"save_status_saving": {
+		"message": "Saving..."
+	},
+	"save_status_saved": {
+		"message": "Saved"
+	},
+	"save_status_offline_saved": {
+		"message": "Offline · Saved on this device"
+	},
+	"save_status_offline": {
+		"message": "Offline"
+	},
+	"save_status_syncing": {
+		"message": "Syncing..."
+	},
+	"save_status_sync_failed": {
+		"message": "Saved on this device"
 	},
 	"number": {
 		"message": "Number"
@@ -98,11 +146,23 @@
 	"reading_memo": {
 		"message": "Reading"
 	},
+	"undo": {
+		"message": "Undo"
+	},
 	"go_to": {
 		"message": "Go"
 	},
 	"toast_error_save": {
 		"message": "Couldn't save. Please try again"
+	},
+	"memo_save_status_saved": {
+		"message": "Saved"
+	},
+	"memo_save_status_failed": {
+		"message": "Couldn't save"
+	},
+	"memo_save_status_saving": {
+		"message": "Saving"
 	},
 	"prompt_language_setting": {
 		"message": "Response language"
@@ -146,14 +206,14 @@
 	"category_suggestion_existing": {
 		"message": "Suggest:"
 	},
-	"category_suggestion_new": {
-		"message": "New category:"
-	},
 	"category_suggestion_accept": {
 		"message": "Apply"
 	},
 	"category_suggestion_dismiss": {
 		"message": "Dismiss"
+	},
+	"category_suggestion_apply_failed": {
+		"message": "Could not apply the category. Please try again"
 	},
 	"recommend_category": {
 		"message": "AI category recommendation"
@@ -176,6 +236,18 @@
 	"category_remove": {
 		"message": "Remove category"
 	},
+	"control_disabled_offline_change": {
+		"message": "You can't change this offline"
+	},
+	"control_disabled_offline_delete": {
+		"message": "You can't delete this offline"
+	},
+	"login_network_unavailable": {
+		"message": "You're offline. We'll reload automatically once you're back online."
+	},
+	"control_disabled_syncing": {
+		"message": "Available once syncing finishes"
+	},
 	"memo_section_setting": {
 		"message": "Memo sections"
 	},
@@ -185,12 +257,6 @@
 	"action_item_section_description": {
 		"message": "Show the action items field when writing a memo"
 	},
-	"auto_apply_category_setting": {
-		"message": "Auto-apply category"
-	},
-	"auto_apply_category_description": {
-		"message": "Automatically apply AI-suggested categories"
-	},
 	"memo_fields_setting": {
 		"message": "Memo fields"
 	},
@@ -199,6 +265,27 @@
 	},
 	"highlight_setting_description": {
 		"message": "Select text on a webpage, then click the highlight button to save it."
+	},
+	"shortcut_setting": {
+		"message": "Shortcut"
+	},
+	"shortcut_open_side_panel": {
+		"message": "Open side panel"
+	},
+	"shortcut_setting_description": {
+		"message": "Chrome remembers the key you set."
+	},
+	"shortcut_change": {
+		"message": "Change shortcut"
+	},
+	"shortcut_not_set": {
+		"message": "No shortcut set"
+	},
+	"shortcut_load_failed": {
+		"message": "Couldn't check the shortcut"
+	},
+	"shortcut_open_settings_failed": {
+		"message": "Couldn't open the shortcut settings page. Type chrome://extensions/shortcuts in the address bar."
 	},
 	"ai_setting": {
 		"message": "AI features"
@@ -224,6 +311,12 @@
 	"retry": {
 		"message": "Retry"
 	},
+	"memo_loading": {
+		"message": "Loading memo..."
+	},
+	"memo_load_error": {
+		"message": "Couldn't load the memo."
+	},
 	"show_impression_setting": {
 		"message": "Show impression field"
 	},
@@ -246,13 +339,13 @@
 		"message": "Ask AI about the page content"
 	},
 	"summary_empty_message": {
-		"message": "Click the refresh button above\nto generate a summary"
+		"message": "Get a short summary of the page you're reading"
 	},
 	"summary_loading_message": {
 		"message": "Generating summary…"
 	},
 	"summary_generate_label": {
-		"message": "Generate summary"
+		"message": "Summarize this page"
 	},
 	"impression": {
 		"message": "Impression"
@@ -311,6 +404,12 @@
 	"highlight_bubble_disable": {
 		"message": "Turn off highlight popup"
 	},
+	"highlight_bubble_settings": {
+		"message": "Highlight popup settings"
+	},
+	"highlight_bubble_dismiss": {
+		"message": "Dismiss popup for this selection"
+	},
 	"highlight_bubble_disabled_title": {
 		"message": "Highlight popup turned off."
 	},
@@ -318,7 +417,7 @@
 		"message": "You can turn it back on in Options."
 	},
 	"highlight_intro_message": {
-		"message": "This is Web Memo highlighting. Choose a color to save a passage or add a note. Open the X menu to change the popup position or turn it off."
+		"message": "This is Web Memo highlighting. Choose a color to save a passage or add a note. X dismisses this selection only. Use settings to change the popup position or turn it off."
 	},
 	"highlight_intro_confirm": {
 		"message": "Got it"
@@ -401,6 +500,18 @@
 			"count": {
 				"content": "$1",
 				"example": "3"
+			}
+		}
+	},
+	"past_memo_related_intro": {
+		"message": "You have related memos"
+	},
+	"past_memo_related_more": {
+		"message": "View $count$ more",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "2"
 			}
 		}
 	},

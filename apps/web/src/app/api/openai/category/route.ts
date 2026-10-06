@@ -1,37 +1,31 @@
+import { captureException } from "@sentry/nextjs";
+import { readServerEnv } from "@src/utils/serverEnv";
+import { APITimeoutError } from "@typesafe-ai/sdk";
 import { CHROME_EXTENSION_ID } from "@web-memo/shared/constants";
 import { type NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
 import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "../constant";
-import { createErrorResponse, handleOpenAIError } from "../util";
-import { OPENAI_MODEL, OPENAI_SETTINGS, SYSTEM_MESSAGE } from "./constant";
-import type { CategorySuggestionResponse } from "./type";
-import {
-	buildCategoryPrompt,
-	findMatchingCategoryId,
-	parseAIResponse,
-	validateRequest,
-} from "./util";
+import { createErrorResponse } from "../util";
+import { JEV_MAX_CHOICES } from "./constant";
+import type { IFJevCategoryResult } from "./jev";
+import { getJevCategorySuggestion } from "./jev";
+import type { IFCategorySuggestionResponse } from "./type";
+import { validateRequest } from "./util";
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-if (!OPENAI_API_KEY) {
-	console.warn("OPENAI_API_KEY is not configured");
-}
-
-/** 페이지와 메모를 분석해 카테고리를 추천한다. */
+/** Jev가 고른 기존 카테고리를 추천하고, 추천할 수 없으면 null을 반환합니다. */
 export const POST = async (request: NextRequest) => {
-	if (!OPENAI_API_KEY) {
-		return createErrorResponse(
-			"OpenAI API key not configured",
-			HTTP_STATUS.INTERNAL_SERVER_ERROR,
-		);
-	}
+	const requestStartedAt = performance.now();
+	let jevDurationMs: number | null = null;
+	let noSuggestionReason: string | null = null;
+	let resultSource: "jev" | "none" = "none";
+	let jevChoiceType: IFJevCategoryResult["choiceType"] = null;
+	let jevConfidence: number | null = null;
 
 	try {
-		const origin = request.headers.get("origin");
 		const validOrigin = `chrome-extension://${CHROME_EXTENSION_ID}`;
 
-		if (origin !== validOrigin) {
+		if (request.headers.get("origin") !== validOrigin) {
+			noSuggestionReason = "invalid_origin";
+
 			return createErrorResponse(
 				ERROR_MESSAGES.UNAUTHORIZED,
 				HTTP_STATUS.FORBIDDEN,
@@ -41,85 +35,98 @@ export const POST = async (request: NextRequest) => {
 		const body = await request.json();
 
 		if (!validateRequest(body)) {
+			noSuggestionReason = "invalid_request";
+
 			return createErrorResponse(
 				"Invalid request format",
 				HTTP_STATUS.BAD_REQUEST,
 			);
 		}
 
-		const openai = new OpenAI({
-			apiKey: OPENAI_API_KEY,
-		});
+		if (body.existingCategories.length === 0) {
+			noSuggestionReason = "no_existing_categories";
+		} else if (body.existingCategories.length > JEV_MAX_CHOICES) {
+			noSuggestionReason = "choice_limit";
+		} else {
+			const typeSafeApiKey = readServerEnv("TYPESAFE_API_KEY");
 
-		const prompt = buildCategoryPrompt(body);
+			if (!typeSafeApiKey) {
+				noSuggestionReason = "missing_jev_key";
+				captureException(new Error("TYPESAFE_API_KEY is not configured"));
+			} else {
+				const jevStartedAt = performance.now();
 
-		const completion = await openai.chat.completions.create({
-			model: OPENAI_MODEL,
-			reasoning_effort: "none",
-			messages: [
-				{
-					role: "system",
-					content: SYSTEM_MESSAGE,
-				},
-				{
-					role: "user",
-					content: prompt,
-				},
-			],
-			temperature: OPENAI_SETTINGS.temperature,
-			response_format: OPENAI_SETTINGS.responseFormat,
-		});
+				try {
+					const jevResult = await getJevCategorySuggestion(
+						body,
+						typeSafeApiKey,
+					);
+					jevChoiceType = jevResult.choiceType;
+					jevConfidence = jevResult.confidence;
 
-		const responseContent = completion.choices[0]?.message?.content;
+					if (jevResult.suggestion) {
+						resultSource = "jev";
 
-		if (!responseContent) {
-			return NextResponse.json(
-				{ suggestion: null } satisfies CategorySuggestionResponse,
-				{ headers: CORS_HEADERS },
-			);
-		}
+						return NextResponse.json(
+							{
+								suggestion: jevResult.suggestion,
+							} satisfies IFCategorySuggestionResponse,
+							{ headers: CORS_HEADERS },
+						);
+					}
 
-		const parsed = parseAIResponse(responseContent);
-
-		if (!parsed) {
-			return NextResponse.json(
-				{ suggestion: null } satisfies CategorySuggestionResponse,
-				{ headers: CORS_HEADERS },
-			);
-		}
-
-		let existingCategoryId: number | undefined;
-		let isExisting = parsed.isExisting;
-
-		if (parsed.isExisting) {
-			existingCategoryId = findMatchingCategoryId(
-				body.existingCategories,
-				parsed.categoryName,
-			);
-
-			if (!existingCategoryId) {
-				isExisting = false;
+					noSuggestionReason =
+						jevResult.choiceType === "unknown"
+							? "jev_unknown_choice"
+							: "jev_invalid_confidence";
+				} catch (error) {
+					noSuggestionReason =
+						error instanceof APITimeoutError ? "jev_timeout" : "jev_error";
+					captureException(new Error("Jev category classification failed"), {
+						tags: { cause: error instanceof Error ? error.name : "unknown" },
+					});
+				} finally {
+					jevDurationMs = Math.round(performance.now() - jevStartedAt);
+				}
 			}
 		}
 
-		const response: CategorySuggestionResponse = {
-			suggestion: {
-				categoryName: parsed.categoryName,
-				isExisting,
-				existingCategoryId,
-				confidence: parsed.confidence,
-			},
-		};
-
-		return NextResponse.json(response, { headers: CORS_HEADERS });
+		return NextResponse.json(
+			{ suggestion: null } satisfies IFCategorySuggestionResponse,
+			{ headers: CORS_HEADERS },
+		);
 	} catch (error) {
-		console.error("Category suggestion error:", error);
+		if (error instanceof SyntaxError) {
+			noSuggestionReason = "invalid_json";
 
-		return handleOpenAIError(error, "category");
+			return createErrorResponse(
+				"Invalid request format",
+				HTTP_STATUS.BAD_REQUEST,
+			);
+		}
+
+		noSuggestionReason = "request_error";
+		captureException(new Error("Category suggestion request failed"), {
+			tags: { cause: error instanceof Error ? error.name : "unknown" },
+		});
+
+		return createErrorResponse(
+			ERROR_MESSAGES.GENERAL_SERVER_ERROR,
+			HTTP_STATUS.INTERNAL_SERVER_ERROR,
+		);
+	} finally {
+		console.info("Category suggestion result", {
+			resultSource,
+			noSuggestionReason,
+			jevChoiceType,
+			jevConfidence,
+			jevDurationMs,
+			totalDurationMs: Math.round(performance.now() - requestStartedAt),
+		});
 	}
 };
 
-/** 사전 CORS 요청에 공통 허용 헤더로 응답한다. */
+/** 확장 프로그램의 CORS 사전 요청에 응답합니다. */
 export const OPTIONS = async () => {
 	return new Response(null, {
 		status: 200,

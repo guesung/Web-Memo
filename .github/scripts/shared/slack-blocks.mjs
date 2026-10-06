@@ -76,7 +76,7 @@ const describeExtension = (store, builtVersion) => {
 	const published = store.published ? `\`${store.published}\`` : "_없음_";
 	const draftVersion = store.draft?.version;
 
-	// 업로드는 됐지만 게시 버튼을 안 누른 상태를 드러내는 게 이 줄의 목적입니다.
+	// 업로드는 됐지만 아직 게시되지 않은(심사 중이거나 게시 대기) 상태를 드러내는 게 이 줄의 목적입니다.
 	// 게시본과 초안이 같으면 알릴 게 없으므로 한 줄로 줄입니다.
 	// uploadState는 내부 상태값이라(NOT_FOUND 등) 그대로 노출하지 않습니다.
 	if (!draftVersion || draftVersion === store.published) {

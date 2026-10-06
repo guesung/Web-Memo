@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { SUPABASE } from "@web-memo/shared/constants";
 import { type NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import { getOpenAIApiKey } from "../config";
 import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "../constant";
 import { createErrorResponse, handleOpenAIError } from "../util";
 import {
@@ -11,12 +12,6 @@ import {
 	QA_SYSTEM_MESSAGE,
 	SUMMARIZE_SYSTEM_MESSAGE,
 } from "./constant";
-
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-if (!OPENAI_API_KEY) {
-	console.warn("OPENAI_API_KEY is not configured");
-}
 
 /** 요청의 Bearer 토큰이 로그인한 사용자의 것인지 검증한다 (앱은 origin 헤더를 보내지 않음) */
 const verifyUser = async (request: NextRequest) => {
@@ -36,7 +31,9 @@ const verifyUser = async (request: NextRequest) => {
 
 /** 로그인한 사용자의 페이지 요약과 질의응답을 제공한다. */
 export const POST = async (request: NextRequest) => {
-	if (!OPENAI_API_KEY) {
+	const openAIApiKey = getOpenAIApiKey();
+
+	if (!openAIApiKey) {
 		return createErrorResponse(
 			"OpenAI API key not configured",
 			HTTP_STATUS.INTERNAL_SERVER_ERROR,
@@ -66,7 +63,7 @@ export const POST = async (request: NextRequest) => {
 		const truncatedContent = content.slice(0, PAGE_CONTENT_MAX_LENGTH);
 		const isQuestion = !!question.trim();
 
-		const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+		const openai = new OpenAI({ apiKey: openAIApiKey });
 
 		const completion = await openai.chat.completions.create({
 			model: OPENAI_MODEL,

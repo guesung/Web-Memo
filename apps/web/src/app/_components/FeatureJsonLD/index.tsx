@@ -4,22 +4,10 @@ import JsonLdScript from "../JsonLdScript";
 
 interface FeatureJsonLDProps {
 	lng: Language;
-	feature: "youtube-summary" | "memo" | "save-articles";
+	feature: "memo" | "save-articles";
 }
 
 const FEATURE_DATA = {
-	"youtube-summary": {
-		ko: {
-			name: "유튜브 AI 요약",
-			description:
-				"AI가 유튜브 영상의 핵심 내용을 자동으로 요약해줍니다. 긴 영상도 빠르게 파악하고, 중요한 부분만 메모하세요.",
-		},
-		en: {
-			name: "YouTube AI Summary",
-			description:
-				"AI automatically summarizes the key content of YouTube videos. Quickly grasp long videos and take notes on the important parts.",
-		},
-	},
 	memo: {
 		ko: {
 			name: "웹 메모",

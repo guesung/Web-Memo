@@ -1,5 +1,5 @@
 import { toLooseUrlKey } from "@web-memo/shared/utils/url";
-import type { IFRecentMemo } from "./getRecentMemos";
+import type { IFMemoCandidate } from "./getMemoPage";
 
 /**
  * 느슨한 URL 키가 현재 페이지와 같은 메모를 찾는다.
@@ -11,8 +11,8 @@ export const matchByLooseUrl = ({
 	memos,
 }: {
 	pageUrl: string;
-	memos: IFRecentMemo[];
-}): IFRecentMemo | null => {
+	memos: IFMemoCandidate[];
+}): IFMemoCandidate | null => {
 	const pageKey = toLooseUrlKey(pageUrl);
 
 	if (pageKey === null) {

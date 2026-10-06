@@ -1,7 +1,7 @@
 import {
 	fetchActiveUsersByDate,
 	GA4_CACHE_SECONDS,
-	GA4_SERVICE_ACCOUNT_JSON,
+	getGa4ServiceAccountJson,
 	type IFActiveUsersRow,
 } from "@src/modules/ga";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
@@ -40,14 +40,16 @@ const MAX_DAYS = 365;
  */
 const readCachedActiveUsers = unstable_cache(
 	async (days: number) => {
-		// 호출부가 이미 걸러내므로 실제로 도달하지 않습니다. 클로저 안에서는 타입이
-		// 좁혀지지 않아 두는 가드입니다.
-		if (!GA4_SERVICE_ACCOUNT_JSON) {
+		// 호출부가 이미 걸러내므로 실제로 도달하지 않습니다. 시크릿을 인자로 받지 않고
+		// 여기서 다시 읽으므로 타입을 좁히려고 두는 가드입니다.
+		const serviceAccountJson = getGa4ServiceAccountJson();
+
+		if (!serviceAccountJson) {
 			throw new Error("GA4_SERVICE_ACCOUNT_JSON이 설정되지 않았습니다.");
 		}
 
 		return await fetchActiveUsersByDate({
-			serviceAccountJson: GA4_SERVICE_ACCOUNT_JSON,
+			serviceAccountJson,
 			days,
 		});
 	},
@@ -85,7 +87,7 @@ export async function GET(request: NextRequest) {
 	// 크리덴셜이 아직 없는 것은 조회 실패와 다른 상태입니다. 500을 던지면 화면이
 	// 에러 바운더리로 빠져 나머지 관리 지표까지 못 보게 되고, 조용히 빈 배열만
 	// 돌려주면 "연결 없음"과 "정말 사용자가 없음"을 화면이 구분할 수 없습니다.
-	if (!GA4_SERVICE_ACCOUNT_JSON) {
+	if (!getGa4ServiceAccountJson()) {
 		return jsonWithoutSharedCache({ rows: [], asOf: null, connected: false });
 	}
 

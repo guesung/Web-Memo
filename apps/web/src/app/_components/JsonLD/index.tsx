@@ -41,8 +41,8 @@ const getSoftwareApplicationSchema = (lng: Language) => ({
 	name: lng === "ko" ? "웹 메모" : "Web Memo",
 	description:
 		lng === "ko"
-			? "웹페이지를 읽으며 생각을 즉시 기록할 수 있는 크롬 확장 프로그램입니다. AI로 유튜브 영상을 요약하고, 아티클을 체계적으로 관리하세요."
-			: "A Chrome extension that lets you instantly record your thoughts while reading web pages. Summarize YouTube videos with AI and manage articles systematically.",
+			? "웹페이지를 읽으며 생각을 즉시 기록할 수 있는 크롬 확장 프로그램입니다. 메모를 카테고리별로 정리하고, 아티클을 체계적으로 관리하세요."
+			: "A Chrome extension that lets you instantly record your thoughts while reading web pages. Organize notes by category and manage articles systematically.",
 	url: baseUrl,
 	applicationCategory: "BrowserApplication",
 	operatingSystem: "Chrome, Edge, Brave, Arc",
@@ -63,14 +63,14 @@ const getSoftwareApplicationSchema = (lng: Language) => ({
 		lng === "ko"
 			? [
 					"웹페이지 메모",
-					"AI 유튜브 요약",
+					"카테고리별 메모 정리",
 					"위시리스트",
 					"카테고리 관리",
 					"클라우드 동기화",
 				]
 			: [
 					"Web page memos",
-					"AI YouTube summary",
+					"Organize notes by category",
 					"Wishlist",
 					"Category management",
 					"Cloud sync",

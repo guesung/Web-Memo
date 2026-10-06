@@ -44,3 +44,28 @@ export const exchangeServiceAccountToken = async ({
 
 	return token.access_token;
 };
+
+/**
+ * OAuth 리프레시 토큰으로 액세스 토큰을 얻습니다.
+ *
+ * Chrome 웹스토어 API(확장 업로드·스토어 버전 조회)가 서비스 계정이 아니라 이 방식으로
+ * 인증합니다. 액세스 토큰은 1시간 유효하므로 스크립트 한 번에 하나만 받아 씁니다.
+ */
+export const exchangeRefreshToken = async ({
+	clientId,
+	clientSecret,
+	refreshToken,
+}) => {
+	const token = await requestJson("https://oauth2.googleapis.com/token", {
+		method: "POST",
+		headers: { "content-type": "application/x-www-form-urlencoded" },
+		body: new URLSearchParams({
+			client_id: clientId,
+			client_secret: clientSecret,
+			refresh_token: refreshToken,
+			grant_type: "refresh_token",
+		}),
+	});
+
+	return token.access_token;
+};

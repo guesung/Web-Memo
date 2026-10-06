@@ -8,10 +8,9 @@ import { createErrorReporter } from "@web-memo/shared/utils";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources.mjs";
+import { getOpenAIApiKey } from "./config";
 import { CORS_HEADERS, ERROR_MESSAGES, HTTP_STATUS } from "./constant";
 import type { ValidationResult } from "./type";
-
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 /** OpenAI 요청 메시지의 필수 필드를 검증한다. */
 export const validateMessages = (messages: unknown): ValidationResult => {
@@ -134,7 +133,7 @@ export const createStreamingResponse = (
 	feature: string,
 ) => {
 	const openai = new OpenAI({
-		apiKey: OPENAI_API_KEY,
+		apiKey: getOpenAIApiKey(),
 	});
 
 	const encoder = new TextEncoder();

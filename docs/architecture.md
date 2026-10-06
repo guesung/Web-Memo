@@ -1,7 +1,7 @@
 # 아키텍처
 
-> `/gs` 파이프라인의 `gs:frontend-dev`·`gs:backend-dev`가 첫 코드를 쓰기 전에 읽는 문서입니다.
-> 각 에이전트는 **`## 공통` + 자기 섹션만** 읽습니다. `## QA 실행`은 `gs:qa-verifier`만 읽습니다.
+> `/web-memo` 파이프라인의 `web-memo:frontend-dev`·`web-memo:backend-dev`가 첫 코드를 쓰기 전에 읽는 문서입니다.
+> 각 에이전트는 **`## 공통` + 자기 섹션만** 읽습니다. `## QA 실행`은 `web-memo:qa-verifier`만 읽습니다.
 > 사람이 읽는 전체 규칙은 [`AGENTS.md`](../AGENTS.md)에 있습니다 — 이 문서는 그중 구현 결정에 필요한 것만 추린 판입니다.
 > **여기에 비밀번호·토큰 값을 적지 않습니다.** 이 파일은 커밋됩니다.
 
@@ -17,11 +17,11 @@
 | 실행 | `pnpm dev`(앱 제외 전체) · `pnpm dev:web` · `pnpm dev:extension` · `pnpm dev:app`<br>`pnpm build` / `build:web` / `build:extension` · `pnpm zip`(확장 패키징) |
 | 검증 | **`pnpm check`(biome)가 CI 게이트입니다.** 타입체크·빌드가 다 통과해도 포맷 한 줄로 깨지므로 PR 전에 반드시 돌립니다.<br>`pnpm type-check` · `pnpm type-check:scripts`(워크스페이스 밖이라 별도) · `pnpm lint:syncpack`(패키지 간 버전 정합) · `pnpm test:jest`(Vitest) · `pnpm test:e2e`(Playwright) |
 | 포맷 | Biome 2.0.0, **탭 들여쓰기**. `biome.json`의 `includes`에 걸리지 않는 경로(예: Edge Functions)는 어떤 검사에도 안 걸리므로 손으로 확인합니다 |
-| 배포 | 웹 → Vercel(`www.webmemo.xyz`) · 확장 → 크롬 웹스토어 · 앱 → App Store. 모두 `.github/workflows/`의 `cd-*.yml`이 담당하며 릴리스는 `release.yml`·`versions.yml`입니다.<br>`report-ga-daily.yml`은 매일 07:00 KST에 GA4 지표를 슬랙 전용 채널로 보냅니다.<br>`chore-supabase-inventory.yml`은 매일 08:00 KST에 운영 Supabase를 읽기 전용으로 조회해 [`supabase-inventory.md`](supabase-inventory.md)를 다시 만들고, 달라졌으면 갱신 PR을 열거나 고칩니다(자동 머지 없음).<br>`report-seo.yml`은 매일 09:17 KST에 robots.txt·sitemap.xml·PC/모바일 SSR 메타·hreflang·JSON-LD·OG 이미지·URL 정규화를 검사합니다. 이전 master 실행과 회귀를 비교하고, `GSC_SERVICE_ACCOUNT_JSON`이 있으면 색인 상태와 월요일 주간 검색 성과도 조회해 Actions 요약·아티팩트로 남깁니다.<br>레포 유지보수 자동화는 `chore-cleanup-unused.yml` — 주 1회(토 10:00 KST) knip으로 미사용 파일을 찾아 정리 PR을 엽니다(설정은 루트 `knip.jsonc`)<br>`audit-refactor.yml`은 같은 날 10:17 KST에 설계·구조·퀄리티 관점의 리팩토링 후보를 점검해 노션 작업 카드로 만들고 슬랙으로 알립니다(Claude Code 구독 토큰 사용, 상세는 [환경 변수 문서](environment-variables.md)) |
+| 배포 | 웹 → Vercel(`www.webmemo.xyz`) · 확장 → 크롬 웹스토어 · 앱 → Play 내부 테스트(iOS TestFlight는 matrix 복원 후). develop push는 검증 성공 후보를 공유 앱 큐에서 재판정하고 마지막 앱 배포 성공 이후 변경 시 Android를 `staging` 프로필 APK로 빌드해 Firebase App Distribution(App Tester, `testers` 그룹)에 배포하며, master는 빌드만 하고 PR은 `build-app` 라벨이 있을 때 `verify`로 검증합니다. Android 릴리스는 master CI 산출물(`android-build-ci`)이 있으면 재사용하고 iOS 릴리스는 번호 역전을 막기 위해 항상 새로 빌드하며 push 앱 잡과 실제 빌드 잡의 `release-app` 그룹(`queue: max`, 최대 100개 대기)을 공유합니다. push 전체는 보호하며 develop의 검증·웹·확장 잡만 이전 잡을 취소합니다. 앱 성공 SHA는 플랫폼·run·attempt별 90일 아티팩트로 기록하며 오래된 develop 후보는 EAS 전에 생략합니다. 모두 `.github/workflows/`의 `cd-*.yml`이 담당하며 릴리스는 `release.yml`·`versions.yml`입니다.<br>`notify-extension-published.yml`은 30분마다 웹스토어 게시본을 조회해, 레포의 확장 버전이 심사를 통과해 게시되면 `SLACK_WEBHOOK_URL` 채널로 한 번 알립니다.<br>`report-ga-daily.yml`은 매일 07:00 KST에 GA4 지표를 슬랙 전용 채널로 보냅니다.<br>`chore-supabase-inventory.yml`은 매일 08:00 KST에 운영 Supabase를 읽기 전용으로 조회해 [`supabase-inventory.md`](supabase-inventory.md)를 다시 만들고, 달라졌으면 갱신 PR을 열거나 고칩니다(자동 머지 없음).<br>`report-seo.yml`은 매일 09:17 KST에 robots.txt·sitemap.xml·PC/모바일 SSR 메타·hreflang·JSON-LD·OG 이미지·URL 정규화를 검사합니다. 이전 master 실행과 회귀를 비교하고, `GSC_SERVICE_ACCOUNT_JSON`이 있으면 색인 상태와 월요일 주간 검색 성과도 조회해 Actions 요약·아티팩트로 남깁니다.<br>레포 유지보수 자동화는 `chore-cleanup-unused.yml` — 주 1회(토 10:00 KST) knip으로 미사용 파일을 찾아 정리 PR을 엽니다(설정은 루트 `knip.jsonc`)<br>`audit-refactor.yml`은 같은 날 10:17 KST에 설계·구조·퀄리티 관점의 리팩토링 후보를 점검해 노션 작업 카드로 만들고 슬랙으로 알립니다(Claude Code 구독 토큰 사용, 상세는 [환경 변수 문서](environment-variables.md)) |
 | 브랜치 | **`master`가 유일한 베이스입니다.** `develop`은 테스트 서버 배포 전용 일회성 브랜치이고 작업 브랜치의 베이스가 아닙니다. 머지는 **머지 커밋 생성**(Squash/Rebase 금지). 자세한 내용은 [`branch-strategy.md`](branch-strategy.md) |
 | 환경 변수 | 이름과 용도만 적습니다 — 웹 서버 시크릿의 값은 Vercel 프로젝트 환경변수가 갖습니다(로컬은 `pnpm env:pull`).<br>· `packages/env/.env.{development,staging,production}` → `WEB_URL`(커밋됨, 확장·웹 공유)<br>· Vercel 프로젝트 환경변수 → `OPENAI_API_KEY`, `UPSTASH_*` 등 **서버 시크릿**(커밋 안 함)<br>· `packages/shared/src/constants/` → 환경 무관 고정값(Supabase URL·anon key, Sentry DSN, GA/GTM, OAuth)<br>· 빌드 대상은 셸 `BUILD_ENV`로 고릅니다. 코드에서 환경 분기는 **`CONFIG.buildEnv`**를 쓰고 `NODE_ENV`로 판단하지 않습니다(staging을 표현할 수 없음).<br>· **`packages/env`에 서버 시크릿을 넣지 않습니다** — `tsup`이 번들에 인라인해 클라이언트로 실립니다. 전체 규칙은 [`environment-variables.md`](environment-variables.md) |
-| 모니터링 | Sentry (웹·확장·앱). 웹의 메모 화면 지연은 Grafana Faro 수동 measurement와 Sentry OpenTelemetry span processor를 통한 Grafana Cloud OTLP/Tempo로도 관측합니다. 설정·측정 기준은 [`memo-performance-observability.md`](memo-performance-observability.md) 참조 |
-| i18n | ko/en. 웹은 `apps/web/src/modules/i18n/`(`util.client` / `util.server`), 확장은 `_locales/`. **`lng === "ko"` 분기를 쓰지 않고 항상 번역 키를 씁니다** |
+| 모니터링 | Sentry (웹·확장·앱). 앱은 Expo SDK54에 맞는 React Native SDK ~7.2.0을 사용하고 `web-memo-web` 프로젝트에 `runtime:mobile-app`으로 보고한다. 프로젝트 구분과 대시보드 전용 설정은 [`sentry.md`](sentry.md). 웹의 메모 화면 지연은 Grafana Faro 수동 measurement와 Sentry OpenTelemetry span processor를 통한 Grafana Cloud OTLP/Tempo로도 관측한다. 설정·측정 기준은 [`memo-performance-observability.md`](memo-performance-observability.md) |
+| i18n | ko/en. 웹은 `apps/web/src/modules/i18n/`에서 클라이언트 React 훅 `useTranslation`(`util.client`)과 서버 비동기 함수 `getTranslation`(`util.server`, `await` 필요)를 구분하고, 확장은 `_locales/`를 씁니다. **`lng === "ko"` 분기를 쓰지 않고 항상 번역 키를 씁니다** |
 
 ### SEO 장기 이력
 
@@ -35,6 +35,35 @@ SEO 탭 5개의 컬럼명은 한글로 표시합니다. 기존 영문 헤더가 
 정확히 일치하면 다음 적재에서 첫 행만 한글로 교체하며, 기존 데이터와 수동
 `SEO Changes` 기록은 보존합니다. 다른 헤더가 발견되면 적재를 중단합니다.
 
+### 블로그 정주행 수집·조회 경계
+
+토스·당근 공개 글 카탈로그는 모든 사용자가 공유하고, 구독과 메모 완료만 사용자별로
+계산합니다. 쓰기(수집)와 읽기(앱·웹 조회)는 경로와 인증이 완전히 분리됩니다.
+
+- **수집(쓰기)**: `chore-blog-catalog.yml`(매일 03:17 KST 전체 재순회 + 15분마다 재개
+  요청 확인)이 Node 수집기 `.github/scripts/blog-reading/collect.mjs`를 돌립니다. 수집기는
+  공개 목록을 끝까지 순회해 메타데이터(제목·URL·게시일·provider ID)만 Edge Function
+  `blog-catalog-ingest`로 배치 전송하고, Edge가 Supabase 주입 service role로 memo 스키마의
+  수집 RPC(claim·batch·checkpoint·finish·fail)를 부릅니다. 본문은 저장하지 않습니다.
+- **수집 인증**: 수집 전용 `BLOG_CATALOG_INGEST_SECRET` 하나만 씁니다(GitHub Secrets와
+  Supabase Edge Function secret에 같은 값). 조회 전용 `SUPABASE_ACCESS_TOKEN`·가입 트리거용
+  `CRON_SECRET`을 재사용하지 않고, 번들·Vercel에 넣지 않습니다. **Vercel에는 service role이
+  없습니다** — 웹 서버도 카탈로그를 쓰지 못합니다.
+- **조회(읽기)**: 앱·웹은 로그인 사용자 JWT로 사용자 RPC(`get_blog_reading_page`·
+  `get_blog_reading_summary`·`set_blog_subscription`·`request_blog_sync`)만 부릅니다. 범위는
+  `auth.uid()`로 고정되고, 수집 상태 테이블(cursor·lease)은 직접 읽을 수 없습니다. 화면의
+  '수집 재개'는 요청 큐에 한 줄을 남길 뿐 수집기를 직접 실행하지 않습니다.
+- **모듈 경계**: 호출은 `packages/shared`의 env 비의존 모듈로만 합니다 —
+  서비스 `utils/supabase/blogReadingService.ts`(Supabase client를 인자로 주입), 훅
+  `hooks/blog-reading/`, 순수 함수 `utils/blogReading/`, 타입 `types/blogReading.ts`, 상수
+  `constants/blogCatalog.ts`. 쿼리 키는 `["memos","blogCompletion",userId,...]` 아래라 기존 메모
+  변경의 `["memos"]` 무효화에 함께 걸립니다. 앱은 아래 좁은 경로만 씁니다
+  (`@web-memo/shared/{hooks/blog-reading, utils/services/blog-reading, utils/blog-reading,
+  types/blog-reading, constants/blog-catalog}`).
+- **정규화 계약**: 완료 판정은 SQL이 합니다. SQL(`memo.blog_page_key`·`memo.blog_medium_post_id`·
+  `memo.has_blog_memo_text`)과 JS(`getPageKey`·`getMediumPostId`·`hasMemoText`)는
+  `packages/supabase-edge-functions/tests/blogReading/fixtures.json` 한 벌로 함께 검증합니다.
+
 ## 프론트엔드
 
 | 항목 | 내용 |
@@ -45,10 +74,13 @@ SEO 탭 5개의 컬럼명은 한글로 표시합니다. 기존 영문 헤더가 
 | 스타일링 | TailwindCSS 3.4 + `packages/tailwind-config`. 디자인 토큰 원천은 `packages/ui/global.css`의 CSS 변수이며, **역할 이름(`bg-background`·`text-muted-foreground`)만 쓰고 색상 코드를 직접 적지 않습니다.** 다크 모드는 `next-themes` + `darkMode: ["class"]`. 상세는 [`design-system.md`](design-system.md) |
 | 데이터 패칭 | Supabase 접근은 **`packages/shared/src/hooks/supabase/`의 query/mutation 훅을 통해서만** 합니다. 컴포넌트에서 `supabase.from(...)`을 직접 부르지 않습니다. 새 작업을 추가하면 해당 index에서 export합니다.<br>웹 서버 컴포넌트는 `apps/web/src/modules/supabase`의 SSR 클라이언트(`@supabase/ssr`)를 씁니다 |
 | 컴포넌트 규칙 | 공용 프리미티브 → `packages/ui/src/components/` (추가 시 `index.ts`에서 export)<br>웹 공용 → `apps/web/src/components/`<br>페이지 전용 → 해당 라우트의 `_components/`<br>`page.tsx`는 import·`generateMetadata`·조합만. 파일 300줄을 넘으면 분리합니다<br>가능하면 서버 컴포넌트, `'use client'`는 Web API가 필요할 때만. 클라이언트 컴포넌트는 `Suspense` + fallback으로 감쌉니다 |
-| 작성 규칙 | 함수 선언(`function`) 사용, 화살표 상수 컴포넌트 금지. 에러·엣지 케이스 먼저(early return), happy path 마지막. `interface`/`type`은 파일 끝. 아이콘은 항상 `lucide-react`(인라인 `<svg>` 금지). 상세 설계 원칙은 [`frontend-guidelines.md`](frontend-guidelines.md) |
+| 작성 규칙 | 세부 코딩 규칙은 [`code-conventions.yaml`](code-conventions.yaml) 원장에 있는 것만 적용합니다. 대원칙은 [`frontend-guidelines.md`](frontend-guidelines.md)이고, 아직 검토하지 않은 옛 규칙은 [`code-conventions-legacy.md`](code-conventions-legacy.md)에 참고용으로만 있습니다 |
 | 확장 진입점 | `apps/chrome-extension/manifest.js`가 단일 진실 원천입니다. background service worker · content script(모든 URL) · side panel · options. 팝업·DevTools 패널은 없습니다. 진입점을 추가하려면 `pages/`에 패키지를 만들고 매니페스트에 등록합니다 |
-| 앱 import 규칙 | `apps/app`에서는 `@web-memo/shared`의 **배럴 export를 쓰지 않고 좁은 하위 경로**(`@web-memo/shared/utils/url`)를 씁니다. 배럴을 타면 `@web-memo/env`가 딸려와 EAS 빌드에서 iOS만 깨집니다. 앱은 환경 변수를 쓰지 않고 상수만 읽습니다 |
+| 앱 import 규칙 | `apps/app`에서는 `@web-memo/shared`의 **배럴 export를 쓰지 않고 좁은 하위 경로**(`@web-memo/shared/utils/url`)를 씁니다. 배럴을 타면 `@web-memo/env`가 딸려와 EAS 빌드에서 iOS만 깨집니다. 앱은 환경 변수를 쓰지 않고 상수만 읽습니다. 블로그 정주행은 `@web-memo/shared/hooks/blog-reading` 등 전용 하위 경로를 씁니다(위 `### 블로그 정주행 수집·조회 경계`) |
+| 앱 텍스트 선택 메뉴 | 로그인한 앱 브라우저는 `하이라이트`·`복사` 두 메뉴를 표시합니다. `onCustomMenuSelection`의 `nativeEvent.selectedText`를 `expo-clipboard`로 전달하며, 복사는 메뉴를 누른 경우에만 실행합니다. 비로그인 상태의 `menuItems`는 `undefined`로 두어 OS 기본 선택 메뉴를 유지합니다 |
 | Edge import 규칙 | Edge 런타임 코드(`apps/web/src/middleware.ts`)는 `@web-memo/shared`의 **배럴 export를 쓰지 않고 좁은 하위 경로**(`@web-memo/shared/constants`)를 씁니다. `@web-memo/shared/utils` 배럴이 브라우저 전용 Sentry 코드를 Edge 번들로 끌어들여 빌드가 깨진 적이 있습니다. Next 16은 `middleware.ts`에 deprecated 경고를 내지만, `proxy.ts`는 Node.js 런타임 전용이라 Edge를 유지하려고 `middleware.ts`를 그대로 둡니다 |
+
+웹의 언어별 **내부 페이지 링크**는 `apps/web/src/components/LocalizedLink`에 `lng`와 언어 접두사가 없는 `href`를 전달합니다. 이 컴포넌트는 서버와 클라이언트에서 사용할 수 있고 Next.js `Link`의 나머지 속성을 전달합니다. 쿼리·해시가 있는 `href` 객체도 지원합니다. 외부 URL, 메일 링크, 같은 페이지의 앵커, API 및 인증 콜백 경로에는 사용하지 않습니다. 언어를 아직 모르는 404 화면의 링크도 예외입니다. `router.push`와 서버 리다이렉트는 링크 컴포넌트의 대상이 아니며, 필요할 때 같은 위치의 `getLocalizedHref`를 사용합니다.
 
 ## 백엔드
 
@@ -56,8 +88,8 @@ SEO 탭 5개의 컬럼명은 한글로 표시합니다. 기존 영문 헤더가 
 
 | 항목 | 내용 |
 | --- | --- |
-| 서버 형태 | **Next.js Route Handler** (`apps/web/src/app/api/`) — Vercel Functions로 배포<br>· `api/openai/`(요약) · `api/openai/category`(카테고리 추천) · `api/openai/chat` · `api/openai/webpage-qa`<br>· `api/slack/commands` · `api/slack/interactivity`<br>· `api/version`<br>· `vercel.json`에 `/api/transcript` → `/api/transcript.py` rewrite가 남아 있으나 **대상 파일이 레포에 없습니다**(죽은 rewrite). 자막 추출은 현재 확장 content script(`pages/content-ui/src/ui/youtubeTranscript/`)가 합니다<br>**Supabase Edge Functions** (`packages/supabase-edge-functions/supabase/functions/`) — `kakao-auth`, `send-feedback`, `send-welcome-email`, `send-signup-slack-notification`. 가입용 두 함수는 `auth.users` INSERT 트리거가 pg_net으로 비동기 호출합니다 |
-| DB | **Supabase PostgreSQL.** 스키마는 `memo`와 `feedback` 두 개.<br>테이블: `memo.memo` · `memo.category` · `memo.setting` · `memo.highlight` · `feedback.feedbacks`<br>마이그레이션 SQL → `packages/supabase-edge-functions/supabase/migrations/`<br>타입 → `packages/shared/src/types/supabase.ts` (**손으로 고치지 않고 `pnpm generate-supabase-type`으로 재생성**)<br>ORM은 쓰지 않습니다 — `supabase-js` 쿼리 빌더 직접 사용 |
+| 서버 형태 | **Next.js Route Handler** (`apps/web/src/app/api/`) — Vercel Functions로 배포<br>· `api/openai/`(요약) · `api/openai/category`(카테고리 추천) · `api/openai/chat` · `api/openai/webpage-qa`<br>· `api/slack/commands` · `api/slack/interactivity`<br>· `api/version`<br>· `vercel.json`에 `/api/transcript` → `/api/transcript.py` rewrite가 남아 있으나 **대상 파일이 레포에 없습니다**(죽은 rewrite). 자막 추출은 현재 확장 content script(`pages/content-ui/src/ui/youtubeTranscript/`)가 합니다<br>**Supabase Edge Functions** (`packages/supabase-edge-functions/supabase/functions/`) — `kakao-auth`, `send-feedback`, `send-welcome-email`, `send-signup-slack-notification`, `blog-catalog-ingest`. 가입용 두 함수는 `auth.users` INSERT 트리거가 pg_net으로 비동기 호출합니다. `blog-catalog-ingest`는 JWT 대신 수집 전용 secret으로 인증하는 블로그 정주행 수집 엔드포인트입니다(`## 공통`의 블로그 정주행 절) |
+| DB | **Supabase PostgreSQL.** 스키마는 `memo`와 `feedback` 두 개.<br>테이블: `memo.memo` · `memo.category` · `memo.setting` · `memo.highlight` · `feedback.feedbacks`<br>블로그 정주행: `memo.blog_article`·`memo.blog_article_alias`(공개 카탈로그, 로그인 사용자 읽기 전용) · `memo.blog_subscription`(본인 행) · `memo.blog_sync_state`·`memo.blog_sync_request`(직접 접근 없음, RPC로만)<br>마이그레이션 SQL → `packages/supabase-edge-functions/supabase/migrations/`<br>타입 → `packages/shared/src/types/supabase.ts` (**손으로 고치지 않고 `pnpm generate-supabase-type`으로 재생성**)<br>ORM은 쓰지 않습니다 — `supabase-js` 쿼리 빌더 직접 사용 |
 | 스키마 변경 절차 | ① `migrations/`에 SQL 추가 → ② 원격 DB에 적용 → ③ `pnpm generate-supabase-type` → ④ 관련 query/mutation 훅 갱신.<br>**`*.real.test.ts` E2E가 실제 프로덕션 Supabase를 치므로 스키마는 머지 전이 아니라 push 전에 적용돼 있어야 합니다.** `supabase db push`는 히스토리 불일치로 막혀 있어 Management API로 단일 SQL을 실행합니다 |
 | 운영 인벤토리 | 운영 DB의 실제 구성은 자동 생성 문서 [`supabase-inventory.md`](supabase-inventory.md)가 원천입니다. 모든 스키마(동적 탐색, `auth`·`storage` 등 Supabase 관리 스키마는 별도 구역)의 테이블·컬럼·타입과 DB 함수 시그니처, Edge Function의 이름·배포 버전을 싣습니다. 생성기는 `.github/scripts/supabase/generate-supabase-inventory.mjs`이고, 조회가 하나라도 실패하면 문서와 열린 PR을 건드리지 않습니다.<br>배포 버전은 Edge Runtime/Deno 버전이 아니며, 정확한 Runtime 버전은 Management API에서 얻을 수 없습니다. 행 데이터·secret 값·함수 본문·Webhook URL, 조회 시각·건강 상태는 싣지 않습니다. 필수 객체 누락 검사와 운영 오류 감시는 하지 않습니다 |
 | API 규약 | 경로는 `/api/<도메인>/<행위>`, 소문자 kebab-case.<br>응답은 Route Handler에서 `NextResponse.json()`으로 반환하고, 에러는 상태 코드 + `{ message }` 형태로 통일합니다.<br>Server Action에서는 try/catch 대신 **에러를 값으로 반환**합니다. 반대로 서비스 계층(훅에서 부르는 쪽)은 TanStack Query가 잡을 수 있도록 사용자 친화적 에러를 throw합니다 |
@@ -68,6 +100,8 @@ SEO 탭 5개의 컬럼명은 한글로 표시합니다. 기존 영문 헤더가 
 
 주간 `chore-e2e-coverage.yml`은 `.github/e2e-core-flows.json`의 핵심 메모 흐름과 제품 코드·전체 E2E 테스트를 대조합니다. 근거 있는 누락이 발견되면 새 테스트 파일 한 개를 작성하고, 별도 작업 공간에서 코드 검사·타입 검사·확장 빌드·대상 Playwright 테스트 및 데이터 정리를 통과한 경우에만 `master` 대상 PR을 만듭니다. AI 작성, 테스트 검증, PR 게시는 각각 별도 Actions 작업에서 실행합니다. 누락 없음과 조사 불충분, 검증 실패는 Actions 요약과 결과 아티팩트에서 구분합니다. 기존 `e2e.yml`과는 공유 테스트 계정에 대한 실행 잠금을 사용합니다. 워크플로가 `master`에 등록되면 `workflow_dispatch`로 선택한 ref를 수동 점검할 수 있으며, `master` 외 ref에서는 게시를 생략합니다.
 
+주간 `chore-ga-events.yml`은 최근 14일간 바뀐 제품 소스와 `.github/e2e-core-flows.json`의 흐름을 `type.ts`의 기존 이벤트와 대조해, 측정이 없는 사용자 행동을 최대 2개 찾습니다. 이벤트 추가는 `type.ts`(유니온·`EVENT_CATEGORY`)·호출 위치·`docs/events.md`·`docs/analytics.md`를 기존 파일 수정만으로 함께 바꾸는 패치로 만들고, 코드 검사·타입 검사·analytics 단위 테스트를 통과한 경우에만 새 러너에서 패치를 다시 검증한 뒤 `master` 대상 PR을 만듭니다. AI 작성·검증과 PR 게시는 별도 Actions 작업에서 실행하며, 열린 `chore/auto-ga-events-*` PR이 있으면 그 주는 건너뜁니다.
+
 | 항목 | 내용 |
 | --- | --- |
 | 서버 기동 | `pnpm dev:web` → `http://localhost:3000` (수 초).<br>E2E는 `pnpm run -w dev:web:preview`(`next build && next start`)를 띄우며 **빌드가 포함돼 최대 5분** 걸립니다.<br>**이미 `next start`가 떠 있는 상태에서 다시 빌드하면 화면 전체가 에러 바운더리로 떨어집니다.** 기존 서버를 내리고 시작하세요 |
@@ -75,7 +109,7 @@ SEO 탭 5개의 컬럼명은 한글로 표시합니다. 기존 영문 헤더가 
 | 확장 화면 관측 | 사이드 패널·옵션 페이지는 웹 URL로 못 엽니다. `pnpm build:extension`으로 `dist/`를 만든 뒤 Playwright `launchPersistentContext`에 `--load-extension`으로 물려야 합니다 (`e2e/tests/fixtures/extension.ts`가 그대로 합니다). 사이드 패널 셀렉터: `#memo-textarea`, 열기 버튼: `#OPEN_SIDE_PANEL_BUTTON` |
 | 테스트 계정 | 값을 여기 적지 않습니다. `packages/shared/src/constants/SupabaseConfig.ts`의 `testEmail` / `testPassword` 키를 읽어 씁니다 |
 | 로그인 절차 | `/{lng}/login` 이동 → `data-testid="test-login-button"` 클릭 → `/memos`로 리다이렉트될 때까지 대기. 헬퍼가 `e2e/tests/lib/utils.ts`의 `login()`에 있습니다. web 테스트는 이 절차를 `e2e/tests/auth.setup.ts`가 실행당 한 번만 밟고, 저장한 세션(`e2e/.auth/user.json`, storageState)을 재사용합니다.<br>실제 소셜 로그인(Google·Kakao)은 자동화하지 않습니다 — **수동 항목**입니다 |
-| 첫 진입 가이드 | 로그인 직후 driver.js 가이드 팝오버가 화면을 덮습니다. 가이드는 확장이 설치돼 있어야 시작하므로 확장 없는 web 테스트에는 뜨지 않습니다. 확장을 올린 테스트는 `localStorage.setItem("guide", "true")`로 건너뜁니다 (`skipGuide()`) |
+| 첫 진입 가이드 | 신규 설치 시 공개 `/{lng}/install` 페이지가 로그인 전에 열립니다. 방문 이력(`localStorage.installGuideVisited`)이 있으면 로그인 후 driver.js는 환영·저장 2단계만, 없으면 기존 5단계를 보여줍니다. driver.js는 확장이 설치돼 있어야 시작하므로 확장 없는 web 테스트에는 뜨지 않습니다. 확장을 올린 테스트는 `localStorage.setItem("guide", "true")`로 건너뜁니다 (`skipGuide()`) |
 | 테스트 배치 | 폴더는 **테스트 대상**으로 나눕니다.<br>· `e2e/tests/web/` — 확장 없는 일반 브라우저(`fixtures/web.ts`) + setup 프로젝트의 storageState<br>· `e2e/tests/extension/` — 사이드 패널·옵션 등 확장 화면만 보는 테스트(`fixtures/extension.ts`)<br>· `e2e/tests/hybrid/` — 웹 페이지와 확장을 함께 조작하는 테스트(`fixtures/extension.ts`) |
 | 시드 데이터 | 별도 시드 명령이 없습니다. 파일명으로 두 갈래를 가릅니다.<br>· `*.test.ts` — `e2e/tests/lib/mocks/supabaseRoutes.ts`가 네트워크를 가로채 고정 데이터를 줍니다. **기본적으로 여기에 얹으세요.** 목이 처리하지 않은 Supabase 요청(`/auth/v1` 제외)은 실서버로 보내지 않고 막으며, 그 테스트를 `목 없는 요청: METHOD path?query`로 실패시킵니다(`lib/mocks/supabaseGuard.ts`). 새 쿼리를 쓰는 화면을 테스트하면 목부터 추가합니다<br>· `*.real.test.ts` — 로그인 외에 **실제 프로덕션 Supabase 데이터를 읽거나 씁니다.** 만드는 메모 URL·카테고리 이름에 실행 ID와 테스트 ID를 넣고(`lib/namespace.ts`), `globalTeardown`이 자기 실행 데이터와 24시간 지난 e2e 잔여물만 지웁니다. 다른 실행의 데이터는 건드리지 않습니다. SSR이 서버에서 읽는 화면(휴지통 첫 렌더·사이드바 카테고리)은 Playwright로 가로챌 수 없어 이쪽으로 갑니다 |
 | 뷰포트 | **`web`**(Desktop Chrome)이 기본값입니다. 확장 사이드 패널만 폭이 좁은(≈400px) 단일 컬럼이라 별도로 봅니다 |

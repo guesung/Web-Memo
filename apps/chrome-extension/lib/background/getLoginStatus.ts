@@ -1,5 +1,5 @@
 import type { IFGetLoginStatusResponse } from "@web-memo/shared/modules/extension-bridge";
-import { getAuthenticatedClient } from "./createHighlight";
+import { getAuthenticatedClient } from "./supabaseAuth";
 
 /**
  * content script가 하이라이트 버블을 띄워도 되는지 판단할 로그인 여부를 돌려준다.

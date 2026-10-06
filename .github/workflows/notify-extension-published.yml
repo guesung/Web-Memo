@@ -1,0 +1,66 @@
+name: Notify - Extension Published
+
+# 레포의 확장 버전이 크롬 웹스토어 심사를 통과해 게시되면 Slack에 한 번 알립니다.
+# release.yml은 제출까지만 알리고, 웹스토어에는 심사 완료 웹훅이 없어 여기서 폴링합니다.
+#
+# 같은 버전을 반복해서 알리지 않도록 "이 버전은 알렸다"는 표시를 캐시로 남깁니다.
+# repo variable은 GITHUB_TOKEN으로 쓸 수 없어 PAT가 새로 필요하므로 캐시를 씁니다.
+# 캐시는 7일간 접근이 없으면 지워지지만, 30분마다 restore하므로 레포 버전이 바뀌기 전에는
+# 지워지지 않습니다.
+on:
+  schedule:
+    # 30분마다. 정각은 Actions 크론이 몰려 지연이 커서 피합니다.
+    - cron: "7,37 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: notify-extension-published
+  # 두 실행이 겹쳐 둘 다 캐시 미스를 보면 알림이 두 번 나갑니다. 뒤 실행은 앞이 끝나길 기다립니다.
+  cancel-in-progress: false
+
+# 체크아웃 외에는 아무것도 건드리지 않습니다. 캐시 저장은 GITHUB_TOKEN 권한을 쓰지 않습니다.
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    name: 확장 게시 확인
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Read repo extension version
+        id: repo
+        run: echo "version=$(node -p "require('./apps/chrome-extension/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      # lookup-only로 확인하면 접근으로 잡히지 않아 7일 뒤 표시가 지워질 수 있습니다. 실제로 내려받습니다.
+      - name: Check already notified
+        id: notified-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: .extension-published-notified
+          key: extension-published-notified-${{ steps.repo.outputs.version }}
+
+      # 스크립트는 의존성이 없습니다(fetch만 씁니다). pnpm install을 건너뜁니다.
+      - name: Notify if published
+        id: notify
+        if: ${{ steps.notified-cache.outputs.cache-hit != 'true' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: node .github/scripts/deploy/notify-extension-published.mjs
+
+      - name: Mark as notified
+        if: ${{ steps.notify.outputs.notified == 'true' }}
+        run: echo "${{ steps.repo.outputs.version }}" > .extension-published-notified
+
+      - name: Save notified mark
+        if: ${{ steps.notify.outputs.notified == 'true' }}
+        uses: actions/cache/save@v5
+        with:
+          path: .extension-published-notified
+          key: extension-published-notified-${{ steps.repo.outputs.version }}

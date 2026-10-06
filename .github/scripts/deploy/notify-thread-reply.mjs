@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * master 머지 스레드에 타깃 하나(웹, 확장, 앱)의 빌드 결과를 댓글로 답니다.
- * .github/workflows/ci.yml 의 notify-web, notify-extension, notify-app 잡이 호출합니다.
+ * master 빌드 결과와 develop 앱 App Tester 배포 결과를 머지 스레드에 댓글로 답니다.
+ * REPLY_PHASE는 기본 build이며, store-submit은 develop 앱 App Tester 배포 결과를 로그 링크만 붙여 알립니다.
+ * .github/workflows/ci.yml 의 notify-web, notify-extension, notify-app, notify-staging-app 잡이 호출합니다.
  *
  * 타깃별 잡이 자기 cd-* 잡만 기다리므로, 웹·확장은 앱 빌드(약 30분)와 무관하게
  * 각자 끝나는 대로 알립니다. 모든 타깃이 끝난 뒤의 요약은 notify-build-ready.mjs가 맡습니다.
@@ -50,11 +51,17 @@ import {
  * 알림의 본 목적은 빌드 결과를 알리는 것이라 여기서 실패해도 던지지 않습니다. 토큰이 없거나 조회가 실패하거나
  * 아티팩트가 없으면(보관 기간 만료 등) 경고만 남기고 버튼 없이 보냅니다.
  */
-const resolveExtensionDownloadUrl = async ({ repository, runId, serverUrl }) => {
+const resolveExtensionDownloadUrl = async ({
+	repository,
+	runId,
+	serverUrl,
+}) => {
 	const token = process.env.GH_TOKEN;
 
 	if (!token) {
-		console.warn("::warning::GH_TOKEN 이 없어 확장 다운로드 버튼을 달지 않습니다");
+		console.warn(
+			"::warning::GH_TOKEN 이 없어 확장 다운로드 버튼을 달지 않습니다",
+		);
 
 		return undefined;
 	}
@@ -65,7 +72,9 @@ const resolveExtensionDownloadUrl = async ({ repository, runId, serverUrl }) => 
 		);
 
 		if (!artifact) {
-			console.warn("::warning::확장 아티팩트를 찾지 못해 다운로드 버튼을 달지 않습니다");
+			console.warn(
+				"::warning::확장 아티팩트를 찾지 못해 다운로드 버튼을 달지 않습니다",
+			);
 
 			return undefined;
 		}
@@ -87,6 +96,7 @@ const resolveExtensionDownloadUrl = async ({ repository, runId, serverUrl }) => 
 
 const main = async () => {
 	const target = requireEnv("TARGET");
+	const replyPhase = process.env.REPLY_PHASE ?? "build";
 	const outcome = decideTargetReply({
 		changed: process.env.CHANGED ?? "",
 		result: process.env.RESULT ?? "",
@@ -118,13 +128,13 @@ const main = async () => {
 	const commitSha = process.env.GITHUB_SHA ?? "";
 
 	const downloadUrl =
-		outcome === "success" && target === "extension"
+		replyPhase === "build" && outcome === "success" && target === "extension"
 			? await resolveExtensionDownloadUrl({ repository, runId, serverUrl })
 			: undefined;
 
 	// 커밋을 모르면 무엇을 배포하는 버튼인지 정할 수 없으므로 버튼 없이 로그 링크만 보냅니다.
 	const actionBlock =
-		outcome === "success" && commitSha
+		replyPhase === "build" && outcome === "success" && commitSha
 			? buildActionBlock({
 					targets: [target],
 					ref: commitSha,
@@ -141,6 +151,7 @@ const main = async () => {
 		outcome,
 		runUrl,
 		actionBlock,
+		replyPhase,
 	});
 
 	if (!botToken || !channelId) {

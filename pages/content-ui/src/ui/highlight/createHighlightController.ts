@@ -10,6 +10,8 @@ import {
 } from "@web-memo/shared/modules/highlight";
 import type { HighlightRow } from "@web-memo/shared/types";
 import { normalizeUrl } from "@web-memo/shared/utils/url";
+import { reportContentUiError } from "../../utils/reportError";
+import { reportHighlightResponseFailure } from "./reportHighlightFailure";
 
 /** 선택 툴바가 표시할 위치와 저장 상태. */
 export interface IFHighlightSelectionState {
@@ -46,11 +48,22 @@ export const createHighlightController = (
 	let pageGeneration = 0;
 	let currentUrl = normalizeUrl(location.href);
 	let selectionTimer: ReturnType<typeof setTimeout> | undefined;
+	let isPointerSelecting = false;
+	let isKeyboardSelecting = false;
+	let dismissedRange: Range | null = null;
 	const savedAnchors = new Set<string>();
 	const rowsById = new Map<number, HighlightRow>();
 	const deletedIds = new Set<number>();
 	const getAnchorKey = (payload: Omit<IFCreateHighlightPayload, "color">) =>
 		JSON.stringify([payload.anchor.exact, payload.anchor.textPositionStart]);
+	const isFromToolbar = (event: Event) =>
+		event
+			.composedPath()
+			.some(
+				(target) =>
+					target instanceof Element &&
+					target.id === "WEB_MEMO_HIGHLIGHT_TOOLTIP",
+			);
 	const emit = () => options.onSelectionChange(state);
 	const clearSelectionState = () => {
 		selectionPayload = null;
@@ -63,6 +76,8 @@ export const createHighlightController = (
 		}
 		currentUrl = normalizeUrl(location.href);
 		pageGeneration += 1;
+		clearTimeout(selectionTimer);
+		dismissedRange = null;
 		selectionPayload = null;
 		state = null;
 		savedAnchors.clear();
@@ -74,7 +89,7 @@ export const createHighlightController = (
 	};
 	const captureSelection = () => {
 		checkPage();
-		if (isSaving || isStopped) {
+		if (isSaving || isStopped || isPointerSelecting || isKeyboardSelecting) {
 			return;
 		}
 		if (options.isSelectionEnabled?.() === false) {
@@ -84,6 +99,7 @@ export const createHighlightController = (
 		}
 		const selection = document.getSelection();
 		if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
+			dismissedRange = null;
 			selectionPayload = null;
 			state = null;
 			emit();
@@ -91,6 +107,17 @@ export const createHighlightController = (
 			return;
 		}
 		const range = selection.getRangeAt(0).cloneRange();
+		if (dismissedRange) {
+			if (
+				range.startContainer === dismissedRange.startContainer &&
+				range.startOffset === dismissedRange.startOffset &&
+				range.endContainer === dismissedRange.endContainer &&
+				range.endOffset === dismissedRange.endOffset
+			) {
+				return;
+			}
+			dismissedRange = null;
+		}
 		const container = range.commonAncestorContainer;
 		const element =
 			container.nodeType === Node.ELEMENT_NODE
@@ -148,11 +175,76 @@ export const createHighlightController = (
 	};
 	const handleSelectionChange = () => {
 		clearTimeout(selectionTimer);
+		if (isPointerSelecting || isKeyboardSelecting) {
+			clearSelectionState();
+			return;
+		}
 		selectionTimer = setTimeout(captureSelection, 150);
+	};
+	const handlePointerDown = (event: PointerEvent) => {
+		if (isFromToolbar(event)) {
+			return;
+		}
+		isPointerSelecting = true;
+		dismissedRange = null;
+		clearTimeout(selectionTimer);
+		clearSelectionState();
+	};
+	const handlePointerEnd = () => {
+		if (!isPointerSelecting) {
+			return;
+		}
+		isPointerSelecting = false;
+		clearTimeout(selectionTimer);
+		captureSelection();
+	};
+	const handlePointerMove = (event: PointerEvent) => {
+		if (isPointerSelecting && event.buttons === 0) {
+			handlePointerEnd();
+		}
+	};
+	const handleWindowBlur = () => {
+		isPointerSelecting = false;
+		isKeyboardSelecting = false;
+		clearTimeout(selectionTimer);
+	};
+	const handleKeyDown = (event: KeyboardEvent) => {
+		if (
+			isFromToolbar(event) ||
+			!event.shiftKey ||
+			![
+				"ArrowLeft",
+				"ArrowRight",
+				"ArrowUp",
+				"ArrowDown",
+				"Home",
+				"End",
+				"PageUp",
+				"PageDown",
+			].includes(event.key)
+		) {
+			return;
+		}
+		isKeyboardSelecting = true;
+		dismissedRange = null;
+		clearTimeout(selectionTimer);
+		clearSelectionState();
 	};
 	const handleSelectionEnd = () => {
 		clearTimeout(selectionTimer);
 		captureSelection();
+	};
+	const handleKeyUp = (event: KeyboardEvent) => {
+		if (isFromToolbar(event)) {
+			return;
+		}
+		if (isKeyboardSelecting) {
+			if (event.shiftKey) {
+				return;
+			}
+			isKeyboardSelecting = false;
+		}
+		handleSelectionEnd();
 	};
 	const handleViewportChange = () => {
 		if (!isSaving) {
@@ -191,6 +283,7 @@ export const createHighlightController = (
 				return null;
 			}
 			if (!response?.success) {
+				reportHighlightResponseFailure({ operation: "create", response });
 				state = {
 					...state,
 					isSaving: false,
@@ -216,7 +309,14 @@ export const createHighlightController = (
 			options.onSaveSuccess?.(color);
 
 			return response.highlight;
-		} catch {
+		} catch (error) {
+			// background에 닿지 못한 실패라 background의 보고에 남지 않는다.
+			reportContentUiError({
+				error,
+				feature: "highlight",
+				operation: "create",
+				stage: "request",
+			});
 			if (
 				!isStopped &&
 				saveGeneration === pageGeneration &&
@@ -233,8 +333,15 @@ export const createHighlightController = (
 		return null;
 	};
 	document.addEventListener("selectionchange", handleSelectionChange);
+	document.addEventListener("pointerdown", handlePointerDown, true);
+	document.addEventListener("pointerup", handlePointerEnd, true);
+	document.addEventListener("pointercancel", handlePointerEnd, true);
+	window.addEventListener("pointerup", handlePointerEnd, true);
+	window.addEventListener("pointermove", handlePointerMove);
+	window.addEventListener("blur", handleWindowBlur);
 	document.addEventListener("mouseup", handleSelectionEnd);
-	document.addEventListener("keyup", handleSelectionEnd);
+	document.addEventListener("keydown", handleKeyDown, true);
+	document.addEventListener("keyup", handleKeyUp, true);
 	window.addEventListener("scroll", handleViewportChange, true);
 	window.addEventListener("resize", handleViewportChange);
 	const pageTimer = setInterval(checkPage, 500);
@@ -244,6 +351,12 @@ export const createHighlightController = (
 		/** 열린 선택 툴바를 닫는다. 저장 중에는 결과 안내를 지키려고 닫지 않는다. */
 		dismissSelection: () => {
 			if (!isSaving) {
+				clearTimeout(selectionTimer);
+				const selection = document.getSelection();
+				dismissedRange =
+					selection && !selection.isCollapsed && selection.rangeCount > 0
+						? selection.getRangeAt(0).cloneRange()
+						: null;
 				clearSelectionState();
 			}
 		},
@@ -297,8 +410,15 @@ export const createHighlightController = (
 			clearTimeout(selectionTimer);
 			clearInterval(pageTimer);
 			document.removeEventListener("selectionchange", handleSelectionChange);
+			document.removeEventListener("pointerdown", handlePointerDown, true);
+			document.removeEventListener("pointerup", handlePointerEnd, true);
+			document.removeEventListener("pointercancel", handlePointerEnd, true);
+			window.removeEventListener("pointerup", handlePointerEnd, true);
+			window.removeEventListener("pointermove", handlePointerMove);
+			window.removeEventListener("blur", handleWindowBlur);
 			document.removeEventListener("mouseup", handleSelectionEnd);
-			document.removeEventListener("keyup", handleSelectionEnd);
+			document.removeEventListener("keydown", handleKeyDown, true);
+			document.removeEventListener("keyup", handleKeyUp, true);
 			window.removeEventListener("scroll", handleViewportChange, true);
 			window.removeEventListener("resize", handleViewportChange);
 		},

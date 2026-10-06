@@ -34,3 +34,32 @@ describe("메모 카드 하이라이트", () => {
 		},
 	);
 });
+
+describe("하이라이트 목록 미리보기", () => {
+	const highlights = [
+		{ id: 1, exact_text: "첫 번째 인용문", color: "yellow" } as HighlightRow,
+		{ id: 2, exact_text: "두 번째 인용문", color: "blue" } as HighlightRow,
+	];
+	it("첫 인용문만 제한하고 전체 개수를 표시한다", () => {
+		const html = renderToStaticMarkup(
+			createElement(MemoHighlights, {
+				highlights,
+				label: "하이라이트",
+				isPreview: true,
+				countLabel: "하이라이트 2개",
+			}),
+		);
+		expect(html).toContain("첫 번째 인용문");
+		expect(html).not.toContain("두 번째 인용문");
+		expect(html).toContain("하이라이트 2개");
+		expect(html).toContain("line-clamp-2");
+	});
+	it("상세에서는 모든 인용문을 제한 없이 표시한다", () => {
+		const html = renderToStaticMarkup(
+			createElement(MemoHighlights, { highlights, label: "하이라이트" }),
+		);
+		expect(html).toContain("첫 번째 인용문");
+		expect(html).toContain("두 번째 인용문");
+		expect(html).not.toContain("line-clamp");
+	});
+});

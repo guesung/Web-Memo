@@ -69,9 +69,7 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 						const resultError = getResultError(data);
 
 						if (resultError) {
-							const mutationMeta = mutation?.options?.meta as
-								| { feature?: string; stage?: string; operation?: string }
-								| undefined;
+							const mutationMeta = mutation?.options?.meta;
 
 							reportWebError({
 								error: resultError,
@@ -89,9 +87,7 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 							return;
 						}
 
-						const mutationMeta = mutation?.options?.meta as
-							| { feature?: string; stage?: string; operation?: string }
-							| undefined;
+						const mutationMeta = mutation?.options?.meta;
 
 						reportWebError({
 							error,

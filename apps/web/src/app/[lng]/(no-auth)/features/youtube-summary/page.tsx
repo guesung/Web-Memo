@@ -1,26 +1,12 @@
-import { FeatureJsonLD } from "@src/app/_components";
 import type { LanguageParams } from "@src/modules/i18n";
+import { PATHS } from "@web-memo/shared/constants";
+import { permanentRedirect } from "next/navigation";
 
-import { LandingPageTemplate } from "../../_components";
-import { YOUTUBE_SUMMARY_PAGE } from "./_constants";
-import { metadataEnglish, metadataKorean } from "./_utils";
-
-export async function generateMetadata({ params }: LanguageParams) {
+/** 종료된 유튜브 요약 소개 URL을 현재 제공하는 유튜브 메모 페이지로 보냅니다. */
+const YoutubeSummaryPage = async ({ params }: LanguageParams) => {
 	const { lng } = await params;
 
-	return lng === "ko" ? metadataKorean : metadataEnglish;
-}
+	return permanentRedirect(`/${lng}${PATHS.useCasesYoutubeNotes}`);
+};
 
-interface YoutubeSummaryPageProps extends LanguageParams {}
-
-export default async function YoutubeSummaryPage({
-	params,
-}: YoutubeSummaryPageProps) {
-	const { lng } = await params;
-
-	return (
-		<LandingPageTemplate lng={lng} config={YOUTUBE_SUMMARY_PAGE}>
-			<FeatureJsonLD lng={lng} feature="youtube-summary" />
-		</LandingPageTemplate>
-	);
-}
+export default YoutubeSummaryPage;

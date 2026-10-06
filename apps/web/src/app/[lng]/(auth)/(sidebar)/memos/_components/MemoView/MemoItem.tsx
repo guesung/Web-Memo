@@ -6,6 +6,7 @@ import type { GetMemoResponse, HighlightRow } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
 import { Card, CardContent } from "@web-memo/ui";
 import { motion } from "framer-motion";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import type {
 	HTMLAttributes,
 	KeyboardEvent,
@@ -17,7 +18,8 @@ import { useFormContext } from "react-hook-form";
 import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
 import type { SearchFormValues } from "../MemoSearchFormProvider";
-import { MemoHighlights } from "./MemoHighlights";
+import useIsContentClamped from "./_hooks/useIsContentClamped";
+import { holdScrollPosition } from "./scrollPositionHold";
 
 /** 메모 카드 표시와 선택 속성. */
 interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
@@ -30,6 +32,8 @@ interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	showImpression: boolean;
 	/** 액션 아이템 설정이 켜져 있는지. 꺼져 있으면 내용이 있어도 표시하지 않는다 */
 	showActionItem: boolean;
+	/** 목록 내용을 정해진 줄 수로 제한한다. 휴지통에는 적용하지 않는다. */
+	truncateMemoContent?: boolean;
 	/** 목록에서의 순서. 등장 애니메이션을 계단식으로 미루는 데 쓴다 */
 	index: number;
 	/**
@@ -44,8 +48,8 @@ interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	footer?: ReactNode;
 }
 
-/** 메모 본문과 연결된 하이라이트를 표시한다. */
-const MemoItem = ({
+/** 메모 카드에는 기록 내용을 우선 표시하고 인용문은 상세에서만 보여준다. */
+function MemoItem({
 	lng,
 	memo,
 	highlights,
@@ -54,23 +58,38 @@ const MemoItem = ({
 	isMemoSelected,
 	showImpression,
 	showActionItem,
+	truncateMemoContent = true,
 	index,
 	isReadOnly = false,
 	badge,
 	footer,
 	...props
-}: IFMemoItemProps) => {
+}: IFMemoItemProps) {
 	const { t } = useTranslation(lng);
 	const searchParams = useSearchParams();
 	// 휴지통에는 검색 폼이 없다. 그때 useFormContext는 null을 준다.
 	const formContext = useFormContext<SearchFormValues>();
 	const [isMemoHovering, setIsMemoHovering] = useState(false);
+	const [isMemoExpanded, setIsMemoExpanded] = useState(false);
+	const canTruncate = truncateMemoContent && !isReadOnly;
+	const isContentTruncated = canTruncate && !isMemoExpanded;
+	const { containerRef, isContentClamped } =
+		useIsContentClamped(isContentTruncated);
+	const isExpandButtonVisible =
+		canTruncate && (isMemoExpanded || isContentClamped);
 
 	const handleMouseEnter = () => {
 		setIsMemoHovering(true);
 	};
 	const handleMouseLeave = () => {
 		setIsMemoHovering(false);
+	};
+
+	const handleExpandClick = (event: MouseEvent<HTMLButtonElement>) => {
+		// 카드 클릭은 상세를 열거나 선택을 바꾼다. 펼치기는 그 자리에서만 끝나야 한다.
+		event.stopPropagation();
+		holdScrollPosition();
+		setIsMemoExpanded((previousIsMemoExpanded) => !previousIsMemoExpanded);
 	};
 
 	const handleMemoItemClick = (event: MouseEvent<HTMLElement>) => {
@@ -129,6 +148,7 @@ const MemoItem = ({
 	return (
 		<div
 			{...props}
+			ref={containerRef}
 			id={String(memo.id)}
 			className={cn(
 				"memo-item select-none transition-all duration-300 [transform:translateZ(0)]",
@@ -178,42 +198,77 @@ const MemoItem = ({
 							}}
 						/>
 					)}
-					{badge && <div className="px-5 pt-4">{badge}</div>}
+					{badge && <div className="px-4 pt-3">{badge}</div>}
 					<MemoCardHeader
+						className="px-4 py-3"
 						memo={memo}
 						isMemoHovering={isMemoHovering}
 						isMemoSelected={isMemoSelected}
 						selectMemoItem={selectMemoItem}
 					/>
-					{memo.memo && (
-						<CardContent className="px-5 py-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
-							{memo.memo}
+					{memo.memo?.trim() && (
+						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces [overflow-wrap:anywhere]">
+							<p
+								data-clamp
+								className={cn({ "line-clamp-3": isContentTruncated })}
+							>
+								{memo.memo}
+							</p>
 						</CardContent>
 					)}
-					<MemoHighlights
-						highlights={highlights}
-						label={t("sideBar.highlight")}
-					/>
-					{showImpression && memo.impression && (
-						<CardContent className="px-5 pb-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
+					{showImpression && memo.impression?.trim() && (
+						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces [overflow-wrap:anywhere]">
 							<p className="mb-1 text-xs font-semibold text-muted-foreground">
 								{t("memoSection.impression")}
 							</p>
-							{memo.impression}
+							<p
+								data-clamp
+								className={cn({ "line-clamp-2": isContentTruncated })}
+							>
+								{memo.impression}
+							</p>
 						</CardContent>
 					)}
-					{showActionItem && memo.actionItem && (
-						<CardContent className="px-5 pb-3 text-foreground leading-relaxed whitespace-break-spaces break-all">
+					{showActionItem && memo.actionItem?.trim() && (
+						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces [overflow-wrap:anywhere]">
 							<p className="mb-1 text-xs font-semibold text-muted-foreground">
 								{t("memoSection.actionItem")}
 							</p>
-							{memo.actionItem}
+							<p
+								data-clamp
+								className={cn({ "line-clamp-2": isContentTruncated })}
+							>
+								{memo.actionItem}
+							</p>
 						</CardContent>
+					)}
+					{isExpandButtonVisible && (
+						<button
+							type="button"
+							aria-expanded={isMemoExpanded}
+							onClick={handleExpandClick}
+							className="mx-4 mt-1 flex items-center gap-1 rounded text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+						>
+							{isMemoExpanded ? (
+								<ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />
+							) : (
+								<ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+							)}
+							{t(
+								isMemoExpanded ? "memoSection.collapse" : "memoSection.expand",
+							)}
+						</button>
 					)}
 					{footer ?? (
 						<MemoCardFooter
+							className="px-4 py-2"
 							memo={memo}
 							lng={lng}
+							highlightCount={
+								!isReadOnly && (highlights?.length ?? 0) > 0
+									? highlights?.length
+									: undefined
+							}
 							isShowingOption={isMemoHovering && !isSelectingMode}
 						/>
 					)}
@@ -222,7 +277,7 @@ const MemoItem = ({
 			</motion.div>
 		</div>
 	);
-};
+}
 
 /** 메모 카드의 불필요한 재렌더링을 방지한다. */
 export default memo(MemoItem);

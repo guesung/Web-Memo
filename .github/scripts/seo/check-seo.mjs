@@ -20,10 +20,13 @@ export { addDuplicateWarnings, createReport, evaluatePage, parseSeoHtml };
 
 /** Web Memo에서 검색 노출을 점검하는 공개 페이지입니다. */
 export const SEO_URLS = ["ko", "en"].flatMap((language) =>
-	["introduce", "memo", "youtube-summary", "save-articles", "privacy"].map(
-		(route) =>
-			`https://www.webmemo.xyz/${language}/${["introduce", "privacy"].includes(route) ? "" : "features/"}${route}`,
-	),
+	[
+		"introduce",
+		"features/memo",
+		"features/save-articles",
+		"privacy",
+		"use-cases/youtube-notes",
+	].map((route) => `https://www.webmemo.xyz/${language}/${route}`),
 );
 /** Google이 공개한 스마트폰·데스크톱 크롤러 식별 문자열입니다. */
 export const GOOGLEBOT_AGENTS = {

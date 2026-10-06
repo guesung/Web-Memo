@@ -1,4 +1,4 @@
-import { normalizeUrl } from "@web-memo/shared/utils";
+import { getPageKey, normalizeUrl } from "@web-memo/shared/utils";
 
 /** 같은 확장의 최상위 문서가 현재 탭 URL에 요청했으면 정규화한 URL을 반환한다. */
 export const getValidatedHighlightUrl = (
@@ -26,7 +26,7 @@ export const getValidatedHighlightUrl = (
 			return null;
 		}
 		const normalizedTabUrl = normalizeUrl(tabUrl.href);
-		if (normalizedTabUrl !== normalizeUrl(new URL(payloadUrl).href)) {
+		if (getPageKey(normalizedTabUrl) !== getPageKey(payloadUrl)) {
 			return null;
 		}
 

@@ -21,59 +21,73 @@ test.describe("확장 옵션 페이지", () => {
 		await skipGuide(page);
 	});
 
-	test("카테고리 자동 적용을 끄면 자동 저장되어 새로 열어도 꺼진 채로 남는다.", async ({
+	test("응답 언어를 변경하면 자동 저장되어 새로 열어도 유지된다.", async ({
 		page,
 	}) => {
 		const optionsPage = await page.context().newPage();
 		await optionsPage.goto(getExtensionUrl("options/index.html"));
 
-		const autoApplyCategorySwitch = optionsPage.locator("#auto-apply-category");
-		await expect(autoApplyCategorySwitch).toHaveAttribute(
-			"data-state",
-			"checked",
-		);
+		// background가 설치 때 브라우저 UI 언어로 기본값을 채우므로(CI는 English), 이미 고른 값을
+		// 다시 고르면 저장이 일어나지 않는다. 지금 값과 다른 언어를 골라야 저장을 확인할 수 있다.
+		const languageTrigger = optionsPage.locator("#response-language");
+		await expect(languageTrigger).toHaveText(/English|한국어/);
+		const currentLanguage = (await languageTrigger.textContent()) ?? "";
+		const nextLanguage = currentLanguage.includes("English")
+			? "한국어"
+			: "English";
 
-		await autoApplyCategorySwitch.click();
-		await expect(autoApplyCategorySwitch).toHaveAttribute(
-			"data-state",
-			"unchecked",
-		);
+		await languageTrigger.click();
+		await optionsPage.getByRole("option", { name: nextLanguage }).click();
 		await expect(
 			optionsPage.getByText(/^(Saved|저장했어요)$/).last(),
 		).toBeVisible();
 
 		await optionsPage.reload();
-		await expect(optionsPage.locator("#auto-apply-category")).toHaveAttribute(
-			"data-state",
-			"unchecked",
+		await expect(optionsPage.locator("#response-language")).toContainText(
+			nextLanguage,
 		);
 	});
 
-	test("연속 변경 후 마지막 선택이 저장된다.", async ({ page }) => {
+	test("카테고리 자동 적용 설정은 표시하지 않는다.", async ({ page }) => {
 		const optionsPage = await page.context().newPage();
 		await optionsPage.goto(getExtensionUrl("options/index.html"));
 
-		const autoApplyCategorySwitch = optionsPage.locator("#auto-apply-category");
-		await expect(autoApplyCategorySwitch).toHaveAttribute(
-			"data-state",
-			"checked",
+		await expect(optionsPage.locator("#response-language")).toBeVisible();
+		await expect(optionsPage.locator("#auto-apply-category")).toHaveCount(0);
+	});
+
+	test("단축키 카드는 현재 키(또는 미지정 안내)와 바꾸기 버튼을 보여주고, 바꾸기를 누르면 크롬 단축키 설정 탭을 연다.", async ({
+		page,
+	}) => {
+		const optionsPage = await page.context().newPage();
+		await optionsPage.goto(getExtensionUrl("options/index.html"));
+
+		const shortcutCard = optionsPage
+			.getByRole("heading", { name: /^(단축키|Shortcut)$/ })
+			.locator("..")
+			.locator("..");
+
+		// 실제 등록된 키는 OS·언어에 따라 표기가 달라진다(Alt+S, ⌥S 등). 값 자체는 검증하지 않고,
+		// "사이드 패널 열기" 행의 오른쪽 요소가 빈 값도 읽기 실패 문구도 아닌 채 채워졌는지만 본다.
+		const shortcutRow = shortcutCard
+			.getByText(/^(사이드 패널 열기|Open side panel)$/)
+			.locator("..");
+		const shortcutStatus = shortcutRow.locator(":scope > *").nth(1);
+		await expect
+			.poll(async () => (await shortcutStatus.textContent())?.trim())
+			.not.toBe("");
+		await expect(shortcutStatus).not.toHaveText(
+			/단축키를 확인하지 못했어요|Couldn't check the shortcut/,
 		);
 
-		await autoApplyCategorySwitch.click();
-		await autoApplyCategorySwitch.click();
-		await autoApplyCategorySwitch.click();
-		await expect(autoApplyCategorySwitch).toHaveAttribute(
-			"data-state",
-			"unchecked",
-		);
-		await expect(
-			optionsPage.getByText(/^(Saved|저장했어요)$/).last(),
-		).toBeVisible();
+		const changeButton = shortcutCard.getByRole("button", {
+			name: /단축키 바꾸기|Change shortcut/,
+		});
+		await expect(changeButton).toBeVisible();
 
-		await optionsPage.reload();
-		await expect(optionsPage.locator("#auto-apply-category")).toHaveAttribute(
-			"data-state",
-			"unchecked",
-		);
+		const openedPagePromise = page.context().waitForEvent("page");
+		await changeButton.click();
+		const openedPage = await openedPagePromise;
+		await expect(openedPage).toHaveURL("chrome://extensions/shortcuts");
 	});
 });

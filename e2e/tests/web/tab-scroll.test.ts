@@ -46,6 +46,14 @@ const waitForScrollableDocument = async (page: Page) => {
 		.toBe(true);
 };
 
+/**
+ * 사이드바 안의 탭 링크를 찾는다.
+ * 헤더에도 "My memos" 링크가 있어서 이름만으로 찾으면 둘로 잡혀 strict mode 위반이 난다.
+ * 헤더 링크는 로그인 상태가 확정된 뒤에 그려지므로, 실패 여부도 타이밍에 따라 갈린다.
+ */
+const getSidebarLink = (page: Page, name: string) =>
+	page.locator('[data-sidebar="sidebar"]').getByRole("link", { name });
+
 test.describe("탭 이동과 스크롤 (Mocked)", () => {
 	let store: MockSupabaseStore;
 
@@ -73,18 +81,18 @@ test.describe("탭 이동과 스크롤 (Mocked)", () => {
 			regexp: new RegExp(PATHS.highlights),
 		});
 
-		await expect(page.getByRole("link", { name: "My memos" })).toBeVisible();
-		await expect(page.getByRole("link", { name: "Highlights" })).toBeVisible();
+		await expect(getSidebarLink(page, "My memos")).toBeVisible();
+		await expect(getSidebarLink(page, "Highlights")).toBeVisible();
 	});
 
 	test("사이드바 탭을 눌러도 문서를 다시 받지 않는다.", async ({ page }) => {
 		await markWindow(page);
 
-		await page.getByRole("link", { name: "Highlights" }).click();
+		await getSidebarLink(page, "Highlights").click();
 		await page.waitForURL(new RegExp(PATHS.highlights));
 		expect(await isWindowMarkAlive(page)).toBe(true);
 
-		await page.getByRole("link", { name: "My memos" }).click();
+		await getSidebarLink(page, "My memos").click();
 		await page.waitForURL(new RegExp(`${PATHS.memos}$`));
 		expect(await isWindowMarkAlive(page)).toBe(true);
 	});
@@ -149,10 +157,10 @@ test.describe("탭 이동과 스크롤 (Mocked)", () => {
 			.poll(() => page.evaluate(() => window.scrollY))
 			.toBeGreaterThan(0);
 
-		await page.getByRole("link", { name: "Highlights" }).click();
+		await getSidebarLink(page, "Highlights").click();
 		await page.waitForURL(new RegExp(PATHS.highlights));
 
-		await page.getByRole("link", { name: "My memos" }).click();
+		await getSidebarLink(page, "My memos").click();
 		await page.waitForURL(new RegExp(`${PATHS.memos}$`));
 
 		await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);

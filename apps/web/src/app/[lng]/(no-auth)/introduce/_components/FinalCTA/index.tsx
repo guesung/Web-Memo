@@ -1,5 +1,5 @@
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import InstallButtons from "../InstallButtons";
@@ -17,7 +17,7 @@ interface FinalCTAProps extends LanguageType {
 }
 
 export default async function FinalCTA({ lng, background }: FinalCTAProps) {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	return (
 		<SectionShell background={background} className="max-w-3xl">

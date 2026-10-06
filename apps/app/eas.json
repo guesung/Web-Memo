@@ -21,6 +21,16 @@
 				"NODE_ENV": "production"
 			}
 		},
+		"staging": {
+			"distribution": "internal",
+			"android": {
+				"buildType": "apk"
+			},
+			"autoIncrement": true,
+			"env": {
+				"NODE_ENV": "production"
+			}
+		},
 		"verify": {
 			"extends": "ci",
 			"autoIncrement": false

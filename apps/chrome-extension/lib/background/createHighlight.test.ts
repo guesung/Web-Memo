@@ -13,6 +13,7 @@ vi.mock("./reportBackgroundError", () => ({
 }));
 vi.mock("@web-memo/shared/utils", () => ({
 	normalizeUrl: (url: string) => url,
+	getPageKey: (url: string) => url,
 	HighlightService: class {
 		insertHighlight = mocks.insert;
 	},

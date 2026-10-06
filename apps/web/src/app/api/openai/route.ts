@@ -1,8 +1,11 @@
+import {
+	checkOpenAIRateLimit,
+	formatRemainingTime,
+} from "@src/modules/ratelimit";
 import { CHROME_EXTENSION_ID } from "@web-memo/shared/constants";
 import type { NextRequest } from "next/server";
 import type { ChatCompletionMessageParam } from "openai/resources.mjs";
 import { ERROR_MESSAGES, HTTP_STATUS } from "./constant";
-import { checkRateLimit, formatRemainingTime } from "./ratelimit";
 import {
 	createErrorResponse,
 	createStreamingResponse,
@@ -39,7 +42,7 @@ export async function POST(request: NextRequest) {
 		}
 
 		const clientIp = getClientIp(request);
-		const rateLimitResult = await checkRateLimit(clientIp);
+		const rateLimitResult = await checkOpenAIRateLimit(clientIp);
 
 		if (!rateLimitResult.success) {
 			const remainingTime = formatRemainingTime(rateLimitResult.resetInSeconds);

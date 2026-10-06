@@ -1,5 +1,5 @@
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { BookmarkPlus, Download, PanelRightOpen } from "lucide-react";
 import SectionHeader from "../SectionHeader";
 import SectionShell, { type TSectionBackground } from "../SectionShell";
@@ -18,7 +18,7 @@ interface IFHowItWorksProps extends LanguageType {
 
 /** 번역된 사용 단계를 화면과 구조화 데이터에 함께 표시합니다. */
 const HowItWorks = async ({ lng, background }: IFHowItWorksProps) => {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	const steps = [
 		{

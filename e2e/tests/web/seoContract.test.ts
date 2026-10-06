@@ -6,7 +6,6 @@ const PUBLIC_PATHS = [
 	"privacy",
 	"features/memo",
 	"features/save-articles",
-	"features/youtube-summary",
 	"use-cases/developer",
 	"use-cases/job-hunting",
 	"use-cases/learning",
@@ -76,7 +75,7 @@ test.describe("공개 검색 계약", () => {
 		expect(sitemap.entries.map((entry) => entry.url).sort()).toEqual(
 			expectedUrls.sort(),
 		);
-		expect(new Set(sitemap.entries.map((entry) => entry.url)).size).toBe(25);
+		expect(new Set(sitemap.entries.map((entry) => entry.url)).size).toBe(23);
 
 		for (const entry of sitemap.entries) {
 			const path = new URL(entry.url ?? "").pathname.slice(4);
@@ -228,6 +227,65 @@ test.describe("공개 검색 계약", () => {
 		test(`en/${path}는 404다.`, async ({ request }) => {
 			const response = await request.get(`/en/${path}`);
 			expect(response.status()).toBe(404);
+		});
+	}
+
+	for (const language of ["ko", "en"] as const) {
+		for (const path of ["", "privacy"]) {
+			test(`${language}/${path || "(root)"}의 원본 HTML은 JS 실행 전부터 lang="${language}"다.`, async ({
+				request,
+			}) => {
+				const response = await request.get(
+					path ? `/${language}/${path}` : `/${language}`,
+				);
+				expect(response.ok()).toBe(true);
+				const html = await response.text();
+				expect(html).toMatch(new RegExp(`<html[^>]*\\blang="${language}"`));
+			});
+		}
+	}
+
+	for (const language of ["en", "ko"] as const) {
+		test(`${language}/존재하지-않는-경로는 404이고 원본 HTML의 lang이 ${language}다.`, async ({
+			request,
+		}) => {
+			const response = await request.get(`/${language}/존재하지-않는-경로`);
+			expect(response.status()).toBe(404);
+			const html = await response.text();
+			expect(html).toMatch(new RegExp(`<html[^>]*\\blang="${language}"`));
+			expect(html).not.toContain("__next_error__");
+		});
+	}
+
+	test("en/a/b/c처럼 깊이가 안 맞는 경로도 404이고 원본 HTML의 lang이 en이다.", async ({
+		request,
+	}) => {
+		const response = await request.get("/en/a/b/c");
+		expect(response.status()).toBe(404);
+		const html = await response.text();
+		expect(html).toMatch(/<html[^>]*\blang="en"/);
+		expect(html).not.toContain("__next_error__");
+	});
+
+	const ENGLISH_LENGTH_LIMITED_PATHS = [
+		"use-cases/developer",
+		"use-cases/job-hunting",
+		"use-cases/tech-article",
+		"privacy",
+		"features/memo",
+	] as const;
+
+	for (const path of ENGLISH_LENGTH_LIMITED_PATHS) {
+		test(`en/${path}의 title·description이 검색 결과 권장 길이 안이다.`, async ({
+			page,
+		}) => {
+			await page.goto(`/en/${path}`);
+			const title = await page.title();
+			expect(title.length).toBeLessThanOrEqual(60);
+			const description = await page
+				.locator('meta[name="description"]')
+				.getAttribute("content");
+			expect(description?.length ?? 0).toBeLessThanOrEqual(160);
 		});
 	}
 

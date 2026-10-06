@@ -30,6 +30,7 @@ concurrency:
 
 jobs:
   maintain:
+    # Playwright가 ubuntu26.04를 지원하지 않아 브라우저 설치가 실패합니다. 지원하는 버전으로 올린 뒤 26.04로 옮깁니다.
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     outputs:
@@ -272,6 +273,7 @@ jobs:
   verify:
     needs: maintain
     if: needs.maintain.outputs.artifact_ready == 'true'
+    # Playwright가 ubuntu26.04를 지원하지 않아 브라우저 설치가 실패합니다. 지원하는 버전으로 올린 뒤 26.04로 옮깁니다.
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     outputs:
@@ -437,6 +439,7 @@ jobs:
   publish:
     needs: verify
     if: needs.verify.outputs.verified == 'true' && inputs.dry_run != true && github.ref_name == 'master'
+    # Playwright가 ubuntu26.04를 지원하지 않아 브라우저 설치가 실패합니다. 지원하는 버전으로 올린 뒤 26.04로 옮깁니다.
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

@@ -9,8 +9,6 @@ const LANGUAGES = ["ko", "en"] as const;
 /** 소개 화면에서 한 번에 이동할 수 있어야 하는 기능과 사용 사례 화면입니다. */
 const DIRECT_PUBLIC_PATHS = [
 	PATHS.featuresMemo,
-	PATHS.featuresSaveArticles,
-	PATHS.featuresYoutubeSummary,
 	PATHS.useCasesJobHunting,
 	PATHS.useCasesLearning,
 	PATHS.useCasesNewsReading,
@@ -26,6 +24,7 @@ const DEVELOPER_NAVIGATION_PATH = [
 
 /** 소개 화면에서 아티클 저장을 거쳐 기술 아티클 화면으로 이동하는 고정 경로입니다. */
 const TECH_ARTICLE_NAVIGATION_PATH = [
+	PATHS.featuresMemo,
 	PATHS.featuresSaveArticles,
 	PATHS.useCasesTechArticle,
 ] as const;
@@ -43,12 +42,45 @@ test.use({ storageState: { cookies: [], origins: [] } });
 
 test.describe.configure({ mode: "parallel" });
 test.describe("공개 페이지 탐색 경로", () => {
+	for (const language of LANGUAGES) {
+		test(`${language} 유튜브 요약의 이전 주소는 유튜브 메모로 이동한다.`, async ({
+			page,
+		}) => {
+			await page.goto(`/${language}${PATHS.featuresYoutubeSummary}`);
+			await expect(page).toHaveURL(`/${language}${PATHS.useCasesYoutubeNotes}`);
+		});
+	}
+
 	test.beforeEach(async ({ page }) => {
 		// 테스트 계정 로그인 뒤 메모 화면이 목록·설정을 읽는다. 실서버로 가지 않도록 빈 목 저장소를 씌운다.
 		await setupSupabaseMocks(page, new MockSupabaseStore());
 	});
 
 	for (const language of LANGUAGES) {
+		test(`${language} 내부 링크는 언어 리다이렉트 없이 클라이언트에서 이동한다.`, async ({
+			page,
+		}) => {
+			await page.goto(`/${language}${PATHS.introduce}`);
+			await page.evaluate(() => {
+				(
+					window as typeof window & { __navigationProbe?: boolean }
+				).__navigationProbe = true;
+			});
+
+			const featureLink = page
+				.locator(`a[href="/${language}${PATHS.featuresMemo}"]`)
+				.first();
+			await featureLink.click();
+			await page.waitForURL(`**/${language}${PATHS.featuresMemo}`);
+			expect(
+				await page.evaluate(
+					() =>
+						(window as typeof window & { __navigationProbe?: boolean })
+							.__navigationProbe,
+				),
+			).toBe(true);
+		});
+
 		test(`${language} 공개 페이지는 명시된 링크 경로로 도달한다.`, async ({
 			page,
 		}) => {
@@ -178,7 +210,7 @@ const assertRenderedPublicPage = async ({
 	await expect(page.locator("h1").first()).toBeVisible();
 	await expect(getBrandLink(page)).toHaveAttribute(
 		"href",
-		`/${language}${PATHS.introduce}`,
+		`/${language}${PATHS.memos}`,
 	);
 };
 

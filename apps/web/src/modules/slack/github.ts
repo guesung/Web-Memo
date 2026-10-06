@@ -1,4 +1,4 @@
-import { GITHUB_DEFAULT_BRANCH, getGithubRepository } from "./config";
+import { GITHUB_DEFAULT_BRANCH, GITHUB_REPOSITORY } from "./config";
 import { buildHeaders, GITHUB_API_ORIGIN } from "./githubApi";
 
 /** 배포 호출부가 사용하는 기본 브랜치 조회 진입점입니다. */
@@ -38,7 +38,7 @@ export const dispatchRelease = async ({
 	ref: string;
 }): Promise<void> => {
 	const response = await fetch(
-		`${GITHUB_API_ORIGIN}/repos/${getGithubRepository()}/actions/workflows/release.yml/dispatches`,
+		`${GITHUB_API_ORIGIN}/repos/${GITHUB_REPOSITORY}/actions/workflows/release.yml/dispatches`,
 		{
 			method: "POST",
 			headers: buildHeaders(),
@@ -68,7 +68,7 @@ export const dispatchVersionReport = async ({
 	requestedBy: string;
 }): Promise<void> => {
 	const response = await fetch(
-		`${GITHUB_API_ORIGIN}/repos/${getGithubRepository()}/actions/workflows/versions.yml/dispatches`,
+		`${GITHUB_API_ORIGIN}/repos/${GITHUB_REPOSITORY}/actions/workflows/versions.yml/dispatches`,
 		{
 			method: "POST",
 			headers: buildHeaders(),
@@ -101,7 +101,7 @@ interface IFRefOption {
  * 실패하면 빈 목록으로 취급합니다 — 모달 자체는 떠야 하기 때문입니다.
  */
 export const fetchRefOptions = async (): Promise<IFRefOption[]> => {
-	const repository = getGithubRepository();
+	const repository = GITHUB_REPOSITORY;
 
 	// 모달을 띄운 뒤 views.update로 채우므로 trigger_id 3초 제한은 벗어났지만,
 	// Slack이 상호작용 응답을 3초 안에 받아야 하는 제한은 그대로입니다.

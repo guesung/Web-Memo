@@ -39,7 +39,8 @@
 		"deleteConfirmTitle": "카테고리를 삭제하시겠어요?",
 		"deleteConfirmDescription": "이 카테고리에 속한 메모의 카테고리가 해제됩니다.",
 		"cancel": "취소",
-		"trash": "휴지통"
+		"trash": "휴지통",
+		"blogReading": "블로그 정주행"
 	},
 	"header": {
 		"login": "로그인하기",
@@ -364,6 +365,45 @@
 		"deleteMemo": "메모 삭제하기",
 		"changeCategory": "카테고리 변경하기"
 	},
+	"installGuide": {
+		"metadata": {
+			"title": "Web Memo 설치 가이드 | 웹 메모",
+			"description": "확장 설치 후 사이드 패널을 열고 첫 메모를 시작하는 방법을 알아보세요."
+		},
+		"eyebrow": "처음 사용하는 방법",
+		"title": {
+			"first": "읽던 페이지 옆에서",
+			"second": "바로 메모해요"
+		},
+		"lead": "확장을 설치했다면, 이제 웹페이지를 떠나지 않고 기록할 수 있어요.",
+		"previewLabel": "브라우저와 사이드 패널 사용 장면 미리보기",
+		"previewCaption": "사용 장면 미리보기 · 실제 입력 화면은 로그인 후 열려요",
+		"preview": {
+			"page": "읽고 있던 웹페이지",
+			"url": "읽던 페이지의 제목과 주소",
+			"memo": "나중에 다시 보고 싶은 내용을 이곳에 적어요.",
+			"save": "메모 저장"
+		},
+		"steps": {
+			"open": {
+				"title": "사이드 패널을 열어요",
+				"description": "브라우저의 Web Memo 아이콘을 누르거나 Alt+S를 사용해요."
+			},
+			"write": {
+				"title": "읽던 곳에서 메모해요",
+				"description": "페이지 제목과 주소가 붙어 있어, 생각만 바로 적으면 돼요."
+			},
+			"save": {
+				"title": "로그인하고 보관해요",
+				"description": "메모를 저장하고 다시 꺼내 보려면 로그인이 필요해요."
+			}
+		},
+		"loginNotice": {
+			"title": "메모를 저장하려면 로그인이 필요해요",
+			"description": "로그인하면 사이드 패널에서 첫 메모를 시작할 수 있어요.",
+			"cta": "로그인하고 시작하기"
+		}
+	},
 	"login": {
 		"welcomeTitle": "웹사이트 보며 간편하게 메모하세요.",
 		"kakaoLogin": "카카오 로그인",
@@ -427,6 +467,8 @@
 		"selectLanguage": "언어 선택",
 		"guide": "가이드",
 		"restartGuide": "가이드 다시 보기",
+		"guideExtensionNotDetected": "Web Memo 확장이 감지되지 않아 가이드를 시작할 수 없어요. 확장을 설치하고 켠 뒤 페이지를 새로고침하고 다시 눌러 주세요.",
+		"installExtension": "확장 설치하기",
 		"category": "카테고리",
 		"addCategory": "카테고리 추가하기",
 		"deleteCategory": "카테고리 삭제하기",
@@ -462,6 +504,9 @@
 		}
 	},
 	"memoSection": {
+		"expand": "펼치기",
+		"collapse": "접기",
+		"highlightCount": "하이라이트 {{count}}개",
 		"memo": "메모",
 		"impression": "느낀 점",
 		"impressionPlaceholder": "이 페이지에서 느낀 점을 적어보세요",
@@ -470,6 +515,7 @@
 	},
 	"memos": {
 		"view": {
+			"truncateContent": "메모 내용 줄여 보기",
 			"unknownDate": "작성일 없음",
 			"label": "메모 보기",
 			"byDate": "날짜별 보기",
@@ -538,7 +584,10 @@
 		"note": {
 			"label": "하이라이트 메모",
 			"placeholder": "메모 추가"
-		}
+		},
+		"noResultHint": "검색어나 색상 필터를 바꿔보세요.",
+		"clearFilters": "필터 초기화",
+		"loadingMore": "불러오는 중..."
 	},
 	"introduce": {
 		"navigation": {
@@ -547,53 +596,50 @@
 			"get_started": "시작하기"
 		},
 		"hero": {
-			"title": "웹서핑을 더 쉽게",
-			"subtitle": "읽던 페이지에서 사이드 패널을 열어 메모하고, 긴 글과 영상은 AI가 요약합니다",
+			"title": "글 읽으며 메모하세요",
+			"subtitle": "글을 읽다가 떠오른 생각을 사이드 패널에 적어요.\n페이지 제목과 주소는 자동으로 기록됩니다.",
 			"install_button": "Chrome에 추가",
 			"appstore_button": "App Store",
 			"playstore_button": "Google Play",
 			"explore_features": "기능 살펴보기",
-			"free_forever": "영원히 무료",
-			"quick_install": "설치 10초",
+			"free_forever": "무료로 사용할 수 있어요",
+			"quick_install": "Chrome에서 바로 설치해요",
 			"no_credit_card": "신용카드 필요 없음",
 			"learn_more": "더 알아보기",
 			"desktop_extension_hint": "PC에서는 Chrome 확장으로도 쓸 수 있어요",
-			"installs_badge": "설치"
+			"installs_badge": "설치",
+			"image_alt": "읽던 글 옆의 웹 메모 사이드 패널에 직접 메모를 적은 화면"
 		},
 		"section": {
 			"key_features": "핵심 기능",
-			"key_features_desc": "읽는 중에 필요한 것만 남기는 다섯 가지",
+			"key_features_desc": "읽던 흐름에서 기록까지 이어지는 다섯 가지 장면이에요.",
 			"features_badge": "기능",
-			"demo": "직접 확인해보세요",
-			"demo_title": "직접 확인해보세요",
-			"demo_desc": "웹 메모의 핵심 기능을 살펴보세요",
+			"demo": "웹 메모 미리 보기",
+			"demo_title": "웹 메모 미리 보기",
+			"demo_desc": "메모 작성부터 카테고리별 정리까지 실제 화면으로 살펴봐요.",
 			"how_it_works": "시작하는 방법",
-			"how_it_works_desc": "3단계로 간단하게 시작하세요",
+			"how_it_works_desc": "확장을 설치하고 읽던 페이지에서 첫 메모를 적어요.",
 			"use_cases": "이런 분들에게 추천해요",
-			"use_cases_desc": "다양한 상황에서 웹 메모가 도움이 됩니다",
+			"use_cases_desc": "읽던 페이지 옆에서 메모가 필요한 상황을 살펴봐요.",
 			"stats": "숫자로 보는 웹 메모",
 			"stats_title": "숫자로 보는 웹 메모",
-			"stats_desc": "지금까지 쌓인 숫자입니다",
+			"stats_desc": "현재 기록된 숫자를 살펴봐요.",
 			"testimonials_title": "사용자 후기",
-			"testimonials_desc": "실제 사용자들의 경험을 확인해보세요",
-			"testimonials_note": "* 대표적인 사용 사례를 바탕으로 작성되었습니다",
-			"cta_title": "지금 바로 시작하세요",
-			"cta_desc": "설치하고 첫 메모까지 10초면 됩니다. 전부 무료입니다.",
-			"cta_badge": "지금 시작하세요"
+			"testimonials_desc": "사용 경험을 살펴봐요.",
+			"testimonials_note": "* 대표적인 사용 사례를 바탕으로 작성했어요.",
+			"cta_title": "다음에 읽는 글 옆에서 적어봐요",
+			"cta_desc": "Chrome에 추가한 뒤 읽던 페이지에서 사이드 패널을 열어 메모할 수 있어요.",
+			"cta_badge": "읽던 페이지 옆에서 적어요"
 		},
 		"demo": {
 			"write_memo": "메모 작성",
 			"write_memo_desc": "아티클을 읽으며 바로 메모",
-			"tab_memo": "메모 작성",
-			"tab_memo_desc": "아티클을 읽으며 바로 메모",
+			"tab_memo": "사이드 패널",
+			"tab_memo_desc": "읽던 페이지 옆의 사이드 패널에 생각을 직접 적어요.",
 			"overview": "한눈에 보기",
 			"overview_desc": "모든 메모를 한눈에",
 			"tab_overview": "한눈에 보기",
 			"tab_overview_desc": "모든 메모를 한눈에",
-			"ai_summary": "AI 요약",
-			"ai_summary_desc": "유튜브 영상을 AI로 요약",
-			"tab_ai": "AI 요약",
-			"tab_ai_desc": "유튜브 영상을 AI로 요약",
 			"wishlist": "위시리스트",
 			"wishlist_desc": "나중에 볼 콘텐츠 저장",
 			"tab_wishlist": "위시리스트",
@@ -601,44 +647,57 @@
 			"organize": "정리하기",
 			"organize_desc": "카테고리로 묶어서 정리",
 			"tab_organize": "정리하기",
-			"tab_organize_desc": "카테고리로 묶어서 정리"
+			"tab_organize_desc": "카테고리로 묶어서 정리",
+			"tab_memo_image_alt": "기사 옆 사이드 패널에 직접 작성한 메모",
+			"tab_shortcut": "단축키로 열기",
+			"tab_shortcut_desc": "Alt+S를 누르면 패널이 열려요. Mac에서는 Option+S를 눌러요.",
+			"tab_shortcut_image_alt": "기사와 사이드 패널 위에 Alt+S 단축키가 표시된 화면",
+			"tab_source": "출처 남기기",
+			"tab_source_desc": "메모에 페이지 제목과 주소가 함께 남아요.",
+			"tab_source_image_alt": "메모에 원문 제목과 주소가 함께 표시된 화면",
+			"tab_cross_device": "웹과 앱에서 보기",
+			"tab_cross_device_desc": "같은 계정으로 웹과 앱의 메모를 확인해요. 앱 화면은 현재 한국어 UI예요.",
+			"tab_cross_device_image_alt": "웹과 한국어 앱에 같은 가상 메모가 표시된 화면",
+			"tab_category": "카테고리로 정리",
+			"tab_category_desc": "메모를 주제별로 묶어 다시 찾기 쉽게 해요.",
+			"tab_category_image_alt": "웹 대시보드에서 카테고리를 선택해 해당 메모를 모아 보는 화면"
 		},
 		"steps": {
-			"step1_title": "확장 프로그램 설치",
-			"step1_desc": "Chrome 웹스토어에서 10초 만에",
+			"step1_title": "Chrome 확장 설치하기",
+			"step1_desc": "Chrome 웹스토어에서 웹 메모를 추가해요.",
 			"step2_title": "사이드 패널 열기",
-			"step2_desc": "단축키로 빠르게 열기",
-			"step3_title": "저장하고 정리하기",
-			"step3_desc": "카테고리로 묶어 두고 다시 찾기"
+			"step2_desc": "읽던 페이지에서 Alt+S를 눌러요. Mac에서는 Option+S를 눌러요.",
+			"step3_title": "직접 메모 적기",
+			"step3_desc": "떠오른 생각을 적으면 페이지 제목과 주소도 함께 남아요."
 		},
 		"use_case": {
 			"students_title": "학생 & 연구자",
-			"students_desc": "온라인 강의나 자료 조사할 때 핵심 내용만 골라 저장하세요. 논문 작성에 필요한 레퍼런스를 체계적으로 관리할 수 있습니다.",
+			"students_desc": "온라인 강의나 자료를 조사할 때 떠오른 생각을 옆 패널에 적어요. 출처도 메모와 함께 남아요.",
 			"student_title": "학생 & 연구자",
-			"student_desc": "온라인 강의나 자료를 조사할 때 핵심만 골라 저장하세요. 논문에 인용할 레퍼런스를 출처와 함께 모아둘 수 있습니다.",
+			"student_desc": "온라인 강의나 자료를 조사할 때 떠오른 생각을 옆 패널에 적어요. 출처도 메모와 함께 남아요.",
 			"professionals_title": "직장인",
-			"professionals_desc": "경쟁사 분석이나 트렌드 모니터링을 체계적으로 관리하세요. 업무에 필요한 정보를 빠르게 찾을 수 있습니다.",
+			"professionals_desc": "업무 자료를 읽으며 필요한 내용을 옆 패널에 적어요. 저장한 메모는 나중에 다시 찾아볼 수 있어요.",
 			"professional_title": "리서치 & 업무",
-			"professional_desc": "경쟁사 분석과 트렌드 조사를 한곳에 모으세요. 필요할 때 검색으로 바로 꺼낼 수 있습니다.",
+			"professional_desc": "업무 자료를 읽으며 필요한 내용을 옆 패널에 적어요. 저장한 메모는 나중에 다시 찾아볼 수 있어요.",
 			"efficiency_title": "효율적인 분들",
-			"efficiency_desc": "긴 글 대신 AI 요약으로 핵심만 빠르게 파악하세요. 시간을 절약하며 더 많은 콘텐츠를 소화할 수 있습니다.",
+			"efficiency_desc": "지원되는 콘텐츠에서는 요약을 먼저 훑고, 남길 생각을 직접 적어요.",
 			"creators_title": "콘텐츠 크리에이터",
-			"creators_desc": "영감을 주는 콘텐츠와 아이디어를 모아두세요. 창작 활동에 필요한 레퍼런스를 한 곳에서 관리할 수 있습니다.",
+			"creators_desc": "영감을 준 글을 읽는 자리에서 생각을 적어요. 출처도 메모와 함께 남아요.",
 			"creator_title": "콘텐츠 크리에이터",
-			"creator_desc": "영감을 주는 콘텐츠와 아이디어를 모아두세요. 창작 활동에 필요한 레퍼런스를 한 곳에서 관리할 수 있습니다.",
+			"creator_desc": "영감을 준 글을 읽는 자리에서 생각을 적어요. 출처도 메모와 함께 남아요.",
 			"job_hunting_title": "취업 준비생",
-			"job_hunting_desc": "채용 공고와 기업 정보를 한곳에 정리하세요. 면접 전에 다시 읽을 자료를 모아둘 수 있습니다.",
+			"job_hunting_desc": "채용 공고를 보면서 회사별로 생각을 적어요. 면접 전에 메모와 원문을 함께 확인할 수 있어요.",
 			"news_reading_title": "뉴스 & 아티클",
-			"news_reading_desc": "중요한 기사와 인사이트를 저장하세요. 다시 찾아볼 대목만 메모로 남길 수 있습니다.",
+			"news_reading_desc": "기사에서 기억할 대목을 읽던 자리에서 적어요. 메모에 남은 원문 주소로 다시 돌아갈 수 있어요.",
 			"youtube_notes_title": "유튜브 학습",
-			"youtube_notes_desc": "영상의 핵심을 메모하세요. 자막을 읽은 AI 요약과 함께 남길 수 있습니다."
+			"youtube_notes_desc": "영상을 보다가 떠오른 생각을 직접 적어요. 메모에는 영상 주소가 함께 남아요."
 		},
 		"stats": {
 			"installs": "설치 수",
 			"installs_desc": "Chrome 웹스토어 설치 수",
 			"memos_saved": "저장된 메모",
 			"memos_saved_desc": "사용자들이 저장한 총 메모 개수",
-			"free_forever": "영원히 무료",
+			"free_forever": "무료로 사용할 수 있어요",
 			"no_tracking": "데이터 추적 없음",
 			"rating": "평균 평점",
 			"rating_desc": "Chrome 웹스토어 평점",
@@ -666,32 +725,45 @@
 		},
 		"features": {
 			"memo": {
-				"title": "아티클 읽으며 간편 메모",
-				"description": "아티클을 읽다가 기억하고 싶은 것을 바로 메모하세요"
+				"title": "글 읽으며 메모하세요",
+				"description": "읽다가 남기고 싶은 문장이나 생각을 페이지 옆 사이드 패널에 적어요."
 			},
 			"overview": {
-				"title": "유튜브 영상 간편 요약",
-				"description": "유튜브 영상을 보다가 핵심 내용을 AI로 간편하게 요약하세요"
+				"title": "카테고리별 메모 찾기",
+				"description": "메모를 주제별로 묶어 찾아봐요."
 			},
 			"organize": {
 				"title": "나중에 볼 아티클 저장",
-				"description": "관심 있는 아티클을 저장해두고 언제든지 다시 보세요"
+				"description": "관심 있는 아티클을 목록에 담아두고 다시 찾아봐요."
 			},
-			"ai_summary": {
-				"title": "AI로 요약하기",
-				"description": "핵심 내용을 쏙쏙 뽑아서 보여드려요"
-			},
+			"ai_summary": {},
 			"wishlist": {
 				"title": "나중에 보기",
-				"description": "관심 있는 내용을 위시리스트에 담아두세요"
+				"description": "읽고 싶은 페이지를 위시리스트에 담아둬요."
+			},
+			"category": {
+				"title": "카테고리별로 모아 봐요",
+				"description": "메모에 카테고리를 붙여 주제별로 찾고 다시 읽어요."
+			},
+			"shortcut": {
+				"title": "Alt+S 한 번이면 열려요",
+				"description": "단축키로 사이드 패널을 열고 바로 적어요. Mac에서는 Option+S를 눌러요."
+			},
+			"source": {
+				"title": "어디서 본 글인지 알아서 남아요",
+				"description": "메모에 페이지 제목과 주소가 함께 남아, 원문을 다시 찾아볼 수 있어요."
+			},
+			"cross_device": {
+				"title": "적은 메모는 웹과 앱에서 모아 봐요",
+				"description": "같은 계정으로 로그인하면 웹과 앱에서 남긴 메모를 확인할 수 있어요."
 			}
 		},
 		"how_it_works": {
-			"title": "이렇게 사용하세요",
+			"title": "이렇게 사용해요",
 			"steps": {
 				"step1": {
 					"title": "URL 넣기",
-					"description": "웹페이지 주소를 복사해서 붙여넣으세요"
+					"description": "읽던 페이지에서 사이드 패널을 열어요."
 				},
 				"step2": {
 					"title": "AI 분석",
@@ -699,7 +771,7 @@
 				},
 				"step3": {
 					"title": "요약 받기",
-					"description": "핵심 내용을 바로 확인하세요"
+					"description": "직접 적은 메모를 다시 확인해요."
 				}
 			}
 		},
@@ -711,31 +783,31 @@
 			"questions": {
 				"what_is": {
 					"question": "웹 메모가 뭔가요?",
-					"answer": "웹 메모는 간편 메모 및 요약 서비스입니다. 아티클을 읽거나, 유튜브 영상을 볼 때 '이거 한 줄로 누가 요약해주면 좋겠다..'싶으신 적 있으신가요? 그런 고민을 한 당신을 위해서 준비했습니다. 아티클을 읽으면서 단축키 하나로 사이드 패널을 여세요. 자동으로 아티클 혹은 유튜브 영상을 AI가 요약해줍니다. 그리고 메모를 작성하세요. 작성된 메모는 {{webDisplayHost}}에서 언제든지 확인할 수 있어요."
+					"answer": "웹 메모는 읽던 페이지 옆에 사이드 패널을 열어 생각을 직접 적는 Chrome 확장이에요. 메모에는 페이지 제목과 주소가 함께 남아 원문을 다시 찾을 수 있어요."
 				},
 				"is_free": {
 					"question": "서비스는 무료인가요?",
-					"answer": "웹 메모 서비스는 전부 무료입니다."
+					"answer": "현재 웹 메모는 무료로 사용할 수 있어요."
 				},
 				"how_to_use": {
 					"question": "서비스는 어떻게 이용하나요?",
-					"answer": "웹 메모는 크롬 확장 프로그램을 설치하면 사용할 수 있습니다. 크롬 확장 프로그램을 설치하면 어느 사이트에서도 사이드 패널을 열어서 메모할 수 있어요."
+					"answer": "Chrome 확장을 설치한 뒤 읽던 페이지에서 Alt+S를 눌러 사이드 패널을 열어요. Mac에서는 Option+S를 눌러요."
 				},
 				"where_to_save": {
 					"question": "어디서 메모할 수 있나요?",
-					"answer": "웹 메모는 인터넷 어느 곳에서나 사용 가능합니다! 크롬 확장 프로그램을 설치하면 블로그와 뉴스 사이트에서 중요 내용을 메모하거나, 온라인 강의나 교육 자료 내용을 정리하거나, 유튜브 영상의 힌트나 인사이트를 기록할 수 있어요. 쇼핑몰이나 제품 리뷰 사이트의 정보를 저장하거나, 연구 자료나 논문의 핵심 요점도 정리할 수 있습니다. 단축키 Alt+S(윈도우) / Option+S(맥)만 누르면 언제든지 사이드 패널이 열려 바로 메모를 시작할 수 있어요."
+					"answer": "Chrome 확장을 설치하면 어느 웹사이트에서든 사이드 패널을 열어 직접 메모할 수 있어요. Chrome 웹스토어, 설정, 새 탭, PDF에서는 요약 기능만 지원되지 않아요."
 				},
 				"ai_summary": {
 					"question": "AI 요약 기능은 어떻게 작동하나요?",
-					"answer": "AI 요약 기능은 현재 보고 있는 웹페이지나 유튜브 영상의 내용을 자동으로 분석하여 핵심 내용을 요약해줍니다. 유튜브의 경우 자막을 기반으로 영상 내용을 요약하며, 웹페이지의 경우 본문 텍스트를 분석합니다. 사이드 패널을 열면 자동으로 요약이 시작되어 긴 콘텐츠도 빠르게 핵심을 파악할 수 있어요."
+					"answer": "일부 지원되는 웹페이지에서 요약을 볼 수 있어요. Chrome 웹스토어, 설정, 새 탭, PDF에서는 요약이 지원되지 않아요. 요약을 볼 수 없는 페이지에서도 메모는 직접 적을 수 있어요."
 				},
 				"data_sync": {
 					"question": "여러 기기에서 메모를 동기화할 수 있나요?",
-					"answer": "네! 웹 메모에 로그인하면 모든 메모가 클라우드에 자동 저장됩니다. PC, 노트북, 태블릿 등 어떤 기기에서든 동일한 계정으로 로그인하면 모든 메모를 확인하고 편집할 수 있어요. {{webDisplayHost}} 웹사이트에서도 저장된 메모를 언제든지 확인할 수 있습니다."
+					"answer": "같은 계정으로 로그인하면 저장한 메모를 웹과 앱에서 확인할 수 있어요."
 				},
 				"supported_browsers": {
 					"question": "어떤 브라우저에서 사용할 수 있나요?",
-					"answer": "현재 웹 메모는 Chrome 브라우저와 Chrome 기반 브라우저(Edge, Brave, Arc 등)에서 사용할 수 있습니다. Chrome 웹 스토어에서 확장 프로그램을 설치하면 바로 사용 가능합니다. Firefox와 Safari 지원도 준비 중이니 조금만 기다려주세요!"
+					"answer": "Chrome 확장을 Chrome 웹스토어에서 설치해 사용할 수 있어요."
 				}
 			}
 		},
@@ -817,8 +889,8 @@
 	},
 	"error": {
 		"404": {
-			"title": "페이지를 찾을 수 없어요",
-			"description": "주소가 잘못됐거나 더는 없는 페이지예요",
+			"title": "페이지를 찾지 못했어요",
+			"description": "주소가 정확한지 확인해 주세요",
 			"backToHome": "홈으로 가기"
 		},
 		"500": {
@@ -958,148 +1030,107 @@
 		}
 	},
 	"features": {
-		"youtubeSummary": {
-			"hero": {
-				"badge": "유튜브 AI 요약",
-				"title": "한 시간짜리 영상의 요점을 먼저 읽습니다",
-				"description": "영상의 자막을 AI가 읽고 핵심을 정리합니다. 볼지 말지 먼저 판단하고, 필요한 구간부터 봅니다."
-			},
-			"benefits": {
-				"title": "영상을 다 보기 전에 알 수 있는 것",
-				"subtitle": "재생 시간과 실제로 필요한 시간은 다릅니다",
-				"timeSaving": {
-					"title": "볼지 말지 먼저 판단",
-					"description": "한 시간짜리 영상도 요약을 먼저 읽고 한 시간을 쓸 값어치가 있는지 정합니다."
-				},
-				"aiPowered": {
-					"title": "자막 전체를 읽고 요약",
-					"description": "앞부분만 보고 만드는 요약이 아니라 자막 전체를 넣고 만듭니다."
-				},
-				"transcript": {
-					"title": "자막이 있는 영상이면 동작",
-					"description": "자막이 달린 영상이면 요약할 수 있습니다. 자동 생성 자막도 읽습니다."
-				},
-				"instant": {
-					"title": "패널을 열면 바로 시작",
-					"description": "영상 페이지에서 사이드 패널을 열면 요약이 알아서 시작됩니다."
-				}
-			},
-			"howItWorks": {
-				"title": "요약까지 세 단계",
-				"subtitle": "설치한 다음 할 일은 이게 전부입니다",
-				"step1": {
-					"title": "유튜브 영상 열기",
-					"description": "요약할 영상 페이지로 이동합니다"
-				},
-				"step2": {
-					"title": "사이드 패널 열기",
-					"description": "Alt+S (맥은 Option+S)를 누릅니다"
-				},
-				"step3": {
-					"title": "요약 확인",
-					"description": "요약을 읽고 남길 부분을 메모로 적습니다"
-				}
-			},
-			"cta": {
-				"title": "다음 영상부터 요약을 먼저 읽어보세요",
-				"description": "Chrome에 추가하면 지금 보던 영상에서 바로 쓸 수 있습니다.",
-				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
-			}
-		},
 		"memo": {
 			"hero": {
 				"badge": "브라우저 메모",
-				"title": "읽던 페이지를 떠나지 않고 메모합니다",
-				"description": "웹페이지를 읽다가 떠오른 생각을 옆에 열리는 사이드 패널에 적습니다. 메모에는 그 페이지 주소가 함께 남습니다."
+				"title": "읽던 페이지 옆에서 메모해요",
+				"description": "웹페이지를 읽다가 떠오른 생각을 옆에 열리는 사이드 패널에 적어요. 메모에는 그 페이지 주소가 함께 남아요.",
+				"imageAlt": "기사 옆 사이드 패널에 직접 작성한 메모"
 			},
 			"benefits": {
 				"title": "메모장을 따로 열지 않아도 되는 이유",
 				"subtitle": "적는 순간도, 다시 찾는 순간도 짧게",
 				"shortcut": {
 					"title": "단축키 하나로 열기",
-					"description": "Alt+S (맥은 Option+S)를 누르면 보던 페이지 옆에 패널이 열립니다. 탭을 옮기거나 다른 앱을 띄우지 않습니다."
+					"description": "Alt+S (맥은 Option+S)를 누르면 보던 페이지 옆에 패널이 열려요. 탭을 옮기거나 다른 앱을 띄우지 않아요."
 				},
 				"organize": {
 					"title": "카테고리로 묶기",
-					"description": "메모에 카테고리를 달아두면 목록에서 그 묶음만 골라 볼 수 있습니다."
+					"description": "메모에 카테고리를 달아두면 목록에서 그 묶음만 골라 볼 수 있어요."
 				},
 				"sync": {
 					"title": "로그인하면 기기끼리 이어짐",
-					"description": "메모는 계정에 저장됩니다. 회사 PC에서 적은 메모를 집 노트북에서 그대로 엽니다."
+					"description": "메모는 계정에 저장돼요. 회사 PC에서 적은 메모를 집 노트북에서 그대로 열어요."
 				},
 				"search": {
 					"title": "제목과 본문으로 찾기",
-					"description": "메모가 수백 개 쌓여도 단어 하나로 찾습니다. 어느 페이지에서 적었는지 기억하지 않아도 됩니다."
+					"description": "메모가 수백 개 쌓여도 단어 하나로 찾아요. 어느 페이지에서 적었는지 기억하지 않아도 돼요."
 				}
 			},
 			"howItWorks": {
 				"title": "첫 메모까지 세 단계",
-				"subtitle": "설치한 다음 할 일은 이게 전부입니다",
+				"subtitle": "설치한 뒤 읽던 페이지에서 시작해요.",
 				"step1": {
 					"title": "사이드 패널 열기",
-					"description": "Alt+S (맥은 Option+S). 보던 페이지는 그대로 둡니다"
+					"description": "Alt+S를 누르면 읽던 페이지 옆에 패널이 열려요. Mac에서는 Option+S를 눌러요."
 				},
 				"step2": {
 					"title": "메모 작성하기",
-					"description": "떠오르는 대로 적으면 저장 버튼 없이 저장됩니다"
+					"description": "떠오르는 대로 적으면 저장 버튼 없이 저장돼요"
 				},
 				"step3": {
 					"title": "언제든 확인",
-					"description": "{{webDisplayHost}}에서 지금까지 쓴 메모를 한 화면에 봅니다"
+					"description": "{{webDisplayHost}}에서 지금까지 쓴 메모를 한 화면에 봐요"
 				}
 			},
 			"cta": {
-				"title": "다음에 읽을 글부터 적어보세요",
-				"description": "Chrome에 추가하면 지금 열어둔 탭에서 바로 쓸 수 있습니다.",
-				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
+				"title": "다음에 읽는 글 옆에서 적어봐요",
+				"description": "Chrome에 추가하면 지금 열어둔 탭에서 바로 쓸 수 있어요.",
+				"subtext": "무료로 사용할 수 있어요"
 			}
 		},
 		"saveArticles": {
 			"hero": {
 				"badge": "아티클 저장",
-				"title": "나중에 읽을 글을 한곳에 모아둡니다",
-				"description": "지금 읽을 시간이 없는 글은 위시리스트에 담아두고, 시간이 났을 때 목록에서 꺼내 읽습니다."
+				"title": "나중에 읽을 글을 한곳에 모아 봐요",
+				"description": "지금 읽을 시간이 없는 글은 위시리스트에 담아두고, 시간이 났을 때 목록에서 꺼내 읽어요.",
+				"imageAlt": "웹과 한국어 앱에 같은 가상 메모가 표시된 화면"
 			},
 			"benefits": {
 				"title": "탭 서른 개를 띄워두지 않아도 되는 이유",
 				"subtitle": "열어둔 탭 대신 끝까지 갈 수 있는 목록 하나",
 				"oneClick": {
 					"title": "하트 하나로 담기",
-					"description": "사이드 패널의 하트를 누르면 지금 페이지가 목록에 들어갑니다. 제목과 주소는 알아서 채워집니다."
+					"description": "사이드 패널의 하트를 누르면 지금 페이지가 목록에 들어가요. 제목과 주소도 함께 남아요."
 				},
 				"wishlist": {
 					"title": "읽은 것과 안 읽은 것 구분",
-					"description": "읽은 글을 체크해 두면 다음에 목록을 열었을 때 남은 것만 보입니다."
+					"description": "읽은 글을 체크해 두면 다음에 목록에서 남은 글을 볼 수 있어요."
 				},
 				"anywhere": {
 					"title": "PC에서 담고 휴대폰에서 읽기",
-					"description": "담아둔 글은 {{webDisplayHost}}에서도, 앱에서도 같은 목록으로 열립니다."
+					"description": "담아둔 글은 {{webDisplayHost}}에서도, 앱에서도 같은 목록으로 열려요."
 				},
 				"readLater": {
 					"title": "출퇴근길에 꺼내 읽기",
-					"description": "바쁠 때 발견한 글을 담아두면 시간이 났을 때 다시 찾아 헤매지 않습니다."
+					"description": "바쁠 때 발견한 글을 담아두면 시간이 났을 때 다시 찾아 헤매지 않아요."
 				}
 			},
 			"howItWorks": {
 				"title": "담고 꺼내는 세 단계",
-				"subtitle": "설치한 다음 할 일은 이게 전부입니다",
+				"subtitle": "설치한 뒤 읽던 페이지에서 시작해요.",
 				"step1": {
 					"title": "위시리스트에 담기",
-					"description": "사이드 패널에서 하트 버튼을 누릅니다"
+					"description": "사이드 패널에서 하트 버튼을 눌러요"
 				},
 				"step2": {
 					"title": "목록에서 확인",
-					"description": "담아둔 글이 최근 순으로 쌓입니다"
+					"description": "담아둔 글이 최근 순으로 쌓여요"
 				},
 				"step3": {
 					"title": "시간 날 때 읽기",
-					"description": "목록에서 글을 열고 읽은 것은 체크합니다"
+					"description": "목록에서 글을 열고 읽은 것은 체크해요"
 				}
 			},
 			"cta": {
-				"title": "읽으려던 글을 잃어버리지 마세요",
-				"description": "Chrome에 추가하면 지금 열어둔 탭부터 담을 수 있습니다.",
-				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
+				"title": "나중에 읽을 글을 목록에 모아 봐요",
+				"description": "Chrome에 추가하면 지금 열어둔 탭부터 담을 수 있어요.",
+				"subtext": "무료로 사용할 수 있어요"
+			}
+		},
+		"youtubeSummary": {
+			"hero": {
+				"imageAlt": "웹 대시보드에서 카테고리별 메모를 모아 보는 화면"
 			}
 		}
 	},
@@ -1107,225 +1138,232 @@
 		"research": {
 			"hero": {
 				"badge": "리서치 & 자료 조사",
-				"title": "찾은 자료를 두 번 찾지 않게 합니다",
-				"description": "논문과 아티클을 읽으면서 필요한 대목을 그 자리에서 적고, 원문 주소를 메모와 함께 남깁니다."
+				"title": "찾은 자료를 두 번 찾지 않게 해요",
+				"description": "논문과 아티클을 읽으면서 필요한 대목을 그 자리에서 적고, 원문 주소를 메모와 함께 남겨요.",
+				"imageAlt": "메모에 원문 제목과 주소가 함께 표시된 화면"
 			},
 			"benefits": {
 				"title": "자료 조사에서 시간을 잡아먹는 일들",
-				"subtitle": "찾기·읽기·다시 찾기 중 마지막을 없앱니다",
+				"subtitle": "찾기·읽기·다시 찾기 중 마지막을 없애요",
 				"capture": {
 					"title": "읽던 자리에서 적기",
-					"description": "중요한 대목을 만나면 탭을 옮기지 않고 옆 패널에 적습니다."
+					"description": "중요한 대목을 만나면 탭을 옮기지 않고 옆 패널에 적어요."
 				},
 				"summarize": {
 					"title": "긴 글은 요약 먼저",
-					"description": "본문이 긴 논문과 아티클은 AI 요약을 먼저 읽고 정독할지 정합니다."
+					"description": "요약이 지원되는 페이지라면 먼저 훑고, 필요한 대목을 직접 읽어요."
 				},
 				"organize": {
 					"title": "주제별로 나눠 담기",
-					"description": "프로젝트나 주제 이름으로 카테고리를 만들어 메모를 나눠 담습니다."
+					"description": "프로젝트나 주제 이름으로 카테고리를 만들어 메모를 나눠 담아요."
 				},
 				"reference": {
 					"title": "원문 주소가 같이 남음",
-					"description": "메모에는 그 페이지 주소가 붙습니다. 인용할 때 출처를 되짚지 않아도 됩니다."
+					"description": "메모에는 그 페이지 주소가 붙어요. 인용할 때 출처를 되짚지 않아도 돼요."
 				}
 			},
 			"cta": {
-				"title": "다음 조사부터 메모를 함께 남겨보세요",
-				"description": "Chrome에 추가하면 지금 열어둔 자료에서 바로 쓸 수 있습니다.",
-				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
+				"title": "다음 자료를 읽으면서 메모를 남겨요",
+				"description": "Chrome에 추가하면 지금 열어둔 자료에서 바로 쓸 수 있어요.",
+				"subtext": "무료로 사용할 수 있어요"
 			}
 		},
 		"learning": {
 			"hero": {
 				"badge": "온라인 학습",
-				"title": "강의를 멈추지 않고 필기합니다",
-				"description": "유튜브 강의와 온라인 코스를 보면서 옆 패널에 필기하고, 긴 강의는 요약을 먼저 읽습니다."
+				"title": "강의를 멈추지 않고 필기해요",
+				"description": "유튜브 강의와 온라인 코스를 보면서 옆 패널에 필기해요. 메모에는 강의 주소가 함께 남아요.",
+				"imageAlt": "기사 옆 사이드 패널에 직접 작성한 메모"
 			},
 			"benefits": {
 				"title": "강의를 듣고 나서 남는 것",
 				"subtitle": "다 본 강의를 처음부터 다시 틀지 않도록",
-				"videoSummary": {
-					"title": "강의 요약 먼저 보기",
-					"description": "긴 강의는 자막 기반 요약으로 무엇을 다루는지 먼저 훑습니다."
+				"organize": {
+					"title": "강의별로 모아 보기",
+					"description": "메모에 카테고리를 붙여 강의나 주제별로 모아 볼 수 있어요."
 				},
 				"notes": {
 					"title": "멈추지 않고 필기",
-					"description": "영상을 일시정지하지 않아도 옆 패널에 바로 적을 수 있습니다."
+					"description": "영상을 일시정지하지 않아도 옆 패널에 바로 적을 수 있어요."
 				},
 				"review": {
 					"title": "필기와 강의 주소가 함께",
-					"description": "메모에 강의 주소가 붙어 있어 복습할 때 그 영상으로 바로 돌아갑니다."
+					"description": "메모에 강의 주소가 붙어 있어 복습할 때 그 영상으로 바로 돌아가요."
 				},
 				"focus": {
 					"title": "적으면서 듣기",
-					"description": "받아 적는 동안 흘려듣기가 줄어듭니다. 남은 필기가 그 증거입니다."
+					"description": "옆 패널에 직접 적으면 강의를 들으며 떠오른 생각을 남길 수 있어요."
 				}
 			},
 			"cta": {
-				"title": "다음 강의부터 필기를 남겨보세요",
-				"description": "Chrome에 추가하면 지금 보던 강의에서 바로 쓸 수 있습니다.",
-				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
+				"title": "다음 강의를 보면서 필기를 남겨요",
+				"description": "Chrome에 추가하면 지금 보던 강의에서 바로 쓸 수 있어요.",
+				"subtext": "무료로 사용할 수 있어요"
 			}
 		},
 		"youtubeNotes": {
 			"hero": {
 				"badge": "유튜브 메모",
 				"title": "영상을 보면서 그 자리에 적습니다",
-				"description": "튜토리얼과 리뷰 영상을 보다가 필요한 대목을 적으면, 영상 주소가 메모에 함께 남습니다."
+				"description": "튜토리얼과 리뷰 영상을 보다가 필요한 대목을 적으면, 영상 주소가 메모에 함께 남습니다.",
+				"imageAlt": "기사 옆 사이드 패널에 직접 작성한 메모가 표시된 화면"
 			},
 			"benefits": {
 				"title": "영상에서 건진 것을 남기는 법",
 				"subtitle": "다시 보기로 돌아가 구간을 뒤지지 않도록",
 				"realtime": {
 					"title": "일시정지 없이 적기",
-					"description": "영상을 멈추지 않고 옆 패널에 적습니다. 보던 흐름을 끊지 않습니다."
+					"description": "영상을 멈추지 않고 옆 패널에 적어요. 보던 흐름을 끊지 않아요."
 				},
 				"capture": {
 					"title": "필요한 대목만 남기기",
-					"description": "튜토리얼의 명령어, 리뷰의 결론처럼 다시 볼 부분만 적어 둡니다."
+					"description": "튜토리얼의 명령어, 리뷰의 결론처럼 다시 볼 부분만 적어 둬요."
 				},
 				"timestamp": {
 					"title": "영상 주소가 같이 저장",
-					"description": "메모를 누르면 그 영상으로 돌아갑니다. 제목으로 다시 검색하지 않아도 됩니다."
+					"description": "메모를 누르면 그 영상으로 돌아가요. 제목으로 다시 검색하지 않아도 돼요."
 				},
 				"organize": {
 					"title": "채널·주제별로 나누기",
-					"description": "카테고리를 달아두면 강의 시리즈별로 메모를 모아 볼 수 있습니다."
+					"description": "카테고리를 달아두면 강의 시리즈별로 메모를 모아 볼 수 있어요."
 				}
 			},
 			"cta": {
-				"title": "다음 영상부터 메모를 남겨보세요",
-				"description": "Chrome에 추가하면 지금 보던 영상에서 바로 쓸 수 있습니다.",
-				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
+				"title": "다음 영상을 보면서 메모를 남겨요",
+				"description": "Chrome에 추가하면 지금 보던 영상에서 바로 쓸 수 있어요.",
+				"subtext": "무료로 사용할 수 있어요"
 			}
 		},
 		"newsReading": {
 			"hero": {
 				"badge": "뉴스 & 아티클",
-				"title": "읽고 나서 남는 게 있게 합니다",
-				"description": "뉴스와 블로그를 읽다가 걸리는 문장을 그 자리에서 적고, 원문 주소를 함께 남깁니다."
+				"title": "읽고 나서 남는 게 있게 해요",
+				"description": "뉴스와 블로그를 읽다가 걸리는 문장을 그 자리에서 적고, 원문 주소를 함께 남겨요.",
+				"imageAlt": "기사 옆 사이드 패널에 직접 작성한 메모"
 			},
 			"benefits": {
 				"title": "읽은 기사가 기억에 안 남는 이유",
-				"subtitle": "읽는 동안 한 줄을 남기면 달라집니다",
+				"subtitle": "읽는 동안 한 줄을 남기면 달라져요",
 				"highlight": {
 					"title": "생각났을 때 적기",
-					"description": "나중에 정리하겠다고 미루지 않고 읽던 자리에서 한 줄을 남깁니다."
+					"description": "나중에 정리하겠다고 미루지 않고 읽던 자리에서 한 줄을 남겨요."
 				},
 				"aiSummary": {
 					"title": "긴 기사는 요약 먼저",
-					"description": "본문이 긴 기사는 AI 요약으로 무슨 얘기인지 먼저 확인하고 읽습니다."
+					"description": "요약이 지원되는 기사라면 내용을 먼저 훑고 필요한 대목을 직접 읽어요."
 				},
 				"categorize": {
 					"title": "관심사별로 나누기",
-					"description": "뉴스·기술·비즈니스처럼 카테고리를 만들어 메모를 나눠 담습니다."
+					"description": "뉴스·기술·비즈니스처럼 카테고리를 만들어 메모를 나눠 담아요."
 				},
 				"source": {
 					"title": "원문으로 돌아가기",
-					"description": "메모에 기사 주소가 붙어 있어 원문 확인이 클릭 한 번입니다."
+					"description": "메모에 기사 주소가 붙어 있어 원문을 다시 열 수 있어요."
 				}
 			},
 			"cta": {
-				"title": "오늘 읽은 기사부터 한 줄 남겨보세요",
-				"description": "Chrome에 추가하면 지금 열어둔 기사에서 바로 쓸 수 있습니다.",
-				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
+				"title": "오늘 읽는 기사 옆에 한 줄을 남겨요",
+				"description": "Chrome에 추가하면 지금 열어둔 기사에서 바로 쓸 수 있어요.",
+				"subtext": "무료로 사용할 수 있어요"
 			}
 		},
 		"jobHunting": {
 			"hero": {
 				"badge": "취업 준비",
-				"title": "지원한 회사를 한 목록에서 봅니다",
-				"description": "채용공고와 회사 정보를 회사별로 적어두고, 면접 전에 그 메모만 다시 엽니다."
+				"title": "지원한 회사를 한 목록에서 봐요",
+				"description": "채용공고와 회사 정보를 회사별로 적어두고, 면접 전에 그 메모만 다시 열어요.",
+				"imageAlt": "웹과 한국어 앱에 같은 가상 메모가 표시된 화면"
 			},
 			"benefits": {
 				"title": "지원이 늘어날수록 헷갈리는 것들",
-				"subtitle": "어디에 무엇을 썼는지 기억에 맡기지 않습니다",
+				"subtitle": "어디에 무엇을 썼는지 기억에 맡기지 않아요",
 				"company": {
 					"title": "회사별로 적어두기",
-					"description": "공고를 보면서 복지·기술 스택·팀 구성을 적습니다. 공고가 내려가도 메모는 남습니다."
+					"description": "공고를 보면서 복지·기술 스택·팀 구성을 적어요. 공고가 내려가도 메모는 남아요."
 				},
 				"track": {
 					"title": "어디까지 갔는지 적기",
-					"description": "서류·면접·결과를 같은 메모에 이어 적으면 지원 현황이 한 목록에 모입니다."
+					"description": "서류·면접·결과를 같은 메모에 이어 적으면 지원 현황이 한 목록에 모여요."
 				},
 				"compare": {
 					"title": "조건을 나란히 놓기",
-					"description": "여러 회사의 연봉과 근무 조건을 같은 항목으로 적어두면 비교가 쉬워집니다."
+					"description": "여러 회사의 연봉과 근무 조건을 같은 항목으로 적어두면 비교하기 쉬워요."
 				},
 				"find": {
 					"title": "면접 직전에 꺼내 보기",
-					"description": "회사 이름으로 검색하면 그 회사에 대해 적어둔 것이 한 번에 나옵니다."
+					"description": "회사 이름으로 검색하면 그 회사에 대해 적어둔 것이 한 번에 나와요."
 				}
 			},
 			"cta": {
-				"title": "다음 공고부터 메모로 남겨보세요",
-				"description": "Chrome에 추가하면 지금 열어둔 공고에서 바로 쓸 수 있습니다.",
-				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
+				"title": "다음 공고를 보면서 메모를 남겨요",
+				"description": "Chrome에 추가하면 지금 열어둔 공고에서 바로 쓸 수 있어요.",
+				"subtext": "무료로 사용할 수 있어요"
 			}
 		},
 		"developer": {
 			"hero": {
 				"badge": "개발자를 위한 도구",
-				"title": "찾아낸 해결책을 다시 검색하지 않습니다",
-				"description": "Stack Overflow 답변, GitHub 이슈, 공식 문서에서 통했던 방법을 그 페이지에서 적어둡니다."
+				"title": "찾아낸 해결책을 다시 검색하지 않아요",
+				"description": "Stack Overflow 답변, GitHub 이슈, 공식 문서에서 통했던 방법을 읽던 페이지 옆에 적어둬요.",
+				"imageAlt": "기사 옆 사이드 패널에 직접 작성한 메모"
 			},
 			"benefits": {
 				"title": "같은 검색을 두 번 하지 않으려면",
 				"subtitle": "찾는 데 쓴 30분을 다음에 또 쓰지 않도록",
 				"snippet": {
 					"title": "통한 답변만 적어두기",
-					"description": "Stack Overflow 답변 중 실제로 통한 것을 이유와 함께 적습니다. 다음에 답 목록을 다시 훑지 않아도 됩니다."
+					"description": "Stack Overflow 답변 중 실제로 통한 것을 이유와 함께 적어요. 다음에 답 목록을 다시 훑지 않아도 돼요."
 				},
 				"blog": {
 					"title": "읽은 아티클의 결론",
-					"description": "기술 아티클에서 건진 결론 한두 줄을 남깁니다. 제목만 북마크하면 내용은 기억나지 않습니다."
+					"description": "기술 아티클에서 건진 결론 한두 줄을 남겨요. 제목만 북마크하면 내용은 기억나지 않아요."
 				},
 				"github": {
 					"title": "이슈에서 오간 결정",
-					"description": "PR과 이슈에서 왜 그렇게 정했는지를 적어둡니다. 나중에 같은 논의가 처음부터 반복되지 않습니다."
+					"description": "PR과 이슈에서 왜 그렇게 정했는지를 적어둬요. 나중에 그 논의를 다시 확인할 수 있어요."
 				},
 				"docs": {
 					"title": "문서에서 매번 찾는 부분",
-					"description": "공식 문서 중 매번 다시 찾게 되는 옵션과 시그니처를 적어 내 레퍼런스로 만듭니다."
+					"description": "공식 문서 중 매번 다시 찾게 되는 옵션과 시그니처를 적어 내 레퍼런스로 만들어요."
 				}
 			},
 			"cta": {
-				"title": "다음에 검색해서 푼 문제부터 적어보세요",
-				"description": "Chrome에 추가하면 지금 열어둔 문서에서 바로 쓸 수 있습니다.",
-				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
+				"title": "다음에 찾은 해결책을 그 자리에서 적어요",
+				"description": "Chrome에 추가하면 지금 열어둔 문서에서 바로 쓸 수 있어요.",
+				"subtext": "무료로 사용할 수 있어요"
 			}
 		},
 		"techArticle": {
 			"hero": {
 				"badge": "기술 아티클 정리",
 				"title": "북마크만 쌓이고 내용은 안 남는 문제",
-				"description": "기술 블로그와 뉴스레터에서 읽은 글의 결론을 적어두고, 원문 주소를 함께 남깁니다."
+				"description": "기술 블로그와 뉴스레터에서 읽은 글의 결론을 적어두고, 원문 주소를 함께 남겨요.",
+				"imageAlt": "기사 옆 사이드 패널에 직접 작성한 메모"
 			},
 			"benefits": {
 				"title": "나중에 읽겠다고 담아둔 글들",
-				"subtitle": "제목 대신 내용이 남게 합니다",
+				"subtitle": "제목 대신 내용이 남게 해요",
 				"aiSummary": {
 					"title": "긴 글은 요약 먼저",
-					"description": "본문이 긴 아티클은 AI 요약으로 무슨 얘기인지 먼저 확인합니다."
+					"description": "요약이 지원되는 아티클이라면 내용을 먼저 훑고 필요한 대목을 직접 읽어요."
 				},
 				"clipping": {
 					"title": "걸리는 문단만 적기",
-					"description": "읽다가 걸리는 문단을 그 자리에서 옮겨 적습니다. 전문을 저장하지 않아도 됩니다."
+					"description": "읽다가 걸리는 문단을 그 자리에서 옮겨 적어요. 전문을 저장하지 않아도 돼요."
 				},
 				"organize": {
 					"title": "분야별로 나누기",
-					"description": "프론트엔드·백엔드·DevOps처럼 카테고리를 만들어 나눠 담습니다."
+					"description": "프론트엔드·백엔드·DevOps처럼 카테고리를 만들어 나눠 담아요."
 				},
 				"source": {
 					"title": "원문으로 돌아가기",
-					"description": "메모에 원문 주소가 붙어 있어 인용하거나 다시 읽을 때 바로 엽니다."
+					"description": "메모에 원문 주소가 붙어 있어 인용하거나 다시 읽을 때 바로 열어요."
 				}
 			},
 			"cta": {
-				"title": "오늘 읽은 아티클부터 한 줄 남겨보세요",
-				"description": "Chrome에 추가하면 지금 열어둔 글에서 바로 쓸 수 있습니다.",
-				"subtext": "무료 · 설치 10초 · 신용카드 필요 없음"
+				"title": "오늘 읽는 아티클 옆에 한 줄을 남겨요",
+				"description": "Chrome에 추가하면 지금 열어둔 글에서 바로 쓸 수 있어요.",
+				"subtext": "무료로 사용할 수 있어요"
 			}
 		}
 	},
@@ -1335,12 +1373,12 @@
 		"effective_label": "시행일",
 		"effective_date": "2026년 8월 19일",
 		"updated_label": "최종 수정일",
-		"updated_date": "2026년 8월 19일",
+		"updated_date": "2026년 9월 24일",
 		"summary": {
 			"title": "핵심 요약",
 			"items": [
 				"사용자가 직접 저장한 메모·하이라이트와 해당 웹페이지의 주소·제목만 서버에 보관합니다.",
-				"AI 기능을 실행한 경우에 한해 해당 웹페이지의 본문이 OpenAI로 전송됩니다.",
+				"AI 기능을 실행하거나 메모의 카테고리를 추천할 때 필요한 내용만 OpenAI 또는 TypeSafe AI로 전송됩니다.",
 				"확장 프로그램은 사용자의 전체 인터넷 방문 기록을 수집하거나 저장하지 않습니다.",
 				"수집한 데이터는 어떠한 경우에도 판매하지 않으며 광고 목적으로 사용하지 않습니다."
 			]
@@ -1382,8 +1420,8 @@
 						]
 					},
 					"page_content": {
-						"title": "다. 웹페이지 본문 (AI 기능 사용 시에 한함)",
-						"description": "이용자가 AI 요약, AI 질의응답, 자동 카테고리 분류 기능을 직접 실행한 경우에만, 해당 시점에 열람 중인 웹페이지의 본문 텍스트가 서비스 서버를 거쳐 OpenAI로 전송됩니다. 이 데이터는 응답 생성 목적으로만 처리되며 서비스 데이터베이스에 별도로 저장되지 않습니다.",
+						"title": "다. 웹페이지 및 메모 내용 (AI 기능 사용 시에 한함)",
+						"description": "AI 요약·질의응답 실행 시 웹페이지 본문이 서비스 서버를 거쳐 OpenAI로 전송됩니다. 사이드 패널에서 메모를 작성하거나 수정할 때에는 카테고리 추천을 위해 제목·주소·메모 내용과 기존 카테고리 목록이 TypeSafe AI로 전송될 수 있습니다. 추가 판정이 필요하면 이 정보와 웹페이지 본문 앞부분(최대 2,000자)이 OpenAI로 전송됩니다. 전송 내용은 추천을 위해 처리되며 서비스 데이터베이스에 별도로 저장되지 않습니다.",
 						"items": [
 							"열람 중인 웹페이지의 본문 텍스트 및 제목",
 							"AI 질의응답 기능에 이용자가 입력한 질문과 대화 내용",
@@ -1413,9 +1451,10 @@
 					},
 					"feedback": {
 						"title": "바. 문의 및 피드백 데이터",
-						"description": "이용자가 의견 보내기를 직접 제출한 경우에만 수집됩니다.",
+						"description": "이용자가 의견 보내기 또는 삭제 사유 응답을 직접 제출한 경우에만 수집됩니다.",
 						"items": [
 							"이용자가 작성한 피드백 본문",
+							"확장 프로그램 삭제 후 직접 선택·입력한 삭제 사유 응답",
 							"답변 회신을 위해 이용자가 선택적으로 입력한 이메일 주소"
 						]
 					},
@@ -1500,6 +1539,7 @@
 					"이용자가 저장한 메모·하이라이트·카테고리: 이용자가 직접 삭제하거나 계정 삭제를 요청할 때까지 보관합니다.",
 					"계정 정보: 계정이 유지되는 동안 보관하며, 계정 삭제 요청 시 관련 데이터와 함께 삭제합니다.",
 					"AI 기능에 전송된 웹페이지 본문 및 대화 내용: 응답 생성 후 서비스 데이터베이스에 저장하지 않습니다. OpenAI에서의 보관 기간은 OpenAI의 정책을 따릅니다.",
+					"카테고리 추천을 위해 TypeSafe AI에 전송된 내용: 서비스 데이터베이스에 별도로 저장하지 않습니다. TypeSafe AI의 데이터 처리 부속계약에 따르면 처리 목적상 필요한 기간과 적용 법률에서 요구하는 기간을 고려해 보관하며, 고정된 보관 일수는 명시하지 않습니다.",
 					"서비스 이용 데이터(Google Analytics): 수집일로부터 최대 14개월 후 자동 삭제됩니다.",
 					"오류 진단 데이터 및 세션 리플레이(Sentry): 수집일로부터 최대 90일 후 자동 삭제됩니다.",
 					"문의 및 피드백 데이터: 문의 처리 및 서비스 개선 목적 달성 후 삭제합니다.",
@@ -1600,6 +1640,12 @@
 				"data": "이용자가 AI 기능을 실행한 웹페이지의 본문 및 제목, 질의응답 대화 내용, 분류 대상 메모 내용",
 				"url": "https://openai.com/policies/privacy-policy"
 			},
+			"typesafe": {
+				"name": "TypeSafe AI, Inc.",
+				"purpose": "기존 카테고리 중 적합한 항목 판정",
+				"data": "분류 대상 메모의 제목·주소·내용과 기존 카테고리 이름",
+				"url": "https://typesafe.ai/legal/data-processing"
+			},
 			"google_auth": {
 				"name": "Google LLC (Google 로그인)",
 				"purpose": "Google 계정을 통한 이용자 인증",
@@ -1653,5 +1699,134 @@
 		"confirmDescription": "이 작업은 되돌릴 수 없어요.",
 		"ok": "완전히 삭제",
 		"cancel": "취소"
+	},
+	"uninstall": {
+		"metaTitle": "웹 메모를 지우셨군요 | 웹 메모",
+		"title": "웹 메모를 지우셨군요",
+		"description": "어떤 점이 아쉬웠는지 알려주시면 앞으로 고치는 데 참고할게요",
+		"reasons": {
+			"not_useful": "쓸 일이 없었어요",
+			"hard_to_use": "쓰기 어려웠어요",
+			"found_alternative": "다른 걸 쓰게 됐어요",
+			"privacy_concerns": "개인정보가 걱정됐어요",
+			"performance_issues": "느리거나 불안정했어요",
+			"other": "그 외"
+		},
+		"form": {
+			"feedbackLabel": "더 남기고 싶은 말이 있어요?",
+			"optional": "(선택)",
+			"feedbackPlaceholder": "자유롭게 적어주세요",
+			"submit": "보내기",
+			"submitting": "보내는 중이에요",
+			"notice": "이름이나 연락처는 받지 않아요"
+		},
+		"success": {
+			"title": "의견 보내주셔서 고마워요",
+			"description": "그동안 웹 메모를 써주셔서 감사해요"
+		},
+		"error": "지금은 보내지 못했어요. 잠시 뒤에 다시 눌러주세요"
+	},
+	"blogs": {
+		"title": "블로그 정주행",
+		"description": "공개된 글을 처음부터 읽고 메모를 남겨요.",
+		"selectBlogs": "블로그 선택",
+		"filterLabel": "블로그 선택",
+		"filterAll": "전체",
+		"sortLabel": "정렬",
+		"sortAriaLabel": "글 정렬",
+		"sortOldest": "과거부터",
+		"sortNewest": "최신순",
+		"summaryComplete": "전체 글 {{total}}개 · 메모할 글 {{todo}}개 · 메모 완료 {{done}}개",
+		"summaryCollecting": "현재 수집한 글 {{total}}개 · 메모 완료 {{done}}개",
+		"allMemoed": "현재 수집한 글에는 모두 메모를 남겼어요",
+		"lastUpdated": "마지막 갱신: {{time}}",
+		"refresh": "새로고침",
+		"status": {
+			"label": "블로그별 수집 상태",
+			"completeTitle": "{{name}} · 전체 글 수집 완료",
+			"completeCopy": "공개된 글 총 {{total}}개를 모았어요.",
+			"waitingTitle": "{{name}} · 수집을 준비하고 있어요",
+			"collectingTitle": "{{name}} · 이전 글을 모으고 있어요",
+			"partialTitle": "{{name}} · 일부 글을 가져오지 못했어요",
+			"queuedTitle": "{{name}} · 수집 재개를 요청했어요",
+			"refreshingTitle": "{{name}} · 새 글을 확인하고 있어요",
+			"refreshFailedTitle": "{{name}} · 새 글을 확인하지 못했어요",
+			"foundCopy": "현재 {{count}}개를 찾았어요. 전체 글 수는 확인 중이에요.",
+			"readNow": "먼저 가져온 글부터 읽고 메모할 수 있어요.",
+			"queuedCopy": "다음 예약 작업에서 이어서 수집해요. 예약 작업은 15분마다 요청을 확인해요. 실행 상황에 따라 더 걸릴 수 있어요.",
+			"refreshFailedCopy": "이전에 수집한 전체 글은 계속 볼 수 있어요.",
+			"resume": "수집 재개",
+			"retry": "재시도"
+		},
+		"sync": {
+			"queued": "수집 재개를 요청했어요",
+			"running": "이미 수집하고 있어요",
+			"throttled": "잠시 후 다시 요청할 수 있어요",
+			"throttledAt": "{{time}} 이후에 다시 요청할 수 있어요",
+			"failed": "수집 재개를 요청하지 못했어요"
+		},
+		"list": {
+			"label": "블로그 글 목록",
+			"completed": "메모 완료",
+			"notYet": "메모 전",
+			"openArticle": "원문",
+			"openArticleLabel": "원문 열기: {{title}}",
+			"writeMemo": "메모하기",
+			"writeMemoLabel": "{{title}} 메모하기",
+			"viewMemo": "메모 보기",
+			"viewMemoLabel": "{{title}} 메모 보기",
+			"memoCreateFailed": "메모를 열지 못했어요. 잠시 후 다시 시도해 주세요.",
+			"hint": "메모 · 느낀 점 · 실행할 일 중 하나를 저장하면 체크돼요."
+		},
+		"pagination": {
+			"label": "글 목록 페이지",
+			"range": "{{from}}–{{to}}번째 글",
+			"rangeWithTotal": "{{from}}–{{to}} / {{total}}개",
+			"prev": "이전",
+			"next": "다음",
+			"page": "{{page}}쪽",
+			"pageWithTotal": "{{page}} / {{pages}}쪽",
+			"partialEnd": "이전 글을 더 모으고 있어요. 확보한 마지막 페이지예요."
+		},
+		"newArticles": {
+			"message": "새로 가져온 글 {{count}}개",
+			"refresh": "목록 갱신"
+		},
+		"empty": {
+			"title": "아직 구독한 블로그가 없어요",
+			"description": "읽고 싶은 블로그를 골라보세요."
+		},
+		"login": {
+			"title": "로그인하고 이어서 읽어요",
+			"description": "앱과 웹에서 같은 체크리스트를 볼 수 있어요.",
+			"action": "로그인하기"
+		},
+		"loading": {
+			"title": "글을 불러오고 있어요"
+		},
+		"noArticles": {
+			"title": "아직 가져온 글이 없어요",
+			"description": "수집이 시작되면 글이 여기에 나타나요. 구독은 그대로 유지돼요."
+		},
+		"firstError": {
+			"title": "글 목록을 가져오지 못했어요",
+			"description": "구독은 저장되어 있어요. 잠시 후 다시 시도해 주세요.",
+			"retry": "다시 시도"
+		},
+		"refreshError": {
+			"message": "새 글을 확인하지 못했어요.",
+			"description": "이전에 수집한 글은 계속 볼 수 있어요.",
+			"retry": "재시도"
+		},
+		"offline": "오프라인이에요. 이전에 불러온 글을 보여드려요.",
+		"dialog": {
+			"title": "블로그 선택",
+			"description": "토스와 당근의 공개된 글을 모아 정주행할 수 있어요.",
+			"subscribe": "구독하기",
+			"unsubscribe": "구독 해제",
+			"keepMemos": "구독을 해제해도 작성한 메모는 남아요.",
+			"close": "닫기",
+			"failed": "구독을 변경하지 못했어요"
+		}
 	}
 }

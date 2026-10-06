@@ -20,34 +20,52 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `development` 빌드는 커스텀 이벤트를 보내지 않습니다. `staging`은 보냅니다 — 테스트 서버에서
 도착을 눈으로 확인해야 하기 때문이며, 그 트래픽은 `build_env` 차원으로 걸러 냅니다.
 
-## 이벤트 48종
+## 이벤트 68종
 
 `core_action`은 사용자가 이 서비스를 쓰는 행위, `engagement`는 그 주변의 이동·설정입니다.
 분류는 `EVENT_CATEGORY`가 `Record`로 강제하므로 이벤트를 추가하고 분류를 빠뜨리면 컴파일이
 실패합니다.
 
-### core_action (27종)
+### core_action (32종)
 
 `memo_write`(fields) · `memo_delete`(memo_count) · `memo_restore`(memo_count) ·
 `memo_delete_permanently`(memo_count) · `memo_open`(has_search_query) · `memo_source_open` ·
 `memo_search`(query_length) · `memo_status_toggle`(status, enabled) · `memo_category_change`(source) ·
-`highlight_note_update` · `summary_run` · `summary_complete`(duration_msec) ·
+`highlight_note_update` · `summary_run`(source) · `summary_complete`(duration_msec) ·
 `summary_fail`(reason) · `chat_message_send` · `chat_fail`(reason) ·
-`youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category) ·
-`category_create` · `category_update` · `category_delete` · `login`(method) · `sign_up`(method) ·
-`feedback_submit` · `extension_install_click`(from, position) · `memo_first_write` · `export_run`(format) ·
-`past_memo_open`(kind, source)
+`youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category, source) ·
+`category_create` · `category_update` · `category_delete` ·
+`login`(method) · `sign_up`(method) · `feedback_submit` · `extension_install_click`(from, position) ·
+`memo_first_write` · `export_run`(format) · `highlight_create`(color, has_note) ·
+`past_memo_open`(kind, source) · `blog_subscription_change`(blog_id, active) ·
+`blog_article_open`(blog_id, sort) · `blog_article_memo_click`(blog_id, action) ·
+`blog_sync_resume_request`(blog_id, result)
 
-### engagement (24종)
+### engagement (36종)
 
 `side_panel_open` · `side_panel_open_click` · `side_panel_login_click` ·
 `header_login_click`(from) · `header_memos_click`(from) ·
 `page_view`(page_title, page_location) · `tab_change`(tab_name) · `view_change`(view) ·
 `memo_filter`(search_target) · `memo_undo`(action) · `setting_change`(setting_keys) ·
-`extension_setting_change`(keys) · `category_suggestion_show`(is_new_category) ·
+`extension_setting_change`(keys) · `category_suggestion_show`(is_new_category, source) ·
+`category_suggestion_dismiss`(is_new_category, source) ·
 `login_start`(method) · `logout` · `extension_installed` · `extension_install_dismiss` ·
 `open_web_from_extension`(from) · `guide_open`(from) · `guide_step`(step_name) · `guide_finish` ·
-`search_no_result` · `past_memo_show`(kind, source) · `past_memo_dismiss`(kind, source)
+`install_guide_view` · `install_guide_login_click` ·
+`search_no_result` · `highlight_bubble_disable`(scope) · `notice_view`(notice_id) ·
+`notice_dismiss`(notice_id) · `notice_return`(notice_id, days_since_view) ·
+`past_memo_show`(kind, source) · `past_memo_dismiss`(kind, source) ·
+`past_memo_expand`(kind=related, source=jev) ·
+`memo_offline_queued`(trigger) · `memo_offline_sync_result`(trigger, synced_count, conflict_count, has_other_error) ·
+`shortcut_change_click`(is_success) · `blog_reading_page_move`(direction, page_number, sort)
+
+2026-09-27부터 카테고리 추천의 `show`는 Jev가 고른 기존 카테고리를 사용자에게 표시한 경우,
+`apply`는 사용자가 그 제안을 수락한 경우, `dismiss`는 X 버튼이나 Escape로 명시적으로
+거절한 경우에만 발생합니다. 제안은 시간 경과만으로 사라지지 않으며, 탭·메모 전환은
+`dismiss`로 기록하지 않습니다.
+새 이벤트의 `source`는 `jev`, `is_new_category`는 `false`입니다. 이전에는 자동 적용도
+`apply`로 기록되었고 OpenAI 및 새 카테고리 제안도 포함되었으므로, 변경 전후의 `apply` 건수를
+같은 의미의 지표로 직접 비교하면 안 됩니다.
 
 ### 호출부에 없는 이벤트
 
@@ -60,6 +78,18 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 바꾼 것만 붙습니다. 사이드 패널 자동 저장(upsert)은 요청마다 `category_id`를 실어 보내 값이
 안 바뀌어도 이 이벤트가 찍히므로, 경로별 비율은 `source`가 있는 이벤트만 세야 합니다.
 
+사이드 패널 오프라인 저장은 `useMemoUpsertMutation`을 거치지 않고 대기열에서 `MemoService`를 직접
+부르므로 `memo_write` 계열에 잡히지 않습니다. 대기열로 빠진 저장은 `memo_offline_queued`(trigger:
+offline·network_error·already_queued), 올린 결과는 `memo_offline_sync_result`(trigger: mount·
+online·retry_click·enqueue)로 셉니다. enqueue는 온라인 상태에서 대기 항목이 막 생겨(이미 대기
+중이거나 네트워크 오류 직후) online 전환 없이 곧바로 도는 flush입니다. 후자는 실제로 처리한
+항목이 있을 때만 찍혀 빈 대기열 flush로 부풀지 않습니다.
+
+`summary_run`의 `source`는 요약을 실행한 자리입니다. 요약 탭 빈 화면의 버튼이면 `empty_state`,
+탭 옆 새로고침 아이콘이면 `tab_trigger`입니다. 같은 `source` 차원을 `memo_category_change`도
+쓰므로 이벤트 이름으로 걸러서 봅니다. `summary_fail`의 `reason`은 요약 API가 오류 상태로
+응답하면 `http_<상태 코드>`(예: `http_500`)이고, 스트림 오류·네트워크 실패면 오류 메시지입니다.
+
 로그인 완료(`login`·`sign_up`)는 서버에서 끝나 `gtag`가 닿지 않습니다. 도착한 클라이언트가
 대신 쏩니다.
 
@@ -68,21 +98,30 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 파라미터를 **보내는 것**과 GA4가 그것을 **보고서 차원으로 제공하는 것**은 별개입니다. 등록돼
 있지 않으면 Data API 요청에서 차원 이름으로 쓸 수 없습니다.
 
-### 등록된 이벤트 범위 커스텀 차원 (21개)
+### 등록된 이벤트 범위 커스텀 차원 (22개)
 
 `build_env` · `ext_client_id` · `method` · `fields` · `from` · `status` · `enabled` ·
 `is_success` · `is_new_category` · `has_search_query` · `reason` · `search_target` ·
 `setting_keys` · `keys` · `tab_name` · `view` · `action` · `position` · `step_name` ·
-`event_category` · `source`
+`event_category` · `source` · `extension_version`
 
 `position`은 2026-09-24에 `설치 버튼 위치`로 등록했습니다. `extension_install_click`의
 `hero`·`recommendation`·`final`·`install_check_dialog` 값을 구분합니다.
 같은 날 `step_name`(`가이드 단계`), `event_category`(`이벤트 분류`),
 `source`(`메모 카테고리 변경 경로`)도 이벤트 범위로 등록했습니다.
 
+`extension_version`은 2026-09-26에 `확장 버전`으로 등록했습니다. 확장이 보내는 모든 커스텀
+이벤트에 매니페스트 버전(`chrome.runtime.getManifest().version`)을 공통 파라미터로 싣고, 웹
+이벤트에는 붙이지 않습니다. 배포 전후를 버전으로 가르는 기준이며, 등록 이전 버전의 이벤트는
+`(not set)`입니다.
+
 `ext_client_id`는 등록만 남아 있고 더는 보내지 않습니다. gtag가 이 이름을 예약 필드(`excid`)로
 바꿔 보내 커스텀 차원에 값이 한 번도 도달하지 않았기 때문입니다. 확장과 웹을 잇는 방법은
 [지표를 읽을 때 주의할 것](#지표를-읽을-때-주의할-것)을 보세요.
+
+`past_memo_*` 이벤트는 `kind`를 전송하지만, `kind`는 아직 이벤트 범위 맞춤 측정기준으로
+등록되지 않았습니다. 등록 전에는 Data API에서 중복·관련 종류별 열기 비율을 조회할 수 없으며,
+등록 이전 값도 소급해 조회할 수 없습니다. 등록 확인 전에는 종류별 개선을 판정하지 않습니다.
 
 ### 등록된 커스텀 측정항목 (3종 × 3형태)
 
@@ -90,6 +129,44 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 각각 원값·`average`·`count` 세 형태로 등록돼 있습니다.
 
 등록된 맞춤 측정기준은 **소급 적용되지 않으므로** 등록 이후의 데이터부터 조회됩니다.
+
+### 공지 재방문 계측
+
+`notice_return`은 공지가 실제 표시된 KST 날짜를 확장 `chrome.storage.local`에 처음 기록한 뒤,
+**D1–D7에 사이드 패널을 다시 연 최초 전송 시도**입니다. D0·D8 이후는 보내지 않습니다.
+로컬 저장소 실패·확장 재설치·여러 기기·네트워크 누락은 재방문 수를 낮출 수 있고,
+서로 다른 패널의 동시 실행은 중복 시도를 만들 수 있습니다. 보고서는 이벤트 건수 대신
+`totalUsers`로 고유 사용자를 셉니다. 이 이벤트는 패널 안에서 생기므로 공지가 패널 밖의
+사용자를 다시 불렀다는 증거가 아닙니다.
+만료된 공지의 로컬 키는 현재 자동 삭제하지 않습니다. 공지가 일시적으로 다른 공지에
+가려졌다가 다시 표시될 수 있어 ID 기록을 지우면 재노출을 새 첫 노출로 잘못 셀 수
+있습니다. 공지 종료가 확정되는 정리 경로를 마련할 때 삭제합니다.
+
+공지별 조회에는 이벤트 범위 커스텀 차원 `notice_id`가 필요합니다. **2026-10-04
+15:51 KST에 GA4 속성 471860782에 등록하고 재조회로 확인했습니다**
+(`properties/471860782/customDimensions/16038714798`, [실행 기록](https://github.com/guesung/Web-Memo/actions/runs/37184037854)).
+GA4 처리 24~48시간을 확인하고,
+그 뒤 계측이 배포된 상태에서 처음 시작한 공지만 완결된 관찰 대상으로 삼습니다.
+기존 하이라이트 공지는 마이그레이션상 2026-11-01까지 활성이고, 더 최근 공지가 끝나면
+다시 보일 수 있습니다. 운영 실험에서는 활성 공지 기간을 겹치지 않게 관리합니다.
+
+공지 노출 기간을 `[S,E]`(Asia/Seoul)로 정했다면 분모는 그 기간의 `notice_view` 고유 사용자,
+분자는 `[S+1,E+7]`의 같은 `notice_id`를 가진 `notice_return` 고유 사용자입니다.
+두 수는 독립된 `totalUsers` 집계이므로 분자 사용자가 모두 분모에 속한다고 증명하지는
+못합니다. 비율은 공지별 **노출 대비 재방문 관찰비**로만 읽고, 정확한 첫 노출 코호트
+재방문율로 부르지 않습니다.
+**E+7일이 끝난 뒤 GA 처리 48시간을 더 기다려** 조회합니다. 저장소·전송 누락이나
+GA 임곗값·샘플링이 있으면 결과를 `효과 미확인`으로 읽습니다. 메모 보조 지표는
+`notice_return` 이후 24시간 안의 `memo_first_write`(새 메모 생성) 또는
+`memo_write`(기존 메모 수정) 순서 퍼널이며, D1–D7 메모율로 부르지 않습니다.
+
+과거 `notice_view → side_panel_open` 168시간 퍼널에는 D0가 포함됩니다. 공지별 첫 노출
+코호트를 소급 복원할 수 없으므로 `재방문율`이나 `공지 효과`로 표기하지 않습니다.
+2026-10-04 15:52 KST의 [실제 조회](https://github.com/guesung/Web-Memo/actions/runs/37184062182)는
+9/30~10/1 노출자 17명 중 168시간 이내 후속 `side_panel_open` 12명,
+메모 행동 2명을 반환했습니다. **168시간 창과 GA 처리 시간이 끝나지 않은 잠정값**이고
+하이라이트 출시가 겹쳤으므로 효과는 미확인입니다. 같은 기간의 최종 탐색값은
+2026-10-11 00:00 KST 이후 다시 조회합니다.
 
 ## 지표를 읽을 때 주의할 것
 
@@ -107,6 +184,15 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 gtag보다 먼저 `_ga` 쿠키에 그 값을 심어 이후 웹 이벤트가 같은 사용자로 집계됩니다. UUID 형식이
 아니면 무시합니다. 이미 웹에 방문한 적 있는 사람이 이 링크로 들어오면 `_ga`가 덮어써져 이전 웹
 방문 기록은 다른 사용자로 갈라집니다. 이 연결은 배포 이후 데이터부터 유효합니다.
+
+gtag가 `_ga`에 심은 UUID를 cid로 받아 주는 것은 문서에 없는 동작이라, Google이 쿠키 해석을
+바꾸면 에러 없이 새 cid가 발급되고 이 연결이 조용히 끊깁니다. GA Data API에는 `client_id`
+차원이 없어 수집된 데이터로는 알 수 없으므로, `audit-ga-cid-adoption.yml`이 매주 월요일
+09:13(KST)에 운영 로그인 페이지를 프로브 전용 `ext_cid`로 열어 확인합니다
+(`e2e/probes/gaClientIdAdoption.probe.ts`). GA로 가는 요청은 모두 abort해 운영 데이터에 흔적을
+남기지 않습니다. 실패 메시지의 ①은 `_ga` 쿠키가 심기지 않은 경우(우리 코드 회귀), ②는 쿠키는
+심겼지만 gtag가 그 값을 cid로 쓰지 않은 경우(gtag 변화)입니다. 로컬에서는
+`pnpm -F e2e exec playwright test --config playwright.probe.config.ts`로 돌립니다.
 
 **운영 커스텀 이벤트는 `hostName` 허용 목록과 `build_env=production`을 함께 적용합니다.**
 확장은 staging과 production에서 같은 hostName을 사용하므로 hostName만으로 구분할 수 없습니다.
@@ -166,6 +252,7 @@ BigQuery export를 별도로 연결해야 하며, 연결 전 데이터는 소급
 | `report-daily-ga.mjs` | 로깅이 살아 있는가 | 매일 크론 |
 | `report-weekly-ga.mjs` | 지난주에 무엇을 얼마나 썼고 어디서 새는가 | 매주 월요일 크론 |
 | `measure-feature-usage.mjs` | 이 기간에 이 기능을 몇 명이 몇 번 썼는가 | 손으로, 터미널 |
+| `measure-notice-return.mjs` | 공지 이후 후속 행동 또는 향후 공지별 D1–D7 관찰값은? | 손으로, 터미널 |
 
 주간 퍼널은 순서 강제입니다(`runFunnelReport`). 그 주에 설치한 사람이 같은 사용자로 `설치 →
 사이드 패널 열기 → 로그인하러가기 클릭 → 로그인 버튼 클릭 → 가입 → 메모 작성`을 밟은 수를
@@ -180,6 +267,33 @@ GA4_PROPERTY_ID=471860782 \
 GA4_SERVICE_ACCOUNT_JSON="$(cat ~/ga4-service-account.json)" \
 node .github/scripts/ga/measure-feature-usage.mjs --from 2026-09-11 --to 2026-09-17
 ```
+
+공지 조회는 같은 `GA4_PROPERTY_ID`·`GA4_SERVICE_ACCOUNT_JSON`을 읽습니다. 날짜는
+GA4 속성의 Asia/Seoul 기준입니다. 과거 모드의 `--from`·`--to`는 **첫 노출 코호트가
+아니라** 탐색할 이벤트 시작 구간입니다.
+로컬 인증이 없으면 `report-ga-daily.yml`의 수동 실행에서 `notice_task=historical`로
+9/30~10/1 과거 퍼널을 다시 조회하거나 `notice_task=register-dimension`으로 차원
+등록 여부를 확인할 수 있습니다. 수동 작업은 일일 Slack 리포트를 보내지 않습니다.
+
+```bash
+node .github/scripts/ga/measure-notice-return.mjs \
+  --mode historical --from 2026-09-30 --to 2026-10-01
+
+# 새 공지가 끝나고 7일 관찰 + 48시간 처리까지 완료된 뒤
+node .github/scripts/ga/measure-notice-return.mjs \
+  --mode prospective --from <공지-시작일> --to <공지-종료일> \
+  --notice-id <공지-ID> --dimension-registered-on <notice_id-차원-등록일>
+```
+
+두 번째 명령은 차원 등록일·관찰 기간을 검사합니다. 계측 배포일과 공지 기간 비중복은
+운영 기록과 함께 확인해야 합니다. 현재 작업에서는 새 공지를 발행하지 않습니다.
+
+### 후속 공지 운영 실험안 (미발행)
+
+- 소식 한 건: **블로그 정주행에서 지원 블로그의 글을 이어 읽고 메모로 남길 수 있음**을 기존 공지 카드로 알립니다. 게시 전 실제 기능 제공과 문구를 확인합니다.
+- 후보 노출 기간: **2026-11-03~11-05 KST**. 현재 하이라이트 공지가 11-01까지 살아 있으므로, 종료를 확인하고 새 공지가 끝난 뒤 이전 공지가 다시 나타나지 않는지 확인합니다. 계측 배포·`notice_id` 차원 등록 후 48시간이 지나지 않았다면 시작일과 종료일을 함께 뒤로 옮깁니다. 다른 공지와 기간을 겹치지 않게 합니다.
+- 판정 시점: 후보 기간이 그대로면 **2026-11-15 00:00 KST 이후**(E+7일 종료+48시간). 공지 ID, 실제 S/E, 차원 등록일, 배포일과 동시 기능 출시 여부를 기록하고 위 명령으로 조회합니다.
+- 노출 사용자가 30명 미만이면 작은 표본으로 기록하고 정기 운영 판단을 보류합니다. 임곗값·표본 추출·식별 누락이 있으면 `효과 미확인`입니다. 노출이 적을 것으로 보이면 E 전에 종료일을 최대 7일 연장하고, 관찰 종료 시점도 다시 계산합니다. 그래도 부족하면 다음 비중복 공지에서 같은 절차를 반복합니다. 숫자가 확보돼도 이 한 번의 관찰비만으로 공지의 인과 효과나 정기 운영 성공을 선언하지 않습니다.
 
 ## 주간 수치 누적 (Google Sheets)
 
@@ -236,6 +350,9 @@ Slack 주간 리포트는 그 주와 전주만 보여 줍니다. 몇 달에 걸�
 
 `GA_SHEET_ID`가 없으면 시트 쓰기만 경고를 남기고 건너뜁니다. 시트 쓰기가 실패하면 Slack 게시는
 그대로 하고, 잡은 실패로 끝나 실패 알림이 갑니다.
+
+주간 Slack 리포트 맨 아래 줄에 이 시트로 가는 `누적 시트` 링크가 붙습니다. 몇 주에 걸친 추이는
+메시지가 아니라 시트에서 봅니다. `GA_SHEET_ID`가 없는 실행에는 링크를 싣지 않습니다.
 
 ## Data API 쿼터
 

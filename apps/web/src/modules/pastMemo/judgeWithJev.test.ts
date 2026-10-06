@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { IFRecentMemo } from "./getRecentMemos";
+import type { IFMemoCandidate } from "./getMemoPage";
 
 const mocks = vi.hoisted(() => ({
 	systemOne: vi.fn(),
@@ -29,7 +29,7 @@ const PAGE = {
 	pageExcerpt: "본문",
 };
 
-const createMemos = (count: number): IFRecentMemo[] =>
+const createMemos = (count: number): IFMemoCandidate[] =>
 	Array.from({ length: count }, (_, index) => ({
 		id: 100 + index,
 		title: `메모 ${index}`,

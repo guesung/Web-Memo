@@ -1,3 +1,4 @@
+/** 카테고리 추천 상태와 사용자 수락·거절 동작을 제공합니다. */
 export { useCategorySuggestion } from "./useCategorySuggestion";
 /**
  * 메모 카테고리 팝업 상태. 팝업 컴포넌트가 위치 타입을 쓰도록 함께 내보낸다.

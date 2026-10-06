@@ -12,7 +12,7 @@
 
 브라우저의 `shell_ready`는 하이드레이션 후 React가 화면 틀을 커밋한 시점입니다. 서버가 HTML을 처음 그린 시각이나 정확한 최초 페인트와 같지 않습니다. `data_ready`는 첫 페이지 조회 결과가 화면에 전달된 시점이고, `content_ready`는 첫 목록 배치 또는 정상 빈 상태를 표시한 시점입니다. 오류를 빈 상태로 계산하지 않습니다. 하드 로드에는 `ttfb`와 `fcp`도 기록합니다. 내부 검색·필터·더 보기 동작은 경로 이동 지표와 분리합니다. 첫 접속에는 Navigation Timing의 시작점, 앱 내부 이동에는 라우터 이동 시작점을 사용합니다. 이동이 취소되거나 30초 안에 완료되지 않으면 `navigation_end` 단계에 각각 `cancelled` 또는 `timeout` 결과를 기록하고 성공 지연 백분위에서 제외합니다.
 
-서버 요청 span은 브라우저 목록이 표시될 때까지의 전체 시간이나 Supabase 조회 시간만을 뜻하지 않습니다. Sentry 서버 트레이스의 기본 샘플링은 10%이므로 Grafana 서버 span 건수와 Faro 브라우저 measurement 건수를 직접 비교하지 않습니다.
+서버 요청 span은 브라우저 목록이 표시될 때까지의 전체 시간이나 Supabase 조회 시간만을 뜻하지 않습니다. 서버 span은 Sentry 서버 트레이스 샘플링(`tracesSampleRate`)을 따르고 Faro는 세션의 10%만 수집하므로 Grafana 서버 span 건수와 Faro 브라우저 measurement 건수를 직접 비교하지 않습니다.
 
 ## Grafana Cloud 설정
 

@@ -2,24 +2,23 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "../../../constants";
 import { analytics } from "../../../modules/analytics";
 import type { MemoRow, MemoSupabaseResponse, MemoTable } from "../../../types";
-import { MemoService, normalizeUrl } from "../../../utils";
+import { getPageKey, getPathKey, MemoService } from "../../../utils";
 
 import { useSupabaseClientQuery } from "../queries";
 
-interface MemoUpsertVariables {
+/** 메모 ID 또는 페이지 URL로 저장 대상을 지정한다. */
+interface IFMemoUpsertVariables {
 	id?: MemoRow["id"];
 	url?: string;
 	data: MemoTable["Insert"];
 }
 
-interface MemoUpsertContext {
-	previousMemo: MemoSupabaseResponse | undefined;
-	normalizedUrl: string | undefined;
-	isUpdate: boolean;
+/** 저장 후 무효화할 페이지 키. */
+interface IFMemoUpsertContext {
+	pageKey?: string;
 }
 
-type MutationError = Error;
-
+/** 명시적인 ID 또는 중복이 없는 페이지 후보에만 메모를 저장한다. */
 export default function useMemoUpsertMutation() {
 	const queryClient = useQueryClient();
 	const { data: supabaseClient } = useSupabaseClientQuery();
@@ -27,9 +26,9 @@ export default function useMemoUpsertMutation() {
 
 	return useMutation<
 		MemoSupabaseResponse,
-		MutationError,
-		MemoUpsertVariables,
-		MemoUpsertContext
+		Error,
+		IFMemoUpsertVariables,
+		IFMemoUpsertContext
 	>({
 		meta: {
 			feature: "memo",
@@ -37,97 +36,87 @@ export default function useMemoUpsertMutation() {
 			stage: "save",
 		},
 		mutationFn: async ({ id, url, data }) => {
-			const normalizedUrl = url ? normalizeUrl(url) : undefined;
-
+			const targetUrl = url ?? data.url;
 			let existingMemo: MemoRow | undefined;
 
-			if (id) {
+			if (id !== undefined) {
 				const result = await memoService.getMemoById(id);
+				if (result.error) {
+					throw result.error;
+				}
 				existingMemo = result.data?.[0];
-			} else if (normalizedUrl) {
-				const result = await memoService.getMemoByUrl(normalizedUrl);
+				if (!existingMemo) {
+					throw new Error("선택한 메모를 찾을 수 없습니다.");
+				}
+				// 쿼리만 다른 주소의 메모도 후보로 고를 수 있으므로 경로 키로 비교한다. 저장해도 메모의 원래 URL은 그대로다.
+				if (
+					url &&
+					getPathKey(existingMemo.page_key || existingMemo.url) !==
+						getPathKey(url)
+				) {
+					throw new Error("선택한 메모가 현재 페이지에 속하지 않습니다.");
+				}
+			} else if (targetUrl) {
+				const result = await memoService.getMemoByUrl(targetUrl);
+				if (result.error) {
+					throw result.error;
+				}
+				if ((result.data?.length ?? 0) > 1) {
+					throw new Error("수정할 메모를 선택해 주세요.");
+				}
 				existingMemo = result.data?.[0];
 			}
 
+			const result = existingMemo
+				? await memoService.updateMemo({
+						id: existingMemo.id,
+						request: { ...data, url: existingMemo.url },
+					})
+				: await memoService.insertMemo(data);
+			if (result.error) {
+				throw result.error;
+			}
 			if (existingMemo) {
-				return memoService.updateMemo({ id: existingMemo.id, request: data });
-			}
-
-			return memoService.insertMemo(data);
-		},
-		onMutate: async ({ url, data }) => {
-			const normalizedUrl = url ? normalizeUrl(url) : undefined;
-
-			if (!normalizedUrl) {
-				return { previousMemo: undefined, normalizedUrl, isUpdate: false };
-			}
-
-			await queryClient.cancelQueries({
-				queryKey: QUERY_KEY.memo({ url: normalizedUrl }),
-			});
-
-			const previousMemo = queryClient.getQueryData<MemoSupabaseResponse>(
-				QUERY_KEY.memo({ url: normalizedUrl }),
-			);
-
-			const isUpdate = !!previousMemo?.data?.[0];
-
-			const optimisticMemo: MemoRow = isUpdate
-				? ({
-						...previousMemo.data?.[0],
-						...data,
-						updated_at: new Date().toISOString(),
-					} as MemoRow)
-				: {
-						actionItem: data.actionItem ?? null,
-						category_id: data.category_id ?? null,
-						created_at: new Date().toISOString(),
-						deleted_at: null,
-						favIconUrl: data.favIconUrl ?? null,
-						id: -Date.now(),
-						impression: data.impression ?? null,
-						isReading: data.isReading ?? false,
-						isStar: data.isStar ?? false,
-						isWish: data.isWish ?? false,
-						memo: data.memo ?? "",
-						title: data.title ?? "",
-						updated_at: new Date().toISOString(),
-						url: data.url ?? "",
-						user_id: "",
-					};
-
-			queryClient.setQueryData(QUERY_KEY.memo({ url: normalizedUrl }), {
-				data: [optimisticMemo],
-				error: null,
-			});
-
-			return { previousMemo, normalizedUrl, isUpdate };
-		},
-		onError: (_error, _variables, context) => {
-			if (context?.normalizedUrl && context?.previousMemo) {
-				queryClient.setQueryData(
-					QUERY_KEY.memo({ url: context.normalizedUrl }),
-					context.previousMemo,
-				);
-			}
-		},
-		onSuccess: async (result, variables, context) => {
-			if (context?.isUpdate) {
-				await analytics.trackMemoUpdate(variables.data);
+				const changedData = Object.fromEntries(
+					Object.entries(data).filter(
+						([key, value]) => value !== existingMemo[key as keyof MemoRow],
+					),
+				) as MemoTable["Update"];
+				if (Object.keys(changedData).length > 0) {
+					await analytics.trackMemoUpdate(changedData);
+				}
 			} else {
 				await analytics.trackEvent({ name: "memo_first_write" });
 			}
 
-			queryClient.invalidateQueries({
+			return result;
+		},
+		onMutate: ({ url, data }) => {
+			const targetUrl = url ?? data.url;
+			const pageKey = targetUrl ? getPageKey(targetUrl) : undefined;
+
+			return { pageKey };
+		},
+		onSuccess: async (_result, variables, context) => {
+			await queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.memosPaginatedPrefix(),
 			});
-
-			const newMemo = result.data?.[0];
-			if (!newMemo || !context?.normalizedUrl) return;
-
-			queryClient.setQueryData(QUERY_KEY.memo({ url: context.normalizedUrl }), {
-				data: [newMemo],
-				error: null,
+			// 블로그 정주행 완료 표시·완료 수는 메모 내용에서 계산되므로 함께 다시 읽는다.
+			await queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.blogCompletionPrefix(),
+			});
+			if (context.pageKey) {
+				await queryClient.invalidateQueries({
+					queryKey: QUERY_KEY.memo({ url: context.pageKey }),
+				});
+			}
+			if (variables.id !== undefined) {
+				await queryClient.invalidateQueries({
+					queryKey: QUERY_KEY.memo({ id: variables.id }),
+				});
+			}
+			await queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.samePathMemosPrefix(),
 			});
 		},
 	});

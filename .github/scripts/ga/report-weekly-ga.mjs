@@ -56,7 +56,7 @@ const SUMMARY_KEY_COLUMNS = ["주 시작일"];
 const EVENT_KEY_COLUMNS = ["주 시작일", "이벤트"];
 
 /** 기존 Slack 게시. 웹훅이 없으면 페이로드를 찍고 건너뜁니다. */
-const postReportToSlack = async (report) => {
+const postReportToSlack = async ({ report, spreadsheetId }) => {
 	const repository = process.env.GITHUB_REPOSITORY;
 	const runId = process.env.GITHUB_RUN_ID;
 	const serverUrl = process.env.GITHUB_SERVER_URL ?? "https://github.com";
@@ -67,6 +67,10 @@ const postReportToSlack = async (report) => {
 			repository && runId
 				? `${serverUrl}/${repository}/actions/runs/${runId}`
 				: null,
+		// 시트 기록을 건너뛰는 실행(GA_SHEET_ID 없음)에는 가리킬 시트가 없습니다.
+		sheetUrl: spreadsheetId
+			? `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`
+			: null,
 	});
 
 	if (!process.env.SLACK_REPORT_WEBHOOK_URL) {
@@ -162,7 +166,7 @@ const runRegular = async ({
 	const failures = [];
 
 	try {
-		await postReportToSlack(report);
+		await postReportToSlack({ report, spreadsheetId });
 	} catch (error) {
 		failures.push({ step: "Slack 게시", error });
 	}

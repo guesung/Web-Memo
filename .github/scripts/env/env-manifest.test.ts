@@ -4,9 +4,13 @@ import {
 	checkConsumers,
 	checkDotenvFiles,
 	checkReferences,
+	checkTurboEnv,
 	collectReferences,
+	collectTurboEnvDeclarations,
 	extractReferences,
 	isScannedFile,
+	isTurboBuiltinEnv,
+	parseJsonc,
 	parseManifest,
 	renderDocs,
 	validateManifest,
@@ -20,6 +24,7 @@ const entry = (overrides: Record<string, unknown> = {}) => ({
 	consumers: [".github/workflows/ci.yml"],
 	impact: "없으면 실패한다",
 	note: "",
+	phase: "",
 	required: true,
 	...overrides,
 });
@@ -113,12 +118,13 @@ describe("extractReferences", () => {
 				'const b = process.env["BETA"];',
 				'const c = Deno.env.get("GAMMA");',
 				'const d = requireServerEnv("DELTA");',
+				'const g = readServerEnv("ZETA");',
 				"const e = import.meta.env.VITE_EPSILON;",
 				"const f = import.meta.env.MODE;",
 			].join("\n"),
 		).map((reference) => reference.name);
 
-		expect(names).toEqual(["ALPHA", "BETA", "VITE_EPSILON", "GAMMA", "DELTA"]);
+		expect(names).toEqual(["ALPHA", "BETA", "VITE_EPSILON", "GAMMA", "DELTA", "ZETA"]);
 	});
 
 	it("워크플로는 secrets.* 만 보고 GITHUB_TOKEN은 뺀다", () => {
@@ -296,5 +302,110 @@ describe("vercel 저장소 표기", () => {
 
 		expect(rendered).toContain("| `ALL_ENVS` | 전체 |");
 		expect(rendered).toContain("| `SOME_ENVS` | production, preview |");
+	});
+});
+
+describe("parseManifest의 phase", () => {
+	it("phase를 읽고, 없으면 빈 값으로 둔다", () => {
+		const entries = parseManifest(
+			["- name: A", "  kind: config", "  phase: build", "- name: B", "  kind: config"].join("\n"),
+		);
+
+		expect(entries[0].phase).toBe("build");
+		expect(entries[1].phase).toBe("");
+	});
+
+	it("알 수 없는 phase를 잡는다", () => {
+		expect(validateManifest([entry({ phase: "runtime" })]).join("\n")).toContain("phase는");
+	});
+});
+
+describe("parseJsonc", () => {
+	it("주석과 끝 쉼표를 지우되 문자열 안의 //·/*는 남긴다", () => {
+		const config = parseJsonc(
+			[
+				"{",
+				"  // 줄 주석",
+				'  "outputs": ["dist/**", "!.next/cache/**"], /* 블록 주석 */',
+				'  "url": "https://example.com",',
+				"}",
+			].join("\n"),
+		);
+
+		expect(config).toEqual({
+			outputs: ["dist/**", "!.next/cache/**"],
+			url: "https://example.com",
+		});
+	});
+});
+
+describe("isTurboBuiltinEnv", () => {
+	it("내장 passthrough 이름과 와일드카드 접두사를 알아본다", () => {
+		expect(isTurboBuiltinEnv("COREPACK_HOME")).toBe(true);
+		expect(isTurboBuiltinEnv("VERCEL")).toBe(true);
+		expect(isTurboBuiltinEnv("VERCEL_ENV")).toBe(true);
+		expect(isTurboBuiltinEnv("NEXT_PUBLIC_X")).toBe(true);
+		expect(isTurboBuiltinEnv("BUILD_ENV")).toBe(false);
+		expect(isTurboBuiltinEnv("SENTRY_AUTH_TOKEN")).toBe(false);
+	});
+});
+
+describe("checkTurboEnv", () => {
+	const declarations = collectTurboEnvDeclarations([
+		{
+			path: "turbo.jsonc",
+			config: {
+				globalPassThroughEnv: ["COREPACK_HOME"],
+				tasks: { build: { env: ["BUILD_ENV", "!IGNORED"] } },
+			},
+		},
+		{
+			path: "packages/env/turbo.json",
+			config: { tasks: { ready: { passThroughEnv: ["TOKEN_*"] } } },
+		},
+	]);
+
+	it("선언 위치를 파일과 필드로 모으고 제외 패턴은 뺀다", () => {
+		expect(declarations.get("BUILD_ENV")).toEqual(["turbo.jsonc#tasks.build.env"]);
+		expect(declarations.get("TOKEN_*")).toEqual([
+			"packages/env/turbo.json#tasks.ready.passThroughEnv",
+		]);
+		expect(declarations.has("!IGNORED")).toBe(false);
+	});
+
+	it("선언과 phase: build가 맞으면 통과한다", () => {
+		expect(
+			checkTurboEnv({
+				entries: [
+					entry({ name: "BUILD_ENV", phase: "build" }),
+					entry({ name: "TOKEN_A", phase: "build" }),
+					entry({ name: "VERCEL", kind: "platform", phase: "build" }),
+				],
+				declarations,
+			}),
+		).toEqual([]);
+	});
+
+	it("phase: build인데 turbo에 선언이 없으면 잡는다", () => {
+		const errors = checkTurboEnv({
+			entries: [
+				entry({ name: "BUILD_ENV", phase: "build" }),
+				entry({ name: "SENTRY_AUTH_TOKEN", phase: "build" }),
+			],
+			declarations,
+		});
+
+		expect(errors).toHaveLength(1);
+		expect(errors[0]).toContain("SENTRY_AUTH_TOKEN");
+		expect(errors[0]).toContain("strict");
+	});
+
+	it("turbo에 선언됐는데 매니페스트에 없거나 phase: build가 아니면 잡는다", () => {
+		expect(checkTurboEnv({ entries: [], declarations }).join("\n")).toContain(
+			"BUILD_ENV: turbo.jsonc#tasks.build.env에 선언됐지만 .github/env-manifest.yml에 없습니다",
+		);
+		expect(
+			checkTurboEnv({ entries: [entry({ name: "BUILD_ENV" })], declarations }).join("\n"),
+		).toContain("phase: build가 없습니다");
 	});
 });

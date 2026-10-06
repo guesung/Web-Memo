@@ -19,11 +19,15 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useScrollPositions } from "@/lib/hooks/useScrollPositions";
 import { useSettingQuery } from "@/lib/hooks/useSetting";
+import { useTabBarHideOnScroll } from "@/lib/hooks/useTabBarHideOnScroll";
+import { BlogReadingEntryCard } from "./_components/BlogReadingEntryCard";
 import { MemoCard, type MemoItem } from "./_components/MemoCard";
 import { MemoDetailModal } from "./_components/MemoDetailModal";
 import { TodayArticles } from "./_components/TodayArticles";
+import { WebNoticeBanner } from "./_components/WebNoticeBanner";
 import { useDeleteWithUndo } from "./_hooks/useDeleteWithUndo";
 import { useMemoList } from "./_hooks/useMemoList";
+import { useWebNoticeDismissed } from "./_hooks/useWebNoticeDismissed";
 
 const READ_DONE_PROGRESS = 0.98;
 
@@ -58,6 +62,16 @@ export default function MemoScreen() {
 		highlightCounts,
 	} = useMemoList();
 	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
+	const { scrollProps, showTabBar } = useTabBarHideOnScroll();
+	const isMemoListShown = memos.length > 0;
+
+	// 필터·삭제로 목록이 비면 FlatList가 빈 화면으로 바뀌어 스크롤로는 탭바를 되돌릴 수 없다.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: showTabBar는 매 렌더 새로 만들어지지만 공유 값만 바꾼다
+	useEffect(() => {
+		if (!isMemoListShown) {
+			showTabBar();
+		}
+	}, [isMemoListShown]);
 
 	useEffect(() => {
 		if (filterParam === "wish") {
@@ -69,6 +83,10 @@ export default function MemoScreen() {
 
 	const { deletedMemo, handleDelete, handleUndo } = useDeleteWithUndo();
 	const { data: scrollPositions } = useScrollPositions();
+	const {
+		isDismissed: isWebNoticeDismissed,
+		handleDismiss: handleWebNoticeDismiss,
+	} = useWebNoticeDismissed();
 
 	const getReadingProgress = (url: string): number | undefined => {
 		const position = scrollPositions?.[url];
@@ -90,7 +108,11 @@ export default function MemoScreen() {
 		(url: string) => {
 			router.navigate({
 				pathname: "/(main)/browser",
-				params: { url: encodeURIComponent(url), t: String(Date.now()) },
+				params: {
+					url: encodeURIComponent(url),
+					t: String(Date.now()),
+					newTab: "1",
+				},
 			});
 		},
 		[router],
@@ -136,6 +158,12 @@ export default function MemoScreen() {
 						<Text className="text-xs text-accent font-semibold">로그인</Text>
 					</TouchableOpacity>
 				) : null}
+
+				{isLoggedIn && !isWebNoticeDismissed ? (
+					<WebNoticeBanner onDismiss={handleWebNoticeDismiss} />
+				) : null}
+
+				<BlogReadingEntryCard />
 
 				<View className="flex-row px-5 mb-4 gap-2">
 					<TouchableOpacity
@@ -208,6 +236,7 @@ export default function MemoScreen() {
 										: "최근 메모"}
 						</Text>
 						<FlatList
+							{...scrollProps}
 							data={memos}
 							keyExtractor={(item) => String(item.id)}
 							renderItem={({ item }) => (

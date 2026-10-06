@@ -9,7 +9,7 @@ import {
 	fetchDefaultBranchSha,
 	fetchRefOptions,
 	fetchVersionForBump,
-	getGithubRepository,
+	GITHUB_REPOSITORY,
 	notifySlackSafely,
 	openSlackModal,
 	readVerifiedSlackForm,
@@ -60,7 +60,7 @@ const describeError = (error: unknown): string =>
 	error instanceof Error ? error.message.slice(0, 150) : String(error);
 
 const buildRunUrl = (): string =>
-	`https://github.com/${getGithubRepository()}/actions/workflows/release.yml`;
+	`https://github.com/${GITHUB_REPOSITORY}/actions/workflows/release.yml`;
 
 /** 버튼 하나로 즉시 배포하는 경로. */
 const handleDeployButton = async ({

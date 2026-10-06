@@ -56,18 +56,28 @@ const UNSUPPORTED_SUMMARY_PAGES = [
 ];
 ```
 
+### UI 변경 전 시각 디자인 확인
+
+기능을 추가하거나 수정하면서 사용자가 보는 화면이 바뀐다면, **실제 서비스의 UI 코드를 작성하기 전에** 변경 후 화면을 확인할 수 있는 시각 목업을 사용자에게 먼저 보여주고 명시적으로 승인받습니다. HTML 목업, 화면 시안, 변경 전후 스크린샷 비교처럼 배치·색상·상태를 눈으로 판단할 수 있는 형태로 제시합니다. 텍스트로 작성한 구현 계획이나 디자인 명세만으로 이 단계를 대신하지 않습니다.
+
+- 적용 대상은 이 저장소의 웹·확장·앱 화면 변경입니다. 화면 변화가 없는 API·스크립트·리팩토링 작업에는 적용하지 않습니다.
+- 시각 목업에 대한 사용자 승인 전에는 해당 UI를 구현하지 않습니다. 목업을 수정하면 바뀐 시안을 다시 보여주고 승인받습니다.
+- `/web-memo:design`의 디자인 명세와 설계 승인 절차를 사용할 때도 시각 목업을 함께 보여줍니다. 그 승인에 시각 목업이 포함되어 있다면 별도의 승인을 다시 받지 않아도 됩니다.
+- `/web-memo:implement`처럼 구현 중 질문을 생략하는 절차를 사용하더라도, 승인된 시각 목업이 없거나 시안이 바뀌었다면 해당 UI 구현을 멈추고 사용자 승인을 받습니다.
+- `docs/design-system.md`는 기존 디자인 기준으로 참고합니다. 사용자에게 이번 변경의 시각적 결과를 보여주는 절차를 대체하지 않습니다.
+
 ---
 
 ## 🛠 기술 스택
 
-- **프론트엔드**: TypeScript 5.5.3, React 19.1.0, Next.js 16.3.5(웹 앱, 웹팩 유지), Vite 5.3.3(확장), TailwindCSS 3.4.x
+- **프론트엔드**: TypeScript 5.5.3, React 19.1.0, Next.js 16.3.5(웹 앱, dev·build 모두 Turbopack), Vite 5.3.3(확장), TailwindCSS 3.4.x
 - **상태/데이터**: TanStack Query (React Query) v5.59.0, React Hook Form 7.53.2
 - **UI/스타일링**: TailwindCSS, Framer Motion 11.11.8, Lucide React 0.456.0, Next Themes, Driver.js(튜토리얼/가이드)
 - **백엔드/DB**: Supabase (인증, 데이터베이스, 타입 생성, 실시간)
 - **빌드**: Turbo 2.1.1, Vite 5.3.3, Cross-env, Rimraf
 - **테스트**: Vitest, Playwright 1.47.0
 - **코드 품질**: Biome 2.0.0
-- **모니터링**: Sentry
+- **모니터링**: Sentry ([docs/sentry.md](docs/sentry.md))
 - **유틸리티**: dayjs(날짜), es-hangul(한글 처리), youtube-transcript(자막), OpenAI API
 - **패키지 매니저/런타임**: pnpm 10.23.0, Node.js 24 (`.nvmrc`, 루트 `engines`)
 
@@ -111,7 +121,7 @@ Turborepo 기반 모노레포입니다.
 **Testing & Infra**
 - `e2e/` — Playwright E2E 테스트 스위트
 - `scripts/ai-reviewer/` — PR AI 리뷰 스크립트 (워크스페이스 밖, `pnpm type-check:scripts`로 검사)
-- `.github/scripts/` — 워크플로가 호출하는 Node(`.mjs`)·셸 스크립트. 도메인 폴더(`deploy`·`seo`·`ga`·`env`·`supabase`·`refactor`·`cleanup`)로 나뉘고, 두 도메인 이상이 쓰는 모듈은 `shared/`에 둡니다. 워크플로↔스크립트 대응표는 [`.github/README.md`](.github/README.md)
+- `.github/scripts/` — 워크플로가 호출하는 Node(`.mjs`)·셸 스크립트. 도메인 폴더(`deploy`·`seo`·`ga`·`env`·`conventions`·`supabase`·`refactor`·`cleanup`)로 나뉘고, 두 도메인 이상이 쓰는 모듈은 `shared/`에 둡니다. 워크플로↔스크립트 대응표는 [`.github/README.md`](.github/README.md)
 
 ### ⚠️ `apps/app`(React Native)에서 `@web-memo/shared` import 규칙
 
@@ -208,61 +218,16 @@ pnpm test:jest -- path/to/test.ts        # 단일 테스트 파일
 
 ## ✍️ 코딩 컨벤션
 
-> 상세 프론트엔드 설계 원칙(가독성/예측가능성/응집도/결합도와 권장 패턴)은
-> [docs/frontend-guidelines.md](docs/frontend-guidelines.md) 참고.
+세부 코딩 규칙은 **[`docs/code-conventions.yaml`](docs/code-conventions.yaml) 원장에 있는 것만** 적용합니다. 규칙 본문을 이 파일에 옮겨 적지 않습니다.
 
-### 핵심 원칙
+적용 우선순위는 다음과 같습니다.
 
-- **단순성(Simplicity)**: 복잡함보다 항상 가장 단순한 해법 우선
-- **DRY**: 중복을 피하고 기능 재사용
-- **파일 길이**: 300줄 이하 유지, 넘으면 리팩토링
-- **함수형/선언형 프로그래밍**: class 지양, 상속보다 합성
+1. [`docs/code-conventions.yaml`](docs/code-conventions.yaml) — 세부 규칙 원장. 대원칙과 부딪히면 원장이 우선합니다
+2. [`docs/frontend-guidelines.md`](docs/frontend-guidelines.md) — 대원칙(가독성·예측 가능성·응집도·결합도)과 권장 패턴
+3. [`docs/code-conventions-legacy.md`](docs/code-conventions-legacy.md) — 아직 검토하지 않은 옛 규칙. **참고용이며 강제하지 않습니다**
 
-### 코드 구조
-
-- 파일 구조: exports → subcomponents → helpers → types
-- 네이밍:
-  - 보조 동사를 포함한 서술형 이름 (`isLoading`, `handleClick`)
-  - 디렉토리는 lowercase-with-dashes (`components/auth-wizard`)
-  - **파일명은 camelCase** (예: `getMemoCount.ts`, `chromeStoreStats.ts`)
-  - 컴포넌트는 named export 선호
-- RORO 패턴(Receive Object, Return Object) 적용
-
-### JavaScript / TypeScript
-
-- 순수 함수는 `function` 키워드 사용
-- `interface`/`type`로 먼저 타입을 설계한 뒤 구현
-- 조건문 단순화: 불필요한 중괄호 지양(단, 가드 절은 명확하게)
-
-### React 컴포넌트
-
-- 화살표 함수 상수가 아닌 함수 선언으로 작성
-- 선언형 JSX 사용
-- 정적 콘텐츠는 render 함수 밖 변수로 추출
-- interface/type은 파일 끝에 배치
-- 가능하면 Server Component 우선, `'use client'` 최소화(Web API 접근 시에만)
-- 클라이언트 컴포넌트는 Suspense + fallback으로 래핑
-
-### 에러 처리
-
-- 에러/엣지 케이스를 먼저 처리(early returns), happy path는 마지막
-- 중첩 if와 불필요한 else 지양, 전제 조건은 guard clause로
-- Server Actions에서는 try/catch 대신 에러를 값으로 반환
-- `error.tsx` / `global-error.tsx`로 에러 바운더리 구성
-- 서비스 계층은 TanStack Query를 위해 사용자 친화적 에러를 throw
-
-### 아이콘
-
-- 인라인 `<svg>` 금지 — **항상 `lucide-react` 사용**
-- `import { IconName } from "lucide-react"`
-- 자주 쓰는 아이콘: `Check`, `X`, `ChevronDown`, `Globe`, `Star`, `Users`, `Sparkles` 등
-- 아이콘 검색: https://lucide.dev/icons
-
-### 파일 조직
-
-- 파일 300줄 이하 유지
-- 구조: exports → subcomponents → helpers → types
-- 디렉토리는 lowercase-with-dashes, 파일명은 camelCase
+전역 지침(`~/.agents/AGENTS.md` 등)에 코딩 규칙이 있어도 이 레포에서는 위 순서를 따릅니다.
+규칙을 추가·폐기하는 절차와 필드 설명은 원장 머리 주석에 있습니다. 원장 형식은 PR CI가 검사합니다.
 
 ---
 
@@ -318,7 +283,7 @@ function Component({ lng }: { lng: Language }) {
 
 **서버/클라이언트 컴포넌트** (apps/web):
 - 클라이언트: `import useTranslation from "@src/modules/i18n/util.client"`
-- 서버: `import useTranslation from "@src/modules/i18n/util.server"` (async)
+- 서버: `import getTranslation from "@src/modules/i18n/util.server"` (`await getTranslation(lng)` 비동기 함수)
 
 **검증**: i18n 관련 코드를 수정한 작업 후에는 항상 `/i18n-check`로 번역 완전성을 검증합니다.
 
@@ -409,6 +374,13 @@ production을 구분하지 못합니다. `isProduction()`은 `buildEnv !== "deve
 
 작업 완료 후 PR을 통해 변경을 추적/리뷰합니다.
 
+### GitHub 계정 (MANDATORY)
+
+GitHub 작업을 시작하기 전에 `gh auth status --active --hostname github.com`으로
+활성 계정을 확인합니다. 활성 계정이 `guesung`이 아니면
+`gh auth switch --hostname github.com --user guesung`으로 전환하고, 다시 상태를
+확인해 `guesung`이 활성 계정인 경우에만 작업을 진행합니다.
+
 ### 브랜치 전략 (MANDATORY)
 
 **`master`가 유일한 베이스 브랜치입니다.** `develop`은 테스트 서버 배포 전용
@@ -447,16 +419,19 @@ production을 구분하지 못합니다. `isProduction()`은 `buildEnv !== "deve
 
 ### 세부 컨벤션 문서
 
+- 코드 컨벤션 원장: [docs/code-conventions.yaml](docs/code-conventions.yaml) — 세부 코딩 규칙은 여기 있는 것만 적용
 - 커밋 컨벤션: [docs/commit-convention.md](docs/commit-convention.md)
 - 브랜치 전략: [docs/branch-strategy.md](docs/branch-strategy.md)
 - 환경 변수: [docs/environment-variables.md](docs/environment-variables.md)
+- Sentry: [docs/sentry.md](docs/sentry.md) — 두 프로젝트(확장·웹) 구분, 인바운드 필터,
+  알림 웹훅처럼 대시보드에만 있는 설정
 - 버전 관리: [docs/versioning.md](docs/versioning.md) — 확장·앱·릴리스 노트가
   **각각 독립된 버전 트랙**이며, `apps/chrome-extension` 외의 `package.json`에는
   `version` 필드를 두지 않습니다
 
-### AI 에이전트가 읽는 문서 (`/gs` 파이프라인)
+### AI 에이전트가 읽는 문서 (`/web-memo` 파이프라인)
 
-`/gs` 스킬의 하위 에이전트가 작업 전에 읽는 세 장입니다. 사람이 읽어도 되지만,
+`/web-memo` 스킬의 하위 에이전트가 작업 전에 읽는 세 장입니다. 사람이 읽어도 되지만,
 **규격이 정해져 있으므로 섹션 제목을 바꾸지 마세요** — 에이전트가 제목으로 섹션을 찾습니다.
 
 | 문서 | 읽는 쪽 |
@@ -501,6 +476,10 @@ PR 템플릿 파일은 레포에 없습니다. 최근 PR들이 쓰는 형식을 
 - 복잡한 코드에만 간결한 주석
 - "무엇"보다 "왜"에 초점
 - API 문서: 목적, 파라미터, 반환값, 사용 예시, 에러 처리 포함
+
+### 작업 파이프라인 (web-memo 플러그인)
+
+기획→설계→구현→QA→PR 파이프라인(`/web-memo:*` 스킬과 `web-memo:*` 에이전트)의 원본은 `.agents/skills/web-memo/`입니다. `.claude/skills/web-memo`는 Claude Code가 읽도록 원본을 가리키는 심링크이니, 에이전트·스킬 규칙은 `.agents/skills/web-memo/`에서 고치세요. 구성과 의존 관계는 `.agents/skills/web-memo/dependencies.md`에 있습니다.
 
 ---
 

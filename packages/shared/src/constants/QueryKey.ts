@@ -1,3 +1,5 @@
+import type { TBlogId, TBlogReadingSort } from "../types/blogReading";
+
 export type MemoSortBy = "updated_at" | "created_at" | "title";
 
 /** 하이라이트 목록(무한 스크롤) 쿼리를 구분하는 필터 조합 */
@@ -11,6 +13,13 @@ export const QUERY_KEY = {
 	tab: () => ["tab"],
 	memos: () => ["memos"],
 	memo: (params: { url?: string; id?: number }) => ["memo", params],
+	/**
+	 * 쿼리만 다른 주소까지 포함한 같은 경로의 메모 후보.
+	 * @description `["memo"]` 접두사를 공유해 메모 수정 뒤의 `["memo"]` 무효화에 함께 걸린다.
+	 */
+	samePathMemos: (pathKey: string) => ["memo", "samePath", pathKey],
+	/** 모든 경로의 {@link QUERY_KEY.samePathMemos}를 부분 매칭한다. */
+	samePathMemosPrefix: () => ["memo", "samePath"],
 	/** 모든 페이지네이션 필터를 부분 매칭하며 휴지통 캐시는 포함하지 않는다. */
 	memosPaginatedPrefix: () => ["memos", "paginated"],
 	memosPaginated: (
@@ -85,4 +94,38 @@ export const QUERY_KEY = {
 	notice: () => ["notice"],
 	/** 사이드 패널 과거 메모 판정. 정규화한 페이지 URL마다 별도 캐시다. */
 	pastMemo: (normalizedUrl: string) => ["pastMemo", normalizedUrl],
+	/** 옵션 페이지의 `_execute_action` 단축키. */
+	shortcut: () => ["shortcut"],
+	/**
+	 * 블로그 정주행 개인 캐시 전체(모든 계정)의 접두사.
+	 * @description 목록 행의 완료 표시와 요약의 완료 수가 메모에서 계산되므로 `memos()` 아래에 둔다.
+	 * 그래서 기존 메모 생성·수정·삭제·복원의 `["memos"]` 무효화(웹·확장·앱)에 함께 걸린다.
+	 * 로그아웃·계정 전환 때 `removeQueries`로 개인 캐시를 지울 때도 쓴다.
+	 */
+	blogCompletionPrefix: () => ["memos", "blogCompletion"],
+	/** 한 계정의 블로그 정주행 캐시 전체. `["memos","blogCompletion",userId,...]` */
+	blogCompletion: (userId: string) => ["memos", "blogCompletion", userId],
+	/** 한 계정의 모든 필터·정렬 목록을 부분 매칭한다. 구독 변경 뒤 스냅샷을 새로 잡을 때 쓴다. */
+	blogReadingPages: (userId: string) => [
+		"memos",
+		"blogCompletion",
+		userId,
+		"page",
+	],
+	/**
+	 * 블로그 정주행 목록(커서 무한 조회). 출처 필터·정렬마다 별도 캐시다.
+	 * @description 카탈로그 시점(`catalogVersion`)은 키에 넣지 않고 캐시된 첫 페이지에서 이어 받는다.
+	 * 그래야 메모 변경·포커스 재조회 때 같은 스냅샷을 유지하고, '목록 갱신'(resetQueries) 때만 새 시점을 잡는다.
+	 */
+	blogReadingPage: (
+		userId: string,
+		params: { blogId: TBlogId | null; sort: TBlogReadingSort },
+	) => ["memos", "blogCompletion", userId, "page", params],
+	/** 블로그 정주행 요약(구독별 수집 수·완료 수·수집 상태). */
+	blogReadingSummary: (userId: string) => [
+		"memos",
+		"blogCompletion",
+		userId,
+		"summary",
+	],
 };

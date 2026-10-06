@@ -98,6 +98,38 @@ test.describe("메모 카드의 중요·읽는 중 토글 (Mocked)", () => {
 		await expect(memoCard).toBeVisible();
 	});
 
+	test("저장 응답이 오기 전에도 토글 아이콘이 바로 켜진다.", async ({
+		page,
+	}) => {
+		let releasePatch: () => void = () => {};
+		const patchGate = new Promise<void>((resolve) => {
+			releasePatch = resolve;
+		});
+		await page.route("**/rest/v1/memo**", async (route) => {
+			if (route.request().method() === "PATCH") {
+				await patchGate;
+			}
+			await route.fallback();
+		});
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.memos}`,
+			regexp: new RegExp(PATHS.memos),
+		});
+
+		const wishToggle = getMemoCard(page, TARGET_MEMO_TITLE).getByRole(
+			"button",
+			{ name: "Wishlist", exact: true },
+		);
+		await expect(wishToggle).toHaveAttribute("aria-pressed", "false");
+
+		await wishToggle.click();
+
+		await expect(wishToggle).toHaveAttribute("aria-pressed", "true");
+		releasePatch();
+		await expect(wishToggle).toHaveAttribute("aria-pressed", "true");
+	});
+
 	test("세 토글의 이름은 로케일마다 번역되고, 서로 다르다.", async ({
 		page,
 	}) => {

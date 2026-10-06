@@ -6,10 +6,14 @@ import AiFeaturesOption from "./AiFeaturesOption";
 
 const mocks = vi.hoisted(() => ({
 	set: vi.fn(),
+	track: vi.fn(),
 	settings: { isLoaded: true, isSummaryEnabled: true, isChatEnabled: true },
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
 	useAiFeatureSettings: () => mocks.settings,
+}));
+vi.mock("@web-memo/shared/modules/analytics", () => ({
+	analytics: { trackEvent: mocks.track },
 }));
 vi.mock("@web-memo/shared/modules/chrome-storage", () => ({
 	ChromeSyncStorage: { set: mocks.set },
@@ -83,6 +87,10 @@ describe("AI 기능 옵션", () => {
 
 		expect(mocks.set).toHaveBeenCalledTimes(1);
 		expect(mocks.set).toHaveBeenCalledWith("summary", false);
+		expect(mocks.track).toHaveBeenCalledWith({
+			name: "extension_setting_change",
+			params: { keys: "summary", enabled: false },
+		});
 		expect(getSwitch("summary-enabled").getAttribute("aria-checked")).toBe(
 			"false",
 		);
@@ -96,6 +104,10 @@ describe("AI 기능 옵션", () => {
 		await act(async () => getSwitch("ai-chat-enabled").click());
 
 		expect(mocks.set).toHaveBeenCalledWith("chat", false);
+		expect(mocks.track).toHaveBeenCalledWith({
+			name: "extension_setting_change",
+			params: { keys: "chat", enabled: false },
+		});
 	});
 
 	it("저장에 실패하면 스위치를 이전 값으로 되돌린다", async () => {
@@ -106,6 +118,7 @@ describe("AI 기능 옵션", () => {
 		expect(getSwitch("summary-enabled").getAttribute("aria-checked")).toBe(
 			"true",
 		);
+		expect(mocks.track).not.toHaveBeenCalled();
 	});
 
 	it("저장소 값을 읽기 전에는 스위치를 잠근다", async () => {

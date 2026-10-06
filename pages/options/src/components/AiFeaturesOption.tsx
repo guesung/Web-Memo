@@ -1,4 +1,5 @@
 import { useAiFeatureSettings } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
@@ -25,12 +26,20 @@ const AiFeaturesOption = () => {
 		initialValue: settings.isSummaryEnabled,
 		onSave: async (value: boolean) => {
 			await ChromeSyncStorage.set(STORAGE_KEYS.summaryEnabled, value);
+			analytics.trackEvent({
+				name: "extension_setting_change",
+				params: { keys: STORAGE_KEYS.summaryEnabled, enabled: value },
+			});
 		},
 	});
 	const chat = useAutoSaveSetting({
 		initialValue: settings.isChatEnabled,
 		onSave: async (value: boolean) => {
 			await ChromeSyncStorage.set(STORAGE_KEYS.aiChatEnabled, value);
+			analytics.trackEvent({
+				name: "extension_setting_change",
+				params: { keys: STORAGE_KEYS.aiChatEnabled, enabled: value },
+			});
 		},
 	});
 

@@ -1,7 +1,7 @@
 import { Header, MemoSection, ResizeHandle, TabSection } from "@src/components";
 import { useResizablePanel } from "@src/hooks";
 import {
-	useAiFeatureSettings,
+	useAiFeatureSettingsQuery,
 	useDidMount,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
@@ -12,11 +12,9 @@ export default function SidePanelContent() {
 		useResizablePanel();
 	const { fetchPageContent } = usePageContentContext();
 	const { refetch: refetchTab } = useTabQuery();
-	const { isLoaded, hasLoadFailed, isSummaryEnabled, isChatEnabled } =
-		useAiFeatureSettings();
-	// 값을 읽는 동안과 읽지 못했을 때는 켜짐이라 기존 레이아웃 그대로다. 둘 다 꺼야만 탭 영역이 사라진다.
-	const hasAiTab = isSummaryEnabled || isChatEnabled;
-	const isAiSettingResolved = isLoaded || hasLoadFailed;
+	const { showSummary, showAiChat } = useAiFeatureSettingsQuery();
+	// 기본이 꺼짐이라 설정을 읽는 동안·읽지 못했을 때는 탭 영역을 그리지 않는다. 둘 중 하나라도 켜져야 나타난다.
+	const hasAiTab = showSummary || showAiChat;
 
 	useDidMount(() => {
 		bridge.handle.UPDATE_SIDE_PANEL(() => {
@@ -34,16 +32,11 @@ export default function SidePanelContent() {
 			<Header />
 			{hasAiTab && (
 				<>
-					{isAiSettingResolved ? (
-						<TabSection
-							tabHeight={tabHeight}
-							isSummaryEnabled={isSummaryEnabled}
-							isChatEnabled={isChatEnabled}
-						/>
-					) : (
-						// 설정을 읽는 동안 메모 영역이 위아래로 밀리지 않도록 탭 영역 자리만 비워 둔다.
-						<section aria-hidden style={{ height: `${tabHeight}%` }} />
-					)}
+					<TabSection
+						tabHeight={tabHeight}
+						isSummaryEnabled={showSummary}
+						isChatEnabled={showAiChat}
+					/>
 					<ResizeHandle
 						upperSectionRatio={tabHeight}
 						isResizing={isResizing}

@@ -1,6 +1,7 @@
 export { default as useActiveUsersStatsQuery } from "./useActiveUsersStatsQuery";
 export { default as useAdminStatsQuery } from "./useAdminStatsQuery";
 export { default as useAdminUsersQuery } from "./useAdminUsersQuery";
+export { default as useAiFeatureSettingsQuery } from "./useAiFeatureSettingsQuery";
 export {
 	categoryQueryOptions,
 	default as useCategoryQuery,

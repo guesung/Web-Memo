@@ -1,9 +1,4 @@
-import { useAiFeatureSettings } from "@web-memo/shared/hooks";
-import { analytics } from "@web-memo/shared/modules/analytics";
-import {
-	ChromeSyncStorage,
-	STORAGE_KEYS,
-} from "@web-memo/shared/modules/chrome-storage";
+import { useSettingQuery } from "@web-memo/shared/hooks";
 import { I18n } from "@web-memo/shared/utils/extension";
 import {
 	Card,
@@ -17,31 +12,28 @@ import {
 
 import SaveStatus from "./SaveStatus";
 import { useAutoSaveSetting } from "./useAutoSaveSetting";
+import { useSaveSetting } from "./useSaveSetting";
 
-/** 사이드 패널의 페이지 요약·AI 채팅 사용 여부를 자동 저장합니다. */
+/** 사이드 패널의 페이지 요약·AI 채팅 사용 여부를 서버 설정에 자동 저장합니다. */
 const AiFeaturesOption = () => {
-	const settings = useAiFeatureSettings();
+	const setting = useSettingQuery();
+	const saveSetting = useSaveSetting();
 
 	const summary = useAutoSaveSetting({
-		initialValue: settings.isSummaryEnabled,
+		initialValue: setting.showSummary,
 		onSave: async (value: boolean) => {
-			await ChromeSyncStorage.set(STORAGE_KEYS.summaryEnabled, value);
-			analytics.trackEvent({
-				name: "extension_setting_change",
-				params: { keys: STORAGE_KEYS.summaryEnabled, enabled: value },
-			});
+			await saveSetting({ show_summary: value });
 		},
 	});
 	const chat = useAutoSaveSetting({
-		initialValue: settings.isChatEnabled,
+		initialValue: setting.showAiChat,
 		onSave: async (value: boolean) => {
-			await ChromeSyncStorage.set(STORAGE_KEYS.aiChatEnabled, value);
-			analytics.trackEvent({
-				name: "extension_setting_change",
-				params: { keys: STORAGE_KEYS.aiChatEnabled, enabled: value },
-			});
+			await saveSetting({ show_ai_chat: value });
 		},
 	});
+	if (setting.data.error) {
+		throw setting.data.error;
+	}
 
 	return (
 		<Card>
@@ -56,7 +48,6 @@ const AiFeaturesOption = () => {
 					<Switch
 						id="summary-enabled"
 						checked={summary.value}
-						disabled={!settings.isLoaded}
 						onCheckedChange={summary.changeValue}
 					/>
 					<Label htmlFor="summary-enabled" className="text-sm font-normal">
@@ -71,7 +62,6 @@ const AiFeaturesOption = () => {
 					<Switch
 						id="ai-chat-enabled"
 						checked={chat.value}
-						disabled={!settings.isLoaded}
 						onCheckedChange={chat.changeValue}
 					/>
 					<Label htmlFor="ai-chat-enabled" className="text-sm font-normal">

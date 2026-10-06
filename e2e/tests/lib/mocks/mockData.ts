@@ -44,7 +44,7 @@ export function createMockMemo(overrides: Partial<MockMemo> = {}): MockMemo {
 /**
  * 메모 필드 노출 설정(setting) 행을 만든다.
  *
- * @description 기본값은 제품 기본값과 동일하게 느낀 점·액션 아이템 모두 꺼짐이다.
+ * @description 기본값은 제품 기본값과 동일하게 느낀 점·액션 아이템·요약·AI 채팅 모두 꺼짐이다.
  * 설정 행 자체가 없는 상황은 이 함수 대신 store.setSetting(null)로 표현한다.
  */
 export function createMockSetting(
@@ -55,6 +55,8 @@ export function createMockSetting(
 		user_id: "test-user-id",
 		show_impression: false,
 		show_action_item: false,
+		show_summary: false,
+		show_ai_chat: false,
 		truncate_memo_content: true,
 		...overrides,
 	};

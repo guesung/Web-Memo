@@ -390,21 +390,27 @@ export type Database = {
 				Row: {
 					id: number;
 					show_action_item: boolean;
+					show_ai_chat: boolean;
 					show_impression: boolean;
+					show_summary: boolean;
 					truncate_memo_content: boolean;
 					user_id: string | null;
 				};
 				Insert: {
 					id?: number;
 					show_action_item?: boolean;
+					show_ai_chat?: boolean;
 					show_impression?: boolean;
+					show_summary?: boolean;
 					truncate_memo_content?: boolean;
 					user_id?: string | null;
 				};
 				Update: {
 					id?: number;
 					show_action_item?: boolean;
+					show_ai_chat?: boolean;
 					show_impression?: boolean;
+					show_summary?: boolean;
 					truncate_memo_content?: boolean;
 					user_id?: string | null;
 				};

@@ -160,10 +160,7 @@ export type TAnalyticsEvent =
 	| { name: "install_guide_view" }
 	| { name: "install_guide_login_click" }
 	| { name: "guide_finish" }
-	| {
-			name: "extension_setting_change";
-			params: { keys: string; enabled?: boolean };
-	  }
+	| { name: "extension_setting_change"; params: { keys: string } }
 	| { name: "guide_step"; params: { step_name: string } }
 	| { name: "memo_first_write" }
 	| { name: "export_run"; params: { format: ExportFormat } }

@@ -89,7 +89,15 @@ const Options = () => {
 						</ErrorBoundary>
 					)}
 				</QueryErrorResetBoundary>
-				<AiFeaturesOption />
+				<QueryErrorResetBoundary>
+					{({ reset }) => (
+						<ErrorBoundary onReset={reset} FallbackComponent={OptionsError}>
+							<Suspense fallback={<OptionsSkeleton cardCount={1} />}>
+								<AiFeaturesOption />
+							</Suspense>
+						</ErrorBoundary>
+					)}
+				</QueryErrorResetBoundary>
 				<HighlightOption />
 				<QueryErrorResetBoundary>
 					{({ reset }) => (

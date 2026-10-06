@@ -1,4 +1,6 @@
+import IconTooltip from "@src/components/IconTooltip";
 import { useTabQuery } from "@web-memo/shared/hooks";
+import { I18n } from "@web-memo/shared/utils/extension";
 import { Button } from "@web-memo/ui";
 import { GlobeIcon, SettingsIcon } from "lucide-react";
 import { ToggleTheme } from "./components";
@@ -9,13 +11,16 @@ export default function Header() {
 			<HeaderTabInfo />
 			<div className="flex gap-1 shrink-0">
 				<ToggleTheme />
-				<Button
-					variant="outline"
-					size="sm"
-					onClick={() => chrome.runtime.openOptionsPage()}
-				>
-					<SettingsIcon size={16} />
-				</Button>
+				<IconTooltip label={I18n.get("open_settings")}>
+					<Button
+						variant="outline"
+						size="sm"
+						aria-label={I18n.get("open_settings")}
+						onClick={() => chrome.runtime.openOptionsPage()}
+					>
+						<SettingsIcon size={16} />
+					</Button>
+				</IconTooltip>
 			</div>
 		</header>
 	);

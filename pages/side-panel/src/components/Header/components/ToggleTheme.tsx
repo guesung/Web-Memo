@@ -1,4 +1,6 @@
+import IconTooltip from "@src/components/IconTooltip";
 import { ChromeSyncStorage } from "@web-memo/shared/modules/chrome-storage";
+import { I18n } from "@web-memo/shared/utils/extension";
 import { Button } from "@web-memo/ui";
 import { Moon, Sun } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -42,14 +44,20 @@ export default function ToggleTheme() {
 		else setTheme("dark");
 	};
 
+	const switchLabel = I18n.get(
+		theme === "dark" ? "tooltip_theme_to_light" : "tooltip_theme_to_dark",
+	);
+
 	return (
-		<Button
-			onClick={handleClick}
-			variant="outline"
-			size="sm"
-			aria-label={`${theme === "dark" ? "라이트" : "다크"} 모드로 전환`}
-		>
-			{theme === "dark" ? <Moon /> : <Sun />}
-		</Button>
+		<IconTooltip label={switchLabel}>
+			<Button
+				onClick={handleClick}
+				variant="outline"
+				size="sm"
+				aria-label={switchLabel}
+			>
+				{theme === "dark" ? <Moon /> : <Sun />}
+			</Button>
+		</IconTooltip>
 	);
 }

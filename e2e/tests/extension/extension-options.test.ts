@@ -8,10 +8,12 @@ import {
 } from "../lib/mocks";
 
 test.describe("확장 옵션 페이지", () => {
+	let store: MockSupabaseStore;
+
 	test.beforeEach(async ({ page }) => {
 		// 옵션 페이지의 메모 필드 설정(MemoFieldsOption)이 setting을 읽는다. 로그인 뒤 메모 화면의 목록과 함께
 		// 컨텍스트 단위 목으로 받아, 옵션 페이지처럼 테스트가 나중에 여는 확장 페이지의 요청도 실서버로 가지 않게 한다.
-		const store = new MockSupabaseStore();
+		store = new MockSupabaseStore();
 		store.setSetting(createMockSetting());
 		await setupSupabaseMocks(page, store);
 
@@ -46,6 +48,35 @@ test.describe("확장 옵션 페이지", () => {
 		await expect(optionsPage.locator("#response-language")).toContainText(
 			nextLanguage,
 		);
+	});
+
+	test("AI 기능 카드는 요약·AI 채팅이 기본으로 꺼져 있고, 켜면 자동 저장되어 새로 열어도 유지된다.", async ({
+		page,
+	}) => {
+		const optionsPage = await page.context().newPage();
+		await optionsPage.goto(getExtensionUrl("options/index.html"));
+
+		const summarySwitch = optionsPage.locator("#summary-enabled");
+		const chatSwitch = optionsPage.locator("#ai-chat-enabled");
+		await expect(summarySwitch).toBeEnabled();
+		await expect(summarySwitch).toHaveAttribute("data-state", "unchecked");
+		await expect(chatSwitch).toHaveAttribute("data-state", "unchecked");
+
+		await summarySwitch.click();
+		await expect(summarySwitch).toHaveAttribute("data-state", "checked");
+		await expect(
+			optionsPage.getByText(/^(Saved|저장했어요)$/).last(),
+		).toBeVisible();
+		await expect(chatSwitch).toHaveAttribute("data-state", "unchecked");
+
+		await optionsPage.reload();
+		await expect(summarySwitch).toBeEnabled();
+		await expect(summarySwitch).toHaveAttribute("data-state", "checked");
+		await expect(chatSwitch).toHaveAttribute("data-state", "unchecked");
+		expect(store.getSetting()).toMatchObject({
+			show_summary: true,
+			show_ai_chat: false,
+		});
 	});
 
 	test("카테고리 자동 적용 설정은 표시하지 않는다.", async ({ page }) => {

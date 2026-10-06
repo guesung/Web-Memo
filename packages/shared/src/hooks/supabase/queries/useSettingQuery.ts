@@ -24,6 +24,8 @@ const useSettingQuery = () => {
 		truncateMemoContent: query.data?.data?.truncate_memo_content ?? true,
 		showImpression: query.data?.data?.show_impression ?? false,
 		showActionItem: query.data?.data?.show_action_item ?? false,
+		showSummary: query.data?.data?.show_summary ?? false,
+		showAiChat: query.data?.data?.show_ai_chat ?? false,
 	};
 };
 

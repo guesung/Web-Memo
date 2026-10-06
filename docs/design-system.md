@@ -30,7 +30,7 @@
 | 표시 | `Card` · `Badge` · `Alert` · `Avatar` · `Separator` · `Table` · `Progress` · `Chart`(recharts) · `Calendar`(react-day-picker) · `Carousel`(embla) | 〃 |
 | 구조 | `Tabs` · `Accordion` · `Collapsible` · `Sidebar` · `NavigationMenu` · `Menubar` · `Breadcrumb` · `Pagination` · `ScrollArea` · `Resizable` · `AspectRatio` | 〃 |
 | 상태 | `Skeleton` · `Loading` · `Toast` + `Toaster` · `ErrorBoundary` · `ErrorFallback` · `ToggleTheme` | 〃 |
-| 웹 전용 | `Header` · `DragBox` · `YoutubeEmbed` · `HydrationBoundaryWrapper` | `apps/web/src/components/` |
+| 웹 전용 | `Header` · `DragBox` · `HydrationBoundaryWrapper` | `apps/web/src/components/` |
 | 페이지 전용 | 해당 라우트의 `_components/` (예: `memos/_components/MemoView`, `highlights/_components/HighlightListSkeleton`) | `apps/web/src/app/[lng]/...` |
 
 > `sonner`는 의존성에 있으나 `index.ts`에서 주석 처리돼 있습니다. **토스트는 `Toast`/`Toaster`(Radix)를 씁니다.**

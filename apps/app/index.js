@@ -7,5 +7,9 @@ import "expo-router/entry";
 // 확장은 index.share.js라는 별도 번들을 쓰므로 이 등록과 겹치지 않는다.
 import { AppRegistry } from "react-native";
 import ShareExtension from "@/components/shareExtension/ShareExtension";
+// NativeWind 스타일시트는 진입점에서 등록한다. app/_layout.tsx에서만 읽으면 ShareActivity가
+// 본 앱보다 먼저 뜨는(앱이 꺼진 상태에서 공유) 경우 라우터 루트가 평가되지 않아 className이
+// 전부 빈 스타일로 풀린다.
+import "./global.css";
 
 AppRegistry.registerComponent("shareExtension", () => ShareExtension);

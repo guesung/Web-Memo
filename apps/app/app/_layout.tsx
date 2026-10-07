@@ -11,7 +11,6 @@ import { AuthProvider, useAuth } from "@/lib/auth/AuthProvider";
 import { ThemeProvider, useTheme } from "@/lib/context/ThemeContext";
 import { migrateSharedExtensionPendingUrls } from "@/lib/sharing/pendingSharedUrls";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
-import "../global.css";
 
 SplashScreen.preventAutoHideAsync();
 

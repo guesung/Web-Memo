@@ -204,10 +204,7 @@ function ShareSheet(props: IFShareExtensionProps) {
 						onPress={handleCompleteButtonClick}
 						className="items-center rounded-xl bg-[#5b93f0] py-3"
 					>
-						<Text
-							className="font-semibold text-white"
-							allowFontScaling={false}
-						>
+						<Text className="font-semibold text-white" allowFontScaling={false}>
 							완료
 						</Text>
 					</TouchableOpacity>

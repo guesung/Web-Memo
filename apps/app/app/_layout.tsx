@@ -29,7 +29,6 @@ import { useNotificationObserver } from "@/lib/notifications/useNotificationObse
 import { migrateSharedExtensionPendingUrls } from "@/lib/sharing/pendingSharedUrls";
 import { syncFavoritesToSupabase } from "@/lib/storage/favoriteSync";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
-import "../global.css";
 
 SplashScreen.preventAutoHideAsync();
 

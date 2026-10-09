@@ -2,12 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createBridge, defineMessage } from "./createBridge";
 
 const mocks = vi.hoisted(() => ({
+	config: { buildEnv: "development" },
 	internal: vi.fn(),
 	external: vi.fn(),
 	tab: vi.fn(),
 	onMessage: vi.fn(),
 	onMessageExternal: vi.fn(),
 }));
+vi.mock("@web-memo/env", () => ({ CONFIG: mocks.config }));
 vi.mock("../../utils/extension", () => ({
 	Runtime: {
 		sendMessage: mocks.internal,
@@ -32,6 +34,7 @@ afterEach(() => {
 });
 beforeEach(() => {
 	vi.clearAllMocks();
+	mocks.config.buildEnv = "development";
 	vi.stubGlobal("chrome", { runtime: {} });
 	info = vi.spyOn(console, "info").mockImplementation(() => {});
 });
@@ -196,5 +199,54 @@ describe("extension bridge request logs", () => {
 		mocks.internal.mockResolvedValue(secret);
 		await bridge.request.OPEN_SIDE_PANEL({ token: secret });
 		expect(JSON.stringify(info.mock.calls)).not.toContain(secret);
+	});
+});
+
+describe.each(["staging", "production"])("%s bridge logs", (buildEnv) => {
+	beforeEach(() => {
+		mocks.config.buildEnv = buildEnv;
+	});
+
+	it("각 전송 방향의 응답을 유지하고 로그를 출력하지 않는다", async () => {
+		const bridge = createBridge(schema);
+		mocks.internal.mockResolvedValue("internal response");
+		mocks.external.mockResolvedValue("external response");
+		mocks.tab.mockResolvedValue("tab response");
+		expect(await bridge.request.OPEN_SIDE_PANEL({ token: secret })).toBe(
+			"internal response",
+		);
+		expect(await bridge.request.GET_SIDE_PANEL_OPEN()).toBe(
+			"external response",
+		);
+		expect(await bridge.request.PAGE_CONTENT({ url: secret })).toBe(
+			"tab response",
+		);
+		expect(info).not.toHaveBeenCalled();
+	});
+
+	it("동기·비동기 오류를 그대로 전달하고 로그를 출력하지 않는다", async () => {
+		const error = new Error(secret);
+		const bridge = createBridge(schema);
+		mocks.internal.mockImplementation(() => {
+			throw error;
+		});
+		expect(() => bridge.request.OPEN_SIDE_PANEL({ token: secret })).toThrow(
+			error,
+		);
+		mocks.tab.mockRejectedValue(error);
+		await expect(bridge.request.PAGE_CONTENT({ url: secret })).rejects.toBe(
+			error,
+		);
+		expect(info).not.toHaveBeenCalled();
+	});
+
+	it("Chrome 런타임이 없어도 전송과 로그를 생략한다", async () => {
+		vi.stubGlobal("chrome", undefined);
+		const bridge = createBridge(schema);
+		expect(
+			await bridge.request.OPEN_SIDE_PANEL({ token: secret }),
+		).toBeUndefined();
+		expect(mocks.internal).not.toHaveBeenCalled();
+		expect(info).not.toHaveBeenCalled();
 	});
 });

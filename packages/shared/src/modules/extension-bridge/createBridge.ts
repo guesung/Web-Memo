@@ -1,3 +1,4 @@
+import { CONFIG } from "@web-memo/env";
 import { Runtime, Tab } from "../../utils/extension";
 import type { BRIDGE_MESSAGE_TYPE } from "./type";
 
@@ -67,7 +68,9 @@ export function createBridge<
 		(request as Record<string, unknown>)[key] = ((payload?: unknown) => {
 			const id = ++nextRequestId;
 			function log(stage: "request" | "skipped" | "response" | "failure") {
-				console.info("[extension-bridge]", { id, key, direction, stage });
+				if (CONFIG.buildEnv === "development") {
+					console.info("[extension-bridge]", { id, key, direction, stage });
+				}
 			}
 			log("request");
 			if (!isChromeExtensionEnvironment()) {

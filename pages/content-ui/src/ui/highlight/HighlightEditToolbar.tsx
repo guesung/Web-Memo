@@ -13,8 +13,6 @@ import { HighlightMemoAction } from "./HighlightMemoAction";
 interface IFHighlightEditToolbarProps {
 	state: IFHighlightEditState;
 	initialNoteOpen?: boolean;
-	initialMemoOpen?: boolean;
-	memoDrafts?: Map<number, string>;
 	onHighlightEdit: (
 		action:
 			| { action: "delete" }
@@ -28,22 +26,14 @@ export const HighlightEditToolbar = (props: IFHighlightEditToolbarProps) => {
 	const toolbarRef = useRef<HTMLDivElement>(null);
 	const currentRowIdRef = useRef(props.state.row.id);
 	const [isNoteOpen, setIsNoteOpen] = useState(props.initialNoteOpen ?? false);
-	const [isMemoOpen, setIsMemoOpen] = useState(props.initialMemoOpen ?? false);
 	const [note, setNote] = useState(props.state.row.note ?? "");
-	const memoDraftsRef = useRef(props.memoDrafts ?? new Map<number, string>());
 	useEffect(() => {
 		if (currentRowIdRef.current !== props.state.row.id) {
 			currentRowIdRef.current = props.state.row.id;
 			setNote(props.state.row.note ?? "");
 			setIsNoteOpen(props.initialNoteOpen ?? false);
-			setIsMemoOpen(props.initialMemoOpen ?? false);
 		}
-	}, [
-		props.state.row.id,
-		props.state.row.note,
-		props.initialNoteOpen,
-		props.initialMemoOpen,
-	]);
+	}, [props.state.row.id, props.state.row.note, props.initialNoteOpen]);
 	useEffect(() => {
 		setNote(props.state.row.note ?? "");
 	}, [props.state.row.note]);
@@ -84,7 +74,7 @@ export const HighlightEditToolbar = (props: IFHighlightEditToolbarProps) => {
 					8,
 					Math.min(
 						props.state.y,
-						window.innerHeight - (isNoteOpen || isMemoOpen ? 360 : 150),
+						window.innerHeight - (isNoteOpen ? 360 : 150),
 					),
 				),
 			}}
@@ -151,13 +141,7 @@ export const HighlightEditToolbar = (props: IFHighlightEditToolbarProps) => {
 					</button>
 				</form>
 			)}
-			<HighlightMemoAction
-				key={props.state.row.id}
-				row={props.state.row}
-				initialOpen={props.initialMemoOpen}
-				drafts={memoDraftsRef.current}
-				onOpenChange={setIsMemoOpen}
-			/>
+			<HighlightMemoAction key={props.state.row.id} row={props.state.row} />
 			<button
 				type="button"
 				disabled={props.state.isSaving}

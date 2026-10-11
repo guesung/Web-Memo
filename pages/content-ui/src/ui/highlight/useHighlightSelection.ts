@@ -7,9 +7,10 @@ import {
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import {
 	type HighlightRenderer,
+	resolveAnchor,
 	toHighlightItem,
 } from "@web-memo/shared/modules/highlight";
-import { normalizeUrl } from "@web-memo/shared/utils/url";
+import { getPageKey, normalizeUrl } from "@web-memo/shared/utils/url";
 import { useEffect, useRef, useState } from "react";
 import { reportContentUiError } from "../../utils/reportError";
 import {
@@ -33,8 +34,6 @@ export interface IFHighlightSelectionOptions {
 export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 	const [editState, setEditState] = useState<IFHighlightEditState | null>(null);
 	const [isCreatedNoteOpen, setIsCreatedNoteOpen] = useState(false);
-	const [isCreatedMemoOpen, setIsCreatedMemoOpen] = useState(false);
-	const memoDraftsRef = useRef(new Map<number, string>());
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const [menuError, setMenuError] = useState("");
 	const [lastUsedColor, setLastUsedColor] = useState<HighlightColor>("yellow");
@@ -58,6 +57,10 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 	const isIntroPendingRef = useRef(isIntroPending);
 	const [disabledNoticePosition, setDisabledNoticePosition] =
 		useState<IFHighlightNoticePosition | null>(null);
+	const [panelOpenErrorPosition, setPanelOpenErrorPosition] = useState<{
+		x: number;
+		y: number;
+	} | null>(null);
 	useEffect(() => {
 		let generation = 0;
 		let isStopped = false;
@@ -67,7 +70,6 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			const url = location.href;
 			stopRestore?.();
 			options.notesById.clear();
-			memoDraftsRef.current.clear();
 			try {
 				const response = await bridge.request.GET_HIGHLIGHTS_BY_URL({ url });
 				if (
@@ -107,11 +109,13 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			requestCreate: bridge.request.CREATE_HIGHLIGHT,
 			onSelectionChange: (nextState) => {
 				setSelectionState(nextState);
+				if (nextState) setPanelOpenErrorPosition(null);
 				if (!nextState) {
 					setIsMenuOpen(false);
 				}
 			},
 			onPageChange: () => {
+				setPanelOpenErrorPosition(null);
 				void restorePage();
 			},
 			isSelectionEnabled: () => isBubbleAllowedRef.current,
@@ -135,12 +139,45 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 				setEditState(nextState);
 				if (!nextState) {
 					setIsCreatedNoteOpen(false);
-					setIsCreatedMemoOpen(false);
 				}
 			},
 			requestEdit: bridge.request.EDIT_HIGHLIGHT,
 		});
 		editorRef.current = editor;
+		const stopScrollHandler = bridge.handle.SCROLL_TO_HIGHLIGHT(
+			(payload, _sender, sendResponse) => {
+				try {
+					const { pageKey, id } = payload ?? {};
+					if (
+						typeof pageKey !== "string" ||
+						!pageKey ||
+						!Number.isSafeInteger(id) ||
+						getPageKey(location.href) !== pageKey
+					) {
+						sendResponse({ success: false });
+						return;
+					}
+					const row = controller.getRow(id);
+					if (!row || (row.page_key || getPageKey(row.url)) !== pageKey) {
+						sendResponse({ success: false });
+						return;
+					}
+					const range = resolveAnchor(toHighlightItem(row).anchor);
+					const target =
+						range?.startContainer instanceof Element
+							? range.startContainer
+							: range?.startContainer.parentElement;
+					if (!target?.isConnected || !target.scrollIntoView) {
+						sendResponse({ success: false });
+						return;
+					}
+					target.scrollIntoView({ block: "center" });
+					sendResponse({ success: true });
+				} catch {
+					sendResponse({ success: false });
+				}
+			},
+		);
 		void restorePage();
 		controllerRef.current = controller;
 
@@ -148,6 +185,7 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			isStopped = true;
 			generation += 1;
 			stopRestore?.();
+			stopScrollHandler();
 			editor.stop();
 			editorRef.current = null;
 			controller.stop();
@@ -192,13 +230,27 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			editorRef.current?.open(row, position.x, position.y);
 		}
 	};
+	const requestOpenPanel = (position: { x: number; y: number } | null) => {
+		// Chrome sidePanel.open needs the original click gesture; start before the save request.
+		void bridge.request.OPEN_SIDE_PANEL().then(
+			(response) => {
+				if (!response?.success) setPanelOpenErrorPosition(position);
+				else setPanelOpenErrorPosition(null);
+			},
+			(error) => {
+				reportContentUiError({
+					error,
+					feature: "highlight",
+					operation: "open-side-panel",
+					stage: "request",
+				});
+				setPanelOpenErrorPosition(position);
+			},
+		);
+	};
 	const handleHighlightMemoClick = async () => {
-		const position = selectionState;
-		const row = await controllerRef.current?.save(lastUsedColor);
-		if (row && position) {
-			setIsCreatedMemoOpen(true);
-			editorRef.current?.open(row, position.x, position.y);
-		}
+		requestOpenPanel(selectionState);
+		await controllerRef.current?.save(lastUsedColor);
 	};
 	const handleBubbleMenuClick = () => {
 		setMenuError("");
@@ -290,10 +342,10 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 		isMenuOpen,
 		menuError,
 		isCreatedNoteOpen,
-		isCreatedMemoOpen,
-		memoDrafts: memoDraftsRef.current,
 		isIntroVisible: isIntroPending,
 		disabledNoticePosition,
+		panelOpenErrorPosition,
+		handlePanelOpenRetry: () => requestOpenPanel(panelOpenErrorPosition),
 		handleHighlightColorClick,
 		handleHighlightNoteClick,
 		handleHighlightMemoClick,

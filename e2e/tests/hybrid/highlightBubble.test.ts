@@ -30,7 +30,7 @@ test("선택을 마치면 버블이 뜨고 X는 현재 선택만 닫으며 설�
 		create: chrome.i18n.getMessage("highlight_create"),
 		yellow: chrome.i18n.getMessage("highlight_color_yellow"),
 		note: chrome.i18n.getMessage("highlight_note"),
-		memoAdd: chrome.i18n.getMessage("highlight_memo_add"),
+		memoAdd: chrome.i18n.getMessage("highlight_panel_memo_action"),
 		settings: chrome.i18n.getMessage("highlight_bubble_settings"),
 		dismiss: chrome.i18n.getMessage("highlight_bubble_dismiss"),
 		disableSite: chrome.i18n.getMessage("highlight_bubble_disable_site"),
@@ -92,6 +92,43 @@ test("선택을 마치면 버블이 뜨고 X는 현재 선택만 닫으며 설�
 	await expect(
 		toolbar.getByRole("menuitem", { name: labels.disableAll }),
 	).toBeVisible();
+});
+
+test("선택 툴바의 메모 동작은 하이라이트를 저장하고 사이드 패널을 연다", async ({
+	page,
+}) => {
+	const store = new MockSupabaseStore();
+	await setupSupabaseMocks(page, store);
+	await login(page);
+	await skipGuide(page);
+	await openSidePanel(page);
+	const sidePanelPage = await findSidePanelPage(page);
+	await sidePanelPage.evaluate(async () => {
+		await chrome.storage.sync.set({
+			highlightBubbleEnabled: true,
+			highlightIntroSeen: true,
+			highlightDisabledSites: [],
+		});
+	});
+	const labels = await sidePanelPage.evaluate(() => ({
+		create: chrome.i18n.getMessage("highlight_create"),
+		memo: chrome.i18n.getMessage("highlight_panel_memo_action"),
+	}));
+	await page.evaluate((text) => {
+		const passage = document.createElement("p");
+		passage.id = "e2e-highlight-passage";
+		passage.textContent = text;
+		document.body.append(passage);
+	}, TEST_TEXT);
+	await selectPassage(page, 0, 24);
+	const toolbar = page.locator(TOOLBAR).getByRole("toolbar", {
+		name: labels.create,
+	});
+	await toolbar.getByRole("button", { name: labels.memo }).click();
+	await expect(toolbar).toBeHidden();
+	await expect.poll(() => store.getAllHighlights().length).toBe(1);
+	expect(store.getAllMemos()).toHaveLength(0);
+	expect(await findSidePanelPage(page)).toBeTruthy();
 });
 
 test("드래그 중에는 버블이 숨고 포인터를 놓으면 나타난다", async ({ page }) => {

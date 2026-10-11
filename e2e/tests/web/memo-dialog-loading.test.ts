@@ -114,21 +114,23 @@ test.describe("메모 상세의 즉시 표시와 백그라운드 조회 (Mocked)
 		const textarea = dialog.getByTestId("memo-textarea");
 		await expect(textarea).toHaveValue("Flicker memo");
 
-		// dialog 자신은 진입 페이드로 0에서 시작할 수 있지만, 그 안의 조상은 독자적으로 페이드하면 안 된다.
-		const innerOpacities = await textarea.evaluate((element) => {
+		// 진입 페이드는 dialog 자신의 CSS 애니메이션 하나여야 한다. 안쪽 조상이 따로 페이드하면
+		// 빈 박스가 먼저 보이고 내용이 뒤늦게 나타난다. JS 애니메이션은 끝난 뒤에도 인라인
+		// opacity를 남기므로, 타이밍과 무관하게 인라인 opacity의 유무로 판정한다.
+		const fadingAncestors = await textarea.evaluate((element) => {
 			const dialogElement = element.closest('[role="dialog"]');
-			const opacities: string[] = [];
+			const found: string[] = [];
 			for (
 				let current = element.parentElement;
 				current && current !== dialogElement;
 				current = current.parentElement
 			) {
-				opacities.push(getComputedStyle(current).opacity);
+				if (current.style.opacity !== "")
+					found.push(current.outerHTML.slice(0, 80));
 			}
-			return opacities;
+			return found;
 		});
-		expect(innerOpacities.length).toBeGreaterThan(0);
-		expect(innerOpacities.every((opacity) => opacity === "1")).toBe(true);
+		expect(fadingAncestors).toEqual([]);
 	});
 
 	test("백그라운드 최신값은 미편집 필드에만 반영하고 PATCH는 편집 필드만 보낸다", async ({

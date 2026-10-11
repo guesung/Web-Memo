@@ -19,6 +19,7 @@
 	"knip": "knip",
 		"seo:check": "node .github/scripts/seo/check-seo.mjs",
 		"seo:gsc": "node .github/scripts/seo/check-gsc.mjs",
+		"seo:gsc-demand": "node .github/scripts/seo/export-gsc-demand.mjs",
 		"seo:sheets": "node .github/scripts/seo/persist-seo-sheets.mjs",
 		"dev": "turbo watch dev --filter !@web-memo/app",
 		"dev-server": "pnpm -F hmr ready && pnpm -F hmr dev",

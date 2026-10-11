@@ -12,6 +12,7 @@
 | --- | --- |
 | 정의 위치 | CSS 변수 원천 → `packages/ui/global.css` (`:root` / `.dark`)<br>Tailwind 매핑 → `packages/tailwind-config/tailwind.config.js`<br>웹 전용 유틸 클래스 → `apps/web/src/app/globals.css` |
 | 컬러 | 역할 이름으로만 씁니다 — `background` / `foreground` / `card` / `popover` / `primary` / `secondary` / `muted` / `accent` / `destructive` / `border` / `input` / `ring`. 각각 `-foreground` 짝이 있습니다. 사이드바는 별도 계열(`sidebar-*`), 차트는 `chart-1~5`.<br>강조색은 파랑 계열(`--primary`: 라이트 `221 83% 53%`, 다크 `217 91% 60%`), 위험은 빨강(`--destructive`) |
+| 노란 인용 | `bg-highlight-yellow text-highlight-yellow-foreground`를 한 쌍으로 씁니다. 라이트 배경 `#fef3b0`/글자 `#29220b`, 다크 배경 `#473e15`/글자 `#fff3c4`. 인용 왼쪽 색상 막대는 기존 노랑 `#facc15`를 유지합니다 |
 | 타이포 | 본문 폰트는 **Pretendard**(`font-pretendard`, `apps/web/src/fonts/output/`에서 서브셋 로드). 그 외 `font-sans`(Inter) / `font-serif`(Lora) / `font-mono`(JetBrains Mono)는 CSS 변수로 열려 있으나 실제로는 거의 쓰지 않습니다.<br>크기 단계는 Tailwind 기본 스케일(`text-sm`~`text-4xl`)을 그대로 씁니다. 자간은 `--tracking-normal`(0rem) |
 | 간격 | Tailwind 기본 4px 스케일. 실제로 쓰는 단계는 `1·2·3·4·6·8·12·16`(=4~64px)이며 그 밖의 임의 값(`p-[13px]`)은 쓰지 않습니다 |
 | 모서리 | `--radius: 0.5rem` 하나가 원천. `rounded-lg`(=8px) / `rounded-md`(6px) / `rounded-sm`(4px)이 여기서 파생됩니다. 카드류에 `rounded-2xl`을 쓰는 자리가 소개 페이지에 있습니다 |
@@ -52,6 +53,12 @@
 | 에러 | 화면 단위는 `error.tsx` / `not-found.tsx` / `ErrorBoundary` + `ErrorFallback`(재시도 버튼 포함), 동작 단위 실패는 `Toast`. 사용자에게 스택이나 원문 에러 메시지를 노출하지 않고, Sentry로 보냅니다 |
 
 ## 카피
+
+확장 사이드 패널은 현재 페이지의 하이라이트를 메모 영역 위에서 함께 보여줍니다.
+기본은 최근 인용 두 개의 두 줄 미리보기이며, 전체 목록은 높이를 제한해 내부에서
+스크롤합니다. 접으면 제목과 개수를 남기고, 다시 펼치면 이전 보기 상태를 복원합니다.
+인용은 선택한 메모와 독립적인 페이지 자료이며 하이라이트 갱신으로 메모 입력을
+재설정하지 않습니다. 노란 인용은 위 토큰의 배경·글자색 쌍을 사용합니다.
 
 - 모든 사용자 노출 문구는 **번역 키**로 씁니다. `lng === "ko" ? ... : ...` 분기를 쓰지 않습니다
 - 예외: **한 언어에만 존재하는 페이지**(예: `/ko/compare/*`, 다른 언어 경로는 404)는 문구를 페이지 `_constants`에 그 언어로 둡니다. 쓰이지 않을 반대 언어 키를 만들지 않기 위해서이고, 언어 분기가 없으므로 위 금지 규칙과 충돌하지 않습니다

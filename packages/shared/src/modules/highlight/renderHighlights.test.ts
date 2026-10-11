@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from "vitest";
-import { HIGHLIGHT_COLOR_STYLE } from "../../constants/Highlight";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+	HIGHLIGHT_COLOR_STYLE,
+	HIGHLIGHT_SOURCE_YELLOW_STYLE,
+} from "../../constants/Highlight";
 import { createHighlightRenderer } from "./renderHighlights";
 
 function setup(): { root: HTMLElement; range: Range } {
@@ -25,6 +28,18 @@ describe("createHighlightRenderer (폴백 경로)", () => {
 	// data-webmemo-hl span이 document 전역 조회(remove/setColor)에 섞여 들어간다.
 	afterEach(() => {
 		document.body.innerHTML = "";
+		document.head.querySelector("#webmemo-highlight-style")?.remove();
+		vi.unstubAllGlobals();
+	});
+
+	it("노란 span은 사이트 글자색과 무관한 배경과 글자색을 함께 가진다", () => {
+		const { root, range } = setup();
+		root.style.color = "white";
+		createHighlightRenderer().add(1, range, "yellow");
+
+		const marked = root.querySelector<HTMLElement>("[data-webmemo-hl]");
+		expect(marked?.style.backgroundColor).toBe("rgb(254, 243, 176)");
+		expect(marked?.style.color).toBe("rgb(41, 34, 11)");
 	});
 
 	it("추가하면 선택 구간을 span으로 감싼다", () => {
@@ -58,6 +73,20 @@ describe("createHighlightRenderer (폴백 경로)", () => {
 		expect(marked.style.backgroundColor).toBe(
 			expectedProbe.style.backgroundColor,
 		);
+		expect(marked.style.color).toBe("");
+
+		renderer.setColor(1, "yellow");
+		expect(marked.style.backgroundColor).toBe("rgb(254, 243, 176)");
+		expect(marked.style.color).toBe("rgb(41, 34, 11)");
+	});
+
+	it("다른 색은 기존 반투명 배경을 사용하고 글자색을 지정하지 않는다", () => {
+		const { root, range } = setup();
+		createHighlightRenderer().add(1, range, "green");
+
+		const marked = root.querySelector<HTMLElement>("[data-webmemo-hl]");
+		expect(marked?.style.backgroundColor).toBe("rgba(74, 222, 128, 0.4)");
+		expect(marked?.style.color).toBe("");
 	});
 
 	it("제거하면 span이 사라진다", () => {
@@ -170,5 +199,33 @@ describe("createHighlightRenderer (폴백 경로)", () => {
 
 		expect(root.textContent).toBe("앞강조뒤");
 		expect(root.querySelector("[data-webmemo-hl]")?.textContent).toBe("강조뒤");
+	});
+});
+
+describe("createHighlightRenderer (CSS Highlight API 경로)", () => {
+	afterEach(() => {
+		document.body.innerHTML = "";
+		document.head.querySelector("#webmemo-highlight-style")?.remove();
+		vi.unstubAllGlobals();
+	});
+
+	it("노란 규칙은 불투명 배경과 글자색을 함께 지정하고 다른 색은 유지한다", () => {
+		const highlights = { set: vi.fn(), delete: vi.fn() };
+		vi.stubGlobal("CSS", { highlights });
+		vi.stubGlobal("Highlight", class {});
+		const { range } = setup();
+		createHighlightRenderer().add(1, range, "yellow");
+
+		const css = document.querySelector("#webmemo-highlight-style")?.textContent;
+		expect(css).toContain(
+			`::highlight(webmemo-yellow) { background-color: ${HIGHLIGHT_SOURCE_YELLOW_STYLE.background}; color: ${HIGHLIGHT_SOURCE_YELLOW_STYLE.foreground}; }`,
+		);
+		expect(css).toContain(
+			`::highlight(webmemo-green) { background-color: ${HIGHLIGHT_COLOR_STYLE.green.background}; }`,
+		);
+		expect(highlights.set).toHaveBeenCalledWith(
+			"webmemo-yellow",
+			expect.any(Object),
+		);
 	});
 });

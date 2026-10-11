@@ -2,7 +2,11 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
-import type { GetMemoResponse, HighlightRow } from "@web-memo/shared/types";
+import type {
+	GetMemoResponse,
+	HighlightMemoLink,
+	HighlightRow,
+} from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
 import { Card, CardContent } from "@web-memo/ui";
 import { motion } from "framer-motion";
@@ -19,12 +23,14 @@ import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
 import type { SearchFormValues } from "../MemoSearchFormProvider";
 import useIsContentClamped from "./_hooks/useIsContentClamped";
+import { MemoSourceQuote } from "./MemoSourceQuote";
 import { holdScrollPosition } from "./scrollPositionHold";
 
 /** 메모 카드 표시와 선택 속성. */
 interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	memo: GetMemoResponse;
 	highlights?: HighlightRow[];
+	source?: HighlightMemoLink;
 	isSelectingMode?: boolean;
 	selectMemoItem?: (id: number) => void;
 	isMemoSelected?: boolean;
@@ -53,6 +59,7 @@ function MemoItem({
 	lng,
 	memo,
 	highlights,
+	source,
 	selectMemoItem,
 	isSelectingMode,
 	isMemoSelected,
@@ -206,6 +213,7 @@ function MemoItem({
 						isMemoSelected={isMemoSelected}
 						selectMemoItem={selectMemoItem}
 					/>
+					{source && <MemoSourceQuote lng={lng} source={source} isPreview />}
 					{memo.memo?.trim() && (
 						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces [overflow-wrap:anywhere]">
 							<p

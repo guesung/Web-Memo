@@ -4,6 +4,7 @@ import { useCategoryQuery, useTabQuery } from "@web-memo/shared/hooks";
 import {
 	analytics,
 	type TCategoryChangeSource,
+	type TCategorySuggestionTrigger,
 } from "@web-memo/shared/modules/analytics";
 import { getTabInfo, I18n } from "@web-memo/shared/utils/extension";
 import { toast } from "@web-memo/ui";
@@ -34,6 +35,7 @@ export const useCategorySuggestion = ({
 	const abortControllerRef = useRef<AbortController | null>(null);
 	const requestSequenceRef = useRef(0);
 	const dismissedUrlsRef = useRef(new Set<string>());
+	const failedUrlsRef = useRef(new Set<string>());
 	const currentUrlRef = useRef<string | null>(null);
 	const suggestionMemoIdRef = useRef<number | null>(null);
 	const firstSuggestedMemoIdRef = useRef<number | null>(null);
@@ -57,7 +59,7 @@ export const useCategorySuggestion = ({
 	};
 	const previousTabUrlRef = useRef(tab?.url);
 	const previousMemoIdRef = useRef(currentMemoId);
-	const acceptSuggestion = async () => {
+	const acceptSuggestion = async (trigger: TCategorySuggestionTrigger) => {
 		const activeSuggestion = suggestionRef.current;
 		const isAlreadyAssigned = Boolean(getValues("categoryId"));
 		if (!activeSuggestion || isAcceptingRef.current || isAlreadyAssigned) {
@@ -82,7 +84,7 @@ export const useCategorySuggestion = ({
 			onCategorySelect(activeSuggestion.existingCategoryId, "ai");
 			analytics.trackEvent({
 				name: "category_suggestion_apply",
-				params: { source: "jev", is_new_category: false },
+				params: { source: "jev", is_new_category: false, trigger },
 			});
 			suggestionRef.current = null;
 			setSuggestion(null);
@@ -105,11 +107,17 @@ export const useCategorySuggestion = ({
 		}
 		firstSuggestedMemoIdRef.current = currentMemoIdRef.current;
 		const requestSequence = ++requestSequenceRef.current;
+		let requestedUrl: string | null = null;
 		try {
 			const tabInfo = await getTabInfo();
-			if (!tabInfo.url || dismissedUrlsRef.current.has(tabInfo.url)) {
+			if (
+				!tabInfo.url ||
+				dismissedUrlsRef.current.has(tabInfo.url) ||
+				failedUrlsRef.current.has(tabInfo.url)
+			) {
 				return;
 			}
+			requestedUrl = tabInfo.url;
 			const requestedMemoId = currentMemoIdRef.current;
 			const isRequestOutdated = async () => {
 				const latestTab = await getTabInfo();
@@ -146,6 +154,7 @@ export const useCategorySuggestion = ({
 					(category) => category.id === result.existingCategoryId,
 				)
 			) {
+				failedUrlsRef.current.add(tabInfo.url);
 				return;
 			}
 			analytics.trackEvent({
@@ -158,6 +167,9 @@ export const useCategorySuggestion = ({
 		} catch (error) {
 			if (!(error instanceof Error && error.name === "AbortError")) {
 				Sentry.captureException(error);
+				if (requestedUrl && requestSequence === requestSequenceRef.current) {
+					failedUrlsRef.current.add(requestedUrl);
+				}
 			}
 		} finally {
 			if (requestSequence === requestSequenceRef.current) {

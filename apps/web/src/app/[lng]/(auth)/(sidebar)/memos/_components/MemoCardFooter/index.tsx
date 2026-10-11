@@ -7,7 +7,14 @@ import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
-import { Badge, Button, CardFooter, ToastAction, toast } from "@web-memo/ui";
+import {
+	Badge,
+	Button,
+	CardFooter,
+	IconTooltip,
+	ToastAction,
+	toast,
+} from "@web-memo/ui";
 import dayjs from "dayjs";
 import { BookOpen, Clock, FolderIcon, HeartIcon, StarIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -210,63 +217,85 @@ function MemoCardFooter({
 					"opacity-40 hover:opacity-100": !isShowingOption && !isDropdownOpen,
 				})}
 			>
-				<Button
-					variant="ghost"
-					size="sm"
-					className="w-8 h-8 p-0 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-full"
-					aria-label={t("memos.toggle.wish")}
-					aria-pressed={Boolean(memo.isWish)}
-					onClick={handleIsWishClick}
+				<IconTooltip
+					label={t(
+						memo.isWish ? "memos.tooltip.wishRemove" : "memos.tooltip.wishAdd",
+					)}
 				>
-					<HeartIcon
-						size={16}
-						fill={memo.isWish ? "currentColor" : "none"}
-						className={cn(
-							"transition-all",
-							memo.isWish ? "text-pink-500 scale-110" : "text-muted-foreground",
-							"hover:scale-125",
-						)}
-					/>
-				</Button>
-				<Button
-					variant="ghost"
-					size="sm"
-					className="w-8 h-8 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-full"
-					aria-label={t("memos.toggle.reading")}
-					aria-pressed={Boolean(memo.isReading)}
-					onClick={handleIsReadingClick}
+					<Button
+						variant="ghost"
+						size="sm"
+						className="w-8 h-8 p-0 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-full"
+						aria-label={t("memos.toggle.wish")}
+						aria-pressed={Boolean(memo.isWish)}
+						onClick={handleIsWishClick}
+					>
+						<HeartIcon
+							size={16}
+							fill={memo.isWish ? "currentColor" : "none"}
+							className={cn(
+								"transition-all",
+								memo.isWish
+									? "text-pink-500 scale-110"
+									: "text-muted-foreground",
+								"hover:scale-125",
+							)}
+						/>
+					</Button>
+				</IconTooltip>
+				<IconTooltip
+					label={t(
+						memo.isReading
+							? "memos.tooltip.readingRemove"
+							: "memos.tooltip.readingAdd",
+					)}
 				>
-					<BookOpen
-						size={16}
-						className={cn(
-							"transition-all",
-							memo.isReading
-								? "text-emerald-500 scale-110"
-								: "text-muted-foreground",
-							"hover:scale-125",
-						)}
-					/>
-				</Button>
-				<Button
-					variant="ghost"
-					size="sm"
-					className="w-8 h-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-full"
-					aria-label={t("memos.toggle.star")}
-					aria-pressed={Boolean(memo.isStar)}
-					onClick={handleIsStarClick}
+					<Button
+						variant="ghost"
+						size="sm"
+						className="w-8 h-8 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-full"
+						aria-label={t("memos.toggle.reading")}
+						aria-pressed={Boolean(memo.isReading)}
+						onClick={handleIsReadingClick}
+					>
+						<BookOpen
+							size={16}
+							className={cn(
+								"transition-all",
+								memo.isReading
+									? "text-emerald-500 scale-110"
+									: "text-muted-foreground",
+								"hover:scale-125",
+							)}
+						/>
+					</Button>
+				</IconTooltip>
+				<IconTooltip
+					label={t(
+						memo.isStar ? "memos.tooltip.starRemove" : "memos.tooltip.starAdd",
+					)}
 				>
-					<StarIcon
-						size={16}
-						fill={memo.isStar ? "currentColor" : "none"}
-						className={cn(
-							"transition-all",
-							memo.isStar
-								? "text-amber-500 scale-110"
-								: "text-muted-foreground",
-							"hover:scale-125",
-						)}
-					/>
-				</Button>
+					<Button
+						variant="ghost"
+						size="sm"
+						className="w-8 h-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-full"
+						aria-label={t("memos.toggle.star")}
+						aria-pressed={Boolean(memo.isStar)}
+						onClick={handleIsStarClick}
+					>
+						<StarIcon
+							size={16}
+							fill={memo.isStar ? "currentColor" : "none"}
+							className={cn(
+								"transition-all",
+								memo.isStar
+									? "text-amber-500 scale-110"
+									: "text-muted-foreground",
+								"hover:scale-125",
+							)}
+						/>
+					</Button>
+				</IconTooltip>
 				<MemoOption memos={[memo]} lng={lng} onOpenChange={setIsDropdownOpen} />
 				{children}
 			</div>

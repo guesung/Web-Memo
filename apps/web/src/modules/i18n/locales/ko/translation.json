@@ -509,6 +509,14 @@
 		"actionItemPlaceholder": "이 페이지를 보고 할 일을 적어보세요"
 	},
 	"memos": {
+		"tooltip": {
+			"wishAdd": "위시리스트에 추가",
+			"wishRemove": "위시리스트에서 빼기",
+			"readingAdd": "읽는 중으로 표시",
+			"readingRemove": "읽는 중에서 빼기",
+			"starAdd": "중요 메모로 표시",
+			"starRemove": "중요 메모에서 빼기"
+		},
 		"view": {
 			"truncateContent": "메모 내용 줄여 보기",
 			"unknownDate": "작성일 없음",

@@ -514,6 +514,14 @@
 		"actionItemPlaceholder": "Write what to do after reading this page"
 	},
 	"memos": {
+		"tooltip": {
+			"wishAdd": "Add to wishlist",
+			"wishRemove": "Remove from wishlist",
+			"readingAdd": "Mark as reading",
+			"readingRemove": "Remove from reading",
+			"starAdd": "Mark as important",
+			"starRemove": "Remove from important"
+		},
 		"view": {
 			"truncateContent": "Shorten memo content",
 			"unknownDate": "No creation date",

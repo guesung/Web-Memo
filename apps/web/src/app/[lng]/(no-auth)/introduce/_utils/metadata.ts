@@ -4,15 +4,15 @@ import { createPublicPageMetadata } from "../../_utils";
 export const metadataKorean = createPublicPageMetadata({
 	language: "ko",
 	path: "/introduce",
-	title: "웹 메모 - 칠하고, 바로 옆에 생각을 적어요",
+	title: "웹 메모 - 글 읽으며 메모하세요",
 	description:
-		"읽던 글에서 문장을 칠하고, 그 옆에 떠오른 생각을 적어요. 칠한 문장과 메모는 출처와 함께 한곳에 모여요. 같은 계정으로 웹과 앱에서 확인할 수 있어요.",
+		"글을 읽다가 떠오른 생각을 사이드 패널에 적어요. 페이지 제목과 주소는 자동으로 기록됩니다. 같은 계정으로 웹과 앱에서 메모를 확인할 수 있어요.",
 });
 /** 공개 페이지의 영어 검색 및 공유 메타데이터입니다. */
 export const metadataEnglish = createPublicPageMetadata({
 	language: "en",
 	path: "/introduce",
-	title: "Web Memo - Highlight It, Write Beside It",
+	title: "Web Memo - Take Notes While Reading",
 	description:
-		"Highlight a passage in what you're reading and write down what it made you think. Highlights and notes gather in one place, with their source.",
+		"Write down thoughts in the side panel as you read. The page title and URL are saved automatically. View your notes on web and app with the same account.",
 });

@@ -9,7 +9,7 @@ import type { TLandingPageConfig } from "../../../_components";
  */
 export const RESEARCH_PAGE: TLandingPageConfig = {
 	pageKey: "useCasesResearch",
-	screenshotNumber: 4,
+	screenshotNumber: 3,
 	benefits: [
 		{ key: "capture", icon: FileText },
 		{ key: "summarize", icon: Brain },

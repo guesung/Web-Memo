@@ -6,7 +6,6 @@ import { cn } from "@web-memo/shared/utils";
 import {
 	ArrowRight,
 	FolderOpen,
-	Highlighter,
 	Keyboard,
 	Link2,
 	PanelsTopLeft,
@@ -34,12 +33,6 @@ const Features = async ({ lng, background }: IFFeaturesProps) => {
 	const { t } = await getTranslation(lng);
 
 	const features = [
-		{
-			icon: Highlighter,
-			title: t("introduce.features.highlight.title"),
-			description: t("introduce.features.highlight.description"),
-			href: null,
-		},
 		{
 			icon: Pencil,
 			title: t("introduce.features.memo.title"),

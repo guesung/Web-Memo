@@ -39,6 +39,6 @@ export const COMPARE_PAGE_COPY = {
 	finalCTA: {
 		title: "읽으면서 바로 적고 싶다면",
 		description:
-			"웹 메모는 무료예요. 설치하고 로그인하면 읽던 글에 바로 칠하고 옆에 메모할 수 있어요.",
+			"웹 메모는 무료예요. 설치하고 로그인하면 읽던 페이지 옆 사이드 패널에서 바로 메모할 수 있어요.",
 	},
 } as const;

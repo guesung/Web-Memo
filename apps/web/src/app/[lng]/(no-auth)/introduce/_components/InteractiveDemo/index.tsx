@@ -5,11 +5,11 @@ import useTranslation from "@src/modules/i18n/util.client";
 import { cn } from "@web-memo/ui";
 import { useReducedMotion } from "framer-motion";
 import {
-	Highlighter,
+	FolderOpen,
 	Keyboard,
 	Link2,
-	Palette,
 	PanelsTopLeft,
+	Pencil,
 } from "lucide-react";
 import Image from "next/image";
 import { type FocusEvent, useEffect, useRef, useState } from "react";
@@ -32,11 +32,11 @@ const MANUAL_PAUSE_MS = 3000;
 
 /** 스토어 이미지의 메시지와 같은 순서로 표시하는 데모 장면입니다. */
 const DEMO_TABS = [
-	{ id: "highlight", icon: Highlighter, imageIndex: 1 },
-	{ id: "bubble", icon: Palette, imageIndex: 2 },
-	{ id: "shortcut", icon: Keyboard, imageIndex: 3 },
-	{ id: "source", icon: Link2, imageIndex: 4 },
-	{ id: "collect", icon: PanelsTopLeft, imageIndex: 5 },
+	{ id: "memo", icon: Pencil, imageIndex: 1 },
+	{ id: "shortcut", icon: Keyboard, imageIndex: 2 },
+	{ id: "source", icon: Link2, imageIndex: 3 },
+	{ id: "cross_device", icon: PanelsTopLeft, imageIndex: 4 },
+	{ id: "category", icon: FolderOpen, imageIndex: 5 },
 ];
 
 /** 데모에 필요한 언어와 배경 설정입니다. */

@@ -3,20 +3,19 @@ import { PATHS } from "@web-memo/shared/constants";
 import { expect, test } from "../fixtures/web";
 import { MockSupabaseStore, setupSupabaseMocks } from "../lib/mocks";
 
-/** 소개 페이지를 검증하는 지원 언어와 첫 장면·마지막 장면의 이름입니다. */
+/** 소개 페이지를 검증하는 지원 언어와 마지막 카테고리 장면의 이름입니다. */
 const LANGUAGES = [
 	{
 		language: "ko",
-		firstTabName: "하이라이트 메모",
-		lastTabName: "모아 보기",
-		lastImageAlt: "웹 하이라이트 페이지에 칠한 문장과 메모가 모여 있는 화면",
+		categoryTabName: "카테고리로 정리",
+		categoryImageAlt:
+			"웹 대시보드에서 카테고리를 선택해 해당 메모를 모아 보는 화면",
 	},
 	{
 		language: "en",
-		firstTabName: "Highlight and note",
-		lastTabName: "Browse them together",
-		lastImageAlt:
-			"The web highlights page gathering highlighted sentences and notes",
+		categoryTabName: "Organize by category",
+		categoryImageAlt:
+			"The web dashboard showing notes filtered by a selected category",
 	},
 ] as const;
 
@@ -31,12 +30,7 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 		await setupSupabaseMocks(page, new MockSupabaseStore());
 	});
 
-	for (const {
-		language,
-		firstTabName,
-		lastTabName,
-		lastImageAlt,
-	} of LANGUAGES) {
+	for (const { language, categoryTabName, categoryImageAlt } of LANGUAGES) {
 		test(`${language} 소개 문구와 설치 링크가 현재 제공 상태에 맞다.`, async ({
 			page,
 		}) => {
@@ -44,27 +38,22 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 
 			const isKorean = language === "ko";
 			const heroTitle = isKorean
-				? "칠하고, 바로 옆에 생각을 적어요"
-				: "Highlight it, then write your thought beside it";
+				? "글 읽으며 메모하세요"
+				: "Take notes while reading";
 			const heroSubtitle = isKorean
-				? "읽던 글에서 문장을 칠하고, 그 옆에 떠오른 생각을 적어요.\n칠한 문장과 메모는 출처와 함께 한곳에 모여요."
-				: "Highlight a passage in what you're reading and write down what it made you think.\nHighlights and notes gather in one place, with their source.";
-			const firstFeatureTitle = isKorean
-				? "문장을 칠하고, 옆에 메모해요"
-				: "Highlight a passage, note it beside it";
+				? "글을 읽다가 떠오른 생각을 사이드 패널에 적어요.\n페이지 제목과 주소는 자동으로 기록됩니다."
+				: "Write down thoughts in the side panel as you read.\nThe page title and URL are saved automatically.";
 			const demoTitle = isKorean ? "웹 메모 미리 보기" : "Preview Web Memo";
+			const sidePanelTab = isKorean ? "사이드 패널" : "Side panel";
 
 			await expect(page.getByRole("heading", { level: 1 })).toHaveText(
 				heroTitle,
 			);
 			await expect(page.locator("h1 + p")).toHaveText(heroSubtitle);
 			await expect(page.locator("h1 + p")).toHaveCSS("white-space", "pre-line");
-			await expect(page.getByRole("heading", { level: 3 }).first()).toHaveText(
-				firstFeatureTitle,
-			);
 			await expect(page.locator("#demo h2")).toHaveText(demoTitle);
 			await expect(
-				page.locator("#demo").getByRole("button", { name: firstTabName }),
+				page.locator("#demo").getByRole("button", { name: sidePanelTab }),
 			).toBeVisible();
 			await expect(page.locator('a[href*="apps.apple.com"]')).toHaveCount(0);
 		});
@@ -86,13 +75,13 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 			);
 			const previousAlt = await previousActiveImage.getAttribute("alt");
 
-			const lastTab = carousel.getByRole("button", {
-				name: lastTabName,
+			const categoryTab = carousel.getByRole("button", {
+				name: categoryTabName,
 			});
-			await lastTab.click();
-			await expect(lastTab).toHaveAttribute("aria-pressed", "true");
+			await categoryTab.click();
+			await expect(categoryTab).toHaveAttribute("aria-pressed", "true");
 
-			const nextImage = carousel.locator(`img[alt="${lastImageAlt}"]`);
+			const nextImage = carousel.locator(`img[alt="${categoryImageAlt}"]`);
 			const nextSlide = nextImage.locator("..");
 
 			await expect(nextSlide).not.toHaveAttribute("aria-hidden", "true");
@@ -114,14 +103,16 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 		await page.goto(`/ko${PATHS.introduce}`);
 
 		const carousel = page.locator('section[aria-roledescription="carousel"]');
-		const lastTab = carousel.getByRole("button", { name: "모아 보기" });
-		await lastTab.click();
+		const categoryTab = carousel.getByRole("button", {
+			name: "카테고리로 정리",
+		});
+		await categoryTab.click();
 
-		await lastTab.focus();
+		await categoryTab.focus();
 		await page.waitForTimeout(9000);
 
-		await expect(lastTab).toHaveAttribute("aria-pressed", "true");
-		await expect(lastTab).toBeFocused();
+		await expect(categoryTab).toHaveAttribute("aria-pressed", "true");
+		await expect(categoryTab).toBeFocused();
 	});
 });
 

@@ -9,7 +9,7 @@ import type { TLandingPageConfig } from "../../../_components";
  */
 export const JOB_HUNTING_PAGE: TLandingPageConfig = {
 	pageKey: "useCasesJobHunting",
-	screenshotNumber: 5,
+	screenshotNumber: 4,
 	benefits: [
 		{ key: "company", icon: Building2 },
 		{ key: "track", icon: ClipboardList },

@@ -33,6 +33,7 @@
 - **orca 메모에 작업카드가 없을 때**: 노션 URL 없이 시작한 `/web-memo:implement`·`/web-memo:implement-loop`가 새 카드를 만들지 묻는다. 규칙은 [orca-worktree.md](orca-worktree.md#카드-없음-확인)가 SSOT다. orca 밖이면 묻지 않고, `카드 없이 진행`을 골라도 그대로 돈다.
 - **master 대상 PR에서 작업 카드를 모를 때**: [`/web-memo:pr`](skills/pr/SKILL.md)이 카드를 묻는다. 카드 없이 master로 PR을 올리지 않는다. 파이프라인 안에서도 마찬가지다.
 - **`/common:problem-log`는 언제나 승인을 받는다.** 단독이든 작업 스킬(`/web-memo:implement-loop`·`/web-memo:implement`·`/web-memo:issue-solve`·`/web-memo:self-qa`)이 끝에서 부르든 같다 — 점검 규칙은 [problem-log](~/.agents/skills/common/skills/problem-log/SKILL.md#작업-스킬-끝의-점검)가 SSOT다. 작업 스킬은 PR·마지막 출력까지 다 낸 **뒤에** 점검하므로 파이프라인을 멈추지 않는다. 틀린 원인이 조용히 쌓이는 비용이 한 번 묻는 비용보다 크다.
+- **승인된 시각 시안 없이 UI를 구현하게 됐을 때**: `/web-memo:implement` §0-5가 목업을 보여주고 승인을 받는다. 정상 경로라면 시안은 ⑥(또는 discuss ③) 승인에 이미 포함되어 있어 여기까지 오지 않는다. 화면을 본 적 없는 채로 UI가 PR까지 가는 것을 막는다.
 - **사람이 `/web-memo:interview`를 직접 부른 경우**다. 묻는 것이 존재 이유라 단독 호출에서는 기존대로 묻는다.
 - **`/web-memo:discuss`** 는 사람과 같이 기획·설계를 정하는 입구다. 확정 전까지 결정 지점을 하나씩 사람에게 묻고 합의된 것만 쓰며, 자동 결정을 쓰지 않는다(되돌리는 비용 `낮음` 세부만 추천값을 넣고 설계 설명에 드러낸다). 확정 뒤로는 AI 경로와 똑같이 묻지 않는다.
 

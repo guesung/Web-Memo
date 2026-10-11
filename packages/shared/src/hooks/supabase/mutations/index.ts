@@ -6,7 +6,6 @@ export { default as useDeleteMemosMutation } from "./useDeleteMemosMutation";
 export { default as useDeleteMemosPermanentlyMutation } from "./useDeleteMemosPermanentlyMutation";
 export { default as useFavoriteAddMutation } from "./useFavoriteAddMutation";
 export { default as useFavoriteDeleteMutation } from "./useFavoriteDeleteMutation";
-export { default as useFavoriteTitleUpdateMutation } from "./useFavoriteTitleUpdateMutation";
 export { default as useFavoriteUpdateMutation } from "./useFavoriteUpdateMutation";
 export { default as useFeedbackMutation } from "./useFeedbackMutation";
 export { default as useMemoPatchMutation } from "./useMemoPatchMutation";

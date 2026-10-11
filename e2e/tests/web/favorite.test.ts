@@ -26,6 +26,8 @@ test.describe("즐겨찾기 페이지 (Mocked)", () => {
 			url: `${LANGUAGE}${PATHS.favorites}`,
 			regexp: new RegExp(PATHS.favorites),
 		});
+		// 목록이 서버에서 먼저 그려져 하이드레이션 전에 누른 클릭은 사라진다.
+		await page.waitForLoadState("networkidle");
 	}
 
 	test("사이드바에서 즐겨찾기 페이지로 이동한다.", async ({ page }) => {
@@ -86,26 +88,69 @@ test.describe("즐겨찾기 페이지 (Mocked)", () => {
 		await expect(links.last()).toContainText("오래된 글");
 	});
 
-	test("제목을 수정하면 목록과 저장소에 반영된다.", async ({ page }) => {
+	function formDialog(page: Parameters<typeof gotoSafely>[0]["page"]) {
+		return page.getByRole("dialog");
+	}
+
+	test("수정 다이얼로그는 현재 URL·제목이 채워져 열리고 제목에 포커스가 간다.", async ({
+		page,
+	}) => {
+		store.addFavorite(
+			createMockFavorite({ title: "수정 전 제목", url: "https://a.example/x" }),
+		);
+		await gotoFavorites(page);
+
+		await page.getByRole("button", { name: "Edit", exact: true }).click();
+
+		const dialog = formDialog(page);
+		await expect(
+			dialog.getByRole("heading", { name: "Edit favorite" }),
+		).toBeVisible();
+		await expect(dialog.getByLabel("URL")).toHaveValue("https://a.example/x");
+		await expect(dialog.getByLabel("Title")).toHaveValue("수정 전 제목");
+		await expect(dialog.getByLabel("Title")).toBeFocused();
+	});
+
+	test("제목을 수정해 저장하면 목록과 저장소에 반영된다.", async ({ page }) => {
 		store.addFavorite(createMockFavorite({ title: "수정 전 제목" }));
 		await gotoFavorites(page);
 
-		await page.getByRole("button", { name: "Edit title" }).click();
-		const input = page.getByRole("textbox", { name: "Edit title" });
-		await expect(input).toBeFocused();
-		await input.fill("  수정한 제목  ");
-		await input.press("Enter");
+		await page.getByRole("button", { name: "Edit", exact: true }).click();
+		await formDialog(page).getByLabel("Title").fill("  수정한 제목  ");
+		await formDialog(page).getByRole("button", { name: "Save" }).click();
 
+		await expect(formDialog(page)).toHaveCount(0);
+		await expect(
+			page.getByText("Favorite updated", { exact: true }),
+		).toBeVisible();
 		await expect(page.getByText("수정한 제목", { exact: true })).toBeVisible();
-		// 낙관적 갱신이 먼저 화면에 보이므로 저장소 반영은 요청이 끝날 때까지 기다린다.
-		await expect
-			.poll(() => store.getAllFavorites()[0]?.title)
-			.toBe("수정한 제목");
+		expect(store.getAllFavorites()[0]?.title).toBe("수정한 제목");
 	});
 
-	test("공백뿐이거나 바뀐 게 없으면 요청 없이 보기 모드로 돌아간다.", async ({
+	test("URL을 수정해 저장하면 도메인 표시와 저장소가 갱신된다.", async ({
 		page,
 	}) => {
+		store.addFavorite(
+			createMockFavorite({
+				title: "옮길 글",
+				url: "https://old.example.com/a",
+			}),
+		);
+		await gotoFavorites(page);
+
+		await page.getByRole("button", { name: "Edit", exact: true }).click();
+		await formDialog(page).getByLabel("URL").fill("new.example.org/b");
+		await formDialog(page).getByRole("button", { name: "Save" }).click();
+
+		const link = page.locator("main a[target='_blank']");
+		await expect(link).toContainText("new.example.org");
+		await expect(link).toHaveAttribute("href", "https://new.example.org/b");
+		const [saved] = store.getAllFavorites();
+		expect(saved?.url).toBe("https://new.example.org/b");
+		expect(saved?.page_key).toBe("https://new.example.org/b");
+	});
+
+	test("바뀐 게 없으면 요청 없이 다이얼로그를 닫는다.", async ({ page }) => {
 		store.addFavorite(createMockFavorite({ title: "그대로인 제목" }));
 		let patchCount = 0;
 		await page.route(FAVORITE_REST_PATTERN, async (route) => {
@@ -114,39 +159,30 @@ test.describe("즐겨찾기 페이지 (Mocked)", () => {
 		});
 		await gotoFavorites(page);
 
-		await page.getByRole("button", { name: "Edit title" }).click();
-		const blankInput = page.getByRole("textbox", { name: "Edit title" });
-		await blankInput.fill("   ");
-		await blankInput.press("Enter");
+		await page.getByRole("button", { name: "Edit", exact: true }).click();
+		await formDialog(page).getByRole("button", { name: "Save" }).click();
+
+		await expect(formDialog(page)).toHaveCount(0);
 		await expect(
 			page.getByText("그대로인 제목", { exact: true }),
 		).toBeVisible();
-
-		await page.getByRole("button", { name: "Edit title" }).click();
-		await page.getByRole("textbox", { name: "Edit title" }).press("Enter");
-		await expect(
-			page.getByText("그대로인 제목", { exact: true }),
-		).toBeVisible();
-
 		expect(patchCount).toBe(0);
 	});
 
-	test("Esc로 제목 수정을 취소한다.", async ({ page }) => {
+	test("수정을 취소하면 아무것도 바뀌지 않는다.", async ({ page }) => {
 		store.addFavorite(createMockFavorite({ title: "취소할 제목" }));
 		await gotoFavorites(page);
 
-		await page.getByRole("button", { name: "Edit title" }).click();
-		const input = page.getByRole("textbox", { name: "Edit title" });
-		await input.fill("저장되면 안 되는 제목");
-		await input.press("Escape");
+		await page.getByRole("button", { name: "Edit", exact: true }).click();
+		await formDialog(page).getByLabel("Title").fill("저장되면 안 되는 제목");
+		await formDialog(page).getByRole("button", { name: "Cancel" }).click();
 
+		await expect(formDialog(page)).toHaveCount(0);
 		await expect(page.getByText("취소할 제목", { exact: true })).toBeVisible();
 		expect(store.getAllFavorites()[0]?.title).toBe("취소할 제목");
 	});
 
-	test("제목 수정이 실패하면 원래 제목으로 되돌리고 알린다.", async ({
-		page,
-	}) => {
+	test("저장이 실패하면 다이얼로그를 유지하고 알린다.", async ({ page }) => {
 		store.addFavorite(createMockFavorite({ title: "원래 제목" }));
 		await page.route(FAVORITE_REST_PATTERN, async (route) => {
 			if (route.request().method() !== "PATCH") {
@@ -162,19 +198,143 @@ test.describe("즐겨찾기 페이지 (Mocked)", () => {
 		});
 		await gotoFavorites(page);
 
-		await page.getByRole("button", { name: "Edit title" }).click();
-		const input = page.getByRole("textbox", { name: "Edit title" });
-		await input.fill("바뀌면 안 되는 제목");
-		await input.press("Enter");
+		await page.getByRole("button", { name: "Edit", exact: true }).click();
+		await formDialog(page).getByLabel("Title").fill("바뀌면 안 되는 제목");
+		await formDialog(page).getByRole("button", { name: "Save" }).click();
 
 		await expect(
 			page.getByText(
-				"Couldn't change the title. Please try again in a moment.",
+				"Couldn't save the favorite. Please try again in a moment.",
 				{ exact: true },
 			),
 		).toBeVisible();
-		await expect(page.getByText("원래 제목", { exact: true })).toBeVisible();
-		await expect(page.getByText("바뀌면 안 되는 제목")).toHaveCount(0);
+		await expect(formDialog(page)).toBeVisible();
+		await expect(page.getByText("Mock failure")).toHaveCount(0);
+		expect(store.getAllFavorites()[0]?.title).toBe("원래 제목");
+	});
+
+	test("헤더의 추가 버튼으로 추가하면 목록 맨 위에 들어간다.", async ({
+		page,
+	}) => {
+		store.addFavorite(
+			createMockFavorite({ title: "기존 글", url: "https://old.example/a" }),
+		);
+		await gotoFavorites(page);
+
+		await page.getByRole("button", { name: "Add", exact: true }).click();
+		const dialog = formDialog(page);
+		await expect(
+			dialog.getByRole("heading", { name: "Add favorite" }),
+		).toBeVisible();
+		await expect(dialog.getByLabel("URL")).toBeFocused();
+		await dialog.getByLabel("URL").fill("https://new.example/b");
+		await dialog.getByLabel("Title").fill("새 글");
+		await dialog.getByRole("button", { name: "Add", exact: true }).click();
+
+		await expect(formDialog(page)).toHaveCount(0);
+		await expect(
+			page.getByText("Favorite added", { exact: true }),
+		).toBeVisible();
+		await expect(page.locator("main a[target='_blank']").first()).toContainText(
+			"새 글",
+		);
+		expect(store.getAllFavorites()).toHaveLength(2);
+	});
+
+	test("scheme 없이 입력하면 https로 저장한다.", async ({ page }) => {
+		await gotoFavorites(page);
+
+		await page
+			.getByRole("button", { name: "Add", exact: true })
+			.first()
+			.click();
+		await formDialog(page).getByLabel("URL").fill("  example.com/article  ");
+		await formDialog(page)
+			.getByRole("button", { name: "Add", exact: true })
+			.click();
+
+		await expect(formDialog(page)).toHaveCount(0);
+		expect(store.getAllFavorites()[0]?.url).toBe("https://example.com/article");
+	});
+
+	test("제목을 비우면 www를 뗀 도메인으로 저장한다.", async ({ page }) => {
+		await gotoFavorites(page);
+
+		await page
+			.getByRole("button", { name: "Add", exact: true })
+			.first()
+			.click();
+		await formDialog(page).getByLabel("URL").fill("https://www.example.com/a");
+		await formDialog(page)
+			.getByRole("button", { name: "Add", exact: true })
+			.click();
+
+		await expect(formDialog(page)).toHaveCount(0);
+		expect(store.getAllFavorites()[0]?.title).toBe("example.com");
+		await expect(page.locator("main a[target='_blank']").first()).toContainText(
+			"example.com",
+		);
+	});
+
+	test("올바르지 않은 URL이면 오류를 보여주고 요청하지 않는다.", async ({
+		page,
+	}) => {
+		let postCount = 0;
+		await page.route(FAVORITE_REST_PATTERN, async (route) => {
+			if (route.request().method() === "POST") postCount += 1;
+			await route.fallback();
+		});
+		await gotoFavorites(page);
+
+		await page
+			.getByRole("button", { name: "Add", exact: true })
+			.first()
+			.click();
+		const dialog = formDialog(page);
+		await dialog.getByLabel("URL").fill("ftp://example.com");
+		await dialog.getByRole("button", { name: "Add", exact: true }).click();
+
+		await expect(dialog.getByText("Enter a valid URL")).toBeVisible();
+		await expect(dialog.getByLabel("URL")).toHaveAttribute(
+			"aria-invalid",
+			"true",
+		);
+		expect(postCount).toBe(0);
+	});
+
+	test("이미 있는 페이지를 추가하면 다이얼로그를 유지하고 중복을 알린다.", async ({
+		page,
+	}) => {
+		store.addFavorite(
+			createMockFavorite({
+				title: "이미 있는 글",
+				url: "https://dup.example/a",
+			}),
+		);
+		await gotoFavorites(page);
+
+		await page.getByRole("button", { name: "Add", exact: true }).click();
+		const dialog = formDialog(page);
+		await dialog.getByLabel("URL").fill("dup.example/a");
+		await dialog.getByRole("button", { name: "Add", exact: true }).click();
+
+		await expect(
+			dialog.getByText("This page is already in your favorites"),
+		).toBeVisible();
+		await expect(dialog).toBeVisible();
+		expect(store.getAllFavorites()).toHaveLength(1);
+	});
+
+	test("빈 상태의 추가 버튼으로도 같은 다이얼로그가 열린다.", async ({
+		page,
+	}) => {
+		await gotoFavorites(page);
+
+		await page.getByRole("button", { name: "Add favorite" }).click();
+
+		await expect(
+			formDialog(page).getByRole("heading", { name: "Add favorite" }),
+		).toBeVisible();
 	});
 
 	test("확인 다이얼로그에서 삭제하면 목록에서 사라진다.", async ({ page }) => {

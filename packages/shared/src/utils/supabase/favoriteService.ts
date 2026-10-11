@@ -128,10 +128,6 @@ export class FavoriteService {
 			.select()
 			.single();
 
-	/** id로 즐겨찾기 제목을 바꾸고 갱신된 행을 돌려준다. 제목은 trim해서 저장한다. */
-	updateFavoriteTitle = async (id: number, title: string) =>
-		this.table.update({ title: title.trim() }).eq("id", id).select().single();
-
 	/** id로 즐겨찾기를 삭제한다. */
 	removeFavoriteById = async (id: number) => this.table.delete().eq("id", id);
 }

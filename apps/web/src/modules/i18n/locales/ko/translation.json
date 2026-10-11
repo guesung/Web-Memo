@@ -564,17 +564,33 @@
 	},
 	"favorite": {
 		"title": "즐겨찾기",
-		"subtitle": "{{count}}개 · 앱 브라우저에서 즐겨찾기한 페이지",
-		"editTitle": "제목 수정",
+		"subtitle": "{{count}}개 · 앱과 웹에서 즐겨찾기한 페이지",
+		"add": "추가",
+		"edit": "수정",
 		"delete": "삭제",
 		"retry": "다시 시도",
 		"loadError": "즐겨찾기를 불러오지 못했어요",
-		"updateFailed": "제목을 바꾸지 못했어요. 잠시 후 다시 시도해 주세요",
+		"addSuccess": "즐겨찾기를 추가했어요",
+		"editSuccess": "즐겨찾기를 수정했어요",
+		"saveFailed": "즐겨찾기를 저장하지 못했어요. 잠시 후 다시 시도해 주세요",
 		"deleteSuccess": "즐겨찾기를 삭제했어요",
 		"deleteFailed": "삭제하지 못했어요. 잠시 후 다시 시도해 주세요",
 		"empty": {
 			"title": "아직 즐겨찾기한 페이지가 없어요",
-			"description": "앱 브라우저에서 페이지를 읽다가 즐겨찾기를 누르면 여기에 모여요"
+			"description": "앱 브라우저에서 즐겨찾기하거나 여기서 직접 추가할 수 있어요",
+			"add": "즐겨찾기 추가"
+		},
+		"form": {
+			"addTitle": "즐겨찾기 추가",
+			"editTitle": "즐겨찾기 수정",
+			"urlLabel": "URL",
+			"titleLabel": "제목",
+			"titlePlaceholder": "비워 두면 도메인으로 저장해요",
+			"invalidUrl": "올바른 URL을 입력해 주세요",
+			"duplicate": "이미 즐겨찾기에 있는 페이지예요",
+			"cancel": "취소",
+			"add": "추가",
+			"save": "저장"
 		},
 		"deleteDialog": {
 			"title": "즐겨찾기를 삭제할까요?",

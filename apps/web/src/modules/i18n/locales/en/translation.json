@@ -569,17 +569,33 @@
 	},
 	"favorite": {
 		"title": "Favorites",
-		"subtitle": "{{count}} saved · Pages you favorited in the app browser",
-		"editTitle": "Edit title",
+		"subtitle": "{{count}} saved · Pages you favorited in the app and on the web",
+		"add": "Add",
+		"edit": "Edit",
 		"delete": "Delete",
 		"retry": "Try again",
 		"loadError": "Couldn't load your favorites",
-		"updateFailed": "Couldn't change the title. Please try again in a moment.",
+		"addSuccess": "Favorite added",
+		"editSuccess": "Favorite updated",
+		"saveFailed": "Couldn't save the favorite. Please try again in a moment.",
 		"deleteSuccess": "Favorite deleted",
 		"deleteFailed": "Couldn't delete it. Please try again in a moment.",
 		"empty": {
 			"title": "No favorite pages yet",
-			"description": "Tap favorite while reading a page in the app browser and it will show up here."
+			"description": "Favorite a page in the app browser, or add one here yourself.",
+			"add": "Add favorite"
+		},
+		"form": {
+			"addTitle": "Add favorite",
+			"editTitle": "Edit favorite",
+			"urlLabel": "URL",
+			"titleLabel": "Title",
+			"titlePlaceholder": "Leave blank to save the domain",
+			"invalidUrl": "Enter a valid URL",
+			"duplicate": "This page is already in your favorites",
+			"cancel": "Cancel",
+			"add": "Add",
+			"save": "Save"
 		},
 		"deleteDialog": {
 			"title": "Delete this favorite?",

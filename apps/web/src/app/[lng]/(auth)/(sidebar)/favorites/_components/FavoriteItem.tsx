@@ -7,12 +7,11 @@ import { Button } from "@web-memo/ui";
 import { Globe, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { FavoriteDeleteDialog } from "./FavoriteDeleteDialog";
-import { FavoriteTitleInput } from "./FavoriteTitleInput";
+import { FavoriteFormDialog } from "./FavoriteFormDialog";
 
 interface FavoriteItemProps {
 	lng: Language;
 	favorite: TFavoriteRow;
-	onTitleChange: (id: TFavoriteRow["id"], title: string) => void;
 	onDelete: (favorite: TFavoriteRow) => void;
 }
 
@@ -25,15 +24,10 @@ function getDisplayDomain(url: string) {
 	}
 }
 
-/** 즐겨찾기 한 행. 원문 링크와 제목 수정·삭제 액션을 보여준다. */
-export function FavoriteItem({
-	lng,
-	favorite,
-	onTitleChange,
-	onDelete,
-}: FavoriteItemProps) {
+/** 즐겨찾기 한 행. 원문 링크와 수정·삭제 액션을 보여준다. */
+export function FavoriteItem({ lng, favorite, onDelete }: FavoriteItemProps) {
 	const { t } = useTranslation(lng);
-	const [isEditing, setIsEditing] = useState(false);
+	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [failedFavIconUrl, setFailedFavIconUrl] = useState<string | null>(null);
 	const { favIconUrl } = favorite;
@@ -41,80 +35,68 @@ export function FavoriteItem({
 	const domain = getDisplayDomain(favorite.url);
 	const displayTitle = favorite.title || domain;
 
-	function handleTitleSubmit(value: string) {
-		const nextTitle = value.trim();
-		setIsEditing(false);
-
-		if (nextTitle && nextTitle !== favorite.title) {
-			onTitleChange(favorite.id, nextTitle);
-		}
-	}
-
 	return (
 		<li className="flex items-center gap-3 px-4 py-3">
-			{isEditing ? (
-				<FavoriteTitleInput
-					title={favorite.title}
-					ariaLabel={t("favorite.editTitle")}
-					onSubmit={handleTitleSubmit}
-					onCancel={() => setIsEditing(false)}
-				/>
-			) : (
-				<>
-					<a
-						href={favorite.url}
-						target="_blank"
-						rel="noreferrer"
-						className="group flex min-w-0 flex-1 items-center gap-3"
-					>
-						{isFavIconVisible ? (
-							<img
-								src={favIconUrl}
-								alt=""
-								className="size-4 shrink-0 rounded"
-								onError={() => setFailedFavIconUrl(favIconUrl)}
-							/>
-						) : (
-							<Globe
-								className="size-4 shrink-0 text-muted-foreground"
-								aria-hidden="true"
-							/>
-						)}
-						<span className="flex min-w-0 flex-col">
-							<span className="truncate text-sm font-medium group-hover:underline">
-								{displayTitle}
-							</span>
-							<span className="truncate text-xs text-muted-foreground">
-								{domain}
-							</span>
-						</span>
-					</a>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon"
-						aria-label={t("favorite.editTitle")}
-						onClick={() => setIsEditing(true)}
-					>
-						<Pencil size={16} className="text-muted-foreground" />
-					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon"
-						aria-label={t("favorite.delete")}
-						onClick={() => setIsDeleteDialogOpen(true)}
-					>
-						<Trash2 size={16} className="text-muted-foreground" />
-					</Button>
-					<FavoriteDeleteDialog
-						lng={lng}
-						open={isDeleteDialogOpen}
-						onOpenChange={setIsDeleteDialogOpen}
-						title={displayTitle}
-						onConfirm={() => onDelete(favorite)}
+			<a
+				href={favorite.url}
+				target="_blank"
+				rel="noreferrer"
+				className="group flex min-w-0 flex-1 items-center gap-3"
+			>
+				{isFavIconVisible ? (
+					<img
+						src={favIconUrl}
+						alt=""
+						className="size-4 shrink-0 rounded"
+						onError={() => setFailedFavIconUrl(favIconUrl)}
 					/>
-				</>
+				) : (
+					<Globe
+						className="size-4 shrink-0 text-muted-foreground"
+						aria-hidden="true"
+					/>
+				)}
+				<span className="flex min-w-0 flex-col">
+					<span className="truncate text-sm font-medium group-hover:underline">
+						{displayTitle}
+					</span>
+					<span className="truncate text-xs text-muted-foreground">
+						{domain}
+					</span>
+				</span>
+			</a>
+			<Button
+				type="button"
+				variant="ghost"
+				size="icon"
+				aria-label={t("favorite.edit")}
+				onClick={() => setIsEditDialogOpen(true)}
+			>
+				<Pencil size={16} className="text-muted-foreground" />
+			</Button>
+			<Button
+				type="button"
+				variant="ghost"
+				size="icon"
+				aria-label={t("favorite.delete")}
+				onClick={() => setIsDeleteDialogOpen(true)}
+			>
+				<Trash2 size={16} className="text-muted-foreground" />
+			</Button>
+			<FavoriteDeleteDialog
+				lng={lng}
+				open={isDeleteDialogOpen}
+				onOpenChange={setIsDeleteDialogOpen}
+				title={displayTitle}
+				onConfirm={() => onDelete(favorite)}
+			/>
+			{isEditDialogOpen && (
+				<FavoriteFormDialog
+					lng={lng}
+					open={isEditDialogOpen}
+					onOpenChange={setIsEditDialogOpen}
+					favorite={favorite}
+				/>
 			)}
 		</li>
 	);

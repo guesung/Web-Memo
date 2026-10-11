@@ -2,6 +2,7 @@
 
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import type { HighlightGroup } from "@web-memo/shared/modules/highlight";
 import type { HighlightMemoLink } from "@web-memo/shared/types";
@@ -56,9 +57,20 @@ export function HighlightGroupCard({
 		void bridge.request
 			.OPEN_SIDE_PANEL_FROM_WEB()
 			.then((response) => {
-				if (response?.success !== true) setIsPanelOpenError(true);
+				const isSuccess = response?.success === true;
+				void analytics.trackEvent({
+					name: "highlight_panel_open_result",
+					params: { is_success: isSuccess },
+				});
+				if (!isSuccess) setIsPanelOpenError(true);
 			})
-			.catch(() => setIsPanelOpenError(true));
+			.catch(() => {
+				void analytics.trackEvent({
+					name: "highlight_panel_open_result",
+					params: { is_success: false },
+				});
+				setIsPanelOpenError(true);
+			});
 	};
 	const headerContent = (
 		<>

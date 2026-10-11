@@ -6,7 +6,10 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { HighlightGroupCard } from "./HighlightGroupCard";
 
-const mocks = vi.hoisted(() => ({ openPanel: vi.fn() }));
+const mocks = vi.hoisted(() => ({ openPanel: vi.fn(), trackEvent: vi.fn() }));
+vi.mock("@web-memo/shared/modules/analytics", () => ({
+	analytics: { trackEvent: mocks.trackEvent },
+}));
 vi.mock("@web-memo/shared/modules/extension-bridge", () => ({
 	bridge: { request: { OPEN_SIDE_PANEL_FROM_WEB: mocks.openPanel } },
 }));
@@ -36,6 +39,7 @@ beforeEach(() => {
 	document.body.append(container);
 	root = createRoot(container);
 	mocks.openPanel.mockReset();
+	mocks.trackEvent.mockReset();
 });
 
 afterEach(async () => {
@@ -83,7 +87,16 @@ describe("하이라이트 카드 원문 링크", () => {
 		});
 		expect(click.defaultPrevented).toBe(false);
 		expect(mocks.openPanel).toHaveBeenCalledTimes(1);
+		expect(mocks.trackEvent).not.toHaveBeenCalled();
 		await act(async () => resolve({ success: true }));
+		expect(mocks.trackEvent.mock.calls).toEqual([
+			[
+				{
+					name: "highlight_panel_open_result",
+					params: { is_success: true },
+				},
+			],
+		]);
 		expect(container.querySelector('[role="alert"]')).toBeNull();
 	});
 
@@ -102,6 +115,14 @@ describe("하이라이트 카드 원문 링크", () => {
 			expect(container.querySelector('[role="alert"]')?.textContent).toBe(
 				"highlight.panelOpenError",
 			);
+			expect(mocks.trackEvent.mock.calls).toEqual([
+				[
+					{
+						name: "highlight_panel_open_result",
+						params: { is_success: false },
+					},
+				],
+			]);
 		},
 	);
 
@@ -116,6 +137,14 @@ describe("하이라이트 카드 원문 링크", () => {
 		expect(container.querySelector('[role="alert"]')?.textContent).toBe(
 			"highlight.panelOpenError",
 		);
+		expect(mocks.trackEvent.mock.calls).toEqual([
+			[
+				{
+					name: "highlight_panel_open_result",
+					params: { is_success: false },
+				},
+			],
+		]);
 	});
 
 	it("수정 클릭은 브라우저 링크 동작만 수행한다", async () => {
@@ -130,11 +159,13 @@ describe("하이라이트 카드 원문 링크", () => {
 		});
 		expect(click.defaultPrevented).toBe(false);
 		expect(mocks.openPanel).not.toHaveBeenCalled();
+		expect(mocks.trackEvent).not.toHaveBeenCalled();
 	});
 
 	it("HTTP 외 URL은 링크나 패널 동작을 만들지 않는다", async () => {
 		await renderCard("javascript:alert(1)");
 		expect(container.querySelector("article > a")).toBeNull();
 		expect(mocks.openPanel).not.toHaveBeenCalled();
+		expect(mocks.trackEvent).not.toHaveBeenCalled();
 	});
 });

@@ -71,6 +71,7 @@ export type TInstallClickPosition =
  */
 export type TAnalyticsEvent =
 	| { name: "highlight_source_jump" }
+	| { name: "highlight_panel_open_result"; params: { is_success: boolean } }
 	| { name: "side_panel_open" }
 	| { name: "page_view"; params: { page_title: string; page_location: string } }
 	| { name: "memo_write"; params: { fields: string } }
@@ -260,6 +261,7 @@ export type TAnalyticsEventName = TAnalyticsEvent["name"];
  */
 export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	highlight_source_jump: "core_action",
+	highlight_panel_open_result: "core_action",
 	side_panel_open: "engagement",
 	page_view: "engagement",
 	memo_write: "core_action",

@@ -1,9 +1,9 @@
 {
 	"extensionName": {
-		"message": "Web Memo - Notes right beside the page you're reading"
+		"message": "Web Memo - Web highlighter with notes beside it"
 	},
 	"extensionDescription": {
-		"message": "No need to open a notes app. Write right beside the page you're reading. Title and URL are added for you."
+		"message": "Highlight what you read and write your thought right beside it. Alt+S opens page notes, with title and URL added for you."
 	},
 	"memo": {
 		"message": "Note"

@@ -4,7 +4,6 @@ import {
   buildWeeklyReportHtml,
   buildWeeklyReportSubject,
   type IFReportMemo,
-  MAX_REPORT_MEMOS,
 } from "./template.ts";
 import { getWeekRange } from "./weekRange.ts";
 
@@ -13,8 +12,8 @@ const REPLY_TO = "gueit214@naver.com";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /** 테스트 메일 연타 방지 간격 */
 const TEST_RATE_LIMIT_SECONDS = 60;
-/** 설정 조회 한 번에 읽는 사용자 수 */
-const SETTING_PAGE_SIZE = 500;
+/** 이번 주 메모 작성자를 찾을 때 한 번에 읽는 메모 수 */
+const MEMO_PAGE_SIZE = 1000;
 /** `in` 조회 URL이 길어지지 않게 묶는 user_id 개수 */
 const USER_CHUNK_SIZE = 100;
 
@@ -32,7 +31,8 @@ const CORS_HEADERS = {
 };
 
 interface IFSettingRow {
-  user_id: string | null;
+  user_id: string;
+  weekly_report_enabled: boolean;
   weekly_report_email: string | null;
 }
 
@@ -56,27 +56,32 @@ const isValidEmail = (email: string | null | undefined): email is string =>
   Boolean(email) && EMAIL_PATTERN.test(email as string);
 
 /**
- * 이번 주(월 00:00 KST ~ 지금) 메모를 최신순으로 최대 10개와 전체 개수로 읽는다
+ * 주 시작(월 00:00 KST)부터 rangeEnd까지의 메모를 최신순으로 전부 읽는다
  * @description 본문 없이 페이지만 저장한 것과 위시리스트는 회고할 내용이 없어 뺀다
  */
-const fetchWeekMemos = async (userId: string, weekStartUtc: Date, now: Date) => {
-  const { data, error, count } = await supabase
+const fetchWeekMemos = async (
+  userId: string,
+  weekStartUtc: Date,
+  rangeEnd: Date,
+) => {
+  const { data, error } = await supabase
     .from("memo")
-    .select("title, url, memo, created_at", { count: "exact" })
+    .select("title, url, memo, created_at")
     .eq("user_id", userId)
     .gte("created_at", weekStartUtc.toISOString())
-    .lte("created_at", now.toISOString())
+    .lte("created_at", rangeEnd.toISOString())
     .is("deleted_at", null)
     .not("isWish", "is", true)
     .filter("memo", "match", "\\S")
-    .order("created_at", { ascending: false })
-    .limit(MAX_REPORT_MEMOS);
+    .order("created_at", { ascending: false });
 
   if (error) {
     throw new Error(`이번 주 메모 조회 실패: ${error.message}`);
   }
 
-  return { memos: (data ?? []) as IFReportMemo[], total: count ?? 0 };
+  const memos = (data ?? []) as IFReportMemo[];
+
+  return { memos, total: memos.length };
 };
 
 /**
@@ -164,66 +169,146 @@ const fetchAlreadySentUserIds = async (userIds: string[], weekStart: string) => 
 };
 
 /**
- * 리포트를 켠 모든 사용자의 설정을 페이지 단위로 읽는다
+ * 기간 안에 본문 있는 메모를 쓴 사용자 id 목록
+ * @description 리포트는 기본으로 켜져 있어 설정 행이 없는 사용자도 대상이다. 메모가 없는 주엔
+ * 보내지 않으므로 메모 작성자부터 찾는다
  */
-const fetchEnabledSettings = async () => {
-  const settings: IFSettingRow[] = [];
+const fetchWeekAuthorIds = async (weekStartUtc: Date, rangeEnd: Date) => {
+  const authorIds = new Set<string>();
 
-  for (let offset = 0; ; offset += SETTING_PAGE_SIZE) {
+  for (let offset = 0; ; offset += MEMO_PAGE_SIZE) {
     const { data, error } = await supabase
-      .from("setting")
-      .select("user_id, weekly_report_email")
-      .eq("weekly_report_enabled", true)
+      .from("memo")
+      .select("user_id")
+      .gte("created_at", weekStartUtc.toISOString())
+      .lte("created_at", rangeEnd.toISOString())
+      .is("deleted_at", null)
+      .not("isWish", "is", true)
       .not("user_id", "is", null)
+      .filter("memo", "match", "\\S")
       .order("id", { ascending: true })
-      .range(offset, offset + SETTING_PAGE_SIZE - 1);
+      .range(offset, offset + MEMO_PAGE_SIZE - 1);
 
     if (error) {
-      throw new Error(`리포트 설정 조회 실패: ${error.message}`);
+      throw new Error(`이번 주 메모 작성자 조회 실패: ${error.message}`);
     }
 
-    settings.push(...((data ?? []) as IFSettingRow[]));
+    for (const row of data ?? []) {
+      authorIds.add(row.user_id);
+    }
 
-    if (!data || data.length < SETTING_PAGE_SIZE) {
-      return settings;
+    if (!data || data.length < MEMO_PAGE_SIZE) {
+      return [...authorIds];
     }
   }
 };
 
 /**
- * 정기 모드: 리포트를 켠 사용자 전원에게 이번 주 리포트를 보낸다
+ * 사용자별 리포트 설정. 사용자당 행이 둘 이상이면 가장 먼저 만든 행을 쓴다
  */
-const runRegular = async () => {
+const fetchSettingsByUserId = async (userIds: string[]) => {
+  const settings = new Map<string, IFSettingRow>();
+
+  for (const userIdChunk of chunk(userIds, USER_CHUNK_SIZE)) {
+    const { data, error } = await supabase
+      .from("setting")
+      .select("user_id, weekly_report_enabled, weekly_report_email")
+      .in("user_id", userIdChunk)
+      .order("id", { ascending: true });
+
+    if (error) {
+      throw new Error(`리포트 설정 조회 실패: ${error.message}`);
+    }
+
+    for (const row of (data ?? []) as IFSettingRow[]) {
+      if (!settings.has(row.user_id)) {
+        settings.set(row.user_id, row);
+      }
+    }
+  }
+
+  return settings;
+};
+
+/**
+ * 받을 주소. 설정에 넣은 주소가 없으면 로그인 이메일로 보낸다
+ */
+const resolveReportEmail = async (
+  userId: string,
+  settingEmail: string | null | undefined,
+) => {
+  const trimmed = settingEmail?.trim();
+
+  if (isValidEmail(trimmed)) {
+    return trimmed;
+  }
+
+  const { data, error } = await supabase.auth.admin.getUserById(userId);
+
+  if (error) {
+    throw new Error(`로그인 이메일 조회 실패: ${error.message}`);
+  }
+
+  const loginEmail = data.user?.email?.trim();
+
+  return isValidEmail(loginEmail) ? loginEmail : null;
+};
+
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const WEEK_START_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+interface IFRegularOptions {
+  /** 지난 주를 다시 보낼 때 그 주의 KST 월요일(YYYY-MM-DD). 없으면 이번 주 */
+  weekStart?: string;
+  /** 한 사용자에게만 보낼 때의 user_id. 없으면 대상 전원 */
+  userId?: string;
+}
+
+/**
+ * 정기 모드: 이번 주 메모를 쓴 사용자 중 리포트를 끄지 않은 사람에게 보낸다
+ * @description 수동 재발송용으로 weekStart·userId를 받으면 그 주 전체를 그 사용자에게만 보낸다
+ */
+const runRegular = async (options: IFRegularOptions = {}) => {
   const now = new Date();
-  const { weekStartUtc, weekStart, rangeLabel } = getWeekRange(now);
+  const baseDate = WEEK_START_PATTERN.test(options.weekStart ?? "")
+    ? new Date(`${options.weekStart}T00:00:00+09:00`)
+    : now;
+  const { weekStartUtc, weekStart, rangeLabel } = getWeekRange(baseDate);
+  const rangeEnd = new Date(
+    Math.min(now.getTime(), weekStartUtc.getTime() + WEEK_MS - 1),
+  );
   let sent = 0;
   let skipped = 0;
   let failed = 0;
 
-  const settings = await fetchEnabledSettings();
-  const userIds = [...new Set(settings.map((setting) => setting.user_id as string))];
+  const userIds = (await fetchWeekAuthorIds(weekStartUtc, rangeEnd)).filter(
+    (userId) => !options.userId || userId === options.userId,
+  );
+  const settings = await fetchSettingsByUserId(userIds);
   const alreadySentUserIds = await fetchAlreadySentUserIds(userIds, weekStart);
-  const handledUserIds = new Set<string>();
 
-  for (const setting of settings) {
-    const userId = setting.user_id as string;
-
-    // 사용자당 setting 행이 둘 이상이어도 한 번만 처리한다
-    if (handledUserIds.has(userId)) {
-      continue;
-    }
-
-    handledUserIds.add(userId);
-
+  for (const userId of userIds) {
     try {
-      const email = setting.weekly_report_email?.trim();
+      const setting = settings.get(userId);
 
-      if (alreadySentUserIds.has(userId) || !isValidEmail(email)) {
+      // 설정 행이 없으면 기본값(켜짐)으로 본다. 직접 끈 사람만 뺀다
+      if (setting?.weekly_report_enabled === false || alreadySentUserIds.has(userId)) {
         skipped++;
         continue;
       }
 
-      const { memos, total } = await fetchWeekMemos(userId, weekStartUtc, now);
+      const email = await resolveReportEmail(userId, setting?.weekly_report_email);
+
+      if (!email) {
+        skipped++;
+        continue;
+      }
+
+      const { memos, total } = await fetchWeekMemos(
+        userId,
+        weekStartUtc,
+        rangeEnd,
+      );
 
       if (total === 0) {
         skipped++;
@@ -341,7 +426,9 @@ const runTest = async (req: Request) => {
     throw new Error(`리포트 설정 조회 실패: ${settingError.message}`);
   }
 
-  const email = setting?.weekly_report_email?.trim();
+  const settingEmail = setting?.weekly_report_email?.trim();
+  const loginEmail = userData.user.email?.trim();
+  const email = isValidEmail(settingEmail) ? settingEmail : loginEmail;
 
   if (!isValidEmail(email)) {
     return jsonResponse({ error: "invalid_email" }, 400);
@@ -394,7 +481,7 @@ serve(async (req) => {
   }
 
   try {
-    let body: { mode?: string } = {};
+    let body: { mode?: string } & IFRegularOptions = {};
 
     try {
       body = await req.json();
@@ -414,7 +501,7 @@ serve(async (req) => {
       return jsonResponse({ status: "unauthorized" }, 401);
     }
 
-    return await runRegular();
+    return await runRegular({ weekStart: body?.weekStart, userId: body?.userId });
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
 

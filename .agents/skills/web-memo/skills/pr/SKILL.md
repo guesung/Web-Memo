@@ -1,6 +1,6 @@
 ---
 name: pr
-description: 현재 커밋 작업사항을 바탕으로 PR을 생성한다. draft가 아닌 일반 PR로, base는 레포의 기본 브랜치(main). 만든 PR이 base와 충돌하면 묻지 않고 base를 merge해 해결·검증·push한다. 커밋 안 된 변경이 있으면 /web-memo:commit을 먼저 제안한다. apps/web·apps/app·packages 변경이 있으면 PR 전에 develop 머지(md)를 반드시 한다. "PR 올려줘", "PR 만들어줘" 같은 표현이 나오면 이 스킬을 사용한다. /web-memo:implement ③과 /web-memo:implement-loop ③(b)에서 호출된다.
+description: 현재 커밋 작업사항을 바탕으로 PR을 생성한다. draft가 아닌 일반 PR로, base는 레포의 기본 브랜치(main). 만든 PR이 base와 충돌하면 묻지 않고 base를 merge해 해결·검증·push한다. 커밋 안 된 변경이 있으면 /web-memo:commit을 먼저 제안한다. apps/web·apps/app·packages 변경이 있으면 PR 전에 develop 머지(md)를 반드시 한다. 사람이 승인한 디자인 시안이 있으면 Artifact 링크와 스크린샷을 본문에 항상 싣는다. "PR 올려줘", "PR 만들어줘" 같은 표현이 나오면 이 스킬을 사용한다. /web-memo:implement ③과 /web-memo:implement-loop ③(b)에서 호출된다.
 argument-hint: '[PR 제목·본문 추가 지시 (선택)]'
 ---
 
@@ -26,11 +26,37 @@ argument-hint: '[PR 제목·본문 추가 지시 (선택)]'
      ## Test plan
      - [ ] 테스트 항목들
      ```
-6. `gh pr create --base <base> --title "..." --body "$(cat <<'EOF' ... EOF)"` 로 PR을 생성한다. **`--draft`를 붙이지 않는다.** 이 브랜치로 이미 열린 PR이 있으면(`gh pr view --json url,state`로 `OPEN` 확인) 새로 만들지 않고 그 URL을 쓴 채 7단계로 간다 — 새 커밋은 4단계 push로 이미 그 PR에 붙었다.
+   - 화면이 바뀌는 PR이면 아래 **"승인된 디자인 시안 싣기"**를 수행해 본문 첫 섹션 바로 다음에 `## 디자인 시안`을 넣는다.
+6. `gh pr create --base <base> --title "..." --body "$(cat <<'EOF' ... EOF)"` 로 PR을 생성한다. **`--draft`를 붙이지 않는다.** 이 브랜치로 이미 열린 PR이 있으면(`gh pr view --json url,state`로 `OPEN` 확인) 새로 만들지 않고 그 URL을 쓴 채 7단계로 간다 — 새 커밋은 4단계 push로 이미 그 PR에 붙었다. 이때 `gh pr view --json body`로 본문을 읽어 `## 디자인 시안`이 없고 실을 시안이 있으면, 기존 본문에 그 섹션을 끼운 전체를 `gh pr edit --body`로 넘긴다.
 7. 생성 성공 직후 **[orca-worktree.md](../../orca-worktree.md)의 PR 기록 절차**를 읽고 수행해 현재 Orca 워크스페이스 메모에 PR 제목과 URL을 중복 없이 추가한다. 기존 메모를 보존하고 재조회로 검증한다. 메모 기록에 실패해도 PR 생성 결과는 유지하고 실패 사유를 별도로 알린다.
 8. **충돌 확인 — 있으면 바로 해결한다.** 아래 "base 충돌 해결"을 수행한다. 묻지 않는다.
-9. 생성된 PR URL을 사용자에게 반환한다. develop 머지 결과를 한 줄 덧붙인다: `develop 머지: 완료 <머지 커밋 해시>` / `이미 반영됨` / `건너뜀 (앱/웹 변경 없음)` / `실패 — <사유>`. 충돌을 해결했으면 한 줄 더 덧붙인다: `충돌 해결: <파일 n개> — merge <커밋 해시>`.
+9. 생성된 PR URL을 사용자에게 반환한다. develop 머지 결과를 한 줄 덧붙인다: `develop 머지: 완료 <머지 커밋 해시>` / `이미 반영됨` / `건너뜀 (앱/웹 변경 없음)` / `실패 — <사유>`. 충돌을 해결했으면 한 줄 더 덧붙인다: `충돌 해결: <파일 n개> — merge <커밋 해시>`. 화면이 바뀌는 PR이면 `디자인 시안: 실음 <파일>` / `승인된 시안 없음 — <사유>` 중 하나를 덧붙인다.
 10. 생성된 PR을 사용자 PC의 기본 브라우저로 띄운다: `gh pr view <PR URL> --web`. 실패해도 PR 생성 결과는 유지하고 실패 사유만 별도로 알린다.
+
+## 승인된 디자인 시안 싣기
+
+레포 [AGENTS.md](../../../../../AGENTS.md#ui-변경-전-시각-디자인-확인)는 UI 구현 전에 시각 목업 승인을 요구하고, `/web-memo:design` ①-V는 그 시안을 Artifact로 게시한다. 그런데 Artifact는 비공개 링크라 PR을 보는 사람은 열 수 없고, 시간이 지나면 어떤 화면을 승인했는지 PR에서 확인할 길이 없다. 그래서 승인된 시안은 링크와 함께 **레포에 커밋한 스크린샷**으로 본문에 싣는다.
+
+1. **대상인지 판정한다.** `git diff --name-only origin/<base>...HEAD`에 사용자가 보는 화면을 바꾸는 파일(`apps/web/`·`apps/app/`·`apps/chrome-extension/`·`pages/`·`packages/ui/` 등의 화면 코드)이 없으면 이 절을 건너뛰고 섹션도 넣지 않는다.
+2. **시안을 찾는다.** 아래 순서로 처음 찾은 것을 쓴다.
+   - 호출자의 노션 페이지(`/web-memo:implement-loop`·`/web-memo:implement`가 넘긴 페이지, 없으면 브랜치명·커밋의 `DB-<ID>`로 찾은 작업 카드)에서 `## 디자인` 첫 줄의 `시안: <URL>`
+   - 이번 대화에서 사람에게 보여주고 승인받은 시안(`/web-memo:implement` §0-5 경로)
+3. **승인된 시안인지 확인한다.** 설계서 도장에 `(시안 포함)`이 있거나 이번 대화에서 승인 응답을 받은 시안만 싣는다. 승인 기록이 없는 시안은 초안으로 보고 싣지 않는다.
+4. **스크린샷을 만든다.**
+   - `Artifact` `read`로 시안 HTML을 받는다. `시안:`이 로컬 HTML 경로면 그 파일을 쓴다.
+   - Playwright로 그 HTML을 열어 전체 페이지를 PNG로 캡처한다(`browser_take_screenshot`의 `fullPage`). 폭은 시안이 그린 화면 폭을 따른다.
+   - `docs/mockups/<브랜치명 slug>.png`에 저장한다. 같은 파일이 이미 있으면 덮어쓴다 — 시안이 다시 승인됐다는 뜻이다.
+   - `docs: 승인된 디자인 시안 추가`로 커밋하고 `git push`한다. 이 커밋은 PR 생성(6단계) 전에 올린다.
+5. **본문에 넣는다.** PR 본문에서는 상대 경로 이미지가 보이지 않으므로, 방금 push한 커밋 SHA로 고정한 raw URL을 쓴다.
+   ```
+   ## 디자인 시안
+
+   - 시안: <Artifact URL>
+   - 승인: <도장 일시> · 사람 승인
+
+   ![디자인 시안](https://raw.githubusercontent.com/<owner>/<repo>/<커밋 SHA>/docs/mockups/<파일>.png)
+   ```
+6. **시안이 없거나 승인 기록이 없으면** PR은 막지 않는다. `## 디자인 시안` 섹션에 `승인된 시안 없음 — <사유>`(예: 시안 링크 없음, `(시안 포함)` 도장 없음, 캡처 실패) 한 줄을 남기고 9단계 출력에도 같은 줄을 덧붙인다. 링크는 있는데 캡처만 실패했으면 링크와 승인 줄은 남기고 이미지 자리에 실패 사유를 적는다.
 
 ## develop 머지 — 앱/웹 변경이 있으면 반드시
 
@@ -103,6 +129,7 @@ base가 `master`인 PR은 **항상 작업 카드를 제목 접두사 `[DB-<ID>]`
 
 ## 하지 않는 것
 
+- **승인되지 않은 시안을 싣지 않는다.** 본문의 시안은 "이 화면으로 승인받았다"는 기록이라, 초안이 섞이면 승인 범위를 거꾸로 읽게 된다.
 - **draft PR을 만들지 않는다.** 이 플러그인의 PR은 곧 사람 최종 검토 대상이고, draft 상태 전환은 손만 늘린다.
 - base 브랜치는 사용자가 달리 지정하지 않는 한 **기본 브랜치(main) 고정.** develop은 PR base가 아니라 테섭 배포용 머지 대상이다.
 - **앱/웹 변경이 있는데 develop 머지를 빼먹지 않는다.** 머지했거나, 이미 반영됐거나, 실패 사유를 보고했거나 셋 중 하나로 끝난다.

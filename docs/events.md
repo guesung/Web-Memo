@@ -52,7 +52,7 @@
 | chat_fail | 채팅 실패 (추정) | `reason` | 왜 실패하는가 (추정) | — |
 | youtube_transcript_extract | 유튜브 자막 추출 (추정) | `is_success` | 자막 추출 성공률 (추정) | — |
 | tab_change | 탭 이동 (추정) | `tab_name` | 어느 탭이 쓰이는가 (추정) | — |
-| view_change | 보기 방식 변경 (추정) | `view` | 어떤 보기가 선호되는가 (추정) | — |
+| view_change | 기존 URL 변경 시점에 발생. 메모 목록에서는 보기 방식을 함께 기록 | `view`: 기존 목록 종류, `layout`: `grid` \| `list` \| `domain` (메모 목록에서만) | 도메인 보기를 사용하는가. URL 매개변수 변경에도 발생하므로 건수를 전환 횟수로 해석하지 않는다 | DB-1186 |
 | setting_change / extension_setting_change | 설정 변경 (추정). 서버 설정 저장 성공 시 `setting_change` — 요약·AI 채팅 스위치는 `show_summary`·`show_ai_chat` | `setting_keys` / `keys` | 어떤 설정을 바꾸는가 (추정) · 요약·AI 채팅을 켜는 사용자가 얼마나 되는가 | — |
 | shortcut_change_click | 단축키 변경 버튼 클릭 (추정) | `is_success` | 단축키 변경이 성공하는가 (추정) | — |
 | export_run | 내보내기 실행 | `format` | 어떤 형식으로 내보내는가 | — |

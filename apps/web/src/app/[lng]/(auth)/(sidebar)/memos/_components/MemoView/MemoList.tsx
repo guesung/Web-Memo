@@ -16,6 +16,7 @@ import type {
 import { Button } from "@web-memo/ui";
 import { useEffect, useRef, useState } from "react";
 import { useMemoSettings } from "./_hooks/useMemoSettings";
+import { groupMemosByDomain, UNKNOWN_DOMAIN } from "./groupMemosByDomain";
 import MemoDomainEmptyState from "./MemoDomainEmptyState";
 import MemoEmptyState from "./MemoEmptyState";
 import MemoItem from "./MemoItem";
@@ -35,20 +36,23 @@ const MemoList = (props: IFMemoListProps) => {
 	});
 	const { showImpression, showActionItem, truncateMemoContent } =
 		useMemoSettings();
-	const groups = groupMemosByDate(props.memos);
+	const groups =
+		props.groupBy === "domain"
+			? groupMemosByDomain(props.memos)
+			: groupMemosByDate(props.memos);
 	const [renderedGroupMemoIds, setRenderedGroupMemoIds] = useState<
 		Record<string, string>
 	>({});
-	const visibleDateKeys = new Set(groups.map((group) => group.dateKey));
-	const hasUnmountedDateGroup = Object.keys(renderedGroupMemoIds).some(
-		(dateKey) => !visibleDateKeys.has(dateKey),
+	const visibleGroupKeys = new Set(groups.map((group) => group.key));
+	const hasUnmountedGroup = Object.keys(renderedGroupMemoIds).some(
+		(key) => !visibleGroupKeys.has(key),
 	);
 	/** 사라진 그룹의 완료 기록은 재마운트 전에 제거해 이전 인스턴스의 배치를 재사용하지 않는다. */
-	if (hasUnmountedDateGroup) {
+	if (hasUnmountedGroup) {
 		setRenderedGroupMemoIds(
 			Object.fromEntries(
-				Object.entries(renderedGroupMemoIds).filter(([dateKey]) =>
-					visibleDateKeys.has(dateKey),
+				Object.entries(renderedGroupMemoIds).filter(([key]) =>
+					visibleGroupKeys.has(key),
 				),
 			),
 		);
@@ -56,7 +60,7 @@ const MemoList = (props: IFMemoListProps) => {
 	/** 초기 높이가 0인 Masonry와 새 페이지의 배치가 끝나기 전에는 다음 조회를 막는다. */
 	const isLayoutReady = groups.every(
 		(group) =>
-			renderedGroupMemoIds[group.dateKey] ===
+			renderedGroupMemoIds[group.key] ===
 			group.memos.map((memo) => memo.id).join(","),
 	);
 	useEffect(() => {
@@ -70,13 +74,13 @@ const MemoList = (props: IFMemoListProps) => {
 		}
 	}, [isLayoutReady, props.loadOutcome, props.route, props.navigationId]);
 	const loadMoreRef = useMemoListPagination(props, isLayoutReady);
-	const handleDateGroupRenderComplete = (dateKey: string, memoIds: string) => {
+	const handleGroupRenderComplete = (key: string, memoIds: string) => {
 		setRenderedGroupMemoIds((previousGroups) => {
-			if (previousGroups[dateKey] === memoIds) {
+			if (previousGroups[key] === memoIds) {
 				return previousGroups;
 			}
 
-			return { ...previousGroups, [dateKey]: memoIds };
+			return { ...previousGroups, [key]: memoIds };
 		});
 	};
 
@@ -94,37 +98,41 @@ const MemoList = (props: IFMemoListProps) => {
 			)}
 			{groups.map((group) => (
 				<section
-					data-testid="memo-date-group"
-					key={group.dateKey}
-					aria-labelledby={`memo-date-${group.dateKey}`}
+					data-testid={`memo-${props.groupBy}-group`}
+					key={group.key}
+					aria-labelledby={`memo-${props.groupBy}-${group.key}`}
 					className="grid grid-cols-1 gap-4 md:grid-cols-[144px_minmax(0,1fr)] md:gap-6"
 				>
 					<h2
-						data-testid="memo-date-label"
-						id={`memo-date-${group.dateKey}`}
-						className="border-b border-border pb-3 text-sm font-semibold md:border-b-0 md:border-r md:pb-0 md:pr-4"
+						data-testid={`memo-${props.groupBy}-label`}
+						id={`memo-${props.groupBy}-${group.key}`}
+						className="min-w-0 border-b border-border pb-3 text-sm font-semibold [overflow-wrap:anywhere] md:border-b-0 md:border-r md:pb-0 md:pr-4"
 					>
-						{group.dateKey === "unknown" ? (
+						{props.groupBy === "domain" ? (
+							group.key === UNKNOWN_DOMAIN ? (
+								t("memos.view.unknownDomain")
+							) : (
+								group.key
+							)
+						) : group.key === "unknown" ? (
 							t("memos.view.unknownDate")
 						) : (
 							<time
-								dateTime={group.dateKey}
+								dateTime={group.key}
 								className="flex flex-wrap items-baseline gap-x-2 gap-y-1 md:flex-col"
 							>
 								<span>
-									{dateFormatter.format(new Date(`${group.dateKey}T00:00:00`))}
+									{dateFormatter.format(new Date(`${group.key}T00:00:00`))}
 								</span>
 								<span className="text-xs font-normal text-muted-foreground">
-									{weekdayFormatter.format(
-										new Date(`${group.dateKey}T00:00:00`),
-									)}
+									{weekdayFormatter.format(new Date(`${group.key}T00:00:00`))}
 								</span>
 							</time>
 						)}
 					</h2>
 					<MasonryInfiniteGrid
 						tag="ul"
-						data-testid="memo-date-grid"
+						data-testid={`memo-${props.groupBy}-grid`}
 						className="min-w-0 max-w-[300px] md:max-w-none"
 						useResizeObserver
 						observeChildren
@@ -134,8 +142,8 @@ const MemoList = (props: IFMemoListProps) => {
 						align="start"
 						onRenderComplete={(event) => {
 							restoreHeldScrollPosition();
-							handleDateGroupRenderComplete(
-								group.dateKey,
+							handleGroupRenderComplete(
+								group.key,
 								event.items
 									.map((item) => item.element?.dataset.memoId)
 									.join(","),
@@ -147,7 +155,7 @@ const MemoList = (props: IFMemoListProps) => {
 								data-testid="memo-list-item"
 								data-memo-id={memo.id}
 								key={memo.id}
-								data-grid-groupkey={group.dateKey}
+								data-grid-groupkey={group.key}
 								className="w-[300px] max-w-full"
 							>
 								<MemoItem
@@ -243,14 +251,15 @@ const groupMemosByDate = (memos: GetMemoResponse[]) => {
 		groups.set(dateKey, group);
 	}
 
-	return Array.from(groups, ([dateKey, groupedMemos]) => ({
-		dateKey,
+	return Array.from(groups, ([key, groupedMemos]) => ({
+		key,
 		memos: groupedMemos,
 	}));
 };
 
 /** 목록 데이터와 무한 로딩 상태. */
 interface IFMemoListProps extends LanguageType {
+	groupBy: "date" | "domain";
 	memos: GetMemoResponse[];
 	highlightsByUrl: Map<string, HighlightRow[]>;
 	sourcesByMemo: Map<number, HighlightMemoLink>;

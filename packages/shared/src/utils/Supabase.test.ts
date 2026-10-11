@@ -14,6 +14,7 @@ interface IFRecordedCalls {
 	eq: [string, unknown][];
 	in: [string, unknown][];
 	is: [string, unknown][];
+	like: [string, string][];
 	lt: [string, unknown][];
 	gt: [string, unknown][];
 	or: string[];
@@ -40,6 +41,7 @@ const createMockClient = (): {
 		eq: [],
 		in: [],
 		is: [],
+		like: [],
 		lt: [],
 		gt: [],
 		or: [],
@@ -65,6 +67,11 @@ const createMockClient = (): {
 		},
 		is: (column: string, value: unknown) => {
 			calls.is.push([column, value]);
+
+			return builder;
+		},
+		like: (column: string, pattern: string) => {
+			calls.like.push([column, pattern]);
 
 			return builder;
 		},
@@ -184,6 +191,7 @@ describe("HighlightService.getHighlightsByUrl", () => {
 		);
 
 		expect(calls.in).toContainEqual(["page_key", ["https://a.com/?id=1", ""]]);
+		expect(calls.like).toContainEqual(["url", "https://a.com/%"]);
 		expect(calls.order).toContainEqual(["id", { ascending: true }]);
 	});
 });
@@ -196,6 +204,8 @@ describe("MemoService.getMemoByUrl", () => {
 		);
 
 		expect(calls.in).toContainEqual(["page_key", ["https://a.com/?id=1", ""]]);
+		// 키가 비어 있는 옛 행을 전부 읽지 않도록 원본 URL 접두로 서버에서 좁힌다.
+		expect(calls.like).toContainEqual(["url", "https://a.com/%"]);
 		expect(calls.order).toEqual([["id", { ascending: true }]]);
 	});
 });

@@ -23,6 +23,30 @@ function resolveViewName(pathname: string, searchParams: URLSearchParams) {
 	return "all";
 }
 
+const MEMO_LIST_PATHS = [
+	PATHS.memos,
+	PATHS.memosWish,
+	PATHS.memosStar,
+	PATHS.memosReading,
+];
+
+export function resolveViewChangeParams(
+	pathname: string,
+	searchParams: URLSearchParams,
+) {
+	const view = resolveViewName(pathname, searchParams);
+	if (!MEMO_LIST_PATHS.some((path) => pathname.endsWith(path))) {
+		return { view };
+	}
+
+	const requestedLayout = searchParams.get("view");
+	const layout: "grid" | "list" | "domain" =
+		requestedLayout === "list" || requestedLayout === "domain"
+			? requestedLayout
+			: "grid";
+	return { view, layout };
+}
+
 /**
  * 뷰 전환을 기록합니다.
  * @description 사이드바를 눌러 들어온 것뿐 아니라 주소로 바로 들어온 것도 잡힙니다.
@@ -36,7 +60,7 @@ export default function TrackViewChange() {
 	useEffect(() => {
 		analytics.trackEvent({
 			name: "view_change",
-			params: { view: resolveViewName(pathname, searchParams) },
+			params: resolveViewChangeParams(pathname, searchParams),
 		});
 	}, [pathname, searchParams]);
 

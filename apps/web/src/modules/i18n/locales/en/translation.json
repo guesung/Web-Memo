@@ -517,6 +517,8 @@
 			"unknownDate": "No creation date",
 			"label": "Memo view",
 			"byDate": "By date",
+			"byDomain": "By domain",
+			"unknownDomain": "No domain",
 			"untitled": "Untitled memo",
 			"loadMore": "Load more"
 		},

@@ -512,6 +512,8 @@
 			"unknownDate": "작성일 없음",
 			"label": "메모 보기",
 			"byDate": "날짜별 보기",
+			"byDomain": "도메인별 보기",
+			"unknownDomain": "도메인 없음",
 			"untitled": "제목 없는 메모",
 			"loadMore": "더 보기"
 		},

@@ -98,7 +98,10 @@ export type TAnalyticsEvent =
 			name: "feedback_submit";
 			params: { feedback_type: "general" | "uninstall" };
 	  }
-	| { name: "view_change"; params: { view: string } }
+	| {
+			name: "view_change";
+			params: { view: string; layout?: "grid" | "list" | "domain" };
+	  }
 	| { name: "logout" }
 	| { name: "extension_installed" }
 	| { name: "extension_uninstall" }

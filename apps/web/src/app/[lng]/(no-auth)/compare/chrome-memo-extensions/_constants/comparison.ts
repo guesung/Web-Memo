@@ -25,7 +25,7 @@ export const COMPARE_PRODUCTS: IFCompareProduct[] = [
 	{
 		key: "webMemo",
 		name: "웹 메모",
-		identity: "읽던 페이지 옆에서 메모",
+		identity: "칠한 문장 옆에 메모하는 웹 형광펜",
 		sources: [
 			{ label: "크롬 웹스토어", url: EXTERNAL_LINK.chromeWebStoreListing },
 		],
@@ -109,7 +109,10 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 		key: "recordingMethod",
 		label: "기록 방식",
 		cells: {
-			webMemo: { status: "supported", description: "사이드 패널에 바로 적기" },
+			webMemo: {
+				status: "supported",
+				description: "페이지 위 하이라이트 + 사이드 패널 메모",
+			},
 			notionWebClipper: {
 				status: "supported",
 				description: "팝업에서 노션에 저장",
@@ -246,7 +249,7 @@ export const COMPARE_CRITERIA: IFCompareCriterion[] = [
 		cells: {
 			webMemo: {
 				status: "partial",
-				description: "요약은 없이, 메모는 로그인 필요",
+				description: "요약은 없이, 메모·하이라이트는 로그인 필요",
 			},
 			notionWebClipper: { status: "partial", description: "노션 로그인 필요" },
 			liner: { status: "partial", description: "계정 로그인 필요" },
@@ -286,14 +289,14 @@ export const COMPARE_RECOMMENDATIONS: IFCompareRecommendation[] = [
 	},
 	{
 		situation:
-			"글을 읽다 떠오른 생각을 하이라이트와 상관없이 자유롭게 적고, 어느 페이지에서 쓴 메모인지 자동으로 남기고 싶다면",
+			"글을 읽다 문장을 칠하고 그 옆에 떠오른 생각을 적으면서, 어느 페이지에서 남긴 기록인지 자동으로 남기고 싶다면",
 		productName: "웹 메모",
-		note: "사이드 패널에서 자동 저장되고, 주소·제목이 자동으로 기록돼요.",
+		note: "칠한 문장마다 메모를 붙이고, 페이지 메모는 사이드 패널에 따로 적어요. 주소·제목은 자동으로 기록돼요.",
 	},
 	{
 		situation:
 			"돈을 내지 않고 한국어 화면으로 메모·요약·내보내기를 모두 쓰고 싶다면",
 		productName: "웹 메모",
-		note: "유료 플랜이 없어요. 다만 메모를 쓰려면 로그인해야 해요.",
+		note: "유료 플랜이 없어요. 다만 메모와 하이라이트를 쓰려면 로그인해야 해요.",
 	},
 ];

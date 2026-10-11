@@ -656,5 +656,56 @@
 	},
 	"page_highlights_focus_failed": {
 		"message": "원문 위치를 찾지 못했어요."
+	},
+	"tooltip_plan_add": {
+		"message": "볼 날짜 정하기"
+	},
+	"tooltip_plan_change": {
+		"message": "$date$에 볼 예정이에요 · 바꾸기",
+		"placeholders": {
+			"date": {
+				"content": "$1",
+				"example": "10월 13일"
+			}
+		}
+	},
+	"plan_added": {
+		"message": "$date$에 볼 목록에 담았어요",
+		"placeholders": {
+			"date": {
+				"content": "$1",
+				"example": "10월 13일"
+			}
+		}
+	},
+	"plan_removed": {
+		"message": "읽을 계획에서 뺐어요"
+	},
+	"plan_label_today": {
+		"message": "오늘"
+	},
+	"plan_label_tomorrow": {
+		"message": "내일"
+	},
+	"plan_picker_title": {
+		"message": "언제 볼까요?"
+	},
+	"plan_picker_today": {
+		"message": "오늘"
+	},
+	"plan_picker_tomorrow": {
+		"message": "내일"
+	},
+	"plan_picker_weekend": {
+		"message": "이번 주말"
+	},
+	"plan_picker_next_monday": {
+		"message": "다음 월요일"
+	},
+	"plan_picker_clear": {
+		"message": "날짜 해제"
+	},
+	"plan_date_button": {
+		"message": "읽을 계획 날짜"
 	}
 }

@@ -157,7 +157,7 @@ export default function SettingCategoryForm({
 
 	return (
 		<div className="relative">
-			<div className="space-y-2">
+			<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 				{categories?.map((category) => {
 					const isEditing = editingId === category.id;
 					const categoryColor = category.color || DEFAULT_CATEGORY_COLOR;
@@ -165,7 +165,7 @@ export default function SettingCategoryForm({
 					return (
 						<div
 							key={category.id}
-							className="flex items-center gap-3 rounded-lg border border-border px-3 py-2 transition-colors hover:bg-muted dark:hover:bg-muted/50"
+							className="flex min-w-0 items-center gap-3 rounded-lg border border-border px-3 py-2 transition-colors hover:bg-muted dark:hover:bg-muted/50"
 						>
 							<button
 								type="button"
@@ -226,13 +226,13 @@ export default function SettingCategoryForm({
 				})}
 
 				{categories?.length === 0 && !isAdding && (
-					<p className="px-3 py-2 text-sm text-muted-foreground">
+					<p className="col-span-full px-3 py-2 text-sm text-muted-foreground">
 						{t("setting.categoryEmpty")}
 					</p>
 				)}
 
 				{isAdding ? (
-					<div className="flex items-center gap-3 rounded-lg px-3 py-2">
+					<div className="col-span-full flex min-w-0 items-center gap-3 rounded-lg px-3 py-2">
 						<div className="w-5 h-5 rounded-full flex-shrink-0 bg-muted-foreground/40" />
 						<Input
 							ref={addInputRef}
@@ -249,7 +249,7 @@ export default function SettingCategoryForm({
 				) : (
 					<Button
 						variant="ghost"
-						className="w-full justify-start gap-3 px-3 py-2 text-muted-foreground hover:text-foreground"
+						className="col-span-full w-full justify-start gap-3 px-3 py-2 text-muted-foreground hover:text-foreground"
 						onClick={handleAddOpen}
 						type="button"
 					>

@@ -14,13 +14,24 @@ for (const viewportWidth of [390, 1280]) {
 		await page.setViewportSize({ width: viewportWidth, height: 900 });
 		const store = new MockSupabaseStore();
 		const categoryName = "아주긴카테고리이름".repeat(8);
+		const secondCategoryName = "두 번째 카테고리";
 		store.addCategory(createMockCategory({ name: categoryName }));
+		store.addCategory(createMockCategory({ name: secondCategoryName }));
 		await setupSupabaseMocks(page, store);
 		await gotoSafely({
 			page,
 			url: `/ko${PATHS.memosSetting}`,
 			regexp: new RegExp(PATHS.memosSetting),
 		});
+		const categoryCard = page
+			.getByText("메모를 묶는 카테고리를 관리해요")
+			.locator("../..");
+		await categoryCard
+			.getByRole("button", { name: "카테고리 추가하기" })
+			.click();
+		const addInput = categoryCard.getByPlaceholder("새 카테고리");
+		await addInput.fill("클라이언트 갱신 확인");
+		await addInput.press("Enter");
 
 		const nameButton = page.getByRole("button", {
 			name: categoryName,
@@ -30,6 +41,10 @@ for (const viewportWidth of [390, 1280]) {
 			.getByRole("button", { name: `${categoryName} 이름 변경` })
 			.locator("..");
 		await expect(nameButton).toBeVisible();
+		const secondRow = categoryCard
+			.getByRole("button", { name: secondCategoryName, exact: true })
+			.locator("..");
+		await expect(secondRow).toBeVisible();
 		await expect(row).toHaveCSS("border-style", "solid");
 		await expect(nameButton).toHaveCSS("overflow-wrap", "break-word");
 		await expect
@@ -39,6 +54,25 @@ for (const viewportWidth of [390, 1280]) {
 				),
 			)
 			.toBeGreaterThan(30);
+		const firstPosition = await row.evaluate((element) => {
+			const { x, y, right, bottom } = element.getBoundingClientRect();
+			return { x, y, right, bottom };
+		});
+		const secondPosition = await secondRow.evaluate((element) => {
+			const { x, y, right, bottom } = element.getBoundingClientRect();
+			return { x, y, right, bottom };
+		});
+		if (viewportWidth < 640) {
+			expect(secondPosition.y).toBeGreaterThanOrEqual(firstPosition.bottom);
+		} else {
+			expect(Math.abs(secondPosition.y - firstPosition.y)).toBeLessThan(2);
+			expect(secondPosition.x).toBeGreaterThanOrEqual(firstPosition.right);
+		}
+		expect(
+			await categoryCard.evaluate(
+				(element) => element.scrollWidth <= element.clientWidth,
+			),
+		).toBe(true);
 		const renameButton = row.getByRole("button", {
 			name: `${categoryName} 이름 변경`,
 		});
@@ -74,6 +108,12 @@ for (const viewportWidth of [390, 1280]) {
 		await expect(
 			page.getByRole("button", { name: "새 카테고리 이름", exact: true }),
 		).toHaveCount(0);
-		expect(store.getAllCategories()).toHaveLength(0);
+		expect(store.getAllCategories()).toHaveLength(2);
+		await expect(
+			categoryCard.getByRole("button", {
+				name: secondCategoryName,
+				exact: true,
+			}),
+		).toBeVisible();
 	});
 }

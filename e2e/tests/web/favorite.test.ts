@@ -97,7 +97,10 @@ test.describe("즐겨찾기 페이지 (Mocked)", () => {
 		await input.press("Enter");
 
 		await expect(page.getByText("수정한 제목", { exact: true })).toBeVisible();
-		expect(store.getAllFavorites()[0]?.title).toBe("수정한 제목");
+		// 낙관적 갱신이 먼저 화면에 보이므로 저장소 반영은 요청이 끝날 때까지 기다린다.
+		await expect
+			.poll(() => store.getAllFavorites()[0]?.title)
+			.toBe("수정한 제목");
 	});
 
 	test("공백뿐이거나 바뀐 게 없으면 요청 없이 보기 모드로 돌아간다.", async ({
@@ -167,6 +170,7 @@ test.describe("즐겨찾기 페이지 (Mocked)", () => {
 		await expect(
 			page.getByText(
 				"Couldn't change the title. Please try again in a moment.",
+				{ exact: true },
 			),
 		).toBeVisible();
 		await expect(page.getByText("원래 제목", { exact: true })).toBeVisible();
@@ -189,7 +193,9 @@ test.describe("즐겨찾기 페이지 (Mocked)", () => {
 			.getByRole("button", { name: "Delete" })
 			.click();
 
-		await expect(page.getByText("Favorite deleted")).toBeVisible();
+		await expect(
+			page.getByText("Favorite deleted", { exact: true }),
+		).toBeVisible();
 		await expect(page.getByText("지울 글", { exact: true })).toHaveCount(0);
 		await expect(page.getByText("남길 글", { exact: true })).toBeVisible();
 		expect(store.getAllFavorites().map((favorite) => favorite.title)).toEqual([
@@ -237,7 +243,9 @@ test.describe("즐겨찾기 페이지 (Mocked)", () => {
 			.click();
 
 		await expect(
-			page.getByText("Couldn't delete it. Please try again in a moment."),
+			page.getByText("Couldn't delete it. Please try again in a moment.", {
+				exact: true,
+			}),
 		).toBeVisible();
 		await expect(
 			page.getByText("삭제 실패할 글", { exact: true }),
@@ -263,7 +271,7 @@ test.describe("즐겨찾기 페이지 (Mocked)", () => {
 		});
 		await gotoFavorites(page);
 
-		await expect(page.getByRole("alert")).toContainText(
+		await expect(page.locator("main").getByRole("alert")).toContainText(
 			"Couldn't load your favorites",
 		);
 		shouldFail = false;

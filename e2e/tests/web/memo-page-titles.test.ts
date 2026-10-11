@@ -12,6 +12,7 @@ const ROUTES = [
 	{ path: PATHS.memosStar, ko: "중요 메모", en: "Important" },
 	{ path: PATHS.memosReading, ko: "읽는 중", en: "Reading" },
 	{ path: PATHS.highlights, ko: "하이라이트", en: "Highlights" },
+	{ path: PATHS.favorites, ko: "즐겨찾기", en: "Favorites" },
 ] as const;
 const BRAND = { ko: "웹 메모", en: "Web Memo" } as const;
 
@@ -49,6 +50,7 @@ test.describe("메모 페이지 브라우저 제목 (Mocked)", () => {
 				ROUTES[2],
 				ROUTES[3],
 				ROUTES[4],
+				ROUTES[5],
 				ROUTES[0],
 			]) {
 				await sidebar

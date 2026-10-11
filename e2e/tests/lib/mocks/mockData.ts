@@ -4,11 +4,13 @@ import { getPageKey } from "@web-memo/shared/utils/url";
 type MockMemo = Database["memo"]["Tables"]["memo"]["Row"];
 type MockCategory = Database["memo"]["Tables"]["category"]["Row"];
 type MockHighlight = Database["memo"]["Tables"]["highlight"]["Row"];
+type MockFavorite = Database["memo"]["Tables"]["favorite"]["Row"];
 type MockSetting = Database["memo"]["Tables"]["setting"]["Row"];
 
 let memoIdCounter = 1;
 let categoryIdCounter = 1;
 let highlightIdCounter = 1;
+let favoriteIdCounter = 1;
 
 /**
  * 메모 한 건을 만든다. 실제 테이블 컬럼을 모두 채워 앱이 받는 모양과 어긋나지 않게 한다.
@@ -109,9 +111,29 @@ export function createMockHighlight(
 	};
 }
 
+/** 즐겨찾기 한 건을 만든다. 시각은 id마다 1초씩 벌려 최신순 정렬을 관측할 수 있게 한다. */
+export function createMockFavorite(
+	overrides: Partial<MockFavorite> = {},
+): MockFavorite {
+	const id = favoriteIdCounter++;
+	const url = overrides.url ?? `https://example.com/favorite-${id}`;
+
+	return {
+		id,
+		user_id: "test-user-id",
+		url,
+		title: `Test Favorite ${id}`,
+		favIconUrl: null,
+		created_at: new Date(Date.now() - id * 1000).toISOString(),
+		...overrides,
+		page_key: overrides.page_key ?? getPageKey(url),
+	};
+}
+
 /** 테스트마다 id를 1부터 다시 매긴다. */
 export function resetMockIds() {
 	memoIdCounter = 1;
 	categoryIdCounter = 1;
 	highlightIdCounter = 1;
+	favoriteIdCounter = 1;
 }

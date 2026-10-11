@@ -1,5 +1,6 @@
 "use client";
 
+import { MasonryInfiniteGrid } from "@egjs/react-infinitegrid";
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { useQuery } from "@tanstack/react-query";
@@ -13,7 +14,7 @@ import {
 import { groupHighlightsByUrl } from "@web-memo/shared/modules/highlight";
 import { HighlightService } from "@web-memo/shared/utils";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useHighlightCounts, useHighlightList } from "../_hooks";
 import { HighlightEmptyState } from "./HighlightEmptyState";
 import { HighlightFilterBar } from "./HighlightFilterBar";
@@ -74,7 +75,7 @@ interface HighlightListProps {
 	onClearFilters: () => void;
 }
 
-/** 하이라이트를 URL별로 묶고 추가 페이지는 사용자 요청에만 불러온다. */
+/** 하이라이트를 URL별로 묶고 스크롤 끝에서 다음 페이지를 불러온다. */
 function HighlightList({
 	lng,
 	searchQuery,
@@ -98,8 +99,6 @@ function HighlightList({
 		color: selectedColor,
 	});
 	const rows = data?.pages.flat() ?? [];
-	const groups = groupHighlightsByUrl(rows);
-	const counts = useHighlightCounts(groups.map((group) => group.url));
 	const searchParams = useSearchParams();
 	const requestedId = Number(searchParams.get("highlightId"));
 	const targetHighlightId =
@@ -127,9 +126,10 @@ function HighlightList({
 		targetRow && !rows.some((row) => row.id === targetRow.id)
 			? targetRow
 			: undefined;
-	const visibleGroups = separateTarget
-		? [...groupHighlightsByUrl([separateTarget]), ...groups]
-		: groups;
+	const visibleGroups = groupHighlightsByUrl(
+		separateTarget ? [separateTarget, ...rows] : rows,
+	);
+	const counts = useHighlightCounts(visibleGroups.map((group) => group.url));
 	const links = useHighlightMemoLinks([
 		...rows.map((row) => row.id),
 		...(separateTarget ? [separateTarget.id] : []),
@@ -191,21 +191,33 @@ function HighlightList({
 					}}
 				/>
 			)}
-			<div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,300px),300px))] justify-center gap-4">
-				{visibleGroups.map((group) => (
-					<HighlightGroupCard
+			<HighlightGrid
+				key={`${searchQuery}:${selectedColor ?? ""}`}
+				pageCount={data?.pages.length ?? 0}
+				hasNextPage={!!hasNextPage}
+				isFetching={isFetching}
+				isFetchNextPageError={isFetchNextPageError}
+				fetchNextPage={() => void fetchNextPage({ cancelRefetch: false })}
+			>
+				{visibleGroups.map((group, index) => (
+					<div
 						key={group.url}
-						group={group}
-						lng={lng}
-						count={counts.get(group.url) ?? 0}
-						links={linksByHighlight}
-						isLinkLoading={links.isPending}
-						isLinkError={links.isError}
-						onRetryLinks={() => void links.refetch()}
-						targetHighlightId={targetHighlightId}
-					/>
+						data-grid-groupkey={index}
+						className="w-[300px] max-w-full"
+					>
+						<HighlightGroupCard
+							group={group}
+							lng={lng}
+							count={counts.get(group.url) ?? 0}
+							links={linksByHighlight}
+							isLinkLoading={links.isPending}
+							isLinkError={links.isError}
+							onRetryLinks={() => void links.refetch()}
+							targetHighlightId={targetHighlightId}
+						/>
+					</div>
 				))}
-			</div>
+			</HighlightGrid>
 
 			{isFetchNextPageError ? (
 				<HighlightLoadError
@@ -216,22 +228,80 @@ function HighlightList({
 							void fetchNextPage({ cancelRefetch: false });
 					}}
 				/>
-			) : hasNextPage ? (
-				<button
-					type="button"
-					onClick={() => {
-						if (!isFetching && hasNextPage)
-							void fetchNextPage({ cancelRefetch: false });
-					}}
-					disabled={isFetching}
-					className="mx-auto rounded-lg border border-border bg-background px-4 py-2 text-sm hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed"
-				>
-					{t(
-						isFetchingNextPage ? "highlight.loadingMore" : "highlight.loadMore",
-					)}
-				</button>
+			) : isFetchingNextPage ? (
+				<output className="block text-center text-sm text-muted-foreground">
+					{t("highlight.loadingMore")}
+				</output>
 			) : null}
 		</div>
+	);
+}
+
+function HighlightGrid({
+	children,
+	pageCount,
+	hasNextPage,
+	isFetching,
+	isFetchNextPageError,
+	fetchNextPage,
+}: {
+	children: React.ReactNode;
+	pageCount: number;
+	hasNextPage: boolean;
+	isFetching: boolean;
+	isFetchNextPageError: boolean;
+	fetchNextPage: () => void;
+}) {
+	const lastRequestedPageCount = useRef(0);
+	const requestNextPage = useCallback(() => {
+		if (
+			!hasNextPage ||
+			isFetching ||
+			isFetchNextPageError ||
+			lastRequestedPageCount.current >= pageCount
+		)
+			return;
+		lastRequestedPageCount.current = pageCount;
+		fetchNextPage();
+	}, [fetchNextPage, hasNextPage, isFetching, isFetchNextPageError, pageCount]);
+
+	const requestIfNearBottom = useCallback(() => {
+		const grid = document.getElementById("highlight-grid");
+		if (
+			grid &&
+			grid.getBoundingClientRect().bottom <= window.innerHeight + 400
+		) {
+			requestNextPage();
+		}
+	}, [requestNextPage]);
+
+	useEffect(() => {
+		const frame = requestAnimationFrame(requestIfNearBottom);
+		window.addEventListener("scroll", requestIfNearBottom, { passive: true });
+		window.addEventListener("resize", requestIfNearBottom);
+		return () => {
+			cancelAnimationFrame(frame);
+			window.removeEventListener("scroll", requestIfNearBottom);
+			window.removeEventListener("resize", requestIfNearBottom);
+		};
+	}, [requestIfNearBottom]);
+
+	return (
+		<MasonryInfiniteGrid
+			useTransform
+			useResizeObserver
+			observeChildren
+			autoResize
+			useRecycle={false}
+			id="highlight-grid"
+			className="w-full pb-48"
+			gap={16}
+			align="center"
+			onRequestAppend={requestNextPage}
+			onRenderComplete={requestIfNearBottom}
+		>
+			{children}
+		</MasonryInfiniteGrid>
 	);
 }
 

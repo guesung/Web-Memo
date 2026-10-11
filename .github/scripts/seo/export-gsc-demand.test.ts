@@ -190,6 +190,14 @@ describe("기회 검색어", () => {
 				pages: ["https://www.webmemo.xyz/ko/introduce", "https://www.webmemo.xyz/ko/features/memo"],
 			},
 		]);
+		const markdown = createDemandMarkdown({
+			period: { startDate: "2026-09-02", endDate: "2026-10-07", days: 36 },
+			rows: [row({ query: "메모" })],
+			summary: { opportunities: result, publicPages: summarizePublicPages([]), sitemaps: [] },
+		});
+		expect(markdown).toContain(
+			"| 메모 | 10 | 0 | 10.0 | https://www.webmemo.xyz/ko/introduce<br>https://www.webmemo.xyz/ko/features/memo |",
+		);
 	});
 });
 

@@ -3,7 +3,7 @@ name: Report GSC Demand
 # 조합 페이지 축을 고르기 전에 Search Console의 검색 수요와 사이트맵 색인 상태를 한 번에 뽑습니다.
 # 도메인 이전일(2026-09-02)부터 확정 지연을 뺀 날까지의 query×page 전체 행을 읽고,
 # 기회 검색어·공개 페이지 성과·사이트맵 상태를 gsc-demand.json·gsc-demand.md 아티팩트로 남깁니다.
-# 정기 실행·Slack·Sheets·AI 리포트는 없습니다. 판단 절차는 docs/seo-combination-pages.md 에 있습니다.
+# 정기 실행·메신저 알림·외부 저장·AI 해석 단계는 없습니다. 판단 절차는 docs/seo-combination-pages.md 에 있습니다.
 on:
   workflow_dispatch:
 

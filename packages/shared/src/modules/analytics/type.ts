@@ -98,6 +98,7 @@ export type TAnalyticsEvent =
 	| { name: "view_change"; params: { view: string } }
 	| { name: "logout" }
 	| { name: "extension_installed" }
+	| { name: "extension_uninstall" }
 	| { name: "login_start"; params: { method: string } }
 	| { name: "side_panel_login_click" }
 	| {
@@ -275,6 +276,7 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	view_change: "engagement",
 	logout: "engagement",
 	extension_installed: "engagement",
+	extension_uninstall: "engagement",
 	login_start: "engagement",
 	side_panel_login_click: "engagement",
 	header_login_click: "engagement",

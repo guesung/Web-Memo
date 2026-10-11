@@ -58,6 +58,7 @@
 | login_start / login / sign_up / logout | `login_start`: 웹 로그인 제공자 버튼 클릭. `login`: OAuth 성공 후 메모 레이아웃에 도착한 클라이언트. `sign_up`: 같은 도착 시 신규 계정으로 판정된 경우. `logout`: 로그아웃 | `method` (logout 없음) | 제공자별 시작·도착 규모는? 두 이벤트에는 시도 식별자가 없으므로 사용자 수 비율을 실제 로그인 완료율로 단정하지 않는다 | DB-1160 |
 | side_panel_login_click / header_login_click / header_memos_click | 로그인·메모 진입 클릭 | `from`(header 계열, 언어 접두사를 뺀 경로) | 어느 자리에서 로그인·진입이 눌리는가 | — |
 | extension_install_click / extension_install_dismiss / extension_installed | 설치 버튼 클릭·닫음·설치 완료 | `from`, `position` | 어느 페이지·어느 버튼이 설치로 이어지는가 | — |
+| extension_uninstall | 확장 제거 URL의 `GET /api/uninstall` 요청에서 서버가 GA4로 전송 시도. development·HEAD 제외 | `extension_version`(없거나 잘못되면 `unknown`), `build_env` | 새 제거 URL을 등록한 설치본에서 제거 흐름이 얼마나 발생하며 어느 버전·환경에서 발생하는가 | DB-1182 |
 | open_web_from_extension | 확장에서 웹 열기 | `from` | 웹으로 넘어가는 자리는 어디인가 | — |
 | guide_open / guide_step / guide_finish | 가이드 열기·단계·완료 | `from`, `step_name` | 가이드 어느 단계에서 그만두는가 (추정) | — |
 | install_guide_view | 로그인 전 설치 가이드 화면 조회 | — | 신규 설치자가 로그인 전에 가이드에 도달하는가 | DB-1159 |
@@ -69,6 +70,14 @@
 | blog_article_memo_click | 정주행 행에서 메모 열기 성공 뒤(기존 메모는 다이얼로그 열기 직전, 새 메모는 생성 뮤테이션 `onSuccess`) | `blog_id`, `action`: `create` \| `view` | 정주행이 메모 작성으로 이어지는가 | DB-1134 |
 | blog_sync_resume_request | 수집 재개 요청 뮤테이션의 `onSuccess`(오류 제외) | `blog_id`, `result`: `queued` \| `running` \| `throttled` | 수집 재개가 얼마나 쓰이고 제한에 얼마나 걸리는가 | DB-1134 |
 | blog_reading_page_move | 정주행 목록 쪽 이동 성공 뒤(다음 쪽은 `fetchNextPage` 성공 시) | `direction`: `prev` \| `next`, `page_number`(이동 후, 1부터), `sort` | 목록을 몇 쪽까지 읽어 나가는가 | DB-1134 |
+
+### 확장 제거 이벤트의 수집 범위
+
+- 확장은 서비스 워커가 시작할 때 저장된 `client_id`와 버전으로 제거 URL을 등록합니다. 서버는 같은 ID를 전송하며, ID가 없거나 유효하지 않으면 새 ID를 만들어 개수만 셉니다. 이전 URL을 등록한 구버전 설치본의 `/uninstall` 직접 방문에는 이 이벤트가 없습니다.
+- 서버는 GA 전송을 최대 2초 기다린 뒤 성공·실패와 무관하게 쿼리 없는 기존 설문 페이지로 302 이동합니다. GA의 2xx 응답은 실제 보고서 저장을 보장하지 않습니다.
+- 공개 GET URL의 재방문·직접 호출도 이벤트를 보냅니다. 고유 제거 건수나 실제 제거를 증명하는 값으로 단정하지 않습니다. 설문 페이지의 자동 `page_view`와 별도로 집계합니다.
+- 기존 분석 정책을 따라 `event_category: engagement`, `engagement_time_msec: 100`, 서버 시각의 새 `session_id`를 넣고 staging에서만 `debug_mode`를 켭니다. 기존 확장 세션을 복원한 값이나 실제 참여 시간을 측정한 값은 아닙니다.
+- 기존 확장의 UUID `client_id`를 유지합니다. GA 검증 API의 기본 `RELAXED` 모드에서는 오류가 없었지만, `ENFORCE_RECOMMENDATIONS` 모드는 숫자.숫자 형식을 요구합니다. 엄격 모드로 전환할 때는 기존 확장 분석과 함께 식별자 정책을 검토해야 합니다.
 
 ## 갱신 규칙
 

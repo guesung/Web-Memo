@@ -565,6 +565,26 @@
 		}
 	},
 	"highlight": {
+		"memo": {
+			"add": "+ Add memo",
+			"open": "Open memo",
+			"restore": "Restore from trash",
+			"trashed": "This memo is in trash.",
+			"linked": "Linked memo",
+			"quote": "Quoted text",
+			"placeholder": "Write what this passage made you think",
+			"save": "Save memo",
+			"saving": "Saving...",
+			"cancel": "Cancel",
+			"saveError": "Could not save your memo. Your draft is still here. Try again.",
+			"loadError": "Could not load linked memos. Try again.",
+			"loading": "Loading memo...",
+			"source": "View source",
+			"viewHighlight": "View linked highlight",
+			"deletedHighlight": "This highlight was deleted.",
+			"related": "Other highlights on this page",
+			"relatedCount": "Other highlights on this page ({{count}})"
+		},
 		"loadError": "Could not load highlights. Please try again.",
 		"loadMore": "Load more",
 		"count": "{{count}}",

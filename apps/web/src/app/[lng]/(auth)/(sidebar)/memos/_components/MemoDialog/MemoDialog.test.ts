@@ -28,7 +28,7 @@ const MOCKS = vi.hoisted(() => ({
 vi.mock("@src/modules/i18n/util.client", () => ({
 	default: () => ({
 		t: (key: string, options?: { count: number }) =>
-			key === "memoSection.highlightCount"
+			key === "highlight.memo.relatedCount"
 				? `하이라이트 ${options?.count}개`
 				: key,
 	}),
@@ -41,6 +41,11 @@ vi.mock("@tanstack/react-query", () => ({
 	}),
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
+	useHighlightMemoLinks: () => ({
+		data: [],
+		isError: false,
+		refetch: MOCKS.refetch,
+	}),
 	memoQueryOptions: () => ({}),
 	useSupabaseClientQuery: () => ({ data: {} }),
 	useSettingQuery: () => ({ showImpression: true, showActionItem: true }),

@@ -326,14 +326,14 @@
 - name: CRON_SECRET
   kind: secret
   stores: [supabase]
-  consumers: [packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts, packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts, packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts]
+  consumers: [packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts, packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts, packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
   impact: "DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·가입 알림·아티클 리마인더가 401로 끝난다"
   note: "Vault의 cron_secret과 같은 값이어야 한다"
 
 - name: RESEND_API_KEY
   kind: secret
   stores: [supabase]
-  consumers: [packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts]
+  consumers: [packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
   impact: "가입 안내 메일이 발송되지 않는다"
 
 - name: SLACK_FEEDBACK_WEBHOOK_URL
@@ -354,13 +354,18 @@
 
 - name: SUPABASE_URL
   kind: platform
-  consumers: [packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts]
+  consumers: [packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
   note: "Supabase가 Edge Function에 주입한다"
 
 - name: SUPABASE_SERVICE_ROLE_KEY
   kind: platform
-  consumers: [packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts]
+  consumers: [packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
   note: "Supabase가 Edge Function에 주입한다. Vercel에는 등록하지 않는다"
+
+- name: SUPABASE_ANON_KEY
+  kind: platform
+  consumers: [packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
+  note: "Supabase가 Edge Function에 주입한다. 테스트 발송에서 사용자 토큰을 auth.getUser로 검증할 때만 쓴다"
 
 - name: NODE_ENV
   kind: platform

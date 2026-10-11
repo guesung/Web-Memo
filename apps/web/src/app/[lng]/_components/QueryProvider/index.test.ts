@@ -57,9 +57,24 @@ describe("web QueryProvider mutation synchronization", () => {
 		expect(mocks.settingUpdated).toHaveBeenCalledTimes(1);
 		await unmount();
 	});
+
+	it("pending extension notifications do not block the local success callback", async () => {
+		mocks.refetchMemoList.mockImplementation(() => new Promise(() => {}));
+		mocks.settingUpdated.mockImplementation(() => new Promise(() => {}));
+		const onSuccess = vi.fn();
+		const { mutate, unmount } = await renderMutation(onSuccess);
+		const result = { data: { show_impression: true }, error: null };
+
+		await expect(mutate(result, "setting")).resolves.toEqual(result);
+		expect(onSuccess).toHaveBeenCalledOnce();
+		expect(onSuccess.mock.calls[0]?.[0]).toEqual(result);
+		expect(mocks.settingUpdated).toHaveBeenCalledTimes(1);
+		expect(mocks.refetchMemoList).toHaveBeenCalledTimes(1);
+		await unmount();
+	});
 });
 
-async function renderMutation() {
+async function renderMutation(onSuccess?: ReturnType<typeof vi.fn>) {
 	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
 	let queryClient: ReturnType<typeof useQueryClient>;
 	function CaptureClient() {
@@ -80,6 +95,7 @@ async function renderMutation() {
 				.build(queryClient, {
 					meta: { feature, operation: "upsert", stage: "save" },
 					mutationFn: async () => result,
+					onSuccess,
 				})
 				.execute(undefined),
 		unmount: async () => act(async () => root.unmount()),

@@ -23,6 +23,16 @@ interface QueryProviderProps extends PropsWithChildren, LanguageType {}
 
 const reportWebError = createErrorReporter({ capture: captureException });
 
+function notifyExtension(request: () => Promise<void>) {
+	try {
+		void request().catch(() => {
+			// 확장이 연결되지 않아도 저장 결과는 유지한다.
+		});
+	} catch {
+		// 확장이 연결되지 않아도 저장 결과는 유지한다.
+	}
+}
+
 export default function QueryProvider({ children }: QueryProviderProps) {
 	const [queryClient] = useState(
 		() =>
@@ -65,7 +75,7 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 					},
 				}),
 				mutationCache: new MutationCache({
-					onSuccess: async (data, _variables, _context, mutation) => {
+					onSuccess: (data, _variables, _context, mutation) => {
 						const resultError = getResultError(data);
 						const mutationMeta = mutation?.options?.meta;
 
@@ -84,18 +94,10 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 							mutationMeta?.feature === "setting" &&
 							mutationMeta.operation === "upsert"
 						) {
-							try {
-								await bridge.request.SETTING_UPDATED_FROM_WEB();
-							} catch {
-								// 확장이 연결되지 않아도 저장 결과는 유지한다.
-							}
+							notifyExtension(bridge.request.SETTING_UPDATED_FROM_WEB);
 						}
 
-						try {
-							await bridge.request.REFETCH_THE_MEMO_LIST_FROM_WEB();
-						} catch {
-							// 확장이 연결되지 않아도 저장 결과는 유지한다.
-						}
+						notifyExtension(bridge.request.REFETCH_THE_MEMO_LIST_FROM_WEB);
 					},
 					onError: (error, _variables, _context, mutation) => {
 						if (isAbortError(error)) {

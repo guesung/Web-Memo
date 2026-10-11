@@ -162,15 +162,56 @@ it("카테고리 없음·빈 응답·목록 밖 선택은 제안하지 않는다
 	expect(mocks.request).not.toHaveBeenCalled();
 	mocks.categories = [{ id: 7, name: "개발" }];
 	await render();
-	for (const response of [
+	const responses = [
 		null,
 		{ ...jevSuggestion, existingCategoryId: 8 },
 		{ ...jevSuggestion, isExisting: false },
-	]) {
+	];
+	for (const [index, response] of responses.entries()) {
+		mocks.tab = { url: `https://example.com/${index}`, title: "Article" };
 		mocks.request.mockResolvedValueOnce(response);
+		await render();
 		await act(async () => suggestion.triggerSuggestion("memo"));
 		expect(suggestion.suggestion).toBeNull();
+		expect(mocks.request).toHaveBeenCalledTimes(index + 1);
 	}
+});
+
+it("유효한 추천이 없던 URL은 같은 URL에서 다시 요청하지 않는다", async () => {
+	mocks.request.mockResolvedValue(null);
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	await act(async () => suggestion.triggerSuggestion("memo updated"));
+	expect(mocks.request).toHaveBeenCalledTimes(1);
+});
+
+it("요청이 예외로 실패한 URL은 다시 요청하지 않는다", async () => {
+	mocks.request.mockRejectedValue(new Error("timeout"));
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	await act(async () => suggestion.triggerSuggestion("memo updated"));
+	expect(mocks.request).toHaveBeenCalledTimes(1);
+});
+
+it("AbortError로 끝난 요청은 실패로 기록하지 않아 다시 요청한다", async () => {
+	const abortError = new Error("aborted");
+	abortError.name = "AbortError";
+	mocks.request.mockRejectedValueOnce(abortError);
+	mocks.request.mockResolvedValueOnce(jevSuggestion);
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	await act(async () => suggestion.triggerSuggestion("memo updated"));
+	expect(mocks.request).toHaveBeenCalledTimes(2);
+});
+
+it("실패한 URL과 다른 URL로 이동하면 다시 요청한다", async () => {
+	mocks.request.mockResolvedValue(null);
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	mocks.tab = { url: "https://example.com/b", title: "Another article" };
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	expect(mocks.request).toHaveBeenCalledTimes(2);
 });
 
 it("다른 페이지로 이동한 뒤 이전 제안을 수락하지 않는다", async () => {

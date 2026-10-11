@@ -942,7 +942,9 @@ const handleSettingUpsert = async ({ route, store }: HandlerParams) => {
 		...store.getSetting(),
 		...patch,
 	};
-	store.settingUpserts.push(patch);
+	// user_id는 서비스가 매번 붙이는 식별자라 "무엇을 바꿨나" 기록에서는 뺀다.
+	const { user_id: _userId, ...changedFields } = patch;
+	store.settingUpserts.push(changedFields);
 	store.setSetting(updated);
 
 	await route.fulfill({

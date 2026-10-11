@@ -34,6 +34,10 @@ test.describe("설정 주간 리포트 (Mocked)", () => {
 	};
 
 	const emailInput = (page: Page) => page.getByLabel("받을 이메일");
+	// 토스트는 Radix ToastViewport(role="region") 안에 뜬다. 같은 문구가 스크린리더용
+	// role="status" 공지 영역에도 한 번 더 들어가므로 페이지 전체에서 텍스트로 찾으면 둘이 걸린다.
+	const toastRegion = (page: Page) =>
+		page.getByRole("region", { name: /notifications/i });
 	const testButton = (page: Page) =>
 		page.getByRole("button", { name: "테스트 메일 보내기" });
 
@@ -134,7 +138,9 @@ test.describe("설정 주간 리포트 (Mocked)", () => {
 
 		await emailInput(page).fill("new@example.com");
 		await emailInput(page).press("Enter");
-		await expect(page.getByText("변경사항을 저장했어요")).toBeVisible();
+		await expect(
+			toastRegion(page).getByText("변경사항을 저장했어요"),
+		).toBeVisible();
 		expect(store.settingUpserts).toEqual([
 			{ weekly_report_email: "new@example.com" },
 		]);
@@ -161,7 +167,9 @@ test.describe("설정 주간 리포트 (Mocked)", () => {
 
 		await testButton(page).click();
 
-		await expect(page.getByText("saved@example.com로 보냈어요")).toBeVisible();
+		await expect(
+			toastRegion(page).getByText("saved@example.com로 보냈어요"),
+		).toBeVisible();
 		expect(store.weeklyReportTestRequests).toEqual([{ mode: "test" }]);
 	});
 
@@ -182,6 +190,8 @@ test.describe("설정 주간 리포트 (Mocked)", () => {
 
 		await testButton(page).click();
 
-		await expect(page.getByText("조금 뒤에 다시 보내 주세요")).toBeVisible();
+		await expect(
+			toastRegion(page).getByText("조금 뒤에 다시 보내 주세요"),
+		).toBeVisible();
 	});
 });

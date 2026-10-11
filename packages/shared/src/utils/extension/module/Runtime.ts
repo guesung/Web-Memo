@@ -69,7 +69,7 @@ export class Runtime {
 			request: BridgeRequest<TPayload>,
 			sender: chrome.runtime.MessageSender,
 			sendResponse: (response: TResponse) => void,
-		) => void,
+		) => undefined | boolean | Promise<unknown>,
 	) {
 		const listener = (
 			request: BridgeRequest<TPayload>,
@@ -77,8 +77,10 @@ export class Runtime {
 			sendResponse: (response: TResponse) => void,
 		) => {
 			if (request.type === type) {
-				callback(request, sender, sendResponse);
+				const result = callback(request, sender, sendResponse);
+				return result instanceof Promise ? true : result;
 			}
+			return false;
 		};
 
 		chrome.runtime.onMessageExternal.addListener(listener);

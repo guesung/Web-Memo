@@ -4,6 +4,7 @@ import { expect, test } from "../fixtures/web";
 import { gotoSafely, LANGUAGE } from "../lib";
 import {
 	createMockHighlight,
+	createMockMemo,
 	MockSupabaseStore,
 	resetMockIds,
 	setupSupabaseMocks,
@@ -65,6 +66,35 @@ test("검색 결과가 없을 때 필터를 초기화하면 기존 하이라이�
 	await page.getByRole("button", { name: "Clear filters" }).click();
 	await expect(page.getByLabel("Search text or notes")).toHaveValue("");
 	await expect(page.getByText(firstQuote)).toBeVisible();
+});
+
+test("같은 URL에 자동 생성된 빈 메모도 그리드와 상세에서 하이라이트를 보여준다.", async ({
+	page,
+}) => {
+	resetMockIds();
+	const store = new MockSupabaseStore();
+	const highlight = store.addHighlight(
+		createMockHighlight({ exact_text: "Quote on blank memo page" }),
+	);
+	store.addMemo(
+		createMockMemo({ url: highlight.url, title: "Auto blank memo", memo: "" }),
+	);
+	await setupSupabaseMocks(page, store);
+	await gotoSafely({
+		page,
+		url: `${LANGUAGE}${PATHS.memos}`,
+		regexp: new RegExp(PATHS.memos),
+	});
+	const card = page.locator(".memo-item", { hasText: "Auto blank memo" });
+	await expect(card).toBeVisible();
+	await expect(card.getByText("Highlights (1)")).toBeVisible();
+	await card.click();
+	const dialog = page.getByRole("dialog");
+	await expect(dialog.getByTestId("memo-textarea")).toHaveValue("");
+	await dialog
+		.getByRole("button", { name: "Other highlights on this page (1)" })
+		.click();
+	await expect(dialog.getByText(highlight.exact_text)).toBeVisible();
 });
 
 test("초기 조회를 기다릴 때 빈 상태 대신 목록 스켈레톤을 보여준다.", async ({

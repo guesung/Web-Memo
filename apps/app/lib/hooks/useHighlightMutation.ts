@@ -56,6 +56,12 @@ export function useHighlightCreateMutation() {
 		},
 		onSuccess: (highlight) => {
 			queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.memosPaginatedPrefix(),
+			});
+			queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.memo({ url: getPageKey(highlight.url) }),
+			});
+			queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.highlightsByUrl(getPageKey(highlight.url)),
 			});
 			queryClient.invalidateQueries({

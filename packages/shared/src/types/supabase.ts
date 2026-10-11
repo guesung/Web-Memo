@@ -395,6 +395,7 @@ export type Database = {
 					like_count: number | null;
 					memo: string;
 					page_key: string;
+					plannedDate: string | null;
 					shared_at: string | null;
 					title: string;
 					updated_at: string | null;
@@ -418,6 +419,7 @@ export type Database = {
 					like_count?: number | null;
 					memo: string;
 					page_key?: string;
+					plannedDate?: string | null;
 					shared_at?: string | null;
 					title: string;
 					updated_at?: string | null;
@@ -441,6 +443,7 @@ export type Database = {
 					like_count?: number | null;
 					memo?: string;
 					page_key?: string;
+					plannedDate?: string | null;
 					shared_at?: string | null;
 					title?: string;
 					updated_at?: string | null;
@@ -853,6 +856,10 @@ export type Database = {
 				Returns: Json;
 			};
 			is_supported_blog: { Args: { p_blog_id: string }; Returns: boolean };
+			legacy_page_key_from_normalized_url: {
+				Args: { p_url: string };
+				Returns: string;
+			};
 			request_blog_sync: { Args: { p_blog_id: string }; Returns: Json };
 			save_blog_checkpoint: {
 				Args: {

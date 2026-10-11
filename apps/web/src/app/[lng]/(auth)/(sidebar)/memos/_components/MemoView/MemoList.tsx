@@ -103,7 +103,7 @@ const MemoList = (props: IFMemoListProps) => {
 					<h2
 						data-testid={`memo-${props.groupBy}-label`}
 						id={`memo-${props.groupBy}-${group.key}`}
-						className="border-b border-border pb-3 text-sm font-semibold md:border-b-0 md:border-r md:pb-0 md:pr-4"
+						className="min-w-0 border-b border-border pb-3 text-sm font-semibold [overflow-wrap:anywhere] md:border-b-0 md:border-r md:pb-0 md:pr-4"
 					>
 						{props.groupBy === "domain" ? (
 							group.key === UNKNOWN_DOMAIN ? (

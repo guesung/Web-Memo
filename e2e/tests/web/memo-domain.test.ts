@@ -9,6 +9,8 @@ import {
 	setupSupabaseMocks,
 } from "../lib/mocks";
 
+const LONG_DOMAIN = "very-long-domain-name-without-spaces.example.com";
+
 test.describe("도메인별 메모 보기 (Mocked)", () => {
 	test.beforeEach(async ({ page }) => {
 		resetMockIds();
@@ -18,7 +20,7 @@ test.describe("도메인별 메모 보기 (Mocked)", () => {
 		for (let order = 1; order <= 22; order++) {
 			const url =
 				order === 20
-					? "https://other.example.com/post"
+					? `https://${LONG_DOMAIN}/post`
 					: order === 22
 						? "file:///memo"
 						: `https://${order === 21 ? "WWW." : ""}example.com/post-${order}`;
@@ -71,9 +73,13 @@ test.describe("도메인별 메모 보기 (Mocked)", () => {
 		await expect(page.getByTestId("memo-list-item")).toHaveCount(22);
 		await expect(groups).toHaveCount(3);
 		await expect(groups.first().getByTestId("memo-list-item")).toHaveCount(20);
-		await expect(groups.nth(1).getByTestId("memo-domain-label")).toHaveText(
-			"other.example.com",
-		);
+		const longDomainLabel = groups.nth(1).getByTestId("memo-domain-label");
+		await expect(longDomainLabel).toHaveText(LONG_DOMAIN);
+		expect(
+			await longDomainLabel.evaluate(
+				(label) => label.scrollWidth - label.clientWidth,
+			),
+		).toBeLessThanOrEqual(1);
 		await expect(groups.nth(2).getByTestId("memo-domain-label")).toHaveText(
 			"No domain",
 		);

@@ -607,8 +607,8 @@
 			"get_started": "시작하기"
 		},
 		"hero": {
-			"title": "글 읽으며 메모하세요",
-			"subtitle": "글을 읽다가 떠오른 생각을 사이드 패널에 적어요.\n페이지 제목과 주소는 자동으로 기록됩니다.",
+			"title": "칠하고, 바로 옆에 생각을 적어요",
+			"subtitle": "읽던 글에서 문장을 칠하고, 그 옆에 떠오른 생각을 적어요.\n칠한 문장과 메모는 출처와 함께 한곳에 모여요.",
 			"install_button": "Chrome에 추가",
 			"appstore_button": "App Store",
 			"playstore_button": "Google Play",
@@ -619,11 +619,11 @@
 			"learn_more": "더 알아보기",
 			"desktop_extension_hint": "PC에서는 Chrome 확장으로도 쓸 수 있어요",
 			"installs_badge": "설치",
-			"image_alt": "읽던 글 옆의 웹 메모 사이드 패널에 직접 메모를 적은 화면"
+			"image_alt": "읽던 글의 문장에 노란 하이라이트를 칠하고 바로 옆 메뉴에 메모를 적은 화면"
 		},
 		"section": {
 			"key_features": "핵심 기능",
-			"key_features_desc": "읽던 흐름에서 기록까지 이어지는 다섯 가지 장면이에요.",
+			"key_features_desc": "읽던 글에서 기록까지 이어지는 여섯 가지 장면이에요.",
 			"features_badge": "기능",
 			"demo": "웹 메모 미리 보기",
 			"demo_title": "웹 메모 미리 보기",
@@ -729,6 +729,10 @@
 			"park_quote": "기술 블로그나 문서를 읽을 때 항상 사용해요. 나중에 다시 찾아볼 때 메모해둔 내용이 정말 도움이 됩니다. 강력 추천합니다!"
 		},
 		"features": {
+			"highlight": {
+				"title": "문장을 칠하고, 옆에 메모해요",
+				"description": "글을 드래그하면 다섯 가지 색 버블이 떠요. 칠한 문장을 누르면 바로 옆에 생각을 적을 수 있어요."
+			},
 			"memo": {
 				"title": "글 읽으며 메모하세요",
 				"description": "읽다가 남기고 싶은 문장이나 생각을 페이지 옆 사이드 패널에 적어요."

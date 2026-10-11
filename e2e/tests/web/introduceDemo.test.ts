@@ -44,11 +44,14 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 
 			const isKorean = language === "ko";
 			const heroTitle = isKorean
-				? "글 읽으며 메모하세요"
-				: "Take notes while reading";
+				? "칠하고, 바로 옆에 생각을 적어요"
+				: "Highlight it, then write your thought beside it";
 			const heroSubtitle = isKorean
-				? "글을 읽다가 떠오른 생각을 사이드 패널에 적어요.\n페이지 제목과 주소는 자동으로 기록됩니다."
-				: "Write down thoughts in the side panel as you read.\nThe page title and URL are saved automatically.";
+				? "읽던 글에서 문장을 칠하고, 그 옆에 떠오른 생각을 적어요.\n칠한 문장과 메모는 출처와 함께 한곳에 모여요."
+				: "Highlight a passage in what you're reading and write down what it made you think.\nHighlights and notes gather in one place, with their source.";
+			const firstFeatureTitle = isKorean
+				? "문장을 칠하고, 옆에 메모해요"
+				: "Highlight a passage, note it beside it";
 			const demoTitle = isKorean ? "웹 메모 미리 보기" : "Preview Web Memo";
 
 			await expect(page.getByRole("heading", { level: 1 })).toHaveText(
@@ -56,6 +59,9 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 			);
 			await expect(page.locator("h1 + p")).toHaveText(heroSubtitle);
 			await expect(page.locator("h1 + p")).toHaveCSS("white-space", "pre-line");
+			await expect(page.getByRole("heading", { level: 3 }).first()).toHaveText(
+				firstFeatureTitle,
+			);
 			await expect(page.locator("#demo h2")).toHaveText(demoTitle);
 			await expect(
 				page.locator("#demo").getByRole("button", { name: firstTabName }),

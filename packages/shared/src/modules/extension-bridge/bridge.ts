@@ -19,13 +19,22 @@ import type {
 /** 확장 UI와 background 사이의 타입 지정 메시지 계약. */
 export const bridge = createBridge({
 	GET_SIDE_PANEL_OPEN: defineMessage<void, boolean>("toExtension"),
-	OPEN_SIDE_PANEL: defineMessage<void, void>("internal"),
+	OPEN_SIDE_PANEL: defineMessage<void, { success: boolean }>("internal"),
 	GET_TABS: defineMessage<void, chrome.tabs.Tab>("internal"),
 	PAGE_CONTENT: defineMessage<void, PageContentResponse>("toTab"),
 	YOUTUBE_TRANSCRIPT: defineMessage<void, string>("toTab"),
 	REFETCH_THE_MEMO_LIST_FROM_EXTENSION: defineMessage<void, void>("internal"),
 	REFETCH_THE_MEMO_LIST_FROM_WEB: defineMessage<void, void>("toExtension"),
 	UPDATE_SIDE_PANEL: defineMessage<void, void>("internal"),
+	HIGHLIGHTS_CHANGED: defineMessage<{ pageKey: string }, void>("internal"),
+	FOCUS_HIGHLIGHT: defineMessage<
+		{ tabId: number; pageKey: string; id: number },
+		{ success: boolean }
+	>("internal"),
+	SCROLL_TO_HIGHLIGHT: defineMessage<
+		{ pageKey: string; id: number },
+		{ success: boolean }
+	>("toTab"),
 	SETTING_UPDATED: defineMessage<IFSettingUpdatedPayload, void>("internal"),
 	GET_EXTENSION_MANIFEST: defineMessage<void, chrome.runtime.Manifest>(
 		"toExtension",

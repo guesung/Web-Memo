@@ -518,6 +518,12 @@
 	"past_memo_open": {
 		"message": "열기"
 	},
+	"past_memo_open_memo": {
+		"message": "메모 열기"
+	},
+	"past_memo_open_site": {
+		"message": "웹사이트로 이동"
+	},
 	"past_memo_dismiss": {
 		"message": "무시"
 	},

@@ -42,9 +42,7 @@ test("현재 글의 과거 메모를 알려 주고 사이드 패널에서 읽기
 		notice.getByRole("button", { name: THIRD_RELATED_TITLE }),
 	).toBeVisible();
 
-	await notice
-		.getByRole("button", { name: messages.open, exact: true })
-		.click();
+	await notice.getByRole("button", { name: messages.openMemo }).click();
 	await expect(sidePanelPage.getByText(messages.viewReadonly)).toBeVisible();
 	await expect(sidePanelPage.getByText(DUPLICATE_MEMO_BODY)).toBeVisible();
 	await expect(sidePanelPage.locator("#memo-textarea")).toBeHidden();
@@ -73,6 +71,24 @@ test("관련 메모를 누르면 웹 메모 상세가 아니라 원래 사이트
 		.click();
 	const relatedPage = await relatedPagePromise;
 	await expect(relatedPage).toHaveURL(RELATED_URL);
+});
+
+test("웹사이트로 이동을 누르면 원래 URL을 새 탭으로 연다", async ({
+	page,
+	context,
+}) => {
+	const { sidePanelPage } = await setupPastMemoPage({ page, context });
+	const messages = await getPastMemoMessages(sidePanelPage);
+	const notice = sidePanelPage.getByRole("status").filter({
+		hasText: DUPLICATE_TITLE,
+	});
+
+	await expect(notice).toBeVisible();
+
+	const duplicatePagePromise = context.waitForEvent("page");
+	await notice.getByRole("button", { name: messages.openSite }).click();
+	const duplicatePage = await duplicatePagePromise;
+	await expect(duplicatePage).toHaveURL(DUPLICATE_URL);
 });
 
 test("같은 글이 없어도 첫 관련 메모를 바로 열 수 있다", async ({
@@ -218,6 +234,8 @@ const setupPastMemoPage = async ({
 const getPastMemoMessages = async (sidePanelPage: Page) =>
 	sidePanelPage.evaluate(() => ({
 		open: chrome.i18n.getMessage("past_memo_open"),
+		openMemo: chrome.i18n.getMessage("past_memo_open_memo"),
+		openSite: chrome.i18n.getMessage("past_memo_open_site"),
 		dismiss: chrome.i18n.getMessage("past_memo_dismiss"),
 		relatedIntro: chrome.i18n.getMessage("past_memo_related_intro"),
 		viewBack: chrome.i18n.getMessage("past_memo_view_back"),

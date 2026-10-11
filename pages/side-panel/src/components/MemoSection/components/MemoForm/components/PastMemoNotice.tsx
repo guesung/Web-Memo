@@ -11,7 +11,13 @@ import {
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "@web-memo/ui";
-import { ChevronDownIcon, HistoryIcon, XIcon } from "lucide-react";
+import {
+	ChevronDownIcon,
+	GlobeIcon,
+	HistoryIcon,
+	StickyNoteIcon,
+	XIcon,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { usePastMemoMatch } from "../hooks";
@@ -140,7 +146,8 @@ const PastMemoNotice = (props: IFPastMemoNoticeProps) => {
 				<PastMemoDuplicate
 					duplicate={duplicate}
 					dismissButton={dismissButton}
-					onOpenClick={() => handleDuplicateOpenClick(duplicate)}
+					onOpenMemoClick={() => handleDuplicateOpenClick(duplicate)}
+					onOpenSiteClick={() => void Tab.create({ url: duplicate.url })}
 				/>
 			)}
 			{relatedMemos.length > 0 && (
@@ -157,7 +164,7 @@ const PastMemoNotice = (props: IFPastMemoNoticeProps) => {
 
 export default PastMemoNotice;
 
-/** 같은 글로 판정된 기존 메모 안내. 두 번째 줄에 제목·열기·닫기를 둔다. */
+/** 같은 글로 판정된 기존 메모 안내. 두 번째 줄에 제목·메모 열기·웹사이트 이동·닫기를 둔다. */
 const PastMemoDuplicate = (props: IFPastMemoDuplicateProps) => {
 	const messageKey =
 		props.duplicate.source === "rule"
@@ -182,11 +189,25 @@ const PastMemoDuplicate = (props: IFPastMemoDuplicateProps) => {
 				</span>
 				<Button
 					type="button"
-					variant="link"
-					className="h-auto shrink-0 p-0 text-xs"
-					onClick={props.onOpenClick}
+					variant="ghost"
+					size="icon"
+					className="size-8 shrink-0"
+					aria-label={I18n.get("past_memo_open_memo")}
+					title={I18n.get("past_memo_open_memo")}
+					onClick={props.onOpenMemoClick}
 				>
-					{I18n.get("past_memo_open")}
+					<StickyNoteIcon aria-hidden="true" />
+				</Button>
+				<Button
+					type="button"
+					variant="ghost"
+					size="icon"
+					className="size-8 shrink-0"
+					aria-label={I18n.get("past_memo_open_site")}
+					title={I18n.get("past_memo_open_site")}
+					onClick={props.onOpenSiteClick}
+				>
+					<GlobeIcon aria-hidden="true" />
 				</Button>
 				{props.dismissButton}
 			</div>
@@ -264,7 +285,7 @@ interface IFPastMemoEventParams {
 interface IFPastMemoNoticeProps {
 	/** 현재 URL에 저장된 메모가 있는지. 있으면 판정을 요청하지 않는다 */
 	hasMemoData: boolean;
-	/** 같은 글 안내의 열기를 눌렀을 때. 없으면 원래 사이트를 새 탭으로 연다 */
+	/** 같은 글 안내의 메모 열기를 눌렀을 때. 없으면 원래 사이트를 새 탭으로 연다 */
 	onDuplicateOpen?: (duplicate: IFPastMemoDuplicate) => void;
 }
 
@@ -274,8 +295,10 @@ interface IFPastMemoDuplicateProps {
 	duplicate: IFPastMemoDuplicate;
 	/** 둘째 줄 끝에 둘 닫기 버튼 */
 	dismissButton: ReactNode;
-	/** 열기를 눌렀을 때 */
-	onOpenClick: () => void;
+	/** 메모 열기를 눌렀을 때 */
+	onOpenMemoClick: () => void;
+	/** 웹사이트로 이동을 눌렀을 때 */
+	onOpenSiteClick: () => void;
 }
 
 /** PastMemoRelatedList props */

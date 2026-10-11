@@ -75,6 +75,10 @@ async function click(selector: string) {
 	);
 }
 
+async function clickByLabel(label: string) {
+	await click(`button[aria-label="${label}"]`);
+}
+
 async function clickButtonWithText(text: string) {
 	const button = Array.from(document.querySelectorAll("button")).find(
 		(candidate) => candidate.textContent?.startsWith(text),
@@ -180,8 +184,8 @@ describe("PastMemoNotice analytics", () => {
 	it("열기 이벤트는 URL·종류별 첫 클릭에만 기록하고, 같은 글 열기는 콜백으로 넘기며 관련 메모는 탭을 연다", async () => {
 		const onDuplicateOpen = vi.fn();
 		await render({ onDuplicateOpen });
-		await clickButtonWithText("past_memo_open");
-		await clickButtonWithText("past_memo_open");
+		await clickByLabel("past_memo_open_memo");
+		await clickByLabel("past_memo_open_memo");
 		expect(onDuplicateOpen).toHaveBeenCalledTimes(2);
 		expect(onDuplicateOpen).toHaveBeenCalledWith(mocks.match.duplicate);
 		expect(mocks.createTab).not.toHaveBeenCalled();
@@ -199,9 +203,22 @@ describe("PastMemoNotice analytics", () => {
 		});
 	});
 
-	it("콜백이 없으면 같은 글 열기는 원래 사이트를 새 탭으로 연다", async () => {
+	it("웹사이트로 이동은 원래 사이트를 새 탭으로 열고 열기 이벤트는 기록하지 않는다", async () => {
+		const onDuplicateOpen = vi.fn();
+		await render({ onDuplicateOpen });
+		await clickByLabel("past_memo_open_site");
+
+		expect(mocks.createTab).toHaveBeenCalledTimes(1);
+		expect(mocks.createTab).toHaveBeenCalledWith({
+			url: "https://duplicate.example.com/memo",
+		});
+		expect(onDuplicateOpen).not.toHaveBeenCalled();
+		expect(events("past_memo_open")).toEqual([]);
+	});
+
+	it("콜백이 없으면 메모 열기는 원래 사이트를 새 탭으로 연다", async () => {
 		await render();
-		await clickButtonWithText("past_memo_open");
+		await clickByLabel("past_memo_open_memo");
 
 		expect(mocks.createTab).toHaveBeenCalledWith({
 			url: "https://duplicate.example.com/memo",

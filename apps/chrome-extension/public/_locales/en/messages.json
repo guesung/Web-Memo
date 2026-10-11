@@ -518,6 +518,12 @@
 	"past_memo_open": {
 		"message": "Open"
 	},
+	"past_memo_open_memo": {
+		"message": "Open memo"
+	},
+	"past_memo_open_site": {
+		"message": "Go to website"
+	},
 	"past_memo_dismiss": {
 		"message": "Dismiss"
 	},

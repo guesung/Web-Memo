@@ -18,7 +18,7 @@ test.describe("하이라이트에서 메모로 이동", () => {
 		await setupSupabaseMocks(page, store);
 	});
 
-	test("URL 카드 그리드에서 연결된 메모를 열면 보존된 인용을 본다", async ({
+	test("URL별 한 열 목록에서 연결된 메모를 열면 보존된 인용을 본다", async ({
 		page,
 	}) => {
 		const first = store.addHighlight(
@@ -59,10 +59,20 @@ test.describe("하이라이트에서 메모로 이동", () => {
 			url: `${LANGUAGE}${PATHS.highlights}`,
 			regexp: new RegExp(PATHS.highlights),
 		});
-		const cards = page.locator("main article");
-		await expect(cards).toHaveCount(3);
-		await expect(cards.first()).toHaveCSS("width", "300px");
+		const groups = page.locator("main article");
+		await expect(groups).toHaveCount(3);
+		const firstGroup = await groups.nth(0).boundingBox();
+		const secondGroup = await groups.nth(1).boundingBox();
+		expect(firstGroup?.width).toBeGreaterThan(600);
+		expect(secondGroup?.y).toBeGreaterThan(
+			(firstGroup?.y ?? 0) + (firstGroup?.height ?? 0),
+		);
 		const quote = page.locator(`#highlight-${first.id}`);
+		await expect(quote).toHaveCSS("border-left-width", "5px");
+		await expect(quote.locator("mark")).toHaveCSS(
+			"background-color",
+			"rgba(0, 0, 0, 0)",
+		);
 		await expect(
 			quote.getByRole("button", { name: "Old comment" }),
 		).toBeVisible();
@@ -78,7 +88,7 @@ test.describe("하이라이트에서 메모로 이동", () => {
 		).toHaveAttribute("href", new RegExp(`highlightId=${first.id}`));
 	});
 
-	test("URL 카드 제목으로 원문을 열고 확장이 없으면 패널 안내를 표시한다", async ({
+	test("URL 제목으로 원문을 열고 확장이 없으면 패널 안내를 표시한다", async ({
 		page,
 	}) => {
 		const highlight = store.addHighlight(
@@ -96,11 +106,8 @@ test.describe("하이라이트에서 메모로 이동", () => {
 		await expect(
 			quote.getByRole("link", { name: "Write in side panel" }),
 		).toHaveCount(0);
-		await expect(
-			quote.getByRole("link", { name: "View source" }),
-		).toHaveAttribute(
-			"href",
-			/^https:\/\/example\.com\/article#:~:text=Source%20quote$/,
+		await expect(quote.getByRole("link", { name: "View source" })).toHaveCount(
+			0,
 		);
 		const action = page.getByRole("link", {
 			name: "Open source and memo panel",
@@ -115,6 +122,31 @@ test.describe("하이라이트에서 메모로 이동", () => {
 		await expect(popup).toHaveURL(/https:\/\/example\.com\/article/);
 		await popup.close();
 		expect(store.getAllMemos()).toHaveLength(0);
+	});
+
+	test("스크롤 끝에서 같은 URL의 다음 페이지를 한 목록에 이어 붙인다", async ({
+		page,
+	}) => {
+		const url = "https://example.com/long-article";
+		for (let index = 0; index < 21; index++) {
+			store.addHighlight(
+				createMockHighlight({ url, exact_text: `Saved quote ${index + 1}` }),
+			);
+		}
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.highlights}`,
+			regexp: new RegExp(PATHS.highlights),
+		});
+		await expect(page.locator("main article")).toHaveCount(1);
+		await page.getByTestId("highlight-list-sentinel").scrollIntoViewIfNeeded();
+		await expect(page.locator("main article li[id^='highlight-']")).toHaveCount(
+			21,
+		);
+		await expect(page.locator("main article")).toHaveCount(1);
+		await expect(page.getByRole("button", { name: "Load more" })).toHaveCount(
+			0,
+		);
 	});
 
 	test("휴지통으로 보낸 연결 메모는 휴지통 보기 경로를 보여준다", async ({
@@ -176,10 +208,9 @@ test.describe("하이라이트에서 메모로 이동", () => {
 				.locator(`#highlight-${highlight.id}`)
 				.getByRole("link", { name: "Write in side panel" }),
 		).toHaveCount(0);
-		await expect(page.locator("main article > a").first()).toHaveAttribute(
-			"href",
-			highlight.url,
-		);
+		await expect(
+			page.getByRole("link", { name: "Open source and memo panel" }).first(),
+		).toHaveAttribute("href", highlight.url);
 		await page.getByRole("button", { name: "green" }).click();
 		await expect(page.locator(`#highlight-${highlight.id}`)).toBeVisible();
 	});

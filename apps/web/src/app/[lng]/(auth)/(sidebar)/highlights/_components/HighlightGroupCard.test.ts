@@ -65,7 +65,7 @@ const renderCard = async (url = "https://example.com/article") => {
 	);
 };
 
-describe("하이라이트 카드 원문 링크", () => {
+describe("하이라이트 URL 목록 원문 링크", () => {
 	it("일반 클릭은 기본 새 탭 링크를 보존하며 패널 요청을 즉시 보낸다", async () => {
 		let resolve!: (response: { success: boolean }) => void;
 		mocks.openPanel.mockReturnValue(
@@ -74,7 +74,7 @@ describe("하이라이트 카드 원문 링크", () => {
 			}),
 		);
 		await renderCard();
-		const anchor = container.querySelector("article > a");
+		const anchor = container.querySelector("article a");
 		expect(anchor?.getAttribute("href")).toBe("https://example.com/article");
 		expect(anchor?.getAttribute("target")).toBe("_blank");
 		expect(anchor?.getAttribute("aria-label")).toBe(
@@ -107,7 +107,7 @@ describe("하이라이트 카드 원문 링크", () => {
 			await renderCard();
 			await act(async () => {
 				container
-					.querySelector("article > a")
+					.querySelector("article a")
 					?.dispatchEvent(
 						new MouseEvent("click", { bubbles: true, cancelable: true }),
 					);
@@ -131,7 +131,7 @@ describe("하이라이트 카드 원문 링크", () => {
 		await renderCard();
 		const click = new MouseEvent("click", { bubbles: true, cancelable: true });
 		await act(async () => {
-			container.querySelector("article > a")?.dispatchEvent(click);
+			container.querySelector("article a")?.dispatchEvent(click);
 		});
 		expect(click.defaultPrevented).toBe(false);
 		expect(container.querySelector('[role="alert"]')?.textContent).toBe(
@@ -155,7 +155,7 @@ describe("하이라이트 카드 원문 링크", () => {
 			ctrlKey: true,
 		});
 		await act(async () => {
-			container.querySelector("article > a")?.dispatchEvent(click);
+			container.querySelector("article a")?.dispatchEvent(click);
 		});
 		expect(click.defaultPrevented).toBe(false);
 		expect(mocks.openPanel).not.toHaveBeenCalled();
@@ -164,7 +164,7 @@ describe("하이라이트 카드 원문 링크", () => {
 
 	it("HTTP 외 URL은 링크나 패널 동작을 만들지 않는다", async () => {
 		await renderCard("javascript:alert(1)");
-		expect(container.querySelector("article > a")).toBeNull();
+		expect(container.querySelector("article a")).toBeNull();
 		expect(mocks.openPanel).not.toHaveBeenCalled();
 		expect(mocks.trackEvent).not.toHaveBeenCalled();
 	});

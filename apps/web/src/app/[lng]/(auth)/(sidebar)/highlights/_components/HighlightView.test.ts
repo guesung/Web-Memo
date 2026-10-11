@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, createElement, type ReactNode } from "react";
+import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { HighlightView } from "./HighlightView";
@@ -9,23 +9,8 @@ const QUERY = vi.hoisted(() => ({
 	fetchNextPage: vi.fn(),
 	refetch: vi.fn(),
 	targetRow: null as { id: number; url: string } | null,
-	append: undefined as (() => void) | undefined,
+	intersect: undefined as (() => void) | undefined,
 	highlightId: null as string | null,
-}));
-
-vi.mock("@egjs/react-infinitegrid", () => ({
-	MasonryInfiniteGrid: ({
-		children,
-		onRequestAppend,
-		...props
-	}: Record<string, unknown>) => {
-		QUERY.append = onRequestAppend as () => void;
-		return createElement(
-			"div",
-			{ id: props.id as string },
-			children as ReactNode,
-		);
-	},
 }));
 
 vi.mock("@src/modules/i18n/util.client", () => ({
@@ -112,12 +97,9 @@ function renderView() {
 }
 
 function nearBottom(container: HTMLElement) {
-	const grid = container.querySelector("#highlight-grid");
-	if (!grid) throw new Error("Highlight grid missing");
-	vi.spyOn(grid, "getBoundingClientRect").mockReturnValue({
-		bottom: 0,
-	} as DOMRect);
-	act(() => window.dispatchEvent(new Event("scroll")));
+	if (!container.querySelector('[data-testid="highlight-list-sentinel"]'))
+		throw new Error("Highlight list sentinel missing");
+	act(() => QUERY.intersect?.());
 }
 
 beforeEach(() => {
@@ -127,8 +109,22 @@ beforeEach(() => {
 	QUERY.fetchNextPage.mockClear();
 	QUERY.refetch.mockClear();
 	QUERY.targetRow = null;
-	QUERY.append = undefined;
+	QUERY.intersect = undefined;
 	QUERY.highlightId = null;
+	vi.stubGlobal(
+		"IntersectionObserver",
+		class {
+			constructor(callback: IntersectionObserverCallback) {
+				QUERY.intersect = () =>
+					callback(
+						[{ isIntersecting: true } as IntersectionObserverEntry],
+						{} as IntersectionObserver,
+					);
+			}
+			observe() {}
+			disconnect() {}
+		},
+	);
 	QUERY.result = {
 		data: { pages: [[{ id: 1, url: "https://example.com" }]] },
 		hasNextPage: true,
@@ -146,14 +142,15 @@ afterEach(() => {
 		act(() => root.unmount());
 	}
 	document.body.replaceChildren();
+	vi.unstubAllGlobals();
 });
 
 describe("하이라이트 목록 상태", () => {
-	it("첫 조회가 진행 중이면 그룹 모양 스켈레톤을 보여준다", () => {
+	it("첫 조회가 진행 중이면 한 열 인용 목록 스켈레톤을 보여준다", () => {
 		QUERY.result = { ...QUERY.result, data: undefined, isPending: true };
 		const { container } = renderView();
 		expect(container.querySelectorAll('[data-testid="skeleton"]')).toHaveLength(
-			9,
+			15,
 		);
 		expect(container.textContent).not.toContain("saved group");
 	});
@@ -199,13 +196,16 @@ describe("하이라이트 목록 상태", () => {
 		expect(QUERY.refetch).not.toHaveBeenCalled();
 	});
 
-	it("그리드 끝에서 한 번 조회하고 같은 페이지에서는 중복 호출을 막는다", () => {
+	it("한 열 목록 끝에서 한 번 조회하고 같은 페이지에서는 중복 호출을 막는다", () => {
 		const { container } = renderView();
-		act(() => {
-			QUERY.append?.();
-			QUERY.append?.();
-		});
+		nearBottom(container);
+		nearBottom(container);
 		expect(QUERY.fetchNextPage).toHaveBeenCalledTimes(1);
+		expect(container.querySelector("#highlight-grid")).toBeNull();
+		expect(
+			container.querySelector("article")?.parentElement?.parentElement
+				?.className,
+		).toContain("flex-col");
 		expect(container.textContent).not.toContain("highlight.loadMore");
 	});
 
@@ -217,7 +217,6 @@ describe("하이라이트 목록 상태", () => {
 		};
 		const { container } = renderView();
 		nearBottom(container);
-		act(() => QUERY.append?.());
 		expect(container.querySelector("output")?.textContent).toBe(
 			"highlight.loadingMore",
 		);

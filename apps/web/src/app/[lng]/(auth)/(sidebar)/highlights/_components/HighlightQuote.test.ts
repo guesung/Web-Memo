@@ -16,10 +16,6 @@ vi.mock("@web-memo/shared/modules/analytics", () => ({
 vi.mock("../_hooks", () => ({
 	useHighlightNoteMutation: () => ({ mutate: mocks.saveNote }),
 }));
-vi.mock("@web-memo/shared/utils", () => ({
-	getHighlightSourceUrl: (source: { url: string }) =>
-		source.url ?? "https://example.com",
-}));
 let root: Root;
 let container: HTMLDivElement;
 beforeEach(() => {
@@ -60,18 +56,19 @@ const renderQuote = async (
 };
 describe("하이라이트 문장과 기존 메모", () => {
 	it.each([null, "", "  "])(
-		"빈 메모 %s에는 문장별 작성 CTA 없이 원문 위치 링크를 표시한다",
+		"빈 메모 %s에는 문장별 작성 CTA와 원문 보기 링크를 표시하지 않는다",
 		async (note) => {
 			await renderQuote(note);
-			expect(
-				container.querySelector('a[href="https://example.com/article"]')
-					?.textContent,
-			).toBe("highlight.memo.source");
+			expect(container.querySelector("a")).toBeNull();
+			expect(container.textContent).not.toContain("highlight.memo.source");
 			expect(container.textContent).not.toContain("highlight.memo.sidePanel");
 			expect(container.querySelector("form")).toBeNull();
 			expect(container.querySelector("mark")?.textContent).toBe("저장한 원문");
-			expect(container.querySelector("mark")?.style.backgroundColor).toBe(
-				"rgba(244, 114, 182, 0.4)",
+			expect(container.querySelector("mark")?.className).toContain(
+				"bg-transparent",
+			);
+			expect(container.querySelector("li")?.style.borderColor).toBe(
+				"rgb(244, 114, 182)",
 			);
 		},
 	);

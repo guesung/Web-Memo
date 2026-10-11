@@ -4,6 +4,8 @@ export { default as useCategoryPostMutation } from "./useCategoryPostMutation";
 export { default as useCategoryUpdateMutation } from "./useCategoryUpdateMutation";
 export { default as useDeleteMemosMutation } from "./useDeleteMemosMutation";
 export { default as useDeleteMemosPermanentlyMutation } from "./useDeleteMemosPermanentlyMutation";
+export { default as useFavoriteDeleteMutation } from "./useFavoriteDeleteMutation";
+export { default as useFavoriteTitleUpdateMutation } from "./useFavoriteTitleUpdateMutation";
 export { default as useFeedbackMutation } from "./useFeedbackMutation";
 export { default as useMemoPatchMutation } from "./useMemoPatchMutation";
 export { default as useMemoPostMutation } from "./useMemoPostMutation";

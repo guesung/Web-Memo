@@ -7,11 +7,14 @@ import { I18n } from "@web-memo/shared/utils/extension";
 import { Pencil, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { IFHighlightEditState } from "./createHighlightEditor";
+import { HighlightMemoAction } from "./HighlightMemoAction";
 
 /** 편집 메뉴의 표시 상태와 저장 핸들러. */
 interface IFHighlightEditToolbarProps {
 	state: IFHighlightEditState;
 	initialNoteOpen?: boolean;
+	initialMemoOpen?: boolean;
+	memoDrafts?: Map<number, string>;
 	onHighlightEdit: (
 		action:
 			| { action: "delete" }
@@ -25,14 +28,22 @@ export const HighlightEditToolbar = (props: IFHighlightEditToolbarProps) => {
 	const toolbarRef = useRef<HTMLDivElement>(null);
 	const currentRowIdRef = useRef(props.state.row.id);
 	const [isNoteOpen, setIsNoteOpen] = useState(props.initialNoteOpen ?? false);
+	const [isMemoOpen, setIsMemoOpen] = useState(props.initialMemoOpen ?? false);
 	const [note, setNote] = useState(props.state.row.note ?? "");
+	const memoDraftsRef = useRef(props.memoDrafts ?? new Map<number, string>());
 	useEffect(() => {
 		if (currentRowIdRef.current !== props.state.row.id) {
 			currentRowIdRef.current = props.state.row.id;
 			setNote(props.state.row.note ?? "");
 			setIsNoteOpen(props.initialNoteOpen ?? false);
+			setIsMemoOpen(props.initialMemoOpen ?? false);
 		}
-	}, [props.state.row.id, props.state.row.note, props.initialNoteOpen]);
+	}, [
+		props.state.row.id,
+		props.state.row.note,
+		props.initialNoteOpen,
+		props.initialMemoOpen,
+	]);
 	useEffect(() => {
 		setNote(props.state.row.note ?? "");
 	}, [props.state.row.note]);
@@ -66,14 +77,14 @@ export const HighlightEditToolbar = (props: IFHighlightEditToolbarProps) => {
 			role="toolbar"
 			aria-label={I18n.get("highlight_edit")}
 			aria-busy={props.state.isSaving}
-			className="fixed z-[2147483647] flex max-h-[calc(100vh-16px)] max-w-[250px] flex-col gap-2 overflow-y-auto rounded-md border bg-background p-2 text-sm text-foreground shadow-lg"
+			className="fixed z-[2147483647] flex max-h-[calc(100vh-16px)] w-[min(360px,calc(100vw-16px))] flex-col gap-2 overflow-y-auto rounded-md border bg-background p-2 text-sm text-foreground shadow-lg"
 			style={{
-				left: props.state.x,
+				left: Math.max(8, Math.min(props.state.x, window.innerWidth - 368)),
 				top: Math.max(
 					8,
 					Math.min(
 						props.state.y,
-						window.innerHeight - (isNoteOpen ? 310 : 150),
+						window.innerHeight - (isNoteOpen || isMemoOpen ? 360 : 150),
 					),
 				),
 			}}
@@ -140,6 +151,13 @@ export const HighlightEditToolbar = (props: IFHighlightEditToolbarProps) => {
 					</button>
 				</form>
 			)}
+			<HighlightMemoAction
+				key={props.state.row.id}
+				row={props.state.row}
+				initialOpen={props.initialMemoOpen}
+				drafts={memoDraftsRef.current}
+				onOpenChange={setIsMemoOpen}
+			/>
 			<button
 				type="button"
 				disabled={props.state.isSaving}

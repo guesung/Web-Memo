@@ -13,7 +13,7 @@ export default async function HighlightsPage({ params }: LanguageParams) {
 	const { lng } = await params;
 
 	return (
-		<div className="mx-auto w-full max-w-3xl px-4 py-6">
+		<div className="mx-auto w-full max-w-[1124px] px-4 py-6">
 			<Suspense fallback={<HighlightListSkeleton />}>
 				<HighlightView lng={lng} />
 			</Suspense>

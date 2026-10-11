@@ -59,6 +59,10 @@ export default {
 					DEFAULT: "hsl(var(--accent))",
 					foreground: "hsl(var(--accent-foreground))",
 				},
+				"highlight-yellow": {
+					DEFAULT: "hsl(var(--highlight-yellow))",
+					foreground: "hsl(var(--highlight-yellow-foreground))",
+				},
 				destructive: {
 					DEFAULT: "hsl(var(--destructive))",
 					foreground: "hsl(var(--destructive-foreground))",

@@ -417,7 +417,7 @@
 		"message": "You can turn it back on in Options."
 	},
 	"highlight_intro_message": {
-		"message": "This is Web Memo highlighting. Choose a color to save a passage or add a note. X dismisses this selection only. Use settings to change the popup position or turn it off."
+		"message": "This is Web Memo highlighting. Choose a color to save a passage. Add a comment or a linked memo separately. X dismisses this selection only. Use settings to change the popup position or turn it off."
 	},
 	"highlight_intro_confirm": {
 		"message": "Got it"
@@ -459,14 +459,26 @@
 		"message": "Re-enable"
 	},
 	"highlight_note": {
-		"message": "Note"
+		"message": "Comment"
 	},
 	"highlight_note_placeholder": {
-		"message": "Add a note to this highlight"
+		"message": "Add a comment to this highlight"
 	},
 	"highlight_note_save": {
 		"message": "Save"
 	},
+	"highlight_memo_add": { "message": "Add memo" },
+	"highlight_memo_open": { "message": "Open memo" },
+	"highlight_memo_restore": { "message": "Restore from trash" },
+	"highlight_memo_loading": { "message": "Checking linked memo…" },
+	"highlight_memo_load_failed": { "message": "Could not check the linked memo." },
+	"highlight_memo_retry": { "message": "Retry" },
+	"highlight_memo_quote": { "message": "Selected passage" },
+	"highlight_memo_thought": { "message": "My thoughts" },
+	"highlight_memo_placeholder": { "message": "Write what this passage made you think of" },
+	"highlight_memo_cancel": { "message": "Cancel" },
+	"highlight_memo_save": { "message": "Save memo" },
+	"highlight_memo_save_failed": { "message": "Could not save the memo. Please try again." },
 	"highlight_bubble_menu_title": {
 		"message": "Web Memo highlights"
 	},

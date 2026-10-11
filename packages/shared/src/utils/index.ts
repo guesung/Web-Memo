@@ -7,6 +7,7 @@ export * from "./Environment";
 export * from "./Error";
 export * from "./Export";
 export * from "./errorReporter";
+export * from "./highlightSourceUrl";
 export * from "./memoSearchFilter";
 export * from "./Sentry";
 export * from "./Supabase";

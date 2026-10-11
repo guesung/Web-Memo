@@ -4,12 +4,18 @@ import { useState } from "react";
 import { useMemoHighlights } from "../MemoView/_hooks/useMemoHighlights";
 import { MemoHighlights } from "../MemoView/MemoHighlights";
 
-export function MemoDialogHighlights({ lng, url }: HighlightsProps) {
+export function MemoDialogHighlights({
+	lng,
+	url,
+	omitHighlightId,
+}: HighlightsProps) {
 	const { t } = useTranslation(lng);
 	const [isExpanded, setExpanded] = useState(false);
 	const { highlightsByUrl, isHighlightLoadError, refetchHighlights } =
 		useMemoHighlights([url]);
-	const highlights = highlightsByUrl.get(url) ?? [];
+	const highlights = (highlightsByUrl.get(url) ?? []).filter(
+		(highlight) => highlight.id !== omitHighlightId,
+	);
 
 	if (isHighlightLoadError) {
 		return (
@@ -38,12 +44,12 @@ export function MemoDialogHighlights({ lng, url }: HighlightsProps) {
 				onClick={() => setExpanded((expanded) => !expanded)}
 				className="text-xs font-semibold text-muted-foreground"
 			>
-				{t("memoSection.highlightCount", { count: highlights.length })}
+				{t("highlight.memo.relatedCount", { count: highlights.length })}
 			</button>
 			{isExpanded && (
 				<MemoHighlights
 					highlights={highlights}
-					label={t("sideBar.highlight")}
+					label={t("highlight.memo.related")}
 					className="pt-2"
 				/>
 			)}
@@ -53,4 +59,5 @@ export function MemoDialogHighlights({ lng, url }: HighlightsProps) {
 
 interface HighlightsProps extends LanguageType {
 	url: string;
+	omitHighlightId?: number | null;
 }

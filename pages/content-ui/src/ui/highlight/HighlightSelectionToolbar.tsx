@@ -3,7 +3,15 @@ import {
 	HIGHLIGHT_COLORS,
 } from "@web-memo/shared/constants";
 import { I18n } from "@web-memo/shared/utils/extension";
-import { ArrowDown, ArrowUp, Ban, Pencil, Settings2, X } from "lucide-react";
+import {
+	ArrowDown,
+	ArrowUp,
+	Ban,
+	Pencil,
+	Plus,
+	Settings2,
+	X,
+} from "lucide-react";
 import { useEffect, useRef } from "react";
 import { HighlightEditToolbar } from "./HighlightEditToolbar";
 import { HighlightIntroCoachmark } from "./HighlightIntroCoachmark";
@@ -27,10 +35,13 @@ export const HighlightSelectionToolbar = (
 		isMenuOpen,
 		menuError,
 		isCreatedNoteOpen,
+		isCreatedMemoOpen,
+		memoDrafts,
 		isIntroVisible,
 		disabledNoticePosition,
 		handleHighlightColorClick,
 		handleHighlightNoteClick,
+		handleHighlightMemoClick,
 		handleBubbleMenuClick,
 		handleBubbleCloseClick,
 		handleBubblePositionClick,
@@ -67,6 +78,8 @@ export const HighlightSelectionToolbar = (
 			<HighlightEditToolbar
 				state={editState}
 				initialNoteOpen={isCreatedNoteOpen}
+				initialMemoOpen={isCreatedMemoOpen}
+				memoDrafts={memoDrafts}
 				onHighlightEdit={handleHighlightEdit}
 			/>
 		);
@@ -149,6 +162,17 @@ export const HighlightSelectionToolbar = (
 					className="flex size-7 items-center justify-center rounded-full hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
 				>
 					<Pencil size={16} aria-hidden="true" />
+				</button>
+				<button
+					type="button"
+					aria-label={I18n.get("highlight_memo_add")}
+					disabled={!selectionState.canSave || selectionState.isSaving}
+					onClick={() => {
+						void handleHighlightMemoClick();
+					}}
+					className="flex size-7 items-center justify-center rounded-full hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+				>
+					<Plus size={16} aria-hidden="true" />
 				</button>
 				<button
 					type="button"

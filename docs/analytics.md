@@ -29,17 +29,19 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 ### core_action (32종)
 
 `memo_write`(fields) · `memo_delete`(memo_count) · `memo_restore`(memo_count) ·
-`memo_delete_permanently`(memo_count) · `memo_open`(has_search_query) · `memo_source_open` ·
+`memo_delete_permanently`(memo_count) · `memo_open`(has_search_query, source?) · `memo_source_open` ·
 `memo_search`(query_length) · `memo_status_toggle`(status, enabled) · `memo_category_change`(source) ·
 `highlight_note_update` · `summary_run`(source) · `summary_complete`(duration_msec) ·
 `summary_fail`(reason) · `chat_message_send` · `chat_fail`(reason) ·
 `youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category, source) ·
 `category_create` · `category_update` · `category_delete` ·
 `login`(method) · `sign_up`(method) · `feedback_submit` · `extension_install_click`(from, position) ·
-`memo_first_write` · `export_run`(format) · `highlight_create`(color, has_note) ·
+`memo_first_write`(source?) · `export_run`(format) · `highlight_create`(color, has_note) ·
 `past_memo_open`(kind, source) · `blog_subscription_change`(blog_id, active) ·
 `blog_article_open`(blog_id, sort) · `blog_article_memo_click`(blog_id, action) ·
 `blog_sync_resume_request`(blog_id, result)
+
+하이라이트에서 실제 메모를 생성하면 `memo_first_write`에 `source: highlight`를 보냅니다. 기존 연결을 반환하는 재시도는 제외합니다. 정상 연결 메모 상세를 열면 `memo_open`에 같은 source와 `has_search_query: false`를 보내며 휴지통 경로는 제외합니다. 인용문·메모 본문·URL·ID는 속성에 넣지 않습니다.
 
 ### engagement (36종)
 

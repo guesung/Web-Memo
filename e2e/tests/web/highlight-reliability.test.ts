@@ -154,8 +154,10 @@ test("추가 페이지가 실패해도 기존 인용을 유지하고 재시도�
 }) => {
 	await setupHighlights(page, 25);
 	let shouldFail = true;
+	let nextPageRequests = 0;
 	await page.route(`${SUPABASE.url}/rest/v1/highlight**`, async (route) => {
 		if (!isHighlightGet(route) || !isNextPage(route)) return route.fallback();
+		nextPageRequests += 1;
 		if (!shouldFail) return route.fallback();
 		await route.fulfill({
 			status: 503,
@@ -169,10 +171,15 @@ test("추가 페이지가 실패해도 기존 인용을 유지하고 재시도�
 	await expect(page.getByText(firstQuote)).toBeVisible();
 	const retry = page.getByRole("button", { name: "Try again" });
 	await expect(retry).toBeVisible({ timeout: 20000 });
+	expect(nextPageRequests).toBe(1);
+	await page.waitForTimeout(2500);
+	expect(nextPageRequests).toBe(1);
+	await expect(page.getByText(firstQuote)).toBeVisible();
 	shouldFail = false;
 	await retry.click();
 	await expect(page.getByText(laterQuote)).toBeVisible();
 	await expect(page.getByText(firstQuote)).toHaveCount(1);
+	expect(nextPageRequests).toBe(2);
 });
 
 test("추가 페이지 요청 중에는 스크롤해도 중복 실행하지 않는다.", async ({
@@ -214,13 +221,30 @@ test("같은 URL의 행만 추가되어 카드가 커져도 다음 페이지를 
 	page,
 }) => {
 	await setupHighlights(page, 45);
-	await gotoHighlights(page);
+	let releaseNextPage: (() => void) | undefined;
+	const nextPageGate = new Promise<void>((resolve) => {
+		releaseNextPage = resolve;
+	});
+	let nextPageRequests = 0;
+	await page.route(`${SUPABASE.url}/rest/v1/highlight**`, async (route) => {
+		if (!isHighlightGet(route) || !isNextPage(route)) return route.fallback();
+		nextPageRequests += 1;
+		if (nextPageRequests === 1) await nextPageGate;
+		await route.fallback();
+	});
 	const cards = page.locator("#highlight-grid article");
-	await expect(page.getByText(firstQuote)).toBeVisible();
-	await expect(cards).toHaveCount(1);
-	const firstHeight = await cards
-		.first()
-		.evaluate((card) => card.getBoundingClientRect().height);
+	let firstHeight = 0;
+	try {
+		await gotoHighlights(page);
+		await expect(page.getByText(firstQuote)).toBeVisible();
+		await expect(page.getByText("Highlight quote 20")).toBeAttached();
+		await expect(cards).toHaveCount(1);
+		firstHeight = await cards
+			.first()
+			.evaluate((card) => card.getBoundingClientRect().height);
+	} finally {
+		releaseNextPage?.();
+	}
 
 	await scrollToNextPage(page);
 	await expect(page.getByText(laterQuote)).toBeAttached();
@@ -234,6 +258,7 @@ test("같은 URL의 행만 추가되어 카드가 커져도 다음 페이지를 
 	await scrollToNextPage(page);
 	await expect(page.getByText("Highlight quote 41")).toBeAttached();
 	await expect(cards).toHaveCount(1);
+	expect(nextPageRequests).toBe(2);
 
 	await page.getByLabel("Search text or notes").fill("Highlight quote 41");
 	await expect(page.getByText(firstQuote)).toHaveCount(0);

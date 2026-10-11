@@ -372,6 +372,7 @@ const AuthenticatedMemoSectionContent = () => {
 
 	return (
 		<>
+			<MemoHeader memoData={activeMemo} />
 			{currentOpenedPastMemo && (
 				<PastMemoView
 					memoId={currentOpenedPastMemo.memoId}
@@ -382,7 +383,6 @@ const AuthenticatedMemoSectionContent = () => {
 			)}
 			{/* 작성 중 내용과 자동 저장 상태를 지키려고 폼을 언마운트하지 않고 숨긴다. */}
 			<div className={cn(currentOpenedPastMemo ? "hidden" : "contents")}>
-				<MemoHeader memoData={activeMemo} />
 				{currentDraft && <PreservedDraft draft={currentDraft} />}
 				{(hasMultipleMemos ||
 					hasOnlyOtherUrlMemos ||

@@ -33,7 +33,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `memo_search`(query_length) · `memo_status_toggle`(status, enabled) · `memo_category_change`(source) ·
 `highlight_note_update` · `summary_run`(source) · `summary_complete`(duration_msec) ·
 `summary_fail`(reason) · `chat_message_send` · `chat_fail`(reason) ·
-`youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category, source) ·
+`youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category, source, trigger) ·
 `category_create` · `category_update` · `category_delete` ·
 `login`(method) · `sign_up`(method) · `feedback_submit` · `extension_install_click`(from, position) ·
 `memo_first_write` · `export_run`(format) · `highlight_create`(color, has_note) ·

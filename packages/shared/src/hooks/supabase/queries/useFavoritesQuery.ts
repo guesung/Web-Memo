@@ -9,6 +9,8 @@ import useSupabaseClientQuery from "./useSupabaseClientQuery";
 export const favoritesQueryOptions = (supabaseClient: MemoSupabaseClient) =>
 	queryOptions({
 		queryKey: QUERY_KEY.favorites(),
+		// 기본 재시도(3회, 백오프 합 7초)를 기다리는 동안 오류 박스 없이 로딩만 보이므로 1회로 줄인다.
+		retry: 1,
 		queryFn: async () => {
 			const { data, error } = await new FavoriteService(
 				supabaseClient,

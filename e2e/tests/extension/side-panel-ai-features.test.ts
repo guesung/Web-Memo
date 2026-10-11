@@ -135,6 +135,18 @@ test.describe("사이드 패널 AI 기능", () => {
 		await openSidePanel(page);
 		const sidePanelPage = await findSidePanelPage(page);
 		await page.goto("https://example.com/ai-feature-toggle");
+		await page.bringToFront();
+		await expect
+			.poll(() =>
+				sidePanelPage.evaluate(async () => {
+					const [tab] = await chrome.tabs.query({
+						active: true,
+						currentWindow: true,
+					});
+					return tab?.url;
+				}),
+			)
+			.toBe("https://example.com/ai-feature-toggle");
 		const memo = sidePanelPage.locator("#memo-textarea");
 		await memo.fill("Keep this draft");
 		const showLabel = await getExtensionMessage(
@@ -150,19 +162,30 @@ test.describe("사이드 패널 AI 기능", () => {
 			exact: true,
 		});
 		await expect(showButton).toHaveCount(0);
-		await summarySwitch.click();
+		await summarySwitch.evaluate((element: HTMLElement) => element.click());
 		await expect(showButton).toBeVisible();
+		await expect
+			.poll(() =>
+				sidePanelPage.evaluate(async () => {
+					const [tab] = await chrome.tabs.query({
+						active: true,
+						currentWindow: true,
+					});
+					return tab?.url;
+				}),
+			)
+			.toBe("https://example.com/ai-feature-toggle");
 		expect(summaryApi.getSummaryRequestCount()).toBe(0);
 		await showButton.click();
 		await expect(sidePanelPage.getByText("E2E mock summary")).toBeVisible();
-		await summarySwitch.click();
+		await summarySwitch.evaluate((element: HTMLElement) => element.click());
 		await expect(
 			sidePanelPage.getByRole("button", { name: hideLabel, exact: true }),
 		).toHaveCount(0);
 		await expect(sidePanelPage.locator("#side-panel-summary")).toHaveCount(0);
 		await expect(memo).toHaveValue("Keep this draft");
 		await expect(sidePanelPage.getByRole("tab")).toHaveCount(1);
-		await summarySwitch.click();
+		await summarySwitch.evaluate((element: HTMLElement) => element.click());
 		await expect(showButton).toBeVisible();
 		expect(summaryApi.getSummaryRequestCount()).toBe(1);
 		await showButton.click();

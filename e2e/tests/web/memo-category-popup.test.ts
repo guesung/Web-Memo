@@ -32,6 +32,31 @@ const waitForMemoPatchBody = async (
 	return (await requestPromise).postDataJSON();
 };
 
+/** 메모 PATCH 중 카테고리를 바꾸는 요청만 기다린다. 편집 모달은 본문 자동 저장 PATCH도 보낸다. */
+const waitForCategoryPatchBody = async (
+	page: Page,
+	trigger: () => Promise<void>,
+) => {
+	const requestPromise = page.waitForRequest(
+		(request) =>
+			request.method() === "PATCH" &&
+			request.url().includes("/rest/v1/memo?") &&
+			"category_id" in (request.postDataJSON() ?? {}),
+	);
+	await trigger();
+
+	return (await requestPromise).postDataJSON();
+};
+
+/** 카드를 눌러 편집 모달을 연다. */
+const openMemoDialog = async (page: Page, title: string) => {
+	await getMemoCard(page, title).click();
+	const dialog = page.locator('[role="dialog"]');
+	await expect(dialog.getByTestId("memo-textarea")).toBeVisible();
+
+	return dialog;
+};
+
 /** 카드의 ⋮ → "Change category"로 팝업을 연다. */
 const openPopupFromOption = async (page: Page, title: string) => {
 	await getMemoCard(page, title).getByTestId("memo-option").click();
@@ -154,13 +179,10 @@ test.describe("웹 메모 카드의 카테고리 팝업 (Mocked)", () => {
 		await expect(popover.getByTestId("category-remove-item")).toHaveCount(0);
 	});
 
-	test("편집 모달에서 Escape를 누르면 팝업만 닫히고 모달은 유지된다. 모달 푸터에는 칩이 없다.", async ({
+	test("편집 모달에서 Escape를 누르면 팝업만 닫히고 모달은 유지된다.", async ({
 		page,
 	}) => {
-		await getMemoCard(page, UNCATEGORIZED_TITLE).click();
-		const dialog = page.locator('[role="dialog"]');
-		await expect(dialog.getByTestId("memo-textarea")).toBeVisible();
-		await expect(dialog.getByTestId("category-add-chip")).toHaveCount(0);
+		const dialog = await openMemoDialog(page, UNCATEGORIZED_TITLE);
 
 		await dialog.getByTestId("memo-option").click();
 		await page.getByRole("menuitem", { name: "Change category" }).click();
@@ -170,6 +192,92 @@ test.describe("웹 메모 카드의 카테고리 팝업 (Mocked)", () => {
 		await page.keyboard.press("Escape");
 
 		await expect(popover).toBeHidden();
+		await expect(dialog.getByTestId("memo-textarea")).toBeVisible();
+	});
+
+	test("편집 모달에서도 카테고리가 없으면 ＋ 칩이 보이고, 누르면 팝업이 열린다.", async ({
+		page,
+	}) => {
+		const dialog = await openMemoDialog(page, UNCATEGORIZED_TITLE);
+
+		await dialog.getByTestId("category-add-chip").click();
+
+		const popover = page.getByTestId("category-popover");
+		await expect(popover).toBeVisible();
+		await expect(popover.getByPlaceholder("Search categories")).toBeFocused();
+	});
+
+	test("편집 모달의 카테고리 배지를 누르면 목록 필터 대신 해제 항목이 있는 팝업이 열린다.", async ({
+		page,
+	}) => {
+		const dialog = await openMemoDialog(page, CATEGORIZED_TITLE);
+
+		await dialog.getByTestId("category-badge-button").click();
+
+		const popover = page.getByTestId("category-popover");
+		await expect(popover).toBeVisible();
+		await expect(popover.getByTestId("category-remove-item")).toBeVisible();
+		expect(new URL(page.url()).searchParams.get("category")).toBeNull();
+
+		const removeBody = await waitForCategoryPatchBody(page, () =>
+			popover.getByTestId("category-remove-item").click(),
+		);
+		expect(removeBody).toMatchObject({ category_id: null });
+	});
+
+	test("편집 모달 본문에서 #을 치면 팝업이 열리고, 고르면 #이 지워지며 카테고리가 저장된다.", async ({
+		page,
+	}) => {
+		const dialog = await openMemoDialog(page, UNCATEGORIZED_TITLE);
+		const textarea = dialog.getByTestId("memo-textarea");
+		const originalText = await textarea.inputValue();
+
+		await textarea.click();
+		await textarea.evaluate((element: HTMLTextAreaElement) =>
+			element.setSelectionRange(element.value.length, element.value.length),
+		);
+		await page.keyboard.type("#");
+
+		const popover = page.getByTestId("category-popover");
+		await expect(popover).toBeVisible();
+		await expect(popover.getByPlaceholder("Search categories")).toBeFocused();
+		await expect(textarea).toHaveValue(`${originalText}#`);
+
+		await popover.getByPlaceholder("Search categories").fill("Hash Made");
+		const patchBody = await waitForCategoryPatchBody(page, () =>
+			popover.getByTestId("category-create-item").click(),
+		);
+
+		const createdCategory = store
+			.getAllCategories()
+			.find((category) => category.name === "Hash Made");
+		expect(patchBody).toMatchObject({ category_id: createdCategory?.id });
+		await expect(popover).toBeHidden();
+		await expect(textarea).toHaveValue(originalText);
+		await expect(textarea).toBeFocused();
+	});
+
+	test("편집 모달 본문 # 팝업을 Escape로 닫으면 #은 글자로 남고 본문에 포커스가 돌아온다.", async ({
+		page,
+	}) => {
+		const dialog = await openMemoDialog(page, UNCATEGORIZED_TITLE);
+		const textarea = dialog.getByTestId("memo-textarea");
+		const originalText = await textarea.inputValue();
+
+		await textarea.click();
+		await textarea.evaluate((element: HTMLTextAreaElement) =>
+			element.setSelectionRange(element.value.length, element.value.length),
+		);
+		await page.keyboard.type("#");
+
+		const popover = page.getByTestId("category-popover");
+		await expect(popover).toBeVisible();
+
+		await page.keyboard.press("Escape");
+
+		await expect(popover).toBeHidden();
+		await expect(textarea).toHaveValue(`${originalText}#`);
+		await expect(textarea).toBeFocused();
 		await expect(dialog.getByTestId("memo-textarea")).toBeVisible();
 	});
 });

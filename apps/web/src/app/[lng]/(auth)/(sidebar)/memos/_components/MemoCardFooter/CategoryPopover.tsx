@@ -1,65 +1,45 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import type { CategoryRow } from "@web-memo/shared/types";
 import {
 	CategoryCommand,
 	Popover,
 	PopoverAnchor,
 	PopoverContent,
 } from "@web-memo/ui";
+import type { TMemoCategoryPopover } from "./useMemoCategoryPopover";
 
 /** 카테고리 팝업 props */
 interface IFCategoryPopoverProps extends LanguageType {
-	isOpen: boolean;
-	/** 팝업이 붙을 요소(칩 또는 ⋮ 버튼). 한 번도 열리지 않았으면 null */
-	anchorElement: HTMLElement | null;
-	/** 사용자의 카테고리 목록 */
-	categories: CategoryRow[] | null | undefined;
-	/** 메모에 지정된 카테고리 id. 해당 항목에 체크 표시를 한다 */
-	currentCategoryId: number | null;
-	isCategoryCreating: boolean;
-	onOpenChange: (isOpen: boolean) => void;
-	onCategorySelect: (category: CategoryRow) => void;
-	onCategoryCreate: (categoryName: string) => void;
-	onCategoryRemove: () => void;
-	onCloseAutoFocus: (event: Event) => void;
+	/** useMemoCategoryPopover가 돌려준 팝업 상태 */
+	popover: TMemoCategoryPopover;
 }
 
 /**
- * 메모 카드의 카테고리 검색 팝업
- * @description 칩과 ⋮ 메뉴가 같은 팝업을 쓰므로 붙을 요소를 앵커로 받는다.
- * 사용처: MemoCardFooter/index.tsx
+ * 메모의 카테고리 검색 팝업
+ * @description 칩·배지·⋮ 메뉴·본문 #이 같은 팝업을 쓰므로 붙을 기준을 앵커로 받는다.
+ * 사용처: MemoCardFooter/index.tsx, MemoDialog/index.tsx
  */
 export default function CategoryPopover({
 	lng,
-	isOpen,
-	anchorElement,
-	categories,
-	currentCategoryId,
-	isCategoryCreating,
-	onOpenChange,
-	onCategorySelect,
-	onCategoryCreate,
-	onCategoryRemove,
-	onCloseAutoFocus,
+	popover,
 }: IFCategoryPopoverProps) {
 	const { t } = useTranslation(lng);
 
 	return (
-		<Popover open={isOpen} onOpenChange={onOpenChange}>
-			{anchorElement && (
-				<PopoverAnchor virtualRef={{ current: anchorElement }} />
+		<Popover open={popover.isOpen} onOpenChange={popover.handleOpenChange}>
+			{popover.anchor && (
+				<PopoverAnchor virtualRef={{ current: popover.anchor }} />
 			)}
 			<PopoverContent
 				side="bottom"
 				align="start"
 				className="w-64 p-0"
 				data-testid="category-popover"
-				onCloseAutoFocus={onCloseAutoFocus}
+				onCloseAutoFocus={popover.handleCloseAutoFocus}
 			>
 				<CategoryCommand
-					categories={categories}
-					currentCategoryId={currentCategoryId}
+					categories={popover.categories}
+					currentCategoryId={popover.currentCategoryId}
 					labels={{
 						search: t("memos.categoryPopup.search"),
 						noResult: t("memos.categoryPopup.noResult"),
@@ -72,10 +52,10 @@ export default function CategoryPopover({
 							}),
 						remove: t("memos.categoryPopup.remove"),
 					}}
-					onCategorySelect={onCategorySelect}
-					onCategoryCreate={onCategoryCreate}
-					isCategoryCreating={isCategoryCreating}
-					onRemove={onCategoryRemove}
+					onCategorySelect={popover.handleCategorySelect}
+					onCategoryCreate={popover.handleCategoryCreate}
+					isCategoryCreating={popover.isCategoryCreating}
+					onRemove={popover.handleCategoryRemove}
 					emptyAction={
 						<p className="text-muted-foreground px-2 pb-3 text-center text-xs">
 							{t("memos.categoryPopup.emptyHint")}

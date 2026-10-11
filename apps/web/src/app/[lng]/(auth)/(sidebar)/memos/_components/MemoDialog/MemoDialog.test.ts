@@ -83,6 +83,12 @@ vi.mock("../MemoCardFooter", () => ({
 	default: ({ className }: { className: string }) =>
 		createElement("footer", { className, "data-testid": "memo-detail-footer" }),
 }));
+vi.mock("../MemoCardFooter/useMemoCategoryPopover", () => ({
+	default: () => ({ openFromHash: vi.fn() }),
+}));
+vi.mock("../MemoCardFooter/CategoryPopover", () => ({
+	default: () => null,
+}));
 vi.mock("./SaveStatusIndicator", () => ({
 	default: ({ status }: { status: string }) =>
 		createElement("span", { "data-testid": "save-status" }, status),

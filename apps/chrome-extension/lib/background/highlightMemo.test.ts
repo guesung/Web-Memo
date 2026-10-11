@@ -112,6 +112,10 @@ describe("background 하이라이트 연결 메모 생성", () => {
 			userId: "owner",
 		});
 		expect(mocks.create).toHaveBeenCalledWith(7, "내 생각");
+		expect(mocks.trackEvent).toHaveBeenCalledWith({
+			name: "memo_first_write",
+			params: { source: "highlight" },
+		});
 		expect(mocks.createTab).toHaveBeenCalledWith({
 			url: expect.stringContaining("/memos?id=20"),
 		});
@@ -132,7 +136,22 @@ describe("background 하이라이트 연결 메모 생성", () => {
 				SENDER,
 			),
 		).toMatchObject({ success: true, memoId: 20 });
-		expect(mocks.trackEvent).not.toHaveBeenCalled();
+		expect(mocks.trackEvent).not.toHaveBeenCalledWith(
+			expect.objectContaining({ name: "memo_open" }),
+		);
+	});
+
+	it("저장 재시도로 기존 메모가 반환되면 최초 작성 이벤트를 기록하지 않는다", async () => {
+		mocks.create.mockResolvedValueOnce({
+			memo_id: 20,
+			highlight_id: 7,
+			created: false,
+			deleted_at: null,
+		});
+		await handleCreateHighlightMemo({ highlightId: 7, memo: "내 생각" }, SENDER);
+		expect(mocks.trackEvent).not.toHaveBeenCalledWith(
+			expect.objectContaining({ name: "memo_first_write" }),
+		);
 	});
 	it.each([
 		{ highlightId: 0, memo: "내 생각" },

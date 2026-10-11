@@ -1,11 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { MemoSupabaseClient } from "../../types";
 import { HighlightMemoService } from "./highlightMemoService";
-
-const mocks = vi.hoisted(() => ({ trackEvent: vi.fn() }));
-vi.mock("../../modules/analytics", () => ({
-	analytics: { trackEvent: mocks.trackEvent },
-}));
 
 const makeClient = () => {
 	const query = {
@@ -26,12 +21,8 @@ const makeClient = () => {
 	};
 };
 
-beforeEach(() => {
-	mocks.trackEvent.mockReset();
-});
-
 describe("하이라이트 연결 메모 서비스", () => {
-	it("처음 저장한 메모의 ID를 반환하고 최초 작성 이벤트를 한 번만 기록한다", async () => {
+	it("처음 저장한 메모의 ID와 생성 여부를 반환한다", async () => {
 		const { service, rpc, schema } = makeClient();
 		rpc.mockResolvedValue({
 			data: { memo_id: 20, highlight_id: 7, created: true, deleted_at: null },
@@ -48,14 +39,9 @@ describe("하이라이트 연결 메모 서비스", () => {
 			p_highlight_id: 7,
 			p_memo: "생각",
 		});
-		expect(mocks.trackEvent).toHaveBeenCalledOnce();
-		expect(mocks.trackEvent).toHaveBeenCalledWith({
-			name: "memo_first_write",
-			params: { source: "highlight" },
-		});
 	});
 
-	it("저장 재시도에서 기존 메모가 반환되면 작성 이벤트를 중복 기록하지 않는다", async () => {
+	it("저장 재시도에서 기존 메모가 반환되면 생성되지 않은 것으로 반환한다", async () => {
 		const { service, rpc } = makeClient();
 		rpc.mockResolvedValue({
 			data: {
@@ -67,10 +53,9 @@ describe("하이라이트 연결 메모 서비스", () => {
 			error: null,
 		});
 		expect((await service.create(7, "다시 저장")).created).toBe(false);
-		expect(mocks.trackEvent).not.toHaveBeenCalled();
 	});
 
-	it("RPC 오류와 잘못된 반환 값은 성공이나 작성 이벤트로 취급하지 않는다", async () => {
+	it("RPC 오류와 잘못된 반환 값은 성공으로 취급하지 않는다", async () => {
 		const { service, rpc } = makeClient();
 		const databaseError = new Error("write failed");
 		rpc.mockResolvedValueOnce({ data: null, error: databaseError });
@@ -82,7 +67,6 @@ describe("하이라이트 연결 메모 서비스", () => {
 		await expect(service.create(7, "생각")).rejects.toThrow(
 			"Invalid highlight memo response",
 		);
-		expect(mocks.trackEvent).not.toHaveBeenCalled();
 	});
 
 	it("중복 ID를 제거하고 100개씩 조회한 뒤 모든 연결을 합친다", async () => {

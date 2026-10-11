@@ -15,12 +15,14 @@ import type { TTabName } from "./TabSection/resolveActiveTab";
 
 export default function SidePanelContent() {
 	const { pageKey, content, isLoading, error } = usePageContentContext();
-	const { refetch: refetchTab } = useTabQuery();
+	const { data: tab, refetch: refetchTab } = useTabQuery();
 	const { showAiChat } = useAiFeatureSettingsQuery();
 	const [summaryState, setSummaryState] = useState({ pageKey, isOpen: false });
 	const [selectedTab, setSelectedTab] = useState<TTabName>("chat");
 	const isSummaryOpen = summaryState.pageKey === pageKey && summaryState.isOpen;
 	const isAvailable = !isLoading && !error && Boolean(content.trim());
+	const hasPageContentError =
+		Boolean(error) && /^https?:\/\//i.test(tab?.url ?? "");
 	const isSummaryActive =
 		isSummaryOpen && (!showAiChat || selectedTab === "summary");
 	const hasAiTab = isSummaryOpen || showAiChat;
@@ -63,6 +65,7 @@ export default function SidePanelContent() {
 					onToggle={handleSummaryToggle}
 					isLoading={isLoading}
 					isAvailable={isAvailable}
+					hasPageContentError={hasPageContentError}
 				/>
 				<div
 					ref={containerRef}

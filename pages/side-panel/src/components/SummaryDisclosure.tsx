@@ -7,6 +7,7 @@ interface SummaryDisclosureProps {
 	onToggle: () => void;
 	isLoading: boolean;
 	isAvailable: boolean;
+	hasPageContentError: boolean;
 }
 
 export const SUMMARY_PANEL_ID = "side-panel-summary";
@@ -16,11 +17,14 @@ export default function SummaryDisclosure({
 	onToggle,
 	isLoading,
 	isAvailable,
+	hasPageContentError,
 }: SummaryDisclosureProps) {
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const unavailableMessage = isLoading
 		? I18n.get("summary_page_loading_message")
-		: I18n.get("summary_unavailable_message");
+		: hasPageContentError
+			? I18n.get("error_get_page_content")
+			: I18n.get("summary_unavailable_message");
 
 	return (
 		<div className="mt-3 shrink-0">

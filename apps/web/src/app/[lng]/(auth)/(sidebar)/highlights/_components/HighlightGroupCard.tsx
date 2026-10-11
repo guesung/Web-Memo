@@ -2,9 +2,11 @@
 
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import type { HighlightGroup } from "@web-memo/shared/modules/highlight";
 import type { HighlightMemoLink } from "@web-memo/shared/types";
-import { ExternalLink } from "lucide-react";
+import { getHighlightSourceUrl } from "@web-memo/shared/utils";
+import { PanelRightOpen } from "lucide-react";
 import { useState } from "react";
 import { HighlightQuote } from "./HighlightQuote";
 
@@ -33,37 +35,78 @@ export function HighlightGroupCard({
 }: HighlightGroupCardProps) {
 	const { t } = useTranslation(lng);
 	const [failedFavIconUrl, setFailedFavIconUrl] = useState<string | null>(null);
+	const [isPanelOpenError, setIsPanelOpenError] = useState(false);
 	const favIconUrl = group.favIconUrl;
 	const isFavIconVisible = !!favIconUrl && failedFavIconUrl !== favIconUrl;
+	const sourceUrl = getHighlightSourceUrl({ url: group.url, exact_text: "" });
 
 	const handleFavIconError = () => {
 		setFailedFavIconUrl(favIconUrl);
 	};
+	const handleSourceClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+		if (
+			event.button !== 0 ||
+			event.metaKey ||
+			event.ctrlKey ||
+			event.shiftKey ||
+			event.altKey
+		)
+			return;
+		setIsPanelOpenError(false);
+		void bridge.request
+			.OPEN_SIDE_PANEL_FROM_WEB()
+			.then((response) => {
+				if (response?.success !== true) setIsPanelOpenError(true);
+			})
+			.catch(() => setIsPanelOpenError(true));
+	};
+	const headerContent = (
+		<>
+			{isFavIconVisible ? (
+				<img
+					src={favIconUrl}
+					alt=""
+					className="size-4 rounded"
+					onError={handleFavIconError}
+				/>
+			) : null}
+			<span className="truncate">{group.title ?? group.url}</span>
+			<PanelRightOpen
+				aria-hidden="true"
+				className="size-3.5 shrink-0 text-muted-foreground"
+			/>
+			{count > 0 ? (
+				<span className="shrink-0 text-xs text-muted-foreground">
+					{t("highlight.count", { count })}
+				</span>
+			) : null}
+		</>
+	);
 
 	return (
 		<article className="w-full min-w-0 rounded-xl border border-border bg-card p-4">
-			<a
-				href={group.url}
-				target="_blank"
-				rel="noreferrer"
-				className="mb-3 flex items-center gap-2 text-sm font-medium hover:underline"
-			>
-				{isFavIconVisible ? (
-					<img
-						src={favIconUrl}
-						alt=""
-						className="size-4 rounded"
-						onError={handleFavIconError}
-					/>
-				) : null}
-				<span className="truncate">{group.title ?? group.url}</span>
-				<ExternalLink className="size-3.5 shrink-0 text-muted-foreground" />
-				{count > 0 ? (
-					<span className="shrink-0 text-xs text-muted-foreground">
-						{t("highlight.count", { count })}
-					</span>
-				) : null}
-			</a>
+			{sourceUrl !== "#" ? (
+				<a
+					href={sourceUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					aria-label={t("highlight.openSourceAndPanel")}
+					title={t("highlight.openSourceAndPanel")}
+					onClick={handleSourceClick}
+					className="mb-3 flex items-center gap-2 text-sm font-medium hover:underline"
+				>
+					{headerContent}
+				</a>
+			) : (
+				<div className="mb-3 flex items-center gap-2 text-sm font-medium">
+					{headerContent}
+				</div>
+			)}
+			{isPanelOpenError && (
+				<p role="alert" className="mb-3 text-xs text-destructive">
+					{t("highlight.panelOpenError")}
+				</p>
+			)}
 
 			<ul className="divide-y divide-border">
 				{group.highlights.map((highlight) => (

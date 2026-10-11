@@ -78,7 +78,7 @@ test.describe("하이라이트에서 메모로 이동", () => {
 		).toHaveAttribute("href", new RegExp(`highlightId=${first.id}`));
 	});
 
-	test("미연결 문장은 원문에서 사이드 패널을 열도록 안내하고 메모를 생성하지 않는다", async ({
+	test("URL 카드 제목으로 원문을 열고 확장이 없으면 패널 안내를 표시한다", async ({
 		page,
 	}) => {
 		const highlight = store.addHighlight(
@@ -93,25 +93,33 @@ test.describe("하이라이트에서 메모로 이동", () => {
 			regexp: new RegExp(PATHS.highlights),
 		});
 		const quote = page.locator(`#highlight-${highlight.id}`);
-		const action = quote.getByRole("link", { name: "Write in side panel" });
-		await expect(action).toHaveAttribute(
+		await expect(
+			quote.getByRole("link", { name: "Write in side panel" }),
+		).toHaveCount(0);
+		await expect(
+			quote.getByRole("link", { name: "View source" }),
+		).toHaveAttribute(
 			"href",
 			/^https:\/\/example\.com\/article#:~:text=Source%20quote$/,
 		);
-		await expect(
-			quote.getByText(
-				"On the source page, click the extension icon to open the side panel.",
-			),
-		).toBeVisible();
+		const action = page.getByRole("link", {
+			name: "Open source and memo panel",
+		});
+		await expect(action).toHaveAttribute("href", "https://example.com/article");
 		const popupPromise = page.waitForEvent("popup");
 		await action.click();
+		await expect(
+			page.getByText("Could not open the side panel. Check the extension."),
+		).toBeVisible();
 		const popup = await popupPromise;
 		await expect(popup).toHaveURL(/https:\/\/example\.com\/article/);
 		await popup.close();
 		expect(store.getAllMemos()).toHaveLength(0);
 	});
 
-	test("휴지통으로 보낸 연결 메모는 복원 경로를 보여준다", async ({ page }) => {
+	test("휴지통으로 보낸 연결 메모는 휴지통 보기 경로를 보여준다", async ({
+		page,
+	}) => {
 		const highlight = store.addHighlight(createMockHighlight());
 		const memo = store.addMemo(
 			createMockMemo({
@@ -137,9 +145,8 @@ test.describe("하이라이트에서 메모로 이동", () => {
 			regexp: new RegExp(PATHS.highlights),
 		});
 		const quote = page.locator(`#highlight-${highlight.id}`);
-		await expect(quote.getByText("This memo is in trash.")).toBeVisible();
 		await expect(
-			quote.getByRole("link", { name: "Restore from trash" }),
+			quote.getByRole("link", { name: "Linked memo is in trash · View trash" }),
 		).toHaveAttribute("href", `/${LANGUAGE}${PATHS.memosTrash}`);
 		await expect(
 			quote.getByRole("link", { name: "Write in side panel" }),
@@ -168,7 +175,11 @@ test.describe("하이라이트에서 메모로 이동", () => {
 			page
 				.locator(`#highlight-${highlight.id}`)
 				.getByRole("link", { name: "Write in side panel" }),
-		).toBeVisible();
+		).toHaveCount(0);
+		await expect(page.locator("main article > a").first()).toHaveAttribute(
+			"href",
+			highlight.url,
+		);
 		await page.getByRole("button", { name: "green" }).click();
 		await expect(page.locator(`#highlight-${highlight.id}`)).toBeVisible();
 	});

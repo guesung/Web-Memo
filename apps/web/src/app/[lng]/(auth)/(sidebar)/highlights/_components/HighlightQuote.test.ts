@@ -60,14 +60,14 @@ const renderQuote = async (
 };
 describe("하이라이트 문장과 기존 메모", () => {
 	it.each([null, "", "  "])(
-		"빈 메모 %s에는 원문에서 사이드 패널을 열도록 안내한다",
+		"빈 메모 %s에는 문장별 작성 CTA 없이 원문 위치 링크를 표시한다",
 		async (note) => {
 			await renderQuote(note);
 			expect(
 				container.querySelector('a[href="https://example.com/article"]')
 					?.textContent,
-			).toBe("highlight.memo.sidePanel");
-			expect(container.textContent).toContain("highlight.memo.sidePanelHint");
+			).toBe("highlight.memo.source");
+			expect(container.textContent).not.toContain("highlight.memo.sidePanel");
 			expect(container.querySelector("form")).toBeNull();
 			expect(container.querySelector("mark")?.textContent).toBe("저장한 원문");
 			expect(container.querySelector("mark")?.style.backgroundColor).toBe(
@@ -85,9 +85,9 @@ describe("하이라이트 문장과 기존 메모", () => {
 		expect(
 			container.querySelector('a[href="/ko/memos?id=42"]')?.textContent,
 		).toBe("highlight.memo.open");
-		expect(container.textContent).not.toContain("highlight.memo.sidePanelHint");
+		expect(container.textContent).not.toContain("highlight.memo.sidePanel");
 	});
-	it("휴지통의 연결된 메모는 복원 경로를 유지한다", async () => {
+	it("휴지통의 연결된 메모는 휴지통 보기 경로를 유지한다", async () => {
 		await renderQuote(null, {
 			link: {
 				memo_id: 42,
@@ -96,8 +96,8 @@ describe("하이라이트 문장과 기존 메모", () => {
 		});
 		expect(
 			container.querySelector('a[href="/ko/memos/trash"]')?.textContent,
-		).toBe("highlight.memo.restore");
-		expect(container.textContent).not.toContain("highlight.memo.sidePanelHint");
+		).toBe("highlight.memo.viewTrash");
+		expect(container.textContent).not.toContain("highlight.memo.sidePanel");
 	});
 	it("기존 메모는 클릭하여 수정하고 저장할 수 있다", async () => {
 		await renderQuote("기존 메모");

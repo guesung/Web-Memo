@@ -568,11 +568,8 @@
 	},
 	"highlight": {
 		"memo": {
-			"sidePanel": "Write in side panel",
-			"sidePanelHint": "On the source page, click the extension icon to open the side panel.",
 			"open": "Open memo",
-			"restore": "Restore from trash",
-			"trashed": "This memo is in trash.",
+			"viewTrash": "Linked memo is in trash · View trash",
 			"linked": "Linked memo",
 			"quote": "Quoted text",
 			"loadError": "Could not load linked memos. Try again.",
@@ -583,6 +580,8 @@
 			"related": "Other highlights on this page",
 			"relatedCount": "Other highlights on this page ({{count}})"
 		},
+		"panelOpenError": "Could not open the side panel. Check the extension.",
+		"openSourceAndPanel": "Open source and memo panel",
 		"loadError": "Could not load highlights. Please try again.",
 		"loadMore": "Load more",
 		"count": "{{count}}",

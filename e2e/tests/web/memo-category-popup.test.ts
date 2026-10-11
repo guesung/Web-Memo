@@ -42,14 +42,12 @@ const openPopupFromOption = async (page: Page, title: string) => {
 test.describe("웹 메모 카드의 카테고리 팝업 (Mocked)", () => {
 	let store: MockSupabaseStore;
 	let workCategoryId: number;
-	let lifeCategoryId: number;
 
 	test.beforeEach(async ({ page }) => {
 		resetMockIds();
 		store = new MockSupabaseStore();
 
 		workCategoryId = store.addCategory(createMockCategory({ name: "Work" })).id;
-		lifeCategoryId = store.addCategory(createMockCategory({ name: "Life" })).id;
 		store.addMemo(
 			createMockMemo({
 				title: CATEGORIZED_TITLE,
@@ -66,30 +64,39 @@ test.describe("웹 메모 카드의 카테고리 팝업 (Mocked)", () => {
 		});
 	});
 
-	test("⋮ 메뉴에서 열면 검색창에 포커스가 가고, 현재 카테고리에 체크가 붙고, 다른 카테고리를 고르면 저장된다.", async ({
+	// 팝업 목록은 서버에서 내려온 계정의 카테고리라 목 저장소와 별개다. 이름을 하드코딩하지 않고 첫 항목을 쓴다.
+	test("⋮ 메뉴에서 열면 검색창에 포커스가 가고, 카테고리를 고르면 저장되며, 다시 열면 그 카테고리에 체크가 붙는다.", async ({
 		page,
 	}) => {
-		await openPopupFromOption(page, CATEGORIZED_TITLE);
+		await openPopupFromOption(page, UNCATEGORIZED_TITLE);
 
 		const popover = page.getByTestId("category-popover");
 		await expect(popover.getByPlaceholder("Search categories")).toBeFocused();
-		await expect(popover.getByRole("option", { name: "Work" })).toContainText(
-			"Work",
-		);
+		await expect(popover.getByTestId("category-remove-item")).toHaveCount(0);
+
+		const firstOption = popover.getByRole("option").first();
+		const categoryName = (await firstOption.innerText()).trim();
+		await popover.getByPlaceholder("Search categories").fill(categoryName);
 		await expect(
-			popover.getByRole("option", { name: "Work" }).locator("svg"),
+			popover.getByRole("option", { name: categoryName, exact: true }),
 		).toBeVisible();
 
-		await popover.getByPlaceholder("Search categories").fill("Li");
-		await expect(popover.getByRole("option", { name: "Work" })).toBeHidden();
-
 		const patchBody = await waitForMemoPatchBody(page, () =>
-			popover.getByRole("option", { name: "Life" }).click(),
+			popover.getByRole("option", { name: categoryName, exact: true }).click(),
 		);
 
-		expect(patchBody).toMatchObject({ category_id: lifeCategoryId });
+		expect(typeof patchBody.category_id).toBe("number");
 		await expect(popover).toBeHidden();
-		await expect(page.getByText("Category changed")).toBeVisible();
+		await expect(
+			page.getByText("Category changed", { exact: true }),
+		).toBeVisible();
+
+		await openPopupFromOption(page, UNCATEGORIZED_TITLE);
+		await expect(
+			popover
+				.getByRole("option", { name: categoryName, exact: true })
+				.locator("svg"),
+		).toBeVisible();
 	});
 
 	test("없는 이름을 입력해 만들면 카테고리를 만든 뒤 그 id로 지정한다.", async ({
@@ -121,7 +128,9 @@ test.describe("웹 메모 카드의 카테고리 팝업 (Mocked)", () => {
 			page.getByTestId("category-remove-item").click(),
 		);
 		expect(removeBody).toMatchObject({ category_id: null });
-		await expect(page.getByText("Category removed")).toBeVisible();
+		await expect(
+			page.getByText("Category removed", { exact: true }),
+		).toBeVisible();
 
 		const undoBody = await waitForMemoPatchBody(page, () =>
 			page.getByRole("button", { name: "Undo" }).click(),

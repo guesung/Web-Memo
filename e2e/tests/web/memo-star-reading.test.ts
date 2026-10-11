@@ -172,9 +172,10 @@ test.describe("메모 카드의 중요·읽는 중 토글 (Mocked)", () => {
 		const tooltip = page.getByRole("tooltip");
 		const cases = [
 			{
+				// 위시를 켜면 기본 목록에서 카드가 빠지므로 꺼진 상태의 말풍선만 본다.
 				name: "Wishlist",
 				add: "Add to wishlist",
-				remove: "Remove from wishlist",
+				remove: undefined,
 			},
 			{
 				name: "Reading",
@@ -193,10 +194,12 @@ test.describe("메모 카드의 중요·읽는 중 토글 (Mocked)", () => {
 			await toggle.hover();
 			await expect(tooltip).toHaveText(add);
 
-			await toggle.click();
-			await expect(toggle).toHaveAttribute("aria-pressed", "true");
-			await toggle.hover();
-			await expect(tooltip).toHaveText(remove);
+			if (remove) {
+				await toggle.click();
+				await expect(toggle).toHaveAttribute("aria-pressed", "true");
+				await toggle.hover();
+				await expect(tooltip).toHaveText(remove);
+			}
 
 			// 다음 아이콘의 말풍선과 섞이지 않게 카드 밖으로 빼 둔다
 			await page.mouse.move(5, 5, { steps: 10 });

@@ -454,6 +454,7 @@ const matchesCursor = (memo: MemoRow, url: URL): boolean => {
 /**
  * `order=updated_at.desc,id.desc`를 읽는다.
  * @description 앱은 정렬 키가 같을 때를 대비해 `id`를 2차 키로 함께 보낸다.
+ * 읽을 계획 탭은 `order=plannedDate.asc,updated_at.desc`로 2차 키가 `updated_at`이다.
  */
 const parseOrder = (url: URL) => {
 	const [firstOrderClause, secondOrderClause] = (
@@ -464,13 +465,17 @@ const parseOrder = (url: URL) => {
 
 	return {
 		column:
-			column === "created_at" || column === "title" || column === "deleted_at"
+			column === "created_at" ||
+			column === "title" ||
+			column === "deleted_at" ||
+			column === "plannedDate"
 				? column
 				: "updated_at",
 		ascending,
 		secondColumn: secondOrderClause
 			? secondOrderClause.split(".")[0]
 			: undefined,
+		secondAscending: secondOrderClause?.split(".")[1] === "asc",
 	} as const;
 };
 
@@ -483,6 +488,8 @@ const handleMemoGet = async ({ route, url, store }: HandlerParams) => {
 	const isWish = parseBooleanFilter(url, "isWish");
 	const isStar = parseBooleanFilter(url, "isStar");
 	const isReading = parseBooleanFilter(url, "isReading");
+	const requiresPlannedDate =
+		url.searchParams.get("plannedDate") === "not.is.null";
 	const categoryName = parseEqualsFilter(url, "category.name");
 	const searchQuery = extractIlikeQuery(url, "title");
 	// 한 건 조회(getMemoById·getMemoByUrl)도 같은 GET으로 온다. 여기서 안 걸러주면
@@ -516,6 +523,9 @@ const handleMemoGet = async ({ route, url, store }: HandlerParams) => {
 			if (isReading !== undefined && (memo.isReading ?? false) !== isReading) {
 				return false;
 			}
+			if (requiresPlannedDate && memo.plannedDate === null) {
+				return false;
+			}
 			if (categoryName && memo.category?.name !== categoryName) {
 				return false;
 			}
@@ -535,13 +545,21 @@ const handleMemoGet = async ({ route, url, store }: HandlerParams) => {
 			return true;
 		});
 
-	const { column, ascending, secondColumn } = parseOrder(url);
+	const { column, ascending, secondColumn, secondAscending } = parseOrder(url);
 	const sorted = filtered.sort((a, b) => {
 		const compared = String(a[column] ?? "").localeCompare(
 			String(b[column] ?? ""),
 		);
 		if (compared !== 0) {
 			return ascending ? compared : -compared;
+		}
+
+		if (secondColumn === "updated_at") {
+			const secondCompared = String(a.updated_at ?? "").localeCompare(
+				String(b.updated_at ?? ""),
+			);
+
+			return secondAscending ? secondCompared : -secondCompared;
 		}
 
 		if (secondColumn !== "id") {

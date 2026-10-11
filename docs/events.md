@@ -35,6 +35,7 @@
 | memo_domain_filter_change | 웹 메모 목록에서 도메인을 고르거나 해제해 URL이 실제로 바뀐 직후(같은 값 재선택·이미 미선택인 해제는 제외) | `action`: `select` \| `clear`, `source`: `popover` \| `clear_button` \| `empty_state`, `domain_option_count`(빈 상태 해제에서는 없음) | 도메인 필터가 실제로 쓰이는가? 고른 뒤 바로 해제하는 비율은? 빈 상태의 해제 버튼이 탈출구로 쓰이는가? (도메인 원문은 넣지 않음) | DB-1081 |
 | search_no_result | 검색 결과 없음 (추정) | `has_domain_filter`: boolean | 검색이 실패하는 비율 (추정). 도메인 필터가 겹친 0건을 `false`로 걸러 순수 검색 실패율을 볼 수 있는가 | DB-1081 |
 | memo_status_toggle | 메모 상태(wish/star/reading) 변경. 확장 upsert는 이전 값과 다를 때만 발생 | `status`, `enabled` | 어떤 상태가 쓰이는가 (추정) | DB-1158 |
+| memo_plan_change | 메모의 읽을 계획 날짜 배정·해제 성공 뒤. 웹 패치, 확장 upsert(값이 달라졌을 때·새 메모 첫 배정 포함) | `action`(set/clear), `days_ahead`(set일 때, 오늘 기준 일수) | 읽을 계획이 실제로 배정되는가, 며칠 앞까지 잡는가, 해제 비율은 | DB-1195 |
 | memo_category_change | 메모 카테고리 변경. 확장 upsert는 이전 값과 다를 때만 발생 | `action`: `set` \| `clear` (patch 경로만, `category_id`가 null이면 clear) · `source`: `button` \| `hash` \| `ai` (선택, 확장 upsert에서는 없음) | 사람들이 `#` 입력을 아는가 | DB-1158 |
 | memo_undo | 실행 취소 (추정) | `action` | 어떤 조작이 되돌려지는가 (추정) | — |
 | memo_offline_queued | 오프라인 대기열에 넣음 | `trigger` | 오프라인 저장이 얼마나 일어나는가 | — |

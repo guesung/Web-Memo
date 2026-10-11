@@ -680,5 +680,56 @@
 	},
 	"page_highlights_focus_failed": {
 		"message": "Couldn't find this quote on the page."
+	},
+	"tooltip_plan_add": {
+		"message": "Pick a day to read"
+	},
+	"tooltip_plan_change": {
+		"message": "Planned for $date$ · Change",
+		"placeholders": {
+			"date": {
+				"content": "$1",
+				"example": "October 13"
+			}
+		}
+	},
+	"plan_added": {
+		"message": "Added to your $date$ reading list",
+		"placeholders": {
+			"date": {
+				"content": "$1",
+				"example": "October 13"
+			}
+		}
+	},
+	"plan_removed": {
+		"message": "Removed from your reading plan"
+	},
+	"plan_label_today": {
+		"message": "Today"
+	},
+	"plan_label_tomorrow": {
+		"message": "Tomorrow"
+	},
+	"plan_picker_title": {
+		"message": "When will you read it?"
+	},
+	"plan_picker_today": {
+		"message": "Today"
+	},
+	"plan_picker_tomorrow": {
+		"message": "Tomorrow"
+	},
+	"plan_picker_weekend": {
+		"message": "This weekend"
+	},
+	"plan_picker_next_monday": {
+		"message": "Next Monday"
+	},
+	"plan_picker_clear": {
+		"message": "Clear date"
+	},
+	"plan_date_button": {
+		"message": "Reading plan date"
 	}
 }

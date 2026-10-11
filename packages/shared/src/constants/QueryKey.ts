@@ -44,6 +44,17 @@ export const QUERY_KEY = {
 			...(domain ? { domain } : {}),
 		},
 	],
+	/** 읽을 계획 탭(계획 날짜가 있는 메모)의 모든 필터를 부분 매칭한다. */
+	memosPlannedPrefix: () => ["memos", "planned"],
+	/**
+	 * 읽을 계획 탭 목록.
+	 * @description `memos()` 접두사를 공유해 메모 수정 뒤의 `["memos"]` 무효화에 함께 걸린다.
+	 */
+	memosPlanned: (category?: string, searchQuery?: string) => [
+		"memos",
+		"planned",
+		{ category, searchQuery },
+	],
 	/**
 	 * 메모 url에서 뽑은 도메인 목록.
 	 * @description `memos()` 접두사를 공유해 메모를 만들거나 버릴 때의 무효화에 함께 걸린다.

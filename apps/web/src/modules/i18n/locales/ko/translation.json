@@ -31,6 +31,7 @@
 		"favorite": "즐겨찾기",
 		"importantMemo": "중요 메모",
 		"readingMemo": "읽는 중",
+		"readingPlan": "읽을 계획",
 		"allCategory": "전체 카테고리",
 		"tags": "태그",
 		"settings": "설정",
@@ -348,6 +349,8 @@
 		"memoStarDeleted": "중요 메모에서 삭제했어요",
 		"memoReadingAdded": "읽는 중으로 표시했어요",
 		"memoReadingDeleted": "읽는 중에서 해제했어요",
+		"memoPlanAdded": "{{date}}에 볼 목록에 담았어요",
+		"memoPlanRemoved": "읽을 계획에서 뺐어요",
 		"saveSuccess": "저장했어요",
 		"deleteSuccess": "삭제했어요",
 		"addSuccess": "추가했어요",
@@ -553,7 +556,7 @@
 			"truncateContent": "메모 내용 줄여 보기",
 			"unknownDate": "작성일 없음",
 			"label": "메모 보기",
-			"byDate": "날짜별 보기",
+			"byDate": "작성일별 보기",
 			"byDomain": "도메인별 보기",
 			"unknownDomain": "도메인 없음",
 			"untitled": "제목 없는 메모",
@@ -573,6 +576,28 @@
 			"title": "검색 결과가 없어요",
 			"message": "'{{query}}'와 일치하는 메모를 찾지 못했어요.",
 			"hint": "다른 말로 찾아보세요."
+		},
+		"plan": {
+			"sectionPast": "지난 계획 {{count}}개",
+			"sectionToday": "오늘",
+			"sectionUpcoming": "다가오는 날",
+			"todayEmpty": "오늘 볼 글은 없어요",
+			"emptyTitle": "아직 날짜를 정한 글이 없어요",
+			"emptyHint": "카드의 달력 버튼으로 볼 날을 정해 보세요",
+			"emptyAction": "전체 메모 보기",
+			"chip": "{{label}} 볼 예정",
+			"label": {
+				"today": "오늘",
+				"tomorrow": "내일"
+			},
+			"picker": {
+				"title": "언제 볼까요?",
+				"today": "오늘",
+				"tomorrow": "내일",
+				"weekend": "이번 주말",
+				"nextMonday": "다음 월요일",
+				"clear": "날짜 해제"
+			}
 		},
 		"totalMemos": "메모 {{total}}개",
 		"domainFilter": {
@@ -614,7 +639,8 @@
 		"toggle": {
 			"wish": "위시리스트",
 			"reading": "읽는 중",
-			"star": "중요 메모"
+			"star": "중요 메모",
+			"plan": "볼 날짜 정하기"
 		}
 	},
 	"favorite": {

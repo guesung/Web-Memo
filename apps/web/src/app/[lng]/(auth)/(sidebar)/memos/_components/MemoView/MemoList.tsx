@@ -1,6 +1,5 @@
 "use client";
 
-import { MasonryInfiniteGrid } from "@egjs/react-infinitegrid";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import {
@@ -16,24 +15,17 @@ import type {
 import { Button } from "@web-memo/ui";
 import { useEffect, useRef, useState } from "react";
 import { useMemoSettings } from "./_hooks/useMemoSettings";
-import { groupMemosByDomain, UNKNOWN_DOMAIN } from "./groupMemosByDomain";
+import { groupMemosByDomain } from "./groupMemosByDomain";
+import MemoDateGroup from "./MemoDateGroup";
 import MemoDomainEmptyState from "./MemoDomainEmptyState";
 import MemoEmptyState from "./MemoEmptyState";
-import MemoItem from "./MemoItem";
 import { MemoListSkeleton } from "./MemoListSkeleton";
 import MemoSearchEmptyState from "./MemoSearchEmptyState";
-import { restoreHeldScrollPosition } from "./scrollPositionHold";
 
 /** 메모를 브라우저 현지 작성일별 카드 그리드로 묶어 상세 화면으로 연결한다. */
 const MemoList = (props: IFMemoListProps) => {
 	const { t } = useTranslation(props.lng);
 
-	const dateFormatter = new Intl.DateTimeFormat(props.lng, {
-		dateStyle: "long",
-	});
-	const weekdayFormatter = new Intl.DateTimeFormat(props.lng, {
-		weekday: "long",
-	});
 	const { showImpression, showActionItem, truncateMemoContent } =
 		useMemoSettings();
 	const groups =
@@ -97,82 +89,19 @@ const MemoList = (props: IFMemoListProps) => {
 				/>
 			)}
 			{groups.map((group) => (
-				<section
-					data-testid={`memo-${props.groupBy}-group`}
+				<MemoDateGroup
 					key={group.key}
-					aria-labelledby={`memo-${props.groupBy}-${group.key}`}
-					className="grid grid-cols-1 gap-4 md:grid-cols-[144px_minmax(0,1fr)] md:gap-6"
-				>
-					<h2
-						data-testid={`memo-${props.groupBy}-label`}
-						id={`memo-${props.groupBy}-${group.key}`}
-						className="min-w-0 border-b border-border pb-3 text-sm font-semibold [overflow-wrap:anywhere] md:border-b-0 md:border-r md:pb-0 md:pr-4"
-					>
-						{props.groupBy === "domain" ? (
-							group.key === UNKNOWN_DOMAIN ? (
-								t("memos.view.unknownDomain")
-							) : (
-								group.key
-							)
-						) : group.key === "unknown" ? (
-							t("memos.view.unknownDate")
-						) : (
-							<time
-								dateTime={group.key}
-								className="flex flex-wrap items-baseline gap-x-2 gap-y-1 md:flex-col"
-							>
-								<span>
-									{dateFormatter.format(new Date(`${group.key}T00:00:00`))}
-								</span>
-								<span className="text-xs font-normal text-muted-foreground">
-									{weekdayFormatter.format(new Date(`${group.key}T00:00:00`))}
-								</span>
-							</time>
-						)}
-					</h2>
-					<MasonryInfiniteGrid
-						tag="ul"
-						data-testid={`memo-${props.groupBy}-grid`}
-						className="min-w-0 max-w-[300px] md:max-w-none"
-						useResizeObserver
-						observeChildren
-						autoResize
-						useRecycle={false}
-						gap={16}
-						align="start"
-						onRenderComplete={(event) => {
-							restoreHeldScrollPosition();
-							handleGroupRenderComplete(
-								group.key,
-								event.items
-									.map((item) => item.element?.dataset.memoId)
-									.join(","),
-							);
-						}}
-					>
-						{group.memos.map((memo, index) => (
-							<li
-								data-testid="memo-list-item"
-								data-memo-id={memo.id}
-								key={memo.id}
-								data-grid-groupkey={group.key}
-								className="w-[300px] max-w-full"
-							>
-								<MemoItem
-									lng={props.lng}
-									memo={memo}
-									highlights={props.highlightsByUrl.get(memo.url)}
-									source={props.sourcesByMemo.get(memo.id)}
-									showImpression={showImpression}
-									showActionItem={showActionItem}
-									truncateMemoContent={truncateMemoContent}
-									index={index}
-									className="[&>div>div]:max-w-full"
-								/>
-							</li>
-						))}
-					</MasonryInfiniteGrid>
-				</section>
+					lng={props.lng}
+					groupBy={props.groupBy}
+					groupKey={group.key}
+					memos={group.memos}
+					highlightsByUrl={props.highlightsByUrl}
+					sourcesByMemo={props.sourcesByMemo}
+					showImpression={showImpression}
+					showActionItem={showActionItem}
+					truncateMemoContent={truncateMemoContent}
+					onRenderComplete={handleGroupRenderComplete}
+				/>
 			))}
 			{props.hasNextPage && (
 				<div ref={loadMoreRef} className="flex justify-center">

@@ -612,8 +612,8 @@
 			"get_started": "Get started"
 		},
 		"hero": {
-			"title": "Take notes while reading",
-			"subtitle": "Write down thoughts in the side panel as you read.\nThe page title and URL are saved automatically.",
+			"title": "Highlight it, then write your thought beside it",
+			"subtitle": "Highlight a passage in what you're reading and write down what it made you think.\nHighlights and notes gather in one place, with their source.",
 			"install_button": "Add to Chrome",
 			"appstore_button": "App Store",
 			"playstore_button": "Google Play",
@@ -624,11 +624,11 @@
 			"learn_more": "Learn more",
 			"desktop_extension_hint": "Also available as a Chrome extension on desktop",
 			"installs_badge": "installs",
-			"image_alt": "A note written in the Web Memo side panel beside an article"
+			"image_alt": "A sentence highlighted in yellow in an article, with a note written in the menu right beside it"
 		},
 		"section": {
 			"key_features": "Key Features",
-			"key_features_desc": "Five ways to keep a thought while you read.",
+			"key_features_desc": "Six ways to keep a thought while you read.",
 			"features_badge": "Features",
 			"demo": "Preview Web Memo",
 			"demo_title": "Preview Web Memo",
@@ -734,6 +734,10 @@
 			"park_quote": "I always use it when reading tech blogs or documentation. The notes I've taken are really helpful when I need to look things up later. Highly recommended!"
 		},
 		"features": {
+			"highlight": {
+				"title": "Highlight a passage, note it beside it",
+				"description": "Drag over text and a five-color bubble appears. Click a highlight to write your thought right beside it."
+			},
 			"memo": {
 				"title": "Take notes while reading",
 				"description": "Write a thought or a passage in the side panel beside the page."

@@ -36,6 +36,7 @@ export const bridge = createBridge({
 		{ success: boolean }
 	>("toTab"),
 	SETTING_UPDATED: defineMessage<IFSettingUpdatedPayload, void>("internal"),
+	SETTING_UPDATED_FROM_WEB: defineMessage<void, void>("toExtension"),
 	GET_EXTENSION_MANIFEST: defineMessage<void, chrome.runtime.Manifest>(
 		"toExtension",
 	),

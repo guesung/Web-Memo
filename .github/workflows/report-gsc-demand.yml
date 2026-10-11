@@ -1,0 +1,39 @@
+name: Report GSC Demand
+
+# 조합 페이지 축을 고르기 전에 Search Console의 검색 수요와 사이트맵 색인 상태를 한 번에 뽑습니다.
+# 도메인 이전일(2026-09-02)부터 확정 지연을 뺀 날까지의 query×page 전체 행을 읽고,
+# 기회 검색어·공개 페이지 성과·사이트맵 상태를 gsc-demand.json·gsc-demand.md 아티팩트로 남깁니다.
+# 정기 실행·메신저 알림·외부 저장·AI 해석 단계는 없습니다. 판단 절차는 docs/seo-combination-pages.md 에 있습니다.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    name: GSC 수요 리포트
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      # 스크립트는 Node 내장 모듈만 써서 의존성 설치가 필요 없습니다.
+      - name: Export Search Console demand
+        env:
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+        run: node .github/scripts/seo/export-gsc-demand.mjs
+
+      - name: Upload demand report
+        uses: actions/upload-artifact@v6
+        with:
+          name: gsc-demand-${{ github.run_id }}
+          path: |
+            artifacts/seo/gsc-demand.json
+            artifacts/seo/gsc-demand.md
+          if-no-files-found: error
+          retention-days: 30

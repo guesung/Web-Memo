@@ -59,9 +59,11 @@ vi.mock("../hooks", () => ({ usePastMemoMatch: () => mocks.match }));
 
 let root: Root;
 
-async function render() {
+async function render(props: { onDuplicateOpen?: () => void } = {}) {
 	await act(async () =>
-		root.render(createElement(PastMemoNotice, { hasMemoData: false })),
+		root.render(
+			createElement(PastMemoNotice, { hasMemoData: false, ...props }),
+		),
 	);
 }
 
@@ -71,6 +73,10 @@ async function click(selector: string) {
 	await act(async () =>
 		button?.dispatchEvent(new MouseEvent("click", { bubbles: true })),
 	);
+}
+
+async function clickByLabel(label: string) {
+	await click(`button[aria-label="${label}"]`);
 }
 
 async function clickButtonWithText(text: string) {
@@ -175,10 +181,15 @@ describe("PastMemoNotice analytics", () => {
 		expect(mocks.dismissCurrentUrl).toHaveBeenCalledTimes(1);
 	});
 
-	it("열기 이벤트는 URL·종류별 첫 클릭에만 기록하지만 각 클릭은 탭을 연다", async () => {
-		await render();
-		await clickButtonWithText("past_memo_open");
-		await clickButtonWithText("past_memo_open");
+	it("열기 이벤트는 URL·종류별 첫 클릭에만 기록하고, 같은 글 열기는 콜백으로 넘기며 관련 메모는 탭을 연다", async () => {
+		const onDuplicateOpen = vi.fn();
+		await render({ onDuplicateOpen });
+		await clickByLabel("past_memo_open_memo");
+		await clickByLabel("past_memo_open_memo");
+		expect(onDuplicateOpen).toHaveBeenCalledTimes(2);
+		expect(onDuplicateOpen).toHaveBeenCalledWith(mocks.match.duplicate);
+		expect(mocks.createTab).not.toHaveBeenCalled();
+
 		await click('button[title="first.example.com"]');
 		await click('button[title="first.example.com"]');
 
@@ -186,7 +197,32 @@ describe("PastMemoNotice analytics", () => {
 			{ name: "past_memo_open", params: { kind: "duplicate", source: "rule" } },
 			{ name: "past_memo_open", params: { kind: "related", source: "jev" } },
 		]);
-		expect(mocks.createTab).toHaveBeenCalledTimes(4);
+		expect(mocks.createTab).toHaveBeenCalledTimes(2);
+		expect(mocks.createTab).toHaveBeenCalledWith({
+			url: "https://first.example.com/memo",
+		});
+	});
+
+	it("웹사이트로 이동은 원래 사이트를 새 탭으로 열고 열기 이벤트는 기록하지 않는다", async () => {
+		const onDuplicateOpen = vi.fn();
+		await render({ onDuplicateOpen });
+		await clickByLabel("past_memo_open_site");
+
+		expect(mocks.createTab).toHaveBeenCalledTimes(1);
+		expect(mocks.createTab).toHaveBeenCalledWith({
+			url: "https://duplicate.example.com/memo",
+		});
+		expect(onDuplicateOpen).not.toHaveBeenCalled();
+		expect(events("past_memo_open")).toEqual([]);
+	});
+
+	it("콜백이 없으면 메모 열기는 원래 사이트를 새 탭으로 연다", async () => {
+		await render();
+		await clickByLabel("past_memo_open_memo");
+
+		expect(mocks.createTab).toHaveBeenCalledWith({
+			url: "https://duplicate.example.com/memo",
+		});
 	});
 
 	it("관련 메모 목록을 닫았다 다시 펼칠 때마다 expand를 기록한다", async () => {

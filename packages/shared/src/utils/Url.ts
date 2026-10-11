@@ -75,6 +75,23 @@ export const getPathKey = (url: string): string => {
 	return pageKey.slice(0, queryStartIndex);
 };
 
+/** LIKE 패턴의 특수문자(`\` `%` `_`)를 이스케이프한 뒤 접두 일치 패턴을 만든다. */
+export const toLikePrefixPattern = (value: string): string =>
+	`${value.replace(/[\\%_]/g, "\\$&")}%`;
+
+/**
+ * 아직 `page_key`가 비어 있는 옛 행을 원본 URL로 좁히는 접두 패턴을 만든다.
+ * @description 옛 행도 같은 origin·pathname으로 저장돼 있으므로 쿼리 앞까지를 접두로 쓴다.
+ * 빈 키 행을 전부 읽어 클라이언트에서 거르면 메모가 많은 사용자는 페이지마다 수 MB가 나간다.
+ */
+export const getLegacyUrlPrefixPattern = (pageKey: string): string => {
+	const queryStartIndex = pageKey.indexOf("?");
+	const pagePrefix =
+		queryStartIndex === -1 ? pageKey : pageKey.slice(0, queryStartIndex);
+
+	return toLikePrefixPattern(pagePrefix);
+};
+
 /**
  * 같은 글인지 비교하기 위한 느슨한 URL 키를 만든다.
  * @description 저장 키인 normalizeUrl과 달리 추적 파라미터·m./www. 서브도메인·youtu.be 단축 주소·끝 슬래시·hash 차이를 무시한다.

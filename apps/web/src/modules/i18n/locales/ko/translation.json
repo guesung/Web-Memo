@@ -535,7 +535,6 @@
 		"actionItemPlaceholder": "이 페이지를 보고 할 일을 적어보세요"
 	},
 	"memos": {
-		"categoryAdd": "카테고리 추가",
 		"categoryPopup": {
 			"search": "카테고리 검색",
 			"noResult": "맞는 카테고리가 없어요",

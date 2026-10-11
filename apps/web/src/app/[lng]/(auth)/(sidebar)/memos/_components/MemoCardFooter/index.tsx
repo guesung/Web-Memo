@@ -11,7 +11,6 @@ import { Clock, FolderIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
 import { useState } from "react";
-import CategoryAddChip from "./CategoryAddChip";
 import CategoryPopover from "./CategoryPopover";
 import MemoOption from "./MemoOption";
 import MemoStatusToggles from "./MemoStatusToggles";
@@ -28,8 +27,6 @@ interface IFMemoCardFooterProps
 		React.HTMLAttributes<HTMLDivElement> {
 	memo: GetMemoResponse;
 	isShowingOption?: boolean;
-	/** 선택 모드. 카테고리 추가 칩을 눌러도 팝업 대신 카드 선택으로 처리한다 */
-	isSelectingMode?: boolean;
 	/** 카테고리 배지를 누르면 할 일. 카드는 목록 필터, 편집 모달은 카테고리 팝업 */
 	categoryBadgeAction?: "filter" | "popup";
 	/**
@@ -74,7 +71,6 @@ function MemoCardFooterContent({
 	lng,
 	children,
 	isShowingOption = true,
-	isSelectingMode = false,
 	categoryBadgeAction = "filter",
 	categoryPopover,
 	highlightCount,
@@ -106,14 +102,6 @@ function MemoCardFooterContent({
 			: undefined,
 		borderColor: memo.category?.color || undefined,
 		color: memo.category?.color || undefined,
-	};
-
-	const handleCategoryAddChipClick = (event: MouseEvent<HTMLButtonElement>) => {
-		// 선택 모드에서는 카드 클릭으로 흘려보내 카드 선택을 바꾼다.
-		if (isSelectingMode) return;
-
-		event.stopPropagation();
-		categoryPopover.open(event.currentTarget);
 	};
 
 	return (
@@ -150,13 +138,6 @@ function MemoCardFooterContent({
 						<FolderIcon size={12} aria-hidden="true" />
 						<span>{memo.category.name}</span>
 					</button>
-				)}
-				{!memo.category?.name && (
-					<CategoryAddChip
-						lng={lng}
-						chipRef={categoryPopover.chipRef}
-						onClick={handleCategoryAddChipClick}
-					/>
 				)}
 				<time
 					dateTime={memo.updated_at ?? ""}

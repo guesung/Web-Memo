@@ -57,6 +57,7 @@ const isValidEmail = (email: string | null | undefined): email is string =>
 
 /**
  * 이번 주(월 00:00 KST ~ 지금) 메모를 최신순으로 최대 10개와 전체 개수로 읽는다
+ * @description 본문 없이 페이지만 저장한 것과 위시리스트는 회고할 내용이 없어 뺀다
  */
 const fetchWeekMemos = async (userId: string, weekStartUtc: Date, now: Date) => {
   const { data, error, count } = await supabase
@@ -66,6 +67,8 @@ const fetchWeekMemos = async (userId: string, weekStartUtc: Date, now: Date) => 
     .gte("created_at", weekStartUtc.toISOString())
     .lte("created_at", now.toISOString())
     .is("deleted_at", null)
+    .not("isWish", "is", true)
+    .filter("memo", "match", "\\S")
     .order("created_at", { ascending: false })
     .limit(MAX_REPORT_MEMOS);
 

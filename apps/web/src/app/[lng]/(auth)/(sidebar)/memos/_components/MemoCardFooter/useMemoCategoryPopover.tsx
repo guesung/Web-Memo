@@ -12,7 +12,7 @@ import { ToastAction, toast } from "@web-memo/ui";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
-/** 팝업이 붙을 기준. 칩·배지·⋮ 버튼이거나, 본문 # 경로에서는 커서 위치의 가상 사각형이다 */
+/** 팝업이 붙을 기준. 배지·⋮ 버튼이거나, 본문 # 경로에서는 커서 위치의 가상 사각형이다 */
 export interface IFCategoryPopoverAnchor {
 	getBoundingClientRect: () => DOMRect;
 }
@@ -32,7 +32,7 @@ interface IFUseMemoCategoryPopoverProps extends LanguageType {
 /**
  * 메모 하나의 카테고리 팝업 상태와 저장 로직
  * @description 선택·만들기·해제와 그 토스트(이동하기·되돌리기·실패)를 맡는다.
- * 칩·배지·⋮ 버튼 경로와 본문 # 경로가 같은 팝업을 쓴다.
+ * 배지·⋮ 버튼 경로와 본문 # 경로가 같은 팝업을 쓴다.
  * 사용처: MemoCardFooter/index.tsx, MemoDialog/index.tsx
  */
 export default function useMemoCategoryPopover({
@@ -49,8 +49,6 @@ export default function useMemoCategoryPopover({
 	const [isOpen, setIsOpen] = useState(false);
 	// 닫히는 애니메이션 동안에도 위치를 잡아야 해서 닫아도 비우지 않는다.
 	const [anchor, setAnchor] = useState<IFCategoryPopoverAnchor | null>(null);
-	const chipRef = useRef<HTMLButtonElement>(null);
-	const shouldFocusChipOnCloseRef = useRef(false);
 	const hashOptionsRef = useRef<IFHashOpenOptions | null>(null);
 
 	const currentCategoryId = memo.category_id;
@@ -144,7 +142,6 @@ export default function useMemoCategoryPopover({
 		const isSaved = await patchCategory(null);
 		if (!isSaved) return;
 
-		shouldFocusChipOnCloseRef.current = !hashOptionsRef.current;
 		setIsOpen(false);
 		toast({
 			title: t("toastTitle.categoryRemoved"),
@@ -162,7 +159,7 @@ export default function useMemoCategoryPopover({
 	};
 
 	/**
-	 * 닫히면 포커스를 연 자리로 돌린다. 버튼 경로는 트리거로, 해제했다면 새로 그려진 칩으로,
+	 * 닫히면 포커스를 연 자리로 돌린다. 버튼 경로는 트리거로(해제로 배지가 사라졌으면 생략),
 	 * # 경로는 본문 커서 자리로 보낸다.
 	 */
 	const handleCloseAutoFocus = (event: Event) => {
@@ -173,19 +170,14 @@ export default function useMemoCategoryPopover({
 			return;
 		}
 
-		const focusTarget = shouldFocusChipOnCloseRef.current
-			? chipRef.current
-			: anchor;
-		shouldFocusChipOnCloseRef.current = false;
-		if (focusTarget instanceof HTMLElement && focusTarget.isConnected) {
-			focusTarget.focus();
+		if (anchor instanceof HTMLElement && anchor.isConnected) {
+			anchor.focus();
 		}
 	};
 
 	return {
 		isOpen,
 		anchor,
-		chipRef,
 		categories,
 		currentCategoryId,
 		isCategoryCreating,

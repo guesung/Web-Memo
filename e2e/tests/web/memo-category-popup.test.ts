@@ -163,22 +163,6 @@ test.describe("웹 메모 카드의 카테고리 팝업 (Mocked)", () => {
 		expect(undoBody).toMatchObject({ category_id: workCategoryId });
 	});
 
-	test("카테고리 없는 카드의 ＋ 칩을 누르면 팝업이 열리고, 카테고리 있는 카드에는 칩이 없다.", async ({
-		page,
-	}) => {
-		await expect(
-			getMemoCard(page, CATEGORIZED_TITLE).getByTestId("category-add-chip"),
-		).toHaveCount(0);
-
-		await getMemoCard(page, UNCATEGORIZED_TITLE)
-			.getByTestId("category-add-chip")
-			.click();
-
-		const popover = page.getByTestId("category-popover");
-		await expect(popover).toBeVisible();
-		await expect(popover.getByTestId("category-remove-item")).toHaveCount(0);
-	});
-
 	test("편집 모달에서 Escape를 누르면 팝업만 닫히고 모달은 유지된다.", async ({
 		page,
 	}) => {
@@ -193,18 +177,6 @@ test.describe("웹 메모 카드의 카테고리 팝업 (Mocked)", () => {
 
 		await expect(popover).toBeHidden();
 		await expect(dialog.getByTestId("memo-textarea")).toBeVisible();
-	});
-
-	test("편집 모달에서도 카테고리가 없으면 ＋ 칩이 보이고, 누르면 팝업이 열린다.", async ({
-		page,
-	}) => {
-		const dialog = await openMemoDialog(page, UNCATEGORIZED_TITLE);
-
-		await dialog.getByTestId("category-add-chip").click();
-
-		const popover = page.getByTestId("category-popover");
-		await expect(popover).toBeVisible();
-		await expect(popover.getByPlaceholder("Search categories")).toBeFocused();
 	});
 
 	test("편집 모달의 카테고리 배지를 누르면 목록 필터 대신 해제 항목이 있는 팝업이 열린다.", async ({

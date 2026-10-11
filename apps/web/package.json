@@ -6,7 +6,6 @@
 		"preview": "next build && next start",
 		"build": "node scripts/generatePagePaths.mjs && next build",
 		"generate:paths": "node scripts/generatePagePaths.mjs",
-		"generate:icons": "node scripts/generateIcons.mjs",
 		"build:analyze": "next experimental-analyze",
 		"start": "next start",
 		"type-check": "tsc --noEmit",

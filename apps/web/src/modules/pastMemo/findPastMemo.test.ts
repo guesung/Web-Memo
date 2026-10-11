@@ -30,6 +30,11 @@ const createMemo = (id: number, url: string): IFMemoCandidate => ({
 	updated_at: null,
 });
 
+const createOtherMemos = (count: number) =>
+	Array.from({ length: count }, (_, index) =>
+		createMemo(index + 1, `https://other.com/${index}`),
+	);
+
 const callFindPastMemo = () =>
 	findPastMemo({ accessToken: "token", userId: "user", page: PAGE });
 
@@ -67,83 +72,72 @@ describe("findPastMemo", () => {
 		expect(mocks.judgeWithJev).not.toHaveBeenCalled();
 	});
 
-	it.each([200, 201, 400, 401])(
-		"%i번째의 오래된 URL 일치도 rule로 반환하고 이후 조회를 중단한다",
-		async (position) => {
-			const memos = Array.from({ length: position }, (_, index) =>
-				createMemo(index + 1, `https://other.com/${index}`),
-			);
-			memos[position - 1] = createMemo(
-				position,
-				"https://www.blog.com/post?utm_source=old",
-			);
-			for (let offset = 0; offset < memos.length; offset += 200) {
-				mocks.getMemoPage.mockResolvedValueOnce(
-					memos.slice(offset, offset + 200),
-				);
-			}
+	it("최근 200개에 일치가 없으면 URL 패턴으로 좁힌 오래된 메모에서 rule 일치를 찾는다", async () => {
+		mocks.getMemoPage
+			.mockResolvedValueOnce(createOtherMemos(200))
+			.mockResolvedValueOnce([
+				createMemo(401, "https://www.blog.com/post?utm_source=old"),
+			]);
 
-			const result = await callFindPastMemo();
+		const result = await callFindPastMemo();
 
-			expect(result.duplicate).toEqual({
-				id: position,
-				title: `메모 ${position}`,
-				url: "https://www.blog.com/post?utm_source=old",
-				source: "rule",
-			});
-			expect(mocks.getMemoPage).toHaveBeenCalledTimes(
-				Math.ceil(position / 200),
-			);
-			expect(mocks.judgeWithJev).not.toHaveBeenCalled();
-		},
-	);
+		expect(result.duplicate).toEqual({
+			id: 401,
+			title: "메모 401",
+			url: "https://www.blog.com/post?utm_source=old",
+			source: "rule",
+		});
+		expect(mocks.getMemoPage).toHaveBeenCalledTimes(2);
+		expect(mocks.getMemoPage).toHaveBeenNthCalledWith(2, {
+			accessToken: "token",
+			userId: "user",
+			offset: 0,
+			pageSize: 50,
+			urlPattern: "%blog.com/post%",
+		});
+		expect(mocks.judgeWithJev).not.toHaveBeenCalled();
+	});
 
-	it.each([0, 199, 200, 201, 400])(
-		"일치 없는 %i개를 끝까지 검사하고 Jev에는 최근 200개만 보낸다",
-		async (count) => {
-			const memos = Array.from({ length: count }, (_, index) =>
-				createMemo(index + 1, `https://other.com/${index}`),
-			);
-			for (let offset = 0; offset <= memos.length; offset += 200) {
-				mocks.getMemoPage.mockResolvedValueOnce(
-					memos.slice(offset, offset + 200),
-				);
-			}
-			const response = { duplicate: null, related: [] };
-			mocks.judgeWithJev.mockResolvedValueOnce(response);
+	it("최근 메모가 200개 미만이면 전부 읽은 것이므로 좁힌 조회를 하지 않는다", async () => {
+		const memos = createOtherMemos(199);
+		mocks.getMemoPage.mockResolvedValueOnce(memos);
+		const response = { duplicate: null, related: [] };
+		mocks.judgeWithJev.mockResolvedValueOnce(response);
 
-			expect(await callFindPastMemo()).toEqual(response);
-			expect(mocks.getMemoPage).toHaveBeenCalledTimes(
-				Math.floor(count / 200) + 1,
-			);
-			for (
-				let index = 0;
-				index < mocks.getMemoPage.mock.calls.length;
-				index += 1
-			) {
-				expect(mocks.getMemoPage).toHaveBeenNthCalledWith(index + 1, {
-					accessToken: "token",
-					userId: "user",
-					offset: index * 200,
-					pageSize: 200,
-				});
-			}
-			expect(mocks.judgeWithJev).toHaveBeenCalledWith({
-				apiKey: "key",
-				page: PAGE,
-				memos: memos.slice(0, 200),
-			});
-		},
-	);
+		expect(await callFindPastMemo()).toEqual(response);
+		expect(mocks.getMemoPage).toHaveBeenCalledTimes(1);
+		expect(mocks.getMemoPage).toHaveBeenCalledWith({
+			accessToken: "token",
+			userId: "user",
+			offset: 0,
+			pageSize: 200,
+		});
+		expect(mocks.judgeWithJev).toHaveBeenCalledWith({
+			apiKey: "key",
+			page: PAGE,
+			memos,
+		});
+	});
 
-	it("후속 페이지 조회 실패도 빈 결과로 처리하고 Jev를 호출하지 않는다", async () => {
+	it("좁힌 조회에도 일치가 없으면 전체를 더 읽지 않고 최근 200개만 Jev에 보낸다", async () => {
+		const memos = createOtherMemos(200);
+		mocks.getMemoPage.mockResolvedValueOnce(memos).mockResolvedValueOnce([]);
+		const response = { duplicate: null, related: [] };
+		mocks.judgeWithJev.mockResolvedValueOnce(response);
+
+		expect(await callFindPastMemo()).toEqual(response);
+		expect(mocks.getMemoPage).toHaveBeenCalledTimes(2);
+		expect(mocks.judgeWithJev).toHaveBeenCalledWith({
+			apiKey: "key",
+			page: PAGE,
+			memos,
+		});
+	});
+
+	it("좁힌 조회 실패도 빈 결과로 처리하고 Jev를 호출하지 않는다", async () => {
 		const error = new Error("next page failed");
 		mocks.getMemoPage
-			.mockResolvedValueOnce(
-				Array.from({ length: 200 }, (_, index) =>
-					createMemo(index, `https://other.com/${index}`),
-				),
-			)
+			.mockResolvedValueOnce(createOtherMemos(200))
 			.mockRejectedValueOnce(error);
 
 		expect(await callFindPastMemo()).toEqual({ duplicate: null, related: [] });
@@ -154,13 +148,9 @@ describe("findPastMemo", () => {
 		expect(mocks.judgeWithJev).not.toHaveBeenCalled();
 	});
 
-	it("후속 페이지에서도 정확히 같은 URL은 제외하고 다른 URL의 규칙 일치를 찾는다", async () => {
+	it("좁힌 조회에서도 정확히 같은 URL은 제외하고 다른 URL의 규칙 일치를 찾는다", async () => {
 		mocks.getMemoPage
-			.mockResolvedValueOnce(
-				Array.from({ length: 200 }, (_, index) =>
-					createMemo(index, `https://other.com/${index}`),
-				),
-			)
+			.mockResolvedValueOnce(createOtherMemos(200))
 			.mockResolvedValueOnce([
 				createMemo(201, PAGE.pageUrl),
 				createMemo(202, "https://www.blog.com/post"),

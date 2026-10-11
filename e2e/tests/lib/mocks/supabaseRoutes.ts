@@ -1034,7 +1034,7 @@ const handleCreateMemoFromHighlight = async ({
 
 /**
  * 메모 필드 노출 설정 조회.
- * @description 설정 행이 없으면 빈 배열을 돌려줘야 useSettingQuery의 `?? false` 기본값 경로를 탄다.
+ * @description 설정 행이 없으면 빈 배열을 돌려줘야 요약의 기본 ON 경로를 탄다.
  */
 const handleSettingGet = async ({ route, store }: HandlerParams) => {
 	const setting = store.getSetting();
@@ -1055,7 +1055,7 @@ const handleSettingUpsert = async ({ route, store }: HandlerParams) => {
 		user_id: "test-user-id",
 		show_impression: false,
 		show_action_item: false,
-		show_summary: false,
+		show_summary: true,
 		show_ai_chat: false,
 		truncate_memo_content: true,
 		weekly_report_enabled: false,

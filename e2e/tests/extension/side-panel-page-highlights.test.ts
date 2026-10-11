@@ -53,19 +53,17 @@ test("현재 페이지의 최근 인용 두 개를 보여주고, 전체 보기�
 	await expect(
 		highlights.getByRole("button", { name: /First quote/ }),
 	).toBeVisible();
-	await highlights
-		.getByRole("button", {
-			name: /Highlights on this page|이 페이지의 하이라이트/,
-		})
-		.click();
+	const disclosure = highlights.getByRole("button", {
+		name: /Highlights on this page|이 페이지의 하이라이트/,
+	});
+	await disclosure.focus();
+	await panel.keyboard.press("Enter");
+	await expect(disclosure).toHaveAttribute("aria-expanded", "false");
 	await expect(
 		highlights.getByRole("button", { name: /First quote/ }),
 	).toHaveCount(0);
-	await highlights
-		.getByRole("button", {
-			name: /Highlights on this page|이 페이지의 하이라이트/,
-		})
-		.click();
+	await disclosure.click();
+	await expect(disclosure).toHaveAttribute("aria-expanded", "true");
 	await expect(
 		highlights.getByRole("button", { name: /First quote/ }),
 	).toBeVisible();

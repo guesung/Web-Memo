@@ -34,7 +34,7 @@ test.describe("사이드 패널 AI 기능", () => {
 		await skipGuide(page);
 	});
 
-	test("설정 행이 없으면 요약 진입점 없이 메모를 쓸 수 있다", async ({
+	test("설정 행이 없으면 요약 진입점이 보이고 생성 전까지 메모를 쓸 수 있다", async ({
 		page,
 	}) => {
 		await openSidePanel(page);
@@ -47,11 +47,26 @@ test.describe("사이드 패널 AI 기능", () => {
 
 		await expect(
 			sidePanelPage.getByRole("button", { name: showLabel, exact: true }),
-		).toHaveCount(0);
+		).toBeVisible();
 		await expect(sidePanelPage.locator("#memo-textarea")).toBeVisible();
 		await expect(sidePanelPage.getByRole("tablist")).toHaveCount(0);
 		await expect(sidePanelPage.locator("main [role=slider]")).toHaveCount(0);
 		expect(summaryApi.getSummaryRequestCount()).toBe(0);
+		expect(store.getSetting()).toBeNull();
+	});
+
+	test("첫 설정 저장은 요약 기본 ON을 보존한다", async ({ page }) => {
+		const optionsPage = await page.context().newPage();
+		await optionsPage.goto(getExtensionUrl("options/index.html"));
+		const summarySwitch = optionsPage.locator("#summary-enabled");
+		const chatSwitch = optionsPage.locator("#ai-chat-enabled");
+
+		await expect(summarySwitch).toHaveAttribute("data-state", "checked");
+		await expect(chatSwitch).toHaveAttribute("data-state", "unchecked");
+		await chatSwitch.click();
+		await expect.poll(() => store.getSetting()?.show_ai_chat).toBe(true);
+		expect(store.getSetting()?.show_summary).toBe(true);
+		await expect(summarySwitch).toHaveAttribute("data-state", "checked");
 	});
 
 	test("요약 OFF 설정은 요약 진입점과 영역을 숨긴다", async ({ page }) => {

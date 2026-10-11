@@ -84,16 +84,14 @@ export default function PageHighlights({ userId, tabId, url }: Props) {
 			<button
 				type="button"
 				aria-expanded={!isCollapsed}
-				className="flex min-h-9 w-full shrink-0 items-center gap-2 text-left"
+				className="flex min-h-10 w-full shrink-0 items-center gap-2 text-left text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				onClick={() => setIsCollapsed((value) => !value)}
 			>
-				<Highlighter aria-hidden className="size-4 shrink-0 text-yellow-500" />
-				<span className="min-w-0 flex-1 truncate text-sm font-bold">
+				<Highlighter aria-hidden className="size-4 shrink-0" />
+				<span className="min-w-0 flex-1 truncate text-sm font-medium">
 					{I18n.get("page_highlights_title")}
 				</span>
-				<span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-					{highlights.length}
-				</span>
+				<span className="text-xs">{highlights.length}</span>
 				<ChevronDown
 					aria-hidden
 					className={`size-4 shrink-0 text-muted-foreground transition-transform ${isCollapsed ? "-rotate-90" : ""}`}
@@ -103,11 +101,11 @@ export default function PageHighlights({ userId, tabId, url }: Props) {
 				<div className="min-h-0 overflow-y-auto pt-1">
 					{isLoading && <LoadingState />}
 					{isError && (
-						<p className="rounded-md bg-muted p-2 text-xs text-muted-foreground">
+						<p className="py-2 text-xs text-muted-foreground">
 							{I18n.get("page_highlights_load_failed")}{" "}
 							<button
 								type="button"
-								className="text-primary underline"
+								className="text-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 								onClick={() => void refetch()}
 							>
 								{I18n.get("page_highlights_retry")}
@@ -115,13 +113,13 @@ export default function PageHighlights({ userId, tabId, url }: Props) {
 						</p>
 					)}
 					{!isLoading && !isError && highlights.length === 0 && (
-						<p className="rounded-md bg-muted p-2 text-xs text-muted-foreground">
+						<p className="py-2 text-xs text-muted-foreground">
 							{I18n.get("page_highlights_empty")}
 						</p>
 					)}
 					{!isError && visibleHighlights.length > 0 && (
 						<>
-							<ul className="space-y-1.5">
+							<ul>
 								{visibleHighlights.map((highlight) => (
 									<li key={highlight.id}>
 										<QuoteButton
@@ -134,7 +132,7 @@ export default function PageHighlights({ userId, tabId, url }: Props) {
 							{highlights.length > PREVIEW_COUNT && (
 								<button
 									type="button"
-									className="mt-1 w-full text-right text-xs font-semibold text-primary hover:underline"
+									className="mt-1 w-full text-right text-xs text-muted-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 									onClick={() => setShowAll((value) => !value)}
 								>
 									{showAll
@@ -164,11 +162,10 @@ function QuoteButton({ highlight, onClick }: QuoteButtonProps) {
 	return (
 		<button
 			type="button"
-			className="flex w-full items-start gap-2 rounded-md border border-border border-l-[3px] bg-muted p-2 text-left hover:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-			style={{ borderLeftColor: colorStyle?.bar }}
+			className="flex w-full items-start gap-2 rounded-md py-2 text-left hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 			onClick={onClick}
 		>
-			<span className="min-w-0 flex-1 line-clamp-2 whitespace-pre-wrap break-words text-xs leading-5">
+			<span className="min-w-0 flex-1 line-clamp-2 whitespace-pre-wrap break-words text-sm leading-5">
 				<mark
 					className={`box-decoration-clone rounded-sm px-0.5 ${color === "yellow" ? "bg-highlight-yellow text-highlight-yellow-foreground" : "text-foreground"}`}
 					style={
@@ -192,7 +189,7 @@ function LoadingState() {
 	return (
 		<output
 			aria-label={I18n.get("page_highlights_loading")}
-			className="block animate-pulse space-y-2 rounded-md bg-muted p-2"
+			className="block animate-pulse space-y-2 py-2"
 		>
 			<div className="h-2.5 rounded bg-border" />
 			<div className="h-2.5 w-2/3 rounded bg-border" />

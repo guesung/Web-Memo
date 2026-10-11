@@ -30,7 +30,7 @@ export default function SummaryDisclosure({
 					}
 					onToggle();
 				}}
-				className="flex w-full items-center gap-2 rounded-md bg-muted px-3 py-2 text-left text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
+				className="flex min-h-10 w-full items-center gap-2 border-b border-border text-left text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
 			>
 				<Sparkles aria-hidden="true" className="size-4 shrink-0" />
 				<span className="flex-1">

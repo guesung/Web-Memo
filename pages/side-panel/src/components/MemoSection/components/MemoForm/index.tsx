@@ -427,6 +427,7 @@ const MemoFormContent = ({
 						<CategorySuggestion
 							suggestion={suggestion}
 							isAccepting={isAccepting}
+							isShortcutDisabled={showCategoryList}
 							onAccept={() => void acceptSuggestion()}
 							onDismiss={dismissSuggestion}
 						/>

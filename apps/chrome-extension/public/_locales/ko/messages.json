@@ -464,42 +464,6 @@
 	"highlight_note_save": {
 		"message": "저장"
 	},
-	"highlight_memo_add": {
-		"message": "메모 추가"
-	},
-	"highlight_memo_open": {
-		"message": "메모 열기"
-	},
-	"highlight_memo_restore": {
-		"message": "휴지통에서 복원하기"
-	},
-	"highlight_memo_loading": {
-		"message": "연결된 메모 확인 중…"
-	},
-	"highlight_memo_load_failed": {
-		"message": "연결된 메모를 확인하지 못했어요."
-	},
-	"highlight_memo_retry": {
-		"message": "다시 시도"
-	},
-	"highlight_memo_quote": {
-		"message": "선택한 문장"
-	},
-	"highlight_memo_thought": {
-		"message": "내 생각"
-	},
-	"highlight_memo_placeholder": {
-		"message": "이 문장에서 떠오른 생각을 적어보세요"
-	},
-	"highlight_memo_cancel": {
-		"message": "취소"
-	},
-	"highlight_memo_save": {
-		"message": "메모 저장"
-	},
-	"highlight_memo_save_failed": {
-		"message": "메모를 저장하지 못했어요. 다시 시도해 주세요."
-	},
 	"highlight_bubble_menu_title": {
 		"message": "웹 메모 하이라이트"
 	},
@@ -601,10 +565,10 @@
 		"message": "AI 기능"
 	},
 	"ai_features_description": {
-		"message": "페이지 요약을 열거나 AI 채팅 표시를 설정해요"
+		"message": "AI 기능의 사용 여부를 설정합니다."
 	},
 	"summary_enabled_setting": {
-		"message": "페이지 요약 사용"
+		"message": "요약 기능 활성화"
 	},
 	"ai_chat_enabled_setting": {
 		"message": "AI 채팅 사용"
@@ -631,13 +595,67 @@
 		"message": "요약하려면 먼저 로그인해 주세요"
 	},
 	"summary_panel_hint": {
-		"message": "요약은 사이드 패널에서 필요할 때 열 수 있어요"
+		"message": "사이드 패널에 ‘요약 보기’를 표시해요."
+	},
+	"past_memo_open_memo": {
+		"message": "메모 열기"
+	},
+	"past_memo_open_site": {
+		"message": "웹사이트로 이동"
+	},
+	"past_memo_view_back": {
+		"message": "이 페이지 메모로 돌아가기"
+	},
+	"past_memo_view_readonly": {
+		"message": "읽기 전용"
+	},
+	"past_memo_view_open_original": {
+		"message": "원래 페이지 열기"
+	},
+	"past_memo_view_load_failed": {
+		"message": "메모를 불러오지 못했어요. 삭제됐거나 일시적인 문제일 수 있어요."
+	},
+	"highlight_memo_add": {
+		"message": "메모 추가"
 	},
 	"highlight_panel_memo_action": {
 		"message": "사이드 패널에서 메모하기"
 	},
 	"highlight_panel_open_failed": {
 		"message": "사이드 패널을 열지 못했어요. 다시 시도해 주세요."
+	},
+	"highlight_memo_open": {
+		"message": "메모 열기"
+	},
+	"highlight_memo_restore": {
+		"message": "휴지통에서 복원하기"
+	},
+	"highlight_memo_loading": {
+		"message": "연결된 메모 확인 중…"
+	},
+	"highlight_memo_load_failed": {
+		"message": "연결된 메모를 확인하지 못했어요."
+	},
+	"highlight_memo_retry": {
+		"message": "다시 시도"
+	},
+	"highlight_memo_quote": {
+		"message": "선택한 문장"
+	},
+	"highlight_memo_thought": {
+		"message": "내 생각"
+	},
+	"highlight_memo_placeholder": {
+		"message": "이 문장에서 떠오른 생각을 적어보세요"
+	},
+	"highlight_memo_cancel": {
+		"message": "취소"
+	},
+	"highlight_memo_save": {
+		"message": "메모 저장"
+	},
+	"highlight_memo_save_failed": {
+		"message": "메모를 저장하지 못했어요. 다시 시도해 주세요."
 	},
 	"page_highlights_title": {
 		"message": "이 페이지의 하이라이트"

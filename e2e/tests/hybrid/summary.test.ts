@@ -7,6 +7,7 @@ import {
 	login,
 	openSidePanel,
 	skipGuide,
+	waitForSidePanelMemoQuery,
 } from "../lib";
 import {
 	createMockSetting,
@@ -21,10 +22,13 @@ test.describe("사이드 패널 - 페이지 요약", () => {
 	let summaryApi: Awaited<ReturnType<typeof mockSummaryApi>>;
 
 	test.beforeEach(async ({ page, context }) => {
+		await context.route(
+			/https:\/\/[^/]*(google-analytics\.com|analytics\.google\.com)\//,
+			(route) => route.fulfill({ status: 204 }),
+		);
 		// 요약은 메모가 없어도 된다. 사이드 패널의 메모 조회가 실서버를 읽지 않도록 빈 목 저장소를 씌운다.
-		// 요약 탭은 기본이 꺼짐이라 설정 행에서 켜 둔다.
 		const store = new MockSupabaseStore();
-		store.setSetting(createMockSetting({ show_summary: true }));
+		store.setSetting(createMockSetting({ show_summary: false }));
 		await setupSupabaseMocks(page, store);
 		summaryApi = await mockSummaryApi({
 			context,
@@ -38,36 +42,81 @@ test.describe("사이드 패널 - 페이지 요약", () => {
 		await openSidePanel(page);
 	});
 
-	test("content script가 있는 페이지에서 요약 생성 버튼을 누르면, 요약 API를 한 번 부르고 받은 요약을 보여준다", async ({
+	test("요약 보기를 누르면 바로 요약 API를 한 번 부르고 결과를 보여준다", async ({
 		page,
 	}) => {
 		const sidePanelPage = await findSidePanelPage(page);
-		const summaryGenerateLabel = await getExtensionMessage({
-			sidePanelPage,
-			key: "summary_generate_label",
-		});
-
-		await sidePanelPage
-			.getByRole("button", { name: summaryGenerateLabel, exact: true })
-			.click();
+		expect(summaryApi.getSummaryRequestCount()).toBe(0);
+		await openSummary(sidePanelPage);
 
 		await expect(
 			sidePanelPage.getByText(SUMMARY_CHUNKS.join("")),
 		).toBeVisible();
-		expect(summaryApi.getSummaryRequestCount()).toBe(1);
-	});
-
-	test("content script가 없는 페이지에서 요약을 시도하면, 본문을 읽지 못했다는 안내를 보여주고 요약 API를 부르지 않는다", async ({
-		page,
-	}) => {
-		const sidePanelPage = await findSidePanelPage(page);
-		const summaryGenerateLabel = await getExtensionMessage({
+		await expect(sidePanelPage.getByRole("tablist")).toHaveCount(0);
+		const generateLabel = await getExtensionMessage({
 			sidePanelPage,
 			key: "summary_generate_label",
 		});
-		const pageContentErrorMessage = await getExtensionMessage({
+		await expect(
+			sidePanelPage.getByRole("button", { name: generateLabel, exact: true }),
+		).toHaveCount(0);
+		expect(summaryApi.getSummaryRequestCount()).toBe(1);
+	});
+
+	test("요약 열기와 접기는 GA 이벤트를 각각 한 번 기록하고 페이지 전환은 기록하지 않는다", async ({
+		page,
+	}) => {
+		const sidePanelPage = await findSidePanelPage(page);
+		const actions: Array<Promise<string | undefined>> = [];
+		sidePanelPage.on("console", (message) => {
+			if (!message.text().startsWith("[analytics] summary_panel_toggle")) {
+				return;
+			}
+			const parameters = message.args()[1];
+			actions.push(
+				parameters?.jsonValue().then((params) => {
+					return (params as { action?: string }).action;
+				}) ?? Promise.resolve(undefined),
+			);
+		});
+		const hideLabel = await getExtensionMessage({
 			sidePanelPage,
-			key: "error_get_page_content",
+			key: "summary_hide_label",
+		});
+
+		await openSummary(sidePanelPage);
+		await expect(
+			sidePanelPage.getByText(SUMMARY_CHUNKS.join("")),
+		).toBeVisible();
+		await sidePanelPage
+			.getByRole("button", { name: hideLabel, exact: true })
+			.click();
+		await openSummary(sidePanelPage);
+		await expect
+			.poll(async () => Promise.all(actions))
+			.toEqual(["open", "close", "open"]);
+
+		const previousPageKey = getPageKey(page.url());
+		const nextMemoQuery = sidePanelPage.waitForResponse((response) => {
+			const keys = getMemoQueryPageKeys(response.url());
+			return keys !== null && !keys.includes(previousPageKey);
+		});
+		await page.goto("about:blank");
+		await nextMemoQuery;
+		expect(await Promise.all(actions)).toEqual(["open", "close", "open"]);
+	});
+
+	test("미지원 페이지에서는 눌렀을 때만 안내가 보이고 메모는 남는다", async ({
+		page,
+	}) => {
+		const sidePanelPage = await findSidePanelPage(page);
+		const unavailableMessage = await getExtensionMessage({
+			sidePanelPage,
+			key: "summary_unavailable_message",
+		});
+		const showLabel = await getExtensionMessage({
+			sidePanelPage,
+			key: "summary_show_label",
 		});
 
 		// about:blank에는 content script가 붙지 않는다(매니페스트의 매치 패턴이 about: 스킴을 덮지 않는다).
@@ -87,17 +136,175 @@ test.describe("사이드 패널 - 페이지 요약", () => {
 		await page.goto("about:blank");
 		await nextPageMemoQuery;
 
-		await sidePanelPage
-			.getByRole("button", { name: summaryGenerateLabel, exact: true })
-			.click();
-
-		// 안내는 여러 줄이다. 첫 줄(본문을 읽지 못했다는 문장)로 확인한다.
+		const showButton = sidePanelPage.getByRole("button", {
+			name: showLabel,
+			exact: true,
+		});
+		await expect(showButton).toBeEnabled();
 		await expect(
-			sidePanelPage.getByText(pageContentErrorMessage.split("\n")[0]),
+			sidePanelPage.getByText(unavailableMessage, { exact: true }),
+		).toHaveCount(0);
+		await showButton.click();
+		await expect(
+			sidePanelPage.getByText(unavailableMessage, { exact: true }),
 		).toBeVisible();
+		await expect(sidePanelPage.locator("#memo-textarea")).toBeVisible();
 		expect(summaryApi.getSummaryRequestCount()).toBe(0);
 	});
+
+	test("요약을 접고 같은 페이지에서 다시 열면 결과와 메모 초안이 유지되고 재요청하지 않는다", async ({
+		page,
+	}) => {
+		const sidePanelPage = await findSidePanelPage(page);
+		const hideLabel = await getExtensionMessage({
+			sidePanelPage,
+			key: "summary_hide_label",
+		});
+		const memo = sidePanelPage.locator("#memo-textarea");
+		await memo.fill("Unfinished memo draft");
+		await openSummary(sidePanelPage);
+		await expect(
+			sidePanelPage.getByText(SUMMARY_CHUNKS.join("")),
+		).toBeVisible();
+		await sidePanelPage
+			.getByRole("button", { name: hideLabel, exact: true })
+			.click();
+		await openSummary(sidePanelPage);
+		await expect(
+			sidePanelPage.getByText(SUMMARY_CHUNKS.join("")),
+		).toBeVisible();
+		await expect(memo).toHaveValue("Unfinished memo draft");
+		expect(summaryApi.getSummaryRequestCount()).toBe(1);
+	});
+
+	test("페이지가 바뀌면 기존 요약이 접히고 새 페이지에서 다시 누를 때만 실행된다", async ({
+		page,
+		context,
+	}) => {
+		await context.route("https://example.com/**", (route) =>
+			route.fulfill({
+				contentType: "text/html",
+				body: "<h1>Another page</h1><p>Content for a new summary.</p>",
+			}),
+		);
+		const sidePanelPage = await findSidePanelPage(page);
+		const showLabel = await getExtensionMessage({
+			sidePanelPage,
+			key: "summary_show_label",
+		});
+		await openSummary(sidePanelPage);
+		await expect(
+			sidePanelPage.getByText(SUMMARY_CHUNKS.join("")),
+		).toBeVisible();
+		const nextUrl = "https://example.com/summary-next-page";
+		const nextMemoQuery = waitForSidePanelMemoQuery({
+			sidePanelPage,
+			url: nextUrl,
+		});
+		await page.goto(nextUrl);
+		await nextMemoQuery;
+		await expect(
+			sidePanelPage.getByRole("button", { name: showLabel, exact: true }),
+		).toHaveAttribute("aria-expanded", "false");
+		await expect(sidePanelPage.getByText(SUMMARY_CHUNKS.join(""))).toHaveCount(
+			0,
+		);
+		expect(summaryApi.getSummaryRequestCount()).toBe(1);
+		await openSummary(sidePanelPage);
+		await expect(
+			sidePanelPage.getByText(SUMMARY_CHUNKS.join("")),
+		).toBeVisible();
+		expect(summaryApi.getSummaryRequestCount()).toBe(2);
+	});
+
+	test("요약 요청 실패 후 명시적으로 재시도할 때만 다시 요청한다", async ({
+		page,
+		context,
+	}) => {
+		let requestCount = 0;
+		await context.route("**/api/openai", async (route) => {
+			requestCount += 1;
+			if (requestCount === 1) {
+				await route.fulfill({ status: 500, body: "Summary failed" });
+				return;
+			}
+			await route.fallback();
+		});
+		const sidePanelPage = await findSidePanelPage(page);
+		const retryLabel = await getExtensionMessage({
+			sidePanelPage,
+			key: "summary_retry_label",
+		});
+		await openSummary(sidePanelPage);
+		const retryButton = sidePanelPage.getByRole("button", {
+			name: retryLabel,
+			exact: true,
+		});
+		await expect(retryButton).toBeVisible();
+		expect(requestCount).toBe(1);
+		await retryButton.click();
+		await expect(
+			sidePanelPage.getByText(SUMMARY_CHUNKS.join("")),
+		).toBeVisible();
+		expect(requestCount).toBe(2);
+	});
+
+	test("생성 요청 중에는 재실행할 수 없어 중복 요청하지 않는다", async ({
+		page,
+		context,
+	}) => {
+		let releaseResponse: () => void = () => {};
+		const responseGate = new Promise<void>((resolve) => {
+			releaseResponse = resolve;
+		});
+		let requestCount = 0;
+		await context.route("**/api/openai", async (route) => {
+			requestCount += 1;
+			await responseGate;
+			await route.fallback();
+		});
+		const sidePanelPage = await findSidePanelPage(page);
+		const hideLabel = await getExtensionMessage({
+			sidePanelPage,
+			key: "summary_hide_label",
+		});
+		const loadingMessage = await getExtensionMessage({
+			sidePanelPage,
+			key: "summary_loading_message",
+		});
+		await openSummary(sidePanelPage);
+		try {
+			await expect.poll(() => requestCount).toBe(1);
+			await expect(
+				sidePanelPage.getByText(loadingMessage, { exact: true }),
+			).toBeVisible();
+			await sidePanelPage
+				.getByRole("button", { name: hideLabel, exact: true })
+				.click();
+			await openSummary(sidePanelPage);
+			await expect(
+				sidePanelPage.getByText(loadingMessage, { exact: true }),
+			).toBeVisible();
+			expect(requestCount).toBe(1);
+		} finally {
+			releaseResponse();
+		}
+		await expect(
+			sidePanelPage.getByText(SUMMARY_CHUNKS.join("")),
+		).toBeVisible();
+		expect(summaryApi.getSummaryRequestCount()).toBe(1);
+	});
 });
+
+const openSummary = async (sidePanelPage: Page) => {
+	const showLabel = await getExtensionMessage({
+		sidePanelPage,
+		key: "summary_show_label",
+	});
+	await sidePanelPage
+		.getByRole("button", { name: showLabel, exact: true })
+		.click();
+};
 
 /**
  * 확장이 지금 UI 언어로 쓰는 번역 문구를 읽는다.

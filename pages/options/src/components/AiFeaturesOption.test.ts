@@ -78,26 +78,21 @@ const getSwitch = (id: string) =>
 	document.getElementById(id) as HTMLButtonElement;
 
 describe("AI 기능 옵션", () => {
-	it("기본은 두 스위치 모두 꺼져 있다", async () => {
+	it("요약은 진입 안내를 표시하고 채팅 스위치는 기본으로 꺼져 있다", async () => {
 		await mount();
 
-		expect(getSwitch("summary-enabled").getAttribute("aria-checked")).toBe(
-			"false",
-		);
+		expect(document.getElementById("summary-enabled")).toBeNull();
+		expect(document.body.textContent).toContain("summary_panel_hint");
 		expect(getSwitch("ai-chat-enabled").getAttribute("aria-checked")).toBe(
 			"false",
 		);
 	});
 
-	it("요약 스위치를 켜면 show_summary만 저장한다", async () => {
+	it("기존 요약 설정이 켜져 있어도 스위치를 복원하거나 설정을 저장하지 않는다", async () => {
+		mocks.setting.showSummary = true;
 		await mount();
-		await act(async () => getSwitch("summary-enabled").click());
-
-		expect(mocks.save).toHaveBeenCalledTimes(1);
-		expect(mocks.save).toHaveBeenCalledWith({ show_summary: true });
-		expect(getSwitch("summary-enabled").getAttribute("aria-checked")).toBe(
-			"true",
-		);
+		expect(mocks.save).not.toHaveBeenCalled();
+		expect(document.getElementById("summary-enabled")).toBeNull();
 		expect(getSwitch("ai-chat-enabled").getAttribute("aria-checked")).toBe(
 			"false",
 		);
@@ -113,9 +108,9 @@ describe("AI 기능 옵션", () => {
 	it("저장에 실패하면 스위치를 이전 값으로 되돌린다", async () => {
 		mocks.save.mockRejectedValue(new Error("failed"));
 		await mount();
-		await act(async () => getSwitch("summary-enabled").click());
+		await act(async () => getSwitch("ai-chat-enabled").click());
 
-		expect(getSwitch("summary-enabled").getAttribute("aria-checked")).toBe(
+		expect(getSwitch("ai-chat-enabled").getAttribute("aria-checked")).toBe(
 			"false",
 		);
 	});

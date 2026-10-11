@@ -37,6 +37,8 @@ interface IFMemoCardFooterProps
 	highlightCount?: number;
 	/** 꺼진 상태 버튼을 평소에 숨기고 마우스를 올렸을 때만 보인다. 목록 카드가 켠다 */
 	hidesInactiveActions?: boolean;
+	/** 수정 시각 오른쪽에 붙일 요소. 편집 모달은 저장 상태 아이콘을 둔다 */
+	timeAccessory?: React.ReactNode;
 }
 
 /**
@@ -83,6 +85,7 @@ function MemoCardFooterContent({
 	categoryPopover,
 	highlightCount,
 	hidesInactiveActions = false,
+	timeAccessory,
 	...props
 }: IFMemoCardFooterProps & { categoryPopover: TMemoCategoryPopover }) {
 	const { t } = useTranslation(lng);
@@ -160,6 +163,9 @@ function MemoCardFooterContent({
 					<time dateTime={memo.updated_at ?? ""} className="shrink-0">
 						{dayjs(memo.updated_at).fromNow()}
 					</time>
+					{timeAccessory && (
+						<span className="flex shrink-0">{timeAccessory}</span>
+					)}
 					{memo.plannedDate && (
 						<>
 							<MetaSeparator />

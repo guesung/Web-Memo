@@ -79,7 +79,7 @@ export function HighlightGroupCard({
 				<img
 					src={favIconUrl}
 					alt=""
-					className="size-8 shrink-0 rounded-lg border border-border object-contain p-1"
+					className="size-6 shrink-0 rounded-md border border-border object-contain p-0.5"
 					onError={handleFavIconError}
 				/>
 			) : null}
@@ -87,7 +87,7 @@ export function HighlightGroupCard({
 				<span className="block truncate text-sm font-semibold text-foreground">
 					{group.title ?? group.url}
 				</span>
-				<span className="mt-1 block truncate text-xs text-muted-foreground">
+				<span className="mt-0.5 block truncate text-xs text-muted-foreground">
 					{domain}
 				</span>
 			</span>
@@ -100,7 +100,7 @@ export function HighlightGroupCard({
 
 	return (
 		<article className="w-full min-w-0">
-			<div className="mb-6 flex items-center gap-3 sm:mb-7">
+			<div className="mb-3 flex items-center gap-2.5 sm:mb-3.5">
 				{sourceUrl !== "#" ? (
 					<a
 						href={sourceUrl}
@@ -109,12 +109,12 @@ export function HighlightGroupCard({
 						aria-label={t("highlight.openSourceAndPanel")}
 						title={t("highlight.openSourceAndPanel")}
 						onClick={handleSourceClick}
-						className="flex min-w-0 flex-1 items-center gap-3 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+						className="flex min-w-0 flex-1 items-center gap-2.5 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 					>
 						{headerContent}
 					</a>
 				) : (
-					<div className="flex min-w-0 flex-1 items-center gap-3">
+					<div className="flex min-w-0 flex-1 items-center gap-2.5">
 						{headerContent}
 					</div>
 				)}
@@ -130,7 +130,7 @@ export function HighlightGroupCard({
 				</p>
 			)}
 
-			<ul className="flex flex-col gap-7 sm:gap-9">
+			<ul className="flex flex-col gap-3.5 sm:gap-4">
 				{group.highlights.map((highlight) => (
 					<HighlightQuote
 						key={highlight.id}

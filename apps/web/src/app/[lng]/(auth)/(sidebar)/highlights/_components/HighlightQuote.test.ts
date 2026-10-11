@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import type { HighlightRow } from "@web-memo/shared/types";
+import type { HighlightMemoLink, HighlightRow } from "@web-memo/shared/types";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -10,8 +10,15 @@ const mocks = vi.hoisted(() => ({ saveNote: vi.fn() }));
 vi.mock("@src/modules/i18n/util.client", () => ({
 	default: () => ({ t: (key: string) => key }),
 }));
+vi.mock("@web-memo/shared/modules/analytics", () => ({
+	analytics: { trackEvent: vi.fn() },
+}));
 vi.mock("../_hooks", () => ({
 	useHighlightNoteMutation: () => ({ mutate: mocks.saveNote }),
+}));
+vi.mock("@web-memo/shared/utils", () => ({
+	getHighlightSourceUrl: (source: { url: string }) =>
+		source.url ?? "https://example.com",
 }));
 let root: Root;
 let container: HTMLDivElement;
@@ -27,13 +34,22 @@ afterEach(async () => {
 	vi.clearAllMocks();
 	vi.unstubAllGlobals();
 });
-const renderQuote = async (note: string | null) => {
+const renderQuote = async (
+	note: string | null,
+	options: {
+		link?: HighlightMemoLink;
+		isLinkLoading?: boolean;
+		isLinkError?: boolean;
+	} = {},
+) => {
 	await act(async () =>
 		root.render(
 			createElement(HighlightQuote, {
 				lng: "ko",
+				...options,
 				highlight: {
 					id: 7,
+					url: "https://example.com/article",
 					exact_text: "저장한 원문",
 					color: "pink",
 					note,
@@ -44,16 +60,45 @@ const renderQuote = async (note: string | null) => {
 };
 describe("하이라이트 문장과 기존 메모", () => {
 	it.each([null, "", "  "])(
-		"빈 메모 %s에는 추가 버튼을 표시하지 않는다",
+		"빈 메모 %s에는 원문에서 사이드 패널을 열도록 안내한다",
 		async (note) => {
 			await renderQuote(note);
-			expect(container.querySelector("button")).toBeNull();
+			expect(
+				container.querySelector('a[href="https://example.com/article"]')
+					?.textContent,
+			).toBe("highlight.memo.sidePanel");
+			expect(container.textContent).toContain("highlight.memo.sidePanelHint");
+			expect(container.querySelector("form")).toBeNull();
 			expect(container.querySelector("mark")?.textContent).toBe("저장한 원문");
 			expect(container.querySelector("mark")?.style.backgroundColor).toBe(
 				"rgba(244, 114, 182, 0.4)",
 			);
 		},
 	);
+	it("이미 연결된 메모는 기존 이동 경로를 유지한다", async () => {
+		await renderQuote(null, {
+			link: {
+				memo_id: 42,
+				memo: { id: 42, memo: "연결된 내용", deleted_at: null },
+			} as HighlightMemoLink,
+		});
+		expect(
+			container.querySelector('a[href="/ko/memos?id=42"]')?.textContent,
+		).toBe("highlight.memo.open");
+		expect(container.textContent).not.toContain("highlight.memo.sidePanelHint");
+	});
+	it("휴지통의 연결된 메모는 복원 경로를 유지한다", async () => {
+		await renderQuote(null, {
+			link: {
+				memo_id: 42,
+				memo: { id: 42, memo: "연결된 내용", deleted_at: "2026-10-11" },
+			} as HighlightMemoLink,
+		});
+		expect(
+			container.querySelector('a[href="/ko/memos/trash"]')?.textContent,
+		).toBe("highlight.memo.restore");
+		expect(container.textContent).not.toContain("highlight.memo.sidePanelHint");
+	});
 	it("기존 메모는 클릭하여 수정하고 저장할 수 있다", async () => {
 		await renderQuote("기존 메모");
 		const button = container.querySelector("button");

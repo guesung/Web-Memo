@@ -439,6 +439,12 @@
   note: "운영 프로브의 대상 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 운영 도메인을 본다. 등록하지 않는다"
   required: false
 
+- name: PLAYWRIGHT_BASE_URL
+  kind: platform
+  consumers: [e2e/tests/fixtures/web.ts, e2e/tests/fixtures/extension.ts]
+  note: "독립 QA 서버의 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 localhost:3000을 본다. 확장 QA 빌드의 WEB_URL과 맞추며 외부 서비스에 등록하지 않는다"
+  required: false
+
 - name: PW_CHROMIUM_ATTACH_TO_OTHER
   kind: platform
   consumers: [e2e/tests/fixtures/extension.ts]

@@ -2,9 +2,17 @@
 
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { useQuery } from "@tanstack/react-query";
 import type { HighlightColor } from "@web-memo/shared/constants";
-import { useDebounce } from "@web-memo/shared/hooks";
+import {
+	useDebounce,
+	useHighlightMemoLinks,
+	useSupabaseClientQuery,
+	useSupabaseUserQuery,
+} from "@web-memo/shared/hooks";
 import { groupHighlightsByUrl } from "@web-memo/shared/modules/highlight";
+import { HighlightService } from "@web-memo/shared/utils";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { useHighlightCounts, useHighlightList } from "../_hooks";
 import { HighlightEmptyState } from "./HighlightEmptyState";
@@ -92,6 +100,45 @@ function HighlightList({
 	const rows = data?.pages.flat() ?? [];
 	const groups = groupHighlightsByUrl(rows);
 	const counts = useHighlightCounts(groups.map((group) => group.url));
+	const searchParams = useSearchParams();
+	const requestedId = Number(searchParams.get("highlightId"));
+	const targetHighlightId =
+		Number.isSafeInteger(requestedId) && requestedId > 0
+			? requestedId
+			: undefined;
+	const { data: client } = useSupabaseClientQuery();
+	const { user } = useSupabaseUserQuery();
+	const userId = user.data.user?.id;
+	const target = useQuery({
+		queryKey: ["highlights", "target", userId, targetHighlightId],
+		enabled: !!targetHighlightId && !!userId,
+		queryFn: async () => {
+			if (!targetHighlightId || !userId)
+				throw new Error("Missing highlight identity");
+			const { data, error } = await new HighlightService(
+				client,
+			).getHighlightById({ id: targetHighlightId, userId });
+			if (error) throw error;
+			return data;
+		},
+	});
+	const targetRow = target.data;
+	const separateTarget =
+		targetRow && !rows.some((row) => row.id === targetRow.id)
+			? targetRow
+			: undefined;
+	const visibleGroups = separateTarget
+		? [...groupHighlightsByUrl([separateTarget]), ...groups]
+		: groups;
+	const links = useHighlightMemoLinks([
+		...rows.map((row) => row.id),
+		...(separateTarget ? [separateTarget.id] : []),
+	]);
+	const linksByHighlight = new Map(
+		(links.data ?? []).flatMap((link) =>
+			link.highlight_id === null ? [] : [[link.highlight_id, link] as const],
+		),
+	);
 	const isFiltering = searchQuery.length > 0 || selectedColor !== undefined;
 
 	if (isPending) return <HighlightListSkeleton />;
@@ -109,7 +156,7 @@ function HighlightList({
 		);
 	}
 
-	if (rows.length === 0) {
+	if (rows.length === 0 && !separateTarget) {
 		return (
 			<>
 				{isRefetchError && (
@@ -132,6 +179,9 @@ function HighlightList({
 
 	return (
 		<div className="flex flex-col gap-4">
+			{target.isError && (
+				<HighlightLoadError lng={lng} onRetry={() => void target.refetch()} />
+			)}
 			{isRefetchError && (
 				<HighlightLoadError
 					lng={lng}
@@ -141,14 +191,21 @@ function HighlightList({
 					}}
 				/>
 			)}
-			{groups.map((group) => (
-				<HighlightGroupCard
-					key={group.url}
-					group={group}
-					lng={lng}
-					count={counts.get(group.url) ?? 0}
-				/>
-			))}
+			<div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,300px),300px))] justify-center gap-4">
+				{visibleGroups.map((group) => (
+					<HighlightGroupCard
+						key={group.url}
+						group={group}
+						lng={lng}
+						count={counts.get(group.url) ?? 0}
+						links={linksByHighlight}
+						isLinkLoading={links.isPending}
+						isLinkError={links.isError}
+						onRetryLinks={() => void links.refetch()}
+						targetHighlightId={targetHighlightId}
+					/>
+				))}
+			</div>
 
 			{isFetchNextPageError ? (
 				<HighlightLoadError

@@ -5,6 +5,7 @@ import useTranslation from "@src/modules/i18n/util.client";
 import { useQuery } from "@tanstack/react-query";
 import {
 	memoQueryOptions,
+	useHighlightMemoLinks,
 	useSettingQuery,
 	useSupabaseClientQuery,
 } from "@web-memo/shared/hooks";
@@ -25,6 +26,7 @@ import { useLayoutEffect, useRef } from "react";
 import { useWatch } from "react-hook-form";
 import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
+import { MemoSourceQuote } from "../MemoView/MemoSourceQuote";
 import { MemoDialogHighlights } from "./MemoDialogHighlights";
 import SaveStatusIndicator from "./SaveStatusIndicator";
 import { useMemoDialogEditor } from "./useMemoDialogEditor";
@@ -94,6 +96,8 @@ export default function MemoDialog({
 function MemoDialogContent({ lng, memo, latestMemo, onClose }: ContentProps) {
 	const { t } = useTranslation(lng);
 	const { showImpression, showActionItem } = useSettingQuery();
+	const sources = useHighlightMemoLinks([memo.id], "memo");
+	const source = sources.data?.[0];
 	const { form, saveStatus, markEdited, changeTitle, flushDebounce } =
 		useMemoDialogEditor({ memo, latestMemo });
 	const { register, watch } = form;
@@ -148,6 +152,22 @@ function MemoDialogContent({ lng, memo, latestMemo, onClose }: ContentProps) {
 							className="pr-12"
 						/>
 						<CardContent className="space-y-4 px-5 py-4">
+							{source && <MemoSourceQuote lng={lng} source={source} />}
+							{sources.isError && (
+								<div
+									role="alert"
+									className="flex items-center gap-2 text-xs text-destructive"
+								>
+									<span>{t("highlight.memo.loadError")}</span>
+									<button
+										type="button"
+										onClick={() => void sources.refetch()}
+										className="underline"
+									>
+										{t("error.500.retry")}
+									</button>
+								</div>
+							)}
 							<Textarea
 								{...memoField}
 								ref={(element) => {
@@ -203,7 +223,11 @@ function MemoDialogContent({ lng, memo, latestMemo, onClose }: ContentProps) {
 									/>
 								</div>
 							)}
-							<MemoDialogHighlights lng={lng} url={memo.url} />
+							<MemoDialogHighlights
+								lng={lng}
+								url={memo.url}
+								omitHighlightId={source?.highlight_id}
+							/>
 							<div className="flex h-4 items-center">
 								<SaveStatusIndicator status={saveStatus} lng={lng} />
 							</div>

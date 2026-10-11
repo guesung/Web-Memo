@@ -70,6 +70,7 @@ export type TInstallClickPosition =
  * 여기에 멤버를 추가하고 EVENT_CATEGORY에도 분류를 넣어야 합니다.
  */
 export type TAnalyticsEvent =
+	| { name: "highlight_source_jump" }
 	| { name: "side_panel_open" }
 	| { name: "page_view"; params: { page_title: string; page_location: string } }
 	| { name: "memo_write"; params: { fields: string } }
@@ -85,7 +86,10 @@ export type TAnalyticsEvent =
 	| { name: "highlight_note_update" }
 	| { name: "login"; params: { method: string } }
 	| { name: "memo_search"; params: { query_length: number } }
-	| { name: "memo_open"; params: { has_search_query: boolean } }
+	| {
+			name: "memo_open";
+			params: { has_search_query: boolean; source?: "highlight" };
+	  }
 	| { name: "memo_source_open" }
 	| { name: "memo_restore"; params: { memo_count: number } }
 	| { name: "memo_delete_permanently"; params: { memo_count: number } }
@@ -170,7 +174,7 @@ export type TAnalyticsEvent =
 	| { name: "guide_finish" }
 	| { name: "extension_setting_change"; params: { keys: string } }
 	| { name: "guide_step"; params: { step_name: string } }
-	| { name: "memo_first_write" }
+	| { name: "memo_first_write"; params?: { source: "highlight" } }
 	| { name: "export_run"; params: { format: ExportFormat } }
 	| { name: "search_no_result" }
 	| {
@@ -255,6 +259,7 @@ export type TAnalyticsEventName = TAnalyticsEvent["name"];
  * @description Record로 선언해 이벤트를 추가하고 여기에 넣지 않으면 컴파일이 실패하게 합니다.
  */
 export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
+	highlight_source_jump: "core_action",
 	side_panel_open: "engagement",
 	page_view: "engagement",
 	memo_write: "core_action",

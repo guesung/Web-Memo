@@ -515,12 +515,6 @@
 	"past_memo_open": {
 		"message": "열기"
 	},
-	"past_memo_open_memo": {
-		"message": "메모 열기"
-	},
-	"past_memo_open_site": {
-		"message": "웹사이트로 이동"
-	},
 	"past_memo_dismiss": {
 		"message": "무시"
 	},
@@ -571,13 +565,43 @@
 		"message": "AI 기능"
 	},
 	"ai_features_description": {
-		"message": "메모만 쓰고 싶다면 꺼 두세요. 사이드 패널에서 해당 탭이 사라집니다."
+		"message": "AI 기능의 사용 여부를 설정합니다."
 	},
 	"summary_enabled_setting": {
-		"message": "페이지 요약 사용"
+		"message": "요약 기능 활성화"
 	},
 	"ai_chat_enabled_setting": {
 		"message": "AI 채팅 사용"
+	},
+	"summary_show_label": {
+		"message": "요약 보기"
+	},
+	"summary_hide_label": {
+		"message": "요약 접기"
+	},
+	"summary_page_read_failed_message": {
+		"message": "페이지 내용을 읽지 못했어요. 페이지를 새로고침한 뒤 다시 시도해 주세요."
+	},
+	"summary_unavailable_message": {
+		"message": "이 페이지에서는 요약할 수 없어요"
+	},
+	"summary_page_loading_message": {
+		"message": "페이지를 확인하고 있어요"
+	},
+	"summary_retry_label": {
+		"message": "다시 요약하기"
+	},
+	"summary_login_message": {
+		"message": "요약하려면 먼저 로그인해 주세요"
+	},
+	"summary_panel_hint": {
+		"message": "사이드 패널에 ‘요약 보기’를 표시해요."
+	},
+	"past_memo_open_memo": {
+		"message": "메모 열기"
+	},
+	"past_memo_open_site": {
+		"message": "웹사이트로 이동"
 	},
 	"past_memo_view_back": {
 		"message": "이 페이지 메모로 돌아가기"

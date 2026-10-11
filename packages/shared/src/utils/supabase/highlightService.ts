@@ -180,7 +180,6 @@ export class HighlightService {
 	getHighlightCounts = async (urls: string[]) =>
 		this.supabaseClient
 			.schema(SUPABASE.schema.memo)
-			// @ts-expect-error RPC function types not generated in schema
 			.rpc("get_highlight_counts", { target_urls: urls });
 
 	/** 키가 채워진 행과 기존 빈 키 행을 같은 조회에서 집계한다. */

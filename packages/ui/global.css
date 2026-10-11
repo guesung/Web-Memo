@@ -18,6 +18,8 @@
 		--muted-foreground: 0 0% 39%;
 		--accent: 0 0% 93%;
 		--accent-foreground: 0 0% 4%;
+		--highlight-yellow: 51.54 97.5% 84.31%;
+		--highlight-yellow-foreground: 46 57.69% 10.2%;
 		--destructive: 0 72.2222% 50.5882%;
 		--destructive-foreground: 0 0% 99%;
 		--border: 0 0% 89%;
@@ -77,6 +79,8 @@
 		--muted-foreground: 0 0% 53%;
 		--accent: 0 0% 17%;
 		--accent-foreground: 0 0% 95%;
+		--highlight-yellow: 49.2 54.35% 18.04%;
+		--highlight-yellow-foreground: 47.8 100% 88.43%;
 		--destructive: 0 84.2365% 60.1961%;
 		--destructive-foreground: 0 0% 95%;
 		--border: 0 0% 20%;

@@ -2,14 +2,16 @@
 
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { Button } from "@web-memo/ui";
 import { Bookmark } from "lucide-react";
 
 interface FavoriteEmptyStateProps {
 	lng: Language;
+	onAdd: () => void;
 }
 
-/** 서버에 저장된 즐겨찾기가 없을 때 앱에서 추가하는 방법을 안내한다. */
-export function FavoriteEmptyState({ lng }: FavoriteEmptyStateProps) {
+/** 서버에 저장된 즐겨찾기가 없을 때 앱에서 추가하거나 직접 추가하도록 안내한다. */
+export function FavoriteEmptyState({ lng, onAdd }: FavoriteEmptyStateProps) {
 	const { t } = useTranslation(lng);
 
 	return (
@@ -21,6 +23,9 @@ export function FavoriteEmptyState({ lng }: FavoriteEmptyStateProps) {
 			<p className="text-xs text-muted-foreground">
 				{t("favorite.empty.description")}
 			</p>
+			<Button type="button" onClick={onAdd}>
+				{t("favorite.empty.add")}
+			</Button>
 		</div>
 	);
 }

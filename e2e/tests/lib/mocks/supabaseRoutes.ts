@@ -3,6 +3,7 @@ import { SUPABASE } from "@web-memo/shared/constants";
 import type { Database } from "@web-memo/shared/types";
 import {
 	createMockCategory,
+	createMockFavorite,
 	createMockHighlight,
 	createMockMemo,
 } from "./mockData";
@@ -755,8 +756,53 @@ const handleFavoriteGet = async ({ route, store }: HandlerParams) => {
 	});
 };
 
+/** 같은 사용자 안에서 page_key가 겹치면 DB의 유니크 위반(409)과 같은 응답을 준다. */
+const fulfillFavoriteDuplicate = (route: Route) =>
+	route.fulfill({
+		status: 409,
+		contentType: "application/json",
+		body: JSON.stringify({
+			code: "23505",
+			message:
+				'duplicate key value violates unique constraint "favorite_user_page_key_unique"',
+		}),
+	});
+
+const hasFavoritePageKey = (
+	store: MockSupabaseStore,
+	pageKey: string,
+	exceptId?: number,
+) =>
+	store
+		.getAllFavorites()
+		.some(
+			(favorite) => favorite.page_key === pageKey && favorite.id !== exceptId,
+		);
+
 /**
- * 즐겨찾기 제목 수정. `id=eq.N`으로 대상을 고른다.
+ * 즐겨찾기 추가. 한 건 insert 후 만든 행을 돌려준다.
+ * @description `.select().single()` 요청은 배열이 아니라 객체 한 건을 기대한다.
+ */
+const handleFavoritePost = async ({ route, store }: HandlerParams) => {
+	const [row] = parseRequestRows<FavoriteRow>(route);
+
+	if (row.page_key && hasFavoritePageKey(store, row.page_key)) {
+		await fulfillFavoriteDuplicate(route);
+		return;
+	}
+
+	const created = store.addFavorite(
+		createMockFavorite({ created_at: new Date().toISOString(), ...row }),
+	);
+	await route.fulfill({
+		status: 201,
+		contentType: "application/json",
+		body: JSON.stringify(created),
+	});
+};
+
+/**
+ * 즐겨찾기 수정. `id=eq.N`으로 대상을 고르고 요청 본문(url·page_key·title 등)을 그대로 반영한다.
  * @description `.single()` 요청은 배열이 아니라 객체 한 건을 기대한다.
  */
 const handleFavoritePatch = async ({ route, url, store }: HandlerParams) => {
@@ -766,7 +812,13 @@ const handleFavoritePatch = async ({ route, url, store }: HandlerParams) => {
 		return;
 	}
 
-	const updated = store.updateFavorite(id, route.request().postDataJSON());
+	const updates = route.request().postDataJSON();
+	if (updates.page_key && hasFavoritePageKey(store, updates.page_key, id)) {
+		await fulfillFavoriteDuplicate(route);
+		return;
+	}
+
+	const updated = store.updateFavorite(id, updates);
 	await route.fulfill({
 		status: updated ? 200 : 406,
 		contentType: "application/json",
@@ -1224,6 +1276,7 @@ export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
 			store,
 			handlers: {
 				GET: handleFavoriteGet,
+				POST: handleFavoritePost,
 				PATCH: handleFavoritePatch,
 				DELETE: handleFavoriteDelete,
 			},

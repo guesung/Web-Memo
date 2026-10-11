@@ -82,6 +82,8 @@
 - 기존 분석 정책을 따라 `event_category: engagement`, `engagement_time_msec: 100`, 서버 시각의 새 `session_id`를 넣고 staging에서만 `debug_mode`를 켭니다. 기존 확장 세션을 복원한 값이나 실제 참여 시간을 측정한 값은 아닙니다.
 - 기존 확장의 UUID `client_id`를 유지합니다. GA 검증 API의 기본 `RELAXED` 모드에서는 오류가 없었지만, `ENFORCE_RECOMMENDATIONS` 모드는 숫자.숫자 형식을 요구합니다. 엄격 모드로 전환할 때는 기존 확장 분석과 함께 식별자 정책을 검토해야 합니다.
 
+| highlight_panel_open_result | 하이라이트 카드 상단 원문 링크의 일반 클릭 후 외부 패널 요청이 완료/실패할 때 | `is_success`: boolean | 새 진입점의 패널 열기 요청이 얼마나 성공하는가 (API 완료이며 메모 작성/열람을 뜻하지 않음) | DB-1180 |
+
 ## 갱신 규칙
 
 - 이벤트를 추가·수정·제거하면 이 표를 같은 PR에서 고칩니다. 제거된 이벤트는 행을 지우고, 무엇을 지웠는지는 커밋이 기억합니다.

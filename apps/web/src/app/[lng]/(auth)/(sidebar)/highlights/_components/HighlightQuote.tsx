@@ -135,11 +135,6 @@ export const HighlightQuote = ({
 						</p>
 					</div>
 				)}
-				{link?.memo?.deleted_at && (
-					<p className="mt-2 text-xs text-muted-foreground">
-						{t("highlight.memo.trashed")}
-					</p>
-				)}
 				<div className="mt-3 flex flex-wrap items-center gap-2">
 					{isLinkError ? (
 						<button
@@ -167,23 +162,18 @@ export const HighlightQuote = ({
 										params: { source: "highlight", has_search_query: false },
 									});
 							}}
-							className="rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground"
+							className={
+								link.memo.deleted_at
+									? "text-xs text-muted-foreground underline"
+									: "rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground"
+							}
 						>
 							{t(
 								link.memo.deleted_at
-									? "highlight.memo.restore"
+									? "highlight.memo.viewTrash"
 									: "highlight.memo.open",
 							)}
 						</Link>
-					) : sourceUrl !== "#" ? (
-						<a
-							href={sourceUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="rounded-md border border-border px-2 py-1 text-xs hover:bg-accent"
-						>
-							{t("highlight.memo.sidePanel")}
-						</a>
 					) : null}
 					{sourceUrl !== "#" && (
 						<a
@@ -196,11 +186,6 @@ export const HighlightQuote = ({
 						</a>
 					)}
 				</div>
-				{!isLinkLoading && !isLinkError && !link?.memo && sourceUrl !== "#" && (
-					<p className="mt-2 text-xs text-muted-foreground">
-						{t("highlight.memo.sidePanelHint")}
-					</p>
-				)}
 			</div>
 		</li>
 	);

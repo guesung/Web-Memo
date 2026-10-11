@@ -4,6 +4,7 @@ import { expect, test } from "../fixtures/web";
 import { gotoSafely, LANGUAGE } from "../lib";
 import {
 	createMockHighlight,
+	createMockMemo,
 	MockSupabaseStore,
 	resetMockIds,
 	setupSupabaseMocks,
@@ -48,6 +49,12 @@ async function gotoHighlights(page: Page) {
 	});
 }
 
+async function scrollToNextPage(page: Page) {
+	await page.evaluate(() =>
+		window.scrollTo(0, document.documentElement.scrollHeight),
+	);
+}
+
 test("검색 결과가 없을 때 필터를 초기화하면 기존 하이라이트가 다시 보인다.", async ({
 	page,
 }) => {
@@ -59,6 +66,35 @@ test("검색 결과가 없을 때 필터를 초기화하면 기존 하이라이�
 	await page.getByRole("button", { name: "Clear filters" }).click();
 	await expect(page.getByLabel("Search text or notes")).toHaveValue("");
 	await expect(page.getByText(firstQuote)).toBeVisible();
+});
+
+test("같은 URL에 자동 생성된 빈 메모도 그리드와 상세에서 하이라이트를 보여준다.", async ({
+	page,
+}) => {
+	resetMockIds();
+	const store = new MockSupabaseStore();
+	const highlight = store.addHighlight(
+		createMockHighlight({ exact_text: "Quote on blank memo page" }),
+	);
+	store.addMemo(
+		createMockMemo({ url: highlight.url, title: "Auto blank memo", memo: "" }),
+	);
+	await setupSupabaseMocks(page, store);
+	await gotoSafely({
+		page,
+		url: `${LANGUAGE}${PATHS.memos}`,
+		regexp: new RegExp(PATHS.memos),
+	});
+	const card = page.locator(".memo-item", { hasText: "Auto blank memo" });
+	await expect(card).toBeVisible();
+	await expect(card.getByText("Highlights (1)")).toBeVisible();
+	await card.click();
+	const dialog = page.getByRole("dialog");
+	await expect(dialog.getByTestId("memo-textarea")).toHaveValue("");
+	await dialog
+		.getByRole("button", { name: "Other highlights on this page (1)" })
+		.click();
+	await expect(dialog.getByText(highlight.exact_text)).toBeVisible();
 });
 
 test("초기 조회를 기다릴 때 빈 상태 대신 목록 스켈레톤을 보여준다.", async ({
@@ -118,8 +154,10 @@ test("추가 페이지가 실패해도 기존 인용을 유지하고 재시도�
 }) => {
 	await setupHighlights(page, 25);
 	let shouldFail = true;
+	let nextPageRequests = 0;
 	await page.route(`${SUPABASE.url}/rest/v1/highlight**`, async (route) => {
 		if (!isHighlightGet(route) || !isNextPage(route)) return route.fallback();
+		nextPageRequests += 1;
 		if (!shouldFail) return route.fallback();
 		await route.fulfill({
 			status: 503,
@@ -129,17 +167,22 @@ test("추가 페이지가 실패해도 기존 인용을 유지하고 재시도�
 	});
 	await gotoHighlights(page);
 	await expect(page.getByText(firstQuote)).toBeVisible();
-	await page.getByRole("button", { name: "Load more" }).click();
+	await scrollToNextPage(page);
 	await expect(page.getByText(firstQuote)).toBeVisible();
 	const retry = page.getByRole("button", { name: "Try again" });
 	await expect(retry).toBeVisible({ timeout: 20000 });
+	expect(nextPageRequests).toBe(1);
+	await page.waitForTimeout(2500);
+	expect(nextPageRequests).toBe(1);
+	await expect(page.getByText(firstQuote)).toBeVisible();
 	shouldFail = false;
 	await retry.click();
 	await expect(page.getByText(laterQuote)).toBeVisible();
 	await expect(page.getByText(firstQuote)).toHaveCount(1);
+	expect(nextPageRequests).toBe(2);
 });
 
-test("추가 페이지 요청 중에는 더 보기 동작을 중복 실행하지 않는다.", async ({
+test("추가 페이지 요청 중에는 스크롤해도 중복 실행하지 않는다.", async ({
 	page,
 }) => {
 	await setupHighlights(page, 25);
@@ -162,11 +205,9 @@ test("추가 페이지 요청 중에는 더 보기 동작을 중복 실행하지
 	try {
 		await gotoHighlights(page);
 		await expect(page.getByText(firstQuote)).toBeVisible();
-		await page.getByRole("button", { name: "Load more" }).click();
+		await scrollToNextPage(page);
 		await pageReceived;
-		await expect(
-			page.getByRole("button", { name: "Loading..." }),
-		).toBeDisabled();
+		await scrollToNextPage(page);
 		expect(nextPageRequests).toBe(1);
 		await expect(page.getByText(firstQuote)).toBeVisible();
 	} finally {
@@ -174,4 +215,79 @@ test("추가 페이지 요청 중에는 더 보기 동작을 중복 실행하지
 	}
 	await expect(page.getByText(laterQuote)).toBeVisible();
 	expect(nextPageRequests).toBe(1);
+});
+
+test("같은 URL의 행만 추가되어 카드가 커져도 다음 페이지를 이어서 불러오고 필터를 초기화한다.", async ({
+	page,
+}) => {
+	await setupHighlights(page, 45);
+	let releaseNextPage: (() => void) | undefined;
+	const nextPageGate = new Promise<void>((resolve) => {
+		releaseNextPage = resolve;
+	});
+	let nextPageRequests = 0;
+	await page.route(`${SUPABASE.url}/rest/v1/highlight**`, async (route) => {
+		if (!isHighlightGet(route) || !isNextPage(route)) return route.fallback();
+		nextPageRequests += 1;
+		if (nextPageRequests === 1) await nextPageGate;
+		await route.fallback();
+	});
+	const cards = page.locator("#highlight-grid article");
+	let firstHeight = 0;
+	try {
+		await gotoHighlights(page);
+		await expect(page.getByText(firstQuote)).toBeVisible();
+		await expect(page.getByText("Highlight quote 20")).toBeAttached();
+		await expect(cards).toHaveCount(1);
+		firstHeight = await cards
+			.first()
+			.evaluate((card) => card.getBoundingClientRect().height);
+	} finally {
+		releaseNextPage?.();
+	}
+
+	await scrollToNextPage(page);
+	await expect(page.getByText(laterQuote)).toBeAttached();
+	await expect(cards).toHaveCount(1);
+	await expect
+		.poll(() =>
+			cards.first().evaluate((card) => card.getBoundingClientRect().height),
+		)
+		.toBeGreaterThan(firstHeight);
+
+	await scrollToNextPage(page);
+	await expect(page.getByText("Highlight quote 41")).toBeAttached();
+	await expect(cards).toHaveCount(1);
+	expect(nextPageRequests).toBe(2);
+
+	await page.getByLabel("Search text or notes").fill("Highlight quote 41");
+	await expect(page.getByText(firstQuote)).toHaveCount(0);
+	await expect(page.getByText("Highlight quote 41")).toBeVisible();
+	await page.getByLabel("Search text or notes").fill("");
+	await expect(page.getByText(firstQuote)).toBeVisible();
+});
+
+test("높이가 다른 URL 카드를 Masonry 열에 배치한다.", async ({ page }) => {
+	resetMockIds();
+	const store = new MockSupabaseStore();
+	for (let group = 1; group <= 3; group++) {
+		for (let quote = 1; quote <= group * 2; quote++) {
+			store.addHighlight(
+				createMockHighlight({
+					url: `https://example.com/page-${group}`,
+					exact_text: `Card ${group} quote ${quote}`,
+				}),
+			);
+		}
+	}
+	await setupSupabaseMocks(page, store);
+	await page.setViewportSize({ width: 1600, height: 900 });
+	await gotoHighlights(page);
+	const cards = page.locator("#highlight-grid article");
+	await expect(cards).toHaveCount(3);
+	const boxes = await cards.evaluateAll((elements) =>
+		elements.map((element) => element.getBoundingClientRect().toJSON()),
+	);
+	expect(new Set(boxes.map(({ x }) => x)).size).toBeGreaterThan(1);
+	expect(new Set(boxes.map(({ height }) => height)).size).toBeGreaterThan(1);
 });

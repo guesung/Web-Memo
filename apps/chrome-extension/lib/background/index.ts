@@ -7,6 +7,7 @@ import {
 } from "./highlightMemo";
 import { handleGetLoginStatus } from "./getLoginStatus";
 import { handleFocusHighlight, notifyHighlightChange } from "./highlightPanel";
+import { handleOpenSidePanelFromWeb } from "./openSidePanelFromWeb";
 import "webextension-polyfill";
 
 import { CONFIG } from "@web-memo/env";
@@ -138,6 +139,8 @@ bridge.handle.OPEN_SIDE_PANEL((_, sender, sendResponse) => {
 		return false;
 	}
 });
+
+bridge.handle.OPEN_SIDE_PANEL_FROM_WEB(handleOpenSidePanelFromWeb);
 
 bridge.handle.FOCUS_HIGHLIGHT(async (payload, sender, sendResponse) => {
 	sendResponse(await handleFocusHighlight(payload, sender));

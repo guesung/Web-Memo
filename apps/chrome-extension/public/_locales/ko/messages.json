@@ -596,5 +596,23 @@
 	},
 	"summary_panel_hint": {
 		"message": "사이드 패널에 ‘요약 보기’를 표시해요."
+	},
+	"past_memo_open_memo": {
+		"message": "메모 열기"
+	},
+	"past_memo_open_site": {
+		"message": "웹사이트로 이동"
+	},
+	"past_memo_view_back": {
+		"message": "이 페이지 메모로 돌아가기"
+	},
+	"past_memo_view_readonly": {
+		"message": "읽기 전용"
+	},
+	"past_memo_view_open_original": {
+		"message": "원래 페이지 열기"
+	},
+	"past_memo_view_load_failed": {
+		"message": "메모를 불러오지 못했어요. 삭제됐거나 일시적인 문제일 수 있어요."
 	}
 }

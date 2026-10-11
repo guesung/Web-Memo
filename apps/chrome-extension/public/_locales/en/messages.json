@@ -596,5 +596,23 @@
 	},
 	"summary_panel_hint": {
 		"message": "Show ‘View summary’ in the side panel."
+	},
+	"past_memo_open_memo": {
+		"message": "Open memo"
+	},
+	"past_memo_open_site": {
+		"message": "Go to website"
+	},
+	"past_memo_view_back": {
+		"message": "Back to this page's memo"
+	},
+	"past_memo_view_readonly": {
+		"message": "Read-only"
+	},
+	"past_memo_view_open_original": {
+		"message": "Open original page"
+	},
+	"past_memo_view_load_failed": {
+		"message": "Couldn't load this memo. It may have been deleted, or there may be a temporary problem."
 	}
 }

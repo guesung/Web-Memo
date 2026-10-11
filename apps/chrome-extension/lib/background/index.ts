@@ -15,6 +15,7 @@ import { HighlightService, normalizeUrl } from "@web-memo/shared/utils";
 import { getSupabaseClient, I18n, Tab } from "@web-memo/shared/utils/extension";
 import { initSentry } from "@web-memo/shared/utils";
 import { analytics } from "@web-memo/shared/modules/analytics";
+import { registerUninstallUrl } from "./registerUninstallUrl";
 
 void initSentry();
 
@@ -45,9 +46,8 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 	}
 });
 
-// 확장을 삭제하면 브라우저가 이 주소를 새 탭으로 엽니다. 삭제 사유 설문 페이지입니다.
-// 언어 접두사는 웹 미들웨어가 붙여 줍니다. 서비스 워커가 뜰 때마다 다시 등록해 누락을 막습니다.
-chrome.runtime.setUninstallURL(`${CONFIG.webUrl}/uninstall`);
+// 서비스 워커가 뜰 때마다 등록해 누락을 막습니다. 실패해도 다른 초기화는 계속합니다.
+void registerUninstallUrl();
 
 /**
  * 설치 직후 웹의 공개 가이드를 새 탭으로 엽니다.

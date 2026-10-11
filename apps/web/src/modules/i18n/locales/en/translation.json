@@ -470,6 +470,8 @@
 		"category": "Category",
 		"addCategory": "Add category",
 		"deleteCategory": "Delete category",
+		"renameCategory": "Rename {{name}}",
+		"deleteCategoryNamed": "Delete {{name}}",
 		"defaultCategoryName": "New category",
 		"export": "Export",
 		"exportMemos": "Export memos",

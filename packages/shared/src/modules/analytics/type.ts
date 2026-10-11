@@ -48,6 +48,9 @@ export type TSummaryRunSource = "empty_state" | "tab_trigger" | "disclosure";
  */
 export type TCategoryChangeSource = "button" | "hash" | "ai";
 
+/** 카테고리 추천을 수락한 방식. 클릭과 Cmd/Ctrl+Enter 단축키를 구분합니다. */
+export type TCategorySuggestionTrigger = "click" | "shortcut";
+
 /**
  * 설치 버튼이 한 페이지 안에서 놓인 자리.
  *
@@ -99,6 +102,7 @@ export type TAnalyticsEvent =
 	| { name: "view_change"; params: { view: string } }
 	| { name: "logout" }
 	| { name: "extension_installed" }
+	| { name: "extension_uninstall" }
 	| { name: "login_start"; params: { method: string } }
 	| { name: "side_panel_login_click" }
 	| {
@@ -131,7 +135,11 @@ export type TAnalyticsEvent =
 	  }
 	| {
 			name: "category_suggestion_apply";
-			params: { is_new_category: boolean; source: "jev" | "llm" };
+			params: {
+				is_new_category: boolean;
+				source: "jev" | "llm";
+				trigger: TCategorySuggestionTrigger;
+			};
 	  }
 	| {
 			name: "category_suggestion_dismiss";
@@ -277,6 +285,7 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	view_change: "engagement",
 	logout: "engagement",
 	extension_installed: "engagement",
+	extension_uninstall: "engagement",
 	login_start: "engagement",
 	side_panel_login_click: "engagement",
 	header_login_click: "engagement",

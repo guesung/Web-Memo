@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { MemoSupabaseClient } from "../types";
 import { HighlightService, MemoService } from "./Supabase";
+
+vi.mock("../modules/analytics", () => ({
+	analytics: { trackEvent: vi.fn() },
+}));
 
 /** 가짜 빌더가 기록한 호출 인자 */
 interface IFRecordedCalls {

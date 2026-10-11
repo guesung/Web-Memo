@@ -20,26 +20,30 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `development` 빌드는 커스텀 이벤트를 보내지 않습니다. `staging`은 보냅니다 — 테스트 서버에서
 도착을 눈으로 확인해야 하기 때문이며, 그 트래픽은 `build_env` 차원으로 걸러 냅니다.
 
-## 이벤트 68종
+## 이벤트 69종
 
 `core_action`은 사용자가 이 서비스를 쓰는 행위, `engagement`는 그 주변의 이동·설정입니다.
 분류는 `EVENT_CATEGORY`가 `Record`로 강제하므로 이벤트를 추가하고 분류를 빠뜨리면 컴파일이
 실패합니다.
 
-### core_action (32종)
+### core_action (33종)
 
 `memo_write`(fields) · `memo_delete`(memo_count) · `memo_restore`(memo_count) ·
-`memo_delete_permanently`(memo_count) · `memo_open`(has_search_query) · `memo_source_open` ·
+`memo_delete_permanently`(memo_count) · `memo_open`(has_search_query, source?) · `memo_source_open` ·
 `memo_search`(query_length) · `memo_status_toggle`(status, enabled) · `memo_category_change`(source) ·
-`highlight_note_update` · `summary_run`(source) · `summary_complete`(duration_msec) ·
+`highlight_note_update` · `highlight_source_jump` · `summary_run`(source) · `summary_complete`(duration_msec) ·
 `summary_fail`(reason) · `chat_message_send` · `chat_fail`(reason) ·
 `youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category, source, trigger) ·
 `category_create` · `category_update` · `category_delete` ·
 `login`(method) · `sign_up`(method) · `feedback_submit` · `extension_install_click`(from, position) ·
-`memo_first_write` · `export_run`(format) · `highlight_create`(color, has_note) ·
+`memo_first_write`(source?) · `export_run`(format) · `highlight_create`(color, has_note) ·
 `past_memo_open`(kind, source) · `blog_subscription_change`(blog_id, active) ·
 `blog_article_open`(blog_id, sort) · `blog_article_memo_click`(blog_id, action) ·
 `blog_sync_resume_request`(blog_id, result)
+
+하이라이트에서 실제 메모를 생성하면 `memo_first_write`에 `source: highlight`를 보냅니다. 기존 연결을 반환하는 재시도는 제외합니다. 정상 연결 메모 상세를 열면 `memo_open`에 같은 source와 `has_search_query: false`를 보내며 휴지통 경로는 제외합니다. 인용문·메모 본문·URL·ID는 속성에 넣지 않습니다.
+
+현재 작성 동선은 페이지의 하이라이트를 사이드 패널에서 참고하는 방식입니다. 패널을 여는 동작은 메모 생성으로 기록하지 않습니다. 패널 인용을 선택해 원문 위치 검증과 스크롤에 성공한 경우에만 `highlight_source_jump`를 속성 없이 기록합니다. 기존 생성 RPC의 계측과 연결 메모 열기는 이전 연결 데이터와의 호환을 위해 유지합니다.
 
 ### engagement (36종)
 

@@ -1,0 +1,175 @@
+import { PATHS } from "@web-memo/shared/constants";
+import { expect, test } from "../fixtures/web";
+import { gotoSafely, LANGUAGE } from "../lib";
+import {
+	createMockHighlight,
+	createMockMemo,
+	MockSupabaseStore,
+	resetMockIds,
+	setupSupabaseMocks,
+} from "../lib/mocks";
+
+test.describe("하이라이트에서 메모로 이동", () => {
+	let store: MockSupabaseStore;
+
+	test.beforeEach(async ({ page }) => {
+		resetMockIds();
+		store = new MockSupabaseStore();
+		await setupSupabaseMocks(page, store);
+	});
+
+	test("URL 카드 그리드에서 연결된 메모를 열면 보존된 인용을 본다", async ({
+		page,
+	}) => {
+		const first = store.addHighlight(
+			createMockHighlight({
+				url: "https://example.com/one",
+				exact_text: "First saved sentence",
+				note: "Old comment",
+			}),
+		);
+		store.addHighlight(
+			createMockHighlight({
+				url: "https://example.com/two",
+				exact_text: "Second saved sentence",
+			}),
+		);
+		store.addHighlight(
+			createMockHighlight({
+				url: "https://example.com/three",
+				exact_text: "Third saved sentence",
+			}),
+		);
+		const memo = store.addMemo(
+			createMockMemo({ url: first.url, memo: "My own thought" }),
+		);
+		store.addHighlightMemoSource({
+			memo_id: memo.id,
+			highlight_id: first.id,
+			user_id: first.user_id,
+			exact_text: first.exact_text,
+			url: first.url,
+			prefix_text: first.prefix_text,
+			suffix_text: first.suffix_text,
+			text_position_start: first.text_position_start,
+			color: first.color,
+		});
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.highlights}`,
+			regexp: new RegExp(PATHS.highlights),
+		});
+		const cards = page.locator("main article");
+		await expect(cards).toHaveCount(3);
+		await expect(cards.first()).toHaveCSS("width", "300px");
+		const quote = page.locator(`#highlight-${first.id}`);
+		await expect(
+			quote.getByRole("button", { name: "Old comment" }),
+		).toBeVisible();
+		await quote.getByRole("link", { name: "Open memo" }).click();
+		await expect(page).toHaveURL(new RegExp(`/memos\\?id=${memo.id}`));
+		const dialog = page.getByRole("dialog");
+		await expect(dialog.getByText("First saved sentence")).toBeVisible();
+		await expect(dialog.getByTestId("memo-textarea")).toHaveValue(
+			"My own thought",
+		);
+		await expect(
+			dialog.getByRole("link", { name: "View linked highlight" }),
+		).toHaveAttribute("href", new RegExp(`highlightId=${first.id}`));
+	});
+
+	test("미연결 문장은 원문에서 사이드 패널을 열도록 안내하고 메모를 생성하지 않는다", async ({
+		page,
+	}) => {
+		const highlight = store.addHighlight(
+			createMockHighlight({
+				url: "https://example.com/article",
+				exact_text: "Source quote",
+			}),
+		);
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.highlights}`,
+			regexp: new RegExp(PATHS.highlights),
+		});
+		const quote = page.locator(`#highlight-${highlight.id}`);
+		const action = quote.getByRole("link", { name: "Write in side panel" });
+		await expect(action).toHaveAttribute(
+			"href",
+			/^https:\/\/example\.com\/article#:~:text=Source%20quote$/,
+		);
+		await expect(
+			quote.getByText(
+				"On the source page, click the extension icon to open the side panel.",
+			),
+		).toBeVisible();
+		const popupPromise = page.waitForEvent("popup");
+		await action.click();
+		const popup = await popupPromise;
+		await expect(popup).toHaveURL(/https:\/\/example\.com\/article/);
+		await popup.close();
+		expect(store.getAllMemos()).toHaveLength(0);
+	});
+
+	test("휴지통으로 보낸 연결 메모는 복원 경로를 보여준다", async ({ page }) => {
+		const highlight = store.addHighlight(createMockHighlight());
+		const memo = store.addMemo(
+			createMockMemo({
+				url: highlight.url,
+				memo: "Preserved thought",
+				deleted_at: new Date().toISOString(),
+			}),
+		);
+		store.addHighlightMemoSource({
+			memo_id: memo.id,
+			highlight_id: highlight.id,
+			user_id: highlight.user_id,
+			exact_text: highlight.exact_text,
+			url: highlight.url,
+			prefix_text: highlight.prefix_text,
+			suffix_text: highlight.suffix_text,
+			text_position_start: highlight.text_position_start,
+			color: highlight.color,
+		});
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.highlights}`,
+			regexp: new RegExp(PATHS.highlights),
+		});
+		const quote = page.locator(`#highlight-${highlight.id}`);
+		await expect(quote.getByText("This memo is in trash.")).toBeVisible();
+		await expect(
+			quote.getByRole("link", { name: "Restore from trash" }),
+		).toHaveAttribute("href", `/${LANGUAGE}${PATHS.memosTrash}`);
+		await expect(
+			quote.getByRole("link", { name: "Write in side panel" }),
+		).toHaveCount(0);
+	});
+
+	test("URL만 같은 다른 메모는 직접 연결로 표시하지 않고 ID 이동은 필터와 별개로 찾는다", async ({
+		page,
+	}) => {
+		const highlight = store.addHighlight(
+			createMockHighlight({
+				url: "https://example.com/shared",
+				exact_text: "Owned quote",
+			}),
+		);
+		store.addMemo(
+			createMockMemo({ url: highlight.url, memo: "Unrelated memo" }),
+		);
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.highlights}?highlightId=${highlight.id}`,
+			regexp: new RegExp(PATHS.highlights),
+		});
+		await expect(page.locator(`#highlight-${highlight.id}`)).toBeFocused();
+		await expect(
+			page
+				.locator(`#highlight-${highlight.id}`)
+				.getByRole("link", { name: "Write in side panel" }),
+		).toBeVisible();
+		await page.getByRole("button", { name: "green" }).click();
+		await expect(page.locator(`#highlight-${highlight.id}`)).toBeVisible();
+	});
+});

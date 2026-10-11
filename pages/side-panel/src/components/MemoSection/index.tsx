@@ -31,6 +31,7 @@ import MemoForm from "./components/MemoForm";
 import { MemoFormSkeleton } from "./components/MemoForm/components";
 import { useMemoFieldRatios } from "./components/MemoForm/hooks/useMemoFieldResize";
 import MemoHeader from "./components/MemoHeader";
+import PageHighlights from "./components/PageHighlights";
 import PastMemoView from "./components/PastMemoView";
 import useMemoCandidatesQuery from "./hooks/useMemoCandidatesQuery";
 
@@ -114,12 +115,23 @@ export default function MemoSection({ memoHeight }: MemoSectionProps) {
 
 const MemoSectionContent = () => {
 	const { user } = useSupabaseUserQuery();
+	const { data: tab } = useTabQuery();
 
 	if (!user?.data.user) {
 		return <LoginSection />;
 	}
 
-	return <AuthenticatedMemoSectionContent />;
+	return (
+		<>
+			<PageHighlights
+				key={`${user.data.user.id}:${tab?.id}:${tab?.url ? getPageKey(tab.url) : ""}`}
+				userId={user.data.user.id}
+				tabId={tab?.id}
+				url={tab?.url ?? ""}
+			/>
+			<AuthenticatedMemoSectionContent />
+		</>
+	);
 };
 
 const AuthenticatedMemoSectionContent = () => {

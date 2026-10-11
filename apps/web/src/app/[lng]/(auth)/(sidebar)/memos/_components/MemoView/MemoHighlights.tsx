@@ -34,12 +34,16 @@ export const MemoHighlights = ({
 						className={`text-sm leading-6 whitespace-pre-wrap break-words${isPreview ? " line-clamp-2" : ""}`}
 					>
 						<mark
-							className="box-decoration-clone rounded-sm px-1 text-foreground"
-							style={{
-								backgroundColor:
-									HIGHLIGHT_COLOR_STYLE[highlight.color as HighlightColor]
-										.background,
-							}}
+							className={`box-decoration-clone rounded-sm px-1 ${highlight.color === "yellow" ? "bg-highlight-yellow text-highlight-yellow-foreground" : "text-foreground"}`}
+							style={
+								highlight.color === "yellow"
+									? undefined
+									: {
+											backgroundColor:
+												HIGHLIGHT_COLOR_STYLE[highlight.color as HighlightColor]
+													.background,
+										}
+							}
 						>
 							{highlight.exact_text}
 						</mark>

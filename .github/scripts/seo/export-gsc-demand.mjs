@@ -54,7 +54,8 @@ export const resolveDemandPeriod = (now = new Date()) => {
 	};
 };
 
-const fetchAllRows = async ({ accessToken, period, fetcher, sleep }) => {
+/** 주어진 차원으로 기간 전체 행을 최대 행 수 단위로 이어 받습니다. 행의 키는 차원 이름(query·page)으로 풀어 둡니다. */
+const fetchAllRows = async ({ accessToken, period, dimensions, fetcher, sleep }) => {
 	const rows = [];
 	for (let startRow = 0; ; startRow += GSC_ROW_LIMIT) {
 		const response = await requestGsc({
@@ -65,15 +66,16 @@ const fetchAllRows = async ({ accessToken, period, fetcher, sleep }) => {
 			body: {
 				startDate: period.startDate,
 				endDate: period.endDate,
-				dimensions: ["query", "page"],
+				dimensions,
 				rowLimit: GSC_ROW_LIMIT,
 				startRow,
 				dataState: "final",
 			},
 		});
 		const page = (response.rows ?? []).map((row) => ({
-			query: row.keys?.[0] ?? "",
-			page: row.keys?.[1] ?? "",
+			...Object.fromEntries(
+				dimensions.map((dimension, index) => [dimension, row.keys?.[index] ?? ""]),
+			),
 			clicks: row.clicks ?? 0,
 			impressions: row.impressions ?? 0,
 			ctr: row.ctr ?? 0,
@@ -231,7 +233,21 @@ export const collectGscDemand = async ({
 	}
 	const period = resolveDemandPeriod(now);
 	try {
-		const rows = await fetchAllRows({ accessToken, period, fetcher, sleep });
+		const rows = await fetchAllRows({
+			accessToken,
+			period,
+			dimensions: ["query", "page"],
+			fetcher,
+			sleep,
+		});
+		// query 차원이 들어간 조회는 익명화된 검색어 행을 빼고 돌려줍니다. 페이지 합계는 page 차원만으로 따로 받아야 콘솔과 맞습니다.
+		const pageRows = await fetchAllRows({
+			accessToken,
+			period,
+			dimensions: ["page"],
+			fetcher,
+			sleep,
+		});
 		const sitemaps = summarizeSitemaps(
 			await requestGsc({ url: SITEMAPS_URL, method: "GET", accessToken, fetcher, sleep }),
 		);
@@ -241,9 +257,10 @@ export const collectGscDemand = async ({
 			siteUrl: GSC_SITE_URL,
 			period,
 			rows,
+			pageRows,
 			summary: {
 				opportunities: summarizeOpportunities(rows),
-				publicPages: summarizePublicPages(rows),
+				publicPages: summarizePublicPages(pageRows),
 				sitemaps,
 			},
 		};
@@ -319,6 +336,8 @@ const createOpportunitySection = (opportunities) => {
 const createPublicPageSection = (groups) => [
 	"## 공개 페이지 성과",
 	"",
+	"page 차원만으로 조회한 합계입니다. 익명화된 검색어의 노출·클릭까지 포함해 Search Console 실적 화면과 같은 기준입니다.",
+	"",
 	"| 묶음·페이지 | 노출 | 클릭 | CTR | 평균 순위 |",
 	"|---|---|---|---|---|",
 	...groups.flatMap((group) => [
@@ -337,10 +356,11 @@ export const createDemandMarkdown = (report) => {
 	const header = [
 		"# Web Memo GSC 수요 리포트",
 		"",
-		`기간: ${period.startDate} ~ ${period.endDate} (${period.days}일치) · 수집 행 ${rows.length}개`,
+		`기간: ${period.startDate} ~ ${period.endDate} (${period.days}일치) · 검색어×페이지 행 ${rows.length}개 · 페이지 행 ${(report.pageRows ?? []).length}개`,
 		"",
 	];
-	if (rows.length === 0) {
+	// 검색어 행이 없어도 페이지 합계(익명화된 검색어 포함)가 있으면 데이터가 있는 것입니다.
+	if (rows.length === 0 && (report.pageRows ?? []).length === 0) {
 		return [
 			...header,
 			`데이터 부족 — ${period.days}일치 동안 검색 노출 데이터가 없습니다. 색인 상태부터 확인하세요.`,

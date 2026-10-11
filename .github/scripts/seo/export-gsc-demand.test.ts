@@ -37,19 +37,33 @@ const row = ({ query = "q", page = "https://www.webmemo.xyz/ko/introduce", click
 const tokenExchanger = vi.fn(async () => "token");
 const sleep = vi.fn(async () => {});
 
-/** searchAnalytics 응답을 차례로 돌려주고, sitemaps GET에는 sitemapBody를 돌려주는 fetcher 목입니다. */
-const createFetcher = ({ analytics = [{ rows: [] }], sitemapBody = {} } = {}) => {
-	const queue = [...analytics];
+/**
+ * searchAnalytics 응답을 차원별로 차례로 돌려주는 fetcher 목입니다.
+ * query×page 조회에는 analytics, page 조회에는 pageAnalytics, sitemaps GET에는 sitemapBody를 돌려줍니다.
+ */
+const createFetcher = ({ analytics = [{ rows: [] }], pageAnalytics = [{ rows: [] }], sitemapBody = {} } = {}) => {
+	const queues = { "query,page": [...analytics], page: [...pageAnalytics] };
 	return vi.fn(async (url, init) => {
 		if (url.endsWith("/sitemaps")) {
 			return json(sitemapBody);
 		}
-		const next = queue.shift();
+		const next = queues[JSON.parse(init.body).dimensions.join(",")].shift();
 		return next instanceof Response ? next : json(next ?? { rows: [] });
 	});
 };
-const analyticsCalls = (fetcher) =>
-	fetcher.mock.calls.filter(([url]) => url.endsWith("/searchAnalytics/query"));
+const analyticsCalls = (fetcher, dimensions = ["query", "page"]) =>
+	fetcher.mock.calls.filter(
+		([url, init]) =>
+			url.endsWith("/searchAnalytics/query") &&
+			JSON.parse(init.body).dimensions.join(",") === dimensions.join(","),
+	);
+const pageApiRow = ({ page, clicks = 0, impressions = 10, position = 10 }) => ({
+	keys: [page],
+	clicks,
+	impressions,
+	ctr: impressions ? clicks / impressions : 0,
+	position,
+});
 
 afterEach(() => {
 	process.exitCode = undefined;
@@ -119,6 +133,44 @@ describe("GSC 수요 수집", () => {
 		);
 		expect(init.method).toBe("GET");
 		expect(init.body).toBeUndefined();
+	});
+
+	it("공개 페이지 성과는 page 차원만으로 따로 조회해 익명화된 검색어의 노출까지 합산한다", async () => {
+		const fetcher = createFetcher({
+			// query×page 조회에는 익명화된 검색어가 빠져 news-reading 행이 없다.
+			analytics: [{ rows: [apiRow({ query: "web memo", page: "https://www.webmemo.xyz/en/introduce", impressions: 27 })] }],
+			pageAnalytics: [
+				{
+					rows: [
+						pageApiRow({ page: "https://www.webmemo.xyz/ko/use-cases/news-reading", impressions: 6, clicks: 4 }),
+						pageApiRow({ page: "https://www.webmemo.xyz/en/introduce", impressions: 46, clicks: 2 }),
+					],
+				},
+			],
+		});
+		const report = await collectGscDemand({ serviceAccountJson: "{}", now: NOW, fetcher, tokenExchanger, sleep });
+
+		const [[, init]] = analyticsCalls(fetcher, ["page"]);
+		expect(JSON.parse(init.body)).toMatchObject({ dimensions: ["page"], rowLimit: 25000, startRow: 0, dataState: "final" });
+		expect(report.pageRows).toHaveLength(2);
+		const byKey = Object.fromEntries(report.summary.publicPages.map((group) => [group.key, group]));
+		expect(byKey["use-cases"]).toMatchObject({ impressions: 6, clicks: 4 });
+		expect(byKey.introduce).toMatchObject({ impressions: 46, clicks: 2 });
+		expect(report.summary.opportunities.map((entry) => entry.query)).toEqual(["web memo"]);
+	});
+
+	it("검색어 행이 없어도 페이지 합계가 있으면 데이터 부족으로 보지 않는다", () => {
+		const pageRows = [{ page: "https://www.webmemo.xyz/ko/use-cases/news-reading", clicks: 4, impressions: 6, ctr: 0, position: 5 }];
+		const markdown = createDemandMarkdown({
+			period: { startDate: "2026-09-02", endDate: "2026-10-07", days: 36 },
+			rows: [],
+			pageRows,
+			summary: { opportunities: [], publicPages: summarizePublicPages(pageRows), sitemaps: [] },
+		});
+
+		expect(markdown).not.toContain("데이터 부족");
+		expect(markdown).toContain("페이지 행 1개");
+		expect(markdown).toContain("| **use-cases** (/use-cases/) | 6 | 4 | 66.7% | 5.0 |");
 	});
 
 	it("시크릿이 없으면 시크릿 없음 오류를 던진다", async () => {

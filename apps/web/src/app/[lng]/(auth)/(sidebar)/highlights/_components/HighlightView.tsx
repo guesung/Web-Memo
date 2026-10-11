@@ -1,6 +1,5 @@
 "use client";
 
-import { MasonryInfiniteGrid } from "@egjs/react-infinitegrid";
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { useQuery } from "@tanstack/react-query";
@@ -47,7 +46,7 @@ export function HighlightView({ lng }: HighlightViewProps) {
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
+		<div className="mx-auto flex w-full max-w-[840px] flex-col gap-8">
 			<HighlightFilterBar
 				lng={lng}
 				searchInput={searchInput}
@@ -178,7 +177,7 @@ function HighlightList({
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
+		<div className="flex flex-col gap-8">
 			{target.isError && (
 				<HighlightLoadError lng={lng} onRetry={() => void target.refetch()} />
 			)}
@@ -191,7 +190,7 @@ function HighlightList({
 					}}
 				/>
 			)}
-			<HighlightGrid
+			<HighlightListPagination
 				key={`${searchQuery}:${selectedColor ?? ""}`}
 				pageCount={data?.pages.length ?? 0}
 				hasNextPage={!!hasNextPage}
@@ -199,12 +198,8 @@ function HighlightList({
 				isFetchNextPageError={isFetchNextPageError}
 				fetchNextPage={() => void fetchNextPage({ cancelRefetch: false })}
 			>
-				{visibleGroups.map((group, index) => (
-					<div
-						key={group.url}
-						data-grid-groupkey={index}
-						className="w-[300px] max-w-full"
-					>
+				{visibleGroups.map((group) => (
+					<div key={group.url}>
 						<HighlightGroupCard
 							group={group}
 							lng={lng}
@@ -217,7 +212,7 @@ function HighlightList({
 						/>
 					</div>
 				))}
-			</HighlightGrid>
+			</HighlightListPagination>
 
 			{isFetchNextPageError ? (
 				<HighlightLoadError
@@ -237,7 +232,7 @@ function HighlightList({
 	);
 }
 
-function HighlightGrid({
+function HighlightListPagination({
 	children,
 	pageCount,
 	hasNextPage,
@@ -265,43 +260,34 @@ function HighlightGrid({
 		fetchNextPage();
 	}, [fetchNextPage, hasNextPage, isFetching, isFetchNextPageError, pageCount]);
 
-	const requestIfNearBottom = useCallback(() => {
-		const grid = document.getElementById("highlight-grid");
-		if (
-			grid &&
-			grid.getBoundingClientRect().bottom <= window.innerHeight + 400
-		) {
-			requestNextPage();
-		}
-	}, [requestNextPage]);
+	const sentinelRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		const frame = requestAnimationFrame(requestIfNearBottom);
-		window.addEventListener("scroll", requestIfNearBottom, { passive: true });
-		window.addEventListener("resize", requestIfNearBottom);
-		return () => {
-			cancelAnimationFrame(frame);
-			window.removeEventListener("scroll", requestIfNearBottom);
-			window.removeEventListener("resize", requestIfNearBottom);
-		};
-	}, [requestIfNearBottom]);
+		const sentinel = sentinelRef.current;
+		if (!sentinel || !hasNextPage || isFetching || isFetchNextPageError) return;
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries.some((entry) => entry.isIntersecting)) {
+					observer.disconnect();
+					requestNextPage();
+				}
+			},
+			{ rootMargin: "400px" },
+		);
+		observer.observe(sentinel);
+		return () => observer.disconnect();
+	}, [hasNextPage, isFetching, isFetchNextPageError, requestNextPage]);
 
 	return (
-		<MasonryInfiniteGrid
-			useTransform
-			useResizeObserver
-			observeChildren
-			autoResize
-			useRecycle={false}
-			id="highlight-grid"
-			className="w-full pb-48"
-			gap={16}
-			align="center"
-			onRequestAppend={requestNextPage}
-			onRenderComplete={requestIfNearBottom}
-		>
+		<div className="flex w-full flex-col gap-12 pb-24 sm:gap-16">
 			{children}
-		</MasonryInfiniteGrid>
+			<div
+				ref={sentinelRef}
+				data-testid="highlight-list-sentinel"
+				aria-hidden="true"
+				className="h-px"
+			/>
+		</div>
 	);
 }
 

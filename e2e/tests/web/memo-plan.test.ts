@@ -200,7 +200,9 @@ test.describe("카드에서 읽을 계획 날짜 정하기 (Mocked)", () => {
 			"Read tomorrow",
 		);
 		await expect(
-			page.getByText(`Added to your ${formatToastDate(1)} reading list`),
+			page.getByText(`Added to your ${formatToastDate(1)} reading list`, {
+				exact: true,
+			}),
 		).toBeVisible();
 		await expect(page.getByRole("dialog")).toHaveCount(0);
 		await expect(page).not.toHaveURL(/[?&]id=/);
@@ -247,13 +249,13 @@ test.describe("카드에서 읽을 계획 날짜 정하기 (Mocked)", () => {
 		await expect(memoCard.getByTestId("plan-date-chip")).toContainText("Read ");
 		await memoCard.getByTestId("plan-date-chip").click();
 		await expect(page.getByTestId("plan-date-picker")).toBeVisible();
-		await expect(page.getByRole("dialog")).toHaveCount(0);
+		await expect(page).not.toHaveURL(/[?&]id=/);
 
 		await page.getByTestId("plan-date-clear").click();
 
 		await expect(memoCard.getByTestId("plan-date-chip")).toHaveCount(0);
 		await expect(
-			page.getByText("Removed from your reading plan"),
+			page.getByText("Removed from your reading plan", { exact: true }),
 		).toBeVisible();
 	});
 
@@ -268,7 +270,10 @@ test.describe("카드에서 읽을 계획 날짜 정하기 (Mocked)", () => {
 		});
 
 		await page.locator(".memo-item", { hasText: "상세에서 계획할 글" }).click();
-		const dialog = page.getByRole("dialog");
+		// 팝오버 콘텐츠도 role=dialog라 상세 다이얼로그만 메모 입력창으로 좁힌다.
+		const dialog = page
+			.getByRole("dialog")
+			.filter({ has: page.getByTestId("memo-textarea") });
 		await expect(dialog).toBeVisible();
 
 		await dialog.getByRole("button", { name: PLAN_BUTTON_NAME }).click();

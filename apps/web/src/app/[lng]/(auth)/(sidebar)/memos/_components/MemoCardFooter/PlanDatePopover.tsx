@@ -45,7 +45,7 @@ export default function PlanDatePopover({
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent
-				className="w-auto p-3"
+				className="max-h-[var(--radix-popover-content-available-height)] w-auto overflow-y-auto p-3"
 				onClick={stopPropagation}
 				onKeyDown={(event) => event.stopPropagation()}
 			>

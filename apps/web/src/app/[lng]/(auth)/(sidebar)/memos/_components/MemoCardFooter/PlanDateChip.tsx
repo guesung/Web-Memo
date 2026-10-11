@@ -43,7 +43,10 @@ export default function PlanDateChip({
 					: "font-semibold text-primary",
 			)}
 		>
-			{t("memos.plan.chip", { label })}
+			{t("memos.plan.chip", {
+				label,
+				interpolation: { escapeValue: false },
+			})}
 		</button>
 	);
 }

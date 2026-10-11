@@ -20,7 +20,19 @@ const getLocalDateKey = (offsetDays = 0) => {
 	].join("-");
 };
 
+/** 토스트에 쓰이는 "October 13" 모양의 월·일. */
+const formatToastDate = (offsetDays: number) => {
+	const date = new Date();
+	date.setDate(date.getDate() + offsetDays);
+
+	return new Intl.DateTimeFormat(LANGUAGE, {
+		month: "long",
+		day: "numeric",
+	}).format(date);
+};
+
 const PLAN_URL = `${LANGUAGE}${PATHS.memosPlan}`;
+const PLAN_BUTTON_NAME = "Pick a day to read";
 
 test.describe("읽을 계획 탭 (Mocked)", () => {
 	let store: MockSupabaseStore;
@@ -154,5 +166,117 @@ test.describe("읽을 계획 탭 (Mocked)", () => {
 
 		await expect(page.getByText("No results")).toBeVisible();
 		await expect(page.getByTestId("plan-empty-state")).toHaveCount(0);
+	});
+});
+
+test.describe("카드에서 읽을 계획 날짜 정하기 (Mocked)", () => {
+	let store: MockSupabaseStore;
+
+	test.beforeEach(async ({ page }) => {
+		resetMockIds();
+		store = new MockSupabaseStore();
+		await setupSupabaseMocks(page, store);
+	});
+
+	test("달력 버튼으로 내일을 고르면 팝오버가 닫히고 칩과 토스트가 뜨며, 카드 상세는 열리지 않는다.", async ({
+		page,
+	}) => {
+		store.addMemo(createMockMemo({ title: "계획할 글" }));
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.memos}`,
+			regexp: new RegExp(PATHS.memos),
+		});
+
+		const memoCard = page.locator(".memo-item", { hasText: "계획할 글" });
+		await expect(memoCard.getByTestId("plan-date-chip")).toHaveCount(0);
+
+		await memoCard.getByRole("button", { name: PLAN_BUTTON_NAME }).click();
+		await expect(page.getByTestId("plan-date-picker")).toBeVisible();
+		await page.getByTestId("plan-quick-tomorrow").click();
+
+		await expect(page.getByTestId("plan-date-picker")).toBeHidden();
+		await expect(memoCard.getByTestId("plan-date-chip")).toHaveText(
+			"Read tomorrow",
+		);
+		await expect(
+			page.getByText(`Added to your ${formatToastDate(1)} reading list`),
+		).toBeVisible();
+		await expect(page.getByRole("dialog")).toHaveCount(0);
+		await expect(page).not.toHaveURL(/[?&]id=/);
+
+		await page.getByRole("link", { name: "Reading plan", exact: true }).click();
+		await expect(
+			page.getByTestId("plan-section-upcoming").locator(".memo-item"),
+		).toHaveCount(1);
+	});
+
+	test("토스트의 되돌리기를 누르면 이전 상태로 돌아간다.", async ({ page }) => {
+		store.addMemo(createMockMemo({ title: "계획할 글" }));
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.memos}`,
+			regexp: new RegExp(PATHS.memos),
+		});
+
+		const memoCard = page.locator(".memo-item", { hasText: "계획할 글" });
+		await memoCard.getByRole("button", { name: PLAN_BUTTON_NAME }).click();
+		await page.getByTestId("plan-quick-today").click();
+		await expect(memoCard.getByTestId("plan-date-chip")).toHaveText(
+			"Read today",
+		);
+
+		await page.getByRole("button", { name: "Undo" }).click();
+
+		await expect(memoCard.getByTestId("plan-date-chip")).toHaveCount(0);
+	});
+
+	test("칩을 눌러 같은 팝오버를 열고 날짜를 해제하면 칩이 사라지고 토스트가 뜬다.", async ({
+		page,
+	}) => {
+		store.addMemo(
+			createMockMemo({ title: "계획된 글", plannedDate: getLocalDateKey(3) }),
+		);
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.memos}`,
+			regexp: new RegExp(PATHS.memos),
+		});
+
+		const memoCard = page.locator(".memo-item", { hasText: "계획된 글" });
+		await expect(memoCard.getByTestId("plan-date-chip")).toContainText("Read ");
+		await memoCard.getByTestId("plan-date-chip").click();
+		await expect(page.getByTestId("plan-date-picker")).toBeVisible();
+		await expect(page.getByRole("dialog")).toHaveCount(0);
+
+		await page.getByTestId("plan-date-clear").click();
+
+		await expect(memoCard.getByTestId("plan-date-chip")).toHaveCount(0);
+		await expect(
+			page.getByText("Removed from your reading plan"),
+		).toBeVisible();
+	});
+
+	test("다이얼로그 안에서 날짜를 정해도 다이얼로그는 닫히지 않는다.", async ({
+		page,
+	}) => {
+		store.addMemo(createMockMemo({ title: "상세에서 계획할 글" }));
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.memos}`,
+			regexp: new RegExp(PATHS.memos),
+		});
+
+		await page.locator(".memo-item", { hasText: "상세에서 계획할 글" }).click();
+		const dialog = page.getByRole("dialog");
+		await expect(dialog).toBeVisible();
+
+		await dialog.getByRole("button", { name: PLAN_BUTTON_NAME }).click();
+		await page.getByTestId("plan-quick-tomorrow").click();
+
+		await expect(dialog.getByTestId("plan-date-chip")).toHaveText(
+			"Read tomorrow",
+		);
+		await expect(dialog).toBeVisible();
 	});
 });

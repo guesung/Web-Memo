@@ -6,7 +6,7 @@ import { useMemoPatchMutation } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
-import { cn } from "@web-memo/shared/utils";
+import { cn, type TPlanDateKey } from "@web-memo/shared/utils";
 import { Badge, Button, CardFooter, ToastAction, toast } from "@web-memo/ui";
 import dayjs from "dayjs";
 import { BookOpen, Clock, FolderIcon, HeartIcon, StarIcon } from "lucide-react";
@@ -14,6 +14,9 @@ import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
 import { useState } from "react";
 import MemoOption from "./MemoOption";
+import PlanDateChip from "./PlanDateChip";
+import PlanDatePopover from "./PlanDatePopover";
+import usePlanDateChange from "./usePlanDateChange";
 
 /** 메모 카드 푸터의 상태와 표시 속성. */
 interface IFMemoCardFooterProps
@@ -38,6 +41,8 @@ function MemoCardFooter({
 	const router = useRouter();
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const [isPlanPickerOpen, setIsPlanPickerOpen] = useState(false);
+	const changePlanDate = usePlanDateChange({ memo, lng });
 
 	const handleCategoryClick = (event: MouseEvent<HTMLDivElement>) => {
 		event.stopPropagation();
@@ -45,6 +50,11 @@ function MemoCardFooter({
 
 		searchParams.set("category", memo.category?.name);
 		router.push(searchParams.getUrl(), { scroll: false });
+	};
+
+	const handlePlanDateSelect = (plannedDate: TPlanDateKey | null) => {
+		setIsPlanPickerOpen(false);
+		changePlanDate(plannedDate);
 	};
 
 	const handleIsWishClick = (event: MouseEvent<HTMLButtonElement>) => {
@@ -197,6 +207,13 @@ function MemoCardFooter({
 					<Clock className="w-3 h-3" />
 					{dayjs(memo.updated_at).fromNow()}
 				</time>
+				{memo.plannedDate && (
+					<PlanDateChip
+						lng={lng}
+						plannedDate={memo.plannedDate}
+						onClick={() => setIsPlanPickerOpen(true)}
+					/>
+				)}
 				{highlightCount !== undefined && highlightCount > 0 ? (
 					<span className="text-xs font-medium text-primary">
 						{t("memoSection.highlightCount", { count: highlightCount })}
@@ -206,8 +223,9 @@ function MemoCardFooter({
 
 			<div
 				className={cn("flex items-center gap-1 transition-opacity", {
-					"opacity-100": isShowingOption || isDropdownOpen,
-					"opacity-40 hover:opacity-100": !isShowingOption && !isDropdownOpen,
+					"opacity-100": isShowingOption || isDropdownOpen || isPlanPickerOpen,
+					"opacity-40 hover:opacity-100":
+						!isShowingOption && !isDropdownOpen && !isPlanPickerOpen,
 				})}
 			>
 				<Button
@@ -267,6 +285,13 @@ function MemoCardFooter({
 						)}
 					/>
 				</Button>
+				<PlanDatePopover
+					memo={memo}
+					lng={lng}
+					open={isPlanPickerOpen}
+					onOpenChange={setIsPlanPickerOpen}
+					onSelect={handlePlanDateSelect}
+				/>
 				<MemoOption memos={[memo]} lng={lng} onOpenChange={setIsDropdownOpen} />
 				{children}
 			</div>

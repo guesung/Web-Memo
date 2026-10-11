@@ -45,7 +45,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 
 `side_panel_open` · `side_panel_open_click` · `side_panel_login_click` ·
 `header_login_click`(from) · `header_memos_click`(from) ·
-`page_view`(page_title, page_location) · `tab_change`(tab_name) · `view_change`(view) ·
+`page_view`(page_title, page_location) · `tab_change`(tab_name) · `view_change`(view, 메모 목록에서만 layout: grid/list/domain) ·
 `memo_filter`(search_target) · `memo_undo`(action) · `setting_change`(setting_keys) ·
 `extension_setting_change`(keys) · `category_suggestion_show`(is_new_category, source) ·
 `category_suggestion_dismiss`(is_new_category, source) ·

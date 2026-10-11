@@ -48,6 +48,9 @@ export type TSummaryRunSource = "empty_state" | "tab_trigger";
  */
 export type TCategoryChangeSource = "button" | "hash" | "ai";
 
+/** 카테고리 추천을 수락한 방식. 클릭과 Cmd/Ctrl+Enter 단축키를 구분합니다. */
+export type TCategorySuggestionTrigger = "click" | "shortcut";
+
 /**
  * 설치 버튼이 한 페이지 안에서 놓인 자리.
  *
@@ -131,7 +134,11 @@ export type TAnalyticsEvent =
 	  }
 	| {
 			name: "category_suggestion_apply";
-			params: { is_new_category: boolean; source: "jev" | "llm" };
+			params: {
+				is_new_category: boolean;
+				source: "jev" | "llm";
+				trigger: TCategorySuggestionTrigger;
+			};
 	  }
 	| {
 			name: "category_suggestion_dismiss";

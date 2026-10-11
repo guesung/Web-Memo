@@ -106,11 +106,11 @@ it("낮은 확신도의 Jev 선택도 자동 적용 없이 제안하고 수락 �
 		name: "category_suggestion_show",
 		params: { source: "jev", is_new_category: false },
 	});
-	await act(async () => suggestion.acceptSuggestion());
+	await act(async () => suggestion.acceptSuggestion("click"));
 	expect(mocks.onSelect).toHaveBeenCalledWith(7, "ai");
 	expect(mocks.trackEvent).toHaveBeenCalledWith({
 		name: "category_suggestion_apply",
-		params: { source: "jev", is_new_category: false },
+		params: { source: "jev", is_new_category: false, trigger: "click" },
 	});
 });
 
@@ -178,7 +178,7 @@ it("다른 페이지로 이동한 뒤 이전 제안을 수락하지 않는다", 
 	await render();
 	await act(async () => suggestion.triggerSuggestion("memo"));
 	mocks.tab = { url: "https://example.com/b", title: "Another article" };
-	await act(async () => suggestion.acceptSuggestion());
+	await act(async () => suggestion.acceptSuggestion("click"));
 	expect(suggestion.suggestion).toBeNull();
 	expect(mocks.onSelect).not.toHaveBeenCalled();
 });
@@ -188,7 +188,7 @@ it("수락 중 페이지 정보 조회가 실패하면 제안을 유지하고 �
 	await render();
 	await act(async () => suggestion.triggerSuggestion("memo"));
 	mocks.getTabInfo.mockRejectedValueOnce(new Error("tab unavailable"));
-	await act(async () => suggestion.acceptSuggestion());
+	await act(async () => suggestion.acceptSuggestion("click"));
 	expect(suggestion.suggestion?.existingCategoryId).toBe(7);
 	expect(mocks.onSelect).not.toHaveBeenCalled();
 	expect(mocks.toast).toHaveBeenCalledWith({
@@ -223,7 +223,7 @@ it("카테고리를 적용했다가 제거하면 추가 입력에 다시 추천�
 	mocks.request.mockResolvedValue(jevSuggestion);
 	await render();
 	await act(async () => suggestion.triggerSuggestion("memo"));
-	await act(async () => suggestion.acceptSuggestion());
+	await act(async () => suggestion.acceptSuggestion("click"));
 	await render();
 	mocks.values.categoryId = null;
 	await render();

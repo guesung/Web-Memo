@@ -1,3 +1,4 @@
+import type { TCategorySuggestionTrigger } from "@web-memo/shared/modules/analytics";
 import { isMac } from "@web-memo/shared/utils";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { CheckIcon, LightbulbIcon, Loader2Icon, XIcon } from "lucide-react";
@@ -20,7 +21,7 @@ export const CategorySuggestion = (props: IFCategorySuggestionProps) => {
 		const handleWindowKeyDown = (event: globalThis.KeyboardEvent) => {
 			if (!isAcceptShortcut(event, isMacOS)) return;
 			event.preventDefault();
-			onAccept();
+			onAccept("shortcut");
 		};
 		window.addEventListener("keydown", handleWindowKeyDown);
 		return () => window.removeEventListener("keydown", handleWindowKeyDown);
@@ -55,7 +56,7 @@ export const CategorySuggestion = (props: IFCategorySuggestionProps) => {
 				type="button"
 				data-testid="category-suggestion-accept"
 				disabled={props.isAccepting}
-				onClick={props.onAccept}
+				onClick={() => props.onAccept("click")}
 				aria-label={acceptLabel}
 				title={acceptLabel}
 				className="flex shrink-0 items-center gap-1 rounded p-1 hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
@@ -89,6 +90,6 @@ interface IFCategorySuggestionProps {
 	isAccepting: boolean;
 	/** # 카테고리 팝업처럼 Enter를 다른 곳에서 쓰는 동안 단축키를 끈다. */
 	isShortcutDisabled: boolean;
-	onAccept: () => void;
+	onAccept: (trigger: TCategorySuggestionTrigger) => void;
 	onDismiss: () => void;
 }

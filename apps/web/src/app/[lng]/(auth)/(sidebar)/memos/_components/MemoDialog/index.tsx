@@ -212,6 +212,7 @@ function MemoDialogContent({ lng, memo, latestMemo, onClose }: ContentProps) {
 							memo={memo}
 							lng={lng}
 							isShowingOption={false}
+							hasCategoryAddChip={false}
 							className="px-6 py-4 border-t-0"
 						/>
 					</Card>

@@ -19,8 +19,11 @@ import dayjs from "dayjs";
 import { BookOpen, Clock, FolderIcon, HeartIcon, StarIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import CategoryAddChip from "./CategoryAddChip";
+import CategoryPopover from "./CategoryPopover";
 import MemoOption from "./MemoOption";
+import useMemoCategoryPopover from "./useMemoCategoryPopover";
 
 /** 메모 카드 푸터의 상태와 표시 속성. */
 interface IFMemoCardFooterProps
@@ -28,6 +31,10 @@ interface IFMemoCardFooterProps
 		React.HTMLAttributes<HTMLDivElement> {
 	memo: GetMemoResponse;
 	isShowingOption?: boolean;
+	/** 선택 모드. 카테고리 추가 칩을 눌러도 팝업 대신 카드 선택으로 처리한다 */
+	isSelectingMode?: boolean;
+	/** 카테고리가 없을 때 추가 칩을 보여줄지. 편집 모달은 숨긴다 */
+	hasCategoryAddChip?: boolean;
 	highlightCount?: number;
 }
 
@@ -37,6 +44,8 @@ function MemoCardFooter({
 	lng,
 	children,
 	isShowingOption = true,
+	isSelectingMode = false,
+	hasCategoryAddChip = true,
 	highlightCount,
 	...props
 }: IFMemoCardFooterProps) {
@@ -45,6 +54,12 @@ function MemoCardFooter({
 	const router = useRouter();
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const categoryAddChipRef = useRef<HTMLButtonElement>(null);
+	const categoryPopover = useMemoCategoryPopover({
+		lng,
+		memo,
+		chipRef: categoryAddChipRef,
+	});
 
 	const handleCategoryClick = (event: MouseEvent<HTMLDivElement>) => {
 		event.stopPropagation();
@@ -52,6 +67,14 @@ function MemoCardFooter({
 
 		searchParams.set("category", memo.category?.name);
 		router.push(searchParams.getUrl(), { scroll: false });
+	};
+
+	const handleCategoryAddChipClick = (event: MouseEvent<HTMLButtonElement>) => {
+		// 선택 모드에서는 카드 클릭으로 흘려보내 카드 선택을 바꾼다.
+		if (isSelectingMode) return;
+
+		event.stopPropagation();
+		categoryPopover.open(event.currentTarget);
 	};
 
 	const handleIsWishClick = (event: MouseEvent<HTMLButtonElement>) => {
@@ -197,6 +220,13 @@ function MemoCardFooter({
 						<span>{memo.category.name}</span>
 					</Badge>
 				)}
+				{!memo.category?.name && hasCategoryAddChip && (
+					<CategoryAddChip
+						lng={lng}
+						chipRef={categoryAddChipRef}
+						onClick={handleCategoryAddChipClick}
+					/>
+				)}
 				<time
 					dateTime={memo.updated_at ?? ""}
 					className="text-xs text-muted-foreground flex items-center gap-1.5"
@@ -296,9 +326,27 @@ function MemoCardFooter({
 						/>
 					</Button>
 				</IconTooltip>
-				<MemoOption memos={[memo]} lng={lng} onOpenChange={setIsDropdownOpen} />
+				<MemoOption
+					memos={[memo]}
+					lng={lng}
+					onOpenChange={setIsDropdownOpen}
+					onCategoryPopupOpen={categoryPopover.open}
+				/>
 				{children}
 			</div>
+			<CategoryPopover
+				lng={lng}
+				isOpen={categoryPopover.isOpen}
+				anchorElement={categoryPopover.anchorElement}
+				categories={categoryPopover.categories}
+				currentCategoryId={categoryPopover.currentCategoryId}
+				isCategoryCreating={categoryPopover.isCategoryCreating}
+				onOpenChange={categoryPopover.handleOpenChange}
+				onCategorySelect={categoryPopover.handleCategorySelect}
+				onCategoryCreate={categoryPopover.handleCategoryCreate}
+				onCategoryRemove={categoryPopover.handleCategoryRemove}
+				onCloseAutoFocus={categoryPopover.handleCloseAutoFocus}
+			/>
 		</CardFooter>
 	);
 }

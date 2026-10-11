@@ -468,6 +468,8 @@
 		"message": "Save"
 	},
 	"highlight_memo_add": { "message": "Add memo" },
+	"highlight_panel_memo_action": { "message": "Write in side panel" },
+	"highlight_panel_open_failed": { "message": "Could not open the side panel. Please try again." },
 	"highlight_memo_open": { "message": "Open memo" },
 	"highlight_memo_restore": { "message": "Restore from trash" },
 	"highlight_memo_loading": { "message": "Checking linked memo…" },
@@ -587,5 +589,13 @@
 	},
 	"ai_chat_enabled_setting": {
 		"message": "Use AI chat"
-	}
+	},
+	"page_highlights_title": { "message": "Highlights on this page" },
+	"page_highlights_loading": { "message": "Loading highlights" },
+	"page_highlights_empty": { "message": "No highlights saved on this page yet." },
+	"page_highlights_load_failed": { "message": "Couldn't load highlights." },
+	"page_highlights_retry": { "message": "Try again" },
+	"page_highlights_show_all": { "message": "Show all $1" },
+	"page_highlights_show_less": { "message": "Show preview" },
+	"page_highlights_focus_failed": { "message": "Couldn't find this quote on the page." }
 }

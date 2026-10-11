@@ -42,6 +42,7 @@
 | category_suggestion_show / _apply / _dismiss | 카테고리 추천 노출·적용·닫음 | `is_new_category`, `source`: `jev` \| `llm` | 추천이 받아들여지는가 | — |
 | past_memo_show / _open / _dismiss / _expand | 과거 메모 종류별 노출·원문 열기·닫음·관련 목록 펼침. 노출과 첫 열기는 URL·종류당 한 번 집계하며, 중복·관련이 함께 있으면 종류별로 각각 노출·닫음을 기록 | `kind`: `duplicate` \| `related`, `source`: `rule` \| `jev` (`_expand`는 related/jev) | 과거 메모 안내를 보고 원문을 여는가 | — |
 | highlight_create | 하이라이트 생성 | `color`, `has_note` | 어떤 색·메모 여부로 쓰이는가 | — |
+| highlight_source_jump | 사이드 패널 인용 선택 후 원문 위치 검증·스크롤 성공 | — | 패널 인용을 통해 원문으로 돌아가는가 | DB-1180 |
 | highlight_note_update | 하이라이트 메모 수정 (추정) | — | 하이라이트에 메모를 다는가 (추정) | — |
 | highlight_bubble_disable | 하이라이트 말풍선 끄기 | `scope`: `site` \| `all` | 말풍선이 거슬리는가 (추정) | — |
 | summary_run | 요약 실행 | `source`: `empty_state` \| `tab_trigger` | 어느 자리에서 요약이 시작되는가 | — |

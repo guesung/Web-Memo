@@ -468,6 +468,8 @@
 		"message": "저장"
 	},
 	"highlight_memo_add": { "message": "메모 추가" },
+	"highlight_panel_memo_action": { "message": "사이드 패널에서 메모하기" },
+	"highlight_panel_open_failed": { "message": "사이드 패널을 열지 못했어요. 다시 시도해 주세요." },
 	"highlight_memo_open": { "message": "메모 열기" },
 	"highlight_memo_restore": { "message": "휴지통에서 복원하기" },
 	"highlight_memo_loading": { "message": "연결된 메모 확인 중…" },
@@ -587,5 +589,13 @@
 	},
 	"ai_chat_enabled_setting": {
 		"message": "AI 채팅 사용"
-	}
+	},
+	"page_highlights_title": { "message": "이 페이지의 하이라이트" },
+	"page_highlights_loading": { "message": "하이라이트 불러오는 중" },
+	"page_highlights_empty": { "message": "이 페이지에 저장한 하이라이트가 없어요." },
+	"page_highlights_load_failed": { "message": "하이라이트를 불러오지 못했어요." },
+	"page_highlights_retry": { "message": "다시 시도" },
+	"page_highlights_show_all": { "message": "$1개 모두 보기" },
+	"page_highlights_show_less": { "message": "미리보기로 돌아가기" },
+	"page_highlights_focus_failed": { "message": "원문 위치를 찾지 못했어요." }
 }

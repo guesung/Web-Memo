@@ -1,5 +1,6 @@
 import { CONFIG } from "@web-memo/env";
 import { PATHS } from "@web-memo/shared/constants";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import type { HighlightRow } from "@web-memo/shared/types";
 import { I18n } from "@web-memo/shared/utils/extension";
@@ -171,6 +172,14 @@ export const HighlightMemoAction = ({
 					href={memoUrl(link.memoId, link.deletedAt)}
 					target="_blank"
 					rel="noopener noreferrer"
+					onClick={() => {
+						if (!link.deletedAt) {
+							analytics.trackEvent({
+								name: "memo_open",
+								params: { source: "highlight", has_search_query: false },
+							});
+						}
+					}}
 					className="flex items-center gap-2 rounded px-2 py-1 hover:bg-accent"
 				>
 					<BookOpen size={16} aria-hidden="true" />

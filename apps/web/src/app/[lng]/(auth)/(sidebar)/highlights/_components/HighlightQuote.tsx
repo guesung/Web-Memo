@@ -7,6 +7,7 @@ import {
 	type HighlightColor,
 	PATHS,
 } from "@web-memo/shared/constants";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import type { HighlightMemoLink, HighlightRow } from "@web-memo/shared/types";
 import { getHighlightSourceUrl } from "@web-memo/shared/utils";
 import Link from "next/link";
@@ -168,6 +169,13 @@ export const HighlightQuote = ({
 									? `/${lng}${PATHS.memosTrash}`
 									: `/${lng}${PATHS.memos}?id=${link.memo_id}`
 							}
+							onClick={() => {
+								if (!link.memo?.deleted_at)
+									analytics.trackEvent({
+										name: "memo_open",
+										params: { source: "highlight", has_search_query: false },
+									});
+							}}
 							className="rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground"
 						>
 							{t(

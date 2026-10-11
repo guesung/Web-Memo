@@ -1,5 +1,6 @@
 import { CONFIG } from "@web-memo/env";
 import { PATHS } from "@web-memo/shared/constants";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import type {
 	CreateHighlightMemoPayload,
 	CreateHighlightMemoResponse,
@@ -127,6 +128,11 @@ async function openSavedMemo(memoId: number, deletedAt: string | null) {
 	url.searchParams.set("id", String(memoId));
 	try {
 		await chrome.tabs.create({ url: url.href });
+		if (!deletedAt)
+			void analytics.trackEvent({
+				name: "memo_open",
+				params: { source: "highlight", has_search_query: false },
+			});
 	} catch {
 		reportFailure("open-linked-memo");
 	}

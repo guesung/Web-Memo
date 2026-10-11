@@ -1,3 +1,4 @@
+import { analytics } from "../../modules/analytics";
 import type {
 	CreateHighlightMemoResult,
 	HighlightMemoLink,
@@ -29,6 +30,11 @@ export class HighlightMemoService {
 			!(data.deleted_at === null || typeof data.deleted_at === "string")
 		)
 			throw new Error("Invalid highlight memo response");
+		if (data.created)
+			void analytics.trackEvent({
+				name: "memo_first_write",
+				params: { source: "highlight" },
+			});
 		return {
 			memo_id: data.memo_id,
 			highlight_id: data.highlight_id,

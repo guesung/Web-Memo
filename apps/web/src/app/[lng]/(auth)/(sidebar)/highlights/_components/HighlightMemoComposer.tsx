@@ -4,6 +4,7 @@ import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { PATHS } from "@web-memo/shared/constants";
 import { useCreateHighlightMemo } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
@@ -41,6 +42,11 @@ export function HighlightMemoComposer({
 				highlightId,
 				memo: draft.trim(),
 			});
+			if (!result.deleted_at)
+				analytics.trackEvent({
+					name: "memo_open",
+					params: { source: "highlight", has_search_query: false },
+				});
 			router.push(
 				result.deleted_at
 					? `/${lng}${PATHS.memosTrash}`

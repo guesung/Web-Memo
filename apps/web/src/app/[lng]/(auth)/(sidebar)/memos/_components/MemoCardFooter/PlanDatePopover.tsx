@@ -19,6 +19,7 @@ export default function PlanDatePopover({
 	open,
 	onOpenChange,
 	onSelect,
+	triggerClassName,
 }: IFPlanDatePopoverProps) {
 	const { t } = useTranslation(lng);
 	const stopPropagation = (event: MouseEvent) => event.stopPropagation();
@@ -29,7 +30,10 @@ export default function PlanDatePopover({
 				<Button
 					variant="ghost"
 					size="sm"
-					className="w-8 h-8 p-0 hover:bg-primary/10 rounded-full"
+					className={cn(
+						"w-8 h-8 p-0 hover:bg-primary/10 rounded-full",
+						triggerClassName,
+					)}
 					aria-label={t("memos.toggle.plan")}
 					title={t("memos.toggle.plan")}
 					onClick={stopPropagation}
@@ -72,4 +76,6 @@ interface IFPlanDatePopoverProps extends LanguageType {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	onSelect: (plannedDate: TPlanDateKey | null) => void;
+	/** 달력 버튼에 덧붙일 클래스. 카드가 평소에 버튼을 숨길 때 쓴다 */
+	triggerClassName?: string;
 }

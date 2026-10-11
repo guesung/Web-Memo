@@ -191,6 +191,8 @@ test.describe("카드에서 읽을 계획 날짜 정하기 (Mocked)", () => {
 		const memoCard = page.locator(".memo-item", { hasText: "계획할 글" });
 		await expect(memoCard.getByTestId("plan-date-chip")).toHaveCount(0);
 
+		// 달력 버튼은 카드에 마우스를 올려야 나타난다.
+		await memoCard.hover();
 		await memoCard.getByRole("button", { name: PLAN_BUTTON_NAME }).click();
 		await expect(page.getByTestId("plan-date-picker")).toBeVisible();
 		await page.getByTestId("plan-quick-tomorrow").click();
@@ -222,6 +224,8 @@ test.describe("카드에서 읽을 계획 날짜 정하기 (Mocked)", () => {
 		});
 
 		const memoCard = page.locator(".memo-item", { hasText: "계획할 글" });
+		// 달력 버튼은 카드에 마우스를 올려야 나타난다.
+		await memoCard.hover();
 		await memoCard.getByRole("button", { name: PLAN_BUTTON_NAME }).click();
 		await page.getByTestId("plan-quick-today").click();
 		await expect(memoCard.getByTestId("plan-date-chip")).toHaveText(

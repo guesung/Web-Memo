@@ -282,3 +282,18 @@ test.describe("즐겨찾기 페이지 (Mocked)", () => {
 		).toBeVisible();
 	});
 });
+
+test.describe("즐겨찾기 페이지 접근 제어 (Mocked)", () => {
+	// web 프로젝트는 로그인 세션(storageState)을 물려받으므로, 비로그인 동작은 세션을 비워서 본다.
+	test.use({ storageState: { cookies: [], origins: [] } });
+
+	test("비로그인 상태로 접근하면 로그인 페이지로 보낸다.", async ({ page }) => {
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.favorites}`,
+			regexp: new RegExp(PATHS.login),
+		});
+
+		await expect(page).toHaveURL(new RegExp(PATHS.login));
+	});
+});

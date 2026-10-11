@@ -32,6 +32,7 @@ export function IconTooltip({ label, children }: IFIconTooltipProps) {
 
 	// Radix는 트리거를 누르면 말풍선을 닫는다. 토글 버튼은 누른 뒤 바뀐 동작을 바로 보여줘야
 	// 하므로, 닫힘이 처리된 직후 다시 연다. 터치는 원래 말풍선을 띄우지 않으므로 제외한다.
+	// 안쪽 버튼이 카드 클릭을 막으려고 stopPropagation을 하므로 캡처 단계에서 받는다.
 	const handlePointerDown = (event: PointerEvent) => {
 		lastPointerTypeRef.current = event.pointerType;
 	};
@@ -46,7 +47,7 @@ export function IconTooltip({ label, children }: IFIconTooltipProps) {
 				<TooltipTrigger
 					asChild
 					onPointerDown={handlePointerDown}
-					onClick={handleClick}
+					onClickCapture={handleClick}
 				>
 					<span className="inline-flex">{children}</span>
 				</TooltipTrigger>

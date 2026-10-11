@@ -103,7 +103,7 @@ function MemoDialogContent({ lng, memo, latestMemo, onClose }: ContentProps) {
 	const { form, saveStatus, markEdited, changeTitle, flushDebounce } =
 		useMemoDialogEditor({ memo, latestMemo });
 	const { register, watch } = form;
-	// 본문 #과 푸터(칩·배지·⋮)가 같은 팝업을 열도록 모달이 갖는다.
+	// 본문 #과 푸터(배지·⋮)가 같은 팝업을 열도록 모달이 갖는다.
 	const categoryPopover = useMemoCategoryPopover({ lng, memo });
 	const hashCategory = useMemoHashCategory({
 		form,

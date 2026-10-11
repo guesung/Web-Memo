@@ -536,7 +536,6 @@
 		"actionItemPlaceholder": "Write what to do after reading this page"
 	},
 	"memos": {
-		"categoryAdd": "Add category",
 		"categoryPopup": {
 			"search": "Search categories",
 			"noResult": "No matching categories",

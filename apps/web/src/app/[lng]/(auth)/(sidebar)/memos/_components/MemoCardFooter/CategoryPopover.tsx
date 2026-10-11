@@ -16,7 +16,7 @@ interface IFCategoryPopoverProps extends LanguageType {
 
 /**
  * 메모의 카테고리 검색 팝업
- * @description 칩·배지·⋮ 메뉴·본문 #이 같은 팝업을 쓰므로 붙을 기준을 앵커로 받는다.
+ * @description 배지·⋮ 메뉴·본문 #이 같은 팝업을 쓰므로 붙을 기준을 앵커로 받는다.
  * 사용처: MemoCardFooter/index.tsx, MemoDialog/index.tsx
  */
 export default function CategoryPopover({

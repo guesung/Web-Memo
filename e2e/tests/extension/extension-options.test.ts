@@ -10,7 +10,11 @@ import {
 test.describe("확장 옵션 페이지", () => {
 	let store: MockSupabaseStore;
 
-	test.beforeEach(async ({ page }) => {
+	test.beforeEach(async ({ page, context }) => {
+		await context.route(
+			/https:\/\/[^/]*(google-analytics\.com|analytics\.google\.com)\//,
+			(route) => route.fulfill({ status: 204 }),
+		);
 		// 옵션 페이지의 메모 필드 설정(MemoFieldsOption)이 setting을 읽는다. 로그인 뒤 메모 화면의 목록과 함께
 		// 컨텍스트 단위 목으로 받아, 옵션 페이지처럼 테스트가 나중에 여는 확장 페이지의 요청도 실서버로 가지 않게 한다.
 		store = new MockSupabaseStore();
@@ -50,32 +54,33 @@ test.describe("확장 옵션 페이지", () => {
 		);
 	});
 
-	test("AI 기능 카드는 요약·AI 채팅이 기본으로 꺼져 있고, 켜면 자동 저장되어 새로 열어도 유지된다.", async ({
+	test("AI 기능 카드는 요약 안내를 보이고 채팅 설정만 자동 저장한다.", async ({
 		page,
 	}) => {
 		const optionsPage = await page.context().newPage();
 		await optionsPage.goto(getExtensionUrl("options/index.html"));
 
-		const summarySwitch = optionsPage.locator("#summary-enabled");
 		const chatSwitch = optionsPage.locator("#ai-chat-enabled");
-		await expect(summarySwitch).toBeEnabled();
-		await expect(summarySwitch).toHaveAttribute("data-state", "unchecked");
+		const hint = await optionsPage.evaluate(() =>
+			chrome.i18n.getMessage("summary_panel_hint"),
+		);
+		await expect(optionsPage.locator("#summary-enabled")).toHaveCount(0);
+		await expect(optionsPage.getByText(hint, { exact: true })).toBeVisible();
 		await expect(chatSwitch).toHaveAttribute("data-state", "unchecked");
 
-		await summarySwitch.click();
-		await expect(summarySwitch).toHaveAttribute("data-state", "checked");
+		await chatSwitch.click();
+		await expect(chatSwitch).toHaveAttribute("data-state", "checked");
 		await expect(
 			optionsPage.getByText(/^(Saved|저장했어요)$/).last(),
 		).toBeVisible();
-		await expect(chatSwitch).toHaveAttribute("data-state", "unchecked");
 
 		await optionsPage.reload();
-		await expect(summarySwitch).toBeEnabled();
-		await expect(summarySwitch).toHaveAttribute("data-state", "checked");
-		await expect(chatSwitch).toHaveAttribute("data-state", "unchecked");
+		await expect(optionsPage.locator("#summary-enabled")).toHaveCount(0);
+		await expect(optionsPage.getByText(hint, { exact: true })).toBeVisible();
+		await expect(chatSwitch).toHaveAttribute("data-state", "checked");
 		expect(store.getSetting()).toMatchObject({
-			show_summary: true,
-			show_ai_chat: false,
+			show_summary: false,
+			show_ai_chat: true,
 		});
 	});
 

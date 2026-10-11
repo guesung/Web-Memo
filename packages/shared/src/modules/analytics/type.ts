@@ -36,10 +36,10 @@ export interface IFGa4EventParams {
 
 /**
  * 요약 실행을 시작한 자리.
- * @description empty_state는 요약 탭이 빈 화면일 때의 안내 버튼, tab_trigger는 탭
- * 아이콘의 새로고침 버튼입니다. 배포 전후로 자리별 실행 비율이 어떻게 갈리는지 봅니다.
+ * @description disclosure는 사이드 패널 진입 행, empty_state는 빈 상태의 수동 실행 버튼입니다.
+ * tab_trigger는 이전 탭 아이콘 재생성 버튼의 과거 이벤트와 호환하기 위해 남깁니다.
  */
-export type TSummaryRunSource = "empty_state" | "tab_trigger";
+export type TSummaryRunSource = "empty_state" | "tab_trigger" | "disclosure";
 
 /**
  * 메모 카테고리를 바꾼 경로.
@@ -72,6 +72,7 @@ export type TAnalyticsEvent =
 	| { name: "memo_write"; params: { fields: string } }
 	| { name: "memo_delete"; params: { memo_count: number } }
 	| { name: "summary_run"; params: { source: TSummaryRunSource } }
+	| { name: "summary_panel_toggle"; params: { action: "open" | "close" } }
 	| { name: "summary_complete"; params: { duration_msec: number } }
 	| { name: "chat_message_send" }
 	| { name: "tab_change"; params: { tab_name: string } }
@@ -253,6 +254,7 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	memo_write: "core_action",
 	memo_delete: "core_action",
 	summary_run: "core_action",
+	summary_panel_toggle: "engagement",
 	summary_complete: "core_action",
 	chat_message_send: "core_action",
 	tab_change: "engagement",

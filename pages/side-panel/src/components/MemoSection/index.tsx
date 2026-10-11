@@ -19,10 +19,10 @@ import {
 	useSupabaseUserQuery,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
-import type { Database } from "@web-memo/shared/types";
+import type { Database, IFPastMemoDuplicate } from "@web-memo/shared/types";
 import { getPageKey } from "@web-memo/shared/utils";
 import { I18n } from "@web-memo/shared/utils/extension";
-import { ErrorBoundary, ToastAction, toast } from "@web-memo/ui";
+import { cn, ErrorBoundary, ToastAction, toast } from "@web-memo/ui";
 import { Suspense, useEffect, useRef, useState } from "react";
 import LoginSection from "../LoginSection";
 import NoticeBanner from "../NoticeBanner";
@@ -31,6 +31,7 @@ import MemoForm from "./components/MemoForm";
 import { MemoFormSkeleton } from "./components/MemoForm/components";
 import { useMemoFieldRatios } from "./components/MemoForm/hooks/useMemoFieldResize";
 import MemoHeader from "./components/MemoHeader";
+import PastMemoView from "./components/PastMemoView";
 import useMemoCandidatesQuery from "./hooks/useMemoCandidatesQuery";
 
 /** 사이드 패널의 현재 페이지 메모와 후보 선택을 표시한다. */
@@ -163,6 +164,15 @@ const AuthenticatedMemoSectionContent = () => {
 		null,
 	);
 	const isCandidateListRequested = candidateListScope === editorScope;
+	// 같은 글 알림에서 연 과거 메모. 탭·페이지가 바뀌면 scope가 달라져 자동으로 닫힌다.
+	const [openedPastMemo, setOpenedPastMemo] = useState<{
+		scope: string;
+		memoId: number;
+		url: string;
+		title: string;
+	} | null>(null);
+	const currentOpenedPastMemo =
+		openedPastMemo?.scope === editorScope ? openedPastMemo : null;
 	const currentSelection = selection?.scope === editorScope ? selection : null;
 	const currentDraft =
 		preservedDraft?.scope === editorScope ? preservedDraft.value : null;
@@ -323,6 +333,15 @@ const AuthenticatedMemoSectionContent = () => {
 		});
 	};
 
+	const handlePastMemoOpen = (duplicate: IFPastMemoDuplicate) => {
+		setOpenedPastMemo({
+			scope: editorScope,
+			memoId: duplicate.id,
+			url: duplicate.url,
+			title: duplicate.title,
+		});
+	};
+
 	const handleNewMemoClick = () => {
 		setCandidateListScope(null);
 		setSelection({ scope: editorScope, memoId: null, memo: null });
@@ -353,43 +372,55 @@ const AuthenticatedMemoSectionContent = () => {
 
 	return (
 		<>
-			<MemoHeader memoData={activeMemo} />
-			{currentDraft && <PreservedDraft draft={currentDraft} />}
-			{(hasMultipleMemos ||
-				hasOnlyOtherUrlMemos ||
-				isCandidateListRequested ||
-				currentDraft) &&
-			!currentSelection ? (
-				<MemoCandidateList
-					memos={memos}
-					otherUrlMemos={otherUrlMemos}
-					onMemoSelect={handleMemoSelect}
-					onNewMemoClick={memos.length === 0 ? handleNewMemoClick : undefined}
-					onMemoDelete={handleMemoDelete}
-					isOffline={!isOnline}
-					isSyncing={isSyncing}
-				/>
-			) : (
-				<MemoForm
-					key={editorScope}
-					fieldResizeState={fieldResizeState}
-					selectedMemo={activeMemo}
-					isSelectedMemoMissing={
-						isSelectedMemoMissing || hasUnselectedCollision
-					}
-					onOtherMemoClick={
-						hasMultipleMemos ||
-						otherUrlMemos.length > 0 ||
-						isSelectedMemoMissing
-							? handleOtherMemoClick
-							: undefined
-					}
-					isSyncing={isSyncing}
-					isSyncFailed={isSyncFailed}
-					hasSyncNetworkError={lastFlushHadNetworkError}
-					onRetrySync={retrySync}
+			{currentOpenedPastMemo && (
+				<PastMemoView
+					memoId={currentOpenedPastMemo.memoId}
+					title={currentOpenedPastMemo.title}
+					url={currentOpenedPastMemo.url}
+					onBackClick={() => setOpenedPastMemo(null)}
 				/>
 			)}
+			{/* 작성 중 내용과 자동 저장 상태를 지키려고 폼을 언마운트하지 않고 숨긴다. */}
+			<div className={cn(currentOpenedPastMemo ? "hidden" : "contents")}>
+				<MemoHeader memoData={activeMemo} />
+				{currentDraft && <PreservedDraft draft={currentDraft} />}
+				{(hasMultipleMemos ||
+					hasOnlyOtherUrlMemos ||
+					isCandidateListRequested ||
+					currentDraft) &&
+				!currentSelection ? (
+					<MemoCandidateList
+						memos={memos}
+						otherUrlMemos={otherUrlMemos}
+						onMemoSelect={handleMemoSelect}
+						onNewMemoClick={memos.length === 0 ? handleNewMemoClick : undefined}
+						onMemoDelete={handleMemoDelete}
+						isOffline={!isOnline}
+						isSyncing={isSyncing}
+					/>
+				) : (
+					<MemoForm
+						key={editorScope}
+						fieldResizeState={fieldResizeState}
+						selectedMemo={activeMemo}
+						isSelectedMemoMissing={
+							isSelectedMemoMissing || hasUnselectedCollision
+						}
+						onOtherMemoClick={
+							hasMultipleMemos ||
+							otherUrlMemos.length > 0 ||
+							isSelectedMemoMissing
+								? handleOtherMemoClick
+								: undefined
+						}
+						isSyncing={isSyncing}
+						isSyncFailed={isSyncFailed}
+						hasSyncNetworkError={lastFlushHadNetworkError}
+						onRetrySync={retrySync}
+						onPastMemoOpen={handlePastMemoOpen}
+					/>
+				)}
+			</div>
 		</>
 	);
 };

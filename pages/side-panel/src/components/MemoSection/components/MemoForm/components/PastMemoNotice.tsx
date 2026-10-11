@@ -87,6 +87,10 @@ const PastMemoNotice = (props: IFPastMemoNoticeProps) => {
 				params: { kind: "duplicate", source: pastMemoDuplicate.source },
 			});
 		}
+		if (props.onDuplicateOpen) {
+			props.onDuplicateOpen(pastMemoDuplicate);
+			return;
+		}
 		void Tab.create({ url: pastMemoDuplicate.url });
 	};
 
@@ -260,6 +264,8 @@ interface IFPastMemoEventParams {
 interface IFPastMemoNoticeProps {
 	/** 현재 URL에 저장된 메모가 있는지. 있으면 판정을 요청하지 않는다 */
 	hasMemoData: boolean;
+	/** 같은 글 안내의 열기를 눌렀을 때. 없으면 원래 사이트를 새 탭으로 연다 */
+	onDuplicateOpen?: (duplicate: IFPastMemoDuplicate) => void;
 }
 
 /** PastMemoDuplicate props */

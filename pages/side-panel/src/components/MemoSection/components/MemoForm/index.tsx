@@ -12,7 +12,7 @@ import { QUERY_KEY, type TMemoStatusKey } from "@web-memo/shared/constants";
 import { useSettingQuery, useSupabaseUserQuery } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
-import type { Database } from "@web-memo/shared/types";
+import type { Database, IFPastMemoDuplicate } from "@web-memo/shared/types";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
 	badgeVariants,
@@ -54,6 +54,7 @@ const MemoFormContent = ({
 	isSyncFailed = false,
 	hasSyncNetworkError = false,
 	onRetrySync,
+	onPastMemoOpen,
 }: IFMemoFormProps) => {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const [isSwitching, setIsSwitching] = useState(false);
@@ -259,7 +260,12 @@ const MemoFormContent = ({
 					{I18n.get("memo_choose_other")}
 				</button>
 			)}
-			{!isMemoLocked && <PastMemoNotice hasMemoData={!!memoData?.created_at} />}
+			{!isMemoLocked && (
+				<PastMemoNotice
+					hasMemoData={!!memoData?.created_at}
+					onDuplicateOpen={onPastMemoOpen}
+				/>
+			)}
 			<form className="relative flex min-h-0 flex-1 flex-col py-1">
 				<div className="mb-1 flex shrink-0 items-center gap-1">
 					{setting.isRefetchError && (
@@ -563,6 +569,7 @@ const MemoForm = ({
 	isSyncFailed,
 	hasSyncNetworkError,
 	onRetrySync,
+	onPastMemoOpen,
 }: IFMemoFormProps) => {
 	const form = useForm<MemoInput>({
 		shouldUnregister: false,
@@ -592,6 +599,7 @@ const MemoForm = ({
 				isSyncFailed={isSyncFailed}
 				hasSyncNetworkError={hasSyncNetworkError}
 				onRetrySync={onRetrySync}
+				onPastMemoOpen={onPastMemoOpen}
 			/>
 		</FormProvider>
 	);
@@ -622,6 +630,8 @@ interface IFMemoFormProps {
 	hasSyncNetworkError?: boolean;
 	/** 대기열 동기화 실패(syncFailed) 다시 시도 버튼 클릭 핸들러 */
 	onRetrySync?: () => void;
+	/** 과거 메모 알림에서 같은 글의 열기를 눌렀을 때. 사이드 패널 안에서 읽기 전용으로 보여 주는 쪽이 처리한다 */
+	onPastMemoOpen?: (duplicate: IFPastMemoDuplicate) => void;
 }
 
 interface IFMemoStatusToggleProps {

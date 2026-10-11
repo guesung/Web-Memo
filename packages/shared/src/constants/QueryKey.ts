@@ -105,6 +105,8 @@ export const QUERY_KEY = {
 	],
 	/** `highlightCounts`의 공통 접두사. URL 배열을 모르는 뮤테이션에서 prefix 매칭으로 무효화할 때 쓴다. */
 	highlightCountsPrefix: () => ["highlights", "counts"],
+	/** 서버에 저장된 즐겨찾기 전체 목록. 제목 수정·삭제 뮤테이션이 낙관적으로 갱신한다. */
+	favorites: () => ["favorites"],
 	/** 사이드 패널 공지. 세션과 무관한 공개 데이터라 사용자별로 나누지 않는다. */
 	notice: () => ["notice"],
 	/** 사이드 패널 과거 메모 판정. 정규화한 페이지 URL마다 별도 캐시다. */

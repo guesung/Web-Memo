@@ -12,6 +12,7 @@ type CategoryRow = Database["memo"]["Tables"]["category"]["Row"];
 type HighlightRow = Database["memo"]["Tables"]["highlight"]["Row"];
 type HighlightMemoSource =
 	Database["memo"]["Tables"]["highlight_memo_source"]["Row"];
+type FavoriteRow = Database["memo"]["Tables"]["favorite"]["Row"];
 type SettingRow = Database["memo"]["Tables"]["setting"]["Row"];
 
 /** 앱이 받는 메모 한 건. `select("*, category(...)")`의 응답 모양이다. */
@@ -37,6 +38,7 @@ export class MockSupabaseStore {
 	private categories: Map<number, CategoryRow> = new Map();
 	private highlights: Map<number, HighlightRow> = new Map();
 	private highlightMemoSources: Map<number, HighlightMemoSource> = new Map();
+	private favorites: Map<number, FavoriteRow> = new Map();
 	private setting: SettingRow | null = null;
 
 	/** 설정 저장 요청이 보낸 body를 받은 순서대로 쌓는다. 어떤 키를 보냈는지 검증하는 데 쓴다. */
@@ -185,6 +187,35 @@ export class MockSupabaseStore {
 		return highlight;
 	}
 
+	/** 즐겨찾기 한 건을 저장소에 넣는다. */
+	addFavorite(favorite: FavoriteRow) {
+		this.favorites.set(favorite.id, favorite);
+		return favorite;
+	}
+
+	/** 저장된 즐겨찾기 전체를 돌려준다. */
+	getAllFavorites() {
+		return Array.from(this.favorites.values());
+	}
+
+	/** 즐겨찾기를 부분 갱신한다. 없으면 null. */
+	updateFavorite(id: number, updates: Partial<FavoriteRow>) {
+		const favorite = this.favorites.get(id);
+		if (!favorite) return null;
+
+		const updated = { ...favorite, ...updates };
+		this.favorites.set(id, updated);
+
+		return updated;
+	}
+
+	/** 즐겨찾기를 지우고 지운 행을 돌려준다. */
+	deleteFavorite(id: number) {
+		const favorite = this.favorites.get(id);
+		this.favorites.delete(id);
+		return favorite;
+	}
+
 	/** 메모에 category_id로 연결된 카테고리를 붙여 앱이 받는 모양으로 만든다. */
 	toMemoWithCategory(memo: MemoRow): MemoWithCategory {
 		const category =
@@ -204,6 +235,7 @@ export class MockSupabaseStore {
 		this.categories.clear();
 		this.highlights.clear();
 		this.highlightMemoSources.clear();
+		this.favorites.clear();
 		this.setting = null;
 	}
 }
@@ -692,6 +724,54 @@ const handleCategoryDelete = async ({ route, url, store }: HandlerParams) => {
 	});
 };
 
+/** 즐겨찾기 목록 조회. 실제 쿼리처럼 created_at 내림차순으로 돌려준다. */
+const handleFavoriteGet = async ({ route, store }: HandlerParams) => {
+	const favorites = store
+		.getAllFavorites()
+		.sort((a, b) => b.created_at.localeCompare(a.created_at));
+
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(favorites),
+	});
+};
+
+/**
+ * 즐겨찾기 제목 수정. `id=eq.N`으로 대상을 고른다.
+ * @description `.single()` 요청은 배열이 아니라 객체 한 건을 기대한다.
+ */
+const handleFavoritePatch = async ({ route, url, store }: HandlerParams) => {
+	const id = parseIdFromUrl(url);
+	if (!id) {
+		await route.fallback();
+		return;
+	}
+
+	const updated = store.updateFavorite(id, route.request().postDataJSON());
+	await route.fulfill({
+		status: updated ? 200 : 406,
+		contentType: "application/json",
+		body: JSON.stringify(updated ?? { message: "no rows" }),
+	});
+};
+
+/** 즐겨찾기 삭제. `id=eq.N`으로 대상을 고른다. */
+const handleFavoriteDelete = async ({ route, url, store }: HandlerParams) => {
+	const id = parseIdFromUrl(url);
+	if (!id) {
+		await route.fallback();
+		return;
+	}
+
+	const deleted = store.deleteFavorite(id);
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(deleted ? [deleted] : []),
+	});
+};
+
 /**
  * 하이라이트 목록 조회. URL·색상·검색어 필터를 적용한다.
  * @description 페이지별 조회는 `url=eq.X`, 여러 페이지 묶음 조회는 `url=in.(...)`로 온다.
@@ -1118,6 +1198,18 @@ export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
 				store,
 				handlers: { POST: handleWeeklyReportTest },
 			}),
+	);
+
+	await context.route(`${SUPABASE.url}/rest/v1/favorite**`, (route) =>
+		dispatchByMethod({
+			route,
+			store,
+			handlers: {
+				GET: handleFavoriteGet,
+				PATCH: handleFavoritePatch,
+				DELETE: handleFavoriteDelete,
+			},
+		}),
 	);
 
 	await context.route(`${SUPABASE.url}/rest/v1/notice**`, (route) =>

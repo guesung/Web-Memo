@@ -37,6 +37,7 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | `report-ga-daily.yml` | schedule, workflow_dispatch | 매일 07:00 KST 또는 수동 실행마다 | `ga/report-daily-ga.mjs` |
 | `report-ga-weekly.yml` | schedule, workflow_dispatch | 매주 월요일 08:00 KST 또는 수동 실행마다 | `ga/report-weekly-ga.mjs` |
 | `report-seo.yml` | schedule, workflow_dispatch | 매일 09:17 KST 또는 수동 실행마다 | `pnpm seo:check`·`seo:gsc`·`seo:sheets` · `seo/find-previous-seo-report.mjs` · `seo/build-seo-ai-context.mjs` · `seo/send-seo-ai-report.mjs` · `seo/seo-fix.mjs` · `seo/notify-seo-slack.mjs` |
+| `report-gsc-demand.yml` | workflow_dispatch | 수동 실행할 때마다 | `pnpm seo:gsc-demand` → `seo/export-gsc-demand.mjs` (조합 페이지 축 판단용 GSC 수요·사이트맵 리포트, 아티팩트만 남김) |
 | `chore-cleanup-unused.yml` | schedule, workflow_dispatch | 매주 토요일 10:00 KST 또는 수동 실행마다 | `cleanup/cleanup-unused-files.mjs` |
 | `chore-e2e-coverage.yml` | schedule, workflow_dispatch | 매주 일요일 10:23 KST 또는 수동 실행마다 | `e2e-coverage/maintain.mjs` |
 | `chore-ga-events.yml` | schedule, workflow_dispatch | 매주 수요일 09:41 KST 또는 수동 실행마다 | `ga-events/maintain.mjs` |
@@ -85,6 +86,7 @@ import하지 않습니다.
 | --- | --- | --- |
 | `pnpm seo:check` | `seo/check-seo.mjs` | SEO 점검 (`report-seo.yml`도 사용) |
 | `pnpm seo:gsc` | `seo/check-gsc.mjs` | Search Console 색인·성과 조회 |
+| `pnpm seo:gsc-demand` | `seo/export-gsc-demand.mjs` | 도메인 이전일 이후 GSC 수요·사이트맵 상태 리포트 (`report-gsc-demand.yml`도 사용) |
 | `pnpm seo:sheets` | `seo/persist-seo-sheets.mjs` | SEO 결과를 Google Sheets에 적재 |
 | 수동 CLI | `ga/measure-feature-usage.mjs` | 기간별 기능 사용량 측정 ([`docs/analytics.md`](../docs/analytics.md)) |
 | 수동 CLI | `blog-reading/collect.mjs` | `--dry-run`으로 서버 저장 없이 원본 순회만 확인, `--smoke`로 당근 접근 확인 (종료 코드 3은 원본 사이트의 접근 차단) |

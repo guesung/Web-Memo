@@ -40,7 +40,8 @@ export const resolveGscWeeks = (now = new Date()) => {
 	};
 };
 
-const safeFailure = (error) => {
+/** 요청 오류를 응답 본문 없이 사람이 읽을 코드·문구로 바꿉니다. */
+export const safeFailure = (error) => {
 	const message = error instanceof Error ? error.message : String(error);
 	const status = Number(message.match(/^([45]\d\d)\b/)?.[1]);
 	if (status === 403) {
@@ -56,9 +57,11 @@ const safeFailure = (error) => {
 	return { code: "request_failed", message: "Search Console 요청에 실패했습니다." };
 };
 
-const requestGsc = async ({
+/** Search Console API를 호출합니다. 429·5xx는 최대 시도 횟수까지 지수 백오프로 다시 시도합니다. */
+export const requestGsc = async ({
 	url,
 	accessToken,
+	method = "POST",
 	body,
 	fetcher,
 	sleep,
@@ -66,12 +69,12 @@ const requestGsc = async ({
 }) => {
 	for (let attempt = 1; attempt <= maximumAttempts; attempt += 1) {
 		const response = await fetcher(url, {
-			method: "POST",
+			method,
 			headers: {
 				authorization: `Bearer ${accessToken}`,
 				"content-type": "application/json",
 			},
-			body: JSON.stringify(body),
+			...(method === "GET" ? {} : { body: JSON.stringify(body) }),
 		});
 		if (response.ok) {
 			return await response.json();

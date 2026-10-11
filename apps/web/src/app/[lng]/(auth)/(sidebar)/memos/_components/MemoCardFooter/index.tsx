@@ -9,7 +9,7 @@ import type { GetMemoResponse } from "@web-memo/shared/types";
 import { cn, type TPlanDateKey } from "@web-memo/shared/utils";
 import { Badge, Button, CardFooter, ToastAction, toast } from "@web-memo/ui";
 import dayjs from "dayjs";
-import { BookOpen, Clock, FolderIcon, HeartIcon, StarIcon } from "lucide-react";
+import { BookOpen, FolderIcon, HeartIcon, StarIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
 import { useState } from "react";
@@ -25,7 +25,15 @@ interface IFMemoCardFooterProps
 	memo: GetMemoResponse;
 	isShowingOption?: boolean;
 	highlightCount?: number;
+	/** 꺼진 상태 버튼을 평소에 숨기고 마우스를 올렸을 때만 보인다. 목록 카드가 켠다 */
+	hidesInactiveActions?: boolean;
 }
+
+/**
+ * 꺼진 상태 버튼을 평소에 숨기는 클래스. 호버할 수 있는 기기에서만 숨긴다.
+ * @description 터치 화면에는 호버가 없어, 숨기면 카드에서 누를 길이 사라진다.
+ */
+const HIDDEN_UNTIL_HOVER = "[@media(hover:hover)]:hidden";
 
 /** 메모 카테고리, 수정 시각과 상태 변경 버튼을 표시한다. */
 function MemoCardFooter({
@@ -34,6 +42,7 @@ function MemoCardFooter({
 	children,
 	isShowingOption = true,
 	highlightCount,
+	hidesInactiveActions = false,
 	...props
 }: IFMemoCardFooterProps) {
 	const { t } = useTranslation(lng);
@@ -43,6 +52,13 @@ function MemoCardFooter({
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const [isPlanPickerOpen, setIsPlanPickerOpen] = useState(false);
 	const changePlanDate = usePlanDateChange({ memo, lng });
+	const isActionsExpanded =
+		isShowingOption || isDropdownOpen || isPlanPickerOpen;
+	const hiddenUntilHover = (isActive: boolean) =>
+		hidesInactiveActions &&
+		!isActionsExpanded &&
+		!isActive &&
+		HIDDEN_UNTIL_HOVER;
 
 	const handleCategoryClick = (event: MouseEvent<HTMLDivElement>) => {
 		event.stopPropagation();
@@ -200,38 +216,45 @@ function MemoCardFooter({
 						<span>{memo.category.name}</span>
 					</Badge>
 				)}
-				<time
-					dateTime={memo.updated_at ?? ""}
-					className="text-xs text-muted-foreground flex items-center gap-1.5"
-				>
-					<Clock className="w-3 h-3" />
-					{dayjs(memo.updated_at).fromNow()}
-				</time>
-				{memo.plannedDate && (
-					<PlanDateChip
-						lng={lng}
-						plannedDate={memo.plannedDate}
-						onClick={() => setIsPlanPickerOpen(true)}
-					/>
-				)}
-				{highlightCount !== undefined && highlightCount > 0 ? (
-					<span className="text-xs font-medium text-primary">
-						{t("memoSection.highlightCount", { count: highlightCount })}
-					</span>
-				) : null}
+				{/* 호버로 아이콘이 늘어나도 카드 높이가 변하지 않게, 넘치는 뒷부분은 말줄임으로 자른다. */}
+				<div className="flex min-w-0 items-center gap-x-1.5 whitespace-nowrap text-xs text-muted-foreground">
+					<time dateTime={memo.updated_at ?? ""} className="shrink-0">
+						{dayjs(memo.updated_at).fromNow()}
+					</time>
+					{memo.plannedDate && (
+						<>
+							<MetaSeparator />
+							<PlanDateChip
+								lng={lng}
+								plannedDate={memo.plannedDate}
+								onClick={() => setIsPlanPickerOpen(true)}
+							/>
+						</>
+					)}
+					{highlightCount !== undefined && highlightCount > 0 ? (
+						<>
+							<MetaSeparator />
+							<span className="min-w-0 truncate font-medium text-primary">
+								{t("memoSection.highlightCount", { count: highlightCount })}
+							</span>
+						</>
+					) : null}
+				</div>
 			</div>
 
 			<div
 				className={cn("flex items-center gap-1 transition-opacity", {
-					"opacity-100": isShowingOption || isDropdownOpen || isPlanPickerOpen,
 					"opacity-40 hover:opacity-100":
-						!isShowingOption && !isDropdownOpen && !isPlanPickerOpen,
+						!hidesInactiveActions && !isActionsExpanded,
 				})}
 			>
 				<Button
 					variant="ghost"
 					size="sm"
-					className="w-8 h-8 p-0 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-full"
+					className={cn(
+						"w-8 h-8 p-0 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-full",
+						hiddenUntilHover(Boolean(memo.isWish)),
+					)}
 					aria-label={t("memos.toggle.wish")}
 					aria-pressed={Boolean(memo.isWish)}
 					onClick={handleIsWishClick}
@@ -249,7 +272,10 @@ function MemoCardFooter({
 				<Button
 					variant="ghost"
 					size="sm"
-					className="w-8 h-8 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-full"
+					className={cn(
+						"w-8 h-8 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-full",
+						hiddenUntilHover(Boolean(memo.isReading)),
+					)}
 					aria-label={t("memos.toggle.reading")}
 					aria-pressed={Boolean(memo.isReading)}
 					onClick={handleIsReadingClick}
@@ -268,7 +294,10 @@ function MemoCardFooter({
 				<Button
 					variant="ghost"
 					size="sm"
-					className="w-8 h-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-full"
+					className={cn(
+						"w-8 h-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-full",
+						hiddenUntilHover(Boolean(memo.isStar)),
+					)}
 					aria-label={t("memos.toggle.star")}
 					aria-pressed={Boolean(memo.isStar)}
 					onClick={handleIsStarClick}
@@ -291,11 +320,32 @@ function MemoCardFooter({
 					open={isPlanPickerOpen}
 					onOpenChange={setIsPlanPickerOpen}
 					onSelect={handlePlanDateSelect}
+					// 날짜가 있으면 왼쪽 문구로 이미 보이므로, 켜진 상태여도 평소엔 숨긴다.
+					triggerClassName={cn(hiddenUntilHover(false))}
 				/>
-				<MemoOption memos={[memo]} lng={lng} onOpenChange={setIsDropdownOpen} />
+				<span
+					className={cn("transition-opacity", {
+						"opacity-40": hidesInactiveActions && !isActionsExpanded,
+					})}
+				>
+					<MemoOption
+						memos={[memo]}
+						lng={lng}
+						onOpenChange={setIsDropdownOpen}
+					/>
+				</span>
 				{children}
 			</div>
 		</CardFooter>
+	);
+}
+
+/** 푸터 한 줄 정보 사이의 구분점. 읽기 보조 기기에는 읽히지 않게 한다. */
+function MetaSeparator() {
+	return (
+		<span aria-hidden="true" className="shrink-0">
+			·
+		</span>
 	);
 }
 

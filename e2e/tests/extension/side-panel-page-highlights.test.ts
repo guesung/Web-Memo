@@ -141,7 +141,10 @@ test("하이라이트 조회 실패 후 재시도와 빈 상태에서도 메모�
 			shouldFail &&
 			route.request().method() === "GET" &&
 			!route.request().serviceWorker() &&
-			route.request().frame().url().includes("side-panel")
+			route.request().frame().url().includes("side-panel") &&
+			new globalThis.URL(route.request().url()).searchParams
+				.get("page_key")
+				?.includes("panel-highlights")
 		) {
 			shouldFail = false;
 			await route.fulfill({

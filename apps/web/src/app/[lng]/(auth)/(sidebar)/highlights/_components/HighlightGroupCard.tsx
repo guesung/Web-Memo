@@ -18,8 +18,6 @@ interface HighlightGroupCardProps {
 	isLinkError?: boolean;
 	onRetryLinks?: () => void;
 	targetHighlightId?: number;
-	drafts?: Record<number, string>;
-	onDraftChange?: (id: number, draft: string) => void;
 }
 
 /** 같은 URL에서 그은 하이라이트를 한 카드로 모아 보여준다 */
@@ -32,8 +30,6 @@ export function HighlightGroupCard({
 	isLinkError,
 	onRetryLinks,
 	targetHighlightId,
-	drafts,
-	onDraftChange,
 }: HighlightGroupCardProps) {
 	const { t } = useTranslation(lng);
 	const [failedFavIconUrl, setFailedFavIconUrl] = useState<string | null>(null);
@@ -80,8 +76,6 @@ export function HighlightGroupCard({
 						isLinkError={isLinkError}
 						onRetryLinks={onRetryLinks}
 						isTarget={targetHighlightId === highlight.id}
-						draft={drafts?.[highlight.id]}
-						onDraftChange={(draft) => onDraftChange?.(highlight.id, draft)}
 					/>
 				))}
 			</ul>

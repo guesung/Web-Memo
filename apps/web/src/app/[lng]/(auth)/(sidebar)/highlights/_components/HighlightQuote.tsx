@@ -13,7 +13,6 @@ import { getHighlightSourceUrl } from "@web-memo/shared/utils";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useHighlightNoteMutation } from "../_hooks";
-import { HighlightMemoComposer } from "./HighlightMemoComposer";
 
 /** 하이라이트 문장과 기존 메모를 표시하는 속성. */
 interface IFHighlightQuoteProps {
@@ -24,8 +23,6 @@ interface IFHighlightQuoteProps {
 	isLinkError?: boolean;
 	onRetryLinks?: () => void;
 	isTarget?: boolean;
-	draft?: string;
-	onDraftChange?: (draft: string) => void;
 }
 
 /** URL별 그룹 카드 안에서 하이라이트 한 문장을 보여준다. 코멘트 영역을 누르면 편집할 수 있다. */
@@ -37,8 +34,6 @@ export const HighlightQuote = ({
 	isLinkError,
 	onRetryLinks,
 	isTarget,
-	draft: controlledDraft,
-	onDraftChange,
 }: IFHighlightQuoteProps) => {
 	const { t } = useTranslation(lng);
 	const [isEditing, setIsEditing] = useState(false);
@@ -49,12 +44,8 @@ export const HighlightQuote = ({
 		useHighlightNoteMutation();
 	const noteTextareaRef = useRef<HTMLTextAreaElement>(null);
 	const itemRef = useRef<HTMLLIElement>(null);
-	const addButtonRef = useRef<HTMLButtonElement>(null);
-	const [isComposerOpen, setComposerOpen] = useState(false);
-	const [localDraft, setLocalDraft] = useState("");
-	const draft = controlledDraft ?? localDraft;
-
 	const style = HIGHLIGHT_COLOR_STYLE[highlight.color as HighlightColor];
+	const sourceUrl = getHighlightSourceUrl(highlight);
 
 	useEffect(() => {
 		if (isEditing) {
@@ -184,40 +175,31 @@ export const HighlightQuote = ({
 									: "highlight.memo.open",
 							)}
 						</Link>
-					) : (
-						<button
-							ref={addButtonRef}
-							type="button"
-							onClick={() => setComposerOpen(true)}
+					) : sourceUrl !== "#" ? (
+						<a
+							href={sourceUrl}
+							target="_blank"
+							rel="noopener noreferrer"
 							className="rounded-md border border-border px-2 py-1 text-xs hover:bg-accent"
 						>
-							{t("highlight.memo.add")}
-						</button>
+							{t("highlight.memo.sidePanel")}
+						</a>
+					) : null}
+					{sourceUrl !== "#" && (
+						<a
+							href={sourceUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="ml-auto text-xs text-muted-foreground underline"
+						>
+							{t("highlight.memo.source")}
+						</a>
 					)}
-					<a
-						href={getHighlightSourceUrl(highlight)}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="ml-auto text-xs text-muted-foreground underline"
-					>
-						{t("highlight.memo.source")}
-					</a>
 				</div>
-				{isComposerOpen && !link && !isLinkError && (
-					<HighlightMemoComposer
-						lng={lng}
-						highlightId={highlight.id}
-						quote={highlight.exact_text}
-						draft={draft}
-						onDraftChange={(value) => {
-							setLocalDraft(value);
-							onDraftChange?.(value);
-						}}
-						onCancel={() => {
-							setComposerOpen(false);
-							addButtonRef.current?.focus();
-						}}
-					/>
+				{!isLinkLoading && !isLinkError && !link?.memo && sourceUrl !== "#" && (
+					<p className="mt-2 text-xs text-muted-foreground">
+						{t("highlight.memo.sidePanelHint")}
+					</p>
 				)}
 			</div>
 		</li>

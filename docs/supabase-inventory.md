@@ -310,6 +310,8 @@
 | `show_impression` | `boolean` |
 | `show_action_item` | `boolean` |
 | `truncate_memo_content` | `boolean` |
+| `show_summary` | `boolean` |
+| `show_ai_chat` | `boolean` |
 
 #### DB 함수 (38개)
 
@@ -964,11 +966,12 @@ Supabase가 만들고 관리하는 스키마입니다. 플랫폼 업데이트로
 | `action_filter` | `text` |
 | `selected_columns` | `text[]` |
 
-#### DB 함수 (15개)
+#### DB 함수 (18개)
 
 | 함수 | 반환 타입 |
 | --- | --- |
 | `apply_rls(wal jsonb, max_record_bytes integer)` | `SETOF realtime.wal_rls` |
+| `authorize(role_name text, topic_name text, claims text, sub text, headers text, read_extensions text[], write_extensions text[], OUT read_allowed boolean[], OUT write_allowed boolean[])` | `record` |
 | `broadcast_changes(topic_name text, event_name text, operation text, table_name text, table_schema text, new record, old record, level text)` | `void` |
 | `build_prepared_statement_sql(prepared_statement_name text, entity regclass, columns realtime.wal_column[])` | `text` |
 | `cast(val text, type_ regtype)` | `jsonb` |
@@ -976,9 +979,11 @@ Supabase가 만들고 관리하는 스키마입니다. 플랫폼 업데이트로
 | `check_equality_op(op realtime.equality_op, type_ regtype, val_1 text, val_2 text, negate boolean)` | `boolean` |
 | `is_visible_through_filters(columns realtime.wal_column[], filters realtime.user_defined_filter[])` | `boolean` |
 | `list_changes(publication name, slot_name name, max_changes integer, max_record_bytes integer)` | `TABLE(wal jsonb, is_rls_enabled boolean, subscription_ids uuid[], errors text[], slot_changes_count bigint)` |
+| `list_changes_sync(publication name, slot_name name, max_changes integer, max_record_bytes integer)` | `TABLE(wal jsonb, is_rls_enabled boolean, subscription_ids uuid[], errors text[], slot_changes_count bigint)` |
 | `quote_wal2json(entity regclass)` | `text` |
 | `send(payload jsonb, event text, topic text, private boolean)` | `void` |
 | `send_binary(payload bytea, event text, topic text, private boolean)` | `void` |
+| `settled_changes(slot_name name, max_changes integer, VARIADIC opts text[])` | `TABLE(lsn pg_lsn, xid xid, data text)` |
 | `subscription_check_filters()` | `trigger` |
 | `to_regrole(role_name text)` | `regrole` |
 | `topic()` | `text` |

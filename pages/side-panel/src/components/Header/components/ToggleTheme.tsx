@@ -1,7 +1,6 @@
-import IconTooltip from "@src/components/IconTooltip";
 import { ChromeSyncStorage } from "@web-memo/shared/modules/chrome-storage";
 import { I18n } from "@web-memo/shared/utils/extension";
-import { Button } from "@web-memo/ui";
+import { Button, IconTooltip } from "@web-memo/ui";
 import { Moon, Sun } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 

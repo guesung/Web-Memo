@@ -355,7 +355,10 @@
 		"memo_updated_at": "{{time}}에 수정됨",
 		"guideDone": "🎉 가이드를 완료했어요",
 		"guideDoneDescription": "즐겁게 메모해 보세요!",
-		"duplicateCategory": "이미 같은 이름의 카테고리가 있어요"
+		"duplicateCategory": "이미 같은 이름의 카테고리가 있어요",
+		"categoryRemoved": "카테고리를 해제했어요",
+		"categoryCreateFailed": "카테고리를 만들지 못했어요",
+		"categoryEditFailed": "카테고리를 바꾸지 못했어요"
 	},
 	"toastActionMessage": {
 		"goTo": "이동하기",
@@ -509,6 +512,23 @@
 		"actionItemPlaceholder": "이 페이지를 보고 할 일을 적어보세요"
 	},
 	"memos": {
+		"categoryAdd": "카테고리 추가",
+		"categoryPopup": {
+			"search": "카테고리 검색",
+			"noResult": "맞는 카테고리가 없어요",
+			"empty": "아직 카테고리가 없어요",
+			"emptyHint": "이름을 입력하면 바로 만들 수 있어요",
+			"createNamed": "'{{name}}' 만들기",
+			"remove": "카테고리 해제"
+		},
+		"tooltip": {
+			"wishAdd": "위시리스트에 추가",
+			"wishRemove": "위시리스트에서 빼기",
+			"readingAdd": "읽는 중으로 표시",
+			"readingRemove": "읽는 중에서 빼기",
+			"starAdd": "중요 메모로 표시",
+			"starRemove": "중요 메모에서 빼기"
+		},
 		"view": {
 			"truncateContent": "메모 내용 줄여 보기",
 			"unknownDate": "작성일 없음",

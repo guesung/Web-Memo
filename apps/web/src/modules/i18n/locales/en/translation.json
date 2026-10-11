@@ -360,7 +360,10 @@
 		"memo_updated_at": "Modified at {{time}}",
 		"guideDone": "🎉 Guide completed",
 		"guideDoneDescription": "Enjoy taking memos!",
-		"duplicateCategory": "A category with this name already exists"
+		"duplicateCategory": "A category with this name already exists",
+		"categoryRemoved": "Category removed",
+		"categoryCreateFailed": "Couldn't create the category",
+		"categoryEditFailed": "Couldn't change the category"
 	},
 	"toastActionMessage": {
 		"goTo": "Go to",
@@ -514,6 +517,23 @@
 		"actionItemPlaceholder": "Write what to do after reading this page"
 	},
 	"memos": {
+		"categoryAdd": "Add category",
+		"categoryPopup": {
+			"search": "Search categories",
+			"noResult": "No matching categories",
+			"empty": "No categories yet",
+			"emptyHint": "Type a name to create one",
+			"createNamed": "Create '{{name}}'",
+			"remove": "Remove category"
+		},
+		"tooltip": {
+			"wishAdd": "Add to wishlist",
+			"wishRemove": "Remove from wishlist",
+			"readingAdd": "Mark as reading",
+			"readingRemove": "Remove from reading",
+			"starAdd": "Mark as important",
+			"starRemove": "Remove from important"
+		},
 		"view": {
 			"truncateContent": "Shorten memo content",
 			"unknownDate": "No creation date",

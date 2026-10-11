@@ -37,14 +37,13 @@ export const buildMemoUpdateEvents = (
 	}
 
 	if ("category_id" in request) {
-		if (context.categorySource) {
-			events.push({
-				name: "memo_category_change",
-				params: { source: context.categorySource },
-			});
-		} else {
-			events.push({ name: "memo_category_change" });
-		}
+		const action = request.category_id === null ? "clear" : "set";
+		events.push({
+			name: "memo_category_change",
+			params: context.categorySource
+				? { action, source: context.categorySource }
+				: { action },
+		});
 	}
 
 	const changedContentKeys = CONTENT_KEYS.filter(

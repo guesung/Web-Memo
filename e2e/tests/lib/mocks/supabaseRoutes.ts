@@ -10,6 +10,8 @@ import {
 type MemoRow = Database["memo"]["Tables"]["memo"]["Row"];
 type CategoryRow = Database["memo"]["Tables"]["category"]["Row"];
 type HighlightRow = Database["memo"]["Tables"]["highlight"]["Row"];
+type HighlightMemoSource =
+	Database["memo"]["Tables"]["highlight_memo_source"]["Row"];
 type SettingRow = Database["memo"]["Tables"]["setting"]["Row"];
 
 /** 앱이 받는 메모 한 건. `select("*, category(...)")`의 응답 모양이다. */
@@ -34,6 +36,7 @@ export class MockSupabaseStore {
 	private memos: Map<number, MemoRow> = new Map();
 	private categories: Map<number, CategoryRow> = new Map();
 	private highlights: Map<number, HighlightRow> = new Map();
+	private highlightMemoSources: Map<number, HighlightMemoSource> = new Map();
 	private setting: SettingRow | null = null;
 
 	/** 메모 한 건을 저장소에 넣는다. */
@@ -76,7 +79,17 @@ export class MockSupabaseStore {
 	deleteMemo(id: number) {
 		const memo = this.memos.get(id);
 		this.memos.delete(id);
+		this.highlightMemoSources.delete(id);
 		return memo;
+	}
+
+	addHighlightMemoSource(source: HighlightMemoSource) {
+		this.highlightMemoSources.set(source.memo_id, source);
+		return source;
+	}
+
+	getHighlightMemoSources() {
+		return Array.from(this.highlightMemoSources.values());
 	}
 
 	/** 카테고리 한 건을 저장소에 넣는다. */
@@ -154,6 +167,13 @@ export class MockSupabaseStore {
 	deleteHighlight(id: number) {
 		const highlight = this.highlights.get(id);
 		this.highlights.delete(id);
+		for (const source of Array.from(this.highlightMemoSources.values())) {
+			if (source.highlight_id === id)
+				this.highlightMemoSources.set(source.memo_id, {
+					...source,
+					highlight_id: null,
+				});
+		}
 		return highlight;
 	}
 
@@ -175,6 +195,7 @@ export class MockSupabaseStore {
 		this.memos.clear();
 		this.categories.clear();
 		this.highlights.clear();
+		this.highlightMemoSources.clear();
 		this.setting = null;
 	}
 }
@@ -669,6 +690,8 @@ const handleCategoryDelete = async ({ route, url, store }: HandlerParams) => {
  */
 const handleHighlightGet = async ({ route, url, store }: HandlerParams) => {
 	const targetUrls = parseValueListFilter(url, "url");
+	const targetId = parseEqualsFilter(url, "id");
+	const userId = parseEqualsFilter(url, "user_id");
 	const color = parseEqualsFilter(url, "color");
 	const searchQuery = extractIlikeQuery(url, "exact_text");
 	const cursor = url.searchParams
@@ -683,6 +706,14 @@ const handleHighlightGet = async ({ route, url, store }: HandlerParams) => {
 	const highlights = store
 		.getAllHighlights()
 		.filter((highlight) => {
+			if (targetId && highlight.id !== Number(targetId)) return false;
+			// 목 기본 소유자는 로그인한 테스트 계정을 뜻한다. 명시한 타인 ID는 그대로 구별한다.
+			if (
+				userId &&
+				highlight.user_id !== "test-user-id" &&
+				highlight.user_id !== userId
+			)
+				return false;
 			if (targetUrls !== undefined && !targetUrls.includes(highlight.url)) {
 				return false;
 			}
@@ -717,7 +748,14 @@ const handleHighlightGet = async ({ route, url, store }: HandlerParams) => {
 	await route.fulfill({
 		status: 200,
 		contentType: "application/json",
-		body: JSON.stringify(highlights.slice(0, limit)),
+		body: JSON.stringify(
+			route
+				.request()
+				.headers()
+				.accept?.includes("application/vnd.pgrst.object+json")
+				? (highlights[0] ?? null)
+				: highlights.slice(0, limit),
+		),
 	});
 };
 
@@ -786,6 +824,105 @@ const handleHighlightCountsRpc = async ({ route, store }: HandlerParams) => {
 		status: 200,
 		contentType: "application/json",
 		body: JSON.stringify(highlightCounts),
+	});
+};
+
+/** 연결 조회는 요청한 ID만 반환하고 memo 조인까지 한 번에 담는다. */
+const handleHighlightMemoSourceGet = async ({
+	route,
+	url,
+	store,
+}: HandlerParams) => {
+	const byHighlight = parseValueListFilter(url, "highlight_id");
+	const byMemo = parseValueListFilter(url, "memo_id");
+	if (!byHighlight && !byMemo) return route.fallback();
+	const sources = store
+		.getHighlightMemoSources()
+		.filter((source) =>
+			byHighlight
+				? source.highlight_id !== null &&
+					byHighlight.includes(String(source.highlight_id))
+				: byMemo?.includes(String(source.memo_id)),
+		)
+		.map((source) => {
+			const memo = store.getMemo(source.memo_id);
+			return {
+				...source,
+				memo: memo
+					? { id: memo.id, memo: memo.memo, deleted_at: memo.deleted_at }
+					: null,
+			};
+		});
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(sources),
+	});
+};
+
+/** 생성 RPC 목도 재시도 시 기존 연결을 반환해 중복 작성을 관측한다. */
+const handleCreateMemoFromHighlight = async ({
+	route,
+	store,
+}: HandlerParams) => {
+	const { p_highlight_id: highlightId, p_memo: memoText } = route
+		.request()
+		.postDataJSON() as { p_highlight_id: number; p_memo: string };
+	const highlight = store
+		.getAllHighlights()
+		.find((item) => item.id === highlightId);
+	if (!highlight || !memoText?.trim()) {
+		await route.fulfill({
+			status: 400,
+			contentType: "application/json",
+			body: JSON.stringify({ message: "Invalid highlight or memo" }),
+		});
+		return;
+	}
+	const existing = store
+		.getHighlightMemoSources()
+		.find((source) => source.highlight_id === highlightId);
+	if (existing) {
+		const memo = store.getMemo(existing.memo_id);
+		await route.fulfill({
+			status: 200,
+			contentType: "application/json",
+			body: JSON.stringify({
+				memo_id: existing.memo_id,
+				highlight_id: highlightId,
+				created: false,
+				deleted_at: memo?.deleted_at ?? null,
+			}),
+		});
+		return;
+	}
+	const memo = store.addMemo(
+		createMockMemo({
+			url: highlight.url,
+			title: highlight.title ?? highlight.url,
+			memo: memoText.trim(),
+		}),
+	);
+	store.addHighlightMemoSource({
+		memo_id: memo.id,
+		highlight_id: highlight.id,
+		user_id: highlight.user_id,
+		exact_text: highlight.exact_text,
+		url: highlight.url,
+		prefix_text: highlight.prefix_text,
+		suffix_text: highlight.suffix_text,
+		text_position_start: highlight.text_position_start,
+		color: highlight.color,
+	});
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify({
+			memo_id: memo.id,
+			highlight_id: highlightId,
+			created: true,
+			deleted_at: null,
+		}),
 	});
 };
 
@@ -918,6 +1055,25 @@ export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
 				DELETE: handleHighlightDelete,
 			},
 		}),
+	);
+
+	await context.route(
+		`${SUPABASE.url}/rest/v1/highlight_memo_source**`,
+		(route) =>
+			dispatchByMethod({
+				route,
+				store,
+				handlers: { GET: handleHighlightMemoSourceGet },
+			}),
+	);
+	await context.route(
+		`${SUPABASE.url}/rest/v1/rpc/create_memo_from_highlight`,
+		(route) =>
+			dispatchByMethod({
+				route,
+				store,
+				handlers: { POST: handleCreateMemoFromHighlight },
+			}),
 	);
 
 	await context.route(

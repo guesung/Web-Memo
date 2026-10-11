@@ -417,7 +417,7 @@
 		"message": "옵션에서 다시 켤 수 있어요."
 	},
 	"highlight_intro_message": {
-		"message": "웹 메모의 하이라이트예요. 색상을 누르면 문장을 저장하고, 메모도 남길 수 있어요. X는 이번 선택만 닫고, 설정에서 위치를 바꾸거나 팝업을 끌 수 있어요."
+		"message": "웹 메모의 하이라이트예요. 색상을 누르면 문장을 저장해요. 코멘트와 실제 메모는 별도로 추가할 수 있어요. X는 이번 선택만 닫고, 설정에서 위치를 바꾸거나 팝업을 끌 수 있어요."
 	},
 	"highlight_intro_confirm": {
 		"message": "확인"
@@ -459,14 +459,26 @@
 		"message": "다시 켜기"
 	},
 	"highlight_note": {
-		"message": "메모"
+		"message": "코멘트"
 	},
 	"highlight_note_placeholder": {
-		"message": "이 하이라이트에 메모 추가"
+		"message": "이 하이라이트에 코멘트 추가"
 	},
 	"highlight_note_save": {
 		"message": "저장"
 	},
+	"highlight_memo_add": { "message": "메모 추가" },
+	"highlight_memo_open": { "message": "메모 열기" },
+	"highlight_memo_restore": { "message": "휴지통에서 복원하기" },
+	"highlight_memo_loading": { "message": "연결된 메모 확인 중…" },
+	"highlight_memo_load_failed": { "message": "연결된 메모를 확인하지 못했어요." },
+	"highlight_memo_retry": { "message": "다시 시도" },
+	"highlight_memo_quote": { "message": "선택한 문장" },
+	"highlight_memo_thought": { "message": "내 생각" },
+	"highlight_memo_placeholder": { "message": "이 문장에서 떠오른 생각을 적어보세요" },
+	"highlight_memo_cancel": { "message": "취소" },
+	"highlight_memo_save": { "message": "메모 저장" },
+	"highlight_memo_save_failed": { "message": "메모를 저장하지 못했어요. 다시 시도해 주세요." },
 	"highlight_bubble_menu_title": {
 		"message": "웹 메모 하이라이트"
 	},

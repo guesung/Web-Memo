@@ -574,6 +574,26 @@
 		}
 	},
 	"highlight": {
+		"memo": {
+			"add": "+ 메모 추가",
+			"open": "메모 열기",
+			"restore": "휴지통에서 복원",
+			"trashed": "연결된 메모가 휴지통에 있습니다.",
+			"linked": "연결된 메모",
+			"quote": "인용문",
+			"placeholder": "이 문장에서 떠오른 생각을 적어보세요",
+			"save": "메모 저장",
+			"saving": "저장 중...",
+			"cancel": "취소",
+			"saveError": "메모를 저장하지 못했습니다. 입력은 남아 있습니다. 다시 시도해 주세요.",
+			"loadError": "연결된 메모를 불러오지 못했습니다. 다시 시도해 주세요.",
+			"loading": "메모 불러오는 중...",
+			"source": "원문 보기",
+			"viewHighlight": "연결된 하이라이트 보기",
+			"deletedHighlight": "하이라이트가 삭제되었습니다.",
+			"related": "같은 페이지의 다른 하이라이트",
+			"relatedCount": "같은 페이지의 다른 하이라이트 {{count}}개"
+		},
 		"loadError": "하이라이트를 불러오지 못했어요. 다시 시도해 주세요.",
 		"loadMore": "더 보기",
 		"count": "{{count}}개",

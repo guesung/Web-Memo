@@ -8,7 +8,11 @@ import {
 	type TMemoLoadOutcome,
 	type TMemoRoute,
 } from "@src/modules/observability/client";
-import type { GetMemoResponse, HighlightRow } from "@web-memo/shared/types";
+import type {
+	GetMemoResponse,
+	HighlightMemoLink,
+	HighlightRow,
+} from "@web-memo/shared/types";
 import { Button } from "@web-memo/ui";
 import { useEffect, useRef, useState } from "react";
 import { useMemoSettings } from "./_hooks/useMemoSettings";
@@ -150,6 +154,7 @@ const MemoList = (props: IFMemoListProps) => {
 									lng={props.lng}
 									memo={memo}
 									highlights={props.highlightsByUrl.get(memo.url)}
+									source={props.sourcesByMemo.get(memo.id)}
 									showImpression={showImpression}
 									showActionItem={showActionItem}
 									truncateMemoContent={truncateMemoContent}
@@ -248,6 +253,7 @@ const groupMemosByDate = (memos: GetMemoResponse[]) => {
 interface IFMemoListProps extends LanguageType {
 	memos: GetMemoResponse[];
 	highlightsByUrl: Map<string, HighlightRow[]>;
+	sourcesByMemo: Map<number, HighlightMemoLink>;
 	searchQuery: string;
 	/** 정규화된 선택 도메인. 필터가 없으면 undefined */
 	domain: string | undefined;

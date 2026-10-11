@@ -14,10 +14,26 @@ vi.mock("@src/modules/i18n/util.client", () => ({
 	default: () => ({ t: (key: string) => key }),
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
+	useHighlightMemoLinks: () => ({
+		data: [],
+		isPending: false,
+		isError: false,
+		refetch: vi.fn(),
+	}),
+	useSupabaseClientQuery: () => ({ data: {} }),
+	useSupabaseUserQuery: () => ({
+		user: { data: { user: { id: "test-user" } } },
+	}),
 	useDebounce: () => ({
 		debounce: (callback: () => void) => callback(),
 		abortDebounce: vi.fn(),
 	}),
+}));
+vi.mock("@tanstack/react-query", () => ({
+	useQuery: () => ({ data: null, isError: false }),
+}));
+vi.mock("next/navigation", () => ({
+	useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock("@web-memo/shared/constants", () => ({
 	HIGHLIGHT_COLORS: ["yellow"],

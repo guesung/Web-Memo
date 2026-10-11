@@ -8,7 +8,11 @@ import {
 	type TMemoLoadOutcome,
 	type TMemoRoute,
 } from "@src/modules/observability/client";
-import { useDidMount, useMemosInfiniteQuery } from "@web-memo/shared/hooks";
+import {
+	useDidMount,
+	useHighlightMemoLinks,
+	useMemosInfiniteQuery,
+} from "@web-memo/shared/hooks";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { parseDomainFilter } from "@web-memo/shared/utils";
 import { Loading, Skeleton } from "@web-memo/ui";
@@ -96,6 +100,13 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 
 	const { highlightsByUrl, isHighlightLoadError, refetchHighlights } =
 		useMemoHighlights(memos.map((memo) => memo.url));
+	const sources = useHighlightMemoLinks(
+		memos.map((memo) => memo.id),
+		"memo",
+	);
+	const sourcesByMemo = new Map(
+		(sources.data ?? []).map((source) => [source.memo_id, source]),
+	);
 
 	const { moveNextGuideStep } = useGuide({ lng });
 	useDidMount(async () => {
@@ -170,12 +181,28 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 					</button>
 				</div>
 			)}
+			{sources.isError && (
+				<div
+					role="alert"
+					className="flex items-center gap-2 text-sm text-destructive"
+				>
+					<p>{t("highlight.memo.loadError")}</p>
+					<button
+						type="button"
+						onClick={() => void sources.refetch()}
+						className="underline"
+					>
+						{t("error.500.retry")}
+					</button>
+				</div>
+			)}
 			{isListView ? (
 				<MemoList
 					key={tabKey}
 					lng={lng}
 					memos={memos}
 					highlightsByUrl={highlightsByUrl}
+					sourcesByMemo={sourcesByMemo}
 					searchQuery={searchQuery}
 					domain={domain}
 					hasNextPage={hasNextPage}
@@ -191,6 +218,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 					lng={lng}
 					memos={memos}
 					highlightsByUrl={highlightsByUrl}
+					sourcesByMemo={sourcesByMemo}
 					searchQuery={searchQuery}
 					domain={domain}
 					hasNextPage={hasNextPage}

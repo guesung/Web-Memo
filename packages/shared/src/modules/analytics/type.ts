@@ -82,7 +82,10 @@ export type TAnalyticsEvent =
 	| { name: "highlight_note_update" }
 	| { name: "login"; params: { method: string } }
 	| { name: "memo_search"; params: { query_length: number } }
-	| { name: "memo_open"; params: { has_search_query: boolean } }
+	| {
+			name: "memo_open";
+			params: { has_search_query: boolean; source?: "highlight" };
+	  }
 	| { name: "memo_source_open" }
 	| { name: "memo_restore"; params: { memo_count: number } }
 	| { name: "memo_delete_permanently"; params: { memo_count: number } }
@@ -163,7 +166,7 @@ export type TAnalyticsEvent =
 	| { name: "guide_finish" }
 	| { name: "extension_setting_change"; params: { keys: string } }
 	| { name: "guide_step"; params: { step_name: string } }
-	| { name: "memo_first_write" }
+	| { name: "memo_first_write"; params?: { source: "highlight" } }
 	| { name: "export_run"; params: { format: ExportFormat } }
 	| { name: "search_no_result"; params: { has_domain_filter: boolean } }
 	| {

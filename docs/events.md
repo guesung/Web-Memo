@@ -24,11 +24,11 @@
 | side_panel_open_click | 사이드 패널을 여는 버튼 클릭 (추정) | — | 버튼으로 여는 사람이 얼마나 되는가 (추정) | — |
 | page_view | 페이지 조회 | `page_title`, `page_location` | 어느 페이지가 얼마나 보이는가 (추정) | — |
 | memo_write | 저장된 메모의 제목·본문·인상·할 일 수정. 확장 upsert는 이전 값과 다른 필드에만 발생 | `fields`: 변경된 필드 이름 | 어떤 내용을 수정하는가 (추정) | DB-1158 |
-| memo_first_write | 새 메모 insert 성공 시마다 발생 (사용자 생애 첫 작성만 뜻하지 않음) | — | 새 메모를 만든 사용자가 얼마나 되는가 | — |
+| memo_first_write | 새 메모 insert 성공 시마다 발생 (하이라이트 RPC는 created=true만, 사용자 생애 첫 작성만 뜻하지 않음) | `source?: highlight` | 새 메모를 만든 사용자가 얼마나 되는가 | — |
 | memo_delete | 메모 삭제 (추정) | `memo_count` | 지우는 메모가 얼마나 되는가 (추정) | — |
 | memo_restore | 휴지통에서 복원 (추정) | `memo_count` | 삭제 후 되살리는 비율 (추정) | — |
 | memo_delete_permanently | 영구 삭제 (추정) | `memo_count` | 휴지통을 비우는 빈도 (추정) | — |
-| memo_open | 메모 열기 (추정) | `has_search_query` | 검색에서 열리는 비율 (추정) | — |
+| memo_open | 메모 열기 (하이라이트 연결 메모의 실제 상세 열기 포함, 휴지통 제외) | `has_search_query`, `source?: highlight` | 검색에서 열리는 비율 (추정) | — |
 | memo_source_open | 메모의 원문 페이지 열기 (추정) | — | 저장한 페이지로 되돌아가는가 (추정) | — |
 | memo_search | 메모 검색 (추정) | `query_length` | 검색이 쓰이는가(원문은 넣지 않음) (추정) | — |
 | memo_filter | 메모 필터 (추정) | `search_target` | 어떤 대상으로 거르는가 (추정) | — |

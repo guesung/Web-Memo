@@ -29,7 +29,13 @@ describe("메모 카드 하이라이트", () => {
 			);
 			expect(html).toContain('aria-label="하이라이트"');
 			expect(html).toContain("<mark");
-			expect(html).toContain(HIGHLIGHT_COLOR_STYLE[color].background);
+			if (color === "yellow") {
+				expect(html).toContain(
+					"bg-highlight-yellow text-highlight-yellow-foreground",
+				);
+			} else {
+				expect(html).toContain(HIGHLIGHT_COLOR_STYLE[color].background);
+			}
 			expect(html).toContain("원문 &lt;문장&gt;");
 		},
 	);

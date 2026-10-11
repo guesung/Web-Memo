@@ -10,8 +10,18 @@ const mocks = vi.hoisted(() => ({ saveNote: vi.fn() }));
 vi.mock("@src/modules/i18n/util.client", () => ({
 	default: () => ({ t: (key: string) => key }),
 }));
+vi.mock("@web-memo/shared/modules/analytics", () => ({
+	analytics: { trackEvent: vi.fn() },
+}));
 vi.mock("../_hooks", () => ({
 	useHighlightNoteMutation: () => ({ mutate: mocks.saveNote }),
+}));
+vi.mock("@web-memo/shared/utils", () => ({
+	getHighlightSourceUrl: (source: { url: string }) =>
+		source.url ?? "https://example.com",
+}));
+vi.mock("./HighlightMemoComposer", () => ({
+	HighlightMemoComposer: () => createElement("form"),
 }));
 let root: Root;
 let container: HTMLDivElement;
@@ -47,7 +57,9 @@ describe("하이라이트 문장과 기존 메모", () => {
 		"빈 메모 %s에는 추가 버튼을 표시하지 않는다",
 		async (note) => {
 			await renderQuote(note);
-			expect(container.querySelector("button")).toBeNull();
+			expect(container.querySelector("button")?.textContent).toBe(
+				"highlight.memo.add",
+			);
 			expect(container.querySelector("mark")?.textContent).toBe("저장한 원문");
 			expect(container.querySelector("mark")?.style.backgroundColor).toBe(
 				"rgba(244, 114, 182, 0.4)",

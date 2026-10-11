@@ -5,7 +5,7 @@ import { supabaseGuardFixture } from "../lib/mocks/supabaseGuard";
 
 process.env.PW_CHROMIUM_ATTACH_TO_OTHER = "1";
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
 
 /** 확장이 설치 탭을 늦게 여는 부하 상황까지 기다리는 최대 시간. 확장이 탭을 안 여는 환경에서는 이만큼만 지연된다. */
 const INSTALL_TAB_WAIT_MS = 20000;

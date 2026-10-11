@@ -12,6 +12,7 @@
 | --- | --- |
 | 정의 위치 | CSS 변수 원천 → `packages/ui/global.css` (`:root` / `.dark`)<br>Tailwind 매핑 → `packages/tailwind-config/tailwind.config.js`<br>웹 전용 유틸 클래스 → `apps/web/src/app/globals.css` |
 | 컬러 | 역할 이름으로만 씁니다 — `background` / `foreground` / `card` / `popover` / `primary` / `secondary` / `muted` / `accent` / `destructive` / `border` / `input` / `ring`. 각각 `-foreground` 짝이 있습니다. 사이드바는 별도 계열(`sidebar-*`), 차트는 `chart-1~5`.<br>강조색은 파랑 계열(`--primary`: 라이트 `221 83% 53%`, 다크 `217 91% 60%`), 위험은 빨강(`--destructive`) |
+| 노란 인용 | `bg-highlight-yellow text-highlight-yellow-foreground`를 한 쌍으로 씁니다. 라이트 배경 `#fef3b0`/글자 `#29220b`, 다크 배경 `#473e15`/글자 `#fff3c4`. 인용 왼쪽 색상 막대는 기존 노랑 `#facc15`를 유지합니다 |
 | 타이포 | 본문 폰트는 **Pretendard**(`font-pretendard`, `apps/web/src/fonts/output/`에서 서브셋 로드). 그 외 `font-sans`(Inter) / `font-serif`(Lora) / `font-mono`(JetBrains Mono)는 CSS 변수로 열려 있으나 실제로는 거의 쓰지 않습니다.<br>크기 단계는 Tailwind 기본 스케일(`text-sm`~`text-4xl`)을 그대로 씁니다. 자간은 `--tracking-normal`(0rem) |
 | 간격 | Tailwind 기본 4px 스케일. 실제로 쓰는 단계는 `1·2·3·4·6·8·12·16`(=4~64px)이며 그 밖의 임의 값(`p-[13px]`)은 쓰지 않습니다 |
 | 모서리 | `--radius: 0.5rem` 하나가 원천. `rounded-lg`(=8px) / `rounded-md`(6px) / `rounded-sm`(4px)이 여기서 파생됩니다. 카드류에 `rounded-2xl`을 쓰는 자리가 소개 페이지에 있습니다 |

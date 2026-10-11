@@ -33,6 +33,8 @@ export interface IFHighlightSelectionOptions {
 export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 	const [editState, setEditState] = useState<IFHighlightEditState | null>(null);
 	const [isCreatedNoteOpen, setIsCreatedNoteOpen] = useState(false);
+	const [isCreatedMemoOpen, setIsCreatedMemoOpen] = useState(false);
+	const memoDraftsRef = useRef(new Map<number, string>());
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const [menuError, setMenuError] = useState("");
 	const [lastUsedColor, setLastUsedColor] = useState<HighlightColor>("yellow");
@@ -65,6 +67,7 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			const url = location.href;
 			stopRestore?.();
 			options.notesById.clear();
+			memoDraftsRef.current.clear();
 			try {
 				const response = await bridge.request.GET_HIGHLIGHTS_BY_URL({ url });
 				if (
@@ -132,6 +135,7 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 				setEditState(nextState);
 				if (!nextState) {
 					setIsCreatedNoteOpen(false);
+					setIsCreatedMemoOpen(false);
 				}
 			},
 			requestEdit: bridge.request.EDIT_HIGHLIGHT,
@@ -185,6 +189,14 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 		const row = await controllerRef.current?.save(lastUsedColor);
 		if (row && position) {
 			setIsCreatedNoteOpen(true);
+			editorRef.current?.open(row, position.x, position.y);
+		}
+	};
+	const handleHighlightMemoClick = async () => {
+		const position = selectionState;
+		const row = await controllerRef.current?.save(lastUsedColor);
+		if (row && position) {
+			setIsCreatedMemoOpen(true);
 			editorRef.current?.open(row, position.x, position.y);
 		}
 	};
@@ -278,10 +290,13 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 		isMenuOpen,
 		menuError,
 		isCreatedNoteOpen,
+		isCreatedMemoOpen,
+		memoDrafts: memoDraftsRef.current,
 		isIntroVisible: isIntroPending,
 		disabledNoticePosition,
 		handleHighlightColorClick,
 		handleHighlightNoteClick,
+		handleHighlightMemoClick,
 		handleBubbleMenuClick,
 		handleBubbleCloseClick,
 		handleMenuDismiss,

@@ -46,7 +46,7 @@ export function HighlightView({ lng }: HighlightViewProps) {
 	}
 
 	return (
-		<div className="mx-auto flex w-full max-w-[840px] flex-col gap-8">
+		<div className="mx-auto flex w-full max-w-[840px] flex-col gap-6">
 			<HighlightFilterBar
 				lng={lng}
 				searchInput={searchInput}
@@ -177,7 +177,7 @@ function HighlightList({
 	}
 
 	return (
-		<div className="flex flex-col gap-8">
+		<div className="flex flex-col gap-6">
 			{target.isError && (
 				<HighlightLoadError lng={lng} onRetry={() => void target.refetch()} />
 			)}
@@ -279,7 +279,7 @@ function HighlightListPagination({
 	}, [hasNextPage, isFetching, isFetchNextPageError, requestNextPage]);
 
 	return (
-		<div className="flex w-full flex-col gap-12 pb-24 sm:gap-16">
+		<div className="flex w-full flex-col gap-7 pb-24 sm:gap-8">
 			{children}
 			<div
 				ref={sentinelRef}

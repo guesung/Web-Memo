@@ -1,11 +1,8 @@
 import { formatKoreanDate } from "./weekRange.ts";
 
-export const MAX_REPORT_MEMOS = 10;
-
 const WEB_URL = "https://webmemo.xyz";
 const MEMOS_URL = `${WEB_URL}/ko/memos`;
 const SETTING_URL = `${WEB_URL}/ko/memos/setting`;
-const MEMO_PREVIEW_LENGTH = 100;
 
 export interface IFReportMemo {
   title: string;
@@ -38,18 +35,11 @@ const parseHostname = (url: string) => {
 const isHttpUrl = (url: string) => /^https?:\/\//i.test(url);
 
 /**
- * 메모 본문을 미리보기로 줄인다. 줄바꿈은 공백으로 펴고, 길면 잘라 말줄임표를 붙인다
+ * 메모 본문을 줄바꿈을 살려 HTML로 바꾼다
+ * @description white-space를 무시하는 메일 클라이언트가 있어 줄바꿈을 <br>로 직접 바꾼다
  */
-const toPreview = (memo: string) => {
-  const flattened = memo.replace(/\s+/g, " ").trim();
-  const characters = Array.from(flattened);
-
-  if (characters.length <= MEMO_PREVIEW_LENGTH) {
-    return flattened;
-  }
-
-  return `${characters.slice(0, MEMO_PREVIEW_LENGTH).join("")}…`;
-};
+const toMemoBodyHtml = (memo: string) =>
+  escapeHtml(memo.trim()).replace(/\r?\n/g, "<br>");
 
 /**
  * 주간 리포트 메일 제목을 만든다
@@ -90,7 +80,7 @@ const buildMemoItemHtml = (memo: IFReportMemo) => {
   }
 
   const meta = metaParts.filter(Boolean).join(" · ");
-  const preview = toPreview(memo.memo);
+  const body = toMemoBodyHtml(memo.memo);
 
   return [
     `<div style="padding:14px 0;border-top:1px solid ${DIVIDER_COLOR};">`,
@@ -98,7 +88,9 @@ const buildMemoItemHtml = (memo: IFReportMemo) => {
     meta
       ? `<div style="font-size:13px;color:${MUTED_COLOR};">${escapeHtml(meta)}</div>`
       : "",
-    preview ? `<div style="margin-top:4px;">${escapeHtml(preview)}</div>` : "",
+    body
+      ? `<div style="margin-top:4px;overflow-wrap:anywhere;word-break:break-word;">${body}</div>`
+      : "",
     "</div>",
   ].join("");
 };
@@ -136,19 +128,12 @@ export const buildWeeklyReportHtml = ({
     ].join("");
   }
 
-  const remaining = total - memos.length;
-  const moreText =
-    remaining > 0
-      ? `<p style="margin:0 0 4px;">외 ${remaining}개는 웹에서 볼 수 있어요.</p>`
-      : "";
-
   return [
     wrapperOpen,
     `<p style="margin:0 0 4px;font-weight:600;">이번 주에 메모 ${total}개를 남기셨어요.</p>`,
     rangeHtml,
     ...memos.map(buildMemoItemHtml),
     `<div style="padding-top:14px;border-top:1px solid ${DIVIDER_COLOR};">`,
-    moreText,
     `<p style="margin:0;"><a href="${MEMOS_URL}" style="${linkStyle}">웹에서 전체 보기 →</a></p>`,
     "</div>",
     `<p style="${footerStyle}">매주 일요일 저녁에 보내 드려요. ${settingLink}</p>`,

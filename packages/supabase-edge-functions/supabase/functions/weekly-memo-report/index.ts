@@ -4,7 +4,6 @@ import {
   buildWeeklyReportHtml,
   buildWeeklyReportSubject,
   type IFReportMemo,
-  MAX_REPORT_MEMOS,
 } from "./template.ts";
 import { getWeekRange } from "./weekRange.ts";
 
@@ -56,27 +55,28 @@ const isValidEmail = (email: string | null | undefined): email is string =>
   Boolean(email) && EMAIL_PATTERN.test(email as string);
 
 /**
- * 이번 주(월 00:00 KST ~ 지금) 메모를 최신순으로 최대 10개와 전체 개수로 읽는다
+ * 이번 주(월 00:00 KST ~ 지금) 메모를 최신순으로 전부 읽는다
  * @description 본문 없이 페이지만 저장한 것과 위시리스트는 회고할 내용이 없어 뺀다
  */
 const fetchWeekMemos = async (userId: string, weekStartUtc: Date, now: Date) => {
-  const { data, error, count } = await supabase
+  const { data, error } = await supabase
     .from("memo")
-    .select("title, url, memo, created_at", { count: "exact" })
+    .select("title, url, memo, created_at")
     .eq("user_id", userId)
     .gte("created_at", weekStartUtc.toISOString())
     .lte("created_at", now.toISOString())
     .is("deleted_at", null)
     .not("isWish", "is", true)
     .filter("memo", "match", "\\S")
-    .order("created_at", { ascending: false })
-    .limit(MAX_REPORT_MEMOS);
+    .order("created_at", { ascending: false });
 
   if (error) {
     throw new Error(`이번 주 메모 조회 실패: ${error.message}`);
   }
 
-  return { memos: (data ?? []) as IFReportMemo[], total: count ?? 0 };
+  const memos = (data ?? []) as IFReportMemo[];
+
+  return { memos, total: memos.length };
 };
 
 /**

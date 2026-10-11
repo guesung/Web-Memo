@@ -72,13 +72,21 @@ const MemoFormContent = ({
 	const userId = user.data.user?.id;
 
 	useEffect(() => {
-		return bridge.handle.SETTING_UPDATED((payload) => {
+		const unsubscribeInternal = bridge.handle.SETTING_UPDATED((payload) => {
 			if (payload.userId !== userId) {
 				return;
 			}
 
 			void queryClient.invalidateQueries({ queryKey: QUERY_KEY.setting() });
 		});
+		const unsubscribeWeb = bridge.handle.SETTING_UPDATED_FROM_WEB(() => {
+			void queryClient.invalidateQueries({ queryKey: QUERY_KEY.setting() });
+		});
+
+		return () => {
+			unsubscribeInternal();
+			unsubscribeWeb();
+		};
 	}, [queryClient, userId]);
 
 	const visibleFieldKeys: TMemoFieldKey[] = ["memo"];

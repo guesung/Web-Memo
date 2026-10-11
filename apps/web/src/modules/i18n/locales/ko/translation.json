@@ -465,6 +465,8 @@
 		"category": "카테고리",
 		"addCategory": "카테고리 추가하기",
 		"deleteCategory": "카테고리 삭제하기",
+		"renameCategory": "{{name}} 이름 변경",
+		"deleteCategoryNamed": "{{name}} 삭제",
 		"defaultCategoryName": "새 카테고리",
 		"export": "내보내기",
 		"exportMemos": "메모 내보내기",

@@ -73,13 +73,9 @@ const buildMemoItemHtml = (memo: IFReportMemo) => {
   const titleHtml = isHttpUrl(memo.url)
     ? `<a href="${escapeHtml(memo.url)}" style="${linkStyle}font-weight:600;">${titleText}</a>`
     : `<span style="font-weight:600;">${titleText}</span>`;
-  const metaParts = [hostname];
-
-  if (memo.created_at) {
-    metaParts.push(formatKoreanDate(new Date(memo.created_at)));
-  }
-
-  const meta = metaParts.filter(Boolean).join(" · ");
+  const meta = memo.created_at
+    ? formatKoreanDate(new Date(memo.created_at))
+    : "";
   const body = toMemoBodyHtml(memo.memo);
 
   return [

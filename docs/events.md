@@ -34,6 +34,7 @@
 | memo_filter | 메모 필터 (추정) | `search_target` | 어떤 대상으로 거르는가 (추정) | — |
 | search_no_result | 검색 결과 없음 (추정) | — | 검색이 실패하는 비율 (추정) | — |
 | memo_status_toggle | 메모 상태(wish/star/reading) 변경. 확장 upsert는 이전 값과 다를 때만 발생 | `status`, `enabled` | 어떤 상태가 쓰이는가 (추정) | DB-1158 |
+| memo_plan_change | 메모의 읽을 계획 날짜 배정·해제 성공 뒤. 웹 패치, 확장 upsert(값이 달라졌을 때·새 메모 첫 배정 포함) | `action`(set/clear), `days_ahead`(set일 때, 오늘 기준 일수) | 읽을 계획이 실제로 배정되는가, 며칠 앞까지 잡는가, 해제 비율은 | DB-1195 |
 | memo_category_change | 메모 카테고리 변경. 확장 upsert는 이전 값과 다를 때만 발생 | `source`: `button` \| `hash` \| `ai` (선택, 확장 upsert에서는 없음) | 사람들이 `#` 입력을 아는가 | DB-1158 |
 | memo_undo | 실행 취소 (추정) | `action` | 어떤 조작이 되돌려지는가 (추정) | — |
 | memo_offline_queued | 오프라인 대기열에 넣음 | `trigger` | 오프라인 저장이 얼마나 일어나는가 | — |

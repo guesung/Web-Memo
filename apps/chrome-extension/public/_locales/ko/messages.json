@@ -565,10 +565,10 @@
 		"message": "AI 기능"
 	},
 	"ai_features_description": {
-		"message": "페이지 요약을 열거나 AI 채팅 표시를 설정해요"
+		"message": "AI 기능의 사용 여부를 설정합니다."
 	},
 	"summary_enabled_setting": {
-		"message": "페이지 요약 사용"
+		"message": "요약 기능 활성화"
 	},
 	"ai_chat_enabled_setting": {
 		"message": "AI 채팅 사용"
@@ -595,6 +595,6 @@
 		"message": "요약하려면 먼저 로그인해 주세요"
 	},
 	"summary_panel_hint": {
-		"message": "요약은 사이드 패널에서 필요할 때 열 수 있어요"
+		"message": "사이드 패널에 ‘요약 보기’를 표시해요."
 	}
 }

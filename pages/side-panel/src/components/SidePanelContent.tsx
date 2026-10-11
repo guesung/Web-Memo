@@ -25,7 +25,7 @@ export default function SidePanelContent() {
 function SidePanelBody() {
 	const { pageKey, content, isLoading, error } = usePageContentContext();
 	const { refetch: refetchTab } = useTabQuery();
-	const { showAiChat } = useAiFeatureSettingsQuery();
+	const { showSummary, showAiChat } = useAiFeatureSettingsQuery();
 	const {
 		generateSummary,
 		hasRequestedSummary,
@@ -37,7 +37,8 @@ function SidePanelBody() {
 	);
 	const [summaryState, setSummaryState] = useState({ pageKey, isOpen: false });
 	const [selectedTab, setSelectedTab] = useState<TTabName>("chat");
-	const isSummaryOpen = summaryState.pageKey === pageKey && summaryState.isOpen;
+	const isSummaryOpen =
+		showSummary && summaryState.pageKey === pageKey && summaryState.isOpen;
 	const isAvailable = !isLoading && !error && Boolean(content.trim());
 	const isSummaryActive =
 		isSummaryOpen && (!showAiChat || selectedTab === "summary");
@@ -52,7 +53,15 @@ function SidePanelBody() {
 	}, [pageKey]);
 
 	useEffect(() => {
+		if (showSummary) return;
+		setPendingOpenPageKey(null);
+		setSummaryState({ pageKey, isOpen: false });
+		setSelectedTab("chat");
+	}, [showSummary, pageKey]);
+
+	useEffect(() => {
 		if (
+			showSummary &&
 			!isLoading &&
 			(!isAvailable || !isAuthPending) &&
 			pendingOpenPageKey === pageKey
@@ -68,6 +77,7 @@ function SidePanelBody() {
 			}
 		}
 	}, [
+		showSummary,
 		pageKey,
 		pendingOpenPageKey,
 		isLoading,
@@ -86,6 +96,7 @@ function SidePanelBody() {
 	});
 
 	const handleSummaryToggle = () => {
+		if (!showSummary) return;
 		const action = isSummaryOpen ? "close" : "open";
 		analytics.trackEvent({ name: "summary_panel_toggle", params: { action } });
 		setSummaryState({ pageKey, isOpen: !isSummaryOpen });
@@ -108,11 +119,13 @@ function SidePanelBody() {
 	return (
 		<main className="relative flex h-lvh max-w-none flex-col overflow-x-hidden bg-background px-4 text-foreground">
 			<Header />
-			<SummaryDisclosure
-				isOpen={isSummaryOpen}
-				onToggle={handleSummaryToggle}
-			/>
-			{!isSummaryOpen && <span id={SUMMARY_PANEL_ID} hidden />}
+			{showSummary && (
+				<SummaryDisclosure
+					isOpen={isSummaryOpen}
+					onToggle={handleSummaryToggle}
+				/>
+			)}
+			{showSummary && !isSummaryOpen && <span id={SUMMARY_PANEL_ID} hidden />}
 			<div ref={containerRef} className="relative flex min-h-0 flex-1 flex-col">
 				{hasAiTab && (
 					<>

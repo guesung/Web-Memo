@@ -565,10 +565,10 @@
 		"message": "AI features"
 	},
 	"ai_features_description": {
-		"message": "Open page summaries or choose whether to show AI chat."
+		"message": "Choose which AI features to use."
 	},
 	"summary_enabled_setting": {
-		"message": "Use page summary"
+		"message": "Enable page summary"
 	},
 	"ai_chat_enabled_setting": {
 		"message": "Use AI chat"
@@ -595,6 +595,6 @@
 		"message": "Sign in to summarize this page."
 	},
 	"summary_panel_hint": {
-		"message": "Open a summary from the side panel whenever you need it."
+		"message": "Show ‘View summary’ in the side panel."
 	}
 }

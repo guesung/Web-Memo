@@ -78,21 +78,25 @@ const getSwitch = (id: string) =>
 	document.getElementById(id) as HTMLButtonElement;
 
 describe("AI 기능 옵션", () => {
-	it("요약은 진입 안내를 표시하고 채팅 스위치는 기본으로 꺼져 있다", async () => {
+	it("요약과 채팅 스위치는 기본으로 꺼져 있다", async () => {
 		await mount();
 
-		expect(document.getElementById("summary-enabled")).toBeNull();
+		expect(getSwitch("summary-enabled").getAttribute("aria-checked")).toBe(
+			"false",
+		);
 		expect(document.body.textContent).toContain("summary_panel_hint");
 		expect(getSwitch("ai-chat-enabled").getAttribute("aria-checked")).toBe(
 			"false",
 		);
 	});
 
-	it("기존 요약 설정이 켜져 있어도 스위치를 복원하거나 설정을 저장하지 않는다", async () => {
+	it("기존 요약 설정을 복원하고 초기 조회만으로 저장하지 않는다", async () => {
 		mocks.setting.showSummary = true;
 		await mount();
 		expect(mocks.save).not.toHaveBeenCalled();
-		expect(document.getElementById("summary-enabled")).toBeNull();
+		expect(getSwitch("summary-enabled").getAttribute("aria-checked")).toBe(
+			"true",
+		);
 		expect(getSwitch("ai-chat-enabled").getAttribute("aria-checked")).toBe(
 			"false",
 		);
@@ -105,13 +109,35 @@ describe("AI 기능 옵션", () => {
 		expect(mocks.save).toHaveBeenCalledWith({ show_ai_chat: true });
 	});
 
+	it("요약 스위치를 켜면 show_summary만 저장한다", async () => {
+		await mount();
+		await act(async () => getSwitch("summary-enabled").click());
+
+		expect(mocks.save).toHaveBeenCalledTimes(1);
+		expect(mocks.save).toHaveBeenCalledWith({ show_summary: true });
+		expect(getSwitch("ai-chat-enabled").getAttribute("aria-checked")).toBe(
+			"false",
+		);
+	});
+
 	it("저장에 실패하면 스위치를 이전 값으로 되돌린다", async () => {
 		mocks.save.mockRejectedValue(new Error("failed"));
 		await mount();
-		await act(async () => getSwitch("ai-chat-enabled").click());
+		await act(async () => getSwitch("summary-enabled").click());
 
-		expect(getSwitch("ai-chat-enabled").getAttribute("aria-checked")).toBe(
+		expect(getSwitch("summary-enabled").getAttribute("aria-checked")).toBe(
 			"false",
+		);
+		expect(document.body.textContent).toContain("setting_save_failed");
+		mocks.save.mockResolvedValue(undefined);
+		await act(async () =>
+			Array.from(document.querySelectorAll("button"))
+				.find((button) => button.textContent === "retry")
+				?.click(),
+		);
+		expect(mocks.save).toHaveBeenLastCalledWith({ show_summary: true });
+		expect(getSwitch("summary-enabled").getAttribute("aria-checked")).toBe(
+			"true",
 		);
 	});
 

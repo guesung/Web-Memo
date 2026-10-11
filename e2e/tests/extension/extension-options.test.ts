@@ -54,32 +54,49 @@ test.describe("확장 옵션 페이지", () => {
 		);
 	});
 
-	test("AI 기능 카드는 요약 안내를 보이고 채팅 설정만 자동 저장한다.", async ({
+	test("AI 기능 카드에서 요약과 채팅을 독립적으로 저장한다.", async ({
 		page,
 	}) => {
 		const optionsPage = await page.context().newPage();
+		const changedSettingKeys: Array<Promise<string | undefined>> = [];
+		optionsPage.on("console", (message) => {
+			if (!message.text().startsWith("[analytics] setting_change")) return;
+			changedSettingKeys.push(
+				message
+					.args()[1]
+					?.jsonValue()
+					.then((params) => {
+						return (params as { setting_keys?: string }).setting_keys;
+					}) ?? Promise.resolve(undefined),
+			);
+		});
 		await optionsPage.goto(getExtensionUrl("options/index.html"));
 
 		const chatSwitch = optionsPage.locator("#ai-chat-enabled");
+		const summarySwitch = optionsPage.locator("#summary-enabled");
 		const hint = await optionsPage.evaluate(() =>
 			chrome.i18n.getMessage("summary_panel_hint"),
 		);
-		await expect(optionsPage.locator("#summary-enabled")).toHaveCount(0);
+		await expect(summarySwitch).toHaveAttribute("data-state", "unchecked");
 		await expect(optionsPage.getByText(hint, { exact: true })).toBeVisible();
 		await expect(chatSwitch).toHaveAttribute("data-state", "unchecked");
+		await summarySwitch.click();
+		await expect(summarySwitch).toHaveAttribute("data-state", "checked");
+		await expect.poll(() => store.getSetting()?.show_summary).toBe(true);
+		await expect
+			.poll(async () => Promise.all(changedSettingKeys))
+			.toEqual(["show_summary"]);
 
 		await chatSwitch.click();
 		await expect(chatSwitch).toHaveAttribute("data-state", "checked");
-		await expect(
-			optionsPage.getByText(/^(Saved|저장했어요)$/).last(),
-		).toBeVisible();
+		await expect.poll(() => store.getSetting()?.show_ai_chat).toBe(true);
 
 		await optionsPage.reload();
-		await expect(optionsPage.locator("#summary-enabled")).toHaveCount(0);
+		await expect(summarySwitch).toHaveAttribute("data-state", "checked");
 		await expect(optionsPage.getByText(hint, { exact: true })).toBeVisible();
 		await expect(chatSwitch).toHaveAttribute("data-state", "checked");
 		expect(store.getSetting()).toMatchObject({
-			show_summary: false,
+			show_summary: true,
 			show_ai_chat: true,
 		});
 	});

@@ -28,7 +28,7 @@ test.describe("사이드 패널 - 페이지 요약", () => {
 		);
 		// 요약은 메모가 없어도 된다. 사이드 패널의 메모 조회가 실서버를 읽지 않도록 빈 목 저장소를 씌운다.
 		const store = new MockSupabaseStore();
-		store.setSetting(createMockSetting({ show_summary: false }));
+		store.setSetting(createMockSetting({ show_summary: true }));
 		await setupSupabaseMocks(page, store);
 		summaryApi = await mockSummaryApi({
 			context,

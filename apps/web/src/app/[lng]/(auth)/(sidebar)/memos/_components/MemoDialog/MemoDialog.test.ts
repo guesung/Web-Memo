@@ -80,8 +80,18 @@ vi.mock("../MemoCardHeader", () => ({
 		createElement("h2", null, memo.title),
 }));
 vi.mock("../MemoCardFooter", () => ({
-	default: ({ className }: { className: string }) =>
-		createElement("footer", { className, "data-testid": "memo-detail-footer" }),
+	default: ({
+		className,
+		timeAccessory,
+	}: {
+		className: string;
+		timeAccessory: ReactNode;
+	}) =>
+		createElement(
+			"footer",
+			{ className, "data-testid": "memo-detail-footer" },
+			timeAccessory,
+		),
 }));
 vi.mock("../MemoCardFooter/useMemoCategoryPopover", () => ({
 	default: () => ({ openFromHash: vi.fn() }),

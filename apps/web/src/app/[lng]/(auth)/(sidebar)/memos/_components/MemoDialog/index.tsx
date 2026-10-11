@@ -233,9 +233,6 @@ function MemoDialogContent({ lng, memo, latestMemo, onClose }: ContentProps) {
 							url={memo.url}
 							omitHighlightId={source?.highlight_id}
 						/>
-						<div className="flex h-4 items-center">
-							<SaveStatusIndicator status={saveStatus} lng={lng} />
-						</div>
 					</CardContent>
 					<MemoCardFooter
 						memo={memo}
@@ -243,6 +240,9 @@ function MemoDialogContent({ lng, memo, latestMemo, onClose }: ContentProps) {
 						isShowingOption={false}
 						categoryBadgeAction="popup"
 						categoryPopover={categoryPopover}
+						timeAccessory={
+							<SaveStatusIndicator status={saveStatus} lng={lng} />
+						}
 						className="px-6 py-4 border-t-0"
 					/>
 				</Card>

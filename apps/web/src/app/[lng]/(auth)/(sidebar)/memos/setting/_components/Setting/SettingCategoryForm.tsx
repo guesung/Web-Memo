@@ -21,7 +21,7 @@ import {
 	Input,
 	toast,
 } from "@web-memo/ui";
-import { PlusIcon, TrashIcon } from "lucide-react";
+import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /** 메모를 묶는 카테고리를 만들고 이름·색을 바꾸고 지우는 설정 */
@@ -157,7 +157,7 @@ export default function SettingCategoryForm({
 
 	return (
 		<div className="relative">
-			<div className="space-y-1">
+			<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 				{categories?.map((category) => {
 					const isEditing = editingId === category.id;
 					const categoryColor = category.color || DEFAULT_CATEGORY_COLOR;
@@ -165,7 +165,7 @@ export default function SettingCategoryForm({
 					return (
 						<div
 							key={category.id}
-							className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-muted dark:hover:bg-muted/50 transition-colors group"
+							className="flex min-w-0 items-center gap-3 rounded-lg border border-border px-3 py-2 transition-colors hover:bg-muted dark:hover:bg-muted/50"
 						>
 							<button
 								type="button"
@@ -179,7 +179,7 @@ export default function SettingCategoryForm({
 									ref={editInputRef}
 									defaultValue={category.name}
 									autoFocus
-									className="h-7 flex-1 text-sm"
+									className="h-7 min-w-0 flex-1 text-sm"
 									onBlur={(e) =>
 										handleRenameSubmit(category.id, e.target.value)
 									}
@@ -191,7 +191,7 @@ export default function SettingCategoryForm({
 							) : (
 								<button
 									type="button"
-									className="flex-1 text-sm font-medium text-foreground cursor-pointer truncate hover:text-foreground transition-colors text-left"
+									className="min-w-0 flex-1 cursor-pointer break-words text-left text-sm font-medium text-foreground transition-colors hover:text-foreground"
 									onClick={() => handleRenameOpen(category.id)}
 								>
 									{category.name}
@@ -200,8 +200,23 @@ export default function SettingCategoryForm({
 							<Button
 								variant="ghost"
 								size="icon"
-								className="text-destructive h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+								className="h-7 w-7 shrink-0"
 								type="button"
+								aria-label={t("setting.renameCategory", {
+									name: category.name,
+								})}
+								onClick={() => handleRenameOpen(category.id)}
+							>
+								<PencilIcon size={14} />
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-7 w-7 shrink-0 text-destructive"
+								type="button"
+								aria-label={t("setting.deleteCategoryNamed", {
+									name: category.name,
+								})}
 								onClick={() => setCategoryIdToDelete(category.id)}
 							>
 								<TrashIcon size={14} />
@@ -211,13 +226,13 @@ export default function SettingCategoryForm({
 				})}
 
 				{categories?.length === 0 && !isAdding && (
-					<p className="px-3 py-2 text-sm text-muted-foreground">
+					<p className="col-span-full px-3 py-2 text-sm text-muted-foreground">
 						{t("setting.categoryEmpty")}
 					</p>
 				)}
 
 				{isAdding ? (
-					<div className="flex items-center gap-3 rounded-lg px-3 py-2">
+					<div className="col-span-full flex min-w-0 items-center gap-3 rounded-lg px-3 py-2">
 						<div className="w-5 h-5 rounded-full flex-shrink-0 bg-muted-foreground/40" />
 						<Input
 							ref={addInputRef}
@@ -234,7 +249,7 @@ export default function SettingCategoryForm({
 				) : (
 					<Button
 						variant="ghost"
-						className="w-full justify-start gap-3 px-3 py-2 text-muted-foreground hover:text-foreground"
+						className="col-span-full w-full justify-start gap-3 px-3 py-2 text-muted-foreground hover:text-foreground"
 						onClick={handleAddOpen}
 						type="button"
 					>

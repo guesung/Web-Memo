@@ -1,5 +1,34 @@
 import { describe, expect, it } from "vitest";
-import { getPageKey, getPathKey, normalizeUrl, toLooseUrlKey } from "./Url";
+import {
+	getLegacyUrlPrefixPattern,
+	getPageKey,
+	getPathKey,
+	normalizeUrl,
+	toLikePrefixPattern,
+	toLooseUrlKey,
+} from "./Url";
+
+describe("toLikePrefixPattern", () => {
+	it("LIKE 특수문자를 이스케이프하고 끝에 %를 붙인다", () => {
+		expect(toLikePrefixPattern("https://a.com/x_y%z\\")).toBe(
+			"https://a.com/x\\_y\\%z\\\\%",
+		);
+	});
+});
+
+describe("getLegacyUrlPrefixPattern", () => {
+	it("페이지 키의 쿼리 앞까지를 접두 패턴으로 쓴다", () => {
+		expect(getLegacyUrlPrefixPattern("https://a.com/post?id=1")).toBe(
+			"https://a.com/post%",
+		);
+	});
+
+	it("쿼리가 없으면 페이지 키 전체가 접두다", () => {
+		expect(getLegacyUrlPrefixPattern("https://a.com/post")).toBe(
+			"https://a.com/post%",
+		);
+	});
+});
 
 describe("getPageKey", () => {
 	it.each([

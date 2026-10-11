@@ -6,7 +6,12 @@ import type {
 	MemoTable,
 } from "../../types";
 import { getMemoSearchFilter } from "../memoSearchFilter";
-import { getPageKey, getPathKey } from "../Url";
+import {
+	getLegacyUrlPrefixPattern,
+	getPageKey,
+	getPathKey,
+	toLikePrefixPattern,
+} from "../Url";
 import { fetchAllByPageKeyBatched } from "./fetchAllByPageKeyBatched";
 
 /** 날짜 정렬에서 같은 시각의 메모까지 이어 읽는 복합 커서. */
@@ -30,7 +35,11 @@ export class MemoService {
 			.insert({ ...request, page_key: getPageKey(request.url) })
 			.select();
 
-	/** 같은 페이지의 메모 후보를 최근 수정 순으로 모두 조회한다. */
+	/**
+	 * 같은 페이지의 메모 후보를 최근 수정 순으로 모두 조회한다.
+	 * @description 키가 비어 있는 옛 행은 원본 URL 접두로 서버에서 먼저 좁힌다. 키가 있는 행도 같은 접두를
+	 * 가지므로 조건을 공통으로 건다.
+	 */
 	getMemoByUrl = async (url: string) => {
 		const pageKey = getPageKey(url);
 		const { data, error } = await fetchAllByPageKeyBatched<GetMemoResponse>({
@@ -41,6 +50,7 @@ export class MemoService {
 					.select("*, category(id, name, color)")
 					.is("deleted_at", null)
 					.in("page_key", [pageKey, ""])
+					.like("url", getLegacyUrlPrefixPattern(pageKey))
 					.gt("id", lastId)
 					.order("id", { ascending: true })
 					.limit(batchSize),
@@ -67,12 +77,12 @@ export class MemoService {
 
 	/**
 	 * 쿼리만 다른 주소까지 포함해 같은 경로의 메모 후보를 최근 수정 순으로 모두 조회한다.
-	 * @description `page_key`가 경로로 시작하는 행과 아직 키가 없는 옛 행을 읽고, JS에서 경로 키를 다시 비교해
-	 * `/a`가 `/ab`를 잡거나 LIKE 와일드카드가 섞여 넓게 잡힌 행을 걸러 낸다.
+	 * @description `page_key`가 경로로 시작하는 행과, 아직 키가 없지만 원본 URL이 경로로 시작하는 옛 행을 읽고,
+	 * JS에서 경로 키를 다시 비교해 `/a`가 `/ab`를 잡거나 LIKE 와일드카드가 섞여 넓게 잡힌 행을 걸러 낸다.
 	 */
 	getMemosBySamePath = async (url: string) => {
 		const pathKey = getPathKey(url);
-		const pathPattern = `${pathKey.replace(/[\\%_]/g, "\\$&")}%`;
+		const pathPattern = toLikePrefixPattern(pathKey);
 		const memos: GetMemoResponse[] = [];
 
 		for (const pageKeyFilter of ["like", "empty"] as const) {
@@ -86,7 +96,7 @@ export class MemoService {
 					const filteredQuery =
 						pageKeyFilter === "like"
 							? baseQuery.like("page_key", pathPattern)
-							: baseQuery.eq("page_key", "");
+							: baseQuery.eq("page_key", "").like("url", pathPattern);
 					return filteredQuery
 						.gt("id", lastId)
 						.order("id", { ascending: true })

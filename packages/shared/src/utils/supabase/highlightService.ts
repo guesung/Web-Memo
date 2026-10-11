@@ -1,6 +1,6 @@
 import { SUPABASE } from "../../constants";
 import type { HighlightTable, MemoSupabaseClient } from "../../types";
-import { getPageKey } from "../Url";
+import { getLegacyUrlPrefixPattern, getPageKey } from "../Url";
 import { fetchAllByPageKeyBatched } from "./fetchAllByPageKeyBatched";
 
 /** 하이라이트 목록 페이지네이션 커서. (정렬값, id) 복합 커서로 중복·누락을 막는다. */
@@ -35,7 +35,10 @@ export class HighlightService {
 			.from(SUPABASE.table.highlight);
 	}
 
-	/** 모바일 WebView 복원용. 페이지 하나의 하이라이트를 모두 가져온다. */
+	/**
+	 * 모바일 WebView 복원용. 페이지 하나의 하이라이트를 모두 가져온다.
+	 * @description 키가 비어 있는 옛 행은 원본 URL 접두로 서버에서 먼저 좁힌다.
+	 */
 	getHighlightsByUrl = async (url: string) => {
 		const pageKey = getPageKey(url);
 		return fetchAllByPageKeyBatched<HighlightTable["Row"]>({
@@ -43,6 +46,7 @@ export class HighlightService {
 				this.table
 					.select("*")
 					.in("page_key", [pageKey, ""])
+					.like("url", getLegacyUrlPrefixPattern(pageKey))
 					.gt("id", lastId)
 					.order("id", { ascending: true })
 					.limit(batchSize),

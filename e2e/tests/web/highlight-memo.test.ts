@@ -28,6 +28,12 @@ test.describe("하이라이트에서 메모로 이동", () => {
 				note: "Old comment",
 			}),
 		);
+		const secondOnPage = store.addHighlight(
+			createMockHighlight({
+				url: first.url,
+				exact_text: "Another sentence from the same page",
+			}),
+		);
 		store.addHighlight(
 			createMockHighlight({
 				url: "https://example.com/two",
@@ -68,11 +74,38 @@ test.describe("하이라이트에서 메모로 이동", () => {
 			(firstGroup?.y ?? 0) + (firstGroup?.height ?? 0),
 		);
 		const quote = page.locator(`#highlight-${first.id}`);
-		await expect(quote).toHaveCSS("border-left-width", "5px");
+		const nextQuote = page.locator(`#highlight-${secondOnPage.id}`);
+		await expect(quote).toHaveCSS("border-left-width", "3px");
+		await expect(quote.locator("mark")).toHaveCSS("font-size", "16px");
+		expect(
+			(secondGroup?.y ?? 0) - (firstGroup?.y ?? 0) - (firstGroup?.height ?? 0),
+		).toBeCloseTo(32, 1);
+		const quoteBoxes = [
+			await quote.boundingBox(),
+			await nextQuote.boundingBox(),
+		];
+		const [upper, lower] = quoteBoxes.sort(
+			(left, right) => (left?.y ?? 0) - (right?.y ?? 0),
+		);
+		expect((lower?.y ?? 0) - (upper?.y ?? 0) - (upper?.height ?? 0)).toBeCloseTo(16, 1);
 		await expect(quote.locator("mark")).toHaveCSS(
 			"background-color",
 			"rgba(0, 0, 0, 0)",
 		);
+		await page.setViewportSize({ width: 390, height: 844 });
+		await expect(quote.locator("mark")).toHaveCSS("font-size", "16px");
+		const mobileQuoteBoxes = [
+			await quote.boundingBox(),
+			await nextQuote.boundingBox(),
+		];
+		const [mobileUpper, mobileLower] = mobileQuoteBoxes.sort(
+			(left, right) => (left?.y ?? 0) - (right?.y ?? 0),
+		);
+		expect(
+			(mobileLower?.y ?? 0) -
+				(mobileUpper?.y ?? 0) -
+				(mobileUpper?.height ?? 0),
+		).toBeCloseTo(14, 1);
 		await expect(
 			quote.getByRole("button", { name: "Old comment" }),
 		).toBeVisible();

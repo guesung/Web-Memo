@@ -82,11 +82,11 @@ export const HighlightQuote = ({
 			ref={itemRef}
 			id={`highlight-${highlight.id}`}
 			tabIndex={isTarget ? -1 : undefined}
-			className={`border-l-4 pl-5 outline-none sm:border-l-[5px] sm:pl-7${isTarget ? " rounded-sm ring-2 ring-primary ring-offset-4 ring-offset-background" : ""}`}
+			className={`border-l-[3px] pl-[14px] outline-none sm:pl-4${isTarget ? " rounded-sm ring-2 ring-primary ring-offset-4 ring-offset-background" : ""}`}
 			style={{ borderColor: style.bar }}
 		>
 			<div className="min-w-0">
-				<p className="break-keep text-lg leading-[1.7] text-foreground [overflow-wrap:anywhere] sm:text-[22px] sm:leading-[1.65]">
+				<p className="break-keep text-base leading-[1.6] text-foreground [overflow-wrap:anywhere]">
 					<mark className="bg-transparent text-inherit">
 						{highlight.exact_text}
 					</mark>
@@ -99,7 +99,7 @@ export const HighlightQuote = ({
 						onChange={(event) => setNote(event.target.value)}
 						onBlur={handleNoteBlur}
 						aria-label={t("highlight.note.label")}
-						className="mt-3 w-full resize-none rounded-md border border-border bg-background p-2 text-sm"
+						className="mt-1.5 w-full resize-none rounded-md border border-border bg-background p-2 text-[13px] leading-[1.5]"
 						rows={2}
 					/>
 				) : note.trim() ? (
@@ -107,7 +107,7 @@ export const HighlightQuote = ({
 						type="button"
 						disabled={isNoteSaving}
 						onClick={() => setIsEditing(true)}
-						className="mt-3 block text-left text-sm leading-6 text-muted-foreground hover:underline"
+						className="mt-1.5 block text-left text-[13px] leading-[1.5] text-muted-foreground hover:underline"
 					>
 						{note}
 					</button>
@@ -118,13 +118,13 @@ export const HighlightQuote = ({
 					</p>
 				)}
 				{link?.memo && !link.memo.deleted_at && (
-					<div className="mt-3 space-y-1 text-xs text-muted-foreground">
+					<div className="mt-1.5 space-y-1 text-xs text-muted-foreground">
 						<p className="font-medium">{t("highlight.memo.linked")}</p>
 						<p className="line-clamp-3 whitespace-pre-wrap">{link.memo.memo}</p>
 					</div>
 				)}
 				{(isLinkError || isLinkLoading || link?.memo) && (
-					<div className="mt-3 flex flex-wrap items-center gap-2">
+					<div className="mt-1.5 flex flex-wrap items-center gap-2">
 						{isLinkError ? (
 							<button
 								type="button"

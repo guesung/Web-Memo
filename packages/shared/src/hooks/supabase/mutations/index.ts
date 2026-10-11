@@ -12,3 +12,8 @@ export { default as useMemoUpsertMutation } from "./useMemoUpsertMutation";
 export { default as useRestoreMemosMutation } from "./useRestoreMemosMutation";
 export { default as useSettingUpsertMutation } from "./useSettingUpsertMutation";
 export { default as useSignoutMutation } from "./useSignoutMutation";
+export {
+	default as useWeeklyReportTestMutation,
+	type TWeeklyReportTestFailureReason,
+	WeeklyReportTestError,
+} from "./useWeeklyReportTestMutation";

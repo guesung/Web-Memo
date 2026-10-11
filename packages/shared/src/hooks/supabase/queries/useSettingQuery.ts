@@ -26,6 +26,8 @@ const useSettingQuery = () => {
 		showActionItem: query.data?.data?.show_action_item ?? false,
 		showSummary: query.data?.data?.show_summary ?? true,
 		showAiChat: query.data?.data?.show_ai_chat ?? false,
+		weeklyReportEnabled: query.data?.data?.weekly_report_enabled ?? false,
+		weeklyReportEmail: query.data?.data?.weekly_report_email ?? null,
 	};
 };
 

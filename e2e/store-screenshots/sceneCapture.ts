@@ -4,7 +4,7 @@ import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 import { PATHS } from "@web-memo/shared/constants";
 import { DEMO_CONTENT, type TStoreLanguage } from "./demoData";
-import { DASHBOARD_CLOCK_OFFSET_MS } from "./demoRoutes";
+import { DASHBOARD_CLOCK_OFFSET_MS, toDemoHighlights } from "./demoRoutes";
 
 /**
  * 사이드 패널이 현재 탭의 제목과 메모를 다 그릴 때까지 기다린다.
@@ -30,7 +30,7 @@ export const waitForSidePanelMemo = async ({
 
 /**
  * 메모에 붙는 출처("메모 ↗" 줄과 글 제목 줄)의 세로 위치를 JSON으로 저장한다.
- * @description 3번 장은 이 부분을 확대한다. 위치는 경계 비율과 폰트에 따라 달라지므로 찍은 화면에서 직접 잰다.
+ * @description 4번 장은 이 부분을 확대한다. 위치는 경계 비율과 폰트에 따라 달라지므로 찍은 화면에서 직접 잰다.
  * 값은 사이드 패널 CSS px 기준이다. 머리글 줄 바로 위에 붙은 경계 손잡이 아이콘이 줄 안으로 2px 넘쳐 들어오므로
  * 위쪽은 2px 안으로 자르고, 아래쪽은 메모 칸 테두리가 들어오지 않게 2px만 둔다.
  */
@@ -82,31 +82,22 @@ export const captureSidePanelScene = async ({
 };
 
 /**
- * 웹 대시보드(/memos)를 목 데이터로 찍는다.
+ * 웹 하이라이트 대시보드(/highlights)를 목 데이터로 찍는다.
  * @description 사이드바 카테고리는 서버 컴포넌트가 실제 계정에서 미리 읽어 5분 캐시로 심는다(목이 닿지 않는다).
  * 브라우저의 Date만 10분 앞당겨 심긴 캐시를 처음부터 만료된 것으로 보이게 하면, 화면이 붙자마자 목 저장소에서
- * 다시 읽는다. Playwright의 가짜 시계는 타이머까지 멈춰 메모 카드가 그려지지 않으므로 쓰지 않는다.
+ * 다시 읽는다. Playwright의 가짜 시계는 타이머까지 멈춰 목록이 그려지지 않으므로 쓰지 않는다.
  * 개발 서버에서만 뜨는 Next.js 표시와 React Grab, 떠 있는 상담 버튼과 알림 토스트(상담 연결 실패 등)는 화면에서 숨긴다.
+ * 목록이 다 그려졌는지 칠한 문장 수와 첫 카드 맨 위 문장·메모로 확인한다. 빈 상태·스켈레톤·불러오기 오류는 문장이 없어 걸러진다.
+ * 최종 렌더 크기인 1160×586, 픽셀 밀도 1로 찍어 합성 과정에서 줄이지 않는다.
  */
-export const captureDashboard = async ({
+export const captureHighlightDashboard = async ({
 	page,
 	language,
 	outputPath,
-	categoryName,
-}: IFCaptureDashboardParams) => {
+}: IFCaptureHighlightDashboardParams) => {
 	const content = DEMO_CONTENT[language];
-	const category = content.categories.find(
-		(item) => item.name === categoryName,
-	);
-	// 전체 목록은 위시리스트 메모를 빼고 보여준다.
-	const listedMemoCount = [
-		content.articleMemo,
-		content.videoMemo,
-		...content.otherMemos,
-	].filter(
-		(demoMemo) =>
-			!demoMemo.isWish && (!category || demoMemo.categoryId === category.id),
-	).length;
+	const { articleText, articleNote } = content.highlightScene;
+	const demoHighlights = toDemoHighlights(content);
 
 	await page.addInitScript((offsetMilliseconds) => {
 		const RealDate = Date;
@@ -128,13 +119,19 @@ export const captureDashboard = async ({
 
 		globalThis.Date = ShiftedDate as DateConstructor;
 	}, DASHBOARD_CLOCK_OFFSET_MS);
-	// 데스크톱 레이아웃이 나오는 폭으로 찍고 템플릿이 줄여 넣는다.
-	await page.setViewportSize({ width: category ? 1160 : 1280, height: 815 });
-	await page.goto(`/${language}${PATHS.memos}`);
-	if (category) {
-		await page.getByRole("link", { name: category.name }).click();
-	}
-	await expect(page.locator(".memo-item")).toHaveCount(listedMemoCount);
+	// 데스크톱 레이아웃이 나오는 폭으로 찍는다.
+	await page.setViewportSize({ width: 1160, height: 815 });
+	await page.goto(`/${language}${PATHS.highlights}`);
+
+	const quotes = page.locator("article li");
+
+	await expect(quotes).toHaveCount(demoHighlights.length);
+	await expect(page.locator("article")).toHaveCount(
+		new Set(demoHighlights.map((highlight) => highlight.url)).size,
+	);
+	// 1번 장의 문장·메모가 첫 카드 맨 위에 와야 한다.
+	await expect(quotes.first()).toContainText(articleText);
+	await expect(quotes.first()).toContainText(articleNote);
 	await expect(
 		page
 			.locator('a[href*="category="]')
@@ -147,7 +144,7 @@ export const captureDashboard = async ({
 	await screenshotWhenStable({
 		page,
 		path: outputPath,
-		clip: category ? { x: 0, y: 0, width: 1160, height: 586 } : undefined,
+		clip: { x: 0, y: 0, width: 1160, height: 586 },
 	});
 };
 
@@ -158,7 +155,7 @@ export const captureDashboard = async ({
  * 실제 페이지(brunch·유튜브)는 표지·썸네일 이미지가 CDN에서 늦게 도착하므로 최대 6초(300ms × 20번)까지 기다린다.
  * @throws 스무 번 안에 화면이 멈추지 않으면 던진다.
  */
-const screenshotWhenStable = async ({
+export const screenshotWhenStable = async ({
 	page,
 	path: outputPath,
 	clip,
@@ -216,16 +213,14 @@ interface IFCaptureSceneParams {
 	name: string;
 }
 
-/** {@link captureDashboard}의 인자. */
-interface IFCaptureDashboardParams {
+/** {@link captureHighlightDashboard}의 인자. */
+interface IFCaptureHighlightDashboardParams {
 	/** 로그인한 웹 탭 */
 	page: Page;
 	/** 대시보드 언어 */
 	language: TStoreLanguage;
 	/** 저장할 PNG 경로 */
 	outputPath: string;
-	/** 지정하면 해당 카테고리를 선택한 5번 장면을 1160×586으로 찍는다 */
-	categoryName?: string;
 }
 
 /** {@link screenshotWhenStable}의 인자. */

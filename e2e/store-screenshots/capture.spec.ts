@@ -12,13 +12,20 @@ import { DEMO_CONTENT } from "./demoData";
 import { gotoDemoPage, setupDemoRoutes } from "./demoRoutes";
 import { closeInstallTab, launchExtensionContext } from "./extensionContext";
 import {
-	captureDashboard,
+	captureHighlightNoteScene,
+	captureHighlightSelectionScene,
+	enableHighlightBubble,
+	hideScrollbar,
+	readHighlightLabels,
+	waitForHighlightPainted,
+} from "./highlightScene";
+import {
+	captureHighlightDashboard,
 	captureSidePanelScene,
 	saveMemoSourceBox,
 	waitForSidePanelMemo,
 } from "./sceneCapture";
 import {
-	dragSidePanelDivider,
 	expectMemoFieldsFullyVisible,
 	fitMemoFieldToContent,
 } from "./sidePanelLayout";
@@ -57,19 +64,21 @@ for (const language of ["ko", "en"] as const) {
 			await openSidePanel(page);
 			const sidePanelPage = await findSidePanelPage(page, 15000);
 			await sidePanelPage.setViewportSize({ width: 400, height: 586 });
+			await enableHighlightBubble(sidePanelPage);
 			// 사이드 패널은 창의 활성 탭을 따라간다. 패널 탭이 열리며 활성 탭을 가져갔으므로 웹 메모 탭을 되돌린다.
 			await page.bringToFront();
 			await gotoDemoPage({ page, demoPage: content.articlePage });
 
-			// 1~3번 장: 메모가 주인공이므로 요약 영역을 줄여 메모 칸(느낀 점을 켠 언어는 느낀 점까지)이 잘리지 않게 한다.
-			// 23%는 요약 안내 문구와 버튼이 잘리지 않고 들어가는 가장 낮은 비율이다(20%면 탭 목록 밑으로 잘린다).
+			// 칠한 문장이 기사 위에 복원된 뒤에 찍는다. 3·4번 장의 기사 캡처에도 1번 장의 하이라이트가 남아 있다.
+			await waitForHighlightPainted(page);
+
+			// 1~4번 장: 메모 칸(느낀 점을 켠 언어는 느낀 점까지)이 잘리지 않게 맞춘다.
 			const articleTitle = await page.title();
 			await waitForSidePanelMemo({
 				sidePanelPage,
 				pageTitle: articleTitle,
 				memo: content.articleMemo.memo,
 			});
-			await dragSidePanelDivider({ sidePanelPage, tabRatio: 23 });
 			await fitMemoFieldToContent(sidePanelPage);
 			await expectMemoFieldsFullyVisible(sidePanelPage);
 			await captureSidePanelScene({
@@ -88,10 +97,26 @@ for (const language of ["ko", "en"] as const) {
 				path.join(outputDirectory, "page-titles.json"),
 				JSON.stringify({ article: articleTitle }),
 			);
-			await captureDashboard({
+
+			// 1·2번 장: 3·4번 장이 쓰는 기사 캡처(위)를 찍은 뒤에 스크롤과 선택을 건드린다.
+			const labels = await readHighlightLabels(sidePanelPage);
+			const { articleText, articleNote, selectionText } =
+				content.highlightScene;
+
+			await page.bringToFront();
+			await hideScrollbar(page);
+			await captureHighlightNoteScene({
 				page,
-				language,
-				outputPath: path.join(outputDirectory, "dashboard.png"),
+				labels,
+				text: articleText,
+				note: articleNote,
+				outputPath: path.join(outputDirectory, "highlight-note-page.png"),
+			});
+			await captureHighlightSelectionScene({
+				page,
+				labels,
+				text: selectionText,
+				outputPath: path.join(outputDirectory, "highlight-select-page.png"),
 			});
 		} finally {
 			await context.close();
@@ -99,21 +124,21 @@ for (const language of ["ko", "en"] as const) {
 
 		expect(unhandledSupabaseRequests, "목 없는 Supabase 요청").toEqual([]);
 
-		const categoryContext = await browser.newContext({
+		const dashboardContext = await browser.newContext({
 			locale: language === "ko" ? "ko-KR" : "en-US",
 			deviceScaleFactor: 1,
 		});
-		const unhandledCategoryRequests =
-			await guardUnhandledSupabaseRequests(categoryContext);
+		const unhandledDashboardRequests =
+			await guardUnhandledSupabaseRequests(dashboardContext);
 		try {
-			const categoryPage = await categoryContext.newPage();
+			const dashboardPage = await dashboardContext.newPage();
 			await setupDemoRoutes({
-				page: categoryPage,
-				context: categoryContext,
+				page: dashboardPage,
+				context: dashboardContext,
 				language,
 			});
-			await login(categoryPage);
-			await categoryContext.addCookies([
+			await login(dashboardPage);
+			await dashboardContext.addCookies([
 				{
 					name: "i18next",
 					value: language,
@@ -121,17 +146,16 @@ for (const language of ["ko", "en"] as const) {
 					sameSite: "Strict",
 				},
 			]);
-			await skipGuide(categoryPage);
-			await captureDashboard({
-				page: categoryPage,
+			await skipGuide(dashboardPage);
+			await captureHighlightDashboard({
+				page: dashboardPage,
 				language,
-				categoryName: content.categories[0].name,
-				outputPath: path.join(outputDirectory, "category-dashboard.png"),
+				outputPath: path.join(outputDirectory, "highlights-dashboard.png"),
 			});
 		} finally {
-			await categoryContext.close();
+			await dashboardContext.close();
 		}
 
-		expect(unhandledCategoryRequests, "목 없는 Supabase 요청").toEqual([]);
+		expect(unhandledDashboardRequests, "목 없는 Supabase 요청").toEqual([]);
 	});
 }

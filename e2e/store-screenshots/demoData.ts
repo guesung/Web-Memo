@@ -1,3 +1,4 @@
+import type { HighlightColor } from "@web-memo/shared/constants";
 import { KO_REAL_CONTENT } from "./realMemos";
 
 /**
@@ -38,6 +39,36 @@ export interface IFDemoMemo {
 	isWish?: boolean;
 	/** 중요 표시 여부 */
 	isStar?: boolean;
+}
+
+/** 시연용 하이라이트 한 건. 웹 하이라이트 대시보드(5번 장)에 카드로 보인다. */
+export interface IFDemoHighlight {
+	/** 하이라이트를 칠한 페이지 주소 */
+	url: string;
+	/** 페이지 제목 */
+	title: string;
+	/** 페이지 favicon 주소 */
+	favIconUrl: string | null;
+	/** 칠한 문장 */
+	text: string;
+	/** 하이라이트 색 */
+	color: HighlightColor;
+	/** 하이라이트에 단 메모. 없으면 null */
+	note: string | null;
+	/** 칠한 시각이 지금부터 몇 분 전인지. 카드 순서를 정한다(작을수록 위) */
+	minutesAgo: number;
+}
+
+/** 하이라이트 장면(1·2·5번 장)에 쓰는 문장과 메모. */
+export interface IFDemoHighlightScene {
+	/** 1번 장에서 칠하고 메모를 단 기사 속 문장. 3·4번 장의 기사에도 남아 있다 */
+	articleText: string;
+	/** 1번 장 하이라이트의 메모 */
+	articleNote: string;
+	/** 2번 장에서 선택만 하는 다른 문장. 칠한 문장과 겹치지 않는다 */
+	selectionText: string;
+	/** 5번 장 대시보드에 1번 장 하이라이트 아래로 보일 다른 페이지의 하이라이트 */
+	otherHighlights: IFDemoHighlight[];
 }
 
 /**
@@ -83,18 +114,20 @@ export interface IFDemoContent {
 	videoSummaryRatio: number;
 	/** 사이드바에 보일 카테고리 */
 	categories: IFDemoCategory[];
-	/** 1~3번 장의 기사 페이지 */
+	/** 1~4번 장의 기사 페이지 */
 	articlePage: IFDemoPage;
 	/** 5번 장의 영상 페이지 */
 	videoPage: IFDemoPage;
 	/** 대체 영상 페이지 값. videoPage.realPage가 null일 때만 쓴다 */
 	substituteVideo: IFSubstituteVideo | null;
-	/** 기사에 남긴 메모. 1~3번 장의 사이드 패널에 보인다 */
+	/** 기사에 남긴 메모. 1~4번 장의 사이드 패널에 보인다 */
 	articleMemo: IFDemoMemo;
 	/** 영상에 남긴 메모. 5번 장의 사이드 패널에 보인다 */
 	videoMemo: IFDemoMemo;
-	/** 웹 대시보드(4번 장)에 함께 보일 다른 메모 */
+	/** 웹 대시보드(메모 목록)에 함께 보일 다른 메모 */
 	otherMemos: IFDemoMemo[];
+	/** 하이라이트 장면의 문장·메모 */
+	highlightScene: IFDemoHighlightScene;
 	/** 목 요약 응답. 사이드 패널은 조각을 순서대로 이어 붙여 보여준다 */
 	summaryChunks: string[];
 }
@@ -203,6 +236,43 @@ const EN_DEMO_CONTENT: IFDemoContent = {
 			minutesAgo: 60 * 100,
 		},
 	],
+	highlightScene: {
+		articleText:
+			"Checking it takes a few seconds, yet getting back into deep work afterwards takes far longer.",
+		articleNote:
+			"Not slow — I had no rule for what to cut. List 3 to cut first.",
+		selectionText:
+			"How often you check notifications is really how often you restart your focus.",
+		otherHighlights: [
+			{
+				url: "https://research.example.org/remote-retro-template",
+				title: "A weekly retro template for remote teams",
+				favIconUrl: null,
+				text: "Went well / Could improve / Try next — three columns are enough.",
+				color: "green",
+				note: null,
+				minutesAgo: 90,
+			},
+			{
+				url: "https://research.example.org/remote-retro-template",
+				title: "A weekly retro template for remote teams",
+				favIconUrl: null,
+				text: "Use a 15-min timer",
+				color: "pink",
+				note: null,
+				minutesAgo: 95,
+			},
+			{
+				url: "https://ux.example.com/interview-questions",
+				title: "Checklist for writing user interview questions",
+				favIconUrl: null,
+				text: "Ask about 'the last time you did it' instead of 'why'",
+				color: "blue",
+				note: null,
+				minutesAgo: 60 * 26,
+			},
+		],
+	},
 	summaryChunks: [
 		"**In one line**\n",
 		"A 10-minute animated short where a gentle giant rabbit turns the tables on three rodents who bully him and the forest's small animals.\n\n",

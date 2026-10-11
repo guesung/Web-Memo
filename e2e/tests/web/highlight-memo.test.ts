@@ -87,7 +87,9 @@ test.describe("하이라이트에서 메모로 이동", () => {
 		const [upper, lower] = quoteBoxes.sort(
 			(left, right) => (left?.y ?? 0) - (right?.y ?? 0),
 		);
-		expect((lower?.y ?? 0) - (upper?.y ?? 0) - (upper?.height ?? 0)).toBeCloseTo(16, 1);
+		expect(
+			(lower?.y ?? 0) - (upper?.y ?? 0) - (upper?.height ?? 0),
+		).toBeCloseTo(16, 1);
 		await expect(quote.locator("mark")).toHaveCSS(
 			"background-color",
 			"rgba(0, 0, 0, 0)",

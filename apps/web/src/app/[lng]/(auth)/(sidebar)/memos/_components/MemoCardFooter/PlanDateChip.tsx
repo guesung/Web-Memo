@@ -37,7 +37,7 @@ export default function PlanDateChip({
 			data-testid="plan-date-chip"
 			onClick={handleClick}
 			className={cn(
-				"w-fit rounded text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+				"w-fit shrink-0 whitespace-nowrap rounded text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
 				labelKind === "date"
 					? "text-muted-foreground"
 					: "font-semibold text-primary",

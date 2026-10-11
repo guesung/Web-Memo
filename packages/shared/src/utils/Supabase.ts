@@ -39,6 +39,7 @@ export {
 } from "./supabase/favoriteService";
 /** FeedbackService 도메인 서비스의 기존 공개 경로를 유지한다. */
 export { FeedbackService } from "./supabase/feedbackService";
+export { HighlightMemoService } from "./supabase/highlightMemoService";
 /** 하이라이트 서비스와 조회 데이터 계약을 제공한다. */
 export {
 	type HighlightCountRow,

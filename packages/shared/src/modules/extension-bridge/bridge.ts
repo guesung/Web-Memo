@@ -1,7 +1,10 @@
 import { createBridge, defineMessage } from "./createBridge";
 import type {
+	CreateHighlightMemoPayload,
+	CreateHighlightMemoResponse,
 	CreateMemoPayload,
 	CreateMemoResponse,
+	GetHighlightMemoLinksResponse,
 	GetHighlightsByUrlPayload,
 	GetHighlightsByUrlResponse,
 	IFCreateHighlightPayload,
@@ -36,6 +39,14 @@ export const bridge = createBridge({
 		"internal",
 	),
 	CREATE_MEMO: defineMessage<CreateMemoPayload, CreateMemoResponse>("internal"),
+	CREATE_MEMO_FROM_HIGHLIGHT: defineMessage<
+		CreateHighlightMemoPayload,
+		CreateHighlightMemoResponse
+	>("internal"),
+	GET_HIGHLIGHT_MEMO_LINKS: defineMessage<
+		{ highlightIds: number[] },
+		GetHighlightMemoLinksResponse
+	>("internal"),
 	GET_HIGHLIGHTS_BY_URL: defineMessage<
 		GetHighlightsByUrlPayload,
 		GetHighlightsByUrlResponse

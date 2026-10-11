@@ -1,6 +1,7 @@
 import { handleEditHighlight } from "./editHighlight";
 import { handleCreateHighlight } from "./createHighlight";
 import { handleCreateMemo } from "./createMemo";
+import { handleCreateHighlightMemo, handleGetHighlightMemoLinks } from "./highlightMemo";
 import { handleGetLoginStatus } from "./getLoginStatus";
 import "webextension-polyfill";
 
@@ -128,6 +129,14 @@ bridge.handle.GET_TABS(async (_, __, sendResponse) => {
 // 기존 메모가 있으면 내용을 추가하고, 없으면 새로 생성한다.
 bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
 	sendResponse(await handleCreateMemo(payload));
+});
+
+bridge.handle.CREATE_MEMO_FROM_HIGHLIGHT(async (payload, sender, sendResponse) => {
+	sendResponse(await handleCreateHighlightMemo(payload,sender));
+});
+
+bridge.handle.GET_HIGHLIGHT_MEMO_LINKS(async (payload, sender, sendResponse) => {
+	sendResponse(await handleGetHighlightMemoLinks(payload,sender));
 });
 
 // content-ui가 현재 페이지의 하이라이트를 조회한다.

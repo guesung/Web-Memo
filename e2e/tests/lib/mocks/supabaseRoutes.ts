@@ -39,6 +39,14 @@ export class MockSupabaseStore {
 	private highlightMemoSources: Map<number, HighlightMemoSource> = new Map();
 	private setting: SettingRow | null = null;
 
+	/** 설정 저장 요청이 보낸 body를 받은 순서대로 쌓는다. 어떤 키를 보냈는지 검증하는 데 쓴다. */
+	readonly settingUpserts: Record<string, unknown>[] = [];
+	/** 주간 리포트 테스트 메일 요청이 보낸 body를 받은 순서대로 쌓는다. */
+	readonly weeklyReportTestRequests: unknown[] = [];
+	/** 주간 리포트 테스트 메일 함수가 돌려줄 응답 */
+	weeklyReportTestResponse: { status: number; body: Record<string, unknown> } =
+		{ status: 200, body: { status: "ok", email: "report@example.com" } };
+
 	/** 메모 한 건을 저장소에 넣는다. */
 	addMemo(memo: MemoRow) {
 		this.memos.set(memo.id, memo);
@@ -952,15 +960,31 @@ const handleSettingUpsert = async ({ route, store }: HandlerParams) => {
 		show_summary: false,
 		show_ai_chat: false,
 		truncate_memo_content: true,
+		weekly_report_enabled: false,
+		weekly_report_email: null,
 		...store.getSetting(),
 		...patch,
 	};
+	// user_id는 서비스가 매번 붙이는 식별자라 "무엇을 바꿨나" 기록에서는 뺀다.
+	const { user_id: _userId, ...changedFields } = patch;
+	store.settingUpserts.push(changedFields);
 	store.setSetting(updated);
 
 	await route.fulfill({
 		status: 200,
 		contentType: "application/json",
 		body: JSON.stringify(updated),
+	});
+};
+
+/** 주간 리포트 테스트 메일 발송. 저장소에 정해 둔 상태 코드와 body로 응답한다. */
+const handleWeeklyReportTest = async ({ route, store }: HandlerParams) => {
+	store.weeklyReportTestRequests.push(route.request().postDataJSON());
+
+	await route.fulfill({
+		status: store.weeklyReportTestResponse.status,
+		contentType: "application/json",
+		body: JSON.stringify(store.weeklyReportTestResponse.body),
 	});
 };
 
@@ -1083,6 +1107,16 @@ export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
 				route,
 				store,
 				handlers: { POST: handleHighlightCountsRpc },
+			}),
+	);
+
+	await context.route(
+		`${SUPABASE.url}/functions/v1/weekly-memo-report`,
+		(route) =>
+			dispatchByMethod({
+				route,
+				store,
+				handlers: { POST: handleWeeklyReportTest },
 			}),
 	);
 

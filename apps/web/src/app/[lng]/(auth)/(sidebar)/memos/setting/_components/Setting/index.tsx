@@ -13,11 +13,12 @@ import SettingGuide from "./SettingGuide";
 import SettingLanguage from "./SettingLanguage";
 import SettingMemoFields from "./SettingMemoFields";
 import SettingSection from "./SettingSection";
+import SettingWeeklyReport from "./SettingWeeklyReport";
 
 interface IFSettingProps extends LanguageType {}
 
 /**
- * 설정 화면의 본체. 다섯 섹션을 의미 단위 카드 네 장으로 묶는다.
+ * 설정 화면의 본체. 여섯 섹션을 의미 단위 카드 다섯 장으로 묶는다.
  *
  * @description Suspense를 카드 안쪽에 둔다. 예전에는 페이지 전체가 스피너 하나로 덮여
  * 언어·가이드처럼 기다릴 것이 없는 설정까지 같이 사라졌다.
@@ -53,6 +54,15 @@ export default function Setting({ lng }: IFSettingProps) {
 			>
 				<Suspense fallback={<SettingValueSkeleton />}>
 					<SettingCategoryForm lng={lng} />
+				</Suspense>
+			</SettingSection>
+
+			<SettingSection
+				title={t("setting.sectionWeeklyReport")}
+				description={t("setting.sectionWeeklyReportDescription")}
+			>
+				<Suspense fallback={<SettingValueSkeleton />}>
+					<SettingWeeklyReport lng={lng} />
 				</Suspense>
 			</SettingSection>
 

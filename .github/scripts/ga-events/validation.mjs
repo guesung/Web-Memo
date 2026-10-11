@@ -46,6 +46,26 @@ export const extractEventNames = (source) => [...source.matchAll(/\bname:\s*"([a
 /** 이 스크립트가 고칠 수 있는 제품 소스인지 (테스트·타입 파일 제외) 판정합니다. */
 export const isSourceFile = (file) => /^[a-zA-Z0-9_./()[\]+-]+$/.test(file) && !file.split("/").includes("..") && SOURCE_PREFIXES.some((prefix) => file.startsWith(prefix)) && /\.tsx?$/.test(file) && !/\.test\./.test(file) && file !== TYPE_FILE;
 
+/**
+ * git log --name-only 출력 줄에서 분석 시작점으로 넘길 화면 파일을 고릅니다.
+ * 추적 중인 `.tsx` 제품 소스만, 등장 횟수 내림차순(동점이면 경로 오름차순)으로 상위 limit개를 돌려줍니다.
+ */
+export const selectRecentFiles = (changedFiles, trackedFiles, limit = 30) => {
+	const tracked = new Set(trackedFiles);
+	const counts = new Map();
+	for (const file of changedFiles) {
+		if (!file || !file.endsWith(".tsx") || /\.(?:test|stories|spec)\./.test(file) || file.split("/").includes("__tests__") || !tracked.has(file)) {
+			continue;
+		}
+		counts.set(file, (counts.get(file) ?? 0) + 1);
+	}
+
+	return [...counts.entries()]
+		.sort(([fileA, countA], [fileB, countB]) => countB - countA || (fileA < fileB ? -1 : fileA > fileB ? 1 : 0))
+		.slice(0, limit)
+		.map(([file]) => file);
+};
+
 /** 모델이 반환한 후보를 제한된 스키마로 검사합니다. */
 export const validateCandidate = (candidate, { existingEvents, trackedFiles }) => {
 	const keys = ["status", "reason", "events"];

@@ -648,8 +648,8 @@
 			"get_started": "Get started"
 		},
 		"hero": {
-			"title": "Take notes while reading",
-			"subtitle": "Write down thoughts in the side panel as you read.\nThe page title and URL are saved automatically.",
+			"title": "Highlight it, then write your thought beside it",
+			"subtitle": "Highlight a passage in what you're reading and write down what it made you think.\nHighlights and notes gather in one place, with their source.",
 			"install_button": "Add to Chrome",
 			"appstore_button": "App Store",
 			"playstore_button": "Google Play",
@@ -660,11 +660,11 @@
 			"learn_more": "Learn more",
 			"desktop_extension_hint": "Also available as a Chrome extension on desktop",
 			"installs_badge": "installs",
-			"image_alt": "A note written in the Web Memo side panel beside an article"
+			"image_alt": "A sentence highlighted in yellow in an article, with a note written in the menu right beside it"
 		},
 		"section": {
 			"key_features": "Key Features",
-			"key_features_desc": "Five ways to keep a thought while you read.",
+			"key_features_desc": "Six ways to keep a thought while you read.",
 			"features_badge": "Features",
 			"demo": "Preview Web Memo",
 			"demo_title": "Preview Web Memo",
@@ -686,33 +686,27 @@
 		"demo": {
 			"write_memo": "Write Memo",
 			"write_memo_desc": "Take notes while reading articles",
-			"tab_memo": "Side panel",
-			"tab_memo_desc": "Write your own note in the side panel while you read.",
 			"overview": "Overview",
 			"overview_desc": "See all memos at a glance",
-			"tab_overview": "Overview",
-			"tab_overview_desc": "See all memos at a glance",
 			"wishlist": "Wishlist",
 			"wishlist_desc": "Save content for later",
-			"tab_wishlist": "Wishlist",
-			"tab_wishlist_desc": "Save content for later",
 			"organize": "Organize",
 			"organize_desc": "Group notes into categories",
-			"tab_organize": "Organize",
-			"tab_organize_desc": "Group notes into categories",
-			"tab_memo_image_alt": "A written note in the side panel beside an article",
+			"tab_highlight": "Highlight and note",
+			"tab_highlight_desc": "Write your thought in the menu right beside the highlighted sentence.",
+			"tab_highlight_image_alt": "A sentence highlighted in yellow in an article, with a note written in the menu right beside it",
+			"tab_bubble": "Pick a color",
+			"tab_bubble_desc": "Drag over text and a five-color bubble appears. Highlight with the color you like.",
+			"tab_bubble_image_alt": "A five-color bubble appearing after dragging over a sentence",
 			"tab_shortcut": "Open with a shortcut",
-			"tab_shortcut_desc": "Press Alt+S to open the panel. On Mac, press Option+S.",
+			"tab_shortcut_desc": "Press Alt+S to open the side panel. On Mac, press Option+S.",
 			"tab_shortcut_image_alt": "An article and side panel with the Alt+S shortcut shown",
 			"tab_source": "Keep the source",
 			"tab_source_desc": "The page title and URL stay with the note.",
 			"tab_source_image_alt": "A note showing the original page title and URL",
-			"tab_cross_device": "View on web and app",
-			"tab_cross_device_desc": "See notes with the same account on web and app. The app currently has a Korean interface.",
-			"tab_cross_device_image_alt": "The same sample note on web and in the current Korean app",
-			"tab_category": "Organize by category",
-			"tab_category_desc": "Group notes by topic so they are easier to find later.",
-			"tab_category_image_alt": "The web dashboard showing notes filtered by a selected category"
+			"tab_collect": "Browse them together",
+			"tab_collect_desc": "See your highlights and notes together on the web highlights page.",
+			"tab_collect_image_alt": "The web highlights page gathering highlighted sentences and notes"
 		},
 		"steps": {
 			"step1_title": "Install the Chrome extension",
@@ -776,6 +770,10 @@
 			"park_quote": "I always use it when reading tech blogs or documentation. The notes I've taken are really helpful when I need to look things up later. Highly recommended!"
 		},
 		"features": {
+			"highlight": {
+				"title": "Highlight a passage, note it beside it",
+				"description": "Drag over text and a five-color bubble appears. Click a highlight to write your thought right beside it."
+			},
 			"memo": {
 				"title": "Take notes while reading",
 				"description": "Write a thought or a passage in the side panel beside the page."
@@ -1087,7 +1085,7 @@
 				"badge": "Browser Notes",
 				"title": "Take notes without leaving the page",
 				"description": "Write what comes to mind in a side panel next to what you're reading. The page URL is saved with every note.",
-				"imageAlt": "A written note in the side panel beside an article"
+				"imageAlt": "The side panel opened beside an article with Alt+S to write a note"
 			},
 			"benefits": {
 				"title": "Why the notes belong in the browser",
@@ -1136,7 +1134,7 @@
 				"badge": "Save Articles",
 				"title": "Keep what you'll read later in one list",
 				"description": "Save the articles you have no time for now, and pull them from the list when you do.",
-				"imageAlt": "The same sample note on web and in the current Korean app"
+				"imageAlt": "The web highlights page gathering highlighted sentences and notes"
 			},
 			"benefits": {
 				"title": "Instead of thirty tabs left open",
@@ -1225,7 +1223,7 @@
 				"badge": "Online Learning",
 				"title": "Take lecture notes without pausing",
 				"description": "Write in the side panel while a lecture plays. The lecture URL stays with your note.",
-				"imageAlt": "A written note in the side panel beside an article"
+				"imageAlt": "The side panel opened beside an article with Alt+S to write a note"
 			},
 			"benefits": {
 				"title": "What's left after the lecture ends",
@@ -1258,7 +1256,7 @@
 				"badge": "YouTube Notes",
 				"title": "Write it down while the video plays",
 				"description": "Note what you need from tutorials and reviews, and the video URL is saved alongside it.",
-				"imageAlt": "A written note in the side panel beside an article"
+				"imageAlt": "The side panel opened beside an article with Alt+S to write a note"
 			},
 			"benefits": {
 				"title": "Keeping what a video gave you",
@@ -1291,7 +1289,7 @@
 				"badge": "News & Articles",
 				"title": "Read so that something stays",
 				"description": "Note the line that catches you while reading news and blogs, and keep the source URL with it.",
-				"imageAlt": "A written note in the side panel beside an article"
+				"imageAlt": "A sentence highlighted in yellow in an article, with a note written in the menu right beside it"
 			},
 			"benefits": {
 				"title": "Why articles don't stick",
@@ -1324,7 +1322,7 @@
 				"badge": "Job Hunting",
 				"title": "See every application in one list",
 				"description": "Write down postings and company details company by company, and reopen just those notes before an interview.",
-				"imageAlt": "The same sample note on web and in the current Korean app"
+				"imageAlt": "The web highlights page gathering highlighted sentences and notes"
 			},
 			"benefits": {
 				"title": "What gets confusing as applications pile up",
@@ -1357,7 +1355,7 @@
 				"badge": "For Developers",
 				"title": "Never search for the same fix twice",
 				"description": "Note what actually worked, right on the Stack Overflow answer, GitHub issue, or doc page where you found it.",
-				"imageAlt": "A written note in the side panel beside an article"
+				"imageAlt": "A sentence highlighted in yellow in an article, with a note written in the menu right beside it"
 			},
 			"benefits": {
 				"title": "So the same search doesn't happen twice",
@@ -1390,7 +1388,7 @@
 				"badge": "Tech Article Organizer",
 				"title": "Bookmarks pile up, the content doesn't",
 				"description": "Note what a tech blog or newsletter actually concluded, with the original URL attached.",
-				"imageAlt": "A written note in the side panel beside an article"
+				"imageAlt": "A note showing the original page title and URL"
 			},
 			"benefits": {
 				"title": "About those articles saved for later",

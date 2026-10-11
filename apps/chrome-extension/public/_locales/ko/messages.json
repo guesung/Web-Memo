@@ -1,9 +1,9 @@
 {
 	"extensionName": {
-		"message": "웹 메모 - 읽던 페이지 옆에서 바로 적는 메모"
+		"message": "웹 메모 - 칠하고 바로 옆에 적는 웹 형광펜"
 	},
 	"extensionDescription": {
-		"message": "메모하려고 앱을 열 필요 없어요. 읽던 페이지 옆에서 바로 적고, 제목과 URL은 알아서 붙어요."
+		"message": "읽던 글에 형광펜을 칠하고 바로 옆에 생각을 적어요. Alt+S로 사이드 패널에도 메모하고, 제목과 URL은 알아서 붙어요."
 	},
 	"memo": {
 		"message": "메모"

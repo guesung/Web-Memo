@@ -17,7 +17,7 @@ import type { TLandingPageConfig } from "../../../_components";
  */
 export const MEMO_PAGE: TLandingPageConfig = {
 	pageKey: "featuresMemo",
-	screenshotNumber: 1,
+	screenshotNumber: 3,
 	benefits: [
 		{ key: "shortcut", icon: Keyboard },
 		{ key: "organize", icon: FolderOpen },

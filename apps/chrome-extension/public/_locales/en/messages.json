@@ -261,7 +261,7 @@
 		"message": "Memo fields"
 	},
 	"highlight_setting": {
-		"message": "Highlights"
+		"message": "Highlight"
 	},
 	"highlight_setting_description": {
 		"message": "Select text on a webpage, then click the highlight button to save it."
@@ -422,9 +422,6 @@
 	"highlight_intro_confirm": {
 		"message": "Got it"
 	},
-	"highlight_setting": {
-		"message": "Highlight"
-	},
 	"highlight_bubble_setting": {
 		"message": "Show highlight popup when selecting text"
 	},
@@ -568,12 +565,33 @@
 		"message": "AI features"
 	},
 	"ai_features_description": {
-		"message": "Turn these off if you only want to write memos. The matching tab disappears from the side panel."
+		"message": "Open page summaries or choose whether to show AI chat."
 	},
 	"summary_enabled_setting": {
 		"message": "Use page summary"
 	},
 	"ai_chat_enabled_setting": {
 		"message": "Use AI chat"
+	},
+	"summary_show_label": {
+		"message": "View summary"
+	},
+	"summary_hide_label": {
+		"message": "Hide summary"
+	},
+	"summary_unavailable_message": {
+		"message": "Summary is unavailable on this page."
+	},
+	"summary_page_loading_message": {
+		"message": "Checking this page…"
+	},
+	"summary_retry_label": {
+		"message": "Try summarizing again"
+	},
+	"summary_login_message": {
+		"message": "Sign in to summarize this page."
+	},
+	"summary_panel_hint": {
+		"message": "Open a summary from the side panel whenever you need it."
 	}
 }

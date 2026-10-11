@@ -51,7 +51,8 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 
 	// 카테고리는 사이드바 하단에서 고르는 가로지르는 조건이라 필터와 달리 쿼리로 남는다.
 	const category = searchParams.get("category") ?? "";
-	const isListView = searchParams.get("view") === "list";
+	const view = searchParams.get("view");
+	const isListView = view === "list" || view === "domain";
 	const searchQuery = watch("searchQuery");
 
 	const {
@@ -63,7 +64,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 		fetchNextPage,
 	} = useMemosInfiniteQuery({
 		category,
-		sortBy: isListView ? "created_at" : "updated_at",
+		sortBy: view === "list" ? "created_at" : "updated_at",
 		isWish: getWishlistFilter(filter),
 		isStar: filter === "star" ? true : undefined,
 		isReading: filter === "reading" ? true : undefined,
@@ -107,7 +108,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 	 * 검색어와 id(메모 다이얼로그)는 넣지 않는다. 넣으면 글자를 칠 때마다,
 	 * 다이얼로그를 여닫을 때마다 그리드가 통째로 다시 그려진다.
 	 */
-	const tabKey = `${category}|${filter}|${isListView}`;
+	const tabKey = `${category}|${filter}|${view === "list" || view === "domain" ? view : "grid"}`;
 
 	return (
 		<div className="flex w-full flex-col gap-4">
@@ -146,6 +147,7 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 				<MemoList
 					key={tabKey}
 					lng={lng}
+					groupBy={view === "domain" ? "domain" : "date"}
 					memos={memos}
 					highlightsByUrl={highlightsByUrl}
 					searchQuery={searchQuery}

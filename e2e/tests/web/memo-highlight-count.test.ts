@@ -62,7 +62,7 @@ test("카드에서 제거한 인용문은 상세 다이얼로그에서 계속 �
 	const dialog = page.getByRole("dialog");
 	await expect(dialog).toBeVisible();
 	const expandHighlights = dialog.getByRole("button", {
-		name: "Highlights (2)",
+		name: "Other highlights on this page (2)",
 	});
 	await expect(
 		expandHighlights.or(dialog.getByText(SECOND_QUOTE)).first(),

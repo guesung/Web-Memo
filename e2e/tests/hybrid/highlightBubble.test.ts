@@ -30,6 +30,7 @@ test("선택을 마치면 버블이 뜨고 X는 현재 선택만 닫으며 설�
 		create: chrome.i18n.getMessage("highlight_create"),
 		yellow: chrome.i18n.getMessage("highlight_color_yellow"),
 		note: chrome.i18n.getMessage("highlight_note"),
+		memoAdd: chrome.i18n.getMessage("highlight_memo_add"),
 		settings: chrome.i18n.getMessage("highlight_bubble_settings"),
 		dismiss: chrome.i18n.getMessage("highlight_bubble_dismiss"),
 		disableSite: chrome.i18n.getMessage("highlight_bubble_disable_site"),
@@ -53,6 +54,9 @@ test("선택을 마치면 버블이 뜨고 X는 현재 선택만 닫으며 설�
 	).toBeVisible();
 	await expect(
 		toolbar.getByRole("button", { name: labels.note }),
+	).toBeVisible();
+	await expect(
+		toolbar.getByRole("button", { name: labels.memoAdd }),
 	).toBeVisible();
 	await expect(
 		toolbar.getByRole("button", { name: labels.settings }),

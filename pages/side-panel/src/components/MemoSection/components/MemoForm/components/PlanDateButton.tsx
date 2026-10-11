@@ -25,7 +25,7 @@ export default function PlanDateButton({
 	onSelect,
 }: IFPlanDateButtonProps) {
 	const [isOpen, setIsOpen] = useState(false);
-	const locale = I18n.getUILanguage();
+	const locale = I18n.getMessageLocale();
 	const todayKey = toPlanDateKey(new Date());
 	const labelKind = plannedDate
 		? getPlanDateLabelKind(plannedDate, todayKey)

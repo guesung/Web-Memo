@@ -263,7 +263,7 @@ const MemoFormContent = ({
 			title: result.plannedDate
 				? I18n.get(
 						"plan_added",
-						new Intl.DateTimeFormat(I18n.getUILanguage(), {
+						new Intl.DateTimeFormat(I18n.getMessageLocale(), {
 							month: "long",
 							day: "numeric",
 						}).format(parsePlanDateKey(result.plannedDate)),

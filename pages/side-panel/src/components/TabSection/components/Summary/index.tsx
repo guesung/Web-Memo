@@ -1,5 +1,6 @@
 import LoginSection from "@src/components/LoginSection";
-import { useSupabaseUserQuery } from "@web-memo/shared/hooks";
+import { usePageContentContext } from "@src/components/PageContentProvider";
+import { useSupabaseUserQuery, useTabQuery } from "@web-memo/shared/hooks";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { Button, ErrorBoundary, TextShimmer } from "@web-memo/ui";
 import { Sparkles } from "lucide-react";
@@ -7,7 +8,50 @@ import { Suspense } from "react";
 import { formatSummaryText } from "../../../../hooks/useSummary/util";
 import { useSummaryContext } from "./components/SummaryProvider";
 
-export default function Summary() {
+export default function Summary({
+	isAwaitingSummary,
+}: {
+	isAwaitingSummary: boolean;
+}) {
+	const { content, isLoading, error } = usePageContentContext();
+	const { data: tab } = useTabQuery();
+	const { isAuthPending } = useSummaryContext();
+
+	if (isLoading) {
+		return (
+			<div className="flex h-full flex-1 items-center justify-center">
+				<TextShimmer className="text-sm">
+					{I18n.get("summary_page_loading_message")}
+				</TextShimmer>
+			</div>
+		);
+	}
+
+	if (error || !content.trim()) {
+		const isWebPage = /^https?:\/\//i.test(tab?.url ?? "");
+		return (
+			<p className="pt-4 text-sm text-muted-foreground">
+				{I18n.get(
+					error && isWebPage
+						? "summary_page_read_failed_message"
+						: "summary_unavailable_message",
+				)}
+			</p>
+		);
+	}
+
+	if (isAwaitingSummary) {
+		return (
+			<div className="flex h-full flex-1 items-center justify-center">
+				<TextShimmer className="text-sm">
+					{I18n.get(
+						isAuthPending ? "summary_login_message" : "summary_loading_message",
+					)}
+				</TextShimmer>
+			</div>
+		);
+	}
+
 	return (
 		<ErrorBoundary FallbackComponent={LoginSection}>
 			<Suspense

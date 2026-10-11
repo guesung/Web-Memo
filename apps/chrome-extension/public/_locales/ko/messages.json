@@ -579,6 +579,9 @@
 	"summary_hide_label": {
 		"message": "요약 접기"
 	},
+	"summary_page_read_failed_message": {
+		"message": "페이지 내용을 읽지 못했어요. 페이지를 새로고침한 뒤 다시 시도해 주세요."
+	},
 	"summary_unavailable_message": {
 		"message": "이 페이지에서는 요약할 수 없어요"
 	},

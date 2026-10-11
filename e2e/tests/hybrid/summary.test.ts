@@ -42,28 +42,71 @@ test.describe("사이드 패널 - 페이지 요약", () => {
 		await openSidePanel(page);
 	});
 
-	test("content script가 있는 페이지에서 요약 생성 버튼을 누르면, 요약 API를 한 번 부르고 받은 요약을 보여준다", async ({
+	test("요약 보기를 누르면 바로 요약 API를 한 번 부르고 결과를 보여준다", async ({
 		page,
 	}) => {
 		const sidePanelPage = await findSidePanelPage(page);
-		const summaryGenerateLabel = await getExtensionMessage({
-			sidePanelPage,
-			key: "summary_generate_label",
-		});
-		await openSummary(sidePanelPage);
 		expect(summaryApi.getSummaryRequestCount()).toBe(0);
-
-		await sidePanelPage
-			.getByRole("button", { name: summaryGenerateLabel, exact: true })
-			.click();
+		await openSummary(sidePanelPage);
 
 		await expect(
 			sidePanelPage.getByText(SUMMARY_CHUNKS.join("")),
 		).toBeVisible();
+		await expect(sidePanelPage.getByRole("tablist")).toHaveCount(0);
+		const generateLabel = await getExtensionMessage({
+			sidePanelPage,
+			key: "summary_generate_label",
+		});
+		await expect(
+			sidePanelPage.getByRole("button", { name: generateLabel, exact: true }),
+		).toHaveCount(0);
 		expect(summaryApi.getSummaryRequestCount()).toBe(1);
 	});
 
-	test("미지원 페이지에서는 요약 진입점이 비활성이고 메모는 남는다", async ({
+	test("요약 열기와 접기는 GA 이벤트를 각각 한 번 기록하고 페이지 전환은 기록하지 않는다", async ({
+		page,
+	}) => {
+		const sidePanelPage = await findSidePanelPage(page);
+		const actions: Array<Promise<string | undefined>> = [];
+		sidePanelPage.on("console", (message) => {
+			if (!message.text().startsWith("[analytics] summary_panel_toggle")) {
+				return;
+			}
+			const parameters = message.args()[1];
+			actions.push(
+				parameters?.jsonValue().then((params) => {
+					return (params as { action?: string }).action;
+				}) ?? Promise.resolve(undefined),
+			);
+		});
+		const hideLabel = await getExtensionMessage({
+			sidePanelPage,
+			key: "summary_hide_label",
+		});
+
+		await openSummary(sidePanelPage);
+		await expect(
+			sidePanelPage.getByText(SUMMARY_CHUNKS.join("")),
+		).toBeVisible();
+		await sidePanelPage
+			.getByRole("button", { name: hideLabel, exact: true })
+			.click();
+		await openSummary(sidePanelPage);
+		await expect
+			.poll(async () => Promise.all(actions))
+			.toEqual(["open", "close", "open"]);
+
+		const previousPageKey = getPageKey(page.url());
+		const nextMemoQuery = sidePanelPage.waitForResponse((response) => {
+			const keys = getMemoQueryPageKeys(response.url());
+			return keys !== null && !keys.includes(previousPageKey);
+		});
+		await page.goto("about:blank");
+		await nextMemoQuery;
+		expect(await Promise.all(actions)).toEqual(["open", "close", "open"]);
+	});
+
+	test("미지원 페이지에서는 눌렀을 때만 안내가 보이고 메모는 남는다", async ({
 		page,
 	}) => {
 		const sidePanelPage = await findSidePanelPage(page);
@@ -93,9 +136,15 @@ test.describe("사이드 패널 - 페이지 요약", () => {
 		await page.goto("about:blank");
 		await nextPageMemoQuery;
 
+		const showButton = sidePanelPage.getByRole("button", {
+			name: showLabel,
+			exact: true,
+		});
+		await expect(showButton).toBeEnabled();
 		await expect(
-			sidePanelPage.getByRole("button", { name: showLabel, exact: true }),
-		).toBeDisabled();
+			sidePanelPage.getByText(unavailableMessage, { exact: true }),
+		).toHaveCount(0);
+		await showButton.click();
 		await expect(
 			sidePanelPage.getByText(unavailableMessage, { exact: true }),
 		).toBeVisible();
@@ -107,10 +156,6 @@ test.describe("사이드 패널 - 페이지 요약", () => {
 		page,
 	}) => {
 		const sidePanelPage = await findSidePanelPage(page);
-		const generateLabel = await getExtensionMessage({
-			sidePanelPage,
-			key: "summary_generate_label",
-		});
 		const hideLabel = await getExtensionMessage({
 			sidePanelPage,
 			key: "summary_hide_label",
@@ -118,9 +163,6 @@ test.describe("사이드 패널 - 페이지 요약", () => {
 		const memo = sidePanelPage.locator("#memo-textarea");
 		await memo.fill("Unfinished memo draft");
 		await openSummary(sidePanelPage);
-		await sidePanelPage
-			.getByRole("button", { name: generateLabel, exact: true })
-			.click();
 		await expect(
 			sidePanelPage.getByText(SUMMARY_CHUNKS.join("")),
 		).toBeVisible();
@@ -135,7 +177,7 @@ test.describe("사이드 패널 - 페이지 요약", () => {
 		expect(summaryApi.getSummaryRequestCount()).toBe(1);
 	});
 
-	test("페이지가 바뀌면 기존 요약이 접히고 새 페이지에서 자동 실행되지 않는다", async ({
+	test("페이지가 바뀌면 기존 요약이 접히고 새 페이지에서 다시 누를 때만 실행된다", async ({
 		page,
 		context,
 	}) => {
@@ -146,18 +188,11 @@ test.describe("사이드 패널 - 페이지 요약", () => {
 			}),
 		);
 		const sidePanelPage = await findSidePanelPage(page);
-		const generateLabel = await getExtensionMessage({
-			sidePanelPage,
-			key: "summary_generate_label",
-		});
 		const showLabel = await getExtensionMessage({
 			sidePanelPage,
 			key: "summary_show_label",
 		});
 		await openSummary(sidePanelPage);
-		await sidePanelPage
-			.getByRole("button", { name: generateLabel, exact: true })
-			.click();
 		await expect(
 			sidePanelPage.getByText(SUMMARY_CHUNKS.join("")),
 		).toBeVisible();
@@ -171,11 +206,15 @@ test.describe("사이드 패널 - 페이지 요약", () => {
 		await expect(
 			sidePanelPage.getByRole("button", { name: showLabel, exact: true }),
 		).toHaveAttribute("aria-expanded", "false");
-		await openSummary(sidePanelPage);
 		await expect(sidePanelPage.getByText(SUMMARY_CHUNKS.join(""))).toHaveCount(
 			0,
 		);
 		expect(summaryApi.getSummaryRequestCount()).toBe(1);
+		await openSummary(sidePanelPage);
+		await expect(
+			sidePanelPage.getByText(SUMMARY_CHUNKS.join("")),
+		).toBeVisible();
+		expect(summaryApi.getSummaryRequestCount()).toBe(2);
 	});
 
 	test("요약 요청 실패 후 명시적으로 재시도할 때만 다시 요청한다", async ({
@@ -192,18 +231,11 @@ test.describe("사이드 패널 - 페이지 요약", () => {
 			await route.fallback();
 		});
 		const sidePanelPage = await findSidePanelPage(page);
-		const generateLabel = await getExtensionMessage({
-			sidePanelPage,
-			key: "summary_generate_label",
-		});
 		const retryLabel = await getExtensionMessage({
 			sidePanelPage,
 			key: "summary_retry_label",
 		});
 		await openSummary(sidePanelPage);
-		await sidePanelPage
-			.getByRole("button", { name: generateLabel, exact: true })
-			.click();
 		const retryButton = sidePanelPage.getByRole("button", {
 			name: retryLabel,
 			exact: true,
@@ -232,9 +264,9 @@ test.describe("사이드 패널 - 페이지 요약", () => {
 			await route.fallback();
 		});
 		const sidePanelPage = await findSidePanelPage(page);
-		const generateLabel = await getExtensionMessage({
+		const hideLabel = await getExtensionMessage({
 			sidePanelPage,
-			key: "summary_generate_label",
+			key: "summary_hide_label",
 		});
 		const loadingMessage = await getExtensionMessage({
 			sidePanelPage,
@@ -242,16 +274,17 @@ test.describe("사이드 패널 - 페이지 요약", () => {
 		});
 		await openSummary(sidePanelPage);
 		try {
-			await sidePanelPage
-				.getByRole("button", { name: generateLabel, exact: true })
-				.click();
 			await expect.poll(() => requestCount).toBe(1);
 			await expect(
 				sidePanelPage.getByText(loadingMessage, { exact: true }),
 			).toBeVisible();
+			await sidePanelPage
+				.getByRole("button", { name: hideLabel, exact: true })
+				.click();
+			await openSummary(sidePanelPage);
 			await expect(
-				sidePanelPage.getByRole("button", { name: generateLabel, exact: true }),
-			).toHaveCount(0);
+				sidePanelPage.getByText(loadingMessage, { exact: true }),
+			).toBeVisible();
 			expect(requestCount).toBe(1);
 		} finally {
 			releaseResponse();

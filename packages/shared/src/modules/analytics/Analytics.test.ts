@@ -402,6 +402,37 @@ describe("Analytics 환경별 동작", () => {
 		);
 	});
 
+	it("요약 패널 열기와 접기에 참여 이벤트와 확장 메타데이터를 싣는다", async () => {
+		stubChromeStorage();
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+
+		await analytics.trackEvent({
+			name: "summary_panel_toggle",
+			params: { action: "open" },
+		});
+		await analytics.trackEvent({
+			name: "summary_panel_toggle",
+			params: { action: "close" },
+		});
+
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+		for (const [index, action] of ["open", "close"].entries()) {
+			const [, request] = fetchMock.mock.calls[index];
+			const event = JSON.parse(request.body).events[0];
+			expect(event.name).toBe("summary_panel_toggle");
+			expect(event.params).toMatchObject({
+				action,
+				event_category: "engagement",
+				engagement_time_msec: 100,
+				build_env: "production",
+				extension_version: "1.2.3",
+			});
+		}
+	});
+
 	it("웹에서는 이벤트에 extension_version 키 자체가 없다", async () => {
 		window.gtag = gtag;
 		const analytics = await loadAnalytics({

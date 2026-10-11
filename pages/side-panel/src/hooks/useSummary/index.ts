@@ -27,6 +27,9 @@ const reportSummaryFailure = (error: unknown, stage: string) => {
 
 interface UseSummaryReturn {
 	isSummaryLoading: boolean;
+	hasRequestedSummary: boolean;
+	isAuthenticated: boolean;
+	isAuthPending: boolean;
 	summary: string;
 	errorMessage: string;
 	generateSummary: (source: TSummaryRunSource) => Promise<void>;
@@ -38,6 +41,7 @@ export default function useSummary(): UseSummaryReturn {
 		summary: "",
 		errorMessage: "",
 		isGenerating: false,
+		hasRequestedSummary: false,
 	});
 	const activeRequestRef = useRef<{
 		pageKey: string;
@@ -52,14 +56,16 @@ export default function useSummary(): UseSummaryReturn {
 	} = usePageContentContext();
 	const currentPageKeyRef = useRef(pageKey);
 	currentPageKeyRef.current = pageKey;
-	const { data: supabaseClient } = useQuery(supabaseClientQueryOptions());
-	const { data: userResponse } = useQuery({
+	const clientQuery = useQuery(supabaseClientQueryOptions());
+	const supabaseClient = clientQuery.data;
+	const userQuery = useQuery({
 		queryKey: QUERY_KEY.user(),
 		queryFn: supabaseClient
 			? userQueryOptions(supabaseClient).queryFn
 			: skipToken,
 		retry: false,
 	});
+	const userResponse = userQuery.data;
 
 	useEffect(() => {
 		const scope = pageKey;
@@ -68,6 +74,7 @@ export default function useSummary(): UseSummaryReturn {
 			summary: "",
 			errorMessage: "",
 			isGenerating: false,
+			hasRequestedSummary: false,
 		});
 		return () => {
 			if (activeRequestRef.current?.pageKey === scope) {
@@ -94,6 +101,7 @@ export default function useSummary(): UseSummaryReturn {
 					summary: "",
 					errorMessage: I18n.get("error_get_page_content"),
 					isGenerating: false,
+					hasRequestedSummary: false,
 				});
 				return;
 			}
@@ -104,7 +112,13 @@ export default function useSummary(): UseSummaryReturn {
 				activeRequestRef.current?.controller === controller &&
 				currentPageKeyRef.current === pageKey &&
 				!controller.signal.aborted;
-			setState({ pageKey, summary: "", errorMessage: "", isGenerating: true });
+			setState({
+				pageKey,
+				summary: "",
+				errorMessage: "",
+				isGenerating: true,
+				hasRequestedSummary: true,
+			});
 
 			analytics.trackEvent({ name: "summary_run", params: { source } });
 			const startedAt = Date.now();
@@ -207,10 +221,20 @@ export default function useSummary(): UseSummaryReturn {
 	const currentState =
 		state.pageKey === pageKey
 			? state
-			: { pageKey, summary: "", errorMessage: "", isGenerating: false };
+			: {
+					pageKey,
+					summary: "",
+					errorMessage: "",
+					isGenerating: false,
+					hasRequestedSummary: false,
+				};
 
 	return {
 		isSummaryLoading: currentState.isGenerating,
+		hasRequestedSummary: currentState.hasRequestedSummary,
+		isAuthenticated: Boolean(userResponse?.data.user),
+		isAuthPending:
+			clientQuery.isPending || (Boolean(supabaseClient) && userQuery.isPending),
 		summary: currentState.summary,
 		generateSummary,
 		errorMessage: currentState.errorMessage,

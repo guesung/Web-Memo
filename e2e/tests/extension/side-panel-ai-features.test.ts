@@ -5,11 +5,13 @@ import { findSidePanelPage, login, openSidePanel, skipGuide } from "../lib";
 import {
 	createMockSetting,
 	MockSupabaseStore,
+	mockSummaryApi,
 	setupSupabaseMocks,
 } from "../lib/mocks";
 
 test.describe("사이드 패널 AI 기능", () => {
 	let store: MockSupabaseStore;
+	let summaryApi: Awaited<ReturnType<typeof mockSummaryApi>>;
 
 	test.beforeEach(async ({ page, context }) => {
 		await context.route(
@@ -18,6 +20,10 @@ test.describe("사이드 패널 AI 기능", () => {
 		);
 		store = new MockSupabaseStore();
 		await setupSupabaseMocks(page, store);
+		summaryApi = await mockSummaryApi({
+			context,
+			summaryChunks: ["E2E mock summary"],
+		});
 		await context.route("https://example.com/**", async (route) => {
 			await route.fulfill({
 				contentType: "text/html",
@@ -45,6 +51,7 @@ test.describe("사이드 패널 AI 기능", () => {
 		await expect(sidePanelPage.locator("#memo-textarea")).toBeVisible();
 		await expect(sidePanelPage.getByRole("tablist")).toHaveCount(0);
 		await expect(sidePanelPage.locator("main [role=slider]")).toHaveCount(0);
+		expect(summaryApi.getSummaryRequestCount()).toBe(0);
 	});
 
 	test("기존 요약 OFF 설정도 수동으로 요약을 열 수 있다", async ({ page }) => {
@@ -70,7 +77,10 @@ test.describe("사이드 패널 AI 기능", () => {
 		await expect(
 			sidePanelPage.getByRole("button", { name: hideLabel, exact: true }),
 		).toHaveAttribute("aria-expanded", "true");
+		await expect(sidePanelPage.getByText("E2E mock summary")).toBeVisible();
+		await expect(sidePanelPage.getByRole("tablist")).toHaveCount(0);
 		await expect(sidePanelPage.locator("#memo-textarea")).toBeVisible();
+		expect(summaryApi.getSummaryRequestCount()).toBe(1);
 		expect(store.getSetting()?.show_summary).toBe(false);
 	});
 
@@ -100,10 +110,8 @@ test.describe("사이드 패널 AI 기능", () => {
 		await sidePanelPage
 			.getByRole("button", { name: showLabel, exact: true })
 			.click();
-		await expect(sidePanelPage.getByRole("tab")).toHaveCount(2);
-		await expect(
-			sidePanelPage.getByRole("tab", { name: /Summary|요약/ }),
-		).toHaveAttribute("aria-selected", "true");
+		await expect(sidePanelPage.getByRole("tablist")).toHaveCount(0);
+		await expect(sidePanelPage.getByText("E2E mock summary")).toBeVisible();
 		await expect(sidePanelPage.locator("main [role=slider]")).toHaveCount(1);
 		await sidePanelPage
 			.getByRole("button", { name: hideLabel, exact: true })
@@ -113,6 +121,7 @@ test.describe("사이드 패널 AI 기능", () => {
 			"aria-selected",
 			"true",
 		);
+		expect(summaryApi.getSummaryRequestCount()).toBe(1);
 	});
 
 	test("옵션에는 요약 스위치 대신 안내가 있고 채팅 스위치는 저장된다", async ({

@@ -1,6 +1,6 @@
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { ErrorBoundary, Tabs, TabsContent, TabsList } from "@web-memo/ui";
-import { ChatTabTrigger, SummaryTabTrigger } from "./components";
+import { ChatTabTrigger } from "./components";
 import Chat from "./components/Chat";
 import { ChatProvider } from "./components/Chat/components";
 import Summary from "./components/Summary";
@@ -13,6 +13,7 @@ interface TabSectionProps {
 	selectedTab: TTabName;
 	onTabChange: (tab: TTabName) => void;
 	panelId: string;
+	isAwaitingSummary: boolean;
 }
 
 export default function TabSection({
@@ -22,6 +23,7 @@ export default function TabSection({
 	selectedTab,
 	onTabChange,
 	panelId,
+	isAwaitingSummary,
 }: TabSectionProps) {
 	const activeTab = resolveActiveTab({
 		selectedTab,
@@ -46,12 +48,11 @@ export default function TabSection({
 					onValueChange={handleTabChange}
 					className="flex min-h-0 flex-1 flex-col overflow-hidden"
 				>
-					<TabsList
-						className={`mt-3 grid w-full shrink-0 ${isSummaryOpen && isChatEnabled ? "grid-cols-2" : "grid-cols-1"}`}
-					>
-						{isSummaryOpen && <SummaryTabTrigger />}
-						{isChatEnabled && <ChatTabTrigger />}
-					</TabsList>
+					{!isSummaryOpen && isChatEnabled && (
+						<TabsList className="mt-3 grid w-full shrink-0 grid-cols-1">
+							<ChatTabTrigger />
+						</TabsList>
+					)}
 					{isSummaryOpen && (
 						<TabsContent
 							id={panelId}
@@ -59,7 +60,7 @@ export default function TabSection({
 							className="mt-0 min-h-0 flex-1 overflow-y-auto"
 						>
 							<ErrorBoundary>
-								<Summary />
+								<Summary isAwaitingSummary={isAwaitingSummary} />
 							</ErrorBoundary>
 						</TabsContent>
 					)}

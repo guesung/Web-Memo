@@ -579,6 +579,9 @@
 	"summary_hide_label": {
 		"message": "Hide summary"
 	},
+	"summary_page_read_failed_message": {
+		"message": "Couldn't read this page. Refresh it and try again."
+	},
 	"summary_unavailable_message": {
 		"message": "Summary is unavailable on this page."
 	},

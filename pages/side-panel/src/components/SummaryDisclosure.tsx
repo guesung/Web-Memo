@@ -5,9 +5,6 @@ import { useRef } from "react";
 interface SummaryDisclosureProps {
 	isOpen: boolean;
 	onToggle: () => void;
-	isLoading: boolean;
-	isAvailable: boolean;
-	hasPageContentError: boolean;
 }
 
 export const SUMMARY_PANEL_ID = "side-panel-summary";
@@ -15,23 +12,13 @@ export const SUMMARY_PANEL_ID = "side-panel-summary";
 export default function SummaryDisclosure({
 	isOpen,
 	onToggle,
-	isLoading,
-	isAvailable,
-	hasPageContentError,
 }: SummaryDisclosureProps) {
 	const buttonRef = useRef<HTMLButtonElement>(null);
-	const unavailableMessage = isLoading
-		? I18n.get("summary_page_loading_message")
-		: hasPageContentError
-			? I18n.get("error_get_page_content")
-			: I18n.get("summary_unavailable_message");
-
 	return (
 		<div className="mt-3 shrink-0">
 			<button
 				ref={buttonRef}
 				type="button"
-				disabled={!isAvailable && !isOpen}
 				aria-expanded={isOpen}
 				aria-controls={SUMMARY_PANEL_ID}
 				onClick={() => {
@@ -54,11 +41,6 @@ export default function SummaryDisclosure({
 					className={`size-4 shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? "rotate-180" : ""}`}
 				/>
 			</button>
-			{!isAvailable && (
-				<output className="block px-3 pt-1 text-xs text-muted-foreground">
-					{unavailableMessage}
-				</output>
-			)}
 		</div>
 	);
 }

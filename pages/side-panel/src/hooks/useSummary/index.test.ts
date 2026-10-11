@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
 	user: { data: { user: { id: "user-1" } } } as
 		| { data: { user: { id: string } | null } }
 		| undefined,
+	authPending: false,
 	trackEvent: vi.fn(),
 	stream: vi.fn(),
 }));
@@ -29,6 +30,7 @@ vi.mock("@tanstack/react-query", () => ({
 	skipToken: Symbol("skipToken"),
 	useQuery: (options: { queryKey: string[] }) => ({
 		data: options.queryKey[0] === "user" ? mocks.user : {},
+		isPending: options.queryKey[0] === "user" && mocks.authPending,
 	}),
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
@@ -74,6 +76,7 @@ beforeEach(() => {
 		error: "",
 	};
 	mocks.user = { data: { user: { id: "user-1" } } };
+	mocks.authPending = false;
 	mocks.trackEvent.mockReset();
 	mocks.stream.mockReset();
 	document.body.innerHTML = '<div id="root"></div>';
@@ -87,10 +90,13 @@ afterEach(async () => {
 
 it("인증 확인 전에는 요약 요청을 보내지 않는다", async () => {
 	mocks.user = undefined;
+	mocks.authPending = true;
 	const fetchMock = vi.fn();
 	vi.stubGlobal("fetch", fetchMock);
 	await render();
-	await act(async () => summary.generateSummary("empty_state"));
+	expect(summary.isAuthPending).toBe(true);
+	await act(async () => summary.generateSummary("disclosure"));
+	expect(summary.hasRequestedSummary).toBe(false);
 	expect(fetchMock).not.toHaveBeenCalled();
 	expect(mocks.trackEvent).not.toHaveBeenCalled();
 });
@@ -111,11 +117,16 @@ it("중복 클릭을 막고 페이지 변경 후 이전 스트림 조각을 무�
 	await render();
 	let request!: Promise<void>;
 	await act(async () => {
-		request = summary.generateSummary("empty_state");
-		void summary.generateSummary("empty_state");
+		request = summary.generateSummary("disclosure");
+		void summary.generateSummary("disclosure");
 		await Promise.resolve();
 	});
 	expect(fetchMock).toHaveBeenCalledTimes(1);
+	expect(summary.hasRequestedSummary).toBe(true);
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "summary_run",
+		params: { source: "disclosure" },
+	});
 	expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
 
 	await act(async () => onChunk("current"));
@@ -125,6 +136,7 @@ it("중복 클릭을 막고 페이지 변경 후 이전 스트림 조각을 무�
 	expect(fetchMock.mock.calls[0][1].signal.aborted).toBe(true);
 	await act(async () => onChunk("old"));
 	expect(summary.summary).toBe("");
+	expect(summary.hasRequestedSummary).toBe(false);
 	await act(async () => resolveStream());
 	await request;
 });

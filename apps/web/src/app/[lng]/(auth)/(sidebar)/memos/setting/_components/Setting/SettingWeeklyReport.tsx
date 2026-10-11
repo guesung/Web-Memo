@@ -62,7 +62,11 @@ export default function SettingWeeklyReport({
 				/>
 			</SettingRow>
 			{weeklyReportEnabled && (
-				<WeeklyReportEmailFields lng={lng} savedEmail={weeklyReportEmail} />
+				// 주소를 저장하지 않았으면 발송도 로그인 이메일로 가므로 그 주소를 보여 준다
+				<WeeklyReportEmailFields
+					lng={lng}
+					savedEmail={weeklyReportEmail ?? loginEmail ?? null}
+				/>
 			)}
 		</>
 	);

@@ -30,6 +30,7 @@
 		"highlight": "Highlights",
 		"importantMemo": "Important",
 		"readingMemo": "Reading",
+		"readingPlan": "Reading plan",
 		"allCategory": "All categories",
 		"tags": "Tags",
 		"settings": "Settings",
@@ -518,7 +519,7 @@
 			"truncateContent": "Shorten memo content",
 			"unknownDate": "No creation date",
 			"label": "Memo view",
-			"byDate": "By date",
+			"byDate": "By created date",
 			"untitled": "Untitled memo",
 			"loadMore": "Load more"
 		},
@@ -536,6 +537,15 @@
 			"title": "No results",
 			"message": "We couldn't find any memo matching '{{query}}'.",
 			"hint": "Try a different keyword."
+		},
+		"plan": {
+			"sectionPast": "Past plans ({{count}})",
+			"sectionToday": "Today",
+			"sectionUpcoming": "Upcoming",
+			"todayEmpty": "Nothing to read today",
+			"emptyTitle": "No dates picked yet",
+			"emptyHint": "Use the calendar button on a card to pick a day to read it",
+			"emptyAction": "View all memos"
 		},
 		"totalMemos": "{{total}} memos",
 		"searchPlaceholder": "Search memos",

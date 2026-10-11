@@ -30,6 +30,7 @@
 		"highlight": "하이라이트",
 		"importantMemo": "중요 메모",
 		"readingMemo": "읽는 중",
+		"readingPlan": "읽을 계획",
 		"allCategory": "전체 카테고리",
 		"tags": "태그",
 		"settings": "설정",
@@ -513,7 +514,7 @@
 			"truncateContent": "메모 내용 줄여 보기",
 			"unknownDate": "작성일 없음",
 			"label": "메모 보기",
-			"byDate": "날짜별 보기",
+			"byDate": "작성일별 보기",
 			"untitled": "제목 없는 메모",
 			"loadMore": "더 보기"
 		},
@@ -531,6 +532,15 @@
 			"title": "검색 결과가 없어요",
 			"message": "'{{query}}'와 일치하는 메모를 찾지 못했어요.",
 			"hint": "다른 말로 찾아보세요."
+		},
+		"plan": {
+			"sectionPast": "지난 계획 {{count}}개",
+			"sectionToday": "오늘",
+			"sectionUpcoming": "다가오는 날",
+			"todayEmpty": "오늘 볼 글은 없어요",
+			"emptyTitle": "아직 날짜를 정한 글이 없어요",
+			"emptyHint": "카드의 달력 버튼으로 볼 날을 정해 보세요",
+			"emptyAction": "전체 메모 보기"
 		},
 		"totalMemos": "메모 {{total}}개",
 		"searchPlaceholder": "메모 찾기",

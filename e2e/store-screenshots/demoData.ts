@@ -238,7 +238,7 @@ const EN_DEMO_CONTENT: IFDemoContent = {
 	],
 	highlightScene: {
 		articleText:
-			"Checking it takes a few seconds, yet getting back into deep work afterwards takes far longer.",
+			"They opened chat only at 10 a.m., 1 p.m. and 4 p.m., and took urgent requests by phone.",
 		articleNote:
 			"Not slow — I had no rule for what to cut. List 3 to cut first.",
 		selectionText:

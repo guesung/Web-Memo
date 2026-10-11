@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { type PointerEvent, type ReactNode, useRef, useState } from "react";
 
 import {
 	Tooltip,
@@ -23,14 +23,31 @@ interface IFIconTooltipProps {
  * @description 확장 사이드 패널과 웹 메모 카드가 같은 말풍선을 쓴다.
  */
 export function IconTooltip({ label, children }: IFIconTooltipProps) {
+	const [isOpen, setIsOpen] = useState(false);
+	const lastPointerTypeRef = useRef<string | null>(null);
+
 	if (!label) {
 		return children;
 	}
 
+	// Radix는 트리거를 누르면 말풍선을 닫는다. 토글 버튼은 누른 뒤 바뀐 동작을 바로 보여줘야
+	// 하므로, 닫힘이 처리된 직후 다시 연다. 터치는 원래 말풍선을 띄우지 않으므로 제외한다.
+	const handlePointerDown = (event: PointerEvent) => {
+		lastPointerTypeRef.current = event.pointerType;
+	};
+	const handleClick = () => {
+		if (lastPointerTypeRef.current === "touch") return;
+		queueMicrotask(() => setIsOpen(true));
+	};
+
 	return (
 		<TooltipProvider delayDuration={TOOLTIP_DELAY_MS}>
-			<Tooltip>
-				<TooltipTrigger asChild>
+			<Tooltip open={isOpen} onOpenChange={setIsOpen}>
+				<TooltipTrigger
+					asChild
+					onPointerDown={handlePointerDown}
+					onClick={handleClick}
+				>
 					<span className="inline-flex">{children}</span>
 				</TooltipTrigger>
 				<TooltipContent side="top">{label}</TooltipContent>

@@ -44,13 +44,14 @@
 | highlight_create | 하이라이트 생성 | `color`, `has_note` | 어떤 색·메모 여부로 쓰이는가 | — |
 | highlight_note_update | 하이라이트 메모 수정 (추정) | — | 하이라이트에 메모를 다는가 (추정) | — |
 | highlight_bubble_disable | 하이라이트 말풍선 끄기 | `scope`: `site` \| `all` | 말풍선이 거슬리는가 (추정) | — |
-| summary_run | 요약 실행 | `source`: `empty_state` \| `tab_trigger` | 어느 자리에서 요약이 시작되는가 | — |
+| summary_run | 요약 실행. 요약 보기에서 첫 요청은 `disclosure`, 명시 재시도는 기존 `empty_state`. 재열기로 요청을 재사용하면 기록하지 않음 | `source`: `disclosure` \| `empty_state` \| `tab_trigger`(기존 버전) | 어느 자리에서 요약이 시작되는가 | — |
+| summary_panel_toggle | 요약 행을 직접 열거나 접음. 초기 렌더·페이지 변경에 따른 자동 접힘은 제외 | `action`: `open` \| `close` | 요약 진입과 메모 화면 복귀를 얼마나 하는가 | — |
 | summary_complete | 요약 완료 | `duration_msec` | 요약이 얼마나 걸리는가 (추정) | — |
 | summary_fail | 요약 실패 | `reason` | 왜 실패하는가 (추정) | — |
 | chat_message_send | 채팅 메시지 전송 (추정) | — | 채팅이 쓰이는가 (추정) | — |
 | chat_fail | 채팅 실패 (추정) | `reason` | 왜 실패하는가 (추정) | — |
 | youtube_transcript_extract | 유튜브 자막 추출 (추정) | `is_success` | 자막 추출 성공률 (추정) | — |
-| tab_change | 탭 이동·요약 진입 행 펼침. 접기·페이지 변경에 따른 자동 전환은 제외 | `tab_name` | 어느 AI 탭에 진입하는가 | — |
+| tab_change | 실제 탭 클릭. 요약 행 조작은 `summary_panel_toggle`로 기록하고 자동 전환은 제외 | `tab_name` | 어느 AI 탭에 진입하는가 | — |
 | view_change | 보기 방식 변경 (추정) | `view` | 어떤 보기가 선호되는가 (추정) | — |
 | setting_change / extension_setting_change | 설정 변경 (추정). 서버 설정 저장 성공 시 `setting_change` — AI 채팅 스위치는 `show_ai_chat`. 요약 스위치는 안내로 교체되어 `show_summary` 저장은 발생하지 않음 | `setting_keys` / `keys` | 어떤 설정을 바꾸는가 (추정) · AI 채팅을 켜는 사용자가 얼마나 되는가 | — |
 | shortcut_change_click | 단축키 변경 버튼 클릭 (추정) | `is_success` | 단축키 변경이 성공하는가 (추정) | — |

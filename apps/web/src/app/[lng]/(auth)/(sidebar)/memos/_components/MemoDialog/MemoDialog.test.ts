@@ -87,9 +87,6 @@ vi.mock("./SaveStatusIndicator", () => ({
 	default: ({ status }: { status: string }) =>
 		createElement("span", { "data-testid": "save-status" }, status),
 }));
-vi.mock("framer-motion", () => ({
-	motion: { div: ({ children }: { children: ReactNode }) => children },
-}));
 vi.mock("@web-memo/ui", () => ({
 	Card: ({ children }: { children: ReactNode }) => children,
 	CardContent: ({ children }: { children: ReactNode }) => children,

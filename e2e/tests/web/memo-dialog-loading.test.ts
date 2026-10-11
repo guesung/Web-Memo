@@ -102,6 +102,35 @@ test.describe("메모 상세의 즉시 표시와 백그라운드 조회 (Mocked)
 		}
 	});
 
+	test("다이얼로그 안 카드 콘텐츠는 별도 페이드 래퍼 없이 다이얼로그와 함께 나타난다", async ({
+		page,
+	}) => {
+		const store = new MockSupabaseStore();
+		store.addMemo(createMockMemo({ memo: "Flicker memo" }));
+		await openMemos(page, store);
+
+		await page.locator(".memo-item", { hasText: "Flicker memo" }).click();
+		const dialog = page.getByRole("dialog");
+		const textarea = dialog.getByTestId("memo-textarea");
+		await expect(textarea).toHaveValue("Flicker memo");
+
+		// dialog 자신은 진입 페이드로 0에서 시작할 수 있지만, 그 안의 조상은 독자적으로 페이드하면 안 된다.
+		const innerOpacities = await textarea.evaluate((element) => {
+			const dialogElement = element.closest('[role="dialog"]');
+			const opacities: string[] = [];
+			for (
+				let current = element.parentElement;
+				current && current !== dialogElement;
+				current = current.parentElement
+			) {
+				opacities.push(getComputedStyle(current).opacity);
+			}
+			return opacities;
+		});
+		expect(innerOpacities.length).toBeGreaterThan(0);
+		expect(innerOpacities.every((opacity) => opacity === "1")).toBe(true);
+	});
+
 	test("백그라운드 최신값은 미편집 필드에만 반영하고 PATCH는 편집 필드만 보낸다", async ({
 		page,
 	}) => {

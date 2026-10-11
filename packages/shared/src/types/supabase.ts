@@ -661,6 +661,8 @@ export type Database = {
 					show_summary: boolean;
 					truncate_memo_content: boolean;
 					user_id: string | null;
+					weekly_report_email: string | null;
+					weekly_report_enabled: boolean;
 				};
 				Insert: {
 					id?: number;
@@ -670,6 +672,8 @@ export type Database = {
 					show_summary?: boolean;
 					truncate_memo_content?: boolean;
 					user_id?: string | null;
+					weekly_report_email?: string | null;
+					weekly_report_enabled?: boolean;
 				};
 				Update: {
 					id?: number;
@@ -679,6 +683,38 @@ export type Database = {
 					show_summary?: boolean;
 					truncate_memo_content?: boolean;
 					user_id?: string | null;
+					weekly_report_email?: string | null;
+					weekly_report_enabled?: boolean;
+				};
+				Relationships: [];
+			};
+			weekly_report_log: {
+				Row: {
+					created_at: string;
+					email: string;
+					id: number;
+					is_test: boolean;
+					status: string;
+					user_id: string;
+					week_start: string;
+				};
+				Insert: {
+					created_at?: string;
+					email: string;
+					id?: number;
+					is_test?: boolean;
+					status: string;
+					user_id: string;
+					week_start: string;
+				};
+				Update: {
+					created_at?: string;
+					email?: string;
+					id?: number;
+					is_test?: boolean;
+					status?: string;
+					user_id?: string;
+					week_start?: string;
 				};
 				Relationships: [];
 			};

@@ -1,6 +1,5 @@
-import IconTooltip from "@src/components/IconTooltip";
 import { I18n } from "@web-memo/shared/utils/extension";
-import { TabsTrigger } from "@web-memo/ui";
+import { IconTooltip, TabsTrigger } from "@web-memo/ui";
 import { Sparkles, Trash2 } from "lucide-react";
 import { useChatContext } from "./Chat/components";
 

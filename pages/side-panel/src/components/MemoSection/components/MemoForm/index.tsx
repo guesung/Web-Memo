@@ -1,4 +1,3 @@
-import IconTooltip from "@src/components/IconTooltip";
 import ResizeHandle from "@src/components/ResizeHandle";
 import { useOnlineStatus } from "@src/hooks";
 import type { MemoInput } from "@src/types/Input";
@@ -17,6 +16,7 @@ import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
 	badgeVariants,
 	cn,
+	IconTooltip,
 	Input,
 	Textarea,
 	ToastAction,

@@ -32,6 +32,8 @@ interface IFMemoCardFooterProps
 	 */
 	categoryPopover?: TMemoCategoryPopover;
 	highlightCount?: number;
+	/** 수정 시각 오른쪽에 붙일 요소. 편집 모달은 저장 상태 아이콘을 둔다 */
+	timeAccessory?: React.ReactNode;
 }
 
 /** 메모 카테고리, 수정 시각과 상태 변경 버튼을 표시한다. */
@@ -71,6 +73,7 @@ function MemoCardFooterContent({
 	categoryBadgeAction = "filter",
 	categoryPopover,
 	highlightCount,
+	timeAccessory,
 	...props
 }: IFMemoCardFooterProps & { categoryPopover: TMemoCategoryPopover }) {
 	const { t } = useTranslation(lng);
@@ -129,13 +132,16 @@ function MemoCardFooterContent({
 						<span>{memo.category.name}</span>
 					</button>
 				)}
-				<time
-					dateTime={memo.updated_at ?? ""}
-					className="text-xs text-muted-foreground flex items-center gap-1.5"
-				>
-					<Clock className="w-3 h-3" />
-					{dayjs(memo.updated_at).fromNow()}
-				</time>
+				<div className="flex items-center gap-2">
+					<time
+						dateTime={memo.updated_at ?? ""}
+						className="text-xs text-muted-foreground flex items-center gap-1.5"
+					>
+						<Clock className="w-3 h-3" />
+						{dayjs(memo.updated_at).fromNow()}
+					</time>
+					{timeAccessory}
+				</div>
 				{highlightCount !== undefined && highlightCount > 0 ? (
 					<span className="text-xs font-medium text-primary">
 						{t("memoSection.highlightCount", { count: highlightCount })}

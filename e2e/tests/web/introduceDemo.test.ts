@@ -3,19 +3,20 @@ import { PATHS } from "@web-memo/shared/constants";
 import { expect, test } from "../fixtures/web";
 import { MockSupabaseStore, setupSupabaseMocks } from "../lib/mocks";
 
-/** 소개 페이지를 검증하는 지원 언어와 마지막 카테고리 장면의 이름입니다. */
+/** 소개 페이지를 검증하는 지원 언어와 첫 장면·마지막 장면의 이름입니다. */
 const LANGUAGES = [
 	{
 		language: "ko",
-		categoryTabName: "카테고리로 정리",
-		categoryImageAlt:
-			"웹 대시보드에서 카테고리를 선택해 해당 메모를 모아 보는 화면",
+		firstTabName: "하이라이트 메모",
+		lastTabName: "모아 보기",
+		lastImageAlt: "웹 하이라이트 페이지에 칠한 문장과 메모가 모여 있는 화면",
 	},
 	{
 		language: "en",
-		categoryTabName: "Organize by category",
-		categoryImageAlt:
-			"The web dashboard showing notes filtered by a selected category",
+		firstTabName: "Highlight and note",
+		lastTabName: "Browse them together",
+		lastImageAlt:
+			"The web highlights page gathering highlighted sentences and notes",
 	},
 ] as const;
 
@@ -30,7 +31,12 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 		await setupSupabaseMocks(page, new MockSupabaseStore());
 	});
 
-	for (const { language, categoryTabName, categoryImageAlt } of LANGUAGES) {
+	for (const {
+		language,
+		firstTabName,
+		lastTabName,
+		lastImageAlt,
+	} of LANGUAGES) {
 		test(`${language} 소개 문구와 설치 링크가 현재 제공 상태에 맞다.`, async ({
 			page,
 		}) => {
@@ -44,7 +50,6 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 				? "글을 읽다가 떠오른 생각을 사이드 패널에 적어요.\n페이지 제목과 주소는 자동으로 기록됩니다."
 				: "Write down thoughts in the side panel as you read.\nThe page title and URL are saved automatically.";
 			const demoTitle = isKorean ? "웹 메모 미리 보기" : "Preview Web Memo";
-			const sidePanelTab = isKorean ? "사이드 패널" : "Side panel";
 
 			await expect(page.getByRole("heading", { level: 1 })).toHaveText(
 				heroTitle,
@@ -53,7 +58,7 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 			await expect(page.locator("h1 + p")).toHaveCSS("white-space", "pre-line");
 			await expect(page.locator("#demo h2")).toHaveText(demoTitle);
 			await expect(
-				page.locator("#demo").getByRole("button", { name: sidePanelTab }),
+				page.locator("#demo").getByRole("button", { name: firstTabName }),
 			).toBeVisible();
 			await expect(page.locator('a[href*="apps.apple.com"]')).toHaveCount(0);
 		});
@@ -75,13 +80,13 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 			);
 			const previousAlt = await previousActiveImage.getAttribute("alt");
 
-			const categoryTab = carousel.getByRole("button", {
-				name: categoryTabName,
+			const lastTab = carousel.getByRole("button", {
+				name: lastTabName,
 			});
-			await categoryTab.click();
-			await expect(categoryTab).toHaveAttribute("aria-pressed", "true");
+			await lastTab.click();
+			await expect(lastTab).toHaveAttribute("aria-pressed", "true");
 
-			const nextImage = carousel.locator(`img[alt="${categoryImageAlt}"]`);
+			const nextImage = carousel.locator(`img[alt="${lastImageAlt}"]`);
 			const nextSlide = nextImage.locator("..");
 
 			await expect(nextSlide).not.toHaveAttribute("aria-hidden", "true");
@@ -103,16 +108,14 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 		await page.goto(`/ko${PATHS.introduce}`);
 
 		const carousel = page.locator('section[aria-roledescription="carousel"]');
-		const categoryTab = carousel.getByRole("button", {
-			name: "카테고리로 정리",
-		});
-		await categoryTab.click();
+		const lastTab = carousel.getByRole("button", { name: "모아 보기" });
+		await lastTab.click();
 
-		await categoryTab.focus();
+		await lastTab.focus();
 		await page.waitForTimeout(9000);
 
-		await expect(categoryTab).toHaveAttribute("aria-pressed", "true");
-		await expect(categoryTab).toBeFocused();
+		await expect(lastTab).toHaveAttribute("aria-pressed", "true");
+		await expect(lastTab).toBeFocused();
 	});
 });
 

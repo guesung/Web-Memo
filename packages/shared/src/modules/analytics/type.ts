@@ -70,6 +70,7 @@ export type TInstallClickPosition =
  * 여기에 멤버를 추가하고 EVENT_CATEGORY에도 분류를 넣어야 합니다.
  */
 export type TAnalyticsEvent =
+	| { name: "highlight_source_jump" }
 	| { name: "side_panel_open" }
 	| { name: "page_view"; params: { page_title: string; page_location: string } }
 	| { name: "memo_write"; params: { fields: string } }
@@ -271,6 +272,7 @@ export type TAnalyticsEventName = TAnalyticsEvent["name"];
  * @description Record로 선언해 이벤트를 추가하고 여기에 넣지 않으면 컴파일이 실패하게 합니다.
  */
 export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
+	highlight_source_jump: "core_action",
 	side_panel_open: "engagement",
 	page_view: "engagement",
 	memo_write: "core_action",

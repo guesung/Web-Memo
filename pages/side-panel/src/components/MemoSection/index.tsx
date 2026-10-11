@@ -31,6 +31,7 @@ import MemoForm from "./components/MemoForm";
 import { MemoFormSkeleton } from "./components/MemoForm/components";
 import { useMemoFieldRatios } from "./components/MemoForm/hooks/useMemoFieldResize";
 import MemoHeader from "./components/MemoHeader";
+import PageHighlights from "./components/PageHighlights";
 import useMemoCandidatesQuery from "./hooks/useMemoCandidatesQuery";
 
 /** 사이드 패널의 현재 페이지 메모와 후보 선택을 표시한다. */
@@ -113,12 +114,23 @@ export default function MemoSection({ memoHeight }: MemoSectionProps) {
 
 const MemoSectionContent = () => {
 	const { user } = useSupabaseUserQuery();
+	const { data: tab } = useTabQuery();
 
 	if (!user?.data.user) {
 		return <LoginSection />;
 	}
 
-	return <AuthenticatedMemoSectionContent />;
+	return (
+		<>
+			<PageHighlights
+				key={`${user.data.user.id}:${tab?.id}:${tab?.url ? getPageKey(tab.url) : ""}`}
+				userId={user.data.user.id}
+				tabId={tab?.id}
+				url={tab?.url ?? ""}
+			/>
+			<AuthenticatedMemoSectionContent />
+		</>
+	);
 };
 
 const AuthenticatedMemoSectionContent = () => {

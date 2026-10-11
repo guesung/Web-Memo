@@ -29,7 +29,6 @@ export function HighlightView({ lng }: HighlightViewProps) {
 	const [searchInput, setSearchInput] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedColor, setSelectedColor] = useState<HighlightColor>();
-	const [drafts, setDrafts] = useState<Record<number, string>>({});
 	const { debounce, abortDebounce } = useDebounce();
 
 	useEffect(() => abortDebounce, [abortDebounce]);
@@ -62,10 +61,6 @@ export function HighlightView({ lng }: HighlightViewProps) {
 					searchQuery={searchQuery}
 					selectedColor={selectedColor}
 					onClearFilters={handleClearFilters}
-					drafts={drafts}
-					onDraftChange={(id, draft) =>
-						setDrafts((current) => ({ ...current, [id]: draft }))
-					}
 				/>
 			</Suspense>
 		</div>
@@ -77,8 +72,6 @@ interface HighlightListProps {
 	searchQuery: string;
 	selectedColor?: HighlightColor;
 	onClearFilters: () => void;
-	drafts: Record<number, string>;
-	onDraftChange: (id: number, draft: string) => void;
 }
 
 /** 하이라이트를 URL별로 묶고 추가 페이지는 사용자 요청에만 불러온다. */
@@ -87,8 +80,6 @@ function HighlightList({
 	searchQuery,
 	selectedColor,
 	onClearFilters,
-	drafts,
-	onDraftChange,
 }: HighlightListProps) {
 	const { t } = useTranslation(lng);
 	const {
@@ -212,8 +203,6 @@ function HighlightList({
 						isLinkError={links.isError}
 						onRetryLinks={() => void links.refetch()}
 						targetHighlightId={targetHighlightId}
-						drafts={drafts}
-						onDraftChange={onDraftChange}
 					/>
 				))}
 			</div>

@@ -35,10 +35,10 @@ export const HighlightSelectionToolbar = (
 		isMenuOpen,
 		menuError,
 		isCreatedNoteOpen,
-		isCreatedMemoOpen,
-		memoDrafts,
 		isIntroVisible,
 		disabledNoticePosition,
+		panelOpenErrorPosition,
+		handlePanelOpenRetry,
 		handleHighlightColorClick,
 		handleHighlightNoteClick,
 		handleHighlightMemoClick,
@@ -73,13 +73,31 @@ export const HighlightSelectionToolbar = (
 			document.removeEventListener("keydown", handleDocumentKeyDown);
 		};
 	}, [isMenuOpen, handleMenuDismiss]);
+	if (panelOpenErrorPosition) {
+		return (
+			<div
+				className="fixed z-[2147483647] flex flex-col gap-2 rounded-lg border bg-background px-3 py-2 text-sm text-foreground shadow-lg"
+				style={{
+					left: panelOpenErrorPosition.x,
+					top: panelOpenErrorPosition.y,
+				}}
+			>
+				<output>{I18n.get("highlight_panel_open_failed")}</output>
+				<button
+					type="button"
+					onClick={handlePanelOpenRetry}
+					className="self-start underline"
+				>
+					{I18n.get("highlight_memo_retry")}
+				</button>
+			</div>
+		);
+	}
 	if (editState) {
 		return (
 			<HighlightEditToolbar
 				state={editState}
 				initialNoteOpen={isCreatedNoteOpen}
-				initialMemoOpen={isCreatedMemoOpen}
-				memoDrafts={memoDrafts}
 				onHighlightEdit={handleHighlightEdit}
 			/>
 		);
@@ -165,7 +183,7 @@ export const HighlightSelectionToolbar = (
 				</button>
 				<button
 					type="button"
-					aria-label={I18n.get("highlight_memo_add")}
+					aria-label={I18n.get("highlight_panel_memo_action")}
 					disabled={!selectionState.canSave || selectionState.isSaving}
 					onClick={() => {
 						void handleHighlightMemoClick();

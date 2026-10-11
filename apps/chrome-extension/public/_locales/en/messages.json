@@ -464,18 +464,42 @@
 	"highlight_note_save": {
 		"message": "Save"
 	},
-	"highlight_memo_add": { "message": "Add memo" },
-	"highlight_memo_open": { "message": "Open memo" },
-	"highlight_memo_restore": { "message": "Restore from trash" },
-	"highlight_memo_loading": { "message": "Checking linked memo…" },
-	"highlight_memo_load_failed": { "message": "Could not check the linked memo." },
-	"highlight_memo_retry": { "message": "Retry" },
-	"highlight_memo_quote": { "message": "Selected passage" },
-	"highlight_memo_thought": { "message": "My thoughts" },
-	"highlight_memo_placeholder": { "message": "Write what this passage made you think of" },
-	"highlight_memo_cancel": { "message": "Cancel" },
-	"highlight_memo_save": { "message": "Save memo" },
-	"highlight_memo_save_failed": { "message": "Could not save the memo. Please try again." },
+	"highlight_memo_add": {
+		"message": "Add memo"
+	},
+	"highlight_memo_open": {
+		"message": "Open memo"
+	},
+	"highlight_memo_restore": {
+		"message": "Restore from trash"
+	},
+	"highlight_memo_loading": {
+		"message": "Checking linked memo…"
+	},
+	"highlight_memo_load_failed": {
+		"message": "Could not check the linked memo."
+	},
+	"highlight_memo_retry": {
+		"message": "Retry"
+	},
+	"highlight_memo_quote": {
+		"message": "Selected passage"
+	},
+	"highlight_memo_thought": {
+		"message": "My thoughts"
+	},
+	"highlight_memo_placeholder": {
+		"message": "Write what this passage made you think of"
+	},
+	"highlight_memo_cancel": {
+		"message": "Cancel"
+	},
+	"highlight_memo_save": {
+		"message": "Save memo"
+	},
+	"highlight_memo_save_failed": {
+		"message": "Could not save the memo. Please try again."
+	},
 	"highlight_bubble_menu_title": {
 		"message": "Web Memo highlights"
 	},
@@ -608,5 +632,35 @@
 	},
 	"summary_panel_hint": {
 		"message": "Open a summary from the side panel whenever you need it."
+	},
+	"highlight_panel_memo_action": {
+		"message": "Write in side panel"
+	},
+	"highlight_panel_open_failed": {
+		"message": "Could not open the side panel. Please try again."
+	},
+	"page_highlights_title": {
+		"message": "Highlights on this page"
+	},
+	"page_highlights_loading": {
+		"message": "Loading highlights"
+	},
+	"page_highlights_empty": {
+		"message": "No highlights saved on this page yet."
+	},
+	"page_highlights_load_failed": {
+		"message": "Couldn't load highlights."
+	},
+	"page_highlights_retry": {
+		"message": "Try again"
+	},
+	"page_highlights_show_all": {
+		"message": "Show all $1"
+	},
+	"page_highlights_show_less": {
+		"message": "Show preview"
+	},
+	"page_highlights_focus_failed": {
+		"message": "Couldn't find this quote on the page."
 	}
 }

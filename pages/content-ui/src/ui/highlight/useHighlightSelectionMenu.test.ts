@@ -12,6 +12,8 @@ const mocks = vi.hoisted(() => ({
 	query: vi.fn(),
 	create: vi.fn(),
 	edit: vi.fn(),
+	openPanel: vi.fn(),
+	handleScroll: vi.fn(() => vi.fn()),
 }));
 vi.mock("./useHighlightBubbleGate", () => ({
 	useHighlightBubbleGate: () => ({
@@ -41,7 +43,9 @@ vi.mock("@web-memo/shared/modules/extension-bridge", () => ({
 			GET_HIGHLIGHTS_BY_URL: mocks.query,
 			CREATE_HIGHLIGHT: mocks.create,
 			EDIT_HIGHLIGHT: mocks.edit,
+			OPEN_SIDE_PANEL: mocks.openPanel,
 		},
+		handle: { SCROLL_TO_HIGHLIGHT: mocks.handleScroll },
 	},
 }));
 

@@ -10,23 +10,34 @@ import type { CategoryRow, GetMemoResponse } from "@web-memo/shared/types";
 import { generateRandomPastelColor } from "@web-memo/shared/utils";
 import { ToastAction, toast } from "@web-memo/ui";
 import { useRouter } from "next/navigation";
-import { type RefObject, useRef, useState } from "react";
+import { useRef, useState } from "react";
+
+/** 팝업이 붙을 기준. 칩·배지·⋮ 버튼이거나, 본문 # 경로에서는 커서 위치의 가상 사각형이다 */
+export interface IFCategoryPopoverAnchor {
+	getBoundingClientRect: () => DOMRect;
+}
+
+/** 본문 # 입력으로 열 때 넘기는 동작 */
+interface IFHashOpenOptions {
+	/** 카테고리를 고르면 본문에 넣은 #을 지운다. 저장보다 먼저 부른다 */
+	onSelect: () => void;
+	/** 닫히면 포커스를 본문 커서 자리로 돌린다 */
+	restoreFocus: () => void;
+}
 
 interface IFUseMemoCategoryPopoverProps extends LanguageType {
 	memo: GetMemoResponse;
-	/** 칩이 다시 나타났을 때 포커스를 보낼 칩 ref */
-	chipRef: RefObject<HTMLButtonElement | null>;
 }
 
 /**
- * 메모 카드 하나의 카테고리 팝업 상태와 저장 로직
+ * 메모 하나의 카테고리 팝업 상태와 저장 로직
  * @description 선택·만들기·해제와 그 토스트(이동하기·되돌리기·실패)를 맡는다.
- * 사용처: MemoCardFooter/index.tsx
+ * 칩·배지·⋮ 버튼 경로와 본문 # 경로가 같은 팝업을 쓴다.
+ * 사용처: MemoCardFooter/index.tsx, MemoDialog/index.tsx
  */
 export default function useMemoCategoryPopover({
 	lng,
 	memo,
-	chipRef,
 }: IFUseMemoCategoryPopoverProps) {
 	const { t } = useTranslation(lng);
 	const searchParams = useSearchParams();
@@ -37,13 +48,25 @@ export default function useMemoCategoryPopover({
 		useCategoryPostMutation();
 	const [isOpen, setIsOpen] = useState(false);
 	// 닫히는 애니메이션 동안에도 위치를 잡아야 해서 닫아도 비우지 않는다.
-	const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
+	const [anchor, setAnchor] = useState<IFCategoryPopoverAnchor | null>(null);
+	const chipRef = useRef<HTMLButtonElement>(null);
 	const shouldFocusChipOnCloseRef = useRef(false);
+	const hashOptionsRef = useRef<IFHashOpenOptions | null>(null);
 
 	const currentCategoryId = memo.category_id;
 
-	const open = (anchor: HTMLElement) => {
-		setAnchorElement(anchor);
+	const open = (nextAnchor: HTMLElement) => {
+		hashOptionsRef.current = null;
+		setAnchor(nextAnchor);
+		setIsOpen(true);
+	};
+
+	const openFromHash = (
+		nextAnchor: IFCategoryPopoverAnchor,
+		options: IFHashOpenOptions,
+	) => {
+		hashOptionsRef.current = options;
+		setAnchor(nextAnchor);
 		setIsOpen(true);
 	};
 
@@ -56,7 +79,7 @@ export default function useMemoCategoryPopover({
 			await patchMemo({
 				id: memo.id,
 				request: { category_id: categoryId },
-				categorySource: "button",
+				categorySource: hashOptionsRef.current ? "hash" : "button",
 			});
 			return true;
 		} catch {
@@ -66,6 +89,8 @@ export default function useMemoCategoryPopover({
 	};
 
 	const assignCategory = async (category: Pick<CategoryRow, "id" | "name">) => {
+		hashOptionsRef.current?.onSelect();
+
 		if (category.id === currentCategoryId) {
 			setIsOpen(false);
 			return;
@@ -119,7 +144,7 @@ export default function useMemoCategoryPopover({
 		const isSaved = await patchCategory(null);
 		if (!isSaved) return;
 
-		shouldFocusChipOnCloseRef.current = true;
+		shouldFocusChipOnCloseRef.current = !hashOptionsRef.current;
 		setIsOpen(false);
 		toast({
 			title: t("toastTitle.categoryRemoved"),
@@ -136,26 +161,36 @@ export default function useMemoCategoryPopover({
 		});
 	};
 
-	/** 닫히면 포커스를 트리거로 돌린다. 해제했다면 새로 그려진 칩으로 보낸다. */
+	/**
+	 * 닫히면 포커스를 연 자리로 돌린다. 버튼 경로는 트리거로, 해제했다면 새로 그려진 칩으로,
+	 * # 경로는 본문 커서 자리로 보낸다.
+	 */
 	const handleCloseAutoFocus = (event: Event) => {
 		event.preventDefault();
 
+		if (hashOptionsRef.current) {
+			hashOptionsRef.current.restoreFocus();
+			return;
+		}
+
 		const focusTarget = shouldFocusChipOnCloseRef.current
 			? chipRef.current
-			: anchorElement;
+			: anchor;
 		shouldFocusChipOnCloseRef.current = false;
-		if (focusTarget?.isConnected) {
+		if (focusTarget instanceof HTMLElement && focusTarget.isConnected) {
 			focusTarget.focus();
 		}
 	};
 
 	return {
 		isOpen,
-		anchorElement,
+		anchor,
+		chipRef,
 		categories,
 		currentCategoryId,
 		isCategoryCreating,
 		open,
+		openFromHash,
 		handleOpenChange: setIsOpen,
 		handleCategorySelect: assignCategory,
 		handleCategoryCreate,
@@ -163,3 +198,6 @@ export default function useMemoCategoryPopover({
 		handleCloseAutoFocus,
 	};
 }
+
+/** 푸터·모달이 주고받는 카테고리 팝업 상태 */
+export type TMemoCategoryPopover = ReturnType<typeof useMemoCategoryPopover>;

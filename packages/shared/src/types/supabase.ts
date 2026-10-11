@@ -395,6 +395,7 @@ export type Database = {
 					like_count: number | null;
 					memo: string;
 					page_key: string;
+					plannedDate: string | null;
 					shared_at: string | null;
 					title: string;
 					updated_at: string | null;
@@ -418,6 +419,7 @@ export type Database = {
 					like_count?: number | null;
 					memo: string;
 					page_key?: string;
+					plannedDate?: string | null;
 					shared_at?: string | null;
 					title: string;
 					updated_at?: string | null;
@@ -441,6 +443,7 @@ export type Database = {
 					like_count?: number | null;
 					memo?: string;
 					page_key?: string;
+					plannedDate?: string | null;
 					shared_at?: string | null;
 					title?: string;
 					updated_at?: string | null;

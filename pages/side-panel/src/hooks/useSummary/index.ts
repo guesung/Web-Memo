@@ -63,6 +63,12 @@ export default function useSummary(): UseSummaryReturn {
 
 	useEffect(() => {
 		const scope = pageKey;
+		setState({
+			pageKey: scope,
+			summary: "",
+			errorMessage: "",
+			isGenerating: false,
+		});
 		return () => {
 			if (activeRequestRef.current?.pageKey === scope) {
 				activeRequestRef.current.controller.abort();

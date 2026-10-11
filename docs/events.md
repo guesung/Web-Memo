@@ -50,9 +50,9 @@
 | chat_message_send | 채팅 메시지 전송 (추정) | — | 채팅이 쓰이는가 (추정) | — |
 | chat_fail | 채팅 실패 (추정) | `reason` | 왜 실패하는가 (추정) | — |
 | youtube_transcript_extract | 유튜브 자막 추출 (추정) | `is_success` | 자막 추출 성공률 (추정) | — |
-| tab_change | 탭 이동 (추정) | `tab_name` | 어느 탭이 쓰이는가 (추정) | — |
+| tab_change | 탭 이동·요약 진입 행 펼침. 접기·페이지 변경에 따른 자동 전환은 제외 | `tab_name` | 어느 AI 탭에 진입하는가 | — |
 | view_change | 보기 방식 변경 (추정) | `view` | 어떤 보기가 선호되는가 (추정) | — |
-| setting_change / extension_setting_change | 설정 변경 (추정). 서버 설정 저장 성공 시 `setting_change` — 요약·AI 채팅 스위치는 `show_summary`·`show_ai_chat` | `setting_keys` / `keys` | 어떤 설정을 바꾸는가 (추정) · 요약·AI 채팅을 켜는 사용자가 얼마나 되는가 | — |
+| setting_change / extension_setting_change | 설정 변경 (추정). 서버 설정 저장 성공 시 `setting_change` — AI 채팅 스위치는 `show_ai_chat`. 요약 스위치는 안내로 교체되어 `show_summary` 저장은 발생하지 않음 | `setting_keys` / `keys` | 어떤 설정을 바꾸는가 (추정) · AI 채팅을 켜는 사용자가 얼마나 되는가 | — |
 | shortcut_change_click | 단축키 변경 버튼 클릭 (추정) | `is_success` | 단축키 변경이 성공하는가 (추정) | — |
 | export_run | 내보내기 실행 | `format` | 어떤 형식으로 내보내는가 | — |
 | login_start / login / sign_up / logout | `login_start`: 웹 로그인 제공자 버튼 클릭. `login`: OAuth 성공 후 메모 레이아웃에 도착한 클라이언트. `sign_up`: 같은 도착 시 신규 계정으로 판정된 경우. `logout`: 로그아웃 | `method` (logout 없음) | 제공자별 시작·도착 규모는? 두 이벤트에는 시도 식별자가 없으므로 사용자 수 비율을 실제 로그인 완료율로 단정하지 않는다 | DB-1160 |

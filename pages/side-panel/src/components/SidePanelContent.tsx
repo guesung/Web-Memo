@@ -5,8 +5,9 @@ import {
 	useDidMount,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePageContentContext } from "./PageContentProvider";
 import SummaryDisclosure, { SUMMARY_PANEL_ID } from "./SummaryDisclosure";
 import { SummaryProvider } from "./TabSection/components/Summary/components";
@@ -26,6 +27,11 @@ export default function SidePanelContent() {
 	const { tabHeight, memoHeight, isResizing, handleMouseDown, containerRef } =
 		useResizablePanel(isSummaryActive);
 
+	useEffect(() => {
+		setSummaryState({ pageKey, isOpen: false });
+		setSelectedTab("chat");
+	}, [pageKey]);
+
 	useDidMount(() => {
 		bridge.handle.UPDATE_SIDE_PANEL(() => {
 			void refetchTab();
@@ -33,6 +39,12 @@ export default function SidePanelContent() {
 	});
 
 	const handleSummaryToggle = () => {
+		if (!isSummaryOpen) {
+			analytics.trackEvent({
+				name: "tab_change",
+				params: { tab_name: "summary" },
+			});
+		}
 		setSummaryState({ pageKey, isOpen: !isSummaryOpen });
 		setSelectedTab(isSummaryOpen ? "chat" : "summary");
 	};

@@ -128,3 +128,23 @@ it("중복 클릭을 막고 페이지 변경 후 이전 스트림 조각을 무�
 	await act(async () => resolveStream());
 	await request;
 });
+
+it("완료된 요약은 A→B→A 이동 후 다시 나타나지 않는다", async () => {
+	mocks.stream.mockImplementation(
+		async (_response: Response, onChunk: (content: string) => void) => {
+			onChunk("A summary");
+		},
+	);
+	vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
+	await render();
+	await act(async () => summary.generateSummary("empty_state"));
+	expect(summary.summary).toBe("A summary");
+
+	mocks.page = { ...mocks.page, pageKey: "2:https://example.com/second" };
+	await render();
+	expect(summary.summary).toBe("");
+	mocks.page = { ...mocks.page, pageKey: "1:https://example.com/first" };
+	await render();
+	expect(summary.summary).toBe("");
+	expect(summary.isSummaryLoading).toBe(false);
+});

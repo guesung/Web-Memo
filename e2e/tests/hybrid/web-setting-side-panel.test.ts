@@ -42,6 +42,14 @@ test("웹 설정에서 두 메모 필드를 켜고 꺼도 열린 패널의 값�
 		["show-action-item", actionItem, "저장된 액션 아이템"],
 	] as const) {
 		const settingSwitch = page.locator(`#${switchId}`);
+		// SSR 버튼은 보이더라도 React가 이벤트를 연결하기 전의 클릭은 무시된다.
+		await expect
+			.poll(() =>
+				settingSwitch.evaluate((element) =>
+					Object.keys(element).some((key) => key.startsWith("__reactProps$")),
+				),
+			)
+			.toBe(true);
 		await settingSwitch.click();
 		await expect(settingSwitch).toBeChecked();
 		await expect(field).toHaveValue(value);

@@ -17,6 +17,7 @@ export const GENERATED_PAGE_PATHS = {
 	login: "/login",
 	memos: "/memos",
 	memosBlogs: "/memos/blogs",
+	memosPlan: "/memos/plan",
 	memosReading: "/memos/reading",
 	memosSetting: "/memos/setting",
 	memosStar: "/memos/star",

@@ -27,6 +27,7 @@ export * from "./label";
 export * from "./loading";
 export * from "./menubar";
 export * from "./navigation-menu";
+export * from "./PlanDatePicker";
 export * from "./pagination";
 export * from "./popover";
 export * from "./progress";

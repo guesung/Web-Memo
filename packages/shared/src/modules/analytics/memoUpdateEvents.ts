@@ -1,4 +1,5 @@
 import type { MemoTable } from "../../types";
+import { parsePlanDateKey, toPlanDateKey } from "../../utils/planDate";
 import type { TAnalyticsEvent, TCategoryChangeSource } from "./type";
 
 /**
@@ -9,6 +10,16 @@ export interface IFMemoUpdateContext {
 	/** 카테고리를 바꾼 경로. 모르면 비워 두고, 그러면 source 없이 보냅니다 */
 	categorySource?: TCategoryChangeSource;
 }
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/** 오늘(로컬)부터 계획 날짜까지의 일수. 서머타임으로 하루 길이가 달라져도 반올림으로 맞춘다. */
+const getDaysAhead = (plannedDate: string) => {
+	const today = parsePlanDateKey(toPlanDateKey(new Date()));
+	return Math.round(
+		(parsePlanDateKey(plannedDate).getTime() - today.getTime()) / MS_PER_DAY,
+	);
+};
 
 /** 메모 변경 필드를 분석 이벤트로 해석합니다. 전송이나 저장소 접근은 하지 않습니다. */
 export const buildMemoUpdateEvents = (
@@ -45,6 +56,20 @@ export const buildMemoUpdateEvents = (
 		} else {
 			events.push({ name: "memo_category_change" });
 		}
+	}
+
+	if (request.plannedDate !== undefined) {
+		events.push(
+			request.plannedDate === null
+				? { name: "memo_plan_change", params: { action: "clear" } }
+				: {
+						name: "memo_plan_change",
+						params: {
+							action: "set",
+							days_ahead: getDaysAhead(request.plannedDate),
+						},
+					},
+		);
 	}
 
 	const changedContentKeys = CONTENT_KEYS.filter(

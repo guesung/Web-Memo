@@ -22,7 +22,8 @@ export type TMemoRoute =
 	| "/memos"
 	| "/memos/wish"
 	| "/memos/star"
-	| "/memos/reading";
+	| "/memos/reading"
+	| "/memos/plan";
 
 /** 메모 화면 내비게이션 하나의 측정 상태. */
 interface IFMemoNavigation {
@@ -57,7 +58,12 @@ export const getMemoRoute = (pathname: string): TMemoRoute | null => {
 	}
 
 	const filter = segments[memoIndex + 1];
-	if (filter === "wish" || filter === "star" || filter === "reading") {
+	if (
+		filter === "wish" ||
+		filter === "star" ||
+		filter === "reading" ||
+		filter === "plan"
+	) {
 		return `/memos/${filter}`;
 	}
 

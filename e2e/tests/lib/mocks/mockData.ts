@@ -38,6 +38,7 @@ export function createMockMemo(overrides: Partial<MockMemo> = {}): MockMemo {
 		isWish: false,
 		isStar: false,
 		isReading: false,
+		plannedDate: null,
 		category_id: null,
 		created_at: now,
 		updated_at: now,

@@ -30,7 +30,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 
 `memo_write`(fields) · `memo_delete`(memo_count) · `memo_restore`(memo_count) ·
 `memo_delete_permanently`(memo_count) · `memo_open`(has_search_query, source?) · `memo_source_open` ·
-`memo_search`(query_length) · `memo_status_toggle`(status, enabled) · `memo_plan_change`(action, days_ahead?) · `memo_category_change`(source) ·
+`memo_search`(query_length) · `memo_status_toggle`(status, enabled) · `memo_plan_change`(action, days_ahead?) · `memo_category_change`(action, source) ·
 `highlight_note_update` · `highlight_source_jump` · `summary_run`(source) · `summary_complete`(duration_msec) ·
 `summary_fail`(reason) · `chat_message_send` · `chat_fail`(reason) ·
 `youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category, source, trigger) ·

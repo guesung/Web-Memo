@@ -130,7 +130,7 @@ export type TAnalyticsEvent =
 	  }
 	| {
 			name: "memo_category_change";
-			params?: { source: TCategoryChangeSource };
+			params?: { action: "set" | "clear"; source?: TCategoryChangeSource };
 	  }
 	| {
 			name: "memo_plan_change";

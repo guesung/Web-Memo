@@ -1,4 +1,3 @@
-import IconTooltip from "@src/components/IconTooltip";
 import {
 	formatPlanDateShort,
 	getPlanDateLabelKind,
@@ -8,6 +7,7 @@ import {
 import { I18n } from "@web-memo/shared/utils/extension";
 import {
 	cn,
+	IconTooltip,
 	PlanDatePicker,
 	Popover,
 	PopoverContent,

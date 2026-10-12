@@ -1,5 +1,9 @@
 import { useEffect, useRef } from "react";
 
+/** Escape를 먼저 받아야 하는 열린 레이어: 드롭다운 메뉴와 카테고리 팝업 */
+const OPEN_LAYER_SELECTOR =
+	'[role="menu"][data-state="open"], [data-testid="category-popover"][data-state="open"]';
+
 /**
  * 메뉴가 열려 있는 상태에서 Escape를 눌렀는지 판정하는 ref를 반환한다.
  *
@@ -18,9 +22,8 @@ export default function useSuppressEscapeWhenMenuOpen() {
 		const handleDocumentKeyDownCapture = (event: KeyboardEvent) => {
 			if (event.key !== "Escape") return;
 
-			wasMenuOpenOnEscapeRef.current = !!document.querySelector(
-				'[role="menu"][data-state="open"]',
-			);
+			wasMenuOpenOnEscapeRef.current =
+				!!document.querySelector(OPEN_LAYER_SELECTOR);
 		};
 
 		document.addEventListener("keydown", handleDocumentKeyDownCapture, true);

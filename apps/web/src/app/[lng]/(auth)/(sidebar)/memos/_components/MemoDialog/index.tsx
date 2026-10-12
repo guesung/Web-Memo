@@ -24,11 +24,14 @@ import {
 import { useLayoutEffect, useRef } from "react";
 import { useWatch } from "react-hook-form";
 import MemoCardFooter from "../MemoCardFooter";
+import CategoryPopover from "../MemoCardFooter/CategoryPopover";
+import useMemoCategoryPopover from "../MemoCardFooter/useMemoCategoryPopover";
 import MemoCardHeader from "../MemoCardHeader";
 import { MemoSourceQuote } from "../MemoView/MemoSourceQuote";
 import { MemoDialogHighlights } from "./MemoDialogHighlights";
 import SaveStatusIndicator from "./SaveStatusIndicator";
 import { useMemoDialogEditor } from "./useMemoDialogEditor";
+import { useMemoHashCategory } from "./useMemoHashCategory";
 
 /** 카드 값으로 즉시 열고 상세 쿼리는 백그라운드에서 동기화한다. */
 export default function MemoDialog({
@@ -100,6 +103,13 @@ function MemoDialogContent({ lng, memo, latestMemo, onClose }: ContentProps) {
 	const { form, saveStatus, markEdited, changeTitle, flushDebounce } =
 		useMemoDialogEditor({ memo, latestMemo });
 	const { register, watch } = form;
+	// 본문 #과 푸터(배지·⋮)가 같은 팝업을 열도록 모달이 갖는다.
+	const categoryPopover = useMemoCategoryPopover({ lng, memo });
+	const hashCategory = useMemoHashCategory({
+		form,
+		markEdited,
+		categoryPopover,
+	});
 	useWatch({
 		control: form.control,
 		name: ["memo", "impression", "actionItem"],
@@ -168,6 +178,7 @@ function MemoDialogContent({ lng, memo, latestMemo, onClose }: ContentProps) {
 								memoField.ref(element);
 								memoRef.current = element;
 							}}
+							onKeyDown={hashCategory.handleKeyDown}
 							layout={false}
 							className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none !transition-[border-color,box-shadow]"
 							placeholder={t("memos.placeholder")}
@@ -222,17 +233,20 @@ function MemoDialogContent({ lng, memo, latestMemo, onClose }: ContentProps) {
 							url={memo.url}
 							omitHighlightId={source?.highlight_id}
 						/>
-						<div className="flex h-4 items-center">
-							<SaveStatusIndicator status={saveStatus} lng={lng} />
-						</div>
 					</CardContent>
 					<MemoCardFooter
 						memo={memo}
 						lng={lng}
 						isShowingOption={false}
+						categoryBadgeAction="popup"
+						categoryPopover={categoryPopover}
+						timeAccessory={
+							<SaveStatusIndicator status={saveStatus} lng={lng} />
+						}
 						className="px-6 py-4 border-t-0"
 					/>
 				</Card>
+				<CategoryPopover lng={lng} popover={categoryPopover} />
 			</DialogContent>
 		</Dialog>
 	);

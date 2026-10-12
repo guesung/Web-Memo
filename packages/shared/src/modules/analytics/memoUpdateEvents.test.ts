@@ -23,7 +23,7 @@ describe("메모 변경 이벤트 해석", () => {
 				name: "memo_status_toggle",
 				params: { status: "reading", enabled: false },
 			},
-			{ name: "memo_category_change" },
+			{ name: "memo_category_change", params: { action: "clear" } },
 			{ name: "memo_write", params: { fields: "actionItem,memo,title" } },
 		]);
 	});
@@ -31,7 +31,26 @@ describe("메모 변경 이벤트 해석", () => {
 	it("카테고리 변경 경로를 넘기면 source로 싣는다", () => {
 		expect(
 			buildMemoUpdateEvents({ category_id: 3 }, { categorySource: "button" }),
-		).toEqual([{ name: "memo_category_change", params: { source: "button" } }]);
+		).toEqual([
+			{
+				name: "memo_category_change",
+				params: { action: "set", source: "button" },
+			},
+		]);
+	});
+
+	it("category_id가 null이면 action을 clear로 싣는다", () => {
+		expect(
+			buildMemoUpdateEvents(
+				{ category_id: null },
+				{ categorySource: "button" },
+			),
+		).toEqual([
+			{
+				name: "memo_category_change",
+				params: { action: "clear", source: "button" },
+			},
+		]);
 	});
 
 	it("카테고리 키가 없으면 경로를 넘겨도 카테고리 이벤트가 없다", () => {

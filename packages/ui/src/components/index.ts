@@ -6,6 +6,10 @@ export * from "./avatar";
 export * from "./badge";
 export * from "./breadcrumb";
 export * from "./button";
+/**
+ * 메모 카테고리 검색·선택 팝업 본문 (확장·웹 공용)
+ */
+export * from "./CategoryCommand";
 export * from "./calendar";
 export * from "./card";
 export * from "./carousel";
@@ -21,6 +25,10 @@ export { default as ErrorBoundary } from "./ErrorBoundary";
 export { default as ErrorFallback } from "./ErrorFallback";
 export * from "./form";
 export * from "./hover-card";
+/**
+ * 아이콘 컨트롤 말풍선 (확장·웹 공용)
+ */
+export * from "./IconTooltip";
 export * from "./input";
 export * from "./input-otp";
 export * from "./label";

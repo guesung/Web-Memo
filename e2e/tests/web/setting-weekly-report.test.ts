@@ -41,14 +41,17 @@ test.describe("설정 주간 리포트 (Mocked)", () => {
 	const testButton = (page: Page) =>
 		page.getByRole("button", { name: "테스트 메일 보내기" });
 
-	test("기본은 꺼져 있고 이메일 칸과 테스트 행이 없다.", async ({ page }) => {
+	test("기본은 켜져 있고 받을 이메일 칸에 로그인 이메일이 보인다.", async ({
+		page,
+	}) => {
 		await openSetting(page, null);
 
 		await expect(
 			page.getByRole("switch", { name: "리포트 메일 받기" }),
-		).not.toBeChecked();
-		await expect(emailInput(page)).toHaveCount(0);
-		await expect(testButton(page)).toHaveCount(0);
+		).toBeChecked();
+		expect(await emailInput(page).inputValue()).toMatch(EMAIL_PATTERN);
+		await expect(testButton(page)).toBeEnabled();
+		expect(store.settingUpserts).toEqual([]);
 	});
 
 	test("카드는 카테고리 카드 다음, 데이터 카드 앞에 있다.", async ({
@@ -73,7 +76,10 @@ test.describe("설정 주간 리포트 (Mocked)", () => {
 	test("주소가 없을 때 켜면 로그인 이메일로 저장하고 입력칸에 채운다.", async ({
 		page,
 	}) => {
-		await openSetting(page, null);
+		await openSetting(
+			page,
+			createMockSetting({ weekly_report_enabled: false }),
+		);
 
 		await page.getByRole("switch", { name: "리포트 메일 받기" }).click();
 
@@ -90,7 +96,10 @@ test.describe("설정 주간 리포트 (Mocked)", () => {
 	}) => {
 		await openSetting(
 			page,
-			createMockSetting({ weekly_report_email: "saved@example.com" }),
+			createMockSetting({
+				weekly_report_enabled: false,
+				weekly_report_email: "saved@example.com",
+			}),
 		);
 
 		await page.getByRole("switch", { name: "리포트 메일 받기" }).click();

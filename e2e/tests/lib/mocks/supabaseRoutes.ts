@@ -937,7 +937,7 @@ const handleSettingUpsert = async ({ route, store }: HandlerParams) => {
 		show_summary: true,
 		show_ai_chat: false,
 		truncate_memo_content: true,
-		weekly_report_enabled: false,
+		weekly_report_enabled: true,
 		weekly_report_email: null,
 		...store.getSetting(),
 		...patch,

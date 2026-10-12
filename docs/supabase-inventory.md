@@ -203,6 +203,20 @@
 | `updated_at` | `timestamp with time zone` |
 | `page_key` | `text` |
 
+#### 테이블 `memo.highlight_memo_source`
+
+| 컬럼 | 타입 |
+| --- | --- |
+| `memo_id` | `bigint` |
+| `highlight_id` | `bigint` |
+| `user_id` | `uuid` |
+| `exact_text` | `text` |
+| `url` | `text` |
+| `prefix_text` | `text` |
+| `suffix_text` | `text` |
+| `text_position_start` | `integer` |
+| `color` | `text` |
+
 #### 테이블 `memo.memo`
 
 | 컬럼 | 타입 |
@@ -228,6 +242,7 @@
 | `isReading` | `boolean` |
 | `deleted_at` | `timestamp with time zone` |
 | `page_key` | `text` |
+| `plannedDate` | `date` |
 
 #### 테이블 `memo.notice`
 
@@ -310,8 +325,24 @@
 | `show_impression` | `boolean` |
 | `show_action_item` | `boolean` |
 | `truncate_memo_content` | `boolean` |
+| `show_summary` | `boolean` |
+| `show_ai_chat` | `boolean` |
+| `weekly_report_enabled` | `boolean` |
+| `weekly_report_email` | `text` |
 
-#### DB 함수 (38개)
+#### 테이블 `memo.weekly_report_log`
+
+| 컬럼 | 타입 |
+| --- | --- |
+| `id` | `bigint` |
+| `user_id` | `uuid` |
+| `week_start` | `date` |
+| `email` | `text` |
+| `is_test` | `boolean` |
+| `status` | `text` |
+| `created_at` | `timestamp with time zone` |
+
+#### DB 함수 (41개)
 
 | 함수 | 반환 타입 |
 | --- | --- |
@@ -328,7 +359,9 @@
 | `create_default_categories()` | `trigger` |
 | `create_default_memos()` | `trigger` |
 | `create_default_user_data()` | `trigger` |
+| `create_memo_from_highlight(p_highlight_id bigint, p_memo text)` | `jsonb` |
 | `enforce_notification_schedule_limit()` | `trigger` |
+| `ensure_memo_for_highlight()` | `trigger` |
 | `fail_blog_sync(p_blog_id text, p_generation bigint, p_lease_token uuid, p_error_code text, p_checkpoint jsonb, p_keep_checkpoint boolean)` | `jsonb` |
 | `finish_blog_sync(p_blog_id text, p_generation bigint, p_lease_token uuid, p_evidence jsonb)` | `jsonb` |
 | `get_active_users_stats(include_admin boolean)` | `json` |
@@ -347,6 +380,7 @@
 | `ingest_blog_batch(p_blog_id text, p_generation bigint, p_lease_token uuid, p_items jsonb)` | `jsonb` |
 | `invalidate_page_key_after_url_change()` | `trigger` |
 | `is_supported_blog(p_blog_id text)` | `boolean` |
+| `legacy_page_key_from_normalized_url(p_url text)` | `text` |
 | `request_blog_sync(p_blog_id text)` | `jsonb` |
 | `save_blog_checkpoint(p_blog_id text, p_generation bigint, p_lease_token uuid, p_checkpoint jsonb)` | `jsonb` |
 | `send_welcome_email()` | `trigger` |
@@ -964,11 +998,12 @@ Supabase가 만들고 관리하는 스키마입니다. 플랫폼 업데이트로
 | `action_filter` | `text` |
 | `selected_columns` | `text[]` |
 
-#### DB 함수 (15개)
+#### DB 함수 (18개)
 
 | 함수 | 반환 타입 |
 | --- | --- |
 | `apply_rls(wal jsonb, max_record_bytes integer)` | `SETOF realtime.wal_rls` |
+| `authorize(role_name text, topic_name text, claims text, sub text, headers text, read_extensions text[], write_extensions text[], OUT read_allowed boolean[], OUT write_allowed boolean[])` | `record` |
 | `broadcast_changes(topic_name text, event_name text, operation text, table_name text, table_schema text, new record, old record, level text)` | `void` |
 | `build_prepared_statement_sql(prepared_statement_name text, entity regclass, columns realtime.wal_column[])` | `text` |
 | `cast(val text, type_ regtype)` | `jsonb` |
@@ -976,9 +1011,11 @@ Supabase가 만들고 관리하는 스키마입니다. 플랫폼 업데이트로
 | `check_equality_op(op realtime.equality_op, type_ regtype, val_1 text, val_2 text, negate boolean)` | `boolean` |
 | `is_visible_through_filters(columns realtime.wal_column[], filters realtime.user_defined_filter[])` | `boolean` |
 | `list_changes(publication name, slot_name name, max_changes integer, max_record_bytes integer)` | `TABLE(wal jsonb, is_rls_enabled boolean, subscription_ids uuid[], errors text[], slot_changes_count bigint)` |
+| `list_changes_sync(publication name, slot_name name, max_changes integer, max_record_bytes integer)` | `TABLE(wal jsonb, is_rls_enabled boolean, subscription_ids uuid[], errors text[], slot_changes_count bigint)` |
 | `quote_wal2json(entity regclass)` | `text` |
 | `send(payload jsonb, event text, topic text, private boolean)` | `void` |
 | `send_binary(payload bytea, event text, topic text, private boolean)` | `void` |
+| `settled_changes(slot_name name, max_changes integer, VARIADIC opts text[])` | `TABLE(lsn pg_lsn, xid xid, data text)` |
 | `subscription_check_filters()` | `trigger` |
 | `to_regrole(role_name text)` | `regrole` |
 | `topic()` | `text` |
@@ -1200,3 +1237,4 @@ Supabase가 만들고 관리하는 스키마입니다. 플랫폼 업데이트로
 | `send-feedback` | 7 |
 | `send-signup-slack-notification` | 3 |
 | `send-welcome-email` | 6 |
+| `weekly-memo-report` | 5 |

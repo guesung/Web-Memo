@@ -37,6 +37,7 @@ const NOINDEX_PATHS = [
 	PATHS.login,
 	PATHS.memos,
 	PATHS.highlights,
+	PATHS.favorites,
 	PATHS.admin,
 	PATHS.uninstall,
 ];

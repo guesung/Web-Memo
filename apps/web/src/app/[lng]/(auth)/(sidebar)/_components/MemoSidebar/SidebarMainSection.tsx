@@ -3,6 +3,7 @@ import getTranslation from "@src/modules/i18n/util.server";
 import { PATHS } from "@web-memo/shared/constants";
 import { SidebarGroup, SidebarMenu } from "@web-memo/ui";
 import {
+	Bookmark,
 	BookOpen,
 	CalendarClock,
 	Heart,
@@ -88,6 +89,15 @@ const SidebarMainSection = async ({ lng }: LanguageType) => {
 						/>
 					}
 					iconChipClassName="bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/40"
+				/>
+				<SidebarNavItem
+					lng={lng}
+					href={PATHS.favorites}
+					label={t("sideBar.favorite")}
+					icon={
+						<Bookmark size={16} className="text-sky-600 dark:text-sky-400" />
+					}
+					iconChipClassName="bg-sky-100 dark:bg-sky-900/30 group-hover:bg-sky-200 dark:group-hover:bg-sky-800/40"
 				/>
 			</SidebarMenu>
 		</SidebarGroup>

@@ -30,7 +30,8 @@ type SidebarPageLabelKey =
 	| "sideBar.importantMemo"
 	| "sideBar.readingMemo"
 	| "sideBar.readingPlan"
-	| "sideBar.highlight";
+	| "sideBar.highlight"
+	| "sideBar.favorite";
 
 interface SidebarPageMetadataArgs {
 	params: LanguageParams["params"];

@@ -28,6 +28,7 @@
 		"memo": "My memos",
 		"wishList": "Wishlist",
 		"highlight": "Highlights",
+		"favorite": "Favorites",
 		"importantMemo": "Important",
 		"readingMemo": "Reading",
 		"readingPlan": "Reading plan",
@@ -628,6 +629,43 @@
 			"reading": "Reading",
 			"star": "Important",
 			"plan": "Pick a day to read"
+		}
+	},
+	"favorite": {
+		"title": "Favorites",
+		"subtitle": "{{count}} saved · Pages you favorited in the app and on the web",
+		"add": "Add",
+		"edit": "Edit",
+		"delete": "Delete",
+		"retry": "Try again",
+		"loadError": "Couldn't load your favorites",
+		"addSuccess": "Favorite added",
+		"editSuccess": "Favorite updated",
+		"saveFailed": "Couldn't save the favorite. Please try again in a moment.",
+		"deleteSuccess": "Favorite deleted",
+		"deleteFailed": "Couldn't delete it. Please try again in a moment.",
+		"empty": {
+			"title": "No favorite pages yet",
+			"description": "Favorite a page in the app browser, or add one here yourself.",
+			"add": "Add favorite"
+		},
+		"form": {
+			"addTitle": "Add favorite",
+			"editTitle": "Edit favorite",
+			"urlLabel": "URL",
+			"titleLabel": "Title",
+			"titlePlaceholder": "Leave blank to save the domain",
+			"invalidUrl": "Enter a valid URL",
+			"duplicate": "This page is already in your favorites",
+			"cancel": "Cancel",
+			"add": "Add",
+			"save": "Save"
+		},
+		"deleteDialog": {
+			"title": "Delete this favorite?",
+			"description": "\"{{title}}\" will be removed from both the app and web lists.",
+			"cancel": "Cancel",
+			"confirm": "Delete"
 		}
 	},
 	"highlight": {

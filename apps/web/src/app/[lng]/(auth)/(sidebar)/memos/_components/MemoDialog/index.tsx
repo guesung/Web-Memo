@@ -21,15 +21,17 @@ import {
 	Loading,
 	Textarea,
 } from "@web-memo/ui";
-import { motion } from "framer-motion";
 import { useLayoutEffect, useRef } from "react";
 import { useWatch } from "react-hook-form";
 import MemoCardFooter from "../MemoCardFooter";
+import CategoryPopover from "../MemoCardFooter/CategoryPopover";
+import useMemoCategoryPopover from "../MemoCardFooter/useMemoCategoryPopover";
 import MemoCardHeader from "../MemoCardHeader";
 import { MemoSourceQuote } from "../MemoView/MemoSourceQuote";
 import { MemoDialogHighlights } from "./MemoDialogHighlights";
 import SaveStatusIndicator from "./SaveStatusIndicator";
 import { useMemoDialogEditor } from "./useMemoDialogEditor";
+import { useMemoHashCategory } from "./useMemoHashCategory";
 
 /** 카드 값으로 즉시 열고 상세 쿼리는 백그라운드에서 동기화한다. */
 export default function MemoDialog({
@@ -101,6 +103,13 @@ function MemoDialogContent({ lng, memo, latestMemo, onClose }: ContentProps) {
 	const { form, saveStatus, markEdited, changeTitle, flushDebounce } =
 		useMemoDialogEditor({ memo, latestMemo });
 	const { register, watch } = form;
+	// 본문 #과 푸터(배지·⋮)가 같은 팝업을 열도록 모달이 갖는다.
+	const categoryPopover = useMemoCategoryPopover({ lng, memo });
+	const hashCategory = useMemoHashCategory({
+		form,
+		markEdited,
+		categoryPopover,
+	});
 	useWatch({
 		control: form.control,
 		name: ["memo", "impression", "actionItem"],
@@ -140,106 +149,104 @@ function MemoDialogContent({ lng, memo, latestMemo, onClose }: ContentProps) {
 				aria-describedby={undefined}
 			>
 				<DialogTitle className="sr-only">{title}</DialogTitle>
-				<motion.div
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					exit={{ opacity: 0 }}
-				>
-					<Card>
-						<MemoCardHeader
-							memo={{ ...memo, title }}
-							onTitleChange={changeTitle}
-							className="pr-12"
-						/>
-						<CardContent className="space-y-4 px-5 py-4">
-							{source && <MemoSourceQuote lng={lng} source={source} />}
-							{sources.isError && (
-								<div
-									role="alert"
-									className="flex items-center gap-2 text-xs text-destructive"
+				<Card>
+					<MemoCardHeader
+						memo={{ ...memo, title }}
+						onTitleChange={changeTitle}
+						className="pr-12"
+					/>
+					<CardContent className="space-y-4 px-5 py-4">
+						{source && <MemoSourceQuote lng={lng} source={source} />}
+						{sources.isError && (
+							<div
+								role="alert"
+								className="flex items-center gap-2 text-xs text-destructive"
+							>
+								<span>{t("highlight.memo.loadError")}</span>
+								<button
+									type="button"
+									onClick={() => void sources.refetch()}
+									className="underline"
 								>
-									<span>{t("highlight.memo.loadError")}</span>
-									<button
-										type="button"
-										onClick={() => void sources.refetch()}
-										className="underline"
-									>
-										{t("error.500.retry")}
-									</button>
-								</div>
-							)}
-							<Textarea
-								{...memoField}
-								ref={(element) => {
-									memoField.ref(element);
-									memoRef.current = element;
-								}}
-								layout={false}
-								className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none !transition-[border-color,box-shadow]"
-								placeholder={t("memos.placeholder")}
-								data-testid="memo-textarea"
-							/>
-							{showImpression && (
-								<div className="space-y-1.5">
-									<label
-										htmlFor="impression"
-										className="block text-xs font-semibold text-muted-foreground"
-									>
-										{t("memoSection.impression")}
-									</label>
-									<Textarea
-										{...impressionField}
-										id="impression"
-										ref={(element) => {
-											impressionField.ref(element);
-											impressionRef.current = element;
-										}}
-										layout={false}
-										className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none !transition-[border-color,box-shadow]"
-										placeholder={t("memoSection.impressionPlaceholder")}
-										data-testid="impression-textarea"
-									/>
-								</div>
-							)}
-							{showActionItem && (
-								<div className="space-y-1.5">
-									<label
-										htmlFor="actionItem"
-										className="block text-xs font-semibold text-muted-foreground"
-									>
-										{t("memoSection.actionItem")}
-									</label>
-									<Textarea
-										{...actionItemField}
-										id="actionItem"
-										ref={(element) => {
-											actionItemField.ref(element);
-											actionItemRef.current = element;
-										}}
-										layout={false}
-										className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none !transition-[border-color,box-shadow]"
-										placeholder={t("memoSection.actionItemPlaceholder")}
-										data-testid="action-item-textarea"
-									/>
-								</div>
-							)}
-							<MemoDialogHighlights
-								lng={lng}
-								url={memo.url}
-								omitHighlightId={source?.highlight_id}
-							/>
-							<div className="flex h-4 items-center">
-								<SaveStatusIndicator status={saveStatus} lng={lng} />
+									{t("error.500.retry")}
+								</button>
 							</div>
-						</CardContent>
-						<MemoCardFooter
-							memo={memo}
-							lng={lng}
-							isShowingOption={false}
-							className="px-6 py-4 border-t-0"
+						)}
+						<Textarea
+							{...memoField}
+							ref={(element) => {
+								memoField.ref(element);
+								memoRef.current = element;
+							}}
+							onKeyDown={hashCategory.handleKeyDown}
+							layout={false}
+							className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none !transition-[border-color,box-shadow]"
+							placeholder={t("memos.placeholder")}
+							data-testid="memo-textarea"
 						/>
-					</Card>
-				</motion.div>
+						{showImpression && (
+							<div className="space-y-1.5">
+								<label
+									htmlFor="impression"
+									className="block text-xs font-semibold text-muted-foreground"
+								>
+									{t("memoSection.impression")}
+								</label>
+								<Textarea
+									{...impressionField}
+									id="impression"
+									ref={(element) => {
+										impressionField.ref(element);
+										impressionRef.current = element;
+									}}
+									layout={false}
+									className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none !transition-[border-color,box-shadow]"
+									placeholder={t("memoSection.impressionPlaceholder")}
+									data-testid="impression-textarea"
+								/>
+							</div>
+						)}
+						{showActionItem && (
+							<div className="space-y-1.5">
+								<label
+									htmlFor="actionItem"
+									className="block text-xs font-semibold text-muted-foreground"
+								>
+									{t("memoSection.actionItem")}
+								</label>
+								<Textarea
+									{...actionItemField}
+									id="actionItem"
+									ref={(element) => {
+										actionItemField.ref(element);
+										actionItemRef.current = element;
+									}}
+									layout={false}
+									className="resize-none overflow-hidden outline-none focus:border-border focus:outline-none !transition-[border-color,box-shadow]"
+									placeholder={t("memoSection.actionItemPlaceholder")}
+									data-testid="action-item-textarea"
+								/>
+							</div>
+						)}
+						<MemoDialogHighlights
+							lng={lng}
+							url={memo.url}
+							omitHighlightId={source?.highlight_id}
+						/>
+					</CardContent>
+					<MemoCardFooter
+						memo={memo}
+						lng={lng}
+						isShowingOption={false}
+						categoryBadgeAction="popup"
+						categoryPopover={categoryPopover}
+						timeAccessory={
+							<SaveStatusIndicator status={saveStatus} lng={lng} />
+						}
+						className="px-6 py-4 border-t-0"
+					/>
+				</Card>
+				<CategoryPopover lng={lng} popover={categoryPopover} />
 			</DialogContent>
 		</Dialog>
 	);

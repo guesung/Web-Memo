@@ -515,12 +515,6 @@
 	"past_memo_open": {
 		"message": "Open"
 	},
-	"past_memo_open_memo": {
-		"message": "Open memo"
-	},
-	"past_memo_open_site": {
-		"message": "Go to website"
-	},
 	"past_memo_dismiss": {
 		"message": "Dismiss"
 	},
@@ -571,13 +565,43 @@
 		"message": "AI features"
 	},
 	"ai_features_description": {
-		"message": "Turn these off if you only want to write memos. The matching tab disappears from the side panel."
+		"message": "Choose which AI features to use."
 	},
 	"summary_enabled_setting": {
-		"message": "Use page summary"
+		"message": "Enable page summary"
 	},
 	"ai_chat_enabled_setting": {
 		"message": "Use AI chat"
+	},
+	"summary_show_label": {
+		"message": "View summary"
+	},
+	"summary_hide_label": {
+		"message": "Hide summary"
+	},
+	"summary_page_read_failed_message": {
+		"message": "Couldn't read this page. Refresh it and try again."
+	},
+	"summary_unavailable_message": {
+		"message": "Summary is unavailable on this page."
+	},
+	"summary_page_loading_message": {
+		"message": "Checking this page…"
+	},
+	"summary_retry_label": {
+		"message": "Try summarizing again"
+	},
+	"summary_login_message": {
+		"message": "Sign in to summarize this page."
+	},
+	"summary_panel_hint": {
+		"message": "Show ‘View summary’ in the side panel."
+	},
+	"past_memo_open_memo": {
+		"message": "Open memo"
+	},
+	"past_memo_open_site": {
+		"message": "Go to website"
 	},
 	"past_memo_view_back": {
 		"message": "Back to this page's memo"
@@ -656,5 +680,56 @@
 	},
 	"page_highlights_focus_failed": {
 		"message": "Couldn't find this quote on the page."
+	},
+	"tooltip_plan_add": {
+		"message": "Pick a day to read"
+	},
+	"tooltip_plan_change": {
+		"message": "Planned for $date$ · Change",
+		"placeholders": {
+			"date": {
+				"content": "$1",
+				"example": "October 13"
+			}
+		}
+	},
+	"plan_added": {
+		"message": "Added to your $date$ reading list",
+		"placeholders": {
+			"date": {
+				"content": "$1",
+				"example": "October 13"
+			}
+		}
+	},
+	"plan_removed": {
+		"message": "Removed from your reading plan"
+	},
+	"plan_label_today": {
+		"message": "Today"
+	},
+	"plan_label_tomorrow": {
+		"message": "Tomorrow"
+	},
+	"plan_picker_title": {
+		"message": "When will you read it?"
+	},
+	"plan_picker_today": {
+		"message": "Today"
+	},
+	"plan_picker_tomorrow": {
+		"message": "Tomorrow"
+	},
+	"plan_picker_weekend": {
+		"message": "This weekend"
+	},
+	"plan_picker_next_monday": {
+		"message": "Next Monday"
+	},
+	"plan_picker_clear": {
+		"message": "Clear date"
+	},
+	"plan_date_button": {
+		"message": "Reading plan date"
 	}
 }

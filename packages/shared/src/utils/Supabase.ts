@@ -35,6 +35,7 @@ export { CategoryService } from "./supabase/categoryService";
 export {
 	FavoriteService,
 	type IFFavoriteInput,
+	isFavoriteDuplicateError,
 	type TFavoriteRow,
 } from "./supabase/favoriteService";
 /** FeedbackService 도메인 서비스의 기존 공개 경로를 유지한다. */

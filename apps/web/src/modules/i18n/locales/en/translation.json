@@ -28,8 +28,10 @@
 		"memo": "My memos",
 		"wishList": "Wishlist",
 		"highlight": "Highlights",
+		"favorite": "Favorites",
 		"importantMemo": "Important",
 		"readingMemo": "Reading",
+		"readingPlan": "Reading plan",
 		"allCategory": "All categories",
 		"tags": "Tags",
 		"settings": "Settings",
@@ -352,6 +354,8 @@
 		"memoStarDeleted": "Removed from important",
 		"memoReadingAdded": "Marked as reading",
 		"memoReadingDeleted": "Unmarked as reading",
+		"memoPlanAdded": "Added to your {{date}} reading list",
+		"memoPlanRemoved": "Removed from your reading plan",
 		"saveSuccess": "Saved",
 		"deleteSuccess": "Deleted",
 		"addSuccess": "Added",
@@ -360,7 +364,10 @@
 		"memo_updated_at": "Modified at {{time}}",
 		"guideDone": "🎉 Guide completed",
 		"guideDoneDescription": "Enjoy taking memos!",
-		"duplicateCategory": "A category with this name already exists"
+		"duplicateCategory": "A category with this name already exists",
+		"categoryRemoved": "Category removed",
+		"categoryCreateFailed": "Couldn't create the category",
+		"categoryEditFailed": "Couldn't change the category"
 	},
 	"toastActionMessage": {
 		"goTo": "Go to",
@@ -476,7 +483,26 @@
 		"export": "Export",
 		"exportMemos": "Export memos",
 		"showImpressionSection": "Show the impression field when writing a memo",
-		"showActionItemSection": "Show the action items field when writing a memo"
+		"showActionItemSection": "Show the action items field when writing a memo",
+		"sectionWeeklyReport": "Weekly report",
+		"sectionWeeklyReportDescription": "Every Sunday evening, we email you the memos you wrote that week",
+		"weeklyReportEnable": "Get the report email",
+		"weeklyReportEnableDescription": "We skip weeks without memos",
+		"weeklyReportEmail": "Email address",
+		"weeklyReportEmailDescription": "It can differ from your sign-in account",
+		"weeklyReportEmailPlaceholder": "Enter an email address",
+		"weeklyReportEmailInvalid": "Check the email format",
+		"weeklyReportEmailRequired": "Enter an email address",
+		"weeklyReportTest": "Test email",
+		"weeklyReportTestDescription": "Send this week's report once, right now",
+		"weeklyReportTestButton": "Send test email",
+		"weeklyReportTestSending": "Sending…",
+		"weeklyReportTestSent": "Sent to {{email}}",
+		"weeklyReportTestSentDescription": "Check your inbox",
+		"weeklyReportTestFailed": "Couldn't send the email",
+		"weeklyReportTestFailedDescription": "Check the address and try again",
+		"weeklyReportTestRateLimited": "Please try again in a moment",
+		"saveFailed": "Couldn't save"
 	},
 	"guide": {
 		"next": "Next",
@@ -514,11 +540,27 @@
 		"actionItemPlaceholder": "Write what to do after reading this page"
 	},
 	"memos": {
+		"categoryPopup": {
+			"search": "Search categories",
+			"noResult": "No matching categories",
+			"empty": "No categories yet",
+			"emptyHint": "Type a name to create one",
+			"createNamed": "Create '{{name}}'",
+			"remove": "Remove category"
+		},
+		"tooltip": {
+			"wishAdd": "Add to wishlist",
+			"wishRemove": "Remove from wishlist",
+			"readingAdd": "Mark as reading",
+			"readingRemove": "Remove from reading",
+			"starAdd": "Mark as important",
+			"starRemove": "Remove from important"
+		},
 		"view": {
 			"truncateContent": "Shorten memo content",
 			"unknownDate": "No creation date",
 			"label": "Memo view",
-			"byDate": "By date",
+			"byDate": "By created date",
 			"untitled": "Untitled memo",
 			"loadMore": "Load more"
 		},
@@ -536,6 +578,28 @@
 			"title": "No results",
 			"message": "We couldn't find any memo matching '{{query}}'.",
 			"hint": "Try a different keyword."
+		},
+		"plan": {
+			"sectionPast": "Past plans ({{count}})",
+			"sectionToday": "Today",
+			"sectionUpcoming": "Upcoming",
+			"todayEmpty": "Nothing to read today",
+			"emptyTitle": "No dates picked yet",
+			"emptyHint": "Use the calendar button on a card to pick a day to read it",
+			"emptyAction": "View all memos",
+			"chip": "Read {{label}}",
+			"label": {
+				"today": "today",
+				"tomorrow": "tomorrow"
+			},
+			"picker": {
+				"title": "When will you read it?",
+				"today": "Today",
+				"tomorrow": "Tomorrow",
+				"weekend": "This weekend",
+				"nextMonday": "Next Monday",
+				"clear": "Clear date"
+			}
 		},
 		"totalMemos": "{{total}} memos",
 		"searchPlaceholder": "Search memos",
@@ -563,7 +627,45 @@
 		"toggle": {
 			"wish": "Wishlist",
 			"reading": "Reading",
-			"star": "Important"
+			"star": "Important",
+			"plan": "Pick a day to read"
+		}
+	},
+	"favorite": {
+		"title": "Favorites",
+		"subtitle": "{{count}} saved · Pages you favorited in the app and on the web",
+		"add": "Add",
+		"edit": "Edit",
+		"delete": "Delete",
+		"retry": "Try again",
+		"loadError": "Couldn't load your favorites",
+		"addSuccess": "Favorite added",
+		"editSuccess": "Favorite updated",
+		"saveFailed": "Couldn't save the favorite. Please try again in a moment.",
+		"deleteSuccess": "Favorite deleted",
+		"deleteFailed": "Couldn't delete it. Please try again in a moment.",
+		"empty": {
+			"title": "No favorite pages yet",
+			"description": "Favorite a page in the app browser, or add one here yourself.",
+			"add": "Add favorite"
+		},
+		"form": {
+			"addTitle": "Add favorite",
+			"editTitle": "Edit favorite",
+			"urlLabel": "URL",
+			"titleLabel": "Title",
+			"titlePlaceholder": "Leave blank to save the domain",
+			"invalidUrl": "Enter a valid URL",
+			"duplicate": "This page is already in your favorites",
+			"cancel": "Cancel",
+			"add": "Add",
+			"save": "Save"
+		},
+		"deleteDialog": {
+			"title": "Delete this favorite?",
+			"description": "\"{{title}}\" will be removed from both the app and web lists.",
+			"cancel": "Cancel",
+			"confirm": "Delete"
 		}
 	},
 	"highlight": {

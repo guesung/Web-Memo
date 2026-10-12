@@ -34,7 +34,8 @@
 | memo_filter | 메모 필터 (추정) | `search_target` | 어떤 대상으로 거르는가 (추정) | — |
 | search_no_result | 검색 결과 없음 (추정) | — | 검색이 실패하는 비율 (추정) | — |
 | memo_status_toggle | 메모 상태(wish/star/reading) 변경. 확장 upsert는 이전 값과 다를 때만 발생 | `status`, `enabled` | 어떤 상태가 쓰이는가 (추정) | DB-1158 |
-| memo_category_change | 메모 카테고리 변경. 확장 upsert는 이전 값과 다를 때만 발생 | `source`: `button` \| `hash` \| `ai` (선택, 확장 upsert에서는 없음) | 사람들이 `#` 입력을 아는가 | DB-1158 |
+| memo_plan_change | 메모의 읽을 계획 날짜 배정·해제 성공 뒤. 웹 패치, 확장 upsert(값이 달라졌을 때·새 메모 첫 배정 포함) | `action`(set/clear), `days_ahead`(set일 때, 오늘 기준 일수) | 읽을 계획이 실제로 배정되는가, 며칠 앞까지 잡는가, 해제 비율은 | DB-1195 |
+| memo_category_change | 메모 카테고리 변경. 확장 upsert는 이전 값과 다를 때만 발생 | `action`: `set` \| `clear` (patch 경로만, `category_id`가 null이면 clear) · `source`: `button` \| `hash` \| `ai` (선택, 확장 upsert에서는 없음) | 사람들이 `#` 입력을 아는가 | DB-1158 |
 | memo_undo | 실행 취소 (추정) | `action` | 어떤 조작이 되돌려지는가 (추정) | — |
 | memo_offline_queued | 오프라인 대기열에 넣음 | `trigger` | 오프라인 저장이 얼마나 일어나는가 | — |
 | memo_offline_sync_result | 대기열 동기화 결과 | `trigger`, `synced_count`, `conflict_count`, `has_other_error` | 동기화가 충돌 없이 끝나는가 | — |
@@ -45,15 +46,16 @@
 | highlight_source_jump | 사이드 패널 인용 선택 후 원문 위치 검증·스크롤 성공 | — | 패널 인용을 통해 원문으로 돌아가는가 | DB-1180 |
 | highlight_note_update | 하이라이트 메모 수정 (추정) | — | 하이라이트에 메모를 다는가 (추정) | — |
 | highlight_bubble_disable | 하이라이트 말풍선 끄기 | `scope`: `site` \| `all` | 말풍선이 거슬리는가 (추정) | — |
-| summary_run | 요약 실행 | `source`: `empty_state` \| `tab_trigger` | 어느 자리에서 요약이 시작되는가 | — |
+| summary_run | 요약 실행. 요약 보기에서 첫 요청은 `disclosure`, 명시 재시도는 기존 `empty_state`. 재열기로 요청을 재사용하면 기록하지 않음 | `source`: `disclosure` \| `empty_state` \| `tab_trigger`(기존 버전) | 어느 자리에서 요약이 시작되는가 | — |
+| summary_panel_toggle | 요약 행을 직접 열거나 접음. 초기 렌더·페이지 변경·설정 OFF에 따른 자동 접힘은 제외 | `action`: `open` \| `close` | 요약 진입과 메모 화면 복귀를 얼마나 하는가 | — |
 | summary_complete | 요약 완료 | `duration_msec` | 요약이 얼마나 걸리는가 (추정) | — |
 | summary_fail | 요약 실패 | `reason` | 왜 실패하는가 (추정) | — |
 | chat_message_send | 채팅 메시지 전송 (추정) | — | 채팅이 쓰이는가 (추정) | — |
 | chat_fail | 채팅 실패 (추정) | `reason` | 왜 실패하는가 (추정) | — |
 | youtube_transcript_extract | 유튜브 자막 추출 (추정) | `is_success` | 자막 추출 성공률 (추정) | — |
-| tab_change | 탭 이동 (추정) | `tab_name` | 어느 탭이 쓰이는가 (추정) | — |
+| tab_change | 실제 탭 클릭. 요약 행 조작은 `summary_panel_toggle`로 기록하고 자동 전환은 제외 | `tab_name` | 어느 AI 탭에 진입하는가 | — |
 | view_change | 보기 방식 변경 (추정) | `view` | 어떤 보기가 선호되는가 (추정) | — |
-| setting_change / extension_setting_change | 설정 변경 (추정). 서버 설정 저장 성공 시 `setting_change` — 요약·AI 채팅 스위치는 `show_summary`·`show_ai_chat` | `setting_keys` / `keys` | 어떤 설정을 바꾸는가 (추정) · 요약·AI 채팅을 켜는 사용자가 얼마나 되는가 | — |
+| setting_change / extension_setting_change | 설정 변경 (추정). 서버 설정 저장 성공 시 `setting_change` — 요약 스위치는 `show_summary`, AI 채팅 스위치는 `show_ai_chat`. 실패·렌더만으로는 기록하지 않으며 설정값 자체는 전송하지 않음 | `setting_keys` / `keys` | 어떤 설정을 바꾸는가 (추정) · AI 채팅을 켜는 사용자가 얼마나 되는가 | — |
 | shortcut_change_click | 단축키 변경 버튼 클릭 (추정) | `is_success` | 단축키 변경이 성공하는가 (추정) | — |
 | export_run | 내보내기 실행 | `format` | 어떤 형식으로 내보내는가 | — |
 | login_start / login / sign_up / logout | `login_start`: 웹 로그인 제공자 버튼 클릭. `login`: OAuth 성공 후 메모 레이아웃에 도착한 클라이언트. `sign_up`: 같은 도착 시 신규 계정으로 판정된 경우. `logout`: 로그아웃 | `method` (logout 없음) | 제공자별 시작·도착 규모는? 두 이벤트에는 시도 식별자가 없으므로 사용자 수 비율을 실제 로그인 완료율로 단정하지 않는다 | DB-1160 |

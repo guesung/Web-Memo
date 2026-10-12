@@ -7,11 +7,16 @@ export {
 	default as useCategoryQuery,
 } from "./useCategoryQuery";
 export { default as useDeletedMemosQuery } from "./useDeletedMemosQuery";
+export {
+	default as useFavoritesQuery,
+	favoritesQueryOptions,
+} from "./useFavoritesQuery";
 export { default as useFeedbackQuery } from "./useFeedbackQuery";
 export { default as useFeedbacksQuery } from "./useFeedbacksQuery";
 export { default as useMemoQuery, memoQueryOptions } from "./useMemoQuery";
 export { default as useMemosInfiniteQuery } from "./useMemosInfiniteQuery";
 export { default as useNoticeQuery } from "./useNoticeQuery";
+export { default as usePlannedMemosQuery } from "./usePlannedMemosQuery";
 export {
 	default as useSamePathMemoQuery,
 	samePathMemoQueryOptions,

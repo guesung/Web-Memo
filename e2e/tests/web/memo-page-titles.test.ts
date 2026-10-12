@@ -11,7 +11,9 @@ const ROUTES = [
 	{ path: PATHS.memosWish, ko: "위시리스트", en: "Wishlist" },
 	{ path: PATHS.memosStar, ko: "중요 메모", en: "Important" },
 	{ path: PATHS.memosReading, ko: "읽는 중", en: "Reading" },
+	{ path: PATHS.memosPlan, ko: "읽을 계획", en: "Reading plan" },
 	{ path: PATHS.highlights, ko: "하이라이트", en: "Highlights" },
+	{ path: PATHS.favorites, ko: "즐겨찾기", en: "Favorites" },
 ] as const;
 const BRAND = { ko: "웹 메모", en: "Web Memo" } as const;
 
@@ -49,6 +51,7 @@ test.describe("메모 페이지 브라우저 제목 (Mocked)", () => {
 				ROUTES[2],
 				ROUTES[3],
 				ROUTES[4],
+				ROUTES[5],
 				ROUTES[0],
 			]) {
 				await sidebar
@@ -73,7 +76,7 @@ test.describe("메모 페이지 브라우저 제목 (Mocked)", () => {
 			await expect(page).toHaveTitle(`${BRAND[lng]} | ${ROUTES[0][lng]}`);
 			await page
 				.getByRole("button", {
-					name: lng === "ko" ? "날짜별 보기" : "By date",
+					name: lng === "ko" ? "작성일별 보기" : "By created date",
 				})
 				.click();
 			await expect(page).toHaveURL(/view=list/);

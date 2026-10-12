@@ -83,6 +83,12 @@ test.describe("메모 수정 기능 (Mocked)", () => {
 		await patchResponsePromise;
 		await refetchResponsePromise;
 
+		// 사이드 패널처럼 저장 완료는 문구 없이 아이콘만 보이고, 문구는 툴팁으로 남는다.
+		const saveStatus = page.getByTestId("memo-save-status");
+		await expect(saveStatus).toHaveAttribute("data-save-status", "saved");
+		await expect(saveStatus).toHaveAttribute("title", "All changes saved");
+		await expect(saveStatus.locator("span")).toHaveClass(/sr-only/);
+
 		await page.getByTestId("memo-close-button").click();
 
 		const newMemoItem = page.locator(".memo-item", {

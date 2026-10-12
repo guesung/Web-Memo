@@ -19,7 +19,14 @@ const PUBLIC_PATHS = [
 const KOREAN_ONLY_PATHS = ["compare/chrome-memo-extensions"] as const;
 
 /** 로그인 여부와 무관하게 첫 응답부터 색인을 막아야 하는 HTML 경로입니다. */
-const NOINDEX_PATHS = ["login", "memos", "highlights", "admin", "uninstall"];
+const NOINDEX_PATHS = [
+	"login",
+	"memos",
+	"highlights",
+	"favorites",
+	"admin",
+	"uninstall",
+];
 
 // 비로그인 상태의 화면을 검증하므로 setup이 저장한 로그인 세션을 쓰지 않는다.
 test.use({ storageState: { cookies: [], origins: [] } });

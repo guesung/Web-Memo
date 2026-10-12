@@ -13,6 +13,8 @@ import { SearchParams } from "@web-memo/shared/modules/search-params";
 export interface IFMemoUrlParams
 	extends Partial<Record<TMemoStatusKey, boolean>> {
 	id?: number;
+	/** true면 목록 대신 읽을 계획 탭 주소를 만든다 */
+	isPlan?: boolean;
 }
 
 /**
@@ -30,7 +32,9 @@ export const getMemoUrl = (memoUrlParams: IFMemoUrlParams) => {
 		}
 	});
 
-	return `${CONFIG.webUrl}${PATHS.memos}${searchParams.getSearchParams()}`;
+	const path = memoUrlParams.isPlan ? PATHS.memosPlan : PATHS.memos;
+
+	return `${CONFIG.webUrl}${path}${searchParams.getSearchParams()}`;
 };
 
 export const getMemoWishListUrl = (id?: number) => {

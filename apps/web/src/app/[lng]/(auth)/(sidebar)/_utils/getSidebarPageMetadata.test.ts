@@ -22,6 +22,7 @@ describe("sidebar page metadata", () => {
 		["sideBar.wishList", "웹 메모 | 위시리스트", "Web Memo | Wishlist"],
 		["sideBar.importantMemo", "웹 메모 | 중요 메모", "Web Memo | Important"],
 		["sideBar.readingMemo", "웹 메모 | 읽는 중", "Web Memo | Reading"],
+		["sideBar.readingPlan", "웹 메모 | 읽을 계획", "Web Memo | Reading plan"],
 		["sideBar.highlight", "웹 메모 | 하이라이트", "Web Memo | Highlights"],
 	] as const)(
 		"%s 번역 제목을 만든다",

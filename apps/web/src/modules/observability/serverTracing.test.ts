@@ -82,29 +82,32 @@ describe("Grafana server request exporter", () => {
 		},
 	);
 
-	it.each(["/memos", "/memos/wish", "/memos/star", "/memos/reading"])(
-		"exports sanitized request for %s and schedules flush",
-		(route) => {
-			const processor = createGrafanaSpanProcessors()[0];
-			const original = createSpan({ "http.route": `/[lng]${route}` });
-			processor.onEnd(original);
-			const exported: ReadableSpan = mocks.onEnd.mock.calls[0][0];
-			expect(exported.name).toBe("app.memo.server_request");
-			expect(exported.attributes).toEqual({
-				"app.route": route,
-				"app.outcome": "success",
-			});
-			expect(exported.status).toEqual({ code: 0 });
-			expect(exported.events).toEqual([]);
-			expect(exported.resource.attributes).toEqual({
-				"service.name": "web-memo-web",
-			});
-			expect(exported.duration).toEqual(original.duration);
-			expect(mocks.forceFlush).toHaveBeenCalledOnce();
-			expect(mocks.waitUntil).toHaveBeenCalledWith(expect.any(Promise));
-			expect(original.attributes["user.id"]).toBe("private-user");
-		},
-	);
+	it.each([
+		"/memos",
+		"/memos/wish",
+		"/memos/star",
+		"/memos/reading",
+		"/memos/plan",
+	])("exports sanitized request for %s and schedules flush", (route) => {
+		const processor = createGrafanaSpanProcessors()[0];
+		const original = createSpan({ "http.route": `/[lng]${route}` });
+		processor.onEnd(original);
+		const exported: ReadableSpan = mocks.onEnd.mock.calls[0][0];
+		expect(exported.name).toBe("app.memo.server_request");
+		expect(exported.attributes).toEqual({
+			"app.route": route,
+			"app.outcome": "success",
+		});
+		expect(exported.status).toEqual({ code: 0 });
+		expect(exported.events).toEqual([]);
+		expect(exported.resource.attributes).toEqual({
+			"service.name": "web-memo-web",
+		});
+		expect(exported.duration).toEqual(original.duration);
+		expect(mocks.forceFlush).toHaveBeenCalledOnce();
+		expect(mocks.waitUntil).toHaveBeenCalledWith(expect.any(Promise));
+		expect(original.attributes["user.id"]).toBe("private-user");
+	});
 
 	it.each([
 		{ "http.method": "POST" },

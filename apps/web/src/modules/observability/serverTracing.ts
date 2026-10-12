@@ -12,6 +12,7 @@ const MEMO_ROUTES: ReadonlySet<string> = new Set([
 	"/memos/wish",
 	"/memos/star",
 	"/memos/reading",
+	"/memos/plan",
 ]);
 
 const warnedFailures = new Set<string>();

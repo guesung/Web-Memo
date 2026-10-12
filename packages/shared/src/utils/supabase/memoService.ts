@@ -14,6 +14,9 @@ import {
 } from "../Url";
 import { fetchAllByPageKeyBatched } from "./fetchAllByPageKeyBatched";
 
+/** 읽을 계획 탭이 한 번에 불러오는 최대 메모 수. */
+const PLANNED_MEMOS_LIMIT = 500;
+
 /** 날짜 정렬에서 같은 시각의 메모까지 이어 읽는 복합 커서. */
 export interface IFMemoPageCursor {
 	value: string | null;
@@ -250,6 +253,39 @@ export class MemoService {
 		if (isReading !== undefined) {
 			query = query.eq("isReading", isReading);
 		}
+
+		if (category) {
+			query = query.eq("category.name", category);
+		}
+
+		if (searchQuery) {
+			query = query.or(getMemoSearchFilter(searchQuery));
+		}
+
+		return query;
+	};
+
+	/** 읽을 계획이 잡힌 메모를 계획 날짜 오름차순으로 한 번에 조회한다. 페이징 없이 최대 500건이며, 위시 메모도 포함한다. */
+	getPlannedMemos = async ({
+		category,
+		searchQuery,
+	}: {
+		category?: string;
+		searchQuery?: string;
+	} = {}) => {
+		const selectQuery = category
+			? "*, category!inner(id, name, color)"
+			: "*, category(id, name, color)";
+
+		let query = this.supabaseClient
+			.schema(SUPABASE.table.memo)
+			.from(SUPABASE.table.memo)
+			.select(selectQuery, { count: "exact" })
+			.not("plannedDate", "is", null)
+			.is("deleted_at", null)
+			.order("plannedDate", { ascending: true })
+			.order("updated_at", { ascending: false, nullsFirst: false })
+			.limit(PLANNED_MEMOS_LIMIT);
 
 		if (category) {
 			query = query.eq("category.name", category);

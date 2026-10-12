@@ -87,6 +87,10 @@ export default function useMemoUpsertMutation() {
 				}
 			} else {
 				await analytics.trackEvent({ name: "memo_first_write" });
+				// 저장 전 새 메모에 처음 날짜를 배정하는 경우도 배정 이벤트로 센다.
+				if (data.plannedDate) {
+					await analytics.trackMemoUpdate({ plannedDate: data.plannedDate });
+				}
 			}
 
 			return result;
@@ -100,6 +104,9 @@ export default function useMemoUpsertMutation() {
 		onSuccess: async (_result, variables, context) => {
 			await queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.memosPaginatedPrefix(),
+			});
+			await queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.memosPlannedPrefix(),
 			});
 			// 블로그 정주행 완료 표시·완료 수는 메모 내용에서 계산되므로 함께 다시 읽는다.
 			await queryClient.invalidateQueries({

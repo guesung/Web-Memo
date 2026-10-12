@@ -34,6 +34,17 @@ export const QUERY_KEY = {
 		"paginated",
 		{ category, isWish, searchQuery, sortBy, isStar, isReading },
 	],
+	/** 읽을 계획 탭(계획 날짜가 있는 메모)의 모든 필터를 부분 매칭한다. */
+	memosPlannedPrefix: () => ["memos", "planned"],
+	/**
+	 * 읽을 계획 탭 목록.
+	 * @description `memos()` 접두사를 공유해 메모 수정 뒤의 `["memos"]` 무효화에 함께 걸린다.
+	 */
+	memosPlanned: (category?: string, searchQuery?: string) => [
+		"memos",
+		"planned",
+		{ category, searchQuery },
+	],
 	/**
 	 * 휴지통 목록.
 	 * @description `memos()` 접두사를 일부러 공유한다. 메모를 버리거나 되살리면

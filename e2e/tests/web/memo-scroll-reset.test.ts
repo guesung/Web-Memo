@@ -120,7 +120,7 @@ test.describe("메모 목록 전환의 스크롤 (Mocked)", () => {
 	}) => {
 		await scrollIntoMemoList(page);
 		await installScrollToProbe(page);
-		await page.getByRole("button", { name: "By date" }).click();
+		await page.getByRole("button", { name: "By created date" }).click();
 		await expect(page).toHaveURL(/view=list/);
 		await expect(page.getByTestId("memo-list-item").first()).toBeVisible();
 		const list = await getScrollObservation(page);

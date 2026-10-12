@@ -101,7 +101,7 @@ describe("하이라이트 URL 목록 원문 링크", () => {
 	});
 
 	it.each([undefined, { success: false }])(
-		"확장 응답 %s이면 안내를 표시한다",
+		"확장 응답 %s이어도 오류 안내 없이 실패를 계측한다",
 		async (response) => {
 			mocks.openPanel.mockResolvedValue(response);
 			await renderCard();
@@ -112,9 +112,7 @@ describe("하이라이트 URL 목록 원문 링크", () => {
 						new MouseEvent("click", { bubbles: true, cancelable: true }),
 					);
 			});
-			expect(container.querySelector('[role="alert"]')?.textContent).toBe(
-				"highlight.panelOpenError",
-			);
+			expect(container.querySelector('[role="alert"]')).toBeNull();
 			expect(mocks.trackEvent.mock.calls).toEqual([
 				[
 					{
@@ -134,9 +132,7 @@ describe("하이라이트 URL 목록 원문 링크", () => {
 			container.querySelector("article a")?.dispatchEvent(click);
 		});
 		expect(click.defaultPrevented).toBe(false);
-		expect(container.querySelector('[role="alert"]')?.textContent).toBe(
-			"highlight.panelOpenError",
-		);
+		expect(container.querySelector('[role="alert"]')).toBeNull();
 		expect(mocks.trackEvent.mock.calls).toEqual([
 			[
 				{

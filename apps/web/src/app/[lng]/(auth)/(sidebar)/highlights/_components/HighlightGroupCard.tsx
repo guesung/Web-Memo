@@ -36,7 +36,6 @@ export function HighlightGroupCard({
 }: HighlightGroupCardProps) {
 	const { t } = useTranslation(lng);
 	const [failedFavIconUrl, setFailedFavIconUrl] = useState<string | null>(null);
-	const [isPanelOpenError, setIsPanelOpenError] = useState(false);
 	const favIconUrl = group.favIconUrl;
 	const isFavIconVisible = !!favIconUrl && failedFavIconUrl !== favIconUrl;
 	const sourceUrl = getHighlightSourceUrl({ url: group.url, exact_text: "" });
@@ -54,7 +53,6 @@ export function HighlightGroupCard({
 			event.altKey
 		)
 			return;
-		setIsPanelOpenError(false);
 		void bridge.request
 			.OPEN_SIDE_PANEL_FROM_WEB()
 			.then((response) => {
@@ -63,14 +61,12 @@ export function HighlightGroupCard({
 					name: "highlight_panel_open_result",
 					params: { is_success: isSuccess },
 				});
-				if (!isSuccess) setIsPanelOpenError(true);
 			})
 			.catch(() => {
 				void analytics.trackEvent({
 					name: "highlight_panel_open_result",
 					params: { is_success: false },
 				});
-				setIsPanelOpenError(true);
 			});
 	};
 	const headerContent = (
@@ -124,12 +120,6 @@ export function HighlightGroupCard({
 					</span>
 				) : null}
 			</div>
-			{isPanelOpenError && (
-				<p role="alert" className="mb-4 text-xs text-destructive">
-					{t("highlight.panelOpenError")}
-				</p>
-			)}
-
 			<ul className="flex flex-col gap-3.5 sm:gap-4">
 				{group.highlights.map((highlight) => (
 					<HighlightQuote

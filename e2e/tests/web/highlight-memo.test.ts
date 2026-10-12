@@ -152,7 +152,7 @@ test.describe("하이라이트에서 메모로 이동", () => {
 		await action.click();
 		await expect(
 			page.getByText("Could not open the side panel. Check the extension."),
-		).toBeVisible();
+		).toHaveCount(0);
 		const popup = await popupPromise;
 		await expect(popup).toHaveURL(/https:\/\/example\.com\/article/);
 		await popup.close();

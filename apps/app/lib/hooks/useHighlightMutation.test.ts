@@ -1,11 +1,15 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import {
+	useHighlightCreateMutation,
 	useHighlightDeleteMutation,
 	useHighlightUpdateMutation,
 } from "./useHighlightMutation";
 
 const mocks = vi.hoisted(() => ({
 	mutationFn: undefined as ((input: never) => Promise<unknown>) | undefined,
+	onSuccess: undefined as ((highlight: { url: string }) => void) | undefined,
+	invalidateQueries: vi.fn(),
+	insertHighlight: vi.fn(),
 	getHighlightById: vi.fn(),
 	updateHighlight: vi.fn(),
 	deleteHighlight: vi.fn(),
@@ -14,17 +18,20 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@tanstack/react-query", () => ({
 	useMutation: (options: {
 		mutationFn: (input: never) => Promise<unknown>;
+		onSuccess?: (highlight: { url: string }) => void;
 	}) => {
 		mocks.mutationFn = options.mutationFn;
+		mocks.onSuccess = options.onSuccess;
 		return {};
 	},
-	useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+	useQueryClient: () => ({ invalidateQueries: mocks.invalidateQueries }),
 }));
 vi.mock("@/lib/auth/AuthProvider", () => ({
 	useAuth: () => ({ session: { user: { id: "owner" } } }),
 }));
 vi.mock("@/lib/supabase/client", () => ({
 	highlightService: {
+		insertHighlight: mocks.insertHighlight,
 		getHighlightById: mocks.getHighlightById,
 		updateHighlight: mocks.updateHighlight,
 		deleteHighlight: mocks.deleteHighlight,
@@ -33,6 +40,9 @@ vi.mock("@/lib/supabase/client", () => ({
 
 beforeEach(() => {
 	mocks.mutationFn = undefined;
+	mocks.onSuccess = undefined;
+	mocks.invalidateQueries.mockReset();
+	mocks.insertHighlight.mockReset();
 	mocks.getHighlightById.mockReset();
 	mocks.updateHighlight.mockReset();
 	mocks.deleteHighlight.mockReset();
@@ -43,6 +53,18 @@ beforeEach(() => {
 			page_key: "https://example.com/other",
 		},
 		error: null,
+	});
+});
+
+it("하이라이트 저장 성공 후 자동 생성된 메모의 목록과 페이지 캐시를 갱신한다", async () => {
+	const { QUERY_KEY } = await import("@web-memo/shared/constants");
+	useHighlightCreateMutation();
+	mocks.onSuccess?.({ url: "https://example.com/current?utm_source=old" });
+	expect(mocks.invalidateQueries).toHaveBeenCalledWith({
+		queryKey: QUERY_KEY.memosPaginatedPrefix(),
+	});
+	expect(mocks.invalidateQueries).toHaveBeenCalledWith({
+		queryKey: QUERY_KEY.memo({ url: "https://example.com/current" }),
 	});
 });
 

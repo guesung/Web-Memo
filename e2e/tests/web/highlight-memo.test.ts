@@ -18,7 +18,7 @@ test.describe("하이라이트에서 메모로 이동", () => {
 		await setupSupabaseMocks(page, store);
 	});
 
-	test("URL 카드 그리드에서 연결된 메모를 열면 보존된 인용을 본다", async ({
+	test("URL별 한 열 목록에서 연결된 메모를 열면 보존된 인용을 본다", async ({
 		page,
 	}) => {
 		const first = store.addHighlight(
@@ -26,6 +26,12 @@ test.describe("하이라이트에서 메모로 이동", () => {
 				url: "https://example.com/one",
 				exact_text: "First saved sentence",
 				note: "Old comment",
+			}),
+		);
+		const secondOnPage = store.addHighlight(
+			createMockHighlight({
+				url: first.url,
+				exact_text: "Another sentence from the same page",
 			}),
 		);
 		store.addHighlight(
@@ -59,10 +65,49 @@ test.describe("하이라이트에서 메모로 이동", () => {
 			url: `${LANGUAGE}${PATHS.highlights}`,
 			regexp: new RegExp(PATHS.highlights),
 		});
-		const cards = page.locator("main article");
-		await expect(cards).toHaveCount(3);
-		await expect(cards.first()).toHaveCSS("width", "300px");
+		const groups = page.locator("main article");
+		await expect(groups).toHaveCount(3);
+		const firstGroup = await groups.nth(0).boundingBox();
+		const secondGroup = await groups.nth(1).boundingBox();
+		expect(firstGroup?.width).toBeGreaterThan(600);
+		expect(secondGroup?.y).toBeGreaterThan(
+			(firstGroup?.y ?? 0) + (firstGroup?.height ?? 0),
+		);
 		const quote = page.locator(`#highlight-${first.id}`);
+		const nextQuote = page.locator(`#highlight-${secondOnPage.id}`);
+		await expect(quote).toHaveCSS("border-left-width", "3px");
+		await expect(quote.locator("mark")).toHaveCSS("font-size", "16px");
+		expect(
+			(secondGroup?.y ?? 0) - (firstGroup?.y ?? 0) - (firstGroup?.height ?? 0),
+		).toBeCloseTo(32, 1);
+		const quoteBoxes = [
+			await quote.boundingBox(),
+			await nextQuote.boundingBox(),
+		];
+		const [upper, lower] = quoteBoxes.sort(
+			(left, right) => (left?.y ?? 0) - (right?.y ?? 0),
+		);
+		expect(
+			(lower?.y ?? 0) - (upper?.y ?? 0) - (upper?.height ?? 0),
+		).toBeCloseTo(16, 1);
+		await expect(quote.locator("mark")).toHaveCSS(
+			"background-color",
+			"rgba(0, 0, 0, 0)",
+		);
+		await page.setViewportSize({ width: 390, height: 844 });
+		await expect(quote.locator("mark")).toHaveCSS("font-size", "16px");
+		const mobileQuoteBoxes = [
+			await quote.boundingBox(),
+			await nextQuote.boundingBox(),
+		];
+		const [mobileUpper, mobileLower] = mobileQuoteBoxes.sort(
+			(left, right) => (left?.y ?? 0) - (right?.y ?? 0),
+		);
+		expect(
+			(mobileLower?.y ?? 0) -
+				(mobileUpper?.y ?? 0) -
+				(mobileUpper?.height ?? 0),
+		).toBeCloseTo(14, 1);
 		await expect(
 			quote.getByRole("button", { name: "Old comment" }),
 		).toBeVisible();
@@ -78,7 +123,7 @@ test.describe("하이라이트에서 메모로 이동", () => {
 		).toHaveAttribute("href", new RegExp(`highlightId=${first.id}`));
 	});
 
-	test("미연결 문장은 원문에서 사이드 패널을 열도록 안내하고 메모를 생성하지 않는다", async ({
+	test("URL 제목으로 원문을 열고 확장이 없으면 패널 안내를 표시한다", async ({
 		page,
 	}) => {
 		const highlight = store.addHighlight(
@@ -93,25 +138,55 @@ test.describe("하이라이트에서 메모로 이동", () => {
 			regexp: new RegExp(PATHS.highlights),
 		});
 		const quote = page.locator(`#highlight-${highlight.id}`);
-		const action = quote.getByRole("link", { name: "Write in side panel" });
-		await expect(action).toHaveAttribute(
-			"href",
-			/^https:\/\/example\.com\/article#:~:text=Source%20quote$/,
-		);
 		await expect(
-			quote.getByText(
-				"On the source page, click the extension icon to open the side panel.",
-			),
-		).toBeVisible();
+			quote.getByRole("link", { name: "Write in side panel" }),
+		).toHaveCount(0);
+		await expect(quote.getByRole("link", { name: "View source" })).toHaveCount(
+			0,
+		);
+		const action = page.getByRole("link", {
+			name: "Open source and memo panel",
+		});
+		await expect(action).toHaveAttribute("href", "https://example.com/article");
 		const popupPromise = page.waitForEvent("popup");
 		await action.click();
+		await expect(
+			page.getByText("Could not open the side panel. Check the extension."),
+		).toHaveCount(0);
 		const popup = await popupPromise;
 		await expect(popup).toHaveURL(/https:\/\/example\.com\/article/);
 		await popup.close();
 		expect(store.getAllMemos()).toHaveLength(0);
 	});
 
-	test("휴지통으로 보낸 연결 메모는 복원 경로를 보여준다", async ({ page }) => {
+	test("스크롤 끝에서 같은 URL의 다음 페이지를 한 목록에 이어 붙인다", async ({
+		page,
+	}) => {
+		const url = "https://example.com/long-article";
+		for (let index = 0; index < 21; index++) {
+			store.addHighlight(
+				createMockHighlight({ url, exact_text: `Saved quote ${index + 1}` }),
+			);
+		}
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.highlights}`,
+			regexp: new RegExp(PATHS.highlights),
+		});
+		await expect(page.locator("main article")).toHaveCount(1);
+		await page.getByTestId("highlight-list-sentinel").scrollIntoViewIfNeeded();
+		await expect(page.locator("main article li[id^='highlight-']")).toHaveCount(
+			21,
+		);
+		await expect(page.locator("main article")).toHaveCount(1);
+		await expect(page.getByRole("button", { name: "Load more" })).toHaveCount(
+			0,
+		);
+	});
+
+	test("휴지통으로 보낸 연결 메모는 휴지통 보기 경로를 보여준다", async ({
+		page,
+	}) => {
 		const highlight = store.addHighlight(createMockHighlight());
 		const memo = store.addMemo(
 			createMockMemo({
@@ -137,9 +212,8 @@ test.describe("하이라이트에서 메모로 이동", () => {
 			regexp: new RegExp(PATHS.highlights),
 		});
 		const quote = page.locator(`#highlight-${highlight.id}`);
-		await expect(quote.getByText("This memo is in trash.")).toBeVisible();
 		await expect(
-			quote.getByRole("link", { name: "Restore from trash" }),
+			quote.getByRole("link", { name: "Linked memo is in trash · View trash" }),
 		).toHaveAttribute("href", `/${LANGUAGE}${PATHS.memosTrash}`);
 		await expect(
 			quote.getByRole("link", { name: "Write in side panel" }),
@@ -168,7 +242,10 @@ test.describe("하이라이트에서 메모로 이동", () => {
 			page
 				.locator(`#highlight-${highlight.id}`)
 				.getByRole("link", { name: "Write in side panel" }),
-		).toBeVisible();
+		).toHaveCount(0);
+		await expect(
+			page.getByRole("link", { name: "Open source and memo panel" }).first(),
+		).toHaveAttribute("href", highlight.url);
 		await page.getByRole("button", { name: "green" }).click();
 		await expect(page.locator(`#highlight-${highlight.id}`)).toBeVisible();
 	});

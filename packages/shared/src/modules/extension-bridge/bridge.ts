@@ -19,6 +19,9 @@ import type {
 /** 확장 UI와 background 사이의 타입 지정 메시지 계약. */
 export const bridge = createBridge({
 	GET_SIDE_PANEL_OPEN: defineMessage<void, boolean>("toExtension"),
+	OPEN_SIDE_PANEL_FROM_WEB: defineMessage<void, { success: boolean }>(
+		"toExtension",
+	),
 	OPEN_SIDE_PANEL: defineMessage<void, { success: boolean }>("internal"),
 	GET_TABS: defineMessage<void, chrome.tabs.Tab>("internal"),
 	PAGE_CONTENT: defineMessage<void, PageContentResponse>("toTab"),

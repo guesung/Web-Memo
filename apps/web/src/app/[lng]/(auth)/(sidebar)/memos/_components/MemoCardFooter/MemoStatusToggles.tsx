@@ -11,6 +11,8 @@ import type { MouseEvent } from "react";
 /** 메모 카드 푸터 상태 토글의 props. */
 interface IFMemoStatusTogglesProps extends LanguageType {
 	memo: GetMemoResponse;
+	/** 켜짐 여부를 받아 평소에 숨길 클래스를 돌려준다. 목록 카드의 호버 표시용 */
+	hiddenUntilHover?: (isActive: boolean) => string | false;
 }
 
 /**
@@ -20,6 +22,7 @@ interface IFMemoStatusTogglesProps extends LanguageType {
 export default function MemoStatusToggles({
 	memo,
 	lng,
+	hiddenUntilHover = () => false,
 }: IFMemoStatusTogglesProps) {
 	const { t } = useTranslation(lng);
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
@@ -144,7 +147,10 @@ export default function MemoStatusToggles({
 				<Button
 					variant="ghost"
 					size="sm"
-					className="w-8 h-8 p-0 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-full"
+					className={cn(
+						"w-8 h-8 p-0 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-full",
+						hiddenUntilHover(Boolean(memo.isWish)),
+					)}
 					aria-label={t("memos.toggle.wish")}
 					aria-pressed={Boolean(memo.isWish)}
 					onClick={handleIsWishClick}
@@ -170,7 +176,10 @@ export default function MemoStatusToggles({
 				<Button
 					variant="ghost"
 					size="sm"
-					className="w-8 h-8 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-full"
+					className={cn(
+						"w-8 h-8 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-full",
+						hiddenUntilHover(Boolean(memo.isReading)),
+					)}
 					aria-label={t("memos.toggle.reading")}
 					aria-pressed={Boolean(memo.isReading)}
 					onClick={handleIsReadingClick}
@@ -195,7 +204,10 @@ export default function MemoStatusToggles({
 				<Button
 					variant="ghost"
 					size="sm"
-					className="w-8 h-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-full"
+					className={cn(
+						"w-8 h-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-full",
+						hiddenUntilHover(Boolean(memo.isStar)),
+					)}
 					aria-label={t("memos.toggle.star")}
 					aria-pressed={Boolean(memo.isStar)}
 					onClick={handleIsStarClick}

@@ -14,6 +14,7 @@ function resolveViewName(pathname: string, searchParams: URLSearchParams) {
 	if (pathname.endsWith(PATHS.highlights)) return "highlights";
 	if (pathname.endsWith(PATHS.memosTrash)) return "trash";
 	if (pathname.endsWith(PATHS.memosSetting)) return "setting";
+	if (pathname.endsWith(PATHS.memosPlan)) return "plan";
 
 	if (searchParams.get("isWish") === "true") return "wish";
 	if (searchParams.get("isStar") === "true") return "star";

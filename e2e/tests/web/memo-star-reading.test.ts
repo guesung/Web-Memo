@@ -51,6 +51,8 @@ test.describe("메모 카드의 중요·읽는 중 토글 (Mocked)", () => {
 		});
 
 		const memoCard = getMemoCard(page, TARGET_MEMO_TITLE);
+		// 꺼진 토글은 카드에 마우스를 올려야 나타난다.
+		await memoCard.hover();
 		const starToggle = memoCard.getByRole("button", {
 			name: "Important",
 			exact: true,
@@ -81,6 +83,7 @@ test.describe("메모 카드의 중요·읽는 중 토글 (Mocked)", () => {
 		});
 
 		const memoCard = getMemoCard(page, TARGET_MEMO_TITLE);
+		await memoCard.hover();
 		const readingToggle = memoCard.getByRole("button", {
 			name: "Reading",
 			exact: true,
@@ -117,10 +120,12 @@ test.describe("메모 카드의 중요·읽는 중 토글 (Mocked)", () => {
 			regexp: new RegExp(PATHS.memos),
 		});
 
-		const wishToggle = getMemoCard(page, TARGET_MEMO_TITLE).getByRole(
-			"button",
-			{ name: "Wishlist", exact: true },
-		);
+		const memoCard = getMemoCard(page, TARGET_MEMO_TITLE);
+		await memoCard.hover();
+		const wishToggle = memoCard.getByRole("button", {
+			name: "Wishlist",
+			exact: true,
+		});
 		await expect(wishToggle).toHaveAttribute("aria-pressed", "false");
 
 		await wishToggle.click();
@@ -191,6 +196,8 @@ test.describe("메모 카드의 중요·읽는 중 토글 (Mocked)", () => {
 
 		for (const { name, add, remove } of cases) {
 			const toggle = memoCard.getByRole("button", { name, exact: true });
+			// 꺼진 아이콘은 카드에 마우스를 올려야 보인다
+			await memoCard.hover();
 			await toggle.hover();
 			await expect(tooltip).toHaveText(add);
 

@@ -132,6 +132,14 @@ export type TAnalyticsEvent =
 			name: "memo_category_change";
 			params?: { action: "set" | "clear"; source?: TCategoryChangeSource };
 	  }
+	| {
+			name: "memo_plan_change";
+			params: {
+				action: "set" | "clear";
+				/** set일 때만. 오늘(로컬)부터 계획 날짜까지의 일수. 0이면 오늘 */
+				days_ahead?: number;
+			};
+	  }
 	| { name: "memo_undo"; params: { action: "wish" | "reading" | "delete" } }
 	| {
 			name: "category_suggestion_show";
@@ -298,6 +306,7 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	sign_up: "core_action",
 	memo_status_toggle: "core_action",
 	memo_category_change: "core_action",
+	memo_plan_change: "core_action",
 	memo_undo: "engagement",
 	category_suggestion_show: "engagement",
 	category_suggestion_apply: "core_action",

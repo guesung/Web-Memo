@@ -12,6 +12,7 @@ import { useSettingQuery, useSupabaseUserQuery } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import type { Database, IFPastMemoDuplicate } from "@web-memo/shared/types";
+import { parsePlanDateKey } from "@web-memo/shared/utils";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
 	badgeVariants,
@@ -32,6 +33,7 @@ import {
 	CategorySuggestion,
 	getSaveStatus,
 	PastMemoNotice,
+	PlanDateButton,
 	SaveStatus,
 } from "./components";
 import {
@@ -66,7 +68,12 @@ const MemoFormContent = ({
 	const currentCategoryId = watch("categoryId");
 	// 상태 아이콘은 조회 캐시(memoData)가 아니라 폼 값을 읽는다. 저장 전 새 메모도 누르는 즉시 바뀌고,
 	// 저장 실패 시 toggleMemoStatus가 폼 값을 되돌려 아이콘도 함께 돌아온다.
-	const [isWish, isStar, isReading] = watch(["isWish", "isStar", "isReading"]);
+	const [isWish, isStar, isReading, plannedDate] = watch([
+		"isWish",
+		"isStar",
+		"isReading",
+		"plannedDate",
+	]);
 	const { user } = useSupabaseUserQuery();
 	const setting = useSettingQuery();
 	const { showImpression, showActionItem } = setting;
@@ -115,6 +122,7 @@ const MemoFormContent = ({
 		handleActionItemChange,
 		updateCategory,
 		toggleMemoStatus,
+		setPlannedDate,
 	} = useMemoForm({ selectedMemo, isMemoLocked, isSyncing });
 	// 겉모습(로딩 문구·버튼 흐림)만 200ms 지연시킨다. 편집·저장 차단은 isMemoLocked로 즉시 적용된다.
 	const isMemoLoadingVisible = useDelayedFlag(
@@ -229,6 +237,40 @@ const MemoFormContent = ({
 			title: I18n.get(toastMessageKey),
 			action: (
 				<ToastAction altText={I18n.get("go_to")} onClick={navigateToMemoList}>
+					{I18n.get("go_to")}
+				</ToastAction>
+			),
+		});
+	};
+
+	const handlePlanDateSelect = async (nextPlannedDate: string | null) => {
+		const result = await setPlannedDate(nextPlannedDate);
+
+		// 실패는 MutationCache가 이미 토스트로 알렸다. 성공 토스트를 그 위에 덮지 않는다.
+		if (!result) {
+			return;
+		}
+
+		const navigateToPlanTab = () => {
+			analytics.trackEvent({
+				name: "open_web_from_extension",
+				params: { from: "side_panel_toast" },
+			});
+			Tab.create({ url: getMemoUrl({ id: memoData?.id, isPlan: true }) });
+		};
+
+		toast({
+			title: result.plannedDate
+				? I18n.get(
+						"plan_added",
+						new Intl.DateTimeFormat(I18n.getMessageLocale(), {
+							month: "long",
+							day: "numeric",
+						}).format(parsePlanDateKey(result.plannedDate)),
+					)
+				: I18n.get("plan_removed"),
+			action: (
+				<ToastAction altText={I18n.get("go_to")} onClick={navigateToPlanTab}>
 					{I18n.get("go_to")}
 				</ToastAction>
 			),
@@ -495,6 +537,13 @@ const MemoFormContent = ({
 								className={cn({ "text-emerald-500": isReading })}
 							/>
 						</MemoStatusToggle>
+						<PlanDateButton
+							plannedDate={plannedDate}
+							isDisabled={isMemoLocked || isControlsDisabled}
+							isDimmed={isMemoUiDimmed || isControlsDisabled}
+							disabledReason={changeDisabledReason}
+							onSelect={handlePlanDateSelect}
+						/>
 						{!isMemoLocked && (
 							<SaveStatus
 								saveStatus={displaySaveStatus}
@@ -583,6 +632,7 @@ const MemoForm = ({
 			isStar: false,
 			isReading: false,
 			categoryId: null,
+			plannedDate: null,
 		},
 	});
 

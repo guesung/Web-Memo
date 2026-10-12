@@ -4,6 +4,7 @@ import { PATHS } from "@web-memo/shared/constants";
 import { SidebarGroup, SidebarMenu } from "@web-memo/ui";
 import {
 	BookOpen,
+	CalendarClock,
 	Heart,
 	Highlighter,
 	Home,
@@ -35,6 +36,13 @@ const SidebarMainSection = async ({ lng }: LanguageType) => {
 						<Heart size={16} className="text-pink-600 dark:text-pink-400" />
 					}
 					iconChipClassName="bg-pink-100 dark:bg-pink-900/30 group-hover:bg-pink-200 dark:group-hover:bg-pink-800/40"
+				/>
+				<SidebarNavItem
+					lng={lng}
+					href={PATHS.memosPlan}
+					label={t("sideBar.readingPlan")}
+					icon={<CalendarClock size={16} className="text-primary" />}
+					iconChipClassName="bg-primary/10 group-hover:bg-primary/20"
 				/>
 				<SidebarNavItem
 					lng={lng}

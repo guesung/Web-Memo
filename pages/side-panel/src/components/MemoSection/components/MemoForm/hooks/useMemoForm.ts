@@ -186,6 +186,7 @@ export default function useMemoForm({
 				setValue("isStar", memoData?.isStar ?? false);
 				setValue("isReading", memoData?.isReading ?? false);
 				setValue("categoryId", memoData?.category_id ?? null);
+				setValue("plannedDate", memoData?.plannedDate ?? null);
 			}
 		},
 		[
@@ -197,6 +198,7 @@ export default function useMemoForm({
 			memoData?.isStar,
 			memoData?.isReading,
 			memoData?.category_id,
+			memoData?.plannedDate,
 			saveStatus,
 			setValue,
 		],
@@ -276,6 +278,11 @@ export default function useMemoForm({
 				isStar: overrides?.isStar ?? currentValues.isStar,
 				isReading: overrides?.isReading ?? currentValues.isReading,
 				categoryId: overrides?.categoryId ?? currentValues.categoryId,
+				// null은 "계획 해제"라는 값이므로 ??가 아니라 undefined 여부로 덮어쓴다.
+				plannedDate:
+					overrides?.plannedDate !== undefined
+						? overrides.plannedDate
+						: currentValues.plannedDate,
 			};
 
 			isSavingRef.current = true;
@@ -387,6 +394,7 @@ export default function useMemoForm({
 							isStar: memoInput.isStar,
 							isReading: memoInput.isReading,
 							category_id: memoInput.categoryId,
+							plannedDate: memoInput.plannedDate,
 						},
 					},
 					{
@@ -571,6 +579,45 @@ export default function useMemoForm({
 		return nextStatusValue;
 	};
 
+	/**
+	 * 읽을 계획 날짜를 바꿔 저장한다. `null`이면 계획에서 뺀다.
+	 * @description toggleMemoStatus와 같은 가드·낙관 반영·롤백을 따른다. 저장에 실패하면
+	 * 폼 값과 캐시를 이전 날짜로 되돌리고 `undefined`를 준다(호출부가 성공 토스트를 건너뛴다).
+	 * 성공하면 저장된 날짜 키(해제는 `null`)를 준다. 실패 알림은 MutationCache가 맡는다.
+	 */
+	const setPlannedDate = async (
+		plannedDate: string | null,
+	): Promise<{ plannedDate: string | null } | undefined> => {
+		if (isMemoLocked || !isOnline || isSyncing) {
+			return undefined;
+		}
+
+		hasEditedMemoRef.current = true;
+		const previousPlannedDate = getValues("plannedDate");
+		const memoId = memoData?.id;
+
+		setValue("plannedDate", plannedDate);
+		if (memoId !== undefined) {
+			patchPlannedDateCache({ queryClient, memoId, plannedDate });
+		}
+
+		const isSaved = await saveMemo({ plannedDate });
+
+		if (!isSaved) {
+			setValue("plannedDate", previousPlannedDate);
+			if (memoId !== undefined) {
+				patchPlannedDateCache({
+					queryClient,
+					memoId,
+					plannedDate: previousPlannedDate,
+				});
+			}
+			return undefined;
+		}
+
+		return { plannedDate };
+	};
+
 	const saveBeforeSwitch = async () => {
 		if (isMemoLocked || isSavingRef.current) {
 			return false;
@@ -605,6 +652,7 @@ export default function useMemoForm({
 		handleActionItemChange,
 		updateCategory,
 		toggleMemoStatus,
+		setPlannedDate,
 	};
 }
 
@@ -636,6 +684,38 @@ export function patchMemoStatusCache({
 				data: cachedResponse.data.map((cachedMemo) =>
 					cachedMemo.id === memoId
 						? { ...cachedMemo, [statusKey]: statusValue }
+						: cachedMemo,
+				),
+			};
+		},
+	);
+}
+
+/**
+ * `["memo"]` 접두사 캐시에서 해당 메모의 읽을 계획 날짜를 바꾼다.
+ * @description patchMemoStatusCache가 boolean 상태 전용이라 날짜는 따로 둔다. 낙관적 갱신 용도다.
+ */
+function patchPlannedDateCache({
+	queryClient,
+	memoId,
+	plannedDate,
+}: {
+	queryClient: QueryClient;
+	memoId: number;
+	plannedDate: string | null;
+}) {
+	queryClient.setQueriesData<{ data: MemoRow[] | null }>(
+		{ queryKey: ["memo"] },
+		(cachedResponse) => {
+			if (!Array.isArray(cachedResponse?.data)) {
+				return cachedResponse;
+			}
+
+			return {
+				...cachedResponse,
+				data: cachedResponse.data.map((cachedMemo) =>
+					cachedMemo.id === memoId
+						? { ...cachedMemo, plannedDate }
 						: cachedMemo,
 				),
 			};

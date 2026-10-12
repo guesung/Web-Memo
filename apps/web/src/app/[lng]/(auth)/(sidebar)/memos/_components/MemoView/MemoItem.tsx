@@ -278,6 +278,7 @@ function MemoItem({
 									: undefined
 							}
 							isShowingOption={isMemoHovering && !isSelectingMode}
+							hidesInactiveActions
 						/>
 					)}
 					<div className="absolute -inset-0.5 bg-gradient-to-r from-primary via-primary to-cyan-500 rounded-2xl opacity-0 group-hover:opacity-[0.08] blur transition-opacity duration-300 -z-10" />

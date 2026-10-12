@@ -38,6 +38,7 @@ export function createMockMemo(overrides: Partial<MockMemo> = {}): MockMemo {
 		isWish: false,
 		isStar: false,
 		isReading: false,
+		plannedDate: null,
 		category_id: null,
 		created_at: now,
 		updated_at: now,
@@ -63,7 +64,7 @@ export function createMockSetting(
 		show_summary: false,
 		show_ai_chat: false,
 		truncate_memo_content: true,
-		weekly_report_enabled: false,
+		weekly_report_enabled: true,
 		weekly_report_email: null,
 		...overrides,
 	};

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "../../constants/QueryKey";
+import { analytics } from "../../modules/analytics";
 import { HighlightMemoService } from "../../utils/supabase/highlightMemoService";
 import { useSupabaseClientQuery, useSupabaseUserQuery } from "./queries";
 
@@ -36,7 +37,12 @@ export function useCreateHighlightMemo() {
 			highlightId: number;
 			memo: string;
 		}) => new HighlightMemoService(client).create(highlightId, memo),
-		onSuccess: async () => {
+		onSuccess: async (result) => {
+			if (result.created)
+				void analytics.trackEvent({
+					name: "memo_first_write",
+					params: { source: "highlight" },
+				});
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() }),
 				queryClient.invalidateQueries({ queryKey: QUERY_KEY.highlights() }),

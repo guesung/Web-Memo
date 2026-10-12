@@ -54,6 +54,11 @@ export async function handleCreateHighlightMemo(
 			payload.highlightId,
 			payload.memo,
 		);
+		if (result.created)
+			void analytics.trackEvent({
+				name: "memo_first_write",
+				params: { source: "highlight" },
+			});
 		await bridgeRefresh();
 		await openSavedMemo(result.memo_id, result.deleted_at);
 		return {

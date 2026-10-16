@@ -2,51 +2,16 @@ import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 /**
- * 사이드 패널의 요약·메모 경계(ResizeHandle)를 마우스로 끌어 요약 영역 비율을 바꾼다.
- * @description 확장 코드는 건드리지 않고 사용자가 하는 조작 그대로 핸들을 끈다. 이동량은 패널 높이 대비 비율로
- * 계산하고, 끝난 뒤 핸들의 aria-valuenow가 목표 비율(±1)에 닿았는지 확인한다.
- * @throws 핸들을 찾지 못하거나 비율이 목표에 닿지 않으면 던진다.
- */
-export const dragSidePanelDivider = async ({
-	sidePanelPage,
-	tabRatio,
-}: IFDragSidePanelDividerParams) => {
-	// 느낀 점 칸이 켜지면 메모·느낀 점 사이에도 같은 이름의 핸들이 생긴다. 요약·메모 경계는 DOM에서 첫 번째다.
-	const divider = sidePanelPage
-		.getByRole("slider", { name: "Resize panels" })
-		.first();
-	const dividerBox = await divider.boundingBox();
-
-	if (!dividerBox) {
-		throw new Error("사이드 패널의 요약·메모 경계를 찾지 못했습니다.");
-	}
-
-	const currentRatio = Number(await divider.getAttribute("aria-valuenow"));
-	const panelHeight = await sidePanelPage.evaluate(
-		() => document.querySelector("main")?.getBoundingClientRect().height ?? 0,
-	);
-	await dragVertically({
-		sidePanelPage,
-		box: dividerBox,
-		deltaY: ((tabRatio - currentRatio) / 100) * panelHeight,
-	});
-	await expect
-		.poll(async () =>
-			Math.abs(Number(await divider.getAttribute("aria-valuenow")) - tabRatio),
-		)
-		.toBeLessThanOrEqual(1);
-};
-
-/**
  * 메모 칸과 느낀 점 칸 사이 경계를 끌어 메모 칸을 내용 높이에 맞추고, 남는 높이를 느낀 점 칸에 준다.
- * @description 느낀 점 칸이 꺼져 있으면 경계가 없으므로 아무것도 하지 않는다. 메모 칸에는 한 줄(16px) 여유를 둔다.
+ * @description 요약·AI 채팅 탭은 기본값이 꺼짐이라(목 설정도 꺼짐) 사이드 패널의 경계는 이 하나뿐이다.
+ * 느낀 점 칸이 꺼져 있으면 경계가 없으므로 아무것도 하지 않는다. 메모 칸에는 한 줄(16px) 여유를 둔다.
  * 남은 높이가 모자라면 느낀 점 칸을 44px까지만 줄이고, 메모 칸은 그만큼만 커진다.
  * @throws 경계가 보이는데 위치를 읽지 못하면 던진다.
  */
 export const fitMemoFieldToContent = async (sidePanelPage: Page) => {
 	const fieldDivider = sidePanelPage
 		.getByRole("slider", { name: "Resize panels" })
-		.nth(1);
+		.first();
 
 	if ((await fieldDivider.count()) === 0) {
 		return;
@@ -131,14 +96,6 @@ export const expectMemoFieldsFullyVisible = async (sidePanelPage: Page) => {
 		).toBeLessThanOrEqual(fieldSize.clientHeight);
 	}
 };
-
-/** {@link dragSidePanelDivider}의 인자. */
-interface IFDragSidePanelDividerParams {
-	/** 확장의 사이드 패널 페이지 */
-	sidePanelPage: Page;
-	/** 요약 영역이 차지할 목표 비율(%). 확장 기본값은 60이다 */
-	tabRatio: number;
-}
 
 /** {@link dragVertically}의 인자. */
 interface IFDragVerticallyParams {

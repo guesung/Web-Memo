@@ -1,4 +1,9 @@
-import type { IFDemoCategory, IFDemoContent, IFDemoMemo } from "./demoData";
+import type {
+	IFDemoCategory,
+	IFDemoContent,
+	IFDemoHighlight,
+	IFDemoMemo,
+} from "./demoData";
 
 /**
  * 한국어판에 쓰는 사용자의 실제 메모 9개.
@@ -139,7 +144,7 @@ const REAL_MEMOS: IFRealMemo[] = [
 	},
 ];
 
-/** 1~3번 장의 기사 메모 id("선택을 잘하는 사람들의 특징"). */
+/** 1~4번 장의 기사 메모 id("선택을 잘하는 사람들의 특징"). */
 const ARTICLE_MEMO_ID = 10178;
 /** 5번 장의 영상 메모 id("AI를 미친 듯이 써보고 깨달은 한 가지"). */
 const VIDEO_MEMO_ID = 10716;
@@ -203,6 +208,30 @@ const findRealMemo = (id: number) => {
 	return realMemo;
 };
 
+/** 5번 장 대시보드의 "요즘IT" 하이라이트 카드가 쓰는 실제 메모 id. */
+const YOZM_MEMO_ID = 10630;
+/** 5번 장 대시보드의 토스 기술 블로그 하이라이트 카드가 쓰는 실제 메모 id. */
+const TOSS_MEMO_ID = 12425;
+
+/**
+ * 실제 메모의 페이지 정보로 대시보드용 하이라이트 한 건을 만든다.
+ * @description 문장은 해당 메모 본문에 적힌 말을 그대로 옮긴다.
+ */
+const toOtherHighlight = (
+	memoId: number,
+	highlight: Pick<IFDemoHighlight, "text" | "color" | "minutesAgo">,
+): IFDemoHighlight => {
+	const realMemo = findRealMemo(memoId);
+
+	return {
+		url: realMemo.url,
+		title: realMemo.title,
+		favIconUrl: realMemo.favIconUrl,
+		note: null,
+		...highlight,
+	};
+};
+
 /**
  * 한국어판 시연 데이터.
  * @description 기사(brunch)와 영상(유튜브)은 실제 페이지를 읽기만 한다. 본문을 가리는 요소는 CSS로 숨긴다.
@@ -245,6 +274,31 @@ export const KO_REAL_CONTENT: IFDemoContent = {
 		(realMemo) =>
 			realMemo.id !== ARTICLE_MEMO_ID && realMemo.id !== VIDEO_MEMO_ID,
 	).map(toDemoMemo),
+	highlightScene: {
+		articleText:
+			"불안이 없어서가 아니라, 오히려 불안을 충분히 느끼면서도 결국 발을 내딛는 사람들이다.",
+		articleNote:
+			"결정이 늦은 게 아니라 버릴 기준이 없었던 것. 다음 회의 전에 버릴 것 3개 먼저 적기",
+		selectionText:
+			"같은 조건, 비슷한 환경 앞에서 어떤 사람은 끝없이 망설이고, 어떤 사람은 떨리는 상태 그대로 결정을 내린다.",
+		otherHighlights: [
+			toOtherHighlight(YOZM_MEMO_ID, {
+				text: "어디까지 도구에 맡기고, 어디부터는 사람이 봐야 하는가",
+				color: "green",
+				minutesAgo: 90,
+			}),
+			toOtherHighlight(YOZM_MEMO_ID, {
+				text: "판단이라는 마지막 1초는 사람에게 남겨 둔다",
+				color: "pink",
+				minutesAgo: 95,
+			}),
+			toOtherHighlight(TOSS_MEMO_ID, {
+				text: "basePath를 설정한 상태에서 Page Router화면끼리 이동하면 basePath가 두 번 붙는 이슈",
+				color: "blue",
+				minutesAgo: 60 * 26,
+			}),
+		],
+	},
 	summaryChunks: [
 		"한 줄 요약\n",
 		"AI를 많이 써 보고 깨달은 것은, 이제 진짜 중요해진 것이 읽기라는 점입니다. 틀린 걸 찾아내고, 더 나은 걸 찾아내 조합해서 산출물로 만들어내는 능력입니다.\n\n",

@@ -746,33 +746,27 @@
 		"demo": {
 			"write_memo": "메모 작성",
 			"write_memo_desc": "아티클을 읽으며 바로 메모",
-			"tab_memo": "사이드 패널",
-			"tab_memo_desc": "읽던 페이지 옆의 사이드 패널에 생각을 직접 적어요.",
 			"overview": "한눈에 보기",
 			"overview_desc": "모든 메모를 한눈에",
-			"tab_overview": "한눈에 보기",
-			"tab_overview_desc": "모든 메모를 한눈에",
 			"wishlist": "위시리스트",
 			"wishlist_desc": "나중에 볼 콘텐츠 저장",
-			"tab_wishlist": "위시리스트",
-			"tab_wishlist_desc": "나중에 볼 콘텐츠 저장",
 			"organize": "정리하기",
 			"organize_desc": "카테고리로 묶어서 정리",
-			"tab_organize": "정리하기",
-			"tab_organize_desc": "카테고리로 묶어서 정리",
-			"tab_memo_image_alt": "기사 옆 사이드 패널에 직접 작성한 메모",
+			"tab_highlight": "하이라이트 메모",
+			"tab_highlight_desc": "칠한 문장 옆 메뉴에 떠오른 생각을 바로 적어요.",
+			"tab_highlight_image_alt": "읽던 글의 문장에 노란 하이라이트를 칠하고 바로 옆 메뉴에 메모를 적은 화면",
+			"tab_bubble": "색상 고르기",
+			"tab_bubble_desc": "글을 드래그하면 다섯 가지 색 버블이 떠요. 마음에 드는 색으로 칠해요.",
+			"tab_bubble_image_alt": "문장을 드래그하자 다섯 가지 색 버블이 나타난 화면",
 			"tab_shortcut": "단축키로 열기",
-			"tab_shortcut_desc": "Alt+S를 누르면 패널이 열려요. Mac에서는 Option+S를 눌러요.",
+			"tab_shortcut_desc": "Alt+S를 누르면 사이드 패널이 열려요. Mac에서는 Option+S를 눌러요.",
 			"tab_shortcut_image_alt": "기사와 사이드 패널 위에 Alt+S 단축키가 표시된 화면",
 			"tab_source": "출처 남기기",
 			"tab_source_desc": "메모에 페이지 제목과 주소가 함께 남아요.",
 			"tab_source_image_alt": "메모에 원문 제목과 주소가 함께 표시된 화면",
-			"tab_cross_device": "웹과 앱에서 보기",
-			"tab_cross_device_desc": "같은 계정으로 웹과 앱의 메모를 확인해요. 앱 화면은 현재 한국어 UI예요.",
-			"tab_cross_device_image_alt": "웹과 한국어 앱에 같은 가상 메모가 표시된 화면",
-			"tab_category": "카테고리로 정리",
-			"tab_category_desc": "메모를 주제별로 묶어 다시 찾기 쉽게 해요.",
-			"tab_category_image_alt": "웹 대시보드에서 카테고리를 선택해 해당 메모를 모아 보는 화면"
+			"tab_collect": "모아 보기",
+			"tab_collect_desc": "웹의 하이라이트 페이지에서 칠한 문장과 메모를 한곳에 모아 봐요.",
+			"tab_collect_image_alt": "웹 하이라이트 페이지에 칠한 문장과 메모가 모여 있는 화면"
 		},
 		"steps": {
 			"step1_title": "Chrome 확장 설치하기",
@@ -1147,7 +1141,7 @@
 				"badge": "브라우저 메모",
 				"title": "읽던 페이지 옆에서 메모해요",
 				"description": "웹페이지를 읽다가 떠오른 생각을 옆에 열리는 사이드 패널에 적어요. 메모에는 그 페이지 주소가 함께 남아요.",
-				"imageAlt": "기사 옆 사이드 패널에 직접 작성한 메모"
+				"imageAlt": "Alt+S로 읽던 글 옆에 사이드 패널을 열어 메모하는 화면"
 			},
 			"benefits": {
 				"title": "메모장을 따로 열지 않아도 되는 이유",
@@ -1196,7 +1190,7 @@
 				"badge": "아티클 저장",
 				"title": "나중에 읽을 글을 한곳에 모아 봐요",
 				"description": "지금 읽을 시간이 없는 글은 위시리스트에 담아두고, 시간이 났을 때 목록에서 꺼내 읽어요.",
-				"imageAlt": "웹과 한국어 앱에 같은 가상 메모가 표시된 화면"
+				"imageAlt": "웹 하이라이트 페이지에 칠한 문장과 메모가 모여 있는 화면"
 			},
 			"benefits": {
 				"title": "탭 서른 개를 띄워두지 않아도 되는 이유",
@@ -1285,7 +1279,7 @@
 				"badge": "온라인 학습",
 				"title": "강의를 멈추지 않고 필기해요",
 				"description": "유튜브 강의와 온라인 코스를 보면서 옆 패널에 필기해요. 메모에는 강의 주소가 함께 남아요.",
-				"imageAlt": "기사 옆 사이드 패널에 직접 작성한 메모"
+				"imageAlt": "Alt+S로 읽던 글 옆에 사이드 패널을 열어 메모하는 화면"
 			},
 			"benefits": {
 				"title": "강의를 듣고 나서 남는 것",
@@ -1318,7 +1312,7 @@
 				"badge": "유튜브 메모",
 				"title": "영상을 보면서 그 자리에 적습니다",
 				"description": "튜토리얼과 리뷰 영상을 보다가 필요한 대목을 적으면, 영상 주소가 메모에 함께 남습니다.",
-				"imageAlt": "기사 옆 사이드 패널에 직접 작성한 메모가 표시된 화면"
+				"imageAlt": "Alt+S로 읽던 글 옆에 사이드 패널을 열어 메모하는 화면"
 			},
 			"benefits": {
 				"title": "영상에서 건진 것을 남기는 법",
@@ -1351,7 +1345,7 @@
 				"badge": "뉴스 & 아티클",
 				"title": "읽고 나서 남는 게 있게 해요",
 				"description": "뉴스와 블로그를 읽다가 걸리는 문장을 그 자리에서 적고, 원문 주소를 함께 남겨요.",
-				"imageAlt": "기사 옆 사이드 패널에 직접 작성한 메모"
+				"imageAlt": "읽던 글의 문장에 노란 하이라이트를 칠하고 바로 옆 메뉴에 메모를 적은 화면"
 			},
 			"benefits": {
 				"title": "읽은 기사가 기억에 안 남는 이유",
@@ -1384,7 +1378,7 @@
 				"badge": "취업 준비",
 				"title": "지원한 회사를 한 목록에서 봐요",
 				"description": "채용공고와 회사 정보를 회사별로 적어두고, 면접 전에 그 메모만 다시 열어요.",
-				"imageAlt": "웹과 한국어 앱에 같은 가상 메모가 표시된 화면"
+				"imageAlt": "웹 하이라이트 페이지에 칠한 문장과 메모가 모여 있는 화면"
 			},
 			"benefits": {
 				"title": "지원이 늘어날수록 헷갈리는 것들",
@@ -1417,7 +1411,7 @@
 				"badge": "개발자를 위한 도구",
 				"title": "찾아낸 해결책을 다시 검색하지 않아요",
 				"description": "Stack Overflow 답변, GitHub 이슈, 공식 문서에서 통했던 방법을 읽던 페이지 옆에 적어둬요.",
-				"imageAlt": "기사 옆 사이드 패널에 직접 작성한 메모"
+				"imageAlt": "읽던 글의 문장에 노란 하이라이트를 칠하고 바로 옆 메뉴에 메모를 적은 화면"
 			},
 			"benefits": {
 				"title": "같은 검색을 두 번 하지 않으려면",
@@ -1450,7 +1444,7 @@
 				"badge": "기술 아티클 정리",
 				"title": "북마크만 쌓이고 내용은 안 남는 문제",
 				"description": "기술 블로그와 뉴스레터에서 읽은 글의 결론을 적어두고, 원문 주소를 함께 남겨요.",
-				"imageAlt": "기사 옆 사이드 패널에 직접 작성한 메모"
+				"imageAlt": "메모에 원문 제목과 주소가 함께 표시된 화면"
 			},
 			"benefits": {
 				"title": "나중에 읽겠다고 담아둔 글들",

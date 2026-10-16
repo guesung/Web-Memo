@@ -17,7 +17,7 @@ import type { TLandingPageConfig } from "../../../_components";
  */
 export const SAVE_ARTICLES_PAGE: TLandingPageConfig = {
 	pageKey: "featuresSaveArticles",
-	screenshotNumber: 4,
+	screenshotNumber: 5,
 	benefits: [
 		{ key: "oneClick", icon: Bookmark },
 		{ key: "wishlist", icon: FolderHeart },

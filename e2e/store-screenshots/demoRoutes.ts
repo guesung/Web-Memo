@@ -3,6 +3,7 @@ import path from "node:path";
 import type { BrowserContext, Page } from "@playwright/test";
 import {
 	createMockCategory,
+	createMockHighlight,
 	createMockMemo,
 	createMockSetting,
 	MockSupabaseStore,
@@ -11,6 +12,8 @@ import {
 } from "../tests/lib/mocks";
 import {
 	DEMO_CONTENT,
+	type IFDemoContent,
+	type IFDemoHighlight,
 	type IFDemoPage,
 	type IFSubstituteVideo,
 	type TStoreLanguage,
@@ -80,6 +83,25 @@ export const setupDemoRoutes = async ({
 		);
 	}
 
+	for (const demoHighlight of toDemoHighlights(content)) {
+		const savedAt = new Date(
+			now - demoHighlight.minutesAgo * 60 * 1000,
+		).toISOString();
+
+		store.addHighlight(
+			createMockHighlight({
+				url: demoHighlight.url,
+				title: demoHighlight.title,
+				favIconUrl: demoHighlight.favIconUrl,
+				exact_text: demoHighlight.text,
+				color: demoHighlight.color,
+				note: demoHighlight.note,
+				created_at: savedAt,
+				updated_at: savedAt,
+			}),
+		);
+	}
+
 	await setupSupabaseMocks(page, store);
 	await mockSummaryApi({ context, summaryChunks: content.summaryChunks });
 	await context.route("http://localhost:3000/api/past-memo", (route) =>
@@ -124,6 +146,23 @@ export const setupDemoRoutes = async ({
 
 	return { store };
 };
+
+/**
+ * 목 저장소에 넣을 하이라이트 전부. 1번 장에서 칠하는 기사 문장이 가장 최근이라 대시보드 첫 카드 맨 위에 온다.
+ * @description 기사 하이라이트는 앵커를 텍스트(exact)만으로 채워도 확장이 본문에서 그 문장을 찾아 복원한다.
+ */
+export const toDemoHighlights = (content: IFDemoContent): IFDemoHighlight[] => [
+	{
+		url: content.articlePage.url,
+		title: content.articleMemo.title,
+		favIconUrl: content.articleMemo.favIconUrl ?? null,
+		text: content.highlightScene.articleText,
+		color: "yellow",
+		note: content.highlightScene.articleNote,
+		minutesAgo: 1,
+	},
+	...content.highlightScene.otherHighlights,
+];
 
 /**
  * 캡처할 페이지로 이동하고, 실제 페이지면 본문이 뜬 뒤 가리는 요소를 CSS로 숨긴다.

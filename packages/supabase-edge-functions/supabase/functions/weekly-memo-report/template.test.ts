@@ -3,6 +3,7 @@ import {
   buildWeekSummary,
   buildWeeklyReportHtml,
   type IFReportMemo,
+  withUtm,
 } from "./template";
 
 const memo = (overrides: Partial<IFReportMemo> = {}): IFReportMemo => ({
@@ -218,5 +219,43 @@ describe("buildWeeklyReportHtml", () => {
     const html = buildWeeklyReportHtml({ ...base, total: 0, memos: [] });
 
     expect(html).toContain("이번 주, 메모 0개를 남겼어요");
+  });
+});
+
+describe("withUtm", () => {
+  test("메일 유입을 가를 UTM을 붙이고 href용으로 이스케이프한다", () => {
+    expect(
+      withUtm("https://webmemo.xyz/ko/memos", {
+        content: "view_all",
+        isTest: false,
+      }),
+    ).toBe(
+      "https://webmemo.xyz/ko/memos?utm_source=weekly_report&amp;utm_medium=email&amp;utm_campaign=weekly_memo_report&amp;utm_content=view_all",
+    );
+  });
+
+  test("테스트 메일은 캠페인을 따로 둔다", () => {
+    expect(
+      withUtm("https://webmemo.xyz/ko/memos", { content: "organize", isTest: true }),
+    ).toContain("utm_campaign=weekly_memo_report_test");
+  });
+});
+
+describe("buildWeeklyReportHtml 링크", () => {
+  const html = buildWeeklyReportHtml({
+    memos: [memo({ url: "https://a.com/x" })],
+    total: 1,
+    rangeLabel: "10월 12일(월) ~ 10월 18일(일)",
+    isTest: false,
+  });
+
+  test("웹 메모 링크는 버튼 위치별 utm_content를 단다", () => {
+    for (const content of ["organize", "view_all", "footer_web", "footer_setting"]) {
+      expect(html).toContain(`utm_content=${content}"`);
+    }
+  });
+
+  test("메모 원문 링크에는 UTM을 붙이지 않는다", () => {
+    expect(html).toContain('href="https://a.com/x"');
   });
 });

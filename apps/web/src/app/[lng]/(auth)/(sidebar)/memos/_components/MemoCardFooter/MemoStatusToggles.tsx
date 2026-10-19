@@ -11,8 +11,8 @@ import type { MouseEvent } from "react";
 /** 메모 카드 푸터 상태 토글의 props. */
 interface IFMemoStatusTogglesProps extends LanguageType {
 	memo: GetMemoResponse;
-	/** 버튼마다 덧붙일 클래스. 켜진 상태인지를 받아 꺼진 버튼만 숨길 때 쓴다 */
-	buttonClassName?: (isActive: boolean) => string;
+	/** 켜짐 여부를 받아 평소에 숨길 클래스를 돌려준다. 목록 카드의 호버 표시용 */
+	hiddenUntilHover?: (isActive: boolean) => string | false;
 }
 
 /**
@@ -22,7 +22,7 @@ interface IFMemoStatusTogglesProps extends LanguageType {
 export default function MemoStatusToggles({
 	memo,
 	lng,
-	buttonClassName,
+	hiddenUntilHover = () => false,
 }: IFMemoStatusTogglesProps) {
 	const { t } = useTranslation(lng);
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
@@ -149,7 +149,7 @@ export default function MemoStatusToggles({
 					size="sm"
 					className={cn(
 						"w-8 h-8 p-0 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-full",
-						buttonClassName?.(Boolean(memo.isWish)),
+						hiddenUntilHover(Boolean(memo.isWish)),
 					)}
 					aria-label={t("memos.toggle.wish")}
 					aria-pressed={Boolean(memo.isWish)}
@@ -178,7 +178,7 @@ export default function MemoStatusToggles({
 					size="sm"
 					className={cn(
 						"w-8 h-8 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-full",
-						buttonClassName?.(Boolean(memo.isReading)),
+						hiddenUntilHover(Boolean(memo.isReading)),
 					)}
 					aria-label={t("memos.toggle.reading")}
 					aria-pressed={Boolean(memo.isReading)}
@@ -206,7 +206,7 @@ export default function MemoStatusToggles({
 					size="sm"
 					className={cn(
 						"w-8 h-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-full",
-						buttonClassName?.(Boolean(memo.isStar)),
+						hiddenUntilHover(Boolean(memo.isStar)),
 					)}
 					aria-label={t("memos.toggle.star")}
 					aria-pressed={Boolean(memo.isStar)}

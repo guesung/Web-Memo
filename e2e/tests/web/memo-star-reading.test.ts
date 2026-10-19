@@ -198,6 +198,8 @@ test.describe("메모 카드의 중요·읽는 중 토글 (Mocked)", () => {
 			// 꺼진 토글은 카드에 마우스를 올려야 나타난다.
 			await memoCard.hover();
 			const toggle = memoCard.getByRole("button", { name, exact: true });
+			// 꺼진 아이콘은 카드에 마우스를 올려야 보인다
+			await memoCard.hover();
 			await toggle.hover();
 			await expect(tooltip).toHaveText(add);
 

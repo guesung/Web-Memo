@@ -20,6 +20,11 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `development` 빌드는 커스텀 이벤트를 보내지 않습니다. `staging`은 보냅니다 — 테스트 서버에서
 도착을 눈으로 확인해야 하기 때문이며, 그 트래픽은 `build_env` 차원으로 걸러 냅니다.
 
+주간 메모 리포트 메일의 웹 메모 링크에는 UTM이 붙습니다(`weekly-memo-report/template.ts`의 `withUtm`).
+커스텀 이벤트가 아니라 GA4 유입 경로로 집계되므로 "트래픽 획득"에서 소스 `weekly_report` · 매체 `email`로 봅니다.
+캠페인은 정기 `weekly_memo_report` / 테스트 `weekly_memo_report_test`, `utm_content`는 누른 자리
+(`organize` · `view_all` · `footer_web` · `footer_setting` · `empty_open`)입니다. 메모 원문 링크에는 붙이지 않습니다.
+
 ## 이벤트 73종
 
 `core_action`은 사용자가 이 서비스를 쓰는 행위, `engagement`는 그 주변의 이동·설정입니다.

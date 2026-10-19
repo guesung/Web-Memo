@@ -4,6 +4,28 @@ const WEB_URL = "https://webmemo.xyz";
 const MEMOS_URL = `${WEB_URL}/ko/memos`;
 const SETTING_URL = `${WEB_URL}/ko/memos/setting`;
 
+/**
+ * 웹 메모 링크에 UTM을 붙인다
+ * @description 메일에서 들어온 방문을 GA4 유입 경로(소스·매체·캠페인)로 가르기 위해서다.
+ * 메모 원문 링크에는 붙이지 않는다 — 우리 GA에 남지 않고 상대 사이트 URL만 바뀐다.
+ */
+export const withUtm = (
+  url: string,
+  { content, isTest }: { content: string; isTest: boolean },
+) => {
+  const target = new URL(url);
+
+  target.searchParams.set("utm_source", "weekly_report");
+  target.searchParams.set("utm_medium", "email");
+  target.searchParams.set(
+    "utm_campaign",
+    isTest ? "weekly_memo_report_test" : "weekly_memo_report",
+  );
+  target.searchParams.set("utm_content", content);
+
+  return escapeHtml(target.toString());
+};
+
 export interface IFReportMemo {
   title: string;
   url: string;
@@ -191,8 +213,8 @@ const buildFooterHtml = (isTest: boolean) => {
     "</td></tr></table></td></tr>" +
     `<tr><td style="padding:24px 24px 0;font-size:12px;line-height:1.8;color:${COLOR.muted};">` +
     `${isTest ? "테스트로 보낸 메일이에요." : "매주 일요일 저녁 8시에 보내 드려요."}<br>` +
-    `<a href="${MEMOS_URL}" style="${footerLinkStyle}">웹에서 보기</a> &nbsp;·&nbsp; ` +
-    `<a href="${SETTING_URL}" style="${footerLinkStyle}">리포트 설정 · 수신 거부</a>` +
+    `<a href="${withUtm(MEMOS_URL, { content: "footer_web", isTest })}" style="${footerLinkStyle}">웹에서 보기</a> &nbsp;·&nbsp; ` +
+    `<a href="${withUtm(SETTING_URL, { content: "footer_setting", isTest })}" style="${footerLinkStyle}">리포트 설정 · 수신 거부</a>` +
     "</td></tr>"
   );
 };
@@ -256,7 +278,7 @@ export const buildWeeklyReportHtml = ({
         `<tr><td style="padding:28px 24px 8px;">` +
         `<div style="font-size:24px;line-height:1.4;font-weight:800;letter-spacing:-0.4px;">이번 주엔 아직 메모가 없어요</div>` +
         `<p style="margin:12px 0 0;font-size:15px;line-height:1.8;color:${COLOR.body};">메모를 남기면 일요일 저녁에 이 주소로 모아 보내 드려요.</p>` +
-        `<p style="margin:12px 0 0;font-size:14px;"><a href="${MEMOS_URL}" style="${accentLinkStyle}">웹 메모 열기 →</a></p>` +
+        `<p style="margin:12px 0 0;font-size:14px;"><a href="${withUtm(MEMOS_URL, { content: "empty_open", isTest })}" style="${accentLinkStyle}">웹 메모 열기 →</a></p>` +
         "</td></tr>" +
         buildFooterHtml(true),
     );
@@ -274,11 +296,11 @@ export const buildWeeklyReportHtml = ({
       `<table ${TABLE_ATTRS} width="100%"><tr><td style="border:1px solid ${COLOR.line};border-radius:8px;padding:16px 18px;">` +
       `<div style="font-size:15px;font-weight:700;">웹에서 정리하기</div>` +
       `<div style="margin-top:4px;font-size:14px;line-height:1.6;color:${COLOR.muted};">이번 주 메모를 카테고리로 묶거나 다시 다듬어 보세요.</div>` +
-      `<div style="margin-top:8px;font-size:14px;"><a href="${MEMOS_URL}" style="${accentLinkStyle}">메모 정리하러 가기 →</a></div>` +
+      `<div style="margin-top:8px;font-size:14px;"><a href="${withUtm(MEMOS_URL, { content: "organize", isTest })}" style="${accentLinkStyle}">메모 정리하러 가기 →</a></div>` +
       "</td></tr></table></td></tr>" +
       `<tr><td style="padding:32px 24px 12px;font-size:13px;font-weight:700;color:${COLOR.muted};letter-spacing:0.2px;">이번 주 메모 : ${escapeHtml(rangeLabel)}</td></tr>` +
       memos.map(buildMemoItemHtml).join("") +
-      `<tr><td style="padding:16px 24px 0;border-top:1px solid ${COLOR.line};font-size:14px;"><a href="${MEMOS_URL}" style="${accentLinkStyle}">웹에서 전체 보기 →</a></td></tr>` +
+      `<tr><td style="padding:16px 24px 0;border-top:1px solid ${COLOR.line};font-size:14px;"><a href="${withUtm(MEMOS_URL, { content: "view_all", isTest })}" style="${accentLinkStyle}">웹에서 전체 보기 →</a></td></tr>` +
       buildFooterHtml(isTest),
   );
 };

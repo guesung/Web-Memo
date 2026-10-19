@@ -37,6 +37,16 @@ describe("buildWeekSummary", () => {
     expect(summary.topSite).toBeNull();
   });
 
+  test("사이트가 모두 달라 최다 개수가 1이면 최다 사이트를 생략한다", () => {
+    const summary = buildWeekSummary([
+      memo({ url: "https://a.com/1" }),
+      memo({ url: "https://b.com/1" }),
+    ]);
+
+    expect(summary.siteCount).toBe(2);
+    expect(summary.topSite).toBeNull();
+  });
+
   test("최다 요일 개수가 1이면 요일을 생략한다", () => {
     const summary = buildWeekSummary([
       memo({ created_at: "2026-10-14T03:00:00Z" }),

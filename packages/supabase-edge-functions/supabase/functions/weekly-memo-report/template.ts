@@ -85,7 +85,7 @@ const WEEKDAY_NAMES = [
 export interface IFWeekSummary {
   memoCount: number;
   siteCount: number;
-  /** 사이트가 2곳 이상일 때만 채운다 */
+  /** 사이트가 2곳 이상이고 최다 개수가 2개 이상일 때만 채운다 */
   topSite: { hostname: string; count: number } | null;
   /** 최다 개수가 2개 이상일 때만 채운다 */
   topWeekday: { name: string; count: number } | null;
@@ -131,8 +131,8 @@ export const buildWeekSummary = (memos: IFReportMemo[]): IFWeekSummary => {
     memoCount: memos.length,
     siteCount: site.counts.size,
     topSite:
-      site.top && site.counts.size >= 2
-        ? { hostname: site.top.key, count: site.top.count }
+      site.top && site.counts.size >= 2 && site.top.count >= 2
+        ?{ hostname: site.top.key, count: site.top.count }
         : null,
     topWeekday:
       weekday.top && weekday.top.count >= 2

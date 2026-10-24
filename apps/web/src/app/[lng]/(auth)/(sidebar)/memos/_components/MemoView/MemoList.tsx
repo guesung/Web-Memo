@@ -15,8 +15,9 @@ import type {
 import { Button } from "@web-memo/ui";
 import { useEffect, useRef, useState } from "react";
 import { useMemoSettings } from "./_hooks/useMemoSettings";
-import MemoDateGroup from "./MemoDateGroup";
+import { groupMemosByDomain } from "./groupMemosByDomain";
 import MemoEmptyState from "./MemoEmptyState";
+import MemoGroup from "./MemoGroup";
 import { MemoListSkeleton } from "./MemoListSkeleton";
 import MemoSearchEmptyState from "./MemoSearchEmptyState";
 
@@ -26,20 +27,23 @@ const MemoList = (props: IFMemoListProps) => {
 
 	const { showImpression, showActionItem, truncateMemoContent } =
 		useMemoSettings();
-	const groups = groupMemosByDate(props.memos);
+	const groups =
+		props.groupBy === "domain"
+			? groupMemosByDomain(props.memos)
+			: groupMemosByDate(props.memos);
 	const [renderedGroupMemoIds, setRenderedGroupMemoIds] = useState<
 		Record<string, string>
 	>({});
-	const visibleDateKeys = new Set(groups.map((group) => group.dateKey));
-	const hasUnmountedDateGroup = Object.keys(renderedGroupMemoIds).some(
-		(dateKey) => !visibleDateKeys.has(dateKey),
+	const visibleGroupKeys = new Set(groups.map((group) => group.key));
+	const hasUnmountedGroup = Object.keys(renderedGroupMemoIds).some(
+		(key) => !visibleGroupKeys.has(key),
 	);
 	/** 사라진 그룹의 완료 기록은 재마운트 전에 제거해 이전 인스턴스의 배치를 재사용하지 않는다. */
-	if (hasUnmountedDateGroup) {
+	if (hasUnmountedGroup) {
 		setRenderedGroupMemoIds(
 			Object.fromEntries(
-				Object.entries(renderedGroupMemoIds).filter(([dateKey]) =>
-					visibleDateKeys.has(dateKey),
+				Object.entries(renderedGroupMemoIds).filter(([key]) =>
+					visibleGroupKeys.has(key),
 				),
 			),
 		);
@@ -47,7 +51,7 @@ const MemoList = (props: IFMemoListProps) => {
 	/** 초기 높이가 0인 Masonry와 새 페이지의 배치가 끝나기 전에는 다음 조회를 막는다. */
 	const isLayoutReady = groups.every(
 		(group) =>
-			renderedGroupMemoIds[group.dateKey] ===
+			renderedGroupMemoIds[group.key] ===
 			group.memos.map((memo) => memo.id).join(","),
 	);
 	useEffect(() => {
@@ -61,13 +65,13 @@ const MemoList = (props: IFMemoListProps) => {
 		}
 	}, [isLayoutReady, props.loadOutcome, props.route, props.navigationId]);
 	const loadMoreRef = useMemoListPagination(props, isLayoutReady);
-	const handleDateGroupRenderComplete = (dateKey: string, memoIds: string) => {
+	const handleGroupRenderComplete = (key: string, memoIds: string) => {
 		setRenderedGroupMemoIds((previousGroups) => {
-			if (previousGroups[dateKey] === memoIds) {
+			if (previousGroups[key] === memoIds) {
 				return previousGroups;
 			}
 
-			return { ...previousGroups, [dateKey]: memoIds };
+			return { ...previousGroups, [key]: memoIds };
 		});
 	};
 
@@ -86,17 +90,18 @@ const MemoList = (props: IFMemoListProps) => {
 					<MemoEmptyState lng={props.lng} />
 				))}
 			{groups.map((group) => (
-				<MemoDateGroup
-					key={group.dateKey}
+				<MemoGroup
+					key={group.key}
 					lng={props.lng}
-					dateKey={group.dateKey}
+					groupBy={props.groupBy}
+					groupKey={group.key}
 					memos={group.memos}
 					highlightsByUrl={props.highlightsByUrl}
 					sourcesByMemo={props.sourcesByMemo}
 					showImpression={showImpression}
 					showActionItem={showActionItem}
 					truncateMemoContent={truncateMemoContent}
-					onRenderComplete={handleDateGroupRenderComplete}
+					onRenderComplete={handleGroupRenderComplete}
 				/>
 			))}
 			{props.hasNextPage && (
@@ -159,14 +164,15 @@ const groupMemosByDate = (memos: GetMemoResponse[]) => {
 		groups.set(dateKey, group);
 	}
 
-	return Array.from(groups, ([dateKey, groupedMemos]) => ({
-		dateKey,
+	return Array.from(groups, ([key, groupedMemos]) => ({
+		key,
 		memos: groupedMemos,
 	}));
 };
 
 /** 목록 데이터와 무한 로딩 상태. */
 interface IFMemoListProps extends LanguageType {
+	groupBy: "date" | "domain";
 	memos: GetMemoResponse[];
 	highlightsByUrl: Map<string, HighlightRow[]>;
 	sourcesByMemo: Map<number, HighlightMemoLink>;

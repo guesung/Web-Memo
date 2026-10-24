@@ -232,7 +232,7 @@ test("같은 URL의 행만 추가되어 카드가 커져도 다음 페이지를 
 		if (nextPageRequests === 1) await nextPageGate;
 		await route.fallback();
 	});
-	const cards = page.locator("#highlight-grid article");
+	const cards = page.locator("main article");
 	let firstHeight = 0;
 	try {
 		await gotoHighlights(page);
@@ -265,29 +265,4 @@ test("같은 URL의 행만 추가되어 카드가 커져도 다음 페이지를 
 	await expect(page.getByText("Highlight quote 41")).toBeVisible();
 	await page.getByLabel("Search text or notes").fill("");
 	await expect(page.getByText(firstQuote)).toBeVisible();
-});
-
-test("높이가 다른 URL 카드를 Masonry 열에 배치한다.", async ({ page }) => {
-	resetMockIds();
-	const store = new MockSupabaseStore();
-	for (let group = 1; group <= 3; group++) {
-		for (let quote = 1; quote <= group * 2; quote++) {
-			store.addHighlight(
-				createMockHighlight({
-					url: `https://example.com/page-${group}`,
-					exact_text: `Card ${group} quote ${quote}`,
-				}),
-			);
-		}
-	}
-	await setupSupabaseMocks(page, store);
-	await page.setViewportSize({ width: 1600, height: 900 });
-	await gotoHighlights(page);
-	const cards = page.locator("#highlight-grid article");
-	await expect(cards).toHaveCount(3);
-	const boxes = await cards.evaluateAll((elements) =>
-		elements.map((element) => element.getBoundingClientRect().toJSON()),
-	);
-	expect(new Set(boxes.map(({ x }) => x)).size).toBeGreaterThan(1);
-	expect(new Set(boxes.map(({ height }) => height)).size).toBeGreaterThan(1);
 });

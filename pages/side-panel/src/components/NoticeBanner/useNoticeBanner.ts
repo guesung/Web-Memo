@@ -2,6 +2,7 @@ import { useNoticeQuery } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import {
 	ChromeSyncStorage,
+	recordFirstNoticeExposure,
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
 import { useEffect, useRef, useState } from "react";
@@ -41,6 +42,17 @@ export default function useNoticeBanner() {
 			name: "notice_view",
 			params: { notice_id: visibleNoticeId },
 		});
+		void recordFirstNoticeExposure({ noticeId: visibleNoticeId }).catch(
+			(error) => {
+				reportSidePanelError({
+					error,
+					feature: "notice",
+					operation: "record_exposure",
+					stage: "storage",
+					level: "warning",
+				});
+			},
+		);
 	}, [visibleNoticeId]);
 
 	const handleNoticeDismiss = async () => {

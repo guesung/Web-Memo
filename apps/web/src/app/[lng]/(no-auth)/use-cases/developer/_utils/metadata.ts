@@ -20,7 +20,7 @@ export const metadataKorean = createPublicPageMetadata({
 export const metadataEnglish = createPublicPageMetadata({
 	language: "en",
 	path: "/use-cases/developer",
-	title: "Web Memo for Developers - Code Snippets & Tech Resources | Web Memo",
+	title: "Code Snippets for Developers & Tech Resources | Web Memo",
 	description:
 		"Organize Stack Overflow answers, GitHub issues, and tech blogs systematically. Manage your development knowledge in one place.",
 	keywords: [

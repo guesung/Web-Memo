@@ -4,12 +4,9 @@ import type {
 	TCreateHighlightResponse,
 } from "@web-memo/shared/modules/extension-bridge";
 import { HighlightService } from "@web-memo/shared/utils";
-import {
-	getSupabaseClient,
-	SupabaseSessionRequiredError,
-} from "@web-memo/shared/utils/extension";
 import { getValidatedHighlightUrl } from "./getValidatedHighlightUrl";
 import { reportBackgroundError } from "./reportBackgroundError";
+import { getAuthenticatedClient } from "./supabaseAuth";
 
 /** 신뢰할 수 없는 메시지 본문과 Chrome이 제공하는 발신 문서 정보. */
 interface IFCreateHighlightRequest {
@@ -104,18 +101,6 @@ const isValidPayload = (
 		Number.isSafeInteger(anchor.textPositionStart) &&
 		anchor.textPositionStart >= 0
 	);
-};
-
-/** 기존 클라이언트 초기화는 쿠키가 없으면 예외를 던진다. 로그인 안내로 변환한다. */
-export const getAuthenticatedClient = async () => {
-	try {
-		return await getSupabaseClient();
-	} catch (error) {
-		if (error instanceof SupabaseSessionRequiredError) {
-			return null;
-		}
-		throw error;
-	}
 };
 
 /** 진단에 허용하는 저장 단계. URL 검증은 외부 입력이므로 기록하지 않는다. */

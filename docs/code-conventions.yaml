@@ -1,0 +1,57 @@
+# 코드 컨벤션 원장: 이 레포의 세부 코딩 규칙이 있는 유일한 곳입니다.
+#
+# 대원칙은 docs/frontend-guidelines.md(가독성·예측 가능성·응집도·결합도)이고, 이 원장의 규칙은
+# 그 대원칙을 이 레포에서 어떻게 지키는지 정한 것입니다. 둘이 부딪히면 이 원장이 우선합니다.
+# docs/code-conventions-legacy.md는 아직 검토하지 않은 옛 규칙을 모아 둔 참고 자료일 뿐 강제하지 않습니다.
+#
+# 형식은 PR CI가 검사합니다. 로컬에서는 아래 명령으로 확인하세요.
+#   node .github/scripts/conventions/check-code-conventions.mjs
+#
+# 규칙 추가 절차
+#   1. 규칙을 사람과 합의합니다. 합의하지 않은 규칙은 올리지 않습니다.
+#   2. 아래 rules 끝에 항목을 하나 추가합니다. pr은 null로 둡니다.
+#   3. legacy 문서에 같은 규칙이 있으면 그 줄을 지웁니다.
+#   4. PR을 만든 뒤 그 항목의 pr을 PR URL로 바꿉니다.
+#   규칙을 바꾸지 않고 폐기할 때는 항목을 지우지 않습니다. status를 폐기로 바꾸고,
+#   대신할 규칙을 먼저 추가한 뒤 replaced_by에 그 id를 적습니다.
+#
+# 필드 (13개 모두 필수, 이 밖의 키는 쓰지 않습니다)
+#   id           kebab-case. 원장 안에서 겹치지 않습니다
+#   name         규칙을 한 줄로
+#   category     네이밍 | 구조·배치 | 문법 스타일 | 주석·문서 | 관행
+#   principles   이 규칙이 지키는 대원칙. 가독성 | 예측 가능성 | 응집도 | 결합도 중 1개 이상의 배열
+#   scope        적용 경로 glob 배열 (예: ["apps/**", "packages/**"])
+#   status       적용중 | 보류 | 폐기
+#   severity     필수 | 권장
+#   rule         무엇을 하고 무엇을 하지 않는가
+#   why          왜 그렇게 하는가
+#   exceptions   예외 목록. 없으면 []
+#   examples     bad·good 중 1개 이상 (각각 코드 문자열)
+#   pr           규칙을 도입한 PR URL. 처음 작성할 때는 null
+#   replaced_by  폐기일 때만 대신하는 규칙의 id(적용중·보류인 항목). 그 밖에는 null
+
+rules:
+  - id: icon-lucide-only
+    name: 아이콘은 lucide-react만 쓴다
+    category: 구조·배치
+    principles: [예측 가능성, 응집도]
+    scope: ["apps/**", "pages/**", "packages/**"]
+    status: 적용중
+    severity: 필수
+    rule: |
+      아이콘은 lucide-react에서 import한다.
+      인라인 <svg>를 새로 만들지 않는다.
+    why: |
+      아이콘 출처가 하나면 크기·선 굵기·색이 같은 방식(className, currentColor)으로
+      동작한다는 걸 어느 화면에서나 기대할 수 있다.
+    exceptions:
+      - lucide에 없는 브랜드 로고는 apps/web/src/app/[lng]/(no-auth)/introduce/_components/StoreIcon 한 파일에만 인라인 path로 둔다.
+    examples:
+      bad: |
+        <svg viewBox="0 0 24 24"><path d="..." /></svg>
+      good: |
+        import { Check } from "lucide-react";
+
+        <Check className="size-4" />
+    pr: null
+    replaced_by: null

@@ -75,4 +75,63 @@ describe("확장 Supabase 초기화 오류 계약", () => {
 			expect(error).not.toBeInstanceOf(SupabaseSessionRequiredError);
 		},
 	);
+	it.each(["getSession", "setSession"] as const)(
+		"%s가 4xx AuthApiError를 반환하면 로그인 필요 오류로 변환한다",
+		async (method) => {
+			const cause = Object.assign(new Error("Invalid Refresh Token"), {
+				name: "AuthApiError",
+				status: 400,
+			});
+			if (method === "getSession") {
+				mocks.getSession.mockResolvedValue({
+					data: { session: null },
+					error: cause,
+				});
+			} else {
+				mocks.getCookie.mockResolvedValue({ value: "test-token" });
+				mocks.setSession.mockResolvedValue({ error: cause });
+			}
+			const { getSupabaseClient, SupabaseSessionRequiredError } = await import(
+				"./Supabase"
+			);
+			const error = await getSupabaseClient().catch(
+				(caught: unknown) => caught,
+			);
+			expect(error).toBeInstanceOf(SupabaseSessionRequiredError);
+			expect(error).toMatchObject({ cause });
+		},
+	);
+	it("AuthSessionMissingError도 로그인 필요 오류로 변환한다", async () => {
+		mocks.getSession.mockResolvedValue({
+			data: { session: null },
+			error: Object.assign(new Error("Auth session missing!"), {
+				name: "AuthSessionMissingError",
+			}),
+		});
+		const { getSupabaseClient, SupabaseSessionRequiredError } = await import(
+			"./Supabase"
+		);
+		await expect(getSupabaseClient()).rejects.toBeInstanceOf(
+			SupabaseSessionRequiredError,
+		);
+	});
+	it.each([500, 429])(
+		"AuthApiError %i는 기존 사용자 메시지와 원인을 유지한다",
+		async (status) => {
+			const cause = Object.assign(new Error("server side"), {
+				name: "AuthApiError",
+				status,
+			});
+			mocks.getCookie.mockResolvedValue({ value: "test-token" });
+			mocks.setSession.mockResolvedValue({ error: cause });
+			const { getSupabaseClient, SupabaseSessionRequiredError } = await import(
+				"./Supabase"
+			);
+			const error = await getSupabaseClient().catch(
+				(caught: unknown) => caught,
+			);
+			expect(error).toMatchObject({ message: "로그인을 먼저 해주세요", cause });
+			expect(error).not.toBeInstanceOf(SupabaseSessionRequiredError);
+		},
+	);
 });

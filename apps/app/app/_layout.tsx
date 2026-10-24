@@ -1,4 +1,11 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as Sentry from "@sentry/react-native";
+import {
+	focusManager,
+	QueryClient,
+	QueryClientProvider,
+} from "@tanstack/react-query";
+import * as Linking from "expo-linking";
+import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -9,7 +16,14 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthProvider";
 import { ThemeProvider, useTheme } from "@/lib/context/ThemeContext";
+import {
+	recordEntryTrace,
+	reportEntryError,
+} from "@/lib/monitoring/entryTrace";
+import { syncNotificationTimezone } from "@/lib/notifications/registerPushToken";
+import { useNotificationObserver } from "@/lib/notifications/useNotificationObserver";
 import { migrateSharedExtensionPendingUrls } from "@/lib/sharing/pendingSharedUrls";
+import { syncFavoritesToSupabase } from "@/lib/storage/favoriteSync";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
 
 SplashScreen.preventAutoHideAsync();
@@ -19,6 +33,9 @@ const queryClient = new QueryClient({
 		queries: {
 			retry: 1,
 			staleTime: 1000 * 60 * 5,
+			// 앱은 아래에서 AppState를 focusManager에 연결한다. 기존 쿼리가 foreground마다 다시 받아 오지 않도록
+			// 기본값은 끄고, 블로그 정주행 쿼리만 훅에서 refetchOnWindowFocus를 켠다.
+			refetchOnWindowFocus: false,
 		},
 	},
 });
@@ -46,6 +63,13 @@ function SyncOnAuth() {
 					}
 				})
 				.catch(() => {});
+			const syncFavorites = async () => {
+				try {
+					await syncFavoritesToSupabase();
+					queryClient.invalidateQueries({ queryKey: ["favorites"] });
+				} catch {}
+			};
+			syncFavorites();
 		}
 	}, [session]);
 
@@ -86,6 +110,42 @@ function useRefreshOnForeground() {
 	}, []);
 }
 
+/** 로그인 상태에서만 마운트되는 알림 연결부. 포그라운드 표시·탭 이동·타임존 동기화를 맡는다 */
+function LoggedInNotificationBridge() {
+	useNotificationObserver();
+
+	useEffect(() => {
+		Notifications.setNotificationHandler({
+			handleNotification: async () => ({
+				shouldShowBanner: true,
+				shouldShowList: true,
+				shouldPlaySound: false,
+				shouldSetBadge: false,
+			}),
+		});
+
+		syncNotificationTimezone();
+
+		const subscription = AppState.addEventListener("change", (state) => {
+			if (state === "active") {
+				syncNotificationTimezone();
+			}
+		});
+
+		return () => subscription.remove();
+	}, []);
+
+	return null;
+}
+
+function NotificationBridge() {
+	const { isLoggedIn } = useAuth();
+
+	if (!isLoggedIn) return null;
+
+	return <LoggedInNotificationBridge />;
+}
+
 /** 화면 전환 중 테마와 어긋나는 배경이 비치지 않도록 스택 배경색을 테마에 맞춘다 */
 function ThemedStack() {
 	const { isDark } = useTheme();
@@ -103,6 +163,7 @@ function ThemedStack() {
 			{/* 탭 밖의 상세 화면이라 탭바 없이 뜬다 */}
 			<Stack.Screen name="trash" />
 			<Stack.Screen name="pending-memos" />
+			<Stack.Screen name="blog-reading" />
 			{/* iOS 공유 확장이 openHostApp으로 여는 webmemo://share 딥링크 */}
 			<Stack.Screen name="share" />
 			<Stack.Screen name="+not-found" />
@@ -110,9 +171,39 @@ function ThemedStack() {
 	);
 }
 
-export default function RootLayout() {
+function RootLayout() {
 	useEffect(() => {
+		recordEntryTrace({ source: "app", stage: "root.mounted" });
 		SplashScreen.hideAsync();
+		void Linking.getInitialURL()
+			.then((url) => {
+				if (url) recordEntryTrace({ source: "link", stage: "initial", url });
+			})
+			.catch((error) =>
+				reportEntryError(error, { source: "link", stage: "initial.read" }),
+			);
+		const subscription = Linking.addEventListener("url", ({ url }) => {
+			recordEntryTrace({
+				source: "link",
+				stage: "received",
+				url: url ?? undefined,
+			});
+		});
+		return () => subscription.remove();
+	}, []);
+
+	// React Native에는 브라우저 focus 이벤트가 없으므로 앱이 foreground로 돌아올 때를 focus로 알린다.
+	useEffect(() => {
+		const subscription = AppState.addEventListener("change", (status) => {
+			recordEntryTrace({
+				source: "app",
+				stage: "state.changed",
+				data: { state: status },
+			});
+			focusManager.setFocused(status === "active");
+		});
+
+		return () => subscription.remove();
 	}, []);
 	useRefreshOnForeground();
 
@@ -124,9 +215,12 @@ export default function RootLayout() {
 						<ThemedStack />
 					</GestureHandlerRootView>
 					<SyncOnAuth />
+					<NotificationBridge />
 					<StatusBar style="auto" />
 				</AuthProvider>
 			</ThemeProvider>
 		</QueryClientProvider>
 	);
 }
+
+export default Sentry.wrap(RootLayout);

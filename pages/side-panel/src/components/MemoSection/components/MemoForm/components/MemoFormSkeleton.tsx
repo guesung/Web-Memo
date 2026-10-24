@@ -1,5 +1,10 @@
 import { Badge, Skeleton } from "@web-memo/ui";
-import { BookOpenIcon, HeartIcon, StarIcon } from "lucide-react";
+import {
+	BookOpenIcon,
+	CalendarClockIcon,
+	HeartIcon,
+	StarIcon,
+} from "lucide-react";
 
 /**
  * MemoForm이 뜨기 전(user·setting·category 대기) 자리를 채우는 뼈대.
@@ -24,6 +29,7 @@ export default function MemoFormSkeleton() {
 					<HeartIcon size={16} className="text-muted-foreground/50" />
 					<StarIcon size={16} className="text-muted-foreground/50" />
 					<BookOpenIcon size={16} className="text-muted-foreground/50" />
+					<CalendarClockIcon size={16} className="text-muted-foreground/50" />
 				</div>
 				<Badge
 					variant="outline"

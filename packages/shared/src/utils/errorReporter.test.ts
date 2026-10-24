@@ -193,6 +193,24 @@ describe("createErrorReporter", () => {
 		expect(capture).not.toHaveBeenCalled();
 	});
 
+	it("PostgREST가 값으로 돌려준 요청 취소도 보내지 않는다", () => {
+		const { capture, report } = createReporter();
+
+		expect(
+			report({
+				error: {
+					message: "AbortError: signal is aborted without reason",
+					hint: "Request was aborted (timeout or manual cancellation)",
+					code: "",
+				},
+				feature: "web",
+				operation: "highlights",
+				stage: "query",
+			}),
+		).toBe(false);
+		expect(capture).not.toHaveBeenCalled();
+	});
+
 	it("같은 기능·단계·메시지는 8초 안에 한 번만 보낸다", () => {
 		const { capture, report } = createReporter();
 		const params = {
@@ -251,6 +269,34 @@ describe("isAbortError", () => {
 		expect(isAbortError(canceledError)).toBe(true);
 		expect(isAbortError(new Error("x"))).toBe(false);
 		expect(isAbortError("AbortError")).toBe(false);
+	});
+
+	it("PostgREST의 취소 오류 객체와 기존에 메시지만 감싼 Error를 판별한다", () => {
+		const message = "AbortError: signal is aborted without reason";
+		const hint = "Request was aborted (timeout or manual cancellation)";
+
+		expect(isAbortError({ message, hint, code: "" })).toBe(true);
+		expect(
+			isAbortError({
+				message,
+				hint: `${hint}. URL exceeded 8000 characters`,
+				code: "",
+			}),
+		).toBe(true);
+		expect(isAbortError(new Error(message))).toBe(true);
+		expect(isAbortError({ message, code: "" })).toBe(false);
+		expect(isAbortError({ message, hint, code: "PGRST301" })).toBe(false);
+		expect(
+			isAbortError({
+				message: "AbortError: request timed out",
+				hint,
+				code: "",
+			}),
+		).toBe(false);
+		expect(isAbortError(new Error(`Query failed: ${message}`))).toBe(false);
+		expect(isAbortError(new Error("AbortError: permission denied"))).toBe(
+			false,
+		);
 	});
 });
 

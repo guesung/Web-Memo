@@ -26,6 +26,7 @@ export type CategorySupabaseResponse = PostgrestSingleResponse<
 export type SettingTable = Database["memo"]["Tables"]["setting"];
 export type SettingRow = SettingTable["Row"];
 
+export type FavoriteTable = Database["memo"]["Tables"]["favorite"];
 export type HighlightTable = Database["memo"]["Tables"]["highlight"];
 export type HighlightRow = HighlightTable["Row"];
 

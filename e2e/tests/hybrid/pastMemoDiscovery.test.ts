@@ -1,14 +1,21 @@
 import type { BrowserContext, Page } from "@playwright/test";
 import { expect, test } from "../fixtures/extension";
 import { findSidePanelPage, login, openSidePanel, skipGuide } from "../lib";
-import { MockSupabaseStore, setupSupabaseMocks } from "../lib/mocks";
+import {
+	createMockMemo,
+	MockSupabaseStore,
+	setupSupabaseMocks,
+} from "../lib/mocks";
 
 const DUPLICATE_TITLE = "Previously saved article";
 const DUPLICATE_URL = "https://example.com/articles/previously-saved";
+const DUPLICATE_MEMO_BODY = "Saved duplicate body";
 const RELATED_TITLE = "Related saved article";
 const RELATED_URL = "https://example.com/articles/related";
+const SECOND_RELATED_TITLE = "Another related article";
+const THIRD_RELATED_TITLE = "A third related article";
 
-test("현재 글의 과거 메모를 알려 주고 기존 글을 연다", async ({
+test("현재 글의 과거 메모를 알려 주고 사이드 패널에서 읽기 전용으로 연다", async ({
 	page,
 	context,
 }) => {
@@ -20,19 +27,32 @@ test("현재 글의 과거 메모를 알려 주고 기존 글을 연다", async 
 
 	await expect(notice).toBeVisible();
 	await expect(notice.getByText(DUPLICATE_TITLE)).toBeVisible();
-	await expect(notice.getByText(messages.related)).toBeVisible();
-	await notice.getByText(messages.related).click();
+	await expect(notice.getByText(messages.relatedIntro)).toBeVisible();
 	await expect(
-		notice.getByRole("button", { name: RELATED_TITLE }),
+		notice.getByRole("button", { name: `${RELATED_TITLE} ${messages.open}` }),
+	).toBeVisible();
+	await expect(
+		notice.getByRole("button", { name: SECOND_RELATED_TITLE }),
+	).toBeHidden();
+	await notice.getByRole("button", { name: messages.relatedMore }).click();
+	await expect(
+		notice.getByRole("button", { name: SECOND_RELATED_TITLE }),
+	).toBeVisible();
+	await expect(
+		notice.getByRole("button", { name: THIRD_RELATED_TITLE }),
 	).toBeVisible();
 
-	const openedPagePromise = context.waitForEvent("page");
-	await notice.getByRole("button", { name: messages.open }).click();
-	const openedPage = await openedPagePromise;
-	await expect(openedPage).toHaveURL(DUPLICATE_URL);
+	await notice.getByRole("button", { name: messages.openMemo }).click();
+	await expect(sidePanelPage.getByText(messages.viewReadonly)).toBeVisible();
+	await expect(sidePanelPage.getByText(DUPLICATE_MEMO_BODY)).toBeVisible();
+	await expect(sidePanelPage.locator("#memo-textarea")).toBeHidden();
+
+	await sidePanelPage.getByRole("button", { name: messages.viewBack }).click();
+	await expect(sidePanelPage.getByText(messages.viewReadonly)).toBeHidden();
+	await expect(sidePanelPage.locator("#memo-textarea")).toBeVisible();
 });
 
-// 새 탭이 열리면 사이드 패널이 그 탭을 따라가 배너가 사라지므로, 같은 글 열기와 따로 확인한다.
+// 새 탭이 열리면 사이드 패널이 그 탭을 따라가 배너가 사라진다.
 test("관련 메모를 누르면 웹 메모 상세가 아니라 원래 사이트를 새 탭으로 연다", async ({
 	page,
 	context,
@@ -44,12 +64,54 @@ test("관련 메모를 누르면 웹 메모 상세가 아니라 원래 사이트
 	});
 
 	await expect(notice).toBeVisible();
-	await notice.getByText(messages.related).click();
 
 	const relatedPagePromise = context.waitForEvent("page");
-	await notice.getByRole("button", { name: RELATED_TITLE }).click();
+	await notice
+		.getByRole("button", { name: `${RELATED_TITLE} ${messages.open}` })
+		.click();
 	const relatedPage = await relatedPagePromise;
 	await expect(relatedPage).toHaveURL(RELATED_URL);
+});
+
+test("웹사이트로 이동을 누르면 원래 URL을 새 탭으로 연다", async ({
+	page,
+	context,
+}) => {
+	const { sidePanelPage } = await setupPastMemoPage({ page, context });
+	const messages = await getPastMemoMessages(sidePanelPage);
+	const notice = sidePanelPage.getByRole("status").filter({
+		hasText: DUPLICATE_TITLE,
+	});
+
+	await expect(notice).toBeVisible();
+
+	const duplicatePagePromise = context.waitForEvent("page");
+	await notice.getByRole("button", { name: messages.openSite }).click();
+	const duplicatePage = await duplicatePagePromise;
+	await expect(duplicatePage).toHaveURL(DUPLICATE_URL);
+});
+
+test("같은 글이 없어도 첫 관련 메모를 바로 열 수 있다", async ({
+	page,
+	context,
+}) => {
+	const { sidePanelPage } = await setupPastMemoPage({
+		page,
+		context,
+		includeDuplicate: false,
+	});
+	const messages = await getPastMemoMessages(sidePanelPage);
+	const notice = sidePanelPage.getByRole("status").filter({
+		hasText: RELATED_TITLE,
+	});
+
+	await expect(notice.getByText(messages.relatedIntro)).toBeVisible();
+	await expect(
+		notice.getByRole("button", { name: `${RELATED_TITLE} ${messages.open}` }),
+	).toBeVisible();
+	await expect(
+		notice.getByRole("button", { name: SECOND_RELATED_TITLE }),
+	).toBeHidden();
 });
 
 test("과거 메모 알림을 닫으면 같은 글에서 다시 표시하지 않는다", async ({
@@ -94,8 +156,21 @@ test("과거 메모 알림을 닫으면 같은 글에서 다시 표시하지 않
 	).toHaveLength(1);
 });
 
-const setupPastMemoPage = async ({ page, context }: IFPastMemoPageParams) => {
-	await setupSupabaseMocks(page, new MockSupabaseStore());
+const setupPastMemoPage = async ({
+	page,
+	context,
+	includeDuplicate = true,
+}: IFPastMemoPageParams) => {
+	const store = new MockSupabaseStore();
+	store.addMemo(
+		createMockMemo({
+			id: 101,
+			title: DUPLICATE_TITLE,
+			url: DUPLICATE_URL,
+			memo: DUPLICATE_MEMO_BODY,
+		}),
+	);
+	await setupSupabaseMocks(page, store);
 
 	const requestedPageUrls: string[] = [];
 	await context.route("**/api/past-memo", async (route) => {
@@ -110,17 +185,33 @@ const setupPastMemoPage = async ({ page, context }: IFPastMemoPageParams) => {
 		}
 		await route.fulfill({
 			json: {
-				duplicate: {
-					id: 101,
-					title: DUPLICATE_TITLE,
-					url: DUPLICATE_URL,
-					source: "rule",
-				},
+				duplicate: includeDuplicate
+					? {
+							id: 101,
+							title: DUPLICATE_TITLE,
+							url: DUPLICATE_URL,
+							source: "rule",
+						}
+					: null,
 				related: [
 					{
 						id: 102,
 						title: RELATED_TITLE,
 						url: RELATED_URL,
+						favIconUrl: null,
+						updatedAt: null,
+					},
+					{
+						id: 103,
+						title: SECOND_RELATED_TITLE,
+						url: "https://example.com/articles/another-related",
+						favIconUrl: null,
+						updatedAt: null,
+					},
+					{
+						id: 104,
+						title: THIRD_RELATED_TITLE,
+						url: "https://example.com/articles/third-related",
 						favIconUrl: null,
 						updatedAt: null,
 					},
@@ -143,12 +234,18 @@ const setupPastMemoPage = async ({ page, context }: IFPastMemoPageParams) => {
 const getPastMemoMessages = async (sidePanelPage: Page) =>
 	sidePanelPage.evaluate(() => ({
 		open: chrome.i18n.getMessage("past_memo_open"),
+		openMemo: chrome.i18n.getMessage("past_memo_open_memo"),
+		openSite: chrome.i18n.getMessage("past_memo_open_site"),
 		dismiss: chrome.i18n.getMessage("past_memo_dismiss"),
-		related: chrome.i18n.getMessage("past_memo_related", "1"),
+		relatedIntro: chrome.i18n.getMessage("past_memo_related_intro"),
+		viewBack: chrome.i18n.getMessage("past_memo_view_back"),
+		viewReadonly: chrome.i18n.getMessage("past_memo_view_readonly"),
+		relatedMore: chrome.i18n.getMessage("past_memo_related_more", "2"),
 	}));
 
 /** 과거 메모 알림을 목 응답으로 여는 데 필요한 브라우저 페이지와 컨텍스트. */
 interface IFPastMemoPageParams {
 	page: Page;
 	context: BrowserContext;
+	includeDuplicate?: boolean;
 }

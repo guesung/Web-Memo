@@ -1,8 +1,4 @@
-import {
-	useSettingQuery,
-	useSettingUpsertMutation,
-} from "@web-memo/shared/hooks";
-import { bridge } from "@web-memo/shared/modules/extension-bridge";
+import { useSettingQuery } from "@web-memo/shared/hooks";
 import { I18n } from "@web-memo/shared/utils/extension";
 import {
 	Card,
@@ -15,36 +11,12 @@ import {
 
 import SaveStatus from "./SaveStatus";
 import { useAutoSaveSetting } from "./useAutoSaveSetting";
+import { useSaveSetting } from "./useSaveSetting";
 
 /** 메모 작성 화면에서 표시할 입력 항목을 자동 저장합니다. */
 const MemoFieldsOption = () => {
 	const setting = useSettingQuery();
-	const settingMutation = useSettingUpsertMutation();
-
-	const saveSetting = async (request: {
-		show_impression?: boolean;
-		show_action_item?: boolean;
-	}) => {
-		const result = await settingMutation.mutateAsync(request);
-		if (result.error) {
-			throw result.error;
-		}
-
-		const userId = result.data?.user_id;
-		if (userId) {
-			try {
-				await bridge.request.SETTING_UPDATED({ userId });
-			} catch (error) {
-				if (
-					error instanceof Error &&
-					error.message.includes("Receiving end does not exist")
-				) {
-					return;
-				}
-				console.error("Setting update notification failed", error);
-			}
-		}
-	};
+	const saveSetting = useSaveSetting();
 
 	const impression = useAutoSaveSetting({
 		initialValue: setting.showImpression,

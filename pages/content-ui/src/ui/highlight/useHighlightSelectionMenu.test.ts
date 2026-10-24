@@ -12,6 +12,8 @@ const mocks = vi.hoisted(() => ({
 	query: vi.fn(),
 	create: vi.fn(),
 	edit: vi.fn(),
+	openPanel: vi.fn(),
+	handleScroll: vi.fn(() => vi.fn()),
 }));
 vi.mock("./useHighlightBubbleGate", () => ({
 	useHighlightBubbleGate: () => ({
@@ -41,7 +43,9 @@ vi.mock("@web-memo/shared/modules/extension-bridge", () => ({
 			GET_HIGHLIGHTS_BY_URL: mocks.query,
 			CREATE_HIGHLIGHT: mocks.create,
 			EDIT_HIGHLIGHT: mocks.edit,
+			OPEN_SIDE_PANEL: mocks.openPanel,
 		},
+		handle: { SCROLL_TO_HIGHLIGHT: mocks.handleScroll },
 	},
 }));
 
@@ -99,14 +103,25 @@ it("팝업 위치와 사이트 끄기 저장 실패를 메뉴 오류로 표시�
 		document.dispatchEvent(new MouseEvent("mouseup"));
 	});
 	await act(async () => {
-		hook?.handleBubbleCloseClick();
+		hook?.handleBubbleMenuClick();
 	});
 	expect(hook?.menuError).toBe("");
+	expect(hook?.isMenuOpen).toBe(true);
 	await act(async () => {
 		await hook?.handleBubbleDisableClick("site");
 	});
 	expect(hook?.menuError).toBe("highlight_save_failed");
 	expect(hook?.selectionState).not.toBeNull();
+	vi.mocked(ChromeSyncStorage.set).mockClear();
+	vi.mocked(analytics.trackEvent).mockClear();
+	await act(async () => {
+		hook?.handleBubbleCloseClick();
+	});
+	expect(hook?.selectionState).toBeNull();
+	expect(hook?.isMenuOpen).toBe(false);
+	expect(document.getSelection()?.toString()).toBe("site selection");
+	expect(ChromeSyncStorage.set).not.toHaveBeenCalled();
+	expect(analytics.trackEvent).not.toHaveBeenCalled();
 	await act(async () => {
 		root.unmount();
 	});

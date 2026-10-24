@@ -1,11 +1,12 @@
 "use client";
 
+import LocalizedLink from "@src/components/LocalizedLink";
+import { getLocalizedHref } from "@src/components/LocalizedLink/getLocalizedHref";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { PATHS } from "@web-memo/shared/constants";
 import { cn } from "@web-memo/ui";
 import { BarChart3, MessageSquare, Users } from "lucide-react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 interface AdminSidebarProps extends LanguageType {}
@@ -16,17 +17,17 @@ export default function AdminSidebar({ lng }: AdminSidebarProps) {
 
 	const menuItems = [
 		{
-			href: `/${lng}${PATHS.admin}`,
+			href: PATHS.admin,
 			icon: BarChart3,
 			labelKey: "admin.sidebar.dashboard",
 		},
 		{
-			href: `/${lng}${PATHS.adminUsers}`,
+			href: PATHS.adminUsers,
 			icon: Users,
 			labelKey: "admin.sidebar.users",
 		},
 		{
-			href: `/${lng}${PATHS.adminFeedback}`,
+			href: PATHS.adminFeedback,
 			icon: MessageSquare,
 			labelKey: "admin.sidebar.feedback",
 		},
@@ -42,10 +43,11 @@ export default function AdminSidebar({ lng }: AdminSidebarProps) {
 			<nav className="space-y-1">
 				{menuItems.map((item) => {
 					const isActive =
-						pathname === item.href ||
+						pathname === getLocalizedHref(lng, item.href) ||
 						(item.href.includes("/users") && pathname.includes("/users"));
 					return (
-						<Link
+						<LocalizedLink
+							lng={lng}
 							key={item.href}
 							href={item.href}
 							className={cn(
@@ -57,7 +59,7 @@ export default function AdminSidebar({ lng }: AdminSidebarProps) {
 						>
 							<item.icon className="h-4 w-4" />
 							{t(item.labelKey)}
-						</Link>
+						</LocalizedLink>
 					);
 				})}
 			</nav>

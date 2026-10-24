@@ -11,11 +11,13 @@ import { QUERY_KEY, type TMemoStatusKey } from "@web-memo/shared/constants";
 import { useSettingQuery, useSupabaseUserQuery } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
-import type { Database } from "@web-memo/shared/types";
+import type { Database, IFPastMemoDuplicate } from "@web-memo/shared/types";
+import { parsePlanDateKey } from "@web-memo/shared/utils";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import {
 	badgeVariants,
 	cn,
+	IconTooltip,
 	Input,
 	Textarea,
 	ToastAction,
@@ -31,6 +33,7 @@ import {
 	CategorySuggestion,
 	getSaveStatus,
 	PastMemoNotice,
+	PlanDateButton,
 	SaveStatus,
 } from "./components";
 import {
@@ -53,6 +56,7 @@ const MemoFormContent = ({
 	isSyncFailed = false,
 	hasSyncNetworkError = false,
 	onRetrySync,
+	onPastMemoOpen,
 }: IFMemoFormProps) => {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const [isSwitching, setIsSwitching] = useState(false);
@@ -62,19 +66,35 @@ const MemoFormContent = ({
 	const { ref, ...rest } = register("memo");
 
 	const currentCategoryId = watch("categoryId");
+	// 상태 아이콘은 조회 캐시(memoData)가 아니라 폼 값을 읽는다. 저장 전 새 메모도 누르는 즉시 바뀌고,
+	// 저장 실패 시 toggleMemoStatus가 폼 값을 되돌려 아이콘도 함께 돌아온다.
+	const [isWish, isStar, isReading, plannedDate] = watch([
+		"isWish",
+		"isStar",
+		"isReading",
+		"plannedDate",
+	]);
 	const { user } = useSupabaseUserQuery();
 	const setting = useSettingQuery();
 	const { showImpression, showActionItem } = setting;
 	const userId = user.data.user?.id;
 
 	useEffect(() => {
-		return bridge.handle.SETTING_UPDATED((payload) => {
+		const unsubscribeInternal = bridge.handle.SETTING_UPDATED((payload) => {
 			if (payload.userId !== userId) {
 				return;
 			}
 
 			void queryClient.invalidateQueries({ queryKey: QUERY_KEY.setting() });
 		});
+		const unsubscribeWeb = bridge.handle.SETTING_UPDATED_FROM_WEB(() => {
+			void queryClient.invalidateQueries({ queryKey: QUERY_KEY.setting() });
+		});
+
+		return () => {
+			unsubscribeInternal();
+			unsubscribeWeb();
+		};
 	}, [queryClient, userId]);
 
 	const visibleFieldKeys: TMemoFieldKey[] = ["memo"];
@@ -102,6 +122,7 @@ const MemoFormContent = ({
 		handleActionItemChange,
 		updateCategory,
 		toggleMemoStatus,
+		setPlannedDate,
 	} = useMemoForm({ selectedMemo, isMemoLocked, isSyncing });
 	// 겉모습(로딩 문구·버튼 흐림)만 200ms 지연시킨다. 편집·저장 차단은 isMemoLocked로 즉시 적용된다.
 	const isMemoLoadingVisible = useDelayedFlag(
@@ -222,6 +243,40 @@ const MemoFormContent = ({
 		});
 	};
 
+	const handlePlanDateSelect = async (nextPlannedDate: string | null) => {
+		const result = await setPlannedDate(nextPlannedDate);
+
+		// 실패는 MutationCache가 이미 토스트로 알렸다. 성공 토스트를 그 위에 덮지 않는다.
+		if (!result) {
+			return;
+		}
+
+		const navigateToPlanTab = () => {
+			analytics.trackEvent({
+				name: "open_web_from_extension",
+				params: { from: "side_panel_toast" },
+			});
+			Tab.create({ url: getMemoUrl({ id: memoData?.id, isPlan: true }) });
+		};
+
+		toast({
+			title: result.plannedDate
+				? I18n.get(
+						"plan_added",
+						new Intl.DateTimeFormat(I18n.getMessageLocale(), {
+							month: "long",
+							day: "numeric",
+						}).format(parsePlanDateKey(result.plannedDate)),
+					)
+				: I18n.get("plan_removed"),
+			action: (
+				<ToastAction altText={I18n.get("go_to")} onClick={navigateToPlanTab}>
+					{I18n.get("go_to")}
+				</ToastAction>
+			),
+		});
+	};
+
 	const currentCategory = categories?.find(
 		(category) => category.id === currentCategoryId,
 	);
@@ -247,7 +302,12 @@ const MemoFormContent = ({
 					{I18n.get("memo_choose_other")}
 				</button>
 			)}
-			{!isMemoLocked && <PastMemoNotice hasMemoData={!!memoData?.created_at} />}
+			{!isMemoLocked && (
+				<PastMemoNotice
+					hasMemoData={!!memoData?.created_at}
+					onDuplicateOpen={onPastMemoOpen}
+				/>
+			)}
 			<form className="relative flex min-h-0 flex-1 flex-col py-1">
 				<div className="mb-1 flex shrink-0 items-center gap-1">
 					{setting.isRefetchError && (
@@ -415,7 +475,8 @@ const MemoFormContent = ({
 						<CategorySuggestion
 							suggestion={suggestion}
 							isAccepting={isAccepting}
-							onAccept={() => void acceptSuggestion()}
+							isShortcutDisabled={showCategoryList}
+							onAccept={(trigger) => void acceptSuggestion(trigger)}
 							onDismiss={dismissSuggestion}
 						/>
 					</div>
@@ -424,49 +485,65 @@ const MemoFormContent = ({
 					<div className="flex min-w-0 items-center gap-2">
 						<MemoStatusToggle
 							label={I18n.get("wish_list")}
-							isOn={!!memoData?.isWish}
+							isOn={!!isWish}
 							isDisabled={isMemoLocked || isControlsDisabled}
 							isDimmed={isMemoUiDimmed || isControlsDisabled}
-							title={changeDisabledReason}
+							disabledReason={changeDisabledReason}
+							actionLabel={I18n.get(
+								isWish ? "tooltip_wish_remove" : "tooltip_wish_add",
+							)}
 							onClick={() => handleMemoStatusClick("isWish")}
 						>
 							<HeartIcon
 								size={16}
-								fill={memoData?.isWish ? "currentColor" : ""}
-								fillOpacity={memoData?.isWish ? 100 : 0}
+								fill={isWish ? "currentColor" : ""}
+								fillOpacity={isWish ? 100 : 0}
 								className={cn({
-									"animate-heart-pop text-pink-500": memoData?.isWish,
+									"animate-heart-pop text-pink-500": isWish,
 								})}
 							/>
 						</MemoStatusToggle>
 						<MemoStatusToggle
 							label={I18n.get("important_memo")}
-							isOn={!!memoData?.isStar}
+							isOn={!!isStar}
 							isDisabled={isMemoLocked || isControlsDisabled}
 							isDimmed={isMemoUiDimmed || isControlsDisabled}
-							title={changeDisabledReason}
+							disabledReason={changeDisabledReason}
+							actionLabel={I18n.get(
+								isStar ? "tooltip_star_remove" : "tooltip_star_add",
+							)}
 							onClick={() => handleMemoStatusClick("isStar")}
 						>
 							<StarIcon
 								size={16}
-								fill={memoData?.isStar ? "currentColor" : ""}
-								fillOpacity={memoData?.isStar ? 100 : 0}
-								className={cn({ "text-amber-500": memoData?.isStar })}
+								fill={isStar ? "currentColor" : ""}
+								fillOpacity={isStar ? 100 : 0}
+								className={cn({ "text-amber-500": isStar })}
 							/>
 						</MemoStatusToggle>
 						<MemoStatusToggle
 							label={I18n.get("reading_memo")}
-							isOn={!!memoData?.isReading}
+							isOn={!!isReading}
 							isDisabled={isMemoLocked || isControlsDisabled}
 							isDimmed={isMemoUiDimmed || isControlsDisabled}
-							title={changeDisabledReason}
+							disabledReason={changeDisabledReason}
+							actionLabel={I18n.get(
+								isReading ? "tooltip_reading_remove" : "tooltip_reading_add",
+							)}
 							onClick={() => handleMemoStatusClick("isReading")}
 						>
 							<BookOpenIcon
 								size={16}
-								className={cn({ "text-emerald-500": memoData?.isReading })}
+								className={cn({ "text-emerald-500": isReading })}
 							/>
 						</MemoStatusToggle>
+						<PlanDateButton
+							plannedDate={plannedDate}
+							isDisabled={isMemoLocked || isControlsDisabled}
+							isDimmed={isMemoUiDimmed || isControlsDisabled}
+							disabledReason={changeDisabledReason}
+							onSelect={handlePlanDateSelect}
+						/>
 						{!isMemoLocked && (
 							<SaveStatus
 								saveStatus={displaySaveStatus}
@@ -542,6 +619,7 @@ const MemoForm = ({
 	isSyncFailed,
 	hasSyncNetworkError,
 	onRetrySync,
+	onPastMemoOpen,
 }: IFMemoFormProps) => {
 	const form = useForm<MemoInput>({
 		shouldUnregister: false,
@@ -554,6 +632,7 @@ const MemoForm = ({
 			isStar: false,
 			isReading: false,
 			categoryId: null,
+			plannedDate: null,
 		},
 	});
 
@@ -571,6 +650,7 @@ const MemoForm = ({
 				isSyncFailed={isSyncFailed}
 				hasSyncNetworkError={hasSyncNetworkError}
 				onRetrySync={onRetrySync}
+				onPastMemoOpen={onPastMemoOpen}
 			/>
 		</FormProvider>
 	);
@@ -601,6 +681,8 @@ interface IFMemoFormProps {
 	hasSyncNetworkError?: boolean;
 	/** 대기열 동기화 실패(syncFailed) 다시 시도 버튼 클릭 핸들러 */
 	onRetrySync?: () => void;
+	/** 과거 메모 알림에서 같은 글의 열기를 눌렀을 때. 사이드 패널 안에서 읽기 전용으로 보여 주는 쪽이 처리한다 */
+	onPastMemoOpen?: (duplicate: IFPastMemoDuplicate) => void;
 }
 
 interface IFMemoStatusToggleProps {
@@ -612,8 +694,10 @@ interface IFMemoStatusToggleProps {
 	isDisabled?: boolean;
 	/** 잠금이 눈에 띄게 오래 지속돼 흐리게 보여줄지 */
 	isDimmed?: boolean;
-	/** 막힌 사유(오프라인·동기화 중). 잠금(isDisabled)이 함께 걸리면 비워 둔다 */
-	title?: string;
+	/** 막힌 사유(오프라인·동기화 중). 있으면 말풍선에 동작 문구 대신 보여 준다. 잠금(isDisabled)이 함께 걸리면 비워 둔다 */
+	disabledReason?: string;
+	/** 누르면 일어날 일. 켜져 있으면 "빼기", 꺼져 있으면 "추가"를 말풍선으로 알린다 */
+	actionLabel: string;
 	onClick: () => void;
 	children: React.ReactNode;
 }
@@ -630,28 +714,31 @@ function MemoStatusToggle({
 	isOn,
 	isDisabled,
 	isDimmed,
-	title,
+	disabledReason,
+	actionLabel,
 	onClick,
 	children,
 }: IFMemoStatusToggleProps) {
 	return (
-		<button
-			type="button"
-			aria-label={label}
-			aria-pressed={isOn}
-			disabled={isDisabled}
-			title={title}
-			onClick={onClick}
-			className={cn(
-				"focus-visible:ring-ring rounded-sm transition-transform focus-visible:outline-none focus-visible:ring-1",
-				// 사유(title)가 있는 비활성은 오프라인·동기화 중이라 누를 수 없음을 커서로도 알린다
-				isDisabled && (title ? "cursor-not-allowed" : "cursor-default"),
-				!isDisabled && "hover:scale-110 active:scale-95",
-				isDimmed && "opacity-50",
-			)}
-		>
-			{children}
-		</button>
+		<IconTooltip label={disabledReason ?? actionLabel}>
+			<button
+				type="button"
+				aria-label={label}
+				aria-pressed={isOn}
+				disabled={isDisabled}
+				onClick={onClick}
+				className={cn(
+					"focus-visible:ring-ring rounded-sm transition-transform focus-visible:outline-none focus-visible:ring-1",
+					// 사유가 있는 비활성은 오프라인·동기화 중이라 누를 수 없음을 커서로도 알린다
+					isDisabled &&
+						(disabledReason ? "cursor-not-allowed" : "cursor-default"),
+					!isDisabled && "hover:scale-110 active:scale-95",
+					isDimmed && "opacity-50",
+				)}
+			>
+				{children}
+			</button>
+		</IconTooltip>
 	);
 }
 

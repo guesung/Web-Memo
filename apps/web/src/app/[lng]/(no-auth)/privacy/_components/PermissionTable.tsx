@@ -1,10 +1,10 @@
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { PRIVACY_PERMISSIONS } from "../_constants";
 
 /** 확장 프로그램이 요청하는 권한과 그 사용 이유를 정리한 표 */
 export default async function PermissionTable({ lng }: PermissionTableProps) {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	return (
 		<div className="mt-6 overflow-x-auto rounded-lg border border-border">

@@ -1,4 +1,4 @@
-import { Check, ChevronDown, FileText, Save, X } from "lucide-react-native";
+import { ChevronDown, FileText, X } from "lucide-react-native";
 import {
 	ActivityIndicator,
 	Image,
@@ -15,6 +15,7 @@ import {
 	useMemoPanelState,
 } from "../_hooks/useMemoPanelState";
 import { MemoCandidateChooser } from "./MemoCandidateChooser";
+import { MemoSaveFeedback } from "./memoSaveFeedback";
 
 /** 현재 페이지의 메모 후보와 편집기를 표시한다. */
 export function MemoPanel(props: IFMemoPanelProps) {
@@ -26,28 +27,24 @@ export function MemoPanel(props: IFMemoPanelProps) {
 		candidates,
 		isPending,
 		handleSelectionChange,
-		selectedMemo,
 		handlePendingLocalSelect,
 		pendingLocalId,
 		pendingSaveMode,
+		pendingTargetId,
 		setPendingSaveMode,
 		handlePendingShareApply,
 		isPendingShareApply,
-		hasDraftRef,
 		titleText,
 		markDraftChanged,
-		setTitleText,
+		failure,
+		handleRetry,
+		handleFlush,
 		isKeyboardVisible,
-		saved,
-		handleSave,
 		showImpression,
 		showActionItem,
 		memoText,
-		setMemoText,
 		impressionText,
-		setImpressionText,
 		actionItemText,
-		setActionItemText,
 		isLoadingMemo,
 		memoError,
 		isChoosingMemo,
@@ -76,7 +73,7 @@ export function MemoPanel(props: IFMemoPanelProps) {
 		<View className="flex-1 bg-white dark:bg-neutral-900 p-3">
 			{pendingLocalMemos.length > 0 && (
 				<View className="mb-2">
-					<Text className="text-amber-600">
+					<Text className="text-amber-600 dark:text-amber-400">
 						동기화 대기 초안을 선택해 내용을 확인하세요.
 					</Text>
 					{pendingLocalMemos.map((candidate) => (
@@ -95,10 +92,10 @@ export function MemoPanel(props: IFMemoPanelProps) {
 			)}
 			{pendingLocalId && (
 				<View className="mb-2">
-					<Text className="text-amber-600">
+					<Text className="text-amber-600 dark:text-amber-400">
 						초안을 어떻게 저장할지 선택하세요.
 					</Text>
-					{typeof selectedMemo?.id === "number" && (
+					{typeof pendingTargetId === "number" && (
 						<TouchableOpacity
 							accessibilityRole="button"
 							disabled={isPending}
@@ -141,11 +138,6 @@ export function MemoPanel(props: IFMemoPanelProps) {
 					<Text className="text-blue-500 mb-2">다른 메모 선택</Text>
 				</TouchableOpacity>
 			)}
-			{hasDraftRef.current && selectedMemo && (
-				<Text className="text-amber-600 mb-2">
-					작성 중인 내용을 유지했습니다. 저장하면 선택한 메모에 반영됩니다.
-				</Text>
-			)}
 			<View className="flex-row justify-between items-center mb-2">
 				<View className="flex-row items-center gap-1.5 flex-1 mr-2">
 					{favIconUrl ? (
@@ -161,7 +153,6 @@ export function MemoPanel(props: IFMemoPanelProps) {
 						value={titleText}
 						onChangeText={(value) => {
 							markDraftChanged("title", value);
-							setTitleText(value);
 						}}
 						placeholder="제목"
 						placeholderTextColor={isDark ? "#666" : "#999"}
@@ -180,40 +171,24 @@ export function MemoPanel(props: IFMemoPanelProps) {
 					{onClose && (
 						<TouchableOpacity
 							className="items-center justify-center p-1.5"
-							onPress={onClose}
+							onPress={() => {
+								handleFlush();
+								onClose();
+							}}
 						>
 							<X size={16} color={isDark ? "#777" : "#999"} />
 						</TouchableOpacity>
 					)}
-					<TouchableOpacity
-						className={`flex-row items-center gap-1.5 px-3.5 py-2 rounded-lg ${saved ? "bg-success" : "bg-foreground"}`}
-						onPress={handleSave}
-						disabled={
-							isPending ||
-							(pendingLocalId !== null && pendingSaveMode === null) ||
-							(!memoText.trim() &&
-								!impressionText.trim() &&
-								!actionItemText.trim())
-						}
-					>
-						{isPending ? (
-							<ActivityIndicator size="small" color="#fff" />
-						) : saved ? (
-							<Check size={16} color="#fff" />
-						) : (
-							<Save size={16} color="#fff" />
-						)}
-						<Text className="text-white text-sm font-semibold">
-							{saved
-								? "저장됨"
-								: pendingSaveMode === "separate"
-									? "별도 저장"
-									: "저장"}
-						</Text>
-					</TouchableOpacity>
 				</View>
 			</View>
 
+			{failure && (
+				<MemoSaveFeedback
+					isCleanupError={failure === "cleanup"}
+					isPending={isPending}
+					onRetry={handleRetry}
+				/>
+			)}
 			<ScrollView
 				className="flex-1"
 				keyboardShouldPersistTaps="handled"
@@ -228,7 +203,6 @@ export function MemoPanel(props: IFMemoPanelProps) {
 					value={memoText}
 					onChangeText={(value) => {
 						markDraftChanged("memo", value);
-						setMemoText(value);
 					}}
 					multiline
 					scrollEnabled={false}
@@ -247,7 +221,6 @@ export function MemoPanel(props: IFMemoPanelProps) {
 							value={impressionText}
 							onChangeText={(value) => {
 								markDraftChanged("impression", value);
-								setImpressionText(value);
 							}}
 							multiline
 							scrollEnabled={false}
@@ -268,7 +241,6 @@ export function MemoPanel(props: IFMemoPanelProps) {
 							value={actionItemText}
 							onChangeText={(value) => {
 								markDraftChanged("actionItem", value);
-								setActionItemText(value);
 							}}
 							multiline
 							scrollEnabled={false}

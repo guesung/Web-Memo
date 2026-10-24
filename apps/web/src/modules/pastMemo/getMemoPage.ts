@@ -17,18 +17,20 @@ export interface IFMemoCandidate {
 /**
  * 사용자의 비삭제 메모를 최근 수정 순으로 한 페이지씩 읽는다.
  * @description 서비스 롤 키를 쓰지 않고 사용자 토큰을 실은 클라이언트로 조회해 RLS를 그대로 탄다.
- * 조회에 실패하면 Supabase 오류를 그대로 던진다.
+ * urlPattern을 주면 원본 URL이 그 ILIKE 패턴에 맞는 메모만 읽는다. 조회에 실패하면 Supabase 오류를 그대로 던진다.
  */
 export const getMemoPage = async ({
 	accessToken,
 	userId,
 	offset,
 	pageSize,
+	urlPattern,
 }: {
 	accessToken: string;
 	userId: string;
 	offset: number;
 	pageSize: number;
+	urlPattern?: string;
 }): Promise<IFMemoCandidate[]> => {
 	const supabaseClient = createClient<Database, "memo">(
 		SUPABASE.url,
@@ -40,11 +42,15 @@ export const getMemoPage = async ({
 		},
 	);
 
-	const { data, error } = await supabaseClient
+	const baseQuery = supabaseClient
 		.from(SUPABASE.table.memo)
 		.select("id,title,url,favIconUrl,updated_at")
 		.eq("user_id", userId)
-		.is("deleted_at", null)
+		.is("deleted_at", null);
+	const filteredQuery = urlPattern
+		? baseQuery.ilike("url", urlPattern)
+		: baseQuery;
+	const { data, error } = await filteredQuery
 		// Postgres의 DESC는 NULL을 앞에 두므로, 수정 시각이 없는 메모가 최근 메모를 밀어내지 않게 뒤로 보낸다.
 		.order("updated_at", { ascending: false, nullsFirst: false })
 		.order("id", { ascending: false })

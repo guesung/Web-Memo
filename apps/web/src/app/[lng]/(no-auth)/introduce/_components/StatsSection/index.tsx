@@ -1,5 +1,5 @@
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { FileText, Gift, Shield, Users } from "lucide-react";
 import SectionHeader from "../SectionHeader";
 import SectionShell, { type TSectionBackground } from "../SectionShell";
@@ -28,7 +28,7 @@ export default async function StatsSection({
 	stats,
 	background,
 }: StatsSectionProps) {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	const countedStats = [
 		{

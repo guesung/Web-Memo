@@ -11,17 +11,18 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, labeled, unlabeled]
 
-# master는 커밋마다 CI를 병렬로 끝까지 돌립니다. 그룹을 ref 단위로 두면 push가 연달아 들어올 때
-# GitHub이 대기 run을 하나만 남기고 앞선 대기 run을 cancel-in-progress와 상관없이 취소합니다.
-# 취소된 run은 잡이 하나도 뜨지 않아 그 커밋은 CI 검증도 Slack 알림도 없이 사라집니다(PR #517).
-# master의 이 CI는 배포하지 않고 빌드 검증·아티팩트·알림만 하므로 병렬로 돌려도 배포가 겹치지 않습니다.
-# PR과 develop은 종전처럼 같은 ref의 앞선 run을 취소합니다.
+# push 실행 전체는 보호하고, develop의 짧은 작업만 잡별로 취소합니다.
+# 상위 실행을 취소하면 이미 시작한 앱 빌드·배포도 함께 끊깁니다.
+# PR은 종전처럼 이전 실행 전체를 취소합니다.
 concurrency:
-  group: ci-${{ github.ref == 'refs/heads/master' && github.sha || github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  group: ci-run-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   ci:
+    concurrency:
+      group: ci-check-${{ github.ref == 'refs/heads/develop' && github.ref || github.run_id }}
+      cancel-in-progress: ${{ github.ref == 'refs/heads/develop' }}
     runs-on: ubuntu-26.04
     timeout-minutes: 15
     env:
@@ -51,6 +52,9 @@ jobs:
       - name: Page paths up to date
         run: node apps/web/scripts/generatePagePaths.mjs --check
 
+      - name: Code conventions ledger
+        run: node .github/scripts/conventions/check-code-conventions.mjs
+
       - name: Check (format + lint)
         run: pnpm check
 
@@ -65,6 +69,9 @@ jobs:
         run: pnpm test:jest --run
 
   changes:
+    concurrency:
+      group: changes-${{ github.ref == 'refs/heads/develop' && github.ref || github.run_id }}
+      cancel-in-progress: ${{ github.ref == 'refs/heads/develop' }}
     runs-on: ubuntu-26.04
     timeout-minutes: 5
     # 성공한 이전 런을 조회하려면 actions:read가 필요합니다.
@@ -129,26 +136,29 @@ jobs:
   # 앱과 무관한 PR까지 빌드를 끌고 오므로, PR에서는 build-app 라벨이 있을 때만 돌립니다.
   cd-app:
     needs: [ci, changes]
-    # 재사용 워크플로의 잡은 호출자 권한을 넘어설 수 없습니다.
-    # cd-app.yml은 체크아웃만 하므로 contents:read면 충분합니다.
+    # 앱 후보·배포 성공 marker 조회도 재사용 워크플로에서 수행합니다.
     permissions:
       contents: read
+      actions: read
     if: >-
-      needs.changes.outputs.app == 'true' &&
+      (github.ref == 'refs/heads/develop' || needs.changes.outputs.app == 'true') &&
       (github.event_name != 'pull_request' ||
       contains(github.event.pull_request.labels.*.name, 'build-app'))
+    # develop은 모든 검증 통과 후보를 보냅니다. 앱 자체 성공 기준으로 변경을 다시 판정합니다.
+    # 공유 직렬화는 실제 cd-app 빌드 잡에서 수행합니다(호출자 중복 잠금 금지).
     uses: ./.github/workflows/cd-app.yml
     secrets: inherit
     with:
-      # master에 머지돼도 자동으로 스토어에 올리지 않습니다. 여기서는 빌드가 되는지만 봅니다.
-      # 실제 제출은 아래 notify가 보낸 Slack 메시지의 버튼 → release.yml 한 경로뿐입니다.
-      # (docs/release-flow.md)
-      deploy_target: "build-only"
-      # master 머지분은 release.yml이 그대로 내려받아 제출하므로 스토어에 올릴 수 있는
-      # 빌드여야 합니다(ci = autoIncrement on). PR 검증 빌드는 버려지므로 verify입니다.
-      build_profile: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') && 'ci' || 'verify' }}
+      # develop은 Android를 Firebase App Distribution(App Tester)으로, iOS를 TestFlight로 배포하고, master와 PR은 빌드만 합니다.
+      # master 커밋의 제출은 Slack 버튼 → release.yml에서 수행합니다.
+      deploy_target: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/develop') && 'staging' || 'build-only' }}
+      # develop 배포와 master 빌드는 번호를 올리고, PR 검증은 고정합니다.
+      build_profile: ${{ github.event_name == 'push' && 'ci' || 'verify' }}
 
   cd-extension:
+    concurrency:
+      group: cd-extension-${{ github.ref == 'refs/heads/develop' && github.ref || github.run_id }}
+      cancel-in-progress: ${{ github.ref == 'refs/heads/develop' }}
     needs: [ci, changes]
     if: needs.changes.outputs.extension == 'true'
     uses: ./.github/workflows/cd-extension.yml
@@ -160,6 +170,9 @@ jobs:
       deploy_target: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') && 'build-only' || 'staging' }}
 
   cd-web:
+    concurrency:
+      group: cd-web-${{ github.ref == 'refs/heads/develop' && github.ref || github.run_id }}
+      cancel-in-progress: ${{ github.ref == 'refs/heads/develop' }}
     needs: [ci, changes]
     if: needs.changes.outputs.web == 'true'
     uses: ./.github/workflows/cd-web.yml
@@ -199,6 +212,31 @@ jobs:
           # 둘 다 실패로 뭉개집니다. skipped는 앞 스텝에서 멈췄다는 뜻입니다.
           DEPLOY_OUTCOME: ${{ needs['cd-web'].outputs.staging_outcome }}
         run: node .github/scripts/deploy/notify-staging-deploy.mjs
+
+  # 앱 결과는 웹 배포와 별도로 끝나는 즉시 같은 develop 머지 스레드에 답니다.
+  notify-staging-app:
+    name: Slack 앱 App Tester 배포 알림
+    needs: [slack-thread, changes, cd-app]
+    if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/develop' && (needs['cd-app'].outputs.attempted == 'true' || needs['cd-app'].result == 'failure') && (needs['cd-app'].result == 'success' || needs['cd-app'].result == 'failure') }}
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Notify app internal test submission
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          SLACK_THREAD_TS: ${{ needs.slack-thread.outputs.thread_ts }}
+          TARGET: app
+          REPLY_PHASE: store-submit
+          CHANGED: 'true'
+          RESULT: ${{ needs['cd-app'].result }}
+        run: node .github/scripts/deploy/notify-thread-reply.mjs
 
   # master 머지 스레드에 타깃 하나의 빌드 결과를 댓글로 답니다(notify-web, notify-extension, notify-app).
   # 각 잡은 자기 cd-* 잡만 기다리므로 웹·확장 결과가 앱 빌드(약 30분)에 묶이지 않고 끝나는 대로 나갑니다.

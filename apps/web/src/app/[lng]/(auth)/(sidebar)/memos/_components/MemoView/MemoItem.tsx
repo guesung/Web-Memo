@@ -2,7 +2,11 @@ import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
-import type { GetMemoResponse, HighlightRow } from "@web-memo/shared/types";
+import type {
+	GetMemoResponse,
+	HighlightMemoLink,
+	HighlightRow,
+} from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
 import { Card, CardContent } from "@web-memo/ui";
 import { motion } from "framer-motion";
@@ -19,13 +23,14 @@ import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
 import type { SearchFormValues } from "../MemoSearchFormProvider";
 import useIsContentClamped from "./_hooks/useIsContentClamped";
-import { MemoHighlights } from "./MemoHighlights";
+import { MemoSourceQuote } from "./MemoSourceQuote";
 import { holdScrollPosition } from "./scrollPositionHold";
 
 /** 메모 카드 표시와 선택 속성. */
 interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	memo: GetMemoResponse;
 	highlights?: HighlightRow[];
+	source?: HighlightMemoLink;
 	isSelectingMode?: boolean;
 	selectMemoItem?: (id: number) => void;
 	isMemoSelected?: boolean;
@@ -49,11 +54,12 @@ interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	footer?: ReactNode;
 }
 
-/** 메모 본문과 연결된 하이라이트를 표시한다. */
-const MemoItem = ({
+/** 메모 카드에는 기록 내용을 우선 표시하고 인용문은 상세에서만 보여준다. */
+function MemoItem({
 	lng,
 	memo,
 	highlights,
+	source,
 	selectMemoItem,
 	isSelectingMode,
 	isMemoSelected,
@@ -65,7 +71,7 @@ const MemoItem = ({
 	badge,
 	footer,
 	...props
-}: IFMemoItemProps) => {
+}: IFMemoItemProps) {
 	const { t } = useTranslation(lng);
 	const searchParams = useSearchParams();
 	// 휴지통에는 검색 폼이 없다. 그때 useFormContext는 null을 준다.
@@ -76,10 +82,8 @@ const MemoItem = ({
 	const isContentTruncated = canTruncate && !isMemoExpanded;
 	const { containerRef, isContentClamped } =
 		useIsContentClamped(isContentTruncated);
-	const hasHiddenHighlights =
-		isContentTruncated && (highlights?.length ?? 0) > 1;
 	const isExpandButtonVisible =
-		canTruncate && (isMemoExpanded || isContentClamped || hasHiddenHighlights);
+		canTruncate && (isMemoExpanded || isContentClamped);
 
 	const handleMouseEnter = () => {
 		setIsMemoHovering(true);
@@ -209,6 +213,7 @@ const MemoItem = ({
 						isMemoSelected={isMemoSelected}
 						selectMemoItem={selectMemoItem}
 					/>
+					{source && <MemoSourceQuote lng={lng} source={source} isPreview />}
 					{memo.memo?.trim() && (
 						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces [overflow-wrap:anywhere]">
 							<p
@@ -218,17 +223,6 @@ const MemoItem = ({
 								{memo.memo}
 							</p>
 						</CardContent>
-					)}
-					{!isReadOnly && (
-						<MemoHighlights
-							highlights={highlights}
-							label={t("sideBar.highlight")}
-							isPreview={isContentTruncated}
-							className="px-4 py-2"
-							countLabel={t("memoSection.highlightCount", {
-								count: highlights?.length ?? 0,
-							})}
-						/>
 					)}
 					{showImpression && memo.impression?.trim() && (
 						<CardContent className="px-4 py-2 text-foreground leading-relaxed whitespace-break-spaces [overflow-wrap:anywhere]">
@@ -278,7 +272,13 @@ const MemoItem = ({
 							className="px-4 py-2"
 							memo={memo}
 							lng={lng}
+							highlightCount={
+								!isReadOnly && (highlights?.length ?? 0) > 0
+									? highlights?.length
+									: undefined
+							}
 							isShowingOption={isMemoHovering && !isSelectingMode}
+							hidesInactiveActions
 						/>
 					)}
 					<div className="absolute -inset-0.5 bg-gradient-to-r from-primary via-primary to-cyan-500 rounded-2xl opacity-0 group-hover:opacity-[0.08] blur transition-opacity duration-300 -z-10" />
@@ -286,7 +286,7 @@ const MemoItem = ({
 			</motion.div>
 		</div>
 	);
-};
+}
 
 /** 메모 카드의 불필요한 재렌더링을 방지한다. */
 export default memo(MemoItem);

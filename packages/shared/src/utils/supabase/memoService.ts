@@ -6,7 +6,16 @@ import type {
 	MemoTable,
 } from "../../types";
 import { getMemoSearchFilter } from "../memoSearchFilter";
-import { getPageKey, getPathKey } from "../Url";
+import {
+	getLegacyUrlPrefixPattern,
+	getPageKey,
+	getPathKey,
+	toLikePrefixPattern,
+} from "../Url";
+import { fetchAllByPageKeyBatched } from "./fetchAllByPageKeyBatched";
+
+/** 읽을 계획 탭이 한 번에 불러오는 최대 메모 수. */
+const PLANNED_MEMOS_LIMIT = 500;
 
 /** 날짜 정렬에서 같은 시각의 메모까지 이어 읽는 복합 커서. */
 export interface IFMemoPageCursor {
@@ -29,38 +38,37 @@ export class MemoService {
 			.insert({ ...request, page_key: getPageKey(request.url) })
 			.select();
 
-	/** 같은 페이지의 메모 후보를 최근 수정 순으로 모두 조회한다. */
+	/**
+	 * 같은 페이지의 메모 후보를 최근 수정 순으로 모두 조회한다.
+	 * @description 키가 비어 있는 옛 행은 원본 URL 접두로 서버에서 먼저 좁힌다. 키가 있는 행도 같은 접두를
+	 * 가지므로 조건을 공통으로 건다.
+	 */
 	getMemoByUrl = async (url: string) => {
 		const pageKey = getPageKey(url);
-		const memos: GetMemoResponse[] = [];
-		let lastId = 0;
-		while (true) {
-			const { data, error } = await this.supabaseClient
-				.schema(SUPABASE.table.memo)
-				.from(SUPABASE.table.memo)
-				.select("*, category(id, name, color)")
-				.is("deleted_at", null)
-				.in("page_key", [pageKey, ""])
-				.gt("id", lastId)
-				.order("id", { ascending: true })
-				.limit(500);
-			if (error) {
-				return { data: null, error };
-			}
-			memos.push(
-				...(data ?? []).filter((memo) => {
-					try {
-						return (memo.page_key || getPageKey(memo.url)) === pageKey;
-					} catch {
-						return false;
-					}
-				}),
-			);
-			if (!data || data.length < 500) {
-				break;
-			}
-			lastId = data[data.length - 1].id;
+		const { data, error } = await fetchAllByPageKeyBatched<GetMemoResponse>({
+			fetchBatch: (lastId, batchSize) =>
+				this.supabaseClient
+					.schema(SUPABASE.table.memo)
+					.from(SUPABASE.table.memo)
+					.select("*, category(id, name, color)")
+					.is("deleted_at", null)
+					.in("page_key", [pageKey, ""])
+					.like("url", getLegacyUrlPrefixPattern(pageKey))
+					.gt("id", lastId)
+					.order("id", { ascending: true })
+					.limit(batchSize),
+			matches: (memo) => {
+				try {
+					return (memo.page_key || getPageKey(memo.url)) === pageKey;
+				} catch {
+					return false;
+				}
+			},
+		});
+		if (error) {
+			return { data: null, error };
 		}
+		const memos = data ?? [];
 		memos.sort((first, second) => {
 			const dateDifference = (second.updated_at ?? "").localeCompare(
 				first.updated_at ?? "",
@@ -72,47 +80,43 @@ export class MemoService {
 
 	/**
 	 * 쿼리만 다른 주소까지 포함해 같은 경로의 메모 후보를 최근 수정 순으로 모두 조회한다.
-	 * @description `page_key`가 경로로 시작하는 행과 아직 키가 없는 옛 행을 읽고, JS에서 경로 키를 다시 비교해
-	 * `/a`가 `/ab`를 잡거나 LIKE 와일드카드가 섞여 넓게 잡힌 행을 걸러 낸다.
+	 * @description `page_key`가 경로로 시작하는 행과, 아직 키가 없지만 원본 URL이 경로로 시작하는 옛 행을 읽고,
+	 * JS에서 경로 키를 다시 비교해 `/a`가 `/ab`를 잡거나 LIKE 와일드카드가 섞여 넓게 잡힌 행을 걸러 낸다.
 	 */
 	getMemosBySamePath = async (url: string) => {
 		const pathKey = getPathKey(url);
-		const pathPattern = `${pathKey.replace(/[\\%_]/g, "\\$&")}%`;
+		const pathPattern = toLikePrefixPattern(pathKey);
 		const memos: GetMemoResponse[] = [];
 
 		for (const pageKeyFilter of ["like", "empty"] as const) {
-			let lastId = 0;
-			while (true) {
-				const baseQuery = this.supabaseClient
-					.schema(SUPABASE.table.memo)
-					.from(SUPABASE.table.memo)
-					.select("*, category(id, name, color)")
-					.is("deleted_at", null);
-				const filteredQuery =
-					pageKeyFilter === "like"
-						? baseQuery.like("page_key", pathPattern)
-						: baseQuery.eq("page_key", "");
-				const { data, error } = await filteredQuery
-					.gt("id", lastId)
-					.order("id", { ascending: true })
-					.limit(500);
-				if (error) {
-					return { data: null, error };
-				}
-				memos.push(
-					...(data ?? []).filter((memo) => {
-						try {
-							return getPathKey(memo.page_key || memo.url) === pathKey;
-						} catch {
-							return false;
-						}
-					}),
-				);
-				if (!data || data.length < 500) {
-					break;
-				}
-				lastId = data[data.length - 1].id;
+			const { data, error } = await fetchAllByPageKeyBatched<GetMemoResponse>({
+				fetchBatch: (lastId, batchSize) => {
+					const baseQuery = this.supabaseClient
+						.schema(SUPABASE.table.memo)
+						.from(SUPABASE.table.memo)
+						.select("*, category(id, name, color)")
+						.is("deleted_at", null);
+					const filteredQuery =
+						pageKeyFilter === "like"
+							? baseQuery.like("page_key", pathPattern)
+							: baseQuery.eq("page_key", "").like("url", pathPattern);
+					return filteredQuery
+						.gt("id", lastId)
+						.order("id", { ascending: true })
+						.limit(batchSize);
+				},
+				matches: (memo) => {
+					try {
+						return getPathKey(memo.page_key || memo.url) === pathKey;
+					} catch {
+						return false;
+					}
+				},
+			});
+			if (error) {
+				return { data: null, error };
 			}
+			memos.push(...(data ?? []));
 		}
 		// 두 조회는 실제 DB에서 겹치지 않지만, 필터를 무시하는 목에서도 한 메모가 두 번 나오지 않게 한다.
 		const uniqueMemos = Array.from(
@@ -249,6 +253,39 @@ export class MemoService {
 		if (isReading !== undefined) {
 			query = query.eq("isReading", isReading);
 		}
+
+		if (category) {
+			query = query.eq("category.name", category);
+		}
+
+		if (searchQuery) {
+			query = query.or(getMemoSearchFilter(searchQuery));
+		}
+
+		return query;
+	};
+
+	/** 읽을 계획이 잡힌 메모를 계획 날짜 오름차순으로 한 번에 조회한다. 페이징 없이 최대 500건이며, 위시 메모도 포함한다. */
+	getPlannedMemos = async ({
+		category,
+		searchQuery,
+	}: {
+		category?: string;
+		searchQuery?: string;
+	} = {}) => {
+		const selectQuery = category
+			? "*, category!inner(id, name, color)"
+			: "*, category(id, name, color)";
+
+		let query = this.supabaseClient
+			.schema(SUPABASE.table.memo)
+			.from(SUPABASE.table.memo)
+			.select(selectQuery, { count: "exact" })
+			.not("plannedDate", "is", null)
+			.is("deleted_at", null)
+			.order("plannedDate", { ascending: true })
+			.order("updated_at", { ascending: false, nullsFirst: false })
+			.limit(PLANNED_MEMOS_LIMIT);
 
 		if (category) {
 			query = query.eq("category.name", category);

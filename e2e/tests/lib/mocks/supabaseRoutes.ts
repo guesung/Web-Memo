@@ -3,6 +3,7 @@ import { SUPABASE } from "@web-memo/shared/constants";
 import type { Database } from "@web-memo/shared/types";
 import {
 	createMockCategory,
+	createMockFavorite,
 	createMockHighlight,
 	createMockMemo,
 } from "./mockData";
@@ -10,6 +11,9 @@ import {
 type MemoRow = Database["memo"]["Tables"]["memo"]["Row"];
 type CategoryRow = Database["memo"]["Tables"]["category"]["Row"];
 type HighlightRow = Database["memo"]["Tables"]["highlight"]["Row"];
+type HighlightMemoSource =
+	Database["memo"]["Tables"]["highlight_memo_source"]["Row"];
+type FavoriteRow = Database["memo"]["Tables"]["favorite"]["Row"];
 type SettingRow = Database["memo"]["Tables"]["setting"]["Row"];
 
 /** 앱이 받는 메모 한 건. `select("*, category(...)")`의 응답 모양이다. */
@@ -34,7 +38,17 @@ export class MockSupabaseStore {
 	private memos: Map<number, MemoRow> = new Map();
 	private categories: Map<number, CategoryRow> = new Map();
 	private highlights: Map<number, HighlightRow> = new Map();
+	private highlightMemoSources: Map<number, HighlightMemoSource> = new Map();
+	private favorites: Map<number, FavoriteRow> = new Map();
 	private setting: SettingRow | null = null;
+
+	/** 설정 저장 요청이 보낸 body를 받은 순서대로 쌓는다. 어떤 키를 보냈는지 검증하는 데 쓴다. */
+	readonly settingUpserts: Record<string, unknown>[] = [];
+	/** 주간 리포트 테스트 메일 요청이 보낸 body를 받은 순서대로 쌓는다. */
+	readonly weeklyReportTestRequests: unknown[] = [];
+	/** 주간 리포트 테스트 메일 함수가 돌려줄 응답 */
+	weeklyReportTestResponse: { status: number; body: Record<string, unknown> } =
+		{ status: 200, body: { status: "ok", email: "report@example.com" } };
 
 	/** 메모 한 건을 저장소에 넣는다. */
 	addMemo(memo: MemoRow) {
@@ -76,7 +90,17 @@ export class MockSupabaseStore {
 	deleteMemo(id: number) {
 		const memo = this.memos.get(id);
 		this.memos.delete(id);
+		this.highlightMemoSources.delete(id);
 		return memo;
+	}
+
+	addHighlightMemoSource(source: HighlightMemoSource) {
+		this.highlightMemoSources.set(source.memo_id, source);
+		return source;
+	}
+
+	getHighlightMemoSources() {
+		return Array.from(this.highlightMemoSources.values());
 	}
 
 	/** 카테고리 한 건을 저장소에 넣는다. */
@@ -154,7 +178,43 @@ export class MockSupabaseStore {
 	deleteHighlight(id: number) {
 		const highlight = this.highlights.get(id);
 		this.highlights.delete(id);
+		for (const source of Array.from(this.highlightMemoSources.values())) {
+			if (source.highlight_id === id)
+				this.highlightMemoSources.set(source.memo_id, {
+					...source,
+					highlight_id: null,
+				});
+		}
 		return highlight;
+	}
+
+	/** 즐겨찾기 한 건을 저장소에 넣는다. */
+	addFavorite(favorite: FavoriteRow) {
+		this.favorites.set(favorite.id, favorite);
+		return favorite;
+	}
+
+	/** 저장된 즐겨찾기 전체를 돌려준다. */
+	getAllFavorites() {
+		return Array.from(this.favorites.values());
+	}
+
+	/** 즐겨찾기를 부분 갱신한다. 없으면 null. */
+	updateFavorite(id: number, updates: Partial<FavoriteRow>) {
+		const favorite = this.favorites.get(id);
+		if (!favorite) return null;
+
+		const updated = { ...favorite, ...updates };
+		this.favorites.set(id, updated);
+
+		return updated;
+	}
+
+	/** 즐겨찾기를 지우고 지운 행을 돌려준다. */
+	deleteFavorite(id: number) {
+		const favorite = this.favorites.get(id);
+		this.favorites.delete(id);
+		return favorite;
 	}
 
 	/** 메모에 category_id로 연결된 카테고리를 붙여 앱이 받는 모양으로 만든다. */
@@ -175,6 +235,8 @@ export class MockSupabaseStore {
 		this.memos.clear();
 		this.categories.clear();
 		this.highlights.clear();
+		this.highlightMemoSources.clear();
+		this.favorites.clear();
 		this.setting = null;
 	}
 }
@@ -379,6 +441,7 @@ const matchesCursor = (memo: MemoRow, url: URL): boolean => {
 /**
  * `order=updated_at.desc,id.desc`를 읽는다.
  * @description 앱은 정렬 키가 같을 때를 대비해 `id`를 2차 키로 함께 보낸다.
+ * 읽을 계획 탭은 `order=plannedDate.asc,updated_at.desc`로 2차 키가 `updated_at`이다.
  */
 const parseOrder = (url: URL) => {
 	const [firstOrderClause, secondOrderClause] = (
@@ -389,13 +452,17 @@ const parseOrder = (url: URL) => {
 
 	return {
 		column:
-			column === "created_at" || column === "title" || column === "deleted_at"
+			column === "created_at" ||
+			column === "title" ||
+			column === "deleted_at" ||
+			column === "plannedDate"
 				? column
 				: "updated_at",
 		ascending,
 		secondColumn: secondOrderClause
 			? secondOrderClause.split(".")[0]
 			: undefined,
+		secondAscending: secondOrderClause?.split(".")[1] === "asc",
 	} as const;
 };
 
@@ -408,6 +475,8 @@ const handleMemoGet = async ({ route, url, store }: HandlerParams) => {
 	const isWish = parseBooleanFilter(url, "isWish");
 	const isStar = parseBooleanFilter(url, "isStar");
 	const isReading = parseBooleanFilter(url, "isReading");
+	const requiresPlannedDate =
+		url.searchParams.get("plannedDate") === "not.is.null";
 	const categoryName = parseEqualsFilter(url, "category.name");
 	const searchQuery = extractIlikeQuery(url, "title");
 	// 한 건 조회(getMemoById·getMemoByUrl)도 같은 GET으로 온다. 여기서 안 걸러주면
@@ -437,6 +506,9 @@ const handleMemoGet = async ({ route, url, store }: HandlerParams) => {
 			if (isReading !== undefined && (memo.isReading ?? false) !== isReading) {
 				return false;
 			}
+			if (requiresPlannedDate && memo.plannedDate === null) {
+				return false;
+			}
 			if (categoryName && memo.category?.name !== categoryName) {
 				return false;
 			}
@@ -456,13 +528,21 @@ const handleMemoGet = async ({ route, url, store }: HandlerParams) => {
 			return true;
 		});
 
-	const { column, ascending, secondColumn } = parseOrder(url);
+	const { column, ascending, secondColumn, secondAscending } = parseOrder(url);
 	const sorted = filtered.sort((a, b) => {
 		const compared = String(a[column] ?? "").localeCompare(
 			String(b[column] ?? ""),
 		);
 		if (compared !== 0) {
 			return ascending ? compared : -compared;
+		}
+
+		if (secondColumn === "updated_at") {
+			const secondCompared = String(a.updated_at ?? "").localeCompare(
+				String(b.updated_at ?? ""),
+			);
+
+			return secondAscending ? secondCompared : -secondCompared;
 		}
 
 		if (secondColumn !== "id") {
@@ -640,37 +720,177 @@ const handleCategoryDelete = async ({ route, url, store }: HandlerParams) => {
 	});
 };
 
+/** 즐겨찾기 목록 조회. 실제 쿼리처럼 created_at 내림차순으로 돌려준다. */
+const handleFavoriteGet = async ({ route, store }: HandlerParams) => {
+	const favorites = store
+		.getAllFavorites()
+		.sort((a, b) => b.created_at.localeCompare(a.created_at));
+
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(favorites),
+	});
+};
+
+/** 같은 사용자 안에서 page_key가 겹치면 DB의 유니크 위반(409)과 같은 응답을 준다. */
+const fulfillFavoriteDuplicate = (route: Route) =>
+	route.fulfill({
+		status: 409,
+		contentType: "application/json",
+		body: JSON.stringify({
+			code: "23505",
+			message:
+				'duplicate key value violates unique constraint "favorite_user_page_key_unique"',
+		}),
+	});
+
+const hasFavoritePageKey = (
+	store: MockSupabaseStore,
+	pageKey: string,
+	exceptId?: number,
+) =>
+	store
+		.getAllFavorites()
+		.some(
+			(favorite) => favorite.page_key === pageKey && favorite.id !== exceptId,
+		);
+
+/**
+ * 즐겨찾기 추가. 한 건 insert 후 만든 행을 돌려준다.
+ * @description `.select().single()` 요청은 배열이 아니라 객체 한 건을 기대한다.
+ */
+const handleFavoritePost = async ({ route, store }: HandlerParams) => {
+	const [row] = parseRequestRows<FavoriteRow>(route);
+
+	if (row.page_key && hasFavoritePageKey(store, row.page_key)) {
+		await fulfillFavoriteDuplicate(route);
+		return;
+	}
+
+	const created = store.addFavorite(
+		createMockFavorite({ created_at: new Date().toISOString(), ...row }),
+	);
+	await route.fulfill({
+		status: 201,
+		contentType: "application/json",
+		body: JSON.stringify(created),
+	});
+};
+
+/**
+ * 즐겨찾기 수정. `id=eq.N`으로 대상을 고르고 요청 본문(url·page_key·title 등)을 그대로 반영한다.
+ * @description `.single()` 요청은 배열이 아니라 객체 한 건을 기대한다.
+ */
+const handleFavoritePatch = async ({ route, url, store }: HandlerParams) => {
+	const id = parseIdFromUrl(url);
+	if (!id) {
+		await route.fallback();
+		return;
+	}
+
+	const updates = route.request().postDataJSON();
+	if (updates.page_key && hasFavoritePageKey(store, updates.page_key, id)) {
+		await fulfillFavoriteDuplicate(route);
+		return;
+	}
+
+	const updated = store.updateFavorite(id, updates);
+	await route.fulfill({
+		status: updated ? 200 : 406,
+		contentType: "application/json",
+		body: JSON.stringify(updated ?? { message: "no rows" }),
+	});
+};
+
+/** 즐겨찾기 삭제. `id=eq.N`으로 대상을 고른다. */
+const handleFavoriteDelete = async ({ route, url, store }: HandlerParams) => {
+	const id = parseIdFromUrl(url);
+	if (!id) {
+		await route.fallback();
+		return;
+	}
+
+	const deleted = store.deleteFavorite(id);
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(deleted ? [deleted] : []),
+	});
+};
+
 /**
  * 하이라이트 목록 조회. URL·색상·검색어 필터를 적용한다.
  * @description 페이지별 조회는 `url=eq.X`, 여러 페이지 묶음 조회는 `url=in.(...)`로 온다.
  */
 const handleHighlightGet = async ({ route, url, store }: HandlerParams) => {
 	const targetUrls = parseValueListFilter(url, "url");
+	const targetId = parseEqualsFilter(url, "id");
+	const userId = parseEqualsFilter(url, "user_id");
 	const color = parseEqualsFilter(url, "color");
 	const searchQuery = extractIlikeQuery(url, "exact_text");
+	const cursor = url.searchParams
+		.getAll("or")
+		.map((condition) =>
+			condition.match(
+				/^\(created_at\.lt\."?([^",]+)"?,and\(created_at\.eq\."?([^",]+)"?,id\.lt\.(\d+)\)\)$/,
+			),
+		)
+		.find((matched): matched is RegExpMatchArray => matched !== null);
 
-	const highlights = store.getAllHighlights().filter((highlight) => {
-		if (targetUrls !== undefined && !targetUrls.includes(highlight.url)) {
-			return false;
-		}
-		if (color && highlight.color !== color) {
-			return false;
-		}
-		if (
-			searchQuery &&
-			!matchesIlike(highlight.exact_text, searchQuery) &&
-			!matchesIlike(highlight.note, searchQuery)
-		) {
-			return false;
-		}
+	const highlights = store
+		.getAllHighlights()
+		.filter((highlight) => {
+			if (targetId && highlight.id !== Number(targetId)) return false;
+			// 목 기본 소유자는 로그인한 테스트 계정을 뜻한다. 명시한 타인 ID는 그대로 구별한다.
+			if (
+				userId &&
+				highlight.user_id !== "test-user-id" &&
+				highlight.user_id !== userId
+			)
+				return false;
+			if (targetUrls !== undefined && !targetUrls.includes(highlight.url)) {
+				return false;
+			}
+			if (color && highlight.color !== color) {
+				return false;
+			}
+			if (
+				searchQuery &&
+				!matchesIlike(highlight.exact_text, searchQuery) &&
+				!matchesIlike(highlight.note, searchQuery)
+			) {
+				return false;
+			}
+			if (cursor) {
+				const compared = highlight.created_at.localeCompare(cursor[1]);
+				if (
+					compared > 0 ||
+					(compared === 0 && highlight.id >= Number(cursor[3]))
+				) {
+					return false;
+				}
+			}
 
-		return true;
-	});
+			return true;
+		})
+		.sort(
+			(left, right) =>
+				right.created_at.localeCompare(left.created_at) || right.id - left.id,
+		);
+	const limit = Number(url.searchParams.get("limit") ?? highlights.length);
 
 	await route.fulfill({
 		status: 200,
 		contentType: "application/json",
-		body: JSON.stringify(highlights),
+		body: JSON.stringify(
+			route
+				.request()
+				.headers()
+				.accept?.includes("application/vnd.pgrst.object+json")
+				? (highlights[0] ?? null)
+				: highlights.slice(0, limit),
+		),
 	});
 };
 
@@ -742,9 +962,108 @@ const handleHighlightCountsRpc = async ({ route, store }: HandlerParams) => {
 	});
 };
 
+/** 연결 조회는 요청한 ID만 반환하고 memo 조인까지 한 번에 담는다. */
+const handleHighlightMemoSourceGet = async ({
+	route,
+	url,
+	store,
+}: HandlerParams) => {
+	const byHighlight = parseValueListFilter(url, "highlight_id");
+	const byMemo = parseValueListFilter(url, "memo_id");
+	if (!byHighlight && !byMemo) return route.fallback();
+	const sources = store
+		.getHighlightMemoSources()
+		.filter((source) =>
+			byHighlight
+				? source.highlight_id !== null &&
+					byHighlight.includes(String(source.highlight_id))
+				: byMemo?.includes(String(source.memo_id)),
+		)
+		.map((source) => {
+			const memo = store.getMemo(source.memo_id);
+			return {
+				...source,
+				memo: memo
+					? { id: memo.id, memo: memo.memo, deleted_at: memo.deleted_at }
+					: null,
+			};
+		});
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify(sources),
+	});
+};
+
+/** 생성 RPC 목도 재시도 시 기존 연결을 반환해 중복 작성을 관측한다. */
+const handleCreateMemoFromHighlight = async ({
+	route,
+	store,
+}: HandlerParams) => {
+	const { p_highlight_id: highlightId, p_memo: memoText } = route
+		.request()
+		.postDataJSON() as { p_highlight_id: number; p_memo: string };
+	const highlight = store
+		.getAllHighlights()
+		.find((item) => item.id === highlightId);
+	if (!highlight || !memoText?.trim()) {
+		await route.fulfill({
+			status: 400,
+			contentType: "application/json",
+			body: JSON.stringify({ message: "Invalid highlight or memo" }),
+		});
+		return;
+	}
+	const existing = store
+		.getHighlightMemoSources()
+		.find((source) => source.highlight_id === highlightId);
+	if (existing) {
+		const memo = store.getMemo(existing.memo_id);
+		await route.fulfill({
+			status: 200,
+			contentType: "application/json",
+			body: JSON.stringify({
+				memo_id: existing.memo_id,
+				highlight_id: highlightId,
+				created: false,
+				deleted_at: memo?.deleted_at ?? null,
+			}),
+		});
+		return;
+	}
+	const memo = store.addMemo(
+		createMockMemo({
+			url: highlight.url,
+			title: highlight.title ?? highlight.url,
+			memo: memoText.trim(),
+		}),
+	);
+	store.addHighlightMemoSource({
+		memo_id: memo.id,
+		highlight_id: highlight.id,
+		user_id: highlight.user_id,
+		exact_text: highlight.exact_text,
+		url: highlight.url,
+		prefix_text: highlight.prefix_text,
+		suffix_text: highlight.suffix_text,
+		text_position_start: highlight.text_position_start,
+		color: highlight.color,
+	});
+	await route.fulfill({
+		status: 200,
+		contentType: "application/json",
+		body: JSON.stringify({
+			memo_id: memo.id,
+			highlight_id: highlightId,
+			created: true,
+			deleted_at: null,
+		}),
+	});
+};
+
 /**
  * 메모 필드 노출 설정 조회.
- * @description 설정 행이 없으면 빈 배열을 돌려줘야 useSettingQuery의 `?? false` 기본값 경로를 탄다.
+ * @description 설정 행이 없으면 빈 배열을 돌려줘야 요약의 기본 ON 경로를 탄다.
  */
 const handleSettingGet = async ({ route, store }: HandlerParams) => {
 	const setting = store.getSetting();
@@ -765,15 +1084,34 @@ const handleSettingUpsert = async ({ route, store }: HandlerParams) => {
 		user_id: "test-user-id",
 		show_impression: false,
 		show_action_item: false,
+		show_summary: true,
+		show_ai_chat: false,
+		truncate_memo_content: true,
+		weekly_report_enabled: true,
+		weekly_report_email: null,
 		...store.getSetting(),
 		...patch,
 	};
+	// user_id는 서비스가 매번 붙이는 식별자라 "무엇을 바꿨나" 기록에서는 뺀다.
+	const { user_id: _userId, ...changedFields } = patch;
+	store.settingUpserts.push(changedFields);
 	store.setSetting(updated);
 
 	await route.fulfill({
 		status: 200,
 		contentType: "application/json",
 		body: JSON.stringify(updated),
+	});
+};
+
+/** 주간 리포트 테스트 메일 발송. 저장소에 정해 둔 상태 코드와 body로 응답한다. */
+const handleWeeklyReportTest = async ({ route, store }: HandlerParams) => {
+	store.weeklyReportTestRequests.push(route.request().postDataJSON());
+
+	await route.fulfill({
+		status: store.weeklyReportTestResponse.status,
+		contentType: "application/json",
+		body: JSON.stringify(store.weeklyReportTestResponse.body),
 	});
 };
 
@@ -871,12 +1209,54 @@ export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
 	);
 
 	await context.route(
+		`${SUPABASE.url}/rest/v1/highlight_memo_source**`,
+		(route) =>
+			dispatchByMethod({
+				route,
+				store,
+				handlers: { GET: handleHighlightMemoSourceGet },
+			}),
+	);
+	await context.route(
+		`${SUPABASE.url}/rest/v1/rpc/create_memo_from_highlight`,
+		(route) =>
+			dispatchByMethod({
+				route,
+				store,
+				handlers: { POST: handleCreateMemoFromHighlight },
+			}),
+	);
+
+	await context.route(
 		`${SUPABASE.url}/rest/v1/rpc/get_highlight_counts`,
 		(route) =>
 			dispatchByMethod({
 				route,
 				store,
 				handlers: { POST: handleHighlightCountsRpc },
+			}),
+	);
+
+	await context.route(`${SUPABASE.url}/rest/v1/favorite**`, (route) =>
+		dispatchByMethod({
+			route,
+			store,
+			handlers: {
+				GET: handleFavoriteGet,
+				POST: handleFavoritePost,
+				PATCH: handleFavoritePatch,
+				DELETE: handleFavoriteDelete,
+			},
+		}),
+	);
+
+	await context.route(
+		`${SUPABASE.url}/functions/v1/weekly-memo-report`,
+		(route) =>
+			dispatchByMethod({
+				route,
+				store,
+				handlers: { POST: handleWeeklyReportTest },
 			}),
 	);
 

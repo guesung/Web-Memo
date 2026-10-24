@@ -51,6 +51,8 @@ test.describe("메모 카드의 중요·읽는 중 토글 (Mocked)", () => {
 		});
 
 		const memoCard = getMemoCard(page, TARGET_MEMO_TITLE);
+		// 꺼진 토글은 카드에 마우스를 올려야 나타난다.
+		await memoCard.hover();
 		const starToggle = memoCard.getByRole("button", {
 			name: "Important",
 			exact: true,
@@ -81,6 +83,7 @@ test.describe("메모 카드의 중요·읽는 중 토글 (Mocked)", () => {
 		});
 
 		const memoCard = getMemoCard(page, TARGET_MEMO_TITLE);
+		await memoCard.hover();
 		const readingToggle = memoCard.getByRole("button", {
 			name: "Reading",
 			exact: true,
@@ -96,6 +99,40 @@ test.describe("메모 카드의 중요·읽는 중 토글 (Mocked)", () => {
 		await expect(page).toHaveURL(new RegExp(`${PATHS.memosReading}$`));
 		await expect(page.locator(".memo-item")).toHaveCount(1);
 		await expect(memoCard).toBeVisible();
+	});
+
+	test("저장 응답이 오기 전에도 토글 아이콘이 바로 켜진다.", async ({
+		page,
+	}) => {
+		let releasePatch: () => void = () => {};
+		const patchGate = new Promise<void>((resolve) => {
+			releasePatch = resolve;
+		});
+		await page.route("**/rest/v1/memo**", async (route) => {
+			if (route.request().method() === "PATCH") {
+				await patchGate;
+			}
+			await route.fallback();
+		});
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.memos}`,
+			regexp: new RegExp(PATHS.memos),
+		});
+
+		const memoCard = getMemoCard(page, TARGET_MEMO_TITLE);
+		await memoCard.hover();
+		const wishToggle = memoCard.getByRole("button", {
+			name: "Wishlist",
+			exact: true,
+		});
+		await expect(wishToggle).toHaveAttribute("aria-pressed", "false");
+
+		await wishToggle.click();
+
+		await expect(wishToggle).toHaveAttribute("aria-pressed", "true");
+		releasePatch();
+		await expect(wishToggle).toHaveAttribute("aria-pressed", "true");
 	});
 
 	test("세 토글의 이름은 로케일마다 번역되고, 서로 다르다.", async ({
@@ -125,5 +162,55 @@ test.describe("메모 카드의 중요·읽는 중 토글 (Mocked)", () => {
 			expect(koreanToggleName).toMatch(/[가-힣]/);
 			expect(koreanToggleName).not.toBe(englishToggleNames[index]);
 		});
+	});
+
+	test("상태 아이콘에 올리면 현재 상태의 반대 동작이 말풍선으로 뜨고, 토글하면 문구가 바뀐다.", async ({
+		page,
+	}) => {
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.memos}`,
+			regexp: new RegExp(PATHS.memos),
+		});
+
+		const memoCard = getMemoCard(page, TARGET_MEMO_TITLE);
+		const tooltip = page.getByRole("tooltip");
+		const cases = [
+			{
+				// 위시를 켜면 기본 목록에서 카드가 빠지므로 꺼진 상태의 말풍선만 본다.
+				name: "Wishlist",
+				add: "Add to wishlist",
+				remove: undefined,
+			},
+			{
+				name: "Reading",
+				add: "Mark as reading",
+				remove: "Remove from reading",
+			},
+			{
+				name: "Important",
+				add: "Mark as important",
+				remove: "Remove from important",
+			},
+		];
+
+		for (const { name, add, remove } of cases) {
+			const toggle = memoCard.getByRole("button", { name, exact: true });
+			// 꺼진 아이콘은 카드에 마우스를 올려야 보인다
+			await memoCard.hover();
+			await toggle.hover();
+			await expect(tooltip).toHaveText(add);
+
+			if (remove) {
+				await toggle.click();
+				await expect(toggle).toHaveAttribute("aria-pressed", "true");
+				await toggle.hover();
+				await expect(tooltip).toHaveText(remove);
+			}
+
+			// 다음 아이콘의 말풍선과 섞이지 않게 카드 밖으로 빼 둔다
+			await page.mouse.move(5, 5, { steps: 10 });
+			await expect(tooltip).toHaveCount(0);
+		}
 	});
 });

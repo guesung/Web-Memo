@@ -8,10 +8,16 @@ import {
 } from "../lib/mocks";
 
 test.describe("확장 옵션 페이지", () => {
-	test.beforeEach(async ({ page }) => {
+	let store: MockSupabaseStore;
+
+	test.beforeEach(async ({ page, context }) => {
+		await context.route(
+			/https:\/\/[^/]*(google-analytics\.com|analytics\.google\.com)\//,
+			(route) => route.fulfill({ status: 204 }),
+		);
 		// 옵션 페이지의 메모 필드 설정(MemoFieldsOption)이 setting을 읽는다. 로그인 뒤 메모 화면의 목록과 함께
 		// 컨텍스트 단위 목으로 받아, 옵션 페이지처럼 테스트가 나중에 여는 확장 페이지의 요청도 실서버로 가지 않게 한다.
-		const store = new MockSupabaseStore();
+		store = new MockSupabaseStore();
 		store.setSetting(createMockSetting());
 		await setupSupabaseMocks(page, store);
 
@@ -48,11 +54,93 @@ test.describe("확장 옵션 페이지", () => {
 		);
 	});
 
+	test("AI 기능 카드에서 요약과 채팅을 독립적으로 저장한다.", async ({
+		page,
+	}) => {
+		const optionsPage = await page.context().newPage();
+		const changedSettingKeys: Array<Promise<string | undefined>> = [];
+		optionsPage.on("console", (message) => {
+			if (!message.text().startsWith("[analytics] setting_change")) return;
+			changedSettingKeys.push(
+				message
+					.args()[1]
+					?.jsonValue()
+					.then((params) => {
+						return (params as { setting_keys?: string }).setting_keys;
+					}) ?? Promise.resolve(undefined),
+			);
+		});
+		await optionsPage.goto(getExtensionUrl("options/index.html"));
+
+		const chatSwitch = optionsPage.locator("#ai-chat-enabled");
+		const summarySwitch = optionsPage.locator("#summary-enabled");
+		const hint = await optionsPage.evaluate(() =>
+			chrome.i18n.getMessage("summary_panel_hint"),
+		);
+		await expect(summarySwitch).toHaveAttribute("data-state", "unchecked");
+		await expect(optionsPage.getByText(hint, { exact: true })).toBeVisible();
+		await expect(chatSwitch).toHaveAttribute("data-state", "unchecked");
+		await summarySwitch.click();
+		await expect(summarySwitch).toHaveAttribute("data-state", "checked");
+		await expect.poll(() => store.getSetting()?.show_summary).toBe(true);
+		await expect
+			.poll(async () => Promise.all(changedSettingKeys))
+			.toEqual(["show_summary"]);
+
+		await chatSwitch.click();
+		await expect(chatSwitch).toHaveAttribute("data-state", "checked");
+		await expect.poll(() => store.getSetting()?.show_ai_chat).toBe(true);
+
+		await optionsPage.reload();
+		await expect(summarySwitch).toHaveAttribute("data-state", "checked");
+		await expect(optionsPage.getByText(hint, { exact: true })).toBeVisible();
+		await expect(chatSwitch).toHaveAttribute("data-state", "checked");
+		expect(store.getSetting()).toMatchObject({
+			show_summary: true,
+			show_ai_chat: true,
+		});
+	});
+
 	test("카테고리 자동 적용 설정은 표시하지 않는다.", async ({ page }) => {
 		const optionsPage = await page.context().newPage();
 		await optionsPage.goto(getExtensionUrl("options/index.html"));
 
 		await expect(optionsPage.locator("#response-language")).toBeVisible();
 		await expect(optionsPage.locator("#auto-apply-category")).toHaveCount(0);
+	});
+
+	test("단축키 카드는 현재 키(또는 미지정 안내)와 바꾸기 버튼을 보여주고, 바꾸기를 누르면 크롬 단축키 설정 탭을 연다.", async ({
+		page,
+	}) => {
+		const optionsPage = await page.context().newPage();
+		await optionsPage.goto(getExtensionUrl("options/index.html"));
+
+		const shortcutCard = optionsPage
+			.getByRole("heading", { name: /^(단축키|Shortcut)$/ })
+			.locator("..")
+			.locator("..");
+
+		// 실제 등록된 키는 OS·언어에 따라 표기가 달라진다(Alt+S, ⌥S 등). 값 자체는 검증하지 않고,
+		// "사이드 패널 열기" 행의 오른쪽 요소가 빈 값도 읽기 실패 문구도 아닌 채 채워졌는지만 본다.
+		const shortcutRow = shortcutCard
+			.getByText(/^(사이드 패널 열기|Open side panel)$/)
+			.locator("..");
+		const shortcutStatus = shortcutRow.locator(":scope > *").nth(1);
+		await expect
+			.poll(async () => (await shortcutStatus.textContent())?.trim())
+			.not.toBe("");
+		await expect(shortcutStatus).not.toHaveText(
+			/단축키를 확인하지 못했어요|Couldn't check the shortcut/,
+		);
+
+		const changeButton = shortcutCard.getByRole("button", {
+			name: /단축키 바꾸기|Change shortcut/,
+		});
+		await expect(changeButton).toBeVisible();
+
+		const openedPagePromise = page.context().waitForEvent("page");
+		await changeButton.click();
+		const openedPage = await openedPagePromise;
+		await expect(openedPage).toHaveURL("chrome://extensions/shortcuts");
 	});
 });

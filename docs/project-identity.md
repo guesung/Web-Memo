@@ -1,8 +1,8 @@
 # 프로젝트 정체
 
-> `/gs` 파이프라인의 `gs:planner`가 기획서를 쓰기 전에 읽는 문서입니다.
+> `/web-memo` 파이프라인의 `web-memo:planner`가 기획서를 쓰기 전에 읽는 문서입니다.
 > **"이 아이디어를 웹 메모가 해야 하는가"** 를 판단하는 근거이며, 기능 명세가 아니라 방향을 적습니다.
-> 규격은 [`plugins/gs/project-docs.md`](https://github.com/guesung/guesung) 의 "골격 — 정체"를 따릅니다.
+> 규격은 [`.agents/skills/web-memo/project-docs.md`](../.agents/skills/web-memo/project-docs.md) 의 "골격 — 정체"를 따릅니다.
 
 ## 정체
 

@@ -1,42 +1,48 @@
+import { SEARCH_TARGET_OPTIONS } from "./constant";
 import type {
 	SearchParamKeyType,
 	SearchParamType,
 	SearchParamValueType,
-} from ".";
+} from "./type";
 
 export default class SearchParams {
-	#searchParamsMap: Map<SearchParamKeyType, Set<SearchParamValueType>>;
+	#searchParamsMap: Map<string, Set<string>>;
 
-	constructor(searchParams: SearchParamType[] = []) {
-		this.#searchParamsMap = searchParams.reduce((acc, [key, value]) => {
-			if (!acc.has(key)) {
-				acc.set(key, new Set());
-			}
-			acc.get(key)?.add(value);
-			return acc;
-		}, new Map());
+	constructor(searchParams: Iterable<readonly [string, string]> = []) {
+		this.#searchParamsMap = new Map();
+		for (const [key, value] of searchParams) {
+			const values = this.#searchParamsMap.get(key) ?? new Set<string>();
+			values.add(value);
+			this.#searchParamsMap.set(key, values);
+		}
 	}
 
-	get = (key: SearchParamKeyType) => {
-		const values = this.#searchParamsMap.get(key);
-		return values ? Array.from(values)[0] || "" : "";
+	get = <K extends SearchParamKeyType>(
+		key: K,
+	): SearchParamValueType<K> | "" => {
+		const value = this.#searchParamsMap.get(key)?.values().next().value;
+		return value && isValidValue(key, value) ? value : "";
 	};
 
-	getAll = (key: SearchParamKeyType) => {
-		return Array.from(this.#searchParamsMap.get(key) || []);
+	getAll = <K extends SearchParamKeyType>(
+		key: K,
+	): SearchParamValueType<K>[] => {
+		return Array.from(this.#searchParamsMap.get(key) || []).filter((value) =>
+			isValidValue(key, value),
+		);
 	};
 
-	add = (key: SearchParamKeyType, value: SearchParamValueType) => {
+	add = (...[key, value]: SearchParamType) => {
 		const values = this.#searchParamsMap.get(key) ?? new Set();
 		values.add(value);
 		this.#searchParamsMap.set(key, values);
 	};
 
-	set = (key: SearchParamKeyType, value: SearchParamValueType) => {
+	set = (...[key, value]: SearchParamType) => {
 		this.#searchParamsMap.set(key, new Set([value]));
 	};
 
-	remove = (key: SearchParamKeyType, value: SearchParamValueType) => {
+	remove = (...[key, value]: SearchParamType) => {
 		this.#searchParamsMap.get(key)?.delete(value);
 		if (this.#searchParamsMap.get(key)?.size === 0) {
 			this.#searchParamsMap.delete(key);
@@ -48,15 +54,23 @@ export default class SearchParams {
 	};
 
 	getSearchParams() {
-		const params: SearchParamType[] = [];
+		const params = new URLSearchParams();
 		this.#searchParamsMap.forEach((values, key) => {
-			values.forEach((value) => params.push([key, value]));
+			values.forEach((value) => params.append(key, value));
 		});
 
-		return params.reduce(
-			(acc, [key, value], index) =>
-				`${acc}${index === 0 ? "?" : "&"}${key}=${value}`,
-			"",
-		);
+		const query = params.toString();
+		return query ? `?${query}` : "";
 	}
+}
+
+function isValidValue<K extends SearchParamKeyType>(
+	key: K,
+	value: string,
+): value is SearchParamValueType<K> {
+	if (key === "view") return value === "grid" || value === "list";
+	if (key === "searchTarget") {
+		return SEARCH_TARGET_OPTIONS.some((option) => option === value);
+	}
+	return true;
 }

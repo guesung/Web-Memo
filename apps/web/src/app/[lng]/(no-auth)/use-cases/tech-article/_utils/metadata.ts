@@ -19,7 +19,7 @@ export const metadataKorean = createPublicPageMetadata({
 export const metadataEnglish = createPublicPageMetadata({
 	language: "en",
 	path: "/use-cases/tech-article",
-	title: "Tech Article Organizer - Dev Blogs & Newsletter Manager | Web Memo",
+	title: "Tech Articles - Dev Blogs & Newsletter Notes | Web Memo",
 	description:
 		"Organize key insights from tech blogs, newsletters, and dev articles systematically. Use AI summaries to quickly grasp content and manage by topic.",
 	keywords: [

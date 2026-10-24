@@ -1,5 +1,6 @@
 "use client";
 
+import LocalizedLink from "@src/components/LocalizedLink";
 import {
 	Avatar,
 	DropdownMenu,
@@ -19,7 +20,6 @@ import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { Button } from "@web-memo/ui";
 import { LogIn, NotebookText } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import ToggleTheme from "./ToggleTheme";
 
@@ -89,10 +89,14 @@ const HeaderMemosLink = ({ lng, pathname }: IFHeaderEntryLinkProps) => {
 			asChild
 			className={HEADER_ENTRY_BUTTON_CLASS_NAME}
 		>
-			<Link href={`/${lng}${PATHS.memos}`} onClick={handleMemosLinkClick}>
+			<LocalizedLink
+				lng={lng}
+				href={PATHS.memos}
+				onClick={handleMemosLinkClick}
+			>
 				<NotebookText />
 				<span className="sr-only sm:not-sr-only">{t("header.myMemos")}</span>
-			</Link>
+			</LocalizedLink>
 		</Button>
 	);
 };
@@ -115,10 +119,14 @@ const HeaderLoginLink = ({ lng, pathname }: IFHeaderEntryLinkProps) => {
 			asChild
 			className={HEADER_ENTRY_BUTTON_CLASS_NAME}
 		>
-			<Link href={`/${lng}${PATHS.login}`} onClick={handleLoginLinkClick}>
+			<LocalizedLink
+				lng={lng}
+				href={PATHS.login}
+				onClick={handleLoginLinkClick}
+			>
 				<LogIn />
 				<span className="sr-only sm:not-sr-only">{t("header.login")}</span>
-			</Link>
+			</LocalizedLink>
 		</Button>
 	);
 };

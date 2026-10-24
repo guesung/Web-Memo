@@ -1,11 +1,11 @@
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { ShieldCheck } from "lucide-react";
 import { toStringArray } from "../_utils";
 
 /** 방침 페이지 상단의 제목·시행일·핵심 요약 영역 */
 export default async function PolicyHero({ lng }: PolicyHeroProps) {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	const summaryItems = toStringArray(
 		t("privacy.summary.items", { returnObjects: true }),

@@ -25,6 +25,25 @@ test.describe("로그인 기능", () => {
 		await expect(page).toHaveURL(new RegExp(PATHS.login));
 	});
 
+	test("로그인 오류로 돌아오면 안내와 재시도 버튼을 표시한다.", async ({
+		page,
+	}) => {
+		await gotoSafely({
+			page,
+			url: `/ko${PATHS.login}?error=1`,
+			regexp: new RegExp(`${PATHS.login}\\?error=1`),
+		});
+
+		const alert = page.locator("main").getByRole("alert");
+		await expect(alert).toBeVisible();
+		await expect(alert).toContainText(
+			"로그인이 끝나지 않았어요. 다시 한 번 눌러주세요.",
+		);
+		for (const provider of ["kakao", "google", "apple"]) {
+			await expect(page.getByTestId(`${provider}-login-button`)).toBeEnabled();
+		}
+	});
+
 	test("카카오 로그인 버튼을 클릭하면, 카카오 로그인 페이지로 이동한다.", async ({
 		page,
 	}) => {

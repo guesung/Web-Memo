@@ -194,6 +194,21 @@ describe("메모 upsert 저장 중 Supabase 오류", () => {
 		expect(analytics.trackMemoUpdate).not.toHaveBeenCalled();
 	});
 
+	it("새 메모에 계획 날짜가 있으면 첫 작성과 함께 날짜 배정도 기록한다", async () => {
+		const url = "https://example.com";
+		getMemoByUrl.mockResolvedValueOnce({ data: [], error: null });
+		insertMemo.mockResolvedValueOnce({ data: [{ id: 2 }], error: null });
+
+		await mutate({ url, data: { url, plannedDate: "2026-10-12" } });
+
+		expect(analytics.trackEvent).toHaveBeenCalledWith({
+			name: "memo_first_write",
+		});
+		expect(analytics.trackMemoUpdate).toHaveBeenCalledWith({
+			plannedDate: "2026-10-12",
+		});
+	});
+
 	it("저장에 성공하면 블로그 정주행 완료 캐시도 무효화한다", async () => {
 		const blogPageKey = QUERY_KEY.blogReadingPage("user-1", {
 			blogId: null,

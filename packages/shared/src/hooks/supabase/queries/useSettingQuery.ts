@@ -24,8 +24,10 @@ const useSettingQuery = () => {
 		truncateMemoContent: query.data?.data?.truncate_memo_content ?? true,
 		showImpression: query.data?.data?.show_impression ?? false,
 		showActionItem: query.data?.data?.show_action_item ?? false,
-		showSummary: query.data?.data?.show_summary ?? false,
+		showSummary: query.data?.data?.show_summary ?? true,
 		showAiChat: query.data?.data?.show_ai_chat ?? false,
+		weeklyReportEnabled: query.data?.data?.weekly_report_enabled ?? true,
+		weeklyReportEmail: query.data?.data?.weekly_report_email ?? null,
 	};
 };
 

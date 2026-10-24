@@ -28,7 +28,7 @@ const MOCKS = vi.hoisted(() => ({
 vi.mock("@src/modules/i18n/util.client", () => ({
 	default: () => ({
 		t: (key: string, options?: { count: number }) =>
-			key === "memoSection.highlightCount"
+			key === "highlight.memo.relatedCount"
 				? `하이라이트 ${options?.count}개`
 				: key,
 	}),
@@ -41,6 +41,11 @@ vi.mock("@tanstack/react-query", () => ({
 	}),
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
+	useHighlightMemoLinks: () => ({
+		data: [],
+		isError: false,
+		refetch: MOCKS.refetch,
+	}),
 	memoQueryOptions: () => ({}),
 	useSupabaseClientQuery: () => ({ data: {} }),
 	useSettingQuery: () => ({ showImpression: true, showActionItem: true }),
@@ -75,15 +80,28 @@ vi.mock("../MemoCardHeader", () => ({
 		createElement("h2", null, memo.title),
 }));
 vi.mock("../MemoCardFooter", () => ({
-	default: ({ className }: { className: string }) =>
-		createElement("footer", { className, "data-testid": "memo-detail-footer" }),
+	default: ({
+		className,
+		timeAccessory,
+	}: {
+		className: string;
+		timeAccessory: ReactNode;
+	}) =>
+		createElement(
+			"footer",
+			{ className, "data-testid": "memo-detail-footer" },
+			timeAccessory,
+		),
+}));
+vi.mock("../MemoCardFooter/useMemoCategoryPopover", () => ({
+	default: () => ({ openFromHash: vi.fn() }),
+}));
+vi.mock("../MemoCardFooter/CategoryPopover", () => ({
+	default: () => null,
 }));
 vi.mock("./SaveStatusIndicator", () => ({
 	default: ({ status }: { status: string }) =>
 		createElement("span", { "data-testid": "save-status" }, status),
-}));
-vi.mock("framer-motion", () => ({
-	motion: { div: ({ children }: { children: ReactNode }) => children },
 }));
 vi.mock("@web-memo/ui", () => ({
 	Card: ({ children }: { children: ReactNode }) => children,

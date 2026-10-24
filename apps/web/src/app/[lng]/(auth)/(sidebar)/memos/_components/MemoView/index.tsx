@@ -1,6 +1,5 @@
 "use client";
 
-import { useGuide } from "@src/modules/guide";
 import type { LanguageType } from "@src/modules/i18n";
 import {
 	getMemoNavigationId,
@@ -8,22 +7,15 @@ import {
 	type TMemoLoadOutcome,
 	type TMemoRoute,
 } from "@src/modules/observability/client";
-import { useDidMount, useMemosInfiniteQuery } from "@web-memo/shared/hooks";
-import { bridge } from "@web-memo/shared/modules/extension-bridge";
-import { Loading, Skeleton } from "@web-memo/ui";
+import { useMemosInfiniteQuery } from "@web-memo/shared/hooks";
 import dynamic from "next/dynamic";
-import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect } from "react";
-import { useFormContext } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
 import type { TMemoFilter } from "../../_types";
-import MemoDialog from "../MemoDialog";
-import type { SearchFormValues } from "../MemoSearchFormProvider";
-import { useMemoDialog } from "./_hooks";
-import { useMemoHighlights } from "./_hooks/useMemoHighlights";
+import { useMemoSearchConditions } from "./_hooks";
 import MemoGrid from "./MemoGrid";
 import { MemoListSkeleton } from "./MemoListSkeleton";
-import MemoViewToggle from "./MemoViewToggle";
+import MemoViewFrame from "./MemoViewFrame";
+import PlanMemoView from "./PlanMemoView";
 
 /** 현지 날짜는 브라우저에서 계산하여 서버 시간대의 영향을 받지 않는다. */
 const MemoList = dynamic(() => import("./MemoList"), {
@@ -31,29 +23,20 @@ const MemoList = dynamic(() => import("./MemoList"), {
 	loading: () => <MemoListSkeleton />,
 });
 
-/** 브라우저에서 설정을 읽는 토글을 지연 로딩한다. 인증 준비를 위한 Suspense는 유지한다. */
-const MemoTruncateToggle = dynamic(() => import("./MemoTruncateToggle"), {
-	ssr: false,
-	loading: () => <Skeleton className="h-10 w-10" />,
-});
-
-const MemoRefreshButton = dynamic(() => import("./MemoRefreshButton"), {
-	ssr: false,
-	loading: () => <Skeleton className="h-10 w-10" />,
-});
-
 /** 라우트 필터에 해당하는 메모 목록과 검색 결과를 표시한다. */
 const MemoView = ({ lng, filter }: IFMemoViewProps) => {
-	const { t } = useTranslation(lng);
-	const { watch } = useFormContext<SearchFormValues>();
-	const searchParams = useSearchParams();
-	const { dialogMemoId } = useMemoDialog();
+	if (filter === "plan") {
+		return <PlanMemoView lng={lng} />;
+	}
 
-	// 카테고리는 사이드바 하단에서 고르는 가로지르는 조건이라 필터와 달리 쿼리로 남는다.
-	const category = searchParams.get("category") ?? "";
-	const view = searchParams.get("view");
-	const isListView = view === "list" || view === "domain";
-	const searchQuery = watch("searchQuery");
+	return <PagedMemoView lng={lng} filter={filter} />;
+};
+
+export default MemoView;
+
+/** 페이지 단위로 불러오는 메모 목록. 카드·작성일별·도메인별 보기를 전환한다. */
+const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
+	const { category, view, isListView, searchQuery } = useMemoSearchConditions();
 
 	const {
 		data,
@@ -86,18 +69,6 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 		});
 	}, [route, navigationId, loadOutcome]);
 
-	const { highlightsByUrl, isHighlightLoadError, refetchHighlights } =
-		useMemoHighlights(memos.map((memo) => memo.url));
-
-	const { moveNextGuideStep } = useGuide({ lng });
-	useDidMount(async () => {
-		try {
-			await bridge.request.SYNC_LOGIN_STATUS();
-		} catch {
-			// 확장이 없거나 사이드 패널이 닫혀 수신자가 없으면 알릴 대상이 없으므로 무시한다.
-		}
-	});
-
 	/**
 	 * 현재 탭을 식별하는 키. MemoGrid를 탭마다 리마운트시키는 데 쓴다.
 	 *
@@ -108,86 +79,43 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 	 * 검색어와 id(메모 다이얼로그)는 넣지 않는다. 넣으면 글자를 칠 때마다,
 	 * 다이얼로그를 여닫을 때마다 그리드가 통째로 다시 그려진다.
 	 */
-	const tabKey = `${category}|${filter}|${view === "list" || view === "domain" ? view : "grid"}`;
+	const tabKey = `${category}|${filter}|${view}`;
 
 	return (
-		<div className="flex w-full flex-col gap-4">
-			<div className="flex items-center">
-				<div className="flex w-full items-center justify-between">
-					<p className="text-muted-foreground select-none text-sm flex items-center gap-2">
-						<span className="w-2 h-2 bg-primary rounded-full" />
-						{t("memos.totalMemos", { total: totalCount })}
-					</p>
-					<div className="flex items-center gap-2">
-						<MemoViewToggle lng={lng} />
-						<Suspense fallback={<Skeleton className="h-10 w-10" />}>
-							<MemoTruncateToggle lng={lng} />
-						</Suspense>
-						<MemoRefreshButton lng={lng} onGuideNext={moveNextGuideStep} />
-					</div>
-				</div>
-			</div>
+		<MemoViewFrame
+			lng={lng}
+			memos={memos}
+			totalCount={totalCount}
+			isViewToggleVisible
+		>
+			{({ highlightsByUrl, sourcesByMemo }) => {
+				const listProps = {
+					lng,
+					memos,
+					highlightsByUrl,
+					sourcesByMemo,
+					searchQuery,
+					hasNextPage,
+					isFetchingNextPage,
+					fetchNextPage,
+					loadOutcome,
+					route,
+					navigationId,
+				};
 
-			{isHighlightLoadError && (
-				<div
-					role="alert"
-					className="flex items-center gap-2 text-sm text-destructive"
-				>
-					<p>{t("highlight.loadError")}</p>
-					<button
-						type="button"
-						onClick={() => void refetchHighlights()}
-						className="underline"
-					>
-						{t("error.500.retry")}
-					</button>
-				</div>
-			)}
-			{isListView ? (
-				<MemoList
-					key={tabKey}
-					lng={lng}
-					groupBy={view === "domain" ? "domain" : "date"}
-					memos={memos}
-					highlightsByUrl={highlightsByUrl}
-					searchQuery={searchQuery}
-					hasNextPage={hasNextPage}
-					isFetchingNextPage={isFetchingNextPage}
-					fetchNextPage={fetchNextPage}
-					loadOutcome={loadOutcome}
-					route={route}
-					navigationId={navigationId}
-				/>
-			) : (
-				<MemoGrid
-					key={tabKey}
-					lng={lng}
-					memos={memos}
-					highlightsByUrl={highlightsByUrl}
-					searchQuery={searchQuery}
-					hasNextPage={hasNextPage}
-					isFetchingNextPage={isFetchingNextPage}
-					fetchNextPage={fetchNextPage}
-					loadOutcome={loadOutcome}
-					route={route}
-					navigationId={navigationId}
-				/>
-			)}
-			{dialogMemoId && (
-				<Suspense fallback={<Loading />}>
-					<MemoDialog
-						key={dialogMemoId}
-						lng={lng}
-						memoId={dialogMemoId}
-						initialMemo={memos.find((memo) => memo.id === dialogMemoId)}
+				return isListView ? (
+					<MemoList
+						key={tabKey}
+						groupBy={view === "domain" ? "domain" : "date"}
+						{...listProps}
 					/>
-				</Suspense>
-			)}
-		</div>
+				) : (
+					<MemoGrid key={tabKey} {...listProps} />
+				);
+			}}
+		</MemoViewFrame>
 	);
 };
-
-export default MemoView;
 
 /** 기본 목록에서는 위시 메모를 제외하고 별표·읽는 중에서는 위시 여부를 제한하지 않는다. */
 const getWishlistFilter = (filter: TMemoFilter): boolean | undefined => {
@@ -206,4 +134,9 @@ const getWishlistFilter = (filter: TMemoFilter): boolean | undefined => {
 interface IFMemoViewProps extends LanguageType {
 	/** 라우트가 정한 메모 범위 */
 	filter: TMemoFilter;
+}
+
+/** 페이지 단위 목록의 언어와 라우트 필터. 읽을 계획은 PlanMemoView가 맡는다. */
+interface IFPagedMemoViewProps extends LanguageType {
+	filter: Exclude<TMemoFilter, "plan">;
 }

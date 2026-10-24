@@ -9,7 +9,7 @@ import { supabaseGuardFixture } from "../lib/mocks/supabaseGuard";
  * `*.real.test.ts`가 아니면 목이 처리하지 않은 Supabase 요청을 막고 테스트를 실패시킨다(supabaseGuard.ts).
  */
 export const test = base.extend<{ supabaseGuard: undefined }>({
-	baseURL: "http://localhost:3000",
+	baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000",
 	locale: "en-US",
 	supabaseGuard: [supabaseGuardFixture, { auto: true }],
 });

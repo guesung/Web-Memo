@@ -141,7 +141,7 @@ jobs:
             결과는 지정된 JSON 스키마로만 냅니다. headline 은 오늘 상황을 두세 문장으로 요약합니다.
           claude_args: |
             --model claude-sonnet-5
-            --max-turns 30
+            --max-turns 50
             --allowedTools Read,Grep,Glob
             --json-schema '{"type":"object","properties":{"status":{"type":"string","enum":["good","warning","critical"]},"headline":{"type":"string"},"situation":{"type":"object","properties":{"good":{"type":"array","items":{"type":"string"}},"concerns":{"type":"array","items":{"type":"string"}}},"required":["good","concerns"]},"findings":{"type":"array","items":{"type":"object","properties":{"priority":{"type":"string","enum":["P0","P1","P2","P3"]},"title":{"type":"string"},"impact":{"type":"string"},"evidence":{"type":"string"},"suggestion":{"type":"string"},"codeRefs":{"type":"array","items":{"type":"string"}},"fixability":{"type":"string","enum":["code","content","external"]},"evidenceIds":{"type":"array","items":{"type":"string"}}},"required":["priority","title","impact","evidence","suggestion","codeRefs","fixability","evidenceIds"]}},"roadmap":{"type":"array","items":{"type":"object","properties":{"when":{"type":"string"},"action":{"type":"string"}},"required":["when","action"]}}},"required":["status","headline","situation","findings","roadmap"]}'
 

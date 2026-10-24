@@ -29,7 +29,9 @@ type SidebarPageLabelKey =
 	| "sideBar.wishList"
 	| "sideBar.importantMemo"
 	| "sideBar.readingMemo"
-	| "sideBar.highlight";
+	| "sideBar.readingPlan"
+	| "sideBar.highlight"
+	| "sideBar.favorite";
 
 interface SidebarPageMetadataArgs {
 	params: LanguageParams["params"];

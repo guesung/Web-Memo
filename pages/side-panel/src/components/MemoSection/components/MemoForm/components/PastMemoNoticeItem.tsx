@@ -2,6 +2,8 @@ import type { IFPastMemoRelated } from "@web-memo/shared/types";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { GlobeIcon } from "lucide-react";
 import { useState } from "react";
+import { formatRelativeDate } from "../../../../../utils/formatRelativeDate";
+import { getHostname } from "../../../../../utils/getHostname";
 
 /**
  * 과거 메모 배너의 관련 메모 한 행. 행 전체가 열기 버튼이다.
@@ -52,48 +54,6 @@ const PastMemoNoticeItem = (props: IFPastMemoNoticeItemProps) => {
 };
 
 export default PastMemoNoticeItem;
-
-/** 큰 단위부터 비교해 처음으로 1 이상이 되는 단위로 표기한다. 웹 메모 목록(dayjs fromNow)처럼 상대 시간이다. */
-const RELATIVE_TIME_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
-	["year", 60 * 60 * 24 * 365],
-	["month", 60 * 60 * 24 * 30],
-	["week", 60 * 60 * 24 * 7],
-	["day", 60 * 60 * 24],
-	["hour", 60 * 60],
-	["minute", 60],
-];
-
-const formatRelativeDate = (isoDate: string) => {
-	const elapsedSeconds = (new Date(isoDate).getTime() - Date.now()) / 1000;
-
-	if (Number.isNaN(elapsedSeconds)) {
-		return "";
-	}
-
-	const formatter = new Intl.RelativeTimeFormat(I18n.getUILanguage(), {
-		numeric: "auto",
-	});
-	const matchedUnit = RELATIVE_TIME_UNITS.find(
-		([, unitSeconds]) => Math.abs(elapsedSeconds) >= unitSeconds,
-	);
-
-	if (!matchedUnit) {
-		return formatter.format(0, "minute");
-	}
-
-	return formatter.format(
-		Math.round(elapsedSeconds / matchedUnit[1]),
-		matchedUnit[0],
-	);
-};
-
-const getHostname = (url: string) => {
-	try {
-		return new URL(url).hostname;
-	} catch {
-		return url;
-	}
-};
 
 /** PastMemoNoticeItem props */
 interface IFPastMemoNoticeItemProps {

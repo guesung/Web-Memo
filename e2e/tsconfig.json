@@ -2,6 +2,7 @@
 	"extends": "@web-memo/tsconfig/base",
 	"compilerOptions": {
 		"noEmit": true,
+		"target": "ES2017",
 		"types": ["node", "chrome"]
 	},
 	"include": [

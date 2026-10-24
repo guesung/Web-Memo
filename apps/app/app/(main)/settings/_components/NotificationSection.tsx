@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react-native";
+import { Bell, Plus } from "lucide-react-native";
 import { useState } from "react";
 import { Alert, Linking, Text, TouchableOpacity, View } from "react-native";
 import {
@@ -14,6 +14,7 @@ import {
 	registerPushToken,
 	requestNotificationPermission,
 } from "@/lib/notifications/registerPushToken";
+import { sendTestNotification } from "@/lib/notifications/sendTestNotification";
 import { NotificationTimeRow } from "./NotificationTimeRow";
 import { NotificationTimeSheet } from "./NotificationTimeSheet";
 
@@ -37,6 +38,7 @@ export function NotificationSection() {
 	const [editingSchedule, setEditingSchedule] =
 		useState<IFNotificationSchedule | null>(null);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const [isSendingTest, setIsSendingTest] = useState(false);
 
 	const isFull = schedules.length >= MAX_SCHEDULE_COUNT;
 
@@ -106,6 +108,26 @@ export function NotificationSection() {
 		}
 	};
 
+	const handleTestPress = async () => {
+		setIsSendingTest(true);
+
+		try {
+			if (!(await requestNotificationPermission())) {
+				showPermissionDeniedAlert();
+				return;
+			}
+
+			await sendTestNotification();
+		} catch {
+			Alert.alert(
+				"테스트 알림을 보내지 못했어요",
+				"잠시 후 다시 시도해 주세요.",
+			);
+		} finally {
+			setIsSendingTest(false);
+		}
+	};
+
 	return (
 		<View className="mb-7">
 			<Text className="text-sm font-semibold text-muted-foreground dark:text-neutral-500 uppercase tracking-wide mb-2.5">
@@ -171,6 +193,19 @@ export function NotificationSection() {
 								}`}
 							>
 								시간 추가
+							</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							accessibilityRole="button"
+							disabled={isSendingTest}
+							className={`flex-row items-center gap-2 pt-3.5 border-t border-muted dark:border-neutral-800 ${
+								isSendingTest ? "opacity-60" : ""
+							}`}
+							onPress={handleTestPress}
+						>
+							<Bell size={20} color="#2f6bf0" />
+							<Text className="text-[15px] font-semibold text-[#2f6bf0] dark:text-[#5b93f0]">
+								테스트 알림 보내기
 							</Text>
 						</TouchableOpacity>
 					</>

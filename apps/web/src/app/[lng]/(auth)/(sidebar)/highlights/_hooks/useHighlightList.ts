@@ -8,7 +8,7 @@ import { useMemo } from "react";
 
 const PAGE_SIZE = 20;
 
-/** 하이라이트 수동 더 보기 목록. memos와 같은 복합 커서를 사용한다. */
+/** 메모 목록과 같은 복합 커서로 하이라이트를 이어 읽는다. */
 export function useHighlightList({
 	searchQuery,
 	color,
@@ -24,6 +24,7 @@ export function useHighlightList({
 
 	return useInfiniteQuery({
 		queryKey: QUERY_KEY.highlightsPaginated({ searchQuery, color }),
+		retry: false,
 		initialPageParam: undefined as { value: string; id: number } | undefined,
 		queryFn: async ({ pageParam }) => {
 			const { data, error } = await highlightService.getHighlightsPaginated({

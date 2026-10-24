@@ -1,9 +1,8 @@
-import IconTooltip from "@src/components/IconTooltip";
 import { getMemoUrl } from "@src/utils";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import type { Database } from "@web-memo/shared/types";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
-import { Button, ErrorBoundary } from "@web-memo/ui";
+import { Button, ErrorBoundary, IconTooltip } from "@web-memo/ui";
 import { ExternalLinkIcon } from "lucide-react";
 import { Suspense } from "react";
 

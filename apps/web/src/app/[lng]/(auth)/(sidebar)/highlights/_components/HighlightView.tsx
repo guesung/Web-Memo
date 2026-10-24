@@ -2,10 +2,18 @@
 
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { useQuery } from "@tanstack/react-query";
 import type { HighlightColor } from "@web-memo/shared/constants";
-import { useDebounce } from "@web-memo/shared/hooks";
+import {
+	useDebounce,
+	useHighlightMemoLinks,
+	useSupabaseClientQuery,
+	useSupabaseUserQuery,
+} from "@web-memo/shared/hooks";
 import { groupHighlightsByUrl } from "@web-memo/shared/modules/highlight";
-import { Suspense, useEffect, useState } from "react";
+import { HighlightService } from "@web-memo/shared/utils";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useHighlightCounts, useHighlightList } from "../_hooks";
 import { HighlightEmptyState } from "./HighlightEmptyState";
 import { HighlightFilterBar } from "./HighlightFilterBar";
@@ -38,7 +46,7 @@ export function HighlightView({ lng }: HighlightViewProps) {
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
+		<div className="mx-auto flex w-full max-w-[840px] flex-col gap-6">
 			<HighlightFilterBar
 				lng={lng}
 				searchInput={searchInput}
@@ -66,7 +74,7 @@ interface HighlightListProps {
 	onClearFilters: () => void;
 }
 
-/** 하이라이트를 URL별로 묶고 추가 페이지는 사용자 요청에만 불러온다. */
+/** 하이라이트를 URL별로 묶고 스크롤 끝에서 다음 페이지를 불러온다. */
 function HighlightList({
 	lng,
 	searchQuery,
@@ -90,8 +98,46 @@ function HighlightList({
 		color: selectedColor,
 	});
 	const rows = data?.pages.flat() ?? [];
-	const groups = groupHighlightsByUrl(rows);
-	const counts = useHighlightCounts(groups.map((group) => group.url));
+	const searchParams = useSearchParams();
+	const requestedId = Number(searchParams.get("highlightId"));
+	const targetHighlightId =
+		Number.isSafeInteger(requestedId) && requestedId > 0
+			? requestedId
+			: undefined;
+	const { data: client } = useSupabaseClientQuery();
+	const { user } = useSupabaseUserQuery();
+	const userId = user.data.user?.id;
+	const target = useQuery({
+		queryKey: ["highlights", "target", userId, targetHighlightId],
+		enabled: !!targetHighlightId && !!userId,
+		queryFn: async () => {
+			if (!targetHighlightId || !userId)
+				throw new Error("Missing highlight identity");
+			const { data, error } = await new HighlightService(
+				client,
+			).getHighlightById({ id: targetHighlightId, userId });
+			if (error) throw error;
+			return data;
+		},
+	});
+	const targetRow = target.data;
+	const separateTarget =
+		targetRow && !rows.some((row) => row.id === targetRow.id)
+			? targetRow
+			: undefined;
+	const visibleGroups = groupHighlightsByUrl(
+		separateTarget ? [separateTarget, ...rows] : rows,
+	);
+	const counts = useHighlightCounts(visibleGroups.map((group) => group.url));
+	const links = useHighlightMemoLinks([
+		...rows.map((row) => row.id),
+		...(separateTarget ? [separateTarget.id] : []),
+	]);
+	const linksByHighlight = new Map(
+		(links.data ?? []).flatMap((link) =>
+			link.highlight_id === null ? [] : [[link.highlight_id, link] as const],
+		),
+	);
 	const isFiltering = searchQuery.length > 0 || selectedColor !== undefined;
 
 	if (isPending) return <HighlightListSkeleton />;
@@ -109,7 +155,7 @@ function HighlightList({
 		);
 	}
 
-	if (rows.length === 0) {
+	if (rows.length === 0 && !separateTarget) {
 		return (
 			<>
 				{isRefetchError && (
@@ -131,7 +177,10 @@ function HighlightList({
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
+		<div className="flex flex-col gap-6">
+			{target.isError && (
+				<HighlightLoadError lng={lng} onRetry={() => void target.refetch()} />
+			)}
 			{isRefetchError && (
 				<HighlightLoadError
 					lng={lng}
@@ -141,14 +190,29 @@ function HighlightList({
 					}}
 				/>
 			)}
-			{groups.map((group) => (
-				<HighlightGroupCard
-					key={group.url}
-					group={group}
-					lng={lng}
-					count={counts.get(group.url) ?? 0}
-				/>
-			))}
+			<HighlightListPagination
+				key={`${searchQuery}:${selectedColor ?? ""}`}
+				pageCount={data?.pages.length ?? 0}
+				hasNextPage={!!hasNextPage}
+				isFetching={isFetching}
+				isFetchNextPageError={isFetchNextPageError}
+				fetchNextPage={() => void fetchNextPage({ cancelRefetch: false })}
+			>
+				{visibleGroups.map((group) => (
+					<div key={group.url}>
+						<HighlightGroupCard
+							group={group}
+							lng={lng}
+							count={counts.get(group.url) ?? 0}
+							links={linksByHighlight}
+							isLinkLoading={links.isPending}
+							isLinkError={links.isError}
+							onRetryLinks={() => void links.refetch()}
+							targetHighlightId={targetHighlightId}
+						/>
+					</div>
+				))}
+			</HighlightListPagination>
 
 			{isFetchNextPageError ? (
 				<HighlightLoadError
@@ -159,21 +223,70 @@ function HighlightList({
 							void fetchNextPage({ cancelRefetch: false });
 					}}
 				/>
-			) : hasNextPage ? (
-				<button
-					type="button"
-					onClick={() => {
-						if (!isFetching && hasNextPage)
-							void fetchNextPage({ cancelRefetch: false });
-					}}
-					disabled={isFetching}
-					className="mx-auto rounded-lg border border-border bg-background px-4 py-2 text-sm hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed"
-				>
-					{t(
-						isFetchingNextPage ? "highlight.loadingMore" : "highlight.loadMore",
-					)}
-				</button>
+			) : isFetchingNextPage ? (
+				<output className="block text-center text-sm text-muted-foreground">
+					{t("highlight.loadingMore")}
+				</output>
 			) : null}
+		</div>
+	);
+}
+
+function HighlightListPagination({
+	children,
+	pageCount,
+	hasNextPage,
+	isFetching,
+	isFetchNextPageError,
+	fetchNextPage,
+}: {
+	children: React.ReactNode;
+	pageCount: number;
+	hasNextPage: boolean;
+	isFetching: boolean;
+	isFetchNextPageError: boolean;
+	fetchNextPage: () => void;
+}) {
+	const lastRequestedPageCount = useRef(0);
+	const requestNextPage = useCallback(() => {
+		if (
+			!hasNextPage ||
+			isFetching ||
+			isFetchNextPageError ||
+			lastRequestedPageCount.current >= pageCount
+		)
+			return;
+		lastRequestedPageCount.current = pageCount;
+		fetchNextPage();
+	}, [fetchNextPage, hasNextPage, isFetching, isFetchNextPageError, pageCount]);
+
+	const sentinelRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		const sentinel = sentinelRef.current;
+		if (!sentinel || !hasNextPage || isFetching || isFetchNextPageError) return;
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries.some((entry) => entry.isIntersecting)) {
+					observer.disconnect();
+					requestNextPage();
+				}
+			},
+			{ rootMargin: "400px" },
+		);
+		observer.observe(sentinel);
+		return () => observer.disconnect();
+	}, [hasNextPage, isFetching, isFetchNextPageError, requestNextPage]);
+
+	return (
+		<div className="flex w-full flex-col gap-7 pb-24 sm:gap-8">
+			{children}
+			<div
+				ref={sentinelRef}
+				data-testid="highlight-list-sentinel"
+				aria-hidden="true"
+				className="h-px"
+			/>
 		</div>
 	);
 }

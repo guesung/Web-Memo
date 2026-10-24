@@ -1,7 +1,13 @@
 import { handleEditHighlight } from "./editHighlight";
 import { handleCreateHighlight } from "./createHighlight";
 import { handleCreateMemo } from "./createMemo";
+import {
+	handleCreateHighlightMemo,
+	handleGetHighlightMemoLinks,
+} from "./highlightMemo";
 import { handleGetLoginStatus } from "./getLoginStatus";
+import { handleFocusHighlight, notifyHighlightChange } from "./highlightPanel";
+import { handleOpenSidePanelFromWeb } from "./openSidePanelFromWeb";
 import "webextension-polyfill";
 
 import { CONFIG } from "@web-memo/env";
@@ -31,7 +37,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 			await analytics.trackEvent({ name: "extension_installed" });
 		} catch (error) {
 			// 계측 실패가 패널 설정·언어 초기화·설치 탭을 막으면 안 되므로 삼킵니다.
-			console.warn("[analytics] extension_installed 전송에 실패했습니다.", error);
+			console.warn(
+				"[analytics] extension_installed 전송에 실패했습니다.",
+				error,
+			);
 		}
 	}
 
@@ -93,8 +102,12 @@ if (chrome.contextMenus)
 				await Tab.create({ url: `${CONFIG.webUrl}/memos` });
 				break;
 			case CONTEXT_MENU_ID_SHOW_GUIDE:
-				analytics.trackEvent({ name: "guide_open", params: { from: "context_menu" } });
-				if (I18n.getUILanguage() === "ko") Tab.create({ url: EXTERNAL_LINK.notionGuideKo });
+				analytics.trackEvent({
+					name: "guide_open",
+					params: { from: "context_menu" },
+				});
+				if (I18n.getUILanguage() === "ko")
+					Tab.create({ url: EXTERNAL_LINK.notionGuideKo });
 				else Tab.create({ url: EXTERNAL_LINK.notionGuideEn });
 				break;
 		}
@@ -110,9 +123,27 @@ chrome.tabs.onUpdated.addListener(async () => {
 });
 
 // content-ui에서 메시지를 전달받아 사이드 패널을 연다.
-bridge.handle.OPEN_SIDE_PANEL((_, sender) => {
-	if (!sender.tab?.windowId) return;
-	chrome.sidePanel.open({ windowId: sender.tab.windowId });
+bridge.handle.OPEN_SIDE_PANEL((_, sender, sendResponse) => {
+	if (sender.tab?.windowId === undefined) {
+		sendResponse({ success: false });
+		return false;
+	}
+	try {
+		chrome.sidePanel.open({ windowId: sender.tab.windowId }).then(
+			() => sendResponse({ success: true }),
+			() => sendResponse({ success: false }),
+		);
+		return true;
+	} catch {
+		sendResponse({ success: false });
+		return false;
+	}
+});
+
+bridge.handle.OPEN_SIDE_PANEL_FROM_WEB(handleOpenSidePanelFromWeb);
+
+bridge.handle.FOCUS_HIGHLIGHT(async (payload, sender, sendResponse) => {
+	sendResponse(await handleFocusHighlight(payload, sender));
 });
 
 bridge.handle.GET_EXTENSION_MANIFEST((_, __, sendResponse) => {
@@ -129,6 +160,18 @@ bridge.handle.GET_TABS(async (_, __, sendResponse) => {
 bridge.handle.CREATE_MEMO(async (payload, _sender, sendResponse) => {
 	sendResponse(await handleCreateMemo(payload));
 });
+
+bridge.handle.CREATE_MEMO_FROM_HIGHLIGHT(
+	async (payload, sender, sendResponse) => {
+		sendResponse(await handleCreateHighlightMemo(payload, sender));
+	},
+);
+
+bridge.handle.GET_HIGHLIGHT_MEMO_LINKS(
+	async (payload, sender, sendResponse) => {
+		sendResponse(await handleGetHighlightMemoLinks(payload, sender));
+	},
+);
 
 // content-ui가 현재 페이지의 하이라이트를 조회한다.
 // 실패해도 빈 배열을 돌려준다 — 남의 페이지 위에서 조용히 실패해야 한다(설계 §8).
@@ -161,9 +204,13 @@ bridge.handle.GET_LOGIN_STATUS(async (_payload, _sender, sendResponse) => {
 
 /** 선택된 텍스트는 인증된 background에서만 저장한다. */
 bridge.handle.CREATE_HIGHLIGHT(async (payload, sender, sendResponse) => {
- sendResponse(await handleCreateHighlight({ payload, sender }));
+	const result = await handleCreateHighlight({ payload, sender });
+	await notifyHighlightChange(result);
+	sendResponse(result);
 });
 
 bridge.handle.EDIT_HIGHLIGHT(async (payload, sender, sendResponse) => {
-	sendResponse(await handleEditHighlight({ payload, sender }));
+	const result = await handleEditHighlight({ payload, sender });
+	await notifyHighlightChange(result);
+	sendResponse(result);
 });

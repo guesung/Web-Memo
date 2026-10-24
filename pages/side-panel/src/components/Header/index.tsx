@@ -1,7 +1,6 @@
-import IconTooltip from "@src/components/IconTooltip";
 import { useTabQuery } from "@web-memo/shared/hooks";
 import { I18n } from "@web-memo/shared/utils/extension";
-import { Button } from "@web-memo/ui";
+import { Button, IconTooltip } from "@web-memo/ui";
 import { GlobeIcon, SettingsIcon } from "lucide-react";
 import { ToggleTheme } from "./components";
 

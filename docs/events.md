@@ -47,6 +47,7 @@
 | highlight_source_jump | 사이드 패널 인용 선택 후 원문 위치 검증·스크롤 성공 | — | 패널 인용을 통해 원문으로 돌아가는가 | DB-1180 |
 | highlight_note_update | 하이라이트 메모 수정 (추정) | — | 하이라이트에 메모를 다는가 (추정) | — |
 | highlight_bubble_disable | 하이라이트 말풍선 끄기 | `scope`: `site` \| `all` | 말풍선이 거슬리는가 (추정) | — |
+| highlight_bubble_dismiss | 하이라이트 말풍선 X(이번 선택만 닫기) 클릭. Esc·바깥 클릭·선택 해제로 사라지는 경우는 제외 | — | 끄기 대신 X를 반복해 누르는가, 닫기·끄기·생성 중 무엇을 고르는가 | DB-1225 |
 | summary_run | 요약 실행. 요약 보기에서 첫 요청은 `disclosure`, 명시 재시도는 기존 `empty_state`. 재열기로 요청을 재사용하면 기록하지 않음 | `source`: `disclosure` \| `empty_state` \| `tab_trigger`(기존 버전) | 어느 자리에서 요약이 시작되는가 | — |
 | summary_panel_toggle | 요약 행을 직접 열거나 접음. 초기 렌더·페이지 변경·설정 OFF에 따른 자동 접힘은 제외 | `action`: `open` \| `close` | 요약 진입과 메모 화면 복귀를 얼마나 하는가 | — |
 | summary_complete | 요약 완료 | `duration_msec` | 요약이 얼마나 걸리는가 (추정) | — |

@@ -12,8 +12,8 @@ import { UNKNOWN_DOMAIN } from "./groupMemosByDomain";
 import MemoItem from "./MemoItem";
 import { restoreHeldScrollPosition } from "./scrollPositionHold";
 
-/** 한 날짜(또는 도메인)에 속한 메모를 왼쪽 라벨 열과 카드 masonry로 보여준다. */
-const MemoDateGroup = ({
+/** 한 날짜 또는 도메인에 속한 메모를 왼쪽 그룹 열과 카드 masonry로 보여준다. */
+const MemoGroup = ({
 	lng,
 	groupBy = "date",
 	groupKey,
@@ -24,7 +24,7 @@ const MemoDateGroup = ({
 	showActionItem,
 	truncateMemoContent,
 	onRenderComplete,
-}: IFMemoDateGroupProps) => {
+}: IFMemoGroupProps) => {
 	const { t } = useTranslation(lng);
 	const dateFormatter = new Intl.DateTimeFormat(lng, { dateStyle: "long" });
 	const weekdayFormatter = new Intl.DateTimeFormat(lng, { weekday: "long" });
@@ -106,16 +106,13 @@ const MemoDateGroup = ({
 	);
 };
 
-export default MemoDateGroup;
+export default MemoGroup;
 
-/** 그룹의 메모와 카드 표시 설정. */
-export interface IFMemoDateGroupProps extends LanguageType {
-	/** 무엇으로 묶은 그룹인지. 라벨과 테스트 id가 달라진다 */
+/** 날짜·도메인 그룹의 메모와 카드 표시 설정. */
+export interface IFMemoGroupProps extends LanguageType {
+	/** 묶는 기준. 기본은 날짜 */
 	groupBy?: "date" | "domain";
-	/**
-	 * 날짜 그룹이면 `YYYY-MM-DD` 현지 날짜 키(알 수 없으면 `unknown`),
-	 * 도메인 그룹이면 도메인(알 수 없으면 `UNKNOWN_DOMAIN`)
-	 */
+	/** 날짜면 `YYYY-MM-DD` 현지 날짜 키(알 수 없으면 `unknown`), 도메인이면 호스트명(알 수 없으면 빈 문자열) */
 	groupKey: string;
 	memos: GetMemoResponse[];
 	highlightsByUrl: Map<string, HighlightRow[]>;

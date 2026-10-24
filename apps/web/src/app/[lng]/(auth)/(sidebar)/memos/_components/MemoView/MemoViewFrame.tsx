@@ -24,12 +24,6 @@ const MemoTruncateToggle = dynamic(() => import("./MemoTruncateToggle"), {
 	loading: () => <Skeleton className="h-10 w-10" />,
 });
 
-/** 도메인 목록을 읽는 Suspense 쿼리라 클라이언트에서만 그리고, 메모 목록은 막지 않는다. */
-const MemoDomainFilter = dynamic(() => import("./MemoDomainFilter"), {
-	ssr: false,
-	loading: () => <Skeleton className="h-10 w-28" />,
-});
-
 const MemoRefreshButton = dynamic(() => import("./MemoRefreshButton"), {
 	ssr: false,
 	loading: () => <Skeleton className="h-10 w-10" />,
@@ -46,7 +40,8 @@ const MemoViewFrame = ({
 	memos,
 	totalCount,
 	domain,
-	isListControlsVisible,
+	domainFilter,
+	isViewToggleVisible,
 	children,
 }: IFMemoViewFrameProps) => {
 	const { t } = useTranslation(lng);
@@ -70,27 +65,22 @@ const MemoViewFrame = ({
 		}
 	});
 
-	const totalMemosText = domain
-		? t("memos.domainFilter.totalMemos", { domain, total: totalCount })
-		: t("memos.totalMemos", { total: totalCount });
-
 	return (
 		<div className="flex w-full flex-col gap-4">
 			<div className="flex items-center">
 				<div className="flex w-full flex-wrap items-center justify-between gap-2">
 					<p className="text-muted-foreground select-none text-sm flex items-center gap-2">
 						<span className="w-2 h-2 bg-primary rounded-full" />
-						{totalMemosText}
+						{domain
+							? t("memos.domainFilter.totalMemos", {
+									domain,
+									total: totalCount,
+								})
+							: t("memos.totalMemos", { total: totalCount })}
 					</p>
 					<div className="flex flex-wrap items-center gap-2 max-sm:w-full">
-						{isListControlsVisible && (
-							<>
-								<Suspense fallback={<Skeleton className="h-10 w-28" />}>
-									<MemoDomainFilter lng={lng} domain={domain} />
-								</Suspense>
-								<MemoViewToggle lng={lng} />
-							</>
-						)}
+						{domainFilter}
+						{isViewToggleVisible && <MemoViewToggle lng={lng} />}
 						<Suspense fallback={<Skeleton className="h-10 w-10" />}>
 							<MemoTruncateToggle lng={lng} />
 						</Suspense>
@@ -155,9 +145,11 @@ export interface IFMemoViewRelations {
 interface IFMemoViewFrameProps extends LanguageType {
 	memos: GetMemoResponse[];
 	totalCount: number;
-	/** 정규화된 선택 도메인. 있으면 개수 문구가 도메인 기준이 된다 */
+	/** 정규화된 선택 도메인. 필터가 없으면 undefined */
 	domain?: string;
-	/** 도메인 필터와 카드·작성일별·도메인별 보기 전환을 보여줄지 */
-	isListControlsVisible: boolean;
+	/** 보기 도구 앞에 놓는 도메인 선택 컨트롤 */
+	domainFilter?: ReactNode;
+	/** 카드·작성일별 보기 전환을 보여줄지 */
+	isViewToggleVisible: boolean;
 	children: (relations: IFMemoViewRelations) => ReactNode;
 }

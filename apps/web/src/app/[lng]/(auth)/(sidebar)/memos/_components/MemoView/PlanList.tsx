@@ -21,7 +21,7 @@ import { ChevronRight } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useMemoSettings } from "./_hooks/useMemoSettings";
-import MemoDateGroup from "./MemoDateGroup";
+import MemoGroup from "./MemoGroup";
 import { groupPlannedMemos, type IFPlanDateGroup } from "./planSections";
 
 /** 읽을 계획 메모를 오늘(브라우저 현지 날짜) 기준 지난 계획·오늘·다가오는 날로 나눠 날짜별로 보여준다. */
@@ -57,7 +57,7 @@ const PlanList = ({
 
 	const renderGroups = (groups: IFPlanDateGroup[]) =>
 		groups.map((group) => (
-			<MemoDateGroup
+			<MemoGroup
 				key={group.dateKey}
 				lng={lng}
 				groupKey={group.dateKey}

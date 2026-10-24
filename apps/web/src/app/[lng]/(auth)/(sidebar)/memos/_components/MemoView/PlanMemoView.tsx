@@ -44,7 +44,7 @@ const PlanMemoView = ({ lng }: LanguageType) => {
 			lng={lng}
 			memos={memos}
 			totalCount={memos.length}
-			isListControlsVisible={false}
+			isViewToggleVisible={false}
 		>
 			{({ highlightsByUrl, sourcesByMemo }) =>
 				memos.length === 0 ? (

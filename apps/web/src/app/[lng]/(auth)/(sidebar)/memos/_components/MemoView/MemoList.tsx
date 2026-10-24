@@ -16,9 +16,9 @@ import { Button } from "@web-memo/ui";
 import { useEffect, useRef, useState } from "react";
 import { useMemoSettings } from "./_hooks/useMemoSettings";
 import { groupMemosByDomain } from "./groupMemosByDomain";
-import MemoDateGroup from "./MemoDateGroup";
 import MemoDomainEmptyState from "./MemoDomainEmptyState";
 import MemoEmptyState from "./MemoEmptyState";
+import MemoGroup from "./MemoGroup";
 import { MemoListSkeleton } from "./MemoListSkeleton";
 import MemoSearchEmptyState from "./MemoSearchEmptyState";
 
@@ -89,7 +89,7 @@ const MemoList = (props: IFMemoListProps) => {
 				/>
 			)}
 			{groups.map((group) => (
-				<MemoDateGroup
+				<MemoGroup
 					key={group.key}
 					lng={props.lng}
 					groupBy={props.groupBy}

@@ -8,8 +8,10 @@ import {
 	type TMemoRoute,
 } from "@src/modules/observability/client";
 import { useMemosInfiniteQuery } from "@web-memo/shared/hooks";
+import { parseDomainFilter } from "@web-memo/shared/utils";
+import { Skeleton } from "@web-memo/ui";
 import dynamic from "next/dynamic";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import type { TMemoFilter } from "../../_types";
 import { useMemoSearchConditions } from "./_hooks";
 import MemoGrid from "./MemoGrid";
@@ -21,6 +23,12 @@ import PlanMemoView from "./PlanMemoView";
 const MemoList = dynamic(() => import("./MemoList"), {
 	ssr: false,
 	loading: () => <MemoListSkeleton />,
+});
+
+/** 도메인 목록을 읽는 Suspense 쿼리라 클라이언트에서만 그리고, 메모 목록은 막지 않는다. */
+const MemoDomainFilter = dynamic(() => import("./MemoDomainFilter"), {
+	ssr: false,
+	loading: () => <Skeleton className="h-10 w-28" />,
 });
 
 /** 라우트 필터에 해당하는 메모 목록과 검색 결과를 표시한다. */
@@ -36,8 +44,12 @@ export default MemoView;
 
 /** 페이지 단위로 불러오는 메모 목록. 카드·작성일별·도메인별 보기를 전환한다. */
 const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
-	const { category, view, isListView, domain, searchQuery } =
+	const { category, view, isListView, searchQuery, domainParam } =
 		useMemoSearchConditions();
+	const domain = parseDomainFilter(domainParam);
+	const isWish = getWishlistFilter(filter);
+	const isStar = filter === "star" ? true : undefined;
+	const isReading = filter === "reading" ? true : undefined;
 
 	const {
 		data,
@@ -49,9 +61,9 @@ const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
 	} = useMemosInfiniteQuery({
 		category,
 		sortBy: view === "list" ? "created_at" : "updated_at",
-		isWish: getWishlistFilter(filter),
-		isStar: filter === "star" ? true : undefined,
-		isReading: filter === "reading" ? true : undefined,
+		isWish,
+		isStar,
+		isReading,
 		searchQuery: searchQuery || undefined,
 		domain,
 	});
@@ -81,20 +93,7 @@ const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
 	 * 검색어와 id(메모 다이얼로그)는 넣지 않는다. 넣으면 글자를 칠 때마다,
 	 * 다이얼로그를 여닫을 때마다 그리드가 통째로 다시 그려진다.
 	 */
-	const tabKey = `${category}|${filter}|${view === "list" || view === "domain" ? view : "grid"}|${domain ?? ""}`;
-
-	/**
-	 * 탭이 바뀌면 목록을 맨 위에서 보여준다.
-	 *
-	 * @description 카테고리 전환은 searchParams만 바꾸는 같은 라우트 전환이라 Next가
-	 * 스크롤을 맨 위로 올려주지 않는다. 위의 리마운트만으로는 이미 내려가 있던 문서
-	 * 스크롤이 그대로 남으므로 여기서 직접 올린다. 둘 다 필요하다 - 이것만 있으면
-	 * egjs 보정이 곧바로 덮어쓰고, 리마운트만 있으면 이전 스크롤이 남는다.
-	 */
-	// biome-ignore lint/correctness/useExhaustiveDependencies: 탭이 바뀔 때만 올려야 한다
-	useEffect(() => {
-		window.scrollTo(0, 0);
-	}, [tabKey]);
+	const tabKey = `${category}|${filter}|${view}|${domain ?? ""}`;
 
 	return (
 		<MemoViewFrame
@@ -102,60 +101,52 @@ const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
 			memos={memos}
 			totalCount={totalCount}
 			domain={domain}
-			isListControlsVisible
+			domainFilter={
+				<Suspense fallback={<Skeleton className="h-10 w-28" />}>
+					<MemoDomainFilter
+						lng={lng}
+						domain={domain}
+						category={category}
+						isWish={isWish}
+						isStar={isStar}
+						isReading={isReading}
+					/>
+				</Suspense>
+			}
+			isViewToggleVisible
 		>
-			{({ highlightsByUrl, sourcesByMemo }) =>
-				isListView ? (
+			{({ highlightsByUrl, sourcesByMemo }) => {
+				const listProps = {
+					lng,
+					memos,
+					highlightsByUrl,
+					sourcesByMemo,
+					searchQuery,
+					domain,
+					hasNextPage,
+					isFetchingNextPage,
+					fetchNextPage,
+					loadOutcome,
+					route,
+					navigationId,
+				};
+
+				return isListView ? (
 					<MemoList
 						key={tabKey}
-						lng={lng}
 						groupBy={view === "domain" ? "domain" : "date"}
-						memos={memos}
-						highlightsByUrl={highlightsByUrl}
-						sourcesByMemo={sourcesByMemo}
-						searchQuery={searchQuery}
-						domain={domain}
-						hasNextPage={hasNextPage}
-						isFetchingNextPage={isFetchingNextPage}
-						fetchNextPage={fetchNextPage}
-						loadOutcome={loadOutcome}
-						route={route}
-						navigationId={navigationId}
+						{...listProps}
 					/>
 				) : (
-					<MemoGrid
-						key={tabKey}
-						lng={lng}
-						memos={memos}
-						highlightsByUrl={highlightsByUrl}
-						sourcesByMemo={sourcesByMemo}
-						searchQuery={searchQuery}
-						domain={domain}
-						hasNextPage={hasNextPage}
-						isFetchingNextPage={isFetchingNextPage}
-						fetchNextPage={fetchNextPage}
-						loadOutcome={loadOutcome}
-						route={route}
-						navigationId={navigationId}
-					/>
-				)
-			}
+					<MemoGrid key={tabKey} {...listProps} />
+				);
+			}}
 		</MemoViewFrame>
 	);
 };
 
-/** 기본 목록에서는 위시 메모를 제외하고 별표·읽는 중에서는 위시 여부를 제한하지 않는다. */
-const getWishlistFilter = (filter: TMemoFilter): boolean | undefined => {
-	if (filter === "all") {
-		return false;
-	}
-
-	if (filter === "wish") {
-		return true;
-	}
-
-	return undefined;
-};
+/** 위시 탭만 위시 메모를 보여주고, 그 외 탭(별표·읽는 중 포함)은 위시 메모를 제외해 검색도 현재 탭 안에서만 한다. */
+const getWishlistFilter = (filter: TMemoFilter): boolean => filter === "wish";
 
 /** 메모 목록의 언어와 라우트 필터. */
 interface IFMemoViewProps extends LanguageType {

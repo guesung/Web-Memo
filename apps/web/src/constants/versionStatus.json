@@ -1,0 +1,20 @@
+{
+	"generatedAt": "2026-09-18T11:56:49.492Z",
+	"tracks": [
+		{
+			"track": "extension",
+			"version": "1.10.18",
+			"lastChangedAt": "2026-09-16"
+		},
+		{
+			"track": "app",
+			"version": "1.0.8",
+			"lastChangedAt": "2026-08-23"
+		},
+		{
+			"track": "release-notes",
+			"version": "v1.10.12",
+			"lastChangedAt": "2026-08-09"
+		}
+	]
+}

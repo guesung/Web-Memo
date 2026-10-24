@@ -260,6 +260,7 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 		controllerRef.current?.dismissSelection();
 		setIsMenuOpen(false);
 		setMenuError("");
+		analytics.trackEvent({ name: "highlight_bubble_dismiss" });
 	};
 	const handleMenuDismiss = () => {
 		setIsMenuOpen(false);

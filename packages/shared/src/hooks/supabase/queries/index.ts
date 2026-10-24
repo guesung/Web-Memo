@@ -13,6 +13,7 @@ export {
 } from "./useFavoritesQuery";
 export { default as useFeedbackQuery } from "./useFeedbackQuery";
 export { default as useFeedbacksQuery } from "./useFeedbacksQuery";
+export { default as useMemoDomainsQuery } from "./useMemoDomainsQuery";
 export { default as useMemoQuery, memoQueryOptions } from "./useMemoQuery";
 export { default as useMemosInfiniteQuery } from "./useMemosInfiniteQuery";
 export { default as useNoticeQuery } from "./useNoticeQuery";

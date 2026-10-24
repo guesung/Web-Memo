@@ -39,6 +39,8 @@ const MemoViewFrame = ({
 	lng,
 	memos,
 	totalCount,
+	domain,
+	domainFilter,
 	isViewToggleVisible,
 	children,
 }: IFMemoViewFrameProps) => {
@@ -66,12 +68,18 @@ const MemoViewFrame = ({
 	return (
 		<div className="flex w-full flex-col gap-4">
 			<div className="flex items-center">
-				<div className="flex w-full items-center justify-between">
+				<div className="flex w-full flex-wrap items-center justify-between gap-2">
 					<p className="text-muted-foreground select-none text-sm flex items-center gap-2">
 						<span className="w-2 h-2 bg-primary rounded-full" />
-						{t("memos.totalMemos", { total: totalCount })}
+						{domain
+							? t("memos.domainFilter.totalMemos", {
+									domain,
+									total: totalCount,
+								})
+							: t("memos.totalMemos", { total: totalCount })}
 					</p>
-					<div className="flex items-center gap-2">
+					<div className="flex flex-wrap items-center gap-2 max-sm:w-full">
+						{domainFilter}
 						{isViewToggleVisible && <MemoViewToggle lng={lng} />}
 						<Suspense fallback={<Skeleton className="h-10 w-10" />}>
 							<MemoTruncateToggle lng={lng} />
@@ -137,6 +145,10 @@ export interface IFMemoViewRelations {
 interface IFMemoViewFrameProps extends LanguageType {
 	memos: GetMemoResponse[];
 	totalCount: number;
+	/** 정규화된 선택 도메인. 필터가 없으면 undefined */
+	domain?: string;
+	/** 보기 도구 앞에 놓는 도메인 선택 컨트롤 */
+	domainFilter?: ReactNode;
 	/** 카드·작성일별 보기 전환을 보여줄지 */
 	isViewToggleVisible: boolean;
 	children: (relations: IFMemoViewRelations) => ReactNode;

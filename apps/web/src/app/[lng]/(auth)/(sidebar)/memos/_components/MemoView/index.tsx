@@ -8,8 +8,10 @@ import {
 	type TMemoRoute,
 } from "@src/modules/observability/client";
 import { useMemosInfiniteQuery } from "@web-memo/shared/hooks";
+import { parseDomainFilter } from "@web-memo/shared/utils";
+import { Skeleton } from "@web-memo/ui";
 import dynamic from "next/dynamic";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import type { TMemoFilter } from "../../_types";
 import { useMemoSearchConditions } from "./_hooks";
 import MemoGrid from "./MemoGrid";
@@ -21,6 +23,12 @@ import PlanMemoView from "./PlanMemoView";
 const MemoList = dynamic(() => import("./MemoList"), {
 	ssr: false,
 	loading: () => <MemoListSkeleton />,
+});
+
+/** 도메인 목록을 읽는 Suspense 쿼리라 클라이언트에서만 그리고, 메모 목록은 막지 않는다. */
+const MemoDomainFilter = dynamic(() => import("./MemoDomainFilter"), {
+	ssr: false,
+	loading: () => <Skeleton className="h-10 w-28" />,
 });
 
 /** 라우트 필터에 해당하는 메모 목록과 검색 결과를 표시한다. */
@@ -36,7 +44,12 @@ export default MemoView;
 
 /** 페이지 단위로 불러오는 메모 목록. 카드·작성일별·도메인별 보기를 전환한다. */
 const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
-	const { category, view, isListView, searchQuery } = useMemoSearchConditions();
+	const { category, view, isListView, searchQuery, domainParam } =
+		useMemoSearchConditions();
+	const domain = parseDomainFilter(domainParam);
+	const isWish = getWishlistFilter(filter);
+	const isStar = filter === "star" ? true : undefined;
+	const isReading = filter === "reading" ? true : undefined;
 
 	const {
 		data,
@@ -48,10 +61,11 @@ const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
 	} = useMemosInfiniteQuery({
 		category,
 		sortBy: view === "list" ? "created_at" : "updated_at",
-		isWish: getWishlistFilter(filter),
-		isStar: filter === "star" ? true : undefined,
-		isReading: filter === "reading" ? true : undefined,
+		isWish,
+		isStar,
+		isReading,
 		searchQuery: searchQuery || undefined,
+		domain,
 	});
 	const loadOutcome: TMemoLoadOutcome = data.pages[0]?.error
 		? "error"
@@ -79,13 +93,26 @@ const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
 	 * 검색어와 id(메모 다이얼로그)는 넣지 않는다. 넣으면 글자를 칠 때마다,
 	 * 다이얼로그를 여닫을 때마다 그리드가 통째로 다시 그려진다.
 	 */
-	const tabKey = `${category}|${filter}|${view}`;
+	const tabKey = `${category}|${filter}|${view}|${domain ?? ""}`;
 
 	return (
 		<MemoViewFrame
 			lng={lng}
 			memos={memos}
 			totalCount={totalCount}
+			domain={domain}
+			domainFilter={
+				<Suspense fallback={<Skeleton className="h-10 w-28" />}>
+					<MemoDomainFilter
+						lng={lng}
+						domain={domain}
+						category={category}
+						isWish={isWish}
+						isStar={isStar}
+						isReading={isReading}
+					/>
+				</Suspense>
+			}
 			isViewToggleVisible
 		>
 			{({ highlightsByUrl, sourcesByMemo }) => {
@@ -95,6 +122,7 @@ const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
 					highlightsByUrl,
 					sourcesByMemo,
 					searchQuery,
+					domain,
 					hasNextPage,
 					isFetchingNextPage,
 					fetchNextPage,
@@ -117,18 +145,8 @@ const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
 	);
 };
 
-/** 기본 목록에서는 위시 메모를 제외하고 별표·읽는 중에서는 위시 여부를 제한하지 않는다. */
-const getWishlistFilter = (filter: TMemoFilter): boolean | undefined => {
-	if (filter === "all") {
-		return false;
-	}
-
-	if (filter === "wish") {
-		return true;
-	}
-
-	return undefined;
-};
+/** 위시 탭만 위시 메모를 보여주고, 그 외 탭(별표·읽는 중 포함)은 위시 메모를 제외해 검색도 현재 탭 안에서만 한다. */
+const getWishlistFilter = (filter: TMemoFilter): boolean => filter === "wish";
 
 /** 메모 목록의 언어와 라우트 필터. */
 interface IFMemoViewProps extends LanguageType {

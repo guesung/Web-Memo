@@ -15,6 +15,7 @@ interface IFUseMemosInfiniteQueryProps {
 	isStar?: boolean;
 	isReading?: boolean;
 	searchQuery?: string;
+	domain?: string;
 	sortBy?: MemoSortBy;
 }
 
@@ -25,6 +26,7 @@ const useMemosInfiniteQuery = ({
 	isStar,
 	isReading,
 	searchQuery,
+	domain,
 	sortBy = "updated_at",
 }: IFUseMemosInfiniteQueryProps = {}) => {
 	const { data: supabaseClient } = useSupabaseClientQuery();
@@ -38,6 +40,7 @@ const useMemosInfiniteQuery = ({
 			sortBy,
 			isStar,
 			isReading,
+			domain,
 		),
 		queryFn: async ({ pageParam }) => {
 			const result = await memoService.getMemosPaginated({
@@ -48,6 +51,7 @@ const useMemosInfiniteQuery = ({
 				isStar,
 				isReading,
 				searchQuery,
+				domain,
 				sortBy,
 			});
 

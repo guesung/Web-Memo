@@ -37,6 +37,7 @@ import {
 } from "./_hooks";
 import { useMemoSettings } from "./_hooks/useMemoSettings";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
+import MemoDomainEmptyState from "./MemoDomainEmptyState";
 import MemoEmptyState from "./MemoEmptyState";
 import MemoItem from "./MemoItem";
 import { MemoItemSkeleton } from "./MemoItemSkeleton";
@@ -51,6 +52,7 @@ interface MemoGridProps extends LanguageType {
 	highlightsByUrl: Map<string, HighlightRow[]>;
 	sourcesByMemo: Map<number, HighlightMemoLink>;
 	searchQuery: string;
+	domain: string | undefined;
 	hasNextPage: boolean;
 	isFetchingNextPage: boolean;
 	fetchNextPage: () => void;
@@ -65,6 +67,7 @@ export default function MemoGrid({
 	highlightsByUrl,
 	sourcesByMemo,
 	searchQuery,
+	domain,
 	hasNextPage,
 	isFetchingNextPage,
 	fetchNextPage,
@@ -199,7 +202,10 @@ export default function MemoGrid({
 	// biome-ignore lint/correctness/useExhaustiveDependencies: searchQuery가 바뀔 때만 재판정한다. memos까지 의존성에 넣으면 같은 검색어에서 목록이 갱신될 때마다 중복 집계된다.
 	useEffect(() => {
 		if (memos.length === 0 && searchQuery) {
-			analytics.trackEvent({ name: "search_no_result" });
+			analytics.trackEvent({
+				name: "search_no_result",
+				params: { has_domain_filter: domain !== undefined },
+			});
 		}
 	}, [searchQuery]);
 	useEffect(() => {
@@ -213,8 +219,12 @@ export default function MemoGrid({
 		}
 	}, [memos.length, loadOutcome, route, navigationId]);
 
-	// 검색 결과가 없는 것과 메모가 하나도 없는 것은 다른 상황이다. 같은 화면을 보여주면
-	// 검색 중인 사용자에게 "첫 메모를 만들어보세요"가 뜬다.
+	// 필터·검색 결과가 없는 것과 메모가 하나도 없는 것은 다른 상황이다. 같은 화면을 보여주면
+	// 필터 중인 사용자에게 "첫 메모를 만들어보세요"가 뜬다. 도메인이 더 좁은 조건이라 먼저 본다.
+	if (memos.length === 0 && domain) {
+		return <MemoDomainEmptyState lng={lng} domain={domain} />;
+	}
+
 	if (memos.length === 0 && searchQuery) {
 		return <MemoSearchEmptyState lng={lng} searchQuery={searchQuery} />;
 	}

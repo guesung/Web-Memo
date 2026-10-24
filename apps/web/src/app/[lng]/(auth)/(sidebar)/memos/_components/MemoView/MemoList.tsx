@@ -16,6 +16,7 @@ import { Button } from "@web-memo/ui";
 import { useEffect, useRef, useState } from "react";
 import { useMemoSettings } from "./_hooks/useMemoSettings";
 import { groupMemosByDomain } from "./groupMemosByDomain";
+import MemoDomainEmptyState from "./MemoDomainEmptyState";
 import MemoEmptyState from "./MemoEmptyState";
 import MemoGroup from "./MemoGroup";
 import { MemoListSkeleton } from "./MemoListSkeleton";
@@ -80,15 +81,13 @@ const MemoList = (props: IFMemoListProps) => {
 			data-testid="memo-list"
 			className="mx-auto w-full max-w-[1124px] space-y-8 pb-24"
 		>
-			{props.memos.length === 0 &&
-				(props.searchQuery ? (
-					<MemoSearchEmptyState
-						lng={props.lng}
-						searchQuery={props.searchQuery}
-					/>
-				) : (
-					<MemoEmptyState lng={props.lng} />
-				))}
+			{props.memos.length === 0 && (
+				<MemoListEmptyState
+					lng={props.lng}
+					domain={props.domain}
+					searchQuery={props.searchQuery}
+				/>
+			)}
 			{groups.map((group) => (
 				<MemoGroup
 					key={group.key}
@@ -122,6 +121,23 @@ const MemoList = (props: IFMemoListProps) => {
 };
 
 export default MemoList;
+
+/** 목록이 비었을 때 도메인 → 검색어 → 전체 빈 상태 순으로 원인을 가려 보여준다. */
+const MemoListEmptyState = ({
+	lng,
+	domain,
+	searchQuery,
+}: Pick<IFMemoListProps, "lng" | "domain" | "searchQuery">) => {
+	if (domain) {
+		return <MemoDomainEmptyState lng={lng} domain={domain} />;
+	}
+
+	if (searchQuery) {
+		return <MemoSearchEmptyState lng={lng} searchQuery={searchQuery} />;
+	}
+
+	return <MemoEmptyState lng={lng} />;
+};
 
 /** 화면 아래에 도달하면 다음 페이지를 가져오며 같은 요청을 중복하지 않는다. */
 const useMemoListPagination = (
@@ -177,6 +193,8 @@ interface IFMemoListProps extends LanguageType {
 	highlightsByUrl: Map<string, HighlightRow[]>;
 	sourcesByMemo: Map<number, HighlightMemoLink>;
 	searchQuery: string;
+	/** 정규화된 선택 도메인. 필터가 없으면 undefined */
+	domain: string | undefined;
 	hasNextPage: boolean;
 	isFetchingNextPage: boolean;
 	fetchNextPage: () => unknown;

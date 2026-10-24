@@ -42,9 +42,9 @@ const MemoView = ({ lng, filter }: IFMemoViewProps) => {
 
 export default MemoView;
 
-/** 페이지 단위로 불러오는 메모 목록. 카드 보기와 작성일별 보기를 전환한다. */
+/** 페이지 단위로 불러오는 메모 목록. 카드·작성일별·도메인별 보기를 전환한다. */
 const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
-	const { category, isListView, searchQuery, domainParam } =
+	const { category, view, isListView, searchQuery, domainParam } =
 		useMemoSearchConditions();
 	const domain = parseDomainFilter(domainParam);
 	const isWish = getWishlistFilter(filter);
@@ -60,7 +60,7 @@ const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
 		fetchNextPage,
 	} = useMemosInfiniteQuery({
 		category,
-		sortBy: isListView ? "created_at" : "updated_at",
+		sortBy: view === "list" ? "created_at" : "updated_at",
 		isWish,
 		isStar,
 		isReading,
@@ -93,8 +93,7 @@ const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
 	 * 검색어와 id(메모 다이얼로그)는 넣지 않는다. 넣으면 글자를 칠 때마다,
 	 * 다이얼로그를 여닫을 때마다 그리드가 통째로 다시 그려진다.
 	 */
-	const tabKey = `${category}|${filter}|${isListView}|${domain ?? ""}`;
-	const ListComponent = isListView ? MemoList : MemoGrid;
+	const tabKey = `${category}|${filter}|${view}|${domain ?? ""}`;
 
 	return (
 		<MemoViewFrame
@@ -116,23 +115,32 @@ const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
 			}
 			isViewToggleVisible
 		>
-			{({ highlightsByUrl, sourcesByMemo }) => (
-				<ListComponent
-					key={tabKey}
-					lng={lng}
-					memos={memos}
-					highlightsByUrl={highlightsByUrl}
-					sourcesByMemo={sourcesByMemo}
-					searchQuery={searchQuery}
-					domain={domain}
-					hasNextPage={hasNextPage}
-					isFetchingNextPage={isFetchingNextPage}
-					fetchNextPage={fetchNextPage}
-					loadOutcome={loadOutcome}
-					route={route}
-					navigationId={navigationId}
-				/>
-			)}
+			{({ highlightsByUrl, sourcesByMemo }) => {
+				const listProps = {
+					lng,
+					memos,
+					highlightsByUrl,
+					sourcesByMemo,
+					searchQuery,
+					domain,
+					hasNextPage,
+					isFetchingNextPage,
+					fetchNextPage,
+					loadOutcome,
+					route,
+					navigationId,
+				};
+
+				return isListView ? (
+					<MemoList
+						key={tabKey}
+						groupBy={view === "domain" ? "domain" : "date"}
+						{...listProps}
+					/>
+				) : (
+					<MemoGrid key={tabKey} {...listProps} />
+				);
+			}}
 		</MemoViewFrame>
 	);
 };

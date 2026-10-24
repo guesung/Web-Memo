@@ -8,13 +8,15 @@ import type {
 	HighlightMemoLink,
 	HighlightRow,
 } from "@web-memo/shared/types";
+import { UNKNOWN_DOMAIN } from "./groupMemosByDomain";
 import MemoItem from "./MemoItem";
 import { restoreHeldScrollPosition } from "./scrollPositionHold";
 
-/** 한 날짜에 속한 메모를 왼쪽 날짜 열과 카드 masonry로 보여준다. */
-const MemoDateGroup = ({
+/** 한 날짜 또는 도메인에 속한 메모를 왼쪽 그룹 열과 카드 masonry로 보여준다. */
+const MemoGroup = ({
 	lng,
-	dateKey,
+	groupBy = "date",
+	groupKey,
 	memos,
 	highlightsByUrl,
 	sourcesByMemo,
@@ -22,39 +24,47 @@ const MemoDateGroup = ({
 	showActionItem,
 	truncateMemoContent,
 	onRenderComplete,
-}: IFMemoDateGroupProps) => {
+}: IFMemoGroupProps) => {
 	const { t } = useTranslation(lng);
 	const dateFormatter = new Intl.DateTimeFormat(lng, { dateStyle: "long" });
 	const weekdayFormatter = new Intl.DateTimeFormat(lng, { weekday: "long" });
 
 	return (
 		<section
-			data-testid="memo-date-group"
-			aria-labelledby={`memo-date-${dateKey}`}
+			data-testid={`memo-${groupBy}-group`}
+			aria-labelledby={`memo-${groupBy}-${groupKey}`}
 			className="grid grid-cols-1 gap-4 md:grid-cols-[144px_minmax(0,1fr)] md:gap-6"
 		>
 			<h2
-				data-testid="memo-date-label"
-				id={`memo-date-${dateKey}`}
-				className="border-b border-border pb-3 text-sm font-semibold md:border-b-0 md:border-r md:pb-0 md:pr-4"
+				data-testid={`memo-${groupBy}-label`}
+				id={`memo-${groupBy}-${groupKey}`}
+				className="min-w-0 border-b border-border pb-3 text-sm font-semibold [overflow-wrap:anywhere] md:border-b-0 md:border-r md:pb-0 md:pr-4"
 			>
-				{dateKey === "unknown" ? (
+				{groupBy === "domain" ? (
+					groupKey === UNKNOWN_DOMAIN ? (
+						t("memos.view.unknownDomain")
+					) : (
+						groupKey
+					)
+				) : groupKey === "unknown" ? (
 					t("memos.view.unknownDate")
 				) : (
 					<time
-						dateTime={dateKey}
+						dateTime={groupKey}
 						className="flex flex-wrap items-baseline gap-x-2 gap-y-1 md:flex-col"
 					>
-						<span>{dateFormatter.format(new Date(`${dateKey}T00:00:00`))}</span>
+						<span>
+							{dateFormatter.format(new Date(`${groupKey}T00:00:00`))}
+						</span>
 						<span className="text-xs font-normal text-muted-foreground">
-							{weekdayFormatter.format(new Date(`${dateKey}T00:00:00`))}
+							{weekdayFormatter.format(new Date(`${groupKey}T00:00:00`))}
 						</span>
 					</time>
 				)}
 			</h2>
 			<MasonryInfiniteGrid
 				tag="ul"
-				data-testid="memo-date-grid"
+				data-testid={`memo-${groupBy}-grid`}
 				className="min-w-0 max-w-[300px] md:max-w-none"
 				useResizeObserver
 				observeChildren
@@ -65,7 +75,7 @@ const MemoDateGroup = ({
 				onRenderComplete={(event) => {
 					restoreHeldScrollPosition();
 					onRenderComplete?.(
-						dateKey,
+						groupKey,
 						event.items.map((item) => item.element?.dataset.memoId).join(","),
 					);
 				}}
@@ -75,7 +85,7 @@ const MemoDateGroup = ({
 						data-testid="memo-list-item"
 						data-memo-id={memo.id}
 						key={memo.id}
-						data-grid-groupkey={dateKey}
+						data-grid-groupkey={groupKey}
 						className="w-[300px] max-w-full"
 					>
 						<MemoItem
@@ -96,12 +106,14 @@ const MemoDateGroup = ({
 	);
 };
 
-export default MemoDateGroup;
+export default MemoGroup;
 
-/** 날짜 그룹의 메모와 카드 표시 설정. */
-export interface IFMemoDateGroupProps extends LanguageType {
-	/** `YYYY-MM-DD` 현지 날짜 키. 날짜를 알 수 없으면 `unknown` */
-	dateKey: string;
+/** 날짜·도메인 그룹의 메모와 카드 표시 설정. */
+export interface IFMemoGroupProps extends LanguageType {
+	/** 묶는 기준. 기본은 날짜 */
+	groupBy?: "date" | "domain";
+	/** 날짜면 `YYYY-MM-DD` 현지 날짜 키(알 수 없으면 `unknown`), 도메인이면 호스트명(알 수 없으면 빈 문자열) */
+	groupKey: string;
 	memos: GetMemoResponse[];
 	highlightsByUrl: Map<string, HighlightRow[]>;
 	sourcesByMemo: Map<number, HighlightMemoLink>;
@@ -109,5 +121,5 @@ export interface IFMemoDateGroupProps extends LanguageType {
 	showActionItem: boolean;
 	truncateMemoContent: boolean;
 	/** masonry 배치가 끝났을 때 그 그룹의 메모 id 목록(쉼표 구분)을 알린다 */
-	onRenderComplete?: (dateKey: string, memoIds: string) => void;
+	onRenderComplete?: (groupKey: string, memoIds: string) => void;
 }

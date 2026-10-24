@@ -204,6 +204,7 @@ export type TAnalyticsEvent =
 			params: { color: HighlightColor; has_note: boolean };
 	  }
 	| { name: "highlight_bubble_disable"; params: { scope: "site" | "all" } }
+	| { name: "highlight_bubble_dismiss" }
 	| { name: "notice_view"; params: { notice_id: number } }
 	| {
 			name: "notice_return";
@@ -340,6 +341,7 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	memo_domain_filter_change: "engagement",
 	highlight_create: "core_action",
 	highlight_bubble_disable: "engagement",
+	highlight_bubble_dismiss: "engagement",
 	notice_view: "engagement",
 	notice_return: "engagement",
 	notice_dismiss: "engagement",

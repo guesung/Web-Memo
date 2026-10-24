@@ -121,7 +121,10 @@ it("팝업 위치와 사이트 끄기 저장 실패를 메뉴 오류로 표시�
 	expect(hook?.isMenuOpen).toBe(false);
 	expect(document.getSelection()?.toString()).toBe("site selection");
 	expect(ChromeSyncStorage.set).not.toHaveBeenCalled();
-	expect(analytics.trackEvent).not.toHaveBeenCalled();
+	expect(analytics.trackEvent).toHaveBeenCalledTimes(1);
+	expect(analytics.trackEvent).toHaveBeenCalledWith({
+		name: "highlight_bubble_dismiss",
+	});
 	await act(async () => {
 		root.unmount();
 	});

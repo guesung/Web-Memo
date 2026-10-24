@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
 	getPendingSharedUrls,
 	type IFPendingSharedUrl,
-} from "@/lib/sharing/shareHandler";
+} from "@/lib/sharing/pendingSharedUrls";
 import {
 	getPendingMemoSyncs,
 	type IFPendingMemoSync,

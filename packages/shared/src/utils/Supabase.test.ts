@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { MemoSupabaseClient } from "../types";
 import { HighlightService, MemoService } from "./Supabase";
+
+vi.mock("../modules/analytics", () => ({
+	analytics: { trackEvent: vi.fn() },
+}));
 
 /** 가짜 빌더가 기록한 호출 인자 */
 interface IFRecordedCalls {
@@ -10,6 +14,8 @@ interface IFRecordedCalls {
 	eq: [string, unknown][];
 	in: [string, unknown][];
 	is: [string, unknown][];
+	like: [string, string][];
+	not: [string, string, unknown][];
 	lt: [string, unknown][];
 	gt: [string, unknown][];
 	or: string[];
@@ -36,6 +42,8 @@ const createMockClient = (): {
 		eq: [],
 		in: [],
 		is: [],
+		like: [],
+		not: [],
 		lt: [],
 		gt: [],
 		or: [],
@@ -61,6 +69,15 @@ const createMockClient = (): {
 		},
 		is: (column: string, value: unknown) => {
 			calls.is.push([column, value]);
+
+			return builder;
+		},
+		not: (column: string, operator: string, value: unknown) => {
+			calls.not.push([column, operator, value]);
+			return builder;
+		},
+		like: (column: string, pattern: string) => {
+			calls.like.push([column, pattern]);
 
 			return builder;
 		},
@@ -180,6 +197,7 @@ describe("HighlightService.getHighlightsByUrl", () => {
 		);
 
 		expect(calls.in).toContainEqual(["page_key", ["https://a.com/?id=1", ""]]);
+		expect(calls.like).toContainEqual(["url", "https://a.com/%"]);
 		expect(calls.order).toContainEqual(["id", { ascending: true }]);
 	});
 });
@@ -192,6 +210,8 @@ describe("MemoService.getMemoByUrl", () => {
 		);
 
 		expect(calls.in).toContainEqual(["page_key", ["https://a.com/?id=1", ""]]);
+		// 키가 비어 있는 옛 행을 전부 읽지 않도록 원본 URL 접두로 서버에서 좁힌다.
+		expect(calls.like).toContainEqual(["url", "https://a.com/%"]);
 		expect(calls.order).toEqual([["id", { ascending: true }]]);
 	});
 });
@@ -393,5 +413,43 @@ describe("MemoService.getMemosPaginated", () => {
 			["title", { ascending: true }],
 			["id", { ascending: true }],
 		]);
+	});
+});
+
+describe("MemoService.getPlannedMemos", () => {
+	it("계획 날짜가 있는 메모만 계획 날짜 오름차순, 수정 최신순으로 500건까지 조회한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getPlannedMemos({});
+
+		expect(calls.not).toEqual([["plannedDate", "is", null]]);
+		expect(calls.is).toEqual([["deleted_at", null]]);
+		expect(calls.order).toEqual([
+			["plannedDate", { ascending: true }],
+			["updated_at", { ascending: false, nullsFirst: false }],
+		]);
+		expect(calls.limit).toEqual([500]);
+		expect(calls.select).toEqual(["*, category(id, name, color)"]);
+		expect(calls.eq).toEqual([]);
+		expect(calls.or).toEqual([]);
+	});
+
+	it("위시 메모를 거르지 않는다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getPlannedMemos({});
+
+		expect(calls.eq.some(([column]) => column === "isWish")).toBe(false);
+	});
+
+	it("카테고리와 검색어를 목록 조회와 같은 방식으로 적용한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getPlannedMemos({
+			category: "개발",
+			searchQuery: "리액트",
+		});
+
+		expect(calls.select).toEqual(["*, category!inner(id, name, color)"]);
+		expect(calls.eq).toEqual([["category.name", "개발"]]);
+		expect(calls.or).toHaveLength(1);
+		expect(calls.or[0]).toContain("title.ilike.%리액트%");
 	});
 });

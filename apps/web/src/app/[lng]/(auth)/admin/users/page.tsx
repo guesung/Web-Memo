@@ -2,7 +2,7 @@
 
 import { HydrationBoundaryWrapper } from "@src/components";
 import type { LanguageParams } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import { AdminService } from "@web-memo/shared/utils";
@@ -17,7 +17,7 @@ interface PageProps extends LanguageParams {
 /** 가입한 사용자를 모아 보는 관리자 화면 */
 export default async function UsersPage({ params, searchParams }: PageProps) {
 	const { lng } = await params;
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 	const supabaseClient = await getSupabaseClient();
 	const adminService = new AdminService(supabaseClient);
 

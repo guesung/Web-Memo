@@ -46,6 +46,26 @@ export const extractEventNames = (source) => [...source.matchAll(/\bname:\s*"([a
 /** 이 스크립트가 고칠 수 있는 제품 소스인지 (테스트·타입 파일 제외) 판정합니다. */
 export const isSourceFile = (file) => /^[a-zA-Z0-9_./()[\]+-]+$/.test(file) && !file.split("/").includes("..") && SOURCE_PREFIXES.some((prefix) => file.startsWith(prefix)) && /\.tsx?$/.test(file) && !/\.test\./.test(file) && file !== TYPE_FILE;
 
+/**
+ * git log --name-only 출력 줄에서 분석 시작점으로 넘길 화면 파일을 고릅니다.
+ * 추적 중인 `.tsx` 제품 소스만, 등장 횟수 내림차순(동점이면 경로 오름차순)으로 상위 limit개를 돌려줍니다.
+ */
+export const selectRecentFiles = (changedFiles, trackedFiles, limit = 30) => {
+	const tracked = new Set(trackedFiles);
+	const counts = new Map();
+	for (const file of changedFiles) {
+		if (!file || !file.endsWith(".tsx") || /\.(?:test|stories|spec)\./.test(file) || file.split("/").includes("__tests__") || !tracked.has(file)) {
+			continue;
+		}
+		counts.set(file, (counts.get(file) ?? 0) + 1);
+	}
+
+	return [...counts.entries()]
+		.sort(([fileA, countA], [fileB, countB]) => countB - countA || (fileA < fileB ? -1 : fileA > fileB ? 1 : 0))
+		.slice(0, limit)
+		.map(([file]) => file);
+};
+
 /** 모델이 반환한 후보를 제한된 스키마로 검사합니다. */
 export const validateCandidate = (candidate, { existingEvents, trackedFiles }) => {
 	const keys = ["status", "reason", "events"];
@@ -97,6 +117,17 @@ export const validateCandidate = (candidate, { existingEvents, trackedFiles }) =
 const addedLines = (diff) => diff.split("\n").filter((line) => line.startsWith("+") && !line.startsWith("+++"));
 const removedLines = (diff) => diff.split("\n").filter((line) => line.startsWith("-") && !line.startsWith("---"));
 const sameSet = (left, right) => left.size === right.size && [...left].every((item) => right.has(item));
+// 유니온 끝에 멤버를 붙이면 기존 마지막 줄의 `;`·`,`만 바뀌므로, 끝 구두점을 뗀 내용이 같으면 변경으로 보지 않습니다.
+const normalizeLine = (line) => line.slice(1).trim().replace(/[;,]$/, "");
+/** 줄 끝 구두점만 달라진 줄을 빼고 실제로 추가·삭제된 줄만 남깁니다. */
+export const effectiveChanges = (diff) => {
+	const added = addedLines(diff);
+	const removed = removedLines(diff);
+	const addedKeys = new Set(added.map(normalizeLine));
+	const removedKeys = new Set(removed.map(normalizeLine));
+
+	return { added: added.filter((line) => !removedKeys.has(normalizeLine(line))), removed: removed.filter((line) => !addedKeys.has(normalizeLine(line))) };
+};
 
 /** 기존 파일 수정만으로 후보의 이벤트를 정확히 심었는지 검사합니다. */
 export const validateChanges = ({ baseSha, candidate }) => {
@@ -128,11 +159,12 @@ export const validateChanges = ({ baseSha, candidate }) => {
 
 	const expected = new Set(candidate.events.map((event) => event.name));
 	const typeDiff = run("git", ["diff", "-U0", baseSha, "--", TYPE_FILE]);
-	if (removedLines(typeDiff).some((line) => /\bname:\s*"/.test(line) || /^-\s*[a-z0-9_]+:\s*"(?:engagement|core_action)"/.test(line))) {
+	const typeChanges = effectiveChanges(typeDiff);
+	if (typeChanges.removed.some((line) => /\bname:\s*"/.test(line) || /^-\s*[a-z0-9_]+:\s*"(?:engagement|core_action)"/.test(line))) {
 		fail("기존 이벤트 정의를 지우거나 바꿀 수 없습니다");
 	}
-	const unionNames = new Set(addedLines(typeDiff).flatMap((line) => extractEventNames(line)));
-	const categories = new Map(addedLines(typeDiff).flatMap((line) => [...line.matchAll(/^\+\s*([a-z0-9_]+):\s*"(engagement|core_action)"/g)].map((match) => [match[1], match[2]])));
+	const unionNames = new Set(typeChanges.added.flatMap((line) => extractEventNames(line)));
+	const categories = new Map(typeChanges.added.flatMap((line) => [...line.matchAll(/^\+\s*([a-z0-9_]+):\s*"(engagement|core_action)"/g)].map((match) => [match[1], match[2]])));
 	if (!sameSet(unionNames, expected) || !sameSet(new Set(categories.keys()), expected) || candidate.events.some((event) => categories.get(event.name) !== event.category)) {
 		fail("type.ts에 추가된 이벤트와 분류가 후보와 다릅니다");
 	}

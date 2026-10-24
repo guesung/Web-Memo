@@ -1,3 +1,4 @@
+import { getPageKey } from "@web-memo/shared/utils/url";
 import { describe, expect, it } from "vitest";
 import type { IFBrowserTabsState } from "@/lib/storage/browserTabs";
 import {
@@ -120,11 +121,29 @@ describe("updateActiveTab", () => {
 describe("openUrlInTab", () => {
 	const getKey = (url: string) => url.replace(/#.*$/, "");
 
+	it("같은 영상 탭을 재사용해도 요청한 재생 시점은 유지한다", () => {
+		const state: IFBrowserTabsState = {
+			tabs: [
+				{
+					id: "video",
+					url: "https://www.youtube.com/watch?v=abc&t=10",
+					title: "Video",
+				},
+			],
+			activeTabId: "video",
+		};
+		const url = "https://www.youtube.com/watch?v=abc&t=90";
+		const next = openUrlInTab(state, url, { getKey: getPageKey });
+		expect(next.tabs).toEqual([{ ...state.tabs[0], url }]);
+		expect(next.activeTabId).toBe("video");
+	});
+
 	it("같은 페이지의 탭이 있으면 그 탭으로 전환한다", () => {
 		const next = openUrlInTab(stateOf("a"), "https://c.com#x", { getKey });
 
 		expect(next.tabs).toHaveLength(3);
 		expect(next.activeTabId).toBe("c");
+		expect(next.tabs[2].url).toBe("https://c.com#x");
 	});
 
 	it("같은 페이지 탭이 없고 활성 탭이 비어 있으면 그 탭에 연다", () => {

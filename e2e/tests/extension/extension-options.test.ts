@@ -8,10 +8,16 @@ import {
 } from "../lib/mocks";
 
 test.describe("확장 옵션 페이지", () => {
-	test.beforeEach(async ({ page }) => {
+	let store: MockSupabaseStore;
+
+	test.beforeEach(async ({ page, context }) => {
+		await context.route(
+			/https:\/\/[^/]*(google-analytics\.com|analytics\.google\.com)\//,
+			(route) => route.fulfill({ status: 204 }),
+		);
 		// 옵션 페이지의 메모 필드 설정(MemoFieldsOption)이 setting을 읽는다. 로그인 뒤 메모 화면의 목록과 함께
 		// 컨텍스트 단위 목으로 받아, 옵션 페이지처럼 테스트가 나중에 여는 확장 페이지의 요청도 실서버로 가지 않게 한다.
-		const store = new MockSupabaseStore();
+		store = new MockSupabaseStore();
 		store.setSetting(createMockSetting());
 		await setupSupabaseMocks(page, store);
 
@@ -46,6 +52,53 @@ test.describe("확장 옵션 페이지", () => {
 		await expect(optionsPage.locator("#response-language")).toContainText(
 			nextLanguage,
 		);
+	});
+
+	test("AI 기능 카드에서 요약과 채팅을 독립적으로 저장한다.", async ({
+		page,
+	}) => {
+		const optionsPage = await page.context().newPage();
+		const changedSettingKeys: Array<Promise<string | undefined>> = [];
+		optionsPage.on("console", (message) => {
+			if (!message.text().startsWith("[analytics] setting_change")) return;
+			changedSettingKeys.push(
+				message
+					.args()[1]
+					?.jsonValue()
+					.then((params) => {
+						return (params as { setting_keys?: string }).setting_keys;
+					}) ?? Promise.resolve(undefined),
+			);
+		});
+		await optionsPage.goto(getExtensionUrl("options/index.html"));
+
+		const chatSwitch = optionsPage.locator("#ai-chat-enabled");
+		const summarySwitch = optionsPage.locator("#summary-enabled");
+		const hint = await optionsPage.evaluate(() =>
+			chrome.i18n.getMessage("summary_panel_hint"),
+		);
+		await expect(summarySwitch).toHaveAttribute("data-state", "unchecked");
+		await expect(optionsPage.getByText(hint, { exact: true })).toBeVisible();
+		await expect(chatSwitch).toHaveAttribute("data-state", "unchecked");
+		await summarySwitch.click();
+		await expect(summarySwitch).toHaveAttribute("data-state", "checked");
+		await expect.poll(() => store.getSetting()?.show_summary).toBe(true);
+		await expect
+			.poll(async () => Promise.all(changedSettingKeys))
+			.toEqual(["show_summary"]);
+
+		await chatSwitch.click();
+		await expect(chatSwitch).toHaveAttribute("data-state", "checked");
+		await expect.poll(() => store.getSetting()?.show_ai_chat).toBe(true);
+
+		await optionsPage.reload();
+		await expect(summarySwitch).toHaveAttribute("data-state", "checked");
+		await expect(optionsPage.getByText(hint, { exact: true })).toBeVisible();
+		await expect(chatSwitch).toHaveAttribute("data-state", "checked");
+		expect(store.getSetting()).toMatchObject({
+			show_summary: true,
+			show_ai_chat: true,
+		});
 	});
 
 	test("카테고리 자동 적용 설정은 표시하지 않는다.", async ({ page }) => {

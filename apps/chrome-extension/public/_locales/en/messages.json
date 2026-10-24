@@ -261,7 +261,7 @@
 		"message": "Memo fields"
 	},
 	"highlight_setting": {
-		"message": "Highlights"
+		"message": "Highlight"
 	},
 	"highlight_setting_description": {
 		"message": "Select text on a webpage, then click the highlight button to save it."
@@ -404,6 +404,12 @@
 	"highlight_bubble_disable": {
 		"message": "Turn off highlight popup"
 	},
+	"highlight_bubble_settings": {
+		"message": "Highlight popup settings"
+	},
+	"highlight_bubble_dismiss": {
+		"message": "Dismiss popup for this selection"
+	},
 	"highlight_bubble_disabled_title": {
 		"message": "Highlight popup turned off."
 	},
@@ -411,13 +417,10 @@
 		"message": "You can turn it back on in Options."
 	},
 	"highlight_intro_message": {
-		"message": "This is Web Memo highlighting. Choose a color to save a passage or add a note. Open the X menu to change the popup position or turn it off."
+		"message": "This is Web Memo highlighting. Choose a color to save a passage. Add a comment or a linked memo separately. X dismisses this selection only. Use settings to change the popup position or turn it off."
 	},
 	"highlight_intro_confirm": {
 		"message": "Got it"
-	},
-	"highlight_setting": {
-		"message": "Highlight"
 	},
 	"highlight_bubble_setting": {
 		"message": "Show highlight popup when selecting text"
@@ -453,10 +456,10 @@
 		"message": "Re-enable"
 	},
 	"highlight_note": {
-		"message": "Note"
+		"message": "Comment"
 	},
 	"highlight_note_placeholder": {
-		"message": "Add a note to this highlight"
+		"message": "Add a comment to this highlight"
 	},
 	"highlight_note_save": {
 		"message": "Save"
@@ -497,6 +500,18 @@
 			}
 		}
 	},
+	"past_memo_related_intro": {
+		"message": "You have related memos"
+	},
+	"past_memo_related_more": {
+		"message": "View $count$ more",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "2"
+			}
+		}
+	},
 	"past_memo_open": {
 		"message": "Open"
 	},
@@ -512,5 +527,209 @@
 				"example": "Reading"
 			}
 		}
+	},
+	"tooltip_wish_add": {
+		"message": "Add to wishlist"
+	},
+	"tooltip_wish_remove": {
+		"message": "Remove from wishlist"
+	},
+	"tooltip_star_add": {
+		"message": "Mark as important"
+	},
+	"tooltip_star_remove": {
+		"message": "Remove from important"
+	},
+	"tooltip_reading_add": {
+		"message": "Mark as reading"
+	},
+	"tooltip_reading_remove": {
+		"message": "Remove from reading"
+	},
+	"tooltip_theme_to_dark": {
+		"message": "Switch to dark mode"
+	},
+	"tooltip_theme_to_light": {
+		"message": "Switch to light mode"
+	},
+	"open_settings": {
+		"message": "Open settings"
+	},
+	"open_in_new_tab": {
+		"message": "Open in new tab"
+	},
+	"summary_regenerate": {
+		"message": "Regenerate summary"
+	},
+	"ai_features_setting": {
+		"message": "AI features"
+	},
+	"ai_features_description": {
+		"message": "Choose which AI features to use."
+	},
+	"summary_enabled_setting": {
+		"message": "Enable page summary"
+	},
+	"ai_chat_enabled_setting": {
+		"message": "Use AI chat"
+	},
+	"summary_show_label": {
+		"message": "View summary"
+	},
+	"summary_hide_label": {
+		"message": "Hide summary"
+	},
+	"summary_page_read_failed_message": {
+		"message": "Couldn't read this page. Refresh it and try again."
+	},
+	"summary_unavailable_message": {
+		"message": "Summary is unavailable on this page."
+	},
+	"summary_page_loading_message": {
+		"message": "Checking this page…"
+	},
+	"summary_retry_label": {
+		"message": "Try summarizing again"
+	},
+	"summary_login_message": {
+		"message": "Sign in to summarize this page."
+	},
+	"summary_panel_hint": {
+		"message": "Show ‘View summary’ in the side panel."
+	},
+	"past_memo_open_memo": {
+		"message": "Open memo"
+	},
+	"past_memo_open_site": {
+		"message": "Go to website"
+	},
+	"past_memo_view_back": {
+		"message": "Back to this page's memo"
+	},
+	"past_memo_view_readonly": {
+		"message": "Read-only"
+	},
+	"past_memo_view_open_original": {
+		"message": "Open original page"
+	},
+	"past_memo_view_load_failed": {
+		"message": "Couldn't load this memo. It may have been deleted, or there may be a temporary problem."
+	},
+	"highlight_memo_add": {
+		"message": "Add memo"
+	},
+	"highlight_panel_memo_action": {
+		"message": "Write in side panel"
+	},
+	"highlight_panel_open_failed": {
+		"message": "Could not open the side panel. Please try again."
+	},
+	"highlight_memo_open": {
+		"message": "Open memo"
+	},
+	"highlight_memo_restore": {
+		"message": "Restore from trash"
+	},
+	"highlight_memo_loading": {
+		"message": "Checking linked memo…"
+	},
+	"highlight_memo_load_failed": {
+		"message": "Could not check the linked memo."
+	},
+	"highlight_memo_retry": {
+		"message": "Retry"
+	},
+	"highlight_memo_quote": {
+		"message": "Selected passage"
+	},
+	"highlight_memo_thought": {
+		"message": "My thoughts"
+	},
+	"highlight_memo_placeholder": {
+		"message": "Write what this passage made you think of"
+	},
+	"highlight_memo_cancel": {
+		"message": "Cancel"
+	},
+	"highlight_memo_save": {
+		"message": "Save memo"
+	},
+	"highlight_memo_save_failed": {
+		"message": "Could not save the memo. Please try again."
+	},
+	"page_highlights_title": {
+		"message": "Highlights on this page"
+	},
+	"page_highlights_loading": {
+		"message": "Loading highlights"
+	},
+	"page_highlights_empty": {
+		"message": "No highlights saved on this page yet."
+	},
+	"page_highlights_load_failed": {
+		"message": "Couldn't load highlights."
+	},
+	"page_highlights_retry": {
+		"message": "Try again"
+	},
+	"page_highlights_show_all": {
+		"message": "Show all $1"
+	},
+	"page_highlights_show_less": {
+		"message": "Show preview"
+	},
+	"page_highlights_focus_failed": {
+		"message": "Couldn't find this quote on the page."
+	},
+	"tooltip_plan_add": {
+		"message": "Pick a day to read"
+	},
+	"tooltip_plan_change": {
+		"message": "Planned for $date$ · Change",
+		"placeholders": {
+			"date": {
+				"content": "$1",
+				"example": "October 13"
+			}
+		}
+	},
+	"plan_added": {
+		"message": "Added to your $date$ reading list",
+		"placeholders": {
+			"date": {
+				"content": "$1",
+				"example": "October 13"
+			}
+		}
+	},
+	"plan_removed": {
+		"message": "Removed from your reading plan"
+	},
+	"plan_label_today": {
+		"message": "Today"
+	},
+	"plan_label_tomorrow": {
+		"message": "Tomorrow"
+	},
+	"plan_picker_title": {
+		"message": "When will you read it?"
+	},
+	"plan_picker_today": {
+		"message": "Today"
+	},
+	"plan_picker_tomorrow": {
+		"message": "Tomorrow"
+	},
+	"plan_picker_weekend": {
+		"message": "This weekend"
+	},
+	"plan_picker_next_monday": {
+		"message": "Next Monday"
+	},
+	"plan_picker_clear": {
+		"message": "Clear date"
+	},
+	"plan_date_button": {
+		"message": "Reading plan date"
 	}
 }

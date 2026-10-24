@@ -12,6 +12,7 @@ import {
 import { Suspense } from "react";
 
 import {
+	AiFeaturesOption,
 	Header,
 	HighlightOption,
 	MemoFieldsOption,
@@ -84,6 +85,15 @@ const Options = () => {
 						<ErrorBoundary onReset={reset} FallbackComponent={OptionsError}>
 							<Suspense fallback={<OptionsSkeleton cardCount={1} />}>
 								<MemoFieldsOption />
+							</Suspense>
+						</ErrorBoundary>
+					)}
+				</QueryErrorResetBoundary>
+				<QueryErrorResetBoundary>
+					{({ reset }) => (
+						<ErrorBoundary onReset={reset} FallbackComponent={OptionsError}>
+							<Suspense fallback={<OptionsSkeleton cardCount={1} />}>
+								<AiFeaturesOption />
 							</Suspense>
 						</ErrorBoundary>
 					)}

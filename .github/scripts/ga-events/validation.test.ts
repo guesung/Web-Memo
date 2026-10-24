@@ -15,7 +15,7 @@ vi.mock("node:fs", async (importOriginal) => ({
 	lstatSync: vi.fn(() => ({ isSymbolicLink: () => false })),
 }));
 
-import { MAX_EVENTS, TYPE_FILE, extractEventNames, isSourceFile, validateCandidate, validateChanges } from "./validation.mjs";
+import { MAX_EVENTS, TYPE_FILE, extractEventNames, isSourceFile, selectRecentFiles, validateCandidate, validateChanges } from "./validation.mjs";
 
 const BASE_SHA = "a".repeat(40);
 const SOURCE_FILE = "apps/web/src/app/[lng]/(auth)/memos/_components/MemoItem.tsx";
@@ -118,6 +118,19 @@ describe("validateChanges", () => {
 		expect(() => validateChanges({ baseSha: BASE_SHA, candidate: gap })).toThrow("기존 이벤트 정의");
 	});
 
+	it("유니온 끝에 붙여 기존 마지막 줄의 세미콜론만 바뀌어도 통과시킨다", () => {
+		const last = '\t| { name: "shortcut_change_click"; params: { is_success: boolean } }';
+		setOutputs({ [`diff ${TYPE_FILE}`]: `-${last};\n+${last}\n+\t| { name: "memo_share_click"; params: { source: string } };\n+\tmemo_share_click: "engagement",` });
+
+		expect(() => validateChanges({ baseSha: BASE_SHA, candidate: gap })).not.toThrow();
+	});
+
+	it("기존 이벤트 줄의 내용이 바뀌면 끝 구두점이 같아도 거절한다", () => {
+		setOutputs({ [`diff ${TYPE_FILE}`]: `${typeDiff}\n-\t| { name: "memo_open"; params: { a: string } };\n+\t| { name: "memo_open"; params: { b: string } };` });
+
+		expect(() => validateChanges({ baseSha: BASE_SHA, candidate: gap })).toThrow();
+	});
+
 	it("호출 위치가 없으면 거절한다", () => {
 		setOutputs({ [`diff ${SOURCE_FILE}`]: "+\t\tconst isShared = true;" });
 
@@ -134,5 +147,47 @@ describe("validateChanges", () => {
 		setOutputs({ [`diff ${SOURCE_FILE}`]: `${callDiff}\n+\tfetch("https://example.com");` });
 
 		expect(() => validateChanges({ baseSha: BASE_SHA, candidate: gap })).toThrow("위험한 코드");
+	});
+});
+
+describe("selectRecentFiles", () => {
+	const tracked = (...files: string[]) => files;
+
+	it("등장 횟수 내림차순, 동점이면 경로 오름차순으로 정렬한다", () => {
+		const files = tracked("pages/b.tsx", "pages/a.tsx", "pages/c.tsx");
+
+		expect(selectRecentFiles(["pages/b.tsx", "pages/a.tsx", "pages/c.tsx", "pages/c.tsx", "pages/b.tsx", "pages/c.tsx"], files)).toEqual(["pages/c.tsx", "pages/b.tsx", "pages/a.tsx"]);
+		expect(selectRecentFiles(["pages/b.tsx", "pages/a.tsx"], files)).toEqual(["pages/a.tsx", "pages/b.tsx"]);
+	});
+
+	it(".ts와 빈 줄은 제외한다", () => {
+		const files = tracked("pages/a.tsx", "pages/util.ts");
+
+		expect(selectRecentFiles(["", "pages/util.ts", "pages/a.tsx", ""], files)).toEqual(["pages/a.tsx"]);
+	});
+
+	it("test·stories·spec·__tests__ 파일은 제외한다", () => {
+		const excluded = ["pages/a.test.tsx", "pages/a.stories.tsx", "pages/a.spec.tsx", "pages/__tests__/a.tsx"];
+
+		expect(selectRecentFiles([...excluded, "pages/a.tsx"], [...excluded, "pages/a.tsx"])).toEqual(["pages/a.tsx"]);
+	});
+
+	it("추적하지 않는 파일은 제외한다", () => {
+		expect(selectRecentFiles(["pages/deleted.tsx", "pages/a.tsx"], tracked("pages/a.tsx"))).toEqual(["pages/a.tsx"]);
+	});
+
+	it("기본 상한은 30개다", () => {
+		const files = Array.from({ length: 50 }, (_, index) => `pages/f${String(index).padStart(2, "0")}.tsx`);
+
+		const result = selectRecentFiles(files, files);
+
+		expect(result).toHaveLength(30);
+		expect(result[0]).toBe("pages/f00.tsx");
+		expect(selectRecentFiles(files, files, 5)).toHaveLength(5);
+	});
+
+	it("30개 미만이면 있는 만큼, 없으면 빈 배열을 돌려준다", () => {
+		expect(selectRecentFiles(["pages/a.tsx", "pages/b.tsx"], tracked("pages/a.tsx", "pages/b.tsx"))).toEqual(["pages/a.tsx", "pages/b.tsx"]);
+		expect(selectRecentFiles([], tracked("pages/a.tsx"))).toEqual([]);
 	});
 });

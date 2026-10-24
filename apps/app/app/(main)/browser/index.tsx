@@ -1,9 +1,16 @@
+import { useIsFocused } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { Heart } from "lucide-react-native";
 import { useCallback, useEffect, useRef } from "react";
 import { KeyboardAvoidingView, Platform, Text, View } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
 import { WebView } from "react-native-webview";
+import { flushMemoAutoSaveSessions } from "@/lib/memoAutoSaveSession";
+import {
+	recordEntryTrace,
+	reportEntryError,
+} from "../../../lib/monitoring/entryTrace";
 import { AISheet } from "./_components/AISheet";
 import { BrowserHeader } from "./_components/BrowserHeader";
 import { DraggableFab } from "./_components/DraggableFab";
@@ -21,6 +28,7 @@ import {
 import { INJECTED_JS_ON_LOAD } from "./_utils/webViewScripts";
 
 export default function BrowserScreen() {
+	const router = useRouter();
 	/**
 	 * useBrowserState()가 반환하는 webViewRef가 있어야 useWebViewHighlights를 호출할 수
 	 * 있는데, useBrowserState() 호출에는 highlights.handleHighlightMessage가 필요해
@@ -41,6 +49,9 @@ export default function BrowserScreen() {
 		insets,
 		webViewRef,
 		currentUrl,
+		webViewSourceUrl,
+		webViewRevision,
+		isFromBlogReading,
 		selectedMemoId,
 		setSelectedMemoId,
 		urlInput,
@@ -66,6 +77,8 @@ export default function BrowserScreen() {
 		resizeGesture,
 		handleUrlSubmit,
 		handleNavigationStateChange,
+		handleWebViewLoadStart,
+		handleWebViewLoadError,
 		handleShouldStartLoadWithRequest,
 		handleWebViewMessage,
 		handleWishToggle,
@@ -94,7 +107,15 @@ export default function BrowserScreen() {
 		isAILoading,
 		aiError,
 		askAIQuestion,
-	} = useBrowserState({ onHighlightMessage: forwardHighlightMessage });
+	} = useBrowserState({
+		onHighlightMessage: forwardHighlightMessage,
+		onBeforeMemoLeave: flushMemoAutoSaveSessions,
+	});
+	const isFocused = useIsFocused();
+	useEffect(() => {
+		if (!isFocused) flushMemoAutoSaveSessions();
+		return () => flushMemoAutoSaveSessions();
+	}, [isFocused]);
 
 	const highlights = useWebViewHighlights({ webViewRef });
 
@@ -168,6 +189,9 @@ export default function BrowserScreen() {
 				onOpenBlogSheet={() => setIsBlogSheetOpen(true)}
 				onOpenActions={() => setIsActionsSheetOpen(true)}
 				onOpenTabSheet={() => setIsTabSheetOpen(true)}
+				onReturnToBlogReading={
+					isFromBlogReading ? () => router.navigate("/blog-reading") : undefined
+				}
 			/>
 
 			<View
@@ -176,8 +200,59 @@ export default function BrowserScreen() {
 			>
 				<View className="flex-1">
 					<WebView
+						key={webViewRevision}
 						ref={webViewRef}
-						source={{ uri: currentUrl }}
+						source={{ uri: webViewSourceUrl }}
+						onLoadStart={(event) => {
+							handleWebViewLoadStart(event.nativeEvent.url);
+							recordEntryTrace({
+								source: "webview",
+								stage: "load_start",
+								url: event.nativeEvent.url,
+							});
+						}}
+						onLoadEnd={(event) =>
+							recordEntryTrace({
+								source: "webview",
+								stage: "load_end",
+								url: event.nativeEvent.url,
+							})
+						}
+						onError={(event) => {
+							handleWebViewLoadError();
+							recordEntryTrace({
+								source: "webview",
+								stage: "load_error",
+								url: event.nativeEvent.url,
+								data: { code: event.nativeEvent.code },
+							});
+						}}
+						onHttpError={(event) =>
+							recordEntryTrace({
+								source: "webview",
+								stage: "http_error",
+								url: event.nativeEvent.url,
+								data: { statusCode: event.nativeEvent.statusCode },
+							})
+						}
+						onContentProcessDidTerminate={(event) =>
+							reportEntryError(
+								new Error("WebView content process terminated"),
+								{
+									source: "webview",
+									stage: "ios_content_process_terminated",
+									url: event.nativeEvent.url,
+								},
+							)
+						}
+						onRenderProcessGone={(event) =>
+							reportEntryError(new Error("WebView render process gone"), {
+								source: "webview",
+								stage: "android_render_process_gone",
+								url: currentUrl,
+								data: { didCrash: event.nativeEvent.didCrash },
+							})
+						}
 						onNavigationStateChange={handleNavigationStateChange}
 						onMessage={handleWebViewMessage}
 						onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
@@ -204,6 +279,7 @@ export default function BrowserScreen() {
 						</Animated.View>
 					</GestureDetector>
 					<MemoPanel
+						activeTabId={activeTabId}
 						url={currentUrl}
 						selectedMemoId={selectedMemoId}
 						onSelectedMemoIdChange={setSelectedMemoId}

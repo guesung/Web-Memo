@@ -404,6 +404,12 @@
 	"highlight_bubble_disable": {
 		"message": "하이라이트 팝업 끄기"
 	},
+	"highlight_bubble_settings": {
+		"message": "하이라이트 팝업 설정"
+	},
+	"highlight_bubble_dismiss": {
+		"message": "이번 선택에서 팝업 닫기"
+	},
 	"highlight_bubble_disabled_title": {
 		"message": "하이라이트 팝업을 껐어요."
 	},
@@ -411,13 +417,10 @@
 		"message": "옵션에서 다시 켤 수 있어요."
 	},
 	"highlight_intro_message": {
-		"message": "웹 메모의 하이라이트예요. 색상을 누르면 문장을 저장하고, 메모도 남길 수 있어요. X 메뉴에서 위치를 바꾸거나 팝업을 끌 수 있어요."
+		"message": "웹 메모의 하이라이트예요. 색상을 누르면 문장을 저장해요. 코멘트와 실제 메모는 별도로 추가할 수 있어요. X는 이번 선택만 닫고, 설정에서 위치를 바꾸거나 팝업을 끌 수 있어요."
 	},
 	"highlight_intro_confirm": {
 		"message": "확인"
-	},
-	"highlight_setting": {
-		"message": "하이라이트"
 	},
 	"highlight_bubble_setting": {
 		"message": "드래그할 때 하이라이트 팝업 보기"
@@ -453,10 +456,10 @@
 		"message": "다시 켜기"
 	},
 	"highlight_note": {
-		"message": "메모"
+		"message": "코멘트"
 	},
 	"highlight_note_placeholder": {
-		"message": "이 하이라이트에 메모 추가"
+		"message": "이 하이라이트에 코멘트 추가"
 	},
 	"highlight_note_save": {
 		"message": "저장"
@@ -497,6 +500,18 @@
 			}
 		}
 	},
+	"past_memo_related_intro": {
+		"message": "관련 메모가 있어요"
+	},
+	"past_memo_related_more": {
+		"message": "나머지 $count$개 보기",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "2"
+			}
+		}
+	},
 	"past_memo_open": {
 		"message": "열기"
 	},
@@ -512,5 +527,209 @@
 				"example": "독서"
 			}
 		}
+	},
+	"tooltip_wish_add": {
+		"message": "위시리스트에 추가"
+	},
+	"tooltip_wish_remove": {
+		"message": "위시리스트에서 빼기"
+	},
+	"tooltip_star_add": {
+		"message": "중요 메모로 표시"
+	},
+	"tooltip_star_remove": {
+		"message": "중요 메모에서 빼기"
+	},
+	"tooltip_reading_add": {
+		"message": "읽는 중으로 표시"
+	},
+	"tooltip_reading_remove": {
+		"message": "읽는 중에서 빼기"
+	},
+	"tooltip_theme_to_dark": {
+		"message": "다크 모드로 전환"
+	},
+	"tooltip_theme_to_light": {
+		"message": "라이트 모드로 전환"
+	},
+	"open_settings": {
+		"message": "설정 열기"
+	},
+	"open_in_new_tab": {
+		"message": "새 탭에서 열기"
+	},
+	"summary_regenerate": {
+		"message": "요약 다시 생성"
+	},
+	"ai_features_setting": {
+		"message": "AI 기능"
+	},
+	"ai_features_description": {
+		"message": "AI 기능의 사용 여부를 설정합니다."
+	},
+	"summary_enabled_setting": {
+		"message": "요약 기능 활성화"
+	},
+	"ai_chat_enabled_setting": {
+		"message": "AI 채팅 사용"
+	},
+	"summary_show_label": {
+		"message": "요약 보기"
+	},
+	"summary_hide_label": {
+		"message": "요약 접기"
+	},
+	"summary_page_read_failed_message": {
+		"message": "페이지 내용을 읽지 못했어요. 페이지를 새로고침한 뒤 다시 시도해 주세요."
+	},
+	"summary_unavailable_message": {
+		"message": "이 페이지에서는 요약할 수 없어요"
+	},
+	"summary_page_loading_message": {
+		"message": "페이지를 확인하고 있어요"
+	},
+	"summary_retry_label": {
+		"message": "다시 요약하기"
+	},
+	"summary_login_message": {
+		"message": "요약하려면 먼저 로그인해 주세요"
+	},
+	"summary_panel_hint": {
+		"message": "사이드 패널에 ‘요약 보기’를 표시해요."
+	},
+	"past_memo_open_memo": {
+		"message": "메모 열기"
+	},
+	"past_memo_open_site": {
+		"message": "웹사이트로 이동"
+	},
+	"past_memo_view_back": {
+		"message": "이 페이지 메모로 돌아가기"
+	},
+	"past_memo_view_readonly": {
+		"message": "읽기 전용"
+	},
+	"past_memo_view_open_original": {
+		"message": "원래 페이지 열기"
+	},
+	"past_memo_view_load_failed": {
+		"message": "메모를 불러오지 못했어요. 삭제됐거나 일시적인 문제일 수 있어요."
+	},
+	"highlight_memo_add": {
+		"message": "메모 추가"
+	},
+	"highlight_panel_memo_action": {
+		"message": "사이드 패널에서 메모하기"
+	},
+	"highlight_panel_open_failed": {
+		"message": "사이드 패널을 열지 못했어요. 다시 시도해 주세요."
+	},
+	"highlight_memo_open": {
+		"message": "메모 열기"
+	},
+	"highlight_memo_restore": {
+		"message": "휴지통에서 복원하기"
+	},
+	"highlight_memo_loading": {
+		"message": "연결된 메모 확인 중…"
+	},
+	"highlight_memo_load_failed": {
+		"message": "연결된 메모를 확인하지 못했어요."
+	},
+	"highlight_memo_retry": {
+		"message": "다시 시도"
+	},
+	"highlight_memo_quote": {
+		"message": "선택한 문장"
+	},
+	"highlight_memo_thought": {
+		"message": "내 생각"
+	},
+	"highlight_memo_placeholder": {
+		"message": "이 문장에서 떠오른 생각을 적어보세요"
+	},
+	"highlight_memo_cancel": {
+		"message": "취소"
+	},
+	"highlight_memo_save": {
+		"message": "메모 저장"
+	},
+	"highlight_memo_save_failed": {
+		"message": "메모를 저장하지 못했어요. 다시 시도해 주세요."
+	},
+	"page_highlights_title": {
+		"message": "이 페이지의 하이라이트"
+	},
+	"page_highlights_loading": {
+		"message": "하이라이트 불러오는 중"
+	},
+	"page_highlights_empty": {
+		"message": "이 페이지에 저장한 하이라이트가 없어요."
+	},
+	"page_highlights_load_failed": {
+		"message": "하이라이트를 불러오지 못했어요."
+	},
+	"page_highlights_retry": {
+		"message": "다시 시도"
+	},
+	"page_highlights_show_all": {
+		"message": "$1개 모두 보기"
+	},
+	"page_highlights_show_less": {
+		"message": "미리보기로 돌아가기"
+	},
+	"page_highlights_focus_failed": {
+		"message": "원문 위치를 찾지 못했어요."
+	},
+	"tooltip_plan_add": {
+		"message": "볼 날짜 정하기"
+	},
+	"tooltip_plan_change": {
+		"message": "$date$에 볼 예정이에요 · 바꾸기",
+		"placeholders": {
+			"date": {
+				"content": "$1",
+				"example": "10월 13일"
+			}
+		}
+	},
+	"plan_added": {
+		"message": "$date$에 볼 목록에 담았어요",
+		"placeholders": {
+			"date": {
+				"content": "$1",
+				"example": "10월 13일"
+			}
+		}
+	},
+	"plan_removed": {
+		"message": "읽을 계획에서 뺐어요"
+	},
+	"plan_label_today": {
+		"message": "오늘"
+	},
+	"plan_label_tomorrow": {
+		"message": "내일"
+	},
+	"plan_picker_title": {
+		"message": "언제 볼까요?"
+	},
+	"plan_picker_today": {
+		"message": "오늘"
+	},
+	"plan_picker_tomorrow": {
+		"message": "내일"
+	},
+	"plan_picker_weekend": {
+		"message": "이번 주말"
+	},
+	"plan_picker_next_monday": {
+		"message": "다음 월요일"
+	},
+	"plan_picker_clear": {
+		"message": "날짜 해제"
+	},
+	"plan_date_button": {
+		"message": "읽을 계획 날짜"
 	}
 }

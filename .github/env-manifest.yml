@@ -162,9 +162,9 @@
 - name: SENTRY_AUTH_TOKEN
   kind: secret
   stores: [github, vercel]
-  consumers: [.github/workflows/cd-extension.yml, apps/web/next.config.mjs, packages/vite-config/lib/withPageConfig.mjs]
+  consumers: [.github/workflows/cd-extension.yml, .github/workflows/cd-app.yml, apps/web/next.config.mjs, packages/vite-config/lib/withPageConfig.mjs]
   impact: "Sentry 소스맵 업로드가 조용히 실패한다. 빌드는 통과하므로 스택 트레이스가 난독화된 채 보여야 알게 된다"
-  note: "확장은 GitHub Secrets, 웹은 Vercel 프로젝트 환경변수로 받는다"
+  note: "확장·앱 네이티브 로컬 빌드는 GitHub Secrets, 웹은 Vercel 프로젝트 환경변수로 받는다"
   phase: build
 
 - name: SLACK_BOT_TOKEN
@@ -173,6 +173,13 @@
   consumers: [.github/workflows/ci.yml, apps/web/src/modules/slack/config.ts, .github/workflows/report-seo.yml]
   impact: "GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다"
   note: "같은 값이어야 하지만 서로 읽지 못해 따로 등록한다"
+
+- name: BLOG_CATALOG_INGEST_SECRET
+  kind: secret
+  stores: [github, supabase]
+  consumers: [.github/workflows/chore-blog-catalog.yml, .github/scripts/blog-reading/collect.mjs, packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts]
+  impact: "블로그 정주행 카탈로그 수집이 멈춘다. GitHub에 없으면 수집기가 시작하지 못하고, Supabase에 없으면 수집 엔드포인트가 500으로 모든 요청을 거절해 토스·당근의 새 글과 재개 요청이 반영되지 않는다(이미 수집된 글 조회는 그대로다)"
+  note: "카탈로그 쓰기 전용 secret이다. 32자 이상 무작위 값으로 만들어 GitHub Secrets와 Supabase Edge Function secret에 같은 값을 등록한다. 조회 전용 SUPABASE_ACCESS_TOKEN과 가입 트리거용 CRON_SECRET을 재사용하지 않는다. 번들·Vercel에 넣지 않는다"
 
 - name: GA4_SERVICE_ACCOUNT_JSON
   kind: secret
@@ -200,13 +207,37 @@
   kind: secret
   stores: [github]
   required: false
-  consumers: [.github/workflows/report-seo.yml]
+  consumers: [.github/workflows/report-seo.yml, .github/workflows/report-gsc-demand.yml]
   impact: "없으면 공개 SEO 검사는 계속 실행되지만 Search Console 색인 상태와 주간 검색 성과 조회를 건너뛴다"
   note: "Web Memo Search Console 속성에 조회 권한을 부여한 전용 서비스 계정 JSON만 등록한다"
 
 # ---------------------------------------------------------------------------
 # Vercel 프로젝트 환경변수: 배포된 웹의 런타임·빌드 값
 # ---------------------------------------------------------------------------
+
+- name: NEXT_PUBLIC_FARO_URL
+  kind: config
+  stores: [vercel]
+  required: false
+  consumers: [apps/web/src/modules/observability/client.ts]
+  impact: "메모 화면의 브라우저 지연 측정값이 Grafana Faro에 전송되지 않는다"
+  note: "Grafana Frontend Observability의 공개 수집 URL. Next 빌드 시 클라이언트 번들에 포함된다"
+
+- name: GRAFANA_OTLP_ENDPOINT
+  kind: config
+  stores: [vercel]
+  required: false
+  consumers: [apps/web/src/modules/observability/serverTracing.ts]
+  impact: "메모 경로의 Next.js 서버 요청 span이 Grafana Tempo에 전송되지 않는다"
+  note: "Grafana Cloud OTLP HTTP traces 엔드포인트"
+
+- name: GRAFANA_OTLP_AUTHORIZATION
+  kind: secret
+  stores: [vercel]
+  required: false
+  consumers: [apps/web/src/modules/observability/serverTracing.ts]
+  impact: "메모 경로의 Next.js 서버 요청 span 인증이 되지 않아 Grafana Tempo에 전송되지 않는다"
+  note: "Grafana Cloud Access Policy 토큰을 포함한 Basic 인증 헤더 값. 서버에서만 읽는다"
 
 - name: OPENAI_API_KEY
   kind: secret
@@ -295,14 +326,14 @@
 - name: CRON_SECRET
   kind: secret
   stores: [supabase]
-  consumers: [packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts, packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts]
-  impact: "DB 트리거가 부르는 함수의 호출자 확인이 실패해 가입 메일과 가입 알림이 401로 끝난다"
+  consumers: [packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts, packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts, packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
+  impact: "DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·가입 알림·아티클 리마인더가 401로 끝난다"
   note: "Vault의 cron_secret과 같은 값이어야 한다"
 
 - name: RESEND_API_KEY
   kind: secret
   stores: [supabase]
-  consumers: [packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts]
+  consumers: [packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
   impact: "가입 안내 메일이 발송되지 않는다"
 
 - name: SLACK_FEEDBACK_WEBHOOK_URL
@@ -323,13 +354,18 @@
 
 - name: SUPABASE_URL
   kind: platform
-  consumers: [packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts]
+  consumers: [packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
   note: "Supabase가 Edge Function에 주입한다"
 
 - name: SUPABASE_SERVICE_ROLE_KEY
   kind: platform
-  consumers: [packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts]
+  consumers: [packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
   note: "Supabase가 Edge Function에 주입한다. Vercel에는 등록하지 않는다"
+
+- name: SUPABASE_ANON_KEY
+  kind: platform
+  consumers: [packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
+  note: "Supabase가 Edge Function에 주입한다. 테스트 발송에서 사용자 토큰을 auth.getUser로 검증할 때만 쓴다"
 
 - name: NODE_ENV
   kind: platform
@@ -406,6 +442,12 @@
   kind: platform
   consumers: [e2e/playwright.probe.config.ts]
   note: "운영 프로브의 대상 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 운영 도메인을 본다. 등록하지 않는다"
+  required: false
+
+- name: PLAYWRIGHT_BASE_URL
+  kind: platform
+  consumers: [e2e/tests/fixtures/web.ts, e2e/tests/fixtures/extension.ts]
+  note: "독립 QA 서버의 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 localhost:3000을 본다. 확장 QA 빌드의 WEB_URL과 맞추며 외부 서비스에 등록하지 않는다"
   required: false
 
 - name: PW_CHROMIUM_ATTACH_TO_OTHER

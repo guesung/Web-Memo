@@ -1,5 +1,5 @@
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import type { ReactNode } from "react";
 import type { TPrivacySectionKey } from "../_constants";
 import { toStringArray } from "../_utils";
@@ -11,7 +11,7 @@ export default async function PolicySection({
 	index,
 	children,
 }: PolicySectionProps) {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	const paragraphs = toStringArray(
 		t(`privacy.sections.${sectionKey}.body`, { returnObjects: true }),

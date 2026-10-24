@@ -20,7 +20,7 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 
 | 워크플로 | 트리거 | 실행 주기·시각 | 부르는 스크립트 (`.github/scripts/` 기준) |
 | --- | --- | --- | --- |
-| `ci.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | `deploy/resolve-affected-base.sh` · `deploy/detect-affected-apps.sh` · `deploy/notify-thread-root.mjs` · `deploy/notify-thread-reply.mjs` · `deploy/notify-build-ready.mjs` · `deploy/notify-staging-deploy.mjs` · `deploy/comment-pr-extension.mjs`, 그리고 `cd-app`·`cd-extension`·`cd-web` 호출 |
+| `ci.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | `deploy/resolve-affected-base.sh` · `deploy/detect-affected-apps.sh` · `deploy/notify-thread-root.mjs` · `deploy/notify-thread-reply.mjs` · `deploy/notify-build-ready.mjs` · `deploy/notify-staging-deploy.mjs` · `deploy/comment-pr-extension.mjs` · `conventions/check-code-conventions.mjs`, 그리고 `cd-app`·`cd-extension`·`cd-web` 호출 |
 | `e2e.yml` | push(develop·master), pull_request | 해당 push·PR 이벤트마다 | 없음 (Playwright) |
 | `cd-app.yml` | workflow_call | 검증된 develop 후보를 큐에서 재판정해 Android APK 빌드·Firebase App Distribution 배포, master·PR은 빌드만, release는 새 빌드·Play 내부 테스트 제출 | `deploy/prepareStagingApp.mjs` · `deploy/appDeploymentState.mjs` · `deploy/detect-affected-apps.sh` (EAS CLI·firebase-tools) |
 | `cd-extension.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-reusable-artifact.sh` · `deploy/upload-extension-to-store.mjs` |
@@ -36,11 +36,13 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | `audit-refactor.yml` | schedule, workflow_dispatch | 매주 토요일 10:17 KST 또는 수동 실행마다 | `refactor/report-refactor-audit.mjs` |
 | `report-ga-daily.yml` | schedule, workflow_dispatch | 매일 07:00 KST 또는 수동 실행마다 | `ga/report-daily-ga.mjs` |
 | `report-ga-weekly.yml` | schedule, workflow_dispatch | 매주 월요일 08:00 KST 또는 수동 실행마다 | `ga/report-weekly-ga.mjs` |
-| `report-seo.yml` | schedule, workflow_dispatch | 매일 09:17 KST 또는 수동 실행마다 | `pnpm seo:check`·`seo:gsc`·`seo:sheets` · `seo/find-previous-seo-report.mjs` · `seo/build-seo-ai-context.mjs` · `seo/send-seo-ai-report.mjs` · `seo/notify-seo-slack.mjs` |
+| `report-seo.yml` | schedule, workflow_dispatch | 매일 09:17 KST 또는 수동 실행마다 | `pnpm seo:check`·`seo:gsc`·`seo:sheets` · `seo/find-previous-seo-report.mjs` · `seo/build-seo-ai-context.mjs` · `seo/send-seo-ai-report.mjs` · `seo/seo-fix.mjs` · `seo/notify-seo-slack.mjs` |
+| `report-gsc-demand.yml` | workflow_dispatch | 수동 실행할 때마다 | `pnpm seo:gsc-demand` → `seo/export-gsc-demand.mjs` (조합 페이지 축 판단용 GSC 수요·사이트맵 리포트, 아티팩트만 남김) |
 | `chore-cleanup-unused.yml` | schedule, workflow_dispatch | 매주 토요일 10:00 KST 또는 수동 실행마다 | `cleanup/cleanup-unused-files.mjs` |
 | `chore-e2e-coverage.yml` | schedule, workflow_dispatch | 매주 일요일 10:23 KST 또는 수동 실행마다 | `e2e-coverage/maintain.mjs` |
 | `chore-ga-events.yml` | schedule, workflow_dispatch | 매주 수요일 09:41 KST 또는 수동 실행마다 | `ga-events/maintain.mjs` |
 | `chore-supabase-inventory.yml` | schedule, workflow_dispatch | 매일 08:00 KST 또는 수동 실행마다 | `supabase/generate-supabase-inventory.mjs` · `supabase/sync-supabase-inventory-pr.mjs` |
+| `chore-blog-catalog.yml` | schedule, workflow_dispatch | 매일 03:17 KST 전체 재순회, 15분마다 재개 요청 확인 또는 수동 실행(소스 선택·당근 smoke·dry-run)마다 | `blog-reading/collect.mjs` |
 
 정기 실행 시각은 워크플로의 UTC cron을 한국 시간(KST)으로 환산한 예정 시각입니다. GitHub Actions 사정에 따라 실제 시작은 늦어질 수 있습니다.
 
@@ -63,13 +65,15 @@ dispatch해도 스크립트는 master의 것이 돕니다.
 | --- | --- |
 | `shared/` | 두 도메인 이상이 쓰는 모듈 (`run-context`·`slack-api`·`slack-blocks`·`http`·`jwt`·`google-auth`·`repo-versions`) |
 | `deploy/` | CI 빌드 판정, Slack 빌드·배포·릴리스 알림, PR 확장 다운로드 댓글, 확장 웹스토어 업로드, 스토어 버전 |
-| `seo/` | SEO 점검·GSC·Sheets 적재·AI 리포트 |
+| `seo/` | SEO 점검·GSC·Sheets 적재·AI 리포트·P0·P1 자동 수정 PR |
 | `ga/` | GA4 일간·주간 리포트, 기능 사용량 측정 |
 | `env/` | 환경 변수 매니페스트 검사와 등록 현황 감사 |
+| `conventions/` | 코드 컨벤션 원장(`docs/code-conventions.yaml`) 형식 검사 |
 | `supabase/` | 운영 Supabase 인벤토리 문서(`docs/supabase-inventory.md`) 생성과 갱신 PR |
 | `refactor/` | 주간 리팩토링 점검 |
 | `cleanup/` | 미사용 파일 정리 |
 | `e2e-coverage/` | 핵심 사용자 흐름의 E2E 누락 점검, 새 테스트 검증, 자동 보완 PR 게시 |
+| `blog-reading/` | 블로그 정주행(토스·당근) 공개 글 카탈로그 수집기. 원본 순회(`tossSource`·`daangnSource`)와 수집 엔드포인트 클라이언트(`ingestClient`), 실행 진입점(`collect`) |
 | `ga-events/` | GA 이벤트 누락 점검, 이벤트 추가 패치 검증, 자동 보완 PR 게시 |
 
 **`shared/` 규칙**: 두 도메인 이상이 쓰는 모듈만 `shared/`에 둡니다. 한 도메인만 쓰면 이름이
@@ -82,7 +86,9 @@ import하지 않습니다.
 | --- | --- | --- |
 | `pnpm seo:check` | `seo/check-seo.mjs` | SEO 점검 (`report-seo.yml`도 사용) |
 | `pnpm seo:gsc` | `seo/check-gsc.mjs` | Search Console 색인·성과 조회 |
+| `pnpm seo:gsc-demand` | `seo/export-gsc-demand.mjs` | 도메인 이전일 이후 GSC 수요·사이트맵 상태 리포트 (`report-gsc-demand.yml`도 사용) |
 | `pnpm seo:sheets` | `seo/persist-seo-sheets.mjs` | SEO 결과를 Google Sheets에 적재 |
 | 수동 CLI | `ga/measure-feature-usage.mjs` | 기간별 기능 사용량 측정 ([`docs/analytics.md`](../docs/analytics.md)) |
+| 수동 CLI | `blog-reading/collect.mjs` | `--dry-run`으로 서버 저장 없이 원본 순회만 확인, `--smoke`로 당근 접근 확인 (종료 코드 3은 원본 사이트의 접근 차단) |
 
 테스트는 `pnpm exec vitest run .github/scripts`로 돌립니다.

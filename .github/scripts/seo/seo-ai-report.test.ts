@@ -53,6 +53,27 @@ describe("normalizeSeoAiReport", () => {
 		expect(report.droppedFindingCount).toBe(1);
 	});
 
+	it("fixability가 유효하면 보존하고, 없거나 이상하면 코드 수정 대상이 아닌 external로 둔다", () => {
+		const report = normalizeSeoAiReport({
+			raw: rawReport({
+				findings: [
+					finding({ title: "코드", fixability: "code" }),
+					finding({ title: "콘텐츠", fixability: "content" }),
+					finding({ title: "누락" }),
+					finding({ title: "이상한 값", fixability: "everything" }),
+				],
+			}),
+			context,
+		});
+
+		expect(report.findings.map((item) => [item.title, item.fixability])).toEqual([
+			["코드", "code"],
+			["콘텐츠", "content"],
+			["누락", "external"],
+			["이상한 값", "external"],
+		]);
+	});
+
 	it("저장소에 없는 파일 참조는 지우고 발견은 남긴다", () => {
 		const report = normalizeSeoAiReport({
 			raw: rawReport({

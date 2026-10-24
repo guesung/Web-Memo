@@ -1,11 +1,11 @@
 "use client";
 
+import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { PATHS } from "@web-memo/shared/constants";
 import { Button } from "@web-memo/ui";
 import { Trash2 } from "lucide-react";
-import Link from "next/link";
 
 interface IFTrashEmptyStateProps extends LanguageType {}
 
@@ -34,7 +34,9 @@ export default function TrashEmptyState({ lng }: IFTrashEmptyStateProps) {
 			</p>
 
 			<Button variant="outline" asChild>
-				<Link href={`/${lng}${PATHS.memos}`}>{t("trash.backToMemos")}</Link>
+				<LocalizedLink lng={lng} href={PATHS.memos}>
+					{t("trash.backToMemos")}
+				</LocalizedLink>
 			</Button>
 		</div>
 	);

@@ -7,17 +7,25 @@ import {
 import { DragBox } from "@src/components";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import {
+	reportMemoLoadStage,
+	type TMemoLoadOutcome,
+	type TMemoRoute,
+} from "@src/modules/observability/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import {
 	useDeleteMemosMutation,
 	useKeyboardBind,
 	useMemosUpsertMutation,
-	useSettingQuery,
 } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
-import type { GetMemoResponse, HighlightRow } from "@web-memo/shared/types";
+import type {
+	GetMemoResponse,
+	HighlightMemoLink,
+	HighlightRow,
+} from "@web-memo/shared/types";
 import { ToastAction, toast } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -27,6 +35,7 @@ import {
 	useMemoSelection,
 	useSuppressEscapeWhenMenuOpen,
 } from "./_hooks";
+import { useMemoSettings } from "./_hooks/useMemoSettings";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import MemoDomainEmptyState from "./MemoDomainEmptyState";
 import MemoEmptyState from "./MemoEmptyState";
@@ -41,22 +50,30 @@ const CONTAINER_ID = "memo-grid";
 interface MemoGridProps extends LanguageType {
 	memos: GetMemoResponse[];
 	highlightsByUrl: Map<string, HighlightRow[]>;
+	sourcesByMemo: Map<number, HighlightMemoLink>;
 	searchQuery: string;
 	domain: string | undefined;
 	hasNextPage: boolean;
 	isFetchingNextPage: boolean;
 	fetchNextPage: () => void;
+	loadOutcome: TMemoLoadOutcome;
+	route: TMemoRoute;
+	navigationId: number | null;
 }
 
 export default function MemoGrid({
 	lng,
 	memos,
 	highlightsByUrl,
+	sourcesByMemo,
 	searchQuery,
 	domain,
 	hasNextPage,
 	isFetchingNextPage,
 	fetchNextPage,
+	loadOutcome,
+	route,
+	navigationId,
 }: MemoGridProps) {
 	const { t } = useTranslation(lng);
 	const router = useRouter();
@@ -68,7 +85,7 @@ export default function MemoGrid({
 	const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
 	const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
 	const { showImpression, showActionItem, truncateMemoContent } =
-		useSettingQuery();
+		useMemoSettings();
 
 	const {
 		selectedMemoIds,
@@ -191,6 +208,16 @@ export default function MemoGrid({
 			});
 		}
 	}, [searchQuery]);
+	useEffect(() => {
+		if (memos.length === 0) {
+			reportMemoLoadStage({
+				route,
+				navigationId,
+				stage: "content_ready",
+				outcome: loadOutcome,
+			});
+		}
+	}, [memos.length, loadOutcome, route, navigationId]);
 
 	// 필터·검색 결과가 없는 것과 메모가 하나도 없는 것은 다른 상황이다. 같은 화면을 보여주면
 	// 필터 중인 사용자에게 "첫 메모를 만들어보세요"가 뜬다. 도메인이 더 좁은 조건이라 먼저 본다.
@@ -232,7 +259,15 @@ export default function MemoGrid({
 				align="center"
 				placeholder={<MemoItemSkeleton />}
 				onRequestAppend={handleRequestAppend}
-				onRenderComplete={restoreHeldScrollPosition}
+				onRenderComplete={() => {
+					restoreHeldScrollPosition();
+					reportMemoLoadStage({
+						route,
+						navigationId,
+						stage: "content_ready",
+						outcome: loadOutcome,
+					});
+				}}
 			>
 				{memos.map((memo, index) => (
 					<MemoItem
@@ -242,6 +277,7 @@ export default function MemoGrid({
 						index={index}
 						memo={memo}
 						highlights={highlightsByUrl.get(memo.url)}
+						source={sourcesByMemo.get(memo.id)}
 						isMemoSelected={checkMemoSelected(memo.id)}
 						selectMemoItem={handleSelectMemoItem}
 						isSelectingMode={isSelectingMode}

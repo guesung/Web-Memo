@@ -28,8 +28,10 @@
 		"memo": "My memos",
 		"wishList": "Wishlist",
 		"highlight": "Highlights",
+		"favorite": "Favorites",
 		"importantMemo": "Important",
 		"readingMemo": "Reading",
+		"readingPlan": "Reading plan",
 		"allCategory": "All categories",
 		"tags": "Tags",
 		"settings": "Settings",
@@ -39,7 +41,8 @@
 		"deleteConfirmTitle": "Delete category?",
 		"deleteConfirmDescription": "Memos in this category will become uncategorized.",
 		"cancel": "Cancel",
-		"trash": "Trash"
+		"trash": "Trash",
+		"blogReading": "Blog Reading"
 	},
 	"header": {
 		"login": "Sign in",
@@ -351,6 +354,8 @@
 		"memoStarDeleted": "Removed from important",
 		"memoReadingAdded": "Marked as reading",
 		"memoReadingDeleted": "Unmarked as reading",
+		"memoPlanAdded": "Added to your {{date}} reading list",
+		"memoPlanRemoved": "Removed from your reading plan",
 		"saveSuccess": "Saved",
 		"deleteSuccess": "Deleted",
 		"addSuccess": "Added",
@@ -359,7 +364,10 @@
 		"memo_updated_at": "Modified at {{time}}",
 		"guideDone": "🎉 Guide completed",
 		"guideDoneDescription": "Enjoy taking memos!",
-		"duplicateCategory": "A category with this name already exists"
+		"duplicateCategory": "A category with this name already exists",
+		"categoryRemoved": "Category removed",
+		"categoryCreateFailed": "Couldn't create the category",
+		"categoryEditFailed": "Couldn't change the category"
 	},
 	"toastActionMessage": {
 		"goTo": "Go to",
@@ -368,6 +376,45 @@
 	"option": {
 		"deleteMemo": "Delete memo",
 		"changeCategory": "Change category"
+	},
+	"installGuide": {
+		"metadata": {
+			"title": "Getting started with Web Memo | Web Memo",
+			"description": "Learn how to open the side panel and write your first memo after installing the extension."
+		},
+		"eyebrow": "Getting started",
+		"title": {
+			"first": "Take notes beside",
+			"second": "the page you're reading"
+		},
+		"lead": "After installing the extension, capture your thoughts without leaving the page.",
+		"previewLabel": "Preview of a browser page and the Web Memo side panel",
+		"previewCaption": "Preview only · Sign in to open the real editor",
+		"preview": {
+			"page": "The page you're reading",
+			"url": "Page title and address",
+			"memo": "Write down anything you'd like to revisit later.",
+			"save": "Save memo"
+		},
+		"steps": {
+			"open": {
+				"title": "Open the side panel",
+				"description": "Click the Web Memo icon in your browser or press Alt+S."
+			},
+			"write": {
+				"title": "Take notes as you read",
+				"description": "The page title and address are attached, so you can focus on your thoughts."
+			},
+			"save": {
+				"title": "Sign in to keep your notes",
+				"description": "You need to sign in to save your notes and revisit them later."
+			}
+		},
+		"loginNotice": {
+			"title": "Sign in to save your notes",
+			"description": "After signing in, you can write your first memo in the side panel.",
+			"cta": "Sign in and get started"
+		}
 	},
 	"login": {
 		"welcomeTitle": "Easily take notes while browsing websites.",
@@ -384,13 +431,6 @@
 		"errorAlert": "Login didn't finish. Please tap the button once more.",
 		"askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
 		"personalInformationInfo": "Signing in is used to sync your memos."
-	},
-	"dialogInstall": {
-		"title": "Extension required",
-		"description": "You'll need to install the extension to use memos",
-		"cancel": "Maybe later",
-		"ok": "Install now",
-		"close": "Close"
 	},
 	"dialogVersion": {
 		"title": "New version available",
@@ -437,11 +477,32 @@
 		"category": "Category",
 		"addCategory": "Add category",
 		"deleteCategory": "Delete category",
+		"renameCategory": "Rename {{name}}",
+		"deleteCategoryNamed": "Delete {{name}}",
 		"defaultCategoryName": "New category",
 		"export": "Export",
 		"exportMemos": "Export memos",
 		"showImpressionSection": "Show the impression field when writing a memo",
-		"showActionItemSection": "Show the action items field when writing a memo"
+		"showActionItemSection": "Show the action items field when writing a memo",
+		"sectionWeeklyReport": "Weekly report",
+		"sectionWeeklyReportDescription": "Every Sunday evening, we email you the memos you wrote that week",
+		"weeklyReportEnable": "Get the report email",
+		"weeklyReportEnableDescription": "We skip weeks without memos",
+		"weeklyReportEmail": "Email address",
+		"weeklyReportEmailDescription": "It can differ from your sign-in account",
+		"weeklyReportEmailPlaceholder": "Enter an email address",
+		"weeklyReportEmailInvalid": "Check the email format",
+		"weeklyReportEmailRequired": "Enter an email address",
+		"weeklyReportTest": "Test email",
+		"weeklyReportTestDescription": "Send this week's report once, right now",
+		"weeklyReportTestButton": "Send test email",
+		"weeklyReportTestSending": "Sending…",
+		"weeklyReportTestSent": "Sent to {{email}}",
+		"weeklyReportTestSentDescription": "Check your inbox",
+		"weeklyReportTestFailed": "Couldn't send the email",
+		"weeklyReportTestFailedDescription": "Check the address and try again",
+		"weeklyReportTestRateLimited": "Please try again in a moment",
+		"saveFailed": "Couldn't save"
 	},
 	"guide": {
 		"next": "Next",
@@ -479,11 +540,27 @@
 		"actionItemPlaceholder": "Write what to do after reading this page"
 	},
 	"memos": {
+		"categoryPopup": {
+			"search": "Search categories",
+			"noResult": "No matching categories",
+			"empty": "No categories yet",
+			"emptyHint": "Type a name to create one",
+			"createNamed": "Create '{{name}}'",
+			"remove": "Remove category"
+		},
+		"tooltip": {
+			"wishAdd": "Add to wishlist",
+			"wishRemove": "Remove from wishlist",
+			"readingAdd": "Mark as reading",
+			"readingRemove": "Remove from reading",
+			"starAdd": "Mark as important",
+			"starRemove": "Remove from important"
+		},
 		"view": {
 			"truncateContent": "Shorten memo content",
 			"unknownDate": "No creation date",
 			"label": "Memo view",
-			"byDate": "By date",
+			"byDate": "By created date",
 			"untitled": "Untitled memo",
 			"loadMore": "Load more"
 		},
@@ -501,6 +578,28 @@
 			"title": "No results",
 			"message": "We couldn't find any memo matching '{{query}}'.",
 			"hint": "Try a different keyword."
+		},
+		"plan": {
+			"sectionPast": "Past plans ({{count}})",
+			"sectionToday": "Today",
+			"sectionUpcoming": "Upcoming",
+			"todayEmpty": "Nothing to read today",
+			"emptyTitle": "No dates picked yet",
+			"emptyHint": "Use the calendar button on a card to pick a day to read it",
+			"emptyAction": "View all memos",
+			"chip": "Read {{label}}",
+			"label": {
+				"today": "today",
+				"tomorrow": "tomorrow"
+			},
+			"picker": {
+				"title": "When will you read it?",
+				"today": "Today",
+				"tomorrow": "Tomorrow",
+				"weekend": "This weekend",
+				"nextMonday": "Next Monday",
+				"clear": "Clear date"
+			}
 		},
 		"totalMemos": "{{total}} memos",
 		"domainFilter": {
@@ -542,10 +641,63 @@
 		"toggle": {
 			"wish": "Wishlist",
 			"reading": "Reading",
-			"star": "Important"
+			"star": "Important",
+			"plan": "Pick a day to read"
+		}
+	},
+	"favorite": {
+		"title": "Favorites",
+		"subtitle": "{{count}} saved · Pages you favorited in the app and on the web",
+		"add": "Add",
+		"edit": "Edit",
+		"delete": "Delete",
+		"retry": "Try again",
+		"loadError": "Couldn't load your favorites",
+		"addSuccess": "Favorite added",
+		"editSuccess": "Favorite updated",
+		"saveFailed": "Couldn't save the favorite. Please try again in a moment.",
+		"deleteSuccess": "Favorite deleted",
+		"deleteFailed": "Couldn't delete it. Please try again in a moment.",
+		"empty": {
+			"title": "No favorite pages yet",
+			"description": "Favorite a page in the app browser, or add one here yourself.",
+			"add": "Add favorite"
+		},
+		"form": {
+			"addTitle": "Add favorite",
+			"editTitle": "Edit favorite",
+			"urlLabel": "URL",
+			"titleLabel": "Title",
+			"titlePlaceholder": "Leave blank to save the domain",
+			"invalidUrl": "Enter a valid URL",
+			"duplicate": "This page is already in your favorites",
+			"cancel": "Cancel",
+			"add": "Add",
+			"save": "Save"
+		},
+		"deleteDialog": {
+			"title": "Delete this favorite?",
+			"description": "\"{{title}}\" will be removed from both the app and web lists.",
+			"cancel": "Cancel",
+			"confirm": "Delete"
 		}
 	},
 	"highlight": {
+		"memo": {
+			"open": "Open memo",
+			"viewTrash": "Linked memo is in trash · View trash",
+			"linked": "Linked memo",
+			"quote": "Quoted text",
+			"loadError": "Could not load linked memos. Try again.",
+			"loading": "Loading memo...",
+			"source": "View source",
+			"viewHighlight": "View linked highlight",
+			"deletedHighlight": "This highlight was deleted.",
+			"related": "Other highlights on this page",
+			"relatedCount": "Other highlights on this page ({{count}})"
+		},
+		"panelOpenError": "Could not open the side panel. Check the extension.",
+		"openSourceAndPanel": "Open source and memo panel",
 		"loadError": "Could not load highlights. Please try again.",
 		"loadMore": "Load more",
 		"count": "{{count}}",
@@ -563,7 +715,10 @@
 		"note": {
 			"label": "Highlight note",
 			"placeholder": "Add a note"
-		}
+		},
+		"noResultHint": "Try another search term or color.",
+		"clearFilters": "Clear filters",
+		"loadingMore": "Loading..."
 	},
 	"introduce": {
 		"navigation": {
@@ -1699,5 +1854,108 @@
 			"description": "Thank you for using Web Memo"
 		},
 		"error": "We couldn't send it just now. Please try again in a moment"
+	},
+	"blogs": {
+		"title": "Blog Reading",
+		"description": "Read public posts from the beginning and leave memos.",
+		"selectBlogs": "Choose blogs",
+		"filterLabel": "Choose blog",
+		"filterAll": "All",
+		"sortLabel": "Sort",
+		"sortAriaLabel": "Sort posts",
+		"sortOldest": "Oldest first",
+		"sortNewest": "Newest first",
+		"summaryComplete": "{{total}} posts · {{todo}} to memo · {{done}} memoed",
+		"summaryCollecting": "{{total}} posts collected so far · {{done}} memoed",
+		"allMemoed": "You have left memos on every post collected so far",
+		"lastUpdated": "Last updated: {{time}}",
+		"refresh": "Refresh",
+		"status": {
+			"label": "Collection status by blog",
+			"completeTitle": "{{name}} · All posts collected",
+			"completeCopy": "Collected {{total}} public posts in total.",
+			"waitingTitle": "{{name}} · Getting ready to collect",
+			"collectingTitle": "{{name}} · Collecting earlier posts",
+			"partialTitle": "{{name}} · Some posts could not be fetched",
+			"queuedTitle": "{{name}} · Resume requested",
+			"refreshingTitle": "{{name}} · Checking for new posts",
+			"refreshFailedTitle": "{{name}} · Could not check for new posts",
+			"foundCopy": "Found {{count}} so far. The total is still being confirmed.",
+			"readNow": "You can read and memo the posts collected first.",
+			"queuedCopy": "Collection continues in the next scheduled run. Requests are checked every 15 minutes, and it may take longer depending on the run.",
+			"refreshFailedCopy": "You can keep reading the posts collected earlier.",
+			"resume": "Resume collecting",
+			"retry": "Retry"
+		},
+		"sync": {
+			"queued": "Requested to resume collecting",
+			"running": "Already collecting",
+			"throttled": "You can request again shortly",
+			"throttledAt": "You can request again after {{time}}",
+			"failed": "Could not request collecting"
+		},
+		"list": {
+			"label": "Blog posts",
+			"completed": "Memoed",
+			"notYet": "No memo yet",
+			"openArticle": "Original",
+			"openArticleLabel": "Open original: {{title}}",
+			"writeMemo": "Write memo",
+			"writeMemoLabel": "Write memo for {{title}}",
+			"viewMemo": "View memo",
+			"viewMemoLabel": "View memo for {{title}}",
+			"memoCreateFailed": "Could not open the memo. Please try again shortly.",
+			"hint": "Saving a memo, impression, or action item checks the post."
+		},
+		"pagination": {
+			"label": "Post list pages",
+			"range": "Posts {{from}}–{{to}}",
+			"rangeWithTotal": "{{from}}–{{to}} of {{total}}",
+			"prev": "Previous",
+			"next": "Next",
+			"page": "Page {{page}}",
+			"pageWithTotal": "Page {{page}} of {{pages}}",
+			"partialEnd": "More earlier posts are being collected. This is the last page so far."
+		},
+		"newArticles": {
+			"message": "{{count}} new posts fetched",
+			"refresh": "Update list"
+		},
+		"empty": {
+			"title": "You have not subscribed to any blog yet",
+			"description": "Pick a blog you want to read."
+		},
+		"login": {
+			"title": "Log in to keep reading",
+			"description": "See the same checklist in the app and on the web.",
+			"action": "Log in"
+		},
+		"loading": {
+			"title": "Loading posts"
+		},
+		"noArticles": {
+			"title": "No posts collected yet",
+			"description": "Posts will appear here once collecting starts. Your subscription stays."
+		},
+		"firstError": {
+			"title": "Could not load the post list",
+			"description": "Your subscription is saved. Please try again shortly.",
+			"retry": "Try again"
+		},
+		"refreshError": {
+			"message": "Could not check for new posts.",
+			"description": "You can keep reading the posts collected earlier.",
+			"retry": "Retry"
+		},
+		"offline": "You are offline. Showing posts loaded earlier.",
+		"dialog": {
+			"title": "Choose blogs",
+			"description": "Collect the public posts of Toss and Daangn to read through.",
+			"subscribe": "Subscribe",
+			"unsubscribe": "Unsubscribe",
+			"keepMemos": "Your memos stay even if you unsubscribe.",
+			"close": "Close",
+			"failed": "Could not change your subscription"
+		}
 	}
 }

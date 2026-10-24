@@ -71,7 +71,9 @@ export function useWebViewHighlights({
 		setTimeout(() => setHighlightToast(null), 3000);
 	}, []);
 
-	const normalizedUrl = pageUrl ? normalizeUrl(pageUrl) : "";
+	const normalizedUrl = /^https?:\/\//i.test(pageUrl)
+		? normalizeUrl(pageUrl)
+		: "";
 	const { data: highlights, isSuccess: isHighlightsSuccess } =
 		useHighlightsByUrl(normalizedUrl);
 	const { mutate: createHighlight } = useHighlightCreateMutation();

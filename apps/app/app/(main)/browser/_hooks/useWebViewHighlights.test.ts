@@ -1,3 +1,4 @@
+import { getPageKey } from "@web-memo/shared/utils/url";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useWebViewHighlights } from "./useWebViewHighlights";
 
@@ -6,10 +7,15 @@ const mocks = vi.hoisted(() => ({
 	setStringAsync: vi.fn(),
 	injectJavaScript: vi.fn(),
 	createHighlight: vi.fn(),
+	pageUrl: "",
+	highlightUrls: [] as string[],
 }));
 
 vi.mock("react", () => ({
-	useState: <T>(initialValue: T) => [initialValue, vi.fn()],
+	useState: <T>(initialValue: T) => [
+		initialValue === "" ? mocks.pageUrl : initialValue,
+		vi.fn(),
+	],
 	useCallback: <T>(callback: T) => callback,
 	useEffect: vi.fn(),
 }));
@@ -20,7 +26,11 @@ vi.mock("@/lib/auth/AuthProvider", () => ({
 	useAuth: () => ({ isLoggedIn: mocks.isLoggedIn }),
 }));
 vi.mock("@/lib/hooks/useHighlights", () => ({
-	useHighlightsByUrl: () => ({ data: [], isSuccess: true }),
+	useHighlightsByUrl: (url: string) => {
+		mocks.highlightUrls.push(url);
+		if (url) getPageKey(url);
+		return { data: [], isSuccess: true };
+	},
 }));
 vi.mock("@/lib/hooks/useHighlightMutation", () => ({
 	useHighlightCreateMutation: () => ({ mutate: mocks.createHighlight }),
@@ -30,8 +40,26 @@ vi.mock("@/lib/hooks/useHighlightMutation", () => ({
 
 beforeEach(() => {
 	mocks.isLoggedIn = true;
+	mocks.pageUrl = "";
+	mocks.highlightUrls.length = 0;
 	vi.clearAllMocks();
 	mocks.setStringAsync.mockReset().mockResolvedValue(true);
+});
+
+describe("하이라이트 페이지 URL", () => {
+	it("WebView의 about:blank에서는 URL 조회를 시작하지 않는다", () => {
+		mocks.pageUrl = "about:blank";
+
+		expect(() => createHook()).not.toThrow();
+		expect(mocks.highlightUrls).toEqual([""]);
+	});
+
+	it("웹 페이지 URL은 기존처럼 정규화해 조회한다", () => {
+		mocks.pageUrl = "https://example.com/post#section";
+
+		createHook();
+		expect(mocks.highlightUrls).toEqual(["https://example.com/post"]);
+	});
 });
 
 describe("인앱 브라우저 텍스트 선택 메뉴", () => {

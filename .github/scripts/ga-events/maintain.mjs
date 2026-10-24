@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { appendFileSync, constants, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { TYPE_FILE, extractEventNames, isoWeek, run, validateCandidate, validateChanges } from "./validation.mjs";
+import { TYPE_FILE, extractEventNames, isoWeek, run, selectRecentFiles, validateCandidate, validateChanges } from "./validation.mjs";
 
 const directory = path.resolve(process.env.GA_EVENTS_DIR ?? path.join(process.env.RUNNER_TEMP ?? "/tmp", "ga-events"));
 const repositoryRoot = path.resolve(run("git", ["rev-parse", "--show-toplevel"]));
@@ -60,10 +60,14 @@ const commands = {
 			fail("이벤트 유니온에서 이벤트를 찾지 못했습니다");
 		}
 		const trackedFiles = run("git", ["ls-files"]).split("\n").filter(Boolean);
-		const recentFiles = [...new Set(run("git", ["log", "--since=14 days ago", "--format=", "--name-only", baseSha, "--", "apps/web/src/", "apps/chrome-extension/src/", "pages/", "packages/shared/src/"]).split("\n").filter((file) => /\.tsx?$/.test(file) && !/\.test\./.test(file)))].filter((file) => trackedFiles.includes(file)).slice(0, 200);
+		const changedFiles = run("git", ["log", "--since=14 days ago", "--format=", "--name-only", baseSha, "--", "apps/web/src/", "apps/chrome-extension/src/", "pages/", "packages/shared/src/"]).split("\n");
+		const recentFiles = selectRecentFiles(changedFiles, trackedFiles);
 		const flows = JSON.parse(readFileSync(".github/e2e-core-flows.json", "utf8"));
-		write("context", { baseSha, week: isoWeek().label, existingEvents, trackedFiles, recentFiles, flows });
-		output("context_file", path.join(directory, "context.json"));
+		const week = isoWeek().label;
+		// 검증 단계는 trackedFiles가 든 context.json을, 모델에는 trackedFiles를 뺀 analysis-context.json을 줍니다.
+		write("context", { baseSha, week, existingEvents, trackedFiles, recentFiles, flows });
+		write("analysis-context", { baseSha, week, existingEvents, recentFiles, flows });
+		output("context_file", path.join(directory, "analysis-context.json"));
 	},
 	candidate: () => {
 		const value = validateCandidate(JSON.parse(process.env.GA_EVENTS_CANDIDATE_JSON ?? ""), validationContext());

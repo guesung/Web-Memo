@@ -1,18 +1,10 @@
 import { CONFIG } from "@web-memo/env";
-import { DEFAULT_CATEGORY_COLOR, PATHS } from "@web-memo/shared/constants";
+import { PATHS } from "@web-memo/shared/constants";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import type { CategoryRow } from "@web-memo/shared/types";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-	CommandList,
-} from "@web-memo/ui";
-import { CheckIcon, ExternalLinkIcon, PlusIcon } from "lucide-react";
-import { useState } from "react";
+import { CategoryCommand, CommandItem } from "@web-memo/ui";
+import { ExternalLinkIcon } from "lucide-react";
 import type { TCategoryPopupPosition } from "../hooks";
 
 /** 카테고리 선택 팝업 props */
@@ -45,18 +37,6 @@ interface IFCategoryCommandPopupProps {
  * 빈 상태 문구와 웹 설정 페이지 링크를 보여준다. 사용처: MemoForm/index.tsx
  */
 const CategoryCommandPopup = (props: IFCategoryCommandPopupProps) => {
-	const [searchText, setSearchText] = useState("");
-	const hasNoCategories = !props.categories?.length;
-	const trimmedSearchText = searchText.trim();
-	const hasSameNameCategory = Boolean(
-		props.categories?.some(
-			(category) =>
-				category.name.toLowerCase() === trimmedSearchText.toLowerCase(),
-		),
-	);
-	const isCreateItemVisible =
-		trimmedSearchText.length > 0 && !hasSameNameCategory;
-
 	const handleCreateOnWebSelect = () => {
 		analytics.trackEvent({
 			name: "open_web_from_extension",
@@ -73,77 +53,33 @@ const CategoryCommandPopup = (props: IFCategoryCommandPopupProps) => {
 			className="bg-popover fixed z-50 w-64 overflow-y-auto rounded-md border shadow-lg"
 			style={props.position}
 		>
-			<Command>
-				<CommandInput
-					ref={props.commandInputRef}
-					placeholder={I18n.get("search_category")}
-					value={searchText}
-					onValueChange={setSearchText}
-					onKeyDown={(event) => {
-						if (event.key === "Escape") {
-							props.onEscapeKeyDown();
-						}
-					}}
-				/>
-				<CommandList>
-					{hasNoCategories ? (
-						<>
-							<p className="text-muted-foreground px-2 pt-4 pb-2 text-center text-sm">
-								{I18n.get("category_empty")}
-							</p>
-							<CommandItem
-								forceMount
-								value="create-category-on-web"
-								onSelect={handleCreateOnWebSelect}
-								className="m-1 justify-center"
-							>
-								<ExternalLinkIcon aria-hidden="true" />
-								{I18n.get("category_create_on_web")}
-							</CommandItem>
-						</>
-					) : (
-						<>
-							<CommandEmpty>{I18n.get("no_categories_found")}</CommandEmpty>
-							<CommandGroup>
-								{props.categories?.map((category) => (
-									<CommandItem
-										key={category.id}
-										onSelect={() => props.onCategorySelect(category)}
-										className="flex items-center gap-2"
-									>
-										<div
-											className="h-3 w-3 shrink-0 rounded-full"
-											style={{
-												backgroundColor:
-													category.color || DEFAULT_CATEGORY_COLOR,
-											}}
-										/>
-										<span className="truncate">{category.name}</span>
-										{category.id === props.currentCategoryId && (
-											<CheckIcon className="ml-auto" aria-hidden="true" />
-										)}
-									</CommandItem>
-								))}
-							</CommandGroup>
-						</>
-					)}
-					{isCreateItemVisible && (
-						<CommandItem
-							forceMount
-							value="create-category-from-search"
-							disabled={props.isCategoryCreating}
-							onSelect={() => props.onCategoryCreate(trimmedSearchText)}
-							data-testid="category-create-item"
-							className="m-1"
-						>
-							<PlusIcon aria-hidden="true" />
-							<span className="truncate">
-								{I18n.get("category_create_named", trimmedSearchText)}
-							</span>
-						</CommandItem>
-					)}
-				</CommandList>
-			</Command>
+			<CategoryCommand
+				categories={props.categories}
+				currentCategoryId={props.currentCategoryId}
+				labels={{
+					search: I18n.get("search_category"),
+					noResult: I18n.get("no_categories_found"),
+					empty: I18n.get("category_empty"),
+					createNamed: (categoryName) =>
+						I18n.get("category_create_named", categoryName),
+				}}
+				onCategorySelect={props.onCategorySelect}
+				onCategoryCreate={props.onCategoryCreate}
+				isCategoryCreating={props.isCategoryCreating}
+				commandInputRef={props.commandInputRef}
+				onEscapeKeyDown={props.onEscapeKeyDown}
+				emptyAction={
+					<CommandItem
+						forceMount
+						value="create-category-on-web"
+						onSelect={handleCreateOnWebSelect}
+						className="m-1 justify-center"
+					>
+						<ExternalLinkIcon aria-hidden="true" />
+						{I18n.get("category_create_on_web")}
+					</CommandItem>
+				}
+			/>
 		</div>
 	);
 };

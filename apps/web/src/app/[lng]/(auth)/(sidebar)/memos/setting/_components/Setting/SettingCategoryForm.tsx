@@ -21,7 +21,7 @@ import {
 	Input,
 	toast,
 } from "@web-memo/ui";
-import { PlusIcon, TrashIcon } from "lucide-react";
+import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /** 메모를 묶는 카테고리를 만들고 이름·색을 바꾸고 지우는 설정 */
@@ -32,7 +32,8 @@ export default function SettingCategoryForm({
 
 	const { categories } = useCategoryQuery();
 	const { mutate: deleteCategory } = useCategoryDeleteMutation();
-	const { mutate: insertCategory } = useCategoryPostMutation();
+	const { mutate: insertCategory, isPending: isInserting } =
+		useCategoryPostMutation();
 	const { mutate: updateCategory } = useCategoryUpdateMutation();
 
 	const [editingId, setEditingId] = useState<number | null>(null);
@@ -44,6 +45,8 @@ export default function SettingCategoryForm({
 	const addInputRef = useRef<HTMLInputElement>(null);
 	const colorInputRef = useRef<HTMLInputElement>(null);
 	const colorTargetIdRef = useRef<number | null>(null);
+	/** 제출·취소로 입력칸을 닫은 뒤 언마운트 blur가 다시 제출하지 않게 막는다. 입력칸을 열 때 푼다. */
+	const isInputClosedRef = useRef(false);
 
 	const handleColorChange = useCallback(
 		(e: Event) => {
@@ -67,6 +70,9 @@ export default function SettingCategoryForm({
 	}, [handleColorChange]);
 
 	const handleRenameSubmit = (categoryId: number, newName: string) => {
+		if (isInputClosedRef.current) return;
+		isInputClosedRef.current = true;
+
 		const trimmedName = newName.trim();
 		setEditingId(null);
 
@@ -89,6 +95,9 @@ export default function SettingCategoryForm({
 	};
 
 	const handleAddSubmit = (name: string) => {
+		if (isInserting || isInputClosedRef.current) return;
+		isInputClosedRef.current = true;
+
 		const trimmedName = name.trim();
 		setIsAdding(false);
 
@@ -106,6 +115,27 @@ export default function SettingCategoryForm({
 			{ name: trimmedName, color: generateRandomPastelColor() },
 			{ onSuccess: () => toast({ title: t("toastTitle.successSave") }) },
 		);
+	};
+
+	const handleRenameCancel = () => {
+		isInputClosedRef.current = true;
+		setEditingId(null);
+	};
+
+	const handleAddCancel = () => {
+		isInputClosedRef.current = true;
+		setIsAdding(false);
+	};
+
+	const handleRenameOpen = (categoryId: number) => {
+		isInputClosedRef.current = false;
+		setEditingId(categoryId);
+		setTimeout(() => editInputRef.current?.focus(), 50);
+	};
+
+	const handleAddOpen = () => {
+		isInputClosedRef.current = false;
+		setIsAdding(true);
 	};
 
 	const handleCategoryDeleteConfirm = () => {
@@ -127,7 +157,7 @@ export default function SettingCategoryForm({
 
 	return (
 		<div className="relative">
-			<div className="space-y-1">
+			<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 				{categories?.map((category) => {
 					const isEditing = editingId === category.id;
 					const categoryColor = category.color || DEFAULT_CATEGORY_COLOR;
@@ -135,7 +165,7 @@ export default function SettingCategoryForm({
 					return (
 						<div
 							key={category.id}
-							className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-muted dark:hover:bg-muted/50 transition-colors group"
+							className="flex min-w-0 items-center gap-3 rounded-lg border border-border px-3 py-2 transition-colors hover:bg-muted dark:hover:bg-muted/50"
 						>
 							<button
 								type="button"
@@ -149,24 +179,20 @@ export default function SettingCategoryForm({
 									ref={editInputRef}
 									defaultValue={category.name}
 									autoFocus
-									className="h-7 flex-1 text-sm"
+									className="h-7 min-w-0 flex-1 text-sm"
 									onBlur={(e) =>
 										handleRenameSubmit(category.id, e.target.value)
 									}
 									onKeyDown={(e) => {
-										if (e.key === "Enter")
-											handleRenameSubmit(category.id, e.currentTarget.value);
-										if (e.key === "Escape") setEditingId(null);
+										if (e.key === "Enter") e.currentTarget.blur();
+										if (e.key === "Escape") handleRenameCancel();
 									}}
 								/>
 							) : (
 								<button
 									type="button"
-									className="flex-1 text-sm font-medium text-foreground cursor-pointer truncate hover:text-foreground transition-colors text-left"
-									onClick={() => {
-										setEditingId(category.id);
-										setTimeout(() => editInputRef.current?.focus(), 50);
-									}}
+									className="min-w-0 flex-1 cursor-pointer break-words text-left text-sm font-medium text-foreground transition-colors hover:text-foreground"
+									onClick={() => handleRenameOpen(category.id)}
 								>
 									{category.name}
 								</button>
@@ -174,8 +200,23 @@ export default function SettingCategoryForm({
 							<Button
 								variant="ghost"
 								size="icon"
-								className="text-destructive h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+								className="h-7 w-7 shrink-0"
 								type="button"
+								aria-label={t("setting.renameCategory", {
+									name: category.name,
+								})}
+								onClick={() => handleRenameOpen(category.id)}
+							>
+								<PencilIcon size={14} />
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-7 w-7 shrink-0 text-destructive"
+								type="button"
+								aria-label={t("setting.deleteCategoryNamed", {
+									name: category.name,
+								})}
 								onClick={() => setCategoryIdToDelete(category.id)}
 							>
 								<TrashIcon size={14} />
@@ -185,13 +226,13 @@ export default function SettingCategoryForm({
 				})}
 
 				{categories?.length === 0 && !isAdding && (
-					<p className="px-3 py-2 text-sm text-muted-foreground">
+					<p className="col-span-full px-3 py-2 text-sm text-muted-foreground">
 						{t("setting.categoryEmpty")}
 					</p>
 				)}
 
 				{isAdding ? (
-					<div className="flex items-center gap-3 rounded-lg px-3 py-2">
+					<div className="col-span-full flex min-w-0 items-center gap-3 rounded-lg px-3 py-2">
 						<div className="w-5 h-5 rounded-full flex-shrink-0 bg-muted-foreground/40" />
 						<Input
 							ref={addInputRef}
@@ -200,16 +241,16 @@ export default function SettingCategoryForm({
 							className="h-7 flex-1 text-sm"
 							onBlur={(e) => handleAddSubmit(e.target.value)}
 							onKeyDown={(e) => {
-								if (e.key === "Enter") handleAddSubmit(e.currentTarget.value);
-								if (e.key === "Escape") setIsAdding(false);
+								if (e.key === "Enter") e.currentTarget.blur();
+								if (e.key === "Escape") handleAddCancel();
 							}}
 						/>
 					</div>
 				) : (
 					<Button
 						variant="ghost"
-						className="w-full justify-start gap-3 px-3 py-2 text-muted-foreground hover:text-foreground"
-						onClick={() => setIsAdding(true)}
+						className="col-span-full w-full justify-start gap-3 px-3 py-2 text-muted-foreground hover:text-foreground"
+						onClick={handleAddOpen}
 						type="button"
 					>
 						<PlusIcon size={16} />

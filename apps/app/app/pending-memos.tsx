@@ -40,7 +40,7 @@ export default function PendingMemosScreen() {
 	const openUrl = (url: string) => {
 		router.replace({
 			pathname: "/(main)/browser",
-			params: { url, t: String(Date.now()) },
+			params: { url: encodeURIComponent(url), t: String(Date.now()) },
 		});
 	};
 

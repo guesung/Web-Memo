@@ -3,6 +3,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, Component, createElement, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+	ANALYTICS,
+	ANALYTICS_EXCLUDED_STORAGE_KEY,
+	ANALYTICS_EXCLUDED_USER_ID,
+} from "../../constants";
+import { SupabaseSessionRequiredError } from "../../utils/extension";
 import { AnalyticsUserTracking } from "./AnalyticsUserTracking";
 
 const mocks = vi.hoisted(() => ({
@@ -97,7 +103,9 @@ afterEach(async () => {
 
 describe("AnalyticsUserTracking", () => {
 	it("로그아웃이면 오류를 던지지 않고 아무것도 그리지 않으며 사용자 id를 비운다", async () => {
-		mocks.getClient.mockRejectedValue(new Error("로그인을 먼저 해주세요"));
+		mocks.getClient.mockRejectedValue(
+			new SupabaseSessionRequiredError("로그인을 먼저 해주세요"),
+		);
 
 		await renderTracking();
 
@@ -132,6 +140,40 @@ describe("AnalyticsUserTracking", () => {
 		await renderTracking();
 
 		expect(mocks.setUserId).not.toHaveBeenCalled();
+	});
+
+	it("세션 복원 중 네트워크 오류는 같은 문구로 감싸져도 로그아웃으로 보지 않고 저장된 사용자 id를 지우지 않는다", async () => {
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		// 확장의 getSupabaseClient는 세션 부재가 아닌 오류도 이 문구로 감싸 던진다.
+		const error = new Error("로그인을 먼저 해주세요", {
+			cause: new TypeError("Failed to fetch"),
+		});
+		mocks.getClient.mockRejectedValue(error);
+
+		await renderTracking();
+
+		expect(caughtErrors).toEqual([error]);
+		expect(mocks.setUserId).not.toHaveBeenCalled();
+	});
+
+	it("만든 사람 본인 계정이면 gtag 자동 수집을 끄고 제외 표식을 남긴다", async () => {
+		mocks.getClient.mockResolvedValue({ name: "client" });
+		mocks.getUser.mockResolvedValue({
+			data: { user: { id: ANALYTICS_EXCLUDED_USER_ID } },
+			error: null,
+		});
+
+		await renderTracking();
+
+		expect(mocks.setUserId).toHaveBeenCalledWith(ANALYTICS_EXCLUDED_USER_ID);
+		expect(
+			(window as unknown as Record<string, boolean>)[
+				`ga-disable-${ANALYTICS.gaId}`
+			],
+		).toBe(true);
+		expect(window.localStorage.getItem(ANALYTICS_EXCLUDED_STORAGE_KEY)).toBe(
+			"1",
+		);
 	});
 
 	it("로그아웃이 아닌 오류는 지금처럼 ErrorBoundary로 던진다", async () => {

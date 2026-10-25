@@ -105,10 +105,12 @@ for (const viewportWidth of [390, 1280]) {
 			.getByRole("alertdialog")
 			.getByRole("button", { name: "삭제", exact: true })
 			.click();
+		// 닫히는 다이얼로그가 배경을 aria-hidden으로 가려 아래 조회가 삭제 전에도 통과하므로, 닫힘과 요청 반영을 기다린다.
+		await expect(page.getByRole("alertdialog")).toHaveCount(0);
 		await expect(
 			page.getByRole("button", { name: "새 카테고리 이름", exact: true }),
 		).toHaveCount(0);
-		expect(store.getAllCategories()).toHaveLength(2);
+		await expect.poll(() => store.getAllCategories()).toHaveLength(2);
 		await expect(
 			categoryCard.getByRole("button", {
 				name: secondCategoryName,

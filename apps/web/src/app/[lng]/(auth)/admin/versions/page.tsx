@@ -2,7 +2,7 @@
 
 import versionStatus from "@src/constants/versionStatus.json";
 import type { LanguageParams } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import {
 	Table,
 	TableBody,
@@ -29,7 +29,7 @@ const TRACK_LABEL_KEYS: Record<string, string> = {
  */
 export default async function VersionsPage({ params }: IFPageProps) {
 	const { lng } = await params;
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 	const locale = lng === "ko" ? "ko-KR" : "en-US";
 
 	return (

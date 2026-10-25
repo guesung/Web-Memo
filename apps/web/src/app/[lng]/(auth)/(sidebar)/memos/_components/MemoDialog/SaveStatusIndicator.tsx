@@ -14,6 +14,8 @@ export type TMemoSaveStatus = "idle" | "saving" | "saved" | "error";
 interface SaveStatusIndicatorProps extends LanguageType {
 	/** 현재 자동 저장 상태 */
 	status: TMemoSaveStatus;
+	/** 저장 중·완료 문구도 화면에 보인다. 메모 상세 다이얼로그가 켠다 */
+	showsLabel?: boolean;
 }
 
 /**
@@ -24,6 +26,7 @@ interface SaveStatusIndicatorProps extends LanguageType {
 export default function SaveStatusIndicator({
 	status,
 	lng,
+	showsLabel = false,
 }: SaveStatusIndicatorProps) {
 	const { t } = useTranslation(lng);
 
@@ -53,13 +56,21 @@ export default function SaveStatusIndicator({
 							className="animate-spin"
 							aria-hidden="true"
 						/>
-						<span className="sr-only">{t("memos.saveStatus.saving")}</span>
+						<span className={cn({ "sr-only": !showsLabel })}>
+							{t("memos.saveStatus.saving")}
+						</span>
 					</>
 				)}
 				{status === "saved" && (
 					<>
 						<Check size={13} aria-hidden="true" />
-						<span className="sr-only">{t("memos.saveStatus.saved")}</span>
+						<span className={cn({ "sr-only": !showsLabel })}>
+							{t(
+								showsLabel
+									? "memos.saveStatus.savedShort"
+									: "memos.saveStatus.saved",
+							)}
+						</span>
 					</>
 				)}
 				{status === "error" && (

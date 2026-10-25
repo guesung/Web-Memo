@@ -24,6 +24,7 @@ const MOCKS = vi.hoisted(() => ({
 	resolveSave: undefined as (() => void) | undefined,
 	debounce: vi.fn(),
 	pendingSave: undefined as (() => void) | undefined,
+	setSearchParam: vi.fn(),
 }));
 vi.mock("@src/modules/i18n/util.client", () => ({
 	default: () => ({
@@ -67,10 +68,15 @@ vi.mock("@web-memo/shared/hooks", () => ({
 	useKeyboardBind: vi.fn(),
 }));
 vi.mock("@web-memo/shared/modules/search-params", () => ({
-	useSearchParams: () => ({}),
+	useSearchParams: () => ({
+		set: MOCKS.setSearchParam,
+		removeAll: vi.fn(),
+		getUrl: () => "/memos?id=2",
+	}),
 }));
 vi.mock("@web-memo/shared/utils", () => ({
 	adjustTextareaHeight: MOCKS.adjustHeight,
+	cn: (...classNames: unknown[]) => classNames.filter(Boolean).join(" "),
 }));
 vi.mock("../MemoView/_hooks/useMemoHighlights", () => ({
 	useMemoHighlights: MOCKS.highlights,
@@ -104,8 +110,9 @@ vi.mock("./SaveStatusIndicator", () => ({
 		createElement("span", { "data-testid": "save-status" }, status),
 }));
 vi.mock("@web-memo/ui", () => ({
-	Card: ({ children }: { children: ReactNode }) => children,
-	CardContent: ({ children }: { children: ReactNode }) => children,
+	Button: (props: object) =>
+		createElement("button", { type: "button", ...props }),
+	IconTooltip: ({ children }: { children: ReactNode }) => children,
 	Dialog: ({ children }: { children: ReactNode }) => children,
 	DialogContent: ({ children }: { children: ReactNode }) => children,
 	DialogTitle: ({ children }: { children: ReactNode }) => children,
@@ -116,16 +123,34 @@ vi.mock("@web-memo/ui", () => ({
 
 const container = document.createElement("div");
 let root: ReturnType<typeof createRoot>;
-async function render(memoId = 1) {
+async function render(
+	memoId = 1,
+	options: {
+		memo?: Partial<GetMemoResponse>;
+		prevMemoId?: number;
+		nextMemoId?: number;
+	} = {},
+) {
 	await act(async () =>
 		root.render(
 			createElement(MemoDialog, {
 				lng: "ko",
 				memoId,
-				initialMemo: { ...MOCKS.initialMemo, id: memoId } as GetMemoResponse,
+				initialMemo: {
+					...MOCKS.initialMemo,
+					...options.memo,
+					id: memoId,
+				} as GetMemoResponse,
+				prevMemoId: options.prevMemoId,
+				nextMemoId: options.nextMemoId,
 			}),
 		),
 	);
+}
+function pressKey(key: string, target: EventTarget = document.body) {
+	return act(async () => {
+		target.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+	});
 }
 function textarea(testId: string) {
 	return container.querySelector<HTMLTextAreaElement>(
@@ -171,9 +196,6 @@ describe("메모 상세 즉시 표시와 동기화", () => {
 		expect(textarea("impression-textarea")?.value).toBe("느낀점");
 		expect(MOCKS.pendingSave).toBeUndefined();
 		expect(MOCKS.mutate).not.toHaveBeenCalled();
-		expect(container.querySelector("footer")?.className).toContain(
-			"border-t-0",
-		);
 	});
 	it("카드 없는 직접 진입에서 결과가 없으면 닫을 수 있는 실패 상태를 보여준다", async () => {
 		MOCKS.querySucceeded = true;
@@ -303,5 +325,83 @@ describe("메모 상세 하이라이트", () => {
 		expect(
 			container.querySelector("[aria-expanded]")?.getAttribute("aria-expanded"),
 		).toBe("false");
+	});
+});
+
+describe("메모 상세 보조 필드 접기", () => {
+	it("비어 있는 느낀 점·액션 아이템은 + 버튼만 보이고, 누르면 입력칸이 열려 포커스된다", async () => {
+		// 포커스는 문서에 붙은 요소에만 간다.
+		document.body.append(container);
+		await render(1, { memo: { impression: "", actionItem: "" } });
+		expect(textarea("impression-textarea")).toBeNull();
+		expect(textarea("action-item-textarea")).toBeNull();
+		const addImpression = container.querySelector<HTMLButtonElement>(
+			'[data-testid="add-impression-button"]',
+		);
+		await act(async () => addImpression?.click());
+		expect(document.activeElement).toBe(textarea("impression-textarea"));
+		expect(
+			container.querySelector('[data-testid="add-impression-button"]'),
+		).toBeNull();
+		expect(
+			container.querySelector('[data-testid="add-action-item-button"]'),
+		).not.toBeNull();
+		container.remove();
+	});
+	it("내용이 있던 필드는 모두 지워도 닫히지 않는다", async () => {
+		await render();
+		await edit("impression-textarea", "");
+		expect(textarea("impression-textarea")).not.toBeNull();
+	});
+});
+
+describe("메모 상세 이전·다음 이동", () => {
+	beforeEach(() => {
+		vi.spyOn(history, "replaceState");
+	});
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it("화살표 키로 앞뒤 메모로 바꾸며 기록을 쌓지 않는다", async () => {
+		history.pushState({ openedMemoId: 1 }, "");
+		await render(1, { prevMemoId: 3, nextMemoId: 2 });
+		await pressKey("ArrowRight");
+		expect(MOCKS.setSearchParam).toHaveBeenLastCalledWith("id", "2");
+		expect(history.replaceState).toHaveBeenLastCalledWith(
+			{ openedMemoId: 2 },
+			"",
+			"/memos?id=2",
+		);
+		await pressKey("ArrowLeft");
+		expect(MOCKS.setSearchParam).toHaveBeenLastCalledWith("id", "3");
+	});
+	it("입력칸에서 누른 화살표 키는 커서 이동에만 쓴다", async () => {
+		await render(1, { nextMemoId: 2 });
+		const memoTextarea = textarea("memo-textarea");
+		if (!memoTextarea) throw new Error("Missing memo-textarea");
+		await pressKey("ArrowRight", memoTextarea);
+		expect(MOCKS.setSearchParam).not.toHaveBeenCalled();
+	});
+	it("넘기기 전에 편집 중인 내용을 먼저 저장한다", async () => {
+		await render(1, { nextMemoId: 2 });
+		await edit("memo-textarea", "넘기기 전 수정");
+		await act(async () =>
+			container
+				.querySelector<HTMLButtonElement>('[data-testid="memo-dialog-next"]')
+				?.click(),
+		);
+		expect(MOCKS.mutate.mock.calls[0]?.[0].request).toEqual({
+			memo: "넘기기 전 수정",
+		});
+		expect(MOCKS.setSearchParam).toHaveBeenLastCalledWith("id", "2");
+	});
+	it("끝에 닿은 방향의 버튼은 꺼진다", async () => {
+		await render(1, { prevMemoId: 3 });
+		expect(
+			container.querySelector<HTMLButtonElement>(
+				'[data-testid="memo-dialog-next"]',
+			)?.disabled,
+		).toBe(true);
 	});
 });

@@ -210,11 +210,15 @@ test.describe("메모 상세의 즉시 표시와 백그라운드 조회 (Mocked)
 				"Quoted memo",
 			);
 			await expect(
-				dialog.getByRole("button", { name: "Highlights (1)" }),
+				dialog.getByRole("button", {
+					name: "Other highlights on this page (1)",
+				}),
 			).toHaveCount(0);
 			await expect(dialog.getByText("Delayed quote")).toHaveCount(0);
 			highlightGate.release();
-			const toggle = dialog.getByRole("button", { name: "Highlights (1)" });
+			const toggle = dialog.getByRole("button", {
+				name: "Other highlights on this page (1)",
+			});
 			await expect(toggle).toBeVisible();
 			await expect(dialog.getByText("Delayed quote")).toHaveCount(0);
 			await toggle.click();

@@ -24,6 +24,7 @@ import {
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useWatch } from "react-hook-form";
+import { isTypingTarget } from "../../_utils";
 import MemoCardFooter from "../MemoCardFooter";
 import CategoryPopover from "../MemoCardFooter/CategoryPopover";
 import useMemoCategoryPopover from "../MemoCardFooter/useMemoCategoryPopover";
@@ -392,15 +393,6 @@ function AddFieldButton({
 			<Plus className="size-3.5" aria-hidden="true" />
 			{label}
 		</button>
-	);
-}
-
-/** 화살표 키가 커서 이동에 쓰이는 곳이면 메모를 넘기지 않는다. */
-function isTypingTarget(target: EventTarget | null) {
-	if (!(target instanceof HTMLElement)) return false;
-	return (
-		target.isContentEditable ||
-		["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)
 	);
 }
 

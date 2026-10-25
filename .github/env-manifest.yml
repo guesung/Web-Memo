@@ -354,12 +354,12 @@
 
 - name: SUPABASE_URL
   kind: platform
-  consumers: [packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
+  consumers: [packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts, packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts, packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
   note: "Supabase가 Edge Function에 주입한다"
 
 - name: SUPABASE_SERVICE_ROLE_KEY
   kind: platform
-  consumers: [packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
+  consumers: [packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts, packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts, packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
   note: "Supabase가 Edge Function에 주입한다. Vercel에는 등록하지 않는다"
 
 - name: SUPABASE_ANON_KEY

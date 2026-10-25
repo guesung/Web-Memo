@@ -3,9 +3,9 @@
  * DB 함수(memo.ingest_blog_batch 등)가 같은 규칙을 한 번 더 강제하므로, 여기서 통과해도 DB가 거절할 수 있다.
  */
 
-export const BLOG_IDS = ["toss", "daangn"] as const;
+export const BLOG_IDS = ["toss", "daangn", "geeknews"] as const;
 
-export const CLAIM_TRIGGERS = ["daily", "request", "manual"] as const;
+export const CLAIM_TRIGGERS = ["daily", "request", "manual", "feed"] as const;
 
 export const FAIL_ERROR_CODES = [
   "time_limit",
@@ -84,6 +84,8 @@ export type TParseResult<TValue> =
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const GEEKNEWS_ARTICLE_URL_PATTERN =
+  /^https:\/\/news\.hada\.io\/topic\?id=[0-9]{1,18}$/;
 const PROVIDER_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 const ISO_DATETIME_PATTERN =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
@@ -124,6 +126,10 @@ export const isAllowedArticleUrl = ({
 
   if (blogId === "toss") {
     return url.startsWith("https://toss.tech/article/");
+  }
+
+  if (blogId === "geeknews") {
+    return !isAlias && GEEKNEWS_ARTICLE_URL_PATTERN.test(url);
   }
 
   if (isAlias) {
@@ -266,6 +272,27 @@ const parseEvidence = (
         reportedCount: value.reportedCount,
         uniqueCount: value.uniqueCount,
         pageCount: value.pageCount,
+      },
+    };
+  }
+
+  if (blogId === "geeknews") {
+    const isValid =
+      value.kind === "geeknews" &&
+      isPositiveInteger(value.entryCount) &&
+      isPositiveInteger(value.uniqueCount) &&
+      value.entryCount >= value.uniqueCount;
+
+    if (!isValid) {
+      return fail("geeknews 종료 증거가 올바르지 않습니다");
+    }
+
+    return {
+      ok: true,
+      value: {
+        kind: "geeknews",
+        entryCount: value.entryCount,
+        uniqueCount: value.uniqueCount,
       },
     };
   }

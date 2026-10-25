@@ -226,6 +226,30 @@ const runRegular = async ({
 };
 
 /**
+ * 백필 한 주의 리텐션. 실패해도 그 주의 GA 행은 쓰도록 null 로 돌려주고 실패만 모읍니다.
+ *
+ * GA 조회와 같은 try 에 두면 Supabase 의 일시 오류 하나로 그 주의 활성 사용자·이벤트 행까지
+ * 빠집니다. 정기 모드가 "GA 는 내보내고 잡만 실패"하는 것과 맞춥니다. null 이면 시트의
+ * 리텐션 칸을 넣지 않아 이미 적힌 값도 남습니다.
+ */
+const fetchRetentionForBackfill = async ({
+	serviceRoleKey,
+	week,
+	failedRetentionWeeks,
+}) => {
+	try {
+		return await fetchMemoRetention({ serviceRoleKey, week });
+	} catch (error) {
+		failedRetentionWeeks.push(week.start);
+		console.error(
+			`::error::${week.start} 주 메모 리텐션 조회 실패: ${error.message}`,
+		);
+
+		return null;
+	}
+};
+
+/**
  * 백필 모드. 주마다 조회해 행을 모은 뒤 탭마다 한 번씩 씁니다.
  *
  * 주마다 시트에 쓰면 90주 백필이 쓰기 요청만 수백 번이라 Sheets API 분당 한도에
@@ -249,6 +273,7 @@ const runBackfill = async ({
 	const summaryRows = [];
 	const eventRows = [];
 	const failedWeeks = [];
+	const failedRetentionWeeks = [];
 
 	console.log(
 		`백필: ${plan.weeks[0].start} ~ ${plan.weeks.at(-1).start} (${plan.weeks.length}주)`,
@@ -262,7 +287,11 @@ const runBackfill = async ({
 					propertyId,
 					week,
 				});
-				const retention = await fetchMemoRetention({ serviceRoleKey, week });
+				const retention = await fetchRetentionForBackfill({
+					serviceRoleKey,
+					week,
+					failedRetentionWeeks,
+				});
 				const rows = buildRowsFromReport({
 					report,
 					retention,
@@ -286,7 +315,11 @@ const runBackfill = async ({
 				week,
 			});
 			// 리텐션은 GA 이벤트와 무관하게 저장된 데이터로 세므로 옛 주도 채웁니다.
-			const retention = await fetchMemoRetention({ serviceRoleKey, week });
+			const retention = await fetchRetentionForBackfill({
+				serviceRoleKey,
+				week,
+				failedRetentionWeeks,
+			});
 
 			summaryRows.push(
 				buildSummaryRow({
@@ -319,6 +352,13 @@ const runBackfill = async ({
 	if (failedWeeks.length > 0) {
 		console.error(
 			`::error::${failedWeeks.length}주 조회 실패 — 같은 범위로 다시 돌리면 채워집니다: ${failedWeeks.join(", ")}`,
+		);
+		process.exitCode = 1;
+	}
+
+	if (failedRetentionWeeks.length > 0) {
+		console.error(
+			`::error::${failedRetentionWeeks.length}주 메모 리텐션 조회 실패 — GA 행은 썼고 리텐션 칸만 비었습니다: ${failedRetentionWeeks.join(", ")}`,
 		);
 		process.exitCode = 1;
 	}

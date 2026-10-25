@@ -12,6 +12,9 @@ import PageContentProvider from "./components/PageContentProvider";
 import SidePanelContent from "./components/SidePanelContent";
 import { reportSidePanelError } from "./utils";
 
+/** 사용자 추적이 실패해도 화면에는 아무것도 그리지 않는다. 오류 보고는 ErrorBoundary가 그대로 한다. */
+const HiddenFallback = () => null;
+
 export default function SidePanel() {
 	useDidMount(() => {
 		bridge.handle.GET_SIDE_PANEL_OPEN((_, __, sendResponse) => {
@@ -45,7 +48,7 @@ export default function SidePanel() {
 				<SidePanelContent />
 
 				<Toaster />
-				<ErrorBoundary>
+				<ErrorBoundary FallbackComponent={HiddenFallback}>
 					<Suspense>
 						<AnalyticsUserTracking />
 					</Suspense>

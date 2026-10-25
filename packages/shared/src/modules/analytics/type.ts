@@ -183,6 +183,14 @@ export type TAnalyticsEvent =
 	  }
 	| { name: "guide_open"; params: { from: "context_menu" } }
 	| { name: "install_guide_view" }
+	/** 확장 백그라운드가 설치 직후 가이드 탭을 연 결과. 광고 차단기에 막히지 않는 경로입니다. */
+	| { name: "install_guide_tab_opened"; params: { is_success: boolean } }
+	/**
+	 * 설치 가이드 페이지가 보낸 1st-party 비컨을 웹 서버가 Measurement Protocol로 옮긴 것.
+	 * @description `trackEvent`로 보내지 않습니다. `POST /api/install-guide-load`만 보냅니다.
+	 * gtag의 `install_guide_view`와 이중으로 집계되지 않도록 이름을 따로 둡니다.
+	 */
+	| { name: "install_guide_load" }
 	| { name: "install_guide_login_click" }
 	| { name: "install_guide_panel_open_click"; params: { is_success: boolean } }
 	| { name: "guide_finish" }
@@ -332,6 +340,8 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	open_web_from_extension: "engagement",
 	guide_open: "engagement",
 	install_guide_view: "engagement",
+	install_guide_tab_opened: "engagement",
+	install_guide_load: "engagement",
 	install_guide_login_click: "engagement",
 	install_guide_panel_open_click: "engagement",
 	guide_finish: "engagement",

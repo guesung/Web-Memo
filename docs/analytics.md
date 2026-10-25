@@ -60,7 +60,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `category_suggestion_dismiss`(is_new_category, source) ·
 `login_start`(method) · `logout` · `extension_installed` · `extension_install_dismiss` ·
 `open_web_from_extension`(from) · `guide_open`(from) · `guide_step`(step_name) · `guide_finish` ·
-`install_guide_view` · `install_guide_login_click` ·
+`install_guide_view` · `install_guide_tab_opened`(is_success) · `install_guide_load` · `install_guide_login_click` ·
 `search_no_result` · `highlight_bubble_disable`(scope) · `notice_view`(notice_id) ·
 `notice_dismiss`(notice_id) · `notice_return`(notice_id, days_since_view) ·
 `past_memo_show`(kind, source) · `past_memo_dismiss`(kind, source) ·
@@ -77,6 +77,12 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 같은 의미의 지표로 직접 비교하면 안 됩니다.
 
 ### 호출부에 없는 이벤트
+
+`install_guide_load`는 `analytics.trackEvent`로 보내지 않습니다. 설치 가이드 페이지가
+`navigator.sendBeacon`으로 `POST /api/install-guide-load`를 부르면 웹 서버가 Measurement Protocol로
+보냅니다. 광고 차단기가 gtag를 막아 `install_guide_view`가 빠지는 설치자를 세려고 둔 경로라,
+gtag 이벤트와 겹쳐 세지 않도록 이름을 따로 씁니다. `extension_uninstall`도 같은 방식으로
+`GET /api/uninstall`의 서버가 보냅니다.
 
 `memo_write` · `memo_status_toggle` · `memo_category_change` 셋은 화면 코드에 직접 심겨 있지
 않습니다. 메모 변경 요청의 키를 보고 `Analytics.ts`의 `trackMemoUpdate`가 갈라 보냅니다 —

@@ -1,5 +1,6 @@
 import type { LanguageType } from "@src/modules/i18n";
 import getTranslation from "@src/modules/i18n/util.server";
+import { InstallGuideLoadBeacon } from "./installGuideLoadBeacon";
 import { InstallGuideViewTracker } from "./installGuideViewTracker";
 import { LoginCTA } from "./loginCTA";
 import { OpenSidePanelCTA } from "./openSidePanelCTA";
@@ -24,6 +25,7 @@ export default async function InstallGuide({ lng, extCid }: InstallGuideProps) {
 	return (
 		<main className="min-h-[calc(100vh-3rem)] bg-background text-foreground">
 			<InstallGuideViewTracker />
+			<InstallGuideLoadBeacon extCid={extCid} />
 			<div className="mx-auto max-w-6xl px-6 pb-20 pt-10 md:pt-16">
 				<p className="mb-3 text-sm font-bold text-primary">
 					{t("installGuide.eyebrow")}

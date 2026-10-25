@@ -74,7 +74,10 @@ export type TAnalyticsEvent =
 	| { name: "highlight_panel_open_result"; params: { is_success: boolean } }
 	| { name: "side_panel_open" }
 	| { name: "page_view"; params: { page_title: string; page_location: string } }
-	| { name: "memo_write"; params: { fields: string } }
+	| {
+			name: "memo_write";
+			params: { fields: string; is_new: boolean; source?: "highlight" };
+	  }
 	| { name: "memo_delete"; params: { memo_count: number } }
 	| { name: "summary_run"; params: { source: TSummaryRunSource } }
 	| { name: "summary_panel_toggle"; params: { action: "open" | "close" } }

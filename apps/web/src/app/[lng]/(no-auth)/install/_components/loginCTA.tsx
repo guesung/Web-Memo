@@ -44,7 +44,7 @@ export function LoginCTA({ lng, extCid, label }: LoginCTAProps) {
 		<Link
 			href={loginPath}
 			onClick={handleClick}
-			className="whitespace-nowrap rounded-lg bg-primary px-6 py-3 text-center text-sm font-bold text-primary-foreground hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+			className="text-primary underline underline-offset-4 hover:text-primary/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
 		>
 			{label}
 		</Link>

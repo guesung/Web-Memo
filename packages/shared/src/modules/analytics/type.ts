@@ -184,6 +184,7 @@ export type TAnalyticsEvent =
 	| { name: "guide_open"; params: { from: "context_menu" } }
 	| { name: "install_guide_view" }
 	| { name: "install_guide_login_click" }
+	| { name: "install_guide_panel_open_click"; params: { is_success: boolean } }
 	| { name: "guide_finish" }
 	| { name: "extension_setting_change"; params: { keys: string } }
 	| { name: "guide_step"; params: { step_name: string } }
@@ -332,6 +333,7 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	guide_open: "engagement",
 	install_guide_view: "engagement",
 	install_guide_login_click: "engagement",
+	install_guide_panel_open_click: "engagement",
 	guide_finish: "engagement",
 	extension_setting_change: "engagement",
 	guide_step: "engagement",

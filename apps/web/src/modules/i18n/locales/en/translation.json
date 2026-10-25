@@ -382,12 +382,12 @@
 			"title": "Getting started with Web Memo | Web Memo",
 			"description": "Learn how to open the side panel and write your first memo after installing the extension."
 		},
-		"eyebrow": "Getting started",
+		"eyebrow": "Installed",
 		"title": {
 			"first": "Take notes beside",
 			"second": "the page you're reading"
 		},
-		"lead": "After installing the extension, capture your thoughts without leaving the page.",
+		"lead": "Open the side panel to start right on this page.",
 		"previewLabel": "Preview of a browser page and the Web Memo side panel",
 		"previewCaption": "Preview only · Sign in to open the real editor",
 		"preview": {
@@ -399,21 +399,25 @@
 		"steps": {
 			"open": {
 				"title": "Open the side panel",
-				"description": "Click the Web Memo icon in your browser or press Alt+S."
+				"description": "Use the button above, the Web Memo icon in the toolbar, or Alt+S."
 			},
 			"write": {
-				"title": "Take notes as you read",
-				"description": "The page title and address are attached, so you can focus on your thoughts."
+				"title": "Sign in from the panel",
+				"description": "Start right away with your Google or Kakao account."
 			},
 			"save": {
-				"title": "Sign in to keep your notes",
-				"description": "You need to sign in to save your notes and revisit them later."
+				"title": "Drag and take notes",
+				"description": "Drag a sentence to highlight it, or type in the panel to save notes per page."
 			}
 		},
-		"loginNotice": {
-			"title": "Sign in to save your notes",
-			"description": "After signing in, you can write your first memo in the side panel.",
-			"cta": "Sign in and get started"
+		"openPanel": {
+			"cta": "Open side panel",
+			"shortcutPrefix": "or",
+			"failure": "Didn't open? Pin Web Memo from the puzzle icon next to the address bar, then click its icon."
+		},
+		"webLogin": {
+			"prefix": "Already have an account?",
+			"cta": "Sign in on the web"
 		}
 	},
 	"login": {

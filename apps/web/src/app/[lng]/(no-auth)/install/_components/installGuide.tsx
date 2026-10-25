@@ -2,6 +2,7 @@ import type { LanguageType } from "@src/modules/i18n";
 import getTranslation from "@src/modules/i18n/util.server";
 import { InstallGuideViewTracker } from "./installGuideViewTracker";
 import { LoginCTA } from "./loginCTA";
+import { OpenSidePanelCTA } from "./openSidePanelCTA";
 
 export default async function InstallGuide({ lng, extCid }: InstallGuideProps) {
 	const { t } = await getTranslation(lng);
@@ -32,9 +33,16 @@ export default async function InstallGuide({ lng, extCid }: InstallGuideProps) {
 					<br />
 					{t("installGuide.title.second")}
 				</h1>
-				<p className="mb-10 mt-4 text-lg leading-relaxed text-muted-foreground">
+				<p className="mb-6 mt-4 text-lg leading-relaxed text-muted-foreground">
 					{t("installGuide.lead")}
 				</p>
+				<div className="mb-10">
+					<OpenSidePanelCTA
+						label={t("installGuide.openPanel.cta")}
+						shortcutPrefix={t("installGuide.openPanel.shortcutPrefix")}
+						failureMessage={t("installGuide.openPanel.failure")}
+					/>
+				</div>
 
 				<div className="grid items-stretch gap-8 md:grid-cols-5">
 					<div className="md:col-span-3">
@@ -47,7 +55,7 @@ export default async function InstallGuide({ lng, extCid }: InstallGuideProps) {
 						{steps.map((step, index) => (
 							<li
 								key={step.title}
-								className="flex gap-4 rounded-lg border border-border bg-card p-5"
+								className={`flex gap-4 rounded-lg border bg-card p-5 ${index === 0 ? "border-primary" : "border-border"}`}
 							>
 								<span className="grid size-7 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-bold text-primary">
 									{index + 1}
@@ -63,21 +71,14 @@ export default async function InstallGuide({ lng, extCid }: InstallGuideProps) {
 					</ol>
 				</div>
 
-				<div className="mt-8 flex flex-col gap-6 rounded-xl border border-border bg-card p-6 md:flex-row md:items-center md:justify-between">
-					<div>
-						<strong className="text-lg">
-							{t("installGuide.loginNotice.title")}
-						</strong>
-						<p className="mt-2 text-sm text-muted-foreground">
-							{t("installGuide.loginNotice.description")}
-						</p>
-					</div>
+				<p className="mt-8 text-sm text-muted-foreground">
+					{t("installGuide.webLogin.prefix")}{" "}
 					<LoginCTA
 						lng={lng}
 						extCid={extCid}
-						label={t("installGuide.loginNotice.cta")}
+						label={t("installGuide.webLogin.cta")}
 					/>
-				</div>
+				</p>
 			</div>
 		</main>
 	);

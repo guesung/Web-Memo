@@ -407,6 +407,12 @@
 	"actionItemPlaceholder": {
 		"message": "이 페이지를 보고 할 일을 적어보세요"
 	},
+	"addImpression": {
+		"message": "느낀 점 추가"
+	},
+	"addActionItem": {
+		"message": "액션 아이템 추가"
+	},
 	"highlight_create": {
 		"message": "하이라이트"
 	},

@@ -34,6 +34,35 @@ test.describe("헤더 진입점 (로그인)", () => {
 
 		expect(new URL(page.url()).pathname).toBe(`/ko${PATHS.memos}`);
 	});
+
+	test("아바타 메뉴에서 로그아웃하면 로그인 화면 본문이 보이고 헤더가 비로그인 상태가 된다.", async ({
+		page,
+	}) => {
+		// signOut은 global scope라 실서버로 가면 setup이 만든 공유 세션이 무효화된다.
+		// 쿠키 정리는 클라이언트에서 일어나므로 서버 호출만 204로 막는다.
+		await page.route("**/auth/v1/logout**", (route) =>
+			route.fulfill({ status: 204 }),
+		);
+
+		await page.goto(`/ko${PATHS.introduce}`);
+		await expect(
+			getHeader(page).getByRole("link", { name: "내 메모" }),
+		).toBeVisible();
+
+		await getHeader(page).getByRole("button", { name: "avatar" }).click();
+		await page.getByRole("button", { name: "로그아웃하기" }).click();
+		await page.waitForURL(`**/ko${PATHS.login}`);
+
+		await expect(
+			page.getByText("웹사이트 보며 간편하게 메모하세요."),
+		).toBeVisible();
+		await expect(
+			getHeader(page).getByRole("link", { name: "내 메모" }),
+		).toHaveCount(0);
+		await expect(
+			getHeader(page).getByRole("button", { name: "avatar" }),
+		).toHaveCount(0);
+	});
 });
 
 test.describe("헤더 진입점 (로그아웃)", () => {

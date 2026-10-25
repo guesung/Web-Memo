@@ -6,7 +6,13 @@
  */
 
 /** 지원 블로그 id. SQL `memo.is_supported_blog`의 값과 같다. */
-export type TBlogId = "toss" | "daangn";
+export type TBlogId = "toss" | "daangn" | "geeknews";
+
+/**
+ * 소스 종류.
+ * @description `archive`는 공개 글 전체를 모아 "n / 전체" 진행률을 내는 블로그, `feed`는 최근 글만 계속 쌓여 전체 글 수가 정해지지 않는 피드다.
+ */
+export type TBlogKind = "archive" | "feed";
 
 /** 목록 정렬. `oldest`(기본, 과거부터) 또는 `newest`(최신부터). */
 export type TBlogReadingSort = "oldest" | "newest";
@@ -47,6 +53,8 @@ export interface IFBlogCatalogItem {
 	displayName: { ko: string; en: string };
 	/** 원문 블로그 홈 주소 */
 	homeUrl: string;
+	/** 소스 종류 */
+	kind: TBlogKind;
 }
 
 /** 체크리스트 한 행. `get_blog_reading_page`의 `items[]` */

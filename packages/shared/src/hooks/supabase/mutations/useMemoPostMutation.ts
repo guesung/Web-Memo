@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { NoMemosError, QUERY_KEY } from "../../../constants";
+import { analytics } from "../../../modules/analytics";
 import type { MemoSupabaseResponse, MemoTable } from "../../../types";
 import { MemoService } from "../../../utils";
 
@@ -29,7 +30,8 @@ const useMemoPostMutation = () => {
 
 				return result;
 			},
-			onSuccess: async () => {
+			onSuccess: async (_result, request) => {
+				void analytics.trackMemoCreate(request);
 				await queryClient.invalidateQueries({ queryKey: QUERY_KEY.memos() });
 			},
 		},

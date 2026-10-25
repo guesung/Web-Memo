@@ -7,6 +7,7 @@ export const GENERATED_PAGE_PATHS = {
 	admin: "/admin",
 	adminFeedback: "/admin/feedback",
 	adminUsers: "/admin/users",
+	adminVersions: "/admin/versions",
 	compareChromeMemoExtensions: "/compare/chrome-memo-extensions",
 	favorites: "/favorites",
 	featuresMemo: "/features/memo",

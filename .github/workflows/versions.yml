@@ -21,12 +21,12 @@ concurrency:
 jobs:
   report:
     name: 배포 현황 조회
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -40,4 +40,4 @@ jobs:
           CWS_CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CWS_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           CWS_REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
-        run: node .github/scripts/report-store-versions.mjs
+        run: node .github/scripts/deploy/report-store-versions.mjs

@@ -28,13 +28,20 @@ export async function GET(request: NextRequest) {
 	const code = requestUrl.searchParams.get("code");
 
 	if (code) {
-		const supabase = getSupabaseClient();
+		const supabase = await getSupabaseClient();
 		const { data: sessionData } =
 			await supabase.auth.exchangeCodeForSession(code);
 
-		if (!sessionData.session) throw new Error("no session");
+		if (!sessionData.session) {
+			const loginUrl = new URL(
+				`${requestUrl.origin}/${language}${PATHS.login}`,
+			);
+			loginUrl.searchParams.set("error", "1");
 
-		const cookieStore = cookies();
+			return NextResponse.redirect(loginUrl, 302);
+		}
+
+		const cookieStore = await cookies();
 		cookieStore.set(
 			SUPABASE.authCookie.accessToken,
 			sessionData.session.access_token,

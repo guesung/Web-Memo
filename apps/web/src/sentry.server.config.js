@@ -1,7 +1,12 @@
 import { init } from "@sentry/nextjs";
-import { SENTRY } from "@web-memo/shared/constants";
+import { createGrafanaSpanProcessors } from "./modules/observability/serverTracing";
+import { SENTRY_COMMON_OPTIONS } from "./sentry.common.config";
+
+const grafanaSpanProcessors = createGrafanaSpanProcessors();
 
 init({
-	dsn: SENTRY.dsnWeb,
-	tracesSampleRate: 0.1,
+	...SENTRY_COMMON_OPTIONS,
+	...(grafanaSpanProcessors.length > 0 && {
+		openTelemetrySpanProcessors: grafanaSpanProcessors,
+	}),
 });

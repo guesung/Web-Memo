@@ -1,9 +1,12 @@
+export type * from "./mutationMeta";
 export { default as useCategoryDeleteMutation } from "./useCategoryDeleteMutation";
 export { default as useCategoryPostMutation } from "./useCategoryPostMutation";
 export { default as useCategoryUpdateMutation } from "./useCategoryUpdateMutation";
-export { default as useCategoryUpsertMutation } from "./useCategoryUpsertMutation";
 export { default as useDeleteMemosMutation } from "./useDeleteMemosMutation";
 export { default as useDeleteMemosPermanentlyMutation } from "./useDeleteMemosPermanentlyMutation";
+export { default as useFavoriteAddMutation } from "./useFavoriteAddMutation";
+export { default as useFavoriteDeleteMutation } from "./useFavoriteDeleteMutation";
+export { default as useFavoriteUpdateMutation } from "./useFavoriteUpdateMutation";
 export { default as useFeedbackMutation } from "./useFeedbackMutation";
 export { default as useMemoPatchMutation } from "./useMemoPatchMutation";
 export { default as useMemoPostMutation } from "./useMemoPostMutation";
@@ -12,3 +15,8 @@ export { default as useMemoUpsertMutation } from "./useMemoUpsertMutation";
 export { default as useRestoreMemosMutation } from "./useRestoreMemosMutation";
 export { default as useSettingUpsertMutation } from "./useSettingUpsertMutation";
 export { default as useSignoutMutation } from "./useSignoutMutation";
+export {
+	default as useWeeklyReportTestMutation,
+	type TWeeklyReportTestFailureReason,
+	WeeklyReportTestError,
+} from "./useWeeklyReportTestMutation";

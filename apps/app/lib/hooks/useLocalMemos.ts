@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getPageKey } from "@web-memo/shared/utils/url";
 import {
 	deleteMemo,
 	getAllMemos,
@@ -12,7 +13,8 @@ import { syncMemosToSupabase } from "@/lib/storage/syncService";
 
 const QUERY_KEY = {
 	localMemos: () => ["localMemos"] as const,
-	localMemoByUrl: (url: string) => ["localMemo", url] as const,
+	localMemoByUrl: (url: string) =>
+		["localMemo", url ? getPageKey(url) : ""] as const,
 };
 
 export function useLocalMemos() {
@@ -52,11 +54,13 @@ export function useLocalMemoWishToggle() {
 			url,
 			title,
 			favIconUrl,
+			selectedId,
 		}: {
 			url: string;
 			title?: string;
 			favIconUrl?: string;
-		}) => toggleWishByUrl(url, title, favIconUrl),
+			selectedId?: string;
+		}) => toggleWishByUrl(url, title, favIconUrl, selectedId),
 		onSuccess: (_data, { url }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos() });
 			queryClient.invalidateQueries({
@@ -74,11 +78,13 @@ export function useLocalMemoStarToggle() {
 			url,
 			title,
 			favIconUrl,
+			selectedId,
 		}: {
 			url: string;
 			title?: string;
 			favIconUrl?: string;
-		}) => toggleStarByUrl(url, title, favIconUrl),
+			selectedId?: string;
+		}) => toggleStarByUrl(url, title, favIconUrl, selectedId),
 		onSuccess: (_data, { url }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos() });
 			queryClient.invalidateQueries({
@@ -96,11 +102,13 @@ export function useLocalMemoReadingToggle() {
 			url,
 			title,
 			favIconUrl,
+			selectedId,
 		}: {
 			url: string;
 			title?: string;
 			favIconUrl?: string;
-		}) => toggleReadingByUrl(url, title, favIconUrl),
+			selectedId?: string;
+		}) => toggleReadingByUrl(url, title, favIconUrl, selectedId),
 		onSuccess: (_data, { url }) => {
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos() });
 			queryClient.invalidateQueries({

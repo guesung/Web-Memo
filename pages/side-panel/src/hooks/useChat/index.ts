@@ -1,9 +1,20 @@
 import { CONFIG } from "@web-memo/env";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { STORAGE_KEYS } from "@web-memo/shared/modules/chrome-storage";
+import { isAbortError } from "@web-memo/shared/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePageContentContext } from "../../components/PageContentProvider";
+import { reportPageFeatureError } from "../../utils";
 import { processStreamingResponse } from "../useSummary/util";
+
+const reportChatFailure = (error: unknown, stage: string) => {
+	void reportPageFeatureError({
+		error,
+		feature: "chat",
+		operation: "send",
+		stage,
+	});
+};
 
 export interface ChatMessage {
 	id: string;
@@ -116,7 +127,13 @@ export default function useChat(): UseChatReturn {
 				});
 
 				if (!response.ok) {
-					throw new Error(`HTTP error! status: ${response.status}`);
+					reportChatFailure(
+						new Error(`채팅 API 응답 실패: ${response.status}`),
+						"fetch",
+					);
+					setError(`HTTP error! status: ${response.status}`);
+					setMessages((prev) => prev.slice(0, -1));
+					return;
 				}
 
 				await processStreamingResponse(
@@ -134,21 +151,25 @@ export default function useChat(): UseChatReturn {
 							return updated;
 						});
 					},
-					(errorMessage) => {
+					(errorMessage, streamFailureStage) => {
+						reportChatFailure(new Error(errorMessage), streamFailureStage);
 						setError(errorMessage);
 						setMessages((prev) => prev.slice(0, -1));
 					},
 				);
 			} catch (err) {
-				console.error("Chat error:", err);
-				analytics.trackEvent({
-					name: "chat_fail",
-					params: { reason: err instanceof Error ? err.message : "unknown" },
-				});
-				setError(
-					err instanceof Error ? err.message : "채팅 중 오류가 발생했습니다",
-				);
-				setMessages((prev) => prev.slice(0, -1));
+				if (!isAbortError(err)) {
+					console.error("Chat error:", err);
+					analytics.trackEvent({
+						name: "chat_fail",
+						params: { reason: err instanceof Error ? err.message : "unknown" },
+					});
+					reportChatFailure(err, "general");
+					setError(
+						err instanceof Error ? err.message : "채팅 중 오류가 발생했습니다",
+					);
+					setMessages((prev) => prev.slice(0, -1));
+				}
 			} finally {
 				setIsLoading(false);
 			}

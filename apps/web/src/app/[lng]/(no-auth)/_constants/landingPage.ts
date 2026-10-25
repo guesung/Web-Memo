@@ -9,7 +9,6 @@ import {
 	Newspaper,
 	Pencil,
 	Search,
-	Sparkles,
 	Youtube,
 } from "lucide-react";
 
@@ -26,7 +25,6 @@ import {
 export type TLandingPageKey =
 	| "featuresMemo"
 	| "featuresSaveArticles"
-	| "featuresYoutubeSummary"
 	| "useCasesDeveloper"
 	| "useCasesJobHunting"
 	| "useCasesLearning"
@@ -55,11 +53,6 @@ export const LANDING_PAGE: Record<TLandingPageKey, TLandingPageEntry> = {
 		path: PATHS.featuresSaveArticles,
 		icon: Bookmark,
 		translationPrefix: "features.saveArticles",
-	},
-	featuresYoutubeSummary: {
-		path: PATHS.featuresYoutubeSummary,
-		icon: Sparkles,
-		translationPrefix: "features.youtubeSummary",
 	},
 	useCasesDeveloper: {
 		path: PATHS.useCasesDeveloper,

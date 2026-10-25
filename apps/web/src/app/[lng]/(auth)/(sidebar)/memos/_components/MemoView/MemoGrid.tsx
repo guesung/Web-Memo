@@ -7,47 +7,73 @@ import {
 import { DragBox } from "@src/components";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import {
+	reportMemoLoadStage,
+	type TMemoLoadOutcome,
+	type TMemoRoute,
+} from "@src/modules/observability/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import {
 	useDeleteMemosMutation,
 	useKeyboardBind,
 	useMemosUpsertMutation,
-	useSettingQuery,
 } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
-import type { GetMemoResponse, HighlightRow } from "@web-memo/shared/types";
-import { Loading, Skeleton, ToastAction, toast } from "@web-memo/ui";
+import type {
+	GetMemoResponse,
+	HighlightMemoLink,
+	HighlightRow,
+} from "@web-memo/shared/types";
+import { ToastAction, toast } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import MemoDialog from "../MemoDialog";
-import { useDragSelection, useMemoDialog, useMemoSelection } from "./_hooks";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	useDragSelection,
+	useMemoSelection,
+	useSuppressEscapeWhenMenuOpen,
+} from "./_hooks";
+import { useMemoSettings } from "./_hooks/useMemoSettings";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
+import MemoDomainEmptyState from "./MemoDomainEmptyState";
 import MemoEmptyState from "./MemoEmptyState";
 import MemoItem from "./MemoItem";
+import { MemoItemSkeleton } from "./MemoItemSkeleton";
 import MemoOptionHeader from "./MemoOptionHeader";
 import MemoSearchEmptyState from "./MemoSearchEmptyState";
+import { restoreHeldScrollPosition } from "./scrollPositionHold";
 
 const CONTAINER_ID = "memo-grid";
 
 interface MemoGridProps extends LanguageType {
 	memos: GetMemoResponse[];
 	highlightsByUrl: Map<string, HighlightRow[]>;
+	sourcesByMemo: Map<number, HighlightMemoLink>;
 	searchQuery: string;
+	domain: string | undefined;
 	hasNextPage: boolean;
 	isFetchingNextPage: boolean;
 	fetchNextPage: () => void;
+	loadOutcome: TMemoLoadOutcome;
+	route: TMemoRoute;
+	navigationId: number | null;
 }
 
 export default function MemoGrid({
 	lng,
 	memos,
 	highlightsByUrl,
+	sourcesByMemo,
 	searchQuery,
+	domain,
 	hasNextPage,
 	isFetchingNextPage,
 	fetchNextPage,
+	loadOutcome,
+	route,
+	navigationId,
 }: MemoGridProps) {
 	const { t } = useTranslation(lng);
 	const router = useRouter();
@@ -58,7 +84,8 @@ export default function MemoGrid({
 	const queryClient = useQueryClient();
 	const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
 	const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
-	const { showImpression, showActionItem } = useSettingQuery();
+	const { showImpression, showActionItem, truncateMemoContent } =
+		useMemoSettings();
 
 	const {
 		selectedMemoIds,
@@ -68,8 +95,6 @@ export default function MemoGrid({
 		setSelectedMemoIds,
 		clearSelection,
 	} = useMemoSelection();
-
-	const { dialogMemoId } = useMemoDialog();
 
 	const { rafRef } = useDragSelection({
 		containerId: CONTAINER_ID,
@@ -161,33 +186,7 @@ export default function MemoGrid({
 		[rafRef],
 	);
 
-	// 메뉴가 열려 있으면 Escape의 주인은 그 레이어다. Radix는 최상위 레이어에만 Escape를
-	// 주므로 DialogContent의 onEscapeKeyDown은 아예 불리지 않고, window 리스너인
-	// useKeyboardBind만 돌아 메모 상세까지 닫혀버린다.
-	//
-	// 판정은 눌린 순간에 해야 한다. window 버블 시점엔 Radix가 이미 메뉴를 닫아
-	// data-state가 closed이고, 포퍼 래퍼로 보면 툴팁·팝오버가 걸리는 데다 닫히는
-	// 애니메이션 동안 래퍼가 남아 직후의 Escape까지 삼킨다.
-	const wasMenuOpenOnEscapeRef = useRef(false);
-
-	useEffect(function trackMenuOpenOnEscape() {
-		const handleDocumentKeyDownCapture = (event: KeyboardEvent) => {
-			if (event.key !== "Escape") return;
-
-			wasMenuOpenOnEscapeRef.current = !!document.querySelector(
-				'[role="menu"][data-state="open"]',
-			);
-		};
-
-		document.addEventListener("keydown", handleDocumentKeyDownCapture, true);
-		return () => {
-			document.removeEventListener(
-				"keydown",
-				handleDocumentKeyDownCapture,
-				true,
-			);
-		};
-	}, []);
+	const { wasMenuOpenOnEscapeRef } = useSuppressEscapeWhenMenuOpen();
 
 	useKeyboardBind({
 		key: "Escape",
@@ -200,8 +199,32 @@ export default function MemoGrid({
 	useKeyboardBind({ key: "Delete", callback: handleDeleteKeyPress });
 	useKeyboardBind({ key: "Backspace", callback: handleDeleteKeyPress });
 
-	// 검색 결과가 없는 것과 메모가 하나도 없는 것은 다른 상황이다. 같은 화면을 보여주면
-	// 검색 중인 사용자에게 "첫 메모를 만들어보세요"가 뜬다.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: searchQuery가 바뀔 때만 재판정한다. memos까지 의존성에 넣으면 같은 검색어에서 목록이 갱신될 때마다 중복 집계된다.
+	useEffect(() => {
+		if (memos.length === 0 && searchQuery) {
+			analytics.trackEvent({
+				name: "search_no_result",
+				params: { has_domain_filter: domain !== undefined },
+			});
+		}
+	}, [searchQuery]);
+	useEffect(() => {
+		if (memos.length === 0) {
+			reportMemoLoadStage({
+				route,
+				navigationId,
+				stage: "content_ready",
+				outcome: loadOutcome,
+			});
+		}
+	}, [memos.length, loadOutcome, route, navigationId]);
+
+	// 필터·검색 결과가 없는 것과 메모가 하나도 없는 것은 다른 상황이다. 같은 화면을 보여주면
+	// 필터 중인 사용자에게 "첫 메모를 만들어보세요"가 뜬다. 도메인이 더 좁은 조건이라 먼저 본다.
+	if (memos.length === 0 && domain) {
+		return <MemoDomainEmptyState lng={lng} domain={domain} />;
+	}
+
 	if (memos.length === 0 && searchQuery) {
 		return <MemoSearchEmptyState lng={lng} searchQuery={searchQuery} />;
 	}
@@ -236,6 +259,15 @@ export default function MemoGrid({
 				align="center"
 				placeholder={<MemoItemSkeleton />}
 				onRequestAppend={handleRequestAppend}
+				onRenderComplete={() => {
+					restoreHeldScrollPosition();
+					reportMemoLoadStage({
+						route,
+						navigationId,
+						stage: "content_ready",
+						outcome: loadOutcome,
+					});
+				}}
 			>
 				{memos.map((memo, index) => (
 					<MemoItem
@@ -245,19 +277,17 @@ export default function MemoGrid({
 						index={index}
 						memo={memo}
 						highlights={highlightsByUrl.get(memo.url)}
+						source={sourcesByMemo.get(memo.id)}
 						isMemoSelected={checkMemoSelected(memo.id)}
 						selectMemoItem={handleSelectMemoItem}
 						isSelectingMode={isSelectingMode}
 						showImpression={showImpression}
 						showActionItem={showActionItem}
+						truncateMemoContent={truncateMemoContent}
 					/>
 				))}
 			</MasonryInfiniteGrid>
-			{dialogMemoId && (
-				<Suspense fallback={<Loading />}>
-					<MemoDialog lng={lng} memoId={dialogMemoId} />
-				</Suspense>
-			)}
+
 			<DeleteConfirmDialog
 				lng={lng}
 				open={isDeleteDialogOpen}
@@ -269,21 +299,15 @@ export default function MemoGrid({
 	);
 }
 
-function MemoItemSkeleton() {
-	return <Skeleton className="h-[300px] w-[300px]" />;
-}
-
-export function MemoGridSkeleton() {
+/** 그리드 최초 로딩에서 짧은 메모 카드들을 표시한다. */
+export const MemoGridSkeleton = () => {
 	return (
 		<div className="container max-w-full pt-4">
 			<div className="flex flex-wrap justify-center gap-4">
 				{Array.from({ length: 12 }).map((_, index) => (
-					<Skeleton
-						key={index.toString()}
-						className="h-[300px] w-[300px] rounded-lg"
-					/>
+					<MemoItemSkeleton key={index.toString()} />
 				))}
 			</div>
 		</div>
 	);
-}
+};

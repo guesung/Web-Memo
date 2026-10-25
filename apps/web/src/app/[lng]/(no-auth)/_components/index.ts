@@ -4,3 +4,4 @@ export {
 	type TLandingPageConfig,
 	type TLandingPageItem,
 } from "./LandingPageTemplate";
+export { default as TrackInstallClick } from "./TrackInstallClick";

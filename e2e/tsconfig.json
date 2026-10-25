@@ -2,7 +2,17 @@
 	"extends": "@web-memo/tsconfig/base",
 	"compilerOptions": {
 		"noEmit": true,
+		"target": "ES2017",
 		"types": ["node", "chrome"]
 	},
-	"include": ["tests", "playwright.config.ts"]
+	"include": [
+		"tests",
+		"probes",
+		"store-screenshots",
+		"playwright.config.ts",
+		"playwright.probe.config.ts",
+		"playwright.store.config.ts",
+		"globalSetup.ts",
+		"globalTeardown.ts"
+	]
 }

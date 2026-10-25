@@ -1,7 +1,7 @@
 {
 	"name": "@web-memo/chrome-extension",
 	"private": true,
-	"version": "1.10.18",
+	"version": "1.11.1",
 	"description": "chrome extension",
 	"scripts": {
 		"clean": "rimraf ../../dist",
@@ -17,6 +17,7 @@
 	"type": "module",
 	"dependencies": {
 		"@web-memo/shared": "workspace:*",
+		"@sentry/react": "^9.47.1",
 		"webextension-polyfill": "^0.12.0"
 	},
 	"devDependencies": {

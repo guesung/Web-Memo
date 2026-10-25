@@ -21,6 +21,8 @@ import { ArrowDown, ArrowUp, ArrowUpDown, MessageSquare } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
+import FeedbackContent from "./FeedbackContent";
+import FeedbackPageSizeSelect from "./FeedbackPageSizeSelect";
 import FeedbackPagination from "./FeedbackPagination";
 import FeedbackTableSkeleton from "./FeedbackTableSkeleton";
 
@@ -42,6 +44,7 @@ export default function FeedbackTable({ lng }: FeedbackTableProps) {
 
 	const searchQuery = searchParams.get("q") ?? "";
 	const currentPage = Number(searchParams.get("page") ?? "1");
+	const pageSize = Number(searchParams.get("pageSize") ?? FEEDBACK_PAGE_SIZE);
 	const highlightedIdParam = searchParams.get("id");
 	const highlightedId = highlightedIdParam ? Number(highlightedIdParam) : null;
 
@@ -53,6 +56,7 @@ export default function FeedbackTable({ lng }: FeedbackTableProps) {
 	const { feedbacks, totalCount, isLoading } = useFeedbacksQuery({
 		searchQuery: searchQuery || undefined,
 		page: currentPage,
+		pageSize,
 	});
 
 	const isHighlightedMissing =
@@ -74,7 +78,13 @@ export default function FeedbackTable({ lng }: FeedbackTableProps) {
 		);
 	};
 
-	const handlePageChange = (page: number) => {
+	const navigateToFeedbackListParams = ({
+		page,
+		pageSize: nextPageSize,
+	}: {
+		page: number;
+		pageSize: number;
+	}) => {
 		const nextSearchParams = new URLSearchParams();
 
 		if (searchQuery) {
@@ -83,9 +93,20 @@ export default function FeedbackTable({ lng }: FeedbackTableProps) {
 		if (page > 1) {
 			nextSearchParams.set("page", String(page));
 		}
+		if (nextPageSize !== FEEDBACK_PAGE_SIZE) {
+			nextSearchParams.set("pageSize", String(nextPageSize));
+		}
 
 		const queryString = nextSearchParams.toString();
 		router.replace(queryString ? `${pathname}?${queryString}` : pathname);
+	};
+
+	const handlePageChange = (page: number) => {
+		navigateToFeedbackListParams({ page, pageSize });
+	};
+
+	const handlePageSizeChange = (nextPageSize: number) => {
+		navigateToFeedbackListParams({ page: 1, pageSize: nextPageSize });
 	};
 
 	const handleSearchClearClick = () => {
@@ -136,14 +157,23 @@ export default function FeedbackTable({ lng }: FeedbackTableProps) {
 			<div className="text-center py-12 text-muted-foreground">
 				<MessageSquare className="mx-auto mb-3 h-8 w-8" />
 				<p>{t("admin.feedback.empty")}</p>
+				{/* 검색 결과 없음에는 붙이지 않는다. 검색어가 안 맞은 것과 수집 대상이 좁아진 것은 다른 이야기다. */}
+				<p className="mt-1 text-sm">{t("admin.feedback.empty_hint")}</p>
 			</div>
 		);
 	}
 
 	return (
 		<div className="space-y-4">
-			<div className="text-sm text-muted-foreground">
-				{t("admin.feedback.total", { count: totalCount })}
+			<div className="flex items-center justify-between">
+				<div className="text-sm text-muted-foreground">
+					{t("admin.feedback.total", { count: totalCount })}
+				</div>
+				<FeedbackPageSizeSelect
+					lng={lng}
+					pageSize={pageSize}
+					onPageSizeChange={handlePageSizeChange}
+				/>
 			</div>
 			<FeedbackRows
 				lng={lng}
@@ -157,7 +187,7 @@ export default function FeedbackTable({ lng }: FeedbackTableProps) {
 			<FeedbackPagination
 				lng={lng}
 				currentPage={currentPage}
-				totalPages={Math.ceil(totalCount / FEEDBACK_PAGE_SIZE)}
+				totalPages={Math.ceil(totalCount / pageSize)}
 				onPageChange={handlePageChange}
 			/>
 		</div>
@@ -244,7 +274,7 @@ function FeedbackRows({
 									{new Date(feedback.created_at).toLocaleString(locale)}
 								</TableCell>
 								<TableCell className="align-top">
-									<span className="line-clamp-2">{feedback.content}</span>
+									<FeedbackContent lng={lng} content={feedback.content} />
 								</TableCell>
 								<TableCell className="align-top">
 									{feedback.user_id ? (
@@ -266,9 +296,11 @@ function FeedbackRows({
 							<CollapsibleContent asChild>
 								<tr className="border-b bg-muted/50">
 									<td colSpan={3} className="px-4 py-3">
-										<p className="whitespace-pre-wrap text-sm">
-											{feedback.content}
-										</p>
+										<FeedbackContent
+											lng={lng}
+											content={feedback.content}
+											isExpanded
+										/>
 									</td>
 								</tr>
 							</CollapsibleContent>

@@ -14,7 +14,7 @@ import type { TLandingPageConfig } from "../../../_components";
  */
 export const NEWS_READING_PAGE: TLandingPageConfig = {
 	pageKey: "useCasesNewsReading",
-	screenshotNumber: 2,
+	screenshotNumber: 1,
 	benefits: [
 		{ key: "highlight", icon: Highlighter },
 		{ key: "aiSummary", icon: Sparkles },

@@ -5,6 +5,8 @@ import type {
 import type { HighlightRenderer } from "@web-memo/shared/modules/highlight";
 import type { HighlightRow } from "@web-memo/shared/types";
 import { normalizeUrl } from "@web-memo/shared/utils/url";
+import { reportContentUiError } from "../../utils/reportError";
+import { reportHighlightResponseFailure } from "./reportHighlightFailure";
 
 /** 클릭된 하이라이트와 편집 메뉴 상태. */
 export interface IFHighlightEditState {
@@ -71,10 +73,13 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 			return;
 		}
 		event.preventDefault();
+		open(row, event.clientX, event.clientY + 12);
+	};
+	const open = (row: HighlightRow, x: number, y: number) => {
 		state = {
 			row,
-			x: Math.max(8, Math.min(event.clientX, window.innerWidth - 260)),
-			y: Math.max(8, Math.min(event.clientY + 12, window.innerHeight - 150)),
+			x: Math.max(8, Math.min(x, window.innerWidth - 260)),
+			y: Math.max(8, Math.min(y, window.innerHeight - 150)),
 			isSaving: false,
 			message: "",
 		};
@@ -91,11 +96,12 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 			| {
 					action: "color";
 					color: NonNullable<IFEditHighlightPayload["color"]>;
-			  },
+			  }
+			| { action: "note"; note: string },
 	) => {
 		checkPage();
 		if (!state || state.isSaving || stopped) {
-			return;
+			return false;
 		}
 		const selected = state;
 		const requestGeneration = generation;
@@ -114,9 +120,14 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 				generation !== requestGeneration ||
 				requestUrl !== currentUrl
 			) {
-				return;
+				return false;
 			}
 			if (!response?.success) {
+				reportHighlightResponseFailure({
+					operation: "edit",
+					response,
+					tags: { action: action.action },
+				});
 				state = {
 					...selected,
 					isSaving: false,
@@ -126,7 +137,7 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 							: "highlight_save_failed",
 				};
 				options.onChange(state);
-				return;
+				return false;
 			}
 			if (action.action === "delete") {
 				options.renderer.remove(selected.row.id);
@@ -134,12 +145,28 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 				options.notesById.delete(selected.row.id);
 				close();
 			} else {
-				options.renderer.setColor(selected.row.id, action.color);
+				if (action.action === "color") {
+					options.renderer.setColor(selected.row.id, action.color);
+				} else if (response.highlight.note) {
+					options.notesById.set(selected.row.id, response.highlight.note);
+				} else {
+					options.notesById.delete(selected.row.id);
+				}
 				options.updateRow(response.highlight);
 				state = { ...selected, row: response.highlight, isSaving: false };
 				options.onChange(state);
 			}
-		} catch {
+
+			return true;
+		} catch (error) {
+			// background에 닿지 못한 실패라 background의 보고에 남지 않는다.
+			reportContentUiError({
+				error,
+				feature: "highlight",
+				operation: "edit",
+				stage: "request",
+				tags: { action: action.action },
+			});
 			checkPage();
 			if (!stopped && generation === requestGeneration) {
 				state = {
@@ -149,6 +176,8 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 				};
 				options.onChange(state);
 			}
+
+			return false;
 		}
 	};
 	document.addEventListener("click", handleDocumentClick);
@@ -157,6 +186,7 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 
 	return {
 		edit,
+		open,
 		close,
 		stop: () => {
 			stopped = true;

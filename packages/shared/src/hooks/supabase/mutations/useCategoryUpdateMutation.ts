@@ -9,6 +9,11 @@ export default function useCategoryUpdateMutation() {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	return useMutation({
+		meta: {
+			feature: "category",
+			operation: "update",
+			stage: "save",
+		},
 		mutationFn: new CategoryService(supabaseClient).updateCategory,
 		onSuccess: () => {
 			analytics.trackEvent({ name: "category_update" });

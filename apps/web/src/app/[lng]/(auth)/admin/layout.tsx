@@ -12,11 +12,9 @@ import { AdminSidebar } from "./_components";
 
 interface LayoutProps extends LanguageParams, PropsWithChildren {}
 
-export default async function AdminLayout({
-	children,
-	params: { lng },
-}: LayoutProps) {
-	const supabaseClient = getSupabaseClient();
+export default async function AdminLayout({ children, params }: LayoutProps) {
+	const { lng } = await params;
+	const supabaseClient = await getSupabaseClient();
 	const {
 		data: { user },
 	} = await supabaseClient.auth.getUser();

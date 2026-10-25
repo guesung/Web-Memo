@@ -4,7 +4,6 @@ import { type SharedValue, useSharedValue } from "react-native-reanimated";
 interface BrowserScrollContextValue {
 	tabBarTranslateY: SharedValue<number>;
 	headerTranslateY: SharedValue<number>;
-	isBrowserActive: SharedValue<number>;
 }
 
 const BrowserScrollContext = createContext<BrowserScrollContextValue | null>(
@@ -18,11 +17,10 @@ export function BrowserScrollProvider({
 }) {
 	const tabBarTranslateY = useSharedValue(0);
 	const headerTranslateY = useSharedValue(0);
-	const isBrowserActive = useSharedValue(0);
 
 	return (
 		<BrowserScrollContext.Provider
-			value={{ tabBarTranslateY, headerTranslateY, isBrowserActive }}
+			value={{ tabBarTranslateY, headerTranslateY }}
 		>
 			{children}
 		</BrowserScrollContext.Provider>

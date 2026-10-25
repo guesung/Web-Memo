@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ANALYTICS_EXCLUDED_USER_ID } from "../../constants";
 import type { TAnalyticsEvent } from "./type";
 
 /**
@@ -45,6 +46,9 @@ function stubChromeStorage({
 				get: vi.fn().mockResolvedValue({ sessionData: null }),
 				set: vi.fn(),
 			},
+		},
+		runtime: {
+			getManifest: vi.fn().mockReturnValue({ version: "1.2.3" }),
 		},
 	});
 }
@@ -163,6 +167,9 @@ describe("Analytics 환경별 동작", () => {
 					set: vi.fn(),
 				},
 			},
+			runtime: {
+				getManifest: vi.fn().mockReturnValue({ version: "1.2.3" }),
+			},
 		});
 
 		const analytics = await loadAnalytics({
@@ -187,6 +194,40 @@ describe("Analytics 환경별 동작", () => {
 		analytics.setUserId("user-1");
 
 		expect(set).toHaveBeenCalledWith({ analyticsUserId: "user-1" });
+		expect(gtag).not.toHaveBeenCalled();
+	});
+
+	it("웹에서 setUserId를 부르면 gtag 자동 이벤트에도 실리도록 set으로 user_id를 정한다", async () => {
+		window.gtag = gtag;
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: false,
+		});
+
+		analytics.setUserId("user-1");
+
+		expect(gtag).toHaveBeenCalledWith("set", { user_id: "user-1" });
+	});
+
+	it("웹에서 로그아웃하면 빈 문자열이 아닌 null로 user_id를 지운다", async () => {
+		window.gtag = gtag;
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: false,
+		});
+
+		analytics.setUserId(undefined);
+
+		expect(gtag).toHaveBeenCalledWith("set", { user_id: null });
+	});
+
+	it("웹에서 gtag가 아직 없으면 setUserId가 던지지 않는다", async () => {
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: false,
+		});
+
+		expect(() => analytics.setUserId("user-1")).not.toThrow();
 	});
 
 	it("setUserId가 불린 적 없어도 storage에 남은 user_id를 실어 보낸다", async () => {
@@ -208,6 +249,130 @@ describe("Analytics 환경별 동작", () => {
 		expect(JSON.parse(request.body).user_id).toBe("user-1");
 	});
 
+	it("storage에 운영자 user_id만 있으면 이벤트를 보내지 않는다", async () => {
+		stubChromeStorage({
+			get: vi.fn().mockResolvedValue({
+				analyticsUserId: ANALYTICS_EXCLUDED_USER_ID,
+			}),
+		});
+
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+
+		await analytics.trackEvent(EVENT);
+
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it("storage 조회 중 로그인하면 최신 user_id를 사용한다", async () => {
+		let resolveStoredUserId:
+			| ((value: { analyticsUserId: string }) => void)
+			| undefined;
+		const storedUserIdPromise = new Promise<{ analyticsUserId: string }>(
+			(resolve) => {
+				resolveStoredUserId = resolve;
+			},
+		);
+		stubChromeStorage({
+			get: vi
+				.fn()
+				.mockImplementationOnce(() => storedUserIdPromise)
+				.mockResolvedValue({ clientId: "c" }),
+		});
+
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+		const trackEventPromise = analytics.trackEvent(EVENT);
+		analytics.setUserId("latest-user");
+		resolveStoredUserId?.({ analyticsUserId: "stored-user" });
+		await trackEventPromise;
+
+		const [, request] = fetchMock.mock.calls[0];
+		expect(JSON.parse(request.body).user_id).toBe("latest-user");
+	});
+
+	it("storage 조회 중 로그아웃하면 저장된 user_id를 복구하지 않는다", async () => {
+		let resolveStoredUserId:
+			| ((value: { analyticsUserId: string }) => void)
+			| undefined;
+		const storedUserIdPromise = new Promise<{ analyticsUserId: string }>(
+			(resolve) => {
+				resolveStoredUserId = resolve;
+			},
+		);
+		stubChromeStorage({
+			get: vi
+				.fn()
+				.mockImplementationOnce(() => storedUserIdPromise)
+				.mockResolvedValue({ clientId: "c" }),
+		});
+
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+		const trackEventPromise = analytics.trackEvent(EVENT);
+		analytics.setUserId(undefined);
+		resolveStoredUserId?.({ analyticsUserId: "stored-user" });
+		await trackEventPromise;
+
+		const [, request] = fetchMock.mock.calls[0];
+		expect(JSON.parse(request.body).user_id).toBeUndefined();
+	});
+
+	it("storage 조회가 실패해도 조회 중 설정된 운영자 user_id를 우선한다", async () => {
+		let rejectStoredUserId: ((reason?: unknown) => void) | undefined;
+		const storedUserIdPromise = new Promise<never>((_resolve, reject) => {
+			rejectStoredUserId = reject;
+		});
+		stubChromeStorage({
+			get: vi.fn().mockImplementationOnce(() => storedUserIdPromise),
+		});
+
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+		const trackEventPromise = analytics.trackEvent(EVENT);
+		analytics.setUserId(ANALYTICS_EXCLUDED_USER_ID);
+		rejectStoredUserId?.(new Error("storage read failed"));
+		await trackEventPromise;
+
+		expect(fetchMock).not.toHaveBeenCalled();
+		expect(console.warn).not.toHaveBeenCalledWith(
+			expect.stringContaining("storage에서 읽지 못했습니다"),
+		);
+	});
+
+	it("storage 조회가 실패해도 조회 중 설정된 최신 user_id로 전송한다", async () => {
+		let rejectStoredUserId: ((reason?: unknown) => void) | undefined;
+		const storedUserIdPromise = new Promise<never>((_resolve, reject) => {
+			rejectStoredUserId = reject;
+		});
+		stubChromeStorage({
+			get: vi
+				.fn()
+				.mockImplementationOnce(() => storedUserIdPromise)
+				.mockResolvedValue({ clientId: "c" }),
+		});
+
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+		const trackEventPromise = analytics.trackEvent(EVENT);
+		analytics.setUserId("latest-user");
+		rejectStoredUserId?.(new Error("storage read failed"));
+		await trackEventPromise;
+
+		const [, request] = fetchMock.mock.calls[0];
+		expect(JSON.parse(request.body).user_id).toBe("latest-user");
+	});
+
 	it("로그아웃하면 storage에 남긴 user_id를 지운다", async () => {
 		const remove = vi.fn();
 		stubChromeStorage({ remove });
@@ -219,6 +384,66 @@ describe("Analytics 환경별 동작", () => {
 		analytics.setUserId(undefined);
 
 		expect(remove).toHaveBeenCalledWith("analyticsUserId");
+	});
+
+	it("확장에서는 이벤트에 매니페스트 버전을 extension_version으로 싣는다", async () => {
+		stubChromeStorage();
+
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+
+		await analytics.trackEvent(EVENT);
+
+		const [, request] = fetchMock.mock.calls[0];
+		expect(JSON.parse(request.body).events[0].params.extension_version).toBe(
+			"1.2.3",
+		);
+	});
+
+	it("요약 패널 열기와 접기에 참여 이벤트와 확장 메타데이터를 싣는다", async () => {
+		stubChromeStorage();
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+
+		await analytics.trackEvent({
+			name: "summary_panel_toggle",
+			params: { action: "open" },
+		});
+		await analytics.trackEvent({
+			name: "summary_panel_toggle",
+			params: { action: "close" },
+		});
+
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+		for (const [index, action] of ["open", "close"].entries()) {
+			const [, request] = fetchMock.mock.calls[index];
+			const event = JSON.parse(request.body).events[0];
+			expect(event.name).toBe("summary_panel_toggle");
+			expect(event.params).toMatchObject({
+				action,
+				event_category: "engagement",
+				engagement_time_msec: 100,
+				build_env: "production",
+				extension_version: "1.2.3",
+			});
+		}
+	});
+
+	it("웹에서는 이벤트에 extension_version 키 자체가 없다", async () => {
+		window.gtag = gtag;
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: false,
+		});
+
+		await analytics.trackEvent(EVENT);
+
+		const [, , parameters] = gtag.mock.calls[0];
+		expect(parameters).not.toHaveProperty("extension_version");
 	});
 
 	it("웹에서는 user_id를 storage에 남기지 않는다", async () => {

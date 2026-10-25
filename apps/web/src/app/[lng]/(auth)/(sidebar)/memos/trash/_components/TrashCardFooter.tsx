@@ -25,7 +25,7 @@ export default function TrashCardFooter({
 	const { t } = useTranslation(lng);
 
 	return (
-		<CardFooter className="flex items-center justify-between gap-2 px-5 py-3 border-t border-border">
+		<CardFooter className="flex items-center justify-between gap-2 px-4 py-2 border-t border-border">
 			<Button
 				variant="outline"
 				size="sm"

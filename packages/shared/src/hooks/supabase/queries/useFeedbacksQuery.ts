@@ -13,7 +13,11 @@ export default function useFeedbacksQuery(params: IFGetFeedbacksParams = {}) {
 
 	const query = useQuery({
 		queryFn: () => new AdminService(supabaseClient).getFeedbacks(params),
-		queryKey: QUERY_KEY.feedbacks(params.searchQuery, params.page),
+		queryKey: QUERY_KEY.feedbacks(
+			params.searchQuery,
+			params.page,
+			params.pageSize,
+		),
 		enabled: !!supabaseClient,
 	});
 

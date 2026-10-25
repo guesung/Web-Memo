@@ -9,8 +9,9 @@ import { MemoService } from "@web-memo/shared/utils";
 
 import { Trash } from "./_components";
 
-export default async function Page({ params: { lng } }: LanguageParams) {
-	const supabaseClient = getSupabaseClient();
+export default async function Page({ params }: LanguageParams) {
+	const { lng } = await params;
+	const supabaseClient = await getSupabaseClient();
 
 	return (
 		<div className="flex flex-col px-4 md:px-6 py-4">

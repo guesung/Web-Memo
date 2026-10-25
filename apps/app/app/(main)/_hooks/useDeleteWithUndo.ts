@@ -1,28 +1,26 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import {
-	useLocalMemoDelete,
-	useLocalMemoUpsert,
-} from "@/lib/hooks/useLocalMemos";
-import {
-	useDeleteMemoMutation,
-	useMemoUpsertMutation,
-} from "@/lib/hooks/useMemoMutation";
+import { useLocalMemoDelete } from "@/lib/hooks/useLocalMemos";
+import { useDeleteMemoMutation } from "@/lib/hooks/useMemoMutation";
+import { restoreMemo } from "@/lib/storage/localMemo";
+import { memoService } from "@/lib/supabase/client";
 import type { MemoItem } from "../_components/MemoCard";
 
+/** 삭제 직후 ID로 같은 메모를 복구한다. */
 export function useDeleteWithUndo() {
 	const { isLoggedIn } = useAuth();
+	const queryClient = useQueryClient();
 	const deleteLocal = useLocalMemoDelete();
 	const deleteSupabase = useDeleteMemoMutation();
-	const upsertLocal = useLocalMemoUpsert();
-	const upsertSupabase = useMemoUpsertMutation();
-
 	const [deletedMemo, setDeletedMemo] = useState<MemoItem | null>(null);
 	const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const handleDelete = useCallback(
 		(item: MemoItem) => {
-			if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
+			if (deleteTimerRef.current) {
+				clearTimeout(deleteTimerRef.current);
+			}
 			setDeletedMemo(item);
 			if (isLoggedIn) {
 				deleteSupabase.mutate(item.id as number);
@@ -34,34 +32,27 @@ export function useDeleteWithUndo() {
 		[isLoggedIn, deleteSupabase, deleteLocal],
 	);
 
-	const handleUndo = useCallback(() => {
-		if (!deletedMemo) return;
-		if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
-		if (isLoggedIn) {
-			const m = deletedMemo as import("@web-memo/shared/types").GetMemoResponse;
-			upsertSupabase.mutate({
-				url: m.url,
-				title: m.title,
-				memo: m.memo ?? "",
-				impression: m.impression ?? undefined,
-				actionItem: m.actionItem ?? undefined,
-				favIconUrl: m.favIconUrl ?? undefined,
-				isWish: m.isWish ?? false,
-			});
-		} else {
-			const m = deletedMemo as import("@/lib/storage/localMemo").LocalMemo;
-			upsertLocal.mutate({
-				url: m.url,
-				title: m.title,
-				memo: m.memo,
-				impression: m.impression,
-				actionItem: m.actionItem,
-				favIconUrl: m.favIconUrl,
-				isWish: m.isWish,
-			});
+	const handleUndo = useCallback(async () => {
+		if (!deletedMemo) {
+			return;
 		}
+		if (deleteTimerRef.current) {
+			clearTimeout(deleteTimerRef.current);
+		}
+		if (isLoggedIn) {
+			const result = await memoService.restoreMemos([deletedMemo.id as number]);
+			if (result.error) {
+				throw result.error;
+			}
+		} else {
+			await restoreMemo(deletedMemo.id as string);
+		}
+		queryClient.invalidateQueries({ queryKey: ["memos"] });
+		queryClient.invalidateQueries({ queryKey: ["memo"] });
+		queryClient.invalidateQueries({ queryKey: ["localMemos"] });
+		queryClient.invalidateQueries({ queryKey: ["localMemo"] });
 		setDeletedMemo(null);
-	}, [deletedMemo, isLoggedIn, upsertSupabase, upsertLocal]);
+	}, [deletedMemo, isLoggedIn, queryClient]);
 
 	return { deletedMemo, handleDelete, handleUndo };
 }

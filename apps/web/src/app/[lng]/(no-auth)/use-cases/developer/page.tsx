@@ -5,11 +5,15 @@ import { DEVELOPER_PAGE } from "./_constants";
 import { metadataEnglish, metadataKorean } from "./_utils";
 
 export async function generateMetadata({ params }: LanguageParams) {
-	return params.lng === "ko" ? metadataKorean : metadataEnglish;
+	const { lng } = await params;
+
+	return lng === "ko" ? metadataKorean : metadataEnglish;
 }
 
 interface DeveloperPageProps extends LanguageParams {}
 
-export default function DeveloperPage({ params: { lng } }: DeveloperPageProps) {
+export default async function DeveloperPage({ params }: DeveloperPageProps) {
+	const { lng } = await params;
+
 	return <LandingPageTemplate lng={lng} config={DEVELOPER_PAGE} />;
 }

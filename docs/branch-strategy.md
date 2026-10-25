@@ -88,13 +88,13 @@ git checkout feat/memo-search   # 작업 브랜치로 복귀
    `package.json`의 버전을 올린 뒤, 커밋하고 `v*` 태그를 푸시합니다. 이어서
    `master`로 PR을 열어 머지합니다.
    - `v*` 태그 푸시는 GitHub Release를 생성합니다
-     (`.github/workflows/github-release.yml`).
+     (`.github/workflows/release-github.yml`).
 2. **Slack에서 배포합니다.** `master` 빌드가 끝나면 스토어 현황과 배포 버튼이
    담긴 메시지가 Slack에 옵니다. 원하는 대상 버튼을 누르면 그 커밋이 배포되고,
    **다른 버전…**을 누르면 대상과 리비전을 골라 배포합니다. 전체 흐름과 설정은
    [release-flow.md](release-flow.md)를 참고하세요.
    - `app` — iOS 빌드 + TestFlight 제출
-   - `extension` — 빌드 + Chrome 웹 스토어 업로드(게시는 수동)
+   - `extension` — 빌드 + Chrome 웹 스토어 업로드(심사를 통과하면 바로 게시)
    - `web` — Vercel 프로덕션 배포
 
    Slack이 막혔다면 Actions → **Release** → *Run workflow*로 같은 일을 할 수
@@ -109,19 +109,16 @@ git checkout feat/memo-search   # 작업 브랜치로 복귀
 | Slack 배포 버튼        | 체크한 대상의 프로덕션 배포 (Release 워크플로 실행) |
 | Actions → **Release**  | 체크한 대상의 프로덕션 배포                         |
 | `v*` 태그 푸시         | GitHub Release 생성                                 |
-| 매월 1일 (+수동)       | knip으로 미사용 파일을 찾아 정리 PR 자동 생성 — 머지는 수동 |
+| 매주 토요일 (+수동)     | knip으로 미사용 파일을 찾아 정리 PR 자동 생성 — 머지는 수동 |
+| 매주 토요일 (+수동)     | 설계·구조·퀄리티 관점의 리팩토링 후보를 점검해 노션 카드와 Slack으로 알림 |
 
 ### `develop` 리셋 (릴리스 후)
 
-```bash
-git checkout master
-git pull origin master
-git branch -f develop master
-git push --force-with-lease origin develop
-```
-
-`develop`에 쌓인 모든 테스트 머지가 버려집니다. 의도된 동작입니다 — `develop`에만
-존재하는 작업은 결코 있어서는 안 됩니다.
+릴리스가 끝난 뒤 명시적으로 `/web-memo:reset-develop`을 실행합니다. 이 스킬은 원격
+`master`와 `develop`을 새로 조회하고, 버려질 커밋을 보고한 뒤 백업 ref를 남깁니다.
+원격 `develop`이 확인한 SHA에서 바뀌지 않았을 때만 `master` 커밋으로 강제 푸시하고
+결과를 재조회합니다. 다른 워크트리에서 로컬 `develop`을 사용 중이면 해당 브랜치는
+옮기지 않습니다. `develop`에만 존재하는 작업은 `master` PR로 보존해야 합니다.
 
 ### 작업 브랜치 최신화
 

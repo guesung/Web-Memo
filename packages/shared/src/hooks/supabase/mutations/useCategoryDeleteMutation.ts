@@ -9,6 +9,11 @@ export default function useCategoryDeleteMutation() {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	return useMutation({
+		meta: {
+			feature: "category",
+			operation: "delete",
+			stage: "save",
+		},
 		mutationFn: new CategoryService(supabaseClient).deleteCategory,
 		onSuccess: () => {
 			analytics.trackEvent({ name: "category_delete" });

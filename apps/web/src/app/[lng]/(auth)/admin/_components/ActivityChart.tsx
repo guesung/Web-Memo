@@ -18,11 +18,17 @@ import {
 	YAxis,
 } from "@web-memo/ui";
 
-interface ActivityChartProps extends LanguageType {}
+interface IFActivityChartProps extends LanguageType {
+	/** 관리자 본인의 데이터도 셀지 여부 */
+	includeAdmin: boolean;
+}
 
-export default function ActivityChart({ lng }: ActivityChartProps) {
+export default function ActivityChart({
+	lng,
+	includeAdmin,
+}: IFActivityChartProps) {
 	const { t } = useTranslation(lng);
-	const { stats } = useAdminStatsQuery();
+	const { stats } = useAdminStatsQuery({ includeAdmin });
 
 	const activityData = [
 		{

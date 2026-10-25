@@ -10,6 +10,11 @@ export function useHighlightNoteMutation() {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	return useMutation<void, Error, { id: number; note: string }>({
+		meta: {
+			feature: "highlight",
+			operation: "update-note",
+			stage: "save",
+		},
 		mutationFn: async ({ id, note }) => {
 			const { error } = await new HighlightService(
 				supabaseClient,

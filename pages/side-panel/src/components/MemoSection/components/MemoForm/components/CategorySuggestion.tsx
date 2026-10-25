@@ -1,124 +1,95 @@
+import type { TCategorySuggestionTrigger } from "@web-memo/shared/modules/analytics";
+import { isMac } from "@web-memo/shared/utils";
 import { I18n } from "@web-memo/shared/utils/extension";
-import { cn } from "@web-memo/ui";
 import { CheckIcon, LightbulbIcon, Loader2Icon, XIcon } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { type KeyboardEvent, useEffect } from "react";
+import type { IFCategorySuggestion } from "../hooks/requestCategorySuggestion";
+import { isAcceptShortcut } from "./isAcceptShortcut";
 
-export function CategorySuggestion({
-	isLoading,
-	suggestion,
-	onAccept,
-	onDismiss,
-}: CategorySuggestionProps) {
-	const containerRef = useRef<HTMLDivElement>(null);
+/** 메모 하단에 Jev가 선택한 기존 카테고리를 제안합니다. */
+export const CategorySuggestion = (props: IFCategorySuggestionProps) => {
+	const labelText = I18n.get("category_suggestion_existing");
+	const isMacOS = isMac();
+	const shortcutLabel = isMacOS ? "⌘↵" : "Ctrl↵";
+	const acceptLabel = `${I18n.get("category_suggestion_accept")} (${isMacOS ? "⌘+Enter" : "Ctrl+Enter"})`;
+	const { isAccepting, isShortcutDisabled, onAccept } = props;
 
-	// Handle keyboard events
+	// 칩이 보이는 동안에는 메모·제목 입력에 포커스가 있어도 수락할 수 있어야 해서 window에서 받는다.
 	useEffect(() => {
-		function handleKeyDown(event: KeyboardEvent) {
-			if (!suggestion) return;
+		if (isAccepting || isShortcutDisabled) return;
 
-			if (event.key === "Escape") {
-				onDismiss();
-			} else if (
-				event.key === "Enter" &&
-				event.target === containerRef.current
-			) {
-				onAccept();
-			}
+		const handleWindowKeyDown = (event: globalThis.KeyboardEvent) => {
+			if (!isAcceptShortcut(event, isMacOS)) return;
+			event.preventDefault();
+			onAccept("shortcut");
+		};
+		window.addEventListener("keydown", handleWindowKeyDown);
+		return () => window.removeEventListener("keydown", handleWindowKeyDown);
+	}, [isAccepting, isShortcutDisabled, isMacOS, onAccept]);
+
+	const handleSuggestionKeyDown = (event: KeyboardEvent<HTMLOutputElement>) => {
+		if (event.key === "Escape" && !props.isAccepting) {
+			event.stopPropagation();
+			props.onDismiss();
 		}
-
-		document.addEventListener("keydown", handleKeyDown);
-		return () => document.removeEventListener("keydown", handleKeyDown);
-	}, [suggestion, onAccept, onDismiss]);
-
-	// Loading state - subtle indicator
-	if (isLoading) {
-		return (
-			<output className="flex items-center gap-1 text-muted-foreground">
-				<Loader2Icon className="h-3 w-3 animate-spin" aria-hidden="true" />
-				<span className="text-xs">{I18n.get("category_suggesting")}</span>
-			</output>
-		);
-	}
-
-	// No suggestion
-	if (!suggestion) {
-		return null;
-	}
-
-	const isNewCategory = !suggestion.isExisting;
-	const labelText = isNewCategory
-		? I18n.get("category_suggestion_new")
-		: I18n.get("category_suggestion_existing");
+	};
 
 	return (
-		<div
-			ref={containerRef}
-			role="alert"
-			aria-live="polite"
-			aria-label={`${labelText}: ${suggestion.categoryName}`}
-			className={cn(
-				"flex items-center gap-2 rounded-md border bg-background/95 px-2 py-1 shadow-sm",
-				"animate-in fade-in slide-in-from-bottom-1 duration-200",
-			)}
+		<output
+			aria-label={`${labelText} ${props.suggestion.categoryName}`}
+			data-testid="category-suggestion"
+			className="flex min-w-0 items-center gap-1 rounded-md border bg-background p-1 text-xs"
+			onKeyDown={handleSuggestionKeyDown}
 		>
-			<LightbulbIcon className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
-
-			<div className="flex items-center gap-1 text-xs min-w-0">
-				<span className="text-muted-foreground flex-shrink-0">
-					{isNewCategory
-						? I18n.get("category_suggestion_new")
-						: I18n.get("category_suggestion_existing")}
-				</span>
-				<span
-					className="font-medium truncate max-w-[120px]"
-					title={suggestion.categoryName}
-				>
-					{suggestion.categoryName}
-				</span>
-			</div>
-
-			<div className="flex items-center gap-0.5 flex-shrink-0">
-				<button
-					type="button"
-					onClick={onAccept}
-					className={cn(
-						"rounded p-0.5 transition-colors",
-						"hover:bg-green-500/15 hover:text-green-700 dark:hover:text-green-400",
-						"focus:ring-1 focus:ring-green-500 focus:outline-none",
-					)}
-					aria-label={I18n.get("category_suggestion_accept")}
-					title={I18n.get("category_suggestion_accept")}
-				>
-					<CheckIcon className="h-3.5 w-3.5" />
-				</button>
-				<button
-					type="button"
-					onClick={onDismiss}
-					className={cn(
-						"rounded p-0.5 transition-colors",
-						"hover:bg-destructive/15 hover:text-destructive",
-						"focus:ring-destructive focus:ring-1 focus:outline-none",
-					)}
-					aria-label={I18n.get("category_suggestion_dismiss")}
-					title={I18n.get("category_suggestion_dismiss")}
-				>
-					<XIcon className="h-3.5 w-3.5" />
-				</button>
-			</div>
-		</div>
+			<LightbulbIcon
+				className="size-3.5 shrink-0 text-muted-foreground"
+				aria-hidden="true"
+			/>
+			<span className="shrink-0 text-muted-foreground">{labelText}</span>
+			<span
+				className="max-w-32 truncate font-medium"
+				title={props.suggestion.categoryName}
+			>
+				{props.suggestion.categoryName}
+			</span>
+			<button
+				type="button"
+				data-testid="category-suggestion-accept"
+				disabled={props.isAccepting}
+				onClick={() => props.onAccept("click")}
+				aria-label={acceptLabel}
+				title={acceptLabel}
+				className="flex shrink-0 items-center gap-1 rounded p-1 hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
+			>
+				{props.isAccepting ? (
+					<Loader2Icon className="size-3.5 animate-spin" aria-hidden="true" />
+				) : (
+					<CheckIcon className="size-3.5" aria-hidden="true" />
+				)}
+				{/* 버튼 이름은 aria-label이 정하므로 kbd는 스크린 리더에 따로 읽히지 않는다. */}
+				<kbd className="rounded border bg-muted px-1 font-mono text-[10px] text-muted-foreground">
+					{shortcutLabel}
+				</kbd>
+			</button>
+			<button
+				type="button"
+				disabled={props.isAccepting}
+				onClick={props.onDismiss}
+				aria-label={I18n.get("category_suggestion_dismiss")}
+				className="shrink-0 rounded p-1 hover:bg-accent hover:text-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
+			>
+				<XIcon className="size-3.5" aria-hidden="true" />
+			</button>
+		</output>
 	);
-}
+};
 
-interface CategorySuggestionData {
-	categoryName: string;
-	isExisting: boolean;
-	existingCategoryId: number | null;
-	confidence: number;
-}
-
-interface CategorySuggestionProps {
-	isLoading: boolean;
-	suggestion: CategorySuggestionData | null;
-	onAccept: () => void;
+/** 카테고리 제안 칩의 입력입니다. */
+interface IFCategorySuggestionProps {
+	suggestion: IFCategorySuggestion;
+	isAccepting: boolean;
+	/** # 카테고리 팝업처럼 Enter를 다른 곳에서 쓰는 동안 단축키를 끈다. */
+	isShortcutDisabled: boolean;
+	onAccept: (trigger: TCategorySuggestionTrigger) => void;
 	onDismiss: () => void;
 }

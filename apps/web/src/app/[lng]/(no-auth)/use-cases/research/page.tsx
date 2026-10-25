@@ -5,11 +5,15 @@ import { RESEARCH_PAGE } from "./_constants";
 import { metadataEnglish, metadataKorean } from "./_utils";
 
 export async function generateMetadata({ params }: LanguageParams) {
-	return params.lng === "ko" ? metadataKorean : metadataEnglish;
+	const { lng } = await params;
+
+	return lng === "ko" ? metadataKorean : metadataEnglish;
 }
 
 interface ResearchPageProps extends LanguageParams {}
 
-export default function ResearchPage({ params: { lng } }: ResearchPageProps) {
+export default async function ResearchPage({ params }: ResearchPageProps) {
+	const { lng } = await params;
+
 	return <LandingPageTemplate lng={lng} config={RESEARCH_PAGE} />;
 }

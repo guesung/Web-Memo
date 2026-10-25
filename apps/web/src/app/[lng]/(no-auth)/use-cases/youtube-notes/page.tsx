@@ -5,13 +5,17 @@ import { YOUTUBE_NOTES_PAGE } from "./_constants";
 import { metadataEnglish, metadataKorean } from "./_utils";
 
 export async function generateMetadata({ params }: LanguageParams) {
-	return params.lng === "ko" ? metadataKorean : metadataEnglish;
+	const { lng } = await params;
+
+	return lng === "ko" ? metadataKorean : metadataEnglish;
 }
 
 interface YoutubeNotesPageProps extends LanguageParams {}
 
-export default function YoutubeNotesPage({
-	params: { lng },
+export default async function YoutubeNotesPage({
+	params,
 }: YoutubeNotesPageProps) {
+	const { lng } = await params;
+
 	return <LandingPageTemplate lng={lng} config={YOUTUBE_NOTES_PAGE} />;
 }

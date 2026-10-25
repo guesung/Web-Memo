@@ -15,6 +15,11 @@ export default function useDeleteMemosPermanentlyMutation() {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	return useMutation<MemoSupabaseResponse, Error, number[]>({
+		meta: {
+			feature: "memo",
+			operation: "delete-permanently",
+			stage: "save",
+		},
 		mutationFn: new MemoService(supabaseClient).deleteMemosPermanently,
 		onSuccess: (_, idList) => {
 			analytics.trackEvent({

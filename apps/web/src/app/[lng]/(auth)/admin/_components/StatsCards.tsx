@@ -6,11 +6,14 @@ import { useAdminStatsQuery } from "@web-memo/shared/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@web-memo/ui";
 import { Calendar, FileText, TrendingUp, Users } from "lucide-react";
 
-interface StatsCardsProps extends LanguageType {}
+interface IFStatsCardsProps extends LanguageType {
+	/** 관리자 본인의 데이터도 셀지 여부 */
+	includeAdmin: boolean;
+}
 
-export default function StatsCards({ lng }: StatsCardsProps) {
+export default function StatsCards({ lng, includeAdmin }: IFStatsCardsProps) {
 	const { t } = useTranslation(lng);
-	const { stats } = useAdminStatsQuery();
+	const { stats } = useAdminStatsQuery({ includeAdmin });
 
 	const cards = [
 		{

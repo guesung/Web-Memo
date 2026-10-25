@@ -6,25 +6,33 @@ import { useActiveUsersStatsQuery } from "@web-memo/shared/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@web-memo/ui";
 import { Activity, CalendarDays, CalendarRange } from "lucide-react";
 
-export default function ActiveUsersCard({ lng }: LanguageType) {
+interface IFActiveUsersCardProps extends LanguageType {
+	/** 관리자 본인의 데이터도 셀지 여부 */
+	includeAdmin: boolean;
+}
+
+export default function ActiveUsersCard({
+	lng,
+	includeAdmin,
+}: IFActiveUsersCardProps) {
 	const { t } = useTranslation(lng);
-	const { stats } = useActiveUsersStatsQuery();
+	const { stats } = useActiveUsersStatsQuery({ includeAdmin });
 
 	const cards = [
 		{
-			titleKey: "admin.activeUsers.daily",
+			titleKey: "admin.memoActivityUsers.daily",
 			value: stats?.dailyActiveUsers ?? 0,
 			icon: Activity,
 			color: "text-rose-500",
 		},
 		{
-			titleKey: "admin.activeUsers.weekly",
+			titleKey: "admin.memoActivityUsers.weekly",
 			value: stats?.weeklyActiveUsers ?? 0,
 			icon: CalendarDays,
 			color: "text-cyan-500",
 		},
 		{
-			titleKey: "admin.activeUsers.monthly",
+			titleKey: "admin.memoActivityUsers.monthly",
 			value: stats?.monthlyActiveUsers ?? 0,
 			icon: CalendarRange,
 			color: "text-indigo-500",
@@ -33,9 +41,12 @@ export default function ActiveUsersCard({ lng }: LanguageType) {
 
 	return (
 		<section>
-			<h2 className="text-lg font-semibold mb-4">
-				{t("admin.activeUsers.title")}
+			<h2 className="text-lg font-semibold">
+				{t("admin.memoActivityUsers.title")}
 			</h2>
+			<p className="mb-4 mt-1 text-sm text-muted-foreground">
+				{t("admin.memoActivityUsers.description")}
+			</p>
 			<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 				{cards.map((card) => (
 					<Card key={card.titleKey}>

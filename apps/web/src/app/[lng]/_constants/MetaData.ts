@@ -19,9 +19,9 @@ export const metadataCommon: Metadata = {
 		icon: "/favicon.ico",
 	},
 	verification: {
-		google: "e92NNntqJ--8e3A0jAc-YFB3QwHg46AQQ4eplMUvqtQ",
+		google: "vPlV59W1xMxt-XN4Qf4i1zmIW1pD_gVOIS595iCn5_w",
 		other: {
-			"naver-site-verification": "7140428f3bcb61efc36b5e1cfb62305c2e57e181",
+			"naver-site-verification": "d78c677961160b3054652639e8f5baff2fdb6793",
 		},
 	},
 };

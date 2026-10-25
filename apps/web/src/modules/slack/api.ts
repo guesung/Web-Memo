@@ -101,7 +101,7 @@ export const openSlackModal = async ({
  * 이미 열려 있는 모달의 내용을 교체합니다.
  *
  * @description trigger_id 3초 제한 때문에 모달은 외부 호출 없이 먼저 띄우고,
- * 느린 데이터(GitHub 태그·커밋 목록)는 이걸로 나중에 채웁니다.
+ * 느린 데이터(GitHub 커밋 목록)는 이걸로 나중에 채웁니다.
  * 실패해도 모달 자체는 이미 떠 있으므로 호출부가 삼켜도 됩니다.
  */
 export const updateSlackModal = async ({
@@ -112,6 +112,23 @@ export const updateSlackModal = async ({
 	view: Record<string, unknown>;
 }): Promise<void> => {
 	await callSlackApi("views.update", { view_id: viewId, view });
+};
+
+/**
+ * 채널에 새 메시지를 보냅니다.
+ *
+ * @description response_url과 달리 특정 메시지에 대한 답이 아니라 독립된 알림을
+ * 보낼 때 씁니다(예: Sentry 웹훅 릴레이). 대상 채널에 이 앱의 봇이 초대돼 있어야
+ * 합니다.
+ */
+export const postSlackMessage = async ({
+	channel,
+	text,
+}: {
+	channel: string;
+	text: string;
+}): Promise<void> => {
+	await callSlackApi("chat.postMessage", { channel, text });
 };
 
 /**

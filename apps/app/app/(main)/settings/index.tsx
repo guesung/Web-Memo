@@ -2,9 +2,11 @@ import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import {
 	ChevronRight,
+	ExternalLink,
 	LogIn,
 	LogOut,
 	MessageCircle,
+	Monitor,
 	Moon,
 	Smartphone,
 	Sun,
@@ -21,13 +23,17 @@ import {
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { WEB_API_ORIGIN } from "@/app/(main)/browser/_constants/webApi";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useTheme } from "@/lib/context/ThemeContext";
 import {
 	useSettingQuery,
 	useSettingUpsertMutation,
 } from "@/lib/hooks/useSetting";
+import { useTabBarHideOnScroll } from "@/lib/hooks/useTabBarHideOnScroll";
+import { removePushToken } from "@/lib/notifications/registerPushToken";
 import type { TThemePreference } from "@/lib/storage/themePreference";
+import { NotificationSection } from "./_components/NotificationSection";
 
 /** 설정 화면에 노출할 테마 선택 항목 */
 const THEME_OPTIONS: {
@@ -46,17 +52,31 @@ export default function SettingsScreen() {
 	const { session, signOut, isLoggedIn } = useAuth();
 	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
 	const { mutate: upsertSetting } = useSettingUpsertMutation();
+	const { scrollProps } = useTabBarHideOnScroll();
 	const { themePreference, isDark, setThemePreference } = useTheme();
+
+	const handleSignOutConfirm = async () => {
+		await removePushToken();
+		await signOut();
+	};
 
 	const handleSignOut = () => {
 		Alert.alert("로그아웃", "로그아웃 하시겠습니까?", [
 			{ text: "취소", style: "cancel" },
-			{ text: "로그아웃", style: "destructive", onPress: signOut },
+			{
+				text: "로그아웃",
+				style: "destructive",
+				onPress: handleSignOutConfirm,
+			},
 		]);
 	};
 
 	const handleLogin = () => {
 		router.navigate("/(auth)/login");
+	};
+
+	const handleOpenWebPress = () => {
+		Linking.openURL(`${WEB_API_ORIGIN}/memos`);
 	};
 
 	const appVersion = Constants.expoConfig?.version;
@@ -75,10 +95,20 @@ export default function SettingsScreen() {
 			{/* 섹션이 화면 높이를 넘어가므로 스크롤 주체가 필요하다. 일반 View로 두면
 			    넘치는 섹션(로그인 시 메모 필드부터)이 잘린 채 닿을 방법이 없다. */}
 			<ScrollView
+				{...scrollProps}
 				className="flex-1 px-5"
 				contentContainerStyle={{ paddingBottom: 32 }}
 				showsVerticalScrollIndicator={false}
 			>
+				<TouchableOpacity
+					accessibilityRole="button"
+					className="p-4 mb-5 rounded-xl border border-muted dark:border-neutral-800"
+					onPress={() => router.push("/pending-memos")}
+				>
+					<Text className="font-semibold text-foreground dark:text-white">
+						보류된 메모와 공유 요청
+					</Text>
+				</TouchableOpacity>
 				{/* Account Section */}
 				<View className="mb-7">
 					<Text className="text-sm font-semibold text-muted-foreground dark:text-neutral-500 uppercase tracking-wide mb-2.5">
@@ -123,6 +153,8 @@ export default function SettingsScreen() {
 						)}
 					</View>
 				</View>
+
+				{isLoggedIn && <NotificationSection />}
 
 				{/* Theme Section */}
 				<View className="mb-7">
@@ -243,7 +275,27 @@ export default function SettingsScreen() {
 					<Text className="text-sm font-semibold text-muted-foreground dark:text-neutral-500 uppercase tracking-wide mb-2.5">
 						메모
 					</Text>
-					<View className="bg-card dark:bg-neutral-900 rounded-[14px] p-4 border border-muted dark:border-neutral-800">
+					<View className="bg-card dark:bg-neutral-900 rounded-[14px] p-4 border border-muted dark:border-neutral-800 gap-3">
+						{isLoggedIn ? (
+							<TouchableOpacity
+								className="flex-row justify-between items-center py-2"
+								onPress={handleOpenWebPress}
+								activeOpacity={0.6}
+							>
+								<View className="flex-row items-center gap-2">
+									<Monitor size={16} color={isDark ? "#a3a3a3" : "#555"} />
+									<View>
+										<Text className="text-[15px] text-secondary-foreground dark:text-neutral-300">
+											웹에서 메모 보기
+										</Text>
+										<Text className="text-[13px] text-muted-foreground dark:text-neutral-500">
+											webmemo.xyz
+										</Text>
+									</View>
+								</View>
+								<ExternalLink size={14} color={isDark ? "#737373" : "#999"} />
+							</TouchableOpacity>
+						) : null}
 						<TouchableOpacity
 							className="flex-row justify-between items-center py-2"
 							onPress={() => router.push("/trash")}

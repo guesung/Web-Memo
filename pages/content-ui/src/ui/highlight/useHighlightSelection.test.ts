@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+
+import { ChromeSyncStorage } from "@web-memo/shared/modules/chrome-storage";
 import type { GetHighlightsByUrlResponse } from "@web-memo/shared/modules/extension-bridge";
 import type { HighlightRow } from "@web-memo/shared/types";
 import { act, createElement } from "react";
@@ -10,6 +12,37 @@ const mocks = vi.hoisted(() => ({
 	query: vi.fn(),
 	create: vi.fn(),
 	edit: vi.fn(),
+	handleScroll: vi.fn(
+		(
+			_callback: (
+				payload: { pageKey: string; id: number },
+				sender: unknown,
+				sendResponse: (response: { success: boolean }) => void,
+			) => void,
+		) => vi.fn(),
+	),
+}));
+vi.mock("./useHighlightBubbleGate", () => ({
+	useHighlightBubbleGate: () => ({
+		isBubbleAllowed: true,
+		isIntroPending: false,
+		bubblePosition: "below",
+		positionSettingStatus: "ready",
+		setBubblePosition: vi.fn(),
+	}),
+}));
+vi.mock("@web-memo/shared/modules/chrome-storage", () => ({
+	ChromeSyncStorage: {
+		set: vi.fn(),
+		get: vi.fn().mockResolvedValue(undefined),
+		subscribe: vi.fn(() => vi.fn()),
+	},
+	STORAGE_KEYS: {},
+}));
+// 리포터는 @web-memo/env를 끌어와 테스트에서 불러올 수 없다.
+vi.mock("../../utils/reportError", () => ({ reportContentUiError: vi.fn() }));
+vi.mock("@web-memo/shared/modules/analytics", () => ({
+	analytics: { trackEvent: vi.fn() },
 }));
 vi.mock("@web-memo/shared/modules/extension-bridge", () => ({
 	bridge: {
@@ -18,10 +51,13 @@ vi.mock("@web-memo/shared/modules/extension-bridge", () => ({
 			CREATE_HIGHLIGHT: mocks.create,
 			EDIT_HIGHLIGHT: mocks.edit,
 		},
+		handle: { SCROLL_TO_HIGHLIGHT: mocks.handleScroll },
 	},
 }));
 
 afterEach(() => {
+	vi.mocked(ChromeSyncStorage.set).mockReset();
+	vi.clearAllMocks();
 	window.history.replaceState(null, "", "/");
 	vi.useRealTimers();
 	vi.unstubAllGlobals();
@@ -90,6 +126,63 @@ describe("SPA 하이라이트 조회 생명주기", () => {
 			root.unmount();
 		});
 	});
+});
+
+it("현재 페이지의 저장된 인용만 찾아 스크롤하고 등록한 수신기를 정리한다", async () => {
+	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+	document.body.innerHTML = "<p>saved highlight text</p><div id='root'></div>";
+	const pageKey = location.href;
+	const row = {
+		id: 7,
+		page_key: pageKey,
+		url: pageKey,
+		exact_text: "saved highlight text",
+		prefix_text: "",
+		suffix_text: "",
+		text_position_start: 0,
+		color: "yellow",
+		note: null,
+	} as HighlightRow;
+	mocks.query.mockResolvedValue({ highlights: [row] });
+	const originalScrollIntoView = Element.prototype.scrollIntoView;
+	const scrollIntoView = vi.fn();
+	Element.prototype.scrollIntoView = scrollIntoView;
+	const options = {
+		renderer: {
+			add: vi.fn(),
+			remove: vi.fn(),
+			setColor: vi.fn(),
+			hitTest: vi.fn(() => null),
+			clear: vi.fn(),
+		},
+		notesById: new Map<number, string>(),
+	};
+	const TestHook = () => {
+		useHighlightSelection(options);
+		return null;
+	};
+	const root = createRoot(document.getElementById("root") as HTMLElement);
+	await act(async () => root.render(createElement(TestHook)));
+	const handler = mocks.handleScroll.mock.calls[0]?.[0];
+	const sendResponse = vi.fn();
+	handler({ pageKey, id: 7 }, {}, sendResponse);
+	expect(sendResponse).toHaveBeenLastCalledWith({ success: true });
+	expect(scrollIntoView).toHaveBeenCalledWith({ block: "center" });
+	handler({ pageKey: `${pageKey}different`, id: 7 }, {}, sendResponse);
+	expect(sendResponse).toHaveBeenLastCalledWith({ success: false });
+	handler({ pageKey, id: 999 }, {}, sendResponse);
+	expect(sendResponse).toHaveBeenLastCalledWith({ success: false });
+	row.page_key = "";
+	handler({ pageKey, id: 7 }, {}, sendResponse);
+	expect(sendResponse).toHaveBeenLastCalledWith({ success: true });
+	row.exact_text = "missing quote";
+	handler({ pageKey, id: 7 }, {}, sendResponse);
+	expect(sendResponse).toHaveBeenLastCalledWith({ success: false });
+	expect(mocks.handleScroll).toHaveBeenCalledTimes(1);
+	const unsubscribe = mocks.handleScroll.mock.results[0]?.value;
+	await act(async () => root.unmount());
+	expect(unsubscribe).toHaveBeenCalledTimes(1);
+	Element.prototype.scrollIntoView = originalScrollIntoView;
 });
 
 it.each(["success", "failure"])(

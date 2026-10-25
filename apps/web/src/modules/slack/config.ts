@@ -1,3 +1,5 @@
+import { requireServerEnv } from "@src/utils/serverEnv";
+
 /**
  * Slack ↔ GitHub 연동에 필요한 서버 전용 설정.
  *
@@ -7,17 +9,6 @@
  * 시크릿을 거기 두면 그대로 커밋되거나 확장 번들에 섞여 들어갑니다.
  * 여기서는 Vercel 환경변수를 서버에서만 직접 읽습니다.
  */
-
-/** 값이 없으면 조용히 빈 문자열로 넘기지 않고 즉시 실패시킵니다. */
-const requireServerEnv = (name: string): string => {
-	const value = process.env[name];
-
-	if (!value) {
-		throw new Error(`${name} 환경변수가 설정되지 않았습니다`);
-	}
-
-	return value;
-};
 
 /** Slack 요청 서명 검증 키. Slack App > Basic Information > Signing Secret. */
 export const getSlackSigningSecret = (): string =>
@@ -31,9 +22,8 @@ export const getSlackBotToken = (): string =>
 export const getGithubDispatchToken = (): string =>
 	requireServerEnv("GITHUB_DISPATCH_TOKEN");
 
-/** 배포를 트리거할 대상 레포지토리. */
-export const getGithubRepository = (): string =>
-	process.env.GITHUB_DISPATCH_REPOSITORY ?? "guesung/Web-Memo";
+/** 배포를 트리거할 대상 레포지토리. 환경마다 다르지 않아 환경변수 없이 상수로 둡니다. */
+export const GITHUB_REPOSITORY = "guesung/Web-Memo";
 
 /** 워크플로를 실행할 기본 브랜치. release.yml은 여기서 dispatch됩니다. */
 export const GITHUB_DEFAULT_BRANCH = "master";

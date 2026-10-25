@@ -1,3 +1,4 @@
+import type { HighlightColor } from "@web-memo/shared/constants";
 import type {
 	IFCreateHighlightPayload,
 	TCreateHighlightResponse,
@@ -9,11 +10,14 @@ import {
 } from "@web-memo/shared/modules/highlight";
 import type { HighlightRow } from "@web-memo/shared/types";
 import { normalizeUrl } from "@web-memo/shared/utils/url";
+import { reportContentUiError } from "../../utils/reportError";
+import { reportHighlightResponseFailure } from "./reportHighlightFailure";
 
 /** 선택 툴바가 표시할 위치와 저장 상태. */
 export interface IFHighlightSelectionState {
 	x: number;
 	y: number;
+	aboveY: number;
 	isSaving: boolean;
 	message: string;
 	canSave: boolean;
@@ -27,31 +31,53 @@ interface IFHighlightControllerOptions {
 	) => Promise<TCreateHighlightResponse>;
 	onSelectionChange: (state: IFHighlightSelectionState | null) => void;
 	onPageChange?: () => void;
+	/** false를 돌려주면 새 선택에 툴바를 띄우지 않는다. 생략하면 항상 띄운다. */
+	isSelectionEnabled?: () => boolean;
+	/** 저장이 성공해 하이라이트를 그린 뒤 한 번 불린다. */
+	onSaveSuccess?: (color: HighlightColor) => void;
 }
 
 /** 선택 해제 전에 앵커를 보관하며 한 번에 하나만 저장하고 성공한 결과만 그린다. */
 export const createHighlightController = (
 	options: IFHighlightControllerOptions,
 ) => {
-	let selectionPayload: IFCreateHighlightPayload | null = null;
+	let selectionPayload: Omit<IFCreateHighlightPayload, "color"> | null = null;
 	let state: IFHighlightSelectionState | null = null;
 	let isSaving = false;
 	let isStopped = false;
 	let pageGeneration = 0;
 	let currentUrl = normalizeUrl(location.href);
 	let selectionTimer: ReturnType<typeof setTimeout> | undefined;
+	let isPointerSelecting = false;
+	let isKeyboardSelecting = false;
+	let dismissedRange: Range | null = null;
 	const savedAnchors = new Set<string>();
 	const rowsById = new Map<number, HighlightRow>();
 	const deletedIds = new Set<number>();
-	const getAnchorKey = (payload: IFCreateHighlightPayload) =>
+	const getAnchorKey = (payload: Omit<IFCreateHighlightPayload, "color">) =>
 		JSON.stringify([payload.anchor.exact, payload.anchor.textPositionStart]);
+	const isFromToolbar = (event: Event) =>
+		event
+			.composedPath()
+			.some(
+				(target) =>
+					target instanceof Element &&
+					target.id === "WEB_MEMO_HIGHLIGHT_TOOLTIP",
+			);
 	const emit = () => options.onSelectionChange(state);
+	const clearSelectionState = () => {
+		selectionPayload = null;
+		state = null;
+		emit();
+	};
 	const checkPage = () => {
 		if (currentUrl === normalizeUrl(location.href)) {
 			return;
 		}
 		currentUrl = normalizeUrl(location.href);
 		pageGeneration += 1;
+		clearTimeout(selectionTimer);
+		dismissedRange = null;
 		selectionPayload = null;
 		state = null;
 		savedAnchors.clear();
@@ -63,11 +89,17 @@ export const createHighlightController = (
 	};
 	const captureSelection = () => {
 		checkPage();
-		if (isSaving || isStopped) {
+		if (isSaving || isStopped || isPointerSelecting || isKeyboardSelecting) {
+			return;
+		}
+		if (options.isSelectionEnabled?.() === false) {
+			clearSelectionState();
+
 			return;
 		}
 		const selection = document.getSelection();
 		if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
+			dismissedRange = null;
 			selectionPayload = null;
 			state = null;
 			emit();
@@ -75,6 +107,17 @@ export const createHighlightController = (
 			return;
 		}
 		const range = selection.getRangeAt(0).cloneRange();
+		if (dismissedRange) {
+			if (
+				range.startContainer === dismissedRange.startContainer &&
+				range.startOffset === dismissedRange.startOffset &&
+				range.endContainer === dismissedRange.endContainer &&
+				range.endOffset === dismissedRange.endOffset
+			) {
+				return;
+			}
+			dismissedRange = null;
+		}
 		const container = range.commonAncestorContainer;
 		const element =
 			container.nodeType === Node.ELEMENT_NODE
@@ -99,6 +142,7 @@ export const createHighlightController = (
 		state = {
 			x: Math.max(8, Math.min(bounds.left, window.innerWidth - 250)),
 			y: Math.max(8, Math.min(bounds.bottom + 8, window.innerHeight - 90)),
+			aboveY: Math.max(8, bounds.top - 44),
 			isSaving: false,
 			message: "",
 			canSave: false,
@@ -131,11 +175,76 @@ export const createHighlightController = (
 	};
 	const handleSelectionChange = () => {
 		clearTimeout(selectionTimer);
+		if (isPointerSelecting || isKeyboardSelecting) {
+			clearSelectionState();
+			return;
+		}
 		selectionTimer = setTimeout(captureSelection, 150);
+	};
+	const handlePointerDown = (event: PointerEvent) => {
+		if (isFromToolbar(event)) {
+			return;
+		}
+		isPointerSelecting = true;
+		dismissedRange = null;
+		clearTimeout(selectionTimer);
+		clearSelectionState();
+	};
+	const handlePointerEnd = () => {
+		if (!isPointerSelecting) {
+			return;
+		}
+		isPointerSelecting = false;
+		clearTimeout(selectionTimer);
+		captureSelection();
+	};
+	const handlePointerMove = (event: PointerEvent) => {
+		if (isPointerSelecting && event.buttons === 0) {
+			handlePointerEnd();
+		}
+	};
+	const handleWindowBlur = () => {
+		isPointerSelecting = false;
+		isKeyboardSelecting = false;
+		clearTimeout(selectionTimer);
+	};
+	const handleKeyDown = (event: KeyboardEvent) => {
+		if (
+			isFromToolbar(event) ||
+			!event.shiftKey ||
+			![
+				"ArrowLeft",
+				"ArrowRight",
+				"ArrowUp",
+				"ArrowDown",
+				"Home",
+				"End",
+				"PageUp",
+				"PageDown",
+			].includes(event.key)
+		) {
+			return;
+		}
+		isKeyboardSelecting = true;
+		dismissedRange = null;
+		clearTimeout(selectionTimer);
+		clearSelectionState();
 	};
 	const handleSelectionEnd = () => {
 		clearTimeout(selectionTimer);
 		captureSelection();
+	};
+	const handleKeyUp = (event: KeyboardEvent) => {
+		if (isFromToolbar(event)) {
+			return;
+		}
+		if (isKeyboardSelecting) {
+			if (event.shiftKey) {
+				return;
+			}
+			isKeyboardSelecting = false;
+		}
+		handleSelectionEnd();
 	};
 	const handleViewportChange = () => {
 		if (!isSaving) {
@@ -144,24 +253,26 @@ export const createHighlightController = (
 			emit();
 		}
 	};
-	const save = async () => {
+	const save = async (
+		color: HighlightColor = "yellow",
+	): Promise<HighlightRow | null> => {
 		checkPage();
 		const payload = selectionPayload;
 		const saveGeneration = pageGeneration;
 		if (!payload || !state || isSaving || isStopped) {
-			return;
+			return null;
 		}
 		if (savedAnchors.has(getAnchorKey(payload))) {
 			state = { ...state, message: "highlight_duplicate", canSave: false };
 			emit();
 
-			return;
+			return null;
 		}
 		isSaving = true;
 		state = { ...state, isSaving: true, message: "" };
 		emit();
 		try {
-			const response = await options.requestCreate(payload);
+			const response = await options.requestCreate({ ...payload, color });
 			if (
 				isStopped ||
 				saveGeneration !== pageGeneration ||
@@ -169,9 +280,10 @@ export const createHighlightController = (
 			) {
 				checkPage();
 
-				return;
+				return null;
 			}
 			if (!response?.success) {
+				reportHighlightResponseFailure({ operation: "create", response });
 				state = {
 					...state,
 					isSaving: false,
@@ -182,19 +294,29 @@ export const createHighlightController = (
 				};
 				emit();
 
-				return;
+				return null;
 			}
 			savedAnchors.add(getAnchorKey(payload));
 			rowsById.set(response.highlight.id, response.highlight);
 			const range = resolveAnchor(payload.anchor);
 			if (range) {
-				options.renderer.add(response.highlight.id, range, "yellow");
+				options.renderer.add(response.highlight.id, range, color);
 			}
 			selectionPayload = null;
 			state = null;
 			document.getSelection()?.removeAllRanges();
 			emit();
-		} catch {
+			options.onSaveSuccess?.(color);
+
+			return response.highlight;
+		} catch (error) {
+			// background에 닿지 못한 실패라 background의 보고에 남지 않는다.
+			reportContentUiError({
+				error,
+				feature: "highlight",
+				operation: "create",
+				stage: "request",
+			});
 			if (
 				!isStopped &&
 				saveGeneration === pageGeneration &&
@@ -207,16 +329,37 @@ export const createHighlightController = (
 		} finally {
 			isSaving = false;
 		}
+
+		return null;
 	};
 	document.addEventListener("selectionchange", handleSelectionChange);
+	document.addEventListener("pointerdown", handlePointerDown, true);
+	document.addEventListener("pointerup", handlePointerEnd, true);
+	document.addEventListener("pointercancel", handlePointerEnd, true);
+	window.addEventListener("pointerup", handlePointerEnd, true);
+	window.addEventListener("pointermove", handlePointerMove);
+	window.addEventListener("blur", handleWindowBlur);
 	document.addEventListener("mouseup", handleSelectionEnd);
-	document.addEventListener("keyup", handleSelectionEnd);
+	document.addEventListener("keydown", handleKeyDown, true);
+	document.addEventListener("keyup", handleKeyUp, true);
 	window.addEventListener("scroll", handleViewportChange, true);
 	window.addEventListener("resize", handleViewportChange);
 	const pageTimer = setInterval(checkPage, 500);
 
 	return {
 		save,
+		/** 열린 선택 툴바를 닫는다. 저장 중에는 결과 안내를 지키려고 닫지 않는다. */
+		dismissSelection: () => {
+			if (!isSaving) {
+				clearTimeout(selectionTimer);
+				const selection = document.getSelection();
+				dismissedRange =
+					selection && !selection.isCollapsed && selection.rangeCount > 0
+						? selection.getRangeAt(0).cloneRange()
+						: null;
+				clearSelectionState();
+			}
+		},
 		getRow: (id: number) => rowsById.get(id),
 		updateRow: (row: HighlightRow) => rowsById.set(row.id, row),
 		removeRow: (id: number) => {
@@ -267,8 +410,15 @@ export const createHighlightController = (
 			clearTimeout(selectionTimer);
 			clearInterval(pageTimer);
 			document.removeEventListener("selectionchange", handleSelectionChange);
+			document.removeEventListener("pointerdown", handlePointerDown, true);
+			document.removeEventListener("pointerup", handlePointerEnd, true);
+			document.removeEventListener("pointercancel", handlePointerEnd, true);
+			window.removeEventListener("pointerup", handlePointerEnd, true);
+			window.removeEventListener("pointermove", handlePointerMove);
+			window.removeEventListener("blur", handleWindowBlur);
 			document.removeEventListener("mouseup", handleSelectionEnd);
-			document.removeEventListener("keyup", handleSelectionEnd);
+			document.removeEventListener("keydown", handleKeyDown, true);
+			document.removeEventListener("keyup", handleKeyUp, true);
 			window.removeEventListener("scroll", handleViewportChange, true);
 			window.removeEventListener("resize", handleViewportChange);
 		},

@@ -1,14 +1,26 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { MemoSupabaseClient } from "../types";
-import { HighlightService } from "./Supabase";
+import { HighlightService, MemoService } from "./Supabase";
+
+vi.mock("../modules/analytics", () => ({
+	analytics: { trackEvent: vi.fn() },
+}));
 
 /** 가짜 빌더가 기록한 호출 인자 */
-interface RecordedCalls {
+interface IFRecordedCalls {
 	schema: string[];
 	from: string[];
 	select: string[];
 	eq: [string, unknown][];
+	in: [string, unknown][];
+	is: [string, unknown][];
+	like: [string, string][];
+	not: [string, string, unknown][];
+	lt: [string, unknown][];
+	gt: [string, unknown][];
 	or: string[];
+	filter: [string, string, unknown][];
+	range: [number, number][];
 	order: [string, unknown][];
 	limit: number[];
 	rpc: [string, unknown][];
@@ -17,18 +29,26 @@ interface RecordedCalls {
 /**
  * Supabase 쿼리 빌더를 흉내 내는 최소 목.
  * @description 체이닝 메서드는 자기 자신을 돌려주고, await 되는 시점에 빈 결과를 반환한다.
- * HighlightService가 실제로 쓰는 메서드만 구현한다.
+ * 서비스가 실제로 쓰는 메서드만 구현한다.
  */
-function createMockClient(): {
+const createMockClient = (): {
 	client: MemoSupabaseClient;
-	calls: RecordedCalls;
-} {
-	const calls: RecordedCalls = {
+	calls: IFRecordedCalls;
+} => {
+	const calls: IFRecordedCalls = {
 		schema: [],
 		from: [],
 		select: [],
 		eq: [],
+		in: [],
+		is: [],
+		like: [],
+		not: [],
+		lt: [],
+		gt: [],
 		or: [],
+		filter: [],
+		range: [],
 		order: [],
 		limit: [],
 		rpc: [],
@@ -43,8 +63,44 @@ function createMockClient(): {
 			calls.eq.push([column, value]);
 			return builder;
 		},
+		in: (column: string, value: unknown) => {
+			calls.in.push([column, value]);
+			return builder;
+		},
+		is: (column: string, value: unknown) => {
+			calls.is.push([column, value]);
+
+			return builder;
+		},
+		not: (column: string, operator: string, value: unknown) => {
+			calls.not.push([column, operator, value]);
+			return builder;
+		},
+		like: (column: string, pattern: string) => {
+			calls.like.push([column, pattern]);
+
+			return builder;
+		},
+		lt: (column: string, value: unknown) => {
+			calls.lt.push([column, value]);
+
+			return builder;
+		},
+		gt: (column: string, value: unknown) => {
+			calls.gt.push([column, value]);
+
+			return builder;
+		},
 		or: (filter: string) => {
 			calls.or.push(filter);
+			return builder;
+		},
+		filter: (column: string, operator: string, value: unknown) => {
+			calls.filter.push([column, operator, value]);
+			return builder;
+		},
+		range: (from: number, to: number) => {
+			calls.range.push([from, to]);
 			return builder;
 		},
 		order: (column: string, options: unknown) => {
@@ -81,7 +137,7 @@ function createMockClient(): {
 	} as unknown as MemoSupabaseClient;
 
 	return { client, calls };
-}
+};
 
 describe("HighlightService.getHighlightsPaginated", () => {
 	it("검색어가 있으면 exact_text와 note를 대상으로 필터를 건다", async () => {
@@ -134,12 +190,29 @@ describe("HighlightService.getHighlightsPaginated", () => {
 });
 
 describe("HighlightService.getHighlightsByUrl", () => {
-	it("url로 조회하고 id 오름차순으로 정렬한다", async () => {
+	it("추적 파라미터를 제외한 page_key로 조회하고 id 오름차순으로 정렬한다", async () => {
 		const { client, calls } = createMockClient();
-		await new HighlightService(client).getHighlightsByUrl("https://a.com");
+		await new HighlightService(client).getHighlightsByUrl(
+			"https://a.com/?utm_source=mail&id=1",
+		);
 
-		expect(calls.eq).toContainEqual(["url", "https://a.com"]);
+		expect(calls.in).toContainEqual(["page_key", ["https://a.com/?id=1", ""]]);
+		expect(calls.like).toContainEqual(["url", "https://a.com/%"]);
 		expect(calls.order).toContainEqual(["id", { ascending: true }]);
+	});
+});
+
+describe("MemoService.getMemoByUrl", () => {
+	it("같은 page_key의 후보를 최신 수정 순으로 조회한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemoByUrl(
+			"https://a.com/?utm_source=mail&id=1",
+		);
+
+		expect(calls.in).toContainEqual(["page_key", ["https://a.com/?id=1", ""]]);
+		// 키가 비어 있는 옛 행을 전부 읽지 않도록 원본 URL 접두로 서버에서 좁힌다.
+		expect(calls.like).toContainEqual(["url", "https://a.com/%"]);
+		expect(calls.order).toEqual([["id", { ascending: true }]]);
 	});
 });
 
@@ -162,5 +235,221 @@ describe("HighlightService.getHighlightCounts", () => {
 		await new HighlightService(client).getHighlightCounts(["https://a.com"]);
 
 		expect(calls.schema).toContain("memo");
+	});
+});
+
+describe("HighlightService.getHighlightCountsByPageKeys", () => {
+	it("키와 기존 빈 키를 한 조회에서 집계한다", async () => {
+		const { client, calls } = createMockClient();
+		await new HighlightService(client).getHighlightCountsByPageKeys([
+			"https://a.com",
+		]);
+
+		expect(calls.in).toContainEqual(["page_key", ["https://a.com", ""]]);
+		expect(calls.rpc).toEqual([]);
+	});
+	it("여러 페이지의 개수 조회를 20개씩 나눈다", async () => {
+		const { client, calls } = createMockClient();
+		const pageKeys = Array.from(
+			{ length: 41 },
+			(_, index) => `https://a.com/${index}`,
+		);
+		await new HighlightService(client).getHighlightCountsByPageKeys(pageKeys);
+		expect(calls.in.map(([, values]) => (values as string[]).length)).toEqual([
+			21, 21, 2,
+		]);
+	});
+});
+
+describe("MemoService.getMemoDomains", () => {
+	it("삭제되지 않은 메모의 url만 최근 수정 순으로 1000건씩 읽는다", async () => {
+		const { client, calls } = createMockClient();
+		const result = await new MemoService(client).getMemoDomains();
+
+		expect(calls.select).toEqual(["url"]);
+		expect(calls.is).toEqual([["deleted_at", null]]);
+		expect(calls.order).toEqual([
+			["updated_at", { ascending: false, nullsFirst: false }],
+			["id", { ascending: false }],
+		]);
+		expect(calls.range).toEqual([[0, 999]]);
+		expect(result).toEqual({ data: [], error: null });
+	});
+
+	it("탭·카테고리 조건을 목록 조회와 같은 방식으로 건다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemoDomains({
+			category: "Work",
+			isWish: false,
+			isStar: true,
+		});
+
+		expect(calls.select).toEqual(["url,category!inner(name)"]);
+		expect(calls.eq).toEqual([
+			["isWish", false],
+			["isStar", true],
+			["category.name", "Work"],
+		]);
+	});
+});
+
+describe("MemoService.getMemosPaginated", () => {
+	it.each(["created_at", "updated_at"] as const)(
+		"%s가 없는 메모도 id로 다음 페이지를 이어 읽는다",
+		async (sortBy) => {
+			const { client, calls } = createMockClient();
+			await new MemoService(client).getMemosPaginated({
+				sortBy,
+				cursor: { value: null, id: 42 },
+			});
+
+			expect(calls.is).toEqual([
+				["deleted_at", null],
+				[sortBy, null],
+			]);
+			expect(calls.lt).toEqual([["id", 42]]);
+			expect(calls.or).toEqual([]);
+			expect(calls.order[0]).toEqual([
+				sortBy,
+				{ ascending: false, nullsFirst: false },
+			]);
+		},
+	);
+
+	it.each(["created_at", "updated_at"] as const)(
+		"%s가 같은 메모를 누락하지 않도록 id까지 비교한다",
+		async (sortBy) => {
+			const { client, calls } = createMockClient();
+			await new MemoService(client).getMemosPaginated({
+				sortBy,
+				cursor: { value: "2026-09-23T01:02:03.123456+00:00", id: 42 },
+			});
+
+			expect(calls.or).toEqual([
+				`${sortBy}.lt."2026-09-23T01:02:03.123456+00:00",and(${sortBy}.eq."2026-09-23T01:02:03.123456+00:00",id.lt.42),${sortBy}.is.null`,
+			]);
+			expect(calls.order).toEqual([
+				[sortBy, { ascending: false, nullsFirst: false }],
+				["id", { ascending: false }],
+			]);
+			expect(calls.lt).toEqual([]);
+		},
+	);
+
+	it("검색과 필터를 커서 조건에 함께 적용하고 휴지통 메모를 제외한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemosPaginated({
+			sortBy: "created_at",
+			cursor: { value: "2026-09-23T00:00:00Z", id: 42 },
+			searchQuery: "리액트",
+			category: "개발",
+			isWish: true,
+			isStar: false,
+			isReading: true,
+		});
+
+		expect(calls.or).toHaveLength(2);
+		expect(calls.or[1]).toContain("title.ilike.%리액트%");
+		expect(calls.select).toEqual(["*, category!inner(id, name, color)"]);
+		expect(calls.eq).toEqual([
+			["isWish", true],
+			["isStar", false],
+			["isReading", true],
+			["category.name", "개발"],
+		]);
+		expect(calls.is).toEqual([["deleted_at", null]]);
+	});
+
+	it("도메인은 url 정규식 조건 하나로 다른 필터와 함께 적용한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemosPaginated({
+			domain: "youtube.com",
+			isStar: true,
+			searchQuery: "리액트",
+		});
+
+		expect(calls.filter).toEqual([
+			["url", "imatch", "^https?://(www\\.)?youtube\\.com([/:?#]|$)"],
+		]);
+		expect(calls.eq).toEqual([["isStar", true]]);
+		expect(calls.or).toHaveLength(1);
+	});
+
+	it("도메인이 없으면 url 조건을 걸지 않는다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemosPaginated({});
+
+		expect(calls.filter).toEqual([]);
+	});
+
+	it("첫 페이지는 커서 필터 없이 최신 수정순 20건을 조회한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemosPaginated({});
+
+		expect(calls.or).toEqual([]);
+		expect(calls.order).toEqual([
+			["updated_at", { ascending: false, nullsFirst: false }],
+			["id", { ascending: false }],
+		]);
+		expect(calls.limit).toEqual([20]);
+	});
+
+	it("기존 모바일 문자열 날짜 커서를 계속 지원한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemosPaginated({ cursor: "2026-09-23" });
+
+		expect(calls.lt).toEqual([["updated_at", "2026-09-23"]]);
+	});
+
+	it("제목 정렬의 문자열 커서는 오름차순으로 조회한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemosPaginated({
+			sortBy: "title",
+			cursor: "메모 제목",
+		});
+
+		expect(calls.gt).toEqual([["title", "메모 제목"]]);
+		expect(calls.order).toEqual([
+			["title", { ascending: true }],
+			["id", { ascending: true }],
+		]);
+	});
+});
+
+describe("MemoService.getPlannedMemos", () => {
+	it("계획 날짜가 있는 메모만 계획 날짜 오름차순, 수정 최신순으로 500건까지 조회한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getPlannedMemos({});
+
+		expect(calls.not).toEqual([["plannedDate", "is", null]]);
+		expect(calls.is).toEqual([["deleted_at", null]]);
+		expect(calls.order).toEqual([
+			["plannedDate", { ascending: true }],
+			["updated_at", { ascending: false, nullsFirst: false }],
+		]);
+		expect(calls.limit).toEqual([500]);
+		expect(calls.select).toEqual(["*, category(id, name, color)"]);
+		expect(calls.eq).toEqual([]);
+		expect(calls.or).toEqual([]);
+	});
+
+	it("위시 메모를 거르지 않는다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getPlannedMemos({});
+
+		expect(calls.eq.some(([column]) => column === "isWish")).toBe(false);
+	});
+
+	it("카테고리와 검색어를 목록 조회와 같은 방식으로 적용한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getPlannedMemos({
+			category: "개발",
+			searchQuery: "리액트",
+		});
+
+		expect(calls.select).toEqual(["*, category!inner(id, name, color)"]);
+		expect(calls.eq).toEqual([["category.name", "개발"]]);
+		expect(calls.or).toHaveLength(1);
+		expect(calls.or[0]).toContain("title.ilike.%리액트%");
 	});
 });

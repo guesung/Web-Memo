@@ -31,6 +31,24 @@ describe("groupHighlightsByUrl", () => {
 		expect(groups[0].highlights).toHaveLength(2);
 	});
 
+	it("추적 파라미터만 다른 URL을 같은 페이지로 묶는다", () => {
+		const groups = groupHighlightsByUrl([
+			row({
+				id: 1,
+				url: "https://a.com?utm_source=one",
+				page_key: "https://a.com",
+			}),
+			row({
+				id: 2,
+				url: "https://a.com?utm_source=two",
+				page_key: "https://a.com",
+			}),
+		]);
+
+		expect(groups).toHaveLength(1);
+		expect(groups[0].highlights).toHaveLength(2);
+	});
+
 	it("입력 순서를 그룹 순서로 유지한다", () => {
 		const groups = groupHighlightsByUrl([
 			row({ id: 1, url: "https://b.com" }),

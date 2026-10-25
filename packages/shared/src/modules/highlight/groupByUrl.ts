@@ -1,4 +1,5 @@
 import type { HighlightRow } from "../../types";
+import { getPageKey } from "../../utils/Url";
 
 /** 한 페이지에서 그은 하이라이트 묶음 */
 export interface HighlightGroup {
@@ -8,19 +9,22 @@ export interface HighlightGroup {
 	highlights: HighlightRow[];
 }
 
-/** 하이라이트를 URL별로 묶는다. 입력 순서가 그룹 순서가 된다. */
-export function groupHighlightsByUrl(rows: HighlightRow[]): HighlightGroup[] {
+/** 하이라이트를 페이지 식별값별로 묶는다. 입력 순서가 그룹 순서가 된다. */
+export const groupHighlightsByUrl = (
+	rows: HighlightRow[],
+): HighlightGroup[] => {
 	const groups = new Map<string, HighlightGroup>();
 
 	for (const row of rows) {
-		const existing = groups.get(row.url);
+		const pageKey = row.page_key || getPageKey(row.url);
+		const existing = groups.get(pageKey);
 
 		if (existing) {
 			existing.highlights.push(row);
 			continue;
 		}
 
-		groups.set(row.url, {
+		groups.set(pageKey, {
 			url: row.url,
 			title: row.title,
 			favIconUrl: row.favIconUrl,
@@ -29,4 +33,4 @@ export function groupHighlightsByUrl(rows: HighlightRow[]): HighlightGroup[] {
 	}
 
 	return [...groups.values()];
-}
+};

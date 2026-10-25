@@ -16,9 +16,5 @@ export const YOUTUBE_NOTES_PAGE: TLandingPageConfig = {
 		{ key: "timestamp", icon: Clock },
 		{ key: "organize", icon: Bookmark },
 	],
-	relatedKeys: [
-		"useCasesLearning",
-		"useCasesResearch",
-		"featuresYoutubeSummary",
-	],
+	relatedKeys: ["useCasesLearning", "useCasesResearch"],
 };

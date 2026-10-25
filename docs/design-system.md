@@ -1,6 +1,6 @@
 # 디자인 시스템
 
-> `/gs` 파이프라인의 `gs:designer`가 와이어프레임을 그리기 전에 읽는 문서입니다.
+> `/web-memo` 파이프라인의 `web-memo:designer`가 와이어프레임을 그리기 전에 읽는 문서입니다.
 > [`docs/project-identity.md`](project-identity.md)의 `톤·태도`를 색·간격·모서리로 번역한 판입니다.
 > **값의 원천은 코드입니다.** 이 문서와 코드가 어긋나면 코드가 맞고, 이 문서를 고쳐야 합니다.
 
@@ -12,6 +12,7 @@
 | --- | --- |
 | 정의 위치 | CSS 변수 원천 → `packages/ui/global.css` (`:root` / `.dark`)<br>Tailwind 매핑 → `packages/tailwind-config/tailwind.config.js`<br>웹 전용 유틸 클래스 → `apps/web/src/app/globals.css` |
 | 컬러 | 역할 이름으로만 씁니다 — `background` / `foreground` / `card` / `popover` / `primary` / `secondary` / `muted` / `accent` / `destructive` / `border` / `input` / `ring`. 각각 `-foreground` 짝이 있습니다. 사이드바는 별도 계열(`sidebar-*`), 차트는 `chart-1~5`.<br>강조색은 파랑 계열(`--primary`: 라이트 `221 83% 53%`, 다크 `217 91% 60%`), 위험은 빨강(`--destructive`) |
+| 노란 인용 | `bg-highlight-yellow text-highlight-yellow-foreground`를 한 쌍으로 씁니다. 라이트 배경 `#fef3b0`/글자 `#29220b`, 다크 배경 `#473e15`/글자 `#fff3c4`. 인용 왼쪽 색상 막대는 기존 노랑 `#facc15`를 유지합니다 |
 | 타이포 | 본문 폰트는 **Pretendard**(`font-pretendard`, `apps/web/src/fonts/output/`에서 서브셋 로드). 그 외 `font-sans`(Inter) / `font-serif`(Lora) / `font-mono`(JetBrains Mono)는 CSS 변수로 열려 있으나 실제로는 거의 쓰지 않습니다.<br>크기 단계는 Tailwind 기본 스케일(`text-sm`~`text-4xl`)을 그대로 씁니다. 자간은 `--tracking-normal`(0rem) |
 | 간격 | Tailwind 기본 4px 스케일. 실제로 쓰는 단계는 `1·2·3·4·6·8·12·16`(=4~64px)이며 그 밖의 임의 값(`p-[13px]`)은 쓰지 않습니다 |
 | 모서리 | `--radius: 0.5rem` 하나가 원천. `rounded-lg`(=8px) / `rounded-md`(6px) / `rounded-sm`(4px)이 여기서 파생됩니다. 카드류에 `rounded-2xl`을 쓰는 자리가 소개 페이지에 있습니다 |
@@ -30,7 +31,7 @@
 | 표시 | `Card` · `Badge` · `Alert` · `Avatar` · `Separator` · `Table` · `Progress` · `Chart`(recharts) · `Calendar`(react-day-picker) · `Carousel`(embla) | 〃 |
 | 구조 | `Tabs` · `Accordion` · `Collapsible` · `Sidebar` · `NavigationMenu` · `Menubar` · `Breadcrumb` · `Pagination` · `ScrollArea` · `Resizable` · `AspectRatio` | 〃 |
 | 상태 | `Skeleton` · `Loading` · `Toast` + `Toaster` · `ErrorBoundary` · `ErrorFallback` · `ToggleTheme` | 〃 |
-| 웹 전용 | `Header` · `DragBox` · `YoutubeEmbed` · `HydrationBoundaryWrapper` | `apps/web/src/components/` |
+| 웹 전용 | `Header` · `DragBox` · `HydrationBoundaryWrapper` | `apps/web/src/components/` |
 | 페이지 전용 | 해당 라우트의 `_components/` (예: `memos/_components/MemoView`, `highlights/_components/HighlightListSkeleton`) | `apps/web/src/app/[lng]/...` |
 
 > `sonner`는 의존성에 있으나 `index.ts`에서 주석 처리돼 있습니다. **토스트는 `Toast`/`Toaster`(Radix)를 씁니다.**
@@ -39,18 +40,59 @@
 
 ## 레이아웃
 
+웹 고정 헤더와 `HeaderMargin`은 `apps/web/src/components/Header/index.tsx`의 높이 클래스(`h-12`)를 공유합니다. 메모 목록의 최소 높이는 별도로 헤더 높이 `3rem`을 제외하므로, 헤더 높이를 변경할 때 함께 확인해야 합니다. 메모 사이드바의 탐색 행과 설정 푸터는 높이 48px이며, 행 사이 간격과 섹션 바깥 패딩 없이 전체 너비에 hover 배경을 표시합니다. 사이드바 내용의 스크롤바만 해당 컴포넌트의 CSS Module에서 Chromium은 4px, Firefox는 `thin`으로 표시합니다.
+
 | 항목 | 내용 |
 | --- | --- |
 | 반응형 기준 | Tailwind 기본 브레이크포인트를 그대로 씁니다(커스텀 없음). 실제 쓰이는 것은 **`sm`(640) · `lg`(1024) · `md`(768)** 순이고 `xl` 이상은 거의 쓰지 않습니다. 모바일 우선으로 쓰고, 첫 분기를 `sm`에 두는 것이 이 레포의 관행입니다 |
 | 페이지 골격 | 웹은 `[lng]` 아래 두 갈래입니다.<br>· `(no-auth)` — 헤더 + 본문(소개·기능·유스케이스·로그인·개인정보). 마케팅 성격이라 여백이 넓고 애니메이션이 있습니다<br>· `(auth)/(sidebar)` — 좌측 사이드바 + 본문(메모·하이라이트·설정·휴지통). 도구 성격이라 정보 밀도가 높고 장식을 줄입니다<br>확장 사이드 패널은 폭이 좁은(≈400px) 단일 컬럼이라 **데스크톱 레이아웃을 그대로 옮기지 않습니다** |
 | 시각 인상 | 도구 화면은 담백하게 — 넓은 여백보다 스캔 가능한 밀도, 얕은 그림자, 파랑 강조 한 색.<br>소개/마케팅 화면만 예외적으로 그라디언트·글래스모피즘 유틸(`gradient-mesh` · `glass-card` · `gradient-text` · `glow-*`)을 씁니다. **이 유틸을 `(auth)` 화면으로 끌고 오지 않습니다** |
+| 랜딩 팔레트 | `(no-auth)` 랜딩은 `.landing` 스코프(`apps/web/src/app/globals.css`) 안에서 그려집니다. 이 스코프가 역할 토큰을 **무채색으로 덮어써** `primary`가 파랑이 아니라 거의 검정(다크에서는 거의 흰색)이 됩니다. 유채색은 `.landing-accent`(peach 면 + sienna 글자) 한 쌍뿐이고 **페이지당 한 곳에서만** 씁니다. 경계는 `.landing-hairline`(1px `border`)으로 긋습니다. radius는 덮지 않으므로 카드는 `rounded-3xl`, 버튼은 `rounded-full`을 클래스로 씁니다. 다크 값은 `.dark .landing`에 따로 있습니다 |
 | 빈 화면 | 안내 문구 + 다음 행동 버튼 하나. 일러스트를 만들지 않고 `lucide-react` 아이콘 + 텍스트로 처리합니다 |
 | 로딩 | **스켈레톤이 기본입니다.** 목록·그리드는 실제 레이아웃과 같은 모양의 `Skeleton`(예: `HighlightListSkeleton`), 버튼 등 국소 작업만 스피너(`Loading`). 클라이언트 컴포넌트는 `Suspense` + fallback으로 감쌉니다 |
 | 에러 | 화면 단위는 `error.tsx` / `not-found.tsx` / `ErrorBoundary` + `ErrorFallback`(재시도 버튼 포함), 동작 단위 실패는 `Toast`. 사용자에게 스택이나 원문 에러 메시지를 노출하지 않고, Sentry로 보냅니다 |
 
+웹 하이라이트 목록은 최대 폭 840px의 한 열 읽기 목록입니다. URL별 제목·도메인·개수를
+한 번만 표시하고, 각 인용은 저장된 색의 왼쪽 막대(모바일·데스크톱 3px)와
+본문(모바일·데스크톱 16px, 줄 높이 1.6)으로 구분합니다. 카드 테두리와 인용 배경색은 쓰지
+않으며, URL 그룹 간격은 모바일 28px·데스크톱 32px, 인용 간격은 모바일 14px·데스크톱
+16px입니다. 인용 코멘트는 13px이며 본문과 6px 간격을 둡니다. 문서 스크롤의 하단
+관측 지점에서 다음 페이지를 불러오며, 같은 URL의 다음 페이지는 기존 그룹에 합칩니다.
+URL 제목 링크에서 원문 새 탭과 확장 패널 열기를 함께 요청합니다. 연결된 메모 열기는
+문장 아래 조용한 텍스트 링크로 두고, 휴지통
+상태에서는 휴지통 목록으로 안내합니다.
+
 ## 카피
 
+설정에서 요약을 활성화하면 확장 사이드 패널의 헤더 아래에 작은 `요약 보기` 행이
+표시됩니다. 저장된 요약 OFF·초기 조회 중·조회 실패에는 행과 요약 영역을 숨깁니다.
+설정 조회가 성공하고 저장된 설정이 없는 신규 계정은 요약 기본 ON이며, 기존에 저장한
+OFF 값은 유지합니다. ON이어도 행을 클릭하기 전에는 요약을 생성하지 않습니다.
+새 패널과 다른 페이지에서는 요약이 접혀 있고, `요약 보기` 클릭으로 첫 생성을
+시작합니다. 같은 페이지에서 접고 다시 열면 진행 중 요청과 결과를 유지합니다.
+접힌 상태에는 준비·미지원·본문 읽기 실패 안내를 미리 표시하지 않습니다. 요약 행을
+연 뒤에만 내부에 준비 상태나 짧은 불가 이유를 표시하며 메모는 계속 사용할 수 있습니다.
+요약 영역의 중복된 `요약` 탭·재생성 버튼은 표시하지 않습니다.
+요약은 기본 높이 40%, 최대 60%이며 메모에 최소 128px을 남깁니다. 채팅을 켠 경우
+같은 상단 영역을 공유하고 요약을 접으면 기존 채팅으로 돌아갑니다.
+옵션의 AI 기능 카드는 `요약 기능 활성화` 스위치와 사이드 패널 표시 안내를 제공합니다.
+저장 성공은 열린 패널에도 반영됩니다. ON은 접힌 행만 표시하고, OFF는 요약을 닫고
+대기 중 실행 의도를 취소합니다. 메모 내용·커서와 같은 페이지 결과는 유지합니다.
+채팅 스위치는 독립적으로 유지합니다.
+
+확장 사이드 패널은 현재 페이지의 하이라이트를 메모 영역 위에서 함께 보여줍니다.
+기본은 최근 인용 두 개의 두 줄 미리보기이며, 전체 목록은 높이를 제한해 내부에서
+스크롤합니다. 접으면 제목과 개수를 남기고, 다시 펼치면 이전 보기 상태를 복원합니다.
+요약과 하이라이트 제목은 40px 높이의 보조 행으로 맞춥니다. 제목은 14px medium,
+개수와 아이콘은 muted 색으로 표시하며 개수 배지는 쓰지 않습니다. 요약 행은 투명한
+배경과 하단 구분선으로 구획합니다. 인용 목록은 카드 테두리·배경·왼쪽 색 막대를
+제거하고, 14px/20px 인라인 mark의 원래 하이라이트 색과 원문 이동 화살표를 유지합니다.
+빈 상태·오류·로딩도 목록 안에서 표현하고, hover 배경과 키보드 focus ring을 제공합니다.
+인용은 선택한 메모와 독립적인 페이지 자료이며 하이라이트 갱신으로 메모 입력을
+재설정하지 않습니다. 노란 인용은 위 토큰의 배경·글자색 쌍을 사용합니다.
+
 - 모든 사용자 노출 문구는 **번역 키**로 씁니다. `lng === "ko" ? ... : ...` 분기를 쓰지 않습니다
+- 예외: **한 언어에만 존재하는 페이지**(예: `/ko/compare/*`, 다른 언어 경로는 404)는 문구를 페이지 `_constants`에 그 언어로 둡니다. 쓰이지 않을 반대 언어 키를 만들지 않기 위해서이고, 언어 분기가 없으므로 위 금지 규칙과 충돌하지 않습니다
 - 키 위치: `apps/web/src/modules/i18n/locales/{ko,en}/translation.json` (중첩 객체, 관련 문구는 공통 prefix로 묶음)
 - 확장은 `_locales/`
 - 문구를 추가·수정한 뒤에는 `/i18n-check`로 ko/en 양쪽 완전성을 확인합니다

@@ -1,10 +1,18 @@
+import type { HighlightColor } from "@web-memo/shared/constants";
+import { analytics } from "@web-memo/shared/modules/analytics";
+import {
+	ChromeSyncStorage,
+	STORAGE_KEYS,
+} from "@web-memo/shared/modules/chrome-storage";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import {
 	type HighlightRenderer,
+	resolveAnchor,
 	toHighlightItem,
 } from "@web-memo/shared/modules/highlight";
-import { normalizeUrl } from "@web-memo/shared/utils/url";
+import { getPageKey, normalizeUrl } from "@web-memo/shared/utils/url";
 import { useEffect, useRef, useState } from "react";
+import { reportContentUiError } from "../../utils/reportError";
 import {
 	createHighlightController,
 	type IFHighlightSelectionState,
@@ -14,6 +22,7 @@ import {
 	type IFHighlightEditState,
 } from "./createHighlightEditor";
 import { startHighlightRestore } from "./restoreHighlights";
+import { useHighlightBubbleGate } from "./useHighlightBubbleGate";
 
 /** 생성과 복원이 공유하는 렌더러 및 중복 판정에 필요한 기존 행. */
 export interface IFHighlightSelectionOptions {
@@ -24,6 +33,10 @@ export interface IFHighlightSelectionOptions {
 /** 텍스트 선택 추적과 메시지 저장의 생명주기를 관리한다. */
 export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 	const [editState, setEditState] = useState<IFHighlightEditState | null>(null);
+	const [isCreatedNoteOpen, setIsCreatedNoteOpen] = useState(false);
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
+	const [menuError, setMenuError] = useState("");
+	const [lastUsedColor, setLastUsedColor] = useState<HighlightColor>("yellow");
 	const editorRef = useRef<ReturnType<typeof createHighlightEditor> | null>(
 		null,
 	);
@@ -32,6 +45,22 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 	const controllerRef = useRef<ReturnType<
 		typeof createHighlightController
 	> | null>(null);
+	const {
+		isBubbleAllowed,
+		isIntroPending,
+		bubblePosition,
+		positionSettingStatus,
+		setBubblePosition,
+	} = useHighlightBubbleGate();
+	/** 컨트롤러는 한 번만 만들어지므로 게이트의 최신 값을 ref로 읽게 한다. */
+	const isBubbleAllowedRef = useRef(isBubbleAllowed);
+	const isIntroPendingRef = useRef(isIntroPending);
+	const [disabledNoticePosition, setDisabledNoticePosition] =
+		useState<IFHighlightNoticePosition | null>(null);
+	const [panelOpenErrorPosition, setPanelOpenErrorPosition] = useState<{
+		x: number;
+		y: number;
+	} | null>(null);
 	useEffect(() => {
 		let generation = 0;
 		let isStopped = false;
@@ -65,16 +94,39 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 					},
 					renderer: options.renderer,
 				});
-			} catch {
+			} catch (error) {
 				/** 조회 실패에도 첫 생성 툴바를 유지한다. */
+				reportContentUiError({
+					error,
+					feature: "highlight",
+					operation: "restore",
+					stage: "load",
+				});
 			}
 		};
 		const controller = createHighlightController({
 			renderer: options.renderer,
 			requestCreate: bridge.request.CREATE_HIGHLIGHT,
-			onSelectionChange: setSelectionState,
+			onSelectionChange: (nextState) => {
+				setSelectionState(nextState);
+				if (nextState) setPanelOpenErrorPosition(null);
+				if (!nextState) {
+					setIsMenuOpen(false);
+				}
+			},
 			onPageChange: () => {
+				setPanelOpenErrorPosition(null);
 				void restorePage();
+			},
+			isSelectionEnabled: () => isBubbleAllowedRef.current,
+			onSaveSuccess: (color) => {
+				analytics.trackEvent({
+					name: "highlight_create",
+					params: { color, has_note: false },
+				});
+				if (isIntroPendingRef.current) {
+					void markIntroSeen();
+				}
 			},
 		});
 		const editor = createHighlightEditor({
@@ -83,10 +135,49 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			getRow: controller.getRow,
 			updateRow: controller.updateRow,
 			removeRow: controller.removeRow,
-			onChange: setEditState,
+			onChange: (nextState) => {
+				setEditState(nextState);
+				if (!nextState) {
+					setIsCreatedNoteOpen(false);
+				}
+			},
 			requestEdit: bridge.request.EDIT_HIGHLIGHT,
 		});
 		editorRef.current = editor;
+		const stopScrollHandler = bridge.handle.SCROLL_TO_HIGHLIGHT(
+			(payload, _sender, sendResponse) => {
+				try {
+					const { pageKey, id } = payload ?? {};
+					if (
+						typeof pageKey !== "string" ||
+						!pageKey ||
+						!Number.isSafeInteger(id) ||
+						getPageKey(location.href) !== pageKey
+					) {
+						sendResponse({ success: false });
+						return;
+					}
+					const row = controller.getRow(id);
+					if (!row || (row.page_key || getPageKey(row.url)) !== pageKey) {
+						sendResponse({ success: false });
+						return;
+					}
+					const range = resolveAnchor(toHighlightItem(row).anchor);
+					const target =
+						range?.startContainer instanceof Element
+							? range.startContainer
+							: range?.startContainer.parentElement;
+					if (!target?.isConnected || !target.scrollIntoView) {
+						sendResponse({ success: false });
+						return;
+					}
+					target.scrollIntoView({ block: "center" });
+					sendResponse({ success: true });
+				} catch {
+					sendResponse({ success: false });
+				}
+			},
+		);
 		void restorePage();
 		controllerRef.current = controller;
 
@@ -94,22 +185,200 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			isStopped = true;
 			generation += 1;
 			stopRestore?.();
+			stopScrollHandler();
 			editor.stop();
 			editorRef.current = null;
 			controller.stop();
 			controllerRef.current = null;
 		};
 	}, [options.renderer, options.notesById]);
-	const handleHighlightButtonClick = async () => {
-		await controllerRef.current?.save();
+	useEffect(() => {
+		isBubbleAllowedRef.current = isBubbleAllowed;
+		if (!isBubbleAllowed) {
+			controllerRef.current?.dismissSelection();
+		}
+	}, [isBubbleAllowed]);
+	useEffect(() => {
+		isIntroPendingRef.current = isIntroPending;
+	}, [isIntroPending]);
+	useEffect(() => {
+		if (!disabledNoticePosition) {
+			return;
+		}
+		const handlePageInteraction = () => setDisabledNoticePosition(null);
+		document.addEventListener("selectionchange", handlePageInteraction);
+		document.addEventListener("pointerdown", handlePageInteraction);
+		window.addEventListener("scroll", handlePageInteraction, true);
+
+		return () => {
+			document.removeEventListener("selectionchange", handlePageInteraction);
+			document.removeEventListener("pointerdown", handlePageInteraction);
+			window.removeEventListener("scroll", handlePageInteraction, true);
+		};
+	}, [disabledNoticePosition]);
+	const handleHighlightColorClick = async (color: HighlightColor) => {
+		const row = await controllerRef.current?.save(color);
+		if (row) {
+			setLastUsedColor(color);
+		}
+	};
+	const handleHighlightNoteClick = async () => {
+		const position = selectionState;
+		const row = await controllerRef.current?.save(lastUsedColor);
+		if (row && position) {
+			setIsCreatedNoteOpen(true);
+			editorRef.current?.open(row, position.x, position.y);
+		}
+	};
+	const requestOpenPanel = (position: { x: number; y: number } | null) => {
+		// Chrome sidePanel.open needs the original click gesture; start before the save request.
+		void bridge.request.OPEN_SIDE_PANEL().then(
+			(response) => {
+				if (!response?.success) setPanelOpenErrorPosition(position);
+				else setPanelOpenErrorPosition(null);
+			},
+			(error) => {
+				reportContentUiError({
+					error,
+					feature: "highlight",
+					operation: "open-side-panel",
+					stage: "request",
+				});
+				setPanelOpenErrorPosition(position);
+			},
+		);
+	};
+	const handleHighlightMemoClick = async () => {
+		requestOpenPanel(selectionState);
+		await controllerRef.current?.save(lastUsedColor);
+	};
+	const handleBubbleMenuClick = () => {
+		setMenuError("");
+		setIsMenuOpen(!isMenuOpen);
+	};
+	const handleBubbleCloseClick = () => {
+		controllerRef.current?.dismissSelection();
+		setIsMenuOpen(false);
+		setMenuError("");
+	};
+	const handleMenuDismiss = () => {
+		setIsMenuOpen(false);
+	};
+	const handleBubblePositionClick = async () => {
+		if (positionSettingStatus !== "ready") {
+			return;
+		}
+		const nextPosition = bubblePosition === "below" ? "above" : "below";
+		try {
+			await ChromeSyncStorage.set(
+				STORAGE_KEYS.highlightBubblePosition,
+				nextPosition,
+			);
+			setBubblePosition(nextPosition);
+			setIsMenuOpen(false);
+			setMenuError("");
+			analytics.trackEvent({
+				name: "extension_setting_change",
+				params: { keys: "highlightBubblePosition" },
+			});
+		} catch (error) {
+			reportContentUiError({
+				error,
+				feature: "highlight",
+				operation: "update-bubble-position",
+				stage: "storage",
+			});
+			setMenuError("highlight_save_failed");
+		}
+	};
+	const handleBubbleDisableClick = async (scope: "site" | "all") => {
+		if (!selectionState) {
+			return;
+		}
+		const noticePosition = { x: selectionState.x, y: selectionState.y, scope };
+		try {
+			if (scope === "site") {
+				const sites = await ChromeSyncStorage.get<string[]>(
+					STORAGE_KEYS.highlightDisabledSites,
+				);
+				await ChromeSyncStorage.set(STORAGE_KEYS.highlightDisabledSites, [
+					...new Set([
+						...(Array.isArray(sites) ? sites : []),
+						location.hostname,
+					]),
+				]);
+			} else {
+				await ChromeSyncStorage.set(STORAGE_KEYS.highlightBubbleEnabled, false);
+			}
+		} catch (error) {
+			reportContentUiError({
+				error,
+				feature: "highlight",
+				operation: "disable-bubble",
+				stage: "storage",
+				tags: { scope },
+			});
+			setMenuError("highlight_save_failed");
+			return;
+		}
+		analytics.trackEvent({
+			name: "highlight_bubble_disable",
+			params: { scope },
+		});
+		void markIntroSeen();
+		controllerRef.current?.dismissSelection();
+		setIsMenuOpen(false);
+		setMenuError("");
+		setDisabledNoticePosition(noticePosition);
+	};
+	const handleIntroConfirmClick = async () => {
+		await markIntroSeen();
 	};
 
 	return {
 		selectionState,
-		handleHighlightButtonClick,
+		bubblePosition,
+		positionSettingStatus,
+		isMenuOpen,
+		menuError,
+		isCreatedNoteOpen,
+		isIntroVisible: isIntroPending,
+		disabledNoticePosition,
+		panelOpenErrorPosition,
+		handlePanelOpenRetry: () => requestOpenPanel(panelOpenErrorPosition),
+		handleHighlightColorClick,
+		handleHighlightNoteClick,
+		handleHighlightMemoClick,
+		handleBubbleMenuClick,
+		handleBubbleCloseClick,
+		handleMenuDismiss,
+		handleBubblePositionClick,
+		handleBubbleDisableClick,
+		handleIntroConfirmClick,
 		editState,
-		handleHighlightEdit: (
+		handleHighlightEdit: async (
 			action: Parameters<ReturnType<typeof createHighlightEditor>["edit"]>[0],
-		) => editorRef.current?.edit(action),
+		) => {
+			const didSave = await editorRef.current?.edit(action);
+			if (didSave && action.action === "note") {
+				analytics.trackEvent({ name: "highlight_note_update" });
+			}
+		},
 	};
 };
+
+/** 첫 선택 말풍선을 본 것으로 기록한다. 실패하면 다음 선택에서 다시 보여준다. */
+const markIntroSeen = async () => {
+	try {
+		await ChromeSyncStorage.set(STORAGE_KEYS.highlightIntroSeen, true);
+	} catch {
+		/** 기록 실패는 말풍선이 한 번 더 뜨는 것으로 끝난다. */
+	}
+};
+
+/** 끔 안내를 띄울 화면 좌표. 사라진 버블의 자리를 그대로 쓴다. */
+interface IFHighlightNoticePosition {
+	x: number;
+	y: number;
+	scope: "site" | "all";
+}

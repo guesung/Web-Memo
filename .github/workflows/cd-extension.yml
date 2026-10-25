@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       deploy_target:
-        description: "배포 대상 (none = production으로 빌드만, staging = staging으로 빌드만, production = 크롬 웹스토어 업로드)"
+        description: "배포 대상 (build-only = production으로 빌드만, staging = staging으로 빌드만, production = 크롬 웹스토어 업로드)"
         type: string
-        default: "none"
+        default: "build-only"
       ref:
         description: "체크아웃할 커밋/태그 (비우면 호출한 워크플로의 기본 ref)"
         type: string
@@ -23,9 +23,9 @@ on:
         description: "배포 대상"
         type: choice
         options:
-          - none
+          - build-only
           - staging
-        default: "none"
+        default: "build-only"
       ref:
         description: "체크아웃할 커밋/태그 (비우면 실행한 브랜치)"
         type: string
@@ -34,7 +34,7 @@ on:
 jobs:
   build-extension:
     name: 확장 빌드
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       zip_name: ${{ steps.zip.outputs.name }}
     env:
@@ -42,7 +42,7 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref }}
 
@@ -55,7 +55,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           ARTIFACT_PREFIX: store-package-extension-production-
-        run: .github/scripts/find-reusable-artifact.sh
+        run: .github/scripts/deploy/find-reusable-artifact.sh
 
       - name: Download reusable build
         if: ${{ steps.reuse.outputs.found == 'true' }}
@@ -66,10 +66,10 @@ jobs:
             --name "${{ steps.reuse.outputs.name }}" \
             --dir dist-zip
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         if: ${{ steps.reuse.outputs.found != 'true' }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         if: ${{ steps.reuse.outputs.found != 'true' }}
         with:
           node-version-file: ".nvmrc"
@@ -112,7 +112,7 @@ jobs:
           unzip -q "dist-zip/${{ steps.zip.outputs.name }}.zip" -d dist-artifact
 
       - name: Upload Extension
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.zip.outputs.name }}
           path: dist-artifact
@@ -122,29 +122,33 @@ jobs:
       # artifact에는 압축 전 빌드 결과물을 올립니다. 스토어 업로드용 ZIP은 별도
       # artifact로 보존해 재사용 경로와 Chrome Web Store 업로드 계약을 유지합니다.
       - name: Upload Store Package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: store-package-${{ steps.zip.outputs.name }}
           path: dist-zip/${{ steps.zip.outputs.name }}.zip
 
   upload-extension:
     needs: build-extension
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     name: 크롬 웹스토어 업로드
     if: ${{ inputs.deploy_target == 'production' }}
     steps:
+      # 업로드 스크립트와 게시자 ID 상수(packages/shared)를 읽으려면 코드가 필요합니다.
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+
       # 이름을 지정하면 아티팩트 내용물이 하위 디렉터리 없이 그대로 풀립니다.
       - name: Download Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: store-package-${{ needs.build-extension.outputs.zip_name }}
 
+      # 심사를 통과하면 바로 게시됩니다. 스크립트가 웹스토어 API v2를 직접 호출합니다.
       - name: Upload zipped file on chrome store
-        uses: mnao305/chrome-extension-upload@v5.0.0
-        with:
-          file-path: ${{ needs.build-extension.outputs.zip_name }}.zip
-          extension-id: eaiojpmgklfngpjddhoalgcpkepgkclh
-          client-id: ${{ secrets.CLIENT_ID }}
-          client-secret: ${{ secrets.CLIENT_SECRET }}
-          refresh-token: ${{ secrets.REFRESH_TOKEN }}
-          publish: true
+        env:
+          CWS_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+          ZIP_PATH: ${{ needs.build-extension.outputs.zip_name }}.zip
+        run: node .github/scripts/deploy/upload-extension-to-store.mjs

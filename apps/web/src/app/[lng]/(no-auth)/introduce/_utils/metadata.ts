@@ -1,36 +1,18 @@
-import { CONFIG } from "@web-memo/env";
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "../../_utils";
 
-export const metadataKorean: Metadata = {
-	title: "웹 메모 - 웹페이지 읽으며 바로 메모하는 크롬 확장",
+/** 공개 페이지의 한국어 검색 및 공유 메타데이터입니다. */
+export const metadataKorean = createPublicPageMetadata({
+	language: "ko",
+	path: "/introduce",
+	title: "웹 메모 - 글 읽으며 메모하세요",
 	description:
-		"웹 메모는 웹페이지를 읽으며 생각을 즉시 기록하는 크롬 확장 프로그램입니다. 사이드 패널에서 아티클을 바로 메모하고, 유튜브 영상을 AI로 요약하며, 저장한 메모를 체계적으로 관리하세요. 무료로 시작하세요.",
-	alternates: {
-		canonical: `${CONFIG.webUrl}/ko/introduce`,
-		languages: {
-			ko: `${CONFIG.webUrl}/ko/introduce`,
-			en: `${CONFIG.webUrl}/en/introduce`,
-			"x-default": `${CONFIG.webUrl}/en/introduce`,
-		},
-	},
-	openGraph: {
-		images: ["/og-image.png"],
-	},
-};
-
-export const metadataEnglish: Metadata = {
-	title: "Web Memo - Take Notes While Browsing | Chrome Extension",
+		"글을 읽다가 떠오른 생각을 사이드 패널에 적어요. 페이지 제목과 주소는 자동으로 기록됩니다. 같은 계정으로 웹과 앱에서 메모를 확인할 수 있어요.",
+});
+/** 공개 페이지의 영어 검색 및 공유 메타데이터입니다. */
+export const metadataEnglish = createPublicPageMetadata({
+	language: "en",
+	path: "/introduce",
+	title: "Web Memo - Take Notes While Reading",
 	description:
-		"Web Memo is a Chrome extension that lets you instantly capture thoughts while reading web pages. Take notes on articles from the side panel, summarize YouTube videos with AI, and organize your saved memos systematically. Free to start.",
-	alternates: {
-		canonical: `${CONFIG.webUrl}/en/introduce`,
-		languages: {
-			ko: `${CONFIG.webUrl}/ko/introduce`,
-			en: `${CONFIG.webUrl}/en/introduce`,
-			"x-default": `${CONFIG.webUrl}/en/introduce`,
-		},
-	},
-	openGraph: {
-		images: ["/og-image.png"],
-	},
-};
+		"Write down thoughts in the side panel as you read. The page title and URL are saved automatically. View your notes on web and app with the same account.",
+});

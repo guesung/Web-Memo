@@ -6,12 +6,22 @@ import { getLanguage, SUPPORTED_LANGUAGES } from "./modules/i18n";
 import { updateAuthorization } from "./modules/supabase";
 
 /**
- * 인증 갱신을 건너뛰어야 하는 경로.
+ * 인증 갱신을 건너뛰어야 하는 경로 접두사.
  *
  * updateAuthorization은 매 요청마다 Supabase에 왕복하는데, Slack은 3초 안에 응답을
- * 못 받으면 사용자에게 실패로 표시합니다. 두 경로 모두 세션을 쓰지 않으므로 그냥 통과시킵니다.
+ * 못 받으면 사용자에게 실패로 표시합니다. 제거 이벤트 경로도 세션 없이 열려야 합니다.
  */
 const AUTH_BYPASS_PATHS = ["/api/slack", "/api/version"];
+
+/**
+ * 인증·로케일 처리와 독립적으로 응답해야 하는 공개 SEO 파일.
+ *
+ * @description
+ * 검색엔진이 읽는 정적 엔드포인트는 사용자 세션 갱신에 의존할 이유가 없습니다.
+ * 인증 처리에서 오류나 지연이 생겨도 sitemap과 robots 응답에는 영향을 주지 않도록
+ * 미들웨어의 나머지 로직을 건너뜁니다.
+ */
+const PUBLIC_SEO_PATHS = ["/sitemap.xml", "/robots.txt"];
 
 /**
  * 색인 대상이 아닌 경로. 로케일 접두사를 뗀 형태로 비교합니다.
@@ -27,6 +37,7 @@ const NOINDEX_PATHS = [
 	PATHS.login,
 	PATHS.memos,
 	PATHS.highlights,
+	PATHS.favorites,
 	PATHS.admin,
 	PATHS.uninstall,
 ];
@@ -105,7 +116,19 @@ function getLegacyMemoFilterRedirect(request: NextRequest) {
 export async function middleware(request: NextRequest) {
 	const pathname = request.nextUrl.pathname;
 
-	if (AUTH_BYPASS_PATHS.some((path) => pathname.startsWith(path))) {
+	// `app/global-not-found.tsx`는 라우팅 단계에서 직접 렌더돼 `params`도 `notFound()`
+	// 세그먼트도 못 받는다. `<html lang>`을 매칭 안 되는 경로에서도 맞추려면 경로를
+	// 요청 헤더로 실어 보내는 수밖에 없다. request.headers를 그대로 건드리므로
+	// updateAuthorization이 만드는 응답에도 그대로 실려 나간다.
+	request.headers.set("x-pathname", pathname);
+
+	if (
+		pathname === "/api/uninstall" ||
+		AUTH_BYPASS_PATHS.some((path) => pathname.startsWith(path))
+	) {
+		return NextResponse.next();
+	}
+	if (PUBLIC_SEO_PATHS.includes(pathname)) {
 		return NextResponse.next();
 	}
 
@@ -122,10 +145,7 @@ export async function middleware(request: NextRequest) {
 	);
 	const isAuthPath = pathname.startsWith(PATHS.auth);
 	const isApiPath = pathname.startsWith("/api");
-	const isSitemapPath = pathname.startsWith("/sitemap");
-	const isRobotsPath = pathname.startsWith("/robots");
-	const isNotNeedLanguagePath =
-		isAuthPath || isApiPath || isSitemapPath || isRobotsPath;
+	const isNotNeedLanguagePath = isAuthPath || isApiPath;
 
 	if (!isLanguagePath && !isNotNeedLanguagePath)
 		return NextResponse.redirect(

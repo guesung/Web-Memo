@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import {
 	ChromeSyncStorage,
@@ -5,7 +6,6 @@ import {
 } from "@web-memo/shared/modules/chrome-storage";
 import { I18n } from "@web-memo/shared/utils/extension";
 import {
-	Button,
 	Card,
 	CardContent,
 	CardHeader,
@@ -16,197 +16,86 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-	Switch,
-	useToast,
 } from "@web-memo/ui";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
 
-export default function Option() {
-	const { toast } = useToast();
+import SaveStatus from "./SaveStatus";
+import { useAutoSaveSetting } from "./useAutoSaveSetting";
 
-	const {
-		handleSubmit,
-		setValue,
-		watch,
-		formState: { dirtyFields },
-	} = useForm({
-		defaultValues: {
-			youtubePrompt: "",
-			webPrompt: "",
-			language: "ko",
-			autoApplyCategory: true,
-			impressionSectionEnabled: false,
-			actionItemSectionEnabled: false,
-		},
-	});
-
-	const onSubmit = handleSubmit(async (data) => {
-		await ChromeSyncStorage.set(
-			STORAGE_KEYS.youtubePrompts,
-			data.youtubePrompt,
-		);
-		await ChromeSyncStorage.set(STORAGE_KEYS.webPrompts, data.webPrompt);
-		await ChromeSyncStorage.set(STORAGE_KEYS.language, data.language);
-		await ChromeSyncStorage.set(
-			STORAGE_KEYS.autoApplyCategory,
-			data.autoApplyCategory,
-		);
-		await ChromeSyncStorage.set(
-			STORAGE_KEYS.impressionSectionEnabled,
-			data.impressionSectionEnabled,
-		);
-		await ChromeSyncStorage.set(
-			STORAGE_KEYS.actionItemSectionEnabled,
-			data.actionItemSectionEnabled,
-		);
-
-		// 폼은 전체를 저장하지만 실제로 손댄 항목만 남깁니다. autoApplyCategory가 꺼지는
-		// 비율이 카테고리 제안의 체감 품질을 말해줍니다.
-		const changedKeys = Object.keys(dirtyFields).sort().join(",");
-
-		if (changedKeys) {
-			analytics.trackEvent({
-				name: "extension_setting_change",
-				params: { keys: changedKeys },
-			});
-		}
-
-		toast({
-			title: I18n.get("settings_saved"),
-		});
-	});
-
-	useEffect(() => {
-		const fetchStorage = async () => {
+/** AI 응답 언어 설정을 보여줍니다. */
+const Option = () => {
+	const storedSettings = useSuspenseQuery({
+		queryKey: ["options", "ai-settings"],
+		queryFn: async () => {
 			const language = await ChromeSyncStorage.get<string>(
 				STORAGE_KEYS.language,
 			);
-			const youtubePrompts = await ChromeSyncStorage.get<string>(
-				STORAGE_KEYS.youtubePrompts,
-			);
-			const webPrompts = await ChromeSyncStorage.get<string>(
-				STORAGE_KEYS.webPrompts,
-			);
-			const autoApplyCategory = await ChromeSyncStorage.get<boolean>(
-				STORAGE_KEYS.autoApplyCategory,
-			);
-			const impressionSectionEnabled = await ChromeSyncStorage.get<boolean>(
-				STORAGE_KEYS.impressionSectionEnabled,
-			);
-			const actionItemSectionEnabled = await ChromeSyncStorage.get<boolean>(
-				STORAGE_KEYS.actionItemSectionEnabled,
-			);
 
-			setValue("language", language);
-			setValue("youtubePrompt", youtubePrompts);
-			setValue("webPrompt", webPrompts);
-			setValue("autoApplyCategory", autoApplyCategory ?? true);
-			setValue("impressionSectionEnabled", impressionSectionEnabled ?? false);
-			setValue("actionItemSectionEnabled", actionItemSectionEnabled ?? false);
-		};
+			return {
+				language: language ?? "ko",
+			};
+		},
+		staleTime: Number.POSITIVE_INFINITY,
+	});
 
-		fetchStorage();
-	}, [setValue]);
+	const language = useAutoSaveSetting({
+		initialValue: storedSettings.data.language,
+		onSave: async (value: string) => {
+			await ChromeSyncStorage.set(STORAGE_KEYS.language, value);
+			analytics.trackEvent({
+				name: "extension_setting_change",
+				params: { keys: "language" },
+			});
+		},
+	});
 
 	return (
-		<div className="flex flex-col gap-6">
+		<>
 			<Card>
 				<CardHeader>
 					<CardTitle asChild>
-						<h2 className="text-lg">{I18n.get("prompt_language_setting")}</h2>
+						<h2 className="text-lg">{I18n.get("highlight_setting")}</h2>
 					</CardTitle>
 				</CardHeader>
-				<CardContent className="pb-6">
-					<Select
-						value={watch("language")}
-						onValueChange={(value) => setValue("language", value)}
-					>
-						<SelectTrigger className="w-40">
-							<SelectValue
-								placeholder={I18n.get("select_language_placeholder")}
+				<CardContent className="pb-6 text-sm text-muted-foreground">
+					{I18n.get("highlight_setting_description")}
+				</CardContent>
+			</Card>
+			<Card>
+				<CardHeader>
+					<CardTitle asChild>
+						<h2 className="text-lg">{I18n.get("ai_setting")}</h2>
+					</CardTitle>
+				</CardHeader>
+				<CardContent className="flex flex-col gap-6 pb-6">
+					<div className="flex flex-col gap-2">
+						<Label htmlFor="response-language">
+							{I18n.get("prompt_language_setting")}
+						</Label>
+						<div className="flex flex-wrap items-center gap-3">
+							<Select
+								value={language.value}
+								onValueChange={language.changeValue}
+							>
+								<SelectTrigger id="response-language" className="w-40">
+									<SelectValue
+										placeholder={I18n.get("select_language_placeholder")}
+									/>
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="ko">한국어</SelectItem>
+									<SelectItem value="en-US">English</SelectItem>
+								</SelectContent>
+							</Select>
+							<SaveStatus
+								status={language.status}
+								onRetryClick={language.retrySave}
 							/>
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="ko">한국어</SelectItem>
-							<SelectItem value="en-US">English</SelectItem>
-						</SelectContent>
-					</Select>
-				</CardContent>
-			</Card>
-
-			<Card>
-				<CardHeader>
-					<CardTitle asChild>
-						<h2 className="text-lg">
-							{I18n.get("auto_apply_category_setting")}
-						</h2>
-					</CardTitle>
-				</CardHeader>
-				<CardContent className="pb-6">
-					<div className="flex items-center gap-3">
-						<Switch
-							id="auto-apply-category"
-							checked={watch("autoApplyCategory")}
-							onCheckedChange={(checked) =>
-								setValue("autoApplyCategory", checked)
-							}
-						/>
-						<Label
-							htmlFor="auto-apply-category"
-							className="text-sm font-normal"
-						>
-							{I18n.get("auto_apply_category_description")}
-						</Label>
+						</div>
 					</div>
 				</CardContent>
 			</Card>
-
-			<Card>
-				<CardHeader>
-					<CardTitle asChild>
-						<h2 className="text-lg">{I18n.get("memo_section_setting")}</h2>
-					</CardTitle>
-				</CardHeader>
-				<CardContent className="flex flex-col gap-4 pb-6">
-					<div className="flex items-center gap-3">
-						<Switch
-							id="impression-section-enabled"
-							checked={watch("impressionSectionEnabled")}
-							onCheckedChange={(checked) =>
-								setValue("impressionSectionEnabled", checked)
-							}
-						/>
-						<Label
-							htmlFor="impression-section-enabled"
-							className="text-sm font-normal"
-						>
-							{I18n.get("impression_section_description")}
-						</Label>
-					</div>
-					<div className="flex items-center gap-3">
-						<Switch
-							id="action-item-section-enabled"
-							checked={watch("actionItemSectionEnabled")}
-							onCheckedChange={(checked) =>
-								setValue("actionItemSectionEnabled", checked)
-							}
-						/>
-						<Label
-							htmlFor="action-item-section-enabled"
-							className="text-sm font-normal"
-						>
-							{I18n.get("action_item_section_description")}
-						</Label>
-					</div>
-				</CardContent>
-			</Card>
-
-			<div className="flex justify-end">
-				<Button type="submit" onClick={onSubmit}>
-					{I18n.get("save")}
-				</Button>
-			</div>
-		</div>
+		</>
 	);
-}
+};
+
+export default Option;

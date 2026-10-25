@@ -11,6 +11,11 @@ export default function useRestoreMemosMutation() {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	return useMutation<MemoSupabaseResponse, Error, number[]>({
+		meta: {
+			feature: "memo",
+			operation: "restore",
+			stage: "save",
+		},
 		mutationFn: new MemoService(supabaseClient).restoreMemos,
 		onSuccess: (_, idList) => {
 			analytics.trackEvent({

@@ -1,4 +1,5 @@
 import type { HighlightRow } from "../../types";
+import type { HighlightMemoLink } from "../../types/highlightMemo";
 import type { HighlightAnchor } from "../highlight/types";
 import type { Category } from "./constant";
 
@@ -27,6 +28,28 @@ export interface CreateMemoResponse {
 	error?: string;
 }
 
+/** 하이라이트와 실제 메모를 원자적으로 연결하는 전용 요청. */
+export interface CreateHighlightMemoPayload {
+	highlightId: number;
+	memo: string;
+}
+
+export type CreateHighlightMemoResponse =
+	| {
+			success: true;
+			memoId: number;
+			created: boolean;
+			deletedAt: string | null;
+	  }
+	| {
+			success: false;
+			reason: "unauthenticated" | "invalid_request" | "save_failed";
+	  };
+
+export type GetHighlightMemoLinksResponse =
+	| { success: true; links: HighlightMemoLink[] }
+	| { success: false; reason: "unauthenticated" | "load_failed" };
+
 export interface YoutubeTranscriptResponse {
 	success: boolean;
 	transcript: string;
@@ -43,9 +66,10 @@ export interface GetHighlightsByUrlResponse {
 	highlights: HighlightRow[];
 }
 
-/** 선택 당시의 앵커와 페이지 메타데이터. 사용자 ID와 색상은 background가 결정한다. */
+/** 선택 당시의 앵커와 페이지 메타데이터. 사용자 ID는 background가 결정하고 선택 색상은 허용 목록으로 검증한다. */
 export interface IFCreateHighlightPayload {
 	anchor: HighlightAnchor;
+	color: import("../../constants/Highlight").HighlightColor;
 	url: string;
 	title: string;
 	favIconUrl: string;
@@ -59,13 +83,24 @@ export type TCreateHighlightResponse =
 			error: "unauthenticated" | "invalid_request" | "save_failed";
 	  };
 
-/** 현재 페이지에서 실행하는 하이라이트 색 변경 또는 삭제. */
+/** 현재 페이지에서 실행하는 하이라이트 색상·메모 변경 또는 삭제. */
 export interface IFEditHighlightPayload {
 	id: number;
 	url: string;
-	action: "color" | "delete";
+	action: "color" | "note" | "delete";
+	note?: string;
 	color?: import("../../constants/Highlight").HighlightColor;
+}
+
+/** 설정이 저장된 계정. 수신자는 자신의 계정과 비교한 뒤 재조회한다. */
+export interface IFSettingUpdatedPayload {
+	userId: string;
 }
 
 /** 실제 변경된 행 또는 검증·인증·저장 오류. */
 export type TEditHighlightResponse = TCreateHighlightResponse;
+
+/** content script가 버블을 띄워도 되는지 판단하는 로그인 여부. 세션이 없거나 확인에 실패하면 false다. */
+export interface IFGetLoginStatusResponse {
+	isLoggedIn: boolean;
+}

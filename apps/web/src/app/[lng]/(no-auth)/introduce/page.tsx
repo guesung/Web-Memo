@@ -16,7 +16,9 @@ import { CHROME_STORE_STATS } from "./_constants";
 import { getMemoCount, metadataEnglish, metadataKorean } from "./_utils";
 
 export async function generateMetadata({ params }: LanguageParams) {
-	return params.lng === "ko" ? metadataKorean : metadataEnglish;
+	const { lng } = await params;
+
+	return lng === "ko" ? metadataKorean : metadataEnglish;
 }
 
 interface IntroducePageProps extends LanguageParams {}
@@ -30,9 +32,8 @@ interface IntroducePageProps extends LanguageParams {}
  * 배경 밴드는 섹션이 아니라 여기서 정한다 — 인접한 두 섹션이 같은 밴드를 쓰지
  * 않아야 하는데, 그 판단은 순서를 아는 쪽만 할 수 있다.
  */
-export default async function IntroducePage({
-	params: { lng },
-}: IntroducePageProps) {
+export default async function IntroducePage({ params }: IntroducePageProps) {
+	const { lng } = await params;
 	const memoCount = await getMemoCount();
 
 	const stats = {

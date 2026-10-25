@@ -14,8 +14,7 @@
 | --- | --- | --- | --- |
 | `packages/env/.env.{development,staging,production}` | 확장·웹이 공유하며 환경마다 다른 값 | ✅ 커밋 | `tsup`이 빌드 시 인라인 |
 | `packages/env/.env` | 위 값의 로컬 오버라이드 (선택) | ❌ | 동상 |
-| `apps/web/.env` | 웹에서만 쓰는 서버 시크릿 | ❌ | Next.js가 자동 로드 (로컬·e2e 전용) |
-| Vercel 프로젝트 환경변수 | 배포된 웹의 런타임·빌드 값 | — | 서버리스 함수가 런타임에 `process.env` |
+| Vercel 프로젝트 환경변수 | 웹의 서버 시크릿과 런타임·빌드 값. **웹 값의 원천(SSOT)** | — | 서버리스 함수가 런타임에 `process.env`. 로컬은 `env:pull`로 development 값을 받음 |
 | GitHub Secrets | CI/CD가 외부 서비스에 인증하는 데 쓰는 값 | — | 워크플로의 `${{ secrets.* }}` |
 | `packages/shared/src/constants/` | 환경과 무관한 고정값 | ✅ | 그냥 `import` |
 
@@ -23,8 +22,127 @@
 
 1. 환경이 달라져도 값이 같은가 → `packages/shared/src/constants/`
 2. 환경마다 다르고, 확장·웹이 같이 쓰는가 → `packages/env/.env.{환경}`
-3. 웹 서버에서만 읽고 절대 노출되면 안 되는가 → `apps/web/.env` + Vercel 프로젝트 환경변수
+3. 웹 서버에서만 읽고 절대 노출되면 안 되는가 → Vercel 프로젝트 환경변수(세 환경에 같은 값으로 등록, `BUILD_ENV`만 예외)
 4. 배포 파이프라인이 외부 서비스에 인증하는 데만 쓰는가 → GitHub Secrets
+
+---
+
+## 전체 목록
+
+어떤 변수가 어디에 등록돼 있어야 하는지의 원천은 [`.github/env-manifest.yml`](../.github/env-manifest.yml)
+입니다. 아래 목록은 그 파일에서 생성한 것이라 **손으로 고치지 않습니다.** 값을 추가·삭제·이동하면
+매니페스트를 고치고 `node .github/scripts/env/check-env-manifest.mjs --write`로 갱신합니다.
+
+두 가지가 자동으로 대조합니다.
+
+- **PR CI** (`audit-env-manifest.yml`): 코드·워크플로가 읽는 이름, `.env` 파일의 키, 이 목록이 매니페스트와
+  같은지 봅니다. 어긋나면 PR이 실패합니다. 토큰이 필요 없습니다.
+- **등록 현황 감사** (`audit-env-registry.yml`): GitHub·Vercel·Supabase에 **실제로 등록된 이름**을
+  매니페스트와 대조합니다. 매일 돌아 다르면 Slack으로 알리고, **PR에서도 돌아** 등록이 빠진 값이
+  있으면 체크를 실패시킵니다. 코드보다 시크릿을 먼저 등록하는 것은 정상적인 순서라, 매니페스트에 없는
+  등록과 선언하지 않은 환경은 경고 주석으로만 남깁니다. 조회 토큰이 없는 저장소는 비교할 수 없으므로
+  실패가 아니라 "미조회" 경고입니다. 이름만 비교하므로 **같은 이름이 두 곳에 있을 때 값이
+  같은지는 확인하지 못합니다.**
+
+<!-- env-manifest:start -->
+
+### GitHub Secrets (27개)
+
+| 이름 | 없으면 생기는 일 | 읽는 곳 |
+| --- | --- | --- |
+| `APP_ID` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml`, `.github/workflows/chore-ga-events.yml` |
+| `APP_PRIVATE_KEY` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml`, `.github/workflows/chore-ga-events.yml` |
+| `BLOG_CATALOG_INGEST_SECRET` | 블로그 정주행 카탈로그 수집이 멈춘다. GitHub에 없으면 수집기가 시작하지 못하고, Supabase에 없으면 수집 엔드포인트가 500으로 모든 요청을 거절해 토스·당근의 새 글과 재개 요청이 반영되지 않는다(이미 수집된 글 조회는 그대로다) | `.github/workflows/chore-blog-catalog.yml`, `.github/scripts/blog-reading/collect.mjs`, `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts` |
+| `CLAUDE_CODE_OAUTH_TOKEN` | 주간 리팩토링 점검과 SEO AI 리포트, GA 이벤트 점검이 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신한다. 구독 토큰이라 만료·한도 소진으로도 실패한다 | `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/chore-ga-events.yml` |
+| `CLIENT_ID` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
+| `CLIENT_SECRET` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
+| `EXPO_ANDROID_SERVICE_ACCOUNT_JSON` | master 릴리스(release.yml)의 Google Play 내부 테스트 제출과 현황 조회가 실패한다 | `.github/workflows/cd-app.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
+| `EXPO_ASC_API_KEY_P8` | TestFlight 제출과 App Store 현황 조회가 실패한다 | `.github/workflows/cd-app.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
+| `EXPO_TOKEN` | EAS 로그인이 실패해 앱 빌드가 멈춘다 | `.github/workflows/cd-app.yml` |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | develop 앱 빌드의 Firebase App Distribution(App Tester) 배포가 실패한다 | `.github/workflows/cd-app.yml` |
+| `GA_SHEET_ID` | 주간 GA 수치가 Google Sheets에 쌓이지 않는다(Slack 리포트는 그대로 가고 경고만 남는다) | `.github/workflows/report-ga-weekly.yml` |
+| `GA4_SERVICE_ACCOUNT_JSON` | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/report-seo.yml`, `apps/web/src/modules/ga/config.ts` |
+| `GSC_SERVICE_ACCOUNT_JSON` (선택) | 없으면 공개 SEO 검사는 계속 실행되지만 Search Console 색인 상태와 주간 검색 성과 조회를 건너뛴다 | `.github/workflows/report-seo.yml`, `.github/workflows/report-gsc-demand.yml` |
+| `NOTION_TOKEN` | 주간 리팩토링 점검 결과가 노션 작업 카드로 만들어지지 않는다 | `.github/workflows/audit-refactor.yml` |
+| `REFRESH_TOKEN` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
+| `SENTRY_AUTH_TOKEN` | Sentry 소스맵 업로드가 조용히 실패한다. 빌드는 통과하므로 스택 트레이스가 난독화된 채 보여야 알게 된다 | `.github/workflows/cd-extension.yml`, `.github/workflows/cd-app.yml`, `apps/web/next.config.mjs`, `packages/vite-config/lib/withPageConfig.mjs` |
+| `SEO_SHEET_ID` (선택) | SEO·GSC 장기 이력이 Google Sheets에 쌓이지 않는다(공개 SEO 검사와 원본 아티팩트는 유지된다) | `.github/workflows/report-seo.yml` |
+| `SLACK_BOT_TOKEN` | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts`, `.github/workflows/report-seo.yml` |
+| `SLACK_CHANNEL_ID` | 머지 스레드가 생기지 않고 웹훅 알림으로 폴백한다 | `.github/workflows/ci.yml` |
+| `SLACK_REPORT_CHANNEL_ID` | SEO AI 리포트를 스레드로 보내지 못하고 기존 기계 판정 알림으로 대신한다. 봇(SLACK_BOT_TOKEN)이 이 채널에 초대돼 있어야 한다 | `.github/workflows/report-seo.yml` |
+| `SLACK_REPORT_WEBHOOK_URL` | GA 리포트, 주간 리팩토링 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다 | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml` |
+| `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/versions.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/audit-ga-cid-adoption.yml`, `.github/workflows/notify-extension-published.yml` |
+| `STAGING_WEB_URL_WITHOUT_PROTOCOL` | 스테이징 배포에 alias 도메인이 붙지 않는다 | `.github/workflows/cd-web.yml` |
+| `SUPABASE_ACCESS_TOKEN` | 등록 현황 감사가 Supabase secrets를 조회하지 못하고 Supabase 인벤토리 문서가 갱신되지 않는다 | `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml` |
+| `TURBO_TEAM` | Turborepo 원격 캐시 팀을 못 찾아 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml` |
+| `TURBO_TOKEN` | Turborepo 원격 캐시를 못 써 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml` |
+| `VERCEL_TOKEN` | vercel pull, build, deploy, alias가 인증에 실패해 웹 배포가 멈추고, e2e가 웹 서버 환경 변수를 받지 못한다 | `.github/workflows/cd-web.yml`, `.github/workflows/e2e.yml`, `.github/workflows/audit-env-registry.yml` |
+
+### Vercel 프로젝트 환경변수 (17개)
+
+| 이름 | 환경 | 없으면 생기는 일 | 읽는 곳 |
+| --- | --- | --- | --- |
+| `BUILD_ENV` | production, preview | 대시보드에서 수동 재배포할 때 development로 구워져 운영에 localhost:3000이 실린다. tsup.config.ts의 가드가 빌드를 실패시켜 막는다 | `packages/env/src/config.ts`, `packages/env/tsup.config.ts`, `apps/web/next.config.mjs`, `packages/zipper/index.ts` |
+| `ENABLE_EXPERIMENTAL_COREPACK` | 전체 | corepack이 꺼져 packageManager의 pnpm 버전이 무시된다 | 코드 밖 |
+| `GA4_SERVICE_ACCOUNT_JSON` | 전체 | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/report-seo.yml`, `apps/web/src/modules/ga/config.ts` |
+| `GITHUB_DISPATCH_TOKEN` | 전체 | Slack에서 release.yml과 versions.yml을 실행하지 못한다 | `apps/web/src/modules/slack/config.ts` |
+| `GRAFANA_OTLP_AUTHORIZATION` (선택) | 전체 | 메모 경로의 Next.js 서버 요청 span 인증이 되지 않아 Grafana Tempo에 전송되지 않는다 | `apps/web/src/modules/observability/serverTracing.ts` |
+| `GRAFANA_OTLP_ENDPOINT` (선택) | 전체 | 메모 경로의 Next.js 서버 요청 span이 Grafana Tempo에 전송되지 않는다 | `apps/web/src/modules/observability/serverTracing.ts` |
+| `NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY` | 전체 | 채널톡 위젯이 뜨지 않는다 | `apps/web/src/components/ChannelTalk/index.tsx` |
+| `NEXT_PUBLIC_FARO_URL` (선택) | 전체 | 메모 화면의 브라우저 지연 측정값이 Grafana Faro에 전송되지 않는다 | `apps/web/src/modules/observability/client.ts` |
+| `OPENAI_API_KEY` | 전체 | AI 기능 전체가 실패한다 | `apps/web/src/app/api/openai/config.ts` |
+| `SENTRY_AUTH_TOKEN` | 전체 | Sentry 소스맵 업로드가 조용히 실패한다. 빌드는 통과하므로 스택 트레이스가 난독화된 채 보여야 알게 된다 | `.github/workflows/cd-extension.yml`, `.github/workflows/cd-app.yml`, `apps/web/next.config.mjs`, `packages/vite-config/lib/withPageConfig.mjs` |
+| `SENTRY_WEBHOOK_SECRET` | production | Sentry 웹훅의 서명을 검증하지 못해 에러 알림이 Slack으로 릴레이되지 않는다 | `apps/web/src/modules/sentry/config.ts` |
+| `SLACK_BOT_TOKEN` | 전체 | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts`, `.github/workflows/report-seo.yml` |
+| `SLACK_SENTRY_ALERT_CHANNEL` | 전체 | Sentry 알림을 보낼 채널을 몰라 릴레이가 실패한다 | `apps/web/src/modules/sentry/config.ts` |
+| `SLACK_SIGNING_SECRET` | 전체 | Slack 요청 서명을 검증하지 못해 배포 버튼과 슬래시 커맨드가 실패한다 | `apps/web/src/modules/slack/config.ts` |
+| `TYPESAFE_API_KEY` | 전체 | Jev 카테고리 판정을 건너뛰고 기존 OpenAI 추천으로 대체하고, 과거 메모 판정(POST /api/past-memo)의 jev 판정이 조용히 꺼진다 | `apps/web/src/app/api/openai/category/route.ts`, `apps/web/src/modules/pastMemo/findPastMemo.ts` |
+| `UPSTASH_REDIS_REST_TOKEN` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/modules/ratelimit/rateLimit.ts` |
+| `UPSTASH_REDIS_REST_URL` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/modules/ratelimit/rateLimit.ts` |
+
+### Supabase Edge Function secrets (6개)
+
+| 이름 | 없으면 생기는 일 | 읽는 곳 |
+| --- | --- | --- |
+| `BLOG_CATALOG_INGEST_SECRET` | 블로그 정주행 카탈로그 수집이 멈춘다. GitHub에 없으면 수집기가 시작하지 못하고, Supabase에 없으면 수집 엔드포인트가 500으로 모든 요청을 거절해 토스·당근의 새 글과 재개 요청이 반영되지 않는다(이미 수집된 글 조회는 그대로다) | `.github/workflows/chore-blog-catalog.yml`, `.github/scripts/blog-reading/collect.mjs`, `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts` |
+| `CRON_SECRET` | DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·가입 알림·아티클 리마인더가 401로 끝난다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
+| `RESEND_API_KEY` | 가입 안내 메일이 발송되지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
+| `SLACK_FEEDBACK_WEBHOOK_URL` | 피드백 Slack 알림이 오지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts` |
+| `SLACK_SIGNUP_WEBHOOK_URL` | 신규 가입 Slack 알림이 오지 않는다. 함수가 예외를 던지고 로그에만 남는다 | `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts` |
+| `WEB_URL` | envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 피드백 알림에서 관리자 링크 줄만 빠진다 | `packages/env/src/config.ts`, `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts` |
+
+### `packages/env/.env.{환경}` (1개)
+
+| 이름 | 없으면 생기는 일 | 읽는 곳 |
+| --- | --- | --- |
+| `WEB_URL` | envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 피드백 알림에서 관리자 링크 줄만 빠진다 | `packages/env/src/config.ts`, `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts` |
+
+### 플랫폼이 주입하는 값 (등록하지 않음)
+
+| 이름 | 주입하는 곳 | 읽는 곳 |
+| --- | --- | --- |
+| `__DEV__` | 확장 개발 모드 스위치. packages/vite-config가 넣는다 | `packages/vite-config/lib/env.mjs` |
+| `__FIREFOX__` | Firefox 빌드 스크립트가 넣는 분기 스위치 | `apps/chrome-extension/utils/plugins/make-manifest-plugin.ts` |
+| `CI` | GitHub Actions가 자동으로 넣는다. Playwright의 test.only 금지·워커 수·서버 재사용 정책을 가른다 | `e2e/playwright.config.ts` |
+| `E2E_RUN_ID` | E2E 실행 ID. globalSetup이 한 번 정해 워커·teardown이 같은 값으로 자기 실행 데이터를 찾는다. 등록할 곳 없음 | `e2e/globalSetup.ts`, `e2e/tests/lib/namespace.ts` |
+| `GITHUB_REF_NAME` | GitHub Actions가 넣는다. Vercel 값이 없을 때의 폴백으로 읽는다 | `apps/web/src/app/api/version/route.ts` |
+| `GITHUB_RUN_ATTEMPT` | GitHub Actions가 넣는다. E2E 실행 ID를 재시도마다 다르게 만든다 | `e2e/globalSetup.ts` |
+| `GITHUB_RUN_ID` | GitHub Actions가 넣는다. E2E 실행 ID의 앞부분으로 실DB 테스트 데이터를 실행별로 가른다 | `e2e/globalSetup.ts` |
+| `GITHUB_SHA` | GitHub Actions가 넣는다. Vercel 값이 없을 때의 폴백으로 읽는다 | `apps/web/src/app/api/version/route.ts` |
+| `NEXT_RUNTIME` | Next.js가 실행 런타임(nodejs, edge)을 넣는다 | `apps/web/src/instrumentation.ts` |
+| `NODE_ENV` | Next와 Vite 같은 툴체인이 자기 값으로 채운다. 환경 구분에는 쓰지 않고 BUILD_ENV를 쓴다 | `apps/chrome-extension/vite.config.mts` |
+| `PLAYWRIGHT_BASE_URL` | 독립 QA 서버의 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 localhost:3000을 본다. 확장 QA 빌드의 WEB_URL과 맞추며 외부 서비스에 등록하지 않는다 | `e2e/tests/fixtures/web.ts`, `e2e/tests/fixtures/extension.ts` |
+| `PROBE_BASE_URL` | 운영 프로브의 대상 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 운영 도메인을 본다. 등록하지 않는다 | `e2e/playwright.probe.config.ts` |
+| `PW_CHROMIUM_ATTACH_TO_OTHER` | Playwright가 넣는 내부 플래그 | `e2e/tests/fixtures/extension.ts` |
+| `SUPABASE_ANON_KEY` | Supabase가 Edge Function에 주입한다. 테스트 발송에서 사용자 토큰을 auth.getUser로 검증할 때만 쓴다 | `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase가 Edge Function에 주입한다. Vercel에는 등록하지 않는다 | `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
+| `SUPABASE_URL` | Supabase가 Edge Function에 주입한다 | `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
+| `VERCEL` | Vercel 빌드와 런타임이 넣는다 | `apps/web/src/modules/slack/afterResponse.ts`, `packages/env/tsup.config.ts` |
+| `VERCEL_ENV` | Vercel이 배포 환경(production, preview, development)을 넣는다 | `apps/web/src/app/api/version/route.ts` |
+| `VERCEL_GIT_COMMIT_REF` | Vercel이 넣는다 | `apps/web/src/app/api/version/route.ts` |
+| `VERCEL_GIT_COMMIT_SHA` | Vercel이 넣는다 | `apps/web/src/app/api/version/route.ts` |
+
+<!-- env-manifest:end -->
 
 ---
 
@@ -126,6 +244,18 @@ pnpm dev                             # .env.development (기본값)
 `packages/env/turbo.json`의 `ready` 태스크가 `env: ["BUILD_ENV"]`를 선언하므로
 환경별로 캐시가 갈립니다. 이게 없으면 staging 빌드가 production 캐시를 재사용합니다.
 
+**Vercel 대시보드의 수동 재배포에는 GitHub Actions가 지정하는 셸 `BUILD_ENV`가 없습니다.**
+GitHub Actions의 `cd-web.yml`은 배포 대상에 맞춰 `BUILD_ENV`를 넣지만, 대시보드의 수동 재배포 등은 그
+워크플로를 거치지 않습니다. `vercel.json`의 `git.deploymentEnabled: false`가 모든 브랜치의
+Git 연동 자동 배포를 막으므로 작업 브랜치의 PR Preview도 자동 생성되지 않습니다.
+상용 배포는 Slack 버튼 → `release.yml` 경로를 사용합니다([release-flow.md](release-flow.md) 참고).
+그래서 Vercel 프로젝트 환경변수에 `BUILD_ENV`를 직접 등록해 둡니다
+(Production = `production`, Preview = `staging`, [3절](#3-vercel-프로젝트-환경변수--배포된-웹의-런타임-값) 참고).
+빠지면 `development`로 구워져 운영 사이트의 랜딩 주소창 목업·sitemap·canonical이
+전부 `localhost:3000`이 되는데, 에러 없이 배포가 성공하므로 사용자가 먼저 발견합니다.
+`tsup.config.ts`는 `VERCEL`이 설정된 빌드에서 `BUILD_ENV`가 없으면 빌드를 실패시켜
+이 조용한 실패를 배포 전에 드러냅니다.
+
 > ⚠️ **분기 기준이 셸 변수라는 점이 중요합니다.**
 > 예전에는 `NODE_ENV`로 파일을 골랐는데, CI가 그 값을 `.env` 파일 *안에* 써넣었습니다.
 > 파일 선택은 파일을 읽기 전에 끝나므로 파일 안의 값으로는 분기를 뒤집을 수 없고,
@@ -154,27 +284,44 @@ export const isProduction = () => CONFIG.buildEnv !== "development";
 
 `config.ts`가 참조하는 키는 `tsup`이 번들에 인라인하므로 확장·웹 클라이언트에
 그대로 실립니다. **서버 시크릿을 여기 추가하지 마세요.** 비밀이 필요하면
-`apps/web/.env`에 두고 서버에서만 읽습니다.
+Vercel 프로젝트 환경변수에 두고 서버에서만 읽습니다.
 
 ---
 
-## 2. `apps/web/.env` — 웹 전용 서버 시크릿
+## 2. 웹 전용 서버 시크릿 — Vercel이 원천, 로컬은 pull
 
-`apps/web/.env.example`에 필요한 키가 적혀 있습니다.
+웹의 서버 시크릿(`OPENAI_API_KEY`, `UPSTASH_*`, `GA4_SERVICE_ACCOUNT_JSON`, Slack·GitHub 토큰 등)은
+**Vercel 프로젝트 환경변수가 유일한 원천**입니다. 로컬 파일을 따로 관리하지 않습니다. 키 목록과 용도는 위
+[전체 목록](#전체-목록)의 Vercel 표가 원천입니다. 웹의 `GA4_PROPERTY_ID`는 비밀이 아니고 환경마다 다르지 않아
+환경변수가 아니라 코드 상수(`apps/web/src/modules/ga/config.ts`)입니다.
 
-| 키 | 용도 | 읽는 곳 |
-| --- | --- | --- |
-| `OPENAI_API_KEY` | 요약·카테고리 분류·웹페이지 QA | `src/app/api/openai/**` |
-| `UPSTASH_REDIS_REST_URL` | OpenAI API 레이트 리밋 | `src/app/api/openai/ratelimit.ts` |
-| `UPSTASH_REDIS_REST_TOKEN` | 동상 | 동상 |
+로컬에서 실행할 때는 development 환경 값을 받아 씁니다.
 
-웹은 공유 `.env`(`packages/env`)를 읽지 않습니다. `process.env`로 직접 읽는 값이
-전부 웹 전용이고, 공유 값 `WEB_URL`은 `packages/env`가 인라인한 `CONFIG.webUrl`로
-받기 때문입니다. 그래서 웹 전용 값만 `apps/web/.env`에 두면 Next.js 기본 동작으로
-충분하고, `dotenv-cli`나 `vercel build` 수정 같은 장치가 필요 없습니다.
+```bash
+vercel link                          # 최초 1회, 저장소 루트에서 (프로젝트 web-memo, 스코프 gueit214s-projects)
+pnpm env:pull                        # 저장소 루트에서 실행. apps/web/.env.local 생성 (gitignore 대상)
+```
 
-**이 파일은 로컬 개발과 e2e에서만 쓰입니다.** 배포된 서버리스 함수가 읽는 값은
-Vercel 프로젝트 설정에서 옵니다.
+- **웹 값은 세 환경(production·preview·development)에 같은 값으로 등록합니다.** 예외는 둘입니다.
+  - `BUILD_ENV`: 값이 환경마다 달라야 합니다(production은 `production`, preview는 `staging`, development는 등록하지 않음).
+  - `SENTRY_WEBHOOK_SECRET`: production에만 둡니다. Sentry Internal Integration의 Client Secret은 생성할 때
+    한 번만 표시돼 다른 환경에 같은 값을 복사할 수 없습니다. 통일하려면 시크릿을 회전하고 세 환경에 새 값을
+    등록해야 하는데, 운영에 새 값을 등록하고 재배포하기 전까지 웹훅 서명 검증이 실패해 에러 알림이 끊기므로
+    지금은 운영 전용으로 둡니다.
+
+  매니페스트에서는 `stores: [vercel]`이 세 환경 모두라는 뜻이고, 예외만 `vercel:<환경>`으로 적습니다.
+- **development 값은 프로젝트 접근 권한이 있는 사람이 읽을 수 있습니다.** production·preview 값은 sensitive라
+  pull로 받을 수 없지만, Vercel은 development 대상을 sensitive로 만들 수 없기 때문입니다. 세 환경을 같게
+  두면 production 값도 development 등록본으로 읽을 수 있다는 뜻이니 접근 권한 범위를 그렇게 다루세요.
+- **`GA4_SERVICE_ACCOUNT_JSON`은** 서비스 계정 키 JSON 전문을 한 줄로 넣습니다. 같은 이름의 값이
+  GitHub Secrets에도 있지만(§5, `report-ga-daily.yml`이 읽습니다) 서로 다른 곳이라 **양쪽에 각각
+  등록해야 합니다.** 값이 없으면 실패하지 않고 `/api/admin/ga/active-users`가 `connected: false`를
+  돌려주며, 대시보드는 그래프 대신 "연결 없음"을 그립니다.
+- **e2e도 같은 방식입니다.** `e2e.yml`이 `VERCEL_TOKEN`으로 development 값을 받아
+  `apps/web/.env.local`에 씁니다(토큰이 없으면 경고만 하고 넘어갑니다).
+
+웹은 공유 `.env`(`packages/env`)를 읽지 않습니다. `process.env`로 직접 읽는 값이 전부 웹 전용이고,
+공유 값 `WEB_URL`은 `packages/env`가 인라인한 `CONFIG.webUrl`로 받기 때문입니다.
 
 ---
 
@@ -183,18 +330,8 @@ Vercel 프로젝트 설정에서 옵니다.
 배포된 서버리스 함수는 런타임에 `process.env`를 읽습니다. 그 값을 실제로 공급하는
 것은 Vercel 프로젝트 설정 하나뿐이고, 워크플로는 `vercel pull`로 그것을 받아옵니다.
 
-등록해야 하는 값은 `apps/web/.env.example`의 세 개(`OPENAI_API_KEY`,
-`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`)와, 소스맵 업로드에 쓰는
-`SENTRY_AUTH_TOKEN`, 그리고 빌드 시스템 플래그 `ENABLE_EXPERIMENTAL_COREPACK`입니다.
-변경은 Vercel 대시보드나 `vercel env` CLI로 합니다.
-
-| 키 | 환경 | 없으면 생기는 일 |
-| --- | --- | --- |
-| `OPENAI_API_KEY` | Production·Preview·Development | AI 기능 전체가 실패 |
-| `UPSTASH_REDIS_REST_URL` | 동상 | 레이트 리밋이 **조용히 꺼짐** |
-| `UPSTASH_REDIS_REST_TOKEN` | 동상 | 동상 |
-| `SENTRY_AUTH_TOKEN` | Production·Preview | 소스맵 업로드가 **조용히 실패** |
-| `ENABLE_EXPERIMENTAL_COREPACK` | 전 환경 | corepack이 꺼져 `packageManager`의 pnpm 버전이 무시됨 |
+등록해야 하는 값과 환경별 등록 범위, 빠졌을 때의 영향은 위 [전체 목록](#전체-목록)의
+Vercel 표가 원천입니다. 변경은 Vercel 대시보드나 `vercel env` CLI로 합니다.
 
 `ENABLE_EXPERIMENTAL_COREPACK`은 코드가 읽는 값이 아니라 Vercel 빌드 시스템이 보는
 플래그입니다. 코드에서 grep해도 나오지 않으므로 "안 쓰는 값"으로 오인하기 쉽지만,
@@ -224,7 +361,7 @@ vercel env ls production
 ### 셸 환경 변수로 덧씌우지 않습니다
 
 과거 `cd-web.yml`은 `OPENAI_API_KEY`를 세 경로로 주고 있었습니다 — `vercel pull`,
-`apps/web/.env`에 `echo`, `vercel build` 스텝의 셸 `env`. 뒤의 둘은 빌드 시점에만
+`apps/web/.env`에 `echo`(지금은 이 방식을 쓰지 않습니다), `vercel build` 스텝의 셸 `env`. 뒤의 둘은 빌드 시점에만
 존재해 런타임에 아무 역할도 하지 않습니다.
 
 무해하지도 않았습니다. GitHub Secrets에 **등록되지 않은 이름**을 셸로 넘기면 빈
@@ -273,45 +410,54 @@ Protocol로 직접 이벤트를 보내는 현재 구조상 이미 번들에 인�
 배포 파이프라인이 외부 서비스에 인증할 때만 씁니다. 애플리케이션 코드가 읽는 값은
 하나도 없습니다.
 
-현재 등록된 15개입니다 (`gh secret list -R guesung/Web-Memo`).
+등록된 목록과 용도는 위 [전체 목록](#전체-목록)의 GitHub Secrets 표가 원천이고,
+실제 등록 상태는 `gh secret list -R guesung/Web-Memo`나 스케줄 감사(`audit-env-registry.yml`)로
+확인합니다.
 
-| 이름 | 용도 | 쓰는 워크플로 |
-| --- | --- | --- |
-| `TURBO_TOKEN` | Turborepo 원격 캐시 인증 | `ci.yml`, `e2e.yml`, `cd-extension.yml` |
-| `TURBO_TEAM` | 원격 캐시 팀 식별자 | 동상 |
-| `VERCEL_TOKEN` | `vercel pull`·`build`·`deploy`·`alias` 인증 | `cd-web.yml` |
-| `STAGING_WEB_URL_WITHOUT_PROTOCOL` | 스테이징 배포에 붙일 alias 도메인 (프로토콜 없는 형태) | `cd-web.yml` |
-| `CLIENT_ID` | 크롬 웹스토어 API OAuth | `cd-extension.yml` |
-| `CLIENT_SECRET` | 동상 | `cd-extension.yml` |
-| `REFRESH_TOKEN` | 동상 | `cd-extension.yml` |
-| `EXPO_TOKEN` | EAS 로그인 | `cd-app.yml` |
-| `EXPO_ASC_API_KEY_P8` | App Store Connect API 키 (TestFlight 제출) | `cd-app.yml` |
-| `EXPO_ANDROID_SERVICE_ACCOUNT_JSON` | Google Play 서비스 계정 키 (내부 테스트 제출) | `cd-app.yml` |
-| `SLACK_WEBHOOK_URL` | 빌드·배포 결과 Slack 알림 | `ci.yml`, `release.yml`, `versions.yml` |
-| `WEB_ENV_FILE` | e2e에서 `apps/web/.env`를 통째로 복원 | `e2e.yml` |
-| `SENTRY_AUTH_TOKEN` | 확장 빌드의 Sentry 소스맵 업로드 인증 | `cd-extension.yml` |
-| `SLACK_REPORT_WEBHOOK_URL` | 데일리 GA 리포트 전용 채널 알림 | `daily-ga-report.yml` |
-| `GA4_SERVICE_ACCOUNT_JSON` | GA4 Data API 조회용 서비스 계정 키 (속성 뷰어 권한) | `daily-ga-report.yml` |
+같은 이름이 Vercel에도 있는 `SLACK_BOT_TOKEN`은 Vercel 환경변수와 같은 값(`chat:write` 스코프)이지만
+서로 읽지 못하므로 따로 등록합니다. `SLACK_CHANNEL_ID`는 웹훅 URL에서 얻을 수 없어 채널 ID를 직접 넣습니다.
+
+감사 워크플로가 GitHub Secrets 목록을 읽으려면 `GITHUB_TOKEN`으로는 부족합니다. 이미 `chore-cleanup-unused.yml`이
+쓰는 GitHub App(`APP_ID`, `APP_PRIVATE_KEY`)에 **Secrets: read** 권한을 주고, Supabase는 대시보드에서 발급한
+토큰을 `SUPABASE_ACCESS_TOKEN`으로 등록해야 합니다. 없으면 해당 저장소만 "미조회"로 남습니다.
 
 `GITHUB_TOKEN`은 GitHub Actions가 자동으로 제공하므로 등록하지 않습니다.
 
+`audit-refactor.yml`(주간 리팩토링 점검)은 시크릿을 둘 더 읽습니다.
+- `CLAUDE_CODE_OAUTH_TOKEN`은 API 키가 아니라 **Claude Code 구독 토큰**입니다. 로컬에서 `claude setup-token`으로
+  발급합니다. 구독 한도를 다른 작업과 나눠 쓰고 토큰에 만료가 있어서, 한도 소진이나 만료로 점검이 실패할 수
+  있습니다. 실패는 `SLACK_WEBHOOK_URL` 채널로 옵니다.
+- `NOTION_TOKEN`은 노션 내부 통합의 시크릿입니다. 통합을 만든 뒤 **개인 업무 로그 DB를 그 통합에 공유**해야
+  카드가 만들어집니다. DB ID(`5f408e05-0015-4532-bcd8-bd36439bec5a`)는 비밀이 아니라 워크플로에 값을 그대로 적었습니다.
+- 시크릿과 별개로 **Claude GitHub App(https://github.com/apps/claude)이 이 레포에 설치**돼 있어야 합니다.
+  액션이 OIDC 토큰을 App 토큰으로 교환하는데, 설치돼 있지 않으면 매주 실패 알림만 옵니다.
+- 두 값을 등록하기 전에 머지하면 등록 현황 감사가 PR 체크를 실패시킵니다. 등록한 뒤 머지합니다.
+
 두 Slack 웹훅은 채널이 다릅니다. `SLACK_WEBHOOK_URL`은 빌드·배포·릴리스 결과가 가는
-기존 CI 채널이고, `SLACK_REPORT_WEBHOOK_URL`은 매일 아침 GA 리포트만 가는 전용 채널입니다.
+기존 CI 채널이고, `SLACK_REPORT_WEBHOOK_URL`은 GA 리포트와 주간 리팩토링 점검 결과만 가는 전용 채널입니다.
 성격이 달라 나눴습니다 — 리포트가 매일 쌓이면 즉시 봐야 하는 배포 실패 알림을 밀어냅니다.
-**다만 `daily-ga-report.yml`의 실패 알림은 일부러 `SLACK_WEBHOOK_URL`로 보냅니다.**
+**다만 `report-ga-daily.yml`의 실패 알림은 일부러 `SLACK_WEBHOOK_URL`로 보냅니다.**
 리포트 채널 웹훅 자체가 죽으면 실패 알림도 같이 침묵하기 때문에, 경로를 갈라 둔 것입니다.
 
-`GA4_PROPERTY_ID`는 시크릿이 아니라 `daily-ga-report.yml`에 값을 그대로 적습니다(`471860782`).
+`GA4_PROPERTY_ID`는 시크릿이 아니라 `report-ga-daily.yml`에 값을 그대로 적습니다(`471860782`).
 비밀이 아니고, 시크릿으로 두면 값이 안 보여 디버깅만 어려워집니다.
 GA4 콘솔 → 관리 → 속성 설정 상단의 **숫자** 속성 ID이며,
 `packages/shared/src/constants/Analytics.ts`의 `G-6HHNP7KJM5`는 측정 ID라 Data API에 넣으면 403/404가 납니다.
 
-### `SENTRY_AUTH_TOKEN`은 확장과 웹이 서로 다른 경로로 받습니다
+`GA_SHEET_ID`는 GA·SEO 장기 이력을 같이 쌓는 Google Sheets URL의 `/d/`와 `/edit`
+사이 ID입니다. 스프레드시트를 `GA4_SERVICE_ACCOUNT_JSON`의 `client_email`에 편집자로
+공유하고, 해당 서비스 계정의 GCP 프로젝트에서 Google Sheets API를 켜야 합니다.
+탭은 없으면 스크립트가 만듭니다. 동일한 실행 ID와 시도 번호로 적재를 재시도하면
+기존 행을 갱신하고, GitHub Actions에서 재실행하여 시도 번호가 바뀌면 새 행을 남깁니다.
+값이 없으면 원본 Actions 아티팩트는 남기고 Sheets 적재만 건너뜁니다.
+
+### `SENTRY_AUTH_TOKEN`은 확장·앱과 웹이 서로 다른 경로로 받습니다
 
 같은 이름이지만 공급처가 둘로 갈립니다.
 
 - **확장**: `cd-extension.yml`의 Build 스텝이 `${{ secrets.SENTRY_AUTH_TOKEN }}`을
   셸 환경 변수로 넘깁니다. → GitHub Secrets에 등록
+- **앱**: `cd-app.yml`의 EAS local Build 스텝이 GitHub Secrets의 토큰을 전달합니다. 직접 EAS cloud 빌드는 EAS 환경에 별도로 등록해야 합니다.
 - **웹**: 셸로 받지 않고 `vercel pull`이 가져오는 Vercel 프로젝트 환경변수에
   의존합니다. → Vercel 프로젝트 환경변수(Production·Preview)에 등록
 
@@ -321,11 +467,22 @@ GA4 콘솔 → 관리 → 속성 설정 상단의 **숫자** 속성 ID이며,
 다른 쪽은 조용히 실패합니다. 소스맵 업로드는 실패해도 빌드가 통과하므로 드러나지
 않습니다. Sentry에서 스택 트레이스가 난독화된 채로 보이면 이 값부터 확인하세요.
 
+두 경로 모두 빌드를 turbo로 돌리므로 **`turbo.jsonc`의 `build.env`에도 선언돼 있어야** 합니다.
+turbo 2는 선언하지 않은 환경 변수를 태스크에 넘기지 않습니다(strict envMode). 선언이 빠져
+있던 동안에는 양쪽에 등록해 놓고도 빌드 로그에 `No auth token provided. Will not upload source maps`만
+남기고 업로드를 건너뛰었습니다.
+
+이런 누락은 이제 PR CI(`check-env-manifest.mjs`)가 막습니다. 빌드 설정 파일이 셸에서 받아 읽는 값은
+매니페스트에 `phase: build`로 표시하고, 검사는 그 표시와 turbo 설정(`turbo.jsonc`, 패키지별 `turbo.json`)의
+`env`·`passThroughEnv` 선언을 양방향으로 대조합니다. turbo 내장 passthrough(`VERCEL*`, `NEXT_*`, `GITHUB_*`,
+`CI` 등)에 걸리는 이름은 선언 없이도 넘어가므로 대조하지 않습니다.
+
 ### 그 밖의 주의점
 
-- **`WEB_ENV_FILE`은 파일 내용 전체**입니다. 키 하나가 아니라 `apps/web/.env`를
-  그대로 붙여넣은 값이고, e2e 잡이 `printf`로 파일을 복원합니다.
-  `apps/web/.env.example`에 키가 추가되면 이 시크릿도 함께 갱신해야 합니다.
+- **`WEB_ENV_FILE`은 없앴습니다.** e2e가 `apps/web/.env`를 이 시크릿으로 복원하던 방식을
+  `vercel env pull`(development)로 바꿨고, GitHub 시크릿도 삭제했습니다(2026-09-20). 값을 읽을 수 없어
+  삭제하면 되살릴 수 없으니, 비슷한 시크릿을 지울 때는 그 시크릿을 읽는 워크플로가 `master`에서 사라진 뒤에
+  지웁니다.
 - **앱 서명 키는 시크릿에 없습니다.** EAS 서버에 등록된 것을 받아 쓰므로 러너에
   별도 시크릿이 필요 없습니다.
 - 재사용 워크플로는 `secrets: inherit`으로 호출자의 시크릿을 물려받습니다.
@@ -354,19 +511,24 @@ gitignore 대상이라 EAS 샌드박스에 복사되지 않아 iOS 빌드가 깨
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
-아래는 우리가 `supabase secrets set <이름>=<값>`으로 직접 등록하는 값입니다.
-레포에도 `.env`에도 두지 않습니다.
+그 밖에 우리가 `supabase secrets set <이름>=<값>`으로 직접 등록하는 값은 위 [전체 목록](#전체-목록)의
+Supabase 표가 원천입니다. 레포에도 `.env`에도 두지 않습니다. `CRON_SECRET`은 DB에서 함수를 부를 때의
+호출자 확인에 쓰며 Vault의 `cron_secret`과 같은 값이어야 합니다.
 
-| 이름 | 쓰는 함수 | 용도 |
-| --- | --- | --- |
-| `SLACK_FEEDBACK_WEBHOOK_URL` | `send-feedback` | 피드백 슬랙 알림 |
-| `RESEND_API_KEY` | `send-welcome-email` | 가입 안내 메일 발송 |
-| `CRON_SECRET` | `daily-article-reminder`, `send-welcome-email` | DB에서 부르는 함수의 호출자 확인. Vault `cron_secret`과 같은 값 |
+`send-welcome-email`과 `send-signup-slack-notification`은 JWT 검증을 끄고
+(`--no-verify-jwt`) 배포하며, 호출자는 `x-cron-secret` 헤더로 확인합니다. 두 함수
+모두 같은 `memo.send_welcome_email()` 트리거가 부르므로 이 헤더와 호출 주소를
+Vault의 `cron_secret`·`project_url`에서 읽어 `daily-article-reminder`와 같은 두
+값을 공유합니다. 새로 넣을 DB 설정은 없습니다.
 
-`send-welcome-email`은 JWT 검증을 끄고(`--no-verify-jwt`) 배포하며, 호출자는
-`x-cron-secret` 헤더로 확인합니다. 트리거가 이 헤더와 호출 주소를 Vault의
-`cron_secret`·`project_url`에서 읽으므로 `daily-article-reminder`와 같은 두 값을
-공유합니다. 새로 넣을 DB 설정은 없습니다.
+`blog-catalog-ingest`도 JWT 검증을 끄고 배포합니다(`config.toml`의 `verify_jwt = false`).
+호출자는 GitHub Actions의 블로그 카탈로그 수집기(`chore-blog-catalog.yml`) 하나이고, `x-blog-catalog-ingest-secret`
+헤더를 `BLOG_CATALOG_INGEST_SECRET`과 상수 시간으로 비교해 확인합니다. 이 값은 **카탈로그 쓰기 전용**이라
+GitHub Secrets(수집기가 읽음)와 Supabase Edge Function secret(엔드포인트가 읽음)에 같은 값을 따로 등록합니다.
+조회 전용 `SUPABASE_ACCESS_TOKEN`과 `CRON_SECRET`을 쓰기 인증에 재사용하지 않으며, 번들과 Vercel에는 두지 않습니다.
+엔드포인트는 Supabase가 주입하는 service role로 `memo` 스키마의 검증 RPC만 부릅니다.
+등록은 코드 배포와 별개의 콘솔 작업입니다: 32자 이상 무작위 값을 만들어 `supabase secrets set BLOG_CATALOG_INGEST_SECRET=...`과
+GitHub Secrets 양쪽에 넣습니다(값은 어디에도 커밋하지 않습니다).
 
 ### 빌드 플래그
 
@@ -377,7 +539,6 @@ gitignore 대상이라 EAS 샌드박스에 복사되지 않아 iOS 빌드가 깨
 | `BUILD_ENV` | `.env.{환경}` 선택 + `CONFIG.buildEnv`로 번들에 인라인 | 셸 / 워크플로 `env` |
 | `__FIREFOX__` | Firefox 전용 빌드 (manifest 분기) | 빌드 스크립트 |
 | `__DEV__` | 확장 개발 모드 (HMR·소스맵) | `packages/vite-config` |
-| `ANALYZE` | Next.js 번들 분석 활성화 | 로컬에서 수동 |
 | `CI` | Playwright의 재시도·서버 재사용 정책 분기 | GitHub Actions 자동 주입 |
 
 ---
@@ -385,9 +546,9 @@ gitignore 대상이라 EAS 샌드박스에 복사되지 않아 iOS 빌드가 깨
 ## 7. 로컬 셋업
 
 ```bash
-# 1. 웹 서버 시크릿 (웹의 AI 기능을 로컬에서 쓸 때만 필요)
-cp apps/web/.env.example apps/web/.env
-# → OPENAI_API_KEY, UPSTASH_* 를 채웁니다
+# 1. 웹 서버 시크릿 (웹의 AI 기능 등을 로컬에서 쓸 때만 필요). Vercel이 원천이라 pull로 받습니다
+vercel link                          # 최초 1회, 저장소 루트에서
+pnpm env:pull                        # 저장소 루트에서 실행. apps/web/.env.local 생성
 
 # 2. 공유 환경별 값은 이미 커밋되어 있으므로 아무것도 하지 않아도 됩니다
 #    로컬에서만 다른 값을 쓰고 싶을 때 오버라이드 파일을 만듭니다

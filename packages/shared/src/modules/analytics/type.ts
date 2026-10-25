@@ -1,12 +1,15 @@
 import type { CONFIG } from "@web-memo/env";
+import type { HighlightColor } from "../../constants/Highlight";
+import type { TBlogId, TBlogReadingSort } from "../../types/blogReading";
+import type { ExportFormat } from "../../utils/Export";
 
 declare global {
 	interface Window {
-		gtag: (
-			command: "event",
-			action: string,
-			parameters: IFGa4EventParams,
-		) => void;
+		gtag: {
+			(command: "event", action: string, parameters: IFGa4EventParams): void;
+			/** 이후 모든 요청에 실을 값. 로그아웃은 null로 지웁니다. */
+			(command: "set", parameters: { user_id: string | null }): void;
+		};
 	}
 }
 
@@ -26,10 +29,39 @@ export interface IFGa4EventParams {
 	debug_mode?: true;
 	user_id?: string;
 	session_id?: string;
-	/** 확장에서 넘어온 client_id. 확장→웹 퍼널을 잇습니다. */
-	ext_client_id?: string;
+	/** 확장에서만 실립니다. 배포 전후를 가르는 기준이라 웹 이벤트에는 키 자체가 없습니다. */
+	extension_version?: string;
 	[key: string]: unknown;
 }
+
+/**
+ * 요약 실행을 시작한 자리.
+ * @description disclosure는 사이드 패널 진입 행, empty_state는 빈 상태의 수동 실행 버튼입니다.
+ * tab_trigger는 이전 탭 아이콘 재생성 버튼의 과거 이벤트와 호환하기 위해 남깁니다.
+ */
+export type TSummaryRunSource = "empty_state" | "tab_trigger" | "disclosure";
+
+/**
+ * 메모 카테고리를 바꾼 경로.
+ * @description button은 사이드 패널의 칩·배지·해제 버튼, hash는 본문의 # 입력, ai는 AI 추천 자동
+ * 적용입니다. "사람들이 #을 모른다"는 가정을 확인하려고 경로별 비율을 봅니다.
+ */
+export type TCategoryChangeSource = "button" | "hash" | "ai";
+
+/** 카테고리 추천을 수락한 방식. 클릭과 Cmd/Ctrl+Enter 단축키를 구분합니다. */
+export type TCategorySuggestionTrigger = "click" | "shortcut";
+
+/**
+ * 설치 버튼이 한 페이지 안에서 놓인 자리.
+ *
+ * @description 같은 페이지에 설치 버튼이 둘 이상이라 출발 경로만으로는 어느 버튼이 눌렸는지
+ * 구분되지 않습니다. `extension_install_click`의 `position` 값입니다.
+ */
+export type TInstallClickPosition =
+	| "hero"
+	| "recommendation"
+	| "final"
+	| "install_check_dialog";
 
 /**
  * 추적 가능한 이벤트 전체 목록.
@@ -38,11 +70,14 @@ export interface IFGa4EventParams {
  * 여기에 멤버를 추가하고 EVENT_CATEGORY에도 분류를 넣어야 합니다.
  */
 export type TAnalyticsEvent =
+	| { name: "highlight_source_jump" }
+	| { name: "highlight_panel_open_result"; params: { is_success: boolean } }
 	| { name: "side_panel_open" }
 	| { name: "page_view"; params: { page_title: string; page_location: string } }
 	| { name: "memo_write"; params: { fields: string } }
 	| { name: "memo_delete"; params: { memo_count: number } }
-	| { name: "summary_run" }
+	| { name: "summary_run"; params: { source: TSummaryRunSource } }
+	| { name: "summary_panel_toggle"; params: { action: "open" | "close" } }
 	| { name: "summary_complete"; params: { duration_msec: number } }
 	| { name: "chat_message_send" }
 	| { name: "tab_change"; params: { tab_name: string } }
@@ -53,7 +88,10 @@ export type TAnalyticsEvent =
 	| { name: "highlight_note_update" }
 	| { name: "login"; params: { method: string } }
 	| { name: "memo_search"; params: { query_length: number } }
-	| { name: "memo_open"; params: { has_search_query: boolean } }
+	| {
+			name: "memo_open";
+			params: { has_search_query: boolean; source?: "highlight" };
+	  }
 	| { name: "memo_source_open" }
 	| { name: "memo_restore"; params: { memo_count: number } }
 	| { name: "memo_delete_permanently"; params: { memo_count: number } }
@@ -62,31 +100,178 @@ export type TAnalyticsEvent =
 	| { name: "category_create" }
 	| { name: "category_update" }
 	| { name: "category_delete" }
-	| { name: "feedback_submit" }
-	| { name: "view_change"; params: { view: string } }
+	| {
+			name: "feedback_submit";
+			params: { feedback_type: "general" | "uninstall" };
+	  }
+	| {
+			name: "view_change";
+			params: { view: string; layout?: "grid" | "list" | "domain" };
+	  }
 	| { name: "logout" }
 	| { name: "extension_installed" }
+	| { name: "extension_uninstall" }
 	| { name: "login_start"; params: { method: string } }
 	| { name: "side_panel_login_click" }
+	| {
+			name: "header_login_click";
+			params: {
+				/** 언어 접두사를 뺀 출발 경로. 예: "/introduce", "/features/memo" */
+				from: string;
+			};
+	  }
+	| {
+			name: "header_memos_click";
+			params: {
+				/** 언어 접두사를 뺀 출발 경로. 예: "/introduce", "/memos/setting" */
+				from: string;
+			};
+	  }
 	| { name: "sign_up"; params: { method: string } }
 	| {
 			name: "memo_status_toggle";
 			params: { status: "wish" | "star" | "reading"; enabled: boolean };
 	  }
-	| { name: "memo_category_change" }
+	| {
+			name: "memo_category_change";
+			params?: { action: "set" | "clear"; source?: TCategoryChangeSource };
+	  }
+	| {
+			name: "memo_plan_change";
+			params: {
+				action: "set" | "clear";
+				/** set일 때만. 오늘(로컬)부터 계획 날짜까지의 일수. 0이면 오늘 */
+				days_ahead?: number;
+			};
+	  }
 	| { name: "memo_undo"; params: { action: "wish" | "reading" | "delete" } }
-	| { name: "category_suggestion_show"; params: { is_new_category: boolean } }
-	| { name: "category_suggestion_apply"; params: { is_new_category: boolean } }
-	| { name: "extension_install_click" }
+	| {
+			name: "category_suggestion_show";
+			params: { is_new_category: boolean; source: "jev" | "llm" };
+	  }
+	| {
+			name: "category_suggestion_apply";
+			params: {
+				is_new_category: boolean;
+				source: "jev" | "llm";
+				trigger: TCategorySuggestionTrigger;
+			};
+	  }
+	| {
+			name: "category_suggestion_dismiss";
+			params: { is_new_category: boolean; source: "jev" | "llm" };
+	  }
+	| {
+			name: "extension_install_click";
+			params: {
+				/** 언어 접두사를 뺀 출발 경로. 예: "/features/memo", "/memos" */
+				from: string;
+				/** 한 페이지 안에서 누른 버튼의 자리 */
+				position: TInstallClickPosition;
+			};
+	  }
 	| { name: "extension_install_dismiss" }
 	| {
 			name: "open_web_from_extension";
-			params: { from: "side_panel_memo" | "context_menu" };
+			params: {
+				from:
+					| "side_panel_memo"
+					| "side_panel_toast"
+					| "side_panel_category"
+					| "context_menu";
+			};
 	  }
 	| { name: "guide_open"; params: { from: "context_menu" } }
+	| { name: "install_guide_view" }
+	| { name: "install_guide_login_click" }
 	| { name: "guide_finish" }
 	| { name: "extension_setting_change"; params: { keys: string } }
-	| { name: "guide_step"; params: { step_name: string } };
+	| { name: "guide_step"; params: { step_name: string } }
+	| { name: "memo_first_write"; params?: { source: "highlight" } }
+	| { name: "export_run"; params: { format: ExportFormat } }
+	| { name: "search_no_result"; params: { has_domain_filter: boolean } }
+	| {
+			name: "memo_domain_filter_change";
+			params: {
+				action: "select" | "clear";
+				source: "popover" | "clear_button" | "empty_state";
+				/** 드롭다운에 뜬 도메인 수. 빈 상태에서는 알 수 없어 생략합니다. */
+				domain_option_count?: number;
+			};
+	  }
+	| {
+			name: "highlight_create";
+			params: { color: HighlightColor; has_note: boolean };
+	  }
+	| { name: "highlight_bubble_disable"; params: { scope: "site" | "all" } }
+	| { name: "notice_view"; params: { notice_id: number } }
+	| {
+			name: "notice_return";
+			params: { notice_id: number; days_since_view: number };
+	  }
+	| { name: "notice_dismiss"; params: { notice_id: number } }
+	| {
+			name: "past_memo_show";
+			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
+	  }
+	| {
+			name: "past_memo_open";
+			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
+	  }
+	| {
+			name: "past_memo_expand";
+			params: { kind: "related"; source: "jev" };
+	  }
+	| {
+			name: "past_memo_dismiss";
+			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
+	  }
+	| {
+			name: "memo_offline_queued";
+			params: {
+				/** 대기열에 넣은 이유. offline은 사전 판단, network_error는 시도 후 실패, already_queued는 같은 메모에 대기 항목이 이미 있던 경우 */
+				trigger: "offline" | "network_error" | "already_queued";
+			};
+	  }
+	| {
+			name: "memo_offline_sync_result";
+			params: {
+				/**
+				 * flush를 부른 계기. mount는 패널 열기, online은 연결 복구, retry_click은 '다시 시도' 클릭,
+				 * enqueue는 온라인 상태에서 대기 항목이 막 생겨(이미 대기 중이거나 네트워크 오류 직후) 바로 도는 경우
+				 */
+				trigger: "mount" | "online" | "retry_click" | "enqueue";
+				synced_count: number;
+				conflict_count: number;
+				has_other_error: boolean;
+			};
+	  }
+	| { name: "shortcut_change_click"; params: { is_success: boolean } }
+	| {
+			name: "blog_subscription_change";
+			params: { blog_id: TBlogId; active: boolean };
+	  }
+	| {
+			name: "blog_article_open";
+			params: { blog_id: TBlogId; sort: TBlogReadingSort };
+	  }
+	| {
+			name: "blog_article_memo_click";
+			params: { blog_id: TBlogId; action: "create" | "view" };
+	  }
+	| {
+			name: "blog_sync_resume_request";
+			params: { blog_id: TBlogId; result: "queued" | "running" | "throttled" };
+	  }
+	| {
+			name: "blog_reading_page_move";
+			params: {
+				direction: "prev" | "next";
+				/** 이동 후 쪽 번호. 1부터 */
+				page_number: number;
+				sort: TBlogReadingSort;
+			};
+	  };
 
 /** 이벤트 이름만 추린 유니온. */
 export type TAnalyticsEventName = TAnalyticsEvent["name"];
@@ -96,11 +281,14 @@ export type TAnalyticsEventName = TAnalyticsEvent["name"];
  * @description Record로 선언해 이벤트를 추가하고 여기에 넣지 않으면 컴파일이 실패하게 합니다.
  */
 export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
+	highlight_source_jump: "core_action",
+	highlight_panel_open_result: "core_action",
 	side_panel_open: "engagement",
 	page_view: "engagement",
 	memo_write: "core_action",
 	memo_delete: "core_action",
 	summary_run: "core_action",
+	summary_panel_toggle: "engagement",
 	summary_complete: "core_action",
 	chat_message_send: "core_action",
 	tab_change: "engagement",
@@ -124,19 +312,47 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	view_change: "engagement",
 	logout: "engagement",
 	extension_installed: "engagement",
+	extension_uninstall: "engagement",
 	login_start: "engagement",
 	side_panel_login_click: "engagement",
+	header_login_click: "engagement",
+	header_memos_click: "engagement",
 	sign_up: "core_action",
 	memo_status_toggle: "core_action",
 	memo_category_change: "core_action",
+	memo_plan_change: "core_action",
 	memo_undo: "engagement",
 	category_suggestion_show: "engagement",
 	category_suggestion_apply: "core_action",
+	category_suggestion_dismiss: "engagement",
 	extension_install_click: "core_action",
 	extension_install_dismiss: "engagement",
 	open_web_from_extension: "engagement",
 	guide_open: "engagement",
+	install_guide_view: "engagement",
+	install_guide_login_click: "engagement",
 	guide_finish: "engagement",
 	extension_setting_change: "engagement",
 	guide_step: "engagement",
+	memo_first_write: "core_action",
+	export_run: "core_action",
+	search_no_result: "engagement",
+	memo_domain_filter_change: "engagement",
+	highlight_create: "core_action",
+	highlight_bubble_disable: "engagement",
+	notice_view: "engagement",
+	notice_return: "engagement",
+	notice_dismiss: "engagement",
+	past_memo_show: "engagement",
+	past_memo_open: "core_action",
+	past_memo_expand: "engagement",
+	past_memo_dismiss: "engagement",
+	memo_offline_queued: "engagement",
+	memo_offline_sync_result: "engagement",
+	shortcut_change_click: "engagement",
+	blog_subscription_change: "core_action",
+	blog_article_open: "core_action",
+	blog_article_memo_click: "core_action",
+	blog_sync_resume_request: "core_action",
+	blog_reading_page_move: "engagement",
 };

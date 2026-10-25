@@ -6,9 +6,14 @@ const mocks = vi.hoisted(() => ({
 	getClient: vi.fn(),
 	getUser: vi.fn(),
 	insert: vi.fn(),
+	report: vi.fn(),
+}));
+vi.mock("./reportBackgroundError", () => ({
+	reportBackgroundError: mocks.report,
 }));
 vi.mock("@web-memo/shared/utils", () => ({
 	normalizeUrl: (url: string) => url,
+	getPageKey: (url: string) => url,
 	HighlightService: class {
 		insertHighlight = mocks.insert;
 	},
@@ -21,6 +26,7 @@ const PAYLOAD = {
 	url: "https://example.com/article",
 	title: "Article",
 	favIconUrl: "",
+	color: "yellow",
 	anchor: {
 		exact: "selected text",
 		prefix: "",
@@ -48,6 +54,7 @@ beforeEach(() => {
 	mocks.insert
 		.mockReset()
 		.mockResolvedValue({ data: [{ id: 1 }], error: null });
+	mocks.report.mockReset();
 });
 
 afterEach(() => {
@@ -56,7 +63,7 @@ afterEach(() => {
 });
 
 describe("background 하이라이트 저장", () => {
-	it("인증된 사용자와 고정 색상으로 기존 서비스를 호출한다", async () => {
+	it("인증된 사용자와 선택한 색상으로 기존 서비스를 호출한다", async () => {
 		const result = await handleCreateHighlight({
 			payload: { ...PAYLOAD, user_id: "forged", color: "purple" },
 			sender: SENDER,
@@ -65,7 +72,7 @@ describe("background 하이라이트 저장", () => {
 		expect(mocks.insert).toHaveBeenCalledWith(
 			expect.objectContaining({
 				user_id: "authenticated-user",
-				color: "yellow",
+				color: "purple",
 				url: PAYLOAD.url,
 				exact_text: PAYLOAD.anchor.exact,
 			}),
@@ -74,6 +81,8 @@ describe("background 하이라이트 저장", () => {
 	it.each([
 		null,
 		{},
+		{ ...PAYLOAD, color: "red" },
+		{ ...PAYLOAD, color: undefined },
 		{ ...PAYLOAD, anchor: { ...PAYLOAD.anchor, exact: "x" } },
 		{ ...PAYLOAD, anchor: { ...PAYLOAD.anchor, textPositionStart: -1 } },
 	])("잘못된 입력은 DB 접근 전에 거절한다: %j", async (payload) => {
@@ -236,4 +245,68 @@ describe("background 하이라이트 저장", () => {
 			expect(mocks.insert).not.toHaveBeenCalled();
 		},
 	);
+	it.each([
+		{
+			setup: () =>
+				mocks.insert.mockResolvedValue({
+					data: [],
+					error: { message: "secret SQL" },
+				}),
+			stage: "insert_database_error",
+		},
+		{
+			setup: () => mocks.insert.mockResolvedValue({ data: [], error: null }),
+			stage: "insert_empty_result",
+		},
+		{
+			setup: () =>
+				mocks.getUser.mockResolvedValue({
+					data: { user: null },
+					error: { status: 503 },
+				}),
+			stage: "auth_verify_auth_unavailable",
+		},
+		{
+			setup: () => mocks.getClient.mockRejectedValue(new Error("boom")),
+			stage: "client_initialize_unexpected_error",
+		},
+	])(
+		"저장 실패 $stage는 고정 문자열 오류로 Sentry에 보고한다",
+		async ({ setup, stage }) => {
+			setup();
+			await handleCreateHighlight({ payload: PAYLOAD, sender: SENDER });
+			expect(mocks.report).toHaveBeenCalledTimes(1);
+
+			const params = mocks.report.mock.calls[0][0];
+			expect(params).toMatchObject({
+				feature: "highlight",
+				operation: "create",
+				stage,
+			});
+			expect(params.error.message).not.toMatch(/secret|boom|example\.com/);
+		},
+	);
+	it.each([
+		{
+			setup: () =>
+				mocks.getClient.mockRejectedValue(
+					new SupabaseSessionRequiredError("로그인"),
+				),
+		},
+		{
+			setup: () =>
+				mocks.getUser.mockResolvedValue({
+					data: { user: null },
+					error: { status: 401 },
+				}),
+		},
+		{
+			setup: () =>
+				mocks.getUser.mockResolvedValue({ data: { user: null }, error: null }),
+		},
+	])("로그인 부재처럼 정상적인 실패는 보고하지 않는다", async ({ setup }) => {
+		setup();
+		await handleCreateHighlight({ payload: PAYLOAD, sender: SENDER });
+		expect(mocks.report).not.toHaveBeenCalled();
+	});
 });

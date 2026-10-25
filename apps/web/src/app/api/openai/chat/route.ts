@@ -39,18 +39,11 @@ export async function POST(request: NextRequest) {
 			...(messages as ChatCompletionMessageParam[]),
 		];
 
-		return createStreamingResponse(fullMessages);
+		return createStreamingResponse(fullMessages, "chat");
 	} catch (error) {
 		console.error("Chat route handler error:", error);
 
-		if (error instanceof Error) {
-			return handleOpenAIError(error);
-		}
-
-		return createErrorResponse(
-			ERROR_MESSAGES.GENERAL_SERVER_ERROR,
-			HTTP_STATUS.INTERNAL_SERVER_ERROR,
-		);
+		return handleOpenAIError(error, "chat");
 	}
 }
 

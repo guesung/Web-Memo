@@ -1,0 +1,204 @@
+"use client";
+
+import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
+import {
+	reportMemoLoadStage,
+	type TMemoLoadOutcome,
+	type TMemoRoute,
+} from "@src/modules/observability/client";
+import type {
+	GetMemoResponse,
+	HighlightMemoLink,
+	HighlightRow,
+} from "@web-memo/shared/types";
+import { Button } from "@web-memo/ui";
+import { useEffect, useRef, useState } from "react";
+import { useMemoSettings } from "./_hooks/useMemoSettings";
+import { groupMemosByDomain } from "./groupMemosByDomain";
+import MemoDomainEmptyState from "./MemoDomainEmptyState";
+import MemoEmptyState from "./MemoEmptyState";
+import MemoGroup from "./MemoGroup";
+import { MemoListSkeleton } from "./MemoListSkeleton";
+import MemoSearchEmptyState from "./MemoSearchEmptyState";
+
+/** 메모를 브라우저 현지 작성일별 카드 그리드로 묶어 상세 화면으로 연결한다. */
+const MemoList = (props: IFMemoListProps) => {
+	const { t } = useTranslation(props.lng);
+
+	const { showImpression, showActionItem, truncateMemoContent } =
+		useMemoSettings();
+	const groups =
+		props.groupBy === "domain"
+			? groupMemosByDomain(props.memos)
+			: groupMemosByDate(props.memos);
+	const [renderedGroupMemoIds, setRenderedGroupMemoIds] = useState<
+		Record<string, string>
+	>({});
+	const visibleGroupKeys = new Set(groups.map((group) => group.key));
+	const hasUnmountedGroup = Object.keys(renderedGroupMemoIds).some(
+		(key) => !visibleGroupKeys.has(key),
+	);
+	/** 사라진 그룹의 완료 기록은 재마운트 전에 제거해 이전 인스턴스의 배치를 재사용하지 않는다. */
+	if (hasUnmountedGroup) {
+		setRenderedGroupMemoIds(
+			Object.fromEntries(
+				Object.entries(renderedGroupMemoIds).filter(([key]) =>
+					visibleGroupKeys.has(key),
+				),
+			),
+		);
+	}
+	/** 초기 높이가 0인 Masonry와 새 페이지의 배치가 끝나기 전에는 다음 조회를 막는다. */
+	const isLayoutReady = groups.every(
+		(group) =>
+			renderedGroupMemoIds[group.key] ===
+			group.memos.map((memo) => memo.id).join(","),
+	);
+	useEffect(() => {
+		if (isLayoutReady) {
+			reportMemoLoadStage({
+				route: props.route,
+				navigationId: props.navigationId,
+				stage: "content_ready",
+				outcome: props.loadOutcome,
+			});
+		}
+	}, [isLayoutReady, props.loadOutcome, props.route, props.navigationId]);
+	const loadMoreRef = useMemoListPagination(props, isLayoutReady);
+	const handleGroupRenderComplete = (key: string, memoIds: string) => {
+		setRenderedGroupMemoIds((previousGroups) => {
+			if (previousGroups[key] === memoIds) {
+				return previousGroups;
+			}
+
+			return { ...previousGroups, [key]: memoIds };
+		});
+	};
+
+	return (
+		<div
+			data-testid="memo-list"
+			className="mx-auto w-full max-w-[1124px] space-y-8 pb-24"
+		>
+			{props.memos.length === 0 && (
+				<MemoListEmptyState
+					lng={props.lng}
+					domain={props.domain}
+					searchQuery={props.searchQuery}
+				/>
+			)}
+			{groups.map((group) => (
+				<MemoGroup
+					key={group.key}
+					lng={props.lng}
+					groupBy={props.groupBy}
+					groupKey={group.key}
+					memos={group.memos}
+					highlightsByUrl={props.highlightsByUrl}
+					sourcesByMemo={props.sourcesByMemo}
+					showImpression={showImpression}
+					showActionItem={showActionItem}
+					truncateMemoContent={truncateMemoContent}
+					onRenderComplete={handleGroupRenderComplete}
+				/>
+			))}
+			{props.hasNextPage && (
+				<div ref={loadMoreRef} className="flex justify-center">
+					<Button
+						type="button"
+						variant="outline"
+						disabled={props.isFetchingNextPage}
+						onClick={() => props.fetchNextPage()}
+					>
+						{t("memos.view.loadMore")}
+					</Button>
+				</div>
+			)}
+			{props.isFetchingNextPage && <MemoListSkeleton />}
+		</div>
+	);
+};
+
+export default MemoList;
+
+/** 목록이 비었을 때 도메인 → 검색어 → 전체 빈 상태 순으로 원인을 가려 보여준다. */
+const MemoListEmptyState = ({
+	lng,
+	domain,
+	searchQuery,
+}: Pick<IFMemoListProps, "lng" | "domain" | "searchQuery">) => {
+	if (domain) {
+		return <MemoDomainEmptyState lng={lng} domain={domain} />;
+	}
+
+	if (searchQuery) {
+		return <MemoSearchEmptyState lng={lng} searchQuery={searchQuery} />;
+	}
+
+	return <MemoEmptyState lng={lng} />;
+};
+
+/** 화면 아래에 도달하면 다음 페이지를 가져오며 같은 요청을 중복하지 않는다. */
+const useMemoListPagination = (
+	{ hasNextPage, isFetchingNextPage, fetchNextPage }: IFMemoListProps,
+	isLayoutReady: boolean,
+) => {
+	const loadMoreRef = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		const target = loadMoreRef.current;
+		if (!target || !hasNextPage || isFetchingNextPage || !isLayoutReady) {
+			return;
+		}
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries.some((entry) => entry.isIntersecting)) {
+					observer.disconnect();
+					void fetchNextPage();
+				}
+			},
+			{ rootMargin: "300px" },
+		);
+		observer.observe(target);
+
+		return () => observer.disconnect();
+	}, [hasNextPage, isFetchingNextPage, fetchNextPage, isLayoutReady]);
+
+	return loadMoreRef;
+};
+
+/** 페이지 경계와 무관하게 같은 현지 작성일에 속하는 메모를 하나의 그룹으로 합친다. */
+const groupMemosByDate = (memos: GetMemoResponse[]) => {
+	const groups = new Map<string, GetMemoResponse[]>();
+	for (const memo of memos) {
+		const date = new Date(memo.created_at ?? "");
+		const dateKey = Number.isNaN(date.getTime())
+			? "unknown"
+			: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+		const group = groups.get(dateKey) ?? [];
+		group.push(memo);
+		groups.set(dateKey, group);
+	}
+
+	return Array.from(groups, ([key, groupedMemos]) => ({
+		key,
+		memos: groupedMemos,
+	}));
+};
+
+/** 목록 데이터와 무한 로딩 상태. */
+interface IFMemoListProps extends LanguageType {
+	groupBy: "date" | "domain";
+	memos: GetMemoResponse[];
+	highlightsByUrl: Map<string, HighlightRow[]>;
+	sourcesByMemo: Map<number, HighlightMemoLink>;
+	searchQuery: string;
+	/** 정규화된 선택 도메인. 필터가 없으면 undefined */
+	domain: string | undefined;
+	hasNextPage: boolean;
+	isFetchingNextPage: boolean;
+	fetchNextPage: () => unknown;
+	loadOutcome: TMemoLoadOutcome;
+	route: TMemoRoute;
+	navigationId: number | null;
+}

@@ -2,6 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import type { GetMemoResponse } from "@web-memo/shared/types";
 import type { ExportFormat } from "@web-memo/shared/utils";
 import { exportMemos, MemoService } from "@web-memo/shared/utils";
@@ -43,6 +44,7 @@ export default function SettingExport({ lng }: IFSettingExportProps) {
 
 			if (data && data.length > 0) {
 				exportMemos(data as GetMemoResponse[], format);
+				analytics.trackEvent({ name: "export_run", params: { format } });
 			}
 		} catch (error) {
 			console.error("Export failed:", error);

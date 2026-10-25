@@ -5,11 +5,17 @@ import { SettingService } from "../../../utils";
 
 import { useSupabaseClientQuery } from "../queries";
 
+/** 변경된 설정 필드만 저장하고 설정 캐시를 무효화한다. */
 export default function useSettingUpsertMutation() {
 	const queryClient = useQueryClient();
 	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	return useMutation({
+		meta: {
+			feature: "setting",
+			operation: "upsert",
+			stage: "save",
+		},
 		mutationFn: new SettingService(supabaseClient).upsertSetting,
 		onSuccess: (_, request) => {
 			// 어느 설정을 건드렸는지만 남깁니다. 값 자체는 지표로 쓸 일이 없습니다.

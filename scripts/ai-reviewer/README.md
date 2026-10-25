@@ -9,18 +9,11 @@
 설계 등)는 [`docs/superpowers/specs/2026-08-17-ai-review-personas-design.md`](../../docs/superpowers/specs/2026-08-17-ai-review-personas-design.md)에
 있다. 이 README는 **설정과 실행 방법만** 다룬다.
 
-## 두 개의 슬래시 커맨드
+## 실행 구조
 
-| 커맨드 | 역할 |
-| --- | --- |
-| `/ai-review` | 현재 PR의 diff를 읽고 두 페르소나 명의로 인라인 질문(과 시니어의 지적 요약)을 게시한다. |
-| `/ai-review-reply` | 작성자가 답변한 스레드를 찾아 각 봇이 한 번만 재답변하고, 인턴 스레드는 코드 주석 제안으로, 시니어 스레드는 PR 본문의 후속 작업 체크리스트로 남긴다. |
-
-두 커맨드 모두 `.claude/commands/ai-review.md` / `ai-review-reply.md`에 절차가
-있고, 내부에서 이 디렉터리의 `cli.ts`를 서브프로세스로 호출한다. 커맨드는
-`cli.ts`가 인식하는 세 서브커맨드(`pending`/`post`/`followup`)를 순서대로
-호출하며, `cli.ts`가 사전 검증에서 거부하는 필드(`persona`/`kind`/`line`/
-`rootId`)와 거부하지 않는 필드(`path`/`body`)를 각 커맨드 문서에서 명시한다.
+`cli.ts`가 PR의 미답변 스레드 조회(`pending`), 리뷰 게시(`post`), 후속 작업
+기록(`followup`), 승인(`approve`)을 담당한다. 입력 형식과 사전 검증은
+`cli.ts`의 각 서브커맨드에서 확인할 수 있다.
 
 ## Node 요구 사항
 
@@ -119,24 +112,14 @@ chmod 600 ~/.config/web-memo-bots/*.pem
 
 ## 실행 방법
 
-설정이 끝나면 PR이 있는 브랜치에서 슬래시 커맨드를 실행한다.
-
-```bash
-/ai-review          # 기본 3개씩 질문
-/ai-review 5        # 페르소나별 5개씩 질문
-/ai-review-reply    # 답변한 스레드에 재답변
-```
-
-`cli.ts`를 직접 실행할 수도 있다 (커맨드 문서가 실제로 하는 일과 동일하다):
+설정이 끝나면 PR이 있는 브랜치에서 `cli.ts`를 실행한다:
 
 ```bash
 node scripts/ai-reviewer/cli.ts pending  --pr <PR번호>
 node scripts/ai-reviewer/cli.ts post     --pr <PR번호> --input <파일.json>
 node scripts/ai-reviewer/cli.ts followup --pr <PR번호> --input <파일.json>
+node scripts/ai-reviewer/cli.ts approve  --pr <PR번호> --input <파일.json>
 ```
-
-각 서브커맨드의 입력 스키마와 사전 검증 항목은 `.claude/commands/ai-review.md`
-· `ai-review-reply.md`에 있다.
 
 ## 알려진 후속 개선 과제 (기록만, 미구현)
 
@@ -144,8 +127,7 @@ node scripts/ai-reviewer/cli.ts followup --pr <PR번호> --input <파일.json>
   습관"에 의존한다.** `followup.ts`의 `upsertFollowupSection`은 공백·대소문자만
   정규화한 완전 일치 비교로 중복을 걸러내므로, 같은 논점이라도 문장이 조금이라도
   달라지면(모델이 "더 잘 다듬으면") 중복 제거를 그대로 통과해 같은 지적이 두 줄로
-  남는다. `.claude/commands/ai-review-reply.md` 6-0단계가 이를 사람이/모델이
-  주의해서 피하도록 안내하고 있지만, 결정적인 방식은 아니다. 모든 후속 작업 항목이
+  남는다. 모든 후속 작업 항목이
   이미 `— 스레드 #<rootId>` 접미사를 달고 있으므로, 이 `rootId`를 키로 삼아 "같은
   스레드에서 나온 항목인지"로 중복을 판정하면 문장이 달라져도 걸러낼 수 있다.
   아직 구현하지 않았다.

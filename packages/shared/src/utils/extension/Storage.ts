@@ -11,10 +11,3 @@ export const getSession = async () => {
 
 	return JSON.parse(cookie.value) as Session;
 };
-
-export const removeSession = async () => {
-	await chrome.cookies.remove({
-		name: SUPABASE.authToken,
-		url: CONFIG.webUrl,
-	});
-};

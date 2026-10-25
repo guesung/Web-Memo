@@ -2,7 +2,7 @@
 
 import versionStatus from "@src/constants/versionStatus.json";
 import type { LanguageParams } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import {
 	Table,
 	TableBody,
@@ -27,8 +27,9 @@ const TRACK_LABEL_KEYS: Record<string, string> = {
  * @description 데이터는 빌드 시점에 `scripts/generate-version-status.mjs`가 생성한
  * `versionStatus.json` 스냅샷이다. 런타임에 형제 앱 폴더를 직접 읽지 않는다.
  */
-export default async function VersionsPage({ params: { lng } }: IFPageProps) {
-	const { t } = await useTranslation(lng);
+export default async function VersionsPage({ params }: IFPageProps) {
+	const { lng } = await params;
+	const { t } = await getTranslation(lng);
 	const locale = lng === "ko" ? "ko-KR" : "en-US";
 
 	return (

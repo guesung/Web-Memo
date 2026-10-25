@@ -106,30 +106,32 @@ export default memo(function MemoCardHeader({
 		<CardHeader
 			className={cn("relative px-5 py-4 border-b border-border", className)}
 		>
-			<Button
-				variant="outline"
-				size="sm"
-				className={cn(
-					"absolute -left-3 -top-3 z-20",
-					"w-7 h-7 p-0 rounded-full",
-					"bg-card",
-					"border-2 border-border",
-					"shadow-md hover:shadow-lg",
-					"transition-all duration-200",
-					{
-						"opacity-100 scale-100": isShowingSelectButton,
-						"opacity-0 scale-75 pointer-events-none": !isShowingSelectButton,
-						"bg-primary border-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground":
-							isMemoSelected,
-					},
-				)}
-				onClick={handleCheckButtonClick}
-			>
-				<CheckIcon
-					size={12}
-					className={cn("transition-all", { "scale-110": isMemoSelected })}
-				/>
-			</Button>
+			{selectMemoItem && (
+				<Button
+					variant="outline"
+					size="sm"
+					className={cn(
+						"absolute -left-3 -top-3 z-20",
+						"w-7 h-7 p-0 rounded-full",
+						"bg-card",
+						"border-2 border-border",
+						"shadow-md hover:shadow-lg",
+						"transition-all duration-200",
+						{
+							"opacity-100 scale-100": isShowingSelectButton,
+							"opacity-0 scale-75 pointer-events-none": !isShowingSelectButton,
+							"bg-primary border-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground":
+								isMemoSelected,
+						},
+					)}
+					onClick={handleCheckButtonClick}
+				>
+					<CheckIcon
+						size={12}
+						className={cn("transition-all", { "scale-110": isMemoSelected })}
+					/>
+				</Button>
+			)}
 
 			{isTitleEditing ? (
 				<div className="flex items-center gap-2.5">
@@ -190,7 +192,14 @@ export default memo(function MemoCardHeader({
 });
 
 function MemoFavIcon({ favIconUrl }: { favIconUrl?: string | null }) {
-	if (!favIconUrl) {
+	const [failedFavIconUrl, setFailedFavIconUrl] = useState<string | null>(null);
+	const isFavIconBroken = !!favIconUrl && failedFavIconUrl === favIconUrl;
+
+	const handleFavIconError = () => {
+		setFailedFavIconUrl(favIconUrl ?? null);
+	};
+
+	if (!favIconUrl || isFavIconBroken) {
 		return <Globe className="w-5 h-5 text-muted-foreground flex-shrink-0" />;
 	}
 
@@ -203,6 +212,7 @@ function MemoFavIcon({ favIconUrl }: { favIconUrl?: string | null }) {
 				alt="favicon"
 				className="w-full h-full object-contain"
 				priority
+				onError={handleFavIconError}
 			/>
 		</div>
 	);

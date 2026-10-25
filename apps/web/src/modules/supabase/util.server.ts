@@ -7,8 +7,8 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-export const getSupabaseClient = () => {
-	const cookieStore = cookies();
+export const getSupabaseClient = async () => {
+	const cookieStore = await cookies();
 
 	return createServerClient<Database, "memo">(SUPABASE.url, SUPABASE.anonKey, {
 		cookies: {
@@ -33,7 +33,7 @@ export const getSupabaseClient = () => {
 
 export const signInWithOAuth = async (provider: Provider) => {
 	"use server";
-	const supabaseClient = getSupabaseClient();
+	const supabaseClient = await getSupabaseClient();
 
 	const { error, data } = await supabaseClient.auth.signInWithOAuth({
 		provider,
@@ -49,7 +49,7 @@ export const signInWithOAuth = async (provider: Provider) => {
 
 export const signInWithEmail = async (email: string, password: string) => {
 	"use server";
-	const supabaseClient = getSupabaseClient();
+	const supabaseClient = await getSupabaseClient();
 	const { error } = await supabaseClient.auth.signInWithPassword({
 		email,
 		password,

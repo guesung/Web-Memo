@@ -1,61 +1,81 @@
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { ErrorBoundary, Tabs, TabsContent, TabsList } from "@web-memo/ui";
-import { useState } from "react";
-import { ChatTabTrigger, SummaryTabTrigger } from "./components";
+import { ChatTabTrigger } from "./components";
 import Chat from "./components/Chat";
 import { ChatProvider } from "./components/Chat/components";
 import Summary from "./components/Summary";
-import { SummaryProvider } from "./components/Summary/components";
+import { resolveActiveTab, type TTabName } from "./resolveActiveTab";
 
 interface TabSectionProps {
 	tabHeight: number;
+	isSummaryOpen: boolean;
+	isChatEnabled: boolean;
+	selectedTab: TTabName;
+	onTabChange: (tab: TTabName) => void;
+	panelId: string;
+	isAwaitingSummary: boolean;
 }
 
-export default function TabSection({ tabHeight }: TabSectionProps) {
-	const [activeTab, setActiveTab] = useState("summary");
+export default function TabSection({
+	tabHeight,
+	isSummaryOpen,
+	isChatEnabled,
+	selectedTab,
+	onTabChange,
+	panelId,
+	isAwaitingSummary,
+}: TabSectionProps) {
+	const activeTab = resolveActiveTab({
+		selectedTab,
+		isSummaryOpen,
+		isChatEnabled,
+	});
+	if (!activeTab) return null;
 
 	const handleTabChange = (tabName: string) => {
-		setActiveTab(tabName);
+		onTabChange(tabName as TTabName);
 		analytics.trackEvent({ name: "tab_change", params: { tab_name: tabName } });
 	};
 
 	return (
-		<SummaryProvider>
-			<ChatProvider>
-				<section
-					className="flex flex-col overflow-hidden"
-					style={{ height: `${tabHeight}%` }}
+		<ChatProvider>
+			<section
+				className="flex min-h-0 flex-col overflow-hidden"
+				style={{ height: `${tabHeight}%` }}
+			>
+				<Tabs
+					value={activeTab}
+					onValueChange={handleTabChange}
+					className="flex min-h-0 flex-1 flex-col overflow-hidden"
 				>
-					<Tabs
-						value={activeTab}
-						onValueChange={handleTabChange}
-						className="flex flex-col flex-1 min-h-0 overflow-hidden"
-					>
-						<TabsList className="shrink-0 mt-3 w-full grid grid-cols-2">
-							<SummaryTabTrigger />
+					{!isSummaryOpen && isChatEnabled && (
+						<TabsList className="mt-3 grid w-full shrink-0 grid-cols-1">
 							<ChatTabTrigger />
 						</TabsList>
+					)}
+					{isSummaryOpen && (
 						<TabsContent
+							id={panelId}
 							value="summary"
-							className="flex-1 overflow-y-auto mt-0"
+							className="mt-0 min-h-0 flex-1 overflow-y-auto"
 						>
 							<ErrorBoundary>
-								<Summary />
+								<Summary isAwaitingSummary={isAwaitingSummary} />
 							</ErrorBoundary>
 						</TabsContent>
-
+					)}
+					{isChatEnabled && (
 						<TabsContent
 							value="chat"
-							// 채팅 입력창도 같은 이유로 포커스 링이 좌우로 잘린다
-							className="flex-1 overflow-hidden mt-0 px-0.5"
+							className="mt-0 min-h-0 flex-1 overflow-hidden px-0.5"
 						>
 							<ErrorBoundary>
 								<Chat />
 							</ErrorBoundary>
 						</TabsContent>
-					</Tabs>
-				</section>
-			</ChatProvider>
-		</SummaryProvider>
+					)}
+				</Tabs>
+			</section>
+		</ChatProvider>
 	);
 }

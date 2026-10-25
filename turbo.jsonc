@@ -50,7 +50,11 @@
 			// turbo 2의 기본 envMode는 strict라, 선언하지 않으면 빌드가 셸의 BUILD_ENV를
 			// 못 봅니다. next.config가 이 값으로 콘솔 제거 여부를 가르고, 캐시도 환경별로
 			// 갈라져야 staging 산출물이 production 캐시를 물지 않습니다.
-			"env": ["BUILD_ENV"],
+			// SENTRY_AUTH_TOKEN도 같은 이유로 선언합니다. 없으면 웹(Vercel)과 확장(cd-extension)
+			// 빌드 모두 토큰을 못 받아 소스맵 업로드를 경고 한 줄만 남기고 건너뜁니다.
+			// passThroughEnv가 아니라 env인 이유: 토큰 유무에 따라 산출물이 달라집니다(업로드 뒤
+			// 소스맵 삭제). 토큰 없이 만든 CI 캐시를 배포 빌드가 재사용하면 업로드가 통째로 빠집니다.
+			"env": ["BUILD_ENV", "SENTRY_AUTH_TOKEN"],
 			"outputs": ["dist/**", "build/**", ".next/**", "!.next/cache/**"]
 		},
 		// 프로덕션 서버 실행 (apps/web)

@@ -9,7 +9,7 @@ import {
 	fetchDefaultBranchSha,
 	fetchRefOptions,
 	fetchVersionForBump,
-	getGithubRepository,
+	GITHUB_REPOSITORY,
 	notifySlackSafely,
 	openSlackModal,
 	readVerifiedSlackForm,
@@ -28,6 +28,10 @@ import { type NextRequest, NextResponse } from "next/server";
  * Slack App > Interactivity & Shortcuts > Request URL 에 등록합니다:
  *   https://<프로덕션 도메인>/api/slack/interactivity
  *
+ * 배포 버튼은 master 머지 스레드의 두 곳에서 옵니다. 타깃별 빌드 성공 댓글(웹·확장·앱 각각,
+ * 그 타깃 하나)과 모든 타깃이 끝난 뒤의 요약 댓글(빌드에 성공한 전체 타깃)입니다.
+ * 어느 쪽이든 같은 action_id와 value 형식이라 여기서는 출처를 구분하지 않습니다.
+ *
  * @description Slack은 3초 안에 200을 못 받으면 사용자에게 실패로 표시합니다.
  * 그래서 무거운 작업을 만들지 않고, 배포 진행 상황은 워크플로가 스스로 알리게 둡니다.
  */
@@ -35,9 +39,15 @@ import { type NextRequest, NextResponse } from "next/server";
 // node:crypto로 서명을 검증하므로 Node 런타임이 필요합니다.
 export const runtime = "nodejs";
 
-/** 버튼 value에 실려 오는 값. .github/scripts/lib/slack-blocks.mjs가 만듭니다. */
+/**
+ * 버튼 value에 실려 오는 값. .github/scripts/shared/slack-blocks.mjs가 만듭니다.
+ * 타깃별 댓글(notify-thread-reply.mjs)과 요약 댓글(notify-build-ready.mjs)이 같은 값을 실어 보냅니다.
+ */
 interface IFDeployButtonValue {
-	/** 배포 대상 (다른 버전 버튼에는 없습니다) */
+	/**
+	 * 배포 대상. 요약 댓글의 "다른 버전…" 버튼에는 없고(모달에서 대상을 고릅니다),
+	 * 타깃별 댓글의 "다른 버전…" 버튼에는 있습니다(모달이 그 대상으로 고정됩니다).
+	 */
 	target?: TDeployTarget;
 	/** 배포할 커밋 SHA */
 	ref: string;
@@ -50,7 +60,7 @@ const describeError = (error: unknown): string =>
 	error instanceof Error ? error.message.slice(0, 150) : String(error);
 
 const buildRunUrl = (): string =>
-	`https://github.com/${getGithubRepository()}/actions/workflows/release.yml`;
+	`https://github.com/${GITHUB_REPOSITORY}/actions/workflows/release.yml`;
 
 /** 버튼 하나로 즉시 배포하는 경로. */
 const handleDeployButton = async ({
@@ -79,11 +89,12 @@ const handleDeployButton = async ({
 };
 
 /**
- * "다른 버전…" 버튼 — 대상과 ref를 고르는 모달을 엽니다.
+ * "다른 버전…" 버튼 — ref(와 요약 댓글에서는 대상)를 고르는 모달을 엽니다.
+ * 타깃별 댓글의 버튼이면 `value.target`이 있어 대상이 고정된 모달이 열립니다.
  *
  * @description trigger_id는 발급 후 3초 안에 써야 합니다. 그 앞에 GitHub 조회를 두면
  * 콜드 스타트와 겹쳐 `expired_trigger_id`로 죽고, 사용자에게는 버튼이 아무 반응 없는
- * 것처럼 보입니다. 그래서 외부 호출 없이 모달을 **먼저** 띄우고, 태그·커밋 목록은
+ * 것처럼 보입니다. 그래서 외부 호출 없이 모달을 **먼저** 띄우고, 커밋 목록은
  * views.update로 나중에 채웁니다.
  */
 const handleCustomDeployButton = async ({
@@ -106,6 +117,7 @@ const handleCustomDeployButton = async ({
 			refOptions: [fallbackOption],
 			defaultRef: value.ref,
 			responseUrl,
+			target: value.target,
 			isLoading: true,
 		}),
 	});
@@ -134,6 +146,7 @@ const handleCustomDeployButton = async ({
 				refOptions: refOptions.length > 0 ? refOptions : [fallbackOption],
 				defaultRef: value.ref,
 				responseUrl,
+				target: value.target,
 				currentVersions,
 			}),
 		});
@@ -230,12 +243,11 @@ const validateVersionBump = async ({
 	}
 
 	// 버전 커밋은 master 끝에 쌓이는데 배포할 내용이 과거면 둘이 다른 트리가 됩니다.
-	// 태그를 고른 경우도 SHA가 다르므로 여기서 함께 걸립니다.
 	if (ref !== branchResult.value) {
 		return {
 			error: {
 				blockId: DEPLOY_MODAL_FIELDS.ref.blockId,
-				message: `버전을 올리려면 master 최신 커밋(${branchResult.value.slice(0, 7)})을 고르세요 — 과거 커밋·태그에는 버전 커밋을 쌓을 수 없습니다`,
+				message: `버전을 올리려면 master 최신 커밋(${branchResult.value.slice(0, 7)})을 고르세요 — 과거 커밋에는 버전 커밋을 쌓을 수 없습니다`,
 			},
 		};
 	}
@@ -276,7 +288,7 @@ const validateVersionBump = async ({
 	return { currentVersions, baseSha: branchResult.value };
 };
 
-/** 모달 제출 — 여러 대상을 한 번에 배포합니다. */
+/** 모달 제출 — 고정된 대상 하나, 또는 체크박스로 고른 여러 대상을 배포합니다. */
 const handleModalSubmission = async (payload: {
 	view: {
 		private_metadata: string;
@@ -285,13 +297,20 @@ const handleModalSubmission = async (payload: {
 	user: { id: string; username?: string };
 }): Promise<NextResponse> => {
 	const { values } = payload.view.state;
-	const targets = (
-		(
-			values[DEPLOY_MODAL_FIELDS.targets.blockId]?.[
-				DEPLOY_MODAL_FIELDS.targets.actionId
-			] as { selected_options?: Array<{ value: string }> }
-		)?.selected_options ?? []
-	).map(({ value }) => value as TDeployTarget);
+	const { responseUrl, target: fixedTarget } = JSON.parse(
+		payload.view.private_metadata,
+	) as { responseUrl: string; target?: TDeployTarget };
+
+	// 타깃별 댓글에서 열린 모달은 대상이 고정돼 있어 체크박스 자체가 없습니다.
+	const targets: TDeployTarget[] = fixedTarget
+		? [fixedTarget]
+		: (
+				(
+					values[DEPLOY_MODAL_FIELDS.targets.blockId]?.[
+						DEPLOY_MODAL_FIELDS.targets.actionId
+					] as { selected_options?: Array<{ value: string }> }
+				)?.selected_options ?? []
+			).map(({ value }) => value as TDeployTarget);
 
 	// 선택지 라벨에는 커밋 제목이 이미 들어 있습니다("8ae32c1 확장 버전을 올린다").
 	// 배포 시작 메시지에 해시 대신 그 라벨을 그대로 씁니다.
@@ -304,16 +323,20 @@ const handleModalSubmission = async (payload: {
 
 	// 대상을 하나도 안 고르면 워크플로의 preflight가 실패로 끝납니다.
 	// 그 전에 모달 안에서 바로 알려주는 편이 낫습니다.
-	if (targets.length === 0 || !ref) {
+	if (targets.length === 0) {
 		return respondWithModalError({
 			blockId: DEPLOY_MODAL_FIELDS.targets.blockId,
 			message: "배포할 대상을 하나 이상 고르세요",
 		});
 	}
 
-	const { responseUrl } = JSON.parse(payload.view.private_metadata) as {
-		responseUrl: string;
-	};
+	if (!ref) {
+		return respondWithModalError({
+			blockId: DEPLOY_MODAL_FIELDS.ref.blockId,
+			message: "배포할 커밋을 고르세요",
+		});
+	}
+
 	const targetLabels = targets
 		.map((target) => DEPLOY_TARGET_LABELS[target])
 		.join(", ");

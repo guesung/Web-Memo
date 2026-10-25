@@ -100,11 +100,12 @@
 | `UPSTASH_REDIS_REST_TOKEN` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/modules/ratelimit/rateLimit.ts` |
 | `UPSTASH_REDIS_REST_URL` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/modules/ratelimit/rateLimit.ts` |
 
-### Supabase Edge Function secrets (6개)
+### Supabase Edge Function secrets (7개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
 | `BLOG_CATALOG_INGEST_SECRET` | 블로그 정주행 카탈로그 수집이 멈춘다. GitHub에 없으면 수집기가 시작하지 못하고, Supabase에 없으면 수집 엔드포인트가 500으로 모든 요청을 거절해 토스·당근·긱뉴스의 새 글과 재개 요청이 반영되지 않는다(이미 수집된 글 조회는 그대로다) | `.github/workflows/chore-blog-catalog.yml`, `.github/scripts/blog-reading/collect.mjs`, `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts` |
+| `BLOG_DIGEST_ENABLED` (선택) | 정확히 true일 때만 긱뉴스 새 글 묶음 알림이 켜진다. 없거나 다른 값이면 묶음 알림 분기를 건너뛴다(위시 리마인더는 그대로) | `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/blogDigest.ts` |
 | `CRON_SECRET` | DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·가입 알림·아티클 리마인더가 401로 끝난다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
 | `RESEND_API_KEY` | 가입 안내 메일이 발송되지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
 | `SLACK_FEEDBACK_WEBHOOK_URL` | 피드백 Slack 알림이 오지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts` |

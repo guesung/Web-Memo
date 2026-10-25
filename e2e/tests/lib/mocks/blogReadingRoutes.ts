@@ -1,5 +1,5 @@
 import type { Page, Route } from "@playwright/test";
-import { SUPABASE } from "@web-memo/shared/constants";
+import { isFeedBlog, SUPABASE } from "@web-memo/shared/constants";
 import type {
 	IFBlogArticleItem,
 	IFBlogReadingCursor,
@@ -59,7 +59,10 @@ export class MockBlogReadingStore {
 
 		for (let order = 1; order <= count; order++) {
 			const serial = existingCount + order;
-			const url = `https://blog.example.com/${blogId}/${serial}`;
+			const url =
+				blogId === "geeknews"
+					? `https://news.hada.io/topic?id=${serial}`
+					: `https://blog.example.com/${blogId}/${serial}`;
 			this.articles.push({
 				blogId,
 				providerId: String(serial).padStart(4, "0"),
@@ -87,7 +90,7 @@ export class MockBlogReadingStore {
 		}
 	}
 
-	/** 소스 수집 상태를 덮어쓴다. 지정하지 않은 값은 전체 수집 완료 상태를 따른다. */
+	/** 소스 수집 상태를 덮어쓴다. 지정하지 않은 값은 전체 수집 완료 상태를 따른다. 피드 소스의 `total`은 서버처럼 항상 null이다. */
 	setSourceStatus(blogId: TBlogId, patch: Partial<IFBlogSourceStatus>) {
 		this.sourcePatches.set(blogId, {
 			...this.sourcePatches.get(blogId),
@@ -117,7 +120,7 @@ export class MockBlogReadingStore {
 			status: isComplete ? "complete" : "partial",
 			phase,
 			collectedCount,
-			total: isComplete ? collectedCount : null,
+			total: isComplete && !isFeedBlog(blogId) ? collectedCount : null,
 			initialCompletedAt: isComplete ? "2026-09-29T00:00:00.000Z" : null,
 			lastSuccessAt: "2026-09-30T00:30:00.000Z",
 			lastError: null,

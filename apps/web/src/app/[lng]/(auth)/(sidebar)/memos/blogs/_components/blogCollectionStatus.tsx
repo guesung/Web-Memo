@@ -2,11 +2,14 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { BLOG_CATALOG } from "@web-memo/shared/constants";
+import { BLOG_CATALOG, isFeedBlog } from "@web-memo/shared/constants";
 import type { IFBlogSourceStatus, TBlogId } from "@web-memo/shared/types";
 import { getBlogSourceViewState } from "@web-memo/shared/utils";
 import { Button } from "@web-memo/ui";
-import { BLOG_SOURCE_TITLE_KEYS } from "../_constants";
+import {
+	BLOG_FEED_SOURCE_COPY_KEYS,
+	BLOG_SOURCE_TITLE_KEYS,
+} from "../_constants";
 
 /**
  * 블로그별 수집 상태 카드.
@@ -32,6 +35,28 @@ export default function BlogCollectionStatus({
 				const name =
 					BLOG_CATALOG.find((blog) => blog.blogId === source.blogId)
 						?.displayName[lng] ?? source.blogId;
+
+				if (isFeedBlog(source.blogId)) {
+					const { titleKey, descriptionKey } =
+						BLOG_FEED_SOURCE_COPY_KEYS[viewState];
+
+					return (
+						<div
+							key={source.blogId}
+							data-collection-source={source.blogId}
+							data-view-state={viewState}
+							className="border-t border-border py-2 first:border-t-0"
+						>
+							<p className="font-semibold text-foreground">
+								{t(titleKey, { name })}
+							</p>
+							<p className="text-xs text-muted-foreground">
+								{t(descriptionKey)}
+							</p>
+						</div>
+					);
+				}
+
 				const isCollectionPending =
 					viewState === "waiting" ||
 					viewState === "collecting" ||

@@ -14,7 +14,7 @@ import {
 	DialogTitle,
 } from "@web-memo/ui";
 
-/** 토스·당근 구독을 켜고 끄는 대화상자. 해제해도 메모는 남는다. */
+/** 블로그 구독을 켜고 끄는 대화상자. 해제해도 메모는 남는다. */
 export default function BlogSubscriptionsDialog({
 	lng,
 	isOpen,
@@ -52,6 +52,11 @@ export default function BlogSubscriptionsDialog({
 											.replace(/^https?:\/\//, "")
 											.replace(/\/$/, "")}
 									</p>
+									{blog.kind === "feed" && (
+										<p className="text-xs text-muted-foreground">
+											{t("blogs.dialog.feedHint")}
+										</p>
+									)}
 								</div>
 								<Button
 									variant={isSubscribed ? "outline" : "default"}

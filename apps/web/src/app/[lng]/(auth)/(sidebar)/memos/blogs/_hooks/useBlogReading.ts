@@ -1,6 +1,6 @@
 import type { Language } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { BLOG_READING_PAGE_SIZE } from "@web-memo/shared/constants";
+import { BLOG_READING_PAGE_SIZE, isFeedBlog } from "@web-memo/shared/constants";
 import {
 	useBlogReadingPageQuery,
 	useBlogReadingSummaryQuery,
@@ -26,7 +26,7 @@ import { formatBlogDateTime, getBlogScopeTotals } from "../_utils";
 /**
  * 블로그 정주행 화면의 서버 상태·필터·쪽 이동·메모 열기를 한곳에서 다룬다.
  * @description 쪽 이동은 무한 조회가 쌓은 페이지 배열을 인덱스로 짚는다. 필터·정렬이 바뀌면 다른 캐시라 첫 쪽으로 돌아간다.
- * 완료 표시는 서버 응답 그대로이며, 저장하지 않은 초안으로 완료를 앞당기지 않는다.
+ * 긱뉴스 필터로 바꿀 때는 최신순으로 시작한다. 완료 표시는 서버 응답 그대로이며, 저장하지 않은 초안으로 완료를 앞당기지 않는다.
  */
 export const useBlogReading = (lng: Language) => {
 	const { t } = useTranslation(lng);
@@ -115,6 +115,11 @@ export const useBlogReading = (lng: Language) => {
 	const handleBlogFilterClick = (nextBlogFilter: TBlogId | null) => {
 		setBlogFilter(nextBlogFilter);
 		setPageIndex(0);
+
+		// 피드는 최근 글이 중요해 최신순으로 시작한다. 다른 필터는 정렬을 그대로 둔다.
+		if (nextBlogFilter !== null && isFeedBlog(nextBlogFilter)) {
+			setSort("newest");
+		}
 	};
 
 	const handlePrevClick = () => {

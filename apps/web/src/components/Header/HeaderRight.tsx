@@ -39,9 +39,14 @@ export default function HeaderRight({ lng }: LanguageType) {
 	const isLoginPage = pathname === `/${lng}${PATHS.login}`;
 
 	const handleSignoutClick = () => {
-		mutateSignout();
-		void syncLoginStatusToExtension();
-		router.push(`/${lng}${PATHS.login}`);
+		// 세션 쿠키가 지워진 뒤에 이동해야 로그인 페이지 서버 컴포넌트가 비로그인으로 판단한다.
+		mutateSignout(undefined, {
+			onSuccess: () => {
+				void syncLoginStatusToExtension();
+				router.replace(`/${lng}${PATHS.login}`);
+				router.refresh();
+			},
+		});
 	};
 
 	return (
@@ -145,7 +150,7 @@ const getPathWithoutLanguage = (pathname: string, lng: LanguageType["lng"]) => {
 	return pathname.slice(languagePrefix.length) || "/";
 };
 
-/** 로그인 상태 변화를 확장에 알린다. 로그아웃 이동을 기다리게 하지 않도록 호출 쪽에서 await하지 않는다. */
+/** 로그인 상태 변화를 확장에 알린다. 확장의 응답 때문에 로그인 화면 이동이 늦어지지 않도록 호출 쪽에서 await하지 않는다. */
 const syncLoginStatusToExtension = async () => {
 	try {
 		await bridge.request.SYNC_LOGIN_STATUS();

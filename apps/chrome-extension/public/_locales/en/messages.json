@@ -362,6 +362,12 @@
 	"actionItemPlaceholder": {
 		"message": "Write what to do after reading this page"
 	},
+	"addImpression": {
+		"message": "Add impression"
+	},
+	"addActionItem": {
+		"message": "Add action items"
+	},
 	"highlight_create": {
 		"message": "Highlight"
 	},

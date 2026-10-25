@@ -242,6 +242,51 @@
 	"control_disabled_offline_delete": {
 		"message": "오프라인에서는 지울 수 없어요"
 	},
+	"login_intro_title": {
+		"message": "읽으면서 바로 메모하세요"
+	},
+	"login_intro_description": {
+		"message": "로그인하면 지금 보는 페이지에서 바로 쓸 수 있어요."
+	},
+	"login_example_label": {
+		"message": "예시"
+	},
+	"login_example_quote_before": {
+		"message": "좋은 글은 "
+	},
+	"login_example_quote_highlight": {
+		"message": "읽는 사람의 시간을 아껴 준다"
+	},
+	"login_example_quote_after": {
+		"message": "는 점에서 친절하다."
+	},
+	"login_example_note": {
+		"message": "다음 발표 자료 서문에 인용하기"
+	},
+	"login_benefit_highlight_title": {
+		"message": "문장을 드래그해 하이라이트"
+	},
+	"login_benefit_highlight_description": {
+		"message": "다시 방문하면 그 자리에 그대로 남아 있어요"
+	},
+	"login_benefit_organize_title": {
+		"message": "페이지마다 메모가 자동으로 정리돼요"
+	},
+	"login_benefit_organize_description": {
+		"message": "제목·주소와 함께 저장돼 따로 정리할 필요가 없어요"
+	},
+	"login_benefit_web_title": {
+		"message": "웹에서 모아 보고 검색해요"
+	},
+	"login_benefit_web_description": {
+		"message": "webmemo.xyz에서 모든 메모와 하이라이트를 한곳에"
+	},
+	"login_start_button": {
+		"message": "Google·카카오로 시작하기"
+	},
+	"login_start_hint": {
+		"message": "새 탭에서 로그인한 뒤 이 패널로 돌아오면 바로 쓸 수 있어요."
+	},
 	"login_network_unavailable": {
 		"message": "인터넷에 연결되어 있지 않아요. 연결되면 자동으로 다시 불러와요."
 	},

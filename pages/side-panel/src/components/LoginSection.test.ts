@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
+import { analytics } from "@web-memo/shared/modules/analytics";
+import { Tab } from "@web-memo/shared/utils/extension";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -62,7 +64,7 @@ it("온라인이고 사용자 확인이 네트워크 오류가 아니면 로그�
 
 	await renderLoginSection();
 
-	expect(container.textContent).toContain("로그인하러가기");
+	expect(container.textContent).toContain("login_start_button");
 	expect(container.textContent).not.toContain("login_network_unavailable");
 });
 
@@ -96,5 +98,31 @@ it("연결 안내 중에 online 이벤트가 오면 다시 판단한다", async 
 		window.dispatchEvent(new Event("online"));
 	});
 
-	expect(container.textContent).toContain("로그인하러가기");
+	expect(container.textContent).toContain("login_start_button");
+});
+
+it("로그인 전에 예시와 할 수 있는 일을 보여주고, 시작 버튼은 로그인 탭을 연다", async () => {
+	queryClient.setQueryData(QUERY_KEY.user(), {
+		data: { user: null },
+		error: null,
+	});
+	vi.mocked(analytics.getExtensionClientId).mockResolvedValue("cid-1");
+
+	await renderLoginSection();
+
+	expect(container.querySelector("mark")?.textContent).toBe(
+		"login_example_quote_highlight",
+	);
+	expect(container.querySelectorAll("li")).toHaveLength(3);
+
+	await act(async () => {
+		container.querySelector("button")?.click();
+	});
+
+	expect(analytics.trackEvent).toHaveBeenCalledWith({
+		name: "side_panel_login_click",
+	});
+	expect(Tab.create).toHaveBeenCalledWith({
+		url: "https://example.com/login?ext_cid=cid-1",
+	});
 });

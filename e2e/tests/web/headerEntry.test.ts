@@ -54,7 +54,7 @@ test.describe("헤더 진입점 (로그인)", () => {
 		await page.waitForURL(`**/ko${PATHS.login}`);
 
 		await expect(
-			page.getByText("웹사이트 보며 간편하게 메모하세요."),
+			page.getByRole("heading", { name: "웹사이트 보며 간편하게 메모하세요." }),
 		).toBeVisible();
 		await expect(
 			getHeader(page).getByRole("link", { name: "내 메모" }),

@@ -69,21 +69,25 @@ export function OpenSidePanelCTA({
 
 /**
  * 확장에 패널 열기를 요청하고 열렸는지 돌려준다.
- * @description 확장이 없거나 Chrome이 아니면 chrome.runtime이 없어 요청이 동기로 던진다.
- * 옛 버전은 응답하지 않으므로 시간 제한을 두고, 어느 쪽이든 실패로 본다.
+ * @description 확장 환경이 아니면 브리지가 빈 응답을 돌려주고, 확장이 없으면 메시지 전송이
+ * 거부되며, 옛 버전은 응답하지 않는다. 세 경우 모두 실패로 본다. 응답을 기다리는 시간은 제한한다.
  */
 const requestOpenSidePanel = async (): Promise<boolean> => {
+	let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
 	try {
 		const response = await Promise.race([
 			bridge.request.OPEN_SIDE_PANEL_FROM_WEB(),
-			new Promise<undefined>((resolve) =>
-				setTimeout(() => resolve(undefined), OPEN_TIMEOUT_MS),
-			),
+			new Promise<undefined>((resolve) => {
+				timeoutId = setTimeout(() => resolve(undefined), OPEN_TIMEOUT_MS);
+			}),
 		]);
 
 		return response?.success === true;
 	} catch {
 		return false;
+	} finally {
+		clearTimeout(timeoutId);
 	}
 };
 

@@ -1,3 +1,4 @@
+import { isFeedBlog } from "@web-memo/shared/constants/blog-catalog";
 import type { IFBlogReadingSummarySource } from "@web-memo/shared/types/blog-reading";
 import { getBlogSourceViewState } from "@web-memo/shared/utils/blog-reading";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -15,7 +16,7 @@ interface BlogSourceStatusCardProps {
 
 /**
  * 구독한 블로그별 수집 상태 카드.
- * @description 부분 실패에는 '수집 재개' 버튼을 함께 보여 준다. 수집 중에는 분모·퍼센트를 보여 주지 않는다.
+ * @description 전체 수집형 소스의 부분 실패에는 '수집 재개' 버튼을 함께 보여 준다(피드 소스는 재개 없음). 수집 중에는 분모·퍼센트를 보여 주지 않는다.
  * 사용처: app/blog-reading.tsx
  */
 export function BlogSourceStatusCard({
@@ -30,11 +31,13 @@ export function BlogSourceStatusCard({
 		>
 			{sources.map((source, index) => {
 				const viewState = getBlogSourceViewState(source);
+				const isFeed = isFeedBlog(source.blogId);
 				const copy = getBlogSourceStatusCopy({
 					blogName: getBlogDisplayName(source.blogId),
 					viewState,
 					collectedCount: source.collectedCount,
 					total: source.total,
+					isFeed,
 				});
 
 				return (
@@ -55,7 +58,7 @@ export function BlogSourceStatusCard({
 								</Text>
 							) : null}
 						</View>
-						{viewState === "partialFailed" ? (
+						{viewState === "partialFailed" && !isFeed ? (
 							<TouchableOpacity
 								className="px-3 py-2 rounded-lg border border-foreground dark:border-neutral-500"
 								onPress={() => onResume(source.blogId)}

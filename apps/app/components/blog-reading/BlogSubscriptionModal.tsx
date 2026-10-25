@@ -48,7 +48,7 @@ export function BlogSubscriptionModal({
 						블로그 선택
 					</Text>
 					<Text className="text-[13px] text-muted-foreground dark:text-neutral-400 mt-1 mb-2">
-						토스와 당근의 공개된 글을 모아 정주행할 수 있어요.
+						공개된 글을 모아 정주행할 수 있어요.
 					</Text>
 					{BLOG_CATALOG.map((blog) => {
 						const isSubscribed = subscribedBlogIds.includes(blog.blogId);
@@ -67,6 +67,11 @@ export function BlogSubscriptionModal({
 											.replace(/^https?:\/\//, "")
 											.replace(/\/$/, "")}
 									</Text>
+									{blog.kind === "feed" ? (
+										<Text className="text-xs text-muted-foreground dark:text-neutral-400">
+											구독한 뒤 올라온 새 글만 모아요.
+										</Text>
+									) : null}
 								</View>
 								<TouchableOpacity
 									className={`px-3.5 py-2 rounded-lg border ${isSubscribed ? "border-border dark:border-neutral-700" : "bg-foreground border-foreground dark:bg-white dark:border-white"}`}
@@ -88,6 +93,9 @@ export function BlogSubscriptionModal({
 					})}
 					<Text className="text-xs text-muted-foreground dark:text-neutral-400 mt-3">
 						구독을 해제해도 작성한 메모는 남아요.
+					</Text>
+					<Text className="text-xs text-muted-foreground dark:text-neutral-400 mt-1">
+						알림 시간을 켜 두면 하루 한 번 긱뉴스 새 글 수를 알려드려요.
 					</Text>
 					<TouchableOpacity
 						className="self-end mt-4 px-4 py-2 rounded-lg border border-border dark:border-neutral-700"

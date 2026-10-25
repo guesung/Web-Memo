@@ -21,12 +21,12 @@ export function BlogReadingEntryCard() {
 		userId: session?.user.id,
 	});
 	const totals = getBlogSummaryTotals(summary?.sources ?? []);
-	const hasSubscription = (summary?.sources.length ?? 0) > 0;
+	const hasArchiveSource = totals.hasArchiveSource;
 
 	let progressText: string | null = null;
-	if (hasSubscription && totals.confirmedTotal !== null) {
+	if (hasArchiveSource && totals.confirmedTotal !== null) {
 		progressText = `메모할 글 ${totals.confirmedTotal - totals.completedCount}개`;
-	} else if (hasSubscription) {
+	} else if (hasArchiveSource) {
 		progressText = `현재 수집한 글 ${totals.collectedCount}개 · 메모 완료 ${totals.completedCount}개`;
 	}
 

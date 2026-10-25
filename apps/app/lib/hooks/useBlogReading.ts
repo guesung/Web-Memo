@@ -1,4 +1,8 @@
 import {
+	BLOG_CATALOG,
+	isFeedBlog,
+} from "@web-memo/shared/constants/blog-catalog";
+import {
 	useBlogReadingPageQuery,
 	useBlogReadingSummaryQuery,
 	useBlogSubscriptionMutation,
@@ -9,8 +13,9 @@ import type {
 	TBlogReadingSort,
 } from "@web-memo/shared/types/blog-reading";
 import { BlogReadingError } from "@web-memo/shared/utils/services/blog-reading";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { TBlogReadingFullState } from "@/components/blog-reading/BlogReadingStateView";
+import { getBlogDisplayName } from "@/components/blog-reading/blogSourceStatusCopy";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { getBlogSummaryTotals } from "@/lib/blogReadingSummary";
 import { supabase } from "@/lib/supabase/client";
@@ -24,9 +29,18 @@ const isErrorCode = (error: Error | null, code: BlogReadingError["code"]) =>
  * 블로그 정주행 화면의 상태·데이터·동작을 한 곳에 모은 훅.
  * @description 목록은 30개 단위 쪽 이동이다. 서버 상태는 shared 훅(TanStack Query)이 갖고,
  * 여기서는 출처 필터·정렬·현재 쪽·안내 문구와 화면 상태 판정만 관리한다.
+ * 긱뉴스 필터로 바뀔 때는 최신순으로 시작한다.
  * 컴포넌트에서 Supabase를 직접 호출하지 않는다. 사용처: app/blog-reading.tsx
  */
-export function useBlogReading() {
+export function useBlogReading({
+	entryBlogId,
+	entryNonce,
+}: {
+	/** 라우트 파라미터로 들어온 초기 필터 후보. 지원하지 않는 값이면 무시한다 */
+	entryBlogId?: string;
+	/** 같은 blogId로 다시 들어와도 초기 필터를 다시 적용하게 하는 값 */
+	entryNonce?: string;
+} = {}) {
 	const { session, isLoading: isAuthLoading } = useAuth();
 	const userId = session?.user.id;
 	const [sourceFilter, setSourceFilter] = useState<TBlogId | null>(null);
@@ -52,6 +66,39 @@ export function useBlogReading() {
 		supabaseClient: supabase,
 		userId,
 	});
+
+	const appliedEntryKeyRef = useRef<string | null>(null);
+
+	useEffect(() => {
+		if (!entryBlogId || !summaryQuery.data) {
+			return;
+		}
+		const entryKey = `${entryBlogId}:${entryNonce ?? ""}`;
+		if (appliedEntryKeyRef.current === entryKey) {
+			return;
+		}
+		appliedEntryKeyRef.current = entryKey;
+
+		const entryBlog = BLOG_CATALOG.find((blog) => blog.blogId === entryBlogId);
+		if (!entryBlog) {
+			return;
+		}
+		setPageIndex(1);
+		const isSubscribed = summaryQuery.data.sources.some(
+			(source) => source.blogId === entryBlog.blogId,
+		);
+		if (!isSubscribed) {
+			setSourceFilter(null);
+			setNotice(
+				`${getBlogDisplayName(entryBlog.blogId)} 구독이 해제되어 있어요.`,
+			);
+			return;
+		}
+		setSourceFilter(entryBlog.blogId);
+		if (isFeedBlog(entryBlog.blogId)) {
+			setSort("newest");
+		}
+	}, [entryBlogId, entryNonce, summaryQuery.data]);
 
 	useEffect(() => {
 		if (!notice) {
@@ -109,6 +156,9 @@ export function useBlogReading() {
 	const handleSourceFilterChange = (nextFilter: TBlogId | null) => {
 		setSourceFilter(nextFilter);
 		setPageIndex(1);
+		if (nextFilter && isFeedBlog(nextFilter)) {
+			setSort("newest");
+		}
 	};
 
 	const handleSortChange = (nextSort: TBlogReadingSort) => {

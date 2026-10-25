@@ -8,6 +8,8 @@ interface BlogReadingPaginationProps {
 	visibleCount: number;
 	/** 모든 구독 소스의 수집이 끝나 확정된 총 글 수. 수집 중이면 null */
 	confirmedTotal: number | null;
+	/** 피드 소스가 범위에 있으면 true. 총 쪽 수 없이 마지막 쪽 안내만 바꾼다 */
+	isFeedScope: boolean;
 	hasNextPage: boolean;
 	isFetchingNextPage: boolean;
 	onPrevious: () => void;
@@ -23,6 +25,7 @@ export function BlogReadingPagination({
 	pageIndex,
 	visibleCount,
 	confirmedTotal,
+	isFeedScope,
 	hasNextPage,
 	isFetchingNextPage,
 	onPrevious,
@@ -77,7 +80,9 @@ export function BlogReadingPagination({
 			</View>
 			{confirmedTotal === null && !hasNextPage ? (
 				<Text className="text-xs text-muted-foreground dark:text-neutral-400 mt-3 p-3 rounded-lg bg-muted dark:bg-neutral-800">
-					이전 글을 더 모으고 있어요. 확보한 마지막 페이지예요.
+					{isFeedScope
+						? "긱뉴스는 구독한 뒤 모은 글까지만 보여요."
+						: "이전 글을 더 모으고 있어요. 확보한 마지막 페이지예요."}
 				</Text>
 			) : null}
 			<Text className="text-xs text-muted-foreground dark:text-neutral-400 mt-3">

@@ -413,7 +413,8 @@
 		"webLogin": {
 			"prefix": "이미 계정이 있다면",
 			"cta": "웹에서 로그인"
-		}
+		},
+		"stepCompleted": "완료"
 	},
 	"login": {
 		"welcomeTitle": "웹사이트 보며 간편하게 메모하세요.",

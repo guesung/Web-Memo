@@ -4,6 +4,7 @@ import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import { InfoIcon, PanelRightIcon } from "lucide-react";
 import { useRef, useState } from "react";
+import { useInstallGuideProgress } from "./installGuideProgress";
 
 /** 확장이 응답하지 않을 때 실패로 볼 시간. 옛 버전은 이 메시지를 처리하지 않아 응답이 없다. */
 const OPEN_TIMEOUT_MS = 3_000;
@@ -20,6 +21,7 @@ export function OpenSidePanelCTA({
 }: OpenSidePanelCTAProps) {
 	const [isFailed, setIsFailed] = useState(false);
 	const isOpening = useRef(false);
+	const { isPanelOpen, markPanelOpen } = useInstallGuideProgress();
 
 	const handleClick = async () => {
 		if (isOpening.current) return;
@@ -28,6 +30,7 @@ export function OpenSidePanelCTA({
 		const isSuccess = await requestOpenSidePanel();
 
 		setIsFailed(!isSuccess);
+		if (isSuccess) markPanelOpen();
 		isOpening.current = false;
 		void analytics
 			.trackEvent({
@@ -57,7 +60,8 @@ export function OpenSidePanelCTA({
 					{shortcutPrefix} <Kbd>Alt</Kbd> + <Kbd>S</Kbd>
 				</span>
 			</div>
-			{isFailed && (
+			{/* 툴바 아이콘 등 다른 방법으로 열었으면 실패 안내는 더 필요 없다. */}
+			{isFailed && !isPanelOpen && (
 				<output className="flex items-start gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm">
 					<InfoIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
 					{failureMessage}

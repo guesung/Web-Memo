@@ -418,7 +418,8 @@
 		"webLogin": {
 			"prefix": "Already have an account?",
 			"cta": "Sign in on the web"
-		}
+		},
+		"stepCompleted": "Done"
 	},
 	"login": {
 		"welcomeTitle": "Easily take notes while browsing websites.",

@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { buildMemoUpdateEvents } from "./memoUpdateEvents";
+import {
+	buildMemoCreateEvents,
+	buildMemoUpdateEvents,
+} from "./memoUpdateEvents";
 
 describe("메모 변경 이벤트 해석", () => {
 	it("상태·카테고리·본문 이벤트의 순서와 본문 필드 정렬을 유지한다", () => {
@@ -24,7 +27,10 @@ describe("메모 변경 이벤트 해석", () => {
 				params: { status: "reading", enabled: false },
 			},
 			{ name: "memo_category_change", params: { action: "clear" } },
-			{ name: "memo_write", params: { fields: "actionItem,memo,title" } },
+			{
+				name: "memo_write",
+				params: { fields: "actionItem,memo,title", is_new: false },
+			},
 		]);
 	});
 
@@ -56,7 +62,9 @@ describe("메모 변경 이벤트 해석", () => {
 	it("카테고리 키가 없으면 경로를 넘겨도 카테고리 이벤트가 없다", () => {
 		expect(
 			buildMemoUpdateEvents({ memo: "내용" }, { categorySource: "hash" }),
-		).toEqual([{ name: "memo_write", params: { fields: "memo" } }]);
+		).toEqual([
+			{ name: "memo_write", params: { fields: "memo", is_new: false } },
+		]);
 	});
 
 	it("분석 대상 필드가 없는 변경에는 이벤트가 없다", () => {
@@ -97,9 +105,30 @@ describe("메모 변경 이벤트 해석", () => {
 
 		it("plannedDate 키가 없거나 undefined면 이벤트가 없다", () => {
 			expect(buildMemoUpdateEvents({ memo: "내용" })).toEqual([
-				{ name: "memo_write", params: { fields: "memo" } },
+				{ name: "memo_write", params: { fields: "memo", is_new: false } },
 			]);
 			expect(buildMemoUpdateEvents({ plannedDate: undefined })).toEqual([]);
 		});
+	});
+});
+
+describe("새 메모 저장 이벤트 해석", () => {
+	it("내용이 있는 본문 필드만 정렬해 is_new와 함께 싣는다", () => {
+		expect(
+			buildMemoCreateEvents({
+				url: "https://example.com",
+				title: "제목",
+				memo: "내용",
+				impression: "",
+				isStar: true,
+			}),
+		).toEqual([
+			{ name: "memo_write", params: { fields: "memo,title", is_new: true } },
+		]);
+	});
+
+	it("쓴 본문이 없으면 이벤트가 없다", () => {
+		expect(buildMemoCreateEvents({ url: "https://example.com" })).toEqual([]);
+		expect(buildMemoCreateEvents({ memo: "", title: "" })).toEqual([]);
 	});
 });

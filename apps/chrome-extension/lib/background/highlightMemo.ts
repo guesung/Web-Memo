@@ -54,11 +54,17 @@ export async function handleCreateHighlightMemo(
 			payload.highlightId,
 			payload.memo,
 		);
-		if (result.created)
+		// created가 false면 저장 재시도로 이미 만든 메모가 돌아온 것이라 새로 쓴 게 아니다.
+		if (result.created) {
 			void analytics.trackEvent({
 				name: "memo_first_write",
 				params: { source: "highlight" },
 			});
+			void analytics.trackEvent({
+				name: "memo_write",
+				params: { fields: "memo", is_new: true, source: "highlight" },
+			});
+		}
 		await bridgeRefresh();
 		await openSavedMemo(result.memo_id, result.deleted_at);
 		return {

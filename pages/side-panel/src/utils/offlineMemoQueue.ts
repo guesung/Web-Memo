@@ -1,3 +1,4 @@
+import { analytics } from "@web-memo/shared/modules/analytics";
 import type { MemoRow, MemoTable } from "@web-memo/shared/types";
 import { isNetworkError } from "@web-memo/shared/utils";
 
@@ -207,6 +208,9 @@ const flushOfflineMemoItem = async ({
 			if (insertResult.error) {
 				throw insertResult.error;
 			}
+			// 온라인 저장과 같은 기준으로 새 메모 작성을 센다. 대기열 수정 반영은 바뀐 필드를
+			// 알 수 없어(대기 항목은 전체 값을 든다) 세지 않는다.
+			void analytics.trackMemoCreate(queuedRequest);
 
 			return { type: "success" };
 		}
@@ -248,6 +252,7 @@ const flushOfflineMemoItem = async ({
 		if (!newMemo) {
 			throw new Error("새 메모를 만들지 못했습니다.");
 		}
+		void analytics.trackMemoCreate(queuedRequest);
 
 		return { type: "conflict", newMemoId: newMemo.id };
 	} catch (error) {

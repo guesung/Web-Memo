@@ -130,6 +130,60 @@ it("팝업 위치와 사이트 끄기 저장 실패를 메뉴 오류로 표시�
 	});
 });
 
+it("말풍선을 끄면 소개 대기 여부와 선택 길이를 함께 계측한다", async () => {
+	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+	document.body.innerHTML = "<p>site selection text</p><div id='root'></div>";
+	Object.defineProperty(Range.prototype, "getBoundingClientRect", {
+		configurable: true,
+		value: () => ({ left: 20, top: 20, bottom: 40 }),
+	});
+	mocks.query.mockResolvedValue({ highlights: [] });
+	vi.mocked(ChromeSyncStorage.set).mockResolvedValue(undefined);
+	const options = {
+		renderer: {
+			add: vi.fn(),
+			remove: vi.fn(),
+			setColor: vi.fn(),
+			hitTest: vi.fn(() => null),
+			clear: vi.fn(),
+		},
+		notesById: new Map<number, string>(),
+	};
+	let hook: ReturnType<typeof useHighlightSelection> | undefined;
+	const TestHook = () => {
+		hook = useHighlightSelection(options);
+
+		return null;
+	};
+	const root = createRoot(document.getElementById("root") as HTMLElement);
+	await act(async () => {
+		root.render(createElement(TestHook));
+	});
+	const text = document.querySelector("p")?.firstChild as Text;
+	const range = document.createRange();
+	range.setStart(text, 0);
+	range.setEnd(text, "site selection".length);
+	document.getSelection()?.removeAllRanges();
+	document.getSelection()?.addRange(range);
+	await act(async () => {
+		document.dispatchEvent(new MouseEvent("mouseup"));
+	});
+	await act(async () => {
+		await hook?.handleBubbleDisableClick("all");
+	});
+	expect(analytics.trackEvent).toHaveBeenCalledWith({
+		name: "highlight_bubble_disable",
+		params: {
+			scope: "all",
+			intro_pending: false,
+			selection_length: "site selection".length,
+		},
+	});
+	await act(async () => {
+		root.unmount();
+	});
+});
+
 it("연필로 생성한 직후에는 메모 없음으로 계측하고 실제 메모 저장 성공 후에만 수정 이벤트를 보낸다", async () => {
 	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
 	document.body.innerHTML = "<p>sample highlight text</p><div id='root'></div>";

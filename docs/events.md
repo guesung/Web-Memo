@@ -23,7 +23,7 @@
 | side_panel_open | 사이드 패널이 열림 (추정) | — | 확장이 실제로 쓰이는 빈도는? (추정) | — |
 | side_panel_open_click | 사이드 패널을 여는 버튼 클릭 (추정) | — | 버튼으로 여는 사람이 얼마나 되는가 (추정) | — |
 | page_view | 페이지 조회 | `page_title`, `page_location` | 어느 페이지가 얼마나 보이는가 (추정) | — |
-| memo_write | 저장된 메모의 제목·본문·인상·할 일 수정. 확장 upsert는 이전 값과 다른 필드에만 발생 | `fields`: 변경된 필드 이름 | 어떤 내용을 수정하는가 (추정) | DB-1158 |
+| memo_write | 메모의 제목·본문·인상·할 일을 씀. 기존 메모 수정은 이전 값과 다른 필드에만, 새 메모 저장(사이드 패널·웹 블로그 화면·오프라인 대기열 동기화)은 내용이 있는 필드가 하나라도 있을 때, 하이라이트 메모는 새로 만들었을 때만(저장 재시도 제외) 발생. 오프라인 대기열의 수정 반영은 바뀐 필드를 알 수 없어 세지 않음 | `fields`: 쓴 필드 이름, `is_new`: 새 메모 저장인가, `source?`: `highlight` | 메모를 쓰는 사람이 얼마나 되고 어떤 내용을 쓰는가. 2026-10 이전에는 수정만 셌으므로 그 전후 사용자 수를 바로 비교하지 않는다 | DB-1158, DB-1230 |
 | memo_first_write | 새 메모 insert 성공 시마다 발생 (하이라이트 RPC는 created=true만, 사용자 생애 첫 작성만 뜻하지 않음) | `source?: highlight` | 새 메모를 만든 사용자가 얼마나 되는가 | — |
 | memo_delete | 메모 삭제 (추정) | `memo_count` | 지우는 메모가 얼마나 되는가 (추정) | — |
 | memo_restore | 휴지통에서 복원 (추정) | `memo_count` | 삭제 후 되살리는 비율 (추정) | — |
@@ -46,7 +46,7 @@
 | highlight_create | 하이라이트 생성 | `color`, `has_note` | 어떤 색·메모 여부로 쓰이는가 | — |
 | highlight_source_jump | 사이드 패널 인용 선택 후 원문 위치 검증·스크롤 성공 | — | 패널 인용을 통해 원문으로 돌아가는가 | DB-1180 |
 | highlight_note_update | 하이라이트 메모 수정 (추정) | — | 하이라이트에 메모를 다는가 (추정) | — |
-| highlight_bubble_disable | 하이라이트 말풍선 끄기 | `scope`: `site` \| `all` | 말풍선이 거슬리는가 (추정) | — |
+| highlight_bubble_disable | 하이라이트 말풍선 끄기(저장 성공 후) | `scope`: `site` \| `all`, `intro_pending`: 소개를 넘기기 전에 껐는가, `selection_length`: 끌 때 선택돼 있던 글자 수 | 말풍선이 거슬리는가. 써보기도 전에 끄는가, 짧은 선택에서 끄는가 | DB-1230 |
 | highlight_bubble_dismiss | 하이라이트 말풍선 X(이번 선택만 닫기) 클릭. Esc·바깥 클릭·선택 해제로 사라지는 경우는 제외 | — | 끄기 대신 X를 반복해 누르는가, 닫기·끄기·생성 중 무엇을 고르는가 | DB-1225 |
 | summary_run | 요약 실행. 요약 보기에서 첫 요청은 `disclosure`, 명시 재시도는 기존 `empty_state`. 재열기로 요청을 재사용하면 기록하지 않음 | `source`: `disclosure` \| `empty_state` \| `tab_trigger`(기존 버전) | 어느 자리에서 요약이 시작되는가 | — |
 | summary_panel_toggle | 요약 행을 직접 열거나 접음. 초기 렌더·페이지 변경·설정 OFF에 따른 자동 접힘은 제외 | `action`: `open` \| `close` | 요약 진입과 메모 화면 복귀를 얼마나 하는가 | — |

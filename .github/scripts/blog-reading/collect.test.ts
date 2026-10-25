@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { IngestError } from "./ingestClient.mjs";
-import { buildSummaryMarkdown, decideExitCode, EXIT_BLOCKED, EXIT_FAILED, EXIT_OK, parseArgs, runBlog, toSourceError } from "./collect.mjs";
+import { buildSummaryMarkdown, decideExitCode, EXIT_BLOCKED, EXIT_FAILED, EXIT_OK, parseArgs, resolveBlogIds, runBlog, toSourceError } from "./collect.mjs";
 import { SourceError } from "./sourceError.mjs";
 
 const LEASE_TOKEN = "3f2b1c9e-8a4d-4c1e-9b7a-0d5e6f7a8b9c";
@@ -43,6 +43,32 @@ describe("parseArgs", () => {
 
 	it("smoke는 당근과 함께만 허용한다", () => {
 		expect(parseArgs(["--source", "daangn", "--smoke"]).smoke).toBe(true);
+	});
+
+	it("긱뉴스는 feed·manual 트리거로만 받는다", () => {
+		expect(parseArgs(["--source", "geeknews", "--trigger", "feed"])).toMatchObject({ source: "geeknews", trigger: "feed" });
+		expect(parseArgs(["--source", "geeknews", "--trigger", "manual"]).source).toBe("geeknews");
+		expect(() => parseArgs(["--source", "geeknews", "--trigger", "daily"])).toThrow();
+		expect(() => parseArgs(["--source", "geeknews", "--trigger", "request"])).toThrow();
+	});
+
+	it("feed 트리거는 아카이브 소스를 받지 않는다", () => {
+		expect(() => parseArgs(["--source", "toss", "--trigger", "feed"])).toThrow();
+		expect(() => parseArgs(["--source", "daangn", "--trigger", "feed"])).toThrow();
+	});
+});
+
+describe("resolveBlogIds", () => {
+	it("all은 feed면 긱뉴스만, 아니면 토스·당근만 돌린다", () => {
+		expect(resolveBlogIds({ source: "all", trigger: "feed" })).toEqual(["geeknews"]);
+		expect(resolveBlogIds({ source: "all", trigger: "daily" })).toEqual(["toss", "daangn"]);
+		expect(resolveBlogIds({ source: "all", trigger: "request" })).toEqual(["toss", "daangn"]);
+		expect(resolveBlogIds({ source: "all", trigger: "manual" })).toEqual(["toss", "daangn"]);
+	});
+
+	it("소스를 지정하면 그것만 돌린다", () => {
+		expect(resolveBlogIds({ source: "geeknews", trigger: "manual" })).toEqual(["geeknews"]);
+		expect(resolveBlogIds({ source: "toss", trigger: "daily" })).toEqual(["toss"]);
 	});
 });
 
@@ -153,5 +179,28 @@ describe("toSourceError / decideExitCode / summary", () => {
 
 		expect(markdown).toContain("`blocked`");
 		expect(markdown).toContain("완료로 표시되지 않았습니다");
+	});
+});
+
+describe("runBlog (긱뉴스 feed)", () => {
+	it("feed 트리거로 claim하고 피드 증거로 finish한다", async () => {
+		const client = createClient({ finish: vi.fn(async () => ({ total: null })) });
+		const evidence = { kind: "geeknews", entryCount: 50, uniqueCount: 50 };
+		const runners = { geeknews: vi.fn(async () => evidence) };
+		const result = await runBlog({ blogId: "geeknews", client, args: { trigger: "feed", force: false }, deadline: Infinity, log: () => {}, runners });
+
+		expect(client.claim).toHaveBeenCalledWith({ blogId: "geeknews", trigger: "feed", force: false });
+		expect(client.finish).toHaveBeenCalledWith(expect.objectContaining({ blogId: "geeknews", evidence }));
+		expect(result).toEqual({ blogId: "geeknews", outcome: "complete", uniqueCount: 50, total: null });
+	});
+
+	it("피드가 막히면 blocked로 기록하고 기존 글은 건드리지 않는다", async () => {
+		const client = createClient();
+		const runners = { geeknews: vi.fn(async () => Promise.reject(new SourceError("blocked", "403"))) };
+		const result = await runBlog({ blogId: "geeknews", client, args: { trigger: "feed", force: false }, deadline: Infinity, log: () => {}, runners });
+
+		expect(client.finish).not.toHaveBeenCalled();
+		expect(client.fail).toHaveBeenCalledWith(expect.objectContaining({ errorCode: "blocked" }));
+		expect(result).toMatchObject({ outcome: "failed", errorCode: "blocked" });
 	});
 });

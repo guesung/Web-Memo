@@ -39,6 +39,13 @@ interface IFMemoCardFooterProps
 	timeAccessory?: React.ReactNode;
 	/** 꺼진 상태 버튼을 평소에 숨기고 마우스를 올렸을 때만 보인다. 목록 카드가 켠다 */
 	hidesInactiveActions?: boolean;
+	/**
+	 * 수정 시각을 날짜로 보인다(상대 시각은 툴팁). 메모 상세 다이얼로그가 켠다
+	 * @description "4달 전"만으로는 언제 쓴 메모인지 알기 어렵다.
+	 */
+	showsAbsoluteTime?: boolean;
+	/** 켜진 상태 토글에 이름을 함께 보인다. 메모 상세 다이얼로그가 켠다 */
+	labelsActiveToggles?: boolean;
 }
 
 /**
@@ -86,6 +93,8 @@ function MemoCardFooterContent({
 	highlightCount,
 	timeAccessory,
 	hidesInactiveActions = false,
+	showsAbsoluteTime = false,
+	labelsActiveToggles = false,
 	...props
 }: IFMemoCardFooterProps & { categoryPopover: TMemoCategoryPopover }) {
 	const { t } = useTranslation(lng);
@@ -163,8 +172,18 @@ function MemoCardFooterContent({
 				)}
 				{/* 호버로 아이콘이 늘어나도 카드 높이가 변하지 않게, 넘치는 뒷부분은 말줄임으로 자른다. */}
 				<div className="flex min-w-0 items-center gap-x-1.5 whitespace-nowrap text-xs text-muted-foreground">
-					<time dateTime={memo.updated_at ?? ""} className="shrink-0">
-						{dayjs(memo.updated_at).fromNow()}
+					<time
+						dateTime={memo.updated_at ?? ""}
+						title={
+							showsAbsoluteTime ? dayjs(memo.updated_at).fromNow() : undefined
+						}
+						className="shrink-0"
+					>
+						{showsAbsoluteTime
+							? t("memos.dialog.updatedAt", {
+									date: formatMemoDate(memo.updated_at, lng),
+								})
+							: dayjs(memo.updated_at).fromNow()}
 					</time>
 					{timeAccessory}
 					{memo.plannedDate && (
@@ -198,6 +217,7 @@ function MemoCardFooterContent({
 					memo={memo}
 					lng={lng}
 					hiddenUntilHover={hiddenUntilHover}
+					labelsActive={labelsActiveToggles}
 				/>
 				<PlanDatePopover
 					memo={memo}
@@ -233,6 +253,16 @@ const categoryBadgeClassName = cn(
 	"transition-all duration-200",
 	"hover:scale-105 hover:shadow-md",
 );
+
+/** 수정 날짜를 "6월 12일"처럼 보인다. 올해가 아니면 연도를 붙인다. */
+function formatMemoDate(date: string | null, lng: string) {
+	const target = dayjs(date);
+	return new Intl.DateTimeFormat(lng, {
+		year: target.year() === dayjs().year() ? undefined : "numeric",
+		month: "long",
+		day: "numeric",
+	}).format(target.toDate());
+}
 
 /** 푸터 한 줄 정보 사이의 구분점. 읽기 보조 기기에는 읽히지 않게 한다. */
 function MetaSeparator() {

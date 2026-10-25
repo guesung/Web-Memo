@@ -13,6 +13,8 @@ interface IFMemoStatusTogglesProps extends LanguageType {
 	memo: GetMemoResponse;
 	/** 켜짐 여부를 받아 평소에 숨길 클래스를 돌려준다. 목록 카드의 호버 표시용 */
 	hiddenUntilHover?: (isActive: boolean) => string | false;
+	/** 켜진 토글에 이름을 함께 보인다. 아이콘만으로는 뜻을 알기 어려운 메모 상세 다이얼로그가 켠다 */
+	labelsActive?: boolean;
 }
 
 /**
@@ -23,8 +25,13 @@ export default function MemoStatusToggles({
 	memo,
 	lng,
 	hiddenUntilHover = () => false,
+	labelsActive = false,
 }: IFMemoStatusTogglesProps) {
 	const { t } = useTranslation(lng);
+	const labeledClassName = (isActive: boolean, activeClassName: string) =>
+		labelsActive &&
+		isActive &&
+		cn("w-auto gap-1.5 px-3 text-xs font-semibold", activeClassName);
 	const { mutate: mutateMemoPatch } = useMemoPatchMutation();
 
 	const handleIsWishClick = (event: MouseEvent<HTMLButtonElement>) => {
@@ -150,6 +157,10 @@ export default function MemoStatusToggles({
 					className={cn(
 						"w-8 h-8 p-0 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-full",
 						hiddenUntilHover(Boolean(memo.isWish)),
+						labeledClassName(
+							Boolean(memo.isWish),
+							"bg-pink-100/70 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400",
+						),
 					)}
 					aria-label={t("memos.toggle.wish")}
 					aria-pressed={Boolean(memo.isWish)}
@@ -164,6 +175,9 @@ export default function MemoStatusToggles({
 							"hover:scale-125",
 						)}
 					/>
+					{labelsActive && memo.isWish && (
+						<span aria-hidden="true">{t("memos.toggle.wish")}</span>
+					)}
 				</Button>
 			</IconTooltip>
 			<IconTooltip
@@ -179,6 +193,10 @@ export default function MemoStatusToggles({
 					className={cn(
 						"w-8 h-8 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-full",
 						hiddenUntilHover(Boolean(memo.isReading)),
+						labeledClassName(
+							Boolean(memo.isReading),
+							"bg-emerald-100/70 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
+						),
 					)}
 					aria-label={t("memos.toggle.reading")}
 					aria-pressed={Boolean(memo.isReading)}
@@ -194,6 +212,9 @@ export default function MemoStatusToggles({
 							"hover:scale-125",
 						)}
 					/>
+					{labelsActive && memo.isReading && (
+						<span aria-hidden="true">{t("memos.toggle.reading")}</span>
+					)}
 				</Button>
 			</IconTooltip>
 			<IconTooltip
@@ -207,6 +228,10 @@ export default function MemoStatusToggles({
 					className={cn(
 						"w-8 h-8 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-full",
 						hiddenUntilHover(Boolean(memo.isStar)),
+						labeledClassName(
+							Boolean(memo.isStar),
+							"bg-amber-100/70 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
+						),
 					)}
 					aria-label={t("memos.toggle.star")}
 					aria-pressed={Boolean(memo.isStar)}
@@ -223,6 +248,9 @@ export default function MemoStatusToggles({
 							"hover:scale-125",
 						)}
 					/>
+					{labelsActive && memo.isStar && (
+						<span aria-hidden="true">{t("memos.toggle.star")}</span>
+					)}
 				</Button>
 			</IconTooltip>
 		</>

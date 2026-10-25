@@ -61,7 +61,8 @@ concurrency:
 jobs:
   collect:
     name: 블로그 카탈로그 수집
-    runs-on: ubuntu-26.04
+    # Playwright가 ubuntu26.04를 지원하지 않아 브라우저 설치가 실패합니다. 지원하는 버전으로 올린 뒤 26.04로 옮깁니다.
+    runs-on: ubuntu-24.04
     # 수집기 시간 제한(40분) 뒤 finish/fail 기록까지 마칠 여유를 둡니다.
     timeout-minutes: 50
     steps:

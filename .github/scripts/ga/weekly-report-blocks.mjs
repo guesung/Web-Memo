@@ -6,9 +6,10 @@
  * 반면, 여기는 판단에 쓰이지 않는 줄을 적극적으로 뺍니다 — 걸린 게 없는 단은
  * 아예 등장하지 않습니다.
  *
- * 네 섹션의 순서가 곧 질문의 순서입니다. 얼마나 쓰였나(활성 사용자) → 무엇을
- * 쓰나(기능별) → 어디서 새나(퍼널) → 무엇을 안 쓰나(안 쓰인 기능). 마지막
- * 섹션이 "다음에 뭘 만들지"에 가장 직접적으로 답하므로 아래에 둡니다.
+ * 섹션의 순서가 곧 질문의 순서입니다. 얼마나 쓰였나(활성 사용자) → 무엇을
+ * 쓰나(기능별) → 어디서 새나(퍼널) → 남아서 계속 쓰나(메모 리텐션) → 무엇을 안
+ * 쓰나(안 쓰인 기능). 마지막 섹션이 "다음에 뭘 만들지"에 가장 직접적으로 답하므로
+ * 아래에 둡니다. 리텐션만 GA 가 아니라 Supabase 에서 셉니다(memo-retention.mjs).
  */
 
 import { FUNNEL_EVENTS } from "./ga4-weekly.mjs";
@@ -154,6 +155,36 @@ const buildFunnelBlock = (funnel) => {
 };
 
 /**
+ * 메모 리텐션. 조회하지 않은 실행(키 없음)이면 섹션째로 뺍니다.
+ *
+ * 경과 주마다 모수 코호트가 다릅니다(1주는 최근 8개, 4주는 5개). 그래서 세 줄을 한
+ * 곡선으로 읽지 않도록 제목에 밝히고, 각 줄에 모수 인원을 적습니다.
+ *
+ * 잔존율 옆에 인원을 함께 적습니다. 지금 규모에서는 코호트가 한 자릿수라 33.3% 와
+ * 1/3 명이 같은 말인데, 비율만 보면 큰 변화로 읽힙니다.
+ */
+const buildRetentionBlock = (retention) => {
+	const offsetLines = retention.offsets.map(
+		({ offset, cohortUsers, retainedUsers, rate }) =>
+			rate === null
+				? `${offset}주 뒤  관측할 코호트 없음`
+				: `${offset}주 뒤  *${formatRate(rate)}*  (${formatCount(retainedUsers)}/${formatCount(cohortUsers)}명)`,
+	);
+
+	return {
+		type: "section",
+		text: {
+			type: "mrkdwn",
+			text: [
+				"*메모 리텐션*  (메모·하이라이트를 새로 만든 사용자. 최근 8주 코호트 중 그만큼 지난 코호트만 합산해 경과 주마다 모수가 다름)",
+				`이번 주 처음 쓴 사람  *${formatCount(retention.newCreators)}명*`,
+				...offsetLines,
+			].join("\n"),
+		},
+	};
+};
+
+/**
  * 안 쓰인 기능 세 단.
  *
  * 빈 단은 줄째로 뺍니다. "한 번도 안 쓰임 0종"이라는 줄은 정보가 없는데도
@@ -232,7 +263,12 @@ const buildContextBlock = ({
 };
 
 /** 한 주치 집계 결과를 그대로 받아 보낼 페이로드로 만듭니다. */
-export const buildWeeklyReportPayload = ({ report, runUrl, sheetUrl }) => {
+export const buildWeeklyReportPayload = ({
+	report,
+	retention = null,
+	runUrl,
+	sheetUrl,
+}) => {
 	const {
 		start,
 		end,
@@ -262,6 +298,7 @@ export const buildWeeklyReportPayload = ({ report, runUrl, sheetUrl }) => {
 			buildActiveUsersBlock({ activeUsers, start, end }),
 			buildFeatureBlock(features),
 			buildFunnelBlock(funnel),
+			...(retention ? [buildRetentionBlock(retention)] : []),
 			{ type: "divider" },
 			buildUnusedBlock({ unused, thresholds }),
 			buildContextBlock({

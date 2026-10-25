@@ -29,7 +29,13 @@ import type {
 import { ToastAction, toast } from "@web-memo/ui";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from "react";
 import {
 	useDragSelection,
 	useMemoSelection,
@@ -43,7 +49,10 @@ import MemoItem from "./MemoItem";
 import { MemoItemSkeleton } from "./MemoItemSkeleton";
 import MemoOptionHeader from "./MemoOptionHeader";
 import MemoSearchEmptyState from "./MemoSearchEmptyState";
-import { restoreHeldScrollPosition } from "./scrollPositionHold";
+import {
+	holdScrollPosition,
+	restoreHeldScrollPosition,
+} from "./scrollPositionHold";
 
 const CONTAINER_ID = "memo-grid";
 
@@ -174,6 +183,12 @@ export default function MemoGrid({
 			ready();
 		}
 	};
+
+	// egjs는 첫 배치에서 카드 실제 높이를 잰 뒤 그룹 중심을 맞추려고 window를 scrollBy로
+	// 내린다. 첫 진입에는 지켜야 할 "보던 영역"이 없으므로 마운트 시점 위치를 붙잡아 둔다.
+	useLayoutEffect(function holdScrollOnFirstLayout() {
+		holdScrollPosition();
+	}, []);
 
 	useEffect(
 		function closeRAFOnUnmount() {

@@ -26,7 +26,11 @@ vi.mock("../queries", () => ({
 	useSupabaseClientQuery: () => ({ data: {} }),
 }));
 vi.mock("../../../modules/analytics", () => ({
-	analytics: { trackMemoUpdate: vi.fn(), trackEvent: vi.fn() },
+	analytics: {
+		trackMemoUpdate: vi.fn(),
+		trackMemoCreate: vi.fn(),
+		trackEvent: vi.fn(),
+	},
 }));
 vi.mock("../../../utils", () => ({
 	MemoService: class {
@@ -190,6 +194,11 @@ describe("메모 upsert 저장 중 Supabase 오류", () => {
 		expect(result).toEqual({ data: [{ id: 2 }], error: null });
 		expect(analytics.trackEvent).toHaveBeenCalledWith({
 			name: "memo_first_write",
+		});
+		expect(analytics.trackMemoCreate).toHaveBeenCalledWith({
+			url,
+			title: "제목",
+			memo: "내용",
 		});
 		expect(analytics.trackMemoUpdate).not.toHaveBeenCalled();
 	});

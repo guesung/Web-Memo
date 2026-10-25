@@ -19,6 +19,9 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
 		useMutation: (options: unknown) => options,
 	};
 });
+vi.mock("../../../modules/analytics", () => ({
+	analytics: { trackMemoCreate: vi.fn() },
+}));
 vi.mock("../queries", () => ({
 	useSupabaseClientQuery: () => ({ data: {} }),
 }));

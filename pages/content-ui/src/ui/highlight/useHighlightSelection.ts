@@ -297,6 +297,11 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			return;
 		}
 		const noticePosition = { x: selectionState.x, y: selectionState.y, scope };
+		// 저장 뒤 선택을 닫으므로 맥락은 끄기 전에 읽어 둔다.
+		const disableContext = {
+			intro_pending: isIntroPendingRef.current,
+			selection_length: document.getSelection()?.toString().length ?? 0,
+		};
 		try {
 			if (scope === "site") {
 				const sites = await ChromeSyncStorage.get<string[]>(
@@ -324,7 +329,7 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 		}
 		analytics.trackEvent({
 			name: "highlight_bubble_disable",
-			params: { scope },
+			params: { scope, ...disableContext },
 		});
 		void markIntroSeen();
 		controllerRef.current?.dismissSelection();

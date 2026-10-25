@@ -23,8 +23,14 @@ import {
 	ToastAction,
 	toast,
 } from "@web-memo/ui";
-import { BookOpenIcon, HeartIcon, Loader2Icon, StarIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import {
+	BookOpenIcon,
+	HeartIcon,
+	Loader2Icon,
+	PlusIcon,
+	StarIcon,
+} from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import {
 	CategoryAddChip,
@@ -59,6 +65,8 @@ const MemoFormContent = ({
 	onPastMemoOpen,
 }: IFMemoFormProps) => {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+	const impressionRef = useRef<HTMLTextAreaElement | null>(null);
+	const actionItemRef = useRef<HTMLTextAreaElement | null>(null);
 	const [isSwitching, setIsSwitching] = useState(false);
 	const isOffline = !useOnlineStatus();
 	const queryClient = useQueryClient();
@@ -97,13 +105,25 @@ const MemoFormContent = ({
 		};
 	}, [queryClient, userId]);
 
+	const { isImpressionVisible, isActionItemVisible, openField } =
+		useCollapsedSubFields({
+			showImpression,
+			showActionItem,
+			impressionRef,
+			actionItemRef,
+		});
 	const visibleFieldKeys: TMemoFieldKey[] = ["memo"];
-	if (showImpression) {
+	if (isImpressionVisible) {
 		visibleFieldKeys.push("impression");
 	}
-	if (showActionItem) {
+	if (isActionItemVisible) {
 		visibleFieldKeys.push("actionItem");
 	}
+	const collapsedFieldKeys = SUB_FIELD_KEYS.filter(
+		(fieldKey) =>
+			(fieldKey === "impression" ? showImpression : showActionItem) &&
+			!visibleFieldKeys.includes(fieldKey),
+	);
 
 	const { fieldRatios, resizingFieldKey, handleResizeStart } =
 		useMemoFieldResize({ visibleFieldKeys, fieldResizeState });
@@ -124,6 +144,12 @@ const MemoFormContent = ({
 		toggleMemoStatus,
 		setPlannedDate,
 	} = useMemoForm({ selectedMemo, isMemoLocked, isSyncing });
+	const impressionField = register("impression", {
+		onChange: (event) => handleImpressionChange(event.target.value),
+	});
+	const actionItemField = register("actionItem", {
+		onChange: (event) => handleActionItemChange(event.target.value),
+	});
 	// 겉모습(로딩 문구·버튼 흐림)만 200ms 지연시킨다. 편집·저장 차단은 isMemoLocked로 즉시 적용된다.
 	const isMemoLoadingVisible = useDelayedFlag(
 		isMemoLocked && !isMemoLoadFailed,
@@ -398,7 +424,7 @@ const MemoFormContent = ({
 						)
 					)}
 				</div>
-				{showImpression && (
+				{isImpressionVisible && (
 					<>
 						<ResizeHandle
 							upperSectionRatio={fieldRatios.memo}
@@ -425,19 +451,20 @@ const MemoFormContent = ({
 								}
 								readOnly={isMemoLocked}
 								aria-busy={isMemoLocked || undefined}
-								{...register("impression", {
-									onChange: (event) =>
-										handleImpressionChange(event.target.value),
-								})}
+								{...impressionField}
+								ref={(element) => {
+									impressionField.ref(element);
+									impressionRef.current = element;
+								}}
 							/>
 						</div>
 					</>
 				)}
-				{showActionItem && (
+				{isActionItemVisible && (
 					<>
 						<ResizeHandle
 							upperSectionRatio={
-								showImpression ? fieldRatios.impression : fieldRatios.memo
+								isImpressionVisible ? fieldRatios.impression : fieldRatios.memo
 							}
 							isResizing={resizingFieldKey === "actionItem"}
 							onMouseDown={(event) => handleResizeStart(event, "actionItem")}
@@ -462,13 +489,31 @@ const MemoFormContent = ({
 								}
 								readOnly={isMemoLocked}
 								aria-busy={isMemoLocked || undefined}
-								{...register("actionItem", {
-									onChange: (event) =>
-										handleActionItemChange(event.target.value),
-								})}
+								{...actionItemField}
+								ref={(element) => {
+									actionItemField.ref(element);
+									actionItemRef.current = element;
+								}}
 							/>
 						</div>
 					</>
+				)}
+				{collapsedFieldKeys.length > 0 && !isMemoLocked && (
+					<div className="flex shrink-0 flex-wrap gap-2 pt-2">
+						{collapsedFieldKeys.map((fieldKey) => (
+							<button
+								key={fieldKey}
+								type="button"
+								aria-label={I18n.get(SUB_FIELD_MESSAGE_KEYS[fieldKey].add)}
+								onClick={() => openField(fieldKey)}
+								className="text-muted-foreground hover:text-foreground hover:bg-accent hover:border-input focus-visible:ring-ring inline-flex items-center gap-1 rounded-full border border-dashed px-2.5 py-0.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-1"
+								data-testid={`add-${fieldKey}-button`}
+							>
+								<PlusIcon size={12} aria-hidden="true" />
+								{I18n.get(SUB_FIELD_MESSAGE_KEYS[fieldKey].label)}
+							</button>
+						))}
+					</div>
 				)}
 				{suggestion && !currentCategoryId && (
 					<div className="flex shrink-0 justify-end pt-2">
@@ -605,6 +650,79 @@ const MemoFormContent = ({
 		</>
 	);
 };
+
+const SUB_FIELD_KEYS = ["impression", "actionItem"] as const;
+type TSubFieldKey = (typeof SUB_FIELD_KEYS)[number];
+const SUB_FIELD_MESSAGE_KEYS: Record<
+	TSubFieldKey,
+	{ label: string; add: string }
+> = {
+	impression: { label: "impression", add: "addImpression" },
+	actionItem: { label: "actionItem", add: "addActionItem" },
+};
+
+/**
+ * 설정에서 켠 느낀 점·액션 아이템 중 비어 있는 칸은 접어 두고, + 버튼으로 연다.
+ * @description 메모 칸이 패널 높이를 비어 있는 칸과 나눠 갖지 않게 하려는 것이다.
+ * 한 번 보인 칸은 내용을 지워도 닫지 않는다. 쓰다가 칸이 사라지면 안 되기 때문이다.
+ * 폼은 페이지마다 다시 마운트되므로 다른 페이지에서는 다시 접힌다.
+ */
+function useCollapsedSubFields({
+	showImpression,
+	showActionItem,
+	impressionRef,
+	actionItemRef,
+}: {
+	showImpression: boolean;
+	showActionItem: boolean;
+	impressionRef: React.RefObject<HTMLTextAreaElement | null>;
+	actionItemRef: React.RefObject<HTMLTextAreaElement | null>;
+}) {
+	const { watch } = useFormContext<MemoInput>();
+	const [impression, actionItem] = watch(["impression", "actionItem"]);
+	const [openedFieldKeys, setOpenedFieldKeys] = useState<
+		ReadonlySet<TSubFieldKey>
+	>(new Set());
+	const [focusFieldKey, setFocusFieldKey] = useState<TSubFieldKey | null>(null);
+
+	useEffect(
+		function keepFilledFieldsOpen() {
+			const filledFieldKeys = SUB_FIELD_KEYS.filter(
+				(fieldKey) =>
+					(fieldKey === "impression" ? impression : actionItem) &&
+					!openedFieldKeys.has(fieldKey),
+			);
+			if (filledFieldKeys.length === 0) return;
+
+			setOpenedFieldKeys((prev) => new Set([...prev, ...filledFieldKeys]));
+		},
+		[impression, actionItem, openedFieldKeys],
+	);
+
+	useLayoutEffect(
+		function focusOpenedField() {
+			if (!focusFieldKey) return;
+
+			const refs = { impression: impressionRef, actionItem: actionItemRef };
+			refs[focusFieldKey].current?.focus();
+			setFocusFieldKey(null);
+		},
+		[focusFieldKey, impressionRef, actionItemRef],
+	);
+
+	const openField = (fieldKey: TSubFieldKey) => {
+		setOpenedFieldKeys((prev) => new Set(prev).add(fieldKey));
+		setFocusFieldKey(fieldKey);
+	};
+
+	return {
+		isImpressionVisible:
+			showImpression && (openedFieldKeys.has("impression") || !!impression),
+		isActionItemVisible:
+			showActionItem && (openedFieldKeys.has("actionItem") || !!actionItem),
+		openField,
+	};
+}
 
 /** 페이지별 폼 상태를 만들고 지속되는 입력 영역 비율을 편집기에 전달한다. */
 const MemoForm = ({

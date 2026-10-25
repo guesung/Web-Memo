@@ -195,6 +195,13 @@
   impact: "주간 GA 수치가 Google Sheets에 쌓이지 않는다(Slack 리포트는 그대로 가고 경고만 남는다)"
   note: "GA 전용 스프레드시트다. SEO 분석은 SEO_SHEET_ID 로 시트를 나눈다. URL의 /d/와 /edit 사이 ID를 등록하고 서비스 계정에 편집 권한을 준다"
 
+- name: SUPABASE_REPORT_SERVICE_ROLE_KEY
+  kind: secret
+  stores: [github]
+  consumers: [.github/workflows/report-ga-weekly.yml, .github/scripts/ga/report-weekly-ga.mjs]
+  impact: "주간 GA 리포트에서 메모 리텐션 섹션과 시트의 리텐션 칸만 빠진다(경고만 남고 나머지 리포트는 그대로 간다)"
+  note: "Supabase 대시보드의 Project Settings > API Keys에서 service_role 키를 복사한다. 이 워크플로는 집계 함수 memo.weekly_creation_retention 하나만 호출한다. Edge Function에 플랫폼이 주입하는 SUPABASE_SERVICE_ROLE_KEY와 이름을 나눈다. 번들·Vercel에 넣지 않는다"
+
 - name: SEO_SHEET_ID
   kind: secret
   stores: [github]

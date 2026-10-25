@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@web-memo/env", () => ({ CONFIG: {} }));
+vi.mock("@web-memo/shared/modules/analytics", () => ({
+	analytics: { trackMemoCreate: vi.fn() },
+}));
+
+import { analytics } from "@web-memo/shared/modules/analytics";
 
 import {
 	enqueueOfflineMemo,
@@ -30,6 +35,7 @@ beforeEach(() => {
 
 afterEach(() => {
 	vi.unstubAllGlobals();
+	vi.clearAllMocks();
 });
 
 const createItem = (
@@ -123,6 +129,7 @@ describe("flushOfflineMemoQueue", () => {
 		});
 
 		expect(memoService.insertMemo).toHaveBeenCalledTimes(1);
+		expect(analytics.trackMemoCreate).toHaveBeenCalledTimes(1);
 		expect(result.conflicts).toEqual([]);
 		expect(await getPendingOfflineMemos()).toEqual([]);
 	});
@@ -185,6 +192,7 @@ describe("flushOfflineMemoQueue", () => {
 		});
 
 		expect(memoService.insertMemo).toHaveBeenCalledTimes(1);
+		expect(analytics.trackMemoCreate).toHaveBeenCalledTimes(1);
 		expect(result.conflicts).toEqual([
 			{ oldMemoId: 1, newMemoId: 2, url: "https://example.com/a" },
 		]);

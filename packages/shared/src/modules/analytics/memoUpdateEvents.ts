@@ -13,6 +13,9 @@ export interface IFMemoUpdateContext {
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+/** memo_write가 세는 본문 필드. 수정과 새 메모 저장이 같은 기준으로 센다. */
+const CONTENT_KEYS = ["memo", "title", "impression", "actionItem"] as const;
+
 /** 오늘(로컬)부터 계획 날짜까지의 일수. 서머타임으로 하루 길이가 달라져도 반올림으로 맞춘다. */
 const getDaysAhead = (plannedDate: string) => {
 	const today = parsePlanDateKey(toPlanDateKey(new Date()));
@@ -28,7 +31,6 @@ export const buildMemoUpdateEvents = (
 ): TAnalyticsEvent[] => {
 	const events: TAnalyticsEvent[] = [];
 	const STATUS_KEYS = ["isWish", "isStar", "isReading"] as const;
-	const CONTENT_KEYS = ["memo", "title", "impression", "actionItem"] as const;
 
 	for (const statusKey of STATUS_KEYS) {
 		if (!(statusKey in request)) {
@@ -78,9 +80,40 @@ export const buildMemoUpdateEvents = (
 	if (changedContentKeys.length > 0) {
 		events.push({
 			name: "memo_write",
-			params: { fields: [...changedContentKeys].sort().join(",") },
+			params: {
+				fields: [...changedContentKeys].sort().join(","),
+				is_new: false,
+			},
 		});
 	}
 
 	return events;
+};
+
+/**
+ * 새 메모 저장을 memo_write로 해석합니다.
+ * @description 예전에는 수정만 memo_write로 세고 새 메모는 memo_first_write만 보내서,
+ * "메모를 쓴 사람"을 memo_write로 세면 새 메모만 쓰는 사용자가 빠졌습니다.
+ * 수정과 같은 이벤트로 세되 is_new로 구분합니다. 내용이 빈 필드는 쓴 것으로 보지 않습니다.
+ */
+export const buildMemoCreateEvents = (
+	data: Partial<MemoTable["Insert"]>,
+): TAnalyticsEvent[] => {
+	const writtenContentKeys = CONTENT_KEYS.filter(
+		(contentKey) => typeof data[contentKey] === "string" && data[contentKey],
+	);
+
+	if (writtenContentKeys.length === 0) {
+		return [];
+	}
+
+	return [
+		{
+			name: "memo_write",
+			params: {
+				fields: [...writtenContentKeys].sort().join(","),
+				is_new: true,
+			},
+		},
+	];
 };

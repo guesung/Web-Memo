@@ -8,6 +8,7 @@ import {
 	sendEvent,
 } from "./analyticsTransport";
 import {
+	buildMemoCreateEvents,
 	buildMemoUpdateEvents,
 	type IFMemoUpdateContext,
 } from "./memoUpdateEvents";
@@ -194,6 +195,15 @@ class Analytics {
 		context?: IFMemoUpdateContext,
 	): Promise<void> {
 		for (const event of buildMemoUpdateEvents(request, context)) {
+			await this.trackEvent(event);
+		}
+	}
+
+	/** 새 메모 저장 중 본문을 쓴 경우를 memo_write(is_new)로 기록합니다. */
+	public async trackMemoCreate(
+		data: Partial<MemoTable["Insert"]>,
+	): Promise<void> {
+		for (const event of buildMemoCreateEvents(data)) {
 			await this.trackEvent(event);
 		}
 	}

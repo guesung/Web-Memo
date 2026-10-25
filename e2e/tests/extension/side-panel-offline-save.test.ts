@@ -234,7 +234,9 @@ test("오프라인에서 패널을 다시 연 뒤 온라인이 되면 메모 화
 		sidePanelPage.getByText(/offline|인터넷에 연결되어 있지 않아요/i).first(),
 	).toBeVisible();
 	await expect(
-		sidePanelPage.getByRole("button", { name: /로그인하러가기|log ?in/i }),
+		sidePanelPage.getByRole("button", {
+			name: /카카오로 시작하기|continue with google/i,
+		}),
 	).toHaveCount(0);
 
 	await network.goOnline();
@@ -243,7 +245,9 @@ test("오프라인에서 패널을 다시 연 뒤 온라인이 되면 메모 화
 		"복귀 메모",
 	);
 	await expect(
-		sidePanelPage.getByRole("button", { name: /로그인하러가기|log ?in/i }),
+		sidePanelPage.getByRole("button", {
+			name: /카카오로 시작하기|continue with google/i,
+		}),
 	).toHaveCount(0);
 });
 

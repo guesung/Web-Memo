@@ -116,6 +116,10 @@ describe("background 하이라이트 연결 메모 생성", () => {
 			name: "memo_first_write",
 			params: { source: "highlight" },
 		});
+		expect(mocks.trackEvent).toHaveBeenCalledWith({
+			name: "memo_write",
+			params: { fields: "memo", is_new: true, source: "highlight" },
+		});
 		expect(mocks.createTab).toHaveBeenCalledWith({
 			url: expect.stringContaining("/memos?id=20"),
 		});
@@ -151,6 +155,9 @@ describe("background 하이라이트 연결 메모 생성", () => {
 		await handleCreateHighlightMemo({ highlightId: 7, memo: "내 생각" }, SENDER);
 		expect(mocks.trackEvent).not.toHaveBeenCalledWith(
 			expect.objectContaining({ name: "memo_first_write" }),
+		);
+		expect(mocks.trackEvent).not.toHaveBeenCalledWith(
+			expect.objectContaining({ name: "memo_write" }),
 		);
 	});
 	it.each([

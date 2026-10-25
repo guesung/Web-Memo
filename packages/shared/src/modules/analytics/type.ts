@@ -74,7 +74,10 @@ export type TAnalyticsEvent =
 	| { name: "highlight_panel_open_result"; params: { is_success: boolean } }
 	| { name: "side_panel_open" }
 	| { name: "page_view"; params: { page_title: string; page_location: string } }
-	| { name: "memo_write"; params: { fields: string } }
+	| {
+			name: "memo_write";
+			params: { fields: string; is_new: boolean; source?: "highlight" };
+	  }
 	| { name: "memo_delete"; params: { memo_count: number } }
 	| { name: "summary_run"; params: { source: TSummaryRunSource } }
 	| { name: "summary_panel_toggle"; params: { action: "open" | "close" } }
@@ -183,6 +186,14 @@ export type TAnalyticsEvent =
 	  }
 	| { name: "guide_open"; params: { from: "context_menu" } }
 	| { name: "install_guide_view" }
+	/** 확장 백그라운드가 설치 직후 가이드 탭을 연 결과. 광고 차단기에 막히지 않는 경로입니다. */
+	| { name: "install_guide_tab_opened"; params: { is_success: boolean } }
+	/**
+	 * 설치 가이드 페이지가 보낸 1st-party 비컨을 웹 서버가 Measurement Protocol로 옮긴 것.
+	 * @description `trackEvent`로 보내지 않습니다. `POST /api/install-guide-load`만 보냅니다.
+	 * gtag의 `install_guide_view`와 이중으로 집계되지 않도록 이름을 따로 둡니다.
+	 */
+	| { name: "install_guide_load" }
 	| { name: "install_guide_login_click" }
 	| { name: "guide_finish" }
 	| { name: "extension_setting_change"; params: { keys: string } }
@@ -203,7 +214,16 @@ export type TAnalyticsEvent =
 			name: "highlight_create";
 			params: { color: HighlightColor; has_note: boolean };
 	  }
-	| { name: "highlight_bubble_disable"; params: { scope: "site" | "all" } }
+	| {
+			name: "highlight_bubble_disable";
+			params: {
+				scope: "site" | "all";
+				/** 소개를 넘기기 전(하이라이트를 만든 적도, 소개를 확인한 적도 없음)에 껐는가 */
+				intro_pending: boolean;
+				/** 끌 때 선택돼 있던 글자 수. 짧은 선택에도 말풍선이 떠서 거슬리는지 본다 */
+				selection_length: number;
+			};
+	  }
 	| { name: "highlight_bubble_dismiss" }
 	| { name: "notice_view"; params: { notice_id: number } }
 	| {
@@ -331,6 +351,8 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	open_web_from_extension: "engagement",
 	guide_open: "engagement",
 	install_guide_view: "engagement",
+	install_guide_tab_opened: "engagement",
+	install_guide_load: "engagement",
 	install_guide_login_click: "engagement",
 	guide_finish: "engagement",
 	extension_setting_change: "engagement",

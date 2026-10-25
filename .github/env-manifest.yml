@@ -178,7 +178,7 @@
   kind: secret
   stores: [github, supabase]
   consumers: [.github/workflows/chore-blog-catalog.yml, .github/scripts/blog-reading/collect.mjs, packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts]
-  impact: "블로그 정주행 카탈로그 수집이 멈춘다. GitHub에 없으면 수집기가 시작하지 못하고, Supabase에 없으면 수집 엔드포인트가 500으로 모든 요청을 거절해 토스·당근의 새 글과 재개 요청이 반영되지 않는다(이미 수집된 글 조회는 그대로다)"
+  impact: "블로그 정주행 카탈로그 수집이 멈춘다. GitHub에 없으면 수집기가 시작하지 못하고, Supabase에 없으면 수집 엔드포인트가 500으로 모든 요청을 거절해 토스·당근·긱뉴스의 새 글과 재개 요청이 반영되지 않는다(이미 수집된 글 조회는 그대로다)"
   note: "카탈로그 쓰기 전용 secret이다. 32자 이상 무작위 값으로 만들어 GitHub Secrets와 Supabase Edge Function secret에 같은 값을 등록한다. 조회 전용 SUPABASE_ACCESS_TOKEN과 가입 트리거용 CRON_SECRET을 재사용하지 않는다. 번들·Vercel에 넣지 않는다"
 
 - name: GA4_SERVICE_ACCOUNT_JSON
@@ -329,6 +329,14 @@
   consumers: [packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts, packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts, packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
   impact: "DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·가입 알림·아티클 리마인더가 401로 끝난다"
   note: "Vault의 cron_secret과 같은 값이어야 한다"
+
+- name: BLOG_DIGEST_ENABLED
+  kind: config
+  stores: [supabase]
+  required: false
+  consumers: [packages/supabase-edge-functions/supabase/functions/daily-article-reminder/blogDigest.ts]
+  impact: "정확히 true일 때만 긱뉴스 새 글 묶음 알림이 켜진다. 없거나 다른 값이면 묶음 알림 분기를 건너뛴다(위시 리마인더는 그대로)"
+  note: "Edge Function secret이며 기본은 꺼짐이다. 앱의 알림 도착 처리를 배포한 뒤 true로 켠다"
 
 - name: RESEND_API_KEY
   kind: secret

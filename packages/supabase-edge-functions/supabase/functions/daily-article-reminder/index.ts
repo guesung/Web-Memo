@@ -1,5 +1,13 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  BLOG_DIGEST_ENV_NAME,
+  DIGEST_BLOG_ID,
+  type IFDigestCandidates,
+  type IFPushPayload,
+  isBlogDigestEnabled,
+  runBlogDigest,
+} from "./blogDigest.ts";
 import { getLocalDateString, shouldNotifyNow } from "./timeBucket.ts";
 
 const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
@@ -120,13 +128,13 @@ const pickCandidateMemo = async (
  */
 const sendPush = async (
   tokens: { token: string }[],
-  memo: IFCandidateMemo,
+  payload: IFPushPayload,
 ): Promise<boolean> => {
   const messages = tokens.map(({ token }) => ({
     to: token,
-    title: "오늘 읽을 글",
-    body: memo.title,
-    data: { url: memo.url, memoId: memo.id },
+    title: payload.title,
+    body: payload.body,
+    data: payload.data,
   }));
 
   const response = await fetch(EXPO_PUSH_URL, {
@@ -224,6 +232,96 @@ const fetchRecentLogs = async (userIds: string[], now: Date) => {
   }
 
   return logsByUser;
+};
+
+const fetchTokens = async (userId: string) => {
+  const { data, error } = await supabase
+    .from("push_token")
+    .select("token")
+    .eq("user_id", userId);
+
+  if (error) {
+    throw new Error(`푸시 토큰 조회 실패: ${error.message}`);
+  }
+
+  return data ?? [];
+};
+
+/**
+ * 긱뉴스 묶음 분기가 쓰는 DB 접근. 판단은 runBlogDigest가 한다.
+ */
+const blogDigestDeps = {
+  fetchSubscribedUserIds: async (userIds: string[]) => {
+    const subscribed = new Set<string>();
+
+    for (const userIdChunk of chunk(userIds, USER_CHUNK_SIZE)) {
+      const { data, error } = await supabase
+        .from("blog_subscription")
+        .select("user_id")
+        .eq("blog_id", DIGEST_BLOG_ID)
+        .eq("active", true)
+        .is("unsubscribed_at", null)
+        .in("user_id", userIdChunk);
+
+      if (error) {
+        throw new Error(`블로그 구독 조회 실패: ${error.message}`);
+      }
+
+      for (const row of data ?? []) {
+        subscribed.add(row.user_id);
+      }
+    }
+
+    return subscribed;
+  },
+  hasDigestSentOn: async (userId: string, sentOn: string) => {
+    const { data, error } = await supabase
+      .from("blog_digest_log")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("blog_id", DIGEST_BLOG_ID)
+      .eq("sent_on", sentOn)
+      .limit(1);
+
+    if (error) {
+      throw new Error(`묶음 발송 이력 조회 실패: ${error.message}`);
+    }
+
+    return (data ?? []).length > 0;
+  },
+  fetchCandidates: async (userId: string): Promise<IFDigestCandidates> => {
+    const { data, error } = await supabase.rpc("get_blog_digest_candidates", {
+      p_user_id: userId,
+      p_blog_id: DIGEST_BLOG_ID,
+    });
+
+    if (error) {
+      throw new Error(`묶음 후보 조회 실패: ${error.message}`);
+    }
+
+    return data as IFDigestCandidates;
+  },
+  fetchTokens,
+  sendPush,
+  insertLog: async (log: {
+    userId: string;
+    sentOn: string;
+    articleCount: number;
+  }) => {
+    const { error } = await supabase.from("blog_digest_log").insert({
+      user_id: log.userId,
+      blog_id: DIGEST_BLOG_ID,
+      sent_on: log.sentOn,
+      article_count: log.articleCount,
+    });
+
+    // UNIQUE(user_id, blog_id, sent_on) 충돌은 이미 오늘 기록됐다는 뜻이므로 무시한다
+    if (error && error.code !== "23505") {
+      throw new Error(error.message);
+    }
+  },
+  logError: (message: string, ...details: unknown[]) =>
+    console.error(message, ...details),
 };
 
 serve(async (req) => {
@@ -326,7 +424,11 @@ serve(async (req) => {
           continue;
         }
 
-        const isSent = await sendPush(tokens, memo);
+        const isSent = await sendPush(tokens, {
+          title: "오늘 읽을 글",
+          body: memo.title,
+          data: { url: memo.url, memoId: memo.id },
+        });
 
         if (!isSent) {
           failed++;
@@ -356,7 +458,28 @@ serve(async (req) => {
       }
     }
 
-    return jsonResponse({ status: "success", notified, skipped, failed });
+    // 위시 분기와 별개다. 꺼져 있으면(기본) 응답 형태도 그대로다.
+    const digest = await runBlogDigest(
+      {
+        enabled: isBlogDigestEnabled(Deno.env.get(BLOG_DIGEST_ENV_NAME)),
+        now,
+        schedules: (schedules ?? []) as IFNotificationSchedule[],
+        timezones,
+      },
+      blogDigestDeps,
+    ).catch((error) => {
+      console.error("묶음 알림 실행 실패:", error);
+
+      return { notified: 0, skipped: 0, failed: 1 };
+    });
+
+    return jsonResponse({
+      status: "success",
+      notified,
+      skipped,
+      failed,
+      ...(digest ? { digest } : {}),
+    });
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
 

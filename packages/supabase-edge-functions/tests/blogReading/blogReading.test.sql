@@ -3,6 +3,7 @@
 -- 실행 위치는 packages/supabase-edge-functions 이다(fixtures.json을 상대 경로로 읽는다).
 --   psql -v ON_ERROR_STOP=1 -d <DB> -f tests/blogReading/harness.sql              # 일반 PostgreSQL일 때만
 --   psql -v ON_ERROR_STOP=1 -d <DB> -f supabase/migrations/20260930_add_blog_reading.sql
+--   psql -v ON_ERROR_STOP=1 -d <DB> -f supabase/migrations/20261025_add_geeknews_blog_source.sql
 --   psql -v ON_ERROR_STOP=1 -d <DB> -f tests/blogReading/blogReading.test.sql
 -- 데이터를 만들고 지우지 않는다. 빈 로컬 DB에서만 돌린다.
 
@@ -512,6 +513,110 @@ begin
   perform test.ok((select last_error from memo.blog_sync_public_status(array['toss'])) = 'interrupted', '사유는 interrupted');
   c := memo.claim_blog_sync('toss', 'manual');
   perform test.ok((c ->> 'claimed')::boolean and (c ->> 'resume')::boolean, '만료된 lease는 다음 claim이 이어받는다');
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- H. 긱뉴스(피드 소스): URL 허용, 누적 유지, total 없음, feed 트리거 간격
+-- ---------------------------------------------------------------------------
+do $$
+begin
+  perform test.ok(memo.is_supported_blog('geeknews') and memo.is_feed_blog('geeknews'), 'geeknews는 지원되는 피드 소스');
+  perform test.ok(not memo.is_feed_blog('toss') and not memo.is_feed_blog('daangn'), '토스·당근은 피드 소스가 아니다');
+  perform test.ok(memo.blog_url_allowed('geeknews', 'https://news.hada.io/topic?id=12345'), '긱뉴스 topic?id=숫자 허용');
+  perform test.ok(not memo.blog_url_allowed('geeknews', 'https://news.hada.io/topic?id=abc'), '숫자가 아닌 id 거절');
+  perform test.ok(not memo.blog_url_allowed('geeknews', 'https://news.hada.io/topic?id=1&utm_source=x'), '추가 파라미터 거절');
+  perform test.ok(not memo.blog_url_allowed('geeknews', 'http://news.hada.io/topic?id=1'), 'http 거절');
+  perform test.ok(not memo.blog_url_allowed('geeknews', 'https://news.hada.io/topic?id=1/extra'), '뒤에 붙은 경로 거절');
+  perform test.ok(not memo.blog_url_allowed('geeknews', 'https://news.hada.io.evil.com/topic?id=1'), '다른 호스트 거절');
+  perform test.ok(not memo.blog_url_allowed('geeknews', 'https://news.hada.io/topic?id=1', true), '긱뉴스는 별칭 URL을 받지 않는다');
+  perform test.ok(not memo.blog_url_allowed('toss', 'https://news.hada.io/topic?id=1'), '다른 소스에 긱뉴스 URL 거절');
+  perform test.ok((select status from memo.blog_sync_state where blog_id = 'geeknews') = 'pending', 'geeknews 수집 상태 행이 있다');
+end $$;
+
+do $$
+declare
+  c jsonb;
+  tok uuid;
+  g bigint;
+  r jsonb;
+  v_first timestamptz;
+begin
+  c := memo.claim_blog_sync('geeknews', 'feed');
+  tok := (c ->> 'leaseToken')::uuid;
+  g := (c ->> 'generation')::bigint;
+  perform test.ok((c ->> 'claimed')::boolean, 'feed 트리거로 첫 claim');
+
+  perform test.fails(format($q$select memo.ingest_blog_batch('geeknews', %s, %L, %L::jsonb)$q$, g, tok,
+    '[{"providerId":"9","title":"x","url":"https://news.hada.io/topic?id=abc"}]'), '22023', '허용되지 않은 긱뉴스 URL 배치 거절');
+
+  r := memo.ingest_blog_batch('geeknews', g, tok, jsonb_build_array(
+    jsonb_build_object('providerId', '100', 'title', '긱뉴스 A', 'url', 'https://news.hada.io/topic?id=100', 'publishedAt', '2026-10-20T01:00:00Z'),
+    jsonb_build_object('providerId', '101', 'title', '긱뉴스 B', 'url', 'https://news.hada.io/topic?id=101', 'publishedAt', '2026-10-21T01:00:00Z'),
+    jsonb_build_object('providerId', '102', 'title', '긱뉴스 C', 'url', 'https://news.hada.io/topic?id=102', 'publishedAt', '2026-10-22T01:00:00Z')
+  ));
+  perform test.ok((r ->> 'storedCount')::int = 3, '긱뉴스 3건 저장');
+
+  perform test.fails(format($q$select memo.finish_blog_sync('geeknews', %s, %L, %L::jsonb)$q$, g, tok,
+    '{"kind":"toss","entryCount":3,"uniqueCount":3}'), '22023', 'kind가 다르면 finish 거절');
+  perform test.fails(format($q$select memo.finish_blog_sync('geeknews', %s, %L, %L::jsonb)$q$, g, tok,
+    '{"kind":"geeknews","entryCount":3,"uniqueCount":0}'), '22023', 'uniqueCount 0이면 finish 거절');
+  perform test.fails(format($q$select memo.finish_blog_sync('geeknews', %s, %L, %L::jsonb)$q$, g, tok,
+    '{"kind":"geeknews","entryCount":2,"uniqueCount":3}'), '22023', 'entryCount가 uniqueCount보다 작으면 finish 거절');
+  perform test.fails(format($q$select memo.finish_blog_sync('geeknews', %s, %L, %L::jsonb)$q$, g, tok,
+    '{"kind":"geeknews","entryCount":4,"uniqueCount":4}'), '22023', '저장된 수보다 많은 uniqueCount는 finish 거절');
+
+  r := memo.finish_blog_sync('geeknews', g, tok, '{"kind":"geeknews","entryCount":3,"uniqueCount":3}');
+  perform test.ok(r ->> 'status' = 'complete' and r -> 'total' = 'null'::jsonb, '피드 finish는 total 없이 complete');
+  perform test.ok((select reported_total is null and initial_completed_at is null and last_success_at is not null and collected_count = 3
+    from memo.blog_sync_state where blog_id = 'geeknews'), '피드는 reported_total·initial_completed_at을 기록하지 않는다');
+  perform test.ok((select total is null and collected_count = 3 and status = 'complete' from memo.blog_sync_public_status(array['geeknews'])), '공개 상태의 total은 null');
+
+  -- 2시간 30분 안에 성공했으면 건너뛰고, force면 무시한다
+  r := memo.claim_blog_sync('geeknews', 'feed');
+  perform test.ok(not (r ->> 'claimed')::boolean and r ->> 'reason' = 'recent_success', 'feed 트리거는 최근 성공 뒤 건너뛴다');
+
+  update memo.blog_sync_state set last_success_at = now() - interval '2 hours 29 minutes' where blog_id = 'geeknews';
+  r := memo.claim_blog_sync('geeknews', 'feed');
+  perform test.ok(not (r ->> 'claimed')::boolean, '2시간 29분 전 성공이면 아직 건너뛴다');
+
+  update memo.blog_sync_state set last_success_at = now() - interval '2 hours 31 minutes' where blog_id = 'geeknews';
+  c := memo.claim_blog_sync('geeknews', 'feed');
+  tok := (c ->> 'leaseToken')::uuid;
+  g := (c ->> 'generation')::bigint;
+  perform test.ok((c ->> 'claimed')::boolean and g = 2 and not (c ->> 'resume')::boolean, '2시간 31분 뒤에는 새 세대로 시작');
+
+  select first_seen_at into v_first from memo.blog_article where blog_id = 'geeknews' and provider_id = '101';
+
+  -- 세대 2: 100은 피드에서 빠졌고, 101은 제목이 바뀌었고, 103이 새로 왔다
+  r := memo.ingest_blog_batch('geeknews', g, tok, jsonb_build_array(
+    jsonb_build_object('providerId', '101', 'title', '긱뉴스 B 수정', 'url', 'https://news.hada.io/topic?id=101', 'publishedAt', '2026-10-21T01:00:00Z'),
+    jsonb_build_object('providerId', '102', 'title', '긱뉴스 C', 'url', 'https://news.hada.io/topic?id=102', 'publishedAt', '2026-10-22T01:00:00Z'),
+    jsonb_build_object('providerId', '103', 'title', '긱뉴스 D', 'url', 'https://news.hada.io/topic?id=103', 'publishedAt', '2026-10-25T01:00:00Z')
+  ));
+  r := memo.finish_blog_sync('geeknews', g, tok, '{"kind":"geeknews","entryCount":3,"uniqueCount":3}');
+  perform test.ok((r ->> 'unavailableMarked')::int = 0, '피드 finish는 사라진 글을 숨기지 않는다');
+  perform test.ok((select count(*) from memo.blog_article where blog_id = 'geeknews' and available) = 4, '이번 피드에 없는 글도 누적 유지 (4건)');
+  perform test.ok((select title from memo.blog_article where blog_id = 'geeknews' and provider_id = '101') = '긱뉴스 B 수정', '기존 글은 제목을 갱신');
+  perform test.ok((select first_seen_at from memo.blog_article where blog_id = 'geeknews' and provider_id = '101') = v_first, '기존 글의 first_seen_at은 유지');
+  perform test.ok((select total is null and collected_count = 4 from memo.blog_sync_public_status(array['geeknews'])), '누적 뒤에도 total은 null, 수집 수는 4');
+end $$;
+
+-- 실패(형식 변경·차단)는 기존 글을 유지하고 complete로 표시하지 않는다
+update memo.blog_sync_state set last_success_at = now() - interval '4 hours' where blog_id = 'geeknews';
+do $$
+declare
+  c jsonb := memo.claim_blog_sync('geeknews', 'feed');
+  r jsonb;
+begin
+  r := memo.fail_blog_sync('geeknews', (c ->> 'generation')::bigint, (c ->> 'leaseToken')::uuid, 'schema_changed', null, false);
+  perform test.ok(r ->> 'status' = 'partial', '긱뉴스 schema_changed는 partial로 기록');
+  perform test.ok((select last_error = 'schema_changed' and status = 'partial' from memo.blog_sync_state where blog_id = 'geeknews'), '실패 사유가 남는다');
+  perform test.ok((select count(*) from memo.blog_article where blog_id = 'geeknews' and available) = 4, '실패해도 기존 글은 유지');
+  -- partial은 최근 성공이 있어도 건너뛰지 않고 다시 시도한다
+  update memo.blog_sync_state set last_success_at = now() where blog_id = 'geeknews';
+  c := memo.claim_blog_sync('geeknews', 'feed');
+  perform test.ok((c ->> 'claimed')::boolean, '실패한 상태는 다음 feed 실행이 다시 시도한다');
+  perform memo.fail_blog_sync('geeknews', (c ->> 'generation')::bigint, (c ->> 'leaseToken')::uuid, 'blocked', null, false);
 end $$;
 
 select 'ALL BLOG READING SQL TESTS PASSED' as result;

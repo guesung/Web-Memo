@@ -52,7 +52,7 @@
 | --- | --- | --- |
 | `APP_ID` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml`, `.github/workflows/chore-ga-events.yml` |
 | `APP_PRIVATE_KEY` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml`, `.github/workflows/chore-ga-events.yml` |
-| `BLOG_CATALOG_INGEST_SECRET` | 블로그 정주행 카탈로그 수집이 멈춘다. GitHub에 없으면 수집기가 시작하지 못하고, Supabase에 없으면 수집 엔드포인트가 500으로 모든 요청을 거절해 토스·당근의 새 글과 재개 요청이 반영되지 않는다(이미 수집된 글 조회는 그대로다) | `.github/workflows/chore-blog-catalog.yml`, `.github/scripts/blog-reading/collect.mjs`, `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts` |
+| `BLOG_CATALOG_INGEST_SECRET` | 블로그 정주행 카탈로그 수집이 멈춘다. GitHub에 없으면 수집기가 시작하지 못하고, Supabase에 없으면 수집 엔드포인트가 500으로 모든 요청을 거절해 토스·당근·긱뉴스의 새 글과 재개 요청이 반영되지 않는다(이미 수집된 글 조회는 그대로다) | `.github/workflows/chore-blog-catalog.yml`, `.github/scripts/blog-reading/collect.mjs`, `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts` |
 | `CLAUDE_CODE_OAUTH_TOKEN` | 주간 리팩토링 점검과 SEO AI 리포트, GA 이벤트 점검이 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신한다. 구독 토큰이라 만료·한도 소진으로도 실패한다 | `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/chore-ga-events.yml` |
 | `CLIENT_ID` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `CLIENT_SECRET` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
@@ -100,11 +100,12 @@
 | `UPSTASH_REDIS_REST_TOKEN` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/modules/ratelimit/rateLimit.ts` |
 | `UPSTASH_REDIS_REST_URL` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/modules/ratelimit/rateLimit.ts` |
 
-### Supabase Edge Function secrets (6개)
+### Supabase Edge Function secrets (7개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
-| `BLOG_CATALOG_INGEST_SECRET` | 블로그 정주행 카탈로그 수집이 멈춘다. GitHub에 없으면 수집기가 시작하지 못하고, Supabase에 없으면 수집 엔드포인트가 500으로 모든 요청을 거절해 토스·당근의 새 글과 재개 요청이 반영되지 않는다(이미 수집된 글 조회는 그대로다) | `.github/workflows/chore-blog-catalog.yml`, `.github/scripts/blog-reading/collect.mjs`, `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts` |
+| `BLOG_CATALOG_INGEST_SECRET` | 블로그 정주행 카탈로그 수집이 멈춘다. GitHub에 없으면 수집기가 시작하지 못하고, Supabase에 없으면 수집 엔드포인트가 500으로 모든 요청을 거절해 토스·당근·긱뉴스의 새 글과 재개 요청이 반영되지 않는다(이미 수집된 글 조회는 그대로다) | `.github/workflows/chore-blog-catalog.yml`, `.github/scripts/blog-reading/collect.mjs`, `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts` |
+| `BLOG_DIGEST_ENABLED` (선택) | 정확히 true일 때만 긱뉴스 새 글 묶음 알림이 켜진다. 없거나 다른 값이면 묶음 알림 분기를 건너뛴다(위시 리마인더는 그대로) | `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/blogDigest.ts` |
 | `CRON_SECRET` | DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·가입 알림·아티클 리마인더가 401로 끝난다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
 | `RESEND_API_KEY` | 가입 안내 메일이 발송되지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
 | `SLACK_FEEDBACK_WEBHOOK_URL` | 피드백 Slack 알림이 오지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts` |

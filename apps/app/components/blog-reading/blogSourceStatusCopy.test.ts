@@ -37,4 +37,50 @@ describe("getBlogSourceStatusCopy", () => {
 			}).description,
 		).toContain("15분마다");
 	});
+
+	describe("피드 소스", () => {
+		const feedCopy = (
+			viewState: Parameters<typeof getBlogSourceStatusCopy>[0]["viewState"],
+		) =>
+			getBlogSourceStatusCopy({
+				blogName: "긱뉴스",
+				viewState,
+				collectedCount: 0,
+				total: null,
+				isFeed: true,
+			});
+
+		it("정상·수집 중에는 새 글을 모으고 있다고 말한다", () => {
+			for (const viewState of [
+				"complete",
+				"refreshing",
+				"collecting",
+			] as const) {
+				expect(feedCopy(viewState)).toEqual({
+					title: "긱뉴스 · 새 글을 모으고 있어요",
+					description:
+						"하루 여러 번 최근 글을 확인해요. 이전 글은 가져오지 않아요.",
+					hint: null,
+				});
+			}
+		});
+
+		it("글이 아직 없으면 수집을 기다린다고 말한다", () => {
+			expect(feedCopy("waiting").title).toBe("긱뉴스 · 수집을 기다리고 있어요");
+		});
+
+		it("확인 실패 계열은 같은 문구이고 재개를 말하지 않는다", () => {
+			for (const viewState of [
+				"refreshFailed",
+				"partialFailed",
+				"resumeQueued",
+			] as const) {
+				expect(feedCopy(viewState)).toEqual({
+					title: "긱뉴스 · 새 글을 확인하지 못했어요",
+					description: "이전에 모은 글은 계속 볼 수 있어요.",
+					hint: null,
+				});
+			}
+		});
+	});
 });

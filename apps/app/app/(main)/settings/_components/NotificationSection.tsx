@@ -220,6 +220,12 @@ export function NotificationSection() {
 				</Text>
 			)}
 
+			{!isLoading && !isError && schedules.length > 0 && (
+				<Text className="text-[13px] leading-5 text-muted-foreground dark:text-neutral-500 mt-1 px-1">
+					긱뉴스를 구독하면 새 글 수도 함께 알려드려요.
+				</Text>
+			)}
+
 			<NotificationTimeSheet
 				visible={isSheetOpen}
 				editingSchedule={editingSchedule}

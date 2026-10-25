@@ -2,8 +2,11 @@
 /**
  * 블로그 정주행 카탈로그 수집기. chore-blog-catalog.yml이 부릅니다.
  *
- *   node .github/scripts/blog-reading/collect.mjs --source all|toss|daangn --trigger daily|request|manual
+ *   node .github/scripts/blog-reading/collect.mjs --source all|toss|daangn|geeknews --trigger daily|request|manual|feed
  *        [--force] [--dry-run] [--smoke] [--headed] [--time-limit-minutes 40]
+ *
+ * 소스는 두 종류입니다. 아카이브(toss·daangn)는 daily·request·manual로 전체를 순회하고, 피드(geeknews)는 feed(3시간 주기)나
+ * manual로만 Atom 피드의 최근 글을 누적합니다. --source all은 trigger가 feed면 피드 소스만, 아니면 아카이브 소스만 고릅니다.
  *
  * 소스마다 claim(lease) -> 수집(배치 저장·checkpoint) -> finish(종료 증거 검증) 순서로 돌고, 어떤 이유로든 완료하지 못하면
  * fail로 사유를 기록합니다. 기존 글은 지우지 않으며 완료로 위장하지 않습니다.
@@ -23,6 +26,7 @@ import { appendFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 import { collectDaangn, loadChromium, smokeDaangn } from "./daangnSource.mjs";
+import { collectGeeknews } from "./geeknewsSource.mjs";
 import { createIngestClient, DEFAULT_INGEST_URL, IngestError, isStaleLeaseError } from "./ingestClient.mjs";
 import { SourceError } from "./sourceError.mjs";
 import { collectToss } from "./tossSource.mjs";
@@ -32,8 +36,10 @@ export const EXIT_FAILED = 1;
 export const EXIT_USAGE = 2;
 export const EXIT_BLOCKED = 3;
 
-const SOURCES = ["toss", "daangn"];
-const TRIGGERS = ["daily", "request", "manual"];
+const ARCHIVE_SOURCES = ["toss", "daangn"];
+const FEED_SOURCES = ["geeknews"];
+const SOURCES = [...ARCHIVE_SOURCES, ...FEED_SOURCES];
+const TRIGGERS = ["daily", "request", "manual", "feed"];
 const DEFAULT_TIME_LIMIT_MINUTES = 40;
 
 class UsageError extends Error {}
@@ -75,11 +81,19 @@ export const parseArgs = (argv) => {
 	}
 
 	if (args.source !== "all" && !SOURCES.includes(args.source)) {
-		throw new UsageError(`--source는 all|toss|daangn 중 하나여야 합니다`);
+		throw new UsageError(`--source는 all|toss|daangn|geeknews 중 하나여야 합니다`);
 	}
 
 	if (!TRIGGERS.includes(args.trigger)) {
-		throw new UsageError(`--trigger는 daily|request|manual 중 하나여야 합니다`);
+		throw new UsageError(`--trigger는 daily|request|manual|feed 중 하나여야 합니다`);
+	}
+
+	if (FEED_SOURCES.includes(args.source) && args.trigger !== "feed" && args.trigger !== "manual") {
+		throw new UsageError("피드 소스(geeknews)는 --trigger feed|manual로만 수집합니다");
+	}
+
+	if (ARCHIVE_SOURCES.includes(args.source) && args.trigger === "feed") {
+		throw new UsageError("--trigger feed는 피드 소스(geeknews)만 수집합니다");
 	}
 
 	if (!Number.isFinite(args.timeLimitMinutes) || args.timeLimitMinutes < 1 || args.timeLimitMinutes > 300) {
@@ -91,6 +105,15 @@ export const parseArgs = (argv) => {
 	}
 
 	return args;
+};
+
+/** 이번 실행이 돌릴 소스. all은 trigger가 feed면 피드 소스만, 아니면 아카이브 소스만 고릅니다 */
+export const resolveBlogIds = ({ source, trigger }) => {
+	if (source !== "all") {
+		return [source];
+	}
+
+	return trigger === "feed" ? FEED_SOURCES : ARCHIVE_SOURCES;
 };
 
 /** 수집 중 만난 어떤 오류든 서버에 기록할 분류된 실패로 바꿉니다 */
@@ -153,6 +176,7 @@ export const buildSummaryMarkdown = ({ results, args }) => {
 };
 
 const SOURCE_RUNNERS = {
+	geeknews: ({ ingest, deadline, log }) => collectGeeknews({ ingest, deadline, log }),
 	toss: ({ ingest, deadline, log }) => collectToss({ ingest, deadline, log }),
 	daangn: ({ ingest, deadline, log, args }) =>
 		collectDaangn({ ingest, chromium: loadChromium(), deadline, log, headless: !args.headed }),
@@ -278,7 +302,7 @@ const main = async () => {
 		? createDryRunClient(log)
 		: createIngestClient({ url: process.env.BLOG_CATALOG_INGEST_URL || DEFAULT_INGEST_URL, secret });
 	const deadline = Date.now() + args.timeLimitMinutes * 60_000;
-	const blogIds = args.source === "all" ? SOURCES : [args.source];
+	const blogIds = resolveBlogIds(args);
 	const results = [];
 
 	for (const blogId of blogIds) {

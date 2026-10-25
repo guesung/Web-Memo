@@ -26,7 +26,7 @@ import BlogSourceFilter from "./blogSourceFilter";
 import BlogSubscriptionsDialog from "./blogSubscriptionsDialog";
 
 /**
- * 블로그 정주행 화면. 구독한 토스·당근의 공개 글을 30개씩 과거부터 이어 읽는다.
+ * 블로그 정주행 화면. 구독한 블로그의 공개 글을 30개씩 과거부터 이어 읽는다.
  * @description 로그인·첫 로딩·구독 없음·첫 수집 실패는 화면 전체 상태로, 그 밖에는 수집 상태와 목록을 함께 보여 준다.
  */
 export default function BlogReadingView({ lng }: LanguageType) {
@@ -69,10 +69,48 @@ export default function BlogReadingView({ lng }: LanguageType) {
 		);
 	}
 
-	const isEveryMemoed =
-		totals.total === null &&
-		totals.collectedCount > 0 &&
-		totals.completedCount >= totals.collectedCount;
+	const { feed } = totals;
+	const isFeedOnlyScope = feed !== null && !totals.hasArchiveSource;
+	const feedBlogName = feed
+		? (BLOG_CATALOG.find((blog) => blog.blogId === feed.blogId)?.displayName[
+				lng
+			] ?? feed.blogId)
+		: null;
+	const feedUnreadText = feed
+		? t("blogs.summaryFeedUnread", { count: feed.unreadCount })
+		: null;
+	const archiveSummaryText =
+		totals.total !== null
+			? t("blogs.summaryComplete", {
+					total: totals.total,
+					todo: totals.total - totals.completedCount,
+					done: totals.completedCount,
+				})
+			: t("blogs.summaryCollecting", {
+					total: totals.collectedCount,
+					done: totals.completedCount,
+				});
+	const summaryText = isFeedOnlyScope
+		? feedUnreadText
+		: feedBlogName && feedUnreadText
+			? t("blogs.summaryWithFeed", {
+					summary: archiveSummaryText,
+					name: feedBlogName,
+					unread: feedUnreadText,
+					interpolation: { escapeValue: false },
+				})
+			: archiveSummaryText;
+	const allMemoedKey = isFeedOnlyScope
+		? feed.collectedCount > 0 && feed.unreadCount <= 0
+			? "blogs.feedAllMemoed"
+			: null
+		: totals.total === null &&
+				totals.collectedCount > 0 &&
+				totals.completedCount >= totals.collectedCount
+			? "blogs.allMemoed"
+			: null;
+	// 피드가 범위에 있으면 목록에 총 글 수가 없어 총 쪽 수를 만들지 않는다.
+	const paginationTotal = feed ? null : totals.total;
 
 	return (
 		<div className="mx-auto flex w-full max-w-4xl flex-col gap-4">
@@ -165,20 +203,11 @@ export default function BlogReadingView({ lng }: LanguageType) {
 
 							<div className="flex flex-wrap items-center justify-between gap-2">
 								<p className="text-xs text-muted-foreground" data-summary>
-									{totals.total !== null
-										? t("blogs.summaryComplete", {
-												total: totals.total,
-												todo: totals.total - totals.completedCount,
-												done: totals.completedCount,
-											})
-										: t("blogs.summaryCollecting", {
-												total: totals.collectedCount,
-												done: totals.completedCount,
-											})}
-									{isEveryMemoed && (
+									{summaryText}
+									{allMemoedKey && (
 										<>
 											<br />
-											{t("blogs.allMemoed")}
+											{t(allMemoedKey)}
 										</>
 									)}
 								</p>
@@ -193,7 +222,11 @@ export default function BlogReadingView({ lng }: LanguageType) {
 								<BlogReadingStateMessage
 									icon={RotateCw}
 									title={t("blogs.noArticles.title")}
-									description={t("blogs.noArticles.description")}
+									description={t(
+										isFeedOnlyScope
+											? "blogs.noArticles.feedDescription"
+											: "blogs.noArticles.description",
+									)}
 								/>
 							) : (
 								<>
@@ -222,16 +255,20 @@ export default function BlogReadingView({ lng }: LanguageType) {
 										pageNumber={reading.pageNumber}
 										rangeFrom={reading.rangeFrom}
 										rangeTo={reading.rangeTo}
-										total={totals.total}
+										total={paginationTotal}
 										pageSize={BLOG_READING_PAGE_SIZE}
 										hasNextPage={reading.hasNextPage}
 										isFetchingNextPage={pageQuery.isFetchingNextPage}
 										onPrevClick={reading.handlePrevClick}
 										onNextClick={reading.handleNextClick}
 									/>
-									{totals.total === null && !reading.hasNextPage && (
+									{paginationTotal === null && !reading.hasNextPage && (
 										<p className="rounded-lg border border-border bg-muted p-3 text-xs text-muted-foreground">
-											{t("blogs.pagination.partialEnd")}
+											{t(
+												feed
+													? "blogs.pagination.feedEnd"
+													: "blogs.pagination.partialEnd",
+											)}
 										</p>
 									)}
 									<p className="text-xs text-muted-foreground">

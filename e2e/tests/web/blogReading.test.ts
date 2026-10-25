@@ -434,6 +434,253 @@ test.describe("블로그 정주행 (Mocked)", () => {
 		).toBeVisible();
 	});
 
+	test.describe("긱뉴스(피드)", () => {
+		const GEEKNEWS_COUNT = 35;
+		const feedStatusCard = (page: Page) =>
+			page.locator('[data-collection-source="geeknews"]');
+
+		/** 긱뉴스 글을 만들어 구독하고, 화면을 연 뒤 긱뉴스 필터를 누른다. */
+		const openGeekNewsFilter = async ({
+			page,
+			count = GEEKNEWS_COUNT,
+		}: {
+			page: Page;
+			count?: number;
+		}) => {
+			blogStore.addArticles({
+				blogId: "geeknews",
+				count,
+				titlePrefix: "긱뉴스 글",
+			});
+			blogStore.subscribe("geeknews");
+			await openBlogReading({ page, memoStore, blogStore });
+			await page.getByRole("button", { name: "GeekNews", exact: true }).click();
+		};
+
+		test("긱뉴스 필터는 최신순으로 시작하고 안 읽은 글 수와 정상 상태 문구를 보여준다.", async ({
+			page,
+		}) => {
+			memoStore.addMemo(
+				createMockMemo({
+					url: "https://news.hada.io/topic?id=1",
+					memo: "읽고 남긴 메모",
+				}),
+			);
+			await openGeekNewsFilter({ page });
+
+			await expect(
+				page.getByText("GeekNews · Collecting new posts"),
+			).toBeVisible();
+			await expect(
+				page.getByText(
+					"Recent posts are checked several times a day. Earlier posts are not fetched.",
+				),
+			).toBeVisible();
+			await expect(page.locator("[data-summary]")).toHaveText("Unread 34");
+			await expect(page.getByText("posts collected so far")).toHaveCount(0);
+			await expect(
+				page.getByRole("combobox", { name: "Sort posts" }),
+			).toContainText("Newest first");
+			await expect(articleRows(page).first()).toContainText("긱뉴스 글 035");
+			expect(blogStore.pageRequests.at(-1)?.p_sort).toBe("newest");
+			await expect(
+				page.getByRole("button", { name: "Resume collecting" }),
+			).toHaveCount(0);
+		});
+
+		test("마지막 쪽에서는 총 쪽 수 없이 긱뉴스 안내만 보여준다.", async ({
+			page,
+		}) => {
+			await openGeekNewsFilter({ page });
+
+			await expect(page.getByText("Posts 1–30")).toBeVisible();
+			await expect(page.getByText("Page 1", { exact: true })).toBeVisible();
+			await expect(page.getByText(/ of \d+/)).toHaveCount(0);
+
+			await page.getByRole("button", { name: "Next", exact: true }).click();
+
+			await expect(page.getByText("Posts 31–35")).toBeVisible();
+			await expect(
+				page.getByText(
+					"GeekNews only shows posts collected since you subscribe",
+				),
+			).toBeVisible();
+			await expect(
+				page.getByText("More earlier posts are being collected."),
+			).toHaveCount(0);
+		});
+
+		test("긱뉴스 글 링크는 news.hada.io 주제 주소를 가리킨다.", async ({
+			page,
+		}) => {
+			await openGeekNewsFilter({ page, count: 3 });
+
+			await expect(
+				articleRows(page)
+					.first()
+					.getByRole("link", { name: /Open original/ }),
+			).toHaveAttribute("href", "https://news.hada.io/topic?id=3");
+		});
+
+		test("전체 필터에서는 기존 요약 뒤에 긱뉴스 안 읽은 글 수를 붙이고 총 쪽 수를 숨긴다.", async ({
+			page,
+		}) => {
+			blogStore.addArticles({
+				blogId: "toss",
+				count: 3,
+				titlePrefix: "토스 글",
+			});
+			blogStore.addArticles({
+				blogId: "geeknews",
+				count: 2,
+				titlePrefix: "긱뉴스 글",
+			});
+			blogStore.subscribe("toss");
+			blogStore.subscribe("geeknews");
+			await openBlogReading({ page, memoStore, blogStore });
+
+			await expect(page.locator("[data-summary]")).toHaveText(
+				"3 posts · 3 to memo · 0 memoed · GeekNews Unread 2",
+			);
+			await expect(articleRows(page)).toHaveCount(5);
+			await expect(page.getByText(/ of \d+/)).toHaveCount(0);
+			await expect(
+				page.getByText(
+					"GeekNews only shows posts collected since you subscribe",
+				),
+			).toBeVisible();
+
+			// 긱뉴스를 해제하면 접미사가 사라지고 기존 요약만 남는다.
+			await page.getByRole("button", { name: "Choose blogs" }).first().click();
+			await page.getByRole("button", { name: "GeekNews Unsubscribe" }).click();
+			await page.keyboard.press("Escape");
+
+			await expect(page.locator("[data-summary]")).toHaveText(
+				"3 posts · 3 to memo · 0 memoed",
+			);
+		});
+
+		test("구독 중인 긱뉴스의 안 읽은 글이 0개면 0개로 보여준다.", async ({
+			page,
+		}) => {
+			blogStore.addArticles({
+				blogId: "toss",
+				count: 2,
+				titlePrefix: "토스 글",
+			});
+			blogStore.addArticles({
+				blogId: "geeknews",
+				count: 1,
+				titlePrefix: "긱뉴스 글",
+			});
+			blogStore.subscribe("toss");
+			blogStore.subscribe("geeknews");
+			memoStore.addMemo(
+				createMockMemo({
+					url: "https://news.hada.io/topic?id=1",
+					memo: "읽고 남긴 메모",
+				}),
+			);
+			await openBlogReading({ page, memoStore, blogStore });
+
+			await expect(page.locator("[data-summary]")).toContainText(
+				"GeekNews Unread 0",
+			);
+		});
+
+		test("모은 글에 모두 메모했으면 안 읽은 글 0개와 완료 안내를 보여준다.", async ({
+			page,
+		}) => {
+			memoStore.addMemo(
+				createMockMemo({
+					url: "https://news.hada.io/topic?id=1",
+					memo: "읽고 남긴 메모",
+				}),
+			);
+			await openGeekNewsFilter({ page, count: 1 });
+
+			await expect(page.locator("[data-summary]")).toContainText("Unread 0");
+			await expect(
+				page.getByText("You have left memos on every collected post."),
+			).toBeVisible();
+		});
+
+		test("수집 대기(pending)면 대기 문구를 보여준다.", async ({ page }) => {
+			blogStore.subscribe("geeknews");
+			blogStore.setSourceStatus("geeknews", { phase: "pending" });
+			await openBlogReading({ page, memoStore, blogStore });
+
+			await expect(
+				page.getByText("GeekNews · Waiting to collect"),
+			).toBeVisible();
+			await expect(
+				page.getByText(
+					"Your subscription is saved. Collecting starts soon with the latest posts.",
+				),
+			).toBeVisible();
+			await expect(
+				page.getByText(
+					"No posts collected yet. The latest posts will show up after the next collection.",
+				),
+			).toBeVisible();
+		});
+
+		test("수집이 막혀(blocked) 실패하면 실패 문구를 보여주고 재개 버튼은 없다.", async ({
+			page,
+		}) => {
+			blogStore.addArticles({
+				blogId: "geeknews",
+				count: 3,
+				titlePrefix: "긱뉴스 글",
+			});
+			blogStore.subscribe("geeknews");
+			blogStore.setSourceStatus("geeknews", {
+				phase: "refresh_failed",
+				lastError: "blocked",
+			});
+			await openBlogReading({ page, memoStore, blogStore });
+
+			await expect(
+				feedStatusCard(page).getByText(
+					"GeekNews · Could not check for new posts",
+				),
+			).toBeVisible();
+			await expect(
+				feedStatusCard(page).getByText(
+					"You can keep reading the posts collected earlier.",
+				),
+			).toBeVisible();
+			await expect(articleRows(page)).toHaveCount(3);
+			await expect(feedStatusCard(page).getByRole("button")).toHaveCount(0);
+			await expect(
+				page.getByRole("button", { name: "Resume collecting" }),
+			).toHaveCount(0);
+		});
+
+		test("구독 대화상자는 일반화된 설명과 긱뉴스 안내 줄을 보여준다.", async ({
+			page,
+		}) => {
+			blogStore.addArticles({
+				blogId: "toss",
+				count: 1,
+				titlePrefix: "토스 글",
+			});
+			blogStore.subscribe("toss");
+			await openBlogReading({ page, memoStore, blogStore });
+
+			await page.getByRole("button", { name: "Choose blogs" }).first().click();
+
+			await expect(
+				page.getByText("Collect public posts to read through."),
+			).toBeVisible();
+			await expect(
+				page.getByText(
+					"Only collects new posts published after you subscribe.",
+				),
+			).toHaveCount(1);
+		});
+	});
+
 	test("360px 화면에서도 가로 스크롤이 생기지 않는다.", async ({ page }) => {
 		await page.setViewportSize({ width: 360, height: 740 });
 		blogStore.addArticles({

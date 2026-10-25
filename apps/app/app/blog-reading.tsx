@@ -2,7 +2,7 @@ import type {
 	IFBlogArticleItem,
 	TBlogId,
 } from "@web-memo/shared/types/blog-reading";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import { useState } from "react";
 import {
@@ -21,6 +21,7 @@ import { BlogReadingStateView } from "@/components/blog-reading/BlogReadingState
 import { BlogSourceStatusCard } from "@/components/blog-reading/BlogSourceStatusCard";
 import { BlogSubscriptionModal } from "@/components/blog-reading/BlogSubscriptionModal";
 import { getBlogDisplayName } from "@/components/blog-reading/blogSourceStatusCopy";
+import { getBlogSummaryText } from "@/lib/blogReadingSummary";
 import { useBlogReading } from "@/lib/hooks/useBlogReading";
 import { useMemoUpsertMutation } from "@/lib/hooks/useMemoMutation";
 
@@ -32,21 +33,22 @@ export default function BlogReadingScreen() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 	const isDark = useColorScheme() === "dark";
-	const reading = useBlogReading();
+	const { blogId: entryBlogId, t: entryNonce } = useLocalSearchParams<{
+		blogId?: string;
+		t?: string;
+	}>();
+	const reading = useBlogReading({ entryBlogId, entryNonce });
 	const upsertMemo = useMemoUpsertMutation();
 	const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
 	const [memoViewArticle, setMemoViewArticle] =
 		useState<IFBlogArticleItem | null>(null);
 
 	const { scopeTotals } = reading;
-	const isAllCollectedMemoed =
-		scopeTotals.confirmedTotal === null &&
-		scopeTotals.collectedCount > 0 &&
-		scopeTotals.completedCount >= scopeTotals.collectedCount;
-	const summaryText =
-		scopeTotals.confirmedTotal === null
-			? `현재 수집한 글 ${scopeTotals.collectedCount}개 · 메모 완료 ${scopeTotals.completedCount}개`
-			: `전체 글 ${scopeTotals.confirmedTotal}개 · 메모할 글 ${scopeTotals.confirmedTotal - scopeTotals.completedCount}개 · 메모 완료 ${scopeTotals.completedCount}개`;
+	const { summaryText, allMemoedText } = getBlogSummaryText(
+		reading.scopeSources,
+	);
+	const isFeedScope = scopeTotals.feed !== null;
+	const isFeedOnlyScope = isFeedScope && !scopeTotals.hasArchiveSource;
 
 	/** 정주행에서 연 원문임을 알리는 `source`를 실어 기존 앱 브라우저로 연다. */
 	const handleArticleOpen = (article: IFBlogArticleItem) => {
@@ -219,9 +221,9 @@ export default function BlogReadingScreen() {
 							})}
 						</View>
 					</View>
-					{isAllCollectedMemoed ? (
+					{allMemoedText ? (
 						<Text className="px-5 mb-1 text-xs text-muted-foreground dark:text-neutral-400">
-							현재 수집한 글에는 모두 메모를 남겼어요
+							{allMemoedText}
 						</Text>
 					) : null}
 
@@ -257,7 +259,9 @@ export default function BlogReadingScreen() {
 							<Text className="px-4 py-8 text-center text-[13px] text-muted-foreground dark:text-neutral-400">
 								{reading.isPageLoading
 									? "글을 불러오고 있어요."
-									: "아직 가져온 글이 없어요. 수집이 시작되면 여기에 보여요."}
+									: isFeedOnlyScope
+										? "아직 가져온 글이 없어요. 다음 수집 때 최근 글부터 보여요."
+										: "아직 가져온 글이 없어요. 수집이 시작되면 여기에 보여요."}
 							</Text>
 						) : null}
 					</View>
@@ -265,7 +269,8 @@ export default function BlogReadingScreen() {
 					<BlogReadingPagination
 						pageIndex={reading.pageIndex}
 						visibleCount={reading.articles.length}
-						confirmedTotal={scopeTotals.confirmedTotal}
+						confirmedTotal={isFeedScope ? null : scopeTotals.confirmedTotal}
+						isFeedScope={isFeedScope}
 						hasNextPage={reading.hasNextPage}
 						isFetchingNextPage={reading.isFetchingNextPage}
 						onPrevious={reading.handlePreviousPage}

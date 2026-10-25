@@ -1883,6 +1883,9 @@
 		"summaryComplete": "{{total}} posts · {{todo}} to memo · {{done}} memoed",
 		"summaryCollecting": "{{total}} posts collected so far · {{done}} memoed",
 		"allMemoed": "You have left memos on every post collected so far",
+		"feedAllMemoed": "You have left memos on every collected post.",
+		"summaryFeedUnread": "Unread {{count}}",
+		"summaryWithFeed": "{{summary}} · {{name}} {{unread}}",
 		"lastUpdated": "Last updated: {{time}}",
 		"refresh": "Refresh",
 		"status": {
@@ -1900,7 +1903,15 @@
 			"queuedCopy": "Collection continues in the next scheduled run. Requests are checked every 15 minutes, and it may take longer depending on the run.",
 			"refreshFailedCopy": "You can keep reading the posts collected earlier.",
 			"resume": "Resume collecting",
-			"retry": "Retry"
+			"retry": "Retry",
+			"feed": {
+				"normalTitle": "{{name}} · Collecting new posts",
+				"normalCopy": "Recent posts are checked several times a day. Earlier posts are not fetched.",
+				"waitingTitle": "{{name}} · Waiting to collect",
+				"waitingCopy": "Your subscription is saved. Collecting starts soon with the latest posts.",
+				"failedTitle": "{{name}} · Could not check for new posts",
+				"failedCopy": "You can keep reading the posts collected earlier."
+			}
 		},
 		"sync": {
 			"queued": "Requested to resume collecting",
@@ -1930,7 +1941,8 @@
 			"next": "Next",
 			"page": "Page {{page}}",
 			"pageWithTotal": "Page {{page}} of {{pages}}",
-			"partialEnd": "More earlier posts are being collected. This is the last page so far."
+			"partialEnd": "More earlier posts are being collected. This is the last page so far.",
+			"feedEnd": "GeekNews only shows posts collected since you subscribed."
 		},
 		"newArticles": {
 			"message": "{{count}} new posts fetched",
@@ -1950,7 +1962,8 @@
 		},
 		"noArticles": {
 			"title": "No posts collected yet",
-			"description": "Posts will appear here once collecting starts. Your subscription stays."
+			"description": "Posts will appear here once collecting starts. Your subscription stays.",
+			"feedDescription": "No posts collected yet. The latest posts will show up after the next collection."
 		},
 		"firstError": {
 			"title": "Could not load the post list",
@@ -1965,7 +1978,8 @@
 		"offline": "You are offline. Showing posts loaded earlier.",
 		"dialog": {
 			"title": "Choose blogs",
-			"description": "Collect the public posts of Toss and Daangn to read through.",
+			"description": "Collect public posts to read through.",
+			"feedHint": "Only collects new posts published after you subscribe.",
 			"subscribe": "Subscribe",
 			"unsubscribe": "Unsubscribe",
 			"keepMemos": "Your memos stay even if you unsubscribe.",

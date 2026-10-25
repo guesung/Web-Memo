@@ -5,6 +5,14 @@ export const ANALYTICS = {
 } as const;
 
 /**
+ * 확장이 만드는 GA client_id의 형식. UUID 또는 storage를 못 쓸 때의 `session-<시각>-<난수>`입니다.
+ * @description 웹이 URL 쿼리로 받은 client_id를 GA에 그대로 실어 보내기 전에 거르는 기준입니다.
+ * 형식이 다르면 이메일 같은 개인정보가 섞였을 수 있으므로 버리고 새 ID를 씁니다.
+ */
+export const GA_CLIENT_ID_PATTERN =
+	/^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|session-[0-9]{10,15}-[a-z0-9]{1,16})$/i;
+
+/**
  * 만든 사람 본인의 user_id. 이 사람의 행동은 GA로 보내지 않는다.
  * @description 사용자가 적은 지금은 본인의 사용이 섞이면 지표가 통째로 흔들린다.
  *

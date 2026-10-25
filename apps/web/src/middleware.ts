@@ -10,8 +10,13 @@ import { updateAuthorization } from "./modules/supabase";
  *
  * updateAuthorization은 매 요청마다 Supabase에 왕복하는데, Slack은 3초 안에 응답을
  * 못 받으면 사용자에게 실패로 표시합니다. 제거 이벤트 경로도 세션 없이 열려야 합니다.
+ * 설치 가이드 로드 비컨은 세션과 무관해 요청마다 Supabase에 왕복할 이유가 없습니다.
  */
-const AUTH_BYPASS_PATHS = ["/api/slack", "/api/version"];
+const AUTH_BYPASS_PATHS = [
+	"/api/slack",
+	"/api/version",
+	"/api/install-guide-load",
+];
 
 /**
  * 인증·로케일 처리와 독립적으로 응답해야 하는 공개 SEO 파일.

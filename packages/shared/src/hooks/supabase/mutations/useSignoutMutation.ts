@@ -18,6 +18,8 @@ export default function useSignoutMutation() {
 		onSuccess: () => {
 			// 다른 계정이 로그인해도 이전 계정의 구독·완료 현황이 남지 않게 한다.
 			queryClient.removeQueries({ queryKey: QUERY_KEY.blogCompletionPrefix() });
+			// 헤더가 로그인 상태로 남지 않게 한다. remove하면 suspense 쿼리가 다시 suspend되어 깜빡이므로 무효화한다.
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.user() });
 			analytics.trackEvent({ name: "logout" });
 		},
 	});

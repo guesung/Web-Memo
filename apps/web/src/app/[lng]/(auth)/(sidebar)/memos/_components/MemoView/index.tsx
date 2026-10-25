@@ -13,7 +13,10 @@ import { Skeleton } from "@web-memo/ui";
 import dynamic from "next/dynamic";
 import { Suspense, useEffect } from "react";
 import type { TMemoFilter } from "../../_types";
-import { useMemoSearchConditions } from "./_hooks";
+import {
+	useMemoListKeyboardNavigation,
+	useMemoSearchConditions,
+} from "./_hooks";
 import MemoGrid from "./MemoGrid";
 import { MemoListSkeleton } from "./MemoListSkeleton";
 import MemoViewFrame from "./MemoViewFrame";
@@ -33,6 +36,8 @@ const MemoDomainFilter = dynamic(() => import("./MemoDomainFilter"), {
 
 /** 라우트 필터에 해당하는 메모 목록과 검색 결과를 표시한다. */
 const MemoView = ({ lng, filter }: IFMemoViewProps) => {
+	useMemoListKeyboardNavigation();
+
 	if (filter === "plan") {
 		return <PlanMemoView lng={lng} />;
 	}

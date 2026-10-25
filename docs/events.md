@@ -63,10 +63,12 @@
 | login_start / login / sign_up / logout | `login_start`: 웹 로그인 제공자 버튼 클릭. `login`: OAuth 성공 후 메모 레이아웃에 도착한 클라이언트. `sign_up`: 같은 도착 시 신규 계정으로 판정된 경우. `logout`: 로그아웃 | `method` (logout 없음) | 제공자별 시작·도착 규모는? 두 이벤트에는 시도 식별자가 없으므로 사용자 수 비율을 실제 로그인 완료율로 단정하지 않는다 | DB-1160 |
 | side_panel_login_click / header_login_click / header_memos_click | 로그인·메모 진입 클릭 | `from`(header 계열, 언어 접두사를 뺀 경로) | 어느 자리에서 로그인·진입이 눌리는가 | — |
 | extension_install_click / extension_install_dismiss / extension_installed | 설치 버튼 클릭·닫음·설치 완료 | `from`, `position` | 어느 페이지·어느 버튼이 설치로 이어지는가 | — |
-| extension_uninstall | 확장 제거 URL의 `GET /api/uninstall` 요청에서 서버가 GA4로 전송 시도. development·HEAD 제외 | `extension_version`(없거나 잘못되면 `unknown`), `build_env` | 새 제거 URL을 등록한 설치본에서 제거 흐름이 얼마나 발생하며 어느 버전·환경에서 발생하는가 | DB-1182 |
+| extension_uninstall | 확장 제거 URL의 `GET /api/uninstall` 요청에서 서버가 GA4로 전송 시도. 언어가 붙은 제거 페이지로 리다이렉트 응답을 먼저 보낸 뒤 `after()`에서 전송한다(DB-1230부터). development·HEAD 제외 | `extension_version`(없거나 잘못되면 `unknown`), `build_env` | 새 제거 URL을 등록한 설치본에서 제거 흐름이 얼마나 발생하며 어느 버전·환경에서 발생하는가 | DB-1182 |
 | open_web_from_extension | 확장에서 웹 열기 | `from` | 웹으로 넘어가는 자리는 어디인가 | — |
 | guide_open / guide_step / guide_finish | 가이드 열기·단계·완료 | `from`, `step_name` | 가이드 어느 단계에서 그만두는가 (추정) | — |
 | install_guide_view | 로그인 전 설치 가이드 화면 조회 | — | 신규 설치자가 로그인 전에 가이드에 도달하는가 | DB-1159 |
+| install_guide_tab_opened | 신규 설치 직후 확장 백그라운드가 가이드 탭 생성을 시도한 뒤(`extension_installed` 다음). 백그라운드의 Measurement Protocol 전송이라 광고 차단기에 막히지 않는다 | `is_success`: 탭 생성 성공 여부 | 설치 후 `install_guide_view`가 없는 설치자는 탭이 안 열린 것인가, 열렸지만 gtag가 막힌 것인가 | DB-1230 |
+| install_guide_load | 설치 가이드 페이지 로드 시 `navigator.sendBeacon`으로 `POST /api/install-guide-load`를 부르면 웹 서버가 `after()`에서 GA4로 전송한다. `ext_cid`가 형식에 맞으면 그 값을 client_id로, 아니면 새 UUID를 쓴다. development 제외. gtag의 `install_guide_view`와 이중 집계되지 않도록 이름을 따로 둔다 | — | 광고 차단기 때문에 `install_guide_view`가 빠진 설치자까지 포함하면 가이드 도달률은 얼마인가 | DB-1230 |
 | install_guide_login_click | 설치 가이드에서 로그인 버튼 클릭 | — | 가이드 조회가 로그인 시도로 이어지는가 | DB-1159 |
 | notice_view / notice_dismiss | 공지 노출·닫음 | `notice_id` | 공지가 읽히는가 (추정) | — |
 | notice_return | 공지를 처음 본 다음 날부터 7일 안에 사이드 패널을 다시 연 최초 시도 | `notice_id`, `days_since_view`(1~7) | 공지 노출자가 이후 다시 패널을 여는가 (인과 효과는 알 수 없음) | DB-1163 |

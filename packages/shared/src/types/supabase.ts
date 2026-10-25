@@ -10,7 +10,7 @@ export type Database = {
 	// Allows to automatically instantiate createClient with right options
 	// instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
 	__InternalSupabase: {
-		PostgrestVersion: "12.2.3 (519615d)";
+		PostgrestVersion: "12.2.3";
 	};
 	feedback: {
 		Tables: {
@@ -118,6 +118,33 @@ export type Database = {
 						referencedColumns: ["blog_id", "provider_id"];
 					},
 				];
+			};
+			blog_digest_log: {
+				Row: {
+					article_count: number;
+					blog_id: string;
+					id: number;
+					sent_at: string;
+					sent_on: string;
+					user_id: string;
+				};
+				Insert: {
+					article_count: number;
+					blog_id: string;
+					id?: never;
+					sent_at?: string;
+					sent_on: string;
+					user_id: string;
+				};
+				Update: {
+					article_count?: number;
+					blog_id?: string;
+					id?: never;
+					sent_at?: string;
+					sent_on?: string;
+					user_id?: string;
+				};
+				Relationships: [];
 			};
 			blog_subscription: {
 				Row: {
@@ -704,7 +731,7 @@ export type Database = {
 				Insert: {
 					created_at?: string;
 					email: string;
-					id?: number;
+					id?: never;
 					is_test?: boolean;
 					status: string;
 					user_id: string;
@@ -713,7 +740,7 @@ export type Database = {
 				Update: {
 					created_at?: string;
 					email?: string;
-					id?: number;
+					id?: never;
 					is_test?: boolean;
 					status?: string;
 					user_id?: string;
@@ -850,6 +877,10 @@ export type Database = {
 			};
 			get_admin_stats: { Args: { include_admin?: boolean }; Returns: Json };
 			get_admin_users: { Args: { search_query?: string }; Returns: Json };
+			get_blog_digest_candidates: {
+				Args: { p_blog_id: string; p_user_id: string };
+				Returns: Json;
+			};
 			get_blog_reading_page: {
 				Args: {
 					p_blog_id?: string;
@@ -891,6 +922,7 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			is_feed_blog: { Args: { p_blog_id: string }; Returns: boolean };
 			is_supported_blog: { Args: { p_blog_id: string }; Returns: boolean };
 			legacy_page_key_from_normalized_url: {
 				Args: { p_url: string };
@@ -909,6 +941,15 @@ export type Database = {
 			set_blog_subscription: {
 				Args: { p_active: boolean; p_blog_id: string };
 				Returns: Json;
+			};
+			weekly_creation_retention: {
+				Args: { p_week_start: string; p_weeks?: number };
+				Returns: {
+					active_users: number;
+					cohort_size: number;
+					cohort_week: string;
+					week_offset: number;
+				}[];
 			};
 		};
 		Enums: {

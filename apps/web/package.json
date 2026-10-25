@@ -2,9 +2,9 @@
 	"name": "@web-memo/web",
 	"private": true,
 	"scripts": {
-		"dev": "node scripts/generatePagePaths.mjs && next dev",
-		"preview": "next build && next start",
-		"build": "node scripts/generatePagePaths.mjs && next build",
+		"dev": "node scripts/generatePagePaths.mjs && node scripts/generate-version-status.mjs && next dev",
+		"preview": "node scripts/generate-version-status.mjs && next build && next start",
+		"build": "node scripts/generatePagePaths.mjs && node scripts/generate-version-status.mjs && next build",
 		"generate:paths": "node scripts/generatePagePaths.mjs",
 		"build:analyze": "next experimental-analyze",
 		"start": "next start",

@@ -21,6 +21,7 @@ import { HighlightService, normalizeUrl } from "@web-memo/shared/utils";
 import { getSupabaseClient, I18n, Tab } from "@web-memo/shared/utils/extension";
 import { initSentry } from "@web-memo/shared/utils";
 import { analytics } from "@web-memo/shared/modules/analytics";
+import { openInstallGuideTab } from "./openInstallGuideTab";
 import { registerUninstallUrl } from "./registerUninstallUrl";
 
 void initSentry();
@@ -57,22 +58,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
 // 서비스 워커가 뜰 때마다 등록해 누락을 막습니다. 실패해도 다른 초기화는 계속합니다.
 void registerUninstallUrl();
-
-/**
- * 설치 직후 웹의 공개 가이드를 새 탭으로 엽니다.
- * @description 확장의 client_id를 `ext_cid`로 실어 보내 웹 가입까지 한 사용자로 이어 집계합니다.
- * client_id를 얻지 못하면 `ext_cid` 없이 엽니다.
- */
-const openInstallGuideTab = async () => {
-	const guideUrl = new URL(`${CONFIG.webUrl}/install`);
-	const clientId = await analytics.getExtensionClientId();
-
-	if (clientId) {
-		guideUrl.searchParams.set("ext_cid", clientId);
-	}
-
-	await Tab.create({ url: guideUrl.toString() });
-};
 
 // 확장 프로그램이 설치되었을 때 contextMenus를 설정한다.
 const CONTEXT_MENU_ID_CHECK_MEMO = "CONTEXT_MENU_ID_CHECK_MEMO";

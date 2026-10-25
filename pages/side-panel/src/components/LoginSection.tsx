@@ -58,7 +58,7 @@ export default function LoginSection() {
 
 	// 패널을 연 사람의 대부분이 이 화면에서 떠났다. 로그인 전에 할 수 있는 일을 먼저 보여준다.
 	return (
-		<div className="flex h-full flex-col gap-6 overflow-y-auto px-4 py-6">
+		<div className="flex h-full flex-col gap-6 overflow-y-auto py-6">
 			<div className="flex flex-col gap-1">
 				<h2 className="text-balance font-semibold text-lg">
 					{I18n.get("login_intro_title")}

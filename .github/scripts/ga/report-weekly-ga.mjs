@@ -18,6 +18,9 @@
  *   GA4_SERVICE_ACCOUNT_JSON="$(cat ~/ga4-service-account.json)" \
  *   node .github/scripts/ga/report-weekly-ga.mjs
  *
+ * 메모 리텐션(Supabase)까지 싣기: 위 명령에 SUPABASE_REPORT_SERVICE_ROLE_KEY=<service_role 키>
+ * 를 더합니다. 없으면 리텐션 섹션·칸만 빠지고 나머지는 그대로 돕니다.
+ *
  * 시트까지 쓰기 (서비스 계정 이메일을 시트에 편집자로 공유해 두어야 합니다):
  *   GA4_PROPERTY_ID=471860782 \
  *   GA4_SERVICE_ACCOUNT_JSON="$(cat ~/ga4-service-account.json)" \
@@ -47,6 +50,7 @@ import {
 	resolveRunPlan,
 	shouldFetchEvents,
 } from "./ga4-weekly.mjs";
+import { fetchMemoRetention } from "./memo-retention.mjs";
 import { exchangeServiceAccountToken } from "../shared/google-auth.mjs";
 import { requireEnv } from "../shared/run-context.mjs";
 import { postToSlack } from "../shared/slack-blocks.mjs";
@@ -56,12 +60,13 @@ const SUMMARY_KEY_COLUMNS = ["주 시작일"];
 const EVENT_KEY_COLUMNS = ["주 시작일", "이벤트"];
 
 /** 기존 Slack 게시. 웹훅이 없으면 페이로드를 찍고 건너뜁니다. */
-const postReportToSlack = async ({ report, spreadsheetId }) => {
+const postReportToSlack = async ({ report, retention, spreadsheetId }) => {
 	const repository = process.env.GITHUB_REPOSITORY;
 	const runId = process.env.GITHUB_RUN_ID;
 	const serverUrl = process.env.GITHUB_SERVER_URL ?? "https://github.com";
 	const payload = buildWeeklyReportPayload({
 		report,
+		retention,
 		// 로컬 실행에는 런이 없습니다. 링크 없이 나머지만 싣습니다.
 		runUrl:
 			repository && runId
@@ -126,11 +131,18 @@ const writeRowsToSheet = async ({
 };
 
 /** 주간 리포트 한 벌을 요약 행과 이벤트 행으로 바꿉니다. */
-const buildRowsFromReport = ({ report, week, recordedAt, source }) => ({
+const buildRowsFromReport = ({
+	report,
+	retention,
+	week,
+	recordedAt,
+	source,
+}) => ({
 	summaryRow: buildSummaryRow({
 		week,
 		activeUsers: report.activeUsers.current,
 		funnel: report.funnel,
+		retention,
 		recordedAt,
 		source,
 	}),
@@ -153,6 +165,7 @@ const buildRowsFromReport = ({ report, week, recordedAt, source }) => ({
 const runRegular = async ({
 	serviceAccountJson,
 	propertyId,
+	serviceRoleKey,
 	spreadsheetId,
 	plan,
 	recordedAt,
@@ -164,9 +177,18 @@ const runRegular = async ({
 		week,
 	});
 	const failures = [];
+	// 리텐션은 Supabase 에서 따로 옵니다. 실패해도 GA 리포트 본체는 그대로 내보내고,
+	// 실패는 다른 출력과 함께 모아 잡을 실패시킵니다.
+	let retention = null;
 
 	try {
-		await postReportToSlack({ report, spreadsheetId });
+		retention = await fetchMemoRetention({ serviceRoleKey, week });
+	} catch (error) {
+		failures.push({ step: "메모 리텐션 조회", error });
+	}
+
+	try {
+		await postReportToSlack({ report, retention, spreadsheetId });
 	} catch (error) {
 		failures.push({ step: "Slack 게시", error });
 	}
@@ -177,6 +199,7 @@ const runRegular = async ({
 		try {
 			const { summaryRow, eventRows } = buildRowsFromReport({
 				report,
+				retention,
 				week,
 				recordedAt,
 				source: plan.source,
@@ -218,6 +241,7 @@ const runRegular = async ({
 const runBackfill = async ({
 	serviceAccountJson,
 	propertyId,
+	serviceRoleKey,
 	spreadsheetId,
 	plan,
 	recordedAt,
@@ -238,8 +262,10 @@ const runBackfill = async ({
 					propertyId,
 					week,
 				});
+				const retention = await fetchMemoRetention({ serviceRoleKey, week });
 				const rows = buildRowsFromReport({
 					report,
+					retention,
 					week,
 					recordedAt,
 					source: plan.source,
@@ -259,12 +285,15 @@ const runBackfill = async ({
 				propertyId,
 				week,
 			});
+			// 리텐션은 GA 이벤트와 무관하게 저장된 데이터로 세므로 옛 주도 채웁니다.
+			const retention = await fetchMemoRetention({ serviceRoleKey, week });
 
 			summaryRows.push(
 				buildSummaryRow({
 					week,
 					activeUsers,
 					funnel: null,
+					retention,
 					recordedAt,
 					source: plan.source,
 				}),
@@ -314,6 +343,8 @@ const main = async () => {
 	const context = {
 		serviceAccountJson: requireEnv("GA4_SERVICE_ACCOUNT_JSON"),
 		propertyId: requireEnv("GA4_PROPERTY_ID"),
+		// 없으면 리텐션만 건너뜁니다. 로컬·포크에서도 GA 리포트는 돌아야 합니다.
+		serviceRoleKey: process.env.SUPABASE_REPORT_SERVICE_ROLE_KEY,
 		spreadsheetId,
 		plan,
 		recordedAt: formatSeoulMinute(now),

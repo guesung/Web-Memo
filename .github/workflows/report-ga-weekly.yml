@@ -66,6 +66,9 @@ jobs:
           # 비어 있으면 시트 기록만 경고 후 건너뜁니다(백필은 실패). 서비스 계정 이메일을
           # 시트에 편집자로 공유해야 씁니다.
           GA_SHEET_ID: ${{ secrets.GA_SHEET_ID }}
+          # 메모 리텐션(memo.weekly_creation_retention)을 부르는 키입니다. 비어 있으면
+          # 리텐션 섹션·칸만 경고 후 건너뜁니다.
+          SUPABASE_REPORT_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_REPORT_SERVICE_ROLE_KEY }}
           # 입력은 run 스크립트에 직접 넣지 않고 env 로만 넘깁니다. ${{ }} 는 셸이 보기
           # 전에 치환되므로, run 에 넣으면 입력값이 그대로 명령으로 실행될 수 있습니다.
           WEEK_FROM: ${{ inputs.from }}

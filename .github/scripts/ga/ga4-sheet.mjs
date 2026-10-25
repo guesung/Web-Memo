@@ -47,6 +47,30 @@ export const formatSeoulMinute = (date) => {
 };
 
 /**
+ * 요약 행에 붙는 리텐션 칸. 잔존율은 시트에서 서식을 고를 수 있게 0~1 사이 숫자로 적습니다.
+ *
+ * 조회하지 않은 실행(키 없음)이면 칸을 아예 넣지 않습니다. 빈 문자열을 넣으면 그 주를
+ * 키 없이 다시 돌렸을 때 이미 적힌 리텐션이 지워집니다. mergeRows 는 새 행에 없는
+ * 열의 기존 값을 남깁니다. 관측할 코호트가 없는 칸은 퍼널과 같은 이유로 0 이 아니라
+ * 빈 문자열입니다.
+ */
+const buildRetentionCells = (retention) => {
+	if (!retention) {
+		return {};
+	}
+
+	return {
+		"리텐션: 처음 쓴 사람": retention.newCreators,
+		...Object.fromEntries(
+			retention.offsets.map(({ offset, rate }) => [
+				`리텐션: ${offset}주 잔존율`,
+				rate ?? "",
+			]),
+		),
+	};
+};
+
+/**
  * 요약 탭의 한 행(헤더 → 값).
  *
  * funnel 이 null 이면 퍼널 칸을 0 이 아니라 빈 문자열로 둡니다. 퍼널을 조회할 수
@@ -57,6 +81,7 @@ export const buildSummaryRow = ({
 	week,
 	activeUsers,
 	funnel,
+	retention = null,
 	recordedAt,
 	source,
 }) => {
@@ -69,6 +94,7 @@ export const buildSummaryRow = ({
 		"주 종료일": week.end,
 		"활성 사용자": activeUsers,
 		...Object.fromEntries(funnelCells),
+		...buildRetentionCells(retention),
 		"기록 시각": recordedAt,
 		"기록 경위": source,
 	};

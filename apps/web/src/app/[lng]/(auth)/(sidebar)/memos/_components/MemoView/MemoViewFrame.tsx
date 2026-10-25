@@ -127,6 +127,7 @@ const MemoViewFrame = ({
 						lng={lng}
 						memoId={dialogMemoId}
 						initialMemo={memos.find((memo) => memo.id === dialogMemoId)}
+						{...getAdjacentMemoIds(memos, dialogMemoId)}
 					/>
 				</Suspense>
 			)}
@@ -135,6 +136,20 @@ const MemoViewFrame = ({
 };
 
 export default MemoViewFrame;
+
+/**
+ * 목록 순서에서 앞뒤 메모 id를 구한다.
+ * @description 불러온 페이지 안에서만 찾는다. 끝에 닿으면 그 방향은 undefined다.
+ */
+function getAdjacentMemoIds(memos: { id: number }[], memoId: number) {
+	const index = memos.findIndex((memo) => memo.id === memoId);
+	if (index === -1) return {};
+
+	return {
+		prevMemoId: memos[index - 1]?.id,
+		nextMemoId: memos[index + 1]?.id,
+	};
+}
 
 /** 틀이 불러와 목록 본문에 넘기는 하이라이트 연결 정보. */
 export interface IFMemoViewRelations {

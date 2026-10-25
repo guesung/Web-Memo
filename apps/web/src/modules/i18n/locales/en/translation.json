@@ -537,7 +537,9 @@
 		"impression": "Impression",
 		"impressionPlaceholder": "Write what you felt about this page",
 		"actionItem": "Action items",
-		"actionItemPlaceholder": "Write what to do after reading this page"
+		"actionItemPlaceholder": "Write what to do after reading this page",
+		"addImpression": "Impression",
+		"addActionItem": "Action items"
 	},
 	"memos": {
 		"categoryPopup": {
@@ -638,7 +640,13 @@
 		"saveStatus": {
 			"saving": "Saving...",
 			"saved": "All changes saved",
-			"error": "Failed to save"
+			"error": "Failed to save",
+			"savedShort": "Saved"
+		},
+		"dialog": {
+			"prev": "Previous memo",
+			"next": "Next memo",
+			"updatedAt": "Edited {{date}}"
 		},
 		"toggle": {
 			"wish": "Wishlist",

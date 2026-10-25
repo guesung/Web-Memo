@@ -1,6 +1,6 @@
 import { analytics } from "@web-memo/shared/modules/analytics";
 import type { GetMemoResponse } from "@web-memo/shared/types";
-import { cn } from "@web-memo/shared/utils";
+import { cn, getDomainFromUrl } from "@web-memo/shared/utils";
 import {
 	Button,
 	CardHeader,
@@ -28,6 +28,8 @@ interface MemoCardHeaderProps {
 	onTitleChange?: (title: string) => void;
 	/** 헤더 컨테이너에 덧붙일 클래스. Dialog 처럼 닫기 버튼이 겹치는 곳에서 여백을 더 준다 */
 	className?: string;
+	/** 제목 아래에 원문 도메인 링크를 항상 보인다. 메모 상세 다이얼로그가 켠다 */
+	showsSourceDomain?: boolean;
 }
 
 export default memo(function MemoCardHeader({
@@ -37,6 +39,7 @@ export default memo(function MemoCardHeader({
 	isMemoSelected,
 	onTitleChange,
 	className,
+	showsSourceDomain = false,
 }: MemoCardHeaderProps) {
 	const [isTitleEditing, setIsTitleEditing] = useState(false);
 	const [editedTitle, setEditedTitle] = useState(memo.title);
@@ -55,6 +58,7 @@ export default memo(function MemoCardHeader({
 	);
 
 	const displayedTitle = committedTitle ?? memo.title;
+	const sourceDomain = showsSourceDomain ? getDomainFromUrl(memo.url) : null;
 
 	const handleCheckButtonClick = useCallback(
 		(event: MouseEvent<HTMLButtonElement>) => {
@@ -186,6 +190,18 @@ export default memo(function MemoCardHeader({
 						</Button>
 					) : null}
 				</div>
+			)}
+			{sourceDomain && (
+				<Link
+					href={memo.url}
+					target="_blank"
+					className="flex w-fit items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
+					onClick={handleSourceLinkClick}
+					data-testid="memo-source-domain"
+				>
+					{sourceDomain}
+					<ExternalLink className="w-3 h-3" aria-hidden="true" />
+				</Link>
 			)}
 		</CardHeader>
 	);

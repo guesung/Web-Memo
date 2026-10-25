@@ -69,7 +69,8 @@
 | install_guide_view | 로그인 전 설치 가이드 화면 조회 | — | 신규 설치자가 로그인 전에 가이드에 도달하는가 | DB-1159 |
 | install_guide_tab_opened | 신규 설치 직후 확장 백그라운드가 가이드 탭 생성을 시도한 뒤(`extension_installed` 다음). 백그라운드의 Measurement Protocol 전송이라 광고 차단기에 막히지 않는다 | `is_success`: 탭 생성 성공 여부 | 설치 후 `install_guide_view`가 없는 설치자는 탭이 안 열린 것인가, 열렸지만 gtag가 막힌 것인가 | DB-1230 |
 | install_guide_load | 설치 가이드 페이지 로드 시 `navigator.sendBeacon`으로 `POST /api/install-guide-load`를 부르면 웹 서버가 `after()`에서 GA4로 전송한다. `ext_cid`가 형식에 맞으면 그 값을 client_id로, 아니면 새 UUID를 쓴다. development 제외. gtag의 `install_guide_view`와 이중 집계되지 않도록 이름을 따로 둔다 | — | 광고 차단기 때문에 `install_guide_view`가 빠진 설치자까지 포함하면 가이드 도달률은 얼마인가 | DB-1230 |
-| install_guide_login_click | 설치 가이드에서 로그인 버튼 클릭 | — | 가이드 조회가 로그인 시도로 이어지는가 | DB-1159 |
+| install_guide_login_click | 설치 가이드의 "웹에서 로그인" 텍스트 링크 클릭(2026-10 전까지는 주 버튼) | — | 가이드에서 패널 대신 웹 로그인을 고르는 사람이 얼마나 되는가 | DB-1159 |
+| install_guide_panel_open_click | 설치 가이드의 "사이드 패널 열기" 버튼 클릭. 확장이 패널을 열었는지 응답을 받은 뒤(최대 3초) 발생 | `is_success`: 패널이 열렸는가 | 가이드가 첫 패널 열기로 이어지는가, 버튼으로 열리지 않는 비율은 얼마인가 | DB-1230 |
 | notice_view / notice_dismiss | 공지 노출·닫음 | `notice_id` | 공지가 읽히는가 (추정) | — |
 | notice_return | 공지를 처음 본 다음 날부터 7일 안에 사이드 패널을 다시 연 최초 시도 | `notice_id`, `days_since_view`(1~7) | 공지 노출자가 이후 다시 패널을 여는가 (인과 효과는 알 수 없음) | DB-1163 |
 | blog_subscription_change | 블로그 구독 변경 뮤테이션의 `onSuccess`(실패 제외) | `blog_id`, `active`: boolean | 어떤 블로그가 구독·해제되는가 | DB-1134 |

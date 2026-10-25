@@ -1,11 +1,19 @@
+import { BLOG_CATALOG } from "@web-memo/shared/constants/blog-catalog";
 import * as Notifications from "expo-notifications";
 import { useRootNavigationState, useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
 import { recordEntryTrace, reportEntryError } from "../monitoring/entryTrace";
 
+/** `data.type === "blog_digest"`이고 `data.blogId`가 지원 블로그일 때만 그 id를 돌려준다. */
+function getDigestBlogId(data: Record<string, unknown> | undefined) {
+	if (data?.type !== "blog_digest") return undefined;
+	return BLOG_CATALOG.find((blog) => blog.blogId === data.blogId)?.blogId;
+}
+
 /**
- * 알림 탭(포그라운드·백그라운드·콜드스타트)을 구독해 payload의 url을 앱 내 브라우저로 연다.
- * @description url이 없으면 무시한다. `t`는 같은 url 재진입에도 브라우저가 반응하도록 하는 nonce다.
+ * 알림 탭(포그라운드·백그라운드·콜드스타트)을 구독해 payload에 맞는 화면을 연다.
+ * @description `data.url`이 있으면 앱 내 브라우저로, 없고 블로그 묶음 알림(`blog_digest`)이면 정주행 화면의
+ * 해당 블로그 필터로 연다. 둘 다 아니면 무시한다. `t`는 같은 목적지 재진입에도 화면이 반응하도록 하는 nonce다.
  */
 export function useNotificationObserver() {
 	const router = useRouter();
@@ -43,9 +51,12 @@ export function useNotificationObserver() {
 				return false;
 			}
 
-			const url = response.notification.request.content.data?.url;
+			const data = response.notification.request.content.data;
+			const rawUrl = data?.url;
+			const url = typeof rawUrl === "string" && rawUrl ? rawUrl : undefined;
+			const digestBlogId = url ? undefined : getDigestBlogId(data);
 
-			if (typeof url !== "string" || !url) {
+			if (!url && !digestBlogId) {
 				recordEntryTrace({ source: "notification", stage: "ignored_url" });
 				return false;
 			}
@@ -70,10 +81,17 @@ export function useNotificationObserver() {
 				url,
 			});
 			try {
-				router.push({
-					pathname: "/(main)/browser",
-					params: { url: encodeURIComponent(url), t: String(Date.now()) },
-				});
+				if (digestBlogId) {
+					router.push({
+						pathname: "/blog-reading",
+						params: { blogId: digestBlogId, t: String(Date.now()) },
+					});
+				} else if (url) {
+					router.push({
+						pathname: "/(main)/browser",
+						params: { url: encodeURIComponent(url), t: String(Date.now()) },
+					});
+				}
 			} catch (error) {
 				reportEntryError(error, {
 					source: "notification",

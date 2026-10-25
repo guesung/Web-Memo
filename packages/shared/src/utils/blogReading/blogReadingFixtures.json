@@ -6,6 +6,10 @@
 			"expected": "https://toss.tech/article/toss-frontend-chapter"
 		},
 		{
+			"url": "https://news.hada.io/topic?id=12345",
+			"expected": "https://news.hada.io/topic?id=12345"
+		},
+		{
 			"url": "https://toss.tech/article/toss-frontend-chapter#comments",
 			"expected": "https://toss.tech/article/toss-frontend-chapter"
 		},

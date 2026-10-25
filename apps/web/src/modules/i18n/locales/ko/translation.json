@@ -1893,6 +1893,9 @@
 		"summaryComplete": "전체 글 {{total}}개 · 메모할 글 {{todo}}개 · 메모 완료 {{done}}개",
 		"summaryCollecting": "현재 수집한 글 {{total}}개 · 메모 완료 {{done}}개",
 		"allMemoed": "현재 수집한 글에는 모두 메모를 남겼어요",
+		"feedAllMemoed": "모은 글에는 모두 메모를 남겼어요.",
+		"summaryFeedUnread": "안 읽은 글 {{count}}개",
+		"summaryWithFeed": "{{summary}} · {{name}} {{unread}}",
 		"lastUpdated": "마지막 갱신: {{time}}",
 		"refresh": "새로고침",
 		"status": {
@@ -1910,7 +1913,15 @@
 			"queuedCopy": "다음 예약 작업에서 이어서 수집해요. 예약 작업은 15분마다 요청을 확인해요. 실행 상황에 따라 더 걸릴 수 있어요.",
 			"refreshFailedCopy": "이전에 수집한 전체 글은 계속 볼 수 있어요.",
 			"resume": "수집 재개",
-			"retry": "재시도"
+			"retry": "재시도",
+			"feed": {
+				"normalTitle": "{{name}} · 새 글을 모으고 있어요",
+				"normalCopy": "하루 여러 번 최근 글을 확인해요. 이전 글은 가져오지 않아요.",
+				"waitingTitle": "{{name}} · 수집을 기다리고 있어요",
+				"waitingCopy": "구독은 저장되어 있어요. 곧 최근 글부터 모아요.",
+				"failedTitle": "{{name}} · 새 글을 확인하지 못했어요",
+				"failedCopy": "이전에 모은 글은 계속 볼 수 있어요."
+			}
 		},
 		"sync": {
 			"queued": "수집 재개를 요청했어요",
@@ -1940,7 +1951,8 @@
 			"next": "다음",
 			"page": "{{page}}쪽",
 			"pageWithTotal": "{{page}} / {{pages}}쪽",
-			"partialEnd": "이전 글을 더 모으고 있어요. 확보한 마지막 페이지예요."
+			"partialEnd": "이전 글을 더 모으고 있어요. 확보한 마지막 페이지예요.",
+			"feedEnd": "긱뉴스는 구독한 뒤 모은 글까지만 보여요."
 		},
 		"newArticles": {
 			"message": "새로 가져온 글 {{count}}개",
@@ -1960,7 +1972,8 @@
 		},
 		"noArticles": {
 			"title": "아직 가져온 글이 없어요",
-			"description": "수집이 시작되면 글이 여기에 나타나요. 구독은 그대로 유지돼요."
+			"description": "수집이 시작되면 글이 여기에 나타나요. 구독은 그대로 유지돼요.",
+			"feedDescription": "아직 가져온 글이 없어요. 다음 수집 때 최근 글부터 보여요."
 		},
 		"firstError": {
 			"title": "글 목록을 가져오지 못했어요",
@@ -1975,7 +1988,8 @@
 		"offline": "오프라인이에요. 이전에 불러온 글을 보여드려요.",
 		"dialog": {
 			"title": "블로그 선택",
-			"description": "토스와 당근의 공개된 글을 모아 정주행할 수 있어요.",
+			"description": "공개된 글을 모아 정주행할 수 있어요.",
+			"feedHint": "구독한 뒤 올라온 새 글만 모아요.",
 			"subscribe": "구독하기",
 			"unsubscribe": "구독 해제",
 			"keepMemos": "구독을 해제해도 작성한 메모는 남아요.",

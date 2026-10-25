@@ -53,7 +53,7 @@ vi.mock("expo-notifications", () => ({
 type TestResponse = {
 	actionIdentifier: string;
 	notification: {
-		request: { identifier: string; content: { data: { url?: unknown } } };
+		request: { identifier: string; content: { data: Record<string, unknown> } };
 	};
 };
 
@@ -65,6 +65,13 @@ function response(
 	return {
 		actionIdentifier,
 		notification: { request: { identifier: id, content: { data: { url } } } },
+	};
+}
+
+function digestResponse(id: string, data: Record<string, unknown>) {
+	return {
+		actionIdentifier: "default",
+		notification: { request: { identifier: id, content: { data } } },
 	};
 }
 
@@ -213,4 +220,42 @@ it("동기 라우터 오류를 보고한 뒤 호출자에게 그대로 전달한
 		mocks.listener?.(response("one", "https://example.com")),
 	).toThrow(error);
 	expect(mocks.captureException).toHaveBeenCalledWith(error);
+});
+
+it("blog_digest 알림은 정주행 화면의 해당 블로그 필터로 연다", async () => {
+	const tapped = digestResponse("digest", {
+		type: "blog_digest",
+		blogId: "geeknews",
+	});
+	mocks.getInitial.mockResolvedValue(tapped);
+	mocks.getLast.mockReturnValue(tapped);
+	mocks.key = "ready";
+	mount();
+	mocks.listener?.(tapped);
+	await Promise.resolve();
+	expect(mocks.push).toHaveBeenCalledTimes(1);
+	expect(mocks.push).toHaveBeenCalledWith({
+		pathname: "/blog-reading",
+		params: { blogId: "geeknews", t: expect.any(String) },
+	});
+	expect(mocks.clearLast).toHaveBeenCalledTimes(1);
+});
+
+it("지원하지 않는 blogId나 다른 type의 payload는 무시하고, url이 있으면 브라우저를 우선한다", () => {
+	mocks.key = "ready";
+	mount();
+	mocks.listener?.(
+		digestResponse("a", { type: "blog_digest", blogId: "unknown" }),
+	);
+	mocks.listener?.(digestResponse("b", { type: "blog_digest" }));
+	mocks.listener?.(digestResponse("c", { type: "other", blogId: "geeknews" }));
+	expect(mocks.push).not.toHaveBeenCalled();
+	mocks.listener?.(
+		digestResponse("d", {
+			type: "blog_digest",
+			blogId: "geeknews",
+			url: "https://example.com/x",
+		}),
+	);
+	expect(mocks.push.mock.calls[0][0].pathname).toBe("/(main)/browser");
 });

@@ -37,7 +37,7 @@ SEO 탭 5개의 컬럼명은 한글로 표시합니다. 기존 영문 헤더가 
 
 ### 블로그 정주행 수집·조회 경계
 
-토스·당근 공개 글 카탈로그는 모든 사용자가 공유하고, 구독과 메모 완료만 사용자별로
+토스·당근·긱뉴스 공개 글 카탈로그는 모든 사용자가 공유하고, 구독과 메모 완료만 사용자별로
 계산합니다. 쓰기(수집)와 읽기(앱·웹 조회)는 경로와 인증이 완전히 분리됩니다.
 
 - **수집(쓰기)**: `chore-blog-catalog.yml`(매일 03:17 KST 전체 재순회 + 15분마다 재개
@@ -45,6 +45,8 @@ SEO 탭 5개의 컬럼명은 한글로 표시합니다. 기존 영문 헤더가 
   공개 목록을 끝까지 순회해 메타데이터(제목·URL·게시일·provider ID)만 Edge Function
   `blog-catalog-ingest`로 배치 전송하고, Edge가 Supabase 주입 service role로 memo 스키마의
   수집 RPC(claim·batch·checkpoint·finish·fail)를 부릅니다. 본문은 저장하지 않습니다.
+  긱뉴스(`geeknews`)는 전체 순회가 아닌 **피드 소스**입니다. 3시간마다(`trigger feed`) Atom 피드의
+  최근 글을 읽어 누적하며, 피드에서 빠진 글을 숨기지 않고 확정 total도 없습니다(진행률 없음).
 - **수집 인증**: 수집 전용 `BLOG_CATALOG_INGEST_SECRET` 하나만 씁니다(GitHub Secrets와
   Supabase Edge Function secret에 같은 값). 조회 전용 `SUPABASE_ACCESS_TOKEN`·가입 트리거용
   `CRON_SECRET`을 재사용하지 않고, 번들·Vercel에 넣지 않습니다. **Vercel에는 service role이

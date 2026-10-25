@@ -30,8 +30,15 @@ export function getBlogSourceStatusCopy(params: {
 	viewState: TBlogSourceViewState;
 	collectedCount: number;
 	total: number | null;
+	/** 최근 글만 쌓이는 피드 소스인지 */
+	isFeed?: boolean;
 }): IFBlogSourceStatusCopy {
-	const { blogName, viewState, collectedCount, total } = params;
+	const { blogName, viewState, collectedCount, total, isFeed = false } = params;
+
+	if (isFeed) {
+		return getFeedSourceStatusCopy(blogName, viewState);
+	}
+
 	const collectingDescription = `현재 ${collectedCount}개를 찾았어요. 전체 글 수는 확인 중이에요.`;
 	const collectedHint = "먼저 가져온 글부터 읽고 메모할 수 있어요.";
 	const totalDescription =
@@ -81,6 +88,38 @@ export function getBlogSourceStatusCopy(params: {
 				title: `${blogName} · 이전 글을 모으고 있어요`,
 				description: collectingDescription,
 				hint: collectedHint,
+			};
+	}
+}
+
+/** 피드 소스 문구. 전체 수집·총 글 수·재개 개념이 없고, 실패는 대기보다 우선한다. */
+function getFeedSourceStatusCopy(
+	blogName: string,
+	viewState: TBlogSourceViewState,
+): IFBlogSourceStatusCopy {
+	switch (viewState) {
+		case "refreshFailed":
+		case "partialFailed":
+		case "resumeQueued":
+			return {
+				title: `${blogName} · 새 글을 확인하지 못했어요`,
+				description: "이전에 모은 글은 계속 볼 수 있어요.",
+				hint: null,
+			};
+		case "waiting":
+			return {
+				title: `${blogName} · 수집을 기다리고 있어요`,
+				description: "구독은 저장되어 있어요. 곧 최근 글부터 모아요.",
+				hint: null,
+			};
+		case "complete":
+		case "refreshing":
+		case "collecting":
+			return {
+				title: `${blogName} · 새 글을 모으고 있어요`,
+				description:
+					"하루 여러 번 최근 글을 확인해요. 이전 글은 가져오지 않아요.",
+				hint: null,
 			};
 	}
 }

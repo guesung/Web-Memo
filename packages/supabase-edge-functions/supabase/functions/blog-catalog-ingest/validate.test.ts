@@ -150,6 +150,37 @@ describe("parseIngestRequest", () => {
 		expect(build({ ...valid, kind: "toss" }).ok).toBe(false);
 	});
 
+	it("긱뉴스 글은 news.hada.io/topic?id=숫자만 허용하고 별칭은 받지 않는다", () => {
+		const base = { providerId: "12345", title: "긱뉴스 글", publishedAt: null, updatedAt: null };
+		const build = (item: Record<string, unknown>) =>
+			parseIngestRequest({ action: "batch", blogId: "geeknews", generation: 1, leaseToken: LEASE_TOKEN, items: [item] });
+
+		expect(build({ ...base, url: "https://news.hada.io/topic?id=12345" }).ok).toBe(true);
+		expect(build({ ...base, url: "https://news.hada.io/topic?id=abc" }).ok).toBe(false);
+		expect(build({ ...base, url: "https://news.hada.io/topic?id=1&utm_source=x" }).ok).toBe(false);
+		expect(build({ ...base, url: "http://news.hada.io/topic?id=12345" }).ok).toBe(false);
+		expect(build({ ...base, url: "https://news.hada.io.evil.example/topic?id=12345" }).ok).toBe(false);
+		expect(build({ ...base, url: "https://news.hada.io/topic?id=12345", aliasUrls: ["https://news.hada.io/topic?id=12345"] }).ok).toBe(false);
+	});
+
+	it("긱뉴스 finish는 엔트리 수와 고유 수 증거를 요구한다", () => {
+		const build = (evidence: unknown) =>
+			parseIngestRequest({ action: "finish", blogId: "geeknews", generation: 1, leaseToken: LEASE_TOKEN, evidence });
+		const valid = { kind: "geeknews", entryCount: 50, uniqueCount: 50 };
+
+		expect(build(valid).ok).toBe(true);
+		expect(build({ ...valid, entryCount: 51 }).ok).toBe(true);
+		expect(build({ ...valid, uniqueCount: 0 }).ok).toBe(false);
+		expect(build({ ...valid, entryCount: 49 }).ok).toBe(false);
+		expect(build({ ...valid, kind: "daangn" }).ok).toBe(false);
+	});
+
+	it("feed 트리거로 긱뉴스를 claim할 수 있다", () => {
+		const result = parseIngestRequest({ action: "claim", blogId: "geeknews", trigger: "feed" });
+
+		expect(result.ok).toBe(true);
+	});
+
 	it("fail은 허용된 사유 코드만 받고 checkpoint를 유지하는 것이 기본이다", () => {
 		const build = (extra: Record<string, unknown>) =>
 			parseIngestRequest({ action: "fail", blogId: "daangn", generation: 1, leaseToken: LEASE_TOKEN, ...extra });

@@ -2,6 +2,7 @@
 	"description": "블로그 정주행 정규화 계약. SQL(memo.blog_page_key, memo.blog_medium_post_id, memo.has_blog_memo_text)과 JS(getPageKey, String.prototype.trim)가 같은 입력에서 같은 답을 내야 한다. SQL은 blogReading.test.sql이, JS는 .github/scripts/blog-reading/blogReadingContract.test.ts가 이 파일을 읽는다.",
 	"pageKey": [
 		{ "url": "https://toss.tech/article/toss-frontend-chapter", "expected": "https://toss.tech/article/toss-frontend-chapter" },
+		{ "url": "https://news.hada.io/topic?id=12345", "expected": "https://news.hada.io/topic?id=12345" },
 		{ "url": "https://toss.tech/article/toss-frontend-chapter#comments", "expected": "https://toss.tech/article/toss-frontend-chapter" },
 		{ "url": "https://TOSS.tech:443/article/x?utm_source=a&ref=1&fbclid=z", "expected": "https://toss.tech/article/x?ref=1" },
 		{ "url": "https://toss.tech", "expected": "https://toss.tech/" },

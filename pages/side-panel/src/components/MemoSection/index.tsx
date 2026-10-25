@@ -103,7 +103,6 @@ export default function MemoSection({ memoHeight }: MemoSectionProps) {
 			className="flex flex-col overflow-hidden px-0.5"
 			style={{ height: `${memoHeight}%` }}
 		>
-			<NoticeBanner />
 			<ErrorBoundary ref={loginBoundaryRef} FallbackComponent={LoginSection}>
 				<Suspense fallback={<MemoFormSkeleton />}>
 					<MemoSectionContent />
@@ -123,6 +122,8 @@ const MemoSectionContent = () => {
 
 	return (
 		<>
+			{/* 로그인 전에는 공지가 로그인 안내를 가린다. 공지는 로그인한 뒤에만 띄운다. */}
+			<NoticeBanner />
 			<PageHighlights
 				key={`${user.data.user.id}:${tab?.id}:${tab?.url ? getPageKey(tab.url) : ""}`}
 				userId={user.data.user.id}

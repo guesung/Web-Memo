@@ -7,7 +7,7 @@ import useNoticeBanner from "./useNoticeBanner";
 
 /**
  * 사이드 패널 화면 중앙의 비모달 운영 공지 카드.
- * @description 로그인 여부와 무관하게 보인다. 보여줄 공지가 없으면 자리도 차지하지 않는다.
+ * @description 로그인한 사용자에게만 보인다(MemoSection이 로그인 경로에서만 그린다). 보여줄 공지가 없으면 자리도 차지하지 않는다.
  */
 const NoticeBanner = () => {
 	const { notice, handleNoticeDismiss } = useNoticeBanner();

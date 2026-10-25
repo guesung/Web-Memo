@@ -75,9 +75,9 @@ const renderMemo = (props: Partial<Parameters<typeof MemoItem>[0]> = {}) =>
 describe("메모 목록 미리보기", () => {
 	it("일반 목록의 본문과 보조 내용을 제한한다", () => {
 		const html = renderMemo();
-		expect(html).toContain('class="line-clamp-3">작성한 본문');
-		expect(html).toContain('class="line-clamp-2">느낀 점 내용');
-		expect(html).toContain('class="line-clamp-2">액션 내용');
+		expect(html).toMatch(/class="line-clamp-3">(<span[^>]*>)*작성한 본문/);
+		expect(html).toMatch(/class="line-clamp-2">(<span[^>]*>)*느낀 점 내용/);
+		expect(html).toMatch(/class="line-clamp-2">(<span[^>]*>)*액션 내용/);
 	});
 	it.each([true, false])(
 		"말줄임 설정 %s와 무관하게 인용문 대신 개수만 표시한다",
@@ -220,6 +220,22 @@ describe("메모 카드 펼치기", () => {
 				?.dispatchEvent(new MouseEvent("click", { bubbles: true })),
 		);
 		expect(setSearchParam).toHaveBeenCalledWith("id", "1");
+	});
+	it("본문의 링크를 누르면 상세를 열지 않는다", () => {
+		setSearchParam.mockClear();
+		const container = mountMemo({
+			memo: { ...MEMO, memo: "참고 https://example.com/docs" },
+		});
+		const link = container.querySelector("a");
+
+		expect(link?.getAttribute("href")).toBe("https://example.com/docs");
+		expect(link?.getAttribute("target")).toBe("_blank");
+		act(() =>
+			link?.dispatchEvent(
+				new MouseEvent("click", { bubbles: true, cancelable: true }),
+			),
+		);
+		expect(setSearchParam).not.toHaveBeenCalled();
 	});
 	it.each([
 		["잘린 내용이 없으면", { highlights: TWO_HIGHLIGHTS }],

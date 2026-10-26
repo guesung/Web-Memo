@@ -7,7 +7,11 @@ import { useSupabaseClientQuery } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import type { HighlightRow } from "@web-memo/shared/types";
-import { getPageKey, HighlightService } from "@web-memo/shared/utils";
+import {
+	getPageKey,
+	HighlightService,
+	isNetworkError,
+} from "@web-memo/shared/utils";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { ArrowUpRight, ChevronDown, Highlighter } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -33,7 +37,8 @@ export default function PageHighlights({ userId, tabId, url }: Props) {
 					right.created_at.localeCompare(left.created_at) || right.id - left.id,
 			);
 		},
-		retry: false,
+		// online 직후에도 연결이 준비되지 않을 수 있어 전송 실패만 제한적으로 재시도한다.
+		retry: (failureCount, error) => failureCount < 2 && isNetworkError(error),
 	});
 	const [isCollapsed, setIsCollapsed] = useState(false);
 	const [showAll, setShowAll] = useState(false);

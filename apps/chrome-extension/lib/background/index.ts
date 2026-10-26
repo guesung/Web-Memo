@@ -102,7 +102,15 @@ chrome.tabs.onActivated.addListener(async () => {
 	// 활성화된 탭이 변경되었을 때 사이드 패널을 업데이트한다.
 	bridge.request.UPDATE_SIDE_PANEL();
 });
-chrome.tabs.onUpdated.addListener(async () => {
+chrome.tabs.onUpdated.addListener(async (_tabId, changeInfo, tab) => {
+	if (
+		!tab.active ||
+		!("url" in changeInfo ||
+			"status" in changeInfo ||
+			"title" in changeInfo ||
+			"favIconUrl" in changeInfo)
+	)
+		return;
 	// 페이지를 이동했을 때 사이드 패널을 업데이트한다.
 	bridge.request.UPDATE_SIDE_PANEL();
 });

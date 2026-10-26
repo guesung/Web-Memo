@@ -26,6 +26,10 @@
 - 설명: 확정된 설계서를 받아 구현 → 셀프 QA → develop 머지 → PR까지 돌리는 개인 프로젝트 오케스트레이터. 중간에 사람에게 묻지 않고, 끝에 AI 결정 사항과 수동 QA 항목을 보고한 뒤 /common:problem-log 승인을 묻는다.
 - 트리거: "구현 루프 돌려", "설계서대로 만들어서 PR까지", "implement loop". /web-memo:design 또는 discuss의 도장이 필요하며 cashwalk 레포에서는 거부한다.
 
+## /web-memo:improve-loop
+- 설명: 화면 변화 없는 성능·안정성 후보를 찾아 하나만 최대 3회 실험하고, 개선 전후 증거와 회귀 검증이 갖춰진 경우에만 master PR로 제출한다. 효과 미입증 시 PR 없이 결과를 보고한다. 명령 시 한 번 실행하며 자동 머지·운영 반영은 하지 않는다.
+- 트리거: "서비스 개선 루프 돌려줘", "성능 개선 하나 찾아서 PR까지". Codex에서는 `$web-memo-improve-loop`로 호출한다. 루프 자체의 제작·수정 요청은 서비스 개선 실행으로 취급하지 않는다.
+
 ## /web-memo:pr
 - 설명: 현재 커밋 작업사항으로 일반(non-draft) PR을 main base로 만든다. base와 충돌하면 묻지 않고 merge해 해결·검증·push하고, 앱/웹/패키지 변경이 있으면 PR 전에 develop 머지(md)를 한다.
 - 트리거: "PR 올려줘", "PR 만들어줘". /web-memo:implement ③과 /web-memo:implement-loop ③(b)에서 호출된다. 커밋 안 된 변경이 있으면 /web-memo:commit을 먼저 제안한다.

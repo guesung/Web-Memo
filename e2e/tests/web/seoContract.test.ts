@@ -3,6 +3,7 @@ import { expect, test } from "../fixtures/web";
 /** 생성 코드와 독립적으로 명시한 색인 대상 경로입니다. */
 const PUBLIC_PATHS = [
 	"introduce",
+	"compare/chrome-memo-extensions",
 	"privacy",
 	"features/memo",
 	"features/save-articles",
@@ -14,9 +15,6 @@ const PUBLIC_PATHS = [
 	"use-cases/tech-article",
 	"use-cases/youtube-notes",
 ] as const;
-
-/** 한국어로만 존재하는 색인 대상 경로입니다. 다른 언어 경로는 404이고 sitemap·hreflang에서 빠집니다. */
-const KOREAN_ONLY_PATHS = ["compare/chrome-memo-extensions"] as const;
 
 /** 로그인 여부와 무관하게 첫 응답부터 색인을 막아야 하는 HTML 경로입니다. */
 const NOINDEX_PATHS = [
@@ -77,29 +75,14 @@ test.describe("공개 검색 계약", () => {
 			...PUBLIC_PATHS.flatMap((path) =>
 				["ko", "en"].map((language) => `${baseURL}/${language}/${path}`),
 			),
-			...KOREAN_ONLY_PATHS.map((path) => `${baseURL}/ko/${path}`),
 		];
 		expect(sitemap.entries.map((entry) => entry.url).sort()).toEqual(
 			expectedUrls.sort(),
 		);
-		expect(new Set(sitemap.entries.map((entry) => entry.url)).size).toBe(23);
+		expect(new Set(sitemap.entries.map((entry) => entry.url)).size).toBe(24);
 
 		for (const entry of sitemap.entries) {
 			const path = new URL(entry.url ?? "").pathname.slice(4);
-			if (KOREAN_ONLY_PATHS.some((koreanOnlyPath) => koreanOnlyPath === path)) {
-				expect(entry.alternates).toHaveLength(2);
-				expect(entry.alternates).toEqual(
-					expect.arrayContaining([
-						{ language: "ko", url: `${baseURL}/ko/${path}`, rel: "alternate" },
-						{
-							language: "x-default",
-							url: `${baseURL}/ko/${path}`,
-							rel: "alternate",
-						},
-					]),
-				);
-				continue;
-			}
 			expect(entry.alternates).toHaveLength(3);
 			expect(entry.alternates).toEqual(
 				expect.arrayContaining([
@@ -171,6 +154,24 @@ test.describe("공개 검색 계약", () => {
 						).toHaveLength(1);
 					}
 				}
+				if (path === "compare/chrome-memo-extensions") {
+					const articles = schemas.filter(
+						(schema) => schema["@type"] === "Article",
+					);
+					expect(articles).toHaveLength(1);
+					const article = articles[0];
+					expect(article.inLanguage).toBe(language);
+					expect(article.mainEntityOfPage?.["@id"]).toBe(canonical);
+					expect(article.headline).toBe(await page.locator("h1").innerText());
+					expect(article.datePublished).toBe(
+						language === "ko" ? "2026-09-24" : "2026-10-27",
+					);
+					expect(article.dateModified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+					expect(Date.parse(article.dateModified ?? "")).toBeGreaterThanOrEqual(
+						Date.parse(article.datePublished ?? ""),
+					);
+				}
+
 				if (path.startsWith("features/")) {
 					const webPages = schemas.filter(
 						(schema) => schema["@type"] === "WebPage",
@@ -195,46 +196,6 @@ test.describe("공개 검색 계약", () => {
 				);
 			});
 		}
-	}
-
-	for (const path of KOREAN_ONLY_PATHS) {
-		test(`ko/${path}의 canonical·hreflang·JSON-LD 계약이 유효하다.`, async ({
-			page,
-			baseURL,
-		}) => {
-			const canonical = `${baseURL}/ko/${path}`;
-			const response = await page.goto(`/ko/${path}`);
-			expect(response?.ok()).toBe(true);
-			expect(response?.headers()["x-robots-tag"] ?? "").not.toMatch(
-				/noindex|none/i,
-			);
-			await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
-				"href",
-				canonical,
-			);
-			await expect(page.locator('link[rel="alternate"][hreflang]')).toHaveCount(
-				2,
-			);
-			for (const alternateLanguage of ["ko", "x-default"]) {
-				await expect(
-					page.locator(
-						`link[rel="alternate"][hreflang="${alternateLanguage}"]`,
-					),
-				).toHaveAttribute("href", canonical);
-			}
-			const scripts = await page
-				.locator('script[type="application/ld+json"]')
-				.allTextContents();
-			const schemas: IFSchema[] = scripts.map((script) => JSON.parse(script));
-			expect(
-				schemas.filter((schema) => schema["@type"] === "Article"),
-			).toHaveLength(1);
-		});
-
-		test(`en/${path}는 404다.`, async ({ request }) => {
-			const response = await request.get(`/en/${path}`);
-			expect(response.status()).toBe(404);
-		});
 	}
 
 	for (const language of ["ko", "en"] as const) {
@@ -275,6 +236,7 @@ test.describe("공개 검색 계약", () => {
 	});
 
 	const ENGLISH_LENGTH_LIMITED_PATHS = [
+		"compare/chrome-memo-extensions",
 		"use-cases/developer",
 		"use-cases/job-hunting",
 		"use-cases/tech-article",
@@ -331,4 +293,9 @@ test.describe("공개 검색 계약", () => {
 interface IFSchema {
 	"@type"?: string;
 	url?: string;
+	inLanguage?: string;
+	headline?: string;
+	mainEntityOfPage?: { "@id"?: string };
+	datePublished?: string;
+	dateModified?: string;
 }

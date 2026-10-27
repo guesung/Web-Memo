@@ -1006,7 +1006,8 @@
 				"instagram": "Instagram",
 				"youtube": "YouTube",
 				"kakaotalk": "KakaoTalk chat"
-			}
+			},
+			"compare_chrome_memo_extensions": "Compare Chrome note-taking extensions"
 		}
 	},
 	"feedback": {
@@ -1998,6 +1999,215 @@
 			"keepMemos": "Your memos stay even if you unsubscribe.",
 			"close": "Close",
 			"failed": "Could not change your subscription"
+		}
+	},
+	"compareChromeMemoExtensions": {
+		"hero": {
+			"badge": "Chrome note-taking extensions compared",
+			"title": "Which Chrome note-taking extension should you use?",
+			"descriptions": [
+				"We compare five Chrome extensions for notes and highlights: Web Memo, Notion Web Clipper, LINER, Glasp, and Google Keep.",
+				"We checked eight criteria against each product’s official pages: how you capture content, notes beside the page, highlights, AI summaries, YouTube, export, a Korean interface, and login."
+			],
+			"disclosure": "Written by the maker of Web Memo. We also show where Web Memo has limitations.",
+			"lastCheckedLabel": "Last checked",
+			"anchorLabel": "Jump to comparison"
+		},
+		"overview": {
+			"title": "At a glance"
+		},
+		"comparison": {
+			"title": "Compare by feature",
+			"caption": "Based on each product’s official pages. “Not verified” means the official information was insufficient; it does not mean the feature is unavailable. Verification dates appear in the sources below.",
+			"loginNote": "The login row shows what you can use without signing in. “Supported” means all listed functions work without login; “Partial” means only some do.",
+			"criterionHeader": "Criterion",
+			"scrollHint": "Swipe sideways to see more"
+		},
+		"recommendation": {
+			"title": "Find your fit"
+		},
+		"sources": {
+			"title": "Sources and verification dates",
+			"checkedLabel": "Checked",
+			"feedback": "Spotted a change? Let us know and we’ll update this page.",
+			"feedbackLinkLabel": "Send an email"
+		},
+		"finalCTA": {
+			"title": "Take notes while you read",
+			"description": "Web Memo is free. Install it and sign in to take notes in the side panel beside the page you’re reading."
+		},
+		"products": {
+			"webMemo": {
+				"name": "Web Memo",
+				"identity": "Take notes beside the page you are reading",
+				"sources": ["Chrome Web Store"]
+			},
+			"notionWebClipper": {
+				"name": "Notion Web Clipper",
+				"identity": "Save web pages to Notion pages and databases",
+				"sources": ["Web Clipper", "Help center", "Pricing", "Export help"]
+			},
+			"liner": {
+				"name": "LINER",
+				"identity": "AI research tool and highlighter",
+				"sources": [
+					"Homepage",
+					"Pricing",
+					"AI answer export guide (2024)",
+					"Highlighter overview",
+					"Chrome Web Store"
+				]
+			},
+			"glasp": {
+				"name": "Glasp",
+				"identity": "Web, PDF, and YouTube highlighter",
+				"sources": [
+					"Homepage",
+					"FAQ",
+					"Highlighter",
+					"Sync help",
+					"Pricing",
+					"YouTube summary",
+					"Chrome Web Store"
+				]
+			},
+			"googleKeep": {
+				"name": "Google Keep extension",
+				"identity": "Save pages and selected text to Keep notes",
+				"sources": ["Chrome Web Store", "Help center", "Data export help"]
+			}
+		},
+		"criteria": {
+			"recordingMethod": {
+				"label": "Capture method",
+				"cells": {
+					"webMemo": "Write directly in the side panel",
+					"notionWebClipper": "Save to Notion from a popup",
+					"liner": "Highlight on the page",
+					"glasp": "Highlight on the page",
+					"googleKeep": "Create a Keep note in the extension popup"
+				}
+			},
+			"memoBesidePage": {
+				"label": "Notes beside the page",
+				"cells": {
+					"webMemo": "Side panel with autosave",
+					"notionWebClipper": "Edit in Notion after saving",
+					"liner": "Attach notes to highlights",
+					"glasp": "Attach notes to highlights",
+					"googleKeep": "Write notes in a popup"
+				}
+			},
+			"highlight": {
+				"label": "Text highlighting",
+				"cells": {
+					"webMemo": "Five highlight colors and notes",
+					"notionWebClipper": "Not verified in official guidance",
+					"liner": "Web, PDF, and YouTube",
+					"glasp": "Multiple colors; web and PDF",
+					"googleKeep": "Save selected text to a note"
+				}
+			},
+			"aiSummary": {
+				"label": "AI summaries",
+				"cells": {
+					"webMemo": "Summarizes some web pages; some pages are unsupported",
+					"notionWebClipper": "Notion AI is separate; the free plan includes a trial",
+					"liner": "Web, YouTube, and PDF summaries",
+					"glasp": "YouTube and PDF summaries; free usage limits apply",
+					"googleKeep": "AI summaries in the extension not verified"
+				}
+			},
+			"youtube": {
+				"label": "YouTube videos",
+				"cells": {
+					"webMemo": "Notes beside videos; no timestamped notes",
+					"notionWebClipper": "Save video URLs; video-specific functions not verified",
+					"liner": "Video summaries and saved key moments",
+					"glasp": "Transcript highlights and timestamps",
+					"googleKeep": "Save video URLs; video-specific functions not verified"
+				}
+			},
+			"export": {
+				"label": "Export",
+				"cells": {
+					"webMemo": "JSON, CSV, and Markdown",
+					"notionWebClipper": "PDF, HTML, Markdown and CSV from Notion",
+					"liner": "AI answer export documented (2024); highlights and current free access not verified",
+					"glasp": "Markdown, CSV, JSON, Notion, and Obsidian",
+					"googleKeep": "Download notes and attachments with Google Takeout"
+				}
+			},
+			"koreanInterface": {
+				"label": "Korean interface",
+				"cells": {
+					"webMemo": "Korean is the default language",
+					"notionWebClipper": "Korean extension UI not verified in the cited sources",
+					"liner": "Supports Korean",
+					"glasp": "Supports Korean",
+					"googleKeep": "Supports Korean"
+				}
+			},
+			"login": {
+				"label": "Login",
+				"cells": {
+					"webMemo": "Sign-in required for notes and summaries",
+					"notionWebClipper": "Notion login required",
+					"liner": "Free account documented; signed-out access unverified",
+					"glasp": "Sign-in is part of the highlighting setup",
+					"googleKeep": "Sign-in requirement not verified in the cited sources"
+				}
+			}
+		},
+		"recommendations": [
+			{
+				"situation": "If you already keep resources in Notion and want to organize clipped articles with database properties and tags",
+				"note": "Choose a page or database as the destination; the URL property is added automatically.",
+				"productName": "Notion Web Clipper"
+			},
+			{
+				"situation": "If you want to review YouTube lessons by timestamp and move your notes to Obsidian or Notion",
+				"note": "Web Memo only records the video URL.",
+				"productName": "Glasp"
+			},
+			{
+				"situation": "If you already use Keep on your phone or watch and want web clippings in the same place",
+				"productName": "Google Keep extension"
+			},
+			{
+				"situation": "If you want to ask AI questions about papers and PDFs while keeping highlights together",
+				"note": "The free plan has ads in AI answers and allows one file upload per day.",
+				"productName": "LINER"
+			},
+			{
+				"situation": "If you want to jot down independent thoughts while reading and automatically save which page they came from",
+				"note": "Notes autosave in the side panel, along with the page URL and title.",
+				"productName": "Web Memo"
+			},
+			{
+				"situation": "If you want free notes, summaries, and export with a Korean interface",
+				"note": "There is no paid plan, but you need to sign in to write notes.",
+				"productName": "Web Memo"
+			}
+		],
+		"statuses": {
+			"supported": "Supported",
+			"partial": "Partial",
+			"unsupported": "Unavailable",
+			"unknown": "Not verified"
+		},
+		"metadata": {
+			"title": "Compare Chrome Note-Taking Extensions | Web Memo",
+			"description": "Compare Web Memo, Notion Web Clipper, LINER, Glasp, and Google Keep on notes, highlights, AI summaries, export, login, and more. Checked {{date}}.",
+			"keywords": [
+				"Chrome note-taking extensions",
+				"best Chrome notes extension",
+				"Chrome web clipper",
+				"Notion Web Clipper",
+				"LINER",
+				"Glasp",
+				"Google Keep extension"
+			]
 		}
 	}
 }

@@ -114,7 +114,7 @@ const LandingPageTemplate = async ({
 								alt={t(`${translationPrefix}.hero.imageAlt`)}
 								fill
 								className="object-contain"
-								unoptimized
+								sizes="(min-width: 1200px) 548px, (min-width: 1024px) calc((100vw - 104px) / 2), calc(100vw - 48px)"
 								priority
 							/>
 						</div>

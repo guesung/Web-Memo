@@ -155,10 +155,8 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 									src={`/images/webps/introduction/${lng}/${tab.imageIndex}.webp`}
 									alt={t(`introduce.demo.tab_${tab.id}_image_alt`)}
 									fill
-									priority={index === 0}
-									loading="eager"
+									sizes="(min-width: 1200px) 1152px, calc(100vw - 48px)"
 									className="object-contain"
-									unoptimized
 								/>
 							</div>
 						);

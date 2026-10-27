@@ -38,6 +38,31 @@ const STANDALONE_PATHS: TIndexablePath[] = [
 	{ path: PATHS.privacy, priority: 0.3, changeFrequency: "yearly" },
 ];
 
+/** 공개 페이지 내용이 마지막으로 바뀐 커밋 날짜. 새 경로는 확인 전까지 lastmod를 생략합니다. */
+const CONTENT_LAST_MODIFIED: Partial<Record<string, string>> = {
+	[PATHS.introduce]: "2026-10-03",
+	[PATHS.privacy]: "2026-10-02",
+	[PATHS.featuresMemo]: "2026-09-28",
+	[PATHS.featuresSaveArticles]: "2026-09-22",
+	[PATHS.useCasesDeveloper]: "2026-09-28",
+	[PATHS.useCasesJobHunting]: "2026-09-28",
+	[PATHS.useCasesLearning]: "2026-09-27",
+	[PATHS.useCasesNewsReading]: "2026-09-27",
+	[PATHS.useCasesResearch]: "2026-09-22",
+	[PATHS.useCasesTechArticle]: "2026-09-28",
+	[PATHS.useCasesYoutubeNotes]: "2026-09-27",
+	[PATHS.compareChromeMemoExtensions]: "2026-09-27",
+};
+
+/** 이 작업에서 영문 검색 제목을 바꾼 페이지의 수정일입니다. */
+const ENGLISH_CONTENT_LAST_MODIFIED = new Set<string>([
+	PATHS.useCasesDeveloper,
+	PATHS.useCasesJobHunting,
+	PATHS.useCasesLearning,
+	PATHS.useCasesNewsReading,
+	PATHS.useCasesTechArticle,
+]);
+
 const getIndexablePaths = () => {
 	const prefixed = Object.values(PATHS).flatMap((path) => {
 		const matched = PRIORITY_BY_PREFIX.find(({ prefix }) =>
@@ -87,12 +112,16 @@ const getLanguageAlternates = (
 	};
 };
 
-/** 실제 변경일 원천이 없는 lastModified는 생략하고 공개 URL과 언어 대응을 제공합니다. */
+/** 확인된 콘텐츠 수정일만 lastModified로 내보냅니다. */
 const sitemap = (): MetadataRoute.Sitemap => {
 	return getIndexablePaths().flatMap(
 		({ path, priority, changeFrequency, languages = SUPPORTED_LANGUAGES }) =>
 			languages.map((lng) => ({
 				url: `${CONFIG.webUrl}/${lng}${path}`,
+				lastModified:
+					lng === "en" && ENGLISH_CONTENT_LAST_MODIFIED.has(path)
+						? "2026-10-27"
+						: CONTENT_LAST_MODIFIED[path],
 				changeFrequency,
 				priority,
 				alternates: { languages: getLanguageAlternates(path, languages) },

@@ -1,0 +1,1 @@
+export { getLoginMetadata } from "./metadata";

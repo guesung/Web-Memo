@@ -65,7 +65,7 @@ export async function updateAuthorization(request: NextRequest) {
 
 	if (!isUserLogin && isNeedAuthPage) {
 		const url = request.nextUrl.clone();
-		url.pathname = PATHS.login;
+		url.pathname = `/${request.nextUrl.pathname.split("/")[1]}${PATHS.login}`;
 		return NextResponse.redirect(url);
 	}
 

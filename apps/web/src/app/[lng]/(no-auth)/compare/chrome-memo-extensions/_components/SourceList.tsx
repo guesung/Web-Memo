@@ -1,20 +1,15 @@
 import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import { ExternalLink } from "lucide-react";
-import {
-	COMPARE_LAST_CHECKED_DATE,
-	COMPARE_PAGE_COPY,
-	COMPARE_PRODUCTS,
-} from "../_constants";
+import type { TComparisonContent } from "../_utils";
 
 /** 제품별 근거 링크와 확인 날짜. 링크는 모두 새 탭으로 연다 */
-const SourceList = () => {
-	const { checkedLabel, feedback, feedbackLinkLabel } =
-		COMPARE_PAGE_COPY.sources;
+const SourceList = ({ content }: { content: TComparisonContent }) => {
+	const { checkedLabel, feedback, feedbackLinkLabel } = content.sources;
 
 	return (
 		<div>
 			<ul className="border-t border-border">
-				{COMPARE_PRODUCTS.map((product) => (
+				{content.products.map((product) => (
 					<li
 						key={product.key}
 						className="flex flex-col gap-2 border-b border-border py-5 sm:flex-row sm:items-baseline sm:gap-6"
@@ -39,7 +34,7 @@ const SourceList = () => {
 						</span>
 
 						<span className="text-sm text-muted-foreground">
-							{checkedLabel} {COMPARE_LAST_CHECKED_DATE}
+							{checkedLabel} {content.lastCheckedDate}
 						</span>
 					</li>
 				))}

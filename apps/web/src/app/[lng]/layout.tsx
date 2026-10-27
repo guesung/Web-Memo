@@ -2,15 +2,11 @@ import "@web-memo/ui/global.css";
 import "../../fonts/output/PretendardVariable.css";
 import "../globals.css";
 
-import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 import ChannelTalk from "@src/components/ChannelTalk";
+import DeferredAnalytics from "@src/components/DeferredAnalytics";
 import Header from "@src/components/Header";
 import type { LanguageParams } from "@src/modules/i18n";
 import { SUPPORTED_LANGUAGES } from "@src/modules/i18n";
-import {
-	ANALYTICS,
-	ANALYTICS_EXCLUDED_STORAGE_KEY,
-} from "@web-memo/shared/constants";
 import { AnalyticsUserTracking } from "@web-memo/shared/modules/analytics";
 import { isProduction } from "@web-memo/shared/utils";
 import { Toaster } from "@web-memo/ui";
@@ -18,6 +14,11 @@ import { dir } from "i18next";
 import type { Viewport } from "next";
 import Script from "next/script";
 import { type PropsWithChildren, Suspense } from "react";
+import {
+	adoptExtensionClientIdScript,
+	disableExcludedScript,
+	queueAnalyticsScript,
+} from "../../modules/ga/bootstrapScripts";
 import { InitDayjs, JsonLD, ReactGrab, WebVitals } from "../_components";
 import { QueryProvider, ThemeProvider } from "./_components";
 import { metadataEnglish, metadataKorean } from "./_constants";
@@ -91,7 +92,7 @@ export default async function RootLayout({
 						 * 이미 나간 뒤라, 지난 방문에서 남긴 표식을 여기서 먼저 읽습니다.
 						 */}
 						<Script id="ga-disable-excluded" strategy="beforeInteractive">
-							{`try{if(localStorage.getItem("${ANALYTICS_EXCLUDED_STORAGE_KEY}")==="1"){window["ga-disable-${ANALYTICS.gaId}"]=true}}catch(e){}`}
+							{disableExcludedScript}
 						</Script>
 						{/*
 						 * 확장에서 넘어온 사람의 GA client_id를 확장 것으로 맞춥니다.
@@ -105,10 +106,12 @@ export default async function RootLayout({
 							id="ga-adopt-extension-client-id"
 							strategy="beforeInteractive"
 						>
-							{`try{var m=location.search.match(/[?&]ext_cid=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(&|$)/i);if(m&&document.cookie.indexOf("_ga=GA1.1."+m[1])===-1){document.cookie="_ga=GA1.1."+m[1]+"; path=/; max-age=34560000; SameSite=Lax; domain=.webmemo.xyz"}}catch(e){}`}
+							{adoptExtensionClientIdScript}
 						</Script>
-						<GoogleAnalytics gaId={ANALYTICS.gaId} />
-						<GoogleTagManager gtmId={ANALYTICS.gtmId} />
+						<Script id="ga-gtm-queue" strategy="beforeInteractive">
+							{queueAnalyticsScript}
+						</Script>
+						<DeferredAnalytics />
 					</>
 				)}
 				<Toaster />

@@ -19,7 +19,7 @@ const CompareJsonLD = () => {
 		"@type": "Organization",
 		name: "웹 메모",
 		url: CONFIG.webUrl,
-		logo: `${CONFIG.webUrl}/og-image.png`,
+		logo: `${CONFIG.webUrl}/images/pngs/icon-128.png`,
 	};
 
 	const articleSchema = {

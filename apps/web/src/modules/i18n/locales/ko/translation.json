@@ -1004,7 +1004,8 @@
 				"instagram": "인스타그램",
 				"youtube": "유튜브",
 				"kakaotalk": "카카오톡 채팅"
-			}
+			},
+			"compare_chrome_memo_extensions": "크롬 메모 확장 비교"
 		}
 	},
 	"feedback": {
@@ -2006,5 +2007,205 @@
 		"developer": "Developer Notes & Code Snippets | Web Memo",
 		"techArticle": "Tech Article Notes | Web Memo",
 		"jobHunting": "Job Search Notes | Web Memo"
+	},
+	"compareChromeMemoExtensions": {
+		"hero": {
+			"badge": "크롬 메모 확장 비교",
+			"title": "크롬 메모 확장 프로그램, 무엇을 써야 할까요",
+			"descriptions": [
+				"웹 메모, 노션 웹 클리퍼, 라이너, Glasp, Google Keep 확장까지 크롬에서 메모·하이라이트에 쓸 수 있는 확장 다섯 개를 나란히 놓았어요.",
+				"기록 방식, 읽던 페이지 옆 메모, 하이라이트, AI 요약, 유튜브, 내보내기, 한국어 화면, 로그인까지 여덟 가지 기준을 각 제품 공식 페이지에서 확인했어요."
+			],
+			"disclosure": "웹 메모를 만드는 사람이 썼어요. 웹 메모가 약한 항목도 그대로 적었어요.",
+			"lastCheckedLabel": "마지막 확인",
+			"anchorLabel": "비교표 바로 보기"
+		},
+		"overview": {
+			"title": "한눈에 보기"
+		},
+		"comparison": {
+			"title": "기준별 비교",
+			"caption": "각 제품 공식 페이지를 기준으로 정리했어요. 공식 안내만으로 판단할 수 없는 항목은 ‘확인 못 함’으로 표시했으며, 기능이 없다는 뜻은 아니에요. 확인 날짜는 아래 출처에 있어요.",
+			"loginNote": "로그인 행은 로그인 없이 쓸 수 있는 범위를 나타내요. 지원은 로그인 없이 모두, 일부는 일부 기능만 로그인 없이 쓸 수 있다는 뜻이에요.",
+			"criterionHeader": "기준",
+			"scrollHint": "옆으로 밀어서 더 보기"
+		},
+		"recommendation": {
+			"title": "이런 분께 맞아요"
+		},
+		"sources": {
+			"title": "출처와 확인 날짜",
+			"checkedLabel": "확인",
+			"feedback": "달라진 점을 알려주시면 고칠게요.",
+			"feedbackLinkLabel": "메일로 알려주기"
+		},
+		"finalCTA": {
+			"title": "읽으면서 바로 적고 싶다면",
+			"description": "웹 메모는 무료예요. 설치하고 로그인하면 읽던 페이지 옆 사이드 패널에서 바로 메모할 수 있어요."
+		},
+		"products": {
+			"webMemo": {
+				"name": "웹 메모",
+				"identity": "읽던 페이지 옆에서 메모",
+				"sources": ["크롬 웹스토어"]
+			},
+			"notionWebClipper": {
+				"name": "노션 웹 클리퍼",
+				"identity": "웹페이지를 노션 페이지·DB로 저장",
+				"sources": ["웹 클리퍼", "도움말", "요금제", "내보내기 도움말"]
+			},
+			"liner": {
+				"name": "라이너(Liner)",
+				"identity": "AI 리서치 도구와 하이라이터",
+				"sources": [
+					"홈페이지",
+					"요금제",
+					"AI 답변 내보내기 안내(2024)",
+					"하이라이터 소개",
+					"크롬 웹스토어"
+				]
+			},
+			"glasp": {
+				"name": "Glasp",
+				"identity": "웹·PDF·유튜브 하이라이터",
+				"sources": [
+					"홈페이지",
+					"FAQ",
+					"하이라이터",
+					"동기화 도움말",
+					"요금제",
+					"유튜브 요약",
+					"크롬 웹스토어"
+				]
+			},
+			"googleKeep": {
+				"name": "Google Keep 확장",
+				"identity": "페이지·선택 문장을 Keep 노트로",
+				"sources": ["크롬 웹스토어", "도움말", "데이터 내보내기 도움말"]
+			}
+		},
+		"criteria": {
+			"recordingMethod": {
+				"label": "기록 방식",
+				"cells": {
+					"webMemo": "사이드 패널에 바로 적기",
+					"notionWebClipper": "팝업에서 노션에 저장",
+					"liner": "페이지 위 하이라이트",
+					"glasp": "페이지 위 하이라이트",
+					"googleKeep": "확장 팝업에서 Keep 노트"
+				}
+			},
+			"memoBesidePage": {
+				"label": "읽던 페이지 옆에서 메모",
+				"cells": {
+					"webMemo": "사이드 패널, 자동 저장",
+					"notionWebClipper": "저장 후 노션에서 편집",
+					"liner": "하이라이트에 메모 첨부",
+					"glasp": "하이라이트에 메모 첨부",
+					"googleKeep": "팝업에서 메모 작성"
+				}
+			},
+			"highlight": {
+				"label": "본문 하이라이트",
+				"cells": {
+					"webMemo": "5색 하이라이트와 메모",
+					"notionWebClipper": "공식 안내에서 확인 못 함",
+					"liner": "웹·PDF·유튜브",
+					"glasp": "여러 색, 웹·PDF",
+					"googleKeep": "선택 문장을 노트로 저장"
+				}
+			},
+			"aiSummary": {
+				"label": "AI 요약",
+				"cells": {
+					"webMemo": "일부 웹페이지 요약, 미지원 페이지 있음",
+					"notionWebClipper": "Notion AI는 별도 기능, 무료 플랜은 체험",
+					"liner": "웹·유튜브·PDF 요약",
+					"glasp": "유튜브·PDF 요약, 무료 이용량 제한",
+					"googleKeep": "확장 AI 요약은 확인 못 함"
+				}
+			},
+			"youtube": {
+				"label": "유튜브 영상",
+				"cells": {
+					"webMemo": "영상 옆 메모, 타임스탬프 메모 없음",
+					"notionWebClipper": "영상 URL 저장, 영상 전용 기능은 미확인",
+					"liner": "영상 요약, 주요 순간 저장",
+					"glasp": "자막 하이라이트, 타임스탬프",
+					"googleKeep": "영상 URL 저장, 영상 전용 기능은 미확인"
+				}
+			},
+			"export": {
+				"label": "내보내기",
+				"cells": {
+					"webMemo": "JSON·CSV·Markdown",
+					"notionWebClipper": "Notion에서 PDF·HTML·Markdown·CSV",
+					"liner": "AI 답변 내보내기 안내 있음(2024), 하이라이트·현재 무료 범위 미확인",
+					"glasp": "Markdown·CSV·JSON, Notion·Obsidian",
+					"googleKeep": "Google Takeout으로 노트·첨부파일 다운로드"
+				}
+			},
+			"koreanInterface": {
+				"label": "한국어 화면",
+				"cells": {
+					"webMemo": "기본 언어 한국어",
+					"notionWebClipper": "확장 한국어 화면은 공식 출처에서 미확인",
+					"liner": "한국어 지원",
+					"glasp": "한국어 지원",
+					"googleKeep": "한국어 지원"
+				}
+			},
+			"login": {
+				"label": "로그인",
+				"cells": {
+					"webMemo": "메모·요약은 로그인 필요",
+					"notionWebClipper": "노션 로그인 필요",
+					"liner": "무료 계정 안내, 비로그인 이용 범위 미확인",
+					"glasp": "하이라이트 시작 시 로그인 안내",
+					"googleKeep": "공식 출처에서 로그인 필수 여부 미확인"
+				}
+			}
+		},
+		"recommendations": [
+			{
+				"situation": "이미 노션에 자료를 쌓고 있고, 클립한 글을 DB 속성·태그로 관리하고 싶다면",
+				"note": "저장 위치로 페이지·DB를 고르고 URL 속성이 자동으로 붙어요.",
+				"productName": "노션 웹 클리퍼"
+			},
+			{
+				"situation": "유튜브 강의를 타임스탬프 단위로 짚어 가며 정리하고 Obsidian·Notion으로 옮기고 싶다면",
+				"note": "웹 메모는 영상 주소만 남겨요.",
+				"productName": "Glasp"
+			},
+			{
+				"situation": "폰·워치에서 이미 Keep을 쓰고 있어서 웹 스크랩도 같은 곳에 모으고 싶다면",
+				"productName": "Google Keep 확장"
+			},
+			{
+				"situation": "논문·PDF를 AI에게 물어 가며 읽고 하이라이트까지 한곳에 두고 싶다면",
+				"note": "AI 답변에 광고가 있고 파일 업로드가 하루 1개예요.",
+				"productName": "라이너"
+			},
+			{
+				"situation": "글을 읽다 떠오른 생각을 하이라이트와 상관없이 자유롭게 적고, 어느 페이지에서 쓴 메모인지 자동으로 남기고 싶다면",
+				"note": "사이드 패널에서 자동 저장되고, 주소·제목이 자동으로 기록돼요.",
+				"productName": "웹 메모"
+			},
+			{
+				"situation": "돈을 내지 않고 한국어 화면으로 메모·요약·내보내기를 모두 쓰고 싶다면",
+				"note": "유료 플랜이 없어요. 다만 메모를 쓰려면 로그인해야 해요.",
+				"productName": "웹 메모"
+			}
+		],
+		"statuses": {
+			"supported": "지원",
+			"partial": "일부",
+			"unsupported": "없음",
+			"unknown": "확인 못 함"
+		},
+		"metadata": {
+			"title": "크롬 메모 확장 프로그램 추천 비교 — 웹 메모·노션 웹 클리퍼·라이너·Glasp·Keep",
+			"description": "웹 메모·노션 웹 클리퍼·라이너·Glasp·Google Keep 확장을 기록 방식, 하이라이트, AI 요약, 유튜브, 내보내기, 한국어 화면, 로그인 등 8가지 기준으로 각 공식 페이지를 확인해 비교했습니다({{date}} 확인)."
+		}
 	}
 }

@@ -19,18 +19,12 @@ import type { MetadataRoute } from "next";
  * noindex 인 경로(login·uninstall·memos·admin)는 애초에 여기 걸리지 않도록
  * 접두사 규칙 밖에 둔다.
  *
- * compare 는 한국어 본문만 있어서(/en 은 404) 싣는 언어를 ko 로 좁힌다. 언어를 적지
- * 않은 항목은 지원 언어 전부로 펼친다.
+ * 언어를 적지 않은 항목은 지원 언어 전부로 펼친다.
  */
 const PRIORITY_BY_PREFIX: TIndexablePrefix[] = [
 	{ prefix: "/features/", priority: 0.8, changeFrequency: "monthly" },
 	{ prefix: "/use-cases/", priority: 0.7, changeFrequency: "monthly" },
-	{
-		prefix: "/compare/",
-		priority: 0.8,
-		changeFrequency: "monthly",
-		languages: ["ko"],
-	},
+	{ prefix: "/compare/", priority: 0.8, changeFrequency: "monthly" },
 ];
 
 const STANDALONE_PATHS: TIndexablePath[] = [
@@ -51,7 +45,7 @@ const CONTENT_LAST_MODIFIED: Partial<Record<string, string>> = {
 	[PATHS.useCasesResearch]: "2026-09-22",
 	[PATHS.useCasesTechArticle]: "2026-09-28",
 	[PATHS.useCasesYoutubeNotes]: "2026-09-27",
-	[PATHS.compareChromeMemoExtensions]: "2026-09-27",
+	[PATHS.compareChromeMemoExtensions]: "2026-10-27",
 };
 
 /** 이 작업에서 영문 검색 제목을 바꾼 페이지의 수정일입니다. */

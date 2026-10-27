@@ -6,12 +6,14 @@ import { MockSupabaseStore, setupSupabaseMocks } from "../lib/mocks";
 const LANGUAGES = [
 	{
 		language: "ko",
+		heroImageAlt: "읽던 글 옆의 웹 메모 사이드 패널에 직접 메모를 적은 화면",
 		categoryTabName: "카테고리로 정리",
 		categoryImageAlt:
 			"웹 대시보드에서 카테고리를 선택해 해당 메모를 모아 보는 화면",
 	},
 	{
 		language: "en",
+		heroImageAlt: "A note written in the Web Memo side panel beside an article",
 		categoryTabName: "Organize by category",
 		categoryImageAlt:
 			"The web dashboard showing notes filtered by a selected category",
@@ -29,13 +31,18 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 		await setupSupabaseMocks(page, new MockSupabaseStore());
 	});
 
-	for (const { language, categoryTabName, categoryImageAlt } of LANGUAGES) {
+	for (const {
+		language,
+		heroImageAlt,
+		categoryTabName,
+		categoryImageAlt,
+	} of LANGUAGES) {
 		test(`${language} 랜딩은 Hero 이미지만 미리 받고 반응형 크기를 제공한다.`, async ({
 			page,
 		}) => {
 			await page.goto(`/${language}${PATHS.introduce}`);
 
-			const heroImage = page.locator("section").first().locator("img");
+			const heroImage = page.getByRole("img", { name: heroImageAlt });
 			await expect(heroImage).toHaveAttribute("srcset", /_next\/image/);
 			await expect(heroImage).toHaveAttribute("sizes", /548px/);
 			await expect(page.locator('link[rel="preload"][as="image"]')).toHaveCount(

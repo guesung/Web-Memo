@@ -20,7 +20,6 @@ export const createPublicPageMetadata = (
 
 	return {
 		...content,
-		...(options.keywords === undefined ? {} : { keywords: options.keywords }),
 		...(options.robots === undefined ? {} : { robots: options.robots }),
 		alternates: {
 			canonical,
@@ -48,7 +47,6 @@ interface IFPublicPageMetadata {
 	path: string;
 	title: string;
 	description: string;
-	keywords?: Metadata["keywords"];
 	robots?: Metadata["robots"];
 	/** 한국어 본문만 있는 페이지. hreflang에서 en을 빼고 x-default도 ko로 건다 */
 	isKoreanOnly?: boolean;

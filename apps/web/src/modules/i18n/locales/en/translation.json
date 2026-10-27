@@ -2000,5 +2000,12 @@
 			"close": "Close",
 			"failed": "Could not change your subscription"
 		}
+	},
+	"seoTitles": {
+		"learning": "Online Learning Notes | Web Memo",
+		"newsReading": "News & Article Notes | Web Memo",
+		"developer": "Developer Notes & Code Snippets | Web Memo",
+		"techArticle": "Tech Article Notes | Web Memo",
+		"jobHunting": "Job Search Notes | Web Memo"
 	}
 }

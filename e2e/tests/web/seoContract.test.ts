@@ -175,7 +175,9 @@ test.describe("공개 검색 계약", () => {
 				maxRedirects: 0,
 			});
 			expect(response.status()).toBe(307);
-			expect(new URL(response.headers().location ?? "").pathname).toBe(
+			const location = response.headers().location;
+			expect(location).toBeTruthy();
+			expect(new URL(location ?? "", response.url()).pathname).toBe(
 				`/${language}/login`,
 			);
 		});

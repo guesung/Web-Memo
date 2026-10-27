@@ -1,6 +1,5 @@
 "use client";
 
-import * as ChannelService from "@channel.io/channel-web-sdk-loader";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { EXTERNAL_LINK } from "@web-memo/shared/constants";
@@ -30,6 +29,9 @@ export default function ChannelTalk({ lng }: IFChannelTalkProps) {
 	const { t } = useTranslation(lng);
 	const pathname = usePathname();
 	const buttonRef = useRef<HTMLButtonElement>(null);
+	const channelServiceRef = useRef<
+		typeof import("@channel.io/channel-web-sdk-loader") | null
+	>(null);
 	const [status, setStatus] = useState<TChannelTalkStatus>("idle");
 
 	const pluginKey = process.env.NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY;
@@ -55,7 +57,7 @@ export default function ChannelTalk({ lng }: IFChannelTalkProps) {
 	};
 
 	const handleSupportButtonClick = () => {
-		ChannelService.showMessenger();
+		channelServiceRef.current?.showMessenger();
 	};
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: 대상 경로에 들어올 때만 boot/shutdown하면 된다
@@ -63,35 +65,81 @@ export default function ChannelTalk({ lng }: IFChannelTalkProps) {
 		if (!pluginKey || !isSupportedRoute) return;
 
 		setStatus("connecting");
+		let cancelled = false;
+		let started = false;
+		let booted = false;
+		let idleId: number | undefined;
+		let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-		try {
-			ChannelService.loadScript();
-			ChannelService.boot(
-				{
-					pluginKey,
-					hideChannelButtonOnBoot: true,
-					hidePopup: true,
-				},
-				(error) => {
-					if (error) {
-						setStatus("error");
-						showConnectionErrorToast();
-						return;
-					}
+		const connect = async () => {
+			if (started) return;
+			started = true;
+			window.removeEventListener("pointerdown", connect);
+			window.removeEventListener("keydown", connect);
+			window.removeEventListener("load", scheduleConnect);
+			if (idleId !== undefined) window.cancelIdleCallback(idleId);
+			if (timeoutId !== undefined) clearTimeout(timeoutId);
+			try {
+				const channelService = await import(
+					"@channel.io/channel-web-sdk-loader"
+				);
+				if (cancelled) return;
 
-					setStatus("ready");
-				},
-			);
-			ChannelService.onHideMessenger(() => {
-				buttonRef.current?.focus();
-			});
-		} catch {
-			setStatus("error");
-			showConnectionErrorToast();
+				channelServiceRef.current = channelService;
+				channelService.loadScript();
+				booted = true;
+				channelService.boot(
+					{
+						pluginKey,
+						hideChannelButtonOnBoot: true,
+						hidePopup: true,
+					},
+					(error) => {
+						if (cancelled) return;
+						if (error) {
+							setStatus("error");
+							showConnectionErrorToast();
+							return;
+						}
+
+						setStatus("ready");
+					},
+				);
+				channelService.onHideMessenger(() => {
+					if (!cancelled) buttonRef.current?.focus();
+				});
+			} catch {
+				if (cancelled) return;
+				setStatus("error");
+				showConnectionErrorToast();
+			}
+		};
+
+		const scheduleConnect = () => {
+			if ("requestIdleCallback" in window) {
+				idleId = window.requestIdleCallback(connect, { timeout: 5000 });
+			} else {
+				timeoutId = setTimeout(connect, 2000);
+			}
+		};
+
+		window.addEventListener("pointerdown", connect, { once: true });
+		window.addEventListener("keydown", connect, { once: true });
+		if (document.readyState === "complete") {
+			scheduleConnect();
+		} else {
+			window.addEventListener("load", scheduleConnect, { once: true });
 		}
 
 		return () => {
-			ChannelService.shutdown();
+			cancelled = true;
+			window.removeEventListener("pointerdown", connect);
+			window.removeEventListener("keydown", connect);
+			window.removeEventListener("load", scheduleConnect);
+			if (idleId !== undefined) window.cancelIdleCallback(idleId);
+			if (timeoutId !== undefined) clearTimeout(timeoutId);
+			if (booted) channelServiceRef.current?.shutdown();
+			channelServiceRef.current = null;
 		};
 	}, [pluginKey, isSupportedRoute]);
 

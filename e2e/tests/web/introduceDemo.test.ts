@@ -1,4 +1,3 @@
-import type { Page } from "@playwright/test";
 import { PATHS } from "@web-memo/shared/constants";
 import { expect, test } from "../fixtures/web";
 import { MockSupabaseStore, setupSupabaseMocks } from "../lib/mocks";
@@ -7,12 +6,14 @@ import { MockSupabaseStore, setupSupabaseMocks } from "../lib/mocks";
 const LANGUAGES = [
 	{
 		language: "ko",
+		heroImageAlt: "읽던 글 옆의 웹 메모 사이드 패널에 직접 메모를 적은 화면",
 		categoryTabName: "카테고리로 정리",
 		categoryImageAlt:
 			"웹 대시보드에서 카테고리를 선택해 해당 메모를 모아 보는 화면",
 	},
 	{
 		language: "en",
+		heroImageAlt: "A note written in the Web Memo side panel beside an article",
 		categoryTabName: "Organize by category",
 		categoryImageAlt:
 			"The web dashboard showing notes filtered by a selected category",
@@ -30,7 +31,28 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 		await setupSupabaseMocks(page, new MockSupabaseStore());
 	});
 
-	for (const { language, categoryTabName, categoryImageAlt } of LANGUAGES) {
+	for (const {
+		language,
+		heroImageAlt,
+		categoryTabName,
+		categoryImageAlt,
+	} of LANGUAGES) {
+		test(`${language} 랜딩은 Hero 이미지만 미리 받고 반응형 크기를 제공한다.`, async ({
+			page,
+		}) => {
+			await page.goto(`/${language}${PATHS.introduce}`);
+
+			const heroImage = page.getByRole("img", { name: heroImageAlt });
+			await expect(heroImage).toHaveAttribute("srcset", /_next\/image/);
+			await expect(heroImage).toHaveAttribute("sizes", /548px/);
+			await expect(page.locator('link[rel="preload"][as="image"]')).toHaveCount(
+				1,
+			);
+			await expect(
+				page.locator('link[rel="preload"][href*="googletagmanager"]'),
+			).toHaveCount(0);
+		});
+
 		test(`${language} 소개 문구와 설치 링크가 현재 제공 상태에 맞다.`, async ({
 			page,
 		}) => {
@@ -58,7 +80,7 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 			await expect(page.locator('a[href*="apps.apple.com"]')).toHaveCount(0);
 		});
 
-		test(`${language} 탭을 눌러도 슬라이드 이미지가 이미 로드되어 있다.`, async ({
+		test(`${language} 탭을 누르면 최적화된 슬라이드 이미지가 표시된다.`, async ({
 			page,
 		}) => {
 			await page.goto(`/${language}${PATHS.introduce}`);
@@ -68,7 +90,8 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 
 			await carousel.scrollIntoViewIfNeeded();
 			await expect(images).toHaveCount(DEMO_IMAGE_COUNT);
-			await expectAllImagesLoaded(images);
+			await expect(images.first()).toHaveAttribute("srcset", /_next\/image/);
+			await expect(images.first()).toHaveAttribute("sizes", /1152px/);
 
 			const previousActiveImage = carousel.locator(
 				'div:not([aria-hidden="true"]) > img',
@@ -85,11 +108,11 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 			const nextSlide = nextImage.locator("..");
 
 			await expect(nextSlide).not.toHaveAttribute("aria-hidden", "true");
-			expect(
-				await nextImage.evaluate(
-					(image: HTMLImageElement) => image.naturalWidth,
-				),
-			).toBeGreaterThan(0);
+			await expect
+				.poll(() =>
+					nextImage.evaluate((image: HTMLImageElement) => image.naturalWidth),
+				)
+				.toBeGreaterThan(0);
 			await expect(
 				carousel.locator(`img[alt="${previousAlt}"]`).locator(".."),
 			).toHaveAttribute("aria-hidden", "true");
@@ -115,18 +138,3 @@ test.describe("소개 페이지 데모 캐러셀", () => {
 		await expect(categoryTab).toBeFocused();
 	});
 });
-
-/** 모든 데모 이미지의 디코딩된 너비가 0보다 클 때까지 기다립니다. */
-const expectAllImagesLoaded = async (
-	images: ReturnType<Page["locator"]>,
-): Promise<void> => {
-	await expect
-		.poll(() =>
-			images.evaluateAll((elements) =>
-				elements.every(
-					(element) => (element as HTMLImageElement).naturalWidth > 0,
-				),
-			),
-		)
-		.toBe(true);
-};

@@ -776,6 +776,7 @@
 			"testimonials_note": "* Based on representative use cases",
 			"cta_title": "Write beside the next page you read",
 			"cta_desc": "Add Web Memo to Chrome, open the side panel, and write on the page you are reading.",
+			"demo_link_text": "Preview Web Memo",
 			"cta_badge": "Get Started Today"
 		},
 		"demo": {
@@ -873,7 +874,8 @@
 		"features": {
 			"memo": {
 				"title": "Take notes while reading",
-				"description": "Write a thought or a passage in the side panel beside the page."
+				"description": "Write a thought or a passage in the side panel beside the page.",
+				"link_text": "Explore browser note-taking"
 			},
 			"overview": {
 				"title": "Find notes by category",

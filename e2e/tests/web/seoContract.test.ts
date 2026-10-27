@@ -50,9 +50,14 @@ test.describe("공개 검색 계약", () => {
 				return {
 					parseErrors: document.getElementsByTagName("parsererror").length,
 					lastModifiedCount: document.getElementsByTagName("lastmod").length,
+					lastModifiedValues: Array.from(
+						document.getElementsByTagName("lastmod"),
+					).map((element) => element.textContent),
 					entries: Array.from(document.getElementsByTagName("url")).map(
 						(entry) => ({
 							url: entry.getElementsByTagName("loc")[0]?.textContent,
+							lastModified:
+								entry.getElementsByTagName("lastmod")[0]?.textContent,
 							alternates: Array.from(
 								entry.getElementsByTagNameNS(
 									"http://www.w3.org/1999/xhtml",
@@ -70,7 +75,14 @@ test.describe("공개 검색 계약", () => {
 			await response.text(),
 		);
 		expect(sitemap.parseErrors).toBe(0);
-		expect(sitemap.lastModifiedCount).toBe(0);
+		expect(sitemap.lastModifiedCount).toBe(24);
+		expect(
+			sitemap.lastModifiedValues.every((value) =>
+				/^2026-\d{2}-\d{2}(?:T00:00:00.000Z)?$/.test(value ?? ""),
+			),
+		).toBe(true);
+		const secondResponse = await request.get("/sitemap.xml");
+		expect(await secondResponse.text()).toBe(await response.text());
 		const expectedUrls = [
 			...PUBLIC_PATHS.flatMap((path) =>
 				["ko", "en"].map((language) => `${baseURL}/${language}/${path}`),
@@ -83,6 +95,9 @@ test.describe("공개 검색 계약", () => {
 
 		for (const entry of sitemap.entries) {
 			const path = new URL(entry.url ?? "").pathname.slice(4);
+			expect(entry.lastModified).toMatch(
+				/^2026-\d{2}-\d{2}(?:T00:00:00.000Z)?$/,
+			);
 			expect(entry.alternates).toHaveLength(3);
 			expect(entry.alternates).toEqual(
 				expect.arrayContaining([
@@ -106,7 +121,68 @@ test.describe("공개 검색 계약", () => {
 		}
 	});
 
+	test("Organization 구조화 데이터는 정사각 로고를 사용한다.", async ({
+		page,
+		request,
+		baseURL,
+	}) => {
+		const logo = `${baseURL}/images/pngs/icon-128.png`;
+		const image = await request.get("/images/pngs/icon-128.png");
+		expect(image.ok()).toBe(true);
+		for (const path of [
+			"/en/introduce",
+			"/ko/compare/chrome-memo-extensions",
+		]) {
+			await page.goto(path);
+			const schemas = await page
+				.locator('script[type="application/ld+json"]')
+				.allTextContents();
+			const parsed = schemas.map((schema) => JSON.parse(schema));
+			expect(
+				parsed.find((schema) => schema["@type"] === "Organization")?.logo,
+			).toBe(logo);
+			if (path.includes("compare")) {
+				expect(
+					parsed.find((schema) => schema["@type"] === "Article")?.publisher
+						.logo,
+				).toBe(logo);
+			}
+		}
+	});
+
 	for (const language of ["ko", "en"]) {
+		test(`${language}/memos는 같은 언어의 로그인으로 이동한다.`, async ({
+			request,
+		}) => {
+			const response = await request.get(`/${language}/memos`, {
+				maxRedirects: 0,
+			});
+			expect(response.status()).toBe(307);
+			const location = response.headers().location;
+			expect(location).toBeTruthy();
+			expect(new URL(location ?? "", response.url()).pathname).toBe(
+				`/${language}/login`,
+			);
+		});
+
+		test(`${language}/login은 언어별 제목·self canonical·noindex를 가진다.`, async ({
+			page,
+			baseURL,
+		}) => {
+			await page.goto(`/${language}/login`);
+			await expect(page).toHaveTitle(
+				language === "ko" ? "로그인 | 웹 메모" : "Sign in | Web Memo",
+			);
+			await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+				"href",
+				`${baseURL}/${language}/login`,
+			);
+			await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+				"content",
+				/noindex.*nofollow/,
+			);
+		});
+
 		for (const path of PUBLIC_PATHS) {
 			test(`${language}/${path}의 canonical·hreflang·JSON-LD 계약이 유효하다.`, async ({
 				page,
@@ -143,6 +219,7 @@ test.describe("공개 검색 계약", () => {
 				for (const directive of robots) {
 					expect(directive).not.toMatch(/noindex|none/i);
 				}
+				await expect(page.locator('meta[name="keywords"]')).toHaveCount(0);
 				const scripts = await page
 					.locator('script[type="application/ld+json"]')
 					.allTextContents();
@@ -235,6 +312,29 @@ test.describe("공개 검색 계약", () => {
 		expect(html).not.toContain("__next_error__");
 	});
 
+	const ENGLISH_TITLES: Record<string, string> = {
+		"use-cases/developer": "Developer Notes & Code Snippets | Web Memo",
+		"use-cases/job-hunting": "Job Search Notes | Web Memo",
+		"use-cases/learning": "Online Learning Notes | Web Memo",
+		"use-cases/news-reading": "News & Article Notes | Web Memo",
+		"use-cases/tech-article": "Tech Article Notes | Web Memo",
+	};
+
+	for (const [path, title] of Object.entries(ENGLISH_TITLES)) {
+		test(`en/${path}의 검색 및 공유 제목이 간결하다.`, async ({ page }) => {
+			await page.goto(`/en/${path}`);
+			await expect(page).toHaveTitle(title);
+			await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+				"content",
+				title,
+			);
+			await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute(
+				"content",
+				title,
+			);
+		});
+	}
+
 	const ENGLISH_LENGTH_LIMITED_PATHS = [
 		"compare/chrome-memo-extensions",
 		"use-cases/developer",
@@ -257,6 +357,15 @@ test.describe("공개 검색 계약", () => {
 			expect(description?.length ?? 0).toBeLessThanOrEqual(160);
 		});
 	}
+
+	test("뷰포트 확대를 제한하지 않는다.", async ({ page }) => {
+		await page.goto("/en/introduce");
+		const viewport = await page
+			.locator('meta[name="viewport"]')
+			.getAttribute("content");
+		expect(viewport).toContain("width=device-width");
+		expect(viewport).not.toMatch(/maximum-scale|user-scalable=no/i);
+	});
 
 	test("robots는 sitemap을 안내하고 noindex HTML의 크롤링을 허용한다.", async ({
 		request,

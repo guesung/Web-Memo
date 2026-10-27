@@ -422,6 +422,7 @@
 		"stepCompleted": "Done"
 	},
 	"login": {
+		"metadataTitle": "Sign in | Web Memo",
 		"welcomeTitle": "Easily take notes while browsing websites.",
 		"kakaoLogin": "Login with Kakao",
 		"googleLogin": "Sign in with Google",
@@ -775,6 +776,7 @@
 			"testimonials_note": "* Based on representative use cases",
 			"cta_title": "Write beside the next page you read",
 			"cta_desc": "Add Web Memo to Chrome, open the side panel, and write on the page you are reading.",
+			"demo_link_text": "Preview Web Memo",
 			"cta_badge": "Get Started Today"
 		},
 		"demo": {
@@ -872,7 +874,8 @@
 		"features": {
 			"memo": {
 				"title": "Take notes while reading",
-				"description": "Write a thought or a passage in the side panel beside the page."
+				"description": "Write a thought or a passage in the side panel beside the page.",
+				"link_text": "Explore browser note-taking"
 			},
 			"overview": {
 				"title": "Find notes by category",
@@ -2001,6 +2004,13 @@
 			"failed": "Could not change your subscription"
 		}
 	},
+	"seoTitles": {
+		"learning": "Online Learning Notes | Web Memo",
+		"newsReading": "News & Article Notes | Web Memo",
+		"developer": "Developer Notes & Code Snippets | Web Memo",
+		"techArticle": "Tech Article Notes | Web Memo",
+		"jobHunting": "Job Search Notes | Web Memo"
+	},
 	"compareChromeMemoExtensions": {
 		"hero": {
 			"badge": "Chrome note-taking extensions compared",
@@ -2198,16 +2208,7 @@
 		},
 		"metadata": {
 			"title": "Compare Chrome Note-Taking Extensions | Web Memo",
-			"description": "Compare Web Memo, Notion Web Clipper, LINER, Glasp, and Google Keep on notes, highlights, AI summaries, export, login, and more. Checked {{date}}.",
-			"keywords": [
-				"Chrome note-taking extensions",
-				"best Chrome notes extension",
-				"Chrome web clipper",
-				"Notion Web Clipper",
-				"LINER",
-				"Glasp",
-				"Google Keep extension"
-			]
+			"description": "Compare Web Memo, Notion Web Clipper, LINER, Glasp, and Google Keep on notes, highlights, AI summaries, export, login, and more. Checked {{date}}."
 		}
 	}
 }

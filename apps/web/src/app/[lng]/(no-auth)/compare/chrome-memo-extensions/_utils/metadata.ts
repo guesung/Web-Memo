@@ -14,8 +14,5 @@ export const createComparisonMetadata = async (lng: Language) => {
 		description: t(`${prefix}.description`, {
 			date: COMPARE_LAST_CHECKED_DATE,
 		}),
-		keywords: [0, 1, 2, 3, 4, 5, 6].map((index) =>
-			t(`${prefix}.keywords.${index}`),
-		),
 	});
 };

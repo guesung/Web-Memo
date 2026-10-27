@@ -24,7 +24,7 @@ const getOrganizationSchema = (lng: Language) => ({
 	"@type": "Organization",
 	name: lng === "ko" ? "웹 메모" : "Web Memo",
 	url: baseUrl,
-	logo: `${baseUrl}/og-image.png`,
+	logo: `${baseUrl}/images/pngs/icon-128.png`,
 	sameAs: [EXTERNAL_LINK.chromeWebStoreListing],
 	contactPoint: {
 		"@type": "ContactPoint",

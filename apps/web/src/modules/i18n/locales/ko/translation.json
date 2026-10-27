@@ -417,6 +417,7 @@
 		"stepCompleted": "완료"
 	},
 	"login": {
+		"metadataTitle": "로그인 | 웹 메모",
 		"welcomeTitle": "웹사이트 보며 간편하게 메모하세요.",
 		"kakaoLogin": "카카오 로그인",
 		"googleLogin": "Google 계정으로 로그인",
@@ -770,6 +771,7 @@
 			"testimonials_note": "* 대표적인 사용 사례를 바탕으로 작성했어요.",
 			"cta_title": "다음에 읽는 글 옆에서 적어봐요",
 			"cta_desc": "Chrome에 추가한 뒤 읽던 페이지에서 사이드 패널을 열어 메모할 수 있어요.",
+			"demo_link_text": "웹 메모 화면 미리 보기",
 			"cta_badge": "읽던 페이지 옆에서 적어요"
 		},
 		"demo": {
@@ -867,7 +869,8 @@
 		"features": {
 			"memo": {
 				"title": "글 읽으며 메모하세요",
-				"description": "읽다가 남기고 싶은 문장이나 생각을 페이지 옆 사이드 패널에 적어요."
+				"description": "읽다가 남기고 싶은 문장이나 생각을 페이지 옆 사이드 패널에 적어요.",
+				"link_text": "브라우저 메모 기능 알아보기"
 			},
 			"overview": {
 				"title": "카테고리별 메모 찾기",
@@ -1998,6 +2001,13 @@
 			"failed": "구독을 변경하지 못했어요"
 		}
 	},
+	"seoTitles": {
+		"learning": "Online Learning Notes | Web Memo",
+		"newsReading": "News & Article Notes | Web Memo",
+		"developer": "Developer Notes & Code Snippets | Web Memo",
+		"techArticle": "Tech Article Notes | Web Memo",
+		"jobHunting": "Job Search Notes | Web Memo"
+	},
 	"compareChromeMemoExtensions": {
 		"hero": {
 			"badge": "크롬 메모 확장 비교",
@@ -2195,16 +2205,7 @@
 		},
 		"metadata": {
 			"title": "크롬 메모 확장 프로그램 추천 비교 — 웹 메모·노션 웹 클리퍼·라이너·Glasp·Keep",
-			"description": "웹 메모·노션 웹 클리퍼·라이너·Glasp·Google Keep 확장을 기록 방식, 하이라이트, AI 요약, 유튜브, 내보내기, 한국어 화면, 로그인 등 8가지 기준으로 각 공식 페이지를 확인해 비교했습니다({{date}} 확인).",
-			"keywords": [
-				"크롬 메모 확장 프로그램",
-				"크롬 메모 확장 추천",
-				"크롬 확장 프로그램 메모",
-				"노션 웹 클리퍼",
-				"라이너",
-				"Glasp",
-				"Google Keep 확장"
-			]
+			"description": "웹 메모·노션 웹 클리퍼·라이너·Glasp·Google Keep 확장을 기록 방식, 하이라이트, AI 요약, 유튜브, 내보내기, 한국어 화면, 로그인 등 8가지 기준으로 각 공식 페이지를 확인해 비교했습니다({{date}} 확인)."
 		}
 	}
 }

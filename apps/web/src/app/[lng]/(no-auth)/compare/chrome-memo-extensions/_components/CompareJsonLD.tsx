@@ -20,7 +20,7 @@ const CompareJsonLD = ({ lng, title, brandName }: CompareJsonLDProps) => {
 		"@type": "Organization",
 		name: brandName,
 		url: CONFIG.webUrl,
-		logo: `${CONFIG.webUrl}/og-image.png`,
+		logo: `${CONFIG.webUrl}/images/pngs/icon-128.png`,
 	};
 
 	const articleSchema = {

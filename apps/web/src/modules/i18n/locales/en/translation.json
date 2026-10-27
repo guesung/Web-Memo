@@ -422,6 +422,7 @@
 		"stepCompleted": "Done"
 	},
 	"login": {
+		"metadataTitle": "Sign in | Web Memo",
 		"welcomeTitle": "Easily take notes while browsing websites.",
 		"kakaoLogin": "Login with Kakao",
 		"googleLogin": "Sign in with Google",

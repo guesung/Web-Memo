@@ -124,6 +124,36 @@ test.describe("공개 검색 계약", () => {
 	});
 
 	for (const language of ["ko", "en"]) {
+		test(`${language}/memos는 같은 언어의 로그인으로 이동한다.`, async ({
+			request,
+		}) => {
+			const response = await request.get(`/${language}/memos`, {
+				maxRedirects: 0,
+			});
+			expect(response.status()).toBe(307);
+			expect(new URL(response.headers().location ?? "").pathname).toBe(
+				`/${language}/login`,
+			);
+		});
+
+		test(`${language}/login은 언어별 제목·self canonical·noindex를 가진다.`, async ({
+			page,
+			baseURL,
+		}) => {
+			await page.goto(`/${language}/login`);
+			await expect(page).toHaveTitle(
+				language === "ko" ? "로그인 | 웹 메모" : "Sign in | Web Memo",
+			);
+			await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+				"href",
+				`${baseURL}/${language}/login`,
+			);
+			await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+				"content",
+				/noindex.*nofollow/,
+			);
+		});
+
 		for (const path of PUBLIC_PATHS) {
 			test(`${language}/${path}의 canonical·hreflang·JSON-LD 계약이 유효하다.`, async ({
 				page,
@@ -295,6 +325,15 @@ test.describe("공개 검색 계약", () => {
 			expect(description?.length ?? 0).toBeLessThanOrEqual(160);
 		});
 	}
+
+	test("뷰포트 확대를 제한하지 않는다.", async ({ page }) => {
+		await page.goto("/en/introduce");
+		const viewport = await page
+			.locator('meta[name="viewport"]')
+			.getAttribute("content");
+		expect(viewport).toContain("width=device-width");
+		expect(viewport).not.toMatch(/maximum-scale|user-scalable=no/i);
+	});
 
 	test("robots는 sitemap을 안내하고 noindex HTML의 크롤링을 허용한다.", async ({
 		request,

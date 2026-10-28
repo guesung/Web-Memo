@@ -106,9 +106,42 @@ test.describe("사이드 패널 AI 기능", () => {
 			sidePanelPage,
 			"summary_hide_label",
 		);
-		await sidePanelPage
-			.getByRole("button", { name: hideLabel, exact: true })
-			.click();
+		const closing = await sidePanelPage.evaluate(async (label) => {
+			const panelHeight = () =>
+				document
+					.querySelector('[data-testid="ai-panel"]')
+					?.getBoundingClientRect().height ?? 0;
+			const start = panelHeight();
+			const toggle = Array.from(document.querySelectorAll("button")).find(
+				(button) => button.textContent?.trim() === label,
+			);
+			toggle?.click();
+			const samples: number[] = [];
+			let inactive = false;
+			for (let frame = 0; frame < 12; frame++) {
+				await new Promise(requestAnimationFrame);
+				samples.push(panelHeight());
+				if (frame === 0) {
+					const panel = document.querySelector('[data-testid="ai-panel"]');
+					inactive =
+						panel?.hasAttribute("inert") === true &&
+						panel.getAttribute("aria-hidden") === "true";
+				}
+			}
+			return {
+				start,
+				samples,
+				inactive,
+				duplicateId:
+					document.querySelectorAll("#side-panel-summary").length > 1,
+			};
+		}, hideLabel);
+		expect(
+			closing.samples.some((height) => height > 0 && height < closing.start),
+			JSON.stringify(closing),
+		).toBe(true);
+		expect(closing.inactive).toBe(true);
+		expect(closing.duplicateId).toBe(false);
 		await expect(sidePanelPage.getByTestId("ai-panel")).toHaveCount(0);
 		await sidePanelPage.emulateMedia({ reducedMotion: "reduce" });
 		await sidePanelPage
@@ -116,10 +149,22 @@ test.describe("사이드 패널 AI 기능", () => {
 			.click();
 		await expect(sidePanelPage.getByTestId("ai-panel")).toBeVisible();
 		expect(
-			await sidePanelPage
-				.getByTestId("ai-panel")
-				.evaluate((element) => getComputedStyle(element).transitionProperty),
-		).toBe("none");
+			await sidePanelPage.getByTestId("ai-panel").evaluate((element) =>
+				getComputedStyle(element)
+					.transitionDuration.split(",")
+					.every((duration) => parseFloat(duration) < 0.001),
+			),
+		).toBe(true);
+		await sidePanelPage.emulateMedia({ reducedMotion: "no-preference" });
+		await page.goto("https://example.com/ai-feature-toggle-next");
+		await expect(sidePanelPage.getByTestId("ai-panel")).toHaveCount(0);
+		expect(
+			await sidePanelPage.getByTestId("memo-panel").evaluate((element) =>
+				getComputedStyle(element)
+					.transitionDuration.split(",")
+					.every((duration) => parseFloat(duration) < 0.001),
+			),
+		).toBe(true);
 	});
 
 	test("첫 설정 저장은 요약 기본 ON을 보존한다", async ({ page }) => {

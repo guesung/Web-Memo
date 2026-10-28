@@ -38,16 +38,32 @@ function SidePanelBody() {
 	const [summaryState, setSummaryState] = useState({ pageKey, isOpen: false });
 	const [selectedTab, setSelectedTab] = useState<TTabName>("chat");
 	const [isSummaryEntering, setIsSummaryEntering] = useState(false);
+	const [isSummaryExiting, setIsSummaryExiting] = useState(false);
+	const [panelTransition, setPanelTransition] = useState<{
+		pageKey: string;
+		showAiChat: boolean;
+		sequence: number;
+	} | null>(null);
 	const isSummaryOpen =
 		showSummary && summaryState.pageKey === pageKey && summaryState.isOpen;
+	const isExitVisible =
+		isSummaryExiting &&
+		panelTransition?.pageKey === pageKey &&
+		panelTransition.showAiChat === showAiChat &&
+		!showAiChat &&
+		showSummary;
 	const isAvailable = !isLoading && !error && Boolean(content.trim());
 	const isSummaryActive =
 		isSummaryOpen && (!showAiChat || selectedTab === "summary");
-	const hasAiTab = isSummaryOpen || showAiChat;
+	const hasAiTab = isSummaryOpen || showAiChat || isExitVisible;
 	const { tabHeight, isResizing, handleMouseDown, containerRef } =
 		useResizablePanel(isSummaryActive);
-	const animateHeight = !isResizing;
-	const displayedTabHeight = isSummaryEntering ? 0 : tabHeight;
+	const animateHeight =
+		!isResizing &&
+		panelTransition?.pageKey === pageKey &&
+		panelTransition.showAiChat === showAiChat &&
+		showSummary;
+	const displayedTabHeight = isSummaryEntering || isExitVisible ? 0 : tabHeight;
 
 	useEffect(() => {
 		if (!isSummaryEntering) return;
@@ -56,9 +72,21 @@ function SidePanelBody() {
 	}, [isSummaryEntering]);
 
 	useEffect(() => {
+		if (!panelTransition || isSummaryEntering) return;
+		const timeout = setTimeout(() => {
+			setPanelTransition(null);
+			setIsSummaryExiting(false);
+		}, 180);
+		return () => clearTimeout(timeout);
+	}, [panelTransition, isSummaryEntering]);
+
+	useEffect(() => {
 		setPendingOpenPageKey(null);
 		setSummaryState({ pageKey, isOpen: false });
 		setSelectedTab("chat");
+		setPanelTransition(null);
+		setIsSummaryEntering(false);
+		setIsSummaryExiting(false);
 	}, [pageKey]);
 
 	useEffect(() => {
@@ -66,6 +94,9 @@ function SidePanelBody() {
 		setPendingOpenPageKey(null);
 		setSummaryState({ pageKey, isOpen: false });
 		setSelectedTab("chat");
+		setPanelTransition(null);
+		setIsSummaryEntering(false);
+		setIsSummaryExiting(false);
 	}, [showSummary, pageKey]);
 
 	useEffect(() => {
@@ -106,11 +137,22 @@ function SidePanelBody() {
 
 	const handleSummaryToggle = () => {
 		if (!showSummary) return;
-		setIsSummaryEntering(
-			!isSummaryOpen &&
-				!showAiChat &&
-				!window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+		const reducedMotion = window.matchMedia(
+			"(prefers-reduced-motion: reduce)",
+		).matches;
+		setPanelTransition(
+			reducedMotion
+				? null
+				: {
+						pageKey,
+						showAiChat,
+						sequence: (panelTransition?.sequence ?? 0) + 1,
+					},
 		);
+		setIsSummaryEntering(
+			!isSummaryOpen && !showAiChat && !isExitVisible && !reducedMotion,
+		);
+		setIsSummaryExiting(isSummaryOpen && !showAiChat && !reducedMotion);
 		const action = isSummaryOpen ? "close" : "open";
 		analytics.trackEvent({ name: "summary_panel_toggle", params: { action } });
 		setSummaryState({ pageKey, isOpen: !isSummaryOpen });
@@ -126,6 +168,9 @@ function SidePanelBody() {
 	};
 
 	const handleTabChange = (tab: TTabName) => {
+		setPanelTransition(null);
+		setIsSummaryEntering(false);
+		setIsSummaryExiting(false);
 		setSelectedTab(tab);
 		if (tab === "chat") setSummaryState({ pageKey, isOpen: false });
 	};
@@ -139,14 +184,17 @@ function SidePanelBody() {
 					onToggle={handleSummaryToggle}
 				/>
 			)}
-			{showSummary && !isSummaryOpen && <span id={SUMMARY_PANEL_ID} hidden />}
+			{showSummary && !isSummaryOpen && !isExitVisible && (
+				<span id={SUMMARY_PANEL_ID} hidden />
+			)}
 			<div ref={containerRef} className="relative flex min-h-0 flex-1 flex-col">
 				{hasAiTab && (
 					<>
 						<TabSection
 							tabHeight={displayedTabHeight}
 							animateHeight={animateHeight}
-							isSummaryOpen={isSummaryOpen}
+							isSummaryOpen={isSummaryOpen || isExitVisible}
+							isExiting={isExitVisible}
 							isChatEnabled={showAiChat}
 							selectedTab={selectedTab}
 							onTabChange={handleTabChange}
@@ -156,13 +204,18 @@ function SidePanelBody() {
 							}
 						/>
 						<div
+							inert={isExitVisible}
+							aria-hidden={isExitVisible}
 							className={`absolute inset-x-0 z-10 -translate-y-1/2 ${animateHeight ? "transition-[top] duration-[180ms] ease-out motion-reduce:transition-none" : ""}`}
 							style={{ top: `${displayedTabHeight}%` }}
 						>
 							<ResizeHandle
 								upperSectionRatio={tabHeight}
 								isResizing={isResizing}
-								onMouseDown={handleMouseDown}
+								onMouseDown={(event) => {
+									setPanelTransition(null);
+									handleMouseDown(event);
+								}}
 							/>
 						</div>
 					</>

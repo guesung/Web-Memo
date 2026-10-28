@@ -83,6 +83,7 @@ const MemoFormContent = ({
 	const actionItemRef = useRef<HTMLTextAreaElement | null>(null);
 	const [isSwitching, setIsSwitching] = useState(false);
 	const [animateCategory, setAnimateCategory] = useState(false);
+	const [categoryMotionSequence, setCategoryMotionSequence] = useState(0);
 	const [categoryWidth, setCategoryWidth] = useState<number | undefined>();
 	const categoryResizeObserverRef = useRef<ResizeObserver | null>(null);
 	const setCategoryVisual = useCallback((visual: HTMLDivElement | null) => {
@@ -251,16 +252,17 @@ const MemoFormContent = ({
 			source: TCategoryChangeSource,
 		) => {
 			setAnimateCategory(true);
+			setCategoryMotionSequence((sequence) => sequence + 1);
 			updateCategory(categoryId, source);
 		},
 		isMemoLocked,
 	});
 
 	useEffect(() => {
-		if (!animateCategory) return;
+		if (categoryMotionSequence === 0) return;
 		const timeout = setTimeout(() => setAnimateCategory(false), 180);
 		return () => clearTimeout(timeout);
-	}, [animateCategory]);
+	}, [categoryMotionSequence]);
 
 	const {
 		isLoading: isSuggestingCategory,

@@ -41,10 +41,10 @@ export default function usePendingOfflineMemo({
 
 	const refresh = useCallback(async () => {
 		const generation = ++generationRef.current;
-		if (!userId) {
+		if (scopeRef.current === scope && scopeEpochRef.current === epoch) {
 			setResolved({ scope, epoch, result: { status: "loading" } });
-			return;
 		}
+		if (!userId) return;
 		try {
 			const item = await getPendingOfflineMemo({ userId, memoId, url });
 			if (
@@ -87,7 +87,7 @@ export default function usePendingOfflineMemo({
 	}, [refresh]);
 
 	return {
-		...(resolved?.scope === scope
+		...(resolved?.scope === scope && resolved.epoch === epoch
 			? resolved.result
 			: { status: "loading" as const }),
 		refresh,

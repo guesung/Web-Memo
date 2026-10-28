@@ -126,3 +126,42 @@ it("does not reuse a result when returning to a previous scope", async () => {
 	await act(async () => again.resolve(undefined));
 	expect(result.status).toBe("absent");
 });
+
+it("storage refresh hides resolved absence until the new read finishes", async () => {
+	const pending = deferred();
+	const item = {
+		userId: "a",
+		url: "https://example.com/a",
+		data: { memo: "draft" },
+	};
+	mocks.getPendingOfflineMemo
+		.mockResolvedValueOnce(undefined)
+		.mockReturnValueOnce(pending.promise);
+	await render({ userId: "a", url: "https://example.com/a" });
+	expect(result.status).toBe("absent");
+	await act(async () => listeners[0]({ offlineMemoQueue: {} }, "local"));
+	expect(result.status).toBe("loading");
+	expect(result.item).toBeUndefined();
+	await act(async () => pending.resolve(item));
+	expect(result.status).toBe("present");
+	expect(result.item).toBe(item);
+});
+
+it("storage refresh hides an old pending item and reports the new read error", async () => {
+	const pending = deferred();
+	mocks.getPendingOfflineMemo
+		.mockResolvedValueOnce({
+			userId: "a",
+			url: "https://example.com/a",
+			data: { memo: "old" },
+		})
+		.mockReturnValueOnce(pending.promise);
+	await render({ userId: "a", url: "https://example.com/a" });
+	expect(result.status).toBe("present");
+	await act(async () => listeners[0]({ offlineMemoQueue: {} }, "local"));
+	expect(result.status).toBe("loading");
+	expect(result.item).toBeUndefined();
+	await act(async () => pending.reject(new Error("storage unavailable")));
+	expect(result.status).toBe("error");
+	expect(result.item).toBeUndefined();
+});

@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Web Memo 사이드 패널 모션 시안</title>
+    <style>
+      @import url("../../../apps/web/src/fonts/output/PretendardVariable.css");
+      :root {
+        --background: #fcfcfc; --foreground: #0a0a0a; --muted: #646464;
+        --border: #e3e3e3; --input: #d9d9d9; --surface: #f5f5f5;
+        --popover: #f5f5f5; --hover: #ededed; --ring: #2563eb;
+        --yellow: #fef3b0; --yellow-ink: #29220b;
+        --motion: 180ms cubic-bezier(.22,1,.36,1);
+      }
+      :root.dark {
+        color-scheme: dark;
+        --background: #141414; --foreground: #f2f2f2; --muted: #aaa;
+        --border: #333; --input: #424242; --surface: #1d1d1d;
+        --popover: #1d1d1d; --hover: #2b2b2b; --ring: #60a5fa;
+        --yellow: #473e15; --yellow-ink: #fff3c4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-width: 320px; }
+      body { background: var(--surface); color: var(--foreground); font-family: Pretendard, system-ui, sans-serif; }
+      button, input, textarea { font: inherit; }
+      button { cursor: pointer; }
+      button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+      svg { width: 16px; height: 16px; display: block; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .page { display: flex; flex-direction: column; align-items: center; gap: 16px; min-height: 100dvh; padding: 24px 12px 30px; }
+      .intro { width: min(100%, 400px); }
+      .eyebrow { margin: 0 0 5px; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .08em; }
+      h1 { margin: 0; font-size: 20px; letter-spacing: -.03em; }
+      .intro p:last-child { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+      .demo-control { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: min(100%, 400px); min-height: 32px; }
+      .control-caption { margin: 0; color: var(--muted); font-size: 11px; }
+      .reduce-label { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; white-space: nowrap; }
+      .reduce-label input { width: 14px; height: 14px; margin: 0; accent-color: var(--ring); }
+      .panel { position: relative; display: flex; flex-direction: column; width: min(100%, 400px); height: min(730px, calc(100dvh - 164px)); min-height: 500px; overflow: hidden; border: 1px solid var(--border); border-radius: 10px; background: var(--background); box-shadow: 0 8px 24px #0000000d; padding: 0 16px; }
+      .header { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 49px; flex: none; margin-top: 8px; }
+      .tab-title { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; font-weight: 500; }
+      .favicon { display: grid; flex: none; place-items: center; width: 20px; height: 20px; border-radius: 4px; background: #30343b; color: #fff; font: 600 12px Georgia, serif; }
+      .tab-title span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .header-actions { display: flex; gap: 4px; flex: none; }
+      .icon-btn { display: grid; place-items: center; width: 31px; height: 31px; border: 1px solid var(--border); border-radius: 6px; background: var(--background); color: var(--foreground); }
+      .icon-btn:hover, .row-button:hover, .tool-button:hover, .chip:hover { background: var(--hover); }
+      .disclosure-wrap { flex: none; margin-top: 8px; }
+      .row-button { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 40px; padding: 0; border: 0; border-bottom: 1px solid var(--border); background: transparent; color: var(--muted); text-align: left; font-size: 14px; font-weight: 500; }
+      .row-button span.label { flex: 1; }
+      .chevron { transition: transform var(--motion); }
+      .row-button[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+      .row-button[aria-expanded="false"] .chevron-side { transform: rotate(-90deg); }
+      .work { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+      .summary-region { display: flex; flex-direction: column; flex: none; height: 0; min-height: 0; overflow: hidden; transition: height var(--motion); }
+      .work.summary-open .summary-region { height: min(40%, calc(100% - 128px)); }
+      .summary-content { flex: 1; min-height: 0; overflow-y: auto; padding: 13px 0 10px; font-size: 14px; line-height: 1.65; white-space: pre-line; }
+      .resize-handle { display: flex; flex: none; align-items: center; justify-content: center; height: 12px; color: var(--muted); opacity: .65; }
+      .resize-handle svg { width: 16px; height: 16px; }
+      .memo-area { display: flex; flex: 1; flex-direction: column; min-height: 128px; overflow: hidden; }
+      .highlights { display: flex; flex: none; flex-direction: column; min-height: 0; max-height: min(288px, 50%); border-bottom: 1px solid var(--border); padding-bottom: 7px; }
+      .highlights .row-button { flex: none; border-bottom: 0; }
+      .count { font-size: 12px; font-weight: 400; }
+      .highlight-body { height: 0; min-height: 0; overflow: auto; transition: height var(--motion); }
+      .quote { display: flex; align-items: start; gap: 7px; width: 100%; margin: 0; padding: 7px 0; color: var(--foreground); font-size: 14px; line-height: 20px; }
+      .quote mark { background: var(--yellow); color: var(--yellow-ink); border-radius: 2px; padding: 0 2px; box-decoration-break: clone; }
+      .quote svg { width: 13px; height: 13px; flex: none; margin-top: 3px; color: var(--muted); }
+      .quote-text { flex: 1; min-width: 0; display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+      .quote.extra { display: none; }
+      .highlights.show-all .quote.extra { display: flex; }
+      .more { display: block; width: 100%; border: 0; background: none; color: var(--muted); text-align: right; font-size: 12px; padding: 5px 0 3px; }
+      .more:hover { color: var(--ring); }
+      .memo-header { display: flex; align-items: center; gap: 5px; flex: none; height: 40px; margin-top: 4px; font-size: 16px; font-weight: 700; }
+      .memo-header .link-button { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); }
+      .memo-form { display: flex; flex: 1; flex-direction: column; min-height: 0; padding: 4px 0; }
+      .title-field { width: 100%; height: 32px; flex: none; border: 0; outline: 0; background: transparent; color: var(--foreground); font-size: 14px; font-weight: 700; }
+      .title-field:focus-visible { outline: 1px solid var(--ring); outline-offset: 0; border-radius: 3px; }
+      .memo-field { flex: 1; min-height: 55px; width: 100%; resize: none; border: 1px solid var(--input); border-radius: 7px; padding: 8px 10px; background: var(--background); color: var(--foreground); font-size: 14px; line-height: 1.55; }
+      .memo-field::placeholder { color: var(--muted); }
+      .memo-footer { display: flex; justify-content: space-between; align-items: center; gap: 5px; flex: none; min-height: 36px; padding-top: 8px; }
+      .tool-list { display: flex; align-items: center; gap: 3px; min-width: 0; }
+      .tool-button { display: grid; place-items: center; width: 23px; height: 23px; flex: none; border: 0; border-radius: 4px; background: transparent; color: var(--muted); }
+      .tool-button svg { width: 16px; height: 16px; }
+      .save-check { display: grid; place-items: center; color: var(--muted); width: 13px; margin-left: 1px; }
+      .save-check svg { width: 13px; height: 13px; }
+      .category-slot { position: relative; flex: none; width: 105px; height: 25px; transition: width var(--motion); }
+      .chip { position: absolute; right: 0; top: 0; display: inline-flex; align-items: center; justify-content: center; gap: 5px; max-width: 100%; height: 25px; border: 1px solid var(--border); border-radius: 6px; background: var(--background); color: var(--muted); font-size: 12px; white-space: nowrap; transition: opacity 90ms ease, transform var(--motion); }
+      .add-chip { padding: 0 9px; border-style: dashed; }
+      .selected-chip { gap: 6px; padding: 0 7px; color: var(--foreground); opacity: 0; transform: translateY(3px) scale(.96); pointer-events: none; }
+      .selected-chip .color-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: #2563eb; }
+      .chip-name { max-width: 126px; overflow: hidden; text-overflow: ellipsis; }
+      .selected-chip .remove { display: grid; place-items: center; width: 14px; height: 17px; border: 0; background: transparent; color: var(--muted); padding: 0; }
+      .selected-chip .remove svg { width: 12px; height: 12px; }
+      .category-slot.has-category .add-chip { opacity: 0; transform: translateY(-3px) scale(.96); pointer-events: none; }
+      .category-slot.has-category .selected-chip { opacity: 1; transform: none; pointer-events: auto; }
+      .popup { position: fixed; z-index: 20; width: 256px; max-height: 270px; overflow: auto; border: 1px solid var(--border); border-radius: 7px; background: var(--popover); box-shadow: 0 10px 26px #00000024; padding: 4px; }
+      .popup[hidden] { display: none; }
+      .popup input { width: 100%; height: 36px; border: 0; border-bottom: 1px solid var(--border); padding: 0 9px; outline: none; background: transparent; color: var(--foreground); font-size: 13px; }
+      .popup-list { padding: 4px 0; }
+      .popup-item { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 34px; border: 0; border-radius: 5px; padding: 6px 9px; background: transparent; color: var(--foreground); text-align: left; font-size: 13px; }
+      .popup-item:hover, .popup-item:focus-visible { background: var(--hover); }
+      .popup-item .color-dot { width: 12px; height: 12px; flex: none; border-radius: 50%; }
+      .popup-item .name { flex: 1; }
+      .popup-item .current { color: var(--muted); }
+      .no-result { margin: 8px; color: var(--muted); text-align: center; font-size: 12px; }
+      :root.reduce *, :root.reduce *::before, :root.reduce *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; } }
+      @media (max-width: 420px) { .page { padding: 15px 0 0; gap: 11px; } .intro, .demo-control { padding: 0 12px; } .panel { border-left: 0; border-right: 0; border-radius: 0; height: calc(100dvh - 140px); min-height: 500px; } }
+    </style>
+  </head>
+  <body>
+    <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"><defs>
+      <symbol id="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4M19.1 19.1l-1.4-1.4"/></symbol>
+      <symbol id="moon" viewBox="0 0 24 24"><path d="M20.6 14.3A9 9 0 0 1 9.7 3.4 9 9 0 1 0 20.6 14.3Z"/></symbol>
+      <symbol id="settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 13.5v-3l2-1.5-2-3.4-2.3.8-2.6-1.5L13.7 2h-3.4l-.4 2.9L7.3 6.4 5 5.6 3 9l2 1.5v3L3 15l2 3.4 2.3-.8 2.6 1.5.4 2.9h3.4l.4-2.9 2.6-1.5 2.3.8 2-3.4-2-1.5Z"/></symbol>
+      <symbol id="spark" viewBox="0 0 24 24"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Zm7 14 .5 1.5L21 19l-1.5.5L19 21l-.5-1.5L17 19l1.5-.5L19 17Z"/></symbol>
+      <symbol id="highlighter" viewBox="0 0 24 24"><path d="m10 4 10 10-6 6H4v-4L16 4l4 4"/></symbol>
+      <symbol id="down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+      <symbol id="up-right" viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></symbol>
+      <symbol id="external" viewBox="0 0 24 24"><path d="M14 4h6v6m0-6-9 9"/><path d="M20 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h6"/></symbol>
+      <symbol id="heart" viewBox="0 0 24 24"><path d="M20.8 8.5c0 4-8.8 10.2-8.8 10.2S3.2 12.5 3.2 8.5a4.4 4.4 0 0 1 8.8 0 4.4 4.4 0 0 1 8.8 0Z"/></symbol>
+      <symbol id="star" viewBox="0 0 24 24"><path d="m12 2 3.1 6.4 7 .9-5.1 5 .9 7L12 18l-5.9 3.3.9-7-5.1-5 7-.9L12 2Z"/></symbol>
+      <symbol id="book" viewBox="0 0 24 24"><path d="M12 6c-2.5-2-5.2-2-9-2v15c3.8 0 6.5 0 9 2 2.5-2 5.2-2 9-2V4c-3.8 0-6.5 0-9 2Zm0 0v15"/></symbol>
+      <symbol id="calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 2v6m10-6v6M3 10h18"/></symbol>
+      <symbol id="check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+      <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="x" viewBox="0 0 24 24"><path d="M6 6 18 18M18 6 6 18"/></symbol>
+      <symbol id="grip" viewBox="0 0 24 24"><circle cx="8" cy="10" r=".5"/><circle cx="12" cy="10" r=".5"/><circle cx="16" cy="10" r=".5"/><circle cx="8" cy="14" r=".5"/><circle cx="12" cy="14" r=".5"/><circle cx="16" cy="14" r=".5"/></symbol>
+    </defs></svg>
+    <main class="page">
+      <div class="intro"><p class="eyebrow">WEB MEMO · MOTION PREVIEW</p><h1>사이드 패널 모션 시안</h1><p>각 행과 카테고리 칩을 눌러 변화와 메모 입력 상태를 확인하세요.</p></div>
+      <div class="demo-control"><p class="control-caption">패널 폭 400px · 수동 조작</p><label class="reduce-label"><input id="reduce" type="checkbox" /> 움직임 줄이기</label></div>
+      <section class="panel" aria-label="Web Memo 사이드 패널 미리보기">
+        <header class="header"><div class="tab-title"><span class="favicon" aria-hidden="true">d</span><span>좋은 생각은 읽는 동안 떠오른다</span></div><div class="header-actions"><button class="icon-btn" id="theme" type="button" aria-label="다크 모드로 전환" title="테마 전환"><svg id="theme-icon"><use href="#sun" /></svg></button><button class="icon-btn" type="button" aria-label="설정 미리보기" title="설정"><svg><use href="#settings" /></svg></button></div></header>
+        <div class="disclosure-wrap"><button class="row-button" id="summary-toggle" type="button" aria-expanded="false" aria-controls="summary-region"><svg aria-hidden="true"><use href="#spark" /></svg><span class="label" id="summary-label">요약 보기</span><svg class="chevron" aria-hidden="true"><use href="#down" /></svg></button></div>
+        <div class="work" id="work">
+          <section class="summary-region" id="summary-region" aria-label="페이지 요약" inert><div class="summary-content">좋은 생각은 읽는 순간에 떠오르므로, 다른 앱으로 이동하지 않고 그 자리에서 짧게 적는 것이 좋습니다. 기록을 다시 읽으면 당시의 맥락과 생각을 함께 떠올릴 수 있습니다.</div><div class="resize-handle" aria-hidden="true"><svg><use href="#grip" /></svg></div></section>
+          <section class="memo-area" id="memo-area" aria-label="메모 영역">
+            <div class="highlights" id="highlights"><button class="row-button" id="highlight-toggle" type="button" aria-expanded="true" aria-controls="highlight-body"><svg aria-hidden="true"><use href="#highlighter" /></svg><span class="label">이 페이지의 하이라이트</span><span class="count">3</span><svg class="chevron chevron-side" aria-hidden="true"><use href="#down" /></svg></button><div class="highlight-body" id="highlight-body"><div class="quote"><span class="quote-text"><mark>마음에 남는 문장을 만나면 잠깐 멈춰 생각을 적어 보세요.</mark></span><svg aria-hidden="true"><use href="#up-right" /></svg></div><div class="quote"><span class="quote-text"><mark>읽던 맥락에서 벗어나지 않고 떠오른 생각을 남기는 작은 습관</mark></span><svg aria-hidden="true"><use href="#up-right" /></svg></div><div class="quote extra"><span class="quote-text"><mark>완성된 문장보다 지금 떠오른 한 줄에서 시작됩니다.</mark></span><svg aria-hidden="true"><use href="#up-right" /></svg></div><button class="more" id="more" type="button" aria-expanded="false">전체 보기 (3)</button></div></div>
+            <div class="memo-header"><span>메모</span><button class="link-button" type="button" aria-label="새 탭에서 열기 미리보기" title="새 탭에서 열기"><svg><use href="#external" /></svg></button></div>
+            <div class="memo-form"><input class="title-field" id="memo-title" aria-label="메모 제목" value="좋은 생각은 읽는 동안 떠오른다" /><textarea class="memo-field" id="memo" aria-label="메모" placeholder="메모">읽다가 떠오른 생각을 이 페이지와 함께 남겨 두자.</textarea><div class="memo-footer"><div class="tool-list"><button class="tool-button" type="button" aria-label="위시리스트 미리보기"><svg><use href="#heart" /></svg></button><button class="tool-button" type="button" aria-label="중요 메모 미리보기"><svg><use href="#star" /></svg></button><button class="tool-button" type="button" aria-label="읽는 중 미리보기"><svg><use href="#book" /></svg></button><button class="tool-button" type="button" aria-label="날짜 미리보기"><svg><use href="#calendar" /></svg></button><span class="save-check" role="status" aria-label="저장됨"><svg aria-hidden="true"><use href="#check" /></svg></span></div><div class="category-slot" id="category-slot"><button class="chip add-chip" id="add-chip" type="button" aria-label="카테고리 추가"><svg aria-hidden="true" style="width:12px;height:12px"><use href="#plus" /></svg>카테고리</button><span class="chip selected-chip" id="selected-chip" aria-hidden="true" inert><button type="button" id="change-chip" aria-label="카테고리 변경" style="display:flex;align-items:center;gap:5px;max-width:145px;border:0;background:none;color:inherit;padding:0"><span class="color-dot" id="chip-dot"></span><span class="chip-name" id="chip-name"></span></button><button class="remove" id="remove-chip" type="button" aria-label="카테고리 제거"><svg><use href="#x" /></svg></button></span></div></div></div>
+          </section>
+        </div>
+      </section>
+      <div class="popup" id="popup" role="dialog" aria-label="카테고리 선택" hidden><input id="category-search" aria-label="카테고리 검색" placeholder="카테고리 검색" autocomplete="off" /><div class="popup-list" id="popup-list"></div></div>
+    </main>
+    <script>
+      (() => {
+        const categories = [
+          { id: 1, name: "읽을거리", color: "#2563eb" },
+          { id: 2, name: "아이디어", color: "#d97706" },
+          { id: 3, name: "작업 메모", color: "#059669" },
+        ];
+        const $ = (selector) => document.querySelector(selector);
+        const work = $("#work");
+        const summaryToggle = $("#summary-toggle");
+        const summaryRegion = $("#summary-region");
+        const highlightToggle = $("#highlight-toggle");
+        const highlightBody = $("#highlight-body");
+        const highlights = $("#highlights");
+        const memoArea = $("#memo-area");
+        const more = $("#more");
+        const popup = $("#popup");
+        const search = $("#category-search");
+        const categorySlot = $("#category-slot");
+        let summaryOpen = false;
+        let highlightsOpen = true;
+        let showAll = false;
+        let selected = null;
+        let opener = null;
+        let forcedReducedMotion = false;
+        function updateHighlights() {
+          highlights.classList.toggle("show-all", showAll);
+          highlightToggle.setAttribute("aria-expanded", String(highlightsOpen));
+          more.setAttribute("aria-expanded", String(showAll));
+          more.textContent = showAll ? "접기" : "전체 보기 (3)";
+          const available = Math.max(0, Math.min(288 - 47, memoArea.clientHeight * .5 - 47));
+          highlightBody.style.height = highlightsOpen ? `${Math.min(highlightBody.scrollHeight, available)}px` : "0px";
+          highlightBody.inert = !highlightsOpen;
+        }
+        function toggleSummary() {
+          summaryOpen = !summaryOpen;
+          summaryToggle.setAttribute("aria-expanded", String(summaryOpen));
+          $("#summary-label").textContent = summaryOpen ? "요약 숨기기" : "요약 보기";
+          work.classList.toggle("summary-open", summaryOpen);
+          summaryRegion.inert = !summaryOpen;
+          requestAnimationFrame(updateHighlights);
+          setTimeout(updateHighlights, 190);
+        }
+        function updateChip() {
+          categorySlot.classList.toggle("has-category", Boolean(selected));
+          $("#add-chip").inert = Boolean(selected);
+          $("#add-chip").setAttribute("aria-hidden", String(Boolean(selected)));
+          $("#selected-chip").inert = !selected;
+          $("#selected-chip").setAttribute("aria-hidden", String(!selected));
+          if (selected) {
+            $("#chip-name").textContent = selected.name;
+            $("#chip-dot").style.backgroundColor = selected.color;
+            categorySlot.style.width = `${Math.min(165, Math.max(76, 46 + selected.name.length * 13))}px`;
+          } else categorySlot.style.width = "105px";
+          $("#add-chip").tabIndex = selected ? -1 : 0;
+          $("#change-chip").tabIndex = selected ? 0 : -1;
+          $("#remove-chip").tabIndex = selected ? 0 : -1;
+        }
+        function renderCategoryList() {
+          const term = search.value.trim().toLocaleLowerCase();
+          const matching = categories.filter((category) => category.name.toLocaleLowerCase().includes(term));
+          const list = $("#popup-list");
+          list.replaceChildren();
+          if (!matching.length) {
+            const empty = document.createElement("p");
+            empty.className = "no-result";
+            empty.textContent = "카테고리를 찾을 수 없습니다.";
+            list.append(empty);
+          }
+          for (const category of matching) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "popup-item";
+            button.innerHTML = `<span class="color-dot" style="background:${category.color}"></span><span class="name"></span>${category.id === selected?.id ? '<svg class="current" aria-hidden="true"><use href="#check"></use></svg>' : ''}`;
+            button.querySelector(".name").textContent = category.name;
+            button.addEventListener("click", () => { selected = category; updateChip(); closePopup(); $("#change-chip").focus(); });
+            list.append(button);
+          }
+        }
+        function openPopup(event) {
+          opener = event.currentTarget;
+          popup.hidden = false;
+          search.value = "";
+          renderCategoryList();
+          const box = opener.getBoundingClientRect();
+          popup.style.left = `${Math.max(8, Math.min(innerWidth - 264, box.right - 256))}px`;
+          popup.style.top = `${Math.max(8, box.top - popup.offsetHeight - 8)}px`;
+          search.focus();
+        }
+        function closePopup(restoreFocus = false) {
+          popup.hidden = true;
+          if (restoreFocus) opener?.focus();
+        }
+        summaryToggle.addEventListener("click", toggleSummary);
+        highlightToggle.addEventListener("click", () => { highlightsOpen = !highlightsOpen; updateHighlights(); });
+        more.addEventListener("click", () => { showAll = !showAll; updateHighlights(); });
+        $("#add-chip").addEventListener("click", openPopup);
+        $("#change-chip").addEventListener("click", openPopup);
+        $("#remove-chip").addEventListener("click", () => { selected = null; updateChip(); $("#add-chip").focus(); });
+        $("#theme").addEventListener("click", () => setTheme(document.documentElement.classList.contains("dark") ? "light" : "dark"));
+        $("#reduce").addEventListener("change", (event) => setReducedMotion(event.currentTarget.checked));
+        search.addEventListener("input", renderCategoryList);
+        search.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") { closePopup(true); event.preventDefault(); }
+          if (event.key === "Enter") { const first = $("#popup-list .popup-item"); if (first) { first.click(); event.preventDefault(); } }
+        });
+        document.addEventListener("pointerdown", (event) => { if (!popup.hidden && !popup.contains(event.target) && !categorySlot.contains(event.target)) closePopup(); });
+        new ResizeObserver(updateHighlights).observe(memoArea);
+        function setTheme(theme) {
+          if (theme !== "light" && theme !== "dark") throw new TypeError("Theme must be light or dark");
+          document.documentElement.classList.toggle("dark", theme === "dark");
+          $("#theme").setAttribute("aria-label", theme === "dark" ? "라이트 모드로 전환" : "다크 모드로 전환");
+          $("#theme-icon use").setAttribute("href", theme === "dark" ? "#moon" : "#sun");
+          return theme;
+        }
+        function setReducedMotion(enabled) {
+          forcedReducedMotion = Boolean(enabled);
+          document.documentElement.classList.toggle("reduce", forcedReducedMotion);
+          $("#reduce").checked = forcedReducedMotion;
+          return forcedReducedMotion;
+        }
+        function reset() {
+          summaryOpen = true; toggleSummary();
+          highlightsOpen = true; showAll = false; selected = null;
+          updateHighlights(); updateChip(); closePopup();
+          $("#memo-title").value = "좋은 생각은 읽는 동안 떠오른다";
+          $("#memo").value = "읽다가 떠오른 생각을 이 페이지와 함께 남겨 두자.";
+          setTheme("light"); setReducedMotion(false);
+        }
+        window.memoMotionPreview = { setTheme, setReducedMotion, reset };
+        updateHighlights(); updateChip();
+      })();
+    </script>
+  </body>
+</html>

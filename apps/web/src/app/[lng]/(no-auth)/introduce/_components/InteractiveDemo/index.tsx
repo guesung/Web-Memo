@@ -69,9 +69,14 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 	const chooseStage = (index: number) => {
 		stageRef.current = index;
 		setStage(index);
-		setPlaying(false);
+		setPlaying(!reducedMotion);
+		setFocused(false);
 		elapsedRef.current = 0;
+		lastFrameRef.current = null;
 		if (progressRef.current) progressRef.current.style.width = "0%";
+		if (index === 3 && memoRef.current) {
+			memoRef.current.textContent = reducedMotion ? memoText : "";
+		}
 		void analytics.trackEvent({
 			name: "introduce_demo_control",
 			params: { action: "select_step", stage: STAGES[index] },
@@ -139,6 +144,7 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 
 	const togglePlayback = () => {
 		const action = playing ? "pause" : "play";
+		if (!playing) setFocused(false);
 		setPlaying(!playing);
 		void analytics.trackEvent({
 			name: "introduce_demo_control",
